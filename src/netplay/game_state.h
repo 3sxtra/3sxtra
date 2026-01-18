@@ -454,6 +454,7 @@ typedef struct GameState {
     u16 Keep_Grade[2];
     u16 IO_Result;
     u16 VS_Win_Record[2];
+    u16 PLsw[2][2];
     u16 plsw_00[2];
     u16 plsw_01[2];
     s16 Flash_Synchro;
@@ -464,6 +465,7 @@ typedef struct GameState {
     s16 Random_ix32_ex_com;
     s16 Random_ix16_bg;
     s16 Opening_Now;
+    struct _TASK task[11];
 
     // plcnt
 

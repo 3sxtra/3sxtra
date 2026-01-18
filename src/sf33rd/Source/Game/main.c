@@ -71,7 +71,6 @@ void appCopyKeyData();
 u8* mppMalloc(u32 size);
 void njUserInit();
 void njUserMain();
-void njUserMain();
 void cpLoopTask();
 void cpInitTask();
 
@@ -272,12 +271,15 @@ static void game_step_0() {
 
     mpp_w.inGame = false;
 
-    Netplay_Run();
+    if (Netplay_IsRunning()) {
+        Netplay_Run();
+    } else {
+        njUserMain();
+        seqsBeforeProcess();
+        njdp2d_draw();
+        seqsAfterProcess();
+    }
 
-    njUserMain();
-    seqsBeforeProcess();
-    njdp2d_draw();
-    seqsAfterProcess();
     KnjFlush();
     disp_effect_work();
     flFlip(0);
@@ -453,11 +455,5 @@ void cpReadyTask(TaskID num, void* func_adrs) {
 }
 
 void cpExitTask(TaskID num) {
-    struct _TASK* task_ptr = &task[num];
-
-    task_ptr->condition = 0;
-
-    if (task_ptr->callback_adrs != NULL) {
-        task_ptr->callback_adrs();
-    }
+    SDL_zero(task[num]);
 }
