@@ -1,15 +1,20 @@
 #include "netplay/game_state.h"
+#include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/animation/win_pl.h"
 #include "sf33rd/Source/Game/effect/eff56.h"
+#include "sf33rd/Source/Game/effect/effb2.h"
+#include "sf33rd/Source/Game/effect/effb8.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
 #include "sf33rd/Source/Game/engine/spgauge.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/select_timer.h"
+#include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/count.h"
+#include "sf33rd/Source/Game/ui/sc_sub.h"
 
 #include <SDL3/SDL.h>
 
@@ -569,11 +574,72 @@ void GameState_Save(GameState* dst) {
 
     GS_SAVE(eff_hit_flag);
 
+    // sc_sub
+
+    GS_SAVE(FadeLimit);
+    GS_SAVE(WipeLimit);
+
+    // appear
+
+    GS_SAVE(Appear_car_stop);
+    GS_SAVE(Appear_hv);
+    GS_SAVE(Appear_free);
+    GS_SAVE(Appear_flag);
+    GS_SAVE(app_counter);
+    GS_SAVE(appear_work);
+    GS_SAVE(Appear_end);
+
+    // bg_data
+
+    GS_SAVE(y_sitei_pos);
+    GS_SAVE(y_sitei_flag);
+    GS_SAVE(c_number);
+    GS_SAVE(c_kakikae);
+    GS_SAVE(g_number);
+    GS_SAVE(g_kakikae);
+    GS_SAVE(nosekae);
+    GS_SAVE(scrn_adgjust_y);
+    GS_SAVE(scrn_adgjust_x);
+    GS_SAVE(zoom_add);
+    GS_SAVE(ls_cnt1);
+    GS_SAVE(bg_app);
+    GS_SAVE(sa_pa_flag);
+    GS_SAVE(aku_flag);
+    GS_SAVE(seraph_flag);
+    GS_SAVE(akebono_flag);
+    GS_SAVE(bg_mvxy);
+    GS_SAVE(chase_time_y);
+    GS_SAVE(chase_time_x);
+    GS_SAVE(chase_y);
+    GS_SAVE(chase_x);
+    GS_SAVE(demo_car_flag);
+    GS_SAVE(ideal_w);
+    GS_SAVE(bg_app_stop);
+    GS_SAVE(bg_stop);
+    GS_SAVE(base_y_pos);
+    GS_SAVE(etcBgPalCnvTable);
+    GS_SAVE(etcBgGixCnvTable);
+
     // eff56
 
     GS_SAVE(ci_pointer);
     GS_SAVE(ci_col);
     GS_SAVE(ci_timer);
+
+    // effb2
+
+    GS_SAVE(rf_b2_flag);
+    GS_SAVE(b2_curr_no);
+
+    // effb8
+
+    GS_SAVE(test_pl_no);
+    GS_SAVE(test_mes_no);
+    GS_SAVE(test_in);
+    GS_SAVE(old_mes_no2);
+    GS_SAVE(old_mes_no3);
+    GS_SAVE(old_mes_no_pl);
+    GS_SAVE(mes_timer);
 }
 
 #define GS_LOAD(member) SDL_memcpy(&member, &src->member, sizeof(member))
@@ -1132,9 +1198,70 @@ void GameState_Load(const GameState* src) {
 
     GS_LOAD(eff_hit_flag);
 
+    // sc_sub
+
+    GS_LOAD(FadeLimit);
+    GS_LOAD(WipeLimit);
+
+    // appear
+
+    GS_LOAD(Appear_car_stop);
+    GS_LOAD(Appear_hv);
+    GS_LOAD(Appear_free);
+    GS_LOAD(Appear_flag);
+    GS_LOAD(app_counter);
+    GS_LOAD(appear_work);
+    GS_LOAD(Appear_end);
+
+    // bg_data
+
+    GS_LOAD(y_sitei_pos);
+    GS_LOAD(y_sitei_flag);
+    GS_LOAD(c_number);
+    GS_LOAD(c_kakikae);
+    GS_LOAD(g_number);
+    GS_LOAD(g_kakikae);
+    GS_LOAD(nosekae);
+    GS_LOAD(scrn_adgjust_y);
+    GS_LOAD(scrn_adgjust_x);
+    GS_LOAD(zoom_add);
+    GS_LOAD(ls_cnt1);
+    GS_LOAD(bg_app);
+    GS_LOAD(sa_pa_flag);
+    GS_LOAD(aku_flag);
+    GS_LOAD(seraph_flag);
+    GS_LOAD(akebono_flag);
+    GS_LOAD(bg_mvxy);
+    GS_LOAD(chase_time_y);
+    GS_LOAD(chase_time_x);
+    GS_LOAD(chase_y);
+    GS_LOAD(chase_x);
+    GS_LOAD(demo_car_flag);
+    GS_LOAD(ideal_w);
+    GS_LOAD(bg_app_stop);
+    GS_LOAD(bg_stop);
+    GS_LOAD(base_y_pos);
+    GS_LOAD(etcBgPalCnvTable);
+    GS_LOAD(etcBgGixCnvTable);
+
     // eff56
 
     GS_LOAD(ci_pointer);
     GS_LOAD(ci_col);
     GS_LOAD(ci_timer);
+
+    // effb2
+
+    GS_LOAD(rf_b2_flag);
+    GS_LOAD(b2_curr_no);
+
+    // effb8
+
+    GS_LOAD(test_pl_no);
+    GS_LOAD(test_mes_no);
+    GS_LOAD(test_in);
+    GS_LOAD(old_mes_no2);
+    GS_LOAD(old_mes_no3);
+    GS_LOAD(old_mes_no_pl);
+    GS_LOAD(mes_timer);
 }
