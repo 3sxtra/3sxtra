@@ -160,7 +160,7 @@ static void configure_gekko() {
     config.desync_detection = true;
 #endif
 
-    if (gekko_create(&session)) {
+    if (gekko_create(&session, GekkoGameSession)) {
         gekko_start(session, &config);
     } else {
         printf("Session is already running! probably incorrect.\n");
@@ -183,10 +183,10 @@ static void configure_gekko() {
         const bool is_local_player = (i == player_number);
 
         if (is_local_player) {
-            player_handle = gekko_add_actor(session, LocalPlayer, NULL);
+            player_handle = gekko_add_actor(session, GekkoLocalPlayer, NULL);
             gekko_set_local_delay(session, player_handle, DELAY_FRAMES);
         } else {
-            gekko_add_actor(session, RemotePlayer, &remote_address);
+            gekko_add_actor(session, GekkoRemotePlayer, &remote_address);
         }
     }
 }
@@ -448,26 +448,26 @@ static void process_session() {
         const GekkoSessionEvent* event = session_events[i];
 
         switch (event->type) {
-        case PlayerSyncing:
+        case GekkoPlayerSyncing:
             printf("🔴 player syncing\n");
             // FIXME: Show status to the player
             break;
 
-        case PlayerConnected:
+        case GekkoPlayerConnected:
             printf("🔴 player connected\n");
             break;
 
-        case PlayerDisconnected:
+        case GekkoPlayerDisconnected:
             printf("🔴 player disconnected\n");
             handle_disconnection();
             break;
 
-        case SessionStarted:
+        case GekkoSessionStarted:
             printf("🔴 session started\n");
             session_state = NETPLAY_SESSION_RUNNING;
             break;
 
-        case DesyncDetected:
+        case GekkoDesyncDetected:
             const int frame = event->data.desynced.frame;
             printf("⚠️ desync detected at frame %d\n", frame);
 
@@ -476,9 +476,9 @@ static void process_session() {
 #endif
             break;
 
-        case EmptySessionEvent:
-        case SpectatorPaused:
-        case SpectatorUnpaused:
+        case GekkoEmptySessionEvent:
+        case GekkoSpectatorPaused:
+        case GekkoSpectatorUnpaused:
             // Do nothing
             break;
         }
@@ -494,21 +494,21 @@ static void process_events(bool drawing_allowed) {
         const GekkoGameEvent* event = game_events[i];
 
         switch (event->type) {
-        case LoadEvent:
+        case GekkoLoadEvent:
             load_state_from_event(event);
             break;
 
-        case AdvanceEvent:
+        case GekkoAdvanceEvent:
             const bool rolling_back = event->data.adv.rolling_back;
             advance_game(event, drawing_allowed && !rolling_back);
             frames_rolled_back += rolling_back ? 1 : 0;
             break;
 
-        case SaveEvent:
+        case GekkoSaveEvent:
             save_state(event);
             break;
 
-        case EmptyGameEvent:
+        case GekkoEmptyGameEvent:
             // Do nothing
             break;
         }
