@@ -118,10 +118,17 @@ endif()
 set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/third_party")
 set(FFMPEG_ROOT "${THIRD_PARTY_DIR}/ffmpeg/build")
 set(SDL3_ROOT "${THIRD_PARTY_DIR}/sdl3/build")
+set(LIBCDIO_ROOT "${THIRD_PARTY_DIR}/libcdio/build")
 
 include_directories(
     ${FFMPEG_ROOT}/include
     ${SDL3_ROOT}/include
+    ${LIBCDIO_ROOT}/include
+)
+
+target_link_libraries(3sx PRIVATE
+    "${LIBCDIO_ROOT}/lib/libiso9660.a"
+    "${LIBCDIO_ROOT}/lib/libcdio.a"
 )
 
 if(APPLE)
@@ -131,6 +138,7 @@ if(APPLE)
         ${FFMPEG_ROOT}/lib/libavutil.dylib
         ${FFMPEG_ROOT}/lib/libswresample.dylib
         ${SDL3_ROOT}/lib/libSDL3.0.dylib
+        iconv
     )
 elseif(WIN32)
     target_link_libraries(3sx PRIVATE
@@ -139,6 +147,7 @@ elseif(WIN32)
         ${FFMPEG_ROOT}/lib/libavutil.dll.a
         ${FFMPEG_ROOT}/lib/libswresample.dll.a
         ${SDL3_ROOT}/lib/libSDL3.dll.a
+        iconv
 		dbghelp
     )
     target_link_options(3sx PRIVATE
@@ -159,6 +168,11 @@ endif()
 # Installation
 # ======================================
 
+set(PROJECT_LICENSE_FILES
+    "${CMAKE_SOURCE_DIR}/LICENSE"
+    "${CMAKE_SOURCE_DIR}/THIRD_PARTY_NOTICES.txt"
+)
+
 if(APPLE)
     install(TARGETS 3sx
         RUNTIME DESTINATION bin
@@ -171,6 +185,11 @@ if(APPLE)
         ${FFMPEG_DYLIBS}
         ${SDL3_ROOT}/lib/libSDL3.0.dylib
         DESTINATION 3SX.app/Contents/Frameworks
+    )
+
+    install(FILES
+        ${PROJECT_LICENSE_FILES}
+        DESTINATION 3SX.app/Contents/Resources/licenses
     )
 elseif(WIN32)
     install(TARGETS 3sx
@@ -195,6 +214,11 @@ elseif(WIN32)
         "build/3sx.pdb"
         DESTINATION bin
     )
+
+    install(FILES
+        ${PROJECT_LICENSE_FILES}
+        DESTINATION bin/licenses
+    )
 elseif(UNIX)
     install(TARGETS 3sx
         RUNTIME DESTINATION bin
@@ -206,6 +230,11 @@ elseif(UNIX)
         ${FFMPEG_SO}
         ${SDL3_ROOT}/lib/libSDL3.so
         DESTINATION lib
+    )
+
+    install(FILES
+        ${PROJECT_LICENSE_FILES}
+        DESTINATION share/3sx/licenses
     )
 endif()
 
