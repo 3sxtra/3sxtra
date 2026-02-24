@@ -1,6 +1,13 @@
 /**
  * @file appear.c
- * Character Appear Animation
+ * @brief Character entrance (appear) animations.
+ *
+ * Per-character entrance sequences dispatched by `appear_player()`,
+ * including walk-on, jump-in, vehicle arrival, and boss intro animations.
+ * Each `Appear_NNNNN` handler corresponds to a specific animation type
+ * selected by `app_type_tbl`.
+ *
+ * Part of the animation module.
  */
 
 #include "sf33rd/Source/Game/animation/appear.h"
@@ -37,6 +44,12 @@ s16 app_counter[] = { 0, 0 };
 s16 appear_work[] = { 0, 0 };
 s16 Appear_end;
 
+/* === Named Constants === */
+#define APPEAR_TYPE_COUNT 42   /**< Entries in appear_jmp_tbl[] */
+#define SMOKE_CHECK_COUNT 22   /**< Entries in smoke_check[] */
+#define ANIMAL_DECIDE_COUNT 16 /**< Entries in animal_decide_tbl[] */
+
+/** @brief Clear all appear work variables for a new round. */
 void appear_work_clear() {
     Appear_end = 0;
     Appear_flag[0] = 0;
@@ -47,6 +60,7 @@ void appear_work_clear() {
     bg_app_stop = 0;
 }
 
+/** @brief Determine if the player is on the home or visitor side. */
 s32 home_visitor_check(PLW* wk) {
     s8 hv_type;
     s16 pl_num;
@@ -63,13 +77,14 @@ s32 home_visitor_check(PLW* wk) {
         if (Champion == wk->wu.id && wk->player_number == pl_num && pl_num != 8) {
             hv_type = 1;
         }
-    } else if (wk->wu.operator && wk->player_number == pl_num && pl_num != 8) {
+    } else if (wk->wu.pl_operator && wk->player_number == pl_num && pl_num != 8) {
         hv_type = 1;
     }
 
     return hv_type;
 }
 
+/** @brief Apply appear data (position, direction, state) to the player work. */
 void appear_data_set(PLW* wk, APPEAR_DATA* dtbl) {
     if (wk->wu.id) {
         wk->wu.xyz[0].disp.pos = bg_w.bgw[1].pos_x_work - dtbl->hx;
@@ -89,6 +104,7 @@ void appear_data_set(PLW* wk, APPEAR_DATA* dtbl) {
     }
 }
 
+/** @brief Select and apply initial appear data based on character/matchup. */
 void appear_data_init_set(PLW* wk) {
     APPEAR_DATA* dtbl;
     s8 ap_work;
@@ -111,23 +127,32 @@ void appear_data_init_set(PLW* wk) {
     appear_data_set(wk, dtbl);
 }
 
+/** @brief Top-level appear dispatcher — select animation by type table. */
 void appear_player(PLW* wk) {
-    void (*appear_jmp_tbl[42])(
+    void (*appear_jmp_tbl[APPEAR_TYPE_COUNT])(
         PLW* wk) = { Appear_00000, Appear_01000, Appear_01000, Appear_03000, Appear_04000, Appear_05000, Appear_06000,
                      Appear_07000, Appear_08000, Appear_09000, Appear_10000, Appear_11000, Appear_12000, Appear_13000,
                      Appear_14000, Appear_15000, Appear_16000, Appear_17000, Appear_18000, Appear_19000, Appear_20000,
                      Appear_21000, Appear_22000, Appear_23000, Appear_24000, Appear_25000, Appear_26000, Appear_06000,
                      Appear_28000, Appear_29000, Appear_30000, Appear_31000, Appear_32000, Appear_33000, Appear_34000,
                      Appear_01000, Appear_36000, Appear_37000, Appear_38000, Appear_39000, Appear_06000, Appear_41000 };
-    appear_jmp_tbl[(short)wk->wu.routine_no[4]](wk);
+
+    s16 idx = (s16)wk->wu.routine_no[4];
+    if (idx < 0 || idx >= APPEAR_TYPE_COUNT) {
+        return;
+    }
+
+    appear_jmp_tbl[idx](wk);
 }
 
+/** @brief Appear type 0 — standard walk-on entrance. */
 void Appear_00000(PLW* wk) {
     Appear_end++;
     wk->wu.routine_no[2] = 1;
     wk->wu.routine_no[3] = 0;
 }
 
+/** @brief Appear type 1 — walk-on with initial pose. */
 void Appear_01000(PLW* wk) {
     s16 work;
 
@@ -185,6 +210,7 @@ void Appear_01000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 3 — jump-in entrance. */
 void Appear_03000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -204,6 +230,7 @@ void Appear_03000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 4 — walk-on with character-specific flourish. */
 void Appear_04000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -266,6 +293,7 @@ void Appear_04000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 5 — dash-in entrance. */
 void Appear_05000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -335,6 +363,7 @@ void Appear_05000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 6 — flying/airborne entrance. */
 void Appear_06000(PLW* wk) {
     s16 work;
 
@@ -446,6 +475,7 @@ const APPEAR_DATA appear_data[] = {
     { -88, 0, -88, 0, 1, 3, 17 },
 };
 
+/** @brief Appear type 7 — vehicle/ride-in entrance. */
 void Appear_07000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -534,6 +564,7 @@ void Appear_07000(PLW* wk) {
     wk->wu.position_y = wk->wu.xyz[1].disp.pos;
 }
 
+/** @brief Appear type 8 — charge-in entrance. */
 void Appear_08000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -561,6 +592,7 @@ void Appear_08000(PLW* wk) {
     }
 }
 
+/** @brief Check if Sean’s appear needs the basketball variant. */
 s32 sean_appear_check(PLW* wk, s16 id) {
     if (plw[id].player_number == 12 && bg_w.stage == 12) {
         return 1;
@@ -569,6 +601,7 @@ s32 sean_appear_check(PLW* wk, s16 id) {
     return 0;
 }
 
+/** @brief Appear type 9 — Sean’s basketball entrance. */
 void Appear_09000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -629,6 +662,7 @@ void Appear_09000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 10 — dramatic pose entrance. */
 void Appear_10000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -670,6 +704,7 @@ void Appear_10000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 11 — casual walk-on variant. */
 void Appear_11000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -695,6 +730,7 @@ void Appear_11000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 12 — multi-phase entrance animation. */
 void Appear_12000(PLW* wk) {
     s16 work;
 
@@ -744,6 +780,7 @@ void Appear_12000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 13 — character taunt entrance. */
 void Appear_13000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -785,6 +822,7 @@ void Appear_13000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 14 — teleport/materialise entrance. */
 void Appear_14000(PLW* wk) {
     s16 work;
     s16 id_w = wk->wu.id ^ 1;
@@ -830,6 +868,7 @@ void Appear_14000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 15 — off-screen approach entrance. */
 void Appear_15000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -863,6 +902,7 @@ void Appear_15000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 16 — backflip/acrobatic entrance. */
 void Appear_16000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -889,6 +929,7 @@ void Appear_16000(PLW* wk) {
     }
 }
 
+/** @brief Check if Gill should use the special boss-intro appear. */
 s16 gill_appear_check() {
     s16 id_w;
 
@@ -921,6 +962,7 @@ s16 gill_appear_check() {
     return 0;
 }
 
+/** @brief Appear type 17 — Gill’s resurrection/boss intro. */
 void Appear_17000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -976,6 +1018,7 @@ void Appear_17000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 18 — extended character-specific entrance. */
 void Appear_18000(PLW* wk) {
     s16 work;
 
@@ -1068,6 +1111,7 @@ void Appear_18000(PLW* wk) {
     return;
 }
 
+/** @brief Appear type 19 — car/vehicle arrival entrance. */
 void Appear_19000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -1152,6 +1196,7 @@ void Appear_19000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 20 — helicopter/airborne drop entrance. */
 void Appear_20000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -1172,6 +1217,7 @@ void Appear_20000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 21 — train arrival entrance. */
 void Appear_21000(PLW* wk) {
     s16 work;
 
@@ -1200,6 +1246,7 @@ void Appear_21000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 22 — boat/water entrance. */
 void Appear_22000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -1227,6 +1274,7 @@ void Appear_22000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 23 — motorcycle entrance. */
 void Appear_23000(PLW* wk) {
     s16 work;
     switch (wk->wu.routine_no[3]) {
@@ -1260,8 +1308,9 @@ void Appear_23000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 24 — skateboard entrance. */
 void Appear_24000(PLW* wk) {
-    if (!wk->wu.operator) {
+    if (!wk->wu.pl_operator) {
         if (wk->wu.id) {
             wk->wu.xyz[0].disp.pos = bg_w.bgw[1].pos_x_work + 0xA8;
         } else {
@@ -1273,8 +1322,9 @@ void Appear_24000(PLW* wk) {
     wk->wu.routine_no[3] = 0;
 }
 
+/** @brief Appear type 25 — minimal entrance (direct set). */
 void Appear_25000(PLW* wk) {
-    if (!wk->wu.operator) {
+    if (!wk->wu.pl_operator) {
         wk->wu.xyz[0].disp.pos = bg_w.bgw[1].pos_x_work;
     }
 
@@ -1282,8 +1332,9 @@ void Appear_25000(PLW* wk) {
     wk->wu.routine_no[3] = 0;
 }
 
-const s16 smoke_check[] = { 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0 };
+const s16 smoke_check[SMOKE_CHECK_COUNT] = { 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0 };
 
+/** @brief Appear type 26 — smoke/cloud entrance with per-character variants. */
 void Appear_26000(PLW* wk) {
     // s32 effect_86_init(s16 type86);
 
@@ -1379,6 +1430,7 @@ void Appear_26000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 28 — round-2+ re-entrance animation. */
 void Appear_28000(PLW* wk) {
     s16 id_w = wk->wu.id ^ 1;
 
@@ -1439,6 +1491,7 @@ void Appear_28000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 29 — extended re-entrance with sound cues. */
 void Appear_29000(PLW* wk) {
     s16 work;
 
@@ -1565,11 +1618,12 @@ void Appear_29000(PLW* wk) {
     }
 }
 
+/** @brief Select which companion animal appears with the character. */
 void animal_decide(PLW* wk) {
     u8 work2;
     s16 work = random_16();
 
-    work2 = animal_decide_tbl[work];
+    work2 = animal_decide_tbl[work & (ANIMAL_DECIDE_COUNT - 1)];
     don_appear_check(wk);
 
     switch (work2) {
@@ -1589,6 +1643,7 @@ void animal_decide(PLW* wk) {
     return;
 }
 
+/** @brief Check if Don’s appear triggers a special crowd reaction. */
 void don_appear_check(PLW* wk) {
     s16 id_w = wk->wu.id ^ 1;
 
@@ -1597,6 +1652,7 @@ void don_appear_check(PLW* wk) {
     }
 }
 
+/** @brief Appear type 30 — standing idle entrance. */
 void Appear_30000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -1618,6 +1674,7 @@ void Appear_30000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 31 — walk-on with taunt. */
 void Appear_31000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -1647,6 +1704,7 @@ void Appear_31000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 32 — power-up entrance animation. */
 void Appear_32000(PLW* wk) {
     s16 work;
 
@@ -1670,6 +1728,7 @@ void Appear_32000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 33 — leaping entrance. */
 void Appear_33000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -1715,6 +1774,7 @@ void Appear_33000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 34 — landing from above entrance. */
 void Appear_34000(PLW* wk) {
     s16 work;
 
@@ -1746,6 +1806,7 @@ void Appear_34000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 36 — complex multi-phase entrance. */
 void Appear_36000(PLW* wk) {
     s16 id_w = wk->wu.id ^ 1;
 
@@ -1814,8 +1875,9 @@ void Appear_36000(PLW* wk) {
     }
 }
 
-const u8 animal_decide_tbl[] = { 0, 1, 2, 3, 4, 5, 0, 2, 0, 1, 2, 3, 4, 5, 0, 0 };
+const u8 animal_decide_tbl[ANIMAL_DECIDE_COUNT] = { 0, 1, 2, 3, 4, 5, 0, 2, 0, 1, 2, 3, 4, 5, 0, 0 };
 
+/** @brief Appear type 37 — animal companion entrance. */
 void Appear_37000(PLW* wk) {
     s16 id_w = wk->wu.id ^ 1;
 
@@ -1906,6 +1968,7 @@ void Appear_37000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 38 — meta-character walk-on entrance. */
 void Appear_38000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -1932,6 +1995,7 @@ void Appear_38000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 39 — elevator/platform rise entrance. */
 void Appear_39000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -1986,6 +2050,7 @@ void Appear_39000(PLW* wk) {
     }
 }
 
+/** @brief Appear type 41 — delayed entrance (Q-specific). */
 void Appear_41000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -2011,6 +2076,7 @@ void Appear_41000(PLW* wk) {
     }
 }
 
+/** @brief Gouki (Akuma) teleport entrance animation. */
 void gouki_appear(PLW* wk) {
     if (!wk->wu.cmwk[0]) {
         char_move(&wk->wu);

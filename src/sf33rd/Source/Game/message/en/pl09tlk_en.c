@@ -1,8 +1,3 @@
-/**
- * @file pl09tlk_en.c
- * Oro Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl09tlk_en.h"
 #include "common.h"
 
@@ -35,4 +30,4 @@ static s8** msgTalkAdrPL09[7] = {
 
 static s8 msgTalkCtrPL09[7] = { 1, 2, 2, 1, 2, 2, 2 };
 
-MessageTable pl09tlk_usa_tbl = { msgTalkAdrPL09, msgTalkCtrPL09 };
+MessageTable pl09tlk_en_tbl = { msgTalkAdrPL09, msgTalkCtrPL09 };

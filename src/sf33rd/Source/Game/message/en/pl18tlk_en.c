@@ -1,8 +1,3 @@
-/**
- * @file pl18tlk_en.c
- * Twelve Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl18tlk_en.h"
 #include "common.h"
 
@@ -34,4 +29,4 @@ static s8** msgTalkAdrPL18[6] = {
 
 static s8 msgTalkCtrPL18[6] = { 1, 2, 2, 2, 2, 2 };
 
-MessageTable pl18tlk_usa_tbl = { msgTalkAdrPL18, msgTalkCtrPL18 };
+MessageTable pl18tlk_en_tbl = { msgTalkAdrPL18, msgTalkCtrPL18 };

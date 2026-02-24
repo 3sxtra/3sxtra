@@ -4,6 +4,6 @@
 #include "structs.h"
 #include "types.h"
 
-extern MessageTable pl08win_usa_tbl;
+extern MessageTable pl08win_en_tbl;
 
 #endif

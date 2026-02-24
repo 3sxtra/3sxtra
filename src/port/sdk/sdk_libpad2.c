@@ -1,3 +1,11 @@
+/**
+ * @file sdk_libpad2.c
+ * @brief PS2 libpad2 shim — maps SDL gamepad state to scePad2 structs.
+ *
+ * Translates SDL3 gamepad button/axis/trigger state into the PS2
+ * scePad2ButtonState format, including digital buttons, analog sticks,
+ * pressure-sensitive buttons, and rumble/vibration passthrough.
+ */
 #include "common.h"
 #include "port/sdl/sdl_pad.h"
 

@@ -1,6 +1,6 @@
 /**
  * @file effj2.c
- * TODO: identify what this effect does
+ * Effect: Difficulty / Large BBBS Effect
  */
 
 #include "sf33rd/Source/Game/effect/effj2.h"
@@ -10,7 +10,7 @@
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void effJ2_trans(WORK* ewk);
+static void effJ2_trans(WORK* ewk);
 
 const CONN bbbs_nando_large[2] = { { 92, 78, 0, 0x7EC7 }, { -20, 78, 0, 0x7EC6 } };
 
@@ -58,7 +58,7 @@ void effect_J2_move(WORK_Other_CONN* ewk) {
     }
 }
 
-void effJ2_trans(WORK* ewk) {
+static void effJ2_trans(WORK* ewk) {
     ewk->position_x = bg_w.bgw[1].wxy[0].disp.pos;
     ewk->position_y = bg_w.bgw[1].wxy[1].disp.pos;
     sort_push_request3(ewk);

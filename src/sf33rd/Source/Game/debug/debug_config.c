@@ -1,3 +1,13 @@
+/**
+ * @file debug_config.c
+ * @brief Debug option configuration — defaults, get/set with bounds checks.
+ *
+ * Provides the 72-entry option table (`debug_string_data`), profile names,
+ * and a typed API (`DebugConfig_Init/Get/Set`) for managing debug values.
+ * In release builds, a stub `Debug_w[72]` is supplied for compatibility.
+ *
+ * Part of the debug module.
+ */
 #include "sf33rd/Source/Game/debug/debug_config.h"
 #include "common.h"
 
@@ -89,6 +99,7 @@ static const s8 debug_defaults[DEBUG_OPTION_COUNT] = { 8, 8, 0, 0, 0, 0, 0, 0, 0
 
 DebugConfig debug_config = { 0 };
 
+/** @brief Initialize all debug options from the built-in default table. */
 void DebugConfig_Init() {
     // Initialize all debug values from defaults
     for (int i = 0; i < DEBUG_OPTION_COUNT; i++) {
@@ -100,6 +111,7 @@ void DebugConfig_Init() {
     // debug_config.values[DEBUG_PLAYER_2_INVINCIBLE] = 1;
 }
 
+/** @brief Return the current value of a debug option (0 if out of range). */
 s8 DebugConfig_Get(DebugOption option) {
     if (option >= DEBUG_OPTION_COUNT) {
         return 0;
@@ -107,6 +119,7 @@ s8 DebugConfig_Get(DebugOption option) {
     return debug_config.values[option];
 }
 
+/** @brief Set a debug option value, clamped to its declared maximum. */
 void DebugConfig_Set(DebugOption option, s8 value) {
     if (option >= DEBUG_OPTION_COUNT) {
         return;
@@ -123,6 +136,6 @@ void DebugConfig_Set(DebugOption option, s8 value) {
 #else // !DEBUG
 
 // Stub for release builds - Debug_w array that does nothing
-s8 Debug_w[72] = { 0 };
+s8 Debug_w[DEBUG_OPTION_COUNT] = { 0 };
 
 #endif // DEBUG

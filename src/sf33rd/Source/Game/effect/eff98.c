@@ -1,6 +1,6 @@
 /**
  * @file eff98.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/eff98.h"
@@ -24,13 +24,13 @@ void effect_98_move(WORK_Other* ewk) {
     sort_push_request4(&ewk->wu);
 }
 
-void EFF98_WAIT(WORK_Other* ewk) {
+static void EFF98_WAIT(WORK_Other* ewk) {
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-void EFF98_SLIDE_IN(WORK_Other* ewk) {
+static void EFF98_SLIDE_IN(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old]) {
@@ -82,7 +82,7 @@ void EFF98_SLIDE_IN(WORK_Other* ewk) {
 
 void EFF98_SLIDE_OUT(WORK_Other* /* unused */) {}
 
-void EFF98_SUDDENLY(WORK_Other* ewk) {
+static void EFF98_SUDDENLY(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old]) {
@@ -105,7 +105,7 @@ void EFF98_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-void EFF98_KILL(WORK_Other* ewk) {
+static void EFF98_KILL(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old] == 0) {

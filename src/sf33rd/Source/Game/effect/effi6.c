@@ -1,11 +1,12 @@
 /**
  * @file effi6.c
- * TODO: identify what this effect does
+ * Effect: Game State Effect
  */
 
 #include "sf33rd/Source/Game/effect/effi6.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
@@ -14,7 +15,7 @@
 
 // Forward decls
 
-void effi6_line_move(WORK_Other* ewk);
+static void effi6_line_move(WORK_Other* ewk);
 
 // Funcs
 
@@ -44,7 +45,7 @@ void effect_I6_move(WORK_Other* ewk) {
     }
 }
 
-void effi6_line_move(WORK_Other* ewk) {
+static void effi6_line_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;

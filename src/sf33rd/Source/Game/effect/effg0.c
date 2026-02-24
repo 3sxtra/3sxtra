@@ -1,6 +1,6 @@
 /**
  * @file effg0.c
- * TODO: identify what this effect does
+ * Effect: Quake / Score Result Effect
  */
 
 #include "sf33rd/Source/Game/effect/effg0.h"
@@ -12,9 +12,9 @@
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void Check_Die_G0(WORK_Other_CONN* ewk);
-void effG0_trans(WORK* ewk);
-void Flash_G0(WORK_Other_CONN* ewk);
+static void Check_Die_G0(WORK_Other_CONN* ewk);
+static void effG0_trans(WORK* ewk);
+static void Flash_G0(WORK_Other_CONN* ewk);
 
 const u32 bunkai_table_G0[6] = { 1, 10, 100, 1000, 10000, 100000 };
 
@@ -87,7 +87,7 @@ void effect_G0_move(WORK_Other* ewk) {
     }
 }
 
-void Check_Die_G0(WORK_Other_CONN* ewk) {
+static void Check_Die_G0(WORK_Other_CONN* ewk) {
     if (Suicide[2]) {
         ewk->wu.disp_flag = 0;
         ewk->wu.type = 0;
@@ -95,7 +95,7 @@ void Check_Die_G0(WORK_Other_CONN* ewk) {
     }
 }
 
-void effG0_trans(WORK* ewk) {
+static void effG0_trans(WORK* ewk) {
     ewk->cg_number = (ewk->cg_number + 1) & 0x7FFF;
 
     if (ewk->cg_number == 0) {
@@ -107,7 +107,7 @@ void effG0_trans(WORK* ewk) {
     sort_push_request3(ewk);
 }
 
-void Flash_G0(WORK_Other_CONN* ewk) {
+static void Flash_G0(WORK_Other_CONN* ewk) {
     s16 ix;
 
     switch (ewk->wu.routine_no[2]) {
@@ -153,7 +153,7 @@ void Flash_G0(WORK_Other_CONN* ewk) {
     }
 }
 
-s16 score_bunkai_G0(WORK_Other_CONN* ewk, u32 tsc) {
+static s16 score_bunkai_G0(WORK_Other_CONN* ewk, u32 tsc) {
     s16 noobjans = 0;
     s16 i;
     s16 ixs[6];
@@ -179,7 +179,7 @@ s16 score_bunkai_G0(WORK_Other_CONN* ewk, u32 tsc) {
     return noobjans;
 }
 
-s32 effect_G0_init(s16 Order, s16 Time, u32 Score, s16 Pos_Index) {
+s32 effect_G0_init(s16 arg_Order, s16 Time, u32 arg_Score, s16 Pos_Index) {
     WORK_Other_CONN* ewk;
     s16 ix;
 
@@ -192,9 +192,9 @@ s32 effect_G0_init(s16 Order, s16 Time, u32 Score, s16 Pos_Index) {
     ewk->wu.id = 160;
     ewk->wu.work_id = 16;
     ewk->wu.my_family = 2;
-    ewk->wu.dir_old = Order;
+    ewk->wu.dir_old = arg_Order;
     ewk->wu.dir_timer = Time;
-    ewk->wu.dm_butt_type = Score;
+    ewk->wu.dm_butt_type = arg_Score;
     ewk->wu.my_col_code = 82;
     ewk->wu.my_mts = 14;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
@@ -216,6 +216,6 @@ s32 effect_G0_init(s16 Order, s16 Time, u32 Score, s16 Pos_Index) {
     ewk->wu.my_priority = ewk->wu.position_z = 5;
     ewk->wu.mvxy.a[0].sp = 0xFFFE8000;
     ewk->wu.mvxy.d[0].sp = 0xFFFD8000;
-    ewk->num_of_conn = score_bunkai_G0((WORK_Other_CONN*)ewk, Score);
+    ewk->num_of_conn = score_bunkai_G0((WORK_Other_CONN*)ewk, arg_Score);
     return 0;
 }

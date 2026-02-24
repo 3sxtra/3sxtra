@@ -1,6 +1,6 @@
 /**
  * @file effh6.c
- * TODO: identify what this effect does
+ * Effect: Code Table / Ending Effect
  */
 
 #include "sf33rd/Source/Game/effect/effh6.h"

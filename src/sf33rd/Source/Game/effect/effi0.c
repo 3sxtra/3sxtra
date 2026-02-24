@@ -1,6 +1,6 @@
 /**
  * @file effi0.c
- * TODO: identify what this effect does
+ * Effect: Pebble / Koishi Effect
  */
 
 #include "sf33rd/Source/Game/effect/effi0.h"

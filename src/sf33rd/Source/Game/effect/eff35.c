@@ -1,6 +1,6 @@
 /**
  * @file eff35.c
- * TODO: identify what this effect does
+ * Effect: Data Table Effect (General)
  */
 
 #include "sf33rd/Source/Game/effect/eff35.h"
@@ -17,13 +17,13 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void eff35_0000(WORK_Other* ewk);
-void eff35_0001(WORK_Other* ewk);
-void eff35_0002(WORK_Other* ewk);
-void eff35_0003(WORK_Other* ewk);
-void eff35_0004(WORK_Other* ewk);
-void eff35_0005(WORK_Other* ewk);
-void eff35_0006(WORK_Other* ewk);
+static void eff35_0000(WORK_Other* ewk);
+static void eff35_0001(WORK_Other* ewk);
+static void eff35_0002(WORK_Other* ewk);
+static void eff35_0003(WORK_Other* ewk);
+static void eff35_0004(WORK_Other* ewk);
+static void eff35_0005(WORK_Other* ewk);
+static void eff35_0006(WORK_Other* ewk);
 
 const s16 eff35_data_tbl[12][7] = {
     { 608, 0, 28, 1, 1, 0, 60 },  { 432, 0, 28, 1, 2, 0, 60 },  { 848, 20, 81, 1, 3, 3, 60 },
@@ -43,7 +43,7 @@ void effect_35_move(WORK_Other* ewk) {
     eff35_jp[ewk->wu.routine_no[0]](ewk);
 }
 
-void eff35_0000(WORK_Other* ewk) {
+static void eff35_0000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.old_rno[1]--;
@@ -67,7 +67,7 @@ void eff35_0000(WORK_Other* ewk) {
     }
 }
 
-void eff35_0001(WORK_Other* ewk) {
+static void eff35_0001(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (Break_Into) {
@@ -148,7 +148,7 @@ void eff35_0001(WORK_Other* ewk) {
     }
 }
 
-void eff35_0002(WORK_Other* ewk) {
+static void eff35_0002(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (Break_Into) {
@@ -194,7 +194,7 @@ void eff35_0002(WORK_Other* ewk) {
     }
 }
 
-void eff35_0003(WORK_Other* ewk) {
+static void eff35_0003(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -275,7 +275,7 @@ void eff35_0003(WORK_Other* ewk) {
     }
 }
 
-void eff35_0004(WORK_Other* ewk) {
+static void eff35_0004(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.old_rno[1]--;
@@ -330,7 +330,7 @@ void eff35_0004(WORK_Other* ewk) {
     }
 }
 
-void eff35_0005(WORK_Other* ewk) {
+static void eff35_0005(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (Break_Into) {
@@ -378,7 +378,7 @@ void eff35_0005(WORK_Other* ewk) {
     }
 }
 
-void eff35_0006(WORK_Other* ewk) {
+static void eff35_0006(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (Break_Into) {

@@ -1,6 +1,8 @@
 /**
  * @file vm_sub.c
- * Subroutines to configure memory card file operations
+ * @brief Subroutines to configure memory-card file operations.
+ *
+ * Part of the io module.
  */
 
 #include "sf33rd/Source/Game/io/vm_sub.h"
@@ -9,12 +11,14 @@
 #include "sf33rd/Source/Game/io/vm_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Issue a VM access request (load/save) to the given drive. */
 u8 VM_Access_Request(u8 Request, u8 Drive) {
     vm_w.Request = Request;
     vm_w.Drive = Drive;
     return 1;
 }
 
+/** @brief Set file name, type, save size, block size, and icon for a file type. */
 void Setup_File_Property(s16 file_type, u8 number) {
     switch (file_type) {
     case 0:

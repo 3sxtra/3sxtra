@@ -15,30 +15,38 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
+#define CONTINUE_JMP_COUNT 5
+
 u8 CONTINUE_X;
 
-void Continue_1st();
-void Continue_2nd();
-void Continue_3rd();
-void Continue_4th();
-void Continue_5th();
-void Setup_Continue_OBJ();
+static void Continue_1st();
+static void Continue_2nd();
+static void Continue_3rd();
+static void Continue_4th();
+static void Continue_5th();
+static void Setup_Continue_OBJ();
 static s16 Check_Exit_Continue();
 
+/** @brief Main continue-screen dispatcher — runs the current sub-state and returns exit flag. */
 s32 Continue_Scene() {
-    void (*Continue_Jmp_Tbl[5])() = { Continue_1st, Continue_2nd, Continue_3rd, Continue_4th, Continue_5th };
+    void (*Continue_Jmp_Tbl[CONTINUE_JMP_COUNT])() = {
+        Continue_1st, Continue_2nd, Continue_3rd, Continue_4th, Continue_5th
+    };
 
     CONTINUE_X = 0;
-    Continue_Jmp_Tbl[Cont_No[0]]();
+    if (Cont_No[0] < CONTINUE_JMP_COUNT) {
+        Continue_Jmp_Tbl[Cont_No[0]]();
+    }
 
-    if ((Check_Exit_Check() == 0) && (Debug_w[0x18] == -1)) {
+    if ((Check_Exit_Check() == 0) && (Debug_w[DEBUG_TIME_STOP] == -1)) {
         CONTINUE_X = 0;
     }
 
     return CONTINUE_X;
 }
 
-void Continue_1st() {
+/** @brief Continue phase 1 — set up BG scroll, spawn countdown/effects, wait for scene readiness. */
+static void Continue_1st() {
     switch (Cont_No[1]) {
     case 0:
         Cont_No[1] += 1;
@@ -86,30 +94,35 @@ void Continue_1st() {
     }
 }
 
-void Continue_2nd() {
+/** @brief Continue phase 2 — wait until the continue countdown expires. */
+static void Continue_2nd() {
     if (Continue_Count[LOSER] < 0) {
         Cont_No[0] += 1;
     }
 }
 
-void Continue_3rd() {
+/** @brief Continue phase 3 — wait for exit conditions from Check_Exit_Continue. */
+static void Continue_3rd() {
     if ((Cont_Timer = Check_Exit_Continue())) {
         Cont_No[0] += 1;
     }
 }
 
-void Continue_4th() {
+/** @brief Continue phase 4 — countdown delay before signaling exit. */
+static void Continue_4th() {
     if (--Cont_Timer == 0) {
         Cont_No[0] += 1;
         CONTINUE_X = 1;
     }
 }
 
-void Continue_5th() {
+/** @brief Continue phase 5 — immediate exit (fallback). */
+static void Continue_5th() {
     CONTINUE_X = 1;
 }
 
-void Setup_Continue_OBJ() {
+/** @brief Spawn all visual effects/objects for the continue screen (portraits, labels, panels). */
+static void Setup_Continue_OBJ() {
     effect_49_init(4);
     effect_49_init(8);
 
@@ -139,6 +152,7 @@ void Setup_Continue_OBJ() {
     Order_Timer[0x3F] = 1;
 }
 
+/** @brief Check whether both fighters have finished their exit animations; returns frame delay or 0. */
 static s16 Check_Exit_Continue() {
     if (((E_Number[0][0]) == 2) || ((E_Number[1][0]) == 2)) {
         return 0;

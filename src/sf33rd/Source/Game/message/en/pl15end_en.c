@@ -1,8 +1,3 @@
-/**
- * @file pl15end_en.c
- * Chun-Li Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl15end_en.h"
 #include "common.h"
 
@@ -55,4 +50,4 @@ static s8** msgEndAdrPL15[14] = {
 
 static s8 msgEndCtrPL15[14] = { 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1 };
 
-MessageTable pl15end_usa_tbl = { msgEndAdrPL15, msgEndCtrPL15 };
+MessageTable pl15end_en_tbl = { msgEndAdrPL15, msgEndCtrPL15 };

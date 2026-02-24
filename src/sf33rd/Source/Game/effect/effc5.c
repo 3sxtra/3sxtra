@@ -1,6 +1,6 @@
 /**
  * @file effc5.c
- * TODO: identify what this effect does
+ * Effect: Appear / Entry Effect
  */
 
 #include "sf33rd/Source/Game/effect/effc5.h"

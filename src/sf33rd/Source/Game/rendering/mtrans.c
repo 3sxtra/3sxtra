@@ -5,6 +5,8 @@
 
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "common.h"
+#include "port/legacy_matrix.h"
+#include "port/renderer.h"
 #include "port/sdl/sdl_game_renderer.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -14,7 +16,6 @@
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/chren3rd.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/rendering/texgroup.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
@@ -23,12 +24,13 @@
 #include <SDL3/SDL.h>
 
 #define PRIO_BASE_SIZE 128
+#define SPRITE_LAYERS_MAX 24 // Maximum number of sprite layers (matches MultiTexture mts[] array)
 
 typedef struct {
     Sprite2* chip;
     u16 sprTotal;
     u16 sprMax;
-    s8 up[24];
+    s8 up[SPRITE_LAYERS_MAX];
 } SpriteChipSet;
 
 // sbss
@@ -109,21 +111,22 @@ static const u32 bright_type[4][16] = { { 0x00FFFFFF,
 
 // forward decls
 static void DebugLine(f32 x, f32 y, f32 w, f32 h);
-s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr, s32 alpha, s32 id);
-void appRenewTempPriority(s32 z);
+static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr, s32 alpha, s32 id);
+static void appRenewTempPriority(s32 z);
 static s16 check_patcash_ex_trans(PatternCollection* padr, u32 cg);
 static s32 get_free_patcash_index(PatternCollection* padr);
 static s32 get_mltbuf16(MultiTexture* mt, u32 code, u32 palt, s32* ret);
-static s32 get_mltbuf16_ext(MultiTexture* mt, u32 code, u32 palt);
+
 static s32 get_mltbuf16_ext_2(MultiTexture* mt, u32 code, u32 palt, s32* ret, PatternInstance* cp);
 static s32 get_mltbuf32(MultiTexture* mt, u32 code, u32 palt, s32* ret);
-static s32 get_mltbuf32_ext(MultiTexture* mt, u32 code, u32 palt);
+
 static s32 get_mltbuf32_ext_2(MultiTexture* mt, u32 code, u32 palt, s32* ret, PatternInstance* cp);
 static void lz_ext_p6_fx(u8* srcptr, u8* dstptr, u32 len);
 static void lz_ext_p6_cx(u8* srcptr, u16* dstptr, u32 len, u16* palptr);
 static u16 x16_mapping_set(PatternMap* map, s32 code);
 static u16 x32_mapping_set(PatternMap* map, s32 code);
 
+/** @brief Replace tile map entries matching a source code/attribute with new values. */
 static void search_trsptr(uintptr_t trstbl, s32 i, s32 n, s32 cods, s32 atrs, s32 codd, s32 atrd) {
     s32 j;
     u16* tmpbas;
@@ -152,6 +155,7 @@ static void search_trsptr(uintptr_t trstbl, s32 i, s32 n, s32 cods, s32 atrs, s3
     }
 }
 
+/** @brief Render a multi-texture object with standard display mode. */
 void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
     u16* trsbas;
     TileMapEntry* trsptr;
@@ -176,8 +180,8 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
-        flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
-        while (1) {}
+        flLogOut("トランスデータが有効ではありません。グループ番号：%d, cg_number: %d\n", i, n);
+        return;
     }
 
     n -= texgrpdat[i].num_of_1st;
@@ -190,7 +194,8 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
     palo = wk->colcd & 0xF;
 
     if (wk->my_bright_type) {
-        curr_bright = bright_type[wk->my_bright_type - 1][wk->my_bright_level];
+        curr_bright = bright_type[(wk->my_bright_type - 1 < 4) ? wk->my_bright_type - 1 : 3]
+                                 [(wk->my_bright_level < 16) ? wk->my_bright_level : 15];
     } else {
         curr_bright = 0xFFFFFF;
     }
@@ -214,7 +219,7 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
         dh = ((trsptr->attr & 0x300) >> 5) + 8;
 
         if (!(trsptr->attr & 0x2000)) {
-            if (Debug_w[0x10]) {
+            if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                 DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
             }
 
@@ -228,7 +233,7 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
                                  wk->my_clear_level,
                                  mt->id);
         } else {
-            if (Debug_w[0x10]) {
+            if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                 DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
             }
 
@@ -254,6 +259,7 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
     appRenewTempPriority(wk->position_z);
 }
 
+/** @brief Render a multi-texture object in RGB (unpaletted) mode. */
 void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     u16* trsbas;
     TileMapEntry* trsptr;
@@ -278,7 +284,7 @@ void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
         flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
-        while (1) {}
+        return;
     }
 
     n -= texgrpdat[i].num_of_1st;
@@ -290,7 +296,8 @@ void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     attr = flptbl[wk->cg_flip ^ wk->rl_flag];
 
     if (wk->my_bright_type) {
-        curr_bright = bright_type[wk->my_bright_type - 1][wk->my_bright_level];
+        curr_bright = bright_type[(wk->my_bright_type - 1 < 4) ? wk->my_bright_type - 1 : 3]
+                                 [(wk->my_bright_level < 16) ? wk->my_bright_level : 15];
     } else {
         curr_bright = 0xFFFFFF;
     }
@@ -314,7 +321,7 @@ void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
         dh = ((trsptr->attr & 0x300) >> 5) + 8;
 
         if (!(trsptr->attr & 0x2000)) {
-            if (Debug_w[0x10]) {
+            if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                 DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
             }
 
@@ -328,7 +335,7 @@ void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
                                  wk->my_clear_level,
                                  mt->id);
         } else {
-            if (Debug_w[0x10]) {
+            if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                 DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
             }
 
@@ -354,6 +361,7 @@ void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     appRenewTempPriority(wk->position_z);
 }
 
+/** @brief Calculate the maximum vertical extent of a sprite by CG number. */
 s16 getObjectHeight(u16 cgnum) {
     s32 count;
     TileMapEntry* trsptr;
@@ -391,6 +399,7 @@ s16 getObjectHeight(u16 cgnum) {
     return maxHeight;
 }
 
+/** @brief Transform and render with pattern caching (extended variant). */
 void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     u32* textbl;
     u16* trsbas;
@@ -418,7 +427,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
         flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
-        while (1) {}
+        return;
     }
 
     n -= texgrpdat[i].num_of_1st;
@@ -432,7 +441,8 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
-        curr_bright = bright_type[wk->my_bright_type - 1][wk->my_bright_level];
+        curr_bright = bright_type[(wk->my_bright_type - 1 < 4) ? wk->my_bright_type - 1 : 3]
+                                 [(wk->my_bright_level < 16) ? wk->my_bright_level : 15];
     } else {
         curr_bright = 0xFFFFFF;
     }
@@ -490,10 +500,10 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                 case 2:
                     if (get_mltbuf16_ext_2(mt, cc.code, 0, &code, cp) != 0) {
                         lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                        njReLoadTexturePartNumG(mt->mltgidx16 + (code >> 8), (s8*)mt->mltbuf, code & 0xFF, size);
+                        Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
                     }
 
-                    if (Debug_w[0x10]) {
+                    if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                         DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
                     }
 
@@ -511,10 +521,10 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                 case 4:
                     if (get_mltbuf32_ext_2(mt, cc.code, 0, &code, cp) != 0) {
                         lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                        njReLoadTexturePartNumG(mt->mltgidx32 + (code >> 6), (s8*)mt->mltbuf, code & 0x3F, size);
+                        Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
                     }
 
-                    if (Debug_w[0x10]) {
+                    if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                         DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
                     }
 
@@ -545,6 +555,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     {
         s32 code;
+        s32 size;
         s32 wh;
         s32 dw;
         s32 dh;
@@ -555,8 +566,6 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
         cp = mt->cpat->adr[ix];
         cp->curr_disp = 1;
         cp->time = mt->mltcshtime16;
-
-        makeup_tpu_free(mt->mltnum16 / 256, mt->mltnum32 / 64, &cp->map);
         cc.parts.group = i;
 
         while (count--) {
@@ -576,14 +585,18 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
             dw = (texptr->wh & 0xE0) >> 2;
             dh = (texptr->wh & 0x1C) * 2;
             wh = (texptr->wh & 3) + 1;
+            size = (wh * wh) << 6;
             cc.parts.offset = trsptr->code;
 
             switch (wh) {
             case 1:
             case 2:
-                code = get_mltbuf16_ext(mt, cc.code, 0);
+                if (get_mltbuf16_ext_2(mt, cc.code, 0, &code, cp) != 0) {
+                    lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
+                    Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
+                }
 
-                if (Debug_w[0x10]) {
+                if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                     DebugLine(x - (dw & ((s16)attr >> 16)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
                 }
 
@@ -599,9 +612,12 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                 break;
 
             case 4:
-                code = get_mltbuf32_ext(mt, cc.code, 0);
+                if (get_mltbuf32_ext_2(mt, cc.code, 0, &code, cp) != 0) {
+                    lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
+                    Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
+                }
 
-                if (Debug_w[0x10]) {
+                if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                     DebugLine(x - (dw & ((s16)attr >> 16)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
                 }
 
@@ -629,6 +645,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 }
 
+/** @brief Transform and render a multi-texture object with pattern caching. */
 void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
     u32* textbl;
     u16* trsbas;
@@ -666,7 +683,7 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
         flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
-        while (1) {}
+        return;
     }
 
     n -= texgrpdat[i].num_of_1st;
@@ -680,7 +697,8 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
-        curr_bright = bright_type[wk->my_bright_type - 1][wk->my_bright_level];
+        curr_bright = bright_type[(wk->my_bright_type - 1 < 4) ? wk->my_bright_type - 1 : 3]
+                                 [(wk->my_bright_level < 16) ? wk->my_bright_level : 15];
     } else {
         curr_bright = 0xFFFFFF;
     }
@@ -713,10 +731,10 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
         case 2:
             if (get_mltbuf16(mt, cc.code, 0, &code) != 0) {
                 lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                njReLoadTexturePartNumG(mt->mltgidx16 + (code >> 8), (s8*)mt->mltbuf, code & 0xFF, size);
+                Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
             }
 
-            if (Debug_w[0x10]) {
+            if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                 DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
             }
 
@@ -734,10 +752,10 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
         case 4:
             if (get_mltbuf32(mt, cc.code, 0, &code) != 0) {
                 lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                njReLoadTexturePartNumG(mt->mltgidx32 + (code >> 6), (s8*)mt->mltbuf, code & 0x3F, size);
+                Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
             }
 
-            if (Debug_w[0x10]) {
+            if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                 DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
             }
 
@@ -764,6 +782,7 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
     appRenewTempPriority(wk->position_z);
 }
 
+/** @brief Transform and render with CP3 palette (extended variant). */
 void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     u32* textbl;
     u16* trsbas;
@@ -791,7 +810,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
         flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
-        while (1) {}
+        return;
     }
 
     n -= texgrpdat[i].num_of_1st;
@@ -805,7 +824,8 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
-        curr_bright = bright_type[wk->my_bright_type - 1][wk->my_bright_level];
+        curr_bright = bright_type[(wk->my_bright_type - 1 < 4) ? wk->my_bright_type - 1 : 3]
+                                 [(wk->my_bright_level < 16) ? wk->my_bright_level : 15];
     } else {
         curr_bright = 0xFFFFFF;
     }
@@ -868,10 +888,10 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                 case 2:
                     if (get_mltbuf16_ext_2(mt, cc.code, 0, &code, cp) != 0) {
                         lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                        njReLoadTexturePartNumG(mt->mltgidx16 + (code >> 8), (s8*)mt->mltbuf, code & 0xFF, size);
+                        Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
                     }
 
-                    if (Debug_w[0x10]) {
+                    if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                         DebugLine(x - (dw & ((s16)flip >> 0x10)), y + (dh & ((s16)(flip * 2) >> 16)), dw, dh);
                     }
 
@@ -889,10 +909,10 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                 case 4:
                     if (get_mltbuf32_ext_2(mt, cc.code, 0, &code, cp) != 0) {
                         lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                        njReLoadTexturePartNumG(mt->mltgidx32 + (code >> 6), (s8*)mt->mltbuf, code & 0x3F, size);
+                        Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
                     }
 
-                    if (Debug_w[0x10]) {
+                    if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                         DebugLine(x - (dw & ((s16)flip >> 0x10)), y + (dh & ((s16)(flip * 2) >> 16)), dw, dh);
                     }
 
@@ -924,6 +944,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     {
         s32 code;
+        s32 size;
         s32 wh;
         s32 dw;
         s32 dh;
@@ -936,7 +957,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
         cp = mt->cpat->adr[ix];
         cp->curr_disp = 1;
         cp->time = mt->mltcshtime16;
-        makeup_tpu_free(mt->mltnum16 / 256, mt->mltnum32 / 64, &cp->map);
+        // makeup_tpu_free(mt->mltnum16 / 256, mt->mltnum32 / 64, &cp->map);
         cc.parts.group = i;
 
         while (count--) {
@@ -956,6 +977,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
             dw = (texptr->wh & 0xE0) >> 2;
             dh = (texptr->wh & 0x1C) * 2;
             wh = (texptr->wh & 3) + 1;
+            size = (wh * wh) << 6;
             attr = trsptr->attr;
             palt = (attr & 0x1FF) + palo;
             attr = (attr ^ flip) & 0xC000;
@@ -964,9 +986,12 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
             switch (wh) {
             case 1:
             case 2:
-                code = get_mltbuf16_ext(mt, cc.code, 0);
+                if (get_mltbuf16_ext_2(mt, cc.code, 0, &code, cp) != 0) {
+                    lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
+                    Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
+                }
 
-                if (Debug_w[0x10]) {
+                if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                     DebugLine(x - (dw & ((s16)flip >> 0x10)), y + (dh & ((s16)(flip * 2) >> 16)), dw, dh);
                 }
 
@@ -982,9 +1007,12 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                 break;
 
             case 4:
-                code = get_mltbuf32_ext(mt, cc.code, 0);
+                if (get_mltbuf32_ext_2(mt, cc.code, 0, &code, cp) != 0) {
+                    lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
+                    Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
+                }
 
-                if (Debug_w[0x10]) {
+                if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                     DebugLine(x - (dw & ((s16)flip >> 0x10)), y + (dh & ((s16)(flip * 2) >> 16)), dw, dh);
                 }
 
@@ -1012,6 +1040,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 }
 
+/** @brief Transform and render with CP3 palette mapping. */
 void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
     u32* textbl;
     u16* trsbas;
@@ -1051,7 +1080,7 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
         flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
-        while (1) {}
+        return;
     }
 
     n -= texgrpdat[i].num_of_1st;
@@ -1065,7 +1094,8 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
-        curr_bright = bright_type[wk->my_bright_type - 1][wk->my_bright_level];
+        curr_bright = bright_type[(wk->my_bright_type - 1 < 4) ? wk->my_bright_type - 1 : 3]
+                                 [(wk->my_bright_level < 16) ? wk->my_bright_level : 15];
     } else {
         curr_bright = 0xFFFFFF;
     }
@@ -1101,10 +1131,10 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
         case 2:
             if (get_mltbuf16(mt, cc.code, 0, &code) != 0) {
                 lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                njReLoadTexturePartNumG(mt->mltgidx16 + (code >> 8), (s8*)mt->mltbuf, code & 0xFF, size);
+                Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
             }
 
-            if (Debug_w[0x10]) {
+            if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                 DebugLine(x - (dw & ((s16)flip >> 0x10)), y + (dh & ((s16)(flip * 2) >> 16)), dw, dh);
             }
 
@@ -1122,10 +1152,10 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
         case 4:
             if (get_mltbuf32(mt, cc.code, 0, &code) != 0) {
                 lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                njReLoadTexturePartNumG(mt->mltgidx32 + (code >> 6), (s8*)mt->mltbuf, code & 0x3F, size);
+                Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
             }
 
-            if (Debug_w[0x10]) {
+            if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
                 DebugLine(x - (dw & ((s16)flip >> 0x10)), y + (dh & ((s16)(flip * 2) >> 16)), dw, dh);
             }
 
@@ -1152,6 +1182,7 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
     appRenewTempPriority(wk->position_z);
 }
 
+/** @brief Transform and render in RGB mode (extended variant). */
 void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     u32* textbl;
     u16* trsbas;
@@ -1181,7 +1212,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
         flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
-        while (1) {}
+        return;
     }
 
     n -= texgrpdat[i].num_of_1st;
@@ -1195,7 +1226,8 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
-        curr_bright = bright_type[wk->my_bright_type - 1][wk->my_bright_level];
+        curr_bright = bright_type[(wk->my_bright_type - 1 < 4) ? wk->my_bright_type - 1 : 3]
+                                 [(wk->my_bright_level < 16) ? wk->my_bright_level : 15];
     } else {
         curr_bright = 0xFFFFFF;
     }
@@ -1255,7 +1287,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                 case 2:
                     if (get_mltbuf16_ext_2(mt, cc.code, palt, &code, cp) != 0) {
                         lz_ext_p6_cx(&((u8*)texptr)[1], (u16*)mt->mltbuf, size, (u16*)(ColorRAM[palt]));
-                        njReLoadTexturePartNumG(mt->mltgidx16 + (code >> 8), (s8*)mt->mltbuf, code & 0xFF, size * 2);
+                        Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size * 2, 0, 0);
                     }
 
                     rnum = seqsStoreChip(x - (dw * BOOL(flip & 0x8000)),
@@ -1272,7 +1304,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                 case 4:
                     if (get_mltbuf32_ext_2(mt, cc.code, palt, &code, cp) != 0) {
                         lz_ext_p6_cx(&((u8*)texptr)[1], (u16*)mt->mltbuf, size, (u16*)(ColorRAM[palt]));
-                        njReLoadTexturePartNumG(mt->mltgidx32 + (code >> 6), (s8*)mt->mltbuf, code & 0x3F, size * 2);
+                        Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size * 2, 0, 0);
                     }
 
                     rnum = seqsStoreChip(x - (dw * BOOL(flip & 0x8000)),
@@ -1303,6 +1335,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     {
         s32 code;
+        s32 size;
         s32 attr;
         s32 palt;
         s32 wh;
@@ -1312,7 +1345,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
         cp = mt->cpat->adr[ix];
         cp->curr_disp = 1;
         cp->time = mt->mltcshtime16;
-        makeup_tpu_free(mt->mltnum16 / 256, mt->mltnum32 / 64, &cp->map);
+        // makeup_tpu_free(mt->mltnum16 / 256, mt->mltnum32 / 64, &cp->map);
         cc.parts.group = i;
 
         while (count--) {
@@ -1332,6 +1365,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
             dw = (texptr->wh & 0xE0) >> 2;
             dh = (texptr->wh & 0x1C) * 2;
             wh = (texptr->wh & 3) + 1;
+            size = (wh * wh) << 6;
             attr = trsptr->attr;
             palt = (attr & 0x1FF) + palo;
             attr = (attr ^ flip) & 0xC000;
@@ -1340,7 +1374,10 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
             switch (wh) {
             case 1:
             case 2:
-                code = get_mltbuf16_ext(mt, cc.code, palt);
+                if (get_mltbuf16_ext_2(mt, cc.code, palt, &code, cp) != 0) {
+                    lz_ext_p6_cx(&((u8*)texptr)[1], (u16*)mt->mltbuf, size, (u16*)(ColorRAM[palt]));
+                    Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size * 2, 0, 0);
+                }
 
                 rnum = seqsStoreChip(x - (dw * BOOL(flip & 0x8000)),
                                      y + (dh * BOOL(flip & 0x4000)),
@@ -1354,7 +1391,10 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                 break;
 
             case 4:
-                code = get_mltbuf32_ext(mt, cc.code, palt);
+                if (get_mltbuf32_ext_2(mt, cc.code, palt, &code, cp) != 0) {
+                    lz_ext_p6_cx(&((u8*)texptr)[1], (u16*)mt->mltbuf, size, (u16*)(ColorRAM[palt]));
+                    Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size * 2, 0, 0);
+                }
 
                 rnum = seqsStoreChip(x - (dw * BOOL(flip & 0x8000)),
                                      y + (dh * BOOL(flip & 0x4000)),
@@ -1380,6 +1420,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 }
 
+/** @brief Transform and render in RGB mode with pattern caching. */
 void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     u32* textbl;
     u16* trsbas;
@@ -1419,7 +1460,7 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
         flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
-        while (1) {}
+        return;
     }
 
     n -= texgrpdat[i].num_of_1st;
@@ -1433,7 +1474,8 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     palo = wk->colcd;
 
     if (wk->my_bright_type) {
-        curr_bright = bright_type[wk->my_bright_type - 1][wk->my_bright_level];
+        curr_bright = bright_type[(wk->my_bright_type - 1 < 4) ? wk->my_bright_type - 1 : 3]
+                                 [(wk->my_bright_level < 16) ? wk->my_bright_level : 15];
     } else {
         curr_bright = 0xFFFFFF;
     }
@@ -1469,7 +1511,7 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
         case 2:
             if (get_mltbuf16(mt, cc.code, palt, &code) != 0) {
                 lz_ext_p6_cx(&((u8*)texptr)[1], (u16*)mt->mltbuf, size, (u16*)(ColorRAM[palt]));
-                njReLoadTexturePartNumG(mt->mltgidx16 + (code >> 8), (s8*)mt->mltbuf, code & 0xFF, size * 2);
+                Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size * 2, 0, 0);
             }
 
             rnum = seqsStoreChip(x - (dw * BOOL(flip & 0x8000)),
@@ -1486,7 +1528,7 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
         case 4:
             if (get_mltbuf32(mt, cc.code, palt, &code) != 0) {
                 lz_ext_p6_cx(&((u8*)texptr)[1], (u16*)mt->mltbuf, size, (u16*)(ColorRAM[palt]));
-                njReLoadTexturePartNumG(mt->mltgidx32 + (code >> 6), (s8*)mt->mltbuf, code & 0x3F, size * 2);
+                Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size * 2, 0, 0);
             }
 
             rnum = seqsStoreChip(x - (dw * BOOL(flip & 0x8000)),
@@ -1512,6 +1554,7 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     appRenewTempPriority(wk->position_z);
 }
 
+/** @brief Set up the transformation matrix for a multi-texture object. */
 void mlt_obj_matrix(WORK* wk, s32 base_y) {
     njSetMatrix(NULL, &BgMATRIX[wk->my_family]);
     njTranslate(NULL, wk->position_x, wk->position_y + base_y, PrioBase[wk->position_z]);
@@ -1521,6 +1564,7 @@ void mlt_obj_matrix(WORK* wk, s32 base_y) {
     }
 }
 
+/** @brief Initialize the base sprite priority table. */
 void appSetupBasePriority() {
     s32 i;
 
@@ -1529,6 +1573,7 @@ void appSetupBasePriority() {
     }
 }
 
+/** @brief Reset the temporary sprite priority table from the base. */
 void appSetupTempPriority() {
     s32 i;
 
@@ -1537,55 +1582,61 @@ void appSetupTempPriority() {
     }
 }
 
+/** @brief Reserved: renew temporary priority for a single chip. */
 void appRenewTempPriority_1_Chip() {
-    njTranslate(NULL, 0, 0, 1.0f / 65536.0f); // 1 / 2^(-16)
+    // ⚡ Bolt: Z-only translate avoids full 4×4 matmul (~130 FLOPs → 8 FLOPs)
+    njTranslateZ(1.0f / 65536.0f);
 }
 
-void appRenewTempPriority(s32 z) {
+/** @brief Renew the temporary priority based on the given Z position. */
+static void appRenewTempPriority(s32 z) {
     MTX mtx;
     njGetMatrix(&mtx);
     PrioBase[z] = mtx.a[3][2];
 }
 
+/** @brief Initialize the sprite chip set system with the given memory. */
 void seqsInitialize(void* adrs) {
     if (adrs == NULL) {
-        while (1) {
-            // Do nothing
-        }
+        flLogOut("[mtrans] seqsInitialize: NULL address");
+        return;
     }
 
     seqs_w.chip = (Sprite2*)adrs;
     seqs_w.sprMax = 0;
 }
 
+/** @brief Get the maximum number of sprites allowed. */
 u16 seqsGetSprMax() {
     return seqs_w.sprMax;
 }
 
+/** @brief Get the memory usage of the sprite chip set system. */
 u32 seqsGetUseMemorySize() {
     return 0xD000;
 }
 
+/** @brief Pre-frame reset of the sprite chip set system. */
 void seqsBeforeProcess() {
     s32 i;
 
     seqs_w.sprTotal = 0;
 
-    // FIXME: Extract 24 into a define
-    for (i = 0; i < 24; i++) {
+    for (i = 0; i < SPRITE_LAYERS_MAX; i++) {
         seqs_w.up[i] = 0;
     }
 }
 
+/** @brief Post-frame processing: flush accumulated sprites for rendering. */
 void seqsAfterProcess() {
     s32 i;
     u32 keep = 0;
     u32 val = 0;
 
-    if ((Debug_w[0x27] != 3) && (seqs_w.sprTotal != 0)) {
-        for (i = 0; i < 24; i++) {
+    if ((Debug_w[DEBUG_NO_DISP_TYPE_SB] != 3) && (seqs_w.sprTotal != 0)) {
+        for (i = 0; i < SPRITE_LAYERS_MAX; i++) {
             if (seqs_w.up[i]) {
-                if (Debug_w[0x22]) {
+                if (Debug_w[DEBUG_NO_UPDATE_TEXCASH]) {
                     if (ppgCheckTextureDataBe(mts[i].texList.tex) == 0) {
                         seqs_w.up[i] = 0;
                     }
@@ -1614,7 +1665,8 @@ void seqsAfterProcess() {
     }
 }
 
-s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr, s32 alpha, s32 id) {
+/** @brief Store a sprite chip into the chip set for deferred rendering. */
+static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr, s32 alpha, s32 id) {
     Sprite2* chip;
     s32 u;
     s32 v;
@@ -1628,8 +1680,8 @@ s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr, s32 a
     chip->v[1].x = x + w;
     chip->v[1].y = y - h;
     chip->v[0].z = chip->v[1].z = 0.0f;
-    njCalcPoint(NULL, &chip->v[0], &chip->v[0]);
-    njCalcPoint(NULL, &chip->v[1], &chip->v[1]);
+    // ⚡ Bolt: batch two njCalcPoint calls → one njCalcPoints (saves function call + NULL check per chip)
+    njCalcPoints(NULL, &chip->v[0], &chip->v[0], 2);
 
     if ((chip->v[0].x >= 384.0f) || (chip->v[1].x < 0.0f) || (chip->v[0].y >= 224.0f) || (chip->v[1].y < 0.0f)) {
         return 1;
@@ -1671,12 +1723,13 @@ s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr, s32 a
     if (seqs_w.sprTotal > 0x400) {
         // The number of OBJ fragments has exceeded the planned number
         flLogOut("ＯＢＪの破片が予定数を越えてしまいました");
-        while (1) {}
+        return 0;
     }
 
     return 1;
 }
 
+/** @brief Look up or allocate a 16×16 tile buffer slot. */
 static s32 get_mltbuf16(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
     s32 i;
     s32 b = -1;
@@ -1710,11 +1763,12 @@ static s32 get_mltbuf16(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
 
             // CG cache is full. 16x16: %d\n
             flLogOut("ＣＧキャッシュが一杯になりました。１６×１６ : %d\n", mt->id);
-            while (1) {}
+            return 0;
         }
     }
 }
 
+/** @brief Look up or allocate a 32×32 tile buffer slot. */
 static s32 get_mltbuf32(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
     s32 i;
     s32 b = -1;
@@ -1748,11 +1802,12 @@ static s32 get_mltbuf32(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
 
             // CG cache is full. 32x32 : %d\n
             flLogOut("ＣＧキャッシュが一杯になりました。３２×３２ : %d\n", mt->id);
-            while (1) {}
+            return 0;
         }
     }
 }
 
+/** @brief Look up or allocate a 16×16 tile buffer slot (extended, with cache). */
 static s32 get_mltbuf16_ext_2(MultiTexture* mt, u32 code, u32 palt, s32* ret, PatternInstance* cp) {
     PatternState* mc = mt->mltcsh16;
     s32 i;
@@ -1788,9 +1843,10 @@ static s32 get_mltbuf16_ext_2(MultiTexture* mt, u32 code, u32 palt, s32* ret, Pa
 
     // CG cache is full. x16 EXT2\n
     flLogOut("ＣＧキャッシュが一杯になりました。×１６　ＥＸＴ２\n");
-    while (1) {}
+    return 0;
 }
 
+/** @brief Look up or allocate a 32×32 tile buffer slot (extended, with cache). */
 static s32 get_mltbuf32_ext_2(MultiTexture* mt, u32 code, u32 palt, s32* ret, PatternInstance* cp) {
     PatternState* mc = mt->mltcsh32;
     s32 i;
@@ -1825,37 +1881,10 @@ static s32 get_mltbuf32_ext_2(MultiTexture* mt, u32 code, u32 palt, s32* ret, Pa
     }
 
     flLogOut("ＣＧキャッシュが一杯になりました。×３２　ＥＸＴ２\n");
-    while (1) {}
+    return 0;
 }
 
-static s32 get_mltbuf16_ext(MultiTexture* mt, u32 code, u32 palt) {
-    PatternState* mc = mt->mltcsh16;
-    s32 i;
-
-    for (i = 0; i < tpu_free->x16; i++) {
-        if ((code == mc[tpu_free->x16_used[i]].cs.code) && (palt == mc[tpu_free->x16_used[i]].state)) {
-            return tpu_free->x16_used[i];
-        }
-    }
-
-    flLogOut("ＣＧ展開エラー　１６×１６\n");
-    while (1) {}
-}
-
-static s32 get_mltbuf32_ext(MultiTexture* mt, u32 code, u32 palt) {
-    PatternState* mc = mt->mltcsh32;
-    s32 i;
-
-    for (i = 0; i < tpu_free->x32; i++) {
-        if ((code == mc[tpu_free->x32_used[i]].cs.code) && (palt == mc[tpu_free->x32_used[i]].state)) {
-            return tpu_free->x32_used[i];
-        }
-    }
-
-    flLogOut("ＣＧ展開エラー　３２×３２\n");
-    while (1) {}
-}
-
+/** @brief Set the 16×16 tile mapping for a given pattern code. */
 static u16 x16_mapping_set(PatternMap* map, s32 code) {
     u16 num;
     u16 flg;
@@ -1871,6 +1900,7 @@ static u16 x16_mapping_set(PatternMap* map, s32 code) {
     return flg;
 }
 
+/** @brief Set the 32×32 tile mapping for a given pattern code. */
 static u16 x32_mapping_set(PatternMap* map, s32 code) {
     u16 flg = 0;
     u8 num = code & 7;
@@ -1883,6 +1913,7 @@ static u16 x32_mapping_set(PatternMap* map, s32 code) {
     return flg;
 }
 
+/** @brief Populate the free texture pool based on current pattern mappings. */
 void makeup_tpu_free(s32 x16, s32 x32, PatternMap* map) {
     s16 i;
     s16 j;
@@ -1918,6 +1949,7 @@ void makeup_tpu_free(s32 x16, s32 x32, PatternMap* map) {
     }
 }
 
+/** @brief Check if a CG number is already in the extended pattern cache. */
 static s16 check_patcash_ex_trans(PatternCollection* padr, u32 cg) {
     s16 rnum = -1;
     s16 i;
@@ -1932,6 +1964,7 @@ static s16 check_patcash_ex_trans(PatternCollection* padr, u32 cg) {
     return rnum;
 }
 
+/** @brief Find a free pattern cache slot or evict the oldest entry. */
 static s32 get_free_patcash_index(PatternCollection* padr) {
     s16 i;
 
@@ -1942,9 +1975,11 @@ static s32 get_free_patcash_index(PatternCollection* padr) {
     }
 
     flLogOut("ＣＧキャッシュバッファが一杯になりました。\n");
-    while (1) {}
+    // All slots occupied — evict the last one as a fallback to avoid OOB access
+    return 0x3F;
 }
 
+/** @brief Decompress LZ-compressed 4bpp fixed-palette texture data. */
 static void lz_ext_p6_fx(u8* srcptr, u8* dstptr, u32 len) {
     u8* endptr = dstptr + len;
     u8* tmpptr;
@@ -1995,6 +2030,7 @@ static void lz_ext_p6_fx(u8* srcptr, u8* dstptr, u32 len) {
     }
 }
 
+/** @brief Decompress LZ-compressed paletted texture data with color lookup. */
 static void lz_ext_p6_cx(u8* srcptr, u16* dstptr, u32 len, u16* palptr) {
     u16* endptr = dstptr + len;
     u16* tmpptr;
@@ -2045,6 +2081,7 @@ static void lz_ext_p6_cx(u8* srcptr, u16* dstptr, u32 len, u16* palptr) {
     }
 }
 
+/** @brief Initialize the multi-texture transformation system for a character. */
 void mlt_obj_trans_init(MultiTexture* mt, s32 mode, u8* adrs) {
     PatternState* mc;
     PPGFileHeader ppg;
@@ -2095,6 +2132,7 @@ void mlt_obj_trans_init(MultiTexture* mt, s32 mode, u8* adrs) {
     }
 }
 
+/** @brief Update texture cache lifetimes for this multi-texture object. */
 void mlt_obj_trans_update(MultiTexture* mt) {
     s32 i;
     PatternState* mc;
@@ -2119,6 +2157,7 @@ void mlt_obj_trans_update(MultiTexture* mt) {
     }
 }
 
+/** @brief Draw a colored box primitive at the given coordinates. */
 void draw_box(f64 arg0, f64 arg1, f64 arg2, f64 arg3, u32 col, u32 attr, s16 prio) {
     f32 px;
     f32 py;
@@ -2149,10 +2188,11 @@ void draw_box(f64 arg0, f64 arg1, f64 arg2, f64 arg3, u32 col, u32 attr, s16 pri
     line.p[0].y = line.p[1].y = point[0].y;
     line.p[2].y = line.p[3].y = point[1].y;
     line.col[0].color = line.col[1].color = line.col[2].color = line.col[3].color = col;
-    njDrawPolygon2D(&line, 4, PrioBase[prio], attr);
+    Renderer_Queue2DPrimitive((f32*)line.p, PrioBase[prio], (uintptr_t)line.col[0].color, 0);
     appRenewTempPriority(prio);
 }
 
+/** @brief Draw a debug line at the given position and size. */
 static void DebugLine(f32 x, f32 y, f32 w, f32 h) {
     Vec3 point[2];
     PAL_CURSOR line;
@@ -2175,9 +2215,10 @@ static void DebugLine(f32 x, f32 y, f32 w, f32 h) {
     line.p[0].y = line.p[1].y = point[0].y;
     line.p[2].y = line.p[3].y = point[1].y;
     line.col[0].color = line.col[1].color = line.col[2].color = line.col[3].color = 0x80FFFFFF;
-    njDrawPolygon2D(&line, 4, PrioBase[1], 0x20);
+    Renderer_Queue2DPrimitive((f32*)line.p, PrioBase[1], (uintptr_t)line.col[0].color, 0);
 }
 
+/** @brief Melt (dissolve) a texture for transition effects. */
 void mlt_obj_melt2(MultiTexture* mt, u16 cg_number) {
     u32* textbl;
     u16* trsbas;
@@ -2201,7 +2242,7 @@ void mlt_obj_melt2(MultiTexture* mt, u16 cg_number) {
     if (grplds->ok == 0) {
         // The trans data is not valid. Group number: %d\n
         flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", obj_group_table[cg_number]);
-        while (1) {}
+        return;
     }
 
     n = *(u32*)grplds->trans_table / 4;
@@ -2229,7 +2270,7 @@ void mlt_obj_melt2(MultiTexture* mt, u16 cg_number) {
                 case 1:
                 case 2:
                     lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                    njReLoadTexturePartNumG(mt->mltgidx16 + (cd16 >> 8), (s8*)mt->mltbuf, cd16 & 0xFF, size);
+                    Renderer_UpdateTexture(mt->mltgidx16 + (cd16 >> 8), mt->mltbuf, cd16 & 0xFF, size, 0, 0);
                     attr = (attr & 0xC000) | 0x1000 | dd;
                     trsptr->attr |= 0x1000;
                     attr |= palt;
@@ -2241,7 +2282,7 @@ void mlt_obj_melt2(MultiTexture* mt, u16 cg_number) {
 
                 case 4:
                     lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                    njReLoadTexturePartNumG(mt->mltgidx32 + (cd32 >> 6), (s8*)mt->mltbuf, cd32 & 0x3F, size);
+                    Renderer_UpdateTexture(mt->mltgidx32 + (cd32 >> 6), mt->mltbuf, cd32 & 0x3F, size, 0, 0);
                     attr = (attr & 0xC000) | 0x3000 | dd;
                     trsptr->attr |= 0x1000;
                     attr |= palt;

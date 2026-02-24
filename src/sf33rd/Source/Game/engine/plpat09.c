@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/engine/pls01.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 
-void mvxy_table_reader(PLW* wk);
+static void mvxy_table_reader(PLW* wk);
 
 const u8 tenguiwa_stand_by[2][8] = { { 24, 25, 26, 27, 28, 29, 30, 30 }, { 31, 32, 33, 34, 35, 34, 33, 31 } };
 
@@ -39,13 +39,19 @@ const s16 homing_hos[2][20][2] = { { { 0, 128 }, { 0, 128 }, { 0, 128 }, { 0, 12
 
 const s16 homing_kop[2][4] = { { 1, 14, 0, 2 }, { 0, 14, 0, 2 } };
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl09_exatt_table[18])(PLW*);
 
+/** @brief Oro: extra attack dispatcher. */
 void pl09_extra_attack(PLW* wk) {
-    pl09_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl09_exatt_table[idx](wk);
 }
 
-void Att_SP_YAGYOUDAMA(PLW* wk) {
+/** @brief Oro: Yagyoudama (bouncing ball SA). */
+static void Att_SP_YAGYOUDAMA(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -101,6 +107,7 @@ void Att_SP_YAGYOUDAMA(PLW* wk) {
     }
 }
 
+/** @brief Oro: creates and configures Tengu Stone projectiles. */
 s32 set_tenguiwa(PLW* wk, u8 data) {
     s16 i;
     s16 j;
@@ -171,7 +178,8 @@ s32 set_tenguiwa(PLW* wk, u8 data) {
     return 0;
 }
 
-void Att_PL09_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Oro: special action (tokushu koudou). */
+static void Att_PL09_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
@@ -224,7 +232,8 @@ void Att_PL09_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void Att_JINNCHUUWATARI_EX(PLW* wk) {
+/** @brief Oro: EX Jinchuu Watari (wall jump). */
+static void Att_JINNCHUUWATARI_EX(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -267,7 +276,8 @@ void Att_JINNCHUUWATARI_EX(PLW* wk) {
     }
 }
 
-void mvxy_table_reader(PLW* wk) {
+/** @brief Oro: movement XY table reader for multi-segment moves. */
+static void mvxy_table_reader(PLW* wk) {
     PLW* twk = (PLW*)wk->wu.target_adrs;
     const s16* curr_kop = &homing_kop[wk->pl09_dat_index][0];
     s16 ex;
@@ -334,7 +344,8 @@ void mvxy_table_reader(PLW* wk) {
     }
 }
 
-void Att_PL09_EX_TENGUIWA(PLW* wk) {
+/** @brief Oro: EX Tengu Stone Super Art. */
+static void Att_PL09_EX_TENGUIWA(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
@@ -352,7 +363,8 @@ void Att_PL09_EX_TENGUIWA(PLW* wk) {
     }
 }
 
-void Att_PL09_EX_KISHINRIKI(PLW* wk) {
+/** @brief Oro: EX Kishin Riki (close-range grab SA). */
+static void Att_PL09_EX_KISHINRIKI(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;

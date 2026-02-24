@@ -1,6 +1,12 @@
 /**
  * @file demo02.c
- * Demo Sequence 2
+ * @brief Attract-mode gameplay demo sequences.
+ *
+ * Runs the in-game attract demo: selects characters and stage, starts
+ * CPU-vs-CPU gameplay, and handles demo timeout/conclusion with screen
+ * transitions and BGM fade-out.
+ *
+ * Part of the demo module.
  */
 
 #include "common.h"
@@ -17,20 +23,30 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 
-void Demo00();
-void Demo01();
+static void Demo00();
+static void Demo01();
 void Setup_Demo_Arts();
-void Setup_Select_Demo_PL();
+static void Setup_Select_Demo_PL();
 
+#define DEMO_PL_COUNT 4
+#define DEMO_STAGE_COUNT 4
+#define DEMO_ARTS_COUNT 8
+
+/** @brief Top-level demo dispatcher — routes to Demo00 or Demo01 via jump table. */
 s32 Play_Demo() {
     void (*main_jmp_tbl[2])() = { Demo00, Demo01 };
 
     Next_Demo = 0;
-    main_jmp_tbl[D_No[0]]();
+
+    if (D_No[0] >= 0 && D_No[0] < 2) {
+        main_jmp_tbl[D_No[0]]();
+    }
+
     return Next_Demo;
 }
 
-void Demo00() {
+/** @brief Demo sub-sequence 0 — quick start: set up gameplay and run until timeout. */
+static void Demo00() {
     Play_Game = 1;
 
     switch (D_No[1]) {
@@ -75,7 +91,7 @@ void Demo00() {
     case 3:
         Game02();
 
-        if (Debug_w[0x18] == 9) {
+        if (Debug_w[DEBUG_TIME_STOP] == 9) {
             D_Timer = 60;
         }
 
@@ -144,7 +160,8 @@ void Demo00() {
     }
 }
 
-void Demo01() {
+/** @brief Demo sub-sequence 1 — full attract: character select then gameplay. */
+static void Demo01() {
     if (D_No[1] >= 2) {
         Play_Game = 1;
     }
@@ -257,21 +274,26 @@ const u8 Arts_Rnd_Demo_Data[8] = { 0, 0, 0, 1, 1, 1, 2, 2 };
 const s8 Demo_Stage_Play_Data[4][2] = { { 15, 19 }, { 11, 18 }, { 2, 16 }, { 12, 8 } };
 const s8 Demo_PL_Data[4] = { 0, 1, 0, 1 };
 
+/** @brief Select demo characters from a predefined roster (with debug overrides). */
 void Setup_Demo_PL() {
+    if (Demo_PL_Index < 0 || Demo_PL_Index >= DEMO_PL_COUNT) {
+        Demo_PL_Index = 0;
+    }
     My_char[0] = Demo_PL_Play_Data[Demo_PL_Index][0];
     My_char[1] = Demo_PL_Play_Data[Demo_PL_Index][1];
 
-    if (Debug_w[0x1D]) {
-        My_char[0] = Debug_w[0x1D] - 1;
+    if (Debug_w[DEBUG_MY_CHAR_PL1]) {
+        My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
     }
 
-    if (Debug_w[0x1E]) {
-        My_char[1] = Debug_w[0x1E] - 1;
+    if (Debug_w[DEBUG_MY_CHAR_PL2]) {
+        My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
     }
 
     init_omop();
 }
 
+/** @brief Assign random super arts and default colors for demo players. */
 void Setup_Demo_Arts() {
     Super_Arts[0] = Arts_Rnd_Demo_Data[random_16() & 7];
     Super_Arts[1] = Arts_Rnd_Demo_Data[random_16() & 7];
@@ -279,9 +301,13 @@ void Setup_Demo_Arts() {
     Player_Color[1] = 0;
 }
 
+/** @brief Select a demo stage from the predefined roster and advance the index. */
 void Setup_Demo_Stage() {
     s16 rnd = random_16() & 1;
 
+    if (Demo_Stage_Index < 0 || Demo_Stage_Index >= DEMO_STAGE_COUNT) {
+        Demo_Stage_Index = 0;
+    }
     bg_w.area = 0;
     bg_w.stage = Demo_Stage_Play_Data[Demo_Stage_Index][rnd];
     Demo_Stage_Index += 1;
@@ -292,11 +318,15 @@ void Setup_Demo_Stage() {
     }
 }
 
-void Setup_Select_Demo_PL() {
-    plw[0].wu.operator = 0;
-    plw[1].wu.operator = 0;
+/** @brief Configure which player is human-controlled in the current demo. */
+static void Setup_Select_Demo_PL() {
+    plw[0].wu.pl_operator = 0;
+    plw[1].wu.pl_operator = 0;
     Operator_Status[0] = 0;
     Operator_Status[1] = 0;
-    plw[Demo_PL_Data[Select_Demo_Index]].wu.operator = 1;
+    if (Select_Demo_Index < 0 || Select_Demo_Index >= DEMO_PL_COUNT) {
+        Select_Demo_Index = 0;
+    }
+    plw[Demo_PL_Data[Select_Demo_Index]].wu.pl_operator = 1;
     Operator_Status[Demo_PL_Data[Select_Demo_Index]] = 1;
 }

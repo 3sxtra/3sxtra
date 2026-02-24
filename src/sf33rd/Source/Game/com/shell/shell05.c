@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file shell05.c
  * COM Shell: Necro
  */
@@ -8,13 +8,14 @@
 #include "sf33rd/Source/Game/com/com_sub.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 
-void (*const Shell05_Tbl[11])(PLW*);
+static void (*const Shell05_Tbl[11])(PLW*);
 
+/** @brief Necro shell (projectile response) AI entry point. */
 void Shell05(PLW* wk) {
     Shell05_Tbl[(s16)Pattern_Index[wk->wu.id]](wk);
 }
 
-void Shell05_0000(PLW* wk) {
+static void Shell05_0000(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     default:
         End_Pattern(wk);
@@ -22,7 +23,7 @@ void Shell05_0000(PLW* wk) {
     }
 }
 
-void Shell05_0001(PLW* wk) {
+static void Shell05_0001(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 1, 2, 1, -1, -1);
@@ -38,7 +39,7 @@ void Shell05_0001(PLW* wk) {
     }
 }
 
-void Shell05_0002(PLW* wk) {
+static void Shell05_0002(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -54,7 +55,7 @@ void Shell05_0002(PLW* wk) {
     }
 }
 
-void Shell05_0003(PLW* wk) {
+static void Shell05_0003(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -78,7 +79,7 @@ void Shell05_0003(PLW* wk) {
     }
 }
 
-void Shell05_0004(PLW* wk) {
+static void Shell05_0004(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -98,7 +99,7 @@ void Shell05_0004(PLW* wk) {
     }
 }
 
-void Shell05_0005(PLW* wk) {
+static void Shell05_0005(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -118,7 +119,7 @@ void Shell05_0005(PLW* wk) {
     }
 }
 
-void Shell05_0006(PLW* wk) {
+static void Shell05_0006(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 1, 2, 1, -1, -1);
@@ -134,7 +135,7 @@ void Shell05_0006(PLW* wk) {
     }
 }
 
-void Shell05_0007(PLW* wk) {
+static void Shell05_0007(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, -1, 0x50, 8, 0x202, 2, -0x7F80, -1, 0x20);
@@ -146,7 +147,7 @@ void Shell05_0007(PLW* wk) {
     }
 }
 
-void Shell05_0008(PLW* wk) {
+static void Shell05_0008(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -166,7 +167,7 @@ void Shell05_0008(PLW* wk) {
     }
 }
 
-void Shell05_0009(PLW* wk) {
+static void Shell05_0009(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Lever_Off(wk);
@@ -186,7 +187,7 @@ void Shell05_0009(PLW* wk) {
     }
 }
 
-void Shell05_0010(PLW* wk) {
+static void Shell05_0010(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     default:
         End_Pattern(wk);
@@ -194,6 +195,6 @@ void Shell05_0010(PLW* wk) {
     }
 }
 
-void (*const Shell05_Tbl[11])(PLW*) = { Shell05_0000, Shell05_0001, Shell05_0002, Shell05_0003,
-                                        Shell05_0004, Shell05_0005, Shell05_0006, Shell05_0007,
-                                        Shell05_0008, Shell05_0009, Shell05_0010 };
+static void (*const Shell05_Tbl[11])(PLW*) = { Shell05_0000, Shell05_0001, Shell05_0002, Shell05_0003,
+                                               Shell05_0004, Shell05_0005, Shell05_0006, Shell05_0007,
+                                               Shell05_0008, Shell05_0009, Shell05_0010 };

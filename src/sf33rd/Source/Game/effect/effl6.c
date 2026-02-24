@@ -1,6 +1,6 @@
 /**
  * @file effl6.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/effl6.h"
@@ -17,8 +17,8 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effl6_flont(WORK_Other* ewk);
-void effl6_back(WORK_Other* ewk);
+static void effl6_flont(WORK_Other* ewk);
+static void effl6_back(WORK_Other* ewk);
 
 void effect_L6_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -41,7 +41,7 @@ void effect_L6_move(WORK_Other* ewk) {
     }
 }
 
-void effl6_flont(WORK_Other* ewk) {
+static void effl6_flont(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -83,7 +83,7 @@ void effl6_flont(WORK_Other* ewk) {
     }
 }
 
-void effl6_back(WORK_Other* ewk) {
+static void effl6_back(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;

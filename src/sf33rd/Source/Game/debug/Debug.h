@@ -1,3 +1,10 @@
+/**
+ * @file Debug.h
+ * @brief Public API for the in-game debug menu, inspection displays, and pause control.
+ *
+ * Part of the debug module.
+ */
+
 #ifndef DEBUG_H
 #define DEBUG_H
 

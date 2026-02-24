@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effb0.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
@@ -13,16 +14,17 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void end_700_move();
-void end_701_move();
+static void end_700_move();
+static void end_701_move();
 
-void end_700_0000();
-void end_700_2000();
+static void end_700_0000();
+static void end_700_2000();
 
 const s16 timer_7_tbl[4] = { 480, 840, 840, 960 };
 
 const s16 end_7_pos[4][2] = { { 256, 768 }, { 768, 768 }, { 768, 512 }, { 256, 256 } };
 
+/** @brief Ibuki's ending entry point — initialize and run all ending scenes. */
 void end_07000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -67,19 +69,26 @@ void end_07000(s16 pl_num) {
     }
 }
 
-void end_700_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_700_move() {
     void (*end_700_jp[4])() = { end_700_0000, end_700_0000, end_700_2000, end_700_0000 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 4)
+        return;
     end_700_jp[end_w.r_no_2]();
 }
 
-void end_701_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_701_move() {
     void (*end_701_jp[4])() = { end_X_com01, end_700_0000, end_X_com01, end_700_0000 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 4)
+        return;
     end_701_jp[end_w.r_no_2]();
 }
 
-void end_700_0000() {
+/** @brief Scene handler — background setup with per-scene effects and messages. */
+static void end_700_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -116,7 +125,8 @@ void end_700_0000() {
     }
 }
 
-void end_700_2000() {
+/** @brief Scene 2 — horizontal scroll with effect. */
+static void end_700_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

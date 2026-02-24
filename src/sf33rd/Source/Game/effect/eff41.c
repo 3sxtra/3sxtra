@@ -1,6 +1,6 @@
 /**
  * @file eff41.c
- * TODO: identify what this effect does
+ * Effect: Super Art / Sign Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff41.h"
@@ -16,9 +16,9 @@
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void eff41_process_00(WORK_Other* ewk, PLW* mwk);
-void eff41_process_01(WORK_Other* ewk, PLW* mwk);
-void gauge_minus(WORK_Other* ewk, PLW* mwk);
+static void eff41_process_00(WORK_Other* ewk, PLW* mwk);
+static void eff41_process_01(WORK_Other* ewk, PLW* mwk);
+static void gauge_minus(WORK_Other* ewk, PLW* mwk);
 
 const s16 sa_sign_data[69][5] = {
     { 28, 70, 156, 1, 1 },  { -41, 37, 156, 1, 1 },  { 12, 56, 156, 1, 1 },  { -14, 80, 156, 1, 1 },
@@ -116,7 +116,7 @@ void effect_41_move(WORK_Other* ewk) {
     }
 }
 
-void eff41_process_00(WORK_Other* ewk, PLW* mwk) {
+static void eff41_process_00(WORK_Other* ewk, PLW* mwk) {
     if (ewk->wu.cg_type == 1) {
         gauge_minus(ewk, mwk);
     }
@@ -132,7 +132,7 @@ void eff41_process_00(WORK_Other* ewk, PLW* mwk) {
     ewk->wu.position_y = mwk->wu.position_y + sa_sign_data[ewk->wu.type][1];
 }
 
-void eff41_process_01(WORK_Other* ewk, PLW* mwk) {
+static void eff41_process_01(WORK_Other* ewk, PLW* mwk) {
     switch (ewk->wu.cg_type) {
     case 1:
         gauge_minus(ewk, mwk);
@@ -169,7 +169,7 @@ void eff41_process_01(WORK_Other* ewk, PLW* mwk) {
     }
 }
 
-void gauge_minus(WORK_Other* ewk, PLW* mwk) {
+static void gauge_minus(WORK_Other* ewk, PLW* mwk) {
     switch (sa_sign_data[ewk->wu.type][3]) {
     case 1:
         mwk->sa->saeff_ok = -1;

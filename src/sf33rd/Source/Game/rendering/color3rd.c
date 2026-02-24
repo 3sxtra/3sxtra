@@ -5,15 +5,16 @@
 
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "common.h"
+#include "port/sound/spu.h"
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/cse.h"
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlMemMap.h"
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlTSB.h"
 #include "sf33rd/AcrSDK/common/plcommon.h"
 #include "sf33rd/AcrSDK/ps2/flps2vram.h"
+#include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
 #include "sf33rd/Source/Game/rendering/meta_col.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/system/ramcnt.h"
@@ -65,10 +66,14 @@ void palConvRowTim2CI8Clut(u16* src, u16* dst, s32 size);
 const u16 hitmark_color[128];
 const col_file_data color_file[161];
 
+/** @brief Queue a color data load request from the AFS archive. */
 void q_ldreq_color_data(REQ* curr) {
     col_file_data* cfn;
     s32 err;
 
+    if (curr->ix >= 161) {
+        return;
+    }
     cfn = (col_file_data*)&color_file[curr->ix];
 
     switch (curr->rno) {
@@ -128,10 +133,17 @@ void q_ldreq_color_data(REQ* curr) {
         case 1:
             if (cfn->type == 10) {
                 fsClose(curr);
-                cseSendBd2SpuWithId((void*)Get_ramcnt_address(curr->key),
-                                    Get_size_data_ramcnt_key(curr->key),
-                                    curr->id + 1,
-                                    cfn->data + 1);
+                // Inline cseSendBd2SpuWithId
+                {
+                    u32 bank_m = (curr->id + 1) & 0xF;
+                    u32 new_id = cfn->data + 1;
+                    if (g_cseSysWork.SpuBankId[bank_m] != new_id) {
+                        g_cseSysWork.SpuBankId[bank_m] = new_id;
+                        SPU_Upload(mlMemMapGetBankAddr(bank_m),
+                                   (void*)Get_ramcnt_address(curr->key),
+                                   Get_size_data_ramcnt_key(curr->key));
+                    }
+                }
                 curr->rno = 5;
             } else {
                 init_trans_color_ram(curr->id, curr->key, cfn->type, cfn->data);
@@ -154,8 +166,8 @@ void q_ldreq_color_data(REQ* curr) {
     case 5:
         if (sndCheckVTransStatus(1) != 0) {
             Push_ramcnt_key(curr->key);
-            cseMemMapSetPhdAddr(curr->id + 1, csePHDDataTable[cfn->data + 1]);
-            cseTsbSetBankAddr(curr->id + 1, cseTSBDataTable[cfn->data + 1]);
+            mlMemMapSetPhdAddr(curr->id + 1, csePHDDataTable[cfn->data + 1]);
+            mlTsbSetBankAddr(curr->id + 1, cseTSBDataTable[cfn->data + 1]);
             sdbd[curr->id + 1] = (s8*)cseTSBDataTable[cfn->data + 1];
             *curr->result |= lpr_wrdata[curr->id];
             curr->be = 0;
@@ -164,10 +176,14 @@ void q_ldreq_color_data(REQ* curr) {
     }
 }
 
+/** @brief Load a color palette by index into the specified key slot. */
 void load_any_color(u16 ix, u8 kokey) {
     col_file_data* cfn;
     s16 key;
 
+    if (ix >= 161) {
+        return;
+    }
     cfn = (col_file_data*)&color_file[ix];
     key = load_it_use_any_key(cfn->apfn, kokey, 0);
 
@@ -176,6 +192,7 @@ void load_any_color(u16 ix, u8 kokey) {
     }
 }
 
+/** @brief Set the hitmark flash color palette. */
 void set_hitmark_color() {
     s16 i;
 
@@ -184,14 +201,17 @@ void set_hitmark_color() {
         ColorRAM[23][i] = ColorRAM[31][i] = palConvSrcToRam(hitmark_color[i + 64]);
     }
 
-    njSetPaletteData(64, 64, ColorRAM[15]);
-    njSetPaletteData(576, 64, ColorRAM[31]);
+    palCopyGhostDC(64, 64, ColorRAM[15]);
+    palUpdateGhostDC();
+    palCopyGhostDC(576, 64, ColorRAM[31]);
+    palUpdateGhostDC();
     palUpdateGhostCP3(7, 1);
     palUpdateGhostCP3(15, 1);
     palUpdateGhostCP3(23, 1);
     palUpdateGhostCP3(31, 1);
 }
 
+/** @brief Initialize color transition effects in palette RAM. */
 void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
     u16* ldadrs;
     u16* tradrs;
@@ -370,7 +390,14 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
         break;
     }
     case 8:
-        cseSendBd2SpuWithId((void*)Get_ramcnt_address(key), Get_size_data_ramcnt_key(key), 0, 0);
+        // Inline cseSendBd2SpuWithId for bank 0, id 0
+        {
+            u32 bank_m = 0;
+            if (g_cseSysWork.SpuBankId[bank_m] != 0) {
+                g_cseSysWork.SpuBankId[bank_m] = 0;
+                SPU_Upload(mlMemMapGetBankAddr(bank_m), (void*)Get_ramcnt_address(key), Get_size_data_ramcnt_key(key));
+            }
+        }
 
         while (!sndCheckVTransStatus(1)) {
             waitVsyncDummy();
@@ -380,14 +407,22 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
         break;
 
     case 10:
-        cseSendBd2SpuWithId((void*)Get_ramcnt_address(key), Get_size_data_ramcnt_key(key), id + 1, data + 1);
+        // Inline cseSendBd2SpuWithId
+        {
+            u32 bank_m = (id + 1) & 0xF;
+            u32 new_id = data + 1;
+            if (g_cseSysWork.SpuBankId[bank_m] != new_id) {
+                g_cseSysWork.SpuBankId[bank_m] = new_id;
+                SPU_Upload(mlMemMapGetBankAddr(bank_m), (void*)Get_ramcnt_address(key), Get_size_data_ramcnt_key(key));
+            }
+        }
 
         while (!sndCheckVTransStatus(1)) {
             waitVsyncDummy();
         }
 
-        cseMemMapSetPhdAddr(id + 1, csePHDDataTable[data + 1]);
-        cseTsbSetBankAddr(id + 1, cseTSBDataTable[data + 1]);
+        mlMemMapSetPhdAddr(id + 1, csePHDDataTable[data + 1]);
+        mlTsbSetBankAddr(id + 1, cseTSBDataTable[data + 1]);
         sdbd[id + 1] = (s8*)cseTSBDataTable[data + 1];
         Push_ramcnt_key(key);
         break;
@@ -399,6 +434,7 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
     }
 }
 
+/** @brief Reset the color transition request queue. */
 void init_color_trans_req() {
     s16 i;
 
@@ -409,11 +445,13 @@ void init_color_trans_req() {
     col3rd_w.reqNum = 0;
 }
 
+/** @brief Push a color transition request (from_col → to_col). */
 void push_color_trans_req(s16 from_col, s16 to_col) {
     palCopyGhostDC(to_col << 6, 64, ColorRAM[from_col]);
     palUpdateGhostDC();
 }
 
+/** @brief Copy ghost palette data from DC (Dreamcast) format. */
 void palCopyGhostDC(s32 ofs, s32 cnt, void* data) {
     s32 i;
     u16* srcAdrs = data;
@@ -426,6 +464,7 @@ void palCopyGhostDC(s32 ofs, s32 cnt, void* data) {
     col3rd_w.upBits = col3rd_w.upBits | (1 << (ofs / 64));
 }
 
+/** @brief Convert a single palette color from source to RAM format. */
 u16 palConvSrcToRam(u16 col) {
     u8 cA;
     u8 cR;
@@ -443,6 +482,7 @@ u16 palConvSrcToRam(u16 col) {
     return (cA << palFormRam.as) | (cR << palFormRam.rs) | (cG << palFormRam.gs) | (cB << palFormRam.bs);
 }
 
+/** @brief Create the ghost palette data for both players. */
 void palCreateGhost() {
     PPLFileHeader ppl;
     s32 key;
@@ -513,14 +553,17 @@ void palCreateGhost() {
     Push_ramcnt_key(key);
 }
 
+/** @brief Get a pointer to the DC ghost palette chunk. */
 Palette* palGetChunkGhostDC() {
     return &col3rd_w.palDC;
 }
 
+/** @brief Get a pointer to the CP3 ghost palette chunk. */
 Palette* palGetChunkGhostCP3() {
     return &col3rd_w.palCP3;
 }
 
+/** @brief Update the DC ghost palette from ColorRAM. */
 void palUpdateGhostDC() {
     plContext bits;
     s32 i;
@@ -540,6 +583,7 @@ void palUpdateGhostDC() {
     col3rd_w.upBits = 0;
 }
 
+/** @brief Update CP3 ghost palette entries from ColorRAM. */
 void palUpdateGhostCP3(s32 pal, s32 nums) {
     plContext bits;
     s32 i;
@@ -555,6 +599,7 @@ void palUpdateGhostCP3(s32 pal, s32 nums) {
     }
 }
 
+/** @brief Convert a TIM2 CI8 CLUT row from source to destination format. */
 void palConvRowTim2CI8Clut(u16* src, u16* dst, s32 size) {
     s32 i;
     static u8 clut_tbl[32] = { 0, 1, 2,  3,  4,  5,  6,  7,  16, 17, 18, 19, 20, 21, 22, 23,

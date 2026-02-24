@@ -1,6 +1,6 @@
 /**
  * @file eff47.c
- * TODO: identify what this effect does
+ * Effect: Speed / Data Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff47.h"

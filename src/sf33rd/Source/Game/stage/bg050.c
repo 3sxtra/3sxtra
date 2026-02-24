@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg050.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
@@ -14,6 +15,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Mosque, Russia stage. */
 void BG050() {
     bgw_ptr = &bg_w.bgw[1];
     bg0502();
@@ -26,11 +28,15 @@ void BG050() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Mosque, Russia. */
 void bg0501() {
     void (*bg0501_jmp[2])() = { bg0501_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0501_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Mosque, Russia. */
 void bg0501_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -38,11 +44,15 @@ void bg0501_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Background layer handler for Mosque, Russia. */
 void bg0502() {
     void (*bg0502_jmp[2])() = { bg0502_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0502_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Mosque, Russia. */
 void bg0502_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -52,11 +62,15 @@ void bg0502_init00() {
     effect_06_init();
 }
 
+/** @brief Synchronized parallax common handler for Mosque, Russia. */
 void bg050_sync_common() {
     void (*bg050_sync_jmp[2])() = { bg050_sync_init, bg050_sync_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg050_sync_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize synchronized parallax layer for Mosque, Russia. */
 void bg050_sync_init() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -70,6 +84,7 @@ void bg050_sync_init() {
     sync_fam_set3(2);
 }
 
+/** @brief Per-frame movement handler for Mosque, Russia layer. */
 void bg050_sync_move() {
     bg_x_move_check();
     bg_y_move_check();

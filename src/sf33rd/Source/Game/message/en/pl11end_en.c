@@ -1,8 +1,3 @@
-/**
- * @file pl11end_en.c
- * Ken Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl11end_en.h"
 #include "common.h"
 
@@ -69,4 +64,4 @@ static s8** msgEndAdrPL11[15] = {
 
 static s8 msgEndCtrPL11[15] = { 1, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 
-MessageTable pl11end_usa_tbl = { msgEndAdrPL11, msgEndCtrPL11 };
+MessageTable pl11end_en_tbl = { msgEndAdrPL11, msgEndCtrPL11 };

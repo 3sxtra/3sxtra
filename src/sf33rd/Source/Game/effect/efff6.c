@@ -1,6 +1,6 @@
 /**
  * @file efff6.c
- * TODO: identify what this effect does
+ * Effect: Move / Data Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/efff6.h"
@@ -220,7 +220,7 @@ s32 effect_F6_init(u8 typenum) {
     s16 ix;
     const s16* data_ptr;
 
-    if (Debug_w[0x30] & 4) {
+    if (Debug_w[DEBUG_OPENING_TEST] & 4) {
         return 0;
     }
 

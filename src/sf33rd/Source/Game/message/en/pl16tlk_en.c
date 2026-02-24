@@ -1,8 +1,3 @@
-/**
- * @file pl16tlk_en.c
- * Makoto Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl16tlk_en.h"
 #include "common.h"
 
@@ -31,4 +26,4 @@ static s8** msgTalkAdrPL16[6] = {
 
 static s8 msgTalkCtrPL16[6] = { 1, 2, 2, 1, 2, 2 };
 
-MessageTable pl16tlk_usa_tbl = { msgTalkAdrPL16, msgTalkCtrPL16 };
+MessageTable pl16tlk_en_tbl = { msgTalkAdrPL16, msgTalkCtrPL16 };

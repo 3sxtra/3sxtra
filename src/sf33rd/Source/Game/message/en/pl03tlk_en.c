@@ -1,8 +1,3 @@
-/**
- * @file pl03tlk_en.c
- * Yun Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl03tlk_en.h"
 #include "common.h"
 
@@ -35,4 +30,4 @@ static s8** msgTalkAdrPL03[7] = {
 
 static s8 msgTalkCtrPL03[7] = { 1, 1, 2, 2, 2, 2, 2 };
 
-MessageTable pl03tlk_usa_tbl = { msgTalkAdrPL03, msgTalkCtrPL03 };
+MessageTable pl03tlk_en_tbl = { msgTalkAdrPL03, msgTalkCtrPL03 };

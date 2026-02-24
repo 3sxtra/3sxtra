@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg060.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/eff24.h"
 #include "sf33rd/Source/Game/effect/eff44.h"
@@ -16,6 +17,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Home Sweet Home, Germany stage. */
 void BG060() {
     bgw_ptr = &bg_w.bgw[1];
     bg0602();
@@ -28,11 +30,15 @@ void BG060() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Home Sweet Home, Germany. */
 void bg0601() {
     void (*bg0601_jmp[2])() = { bg0601_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0601_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Home Sweet Home, Germany. */
 void bg0601_init00() {
     bgw_ptr->r_no_1 = 0;
     bgw_ptr->r_no_0++;
@@ -45,11 +51,15 @@ void bg0601_init00() {
     bgw_ptr->xy[1].cal = 0;
 }
 
+/** @brief Background layer handler for Home Sweet Home, Germany. */
 void bg0602() {
     void (*bg0602_jmp[2])() = { bg0602_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0602_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Home Sweet Home, Germany. */
 void bg0602_init00() {
     bgw_ptr->r_no_1 = 0;
     bgw_ptr->r_no_0++;
@@ -67,6 +77,7 @@ void bg0602_init00() {
     effect_24_init();
 }
 
+/** @brief Background layer handler for Home Sweet Home, Germany. */
 void bg0603() {
     switch (bgw_ptr->r_no_0) {
     case 0:

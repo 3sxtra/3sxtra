@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -12,26 +13,27 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void end_200_move();
-void end_201_move();
-void end_202_move();
+static void end_200_move();
+static void end_201_move();
+static void end_202_move();
 
-void end_200_0000();
-void end_200_1000();
-void end_200_2000();
-void end_200_3000();
+static void end_200_0000();
+static void end_200_1000();
+static void end_200_2000();
+static void end_200_3000();
 
-void end_201_1000();
-void end_201_3000();
+static void end_201_1000();
+static void end_201_3000();
 
-void end_202_1000();
-void end_202_3000();
-void end_202_4000();
+static void end_202_1000();
+static void end_202_3000();
+static void end_202_4000();
 
 const s16 timer_2_tbl[5] = { 480, 660, 120, 240, 780 };
 
 const s16 end_2_pos[5][2] = { { 256, 768 }, { 320, 256 }, { 512, 0 }, { 320, 256 }, { 320, 256 } };
 
+/** @brief Ryu's ending entry point — initialize and run all ending scenes. */
 void end_02000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -78,13 +80,17 @@ void end_02000(s16 pl_num) {
     }
 }
 
-void end_200_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_200_move() {
     void (*end_200_jp[5])() = { end_200_0000, end_200_1000, end_200_2000, end_200_3000, end_200_3000 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 5)
+        return;
     end_200_jp[end_w.r_no_2]();
 }
 
-void end_200_0000() {
+/** @brief Scene 0 — initial vertical scroll with message. */
+static void end_200_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -117,7 +123,8 @@ void end_200_0000() {
     }
 }
 
-void end_200_1000() {
+/** @brief Scene 1 — horizontal pan with effect trigger. */
+static void end_200_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -145,7 +152,8 @@ void end_200_1000() {
     }
 }
 
-void end_200_2000() {
+/** @brief Scene 2 — background on with dual effect init. */
+static void end_200_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -163,7 +171,8 @@ void end_200_2000() {
     }
 }
 
-void end_200_3000() {
+/** @brief Scene 3–4 — static background with message and optional fade. */
+static void end_200_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -189,13 +198,17 @@ void end_200_3000() {
     }
 }
 
-void end_201_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_201_move() {
     void (*end_201_jp[5])() = { end_X_com01, end_201_1000, end_X_com01, end_201_3000, end_201_3000 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 5)
+        return;
     end_201_jp[end_w.r_no_2]();
 }
 
-void end_201_1000() {
+/** @brief Layer 1 scene 1 — horizontal pan with position setup. */
+static void end_201_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -223,7 +236,8 @@ void end_201_1000() {
     }
 }
 
-void end_201_3000() {
+/** @brief Layer 1 scene 3 — enable background layer and set position. */
+static void end_201_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -244,13 +258,17 @@ void end_201_3000() {
     }
 }
 
-void end_202_move() {
+/** @brief Dispatch to the current scene handler for background layer 2. */
+static void end_202_move() {
     void (*end_202_jp[5])() = { end_X_com01, end_202_1000, end_X_com01, end_202_3000, end_202_4000 };
     bgw_ptr = &bg_w.bgw[2];
+    if (end_w.r_no_2 >= 5)
+        return;
     end_202_jp[end_w.r_no_2]();
 }
 
-void end_202_1000() {
+/** @brief Layer 2 scene 1 — horizontal pan with effect. */
+static void end_202_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -276,7 +294,8 @@ void end_202_1000() {
     }
 }
 
-void end_202_3000() {
+/** @brief Layer 2 scene 3 — scroll right with effect. */
+static void end_202_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -302,7 +321,8 @@ void end_202_3000() {
     }
 }
 
-void end_202_4000() {
+/** @brief Layer 2 scene 4 — position reset with effect init. */
+static void end_202_4000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

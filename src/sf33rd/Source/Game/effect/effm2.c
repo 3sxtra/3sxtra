@@ -1,6 +1,6 @@
 /**
  * @file effm2.c
- * TODO: identify what this effect does
+ * Effect: Character Table / Animal Effect
  */
 
 #include "sf33rd/Source/Game/effect/effm2.h"
@@ -17,8 +17,8 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effm2_move(WORK_Other* ewk);
-void effm2_move2(WORK_Other* ewk);
+static void effm2_move(WORK_Other* ewk);
+static void effm2_move2(WORK_Other* ewk);
 
 const s16 effm2_char_tbl[4] = { 50, 50, 29, 46 };
 
@@ -53,7 +53,7 @@ void effect_M2_move(WORK_Other* ewk) {
     }
 }
 
-void effm2_move(WORK_Other* ewk) {
+static void effm2_move(WORK_Other* ewk) {
     WORK* oya_ptr = (WORK*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
@@ -106,7 +106,7 @@ void effm2_move(WORK_Other* ewk) {
     }
 }
 
-void effm2_move2(WORK_Other* ewk) {
+static void effm2_move2(WORK_Other* ewk) {
     WORK* oya_ptr = (WORK*)ewk->my_master;
     s16 dis_w;
 

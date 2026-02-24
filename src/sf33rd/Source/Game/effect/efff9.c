@@ -1,6 +1,6 @@
 /**
  * @file efff9.c
- * TODO: identify what this effect does
+ * Effect: Text / Message Effect
  */
 
 #include "sf33rd/Source/Game/effect/efff9.h"
@@ -148,7 +148,7 @@ s16 efff9_txt_point;
 s16 efff9_message;
 s16 keep_mes_no;
 
-s32 Rewrite();
+static s32 Rewrite();
 
 void effect_F9_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -244,7 +244,7 @@ void effect_F9_init(s16 END_PL_NO) {
     efff9_PL_NO = END_PL_NO;
 }
 
-void efff9_wk_set(WORK_Other_CONN* ewk) {
+static void efff9_wk_set(WORK_Other_CONN* ewk) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 159;
     ewk->wu.work_id = 16;
@@ -282,7 +282,7 @@ s32 Rewrite_End_Message(u16 mes_no) {
     return 0;
 }
 
-s32 Rewrite() {
+static s32 Rewrite() {
     WORK_Other* ewk;
     s16 ix;
 

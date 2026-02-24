@@ -1,6 +1,6 @@
 /**
  * @file eff18.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/eff18.h"
@@ -11,8 +11,8 @@
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void Setup_Pos_18(WORK_Other_CONN* ewk);
-void Check_TenTen(WORK_Other_CONN* ewk);
+static void Setup_Pos_18(WORK_Other_CONN* ewk);
+static void Check_TenTen(WORK_Other_CONN* ewk);
 
 void effect_18_move(WORK_Other_CONN* ewk) {
     if (Menu_Suicide[ewk->master_player]) {
@@ -54,14 +54,14 @@ s32 effect_18_init(s16 disp_index, s16 cursor_id, s16 sync_bg, s16 master_player
     return 0;
 }
 
-void Setup_Pos_18(WORK_Other_CONN* ewk) {
+static void Setup_Pos_18(WORK_Other_CONN* ewk) {
     ewk->wu.position_x = bg_w.bgw[ewk->wu.my_family - 1].wxy[0].disp.pos - 143;
     ewk->wu.position_y = bg_w.bgw[ewk->wu.my_family - 1].wxy[1].disp.pos + 199 - ewk->wu.type * 18;
     ewk->wu.position_z = 68;
     Check_TenTen(ewk);
 }
 
-void Check_TenTen(WORK_Other_CONN* ewk) {
+static void Check_TenTen(WORK_Other_CONN* ewk) {
     s16 ix;
 
     for (ix = 0; ix < ewk->num_of_conn; ix++) {

@@ -12,13 +12,19 @@
 #include "sf33rd/Source/Game/engine/pls01.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl06_exatt_table[18])(PLW*);
 
+/** @brief Hugo: extra attack dispatcher. */
 void pl06_extra_attack(PLW* wk) {
-    pl06_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl06_exatt_table[idx](wk);
 }
 
-void Att_PL06_HASHIRI_NAGE(PLW* wk) {
+/** @brief Hugo: running throw (hashiri nage) attack. */
+static void Att_PL06_HASHIRI_NAGE(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -132,7 +138,8 @@ void Att_PL06_HASHIRI_NAGE(PLW* wk) {
     }
 }
 
-void Att_PL06_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Hugo: special action (tokushu koudou). */
+static void Att_PL06_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {

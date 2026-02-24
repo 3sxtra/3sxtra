@@ -1,8 +1,3 @@
-/**
- * @file pl08end_en.c
- * Elena Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl08end_en.h"
 #include "common.h"
 
@@ -56,4 +51,4 @@ static s8** msgEndAdrPL08[12] = {
 
 static s8 msgEndCtrPL08[12] = { 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 
-MessageTable pl08end_usa_tbl = { msgEndAdrPL08, msgEndCtrPL08 };
+MessageTable pl08end_en_tbl = { msgEndAdrPL08, msgEndCtrPL08 };

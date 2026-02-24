@@ -1,6 +1,6 @@
 /**
  * @file eff37.c
- * TODO: identify what this effect does
+ * Effect: Panel / Guide Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff37.h"

@@ -1,3 +1,7 @@
+/**
+ * @file saver.h
+ * @brief Public API for the screensaver system.
+ */
 #ifndef SAVER_H
 #define SAVER_H
 

@@ -1,6 +1,6 @@
 /**
  * @file effe7.c
- * TODO: identify what this effect does
+ * Effect: After Image / Slow Effect
  */
 
 #include "sf33rd/Source/Game/effect/effe7.h"
@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void effe7_get_zanzou_data(WORK_Other* ewk);
+static void effe7_get_zanzou_data(WORK_Other* ewk);
 
 void effect_E7_move(WORK_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
@@ -95,7 +95,7 @@ void effect_E7_move(WORK_Other* ewk) {
     }
 }
 
-void effe7_get_zanzou_data(WORK_Other* ewk) {
+static void effe7_get_zanzou_data(WORK_Other* ewk) {
     ewk->wu.position_x = zanzou_table[ewk->master_id]->pos_x;
     ewk->wu.position_y = zanzou_table[ewk->master_id]->pos_y;
     ewk->wu.position_z = zanzou_table[ewk->master_id]->pos_z;

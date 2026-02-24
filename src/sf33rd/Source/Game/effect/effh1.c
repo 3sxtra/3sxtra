@@ -1,11 +1,12 @@
 /**
  * @file effh1.c
- * TODO: identify what this effect does
+ * Effect: Wait Timer / Ending Effect
  */
 
 #include "sf33rd/Source/Game/effect/effh1.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/charset.h"
@@ -15,7 +16,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void eff_h1_move(WORK_Other* ewk);
+static void eff_h1_move(WORK_Other* ewk);
 
 const s16 effh1_wait_timer[8] = { 30, 120, 180, 40, 10, 200, 240, 50 };
 
@@ -45,7 +46,7 @@ void effect_H1_move(WORK_Other* ewk) {
     }
 }
 
-void eff_h1_move(WORK_Other* ewk) {
+static void eff_h1_move(WORK_Other* ewk) {
     s16 work;
 
     switch (ewk->wu.routine_no[1]) {

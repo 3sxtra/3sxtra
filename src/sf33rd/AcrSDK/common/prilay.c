@@ -1,23 +1,34 @@
+/**
+ * @file prilay.c
+ * @brief Priority layer utilities — memory, pixel drawing, color conversion.
+ *
+ * Low-level utility functions for memory operations (custom memset/memmove),
+ * pixel address calculation, pixel read/write across multiple bit depths
+ * and pixel formats, and full-context color conversion between surfaces.
+ *
+ * Part of the AcrSDK common module.
+ * Originally from the PS2 SDK abstraction layer.
+ */
 #include "sf33rd/AcrSDK/common/prilay.h"
 #include "common.h"
 #include "structs.h"
 #include <stdio.h>
 
-#if defined(TARGET_PS2)
-#include "mw_stdarg.h"
-#else
 #include <stdarg.h>
-#endif
 
-s8 plReportMessage[2048];
+#define REPORT_BUFFER_SIZE 2048
+s8 plReportMessage[REPORT_BUFFER_SIZE];
 
+/** @brief Print a formatted message into the global report buffer. */
 s32 plReport(s8* format, ...) {
     va_list args;
     va_start(args, format);
-    vsprintf(plReportMessage, format, args);
+    vsnprintf(plReportMessage, sizeof(plReportMessage), format, args);
+    va_end(args);
     return 1;
 }
 
+/** @brief Fill a memory region with a byte pattern. */
 void plMemset(void* dst, u32 pat, s32 size) {
     s32 i;
     s8* now = dst;
@@ -27,6 +38,7 @@ void plMemset(void* dst, u32 pat, s32 size) {
     }
 }
 
+/** @brief Copy memory with overlap-safe direction detection. */
 void plMemmove(void* dst, void* src, s32 size) {
     s32 i;
     s8* now[2];
@@ -50,6 +62,7 @@ void plMemmove(void* dst, void* src, s32 size) {
     }
 }
 
+/** @brief Calculate the byte address of pixel (x, y) within a surface context. */
 void* plCalcAddress(s32 x, s32 y, plContext* lpcontext) {
     if ((x < 0) || (y < 0) || (x >= lpcontext->width) || (y >= lpcontext->height)) {
         return NULL;
@@ -66,6 +79,7 @@ void* plCalcAddress(s32 x, s32 y, plContext* lpcontext) {
     return (s8*)lpcontext->ptr + (lpcontext->pitch * y) + (x * lpcontext->bitdepth);
 }
 
+/** @brief Draw a single pixel into a surface context in the appropriate format. */
 s32 plDrawPixel(plContext* dst, Pixel* ptr) {
     u8* lp;
     s32 r;
@@ -153,6 +167,7 @@ s32 plDrawPixel(plContext* dst, Pixel* ptr) {
     return 1;
 }
 
+/** @brief Draw a single pixel at (x, y) with the given ARGB color. */
 s32 plDrawPixel_3(plContext* dst, s32 x, s32 y, u32 color) {
     Pixel pixel;
     pixel.x = x;
@@ -161,9 +176,10 @@ s32 plDrawPixel_3(plContext* dst, s32 x, s32 y, u32 color) {
     return plDrawPixel(dst, &pixel);
 }
 
+/** @brief Read the color of pixel (x, y) from a surface context as ARGB. */
 u32 plGetColor(s32 x, s32 y, plContext* lpcontext) {
     u8* lp;
-    u32 color;
+    u32 color = 0;
     s32 r;
     s32 g;
     s32 b;
@@ -249,6 +265,7 @@ u32 plGetColor(s32 x, s32 y, plContext* lpcontext) {
     return a << 24 | r << 16 | g << 8 | b;
 }
 
+/** @brief Convert every pixel from a source surface to a destination surface format. */
 s32 plConvertContext(plContext* dst, plContext* src) {
     s32 x;
     s32 y;

@@ -1,8 +1,3 @@
-/**
- * @file pl04tlk_en.c
- * Dudley Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl04tlk_en.h"
 #include "common.h"
 
@@ -34,4 +29,4 @@ static s8** msgTalkAdrPL04[6] = {
 
 static s8 msgTalkCtrPL04[6] = { 1, 2, 2, 2, 2, 2 };
 
-MessageTable pl04tlk_usa_tbl = { msgTalkAdrPL04, msgTalkCtrPL04 };
+MessageTable pl04tlk_en_tbl = { msgTalkAdrPL04, msgTalkCtrPL04 };

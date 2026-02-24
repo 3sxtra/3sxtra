@@ -1,0 +1,438 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build-linux:
+    name: Build (Linux x86_64)
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:25.04
+    steps:
+      - name: Install Git and tools
+        run: |
+          apt-get update
+          apt-get install -y git curl nasm
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: third_party_linux
+          key: linux-x64-deps-${{ hashFiles('build-deps.sh') }}
+
+      - name: Install build dependencies
+        run: |
+          apt-get install -y $(cat tools/requirements-ubuntu-sdl3.txt)
+          apt-get install -y clang zip python3-jinja2
+
+      - name: Build dependencies from source
+        env:
+          THIRD_PARTY: ${{ github.workspace }}/third_party_linux
+        run: |
+          chmod +x build-deps.sh
+          ./build-deps.sh
+
+      - name: Configure and build with CMake
+        run: |
+          set -o pipefail
+          CC=clang CXX=clang++ cmake -B build-linux -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=OFF -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_linux
+          cmake --build build-linux --parallel
+
+      - name: Package artifact
+        run: |
+          mkdir -p artifacts pkg/bin pkg/lib
+          cp build-linux/3sx pkg/bin/
+          cp third_party_linux/sdl3/build/lib/*.so* pkg/lib/
+          cp third_party_linux/sdl3_image/build/lib/*.so* pkg/lib/
+          cp dist/3sx.sh pkg/
+          chmod +x pkg/3sx.sh pkg/bin/3sx
+          # Runtime assets: fonts, bezels, controller images, stage mods
+          cp -r assets pkg/bin/
+          # GPU shaders (SPIR-V + OpenGL sources)
+          cp -r build-linux/shaders pkg/bin/
+          # Libretro slang-shader presets
+          cp -r third_party_linux/slang-shaders pkg/bin/shaders/libretro
+          cd pkg && zip -r ../artifacts/3sx-linux-x86_64.zip . && cd ..
+
+      - name: Save artifact (local act)
+        if: ${{ env.ACT }}
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/build_output
+          cp artifacts/3sx-linux-x86_64.zip $GITHUB_WORKSPACE/build_output/
+          echo "✅ Artifact saved to build_output/3sx-linux-x86_64.zip"
+
+      - name: Upload artifact (GitHub)
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3sx-linux-x86_64
+          path: artifacts/3sx-linux-x86_64.zip
+
+  build-linux-arm64:
+    name: Build (Linux ARM64 Cross-Compile)
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:25.04
+    steps:
+      - name: Install Git and cross-compile toolchain
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          TZ: UTC
+        run: |
+          apt-get update
+          apt-get install -y git curl xz-utils nodejs
+
+          # ARM64 packages live on ports.ubuntu.com, not archive.ubuntu.com.
+          dpkg --add-architecture arm64
+
+          # Pin existing DEB822 sources to amd64-only (ubuntu:25.04 format)
+          for f in /etc/apt/sources.list.d/*.sources; do
+              if [ -f "$f" ] && ! grep -q 'Architectures:' "$f"; then
+                  sed -i '/^Types:/a Architectures: amd64' "$f"
+              fi
+          done
+
+          # Add arm64 sources from ports.ubuntu.com
+          printf '%s\n' \
+              'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports plucky main restricted universe multiverse' \
+              'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports plucky-updates main restricted universe multiverse' \
+              'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports plucky-security main restricted universe multiverse' \
+              > /etc/apt/sources.list.d/arm64-ports.list
+
+          apt-get update
+          apt-get install -y crossbuild-essential-arm64 cmake ninja-build make pkg-config clang zip file qemu-user-static python3-jinja2
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Cache ARM64 dependencies
+        uses: actions/cache@v4
+        with:
+          path: third_party_arm64
+          key: linux-arm64-cross-deps-${{ hashFiles('build-deps.sh') }}
+
+      - name: Install ARM64 build dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt-get install -y \
+            libasound2-dev:arm64 libpulse-dev:arm64 \
+            libx11-dev:arm64 libxext-dev:arm64 libxrandr-dev:arm64 \
+            libxcursor-dev:arm64 libxfixes-dev:arm64 libxi-dev:arm64 \
+            libxrender-dev:arm64 libxinerama-dev:arm64 libxtst-dev:arm64 \
+            libxss-dev:arm64 libxkbcommon-dev:arm64 libxkbcommon-x11-dev:arm64 \
+            libdrm-dev:arm64 libgbm-dev:arm64 \
+            libgl1-mesa-dev:arm64 libgles2-mesa-dev:arm64 \
+            libegl1-mesa-dev:arm64 libdbus-1-dev:arm64 libudev-dev:arm64 \
+            libpipewire-0.3-dev:arm64 \
+            libwayland-dev:arm64 libwayland-egl1:arm64 libdecor-0-dev:arm64 \
+            libminiupnpc-dev:arm64 \
+            wayland-protocols
+
+      - name: Install Rust toolchain (cross-compile)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-gnu
+
+      - name: Pre-build dependencies
+        env:
+          THIRD_PARTY: ${{ github.workspace }}/third_party_arm64
+          CARGO_BUILD_TARGET: aarch64-unknown-linux-gnu
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+          CC: aarch64-linux-gnu-gcc
+          CXX: aarch64-linux-gnu-g++
+          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+          PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+        run: |
+          # Let build-deps.sh handle everything (SDL3, SDL3_image, librashader, etc.)
+          cd $GITHUB_WORKSPACE
+          export THIRD_PARTY_DIR=$THIRD_PARTY
+          chmod +x ./build-deps.sh
+          ./build-deps.sh
+          
+          # Copy librashader to the location CMake expects (cross-compiled to aarch64 target dir)
+          mkdir -p $THIRD_PARTY/librashader/target/release
+          cp $THIRD_PARTY/librashader/target/aarch64-unknown-linux-gnu/release/liblibrashader_capi.a $THIRD_PARTY/librashader/target/release/
+        shell: bash
+
+      - name: Build for Linux ARM64
+        env:
+          THIRD_PARTY: ${{ github.workspace }}/third_party_arm64
+          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+          PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+        run: |
+          set -o pipefail
+          cmake -B build-linux-arm64 \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-linux-gnu.cmake \
+              -DENABLE_TESTS=OFF \
+              -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_arm64 \
+              -G Ninja
+          cmake --build build-linux-arm64 --parallel
+        shell: bash
+
+      - name: Package artifact
+        run: |
+          mkdir -p artifacts pkg/bin pkg/lib
+          cp build-linux-arm64/3sx pkg/bin/
+          cp third_party_arm64/sdl3/build/lib/*.so* pkg/lib/
+          cp dist/3sx.sh pkg/
+          chmod +x pkg/3sx.sh pkg/bin/3sx
+          # Runtime assets: fonts, bezels, controller images, stage mods
+          cp -r assets pkg/bin/
+          # GPU shaders (SPIR-V + OpenGL sources)
+          cp -r build-linux-arm64/shaders pkg/bin/
+          # Libretro slang-shader presets
+          cp -r third_party_arm64/slang-shaders pkg/bin/shaders/libretro
+          cd pkg && zip -r ../artifacts/3sx-linux-arm64.zip . && cd ..
+
+      - name: Save artifact (local act)
+        if: ${{ env.ACT }}
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/build_output
+          cp artifacts/3sx-linux-arm64.zip $GITHUB_WORKSPACE/build_output/
+          echo "✅ Artifact saved to build_output/3sx-linux-arm64.zip"
+
+      - name: Upload artifact (GitHub)
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3sx-linux-arm64
+          path: artifacts/3sx-linux-arm64.zip
+
+  build-windows:
+    name: Build (Windows x86_64)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: MINGW64
+          install: >-
+            git
+            zip
+            make
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-nasm
+            mingw-w64-x86_64-clang
+            mingw-w64-x86_64-headers-git
+            mingw-w64-x86_64-rust
+            mingw-w64-x86_64-python-jinja
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: third_party
+          key: Windows-deps-${{ hashFiles('build-deps.sh') }}
+
+      - name: Build dependencies from source
+        run: |
+          chmod +x build-deps.sh
+          ./build-deps.sh
+
+      - name: Install Python dependencies for glad
+        shell: pwsh
+        run: python3 -m pip install jinja2
+
+      - name: Configure and build with CMake
+        run: |
+          set -o pipefail
+          CC=clang CXX=clang++ cmake -S . -B build \
+            -G "Ninja" \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_TESTS=OFF
+          cmake --build build --parallel
+
+      - name: Package artifact
+        run: |
+          mkdir -p artifacts pkg
+          cp build/3sx.exe pkg/
+          cp /mingw64/bin/libwinpthread-1.dll pkg/
+          cp /mingw64/bin/libstdc++-6.dll pkg/
+          cp third_party/sdl3/build/bin/*.dll pkg/
+          cp third_party/sdl3_image/build/bin/*.dll pkg/
+          # Runtime assets: fonts, bezels, controller images, stage mods
+          cp -r assets pkg/
+          # GPU shaders (SPIR-V + OpenGL sources)
+          cp -r build/shaders pkg/
+          # Libretro slang-shader presets
+          cp -r third_party/slang-shaders pkg/shaders/libretro
+          cd pkg && zip -r ../artifacts/3sx-windows.zip . && cd ..
+
+      - name: Save artifact (local act)
+        if: ${{ env.ACT }}
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/build_output
+          cp artifacts/3sx-windows.zip $GITHUB_WORKSPACE/build_output/
+          echo "✅ Artifact saved to build_output/3sx-windows.zip"
+
+      - name: Upload artifact (GitHub)
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3sx-windows
+          path: artifacts/3sx-windows.zip
+
+  build-macos:
+    name: Build (macOS Universal)
+    runs-on: macos-latest
+    env:
+      TARGET_ARCH: universal
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: third_party
+          key: macos-universal-deps-${{ hashFiles('build-deps.sh') }}
+
+      - name: Install packaging tool
+        run: brew install zip
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build dependencies from source
+        run: |
+          chmod +x build-deps.sh
+          sh build-deps.sh
+
+      - name: Configure and build with CMake
+        run: |
+          set -o pipefail
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_TESTS=OFF \
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+          cmake --build build --parallel
+
+      - name: Package artifact
+        run: |
+          mkdir -p artifacts
+          # Bundle runtime assets inside the .app
+          cp -r assets build/3sx.app/Contents/Resources/assets
+          cp -r build/shaders build/3sx.app/Contents/Resources/shaders
+          cp -r third_party/slang-shaders build/3sx.app/Contents/Resources/shaders/libretro
+          cd build
+          zip -r ../artifacts/3sx-macos-universal.zip 3sx.app
+
+      - name: Save artifact (local act)
+        if: ${{ env.ACT }}
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/build_output
+          cp artifacts/3sx-macos-universal.zip $GITHUB_WORKSPACE/build_output/
+          echo "✅ Artifact saved to build_output/3sx-macos-universal.zip"
+
+      - name: Upload artifact (GitHub)
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3sx-macos-universal
+          path: artifacts/3sx-macos-universal.zip
+
+  build-flatpak:
+    name: Build Flatpak
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
+      options: --privileged
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build Flatpak bundle
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: flatpak/com.crowdedstreet.ThreeSX.yml
+          bundle: 3sx.flatpak
+          cache: true
+          cache-key: flatpak-builder-${{ hashFiles('com.crowdedstreet.ThreeSX.yml') }}
+
+      - name: Save artifact (local act)
+        if: ${{ env.ACT }}
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/build_output
+          cp 3sx.flatpak $GITHUB_WORKSPACE/build_output/
+          echo "✅ Artifact saved to build_output/3sx.flatpak"
+
+      - name: Upload artifact (GitHub)
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3sx-flatpak
+          path: 3sx.flatpak
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-linux-arm64, build-windows, build-macos, build-flatpak]
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: artifacts/
+
+      - name: Generate release tag
+        id: tag
+        run: |
+          TAG="build-$(date -u +'%Y%m%d-%H%M%S')"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Generated tag: $TAG"
+
+      - name: Create GitHub Release
+        if: ${{ !env.ACT }}
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Release ${{ steps.tag.outputs.tag }}"
+          tag_name: ${{ steps.tag.outputs.tag }}
+          files: |
+            artifacts/*.zip
+            artifacts/*.flatpak
+          body: |
+            Automated release from `main`
+
+            **Commit:** `${{ github.sha }}`
+
+            ### Downloads
+            | Platform | Architecture | File |
+            |----------|-------------|------|
+            | Linux | x86_64 | `3sx-linux-x86_64.zip` |
+            | Linux | ARM64 | `3sx-linux-arm64.zip` |
+            | Windows | x86_64 | `3sx-windows.zip` |
+            | macOS | Universal (arm64 + x86_64) | `3sx-macos-universal.zip` |
+            | Linux (Flatpak) | x86_64 | `3sx.flatpak` |
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+

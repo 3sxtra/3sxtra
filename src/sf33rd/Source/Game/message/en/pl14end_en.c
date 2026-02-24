@@ -1,8 +1,3 @@
-/**
- * @file pl14end_en.c
- * Akuma/Gouki Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl14end_en.h"
 #include "common.h"
 
@@ -43,4 +38,4 @@ static s8** msgEndAdrPL14[11] = {
 
 static s8 msgEndCtrPL14[11] = { 1, 2, 2, 2, 1, 2, 1, 2, 2, 1, 1 };
 
-MessageTable pl14end_usa_tbl = { msgEndAdrPL14, msgEndCtrPL14 };
+MessageTable pl14end_en_tbl = { msgEndAdrPL14, msgEndCtrPL14 };

@@ -1,6 +1,6 @@
 /**
  * @file eff15.c
- * TODO: identify what this effect does
+ * Effect: Score / Bonus Display Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff15.h"
@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void eff15_koishi(WORK_Other* ewk);
+static void eff15_koishi(WORK_Other* ewk);
 
 void effect_15_move(WORK_Other* ewk) {
     if (ewk->wu.type) {
@@ -23,7 +23,7 @@ void effect_15_move(WORK_Other* ewk) {
     }
 }
 
-void eff15_koishi(WORK_Other* ewk) {
+static void eff15_koishi(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;

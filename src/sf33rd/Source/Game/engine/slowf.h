@@ -3,8 +3,6 @@
 
 #include "types.h"
 
-// MARK: - Serialized
-
 extern s16 SLOW_timer;
 extern s16 SLOW_flag;
 extern s16 EXE_flag;

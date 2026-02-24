@@ -1,3 +1,14 @@
+/**
+ * @file flPADUSR.c
+ * @brief Default pad configuration data and hardware I/O button map.
+ *
+ * Contains the baseline FLPAD_CONFIG (fltpad_config_basic) and the
+ * 25-entry I/O bit-position map used to translate hardware button
+ * indices into software button flags.
+ *
+ * Part of the AcrSDK ps2 module.
+ * Originally from the PS2 SDK abstraction layer.
+ */
 #include "sf33rd/AcrSDK/ps2/flPADUSR.h"
 #include "common.h"
 

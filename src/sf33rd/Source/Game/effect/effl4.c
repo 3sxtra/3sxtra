@@ -1,6 +1,6 @@
 /**
  * @file effl4.c
- * TODO: identify what this effect does
+ * Effect: Data Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/effl4.h"
@@ -46,9 +46,6 @@ void effect_L4_move(WORK_Other* ewk) {
 }
 
 s32 effect_L4_init() {
-#if defined(TARGET_PS2)
-    s16 get_my_trans_mode(s32 curr);
-#endif
 
     WORK_Other* ewk;
     s16 ix;

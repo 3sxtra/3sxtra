@@ -1,6 +1,6 @@
 /**
  * @file effm7.c
- * TODO: identify what this effect does
+ * Effect: Data Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/effm7.h"
@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effm7_move(WORK_Other* ewk);
+static void effm7_move(WORK_Other* ewk);
 
 void effect_M7_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -34,7 +34,7 @@ void effect_M7_move(WORK_Other* ewk) {
     }
 }
 
-void effm7_move(WORK_Other* ewk) {
+static void effm7_move(WORK_Other* ewk) {
     s16 id_w;
 
     switch (ewk->wu.routine_no[1]) {

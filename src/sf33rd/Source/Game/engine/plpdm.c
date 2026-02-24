@@ -31,43 +31,43 @@
 
 #include <SDL3/SDL.h>
 
-void setup_damage_process_flags(PLW* wk);
-void Damage_00000(PLW* wk);
-void Damage_01000(PLW* wk);
-void Damage_04000(PLW* wk);
-void Damage_07000(PLW* wk);
-void Damage_12000(PLW* wk);
-void Damage_14000(PLW* wk);
-void Damage_16000(PLW* wk);
-void Damage_17000(PLW* wk);
-void Damage_18000(PLW* wk);
-void Damage_19000(PLW* wk);
-void Damage_20000(PLW* wk);
-void Damage_21000(PLW* wk);
-void Damage_23000(PLW* wk);
-void Damage_24000(PLW* wk);
-void Damage_25000(PLW* wk);
-void Damage_26000(PLW* wk);
-void Damage_27000(PLW* wk);
-void Damage_28000(PLW* wk);
-void Damage_29000(PLW* wk);
-void Damage_30000(PLW* wk);
-void Damage_31000(PLW* wk);
-void first_flight_union(PLW* wk, s16 num, s16 dv);
-void first_TtktV_union(PLW* wk, s16 num, s16 dv);
-void buttobi_chakuchi_cg_type_check(PLW* wk);
-void buttobi_add_y_check(PLW* wk);
-void set_dm_hos_flag_sky(PLW* wk);
-void get_sky_dm_timer(PLW* wk);
-void get_damage_reaction_data(PLW* wk);
-void damage_atemi_setup(PLW* wk, PLW* ek);
-void check_bullet_damage(PLW* wk);
-void check_dmpat_to_dmpat(PLW* /* unused */);
-void add_dm_step_tbl(PLW* wk, s8 flag);
-void set_dm_hos_flag_grd(PLW* wk);
-void setup_smoke_type(PLW* wk);
-s32 remake_initial_speeds(WORK* wk);
-s32 setup_kuuchuu_nmdm(PLW* wk);
+static void setup_damage_process_flags(PLW* wk);
+static void Damage_00000(PLW* wk);
+static void Damage_01000(PLW* wk);
+static void Damage_04000(PLW* wk);
+static void Damage_07000(PLW* wk);
+static void Damage_12000(PLW* wk);
+static void Damage_14000(PLW* wk);
+static void Damage_16000(PLW* wk);
+static void Damage_17000(PLW* wk);
+static void Damage_18000(PLW* wk);
+static void Damage_19000(PLW* wk);
+static void Damage_20000(PLW* wk);
+static void Damage_21000(PLW* wk);
+static void Damage_23000(PLW* wk);
+static void Damage_24000(PLW* wk);
+static void Damage_25000(PLW* wk);
+static void Damage_26000(PLW* wk);
+static void Damage_27000(PLW* wk);
+static void Damage_28000(PLW* wk);
+static void Damage_29000(PLW* wk);
+static void Damage_30000(PLW* wk);
+static void Damage_31000(PLW* wk);
+static void first_flight_union(PLW* wk, s16 num, s16 dv);
+static void first_TtktV_union(PLW* wk, s16 num, s16 dv);
+static void buttobi_chakuchi_cg_type_check(PLW* wk);
+static void buttobi_add_y_check(PLW* wk);
+static void set_dm_hos_flag_sky(PLW* wk);
+static void get_sky_dm_timer(PLW* wk);
+static void get_damage_reaction_data(PLW* wk);
+static void damage_atemi_setup(PLW* wk, PLW* ek);
+static void check_bullet_damage(PLW* wk);
+static void check_dmpat_to_dmpat(PLW* /* unused */);
+static void add_dm_step_tbl(PLW* wk, s8 flag);
+static void set_dm_hos_flag_grd(PLW* wk);
+static void setup_smoke_type(PLW* wk);
+static s32 remake_initial_speeds(WORK* wk);
+static s32 setup_kuuchuu_nmdm(PLW* wk);
 
 const s16 dir32_guard_air[32] = { 0, 0, 0, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4,
                                   4, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 1, 1, 1, 0, 0 };
@@ -175,6 +175,7 @@ const u16 exdm_ix_data[2][20][5] = {
       { 16, 20, 1, 0, 21532 },  { 65530, 0, 1, 0, 23315 }, { 23, 2, 1, 0, 25264 },    { 9, 22, 1, 0, 26103 } }
 };
 
+/** @brief Top-level damage state dispatcher — calls the appropriate Damage_XXXXX handler. */
 void Player_damage(PLW* wk) {
     setup_damage_process_flags(wk);
 
@@ -202,7 +203,8 @@ void Player_damage(PLW* wk) {
     set_hit_stop_hit_quake(&wk->wu);
 }
 
-void setup_damage_process_flags(PLW* wk) {
+/** @brief Clears per-frame process flags for the damage state machine. */
+static void setup_damage_process_flags(PLW* wk) {
     wk->wu.next_z = wk->wu.my_priority;
     wk->running_f = 0;
     wk->guard_flag = 3;
@@ -227,7 +229,8 @@ void setup_damage_process_flags(PLW* wk) {
     }
 }
 
-void Damage_00000(PLW* wk) {
+/** @brief Damage state 00 — generic standing hit reaction. */
+static void Damage_00000(PLW* wk) {
     wk->wu.next_z = 30;
 
     switch (wk->wu.routine_no[3]) {
@@ -253,7 +256,8 @@ void Damage_00000(PLW* wk) {
     }
 }
 
-void Damage_01000(PLW* wk) {
+/** @brief Damage state 01 — ground hit reaction with knockback arc. */
+static void Damage_01000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3] = 1;
@@ -297,7 +301,8 @@ void Damage_01000(PLW* wk) {
     }
 }
 
-void Damage_04000(PLW* wk) {
+/** @brief Damage state 04 — standing guard recoil (block-stun). */
+static void Damage_04000(PLW* wk) {
     wk->guard_flag = 0;
     wk->guard_chuu = guard_kind[wk->wu.routine_no[2] - 4];
     set_dm_hos_flag_grd(wk);
@@ -342,7 +347,8 @@ void Damage_04000(PLW* wk) {
         break;
     }
 }
-void Damage_07000(PLW* wk) {
+/** @brief Damage state 07 — air guard recoil with trajectory adjustment. */
+static void Damage_07000(PLW* wk) {
     wk->guard_flag = 0;
     wk->guard_chuu = guard_kind[wk->wu.routine_no[2] - 4];
 
@@ -411,7 +417,8 @@ void Damage_07000(PLW* wk) {
     }
 }
 
-s32 remake_initial_speeds(WORK* wk) {
+/** @brief Recalculates initial knockback speeds using guard-air direction tables. */
+static s32 remake_initial_speeds(WORK* wk) {
     s16 ix;
     s32 ay = wk->mvxy.a[1].sp;
     s32 dy = wk->mvxy.d[1].sp;
@@ -476,7 +483,8 @@ s32 remake_initial_speeds(WORK* wk) {
     return 0;
 }
 
-void Damage_12000(PLW* wk) {
+/** @brief Damage state 12 — standing hit with damage-level variant. */
+static void Damage_12000(PLW* wk) {
     set_dm_hos_flag_grd(wk);
 
     switch (wk->wu.routine_no[3]) {
@@ -537,7 +545,8 @@ void Damage_12000(PLW* wk) {
     }
 }
 
-void Damage_14000(PLW* wk) {
+/** @brief Damage state 14 — ground-to-air launch with vertical knockback. */
+static void Damage_14000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -568,7 +577,8 @@ void Damage_14000(PLW* wk) {
     }
 }
 
-void Damage_16000(PLW* wk) {
+/** @brief Damage state 16 — blow-away (buttobi) from ground. */
+static void Damage_16000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -601,7 +611,8 @@ void Damage_16000(PLW* wk) {
     }
 }
 
-void Damage_17000(PLW* wk) {
+/** @brief Damage state 17 — air hit with air-recovery opportunity. */
+static void Damage_17000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -656,7 +667,8 @@ void Damage_17000(PLW* wk) {
     }
 }
 
-void Damage_18000(PLW* wk) {
+/** @brief Damage state 18 — air hit with element attribute. */
+static void Damage_18000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -699,7 +711,8 @@ void Damage_18000(PLW* wk) {
     }
 }
 
-void Damage_19000(PLW* wk) {
+/** @brief Damage state 19 — air blow-away from ground launch. */
+static void Damage_19000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -734,7 +747,8 @@ void Damage_19000(PLW* wk) {
     }
 }
 
-void Damage_20000(PLW* wk) {
+/** @brief Damage state 20 — air blow-away with redirect. */
+static void Damage_20000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -764,7 +778,8 @@ void Damage_20000(PLW* wk) {
     }
 }
 
-void Damage_21000(PLW* wk) {
+/** @brief Damage state 21 — vertical launch (ground-to-air). */
+static void Damage_21000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -795,7 +810,8 @@ void Damage_21000(PLW* wk) {
     }
 }
 
-void Damage_23000(PLW* wk) {
+/** @brief Damage state 23 — crumple-fall KO reaction. */
+static void Damage_23000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -825,7 +841,8 @@ void Damage_23000(PLW* wk) {
     }
 }
 
-void Damage_24000(PLW* wk) {
+/** @brief Damage state 24 — spiral-down fall. */
+static void Damage_24000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -872,7 +889,8 @@ void Damage_24000(PLW* wk) {
     }
 }
 
-void Damage_25000(PLW* wk) {
+/** @brief Damage state 25 — wallbounce reaction. */
+static void Damage_25000(PLW* wk) {
     s16 i;
     s16 hok;
 
@@ -916,7 +934,8 @@ void Damage_25000(PLW* wk) {
     }
 }
 
-void Damage_26000(PLW* wk) {
+/** @brief Damage state 26 — groundbounce OTG reaction. */
+static void Damage_26000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -965,7 +984,8 @@ void Damage_26000(PLW* wk) {
     }
 }
 
-void Damage_27000(PLW* wk) {
+/** @brief Damage state 27 — stagger reaction (dizzy trigger). */
+static void Damage_27000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -989,7 +1009,8 @@ void Damage_27000(PLW* wk) {
     }
 }
 
-void Damage_28000(PLW* wk) {
+/** @brief Damage state 28 — stun (KO via stun gauge). */
+static void Damage_28000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -1012,7 +1033,8 @@ void Damage_28000(PLW* wk) {
     }
 }
 
-void Damage_29000(PLW* wk) {
+/** @brief Damage state 29 — Super Art cinematic hit reaction. */
+static void Damage_29000(PLW* wk) {
     PLW* twk = (PLW*)wk->wu.target_adrs;
     const u16* datadrs;
 
@@ -1071,7 +1093,8 @@ void Damage_29000(PLW* wk) {
     }
 }
 
-void Damage_30000(PLW* wk) {
+/** @brief Damage state 30 — extended cinematic damage sequence. */
+static void Damage_30000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -1132,7 +1155,8 @@ void Damage_30000(PLW* wk) {
     }
 }
 
-void Damage_31000(PLW* wk) {
+/** @brief Damage state 31 — throw/grab damage release. */
+static void Damage_31000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -1192,7 +1216,8 @@ void Damage_31000(PLW* wk) {
     }
 }
 
-void first_flight_union(PLW* wk, s16 num, s16 dv) {
+/** @brief Processes airborne blow-away flight arc with landing check. */
+static void first_flight_union(PLW* wk, s16 num, s16 dv) {
     jumping_union_process(&wk->wu, num);
 
     if (wk->wu.routine_no[3] != num) {
@@ -1218,7 +1243,8 @@ void first_flight_union(PLW* wk, s16 num, s16 dv) {
     }
 }
 
-void first_TtktV_union(PLW* wk, s16 num, s16 dv) {
+/** @brief Processes vertical launch arc until landing. */
+static void first_TtktV_union(PLW* wk, s16 num, s16 dv) {
     char_move(&wk->wu);
 
     if (wk->wu.cg_type) {
@@ -1245,7 +1271,8 @@ void first_TtktV_union(PLW* wk, s16 num, s16 dv) {
     }
 }
 
-void buttobi_chakuchi_cg_type_check(PLW* wk) {
+/** @brief Checks for landing after blow-away and triggers appropriate follow-up. */
+static void buttobi_chakuchi_cg_type_check(PLW* wk) {
     switch (wk->wu.cg_type) {
     case 9:
         break;
@@ -1288,7 +1315,8 @@ void buttobi_chakuchi_cg_type_check(PLW* wk) {
     }
 }
 
-void buttobi_add_y_check(PLW* wk) {
+/** @brief Adds Y-offset for airborne blow-away damage. */
+static void buttobi_add_y_check(PLW* wk) {
     s16 ady = _buttobi_add_y_table[wk->as->char_ix][wk->wu.dm_attlv];
 
     if (wk->wu.xyz[1].disp.pos < ady) {
@@ -1296,7 +1324,8 @@ void buttobi_add_y_check(PLW* wk) {
     }
 }
 
-void setup_smoke_type(PLW* wk) {
+/** @brief Sets the smoke/dust VFX type based on damage level. */
+static void setup_smoke_type(PLW* wk) {
     s8* step_tbl;
     u8 ix;
     s16 i;
@@ -1332,7 +1361,8 @@ void setup_smoke_type(PLW* wk) {
     }
 }
 
-void add_dm_step_tbl(PLW* wk, s8 flag) {
+/** @brief Applies damage pushback step table to X position. */
+static void add_dm_step_tbl(PLW* wk, s8 flag) {
     if (flag) {
         if (wk->wu.dm_rl) {
             wk->wu.xyz[0].disp.pos += *wk->dm_step_tbl++;
@@ -1346,9 +1376,11 @@ void add_dm_step_tbl(PLW* wk, s8 flag) {
     wk->dm_step_tbl++;
 }
 
-void check_dmpat_to_dmpat(PLW* /* unused */) {}
+/** @brief Stub — placeholder for damage-pattern-to-damage-pattern transition check. */
+static void check_dmpat_to_dmpat(PLW* /* unused */) {}
 
-void set_dm_hos_flag_sky(PLW* wk) {
+/** @brief Sets the damage direction flag for airborne hit (sky). */
+static void set_dm_hos_flag_sky(PLW* wk) {
     PLW* twk = (PLW*)wk->wu.target_adrs;
     s16 disx = wk->wu.xyz[0].disp.pos - twk->wu.xyz[0].disp.pos;
 
@@ -1388,7 +1420,8 @@ void set_dm_hos_flag_sky(PLW* wk) {
     wk->dm_hos_flag = 1;
 }
 
-void set_dm_hos_flag_grd(PLW* wk) {
+/** @brief Sets the damage direction flag for grounded hit. */
+static void set_dm_hos_flag_grd(PLW* wk) {
     PLW* twk = (PLW*)wk->wu.target_adrs;
     s16 disx = wk->wu.xyz[0].disp.pos - twk->wu.xyz[0].disp.pos;
 
@@ -1416,7 +1449,8 @@ void set_dm_hos_flag_grd(PLW* wk) {
     wk->dm_hos_flag = 1;
 }
 
-void get_sky_dm_timer(PLW* wk) {
+/** @brief Calculates the air-damage tech-timer based on combo depth. */
+static void get_sky_dm_timer(PLW* wk) {
     if (wk->wu.dm_zuru == 7) {
         wk->zuru_ix_counter = 0;
     } else {
@@ -1430,6 +1464,7 @@ void get_sky_dm_timer(PLW* wk) {
     wk->zuru_timer = sky_dm_zuru_table[omop_otedama_ix[(wk->wu.id + 1) & 1]][wk->zuru_ix_counter];
 }
 
+/** @brief Subtracts damage from the defender's vitality with scaling and attribute effects. */
 void subtract_dm_vital(PLW* wk) {
     if (wk->dead_flag == 0) {
         if (wk->wu.dm_vital && (wk->wu.routine_no[1] != 1 || wk->wu.routine_no[2] > 11 || wk->wu.routine_no[3] != 0)) {
@@ -1508,6 +1543,7 @@ void subtract_dm_vital(PLW* wk) {
     wk->wu.dm_piyo = 0;
 }
 
+/** @brief Subtracts damage for a simultaneous-hit (aiuchi) trade situation. */
 void subtract_dm_vital_aiuchi(PLW* wk) {
     if (wk->dead_flag == 0) {
         if (wk->wu.dm_vital && (wk->wu.routine_no[1] != 1 || wk->wu.routine_no[2] > 11 || wk->wu.routine_no[3] != 0)) {
@@ -1569,7 +1605,8 @@ void subtract_dm_vital_aiuchi(PLW* wk) {
     wk->wu.dm_piyo = 0;
 }
 
-void get_damage_reaction_data(PLW* wk) {
+/** @brief Reads the damage reaction table to set animation and knockback data. */
+static void get_damage_reaction_data(PLW* wk) {
     if (wk->atemi_flag == 2) {
         wk->wu.dm_vital = 0;
         damage_atemi_setup(wk, (PLW*)wk->wu.dmg_adrs);
@@ -1620,7 +1657,8 @@ void get_damage_reaction_data(PLW* wk) {
     }
 }
 
-void damage_atemi_setup(PLW* wk, PLW* ek) {
+/** @brief Sets up the counter-hit (atemi) flag based on attacker and defender state. */
+static void damage_atemi_setup(PLW* wk, PLW* ek) {
     wk->wu.routine_no[1] = wk->wu.cmmd.koc;
     wk->wu.routine_no[2] = wk->wu.cmmd.ix;
     wk->wu.routine_no[3] = wk->wu.cmmd.pat;
@@ -1633,6 +1671,7 @@ void damage_atemi_setup(PLW* wk, PLW* ek) {
     ek->wu.hit_quake = wk->wu.att.hs_you / 2;
 }
 
+/** @brief Sets up the crumple-fall (kuzureochi) KO state. */
 s32 setup_kuzureochi(PLW* wk) {
     if (wk->wu.vital_new >= 0) {
         return 0;
@@ -1654,7 +1693,8 @@ s32 setup_kuzureochi(PLW* wk) {
     return 1;
 }
 
-s32 setup_kuuchuu_nmdm(PLW* wk) {
+/** @brief Sets up air-to-air normal damage conversion. */
+static s32 setup_kuuchuu_nmdm(PLW* wk) {
     if (wk->dead_flag) {
         return 0;
     }
@@ -1672,11 +1712,13 @@ s32 setup_kuuchuu_nmdm(PLW* wk) {
     return 1;
 }
 
+/** @brief Retrieves catch-release positional data for a throw break. */
 void get_catch_off_data(PLW* wk, s16 ix) {
     wk->as = &dm_reaction_table[ix];
 }
 
-void check_bullet_damage(PLW* wk) {
+/** @brief Checks if the current damage source is a projectile and updates attributes. */
+static void check_bullet_damage(PLW* wk) {
     WORK* tk = (WORK*)wk->wu.dmg_adrs;
 
     if (tk->work_id != 1 && tk->id == 13 && tama_select[tk->type] != 0) {

@@ -19,21 +19,26 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
+#define GAMEOVER_JMP_COUNT 3
+
 u8 GAME_OVER_X;
 
-void GameOver_1st();
-void GameOver_2nd();
-void GameOver_3rd();
-void Setup_Result_OBJ();
+static void GameOver_1st();
+static void GameOver_2nd();
+static void GameOver_3rd();
+static void Setup_Result_OBJ();
 
+/** @brief Main game-over dispatcher — runs the current sub-state and returns exit flag. */
 s16 Game_Over() {
-    void (*GameOver_Jmp_Tbl[3])() = { GameOver_1st, GameOver_2nd, GameOver_3rd };
+    void (*GameOver_Jmp_Tbl[GAMEOVER_JMP_COUNT])() = { GameOver_1st, GameOver_2nd, GameOver_3rd };
 
     GAME_OVER_X = 0;
     Scene_Cut = Cut_Cut_Loser();
-    GameOver_Jmp_Tbl[GO_No[0]]();
+    if (GO_No[0] < GAMEOVER_JMP_COUNT) {
+        GameOver_Jmp_Tbl[GO_No[0]]();
+    }
 
-    if ((Check_Exit_Check() == 0) && (Debug_w[0x18] == -1)) {
+    if ((Check_Exit_Check() == 0) && (Debug_w[DEBUG_TIME_STOP] == -1)) {
         GAME_OVER_X = 0;
     }
 
@@ -44,7 +49,8 @@ s16 Game_Over() {
     return GAME_OVER_X;
 }
 
-void GameOver_1st() {
+/** @brief Game-over phase 1 — set up BG scroll, spawn effects/BGM, and wait for scene readiness. */
+static void GameOver_1st() {
     switch (GO_No[1]) {
     case 0:
         GO_No[1] += 1;
@@ -98,7 +104,8 @@ void GameOver_1st() {
     }
 }
 
-void GameOver_2nd() {
+/** @brief Game-over phase 2 — fade out, set up result screen objects, fade in, display results. */
+static void GameOver_2nd() {
     switch (GO_No[1]) {
     case 0:
         GO_No[1] += 1;
@@ -196,11 +203,13 @@ void GameOver_2nd() {
     }
 }
 
-void GameOver_3rd() {
+/** @brief Game-over phase 3 — immediate exit (fallback). */
+static void GameOver_3rd() {
     GAME_OVER_X = 1;
 }
 
-void Setup_Result_OBJ() {
+/** @brief Spawn all visual effects/objects for the result screen (labels, character cards). */
+static void Setup_Result_OBJ() {
     effect_76_init(0x32);
     Order[0x32] = 3;
     Order_Timer[0x32] = 1;

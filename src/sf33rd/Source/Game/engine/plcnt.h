@@ -21,52 +21,49 @@ typedef struct {
 } SA_DATA;
 
 typedef enum AppearanceType {
-    APPEAR_TYPE_NON_ANIMATED,
-    APPEAR_TYPE_ANIMATED,
-    APPEAR_TYPE_UNKNOWN_2, // FIXME: document
-    APPEAR_TYPE_UNKNOWN_3, // FIXME: document
+    APPEAR_TYPE_NON_ANIMATED, // Static appearance (no animation)
+    APPEAR_TYPE_ANIMATED,     // Animated entrance (walk-in, etc.)
+    APPEAR_TYPE_TRANSITIONAL, // Mid-round state transition (e.g., post-KO)
+    APPEAR_TYPE_VICTORY,      // Victory sequence appearance
 } AppearanceType;
 
 extern const s8 plid_data[20];
 extern const s16** kizetsu_timer_table[];
 
-// MARK: - Serialized
-
 extern PLW plw[2];
 extern SA_WORK super_arts[2];
-
-/// Afterimage data
 extern ZanzouTableEntry zanzou_table[2][48];
-
-/// Stun data
 extern PiyoriType piyori_type[2];
-
 extern AppearanceType appear_type;
-
-/// Player controller routine indices
 extern s16 pcon_rno[4];
-
-/// `true` if the game has been slowed down at round end
 extern bool round_slow_flag;
-
 extern bool pcon_dp_flag;
 extern u8 win_sp_flag;
-
-/// `true` if death SFX playback needs to be requested
 extern bool dead_voice_flag;
 
-extern UNK_1 rambod[2];
-extern UNK_2 ramhan[2];
-extern u16 vital_inc_timer;
-extern u16 vital_dec_timer;
-extern s16 sag_inc_timer[2];
+// MARK: - Serialized
+
+/// Afterimage data
+
+/// Stun data
+
+/// Player controller routine indices
+
+/// `true` if the game has been slowed down at round end
+
+/// `true` if death SFX playback needs to be requested
 
 // MARK: - Unhandled
 
+extern UNK_1 rambod[2];
+extern UNK_2 ramhan[2];
 extern u32 omop_spmv_ng_table[2];
 extern u32 omop_spmv_ng_table2[2];
+extern u16 vital_inc_timer;
+extern u16 vital_dec_timer;
 extern char cmd_sel[2];
 extern s8 vib_sel[2];
+extern s16 sag_inc_timer[2];
 extern char no_sa[2];
 
 void Player_control();

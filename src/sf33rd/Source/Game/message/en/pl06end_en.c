@@ -1,8 +1,3 @@
-/**
- * @file pl06end_en.c
- * Hugo Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl06end_en.h"
 #include "common.h"
 
@@ -66,4 +61,4 @@ static s8** msgEndAdrPL06[15] = {
 
 static s8 msgEndCtrPL06[15] = { 1, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 
-MessageTable pl06end_usa_tbl = { msgEndAdrPL06, msgEndCtrPL06 };
+MessageTable pl06end_en_tbl = { msgEndAdrPL06, msgEndCtrPL06 };

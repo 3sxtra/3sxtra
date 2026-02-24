@@ -1,0 +1,57 @@
+name: Build (macOS)
+
+on:
+    push:
+        branches: [ "main" ]
+    pull_request:
+        branches: [ "main" ]
+
+jobs:
+    build:
+        runs-on: macos-latest
+        env:
+            TARGET_ARCH: universal
+
+        steps:
+          - name: Checkout repository
+            uses: actions/checkout@v4
+            with:
+                submodules: true
+
+          - name: Cache dependencies
+            uses: actions/cache@v4
+            with:
+                path: third_party
+                key: macos-universal-deps-${{ hashFiles('build-deps.sh') }}
+
+          - name: Install Rust toolchain
+            uses: dtolnay/rust-toolchain@stable
+
+          - name: Install dependencies
+            run: |
+                brew install miniupnpc
+                sh build-deps.sh
+
+          - name: Build for macOS
+            run: |
+                set -o pipefail
+                cmake -B build \
+                  -DCMAKE_BUILD_TYPE=Debug \
+                  -DENABLE_TESTS=OFF \
+                  -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+                cmake --build build --parallel 2>&1 | tee build.log
+            shell: bash
+
+          - name: Save build log (local act)
+            if: ${{ always() && env.ACT }}
+            run: |
+                mkdir -p $GITHUB_WORKSPACE/build_output
+                cp build.log $GITHUB_WORKSPACE/build_output/build-log-macos.log
+                echo "✅ Build log saved to build_output/build-log-macos.log"
+
+          - name: Upload build log (GitHub)
+            if: ${{ always() && !env.ACT }}
+            uses: actions/upload-artifact@v4
+            with:
+                name: build-log
+                path: build.log

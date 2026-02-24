@@ -1,8 +1,3 @@
-/**
- * @file msgextra_en.c
- * Extra Option Menu Option Descriptors (English)
- */
-
 #include "sf33rd/Source/Game/message/en/msgextra_en.h"
 #include "common.h"
 
@@ -48,4 +43,4 @@ static s8** msgExtraAdr[35] = { msgEXTRA_000, msgEXTRA_001, msgEXTRA_002, msgEXT
 static s8 msgExtraCtr[35] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1,
                               2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1 };
 
-MessageTable msgExtraTbl_usa = { msgExtraAdr, msgExtraCtr };
+MessageTable msgExtraTbl_en = { msgExtraAdr, msgExtraCtr };

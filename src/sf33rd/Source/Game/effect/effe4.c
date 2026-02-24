@@ -1,6 +1,6 @@
 /**
  * @file effe4.c
- * TODO: identify what this effect does
+ * Effect: Gauge / Player Control Effect
  */
 
 #include "sf33rd/Source/Game/effect/effe4.h"
@@ -20,7 +20,7 @@ void effect_E4_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (mwk->wu.E4_work_index != ewk->wu.myself || ewk->wu.dead_f != 0 ||
-            (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING)) {
+            (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS)) {
             ewk->wu.routine_no[0] = 2;
             break;
         }

@@ -1,6 +1,6 @@
 /**
  * @file effl8.c
- * TODO: identify what this effect does
+ * Effect: Color / Player 17 Effect
  */
 
 #include "sf33rd/Source/Game/effect/effl8.h"

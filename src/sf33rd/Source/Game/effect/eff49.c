@@ -1,6 +1,6 @@
 /**
  * @file eff49.c
- * TODO: identify what this effect does
+ * Effect: Work User / Character State Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff49.h"
@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-u8 Setup_Char_49(WORK_Other* ewk);
+static u8 Setup_Char_49(WORK_Other* ewk);
 
 void effect_49_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -99,7 +99,7 @@ s32 effect_49_init(s16 vital_new) {
     return 0;
 }
 
-u8 Setup_Char_49(WORK_Other* ewk) {
+static u8 Setup_Char_49(WORK_Other* ewk) {
     s16 xx;
 
     if (ewk->wu.vital_new == 4) {

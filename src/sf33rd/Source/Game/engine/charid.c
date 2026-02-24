@@ -75,6 +75,7 @@ const CharInitData char_init_data_ex[2] = { { _ef13_char_table,
                                               (UNK_7*)_ef13_catt_table,
                                               NULL } };
 
+/** @brief Initializes character work data from the char init tables. */
 void set_char_base_data(WORK* wk) {
     CharInitData* cdat = &char_init_data[wk->charset_id];
     const CharInitData2* cdat2 = &char_init_data2[wk->charset_id];
@@ -110,6 +111,7 @@ void set_char_base_data(WORK* wk) {
     wk->position_z = wk->my_priority;
 }
 
+/** @brief Copies extended character init data to the main init array. */
 void copy_char_base_data() {
     char_init_data[11] = char_init_data_ex[0];
     char_init_data[17] = char_init_data_ex[1];

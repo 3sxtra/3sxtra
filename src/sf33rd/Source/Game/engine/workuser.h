@@ -1,20 +1,12 @@
 #ifndef WORKUSER_H
 #define WORKUSER_H
 
+#include "game_state.h"
 #include "sf33rd/Source/Game/engine/cmd_data.h"
 #include "sf33rd/Source/Game/select_timer.h"
 #include "types.h"
 
 #include <stdbool.h>
-
-typedef enum ModeType {
-    MODE_ARCADE,
-    MODE_VERSUS,
-    MODE_NETWORK,
-    MODE_NORMAL_TRAINING,
-    MODE_PARRY_TRAINING,
-    MODE_REPLAY,
-} ModeType;
 
 // MARK: - Non-serializable
 
@@ -58,6 +50,8 @@ extern s8 Super_Arts[2];
 extern s8 Forbid_Break;
 extern s8 Request_Break[2];
 extern s8 Continue_Count[2];
+
+extern s8 Time_Limit;
 
 /// Go faster during a non-gameplay animation
 extern bool Scene_Cut;
@@ -325,6 +319,7 @@ extern u8 F_No2[2];
 extern u8 F_No3[2];
 extern u8 keep_condition[11];
 extern s8 Check_Buff[4][2][12];
+extern s8 Check_Convert[4][2][12];
 extern s8 Convert_Buff[4][2][12];
 extern u8 Unsubstantial_BG[4];
 extern s8 Menu_Cursor_X[2];
@@ -363,6 +358,7 @@ extern u8 CPU_Time_Lag[2];
 extern u8 Forbid_Reset;
 extern u8 CPU_Rec[2];
 extern u8 Pause_Type;
+extern u32 system_timer;
 extern u16 Game_timer;
 extern s16 Control_Time;
 extern s16 Time_in_Time;
@@ -486,4 +482,6 @@ extern s16 Random_ix32_ex_com;
 extern s16 Random_ix16_bg;
 extern s16 Opening_Now;
 
-#endif
+s8* Get_Ranking_Slot(int playerIdx, int slotIdx);
+
+#endif // WORKUSER_H

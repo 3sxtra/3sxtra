@@ -1,8 +1,3 @@
-/**
- * @file pl18win_en.c
- * Twelve Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl18win_en.h"
 #include "common.h"
 
@@ -46,4 +41,4 @@ static s8 msgWinCtrPL18[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 };
 
-MessageTable pl18win_usa_tbl = { msgWinAdrPL18, msgWinCtrPL18 };
+MessageTable pl18win_en_tbl = { msgWinAdrPL18, msgWinCtrPL18 };

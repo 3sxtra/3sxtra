@@ -1,6 +1,6 @@
 /**
  * @file eff46.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/eff46.h"
@@ -17,8 +17,8 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void eff46_move(WORK_Other* ewk);
-s16 eff46_appear_check(WORK_Other* ewk);
+static void eff46_move(WORK_Other* ewk);
+static s16 eff46_appear_check(WORK_Other* ewk);
 
 void effect_46_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -44,7 +44,7 @@ void effect_46_move(WORK_Other* ewk) {
     }
 }
 
-void eff46_move(WORK_Other* ewk) {
+static void eff46_move(WORK_Other* ewk) {
     s16 work2;
 
     switch (ewk->wu.routine_no[1]) {
@@ -96,7 +96,7 @@ void eff46_move(WORK_Other* ewk) {
     }
 }
 
-s16 eff46_appear_check(WORK_Other* ewk) {
+static s16 eff46_appear_check(WORK_Other* ewk) {
     WORK* oya_ptr = (WORK*)ewk->my_master;
     s16 work = oya_ptr->xyz[0].disp.pos - ewk->wu.xyz[0].disp.pos;
 

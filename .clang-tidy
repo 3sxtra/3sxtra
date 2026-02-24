@@ -1,0 +1,6 @@
+---
+Checks: 'readability-*,bugprone-*,performance-*,modernize-*,-modernize-use-trailing-return-type,-readability-magic-numbers,-readability-identifier-length,-readability-function-cognitive-complexity,-bugprone-narrowing-conversions,-bugprone-easily-swappable-parameters,-bugprone-branch-clone,-bugprone-switch-missing-default-case,-readability-redundant-declaration,-readability-inconsistent-declaration-parameter-name,-readability-uppercase-literal-suffix,-readability-else-after-return,-bugprone-assignment-in-if-condition,-bugprone-signed-char-misuse,-clang-analyzer-*,-readability-implicit-bool-conversion,-readability-isolate-declaration'
+WarningsAsErrors: ''
+HeaderFilterRegex: 'src/.*|include/.*'
+FormatStyle: file
+...

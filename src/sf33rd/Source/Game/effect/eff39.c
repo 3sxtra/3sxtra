@@ -1,6 +1,6 @@
 /**
  * @file eff39.c
- * Character names in character select
+ * Effect: Quake Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff39.h"
@@ -19,13 +19,13 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void EFF39_WAIT(WORK_Other* ewk);
-void EFF39_SUDDENLY(WORK_Other* ewk);
-void EFF39_SLIDE_IN(WORK_Other* ewk);
-void EFF39_SLIDE_OUT(WORK_Other* ewk);
-void EFF39_KILL(WORK_Other* ewk);
-void EFF39_MOVE(WORK_Other* ewk);
-s32 Get_Pos39(WORK_Other* ewk, s16 Who, s16 Get_Type);
+static void EFF39_WAIT(WORK_Other* ewk);
+static void EFF39_SUDDENLY(WORK_Other* ewk);
+static void EFF39_SLIDE_IN(WORK_Other* ewk);
+static void EFF39_SLIDE_OUT(WORK_Other* ewk);
+static void EFF39_KILL(WORK_Other* ewk);
+static void EFF39_MOVE(WORK_Other* ewk);
+static s32 Get_Pos39(WORK_Other* ewk, s16 Who, s16 Get_Type);
 
 void (*const EFF39_Jmp_Tbl[6])() = {
     EFF39_WAIT, EFF39_SLIDE_IN, EFF39_SLIDE_OUT, EFF39_SUDDENLY, EFF39_MOVE, EFF39_KILL
@@ -41,14 +41,14 @@ void effect_39_move(WORK_Other* ewk) {
     }
 }
 
-void EFF39_WAIT(WORK_Other* ewk) {
+static void EFF39_WAIT(WORK_Other* ewk) {
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[6] = 0;
     }
 }
 
-void EFF39_SUDDENLY(WORK_Other* ewk) {
+static void EFF39_SUDDENLY(WORK_Other* ewk) {
     if (--Order_Timer[ewk->wu.dir_old] != 0) {
         return;
     }
@@ -64,7 +64,7 @@ void EFF39_SUDDENLY(WORK_Other* ewk) {
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
 }
 
-void EFF39_SLIDE_IN(WORK_Other* ewk) {
+static void EFF39_SLIDE_IN(WORK_Other* ewk) {
     if (Order[ewk->wu.dir_old] == 5) {
         ewk->wu.routine_no[0] = 5;
         ewk->wu.routine_no[1] = 0;
@@ -134,7 +134,7 @@ void EFF39_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-void EFF39_SLIDE_OUT(WORK_Other* ewk) {
+static void EFF39_SLIDE_OUT(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
         if (ewk->wu.disp_flag == 0) {
@@ -174,7 +174,7 @@ void EFF39_SLIDE_OUT(WORK_Other* ewk) {
     }
 }
 
-void EFF39_KILL(WORK_Other* ewk) {
+static void EFF39_KILL(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old] == 0) {
@@ -190,7 +190,7 @@ void EFF39_KILL(WORK_Other* ewk) {
     }
 }
 
-void EFF39_MOVE(WORK_Other* ewk) {
+static void EFF39_MOVE(WORK_Other* ewk) {
     if (Order[ewk->wu.dir_old] != 4) {
         ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -200,7 +200,7 @@ void EFF39_MOVE(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (Sel_PL_Complete[ewk->master_id] || plw[ewk->master_id].wu.operator == 0) {
+        if (Sel_PL_Complete[ewk->master_id] || plw[ewk->master_id].wu.pl_operator == 0) {
             ewk->wu.routine_no[1] = 2;
         } else {
             ewk->wu.routine_no[1]++;
@@ -268,6 +268,6 @@ s32 effect_39_init(s16 PL_id, s16 dir_old, s16 Your_Char, s16 Target_BG, s16 Opt
     return 0;
 }
 
-s32 Get_Pos39(WORK_Other* ewk, s16 Who, s16 Get_Type) {
+static s32 Get_Pos39(WORK_Other* ewk, s16 Who, s16 Get_Type) {
     return Name_Pos_Data[ewk->master_id][Play_Type][Who][Get_Type];
 }

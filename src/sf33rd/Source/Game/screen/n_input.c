@@ -10,28 +10,28 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void Name_Scs_Input_init();
-void Name_Scs_Input_comm();
-void Name_Input_wait();
-void Name_Scs_Input_end();
-void Name_Scs_Finish();
-s32 Name_Input_sub();
-s32 auto_n_check(u16 chk_lvr, s16 index, u16 sw_data, u16 sw_up_w);
-s32 name_slang_check();
-void define_name_input();
-void ranking_state_check();
-void ranking_name_entry();
-void name_work_init(s16 pl_id);
-void rank_display_set(s16 pl_id);
-void Scs_char_move();
-void Scs_move_sub();
-void current_sc_move2();
-void start_cut_check(s16 pl_id);
-void all_name_display(s16 pl_id);
-void all_flash_display(s16 pl_id);
+static void Name_Scs_Input_init();
+static void Name_Scs_Input_comm();
+static void Name_Input_wait();
+static void Name_Scs_Input_end();
+static void Name_Scs_Finish();
+static s32 Name_Input_sub();
+static s32 auto_n_check(u16 chk_lvr, s16 index, u16 sw_data, u16 sw_up_w);
+static s32 name_slang_check();
+static void define_name_input();
+static void ranking_state_check();
+static void ranking_name_entry();
+static void name_work_init(s16 pl_id);
+static void rank_display_set(s16 pl_id);
+static void Scs_char_move();
+static void Scs_move_sub();
+static void current_sc_move2();
+static void start_cut_check(s16 pl_id);
+static void all_name_display(s16 pl_id);
+static void all_flash_display(s16 pl_id);
 
-void (*Name_Jmp_scs[8])() = { Name_Scs_Input_init, Name_Scs_Input_comm, Name_Input_wait,    Name_Scs_Input_comm,
-                              Name_Input_wait,     Name_Scs_Input_comm, Name_Scs_Input_end, Name_Scs_Finish };
+static void (*Name_Jmp_scs[8])() = { Name_Scs_Input_init, Name_Scs_Input_comm, Name_Input_wait,    Name_Scs_Input_comm,
+                                     Name_Input_wait,     Name_Scs_Input_comm, Name_Scs_Input_end, Name_Scs_Finish };
 
 // sbss
 NAME_WK name_wk[2];
@@ -62,6 +62,7 @@ const u8 ne_color_tbl[18] = { 21, 2, 22, 2, 21, 2, 20, 2, 21, 2, 22, 2, 21, 2, 2
 
 const s16 rank_stage_tbl[4] = { 0, 5, 10, 15 };
 
+/** @brief Main name-input dispatcher — initialises work and dispatches sub-states per player. */
 s16 Name_Input(s16 pl_id) {
     end_no_cut = 1;
     Name_Input_f = 0;
@@ -94,7 +95,8 @@ s16 Name_Input(s16 pl_id) {
     return Name_Input_f;
 }
 
-void Name_Scs_Input_init() {
+/** @brief Name-input init phase — reset timer, flash state, and character indices. */
+static void Name_Scs_Input_init() {
     s8 i;
 
     name_ptr->r_no_0++;
@@ -113,7 +115,8 @@ void Name_Scs_Input_init() {
     Scs_char_move();
 }
 
-void Name_Scs_Input_comm() {
+/** @brief Name-input main phase — decrement timer, read input, commit/backspace characters. */
+static void Name_Scs_Input_comm() {
     s16 work;
     s16 i;
 
@@ -180,7 +183,8 @@ void Name_Scs_Input_comm() {
     Scs_char_move();
 }
 
-void Name_Input_wait() {
+/** @brief Name-input wait phase — small inter-character delay before next input. */
+static void Name_Input_wait() {
     name_ptr->wait_cnt--;
 
     if (name_ptr->wait_cnt < 0) {
@@ -188,7 +192,8 @@ void Name_Input_wait() {
     }
 }
 
-void Name_Scs_Input_end() {
+/** @brief Name-input end phase — finalise the entered name, check slang filter, write ranking entry. */
+static void Name_Scs_Input_end() {
     s16 i;
 
     name_ptr->r_no_0++;
@@ -212,7 +217,8 @@ void Name_Scs_Input_end() {
     ne_flash_flag = 1;
 }
 
-void Name_Scs_Finish() {
+/** @brief Name-input finish phase — countdown before returning control to caller. */
+static void Name_Scs_Finish() {
     naming_cnt[name_ptr->id]--;
 
     if (naming_cnt[name_ptr->id] < 0) {
@@ -223,7 +229,8 @@ void Name_Scs_Finish() {
     Scs_char_move();
 }
 
-s32 Name_Input_sub() {
+/** @brief Process joystick/button input and return action code (0=none, 1=advance, 2=back, 3=end). */
+static s32 Name_Input_sub() {
     u16 sw_up_w;
     u16 sw_data;
 
@@ -270,7 +277,8 @@ s32 Name_Input_sub() {
     }
 }
 
-s32 auto_n_check(u16 chk_lvr, s16 index, u16 sw_data, u16 sw_up_w) {
+/** @brief Auto-repeat helper — returns 1 when the lever direction fires (initial delay + repeat). */
+static s32 auto_n_check(u16 chk_lvr, s16 index, u16 sw_data, u16 sw_up_w) {
     if (sw_up_w & chk_lvr) {
         name_ptr->count1[index] = 0;
         name_ptr->count2[index] = 0;
@@ -297,7 +305,8 @@ s32 auto_n_check(u16 chk_lvr, s16 index, u16 sw_data, u16 sw_up_w) {
     return 0;
 }
 
-s32 name_slang_check() {
+/** @brief Check whether the entered 3-letter name matches any forbidden slang pattern. */
+static s32 name_slang_check() {
     const s16* slang_ptr = &slang_tbl[0][0];
     s16 i;
     s16 j;
@@ -322,7 +331,8 @@ s32 name_slang_check() {
     return 0;
 }
 
-void define_name_input() {
+/** @brief Replace a filtered (slang) name with a default placeholder name. */
+static void define_name_input() {
     s16 work = 1;
 
     if (work & 1) {
@@ -337,7 +347,8 @@ void define_name_input() {
     name_ptr->code[2] = 12;
 }
 
-void ranking_state_check() {
+/** @brief Determine which ranking category the player entered and store the rank/status. */
+static void ranking_state_check() {
     s16 joui;
     s16 j;
 
@@ -359,7 +370,8 @@ void ranking_state_check() {
     name_ptr->rank_status = name_ptr->status = rank_stage_tbl[joui];
 }
 
-void ranking_name_entry() {
+/** @brief Convert the entered character codes to ranking font codes and store in rank_name_w. */
+static void ranking_name_entry() {
     RANK_NAME_W* ptr = &rank_name_w[name_ptr->id];
 
     ptr->code[0] = name_code_tbl[name_ptr->code[0]];
@@ -368,7 +380,8 @@ void ranking_name_entry() {
     ptr->code[3] = name_code_tbl[name_ptr->code[3]];
 }
 
-void name_work_init(s16 pl_id) {
+/** @brief Initialise name-entry work area for the given player (codes, flags, screen-char work). */
+static void name_work_init(s16 pl_id) {
     s16 j;
 
     name_wk[pl_id].r_no_0 = 0;
@@ -394,7 +407,8 @@ void name_work_init(s16 pl_id) {
     }
 }
 
-void rank_display_set(s16 pl_id) {
+/** @brief Display the ranking position label and ordinal suffix for the current entry. */
+static void rank_display_set(s16 pl_id) {
     u16 pos_x;
     u8 rank;
 
@@ -414,7 +428,8 @@ void rank_display_set(s16 pl_id) {
     scfont_sqput((pos_x + 1) & 0xFFFF, 0, 8, 0, (rank << 1) & 0xFF, 0x19, 2, 1, 2);
 }
 
-void Scs_char_move() {
+/** @brief Iterate over all 4 character slots and run their individual move routines. */
+static void Scs_char_move() {
     s16 i;
 
     for (i = 0; i < 4; i++) {
@@ -423,7 +438,8 @@ void Scs_char_move() {
     }
 }
 
-void Scs_move_sub() {
+/** @brief Per-slot state machine — handle idle, confirmed, and finished states. */
+static void Scs_move_sub() {
     switch (nsc_ptr->r_no_0) {
     case 0:
     case_0:
@@ -458,7 +474,8 @@ void Scs_move_sub() {
     }
 }
 
-void current_sc_move2() {
+/** @brief Animate the currently-active character slot cursor (flicker/blink effect). */
+static void current_sc_move2() {
     if (name_ptr->index != nsc_ptr->c_cnt) {
         return;
     }
@@ -498,7 +515,8 @@ void current_sc_move2() {
     }
 }
 
-void start_cut_check(s16 pl_id) {
+/** @brief Force-complete name entry if the scene was skipped by the player. */
+static void start_cut_check(s16 pl_id) {
     s16 i;
 
     if (Naming_Cut[pl_id]) {
@@ -514,7 +532,8 @@ void start_cut_check(s16 pl_id) {
     }
 }
 
-void all_name_display(s16 pl_id) {
+/** @brief Render all 3 name characters (with cursor blink on the active slot). */
+static void all_name_display(s16 pl_id) {
     s16 i;
 
     for (i = 0; i < 3; i++) {
@@ -526,7 +545,8 @@ void all_name_display(s16 pl_id) {
     }
 }
 
-void all_flash_display(s16 pl_id) {
+/** @brief Render all 3 name characters with a colour-cycling flash effect after confirmation. */
+static void all_flash_display(s16 pl_id) {
     s16 i;
 
     for (i = 0; i < 3; i++) {

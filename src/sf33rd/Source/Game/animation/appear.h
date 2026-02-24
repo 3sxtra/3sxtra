@@ -1,3 +1,10 @@
+/**
+ * @file appear.h
+ * @brief Public API for character entrance (appear) animations.
+ *
+ * Part of the animation module.
+ */
+
 #ifndef APPEAR_H
 #define APPEAR_H
 
@@ -17,8 +24,6 @@ typedef struct {
 extern const APPEAR_DATA appear_data[55];
 extern const s16 smoke_check[22];
 extern const u8 animal_decide_tbl[16];
-
-// MARK: - Serialized
 
 extern s8 Appear_car_stop[2];
 extern s8 Appear_hv[2];

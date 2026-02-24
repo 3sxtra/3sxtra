@@ -1,6 +1,6 @@
 /**
  * @file effj0.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/effj0.h"

@@ -1,6 +1,6 @@
 /**
  * @file eff59.c
- * TODO: identify what this effect does
+ * Effect: Correct Data / Adjustment Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff59.h"
@@ -24,9 +24,9 @@ const s16 EFF59_ID05_Data[24][4] = {
     { 0, 0, 0, 0 },        { 0, 0, 0, 0 },        { 0, 0, 0, 0 },        { -72, 144, -40, 16 }
 };
 
-void EFF59_Trans(WORK_Other* ewk);
-void Check_Under_Name(WORK_Other* ewk);
-s32 Check_Break_Into_59(WORK_Other* ewk);
+static void EFF59_Trans(WORK_Other* ewk);
+static void Check_Under_Name(WORK_Other* ewk);
+static s32 Check_Break_Into_59(WORK_Other* ewk);
 
 void effect_59_move(WORK_Other* ewk) {
     WORK_Other* mwk = (WORK_Other*)ewk->my_master;
@@ -88,7 +88,7 @@ void effect_59_move(WORK_Other* ewk) {
     EFF59_Trans(ewk);
 }
 
-void EFF59_Trans(WORK_Other* ewk) {
+static void EFF59_Trans(WORK_Other* ewk) {
     if (ewk->wu.dm_vital == 4 || ewk->wu.dm_vital == 5) {
         sort_push_requestA(&ewk->wu);
     } else {
@@ -96,7 +96,7 @@ void EFF59_Trans(WORK_Other* ewk) {
     }
 }
 
-void Check_Under_Name(WORK_Other* ewk) {
+static void Check_Under_Name(WORK_Other* ewk) {
     WORK_Other* mwk;
 
     if (ewk->wu.dm_vital != 5) {
@@ -114,7 +114,7 @@ void Check_Under_Name(WORK_Other* ewk) {
     }
 }
 
-s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 ID, s16 direction) {
+s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 arg_ID, s16 direction) {
     WORK_Other* ewk;
     s16 ix;
 
@@ -131,11 +131,11 @@ s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 ID, s16 direction) {
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->my_master = mwk;
     ewk->wu.char_index = 19;
-    ewk->wu.dir_step = ID;
-    ewk->wu.dm_vital = ID;
+    ewk->wu.dir_step = arg_ID;
+    ewk->wu.dm_vital = arg_ID;
     ewk->wu.direction = direction;
-    ewk->wu.vital_new = EFF59_Correct_Data[ID][0];
-    ewk->wu.vital_old = EFF59_Correct_Data[ID][1];
+    ewk->wu.vital_new = EFF59_Correct_Data[arg_ID][0];
+    ewk->wu.vital_old = EFF59_Correct_Data[arg_ID][1];
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos = mwk->wu.xyz[0].disp.pos + ewk->wu.vital_new;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos = mwk->wu.xyz[1].disp.pos + ewk->wu.vital_old;
     ewk->wu.position_z = ewk->wu.xyz[2].disp.pos = mwk->wu.xyz[2].disp.pos + ewk->wu.direction;
@@ -144,7 +144,7 @@ s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 ID, s16 direction) {
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
 
-    switch (ID) {
+    switch (arg_ID) {
     case 4:
         ewk->wu.my_col_code = 1;
         ewk->wu.my_clear_level = 128;
@@ -155,7 +155,7 @@ s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 ID, s16 direction) {
         break;
 
     case 5:
-        ewk->wu.dm_vital = ID;
+        ewk->wu.dm_vital = arg_ID;
         ewk->wu.char_index = 82;
         ewk->wu.dir_step = mwk->wu.dir_step;
         ewk->wu.my_col_code = 1;
@@ -169,7 +169,7 @@ s32 effect_59_init(WORK_Other* mwk, s16 Synchro_BG, s16 ID, s16 direction) {
     return 0;
 }
 
-s32 Check_Break_Into_59(WORK_Other* ewk) {
+static s32 Check_Break_Into_59(WORK_Other* ewk) {
     if (ewk->wu.dm_vital != 4 || ewk->wu.routine_no[0] == 4) {
         return 0;
     }

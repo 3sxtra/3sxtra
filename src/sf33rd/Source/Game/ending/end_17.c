@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -12,16 +13,16 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void end_1100_move();
-void end_1101_move();
-void end_1102_move();
+static void end_1100_move();
+static void end_1101_move();
+static void end_1102_move();
 
-void end_1100_common();
-void end_1100_3();
-void end_1100_6();
+static void end_1100_common();
+static void end_1100_3();
+static void end_1100_6();
 
-void end_1101_2();
-void end_1101_3();
+static void end_1101_2();
+static void end_1101_3();
 
 const s16 timer_11_tbl[7] = { 660, 480, 120, 180, 480, 1260, 420 };
 
@@ -30,6 +31,7 @@ const s16 end_11_pos[7][2] = { { 256, 768 }, { 768, 768 }, { 768, 768 }, { 256, 
 
 const s16 end_11_115_pos[4][3] = { { 768, 256, 1 }, { 256, 0, 2 }, { 768, 0, 2 }, { 768, 256, 1 } };
 
+/** @brief Makoto's ending entry point — initialize and run all ending scenes. */
 void end_17000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -76,14 +78,18 @@ void end_17000(s16 pl_num) {
     }
 }
 
-void end_1100_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_1100_move() {
     void (*end_1100_move_jp[7])() = { end_1100_common, end_1100_common, end_1100_common, end_1100_3,
                                       end_1100_common, end_1100_common, end_1100_6 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 7)
+        return;
     end_1100_move_jp[end_w.r_no_2]();
 }
 
-void end_1100_common() {
+/** @brief Common scene handler — per-scene background setup with effects. */
+static void end_1100_common() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -132,7 +138,8 @@ void end_1100_common() {
     }
 }
 
-void end_1100_3() {
+/** @brief Scene 3 — background off with scrolling effect. */
+static void end_1100_3() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -154,7 +161,8 @@ void end_1100_3() {
     }
 }
 
-void end_1100_6() {
+/** @brief Scene 6 — position cycling animation with fade timer. */
+static void end_1100_6() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -190,14 +198,18 @@ void end_1100_6() {
     }
 }
 
-void end_1101_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_1101_move() {
     void (*end_1101_move_jp[7])() = { end_X_com01, end_X_com01, end_1101_2, end_1101_2,
                                       end_X_com01, end_X_com01, end_X_com01 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 7)
+        return;
     end_1101_move_jp[end_w.r_no_2]();
 }
 
-void end_1101_2() {
+/** @brief Layer 1 scene 2 — directional scroll with speed control. */
+static void end_1101_2() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -233,14 +245,18 @@ void end_1101_2() {
     }
 }
 
-void end_1102_move() {
+/** @brief Dispatch to the current scene handler for background layer 2. */
+static void end_1102_move() {
     void (*end_1102_move_jp[7])() = { end_X_com01, end_X_com01, end_1101_2, end_1101_3,
                                       end_X_com01, end_X_com01, end_X_com01 };
     bgw_ptr = &bg_w.bgw[2];
+    if (end_w.r_no_2 >= 7)
+        return;
     end_1102_move_jp[end_w.r_no_2]();
 }
 
-void end_1101_3() {
+/** @brief Layer 2 scene 3 — background enable with vertical scroll. */
+static void end_1101_3() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

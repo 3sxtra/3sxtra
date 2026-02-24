@@ -4,15 +4,7 @@
 #include "structs.h"
 #include "types.h"
 
-typedef struct {
-    s16 cyerw;
-    s16 cred;
-    s16 ored;
-    s8 colnum;
-} VIT;
-
-// MARK: - Serialized
-
+// Serialized for netplay
 extern VIT vit[2];
 
 void vital_cont_init();

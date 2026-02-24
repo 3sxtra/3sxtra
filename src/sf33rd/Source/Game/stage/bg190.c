@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg190.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "sf33rd/Source/Game/effect/eff12.h"
@@ -17,6 +18,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Village in Mongolia stage. */
 void BG190() {
     bgw_ptr = &bg_w.bgw[1];
     bg1902();
@@ -29,11 +31,15 @@ void BG190() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Village in Mongolia. */
 void bg1901() {
     void (*bg1901_jmp[2])() = { bg1901_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1901_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Village in Mongolia. */
 void bg1901_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x1D0;
@@ -41,11 +47,15 @@ void bg1901_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Background layer handler for Village in Mongolia. */
 void bg1902() {
     void (*bg1902_jmp[2])() = { bg1902_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1902_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Village in Mongolia. */
 void bg1902_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x1D0;
@@ -58,6 +68,7 @@ void bg1902_init00() {
     effect_12_init(3);
 }
 
+/** @brief Background layer handler for Village in Mongolia. */
 void sync_bg14_common() {
     switch (bgw_ptr->r_no_0) {
     case 0:

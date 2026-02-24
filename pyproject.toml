@@ -1,0 +1,10 @@
+[project]
+name = "3sx-tools"
+version = "0.1.0"
+description = "Python utilities for the 3SX project"
+requires-python = ">=3.10"
+
+[dependency-groups]
+dev = [
+    "vulture>=2.14",
+]

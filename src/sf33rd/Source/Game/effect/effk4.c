@@ -1,6 +1,6 @@
 /**
  * @file effk4.c
- * TODO: identify what this effect does
+ * Effect: Hit Spark / ISP Effect
  */
 
 #include "sf33rd/Source/Game/effect/effk4.h"
@@ -13,8 +13,8 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void get_init_position_effK4(WORK* wk);
-void get_init_speed_and_timer_effK4(WORK* wk);
+static void get_init_position_effK4(WORK* wk);
+static void get_init_speed_and_timer_effK4(WORK* wk);
 
 const s16 effK4_isp_table[4][4][2] = { { { -512, 768 }, { -768, 768 }, { 512, 768 }, { 768, 768 } },
                                        { { -1024, 1024 }, { -1280, 1024 }, { 1024, 1024 }, { 1280, 1024 } },
@@ -91,7 +91,7 @@ void effect_K4_move(WORK_Other* ewk) {
     }
 }
 
-void get_init_position_effK4(WORK* wk) {
+static void get_init_position_effK4(WORK* wk) {
     s16 xhs;
 
     wk->xyz[0].disp.pos = wk->hit_mark_x;
@@ -103,7 +103,7 @@ void get_init_position_effK4(WORK* wk) {
     wk->type = (xhs < 0) * 2;
 }
 
-void get_init_speed_and_timer_effK4(WORK* wk) {
+static void get_init_speed_and_timer_effK4(WORK* wk) {
     s16 data[4];
     s16 ix;
 

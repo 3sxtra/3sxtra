@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg080.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "sf33rd/Source/Game/effect/eff21.h"
@@ -16,6 +17,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Savanna, Kenya stage. */
 void BG080() {
     bgw_ptr = &bg_w.bgw[1];
     bg0802();
@@ -32,11 +34,15 @@ void BG080() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Savanna, Kenya. */
 void bg0801() {
     void (*bg0801_jmp[2])() = { bg0801_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0801_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Savanna, Kenya. */
 void bg0801_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -44,11 +50,15 @@ void bg0801_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Background layer handler for Savanna, Kenya. */
 void bg0802() {
     void (*bg0802_jmp[2])() = { bg0802_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0802_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Savanna, Kenya. */
 void bg0802_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -60,11 +70,15 @@ void bg0802_init00() {
     effect_21_init(0);
 }
 
+/** @brief Synchronized parallax common handler for Savanna, Kenya. */
 void bg080_sync_common() {
     void (*bg080_sync_jmp[2])() = { bg080_sync_init, bg080_sync_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg080_sync_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize synchronized parallax layer for Savanna, Kenya. */
 void bg080_sync_init() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -94,6 +108,7 @@ void bg080_sync_init() {
     sync_fam_set3(bgw_ptr->fam_no);
 }
 
+/** @brief Per-frame movement handler for Savanna, Kenya layer. */
 void bg080_sync_move() {
     bg_x_move_check();
     bg_y_move_check();

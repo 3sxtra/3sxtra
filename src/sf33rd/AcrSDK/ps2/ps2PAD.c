@@ -1,3 +1,15 @@
+/**
+ * @file ps2PAD.c
+ * @brief Platform-specific pad driver — PS2/SDL gamepad implementation.
+ *
+ * Reads raw button and stick data from PS2 DualShock controllers
+ * (via scePad2) or SDL gamepads, applies hardware-to-software button
+ * mapping, computes analog-to-digital lever conversion, handles
+ * pressure-sensitive buttons, and manages vibration motors.
+ *
+ * Part of the AcrSDK ps2 module.
+ * Originally from the PS2 SDK abstraction layer.
+ */
 #include "sf33rd/AcrSDK/ps2/ps2PAD.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/common/mlPAD.h"
@@ -12,6 +24,11 @@
 #include <math.h>
 
 #define PI 3.14159275f
+#define PAD_KIND_UNKNOWN 0x8000
+#define STICK_CENTER 0x80
+#define STICK_MAX 0x7F
+#define STICK_DIGITAL_THRESHOLD 0x40
+#define LEVER_DIRECTION_COUNT 16
 
 // depth contains button depths in the following order:
 // - Right
@@ -45,7 +62,9 @@ typedef union {
                 u8 l_ay;
             } stick;
         } pos;
-        u8 depth[12]; // FIXME: remove depth handling
+        // Pressure-sensitive button depths (PS2 DualShock 2 feature)
+        // Kept for API compatibility; only populated on actual PS2 hardware
+        u8 depth[12];
         u8 free[12];
     } ix;
 } PS2PAD_STATE;
@@ -84,10 +103,10 @@ static s32 PADRead_for_PS2(s32 i);
 static void update_pad_stick_dir(PAD_STICK* st, s16 depth);
 static u8 lever_analog_to_digital(PAD_STICK* st);
 static void PADReadSub(s32 i);
-s32 flPADShockSet(s32 pad_id, u32 level, u32 time);
+static s32 flPADShockSet(s32 pad_id, u32 level, u32 time);
 static void ps2PADWorkClear();
-static void PADPortOpen(s32 port, s32 slot, PS2Slot* adrs);
 
+/** @brief Initialise both pad ports and set default button mappings. */
 s32 tarPADInit() {
     s32 i;
 
@@ -104,8 +123,19 @@ s32 tarPADInit() {
         ps2slot[i].vib = 0;
     }
 
-    PADPortOpen(0, 0, &ps2slot[0]);
-    PADPortOpen(1, 0, &ps2slot[1]);
+    // Initialize pad port 0
+    ps2slot[0].socket_id = 0;
+    ps2slot[0].state = 1;
+    ps2slot[0].phase = 0;
+    ps2slot[0].port = 0;
+    ps2slot[0].slot = 0;
+
+    // Initialize pad port 1
+    ps2slot[1].socket_id = 1;
+    ps2slot[1].state = 1;
+    ps2slot[1].phase = 0;
+    ps2slot[1].port = 1;
+    ps2slot[1].slot = 0;
 
     for (i = 0; i < 2; i++) {
         ps2pad_config[i] = ps2PadShotConf_Basic;
@@ -117,16 +147,19 @@ s32 tarPADInit() {
     return 1;
 }
 
+/** @brief Shut down the pad driver and clear work areas. */
 void tarPADDestroy() {
     ps2PADWorkClear();
 }
 
+/** @brief Set pressure-sensitivity thresholds for a pad slot. */
 void flPADConfigSetACRtoXX(s32 padnum, s16 a, s16 b, s16 c) {
     ps2pad_config[padnum].abut_on = a;
     ps2pad_config[padnum].ast1_on = b;
     ps2pad_config[padnum].ast2_on = c;
 }
 
+/** @brief Read all pad ports, apply mapping, compute stick direction. */
 void tarPADRead() {
     s32 i;
     TARPAD* pad;
@@ -150,13 +183,15 @@ void tarPADRead() {
     }
 }
 
-void ps2PADWorkClear() {
+/** @brief Zero-clear all pad state and backup arrays. */
+static void ps2PADWorkClear() {
     SDL_zeroa(tarpad_root);
     SDL_zeroa(ps2pad_state);
     SDL_zeroa(ps2pad_backup);
     SDL_zero(ps2pad_clear);
 }
 
+/** @brief Read a single pad port, map buttons, populate stick data. */
 static s32 PADRead_for_PS2(s32 i) {
     s32 j;
     u32 io;
@@ -169,7 +204,7 @@ static s32 PADRead_for_PS2(s32 i) {
     PADReadSub(i);
 
     if (tarpad_root[i].kind != 0 && !(tarpad_root[i].kind & 3)) {
-        tarpad_root[i].kind = 0x8000;
+        tarpad_root[i].kind = PAD_KIND_UNKNOWN;
     }
 
     for (j = 0; j < 16; j++) {
@@ -194,7 +229,7 @@ static s32 PADRead_for_PS2(s32 i) {
         for (j = 0; j < 16; j++) {
             if (ps2pad_state[i].ix.sw & ps2pad_hard_to_soft[i][j][0]) {
                 io |= flpad_io_map[j];
-                tarpad_root[i].anshot.pow[j] = 0x7F;
+                tarpad_root[i].anshot.pow[j] = STICK_MAX;
             }
 
             switch (ps2pad_hard_to_soft[i][j][1]) {
@@ -236,28 +271,28 @@ static s32 PADRead_for_PS2(s32 i) {
         tarpad_root[i].sw = io;
 
         if (tarpad_root[i].anstate & 0x20) {
-            tarpad_root[i].stick[0].x = ps2pad_state[i].pad_buffer[6] - 0x80;
-            tarpad_root[i].stick[0].y = ps2pad_state[i].pad_buffer[7] - 0x80;
+            tarpad_root[i].stick[0].x = ps2pad_state[i].pad_buffer[6] - STICK_CENTER;
+            tarpad_root[i].stick[0].y = ps2pad_state[i].pad_buffer[7] - STICK_CENTER;
 
-            if (tarpad_root[i].stick[0].x < -0x7F) {
-                tarpad_root[i].stick[0].x = -0x7F;
+            if (tarpad_root[i].stick[0].x < -STICK_MAX) {
+                tarpad_root[i].stick[0].x = -STICK_MAX;
             }
 
-            if (tarpad_root[i].stick[0].y < -0x7F) {
-                tarpad_root[i].stick[0].y = -0x7F;
+            if (tarpad_root[i].stick[0].y < -STICK_MAX) {
+                tarpad_root[i].stick[0].y = -STICK_MAX;
             }
         }
 
         if (tarpad_root[i].anstate & 0x40) {
-            tarpad_root[i].stick[1].x = ps2pad_state[i].pad_buffer[4] - 0x80;
-            tarpad_root[i].stick[1].y = ps2pad_state[i].pad_buffer[5] - 0x80;
+            tarpad_root[i].stick[1].x = ps2pad_state[i].pad_buffer[4] - STICK_CENTER;
+            tarpad_root[i].stick[1].y = ps2pad_state[i].pad_buffer[5] - STICK_CENTER;
 
-            if (tarpad_root[i].stick[1].x < -0x7F) {
-                tarpad_root[i].stick[1].x = -0x7F;
+            if (tarpad_root[i].stick[1].x < -STICK_MAX) {
+                tarpad_root[i].stick[1].x = -STICK_MAX;
             }
 
-            if (tarpad_root[i].stick[1].y < -0x7F) {
-                tarpad_root[i].stick[1].y = -0x7F;
+            if (tarpad_root[i].stick[1].y < -STICK_MAX) {
+                tarpad_root[i].stick[1].y = -STICK_MAX;
             }
         }
 
@@ -277,7 +312,8 @@ static s32 PADRead_for_PS2(s32 i) {
     return 1;
 }
 
-void update_pad_stick_dir(PAD_STICK* st, s16 depth) {
+/** @brief Compute analog stick angle and magnitude, applying dead-zone threshold. */
+static void update_pad_stick_dir(PAD_STICK* st, s16 depth) {
     f32 radian;
 
     if ((st->y | st->x) == 0) {
@@ -294,8 +330,8 @@ void update_pad_stick_dir(PAD_STICK* st, s16 depth) {
     st->ang = 360.0f * (st->rad / (PI * 2));
     st->pow = sqrt((f64)(st->x * st->x) + (f64)(st->y * st->y));
 
-    if (st->pow > 0x7F) {
-        st->pow = 0x7F;
+    if (st->pow > STICK_MAX) {
+        st->pow = STICK_MAX;
     }
 
     if (st->pow < depth) {
@@ -307,26 +343,23 @@ void update_pad_stick_dir(PAD_STICK* st, s16 depth) {
     }
 }
 
-u8 lever_analog_to_digital(PAD_STICK* st) {
+/** @brief Convert analog stick angle to a 4-direction digital lever value. */
+static u8 lever_analog_to_digital(PAD_STICK* st) {
     static u8 ps2lever_analog_to_digital[16] = { 8, 9, 9, 1, 1, 5, 5, 4, 4, 6, 6, 2, 2, 10, 10, 8 };
 
-    if (st->pow < 0x40) {
+    if (st->pow < STICK_DIGITAL_THRESHOLD) {
         return 0;
     }
 
-    return ps2lever_analog_to_digital[(u32)(st->ang / 22.5f)];
+    u32 idx = (u32)(st->ang / 22.5f);
+    if (idx >= LEVER_DIRECTION_COUNT) {
+        idx = LEVER_DIRECTION_COUNT - 1;
+    }
+    return ps2lever_analog_to_digital[idx];
 }
 
-// FIXME: this doesn't actually open anything, better remove it entirely
-void PADPortOpen(s32 port, s32 slot, PS2Slot* adrs) {
-    adrs->socket_id = port;
-    adrs->state = 1;
-    adrs->phase = 0;
-    adrs->port = port;
-    adrs->slot = slot;
-}
-
-void PADReadSub(s32 i) {
+/** @brief Read raw pad data from the PS2/SDL driver for one port. */
+static void PADReadSub(s32 i) {
     s32 lp0;
     s32 pstate;
     s32 len;
@@ -491,7 +524,8 @@ void PADReadSub(s32 i) {
     tarpad_root[i].state = ps2slot[i].state;
 }
 
-s32 flPADShockSet(s32 pad_id, u32 level, u32 time) {
+/** @brief Set vibration motor intensity and duration for a pad. */
+static s32 flPADShockSet(s32 pad_id, u32 level, u32 time) {
     s32 vib_data_size;
     u8 vib_data[2];
     u8 profile;

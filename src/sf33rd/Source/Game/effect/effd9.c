@@ -1,6 +1,6 @@
 /**
  * @file effd9.c
- * TODO: identify what this effect does
+ * Effect: Collision Table Effect (1P/2P)
  */
 
 #include "sf33rd/Source/Game/effect/effd9.h"

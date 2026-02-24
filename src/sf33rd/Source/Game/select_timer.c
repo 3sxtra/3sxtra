@@ -1,3 +1,15 @@
+/**
+ * @file select_timer.c
+ * @brief Character select screen countdown timer implementation.
+ *
+ * Implements BCD-based countdown for the character/super-art selection screen.
+ * The timer decrements once per second (60 frames), using BCD subtraction
+ * inherited from the CPS3 arcade hardware.
+ *
+ * Part of the game flow module.
+ * Originally from the PS2 game module.
+ */
+
 #include "sf33rd/Source/Game/select_timer.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -7,14 +19,23 @@
 
 #include <stdbool.h>
 
-SelectTimerState select_timer_state = { 0 };
-static s16 bcdext = 0;
+static s16 s_bcd_carry = 0;
 
+/**
+ * @brief BCD (Binary-Coded Decimal) subtraction: b - a.
+ *
+ * Performs packed-BCD subtraction with borrow, mirroring the 68000 SBCD instruction
+ * used on the original CPS3 arcade hardware.
+ *
+ * @param a Value to subtract
+ * @param b Value to subtract from
+ * @return BCD result of (b - a)
+ */
 static u8 sbcd(u8 a, u8 b) {
     s16 c;
     s16 d;
 
-    if ((d = (b & 0xF) - (a & 0xF) - (bcdext & 1)) < 0) {
+    if ((d = (b & 0xF) - (a & 0xF) - (s_bcd_carry & 1)) < 0) {
         d += 10;
         d |= 16;
     }
@@ -24,35 +45,44 @@ static u8 sbcd(u8 a, u8 b) {
 
     if ((d |= c) < 0) {
         d += 160;
-        bcdext = 1;
+        s_bcd_carry = 1;
     } else {
-        bcdext = 0;
+        s_bcd_carry = 0;
     }
 
     return d;
 }
 
+/** @brief Pause the timer if Time_Stop indicates sleep mode. */
 static void check_sleep() {
     if (Time_Stop == 2) {
         select_timer_state.step = 0;
     }
 }
 
+/** @brief Initialize the select timer for a new selection phase. */
 void SelectTimer_Init() {
     select_timer_state.is_running = true;
     select_timer_state.step = 0;
 }
 
+/** @brief Clear and stop the select timer. */
 void SelectTimer_Finish() {
     SDL_zero(select_timer_state);
 }
 
+/**
+ * @brief Run one frame of the select timer state machine.
+ *
+ * Steps: 0=waiting for Time_Stop to clear, 1=counting down each second,
+ * 2=reached zero (30-frame grace period), 3=timeout fired.
+ */
 void SelectTimer_Run() {
     if (Present_Mode == 4 || Present_Mode == 5) {
         return;
     }
 
-    if (Debug_w[24]) {
+    if (Debug_w[DEBUG_TIME_STOP]) {
         return;
     }
 
@@ -76,7 +106,7 @@ void SelectTimer_Run() {
         }
 
         Unit_Of_Timer = 60;
-        bcdext = 0;
+        s_bcd_carry = 0;
         Select_Timer = sbcd(1, Select_Timer);
 
         if (Select_Timer == 0) {

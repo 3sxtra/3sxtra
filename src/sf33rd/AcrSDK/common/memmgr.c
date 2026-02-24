@@ -1,3 +1,15 @@
+/**
+ * @file memmgr.c
+ * @brief Handle-based memory manager with compaction support.
+ *
+ * Manages a pool of MEM_BLOCK entries identified by handles (1-based).
+ * Supports forward/reverse allocation, aligned allocation, gap-search
+ * allocation (RegisterS), defragmentation via compaction, and temporary
+ * allocations from the tail of the region.
+ *
+ * Part of the AcrSDK common module.
+ * Originally from the PS2 SDK abstraction layer.
+ */
 #include "sf33rd/AcrSDK/common/memmgr.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/common/prilay.h"
@@ -9,6 +21,7 @@ static u32 plmemPullHandle(MEM_MGR* memmgr);
 static void plmemAppendBlockList(MEM_MGR* memmgr, u32 han);
 static void plmemDeleteBlockList(MEM_MGR* memmgr, u32 han);
 
+/** @brief Initialise the memory manager with a block pool and memory region. */
 void plmemInit(MEM_MGR* memmgr, MEM_BLOCK* block, s32 count, void* mem_ptr, s32 memsize, s32 memalign, s32 direction) {
     memmgr->cnt = count;
     memmgr->block = block;
@@ -30,10 +43,12 @@ void plmemInit(MEM_MGR* memmgr, MEM_BLOCK* block, s32 count, void* mem_ptr, s32 
     plMemset(block, 0, count * sizeof(MEM_BLOCK));
 }
 
+/** @brief Register a block at the allocation frontier with default alignment. */
 u32 plmemRegister(MEM_MGR* memmgr, s32 len) {
     return plmemRegisterAlign(memmgr, len, memmgr->memalign);
 }
 
+/** @brief Register a block at the allocation frontier with custom alignment. */
 u32 plmemRegisterAlign(MEM_MGR* memmgr, s32 len, s32 align) {
     u32 han;
 
@@ -71,6 +86,7 @@ u32 plmemRegisterAlign(MEM_MGR* memmgr, s32 len, s32 align) {
     return han + 1;
 }
 
+/** @brief Register a block using gap-search — fits into the first suitable hole. */
 u32 plmemRegisterS(MEM_MGR* memmgr, s32 len) {
     u32 han;
     size_t len2;
@@ -158,6 +174,7 @@ u32 plmemRegisterS(MEM_MGR* memmgr, s32 len) {
     return plmemRegister(memmgr, len);
 }
 
+/** @brief Get a temporary (non-persistent) memory pointer from the far end. */
 void* plmemTemporaryUse(MEM_MGR* memmgr, s32 len) {
     size_t tmp;
 
@@ -181,6 +198,7 @@ void* plmemTemporaryUse(MEM_MGR* memmgr, s32 len) {
     return memmgr->memptr - memmgr->memsize;
 }
 
+/** @brief Retrieve the raw pointer for a handle (1-based index). */
 void* plmemRetrieve(MEM_MGR* memmgr, u32 handle) {
     s32 index = handle - 1;
 
@@ -191,10 +209,11 @@ void* plmemRetrieve(MEM_MGR* memmgr, u32 handle) {
     return memmgr->block[index].ptr;
 }
 
+/** @brief Release a registered block, freeing its handle. */
 s32 plmemRelease(MEM_MGR* memmgr, u32 handle) {
     s32 index = handle - 1;
 
-    if (index >= memmgr->cnt) {
+    if (handle == 0 || index >= memmgr->cnt) {
         return 0;
     }
 
@@ -209,6 +228,7 @@ s32 plmemRelease(MEM_MGR* memmgr, u32 handle) {
     return 1;
 }
 
+/** @brief Compact all blocks towards the base, eliminating gaps. */
 void* plmemCompact(MEM_MGR* memmgr) {
     MEM_BLOCK* now_block;
     MEM_BLOCK* next_block;
@@ -268,10 +288,12 @@ void* plmemCompact(MEM_MGR* memmgr) {
     return memmgr->memnow;
 }
 
+/** @brief Return total pool size minus used size. */
 u32 plmemGetSpace(MEM_MGR* memmgr) {
     return memmgr->memsize - memmgr->used_size;
 }
 
+/** @brief Return the contiguous free space available at the allocation frontier. */
 size_t plmemGetFreeSpace(MEM_MGR* memmgr) {
     if (memmgr->direction != 0) {
         return memmgr->memptr + memmgr->memsize - memmgr->memnow - memmgr->tmemsize;
@@ -280,6 +302,7 @@ size_t plmemGetFreeSpace(MEM_MGR* memmgr) {
     return memmgr->memnow - (memmgr->memptr - memmgr->memsize) - memmgr->tmemsize;
 }
 
+/** @brief Find the first unused block slot and return its index. */
 u32 plmemPullHandle(MEM_MGR* memmgr) {
     s32 i;
 
@@ -293,12 +316,17 @@ u32 plmemPullHandle(MEM_MGR* memmgr) {
     return MEM_NULL_HANDLE;
 }
 
+/** @brief Insert a block into the sorted linked list by address. */
 void plmemAppendBlockList(MEM_MGR* memmgr, u32 han) {
     MEM_BLOCK* block_ptr;
     MEM_BLOCK* next_block;
     MEM_BLOCK* now_block;
     u32 next_han;
     u32 now_han;
+
+    if (han >= (u32)memmgr->cnt) {
+        return;
+    }
 
     block_ptr = &memmgr->block[han];
 
@@ -359,10 +387,15 @@ void plmemAppendBlockList(MEM_MGR* memmgr, u32 han) {
     }
 }
 
+/** @brief Remove a block from the linked list. */
 void plmemDeleteBlockList(MEM_MGR* memmgr, u32 han) {
     MEM_BLOCK* now_block;
     MEM_BLOCK* parent;
     MEM_BLOCK* child;
+
+    if (han >= (u32)memmgr->cnt) {
+        return;
+    }
 
     now_block = &memmgr->block[han];
     parent = NULL;

@@ -1,8 +1,3 @@
-/**
- * @file pl01win_en.c
- * Alex Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl01win_en.h"
 #include "common.h"
 
@@ -70,4 +65,4 @@ static s8 msgWinCtrPL01[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
 };
 
-MessageTable pl01win_usa_tbl = { msgWinAdrPL01, msgWinCtrPL01 };
+MessageTable pl01win_en_tbl = { msgWinAdrPL01, msgWinCtrPL01 };

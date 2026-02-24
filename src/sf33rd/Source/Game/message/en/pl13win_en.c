@@ -1,8 +1,3 @@
-/**
- * @file pl13win_en.c
- * Urien Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl13win_en.h"
 #include "common.h"
 
@@ -70,4 +65,4 @@ static s8 msgWinCtrPL13[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
 };
 
-MessageTable pl13win_usa_tbl = { msgWinAdrPL13, msgWinCtrPL13 };
+MessageTable pl13win_en_tbl = { msgWinAdrPL13, msgWinCtrPL13 };

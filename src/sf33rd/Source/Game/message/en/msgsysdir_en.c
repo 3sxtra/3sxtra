@@ -1,8 +1,3 @@
-/**
- * @file msgsysdir_en.c
- * System Direction/Dipswitch Option Descriptors (English)
- */
-
 #include "sf33rd/Source/Game/message/en/msgsysdir_en.h"
 #include "common.h"
 
@@ -10,8 +5,8 @@
  * Notes:
  * Each string is a different line
  * most lines are about 40 characters
- * If replacing an entry that initially had 2 lines, find the number at the same index in msgSysDirCtr and change it from 2 to 1.
- * In-game the text is centered in the box where it's rendered, so shorter strings won't line up properly.
+ * If replacing an entry that initially had 2 lines, find the number at the same index in msgSysDirCtr and change it
+ * from 2 to 1. In-game the text is centered in the box where it's rendered, so shorter strings won't line up properly.
  * Spaces after the last non-space character seem to be ignored
  */
 
@@ -26,7 +21,7 @@ static s8* msgSYSDIR_007[2] = { "Adjust the parry window timing." };
 static s8* msgSYSDIR_008[1] = { "RED PARRY...................." };
 static s8* msgSYSDIR_009[2] = { "Enable/Disable the ability to perform", "a Red Parry." };
 static s8* msgSYSDIR_010[1] = { "RED PARRY C. INPUT TIME........" };
-static s8* msgSYSDIR_011[2] = { "Adjust the Red Parry window timing."};
+static s8* msgSYSDIR_011[2] = { "Adjust the Red Parry window timing." };
 static s8* msgSYSDIR_012[1] = { "GUARD.........................." };
 static s8* msgSYSDIR_013[1] = { "Enable/Disable the ability to Guard." };
 static s8* msgSYSDIR_014[1] = { "ABSOLUTE GUARD................." };
@@ -115,7 +110,8 @@ static s8* msgSYSDIR_075[2] = { "Enable/Disable the ability to cancel into", "Sp
 static s8* msgSYSDIR_076[1] = { "SUPER ART CANCEL..............." };
 static s8* msgSYSDIR_077[2] = { "Enable/Disable the ability to cancel into a", "Super Art." };
 static s8* msgSYSDIR_078[1] = { "HIGH-JUMP CANCEL..............." };
-static s8* msgSYSDIR_079[2] = { "Enable/Disable the ability to cancel into a", "High-Jump." }; //assumed meaning. I'm not good enough to do HJCs.
+static s8* msgSYSDIR_079[2] = { "Enable/Disable the ability to cancel into a",
+                                "High-Jump." }; // assumed meaning. I'm not good enough to do HJCs.
 static s8* msgSYSDIR_080[1] = { "HIGH-JUMP CANCEL TYPE.........." };
 static s8* msgSYSDIR_081[2] = {
     "Change the High-Jump type to \"2nd Impact\"   ",
@@ -127,7 +123,7 @@ static s8* msgSYSDIR_084[1] = { "AIR GUARD......................" };
 static s8* msgSYSDIR_085[2] = { "Enable/Disable the ability to Guard", "in the air." };
 static s8* msgSYSDIR_086[1] = { "AUTO AIR RECOVERY.............." };
 static s8* msgSYSDIR_087[2] = {
-    "When blown away by an attack, the character", //Revise this to reflect what it actually does in game.
+    "When blown away by an attack, the character", // Revise this to reflect what it actually does in game.
     "will automatically recover.",
 };
 static s8* msgSYSDIR_088[1] = { "KNOCK DOWNS FROM AIR..........." };
@@ -151,7 +147,8 @@ static s8* msgSYSDIR_095[2] = {
     "reset at the beginning of each round.",
 };
 static s8* msgSYSDIR_096[1] = { "GROUND CHAIN COMBO............." };
-static s8* msgSYSDIR_097[2] = { "Enable/Disable the ability to perform Chain", "Combos on the ground." }; //Meaning: chain normals into others of higher strength
+static s8* msgSYSDIR_097[2] = { "Enable/Disable the ability to perform Chain",
+                                "Combos on the ground." }; // Meaning: chain normals into others of higher strength
 static s8* msgSYSDIR_098[1] = { "AIR CHAIN COMBO................" };
 static s8* msgSYSDIR_099[2] = { "Enable/Disable to perform Chain Combos in", "the air." };
 static s8* msgSYSDIR_100[1] = { "CANCEL NORMAL MOVES............" };
@@ -179,7 +176,9 @@ static s8* msgSYSDIR_111[2] = {
     "cancel a Super Art with another Super Art.",
 };
 static s8* msgSYSDIR_112[1] = { "AIR COMBO SKILL................" };
-static s8* msgSYSDIR_113[1] = { "Adjust how easily you can perform Air Combos." }; //Presumably this has something to do with juggle counter values, so being vague here is fine IMO.
+static s8* msgSYSDIR_113[1] = {
+    "Adjust how easily you can perform Air Combos."
+}; // Presumably this has something to do with juggle counter values, so being vague here is fine IMO.
 static s8* msgSYSDIR_114[1] = { "WHIFFED MOVE S.A. GAUGE BUILD.." };
 static s8* msgSYSDIR_115[2] = { "Decide whether the S.A. Gauge builds", "when moves are whiffed." };
 static s8* msgSYSDIR_200[1] = { "Return to the previous page." };
@@ -212,4 +211,4 @@ static s8 msgSysDirCtr[119] = { 1, 2, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 
                                 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2,
                                 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1 };
 
-MessageTable msgSysDirTbl_usa = { msgSysDirAdr, msgSysDirCtr };
+MessageTable msgSysDirTbl_en = { msgSysDirAdr, msgSysDirCtr };

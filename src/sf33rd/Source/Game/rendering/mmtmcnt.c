@@ -48,21 +48,24 @@ const u8 mto_list[9][24] = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                              { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 },
                              { 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
 
+/** @brief Purge texture data for any CPU-controlled player. */
 void Purge_com_player_from_mm() {
-    if (plw[0].wu.operator == 0) {
+    if (plw[0].wu.pl_operator == 0) {
         purge_player_texture(0);
     }
 
-    if (plw[1].wu.operator == 0) {
+    if (plw[1].wu.pl_operator == 0) {
         purge_player_texture(1);
     }
 }
 
+/** @brief Purge both texture cache and main memory for a given list index. */
 void Purge_mmtm_area(s16 ix) {
     Purge_texcash_of_list(ix);
     Purge_memory_of_list(ix);
 }
 
+/** @brief Purge main memory entries according to the PMO list. */
 void Purge_memory_of_list(s16 ix) {
     s16 i;
 
@@ -73,6 +76,7 @@ void Purge_memory_of_list(s16 ix) {
     }
 }
 
+/** @brief Purge texture cache entries according to the PTO list. */
 void Purge_texcash_of_list(s16 ix) {
     s16 i;
 
@@ -83,6 +87,7 @@ void Purge_texcash_of_list(s16 ix) {
     }
 }
 
+/** @brief Create texture cache entries according to the MTO list. */
 void Make_texcash_of_list(s16 ix) {
     s16 i;
 

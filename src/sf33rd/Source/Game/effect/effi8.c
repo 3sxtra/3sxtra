@@ -1,6 +1,6 @@
 /**
  * @file effi8.c
- * TODO: identify what this effect does
+ * Effect: Sound / Hit Box / Tall Effect
  */
 
 #include "sf33rd/Source/Game/effect/effi8.h"
@@ -31,9 +31,9 @@ const u16 cbm_table[8][5] = { { 0x3FFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFF00 }, { 0x1F
                               { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xF800 }, { 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xF000 },
                               { 0x0000, 0x000F, 0xFFFF, 0xFFFF, 0x8000 }, { 0x0000, 0x0000, 0x0FFF, 0xFFFE, 0x0000 } };
 
-void effI8_main_process(WORK_Other* ewk);
-void cal_speeds_to_me_effI8(WORK_Other* ewk, PLW* mwk);
-void cal_speeds_to_em_effI8(WORK_Other* ewk, PLW* twk);
+static void effI8_main_process(WORK_Other* ewk);
+static void cal_speeds_to_me_effI8(WORK_Other* ewk, PLW* mwk);
+static void cal_speeds_to_em_effI8(WORK_Other* ewk, PLW* twk);
 
 void effect_I8_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -95,7 +95,7 @@ void effect_I8_move(WORK_Other* ewk) {
     }
 }
 
-void effI8_main_process(WORK_Other* ewk) {
+static void effI8_main_process(WORK_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     if (ewk->wu.hf.hit_flag) {
@@ -279,14 +279,14 @@ void effI8_main_process(WORK_Other* ewk) {
     }
 }
 
-void cal_speeds_to_me_effI8(WORK_Other* ewk, PLW* mwk) {
+static void cal_speeds_to_me_effI8(WORK_Other* ewk, PLW* mwk) {
     s16 tx = mwk->wu.xyz[0].disp.pos;
     s16 ty = cal_move_quantity3(&mwk->wu, ewk->wu.dir_timer) + 128;
 
     cal_speeds_effD7(ewk, ewk->wu.dir_timer, tx, ty, 5);
 }
 
-void cal_speeds_to_em_effI8(WORK_Other* ewk, PLW* twk) {
+static void cal_speeds_to_em_effI8(WORK_Other* ewk, PLW* twk) {
     s16 tx = twk->wu.position_x;
     s16 ty;
 
@@ -345,7 +345,7 @@ s32 check_ball_mizushibuki(s16 xx, s16 yy) {
     return 0;
 }
 
-s32 effect_I8_init(PLW* wk, s16 top, const s16* sptr) {
+static s32 effect_I8_init(PLW* wk, s16 top, const s16* sptr) {
     WORK_Other* ewk;
     s16 ix;
 

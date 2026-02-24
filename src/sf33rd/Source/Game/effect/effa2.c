@@ -1,6 +1,6 @@
 /**
  * @file effa2.c
- * TODO: identify what this effect does
+ * Effect: Color Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/effa2.h"

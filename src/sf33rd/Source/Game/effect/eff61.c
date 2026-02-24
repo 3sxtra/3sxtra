@@ -1,6 +1,6 @@
 /**
  * @file eff61.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff61.h"
@@ -12,25 +12,21 @@
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void EFF61_WAIT(WORK_Other_CONN* ewk);
-void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
-void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */);
-void EFF61_SUDDENLY(WORK_Other_CONN* ewk);
+static void EFF61_WAIT(WORK_Other_CONN* ewk);
+static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
+static void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */);
+static void EFF61_SUDDENLY(WORK_Other_CONN* ewk);
 
-const s8* Menu_Letter_Data[66] = { "ARCADE",
+const s8* Menu_Letter_Data[74] = { "ARCADE",
                                    "VERSUS",
                                    "TRAINING",
-                                   "SYSTEM DIRECTION",
-#if defined(NETPLAY_ENABLED)
                                    "NETWORK",
-#else
                                    "REPLAY",
-#endif
                                    "OPTION",
                                    "EXIT GAME",
                                    "GAME OPTION",
                                    "BUTTON CONFIG.",
-                                   "SCREEN ADJUST",
+                                   "SYSTEM DIRECTION",
                                    "SOUND",
                                    "SAVE#/#LOAD",
                                    "EXTRA OPTION",
@@ -70,7 +66,7 @@ const s8* Menu_Letter_Data[66] = { "ARCADE",
                                    "EXIT",
                                    "GAME OPTION",
                                    "BUTTON CONFIG.",
-                                   "SCREEN ADJUST",
+                                   "SYSTEM DIRECTION",
                                    "SOUND",
                                    "SAVE#/#LOAD",
                                    "EXIT",
@@ -86,7 +82,18 @@ const s8* Menu_Letter_Data[66] = { "ARCADE",
                                    "BGM SELECT",
                                    "DEFAULT SETTING",
                                    "BGM TEST",
+                                   "EXIT",
+                                   "TRIALS",
+                                   "NETWORK LOBBY",
+                                   "AUTO-CONN",
+                                   "CONNECT",
+                                   "AUTO-CONN",
+                                   "AUTO-SEARCH",
+                                   "CONNECT",
                                    "EXIT" };
+
+/** @brief No-op — NETWORK is now always visible in the Mode Menu. */
+void Menu_UpdateNetworkLabel(void) {}
 
 void (*const EFF61_Jmp_Tbl[4])() = { EFF61_WAIT, EFF61_SLIDE_IN, EFF61_SLIDE_OUT, EFF61_SUDDENLY };
 
@@ -136,13 +143,13 @@ void effect_61_move(WORK_Other_CONN* ewk) {
     sort_push_request3(&ewk->wu);
 }
 
-void EFF61_WAIT(WORK_Other_CONN* ewk) {
+static void EFF61_WAIT(WORK_Other_CONN* ewk) {
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-void EFF61_SLIDE_IN(WORK_Other_CONN* ewk) {
+static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk) {
     if (Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -188,7 +195,7 @@ void EFF61_SLIDE_IN(WORK_Other_CONN* ewk) {
 
 void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */) {}
 
-void EFF61_SUDDENLY(WORK_Other_CONN* ewk) {
+static void EFF61_SUDDENLY(WORK_Other_CONN* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old]) {

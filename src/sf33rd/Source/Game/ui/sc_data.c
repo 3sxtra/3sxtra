@@ -1,6 +1,12 @@
 /**
  * @file sc_data.c
- * Data for layout and properties of HUD and menu screen elements
+ * @brief HUD layout and screen element data tables.
+ *
+ * Contains position tables for player names, faces, grades, victory marks,
+ * super-art gauges, combo display, fade parameters, font UV coordinates,
+ * and training mode display positions.
+ *
+ * Part of the ui module.
  */
 
 #include "sf33rd/Source/Game/ui/sc_data.h"

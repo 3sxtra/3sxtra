@@ -11,13 +11,19 @@
 #include "sf33rd/Source/Game/engine/plpatuni.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl10_exatt_table[18])(PLW*);
 
+/** @brief Yang: extra attack dispatcher. */
 void pl10_extra_attack(PLW* wk) {
-    pl10_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl10_exatt_table[idx](wk);
 }
 
-void Att_PL10_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Yang: special action (tokushu koudou). */
+static void Att_PL10_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
@@ -60,7 +66,8 @@ void Att_PL10_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void Att_PL10_MACH_SLIDE2(PLW* wk) {
+/** @brief Yang: Mantis Slash 2 (mach slide variant). */
+static void Att_PL10_MACH_SLIDE2(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;

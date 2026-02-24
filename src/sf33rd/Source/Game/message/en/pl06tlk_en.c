@@ -1,8 +1,3 @@
-/**
- * @file pl06tlk_en.c
- * Hugo Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl06tlk_en.h"
 #include "common.h"
 
@@ -34,4 +29,4 @@ static s8** msgTalkAdrPL06[6] = {
 
 static s8 msgTalkCtrPL06[6] = { 1, 2, 2, 2, 2, 2 };
 
-MessageTable pl06tlk_usa_tbl = { msgTalkAdrPL06, msgTalkCtrPL06 };
+MessageTable pl06tlk_en_tbl = { msgTalkAdrPL06, msgTalkCtrPL06 };

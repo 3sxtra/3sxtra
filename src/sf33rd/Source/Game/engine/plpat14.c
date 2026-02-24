@@ -12,17 +12,23 @@
 #include "sf33rd/Source/Game/engine/pls01.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 
-s8 stop_count[2]; // FIXME: This is pretty much unused. Remove?
+s8 stop_count[2];
 
 const s16 pl14_HYAKKI_dat[20] = { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 7, 6, 6, 4, 6, 14, 15, 16, 17, 18 };
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl14_exatt_table[18])(PLW*);
 
+/** @brief Akuma: extra attack dispatcher. */
 void pl14_extra_attack(PLW* wk) {
-    pl14_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl14_exatt_table[idx](wk);
 }
 
-void Att_PL14_AT1(PLW* wk) {
+/** @brief Akuma: attack 1 (Hyakki Goushou dive). */
+static void Att_PL14_AT1(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -101,7 +107,8 @@ void Att_PL14_AT1(PLW* wk) {
     }
 }
 
-void Att_PL14_AT2(PLW* wk) {
+/** @brief Akuma: attack 2 (Ashura Senku teleport). */
+static void Att_PL14_AT2(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -148,7 +155,8 @@ void Att_PL14_AT2(PLW* wk) {
     }
 }
 
-void Att_PL14_AT3(PLW* wk) {
+/** @brief Akuma: attack 3 (Shun Goku Satsu / Raging Demon). */
+static void Att_PL14_AT3(PLW* wk) {
     PLW* twk = (PLW*)wk->wu.target_adrs;
 
     switch (wk->wu.routine_no[3]) {
@@ -256,7 +264,8 @@ void Att_PL14_AT3(PLW* wk) {
     }
 }
 
-void Att_PL14_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Akuma: special action (tokushu koudou). */
+static void Att_PL14_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {

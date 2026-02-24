@@ -1,6 +1,6 @@
 /**
  * @file effl7.c
- * TODO: identify what this effect does
+ * Effect: Win Player / Data Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/effl7.h"

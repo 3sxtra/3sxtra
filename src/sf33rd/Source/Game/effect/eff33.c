@@ -1,6 +1,6 @@
 /**
  * @file eff33.c
- * TODO: identify what this effect does
+ * Effect: Win/Lose Symbol Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff33.h"

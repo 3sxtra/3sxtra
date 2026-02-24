@@ -14,16 +14,19 @@ s16 SLOW_timer;
 const s8 slow_timer_to_flag[32] = { 1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
                                     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 };
 
+/** @brief Initializes slow-motion state to off. */
 void init_slow_flag() {
     EXE_flag = 0;
     SLOW_flag = 0;
     SLOW_timer = 0;
 }
 
+/** @brief Triggers the conclusion slow-motion effect. */
 void set_conclusion_slow() {
     SLOW_timer = 95;
 }
 
+/** @brief Per-frame update of the execution freeze flag based on slow-motion timer. */
 void set_EXE_flag() {
     s16 tmw;
 

@@ -1,6 +1,6 @@
 /**
  * @file effb4.c
- * TODO: identify what this effect does
+ * Effect: Mark Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/effb4.h"

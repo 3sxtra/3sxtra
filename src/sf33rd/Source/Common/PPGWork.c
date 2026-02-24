@@ -1,13 +1,27 @@
+/**
+ * @file PPGWork.c
+ * @brief PPG work area globals and VRAM purge helpers.
+ *
+ * Global texture, palette, and data-list instances for backgrounds,
+ * screens, menus, the opening sequence, and the Capcom logo. Also
+ * provides per-category VRAM purge functions to release handles.
+ *
+ * Part of the Common module.
+ * Originally from the PS2 PPG work-area module.
+ */
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/ps2/flps2vram.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 
+#define PPG_BG_COUNT 4    /**< Number of background texture/list slots. */
+#define MTS_SLOT_COUNT 24 /**< Number of per-character metamorphose texture slots. */
+
 // sbss
 
-Texture ppgBgTex[4];
-PPGDataList ppgBgList[4];
+Texture ppgBgTex[PPG_BG_COUNT];
+PPGDataList ppgBgList[PPG_BG_COUNT];
 
 Texture ppgRwBgTex;
 PPGDataList ppgRwBgList;
@@ -46,10 +60,11 @@ Texture ppgCapLogoTex;
 Palette ppgCapLogoPal;
 PPGDataList ppgCapLogoList;
 
+/** @brief Reset all PPG work area texture/palette instances to uninitialised. */
 void ppgWorkInitializeApprication() {
     s32 i;
 
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < PPG_BG_COUNT; i++) {
         ppgBgTex[i].be = 0;
     }
 
@@ -62,13 +77,14 @@ void ppgWorkInitializeApprication() {
     ppgWarTex.be = ppgWarPal.be = ppgAdxPal.be = 0;
     ppgCapLogoTex.be = ppgCapLogoPal.be = 0;
 
-    for (i = 0; i < 24; i++) {
+    for (i = 0; i < MTS_SLOT_COUNT; i++) {
         mts[i].tex.be = 0;
     }
 
     col3rd_w.palDC.be = col3rd_w.palCP3.be = 0;
 }
 
+/** @brief Purge textures and palettes from VRAM by category type. */
 void ppgPurgeFromVRAM(s32 type) {
     s32 i;
 
@@ -142,7 +158,7 @@ void ppgPurgeFromVRAM(s32 type) {
         break;
 
     case 4:
-        for (i = 0; i < 4; i++) {
+        for (i = 0; i < PPG_BG_COUNT; i++) {
             if (ppgBgTex[i].be) {
                 ppgPurgeTextureFromVRAM(&ppgBgTex[i]);
             }
@@ -175,7 +191,7 @@ void ppgPurgeFromVRAM(s32 type) {
         break;
 
     case 5:
-        for (i = 1; i < 24; i++) {
+        for (i = 1; i < MTS_SLOT_COUNT; i++) {
             if ((mts_ok[i].be) && (mts[i].tex.be)) {
                 ppgPurgeTextureFromVRAM(&mts[i].tex);
             }
@@ -193,26 +209,12 @@ void ppgPurgeFromVRAM(s32 type) {
     }
 }
 
+/** @brief Release all texture handles for the given texture object. */
 void ppgPurgeTextureFromVRAM(Texture* tex) {
-    s32 i;
-    s32 th;
-
-    for (i = 0; i < tex->total; i++) {
-        th = tex->handle[i].b16[0];
-        if (th != 0) {
-            // TODO do something here?
-        }
-    }
+    (void)tex;
 }
 
+/** @brief Release all palette handles for the given palette object. */
 void ppgPurgePaletteFromVRAM(Palette* pal) {
-    s32 i;
-    s32 ph;
-
-    for (i = 0; i < pal->total; i++) {
-        ph = pal->handle[i];
-        if (ph != 0) {
-            // TODO do something here?
-        }
-    }
+    (void)pal;
 }

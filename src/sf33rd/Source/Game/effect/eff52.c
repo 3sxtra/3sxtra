@@ -1,6 +1,6 @@
 /**
  * @file eff52.c
- * Sliding border around character name in character select
+ * Effect: Quake Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff52.h"
@@ -15,8 +15,8 @@
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void Setup_Char_52(WORK_Other* ewk);
-void Setup_Pos_52(WORK_Other* ewk);
+static void Setup_Char_52(WORK_Other* ewk);
+static void Setup_Pos_52(WORK_Other* ewk);
 
 void (*const EFF52_Jmp_Tbl[5])();
 
@@ -30,14 +30,14 @@ void effect_52_move(WORK_Other* ewk) {
     }
 }
 
-void EFF52_WAIT(WORK_Other* ewk) {
+static void EFF52_WAIT(WORK_Other* ewk) {
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[6] = 0;
     }
 }
 
-void EFF52_SUDDENLY(WORK_Other* ewk) {
+static void EFF52_SUDDENLY(WORK_Other* ewk) {
     s16 x;
 
     switch (ewk->wu.routine_no[6]) {
@@ -75,7 +75,7 @@ void EFF52_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-void EFF52_SLIDE_IN(WORK_Other* ewk) {
+static void EFF52_SLIDE_IN(WORK_Other* ewk) {
     if (Order[ewk->wu.dir_old] == 4) {
         ewk->wu.routine_no[0] = 4;
         ewk->wu.routine_no[1] = 0;
@@ -114,7 +114,7 @@ void EFF52_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-void EFF52_SLIDE_OUT(WORK_Other* ewk) {
+static void EFF52_SLIDE_OUT(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
         if (ewk->wu.disp_flag == 0) {
@@ -152,7 +152,7 @@ void EFF52_SLIDE_OUT(WORK_Other* ewk) {
     }
 }
 
-void EFF52_KILL(WORK_Other* ewk) {
+static void EFF52_KILL(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old] == 0) {
@@ -196,7 +196,7 @@ s32 effect_52_init(s16 PL_id, s16 dir_old) {
     return 0;
 }
 
-void Setup_Char_52(WORK_Other* ewk) {
+static void Setup_Char_52(WORK_Other* ewk) {
     s16 ix;
 
     if (ewk->wu.dir_old == 37) {
@@ -211,7 +211,7 @@ void Setup_Char_52(WORK_Other* ewk) {
     ewk->wu.direction = Pattern_Data_52[ewk->wu.dir_step + ix][1];
 }
 
-void Setup_Pos_52(WORK_Other* ewk) {
+static void Setup_Pos_52(WORK_Other* ewk) {
     s16 ix;
 
     if (ewk->wu.dir_old == 37) {

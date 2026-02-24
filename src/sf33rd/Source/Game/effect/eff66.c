@@ -1,6 +1,6 @@
 /**
  * @file eff66.c
- * TODO: identify what this effect does
+ * Effect: Quake / Half-Object Flash
  */
 
 #include "sf33rd/Source/Game/effect/eff66.h"
@@ -16,13 +16,13 @@
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void EFF66_WAIT(WORK_Other* ewk);
-void EFF66_SUSPEND(WORK_Other* ewk);
-void EFF66_SLIDE_IN(WORK_Other* ewk);
-void EFF66_BOWAN(WORK_Other* ewk);
-void EFF66_FLASH(WORK_Other* ewk);
-void EFF66_SUDDENLY(WORK_Other* ewk);
-void Setup_Pos_66(WORK_Other* ewk);
+static void EFF66_WAIT(WORK_Other* ewk);
+static void EFF66_SUSPEND(WORK_Other* ewk);
+static void EFF66_SLIDE_IN(WORK_Other* ewk);
+static void EFF66_BOWAN(WORK_Other* ewk);
+static void EFF66_FLASH(WORK_Other* ewk);
+static void EFF66_SUDDENLY(WORK_Other* ewk);
+static void Setup_Pos_66(WORK_Other* ewk);
 
 const u8 Flash_Data_66[14] = { 0, 128, 255, 128, 0, 128, 255, 128, 0, 128, 255, 128, 0, 128 };
 
@@ -72,13 +72,13 @@ void effect_66_move(WORK_Other* ewk) {
     }
 }
 
-void EFF66_WAIT(WORK_Other* ewk) {
+static void EFF66_WAIT(WORK_Other* ewk) {
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-void EFF66_SUSPEND(WORK_Other* ewk) {
+static void EFF66_SUSPEND(WORK_Other* ewk) {
     ewk->wu.disp_flag = 0;
 
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
@@ -86,7 +86,7 @@ void EFF66_SUSPEND(WORK_Other* ewk) {
     }
 }
 
-void EFF66_SLIDE_IN(WORK_Other* ewk) {
+static void EFF66_SLIDE_IN(WORK_Other* ewk) {
     if (Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -129,7 +129,7 @@ void EFF66_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-void EFF66_BOWAN(WORK_Other* ewk) {
+static void EFF66_BOWAN(WORK_Other* ewk) {
     if (ewk->wu.routine_no[0] != Order[ewk->wu.dir_old]) {
         ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -163,7 +163,7 @@ void EFF66_BOWAN(WORK_Other* ewk) {
     }
 }
 
-void EFF66_FLASH(WORK_Other* ewk) {
+static void EFF66_FLASH(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         Setup_Pos_66(ewk);
@@ -189,7 +189,7 @@ void EFF66_FLASH(WORK_Other* ewk) {
     }
 }
 
-void EFF66_SUDDENLY(WORK_Other* ewk) {
+static void EFF66_SUDDENLY(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         Setup_Pos_66(ewk);
@@ -202,7 +202,7 @@ void EFF66_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-void Setup_Pos_66(WORK_Other* ewk) {
+static void Setup_Pos_66(WORK_Other* ewk) {
     if (--Order_Timer[ewk->wu.dir_old]) {
         return;
     }

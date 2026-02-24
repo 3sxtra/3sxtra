@@ -14,11 +14,12 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void plcnt_b2_move();
-void plcnt_b2_die();
+static void plcnt_b2_move();
+static void plcnt_b2_die();
 
 void (*const player_bonus2_process[3])() = { plcnt_b_init, plcnt_b2_move, plcnt_b2_die };
 
+/** @brief Main player controller for the car-crush bonus stage. */
 s32 Player_control_bonus2() {
     if (((pcon_rno[0] + pcon_rno[1]) == 0) || (!Game_pause && !EXE_flag)) {
         players_timer++;
@@ -57,7 +58,8 @@ s32 Player_control_bonus2() {
     return 0;
 }
 
-void plcnt_b2_move() {
+/** @brief Per-frame car-crush bonus stage movement update. */
+static void plcnt_b2_move() {
     if (No_Death) {
         plw[0].wu.dm_vital = plw[1].wu.dm_vital = 0;
     }
@@ -82,7 +84,8 @@ void plcnt_b2_move() {
     }
 }
 
-void plcnt_b2_die() {
+/** @brief Handles car-crush bonus stage completion/finalization. */
+static void plcnt_b2_die() {
     plw[0].wu.dm_vital = plw[1].wu.dm_vital = 0;
 
     switch (pcon_rno[2]) {
@@ -102,7 +105,7 @@ void plcnt_b2_die() {
     case 2:
         complete_victory_pause();
 
-        if (plw[0].wu.operator) {
+        if (plw[0].wu.pl_operator) {
             plw[0].wu.routine_no[1] = 0;
             plw[0].wu.routine_no[2] = 40;
             plw[0].wu.routine_no[3] = 0;
@@ -110,7 +113,7 @@ void plcnt_b2_die() {
             plw[0].wu.routine_no[3] = 9;
         }
 
-        if (plw[1].wu.operator) {
+        if (plw[1].wu.pl_operator) {
             plw[1].wu.routine_no[1] = 0;
             plw[1].wu.routine_no[2] = 40;
             plw[1].wu.routine_no[3] = 0;

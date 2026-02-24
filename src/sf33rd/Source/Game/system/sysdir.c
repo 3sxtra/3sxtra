@@ -1,6 +1,13 @@
 /**
  * @file sysdir.c
- * System Direction (Dipswitch)/Extra Options
+ * @brief System direction (dipswitch) and extra-option parameter decoding.
+ *
+ * Reads the system-direction tables and extra-option structures to configure
+ * gameplay modifiers (parry, guard, dash, jump, super arts, chain combos,
+ * throw, stun, etc.) represented as bitfields in `omop_spmv_ng_table`.
+ *
+ * Part of the system module.
+ * Originally from the PS2 sysdir module.
  */
 
 #include "sf33rd/Source/Game/system/sysdir.h"
@@ -30,10 +37,13 @@ s16 omop_cockpit;
 s16 omop_round_timer;
 s16 omop_dokidoki;
 
-const u32 omop_guard_type[4] = { DIP_AUTO_GUARD_DISABLED | DIP_AUTO_PARRY_DISABLED | DIP_SEMI_AUTO_PARRY_DISABLED,
-                                 DIP_AUTO_PARRY_DISABLED | DIP_SEMI_AUTO_PARRY_DISABLED,
-                                 DIP_AUTO_GUARD_DISABLED | DIP_AUTO_PARRY_DISABLED,
-                                 DIP_AUTO_GUARD_DISABLED | DIP_SEMI_AUTO_PARRY_DISABLED };
+#define OMOP_GUARD_TYPE_COUNT 4
+
+const u32 omop_guard_type[OMOP_GUARD_TYPE_COUNT] = { DIP_AUTO_GUARD_DISABLED | DIP_AUTO_PARRY_DISABLED |
+                                                         DIP_SEMI_AUTO_PARRY_DISABLED,
+                                                     DIP_AUTO_PARRY_DISABLED | DIP_SEMI_AUTO_PARRY_DISABLED,
+                                                     DIP_AUTO_GUARD_DISABLED | DIP_AUTO_PARRY_DISABLED,
+                                                     DIP_AUTO_GUARD_DISABLED | DIP_SEMI_AUTO_PARRY_DISABLED };
 
 const u32 sysdir_base_move[20] = { (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), (DIP_UNKNOWN_18 | DIP_UNKNOWN_19),
                                    (DIP_UNKNOWN_18 | DIP_UNKNOWN_19), (DIP_UNKNOWN_18 | DIP_UNKNOWN_19),
@@ -68,10 +78,12 @@ const s16 sag_length_omake[17] = { -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4
 
 const s16 base_vital_omake[7] = { 0xfe3e, 0xfed4, 0xff6a, 0x0000, 0x0096, 0x012c, 0x01c2 };
 
+/** @brief Check if both players have the SA-max-at-round-start flag set (immediate full gauge). */
 u32 sag_ikinari_max() {
     return ((omop_spmv_ng_table2[0] & 0x40000) + (omop_spmv_ng_table2[1] & 0x40000)) == 0x80000;
 }
 
+/** @brief Return non-zero if "use all super arts" is enabled in the current system direction. */
 u32 check_use_all_SA() {
     if (Direction_Working[Present_Mode] != 0) {
         return system_dir[Present_Mode].contents[9][0];
@@ -80,6 +92,7 @@ u32 check_use_all_SA() {
     return 0;
 }
 
+/** @brief Return non-zero if super arts are disabled in the current system direction. */
 u32 check_without_SA() {
     if (Direction_Working[Present_Mode] != 0) {
         return system_dir[Present_Mode].contents[5][0] == 0;
@@ -88,6 +101,7 @@ u32 check_without_SA() {
     return 0;
 }
 
+/** @brief Initialize all gameplay modifier tables from system direction and extra-option data. */
 void init_omop() {
     omop_spmv_ng_table2[0] = 0;
     omop_spmv_ng_table[0] = 0;
@@ -122,13 +136,16 @@ void init_omop() {
     vib_sel[1] = 1;
 }
 
+/** @brief Decode extra-option parameters into per-player gauge, vital, and HUD settings. */
 void get_extra_option_parameter(_EXTRA_OPTION* omop_extra) {
     omop_vital_ix[0] = omop_extra->contents[0][0];
     omop_vital_ix[1] = omop_extra->contents[0][0];
     omop_vital_init[0] = omop_extra->contents[0][1];
     omop_vital_init[1] = omop_extra->contents[0][2];
-    omop_spmv_ng_table[0] |= omop_guard_type[omop_extra->contents[0][3]];
-    omop_spmv_ng_table[1] |= omop_guard_type[omop_extra->contents[0][3]];
+    if (omop_extra->contents[0][3] < OMOP_GUARD_TYPE_COUNT) {
+        omop_spmv_ng_table[0] |= omop_guard_type[omop_extra->contents[0][3]];
+        omop_spmv_ng_table[1] |= omop_guard_type[omop_extra->contents[0][3]];
+    }
 
     switch (omop_extra->contents[1][0]) {
     case 1:
@@ -181,6 +198,7 @@ void get_extra_option_parameter(_EXTRA_OPTION* omop_extra) {
     omop_dokidoki = 0;
 }
 
+/** @brief Decode system-direction parameters into dipswitch bitfields for all gameplay mechanics. */
 void get_system_direction_parameter(SystemDir* sysdir_data) {
     if (sysdir_data->contents[0][0] == 0) { // Ground parry disabled
         omop_spmv_ng_table[0] |= (DIP_UNKNOWN_8 | DIP_UNKNOWN_9);

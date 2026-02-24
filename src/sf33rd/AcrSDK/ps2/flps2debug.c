@@ -1,3 +1,14 @@
+/**
+ * @file flps2debug.c
+ * @brief Debug text rendering and system error display implementation.
+ *
+ * Queues debug text characters into a RenderBuffer for on-screen display,
+ * supports color changes, and provides a blocking system error screen
+ * that halts execution until the user presses start.
+ *
+ * Part of the AcrSDK ps2 module.
+ * Originally from the PS2 SDK abstraction layer.
+ */
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/common/memfound.h"
@@ -13,13 +24,18 @@
 #include <stdio.h>
 #include <string.h>
 
+#define DEBUG_STR_CAPACITY 0x12C0
+
+/** @brief Initialise the debug text buffer and reset counters. */
 void flPS2DebugInit() {
-    flDebugStrHan = flPS2GetSystemMemoryHandle(0x12C0 * sizeof(RenderBuffer), 1);
+    flDebugStrHan = flPS2GetSystemMemoryHandle(DEBUG_STR_CAPACITY * sizeof(RenderBuffer), 1);
     flDebugStrCtr = 0;
     flDebugStrCol = 0xFFFFFFFF; // White color
 }
 
-// FIXME: reimplement using SDL apis
+// Debug text printing function - queues characters to the RenderBuffer for
+// later rendering by SDLGLTextRenderer_DrawDebugBuffer()
+/** @brief Print formatted debug text at the given grid position. */
 s32 flPrintL(s32 posi_x, s32 posi_y, const s8* format, ...) {
     s8 code;
     s8 str[512];
@@ -33,11 +49,12 @@ s32 flPrintL(s32 posi_x, s32 posi_y, const s8* format, ...) {
     buff_ptr += flDebugStrCtr;
 
     va_start(args, format);
-    vsprintf(str, format, args);
+    vsnprintf(str, sizeof(str), format, args);
+    va_end(args);
     len = strlen(str);
 
-    if (flDebugStrCtr + len >= 0x12C0) {
-        len = 0x12C0 - flDebugStrCtr;
+    if (flDebugStrCtr + len >= DEBUG_STR_CAPACITY) {
+        len = DEBUG_STR_CAPACITY - flDebugStrCtr;
     }
 
     for (i = 0; i < len; i++) {
@@ -58,6 +75,7 @@ s32 flPrintL(s32 posi_x, s32 posi_y, const s8* format, ...) {
     return 1;
 }
 
+/** @brief Set the color for subsequent debug text output. */
 s32 flPrintColor(u32 color) {
     u8 r = (color >> 16) & 0xFF;
     u8 g = (color >> 8) & 0xFF;
@@ -78,13 +96,15 @@ s32 flPrintColor(u32 color) {
     return 1;
 }
 
+/** @brief Display a blocking system error screen with the given message. */
 void flPS2SystemError(s32 error_level, s8* format, ...) {
     va_list args;
     s8 str[512];
 
     flFlip(0);
     va_start(args, format);
-    vsprintf(str, format, args);
+    vsnprintf(str, sizeof(str), format, args);
+    va_end(args);
 
     while (1) {
         flPrintL(10, 20, "%s", str);

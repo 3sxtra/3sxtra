@@ -13,6 +13,7 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Bonus Stage 1. */
 void Bonus_bg() {
     bgw_ptr = &bg_w.bgw[1];
     bns02();
@@ -26,11 +27,15 @@ void Bonus_bg() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Bonus Stage 1. */
 void bns01() {
     void (*bns01_jmp[2])() = { bns01_init00, bns01_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bns01_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Bonus Stage 1. */
 void bns01_init00() {
     bgw_ptr->r_no_0++;
 
@@ -46,16 +51,21 @@ void bns01_init00() {
     effect_05_init();
 }
 
+/** @brief Per-frame movement handler for Bonus Stage 1 layer. */
 void bns01_move() {
     bg_base_x_move_check();
     bg_base_y_move_check();
 }
 
+/** @brief Background layer handler for Bonus Stage 1. */
 void bns02() {
     void (*bns02_jmp[2])() = { bns02_init00, bns02_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bns02_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Bonus Stage 1. */
 void bns02_init00() {
     bgw_ptr->r_no_0++;
 
@@ -69,16 +79,21 @@ void bns02_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Per-frame movement handler for Bonus Stage 1 layer. */
 void bns02_move() {
     bg_x_move_check();
     bg_y_move_check();
 }
 
+/** @brief Background layer handler for Bonus Stage 1. */
 void bns03() {
     void (*bns03_jmp[2])() = { bns03_init00, bns03_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bns03_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Bonus Stage 1. */
 void bns03_init00() {
     bgw_ptr->r_no_0++;
 
@@ -92,6 +107,7 @@ void bns03_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Per-frame movement handler for Bonus Stage 1 layer. */
 void bns03_move() {
     // Do nothing
 }

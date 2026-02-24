@@ -13,13 +13,19 @@
 #include "sf33rd/Source/Game/engine/pls01.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl12_exatt_table[18])(PLW*);
 
+/** @brief Sean: extra attack dispatcher. */
 void pl12_extra_attack(PLW* wk) {
-    pl12_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl12_exatt_table[idx](wk);
 }
 
-void Att_PL12_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Sean: special action (tokushu koudou — basketball). */
+static void Att_PL12_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
@@ -94,7 +100,8 @@ void Att_PL12_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void Att_PL12_BONUS_STAGE(PLW* wk) {
+/** @brief Sean: bonus stage basketball attack. */
+static void Att_PL12_BONUS_STAGE(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {

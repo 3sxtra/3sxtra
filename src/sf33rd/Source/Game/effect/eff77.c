@@ -1,6 +1,6 @@
 /**
  * @file eff77.c
- * TODO: identify what this effect does
+ * Effect: Collision / Slow Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff77.h"

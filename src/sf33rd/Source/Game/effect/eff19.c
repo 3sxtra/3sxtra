@@ -1,6 +1,6 @@
 /**
  * @file eff19.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff19.h"

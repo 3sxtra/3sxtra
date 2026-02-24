@@ -1,6 +1,6 @@
 /**
  * @file effm8.c
- * TODO: identify what this effect does
+ * Effect: Random / Timer Effect
  */
 
 #include "sf33rd/Source/Game/effect/effm8.h"
@@ -16,9 +16,9 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effm8_move_app(WORK_Other* ewk);
-void don_run_sub_m8(WORK_Other* ewk);
-void effm8_move_win(WORK_Other* ewk);
+static void effm8_move_app(WORK_Other* ewk);
+static void don_run_sub_m8(WORK_Other* ewk);
+static void effm8_move_win(WORK_Other* ewk);
 
 const s8 effm8_random_tbl[16] = { 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1 };
 
@@ -45,7 +45,7 @@ void effect_M8_move(WORK_Other* ewk) {
     }
 }
 
-void effm8_move_app(WORK_Other* ewk) {
+static void effm8_move_app(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -79,7 +79,7 @@ void effm8_move_app(WORK_Other* ewk) {
     }
 }
 
-void don_run_sub_m8(WORK_Other* ewk) {
+static void don_run_sub_m8(WORK_Other* ewk) {
     char_move(&ewk->wu);
     add_x_sub(&ewk->wu);
 
@@ -90,7 +90,7 @@ void don_run_sub_m8(WORK_Other* ewk) {
     }
 }
 
-void effm8_move_win(WORK_Other* ewk) {
+static void effm8_move_win(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.old_rno[0]--;

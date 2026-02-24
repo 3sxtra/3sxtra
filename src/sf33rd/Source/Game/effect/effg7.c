@@ -1,6 +1,6 @@
 /**
  * @file effg7.c
- * TODO: identify what this effect does
+ * Effect: Ending Data Effect
  */
 
 #include "sf33rd/Source/Game/effect/effg7.h"

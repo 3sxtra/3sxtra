@@ -1,0 +1,16 @@
+[Unit]
+Description=3SX Lobby Server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/lobby-server
+ExecStart=/usr/bin/node /home/ubuntu/lobby-server/lobby-server.js
+Restart=always
+RestartSec=5
+Environment=LOBBY_PORT=3000
+EnvironmentFile=/home/ubuntu/lobby-server/.env
+
+[Install]
+WantedBy=multi-user.target

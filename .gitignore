@@ -1,20 +1,55 @@
-# Python
-
-.venv
-venv
-__pycache__
-
-# macOS
-
+# === OS ===
 .DS_Store
 
-# IDEs
+# === IDEs & Editors ===
+.vscode/
 
-.vscode
+# === Python ===
+.venv/
+venv/
+__pycache__/
 
-# Project
+# === Agent/AI ===
+.agent/
+/conductor/
+/.jules/
 
-build
-temp
-third_party
-states
+# === Build Outputs ===
+/build/
+/build_tests/
+/build_test/
+/build_rpi4/
+/build_output/
+/build-linux/
+/temp/
+
+# === Third-Party Dependencies ===
+/third_party/
+/third_party_rpi4/
+/third_party_linux/
+
+# === Game Assets (generated/large) ===
+/textures/
+/upscaled/
+/assets/stages/
+/states/
+/assets/bezels/
+
+# === Deployment & Packaging ===
+/dist/
+/deploy/
+/pkg-linux/
+game_deployment.tar.gz
+
+# === Project-Specific ===
+/sf3_3rd_trial_lua/
+3rd_training_lua-main.zip
+sf3_3rd_trial_lua_20220613.zip
+
+/WIP
+*.bat*
+
+# === Secrets ===
+tools/lobby-server/.env
+/stages
+/submodules

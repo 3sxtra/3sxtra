@@ -14,19 +14,21 @@
 
 VIT vit[2];
 
+/** @brief Initializes the vitality bar display state for both players. */
 void vital_cont_init() {
     u8 i;
 
     for (i = 0; i < 2; i++) {
-        vit[i].cyerw = 160;
-        vit[i].cred = 160;
-        vit[i].ored = 160;
+        vit[i].cyerw = 0xA0;
+        vit[i].cred = 0xA0;
+        vit[i].ored = 0xA0;
         vit[i].colnum = 1;
         gauge_stop_flag[i] = 0;
         vital_stop_flag[i] = 0;
     }
 }
 
+/** @brief Per-frame vitality bar update — drives the animated health bar drain. */
 void vital_cont_main() {
     if (omop_cockpit != 0) {
         if (!EXE_flag && !Game_pause) {
@@ -44,8 +46,9 @@ void vital_cont_main() {
     }
 }
 
+/** @brief Updates a single player's vitality bar animation and color state. */
 void vital_control(u8 pl) {
-    if (plw[pl].wu.vital_new < 161) {
+    if (plw[pl].wu.vital_new < 0xA1) {
         if ((vit[pl].cyerw == plw[pl].wu.vital_new) && (vit[pl].cred == plw[pl].wu.vital_new) &&
             (vit[pl].ored != (plw[pl].wu.vital_new + 1))) {
             if (No_Trans == 0) {
@@ -64,9 +67,9 @@ void vital_control(u8 pl) {
             vit[pl].cyerw = 0;
         }
 
-        if (plw[pl].wu.vital_new == 160) {
+        if (plw[pl].wu.vital_new == 0xA0) {
             vit[pl].colnum = 1;
-        } else if (plw[pl].wu.vital_new < 49) {
+        } else if (plw[pl].wu.vital_new < 0x31) {
             vit[pl].colnum = 3;
         } else {
             vit[pl].colnum = 2;
@@ -85,8 +88,9 @@ void vital_control(u8 pl) {
     }
 }
 
+/** @brief Writes all vitality bar sprite parts for one player to the render queue. */
 void vital_parts_allwrite(u8 Pl_Num) {
-    scfont_sqput(Pl_Num * 27, 2, 1, 0, Pl_Num, Pl_Num + 30, 21, 1, 5);
+    scfont_sqput((Pl_Num * 27), 2, 1, 0, Pl_Num, (Pl_Num + 30), 21, 1, 5);
 
     if (omop_vt_bar_disp[Pl_Num] == 0) {
         silver_vital_put(Pl_Num);

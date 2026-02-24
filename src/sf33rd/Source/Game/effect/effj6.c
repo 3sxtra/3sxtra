@@ -1,6 +1,6 @@
 /**
  * @file effj6.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/effj6.h"
@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effect_j6_hit_sub(WORK_Other* ewk);
+static void effect_j6_hit_sub(WORK_Other* ewk);
 
 void effect_J6_move(WORK_Other* ewk) {
     WORK_Other* oya_ptr;
@@ -72,7 +72,7 @@ void effect_J6_move(WORK_Other* ewk) {
     }
 }
 
-void effect_j6_hit_sub(WORK_Other* ewk) {
+static void effect_j6_hit_sub(WORK_Other* ewk) {
     if (eff_hit_check(ewk, 0)) {
         ewk->wu.routine_no[0]++;
         effect_27_init(ewk, 1);

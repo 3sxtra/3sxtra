@@ -1,4 +1,4 @@
-#include "netplay/game_state.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/animation/win_pl.h"
 #include "sf33rd/Source/Game/effect/eff56.h"
@@ -518,6 +518,24 @@ void GameState_Save(GameState* dst) {
     // bg
 
     GS_SAVE(bg_w);
+    GS_SAVE(Screen_Switch);
+    GS_SAVE(Screen_Switch_Buffer);
+    GS_SAVE(rw_num);
+    GS_SAVE(rw_bg_flag);
+    GS_SAVE(tokusyu_stage);
+    GS_SAVE(rw_gbix);
+    GS_SAVE(stage_flash);
+    GS_SAVE(stage_ftimer);
+    GS_SAVE(yang_ix_plus);
+    GS_SAVE(yang_ix);
+    GS_SAVE(yang_timer);
+    GS_SAVE(ending_flag);
+    GS_SAVE(end_prm);
+    GS_SAVE(gouki_end_gbix);
+    GS_SAVE(rw3col_ptr);
+    GS_SAVE(bg_disp_off);
+    GS_SAVE(bgPalCodeOffset);
+    GS_SAVE(rw_dat);
 
     // charset
 
@@ -640,6 +658,33 @@ void GameState_Save(GameState* dst) {
     GS_SAVE(old_mes_no3);
     GS_SAVE(old_mes_no_pl);
     GS_SAVE(mes_timer);
+
+    // work_sys — rollback-critical state
+
+    GS_SAVE(bg_pos);
+    GS_SAVE(fm_pos);
+    GS_SAVE(bg_prm);
+    GS_SAVE(system_timer);
+    GS_SAVE(Gill_Appear_Flag);
+
+    // plcnt — DIP switch combat config
+
+    GS_SAVE(cmd_sel);
+    GS_SAVE(no_sa);
+
+    // sc_sub
+
+    GS_SAVE(Hnc_Num);
+    GS_SAVE(end_w);
+    GS_SAVE(scr_sc);
+    GS_SAVE(X_Adjust);
+    GS_SAVE(Y_Adjust);
+
+    GS_SAVE(BgMATRIX);
+    GS_SAVE(vm_w);
+    GS_SAVE(ck_ex_option);
+    GS_SAVE(X_Adjust_Buff);
+    GS_SAVE(Y_Adjust_Buff);
 }
 
 #define GS_LOAD(member) SDL_memcpy(&member, &src->member, sizeof(member))
@@ -1142,6 +1187,24 @@ void GameState_Load(const GameState* src) {
     // bg
 
     GS_LOAD(bg_w);
+    GS_LOAD(Screen_Switch);
+    GS_LOAD(Screen_Switch_Buffer);
+    GS_LOAD(rw_num);
+    GS_LOAD(rw_bg_flag);
+    GS_LOAD(tokusyu_stage);
+    GS_LOAD(rw_gbix);
+    GS_LOAD(stage_flash);
+    GS_LOAD(stage_ftimer);
+    GS_LOAD(yang_ix_plus);
+    GS_LOAD(yang_ix);
+    GS_LOAD(yang_timer);
+    GS_LOAD(ending_flag);
+    GS_LOAD(end_prm);
+    GS_LOAD(gouki_end_gbix);
+    GS_LOAD(rw3col_ptr);
+    GS_LOAD(bg_disp_off);
+    GS_LOAD(bgPalCodeOffset);
+    GS_LOAD(rw_dat);
 
     // charset
 
@@ -1264,4 +1327,31 @@ void GameState_Load(const GameState* src) {
     GS_LOAD(old_mes_no3);
     GS_LOAD(old_mes_no_pl);
     GS_LOAD(mes_timer);
+
+    // work_sys — rollback-critical state
+
+    GS_LOAD(bg_pos);
+    GS_LOAD(fm_pos);
+    GS_LOAD(bg_prm);
+    GS_LOAD(system_timer);
+    GS_LOAD(Gill_Appear_Flag);
+
+    // plcnt — DIP switch combat config
+
+    GS_LOAD(cmd_sel);
+    GS_LOAD(no_sa);
+
+    // sc_sub
+
+    GS_LOAD(Hnc_Num);
+    GS_LOAD(end_w);
+    GS_LOAD(scr_sc);
+    GS_LOAD(X_Adjust);
+    GS_LOAD(Y_Adjust);
+
+    GS_LOAD(BgMATRIX);
+    GS_LOAD(vm_w);
+    GS_LOAD(ck_ex_option);
+    GS_LOAD(X_Adjust_Buff);
+    GS_LOAD(Y_Adjust_Buff);
 }

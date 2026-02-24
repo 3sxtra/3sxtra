@@ -11,8 +11,9 @@
 #include "sf33rd/Source/Game/engine/pow_pow.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 
-void setup_dm_rl_pldm(WORK* as, WORK* ds);
+static void setup_dm_rl_pldm(WORK* as, WORK* ds);
 
+/** @brief Resolves effect-vs-player hit collision and applies damage. */
 void effect_at_vs_player_dm(s16 ix2, s16 ix) {
     WORK_Other* as = (WORK_Other*)q_hit_push[ix2];
     PLW* ds = (PLW*)q_hit_push[ix];
@@ -62,7 +63,8 @@ void effect_at_vs_player_dm(s16 ix2, s16 ix) {
     plef_at_vs_player_damage_union((PLW*)as, ds, gddir);
 }
 
-void setup_dm_rl_pldm(WORK* as, WORK* ds) {
+/** @brief Sets the damage direction based on relative position of attacker. */
+static void setup_dm_rl_pldm(WORK* as, WORK* ds) {
     s16 pw;
 
     ds->dm_rl = as->rl_flag;

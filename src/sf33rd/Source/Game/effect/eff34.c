@@ -1,6 +1,6 @@
 /**
  * @file eff34.c
- * TODO: identify what this effect does
+ * Effect: Stage Object / ETC3 Character
  */
 
 #include "sf33rd/Source/Game/effect/eff34.h"

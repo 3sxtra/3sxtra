@@ -1,8 +1,18 @@
+/**
+ * @file lose_pl.h
+ * @brief Public API for losing-character post-round animations.
+ *
+ * Part of the animation module.
+ */
+
 #ifndef LOSE_PL_H
 #define LOSE_PL_H
 
 #include "structs.h"
 #include "types.h"
+
+extern s16 lose_rno[3];
+extern s16 lose_free[2];
 
 void lose_player(PLW* wk);
 void Lose_00000(PLW* wk);

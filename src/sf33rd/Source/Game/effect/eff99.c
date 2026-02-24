@@ -1,6 +1,6 @@
 /**
  * @file eff99.c
- * TODO: identify what this effect does
+ * Effect: Position Data Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff99.h"
@@ -11,7 +11,7 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void Setup_Letter_99(WORK_Other_CONN* ewk, s16 letter_index, s16 disp_index);
+static void Setup_Letter_99(WORK_Other_CONN* ewk, s16 letter_index, s16 disp_index);
 
 const s16 Pos_Data_99[5][3] = { { -144, 128, 23 }, { 48, 128, 23 }, { 8, 54, 23 }, { 0, 42, 23 }, { 0, 30, 23 } };
 
@@ -113,7 +113,7 @@ s32 effect_99_init(s16 id, s16 type, s16 char_offset, s16 letter_index, s16 pos_
     return 0;
 }
 
-void Setup_Letter_99(WORK_Other_CONN* ewk, s16 letter_index, s16 disp_index) {
+static void Setup_Letter_99(WORK_Other_CONN* ewk, s16 letter_index, s16 disp_index) {
     s16 x;
     s16 ix;
     s16 offset_x;

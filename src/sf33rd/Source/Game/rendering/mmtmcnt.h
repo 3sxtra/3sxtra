@@ -1,3 +1,8 @@
+/**
+ * @file mmtmcnt.h
+ * @brief Main memory and texture memory purge/create declarations.
+ */
+
 #ifndef MMTMCNT_H
 #define MMTMCNT_H
 

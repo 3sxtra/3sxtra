@@ -1,3 +1,7 @@
+/**
+ * @file sys_sub.h
+ * @brief Public API for the system state and management hub.
+ */
 #ifndef SYS_SUB_H
 #define SYS_SUB_H
 
@@ -11,6 +15,7 @@ extern const struct _SAVE_W Game_Default_Data;
 void Switch_Screen_Init(s32 /* unused */);
 s32 Switch_Screen(u8 Wipe_Type);
 s32 Switch_Screen_Revival(u8 Wipe_Type);
+u16 Remap_Buttons(u16 sw, const _PAD_INFOR* pad_info);
 u16 Convert_User_Setting(s16 PL_id);
 void Clear_Personal_Data(s16 PL_id);
 s16 Check_Count_Cut(s16 PL_id, s16 Limit);
@@ -25,7 +30,7 @@ bool Cut_Cut_Cut();
 void Score_Sub();
 void Disp_Win_Record();
 void Disp_Win_Record_Sub(u16 win_record, s16 zz);
-s32 Button_Cut_EX(s16* Timer, s16 Limit_Time);
+s32 Button_Cut_EX(s16* pTimer, s16 limit);
 s32 Setup_Target_PL();
 void Setup_Final_Grade();
 void Clear_Win_Type();

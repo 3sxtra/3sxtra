@@ -1,3 +1,8 @@
+/**
+ * @file texcash.h
+ * @brief Texture cache manager declarations.
+ */
+
 #ifndef TEXCASH_H
 #define TEXCASH_H
 

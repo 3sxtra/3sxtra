@@ -271,6 +271,7 @@ static const struct {
                      { 20, 190, 0, 5, " " },
                      { 256, 0, 0, 6, NULL } };
 
+/** @brief Check if the player pressed Start to skip the credits roll. */
 static s32 check_shortcut() {
     u16 sw_w;
 
@@ -289,7 +290,8 @@ static s32 check_shortcut() {
     return 0;
 }
 
-void set_credit_string(s32 t, s32 x, s32 y, s32 a, s8* s) {
+/** @brief Queue a single credit line for display at the given screen position and attribute. */
+static void set_credit_string(s32 t, s32 x, s32 y, s32 a, s8* s) {
     char* su;
     s16 xu;
     s16 yu;
@@ -312,6 +314,7 @@ void set_credit_string(s32 t, s32 x, s32 y, s32 a, s8* s) {
     effect_H6_init(t, su, xu, yu, a, -1);
 }
 
+/** @brief Main staff credits state machine — scrolls credit lines and handles timing/skip. */
 s32 staff_credits(u32 /* unused */) {
     s16 t;
     s16 x;

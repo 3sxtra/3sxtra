@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file active12.c
  * COM Active: Sean
  */
@@ -8,13 +8,14 @@
 #include "sf33rd/Source/Game/com/com_sub.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 
-void (*const Pattern12_Tbl[86])();
+static void (*const Pattern12_Tbl[86])();
 
+/** @brief Twelve active AI pattern entry point. */
 void Computer12(PLW* wk) {
     Pattern12_Tbl[(s16)Pattern_Index[wk->wu.id]](wk);
 }
 
-void Pattern12_0000(PLW* wk) {
+static void Pattern12_0000(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Lever_Off(wk);
@@ -30,7 +31,7 @@ void Pattern12_0000(PLW* wk) {
     }
 }
 
-void Pattern12_0001(PLW* wk) {
+static void Pattern12_0001(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Wait(wk, 0);
@@ -42,7 +43,7 @@ void Pattern12_0001(PLW* wk) {
     }
 }
 
-void Pattern12_0002(PLW* wk) {
+static void Pattern12_0002(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Approach_Walk(wk, 0x37, 2);
@@ -58,7 +59,7 @@ void Pattern12_0002(PLW* wk) {
     }
 }
 
-void Pattern12_0003(PLW* wk) {
+static void Pattern12_0003(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Approach_Walk(wk, 0x37, 2);
@@ -74,7 +75,7 @@ void Pattern12_0003(PLW* wk) {
     }
 }
 
-void Pattern12_0004(PLW* wk) {
+static void Pattern12_0004(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Approach_Walk(wk, 0x37, 2);
@@ -90,7 +91,7 @@ void Pattern12_0004(PLW* wk) {
     }
 }
 
-void Pattern12_0005(PLW* wk) {
+static void Pattern12_0005(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         J_Command_Attack(wk, 8, 0x1D, 8, -1);
@@ -102,7 +103,7 @@ void Pattern12_0005(PLW* wk) {
     }
 }
 
-void Pattern12_0006(PLW* wk) {
+static void Pattern12_0006(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         J_Command_Attack(wk, 8, 0x1D, 9, -1);
@@ -114,7 +115,7 @@ void Pattern12_0006(PLW* wk) {
     }
 }
 
-void Pattern12_0007(PLW* wk) {
+static void Pattern12_0007(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         J_Command_Attack(wk, 8, 0x1D, 0xA, -1);
@@ -126,7 +127,7 @@ void Pattern12_0007(PLW* wk) {
     }
 }
 
-void Pattern12_0008(PLW* wk) {
+static void Pattern12_0008(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         J_Command_Attack(wk, 8, 0x20, 8, -1);
@@ -138,7 +139,7 @@ void Pattern12_0008(PLW* wk) {
     }
 }
 
-void Pattern12_0009(PLW* wk) {
+static void Pattern12_0009(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         J_Command_Attack(wk, 8, 0x20, 9, -1);
@@ -150,7 +151,7 @@ void Pattern12_0009(PLW* wk) {
     }
 }
 
-void Pattern12_0010(PLW* wk) {
+static void Pattern12_0010(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         J_Command_Attack(wk, 8, 0x20, 0xA, -1);
@@ -162,7 +163,7 @@ void Pattern12_0010(PLW* wk) {
     }
 }
 
-void Pattern12_0011(PLW* wk) {
+static void Pattern12_0011(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x10);
@@ -182,7 +183,7 @@ void Pattern12_0011(PLW* wk) {
     }
 }
 
-void Pattern12_0012(PLW* wk) {
+static void Pattern12_0012(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x20);
@@ -194,7 +195,7 @@ void Pattern12_0012(PLW* wk) {
     }
 }
 
-void Pattern12_0013(PLW* wk) {
+static void Pattern12_0013(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x40);
@@ -206,7 +207,7 @@ void Pattern12_0013(PLW* wk) {
     }
 }
 
-void Pattern12_0014(PLW* wk) {
+static void Pattern12_0014(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x100);
@@ -218,7 +219,7 @@ void Pattern12_0014(PLW* wk) {
     }
 }
 
-void Pattern12_0015(PLW* wk) {
+static void Pattern12_0015(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x200);
@@ -230,7 +231,7 @@ void Pattern12_0015(PLW* wk) {
     }
 }
 
-void Pattern12_0016(PLW* wk) {
+static void Pattern12_0016(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x400);
@@ -242,7 +243,7 @@ void Pattern12_0016(PLW* wk) {
     }
 }
 
-void Pattern12_0017(PLW* wk) {
+static void Pattern12_0017(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x1C, 0x4008, -1);
@@ -254,7 +255,7 @@ void Pattern12_0017(PLW* wk) {
     }
 }
 
-void Pattern12_0018(PLW* wk) {
+static void Pattern12_0018(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x1C, 0x4009, -1);
@@ -266,7 +267,7 @@ void Pattern12_0018(PLW* wk) {
     }
 }
 
-void Pattern12_0019(PLW* wk) {
+static void Pattern12_0019(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x1C, 0x400A, -1);
@@ -278,7 +279,7 @@ void Pattern12_0019(PLW* wk) {
     }
 }
 
-void Pattern12_0020(PLW* wk) {
+static void Pattern12_0020(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x200);
@@ -290,7 +291,7 @@ void Pattern12_0020(PLW* wk) {
     }
 }
 
-void Pattern12_0021(PLW* wk) {
+static void Pattern12_0021(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x202);
@@ -302,7 +303,7 @@ void Pattern12_0021(PLW* wk) {
     }
 }
 
-void Pattern12_0022(PLW* wk) {
+static void Pattern12_0022(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x402);
@@ -314,7 +315,7 @@ void Pattern12_0022(PLW* wk) {
     }
 }
 
-void Pattern12_0023(PLW* wk) {
+static void Pattern12_0023(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Lever_Attack(wk, 8, 0, 0x200);
@@ -326,7 +327,7 @@ void Pattern12_0023(PLW* wk) {
     }
 }
 
-void Pattern12_0024(PLW* wk) {
+static void Pattern12_0024(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0, -1, -1);
@@ -338,7 +339,7 @@ void Pattern12_0024(PLW* wk) {
     }
 }
 
-void Pattern12_0025(PLW* wk) {
+static void Pattern12_0025(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump(wk, 0);
@@ -350,7 +351,7 @@ void Pattern12_0025(PLW* wk) {
     }
 }
 
-void Pattern12_0026(PLW* wk) {
+static void Pattern12_0026(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Walk(wk, 1, 0x20, -1);
@@ -362,7 +363,7 @@ void Pattern12_0026(PLW* wk) {
     }
 }
 
-void Pattern12_0027(PLW* wk) {
+static void Pattern12_0027(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Keep_Away(wk, 0xBF, 1);
@@ -374,7 +375,7 @@ void Pattern12_0027(PLW* wk) {
     }
 }
 
-void Pattern12_0028(PLW* wk) {
+static void Pattern12_0028(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Pierce_On(wk);
@@ -394,7 +395,7 @@ void Pattern12_0028(PLW* wk) {
     }
 }
 
-void Pattern12_0029(PLW* wk) {
+static void Pattern12_0029(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Pierce_On(wk);
@@ -414,7 +415,7 @@ void Pattern12_0029(PLW* wk) {
     }
 }
 
-void Pattern12_0030(PLW* wk) {
+static void Pattern12_0030(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Keep_Away(wk, 0xBF, 1);
@@ -430,7 +431,7 @@ void Pattern12_0030(PLW* wk) {
     }
 }
 
-void Pattern12_0031(PLW* wk) {
+static void Pattern12_0031(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Walk(wk, 1, 0x20, -1);
@@ -446,7 +447,7 @@ void Pattern12_0031(PLW* wk) {
     }
 }
 
-void Pattern12_0032(PLW* wk) {
+static void Pattern12_0032(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 9, 0x20);
@@ -462,7 +463,7 @@ void Pattern12_0032(PLW* wk) {
     }
 }
 
-void Pattern12_0033(PLW* wk) {
+static void Pattern12_0033(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Approach_Walk(wk, 0x37, 2);
@@ -482,7 +483,7 @@ void Pattern12_0033(PLW* wk) {
     }
 }
 
-void Pattern12_0034(PLW* wk) {
+static void Pattern12_0034(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Keep_Away(wk, 0xBF, 0);
@@ -494,7 +495,7 @@ void Pattern12_0034(PLW* wk) {
     }
 }
 
-void Pattern12_0035(PLW* wk) {
+static void Pattern12_0035(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 0xB, 0x202);
@@ -510,7 +511,7 @@ void Pattern12_0035(PLW* wk) {
     }
 }
 
-void Pattern12_0036(PLW* wk) {
+static void Pattern12_0036(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x400);
@@ -526,7 +527,7 @@ void Pattern12_0036(PLW* wk) {
     }
 }
 
-void Pattern12_0037(PLW* wk) {
+static void Pattern12_0037(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 0xC, 0x40);
@@ -542,7 +543,7 @@ void Pattern12_0037(PLW* wk) {
     }
 }
 
-void Pattern12_0038(PLW* wk) {
+static void Pattern12_0038(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         J_Command_Attack(wk, 8, 0x1D, 9, -1);
@@ -566,7 +567,7 @@ void Pattern12_0038(PLW* wk) {
     }
 }
 
-void Pattern12_0039(PLW* wk) {
+static void Pattern12_0039(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Approach_Walk(wk, 0x37, 2);
@@ -590,7 +591,7 @@ void Pattern12_0039(PLW* wk) {
     }
 }
 
-void Pattern12_0040(PLW* wk) {
+static void Pattern12_0040(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, -0x7FA8, -0x7FC0, 9, 0x20, 0, -0x7FB0, -1, 0x200);
@@ -606,7 +607,7 @@ void Pattern12_0040(PLW* wk) {
     }
 }
 
-void Pattern12_0041(PLW* wk) {
+static void Pattern12_0041(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, -0x7FA8, -0x7FC0, 9, 0x200, 0, -0x7FB0, -1, 0x20);
@@ -626,7 +627,7 @@ void Pattern12_0041(PLW* wk) {
     }
 }
 
-void Pattern12_0042(PLW* wk) {
+static void Pattern12_0042(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, -0x7FA8, -0x7FC0, 0xB, 0x200, 0, -1, -1, -1);
@@ -646,7 +647,7 @@ void Pattern12_0042(PLW* wk) {
     }
 }
 
-void Pattern12_0043(PLW* wk) {
+static void Pattern12_0043(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, -0x7FA8, -0x7FC0, 0xB, 0x200, 0, -0x7FB0, -1, 0x40);
@@ -666,7 +667,7 @@ void Pattern12_0043(PLW* wk) {
     }
 }
 
-void Pattern12_0044(PLW* wk) {
+static void Pattern12_0044(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 9, 0x400, 0, -0x7FB0, -1, 0x200);
@@ -682,7 +683,7 @@ void Pattern12_0044(PLW* wk) {
     }
 }
 
-void Pattern12_0045(PLW* wk) {
+static void Pattern12_0045(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 9, 0x40, 0, -0x7FB0, -1, 0x200);
@@ -702,7 +703,7 @@ void Pattern12_0045(PLW* wk) {
     }
 }
 
-void Pattern12_0046(PLW* wk) {
+static void Pattern12_0046(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 9, 0x40, 0, -0x7FB0, -1, 0x200);
@@ -730,7 +731,7 @@ void Pattern12_0046(PLW* wk) {
     }
 }
 
-void Pattern12_0047(PLW* wk) {
+static void Pattern12_0047(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Pierce_On(wk);
@@ -750,7 +751,7 @@ void Pattern12_0047(PLW* wk) {
     }
 }
 
-void Pattern12_0048(PLW* wk) {
+static void Pattern12_0048(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x8014, 0xA, -1);
@@ -762,7 +763,7 @@ void Pattern12_0048(PLW* wk) {
     }
 }
 
-void Pattern12_0049(PLW* wk) {
+static void Pattern12_0049(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         J_Command_Attack(wk, 8, 0x8215, 0xA, -1);
@@ -774,7 +775,7 @@ void Pattern12_0049(PLW* wk) {
     }
 }
 
-void Pattern12_0050(PLW* wk) {
+static void Pattern12_0050(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x8016, 0xA, -1);
@@ -786,7 +787,7 @@ void Pattern12_0050(PLW* wk) {
     }
 }
 
-void Pattern12_0051(PLW* wk) {
+static void Pattern12_0051(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Keep_Away(wk, 0x7F, 0);
@@ -798,7 +799,7 @@ void Pattern12_0051(PLW* wk) {
     }
 }
 
-void Pattern12_0052(PLW* wk) {
+static void Pattern12_0052(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Pierce_On(wk);
@@ -818,7 +819,7 @@ void Pattern12_0052(PLW* wk) {
     }
 }
 
-void Pattern12_0053(PLW* wk) {
+static void Pattern12_0053(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Approach_Walk(wk, 0x37, 2);
@@ -830,7 +831,7 @@ void Pattern12_0053(PLW* wk) {
     }
 }
 
-void Pattern12_0054(PLW* wk) {
+static void Pattern12_0054(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x10);
@@ -846,7 +847,7 @@ void Pattern12_0054(PLW* wk) {
     }
 }
 
-void Pattern12_0055(PLW* wk) {
+static void Pattern12_0055(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x10);
@@ -866,7 +867,7 @@ void Pattern12_0055(PLW* wk) {
     }
 }
 
-void Pattern12_0056(PLW* wk) {
+static void Pattern12_0056(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Approach_Walk(wk, 0x7F, 2);
@@ -878,7 +879,7 @@ void Pattern12_0056(PLW* wk) {
     }
 }
 
-void Pattern12_0057(PLW* wk) {
+static void Pattern12_0057(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, 0x8058, 0x8040, 9, 0x20, 0, 0x8050, -1, 0x200);
@@ -910,7 +911,7 @@ void Pattern12_0057(PLW* wk) {
     }
 }
 
-void Pattern12_0058(PLW* wk) {
+static void Pattern12_0058(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, -0x7FA8, -0x7FC0, 9, 0x200, 0, -0x7FB0, -1, 0x200);
@@ -922,7 +923,7 @@ void Pattern12_0058(PLW* wk) {
     }
 }
 
-void Pattern12_0059(PLW* wk) {
+static void Pattern12_0059(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Approach_Walk(wk, 0xBF, 2);
@@ -934,7 +935,7 @@ void Pattern12_0059(PLW* wk) {
     }
 }
 
-void Pattern12_0060(PLW* wk) {
+static void Pattern12_0060(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x102);
@@ -946,7 +947,7 @@ void Pattern12_0060(PLW* wk) {
     }
 }
 
-void Pattern12_0061(PLW* wk) {
+static void Pattern12_0061(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x12);
@@ -958,7 +959,7 @@ void Pattern12_0061(PLW* wk) {
     }
 }
 
-void Pattern12_0062(PLW* wk) {
+static void Pattern12_0062(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Keep_Away(wk, 0x37, 0);
@@ -970,7 +971,7 @@ void Pattern12_0062(PLW* wk) {
     }
 }
 
-void Pattern12_0063(PLW* wk) {
+static void Pattern12_0063(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Keep_Away(wk, 0x7F, 0);
@@ -982,7 +983,7 @@ void Pattern12_0063(PLW* wk) {
     }
 }
 
-void Pattern12_0064(PLW* wk) {
+static void Pattern12_0064(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Keep_Away(wk, 0xBF, 0);
@@ -994,7 +995,7 @@ void Pattern12_0064(PLW* wk) {
     }
 }
 
-void Pattern12_0065(PLW* wk) {
+static void Pattern12_0065(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Keep_Away(wk, 0xBF, 0);
@@ -1006,7 +1007,7 @@ void Pattern12_0065(PLW* wk) {
     }
 }
 
-void Pattern12_0066(PLW* wk) {
+static void Pattern12_0066(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 0xB, 0x12);
@@ -1026,7 +1027,7 @@ void Pattern12_0066(PLW* wk) {
     }
 }
 
-void Pattern12_0067(PLW* wk) {
+static void Pattern12_0067(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x102);
@@ -1046,7 +1047,7 @@ void Pattern12_0067(PLW* wk) {
     }
 }
 
-void Pattern12_0068(PLW* wk) {
+static void Pattern12_0068(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x10);
@@ -1070,7 +1071,7 @@ void Pattern12_0068(PLW* wk) {
     }
 }
 
-void Pattern12_0069(PLW* wk) {
+static void Pattern12_0069(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x1E, 8, -1);
@@ -1082,7 +1083,7 @@ void Pattern12_0069(PLW* wk) {
     }
 }
 
-void Pattern12_0070(PLW* wk) {
+static void Pattern12_0070(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x1E, 9, -1);
@@ -1094,7 +1095,7 @@ void Pattern12_0070(PLW* wk) {
     }
 }
 
-void Pattern12_0071(PLW* wk) {
+static void Pattern12_0071(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, -0x7FA8, -0x7FC0, 9, 0x200, 0, -0x7FB0, -1, 0x200);
@@ -1118,7 +1119,7 @@ void Pattern12_0071(PLW* wk) {
     }
 }
 
-void Pattern12_0072(PLW* wk) {
+static void Pattern12_0072(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Attack_Term(wk, -0x7FA0, -0x7FC0, 9, 0x200, 0, -0x7FB0, -1, 0x200);
@@ -1146,7 +1147,7 @@ void Pattern12_0072(PLW* wk) {
     }
 }
 
-void Pattern12_0073(PLW* wk) {
+static void Pattern12_0073(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 9, 0x40);
@@ -1166,7 +1167,7 @@ void Pattern12_0073(PLW* wk) {
     }
 }
 
-void Pattern12_0074(PLW* wk) {
+static void Pattern12_0074(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Approach_Walk(wk, 0x93, 2);
@@ -1186,7 +1187,7 @@ void Pattern12_0074(PLW* wk) {
     }
 }
 
-void Pattern12_0075(PLW* wk) {
+static void Pattern12_0075(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x202);
@@ -1210,7 +1211,7 @@ void Pattern12_0075(PLW* wk) {
     }
 }
 
-void Pattern12_0076(PLW* wk) {
+static void Pattern12_0076(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x1E, 8, -1);
@@ -1226,7 +1227,7 @@ void Pattern12_0076(PLW* wk) {
     }
 }
 
-void Pattern12_0077(PLW* wk) {
+static void Pattern12_0077(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Keep_Away(wk, 0xBF, 0);
@@ -1250,7 +1251,7 @@ void Pattern12_0077(PLW* wk) {
     }
 }
 
-void Pattern12_0078(PLW* wk) {
+static void Pattern12_0078(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 0xB, 0x12);
@@ -1270,7 +1271,7 @@ void Pattern12_0078(PLW* wk) {
     }
 }
 
-void Pattern12_0079(PLW* wk) {
+static void Pattern12_0079(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 0xB, 0x402);
@@ -1290,7 +1291,7 @@ void Pattern12_0079(PLW* wk) {
     }
 }
 
-void Pattern12_0080(PLW* wk) {
+static void Pattern12_0080(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Normal_Attack(wk, 8, 0x10);
@@ -1310,7 +1311,7 @@ void Pattern12_0080(PLW* wk) {
     }
 }
 
-void Pattern12_0081(PLW* wk) {
+static void Pattern12_0081(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 0xC, 0x20, 0xA, -1);
@@ -1322,7 +1323,7 @@ void Pattern12_0081(PLW* wk) {
     }
 }
 
-void Pattern12_0082(PLW* wk) {
+static void Pattern12_0082(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 0xC, 0x20, 0xA, -1);
@@ -1334,7 +1335,7 @@ void Pattern12_0082(PLW* wk) {
     }
 }
 
-void Pattern12_0083(PLW* wk) {
+static void Pattern12_0083(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Hi_Jump(wk, 0xC, 1);
@@ -1350,7 +1351,7 @@ void Pattern12_0083(PLW* wk) {
     }
 }
 
-void Pattern12_0084(PLW* wk) {
+static void Pattern12_0084(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         ETC_Term(wk, 5, 1, 0xFFFF);
@@ -1366,7 +1367,7 @@ void Pattern12_0084(PLW* wk) {
     }
 }
 
-void Pattern12_0085(PLW* wk) {
+static void Pattern12_0085(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Lever_Attack(wk, 8, 0, 0x400);
@@ -1378,7 +1379,7 @@ void Pattern12_0085(PLW* wk) {
     }
 }
 
-void (*const Pattern12_Tbl[86])(PLW*) = {
+static void (*const Pattern12_Tbl[86])(PLW*) = {
     Pattern12_0000, Pattern12_0001, Pattern12_0002, Pattern12_0003, Pattern12_0004, Pattern12_0005, Pattern12_0006,
     Pattern12_0007, Pattern12_0008, Pattern12_0009, Pattern12_0010, Pattern12_0011, Pattern12_0012, Pattern12_0013,
     Pattern12_0014, Pattern12_0015, Pattern12_0016, Pattern12_0017, Pattern12_0018, Pattern12_0019, Pattern12_0020,

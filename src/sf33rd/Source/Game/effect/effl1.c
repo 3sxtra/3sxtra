@@ -1,6 +1,6 @@
 /**
  * @file effl1.c
- * TODO: identify what this effect does
+ * Effect: Decomposition / Grade / Score Effect
  */
 
 #include "sf33rd/Source/Game/effect/effl1.h"
@@ -13,23 +13,23 @@
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void effL1_trans(WORK* ewk);
-void grade_data_disp();
-void effL1_w_win_init(WORK_Other_CONN* ewk);
-void effL1_w_grade_init(WORK_Other_CONN* ewk);
-void effL1_k_grade_init(WORK_Other_CONN* ewk);
-void effL1_w_score_init(WORK_Other_CONN* ewk);
-void effL1_w_graph_init(WORK_Other_CONN* ewk);
-void effL1_k_graph_init(WORK_Other_CONN* ewk);
-void effL1_f_stage_p_init(WORK_Other_CONN* ewk);
-void effL1_f_stage_r_init(WORK_Other_CONN* ewk);
-void effL1_f_grade_init(WORK_Other_CONN* ewk);
-void effL1_f_mk_spp_init(WORK_Other_CONN* ewk);
-void effL1_f_mk_all_init(WORK_Other_CONN* ewk);
-void effL1_f_kz_cont_init(WORK_Other_CONN* ewk);
-void effL1_f_kz_spp_init(WORK_Other_CONN* ewk);
-void effL1_f_score_init(WORK_Other_CONN* ewk);
-void effL1_suuchi_bunkai_sub(WORK_Other_CONN* ewk, u32 tsc);
+static void effL1_trans(WORK* ewk);
+static void grade_data_disp();
+static void effL1_w_win_init(WORK_Other_CONN* ewk);
+static void effL1_w_grade_init(WORK_Other_CONN* ewk);
+static void effL1_k_grade_init(WORK_Other_CONN* ewk);
+static void effL1_w_score_init(WORK_Other_CONN* ewk);
+static void effL1_w_graph_init(WORK_Other_CONN* ewk);
+static void effL1_k_graph_init(WORK_Other_CONN* ewk);
+static void effL1_f_stage_p_init(WORK_Other_CONN* ewk);
+static void effL1_f_stage_r_init(WORK_Other_CONN* ewk);
+static void effL1_f_grade_init(WORK_Other_CONN* ewk);
+static void effL1_f_mk_spp_init(WORK_Other_CONN* ewk);
+static void effL1_f_mk_all_init(WORK_Other_CONN* ewk);
+static void effL1_f_kz_cont_init(WORK_Other_CONN* ewk);
+static void effL1_f_kz_spp_init(WORK_Other_CONN* ewk);
+static void effL1_f_score_init(WORK_Other_CONN* ewk);
+static void effL1_suuchi_bunkai_sub(WORK_Other_CONN* ewk, u32 tsc);
 
 const u32 bunkai_table_l1[8] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000 };
 
@@ -205,7 +205,7 @@ void effect_L1_move(WORK_Other_CONN* ewk) {
     }
 }
 
-void effL1_trans(WORK* ewk) {
+static void effL1_trans(WORK* ewk) {
     ewk->cg_number = (ewk->cg_number + 1) & 0x7FFF;
 
     if (ewk->cg_number == 0) {
@@ -215,11 +215,11 @@ void effL1_trans(WORK* ewk) {
     sort_push_request3(ewk);
 }
 
-void grade_data_disp() {
+static void grade_data_disp() {
     // Do nothing
 };
 
-void effL1_w_win_init(WORK_Other_CONN* ewk) {
+static void effL1_w_win_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     effL1_suuchi_bunkai_sub(ewk, WGJ_Win);
@@ -231,7 +231,7 @@ void effL1_w_win_init(WORK_Other_CONN* ewk) {
     }
 }
 
-void effL1_w_grade_init(WORK_Other_CONN* ewk) {
+static void effL1_w_grade_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     ewk->wu.direction = grade_get_my_grade((s32)Winner_id);
@@ -251,7 +251,7 @@ void effL1_w_grade_init(WORK_Other_CONN* ewk) {
     ewk->prio_reverse = 1;
 }
 
-void effL1_k_grade_init(WORK_Other_CONN* ewk) {
+static void effL1_k_grade_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     if (kakushi_op) {
@@ -271,7 +271,7 @@ void effL1_k_grade_init(WORK_Other_CONN* ewk) {
     ewk->wu.position_x -= 384;
 }
 
-void effL1_w_score_init(WORK_Other_CONN* ewk) {
+static void effL1_w_score_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     effL1_suuchi_bunkai_sub(ewk, WGJ_Score);
@@ -285,7 +285,7 @@ void effL1_w_score_init(WORK_Other_CONN* ewk) {
     ewk->wu.position_x -= 384;
 }
 
-void effL1_w_graph_init(WORK_Other_CONN* ewk) {
+static void effL1_w_graph_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     ewk->wu.direction = grade_get_my_point_percentage((s32)Winner_id, (s16)(ewk->wu.type - 3));
@@ -316,7 +316,7 @@ void effL1_w_graph_init(WORK_Other_CONN* ewk) {
     ewk->wu.position_x -= 384;
 }
 
-void effL1_k_graph_init(WORK_Other_CONN* ewk) {
+static void effL1_k_graph_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     if (kakushi_op) {
@@ -351,7 +351,7 @@ void effL1_k_graph_init(WORK_Other_CONN* ewk) {
     ewk->wu.position_x -= 384;
 }
 
-void effL1_f_stage_p_init(WORK_Other_CONN* ewk) {
+static void effL1_f_stage_p_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     for (i = 0; i < 10; i++) {
@@ -369,7 +369,7 @@ void effL1_f_stage_p_init(WORK_Other_CONN* ewk) {
     }
 }
 
-void effL1_f_stage_r_init(WORK_Other_CONN* ewk) {
+static void effL1_f_stage_r_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     for (i = 0; i < 22; i++) {
@@ -387,7 +387,7 @@ void effL1_f_stage_r_init(WORK_Other_CONN* ewk) {
     }
 }
 
-void effL1_f_grade_init(WORK_Other_CONN* ewk) {
+static void effL1_f_grade_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     ewk->wu.direction = judge_final[WGJ_Target]->grade;
@@ -406,7 +406,7 @@ void effL1_f_grade_init(WORK_Other_CONN* ewk) {
     ewk->prio_reverse = 1;
 }
 
-void effL1_f_mk_spp_init(WORK_Other_CONN* ewk) {
+static void effL1_f_mk_spp_init(WORK_Other_CONN* ewk) {
     s16 i;
     s16 k = 0;
 
@@ -436,7 +436,7 @@ void effL1_f_mk_spp_init(WORK_Other_CONN* ewk) {
     ewk->conn[k + 3].chr = 0x6F10;
 }
 
-void effL1_f_mk_all_init(WORK_Other_CONN* ewk) {
+static void effL1_f_mk_all_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     ewk->num_of_conn = 6;
@@ -452,7 +452,7 @@ void effL1_f_mk_all_init(WORK_Other_CONN* ewk) {
     }
 }
 
-void effL1_f_kz_cont_init(WORK_Other_CONN* ewk) {
+static void effL1_f_kz_cont_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     effL1_suuchi_bunkai_sub(ewk, judge_final[WGJ_Target][Play_Type].keizoku);
@@ -466,7 +466,7 @@ void effL1_f_kz_cont_init(WORK_Other_CONN* ewk) {
     ewk->conn[5].chr += ewk->wu.shell_ix[1];
 }
 
-void effL1_f_kz_spp_init(WORK_Other_CONN* ewk) {
+static void effL1_f_kz_spp_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     effL1_suuchi_bunkai_sub(ewk, judge_final[WGJ_Target][Play_Type].sp_point);
@@ -480,7 +480,7 @@ void effL1_f_kz_spp_init(WORK_Other_CONN* ewk) {
     ewk->conn[6].chr += ewk->wu.shell_ix[1];
 }
 
-void effL1_f_score_init(WORK_Other_CONN* ewk) {
+static void effL1_f_score_init(WORK_Other_CONN* ewk) {
     s16 i;
 
     effL1_suuchi_bunkai_sub(ewk, WGJ_Score);
@@ -495,7 +495,7 @@ void effL1_f_score_init(WORK_Other_CONN* ewk) {
     }
 }
 
-void effL1_suuchi_bunkai_sub(WORK_Other_CONN* ewk, u32 tsc) {
+static void effL1_suuchi_bunkai_sub(WORK_Other_CONN* ewk, u32 tsc) {
     s16 i;
 
     for (i = 7; i > 0; i--) {

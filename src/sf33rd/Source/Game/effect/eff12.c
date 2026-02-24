@@ -1,6 +1,6 @@
 /**
  * @file eff12.c
- * TODO: identify what this effect does
+ * Effect: Screen Object / Flash
  */
 
 #include "sf33rd/Source/Game/effect/eff12.h"

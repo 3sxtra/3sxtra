@@ -146,6 +146,7 @@ const s16 grade_t_table[32][2] = { { 0, 20 },       { 75, 20 },     { 150, 20 },
                                    { 1750, 3000 },  { 1800, 4000 }, { 1850, 5000 }, { 1900, 6000 }, { 1940, 8000 },
                                    { 1980, 10000 }, { 2020, 20000 } };
 
+/** @brief Initializes grading work for a player's first appearance in a mode. */
 void grade_check_work_1st_init(s16 ix, s16 ix2) {
     s16 i;
 
@@ -159,6 +160,7 @@ void grade_check_work_1st_init(s16 ix, s16 ix2) {
     }
 }
 
+/** @brief Resets per-stage grading work (win records, streaks, SA stock). */
 void grade_check_work_stage_init(s16 ix) {
     judge_item[ix][Play_Type].offence_total = 0;
     judge_item[ix][Play_Type].defence_total = 0;
@@ -177,6 +179,7 @@ void grade_check_work_stage_init(s16 ix) {
     judge_item[ix][Play_Type].em_renshou = 0;
 }
 
+/** @brief Resets per-round grading work (combo counts, blocking, first attack). */
 void grade_check_work_round_init(s16 ix) {
     s16 i;
 
@@ -229,6 +232,7 @@ void grade_check_work_round_init(s16 ix) {
     }
 }
 
+/** @brief Calculates and stores the final grading parameters for a player. */
 void grade_makeup_final_parameter(s16 ix, s16 pt) {
     renew_judge_final_work(ix, pt);
     judge_final[ix][pt].all_clear = (VS_Index[WINNER] < 10) ^ 1;
@@ -237,6 +241,7 @@ void grade_makeup_final_parameter(s16 ix, s16 pt) {
     makeup_final_grade(ix, pt);
 }
 
+/** @brief Updates the final judgement work with new grade data. */
 void renew_judge_final_work(s16 ix, s16 pt) {
     u32* frsd;
     s16 i;
@@ -252,6 +257,7 @@ void renew_judge_final_work(s16 ix, s16 pt) {
     }
 }
 
+/** @brief Computes the final letter grade from offence, defence, tech, and extra points. */
 void makeup_final_grade(s16 ix, s16 pt) {
     s16 i;
     s16 tt = 0;
@@ -340,12 +346,14 @@ void makeup_final_grade(s16 ix, s16 pt) {
     judge_final[ix][pt].vs_cpu_grade[12] = judge_final[ix][pt].grade = get_grade_ix(tt);
 }
 
+/** @brief Awards bonus score based on the player's final grade. */
 void grade_final_grade_bonus() {
     u32 bonus_point = grade_t_table[judge_final[WGJ_Target][Final_Play_Type[WGJ_Target]].grade][1];
     bonus_point *= 0x64;
     Score[WGJ_Target][Final_Play_Type[WGJ_Target]] += bonus_point;
 }
 
+/** @brief Builds supplementary per-round data for final grade display. */
 void makeup_spp_frdat(s16 ix, s16 pt) {
     s16 i;
     s16 j;
@@ -382,6 +390,7 @@ void makeup_spp_frdat(s16 ix, s16 pt) {
     }
 }
 
+/** @brief Calculates round-end parameters (vitality, first attack, result). */
 void grade_makeup_round_parameter(s16 ix) {
     s16 ix2 = (ix + 1) & 1;
 
@@ -400,12 +409,14 @@ void grade_makeup_round_parameter(s16 ix) {
     backup_RO_PT();
 }
 
+/** @brief Backs up the current round operator and play type for grade use. */
 void backup_RO_PT() {
     RO_backup[0] = Round_Operator[0];
     RO_backup[1] = Round_Operator[1];
     PT_backup = Play_Type;
 }
 
+/** @brief Calculates round parameters for a double-KO outcome. */
 void grade_makeup_round_para_dko() {
     s16 i;
 
@@ -420,6 +431,7 @@ void grade_makeup_round_para_dko() {
     backup_RO_PT();
 }
 
+/** @brief Calculates the judgement gals (overall match) grading data. */
 void grade_makeup_judgement_gals() {
     s16 i;
 
@@ -433,6 +445,7 @@ void grade_makeup_judgement_gals() {
     }
 }
 
+/** @brief Computes the per-stage grade from offence, defence, tech, and extra totals. */
 void grade_makeup_stage_parameter(s16 ix) {
     s16 i;
     s16 grade;
@@ -541,6 +554,7 @@ void grade_makeup_stage_parameter(s16 ix) {
     }
 }
 
+/** @brief Checks if a player entered via quick-entry (rannyuu) during the stage. */
 s32 rannyuu_Q_check(s16 ix) {
     if ((Round_Operator[ix] == 0) && (My_char[ix] == 17)) {
         return 1;
@@ -549,6 +563,7 @@ s32 rannyuu_Q_check(s16 ix) {
     return 0;
 }
 
+/** @brief Builds the stage grading parameters for the COM player. */
 void grade_makeup_stage_para_com(s16 ix) {
     judge_com[ix].round = judge_item[ix][Play_Type].round;
 
@@ -564,6 +579,7 @@ void grade_makeup_stage_para_com(s16 ix) {
                                        judge_com[ix].tech_pts_total + judge_com[ix].ex_point_total);
 }
 
+/** @brief Builds grading parameters for the bonus stage. */
 void grade_makeup_bonus_parameter(s16 ix) {
     if (Round_Operator[ix] != 0) {
         switch (bg_w.stage) {
@@ -578,6 +594,7 @@ void grade_makeup_bonus_parameter(s16 ix) {
     }
 }
 
+/** @brief Calculates the total offence grade from hit accuracy, clean hits, and combo data. */
 s16 get_offence_total(s16 ix) {
     s32 num;
     s32 num2;
@@ -655,6 +672,7 @@ s16 get_offence_total(s16 ix) {
     return point;
 }
 
+/** @brief Calculates the total defence grade from guard rate, blocking, and stun data. */
 s16 get_defence_total(s16 ix, s16 wf) {
     s32 num = 0;
     s16 i;
@@ -741,6 +759,7 @@ s16 get_defence_total(s16 ix, s16 wf) {
     return num;
 }
 
+/** @brief Calculates the total tech grade from reversals, SA usage, leap attacks, etc. */
 s16 get_tech_pts_total(s16 ix) {
     s16 i;
     s16 point = 0;
@@ -846,6 +865,7 @@ s16 get_tech_pts_total(s16 ix) {
     return point;
 }
 
+/** @brief Calculates extra points from vitality difference, streaks, and enemy wins. */
 s16 get_ex_point_total(s16 ix, s16 wf) {
     s16 i;
     s16 point;
@@ -904,6 +924,7 @@ s16 get_ex_point_total(s16 ix, s16 wf) {
     return point;
 }
 
+/** @brief Increments the clean-hit counter for grading. */
 void grade_add_clean_hits(WORK_Other* wk) {
     WORK* mwk;
     s16 ix;
@@ -923,6 +944,7 @@ void grade_add_clean_hits(WORK_Other* wk) {
     }
 }
 
+/** @brief Increments the attack-renew counter for grading. */
 void grade_add_att_renew(WORK_Other* wk) {
     WORK* mwk;
     s16 ix;
@@ -942,12 +964,14 @@ void grade_add_att_renew(WORK_Other* wk) {
     }
 }
 
+/** @brief Increments the guard-success counter for grading. */
 void grade_add_guard_success(s16 ix) {
     if ((u16)ix < 2) {
         judge_item[ix][Play_Type].guard_succ++;
     }
 }
 
+/** @brief Increments the enemy-stun counter for grading. */
 void grade_add_em_stun(s16 ix) {
     judge_item[ix][Play_Type].em_stun++;
 
@@ -956,12 +980,14 @@ void grade_add_em_stun(s16 ix) {
     }
 }
 
+/** @brief Updates the max combo count if the current combo exceeds the record. */
 void grade_max_combo_check(s16 ix, s16 num) {
     if (judge_item[ix][Play_Type].max_combo < num) {
         judge_item[ix][Play_Type].max_combo = num;
     }
 }
 
+/** @brief Increments the leap-attack counter for grading. */
 void grade_add_leap_attack(s16 ix) {
     judge_item[ix][Play_Type].leap_attack += 1;
 
@@ -970,6 +996,7 @@ void grade_add_leap_attack(s16 ix) {
     }
 }
 
+/** @brief Increments the grab-defence counter for grading. */
 void grade_add_grap_def(s16 ix) {
     judge_item[ix][Play_Type].grap_def += 1;
 
@@ -978,6 +1005,7 @@ void grade_add_grap_def(s16 ix) {
     }
 }
 
+/** @brief Increments the quick-stand counter for grading. */
 void grade_add_quick_stand(s16 ix) {
     judge_item[ix][Play_Type].quick_stand++;
 
@@ -986,6 +1014,7 @@ void grade_add_quick_stand(s16 ix) {
     }
 }
 
+/** @brief Increments the normal-throw counter for grading. */
 void grade_add_nml_nage(WORK* wk) {
     s16 ix;
 
@@ -998,6 +1027,7 @@ void grade_add_nml_nage(WORK* wk) {
     }
 }
 
+/** @brief Increments the reversal counter for grading. */
 void grade_add_reversal(s16 ix) {
     judge_item[ix][Play_Type].reversal += 1;
 
@@ -1006,6 +1036,7 @@ void grade_add_reversal(s16 ix) {
     }
 }
 
+/** @brief Increments the target-combo counter for grading. */
 void grade_add_target_combo(s16 ix) {
     judge_item[ix][Play_Type].target_combo++;
 
@@ -1014,6 +1045,7 @@ void grade_add_target_combo(s16 ix) {
     }
 }
 
+/** @brief Increments the command-move counter for grading. */
 void grade_add_command_waza(s16 ix) {
     judge_item[ix][Play_Type].comwaza += 1;
 
@@ -1022,6 +1054,7 @@ void grade_add_command_waza(s16 ix) {
     }
 }
 
+/** @brief Increments the Super Arts usage counter for grading. */
 void grade_add_super_arts(s16 ix, s16 num) {
     judge_item[ix][Play_Type].sa_exec += num;
 
@@ -1030,10 +1063,12 @@ void grade_add_super_arts(s16 ix, s16 num) {
     }
 }
 
+/** @brief Stores current vitality for grade comparison at round end. */
 void grade_store_vitality(s16 ix) {
     judge_item[ix][Play_Type].vitality = plw[ix].wu.vital_new;
 }
 
+/** @brief Processes a successful parry/blocking and updates grade counters. */
 void grade_add_blocking(PLW* wk) {
     s16 ix = wk->wu.id;
 
@@ -1069,10 +1104,12 @@ void grade_add_blocking(PLW* wk) {
     }
 }
 
+/** @brief Records first-attack status for the round. */
 void grade_get_first_attack(s16 ix) {
     judge_item[ix][Play_Type].first_attack = 1;
 }
 
+/** @brief Sets the round-result flags in the grade work (win type, perfect, etc.). */
 void grade_set_round_result(s16 ix) {
     if (Round_Result & 0x8201) {
         judge_item[ix][Play_Type].kimarite = 0;
@@ -1097,6 +1134,7 @@ void grade_set_round_result(s16 ix) {
     judge_item[ix][Play_Type].kimarite = 0;
 }
 
+/** @brief Increments the personal-action (taunt) counter for grading. */
 void grade_add_personal_action(s16 ix) {
     if (!pcon_dp_flag) {
         judge_item[ix][Play_Type].personal_act++;
@@ -1107,6 +1145,7 @@ void grade_add_personal_action(s16 ix) {
     }
 }
 
+/** @brief Records the vitality difference between players for grading. */
 void grade_check_tairyokusa() {
     s16 vwork = plw[1].wu.vital_new - plw[0].wu.vital_new;
 
@@ -1121,6 +1160,7 @@ void grade_check_tairyokusa() {
     }
 }
 
+/** @brief Tracks repeated-move usage and penalizes excessive repetition. */
 void grade_add_onaji_waza(s16 ix) {
     s16 num;
 
@@ -1136,10 +1176,12 @@ void grade_add_onaji_waza(s16 ix) {
     }
 }
 
+/** @brief Returns the player's current grade value. */
 s16 grade_get_my_grade(s16 ix) {
     return judge_item[ix][Play_Type].grade;
 }
 
+/** @brief Returns the player's grade percentage for the current stage. */
 s16 grade_get_my_point_percentage(s16 ix, s16 flag) {
     s32 rnum;
 
@@ -1172,6 +1214,7 @@ s16 grade_get_my_point_percentage(s16 ix, s16 flag) {
     return rnum;
 }
 
+/** @brief Returns the COM player's grade percentage for the current stage. */
 s16 grade_get_cm_point_percentage(s16 ix, s16 flag) {
     s32 rnum;
 
@@ -1204,6 +1247,7 @@ s16 grade_get_cm_point_percentage(s16 ix, s16 flag) {
     return rnum;
 }
 
+/** @brief Converts a raw point total into a grade bucket index. */
 s16 get_grade_ix(s16 pts) {
     s16 i;
 
@@ -1216,6 +1260,7 @@ s16 get_grade_ix(s16 pts) {
     return i;
 }
 
+/** @brief Checks if the defender missed a guard opportunity and increments the miss counter. */
 void check_guard_miss(WORK* as, PLW* ds, s8 gddir) {
     if (ds->remake_power.total) {
         return;

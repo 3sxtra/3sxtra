@@ -1,3 +1,7 @@
+/**
+ * @file sysdir.h
+ * @brief Dipswitch enums and system-direction parameter API.
+ */
 #ifndef SYSDIR_H
 #define SYSDIR_H
 

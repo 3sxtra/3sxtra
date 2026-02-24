@@ -1,6 +1,6 @@
 /**
  * @file effe0.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/effe0.h"
@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void Setup_Char_E0(WORK_Other* ewk);
+static void Setup_Char_E0(WORK_Other* ewk);
 
 void effect_E0_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -111,7 +111,7 @@ void effect_E0_move(WORK_Other* ewk) {
     sort_push_request4(&ewk->wu);
 }
 
-void Setup_Char_E0(WORK_Other* ewk) {
+static void Setup_Char_E0(WORK_Other* ewk) {
     ewk->wu.char_index = ((ewk->wu.direction - 1) * 4) + 35;
     ewk->wu.dir_step = 0;
 

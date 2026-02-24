@@ -1,21 +1,28 @@
 /**
  * @file op_sub.c
- * Opening Subroutines
+ * @brief Opening subroutines — texture release, tile rendering, palette copy.
+ *
+ * Helper routines used by the opening cinematic: releasing PPG textures,
+ * rendering 256×256 tile quads, drawing scrolling background maps, and
+ * copying palette data.
+ *
+ * Part of the opening module.
  */
 
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "common.h"
+#include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/system/ramcnt.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Release PPG texture/palette handles for a given asset group. */
 void TexRelease(u32 G_Num) {
     if (G_Num == 601) {
         title_tex_flag = 0;
@@ -39,6 +46,7 @@ void TexRelease(u32 G_Num) {
     }
 }
 
+/** @brief Release all opening-background textures and purge associated memory. */
 void TexRelease_OP() {
     Purge_memory_of_kind_of_key(0x1D);
     ppgSourceDataReleased(&ppgOpnBgList);
@@ -47,6 +55,7 @@ void TexRelease_OP() {
     purge_texcash_work(9);
 }
 
+/** @brief Render a single 256×256 opening tile quad with scaling and priority. */
 void put_chr2(OPTW* optw) {
     Vertex tex[4];
 
@@ -62,6 +71,7 @@ void put_chr2(OPTW* optw) {
     ppgWriteQuadUseTrans(tex, optw->col.full, NULL, optw->g_no, -1, optw->hv, 300);
 }
 
+/** @brief Render a scrolling tile map region for an opening background layer. */
 void opbg_trans(OPBW* opbw, s16 x, s16 y) {
     OPTW optw;
     s16 i;
@@ -100,7 +110,9 @@ void opbg_trans(OPBW* opbw, s16 x, s16 y) {
     }
 }
 
+/** @brief Copy n palette entries from colcd into ghost DC slot dst. */
 void COLOR_COPYn(s16 dst, s16 colcd, s16 n) {
     s16* colram = (s16*)ColorRAM;
-    njSetPaletteData(dst * 16, n * 16, &colram[colcd * 16]);
+    palCopyGhostDC(dst * 16, n * 16, &colram[colcd * 16]);
+    palUpdateGhostDC();
 }

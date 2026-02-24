@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file shell11.c
  * COM Shell: Ryu, Ken, Chun-Li, Makoto, Q, Twelve, Remy
  */
@@ -8,13 +8,14 @@
 #include "sf33rd/Source/Game/com/com_sub.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 
-void (*const Shell11_Tbl[14])(PLW*);
+static void (*const Shell11_Tbl[14])(PLW*);
 
+/** @brief Ryu shell (projectile response) AI entry point. */
 void Shell11(PLW* wk) {
     Shell11_Tbl[(s16)Pattern_Index[wk->wu.id]](wk);
 }
 
-void Shell11_0000(PLW* wk) {
+static void Shell11_0000(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     default:
         End_Pattern(wk);
@@ -22,7 +23,7 @@ void Shell11_0000(PLW* wk) {
     }
 }
 
-void Shell11_0001(PLW* wk) {
+static void Shell11_0001(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 1, 2, 1, -1, -1);
@@ -38,7 +39,7 @@ void Shell11_0001(PLW* wk) {
     }
 }
 
-void Shell11_0002(PLW* wk) {
+static void Shell11_0002(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -54,7 +55,7 @@ void Shell11_0002(PLW* wk) {
     }
 }
 
-void Shell11_0003(PLW* wk) {
+static void Shell11_0003(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -78,7 +79,7 @@ void Shell11_0003(PLW* wk) {
     }
 }
 
-void Shell11_0004(PLW* wk) {
+static void Shell11_0004(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -98,7 +99,7 @@ void Shell11_0004(PLW* wk) {
     }
 }
 
-void Shell11_0005(PLW* wk) {
+static void Shell11_0005(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -118,7 +119,7 @@ void Shell11_0005(PLW* wk) {
     }
 }
 
-void Shell11_0006(PLW* wk) {
+static void Shell11_0006(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 1, 2, 1, -1, -1);
@@ -134,7 +135,7 @@ void Shell11_0006(PLW* wk) {
     }
 }
 
-void Shell11_0007(PLW* wk) {
+static void Shell11_0007(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x1D, 8, -1);
@@ -146,7 +147,7 @@ void Shell11_0007(PLW* wk) {
     }
 }
 
-void Shell11_0008(PLW* wk) {
+static void Shell11_0008(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -166,7 +167,7 @@ void Shell11_0008(PLW* wk) {
     }
 }
 
-void Shell11_0009(PLW* wk) {
+static void Shell11_0009(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Lever_Off(wk);
@@ -186,7 +187,7 @@ void Shell11_0009(PLW* wk) {
     }
 }
 
-void Shell11_0010(PLW* wk) {
+static void Shell11_0010(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     default:
         End_Pattern(wk);
@@ -194,7 +195,7 @@ void Shell11_0010(PLW* wk) {
     }
 }
 
-void Shell11_0011(PLW* wk) {
+static void Shell11_0011(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x1D, 0xA, 0x70);
@@ -206,7 +207,7 @@ void Shell11_0011(PLW* wk) {
     }
 }
 
-void Shell11_0012(PLW* wk) {
+static void Shell11_0012(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Command_Attack_Term(wk, 8, 0x1E, 0xA, -1, -1, 0x30, 0, -1, -1, 0xFFFF);
@@ -218,7 +219,7 @@ void Shell11_0012(PLW* wk) {
     }
 }
 
-void Shell11_0013(PLW* wk) {
+static void Shell11_0013(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Jump_Command_Attack_Term(wk, 8, 0x1E, 0xA, 0x700, -1, 0x30, 0, -1, -1, 0xFFFF);
@@ -230,6 +231,6 @@ void Shell11_0013(PLW* wk) {
     }
 }
 
-void (*const Shell11_Tbl[14])(PLW*) = { Shell11_0000, Shell11_0001, Shell11_0002, Shell11_0003, Shell11_0004,
-                                        Shell11_0005, Shell11_0006, Shell11_0007, Shell11_0008, Shell11_0009,
-                                        Shell11_0010, Shell11_0011, Shell11_0012, Shell11_0013 };
+static void (*const Shell11_Tbl[14])(PLW*) = { Shell11_0000, Shell11_0001, Shell11_0002, Shell11_0003, Shell11_0004,
+                                               Shell11_0005, Shell11_0006, Shell11_0007, Shell11_0008, Shell11_0009,
+                                               Shell11_0010, Shell11_0011, Shell11_0012, Shell11_0013 };

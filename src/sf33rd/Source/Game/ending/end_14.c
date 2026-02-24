@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/ending/end_14.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -15,32 +16,32 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void end_e00_move();
-void end_e01_move();
-void end_e02_move();
+static void end_e00_move();
+static void end_e01_move();
+static void end_e02_move();
 
-void end_e00_0000();
-void end_e00_1000();
-void end_e00_2000();
-void end_e00_3000();
-void end_e00_4000();
-void end_e00_5000();
-void end_e00_6000();
-void end_e00_7000();
+static void end_e00_0000();
+static void end_e00_1000();
+static void end_e00_2000();
+static void end_e00_3000();
+static void end_e00_4000();
+static void end_e00_5000();
+static void end_e00_6000();
+static void end_e00_7000();
 
-void end_e01_0000();
-void end_e01_7000();
+static void end_e01_0000();
+static void end_e01_7000();
 
-void end_e02_0000();
-void end_e02_1000();
-void end_e02_2000();
-void end_e02_3000();
-void end_e02_4000();
-void end_e02_7000();
+static void end_e02_0000();
+static void end_e02_1000();
+static void end_e02_2000();
+static void end_e02_3000();
+static void end_e02_4000();
+static void end_e02_7000();
 
-s16 end_e00_0000_col_sub();
-s16 end_e00_0000_col_sub2();
-void end_e00_1000_col_sub();
+static s16 end_e00_0000_col_sub();
+static s16 end_e00_0000_col_sub2();
+static void end_e00_1000_col_sub();
 
 struct {
     XY xy[2];
@@ -51,6 +52,7 @@ const s16 timer_e_tbl[9] = { 1320, 240, 900, 1200, 360, 360, 300, 420, 600 };
 const s16 end_e_pos[10][2] = { { 256, 768 }, { 768, 0 }, { 768, 768 }, { 256, 0 },   { 768, 768 },
                                { 768, 768 }, { 256, 0 }, { 256, 768 }, { 256, 256 }, { 768, 256 } };
 
+/** @brief Akuma/Gouki's ending entry point — initialize and run all ending scenes. */
 void end_14000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -103,14 +105,18 @@ void end_14000(s16 pl_num) {
     }
 }
 
-void end_e00_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_e00_move() {
     void (*end_e00_jp[8])() = { end_e00_0000, end_e00_1000, end_e00_2000, end_e00_3000,
                                 end_e00_4000, end_e00_5000, end_e00_6000, end_e00_7000 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 8)
+        return;
     end_e00_jp[end_w.r_no_2]();
 }
 
-void end_e00_0000() {
+/** @brief Scene 0 — color cycling animation with background setup. */
+static void end_e00_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -195,7 +201,8 @@ void end_e00_0000() {
 
 const u8 end_e00_0000_col_tbl[12] = { 0, 1, 2, 3, 4, 5, 6, 5, 6, 5, 6, 6 };
 
-s16 end_e00_0000_col_sub() {
+/** @brief Color sub-routine — cycle palette for scene 0. */
+static s16 end_e00_0000_col_sub() {
     bgw_ptr->free--;
 
     if (bgw_ptr->free <= 0) {
@@ -212,7 +219,8 @@ s16 end_e00_0000_col_sub() {
     return 0;
 }
 
-s16 end_e00_0000_col_sub2() {
+/** @brief Color sub-routine 2 — reverse palette cycle. */
+static s16 end_e00_0000_col_sub2() {
     bgw_ptr->free--;
 
     if (bgw_ptr->free <= 0) {
@@ -229,7 +237,8 @@ s16 end_e00_0000_col_sub2() {
 
 const u8 end_e00_1000_col_tbl[8] = { 0, 0, 1, 2, 3, 4, 5, 6 };
 
-void end_e00_1000_col_sub() {
+/** @brief Color sub-routine — fade-in palette for scene 1. */
+static void end_e00_1000_col_sub() {
     if (bgw_ptr->l_limit >= 8) {
         return;
     }
@@ -248,7 +257,8 @@ void end_e00_1000_col_sub() {
     }
 }
 
-void end_e00_1000() {
+/** @brief Scene 1 — fade-in with color cycling effect. */
+static void end_e00_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -282,7 +292,8 @@ void end_e00_1000() {
 
 const u8 end_e00_2000_col_tbl[8] = { 6, 5, 4, 3, 2, 1, 0, 0 };
 
-void end_e00_2000() {
+/** @brief Scene 2 — reverse color cycle with fade-out. */
+static void end_e00_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -336,7 +347,8 @@ void end_e00_2000() {
     }
 }
 
-void end_e00_3000() {
+/** @brief Scene 3 — white panel fade with background transition. */
+static void end_e00_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -390,7 +402,8 @@ void end_e00_3000() {
     }
 }
 
-void end_e00_4000() {
+/** @brief Scene 4 — horizontal pan with effect and message. */
+static void end_e00_4000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         overwrite_panel(0xFFFFFFFF, 0x17);
@@ -438,7 +451,8 @@ void end_e00_4000() {
     }
 }
 
-void end_e00_5000() {
+/** @brief Scene 5 — static background with message and effect. */
+static void end_e00_5000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -456,7 +470,8 @@ void end_e00_5000() {
     }
 }
 
-void end_e00_6000() {
+/** @brief Scene 6 — timed effect sequence with flash. */
+static void end_e00_6000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -511,7 +526,8 @@ void end_e00_6000() {
     }
 }
 
-void end_e00_7000() {
+/** @brief Scene 7 — final scene with flash and fade timer. */
+static void end_e00_7000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         overwrite_panel(0xFFFFFFFF, 0x17);
@@ -563,14 +579,18 @@ void end_e00_7000() {
     }
 }
 
-void end_e01_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_e01_move() {
     void (*end_101_jp[8])() = { end_e01_0000, end_X_com01, end_X_com01, end_X_com01,
                                 end_X_com01,  end_X_com01, end_X_com01, end_e01_7000 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 8)
+        return;
     end_101_jp[end_w.r_no_2]();
 }
 
-void end_e01_0000() {
+/** @brief Layer 1 scene 0 — per-scene background setup with effects. */
+static void end_e01_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -638,7 +658,8 @@ void end_e01_0000() {
     }
 }
 
-void end_e01_7000() {
+/** @brief Layer 1 scene 7 — vertical scroll with effects. */
+static void end_e01_7000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -664,14 +685,18 @@ void end_e01_7000() {
     }
 }
 
-void end_e02_move() {
+/** @brief Dispatch to the current scene handler for background layer 2. */
+static void end_e02_move() {
     void (*end_102_jp[8])() = { end_e02_0000, end_e02_1000, end_e02_2000, end_e02_3000,
                                 end_e02_4000, end_X_com01,  end_X_com01,  end_e02_7000 };
     bgw_ptr = &bg_w.bgw[2];
+    if (end_w.r_no_2 >= 8)
+        return;
     end_102_jp[end_w.r_no_2]();
 }
 
-void end_e02_0000() {
+/** @brief Layer 2 scene 0 — color cycling animation on layer 2. */
+static void end_e02_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -705,7 +730,8 @@ void end_e02_0000() {
     }
 }
 
-void end_e02_1000() {
+/** @brief Layer 2 scene 1 — color cycling on layer 2 (variant). */
+static void end_e02_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -721,7 +747,8 @@ void end_e02_1000() {
     }
 }
 
-void end_e02_2000() {
+/** @brief Layer 2 scene 2 — reverse color cycle on layer 2. */
+static void end_e02_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -746,7 +773,8 @@ void end_e02_2000() {
     }
 }
 
-void end_e02_3000() {
+/** @brief Layer 2 scene 3 — background position with effects. */
+static void end_e02_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -772,7 +800,8 @@ void end_e02_3000() {
     }
 }
 
-void end_e02_4000() {
+/** @brief Layer 2 scene 4 — horizontal pan with effect. */
+static void end_e02_4000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -792,7 +821,8 @@ void end_e02_4000() {
     }
 }
 
-void end_e02_7000() {
+/** @brief Layer 2 scene 7 — vertical scroll with effect. */
+static void end_e02_7000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

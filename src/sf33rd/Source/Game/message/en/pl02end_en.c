@@ -1,8 +1,3 @@
-/**
- * @file pl02end_en.c
- * Ryu Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl02end_en.h"
 #include "common.h"
 
@@ -46,4 +41,4 @@ static s8** msgEndAdrPL02[11] = {
 
 static s8 msgEndCtrPL02[11] = { 1, 1, 2, 2, 2, 2, 1, 2, 2, 2, 1 };
 
-MessageTable pl02end_usa_tbl = { msgEndAdrPL02, msgEndCtrPL02 };
+MessageTable pl02end_en_tbl = { msgEndAdrPL02, msgEndCtrPL02 };

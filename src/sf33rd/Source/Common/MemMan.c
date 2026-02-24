@@ -1,12 +1,25 @@
+/**
+ * @file MemMan.c
+ * @brief Doubly-linked-list heap memory manager implementation.
+ *
+ * Best-fit allocator supporting forward (flag=0) and reverse (flag=1)
+ * allocation within a pre-allocated memory region. Memory cells are
+ * linked in address order; allocation finds the smallest gap that fits.
+ *
+ * Part of the Common module.
+ * Originally from the PS2 memory management module.
+ */
 #include "sf33rd/Source/Common/MemMan.h"
 #include "common.h"
 
 u32 mmInitialNumber;
 
+/** @brief Reset the global heap instance counter. */
 void mmSystemInitialize() {
     mmInitialNumber = 0;
 }
 
+/** @brief Initialise a heap region with sentinel cells at both ends. */
 void mmHeapInitialize(_MEMMAN_OBJ* mmobj, u8* adrs, s32 size, s32 unit, s8* format) {
     mmobj->oriHead = adrs;
     mmobj->oriSize = size;
@@ -26,26 +39,32 @@ void mmHeapInitialize(_MEMMAN_OBJ* mmobj, u8* adrs, s32 size, s32 unit, s8* form
     mmobj->cell_fin->size = mmobj->ownUnit;
 }
 
+/** @brief Round a value up to the next alignment boundary. */
 uintptr_t mmRoundUp(s32 unit, uintptr_t num) {
     return ~(unit - 1) & (num + unit - 1);
 }
 
+/** @brief Round a value down to the alignment boundary. */
 uintptr_t mmRoundOff(s32 unit, uintptr_t num) {
     return num & ~(unit - 1);
 }
 
+/** @brief Debug tag writer (no-op in this build). */
 void mmDebWriteTag(s8* /* unused */) {
     // Do nothing
 }
 
+/** @brief Return the current free space in the heap. */
 ssize_t mmGetRemainder(_MEMMAN_OBJ* mmobj) {
     return mmobj->remainder;
 }
 
+/** @brief Return the historical minimum free space (watermark). */
 ssize_t mmGetRemainderMin(_MEMMAN_OBJ* mmobj) {
     return mmobj->remainderMin;
 }
 
+/** @brief Allocate memory from the heap (flag=0: forward, flag=1: reverse). */
 u8* mmAlloc(_MEMMAN_OBJ* mmobj, ssize_t size, s32 flag) {
     struct _MEMMAN_CELL* cell = mmAllocSub(mmobj, size, flag);
 
@@ -62,6 +81,7 @@ u8* mmAlloc(_MEMMAN_OBJ* mmobj, ssize_t size, s32 flag) {
     return (u8*)cell + mmobj->ownUnit;
 }
 
+/** @brief Best-fit allocation subroutine — finds and links a new cell. */
 struct _MEMMAN_CELL* mmAllocSub(_MEMMAN_OBJ* mmobj, ssize_t size, s32 flag) {
     struct _MEMMAN_CELL* myself;
     struct _MEMMAN_CELL* next;
@@ -143,6 +163,7 @@ struct _MEMMAN_CELL* mmAllocSub(_MEMMAN_OBJ* mmobj, ssize_t size, s32 flag) {
     return myself;
 }
 
+/** @brief Free a previously allocated block by unlinking its cell. */
 void mmFree(_MEMMAN_OBJ* mmobj, u8* adrs) {
     struct _MEMMAN_CELL* cell;
 

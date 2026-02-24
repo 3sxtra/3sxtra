@@ -1,3 +1,8 @@
+/**
+ * @file texgroup.h
+ * @brief Texture group manager and loader declarations.
+ */
+
 #ifndef TEXGROUP_H
 #define TEXGROUP_H
 

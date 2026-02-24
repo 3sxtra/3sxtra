@@ -1,6 +1,6 @@
 /**
  * @file eff11.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect (Directional)
  */
 
 #include "sf33rd/Source/Game/effect/eff11.h"

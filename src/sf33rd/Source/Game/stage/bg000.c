@@ -19,6 +19,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Gill's Stage stage. */
 void BG000() {
     bgw_ptr = &bg_w.bgw[1];
     bg0001();
@@ -29,11 +30,15 @@ void BG000() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Gill's Stage. */
 void bg0001() {
     void (*bg0002_jmp[3])() = { bg0001_init00, bg0000_demo, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 3)
+        return;
     bg0002_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Gill's Stage. */
 void bg0001_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x1D0;
@@ -70,11 +75,15 @@ void bg0001_init00() {
     bgw_ptr->old_pos_x = bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
 }
 
+/** @brief Background layer handler for Gill's Stage. */
 void bg0000() {
     void (*bg0000_jmp[3])() = { bg0000_init00, bg0000_demo, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 3)
+        return;
     bg0000_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Gill's Stage. */
 void bg0000_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x1D0;
@@ -101,6 +110,7 @@ void bg0000_init00() {
     bgw_ptr->old_pos_x = bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
 }
 
+/** @brief Demo/intro animation handler for Gill's Stage. */
 void bg0000_demo() {
     switch (bgw_ptr->r_no_1) {
     case 0:

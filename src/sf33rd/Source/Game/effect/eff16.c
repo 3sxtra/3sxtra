@@ -1,6 +1,6 @@
 /**
  * @file eff16.c
- * TODO: identify what this effect does
+ * Effect: Decomposition / Part Break (Bunkai)
  */
 
 #include "sf33rd/Source/Game/effect/eff16.h"
@@ -47,7 +47,7 @@ const CONN bbbs_score[4][8] = { { { -64, 164, 0, 32474 },
                                   { 0, 0, 0, 0 },
                                   { 0, 0, 0, 0 } } };
 
-void eff16_trans(WORK* ewk);
+static void eff16_trans(WORK* ewk);
 static s16 score_bunkai_eff16(WORK_Other_CONN* ewk, u32 tsc);
 
 void effect_16_move(WORK_Other* ewk) {
@@ -111,13 +111,13 @@ void effect_16_move(WORK_Other* ewk) {
     }
 }
 
-void eff16_trans(WORK* ewk) {
+static void eff16_trans(WORK* ewk) {
     ewk->position_x = bg_w.bgw[2].wxy[0].disp.pos;
     ewk->position_y = bg_w.bgw[2].wxy[1].disp.pos;
     sort_push_request3(ewk);
 }
 
-s16 score_bunkai_eff16(WORK_Other_CONN* ewk, u32 tsc) {
+static s16 score_bunkai_eff16(WORK_Other_CONN* ewk, u32 tsc) {
     s16 noobjans = 0;
     s16 i;
     s16 ixs[8];

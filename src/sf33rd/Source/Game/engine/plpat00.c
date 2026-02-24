@@ -19,7 +19,9 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-s16 get_life_add_point(u8 num, s16 ori_add);
+static s16 get_life_add_point(u8 num, s16 ori_add);
+
+#define EXATT_TABLE_SIZE 18
 
 void (*const pl00_exatt_table[18])(PLW*);
 
@@ -29,11 +31,15 @@ const s16 mnd_em_tall[21][2] = { { 28, 56 }, { 24, 44 }, { 24, 40 }, { 20, 32 },
 
 const s16 glap_table[5] = { 1, 2, 3, 4, 0 };
 
+/** @brief Gill: extra attack dispatcher. */
 void pl00_extra_attack(PLW* wk) {
-    pl00_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl00_exatt_table[idx](wk);
 }
 
-void Att_MOONSALT_KNEE_DROP(PLW* wk) {
+/** @brief Gill: Moonsault Knee Drop attack. */
+static void Att_MOONSALT_KNEE_DROP(PLW* wk) {
     PLW* twk;
     s16 ex;
     s16 ey;
@@ -84,7 +90,8 @@ void Att_MOONSALT_KNEE_DROP(PLW* wk) {
     }
 }
 
-void Att_RESURRECTION(PLW* wk) {
+/** @brief Gill: Resurrection Super Art (revive with health regen). */
+static void Att_RESURRECTION(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
@@ -132,7 +139,8 @@ void Att_RESURRECTION(PLW* wk) {
     }
 }
 
-s16 get_life_add_point(u8 num, s16 ori_add) {
+/** @brief Returns the vitality add point scaled by resurrection count. */
+static s16 get_life_add_point(u8 num, s16 ori_add) {
     s16 add_pts = ori_add;
     u16 ix = num - 20;
 
@@ -143,7 +151,8 @@ s16 get_life_add_point(u8 num, s16 ori_add) {
     return add_pts;
 }
 
-void Att_PL00_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Gill: special action (tokushu koudou). */
+static void Att_PL00_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
@@ -191,7 +200,8 @@ void Att_PL00_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void Att_JYOUKA(PLW* wk) {
+/** @brief Gill: Jyouka (purification) Super Art. */
+static void Att_JYOUKA(PLW* wk) {
     s16 x1;
     s16 y1;
 

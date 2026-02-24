@@ -1,8 +1,3 @@
-/**
- * @file pl18end_en.c
- * Twelve Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl18end_en.h"
 #include "common.h"
 
@@ -68,4 +63,4 @@ static s8** msgEndAdrPL18[17] = {
 
 static s8 msgEndCtrPL18[17] = { 1, 2, 1, 1, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 
-MessageTable pl18end_usa_tbl = { msgEndAdrPL18, msgEndCtrPL18 };
+MessageTable pl18end_en_tbl = { msgEndAdrPL18, msgEndCtrPL18 };

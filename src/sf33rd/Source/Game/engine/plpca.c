@@ -21,13 +21,16 @@
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void check_nagenuke(PLW* wk, PLW* tk);
+static void check_nagenuke(PLW* wk, PLW* tk);
 static s32 cat07_running_check(WORK* wk);
-void catch_cg_type_check(PLW* wk);
-void set_char_move_init_ca(PLW* wk, s16 koc, s16 index);
+static void catch_cg_type_check(PLW* wk);
+static void set_char_move_init_ca(PLW* wk, s16 koc, s16 index);
+
+#define PLPCA_DISPATCH_COUNT 9
 
 void (*const plpca_lv_00[9])();
 
+/** @brief Top-level catch/grab state dispatcher. */
 void Player_catch(PLW* wk) {
     wk->wu.next_z = wk->wu.my_priority;
     wk->running_f = 0;
@@ -61,7 +64,8 @@ void Player_catch(PLW* wk) {
         pp_pulpara_catch(&wk->wu);
     }
 
-    plpca_lv_00[wk->wu.routine_no[2]](wk);
+    if (wk->wu.routine_no[2] < PLPCA_DISPATCH_COUNT)
+        plpca_lv_00[wk->wu.routine_no[2]](wk);
     check_nagenuke(wk, (PLW*)wk->wu.hit_adrs);
 
     if (((WORK*)wk->wu.target_adrs)->routine_no[2] == 3) {
@@ -82,7 +86,8 @@ void Player_catch(PLW* wk) {
     wk->wu.next_z -= 3;
 }
 
-void check_nagenuke(PLW* wk, PLW* tk) {
+/** @brief Checks for throw-break (nagenuke) from the grabbed opponent. */
+static void check_nagenuke(PLW* wk, PLW* tk) {
     if (tk->wu.work_id != 1) {
         return;
     }
@@ -126,9 +131,11 @@ void check_nagenuke(PLW* wk, PLW* tk) {
     tk->wu.dm_stop = 0;
 }
 
-void Catch_00000(PLW* /* unused */) {}
+/** @brief Catch state 00 — no-op placeholder. */
+static void Catch_00000(PLW* /* unused */) {}
 
-void Catch_01000(PLW* wk) {
+/** @brief Catch state 01 — grab startup animation. */
+static void Catch_01000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -142,7 +149,8 @@ void Catch_01000(PLW* wk) {
     }
 }
 
-void Catch_02000(PLW* wk) {
+/** @brief Catch state 02 — grab whiff animation. */
+static void Catch_02000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -156,7 +164,8 @@ void Catch_02000(PLW* wk) {
     }
 }
 
-void Catch_03000(PLW* wk) {
+/** @brief Catch state 03 — catch success, pull-in phase. */
+static void Catch_03000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -175,7 +184,8 @@ void Catch_03000(PLW* wk) {
     }
 }
 
-void Catch_04000(PLW* wk) {
+/** @brief Catch state 04 — throw execute phase. */
+static void Catch_04000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -221,7 +231,8 @@ void Catch_04000(PLW* wk) {
     }
 }
 
-void Catch_05000(PLW* wk) {
+/** @brief Catch state 05 — throw followup / release. */
+static void Catch_05000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -278,7 +289,8 @@ void Catch_05000(PLW* wk) {
     }
 }
 
-void Catch_06000(PLW* wk) {
+/** @brief Catch state 06 — air-throw execution. */
+static void Catch_06000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -303,7 +315,8 @@ void Catch_06000(PLW* wk) {
     }
 }
 
-void Catch_07000(PLW* wk) {
+/** @brief Catch state 07 — running grab / command throw. */
+static void Catch_07000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -368,7 +381,8 @@ void Catch_07000(PLW* wk) {
     }
 }
 
-s32 cat07_running_check(WORK* wk) {
+/** @brief Checks if the running-catch can continue based on distance. */
+static s32 cat07_running_check(WORK* wk) {
     if (wk->xyz[0].disp.pos < (bg_w.bgw[1].l_limit2 - 64) || wk->xyz[0].disp.pos > (bg_w.bgw[1].r_limit2 + 64)) {
         char_move_cmja(wk);
         setup_mvxy_data(wk, wk->mvxy.index);
@@ -380,7 +394,8 @@ s32 cat07_running_check(WORK* wk) {
     return 0;
 }
 
-void Catch_08000(PLW* wk) {
+/** @brief Catch state 08 — special catch / multi-hit throw. */
+static void Catch_08000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -401,6 +416,7 @@ void Catch_08000(PLW* wk) {
     }
 }
 
+/** @brief Subtracts grab-damage from the caught opponent's vitality. */
 void subtract_cu_vital(PLW* wk) {
     if (wk->wu.dm_vital != 0) {
         if (wk->dead_flag == 0) {
@@ -449,7 +465,8 @@ void subtract_cu_vital(PLW* wk) {
     wk->wu.dm_piyo = 0;
 }
 
-void catch_cg_type_check(PLW* wk) {
+/** @brief Processes cg_type transitions during the catch state. */
+static void catch_cg_type_check(PLW* wk) {
     PLW* emwk = (PLW*)wk->wu.hit_adrs;
 
     switch (wk->wu.cg_type) {
@@ -512,7 +529,8 @@ void catch_cg_type_check(PLW* wk) {
     }
 }
 
-void set_char_move_init_ca(PLW* wk, s16 koc, s16 index) {
+/** @brief Sets up character move init with catch-specific facing logic. */
+static void set_char_move_init_ca(PLW* wk, s16 koc, s16 index) {
     set_char_move_init(&wk->wu, koc, index);
     wk->cat_break_ok_timer = wk->wu.cmyd.koc >> 8;
     wk->wu.cmyd.koc &= 0xFF;

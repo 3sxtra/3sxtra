@@ -12,13 +12,19 @@
 #include "sf33rd/Source/Game/engine/pls01.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl07_exatt_table[18])(PLW*);
 
+/** @brief Ibuki: extra attack dispatcher. */
 void pl07_extra_attack(PLW* wk) {
-    pl07_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl07_exatt_table[idx](wk);
 }
 
-void Att_PL07_SA2(PLW* wk) {
+/** @brief Ibuki: Super Art 2 (Yoroitoshi). */
+static void Att_PL07_SA2(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -56,7 +62,8 @@ void Att_PL07_SA2(PLW* wk) {
     }
 }
 
-void Att_PL07_AT1(PLW* wk) {
+/** @brief Ibuki: attack 1 (Kasumi Gake). */
+static void Att_PL07_AT1(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -112,7 +119,8 @@ void Att_PL07_AT1(PLW* wk) {
     }
 }
 
-void Att_PL07_AT2(PLW* wk) {
+/** @brief Ibuki: attack 2 (Hien). */
+static void Att_PL07_AT2(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -150,7 +158,8 @@ void Att_PL07_AT2(PLW* wk) {
     }
 }
 
-void Att_PL07_AT3(PLW* wk) {
+/** @brief Ibuki: attack 3 (Tsumuji). */
+static void Att_PL07_AT3(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -176,7 +185,8 @@ void Att_PL07_AT3(PLW* wk) {
     }
 }
 
-void Att_PL07_SA3(PLW* wk) {
+/** @brief Ibuki: Super Art 3 (Yami Shigure). */
+static void Att_PL07_SA3(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -207,7 +217,8 @@ void Att_PL07_SA3(PLW* wk) {
     }
 }
 
-void Att_PL07_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Ibuki: special action (tokushu koudou). */
+static void Att_PL07_TOKUSHUKOUDOU(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;

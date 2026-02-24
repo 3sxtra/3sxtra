@@ -1,6 +1,6 @@
 /**
  * @file effj7.c
- * TODO: identify what this effect does
+ * Effect: Color / Player L Effect
  */
 
 #include "sf33rd/Source/Game/effect/effj7.h"
@@ -380,8 +380,8 @@ const ColorCode pl00_R_1[21] = { { 4, 0, pl00_R_1_00 }, { 4, 0, pl00_R_1_01 }, {
 
 const ColorCode* pl00_cctbl[][2];
 
-void check_new_color_data(WORK* wk);
-void get_new_color_data(WORK* wk, ColorCode* trom, s16* tram);
+static void check_new_color_data(WORK* wk);
+static void get_new_color_data(WORK* wk, ColorCode* trom, s16* tram);
 
 void effect_J7_move(WORK_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
@@ -459,7 +459,7 @@ void effect_J7_move(WORK_Other* ewk) {
     }
 }
 
-void check_new_color_data(WORK* wk) {
+static void check_new_color_data(WORK* wk) {
     if (--wk->dir_timer >= 0) {
         return;
     }
@@ -479,7 +479,7 @@ void check_new_color_data(WORK* wk) {
     }
 }
 
-void get_new_color_data(WORK* wk, ColorCode* trom, s16* tram) {
+static void get_new_color_data(WORK* wk, ColorCode* trom, s16* tram) {
     const s16* data;
     s16 i;
     u16 col;

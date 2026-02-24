@@ -1,6 +1,6 @@
 /**
  * @file eff91.c
- * TODO: identify what this effect does
+ * Effect: Position Data Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff91.h"
@@ -27,7 +27,7 @@ void effect_91_move(WORK_Other* ewk) {
         return;
     }
 
-    if ((ewk->wu.type == 1 && !Debug_w[49]) && (Round_Operator[0] == 0 || Round_Operator[1] == 0)) {
+    if ((ewk->wu.type == 1 && !Debug_w[DEBUG_CPU_REPLAY_TEST]) && (Round_Operator[0] == 0 || Round_Operator[1] == 0)) {
         ewk->wu.my_clear_level = 205;
         sort_push_request4(&ewk->wu);
         return;

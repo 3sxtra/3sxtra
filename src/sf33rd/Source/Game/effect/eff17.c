@@ -1,6 +1,6 @@
 /**
  * @file eff17.c
- * TODO: identify what this effect does
+ * Effect: Effect Dispatch / General
  */
 
 #include "sf33rd/Source/Game/effect/eff17.h"

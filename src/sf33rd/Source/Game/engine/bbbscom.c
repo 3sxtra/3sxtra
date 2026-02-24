@@ -17,6 +17,7 @@
 
 const s32 bbbs_jump_level[4][2];
 
+/** @brief Executes the AI for the basketball bonus stage opponent. */
 void bbbs_com_execute(PLW* wk) {
     switch (Bonus_Stage_RNO[0]) {
     case 0:
@@ -137,11 +138,13 @@ void bbbs_com_execute(PLW* wk) {
     }
 }
 
+/** @brief Initializes the bonus stage AI work data. */
 void bbbs_com_initialize() {
     Bonus_Stage_RNO[0] = Bonus_Stage_RNO[1] = 0;
     Bonus_Stage_RNO[2] = Bonus_Stage_RNO[3] = 0;
 }
 
+/** @brief Configures the bonus game difficulty level based on player performance. */
 void makeup_bonus_game_level(s16 ix) {
     s16 emid = (ix + 1) & 1;
     u16 swdat;
@@ -166,6 +169,7 @@ void makeup_bonus_game_level(s16 ix) {
     }
 }
 
+/** @brief Sets the bonus game difficulty based on the current enemy ID. */
 s32 set_bonus_game_difficulty(s16 emid) {
     s16 grade = judge_final[emid][0].vs_cpu_grade[11];
 
@@ -186,6 +190,7 @@ s32 set_bonus_game_difficulty(s16 emid) {
     }
 }
 
+/** @brief Sets the bonus game difficulty level from DIP switch data. */
 s32 set_bonus_game_nando(u16 swdat) {
     if (swdat == 0x252) {
         return 9;
@@ -226,6 +231,7 @@ s32 set_bonus_game_nando(u16 swdat) {
     return 0;
 }
 
+/** @brief Automatically determines bonus difficulty when no DIP switch is set. */
 s32 katteni_bonus_nando(u16 swdat) {
     if (swdat & 1 && swdat & 0x70) {
         return 1;

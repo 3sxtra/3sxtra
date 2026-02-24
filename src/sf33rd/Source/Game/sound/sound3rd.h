@@ -1,3 +1,14 @@
+/**
+ * @file sound3rd.h
+ * @brief Public API for the main sound system controller.
+ *
+ * Declares functions for BGM playback (ADX streaming), sound effect dispatch
+ * (SPU bank via CSE engine), volume/fade/seamless control, and sound mode setup.
+ *
+ * Part of the sound module.
+ * Originally from the PS2 game module.
+ */
+
 #ifndef SOUND3RD_H
 #define SOUND3RD_H
 
@@ -5,6 +16,7 @@
 #include "types.h"
 
 extern s16 bgm_level;
+extern float g_master_volume;
 extern s16 se_level;
 extern s8* sdbd[3];
 extern SoundEvent* cseTSBDataTable[];

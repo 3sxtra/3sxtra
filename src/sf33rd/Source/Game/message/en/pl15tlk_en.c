@@ -1,8 +1,3 @@
-/**
- * @file pl15tlk_en.c
- * Chun-Li Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl15tlk_en.h"
 #include "common.h"
 
@@ -40,4 +35,4 @@ static s8** msgTalkAdrPL15[8] = {
 
 static s8 msgTalkCtrPL15[8] = { 1, 2, 2, 1, 2, 2, 2, 2 };
 
-MessageTable pl15tlk_usa_tbl = { msgTalkAdrPL15, msgTalkCtrPL15 };
+MessageTable pl15tlk_en_tbl = { msgTalkAdrPL15, msgTalkCtrPL15 };

@@ -1,8 +1,3 @@
-/**
- * @file pl00win_en.c
- * Gill Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl00win_en.h"
 #include "common.h"
 
@@ -70,4 +65,4 @@ static s8 msgWinCtrPL00[28] = {
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 };
 
-MessageTable pl00win_usa_tbl = { msgWinAdrPL00, msgWinCtrPL00 };
+MessageTable pl00win_en_tbl = { msgWinAdrPL00, msgWinCtrPL00 };

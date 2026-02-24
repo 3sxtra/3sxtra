@@ -4,7 +4,7 @@
 #include "types.h"
 
 typedef struct {
-    u8 max;  
+    u8 max;
     s8* name;
 } DEBUG_STR_DAT;
 

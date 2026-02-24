@@ -1,6 +1,6 @@
 /**
  * @file effi3.c
- * TODO: identify what this effect does
+ * Effect: Background Data / Stage Effect
  */
 
 #include "sf33rd/Source/Game/effect/effi3.h"

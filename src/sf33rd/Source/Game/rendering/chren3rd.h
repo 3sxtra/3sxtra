@@ -1,3 +1,8 @@
+/**
+ * @file chren3rd.h
+ * @brief Character renderer object group table declaration.
+ */
+
 #ifndef CHREN3RD_H
 #define CHREN3RD_H
 

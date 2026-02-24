@@ -1,8 +1,3 @@
-/**
- * @file pl09end_en.c
- * Oro Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl09end_en.h"
 #include "common.h"
 
@@ -50,4 +45,4 @@ static s8** msgEndAdrPL09[12] = {
 
 static s8 msgEndCtrPL09[12] = { 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 1 };
 
-MessageTable pl09end_usa_tbl = { msgEndAdrPL09, msgEndCtrPL09 };
+MessageTable pl09end_en_tbl = { msgEndAdrPL09, msgEndCtrPL09 };

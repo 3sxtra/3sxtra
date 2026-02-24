@@ -1,6 +1,6 @@
 /**
  * @file eff75.c
- * TODO: identify what this effect does
+ * Effect: Quake Link Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff75.h"
@@ -26,7 +26,7 @@ void effect_75_move(WORK_Other* ewk) {
     }
 }
 
-void EFF75_WAIT(WORK_Other* ewk) {
+static void EFF75_WAIT(WORK_Other* ewk) {
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
@@ -34,7 +34,7 @@ void EFF75_WAIT(WORK_Other* ewk) {
 
 void EFF75_SLIDE_IN(WORK_Other* /* unused */) {}
 
-void EFF75_CHAR_CHANGE(WORK_Other* ewk) {
+static void EFF75_CHAR_CHANGE(WORK_Other* ewk) {
     if (--Order_Timer[ewk->wu.dir_old] != 0) {
         return;
     }
@@ -45,7 +45,7 @@ void EFF75_CHAR_CHANGE(WORK_Other* ewk) {
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ewk->wu.dir_step + 1, 0);
 }
 
-void EFF75_SUDDENLY(WORK_Other* ewk) {
+static void EFF75_SUDDENLY(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old]) {
@@ -68,7 +68,7 @@ void EFF75_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-s32 effect_75_init(s16 dir_old, s16 ID, s16 Target_BG) {
+s32 effect_75_init(s16 dir_old, s16 arg_ID, s16 Target_BG) {
     WORK_Other* ewk;
     s16 ix;
 
@@ -84,7 +84,7 @@ s32 effect_75_init(s16 dir_old, s16 ID, s16 Target_BG) {
     ewk->wu.my_family = Target_BG + 1;
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->wu.char_index = 19;
-    ewk->wu.dir_step = ID;
+    ewk->wu.dir_step = arg_ID;
     ewk->wu.dir_old = dir_old;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

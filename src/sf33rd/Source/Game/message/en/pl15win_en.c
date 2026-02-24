@@ -1,8 +1,3 @@
-/**
- * @file pl15win_en.c
- * Chun-Li Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl15win_en.h"
 #include "common.h"
 
@@ -70,4 +65,4 @@ static s8 msgWinCtrPL15[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
 };
 
-MessageTable pl15win_usa_tbl = { msgWinAdrPL15, msgWinCtrPL15 };
+MessageTable pl15win_en_tbl = { msgWinAdrPL15, msgWinCtrPL15 };

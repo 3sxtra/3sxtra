@@ -1,6 +1,6 @@
 /**
  * @file effd0.c
- * TODO: identify what this effect does
+ * Effect: Counter / Data Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/effd0.h"
@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void d0_speed_set(WORK* ewk, s16 num);
+static void d0_speed_set(WORK* ewk, s16 num);
 
 const s32 effd0_data_tbl[9][4] = { { 0x4000, -0x800, -0x6000, -0x400 }, { -0x4000, 0x600, -0x4000, -0x600 },
                                    { 0x4000, -0xC00, -0x3000, -0x400 }, { 0x800, -0x300, -0x6000, -0x600 },
@@ -118,7 +118,7 @@ void effect_D0_move(WORK_Other* ewk) {
     }
 }
 
-void d0_speed_set(WORK* ewk, s16 num) {
+static void d0_speed_set(WORK* ewk, s16 num) {
     ewk->old_rno[0] = effd0_conter[num];
     ewk->old_rno[1]++;
 

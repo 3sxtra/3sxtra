@@ -14,6 +14,7 @@ u16 metamor_original[2][5][64];
 // rodata
 const s16 mcs_sel_tbl[2] = { 0x1F8, 0x1FC };
 
+/** @brief Apply metamorphosis color transition to the palette RAM. */
 void metamor_color_trans(s16 wkid) {
     s16 i;
 
@@ -26,6 +27,7 @@ void metamor_color_trans(s16 wkid) {
     palUpdateGhostCP3((wkid * 16) + 8, 1);
 }
 
+/** @brief Copy one player's palette colors over to the other player. */
 void metamor_color_copy(s16 wkid) {
     s16 from_id;
     s16 to_id;
@@ -51,6 +53,7 @@ void metamor_color_copy(s16 wkid) {
     palUpdateGhostCP3(mcs_sel_tbl[wkid], 1);
 }
 
+/** @brief Store the current palette colors for later restoration. */
 void metamor_color_store(s16 wkid) {
     s16 i;
     s16 j;
@@ -66,6 +69,7 @@ void metamor_color_store(s16 wkid) {
     }
 }
 
+/** @brief Restore previously stored palette colors. */
 void metamor_color_restore(s16 wkid) {
     s16 i;
     s16 j;

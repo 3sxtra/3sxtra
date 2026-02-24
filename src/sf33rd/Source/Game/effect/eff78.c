@@ -1,6 +1,6 @@
 /**
  * @file eff78.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect (Crow?)
  */
 
 #include "sf33rd/Source/Game/effect/eff78.h"

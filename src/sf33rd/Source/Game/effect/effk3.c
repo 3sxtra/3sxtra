@@ -1,6 +1,6 @@
 /**
  * @file effk3.c
- * TODO: identify what this effect does
+ * Effect: ISP / Particle Effect
  */
 
 #include "sf33rd/Source/Game/effect/effk3.h"
@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void set_init_posspeed_effK3(WORK* wk);
+static void set_init_posspeed_effK3(WORK* wk);
 
 const s16 numof_effK3[4] = { 2, 4, 6, 6 };
 
@@ -84,7 +84,7 @@ void effect_K3_move(WORK_Other* ewk) {
     }
 }
 
-void set_init_posspeed_effK3(WORK* wk) {
+static void set_init_posspeed_effK3(WORK* wk) {
     s16 data[4];
     s16 ix;
     s16 flag;
@@ -115,7 +115,7 @@ void set_init_posspeed_effK3(WORK* wk) {
     wk->kage_hy = wk->kage_prio / 2;
 }
 
-s32 effect_K3_init(WORK_Other* wk) {
+static s32 effect_K3_init(WORK_Other* wk) {
     WORK_Other* ewk;
     s16 ix;
 

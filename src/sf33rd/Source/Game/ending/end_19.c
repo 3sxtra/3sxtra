@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -12,15 +13,16 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void end_1900_move();
+static void end_1900_move();
 
-void end_1900_0();
-void end_1900_common();
+static void end_1900_0();
+static void end_1900_common();
 
 const s16 timer_19_tbl[6] = { 360, 720, 660, 780, 600, 300 };
 
 const s16 end_19_pos[6][2] = { { 512, 768 }, { 256, 512 }, { 256, 512 }, { 768, 512 }, { 256, 256 }, { 256, 256 } };
 
+/** @brief Twelve's ending entry point — initialize and run all ending scenes. */
 void end_19000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -65,14 +67,18 @@ void end_19000(s16 pl_num) {
     }
 }
 
-void end_1900_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_1900_move() {
     void (*end_1900_move_jp[6])() = { end_1900_0,      end_1900_common, end_1900_common,
                                       end_1900_common, end_1900_common, end_1900_common };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_1900_move_jp[end_w.r_no_2]();
 }
 
-void end_1900_0() {
+/** @brief Scene 0 — horizontal scroll with multiple effects. */
+static void end_1900_0() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -115,7 +121,8 @@ void end_1900_0() {
     }
 }
 
-void end_1900_common() {
+/** @brief Common scene handler — per-scene effects and messages. */
+static void end_1900_common() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

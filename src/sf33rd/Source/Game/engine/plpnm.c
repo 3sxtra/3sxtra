@@ -20,51 +20,51 @@
 #include "sf33rd/Source/Game/io/pulpul.h"
 
 void Player_normal(PLW* wk);
-void setup_normal_process_flags(PLW* wk);
-void Normal_00000(PLW* wk);
-void Normal_01000(PLW* wk);
-void Normal_02000(PLW* wk);
-void Normal_03000(PLW* wk);
-void Normal_04000(PLW* wk);
-void Normal_05000(PLW* wk);
-void nm_05_0000(PLW* wk);
-void nm_05_0100(PLW* wk);
-void Normal_06000(PLW* wk);
-void nm_06_0000(PLW* wk);
-void nm_06_0100(PLW* wk);
-void nm_06_0200(PLW* wk);
-void Normal_07000(PLW* wk);
-void Normal_08000(PLW* wk);
-void Normal_09000(PLW* wk);
-void Normal_10000(PLW* wk);
-void Normal_16000(PLW* wk);
-void Normal_17000(PLW* wk);
-void Normal_18000(PLW* wk);
+static void setup_normal_process_flags(PLW* wk);
+static void Normal_00000(PLW* wk);
+static void Normal_01000(PLW* wk);
+static void Normal_02000(PLW* wk);
+static void Normal_03000(PLW* wk);
+static void Normal_04000(PLW* wk);
+static void Normal_05000(PLW* wk);
+static void nm_05_0000(PLW* wk);
+static void nm_05_0100(PLW* wk);
+static void Normal_06000(PLW* wk);
+static void nm_06_0000(PLW* wk);
+static void nm_06_0100(PLW* wk);
+static void nm_06_0200(PLW* wk);
+static void Normal_07000(PLW* wk);
+static void Normal_08000(PLW* wk);
+static void Normal_09000(PLW* wk);
+static void Normal_10000(PLW* wk);
+static void Normal_16000(PLW* wk);
+static void Normal_17000(PLW* wk);
+static void Normal_18000(PLW* wk);
 void Normal_18000_init_unit(PLW* wk, u8 ps);
-void Normal_27000(PLW* wk);
-void Normal_31000(PLW* wk);
-void Normal_35000(PLW* wk);
-void Normal_36000(PLW* wk);
-void Normal_37000(PLW* wk);
-void Normal_38000(PLW* wk);
-void Normal_39000(PLW* wk);
-void Normal_40000(PLW* wk);
-void Normal_41000(PLW* wk);
-void Normal_42000(PLW* wk);
-void Normal_47000(PLW* wk);
-void Normal_48000(PLW* wk);
-void Normal_50000(PLW* wk);
-void Normal_51000(PLW* wk);
-void Normal_52000(PLW* wk);
-void Normal_53000(PLW* wk);
-void Normal_54000(PLW* wk);
-void Normal_55000(PLW* wk);
-void make_nm55_init_sp(PLW* wk);
-void Normal_56000(PLW* wk);
-void nm56_char_select(PLW* wk);
-void Normal_57000(PLW* wk);
-void Normal_58000(PLW* wk);
-void nm57_dir_select(PLW* wk);
+static void Normal_27000(PLW* wk);
+static void Normal_31000(PLW* wk);
+static void Normal_35000(PLW* wk);
+static void Normal_36000(PLW* wk);
+static void Normal_37000(PLW* wk);
+static void Normal_38000(PLW* wk);
+static void Normal_39000(PLW* wk);
+static void Normal_40000(PLW* wk);
+static void Normal_41000(PLW* wk);
+static void Normal_42000(PLW* wk);
+static void Normal_47000(PLW* wk);
+static void Normal_48000(PLW* wk);
+static void Normal_50000(PLW* wk);
+static void Normal_51000(PLW* wk);
+static void Normal_52000(PLW* wk);
+static void Normal_53000(PLW* wk);
+static void Normal_54000(PLW* wk);
+static void Normal_55000(PLW* wk);
+static void make_nm55_init_sp(PLW* wk);
+static void Normal_56000(PLW* wk);
+static void nm56_char_select(PLW* wk);
+static void Normal_57000(PLW* wk);
+static void Normal_58000(PLW* wk);
+static void nm57_dir_select(PLW* wk);
 
 const s16 nmPB_data[5][3];
 const s16 nmCE_data[4][3];
@@ -74,6 +74,7 @@ void (*const plpnm_lv_00[59])(PLW* wk);
 void (*const normal_05[])(PLW* wk);
 void (*const normal_06[])(PLW* wk);
 
+/** @brief Top-level normal state dispatcher — calls the appropriate Normal_XXXXX handler. */
 void Player_normal(PLW* wk) {
     setup_normal_process_flags(wk);
 
@@ -97,7 +98,8 @@ void Player_normal(PLW* wk) {
     }
 }
 
-void setup_normal_process_flags(PLW* wk) {
+/** @brief Clears per-frame process flags for the normal state machine. */
+static void setup_normal_process_flags(PLW* wk) {
     wk->wu.next_z = wk->wu.my_priority;
     wk->running_f = 0;
     wk->py->flag = 0;
@@ -131,11 +133,13 @@ void setup_normal_process_flags(PLW* wk) {
     wk->wu.swallow_no_effect = 0;
 }
 
-void Normal_00000(PLW* wk) {
+/** @brief Normal state 00 — character appearance animation. */
+static void Normal_00000(PLW* wk) {
     appear_player(wk);
 }
 
-void Normal_01000(PLW* wk) {
+/** @brief Normal state 01 — standing idle. */
+static void Normal_01000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -152,7 +156,8 @@ void Normal_01000(PLW* wk) {
     }
 }
 
-void Normal_02000(PLW* wk) {
+/** @brief Normal state 02 — turn-around idle. */
+static void Normal_02000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -170,7 +175,8 @@ void Normal_02000(PLW* wk) {
     }
 }
 
-void Normal_03000(PLW* wk) {
+/** @brief Normal state 03 — forward walk. */
+static void Normal_03000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -193,7 +199,8 @@ void Normal_03000(PLW* wk) {
     }
 }
 
-void Normal_04000(PLW* wk) {
+/** @brief Normal state 04 — backward walk. */
+static void Normal_04000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -214,7 +221,8 @@ void Normal_04000(PLW* wk) {
     }
 }
 
-void Normal_05000(PLW* wk) {
+/** @brief Normal state 05 — forward dash/run. */
+static void Normal_05000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -225,7 +233,8 @@ void Normal_05000(PLW* wk) {
     jumping_guard_type_check(wk);
 }
 
-void nm_05_0000(PLW* wk) {
+/** @brief Forward dash variant 0 — generic character. */
+static void nm_05_0000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -254,7 +263,8 @@ void nm_05_0000(PLW* wk) {
     }
 }
 
-void nm_05_0100(PLW* wk) {
+/** @brief Forward dash variant 1 — hop-type dash. */
+static void nm_05_0100(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -302,7 +312,8 @@ void nm_05_0100(PLW* wk) {
     }
 }
 
-void Normal_06000(PLW* wk) {
+/** @brief Normal state 06 — backward dash. */
+static void Normal_06000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -313,7 +324,8 @@ void Normal_06000(PLW* wk) {
     jumping_guard_type_check(wk);
 }
 
-void nm_06_0000(PLW* wk) {
+/** @brief Backward dash variant 0 — generic character. */
+static void nm_06_0000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -327,7 +339,8 @@ void nm_06_0000(PLW* wk) {
     }
 }
 
-void nm_06_0100(PLW* wk) {
+/** @brief Backward dash variant 1 — hop-type backdash. */
+static void nm_06_0100(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -356,7 +369,8 @@ void nm_06_0100(PLW* wk) {
     }
 }
 
-void nm_06_0200(PLW* wk) {
+/** @brief Backward dash variant 2 — leap-type backdash. */
+static void nm_06_0200(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -404,7 +418,8 @@ void nm_06_0200(PLW* wk) {
     }
 }
 
-void Normal_07000(PLW* wk) {
+/** @brief Normal state 07 — crouching to stand transition. */
+static void Normal_07000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -421,7 +436,8 @@ void Normal_07000(PLW* wk) {
     }
 }
 
-void Normal_08000(PLW* wk) {
+/** @brief Normal state 08 — standing to crouch transition. */
+static void Normal_08000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -438,7 +454,8 @@ void Normal_08000(PLW* wk) {
     }
 }
 
-void Normal_09000(PLW* wk) {
+/** @brief Normal state 09 — crouching idle. */
+static void Normal_09000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -455,7 +472,8 @@ void Normal_09000(PLW* wk) {
     }
 }
 
-void Normal_10000(PLW* wk) {
+/** @brief Normal state 10 — crouch-walking. */
+static void Normal_10000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -473,7 +491,8 @@ void Normal_10000(PLW* wk) {
     }
 }
 
-void Normal_16000(PLW* wk) {
+/** @brief Normal state 16 — pre-jump squat (neutral). */
+static void Normal_16000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -493,7 +512,8 @@ void Normal_16000(PLW* wk) {
     }
 }
 
-void Normal_17000(PLW* wk) {
+/** @brief Normal state 17 — pre-jump squat (directional). */
+static void Normal_17000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -513,7 +533,8 @@ void Normal_17000(PLW* wk) {
     }
 }
 
-void Normal_18000(PLW* wk) {
+/** @brief Normal state 18 — airborne jump arc. */
+static void Normal_18000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -540,6 +561,7 @@ void Normal_18000(PLW* wk) {
     jumping_guard_type_check(wk);
 }
 
+/** @brief Initializes jump movement data from a given pattern slot. */
 void Normal_18000_init_unit(PLW* wk, u8 ps) {
     ps = (ps - 14) / 2;
 
@@ -552,7 +574,8 @@ void Normal_18000_init_unit(PLW* wk, u8 ps) {
     add_mvxy_speed(&wk->wu);
 }
 
-void Normal_27000(PLW* wk) {
+/** @brief Normal state 27 — standing guard. */
+static void Normal_27000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -569,7 +592,8 @@ void Normal_27000(PLW* wk) {
     }
 }
 
-void Normal_31000(PLW* wk) {
+/** @brief Normal state 31 — guard stun / block-stun reaction. */
+static void Normal_31000(PLW* wk) {
     if (((WORK*)wk->wu.target_adrs)->cg_prio != 2) {
         wk->wu.next_z = 32;
     }
@@ -604,7 +628,8 @@ void Normal_31000(PLW* wk) {
     }
 }
 
-void Normal_35000(PLW* wk) {
+/** @brief Normal state 35 — air guard reaction. */
+static void Normal_35000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -653,7 +678,8 @@ void Normal_35000(PLW* wk) {
     }
 }
 
-void Normal_36000(PLW* wk) {
+/** @brief Normal state 36 — taunt. */
+static void Normal_36000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -661,7 +687,8 @@ void Normal_36000(PLW* wk) {
     char_move(&wk->wu);
 }
 
-void Normal_37000(PLW* wk) {
+/** @brief Normal state 37 — personal action. */
+static void Normal_37000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -669,7 +696,8 @@ void Normal_37000(PLW* wk) {
     char_move(&wk->wu);
 }
 
-void Normal_38000(PLW* wk) {
+/** @brief Normal state 38 — wall-jump / triangle-jump. */
+static void Normal_38000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -688,7 +716,8 @@ void Normal_38000(PLW* wk) {
     jumping_guard_type_check(wk);
 }
 
-void Normal_39000(PLW* wk) {
+/** @brief Normal state 39 — high-jump landing recovery. */
+static void Normal_39000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority - 1;
     }
@@ -702,7 +731,8 @@ void Normal_39000(PLW* wk) {
     set_char_move_init(&wk->wu, 0, 23);
 }
 
-void Normal_40000(PLW* wk) {
+/** @brief Normal state 40 — round win pose. */
+static void Normal_40000(PLW* wk) {
     wk->wu.next_z = 38;
 
     if ((Mode_Type == MODE_NORMAL_TRAINING) || (Mode_Type == MODE_PARRY_TRAINING)) {
@@ -723,7 +753,8 @@ void Normal_40000(PLW* wk) {
     win_player(wk);
 }
 
-void Normal_41000(PLW* wk) {
+/** @brief Normal state 41 — round lose pose. */
+static void Normal_41000(PLW* wk) {
     wk->wu.next_z = 34;
 
     if ((Mode_Type == MODE_NORMAL_TRAINING) || (Mode_Type == MODE_PARRY_TRAINING)) {
@@ -744,7 +775,8 @@ void Normal_41000(PLW* wk) {
     lose_player(wk);
 }
 
-void Normal_42000(PLW* wk) {
+/** @brief Normal state 42 — parry block-stun reaction. */
+static void Normal_42000(PLW* wk) {
     const s16* dadr = nmPB_data[wk->wu.routine_no[2] - 42];
 
     if (((WORK*)wk->wu.target_adrs)->cg_prio != 2) {
@@ -809,7 +841,8 @@ void Normal_42000(PLW* wk) {
     }
 }
 
-void Normal_47000(PLW* wk) {
+/** @brief Normal state 47 — air-parry block-stun. */
+static void Normal_47000(PLW* wk) {
     const s16* datix = nmCE_data[wk->wu.routine_no[2] - 47];
 
     if (((WORK*)wk->wu.target_adrs)->cg_prio != 2) {
@@ -872,7 +905,8 @@ void Normal_47000(PLW* wk) {
     }
 }
 
-void Normal_48000(PLW* wk) {
+/** @brief Normal state 48 — getting up after knockdown. */
+static void Normal_48000(PLW* wk) {
     wk->guard_flag = 3;
 
     switch (wk->wu.routine_no[3]) {
@@ -916,7 +950,8 @@ void Normal_48000(PLW* wk) {
     }
 }
 
-void Normal_50000(PLW* wk) {
+/** @brief Normal state 50 — quick-rise after knockdown. */
+static void Normal_50000(PLW* wk) {
     wk->guard_flag = 3;
 
     switch (wk->wu.routine_no[3]) {
@@ -959,14 +994,16 @@ void Normal_50000(PLW* wk) {
     }
 }
 
-void Normal_51000(PLW* wk) {
+/** @brief Normal state 51 — stun recovery. */
+static void Normal_51000(PLW* wk) {
     if (wk->wu.routine_no[3] == 0) {
         wk->wu.routine_no[3]++;
         set_char_move_init(&wk->wu, 0, 12);
     }
 }
 
-void Normal_52000(PLW* wk) {
+/** @brief Normal state 52 — stunned (dizzy). */
+static void Normal_52000(PLW* wk) {
     wk->guard_flag = 3;
 
     if (wk->the_same_players) {
@@ -997,7 +1034,8 @@ void Normal_52000(PLW* wk) {
     }
 }
 
-void Normal_53000(PLW* wk) {
+/** @brief Normal state 53 — ukemi / tech-recovery in air. */
+static void Normal_53000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -1039,7 +1077,8 @@ void Normal_53000(PLW* wk) {
     }
 }
 
-void Normal_54000(PLW* wk) {
+/** @brief Normal state 54 — landing recovery after tech. */
+static void Normal_54000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -1067,7 +1106,8 @@ void Normal_54000(PLW* wk) {
     }
 }
 
-void Normal_55000(PLW* wk) {
+/** @brief Normal state 55 — metamorphosis / character switch intro. */
+static void Normal_55000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -1094,7 +1134,8 @@ void Normal_55000(PLW* wk) {
     }
 }
 
-void make_nm55_init_sp(PLW* wk) {
+/** @brief Sets up initial speed for metamorphosis movement. */
+static void make_nm55_init_sp(PLW* wk) {
     WORK* efw;
     s16* dad;
     s16 ix;
@@ -1124,7 +1165,8 @@ void make_nm55_init_sp(PLW* wk) {
     }
 }
 
-void Normal_56000(PLW* wk) {
+/** @brief Normal state 56 — metamorphosis character select. */
+static void Normal_56000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -1149,7 +1191,8 @@ void Normal_56000(PLW* wk) {
     }
 }
 
-void nm56_char_select(PLW* wk) {
+/** @brief Helper: selects the target character during metamorphosis. */
+static void nm56_char_select(PLW* wk) {
     WORK* efw;
     s16* dad;
     s16 ix;
@@ -1175,7 +1218,8 @@ void nm56_char_select(PLW* wk) {
     set_char_move_init(&wk->wu, 0, ix);
 }
 
-void Normal_57000(PLW* wk) {
+/** @brief Normal state 57 — metamorphosis direction select. */
+static void Normal_57000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }
@@ -1212,7 +1256,8 @@ void Normal_57000(PLW* wk) {
     }
 }
 
-void nm57_dir_select(PLW* wk) {
+/** @brief Helper: selects the direction during metamorphosis. */
+static void nm57_dir_select(PLW* wk) {
     WORK* efw;
     s16* dad;
     s16 ix;
@@ -1227,7 +1272,8 @@ void nm57_dir_select(PLW* wk) {
     }
 }
 
-void Normal_58000(PLW* wk) {
+/** @brief Normal state 58 — metamorphosis completion / rebirth. */
+static void Normal_58000(PLW* wk) {
     if (wk->the_same_players) {
         wk->wu.next_z = wk->wu.my_priority + 1;
     }

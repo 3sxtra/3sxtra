@@ -1,6 +1,6 @@
 /**
  * @file effa6.c
- * TODO: identify what this effect does
+ * Effect: Player 2 Data / Visual Effect
  */
 
 #include "sf33rd/Source/Game/effect/effa6.h"
@@ -63,9 +63,9 @@ const s16 effA6_pl2_data_tbl[20][64] = {
       0, 210, 2, 840, 6, 210, 7, 210, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
-void wwwk_set(WORK_Other_CONN* ewk);
+static void wwwk_set(WORK_Other_CONN* ewk);
 
-s32 check2_A6_shortcut() {
+static s32 check2_A6_shortcut() {
     u16 sw_w;
 
     if (Player_id) {
@@ -261,7 +261,7 @@ s32 effect_A6_init(WORK_Other* mwk) {
     return 0;
 }
 
-void wwwk_set(WORK_Other_CONN* ewk) {
+static void wwwk_set(WORK_Other_CONN* ewk) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 106;
     ewk->wu.work_id = 16;

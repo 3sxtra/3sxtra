@@ -1,6 +1,6 @@
 /**
  * @file eff21.c
- * TODO: identify what this effect does
+ * Effect: Speed / Motion Blur Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff21.h"

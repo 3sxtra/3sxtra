@@ -1,6 +1,6 @@
 /**
  * @file eff95.c
- * TODO: identify what this effect does
+ * Effect: Data Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff95.h"

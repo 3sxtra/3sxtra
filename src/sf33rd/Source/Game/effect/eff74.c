@@ -1,6 +1,6 @@
 /**
  * @file eff74.c
- * TODO: identify what this effect does
+ * Effect: Position Data / Quake Link Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff74.h"
@@ -44,13 +44,13 @@ void effect_74_move(WORK_Other* ewk) {
     sort_push_request4(&ewk->wu);
 }
 
-void EFF74_WAIT(WORK_Other* ewk) {
+static void EFF74_WAIT(WORK_Other* ewk) {
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-void EFF74_SUDDENLY(WORK_Other* ewk) {
+static void EFF74_SUDDENLY(WORK_Other* ewk) {
     s16 pos_y;
 
     switch (ewk->wu.routine_no[1]) {

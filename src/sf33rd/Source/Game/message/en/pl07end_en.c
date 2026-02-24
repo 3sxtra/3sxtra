@@ -1,8 +1,3 @@
-/**
- * @file pl07end_en.c
- * Ibuki Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl07end_en.h"
 #include "common.h"
 
@@ -63,4 +58,4 @@ static s8** msgEndAdrPL07[15] = {
 
 static s8 msgEndCtrPL07[15] = { 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1 };
 
-MessageTable pl07end_usa_tbl = { msgEndAdrPL07, msgEndCtrPL07 };
+MessageTable pl07end_en_tbl = { msgEndAdrPL07, msgEndCtrPL07 };

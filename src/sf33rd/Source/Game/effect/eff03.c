@@ -1,6 +1,6 @@
 /**
  * @file eff03.c
- * TODO: identify what this effect does
+ * Effect: Player Effects (Dust/Impact)
  */
 
 #include "sf33rd/Source/Game/effect/eff03.h"
@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void eff03_disp_pos(WORK* ewk, WORK* mwk);
+static void eff03_disp_pos(WORK* ewk, WORK* mwk);
 
 const PLEF plef_data[165] = { { 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 0 },       { 13, 0, -2, 0, 1, 0, 0, 1, 0, 0, 1 },
                               { 14, 2, 67, 1, 1, 32, 1, 1, 0, 0, 28 },    { -14, 2, 67, 1, 1, 32, 1, 1, 0, 0, 29 },
@@ -193,7 +193,7 @@ void effect_03_move(WORK_Other* ewk) {
     }
 }
 
-void eff03_disp_pos(WORK* ewk, WORK* mwk) {
+static void eff03_disp_pos(WORK* ewk, WORK* mwk) {
     if (plef_data[ewk->type].ichi) {
         ewk->position_x = mwk->position_x + ewk->xyz[0].disp.pos;
         ewk->position_y = mwk->position_y + ewk->xyz[1].disp.pos;

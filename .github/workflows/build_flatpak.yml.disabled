@@ -1,0 +1,43 @@
+name: Build (Flatpak)
+
+on:
+    push:
+        branches: [ "main" ]
+    pull_request:
+        branches: [ "main" ]
+
+jobs:
+    build:
+        name: Build Flatpak
+        runs-on: ubuntu-latest
+        container:
+            image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
+            options: --privileged
+
+        steps:
+          - name: Checkout repository
+            uses: actions/checkout@v4
+            with:
+                submodules: recursive
+
+          - name: Build Flatpak bundle
+            uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+            with:
+                manifest-path: flatpak/io.github.threestylextra.app.yml
+                bundle: 3sx.flatpak
+                cache: true
+                cache-key: flatpak-builder-${{ hashFiles('io.github.threestylextra.app.yml') }}
+
+          - name: Save artifact (local act)
+            if: ${{ env.ACT }}
+            run: |
+                mkdir -p $GITHUB_WORKSPACE/build_output
+                cp 3sx.flatpak $GITHUB_WORKSPACE/build_output/
+                echo "✅ Artifact saved to build_output/3sx.flatpak"
+
+          - name: Upload artifact (GitHub)
+            if: ${{ !env.ACT }}
+            uses: actions/upload-artifact@v4
+            with:
+                name: 3sx-flatpak
+                path: 3sx.flatpak

@@ -1,6 +1,6 @@
 /**
  * @file eff96.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/eff96.h"

@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/effect/effh1.h"
@@ -13,26 +14,27 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void end_400_move();
-void end_401_move();
-void end_402_move();
+static void end_400_move();
+static void end_401_move();
+static void end_402_move();
 
-void end_400_0000();
-void end_400_1000();
+static void end_400_0000();
+static void end_400_1000();
 
-void end_401_0000();
-void end_401_1000();
-void end_401_2000();
-void end_401_3000();
-void end_401_4000();
+static void end_401_0000();
+static void end_401_1000();
+static void end_401_2000();
+static void end_401_3000();
+static void end_401_4000();
 
-void end_402_0000();
-void end_402_1000();
+static void end_402_0000();
+static void end_402_1000();
 
 const s16 timer_4_tbl[5] = { 960, 1140, 1800, 600, 780 };
 
 const s16 end_4_pos[5][2] = { { 576, 768 }, { 512, 256 }, { 512, 768 }, { 512, 512 }, { 512, 256 } };
 
+/** @brief Dudley's ending entry point — initialize and run all ending scenes. */
 void end_04000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -85,12 +87,16 @@ void end_04000(s16 pl_num) {
 
 void (*end_400_jp[5])() = { end_400_0000, end_400_1000, end_X_com01, end_X_com01, end_X_com01 };
 
-void end_400_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_400_move() {
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 5)
+        return;
     end_400_jp[end_w.r_no_2]();
 }
 
-void end_400_0000() {
+/** @brief Scene 0 — horizontal scroll with message. */
+static void end_400_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -115,7 +121,8 @@ void end_400_0000() {
     }
 }
 
-void end_400_1000() {
+/** @brief Scene 1 — timed wait then diagonal pan. */
+static void end_400_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -160,12 +167,16 @@ void end_400_1000() {
 
 void (*end_401_jp[5])() = { end_401_0000, end_401_1000, end_401_2000, end_401_3000, end_401_4000 };
 
-void end_401_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_401_move() {
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 5)
+        return;
     end_401_jp[end_w.r_no_2]();
 }
 
-void end_401_0000() {
+/** @brief Layer 1 scene 0 — horizontal pan with effect. */
+static void end_401_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -192,7 +203,8 @@ void end_401_0000() {
     }
 }
 
-void end_401_1000() {
+/** @brief Layer 1 scene 1 — timed wait then diagonal pan. */
+static void end_401_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -235,7 +247,8 @@ void end_401_1000() {
     }
 }
 
-void end_401_2000() {
+/** @brief Layer 1 scene 2 — zoom-in frame effect with message. */
+static void end_401_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -280,7 +293,8 @@ void end_401_2000() {
     }
 }
 
-void end_401_3000() {
+/** @brief Layer 1 scene 3 — zoom-out frame effect. */
+static void end_401_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -321,7 +335,8 @@ void end_401_3000() {
     }
 }
 
-void end_401_4000() {
+/** @brief Layer 1 scene 4 — final zoom-out with fade timer. */
+static void end_401_4000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -365,12 +380,16 @@ void end_401_4000() {
 
 void (*end_402_jp[5])() = { end_402_0000, end_402_1000, end_X_com01, end_X_com01, end_X_com01 };
 
-void end_402_move() {
+/** @brief Dispatch to the current scene handler for background layer 2. */
+static void end_402_move() {
     bgw_ptr = &bg_w.bgw[2];
+    if (end_w.r_no_2 >= 5)
+        return;
     end_402_jp[end_w.r_no_2]();
 }
 
-void end_402_0000() {
+/** @brief Layer 2 scene 0 — horizontal pan. */
+static void end_402_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -395,7 +414,8 @@ void end_402_0000() {
     }
 }
 
-void end_402_1000() {
+/** @brief Layer 2 scene 1 — timed wait then diagonal pan with effect. */
+static void end_402_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

@@ -1,3 +1,7 @@
+/**
+ * @file work_sys.h
+ * @brief Extern declarations for global system state variables.
+ */
 #ifndef WORK_SYS_H
 #define WORK_SYS_H
 

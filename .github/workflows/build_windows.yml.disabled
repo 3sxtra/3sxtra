@@ -1,0 +1,74 @@
+name: Build (Windows)
+
+on:
+    push:
+        branches: [ "main" ]
+    pull_request:
+        branches: [ "main" ]
+
+jobs:
+    build:
+        runs-on: windows-latest
+
+        defaults:
+            run:
+                shell: msys2 {0}
+
+        steps:
+          - uses: msys2/setup-msys2@v2
+            with:
+                update: true
+                msystem: MINGW64
+                install: >-
+                    make
+                    mingw-w64-x86_64-cmake
+                    mingw-w64-x86_64-ninja
+                    mingw-w64-x86_64-nasm
+                    mingw-w64-x86_64-clang
+                    mingw-w64-x86_64-headers-git
+                    mingw-w64-x86_64-rust
+                    mingw-w64-x86_64-python-jinja
+                    mingw-w64-x86_64-miniupnpc
+
+          - name: Checkout repository
+            uses: actions/checkout@v4
+            with:
+                submodules: true
+
+          - name: Cache dependencies
+            uses: actions/cache@v4
+            with:
+                path: third_party
+                key: windows-x64-deps-${{ hashFiles('build-deps.sh') }}
+
+          - name: Build dependencies
+            run: sh build-deps.sh
+
+          - name: Install Python dependencies for glad
+            shell: pwsh
+            run: python3 -m pip install jinja2
+
+          - name: Build for Windows
+            run: |
+                set -o pipefail
+
+                CC=clang CXX=clang++ cmake -B build \
+                    -DCMAKE_BUILD_TYPE=Debug \
+                    -DENABLE_TESTS=OFF \
+                    -DMSYS2_LOCATION=${{ steps.msys2.outputs.msys2-location }}
+
+                cmake --build build --parallel 2>&1 | tee build.log
+
+          - name: Save build log (local act)
+            if: ${{ always() && env.ACT }}
+            run: |
+                mkdir -p $GITHUB_WORKSPACE/build_output
+                cp build.log $GITHUB_WORKSPACE/build_output/build-log-windows.log
+                echo "✅ Build log saved to build_output/build-log-windows.log"
+
+          - name: Upload build log (GitHub)
+            if: ${{ always() && !env.ACT }}
+            uses: actions/upload-artifact@v4
+            with:
+                name: build-log
+                path: build.log

@@ -1,6 +1,6 @@
 /**
  * @file effh2.c
- * TODO: identify what this effect does
+ * Effect: Panel Guide Effect
  */
 
 #include "sf33rd/Source/Game/effect/effh2.h"

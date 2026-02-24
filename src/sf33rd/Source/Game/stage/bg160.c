@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg160.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "sf33rd/Source/Game/effect/eff19.h"
@@ -17,6 +18,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for French Cafe, France stage. */
 void BG160() {
     bgw_ptr = &bg_w.bgw[1];
     bg1602();
@@ -29,11 +31,15 @@ void BG160() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for French Cafe, France. */
 void bg1601() {
     void (*bg1601_jmp[2])() = { bg1601_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1601_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for French Cafe, France. */
 void bg1601_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -41,11 +47,15 @@ void bg1601_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Background layer handler for French Cafe, France. */
 void bg1602() {
     void (*bg1602_jmp[2])() = { bg1602_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1602_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for French Cafe, France. */
 void bg1602_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -58,6 +68,7 @@ void bg1602_init00() {
     effect_94_init(2);
 }
 
+/** @brief Synchronized parallax common handler for French Cafe, France. */
 void bg1602_sync_common() {
     switch (bgw_ptr->r_no_0) {
     case 0:

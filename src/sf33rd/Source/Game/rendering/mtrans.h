@@ -1,3 +1,8 @@
+/**
+ * @file mtrans.h
+ * @brief Main graphics rendering and transformation engine declarations.
+ */
+
 #ifndef MTRANS_H
 #define MTRANS_H
 

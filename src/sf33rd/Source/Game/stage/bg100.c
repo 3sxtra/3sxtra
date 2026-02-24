@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg100.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "sf33rd/Source/Game/effect/eff29.h"
@@ -16,6 +17,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Underground Cave stage. */
 void BG100() {
     bgw_ptr = &bg_w.bgw[1];
     bg1001();
@@ -26,11 +28,15 @@ void BG100() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Underground Cave. */
 void bg1000() {
     void (*bg1000_jmp[2])() = { bg1000_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1000_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Underground Cave. */
 void bg1000_init00() {
     bgw_ptr->r_no_1 = 0;
     bgw_ptr->r_no_0++;
@@ -42,11 +48,15 @@ void bg1000_init00() {
     effect_29_init();
 }
 
+/** @brief Background layer handler for Underground Cave. */
 void bg1001() {
     void (*bg1001_jmp[2])() = { bg1001_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1001_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Underground Cave. */
 void bg1001_init00() {
     bgw_ptr->r_no_1 = 0;
     bgw_ptr->r_no_0++;

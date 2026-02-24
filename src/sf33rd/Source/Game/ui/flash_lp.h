@@ -1,3 +1,10 @@
+/**
+ * @file flash_lp.h
+ * @brief Public API for win-mark flash lamp animation.
+ *
+ * Part of the ui module.
+ */
+
 #ifndef FLASH_LP_H
 #define FLASH_LP_H
 

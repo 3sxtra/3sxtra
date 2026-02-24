@@ -1,8 +1,3 @@
-/**
- * @file pl11tlk_en.c
- * Ken Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl11tlk_en.h"
 #include "common.h"
 
@@ -31,4 +26,4 @@ static s8** msgTalkAdrPL11[6] = {
 
 static s8 msgTalkCtrPL11[6] = { 1, 1, 2, 2, 2, 2 };
 
-MessageTable pl11tlk_usa_tbl = { msgTalkAdrPL11, msgTalkCtrPL11 };
+MessageTable pl11tlk_en_tbl = { msgTalkAdrPL11, msgTalkCtrPL11 };

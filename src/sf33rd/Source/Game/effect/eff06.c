@@ -1,10 +1,11 @@
 /**
  * @file eff06.c
- * TODO: identify what this effect does
+ * Effect: Stage Data / Screen Object
  */
 
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"

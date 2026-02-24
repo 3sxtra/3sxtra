@@ -10,6 +10,7 @@
 #include "sf33rd/Source/Game/engine/pow_pow.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 
+/** @brief Resolves player-vs-effect hit collision (attacking a projectile). */
 void player_at_vs_effect_dm(s16 ix2, s16 ix) {
     PLW* as = (PLW*)q_hit_push[ix2];
     WORK_Other* ds = (WORK_Other*)q_hit_push[ix];

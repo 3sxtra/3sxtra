@@ -20,20 +20,21 @@
 #include "sf33rd/Source/Game/rendering/meta_col.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void player_mvbs_0000(PLW* wk);
-void player_mvbs_1000(PLW* wk);
-void plmv_b_1010(PLW* wk);
-void plmv_b_1020(PLW* wk, s16 step);
-void player_mvbs_2000(PLW* wk);
-void player_mvbs_3000(PLW* wk);
-void player_mvbs_4000(PLW* wk);
+static void player_mvbs_0000(PLW* wk);
+static void player_mvbs_1000(PLW* wk);
+static void plmv_b_1010(PLW* wk);
+static void plmv_b_1020(PLW* wk, s16 step);
+static void player_mvbs_2000(PLW* wk);
+static void player_mvbs_3000(PLW* wk);
+static void player_mvbs_4000(PLW* wk);
 
 void (*const plmain_b_lv_00[5])(PLW* wk);
 
+/** @brief Top-level per-frame player move update for bonus stages. */
 void Player_move_bonus(PLW* wk, u16 lv_data) {
     s16 i;
 
-    if (wk->wu.operator) {
+    if (wk->wu.pl_operator) {
         if (wk->metamor_over) {
             wk->cp->sw_lvbt = 0;
         } else {
@@ -88,7 +89,8 @@ void Player_move_bonus(PLW* wk, u16 lv_data) {
     plmain_b_lv_00[wk->wu.routine_no[0]](wk);
 }
 
-void player_mvbs_0000(PLW* wk) {
+/** @brief Bonus stage move phase 0 — initial work setup. */
+static void player_mvbs_0000(PLW* wk) {
     s16 i;
 
     for (i = 0; i < 8; i++) {
@@ -141,7 +143,8 @@ void player_mvbs_0000(PLW* wk) {
     }
 }
 
-void player_mvbs_1000(PLW* wk) {
+/** @brief Bonus stage move phase 1 — appearance/entrance animation. */
+static void player_mvbs_1000(PLW* wk) {
     switch (appear_type) {
     case APPEAR_TYPE_NON_ANIMATED:
         plmv_b_1010(wk);
@@ -149,16 +152,16 @@ void player_mvbs_1000(PLW* wk) {
         Appear_end++;
         break;
 
-    case APPEAR_TYPE_UNKNOWN_3:
+    case APPEAR_TYPE_VICTORY:
         plmv_b_1010(wk);
         plmv_b_1020(wk, 128);
         break;
 
     case APPEAR_TYPE_ANIMATED:
-    case APPEAR_TYPE_UNKNOWN_2:
+    case APPEAR_TYPE_TRANSITIONAL:
         wk->wu.routine_no[0] = 2;
 
-        if (Bonus_Game_Flag != 20 || wk->wu.operator) {
+        if (Bonus_Game_Flag != 20 || wk->wu.pl_operator) {
             wk->wu.routine_no[1] = 0;
             wk->wu.routine_no[2] = 0;
             wk->wu.routine_no[3] = 0;
@@ -169,7 +172,7 @@ void player_mvbs_1000(PLW* wk) {
         break;
     }
 
-    if ((wk->wu.operator == 0) && (Bonus_Game_Flag == 20)) {
+    if ((wk->wu.pl_operator == 0) && (Bonus_Game_Flag == 20)) {
         wk->wu.routine_no[1] = 0;
         wk->wu.routine_no[2] = 51;
         wk->wu.routine_no[3] = 0;
@@ -180,10 +183,11 @@ void player_mvbs_1000(PLW* wk) {
     Player_normal(wk);
 }
 
-void plmv_b_1010(PLW* wk) {
+/** @brief Sub-phase: sets initial routine numbers for bonus entrance. */
+static void plmv_b_1010(PLW* wk) {
     wk->wu.routine_no[0] = 3;
 
-    if (Bonus_Game_Flag != 20 || wk->wu.operator) {
+    if (Bonus_Game_Flag != 20 || wk->wu.pl_operator) {
         wk->wu.routine_no[1] = 0;
         wk->wu.routine_no[2] = 1;
         wk->wu.routine_no[3] = 0;
@@ -191,7 +195,8 @@ void plmv_b_1010(PLW* wk) {
     }
 }
 
-void plmv_b_1020(PLW* wk, s16 step) {
+/** @brief Sub-phase: positions the player at the bonus stage spawn offset. */
+static void plmv_b_1020(PLW* wk, s16 step) {
     if (wk->wu.id) {
         wk->wu.rl_flag = 0;
         wk->wu.xyz[0].disp.pos = step + get_center_position();
@@ -204,8 +209,9 @@ void plmv_b_1020(PLW* wk, s16 step) {
     wk->wu.xyz[1].disp.pos = 0;
 }
 
-void player_mvbs_2000(PLW* wk) {
-    if (Bonus_Game_Flag != 20 || wk->wu.operator) {
+/** @brief Bonus stage move phase 2 — intro wait/transition. */
+static void player_mvbs_2000(PLW* wk) {
+    if (Bonus_Game_Flag != 20 || wk->wu.pl_operator) {
         if (wk->wu.routine_no[2] == 1) {
             wk->wu.routine_no[0] = 3;
             wk->wu.disp_flag = 1;
@@ -219,11 +225,13 @@ void player_mvbs_2000(PLW* wk) {
     Player_normal(wk);
 }
 
-void player_mvbs_3000(PLW* wk) {
+/** @brief Bonus stage move phase 3 — standby/normal state. */
+static void player_mvbs_3000(PLW* wk) {
     Player_normal(wk);
 }
 
-void player_mvbs_4000(PLW* wk) {
+/** @brief Bonus stage move phase 4 — active gameplay with combat. */
+static void player_mvbs_4000(PLW* wk) {
     wk->permited_koa = 0;
     check_extra_jump_timer(wk);
 

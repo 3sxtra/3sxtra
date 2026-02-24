@@ -1,6 +1,6 @@
 /**
  * @file effi9.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/effi9.h"
@@ -10,8 +10,8 @@
 #include "sf33rd/Source/Game/engine/slowf.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 
-void push_image_buff(WORK_Other* wk, ImageBuff* image_buff);
-void init_image_buff(WORK_Other* wk, ImageBuff* image_buff);
+static void push_image_buff(WORK_Other* wk, ImageBuff* image_buff);
+static void init_image_buff(WORK_Other* wk, ImageBuff* image_buff);
 
 void effect_I9_move(WORK_Other* ewk) {
     WORK* sub_w = (WORK*)ewk->wu.target_adrs;
@@ -62,7 +62,7 @@ void effect_I9_move(WORK_Other* ewk) {
     }
 }
 
-void push_image_buff(WORK_Other* wk, ImageBuff* image_buff) {
+static void push_image_buff(WORK_Other* wk, ImageBuff* image_buff) {
     s16 i;
 
     for (i = 16; i > 0; i--) {
@@ -73,7 +73,7 @@ void push_image_buff(WORK_Other* wk, ImageBuff* image_buff) {
     image_buff->pos_y = wk->wu.position_y;
 }
 
-void init_image_buff(WORK_Other* wk, ImageBuff* image_buff) {
+static void init_image_buff(WORK_Other* wk, ImageBuff* image_buff) {
     s16 i;
 
     for (i = 16; i >= 0; i--) {

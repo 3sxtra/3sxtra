@@ -6,7 +6,29 @@ from dataclasses import dataclass
 
 # A tool for comparing CharInitData between the arcade version and the port
 
-cps3_plid_data = (6, 3, 5, 1, 2, 9, 7, 4, 10, 8, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
+cps3_plid_data = (
+    6,
+    3,
+    5,
+    1,
+    2,
+    9,
+    7,
+    4,
+    10,
+    8,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+)
 cps3_vram_offset = 0x6000000
 cps3_chdata_array_offset = 0x18B148
 
@@ -51,7 +73,7 @@ char_name_to_id = {
     "makoto": makoto,
     "q": q,
     "twelve": twelve,
-    "remy": remy
+    "remy": remy,
 }
 
 chdata_offsets = {
@@ -74,7 +96,7 @@ chdata_offsets = {
     makoto: 0x2837C4,
     q: 0x37F0B4,
     twelve: 0x21B47C,
-    remy: 0x1A4F50
+    remy: 0x1A4F50,
 }
 
 chdata_structs = {
@@ -102,16 +124,18 @@ chdata_structs = {
     "atta": "hhhhhhhhhhhhhhhh",
     "hosa": "hhhh",
     "atit": "BBBBBBBBBBBBbbBB",
-    "prot": "hhhhhhhhhhhhhhhhhhhhhhhh"
+    "prot": "hhhhhhhhhhhhhhhhhhhhhhhh",
 }
 
 chdata_fields = tuple(x for x in chdata_structs)
+
 
 @dataclass
 class PortCharDataArrayInfo:
     offset: int
     elem_size: int
     length: int
+
 
 def colored(obj, color: str) -> str:
     colors = {"red": 31, "green": 32, "white": 37}
@@ -125,6 +149,7 @@ def colored(obj, color: str) -> str:
 
     return f"{prefix}{str(obj)}{suffix}"
 
+
 def character_to_plnum(character: int) -> int:
     # It seems Capcom wanted to add Shin Akuma as a separate character and some of his
     # data still remains in the arcade rom. He must've had his own id (15) in the arcade
@@ -134,14 +159,18 @@ def character_to_plnum(character: int) -> int:
 
     return character
 
+
 def bin_name(character: int) -> Path:
     pl_number = character_to_plnum(character)
     return f"pl{pl_number:02}.bin"
 
-def calculate_array_info(afs_path: Path, character: int) -> dict[str, PortCharDataArrayInfo]:
+
+def calculate_array_info(
+    afs_path: Path, character: int
+) -> dict[str, PortCharDataArrayInfo]:
     result: dict[str, PortCharDataArrayInfo] = dict()
     chdata_offset = chdata_offsets[character]
-    
+
     with open(afs_path / bin_name(character), "rb") as f:
         f.seek(chdata_offset)
 
@@ -170,44 +199,62 @@ def calculate_array_info(afs_path: Path, character: int) -> dict[str, PortCharDa
             length = diff // field_size
 
             array_info = PortCharDataArrayInfo(
-                offset=current_offset, 
-                elem_size=field_size,
-                length=length
+                offset=current_offset, elem_size=field_size, length=length
             )
 
             result[field] = array_info
 
     return result
 
+
 def calculate_cps3_array_offsets(rom_path: Path, character: int) -> dict[str, int]:
     result: dict[str, int] = dict()
     pl_num = character_to_plnum(character)
-    chdata_offset = cps3_chdata_array_offset + 0x6C * cps3_plid_data[pl_num] # 0x6C is the size of chdata in CPS3 version
+    chdata_offset = (
+        cps3_chdata_array_offset + 0x6C * cps3_plid_data[pl_num]
+    )  # 0x6C is the size of chdata in CPS3 version
 
     with open(rom_path, "rb") as f:
         f.seek(chdata_offset)
-        
+
         for field in chdata_fields:
             result[field] = int.from_bytes(f.read(4), "big") - cps3_vram_offset
 
     return result
 
-def read_array(path: Path, field: str, offset: int, length: int, little_endian: bool) -> list:
+
+def read_array(
+    path: Path, field: str, offset: int, length: int, little_endian: bool
+) -> list:
     result = list()
     endianness_specifier = "<" if little_endian else ">"
-    format = endianness_specifier + chdata_structs[field]
-    elem_size = struct.calcsize(format)
+    fmt = endianness_specifier + chdata_structs[field]
+    elem_size = struct.calcsize(fmt)
 
     with open(path, "rb") as f:
         f.seek(offset)
 
-        for i in range(length):
+        for _ in range(length):
             chunk = f.read(elem_size)
-            result.append(struct.unpack(format, chunk))
+            result.append(struct.unpack(fmt, chunk))
 
     return result
 
-def analyze_and_print(rom_path: Path, afs_path: Path, character: int, field: str):
+
+def main():
+    if len(sys.argv) < 5:
+        print("Incorrect number of arguments")
+        print(
+            "Usage: python3 compare_char_data.py <decrypted rom path> <unpacked afs path> <character> <field>"
+        )
+        return
+
+    rom_path = Path(sys.argv[1])
+    afs_path = Path(sys.argv[2])
+    char_name = sys.argv[3]
+    field = sys.argv[4]
+
+    character = char_name_to_id[char_name]
     array_info = calculate_array_info(afs_path, character)
     cps3_array_offsets = calculate_cps3_array_offsets(rom_path, character)
 
@@ -217,11 +264,11 @@ def analyze_and_print(rom_path: Path, afs_path: Path, character: int, field: str
     bin_path = afs_path / bin_name(character)
 
     port_values = read_array(
-        path=bin_path, 
-        field=field, 
+        path=bin_path,
+        field=field,
         offset=array_info[field].offset,
         length=length,
-        little_endian=True
+        little_endian=True,
     )
 
     cps3_values = read_array(
@@ -229,7 +276,7 @@ def analyze_and_print(rom_path: Path, afs_path: Path, character: int, field: str
         field=field,
         offset=cps3_array_offsets[field],
         length=length,
-        little_endian=False
+        little_endian=False,
     )
 
     # Print
@@ -255,8 +302,8 @@ def analyze_and_print(rom_path: Path, afs_path: Path, character: int, field: str
                 cps3_value_string_parts.append(colored(cps3_part, "green"))
                 port_value_string_parts.append(colored(port_part, "red"))
 
-        cps3_value_string = f"({", ".join(cps3_value_string_parts)})"
-        port_value_string = f"({", ".join(port_value_string_parts)})"
+        cps3_value_string = f"({', '.join(cps3_value_string_parts)})"
+        port_value_string = f"({', '.join(port_value_string_parts)})"
 
         print(f"0x{index:X}:\t{cps3_value_string}\t{port_value_string}")
 
@@ -265,31 +312,6 @@ def analyze_and_print(rom_path: Path, afs_path: Path, character: int, field: str
     else:
         print("All elements match ✅")
 
-def main():
-    if len(sys.argv) < 5:
-        print("Incorrect number of arguments")
-        print("Usage: python3 compare_char_data.py <decrypted rom path> <unpacked afs path> <character> <field>")
-        return
-    
-    rom_path = Path(sys.argv[1])
-    afs_path = Path(sys.argv[2])
-    char_name = sys.argv[3]
-    field = sys.argv[4]
-    
-    if char_name == "all":
-        is_first = True
-
-        for name in char_name_to_id.keys():
-            if not is_first:
-                print()
-
-            is_first = False
-            print(name + ":")
-            character = char_name_to_id[name]
-            analyze_and_print(rom_path, afs_path, character, field)
-    else:
-        character = char_name_to_id[char_name]
-        analyze_and_print(rom_path, afs_path, character, field)
 
 if __name__ == "__main__":
     main()

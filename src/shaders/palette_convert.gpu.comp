@@ -1,0 +1,98 @@
+#version 450
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+// Binding 0: Read-only storage buffer containing raw pixel data AND palette data
+layout(std430, set = 0, binding = 0) readonly buffer RawData {
+    uint data[];
+} raw_data;
+
+// Binding 1: Write-only image (2D View of a single layer)
+layout(set = 1, binding = 0, rgba8) uniform writeonly image2D out_texture;
+
+// Uniform data (set = 2 per SDL3 GPU SPIR-V convention)
+layout(std140, set = 2, binding = 0) uniform Uniforms {
+    uint u_width;
+    uint u_height;
+    uint u_format;        // 0=8bit, 1=4bit, 2=16bit
+    uint u_layer;         // Unused if we bind specific layer as 2D view
+    uint u_pixel_offset;  // Byte offset to pixel data
+    uint u_palette_offset;// Byte offset to palette data
+    uint u_pitch;         // Bytes per row (stride)
+} u;
+
+// Helper: Read a single byte from the uint array
+uint read_byte(uint byte_offset) {
+    uint word_idx = byte_offset / 4;
+    uint bit_shift = (byte_offset % 4) * 8;
+    return (raw_data.data[word_idx] >> bit_shift) & 0xFF;
+}
+
+// Helper: Read a 16-bit word (little-endian)
+uint read_word(uint byte_offset) {
+    uint word_idx = byte_offset / 4;
+    uint bit_shift = (byte_offset % 4) * 8;
+
+    if (bit_shift <= 16) {
+        return (raw_data.data[word_idx] >> bit_shift) & 0xFFFF;
+    } else {
+        uint b0 = (raw_data.data[word_idx] >> bit_shift) & 0xFF;
+        uint b1 = (raw_data.data[word_idx + 1] & 0xFF);
+        return b0 | (b1 << 8);
+    }
+}
+
+void main() {
+    uint x = gl_GlobalInvocationID.x;
+    uint y = gl_GlobalInvocationID.y;
+
+    if (x >= u.u_width || y >= u.u_height) return;
+
+    vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
+
+    if (u.u_format == 2) {
+        // --- 16-bit ABGR1555 ---
+        uint byte_offset = u.u_pixel_offset + (y * u.u_pitch) + (x * 2);
+        uint pixel = read_word(byte_offset);
+
+        float r = float(pixel & 0x1F) / 31.0;
+        float g = float((pixel >> 5) & 0x1F) / 31.0;
+        float b = float((pixel >> 10) & 0x1F) / 31.0;
+        float a = ((pixel & 0x8000) != 0) ? 1.0 : 0.0;
+
+        color = vec4(r, g, b, a);
+
+    } else {
+        // --- Paletted (4-bit or 8-bit) ---
+        uint index = 0;
+
+        if (u.u_format == 1) {
+            // 4-bit packed
+            uint byte_offset = u.u_pixel_offset + (y * u.u_pitch) + (x / 2);
+            uint b_val = read_byte(byte_offset);
+
+            if ((x % 2) != 0) {
+                index = (b_val >> 4) & 0x0F;
+            } else {
+                index = b_val & 0x0F;
+            }
+        } else {
+            // 8-bit
+            uint byte_offset = u.u_pixel_offset + (y * u.u_pitch) + x;
+            index = read_byte(byte_offset);
+        }
+
+        // Palette Lookup
+        uint pal_word_idx = (u.u_palette_offset / 4) + index;
+        uint pal_pixel = raw_data.data[pal_word_idx];
+
+        float r = float(pal_pixel & 0xFF) / 255.0;
+        float g = float((pal_pixel >> 8) & 0xFF) / 255.0;
+        float b = float((pal_pixel >> 16) & 0xFF) / 255.0;
+        float a = float((pal_pixel >> 24) & 0xFF) / 255.0;
+
+        color = vec4(r, g, b, a);
+    }
+
+    // Write to 2D image (layer binding handles the Z slice)
+    imageStore(out_texture, ivec2(x, y), color);
+}

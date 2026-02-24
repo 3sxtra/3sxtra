@@ -13,16 +13,19 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "structs.h"
 
-void (*scr_x_mv_jp[35])() = { scr_10_20,   scr_10_21,   scr_10_22,   scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy,
-                              scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy,
-                              scr_x_dummy, scr_x_dummy, scr_11_20,   scr_11_21,   scr_11_22,   scr_x_dummy, scr_x_dummy,
-                              scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy,
-                              scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_12_20,   scr_12_21,   scr_12_22 };
+// ⚡ Bolt: const — place dispatch table in .rodata (read-only memory)
+void (*const scr_x_mv_jp[35])() = { scr_10_20,   scr_10_21,   scr_10_22,   scr_x_dummy, scr_x_dummy, scr_x_dummy,
+                                    scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy,
+                                    scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_11_20,   scr_11_21,
+                                    scr_11_22,   scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy,
+                                    scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy, scr_x_dummy,
+                                    scr_x_dummy, scr_x_dummy, scr_12_20,   scr_12_21,   scr_12_22 };
 
 // Forward decls
 static s16 remake_x_mvstep(s16 mvstep);
 static s32 suzi_offset_set_sub(WORK_Other* ewk);
 
+/** @brief Handle CGA zoom logic for the current stage. */
 void check_cg_zoom() {
     s16 i;
     s16 zoom_wk;
@@ -264,6 +267,7 @@ void check_cg_zoom() {
     }
 }
 
+/** @brief Process camera chase movement each frame. */
 void bg_chase_move() {
     if (!Bonus_Game_Flag) {
         chase_start_check();
@@ -274,6 +278,7 @@ void bg_chase_move() {
     }
 }
 
+/** @brief Check conditions to start camera chase mode. */
 void chase_start_check() {
     s16 work;
     s16 work2;
@@ -341,6 +346,7 @@ void chase_start_check() {
     }
 }
 
+/** @brief Move the camera chase target position. */
 void chase_xy_move() {
     if (bg_w.chase_flag & 0xF) {
         bg_w.bg2_sp_x2 = bg_w.bg2_sp_x = 0;
@@ -412,6 +418,7 @@ void chase_xy_move() {
     }
 }
 
+/** @brief Apply movement tweaks to x and y scrolling. */
 void Bg_mv_tw(s32 value_x, s32 value_y) {
     bgw_ptr->xy[0].cal += value_x;
     bgw_ptr->xy[1].cal += value_y;
@@ -419,6 +426,7 @@ void Bg_mv_tw(s32 value_x, s32 value_y) {
     bgw_ptr->wxy[1].cal += value_y;
 }
 
+/** @brief Clamp scroll position against the right boundary. */
 void x_right_check(s16 d1) {
     s32 speed_w;
 
@@ -427,6 +435,7 @@ void x_right_check(s16 d1) {
     ideal_w.iw[0].cal += speed_w;
 }
 
+/** @brief Clamp scroll position against the left boundary. */
 void x_left_check(s16 d0) {
     s32 speed_w;
 
@@ -435,10 +444,13 @@ void x_left_check(s16 d0) {
     ideal_w.iw[0].cal += speed_w;
 }
 
+/** @brief No-op scroll function placeholder. */
 void scr_x_dummy() {}
 
+/** @brief Scroll handler for stage 10, screen layer 0. */
 void scr_10_20() {}
 
+/** @brief Scroll handler for stage 10, screen layer 1. */
 void scr_10_21() {
     s16 meri;
     meri = plw[1].wu.scr_mv_x - satse[plw[1].player_number];
@@ -447,6 +459,7 @@ void scr_10_21() {
     x_left_check(meri);
 }
 
+/** @brief Scroll handler for stage 10, screen layer 2. */
 void scr_10_22() {
     s16 meri;
     meri = plw[1].wu.scr_mv_x + satse[plw[1].player_number];
@@ -455,6 +468,7 @@ void scr_10_22() {
     x_right_check(meri);
 }
 
+/** @brief Scroll handler for stage 11, screen layer 0. */
 void scr_11_20() {
     s16 meri;
     meri = plw[0].wu.scr_mv_x - satse[plw[0].player_number];
@@ -463,6 +477,7 @@ void scr_11_20() {
     x_left_check(meri);
 }
 
+/** @brief Scroll handler for stage 11, screen layer 1. */
 void scr_11_21() {
     s16 meri;
 
@@ -477,6 +492,7 @@ void scr_11_21() {
     x_left_check(meri);
 }
 
+/** @brief Scroll handler for stage 11, screen layer 2. */
 void scr_11_22() {
     s16 meri;
     s16 meri2;
@@ -497,6 +513,7 @@ void scr_11_22() {
     }
 }
 
+/** @brief Scroll handler for stage 12, screen layer 0. */
 void scr_12_20() {
     s16 meri;
     meri = plw[0].wu.scr_mv_x + satse[plw[0].player_number];
@@ -505,6 +522,7 @@ void scr_12_20() {
     x_right_check(meri);
 }
 
+/** @brief Scroll handler for stage 12, screen layer 1. */
 void scr_12_21() {
     s16 meri;
     s16 meri2;
@@ -525,6 +543,7 @@ void scr_12_21() {
     }
 }
 
+/** @brief Scroll handler for stage 12, screen layer 2. */
 void scr_12_22() {
     s16 meri;
 
@@ -539,6 +558,7 @@ void scr_12_22() {
     x_right_check(meri);
 }
 
+/** @brief Sub-routine for base horizontal scroll movement. */
 void bg_base_x_move_sub() {
     s16 work[2];
     s8 st[2];
@@ -588,6 +608,7 @@ void bg_base_x_move_sub() {
     scr_x_mv_jp[(st[0] << 4) + st[1]]();
 }
 
+/** @brief Check and apply base horizontal scroll boundaries. */
 void bg_base_x_move_check() {
     s16 mvstep, old_work;
 
@@ -648,10 +669,12 @@ void bg_base_x_move_check() {
     }
 }
 
-s16 remake_x_mvstep(s16 mvstep) {
+/** @brief Recalculate horizontal movement step size. */
+static s16 remake_x_mvstep(s16 mvstep) {
     return mvstep * 0x50 / 100;
 }
 
+/** @brief Set or release a fixed vertical position for the camera. */
 void Bg_Y_Sitei(u8 on_off, s16 pos) {
     y_sitei_flag = on_off;
 
@@ -663,6 +686,7 @@ void Bg_Y_Sitei(u8 on_off, s16 pos) {
     y_sitei_pos = pos;
 }
 
+/** @brief Check and apply base vertical scroll boundaries. */
 void bg_base_y_move_check() {
     s32 pos_w, kake;
     s16 hi_pos;
@@ -709,6 +733,7 @@ end:
     bg_w.bg2_sp_y = bgw_ptr->xy[1].disp.pos - bgw_ptr->pos_y_work;
 }
 
+/** @brief Check and apply horizontal scroll for a foreground layer. */
 void bg_x_move_check() {
     if (bg_w.chase_flag & 0xF) {
         bgw_ptr->old_pos_x = bgw_ptr->chase_xy[0].disp.pos;
@@ -730,6 +755,7 @@ void bg_x_move_check() {
     }
 }
 
+/** @brief Check and apply vertical scroll for a foreground layer. */
 void bg_y_move_check() {
     if (bg_w.chase_flag & 0xF0) {
         bgw_ptr->chase_xy[1].cal = bgw_ptr->speed_y * bg_w.bg2_sp_y;
@@ -755,6 +781,7 @@ void bg_y_move_check() {
     bgw_ptr->wxy[1].cal = bgw_ptr->xy[1].cal;
 }
 
+/** @brief Update zoom and vertical offset for the stage frame. */
 void zoom_ud_check() {
     s16 work;
     s16 work2;
@@ -843,12 +870,14 @@ void zoom_ud_check() {
     }
 }
 
+/** @brief Set suzi (tile strip) offset for a background object. */
 void suzi_offset_set(WORK_Other* ewk) {
     if (ewk->wu.sync_suzi == 1) {
         suzi_offset_set_sub(ewk);
     }
 }
 
+/** @brief Calculate suzi offset sub-value for a background object. */
 static s32 suzi_offset_set_sub(WORK_Other* ewk) {
     s16 work, work2;
 
@@ -863,6 +892,7 @@ static s32 suzi_offset_set_sub(WORK_Other* ewk) {
     return 0;
 }
 
+/** @brief Synchronize object position with suzi tile strip data. */
 void suzi_sync_pos_set(WORK_Other* ewk) {
     s16 work;
 
@@ -881,6 +911,7 @@ void suzi_sync_pos_set(WORK_Other* ewk) {
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
 }
 
+/** @brief Update parallax family positions for all active layers. */
 void Bg_Family_Set() {
     s8 i;
     s16 x;
@@ -896,6 +927,7 @@ void Bg_Family_Set() {
     }
 }
 
+/** @brief Update parallax family for a specific layer index. */
 void Bg_Family_Set_appoint(s32 num_of_bg) {
     s16 x = bg_w.bgw[num_of_bg].position_x;
     s16 y = bg_w.bgw[num_of_bg].position_y;
@@ -906,6 +938,7 @@ void Bg_Family_Set_appoint(s32 num_of_bg) {
     Family_Set_W(num_of_bg + 1, x, y);
 }
 
+/** @brief Update parallax family positions (alternate method). */
 void Bg_Family_Set_2() {
     s8 i;
     s16 x;
@@ -922,6 +955,7 @@ void Bg_Family_Set_2() {
     }
 }
 
+/** @brief Update parallax family for a specific layer (alternate). */
 void Bg_Family_Set_2_appoint(s32 num_of_bg) {
     s16 x;
     s16 y;
@@ -935,6 +969,7 @@ void Bg_Family_Set_2_appoint(s32 num_of_bg) {
     Family_Set_W(num_of_bg + 1, x, y);
 }
 
+/** @brief Update parallax family for the Akebono (dawn) layer. */
 void ake_Family_Set2() {
     s16 x = bg_w.bgw[3].position_x;
     s16 y = bg_w.bgw[3].position_y;
@@ -947,6 +982,7 @@ void ake_Family_Set2() {
     Family_Set_W(4, x, y);
 }
 
+/** @brief Apply position correction to a single background layer. */
 void bg_pos_hosei_sub2(s16 bg_no) {
     u16 pos;
     s16 pos2;
@@ -956,6 +992,8 @@ void bg_pos_hosei_sub2(s16 bg_no) {
 
     pos -= bg_w.pos_offset;
     pos2 -= bg_w.pos_offset;
+    if (bg_w.quake_x_index >= QUAKE_TABLE_SIZE)
+        bg_w.quake_x_index = QUAKE_TABLE_SIZE - 1;
     pos += quake_x_tbl[bg_w.quake_x_index];
     pos2 += quake_x_tbl[bg_w.quake_x_index];
 
@@ -965,6 +1003,8 @@ void bg_pos_hosei_sub2(s16 bg_no) {
     pos2 = bg_w.bgw[bg_no].xy[1].disp.pos;
     pos = pos2 & 0xFFFF;
 
+    if (bg_w.quake_y_index >= QUAKE_TABLE_SIZE)
+        bg_w.quake_y_index = QUAKE_TABLE_SIZE - 1;
     pos += quake_y_tbl[bg_w.quake_y_index];
     pos2 += quake_y_tbl[bg_w.quake_y_index];
 
@@ -972,6 +1012,7 @@ void bg_pos_hosei_sub2(s16 bg_no) {
     bg_w.bgw[bg_no].abs_y = pos2;
 }
 
+/** @brief Apply position correction with Y-axis to a bg layer. */
 void bg_pos_hosei_sub3(s16 bg_no) {
     u16 pos;
     s16 pos2;
@@ -992,6 +1033,7 @@ void bg_pos_hosei_sub3(s16 bg_no) {
     bg_w.bgw[bg_no].abs_y = pos2;
 }
 
+/** @brief Apply position correction to all active background layers. */
 void bg_pos_hosei2() {
     s16 bg_no = 0;
     u16 pos;
@@ -1006,6 +1048,8 @@ void bg_pos_hosei2() {
 
         pos = pos2 & 0xFFFF;
         pos -= bg_w.pos_offset;
+        if (bg_w.quake_x_index >= QUAKE_TABLE_SIZE)
+            bg_w.quake_x_index = QUAKE_TABLE_SIZE - 1;
         pos += quake_x_tbl[bg_w.quake_x_index];
 
         bg_w.bgw[bg_no].position_x = pos & 0xFFFF;
@@ -1022,6 +1066,8 @@ void bg_pos_hosei2() {
         }
 
         pos = pos2 & 0xFFFF;
+        if (bg_w.quake_y_index >= QUAKE_TABLE_SIZE)
+            bg_w.quake_y_index = QUAKE_TABLE_SIZE - 1;
         pos += quake_y_tbl[bg_w.quake_y_index];
         pos2 += quake_y_tbl[bg_w.quake_y_index];
 
@@ -1032,6 +1078,7 @@ void bg_pos_hosei2() {
     }
 }
 
+/** @brief Get the horizontal center position between both players. */
 s16 get_center_position() {
     if (Bonus_Game_Flag == 0x15) {
         return 0x200;
@@ -1040,10 +1087,12 @@ s16 get_center_position() {
     return bg_w.bgw[1].wxy[0].disp.pos;
 }
 
+/** @brief Get the vertical height position between both players. */
 s16 get_height_position() {
     return bg_w.bgw[1].xy[1].disp.pos;
 }
 
+/** @brief Clear all background work variables to defaults. */
 void bg_work_clear() {
     s16 i;
 
@@ -1066,6 +1115,7 @@ void bg_work_clear() {
     }
 }
 
+/** @brief Force-reset background positions after stage transitions. */
 void compel_bg_init_position() {
     s16 i;
 
@@ -1086,17 +1136,20 @@ void compel_bg_init_position() {
     }
 }
 
+/** @brief Common base-layer scroll movement handler. */
 void bg_base_move_common() {
     bg_base_x_move_check();
     bg_base_y_move_check();
     bg_chase_move();
 }
 
+/** @brief Common foreground-layer scroll movement handler. */
 void bg_move_common() {
     bg_x_move_check();
     bg_y_move_check();
 }
 
+/** @brief Initialize background layers for the current stage. */
 void bg_initialize() {
     const s16* ptr;
     u8 i;
@@ -1179,6 +1232,7 @@ void bg_initialize() {
     Bg_Family_Set();
 }
 
+/** @brief Initialize the Akebono (dawn sky) background layer. */
 void akebono_initialize() {
     bg_w.bgw[3].xy[0].cal = bg_w.bgw[3].wxy[0].cal = 0x100000;
     bg_w.bgw[3].xy[1].cal = bg_w.bgw[3].wxy[1].cal = 0;
@@ -1190,6 +1244,7 @@ void akebono_initialize() {
     Bg_Off_R(8);
 }
 
+/** @brief Write miscellaneous background elements (suzi, etc.). */
 void bg_etc_write(s16 type) {
     u8 i;
 
@@ -1242,6 +1297,7 @@ void bg_etc_write(s16 type) {
     base_y_pos = 40;
 }
 
+/** @brief Check whether an object is outside the visible stage range. */
 s32 Ck_Range_Out_S(WORK_Other* ewk, s16 BG_No, s16 R) {
     s16 x;
 

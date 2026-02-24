@@ -1,8 +1,3 @@
-/**
- * @file pl03win_en.c
- * Yun Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl03win_en.h"
 #include "common.h"
 
@@ -67,4 +62,4 @@ static s8 msgWinCtrPL03[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 2, 2,
 };
 
-MessageTable pl03win_usa_tbl = { msgWinAdrPL03, msgWinCtrPL03 };
+MessageTable pl03win_en_tbl = { msgWinAdrPL03, msgWinCtrPL03 };

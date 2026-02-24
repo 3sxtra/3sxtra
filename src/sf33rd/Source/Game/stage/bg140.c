@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg140.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "sf33rd/Source/Game/effect/eff12.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
@@ -14,6 +15,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Rooftop, New York stage. */
 void BG140() {
     bgw_ptr = &bg_w.bgw[1];
     bg1401();
@@ -26,11 +28,15 @@ void BG140() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Rooftop, New York. */
 void bg1401() {
     void (*bg1401_jmp[2])() = { bg1401_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1401_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Rooftop, New York. */
 void bg1401_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -41,11 +47,15 @@ void bg1401_init00() {
     effect_12_init(0);
 }
 
+/** @brief Background layer handler for Rooftop, New York. */
 void bg1400() {
     void (*bg140_jmp[2])() = { bg1400_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg140_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Rooftop, New York. */
 void bg1400_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -53,6 +63,7 @@ void bg1400_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Background layer handler for Rooftop, New York. */
 void bg1402() {
     switch (bgw_ptr->r_no_0) {
     case 0:

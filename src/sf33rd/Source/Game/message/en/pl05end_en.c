@@ -1,8 +1,3 @@
-/**
- * @file pl05end_en.c
- * Necro Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl05end_en.h"
 #include "common.h"
 
@@ -57,4 +52,4 @@ static s8** msgEndAdrPL05[15] = {
 
 static s8 msgEndCtrPL05[15] = { 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1, 2 };
 
-MessageTable pl05end_usa_tbl = { msgEndAdrPL05, msgEndCtrPL05 };
+MessageTable pl05end_en_tbl = { msgEndAdrPL05, msgEndCtrPL05 };

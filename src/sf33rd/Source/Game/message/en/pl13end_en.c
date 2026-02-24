@@ -1,10 +1,6 @@
-/**
- * @file pl13end_en.c
- * Urien Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl13end_en.h"
 #include "common.h"
+#include "game_state.h"
 
 static s8* msgEndPL13_00[1] = { "" };
 static s8* msgEndPL13_01[2] = {
@@ -59,4 +55,4 @@ static s8** msgEndAdrPL13[12] = {
 
 static s8 msgEndCtrPL13[12] = { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 
-MessageTable pl13end_usa_tbl = { msgEndAdrPL13, msgEndCtrPL13 };
+MessageTable pl13end_en_tbl = { msgEndAdrPL13, msgEndCtrPL13 };

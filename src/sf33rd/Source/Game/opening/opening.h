@@ -1,3 +1,10 @@
+/**
+ * @file opening.h
+ * @brief Public API for the opening cinematic sequence and title screen.
+ *
+ * Part of the opening module.
+ */
+
 #ifndef OPENING_H
 #define OPENING_H
 

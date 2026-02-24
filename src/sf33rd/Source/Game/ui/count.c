@@ -1,6 +1,11 @@
 /**
  * @file count.c
- * Game Clock
+ * @brief Game clock and round timer with flash effects.
+ *
+ * Manages the round countdown timer, bonus-game timer, and the
+ * flashing color effect when time is running low (< 30 seconds).
+ *
+ * Part of the ui module.
  */
 
 #include "sf33rd/Source/Game/ui/count.h"
@@ -14,18 +19,13 @@
 #include "sf33rd/Source/Game/ui/sc_data.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-s8 round_timer;
-s8 flash_timer;
-s8 flash_r_num;
-s8 flash_col;
-s8 math_counter_hi;
-s8 math_counter_low;
-u8 counter_color;
-bool mugen_flag;
-s8 hoji_counter;
-
+/** @brief Initialize the round timer from Time_Limit (or set infinite mode). */
 void count_cont_init(u8 type) {
-    Counter_hi = save_w[Present_Mode].Time_Limit; // FIXME: use a consistent value in netplay
+    if (Mode_Type == MODE_NETWORK) {
+        Counter_hi = 99; // Netplay: use consistent value regardless of local DIP switch settings
+    } else {
+        Counter_hi = Time_Limit;
+    }
 
     if (Counter_hi == -1) {
         mugen_flag = true;
@@ -53,6 +53,7 @@ void count_cont_init(u8 type) {
     counter_color = 4;
 }
 
+/** @brief Per-frame round timer update — check guards then tick down. */
 void count_cont_main() {
     if (Bonus_Game_Flag) {
         return;
@@ -63,7 +64,7 @@ void count_cont_main() {
         return;
     }
 
-    if (Debug_w[24]) {
+    if (Debug_w[DEBUG_TIME_STOP]) {
         counter_write(counter_color);
         return;
     }
@@ -96,6 +97,7 @@ void count_cont_main() {
     counter_write(counter_color);
 }
 
+/** @brief Core countdown logic — decrement timer and trigger flash effects. */
 void counter_control() {
     if (Counter_hi == 0) {
         if (No_Trans == 0) {
@@ -146,6 +148,7 @@ void counter_control() {
     }
 }
 
+/** @brief Render the round timer digits on the HUD. */
 void counter_write(u8 atr) {
     u8 i;
 
@@ -167,6 +170,7 @@ void counter_write(u8 atr) {
     }
 }
 
+/** @brief Render the bonus-game timer digits (larger style). */
 void bcounter_write() {
     if (!No_Trans) {
         scfont_put(21, 4, 0x8F, 2, 20, 6, 2);
@@ -176,20 +180,33 @@ void bcounter_write() {
     }
 }
 
+#define FLASH_TIMER_COUNT 2
+#define FLASH_COLOR_COUNT 4
+
+/** @brief Cycle through flash colors when time is low. */
 void counter_flash(s8 Flash_Num) {
+    if (Flash_Num < 0 || Flash_Num >= FLASH_TIMER_COUNT) {
+        return;
+    }
+
     flash_timer--;
 
     if (flash_timer < 0) {
         flash_timer = flash_timer_tbl[Flash_Num];
-        counter_color = flash_color_tbl[flash_col];
+
+        if (flash_col >= 0 && flash_col < FLASH_COLOR_COUNT) {
+            counter_color = flash_color_tbl[flash_col];
+        }
+
         flash_col++;
 
-        if (flash_col == 4) {
+        if (flash_col == FLASH_COLOR_COUNT) {
             flash_col = 0;
         }
     }
 }
 
+/** @brief Initialize the bonus-game countdown (50 seconds). */
 void bcount_cont_init() {
     Counter_hi = 50;
     hoji_counter = 60;
@@ -201,16 +218,18 @@ void bcount_cont_init() {
     Time_Stop = 0;
 }
 
+/** @brief Per-frame bonus timer update — check guards then tick down. */
 void bcount_cont_main() {
     if (Break_Into != 0 || sa_stop_check() || Time_Stop != 0 || Allow_a_battle_f == 0) {
         return;
     }
 
-    if (!Debug_w[24] && !EXE_flag && !Game_pause) {
+    if (!Debug_w[DEBUG_TIME_STOP] && !EXE_flag && !Game_pause) {
         bcounter_control();
     }
 }
 
+/** @brief Core bonus countdown — decrement and trigger time-over. */
 void bcounter_control() {
     if (Counter_hi == 0) {
         return;
@@ -236,6 +255,7 @@ void bcounter_control() {
     }
 }
 
+/** @brief Decrement bonus timer by 1 (or force to 0 if kind != 0). */
 s16 bcounter_down(u8 kind) {
     if (Counter_hi == 0) {
         math_counter_hi = math_counter_low = 0;

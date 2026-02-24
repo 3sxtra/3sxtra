@@ -25,6 +25,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/training/training_state.h"
 
 #include <SDL3/SDL.h>
 
@@ -40,6 +41,7 @@ s16 mkm_wk[32];
 s16 hpq_in;
 s8 ca_check_flag;
 
+/** @brief Calculates red-blocking freeze-stop time for a given character. */
 void make_red_blocking_time(s16 id, s16 ix, s16 num) {
     switch (ix) {
     case 3:
@@ -59,6 +61,7 @@ void make_red_blocking_time(s16 id, s16 ix, s16 num) {
     }
 }
 
+/** @brief Main hit-check processing — runs catch checks, attack checks, and the hit queue. */
 void hit_check_main_process() {
     aiuchi_flag = 0;
 
@@ -77,6 +80,7 @@ void hit_check_main_process() {
     clear_hit_queue();
 }
 
+/** @brief Evaluates round judge result — KO, time-over, or double-KO. */
 s16 set_judge_result() {
     s16 i;
     s16 rnum = 0;
@@ -96,6 +100,7 @@ s16 set_judge_result() {
     return rnum;
 }
 
+/** @brief Performs extra result checks (chip KO, SA finish, simultaneous KO). */
 void check_result_extra() {
     WORK_Other* dm1p;
     WORK_Other* dm2p;
@@ -162,6 +167,7 @@ void check_result_extra() {
     }
 }
 
+/** @brief Handles caught/thrown status setup when a catch (throw) connects. */
 void set_caught_status(s16 ix) {
     s16 ix2 = hs[ix].dm_me;
     PLW* as = (PLW*)q_hit_push[ix2];
@@ -355,6 +361,7 @@ set_paring_status:
     set_paring_status(as, ds);
 }
 
+/** @brief Returns whether a work item is in an attackable pattern state. */
 s32 check_pat_status(WORK* wk) {
     if (wk->pat_status >= 14 && wk->pat_status < 31) {
         return 1;
@@ -363,6 +370,7 @@ s32 check_pat_status(WORK* wk) {
     return 0;
 }
 
+/** @brief Checks whether the defender is in a valid blocking state against the attacker. */
 s16 check_blocking_flag(PLW* as, PLW* ds) {
     WORK_CP* wp;
     s16 num;
@@ -374,12 +382,14 @@ s16 check_blocking_flag(PLW* as, PLW* ds) {
     return num;
 }
 
+/** @brief Sets up the attack-hit data for a catch (throw) connection. */
 void setup_catch_atthit(WORK* as, WORK* ds) {
     set_damage_and_piyo((PLW*)as, (PLW*)ds);
     dm_status_copy(as, ds);
     as->hit_stop = ds->dm_stop = 0;
 }
 
+/** @brief Calculates the hit-mark sprite position for a catch (throw). */
 void set_catch_hit_mark_pos(WORK* as, WORK* ds) {
     if (as->att.mkh_ix) {
         if (as->rl_flag) {
@@ -395,6 +405,7 @@ void set_catch_hit_mark_pos(WORK* as, WORK* ds) {
     cal_hit_mark_position(ds, as, (s16*)ds->h_cau, (s16*)as->h_cat);
 }
 
+/** @brief Handles struck status setup when a normal attack connects. */
 void set_struck_status(s16 ix) {
     WORK* as;
     WORK* ds;
@@ -437,6 +448,7 @@ void set_struck_status(s16 ix) {
     }
 }
 
+/** @brief Calculates the hit-mark spark position from overlapping hitboxes. */
 void cal_hit_mark_pos(WORK* as, WORK* ds, s16 ix2, s16 ix) {
     if (as->att.mkh_ix) {
         if (as->rl_flag) {
@@ -455,6 +467,7 @@ void cal_hit_mark_pos(WORK* as, WORK* ds, s16 ix2, s16 ix) {
 
 const s16 Dsas_dir_table[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0 };
 
+/** @brief Processes player-vs-player damage — guard, block, or hit depending on state. */
 void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
     ds->wu.dm_guard_success = -1;
 
@@ -574,6 +587,7 @@ set_paring_status:
     set_paring_status(as, ds);
 }
 
+/** @brief Initializes damage-reaction data (hitstop, pushback) on a hit. */
 void dm_reaction_init_set(PLW* as, PLW* ds) {
     ds->wu.routine_no[2] = as->wu.att.reaction;
 
@@ -592,6 +606,7 @@ void dm_reaction_init_set(PLW* as, PLW* ds) {
     ds->wu.routine_no[2] = change_damage_attribute(as, as->wu.at_attribute, ds->wu.routine_no[2]);
 }
 
+/** @brief Handles guard status — chip damage, guard break, and pushback. */
 void set_guard_status(PLW* as, PLW* ds) {
     if (as->wu.att.hs_you == 0 && as->wu.att.hs_me == 0) {
         ds->wu.routine_no[2] = ds->wu.old_rno[2];
@@ -624,6 +639,7 @@ const s8 sel_sp_ch_tbl[12] = { 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0 };
 
 const s16 sel_hs_add_tbl[6] = { 4, 3, 2, 1, 0, 0 };
 
+/** @brief Handles parry (blocking) status — SA gauge reward, grade tracking. */
 void set_paring_status(PLW* as, PLW* ds) {
     s16 hsadix;
 
@@ -719,10 +735,12 @@ void set_paring_status(PLW* as, PLW* ds) {
     hit_pattern_extdat_check(&as->wu);
 }
 
+/** @brief Returns whether the given move is a normal (non-special) attack. */
 s32 check_normal_attack(u8 waza) {
     return sel_sp_ch_tbl[waza >> 3] == 0;
 }
 
+/** @brief Parses hit-pattern extended data and sets attack/damage flags. */
 void hit_pattern_extdat_check(WORK* as) {
     s16 i;
 
@@ -844,6 +862,7 @@ void hit_pattern_extdat_check(WORK* as) {
     }
 }
 
+/** @brief Checks whether a damage source can be guarded given the defender's state. */
 s16 check_dm_att_guard(WORK* as, WORK* ds, s16 kom) {
     s16 curr_id;
     s16 rnum;
@@ -886,6 +905,7 @@ s16 check_dm_att_guard(WORK* as, WORK* ds, s16 kom) {
     return rnum;
 }
 
+/** @brief Checks whether a damage source can be parried (blocked) given the defender's state. */
 s16 check_dm_att_blocking(WORK* as, WORK* ds, s16 dnum) {
     s16 rnum = 0;
     TAMA* tama = (TAMA*)as->my_effadrs;
@@ -922,6 +942,7 @@ s16 check_dm_att_blocking(WORK* as, WORK* ds, s16 dnum) {
     return rnum;
 }
 
+/** @brief Applies damage and stun (piyo) values to the defender. */
 void set_damage_and_piyo(PLW* as, PLW* ds) {
     cal_damage_vitality(as, ds);
     ds->wu.dm_piyo = _add_piyo_gauge[as->player_number][as->wu.att.piyo];
@@ -934,6 +955,9 @@ void set_damage_and_piyo(PLW* as, PLW* ds) {
     } else if (ds->wu.pat_status == 1 || ds->wu.pat_status == 21 || ds->wu.pat_status == 37) {
         ds->wu.dm_vital *= 2;
     }
+
+    // Add natively to training state
+    training_state_add_combo_hit(ds->wu.id, ds->wu.dm_piyo);
 
     if (ds->wu.dm_vital) {
         if (as->wu.routine_no[1] == 2) {
@@ -988,6 +1012,7 @@ void set_damage_and_piyo(PLW* as, PLW* ds) {
     }
 }
 
+/** @brief Converts a damage value into a score index for point calculation. */
 s16 remake_score_index(s16 dmv) {
     s16 i;
 
@@ -1000,6 +1025,7 @@ s16 remake_score_index(s16 dmv) {
     return rsix_r_table[i][1];
 }
 
+/** @brief Handles same-frame simultaneous damage (double hit) hitstop. */
 void same_dm_stop(WORK* as, WORK* ds) {
     if (as->work_id == 1 && as->att.dipsw & 1 && (ds->xyz[1].disp.pos > 0 || (ds->vital_new - ds->dm_vital) < -2)) {
         switch ((ds->dm_stop < 0) + ((as->att.hs_me < 0) * 2)) {
@@ -1018,6 +1044,7 @@ void same_dm_stop(WORK* as, WORK* ds) {
     }
 }
 
+/** @brief Processes air defence — guard or parry while airborne. */
 s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
     s8 just_now;
     s8 attr_att;
@@ -1098,6 +1125,7 @@ s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
     return 1;
 }
 
+/** @brief Increments blocking (parry) point counter for SA gauge charging. */
 void blocking_point_count_up(PLW* wk) {
     wk->kind_of_blocking = 0;
 
@@ -1114,6 +1142,7 @@ void blocking_point_count_up(PLW* wk) {
     }
 }
 
+/** @brief Processes ground defence — stand/crouch guard or parry. */
 s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
     s8 just_now;
     s8 attr_att;
@@ -1295,6 +1324,7 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
     return 1;
 }
 
+/** @brief Sets up damage reaction left/right direction for the defender. */
 void setup_dm_rl(WORK* as, WORK* ds) {
     s16 pw;
 
@@ -1327,6 +1357,7 @@ void setup_dm_rl(WORK* as, WORK* ds) {
     }
 }
 
+/** @brief Copies damage status from attacker to defender work. */
 void dm_status_copy(WORK* as, WORK* ds) {
     ds->dm_attlv = as->att.level;
     ds->dm_impact = as->att.impact;
@@ -1362,6 +1393,7 @@ void dm_status_copy(WORK* as, WORK* ds) {
     as->meoshi_hit_flag = 1;
 }
 
+/** @brief Adds a hit to the combo counter and updates combo display work. */
 void add_combo_work(PLW* as, PLW* ds) {
     s16* kow;
     s16* cal;
@@ -1381,6 +1413,7 @@ void add_combo_work(PLW* as, PLW* ds) {
     ds->remake_power.total++;
 }
 
+/** @brief Adds fake combo hits (for multi-hit moves that don't combo normally). */
 void nise_combo_work(PLW* as, PLW* ds, s16 num) {
     s16* kow;
     s16* cal;
@@ -1399,6 +1432,7 @@ void nise_combo_work(PLW* as, PLW* ds, s16 num) {
     }
 }
 
+/** @brief Calculates combo damage scaling (waribiki) for the current combo length. */
 void cal_combo_waribiki(PLW* as, PLW* ds) {
     POWER* power;
     KOATT* koatt;
@@ -1451,6 +1485,7 @@ void cal_combo_waribiki(PLW* as, PLW* ds) {
     }
 }
 
+/** @brief Calculates combo damage scaling variant 2 (for specific multi-hit patterns). */
 void cal_combo_waribiki2(PLW* ds) {
     s16 num;
 
@@ -1479,6 +1514,7 @@ void cal_combo_waribiki2(PLW* ds) {
     }
 }
 
+/** @brief Main catch (throw) hit-check loop — tests all active catch boxes. */
 void catch_hit_check() {
     WORK* mad;
     WORK* sad;
@@ -1565,6 +1601,7 @@ void catch_hit_check() {
     }
 }
 
+/** @brief Main attack hit-check loop — tests all active attack vs. hurt boxes. */
 void attack_hit_check() {
     WORK* mad;
     WORK* sad;
@@ -1700,6 +1737,7 @@ void attack_hit_check() {
     }
 }
 
+/** @brief Low-level hitbox overlap test (AABB intersection check). */
 s16 hit_check_subroutine(WORK* wk1, WORK* wk2, const s16* hd1, const s16* hd2) {
     s16 d0;
     s16 d1;
@@ -1746,6 +1784,7 @@ s16 hit_check_subroutine(WORK* wk1, WORK* wk2, const s16* hd1, const s16* hd2) {
     return d2;
 }
 
+/** @brief Hitbox overlap test on X-axis only (for push/proximity checks). */
 s32 hit_check_x_only(WORK* wk1, WORK* wk2, s16* hd1, s16* hd2) {
     s16 d0;
     s16 d1;
@@ -1780,6 +1819,7 @@ s32 hit_check_x_only(WORK* wk1, WORK* wk2, s16* hd1, s16* hd2) {
     return 1;
 }
 
+/** @brief Calculates the hit-mark spark position from two overlapping hitbox rects. */
 void cal_hit_mark_position(WORK* wk1, WORK* wk2, s16* hd1, s16* hd2) {
     s16 d0 = *hd1++;
     s16 d1 = *hd1++;
@@ -1830,6 +1870,7 @@ void cal_hit_mark_position(WORK* wk1, WORK* wk2, s16* hd1, s16* hd2) {
     wk2->hit_mark_y = (d0 + d1) >> 1;
 }
 
+/** @brief Gets the target attack position for aim/tracking purposes. */
 void get_target_att_position(WORK* wk, s16* tx, s16* ty) {
     s16 i;
     s16(*ta)[4];
@@ -1854,6 +1895,7 @@ void get_target_att_position(WORK* wk, s16* tx, s16* ty) {
     }
 }
 
+/** @brief Gets the head position for a work item's attack hitbox. */
 s16 get_att_head_position(WORK* wk) {
     s16* ta;
     s16 kx;
@@ -1894,12 +1936,14 @@ s16 get_att_head_position(WORK* wk) {
     return tx;
 }
 
+/** @brief Enqueues a work item into the hit-push processing queue. */
 void hit_push_request(WORK* hpr_wk) {
     if (hpq_in < 31 && hpr_wk->cg_hit_ix != 0) {
         q_hit_push[hpq_in++] = hpr_wk;
     }
 }
 
+/** @brief Clears the hit-push queue and processes all pending hit pushes. */
 void clear_hit_queue() {
     s16 i;
 
@@ -1916,6 +1960,7 @@ void clear_hit_queue() {
     SDL_zeroa(hs);
 }
 
+/** @brief Converts a raw damage attribute to a character-specific variant. */
 s16 change_damage_attribute(PLW* as, u16 atr, u16 ix) {
     switch (atr) {
     case 1:
@@ -1944,36 +1989,43 @@ s16 change_damage_attribute(PLW* as, u16 atr, u16 ix) {
     return ix;
 }
 
+/** @brief Returns the air normal-damage animation index for a character. */
 s16 get_sky_nm_damage(u16 ix) {
     ix -= 32;
     return sky_nm_damage_tbl[ix];
 }
 
+/** @brief Returns the air special-damage animation index for a character. */
 s16 get_sky_sp_damage(u16 ix) {
     ix -= 32;
     return sky_sp_damage_tbl[ix];
 }
 
+/** @brief Returns the reflect/mirror-damage animation index for a character. */
 s16 get_kagami_damage(u16 ix) {
     ix -= 32;
     return kagami_damage_tbl[ix];
 }
 
+/** @brief Returns the ground-hand damage animation index for a character. */
 s16 get_grd_hand_damage(u16 ix) {
     ix -= 32;
     return grd_hand_damage_tbl[ix];
 }
 
+/** @brief Returns 1 if the damage index targets the head region. */
 u8 check_head_damage(s16 ix) {
     ix -= 32;
     return hddm_damage_tbl[ix];
 }
 
+/** @brief Returns 1 if the damage index targets the trunk (body) region. */
 u8 check_trunk_damage(s16 ix) {
     ix -= 32;
     return trdm_damage_tbl[ix];
 }
 
+/** @brief Returns 1 if the damage index requests a special hit-effect (ttk). */
 u8 check_ttk_damage_request(s16 ix) {
     ix -= 32;
     return ttk_damage_req_tbl[ix];

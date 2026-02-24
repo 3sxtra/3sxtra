@@ -1,3 +1,7 @@
+/**
+ * @file reset.h
+ * @brief Public API for the soft-reset detection state machine.
+ */
 #ifndef RESET_H
 #define RESET_H
 

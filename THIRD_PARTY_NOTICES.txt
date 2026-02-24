@@ -1,7 +1,9 @@
 3SX Third-Party Notices
 ========================
 
-This product includes third-party software components.
+This product includes third-party software components listed below.
+
+--------------------------------------------------------------------------------
 
 libcdio / libiso9660
 --------------------
@@ -12,38 +14,250 @@ Upstream: https://github.com/libcdio/libcdio
 - libcdio
 - libiso9660
 
-License: GNU General Public License, version 3 or later (GPLv3+), as provided by the libcdio project.
+License: GNU General Public License, version 3 or later (GPLv3+), as provided
+by the libcdio project.
 
 Copyright:
 - Copyright (C) libcdio contributors.
 
-The source code for libcdio and its license notices are available from the upstream project above.
+The source code for libcdio and its license notices are available from the
+upstream project above.
+
+--------------------------------------------------------------------------------
 
 SDL3
 ----
-Project: SDL3
+Project: SDL3 (Simple DirectMedia Layer)
 Upstream: https://github.com/libsdl-org/SDL
 
 3SX links against:
 - SDL3
 
-License: zlib license, as provided by the SDL project.
+License: zlib License, as provided by the SDL project.
+
+Copyright:
+- Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+
+The source code for SDL3 and its license notices are available from the
+upstream project above.
+
+--------------------------------------------------------------------------------
+
+GLAD
+----
+Project: GLAD (OpenGL Loader-Generator)
+Upstream: https://github.com/Dav1dde/glad
+
+3SX statically links against GLAD (vendored).
+
+License: MIT License
+
+Copyright:
+- Copyright (c) 2013-2022 David Herberth
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions: The above copyright notice and this
+permission notice shall be included in all copies or substantial portions of the
+Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+
+--------------------------------------------------------------------------------
+
+SIMDe (SIMD Everywhere)
+-----------------------
+Project: SIMDe
+Upstream: https://github.com/simd-everywhere/simde
+
+3SX uses SIMDe headers (vendored) for portable SIMD intrinsics.
+
+License: MIT License
+
+Copyright:
+- Copyright (c) 2017-2023 Evan Nemerson <evan@nemerson.com> and contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT
+WARRANTY OF ANY KIND.
+
+--------------------------------------------------------------------------------
+
+stb_image
+---------
+Project: stb (single-file public domain libraries)
+Upstream: https://github.com/nothings/stb
+
+3SX uses stb_image (vendored via stb_impl.c) for PNG loading.
+
+License: Public Domain or MIT License (dual-licensed; user's choice).
+
+Copyright:
+- Copyright (c) 2017 Sean Barrett
+
+--------------------------------------------------------------------------------
+
+librashader
+-----------
+Project: librashader
+Upstream: https://github.com/SnowflakePowered/librashader
+
+3SX links against librashader for RetroArch .slangp shader preset support.
+
+License: Mozilla Public License 2.0 (MPL-2.0)
+
+Copyright:
+- Copyright (c) 2022 SnowflakePowered and contributors
+
+The source code for librashader and its license notices are available from the
+upstream project above.
+
+--------------------------------------------------------------------------------
+
+SDL_shadercross
+---------------
+Project: SDL_shadercross
+Upstream: https://github.com/libsdl-org/SDL_shadercross
+
+3SX links against SDL_shadercross for SPIR-V shader cross-compilation.
+
+License: zlib License, as provided by the SDL project.
 
 Copyright:
 - Copyright (C) SDL contributors.
 
-FFmpeg
-------
-Project: FFmpeg
-Upstream: https://ffmpeg.org
+--------------------------------------------------------------------------------
 
-3SX links against:
-- libavcodec
-- libavformat
-- libavutil
-- libswresample
+Dear ImGui
+----------
+Project: Dear ImGui
+Upstream: https://github.com/ocornut/imgui
 
-License: GNU Lesser General Public License (LGPL), version 2.1 or later, as provided by the FFmpeg project build configuration and linked binaries.
+3SX uses Dear ImGui (vendored) for all in-game overlay menus and UI.
+
+License: MIT License
 
 Copyright:
-- Copyright (C) FFmpeg contributors.
+- Copyright (c) 2014-2024 Omar Cornut
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions: The above copyright notice and this
+permission notice shall be included in all copies or substantial portions of the
+Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+
+--------------------------------------------------------------------------------
+
+CMocka
+------
+Project: CMocka
+Upstream: https://cmocka.org / https://gitlab.com/cmocka/cmocka
+
+3SX uses CMocka for its unit test suite.
+
+License: Apache License 2.0
+
+Copyright:
+- Copyright 2008 Google Inc.
+- Copyright 2014-2024 Andreas Schneider <asn@cryptomilk.org>
+
+The source code for CMocka and its license notices are available from the
+upstream project above.
+
+--------------------------------------------------------------------------------
+
+Tracy Profiler
+--------------
+Project: Tracy
+Upstream: https://github.com/wolfpld/tracy
+
+3SX optionally links against Tracy for CPU and GPU profiling.
+
+License: BSD 3-Clause License
+
+Copyright:
+- Copyright (c) 2017-2024 Bartosz Taudul <wolf@nereid.pl> and contributors
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+3. Neither the name of the copyright holder nor the names of its contributors
+   may be used to endorse or promote products derived from this software
+   without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+
+--------------------------------------------------------------------------------
+
+Spout2
+------
+Project: Spout2
+Upstream: https://github.com/leadedge/Spout2
+
+3SX uses Spout2 (vendored) on Windows for video broadcast output.
+
+License: BSD 2-Clause License
+
+Copyright:
+- Copyright (c) 2014-2024 Lynn Jarvis
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+1. Redistributions of source code must retain the above copyright notice.
+2. Redistributions in binary form must reproduce the above copyright notice
+   in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+
+--------------------------------------------------------------------------------
+
+GekkoNet
+--------
+Project: GekkoNet
+Upstream: https://github.com/HeatXD/GekkoNet
+
+3SX uses GekkoNet (vendored) for P2P GGPO-style rollback netcode.
+
+License: MIT License
+
+Copyright:
+- Copyright (c) HeatXD and contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT
+WARRANTY OF ANY KIND.
+
+--------------------------------------------------------------------------------
+
+zlib
+----
+Project: zlib
+Upstream: https://zlib.net / https://github.com/madler/zlib
+
+3SX links against zlib for data compression.
+
+License: zlib License
+
+Copyright:
+- Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler
+
+This software is provided 'as-is', without any express or implied warranty. In
+no event will the authors be held liable for any damages arising from the use of
+this software. Permission is granted to anyone to use this software for any
+purpose, including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+1. The origin of this software must not be misrepresented.
+2. Altered source versions must be plainly marked as such.
+3. This notice may not be removed or altered from any source distribution.
+
+--------------------------------------------------------------------------------

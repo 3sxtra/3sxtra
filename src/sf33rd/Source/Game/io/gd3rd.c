@@ -1,11 +1,17 @@
 /**
  * @file gd3rd.c
- * AFS file reading
+ * @brief AFS file reading and load-request queue management.
+ *
+ * Handles file open/close/read operations against the AFS archive,
+ * manages a queue of load requests for textures, palettes, and sounds,
+ * and provides the load-request dispatch table.
+ *
+ * Part of the io module.
  */
 
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "common.h"
-#include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/cse.h"
+#include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlTSB.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -27,30 +33,41 @@ typedef struct {
 
 typedef void (*LDREQ_Process_Func)(REQ*);
 
+#define LDREQ_PROCESS_COUNT 6
+#define LDREQ_QUEUE_SIZE 16
+#define LDREQ_TBL_SIZE 294
+#define LDREQ_IX_SIZE 43
+#define LDREQ_RETRY_COUNT 0x40
+#define PLAYER_COUNT 2
+#define CHAR_TWELVE 0x12
+#define METAMOR_BASE_INDEX 0xD4
+#define METAMOR_MIRROR_INDEX 0xE6
+
 const u8 lpr_wrdata[3] = { 0x03, 0xC0, 0x3C };
-const u8 lpc_seldat[2] = { 10, 11 };
+const u8 lpc_seldat[PLAYER_COUNT] = { 10, 11 };
 const u8 lpt_seldat[4] = { 3, 4, 5, 0 };
 
-s16 plt_req[2];
+s16 plt_req[PLAYER_COUNT];
 u8 ldreq_break;
-REQ q_ldreq[16];
-u8 ldreq_result[294];
+REQ q_ldreq[LDREQ_QUEUE_SIZE];
+u8 ldreq_result[LDREQ_TBL_SIZE];
 
 static AFSHandle afs_handle = AFS_NONE;
 
 // forward decls
-s32 Push_LDREQ_Queue(REQ* ldreq);
-void Push_LDREQ_Queue_Metamor();
-void q_ldreq_error(REQ* curr);
-void disp_ldreq_status();
-void Push_LDREQ_Queue_Union(s16 ix);
-s32 Check_LDREQ_Queue_Union(s16 ix);
+static s32 Push_LDREQ_Queue(REQ* ldreq);
+static void Push_LDREQ_Queue_Metamor();
+static void q_ldreq_error(REQ* curr);
+static void disp_ldreq_status();
+static void Push_LDREQ_Queue_Union(s16 ix);
+static s32 Check_LDREQ_Queue_Union(s16 ix);
 
-const LDREQ_Process_Func ldreq_process[6];
+const LDREQ_Process_Func ldreq_process[LDREQ_PROCESS_COUNT];
 s8* ldreq_process_name[];
-const LDREQ_TBL ldreq_tbl[294];
-const s16 ldreq_ix[43][2];
+const LDREQ_TBL ldreq_tbl[LDREQ_TBL_SIZE];
+const s16 ldreq_ix[LDREQ_IX_SIZE][2];
 
+/** @brief Open an AFS file by request number. */
 s32 fsOpen(REQ* req) {
     if (req->fnum >= AFS_GetFileCount()) {
         return 0;
@@ -66,11 +83,13 @@ s32 fsOpen(REQ* req) {
     return 1;
 }
 
+/** @brief Close an AFS file (no-op on modern platform). */
 void fsClose(REQ* /* unused */) {
     AFS_Close(afs_handle);
     afs_handle = AFS_NONE;
 }
 
+/** @brief Return the file size for the given AFS file number. */
 u32 fsGetFileSize(u16 fnum) {
     if (fnum >= AFS_GetFileCount()) {
         return 0;
@@ -79,11 +98,13 @@ u32 fsGetFileSize(u16 fnum) {
     return AFS_GetSize(fnum);
 }
 
+/** @brief Round a byte size up to the nearest sector boundary. */
 u32 fsCalSectorSize(u32 size) {
     return (size + 2048 - 1) / 2048;
 }
 
-s32 fsCansel(REQ* /* unused */) {
+/** @brief Cancel a pending file request (stub). */
+static s32 fsCansel(REQ* /* unused */) {
     if ((afs_handle != AFS_NONE) && (AFS_GetState(afs_handle) == AFS_READ_STATE_READING)) {
         AFS_Stop(afs_handle);
     }
@@ -91,6 +112,7 @@ s32 fsCansel(REQ* /* unused */) {
     return 1;
 }
 
+/** @brief Check whether a file command is still executing. */
 s32 fsCheckCommandExecuting() {
     if (afs_handle == AFS_NONE) {
         return 0;
@@ -112,11 +134,13 @@ s32 fsCheckCommandExecuting() {
     }
 }
 
+/** @brief Issue an asynchronous file-read request. */
 s32 fsRequestFileRead(REQ* /* unused */, u32 sec, void* buff) {
     AFS_Read(afs_handle, sec, buff);
     return 1;
 }
 
+/** @brief Check whether an asynchronous file read has completed. */
 s32 fsCheckFileReaded(REQ* /* unused */) {
     const AFSReadState state = AFS_GetState(afs_handle);
 
@@ -136,24 +160,30 @@ s32 fsCheckFileReaded(REQ* /* unused */) {
     }
 }
 
+/** @brief Synchronous file read — request and wait for completion. */
 s32 fsFileReadSync(REQ* req, u32 sec, void* buff) {
     AFS_ReadSync(afs_handle, sec, buff);
     const s32 rnum = fsCheckFileReaded(req);
     return (rnum == 1) ? 1 : 0;
 }
 
+/** @brief Dummy vsync wait (no-op on modern platform). */
 void waitVsyncDummy() {
-    AFS_RunServer(); // FIXME: Ideally we should only call this from the main loop
-    cseExecServer();
+    // AFS_RunServer is called here intentionally to keep streaming operational during
+    // synchronous file reads. This prevents audio/streaming stalls when the main loop
+    // is blocked on file I/O. Moving this to only the main loop would break sync reads.
+    AFS_RunServer();
+    mlTsbExecServer();
 }
 
+/** @brief Load a file by number, allocating a key from any pool. */
 s32 load_it_use_any_key2(u16 fnum, void** adrs, s16* key, u8 kokey, u8 group) {
     u32 size;
     u32 err;
 
     if (fnum >= AFS_GetFileCount()) {
         flLogOut("ファイルナンバーに異常があります。ファイル番号：%d\n", fnum);
-        while (1) {}
+        return 0;
     }
 
     size = fsGetFileSize(fnum);
@@ -170,6 +200,7 @@ s32 load_it_use_any_key2(u16 fnum, void** adrs, s16* key, u8 kokey, u8 group) {
     return 0;
 }
 
+/** @brief Load a file by number, returning an allocated key. */
 s16 load_it_use_any_key(u16 fnum, u8 kokey, u8 group) {
     u32 err;
     void* adrs;
@@ -184,6 +215,7 @@ s16 load_it_use_any_key(u16 fnum, u8 kokey, u8 group) {
     return 0;
 }
 
+/** @brief Load a file by number using a specific pre-allocated key. */
 s32 load_it_use_this_key(u16 fnum, s16 key) {
     REQ req;
     u32 err;
@@ -211,10 +243,11 @@ s32 load_it_use_this_key(u16 fnum, s16 key) {
     }
 }
 
+/** @brief First-time init of the load-request queue. */
 void Init_Load_Request_Queue_1st() {
     s16 i;
 
-    for (i = 0; i < (s16)(sizeof(q_ldreq) / sizeof(REQ)); i++) {
+    for (i = 0; i < LDREQ_QUEUE_SIZE; i++) {
         q_ldreq[i].be = 0;
         q_ldreq[i].type = 0;
     }
@@ -222,10 +255,12 @@ void Init_Load_Request_Queue_1st() {
     ldreq_break = 0;
 }
 
+/** @brief Signal the load-request queue to break (cancel pending loads). */
 void Request_LDREQ_Break() {
     ldreq_break = 1;
 }
 
+/** @brief Check whether a load-request break has been acknowledged. */
 u8 Check_LDREQ_Break() {
     if (ldreq_break) {
         return 1;
@@ -234,17 +269,28 @@ u8 Check_LDREQ_Break() {
     return fsCheckCommandExecuting();
 }
 
+/** @brief Enqueue load requests for a player character's assets. */
 void Push_LDREQ_Queue_Player(s16 id, s16 ix) {
     REQ ldreq;
     s16 i;
     s16 kara;
     s16 made;
 
+    if (ix < 0 || ix >= LDREQ_IX_SIZE) {
+        return;
+    }
+    if (id < 0 || id >= PLAYER_COUNT) {
+        return;
+    }
+
     kara = ldreq_ix[ix][0];
     made = kara + ldreq_ix[ix][1];
     plt_req[id] = ix;
 
     for (i = kara; i < made; i++) {
+        if (i < 0 || i >= LDREQ_TBL_SIZE) {
+            break;
+        }
         ldreq.type = ldreq_tbl[i].type;
         ldreq.id = id;
         ldreq.ix = ldreq_tbl[i].ix;
@@ -263,21 +309,30 @@ void Push_LDREQ_Queue_Player(s16 id, s16 ix) {
     }
 }
 
+/** @brief Enqueue load requests for a background stage's assets. */
 void Push_LDREQ_Queue_BG(s16 ix) {
     Push_LDREQ_Queue_Union(ix + 20);
     Push_LDREQ_Queue_Metamor();
 }
 
-void Push_LDREQ_Queue_Union(s16 ix) {
+/** @brief Enqueue load requests for union (shared/common) assets. */
+static void Push_LDREQ_Queue_Union(s16 ix) {
     REQ ldreq;
     s16 i;
     s16 kara;
     s16 made;
 
+    if (ix < 0 || ix >= LDREQ_IX_SIZE) {
+        return;
+    }
+
     kara = ldreq_ix[ix][0];
     made = kara + ldreq_ix[ix][1];
 
     for (i = kara; i < made; i++) {
+        if (i < 0 || i >= LDREQ_TBL_SIZE) {
+            break;
+        }
         ldreq.type = ldreq_tbl[i].type;
         ldreq.id = 2;
         ldreq.ix = ldreq_tbl[i].ix;
@@ -290,24 +345,29 @@ void Push_LDREQ_Queue_Union(s16 ix) {
     }
 }
 
-void Push_LDREQ_Queue_Metamor() {
-    switch ((My_char[0] == 0x12) + (My_char[1] == 0x12) * 2) {
+/** @brief Enqueue load requests for metamorphosis character data. */
+static void Push_LDREQ_Queue_Metamor() {
+    switch ((My_char[0] == CHAR_TWELVE) + (My_char[1] == CHAR_TWELVE) * 2) {
     case 1:
-        Push_LDREQ_Queue_Direct(My_char[1] + 0xD4, 0);
+        Push_LDREQ_Queue_Direct(My_char[1] + METAMOR_BASE_INDEX, 0);
         break;
 
     case 2:
-        Push_LDREQ_Queue_Direct(My_char[0] + 0xD4, 1);
+        Push_LDREQ_Queue_Direct(My_char[0] + METAMOR_BASE_INDEX, 1);
         break;
 
     case 3:
-        Push_LDREQ_Queue_Direct(0xE6, 2);
+        Push_LDREQ_Queue_Direct(METAMOR_MIRROR_INDEX, 2);
         break;
     }
 }
 
+/** @brief Enqueue a direct load request by index and ID. */
 void Push_LDREQ_Queue_Direct(s16 ix, s16 id) {
     REQ ldreq;
+    if (ix < 0 || ix >= LDREQ_TBL_SIZE) {
+        return;
+    }
     ldreq.type = ldreq_tbl[ix].type;
     ldreq.id = id;
     ldreq.ix = ldreq_tbl[ix].ix;
@@ -319,21 +379,22 @@ void Push_LDREQ_Queue_Direct(s16 ix, s16 id) {
     Push_LDREQ_Queue(&ldreq);
 }
 
-s32 Push_LDREQ_Queue(REQ* ldreq) {
+/** @brief Push a single load request onto the queue. */
+static s32 Push_LDREQ_Queue(REQ* ldreq) {
     s16 i;
     u8 masknum;
 
-    for (i = 0; i < 16; i++) {
+    for (i = 0; i < LDREQ_QUEUE_SIZE; i++) {
         if (q_ldreq[i].be == 0) {
             break;
         }
     }
 
-    if (i != 0x10) {
+    if (i != LDREQ_QUEUE_SIZE) {
         q_ldreq[i] = ldreq[0];
         q_ldreq[i].be = 2;
         q_ldreq[i].rno = 0;
-        q_ldreq[i].retry = 0x40;
+        q_ldreq[i].retry = LDREQ_RETRY_COUNT;
 
         switch (ldreq->id) {
         case 0:
@@ -357,6 +418,7 @@ s32 Push_LDREQ_Queue(REQ* ldreq) {
     return 0;
 }
 
+/** @brief Process pending load requests in FIFO order. */
 void Check_LDREQ_Queue() {
     s16 i;
 
@@ -364,10 +426,14 @@ void Check_LDREQ_Queue() {
 
     if (!ldreq_break) {
         if (q_ldreq->be != 0) {
-            ldreq_process[q_ldreq->type](q_ldreq);
+            if (q_ldreq->type < LDREQ_PROCESS_COUNT) {
+                ldreq_process[q_ldreq->type](q_ldreq);
+            } else {
+                q_ldreq_error(q_ldreq);
+            }
 
             if (q_ldreq->be == 0) {
-                for (i = 0; i < 15; i++) {
+                for (i = 0; i < LDREQ_QUEUE_SIZE - 1; i++) {
                     q_ldreq[i] = q_ldreq[i + 1];
                 }
 
@@ -386,30 +452,38 @@ void Check_LDREQ_Queue() {
     }
 }
 
-void disp_ldreq_status() {
+/** @brief Display the current load-request queue status (debug). */
+static void disp_ldreq_status() {
     s16 i;
 
     flPrintColor(0xFFFFFF8F);
 
-    if (Debug_w[0xE]) {
-        for (i = 0; i < 16; i++) {
+    if (Debug_w[DEBUG_LDREQ_QUEUE]) {
+        for (i = 0; i < LDREQ_QUEUE_SIZE; i++) {
             flPrintL(2, i + 18, "%1d", q_ldreq[i].be);
-            flPrintL(3, i + 18, ldreq_process_name[q_ldreq[i].type]);
+            if (q_ldreq[i].type < LDREQ_PROCESS_COUNT) {
+                flPrintL(3, i + 18, ldreq_process_name[q_ldreq[i].type]);
+            }
         }
 
         flPrintL(2, i + 18, "%4d", system_timer);
     }
 }
 
+/** @brief Check whether the load-request queue is empty. */
 s32 Check_LDREQ_Clear() {
     return q_ldreq->be == 0 && q_ldreq[1].be == 0;
 }
 
+/** @brief Check whether a player's load requests have completed. */
 s32 Check_LDREQ_Queue_Player(s16 id) {
     s16 i;
     s16 kara;
     s16 made;
 
+    if (id < 0 || id >= PLAYER_COUNT || plt_req[id] < 0 || plt_req[id] >= LDREQ_IX_SIZE) {
+        return 0;
+    }
     kara = ldreq_ix[plt_req[id]][0];
     made = kara + ldreq_ix[plt_req[id]][1];
 
@@ -426,15 +500,20 @@ s32 Check_LDREQ_Queue_Player(s16 id) {
     return 1;
 }
 
+/** @brief Check whether a background's load requests have completed. */
 s32 Check_LDREQ_Queue_BG(s16 ix) {
     return Check_LDREQ_Queue_Union(ix + 20);
 }
 
-s32 Check_LDREQ_Queue_Union(s16 ix) {
+/** @brief Check whether union (shared) load requests have completed. */
+static s32 Check_LDREQ_Queue_Union(s16 ix) {
     s16 i;
     s16 kara;
     s16 made;
 
+    if (ix < 0 || ix >= LDREQ_IX_SIZE) {
+        return 0;
+    }
     kara = ldreq_ix[ix][0];
     made = kara + ldreq_ix[ix][1];
 
@@ -451,6 +530,7 @@ s32 Check_LDREQ_Queue_Union(s16 ix) {
     return 1;
 }
 
+/** @brief Check whether a direct load request has completed. */
 s32 Check_LDREQ_Queue_Direct(s16 ix) {
     if (!(ldreq_result[ix] & lpr_wrdata[2])) {
         return 0;
@@ -459,13 +539,15 @@ s32 Check_LDREQ_Queue_Direct(s16 ix) {
     return 1;
 }
 
-void q_ldreq_error(REQ* curr) {
+/** @brief Error handler for invalid load-request process types. */
+static void q_ldreq_error(REQ* curr) {
     curr->be = 0;
     flLogOut("Q_LDREQ_ERROR : ロード処理の指定に誤りがあります。\n");
 }
 
-const LDREQ_Process_Func ldreq_process[6] = { q_ldreq_error,      q_ldreq_texture_group, q_ldreq_color_data,
-                                              q_ldreq_color_data, q_ldreq_color_data,    q_ldreq_color_data };
+const LDREQ_Process_Func ldreq_process[LDREQ_PROCESS_COUNT] = { q_ldreq_error,      q_ldreq_texture_group,
+                                                                q_ldreq_color_data, q_ldreq_color_data,
+                                                                q_ldreq_color_data, q_ldreq_color_data };
 
 s8* ldreq_process_name[] = { "EMP", "TEX", "COL", "SCR", "SND", "KNJ" };
 

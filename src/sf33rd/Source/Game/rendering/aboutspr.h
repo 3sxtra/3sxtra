@@ -1,3 +1,8 @@
+/**
+ * @file aboutspr.h
+ * @brief Sprite rendering, shadow, and sort-push request declarations.
+ */
+
 #ifndef ABOUTSPR_H
 #define ABOUTSPR_H
 

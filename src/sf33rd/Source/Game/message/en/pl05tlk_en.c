@@ -1,8 +1,3 @@
-/**
- * @file pl05tlk_en.c
- * Necro Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl05tlk_en.h"
 #include "common.h"
 
@@ -31,4 +26,4 @@ static s8** msgTalkAdrPL05[6] = {
 
 static s8 msgTalkCtrPL05[6] = { 1, 2, 2, 1, 2, 2 };
 
-MessageTable pl05tlk_usa_tbl = { msgTalkAdrPL05, msgTalkCtrPL05 };
+MessageTable pl05tlk_en_tbl = { msgTalkAdrPL05, msgTalkCtrPL05 };

@@ -1,8 +1,3 @@
-/**
- * @file pl09win_en.c
- * Oro Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl09win_en.h"
 #include "common.h"
 
@@ -70,4 +65,4 @@ static s8 msgWinCtrPL09[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
 };
 
-MessageTable pl09win_usa_tbl = { msgWinAdrPL09, msgWinCtrPL09 };
+MessageTable pl09win_en_tbl = { msgWinAdrPL09, msgWinCtrPL09 };

@@ -1,6 +1,13 @@
-/**
+﻿/**
  * @file com_sub.c
- * CPU Controlled Character Subroutines
+ * @brief CPU-controlled character AI subroutines.
+ *
+ * Provides the building blocks used by per-character AI patterns (active/passive/shell).
+ * Includes movement primitives (walk, jump, approach, keep-away), attack commands
+ * (normal, lever, command/special, rapid), guard logic, projectile handling,
+ * distance/area calculations, difficulty scaling, and reaction timing.
+ *
+ * Part of the COM (computer player) AI module.
  */
 
 #include "sf33rd/Source/Game/com/com_sub.h"
@@ -58,7 +65,7 @@ void Search_Back_Term(PLW* wk, s16 Move_Value, s16 Next_Action, s16 Next_Menu);
 void Approach_Walk(PLW* wk, s16 Target_Pos, s16 Option);
 s32 Check_Arrival(PLW* wk, s16 Target_Pos, s16 Option);
 void Walk(PLW* wk, u16 Lever, s16 Time, s16 unused);
-void Forced_Guard(PLW* wk, s16 Guard_Type);
+void Forced_Guard(PLW* wk, s16 arg_Guard_Type);
 void Provoke(PLW* wk, s16 Lever);
 void Normal_Attack(PLW* wk, s16 Reaction, u16 Lever_Data);
 s32 Small_Jump_Measure(PLW* wk);
@@ -70,9 +77,9 @@ void Lever_Attack(PLW* wk, s16 Reaction, u16 Lever, u16 Lever_Data);
 void Lever_Attack_SP(PLW* wk, s16 Reaction, u16 Lever, u16 Lever_Data, s16 Time);
 s32 Setup_Guard_Lever(PLW* wk, u16 Lever);
 s32 Check_Start_Lever_Attack(PLW* wk, u16 Lever, u16 Lever_Data); // extra args
-void SA_Term(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 Term_No);
-s32 DENJIN_Check(PLW* wk, u16 SA2, u16* xx, u16 Term_No);
-s32 YAGYOU_Check(PLW* wk, s16* xx, u16 Term_No);
+void SA_Term(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 arg_Term_No);
+s32 DENJIN_Check(PLW* wk, u16 SA2, u16* xx, u16 arg_Term_No);
+s32 YAGYOU_Check(PLW* wk, s16* xx, u16 arg_Term_No);
 s32 SA_Range_Check(PLW* wk, s16 SA_No, u16 Range);
 void Check_SA(PLW* wk, s16 Next_Action, s16 Next_Menu);
 void Check_EX(PLW* wk, s16 Next_Action, s16 Next_Menu);
@@ -197,7 +204,7 @@ s32 Decide_Shell_Reaction(PLW* wk, WORK_Other* tmw, u16 dir_step); // unused sec
 s32 Ck_Distance_XX(s16 x1, s16 x2);
 s32 Check_Behind(PLW* wk, WORK_Other* tmw);
 void Setup_Lever_LR(PLW* wk, s16 PL_id, s16 Lever);
-s32 Check_Exit_Term(PLW* wk, WORK* em, s16 Exit_No);
+s32 Check_Exit_Term(PLW* wk, WORK* em, s16 arg_Exit_No);
 s32 VS_Jump_Term(PLW* wk, WORK* em, s16* xx);
 s32 Exit_Term_0000(PLW* wk, WORK* em);
 s32 Exit_Term_0001(PLW* wk, WORK* em);
@@ -212,7 +219,7 @@ s32 Check_Drop_Term(WORK* em, s16 Y);
 s32 Check_SHINRYU(PLW* wk);
 void Check_BOSS(PLW* wk, u32 Next_Action, u16 Next_Menu);
 void Check_BOSS_EX(PLW* wk, u32 Next_Action, u16 Next_Menu);
-void ETC_Term(PLW* wk, s16 Exit_No, u32 Next_Action, u16 Next_Menu);
+void ETC_Term(PLW* wk, s16 arg_Exit_No, u32 Next_Action, u16 Next_Menu);
 s32 ETC_Term_0000(PLW* wk, WORK* em);
 s32 ETC_Term_0001(PLW* wk, WORK* em);
 s32 ETC_Term_0002(PLW* wk, WORK* em);
@@ -226,25 +233,30 @@ s32 ETC_Term_0009(PLW* wk, WORK* em);
 s32 emLevelRemake(s32 now, s32 max, s32 exd);
 s32 emGetMaxBlocking();
 
+/** @brief Finish the current AI pattern step and advance to the next. */
 void End_Pattern(PLW* wk) {
     Next_Be_Free(wk);
 }
 
+/** @brief Transition to passive (before-passive) state. */
 void Next_Be_Passive(PLW* wk, s32 unused) {
     Next_Be_Free(wk);
 }
 
+/** @brief Enable the turn-over flag to face the opponent. */
 void Turn_Over_On(PLW* wk) {
     Disposal_Again[wk->wu.id] = 1;
     Turn_Over[wk->wu.id] = 1;
     CP_Index[wk->wu.id][0]++;
 }
 
+/** @brief Press a button only (no directional lever). */
 void Only_Shot(PLW* wk, s16 Lever_Data) {
     Lever_Buff[wk->wu.id] = Lever_Data;
     CP_Index[wk->wu.id][0]++;
 }
 
+/** @brief Set directional lever input (left/right and up/down). */
 void Lever_On(PLW* wk, u16 LR_Lever, u16 UD_Lever) {
     CP_Index[wk->wu.id][0]++;
     Disposal_Again[wk->wu.id] = 1;
@@ -257,12 +269,14 @@ void Lever_On(PLW* wk, u16 LR_Lever, u16 UD_Lever) {
     Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
 }
 
+/** @brief Clear the lever input buffer (neutral position). */
 void Lever_Off(PLW* wk) {
     CP_Index[wk->wu.id][0]++;
     Disposal_Again[wk->wu.id] = 1;
     Lever_LR[wk->wu.id] = 0;
 }
 
+/** @brief Enable the pierce/overhead attack flag (unblockable move setup). */
 void Pierce_On(PLW* wk) {
     Disposal_Again[wk->wu.id] = 1;
     CP_Index[wk->wu.id][0]++;
@@ -270,6 +284,7 @@ void Pierce_On(PLW* wk) {
     Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
 }
 
+/** @brief Set Denjin Hadouken charge level based on difficulty. */
 void Setup_DENJIN_LEVEL(PLW* wk) {
     u16 xx;
 
@@ -281,6 +296,7 @@ void Setup_DENJIN_LEVEL(PLW* wk) {
     }
 }
 
+/** @brief Press attack button(s) at the specified power level. */
 void Push_Shot(PLW* wk, s16 Power_Level) {
     s16 xx;
 
@@ -319,6 +335,7 @@ void Push_Shot(PLW* wk, s16 Power_Level) {
     }
 }
 
+/** @brief Check whether Denjin Hadouken should be released based on charge state. */
 s32 Check_Exit_DENJIN(PLW* wk) {
     s16 xx;
     WORK* em;
@@ -393,6 +410,7 @@ s32 Check_Exit_DENJIN(PLW* wk) {
     return 0;
 }
 
+/** @brief Move backward to create distance from the opponent. */
 void Keep_Away(PLW* wk, s16 Target_Pos, s16 Option) {
     switch (CP_Index[wk->wu.id][3]) {
 
@@ -424,6 +442,7 @@ void Keep_Away(PLW* wk, s16 Target_Pos, s16 Option) {
     }
 }
 
+/** @brief Set up a backward jump for the Keep_Away movement. */
 void Setup_KA_Jump(PLW* wk) {
     s16 xx;
 
@@ -443,10 +462,12 @@ void Setup_KA_Jump(PLW* wk) {
     }
 }
 
+/** @brief Set up backward walk for Keep_Away movement. */
 void Setup_KA_Walk(PLW* wk) {
     CP_Index[wk->wu.id][3] = 4;
 }
 
+/** @brief Search for a safe position behind the CPU then walk/jump there. */
 void Search_Back_Term(PLW* wk, s16 Move_Value, s16 Next_Action, s16 Next_Menu) {
     if (wk->wu.rl_waza) {
         Move_Value = wk->wu.xyz[0].disp.pos - Move_Value;
@@ -466,6 +487,7 @@ void Search_Back_Term(PLW* wk, s16 Move_Value, s16 Next_Action, s16 Next_Menu) {
     Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
 }
 
+/** @brief Walk toward the opponent to close distance. */
 void Approach_Walk(PLW* wk, s16 Target_Pos, s16 Option) {
     s16 xx;
 
@@ -513,6 +535,7 @@ void Approach_Walk(PLW* wk, s16 Target_Pos, s16 Option) {
     }
 }
 
+/** @brief Check if the CPU has arrived at the target distance. */
 s32 Check_Arrival(PLW* wk, s16 Target_Pos, s16 Option) {
     if (Option == 3) {
         if (Target_Pos <= PL_Distance[wk->wu.id]) {
@@ -531,6 +554,7 @@ s32 Check_Arrival(PLW* wk, s16 Target_Pos, s16 Option) {
     return 0;
 }
 
+/** @brief Walk in a specified direction for a given time. */
 void Walk(PLW* wk, u16 Lever, s16 Time, s16 unused) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -571,7 +595,8 @@ void Walk(PLW* wk, u16 Lever, s16 Time, s16 unused) {
     }
 }
 
-void Forced_Guard(PLW* wk, s16 Guard_Type) {
+/** @brief Force the CPU into a specific guard stance. */
+void Forced_Guard(PLW* wk, s16 arg_Guard_Type) {
     WORK* em;
     s16 xx;
 
@@ -587,10 +612,11 @@ void Forced_Guard(PLW* wk, s16 Guard_Type) {
         Next_Be_Free(wk);
     }
 
-    Next_Be_Guard(wk, em, Guard_Type);
+    Next_Be_Guard(wk, em, arg_Guard_Type);
     Lever_Buff[wk->wu.id] |= Lever_Squat[wk->wu.id];
 }
 
+/** @brief Perform a taunt/provoke action. */
 void Provoke(PLW* wk, s16 Lever) {
     switch (CP_Index[wk->wu.id][1]) {
     case 0:
@@ -626,6 +652,7 @@ void Provoke(PLW* wk, s16 Lever) {
     }
 }
 
+/** @brief Execute a normal (non-special) attack with reaction checking. */
 void Normal_Attack(PLW* wk, s16 Reaction, u16 Lever_Data) {
     switch (CP_Index[wk->wu.id][1]) {
     case 0:
@@ -671,6 +698,7 @@ void Normal_Attack(PLW* wk, s16 Reaction, u16 Lever_Data) {
     }
 }
 
+/** @brief Check if opponent is attempting a small jump (to counter it). */
 s32 Small_Jump_Measure(PLW* wk) {
     if (Lever_Squat[wk->wu.id] & 2) {
         return Setup_Guard_Lever(wk, 1);
@@ -678,6 +706,7 @@ s32 Small_Jump_Measure(PLW* wk) {
     return 0;
 }
 
+/** @brief Execute a normal attack with a timed delay before pressing the button. */
 void Normal_Attack_SP(PLW* wk, s16 Reaction, u16 Lever_Data, s16 Time) {
     switch (CP_Index[wk->wu.id][1]) {
     case 0:
@@ -723,6 +752,7 @@ void Normal_Attack_SP(PLW* wk, s16 Reaction, u16 Lever_Data, s16 Time) {
     }
 }
 
+/** @brief Execute an attack that adjusts to the opponent's posture (stand/crouch). */
 void Adjust_Attack(PLW* wk, s16 Reaction, u16 Lever_Data) {
     u16 xx;
 
@@ -763,6 +793,7 @@ void Adjust_Attack(PLW* wk, s16 Reaction, u16 Lever_Data) {
     }
 }
 
+/** @brief Check if the opponent is crouching. */
 s32 Check_Squat(PLW* wk) {
     if (((WORK*)wk->wu.target_adrs)->pat_status == 0x20) {
         return 0;
@@ -771,6 +802,7 @@ s32 Check_Squat(PLW* wk) {
     return 2;
 }
 
+/** @brief Check if conditions are met to start a normal attack (reaction timing). */
 s32 Check_Start_Normal_Attack(PLW* wk, s16 Reaction, u16 Lever_Data) {
     if (((wk->wu.routine_no[1]) != 4) || ((wk->wu.cg_type) == 0x40)) {
         return 0;
@@ -791,6 +823,7 @@ s32 Check_Start_Normal_Attack(PLW* wk, s16 Reaction, u16 Lever_Data) {
     return 1;
 }
 
+/** @brief Execute an attack with a directional lever component (e.g. forward+punch). */
 void Lever_Attack(PLW* wk, s16 Reaction, u16 Lever, u16 Lever_Data) {
     s16 xx;
 
@@ -832,6 +865,7 @@ void Lever_Attack(PLW* wk, s16 Reaction, u16 Lever, u16 Lever_Data) {
     }
 }
 
+/** @brief Execute a lever attack with a timed delay before pressing the button. */
 void Lever_Attack_SP(PLW* wk, s16 Reaction, u16 Lever, u16 Lever_Data, s16 Time) {
     s16 xx;
 
@@ -881,6 +915,7 @@ void Lever_Attack_SP(PLW* wk, s16 Reaction, u16 Lever, u16 Lever_Data, s16 Time)
     }
 }
 
+/** @brief Calculate the correct guard lever direction based on facing and type. */
 s32 Setup_Guard_Lever(PLW* wk, u16 Lever) {
     s32 rnum = 0;
 
@@ -903,6 +938,7 @@ s32 Setup_Guard_Lever(PLW* wk, u16 Lever) {
     return rnum;
 }
 
+/** @brief Check if conditions are met to start a lever attack. */
 s32 Check_Start_Lever_Attack(PLW* wk, u16 Lever, u16 Lever_Data) {
     if ((wk->wu.routine_no[1] != 4) || (wk->wu.cg_type == 0x40)) {
         return 0;
@@ -919,7 +955,8 @@ s32 Check_Start_Lever_Attack(PLW* wk, u16 Lever, u16 Lever_Data) {
     return 1;
 }
 
-void SA_Term(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 Term_No) {
+/** @brief Set up a super art (SA) attack with SA meter and range checking. */
+void SA_Term(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 arg_Term_No) {
     s16 xx[3];
 
     if (((Passive_Flag[wk->wu.id]) == 0) && (Check_Passive(wk) != 0)) {
@@ -936,25 +973,25 @@ void SA_Term(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 Term_No) {
     } else if ((plw[wk->wu.id].sa->ok) || (plw[wk->wu.id].sa->mp)) {
         Disposal_Again[wk->wu.id] = 1;
 
-        if ((Term_No != 0xFFFF) || (Term_No != 0)) {
+        if ((arg_Term_No != 0xFFFF) || (arg_Term_No != 0)) {
             switch (wk->player_number) {
             case 2:
-                if (SA_Range_Check(wk, 1, Term_No) != 0) {
+                if (SA_Range_Check(wk, 1, arg_Term_No) != 0) {
                     return;
                 }
-                DENJIN_Check(wk, SA2, (u16*)&xx[2], Term_No);
+                DENJIN_Check(wk, SA2, (u16*)&xx[2], arg_Term_No);
                 Next_Another_Menu(wk, 2, xx[plw[wk->wu.id].sa->kind_of_arts]);
                 return;
 
             case 11:
-                if (SA_Range_Check(wk, 1, Term_No) != 0) {
+                if (SA_Range_Check(wk, 1, arg_Term_No) != 0) {
                     return;
                 }
                 Next_Another_Menu(wk, 2, xx[plw[wk->wu.id].sa->kind_of_arts]);
                 return;
 
             case 1:
-                if (SA_Range_Check(wk, 1, Term_No) != 0) {
+                if (SA_Range_Check(wk, 1, arg_Term_No) != 0) {
                     return;
                 }
                 Next_Another_Menu(wk, 2, xx[plw[wk->wu.id].sa->kind_of_arts]);
@@ -965,37 +1002,36 @@ void SA_Term(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 Term_No) {
                     CP_Index[wk->wu.id][0]++;
                     return;
                 }
-                if (SA_Range_Check(wk, 1, Term_No) != 0) {
+                if (SA_Range_Check(wk, 1, arg_Term_No) != 0) {
                     return;
                 }
                 Next_Another_Menu(wk, 2, xx[plw[wk->wu.id].sa->kind_of_arts]);
                 return;
 
             case 6:
-                if (SA_Range_Check(wk, 0, Term_No) != 0) {
+                if (SA_Range_Check(wk, 0, arg_Term_No) != 0) {
                     return;
                 }
                 Next_Another_Menu(wk, 2, xx[plw[wk->wu.id].sa->kind_of_arts]);
                 return;
 
             case 8:
-                if ((plw[wk->wu.id].sa->kind_of_arts == 2) &&
-                    (plw[wk->wu.id].wu.vital_new <= (Max_vitality / 2))) {
+                if ((plw[wk->wu.id].sa->kind_of_arts == 2) && (plw[wk->wu.id].wu.vital_new <= (Max_vitality / 2))) {
                     break;
                 }
                 CP_Index[wk->wu.id][0]++;
                 return;
 
             case 9:
-                YAGYOU_Check(wk, &xx[1], Term_No);
+                YAGYOU_Check(wk, &xx[1], arg_Term_No);
                 Next_Another_Menu(wk, 2, xx[plw[wk->wu.id].sa->kind_of_arts]);
                 return;
 
             case 14:
-                if (SA_Range_Check(wk, 1, Term_No) != 0) {
+                if (SA_Range_Check(wk, 1, arg_Term_No) != 0) {
                     return;
                 }
-                if (SA_Range_Check(wk, 2, Term_No) != 0) {
+                if (SA_Range_Check(wk, 2, arg_Term_No) != 0) {
                     return;
                 }
                 Next_Another_Menu(wk, 2, xx[plw[wk->wu.id].sa->kind_of_arts]);
@@ -1013,12 +1049,13 @@ void SA_Term(PLW* wk, u16 SA0, u16 SA1, u16 SA2, u16 Term_No) {
     }
 }
 
-s32 DENJIN_Check(PLW* wk, u16 SA2, u16* xx, u16 Term_No) {
+/** @brief Check if Denjin Hadouken super should be used (Ryu SA3 specific). */
+s32 DENJIN_Check(PLW* wk, u16 SA2, u16* xx, u16 arg_Term_No) {
     if (plw[wk->wu.id].sa->kind_of_arts != 2) {
         return 0;
     }
 
-    DENJIN_No[wk->wu.id] = Term_No;
+    DENJIN_No[wk->wu.id] = arg_Term_No;
     DENJIN_Term[wk->wu.id] = SA2;
     xx[0] = 0x37;
     return 1;
@@ -1026,19 +1063,21 @@ s32 DENJIN_Check(PLW* wk, u16 SA2, u16* xx, u16 Term_No) {
 
 const u8 YAGYOU_Data[0x10] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3 };
 
-s32 YAGYOU_Check(PLW* wk, s16* xx, u16 Term_No) {
+/** @brief Check if Yagyou Dama super should be used (Oro SA3 specific). */
+s32 YAGYOU_Check(PLW* wk, s16* xx, u16 arg_Term_No) {
     if (plw[wk->wu.id].sa->kind_of_arts != 1) {
         return 0;
     }
 
-    if (Term_No == 0) {
-        Term_No = YAGYOU_Data[random_16_com()];
-        Term_No += 0x64;
+    if (arg_Term_No == 0) {
+        arg_Term_No = YAGYOU_Data[random_16_com()];
+        arg_Term_No += 0x64;
     }
-    xx[0] = Term_No;
+    xx[0] = arg_Term_No;
     return 1;
 }
 
+/** @brief Check if the opponent is within range for a super art. */
 s32 SA_Range_Check(PLW* wk, s16 SA_No, u16 Range) {
     if (SA_No != plw[wk->wu.id].sa->kind_of_arts) {
         return 0;
@@ -1060,6 +1099,7 @@ s32 SA_Range_Check(PLW* wk, s16 SA_No, u16 Range) {
     return 0;
 }
 
+/** @brief Check for SA gauge and set up a super art if available. */
 void Check_SA(PLW* wk, s16 Next_Action, s16 Next_Menu) {
     if (plw[wk->wu.id].sa->ok) {
         CP_Index[wk->wu.id][0]++;
@@ -1071,6 +1111,7 @@ void Check_SA(PLW* wk, s16 Next_Action, s16 Next_Menu) {
     Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
 }
 
+/** @brief Check for EX gauge and set up an EX move if available. */
 void Check_EX(PLW* wk, s16 Next_Action, s16 Next_Menu) {
     if (plw[wk->wu.id].sa->ex) {
         CP_Index[wk->wu.id][0]++;
@@ -1082,6 +1123,7 @@ void Check_EX(PLW* wk, s16 Next_Action, s16 Next_Menu) {
     Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
 }
 
+/** @brief Check if the SA gauge is completely full and set up if so. */
 void Check_SA_Full(PLW* wk, s16 Next_Action, s16 Next_Menu) {
     Disposal_Again[wk->wu.id] = 1;
 
@@ -1094,6 +1136,7 @@ void Check_SA_Full(PLW* wk, s16 Next_Action, s16 Next_Menu) {
     Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
 }
 
+/** @brief Branch to different menus based on the current distance area (close/mid/far). */
 void Branch_Unit_Area(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03) {
     s16 xx[4];
 
@@ -1108,6 +1151,7 @@ void Branch_Unit_Area(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Me
     Next_Another_Menu(wk, Next_Action, xx[Area_Number[wk->wu.id]]);
 }
 
+/** @brief Randomly select one of four menus based on difficulty-weighted RNG. */
 void Com_Random_Select(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 Menu_02, s16 Menu_03, s16 Rnd_Type) {
     s16 xx[4];
     s16 zz;
@@ -1128,6 +1172,7 @@ void Com_Random_Select(PLW* wk, s16 Next_Action, s16 Menu_00, s16 Menu_01, s16 M
     }
 }
 
+/** @brief Set a wait timer based on the current distance area. */
 void Branch_Wait_Area(PLW* wk, s16 Time_00, s16 Time_01, s16 Time_02, s16 Time_03) {
     s16 xx[4];
 
@@ -1162,6 +1207,7 @@ void Branch_Wait_Area(PLW* wk, s16 Time_00, s16 Time_01, s16 Time_02, s16 Time_0
     }
 }
 
+/** @brief Wait idle for a specified number of frames. */
 void Wait(PLW* wk, s16 Time) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -1196,6 +1242,7 @@ void Wait(PLW* wk, s16 Time) {
     Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
 }
 
+/** @brief Watch the opponent (stand facing them) for a specified duration. */
 void Look(PLW* wk, s16 Time) {
     Passive_Flag[wk->wu.id] = 0;
     Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
@@ -1240,6 +1287,7 @@ void Look(PLW* wk, s16 Time) {
     }
 }
 
+/** @brief Hold a directional position and optionally input buttons for a duration. */
 void Keep_Status(PLW* wk, u16 Lever_Data, s16 Option_Data) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -1280,6 +1328,7 @@ void Keep_Status(PLW* wk, u16 Lever_Data, s16 Option_Data) {
     }
 }
 
+/** @brief Guard against an incoming jump attack. */
 void VS_Jump_Guard(PLW* wk) {
     switch (CP_Index[wk->wu.id][1]) {
     case 0:
@@ -1310,6 +1359,7 @@ void VS_Jump_Guard(PLW* wk) {
     }
 }
 
+/** @brief Wait while the opponent is lying down, optionally inputting buttons. */
 void Wait_Lie(PLW* wk, u16 Lever_Data) {
     WORK* em;
 
@@ -1346,6 +1396,7 @@ void Wait_Lie(PLW* wk, u16 Lever_Data) {
     }
 }
 
+/** @brief Wait for the opponent to get up, optionally pressing buttons. */
 void Wait_Get_Up(PLW* wk, u16 Lever_Data, s16 Option) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -1381,6 +1432,7 @@ void Wait_Get_Up(PLW* wk, u16 Lever_Data, s16 Option) {
     }
 }
 
+/** @brief Check conditions for exiting a wait state (opponent standing, guard, etc.). */
 s32 Check_Wait_Term(PLW* wk, s16 Option) {
     WORK* em;
 
@@ -1401,6 +1453,7 @@ s32 Check_Wait_Term(PLW* wk, s16 Option) {
     return 0;
 }
 
+/** @brief Wait for the current attack animation to complete. */
 void Wait_Attack_Complete(PLW* wk, u16 Lever_Data, s16 Option) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -1438,6 +1491,7 @@ void Wait_Attack_Complete(PLW* wk, u16 Lever_Data, s16 Option) {
     }
 }
 
+/** @brief Check if the guard period has expired (time-limited guard). */
 s32 Check_Exit_Guard(PLW* wk, s16 Option) {
     WORK* em;
 
@@ -1455,6 +1509,7 @@ s32 Check_Exit_Guard(PLW* wk, s16 Option) {
     return Attack_Flag[wk->wu.id];
 }
 
+/** @brief Attack at close range with follow-up on hit. */
 void Short_Range_Attack(PLW* wk, s16 Reaction, u16 Lever_Data, s16 Next_Action, s16 Next_Menu) {
     u16 xx;
 
@@ -1494,6 +1549,7 @@ void Short_Range_Attack(PLW* wk, s16 Reaction, u16 Lever_Data, s16 Next_Action, 
     }
 }
 
+/** @brief Check enemy distance and decide: attack, follow-up menu, or exit. */
 void EM_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Exit_Number, s16 Next_Action, s16 Next_Menu) {
     WORK* em;
 
@@ -1559,6 +1615,7 @@ void EM_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Exit_Number, s16 Next_Action
     }
 }
 
+/** @brief Check projectile distance and decide: dodge, guard, or counter. */
 void SHELL_Term(PLW* wk, s16 Next_Command, s16 Exit_Number, s16 Next_Action, s16 Next_Menu, s16 unused) {
     WORK* em;
     WORK_Other* tmw;
@@ -1599,6 +1656,7 @@ void SHELL_Term(PLW* wk, s16 Next_Command, s16 Exit_Number, s16 Next_Action, s16
     }
 }
 
+/** @brief  */
 s32 Check_Term_Sub_Air(PLW* wk, s16 Distance, s16 Range) {
     if (Range == -1) {
         return 1;
@@ -1618,6 +1676,7 @@ s32 Check_Term_Sub_Air(PLW* wk, s16 Distance, s16 Range) {
     }
 }
 
+/** @brief  */
 s32 Check_Term_Sub(PLW* wk, s16 Distance, s16 Range) {
     if (Range == -1) {
         return 1;
@@ -1637,10 +1696,12 @@ s32 Check_Term_Sub(PLW* wk, s16 Distance, s16 Range) {
 
 const s16 Correct_VS_Air_Data[0x14] = { 0, 0x20, 0, 0, 0, 0x20, 0x20, 0, 0x20, 0, 0, 0, 0, 0x20, 0, 0, 0, 0, 0, 0 };
 
+/** @brief  */
 s32 Correct_Unit_PL(PLW* wk) {
     return Correct_VS_Air_Data[My_char[Player_id]];
 }
 
+/** @brief  */
 s32 Check_Term_Sub_Y(PLW* wk, s16 Distance, s16 Range) {
     WORK* em;
 
@@ -1665,6 +1726,7 @@ s32 Check_Term_Sub_Y(PLW* wk, s16 Distance, s16 Range) {
     }
 }
 
+/** @brief  */
 void Jump(PLW* wk, s16 Jump_Dir) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -1728,6 +1790,7 @@ void Jump(PLW* wk, s16 Jump_Dir) {
     }
 }
 
+/** @brief  */
 void Hi_Jump(PLW* wk, s16 Pl_Number, s16 Jump_Dir) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -1814,6 +1877,7 @@ void Hi_Jump(PLW* wk, s16 Pl_Number, s16 Jump_Dir) {
     }
 }
 
+/** @brief  */
 s32 Check_Start_Hi_Jump(PLW* wk) {
     if ((wk->wu.routine_no[1] != 4) || (wk->wu.cg_type == 0x40)) {
         return 0;
@@ -1830,6 +1894,7 @@ s32 Check_Start_Hi_Jump(PLW* wk) {
     return 1;
 }
 
+/** @brief  */
 s32 Check_Air_Guard(PLW* wk) {
     WORK* em;
     s16 xx;
@@ -1880,6 +1945,7 @@ s32 Check_Air_Guard(PLW* wk) {
     return Guard_Type[wk->wu.id] |= 0x8000;
 }
 
+/** @brief  */
 void Jump_Attack(PLW* wk, s16 Reaction, s16 Time_Data, u16 Lever_Data, s16 Jump_Dir) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -1961,6 +2027,7 @@ void Jump_Attack(PLW* wk, s16 Reaction, s16 Time_Data, u16 Lever_Data, s16 Jump_
     }
 }
 
+/** @brief  */
 void Jump_Attack_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir, s16 Range_JX,
                       s16 Range_JY, s16 J_Lever_Data) {
     switch (CP_Index[wk->wu.id][1]) {
@@ -2069,6 +2136,7 @@ void Jump_Attack_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever
     }
 }
 
+/** @brief  */
 s32 Check_SP_Jump_Attack(PLW* wk, s16 Lever_Data) {
     u16 xx;
 
@@ -2081,6 +2149,7 @@ s32 Check_SP_Jump_Attack(PLW* wk, s16 Lever_Data) {
     return xx | 2;
 }
 
+/** @brief  */
 s32 Check_VS_Air_Attack(PLW* wk, s16 Range_JX, s16 Range_JY, s16 J_Lever_Data) {
     WORK* em;
 
@@ -2132,6 +2201,7 @@ s32 Check_VS_Air_Attack(PLW* wk, s16 Range_JX, s16 Range_JY, s16 J_Lever_Data) {
     return 0;
 }
 
+/** @brief  */
 void Hi_Jump_Attack(PLW* wk, s16 Reaction, s16 Time_Data, u16 Lever_Data, s16 Jump_Dir) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -2259,6 +2329,7 @@ void Hi_Jump_Attack(PLW* wk, s16 Reaction, s16 Time_Data, u16 Lever_Data, s16 Ju
     }
 }
 
+/** @brief  */
 void Hi_Jump_Attack_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Lever_Data, s16 Jump_Dir, s16 Range_JX,
                          s16 Range_JY, u16 J_Lever_Data) {
     switch (CP_Index[wk->wu.id][1]) {
@@ -2422,6 +2493,7 @@ void Hi_Jump_Attack_Term(PLW* wk, s16 Range_X, s16 Range_Y, s16 Reaction, u16 Le
     }
 }
 
+/** @brief  */
 s32 Check_Term_ABS_Distance(PLW* wk) {
     if (Turn_Over[wk->wu.id]) {
         return 1;
@@ -2446,6 +2518,7 @@ s32 Check_Term_ABS_Distance(PLW* wk) {
     return 0;
 }
 
+/** @brief  */
 s32 Check_Com_Add_Y(PLW* wk, s16 Pos_Y, s16 Range) {
     if (Range == -1) {
         return 1;
@@ -2466,6 +2539,7 @@ s32 Check_Com_Add_Y(PLW* wk, s16 Pos_Y, s16 Range) {
     }
 }
 
+/** @brief  */
 void ORO_JA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
                  s16 RJY, u16 JLD) {
     switch (CP_Index[wk->wu.id][1]) {
@@ -2602,6 +2676,7 @@ void ORO_JA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16
     }
 }
 
+/** @brief  */
 void ORO_HJA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Lever_Data, s16 RJX,
                   s16 RJY, u16 JLD) {
     switch (CP_Index[wk->wu.id][1]) {
@@ -2748,6 +2823,7 @@ void ORO_HJA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s1
     }
 }
 
+/** @brief  */
 void Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -2877,6 +2953,7 @@ const s32 Hadou_Check_Data[20][2] = {
     { 1, 0x1F }, { 0, 0 }, { 1, 0x1E }, { 0, 0 },    { 0, 0 },    { 0, 0 },
 };
 
+/** @brief  */
 s32 Hadou_Check(PLW* wk, u16 Tech_Number) {
     if (Hadou_Check_Data[wk->player_number][0] == 0) {
         return 0;
@@ -2889,6 +2966,7 @@ s32 Hadou_Check(PLW* wk, u16 Tech_Number) {
     return Check_Resume_Lever(wk);
 }
 
+/** @brief  */
 s32 Check_Resume_Lever(PLW* wk) {
     u16 Target_Lever;
     s16 xx;
@@ -2907,6 +2985,7 @@ s32 Check_Resume_Lever(PLW* wk) {
     return 0;
 }
 
+/** @brief  */
 void J_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -2998,6 +3077,7 @@ void J_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s
     }
 }
 
+/** @brief  */
 void Rapid_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Shot, u16 Time) {
     switch (CP_Index[wk->wu.id][1]) {
 
@@ -3085,6 +3165,7 @@ void Rapid_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Shot, u16 
     }
 }
 
+/** @brief  */
 void Check_Rapid(PLW* wk, u16 Tech_Number) {
     if (!(Tech_Number & 0xF00)) {
         Rapid_No[wk->wu.id][0] = 0;
@@ -3100,6 +3181,7 @@ void Check_Rapid(PLW* wk, u16 Tech_Number) {
     }
 }
 
+/** @brief  */
 void Setup_Rapid_End_Term(PLW* wk, s16 Tech_Number) {
     Rapid_No[wk->wu.id][2] = (Tech_Number & 0xF00) >> 8;
     if ((Tech_Number & 0xF00) == 0x400) {
@@ -3107,10 +3189,12 @@ void Setup_Rapid_End_Term(PLW* wk, s16 Tech_Number) {
     }
 }
 
+/** @brief  */
 s32 Setup_Rapid_Time(PLW* wk, u16 Tech_Number) {
     return 60;
 }
 
+/** @brief  */
 void Rapid_Sub(PLW* wk) {
     if (Check_Rapid_End(wk) != 0) {
         return;
@@ -3170,6 +3254,7 @@ void Rapid_Sub(PLW* wk) {
     }
 }
 
+/** @brief  */
 s32 Check_Rapid_End(PLW* wk) {
     switch (Rapid_No[wk->wu.id][2]) {
     case 1:
@@ -3212,6 +3297,7 @@ s32 Check_Rapid_End(PLW* wk) {
     return 0;
 }
 
+/** @brief  */
 s32 Check_Start_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number) {
     if (Before_Jump[wk->wu.id]) {
         return Before_Jump[wk->wu.id] = 0;
@@ -3242,6 +3328,7 @@ s32 Check_Start_Command_Attack(PLW* wk, s16 Reaction, u16 Tech_Number) {
     return 1;
 }
 
+/** @brief  */
 void ORO_JCA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
                   s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD) {
     switch (CP_Index[wk->wu.id][1]) {
@@ -3363,6 +3450,7 @@ void ORO_JCA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s1
     }
 }
 
+/** @brief  */
 void ORO_HJCA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s16 RX, s16 RY, u16 Tech_Number,
                    s16 Power_Level, s16 Ex_Shot, s16 RJX, s16 RJY, u16 JLD) {
     switch (CP_Index[wk->wu.id][1]) {
@@ -3501,6 +3589,7 @@ void ORO_HJCA_Term(PLW* wk, s16 Reaction, s16 Jump_Dir, s16 JY, s16 Jump_Dir2, s
     }
 }
 
+/** @brief  */
 void Jump_Command_Attack_Term(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RX, s16 RY,
                               s16 Jump_Dir, s16 JRX, s16 JRY, u16 JLD) {
     switch (CP_Index[wk->wu.id][1]) {
@@ -3605,6 +3694,7 @@ void Jump_Command_Attack_Term(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_
     }
 }
 
+/** @brief  */
 void Hi_Jump_Command_Attack_Term(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Power_Level, s16 Ex_Shot, s16 RX, s16 RY,
                                  s16 Jump_Dir, s16 JRX, s16 JRY, u16 JLD) {
     switch (CP_Index[wk->wu.id][1]) {
@@ -3717,6 +3807,7 @@ void Hi_Jump_Command_Attack_Term(PLW* wk, s16 Reaction, u16 Tech_Number, s16 Pow
     }
 }
 
+/** @brief  */
 s32 Check_Landed(PLW* wk, s16 Reaction) {
     if ((wk->wu.old_pos[1] != 0) && (wk->wu.xyz[1].disp.pos == 0)) {
         Lever_Buff[wk->wu.id] = 0;
@@ -3752,6 +3843,7 @@ s32 Check_Landed(PLW* wk, s16 Reaction) {
     return 0;
 }
 
+/** @brief  */
 s32 Check_Dash_Hit(PLW* wk, u16 Tech_Number) {
     WORK_Other* tmw;
     WORK* em;
@@ -3793,6 +3885,7 @@ s32 Check_Dash_Hit(PLW* wk, u16 Tech_Number) {
     return 0;
 }
 
+/** @brief  */
 s32 Setup_Front_or_Back(PLW* wk, s16 xx) {
     if (wk->wu.rl_waza == 0) {
         if (xx >= 0) {
@@ -3807,6 +3900,7 @@ s32 Setup_Front_or_Back(PLW* wk, s16 xx) {
     }
 }
 
+/** @brief  */
 s32 Check_Hit_Shell(PLW* wk, WORK_Other* tmw, u16 Tech_Number) {
     s16 xx;
 
@@ -3829,6 +3923,7 @@ s32 Check_Hit_Shell(PLW* wk, WORK_Other* tmw, u16 Tech_Number) {
     }
 }
 
+/** @brief  */
 void Jump_Init(PLW* wk, s16 Jump_Dir) {
     switch (Jump_Dir) {
     case 0:
@@ -3848,6 +3943,7 @@ void Jump_Init(PLW* wk, s16 Jump_Dir) {
     }
 }
 
+/** @brief  */
 s32 Command_Type_00(PLW* wk, s16 Power_Level, u16 Tech_Number, s16 Ex_Shot) {
     if (Tech_Address[wk->wu.id][Tech_Index[wk->wu.id] + 4] != 0x1C) {
         Lever_Buff[wk->wu.id] = Tech_Address[wk->wu.id][Tech_Index[wk->wu.id] + 3] & 0x7FFF;
@@ -3911,6 +4007,7 @@ const u16 Rolling_Lv_Data[2][9] = {
     { 4, 2, 8, 1, 4, 2, 8, 1, 0xFFFF },
 };
 
+/** @brief  */
 s32 Command_Type_06(PLW* wk, s16 Power_Level, u16 Tech_Number, s16 Ex_Shot) {
     s16 xx;
 
@@ -3932,6 +4029,7 @@ s32 Command_Type_06(PLW* wk, s16 Power_Level, u16 Tech_Number, s16 Ex_Shot) {
     return 0;
 }
 
+/** @brief  */
 s32 Command_Type_01(PLW* wk, s16 Power_Level, s16 Ex_Shot) {
     switch (CP_Index[wk->wu.id][2]) {
     case 0:
@@ -3971,6 +4069,7 @@ s32 Command_Type_01(PLW* wk, s16 Power_Level, s16 Ex_Shot) {
     return 0;
 }
 
+/** @brief  */
 void Setup_Command_01(PLW* wk) {
     switch (Lever_Pool[wk->wu.id]) {
     case 2:
@@ -3982,6 +4081,7 @@ void Setup_Command_01(PLW* wk) {
     }
 }
 
+/** @brief  */
 void Check_Store_Lever(PLW* wk, u16 Tech_Number, s16 Next_Action, s16 Next_Menu) {
     s16 time;
     u16 lever;
@@ -4002,6 +4102,7 @@ void Check_Store_Lever(PLW* wk, u16 Tech_Number, s16 Next_Action, s16 Next_Menu)
     }
 }
 
+/** @brief  */
 s32 Check_Store_Direction(PLW* wk, u16 lever, s16 time) {
     if (wk->wu.rl_waza) {
         if (lever & (SWK_LEFT | SWK_RIGHT)) {
@@ -4035,6 +4136,7 @@ s32 Check_Store_Direction(PLW* wk, u16 lever, s16 time) {
     return 0;
 }
 
+/** @brief  */
 s32 Select_Combo_Speed(PLW* wk) {
     s8 xx;
     s8 zz;
@@ -4060,6 +4162,7 @@ s32 Select_Combo_Speed(PLW* wk) {
     return zz = Combo_Speed_Unit_Data[wk->player_number][Lv][xx];
 }
 
+/** @brief  */
 s32 Select_Reflection_Time(PLW* wk) {
     s8 Lv;
     s8 xx;
@@ -4087,6 +4190,7 @@ s32 Select_Reflection_Time(PLW* wk) {
     return zz = Reflection_Speed_Unit_Data[My_char[wk->wu.id]][Lv][xx];
 }
 
+/** @brief  */
 s32 Setup_Lv04(s16 xx) {
     s16 i;
     s16* zz;
@@ -4101,6 +4205,7 @@ s32 Setup_Lv04(s16 xx) {
     return 3;
 }
 
+/** @brief  */
 s32 Setup_Lv08(s16 xx) {
     s16 i;
     s16* zz;
@@ -4115,6 +4220,7 @@ s32 Setup_Lv08(s16 xx) {
     return i;
 }
 
+/** @brief  */
 s32 Setup_Lv10(s16 xx) {
     s16 i;
     s16* zz;
@@ -4129,6 +4235,7 @@ s32 Setup_Lv10(s16 xx) {
     return i;
 }
 
+/** @brief  */
 s32 Setup_Lv18(s16 xx) {
     s16 i;
     s16* zz;
@@ -4143,6 +4250,7 @@ s32 Setup_Lv18(s16 xx) {
     return i;
 }
 
+/** @brief  */
 s32 Setup_VS_Catch_Data(PLW* wk) {
     Lv = Setup_Lv08(0);
     if (Break_Into_CPU == 2) {
@@ -4154,6 +4262,7 @@ s32 Setup_VS_Catch_Data(PLW* wk) {
     return VS_Catch_Data[emLevelRemake(Lv, 8, 0)];
 }
 
+/** @brief  */
 s32 Setup_LP_Data(PLW* wk) {
     Lv = Setup_Lv08(0);
     if (Break_Into_CPU == 2) {
@@ -4165,6 +4274,7 @@ s32 Setup_LP_Data(PLW* wk) {
     return LOOK_POSITION_Data[emLevelRemake(Lv, 8, 0)][random_32_com()];
 }
 
+/** @brief  */
 s32 Setup_WT_Data(PLW* wk) {
     Lv = Setup_Lv04(0);
     if (Break_Into_CPU == 2) {
@@ -4176,6 +4286,7 @@ s32 Setup_WT_Data(PLW* wk) {
     return Wait_Time_Data[emLevelRemake(Lv, 4, 0)][random_16_com() & 7];
 }
 
+/** @brief  */
 void Ck_Distance(PLW* wk) {
     PL_Distance[wk->wu.id] = ((WORK*)wk->wu.target_adrs)->xyz[0].disp.pos - wk->wu.xyz[0].disp.pos;
     if (PL_Distance[wk->wu.id] < 0) {
@@ -4183,6 +4294,7 @@ void Ck_Distance(PLW* wk) {
     }
 }
 
+/** @brief  */
 s32 Ck_Distance_Height(PLW* wk) {
     s16 xx;
 
@@ -4193,6 +4305,7 @@ s32 Ck_Distance_Height(PLW* wk) {
     return xx;
 }
 
+/** @brief  */
 s32 Ck_Area(PLW* wk) {
     s16 i;
 
@@ -4204,6 +4317,7 @@ s32 Ck_Area(PLW* wk) {
     return 3;
 }
 
+/** @brief  */
 s32 Ck_Area_Shell(PLW* wk) {
     s16 i;
 
@@ -4216,6 +4330,7 @@ s32 Ck_Area_Shell(PLW* wk) {
     return 3;
 }
 
+/** @brief  */
 void Ck_Distance_Lv(PLW* wk) {
     PL_Distance[wk->wu.id] = ((WORK*)wk->wu.target_adrs)->xyz[0].disp.pos - wk->wu.xyz[0].disp.pos;
 
@@ -4227,6 +4342,7 @@ void Ck_Distance_Lv(PLW* wk) {
     }
 }
 
+/** @brief  */
 void Ck_Distance_LvJ(PLW* wk) {
     PL_Distance[wk->wu.id] = ((WORK*)wk->wu.target_adrs)->xyz[0].disp.pos - wk->wu.xyz[0].disp.pos;
 
@@ -4238,6 +4354,7 @@ void Ck_Distance_LvJ(PLW* wk) {
     }
 }
 
+/** @brief  */
 void Next_End(PLW* wk) {
     if (Check_Guard(wk) != 0) {
         return;
@@ -4249,6 +4366,7 @@ void Next_End(PLW* wk) {
     CP_Index[wk->wu.id][3] = 0;
 }
 
+/** @brief  */
 void Next_Another_Menu(PLW* wk, s16 Next_Action, u16 Next_Menu) {
     if (Next_Action != 1) {
         CP_No[wk->wu.id][0] = Next_Action;
@@ -4262,6 +4380,7 @@ void Next_Another_Menu(PLW* wk, s16 Next_Action, u16 Next_Menu) {
     }
 }
 
+/** @brief  */
 void Reaction_Sub(PLW* wk, s16 Reaction, s16 Power_Level) {
     switch (Reaction & 0x7F) {
     case 9:
@@ -4386,6 +4505,7 @@ void Reaction_Sub(PLW* wk, s16 Reaction, s16 Power_Level) {
     }
 }
 
+/** @brief  */
 s32 Check_Meoshi_Attack(PLW* wk, s16 Reaction, s16 Power_Level) {
     if (wk->wu.cg_meoshi == Last_Eftype[wk->wu.id]) {
         return 0;
@@ -4415,6 +4535,7 @@ s32 Check_Meoshi_Attack(PLW* wk, s16 Reaction, s16 Power_Level) {
     return 0;
 }
 
+/** @brief  */
 s32 Get_Meoshi_Data(PLW* wk) {
     u16 lever;
     u16 shot;
@@ -4429,6 +4550,7 @@ s32 Get_Meoshi_Data(PLW* wk) {
     return shot | lever;
 }
 
+/** @brief  */
 void Reaction_Exit_Sub(PLW* wk) {
     CP_Index[wk->wu.id][0]++;
     CP_Index[wk->wu.id][1] = 0;
@@ -4444,6 +4566,7 @@ void Reaction_Exit_Sub(PLW* wk) {
     }
 }
 
+/** @brief  */
 void Check_First_Menu(PLW* wk) {
     if (CP_Index[wk->wu.id][0] == 0) {
         Combo_Speed[wk->wu.id] = 1;
@@ -4452,6 +4575,7 @@ void Check_First_Menu(PLW* wk) {
     }
 }
 
+/** @brief  */
 void Select_Active(PLW* wk) {
     s16 pl_id;
 
@@ -4512,11 +4636,12 @@ void Select_Active(PLW* wk) {
         }
     }
 
-    if (Debug_w[0x36]) {
-        Pattern_Index[wk->wu.id] = (u16)Debug_w[0x36] - 1;
+    if (Debug_w[DEBUG_ACTIVE_NO]) {
+        Pattern_Index[wk->wu.id] = (u16)Debug_w[DEBUG_ACTIVE_NO] - 1;
     }
 }
 
+/** @brief  */
 s32 Check_SA_Active(PLW* wk, s16* pl_id) {
     if (wk->sa->ok != -1) {
         return 0;
@@ -4539,6 +4664,7 @@ s32 Check_SA_Active(PLW* wk, s16* pl_id) {
     return 0;
 }
 
+/** @brief  */
 void Setup_Follow(PLW* wk, s16 Follow_Type) {
     CP_No[wk->wu.id][0] = 3;
     CP_No[wk->wu.id][1] = Follow_Type;
@@ -4573,6 +4699,7 @@ static const_anon13_p Follow_Menu_2nd_Unit_Data[13] = {
     &Com00_Follow_Menu, &Com00_Follow_Menu, &Com00_Follow_Menu,
 };
 
+/** @brief  */
 void Decide_Follow_Menu(PLW* wk) {
     s8 xx;
     const _anon6* Menu_Add_Ptr0;
@@ -4586,6 +4713,7 @@ void Decide_Follow_Menu(PLW* wk) {
     Pattern_Index[wk->wu.id] = Menu_Add_Ptr1->zzzz[xx][Area_Number[wk->wu.id]];
 }
 
+/** @brief  */
 s32 Select_Passive(PLW* wk) {
     u16 xx;
 
@@ -4670,8 +4798,8 @@ s32 Select_Passive(PLW* wk) {
     CP_No[wk->wu.id][3] = 0;
     Timer_00[wk->wu.id] = Select_Reflection_Time(wk);
 
-    if (Debug_w[0x37]) {
-        Pattern_Index[wk->wu.id] = (u16)Debug_w[0x37] - 1;
+    if (Debug_w[DEBUG_PASSIVE_NO]) {
+        Pattern_Index[wk->wu.id] = (u16)Debug_w[DEBUG_PASSIVE_NO] - 1;
     }
 
     if ((VS_Tech[wk->wu.id] == 0x19) || (VS_Tech[wk->wu.id] == 0x13) || (Timer_00[wk->wu.id] == 0)) {
@@ -4686,6 +4814,7 @@ s32 Select_Passive(PLW* wk) {
     return 1;
 }
 
+/** @brief  */
 void Devide_Level(s16 xx) {
     switch (xx) {
     case 0:
@@ -4703,6 +4832,7 @@ void Devide_Level(s16 xx) {
     }
 }
 
+/** @brief  */
 void Setup_Random(PLW* wk) {
     if (VS_Tech[wk->wu.id] == 0x20) {
         Rnd = (u8)random_16_com() & 7;
@@ -4713,6 +4843,7 @@ void Setup_Random(PLW* wk) {
     }
 }
 
+/** @brief  */
 s32 Check_Dramatic(PLW* wk, s16 PL_id) {
     if (plw[wk->wu.id].sa->ok) {
         return Rnd | 8;
@@ -4726,6 +4857,7 @@ s32 Check_Dramatic(PLW* wk, s16 PL_id) {
 
 const s8 PL_Status[0xA] = { 1, 0, 0, 0, 1, 1, 0, 0, 0, 0 };
 
+/** @brief  */
 s32 Check_Passive(PLW* wk) {
     WORK* em;
 
@@ -4786,6 +4918,7 @@ s32 Check_Passive(PLW* wk) {
     return 0;
 }
 
+/** @brief  */
 s32 Check_Guard(PLW* wk) {
     WORK* em;
     s16 xx;
@@ -4837,6 +4970,7 @@ s32 Check_Guard(PLW* wk) {
     return 1;
 }
 
+/** @brief  */
 s32 Check_Makoto(PLW* wk) {
     if (wk->player_number != 0x10) {
         return 0;
@@ -4851,6 +4985,7 @@ s32 Check_Makoto(PLW* wk) {
     return 0;
 }
 
+/** @brief  */
 s32 Check_Flip_Term(PLW* wk, WORK* tmw) {
     WORK* em;
     s16 xx;
@@ -4886,6 +5021,7 @@ s32 Check_Flip_Term(PLW* wk, WORK* tmw) {
     return 1;
 }
 
+/** @brief  */
 s32 Setup_EM_Rank_Index(PLW* wk) {
     if (EM_Rank != 0) {
         return 0x11;
@@ -4894,6 +5030,7 @@ s32 Setup_EM_Rank_Index(PLW* wk) {
     return wk->player_number;
 }
 
+/** @brief  */
 s32 Flip_Term_Correct(PLW* wk) {
     s16 xx = 0;
 
@@ -4913,6 +5050,7 @@ s32 Flip_Term_Correct(PLW* wk) {
     return xx;
 }
 
+/** @brief  */
 void Next_Be_Guard(PLW* wk, WORK* em, s16 Type_Of_Guard) {
     CP_No[wk->wu.id][0] = 7;
     CP_No[wk->wu.id][1] = 0;
@@ -4925,6 +5063,7 @@ void Next_Be_Guard(PLW* wk, WORK* em, s16 Type_Of_Guard) {
     Check_Guard_Type(wk, em);
 }
 
+/** @brief  */
 s32 Check_Flip_Tech(WORK* em) {
     s32 rnum = 1;
 
@@ -4952,6 +5091,7 @@ s32 Check_Flip_Tech(WORK* em) {
     return rnum;
 }
 
+/** @brief  */
 void Next_Be_Flip(PLW* wk, s16 xx) {
     WORK* em;
 
@@ -4983,6 +5123,7 @@ void Next_Be_Flip(PLW* wk, s16 xx) {
     }
 }
 
+/** @brief  */
 s32 Check_Diagonal_Shell(PLW* wk) {
     WORK_Other* tmw;
     WORK* em;
@@ -5031,6 +5172,7 @@ s32 Check_Diagonal_Shell(PLW* wk) {
     return 0;
 }
 
+/** @brief  */
 s32 Check_Ignore_Shell2(WORK_Other* tmw) {
     if (tmw->wu.type == 0xDE) {
         return 1;
@@ -5054,6 +5196,7 @@ s32 Check_Ignore_Shell2(WORK_Other* tmw) {
     return 0;
 }
 
+/** @brief  */
 s32 Check_Shell(PLW* wk) {
     WORK_Other* tmw;
     WORK* em;
@@ -5117,6 +5260,7 @@ s32 Check_Shell(PLW* wk) {
     return 0;
 }
 
+/** @brief  */
 s32 Check_Shell_Another_in_Flip(PLW* wk) {
     WORK_Other* tmw;
     WORK* em;
@@ -5159,6 +5303,7 @@ s32 Check_Shell_Another_in_Flip(PLW* wk) {
     return xx;
 }
 
+/** @brief  */
 s32 Check_Ignore_Shell(WORK_Other* tmw) {
     if (tmw->wu.type == 0xDE) {
         return 1;
@@ -5182,6 +5327,7 @@ s32 Check_Ignore_Shell(WORK_Other* tmw) {
     return 0;
 }
 
+/** @brief  */
 s32 Compute_Hit_Time(PLW* wk, WORK_Other* tmw) {
     s32 lx1;
     s32 divsp;
@@ -5207,6 +5353,7 @@ s32 Compute_Hit_Time(PLW* wk, WORK_Other* tmw) {
     return x2;
 }
 
+/** @brief  */
 s32 Decide_Shell_Guard(PLW* wk, WORK_Other* tmw) {
     s16 xx;
 
@@ -5229,6 +5376,7 @@ s32 Decide_Shell_Guard(PLW* wk, WORK_Other* tmw) {
     return 1;
 }
 
+/** @brief  */
 void Guard_or_Jump_VS_Shell(PLW* wk, WORK_Other* tmw, s16 xx) {
     if (xx <= Shell_Dodge_Data[0][wk->player_number]) {
         if (Check_Flip_Term(wk, &tmw->wu) != 0) {
@@ -5263,6 +5411,7 @@ void Guard_or_Jump_VS_Shell(PLW* wk, WORK_Other* tmw, s16 xx) {
     Setup_Shell_Disposal(wk, tmw);
 }
 
+/** @brief  */
 void Setup_Shell_Disposal(PLW* wk, WORK_Other* tmw) {
     switch (Pattern_Index[wk->wu.id]) {
     case 0:
@@ -5282,6 +5431,7 @@ void Setup_Shell_Disposal(PLW* wk, WORK_Other* tmw) {
     }
 }
 
+/** @brief  */
 void Next_Be_Shell_Guard(PLW* wk, WORK* tmw) {
     CP_No[wk->wu.id][0] = 9;
     CP_No[wk->wu.id][1] = 0;
@@ -5294,6 +5444,7 @@ void Next_Be_Shell_Guard(PLW* wk, WORK* tmw) {
     Check_Guard_Type(wk, tmw);
 }
 
+/** @brief  */
 s32 Decide_Shell_Reaction(PLW* wk, WORK_Other* tmw, u16 dir_step) {
     if (dir_step == 0xFF) {
         return 0;
@@ -5313,6 +5464,7 @@ s32 Decide_Shell_Reaction(PLW* wk, WORK_Other* tmw, u16 dir_step) {
     return VS_Shell_Active_Data[wk->player_number][dir_step][emLevelRemake(Lv, 8, 0)][Rnd];
 }
 
+/** @brief  */
 s32 Ck_Distance_XX(s16 x1, s16 x2) {
     s16 xx;
 
@@ -5324,6 +5476,7 @@ s32 Ck_Distance_XX(s16 x1, s16 x2) {
     return xx;
 }
 
+/** @brief  */
 s32 Check_Behind(PLW* wk, WORK_Other* tmw) {
     if (wk->wu.rl_waza == 0) {
         if (wk->wu.xyz[0].disp.pos < tmw->wu.xyz[0].disp.pos) {
@@ -5342,6 +5495,7 @@ typedef s32 (*Term_Tbl_t)(PLW* wk, WORK* em);
 const Term_Tbl_t Exit_Term_Tbl[9] = { Exit_Term_0000, Exit_Term_0001, Exit_Term_0002, Exit_Term_0003, Exit_Term_0004,
                                       Exit_Term_0005, Exit_Term_0006, Exit_Term_0007, Exit_Term_0008 };
 
+/** @brief  */
 void Setup_Lever_LR(PLW* wk, s16 PL_id, s16 Lever) {
     if (Lever == 0) {
         Lever_LR[PL_id] = 0;
@@ -5364,15 +5518,17 @@ void Setup_Lever_LR(PLW* wk, s16 PL_id, s16 Lever) {
     }
 }
 
-s32 Check_Exit_Term(PLW* wk, WORK* em, s16 Exit_No) {
+/** @brief  */
+s32 Check_Exit_Term(PLW* wk, WORK* em, s16 arg_Exit_No) {
     s16 xx;
 
     if (VS_Jump_Term(wk, em, &xx) != 0) {
         return xx;
     }
-    return Exit_Term_Tbl[Exit_No](wk, em);
+    return Exit_Term_Tbl[arg_Exit_No](wk, em);
 }
 
+/** @brief  */
 s32 VS_Jump_Term(PLW* wk, WORK* em, s16* xx) {
     if (Attack_Flag[wk->wu.id] == 0) {
         return 0;
@@ -5414,6 +5570,7 @@ s32 VS_Jump_Term(PLW* wk, WORK* em, s16* xx) {
     return 0;
 }
 
+/** @brief  */
 s32 Exit_Term_0000(PLW* wk, WORK* em) {
     switch (Term_No[wk->wu.id]) {
     case 0:
@@ -5431,10 +5588,12 @@ s32 Exit_Term_0000(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 Exit_Term_0001(PLW* wk, WORK* em) {
     return 1;
 }
 
+/** @brief  */
 s32 Exit_Term_0002(PLW* wk, WORK* em) {
     if (em->routine_no[1] == 2) {
         return 1;
@@ -5445,6 +5604,7 @@ s32 Exit_Term_0002(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 Exit_Term_0003(PLW* wk, WORK* em) {
     switch (Term_No[wk->wu.id]) {
     case 0:
@@ -5465,6 +5625,7 @@ s32 Exit_Term_0003(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 Exit_Term_0004(PLW* wk, WORK* em) {
     switch (Term_No[wk->wu.id]) {
     case 0:
@@ -5485,6 +5646,7 @@ s32 Exit_Term_0004(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 Exit_Term_0005(PLW* wk, WORK* em) {
     switch (Term_No[wk->wu.id]) {
     case 0:
@@ -5505,6 +5667,7 @@ s32 Exit_Term_0005(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 Exit_Term_0006(PLW* wk, WORK* em) {
     switch (Term_No[wk->wu.id]) {
     case 0:
@@ -5525,6 +5688,7 @@ s32 Exit_Term_0006(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 Exit_Term_0007(PLW* wk, WORK* em) {
     switch (Term_No[wk->wu.id]) {
     case 0:
@@ -5549,6 +5713,7 @@ s32 Exit_Term_0007(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 Exit_Term_0008(PLW* wk, WORK* em) {
     switch (Term_No[wk->wu.id]) {
     case 0:
@@ -5567,6 +5732,7 @@ s32 Exit_Term_0008(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 Check_Drop_Term(WORK* em, s16 Y) {
     if (em->mvxy.a[1].real.h >= 0) {
         return 0;
@@ -5577,6 +5743,7 @@ s32 Check_Drop_Term(WORK* em, s16 Y) {
     return 1;
 }
 
+/** @brief  */
 s32 Check_SHINRYU(PLW* wk) {
     PLW* em;
 
@@ -5597,6 +5764,7 @@ s32 Check_SHINRYU(PLW* wk) {
 const Term_Tbl_t ETC_Term_Tbl[10] = { ETC_Term_0000, ETC_Term_0001, ETC_Term_0002, ETC_Term_0003, ETC_Term_0004,
                                       ETC_Term_0005, ETC_Term_0006, ETC_Term_0007, ETC_Term_0008, ETC_Term_0009 };
 
+/** @brief  */
 void Check_BOSS(PLW* wk, u32 Next_Action, u16 Next_Menu) {
     if (Break_Into_CPU == 1) {
         Disposal_Again[wk->wu.id] = 1;
@@ -5613,6 +5781,7 @@ void Check_BOSS(PLW* wk, u32 Next_Action, u16 Next_Menu) {
     }
 }
 
+/** @brief  */
 void Check_BOSS_EX(PLW* wk, u32 Next_Action, u16 Next_Menu) {
     if (Break_Into_CPU != 1) {
         Disposal_Again[wk->wu.id] = 1;
@@ -5629,11 +5798,12 @@ void Check_BOSS_EX(PLW* wk, u32 Next_Action, u16 Next_Menu) {
     }
 }
 
-void ETC_Term(PLW* wk, s16 Exit_No, u32 Next_Action, u16 Next_Menu) {
+/** @brief  */
+void ETC_Term(PLW* wk, s16 arg_Exit_No, u32 Next_Action, u16 Next_Menu) {
     s16 xx;
     WORK* em = (WORK*)wk->wu.target_adrs;
 
-    xx = ETC_Term_Tbl[Exit_No](wk, em);
+    xx = ETC_Term_Tbl[arg_Exit_No](wk, em);
 
     if (xx == -1) {
         return;
@@ -5654,6 +5824,7 @@ void ETC_Term(PLW* wk, s16 Exit_No, u32 Next_Action, u16 Next_Menu) {
     }
 }
 
+/** @brief  */
 s32 ETC_Term_0000(PLW* wk, WORK* em) {
     if (Check_VS_Squat(wk, em, 0x1D, 0x21, 0x20) != 0) {
         return 1;
@@ -5661,6 +5832,7 @@ s32 ETC_Term_0000(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 ETC_Term_0001(PLW* wk, WORK* em) {
     if (wk->sa->ok != -1) {
         return 1;
@@ -5674,6 +5846,7 @@ s32 ETC_Term_0001(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 ETC_Term_0002(PLW* wk, WORK* em) {
     if (plw[wk->wu.id].wu.vital_new < 0x31) {
         return 1;
@@ -5681,6 +5854,7 @@ s32 ETC_Term_0002(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 ETC_Term_0003(PLW* wk, WORK* em) {
     if ((em->pat_status != 0x20) && (em->pat_status != 0x21) && (em->pat_status != 2)) {
         return 1;
@@ -5688,6 +5862,7 @@ s32 ETC_Term_0003(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 ETC_Term_0004(PLW* wk, WORK* em) {
     if (em->vital_new >= 0x50) {
         return 0;
@@ -5698,6 +5873,7 @@ s32 ETC_Term_0004(PLW* wk, WORK* em) {
     return 1;
 }
 
+/** @brief  */
 s32 ETC_Term_0005(PLW* wk, WORK* em) {
     if (em->vital_new < plw[wk->wu.id].wu.vital_new) {
         return 1;
@@ -5705,6 +5881,7 @@ s32 ETC_Term_0005(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 ETC_Term_0006(PLW* wk, WORK* em) {
     switch (CP_Index[wk->wu.id][1]) {
     case 0:
@@ -5724,6 +5901,7 @@ s32 ETC_Term_0006(PLW* wk, WORK* em) {
     return -1;
 }
 
+/** @brief  */
 s32 ETC_Term_0007(PLW* wk, WORK* em) {
     if (plw[wk->wu.id].sa->kind_of_arts == 2) {
         return 1;
@@ -5732,6 +5910,7 @@ s32 ETC_Term_0007(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 ETC_Term_0008(PLW* wk, WORK* em) {
     if (plw[wk->wu.id].sa->kind_of_arts == 1) {
         return 1;
@@ -5740,6 +5919,7 @@ s32 ETC_Term_0008(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 ETC_Term_0009(PLW* wk, WORK* em) {
     if (plw[wk->wu.id].sa->kind_of_arts == 0) {
         return 1;
@@ -5748,6 +5928,7 @@ s32 ETC_Term_0009(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief  */
 s32 emLevelRemake(s32 now, s32 max, s32 exd) {
     s32 RemakeLevelForDifficulty[8] = { -30, -10, 0, 0, 0, 0, 20, 60 };
 
@@ -5763,6 +5944,7 @@ s32 emLevelRemake(s32 now, s32 max, s32 exd) {
     return now;
 }
 
+/** @brief  */
 s32 emGetMaxBlocking() {
     s32 RapidBlockingTimes[8] = { 2, 2, 3, 3, 3, 4, 6, 10 };
 

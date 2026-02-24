@@ -1,6 +1,8 @@
 /**
  * @file vm_data.c
- * Replay and SysDir File Names
+ * @brief Replay and System Direction file name string tables.
+ *
+ * Part of the io module.
  */
 
 #include "common.h"

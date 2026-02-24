@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file shell13.c
  * COM Shell: Urien
  */
@@ -8,13 +8,14 @@
 #include "sf33rd/Source/Game/com/com_sub.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 
-void (*const Shell13_Tbl[12])(PLW*);
+static void (*const Shell13_Tbl[12])(PLW*);
 
+/** @brief Remy shell (projectile response) AI entry point. */
 void Shell13(PLW* wk) {
     Shell13_Tbl[(s16)Pattern_Index[wk->wu.id]](wk);
 }
 
-void Shell13_0000(PLW* wk) {
+static void Shell13_0000(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     default:
         End_Pattern(wk);
@@ -22,7 +23,7 @@ void Shell13_0000(PLW* wk) {
     }
 }
 
-void Shell13_0001(PLW* wk) {
+static void Shell13_0001(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 1, 2, 1, -1, -1);
@@ -38,7 +39,7 @@ void Shell13_0001(PLW* wk) {
     }
 }
 
-void Shell13_0002(PLW* wk) {
+static void Shell13_0002(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -54,7 +55,7 @@ void Shell13_0002(PLW* wk) {
     }
 }
 
-void Shell13_0003(PLW* wk) {
+static void Shell13_0003(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -78,7 +79,7 @@ void Shell13_0003(PLW* wk) {
     }
 }
 
-void Shell13_0004(PLW* wk) {
+static void Shell13_0004(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -98,7 +99,7 @@ void Shell13_0004(PLW* wk) {
     }
 }
 
-void Shell13_0005(PLW* wk) {
+static void Shell13_0005(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -118,7 +119,7 @@ void Shell13_0005(PLW* wk) {
     }
 }
 
-void Shell13_0006(PLW* wk) {
+static void Shell13_0006(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 1, 2, 1, -1, -1);
@@ -134,7 +135,7 @@ void Shell13_0006(PLW* wk) {
     }
 }
 
-void Shell13_0007(PLW* wk) {
+static void Shell13_0007(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x1E, 8, -1);
@@ -146,7 +147,7 @@ void Shell13_0007(PLW* wk) {
     }
 }
 
-void Shell13_0008(PLW* wk) {
+static void Shell13_0008(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         SHELL_Term(wk, 0, 2, 1, -1, -1);
@@ -166,7 +167,7 @@ void Shell13_0008(PLW* wk) {
     }
 }
 
-void Shell13_0009(PLW* wk) {
+static void Shell13_0009(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Lever_Off(wk);
@@ -186,7 +187,7 @@ void Shell13_0009(PLW* wk) {
     }
 }
 
-void Shell13_0010(PLW* wk) {
+static void Shell13_0010(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     default:
         End_Pattern(wk);
@@ -194,7 +195,7 @@ void Shell13_0010(PLW* wk) {
     }
 }
 
-void Shell13_0011(PLW* wk) {
+static void Shell13_0011(PLW* wk) {
     switch (CP_Index[wk->wu.id][0]) {
     case 0:
         Command_Attack(wk, 8, 0x1E, 8, 0x70);
@@ -206,6 +207,6 @@ void Shell13_0011(PLW* wk) {
     }
 }
 
-void (*const Shell13_Tbl[12])(PLW*) = { Shell13_0000, Shell13_0001, Shell13_0002, Shell13_0003,
-                                        Shell13_0004, Shell13_0005, Shell13_0006, Shell13_0007,
-                                        Shell13_0008, Shell13_0009, Shell13_0010, Shell13_0011 };
+static void (*const Shell13_Tbl[12])(PLW*) = { Shell13_0000, Shell13_0001, Shell13_0002, Shell13_0003,
+                                               Shell13_0004, Shell13_0005, Shell13_0006, Shell13_0007,
+                                               Shell13_0008, Shell13_0009, Shell13_0010, Shell13_0011 };

@@ -1,6 +1,11 @@
 /**
  * @file demo_dat.c
- * Demo Data
+ * @brief Controller input-replay data for attract-mode demo sequences.
+ *
+ * Contains 4 pre-recorded button-sequence arrays (Sel_PL_Data_00..03) used
+ * to drive the character select cursor during attract demos.
+ *
+ * Part of the demo module.
  */
 
 #include "sf33rd/Source/Game/demo/demo_dat.h"

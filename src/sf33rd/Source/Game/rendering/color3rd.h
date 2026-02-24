@@ -1,3 +1,8 @@
+/**
+ * @file color3rd.h
+ * @brief Color palette loading, conversion, and ghost palette declarations.
+ */
+
 #ifndef COLOR3RD_H
 #define COLOR3RD_H
 

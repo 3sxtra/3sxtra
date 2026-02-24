@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -14,22 +15,23 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void end_1600_move();
+static void end_1600_move();
 
-void end_1600_0000();
-void end_1600_1000();
-void end_1600_2000();
-void end_1600_3000();
-void end_1600_3100();
-void end_1600_5000();
+static void end_1600_0000();
+static void end_1600_1000();
+static void end_1600_2000();
+static void end_1600_3000();
+static void end_1600_3100();
+static void end_1600_5000();
 
-void end_16_col_change();
+static void end_16_col_change();
 
 const s16 timer_16_tbl[6] = { 660, 360, 360, 660, 660, 240 };
 
 const s16 end_16_pos[7][2] = { { 256, 768 }, { 256, 768 }, { 768, 256 }, { 256, 256 },
                                { 256, 0 },   { 256, 0 },   { 768, 0 } };
 
+/** @brief Chun-Li's ending entry point — initialize and run all ending scenes. */
 void end_16000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -74,14 +76,18 @@ void end_16000(s16 pl_num) {
     }
 }
 
-void end_1600_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_1600_move() {
     void (*end_1600_move_jp[6])() = { end_1600_0000, end_1600_1000, end_1600_2000,
                                       end_1600_3000, end_1600_3100, end_1600_5000 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_1600_move_jp[end_w.r_no_2]();
 }
 
-void end_1600_0000() {
+/** @brief Scene 0 — horizontal pan with message. */
+static void end_1600_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -108,7 +114,8 @@ void end_1600_0000() {
     }
 }
 
-void end_1600_1000() {
+/** @brief Scene 1 — fade to black panel. */
+static void end_1600_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -148,7 +155,8 @@ void end_1600_1000() {
     }
 }
 
-void end_1600_2000() {
+/** @brief Scene 2 — black panel fade-in with vertical scroll. */
+static void end_1600_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         overwrite_panel(0xFF000000, 0x17);
@@ -189,7 +197,8 @@ void end_1600_2000() {
     }
 }
 
-void end_1600_3000() {
+/** @brief Scene 3 — effect with color cycling animation. */
+static void end_1600_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -208,7 +217,8 @@ void end_1600_3000() {
     }
 }
 
-void end_1600_3100() {
+/** @brief Scene 3 variant — effect with alternate color cycling. */
+static void end_1600_3100() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -225,7 +235,8 @@ void end_1600_3100() {
     }
 }
 
-void end_1600_5000() {
+/** @brief Scene 5 — final scene with flashing effect and fade timer. */
+static void end_1600_5000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -261,7 +272,8 @@ void end_1600_5000() {
     }
 }
 
-void end_16_col_change() {
+/** @brief Cycle palette colors for Chun-Li's ending. */
+static void end_16_col_change() {
     bgw_ptr->l_limit2--;
 
     if (bgw_ptr->l_limit2 <= 0) {

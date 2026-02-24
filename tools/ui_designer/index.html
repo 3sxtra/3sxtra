@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3SX UI Designer</title>
+    <style>
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-panel: #252526;
+            --bg-canvas: #000000;
+            --text-main: #cccccc;
+            --text-light: #ffffff;
+            --accent: #007acc;
+            --accent-hover: #0098ff;
+            --border: #3c3c3c;
+            --canvas-w: 384px;
+            --canvas-h: 224px;
+            --scale: 2;
+            /* Change this to scale the view */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Layout */
+        .sidebar {
+            width: 300px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .sidebar.right {
+            border-right: none;
+            border-left: 1px solid var(--border);
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #111;
+            overflow: auto;
+            position: relative;
+        }
+
+        /* Panel Sections */
+        .panel-section {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-section h3 {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Controls */
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            width: 100%;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        button.secondary {
+            background-color: #444;
+        }
+
+        button.secondary:hover {
+            background-color: #555;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: #999;
+        }
+
+        .control-group input,
+        .control-group select {
+            width: 100%;
+            background: #333;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 6px;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .control-group input:focus,
+        .control-group select:focus {
+            outline: 1px solid var(--accent);
+            border-color: var(--accent);
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Canvas */
+        .canvas-container {
+            width: calc(var(--canvas-w) * var(--scale));
+            height: calc(var(--canvas-h) * var(--scale));
+            background-color: #000;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            image-rendering: pixelated;
+            overflow: hidden;
+        }
+
+        /* Native Crosshair Guides */
+        .canvas-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            border-left: 1px dashed rgba(255, 255, 255, 0.15);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .canvas-container::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            border-top: 1px dashed rgba(255, 255, 255, 0.15);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Elements on canvas */
+        .canvas-element {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            transform-origin: top left;
+            /* Border for bounding box visual, transparent normally */
+            border: 1px solid transparent;
+        }
+
+        .canvas-element.selected {
+            border: 1px dashed #fff;
+            z-index: 100 !important;
+        }
+
+        /* Text Element Specifics */
+        .type-text {
+            white-space: pre;
+            line-height: 1;
+            /* Match native rendering closely */
+            /* Default CPS3 font-like properties could go here */
+            font-family: monospace;
+            font-size: 8px;
+            /* Base size */
+        }
+
+        /* Box Element */
+        .type-box {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Layers List */
+        .layer-item {
+            padding: 8px;
+            background: #333;
+            margin-bottom: 4px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .layer-item:hover {
+            background: #3a3a3a;
+        }
+
+        .layer-item.selected {
+            background: var(--accent);
+            color: white;
+        }
+
+        .layer-item-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Export Area */
+        pre {
+            background: #111;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            overflow-x: auto;
+            color: #d4d4d4;
+            max-height: 200px;
+            border: 1px solid var(--border);
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: absolute;
+            top: 20px;
+            color: #888;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Left Sidebar: Toolbox & Layers -->
+    <div class="sidebar">
+        <div class="panel-section">
+            <h3>Add Element</h3>
+            <button onclick="addElement('text')">Add Text</button>
+            <button onclick="addElement('box')">Add Box/Sprite Area</button>
+        </div>
+        <div class="panel-section" style="flex:1; overflow-y:auto;">
+            <h3>Elements</h3>
+            <div id="layers-list">
+                <!-- Layers populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Canvas Area -->
+    <div class="main" id="main-area">
+        <div class="top-bar">Native Resolution: 384x224 (Scaled for Visibility)</div>
+        <div class="canvas-container" id="canvas">
+            <!-- Rendered elements go here -->
+        </div>
+    </div>
+
+    <!-- Right Sidebar: Properties & Export -->
+    <div class="sidebar right">
+        <div class="panel-section" id="properties-panel" style="display:none;">
+            <h3>Properties</h3>
+            <div class="control-group">
+                <label>Name (Var reference)</label>
+                <input type="text" id="prop-name" onchange="updateElement()">
+            </div>
+            <div class="control-group">
+                <label>Coordinate System</label>
+                <select id="prop-coord" onchange="updateElement()">
+                    <option value="effect">Effect (X=Center, Y=Bottom-Up)</option>
+                    <option value="overlay">Overlay (X=Left, Y=Top-Down)</option>
+                </select>
+            </div>
+            <div class="flex-row">
+                <div class="control-group" style="flex:1;">
+                    <label>X / Y</label>
+                    <div class="flex-row">
+                        <input type="number" id="prop-x" onchange="updateElement()" style="width:50%;">
+                        <input type="number" id="prop-y" onchange="updateElement()" style="width:50%;">
+                    </div>
+                </div>
+            </div>
+
+            <div id="prop-text-group" style="display:none;">
+                <div class="control-group">
+                    <label>Text</label>
+                    <input type="text" id="prop-text" onchange="updateElement()">
+                </div>
+                <div class="control-group">
+                    <label>Color</label>
+                    <input type="color" id="prop-color" onchange="updateElement()">
+                </div>
+            </div>
+
+            <div id="prop-box-group" style="display:none;">
+                <div class="flex-row">
+                    <div class="control-group" style="flex:1;">
+                        <label>W</label>
+                        <input type="number" id="prop-w" onchange="updateElement()">
+                    </div>
+                    <div class="control-group" style="flex:1;">
+                        <label>H</label>
+                        <input type="number" id="prop-h" onchange="updateElement()">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Ref/Index</label>
+                    <input type="number" id="prop-index" value="0" onchange="updateElement()">
+                </div>
+            </div>
+
+            <div class="control-group" style="margin-top:20px;">
+                <button class="secondary" onclick="deleteSelected()">Delete Element</button>
+            </div>
+        </div>
+        <div class="panel-section" style="display:flex; align-items:center; justify-content:center;" id="no-selection">
+            <span style="color:#666; font-size:13px; text-align:center;">Select an element to view properties</span>
+        </div>
+
+        <div class="panel-section" style="flex:1;">
+            <h3>Export C Arrays</h3>
+            <button onclick="generateCode()">Generate Output</button>
+            <div style="margin-top: 10px;">
+                <pre id="export-output">// Output will appear here</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Model
+        let elements = [];
+        let nextId = 1;
+        let selectedId = null;
+        const SCALE = 2; // Matches CSS var(--scale)
+
+        const canvas = document.getElementById('canvas');
+        const layersList = document.getElementById('layers-list');
+        const propsPanel = document.getElementById('properties-panel');
+        const noSelPanel = document.getElementById('no-selection');
+
+        // Properties Inputs
+        const inName = document.getElementById('prop-name');
+        const inCoord = document.getElementById('prop-coord');
+        const inX = document.getElementById('prop-x');
+        const inY = document.getElementById('prop-y');
+        const inText = document.getElementById('prop-text');
+        const inColor = document.getElementById('prop-color');
+        const inW = document.getElementById('prop-w');
+        const inH = document.getElementById('prop-h');
+        const inIndex = document.getElementById('prop-index');
+
+        // Drag state
+        let isDragging = false;
+        let dragElem = null;
+        let startX = 0, startY = 0;
+        let origX = 0, origY = 0;
+
+        function addElement(type) {
+            const el = {
+                id: nextId++,
+                name: `${type}_${nextId}`,
+                type: type,
+                coordSystem: 'effect', // Default to effect rendering
+                x: 0, // X=0 is horizontal center natively (when effect)
+                y: 112, // Y=112 is vertical center natively (when effect)
+                z: elements.length + 2
+            };
+
+            if (type === 'text') {
+                el.text = "NEW TEXT";
+                el.color = "#FFFFFF";
+            } else if (type === 'box') {
+                el.w = 50;
+                el.h = 50;
+                el.index = 0; // Sprite or palette index
+                el.color = "#ff0000"; // display color
+            }
+
+            elements.push(el);
+            selectElement(el.id);
+            renderAll();
+        }
+
+        function deleteSelected() {
+            if (!selectedId) return;
+            elements = elements.filter(e => e.id !== selectedId);
+            selectedId = null;
+            renderAll();
+        }
+
+        function selectElement(id) {
+            selectedId = id;
+            if (!id) {
+                propsPanel.style.display = 'none';
+                noSelPanel.style.display = 'flex';
+                renderAll();
+                return;
+            }
+
+            const el = elements.find(e => e.id === id);
+            if (!el) return;
+
+            propsPanel.style.display = 'block';
+            noSelPanel.style.display = 'none';
+
+            // Populate generic
+            inName.value = el.name;
+            inCoord.value = el.coordSystem || 'effect';
+            inX.value = el.x;
+            inY.value = el.y;
+
+            // Populate specific types
+            if (el.type === 'text') {
+                document.getElementById('prop-text-group').style.display = 'block';
+                document.getElementById('prop-box-group').style.display = 'none';
+                inText.value = el.text;
+                inColor.value = el.color;
+            } else if (el.type === 'box') {
+                document.getElementById('prop-text-group').style.display = 'none';
+                document.getElementById('prop-box-group').style.display = 'block';
+                inW.value = el.w;
+                inH.value = el.h;
+                inIndex.value = el.index;
+            }
+
+            renderAll();
+        }
+
+        function updateElement() {
+            if (!selectedId) return;
+            const el = elements.find(e => e.id === selectedId);
+            if (!el) return;
+
+            // Recalculate coordinates if changing system to try to stay in place visually? (Too complex, just update value)
+            el.name = inName.value;
+            el.coordSystem = inCoord.value;
+            el.x = parseInt(inX.value) || 0;
+            el.y = parseInt(inY.value) || 0;
+
+            if (el.type === 'text') {
+                el.text = inText.value;
+                el.color = inColor.value;
+            } else if (el.type === 'box') {
+                el.w = parseInt(inW.value) || 10;
+                el.h = parseInt(inH.value) || 10;
+                el.index = parseInt(inIndex.value) || 0;
+            }
+
+            renderAll();
+        }
+
+        function renderAll() {
+            // Render Layers list
+            layersList.innerHTML = '';
+            // Render bottom to top in list
+            [...elements].reverse().forEach(el => {
+                const div = document.createElement('div');
+                div.className = `layer-item ${el.id === selectedId ? 'selected' : ''}`;
+                div.innerHTML = `<span class="layer-item-name">[${el.type.toUpperCase()}] ${el.name}</span>`;
+                div.onclick = () => selectElement(el.id);
+                layersList.appendChild(div);
+            });
+
+            // Render Canvas
+            canvas.innerHTML = '';
+            elements.forEach(el => {
+                const node = document.createElement('div');
+                node.className = `canvas-element type-${el.type} ${el.id === selectedId ? 'selected' : ''}`;
+
+                // NATIVE TO DOM COORDINATE TRANSLATION
+                let domX, domY;
+                if (el.coordSystem === 'overlay') {
+                    // Overlay is Top-Left origin (X=Left, Y=Top)
+                    domX = el.x;
+                    domY = el.y;
+                } else {
+                    // Effect is Center-Bottom origin (X=Center, Y=Bottom)
+                    domX = el.x + 192;
+                    domY = 224 - el.y;
+                }
+
+                node.style.left = (domX * SCALE) + 'px';
+                node.style.top = (domY * SCALE) + 'px';
+                node.style.zIndex = el.z;
+
+                if (el.type === 'text') {
+                    node.innerText = el.text;
+                    node.style.color = el.color;
+                    node.style.transform = `scale(${SCALE})`; // scale text inner
+                } else if (el.type === 'box') {
+                    node.style.width = (el.w * SCALE) + 'px';
+                    node.style.height = (el.h * SCALE) + 'px';
+                    node.style.border = '1px solid ' + el.color;
+                    node.style.backgroundColor = el.color + '40'; // 25% opacity
+
+                    const lbl = document.createElement('div');
+                    lbl.innerText = el.index;
+                    lbl.style.fontSize = (8 * SCALE) + 'px';
+                    lbl.style.color = el.color;
+                    lbl.style.padding = '2px';
+                    node.appendChild(lbl);
+                }
+
+                // Dragging handlers
+                node.addEventListener('mousedown', (e) => startDrag(e, el.id));
+                canvas.appendChild(node);
+            });
+        }
+
+        function startDrag(e, id) {
+            if (e.button !== 0) return; // Only left click
+            e.stopPropagation();
+            selectElement(id);
+
+            isDragging = true;
+            dragElem = elements.find(el => el.id === id);
+            startX = e.clientX;
+            startY = e.clientY;
+            origX = dragElem.x;
+            origY = dragElem.y;
+
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function onDrag(e) {
+            if (!isDragging || !dragElem) return;
+
+            const dx = (e.clientX - startX) / SCALE;
+            const dy = (e.clientY - startY) / SCALE;
+
+            if (dragElem.coordSystem === 'overlay') {
+                dragElem.x = Math.round(origX + dx);
+                dragElem.y = Math.round(origY + dy); // y goes down natively
+            } else {
+                // Effect system: Y is inverted (moving mouse down increases dy, but native Y decreases towards 0 at bottom)
+                dragElem.x = Math.round(origX + dx);
+                dragElem.y = Math.round(origY - dy);
+            }
+
+            // Update UI while tracking
+            if (selectedId === dragElem.id) {
+                inX.value = dragElem.x;
+                inY.value = dragElem.y;
+            }
+
+            renderAll();
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            dragElem = null;
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        // Click on empty canvas deselects
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.target === canvas) {
+                selectElement(null);
+            }
+        });
+
+        // Code Generation
+        function generateCode() {
+            let out = "// Generated UI Coordinates (" + elements.length + " elements)\n\n";
+
+            const texts = elements.filter(e => e.type === 'text');
+            if (texts.length > 0) {
+                out += `const s16 UI_Text_Pos[${texts.length}][2] = {\n    `;
+                out += texts.map(t => `{ ${t.x}, ${t.y} } /* ${t.name} (${t.coordSystem}): "${t.text}" */`).join(',\n    ');
+                out += `\n};\n\n`;
+            }
+
+            const boxes = elements.filter(e => e.type === 'box');
+            if (boxes.length > 0) {
+                out += `const s16 UI_Box_Pos[${boxes.length}][2] = {\n    `;
+                out += boxes.map(b => `{ ${b.x}, ${b.y} } /* ${b.name} (${b.coordSystem}): idx ${b.index} (${b.w}x${b.h}) */`).join(',\n    ');
+                out += `\n};\n`;
+            }
+
+            if (elements.length === 0) {
+                out = "// Add elements first to generate code!";
+            }
+
+            document.getElementById('export-output').innerText = out;
+        }
+
+        // Initialize with ACTUAL Network Lobby Config (`sel_data.c`)
+        elements = [
+            // Title overlay uses SSPutStr_Bigger (TopLeft overlay coordinates)
+            { id: nextId++, name: "title_shadow", coordSystem: "overlay", type: "text", x: 141, y: 21, z: 1, text: "NETWORK LOBBY", color: "#555555" },
+            { id: nextId++, name: "title_text", coordSystem: "overlay", type: "text", x: 140, y: 20, z: 2, text: "NETWORK LOBBY", color: "#FFFFFF" },
+
+            // LAN items uses Slide_Pos_Data_61 (Center/Bottom coordinates)
+            { id: nextId++, name: "lan_conn", coordSystem: "effect", type: "text", x: -210, y: 150, z: 3, text: "AUTO-CONN", color: "#FFFFFF" },
+            { id: nextId++, name: "lan_peer", coordSystem: "effect", type: "text", x: -210, y: 134, z: 4, text: "CONNECT", color: "#FFFFFF" },
+
+            // NET items uses Slide_Pos_Data_61
+            { id: nextId++, name: "net_conn", coordSystem: "effect", type: "text", x: -45, y: 150, z: 5, text: "AUTO-CONN", color: "#FFFFFF" },
+            { id: nextId++, name: "net_srch", coordSystem: "effect", type: "text", x: -45, y: 134, z: 6, text: "AUTO-SEARCH", color: "#FFFFFF" },
+            { id: nextId++, name: "net_peer", coordSystem: "effect", type: "text", x: -45, y: 118, z: 7, text: "CONNECT", color: "#FFFFFF" },
+            { id: nextId++, name: "exit", coordSystem: "effect", type: "text", x: -128, y: 94, z: 8, text: "EXIT", color: "#FFFFFF" }
+        ];
+
+        renderAll();
+        generateCode();
+
+    </script>
+</body>
+
+</html>

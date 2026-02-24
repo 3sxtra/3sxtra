@@ -1,9 +1,18 @@
+/**
+ * @file emlShim.c
+ * @brief CSELIB sound-engine shim — voice management and ADSR control.
+ *
+ * Reimplements the PS2 IOP CSELIB00.IRX voice management layer:
+ * allocates/frees 48 SPU voices with priority-based eviction, handles
+ * key-on/key-off/stop requests, volume/pan/pitch updates with LFO
+ * modulation, and note-to-pitch conversion via ps2sdk tables.
+ */
 #include "port/sound/emlShim.h"
 
 #include "common.h"
 #include "port/sound/list.h"
 #include "port/sound/spu.h"
-#include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlSndDrv.h"
+
 #include <stdio.h>
 #include <string.h>
 

@@ -1,6 +1,6 @@
 /**
  * @file eff07.c
- * TODO: identify what this effect does
+ * Effect: Stage Effect (Water/Liquid?)
  */
 
 #include "bin2obj/char_table.h"

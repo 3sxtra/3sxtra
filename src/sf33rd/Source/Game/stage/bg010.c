@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg010.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "sf33rd/Source/Game/effect/eff07.h"
@@ -16,6 +17,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Subway Station, America stage. */
 void BG010() {
     bgw_ptr = &bg_w.bgw[1];
     bg0102();
@@ -28,11 +30,15 @@ void BG010() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Subway Station, America. */
 void bg0101() {
     void (*bg0101_jmp[2])() = { bg0101_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0101_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Subway Station, America. */
 void bg0101_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -44,11 +50,15 @@ void bg0101_init00() {
     effect_11_init();
 }
 
+/** @brief Background layer handler for Subway Station, America. */
 void bg0102() {
     void (*bg0102_jmp[2])() = { bg0102_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0102_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Subway Station, America. */
 void bg0102_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -56,6 +66,7 @@ void bg0102_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Background layer handler for Subway Station, America. */
 void bg0103() {
     switch (bgw_ptr->r_no_0) {
     case 0:

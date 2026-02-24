@@ -1,6 +1,6 @@
 /**
  * @file effc7.c
- * TODO: identify what this effect does
+ * Effect: Paring Mark Effect
  */
 
 #include "sf33rd/Source/Game/effect/effc7.h"
@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void effc7_sort_push(WORK* ewk, WORK*);
+static void effc7_sort_push(WORK* ewk, WORK*);
 
 const s16 paring_mark_data[3][20][2] = {
     { { 64, 96 }, { 66, 82 }, { 50, 72 }, { 32, 60 }, { 36, 82 }, { 42, 70 }, { 34, 100 },
@@ -84,7 +84,7 @@ void effect_C7_move(WORK_Other* ewk) {
     }
 }
 
-void effc7_sort_push(WORK* ewk, WORK* /* unused */) {
+static void effc7_sort_push(WORK* ewk, WORK* /* unused */) {
     sort_push_request8(ewk);
 }
 

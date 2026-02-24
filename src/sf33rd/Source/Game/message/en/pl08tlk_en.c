@@ -1,8 +1,3 @@
-/**
- * @file pl08tlk_en.c
- * Elena Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl08tlk_en.h"
 #include "common.h"
 
@@ -31,4 +26,4 @@ static s8** msgTalkAdrPL08[6] = {
 
 static s8 msgTalkCtrPL08[6] = { 1, 2, 2, 1, 2, 2 };
 
-MessageTable pl08tlk_usa_tbl = { msgTalkAdrPL08, msgTalkCtrPL08 };
+MessageTable pl08tlk_en_tbl = { msgTalkAdrPL08, msgTalkCtrPL08 };

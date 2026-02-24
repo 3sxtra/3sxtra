@@ -1,6 +1,13 @@
 /**
  * @file se.c
- * Sound Effect and Background Music Request Handler
+ * @brief Sound effect and BGM request handlers.
+ *
+ * Provides the per-character SE dispatch (Se_Shock, Se_Myself, Se_Let, etc.),
+ * stage BGM selection, position-based stereo panning, and the debug sound code
+ * overlay. All SE functions ultimately call SsRequestPan() in sound3rd.c.
+ *
+ * Part of the sound module.
+ * Originally from the PS2 game module.
  */
 
 #include "sf33rd/Source/Game/sound/se.h"
@@ -17,20 +24,29 @@
 #include "structs.h"
 
 #define SDEB_SIZE 8
+#define BGM_STAGE_DATA_SIZE 22
+#define BONUS_VOICE_DATA_SIZE 768
+#define BONUS_SE_CODE_BASE 0x100
+#define SE_PLAYER_OFFSET 0x300 /* Per-player SE code stride (P1 base, P1 + 0x300 = P2) */
 
 u8 gSeqStatus[1];
 SoundPatch sdeb[SDEB_SIZE];
 
-s16 bgm_selectorDC[8] = { 0, 1, 2, 1, 2, 1, 2, 1 };
-s16 bgm_selectorAC[8] = { 0, 1, 0, 1, 0, 1, 0, 1 };
-s16* bgm_selector[2] = { bgm_selectorDC, bgm_selectorAC };
+s16 bgm_selector_arranged[8] = { 0, 1, 2, 1, 2, 1, 2, 1 };
+s16 bgm_selector_arcade[8] = { 0, 1, 0, 1, 0, 1, 0, 1 };
+s16* bgm_selector[2] = { bgm_selector_arranged, bgm_selector_arcade };
 
 const u16 BGM_Stage_Data[22] = { 46, 1, 13, 34, 31, 4, 7, 16, 25, 28, 34, 1, 28, 43, 22, 10, 19, 40, 4, 37, 61, 62 };
 const s16 SE_Shock_Data[7] = { 285, 286, 287, 288, 289, 305, 306 };
 const s16 Finish_SE_Data[2][7] = { { 305, 306, 285, 286, 287, 288, 272 }, { 292, 293, 290, 291, 287, 288, 272 } };
 
+/** @brief Select and play BGM for the given stage and round. */
 void Stage_BGM(u16 Stage_Number, u16 Round_Number) {
     u16 code;
+
+    if (Stage_Number >= BGM_STAGE_DATA_SIZE) {
+        return;
+    }
 
     if (Mode_Type == MODE_ARCADE && Play_Type == 0 && My_char[COM_id] == 17 && Bonus_Game_Flag == 0) {
         code = BGM_Stage_Data[17] + bgm_selector[sys_w.bgm_type][Round_Number & 7];
@@ -48,28 +64,34 @@ void Stage_BGM(u16 Stage_Number, u16 Round_Number) {
     SsRequest(code);
 }
 
+/** @brief Play a sound effect by code (no panning). */
 void Sound_SE(s16 Code) {
     SsRequest(Code);
 }
 
+/** @brief Request BGM playback by code (no panning). */
 void BGM_Request(s16 Code) {
     SsRequest(Code);
 }
 
+/** @brief Request BGM playback with current-code collision check. */
 void BGM_Request_Code_Check(u16 Code) {
     SsRequest_CC(Code);
 }
 
+/** @brief Stop background music. */
 void BGM_Stop() {
     SsBgmOff();
 }
 
+/** @brief Kill all active sound effects. */
 void SE_All_Off() {
     spu_all_off();
 }
 
+/** @brief Dummy SE handler — stores code for debug display but plays nothing. */
 void Se_Dummy(WORK_Other* ewk, u16 Code) {
-    SoundPatchConfig rmc;
+    SoundRequestData rmc;
 
     rmc.ptix = 0;
     rmc.bank = 0;
@@ -79,6 +101,7 @@ void Se_Dummy(WORK_Other* ewk, u16 Code) {
     Store_Sound_Code(Code, &rmc);
 }
 
+/** @brief Shock/hit SE — switches to KO variant if target is dead. */
 void Se_Shock(WORK_Other* ewk, u16 Code) {
     PLW* em;
     s16 xx;
@@ -108,20 +131,21 @@ void Se_Shock(WORK_Other* ewk, u16 Code) {
     }
 
     if (Code) {
-        Code += uid * 0x300;
+        Code += uid * SE_PLAYER_OFFSET;
     }
 
     xx = Get_Position((PLW*)ewk);
     SsRequestPan(Code, xx, xx, 0, 2);
 }
 
+/** @brief Play SE from the caller's own player channel. */
 void Se_Myself(WORK_Other* ewk, u16 Code) {
     s16 xx;
     s16 uid = ewk->wu.id;
 
     if ((ewk->wu.work_id == 1) || (uid = (ewk->master_id), uid < 2)) {
         if (Code) {
-            Code += uid * 0x300;
+            Code += uid * SE_PLAYER_OFFSET;
         }
 
         xx = Get_Position((PLW*)ewk);
@@ -129,18 +153,20 @@ void Se_Myself(WORK_Other* ewk, u16 Code) {
     }
 }
 
+/** @brief Like Se_Myself but only plays when the character is alive. */
 void Se_Myself_Die(WORK_Other* ewk, u16 Code) {
     s16 xx;
 
     if ((ewk->wu.work_id == 1) && (ewk->wu.vital_new >= 0)) {
         if (Code) {
-            Code += ewk->wu.id * 0x300;
+            Code += ewk->wu.id * SE_PLAYER_OFFSET;
         }
         xx = Get_Position((PLW*)ewk);
         SsRequestPan(Code, xx, xx, 0, 2);
     }
 }
 
+/** @brief Play SE on the target's channel (hit reaction). */
 void Se_Let(WORK_Other* ewk, u16 Code) {
     s16 xx;
     s16 uid;
@@ -154,13 +180,14 @@ void Se_Let(WORK_Other* ewk, u16 Code) {
     }
 
     if (Code) {
-        Code += uid * 0x300;
+        Code += uid * SE_PLAYER_OFFSET;
     }
 
     xx = Get_Position((PLW*)ewk);
     SsRequestPan(Code, xx, xx, 0, 2);
 }
 
+/** @brief Like Se_Let with special override codes for KO hits. */
 void Se_Let_SP(WORK_Other* ewk, u16 Code) {
     PLW* em;
     s16 xx;
@@ -184,13 +211,14 @@ void Se_Let_SP(WORK_Other* ewk, u16 Code) {
     }
 
     if (Code) {
-        Code += uid * 0x300;
+        Code += uid * SE_PLAYER_OFFSET;
     }
 
     xx = Get_Position((PLW*)ewk);
     SsRequestPan(Code, xx, xx, 0, 2);
 }
 
+/** @brief Generic SE call — plays at the caller's screen position. */
 void Call_Se(WORK_Other* ewk, u16 Code) {
     s16 xx;
 
@@ -198,6 +226,7 @@ void Call_Se(WORK_Other* ewk, u16 Code) {
     SsRequestPan(Code, xx, xx, 0, 2);
 }
 
+/** @brief Termination SE — only plays if character is airborne and alive. */
 void Se_Term(WORK_Other* ewk, u16 Code) {
     s16 xx;
 
@@ -210,13 +239,14 @@ void Se_Term(WORK_Other* ewk, u16 Code) {
     }
 
     if (Code) {
-        Code += ewk->wu.id * 0x300;
+        Code += ewk->wu.id * SE_PLAYER_OFFSET;
     }
 
     xx = Get_Position((PLW*)ewk);
     SsRequestPan(Code, xx, xx, 0, 2);
 }
 
+/** @brief Play the round-finish sound effect based on the last hit. */
 void Finish_SE() {
     PLW* wk;
     s16 xx;
@@ -231,13 +261,14 @@ void Finish_SE() {
     wk = &plw[Winner_id];
 
     if (Code) {
-        Code += (wk->wu.id * 0x300);
+        Code += (wk->wu.id * SE_PLAYER_OFFSET);
     }
 
     xx = Get_Position(wk);
     SsRequestPan(Code, xx, xx, 0, 2);
 }
 
+/** @brief Look up the finish SE code from the last-called SE. Returns -1 if none. */
 s32 Check_Finish_SE() {
     s16 xx;
 
@@ -250,6 +281,7 @@ s32 Check_Finish_SE() {
     return -1;
 }
 
+/** @brief Calculate stereo pan position (0x10–0x70) for a player on screen. */
 u16 Get_Position(PLW* wk) {
     u16 xx;
     u16 yy;
@@ -273,6 +305,7 @@ u16 Get_Position(PLW* wk) {
     return 0x70;
 }
 
+/** @brief Remap SE code through the bonus-stage voice table if applicable. */
 u16 Check_Bonus_SE(u16 Code) {
     if ((Bonus_Game_Flag == 0) || (Bonus_Type != 20)) {
         return Code;
@@ -282,14 +315,15 @@ u16 Check_Bonus_SE(u16 Code) {
         return Code;
     }
 
-    if (Code >= 0x760) {
+    if (Code >= BONUS_SE_CODE_BASE + BONUS_VOICE_DATA_SIZE) {
         return Code;
     }
 
-    return Bonus_Voice_Data[Code - 0x100];
+    return Bonus_Voice_Data[Code - BONUS_SE_CODE_BASE];
 }
 
-void Store_Sound_Code(u16 code, SoundPatchConfig* rmc) {
+/** @brief Push a sound code into the 8-deep debug ring buffer. */
+void Store_Sound_Code(u16 code, SoundRequestData* rmc) {
     s16 i;
 
     for (i = 7; i > 0; i--) {
@@ -300,10 +334,11 @@ void Store_Sound_Code(u16 code, SoundPatchConfig* rmc) {
     sdeb->rmc = *rmc;
 }
 
+/** @brief Render the debug sound code overlay (enabled by Debug_w[DEBUG_SOUND_CODE_DISP]). */
 void Disp_Sound_Code() {
     s16 i;
 
-    if (Debug_w[4] == 0) {
+    if (Debug_w[DEBUG_SOUND_CODE_DISP] == 0) {
         return;
     }
 

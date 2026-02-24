@@ -19,16 +19,22 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-s32 kabe_check3(PLW* wk);
-u8 get_lever_dir(PLW* wk);
+static s32 kabe_check3(PLW* wk);
+static u8 get_lever_dir(PLW* wk);
+
+#define EXATT_TABLE_SIZE 18
 
 void (*const pl19_exatt_table[18])(PLW*);
 
+/** @brief Twelve: extra attack dispatcher. */
 void pl19_extra_attack(PLW* wk) {
-    pl19_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl19_exatt_table[idx](wk);
 }
 
-void Att_METAMORPHOSE(PLW* wk) {
+/** @brief Twelve: X.C.O.P.Y. metamorphosis Super Art (copy opponent). */
+static void Att_METAMORPHOSE(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -67,7 +73,8 @@ const s16 dra_em_tall[20][2] = { { 24, 16 }, { 28, 16 }, { 16, 16 }, { 16, 16 },
                                  { 18, 16 }, { 28, 16 }, { 25, 16 }, { 16, 16 }, { 16, 16 }, { 16, 16 }, { 24, 16 },
                                  { 16, 16 }, { 16, 16 }, { 16, 16 }, { 24, 16 }, { 20, 16 }, { 20, 16 } };
 
-void Att_SA__D_R_A(PLW* wk) {
+/** @brief Twelve: SA D.R.A. (flying Super Art). */
+static void Att_SA__D_R_A(PLW* wk) {
     PLW* emwk;
 
     switch (wk->wu.routine_no[3]) {
@@ -176,7 +183,8 @@ void Att_SA__D_R_A(PLW* wk) {
     }
 }
 
-void Att_EX__D_R_A(PLW* wk) {
+/** @brief Twelve: EX D.R.A. (enhanced flying attack). */
+static void Att_EX__D_R_A(PLW* wk) {
     PLW* twk;
     s16 ex;
     s16 ey;
@@ -262,7 +270,8 @@ void Att_EX__D_R_A(PLW* wk) {
     }
 }
 
-void Att_KUUCHUUHISSATU(PLW* wk) {
+/** @brief Twelve: air special attack (Kuuchuu Hissatsu). */
+static void Att_KUUCHUUHISSATU(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -320,7 +329,8 @@ void Att_KUUCHUUHISSATU(PLW* wk) {
     }
 }
 
-void Att_AIRDASH(PLW* wk) {
+/** @brief Twelve: air dash attack. */
+static void Att_AIRDASH(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -405,7 +415,8 @@ void Att_AIRDASH(PLW* wk) {
     }
 }
 
-s32 kabe_check3(PLW* wk) {
+/** @brief Twelve: checks if character has reached a stage wall (variant 3). */
+static s32 kabe_check3(PLW* wk) {
     if (get_lever_dir(wk) != 1) {
         return 0;
     }
@@ -417,7 +428,8 @@ s32 kabe_check3(PLW* wk) {
     return (wk->wu.rl_flag + wk->micchaku_flag == 2);
 }
 
-void Att_pl19_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Twelve: special action (tokushu koudou). */
+static void Att_pl19_TOKUSHUKOUDOU(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -462,7 +474,8 @@ void Att_pl19_TOKUSHUKOUDOU(PLW* wk) {
     }
 }
 
-void Att_AIR_A_X_E(PLW* wk) {
+/** @brief Twelve: airborne A.X.E. attack. */
+static void Att_AIR_A_X_E(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -516,7 +529,8 @@ void Att_AIR_A_X_E(PLW* wk) {
     }
 }
 
-u8 get_lever_dir(PLW* wk) {
+/** @brief Twelve: returns directional lever input for air control. */
+static u8 get_lever_dir(PLW* wk) {
     u8 num;
 
     if (wk->wu.work_id == 1) {

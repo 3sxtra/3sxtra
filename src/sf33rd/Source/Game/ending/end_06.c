@@ -13,20 +13,20 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void end_600_move();
-void end_601_move();
+static void end_600_move();
+static void end_601_move();
 
-void end_600_0000();
-void end_600_1000();
-void end_600_2000();
-void end_600_3000();
-void end_600_4000();
-void end_600_5000();
+static void end_600_0000();
+static void end_600_1000();
+static void end_600_2000();
+static void end_600_3000();
+static void end_600_4000();
+static void end_600_5000();
 
-void end_601_0000();
-void end_601_1000();
-void end_601_2000();
-void end_601_3000();
+static void end_601_0000();
+static void end_601_1000();
+static void end_601_2000();
+static void end_601_3000();
 
 const s16 timer_6_tbl[6] = { 420, 360, 120, 1080, 720, 540 };
 
@@ -38,6 +38,7 @@ const s16 end_600_1000_tbl[8][2] = { { -4, 2 }, { 6, -6 }, { -2, 4 }, { -4, 3 },
 const s16 end_600_2000_tbl[12][2] = { { 3, -2 }, { 1, 3 }, { 2, -1 }, { 3, -2 }, { 2, 3 }, { 2, -2 },
                                       { 3, -2 }, { 2, 3 }, { 2, -2 }, { 3, -2 }, { 1, 3 }, { 2, -1 } };
 
+/** @brief Hugo's ending entry point — initialize and run all ending scenes. */
 void end_06000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -82,13 +83,17 @@ void end_06000(s16 pl_num) {
     }
 }
 
-void end_600_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_600_move() {
     void (*end_600_jp[6])() = { end_600_0000, end_600_1000, end_600_2000, end_600_3000, end_600_4000, end_600_5000 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_600_jp[end_w.r_no_2]();
 }
 
-void end_600_0000() {
+/** @brief Scene 0 — initial background setup with message. */
+static void end_600_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -105,7 +110,8 @@ void end_600_0000() {
     }
 }
 
-void end_600_1000() {
+/** @brief Scene 1 — timed horizontal pan with message. */
+static void end_600_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -146,7 +152,8 @@ void end_600_1000() {
     }
 }
 
-void end_600_2000() {
+/** @brief Scene 2 — animated camera shake pattern. */
+static void end_600_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -170,7 +177,7 @@ void end_600_2000() {
             bgw_ptr->free &= 7;
             bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0] + end_600_2000_tbl[bgw_ptr->free][1];
 
-            // TODO: Check if this is correct. Original PS2 matching line is:
+            // Original PS2 matching line is:
             // bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1] + end_600_2000_tbl[bgw_ptr->free][2];
             // Original dev could have counted this as 1-indexed.
             // Makes much more sense that above would be 0 and below would be 1.
@@ -205,7 +212,8 @@ void end_600_2000() {
     }
 }
 
-void end_600_3000() {
+/** @brief Scene 3 — fade-in with message rewrite. */
+static void end_600_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -237,7 +245,8 @@ void end_600_3000() {
     }
 }
 
-void end_600_4000() {
+/** @brief Scene 4 — static background with horizontal pan. */
+static void end_600_4000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -253,7 +262,8 @@ void end_600_4000() {
     }
 }
 
-void end_600_5000() {
+/** @brief Scene 5 — final scene with fade timer and vertical scroll. */
+static void end_600_5000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -294,13 +304,17 @@ void end_600_5000() {
     }
 }
 
-void end_601_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_601_move() {
     void (*end_601_jp[6])() = { end_601_0000, end_601_1000, end_601_2000, end_601_3000, end_X_com01, end_X_com01 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_601_jp[end_w.r_no_2]();
 }
 
-void end_601_0000() {
+/** @brief Layer 1 scene 0 — horizontal pan setup. */
+static void end_601_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -316,7 +330,8 @@ void end_601_0000() {
     }
 }
 
-void end_601_1000() {
+/** @brief Layer 1 scene 1 — timed horizontal pan. */
+static void end_601_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -342,7 +357,8 @@ void end_601_1000() {
     }
 }
 
-void end_601_2000() {
+/** @brief Layer 1 scene 2 — animated shake with lightning effects. */
+static void end_601_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -371,7 +387,7 @@ void end_601_2000() {
             bgw_ptr->free &= 7;
             bgw_ptr->xy[0].disp.pos = end_6_pos[end_w.r_no_2][0] - end_600_2000_tbl[bgw_ptr->free][1];
 
-            // TODO: Check if this is correct. Original PS2 matching line is:
+            // Original PS2 matching line is:
             // bgw_ptr->xy[1].disp.pos = end_6_pos[end_w.r_no_2][1] - end_600_2000_tbl[bgw_ptr->free][2];
             // Original dev could have counted this as 1-indexed.
             // Makes much more sense that above would be 0 and below would be 1.
@@ -388,7 +404,8 @@ void end_601_2000() {
     }
 }
 
-void end_601_3000() {
+/** @brief Layer 1 scene 3 — static background with position set. */
+static void end_601_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

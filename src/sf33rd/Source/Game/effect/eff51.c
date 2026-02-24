@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-void Setup_Letter_51(WORK_Other_CONN* ewk);
+static void Setup_Letter_51(WORK_Other_CONN* ewk);
 
 void effect_51_move(WORK_Other_CONN* ewk) {
     if (Menu_Suicide[ewk->master_player]) {
@@ -59,7 +59,7 @@ s32 effect_51_init(s16 letter_type, s16 cursor_index, s16 master_player) {
     return 0;
 }
 
-void Setup_Letter_51(WORK_Other_CONN* ewk) {
+static void Setup_Letter_51(WORK_Other_CONN* ewk) {
     u8* ptr =
         (u8*)Letter_Data_51[Menu_Page_Buff][ewk->wu.char_index][system_dir[1].contents[Menu_Page_Buff][ewk->wu.type]];
     s16 ix = 0;

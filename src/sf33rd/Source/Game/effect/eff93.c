@@ -1,6 +1,6 @@
 /**
  * @file eff93.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect (Jump Table)
  */
 
 #include "sf33rd/Source/Game/effect/eff93.h"
@@ -23,7 +23,7 @@ void effect_93_move(WORK_Other* ewk) {
     Eff93_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 }
 
-void Eff93_SLIDE_L(WORK_Other* ewk) {
+static void Eff93_SLIDE_L(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {
@@ -64,7 +64,7 @@ void Eff93_SLIDE_L(WORK_Other* ewk) {
     }
 }
 
-void Eff93_SLIDE_R(WORK_Other* ewk) {
+static void Eff93_SLIDE_R(WORK_Other* ewk) {
     s16 arrived_x;
     s16 arrived_y;
 
@@ -114,7 +114,7 @@ void Eff93_SLIDE_R(WORK_Other* ewk) {
     }
 }
 
-void Eff93_SLIDE_L_OUT(WORK_Other* ewk) {
+static void Eff93_SLIDE_L_OUT(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {
@@ -140,7 +140,7 @@ void Eff93_SLIDE_L_OUT(WORK_Other* ewk) {
     }
 }
 
-void Eff93_SLIDE_R_OUT(WORK_Other* ewk) {
+static void Eff93_SLIDE_R_OUT(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {

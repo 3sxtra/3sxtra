@@ -1,6 +1,6 @@
 /**
  * @file effh0.c
- * TODO: identify what this effect does
+ * Effect: Difficulty / BBBS Effect
  */
 
 #include "sf33rd/Source/Game/effect/effh0.h"
@@ -13,7 +13,7 @@
 const CONN bbbs_nando_small[2][2] = { { { 176, -16, 0, 32490 }, { 132, -16, 0, 32489 } },
                                       { { -104, -16, 0, 32490 }, { -148, -16, 0, 32489 } } };
 
-void effH0_trans(WORK* ewk);
+static void effH0_trans(WORK* ewk);
 
 void effect_H0_move(WORK_Other_CONN* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -61,7 +61,7 @@ void effect_H0_move(WORK_Other_CONN* ewk) {
     }
 }
 
-void effH0_trans(WORK* ewk) {
+static void effH0_trans(WORK* ewk) {
     ewk->position_x = bg_w.bgw[2].wxy[0].disp.pos;
     ewk->position_y = bg_w.bgw[2].wxy[1].disp.pos;
     sort_push_request3(ewk);

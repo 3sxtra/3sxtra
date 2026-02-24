@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -12,15 +13,16 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void end_900_move();
+static void end_900_move();
 
-void end_900_0000();
-void end_900_5000();
+static void end_900_0000();
+static void end_900_5000();
 
 const s16 timer_9_tbl[6] = { 300, 480, 120, 540, 780, 600 };
 
 const s16 end_9_pos[6][2] = { { 256, 512 }, { 256, 768 }, { 256, 336 }, { 256, 0 }, { 256, 768 }, { 256, 512 } };
 
+/** @brief Oro's ending entry point — initialize and run all ending scenes. */
 void end_09000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -64,13 +66,17 @@ void end_09000(s16 pl_num) {
     }
 }
 
-void end_900_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_900_move() {
     void (*end_900_jp[6])() = { end_900_0000, end_900_0000, end_900_0000, end_900_0000, end_900_0000, end_900_5000 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_900_jp[end_w.r_no_2]();
 }
 
-void end_900_0000() {
+/** @brief Scene handler — per-scene background setup with effects and messages. */
+static void end_900_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -116,7 +122,8 @@ void end_900_0000() {
     }
 }
 
-void end_900_5000() {
+/** @brief Scene 5 — final scene with vertical scroll and fade timer. */
+static void end_900_5000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

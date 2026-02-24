@@ -1,10 +1,17 @@
 /**
  * @file demo00.c
- * Demo Sequence 0
+ * @brief Boot-sequence screens: warning, Capcom logo, palette cursor.
+ *
+ * Drives the initial boot flow — warning overlay, Capcom logo animation
+ * with fade-in/out, and the pulsing palette-selection cursor. Also provides
+ * the generic `Put_char()` textured-quad renderer used by other demo files.
+ *
+ * Part of the demo module.
  */
 
 #include "sf33rd/Source/Game/demo/demo00.h"
 #include "common.h"
+#include "port/renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/MemMan.h"
 #include "sf33rd/Source/Common/PPGFile.h"
@@ -13,7 +20,6 @@
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "sf33rd/Source/Game/opening/opening.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texgroup.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
@@ -23,8 +29,10 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 
-void CAPLOGO_Init();
-s16 CAPLOGO_Move(u16 type);
+static void CAPLOGO_Init();
+static s16 CAPLOGO_Move(u16 type);
+
+#define PAL_CURSOR_COUNT 3
 
 static const f32 caplogo00[17] = { 0.25f, 0.25f, 1.0f,  0.5f,   0.0f, 0.0f,   192.0f, 64.0f, 0.0f,
                                    0.5f,  1.0f,  0.75f, 192.0f, 0.0f, 256.0f, 64.0f,  -1.0f };
@@ -37,6 +45,7 @@ static const f32* caplogo[2] = { caplogo00, caplogo01 };
 s16 picon_no;
 f32 picon_level;
 
+/** @brief Warning screen state machine — show/fade the boot warning overlay. */
 s32 Warning() {
     Next_Demo = 0;
 
@@ -111,6 +120,7 @@ s32 Warning() {
     return Next_Demo;
 }
 
+/** @brief Capcom logo sequence — load textures, animate, fade in/out. */
 s32 CAPCOM_Logo() {
     ppgSetupCurrentDataList(&ppgCapLogoList);
     Next_Demo = 0;
@@ -195,7 +205,8 @@ s32 CAPCOM_Logo() {
     return Next_Demo;
 }
 
-void CAPLOGO_Init() {
+/** @brief Load the Capcom logo PPG texture and set up palette data. */
+static void CAPLOGO_Init() {
     void* loadAdrs;
     u32 loadSize;
     s16 key;
@@ -208,7 +219,7 @@ void CAPLOGO_Init() {
 
     if (loadSize == 0) {
         flLogOut("カプロゴのテクスチャが読み込めませんでした。\n");
-        while (1) {}
+        return;
     }
 
     ppgSetupPalChunk(NULL, loadAdrs, loadSize, 0, 0, 1);
@@ -219,13 +230,14 @@ void CAPLOGO_Init() {
     ppgSourceDataReleased(0);
 }
 
-s16 CAPLOGO_Move(u16 type) {
+/** @brief Animate the Capcom logo — palette cycling (type 0) or static display (type 1). */
+static s16 CAPLOGO_Move(u16 type) {
     s16 rnum = 0;
 
     switch (type) {
     case 0:
         if (!Game_pause && (op_timer0 != 61)) {
-            njSetPaletteBankNumG(600, op_timer0 / 2);
+            ppgSetupCurrentPaletteNumber(0, op_timer0 / 2);
             op_timer0 += 1;
             rnum = 1;
         }
@@ -234,7 +246,7 @@ s16 CAPLOGO_Move(u16 type) {
         break;
 
     default:
-        njSetPaletteBankNumG(600, 0x1F);
+        ppgSetupCurrentPaletteNumber(0, 0x1F);
         Put_char(caplogo[type], 600, 9, 48, 88, 1.0f, 1.0f);
         break;
     }
@@ -242,8 +254,9 @@ s16 CAPLOGO_Move(u16 type) {
     return rnum;
 }
 
+/** @brief Render a series of textured quads from a float data array. */
 void Put_char(const f32* ptr, u32 indexG, u16 prio, s16 x, s16 y, f32 zx, f32 zy) {
-    Polygon tex[4];
+    RendererVertex tex[4];
     s16 off_x;
     s16 off_y;
 
@@ -251,7 +264,7 @@ void Put_char(const f32* ptr, u32 indexG, u16 prio, s16 x, s16 y, f32 zx, f32 zy
         return;
     }
 
-    tex[0].col = tex[1].col = tex[2].col = tex[3].col = 0xFFFFFFFF;
+    tex[0].color = tex[1].color = tex[2].color = tex[3].color = 0xFFFFFFFF;
     tex[0].z = tex[1].z = tex[2].z = tex[3].z = PrioBase[prio];
 
     while (*ptr != -1.0f) {
@@ -265,10 +278,13 @@ void Put_char(const f32* ptr, u32 indexG, u16 prio, s16 x, s16 y, f32 zx, f32 zy
         tex[0].y = tex[2].y = (y + off_y * zy);
         tex[2].x = tex[3].x = (x + (off_x * zx) + ((u32)*ptr++ * zx));
         tex[1].y = tex[3].y = (y + (off_y * zy) + ((u32)*ptr++ * zy));
-        njDrawTexture(tex, 4, indexG, 1);
+
+        Renderer_SetTexture(indexG);
+        Renderer_DrawTexturedQuad(tex, 4);
     }
 }
 
+/** @brief Load warning/ADX PPG textures and set up palette data. */
 void Warning_Init() {
     void* loadAdrs;
     u32 loadSize;
@@ -285,7 +301,7 @@ void Warning_Init() {
 
     if (loadSize == 0) {
         flLogOut("警告文のテクスチャが読み込めませんでした。\n");
-        while (1) {}
+        return;
     }
 
     ppgSetupPalChunk(&ppgWarPal, loadAdrs, loadSize, 0, 0, 1);
@@ -302,11 +318,12 @@ void Warning_Init() {
     picon_no = 0;
 }
 
-// FIXME: When is this ever called?
+// Called by Warning() state machine (cases 5-8) during boot sequence
+/** @brief Draw the warning/ADX fullscreen overlay by type. */
 void Put_Warning(s16 type) {
-    Polygon tex[4];
+    RendererVertex tex[4];
 
-    tex[0].col = tex[1].col = tex[2].col = tex[3].col = 0xFFFFFFFF;
+    tex[0].color = tex[1].color = tex[2].color = tex[3].color = 0xFFFFFFFF;
 
     if (type == 2) {
         tex[0].z = tex[1].z = tex[2].z = tex[3].z = PrioBase[0x14];
@@ -351,16 +368,13 @@ void Put_Warning(s16 type) {
         break;
     }
 
-    if (type == 2) {
-        njDrawTexture(tex, 4, type + 590, 1);
-        return;
-    }
-
-    njDrawTexture(tex, 4, type + 590, 0);
+    Renderer_SetTexture(type + 590);
+    Renderer_DrawTexturedQuad(tex, 4);
 }
 
+/** @brief Draw the pulsing palette-selection cursor (used in options). */
 void Pal_Cursor_Put(s16 type) {
-    PAL_CURSOR_TBL pal_cursor_tbl[3] = {
+    PAL_CURSOR_TBL pal_cursor_tbl[PAL_CURSOR_COUNT] = {
         { { { 48.0f, 64.0f }, { 48.0f, 99.0f }, { 144.0f, 99.0f }, { 144.0f, 64.0f } },
           { { 0xA0FF0000 }, { 0xA0FF0000 }, { 0xA0FF0000 }, { 0xA0FF0000 } } },
         { { { 48.0f, 296.0f }, { 48.0f, 332.0f }, { 286.0f, 332.0f }, { 286.0f, 296.0f } },
@@ -408,6 +422,9 @@ void Pal_Cursor_Put(s16 type) {
 
     pal_cursorwk = pal_cursor_tbl;
     prio = PrioBase[0x50];
+    if (type < 0 || type >= PAL_CURSOR_COUNT) {
+        return;
+    }
     pal_cursor.p = pal_cursorwk[type].pal_cursor_p;
     pal_cursor.col = pal_cursorwk[type].pal_cursor_col;
     pal_cursor.num = 4;
@@ -416,5 +433,5 @@ void Pal_Cursor_Put(s16 type) {
         pal_cursor.col[i].argb.a = picon_level;
     }
 
-    njDrawPolygon2D(&pal_cursor, 4, prio, 0x60);
+    Renderer_Queue2DPrimitive((f32*)pal_cursor.p, prio, (uintptr_t)pal_cursor.col[0].color, 0);
 }

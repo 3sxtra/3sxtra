@@ -1,6 +1,6 @@
 /**
  * @file effg8.c
- * TODO: identify what this effect does
+ * Effect: SP Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/effg8.h"

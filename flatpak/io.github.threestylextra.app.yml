@@ -1,0 +1,40 @@
+app-id: io.github.threestylextra.app
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: 3sx
+
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=all
+  - --share=network
+
+modules:
+  - name: miniupnpc
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DUPNPC_BUILD_SHARED=ON
+      - -DUPNPC_BUILD_TESTS=OFF
+      - -DUPNPC_BUILD_SAMPLE=OFF
+    sources:
+      - type: archive
+        url: https://github.com/nicboul/miniupnpc/archive/refs/tags/miniupnpc_2_3_3.tar.gz
+        sha256: 0684583cd8c6db2a22dada95b5cd76ce50a2c0c38ae1e3997c79447ae0e2513e
+        strip-components: 2
+        dest: .
+
+  - name: 3sx
+    buildsystem: cmake-ninja
+    build-options:
+      build-args:
+        - --share=network
+      env:
+        CARGO_HOME: /run/build/3sx/cargo-home
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    sources:
+      - type: dir
+        path: .

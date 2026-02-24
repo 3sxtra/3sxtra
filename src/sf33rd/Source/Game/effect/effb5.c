@@ -1,11 +1,12 @@
 /**
  * @file effb5.c
- * TODO: identify what this effect does
+ * Effect: Game State Effect
  */
 
 #include "sf33rd/Source/Game/effect/effb5.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
@@ -14,7 +15,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 
-void current_name_move(WORK_Other* ewk, NAME_WK* np);
+static void current_name_move(WORK_Other* ewk, NAME_WK* np);
 
 void effect_B5_move(WORK_Other* ewk) {
     NAME_WK* np = (NAME_WK*)ewk->my_master;
@@ -100,7 +101,7 @@ void effect_B5_move(WORK_Other* ewk) {
     disp_pos_trans_entry(ewk);
 }
 
-void current_name_move(WORK_Other* ewk, NAME_WK* np) {
+static void current_name_move(WORK_Other* ewk, NAME_WK* np) {
     if (np->index != ewk->wu.old_rno[2]) {
         return;
     }

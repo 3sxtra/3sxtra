@@ -1,6 +1,11 @@
 /**
  * @file pulpul.c
- * Vibration
+ * @brief Controller vibration (rumble) effect processing.
+ *
+ * Manages vibration request queues, parameter tables, and screen-quake
+ * effects triggered by gameplay events (hits, blocks, special moves).
+ *
+ * Part of the io module.
  */
 
 #include "sf33rd/Source/Game/io/pulpul.h"
@@ -15,6 +20,13 @@
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
+
+#define DOKIDOKI_TABLE_SIZE 18
+#define COMM_QUAKE_COUNT 11
+#define PP_SHOCK_TABLE_SIZE 8
+#define PULPUL_LEVEL_COUNT 8
+#define PP_INITIAL_VITALITY 0xA0
+#define PP_QUAKE_MAX_INDEX 0xA
 
 // local declarations
 
@@ -94,19 +106,19 @@ PULREQ pulreq[PULREQ_MAX] = {
 };
 
 // sdata
-static u16 pulpul_level[8] = { 0, 0x40, 0x50, 0x60, 0x70, 0x80, 0x90, 0xA0 };
+static u16 pulpul_level[PULPUL_LEVEL_COUNT] = { 0, 0x40, 0x50, 0x60, 0x70, 0x80, 0x90, 0xA0 };
 
 // rodata
 
-const u16 comm_quay_pulpul[11] = { 0x28, 0x29, 0x29, 0x2A, 0x2A, 0x2A, 0x2B, 0x2B, 0x2B, 0x2B, 0x2C };
+const u16 comm_quay_pulpul[COMM_QUAKE_COUNT] = { 0x28, 0x29, 0x29, 0x2A, 0x2A, 0x2A, 0x2B, 0x2B, 0x2B, 0x2B, 0x2C };
 
-const s16 pp_dm_shock[8] = { 0x18, 0x19, 0x1A, 0x1A, 0x19, 0x1A, 0x1B, 0x1B };
+const s16 pp_dm_shock[PP_SHOCK_TABLE_SIZE] = { 0x18, 0x19, 0x1A, 0x1A, 0x19, 0x1A, 0x1B, 0x1B };
 
-const s16 pp_guard_shock[8] = { 0x1C, 0x1D, 0x1E, 0x1E, 0x1D, 0x1E, 0x1F, 0x1F };
+const s16 pp_guard_shock[PP_SHOCK_TABLE_SIZE] = { 0x1C, 0x1D, 0x1E, 0x1E, 0x1D, 0x1E, 0x1F, 0x1F };
 
-const s16 pp_hit_shock[8] = { 0x24, 0x25, 0x26, 0x26, 0x25, 0x26, 0x27, 0x27 };
+const s16 pp_hit_shock[PP_SHOCK_TABLE_SIZE] = { 0x24, 0x25, 0x26, 0x26, 0x25, 0x26, 0x27, 0x27 };
 
-const s8 dokidoki_ix_change_table[18] = { 0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 7 };
+const s8 dokidoki_ix_change_table[DOKIDOKI_TABLE_SIZE] = { 0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 7 };
 
 const PPWORK_SUB_SUB pulreq_00[1] = { { 0, 0 } };
 
@@ -197,11 +209,13 @@ PUL pul[2];
 s16 vib_req[2][2];
 u8 pulpul_scene;
 
+/** @brief Initialise vibration work structures for both players. */
 void init_pulpul_work() {
     init_pulpul_work2(0);
     init_pulpul_work2(1);
 }
 
+/** @brief Initialise vibration work for a single player. */
 void init_pulpul_work2(s16 ix) {
     ppwork[ix].ok_dev = 0;
     ppwork[ix].id = ix;
@@ -215,16 +229,19 @@ void init_pulpul_work2(s16 ix) {
     init_pulpul_round2(ix);
 }
 
+/** @brief Per-round vibration work reset for a single player. */
 void init_pulpul_round2(s16 ix) {
-    ppwork[ix].vital = 0xA0;
+    ppwork[ix].vital = PP_INITIAL_VITALITY;
     pul[ix].ix.cal = 0;
 }
 
+/** @brief Stop all vibration effects immediately. */
 void pulpul_stop() {
     pulpul_stop2(0);
     pulpul_stop2(1);
 }
 
+/** @brief Stop vibration for a single player. */
 void pulpul_stop2(s16 ix) {
     if (ppwork[ix].ok_dev) {
         vibParamTrans(ix, &pulpara[1]);
@@ -237,6 +254,7 @@ void pulpul_stop2(s16 ix) {
     waitVsyncDummy();
 }
 
+/** @brief Submit a vibration request by index for a player. */
 void pulpul_request(s16 id, s16 ix) {
     PULREQ* adr;
 
@@ -244,7 +262,7 @@ void pulpul_request(s16 id, s16 ix) {
         return;
     }
 
-    if (ix == 0) {
+    if (ix <= 0 || ix >= PULREQ_MAX) {
         return;
     }
 
@@ -260,6 +278,7 @@ void pulpul_request(s16 id, s16 ix) {
     pulpul_req_copy(id, adr);
 }
 
+/** @brief Copy a vibration request into a player’s work area. */
 void pulpul_req_copy(s16 id, PULREQ* adr) {
     ppwork[id].p[adr->prio].ppnew = ppwork[id].ok_dev;
     ppwork[id].p[adr->prio].rno[0] = 0;
@@ -267,6 +286,7 @@ void pulpul_req_copy(s16 id, PULREQ* adr) {
     ppwork[id].p[adr->prio].padr = adr->adrs;
 }
 
+/** @brief Turn on vibration motor for a player. */
 void pp_vib_on(s16 id) {
     PULREQ* adr;
 
@@ -274,20 +294,24 @@ void pp_vib_on(s16 id) {
     pulpul_req_copy(id, adr);
 }
 
+/** @brief Re-issue the current vibration request (after pause). */
 void pulpul_request_again() {
     pulpul_request(0, vib_req[0][0]);
     pulpul_request(1, vib_req[1][0]);
 }
 
+/** @brief Set operator check flag for vibration permission. */
 void pp_operator_check_flag(u8 fl) {
     ppwork[0].opck = ppwork[1].opck = fl;
 }
 
+/** @brief Process vibration work for both players every frame. */
 void move_pulpul_work() {
     move_pulpul(&ppwork[0]);
     move_pulpul(&ppwork[1]);
 }
 
+/** @brief Check whether a vibration unit is connected on a port. */
 s32 chkVibUnit(s32 port) {
     if ((flpad_adr[0][port].kind == 0) || (flpad_adr[0][port].kind == 0x8000)) {
         return 0;
@@ -296,6 +320,7 @@ s32 chkVibUnit(s32 port) {
     return flpad_adr[0][port].conn.vib;
 }
 
+/** @brief Tick the vibration state machine for one player. */
 void move_pulpul(PPWORK* wk) {
     s32 i;
     s32 index;
@@ -365,7 +390,11 @@ void move_pulpul(PPWORK* wk) {
                 /* fallthrough */
 
             case 2:
-                result = pulpul_pdVibMxStart(wk, i, wk->port, &pulpara[wk->p[i].padr[wk->p[i].exix].ix]);
+                if (wk->p[i].padr[wk->p[i].exix].ix >= 0 && wk->p[i].padr[wk->p[i].exix].ix < PULPARA_MAX) {
+                    result = pulpul_pdVibMxStart(wk, i, wk->port, &pulpara[wk->p[i].padr[wk->p[i].exix].ix]);
+                } else {
+                    result = 0;
+                }
 
                 if (!result) {
                     break;
@@ -397,6 +426,7 @@ void move_pulpul(PPWORK* wk) {
     }
 }
 
+/** @brief Start a mixed vibration effect with the given parameters. */
 s32 pulpul_pdVibMxStart(PPWORK* wk, s32 arg1, s32 arg2, PULPARA* param) {
     PULPARA adrs;
 
@@ -407,7 +437,7 @@ s32 pulpul_pdVibMxStart(PPWORK* wk, s32 arg1, s32 arg2, PULPARA* param) {
             return 1;
         }
 
-        if ((wk->opck) && (plw[wk->id].wu.operator == 0)) {
+        if ((wk->opck) && (plw[wk->id].wu.pl_operator == 0)) {
             return 1;
         }
 
@@ -419,6 +449,7 @@ s32 pulpul_pdVibMxStart(PPWORK* wk, s32 arg1, s32 arg2, PULPARA* param) {
     return vibParamTrans(wk->id, &adrs);
 }
 
+/** @brief Translate vibration parameters into motor commands. */
 s32 vibParamTrans(s32 id, PULPARA* prm) {
     s32 vib_data_size;
     s32 rnum;
@@ -471,18 +502,20 @@ s32 vibParamTrans(s32 id, PULPARA* prm) {
     return rnum == 1;
 }
 
+/** @brief Trigger a screen-quake effect by shake index. */
 void pp_screen_quake(s16 ix) {
     ix /= 3;
 
-    if (ix > 0xA) {
-        ix = 0xA;
+    if (ix > PP_QUAKE_MAX_INDEX) {
+        ix = PP_QUAKE_MAX_INDEX;
     }
 
     pulpul_request(0, comm_quay_pulpul[ix]);
     pulpul_request(1, comm_quay_pulpul[ix]);
 }
 
-s32 pp_conv_kow(u8 num) {
+/** @brief Convert a KO-weight value to a vibration parameter index. */
+static s32 pp_conv_kow(u8 num) {
     s16 ix;
 
     if (num & 0x60) {
@@ -495,25 +528,34 @@ s32 pp_conv_kow(u8 num) {
         ix = num / 2 & 0xF;
     }
 
+    if (ix < 0 || ix >= DOKIDOKI_TABLE_SIZE) {
+        ix = 0;
+    }
+
     return dokidoki_ix_change_table[ix];
 }
 
+/** @brief Rebuild vibration parameters at init. */
 void pp_pulpara_remake_at_init() {
     // do nothing
 }
 
+/** @brief Rebuild vibration parameters at init (variant 2). */
 void pp_pulpara_remake_at_init2() {
     // do nothing
 }
 
+/** @brief Rebuild vibration parameters on hit. */
 void pp_pulpara_remake_at_hit() {
     // do nothing
 }
 
+/** @brief Rebuild all vibration parameters. */
 void pp_pulpara_remake_at() {
     // do nothing
 }
 
+/** @brief Rebuild vibration parameters for all damage types. */
 void pp_pulpara_remake_dm_all(WORK* wk) {
     s16 ix;
 
@@ -522,14 +564,17 @@ void pp_pulpara_remake_dm_all(WORK* wk) {
     pulpul_request(wk->id, pp_dm_shock[ix]);
 }
 
+/** @brief Set vibration parameters for a guard impact. */
 void pp_pulpara_guard(WORK* wk) {
     pulpul_request(wk->id, pp_guard_shock[pp_conv_kow(wk->dm_kind_of_waza)]);
 }
 
+/** @brief Set vibration parameters for a hit impact. */
 void pp_pulpara_hit(WORK* wk) {
     pulpul_request(wk->id, pp_hit_shock[pp_conv_kow(wk->kind_of_waza)]);
 }
 
+/** @brief Set vibration parameters for a blocking (parry) event. */
 void pp_pulpara_blocking(WORK* wk) {
     pulpul_request(wk->id, 0x20);
 
@@ -538,14 +583,17 @@ void pp_pulpara_blocking(WORK* wk) {
     }
 }
 
+/** @brief Set vibration parameters for a throw catch. */
 void pp_pulpara_catch(WORK* wk) {
     pulpul_request(wk->id, 0x22);
 }
 
+/** @brief Set vibration parameters for being thrown (caught). */
 void pp_pulpara_caught(WORK* wk) {
     pulpul_request(wk->id, 0x23);
 }
 
+/** @brief Set vibration parameters for Shun Goku Satsu (Raging Demon). */
 void pp_pulpara_shungokusatsu(WORK* wk) {
     pulpul_request(wk->id, 0x2E);
     pulpul_request((wk->id + 1) & 1, 0x2F);

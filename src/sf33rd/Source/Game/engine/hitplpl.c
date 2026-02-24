@@ -9,6 +9,7 @@
 #include "sf33rd/Source/Game/engine/pls02.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 
+/** @brief Resolves player-vs-player hit collision and applies damage/guard. */
 void player_at_vs_player_dm(s16 ix2, s16 ix) {
     PLW* as = (PLW*)q_hit_push[ix2];
     PLW* ds = (PLW*)q_hit_push[ix];

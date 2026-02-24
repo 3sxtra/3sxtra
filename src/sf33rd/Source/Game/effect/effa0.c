@@ -1,6 +1,6 @@
 /**
  * @file effa0.c
- * TODO: identify what this effect does
+ * Effect: Position Data Effect
  */
 
 #include "sf33rd/Source/Game/effect/effa0.h"
@@ -14,7 +14,7 @@
 
 const s16 Pos_Data_A0[4][3] = { { -52, 148, 69 }, { 140, 148, 69 }, { -52, 131, 69 }, { 140, 131, 69 } };
 
-void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_rno, s16 zero);
+static void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_rno, s16 zero);
 
 void effect_A0_move(WORK_Other_CONN* ewk) {
     if (Menu_Suicide[ewk->master_player]) {
@@ -52,7 +52,7 @@ s32 effect_A0_init(s16 type, u16 disp_target, s16 pos_index, s16 old_rno, s16 ze
     return 0;
 }
 
-void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_rno, s16 zero) {
+static void Setup_A0_Sub(WORK_Other_CONN* ewk, s16 old_rno, s16 zero) {
     ewk->num_of_conn = old_rno;
     ewk->conn[0].nx = 0;
     ewk->conn[0].ny = 0;

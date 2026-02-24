@@ -23,20 +23,23 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub2.h"
 
-void Win_1st();
-void Win_2nd();
-void Win_3rd();
-void Win_4th();
-void Win_5th();
-void Win_6th();
-void Lose_2nd();
-void Lose_3rd();
-void Setup_Wins_OBJ();
+static void Win_1st();
+static void Win_2nd();
+static void Win_3rd();
+static void Win_4th();
+static void Win_5th();
+static void Win_6th();
+static void Lose_2nd();
+static void Lose_3rd();
+static void Setup_Wins_OBJ();
+
+#define WIN_JMP_COUNT 6
 
 u8 WIN_X;
 
+/** @brief Main winner-screen dispatcher — runs the current phase and returns exit flag. */
 s32 Winner_Scene() {
-    void (*Win_Jmp_Tbl[6])() = {
+    void (*Win_Jmp_Tbl[WIN_JMP_COUNT])() = {
         Win_1st, Win_2nd, Win_3rd, Win_4th, Win_5th, Win_6th,
     };
 
@@ -46,16 +49,19 @@ s32 Winner_Scene() {
 
     WIN_X = 0;
     Scene_Cut = Cut_Cut_Cut();
-    Win_Jmp_Tbl[M_No[0]]();
+    if (M_No[0] < WIN_JMP_COUNT) {
+        Win_Jmp_Tbl[M_No[0]]();
+    }
 
-    if ((Check_Exit_Check() == 0) && (Debug_w[0x18] == -1)) {
+    if ((Check_Exit_Check() == 0) && (Debug_w[DEBUG_TIME_STOP] == -1)) {
         WIN_X = 0;
     }
 
     return WIN_X;
 }
 
-void Win_1st() {
+/** @brief Win phase 1 — stop replay, clear effects, reload BG/textures for the winner's stage. */
+static void Win_1st() {
     s16 ix;
 
     Switch_Screen(0);
@@ -91,7 +97,8 @@ void Win_1st() {
     pulpul_stop();
 }
 
-void Win_2nd() {
+/** @brief Win phase 2 — spawn victory UI effects, score labels, and win-streak objects. */
+static void Win_2nd() {
     Switch_Screen(0);
     M_No[0] += 1;
 
@@ -142,7 +149,8 @@ void Win_2nd() {
     effect_B8_init(WINNER, 0x3C);
 }
 
-void Win_3rd() {
+/** @brief Win phase 3 — execute screen wipe transition and queue next-character load. */
+static void Win_3rd() {
     switch (M_No[1]) {
     case 0:
         Switch_Screen(0);
@@ -166,12 +174,12 @@ void Win_3rd() {
 
             effect_58_init(0xE, 0x14, 2);
 
-            if (Debug_w[0x1D]) {
-                My_char[0] = Debug_w[0x1D] - 1;
+            if (Debug_w[DEBUG_MY_CHAR_PL1]) {
+                My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
             }
 
-            if (Debug_w[0x1E]) {
-                My_char[1] = Debug_w[0x1E] - 1;
+            if (Debug_w[DEBUG_MY_CHAR_PL2]) {
+                My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
             }
 
             if (Mode_Type == MODE_ARCADE) {
@@ -183,7 +191,8 @@ void Win_3rd() {
     }
 }
 
-void Win_4th() {
+/** @brief Win phase 4 — timed delay before the next phase. */
+static void Win_4th() {
     if (--M_Timer == 0) {
         M_No[0] += 1;
         M_No[1] = 0;
@@ -192,7 +201,8 @@ void Win_4th() {
     }
 }
 
-void Win_5th() {
+/** @brief Win phase 5 — wait for scene-cut or timer expiry, then fade BGM and signal exit. */
+static void Win_5th() {
     switch (M_No[1]) {
     case 0:
         if (Scene_Cut) {
@@ -217,18 +227,22 @@ void Win_5th() {
     }
 }
 
-void Win_6th() {
+/** @brief Win phase 6 — immediate exit (fallback). */
+static void Win_6th() {
     WIN_X = 1;
 }
 
+/** @brief Main loser-screen dispatcher — shares phases with Winner_Scene but uses Lose_2nd/3rd. */
 s32 Loser_Scene() {
-    void (*Lose_Jmp_Tbl[6])() = { Win_1st, Lose_2nd, Lose_3rd, Win_4th, Win_5th, Win_6th };
+    void (*Lose_Jmp_Tbl[WIN_JMP_COUNT])() = { Win_1st, Lose_2nd, Lose_3rd, Win_4th, Win_5th, Win_6th };
 
     WIN_X = 0;
     Scene_Cut = Cut_Cut_Loser();
-    Lose_Jmp_Tbl[M_No[0]]();
+    if (M_No[0] < WIN_JMP_COUNT) {
+        Lose_Jmp_Tbl[M_No[0]]();
+    }
 
-    if ((Check_Exit_Check() == 0) && (Debug_w[0x18] == -1)) {
+    if ((Check_Exit_Check() == 0) && (Debug_w[DEBUG_TIME_STOP] == -1)) {
         WIN_X = 0;
     }
 
@@ -239,7 +253,8 @@ s32 Loser_Scene() {
     return WIN_X;
 }
 
-void Lose_2nd() {
+/** @brief Lose phase 2 — spawn defeat UI effects (fewer objects than Win_2nd). */
+static void Lose_2nd() {
     Switch_Screen(0);
     M_No[0] += 1;
 
@@ -267,7 +282,8 @@ void Lose_2nd() {
     effect_B8_init(WINNER, 0x3C);
 }
 
-void Lose_3rd() {
+/** @brief Lose phase 3 — execute screen wipe and advance to the timed delay. */
+static void Lose_3rd() {
     switch (M_No[1]) {
     case 0:
         Switch_Screen(0);
@@ -288,7 +304,8 @@ void Lose_3rd() {
     }
 }
 
-void Setup_Wins_OBJ() {
+/** @brief Spawn win-streak display objects ("1st WIN", "2nd WIN", etc.) based on current mode. */
+static void Setup_Wins_OBJ() {
     if (Mode_Type == MODE_VERSUS) {
         WGJ_Win = VS_Win_Record[Winner_id];
     } else {

@@ -35,8 +35,7 @@ typedef struct {
     s8 sa_mukou;
 } SPG_DAT;
 
-// MARK: - Serialized
-
+// Serialized for netplay
 extern s8 Old_Stop_SG;
 extern s8 Exec_Wipe_F;
 extern s8 time_clear[2];

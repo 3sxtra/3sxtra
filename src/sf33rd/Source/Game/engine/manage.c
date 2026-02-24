@@ -43,99 +43,107 @@
 #include "sf33rd/Source/Game/ui/count.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void Game_Manage_1st();
-void Clear_1Stage_Work();
-void Game_Manage_2nd();
-void Game_Manage_2_0();
-void Game_Manage_2_1();
-void Game_Manage_2_2();
-void Game_Manage_2_3();
-void Game_Manage_2_4();
-void Game_Manage_3rd();
-void setFinishType();
-void Game_Manage_4th();
-void Game_Manage_5th();
-void Game_Manage_5_0();
-void Game_Manage_5_1();
-void Game_Manage_5_2();
-void Game_Manage_5_3();
-void Game_Manage_5_4();
-void Game_Manage_5_5();
-void Game_Manage_5_6();
-void Game_Manage_5_7();
-void Game_Manage_6th();
-void Game_Manage_7th();
-void Game_Manage_7_0();
-void Game_Manage_7_1();
-void Game_Manage_7_2();
-s32 Check_Disp_Combo();
-void Game_Manage_7_3();
-void Game_Manage_7_4();
-void Game_Manage_7_5();
-void Game_Manage_7_6();
-void Game_Manage_7_7();
-void Game_Manage_7_8();
-void Game_Manage_7_9();
-void Game_Manage_8th();
-void Game_Manage_8_0();
-void Game_Manage_8_1();
-void Game_Manage_81_0();
-void Game_Manage_81_1();
-void Game_Manage_81_2();
-void Game_Manage_81_3();
-void Game_Manage_8_2();
-void Game_Manage_8_3();
-void Game_Manage_9th();
-void Game_Manage_10th();
-void Check_Naming(s16 PL_id);
-s32 Check_Ending();
-s32 Check_Ending_Sub();
-void Additional_Bonus(s16 PL_id);
-u32 Setup_Comp_Bonus();
+static void Game_Manage_1st();
+static void Clear_1Stage_Work();
+static void Game_Manage_2nd();
+static void Game_Manage_2_0();
+static void Game_Manage_2_1();
+static void Game_Manage_2_2();
+static void Game_Manage_2_3();
+static void Game_Manage_2_4();
+static void Game_Manage_3rd();
+static void setFinishType();
+static void Game_Manage_4th();
+static void Game_Manage_5th();
+static void Game_Manage_5_0();
+static void Game_Manage_5_1();
+static void Game_Manage_5_2();
+static void Game_Manage_5_3();
+static void Game_Manage_5_4();
+static void Game_Manage_5_5();
+static void Game_Manage_5_6();
+static void Game_Manage_5_7();
+static void Game_Manage_6th();
+static void Game_Manage_7th();
+static void Game_Manage_7_0();
+static void Game_Manage_7_1();
+static void Game_Manage_7_2();
+static s32 Check_Disp_Combo();
+static void Game_Manage_7_3();
+static void Game_Manage_7_4();
+static void Game_Manage_7_5();
+static void Game_Manage_7_6();
+static void Game_Manage_7_7();
+static void Game_Manage_7_8();
+static void Game_Manage_7_9();
+static void Game_Manage_8th();
+static void Game_Manage_8_0();
+static void Game_Manage_8_1();
+static void Game_Manage_81_0();
+static void Game_Manage_81_1();
+static void Game_Manage_81_2();
+static void Game_Manage_81_3();
+static void Game_Manage_8_2();
+static void Game_Manage_8_3();
+static void Game_Manage_9th();
+static void Game_Manage_10th();
+static void Check_Naming(s16 PL_id);
+static s32 Check_Ending();
+static s32 Check_Ending_Sub();
+static void Additional_Bonus(s16 PL_id);
+static u32 Setup_Comp_Bonus();
 void request_center_message(s16 Kind_of_Message);
-void Setup_Win_Mark();
-void Check_Perfect(s16 PL_id);
-void Update_VS_Data();
-void BGM_Fade_Sub();
-void BGM_Control();
-void Setup_BGM_Fade_In(s16 Time);
-void Check_Stage_BGM();
+static void Setup_Win_Mark();
+static void Check_Perfect(s16 PL_id);
+static void Update_VS_Data();
+static void BGM_Fade_Sub();
+static void BGM_Control();
+static void Setup_BGM_Fade_In(s16 Time);
+static void Check_Stage_BGM();
 void Control_Music_Fade(s16 Time);
-void Check_Conclusion_Type();
-void chkComWins();
-void Update_BI_Term();
-void Ck_Win_Record();
-void Update_Level_Control();
-s32 Judge_Next_Disposal();
-void Quick_Entry();
-s32 Check_Entry_Again();
-void Loser_Sub();
-void Be_Continue();
-void Disp_Winner();
-void Pool_Score(s16 PL_id);
-s32 Check_Break_Into_CPU(s16 PL_id);
-void Judge_Winner();
-s32 Check_Disp_Winner();
-void Check_Fade_Out_BGM(s16 Time);
-s32 Check_BI_Grade(s16 PL_id);
-void Game_Manage_11th();
-void Game_Manage_12th();
-void Game_Manage_12_0();
-void Game_Manage_12_1();
-void Game_Manage_12_2();
-void Game_Manage_12_3();
-void Game_Manage_12_4();
-void Game_Manage_12_5();
-void Game_Manage_12_7();
-void Game_Manage_12_8();
-u8 Check_Bonus_Perfect();
-void Disp_Bonus_Perfect();
-void Flash_Bonus_Perfect();
-u32 Setup_Final_Score(s16 Type);
-s32 Bonus_Cut_Sub();
-s16 Check_Time_Over();
+static void Check_Conclusion_Type();
+static void chkComWins();
+static void Update_BI_Term();
+static void Ck_Win_Record();
+static void Update_Level_Control();
+static s32 Judge_Next_Disposal();
+static void Quick_Entry();
+static s32 Check_Entry_Again();
+static void Loser_Sub();
+static void Be_Continue();
+static void Disp_Winner();
+static void Pool_Score(s16 PL_id);
+static s32 Check_Break_Into_CPU(s16 PL_id);
+static void Judge_Winner();
+static s32 Check_Disp_Winner();
+static void Check_Fade_Out_BGM(s16 Time);
+static s32 Check_BI_Grade(s16 PL_id);
+static void Game_Manage_11th();
+static void Game_Manage_12th();
+static void Game_Manage_12_0();
+static void Game_Manage_12_1();
+static void Game_Manage_12_2();
+static void Game_Manage_12_3();
+static void Game_Manage_12_4();
+static void Game_Manage_12_5();
+static void Game_Manage_12_7();
+static void Game_Manage_12_8();
+static u8 Check_Bonus_Perfect();
+static void Disp_Bonus_Perfect();
+static void Flash_Bonus_Perfect();
+static u32 Setup_Final_Score(s16 Type);
+static s32 Bonus_Cut_Sub();
+static s16 Check_Time_Over();
 void complete_victory_pause();
-void Game_Manage_13th();
+static void Game_Manage_13th();
+
+#define MANAGEMENT_JMP_COUNT 13
+#define SC2_JMP_COUNT 5
+#define SC5_JMP_COUNT 8
+#define SC7_JMP_COUNT 10
+#define SC8_JMP_COUNT 4
+#define SC81_JMP_COUNT 4
+#define SC12_JMP_COUNT 10
 
 u8 Disp_Bonus_Contents;
 s8 MANAGE_X;
@@ -146,24 +154,30 @@ const u8 BIC_SA_Data[2][4] = { { 3, 5, 7, 9 }, { 1, 1, 1, 1 } };
 
 const u32 Ball_Perfect_PTS[2][5] = { { 20000, 30000, 50000, 80000, 120000 }, { 10000, 20000, 40000, 80000, 160000 } };
 
+/** @brief Main match management dispatcher — routes to the current management phase via C_No[0]. */
 s32 Game_Management() {
-    void (*Management_Jmp_Tbl[13])() = { Game_Manage_1st, Game_Manage_2nd,  Game_Manage_3rd,  Game_Manage_4th,
-                                         Game_Manage_5th, Game_Manage_6th,  Game_Manage_7th,  Game_Manage_8th,
-                                         Game_Manage_9th, Game_Manage_10th, Game_Manage_11th, Game_Manage_12th,
-                                         Game_Manage_13th };
+    // ⚡ Bolt: static const — avoid rebuilding this table on the stack every frame
+    static void (*const Management_Jmp_Tbl[13])() = { Game_Manage_1st,  Game_Manage_2nd,  Game_Manage_3rd,
+                                                      Game_Manage_4th,  Game_Manage_5th,  Game_Manage_6th,
+                                                      Game_Manage_7th,  Game_Manage_8th,  Game_Manage_9th,
+                                                      Game_Manage_10th, Game_Manage_11th, Game_Manage_12th,
+                                                      Game_Manage_13th };
 
     if (Break_Into) {
         return 0;
     }
 
     MANAGE_X = 0;
+    if (C_No[0] >= MANAGEMENT_JMP_COUNT)
+        return 0;
     Management_Jmp_Tbl[C_No[0]]();
     BGM_Fade_Sub();
     BGM_Control();
     return MANAGE_X;
 }
 
-void Game_Manage_1st() {
+/** @brief Phase 1: Match initialization — clears work, starts appear sequence, sets up operators. */
+static void Game_Manage_1st() {
     Switch_Screen(0);
     EXE_obroll = 0;
 
@@ -183,12 +197,12 @@ void Game_Manage_1st() {
     Round_Operator[0] = 0;
     Round_Operator[1] = 0;
 
-    if (plw[0].wu.operator) {
+    if (plw[0].wu.pl_operator) {
         Round_Operator[0] = 1;
         Final_Play_Type[0] = Play_Type;
     }
 
-    if (plw[1].wu.operator) {
+    if (plw[1].wu.pl_operator) {
         Round_Operator[1] = 1;
         Final_Play_Type[1] = Play_Type;
     }
@@ -221,10 +235,10 @@ void Game_Manage_1st() {
     grade_check_work_stage_init(0);
     grade_check_work_stage_init(1);
 
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
         cpReadyTask(TASK_MENU, Menu_Task);
         task[TASK_MENU].r_no[0] = 7;
-        plw[New_Challenger].wu.operator = 0;
+        plw[New_Challenger].wu.pl_operator = 0;
         Operator_Status[New_Challenger] = 0;
         Lever_LR[0] = 0;
         Lever_LR[1] = 0;
@@ -236,7 +250,8 @@ void Game_Manage_1st() {
     }
 }
 
-void Clear_1Stage_Work() {
+/** @brief Clears per-stage work variables (bonuses, counters, finish flags). */
+static void Clear_1Stage_Work() {
     s16 xx;
 
     for (xx = 0; xx < 2; xx++) {
@@ -254,13 +269,20 @@ void Clear_1Stage_Work() {
     Disp_Cockpit = 0;
 }
 
-void Game_Manage_2nd() {
-    void (*SC2_Jmp_Tbl[5])() = { Game_Manage_2_0, Game_Manage_2_1, Game_Manage_2_2, Game_Manage_2_3, Game_Manage_2_4 };
+/** @brief Phase 2 dispatcher: pre-round setup (screen switch, round init, appear wait). */
+static void Game_Manage_2nd() {
+    // ⚡ Bolt: static const — avoid rebuilding this table on the stack every frame
+    static void (*const SC2_Jmp_Tbl[5])() = {
+        Game_Manage_2_0, Game_Manage_2_1, Game_Manage_2_2, Game_Manage_2_3, Game_Manage_2_4
+    };
 
+    if (C_No[1] >= SC2_JMP_COUNT)
+        return;
     SC2_Jmp_Tbl[C_No[1]]();
 }
 
-void Game_Manage_2_0() {
+/** @brief Phase 2.0: Wait for cover timer and seek time before round start. */
+static void Game_Manage_2_0() {
     Switch_Screen(0);
     request_message = 0;
     SA_shadow_on = 0;
@@ -283,6 +305,7 @@ void Game_Manage_2_0() {
     Switch_Screen_Init(0);
 }
 
+/** @brief Waits for network/demo seek synchronization before proceeding. */
 s32 Wait_Seek_Time() {
     s16 ix;
     s16 ix2;
@@ -334,14 +357,15 @@ s32 Wait_Seek_Time() {
     }
 }
 
-void Game_Manage_2_1() {
+/** @brief Phase 2.1: Wait for screen revival and training menu readiness. */
+static void Game_Manage_2_1() {
     switch (C_No[2]) {
     case 0:
         if (!Switch_Screen_Revival(0)) {
             break;
         }
 
-        if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+        if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
             C_No[2]++;
             break;
         }
@@ -360,7 +384,8 @@ void Game_Manage_2_1() {
     }
 }
 
-void Game_Manage_2_2() {
+/** @brief Phase 2.2: Initialize round state — clear suicides, reset flags, init grade work. */
+static void Game_Manage_2_2() {
     s16 ix;
 
     Suicide[0] = 0;
@@ -403,7 +428,8 @@ void Game_Manage_2_2() {
     grade_check_work_round_init(1);
 }
 
-void Game_Manage_2_3() {
+/** @brief Phase 2.3: Wait for character appear animations to complete. */
+static void Game_Manage_2_3() {
     if (Appear_end < 2) {
         return;
     }
@@ -427,7 +453,8 @@ void Game_Manage_2_3() {
     effect_B2_init();
 }
 
-void Game_Manage_2_4() {
+/** @brief Phase 2.4: Cockpit fade-in, then transition to fighting phase. */
+static void Game_Manage_2_4() {
     switch (C_No[2]) {
     case 0:
         if (Round_num) {
@@ -442,7 +469,7 @@ void Game_Manage_2_4() {
         FadeOut(0, 0xFF, 8);
         Disp_Cockpit = 1;
 
-        if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+        if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
             Score[0][2] = 0;
             Score[1][2] = 0;
             Game_pause = 0;
@@ -500,7 +527,8 @@ void Game_Manage_2_4() {
     }
 }
 
-void Game_Manage_3rd() {
+/** @brief Phase 3: Check for round conclusion during demo playback. */
+static void Game_Manage_3rd() {
     if (Demo_Flag == 0) {
         return;
     }
@@ -516,17 +544,19 @@ void Game_Manage_3rd() {
     Check_Conclusion_Type();
 }
 
-void setFinishType() {
+/** @brief Determines finish type and updates break-in term data. */
+static void setFinishType() {
     if (Play_Type == 0 && Mode_Type == MODE_ARCADE &&
         PL_Wins[Winner_id] >= save_w[Present_Mode].Battle_Number[Play_Type] && VS_Index[Winner_id] > 8 &&
-        plw[Winner_id].wu.operator != 0 && E_Number[Loser_id][0] != 2) {
+        plw[Winner_id].wu.pl_operator != 0 && E_Number[Loser_id][0] != 2) {
         E_Number[Loser_id][0] = 99;
     }
 
     Update_BI_Term();
 }
 
-void Game_Manage_4th() {
+/** @brief Phase 4: Process round conclusion — KO, draw, or time-over routing. */
+static void Game_Manage_4th() {
     switch (Conclusion_Type) {
     case 0:
         C_No[0] = 6;
@@ -595,14 +625,18 @@ void Game_Manage_4th() {
     }
 }
 
-void Game_Manage_5th() {
-    void (*SC5_Jmp_Tbl[8])() = { Game_Manage_5_0, Game_Manage_5_1, Game_Manage_5_2, Game_Manage_5_3,
-                                 Game_Manage_5_4, Game_Manage_5_5, Game_Manage_5_6, Game_Manage_5_7 };
+/** @brief Phase 5 dispatcher: complete victory (judgement gals) sequence. */
+static void Game_Manage_5th() {
+    // ⚡ Bolt: static const — avoid rebuilding this table on the stack every frame
+    static void (*const SC5_Jmp_Tbl[8])() = { Game_Manage_5_0, Game_Manage_5_1, Game_Manage_5_2, Game_Manage_5_3,
+                                              Game_Manage_5_4, Game_Manage_5_5, Game_Manage_5_6, Game_Manage_5_7 };
 
+    if (C_No[1] >= SC5_JMP_COUNT)
+        return;
     SC5_Jmp_Tbl[C_No[1]]();
 }
 
-void Game_Manage_5_0() {
+static void Game_Manage_5_0() {
     if (Complete_Victory) {
         C_No[1]++;
         C_Timer = 30;
@@ -610,7 +644,7 @@ void Game_Manage_5_0() {
     }
 }
 
-void Game_Manage_5_1() {
+static void Game_Manage_5_1() {
     if (Button_Cut_EX(&C_Timer, 10)) {
         C_No[1]++;
         request_center_message(3);
@@ -618,14 +652,14 @@ void Game_Manage_5_1() {
     }
 }
 
-void Game_Manage_5_2() {
+static void Game_Manage_5_2() {
     if (!request_message) {
         C_No[1]++;
         C_Timer = 30;
     }
 }
 
-void Game_Manage_5_3() {
+static void Game_Manage_5_3() {
     if (Button_Cut_EX(&C_Timer, 10)) {
         C_No[1]++;
         Judge_Winner();
@@ -636,7 +670,7 @@ void Game_Manage_5_3() {
     }
 }
 
-void Game_Manage_5_4() {
+static void Game_Manage_5_4() {
     if (Switch_Screen(0)) {
         C_No[1]++;
         Cover_Timer = 5;
@@ -648,11 +682,11 @@ void Game_Manage_5_4() {
         pcon_rno[1] = 0;
         pcon_rno[2] = 0;
         pcon_rno[3] = 0;
-        appear_type = APPEAR_TYPE_UNKNOWN_3;
+        appear_type = APPEAR_TYPE_VICTORY;
     }
 }
 
-void Game_Manage_5_5() {
+static void Game_Manage_5_5() {
     Switch_Screen(0);
 
     if (--Cover_Timer == 0) {
@@ -664,7 +698,7 @@ void Game_Manage_5_5() {
     }
 }
 
-void Game_Manage_5_6() {
+static void Game_Manage_5_6() {
     if (Switch_Screen_Revival(0)) {
         C_No[1]++;
         C_Timer = 60;
@@ -674,7 +708,7 @@ void Game_Manage_5_6() {
     }
 }
 
-void Game_Manage_5_7() {
+static void Game_Manage_5_7() {
     if (--C_Timer != 0) {
         return;
     }
@@ -698,7 +732,8 @@ void Game_Manage_5_7() {
     Update_VS_Data();
 }
 
-void Game_Manage_6th() {
+/** @brief Phase 6: Post-round cleanup — grade calculation, advance to next round or training end. */
+static void Game_Manage_6th() {
     switch (C_No[1]) {
     case 0:
         if (!Complete_Victory) {
@@ -711,7 +746,8 @@ void Game_Manage_6th() {
         pcon_rno[2] = 0;
         grade_makeup_round_para_dko();
 
-        if (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && omop_cockpit) {
+        if (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS &&
+            omop_cockpit) {
             effect_58_init(6, 1, Winner_id + 100);
             effect_92_init(0, PL_Wins[0] - 1);
             effect_92_init(1, PL_Wins[1] - 1);
@@ -725,7 +761,7 @@ void Game_Manage_6th() {
             break;
         }
 
-        if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+        if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
             C_No[0] = 12;
             End_Training = 1;
             break;
@@ -739,14 +775,19 @@ void Game_Manage_6th() {
     }
 }
 
-void Game_Manage_7th() {
-    void (*SC7_Jmp_Tbl[10])() = { Game_Manage_7_0, Game_Manage_7_1, Game_Manage_7_2, Game_Manage_7_3, Game_Manage_7_4,
-                                  Game_Manage_7_5, Game_Manage_7_6, Game_Manage_7_7, Game_Manage_7_8, Game_Manage_7_9 };
+/** @brief Phase 7 dispatcher: win presentation, winner display, perfect announcement. */
+static void Game_Manage_7th() {
+    // ⚡ Bolt: static const — avoid rebuilding this table on the stack every frame
+    static void (*const SC7_Jmp_Tbl[10])() = { Game_Manage_7_0, Game_Manage_7_1, Game_Manage_7_2, Game_Manage_7_3,
+                                               Game_Manage_7_4, Game_Manage_7_5, Game_Manage_7_6, Game_Manage_7_7,
+                                               Game_Manage_7_8, Game_Manage_7_9 };
 
+    if (C_No[1] >= SC7_JMP_COUNT)
+        return;
     SC7_Jmp_Tbl[C_No[1]]();
 }
 
-void Game_Manage_7_0() {
+static void Game_Manage_7_0() {
     if (!Complete_Victory) {
         return;
     }
@@ -755,20 +796,21 @@ void Game_Manage_7_0() {
     C_Timer = 1;
     grade_makeup_round_parameter(Winner_id);
 
-    if (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && omop_cockpit) {
+    if (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS &&
+        omop_cockpit) {
         effect_58_init(6, 1, Winner_id + 100);
         effect_92_init(Winner_id, PL_Wins[Winner_id] - 1);
     }
 }
 
-void Game_Manage_7_1() {
+static void Game_Manage_7_1() {
     if (--C_Timer == 0) {
         C_No[1]++;
         C_Timer = 10;
     }
 }
 
-void Game_Manage_7_2() {
+static void Game_Manage_7_2() {
     if (!Button_Cut_EX(&C_Timer, 0x7FFF)) {
         return;
     }
@@ -792,7 +834,7 @@ void Game_Manage_7_2() {
     }
 }
 
-s32 Check_Disp_Combo() {
+static s32 Check_Disp_Combo() {
     if (cmb_all_stock[0] != 0 || cmb_calc_now[0] != 0 || cmb_calc_now[1] != 0) {
         return 1;
     }
@@ -804,7 +846,7 @@ s32 Check_Disp_Combo() {
     return 0;
 }
 
-void Game_Manage_7_3() {
+static void Game_Manage_7_3() {
     if (Play_Type == 0 && Perfect_Flag == 0) {
         if (--C_Timer) {
             return;
@@ -817,7 +859,7 @@ void Game_Manage_7_3() {
 
     Message_Suicide[1] = 1;
 
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
         C_No[0] = 12;
         End_Training = 1;
         return;
@@ -834,7 +876,7 @@ void Game_Manage_7_3() {
     Event_Judge_Gals = -1;
 }
 
-void Game_Manage_7_4() {
+static void Game_Manage_7_4() {
     if (--C_Timer == 0) {
         C_No[1]++;
         request_center_message(4);
@@ -843,7 +885,7 @@ void Game_Manage_7_4() {
     }
 }
 
-void Game_Manage_7_5() {
+static void Game_Manage_7_5() {
     if (!request_message) {
         C_No[1]++;
         C_Timer = 6;
@@ -851,7 +893,7 @@ void Game_Manage_7_5() {
     }
 }
 
-void Game_Manage_7_6() {
+static void Game_Manage_7_6() {
     if (Scene_Cut) {
         C_Timer = 1;
     }
@@ -862,14 +904,14 @@ void Game_Manage_7_6() {
     }
 }
 
-void Game_Manage_7_7() {
+static void Game_Manage_7_7() {
     if (--C_Timer == 0) {
         C_No[1]++;
         Event_Judge_Gals = 3;
     }
 }
 
-void Game_Manage_7_8() {
+static void Game_Manage_7_8() {
     if (Event_Judge_Gals == 0) {
         C_No[1]++;
         C_Timer = 30;
@@ -877,19 +919,22 @@ void Game_Manage_7_8() {
     }
 }
 
-void Game_Manage_7_9() {
+static void Game_Manage_7_9() {
     if (--C_Timer == 0) {
         C_No[1] = 0;
     }
 }
 
-void Game_Manage_8th() {
+/** @brief Phase 8 dispatcher: post-match score tallying and bonus display. */
+static void Game_Manage_8th() {
     void (*SC8_Jmp_Tbl[4])() = { Game_Manage_8_0, Game_Manage_8_1, Game_Manage_8_2, Game_Manage_8_3 };
 
+    if (C_No[1] >= SC8_JMP_COUNT)
+        return;
     SC8_Jmp_Tbl[C_No[1]]();
 }
 
-void Game_Manage_8_0() {
+static void Game_Manage_8_0() {
     Round_num++;
     Quick_Entry();
     Stop_Update_Score = 1;
@@ -920,13 +965,15 @@ void Game_Manage_8_0() {
     }
 }
 
-void Game_Manage_8_1() {
+static void Game_Manage_8_1() {
     void (*SC81_Jmp_Tbl[4])() = { Game_Manage_81_0, Game_Manage_81_1, Game_Manage_81_2, Game_Manage_81_3 };
 
+    if (C_No[2] >= SC81_JMP_COUNT)
+        return;
     SC81_Jmp_Tbl[C_No[2]]();
 }
 
-void Game_Manage_81_0() {
+static void Game_Manage_81_0() {
     s16 time;
     s16 pos_id;
     s16 pos_id2;
@@ -977,14 +1024,14 @@ void Game_Manage_81_0() {
     effect_G0_init(80, time, Complete_Bonus, pos_id2);
 }
 
-void Game_Manage_81_1() {
+static void Game_Manage_81_1() {
     if (Order_Dir[80] == 0) {
         C_No[2]++;
         C_Timer = 20;
     }
 }
 
-void Game_Manage_81_2() {
+static void Game_Manage_81_2() {
     if (Scene_Cut) {
         C_Timer = 1;
     }
@@ -1003,7 +1050,7 @@ void Game_Manage_81_2() {
     Sound_SE(100);
 }
 
-void Game_Manage_81_3() {
+static void Game_Manage_81_3() {
     if (Order_Dir[80] == 0) {
         C_No[1]++;
         C_No[2] = 0;
@@ -1011,7 +1058,7 @@ void Game_Manage_81_3() {
     }
 }
 
-void Game_Manage_8_2() {
+static void Game_Manage_8_2() {
     if (Request_Break[Winner_id ^ 1]) {
         C_Timer = 1;
     }
@@ -1037,7 +1084,7 @@ void Game_Manage_8_2() {
     C_Timer = 30;
 }
 
-void Game_Manage_8_3() {
+static void Game_Manage_8_3() {
     if (Scene_Cut) {
         C_Timer = 1;
     }
@@ -1048,7 +1095,8 @@ void Game_Manage_8_3() {
     }
 }
 
-void Game_Manage_9th() {
+/** @brief Phase 9: Between-round transition — screen switch, BGM restart, next round init. */
+static void Game_Manage_9th() {
     switch (C_No[1]) {
     case 0:
         if (PL_Wins[Winner_id] >= save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
@@ -1108,7 +1156,8 @@ void Game_Manage_9th() {
     }
 }
 
-void Game_Manage_10th() {
+/** @brief Phase 10: Post-match conclusion — naming check, ending check, exit to results. */
+static void Game_Manage_10th() {
     switch (C_No[1]) {
     case 0:
         if (Button_Cut_EX(&C_Timer, 0x7FFF)) {
@@ -1174,7 +1223,8 @@ void Game_Manage_10th() {
     }
 }
 
-void Check_Naming(s16 PL_id) {
+/** @brief Clears ranking slots for a player unless they reached an ending path. */
+static void Check_Naming(s16 PL_id) {
     if (Mode_Type != MODE_ARCADE) {
         return;
     }
@@ -1193,7 +1243,8 @@ void Check_Naming(s16 PL_id) {
     Rank_In[PL_id][3] = -1;
 }
 
-s32 Check_Ending() {
+/** @brief Checks if the winner qualifies for a character ending and initializes it. */
+static s32 Check_Ending() {
     s16 xx;
 
     if (Play_Type == 1) {
@@ -1208,7 +1259,7 @@ s32 Check_Ending() {
         Extra_Break = 0;
         Pause_ID = WINNER;
         End_PL = My_char[WINNER];
-        plw[WINNER].wu.operator = 0;
+        plw[WINNER].wu.pl_operator = 0;
         Operator_Status[WINNER] = 0;
         SsBgmControl(0, 0);
         Control_Time = 481;
@@ -1237,19 +1288,21 @@ s32 Check_Ending() {
     return 0;
 }
 
-s32 Check_Ending_Sub() {
+/** @brief Sub-check: returns true if winner has beaten enough opponents or debug ending is on. */
+static s32 Check_Ending_Sub() {
     if (VS_Index[WINNER] > 9) {
         return 1;
     }
 
-    if (Debug_w[47]) {
+    if (Debug_w[DEBUG_ENDING_CHECK]) {
         return 1;
     }
 
     return 0;
 }
 
-void Additional_Bonus(s16 PL_id) {
+/** @brief Adds perfect, vitality, time, and completion bonuses to the player's score. */
+static void Additional_Bonus(s16 PL_id) {
     Complete_Bonus = Setup_Comp_Bonus();
     Score[PL_id][Play_Type] += Perfect_Bonus[Winner_id];
     Score[PL_id][Play_Type] += Vital_Bonus[Winner_id];
@@ -1261,7 +1314,8 @@ void Additional_Bonus(s16 PL_id) {
     }
 }
 
-u32 Setup_Comp_Bonus() {
+/** @brief Calculates the completion bonus based on the winner's straight win count. */
+static u32 Setup_Comp_Bonus() {
     u32 xx;
     u16 zz;
 
@@ -1288,12 +1342,14 @@ u32 Setup_Comp_Bonus() {
     return xx;
 }
 
+/** @brief Requests a center-screen message display (e.g., "PERFECT", "DRAW GAME"). */
 void request_center_message(s16 Kind_of_Message) {
     request_message = 1;
     message_index = Kind_of_Message;
 }
 
-void Setup_Win_Mark() {
+/** @brief Sets the win mark type (SA finish, special, normal) and triggers sound effects. */
+static void Setup_Win_Mark() {
     if (Round_Result & 0x200) {
         win_type[Winner_id][PL_Wins[Winner_id]] = 7;
         SsRequest(121);
@@ -1329,8 +1385,9 @@ void Setup_Win_Mark() {
     Finish_SE();
 }
 
-void Check_Perfect(s16 PL_id) {
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+/** @brief Checks if the player won with full health and sets the Perfect flag. */
+static void Check_Perfect(s16 PL_id) {
+    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
         return;
     }
 
@@ -1344,7 +1401,8 @@ void Check_Perfect(s16 PL_id) {
     win_type[PL_id][PL_Wins[PL_id]] = 3;
 }
 
-void Update_VS_Data() {
+/** @brief Updates match history, VS index, win records, and scoring data after a set ends. */
+static void Update_VS_Data() {
     if (PL_Wins[Winner_id] >= save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
         WINNER = Winner_id;
         LOSER = Loser_id;
@@ -1398,7 +1456,8 @@ void Update_VS_Data() {
     Score[Loser_id][0] = Stock_Score[Loser_id];
 }
 
-void BGM_Fade_Sub() {
+/** @brief Handles gradual BGM fade-in after a round-ending silence. */
+static void BGM_Fade_Sub() {
     switch (BGM_No[1]) {
     case 1:
         if (--BGM_Timer[1] == 0) {
@@ -1429,7 +1488,8 @@ void BGM_Fade_Sub() {
     }
 }
 
-void BGM_Control() {
+/** @brief Controls BGM playback state — delayed start, stage BGM, and victory music. */
+static void BGM_Control() {
     switch (BGM_No[0]) {
     case 0:
         return;
@@ -1466,14 +1526,16 @@ void BGM_Control() {
     }
 }
 
-void Setup_BGM_Fade_In(s16 Time) {
+/** @brief Starts a BGM fade-in from silence over the given time if music is allowed. */
+static void Setup_BGM_Fade_In(s16 Time) {
     if (!PB_Music_Off) {
         BGM_No[1] = 1;
         BGM_Timer[1] = Time;
     }
 }
 
-void Check_Stage_BGM() {
+/** @brief Selects and starts the correct stage BGM based on opponent and boss status. */
+static void Check_Stage_BGM() {
     if (Play_Type == 1) {
         Stage_BGM(bg_w.stage, Round_num);
         return;
@@ -1504,12 +1566,14 @@ void Check_Stage_BGM() {
     }
 }
 
+/** @brief Fades music in and mutes the current BGM. */
 void Control_Music_Fade(s16 Time) {
     Setup_BGM_Fade_In(Time);
     SsBgmControl(0, -128);
 }
 
-void Check_Conclusion_Type() {
+/** @brief Determines conclusion type and updates lost-round/time-finish stats. */
+static void Check_Conclusion_Type() {
     if (Play_Type == 1) {
         return;
     }
@@ -1534,14 +1598,16 @@ void Check_Conclusion_Type() {
     }
 }
 
-void chkComWins() {
+/** @brief Increments lost rounds for the COM-controlled loser. */
+static void chkComWins() {
     if (Round_Operator[Winner_id] == 0) {
         Lost_Round[Loser_id]++;
         Stage_Lost_Round[Loser_id]++;
     }
 }
 
-void Update_BI_Term() {
+/** @brief Updates the break-in term data — SA finish, perfect, cheap finish counters. */
+static void Update_BI_Term() {
     if (Play_Type == 1) {
         return;
     }
@@ -1576,7 +1642,8 @@ void Update_BI_Term() {
     }
 }
 
-void Ck_Win_Record() {
+/** @brief Updates the raw win record (arcade or versus mode). */
+static void Ck_Win_Record() {
     if (PL_Wins[Winner_id] < save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
         return;
     }
@@ -1608,7 +1675,8 @@ void Ck_Win_Record() {
     }
 }
 
-void Update_Level_Control() {
+/** @brief Adjusts difficulty control time — increases for human wins, decreases for CPU wins. */
+static void Update_Level_Control() {
     if (Round_Operator[Winner_id]) {
         if ((Round_Operator[Loser_id]) != 0) {
             return;
@@ -1628,8 +1696,9 @@ void Update_Level_Control() {
     }
 }
 
-s32 Judge_Next_Disposal() {
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+/** @brief Returns 1 if the next round should be a draw (both players at same win count at max). */
+static s32 Judge_Next_Disposal() {
+    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
         return 0;
     }
 
@@ -1644,7 +1713,8 @@ s32 Judge_Next_Disposal() {
     return 0;
 }
 
-void Quick_Entry() {
+/** @brief Handles quick-entry logic at match end: loser removal, best grade, continue. */
+static void Quick_Entry() {
     s8 grade;
 
     if (Check_Entry_Again()) {
@@ -1656,11 +1726,11 @@ void Quick_Entry() {
         return;
     }
 
-    if (plw[LOSER].wu.operator) {
+    if (plw[LOSER].wu.pl_operator) {
         Loser_Sub();
 
         if (Mode_Type != MODE_ARCADE) {
-            plw[LOSER].wu.operator = 1;
+            plw[LOSER].wu.pl_operator = 1;
         }
 
         Be_Continue();
@@ -1675,7 +1745,8 @@ void Quick_Entry() {
     }
 }
 
-s32 Check_Entry_Again() {
+/** @brief Returns 1 if a new challenger can enter, based on battle queue and VS index. */
+static s32 Check_Entry_Again() {
     if (Battle_Q[Winner_id]) {
         return 0;
     }
@@ -1695,8 +1766,9 @@ s32 Check_Entry_Again() {
     return 0;
 }
 
-void Loser_Sub() {
-    plw[LOSER].wu.operator = 0;
+/** @brief Clears operator status for the loser and decrements difficulty. */
+static void Loser_Sub() {
+    plw[LOSER].wu.pl_operator = 0;
     Operator_Status[LOSER] = 0;
     Sel_PL_Complete[LOSER] = 0;
     Sel_Arts_Complete[LOSER] = 0;
@@ -1710,7 +1782,8 @@ void Loser_Sub() {
     }
 }
 
-void Be_Continue() {
+/** @brief Sets up continue-screen data for the losing player in arcade mode. */
+static void Be_Continue() {
     if (Mode_Type != MODE_ARCADE) {
         return;
     }
@@ -1724,7 +1797,8 @@ void Be_Continue() {
     E_Number[LOSER][3] = 0;
 }
 
-void Disp_Winner() {
+/** @brief Shows the winner/loser announcement effect and sound. */
+static void Disp_Winner() {
     if (Play_Type == 1) {
         effect_56_init(My_char[Winner_id] + 7, 1);
         SsRequest(141);
@@ -1741,7 +1815,8 @@ void Disp_Winner() {
     SsRequest(142);
 }
 
-void Pool_Score(s16 PL_id) {
+/** @brief Accumulates perfect, vitality, and time bonus scores for the winner. */
+static void Pool_Score(s16 PL_id) {
     u32 Score_Buff;
 
     if (Perfect_Flag) {
@@ -1760,8 +1835,9 @@ void Pool_Score(s16 PL_id) {
     Time_Bonus[Winner_id] += round_timer * 300;
 }
 
-s32 Check_Break_Into_CPU(s16 PL_id) {
-    if (Debug_w[70] == 9) {
+/** @brief Checks if conditions are met for a hidden boss (Shin Gouki) break-in. */
+static s32 Check_Break_Into_CPU(s16 PL_id) {
+    if (Debug_w[DEBUG_YOSHIZUMI_EXP] == 9) {
         Break_Into_CPU = 2;
         return Battle_Q[PL_id] = 1;
     }
@@ -1805,7 +1881,8 @@ s32 Check_Break_Into_CPU(s16 PL_id) {
     return 0;
 }
 
-void Judge_Winner() {
+/** @brief Determines the overall match winner via judgement gals grade comparison. */
+static void Judge_Winner() {
     grade_makeup_judgement_gals();
 
     if (judge_gals[0].grade == judge_gals[1].grade) {
@@ -1830,8 +1907,9 @@ void Judge_Winner() {
     Loser_id = 0;
 }
 
-s32 Check_Disp_Winner() {
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+/** @brief Returns 1 if the winner's name should be displayed on screen after the match. */
+static s32 Check_Disp_Winner() {
+    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
         return Disp_Win_Name = 0;
     }
 
@@ -1846,7 +1924,8 @@ s32 Check_Disp_Winner() {
     return Disp_Win_Name = 1;
 }
 
-void Check_Fade_Out_BGM(s16 Time) {
+/** @brief Initiates BGM fade-out if the match is over and music hasn't been faded yet. */
+static void Check_Fade_Out_BGM(s16 Time) {
     if (Music_Fade) {
         return;
     }
@@ -1859,7 +1938,8 @@ void Check_Fade_Out_BGM(s16 Time) {
     SsBgmFadeOut(Time);
 }
 
-s32 Check_BI_Grade(s16 PL_id) {
+/** @brief Returns 1 if all the player's VS grades are high enough for a boss break-in. */
+static s32 Check_BI_Grade(s16 PL_id) {
     s16 ix;
 
     for (ix = 0; ix < VS_Index[PL_id]; ix++) {
@@ -1871,7 +1951,8 @@ s32 Check_BI_Grade(s16 PL_id) {
     return 1;
 }
 
-void Game_Manage_11th() {
+/** @brief Phase 11: Intro sequence for rival/sub-boss encounter. */
+static void Game_Manage_11th() {
     switch (C_No[1]) {
     case 0:
         Forbid_Break = -1;
@@ -1920,11 +2001,14 @@ void Game_Manage_11th() {
     }
 }
 
-void Game_Manage_12th() {
+/** @brief Phase 12 dispatcher: bonus stage (car destruction / parry ball) management. */
+static void Game_Manage_12th() {
     void (*SC12_Jmp_Tbl[10])() = { Game_Manage_12_0, Game_Manage_12_1, Game_Manage_12_2, Game_Manage_12_3,
                                    Game_Manage_12_4, Game_Manage_12_5, Game_Manage_12_1, Game_Manage_12_7,
                                    Game_Manage_12_8, Game_Manage_12_5 };
 
+    if (C_No[1] >= SC12_JMP_COUNT)
+        return;
     SC12_Jmp_Tbl[C_No[1]]();
 
     if (Bonus_Type == 20) {
@@ -1932,7 +2016,7 @@ void Game_Manage_12th() {
     }
 }
 
-void Game_Manage_12_0() {
+static void Game_Manage_12_0() {
     s16 ix;
 
     Suicide[0] = 0;
@@ -1961,8 +2045,8 @@ void Game_Manage_12_0() {
 
     Complete_Judgement = 0;
     Music_Fade = 0;
-    Round_Operator[0] = plw[0].wu.operator;
-    Round_Operator[1] = plw[1].wu.operator;
+    Round_Operator[0] = plw[0].wu.pl_operator;
+    Round_Operator[1] = plw[1].wu.pl_operator;
     CP_No[0][0] = 0;
     CP_No[1][0] = 0;
 
@@ -1983,7 +2067,7 @@ void Game_Manage_12_0() {
     }
 }
 
-void Game_Manage_12_1() {
+static void Game_Manage_12_1() {
     bcount_cont_main();
 
     if (Next_Step != 0) {
@@ -1995,7 +2079,7 @@ void Game_Manage_12_1() {
     }
 }
 
-void Game_Manage_12_2() {
+static void Game_Manage_12_2() {
     bcount_cont_main();
 
     if (!Bonus_Game_Complete) {
@@ -2023,7 +2107,7 @@ void Game_Manage_12_2() {
     cpExitTask(TASK_PAUSE);
 }
 
-void Game_Manage_12_3() {
+static void Game_Manage_12_3() {
     switch (C_No[2]) {
     case 0:
         if (Cut_Cut_C_Timer() == 0) {
@@ -2064,7 +2148,7 @@ void Game_Manage_12_3() {
     }
 }
 
-void Game_Manage_12_4() {
+static void Game_Manage_12_4() {
     switch (C_No[2]) {
     case 0:
         if (Bonus_Cut_Sub() == 0 && --C_Timer == 0) {
@@ -2191,10 +2275,10 @@ void Game_Manage_12_4() {
     }
 }
 
-void Game_Manage_12_5() {
+static void Game_Manage_12_5() {
     switch (C_No[2]) {
     case 0:
-        if (Debug_w[70] != 2 && --C_Timer == 0) {
+        if (Debug_w[DEBUG_YOSHIZUMI_EXP] != 2 && --C_Timer == 0) {
             C_No[2]++;
             C_Timer = 20;
         }
@@ -2218,7 +2302,7 @@ void Game_Manage_12_5() {
     }
 }
 
-void Game_Manage_12_7() {
+static void Game_Manage_12_7() {
     bcount_cont_main();
 
     if (Check_Time_Over()) {
@@ -2241,7 +2325,7 @@ void Game_Manage_12_7() {
     effect_58_init(6, 10, 169);
 }
 
-void Game_Manage_12_8() {
+static void Game_Manage_12_8() {
     switch (C_No[2]) {
     case 0:
         switch (C_No[3]) {
@@ -2334,7 +2418,7 @@ void Game_Manage_12_8() {
         break;
 
     default:
-        if (Debug_w[70] != 2 && Cut_Cut_C_Timer() == 0) {
+        if (Debug_w[DEBUG_YOSHIZUMI_EXP] != 2 && Cut_Cut_C_Timer() == 0) {
             C_No[1]++;
             C_No[2] = 0;
             C_No[3] = 0;
@@ -2348,7 +2432,8 @@ void Game_Manage_12_8() {
     }
 }
 
-u8 Check_Bonus_Perfect() {
+/** @brief Checks if both bonus stage targets were fully destroyed (perfect bonus). */
+static u8 Check_Bonus_Perfect() {
     PB_Status = 0;
 
     if (Stock_Bonus_Game_Result >= 20) {
@@ -2362,7 +2447,8 @@ u8 Check_Bonus_Perfect() {
     return PB_Status;
 }
 
-void Disp_Bonus_Perfect() {
+/** @brief Displays the bonus perfect splash effect and score. */
+static void Disp_Bonus_Perfect() {
     switch (PB_Status) {
     case 1:
         effect_08_init(6, 0, 5, 15, 0);
@@ -2389,7 +2475,8 @@ void Disp_Bonus_Perfect() {
     SsRequest(Winner_id + 102);
 }
 
-void Flash_Bonus_Perfect() {
+/** @brief Triggers the flash effect for bonus perfect achievement. */
+static void Flash_Bonus_Perfect() {
     switch (PB_Status) {
     case 1:
         Suicide[5] = 1;
@@ -2405,7 +2492,7 @@ void Flash_Bonus_Perfect() {
     }
 }
 
-u32 Setup_Final_Score(s16 Type) {
+static u32 Setup_Final_Score(s16 Type) {
     u32 xx;
 
     if (Type == 21) {
@@ -2454,7 +2541,7 @@ u32 Setup_Final_Score(s16 Type) {
     return xx;
 }
 
-s32 Bonus_Cut_Sub() {
+static s32 Bonus_Cut_Sub() {
     if (Scene_Cut) {
         Sound_SE(100);
         Bonus_Game_result = 0;
@@ -2496,7 +2583,7 @@ s32 Bonus_Cut_Sub() {
     return 0;
 }
 
-s16 Check_Time_Over() {
+static s16 Check_Time_Over() {
     s16 return_x = 0;
 
     switch (C_No[2]) {
@@ -2524,8 +2611,9 @@ s16 Check_Time_Over() {
     return return_x;
 }
 
+/** @brief Pauses the game briefly for a complete victory announcement. */
 void complete_victory_pause() {
     Complete_Victory = 1;
 }
 
-void Game_Manage_13th() {};
+static void Game_Manage_13th() {};

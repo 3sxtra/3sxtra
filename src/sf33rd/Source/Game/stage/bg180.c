@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg180.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "sf33rd/Source/Game/effect/eff22.h"
@@ -16,6 +17,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Industrial Area stage. */
 void BG180() {
     bgw_ptr = &bg_w.bgw[1];
     bg1802();
@@ -28,11 +30,15 @@ void BG180() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Industrial Area. */
 void bg1801() {
     void (*bg1801_jmp[2])() = { bg1801_init00, bg1801_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1801_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Industrial Area. */
 void bg1801_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -40,16 +46,21 @@ void bg1801_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Per-frame movement handler for Industrial Area layer. */
 void bg1801_move() {
     bg_x_move_check();
     bg_y_move_check();
 }
 
+/** @brief Background layer handler for Industrial Area. */
 void bg1802() {
     void (*bg1802_jmp[2])() = { bg1802_init00, bg1802_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1802_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Industrial Area. */
 void bg1802_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -61,17 +72,22 @@ void bg1802_init00() {
     effect_44_init(4);
 }
 
+/** @brief Per-frame movement handler for Industrial Area layer. */
 void bg1802_move() {
     bg_base_x_move_check();
     bg_base_y_move_check();
     bg_chase_move();
 }
 
+/** @brief Synchronized parallax common handler for Industrial Area. */
 void bg180_sync_common() {
     void (*bg1800_sync_jmp[2])() = { bg180_sync_init, bg180_sync_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1800_sync_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize synchronized parallax layer for Industrial Area. */
 void bg180_sync_init() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -85,6 +101,7 @@ void bg180_sync_init() {
     sync_fam_set3(2);
 }
 
+/** @brief Per-frame movement handler for Industrial Area layer. */
 void bg180_sync_move() {
     bg_x_move_check();
     bg_y_move_check();

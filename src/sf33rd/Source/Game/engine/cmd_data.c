@@ -4,14 +4,11 @@
  */
 
 #include "sf33rd/Source/Game/engine/cmd_data.h"
+#include "game_state.h"
 #include "structs.h"
 #include "types.h"
 
 // bss
-
-WORK_CP wcp[2];
-T_PL_LVR t_pl_lvr[2];
-WAZA_WORK waza_work[2][56];
 
 // sbss
 

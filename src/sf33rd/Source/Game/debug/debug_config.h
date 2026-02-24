@@ -1,3 +1,10 @@
+/**
+ * @file debug_config.h
+ * @brief Debug option configuration system with typed enums and bounds-checked access.
+ *
+ * Part of the debug module.
+ */
+
 #ifndef DEBUG_CONFIG_H
 #define DEBUG_CONFIG_H
 

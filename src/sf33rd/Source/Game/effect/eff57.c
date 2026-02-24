@@ -1,6 +1,6 @@
 /**
  * @file eff57.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff57.h"
@@ -41,13 +41,13 @@ void effect_57_move(WORK_Other* ewk) {
     sort_push_request4(&ewk->wu);
 }
 
-void EFF57_WAIT(WORK_Other* ewk) {
+static void EFF57_WAIT(WORK_Other* ewk) {
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-void EFF57_SLIDE_IN(WORK_Other* ewk) {
+static void EFF57_SLIDE_IN(WORK_Other* ewk) {
     if (Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -99,7 +99,7 @@ void EFF57_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-void EFF57_CHAR_CHANGE(WORK_Other* ewk) {
+static void EFF57_CHAR_CHANGE(WORK_Other* ewk) {
     if (--Order_Timer[ewk->wu.dir_old] == 0) {
         ewk->wu.routine_no[0] = 0;
         Order[ewk->wu.dir_old] = 0;
@@ -108,7 +108,7 @@ void EFF57_CHAR_CHANGE(WORK_Other* ewk) {
     }
 }
 
-void EFF57_WALL(WORK_Other* ewk) {
+static void EFF57_WALL(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old]) {
@@ -131,7 +131,7 @@ void EFF57_WALL(WORK_Other* ewk) {
     }
 }
 
-void EFF57_SUDDENLY(WORK_Other* ewk) {
+static void EFF57_SUDDENLY(WORK_Other* ewk) {
     if (--Order_Timer[ewk->wu.dir_old] != 0) {
         return;
     }
@@ -157,7 +157,7 @@ void EFF57_KILL(WORK_Other* ewk) {
     }
 }
 
-s32 effect_57_init(s16 dir_old, s16 ID, s16 Target_BG, s16 char_ix, s16 option) {
+s32 effect_57_init(s16 dir_old, s16 arg_ID, s16 Target_BG, s16 char_ix, s16 option) {
     WORK_Other* ewk;
     s16 ix;
 
@@ -172,8 +172,8 @@ s32 effect_57_init(s16 dir_old, s16 ID, s16 Target_BG, s16 char_ix, s16 option) 
     ewk->wu.my_col_code = 0x1AC;
     ewk->wu.my_family = Target_BG + 1;
     *ewk->wu.char_table = _sel_pl_char_table;
-    ewk->wu.dir_step = ID;
-    ewk->wu.type = ID;
+    ewk->wu.dir_step = arg_ID;
+    ewk->wu.type = arg_ID;
     ewk->wu.dir_old = dir_old;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

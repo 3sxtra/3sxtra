@@ -1,6 +1,6 @@
 /**
  * @file eff73.c
- * TODO: identify what this effect does
+ * Effect: Vanish / Survive Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff73.h"

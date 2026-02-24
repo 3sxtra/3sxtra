@@ -15,13 +15,19 @@
 
 const u8 pl08_hcs_tbl[8] = { 0, 0, 0, 1, 0, 1, 1, 1 };
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl08_exatt_table[18])(PLW*);
 
+/** @brief Elena: extra attack dispatcher. */
 void pl08_extra_attack(PLW* wk) {
-    pl08_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl08_exatt_table[idx](wk);
 }
 
-void Att_PL08_HEALING(PLW* wk) {
+/** @brief Elena: Healing Super Art (regenerates vitality). */
+static void Att_PL08_HEALING(PLW* wk) {
     u16 cpsw;
 
     wk->scr_pos_set_flag = 0;
@@ -71,7 +77,8 @@ void Att_PL08_HEALING(PLW* wk) {
     }
 }
 
-void Att_PL08_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Elena: special action (tokushu koudou). */
+static void Att_PL08_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {

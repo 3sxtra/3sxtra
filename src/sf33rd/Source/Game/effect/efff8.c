@@ -1,6 +1,6 @@
 /**
  * @file efff8.c
- * TODO: identify what this effect does
+ * Effect: Paring Mark B Effect
  */
 
 #include "sf33rd/Source/Game/effect/efff8.h"

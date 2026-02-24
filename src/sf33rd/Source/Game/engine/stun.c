@@ -14,6 +14,7 @@
 
 SDAT sdat[2];
 
+/** @brief Initializes the stun gauge display state for both players. */
 void stngauge_cont_init() {
     u8 i;
 
@@ -34,6 +35,7 @@ void stngauge_cont_init() {
     stun_gauge_waku_write(sdat->slen, sdat[1].slen);
 }
 
+/** @brief Per-frame stun gauge update — drives the animated stun bar display. */
 void stngauge_cont_main() {
     u8 i;
 
@@ -60,6 +62,7 @@ void stngauge_cont_main() {
     }
 }
 
+/** @brief Updates a single player's stun gauge animation and flash state. */
 void stngauge_control(u8 pl) {
     if (!sdat[pl].proccess_dead) {
         if (plw[pl].dead_flag) {
@@ -131,6 +134,7 @@ void stngauge_control(u8 pl) {
     }
 }
 
+/** @brief Clears both players' stun gauge work and display. */
 void stngauge_work_clear() {
     sdat[0].cstn = 0;
     sdat[0].sflag = 0;

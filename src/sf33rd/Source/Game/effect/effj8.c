@@ -1,6 +1,6 @@
 /**
  * @file effj8.c
- * TODO: identify what this effect does
+ * Effect: Timer / Y-Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/effj8.h"

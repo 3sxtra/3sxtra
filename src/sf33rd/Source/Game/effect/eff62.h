@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_62_move(WORK_Other* ewk);
-s32 effect_62_init(WORK_Other* mwk, s16 ID);
+s32 effect_62_init(WORK_Other* mwk, s16 arg_ID);
 
 #endif

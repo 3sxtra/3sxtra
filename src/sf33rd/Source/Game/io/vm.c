@@ -1,6 +1,8 @@
 /**
  * @file vm.c
- * System save file name
+ * @brief System save file name definition.
+ *
+ * Part of the io module.
  */
 
 #include "common.h"

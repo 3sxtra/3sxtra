@@ -1,0 +1,133 @@
+name: Build (Linux ARM64 Cross-Compile)
+
+on:
+    push:
+        branches: [ "main" ]
+    pull_request:
+        branches: [ "main" ]
+
+jobs:
+    build:
+        name: Build (Linux ARM64 via cross-compile)
+        runs-on: ubuntu-latest
+        container:
+            image: ubuntu:25.04
+
+        steps:
+          - name: Install Git and cross-compile toolchain
+            env:
+                DEBIAN_FRONTEND: noninteractive
+                TZ: UTC
+            run: |
+                apt-get update
+                apt-get install -y git curl xz-utils nodejs
+
+                # ARM64 packages live on ports.ubuntu.com, not archive.ubuntu.com.
+                dpkg --add-architecture arm64
+
+                # Pin existing DEB822 sources to amd64-only (ubuntu:25.04 format)
+                for f in /etc/apt/sources.list.d/*.sources; do
+                    if [ -f "$f" ] && ! grep -q 'Architectures:' "$f"; then
+                        sed -i '/^Types:/a Architectures: amd64' "$f"
+                    fi
+                done
+
+                # Add arm64 sources from ports.ubuntu.com
+                printf '%s\n' \
+                    'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports plucky main restricted universe multiverse' \
+                    'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports plucky-updates main restricted universe multiverse' \
+                    'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports plucky-security main restricted universe multiverse' \
+                    > /etc/apt/sources.list.d/arm64-ports.list
+
+                apt-get update
+                apt-get install -y crossbuild-essential-arm64 cmake ninja-build make pkg-config clang zip file qemu-user-static python3-jinja2
+
+          - name: Checkout repository
+            uses: actions/checkout@v4
+            with:
+                submodules: recursive
+
+          - name: Cache dependencies
+            uses: actions/cache@v4
+            with:
+                path: third_party_arm64
+                key: linux-arm64-cross-deps-${{ hashFiles('build-deps.sh') }}
+
+          - name: Install ARM64 build dependencies
+            env:
+                DEBIAN_FRONTEND: noninteractive
+            run: |
+                apt-get install -y \
+                  libasound2-dev:arm64 libpulse-dev:arm64 \
+                  libx11-dev:arm64 libxext-dev:arm64 libxrandr-dev:arm64 \
+                  libxcursor-dev:arm64 libxfixes-dev:arm64 libxi-dev:arm64 \
+                  libxrender-dev:arm64 libxinerama-dev:arm64 libxtst-dev:arm64 \
+                  libxss-dev:arm64 libxkbcommon-dev:arm64 libxkbcommon-x11-dev:arm64 \
+                  libdrm-dev:arm64 libgbm-dev:arm64 \
+                  libgl1-mesa-dev:arm64 libgles2-mesa-dev:arm64 \
+                  libegl1-mesa-dev:arm64 libdbus-1-dev:arm64 libudev-dev:arm64 \
+                  libpipewire-0.3-dev:arm64 \
+                  libwayland-dev:arm64 libwayland-egl1:arm64 libdecor-0-dev:arm64 \
+                  libminiupnpc-dev:arm64 \
+                  wayland-protocols
+
+          - name: Install Rust toolchain (cross-compile)
+            uses: dtolnay/rust-toolchain@stable
+            with:
+                targets: aarch64-unknown-linux-gnu
+
+          - name: Pre-build dependencies
+            env:
+                THIRD_PARTY: ${{ github.workspace }}/third_party_arm64
+                CARGO_BUILD_TARGET: aarch64-unknown-linux-gnu
+                CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+                CC: aarch64-linux-gnu-gcc
+                CXX: aarch64-linux-gnu-g++
+                PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+                PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            run: |
+                # Let build-deps.sh handle everything (SDL3, SDL3_image, librashader, etc.)
+                cd $GITHUB_WORKSPACE
+                export THIRD_PARTY_DIR=$THIRD_PARTY
+                chmod +x ./build-deps.sh
+                ./build-deps.sh
+                
+                # Copy librashader to the location CMake expects (cross-compiled to aarch64 target dir)
+                mkdir -p $THIRD_PARTY/librashader/target/release
+                cp $THIRD_PARTY/librashader/target/aarch64-unknown-linux-gnu/release/liblibrashader_capi.a $THIRD_PARTY/librashader/target/release/
+            shell: bash
+
+          - name: Build for Linux ARM64
+            env:
+                THIRD_PARTY: ${{ github.workspace }}/third_party_arm64
+                PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+                PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            run: |
+                set -o pipefail
+                cmake -B build-linux-arm64 \
+                    -DCMAKE_BUILD_TYPE=Debug \
+                    -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-linux-gnu.cmake \
+                    -DENABLE_TESTS=OFF \
+                    -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_arm64 \
+                    -G Ninja
+                cmake --build build-linux-arm64 --parallel 2>&1 | tee build.log
+            shell: bash
+
+          - name: Verify binary architecture
+            run: |
+                file build-linux-arm64/3sx
+                file build-linux-arm64/3sx | grep -q "aarch64" && echo "✅ ARM64 binary confirmed" || (echo "❌ Not an ARM64 binary!" && exit 1)
+
+          - name: Save build log (local act)
+            if: ${{ always() && env.ACT }}
+            run: |
+                mkdir -p $GITHUB_WORKSPACE/build_output
+                cp build.log $GITHUB_WORKSPACE/build_output/build-log-arm64-cross.log
+                echo "✅ Build log saved to build_output/build-log-arm64-cross.log"
+
+          - name: Upload build log (GitHub)
+            if: ${{ always() && !env.ACT }}
+            uses: actions/upload-artifact@v4
+            with:
+                name: build-log-arm64-cross
+                path: build.log

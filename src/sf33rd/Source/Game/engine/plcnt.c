@@ -42,6 +42,7 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
+#include "sf33rd/Source/Game/training/training_state.h"
 #include "sf33rd/Source/Game/ui/count.h"
 
 #if defined(DEBUG)
@@ -50,47 +51,41 @@
 
 #include <SDL3/SDL.h>
 
-void pli_0000();
-void pli_1000();
-void move_player_work();
-void move_P1_move_P2();
-void move_P2_move_P1();
-void check_damage_hosei();
-void check_damage_hosei_nage(PLW* as, PLW* ds);
-void check_damage_hosei_dageki(PLW* w1, PLW* w2);
-s32 time_over_check();
-s32 will_die();
-void setup_settle_rno(s16 kos);
-void settle_check();
-s32 check_sa_resurrection(PLW* wk);
-s16 nekorobi_check(s8 ix);
-s16 footwork_check(s8 ix);
-void setup_gouki_wins();
-void setup_any_data();
-void set_base_data(PLW* wk, s16 ix);
+static void pli_0000();
+static void pli_1000();
+static void move_player_work();
+static void move_P1_move_P2();
+static void move_P2_move_P1();
+static void check_damage_hosei();
+static void check_damage_hosei_nage(PLW* as, PLW* ds);
+static void check_damage_hosei_dageki(PLW* w1, PLW* w2);
+static s32 time_over_check();
+static s32 will_die();
+static void setup_settle_rno(s16 kos);
+static void settle_check();
+static s32 check_sa_resurrection(PLW* wk);
+static s16 nekorobi_check(s8 ix);
+static s16 footwork_check(s8 ix);
+static void setup_gouki_wins();
+static void setup_any_data();
+static void set_base_data(PLW* wk, s16 ix);
 void set_base_data_metamorphose(PLW* wk, s16 dmid);
-void set_base_data_tiny(PLW* wk);
-void setup_other_data(PLW* wk);
-s16 remake_sa_store_max(s16 ix, s16 store_max);
-s16 remake_sa_gauge_len(s16 ix, s16 gauge_len);
+static void set_base_data_tiny(PLW* wk);
+static void setup_other_data(PLW* wk);
+static s16 remake_sa_store_max(s16 ix, s16 store_max);
+static s16 remake_sa_gauge_len(s16 ix, s16 gauge_len);
 void clear_super_arts_point(PLW* wk);
-void set_scrrrl();
+static void set_scrrrl();
 
-PLW plw[2];
-ZanzouTableEntry zanzou_table[2][48];
-SA_WORK super_arts[2];
-PiyoriType piyori_type[2];
-AppearanceType appear_type;
-s16 pcon_rno[4];
-bool round_slow_flag;
-bool pcon_dp_flag;
-u8 win_sp_flag;
-bool dead_voice_flag;
-
+// NOTE: rambod/ramhan are recalculated each frame by effk5.c from the effect state
+// (which IS serialized in EffectState). These do not need GameState serialization.
 UNK_1 rambod[2];
 UNK_2 ramhan[2];
-u32 omop_spmv_ng_table[2];  // FIXME: might not be necessary to put in GameState
-u32 omop_spmv_ng_table2[2]; // FIXME: might not be necessary to put in GameState
+
+// NOTE: omop_spmv_ng_table is computed once at match start from game settings by init_omop().
+// In netplay, both players should have identical settings. Not gameplay state, no serialization needed.
+u32 omop_spmv_ng_table[2];
+u32 omop_spmv_ng_table2[2];
 u16 vital_inc_timer;
 u16 vital_dec_timer;
 char cmd_sel[2];
@@ -98,23 +93,23 @@ s8 vib_sel[2];
 s16 sag_inc_timer[2];
 char no_sa[2];
 
-void plcnt_init();
-void plcnt_move();
-void plcnt_die();
+static void plcnt_init();
+static void plcnt_move();
+static void plcnt_die();
 
 void (*const player_main_process[3])() = { plcnt_init, plcnt_move, plcnt_die };
 
-void init_app_10000();
-void init_app_20000();
-void init_app_30000();
+static void init_app_10000();
+static void init_app_20000();
+static void init_app_30000();
 
 void (*const appear_initalize[4])() = { init_app_10000, init_app_10000, init_app_20000, init_app_30000 };
 
-void settle_type_00000();
-void settle_type_10000();
-void settle_type_20000();
-void settle_type_30000();
-void settle_type_40000();
+static void settle_type_00000();
+static void settle_type_10000();
+static void settle_type_20000();
+static void settle_type_30000();
+static void settle_type_40000();
 
 void (*const settle_process[5])() = {
     settle_type_00000, settle_type_10000, settle_type_20000, settle_type_30000, settle_type_40000
@@ -346,6 +341,7 @@ const s16** kizetsu_timer_table[9] = { tsuujyou_dageki,   hissatsu_dageki,   tsu
                                        hissatsu_nage,     super_arts_dageki, super_arts_nage,
                                        super_arts_dageki, super_arts_nage,   super_arts_dageki };
 
+/** @brief Main player controller — dispatches per-player state updates for both sides. */
 void Player_control() {
     pulpul_scene = 1;
 
@@ -396,21 +392,24 @@ end:
     }
 }
 
+/** @brief Requests drawing of both player sprites to the render queue. */
 void reqPlayerDraw() {
-    if (Debug_w[15] == 0) {
+    if (Debug_w[DEBUG_PLAYER_NO_DISP] == 0) {
         move_effect_work(6);
         sort_push_request(&plw[0].wu);
         sort_push_request(&plw[1].wu);
     }
 }
 
-void plcnt_init() {
+/** @brief Initializes player control work for both sides at match start. */
+static void plcnt_init() {
     plw[0].reserv_add_y = plw[1].reserv_add_y = 0;
     appear_initalize[appear_type]();
     move_player_work();
 }
 
-void init_app_10000() {
+/** @brief Initializes player appear state type 1 (standard entrance). */
+static void init_app_10000() {
     switch (pcon_rno[1]) {
     case 0:
         pli_0000();
@@ -422,11 +421,11 @@ void init_app_10000() {
         plw[0].scr_pos_set_flag = plw[1].scr_pos_set_flag = 1;
 
         if (Play_Type == 0) {
-            if (plw[0].wu.operator) {
+            if (plw[0].wu.pl_operator) {
                 mpp_w.useChar[My_char[0]]++;
             }
 
-            if (plw[1].wu.operator) {
+            if (plw[1].wu.pl_operator) {
                 mpp_w.useChar[My_char[1]]++;
             }
         }
@@ -440,13 +439,13 @@ void init_app_10000() {
     case 2:
         pcon_rno[1] = 3;
 
-        if (plw[0].wu.operator) {
+        if (plw[0].wu.pl_operator) {
             paring_ctr_vs[0][0] = paring_ctr_ori[0];
         } else {
             paring_ctr_vs[0][0] = 0;
         }
 
-        if (plw[1].wu.operator) {
+        if (plw[1].wu.pl_operator) {
             paring_ctr_vs[0][1] = paring_ctr_ori[1];
         } else {
             paring_ctr_vs[0][1] = 0;
@@ -461,7 +460,8 @@ void init_app_10000() {
     }
 }
 
-void init_app_20000() {
+/** @brief Initializes player appear state type 2 (between-round re-entrance). */
+static void init_app_20000() {
     s16 i;
 
     switch (pcon_rno[1]) {
@@ -487,7 +487,8 @@ void init_app_20000() {
     }
 }
 
-void init_app_30000() {
+/** @brief Initializes player appear state type 3 (victory pose setup). */
+static void init_app_30000() {
     s16 i;
 
     switch (pcon_rno[1]) {
@@ -535,14 +536,16 @@ void init_app_30000() {
     }
 }
 
-void pli_0000() {
+/** @brief Player init phase 0 — initial idle state setup. */
+static void pli_0000() {
     pcon_rno[1]++;
     round_slow_flag = false;
     SDL_zeroa(plw);
     setup_base_and_other_data();
 }
 
-void pli_1000() {
+/** @brief Player init phase 1 — work data setup and state machine start. */
+static void pli_1000() {
     if (plw[0].wu.routine_no[0] != 3) {
         return;
     }
@@ -562,11 +565,17 @@ void pli_1000() {
     ca_check_flag = 1;
 }
 
+/** @brief Player init phase 2 — additional init (currently a no-op). */
 void pli_0002() {
     // Do nothing
 }
 
-void plcnt_move() {
+/** @brief Per-frame player movement and state update (the core player tick). */
+static void plcnt_move() {
+    if (Mode_Type == MODE_NORMAL_TRAINING) {
+        update_training_state();
+    }
+
     if (time_over_check() != 0) {
         return;
     }
@@ -644,7 +653,8 @@ void plcnt_move() {
     grade_check_tairyokusa();
 }
 
-void plcnt_die() {
+/** @brief Handles player death/KO finalization. */
+static void plcnt_die() {
     plw[0].wu.dm_vital = plw[1].wu.dm_vital = 0;
     settle_process[pcon_rno[1]]();
     move_player_work();
@@ -654,7 +664,8 @@ void plcnt_die() {
     }
 }
 
-void settle_type_00000() {
+/** @brief Settle type 0: Processes a normal KO conclusion. */
+static void settle_type_00000() {
     switch (pcon_rno[2]) {
     case 0:
         plw[Winner_id].wu.dir_timer = 60;
@@ -698,7 +709,8 @@ void settle_type_00000() {
     }
 }
 
-void settle_type_10000() {
+/** @brief Settle type 1: Processes a time-over conclusion. */
+static void settle_type_10000() {
     switch (pcon_rno[2]) {
     case 0:
         if (nekorobi_check(0) && nekorobi_check(1)) {
@@ -715,7 +727,8 @@ void settle_type_10000() {
     }
 }
 
-void settle_type_20000() {
+/** @brief Settle type 2: Processes a double-KO conclusion. */
+static void settle_type_20000() {
     switch (pcon_rno[2]) {
     case 0:
         plw[0].wkey_flag = plw[1].wkey_flag = 1;
@@ -756,7 +769,8 @@ void settle_type_20000() {
     }
 }
 
-void settle_type_30000() {
+/** @brief Settle type 3: Processes a draw-game conclusion. */
+static void settle_type_30000() {
     switch (pcon_rno[2]) {
     case 0:
         break;
@@ -783,7 +797,8 @@ void settle_type_30000() {
     }
 }
 
-void settle_type_40000() {
+/** @brief Settle type 4: Processes a complete victory (judgement gals) conclusion. */
+static void settle_type_40000() {
     switch (pcon_rno[2]) {
     case 0:
         plw[Winner_id].wkey_flag = 1;
@@ -832,7 +847,8 @@ void settle_type_40000() {
     }
 }
 
-void move_player_work() {
+/** @brief Processes player work updates: movement, scroll, image data. */
+static void move_player_work() {
     if (plw[0].reserv_add_y) {
         plw[0].wu.xyz[1].disp.pos += plw[0].reserv_add_y;
         plw[0].reserv_add_y = 0;
@@ -858,7 +874,7 @@ void move_player_work() {
         break;
 
     default:
-        switch (plw[0].wu.operator + (plw[1].wu.operator * 2)) {
+        switch (plw[0].wu.pl_operator + (plw[1].wu.pl_operator * 2)) {
         case 1:
             move_P1_move_P2();
             break;
@@ -894,7 +910,8 @@ void move_player_work() {
     }
 }
 
-void move_P1_move_P2() {
+/** @brief Updates P1 first, then P2 (used for specific frame ordering). */
+static void move_P1_move_P2() {
     if (plw[0].do_not_move == 0) {
         Player_move(&plw[0], processed_lvbt(Convert_User_Setting(0)));
     }
@@ -912,7 +929,8 @@ void move_P1_move_P2() {
     }
 }
 
-void move_P2_move_P1() {
+/** @brief Updates P2 first, then P1 (used for specific frame ordering). */
+static void move_P2_move_P1() {
     if (plw[1].do_not_move == 0) {
         Player_move(&plw[1], processed_lvbt(Convert_User_Setting(1)));
     }
@@ -930,6 +948,7 @@ void move_P2_move_P1() {
     }
 }
 
+/** @brief Stores player sprite data for after-image (shadow trail) rendering. */
 void store_player_after_image_data() {
     s16 i;
 
@@ -951,7 +970,8 @@ void store_player_after_image_data() {
     }
 }
 
-void check_damage_hosei() {
+/** @brief Applies damage correction (hosei) based on difficulty and character. */
+static void check_damage_hosei() {
     plw[0].muriyari_ugoku = plw[0].hosei_amari;
     plw[1].muriyari_ugoku = plw[1].hosei_amari;
 
@@ -973,7 +993,8 @@ void check_damage_hosei() {
     plw[0].hosei_amari = plw[1].hosei_amari = 0;
 }
 
-void check_damage_hosei_nage(PLW* as, PLW* ds) {
+/** @brief Applies throw damage correction based on difficulty and mode. */
+static void check_damage_hosei_nage(PLW* as, PLW* ds) {
     if (as->kind_of_catch) {
         if (ds->hosei_amari != 0) {
             as->wu.xyz[0].disp.pos += ds->hosei_amari;
@@ -995,14 +1016,16 @@ void check_damage_hosei_nage(PLW* as, PLW* ds) {
     }
 }
 
-void check_damage_hosei_dageki(PLW* w1, PLW* w2) {
+/** @brief Applies strike damage correction based on difficulty and mode. */
+static void check_damage_hosei_dageki(PLW* w1, PLW* w2) {
     if ((w1->dm_hos_flag != 0) && (w2->wu.hit_stop == 0)) {
         w2->wu.xyz[0].disp.pos += w1->hosei_amari;
         w2->muriyari_ugoku += w1->hosei_amari;
     }
 }
 
-s32 time_over_check() {
+/** @brief Checks if the round timer has expired. */
+static s32 time_over_check() {
     if ((will_die() != 0) && (round_timer == 0)) {
         Winner_id = 0;
         Loser_id = 1;
@@ -1028,7 +1051,8 @@ s32 time_over_check() {
     return 0;
 }
 
-s32 will_die() {
+/** @brief Returns 1 if either player's vitality has reached zero. */
+static s32 will_die() {
     if (plw[0].wu.dm_vital > plw[0].wu.vital_new) {
         return 0;
     }
@@ -1040,7 +1064,8 @@ s32 will_die() {
     return 1;
 }
 
-void setup_settle_rno(s16 kos) {
+/** @brief Sets up the settle routine number for a given KO type. */
+static void setup_settle_rno(s16 kos) {
     pcon_rno[0] = 2;
     pcon_rno[1] = kos;
     pcon_rno[2] = 0;
@@ -1048,7 +1073,8 @@ void setup_settle_rno(s16 kos) {
     pcon_dp_flag = true;
 }
 
-void settle_check() {
+/** @brief Checks for round conclusion conditions (KO, time-over, draw). */
+static void settle_check() {
     while (1) {
         switch ((plw[0].dead_flag) + (plw[1].dead_flag * 2)) {
         case 1:
@@ -1107,7 +1133,8 @@ void settle_check() {
     }
 }
 
-s32 check_sa_resurrection(PLW* wk) {
+/** @brief Checks if a player's SA provides automatic resurrection (Gill). */
+static s32 check_sa_resurrection(PLW* wk) {
     if (check_sa_type_rebirth(wk) == 0) {
         return 0;
     }
@@ -1118,6 +1145,7 @@ s32 check_sa_resurrection(PLW* wk) {
     return 1;
 }
 
+/** @brief Checks if a player's SA provides rebirth-type resurrection. */
 s32 check_sa_type_rebirth(PLW* wk) {
     if ((wk->spmv_ng_flag & DIP_UNKNOWN_30) || (wk->spmv_ng_flag & DIP_UNKNOWN_31)) {
         return 0;
@@ -1134,7 +1162,8 @@ s32 check_sa_type_rebirth(PLW* wk) {
     return 1;
 }
 
-s16 nekorobi_check(s8 ix) {
+/** @brief Returns whether a player is currently in a knocked-down state. */
+static s16 nekorobi_check(s8 ix) {
     s16 rnum = 0;
 
     if ((plw[ix].wu.routine_no[1] == 1) && (plw[ix].wu.routine_no[2] == 0) && (plw[ix].wu.routine_no[3] > 2)) {
@@ -1144,7 +1173,8 @@ s16 nekorobi_check(s8 ix) {
     return rnum;
 }
 
-s16 footwork_check(s8 ix) {
+/** @brief Returns whether a player is currently performing footwork movement. */
+static s16 footwork_check(s8 ix) {
     s16 rnum = 0;
 
     if (plw[ix].wu.routine_no[1] == 0 && plw[ix].wu.routine_no[2] == 1) {
@@ -1154,6 +1184,7 @@ s16 footwork_check(s8 ix) {
     return rnum;
 }
 
+/** @brief Sets screen-quake parameters for a player's landing/impact. */
 void set_quake(PLW* wk) {
     if (wk->wu.hit_quake) {
         wk->wu.hit_quake--;
@@ -1167,6 +1198,7 @@ void set_quake(PLW* wk) {
     }
 }
 
+/** @brief Adds a delta to the player's next-frame position. */
 void add_next_position(PLW* wk) {
     wk->wu.position_x = wk->wu.xyz[0].disp.pos + wk->wu.next_x;
     wk->wu.position_y = wk->wu.xyz[1].disp.pos + wk->wu.next_y;
@@ -1174,7 +1206,8 @@ void add_next_position(PLW* wk) {
     wk->wu.next_y = 0;
 }
 
-void setup_gouki_wins() {
+/** @brief Sets up Gouki's win conditions for the hidden boss encounter. */
+static void setup_gouki_wins() {
     gouki_wins = 0;
 
     if (plw[Winner_id].player_number == 14) {
@@ -1182,6 +1215,7 @@ void setup_gouki_wins() {
     }
 }
 
+/** @brief Erases extra player-effect work items (projectiles, helpers). */
 void erase_extra_plef_work() {
     effect_work_list_init(0, 0);
     effect_work_list_init(1, 1);
@@ -1194,6 +1228,7 @@ void erase_extra_plef_work() {
     effect_work_list_init(6, -1);
 }
 
+/** @brief Sets up per-character base data and animation/damage tables. */
 void setup_base_and_other_data() {
     make_texcash_work(3);
     make_texcash_work(4);
@@ -1222,7 +1257,7 @@ void setup_base_and_other_data() {
     poison_flag[0] = 0;
     poison_flag[1] = 0;
 
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
         effect_E3_init(&plw[0]);
         effect_E3_init(&plw[1]);
         effect_E4_init(&plw[0]);
@@ -1230,7 +1265,8 @@ void setup_base_and_other_data() {
     }
 }
 
-void setup_any_data() {
+/** @brief Sets up miscellaneous per-character data (colors, weight, shadow). */
+static void setup_any_data() {
     set_base_data_tiny(&plw[0]);
     set_base_data_tiny(&plw[1]);
     setup_other_data(&plw[0]);
@@ -1247,13 +1283,14 @@ void setup_any_data() {
     }
 }
 
-void set_base_data(PLW* wk, s16 ix) {
+/** @brief Sets base data (move tables, animation data) for a player work item. */
+static void set_base_data(PLW* wk, s16 ix) {
     wk->wu.be_flag = 1;
     wk->wu.disp_flag = 0;
     wk->wu.blink_timing = ix;
     wk->wu.id = ix;
     wk->wu.work_id = 1;
-    wk->wu.operator = Operator_Status[ix];
+    wk->wu.pl_operator = Operator_Status[ix];
     wk->wu.charset_id = plid_data[My_char[ix]];
     wk->wkey_flag = wk->dead_flag = 0;
     set_char_base_data(&wk->wu);
@@ -1278,6 +1315,7 @@ void set_base_data(PLW* wk, s16 ix) {
     set_jugde_area(&wk->wu);
 }
 
+/** @brief Sets base data for a metamorphosed (transformed) character. */
 void set_base_data_metamorphose(PLW* wk, s16 dmid) {
     set_char_base_data(&wk->wu);
 
@@ -1291,7 +1329,8 @@ void set_base_data_metamorphose(PLW* wk, s16 dmid) {
     set_player_shadow(wk);
 }
 
-void set_base_data_tiny(PLW* wk) {
+/** @brief Sets up compact base data for a reduced-data character variant. */
+static void set_base_data_tiny(PLW* wk) {
     wk->wu.charset_id = plid_data[My_char[wk->wu.id]];
     wk->player_number = My_char[wk->wu.id];
     set_char_base_data(&wk->wu);
@@ -1310,6 +1349,7 @@ void set_base_data_tiny(PLW* wk) {
     set_player_shadow(wk);
 }
 
+/** @brief Configures the player's shadow sprite parameters. */
 void set_player_shadow(PLW* wk) {
     wk->wu.kage_flag = 1;
     wk->wu.kage_prio = 68;
@@ -1317,7 +1357,8 @@ void set_player_shadow(PLW* wk) {
     wk->wu.kage_char = kage_base[wk->player_number][1];
 }
 
-void setup_other_data(PLW* wk) {
+/** @brief Sets up other per-player data (SA config, damage tables). */
+static void setup_other_data(PLW* wk) {
     s16 i;
 
     if (wk->player_number == 0) {
@@ -1332,6 +1373,7 @@ void setup_other_data(PLW* wk) {
     effect_00_init(&wk->wu);
 }
 
+/** @brief Clears the chain-combo EX check state for a player. */
 void clear_chainex_check(s16 ix) {
     s16 i;
 
@@ -1340,6 +1382,7 @@ void clear_chainex_check(s16 ix) {
     }
 }
 
+/** @brief Sets the stun (kizetsu/piyo) status parameters for a player. */
 void set_kizetsu_status(s16 ix) {
     s16 plnum = My_char[ix];
 
@@ -1359,6 +1402,7 @@ void set_kizetsu_status(s16 ix) {
     }
 }
 
+/** @brief Clears the stun gauge and related work for a player. */
 void clear_kizetsu_point(PLW* wk) {
     wk->py->flag = 0;
     wk->py->time = 0;
@@ -1367,6 +1411,7 @@ void clear_kizetsu_point(PLW* wk) {
     wk->py->recover = pl_nr_piyo_tbl[wk->player_number];
 }
 
+/** @brief Sets up the Super Arts status (gauge, stock, type) for a player. */
 void set_super_arts_status(s16 ix) {
     const SA_DATA* saptr;
 
@@ -1397,7 +1442,8 @@ void set_super_arts_status(s16 ix) {
     super_arts[ix].ok = 0;
 }
 
-s16 remake_sa_store_max(s16 ix, s16 store_max) {
+/** @brief Adjusts SA stock maximum based on character-specific rules. */
+static s16 remake_sa_store_max(s16 ix, s16 store_max) {
     s16 num = store_max + sag_stock_omake[omop_sag_max_ix[ix]];
 
     if (num <= 0) {
@@ -1411,7 +1457,8 @@ s16 remake_sa_store_max(s16 ix, s16 store_max) {
     return num;
 }
 
-s16 remake_sa_gauge_len(s16 ix, s16 gauge_len) {
+/** @brief Adjusts SA gauge length based on character-specific rules. */
+static s16 remake_sa_gauge_len(s16 ix, s16 gauge_len) {
     s16 num = gauge_len + sag_length_omake[omop_sag_len_ix[ix]] * 8;
 
     if (num < 0x40) {
@@ -1425,6 +1472,7 @@ s16 remake_sa_gauge_len(s16 ix, s16 gauge_len) {
     return num;
 }
 
+/** @brief Sets up SA status using DC (Dreamcast) balance data. */
 void set_super_arts_status_dc(s16 ix) {
     const SA_DATA* saptr;
 
@@ -1449,6 +1497,7 @@ void set_super_arts_status_dc(s16 ix) {
     super_arts[ix].dtm_mul = 1;
 }
 
+/** @brief Clears a player's SA gauge and stock to zero. */
 void clear_super_arts_point(PLW* wk) {
     wk->sa->store = 0;
     wk->sa->gauge.s.h = 0;
@@ -1464,6 +1513,7 @@ void clear_super_arts_point(PLW* wk) {
     wk->sa->bacckup_g_h = 0;
 }
 
+/** @brief Checks if an active combo has ended and finalizes combo data. */
 s16 check_combo_end(s16 ix) {
     s16 rnum;
 
@@ -1506,7 +1556,8 @@ s16 check_combo_end(s16 ix) {
     return rnum;
 }
 
-void set_scrrrl() {
+/** @brief Sets the scroll direction flags for left/right screen boundaries. */
+static void set_scrrrl() {
     s16 scrc = get_center_position();
 
     scrr = scrc + 192;

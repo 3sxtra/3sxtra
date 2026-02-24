@@ -1,3 +1,10 @@
+/**
+ * @file OBJTEST.h
+ * @brief Public API for vibration/force-feedback data snapshot.
+ *
+ * Part of the debug module.
+ */
+
 #ifndef OBJTEST_H
 #define OBJTEST_H
 

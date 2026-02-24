@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -12,27 +13,28 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void end_1000_move();
-void end_1001_move();
-void end_1002_move();
-void end_1003_move();
+static void end_1000_move();
+static void end_1001_move();
+static void end_1002_move();
+static void end_1003_move();
 
-void end_1000_0000();
-void end_1000_1000();
-void end_1000_2000();
-void end_1000_4000();
+static void end_1000_0000();
+static void end_1000_1000();
+static void end_1000_2000();
+static void end_1000_4000();
 
-void end_1001_1000();
+static void end_1001_1000();
 
-void end_1002_1000();
+static void end_1002_1000();
 
-void end_1003_1000();
-void end_1003_2000();
+static void end_1003_1000();
+static void end_1003_2000();
 
 const s16 timer_10_tbl[6] = { 780, 720, 420, 780, 420, 660 };
 
 const s16 end_10_pos[6][2] = { { 256, 768 }, { 256, 512 }, { 256, 432 }, { 256, 432 }, { 256, 0 }, { 256, 256 } };
 
+/** @brief Yang's ending entry point — initialize and run all ending scenes. */
 void end_10000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -81,14 +83,18 @@ void end_10000(s16 pl_num) {
     }
 }
 
-void end_1000_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_1000_move() {
     void (*end_1000_jp[6])() = { end_1000_0000, end_1000_1000, end_1000_2000,
                                  end_1000_2000, end_1000_4000, end_1000_2000 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_1000_jp[end_w.r_no_2]();
 }
 
-void end_1000_0000() {
+/** @brief Scene 0 — initial background setup with effect and message. */
+static void end_1000_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -117,7 +123,8 @@ void end_1000_0000() {
     }
 }
 
-void end_1000_1000() {
+/** @brief Scene 1 — timed horizontal pan with message. */
+static void end_1000_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -156,7 +163,8 @@ void end_1000_1000() {
     }
 }
 
-void end_1000_2000() {
+/** @brief Scene 2–3 — fade to black panel with timed reveal. */
+static void end_1000_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -195,7 +203,8 @@ void end_1000_2000() {
     }
 }
 
-void end_1000_4000() {
+/** @brief Scene 4–5 — static background with message and optional fade. */
+static void end_1000_4000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -224,13 +233,17 @@ void end_1000_4000() {
     }
 }
 
-void end_1001_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_1001_move() {
     void (*end_101_jp[6])() = { end_X_com01, end_1001_1000, end_X_com01, end_X_com01, end_X_com01, end_X_com01 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_101_jp[end_w.r_no_2]();
 }
 
-void end_1001_1000() {
+/** @brief Layer 1 scene 1 — horizontal pan with effect. */
+static void end_1001_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -268,13 +281,17 @@ void end_1001_1000() {
     }
 }
 
-void end_1002_move() {
+/** @brief Dispatch to the current scene handler for background layer 2. */
+static void end_1002_move() {
     void (*end_102_jp[6])() = { end_X_com01, end_1002_1000, end_X_com01, end_X_com01, end_X_com01, end_X_com01 };
     bgw_ptr = &bg_w.bgw[2];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_102_jp[end_w.r_no_2]();
 }
 
-void end_1002_1000() {
+/** @brief Layer 2 scene 1 — horizontal pan with effect. */
+static void end_1002_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -311,13 +328,17 @@ void end_1002_1000() {
     }
 }
 
-void end_1003_move() {
+/** @brief Dispatch to the current scene handler for background layer 3. */
+static void end_1003_move() {
     void (*end_103_jp[6])() = { end_X_com01, end_1003_1000, end_1003_2000, end_X_com01, end_X_com01, end_X_com01 };
     bgw_ptr = &bg_w.bgw[5];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_103_jp[end_w.r_no_2]();
 }
 
-void end_1003_1000() {
+/** @brief Layer 3 scene 1 — horizontal pan with effects. */
+static void end_1003_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -359,7 +380,8 @@ void end_1003_1000() {
     }
 }
 
-void end_1003_2000() {
+/** @brief Layer 3 scene 2 — static background with position set. */
+static void end_1003_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

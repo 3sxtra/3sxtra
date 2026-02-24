@@ -1,3 +1,10 @@
+/**
+ * @file app_data.h
+ * @brief Per-character entrance-animation type lookup tables.
+ *
+ * Part of the animation module.
+ */
+
 #ifndef APP_DATA_H
 #define APP_DATA_H
 

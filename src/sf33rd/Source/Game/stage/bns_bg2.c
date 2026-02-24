@@ -15,6 +15,7 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Bonus Stage 2. */
 void Bonus_bg2() {
     bgw_ptr = &bg_w.bgw[1];
     bns11();
@@ -28,11 +29,15 @@ void Bonus_bg2() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Bonus Stage 2. */
 void bns11() {
     void (*bns11_jmp[2])() = { bns11_init00, bns11_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bns11_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Bonus Stage 2. */
 void bns11_init00() {
     bgw_ptr->r_no_0++;
 
@@ -49,7 +54,7 @@ void bns11_init00() {
     effect_05_init();
     effect_12_init(4);
 
-    if (!plw->wu.operator) {
+    if (!plw->wu.pl_operator) {
         effect_35_init(2, 1);
     } else {
         effect_35_init(2, 0);
@@ -60,16 +65,21 @@ void bns11_init00() {
     effect_35_init(2, 4);
 }
 
+/** @brief Per-frame movement handler for Bonus Stage 2 layer. */
 void bns11_move() {
     bg_base_x_move_check();
     bg_base_y_move_check();
 }
 
+/** @brief Background layer handler for Bonus Stage 2. */
 void bns12() {
     void (*bns12_jmp[2])() = { bns12_init00, bns12_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bns12_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Bonus Stage 2. */
 void bns12_init00() {
     bgw_ptr->r_no_0++;
 
@@ -84,16 +94,21 @@ void bns12_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Per-frame movement handler for Bonus Stage 2 layer. */
 void bns12_move() {
     bg_x_move_check();
     bg_y_move_check();
 }
 
+/** @brief Background layer handler for Bonus Stage 2. */
 void bns13() {
     void (*bns13_jmp[2])() = { bns13_init00, bns13_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bns13_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Bonus Stage 2. */
 void bns13_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -101,6 +116,7 @@ void bns13_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Per-frame movement handler for Bonus Stage 2 layer. */
 void bns13_move() {
     // Do nothing
 }

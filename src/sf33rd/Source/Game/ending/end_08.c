@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -12,16 +13,17 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void end_800_move();
+static void end_800_move();
 
-void end_8000_0000();
-void end_8000_0001();
-void end_8000_0002();
+static void end_8000_0000();
+static void end_8000_0001();
+static void end_8000_0002();
 
 const s16 timer_8_tbl[4] = { 840, 480, 900, 360 };
 
 const s16 end_8_pos[4][2] = { { 256, 768 }, { 256, 512 }, { 256, 0 }, { 768, 512 } };
 
+/** @brief Elena's ending entry point — initialize and run all ending scenes. */
 void end_08000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -64,13 +66,17 @@ void end_08000(s16 pl_num) {
     }
 }
 
-void end_800_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_800_move() {
     void (*end_800_jp[4])() = { end_8000_0000, end_8000_0001, end_8000_0002, end_8000_0002 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 4)
+        return;
     end_800_jp[end_w.r_no_2]();
 }
 
-void end_8000_0000() {
+/** @brief Scene 0 — horizontal pan with effect initialization. */
+static void end_8000_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -98,7 +104,8 @@ void end_8000_0000() {
     }
 }
 
-void end_8000_0001() {
+/** @brief Scene 1 — vertical pan with message. */
+static void end_8000_0001() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -125,7 +132,8 @@ void end_8000_0001() {
     }
 }
 
-void end_8000_0002() {
+/** @brief Scene 2–3 — static background with effects and optional fade. */
+static void end_8000_0002() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

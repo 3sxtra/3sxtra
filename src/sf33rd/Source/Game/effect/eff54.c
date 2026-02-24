@@ -1,6 +1,6 @@
 /**
  * @file eff54.c
- * TODO: identify what this effect does
+ * Effect: Texture / Cache Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff54.h"

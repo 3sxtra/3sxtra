@@ -1,6 +1,6 @@
 /**
  * @file eff70.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/eff70.h"
@@ -14,7 +14,7 @@
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-void Setup_Eff70(WORK_Other* ewk);
+static void Setup_Eff70(WORK_Other* ewk);
 
 void effect_70_move(WORK_Other* ewk) {
     if (Suicide[0] == 1) {
@@ -111,7 +111,10 @@ s32 effect_70_init(s16 id) {
     ewk->wu.dir_step = id;
     ewk->wu.dir_timer = 10;
 
-    if (permission_player[Present_Mode].ok[id] == 0) { // FIXME: Should this be moved to GameState?
+    // permission_player is menu/UI state (character unlock flags), not gameplay state.
+    // It's initialized at startup and set before gameplay begins, so both netplay
+    // clients will have identical values. No GameState serialization needed.
+    if (permission_player[Present_Mode].ok[id] == 0) {
         ewk->wu.my_bright_type = 1;
         ewk->wu.my_bright_level = 7;
         ewk->wu.my_clear_level = 80;
@@ -120,7 +123,7 @@ s32 effect_70_init(s16 id) {
     return 0;
 }
 
-void Setup_Eff70(WORK_Other* ewk) {
+static void Setup_Eff70(WORK_Other* ewk) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 70;
     ewk->wu.work_id = 16;

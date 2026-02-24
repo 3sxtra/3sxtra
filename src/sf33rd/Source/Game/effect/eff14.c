@@ -1,6 +1,6 @@
 /**
  * @file eff14.c
- * TODO: identify what this effect does
+ * Effect: Score / Bonus Display Effect (16x24 Digits)
  */
 
 #include "sf33rd/Source/Game/effect/eff14.h"

@@ -13,17 +13,23 @@
 #include "sf33rd/Source/Game/engine/pls01.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl01_exatt_table[18])(PLW*);
 
 const s16 pl01_ddt_dat[20][2] = { { 46, 11 }, { 32, 12 }, { 28, 13 }, { 16, 14 }, { 36, 15 }, { 16, 16 }, { 60, 17 },
                                   { 20, 18 }, { 24, 19 }, { 12, 20 }, { 16, 14 }, { 28, 13 }, { 28, 13 }, { 46, 11 },
                                   { 28, 13 }, { 24, 21 }, { 18, 22 }, { 52, 23 }, { 18, 16 }, { 38, 24 } };
 
+/** @brief Alex: extra attack dispatcher. */
 void pl01_extra_attack(PLW* wk) {
-    pl01_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl01_exatt_table[idx](wk);
 }
 
-void Att_PL01_DDT(PLW* wk) {
+/** @brief Alex: DDT (pro-wrestling throw) attack. */
+static void Att_PL01_DDT(PLW* wk) {
     PLW* twk = (PLW*)wk->wu.target_adrs;
 
     switch (wk->wu.routine_no[3]) {
@@ -65,7 +71,8 @@ void Att_PL01_DDT(PLW* wk) {
     }
 }
 
-void Att_PL01_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Alex: special action (tokushu koudou). */
+static void Att_PL01_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {

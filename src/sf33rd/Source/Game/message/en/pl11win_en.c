@@ -1,8 +1,3 @@
-/**
- * @file pl11win_en.c
- * Ken Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl11win_en.h"
 #include "common.h"
 
@@ -67,4 +62,4 @@ static s8 msgWinCtrPL11[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 2, 2, 2, 2, 2,
 };
 
-MessageTable pl11win_usa_tbl = { msgWinAdrPL11, msgWinCtrPL11 };
+MessageTable pl11win_en_tbl = { msgWinAdrPL11, msgWinCtrPL11 };

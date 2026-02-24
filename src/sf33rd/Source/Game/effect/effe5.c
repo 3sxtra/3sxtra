@@ -1,6 +1,6 @@
 /**
  * @file effe5.c
- * TODO: identify what this effect does
+ * Effect: After Image / Illusion Effect
  */
 
 #include "sf33rd/Source/Game/effect/effe5.h"
@@ -46,8 +46,8 @@ const u16 illusion_setup_table[13][2] = {
     { 0, 12 }, { 0, 13 }, { 0, 0 }, { 0, 15 }, { 0, 17 }, { 0, 18 },
 };
 
-s32 check_new_after_image(WORK_Other* ewk, PLW* mwk);
-void setup_illusion_data(WORK_Other* ewk, PLW* mwk);
+static s32 check_new_after_image(WORK_Other* ewk, PLW* mwk);
+static void setup_illusion_data(WORK_Other* ewk, PLW* mwk);
 
 void effect_E5_move(WORK_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
@@ -179,7 +179,7 @@ void effect_E5_move(WORK_Other* ewk) {
     }
 }
 
-void setup_illusion_data(WORK_Other* ewk, PLW* mwk) {
+static void setup_illusion_data(WORK_Other* ewk, PLW* mwk) {
     const u16* tblh = after_image_data[mwk->image_data_index];
 
     if (tblh[0] & 0x10) {
@@ -211,7 +211,7 @@ void setup_illusion_data(WORK_Other* ewk, PLW* mwk) {
     mwk->image_setup_flag = 1;
 }
 
-s32 check_new_after_image(WORK_Other* ewk, PLW* mwk) {
+static s32 check_new_after_image(WORK_Other* ewk, PLW* mwk) {
     if (mwk->image_setup_flag != 2) {
         return 0;
     }

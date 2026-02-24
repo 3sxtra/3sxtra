@@ -1,8 +1,3 @@
-/**
- * @file pl00tlk_en.c
- * Gill Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl00tlk_en.h"
 #include "common.h"
 
@@ -41,4 +36,4 @@ static s8** msgTalkAdrPL00[9] = {
 
 static s8 msgTalkCtrPL00[9] = { 1, 1, 2, 2, 2, 2, 2, 2, 1 };
 
-MessageTable pl00tlk_usa_tbl = { msgTalkAdrPL00, msgTalkCtrPL00 };
+MessageTable pl00tlk_en_tbl = { msgTalkAdrPL00, msgTalkCtrPL00 };

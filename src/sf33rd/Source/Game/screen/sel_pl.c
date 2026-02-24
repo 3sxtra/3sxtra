@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/screen/sel_pl.h"
 #include "common.h"
+#include "port/renderer.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/com/com_data.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -33,7 +34,6 @@
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/menu/menu.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
 #include "sf33rd/Source/Game/rendering/mmtmcnt.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/screen/next_cpu.h"
@@ -50,83 +50,90 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void Switch_Work();
-void Sel_PL_Control();
-void Sel_PL_Cont_1st();
-void Check_Use_Gill();
-void Sel_PL_Cont_2nd();
-void Sel_PL_Cont_3rd();
-void Sel_PL_Cont_4th();
-void Setup_Face_ID();
-void Setup_1st_Play_Type();
-void Setup_Face_Sub();
-void Setup_Select_Status();
-u8 Setup_Aborigine();
-void Setup_Cursor_Y();
-void Initialize_BG();
-void Setup_BG_General();
-void Setup_FACE_BG();
-s16 Setup_Face_X();
-s16 Setup_Face_Y();
-void Face_Control();
-void Face_1st();
-void Face_2nd();
-void Face_3rd();
-void Face_4th();
-void Move_Face_BG();
-void OBJ_Control();
-void OBJ_1st();
-void OBJ_2nd();
-void OBJ_3rd();
-void Setup_EFF69();
-void Go_Away_Red_Lines();
-void Player_Select_Control();
-void PL_Sel_1st();
-void PL_Sel_2nd();
-void PL_Sel_3rd();
-void PL_Sel_4th();
-void PL_Sel_5th();
-void Setup_Plates(s8 PL_id, s16 Time);
-void Sel_PL();
-void Sel_PL_1st();
-void Sel_PL_2nd();
-void Sel_PL_3rd();
-u16 Deley_Shot_Sub(s16 PL_id);
-void Sel_PL_4th();
-void Sel_PL_5th();
-void Sel_PL_6th();
-u16 Disposal_Of_Diagonal(u16 sw);
-void Sel_PL_Sub(s16 PL_id, u16 sw);
-void Sel_PL_Sub_CR(s16 PL_id);
-void Sel_PL_Sub_CL(s16 PL_id);
-void Sel_PL_Sub_CU(s16 PL_id);
-void Sel_PL_Sub_CD(s16 PL_id);
-void Auto_Repeat_Sub(s16 PL_id);
-u16 Auto_Repeat_Sub_Wife(s16 PL_id);
-void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */);
-void Check_Exit();
-void Exit_1st();
-void Exit_2nd();
-void Exit_3rd();
-void Exit_4th();
-void Exit_5th();
-void Exit_6th();
-void Exit_7th();
-void Handicap_1st();
-void Handicap_2nd();
-void Handicap_3rd();
-void Handicap_Control();
-void Handicap_1();
-void Handicap_2();
-void Handicap_3();
-void Handicap_4();
-void Handicap_Vital_Select(s16 PL_id);
-u16 Handicap_Vital_Move_Sub(u16 sw, s16 PL_id);
-void Handicap_Stage_Select(s16 PL_id);
-void Handicap_Stage_Move_Sub(u16 sw);
-void Correct_Control_Time(s16 PL_id);
-s32 Check_Boss(s16 PL_id);
-u8 Setup_Battle_Country();
+static void Switch_Work();
+static void Sel_PL_Control();
+static void Sel_PL_Cont_1st();
+static void Check_Use_Gill();
+static void Sel_PL_Cont_2nd();
+static void Sel_PL_Cont_3rd();
+static void Sel_PL_Cont_4th();
+static void Setup_Face_ID();
+static void Setup_1st_Play_Type();
+static void Setup_Face_Sub();
+static void Setup_Select_Status();
+static u8 Setup_Aborigine();
+static void Setup_Cursor_Y();
+static void Initialize_BG();
+static void Setup_BG_General();
+static void Setup_FACE_BG();
+static s16 Setup_Face_X();
+static s16 Setup_Face_Y();
+static void Face_Control();
+static void Face_1st();
+static void Face_2nd();
+static void Face_3rd();
+static void Face_4th();
+static void Move_Face_BG();
+static void OBJ_Control();
+static void OBJ_1st();
+static void OBJ_2nd();
+static void OBJ_3rd();
+static void Setup_EFF69();
+static void Go_Away_Red_Lines();
+static void Player_Select_Control();
+static void PL_Sel_1st();
+static void PL_Sel_2nd();
+static void PL_Sel_3rd();
+static void PL_Sel_4th();
+static void PL_Sel_5th();
+static void Setup_Plates(s8 PL_id, s16 Time);
+static void Sel_PL();
+static void Sel_PL_1st();
+static void Sel_PL_2nd();
+static void Sel_PL_3rd();
+static u16 Deley_Shot_Sub(s16 PL_id);
+static void Sel_PL_4th();
+static void Sel_PL_5th();
+static void Sel_PL_6th();
+static u16 Disposal_Of_Diagonal(u16 sw);
+static void Sel_PL_Sub(s16 PL_id, u16 sw);
+static void Sel_PL_Sub_CR(s16 PL_id);
+static void Sel_PL_Sub_CL(s16 PL_id);
+static void Sel_PL_Sub_CU(s16 PL_id);
+static void Sel_PL_Sub_CD(s16 PL_id);
+static void Auto_Repeat_Sub(s16 PL_id);
+static u16 Auto_Repeat_Sub_Wife(s16 PL_id);
+static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */);
+static void Check_Exit();
+static void Exit_1st();
+static void Exit_2nd();
+static void Exit_3rd();
+static void Exit_4th();
+static void Exit_5th();
+static void Exit_6th();
+static void Exit_7th();
+static void Handicap_1st();
+static void Handicap_2nd();
+static void Handicap_3rd();
+static void Handicap_Control();
+static void Handicap_1();
+static void Handicap_2();
+static void Handicap_3();
+static void Handicap_4();
+static void Handicap_Vital_Select(s16 PL_id);
+static u16 Handicap_Vital_Move_Sub(u16 sw, s16 PL_id);
+static void Handicap_Stage_Select(s16 PL_id);
+static void Handicap_Stage_Move_Sub(u16 sw);
+static void Correct_Control_Time(s16 PL_id);
+static s32 Check_Boss(s16 PL_id);
+static u8 Setup_Battle_Country();
+
+#define SEL_PL_CONT_JMP_COUNT 4
+#define FACE_JMP_COUNT 4
+#define OBJ_JMP_COUNT 3
+#define PL_SEL_JMP_COUNT 5
+#define SEL_PL_JMP_COUNT 6
+#define HANDICAP_JMP_COUNT 4
 
 u8 SEL_PL_X;
 s16 Play_Type_1st;
@@ -142,6 +149,7 @@ const u8 Repeat_Time_Data[3] = { 26, 9, 7 };
 
 const u8 Repeat_Time_Data_Wife[3] = { 1, 1, 1 };
 
+/** @brief Main character-select dispatcher — run controls, per-player select, and return exit flag. */
 s16 Select_Player() {
     SEL_PL_X = 0;
 
@@ -158,15 +166,16 @@ s16 Select_Player() {
     Sel_PL();
     Time_Over = false;
 
-    if (Check_Exit_Check() == 0 && Debug_w[24] == -1) {
+    if (Check_Exit_Check() == 0 && Debug_w[DEBUG_TIME_STOP] == -1) {
         SEL_PL_X = 0;
     }
 
     return SEL_PL_X;
 }
 
-void Switch_Work() {
-    if (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING) {
+/** @brief Mirror input in training mode so the champion’s inputs control both sides. */
+static void Switch_Work() {
+    if (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS) {
         return;
     }
 
@@ -209,10 +218,15 @@ void Switch_Work() {
     }
 }
 
-void Sel_PL_Control() {
-    void (*Sel_PL_Cont_Tbl[4])() = { Sel_PL_Cont_1st, Sel_PL_Cont_2nd, Sel_PL_Cont_3rd, Sel_PL_Cont_4th };
+/** @brief Top-level select-screen controller — run status, face, OBJ, player-select, and exit phases. */
+static void Sel_PL_Control() {
+    void (*Sel_PL_Cont_Tbl[SEL_PL_CONT_JMP_COUNT])() = {
+        Sel_PL_Cont_1st, Sel_PL_Cont_2nd, Sel_PL_Cont_3rd, Sel_PL_Cont_4th
+    };
     Setup_Select_Status();
-    Sel_PL_Cont_Tbl[S_No[0]]();
+    if (S_No[0] < SEL_PL_CONT_JMP_COUNT) {
+        Sel_PL_Cont_Tbl[S_No[0]]();
+    }
     Face_Control();
     OBJ_Control();
     ID2 = 0;
@@ -222,7 +236,8 @@ void Sel_PL_Control() {
     Check_Exit();
 }
 
-void Sel_PL_Cont_1st() {
+/** @brief Select control phase 1 — screen switch, clear state, build texcache, init BG/faces/timer. */
+static void Sel_PL_Cont_1st() {
     s16 xx;
 
     Switch_Screen(1);
@@ -280,7 +295,8 @@ void Sel_PL_Cont_1st() {
     effect_58_init(6, 20, 157);
 }
 
-void Check_Use_Gill() {
+/** @brief Unlock Gill if the player has used every other character at least once. */
+static void Check_Use_Gill() {
     s16 ix;
 
     if (Mode_Type == MODE_NETWORK) {
@@ -290,6 +306,13 @@ void Check_Use_Gill() {
     permission_player[1].ok[0] = 0;
     permission_player[4].ok[0] = 0;
     permission_player[5].ok[0] = 0;
+
+    if (save_w[Present_Mode].Unlock_All) {
+        permission_player[1].ok[0] = 1;
+        permission_player[4].ok[0] = 1;
+        permission_player[5].ok[0] = 1;
+        return;
+    }
 
     for (ix = 1; ix < 20; ix++) {
         if (save_w[1].PL_Color[0][ix] == 0) {
@@ -302,7 +325,8 @@ void Check_Use_Gill() {
     permission_player[5].ok[0] = 1;
 }
 
-void Sel_PL_Cont_2nd() {
+/** @brief Select control phase 2 — init screen-switch revival, request entry state, clear flash. */
+static void Sel_PL_Cont_2nd() {
     Switch_Screen(1);
     Switch_Screen_Init(1);
     S_No[0]++;
@@ -310,7 +334,8 @@ void Sel_PL_Cont_2nd() {
     Clear_Flash_No();
 }
 
-void Sel_PL_Cont_3rd() {
+/** @brief Select control phase 3 — wait for screen revival, then enable break-in and clear demo flag. */
+static void Sel_PL_Cont_3rd() {
     if (!Switch_Screen_Revival(0)) {
         return;
     }
@@ -324,11 +349,13 @@ void Sel_PL_Cont_3rd() {
     }
 }
 
-void Sel_PL_Cont_4th() {
+/** @brief Select control phase 4 — intentionally empty (placeholder). */
+static void Sel_PL_Cont_4th() {
     // Do nothing
 }
 
-void Setup_Face_ID() {
+/** @brief Populate ID_of_Face grid from the Face_Cursor_Data layout table. */
+static void Setup_Face_ID() {
     s16 x;
     s16 y;
 
@@ -339,7 +366,8 @@ void Setup_Face_ID() {
     }
 }
 
-void Setup_1st_Play_Type() {
+/** @brief Record the initial play-type so we know whether a second player joined later. */
+static void Setup_1st_Play_Type() {
     if (Play_Type == 1) {
         Play_Type_1st = 99;
     } else {
@@ -347,7 +375,8 @@ void Setup_1st_Play_Type() {
     }
 }
 
-void Setup_Face_Sub() {
+/** @brief Spawn all 19 character-face portrait effect objects on the grid. */
+static void Setup_Face_Sub() {
     s16 x;
 
     Complete_Face = 19;
@@ -357,29 +386,31 @@ void Setup_Face_Sub() {
     }
 }
 
-void Setup_Select_Status() {
-    if (plw[0].wu.operator) {
+/** @brief Compute Select_Status from operator flags and arts-complete state. */
+static void Setup_Select_Status() {
+    if (plw[0].wu.pl_operator) {
         Select_Status[0] = 1;
     } else {
         Select_Status[0] = 0;
     }
 
-    if (plw[1].wu.operator) {
+    if (plw[1].wu.pl_operator) {
         Select_Status[0] |= 2;
     }
 
-    if (Sel_Arts_Complete[0] != -1 && plw[0].wu.operator != 0) {
+    if (Sel_Arts_Complete[0] != -1 && plw[0].wu.pl_operator != 0) {
         Select_Status[1] = 1;
     } else {
         Select_Status[1] = 0;
     }
 
-    if (Sel_Arts_Complete[1] != -1 && plw[1].wu.operator != 0) {
+    if (Sel_Arts_Complete[1] != -1 && plw[1].wu.pl_operator != 0) {
         Select_Status[1] |= 2;
     }
 }
 
-u8 Setup_Aborigine() {
+/** @brief Determine Aborigine (which player selects first) from operator state. */
+static u8 Setup_Aborigine() {
     if (Select_Status[0] == 3) {
         return Aborigine = 153;
     }
@@ -391,7 +422,8 @@ u8 Setup_Aborigine() {
     return Aborigine = 1;
 }
 
-void Setup_Cursor_Y() {
+/** @brief Build the per-player Cursor_Y_Pos arrays from the Cursor_Y_Data table. */
+static void Setup_Cursor_Y() {
     s16 i;
     s16 j;
 
@@ -409,21 +441,24 @@ void Setup_Cursor_Y() {
     }
 }
 
-void Initialize_BG() {
+/** @brief Set up all background layers for the character-select screen. */
+static void Initialize_BG() {
     Setup_BG_General();
     Setup_BG(2, 512, 0);
     Setup_BG(3, 704, 0);
     Setup_FACE_BG();
 }
 
-void Setup_BG_General() {
+/** @brief General BG setup — init zoom, store old position, set family. */
+static void Setup_BG_General() {
     Zoomf_Init();
     bg_w.bgw[0].old_pos_x = bg_w.bgw[0].xy[0].disp.pos;
     bg_pos_hosei2();
     Bg_Family_Set();
 }
 
-void Setup_FACE_BG() {
+/** @brief Set up the face-grid BG layer position and family data. */
+static void Setup_FACE_BG() {
     s16 face_x;
     s16 face_y;
 
@@ -442,7 +477,8 @@ void Setup_FACE_BG() {
     Bg_Family_Set_Ex(1);
 }
 
-s16 Setup_Face_X() {
+/** @brief Return the X offset for the face-grid BG based on play type and aborigine. */
+static s16 Setup_Face_X() {
     if (Play_Type == 1) {
         return 604;
     }
@@ -454,7 +490,8 @@ s16 Setup_Face_X() {
     return 696;
 }
 
-s16 Setup_Face_Y() {
+/** @brief Return the Y offset for the face-grid BG based on play type and aborigine. */
+static s16 Setup_Face_Y() {
     if (Play_Type == 1) {
         return 0;
     }
@@ -466,13 +503,17 @@ s16 Setup_Face_Y() {
     return 0;
 }
 
-void Face_Control() {
-    void (*Face_Jmp_Tbl[4])() = { Face_1st, Face_2nd, Face_3rd, Face_4th };
-    Face_Jmp_Tbl[Face_No[0]]();
+/** @brief Face-panel state machine — dispatch face phase and move the BG. */
+static void Face_Control() {
+    void (*Face_Jmp_Tbl[FACE_JMP_COUNT])() = { Face_1st, Face_2nd, Face_3rd, Face_4th };
+    if (Face_No[0] < FACE_JMP_COUNT) {
+        Face_Jmp_Tbl[Face_No[0]]();
+    }
     Move_Face_BG();
 }
 
-void Face_1st() {
+/** @brief Face phase 1 — choose initial face layout (1P or 2P). */
+static void Face_1st() {
     if (Select_Status[0] == 3) {
         Face_No[0] = 3;
     } else {
@@ -480,7 +521,8 @@ void Face_1st() {
     }
 }
 
-void Face_2nd() {
+/** @brief Face phase 2 — slide face BG when second player joins or first completes. */
+static void Face_2nd() {
     if (Select_Status[0] == 3 && Face_MV_Request == 0) {
         Face_No[0] = 3;
         Face_MV_Time = 1;
@@ -515,7 +557,8 @@ void Face_2nd() {
     }
 }
 
-void Face_3rd() {
+/** @brief Face phase 3 — slide face BG back when both players are selecting. */
+static void Face_3rd() {
     if (Select_Status[0] != 3) {
         return;
     }
@@ -539,9 +582,11 @@ void Face_3rd() {
     bg_mvxy.d[0].sp = 0x8000;
 }
 
-void Face_4th() {}
+/** @brief Face phase 4 — no-op (face movement complete). */
+static void Face_4th() {}
 
-void Move_Face_BG() {
+/** @brief Apply pending face-move requests as effect_93 BG scrolls. */
+static void Move_Face_BG() {
     switch (Face_No[1]) {
     case 0:
         if (Face_MV_Request) {
@@ -561,12 +606,16 @@ void Move_Face_BG() {
     }
 }
 
-void OBJ_Control() {
-    void (*OBJ_Jmp_Tbl[3])() = { OBJ_1st, OBJ_2nd, OBJ_3rd };
-    OBJ_Jmp_Tbl[SO_No[0]]();
+/** @brief OBJ state machine — dispatch portrait/plate object initialisation phases. */
+static void OBJ_Control() {
+    void (*OBJ_Jmp_Tbl[OBJ_JMP_COUNT])() = { OBJ_1st, OBJ_2nd, OBJ_3rd };
+    if (SO_No[0] < OBJ_JMP_COUNT) {
+        OBJ_Jmp_Tbl[SO_No[0]]();
+    }
 }
 
-void OBJ_1st() {
+/** @brief OBJ phase 1 — spawn all character-select UI objects (portraits, name plates, effects). */
+static void OBJ_1st() {
     Setup_EFF69();
 
     if (Select_Status[0] != 3) {
@@ -660,7 +709,8 @@ void OBJ_1st() {
     Order_Timer[8] = 86;
 }
 
-void OBJ_2nd() {
+/** @brief OBJ phase 2 — reconfigure objects when a second player breaks in mid-select. */
+static void OBJ_2nd() {
     if (Select_Status[0] != 3) {
         return;
     }
@@ -722,9 +772,11 @@ void OBJ_2nd() {
     Order_Timer[8] = 1;
 }
 
-void OBJ_3rd() {}
+/** @brief OBJ phase 3 — no-op (object setup complete). */
+static void OBJ_3rd() {}
 
-void Setup_EFF69() {
+/** @brief Spawn the 5 red-line / decoration effect-69 objects. */
+static void Setup_EFF69() {
     s16 xx;
 
     for (xx = 0; xx < 5; xx++) {
@@ -733,7 +785,8 @@ void Setup_EFF69() {
     }
 }
 
-void Go_Away_Red_Lines() {
+/** @brief Dismiss all red-line decoration objects with a fade-out animation. */
+static void Go_Away_Red_Lines() {
     Order[0] = 2;
     Order_Timer[0] = 1;
     Order_Dir[0] = 8;
@@ -754,15 +807,19 @@ void Go_Away_Red_Lines() {
     Order_Dir[6] = 8;
 }
 
-void Player_Select_Control() {
-    void (*PL_Sel_Jmp_Tbl[5])() = { PL_Sel_1st, PL_Sel_2nd, PL_Sel_3rd, PL_Sel_4th, PL_Sel_5th };
+/** @brief Per-player select control — dispatch PL_Sel phases if the player is an operator. */
+static void Player_Select_Control() {
+    void (*PL_Sel_Jmp_Tbl[PL_SEL_JMP_COUNT])() = { PL_Sel_1st, PL_Sel_2nd, PL_Sel_3rd, PL_Sel_4th, PL_Sel_5th };
 
-    if (plw[ID2].wu.operator != 0) {
-        PL_Sel_Jmp_Tbl[SP_No[ID2][1]]();
+    if (plw[ID2].wu.pl_operator != 0) {
+        if (SP_No[ID2][1] < PL_SEL_JMP_COUNT) {
+            PL_Sel_Jmp_Tbl[SP_No[ID2][1]]();
+        }
     }
 }
 
-void PL_Sel_1st() {
+/** @brief PL_Sel phase 1 — init cursor state, spawn D8 effects, play voice; skip if already complete. */
+static void PL_Sel_1st() {
     s16 ret;
     s16 ret2;
 
@@ -788,22 +845,23 @@ void PL_Sel_1st() {
         effect_50_init(ID2, 2, 0);
         effect_50_init(ID2, 2, 1);
 
-        if (Debug_w[29]) {
-            My_char[0] = Debug_w[29] - 1;
+        if (Debug_w[DEBUG_MY_CHAR_PL1]) {
+            My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
         }
 
-        if (!Debug_w[30]) {
+        if (!Debug_w[DEBUG_MY_CHAR_PL2]) {
             return;
         }
 
-        My_char[1] = Debug_w[30] - 1;
+        My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
         return;
     }
 
     SP_No[ID2][1]++;
 }
 
-void PL_Sel_2nd() {
+/** @brief PL_Sel phase 2 — handle character confirmation via loading and SA-availability checks. */
+static void PL_Sel_2nd() {
     s16 ret;
     s16 ret2;
 
@@ -822,7 +880,7 @@ void PL_Sel_2nd() {
             Cursor_Timer[ID2] = 40;
             Go_Away_Red_Lines();
 
-            if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+            if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
                 S_No[3] = 1;
                 break;
             }
@@ -857,17 +915,21 @@ void PL_Sel_2nd() {
     }
 }
 
-void PL_Sel_3rd() {
+/** @brief PL_Sel phase 3 — wait for arts completion before advancing. */
+static void PL_Sel_3rd() {
     if (Sel_Arts_Complete[ID2] < 0) {
         SP_No[ID2][1]++;
     }
 }
 
-void PL_Sel_4th() {}
+/** @brief PL_Sel phase 4 — no-op placeholder. */
+static void PL_Sel_4th() {}
 
-void PL_Sel_5th() {}
+/** @brief PL_Sel phase 5 — no-op placeholder. */
+static void PL_Sel_5th() {}
 
-void Setup_Plates(s8 PL_id, s16 Time) {
+/** @brief Spawn the 3 super-art selection plates for the given player. */
+static void Setup_Plates(s8 PL_id, s16 Time) {
     Move_Super_Arts[PL_id] = 3;
     Select_Arts[PL_id] = 3;
     effect_79_init(PL_id, 0, Arts_Y_Data[Super_Arts[PL_id]][0], Time, 2);
@@ -875,15 +937,20 @@ void Setup_Plates(s8 PL_id, s16 Time) {
     effect_79_init(PL_id, 2, Arts_Y_Data[Super_Arts[PL_id]][2], Time, 2);
 }
 
-void Sel_PL() {
-    void (*Sel_PL_Jmp_Tbl[6])() = { Sel_PL_1st, Sel_PL_2nd, Sel_PL_3rd, Sel_PL_4th, Sel_PL_5th, Sel_PL_6th };
+/** @brief Per-player character-select state machine dispatcher. */
+static void Sel_PL() {
+    void (*Sel_PL_Jmp_Tbl[SEL_PL_JMP_COUNT])() = { Sel_PL_1st, Sel_PL_2nd, Sel_PL_3rd,
+                                                   Sel_PL_4th, Sel_PL_5th, Sel_PL_6th };
 
-    if (plw[ID].wu.operator != 0) {
-        Sel_PL_Jmp_Tbl[SP_No[ID][0]]();
+    if (plw[ID].wu.pl_operator != 0) {
+        if (SP_No[ID][0] < SEL_PL_JMP_COUNT) {
+            Sel_PL_Jmp_Tbl[SP_No[ID][0]]();
+        }
     }
 }
 
-void Sel_PL_1st() {
+/** @brief Sel_PL phase 1 — init cursor/auto-repeat state, spawn D8/voice, set Select_Start. */
+static void Sel_PL_1st() {
     u16 Rnd;
 
     if (Exit_No) {
@@ -925,7 +992,8 @@ void Sel_PL_1st() {
     Arts_Y[ID] = Super_Arts[ID] = Last_Super_Arts[ID];
 }
 
-void Sel_PL_2nd() {
+/** @brief Sel_PL phase 2 — wait for Select_Start countdown, then enable cursor input. */
+static void Sel_PL_2nd() {
     if (Select_Start[ID] > 0) {
         return;
     }
@@ -941,7 +1009,8 @@ void Sel_PL_2nd() {
     }
 }
 
-void Sel_PL_3rd() {
+/** @brief Sel_PL phase 3 — handle cursor+button input per-player (or demo), commit character on press. */
+static void Sel_PL_3rd() {
     if (Stop_Cursor[ID] != 0 || Face_Move != 0) {
         return;
     }
@@ -962,12 +1031,12 @@ void Sel_PL_3rd() {
         return;
     }
 
-    if (Debug_w[29]) {
-        My_char[0] = Debug_w[29] - 1;
+    if (Debug_w[DEBUG_MY_CHAR_PL1]) {
+        My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
     }
 
-    if (Debug_w[30]) {
-        My_char[1] = Debug_w[30] - 1;
+    if (Debug_w[DEBUG_MY_CHAR_PL2]) {
+        My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
     }
 
     Push_LDREQ_Queue_Player(ID, My_char[ID]);
@@ -994,7 +1063,8 @@ void Sel_PL_3rd() {
     Check_Same_CPU(ID);
 }
 
-u16 Deley_Shot_Sub(s16 PL_id) {
+/** @brief Delayed-shot sub — accumulate attack buttons over a short window for multi-button detection. */
+static u16 Deley_Shot_Sub(s16 PL_id) {
     u16 sw;
     u16 lever;
 
@@ -1044,14 +1114,16 @@ u16 Deley_Shot_Sub(s16 PL_id) {
     return lever;
 }
 
-void Sel_PL_4th() {
+/** @brief Sel_PL phase 4 — wait for arts plate animation to finish, then enable cursor. */
+static void Sel_PL_4th() {
     if (!Select_Arts[ID]) {
         SP_No[ID][0]++;
         Stop_Cursor[ID] = 0;
     }
 }
 
-void Sel_PL_5th() {
+/** @brief Sel_PL phase 5 — super-art selection input; check boss on completion. */
+static void Sel_PL_5th() {
     if (Stop_Cursor[ID] != 0 || Face_Move != 0) {
         return;
     }
@@ -1074,20 +1146,22 @@ void Sel_PL_5th() {
 
     SP_No[ID][0]++;
 
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
         S_No[3] = 1;
     }
 
-    if (plw[0].wu.operator == 0 || plw[1].wu.operator == 0) {
+    if (plw[0].wu.pl_operator == 0 || plw[1].wu.pl_operator == 0) {
         Check_Boss(ID);
     }
 }
 
-void Sel_PL_6th() {
+/** @brief Sel_PL phase 6 — no-op (selection complete). */
+static void Sel_PL_6th() {
     // Do nothing
 }
 
-u16 Disposal_Of_Diagonal(u16 sw) {
+/** @brief Strip diagonal input so only cardinal directions remain for the face grid. */
+static u16 Disposal_Of_Diagonal(u16 sw) {
     sw &= SWK_DIRECTIONS;
 
     if (sw == SWK_UP) {
@@ -1109,7 +1183,8 @@ u16 Disposal_Of_Diagonal(u16 sw) {
     return sw &= (SWK_LEFT | SWK_RIGHT);
 }
 
-void Sel_PL_Sub(s16 PL_id, u16 sw) {
+/** @brief Character-grid cursor logic — move cursor, play SE, confirm on attack press. */
+static void Sel_PL_Sub(s16 PL_id, u16 sw) {
     Cursor_Move[PL_id] = 0;
 
     if (Sel_PL_Complete[PL_id]) {
@@ -1176,7 +1251,8 @@ void Sel_PL_Sub(s16 PL_id, u16 sw) {
     Correct_Control_Time(PL_id);
 }
 
-void Sel_PL_Sub_CR(s16 PL_id) {
+/** @brief Move cursor right on the face grid, wrapping rows. */
+static void Sel_PL_Sub_CR(s16 PL_id) {
     if (Cursor_X[PL_id] == 7) {
         return;
     }
@@ -1206,7 +1282,8 @@ void Sel_PL_Sub_CR(s16 PL_id) {
     } while (!permission_player[Present_Mode].ok[Face_Cursor_Data[Cursor_Y[PL_id]][Cursor_X[PL_id]]]);
 }
 
-void Sel_PL_Sub_CL(s16 PL_id) {
+/** @brief Move cursor left on the face grid, wrapping rows. */
+static void Sel_PL_Sub_CL(s16 PL_id) {
     if (Cursor_X[PL_id] == 7) {
         return;
     }
@@ -1242,7 +1319,8 @@ void Sel_PL_Sub_CL(s16 PL_id) {
     } while (!permission_player[Present_Mode].ok[Face_Cursor_Data[Cursor_Y[PL_id]][Cursor_X[PL_id]]]);
 }
 
-void Sel_PL_Sub_CU(s16 PL_id) {
+/** @brief Move cursor up on the face grid, wrapping columns. */
+static void Sel_PL_Sub_CU(s16 PL_id) {
     Cursor_Move[PL_id] = 1;
 
     do {
@@ -1273,7 +1351,8 @@ void Sel_PL_Sub_CU(s16 PL_id) {
     } while (!permission_player[Present_Mode].ok[Face_Cursor_Data[Cursor_Y[PL_id]][Cursor_X[PL_id]]]);
 }
 
-void Sel_PL_Sub_CD(s16 PL_id) {
+/** @brief Move cursor down on the face grid, wrapping columns. */
+static void Sel_PL_Sub_CD(s16 PL_id) {
     Cursor_Move[PL_id] = 1;
 
     do {
@@ -1304,7 +1383,8 @@ void Sel_PL_Sub_CD(s16 PL_id) {
     } while (!permission_player[Present_Mode].ok[Face_Cursor_Data[Cursor_Y[PL_id]][Cursor_X[PL_id]]]);
 }
 
-void Auto_Repeat_Sub(s16 PL_id) {
+/** @brief Auto-repeat logic for held directions on the character grid (accelerating repeat). */
+static void Auto_Repeat_Sub(s16 PL_id) {
     u16 sw;
 
     if (Demo_Flag == 0) {
@@ -1395,7 +1475,8 @@ void Auto_Repeat_Sub(s16 PL_id) {
     }
 }
 
-u16 Auto_Repeat_Sub_Wife(s16 PL_id) {
+/** @brief Auto-repeat logic for the super-art plate (up/down only, instant repeat). */
+static u16 Auto_Repeat_Sub_Wife(s16 PL_id) {
     u16 sw;
 
     if (Cursor_Move[PL_id] || Demo_Flag == 0) {
@@ -1456,7 +1537,8 @@ u16 Auto_Repeat_Sub_Wife(s16 PL_id) {
     return 0;
 }
 
-void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
+/** @brief Super-art selector — move art plate up/down, confirm on attack. */
+static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
     u16 lever_sw;
 
     if (Sel_Arts_Complete[PL_id]) {
@@ -1524,18 +1606,21 @@ void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
     }
 }
 
-void Check_Exit() {
+/** @brief Exit state machine dispatcher — run the active exit/handicap phase. */
+static void Check_Exit() {
     void (*Sel_Exit_Tbl[10])() = { Exit_1st, Exit_2nd, Exit_3rd,     Exit_4th,     Exit_5th,
                                    Exit_6th, Exit_7th, Handicap_1st, Handicap_2nd, Handicap_3rd };
     Sel_Exit_Tbl[Exit_No]();
 }
 
-void Exit_1st() {
-    if (plw[0].wu.operator != 0 && Sel_Arts_Complete[0] >= 0) {
+/** @brief Exit phase 1 — wait until all operators have arts complete, dismiss red lines, route to handicap or normal
+ * exit. */
+static void Exit_1st() {
+    if (plw[0].wu.pl_operator != 0 && Sel_Arts_Complete[0] >= 0) {
         return;
     }
 
-    if (plw[1].wu.operator != 0 && Sel_Arts_Complete[1] >= 0) {
+    if (plw[1].wu.pl_operator != 0 && Sel_Arts_Complete[1] >= 0) {
         return;
     }
 
@@ -1562,7 +1647,8 @@ void Exit_1st() {
     }
 }
 
-void Exit_2nd() {
+/** @brief Exit phase 2 — determine battle country/stage, queue BG load, start exit timer. */
+static void Exit_2nd() {
     s16 xx;
 
     S_No[1] = 0;
@@ -1575,8 +1661,8 @@ void Exit_2nd() {
         bg_w.stage = Battle_Country;
         bg_w.area = 0;
 
-        if (Debug_w[31]) {
-            Battle_Country = bg_w.stage = Debug_w[31] - 1;
+        if (Debug_w[DEBUG_STAGE_SELECT]) {
+            Battle_Country = bg_w.stage = Debug_w[DEBUG_STAGE_SELECT] - 1;
         }
 
         Push_LDREQ_Queue_BG(bg_w.stage + 0);
@@ -1598,7 +1684,8 @@ void Exit_2nd() {
     }
 }
 
-void Exit_3rd() {
+/** @brief Exit phase 3 — run Select_CPU_First, then set EM_Rank for the upcoming fight. */
+static void Exit_3rd() {
     if (!Select_CPU_First()) {
         return;
     }
@@ -1615,7 +1702,8 @@ void Exit_3rd() {
     EM_Rank = 0;
 }
 
-void Exit_4th() {
+/** @brief Exit phase 4 — fade in, start BGM, spawn VS-screen objects. */
+static void Exit_4th() {
     FadeInit();
     FadeIn(0, 4, 8);
     Exit_No++;
@@ -1661,7 +1749,8 @@ void Exit_4th() {
     Order_Dir[42] = 5;
 }
 
-void Exit_5th() {
+/** @brief Exit phase 5 — count down while fading, then advance. */
+static void Exit_5th() {
     Exit_Timer--;
 
     if (!FadeIn(0, 4, 8)) {
@@ -1675,16 +1764,13 @@ void Exit_5th() {
     }
 }
 
-void Exit_6th() {
+/** @brief Exit phase 6 — wait for all loads, then count down exit timer and init omop. */
+static void Exit_6th() {
     if (!Check_PL_Load()) {
         return;
     }
 
     if (!Check_LDREQ_Queue_BG(bg_w.stage + 0)) {
-        return;
-    }
-
-    if (!sndCheckVTransStatus(0)) {
         return;
     }
 
@@ -1699,13 +1785,15 @@ void Exit_6th() {
     }
 }
 
-void Exit_7th() {
+/** @brief Exit phase 7 — set final battle stage and signal exit. */
+static void Exit_7th() {
     bg_w.stage = Battle_Country;
     bg_w.area = 0;
     SEL_PL_X = 1;
 }
 
-void Handicap_1st() {
+/** @brief Handicap phase 1 — spawn handicap menu UI (vital bars, stage selector, labels). */
+static void Handicap_1st() {
     Exit_No++;
     Decide_Stage = 0;
     Menu_Common_Init();
@@ -1745,14 +1833,16 @@ void Handicap_1st() {
     effect_99_init(255, 1, 0x70A7, 4, 4, 0);
 }
 
-void Handicap_2nd() {
+/** @brief Handicap phase 2 — run per-player handicap control. */
+static void Handicap_2nd() {
     ID2 = 0;
     Handicap_Control();
     ID2 = 1;
     Handicap_Control();
 }
 
-void Handicap_3rd() {
+/** @brief Handicap phase 3 — fade BGM and return to exit phase 1 when timer expires. */
+static void Handicap_3rd() {
     if (S_Timer == 9) {
         SsBgmFadeOut(0x1000);
     }
@@ -1762,12 +1852,16 @@ void Handicap_3rd() {
     }
 }
 
-void Handicap_Control() {
-    void (*Handicap_Jmp_Tbl[4])() = { Handicap_1, Handicap_2, Handicap_3, Handicap_4 };
-    Handicap_Jmp_Tbl[SP_No[ID2][2]]();
+/** @brief Per-player handicap sub-state machine dispatcher. */
+static void Handicap_Control() {
+    void (*Handicap_Jmp_Tbl[HANDICAP_JMP_COUNT])() = { Handicap_1, Handicap_2, Handicap_3, Handicap_4 };
+    if (SP_No[ID2][2] < HANDICAP_JMP_COUNT) {
+        Handicap_Jmp_Tbl[SP_No[ID2][2]]();
+    }
 }
 
-void Handicap_1() {
+/** @brief Handicap sub 1 — vital-bar selection for this player; advance when confirmed. */
+static void Handicap_1() {
     Handicap_Vital_Select(ID2);
 
     if (!(IO_Result & 0x100)) {
@@ -1792,7 +1886,8 @@ void Handicap_1() {
     }
 }
 
-void Handicap_2() {
+/** @brief Handicap sub 2 — wait or go back if other player cancelled; otherwise proceed to stage. */
+static void Handicap_2() {
     u16 sw;
 
     if (ID2 == 0) {
@@ -1819,7 +1914,8 @@ void Handicap_2() {
 
 u8 hc3alphaadd = { 1 };
 
-void Handicap_3() {
+/** @brief Handicap sub 3 — stage selection with flashing cursor; back or confirm. */
+static void Handicap_3() {
     Handicap_Stage_Select(ID2);
 
     if (IO_Result & 0x100) {
@@ -1858,27 +1954,30 @@ void Handicap_3() {
 
     if (ID2) {
         f32 dmypos[8] = { 296.0f, 90.0f, 296.0f, 98.0f, 284.0f, 90.0f, 268.0f, 112.0f };
-        njdp2d_sort(dmypos, PrioBase[2], (hc3alpha + 48) * 0x1000000 | 0xFFFFFF, 0);
+        Renderer_Queue2DPrimitive(dmypos, PrioBase[2], (hc3alpha + 48) * 0x1000000 | 0xFFFFFF, 0);
     } else {
         f32 dmypos[8] = { 88.0f, 90.0f, 88.0f, 98.0f, 100.0f, 90.0f, 116.0f, 112.0f };
-        njdp2d_sort(dmypos, PrioBase[2], (hc3alpha + 48) * 0x1000000 | 0xFFFFFF, 0);
+        Renderer_Queue2DPrimitive(dmypos, PrioBase[2], (hc3alpha + 48) * 0x1000000 | 0xFFFFFF, 0);
     }
 }
 
-void Handicap_4() {
+/** @brief Handicap sub 4 — wait for both players to finish, then advance to exit timer. */
+static void Handicap_4() {
     if (SP_No[0][2] > 0 && SP_No[1][2] > 0) {
         Exit_No = 9;
         S_Timer = 60;
     }
 }
 
-void Handicap_Vital_Select(s16 PL_id) {
+/** @brief Read pad input and process vital-bar handicap lever movement. */
+static void Handicap_Vital_Select(s16 PL_id) {
     Setup_Pad_or_Stick();
     IO_Result = Check_Menu_Lever(PL_id, 0);
     Handicap_Vital_Move_Sub(IO_Result, PL_id);
 }
 
-u16 Handicap_Vital_Move_Sub(u16 sw, s16 PL_id) {
+/** @brief Move the vital-bar handicap slider left/right (direction swapped for 2P). */
+static u16 Handicap_Vital_Move_Sub(u16 sw, s16 PL_id) {
     if (PL_id == 0) {
         switch (sw) {
         case SWK_LEFT:
@@ -1924,13 +2023,15 @@ u16 Handicap_Vital_Move_Sub(u16 sw, s16 PL_id) {
     return 0;
 }
 
-void Handicap_Stage_Select(s16 PL_id) {
+/** @brief Read pad input and process stage-select lever movement. */
+static void Handicap_Stage_Select(s16 PL_id) {
     Setup_Pad_or_Stick();
     IO_Result = Check_Menu_Lever(PL_id, 0);
     Handicap_Stage_Move_Sub(IO_Result);
 }
 
-void Handicap_Stage_Move_Sub(u16 sw) {
+/** @brief Move the stage selector left/right, wrapping and skipping stage 17. */
+static void Handicap_Stage_Move_Sub(u16 sw) {
     switch (sw) {
     case SWK_LEFT:
         if ((VS_Stage -= 1) < 0) {
@@ -1958,7 +2059,8 @@ void Handicap_Stage_Move_Sub(u16 sw) {
     }
 }
 
-void Correct_Control_Time(s16 PL_id) {
+/** @brief Reduce the select timer based on the player’s continue count. */
+static void Correct_Control_Time(s16 PL_id) {
     u8 xx;
     u8 zz;
 
@@ -1993,7 +2095,8 @@ void Correct_Control_Time(s16 PL_id) {
     SC_Personal_Time[PL_id] = Control_Time;
 }
 
-s32 Check_Boss(s16 PL_id) {
+/** @brief If the player is at boss stage and hasn’t seen the intro, force max time and flag Break_Into_CPU. */
+static s32 Check_Boss(s16 PL_id) {
     if (VS_Index[Player_id] >= 9 && Introduce_Boss[Player_id][1] == 0) {
         Control_Time = Limit_Time;
         SC_Personal_Time[PL_id] = Control_Time;
@@ -2003,7 +2106,8 @@ s32 Check_Boss(s16 PL_id) {
     return Break_Into_CPU = 0;
 }
 
-u8 Setup_Battle_Country() {
+/** @brief Pick the battle stage from VS_Stage, random, or character match-up. */
+static u8 Setup_Battle_Country() {
     s16 Rnd32;
 
     if (Mode_Type == MODE_VERSUS) {

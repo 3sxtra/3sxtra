@@ -1,6 +1,6 @@
 /**
  * @file eff29.c
- * TODO: identify what this effect does
+ * Effect: Vanish / Timeout Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff29.h"

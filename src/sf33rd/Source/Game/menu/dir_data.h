@@ -1,3 +1,10 @@
+/**
+ * @file dir_data.h
+ * @brief System Direction (dipswitch) menu data tables.
+ *
+ * Part of the menu module.
+ */
+
 #ifndef DIR_DATA_H
 #define DIR_DATA_H
 

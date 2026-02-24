@@ -1,3 +1,10 @@
+/**
+ * @file demo00.h
+ * @brief Public API for boot-sequence screens (warning, Capcom logo, cursor).
+ *
+ * Part of the demo module.
+ */
+
 #ifndef DEMO00_H
 #define DEMO00_H
 

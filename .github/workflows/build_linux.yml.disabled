@@ -1,0 +1,56 @@
+name: Build (Linux)
+
+on:
+    push:
+        branches: [ "main" ]
+    pull_request:
+        branches: [ "main" ]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+          - name: Checkout repository
+            uses: actions/checkout@v4
+            with:
+                submodules: recursive
+
+          - name: Cache dependencies
+            uses: actions/cache@v4
+            with:
+                path: third_party_linux
+                key: linux-x64-deps-${{ hashFiles('build-deps.sh') }}
+
+          - name: Install Rust toolchain
+            uses: dtolnay/rust-toolchain@stable
+
+          - name: Install dependencies
+            run: |
+                sudo apt update
+                sudo apt install -y $(cat tools/requirements-ubuntu-sdl3.txt)
+                sudo apt install -y clang curl python3-jinja2
+            shell: bash
+
+          - name: Build for Linux
+            env:
+                THIRD_PARTY: ${{ github.workspace }}/third_party_linux
+            run: |
+                set -o pipefail
+                CC=clang CXX=clang++ cmake -B build-linux -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=OFF -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_linux
+                cmake --build build-linux --parallel 2>&1 | tee build.log
+            shell: bash
+
+          - name: Save build log (local act)
+            if: ${{ always() && env.ACT }}
+            run: |
+                mkdir -p $GITHUB_WORKSPACE/build_output
+                cp build.log $GITHUB_WORKSPACE/build_output/build-log-linux.log
+                echo "✅ Build log saved to build_output/build-log-linux.log"
+
+          - name: Upload build log (GitHub)
+            if: ${{ always() && !env.ACT }}
+            uses: actions/upload-artifact@v4
+            with:
+                name: build-log
+                path: build.log

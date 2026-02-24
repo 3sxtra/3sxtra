@@ -18,6 +18,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Santos Harbor, Brazil stage. */
 void BG090() {
     bgw_ptr = &bg_w.bgw[1];
     bg0902();
@@ -34,6 +35,7 @@ void BG090() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Santos Harbor, Brazil. */
 void bg0901() {
     void (*bg0901_jmp[3])() = { bg0901_init00, demo90_base, bg_move_common };
 
@@ -42,9 +44,12 @@ void bg0901() {
         return;
     }
 
+    if (bgw_ptr->r_no_0 >= 3)
+        return;
     bg0901_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Santos Harbor, Brazil. */
 void bg0901_init00() {
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
     bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
@@ -52,6 +57,7 @@ void bg0901_init00() {
     bg090_demo_check();
 }
 
+/** @brief Background layer handler for Santos Harbor, Brazil. */
 void bg0902() {
     void (*bg0902_jmp[3])() = { bg0902_init00, demo90_base, bg_base_move_common };
 
@@ -60,9 +66,12 @@ void bg0902() {
         return;
     }
 
+    if (bgw_ptr->r_no_0 >= 3)
+        return;
     bg0902_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Santos Harbor, Brazil. */
 void bg0902_init00() {
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
     bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
@@ -73,6 +82,7 @@ void bg0902_init00() {
     effect_68_init();
 }
 
+/** @brief Background layer handler for Santos Harbor, Brazil. */
 void bg_fam0900() {
     if (win_sp_flag) {
         jijii_win_bg2();
@@ -123,6 +133,7 @@ void bg_fam0900() {
     }
 }
 
+/** @brief Check and set up demo-mode for Santos Harbor, Brazil. */
 void bg090_demo_check() {
     s16 pos_w;
 
@@ -141,6 +152,7 @@ void bg090_demo_check() {
     bgw_ptr->xy[1].cal = bgw_ptr->wxy[1].cal = bgw_ptr->speed_y * pos_w;
 }
 
+/** @brief Background layer handler for Santos Harbor, Brazil. */
 void demo90_base() {
     s16 chk_pl;
 
@@ -190,6 +202,7 @@ void demo90_base() {
     }
 }
 
+/** @brief Win animation background handler for Santos Harbor, Brazil. */
 void jijii_win_bg() {
     if ((EXE_flag || Game_pause)) {
         return;
@@ -212,6 +225,7 @@ void jijii_win_bg() {
     }
 }
 
+/** @brief Win animation background handler for Santos Harbor, Brazil. */
 void jijii_win_bg2() {
     s16 zuu_work;
     s32 sp_work;

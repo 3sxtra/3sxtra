@@ -1,6 +1,6 @@
 /**
  * @file effa8.c
- * TODO: identify what this effect does
+ * Effect: Position Data Effect
  */
 
 #include "sf33rd/Source/Game/effect/effa8.h"
@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void Setup_A8_Sub(WORK_Other_CONN* ewk);
+static void Setup_A8_Sub(WORK_Other_CONN* ewk);
 
 const s16 Pos_Data_A8[4][2] = { { 52, 81 }, { 52, 68 }, { 0, 52 }, { 192, 32 } };
 
@@ -246,7 +246,7 @@ s32 effect_A8_init(s16 id, u8 dir_old, s16 sync_bg, s16 master_player, s16 curso
     return 0;
 }
 
-void Setup_A8_Sub(WORK_Other_CONN* ewk) {
+static void Setup_A8_Sub(WORK_Other_CONN* ewk) {
     s16 x;
     s16 ix;
     s16 offset_x;

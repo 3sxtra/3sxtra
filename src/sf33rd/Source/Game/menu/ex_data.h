@@ -1,3 +1,10 @@
+/**
+ * @file ex_data.h
+ * @brief Extra Option menu data tables (training parameters).
+ *
+ * Part of the menu module.
+ */
+
 #ifndef EXDATA_H
 #define EXDATA_H
 

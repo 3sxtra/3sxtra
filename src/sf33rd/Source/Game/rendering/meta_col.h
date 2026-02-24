@@ -1,3 +1,8 @@
+/**
+ * @file meta_col.h
+ * @brief Metamorphosis (Resurrection/X.C.O.P.Y.) color effect declarations.
+ */
+
 #ifndef META_COL_H
 #define META_COL_H
 

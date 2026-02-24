@@ -1,6 +1,11 @@
 /**
  * @file ex_data.c
- * Extra Option Menu Data
+ * @brief Extra Option menu data tables (training parameters).
+ *
+ * Contains per-page max-value limits, page counts, label strings,
+ * and title strings for the Extra Option (training settings) menu.
+ *
+ * Part of the menu module.
  */
 
 #include "common.h"

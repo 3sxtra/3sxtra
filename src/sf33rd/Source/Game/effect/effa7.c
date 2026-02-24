@@ -1,6 +1,6 @@
 /**
  * @file effa7.c
- * TODO: identify what this effect does
+ * Effect: Quake & Hit Spark Effect
  */
 
 #include "sf33rd/Source/Game/effect/effa7.h"

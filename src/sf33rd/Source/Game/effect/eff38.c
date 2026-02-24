@@ -1,6 +1,6 @@
 /**
  * @file eff38.c
- * Large character portraits in character select
+ * Effect: Quake Effect (Base XY)
  */
 
 #include "sf33rd/Source/Game/effect/eff38.h"
@@ -18,17 +18,17 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 
-void EFF38_WAIT(WORK_Other* ewk);
-void EFF38_SUDDENLY(WORK_Other* ewk);
-void EFF38_SLIDE_IN(WORK_Other* ewk);
-void Exit_Slide_in_38(WORK_Other* ewk);
-void EFF38_SLIDE_OUT(WORK_Other* ewk);
-void EFF38_KILL(WORK_Other* ewk);
-void EFF38_SHIFT(WORK_Other* ewk);
-s32 Shift_38(WORK_Other* ewk);
-s32 Move_X_Sub_38(WORK_Other* ewk);
-s32 Move_Y_Sub_38(WORK_Other* ewk, s16 Target_Y);
-void EFF38_MOVE(WORK_Other* ewk);
+static void EFF38_WAIT(WORK_Other* ewk);
+static void EFF38_SUDDENLY(WORK_Other* ewk);
+static void EFF38_SLIDE_IN(WORK_Other* ewk);
+static void Exit_Slide_in_38(WORK_Other* ewk);
+static void EFF38_SLIDE_OUT(WORK_Other* ewk);
+static void EFF38_KILL(WORK_Other* ewk);
+static void EFF38_SHIFT(WORK_Other* ewk);
+static s32 Shift_38(WORK_Other* ewk);
+static s32 Move_X_Sub_38(WORK_Other* ewk);
+static s32 Move_Y_Sub_38(WORK_Other* ewk, s16 Target_Y);
+static void EFF38_MOVE(WORK_Other* ewk);
 
 const s16 EFF38_Base_XY[2][2][2] = { { { -64, 16 }, { -128, 32 } }, { { 64, 16 }, { 128, -32 } } };
 
@@ -45,14 +45,14 @@ void effect_38_move(WORK_Other* ewk) {
     }
 }
 
-void EFF38_WAIT(WORK_Other* ewk) {
+static void EFF38_WAIT(WORK_Other* ewk) {
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
         ewk->wu.routine_no[6] = 0;
     }
 }
 
-void EFF38_SUDDENLY(WORK_Other* ewk) {
+static void EFF38_SUDDENLY(WORK_Other* ewk) {
     if (--Order_Timer[ewk->wu.dir_old] == 0) {
         ewk->wu.disp_flag = 1;
         Order[ewk->wu.dir_old] = 0;
@@ -62,7 +62,7 @@ void EFF38_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-void EFF38_SLIDE_IN(WORK_Other* ewk) {
+static void EFF38_SLIDE_IN(WORK_Other* ewk) {
     u16 cut = Cut_Cut_Sub(3);
 
     switch (ewk->wu.routine_no[6]) {
@@ -104,7 +104,7 @@ void EFF38_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-void Exit_Slide_in_38(WORK_Other* ewk) {
+static void Exit_Slide_in_38(WORK_Other* ewk) {
     ewk->wu.xyz[0].disp.pos = ewk->wu.hit_quake;
 
     if (--Select_Start[ewk->master_id] < 0) {
@@ -129,7 +129,7 @@ void Exit_Slide_in_38(WORK_Other* ewk) {
     Order[ewk->wu.dir_old] = 0;
 }
 
-void EFF38_SLIDE_OUT(WORK_Other* ewk) {
+static void EFF38_SLIDE_OUT(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old] == 0) {
@@ -163,7 +163,7 @@ void EFF38_SLIDE_OUT(WORK_Other* ewk) {
     }
 }
 
-void EFF38_KILL(WORK_Other* ewk) {
+static void EFF38_KILL(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old] == 0) {
@@ -179,7 +179,7 @@ void EFF38_KILL(WORK_Other* ewk) {
     }
 }
 
-void EFF38_SHIFT(WORK_Other* ewk) {
+static void EFF38_SHIFT(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old] != 0) {
@@ -226,7 +226,7 @@ void EFF38_SHIFT(WORK_Other* ewk) {
     }
 }
 
-s32 Shift_38(WORK_Other* ewk) {
+static s32 Shift_38(WORK_Other* ewk) {
     s16 ix;
     s16 loop;
 
@@ -248,7 +248,7 @@ s32 Shift_38(WORK_Other* ewk) {
     return 0;
 }
 
-s32 Move_X_Sub_38(WORK_Other* ewk) {
+static s32 Move_X_Sub_38(WORK_Other* ewk) {
     ewk->wu.xyz[0].cal += ewk->wu.mvxy.a[0].sp;
     ewk->wu.mvxy.a[0].sp += ewk->wu.mvxy.d[0].sp;
 
@@ -273,7 +273,7 @@ s32 Move_X_Sub_38(WORK_Other* ewk) {
     return 0;
 }
 
-s32 Move_Y_Sub_38(WORK_Other* ewk, s16 Target_Y) {
+static s32 Move_Y_Sub_38(WORK_Other* ewk, s16 Target_Y) {
     ewk->wu.xyz[1].cal += ewk->wu.mvxy.a[1].sp;
     ewk->wu.mvxy.a[1].sp += ewk->wu.mvxy.d[1].sp;
 
@@ -294,7 +294,7 @@ s32 Move_Y_Sub_38(WORK_Other* ewk, s16 Target_Y) {
     return 0;
 }
 
-void EFF38_MOVE(WORK_Other* ewk) {
+static void EFF38_MOVE(WORK_Other* ewk) {
     if (Order[ewk->wu.dir_old] != 5) {
         ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -304,7 +304,7 @@ void EFF38_MOVE(WORK_Other* ewk) {
 
     switch (ewk->wu.routine_no[1]) {
     case 0:
-        if (Sel_PL_Complete[ewk->master_id] || plw[ewk->master_id].wu.operator == 0) {
+        if (Sel_PL_Complete[ewk->master_id] || plw[ewk->master_id].wu.pl_operator == 0) {
             ewk->wu.routine_no[1] = 2;
         } else {
             ewk->wu.routine_no[1]++;

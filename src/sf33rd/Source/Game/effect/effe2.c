@@ -1,6 +1,6 @@
 /**
  * @file effe2.c
- * TODO: identify what this effect does
+ * Effect: Flame / Freeze Status Effect
  */
 
 #include "sf33rd/Source/Game/effect/effe2.h"
@@ -144,8 +144,8 @@ const s16 thunder_set_pos_SKB[20][4] = { { 2, 5, 1, 23 }, { 2, 5, 1, 23 }, { 2, 
                                          { 2, 5, 1, 23 }, { 2, 5, 1, 23 }, { 2, 5, 1, 23 }, { 2, 5, 1, 23 },
                                          { 2, 5, 1, 23 }, { 2, 5, 1, 23 }, { 2, 5, 1, 23 }, { 2, 5, 1, 23 } };
 
-void effE2_sort_push(WORK* ewk, WORK* mwk);
-void effe2_erase_or_die(WORK* wk);
+static void effE2_sort_push(WORK* ewk, WORK* mwk);
+static void effe2_erase_or_die(WORK* wk);
 
 void effect_E2_move(WORK_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
@@ -246,7 +246,7 @@ void effect_E2_move(WORK_Other* ewk) {
     }
 }
 
-void effE2_sort_push(WORK* ewk, WORK* mwk) {
+static void effE2_sort_push(WORK* ewk, WORK* mwk) {
     if (ewk->rl_flag) {
         ewk->position_x = mwk->xyz[0].disp.pos + ewk->old_pos[0];
     } else {
@@ -261,7 +261,7 @@ void effE2_sort_push(WORK* ewk, WORK* mwk) {
     sort_push_request8(ewk);
 }
 
-void effe2_erase_or_die(WORK* wk) {
+static void effe2_erase_or_die(WORK* wk) {
     if (wk->cg_wca_ix != 0) {
         wk->routine_no[1] = 1;
         char_move_wca(wk);

@@ -1,3 +1,14 @@
+/**
+ * @file se.h
+ * @brief Public API for sound effect and BGM request handling.
+ *
+ * Declares per-character SE dispatch functions (Se_Shock, Se_Myself, Se_Let, etc.),
+ * stage BGM selection, position-based panning, and the sound debug display.
+ *
+ * Part of the sound module.
+ * Originally from the PS2 game module.
+ */
+
 #ifndef SE_H
 #define SE_H
 
@@ -24,7 +35,7 @@ void Finish_SE();
 s32 Check_Finish_SE();
 u16 Get_Position(PLW* wk);
 u16 Check_Bonus_SE(u16 Code);
-void Store_Sound_Code(u16 code, SoundPatchConfig* rmc);
+void Store_Sound_Code(u16 code, SoundRequestData* rmc);
 void Disp_Sound_Code();
 
 #endif

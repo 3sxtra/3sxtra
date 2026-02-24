@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -12,21 +13,22 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void end_b00_move();
-void end_b01_move();
+static void end_b00_move();
+static void end_b01_move();
 
-void end_b00_0000();
-void end_b00_1000();
-void end_b00_3000();
+static void end_b00_0000();
+static void end_b00_1000();
+static void end_b00_3000();
 
-void end_b01_0000();
-void end_b01_3000();
+static void end_b01_0000();
+static void end_b01_3000();
 
 const s16 timer_b_tbl[7] = { 240, 480, 180, 420, 600, 1080, 720 };
 
 const s16 end_b_pos[7][2] = { { 256, 288 }, { 256, 768 }, { 768, 288 }, { 768, 768 },
                               { 256, 512 }, { 768, 512 }, { 768, 512 } };
 
+/** @brief Ken's ending entry point — initialize and run all ending scenes. */
 void end_11000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -75,14 +77,18 @@ void end_11000(s16 pl_num) {
     }
 }
 
-void end_b00_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_b00_move() {
     void (*end_b00_jp[7])() = { end_b00_0000, end_b00_1000, end_b00_0000, end_b00_3000,
                                 end_b00_0000, end_b00_0000, end_b00_0000 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 7)
+        return;
     end_b00_jp[end_w.r_no_2]();
 }
 
-void end_b00_0000() {
+/** @brief Scene handler — per-scene background setup with effects. */
+static void end_b00_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -136,7 +142,8 @@ void end_b00_0000() {
     }
 }
 
-void end_b00_1000() {
+/** @brief Scene 1 — background enable with effect flag wait. */
+static void end_b00_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -163,7 +170,8 @@ void end_b00_1000() {
     }
 }
 
-void end_b00_3000() {
+/** @brief Scene 3 — quake effect with effect init. */
+static void end_b00_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -201,14 +209,18 @@ void end_b00_3000() {
     }
 }
 
-void end_b01_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_b01_move() {
     void (*end_b01_jp[7])() = { end_b01_0000, end_X_com01, end_b01_0000, end_b01_3000,
                                 end_X_com01,  end_X_com01, end_X_com01 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 7)
+        return;
     end_b01_jp[end_w.r_no_2]();
 }
 
-void end_b01_0000() {
+/** @brief Layer 1 scene 0 — vertical scroll with direction control. */
+static void end_b01_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -240,7 +252,8 @@ void end_b01_0000() {
     }
 }
 
-void end_b01_3000() {
+/** @brief Layer 1 scene 3 — quake-synced layer position. */
+static void end_b01_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

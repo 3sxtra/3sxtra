@@ -1,3 +1,10 @@
+/**
+ * @file vm_sub.h
+ * @brief Memory-card file operation setup helpers.
+ *
+ * Part of the io module.
+ */
+
 #ifndef VM_SUB_H
 #define VM_SUB_H
 

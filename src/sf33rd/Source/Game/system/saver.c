@@ -1,6 +1,13 @@
 /**
  * @file saver.c
- * Screensaver
+ * @brief Screensaver fade-to-black after prolonged inactivity.
+ *
+ * Monitors controller input; after ~5 minutes (18000 frames) of no
+ * button presses, gradually fades the screen to black. Any input
+ * cancels the saver and fades back in.
+ *
+ * Part of the system module.
+ * Originally from the PS2 saver module.
  */
 
 #include "sf33rd/Source/Game/system/saver.h"
@@ -10,14 +17,21 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
+#define SAVER_JMP_COUNT 4
+#define SAVER_IDLE_THRESHOLD 18000
+
+/** @brief Main screensaver task entry point — dispatches sub-state unless a soft reset is active. */
 void Saver_Task(struct _TASK* task_ptr) {
-    void (*const Main_Jmp_Tbl[4])(struct _TASK*) = { Saver_Init, Saver_Check, Saver_Move, Saver_Exit };
+    void (*const Main_Jmp_Tbl[SAVER_JMP_COUNT])(struct _TASK*) = { Saver_Init, Saver_Check, Saver_Move, Saver_Exit };
 
     if (!nowSoftReset()) {
-        Main_Jmp_Tbl[task_ptr->r_no[0]](task_ptr);
+        if (task_ptr->r_no[0] < SAVER_JMP_COUNT) {
+            Main_Jmp_Tbl[task_ptr->r_no[0]](task_ptr);
+        }
     }
 }
 
+/** @brief Initialize the screensaver task — reset all sub-state counters and timer. */
 void Saver_Init(struct _TASK* task_ptr) {
     task_ptr->r_no[0] = 1;
     task_ptr->r_no[1] = 0;
@@ -26,6 +40,7 @@ void Saver_Init(struct _TASK* task_ptr) {
     task_ptr->timer = 0;
 }
 
+/** @brief Check for inactivity — increment the idle timer and advance to fade when threshold is reached. */
 void Saver_Check(struct _TASK* task_ptr) {
     if (Demo_Flag == 0) {
         task_ptr->timer = 0;
@@ -37,11 +52,12 @@ void Saver_Check(struct _TASK* task_ptr) {
         return;
     }
 
-    if ((task_ptr->timer += 1) > 18000) {
+    if ((task_ptr->timer += 1) > SAVER_IDLE_THRESHOLD) {
         task_ptr->r_no[0]++;
     }
 }
 
+/** @brief Active screensaver state — fade out the screen; reset on any input. */
 void Saver_Move(struct _TASK* task_ptr) {
     if ((PLsw[0][0] != 0) || PLsw[1][0] != 0) {
         Saver_Init(task_ptr);
@@ -69,6 +85,7 @@ void Saver_Move(struct _TASK* task_ptr) {
     }
 }
 
+/** @brief Screensaver exit state — fade back in and reinitialize. */
 void Saver_Exit(struct _TASK* task_ptr) {
     switch (task_ptr->r_no[1]) {
     case 0:

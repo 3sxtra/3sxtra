@@ -22,6 +22,7 @@ extern const s16 cmdshot_conv_tbl[32];
 
 u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex);
 
+/** @brief Common setup for special/super move initialization. */
 void hissatsu_setup_union(PLW* wk, s16 rno) {
     wk->wu.routine_no[1] = 4;
     wk->wu.routine_no[2] = rno;
@@ -37,10 +38,12 @@ void hissatsu_setup_union(PLW* wk, s16 rno) {
 const s16 cmdixconv_table[36] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                                   2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 };
 
+/** @brief Converts a command index to a category bucket. */
 s16 cmdixconv(s16 ix) {
     return cmdixconv_table[ix - 20];
 }
 
+/** @brief Checks if a full-gauge Super Art attack can be used. */
 s32 check_full_gauge_attack(PLW* wk, s8 always) {
     u16* conpane;
     s16 j;
@@ -172,6 +175,7 @@ s32 check_full_gauge_attack(PLW* wk, s8 always) {
     return 0;
 }
 
+/** @brief Extended full-gauge check with additional cancel conditions. */
 s32 check_full_gauge_attack2(PLW* wk, s8 always) {
     u16* conpane;
     s16 j;
@@ -303,6 +307,7 @@ s32 check_full_gauge_attack2(PLW* wk, s8 always) {
     return 0;
 }
 
+/** @brief Checks if a Super Arts input command was detected. */
 s16 check_super_arts_attack(PLW* wk) {
     s16 rnum = 0;
     s16 i;
@@ -327,6 +332,7 @@ s16 check_super_arts_attack(PLW* wk) {
     return rnum;
 }
 
+/** @brief Checks Super Arts with damage-cancel conditions. */
 s32 check_super_arts_attack_dc(PLW* wk) {
     s16 j;
     u16 cusw;
@@ -452,6 +458,7 @@ s32 check_super_arts_attack_dc(PLW* wk) {
     return 0;
 }
 
+/** @brief Executes the selected Super Art and sets up the attack state. */
 s32 execute_super_arts(PLW* wk) {
     if (wk->cancel_timer == 0) {
         wk->permited_koa |= 1;
@@ -508,6 +515,7 @@ s32 execute_super_arts(PLW* wk) {
     return 1;
 }
 
+/** @brief Checks if a special move input command was detected. */
 s32 check_special_attack(PLW* wk) {
     s16 i;
     s16 j;
@@ -699,6 +707,7 @@ s32 check_special_attack(PLW* wk) {
     return 0;
 }
 
+/** @brief Activates chain-combo cancel into special move. */
 void chainex_spat_cancel_kidou(WORK* wk) {
     MVXY curr;
 
@@ -711,6 +720,7 @@ void chainex_spat_cancel_kidou(WORK* wk) {
     }
 }
 
+/** @brief Checks if a leap attack input was detected. */
 s32 check_leap_attack(PLW* wk) {
     if (wk->spmv_ng_flag2 & DIP2_UNIVERSAL_OVERHEAD_DISABLED) {
         return 0;
@@ -750,6 +760,7 @@ s32 check_leap_attack(PLW* wk) {
     return 1;
 }
 
+/** @brief Checks if a normal attack input was detected. */
 s32 check_nm_attack(PLW* wk) {
     s16 kos;
     s16 koa;
@@ -869,6 +880,7 @@ s32 check_nm_attack(PLW* wk) {
     return 1;
 }
 
+/** @brief Checks if a cancelable distance is too far for the attack. */
 s16 hikusugi_check(WORK* wk) {
     s16 rnum = 0;
 
@@ -879,6 +891,7 @@ s16 hikusugi_check(WORK* wk) {
     return rnum;
 }
 
+/** @brief Checks if a taunt (chouhatsu) input was detected. */
 s32 check_chouhatsu(PLW* wk) {
     if (wk->spmv_ng_flag & DIP_TAUNT_DISABLED) {
         return 0;
@@ -916,6 +929,7 @@ s32 check_chouhatsu(PLW* wk) {
     return 1;
 }
 
+/** @brief Checks if a throw-break (nagenuke) input was detected. */
 s32 check_nagenuke_cmd(PLW* wk) {
     if (wk->spmv_ng_flag2 & DIP2_THROW_BREAK_DISABLED) {
         return 0;
@@ -943,6 +957,7 @@ s32 check_nagenuke_cmd(PLW* wk) {
 const u8 nml_catch_h2_ok[2][20] = { { 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 },
                                     { 0, 0, 0, 0, 0, 0, 0, 17, 0, 17, 0, 0, 0, 0, 0, 17, 0, 0, 0, 0 } };
 
+/** @brief Checks if a catch/grab attack input was detected. */
 s32 check_catch_attack(PLW* wk) {
     s16 kos;
 
@@ -991,6 +1006,7 @@ s32 check_catch_attack(PLW* wk) {
     return 1;
 }
 
+/** @brief Sets the routine number for the attack state machine. */
 void set_attack_routine_number(PLW* wk) {
     wk->wu.routine_no[1] = 4;
     wk->wu.routine_no[2] = wk->as->r_no;
@@ -998,6 +1014,7 @@ void set_attack_routine_number(PLW* wk) {
     wk->wu.cg_type = 0;
 }
 
+/** @brief Returns the nearing range (approach distance) for an attack. */
 u16 get_nearing_range(s16 pnum, s16 kos) {
     const u16* asstbl;
     u16 nrange = 0;
@@ -1020,6 +1037,7 @@ u16 get_nearing_range(s16 pnum, s16 kos) {
     return nrange;
 }
 
+/** @brief Selects the appropriate move from the command input. */
 s32 waza_select(PLW* wk, s16 kos, s16 sf) {
     const u16* wst;
 
@@ -1083,6 +1101,7 @@ s32 waza_select(PLW* wk, s16 kos, s16 sf) {
     return 0;
 }
 
+/** @brief Decodes waza select table data into actual move parameters. */
 u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex) {
     u16 lever;
     u16 rnum;
@@ -1176,12 +1195,13 @@ u16 decode_wst_data(PLW* wk, u16 cmd, s16 cmd_ex) {
     return rnum;
 }
 
+/** @brief Returns the enemy body collision range. */
 s16 get_em_body_range(WORK* wk) {
     WORK* em;
     s16* dad;
     s16 res_hs;
 
-    if (Bonus_Game_Flag == 20 && wk->operator != 0) {
+    if (Bonus_Game_Flag == 20 && wk->pl_operator != 0) {
         em = (WORK*)((WORK*)wk->target_adrs)->my_effadrs;
         dad = (s16*)(em->hosei_adrs + (get_sel_hosei_tbl_ix(((WORK_Other*)em)->master_player) + 1));
         res_hs = wk->xyz[0].disp.pos - (em->xyz[0].disp.pos + dad[0] + (dad[1] / 2));
@@ -1207,6 +1227,7 @@ s16 get_em_body_range(WORK* wk) {
     return res_hs;
 }
 
+/** @brief Checks extended command input data for direction/button combos. */
 s32 cmd_ex_check(s16 px, s16 cx) {
     if (cx) {
         if (cx < 0) {
@@ -1225,6 +1246,7 @@ s32 cmd_ex_check(s16 px, s16 cx) {
 
 const s16 shot_prio[6][2] = { { 256, 3 }, { 16, 0 }, { 512, 4 }, { 32, 1 }, { 1024, 5 }, { 64, 2 } };
 
+/** @brief Converts raw button/shot data to prioritized shot number. */
 s16 shot_data_convert(u16 sw) {
     s16 i;
     s16 rnum = -1;
@@ -1240,16 +1262,19 @@ s16 shot_data_convert(u16 sw) {
 
 const s16 shot_refresh[6] = { 16, 32, 64, 256, 512, 1024 };
 
+/** @brief Refreshes the shot data after a button press. */
 s16 shot_data_refresh(s16 sw) {
     return shot_refresh[sw];
 }
 
 const s16 rc_shot_conv[16] = { 16, 32, 64, 112, 256, 512, 1024, 1792, 272, 544, 1088, 1904, 0, 0, 0, 0 };
 
+/** @brief Converts rapid-fire shot data to control panel representation. */
 s16 renbanshot_conpaneshot(const s16* dadr, s16 pow) {
     return rc_shot_conv[dadr[pow] & 0xF];
 }
 
+/** @brief Converts data command ID to control panel command. */
 s16 datacmd_conpanecmd(s16 dat) {
     dat = (dat & 0x700) >> 1 | (dat & 0x7F);
     return dat;
@@ -1257,6 +1282,7 @@ s16 datacmd_conpanecmd(s16 dat) {
 
 const u8 renda_status_table[4] = { 0, 20, 32, 0 };
 
+/** @brief Checks for rapid-fire cancel (renda) opportunity. */
 s32 check_renda_cancel(PLW* wk) {
     if (wk->wu.rl_flag != wk->wu.rl_waza) {
         return 0;
@@ -1302,6 +1328,7 @@ const s16 _cnmc_z_lever_data[16][8] = { { -1, -1, -1, -1, -1, -1, -1, -1 }, { 4,
                                         { 1, 4, 5, 7, -1, -1, -1, -1 },     { 3, 5, 6, 9, -1, -1, -1, -1 },
                                         { 1, 4, 7, 3, 6, 9, -1, -1 },       { 1, 4, 7, 5, 3, 6, 9, -1 } };
 
+/** @brief Checks for target-combo (meoshi) cancel opportunity. */
 s32 check_meoshi_cancel(PLW* wk) {
     s16 i;
     s16 tdat;
@@ -1423,6 +1450,7 @@ end:
 
 const s16 gml_real_lever_data[16] = { 0, 6, 2, 10, 4, 0, 8, 5, 1, 9, 0, 0, 4, 8, 4, 8 };
 
+/** @brief Converts target-combo lever data to real direction. */
 s16 get_meoshi_lever(s16 data) {
     return gml_real_lever_data[data & 0xF];
 }

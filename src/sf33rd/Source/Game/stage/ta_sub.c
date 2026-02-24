@@ -16,14 +16,17 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "structs.h"
 
+// sdata
 s16 eff_hit_data[4][4] = { { -67, 59, 13, 29 }, { 31, 95, 24, 15 }, { 4, 123, 28, 15 }, { 20, 15, 67, 37 } };
 
+// sbss
 s16 eff_hit_flag[11];
 
-s32 eff_hit_check_sub(WORK_Other* ewk, PLW* pl);
-s32 eff_hit_check_sub2(WORK_Other* ewk, PLW* pl, s16 where_type);
+static s32 eff_hit_check_sub(WORK_Other* ewk, PLW* pl);
+static s32 eff_hit_check_sub2(WORK_Other* ewk, PLW* pl, s16 where_type);
 static s16 hit_check_subroutine_yu(WORK* tpl, WORK* tef, s16* hd1, s16* hd2);
 
+/** @brief Synchronize family layer position for a foreground object. */
 void sync_fam_set3(s16 my_fam) {
     s16 pos_work_x;
     s16 pos_work_y;
@@ -47,6 +50,8 @@ void sync_fam_set3(s16 my_fam) {
     pos_x_w -= bg_w.pos_offset;
 
     if ((bg_w.quake_x_index) > 0) {
+        if (bg_w.quake_x_index >= QUAKE_TABLE_SIZE)
+            bg_w.quake_x_index = QUAKE_TABLE_SIZE - 1;
         pos_work_x += quake_x_tbl[bg_w.quake_x_index];
         pos_x_w += quake_x_tbl[bg_w.quake_x_index];
     }
@@ -54,6 +59,8 @@ void sync_fam_set3(s16 my_fam) {
     bg_w.bgw[my_fam].position_x = pos_work_x & 0xFFFF;
     bg_w.bgw[my_fam].abs_x = pos_x_w;
     pos_work_y = pos_y_w & 0xFFFF;
+    if (bg_w.quake_y_index >= QUAKE_TABLE_SIZE)
+        bg_w.quake_y_index = QUAKE_TABLE_SIZE - 1;
     pos_work_y += quake_y_tbl[bg_w.quake_y_index];
     pos_y_w += quake_y_tbl[bg_w.quake_y_index];
     bg_w.bgw[my_fam].position_y = pos_work_y & 0xFFFF;
@@ -65,6 +72,7 @@ void sync_fam_set3(s16 my_fam) {
     Family_Set_W(my_fam + 1, pos_work_x, pos_work_y);
 }
 
+/** @brief Check if an object is within horizontal stage range. */
 s32 range_x_check(WORK_Other* ewk) {
     s16 pos_x_work;
     s16 work2;
@@ -93,6 +101,7 @@ s32 range_x_check(WORK_Other* ewk) {
     return 1;
 }
 
+/** @brief Check if an object is within a custom horizontal range. */
 s32 range_x_check3(WORK_Other* ewk, s16 optional_range) {
     s16 pos_x_work;
     s16 work2;
@@ -116,7 +125,8 @@ s32 range_x_check3(WORK_Other* ewk, s16 optional_range) {
     return 1;
 }
 
-s32 range_y_check(WORK_Other* ewk) {
+/** @brief Check if an object is within vertical stage range. */
+static s32 range_y_check(WORK_Other* ewk) {
     s16 pos_y_work;
     s16 work2;
     s16 work3;
@@ -139,26 +149,31 @@ s32 range_y_check(WORK_Other* ewk) {
     return 1;
 }
 
+/** @brief Add horizontal speed to an object's position. */
 void add_x_sub(WORK* wk) {
     wk->xyz[0].cal += wk->mvxy.a[0].sp;
     wk->mvxy.a[0].sp += wk->mvxy.d[0].sp;
 }
 
+/** @brief Add horizontal speed to an object's alternate position. */
 void add_x_sub2(WORK* wk) {
     wk->xyz[0].cal += wk->mvxy.a[0].sp;
     wk->mvxy.a[0].sp += wk->mvxy.d[0].sp;
 }
 
+/** @brief Add vertical speed to an object's position. */
 void add_y_sub(WORK* wk) {
     wk->xyz[1].cal += wk->mvxy.a[1].sp;
     wk->mvxy.a[1].sp += wk->mvxy.d[1].sp;
 }
 
+/** @brief Add vertical speed to an object's alternate position. */
 void add_y_sub2(WORK* wk) {
     wk->xyz[1].cal += wk->mvxy.a[1].sp;
     wk->mvxy.a[1].sp += wk->mvxy.d[1].sp;
 }
 
+/** @brief Check whether the current round needs no-display mode. */
 s32 obr_no_disp_check() {
     if (aku_flag | akebono_flag | sa_pa_flag | seraph_flag) {
         return 1;
@@ -167,6 +182,7 @@ s32 obr_no_disp_check() {
     return 0;
 }
 
+/** @brief Transform and register an object for display. */
 void disp_pos_trans_entry(WORK_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
@@ -177,6 +193,7 @@ void disp_pos_trans_entry(WORK_Other* ewk) {
     sort_push_request4(&ewk->wu);
 }
 
+/** @brief Transform and register an object for display (variant 5). */
 void disp_pos_trans_entry5(WORK_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
@@ -187,6 +204,7 @@ void disp_pos_trans_entry5(WORK_Other* ewk) {
     sort_push_request4(&ewk->wu);
 }
 
+/** @brief Transform and register an object for reversed display. */
 void disp_pos_trans_entry_r(WORK_Other* ewk) {
     if ((obr_no_disp_check() == 0) && (range_x_check(ewk) != 0)) {
         ewk->wu.position_x = (ewk->wu.xyz[0].disp.pos & 0xFFFF) + 1;
@@ -195,6 +213,7 @@ void disp_pos_trans_entry_r(WORK_Other* ewk) {
     }
 }
 
+/** @brief Transform and register an object for reversed display (variant 4). */
 void disp_pos_trans_entry_r4(WORK_Other* ewk) {
     if ((obr_no_disp_check() == 0) && (range_y_check(ewk) != 0)) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
@@ -203,6 +222,7 @@ void disp_pos_trans_entry_r4(WORK_Other* ewk) {
     }
 }
 
+/** @brief Transform and register a scaled object for display. */
 void disp_pos_trans_entry_s(WORK_Other* ewk) {
     if (obr_no_disp_check() == 0) {
         suzi_sync_pos_set(ewk);
@@ -211,6 +231,7 @@ void disp_pos_trans_entry_s(WORK_Other* ewk) {
     }
 }
 
+/** @brief Transform and register a reversed scaled object for display. */
 void disp_pos_trans_entry_rs(WORK_Other* ewk) {
     if ((obr_no_disp_check() == 0) && (range_x_check(ewk) != 0)) {
         suzi_sync_pos_set(ewk);
@@ -219,6 +240,7 @@ void disp_pos_trans_entry_rs(WORK_Other* ewk) {
     }
 }
 
+/** @brief Transform and register a player effect for display. */
 void pl_eff_trans_entry(WORK_Other* ewk) {
     if (obr_no_disp_check() == 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
@@ -227,6 +249,7 @@ void pl_eff_trans_entry(WORK_Other* ewk) {
     }
 }
 
+/** @brief Check whether a background effect collides with a player. */
 s16 eff_hit_check(WORK_Other* ewk, s16 type) {
     if (!EXE_obroll) {
         if (type) {
@@ -251,13 +274,15 @@ const s16 pl_hit_eff[25][4] = { { -11, 56, 33, 38 }, { -11, 56, 35, 53 }, { -13,
                                 { -11, 56, 33, 38 }, { -11, 56, 33, 38 }, { -11, 56, 33, 38 }, { -11, 56, 33, 38 },
                                 { -11, 56, 33, 38 } };
 
-s32 eff_hit_check_sub(WORK_Other* ewk, PLW* pl) {
+/** @brief Sub-routine for effect-player collision detection. */
+static s32 eff_hit_check_sub(WORK_Other* ewk, PLW* pl) {
     if (pl->wu.routine_no[1] == 1) {
         if (pl->wu.routine_no[2] < 14 || pl->wu.routine_no[2] >= 24) {
             return 0;
         }
 
-        if (hit_check_subroutine(&pl->wu, &ewk->wu, pl_hit_eff[pl->player_number], eff_hit_data[ewk->wu.type])) {
+        if (hit_check_subroutine(
+                &pl->wu, &ewk->wu, &pl_hit_eff[pl->player_number][0], &eff_hit_data[ewk->wu.type][0])) {
             return 1;
         }
     }
@@ -265,6 +290,7 @@ s32 eff_hit_check_sub(WORK_Other* ewk, PLW* pl) {
     return 0;
 }
 
+/** @brief Check effect collision against a specific hit zone. */
 s16 eff_hit_check2(WORK_Other* ewk, s16 type, s16 where_type) {
     if (!EXE_obroll) {
         if (type) {
@@ -281,7 +307,8 @@ s16 eff_hit_check2(WORK_Other* ewk, s16 type, s16 where_type) {
     return eff_hit_flag[ewk->wu.type];
 }
 
-s32 eff_hit_check_sub2(WORK_Other* ewk, PLW* pl, s16 where_type) {
+/** @brief Sub-routine for effect collision with zone type. */
+static s32 eff_hit_check_sub2(WORK_Other* ewk, PLW* pl, s16 where_type) {
     s16* hd1 = pl->wu.h_bod->body_dm[where_type];
 
     if (hit_check_subroutine_yu(&pl->wu, &ewk->wu, hd1, eff_hit_data[ewk->wu.type])) {
@@ -291,6 +318,7 @@ s32 eff_hit_check_sub2(WORK_Other* ewk, PLW* pl, s16 where_type) {
     return 0;
 }
 
+/** @brief Core axis-aligned bounding box hit check. */
 static s16 hit_check_subroutine_yu(WORK* tpl, WORK* tef, s16* hd1, s16* hd2) {
     s16 d0 = *hd1++;
     s16 d1 = *hd1++;
@@ -334,6 +362,7 @@ static s16 hit_check_subroutine_yu(WORK* tpl, WORK* tef, s16* hd1, s16* hd2) {
     return d2;
 }
 
+/** @brief Clear all effect hit flags. */
 void eff_hit_flag_clear() {
     s16 i;
     s16* ptr;
@@ -345,6 +374,7 @@ void eff_hit_flag_clear() {
     }
 }
 
+/** @brief Check whether a background object should be forcibly killed. */
 s32 compel_dead_check(WORK_Other* ewk) {
     s32 var_s0 = 0;
 
@@ -357,13 +387,21 @@ s32 compel_dead_check(WORK_Other* ewk) {
     return var_s0;
 }
 
+/** @brief Clear win/lose work state for the next round. */
 void win_lose_work_clear() {
+    a_rno = 0;
+    lose_rno[2] = 0;
     win_rno[0] = 0;
     win_free[0] = 0;
+    lose_rno[0] = 0;
+    lose_free[0] = 0;
     win_rno[1] = 0;
     win_free[1] = 0;
+    lose_rno[1] = 0;
+    lose_free[1] = 0;
 }
 
+/** @brief Calculate horizontal interpolation speed data. */
 void cal_bg_speed_data_x(s16 bg_num, s16 tm, s16 unk) {
     MotionState ms;
 
@@ -388,6 +426,7 @@ void cal_bg_speed_data_x(s16 bg_num, s16 tm, s16 unk) {
     bg_mvxy.kop[0] = 0;
 }
 
+/** @brief Calculate vertical interpolation speed data. */
 void cal_bg_speed_data_y(s16 bg_num, s16 tm, s16 unk) {
     MotionState ms;
 

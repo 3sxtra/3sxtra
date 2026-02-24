@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg020.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "sf33rd/Source/Game/effect/eff78.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
@@ -14,6 +15,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Suzaku Castle Rooftop, Japan stage. */
 void BG020() {
     bgw_ptr = &bg_w.bgw[1];
     bg0202();
@@ -30,11 +32,15 @@ void BG020() {
     Bg_Family_Set_appoint(2);
 }
 
+/** @brief Background layer handler for Suzaku Castle Rooftop, Japan. */
 void bg0201() {
     void (*bg0201_jmp[2])() = { bg0201_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0201_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Suzaku Castle Rooftop, Japan. */
 void bg0201_init00() {
     bgw_ptr->r_no_0 += 1;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -42,11 +48,15 @@ void bg0201_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Background layer handler for Suzaku Castle Rooftop, Japan. */
 void bg0202() {
     void (*bg0202_jmp[2])() = { bg0202_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0202_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Suzaku Castle Rooftop, Japan. */
 void bg0202_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -56,11 +66,15 @@ void bg0202_init00() {
     effect_78_init();
 }
 
+/** @brief Synchronized parallax common handler for Suzaku Castle Rooftop, Japan. */
 void bg020_sync_common() {
     void (*bg020_sync_jmp[2])() = { bg020_sync_init, bg020_sync_move };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg020_sync_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize synchronized parallax layer for Suzaku Castle Rooftop, Japan. */
 void bg020_sync_init() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -74,6 +88,7 @@ void bg020_sync_init() {
     sync_fam_set3(5);
 }
 
+/** @brief Per-frame movement handler for Suzaku Castle Rooftop, Japan layer. */
 void bg020_sync_move() {
     bg_x_move_check();
     bg_y_move_check();

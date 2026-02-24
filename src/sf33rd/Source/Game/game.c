@@ -1,3 +1,19 @@
+/**
+ * @file Game.c
+ * @brief Master game state machine.
+ *
+ * Controls the entire game flow through 13 numbered states (Game00–Game12):
+ * title screen, character select, fight, win/loss, continue, ending,
+ * ranking, demo loop, bonus stages, and more.
+ *
+ * The top-level entry point is Game_Task(), called once per frame by the
+ * task scheduler. It dispatches to Wait_Auto_Load, Loop_Demo, or Game()
+ * based on G_No[0].
+ *
+ * Part of the game core module.
+ * Originally from the PS2 game module.
+ */
+
 #include "sf33rd/Source/Game/game.h"
 #include "common.h"
 #include "main.h"
@@ -31,7 +47,19 @@
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
+#include "sf33rd/Source/Game/training/trials.h"
+#include <SDL3/SDL.h>
+#include <stdio.h>
+
+#include "netplay/netplay.h"
+
+/* === Named Constants === */
+#define MAIN_JMP_COUNT 3         /**< Number of top-level game modes (Wait_Auto_Load, Loop_Demo, Game) */
+#define GAME_STATE_COUNT 13      /**< Number of game states (Game00–Game12) */
+#define DEMO_TIMEOUT_FRAMES 1800 /**< Attract-mode demo timeout: 30 sec × 60 fps */
+#define CONTROL_TIME_DEFAULT 481 /**< Default control time for demo/match start */
+#define MAX_VITALITY_DEFAULT 160 /**< Default maximum vitality value */
+
 #include "sf33rd/Source/Game/rendering/mmtmcnt.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
@@ -102,25 +130,30 @@ s16 Ck_Coin();
 void Loop_Demo_Sub();
 void Before_Select_Sub();
 
+/**
+ * @brief Main game task — top-level per-frame entry point.
+ *
+ * Dispatches to one of three modes based on G_No[0]:
+ *   0 = Wait_Auto_Load (idle while loading)
+ *   1 = Loop_Demo (attract-mode demo loop)
+ *   2 = Game (active gameplay)
+ *
+ * Also handles fast-forward (sysFF) by running multiple iterations per frame.
+ */
 void Game_Task(struct _TASK* task_ptr) {
     s16 ix;
     s16 ff;
 
-    void (*Main_Jmp_Tbl[3])(struct _TASK*) = { Wait_Auto_Load, Loop_Demo, Game };
+    static void (*const Main_Jmp_Tbl[MAIN_JMP_COUNT])(struct _TASK*) = { Wait_Auto_Load, Loop_Demo, Game };
 
-    if (!No_Trans) {
-        init_color_trans_req();
-    }
-
+    init_color_trans_req();
     ff = sysFF;
 
     for (ix = 0; ix < ff; ix++) {
-        if (!No_Trans) {
-            if (ix == ff - 1) {
-                No_Trans = 0;
-            } else {
-                No_Trans = 1;
-            }
+        if (ix == ff - 1) {
+            No_Trans = 0;
+        } else {
+            No_Trans = 1;
         }
 
         Play_Game = 0;
@@ -133,7 +166,9 @@ void Game_Task(struct _TASK* task_ptr) {
         seqsBeforeProcess();
 
         if (nowSoftReset() == 0) {
-            Main_Jmp_Tbl[G_No[0]](task_ptr);
+            if (G_No[0] < MAIN_JMP_COUNT) {
+                Main_Jmp_Tbl[G_No[0]](task_ptr);
+            }
         }
 
         seqsAfterProcess();
@@ -147,9 +182,23 @@ void Game_Task(struct _TASK* task_ptr) {
     Disp_Sound_Code();
 }
 
+/**
+ * @brief Game state dispatcher — routes to Game00–Game12 based on G_No[1].
+ *
+ * Also sets Play_Game flag (1=fight, 2=ending) for subsystems that need
+ * to know whether active gameplay is in progress.
+ */
 void Game() {
-    void (*Game_Jmp_Tbl[13])() = { Game00, Game01, Game02, Game03, Game04, Game05, Game06,
-                                   Game07, Game08, Game09, Game10, Game11, Game12 };
+    // ⚡ Bolt: static const — avoid rebuilding this table on the stack every frame
+    static void (*const Game_Jmp_Tbl[GAME_STATE_COUNT])() = { Game00, Game01, Game02, Game03, Game04, Game05, Game06,
+                                                              Game07, Game08, Game09, Game10, Game11, Game12 };
+
+    // Safety bounds check
+    if (G_No[1] < 0 || G_No[1] >= GAME_STATE_COUNT) {
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION, "Game(): gs_G_No[1]=%d is out of bounds [0-%d)!", G_No[1], GAME_STATE_COUNT);
+        return;
+    }
 
     if (G_No[1] == 2 || G_No[1] == 9) {
         Play_Game = 1;
@@ -160,11 +209,16 @@ void Game() {
     Game_Jmp_Tbl[G_No[1]]();
 }
 
+/** @brief State 0: Title screen — logo display, copyright, transition to menu. */
 void Game00() {
     void (*Game00_Jmp_Tbl[3])() = { Game0_0, Game0_1, Game0_2 };
 
+    if (G_No[2] >= 3) {
+        return;
+    }
+
     Game00_Jmp_Tbl[G_No[2]]();
-    njSetBackColor(0, 0, 0);
+    // njSetBackColor(0, 0, 0);
     BG_Draw_System();
     Basic_Sub();
     Check_Back_Demo();
@@ -235,8 +289,9 @@ void Game0_2() {
     }
 }
 
+/** @brief Check if the attract-mode demo timer has expired (1800 frames = 30 seconds). */
 void Check_Back_Demo() {
-    if (++G_Timer < 1800) {
+    if (++G_Timer < DEMO_TIMEOUT_FRAMES) {
         return;
     }
 
@@ -250,9 +305,13 @@ void Check_Back_Demo() {
     effect_work_init();
 }
 
-/// Screen transition to character select
+/** @brief State 12: Screen transition to character select (from menu). */
 void Game12() {
     void (*Game12_Jmp_Tbl[3])() = { Game12_0, Game12_1, Game12_2 };
+
+    if (G_No[2] >= 3) {
+        return;
+    }
 
     Game12_Jmp_Tbl[G_No[2]]();
     BG_Draw_System();
@@ -286,13 +345,13 @@ void Game12_2() {
     G_No[1] = 1;
     G_No[2] = 0;
     G_No[3] = 0;
-    Control_Time = 481;
+    Control_Time = CONTROL_TIME_DEFAULT;
     Cover_Timer = 23;
     effect_work_init();
     cpExitTask(TASK_MENU);
 }
 
-/// Character select
+/** @brief State 1: Character select — player picks character, super art, and color. */
 void Game01() {
     BG_Draw_System();
     Basic_Sub();
@@ -301,6 +360,12 @@ void Game01() {
 
     switch (G_No[2]) {
     case 0:
+        // The menu task resets Mode_Type to MODE_ARCADE between matches.
+        // Restore it so all MODE_NETWORK-guarded paths (RNG seeding, Game2_0
+        // initialization) work correctly for rematches.
+        if (Netplay_GetSessionState() == NETPLAY_SESSION_RUNNING) {
+            Mode_Type = MODE_NETWORK;
+        }
         Switch_Screen(1);
         G_No[2] += 1;
         S_No[0] = 0;
@@ -355,12 +420,12 @@ void Game01() {
             appear_type = APPEAR_TYPE_ANIMATED;
             set_hitmark_color();
 
-            if (Debug_w[0x1D]) {
-                My_char[0] = Debug_w[0x1D] - 1;
+            if (Debug_w[DEBUG_MY_CHAR_PL1]) {
+                My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
             }
 
-            if (Debug_w[0x1E]) {
-                My_char[1] = Debug_w[0x1E] - 1;
+            if (Debug_w[DEBUG_MY_CHAR_PL2]) {
+                My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
             }
 
             Purge_texcash_of_list(3);
@@ -376,21 +441,21 @@ void Game01() {
                 E_No[3] = 0;
             } else {
                 Demo_Time_Stop = 1;
-                plw[0].wu.operator = 0;
+                plw[0].wu.pl_operator = 0;
                 Operator_Status[0] = 0;
-                plw[1].wu.operator = 0;
+                plw[1].wu.pl_operator = 0;
                 Operator_Status[1] = 0;
             }
 
-            if (plw[0].wu.operator != 0) {
+            if (plw[0].wu.pl_operator != 0) {
                 Sel_Arts_Complete[0] = -1;
             }
 
-            if (plw[1].wu.operator != 0) {
+            if (plw[1].wu.pl_operator != 0) {
                 Sel_Arts_Complete[1] = -1;
             }
 
-            if ((plw[0].wu.operator != 0) && (plw[1].wu.operator != 0)) {
+            if ((plw[0].wu.pl_operator != 0) && (plw[1].wu.pl_operator != 0)) {
                 Play_Type = 1;
             } else {
                 Play_Type = 0;
@@ -403,10 +468,19 @@ void Game01() {
     BG_move();
 }
 
+/** @brief State 2: Main fight — round setup, in-match gameplay, round transitions. */
 void Game02() {
-    void (*Game02_Jmp_Tbl[8])() = { Game2_0, Game2_1, Game2_2, Game2_3, Game2_4, Game2_5, Game2_6, Game2_7 };
+    // ⚡ Bolt: static const — avoid rebuilding this table on the stack every frame
+    static void (*const Game02_Jmp_Tbl[8])() = {
+        Game2_0, Game2_1, Game2_2, Game2_3, Game2_4, Game2_5, Game2_6, Game2_7
+    };
 
     Scene_Cut = Cut_Cut_Cut();
+
+    if (G_No[2] >= 8) {
+        return;
+    }
+
     Game02_Jmp_Tbl[G_No[2]]();
     BG_move_Ex(3);
 }
@@ -433,7 +507,7 @@ void Game2_0() {
     case MODE_VERSUS:
         for (ix = 0; ix < 2; ix++) {
             if (save_w[1].Partner_Type[ix]) {
-                plw[ix].wu.operator = 0;
+                plw[ix].wu.pl_operator = 0;
                 Operator_Status[ix] = 0;
             }
         }
@@ -498,6 +572,7 @@ void Game2_0() {
     player_face_init();
 }
 
+/** @brief In-fight per-frame update: player control, rendering, HUD, hit detection. */
 void Game2_1() {
     mpp_w.inGame = true;
 
@@ -667,10 +742,18 @@ void Game2_7() {
     }
 }
 
+/**
+ * @brief Shared initialization for a new round/match.
+ *
+ * Resets HUD, vitals, scores, combo state, super gauge, stun gauge,
+ * and win counters for both players.
+ */
 void Game01_Sub() {
     Disp_Cockpit = 0;
     Stop_Update_Score = 0;
     vital_cont_init();
+    // Initialize time limit from local settings once (synchronized for netplay)
+    Time_Limit = save_w[Present_Mode].Time_Limit;
     count_cont_init(0);
     Score[0][1] = 0;
     Score[0][2] = 0;
@@ -693,8 +776,10 @@ void Game01_Sub() {
     }
 
     stngauge_cont_init();
+    trials_init();
 }
 
+/** @brief State 3: Win/loss result — winner scene, rankings, mode-specific branching. */
 void Game03() {
     BG_Draw_System();
     move_effect_work(4);
@@ -705,118 +790,102 @@ void Game03() {
 
     switch (G_No[2]) {
     case 0:
-        if (!Winner_Scene()) {
-            break;
-        }
+        if (Winner_Scene() != 0) {
+            switch (Mode_Type) {
+            case MODE_VERSUS:
+            case MODE_NETWORK:
+                G_No[2] += 1;
+                Rep_Game_Infor[10].play_type = 1;
+                Rep_Game_Infor[10].winner = Winner_id;
+                Switch_Screen_Init(0);
 
-        switch (Mode_Type) {
-        case MODE_VERSUS:
-        case MODE_NETWORK:
-            G_No[2] += 1;
-            Rep_Game_Infor[10].play_type = 1;
-            Rep_Game_Infor[10].winner = Winner_id;
-            Switch_Screen_Init(0);
+                if (Country == 3) {
+                    Rep_Game_Infor[10].play_type = 4;
+                }
 
-            if (Country == 3) {
-                Rep_Game_Infor[10].play_type = 4;
-            }
+                break;
 
-            break;
+            case MODE_REPLAY:
+                G_No[2] = 5;
+                cpReadyTask(TASK_MENU, Menu_Task);
+                task[TASK_MENU].r_no[0] = 8;
+                break;
 
-            // case MODE_NETWORK:
-            // G_No[2] = 3;
-            // Rep_Game_Infor[10].play_type = 2;
-            // Rep_Game_Infor[10].winner = Winner_id;
-            // Champion = Winner_id;
-            // New_Challenger = Loser_id;
-            // Switch_Screen_Init(0);
-            // break;
-
-        case MODE_REPLAY:
-            G_No[2] = 5;
-            cpReadyTask(TASK_MENU, Menu_Task);
-            task[TASK_MENU].r_no[0] = 8;
-            break;
-
-        default:
-            G_No[1] = 5;
-            G_No[2] = 0;
-            G_No[3] = 0;
-            E_No[0] = 9;
-            E_No[1] = 0;
-            E_No[2] = 0;
-            E_No[3] = 0;
-
-            if (Battle_Q[WINNER]) {
-                G_No[1] = 11;
-                G_No[2] = 3;
+            default:
+                G_No[1] = 5;
+                G_No[2] = 0;
                 G_No[3] = 0;
+                E_No[0] = 9;
+                E_No[1] = 0;
+                E_No[2] = 0;
+                E_No[3] = 0;
+
+                if (Battle_Q[WINNER]) {
+                    G_No[1] = 0xB;
+                    G_No[2] = 3;
+                    G_No[3] = 0;
+                }
+
+                Cover_Timer = 24;
+
+                if (Round_Operator[LOSER]) {
+                    E_Number[LOSER][0] = 1;
+                    E_Number[LOSER][1] = 0;
+                    E_Number[LOSER][2] = 0;
+                    E_Number[LOSER][3] = 0;
+                }
+
+                break;
             }
-
-            Cover_Timer = 24;
-
-            if (Round_Operator[LOSER]) {
-                E_Number[LOSER][0] = 1;
-                E_Number[LOSER][1] = 0;
-                E_Number[LOSER][2] = 0;
-                E_Number[LOSER][3] = 0;
-            }
-
-            break;
         }
 
         break;
 
     case 1:
-        if (!Switch_Screen(1)) {
-            break;
+        if (Switch_Screen(1) != 0) {
+            G_No[2] += 1;
+            E_No[0] = 1;
+            E_No[1] = 2;
+            E_No[2] = 2;
+            E_No[3] = 0;
+            Request_E_No = 0;
+            cpReadyTask(TASK_MENU, Menu_Task);
+            task[TASK_MENU].r_no[1] = 16;
+            Cursor_Y_Pos[0][0] = 0;
+            Cursor_Y_Pos[1][0] = 0;
+            G_Timer = 4;
         }
 
-        G_No[2] += 1;
-        E_No[0] = 1;
-        E_No[1] = 2;
-        E_No[2] = 2;
-        E_No[3] = 0;
-        Request_E_No = 0;
-        cpReadyTask(TASK_MENU, Menu_Task);
-        task[TASK_MENU].r_no[1] = 16;
-        Cursor_Y_Pos[0][0] = 0;
-        Cursor_Y_Pos[1][0] = 0;
-        G_Timer = 4;
         break;
 
     case 2:
         Switch_Screen(1);
 
-        if (--G_Timer) {
-            break;
+        if (--G_Timer == 0) {
+            Cover_Timer = 10;
+            G_No[1] = 12;
+            G_No[2] = 0;
+            G_No[3] = 0;
         }
-
-        Cover_Timer = 10;
-        G_No[1] = 12;
-        G_No[2] = 0;
-        G_No[3] = 0;
 
         break;
 
     case 3:
-        if (!Switch_Screen(1)) {
-            break;
+        if (Switch_Screen(1) != 0) {
+            G_No[2] += 1;
+            task[7].r_no[0] = 1;
+            G_Timer = 4;
         }
 
-        G_No[2] += 1;
-        task[7].r_no[0] = 1;
-        G_Timer = 4;
         break;
 
     case 4:
         Switch_Screen(1);
 
-        if (--G_Timer) {
-            break;
+        if (--G_Timer == 0) {
+            // Do nothing
         }
 
-        // Do nothing
         break;
 
     case 5:
@@ -827,6 +896,7 @@ void Game03() {
     BG_move();
 }
 
+/** @brief State 4: Loser scene — triggers continue or game-over flow. */
 void Game04() {
     s16 i;
 
@@ -867,6 +937,7 @@ void Game04() {
     BG_move();
 }
 
+/** @brief State 5: Next CPU opponent selection in arcade mode. */
 void Game05() {
     BG_Draw_System();
     Basic_Sub();
@@ -936,6 +1007,7 @@ void Game05() {
     BG_move();
 }
 
+/** @brief State 6: Game Over — ranking check, auto-save, return to attract. */
 void Game06() {
     s16 xx;
 
@@ -950,7 +1022,7 @@ void Game06() {
             Stock_Com_Color[Player_id] = -1;
             Stock_Com_Arts[Player_id] = -1;
             Last_Player_id = -1;
-            Control_Time = 481;
+            Control_Time = CONTROL_TIME_DEFAULT;
             E_No[0] = 8;
             E_No[1] = 0;
             E_No[2] = 0;
@@ -1082,7 +1154,7 @@ void Game06() {
 
 void Request_Break_Sub(s16 PL_id) {
     if ((Request_Break[PL_id] != 0) && (Ck_Break_Into(0, 0, PL_id) != 0)) {
-        plw[PL_id].wu.operator = 1;
+        plw[PL_id].wu.pl_operator = 1;
         Operator_Status[PL_id] = 1;
     }
 }
@@ -1092,8 +1164,8 @@ s32 Check_Disp_Ranking() {
 
     if (rank_type != -1) {
         Rank_Type = rank_type;
-        Present_Rank[0] = Rank_In[0][rank_type];
-        Present_Rank[1] = Rank_In[1][rank_type];
+        Present_Rank[0] = *Get_Ranking_Slot(0, rank_type);
+        Present_Rank[1] = *Get_Ranking_Slot(1, rank_type);
         return 1;
     }
 
@@ -1101,7 +1173,7 @@ s32 Check_Disp_Ranking() {
 
     if (rank_type != -1) {
         Rank_Type = rank_type;
-        Present_Rank[1] = Rank_In[1][rank_type];
+        Present_Rank[1] = *Get_Ranking_Slot(1, rank_type);
         return 1;
     }
 
@@ -1187,6 +1259,7 @@ s32 Disp_Ranking() {
     return 0;
 }
 
+/** @brief State 7: Continue scene — countdown for inserting credits. */
 void Game07() {
     BG_Draw_System();
     Basic_Sub();
@@ -1204,6 +1277,7 @@ void Game07() {
     BG_move();
 }
 
+/** @brief State 8: Ending sequence — plays the winning character's ending. */
 void Game08() {
     BG_Draw_System();
 
@@ -1248,8 +1322,8 @@ void Game08() {
             E_No[3] = 0;
             Clear_Personal_Data(0);
             Clear_Personal_Data(1);
-            plw[0].wu.operator = 0;
-            plw[1].wu.operator = 0;
+            plw[0].wu.pl_operator = 0;
+            plw[1].wu.pl_operator = 0;
             Operator_Status[0] = 0;
             Operator_Status[1] = 0;
             Last_Player_id = Player_Number = -1;
@@ -1263,6 +1337,7 @@ void Game08() {
     move_effect_work(4);
 }
 
+/** @brief State 9: Bonus stage — car/barrel smashing mini-game. */
 void Game09() {
     switch (G_No[2]) {
     case 0:
@@ -1389,6 +1464,7 @@ void Game09() {
     BG_move();
 }
 
+/** @brief Bonus stage per-frame sub-routine: player control, hit check, management. */
 s16 Bonus_Sub() {
     s16 x;
 
@@ -1419,6 +1495,7 @@ s16 Bonus_Sub() {
     return x;
 }
 
+/** @brief State 10: Post-bonus transition — shows bonus results, returns to arcade. */
 void Game10() {
     BG_Draw_System();
     Basic_Sub();
@@ -1468,6 +1545,7 @@ void Game10() {
     BG_move();
 }
 
+/** @brief State 11: Next Q (special opponent) selection in arcade mode. */
 void Game11() {
     BG_Draw_System();
     Basic_Sub();
@@ -1549,6 +1627,12 @@ void Game11() {
     BG_move();
 }
 
+/**
+ * @brief Attract-mode demo loop.
+ *
+ * Cycles through: Capcom logo → title screen → demo fight → ranking →
+ * another demo → ranking → back to title. Interrupted by coin/start.
+ */
 void Loop_Demo(struct _TASK* /* unused */) {
     if (Ck_Coin()) {
         Next_Title_Sub();
@@ -1748,6 +1832,12 @@ void Next_Title_Sub() {
     cpReadyTask(TASK_ENTRY, Entry_Task);
 }
 
+/**
+ * @brief Time Control — manages the in-round countdown timer.
+ *
+ * Decrements Control_Time once per second (60 frames). Skipped during
+ * pauses, bonus games, and when the battle hasn't started yet.
+ */
 void Time_Control() {
     count_cont_main();
 
@@ -1768,6 +1858,13 @@ void Time_Control() {
     }
 }
 
+/**
+ * @brief Check if either player pressed Start to insert a coin.
+ *
+ * Used during the attract-mode demo loop to detect coin-in / start press.
+ *
+ * @return Non-zero if a coin was inserted and the game should proceed.
+ */
 s16 Ck_Coin() {
     s16 PL_id;
 
@@ -1788,10 +1885,10 @@ s16 Ck_Coin() {
         ToneDown(0xFF, 0);
         Request_LDREQ_Break();
         G_No[3] = 1;
-        plw[PL_id].wu.operator = 1;
+        plw[PL_id].wu.pl_operator = 1;
         Operator_Status[PL_id] = 1;
         Champion = PL_id;
-        plw[PL_id ^ 1].wu.operator = 0;
+        plw[PL_id ^ 1].wu.pl_operator = 0;
         Operator_Status[PL_id ^ 1] = 0;
         return 0;
 
@@ -1803,6 +1900,12 @@ s16 Ck_Coin() {
     }
 }
 
+/**
+ * @brief Pre-select initialization — resets state before the character select screen.
+ *
+ * Clears control time, round level, rankings, fade flags, combo demos,
+ * and randomizes the RNG seeds from system_timer.
+ */
 void Before_Select_Sub() {
     s16 xx;
 
@@ -1815,7 +1918,7 @@ void Before_Select_Sub() {
         Control_Time = 2048;
         Round_Level = 7;
     } else {
-        Control_Time = 481;
+        Control_Time = CONTROL_TIME_DEFAULT;
     }
 
     Super_Arts[0] = 0;
@@ -1851,6 +1954,7 @@ void Before_Select_Sub() {
     }
 }
 
+/** @brief Idle task while waiting for auto-load to complete — renders background. */
 void Wait_Auto_Load(struct _TASK* /* unused */) {
     Basic_Sub();
     BG_Draw_System();

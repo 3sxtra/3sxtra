@@ -1,3 +1,10 @@
+/**
+ * @file sc_data.h
+ * @brief Externs for HUD layout and screen data tables.
+ *
+ * Part of the ui module.
+ */
+
 #ifndef SC_DATA_H
 #define SC_DATA_H
 

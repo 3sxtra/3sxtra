@@ -1,3 +1,9 @@
+/**
+ * @file OTESTDAT.c
+ * @brief Work variables for vibration/object test debug screens.
+ *
+ * Part of the debug module.
+ */
 #include "sf33rd/Source/Game/debug/OTESTDAT.h"
 #include "common.h"
 

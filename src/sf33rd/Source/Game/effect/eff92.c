@@ -1,6 +1,6 @@
 /**
  * @file eff92.c
- * TODO: identify what this effect does
+ * Effect: Mark / UI Rewrite Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff92.h"

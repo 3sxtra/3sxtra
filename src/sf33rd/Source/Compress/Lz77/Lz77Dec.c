@@ -1,7 +1,30 @@
+/**
+ * @file Lz77Dec.c
+ * @brief LZ77 variant decompressor implementation.
+ *
+ * Decodes data compressed with the game's custom LZ77 variant.
+ * Supports multiple encoding modes: short/long dictionary copies,
+ * literal runs (8/16-bit length), fill runs, and incrementing-fill runs.
+ *
+ * Part of the Compress module.
+ * Originally from the PS2 compression module.
+ */
 #include "sf33rd/Source/Compress/Lz77/Lz77Dec.h"
 #include "common.h"
 
+/**
+ * @brief Decompress an LZ77-compressed buffer with output size check.
+ *
+ * @param src  Pointer to the compressed source data.
+ * @param dst  Pointer to the output buffer.
+ * @param size Expected decompressed size in bytes.
+ * @return 1 if the decompressed size exactly matches @p size, 0 otherwise.
+ */
 s32 decLZ77withSizeCheck(u8* src, u8* dst, s32 size) {
+    if (src == NULL || dst == NULL) {
+        return 0;
+    }
+
     s32 j;
     s32 loop;
     u8* dic;

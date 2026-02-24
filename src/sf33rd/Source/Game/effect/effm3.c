@@ -1,6 +1,6 @@
 /**
  * @file effm3.c
- * TODO: identify what this effect does
+ * Effect: Bahn / Path Movement Effect
  */
 
 #include "sf33rd/Source/Game/effect/effm3.h"
@@ -13,7 +13,7 @@
 
 const s16 M3_bahn_data[5] = { 16, 10, 78, 0, -512 };
 
-void effM3_trans(WORK* ewk);
+static void effM3_trans(WORK* ewk);
 
 void effect_M3_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -98,7 +98,7 @@ void effect_M3_move(WORK_Other* ewk) {
     }
 }
 
-void effM3_trans(WORK* ewk) {
+static void effM3_trans(WORK* ewk) {
     ewk->position_x = bg_w.bgw[ewk->my_family - 1].wxy[0].disp.pos;
     ewk->position_y = bg_w.bgw[ewk->my_family - 1].wxy[1].disp.pos;
     ewk->position_x += ewk->xyz[0].disp.pos;

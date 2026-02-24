@@ -1,6 +1,6 @@
 /**
  * @file eff42.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff42.h"
@@ -15,12 +15,12 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void EFF42_SUDDENLY(WORK_Other* ewk);
-void EFF42_SLIDE_IN(WORK_Other* ewk);
-void EFF42_SLIDE_OUT(WORK_Other* ewk);
-void EFF42_KILL(WORK_Other* ewk);
-void EFF42_MOVE(WORK_Other* ewk);
-void Setup_Char_Index(WORK_Other* ewk);
+static void EFF42_SUDDENLY(WORK_Other* ewk);
+static void EFF42_SLIDE_IN(WORK_Other* ewk);
+static void EFF42_SLIDE_OUT(WORK_Other* ewk);
+static void EFF42_KILL(WORK_Other* ewk);
+static void EFF42_MOVE(WORK_Other* ewk);
+static void Setup_Char_Index(WORK_Other* ewk);
 
 void (*const EFF42_Jmp_Tbl[5])();
 
@@ -34,7 +34,7 @@ void effect_42_move(WORK_Other* ewk) {
     }
 }
 
-void EFF42_SUDDENLY(WORK_Other* ewk) {
+static void EFF42_SUDDENLY(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old] != 0) {
@@ -67,7 +67,7 @@ void EFF42_SUDDENLY(WORK_Other* ewk) {
     }
 }
 
-void EFF42_SLIDE_IN(WORK_Other* ewk) {
+static void EFF42_SLIDE_IN(WORK_Other* ewk) {
     if (Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -118,7 +118,7 @@ void EFF42_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-void EFF42_SLIDE_OUT(WORK_Other* ewk) {
+static void EFF42_SLIDE_OUT(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[6]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old] != 0) {
@@ -154,7 +154,7 @@ void EFF42_SLIDE_OUT(WORK_Other* ewk) {
     }
 }
 
-void EFF42_KILL(WORK_Other* ewk) {
+static void EFF42_KILL(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old] == 0) {
@@ -171,7 +171,7 @@ void EFF42_KILL(WORK_Other* ewk) {
     }
 }
 
-void EFF42_MOVE(WORK_Other* ewk) {
+static void EFF42_MOVE(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if (--ewk->wu.dir_timer == 0) {
@@ -192,7 +192,7 @@ void EFF42_MOVE(WORK_Other* ewk) {
     }
 }
 
-void Setup_Char_Index(WORK_Other* ewk) {
+static void Setup_Char_Index(WORK_Other* ewk) {
     s16 xx = Select_Timer & (s8)ewk->wu.routine_no[7];
 
     xx &= 0xFF;

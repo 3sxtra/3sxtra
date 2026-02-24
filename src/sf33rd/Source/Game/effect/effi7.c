@@ -1,6 +1,6 @@
 /**
  * @file effi7.c
- * TODO: identify what this effect does
+ * Effect: Ex Sign / Meter Effect
  */
 
 #include "sf33rd/Source/Game/effect/effi7.h"
@@ -12,7 +12,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void effI7_pos_hosei(WORK_Other* ewk, WORK* mwk);
+static void effI7_pos_hosei(WORK_Other* ewk, WORK* mwk);
 
 const s16 ex_sign_data[69][4] = {
     { 28, 70, 121, 1 },  { -44, 60, 121, 0 }, { -24, 40, 121, 1 },  { -12, 52, 121, 1 }, { -40, 68, 121, 1 },
@@ -85,7 +85,7 @@ void effect_I7_move(WORK_Other* ewk) {
     }
 }
 
-void effI7_pos_hosei(WORK_Other* ewk, WORK* mwk) {
+static void effI7_pos_hosei(WORK_Other* ewk, WORK* mwk) {
     ewk->wu.position_x = mwk->position_x;
 
     if (mwk->rl_flag) {

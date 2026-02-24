@@ -1,10 +1,11 @@
 /**
  * @file eff45.c
- * TODO: identify what this effect does
+ * Effect: Debug / Game State Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff45.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/eff61.h"
 #include "sf33rd/Source/Game/effect/effb6.h"
@@ -13,13 +14,13 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-void EFF45_DISP(WORK_Other_CONN* ewk);
-void EFF45_SUSPEND(WORK_Other_CONN* ewk);
-void EFF45_CHANGE(WORK_Other_CONN* ewk);
-void Setup_Message(WORK_Other_CONN* ewk);
-s16 Centering_Sub(WORK_Other_CONN* ewk, s16 dot_type);
-void Check_Pig_Pig(WORK_Other_CONN* ewk);
-void Convert_16_10_2(WORK_Other_CONN* ewk, u16 target);
+static void EFF45_DISP(WORK_Other_CONN* ewk);
+static void EFF45_SUSPEND(WORK_Other_CONN* ewk);
+static void EFF45_CHANGE(WORK_Other_CONN* ewk);
+static void Setup_Message(WORK_Other_CONN* ewk);
+static s16 Centering_Sub(WORK_Other_CONN* ewk, s16 dot_type);
+static void Check_Pig_Pig(WORK_Other_CONN* ewk);
+static void Convert_16_10_2(WORK_Other_CONN* ewk, u16 target);
 
 // sbss
 MessageData Message_Data[4];
@@ -47,7 +48,7 @@ void effect_45_move(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF45_DISP(WORK_Other_CONN* ewk) {
+static void EFF45_DISP(WORK_Other_CONN* ewk) {
     ewk->wu.disp_flag = 1;
 
     if ((ewk->wu.routine_no[0] = Message_Data[ewk->wu.dir_old].order)) {
@@ -55,7 +56,7 @@ void EFF45_DISP(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF45_SUSPEND(WORK_Other_CONN* ewk) {
+static void EFF45_SUSPEND(WORK_Other_CONN* ewk) {
     ewk->wu.disp_flag = 0;
 
     if (Message_Data[ewk->wu.dir_old].order != 2) {
@@ -67,7 +68,7 @@ void EFF45_SUSPEND(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF45_CHANGE(WORK_Other_CONN* ewk) {
+static void EFF45_CHANGE(WORK_Other_CONN* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -112,13 +113,13 @@ s32 effect_45_init(u8 id, s16 sync_bg, s16 master_player) {
     return 0;
 }
 
-void Setup_Message(WORK_Other_CONN* ewk) {
+static void Setup_Message(WORK_Other_CONN* ewk) {
     Message_Data[ewk->wu.dir_old].contents = Message_Data[ewk->wu.dir_old].request;
     Message_Data[ewk->wu.dir_old].kind_cnt = Message_Data[ewk->wu.dir_old].kind_req;
 
-    if (Debug_w[68]) {
-        Message_Data[ewk->wu.dir_old].request = Debug_w[68] - 1;
-        Message_Data[ewk->wu.dir_old].contents = Debug_w[68] - 1;
+    if (Debug_w[DEBUG_MESSAGE_TEST]) {
+        Message_Data[ewk->wu.dir_old].request = Debug_w[DEBUG_MESSAGE_TEST] - 1;
+        Message_Data[ewk->wu.dir_old].contents = Debug_w[DEBUG_MESSAGE_TEST] - 1;
     }
 
     get_message_conn_data(ewk, Message_Data[ewk->wu.dir_old].kind_cnt, 0, Message_Data[ewk->wu.dir_old].request + 0);
@@ -129,7 +130,7 @@ void Setup_Message(WORK_Other_CONN* ewk) {
     Check_Pig_Pig(ewk);
 }
 
-s16 Centering_Sub(WORK_Other_CONN* ewk, s16 dot_type) {
+static s16 Centering_Sub(WORK_Other_CONN* ewk, s16 dot_type) {
     s16 i;
     s16 ix;
     s16 ny;
@@ -157,10 +158,10 @@ s16 Centering_Sub(WORK_Other_CONN* ewk, s16 dot_type) {
     return max / 2;
 }
 
-void Check_Pig_Pig(WORK_Other_CONN* ewk) {
+static void Check_Pig_Pig(WORK_Other_CONN* ewk) {
     s16 ix;
 
-    if (Debug_w[68]) {
+    if (Debug_w[DEBUG_MESSAGE_TEST]) {
         Convert_16_10_2(ewk, vm_w.Block_Size);
 
         for (ix = 0; ix < ewk->num_of_conn; ix++) {
@@ -247,7 +248,7 @@ void Check_Pig_Pig(WORK_Other_CONN* ewk) {
     }
 }
 
-void Convert_16_10_2(WORK_Other_CONN* ewk, u16 target) {
+static void Convert_16_10_2(WORK_Other_CONN* ewk, u16 target) {
     ewk->wu.old_rno[1] = target / 10;
     target %= 10;
     ewk->wu.old_rno[0] = target;

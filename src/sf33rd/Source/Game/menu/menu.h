@@ -1,3 +1,10 @@
+/**
+ * @file menu.h
+ * @brief Public API for game menus — mode select, options, training, replays.
+ *
+ * Part of the menu module.
+ */
+
 #ifndef MENU_H
 #define MENU_H
 

@@ -1,6 +1,6 @@
 /**
  * @file effe8.c
- * TODO: identify what this effect does
+ * Effect: After Image / Work User Effect
  */
 
 #include "sf33rd/Source/Game/effect/effe8.h"
@@ -11,8 +11,8 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk);
-void effE8_trans(WORK_Other* ewk, PLW* mwk);
+static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk);
+static void effE8_trans(WORK_Other* ewk, PLW* mwk);
 
 void effect_E8_move(WORK_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
@@ -90,7 +90,7 @@ void effect_E8_move(WORK_Other* ewk) {
     }
 }
 
-void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
+static void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
     if (ewk->wu.old_rno[5]) {
         if (ewk->wu.type == 0) {
             ewk->wu.position_x = mwk->wu.position_x;
@@ -137,7 +137,7 @@ void effe8_zanzou_process(WORK_Other* ewk, PLW* mwk) {
     }
 }
 
-void effE8_trans(WORK_Other* ewk, PLW* mwk) {
+static void effE8_trans(WORK_Other* ewk, PLW* mwk) {
     if (ewk->wu.old_rno[3] == 0) {
         return;
     }

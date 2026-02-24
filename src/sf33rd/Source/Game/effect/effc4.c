@@ -1,6 +1,6 @@
 /**
  * @file effc4.c
- * TODO: identify what this effect does
+ * Effect: Menu / EX Data Effect
  */
 
 #include "sf33rd/Source/Game/effect/effc4.h"
@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-void Setup_Letter_C4(WORK_Other_CONN* ewk);
+static void Setup_Letter_C4(WORK_Other_CONN* ewk);
 
 void effect_C4_move(WORK_Other_CONN* ewk) {
     if (Menu_Suicide[ewk->master_player]) {
@@ -70,7 +70,7 @@ s32 effect_C4_init(s16 id, s16 letter_type, s16 cursor_index, s16 master_player)
     return 0;
 }
 
-void Setup_Letter_C4(WORK_Other_CONN* ewk) {
+static void Setup_Letter_C4(WORK_Other_CONN* ewk) {
     s16 x;
     s16 ix;
     u8* ptr;

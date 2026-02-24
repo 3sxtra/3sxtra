@@ -1,6 +1,6 @@
 /**
  * @file effg5.c
- * TODO: identify what this effect does
+ * Effect: Sweat / Ase Effect
  */
 
 #include "sf33rd/Source/Game/effect/effg5.h"
@@ -84,7 +84,7 @@ void effect_G5_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_G5_init(WORK* wk, s16 dr, s16 sp, s16 dl) {
+static s32 effect_G5_init(WORK* wk, s16 dr, s16 sp, s16 dl) {
     WORK_Other* ewk;
     s16 ix;
 

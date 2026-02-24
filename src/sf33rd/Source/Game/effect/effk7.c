@@ -1,6 +1,6 @@
 /**
  * @file effk7.c
- * TODO: identify what this effect does
+ * Effect: Player / Common Effect
  */
 
 #include "sf33rd/Source/Game/effect/effk7.h"
@@ -13,8 +13,8 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/meta_col.h"
 
-void K7_move_type_0(WORK_Other* ewk, PLW* mwk);
-s16 K7_mt0_rebirth_check(PLW* mwk);
+static void K7_move_type_0(WORK_Other* ewk, PLW* mwk);
+static s16 K7_mt0_rebirth_check(PLW* mwk);
 
 void effect_K7_move(WORK_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
@@ -57,7 +57,7 @@ void effect_K7_move(WORK_Other* ewk) {
     }
 }
 
-void K7_move_type_0(WORK_Other* ewk, PLW* mwk) {
+static void K7_move_type_0(WORK_Other* ewk, PLW* mwk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (mwk->wu.cg_type != 20) {
@@ -73,7 +73,7 @@ void K7_move_type_0(WORK_Other* ewk, PLW* mwk) {
         mwk->att_plus = 10;
         mwk->def_plus = 6;
 
-        if (mwk->wu.operator == 0) {
+        if (mwk->wu.pl_operator == 0) {
             Next_Be_Free(mwk);
         }
 
@@ -135,7 +135,7 @@ void K7_move_type_0(WORK_Other* ewk, PLW* mwk) {
         set_base_data_metamorphose(mwk, mwk->wu.id);
         metamor_color_restore(mwk->wu.id);
 
-        if (mwk->wu.operator == 0) {
+        if (mwk->wu.pl_operator == 0) {
             Next_Be_Free(mwk);
         }
 
@@ -147,7 +147,7 @@ void K7_move_type_0(WORK_Other* ewk, PLW* mwk) {
     }
 }
 
-s16 K7_mt0_rebirth_check(PLW* mwk) {
+static s16 K7_mt0_rebirth_check(PLW* mwk) {
     s16 num = 0;
 
     switch (mwk->wu.routine_no[1]) {

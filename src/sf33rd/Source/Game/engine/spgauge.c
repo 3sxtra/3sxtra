@@ -13,6 +13,7 @@
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
+// sbss - now declared in header as extern
 s8 Old_Stop_SG;
 s8 Exec_Wipe_F;
 s8 time_clear[2];
@@ -44,21 +45,22 @@ const u16 sagauge_colchg_tbl[4][2] = { { 17, 145 }, { 18, 146 }, { 19, 147 }, { 
 const u16* spgauge_puttbl[2] = { spgauge_tbl, spgauge_tbl };
 const u16* spgauge_postbl[2] = { spg1p_npos_tbl, spg2p_npos_tbl };
 
-void spgauge_control(s8 Spg_Num);
-void wipe_check();
-void satime_ko_after_clear(s8 Stpl_Num);
-void sa_time_moji_send();
-void samoji_control(s8 Stpl_Num);
-void sast_control(s8 Stpl_Num);
-void sast_color_chenge(s8 Stpl_Num);
-void sagauge_color_chenge(s8 Stpl_Num);
-void sa_moji_trans(s8 Stpl_Num, s8 Kind, s8 OnOff);
-void sa_gauge_trans(s8 pl_kind);
-void spgauge_sound_request(s8 Stpl_Num);
-void spgauge_work_clear(s8 Stpl_Num);
-void spgauge_wipe_write(s8 Stpl_Num);
-void sa_waku_trans(s8 Stpl_Num, s8 Spg_Col);
+static void spgauge_control(s8 Spg_Num);
+static void wipe_check();
+static void satime_ko_after_clear(s8 Stpl_Num);
+static void sa_time_moji_send();
+static void samoji_control(s8 Stpl_Num);
+static void sast_control(s8 Stpl_Num);
+static void sast_color_chenge(s8 Stpl_Num);
+static void sagauge_color_chenge(s8 Stpl_Num);
+static void sa_moji_trans(s8 Stpl_Num, s8 Kind, s8 OnOff);
+static void sa_gauge_trans(s8 pl_kind);
+static void spgauge_sound_request(s8 Stpl_Num);
+static void spgauge_work_clear(s8 Stpl_Num);
+static void spgauge_wipe_write(s8 Stpl_Num);
+static void sa_waku_trans(s8 Stpl_Num, s8 Spg_Col);
 
+/** @brief Initializes the Super Art gauge controller for match start. */
 void spgauge_cont_init() {
     s8 lpy;
 
@@ -134,6 +136,7 @@ void spgauge_cont_init() {
     col = 0;
 }
 
+/** @brief Initializes the Super Art gauge controller for demo playback. */
 void spgauge_cont_demo_init() {
     s8 lpy;
 
@@ -212,6 +215,7 @@ void spgauge_cont_demo_init() {
     col = 1;
 }
 
+/** @brief Per-frame Super Art gauge main update — runs gauge control for both sides. */
 void spgauge_cont_main() {
     u8 i;
 
@@ -247,11 +251,13 @@ void spgauge_cont_main() {
     }
 }
 
+/** @brief Fixes an SA gauge display bug for a specific side. */
 void sag_bug_fix(s32 side) {
     spg_dat[side].max = spg_dat[side].max_old = spg_dat[side].max_rno = 0;
 }
 
-void spgauge_control(s8 Spg_Num) {
+/** @brief Controls a single SA gauge stock: fill level, flash, and stock transitions. */
+static void spgauge_control(s8 Spg_Num) {
     if (sa_gauge_flash[Spg_Num] != 0 && plw[Spg_Num].sa->ex == -1) {
         spgauge_sound_request(Spg_Num);
 
@@ -325,8 +331,7 @@ void spgauge_control(s8 Spg_Num) {
         sast_control(Spg_Num);
     }
 
-    if ((plw[Spg_Num].sa->ex != 0 || spg_dat[Spg_Num].ex_flag == 1 || spg_dat[Spg_Num].sa_flag == 1) &&
-        !Game_pause) {
+    if ((plw[Spg_Num].sa->ex != 0 || spg_dat[Spg_Num].ex_flag == 1 || spg_dat[Spg_Num].sa_flag == 1) && !Game_pause) {
         sagauge_color_chenge(Spg_Num);
     }
 
@@ -344,7 +349,8 @@ void spgauge_control(s8 Spg_Num) {
     }
 }
 
-void wipe_check() {
+/** @brief Checks and processes gauge wipe transitions (round start/end). */
+static void wipe_check() {
     if (Old_Stop_SG) {
         if (Exec_Wipe != 0) {
             return;
@@ -393,7 +399,8 @@ void wipe_check() {
     }
 }
 
-void satime_ko_after_clear(s8 Stpl_Num) {
+/** @brief Clears SA time display after a KO for a given stock. */
+static void satime_ko_after_clear(s8 Stpl_Num) {
     spg_dat[Stpl_Num].max = 0;
 
     if (plw[Stpl_Num].sa->store == spg_dat[Stpl_Num].spg_maxlevel) {
@@ -412,7 +419,8 @@ void satime_ko_after_clear(s8 Stpl_Num) {
     plw[Stpl_Num].sa->bacckup_g_h = 0;
 }
 
-void sa_time_moji_send() {
+/** @brief Sends the SA time text sprites to the display system. */
+static void sa_time_moji_send() {
     if (time_flag[0] == 0 && time_flag[1] == 0) {
         return;
     }
@@ -441,7 +449,8 @@ void sa_time_moji_send() {
     time_num++;
 }
 
-void samoji_control(s8 Stpl_Num) {
+/** @brief Controls the SA label text sprite animation (flash/blink cycles). */
+static void samoji_control(s8 Stpl_Num) {
     switch (spg_dat[Stpl_Num].max_rno) {
     case 0:
         max2[Stpl_Num] = 0;
@@ -493,7 +502,8 @@ void samoji_control(s8 Stpl_Num) {
     }
 }
 
-void sast_control(s8 Stpl_Num) {
+/** @brief Controls the SA stock indicator state machine. */
+static void sast_control(s8 Stpl_Num) {
     sast_now[Stpl_Num] = 1;
 
     if (spg_dat[Stpl_Num].time) {
@@ -758,7 +768,8 @@ void sast_control(s8 Stpl_Num) {
     sast_now[Stpl_Num] = 0;
 }
 
-void sast_color_chenge(s8 Stpl_Num) {
+/** @brief Cycles colors for the SA stock indicator sprites. */
+static void sast_color_chenge(s8 Stpl_Num) {
     if (plw[Stpl_Num].sa->gauge_type == 1 && plw[Stpl_Num].sa->ok == -1) {
         col = 1;
 
@@ -788,7 +799,8 @@ void sast_color_chenge(s8 Stpl_Num) {
     }
 }
 
-void sa_color_chenge(s8 Stpl_Num) {
+/** @brief General SA color change handler (delegates to gauge or stock). */
+static void sa_color_chenge(s8 Stpl_Num) {
     if (spg_dat[Stpl_Num].kind) {
         if (Stpl_Num == 0) {
             spg_dat[0].spgcol_number = 18;
@@ -804,7 +816,8 @@ void sa_color_chenge(s8 Stpl_Num) {
     }
 }
 
-void sagauge_color_chenge(s8 Stpl_Num) {
+/** @brief Cycles colors for the SA gauge bar fill sprites. */
+static void sagauge_color_chenge(s8 Stpl_Num) {
     if (spg_dat[Stpl_Num].no_chgcol) {
         return;
     }
@@ -846,7 +859,8 @@ void sagauge_color_chenge(s8 Stpl_Num) {
     spg_dat[Stpl_Num].spgcol_number = sagauge_colchg_tbl[spg_dat[Stpl_Num].gauge_flash_col][Stpl_Num];
 }
 
-void sa_moji_trans(s8 Stpl_Num, s8 Kind, s8 OnOff) {
+/** @brief Transfers SA label text sprite data to the rendering system. */
+static void sa_moji_trans(s8 Stpl_Num, s8 Kind, s8 OnOff) {
     switch (Kind) {
     case 0:
         if (OnOff) {
@@ -888,7 +902,8 @@ void sa_moji_trans(s8 Stpl_Num, s8 Kind, s8 OnOff) {
     }
 }
 
-void sa_gauge_trans(s8 pl_kind) {
+/** @brief Transfers SA gauge bar sprite data to the rendering system. */
+static void sa_gauge_trans(s8 pl_kind) {
     s8 i;
     s16 len;
     const u16* sa_char_ptr;
@@ -927,13 +942,15 @@ void sa_gauge_trans(s8 pl_kind) {
     }
 }
 
-void spgauge_sound_request(s8 Stpl_Num) {
+/** @brief Requests the SA gauge fill sound effect when a stock fills up. */
+static void spgauge_sound_request(s8 Stpl_Num) {
     if (plw[Stpl_Num].sa->store > spg_dat[Stpl_Num].spg_level) {
         Sound_SE(Stpl_Num + 107);
     }
 }
 
-void spgauge_work_clear(s8 Stpl_Num) {
+/** @brief Clears all SA gauge work variables for a given stock. */
+static void spgauge_work_clear(s8 Stpl_Num) {
     plw[Stpl_Num].sa->gauge.s.h = spg_dat[Stpl_Num].current_spg = plw[Stpl_Num].sa->bacckup_g_h;
     plw[Stpl_Num].sa->bacckup_g_h = 0;
     spg_dat[Stpl_Num].old_spg = spg_dat[Stpl_Num].current_spg;
@@ -968,13 +985,15 @@ void spgauge_work_clear(s8 Stpl_Num) {
     max2[Stpl_Num] = 0;
 }
 
-void spgauge_wipe_write(s8 Stpl_Num) {
+/** @brief Writes the SA gauge wipe transition sprites. */
+static void spgauge_wipe_write(s8 Stpl_Num) {
     sa_stock_trans(spg_dat[Stpl_Num].spg_level, col, Stpl_Num);
     sa_gauge_trans(Stpl_Num);
     sa_waku_trans(Stpl_Num, col);
 }
 
-void sa_waku_trans(s8 Stpl_Num, s8 Spg_Col) {
+/** @brief Transfers the SA gauge frame (waku) sprites with color setting. */
+static void sa_waku_trans(s8 Stpl_Num, s8 Spg_Col) {
     s8 lpy;
 
     sc_ram_to_vram(Stpl_Num + (Spg_Col * 2));
@@ -1007,6 +1026,7 @@ void sa_waku_trans(s8 Stpl_Num, s8 Spg_Col) {
     sa_fullstock_trans(spg_dat[1].spg_maxlevel, Spg_Col, 1);
 }
 
+/** @brief Initializes SA gauge for training mode (player 1 side). */
 void tr_spgauge_cont_init(s8 pl) {
     Sa_frame_Clear2(pl);
     spg_dat[pl].current_spg = 0;
@@ -1077,6 +1097,7 @@ void tr_spgauge_cont_init(s8 pl) {
     col = 0;
 }
 
+/** @brief Initializes SA gauge for training mode (player 2 side). */
 void tr_spgauge_cont_init2(s8 pl) {
     Sa_frame_Clear2(pl);
     demo_set_sa_full(&super_arts[pl]);

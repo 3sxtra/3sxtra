@@ -1,6 +1,6 @@
 /**
  * @file effc0.c
- * TODO: identify what this effect does
+ * Effect: Hok Table / Player Hosei Effect
  */
 
 #include "sf33rd/Source/Game/effect/effc0.h"

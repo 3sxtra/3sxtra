@@ -1,6 +1,6 @@
 /**
  * @file eff27.c
- * TODO: identify what this effect does
+ * Effect: Screen Object / Piece Data
  */
 
 #include "sf33rd/Source/Game/effect/eff27.h"
@@ -16,8 +16,8 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void set_second_hop(WORK_Other* ewk);
-void dead_check27(WORK_Other* ewk);
+static void set_second_hop(WORK_Other* ewk);
+static void dead_check27(WORK_Other* ewk);
 
 void (*eff27_jp_tbl[11])(WORK_Other*);
 
@@ -80,7 +80,7 @@ void effect_27_move(WORK_Other* ewk) {
     }
 }
 
-void eff27_00(WORK_Other* ewk) {
+static void eff27_00(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.hit_stop) {
@@ -105,7 +105,7 @@ void eff27_00(WORK_Other* ewk) {
     }
 }
 
-void eff27_02(WORK_Other* ewk) {
+static void eff27_02(WORK_Other* ewk) {
     if (ewk->wu.hit_stop) {
         char_move(&ewk->wu);
     }
@@ -120,7 +120,7 @@ void eff27_02(WORK_Other* ewk) {
     }
 }
 
-void eff27_03(WORK_Other* ewk) {
+static void eff27_03(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.cg_type != 2) {
@@ -162,7 +162,7 @@ void eff27_03(WORK_Other* ewk) {
     }
 }
 
-void eff27_04(WORK_Other* ewk) {
+static void eff27_04(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.cg_type != 2) {
@@ -194,7 +194,7 @@ void eff27_04(WORK_Other* ewk) {
     }
 }
 
-void eff27_05(WORK_Other* ewk) {
+static void eff27_05(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.cg_type != 2) {
@@ -227,7 +227,7 @@ void eff27_05(WORK_Other* ewk) {
     }
 }
 
-void eff27_06(WORK_Other* ewk) {
+static void eff27_06(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         char_move(&ewk->wu);
@@ -249,7 +249,7 @@ void eff27_06(WORK_Other* ewk) {
     }
 }
 
-void eff27_07(WORK_Other* ewk) {
+static void eff27_07(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.cg_type != 2) {
@@ -295,7 +295,7 @@ void eff27_07(WORK_Other* ewk) {
     }
 }
 
-void eff27_08(WORK_Other* ewk) {
+static void eff27_08(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         eff27_03(ewk);
@@ -312,7 +312,7 @@ void eff27_08(WORK_Other* ewk) {
     }
 }
 
-void eff27_09(WORK_Other* ewk) {
+static void eff27_09(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         char_move(&ewk->wu);
@@ -337,7 +337,7 @@ void eff27_09(WORK_Other* ewk) {
     }
 }
 
-void set_second_hop(WORK_Other* ewk) {
+static void set_second_hop(WORK_Other* ewk) {
     const s16* ptr;
 
     ewk->wu.xyz[1].disp.pos = ewk->wu.old_rno[1];
@@ -355,7 +355,7 @@ void set_second_hop(WORK_Other* ewk) {
     ewk->wu.mvxy.a[1].sp = ewk->wu.mvxy.a[1].sp >> 1;
 }
 
-void dead_check27(WORK_Other* ewk) {
+static void dead_check27(WORK_Other* ewk) {
     WORK_Other* oya = (WORK_Other*)ewk->my_master;
 
     if (ewk->wu.old_rno[3] != oya->wu.routine_no[1]) {

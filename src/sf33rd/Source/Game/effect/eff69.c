@@ -1,6 +1,6 @@
 /**
  * @file eff69.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff69.h"
@@ -16,7 +16,7 @@
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void Setup_Clear_OBJ(WORK_Other* ewk);
+static void Setup_Clear_OBJ(WORK_Other* ewk);
 
 void (*const EFF69_Jmp_Tbl[5])();
 
@@ -30,13 +30,13 @@ void effect_69_move(WORK_Other* ewk) {
     }
 }
 
-void EFF69_WAIT(WORK_Other* ewk) {
+static void EFF69_WAIT(WORK_Other* ewk) {
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
 }
 
-void EFF69_SLIDE_IN(WORK_Other* ewk) {
+static void EFF69_SLIDE_IN(WORK_Other* ewk) {
     if (Order[ewk->wu.dir_old] != 1) {
         ewk->wu.routine_no[0] = Order[ewk->wu.dir_old];
         ewk->wu.routine_no[1] = 0;
@@ -90,7 +90,7 @@ void EFF69_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-void EFF69_SLIDE_OUT(WORK_Other* ewk) {
+static void EFF69_SLIDE_OUT(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (ewk->wu.disp_flag == 0) {
@@ -129,7 +129,7 @@ void EFF69_SLIDE_OUT(WORK_Other* ewk) {
     }
 }
 
-void EFF69_SUDDENLY(WORK_Other* ewk) {
+static void EFF69_SUDDENLY(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (--Order_Timer[ewk->wu.dir_old]) {
@@ -182,7 +182,7 @@ s32 effect_69_init(s16 dir_old) {
     return 0;
 }
 
-void Setup_Clear_OBJ(WORK_Other* ewk) {
+static void Setup_Clear_OBJ(WORK_Other* ewk) {
     if (ewk->wu.dir_old < 3) {
         effect_59_init(ewk, ewk->wu.my_family, ewk->wu.dir_old, 1);
     }

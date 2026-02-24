@@ -1,11 +1,12 @@
 /**
  * @file eff05.c
- * TODO: identify what this effect does
+ * Effect: Background / Stage Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"

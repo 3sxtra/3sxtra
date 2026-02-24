@@ -1,6 +1,6 @@
 /**
  * @file eff24.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect (Horizontal/Vertical)
  */
 
 #include "sf33rd/Source/Game/effect/eff24.h"

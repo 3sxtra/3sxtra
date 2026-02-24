@@ -1,6 +1,6 @@
 /**
  * @file effd4.c
- * TODO: identify what this effect does
+ * Effect: Suction / Swallow Effect
  */
 
 #include "sf33rd/Source/Game/effect/effd4.h"
@@ -169,7 +169,7 @@ void effect_D4_move(WORK_Other* ewk) {
     }
 }
 
-s32 distance2speed(WORK_Other* ewk, WORK* wk, s32 dir) {
+static s32 distance2speed(WORK_Other* ewk, WORK* wk, s32 dir) {
     s32 y = 0;
     s32 x = 0;
 

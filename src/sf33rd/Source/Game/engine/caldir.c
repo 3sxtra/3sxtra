@@ -888,12 +888,14 @@ void cmsd_x_initial_speed(MotionState* cc) {
     cc->amx %= cc->timer;
 }
 
+/** @brief Sets the initial Y speed from the motion state data. */
 void cmsd_y_initial_speed(MotionState* cc) {
     cc->amy = cc->y.pl - (cc->timer2 * cc->dly);
     cc->spy = cc->dly + (cc->amy / cc->timer);
     cc->amy %= cc->timer;
 }
 
+/** @brief Sets the X delta (acceleration) speed from the motion state data. */
 void cmsd_x_delta_speed(MotionState* cc) {
     if (cc->spx != 0) {
         cc->amx = cc->x.pl - (cc->timer * cc->spx);
@@ -906,6 +908,7 @@ void cmsd_x_delta_speed(MotionState* cc) {
     cmsd_all_x_speed_data(cc);
 }
 
+/** @brief Sets the Y delta (acceleration) speed from the motion state data. */
 void cmsd_y_delta_speed(MotionState* cc) {
     if (cc->spy != 0) {
         cc->amy = cc->y.pl - (cc->timer * cc->spy);
@@ -918,6 +921,7 @@ void cmsd_y_delta_speed(MotionState* cc) {
     cmsd_all_y_speed_data(cc);
 }
 
+/** @brief Calculates all speed components (initial + delta) for a given trajectory. */
 void cal_all_speed_data(WORK* wk, s16 tm, s16 x1, s16 y1, s8 xsw, s8 ysw) {
     MotionState bb;
 
@@ -951,6 +955,7 @@ void cal_all_speed_data(WORK* wk, s16 tm, s16 x1, s16 y1, s8 xsw, s8 ysw) {
     wk->mvxy.kop[0] = wk->mvxy.kop[1] = 0;
 }
 
+/** @brief Calculates initial speed to reach a target position in a given time. */
 void cal_initial_speed(WORK* wk, s16 tm, s16 x1, s16 y1) {
     MotionState bb;
 
@@ -979,6 +984,7 @@ void cal_initial_speed(WORK* wk, s16 tm, s16 x1, s16 y1) {
     wk->xyz[1].cal += bb.amy;
 }
 
+/** @brief Calculates initial Y speed to reach a target height in a given time. */
 void cal_initial_speed_y(WORK* wk, s16 tm, s16 y1) {
     MotionState bb;
 
@@ -1000,6 +1006,7 @@ void cal_initial_speed_y(WORK* wk, s16 tm, s16 y1) {
     wk->xyz[1].cal += bb.amy;
 }
 
+/** @brief Calculates delta (acceleration) speed for a given trajectory. */
 void cal_delta_speed(WORK* wk, s16 tm, s16 x1, s16 y1, s8 xsw, s8 ysw) {
     MotionState bb;
 
@@ -1032,6 +1039,7 @@ void cal_delta_speed(WORK* wk, s16 tm, s16 x1, s16 y1, s8 xsw, s8 ysw) {
     wk->xyz[1].cal += bb.amy;
 }
 
+/** @brief Calculates the peak Y position of the current trajectory arc. */
 s16 cal_top_of_position_y(WORK* wk) {
     s32 num = cal_time_of_sign_change(wk);
     s32 num2;
@@ -1046,6 +1054,7 @@ s16 cal_top_of_position_y(WORK* wk) {
     return ps_uni.psys.h;
 }
 
+/** @brief Calculates the time at which the Y velocity changes sign (apex). */
 s16 cal_time_of_sign_change(WORK* wk) {
     if (wk->mvxy.a[1].real.h > 0 && wk->mvxy.d[1].real.h < 0) {
         return wk->mvxy.a[1].sp / -wk->mvxy.d[1].sp;
@@ -1054,6 +1063,7 @@ s16 cal_time_of_sign_change(WORK* wk) {
     return 0;
 }
 
+/** @brief Forecasts the move direction after a given number of frames. */
 s16 cal_move_dir_forecast(WORK* wk, s16 tm) {
     PS_DP ps[2];
 
@@ -1068,6 +1078,7 @@ s16 cal_move_dir_forecast(WORK* wk, s16 tm) {
     return caldir_pos_032(wk->xyz[0].disp.pos, wk->xyz[1].disp.pos, ps[0].rp.h, ps[1].rp.h);
 }
 
+/** @brief Converts a binary-coded number to decimal (base-10 representation). */
 s16 remake_2_10(s16 num, s16 keta) {
     switch (keta) {
     case 2:

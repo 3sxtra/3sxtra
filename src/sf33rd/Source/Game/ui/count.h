@@ -1,3 +1,10 @@
+/**
+ * @file count.h
+ * @brief Public API for game clock and round timer.
+ *
+ * Part of the ui module.
+ */
+
 #ifndef COUNT_H
 #define COUNT_H
 

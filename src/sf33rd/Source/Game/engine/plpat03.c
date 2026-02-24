@@ -11,13 +11,19 @@
 #include "sf33rd/Source/Game/engine/plpatuni.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl03_exatt_table[18])(PLW*);
 
+/** @brief Yun: extra attack dispatcher. */
 void pl03_extra_attack(PLW* wk) {
-    pl03_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl03_exatt_table[idx](wk);
 }
 
-void Att_PL03_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Yun: special action (tokushu koudou). */
+static void Att_PL03_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {

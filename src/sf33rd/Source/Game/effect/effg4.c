@@ -1,6 +1,6 @@
 /**
  * @file effg4.c
- * TODO: identify what this effect does
+ * Effect: Gill Effect Data
  */
 
 #include "sf33rd/Source/Game/effect/effg4.h"

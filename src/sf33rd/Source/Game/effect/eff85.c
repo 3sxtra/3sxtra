@@ -1,6 +1,6 @@
 /**
  * @file eff85.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect (Character Index)
  */
 
 #include "sf33rd/Source/Game/effect/eff85.h"

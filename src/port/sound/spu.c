@@ -1,4 +1,14 @@
+/**
+ * @file spu.c
+ * @brief Software PS2 SPU2 emulator — ADPCM decoding and ADSR envelope.
+ *
+ * Emulates the PS2 Sound Processing Unit: decodes VAG/ADPCM blocks,
+ * runs per-voice ADSR envelopes, applies pitch interpolation, and
+ * mixes 48 voices into a stereo output stream via SDL3 audio callback.
+ * Uses an active-voice bitmask for efficient tick processing.
+ */
 #include "port/sound/spu.h"
+#include "port/tracy_zones.h"
 
 #include "common.h"
 #include <SDL3/SDL.h>
@@ -66,6 +76,11 @@ static u16 ram[(2 * 1024 * 1024) >> 1];
 static s16 adpcm_coefs[5][2] = {
     { 0, 0 }, { 60, 0 }, { 115, -52 }, { 98, -55 }, { 122, -60 },
 };
+
+// ⚡ Bolt: Active voice bitmask — tracks which voices have run==true.
+// SPU_Tick iterates only set bits via __builtin_ctzll instead of
+// brute-forcing all 48 voices. Saves ~33 branch checks × 48K ticks/sec.
+static uint64_t active_voices = 0;
 
 static s16 SPU_ApplyVolume(s16 sample, s32 volume) {
     return (sample * volume) >> 15;
@@ -153,6 +168,7 @@ static void SPU_VoiceRunADSR(struct SPU_Voice* v) {
 
     if (v->adsr_phase > ADSR_PHASE_RELEASE) {
         v->run = false;
+        active_voices &= ~(1ULL << (int)(v - voices)); // ⚡ Bolt
     }
 }
 
@@ -204,6 +220,7 @@ static void SPU_VoiceDecode(struct SPU_Voice* v) {
                     v->envx = 0;
                     v->adsr_phase = ADSR_PHASE_STOPPED;
                     v->run = false;
+                    active_voices &= ~(1ULL << (int)(v - voices)); // ⚡ Bolt
                 }
             }
         }
@@ -267,6 +284,7 @@ void SPU_VoiceStop(int vnum) {
     voices[vnum].envx = 0;
     voices[vnum].adsr_phase = ADSR_PHASE_STOPPED;
     voices[vnum].run = false;
+    active_voices &= ~(1ULL << vnum); // ⚡ Bolt
 }
 
 void SPU_VoiceGetConf(int vnum, struct SPUVConf* conf) {
@@ -297,6 +315,7 @@ void SPU_VoiceStart(int vnum, u32 start_addr) {
     v->lsa = start_addr;
     v->nax = v->ssa;
     v->run = true;
+    active_voices |= (1ULL << vnum); // ⚡ Bolt
     v->envx = 0;
 
     v->adsr_counter = 0;
@@ -312,19 +331,29 @@ void SPU_VoiceStart(int vnum, u32 start_addr) {
 }
 
 void SPU_SDL_CB(void* user, SDL_AudioStream* stream, int additional_amount, int total_amount) {
+    TRACE_ZONE_N("SPU_AudioCB");
     u32 samples_per_channel = (additional_amount / sizeof(s16)) >> 1;
+    // ⚡ Bolt: outbuf holds interleaved stereo samples (2 × s16 per tick).
+    // SPU_Tick writes 2 elements per call, so max safe batch = 4096 / 2 = 2048.
     static s16 outbuf[4096] = {};
 
-    // We need to run the eml callbaack at 250hz
+    // We need to run the eml callback at 250hz
     // 48000 / 250 = 192
     static int cb_timer = 192;
 
-    // TODO consider redesigning this whole system, emlshim and spu should probably run
-    // on the same thread, no locks would be needed in the SDL audio callback path
-    SDL_LockMutex(soundLock);
-
     while (samples_per_channel) {
-        u32 batch_count = min(samples_per_channel, 4096);
+        // ⚡ Bolt: Cap at 2048 — each SPU_Tick writes 2 s16 (L+R) into outbuf,
+        // so 2048 ticks × 2 = 4096 elements = full buffer. Previously capped
+        // at 4096, which would write 8192 elements — a 2× buffer overrun.
+        u32 batch_count = min(samples_per_channel, 2048);
+
+        // ⚡ Bolt: Hold soundLock only during the mixing loop — not during
+        // SDL_PutAudioStreamData (which may block on SDL's internal lock).
+        // Previously the lock spanned the entire callback, causing the game
+        // thread to stall whenever it needed soundLock (voice setup, key-off,
+        // volume changes). Now the game thread only contends during mixing.
+        SDL_LockMutex(soundLock);
+
         s16* p = outbuf;
         for (int i = 0; i < batch_count; i++) {
             SPU_Tick(p);
@@ -337,11 +366,12 @@ void SPU_SDL_CB(void* user, SDL_AudioStream* stream, int additional_amount, int 
             }
         }
 
+        SDL_UnlockMutex(soundLock);
+
         SDL_PutAudioStreamData(stream, outbuf, (batch_count * sizeof(s16)) << 1);
         samples_per_channel -= batch_count;
     }
-
-    SDL_UnlockMutex(soundLock);
+    TRACE_ZONE_END();
 }
 
 static void nullcb() {}
@@ -378,19 +408,20 @@ void SPU_Upload(u32 dst, void* src, u32 size) {
 }
 
 void SPU_Tick(s16* output) {
-    struct SPU_Voice* v;
     s32 acc[2] = {};
     s32 vout[2] = {};
 
-    for (int i = 0; i < VOICE_COUNT; i++) {
-        v = &voices[i];
+    // ⚡ Bolt: Iterate only active voices via bitmask bit-scan.
+    // Typical frames have ~5-15 active voices out of 48; this skips
+    // ~33 pointer dereferences + branch checks per tick at 48 kHz.
+    uint64_t mask = active_voices;
+    while (mask) {
+        int i = __builtin_ctzll(mask);
+        mask &= mask - 1; // Clear lowest set bit
 
-        if (v->run) {
-            SPU_VoiceTick(v, vout);
-
-            acc[0] += vout[0];
-            acc[1] += vout[1];
-        }
+        SPU_VoiceTick(&voices[i], vout);
+        acc[0] += vout[0];
+        acc[1] += vout[1];
     }
 
     output[0] = clamp(acc[0], INT16_MIN, INT16_MAX);

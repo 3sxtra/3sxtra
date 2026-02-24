@@ -1,8 +1,3 @@
-/**
- * @file pl17end_en.c
- * Q Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl17end_en.h"
 #include "common.h"
 
@@ -78,4 +73,4 @@ static s8** msgEndAdrPL17[18] = {
 
 static s8 msgEndCtrPL17[18] = { 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2 };
 
-MessageTable pl17end_usa_tbl = { msgEndAdrPL17, msgEndCtrPL17 };
+MessageTable pl17end_en_tbl = { msgEndAdrPL17, msgEndCtrPL17 };

@@ -1,6 +1,6 @@
 /**
  * @file effm1.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/effm1.h"
@@ -17,7 +17,7 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effm1_move(WORK_Other* ewk);
+static void effm1_move(WORK_Other* ewk);
 
 void effect_M1_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -50,7 +50,7 @@ void effect_M1_move(WORK_Other* ewk) {
     }
 }
 
-void effm1_move(WORK_Other* ewk) {
+static void effm1_move(WORK_Other* ewk) {
     WORK* oya_ptr = (WORK*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {

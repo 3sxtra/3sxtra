@@ -1,6 +1,6 @@
 /**
  * @file eff22.c
- * TODO: identify what this effect does
+ * Effect: Snow / Weather Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff22.h"

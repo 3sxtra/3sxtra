@@ -1,10 +1,6 @@
-/**
- * @file pl12end_en.c
- * Sean Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl12end_en.h"
 #include "common.h"
+#include "game_state.h"
 
 static s8* msgEndPL12_00[1] = { "" };
 static s8* msgEndPL12_01[1] = { "   Victory!!                                    " };
@@ -13,7 +9,7 @@ static s8* msgEndPL12_02[2] = {
     "   of his fighting career!                      ",
 };
 static s8* msgEndPL12_03[1] = { "   I did it! Finally!                           " };
-static s8* msgEndPL12_04[1] = { "   Now... I'm the U.S. Champion!                " };
+static s8* msgEndPL12_04[1] = { "   Now... I'm the U.S.Champion!                " };
 static s8* msgEndPL12_05[2] = {
     "   Now I'm at the same level as my              ",
     "   master! It's a dream come true!              ",
@@ -51,4 +47,4 @@ static s8** msgEndAdrPL12[13] = {
 
 static s8 msgEndCtrPL12[13] = { 1, 1, 2, 1, 1, 2, 2, 1, 2, 2, 2, 2, 2 };
 
-MessageTable pl12end_usa_tbl = { msgEndAdrPL12, msgEndCtrPL12 };
+MessageTable pl12end_en_tbl = { msgEndAdrPL12, msgEndCtrPL12 };

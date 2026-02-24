@@ -11,15 +11,21 @@
 #include "sf33rd/Source/Game/engine/plpatuni.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl02_exatt_table[18])(PLW*);
 
 const s16 lgix_table[8] = { 0, 1, 2, 3, 3, 4, 4, 5 };
 
+/** @brief Ryu: extra attack dispatcher. */
 void pl02_extra_attack(PLW* wk) {
-    pl02_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl02_exatt_table[idx](wk);
 }
 
-void Att_DENJINHADOUKEN(PLW* wk) {
+/** @brief Ryu: Denjin Hadouken (electric fireball SA). */
+static void Att_DENJINHADOUKEN(PLW* wk) {
     s16 i;
     s16 lgix;
 
@@ -54,7 +60,8 @@ void Att_DENJINHADOUKEN(PLW* wk) {
     }
 }
 
-void Att_PL02_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Ryu: special action (tokushu koudou). */
+static void Att_PL02_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {

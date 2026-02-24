@@ -1,8 +1,3 @@
-/**
- * @file pl02tlk_en.c
- * Ryu Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl02tlk_en.h"
 #include "common.h"
 
@@ -24,4 +19,4 @@ static s8** msgTalkAdrPL02[5] = {
 
 static s8 msgTalkCtrPL02[5] = { 1, 1, 1, 2, 2 };
 
-MessageTable pl02tlk_usa_tbl = { msgTalkAdrPL02, msgTalkCtrPL02 };
+MessageTable pl02tlk_en_tbl = { msgTalkAdrPL02, msgTalkCtrPL02 };

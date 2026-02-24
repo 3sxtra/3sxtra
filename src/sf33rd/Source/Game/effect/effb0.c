@@ -1,6 +1,6 @@
 /**
  * @file effb0.c
- * TODO: identify what this effect does
+ * Effect: Timer / Ending Data Effect
  */
 
 #include "sf33rd/Source/Game/effect/effb0.h"

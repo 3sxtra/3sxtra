@@ -1,3 +1,15 @@
+/**
+ * @file flps2vram.c
+ * @brief VRAM texture and palette handle management, locking, and format conversion.
+ *
+ * Manages GPU-side texture and palette objects identified by integer handles.
+ * Provides lock/unlock pairs for CPU access to texture/palette pixel data,
+ * handle allocation/release, and pixel format conversion between
+ * plContext surfaces and GS-native pixel formats.
+ *
+ * Part of the AcrSDK ps2 module.
+ * Originally from the PS2 SDK abstraction layer.
+ */
 #include "sf33rd/AcrSDK/ps2/flps2vram.h"
 #include "common.h"
 #include "sf33rd/AcrSDK/common/memfound.h"
@@ -18,19 +30,31 @@
     while (1) {}
 
 static s32 flPS2ConvertTextureFromContext(plContext* lpcontext, FLTexture* lpflTexture, u32 type);
-u32 flPS2GetTextureSize(u32 format, s32 dw, s32 dh, s32 bnum);
+static u32 flPS2GetTextureSize(u32 format, s32 dw, s32 dh, s32 bnum);
 s32 flPS2LockTexture(Rect* /* unused */, FLTexture* lpflTexture, plContext* lpcontext, u32 flag, s32 /* unused */);
 s32 flPS2UnlockTexture(FLTexture*);
+s32 flReleaseTextureHandle(u32 texture_handle);
+s32 flReleasePaletteHandle(u32 palette_handle);
 
-u32 flCreateTextureHandle(plContext* bits, u32 flag) {
+/** @brief Create a texture handle, allocating system memory or converting from context. */
+u32 flCreateTextureHandle(s32 id, plContext* bits, u32 flag) {
     FLTexture* lpflTexture;
+    // Always auto-assign texture handle like the reference code
+    // The 'id' parameter was incorrectly used to map indices to handles,
+    // but the reference code always uses flPS2GetTextureHandle() to auto-assign
     u32 th = flPS2GetTextureHandle();
+    (void)id; // Unused - kept for API compatibility
 
     if (th == 0) {
         return 0;
     }
 
     lpflTexture = &flTexture[LO_16_BITS(th) - 1];
+
+    if (lpflTexture->be_flag) {
+        flReleaseTextureHandle(th);
+    }
+
     flPS2GetTextureInfoFromContext(bits, 1, th, flag);
 
     if (bits->ptr == NULL) {
@@ -43,6 +67,7 @@ u32 flCreateTextureHandle(plContext* bits, u32 flag) {
     return th;
 }
 
+/** @brief Populate an FLTexture from a plContext, determining format and size. */
 s32 flPS2GetTextureInfoFromContext(plContext* bits, s32 bnum, u32 th, u32 flag) {
     FLTexture* lpflTexture;
     s32 lp0;
@@ -152,11 +177,13 @@ s32 flPS2GetTextureInfoFromContext(plContext* bits, s32 bnum, u32 th, u32 flag) 
     return 1;
 }
 
+/** @brief Finalise a texture handle by creating the GPU resource. */
 s32 flPS2CreateTextureHandle(u32 th, u32 flag) {
     SDLGameRenderer_CreateTexture(th);
     return 1;
 }
 
+/** @brief Find the first unused slot in the texture array. */
 u32 flPS2GetTextureHandle() {
     s32 i;
 
@@ -173,6 +200,7 @@ u32 flPS2GetTextureHandle() {
     return i + 1;
 }
 
+/** @brief Create a palette handle, allocating system memory or converting from context. */
 u32 flCreatePaletteHandle(plContext* lpcontext, u32 flag) {
     FLTexture* lpflPalette;
     u32 ph = flPS2GetPaletteHandle();
@@ -182,6 +210,11 @@ u32 flCreatePaletteHandle(plContext* lpcontext, u32 flag) {
     }
 
     lpflPalette = &flPalette[HI_16_BITS(ph) - 1];
+
+    if (lpflPalette->be_flag) {
+        flReleasePaletteHandle(ph >> 16);
+    }
+
     flPS2GetPaletteInfoFromContext(lpcontext, ph, flag);
 
     if (lpcontext->ptr == NULL) {
@@ -199,6 +232,7 @@ u32 flCreatePaletteHandle(plContext* lpcontext, u32 flag) {
     return ph >> 16;
 }
 
+/** @brief Populate an FLTexture (palette) from a plContext. */
 s32 flPS2GetPaletteInfoFromContext(plContext* bits, u32 ph, u32 flag) {
     FLTexture* lpflPalette = &flPalette[((ph & 0xFFFF0000) >> 0x10) - 1];
 
@@ -248,11 +282,13 @@ s32 flPS2GetPaletteInfoFromContext(plContext* bits, u32 ph, u32 flag) {
     return 1;
 }
 
+/** @brief Finalise a palette handle by creating the GPU resource. */
 s32 flPS2CreatePaletteHandle(u32 ph, u32 flag) {
     SDLGameRenderer_CreatePalette(ph);
     return 1;
 }
 
+/** @brief Find the first unused slot in the palette array. */
 u32 flPS2GetPaletteHandle() {
     s32 i;
 
@@ -269,11 +305,17 @@ u32 flPS2GetPaletteHandle() {
     return (i + 1) << 16;
 }
 
+/** @brief Release a texture handle, freeing GPU and system memory. */
 s32 flReleaseTextureHandle(u32 texture_handle) {
+    // Defensive: silently ignore invalid handles instead of crashing
+    if (texture_handle == 0 || texture_handle > FL_TEXTURE_MAX) {
+        return 0;
+    }
+
     FLTexture* lpflTexture = &flTexture[texture_handle - 1];
 
-    if ((texture_handle == 0) || (texture_handle > FL_TEXTURE_MAX) || (lpflTexture->be_flag == 0)) {
-        flPS2SystemError(0, "ERROR flReleaseTextureHandle flps2vram.c");
+    if (lpflTexture->be_flag == 0) {
+        return 0; // Already released
     }
 
     SDLGameRenderer_DestroyTexture(texture_handle);
@@ -286,11 +328,17 @@ s32 flReleaseTextureHandle(u32 texture_handle) {
     return 1;
 }
 
+/** @brief Release a palette handle, freeing GPU and system memory. */
 s32 flReleasePaletteHandle(u32 palette_handle) {
+    // Defensive: silently ignore invalid handles instead of crashing
+    if (palette_handle == 0 || palette_handle > FL_PALETTE_MAX) {
+        return 0;
+    }
+
     FLTexture* lpflPalette = &flPalette[palette_handle - 1];
 
-    if ((palette_handle == 0) || (palette_handle > FL_PALETTE_MAX) || (lpflPalette->be_flag == 0)) {
-        flPS2SystemError(0, "ERROR flReleasePaletteHandle flps2vram.c");
+    if (lpflPalette->be_flag == 0) {
+        return 0; // Already released
     }
 
     SDLGameRenderer_DestroyPalette(palette_handle);
@@ -303,12 +351,13 @@ s32 flReleasePaletteHandle(u32 palette_handle) {
     return 1;
 }
 
+/** @brief Lock a texture for CPU read/write, setting up the plContext buffer. */
 s32 flLockTexture(Rect* lprect, u32 th, plContext* lpcontext, u32 flag) {
-    FLTexture* lpflTexture = &flTexture[th - 1];
-
-    if (th > FL_TEXTURE_MAX) {
+    if (th == 0 || th > FL_TEXTURE_MAX) {
         return 0;
     }
+
+    FLTexture* lpflTexture = &flTexture[th - 1];
 
     if (!lpflTexture->be_flag) {
         return 0;
@@ -317,12 +366,13 @@ s32 flLockTexture(Rect* lprect, u32 th, plContext* lpcontext, u32 flag) {
     return flPS2LockTexture(lprect, lpflTexture, lpcontext, flag, 0);
 }
 
+/** @brief Lock a palette for CPU read/write, adjusting the context for CLUT layout. */
 s32 flLockPalette(Rect* lprect, u32 th, plContext* lpcontext, u32 flag) {
-    FLTexture* lpflPalette = &flPalette[th - 1];
-
-    if (th > FL_PALETTE_MAX) {
+    if (th == 0 || th > FL_PALETTE_MAX) {
         return 0;
     }
+
+    FLTexture* lpflPalette = &flPalette[th - 1];
 
     if (!lpflPalette->be_flag) {
         return 0;
@@ -344,6 +394,7 @@ s32 flLockPalette(Rect* lprect, u32 th, plContext* lpcontext, u32 flag) {
     return 1;
 }
 
+/** @brief Internal lock — allocate a CPU-side buffer and convert pixel format. */
 s32 flPS2LockTexture(Rect* /* unused */, FLTexture* lpflTexture, plContext* lpcontext, u32 flag, s32 /* unused */) {
     u8* buff_ptr;
     u8* buff_ptr1;
@@ -749,12 +800,13 @@ s32 flPS2LockTexture(Rect* /* unused */, FLTexture* lpflTexture, plContext* lpco
     return 1;
 }
 
+/** @brief Unlock a texture, flushing CPU data back to system memory. */
 s32 flUnlockTexture(u32 th) {
-    FLTexture* lpflTexture = &flTexture[th - 1];
-
-    if (th > FL_TEXTURE_MAX) {
+    if (th == 0 || th > FL_TEXTURE_MAX) {
         return 0;
     }
+
+    FLTexture* lpflTexture = &flTexture[th - 1];
 
     if (!lpflTexture->be_flag) {
         return 0;
@@ -765,12 +817,13 @@ s32 flUnlockTexture(u32 th) {
     return ret;
 }
 
+/** @brief Unlock a palette, flushing CPU data back to system memory. */
 s32 flUnlockPalette(u32 th) {
-    FLTexture* lpflPalette = &flPalette[th - 1];
-
-    if (th > FL_PALETTE_MAX) {
+    if (th == 0 || th > FL_PALETTE_MAX) {
         return 0;
     }
+
+    FLTexture* lpflPalette = &flPalette[th - 1];
 
     if (!lpflPalette->be_flag) {
         return 0;
@@ -781,6 +834,7 @@ s32 flUnlockPalette(u32 th) {
     return ret;
 }
 
+/** @brief Internal unlock — convert pixel format and write back to system memory. */
 s32 flPS2UnlockTexture(FLTexture* lpflTexture) {
     u8* buff_ptr;
     u8* buff_ptr1;
@@ -940,7 +994,8 @@ s32 flPS2UnlockTexture(FLTexture* lpflTexture) {
     return 1;
 }
 
-u32 flPS2GetTextureSize(u32 format, s32 dw, s32 dh, s32 bnum) {
+/** @brief Calculate the byte size of a texture given its format and dimensions. */
+static u32 flPS2GetTextureSize(u32 format, s32 dw, s32 dh, s32 bnum) {
     u32 tex_size;
     s32 lp0;
 
@@ -974,7 +1029,8 @@ u32 flPS2GetTextureSize(u32 format, s32 dw, s32 dh, s32 bnum) {
     return tex_size;
 }
 
-s32 flPS2ConvertTextureFromContext(plContext* lpcontext, FLTexture* lpflTexture, u32 type) {
+/** @brief Convert a plContext into a GS-native pixel format and store in system memory. */
+static s32 flPS2ConvertTextureFromContext(plContext* lpcontext, FLTexture* lpflTexture, u32 type) {
     s32 lp0;
     s32 dw;
     s32 dh;
@@ -1083,6 +1139,7 @@ s32 flPS2ConvertTextureFromContext(plContext* lpcontext, FLTexture* lpflTexture,
     return 1;
 }
 
+/** @brief Convert pixels between two plContext surfaces with optional CLUT re-ordering. */
 s32 flPS2ConvertContext(plContext* lpSrc, plContext* lpDst, u32 direction, u32 type) {
     s32 x;
     s32 y;

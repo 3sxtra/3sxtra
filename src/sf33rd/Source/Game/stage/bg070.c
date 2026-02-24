@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg070.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "sf33rd/Source/Game/effect/eff94.h"
 #include "sf33rd/Source/Game/effect/effj8.h"
@@ -15,6 +16,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for A Road In Kyoto, Japan stage. */
 void BG070() {
     bgw_ptr = &bg_w.bgw[1];
     bg0702();
@@ -29,11 +31,15 @@ void BG070() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for A Road In Kyoto, Japan. */
 void bg0701() {
     void (*bg0701_jmp[2])() = { bg0701_init00, bg0701_move00 };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0701_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for A Road In Kyoto, Japan. */
 void bg0701_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -42,16 +48,21 @@ void bg0701_init00() {
     bgw_ptr->zuubun = 0xE3;
 }
 
+/** @brief Per-frame movement handler for A Road In Kyoto, Japan layer. */
 void bg0701_move00() {
     bg_x_move_check();
     bg_y_move_check();
 }
 
+/** @brief Background layer handler for A Road In Kyoto, Japan. */
 void bg0702() {
     void (*bg0702_jmp[2])() = { bg0702_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0702_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for A Road In Kyoto, Japan. */
 void bg0702_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -62,6 +73,7 @@ void bg0702_init00() {
     effect_J8_init();
 }
 
+/** @brief Background layer handler for A Road In Kyoto, Japan. */
 void bg0703() {
     switch (bgw_ptr->r_no_0) {
     case 0:
@@ -85,11 +97,15 @@ void bg0703() {
     }
 }
 
+/** @brief Background layer handler for A Road In Kyoto, Japan. */
 void bg0704() {
     void (*bg0704_jmp[2])() = { bg0704_init00, bg0704_move00 };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg0704_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for A Road In Kyoto, Japan. */
 void bg0704_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -97,6 +113,7 @@ void bg0704_init00() {
     bgw_ptr->hos_xy[0].cal = bgw_ptr->wxy[0].cal = bgw_ptr->xy[0].cal;
 }
 
+/** @brief Per-frame movement handler for A Road In Kyoto, Japan layer. */
 void bg0704_move00() {
     bg_x_move_check();
     bg_y_move_check();

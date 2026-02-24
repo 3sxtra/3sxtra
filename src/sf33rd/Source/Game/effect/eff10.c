@@ -1,6 +1,6 @@
 /**
  * @file eff10.c
- * TODO: identify what this effect does
+ * Effect: UI / Screen Check Data
  */
 
 #include "sf33rd/Source/Game/effect/eff10.h"

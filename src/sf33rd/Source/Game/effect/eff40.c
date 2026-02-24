@@ -1,6 +1,6 @@
 /**
  * @file eff40.c
- * TODO: identify what this effect does
+ * Effect: Position Data Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff40.h"
@@ -15,9 +15,9 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-void EFF40_EXIT(WORK_Other* ewk);
-void EFF40_BACK(WORK_Other* ewk);
-void EFF40_ARROW(WORK_Other* ewk);
+static void EFF40_EXIT(WORK_Other* ewk);
+static void EFF40_BACK(WORK_Other* ewk);
+static void EFF40_ARROW(WORK_Other* ewk);
 
 void (*const EFF40_Jmp_Tbl[4])() = { EFF40_EXIT, EFF40_BACK, EFF40_ARROW, EFF40_ARROW };
 
@@ -41,7 +41,7 @@ void effect_40_move(WORK_Other* ewk) {
     sort_push_request4(&ewk->wu);
 }
 
-void EFF40_EXIT(WORK_Other* ewk) {
+static void EFF40_EXIT(WORK_Other* ewk) {
     if (Menu_Cursor_Y[0] == Menu_Max && ewk->wu.rl_waza == ewk->master_priority) {
         ewk->wu.my_clear_level = 0;
     } else {
@@ -49,7 +49,7 @@ void EFF40_EXIT(WORK_Other* ewk) {
     }
 }
 
-void EFF40_BACK(WORK_Other* ewk) {
+static void EFF40_BACK(WORK_Other* ewk) {
     s16 ix;
 
     if (Menu_Cursor_Y[0] == Menu_Max && ewk->wu.rl_waza == ewk->master_priority) {
@@ -61,7 +61,7 @@ void EFF40_BACK(WORK_Other* ewk) {
     set_char_move_init2(&ewk->wu, 0, ewk->wu.char_index, ix + 1, 0);
 }
 
-void EFF40_ARROW(WORK_Other* ewk) {
+static void EFF40_ARROW(WORK_Other* ewk) {
     if (Menu_Cursor_Y[0] != Menu_Max) {
         set_char_move_init2(&ewk->wu, 0, 76, (ewk->master_priority / 2) + 1, 0);
         ewk->wu.routine_no[1] = 0;

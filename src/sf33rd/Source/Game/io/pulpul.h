@@ -1,3 +1,10 @@
+/**
+ * @file pulpul.h
+ * @brief Public API for controller vibration (rumble) effects.
+ *
+ * Part of the io module.
+ */
+
 #ifndef PULPUL_H
 #define PULPUL_H
 

@@ -1,6 +1,6 @@
 /**
  * @file eff53.c
- * TODO: identify what this effect does
+ * Effect: Vanish / Timer Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff53.h"

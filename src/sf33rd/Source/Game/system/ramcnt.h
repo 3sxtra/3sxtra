@@ -1,3 +1,7 @@
+/**
+ * @file ramcnt.h
+ * @brief Public API for the RAM key management pool.
+ */
 #ifndef RAMCNT_H
 #define RAMCNT_H
 

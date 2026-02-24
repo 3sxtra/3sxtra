@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -15,21 +16,22 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void end_300_move();
-void end_301_move();
+static void end_300_move();
+static void end_301_move();
 
-void end_300_0000();
-void end_300_0002();
-void end_300_0003();
-void end_300_0004();
-void end_300_0005();
+static void end_300_0000();
+static void end_300_0002();
+static void end_300_0003();
+static void end_300_0004();
+static void end_300_0005();
 
-void end_301_0003();
+static void end_301_0003();
 
 const s16 end_3_pos[6][2] = { { 256, 768 }, { 768, 768 }, { 256, 512 }, { 768, 544 }, { 256, 256 }, { 768, 256 } };
 
 const s16 timer_3_tbl[6] = { 660, 420, 1080, 900, 720, 1020 };
 
+/** @brief Yun's ending entry point — initialize and run all ending scenes. */
 void end_03000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -75,13 +77,17 @@ void end_03000(s16 pl_num) {
     }
 }
 
-void end_300_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_300_move() {
     void (*end_300_jp[6])() = { end_300_0000, end_300_0000, end_300_0002, end_300_0003, end_300_0004, end_300_0005 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_300_jp[end_w.r_no_2]();
 }
 
-void end_300_0000() {
+/** @brief Scene 0–1 — initial background with effect and message. */
+static void end_300_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -105,7 +111,8 @@ void end_300_0000() {
     }
 }
 
-void end_300_0002() {
+/** @brief Scene 2 — timed wait with fade to white panel. */
+static void end_300_0002() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -150,7 +157,8 @@ void end_300_0002() {
     }
 }
 
-void end_300_0003() {
+/** @brief Scene 3 — fade-in with vertical scroll and effects. */
+static void end_300_0003() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         overwrite_panel(0xFFFFFFFF, 0x17);
@@ -193,7 +201,8 @@ void end_300_0003() {
     }
 }
 
-void end_300_0004() {
+/** @brief Scene 4 — timed animation loop with effect flags. */
+static void end_300_0004() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -227,7 +236,8 @@ void end_300_0004() {
     }
 }
 
-void end_300_0005() {
+/** @brief Scene 5 — final scene with fade timer. */
+static void end_300_0005() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -242,13 +252,17 @@ void end_300_0005() {
     }
 }
 
-void end_301_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_301_move() {
     void (*end_301_jp[6])() = { end_X_com01, end_X_com01, end_X_com01, end_301_0003, end_X_com01, end_X_com01 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_301_jp[end_w.r_no_2]();
 }
 
-void end_301_0003() {
+/** @brief Layer 1 scene 3 — set background position. */
+static void end_301_0003() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

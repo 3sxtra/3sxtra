@@ -1,6 +1,6 @@
 /**
  * @file eff01.c
- * TODO: identify what this effect does
+ * Effect: Parts / Overlap Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff01.h"
@@ -16,8 +16,8 @@ const s16 parts_colcd_table[14] = {
     0x2000, 0x0, 0x6, 0x2000, 0x4, 0x2020, 0x4, 0x4, 0x0, 0x6, 0x5, 0x4, 0x203C, 0x202A
 };
 
-void get_new_parts_data(WORK_Other* ewk, PLW* mwk);
-void set_parts_disp_flag(WORK_Other* ewk, PLW* mwk);
+static void get_new_parts_data(WORK_Other* ewk, PLW* mwk);
+static void set_parts_disp_flag(WORK_Other* ewk, PLW* mwk);
 
 void effect_01_move(WORK_Other* ewk) {
     WORK* mwk = (WORK*)ewk->my_master;
@@ -131,7 +131,7 @@ void effect_01_move(WORK_Other* ewk) {
     }
 }
 
-void get_new_parts_data(WORK_Other* ewk, PLW* mwk) {
+static void get_new_parts_data(WORK_Other* ewk, PLW* mwk) {
     ewk->wu.now_koc = ewk->wu.cg_ix;
 
     if (ewk->wu.type == 0 && mwk->player_number == 0 && mwk->wu.rl_flag) {
@@ -169,7 +169,7 @@ void get_new_parts_data(WORK_Other* ewk, PLW* mwk) {
     ewk->wu.cg_number = ewk->wu.overlap_char_tbl->parts_char;
 }
 
-void set_parts_disp_flag(WORK_Other* ewk, PLW* mwk) {
+static void set_parts_disp_flag(WORK_Other* ewk, PLW* mwk) {
     switch (ewk->wu.overlap_char_tbl->parts_disp) {
     case 1:
         if (mwk->wu.disp_flag) {

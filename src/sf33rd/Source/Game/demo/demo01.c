@@ -1,6 +1,12 @@
 /**
  * @file demo01.c
- * Demo Sequence 1
+ * @brief Title screen and attract-mode title sequences.
+ *
+ * Manages the title screen flow: loading, BGM standby, opening demo
+ * playback, and screen transitions. Also handles the quick "dash" title
+ * used when returning from attract demos.
+ *
+ * Part of the demo module.
  */
 
 #include "common.h"
@@ -9,15 +15,16 @@
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "sf33rd/Source/Game/opening/opening.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
+
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 
+/** @brief Title screen state machine — load, play opening, fade to game. */
 s16 Title() {
     s16 xx = 0;
 
-    njSetBackColor(0, 0, 0);
+    // njSetBackColor(0, 0, 0);
 
     switch (D_No[1]) {
     case 0:
@@ -79,6 +86,7 @@ s16 Title() {
     return xx;
 }
 
+/** @brief Quick title screen — skip loading, show title briefly and return. */
 s16 Title_At_a_Dash() {
     s16 xx = 0;
 

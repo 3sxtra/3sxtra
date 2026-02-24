@@ -1,6 +1,6 @@
 /**
  * @file effh9.c
- * TODO: identify what this effect does
+ * Effect: Ball / BBBS Effect
  */
 
 #include "sf33rd/Source/Game/effect/effh9.h"
@@ -18,8 +18,8 @@ const CONN bbbs_ball[4][3] = {
     { { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } },
 };
 
-void effH9_trans(WORK* ewk);
-void nokori_ball_effH9(WORK_Other_CONN* ewk, s16 num);
+static void effH9_trans(WORK* ewk);
+static void nokori_ball_effH9(WORK_Other_CONN* ewk, s16 num);
 
 void effect_H9_move(WORK_Other_CONN* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -81,13 +81,13 @@ void effect_H9_move(WORK_Other_CONN* ewk) {
     }
 }
 
-void effH9_trans(WORK* ewk) {
+static void effH9_trans(WORK* ewk) {
     ewk->position_x = bg_w.bgw[2].wxy[0].disp.pos;
     ewk->position_y = bg_w.bgw[2].wxy[1].disp.pos;
     sort_push_request3(ewk);
 }
 
-void nokori_ball_effH9(WORK_Other_CONN* ewk, s16 num) {
+static void nokori_ball_effH9(WORK_Other_CONN* ewk, s16 num) {
     ewk->conn[0].chr = (num % 10) + 32464;
     ewk->conn[1].chr = (num / 10) + 32464;
 }

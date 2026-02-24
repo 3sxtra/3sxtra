@@ -1,8 +1,3 @@
-/**
- * @file pl03end_en.c
- * Yun Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl03end_en.h"
 #include "common.h"
 
@@ -81,4 +76,4 @@ static s8** msgEndAdrPL03[21] = {
 
 static s8 msgEndCtrPL03[21] = { 1, 1, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2 };
 
-MessageTable pl03end_usa_tbl = { msgEndAdrPL03, msgEndCtrPL03 };
+MessageTable pl03end_en_tbl = { msgEndAdrPL03, msgEndCtrPL03 };

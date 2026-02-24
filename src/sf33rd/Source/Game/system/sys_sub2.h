@@ -1,3 +1,7 @@
+/**
+ * @file sys_sub2.h
+ * @brief Display-size pack/unpack utilities.
+ */
 #ifndef SYSSUB2_H
 #define SYSSUB2_H
 

@@ -4,6 +4,8 @@
  */
 
 #include "common.h"
+#include "game_state.h"
+#include "port/renderer.h"
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
@@ -11,35 +13,35 @@
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/ending/end_main.h"
 #include "sf33rd/Source/Game/engine/caldir.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
-void end_2000_move();
-void end_2001_move();
+static void end_2000_move();
+static void end_2001_move();
 
-void end_2000_0000();
-void end_2000_0001();
-void end_2000_0002();
-void end_2000_0003();
-void end_2000_0005();
+static void end_2000_0000();
+static void end_2000_0001();
+static void end_2000_0002();
+static void end_2000_0003();
+static void end_2000_0005();
 
-void end_2001_0000();
-void end_2001_0002();
-void end_2001_0003();
-void end_2001_0004();
-void end_2001_0005();
+static void end_2001_0000();
+static void end_2001_0002();
+static void end_2001_0003();
+static void end_2001_0004();
+static void end_2001_0005();
 
-void sea_write();
-void sea_trans(u16 num, f64 arg2);
+static void sea_write();
+static void sea_trans(u16 num, f64 arg2);
 
 const s16 timer_20_tbl[6] = { 360, 420, 780, 720, 240, 780 };
 
 const s16 end_20_pos[6][2] = { { 256, 704 }, { 256, 304 }, { 256, 448 }, { 256, 816 }, { 768, 768 }, { 256, 224 } };
 
+/** @brief Remy's ending entry point — initialize and run all ending scenes. */
 void end_20000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -85,14 +87,18 @@ void end_20000(s16 pl_num) {
     }
 }
 
-void end_2000_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_2000_move() {
     void (*end_2000_jp[6])() = { end_2000_0000, end_2000_0001, end_2000_0002,
                                  end_2000_0003, end_2000_0002, end_2000_0005 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_2000_jp[end_w.r_no_2]();
 }
 
-void end_2000_0000() {
+/** @brief Scene 0 — initial background with SEA write. */
+static void end_2000_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -112,7 +118,8 @@ void end_2000_0000() {
     }
 }
 
-void end_2000_0001() {
+/** @brief Scene 1 — horizontal pan with SEA write. */
+static void end_2000_0001() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -142,7 +149,8 @@ void end_2000_0001() {
     }
 }
 
-void end_2000_0002() {
+/** @brief Scene 2 — vertical scroll with parallax. */
+static void end_2000_0002() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -171,7 +179,8 @@ void end_2000_0002() {
     }
 }
 
-void end_2000_0003() {
+/** @brief Scene 3 — horizontal pan with message. */
+static void end_2000_0003() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -197,7 +206,8 @@ void end_2000_0003() {
     }
 }
 
-void end_2000_0005() {
+/** @brief Scene 5 — final scene with fade timer and message. */
+static void end_2000_0005() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -239,14 +249,18 @@ void end_2000_0005() {
     }
 }
 
-void end_2001_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_2001_move() {
     void (
         *end_2001_jp[6])() = { end_2001_0000, end_X_com01, end_2001_0002, end_2001_0003, end_2001_0004, end_2001_0005 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 6)
+        return;
     end_2001_jp[end_w.r_no_2]();
 }
 
-void end_2001_0000() {
+/** @brief Layer 1 scene 0 — background enable with position set. */
+static void end_2001_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -261,7 +275,8 @@ void end_2001_0000() {
     }
 }
 
-void end_2001_0002() {
+/** @brief Layer 1 scene 2 — vertical scroll with parallax. */
+static void end_2001_0002() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -276,7 +291,8 @@ void end_2001_0002() {
     }
 }
 
-void end_2001_0003() {
+/** @brief Layer 1 scene 3 — horizontal pan. */
+static void end_2001_0003() {
     ppgSetupCurrentDataList(&ppgAkeList);
     ppgSetupCurrentPaletteNumber(NULL, 0);
 
@@ -298,7 +314,8 @@ void end_2001_0003() {
     }
 }
 
-void end_2001_0004() {
+/** @brief Layer 1 scene 4 — static background. */
+static void end_2001_0004() {
     switch (bgw_ptr->r_no_1) {
     case 0:
     case 1:
@@ -307,7 +324,8 @@ void end_2001_0004() {
     }
 }
 
-void end_2001_0005() {
+/** @brief Layer 1 scene 5 — static background with message. */
+static void end_2001_0005() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -323,7 +341,8 @@ void end_2001_0005() {
     }
 }
 
-void sea_write() {
+/** @brief Write sea background palette data. */
+static void sea_write() {
     u16 j;
     u16 k;
     SEA_WORK work;
@@ -344,11 +363,12 @@ void sea_write() {
     ls_cnt1 = (ls_cnt1 + 2) & 0x1FF;
 }
 
-void sea_trans(u16 num, f64 arg2) {
+/** @brief Apply color gradient transition for sea effect. */
+static void sea_trans(u16 num, f64 arg2) {
     f32 suzi = arg2;
-    Polygon poly[4];
+    RendererVertex poly[4];
 
-    poly[0].col = poly[1].col = poly[2].col = poly[3].col = -1;
+    poly[0].color = poly[1].color = poly[2].color = poly[3].color = -1;
     poly[0].u = poly[1].u = 0.0f;
     poly[2].u = poly[3].u = 1.0f;
     poly[0].v = poly[2].v = num / 512.0f;
@@ -358,5 +378,7 @@ void sea_trans(u16 num, f64 arg2) {
     poly[0].y = poly[2].y = (32.0f + num);
     poly[1].y = poly[3].y = (32.0f + (num + 1));
     poly[0].z = poly[1].z = poly[2].z = poly[3].z = PrioBase[84];
-    njDrawTexture(poly, 4, 228, 0);
+
+    Renderer_SetTexture(228);
+    Renderer_DrawTexturedQuad(poly, 4);
 }

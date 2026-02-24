@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -12,20 +13,21 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 
-void end_1800_move();
+static void end_1800_move();
 
-void end_1800_0001();
-void end_1800_0005();
-void end_1800_0006();
-void end_1800_0008();
-void end_1800_0009();
-void end_1800_0010();
+static void end_1800_0001();
+static void end_1800_0005();
+static void end_1800_0006();
+static void end_1800_0008();
+static void end_1800_0009();
+static void end_1800_0010();
 
 const s16 timer_18_tbl[11] = { 900, 240, 240, 240, 240, 420, 720, 360, 480, 240, 300 };
 
 const s16 end_18_pos[11][2] = { { 768, 768 }, { 256, 768 }, { 256, 768 }, { 256, 768 }, { 256, 768 }, { 768, 768 },
                                 { 256, 512 }, { 256, 768 }, { 256, 512 }, { 256, 256 }, { 768, 512 } };
 
+/** @brief Q's ending entry point — initialize and run all ending scenes. */
 void end_18000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -70,15 +72,19 @@ void end_18000(s16 pl_num) {
     }
 }
 
-void end_1800_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_1800_move() {
     void (*end_1800_move_jp[11])() = { end_1800_0005, end_1800_0001, end_1800_0001, end_1800_0001,
                                        end_1800_0001, end_1800_0005, end_1800_0006, end_1800_0001,
                                        end_1800_0008, end_1800_0009, end_1800_0010 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 11)
+        return;
     end_1800_move_jp[end_w.r_no_2]();
 }
 
-void end_1800_0001() {
+/** @brief Scene handler — per-scene background setup with per-scene effects. */
+static void end_1800_0001() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -130,7 +136,8 @@ void end_1800_0001() {
     }
 }
 
-void end_1800_0005() {
+/** @brief Scene 0/5 — background with blinking effect. */
+static void end_1800_0005() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -162,7 +169,8 @@ void end_1800_0005() {
     }
 }
 
-void end_1800_0006() {
+/** @brief Scene 6 — effect with blinking animation. */
+static void end_1800_0006() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -184,7 +192,8 @@ void end_1800_0006() {
     }
 }
 
-void end_1800_0008() {
+/** @brief Scene 8 — effect with blinking animation. */
+static void end_1800_0008() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -206,7 +215,8 @@ void end_1800_0008() {
     }
 }
 
-void end_1800_0009() {
+/** @brief Scene 9 — alternating horizontal position. */
+static void end_1800_0009() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -230,7 +240,8 @@ void end_1800_0009() {
     }
 }
 
-void end_1800_0010() {
+/** @brief Scene 10 — final scene with dual effects and fade timer. */
+static void end_1800_0010() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

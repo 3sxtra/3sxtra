@@ -1,6 +1,6 @@
 /**
  * @file eff50.c
- * TODO: identify what this effect does
+ * Effect: Work User / Character State Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff50.h"

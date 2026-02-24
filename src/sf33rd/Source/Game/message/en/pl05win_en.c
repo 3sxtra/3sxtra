@@ -1,8 +1,3 @@
-/**
- * @file pl05win_en.c
- * Necro Win Quotes
- */
-
 #include "sf33rd/Source/Game/message/en/pl05win_en.h"
 #include "common.h"
 
@@ -70,4 +65,4 @@ static s8 msgWinCtrPL05[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
 };
 
-MessageTable pl05win_usa_tbl = { msgWinAdrPL05, msgWinCtrPL05 };
+MessageTable pl05win_en_tbl = { msgWinAdrPL05, msgWinCtrPL05 };

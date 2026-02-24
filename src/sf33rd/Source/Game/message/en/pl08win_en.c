@@ -1,8 +1,3 @@
-/**
- * @file pl08win_en.c
- * Elena Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl08win_en.h"
 #include "common.h"
 
@@ -70,4 +65,4 @@ static s8 msgWinCtrPL08[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
 };
 
-MessageTable pl08win_usa_tbl = { msgWinAdrPL08, msgWinCtrPL08 };
+MessageTable pl08win_en_tbl = { msgWinAdrPL08, msgWinCtrPL08 };

@@ -33,18 +33,20 @@ RANK_DATA Ranking_Data[20];
 // forward declaration
 const RANK_DATA Score_Ranking_Table[20];
 
+/** @brief Main ranking dispatcher — run the current sub-table, draw BG, check for early exit. */
 s32 Ranking() {
     void (*main_jmp_tbl[2])() = { Ranking_01, Ranking_00 };
 
     Ranking_X = 0;
     main_jmp_tbl[D_No[0]]();
     BG_Draw_System();
-    if ((Check_Exit_Check() == 0) && (Debug_w[24] == -1)) {
+    if ((Check_Exit_Check() == 0) && (Debug_w[DEBUG_TIME_STOP] == -1)) {
         Ranking_X = 0;
     }
     return Ranking_X;
 }
 
+/** @brief Ranking table 00 dispatcher — used when arriving from gameplay (post-credit entry). */
 void Ranking_00() {
     void (*Ranking_00_tbl[6])() = { Ranking_00_1st, Ranking_00_2nd, Ranking_00_3rd,
                                     Ranking_00_4th, Ranking_00_5th, Ranking_00_6th };
@@ -53,6 +55,7 @@ void Ranking_00() {
     Ranking_00_tbl[D_No[1]]();
 }
 
+/** @brief Ranking_00 phase 1 — build tex-cache, init demo type, and prepare BG/effects. */
 void Ranking_00_1st() {
     make_texcash_work(14);
     D_No[1]++;
@@ -61,6 +64,7 @@ void Ranking_00_1st() {
     Ranking_Sub();
 }
 
+/** @brief Ranking_00 phase 2 — layout all rank entries (names, scores, faces, grades). */
 void Ranking_00_2nd() {
     s16 Char_Index;
 
@@ -172,6 +176,7 @@ void Ranking_00_2nd() {
     }
 }
 
+/** @brief Ranking_00 phase 3 — wait for the Flash_Sign ready flag. */
 void Ranking_00_3rd() {
     if (Flash_Sign[0] == 1) {
         D_No[1]++;
@@ -179,6 +184,7 @@ void Ranking_00_3rd() {
     }
 }
 
+/** @brief Ranking_00 phase 4 — countdown timer, then toggle flash sign flags. */
 void Ranking_00_4th() {
     if (!(--D_Timer)) {
         D_No[1]++;
@@ -188,6 +194,7 @@ void Ranking_00_4th() {
     }
 }
 
+/** @brief Ranking_00 phase 5 — delay then clear the flash sign. */
 void Ranking_00_5th() {
     if (--D_Timer == 0) {
         D_No[1]++;
@@ -196,6 +203,7 @@ void Ranking_00_5th() {
     }
 }
 
+/** @brief Ranking_00 phase 6 — final display timer and BGM fade-out, then signal exit. */
 void Ranking_00_6th() {
     if (--D_Timer == 0) {
         D_Timer = 1;
@@ -208,12 +216,14 @@ void Ranking_00_6th() {
     }
 }
 
+/** @brief Ranking table 01 dispatcher — used from demo/attract-mode sequence. */
 void Ranking_01() {
     void (*Ranking_01_tbl[5])() = { Ranking_01_1st, Ranking_01_2nd, Ranking_00_3rd, Ranking_01_4th, Ranking_01_5th };
 
     Ranking_01_tbl[D_No[1]]();
 }
 
+/** @brief Ranking_01 phase 1 — switch screen, start BGM, purge resources, build texcache. */
 void Ranking_01_1st() {
     Switch_Screen(1);
     BGM_Request(57);
@@ -228,6 +238,7 @@ void Ranking_01_1st() {
     effect_58_init(1, 1, -1);
 }
 
+/** @brief Ranking_01 phase 2 — lay out all rank entries and champion card, queue demo load. */
 void Ranking_01_2nd() {
     s16 Char_Index;
 
@@ -336,6 +347,7 @@ void Ranking_01_2nd() {
     }
 }
 
+/** @brief Ranking_01 phase 4 — countdown delay before exit sequence. */
 void Ranking_01_4th() {
     if (!(--D_Timer)) {
         D_No[1]++;
@@ -343,6 +355,7 @@ void Ranking_01_4th() {
     }
 }
 
+/** @brief Ranking_01 phase 5 — fade-out and transition to next demo/game. */
 void Ranking_01_5th() {
     switch (D_No[2]) {
     case 0:
@@ -374,6 +387,7 @@ void Ranking_01_5th() {
     }
 }
 
+/** @brief Common ranking setup — clear screen and write the appropriate BG for the rank type. */
 void Ranking_Sub() {
     System_all_clear_Level_B();
     if (Rank_Type == 0) {
@@ -386,6 +400,7 @@ void Ranking_Sub() {
     Bg_Family_Set();
 }
 
+/** @brief Render the grade icon (CPU grade or player grade) for the current rank entry. */
 void Setup_grade(s16 y) {
     s16 Char_Index;
 
@@ -436,6 +451,7 @@ void Setup_grade(s16 y) {
     Rank_Pos_X += 48;
 }
 
+/** @brief Render the 3-letter name for the current rank entry. */
 void Setup_Name(s16 y) {
     Name_Sub(0, y);
     Name_Sub(1, y);
@@ -448,12 +464,14 @@ void Setup_Name(s16 y) {
     Rank_X += 3;
 }
 
+/** @brief Render a single name character at the current Rank_Pos_X. */
 void Name_Sub(s16 xx, s16 y) {
     effect_67_init(26, Rank_Pos_X, Rank_Pos_Y, 180, Ranking_Data[Rank].name[xx], 10, y, 0);
     Flash_Rank_Time += Flash_Rank_Interval;
     Rank_Pos_X += 24;
 }
 
+/** @brief Render the character portrait icon for the current rank entry. */
 void Setup_Face(s16 y) {
     Rank_Pos_Y += 16;
     effect_67_init(26, Rank_Pos_X, Rank_Pos_Y, 180, Ranking_Data[Rank].player + 47, 10, y, 1);
@@ -464,6 +482,7 @@ void Setup_Face(s16 y) {
     Flash_Rank_Time += Flash_Rank_Interval;
 }
 
+/** @brief Render the 8-digit score as individual digit sprites. */
 void Setup_Score(s16 y) {
     s16 i;
     s16 First_Digit;
@@ -502,6 +521,7 @@ void Setup_Score(s16 y) {
     Rank_Pos_X += 24;
 }
 
+/** @brief Render a win-count (up to 3 digits) with a WINS label. */
 void Setup_Wins(s16 y) {
     u32 Score_Buff;
     s16 Digit[3];
@@ -537,6 +557,7 @@ void Setup_Wins(s16 y) {
     Rank_X += 1;
 }
 
+/** @brief Render a win-count variant for the champion card (top-entry). */
 void Setup_Wins2(s16 y) {
     u32 Score_Buff;
     s16 Digit[3];
@@ -570,10 +591,12 @@ void Setup_Wins2(s16 y) {
     Flash_Rank_Time += Flash_Rank_Interval;
 }
 
+/** @brief Spawn the RANKING header label as an effect object. */
 void Setup_Ranking_Obj() {
     effect_67_init(24, bg_w.bgw[0].xy[0].disp.pos - 143, bg_w.bgw[0].xy[1].disp.pos + 32, 180, 4, 30, 0, 0);
 }
 
+/** @brief Spawn SCORE/WINS header labels depending on Rank_Type. */
 void Setup_Score_Obj() {
     if (Rank_Type == 0) {
         effect_67_init(24, bg_w.bgw[0].xy[0].disp.pos - 0, bg_w.bgw[0].xy[1].disp.pos + 200, 180, 0, 10, 1, 0);
@@ -585,6 +608,7 @@ void Setup_Score_Obj() {
     effect_67_init(24, bg_w.bgw[0].xy[0].disp.pos - 384, bg_w.bgw[0].xy[1].disp.pos + 200, 180, 3, 10, 1, 0);
 }
 
+/** @brief Initialise all save-data ranking slots from the default Score_Ranking_Table. */
 void Ranking_Init() {
     s16 ix;
     s16 ix2;

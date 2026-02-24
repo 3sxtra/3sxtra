@@ -1,8 +1,3 @@
-/**
- * @file pl13tlk_en.c
- * Urien Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl13tlk_en.h"
 #include "common.h"
 
@@ -38,4 +33,4 @@ static s8** msgTalkAdrPL13[7] = {
 
 static s8 msgTalkCtrPL13[7] = { 1, 2, 2, 2, 2, 2, 2 };
 
-MessageTable pl13tlk_usa_tbl = { msgTalkAdrPL13, msgTalkCtrPL13 };
+MessageTable pl13tlk_en_tbl = { msgTalkAdrPL13, msgTalkCtrPL13 };

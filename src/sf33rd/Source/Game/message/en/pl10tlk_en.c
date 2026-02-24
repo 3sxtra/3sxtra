@@ -1,8 +1,3 @@
-/**
- * @file pl10tlk_en.c
- * Yang Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl10tlk_en.h"
 #include "common.h"
 
@@ -35,4 +30,4 @@ static s8** msgTalkAdrPL10[7] = {
 
 static s8 msgTalkCtrPL10[7] = { 1, 2, 2, 1, 2, 2, 2 };
 
-MessageTable pl10tlk_usa_tbl = { msgTalkAdrPL10, msgTalkCtrPL10 };
+MessageTable pl10tlk_en_tbl = { msgTalkAdrPL10, msgTalkCtrPL10 };

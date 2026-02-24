@@ -21,20 +21,21 @@
 
 #include <SDL3/SDL.h>
 
-void setup_bs_scrrrl_bs();
-void setup_bs_scrrrl_bs2();
-void move_P1_move_P2_bonus(s16* field_work);
-void move_P2_move_P1_bonus(s16* field_work);
+static void setup_bs_scrrrl_bs();
+static void setup_bs_scrrrl_bs2();
+static void move_P1_move_P2_bonus(s16* field_work);
+static void move_P2_move_P1_bonus(s16* field_work);
 
 const s16 bsmr_range_table[3][2][2] = { { { 192, 192 }, { 192, 192 } },
                                         { { 64, 192 }, { 224, -136 } },
                                         { { -112, 224 }, { 216, 40 } } };
 
-void plcnt_b_move();
-void plcnt_b_die();
+static void plcnt_b_move();
+static void plcnt_b_die();
 
 void (*const player_bonus_process[3])() = { plcnt_b_init, plcnt_b_move, plcnt_b_die };
 
+/** @brief Main player controller for the basketball bonus stage. */
 s32 Player_control_bonus() {
     if (((pcon_rno[0] + pcon_rno[1]) == 0) || (!Game_pause && !EXE_flag)) {
         players_timer++;
@@ -69,6 +70,7 @@ s32 Player_control_bonus() {
     return 0;
 }
 
+/** @brief Initializes player work for the bonus stage. */
 void plcnt_b_init() {
     switch (pcon_rno[1]) {
     case 0:
@@ -113,13 +115,13 @@ void plcnt_b_init() {
     case 2:
         pcon_rno[1] = 3;
 
-        if (plw[0].wu.operator) {
+        if (plw[0].wu.pl_operator) {
             paring_ctr_vs[0][0] = paring_ctr_ori[0];
         } else {
             paring_ctr_vs[0][0] = 0;
         }
 
-        if (plw[1].wu.operator) {
+        if (plw[1].wu.pl_operator) {
             paring_ctr_vs[0][1] = paring_ctr_ori[1];
         } else {
             paring_ctr_vs[0][1] = 0;
@@ -136,7 +138,8 @@ void plcnt_b_init() {
     move_player_work_bonus();
 }
 
-void plcnt_b_move() {
+/** @brief Per-frame bonus stage player movement and state update. */
+static void plcnt_b_move() {
     if (No_Death) {
         plw[0].wu.dm_vital = plw[1].wu.dm_vital = 0;
     }
@@ -169,7 +172,8 @@ void plcnt_b_move() {
     }
 }
 
-void plcnt_b_die() {
+/** @brief Handles bonus stage KO/completion finalization. */
+static void plcnt_b_die() {
     plw[0].wu.dm_vital = plw[1].wu.dm_vital = 0;
 
     switch (pcon_rno[2]) {
@@ -207,10 +211,11 @@ void plcnt_b_die() {
     move_player_work_bonus();
 }
 
+/** @brief Returns whether a player is performing footwork in bonus stage context. */
 s16 footwork_check_bns(s8 ix) {
     s16 rnum = 0;
 
-    if ((Bonus_Game_Flag == 20) && plw[ix].wu.operator == 0) {
+    if ((Bonus_Game_Flag == 20) && plw[ix].wu.pl_operator == 0) {
         return 1;
     }
 
@@ -221,10 +226,11 @@ s16 footwork_check_bns(s8 ix) {
     return rnum;
 }
 
-void setup_bs_scrrrl_bs() {
+/** @brief Sets up scroll boundaries for the basketball bonus stage. */
+static void setup_bs_scrrrl_bs() {
     s16 scrc = 512;
 
-    switch (plw[0].wu.operator + (plw[1].wu.operator * 2)) {
+    switch (plw[0].wu.pl_operator + (plw[1].wu.pl_operator * 2)) {
     case 1:
         bs_scrrrl[0][0] = scrc + bsmr_range_table[1][0][0];
         bs_scrrrl[0][1] = scrc - bsmr_range_table[1][0][1];
@@ -248,7 +254,8 @@ void setup_bs_scrrrl_bs() {
     }
 }
 
-void setup_bs_scrrrl_bs2() {
+/** @brief Sets up scroll boundaries for the car-crush bonus stage. */
+static void setup_bs_scrrrl_bs2() {
     s16 scrc = get_center_position();
 
     bs_scrrrl[0][0] = scrc + 192;
@@ -257,6 +264,7 @@ void setup_bs_scrrrl_bs2() {
     bs_scrrrl[1][1] = bs_scrrrl[0][1];
 }
 
+/** @brief Processes player work updates for bonus stage (movement, scroll). */
 void move_player_work_bonus() {
     ichikannkei = check_work_position(&plw->wu, &plw[1].wu);
     set_rl_waza(&plw[0]);
@@ -267,7 +275,7 @@ void move_player_work_bonus() {
         setup_bs_scrrrl_bs2();
     }
 
-    if (plw->wu.operator) {
+    if (plw->wu.pl_operator) {
         move_P1_move_P2_bonus(*bs_scrrrl);
         return;
     }
@@ -275,7 +283,8 @@ void move_player_work_bonus() {
     move_P2_move_P1_bonus(*bs_scrrrl);
 }
 
-void move_P1_move_P2_bonus(s16* field_work) {
+/** @brief Updates P1 first then P2 for bonus stage frame ordering. */
+static void move_P1_move_P2_bonus(s16* field_work) {
     Player_move_bonus(&plw[0], processed_lvbt(Convert_User_Setting(0)));
 
     if (set_field_hosei_flag(&plw[0], field_work[0], 1) != 0) {
@@ -293,7 +302,8 @@ void move_P1_move_P2_bonus(s16* field_work) {
     }
 }
 
-void move_P2_move_P1_bonus(s16* field_work) {
+/** @brief Updates P2 first then P1 for bonus stage frame ordering. */
+static void move_P2_move_P1_bonus(s16* field_work) {
     Player_move_bonus(&plw[1], processed_lvbt(Convert_User_Setting(1)));
 
     if (set_field_hosei_flag(&plw[1], field_work[2], 1) != 0) {
@@ -311,14 +321,14 @@ void move_P2_move_P1_bonus(s16* field_work) {
     }
 }
 
+/** @brief Applies damage correction for bonus stage interactions. */
 void check_damage_hosei_bonus() {
     plw[0].muriyari_ugoku = plw[0].hosei_amari;
     plw[1].muriyari_ugoku = plw[1].hosei_amari;
 
     switch ((plw[0].hosei_amari != 0) + ((plw[1].hosei_amari != 0) * 2)) {
     case 1:
-        if ((!plw[0].tsukami_f || plw[0].kind_of_catch != 1) &&
-            (plw[0].tsukamare_f | plw[0].dm_hos_flag) == 0) {
+        if ((!plw[0].tsukami_f || plw[0].kind_of_catch != 1) && (plw[0].tsukamare_f | plw[0].dm_hos_flag) == 0) {
             break;
         }
 
@@ -328,8 +338,7 @@ void check_damage_hosei_bonus() {
         break;
 
     case 2:
-        if ((!plw[1].tsukami_f || plw[1].kind_of_catch != 1) &&
-            (plw[1].tsukamare_f | plw[1].dm_hos_flag) == 0) {
+        if ((!plw[1].tsukami_f || plw[1].kind_of_catch != 1) && (plw[1].tsukamare_f | plw[1].dm_hos_flag) == 0) {
             break;
         }
 

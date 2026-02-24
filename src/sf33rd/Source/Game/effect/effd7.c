@@ -1,6 +1,6 @@
 /**
  * @file effd7.c
- * TODO: identify what this effect does
+ * Effect: Sound / Hit Box Effect
  */
 
 #include "sf33rd/Source/Game/effect/effd7.h"
@@ -21,10 +21,10 @@
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void effD7_main_process(WORK_Other* ewk);
-void cal_speeds_to_me(WORK_Other* ewk, PLW* mwk);
-void cal_speeds_to_em(WORK_Other* ewk, PLW* twk);
-s32 my_ball_live_check(PLW* wk);
+static void effD7_main_process(WORK_Other* ewk);
+static void cal_speeds_to_me(WORK_Other* ewk, PLW* mwk);
+static void cal_speeds_to_em(WORK_Other* ewk, PLW* twk);
+static s32 my_ball_live_check(PLW* wk);
 
 const s16 effD7_hit_box[2][4] = { { -9, 17, -6, 12 }, { -4, 10, 114, 9 } };
 
@@ -88,7 +88,7 @@ void effect_D7_move(WORK_Other* ewk) {
     }
 }
 
-void effD7_main_process(WORK_Other* ewk) {
+static void effD7_main_process(WORK_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
 
     if (ewk->wu.hf.hit_flag) {
@@ -258,14 +258,14 @@ void effD7_main_process(WORK_Other* ewk) {
     }
 }
 
-void cal_speeds_to_me(WORK_Other* ewk, PLW* mwk) {
+static void cal_speeds_to_me(WORK_Other* ewk, PLW* mwk) {
     s16 tx = mwk->wu.xyz[0].disp.pos;
     s16 ty = mwk->wu.xyz[1].disp.pos + 157;
 
     cal_speeds_effD7(ewk, 20, tx, ty, 6);
 }
 
-void cal_speeds_to_em(WORK_Other* ewk, PLW* twk) {
+static void cal_speeds_to_em(WORK_Other* ewk, PLW* twk) {
     s16 tx = twk->wu.position_x;
     s16 ty;
 
@@ -365,7 +365,7 @@ s32 effect_D7_init(PLW* wk) {
     return 0;
 }
 
-s32 my_ball_live_check(PLW* wk) {
+static s32 my_ball_live_check(PLW* wk) {
     WORK_Other* twk;
     s16 ix;
 

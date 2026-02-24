@@ -15,16 +15,16 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void end_000_move();
-void end_001_move();
+static void end_000_move();
+static void end_001_move();
 
-void end_000_0000();
-void end_000_0001();
-void end_000_0002();
-void end_000_0003();
-void end_000_0004();
+static void end_000_0000();
+static void end_000_0001();
+static void end_000_0002();
+static void end_000_0003();
+static void end_000_0004();
 
-void end_001_0004();
+static void end_001_0004();
 
 // sbss
 u8 fade_prio;
@@ -51,6 +51,7 @@ const s16 end00_quake_tbl2[32] = { 0, -1, -2, -1, 0, -1, 0, 0, 0, 1,  2, 1, 2, 0
 const s16 end00_quake_timer[32] = { 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, 4, 8,
                                     4, 4, 4, 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 8, 4, 8 };
 
+/** @brief Gill's ending entry point — initialize and run all ending scenes. */
 void end_00000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -99,13 +100,17 @@ void end_00000(s16 pl_num) {
     }
 }
 
-void end_000_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_000_move() {
     void (*end_000_jp[5])() = { end_000_0000, end_000_0001, end_000_0002, end_000_0003, end_000_0004 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 5)
+        return;
     end_000_jp[end_w.r_no_2]();
 }
 
-void end_000_0000() {
+/** @brief Scene 0 — initial background setup and quake flag init. */
+static void end_000_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -123,7 +128,8 @@ void end_000_0000() {
 
 s16 end_0_1_time[1] = { 360 };
 
-void end_000_0001() {
+/** @brief Scene 1 — timed sequence with flash, quake, and fade effects. */
+static void end_000_0001() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -221,7 +227,8 @@ void end_000_0001() {
     }
 }
 
-void end_000_0002() {
+/** @brief Scene 2 — fade-in to new background with message rewrite. */
+static void end_000_0002() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         overwrite_panel(0xFFFFFFFF, 0x17);
@@ -252,7 +259,8 @@ void end_000_0002() {
     }
 }
 
-void end_000_0003() {
+/** @brief Scene 3 — static background with message display. */
+static void end_000_0003() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -269,7 +277,8 @@ void end_000_0003() {
     }
 }
 
-void end_000_0004() {
+/** @brief Scene 4 — vertical scroll with quake and fade-out to end. */
+static void end_000_0004() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -387,13 +396,17 @@ void end_000_0004() {
     }
 }
 
-void end_001_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_001_move() {
     void (*end_001_jp[5])() = { end_X_com01, end_X_com01, end_X_com01, end_X_com01, end_001_0004 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 5)
+        return;
     end_001_jp[end_w.r_no_2]();
 }
 
-void end_001_0004() {
+/** @brief Scene 4 for layer 1 — vertical scroll with quake effects. */
+static void end_001_0004() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

@@ -9,6 +9,7 @@
 #include "sf33rd/Source/Game/engine/pow_data.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 
+/** @brief Calculates damage vitality for a player-vs-player attack. */
 void cal_damage_vitality(PLW* as, PLW* ds) {
     u16 xx = as->wu.att.pow;
     s16 yy;
@@ -31,6 +32,7 @@ void cal_damage_vitality(PLW* as, PLW* ds) {
     }
 }
 
+/** @brief Calculates damage vitality for an effect-vs-player attack. */
 void cal_damage_vitality_eff(WORK_Other* as, PLW* ds) {
     u16 xx = as->wu.att.pow;
     s16 yy;
@@ -53,6 +55,7 @@ void cal_damage_vitality_eff(WORK_Other* as, PLW* ds) {
     }
 }
 
+/** @brief Awards additional score for specific damage types (KO, special finish). */
 void Additinal_Score_DM(WORK_Other* wk, u16 ix) {
     s16 id;
 
@@ -73,7 +76,7 @@ void Additinal_Score_DM(WORK_Other* wk, u16 ix) {
     }
 
     if ((Mode_Type != MODE_VERSUS) && (Mode_Type != MODE_REPLAY)) {
-        if (!plw[id].wu.operator) {
+        if (!plw[id].wu.pl_operator) {
             return;
         }
 

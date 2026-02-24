@@ -1,8 +1,3 @@
-/**
- * @file pl19tlk_en.c
- * Remy Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl19tlk_en.h"
 #include "common.h"
 
@@ -43,4 +38,4 @@ static s8** msgTalkAdrPL19[8] = {
 
 static s8 msgTalkCtrPL19[8] = { 1, 2, 2, 2, 2, 2, 2, 2 };
 
-MessageTable pl19tlk_usa_tbl = { msgTalkAdrPL19, msgTalkCtrPL19 };
+MessageTable pl19tlk_en_tbl = { msgTalkAdrPL19, msgTalkCtrPL19 };

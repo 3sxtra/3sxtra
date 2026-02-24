@@ -1,5 +1,18 @@
+/**
+ * @file init3rd.c
+ * @brief One-time game initialization sequence.
+ *
+ * Runs the Init_Task state machine which handles first-time setup:
+ * clearing globals, loading default settings, autoloading memcard data,
+ * displaying the warning/disclaimer screen, then handing off to Game_Task.
+ *
+ * Part of the game core module.
+ * Originally from the PS2 game module.
+ */
+
 #include "sf33rd/Source/Game/init3rd.h"
 #include "main.h"
+#include "port/native_save.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/demo/demo00.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -20,8 +33,12 @@
 #include "sf33rd/Source/Game/system/sys_sub2.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
-#include "sf33rd/Source/PS2/mc/savesub.h"
 #include "structs.h"
+
+/* === Named Constants === */
+#define SAVE_SLOT_COUNT 6        /**< Number of save/settings slots (save_w[], system_dir[], etc.) */
+#define INIT_STEP_COUNT 4        /**< Number of init task sub-steps */
+#define MAX_VITALITY_DEFAULT 160 /**< Default maximum vitality value */
 
 #include <string.h>
 
@@ -36,18 +53,29 @@ void Init_Task_Aload(struct _TASK* task_ptr);
 void Init_Task_Wait(struct _TASK* task_ptr);
 void Init_Task_2nd(struct _TASK* task_ptr);
 void Init_Task_End(struct _TASK* task_ptr);
-void Setup_Difficult_V();
+static void Setup_Difficult_V();
 
+/**
+ * @brief Init task dispatcher — routes to the current init sub-step.
+ *
+ * Sub-steps: Init_Task_1st → Init_Task_Aload (or Init_Task_Wait) → Init_Task_2nd → Init_Task_End.
+ */
 void Init_Task(struct _TASK* task_ptr) {
     void (*Main_Jmp_Tbl[])() = { Init_Task_1st, Init_Task_Aload, Init_Task_2nd, Init_Task_End };
 
-#if defined(MEMCARD_DISABLED)
-    Main_Jmp_Tbl[1] = Init_Task_Wait;
-#endif
+    if (task_ptr->r_no[0] < 0 || task_ptr->r_no[0] >= INIT_STEP_COUNT) {
+        return;
+    }
 
     Main_Jmp_Tbl[task_ptr->r_no[0]](task_ptr);
 }
 
+/**
+ * @brief First init pass — clears all gameplay globals to defaults.
+ *
+ * Sets up texture system, effects, default difficulty, permissions,
+ * score arrays, mode flags, and prepares the Reset_Task.
+ */
 void Init_Task_1st(struct _TASK* task_ptr) {
     s16 ix;
 
@@ -59,7 +87,7 @@ void Init_Task_1st(struct _TASK* task_ptr) {
     Bg_TexInit();
     Scrscreen_Init();
     effect_work_init();
-    Max_vitality = 160;
+    Max_vitality = MAX_VITALITY_DEFAULT;
     reset_NG_flag = 0;
     Break_Into = 0;
     Forbid_Break = 0;
@@ -95,7 +123,7 @@ void Init_Task_1st(struct _TASK* task_ptr) {
     Init_Load_Request_Queue_1st();
     Game_Data_Init();
 
-    for (ix = 0; ix < 6; ix++) {
+    for (ix = 0; ix < SAVE_SLOT_COUNT; ix++) {
         system_dir[ix] = Dir_Default_Data;
         permission_player[ix] = Permission_PL_Data;
 
@@ -127,7 +155,12 @@ void Init_Task_1st(struct _TASK* task_ptr) {
     Warning_Init();
 }
 
-void Setup_Difficult_V() {
+/**
+ * @brief Set difficulty values based on the region (Country).
+ *
+ * Japan (Country==1) uses difficulty row 0, all other regions use row 1.
+ */
+static void Setup_Difficult_V() {
     u8 country;
 
     if (Country == 1) {
@@ -140,39 +173,22 @@ void Setup_Difficult_V() {
     CC_Value[1] = Difficult_V_Data[country][1];
 }
 
+/**
+ * @brief Autoload sub-step — loads options and direction from native filesystem.
+ *
+ * Synchronous — completes in a single frame (no async polling needed).
+ */
 void Init_Task_Aload(struct _TASK* task_ptr) {
-    switch (task_ptr->r_no[1]) {
-    case 0:
-    case 1:
-        task_ptr->r_no[1] = 2;
-        SaveInit(0, 2);
-        /* fallthrough */
+    NativeSave_LoadOptions();
+    NativeSave_LoadDirection();
 
-    case 2:
-        if (SaveMove() <= 0) {
-            task_ptr->r_no[0] += 1;
-            task_ptr->r_no[1] = 0;
-            mpp_w.cutAnalogStickData = false;
-            Forbid_Reset = 1;
-        }
-
-        break;
-
-    case 10:
-        break;
-    }
+    task_ptr->r_no[0] += 1;
+    task_ptr->r_no[1] = 0;
+    mpp_w.cutAnalogStickData = false;
+    Forbid_Reset = 1;
 }
 
-/// Adds a 30 frame delay before proceeding.
-void Init_Task_Wait(struct _TASK* task_ptr) {
-    task_ptr->r_no[1] += 1;
-
-    if (task_ptr->r_no[1] >= 30) {
-        task_ptr->r_no[0] += 1;
-        task_ptr->r_no[1] = 0;
-    }
-}
-
+/** @brief Warning/disclaimer screen sub-step — waits for Warning() to complete. */
 void Init_Task_2nd(struct _TASK* task_ptr) {
     if (Warning() == 0) {
         return;
@@ -181,6 +197,11 @@ void Init_Task_2nd(struct _TASK* task_ptr) {
     task_ptr->r_no[0] += 1;
 }
 
+/**
+ * @brief Final init sub-step — launches the main game.
+ *
+ * Creates Game_Task, Entry_Task, and Debug_Task, then exits Init_Task.
+ */
 void Init_Task_End(struct _TASK* task_ptr) {
     cpReadyTask(TASK_GAME, Game_Task);
     task_ptr->r_no[0] += 1;

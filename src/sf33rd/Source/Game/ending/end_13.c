@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -14,23 +15,24 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void end_d00_move();
-void end_d01_move();
+static void end_d00_move();
+static void end_d01_move();
 
-void end_d00_1000();
-void end_d00_2000();
-void end_d00_3000();
-void end_d00_4000();
-void end_d00_6000();
-void end_d00_7000();
+static void end_d00_1000();
+static void end_d00_2000();
+static void end_d00_3000();
+static void end_d00_4000();
+static void end_d00_6000();
+static void end_d00_7000();
 
-void end_d01_4000();
+static void end_d01_4000();
 
 const s16 timer_d_tbl[8] = { 120, 240, 600, 780, 600, 420, 360, 660 };
 
 const s16 end_d_pos[8][2] = { { 256, 0 },   { 256, 768 }, { 256, 768 }, { 256, 512 },
                               { 192, 256 }, { 256, 512 }, { 256, 0 },   { 256, 0 } };
 
+/** @brief Urien's ending entry point — initialize and run all ending scenes. */
 void end_13000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -80,14 +82,18 @@ void end_13000(s16 pl_num) {
     }
 }
 
-void end_d00_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_d00_move() {
     void (*end_d00_jp[8])() = { end_d00_1000, end_d00_1000, end_d00_2000, end_d00_3000,
                                 end_d00_4000, end_d00_1000, end_d00_6000, end_d00_7000 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 8)
+        return;
     end_d00_jp[end_w.r_no_2]();
 }
 
-void end_d00_1000() {
+/** @brief Scene handler — per-scene background setup with optional effects. */
+static void end_d00_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -118,7 +124,8 @@ void end_d00_1000() {
     }
 }
 
-void end_d00_2000() {
+/** @brief Scene 2 — fade to white panel. */
+static void end_d00_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         if (Request_Fade(3)) {
@@ -145,7 +152,8 @@ void end_d00_2000() {
     }
 }
 
-void end_d00_3000() {
+/** @brief Scene 3 — white panel fade with effect init. */
+static void end_d00_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -176,7 +184,8 @@ void end_d00_3000() {
     }
 }
 
-void end_d00_4000() {
+/** @brief Scene 4 — horizontal pan with dual effects and message. */
+static void end_d00_4000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -206,7 +215,8 @@ void end_d00_4000() {
     }
 }
 
-void end_d00_6000() {
+/** @brief Scene 6 — alternating vertical shake with effect. */
+static void end_d00_6000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -268,7 +278,8 @@ void end_d00_6000() {
     }
 }
 
-void end_d00_7000() {
+/** @brief Scene 7 — final scene with fade timer and message. */
+static void end_d00_7000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -286,14 +297,18 @@ void end_d00_7000() {
     }
 }
 
-void end_d01_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_d01_move() {
     void (*end_d01_jp[8])() = { end_X_com01,  end_X_com01, end_X_com01, end_X_com01,
                                 end_d01_4000, end_X_com01, end_X_com01, end_X_com01 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 8)
+        return;
     end_d01_jp[end_w.r_no_2]();
 }
 
-void end_d01_4000() {
+/** @brief Layer 1 scene 4 — set position for background layer. */
+static void end_d01_4000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

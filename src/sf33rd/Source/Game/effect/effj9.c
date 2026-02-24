@@ -1,6 +1,6 @@
 /**
  * @file effj9.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect (C2 Table)
  */
 
 #include "sf33rd/Source/Game/effect/effj9.h"
@@ -12,8 +12,8 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void effJ9_trans(WORK* wk);
-s16 get_c2_quake(WORK* c2wk);
+static void effJ9_trans(WORK* wk);
+static s16 get_c2_quake(WORK* c2wk);
 
 const s16 c2quake_table[19] = { 0, 3, 3, 2, 2, 1, 1, 1, 0, 0, 0, -1, -1, -1, -2, -2, -3, -3, 0 };
 
@@ -77,12 +77,12 @@ void effect_J9_move(WORK_Other* ewk) {
     }
 }
 
-void effJ9_trans(WORK* wk) {
+static void effJ9_trans(WORK* wk) {
     wk->position_x = wk->xyz[0].disp.pos + wk->next_x;
     sort_push_request(wk);
 }
 
-s16 get_c2_quake(WORK* c2wk) {
+static s16 get_c2_quake(WORK* c2wk) {
     u16 c2cg;
 
     if ((c2cg = c2wk->cg_number) > 18) {

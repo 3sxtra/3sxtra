@@ -1,8 +1,3 @@
-/**
- * @file pl19end_en.c
- * Remy Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl19end_en.h"
 #include "common.h"
 
@@ -71,4 +66,4 @@ static s8** msgEndAdrPL19[17] = {
 
 static s8 msgEndCtrPL19[17] = { 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2 };
 
-MessageTable pl19end_usa_tbl = { msgEndAdrPL19, msgEndCtrPL19 };
+MessageTable pl19end_en_tbl = { msgEndAdrPL19, msgEndCtrPL19 };

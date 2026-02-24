@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -14,26 +15,26 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void end_500_move();
-void end_501_move();
+static void end_500_move();
+static void end_501_move();
 
-void end_500_comm();
-void end_500_0001();
-void end_500_0006();
-void end_500_0007();
-void end_500_0008();
-void end_500_0011();
+static void end_500_comm();
+static void end_500_0001();
+static void end_500_0006();
+static void end_500_0007();
+static void end_500_0008();
+static void end_500_0011();
 
-void end_501_0007();
-void end_501_0008();
-void end_501_0009();
-void end_501_0010();
-void end_501_0011();
-void end_501_0012();
+static void end_501_0007();
+static void end_501_0008();
+static void end_501_0009();
+static void end_501_0010();
+static void end_501_0011();
+static void end_501_0012();
 
-void end_5_bg0_move_sub();
-void end_5_bg1_move_sub();
-void end_5_bg1_move_sub2();
+static void end_5_bg0_move_sub();
+static void end_5_bg1_move_sub();
+static void end_5_bg1_move_sub2();
 
 s8 bdl_index;
 s8 wr5_index;
@@ -55,6 +56,7 @@ const s16 necro_quake_timer[32] = { 4, 4, 4, 4, 8, 4, 4, 4, 4, 4, 4, 4, 8, 4, 4,
 
 const s16 end_500_quake_tbl[8] = { 2, 4, -2, -4, -2, -4, 2, 4 };
 
+/** @brief Necro's ending entry point — initialize and run all ending scenes. */
 void end_05000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -100,15 +102,19 @@ void end_05000(s16 pl_num) {
     }
 }
 
-void end_500_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_500_move() {
     void (*end_500_jp[13])() = { end_500_comm, end_500_0001, end_500_0001, end_500_comm, end_500_comm,
                                  end_500_comm, end_500_0006, end_500_0007, end_500_0008, end_X_com01,
                                  end_X_com01,  end_500_0011, end_X_com01 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 13)
+        return;
     end_500_jp[end_w.r_no_2]();
 }
 
-void end_500_comm() {
+/** @brief Common scene handler — background setup with message and effects. */
+static void end_500_comm() {
     bgw_ptr = &bg_w.bgw[0];
 
     switch (bgw_ptr->r_no_1) {
@@ -146,7 +152,8 @@ void end_500_comm() {
     }
 }
 
-void end_500_0001() {
+/** @brief Scene 1 — background setup with vertical scroll. */
+static void end_500_0001() {
     bgw_ptr = bg_w.bgw;
 
     switch (bgw_ptr->r_no_1) {
@@ -194,7 +201,8 @@ void end_500_0001() {
     }
 }
 
-void end_500_0006() {
+/** @brief Scene 6 — background with quake effect sequence. */
+static void end_500_0006() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         if (Request_Fade(1) != 0) {
@@ -220,7 +228,8 @@ void end_500_0006() {
     }
 }
 
-void end_500_quake_y_sub() {
+/** @brief Apply vertical quake offset to background Y position. */
+static void end_500_quake_y_sub() {
     bgw_ptr->frame_deff--;
 
     if (bgw_ptr->frame_deff <= 0) {
@@ -232,7 +241,8 @@ void end_500_quake_y_sub() {
     }
 }
 
-void end_500_0007() {
+/** @brief Scene 7 — quake effect with lightning flash. */
+static void end_500_0007() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         overwrite_panel(0xFF000000, 0x17);
@@ -287,7 +297,8 @@ void end_500_0007() {
     }
 }
 
-void end_500_0008() {
+/** @brief Scene 8 — quake effect with multiple effects and fade. */
+static void end_500_0008() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -360,7 +371,8 @@ void end_500_0008() {
     }
 }
 
-void end_500_0011() {
+/** @brief Scene 11 — final fade timer with message. */
+static void end_500_0011() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         Rewrite_End_Message(6);
@@ -375,7 +387,8 @@ void end_500_0011() {
     }
 }
 
-void end_5_bg0_move_sub() {
+/** @brief Animate layer 0 background scroll. */
+static void end_5_bg0_move_sub() {
     if (end_w.r_no_2 == 7) {
         bgw_ptr->xy[0].cal += 0xFFF60000;
     } else {
@@ -385,7 +398,8 @@ void end_5_bg0_move_sub() {
     bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
 }
 
-void end_5_bg1_move_sub() {
+/** @brief Animate layer 1 background scroll. */
+static void end_5_bg1_move_sub() {
     bgw_ptr->xy[0].cal += 0xFFF00000;
     bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
 
@@ -401,7 +415,8 @@ void end_5_bg1_move_sub() {
     }
 }
 
-void end_5_bg1_move_sub2() {
+/** @brief Animate layer 1 background scroll (variant 2). */
+static void end_5_bg1_move_sub2() {
     bgw_ptr->xy[0].cal += 0x180000;
     bgw_ptr->abs_x = bgw_ptr->xy[0].disp.pos;
 
@@ -416,15 +431,19 @@ void end_5_bg1_move_sub2() {
     }
 }
 
-void end_501_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_501_move() {
     void (*end_501_jp[13])() = { end_X_com01,  end_X_com01,  end_X_com01,  end_X_com01,  end_X_com01,
                                  end_X_com01,  end_X_com01,  end_501_0007, end_501_0008, end_501_0009,
                                  end_501_0010, end_501_0011, end_501_0012 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 13)
+        return;
     end_501_jp[end_w.r_no_2]();
 }
 
-void end_501_0007() {
+/** @brief Layer 1 scene 7 — quake with lightning flash. */
+static void end_501_0007() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         overwrite_panel(0xFF000000, 0x17);
@@ -464,7 +483,8 @@ void end_501_0007() {
     }
 }
 
-void end_501_0008() {
+/** @brief Layer 1 scene 8 — background position with quake. */
+static void end_501_0008() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -476,7 +496,8 @@ void end_501_0008() {
     }
 }
 
-void end_501_0009() {
+/** @brief Layer 1 scene 9 — background setup with effects. */
+static void end_501_0009() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -495,7 +516,8 @@ void end_501_0009() {
     }
 }
 
-void end_501_0010() {
+/** @brief Layer 1 scene 10 — horizontal pan with effect. */
+static void end_501_0010() {
     end_5_bg1_move_sub2();
 
     switch (bgw_ptr->r_no_1) {
@@ -523,7 +545,8 @@ void end_501_0010() {
     }
 }
 
-void end_501_0011() {
+/** @brief Layer 1 scene 11 — static background. */
+static void end_501_0011() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -560,7 +583,8 @@ void end_501_0011() {
     }
 }
 
-void end_501_0012() {
+/** @brief Layer 1 scene 12 — horizontal pan with scroll. */
+static void end_501_0012() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

@@ -1,3 +1,10 @@
+/**
+ * @file gd3rd.h
+ * @brief Public API for AFS file reading and load-request queue management.
+ *
+ * Part of the io module.
+ */
+
 #ifndef GD3RD_H
 #define GD3RD_H
 

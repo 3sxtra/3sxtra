@@ -4,8 +4,7 @@
 #include "structs.h"
 #include "types.h"
 
-// MARK: - Serialized
-
+// Serialized for netplay (fix desync #117)
 extern const u8* ci_pointer;
 extern u8 ci_col;
 extern u8 ci_timer;

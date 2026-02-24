@@ -1,6 +1,6 @@
 /**
  * @file eff09.c
- * TODO: identify what this effect does
+ * Effect: Appearance / Entry Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff09.h"
@@ -64,9 +64,9 @@ const s32 eff09_19000_tbl[3][4] = { { 0x30000, 0x0, 0x10000, -0x6000 },
                                     { 0x20000, 0x0, 0x48000, -0x6000 },
                                     { 0x18000, 0x0, 0x30000, -0x6000 } };
 
-void sean_ball_move(WORK_Other* ewk, u16 sw_work);
-void ball_bound_set(WORK_Other* ewk);
-void jijii_win_tama_sub(WORK_Other* ewk);
+static void sean_ball_move(WORK_Other* ewk, u16 sw_work);
+static void ball_bound_set(WORK_Other* ewk);
+static void jijii_win_tama_sub(WORK_Other* ewk);
 
 void (*eff09_tbl[28])(WORK_Other*);
 
@@ -79,7 +79,7 @@ void effect_09_move(WORK_Other* ewk) {
     eff09_tbl[ewk->wu.routine_no[0]](ewk);
 }
 
-void eff09_0000(WORK_Other* ewk) {
+static void eff09_0000(WORK_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -115,7 +115,7 @@ void eff09_0000(WORK_Other* ewk) {
     }
 }
 
-void eff09_1000(WORK_Other* ewk) {
+static void eff09_1000(WORK_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -190,7 +190,7 @@ void eff09_1000(WORK_Other* ewk) {
     }
 }
 
-void eff09_2000(WORK_Other* ewk) {
+static void eff09_2000(WORK_Other* ewk) {
     s16 work;
     const s32* ptr;
     u16 sw_work;
@@ -308,8 +308,8 @@ void eff09_2000(WORK_Other* ewk) {
     }
 }
 
-void sean_ball_move(WORK_Other* ewk, u16 sw_work) {
-    if (!plw[ewk->master_id].wu.operator) {
+static void sean_ball_move(WORK_Other* ewk, u16 sw_work) {
+    if (!plw[ewk->master_id].wu.pl_operator) {
         return;
     }
 
@@ -354,7 +354,7 @@ void sean_ball_move(WORK_Other* ewk, u16 sw_work) {
     }
 }
 
-void ball_bound_set(WORK_Other* ewk) {
+static void ball_bound_set(WORK_Other* ewk) {
     ewk->wu.mvxy.a[0].sp = -0x40000;
     ewk->wu.mvxy.a[1].sp = 0x60000;
     ewk->wu.mvxy.d[0].sp = -0x1000;
@@ -367,7 +367,7 @@ void ball_bound_set(WORK_Other* ewk) {
     }
 }
 
-void eff09_3000(WORK_Other* ewk) {
+static void eff09_3000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         if (Exec_Wipe) {
@@ -419,7 +419,7 @@ void eff09_3000(WORK_Other* ewk) {
     }
 }
 
-void eff09_4000(WORK_Other* ewk) {
+static void eff09_4000(WORK_Other* ewk) {
     s16 work;
     s16 work2;
     WORK* oya_ptr;
@@ -483,7 +483,7 @@ void eff09_4000(WORK_Other* ewk) {
     }
 }
 
-void eff09_5000(WORK_Other* ewk) {
+static void eff09_5000(WORK_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -510,7 +510,7 @@ void eff09_5000(WORK_Other* ewk) {
     }
 }
 
-void eff09_6000(WORK_Other* ewk) {
+static void eff09_6000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -554,7 +554,7 @@ void eff09_6000(WORK_Other* ewk) {
     }
 }
 
-void eff09_7000(WORK_Other* ewk) {
+static void eff09_7000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -601,7 +601,7 @@ void eff09_7000(WORK_Other* ewk) {
     }
 }
 
-void eff09_8000(WORK_Other* ewk) {
+static void eff09_8000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -633,7 +633,7 @@ void eff09_8000(WORK_Other* ewk) {
     }
 }
 
-void eff09_9000(WORK_Other* ewk) {
+static void eff09_9000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -668,7 +668,7 @@ void eff09_9000(WORK_Other* ewk) {
     }
 }
 
-void eff09_10000(WORK_Other* ewk) {
+static void eff09_10000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -709,7 +709,7 @@ void eff09_10000(WORK_Other* ewk) {
     }
 }
 
-void eff09_11000(WORK_Other* ewk) {
+static void eff09_11000(WORK_Other* ewk) {
     s16 work;
     s16 work2;
     WORK* oya_ptr = (WORK*)ewk->my_master;
@@ -781,7 +781,7 @@ void eff09_11000(WORK_Other* ewk) {
     }
 }
 
-void eff09_12000(WORK_Other* ewk) {
+static void eff09_12000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -843,7 +843,7 @@ void eff09_12000(WORK_Other* ewk) {
     }
 }
 
-void eff09_13000(WORK_Other* ewk) {
+static void eff09_13000(WORK_Other* ewk) {
     WORK* oya_ptr = (WORK*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
@@ -899,7 +899,7 @@ void eff09_13000(WORK_Other* ewk) {
     }
 }
 
-void eff09_14000(WORK_Other* ewk) {
+static void eff09_14000(WORK_Other* ewk) {
     WORK* oya_ptr = (WORK*)ewk->my_master;
 
     if (ewk->wu.rl_flag) {
@@ -942,7 +942,7 @@ void eff09_14000(WORK_Other* ewk) {
     }
 }
 
-void eff09_15000(WORK_Other* ewk) {
+static void eff09_15000(WORK_Other* ewk) {
     WORK* oya_ptr;
 
     if (obr_no_disp_check()) {
@@ -984,7 +984,7 @@ void eff09_15000(WORK_Other* ewk) {
     }
 }
 
-void eff09_16000(WORK_Other* ewk) {
+static void eff09_16000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -1020,7 +1020,7 @@ void eff09_16000(WORK_Other* ewk) {
     }
 }
 
-void eff09_17000(WORK_Other* ewk) {
+static void eff09_17000(WORK_Other* ewk) {
     WORK* oya_ptr;
 
     if (obr_no_disp_check()) {
@@ -1073,7 +1073,7 @@ void eff09_17000(WORK_Other* ewk) {
     }
 }
 
-void eff09_18000(WORK_Other* ewk) {
+static void eff09_18000(WORK_Other* ewk) {
     WORK* oya_ptr;
 
     if (obr_no_disp_check()) {
@@ -1134,7 +1134,7 @@ void eff09_18000(WORK_Other* ewk) {
     }
 }
 
-void eff09_19000(WORK_Other* ewk) {
+static void eff09_19000(WORK_Other* ewk) {
     if (obr_no_disp_check()) {
         return;
     }
@@ -1191,7 +1191,7 @@ void eff09_19000(WORK_Other* ewk) {
     }
 }
 
-void eff09_20000(WORK_Other* ewk) {
+static void eff09_20000(WORK_Other* ewk) {
     WORK* oya_ptr;
     s16 pos_work;
 
@@ -1247,7 +1247,7 @@ void eff09_20000(WORK_Other* ewk) {
     }
 }
 
-void eff09_21000(WORK_Other* ewk) {
+static void eff09_21000(WORK_Other* ewk) {
     s16 arrive_x;
     s16 arrive_y;
 
@@ -1330,7 +1330,7 @@ void eff09_21000(WORK_Other* ewk) {
     }
 }
 
-void eff09_22000(WORK_Other* ewk) {
+static void eff09_22000(WORK_Other* ewk) {
     WORK* oya_ptr;
     s16 work;
 
@@ -1382,7 +1382,7 @@ void eff09_22000(WORK_Other* ewk) {
     }
 }
 
-void eff09_23000(WORK_Other* ewk) {
+static void eff09_23000(WORK_Other* ewk) {
     WORK* oya_ptr;
 
     if (test_flag) {
@@ -1452,7 +1452,7 @@ void eff09_23000(WORK_Other* ewk) {
     }
 }
 
-void eff09_24000(WORK_Other* ewk) {
+static void eff09_24000(WORK_Other* ewk) {
     WORK* oya_ptr;
 
     if (test_flag) {
@@ -1534,7 +1534,7 @@ void eff09_24000(WORK_Other* ewk) {
     }
 }
 
-void eff09_25000(WORK_Other* ewk) {
+static void eff09_25000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;
@@ -1583,7 +1583,7 @@ void eff09_25000(WORK_Other* ewk) {
     }
 }
 
-void eff09_26000(WORK_Other* ewk) {
+static void eff09_26000(WORK_Other* ewk) {
     WORK* oya_ptr;
 
     if (test_flag) {
@@ -1660,7 +1660,7 @@ void eff09_26000(WORK_Other* ewk) {
     }
 }
 
-void jijii_win_tama_sub(WORK_Other* ewk) {
+static void jijii_win_tama_sub(WORK_Other* ewk) {
     WORK* oya_ptr = (WORK*)ewk->my_master;
 
     ewk->wu.old_rno[0] ^= 1;
@@ -1673,7 +1673,7 @@ void jijii_win_tama_sub(WORK_Other* ewk) {
     ewk->wu.position_z = oya_ptr->position_z + 2;
 }
 
-void eff09_27000(WORK_Other* ewk) {
+static void eff09_27000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1]++;

@@ -18,21 +18,25 @@
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 
-void setup_caught_process_flags(PLW* wk);
-void caught_cg_type_check(PLW* wk, PLW* emwk);
-s32 check_tsukamare_keizoku_check(PLW* wk, PLW* emwk);
+static void setup_caught_process_flags(PLW* wk);
+static void caught_cg_type_check(PLW* wk, PLW* emwk);
+static s32 check_tsukamare_keizoku_check(PLW* wk, PLW* emwk);
 
-void scdmd_12000(PLW* wk);
-void scdmd_16000(PLW* wk);
-void scdmd_17000(PLW* wk);
-void scdmd_18000(PLW* wk);
-void scdmd_19000(PLW* wk);
-void scdmd_28000(PLW* wk);
-void scdmd_30000(PLW* wk);
+static void scdmd_12000(PLW* wk);
+static void scdmd_16000(PLW* wk);
+static void scdmd_17000(PLW* wk);
+static void scdmd_18000(PLW* wk);
+static void scdmd_19000(PLW* wk);
+static void scdmd_28000(PLW* wk);
+static void scdmd_30000(PLW* wk);
+
+#define PLPCU_DISPATCH_COUNT 4
+#define SETUP_CU_DM_COUNT 20
 
 void (*const setup_cu_dm_init_data[20])(PLW* wk);
 void (*const plpcu_lv_00[4])(PLW*, PLW*);
 
+/** @brief Top-level caught/grabbed state dispatcher. */
 void Player_caught(PLW* wk) {
     PLW* emwk = (PLW*)wk->wu.dmg_adrs;
 
@@ -47,10 +51,12 @@ void Player_caught(PLW* wk) {
         clear_chainex_check(wk->wu.id);
     }
 
-    plpcu_lv_00[wk->wu.routine_no[2]](wk, emwk);
+    if (wk->wu.routine_no[2] < PLPCU_DISPATCH_COUNT)
+        plpcu_lv_00[wk->wu.routine_no[2]](wk, emwk);
 }
 
-void setup_caught_process_flags(PLW* wk) {
+/** @brief Clears per-frame process flags for the caught state. */
+static void setup_caught_process_flags(PLW* wk) {
     wk->wu.next_z = wk->wu.my_priority;
     wk->running_f = 0;
     wk->guard_flag = 3;
@@ -76,9 +82,11 @@ void setup_caught_process_flags(PLW* wk) {
     }
 }
 
-void Caught_00000(PLW* /* unused */, PLW* /* unused */) {}
+/** @brief Caught state 00 — no-op placeholder. */
+static void Caught_00000(PLW* /* unused */, PLW* /* unused */) {}
 
-void Caught_01000(PLW* wk, PLW* emwk) {
+/** @brief Caught state 01 — grounded grab hold. */
+static void Caught_01000(PLW* wk, PLW* emwk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -123,7 +131,8 @@ void Caught_01000(PLW* wk, PLW* emwk) {
     }
 }
 
-void Caught_02000(PLW* wk, PLW* emwk) {
+/** @brief Caught state 02 — air grab hold. */
+static void Caught_02000(PLW* wk, PLW* emwk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -168,9 +177,11 @@ void Caught_02000(PLW* wk, PLW* emwk) {
     }
 }
 
-void Caught_03000(PLW* /* unused */, PLW* /* unused */) {}
+/** @brief Caught state 03 — no-op end of catch. */
+static void Caught_03000(PLW* /* unused */, PLW* /* unused */) {}
 
-void caught_cg_type_check(PLW* wk, PLW* emwk) {
+/** @brief Handles cg_type transitions during the caught state. */
+static void caught_cg_type_check(PLW* wk, PLW* emwk) {
     switch (wk->wu.cg_type) {
     case 2:
         wk->wu.hit_quake = wk->wu.dm_quake;
@@ -209,7 +220,9 @@ void caught_cg_type_check(PLW* wk, PLW* emwk) {
             wk->wu.xyz[1].cal = 0;
         }
 
-        setup_cu_dm_init_data[wk->wu.routine_no[2] - 12](wk);
+        s16 cu_dm_idx = wk->wu.routine_no[2] - 12;
+        if (cu_dm_idx >= 0 && cu_dm_idx < SETUP_CU_DM_COUNT)
+            setup_cu_dm_init_data[cu_dm_idx](wk);
         get_catch_off_data(wk, emwk->wu.att.reaction);
 
         if (wk->ukemi_success == 0) {
@@ -221,7 +234,8 @@ void caught_cg_type_check(PLW* wk, PLW* emwk) {
     }
 }
 
-s32 check_tsukamare_keizoku_check(PLW* wk, PLW* emwk) {
+/** @brief Checks if the caught hold should continue (tsukamare keizoku). */
+static s32 check_tsukamare_keizoku_check(PLW* wk, PLW* emwk) {
     if (!emwk->tsukami_f) {
         wk->wu.routine_no[1] = 1;
         wk->wu.routine_no[2] = 88;
@@ -240,7 +254,8 @@ s32 check_tsukamare_keizoku_check(PLW* wk, PLW* emwk) {
     return 0;
 }
 
-void scdmd_12000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 12 (standing hit). */
+static void scdmd_12000(PLW* wk) {
     wk->dm_step_tbl = _dm_step_data[_select_hit_dsd[wk->wu.dm_impact][get_weight_point(&wk->wu)]];
 
     if (!wk->wu.dm_attribute) {
@@ -254,22 +269,26 @@ void scdmd_12000(PLW* wk) {
     }
 }
 
-void scdmd_14000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 14 (launch). */
+static void scdmd_14000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
 }
 
-void scdmd_16000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 16 (blow-away). */
+static void scdmd_16000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.dm_attlv], 0);
 }
 
-void scdmd_17000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 17 (air hit). */
+static void scdmd_17000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.dm_attlv], wk->wu.xyz[1].disp.pos);
 }
 
-void scdmd_18000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 18 (attribute air hit). */
+static void scdmd_18000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.dm_attlv], wk->wu.xyz[1].disp.pos);
 
@@ -284,21 +303,25 @@ void scdmd_18000(PLW* wk) {
     }
 }
 
-void scdmd_19000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 19 (ground-to-air). */
+static void scdmd_19000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.dm_attlv], 0);
 }
 
-void scdmd_20000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 20 (redirect). */
+static void scdmd_20000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
 }
 
-void scdmd_21000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 21 (vertical launch). */
+static void scdmd_21000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
 }
 
-void scdmd_23000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 23 (crumple-fall). */
+static void scdmd_23000(PLW* wk) {
     if (wk->wu.xyz[1].disp.pos < 0) {
         wk->wu.xyz[1].cal = 0;
     }
@@ -306,35 +329,43 @@ void scdmd_23000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
 }
 
-void scdmd_24000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 24 (spiral-down). */
+static void scdmd_24000(PLW* wk) {
     wk->wu.routine_no[2] = 0;
     wk->wu.routine_no[3] = 1;
 }
 
-void scdmd_25000(PLW* wk) {}
+/** @brief Sets up caught-damage init data for state 25 (wallbounce). */
+static void scdmd_25000(PLW* wk) {}
 
-void scdmd_26000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 26 (groundbounce). */
+static void scdmd_26000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
 }
 
-void scdmd_27000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 27 (stagger). */
+static void scdmd_27000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
 }
 
-void scdmd_28000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 28 (stun KO). */
+static void scdmd_28000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.dm_attlv], wk->wu.xyz[1].disp.pos);
 }
 
-void scdmd_29000(PLW* wk) {}
+/** @brief Sets up caught-damage init data for state 29 (SA cinematic). */
+static void scdmd_29000(PLW* wk) {}
 
-void scdmd_30000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 30 (extended cinematic). */
+static void scdmd_30000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.dm_attlv], 0);
 }
 
-void scdmd_31000(PLW* wk) {
+/** @brief Sets up caught-damage init data for state 31 (throw release). */
+static void scdmd_31000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
 }
 

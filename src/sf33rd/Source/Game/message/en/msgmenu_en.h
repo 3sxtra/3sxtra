@@ -4,6 +4,6 @@
 #include "structs.h"
 #include "types.h"
 
-extern MessageTable msgMenuTbl_usa;
+extern MessageTable msgMenuTbl_en;
 
 #endif

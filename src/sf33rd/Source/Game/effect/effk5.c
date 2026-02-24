@@ -1,6 +1,6 @@
 /**
  * @file effk5.c
- * TODO: identify what this effect does
+ * Effect: Lookup Index / Check Effect
  */
 
 #include "sf33rd/Source/Game/effect/effk5.h"
@@ -50,18 +50,18 @@ const s8 k5_exc_check[125] = { 1, 2, 0, 2, 2, 2, 2, 1, 1, 1, 2, 2, 1, 2, 1, 2, 1
 
 // Forward decls
 
-void K5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl);
-void K5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num);
-void K5_init_data_copy2(K5Data* dad, MVJ* mvj, s16 num);
-void get_table_adrs_K5(WORK* wk);
-void k5_add_sub(MVJ* mvj);
-void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj);
-void K5_main_process(WORK* ewk, WORK* mwk, MVJ* mvj);
-void init_K5_work(WORK* ewk, WORK* mwk, MVJ* mvj);
-void get_master_table_address(WORK* ewk, WORK* mwk);
-s32 get_cal_work(WORK* wk);
-void K5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf);
-u32 decode_mvsw(u16 flag);
+static void K5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl);
+static void K5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num);
+static void K5_init_data_copy2(K5Data* dad, MVJ* mvj, s16 num);
+static void get_table_adrs_K5(WORK* wk);
+static void k5_add_sub(MVJ* mvj);
+static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj);
+static void K5_main_process(WORK* ewk, WORK* mwk, MVJ* mvj);
+static void init_K5_work(WORK* ewk, WORK* mwk, MVJ* mvj);
+static void get_master_table_address(WORK* ewk, WORK* mwk);
+static s32 get_cal_work(WORK* wk);
+static void K5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf);
+static u32 decode_mvsw(u16 flag);
 
 // Funcs
 
@@ -137,7 +137,7 @@ void effect_K5_move(WORK_Other* ewk) {
     }
 }
 
-void K5_main_process(WORK* ewk, WORK* mwk, MVJ* mvj) {
+static void K5_main_process(WORK* ewk, WORK* mwk, MVJ* mvj) {
     s16 i;
 
     switch (ewk->routine_no[1]) {
@@ -162,7 +162,7 @@ typedef union {
     u8* cpc;
 } GOTCP;
 
-void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
+static void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
     GOTCP gotcp;
     ST st;
     s16 exc;
@@ -238,7 +238,7 @@ void get_okuri_time(WORK* ewk, WORK* mwk, MVJ* mvj) {
     ewk->routine_no[1] = 2;
 }
 
-void K5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
+static void K5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
     s16 i;
     s16 t0;
     s16 t1;
@@ -336,7 +336,7 @@ void K5_decode_new_hit_index(WORK* wk, MVJ* mvj, u16 mf) {
     }
 }
 
-u32 decode_mvsw(u16 flag) {
+static u32 decode_mvsw(u16 flag) {
     MVSW mvsw;
 
     mvsw.swi = flag;
@@ -362,13 +362,13 @@ u32 decode_mvsw(u16 flag) {
     return mvsw.swi;
 }
 
-void get_table_adrs_K5(WORK* wk) {
+static void get_table_adrs_K5(WORK* wk) {
     wk->cg_ja = wk->hit_ix_table[wk->cg_hit_ix];
     wk->h_bod = &wk->body_adrs[wk->cg_ja.boix];
     wk->h_han = &wk->hand_adrs[wk->cg_ja.bhix + wk->cg_ja.haix];
 }
 
-void init_K5_work(WORK* ewk, WORK* mwk, MVJ* mvj) {
+static void init_K5_work(WORK* ewk, WORK* mwk, MVJ* mvj) {
     s16 i;
 
     for (i = 0; i < 10; i++) {
@@ -382,13 +382,13 @@ void init_K5_work(WORK* ewk, WORK* mwk, MVJ* mvj) {
     mwk->K5_init_flag = 1;
 }
 
-void get_master_table_address(WORK* ewk, WORK* mwk) {
+static void get_master_table_address(WORK* ewk, WORK* mwk) {
     ewk->hit_ix_table = mwk->hit_ix_table;
     ewk->body_adrs = mwk->body_adrs;
     ewk->hand_adrs = mwk->hand_adrs;
 }
 
-void K5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl) {
+static void K5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl) {
     s16 i;
 
     for (i = 0; i < 8; i++) {
@@ -400,7 +400,7 @@ void K5_init_data(WORK* mwk, MVJ* mvj, u16* ixtbl) {
     K5_init_data_copy(mvj + 4, (K5Data*)mwk->hand_adrs[mwk->cg_ja.bhix + mwk->cg_ja.haix].hand_dm, 4);
 }
 
-void K5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num) {
+static void K5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num) {
     s16 i;
 
     for (i = 0; i < num; i++) {
@@ -411,7 +411,7 @@ void K5_init_data_copy(MVJ* mvj, K5Data* dad, s16 num) {
     }
 }
 
-void K5_init_data_copy2(K5Data* dad, MVJ* mvj, s16 num) {
+static void K5_init_data_copy2(K5Data* dad, MVJ* mvj, s16 num) {
     s16 i;
 
     for (i = 0; i < num; i++) {
@@ -422,7 +422,7 @@ void K5_init_data_copy2(K5Data* dad, MVJ* mvj, s16 num) {
     }
 }
 
-s32 get_cal_work(WORK* wk) {
+static s32 get_cal_work(WORK* wk) {
     WORK* fwk;
     s16 ix;
 
@@ -437,7 +437,7 @@ s32 get_cal_work(WORK* wk) {
     return 0;
 }
 
-void k5_add_sub(MVJ* mvj) {
+static void k5_add_sub(MVJ* mvj) {
     s16 i;
 
     for (i = 0; i < 4; i++) {

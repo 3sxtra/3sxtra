@@ -1,6 +1,6 @@
 /**
  * @file effa3.c
- * TODO: identify what this effect does
+ * Effect: Content Check / System Effect
  */
 
 #include "sf33rd/Source/Game/effect/effa3.h"
@@ -10,9 +10,9 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-const u8 Contents_Check_Data_A3[23] = { 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0 };
+const u8 Contents_Check_Data_A3[24] = { 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0 };
 
-s8* Letter_Data_A3[23][8] = {
+s8* Letter_Data_A3[24][8] = {
     { "NORMAL MODE",
       "RECORDING MODE",
       "REPLAY",
@@ -22,17 +22,18 @@ s8* Letter_Data_A3[23][8] = {
       "CHARACTER CHANGE",
       "EXIT" },
     { "ACTION$............",
-      "GUARD$.............",
-      "QUICK STANDING$....",
-      "STUN$..............",
+      "BLOCK TYPE$........",
+      "PARRY TYPE$........",
+      "STUN MASH$.........",
+      "WAKEUP MASH$.......",
       "DEFAULT SETTING",
       "EXIT",
-      NULL,
       NULL },
     { "STAND", "CROUCH", "JUMP", "CPU", "HUMAN", NULL, NULL, NULL },
-    { "AUTO GUARD", "NO GUARD", "ALL GUARD", "PARRYING", "RANDOM GUARD", "RANDOM PARRYING", "ALL RANDOM", NULL },
-    { "OFF", "ON", "RANDOM", NULL, NULL, NULL, NULL, NULL },
-    { "OFF", "ON", NULL, NULL, NULL, NULL, NULL, NULL },
+    { "NONE", "ALWAYS", "FIRST HIT", "RANDOM", NULL, NULL, NULL, NULL },
+    { "NONE", "HIGH", "LOW", "ALL", "RED", NULL, NULL, NULL },
+    { "NONE", "RANDOM FAST", "RANDOM SLOW", "THROW", "CROUCH JAB", "CROUCH SHORT", "SHORYUKEN", NULL },
+    { "NONE", "RANDOM FAST", "RANDOM SLOW", "THROW", "CROUCH JAB", "CROUCH SHORT", "SHORYUKEN", NULL },
     { "S.A.GAUGE$.........",
       "ATTACK DATA$.......",
       "DAMAGE$............$L    $H",

@@ -1,6 +1,11 @@
 /**
  * @file dir_data.c
- * System Direction (Dipswitch) Menu Data
+ * @brief System Direction (dipswitch) menu data tables.
+ *
+ * Contains per-page max-value limits, default settings, page counts,
+ * and ON/OFF label strings for the System Direction menu.
+ *
+ * Part of the menu module.
  */
 
 #include "common.h"

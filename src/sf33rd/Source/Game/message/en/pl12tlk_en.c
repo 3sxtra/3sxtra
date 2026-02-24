@@ -1,8 +1,3 @@
-/**
- * @file pl12tlk_en.c
- * Sean Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl12tlk_en.h"
 #include "common.h"
 
@@ -32,4 +27,4 @@ static s8** msgTalkAdrPL12[7] = {
 
 static s8 msgTalkCtrPL12[7] = { 1, 2, 2, 2, 1, 2, 1 };
 
-MessageTable pl12tlk_usa_tbl = { msgTalkAdrPL12, msgTalkCtrPL12 };
+MessageTable pl12tlk_en_tbl = { msgTalkAdrPL12, msgTalkCtrPL12 };

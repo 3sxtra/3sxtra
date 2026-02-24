@@ -1,11 +1,12 @@
 /**
  * @file eff62.c
- * TODO: identify what this effect does
+ * Effect: Correct Data / Adjustment Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff62.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
@@ -26,7 +27,7 @@ void effect_62_move(WORK_Other* ewk) {
     sort_push_requestA(&ewk->wu);
 }
 
-s32 effect_62_init(WORK_Other* mwk, s16 ID) {
+s32 effect_62_init(WORK_Other* mwk, s16 arg_ID) {
     WORK_Other* ewk;
     s16 ix;
 
@@ -42,10 +43,10 @@ s32 effect_62_init(WORK_Other* mwk, s16 ID) {
     ewk->wu.my_col_code = 0x2000;
     *ewk->wu.char_table = _sel_pl_char_table;
     ewk->my_master = mwk;
-    ewk->wu.dm_vital = ID;
+    ewk->wu.dm_vital = arg_ID;
     ewk->wu.my_family = mwk->wu.my_family;
-    ewk->wu.vital_new = EFF62_Correct_Data[ID][0];
-    ewk->wu.vital_old = EFF62_Correct_Data[ID][1];
+    ewk->wu.vital_new = EFF62_Correct_Data[arg_ID][0];
+    ewk->wu.vital_old = EFF62_Correct_Data[arg_ID][1];
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);
     ewk->wu.my_col_code = 1;

@@ -1,14 +1,14 @@
 /**
  * @file effe9.c
- * TODO: identify what this effect does
+ * Effect: Ending / Renderer Effect
  */
 
 #include "sf33rd/Source/Game/effect/effe9.h"
 #include "common.h"
+#include "port/renderer.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
@@ -59,7 +59,7 @@ void effect_E9_move(WORK_Other* ewk) {
             ita_pos[1] = ita_p[3];
             ita_pos[2] = ita_p[1];
             ita_pos[3] = ita_p[2];
-            njDrawPolygon2D((PAL_CURSOR*)&ita.p, 4, prio, 0x60);
+            Renderer_Queue2DPrimitive((f32*)ita.p, prio, (uintptr_t)ita.col[0].color, 0);
         }
 
         break;
@@ -90,7 +90,7 @@ void effect_E9_move(WORK_Other* ewk) {
             ita_pos[1] = ita_p[3];
             ita_pos[2] = ita_p[1];
             ita_pos[3] = ita_p[2];
-            njDrawPolygon2D((PAL_CURSOR*)&ita.p, 4, prio, 0x60);
+            Renderer_Queue2DPrimitive((f32*)ita.p, prio, (uintptr_t)ita.col[0].color, 0);
             break;
         }
 
@@ -110,7 +110,7 @@ void effect_E9_move(WORK_Other* ewk) {
             ita_pos[1] = ita_p[3];
             ita_pos[2] = ita_p[1];
             ita_pos[3] = ita_p[2];
-            njDrawPolygon2D((PAL_CURSOR*)&ita.p, 4, prio, 0x60);
+            Renderer_Queue2DPrimitive((f32*)ita.p, prio, (uintptr_t)ita.col[0].color, 0);
         }
 
         break;

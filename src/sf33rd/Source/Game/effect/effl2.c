@@ -1,6 +1,6 @@
 /**
  * @file effl2.c
- * TODO: identify what this effect does
+ * Effect: Direction Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/effl2.h"

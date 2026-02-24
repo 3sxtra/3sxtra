@@ -1,11 +1,12 @@
 /**
  * @file effl5.c
- * TODO: identify what this effect does
+ * Effect: Game State Effect
  */
 
 #include "sf33rd/Source/Game/effect/effl5.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effb2.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
@@ -17,7 +18,7 @@
 
 // Forward decls
 
-void hukuromoji_move(WORK_Other* ewk);
+static void hukuromoji_move(WORK_Other* ewk);
 
 // Funcs
 
@@ -48,7 +49,7 @@ void effect_L5_move(WORK_Other* ewk) {
     }
 }
 
-void hukuromoji_move(WORK_Other* ewk) {
+static void hukuromoji_move(WORK_Other* ewk) {
     WORK_Other* oya_ptr = (WORK_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {

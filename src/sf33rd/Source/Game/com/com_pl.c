@@ -1,10 +1,23 @@
 /**
  * @file com_pl.c
- * CPU Controlled Character
+ * @brief CPU-controlled character AI main loop and state machine.
+ *
+ * Top-level AI entry point for CPU players. Manages the AI state machine
+ * that cycles through: Initialize → Free → Active/Follow/Passive → Guard →
+ * Damage/Float/Flip/Caught/Catch states. Dispatches to per-character AI
+ * handlers in the active/, follow/, passive/, and shell/ subdirectories.
+ *
+ * Part of the COM (computer player) AI module.
  */
 
 #include "sf33rd/Source/Game/com/com_pl.h"
 #include "common.h"
+
+#define COM_STATE_COUNT 16
+#define CHAR_COUNT 20
+#define DAMAGE_STATE_COUNT 10
+#define FLOAT_STATE_COUNT 4
+#define FLIP_STATE_COUNT 5
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/Source/Game/com/active/active00.h"
 #include "sf33rd/Source/Game/com/active/active01.h"
@@ -70,6 +83,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
+#include "sf33rd/Source/Game/training/training_dummy.h"
 
 void Main_Program(PLW* wk);
 
@@ -137,6 +151,7 @@ void Pattern_Insurance(PLW* wk, s16 Kind_Of_Insurance, s16 Forced_Number);
 
 const u16 Correct_Lv_Data[16] = { 0, 1, 2, 2, 4, 5, 6, 5, 8, 9, 10, 9, 8, 5, 10, 0 };
 
+/** @brief Top-level CPU AI entry point — returns joystick input for this frame. */
 u16 cpu_algorithm(PLW* wk) {
     u16 sw = CPU_Sub(wk);
 
@@ -154,7 +169,7 @@ u16 cpu_algorithm(PLW* wk) {
 
         CPU_Rec[wk->wu.id] = 1;
 
-        if (Debug_w[0x21]) {
+        if (Debug_w[DEBUG_DISP_REC_STATUS]) {
             flPrintColor(0xFFFFFFFF);
             flPrintL(16, 9, "CPU REC!");
         }
@@ -165,6 +180,7 @@ u16 cpu_algorithm(PLW* wk) {
     return sw;
 }
 
+/** @brief Core AI tick — updates state, runs the main program, and returns lever data. */
 static u16 CPU_Sub(PLW* wk) {
     WORK* em = (WORK*)wk->wu.target_adrs;
 
@@ -183,6 +199,13 @@ static u16 CPU_Sub(PLW* wk) {
     Last_Pattern_Index[wk->wu.id] = Pattern_Index[wk->wu.id];
     Main_Program(wk);
     Lever_Buff[wk->wu.id] = check_illegal_lever_data(Lever_Buff[wk->wu.id]);
+
+    // TRAINING MODE OVERRIDE
+    if (g_training_state.is_in_match) {
+        training_dummy_update_input(wk, wk->wu.id);
+        // Dummy writes Lever_Buff[id] directly — no sync needed
+    }
+
     Check_Store_Lv(wk);
     Shift_Resume_Lv(wk);
     Disp_Lever(&Lever_Buff[wk->wu.id], wk->wu.id, 1);
@@ -190,24 +213,33 @@ static u16 CPU_Sub(PLW* wk) {
     return Lever_Buff[wk->wu.id];
 }
 
+/** @brief AI state machine dispatcher — calls the handler for the current CP_No state. */
 void Main_Program(PLW* wk) {
-    void (*Com_Jmp_Tbl[16])(PLW*) = { Com_Initialize, Com_Free,           Com_Active,   Com_Before_Follow,
-                                      Com_Follow,     Com_Before_Passive, Com_Passive,  Com_Guard,
-                                      Com_VS_Shell,   Com_Guard_VS_Shell, Com_Damage,   Com_Float,
-                                      Com_Flip,       Com_Caught,         Com_Wait_Lie, Com_Catch };
+    void (*Com_Jmp_Tbl[COM_STATE_COUNT])(PLW*) = { Com_Initialize, Com_Free,           Com_Active,   Com_Before_Follow,
+                                                   Com_Follow,     Com_Before_Passive, Com_Passive,  Com_Guard,
+                                                   Com_VS_Shell,   Com_Guard_VS_Shell, Com_Damage,   Com_Float,
+                                                   Com_Flip,       Com_Caught,         Com_Wait_Lie, Com_Catch };
 
     Ck_Distance(wk);
     Area_Number[wk->wu.id] = Ck_Area(wk);
     Attack_Flag[wk->wu.id] = plw[wk->wu.id ^ 1].caution_flag;
     Check_At_Count(wk);
     Disposal_Again[wk->wu.id] = 0;
+
+    if ((u32)CP_No[wk->wu.id][0] >= COM_STATE_COUNT) {
+        return;
+    }
+
     Com_Jmp_Tbl[CP_No[wk->wu.id][0]](wk);
 
     if (Disposal_Again[wk->wu.id]) {
-        Com_Jmp_Tbl[CP_No[wk->wu.id][0]](wk);
+        if ((u32)CP_No[wk->wu.id][0] < COM_STATE_COUNT) {
+            Com_Jmp_Tbl[CP_No[wk->wu.id][0]](wk);
+        }
     }
 }
 
+/** @brief AI state 0: Initialize all CPU player variables at round start. */
 void Com_Initialize(PLW* wk) {
     const s16* xx;
     s16 i;
@@ -259,6 +291,7 @@ void Com_Initialize(PLW* wk) {
     }
 }
 
+/** @brief AI state 1: Free state — select an active behavior pattern. */
 void Com_Free(PLW* wk) {
     s16 xx;
 
@@ -293,6 +326,7 @@ void Com_Free(PLW* wk) {
     Select_Active(wk);
 }
 
+/** @brief AI state 3: Wait before transitioning to follow-up combo execution. */
 void Com_Before_Follow(PLW* wk) {
     Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
 
@@ -328,6 +362,7 @@ void Com_Before_Follow(PLW* wk) {
     Clear_Com_Flag(wk);
 }
 
+/** @brief AI state 5: Wait before transitioning to passive reaction execution. */
 void Com_Before_Passive(PLW* wk) {
     Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
 
@@ -363,6 +398,7 @@ void Com_Before_Passive(PLW* wk) {
     CP_Index[wk->wu.id][3] = 0;
 }
 
+/** @brief AI state 7: Guard state — decide whether to continue blocking or counter-attack. */
 void Com_Guard(PLW* wk) {
     WORK* em;
 
@@ -409,6 +445,7 @@ void Com_Guard(PLW* wk) {
     }
 }
 
+/** @brief Check whether the CPU should attempt a counter-attack based on attack type. */
 static s32 Check_Counter_Attack(PLW* wk) {
     s16 xx;
 
@@ -441,6 +478,7 @@ static s32 Check_Counter_Attack(PLW* wk) {
     return Check_Hamari(wk);
 }
 
+/** @brief Check if the opponent is repeating the same attack ("hamari" trap detection). */
 static s16 Check_Hamari(PLW* wk) {
     u8 tech;
     s16 Rnd;
@@ -470,6 +508,7 @@ static s16 Check_Hamari(PLW* wk) {
     return VS_Tech[wk->wu.id] = 32;
 }
 
+/** @brief AI state 9: Guard against incoming projectiles (shells). */
 void Com_Guard_VS_Shell(PLW* wk) {
     WORK_Other* tmw;
 
@@ -509,6 +548,7 @@ void Com_Guard_VS_Shell(PLW* wk) {
     Timer_00[wk->wu.id]--;
 }
 
+/** @brief Check if Twelve (NO12) should continue guarding against a projectile by position. */
 static s32 Check_No12_Shell_Guard(PLW* wk, WORK_Other* tmw) {
     s16 pos_x;
 
@@ -529,6 +569,7 @@ static s32 Check_No12_Shell_Guard(PLW* wk, WORK_Other* tmw) {
     return 0;
 }
 
+/** @brief Set the guard lever input based on the current guard type (stand/crouch/auto). */
 void Check_Guard_Type(PLW* wk, WORK* em) {
     Lever_Buff[wk->wu.id] = Setup_Guard_Lever(wk, 1);
 
@@ -554,6 +595,7 @@ void Check_Guard_Type(PLW* wk, WORK* em) {
     }
 }
 
+/** @brief Check whether the CPU should remain in guard state or exit. */
 static s32 Ck_Exit_Guard(PLW* wk, WORK* em) {
     s16 Lv;
 
@@ -594,6 +636,7 @@ static s32 Ck_Exit_Guard(PLW* wk, WORK* em) {
     return 0;
 }
 
+/** @brief Sub-check for guard exit — tests whether the opponent is still attacking. */
 static s32 Ck_Exit_Guard_Sub(PLW* wk, WORK* em) {
     if (Attack_Flag[wk->wu.id] == 0) {
         return 0;
@@ -623,11 +666,12 @@ static s32 Ck_Exit_Guard_Sub(PLW* wk, WORK* em) {
     return 1;
 }
 
+/** @brief AI state 2: Execute the active AI pattern for the current character. */
 void Com_Active(PLW* wk) {
-    void (*Char_Jmp_Tbl[20])(PLW*) = { Computer00, Computer01, Computer02, Computer03, Computer04,
-                                       Computer05, Computer06, Computer07, Computer08, Computer09,
-                                       Computer10, Computer11, Computer12, Computer13, Computer14,
-                                       Computer15, Computer16, Computer17, Computer18, Computer19 };
+    void (*Char_Jmp_Tbl[CHAR_COUNT])(PLW*) = { Computer00, Computer01, Computer02, Computer03, Computer04,
+                                               Computer05, Computer06, Computer07, Computer08, Computer09,
+                                               Computer10, Computer11, Computer12, Computer13, Computer14,
+                                               Computer15, Computer16, Computer17, Computer18, Computer19 };
 
     if (Check_Damage(wk)) {
         return;
@@ -642,13 +686,19 @@ void Com_Active(PLW* wk) {
     }
 
     Pattern_Insurance(wk, 0, 0);
+
+    if ((u32)wk->player_number >= CHAR_COUNT) {
+        return;
+    }
+
     Char_Jmp_Tbl[wk->player_number](wk);
 }
 
+/** @brief AI state 4: Execute follow-up combo pattern for the current character. */
 void Com_Follow(PLW* wk) {
-    void (*Follow_Jmp_Tbl[20])(PLW*) = { Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02,
-                                         Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02,
-                                         Follow02, Follow02, Follow02, Follow02, Follow02, Follow02 };
+    void (*Follow_Jmp_Tbl[CHAR_COUNT])(PLW*) = { Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02,
+                                                 Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02,
+                                                 Follow02, Follow02, Follow02, Follow02, Follow02, Follow02 };
 
     if (Check_Damage(wk)) {
         return;
@@ -663,13 +713,20 @@ void Com_Follow(PLW* wk) {
     }
 
     Pattern_Insurance(wk, 3, 2);
+
+    if ((u32)wk->player_number >= CHAR_COUNT) {
+        return;
+    }
+
     Follow_Jmp_Tbl[wk->player_number](wk);
 }
 
+/** @brief AI state 6: Execute passive reaction pattern for the current character. */
 void Com_Passive(PLW* wk) {
-    void (*Passive_Jmp_Tbl[20])(PLW*) = { Passive00, Passive01, Passive02, Passive03, Passive04, Passive05, Passive06,
-                                          Passive07, Passive08, Passive09, Passive10, Passive11, Passive12, Passive13,
-                                          Passive14, Passive15, Passive16, Passive17, Passive18, Passive19 };
+    void (*Passive_Jmp_Tbl[CHAR_COUNT])(PLW*) = { Passive00, Passive01, Passive02, Passive03, Passive04,
+                                                  Passive05, Passive06, Passive07, Passive08, Passive09,
+                                                  Passive10, Passive11, Passive12, Passive13, Passive14,
+                                                  Passive15, Passive16, Passive17, Passive18, Passive19 };
 
     if (Check_Damage(wk)) {
         return;
@@ -684,13 +741,19 @@ void Com_Passive(PLW* wk) {
     }
 
     Pattern_Insurance(wk, 1, 1);
+
+    if ((u32)wk->player_number >= CHAR_COUNT) {
+        return;
+    }
+
     Passive_Jmp_Tbl[wk->player_number](wk);
 }
 
+/** @brief AI state 8: Execute projectile response pattern for the current character. */
 void Com_VS_Shell(PLW* wk) {
-    void (*VS_Shell_Jmp_Tbl[20])(PLW*) = { Shell00, Shell01, Shell11, Shell03, Shell04, Shell05, Shell03,
-                                           Shell07, Shell03, Shell03, Shell03, Shell11, Shell12, Shell13,
-                                           Shell14, Shell11, Shell11, Shell11, Shell11, Shell11 };
+    void (*VS_Shell_Jmp_Tbl[CHAR_COUNT])(PLW*) = { Shell00, Shell01, Shell11, Shell03, Shell04, Shell05, Shell03,
+                                                   Shell07, Shell03, Shell03, Shell03, Shell11, Shell12, Shell13,
+                                                   Shell14, Shell11, Shell11, Shell11, Shell11, Shell11 };
 
     if (Check_Damage(wk)) {
         return;
@@ -705,12 +768,18 @@ void Com_VS_Shell(PLW* wk) {
     }
 
     Pattern_Insurance(wk, 2, 0);
+
+    if ((u32)wk->player_number >= CHAR_COUNT) {
+        return;
+    }
+
     VS_Shell_Jmp_Tbl[wk->player_number](wk);
 }
 
+/** @brief AI state 10: Handle taking damage — dispatches through damage sub-states. */
 void Com_Damage(PLW* wk) {
-    void (*Damage_Jmp_Tbl[10])(PLW*) = { Damage_1st, Damage_2nd, Damage_3rd, Damage_4th, Damage_5th,
-                                         Damage_6th, Damage_7th, Damage_7th, Damage_7th, Damage_8th };
+    void (*Damage_Jmp_Tbl[DAMAGE_STATE_COUNT])(PLW*) = { Damage_1st, Damage_2nd, Damage_3rd, Damage_4th, Damage_5th,
+                                                         Damage_6th, Damage_7th, Damage_7th, Damage_7th, Damage_8th };
 
     if (Check_Caught(wk)) {
         return;
@@ -720,9 +789,14 @@ void Com_Damage(PLW* wk) {
         return;
     }
 
+    if ((u32)CP_No[wk->wu.id][1] >= DAMAGE_STATE_COUNT) {
+        return;
+    }
+
     Damage_Jmp_Tbl[CP_No[wk->wu.id][1]](wk);
 }
 
+/** @brief Damage sub-state 0: Initial damage reaction — decide blocking and get-up action. */
 void Damage_1st(PLW* wk) {
     u8 Lv;
     u8 Rnd;
@@ -819,6 +893,7 @@ void Damage_1st(PLW* wk) {
     }
 }
 
+/** @brief Damage sub-state 1: Continue guarding after hit; check for ukemi (tech) opportunity. */
 void Damage_2nd(PLW* wk) {
     WORK* em = (WORK*)wk->wu.target_adrs;
 
@@ -839,10 +914,13 @@ void Damage_2nd(PLW* wk) {
     }
 }
 
+/** @brief Damage sub-state 2: No-op placeholder. */
 void Damage_3rd(PLW* /* unused */) {}
 
+/** @brief Damage sub-state 3: No-op placeholder. */
 void Damage_4th(PLW* /* unused */) {}
 
+/** @brief Damage sub-state 4: Super art reversal during get-up. */
 void Damage_5th(PLW* wk) {
     if (wk->wu.routine_no[3] == 0) {
         CP_No[wk->wu.id][1] = 0;
@@ -880,6 +958,7 @@ void Damage_5th(PLW* wk) {
     }
 }
 
+/** @brief Damage sub-state 5: Get-up action with command attack reversal. */
 void Damage_6th(PLW* wk) {
     u8 Lv;
     u8 Rnd;
@@ -936,8 +1015,7 @@ void Damage_6th(PLW* wk) {
 
                 if (plw[wk->wu.id].sa->ok &&
                     Arts_Super_Name_Data[wk->player_number][plw[wk->wu.id].sa->kind_of_arts] != -1) {
-                    CP_Index[wk->wu.id][0] =
-                        Arts_Super_Name_Data[wk->player_number][plw[wk->wu.id].sa->kind_of_arts];
+                    CP_Index[wk->wu.id][0] = Arts_Super_Name_Data[wk->player_number][plw[wk->wu.id].sa->kind_of_arts];
                 }
             }
         }
@@ -960,6 +1038,7 @@ void Damage_6th(PLW* wk) {
     }
 }
 
+/** @brief Damage sub-state 6/7/8: Guard on wake-up with guard type selection. */
 void Damage_7th(PLW* wk) {
     WORK* em;
 
@@ -1013,6 +1092,7 @@ void Damage_7th(PLW* wk) {
     }
 }
 
+/** @brief Damage sub-state 9: Stun mash — rapidly input to escape dizzy. */
 void Damage_8th(PLW* wk) {
     s16 Rnd;
     s16 Lv;
@@ -1048,6 +1128,7 @@ void Damage_8th(PLW* wk) {
     }
 }
 
+/** @brief Exit damage state — clear flags and transition to passive or free. */
 void Exit_Damage_Sub(PLW* wk) {
     Clear_Com_Flag(wk);
 
@@ -1058,6 +1139,7 @@ void Exit_Damage_Sub(PLW* wk) {
     Next_Be_Free(wk);
 }
 
+/** @brief Check if the CPU player is currently being hit and should enter damage state. */
 static s32 Check_Damage(PLW* wk) {
     if (Counter_Attack[wk->wu.id] & 2) {
         return 0;
@@ -1078,8 +1160,9 @@ static s32 Check_Damage(PLW* wk) {
     return 0;
 }
 
+/** @brief AI state 11: Float (juggle) state — dispatch to float sub-handlers. */
 void Com_Float(PLW* wk) {
-    void (*Float_Jmp_Tbl[4])(PLW*) = { Damage_2nd, Float_2nd, Float_3rd, Float_4th };
+    void (*Float_Jmp_Tbl[FLOAT_STATE_COUNT])(PLW*) = { Damage_2nd, Float_2nd, Float_3rd, Float_4th };
 
     if (Check_Caught(wk)) {
         return;
@@ -1089,9 +1172,14 @@ void Com_Float(PLW* wk) {
         return;
     }
 
+    if ((u32)CP_No[wk->wu.id][1] >= FLOAT_STATE_COUNT) {
+        return;
+    }
+
     Float_Jmp_Tbl[CP_No[wk->wu.id][1]](wk);
 }
 
+/** @brief Float sub-state 1: Air recovery — input neutral then check for landing. */
 void Float_2nd(PLW* wk) {
     switch (CP_No[wk->wu.id][2]) {
     case 0:
@@ -1110,6 +1198,7 @@ void Float_2nd(PLW* wk) {
     }
 }
 
+/** @brief Float sub-state 2: Hold back to air guard while floating. */
 void Float_3rd(PLW* wk) {
     if (wk->wu.routine_no[1] != 1) {
         Next_Be_Free(wk);
@@ -1134,6 +1223,7 @@ void Float_3rd(PLW* wk) {
     }
 }
 
+/** @brief Float sub-state 3: Hold crouch guard while floating. */
 void Float_4th(PLW* wk) {
     if (wk->wu.routine_no[1] != 1) {
         Next_Be_Free(wk);
@@ -1158,8 +1248,9 @@ void Float_4th(PLW* wk) {
     }
 }
 
+/** @brief AI state 12: Flip (parry) state — dispatch to flip sub-handlers. */
 void Com_Flip(PLW* wk) {
-    void (*Flip_Jmp_Tbl[5])(PLW*) = { Flip_Zero, Flip_1st, Flip_2nd, Flip_3rd, Flip_4th };
+    void (*Flip_Jmp_Tbl[FLIP_STATE_COUNT])(PLW*) = { Flip_Zero, Flip_1st, Flip_2nd, Flip_3rd, Flip_4th };
 
     if (Check_Damage(wk)) {
         return;
@@ -1169,9 +1260,14 @@ void Com_Flip(PLW* wk) {
         return;
     }
 
+    if ((u32)CP_No[wk->wu.id][1] >= FLIP_STATE_COUNT) {
+        return;
+    }
+
     Flip_Jmp_Tbl[CP_No[wk->wu.id][1]](wk);
 }
 
+/** @brief Flip sub-state 0: Ground parry — wait for attack hit, then guard. */
 void Flip_Zero(PLW* wk) {
     WORK* em = (WORK*)wk->wu.target_adrs;
 
@@ -1204,6 +1300,7 @@ void Flip_Zero(PLW* wk) {
     }
 }
 
+/** @brief Check if parry input should be committed — sets guard lever if attack is incoming. */
 s32 Check_Flip_GO(PLW* wk, s16 xx) {
     WORK* em = (WORK*)wk->wu.target_adrs;
 
@@ -1227,12 +1324,14 @@ s32 Check_Flip_GO(PLW* wk, s16 xx) {
     return 0;
 }
 
+/** @brief Flip sub-state 1: Air parry — wait until landing. */
 void Flip_1st(PLW* wk) {
     if (wk->wu.xyz[1].disp.pos <= 0) {
         Exit_Damage_Sub(wk);
     }
 }
 
+/** @brief Flip sub-state 2: After parry — decide whether to counter-attack. */
 void Flip_2nd(PLW* wk) {
     if (PL_Damage_Data[wk->wu.routine_no[2]] != 0) {
         return;
@@ -1247,6 +1346,7 @@ void Flip_2nd(PLW* wk) {
     }
 }
 
+/** @brief Flip sub-state 3: Post-parry against projectile — decide next action. */
 void Flip_3rd(PLW* wk) {
     s16 next_disposal;
 
@@ -1293,6 +1393,7 @@ void Flip_3rd(PLW* wk) {
     }
 }
 
+/** @brief Flip sub-state 4: Wait timer then attempt another shell parry or exit. */
 void Flip_4th(PLW* wk) {
     if (--Timer_00[wk->wu.id] != 0) {
         return;
@@ -1309,6 +1410,7 @@ void Flip_4th(PLW* wk) {
     Timer_00[wk->wu.id] = 9;
 }
 
+/** @brief Set the guard lever for parrying an incoming projectile. Returns 0 if no shell. */
 s32 SetShellFlipLever(PLW* wk) {
     WORK* tmw;
 
@@ -1336,6 +1438,7 @@ s32 SetShellFlipLever(PLW* wk) {
     return 1;
 }
 
+/** @brief Decide the next action after parrying a projectile (continue, guard, or exit). */
 static s32 Check_Shell_Flip(PLW* wk) {
     WORK* shell;
     s32 Rnd;
@@ -1402,6 +1505,7 @@ static s32 Check_Shell_Flip(PLW* wk) {
     return 0;
 }
 
+/** @brief Check if the CPU player has been parried and should enter flip state. */
 s32 Check_Flip(PLW* wk) {
     if (Flip_Flag[wk->wu.id]) {
         return 0;
@@ -1437,6 +1541,7 @@ s32 Check_Flip(PLW* wk) {
     return 1;
 }
 
+/** @brief Decide whether to counter-attack after a successful parry based on difficulty. */
 static s32 Check_Flip_Attack(PLW* wk) {
     s16 Lv = Setup_Lv08(0);
     s16 Rnd;
@@ -1464,6 +1569,7 @@ static s32 Check_Flip_Attack(PLW* wk) {
     return 1;
 }
 
+/** @brief AI state 13: Being thrown — mash to escape or take the throw. */
 void Com_Caught(PLW* wk) {
     s16 Rnd;
     s16 Lv;
@@ -1510,6 +1616,7 @@ void Com_Caught(PLW* wk) {
     }
 }
 
+/** @brief Decide whether the CPU escapes a throw based on difficulty level. */
 static s16 Decide_Exit_Catch(PLW* wk) {
     s16 Rnd;
     s16 xx;
@@ -1533,6 +1640,7 @@ static s16 Decide_Exit_Catch(PLW* wk) {
 
 const u8 Rapid_Lever_Data[2] = { 8, 4 };
 
+/** @brief Generate rapid button-mash input for throw escape or stun recovery. */
 s32 Com_Rapid_Sub(PLW* wk, s16 Shot, u8* dir_step) {
     u16 xx;
 
@@ -1548,6 +1656,7 @@ s32 Com_Rapid_Sub(PLW* wk, s16 Shot, u8* dir_step) {
     return 0;
 }
 
+/** @brief Check if the CPU player has been grabbed and should enter caught state. */
 static s32 Check_Caught(PLW* wk) {
     if (wk->wu.routine_no[1] == 3) {
         CP_No[wk->wu.id][0] = 13;
@@ -1561,6 +1670,7 @@ static s32 Check_Caught(PLW* wk) {
     return 0;
 }
 
+/** @brief AI state 15: Catching the opponent — mash buttons during throw animation. */
 void Com_Catch(PLW* wk) {
     WORK* em;
     s16 Rnd;
@@ -1593,6 +1703,7 @@ void Com_Catch(PLW* wk) {
     }
 }
 
+/** @brief Transition into the catch (throwing opponent) state. */
 void Be_Catch(PLW* wk) {
     CP_No[wk->wu.id][0] = 15;
     CP_No[wk->wu.id][1] = 0;
@@ -1601,6 +1712,7 @@ void Be_Catch(PLW* wk) {
     Clear_Com_Flag(wk);
 }
 
+/** @brief AI state 14: Lying on ground — check for opponent blow-off then exit damage. */
 void Com_Wait_Lie(PLW* wk) {
     WORK* em = (WORK*)wk->wu.target_adrs;
 
@@ -1611,6 +1723,7 @@ void Com_Wait_Lie(PLW* wk) {
     Exit_Damage_Sub(wk);
 }
 
+/** @brief Execute a command attack (special/super) by feeding the input sequence frame-by-frame. */
 s32 Command_Attack_SP(PLW* wk, s8 Pl_Number, s16 Tech_Number, s16 Power_Level) {
     switch (CP_Index[wk->wu.id][1]) {
     case 0:
@@ -1667,6 +1780,7 @@ s32 Command_Attack_SP(PLW* wk, s8 Pl_Number, s16 Tech_Number, s16 Power_Level) {
     return 0;
 }
 
+/** @brief Transition the AI back to the Free (idle) state. */
 void Next_Be_Free(PLW* wk) {
     CP_No[wk->wu.id][0] = 1;
     CP_No[wk->wu.id][1] = 0;
@@ -1675,6 +1789,7 @@ void Next_Be_Free(PLW* wk) {
     Lever_Buff[wk->wu.id] = Lever_LR[wk->wu.id];
 }
 
+/** @brief Transition the AI into the Float (juggle recovery) state. */
 void Next_Be_Float(PLW* wk) {
     s16 Rnd;
     s16 Lv;
@@ -1688,6 +1803,7 @@ void Next_Be_Float(PLW* wk) {
     CP_No[wk->wu.id][1] = Float_Attack_Data[emLevelRemake(Lv, 4, 0)][Rnd];
 }
 
+/** @brief Reset all per-frame AI control flags to their defaults. */
 void Clear_Com_Flag(PLW* wk) {
     Passive_Flag[wk->wu.id] = 0;
     Flip_Flag[wk->wu.id] = 0;
@@ -1709,6 +1825,7 @@ void Clear_Com_Flag(PLW* wk) {
     Last_Eftype[wk->wu.id] = 0;
 }
 
+/** @brief Track the opponent's attack frequency and type for counter-attack decisions. */
 void Check_At_Count(PLW* wk) {
     WORK* em = (WORK*)wk->wu.target_adrs;
     s16 ix;
@@ -1738,6 +1855,7 @@ void Check_At_Count(PLW* wk) {
     }
 }
 
+/** @brief Shift the lever history buffer — stores the last 20 frames of lever input. */
 void Shift_Resume_Lv(PLW* wk) {
     s16 xx;
 
@@ -1748,6 +1866,7 @@ void Shift_Resume_Lv(PLW* wk) {
     Resume_Lever[wk->wu.id][0] = Lever_Buff[wk->wu.id];
 }
 
+/** @brief Track consecutive directional inputs for dash/charge detection. */
 void Check_Store_Lv(PLW* wk) {
     s16 xx = Lever_Buff[wk->wu.id] & 0xF;
 
@@ -1775,6 +1894,7 @@ void Check_Store_Lv(PLW* wk) {
     }
 }
 
+/** @brief Sub-routine for Store_LR — count left/right directional holds with facing correction. */
 void Store_LR_Sub(PLW* wk) {
     if (wk->wu.rl_waza) {
         if (Lever_Buff[wk->wu.id] & 8) {
@@ -1799,6 +1919,7 @@ void Store_LR_Sub(PLW* wk) {
     }
 }
 
+/** @brief Initialize the bullet counter (limits projectile spam). */
 void Setup_Bullet_Counter(PLW* wk) {
     Bullet_Counter[wk->wu.id] = 3;
     Bullet_Counter[wk->wu.id] += random_32_com() & 1;
@@ -1811,6 +1932,7 @@ const u8 Pattern_Insurance_Data[20][4] = {
     { 68, 163, 13, 3 }, { 69, 166, 13, 3 }, { 82, 181, 13, 3 }, { 108, 203, 13, 3 }, { 78, 175, 13, 3 }
 };
 
+/** @brief Safety check: reset pattern index if it exceeds the valid range for this character. */
 void Pattern_Insurance(PLW* wk, s16 Kind_Of_Insurance, s16 Forced_Number) {
     if (Pattern_Insurance_Data[wk->player_number][Kind_Of_Insurance] < Pattern_Index[wk->wu.id]) {
         Pattern_Index[wk->wu.id] = Forced_Number;

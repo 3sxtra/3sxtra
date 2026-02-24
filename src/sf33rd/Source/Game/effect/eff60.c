@@ -1,6 +1,6 @@
 /**
  * @file eff60.c
- * TODO: identify what this effect does
+ * Effect: Flash / Screen Flash
  */
 
 #include "sf33rd/Source/Game/effect/eff60.h"

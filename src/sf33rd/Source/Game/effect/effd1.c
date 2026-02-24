@@ -1,6 +1,6 @@
 /**
  * @file effd1.c
- * TODO: identify what this effect does
+ * Effect: Fall / No Death Attack Effect
  */
 
 #include "sf33rd/Source/Game/effect/effd1.h"
@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void fall_data_set(WORK_Other* ewk);
+static void fall_data_set(WORK_Other* ewk);
 
 void effect_D1_move(WORK_Other* ewk) {
     if (Exec_Wipe) {
@@ -96,7 +96,7 @@ void effect_D1_move(WORK_Other* ewk) {
     }
 }
 
-void fall_data_set(WORK_Other* ewk) {
+static void fall_data_set(WORK_Other* ewk) {
     WORK_Other* oya_ef = (WORK_Other*)ewk->my_master;
     s16 pos_work;
     s16 id_work;

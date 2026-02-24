@@ -1,8 +1,3 @@
-/**
- * @file pl10end_en.c
- * Yang Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl10end_en.h"
 #include "common.h"
 
@@ -80,4 +75,4 @@ static s8** msgEndAdrPL10[20] = {
 
 static s8 msgEndCtrPL10[20] = { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 1, 2, 2, 2, 2, 1 };
 
-MessageTable pl10end_usa_tbl = { msgEndAdrPL10, msgEndCtrPL10 };
+MessageTable pl10end_en_tbl = { msgEndAdrPL10, msgEndCtrPL10 };

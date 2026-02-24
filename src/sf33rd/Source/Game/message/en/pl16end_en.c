@@ -1,8 +1,3 @@
-/**
- * @file pl16end_en.c
- * Makoto Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl16end_en.h"
 #include "common.h"
 
@@ -75,4 +70,4 @@ static s8** msgEndAdrPL16[18] = {
 
 static s8 msgEndCtrPL16[18] = { 1, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2 };
 
-MessageTable pl16end_usa_tbl = { msgEndAdrPL16, msgEndCtrPL16 };
+MessageTable pl16end_en_tbl = { msgEndAdrPL16, msgEndCtrPL16 };

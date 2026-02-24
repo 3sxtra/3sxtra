@@ -11,10 +11,12 @@
 #include "sf33rd/Source/Game/engine/pls01.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 
-void att_ahj_table_reader(PLW* wk);
+static void att_ahj_table_reader(PLW* wk);
 
+/** @brief Dummy attack — no-op placeholder. */
 void Att_DUMMY(PLW* /* unused */) {}
 
+/** @brief Metamorphosis wait state — waits before transformation. */
 void Att_METAMOR_WAIT(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
@@ -56,6 +58,7 @@ const s16 metareb_pos[20][2] = { { 1, 9 },  { 14, 19 }, { 5, 31 }, { 8, 24 },  {
                                  { 6, 35 }, { 15, 24 }, { 6, 26 }, { 8, 24 },  { 5, 31 },  { 4, 32 }, { 1, 9 },
                                  { 5, 30 }, { 1, 23 },  { 6, 22 }, { 13, 25 }, { -4, 22 }, { 0, 17 } };
 
+/** @brief Metamorphosis rebirth — character transformation effect. */
 void Att_METAMOR_REBIRTH(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
@@ -115,11 +118,13 @@ void Att_METAMOR_REBIRTH(PLW* wk) {
     }
 }
 
+/** @brief Hadouken fireball attack (simple version). */
 void Att_HADOUKEN(PLW* wk) {
     wk->scr_pos_set_flag = 0;
     Att_HADOUKEN2(wk);
 }
 
+/** @brief Hadouken fireball attack (with multi-hit / EX). */
 void Att_HADOUKEN2(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -135,6 +140,7 @@ void Att_HADOUKEN2(PLW* wk) {
     }
 }
 
+/** @brief Normal wakeup (okiagari) attack from prone position. */
 void Att_NM_OKIAGARI(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -148,6 +154,7 @@ void Att_NM_OKIAGARI(PLW* wk) {
     }
 }
 
+/** @brief Shoryuken (dragon punch) rising uppercut attack. */
 void Att_SHOURYUUKEN(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -195,6 +202,7 @@ void Att_SHOURYUUKEN(PLW* wk) {
     }
 }
 
+/** @brief Senpuukyaku (hurricane kick) spinning kick attack. */
 void Att_SENPUUKYAKU(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -236,6 +244,7 @@ void Att_SENPUUKYAKU(PLW* wk) {
     }
 }
 
+/** @brief Senpuukyaku variant 2 (air version spinning kick). */
 void Att_SENPUUKYAKU2(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -268,6 +277,7 @@ void Att_SENPUUKYAKU2(PLW* wk) {
     }
 }
 
+/** @brief Abise-geri (overhead kick / dive kick). */
 void Att_ABISEGERI(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -322,6 +332,7 @@ void Att_ABISEGERI(PLW* wk) {
     }
 }
 
+/** @brief Shouryuu-reppa (multi-hit shoryuken Super Art). */
 void Att_SHOURYUUREPPA(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -379,6 +390,7 @@ void Att_SHOURYUUREPPA(PLW* wk) {
     }
 }
 
+/** @brief Shin-Shoryuken (true dragon punch Super Art). */
 void Att_SHINSHOURYUUKEN(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -413,6 +425,7 @@ void Att_SHINSHOURYUUKEN(PLW* wk) {
     }
 }
 
+/** @brief Kuuchuu Nichirin-shou (air palm-strike special). */
 void Att_KUUCHUUNICHIRINSHOU(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -444,6 +457,7 @@ void Att_KUUCHUUNICHIRINSHOU(PLW* wk) {
     }
 }
 
+/** @brief Kuuchuu Jinchuu-watari (air command movement). */
 void Att_KUUCHUUJINNCHUUWATARI(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -493,6 +507,7 @@ void Att_KUUCHUUJINNCHUUWATARI(PLW* wk) {
     }
 }
 
+/** @brief Tenshin-senkyuutai (multi-hit spinning Super Art). */
 void Att_TENSHINSENKYUUTAI(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -588,6 +603,7 @@ void Att_TENSHINSENKYUUTAI(PLW* wk) {
     }
 }
 
+/** @brief Chouchuu-rengeki (mid-air rapid chain attack). */
 void Att_CHOUCHUURENGEKI(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -619,6 +635,7 @@ void Att_CHOUCHUURENGEKI(PLW* wk) {
     }
 }
 
+/** @brief Slide-and-jump (rushing slide into aerial arc). */
 void Att_SLIDE_and_JUMP(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -694,6 +711,7 @@ void Att_SLIDE_and_JUMP(PLW* wk) {
     }
 }
 
+/** @brief Jinchuu-watari (ground command movement). */
 void Att_JINNCHUUWATARI(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -737,6 +755,7 @@ void Att_JINNCHUUWATARI(PLW* wk) {
     }
 }
 
+/** @brief Homing jump (leap targeting the opponent). */
 void Att_HOMING_JUMP(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -780,7 +799,8 @@ const s16 ahj_empos_hos[3][20][2] = {
 
 const s16 ahj_kop[3][4] = { { 0, 24, 0, 2 }, { 0, 22, 0, 2 }, { 0, 23, 0, 2 } };
 
-void att_ahj_table_reader(PLW* wk) {
+/** @brief Reads the air-homing-jump table to initialize trajectory. */
+static void att_ahj_table_reader(PLW* wk) {
     PLW* twk = (PLW*)wk->wu.target_adrs;
     const s16* curr_kop = ahj_kop[wk->as->r_no];
     s16 ex;

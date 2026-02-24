@@ -39,50 +39,51 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void Next_CPU_1st();
-void Next_CPU_2nd();
-void Next_CPU_3rd();
-void Next_CPU_4th();
-void Next_CPU_4th_0_Sub();
-void Next_CPU_4th_1_Sub();
-void Next_CPU_4th_2_Sub();
-void Next_CPU_5th();
+static void Next_CPU_1st();
+static void Next_CPU_2nd();
+static void Next_CPU_3rd();
+static void Next_CPU_4th();
+static void Next_CPU_4th_0_Sub();
+static void Next_CPU_4th_1_Sub();
+static void Next_CPU_4th_2_Sub();
+static void Next_CPU_5th();
 static u8 Check_EM_Speech();
-void Next_CPU_6th();
-void Wait_Load_Complete();
-void Wait_Load_Complete2();
-void Wait_Load_Complete3();
-void After_Bonus_1st();
-void After_Bonus_2nd();
-void Select_CPU_1st();
-void Select_CPU_2nd();
-void NC_Cut_Sub();
-void Select_CPU_3rd();
-void Select_CPU_4th();
-void Next_Bonus_1st();
-void Next_Bonus_2nd();
-void Next_Bonus_3rd();
-void Next_Bonus_End();
-void Next_Q_1st();
-void Next_Q_2nd();
-void Next_Q_3rd();
-void Sel_CPU_Sub(s16 PL_id, u16 sw, u16 /* unused */);
-void Setup_EM_List();
-void Setup_Next_Fighter();
-s8 Setup_Com_Arts();
-void Setup_Com_Color();
-void Setup_Regular_OBJ(s16 PL_id);
-void Regular_OBJ_Sub(s16 PL_id, s16 Dir);
-void Setup_History_OBJ();
-void Setup_VS_OBJ(s16 Option);
-s8 Check_Bonus_Type();
-void Setup_Next_Stage(s16 dir_step);
-void Check_Auto_Cut();
+static void Next_CPU_6th();
+static void Wait_Load_Complete();
+static void Wait_Load_Complete2();
+static void Wait_Load_Complete3();
+static void After_Bonus_1st();
+static void After_Bonus_2nd();
+static void Select_CPU_1st();
+static void Select_CPU_2nd();
+static void NC_Cut_Sub();
+static void Select_CPU_3rd();
+static void Select_CPU_4th();
+static void Next_Bonus_1st();
+static void Next_Bonus_2nd();
+static void Next_Bonus_3rd();
+static void Next_Bonus_End();
+static void Next_Q_1st();
+static void Next_Q_2nd();
+static void Next_Q_3rd();
+static void Sel_CPU_Sub(s16 PL_id, u16 sw, u16 /* unused */);
+static void Setup_EM_List();
+static void Setup_Next_Fighter();
+static s8 Setup_Com_Arts();
+static void Setup_Com_Color();
+static void Setup_Regular_OBJ(s16 PL_id);
+static void Regular_OBJ_Sub(s16 PL_id, s16 Dir);
+static void Setup_History_OBJ();
+static void Setup_VS_OBJ(s16 Option);
+static s8 Check_Bonus_Type();
+static void Setup_Next_Stage(s16 dir_step);
+static void Check_Auto_Cut();
 
 // sbss
 u8 SEL_CPU_X;
 s16 Start_X;
 
+/** @brief Main next-CPU dispatcher — step through opponent select phases and return exit flag. */
 s16 Next_CPU() {
     void (*Next_CPU_Tbl[12])() = { Next_CPU_1st,   Next_CPU_2nd,   Next_CPU_3rd,       Next_CPU_4th,
                                    Next_CPU_5th,   Next_CPU_6th,   Next_Bonus_1st,     Next_Bonus_2nd,
@@ -97,14 +98,15 @@ s16 Next_CPU() {
     Next_CPU_Tbl[SC_No[0]]();
     Time_Over = false;
 
-    if (Check_Exit_Check() == 0 && Debug_w[0x18] == -1) {
+    if (Check_Exit_Check() == 0 && Debug_w[DEBUG_TIME_STOP] == -1) {
         SEL_CPU_X = 0;
     }
 
     return SEL_CPU_X;
 }
 
-void Next_CPU_1st() {
+/** @brief Phase 1 — init BG scroll, build EM list, spawn history/regular objects, start BGM. */
+static void Next_CPU_1st() {
     u16 Rnd;
 
     SC_No[0]++;
@@ -151,11 +153,13 @@ void Next_CPU_1st() {
     effect_58_init(16, 5, 2);
 }
 
-void Next_CPU_2nd() {
+/** @brief Phase 2 — auto-cut check sub-routine dispatch. */
+static void Next_CPU_2nd() {
     NC_Cut_Sub();
 }
 
-void Next_CPU_3rd() {
+/** @brief Phase 3 — player picks CPU opponent from EM list, queue load, handle boss speech path. */
+static void Next_CPU_3rd() {
     switch (SC_No[1]) {
     case 0:
         if (Player_id) {
@@ -171,23 +175,23 @@ void Next_CPU_3rd() {
         SC_No[1]++;
         SC_No[2] = 0;
 
-        if (Debug_w[0x1D]) {
-            My_char[0] = Debug_w[0x1D] - 1;
+        if (Debug_w[DEBUG_MY_CHAR_PL1]) {
+            My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
         }
 
-        if (Debug_w[0x1E]) {
-            My_char[1] = Debug_w[0x1E] - 1;
+        if (Debug_w[DEBUG_MY_CHAR_PL2]) {
+            My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
         }
 
         Push_LDREQ_Queue_Player(COM_id, My_char[COM_id]);
         Setup_Next_Fighter();
 
-        if (Debug_w[0x1D]) {
-            My_char[0] = Debug_w[0x1D] - 1;
+        if (Debug_w[DEBUG_MY_CHAR_PL1]) {
+            My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
         }
 
-        if (Debug_w[0x1E]) {
-            My_char[1] = Debug_w[0x1E] - 1;
+        if (Debug_w[DEBUG_MY_CHAR_PL2]) {
+            My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
         }
 
         if (VS_Index[Player_id] < 8) {
@@ -260,7 +264,8 @@ void Next_CPU_3rd() {
     }
 }
 
-void Next_CPU_4th() {
+/** @brief Phase 4 — fade-in VS screen, then route to load-wait or bonus. */
+static void Next_CPU_4th() {
     switch (SC_No[1]) {
     case 0:
         FadeInit();
@@ -294,7 +299,8 @@ void Next_CPU_4th() {
     }
 }
 
-void Next_CPU_4th_0_Sub() {
+/** @brief Phase 4.0 — init fade, set up VS BG/objects, start BGM 51. */
+static void Next_CPU_4th_0_Sub() {
     FadeIn(0, 4, 8);
     SC_No[1]++;
     Forbid_Break = 0;
@@ -313,7 +319,8 @@ void Next_CPU_4th_0_Sub() {
     FadeInit();
 }
 
-void Next_CPU_4th_1_Sub() {
+/** @brief Phase 4.1 — continue fade-in and wait for exit timer. */
+static void Next_CPU_4th_1_Sub() {
     FadeIn(0, 4, 8);
 
     if ((Exit_Timer -= 1) == 0) {
@@ -321,7 +328,8 @@ void Next_CPU_4th_1_Sub() {
     }
 }
 
-void Next_CPU_4th_2_Sub() {
+/** @brief Phase 4.2 — count down while still fading in. */
+static void Next_CPU_4th_2_Sub() {
     S_Timer--;
 
     if (!FadeIn(0, 4, 8)) {
@@ -335,7 +343,8 @@ void Next_CPU_4th_2_Sub() {
     }
 }
 
-void Next_CPU_5th() {
+/** @brief Phase 5 — screen-switch sequence for boss intros, then proceed to load-wait. */
+static void Next_CPU_5th() {
     switch (SC_No[1]) {
     case 0:
         SC_No[1]++;
@@ -442,6 +451,7 @@ void Next_CPU_5th() {
     }
 }
 
+/** @brief Return non-zero if the boss has an unplayed intro speech for the current matchup. */
 u8 Check_EM_Speech() {
     if (Introduce_Boss[Player_id][VS_Index[Player_id] - 8] & 1) {
         return 0;
@@ -450,11 +460,13 @@ u8 Check_EM_Speech() {
     return Boss_Speech_Data[My_char[Player_id]][VS_Index[Player_id] - 8];
 }
 
-void Next_CPU_6th() {
+/** @brief Phase 6 — signal completion of next-CPU sequence. */
+static void Next_CPU_6th() {
     SEL_CPU_X = 1;
 }
 
-void Wait_Load_Complete() {
+/** @brief Wait for player/BG/sound loads to finish, then init omop and signal exit. */
+static void Wait_Load_Complete() {
     if (!Check_PL_Load()) {
         return;
     }
@@ -476,7 +488,8 @@ void Wait_Load_Complete() {
     SC_No[0] = 5;
 }
 
-void Wait_Load_Complete2() {
+/** @brief Wait for loads then signal exit with code 2 (post-VS path). */
+static void Wait_Load_Complete2() {
     if (!Check_PL_Load()) {
         return;
     }
@@ -498,7 +511,8 @@ void Wait_Load_Complete2() {
     SC_No[0] = 10;
 }
 
-void Wait_Load_Complete3() {
+/** @brief Wait for loads then signal exit with code 2 (bonus-end path). */
+static void Wait_Load_Complete3() {
     if (!Check_PL_Load()) {
         return;
     }
@@ -520,6 +534,7 @@ void Wait_Load_Complete3() {
     SC_No[0] = 7;
 }
 
+/** @brief After-bonus dispatcher — rebuild BG, run next-CPU phases, return exit flag. */
 s32 After_Bonus() {
     void (*After_Bonus_Tbl[11])() = { After_Bonus_1st, After_Bonus_2nd, Next_CPU_1st,        Next_CPU_2nd,
                                       Next_CPU_3rd,    Next_CPU_4th,    Wait_Load_Complete2, Next_Bonus_End,
@@ -536,7 +551,8 @@ s32 After_Bonus() {
     return SEL_CPU_X;
 }
 
-void After_Bonus_1st() {
+/** @brief After-bonus phase 1 — clear screen, set up virtual BG and scroll layers. */
+static void After_Bonus_1st() {
     Switch_Screen(0);
     SC_No[0]++;
     Cover_Timer = 23;
@@ -551,7 +567,8 @@ void After_Bonus_1st() {
     Unsubstantial_BG[0] = 1;
 }
 
-void After_Bonus_2nd() {
+/** @brief After-bonus phase 2 — purge texcache, screen switch, start BGM, and re-enable break. */
+static void After_Bonus_2nd() {
     switch (SC_No[1]) {
     case 0:
         Switch_Screen(0);
@@ -592,6 +609,7 @@ void After_Bonus_2nd() {
     }
 }
 
+/** @brief First CPU-select dispatcher — used when game starts or after demo. */
 s16 Select_CPU_First() {
     void (*Select_CPU_First_Tbl[4])() = { Select_CPU_1st, Select_CPU_2nd, Select_CPU_3rd, Select_CPU_4th };
 
@@ -605,7 +623,8 @@ s16 Select_CPU_First() {
     return SEL_CPU_X;
 }
 
-void Select_CPU_1st() {
+/** @brief Select_CPU phase 1 — build EM list, set up BG, spawn objects. */
+static void Select_CPU_1st() {
     SC_No[0]++;
     Sel_EM_Complete[Player_id] = 0;
     Temporary_EM[Player_id] = Last_Selected_EM[Player_id];
@@ -642,7 +661,8 @@ void Select_CPU_1st() {
     }
 }
 
-void Select_CPU_2nd() {
+/** @brief Select_CPU phase 2 — display EM list, play voice, auto-cut, and dispatch. */
+static void Select_CPU_2nd() {
     u16 Rnd;
 
     switch (SC_No[1]) {
@@ -669,7 +689,8 @@ void Select_CPU_2nd() {
     }
 }
 
-void NC_Cut_Sub() {
+/** @brief Check auto-cut and advance phase if a scene cut has been triggered. */
+static void NC_Cut_Sub() {
     Check_Auto_Cut();
 
     if (Next_Step) {
@@ -679,7 +700,8 @@ void NC_Cut_Sub() {
     }
 }
 
-void Select_CPU_3rd() {
+/** @brief Select_CPU phase 3 — process player/demo input, commit opponent, load assets. */
+static void Select_CPU_3rd() {
     switch (SC_No[1]) {
     case 0:
         if (Demo_Flag == 0) {
@@ -700,23 +722,23 @@ void Select_CPU_3rd() {
 
         SC_No[1]++;
 
-        if (Debug_w[29]) {
-            My_char[0] = Debug_w[29] - 1;
+        if (Debug_w[DEBUG_MY_CHAR_PL1]) {
+            My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
         }
 
-        if (Debug_w[30]) {
-            My_char[1] = Debug_w[30] - 1;
+        if (Debug_w[DEBUG_MY_CHAR_PL2]) {
+            My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
         }
 
         Push_LDREQ_Queue_Player(COM_id, My_char[COM_id]);
         Setup_Next_Fighter();
 
-        if (Debug_w[29]) {
-            My_char[0] = Debug_w[29] - 1;
+        if (Debug_w[DEBUG_MY_CHAR_PL1]) {
+            My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
         }
 
-        if (Debug_w[30]) {
-            My_char[1] = Debug_w[30] - 1;
+        if (Debug_w[DEBUG_MY_CHAR_PL2]) {
+            My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
         }
 
         if (VS_Index[Player_id] < 8) {
@@ -840,13 +862,15 @@ void Select_CPU_3rd() {
     }
 }
 
-void Select_CPU_4th() {
+/** @brief Select_CPU phase 4 — signal completion and init omop. */
+static void Select_CPU_4th() {
     SEL_CPU_X = 1;
     Next_Step = 1;
     init_omop();
 }
 
-void Next_Bonus_1st() {
+/** @brief Bonus phase 1 — init BG scroll, spawn history objects, start BGM. */
+static void Next_Bonus_1st() {
     u16 Rnd;
 
     SC_No[0]++;
@@ -869,7 +893,8 @@ void Next_Bonus_1st() {
     effect_58_init(16, 5, 2);
 }
 
-void Next_Bonus_2nd() {
+/** @brief Bonus phase 2 — auto-cut and timer countdown before transition. */
+static void Next_Bonus_2nd() {
     switch (SC_No[1]) {
     case 0:
         Check_Auto_Cut();
@@ -909,7 +934,8 @@ void Next_Bonus_2nd() {
     }
 }
 
-void Next_Bonus_3rd() {
+/** @brief Bonus phase 3 — fade-in VS screen for the bonus stage. */
+static void Next_Bonus_3rd() {
     switch (SC_No[1]) {
     case 0:
         My_char[COM_id] = Bonus_Type;
@@ -942,10 +968,12 @@ void Next_Bonus_3rd() {
     }
 }
 
-void Next_Bonus_End() {
+/** @brief Bonus end — signal exit with code 2. */
+static void Next_Bonus_End() {
     SEL_CPU_X = 2;
 }
 
+/** @brief Next-Q dispatcher — set up the Q-character fight sequence and return exit flag. */
 s16 Next_Q() {
     void (*Next_Q_Tbl[6])() = {
         Next_Q_1st, Next_Q_2nd, Next_Q_3rd, Wait_Load_Complete, Wait_Load_Complete, Next_CPU_6th
@@ -959,7 +987,7 @@ s16 Next_Q() {
     Scene_Cut = Cut_Cut_Cut();
     Next_Q_Tbl[SC_No[0]]();
 
-    if (Check_Exit_Check() == 0 && Debug_w[0x18] == -1) {
+    if (Check_Exit_Check() == 0 && Debug_w[DEBUG_TIME_STOP] == -1) {
         SEL_CPU_X = 0;
     }
 
@@ -967,7 +995,8 @@ s16 Next_Q() {
     return SEL_CPU_X;
 }
 
-void Next_Q_1st() {
+/** @brief Next_Q phase 1 — set up Q opponent, purge mm, queue player load. */
+static void Next_Q_1st() {
     After_Bonus_1st();
     Setup_ID();
     EM_id = 17;
@@ -978,7 +1007,8 @@ void Next_Q_1st() {
     Push_LDREQ_Queue_Player(COM_id, 17);
 }
 
-void Next_Q_2nd() {
+/** @brief Next_Q phase 2 — screen switch, set up VS objects, and wait for screen revival. */
+static void Next_Q_2nd() {
     switch (SC_No[1]) {
     case 0:
         SC_No[1]++;
@@ -1021,7 +1051,8 @@ void Next_Q_2nd() {
     }
 }
 
-void Next_Q_3rd() {
+/** @brief Next_Q phase 3 — fade-in with BGM, then count down before exit. */
+static void Next_Q_3rd() {
     switch (SC_No[1]) {
     case 0:
         if ((S_Timer -= 1) == 0) {
@@ -1059,7 +1090,8 @@ void Next_Q_3rd() {
     }
 }
 
-void Sel_CPU_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
+/** @brief Process lever/button input for CPU opponent selection (up/down to pick, attack to confirm). */
+static void Sel_CPU_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
     u16 lever_sw;
 
     if (Sel_EM_Complete[PL_id]) {
@@ -1117,7 +1149,8 @@ void Sel_CPU_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
     }
 }
 
-void Setup_EM_List() {
+/** @brief Populate the 2-entry EM_List from the candidate table for the current VS index. */
+static void Setup_EM_List() {
     if (My_char[Player_id] == 0) {
         EM_Candidate[Player_id][0][9] = 1;
         EM_Candidate[Player_id][1][9] = 1;
@@ -1130,7 +1163,8 @@ void Setup_EM_List() {
     EM_List[Player_id][1] = EM_Candidate[Player_id][1][VS_Index[Player_id]];
 }
 
-void Setup_Next_Fighter() {
+/** @brief Set COM character, stage, super-arts, and colour; queue BG load. */
+static void Setup_Next_Fighter() {
     paring_counter[COM_id] = 0;
     paring_bonus_r[COM_id] = 0;
     My_char[COM_id] = EM_id;
@@ -1148,16 +1182,16 @@ void Setup_Next_Fighter() {
         bg_w.stage = Battle_Country;
     }
 
-    if (Debug_w[31]) {
-        Battle_Country = bg_w.stage = Debug_w[31] - 1;
+    if (Debug_w[DEBUG_STAGE_SELECT]) {
+        Battle_Country = bg_w.stage = Debug_w[DEBUG_STAGE_SELECT] - 1;
     }
 
     Push_LDREQ_Queue_BG(bg_w.stage + 0);
     bg_w.area = 0;
     Super_Arts[COM_id] = Stock_Com_Arts[Player_id] = Setup_Com_Arts();
 
-    if (Debug_w[32]) {
-        Super_Arts[COM_id] = bg_w.stage = Debug_w[32] - 1;
+    if (Debug_w[DEBUG_CPU_SA]) {
+        Super_Arts[COM_id] = bg_w.stage = Debug_w[DEBUG_CPU_SA] - 1;
     }
 
     Setup_Com_Color();
@@ -1166,7 +1200,8 @@ void Setup_Next_Fighter() {
 
 const u8 Arts_Rnd_Data[8] = { 0, 0, 0, 1, 1, 1, 2, 2 };
 
-s8 Setup_Com_Arts() {
+/** @brief Pick a super-art for the CPU (random if none stocked, otherwise use the stocked one). */
+static s8 Setup_Com_Arts() {
     if (EM_id == 0) {
         return 1;
     }
@@ -1178,7 +1213,8 @@ s8 Setup_Com_Arts() {
     return Stock_Com_Arts[Player_id];
 }
 
-void Setup_Com_Color() {
+/** @brief Select the CPU’s costume colour (special colour if Break_Com flagged). */
+static void Setup_Com_Color() {
     Com_Color_Shot = Stock_Com_Color[Player_id];
 
     if (Break_Com[Player_id][EM_id]) {
@@ -1189,6 +1225,7 @@ void Setup_Com_Color() {
     Com_Color_Shot = 16;
 }
 
+/** @brief Determine the player’s costume colour based on button held and opponent colour. */
 void Setup_PL_Color(s16 PL_id, u16 sw) {
     s8 id_0;
     s8 id_1;
@@ -1196,7 +1233,7 @@ void Setup_PL_Color(s16 PL_id, u16 sw) {
 
     sw_new = 0;
 
-    if (plw[PL_id ^ 1].wu.operator == 0) {
+    if (plw[PL_id ^ 1].wu.pl_operator == 0) {
         id_0 = -1;
         id_1 = 1;
     } else {
@@ -1208,10 +1245,10 @@ void Setup_PL_Color(s16 PL_id, u16 sw) {
         id_0 = 127;
     }
 
-    if (plw[PL_id].wu.operator != 0 && My_char[PL_id] == 0) {
+    if (plw[PL_id].wu.pl_operator != 0 && My_char[PL_id] == 0) {
         sw_new = 0;
     } else {
-        if (Debug_w[53]) {
+        if (Debug_w[DEBUG_NEW_COLOR]) {
             if (PL_id == 0) {
                 sw_new = p1sw_0;
             } else {
@@ -1378,7 +1415,8 @@ void Setup_PL_Color(s16 PL_id, u16 sw) {
     }
 }
 
-void Setup_Regular_OBJ(s16 PL_id) {
+/** @brief Spawn the regular opponent selection UI objects (name plates, portraits, grade). */
+static void Setup_Regular_OBJ(s16 PL_id) {
     s16 em_id;
 
     if (VS_Index[Player_id] < 8) {
@@ -1406,7 +1444,8 @@ void Setup_Regular_OBJ(s16 PL_id) {
     effect_A9_init(34, em_id, 20, 0);
 }
 
-void Regular_OBJ_Sub(s16 PL_id, s16 Dir) {
+/** @brief Spawn one set of EM plate objects (name, portrait, cursor arrows). */
+static void Regular_OBJ_Sub(s16 PL_id, s16 Dir) {
     s16 ix = Dir - 1;
     s16 x;
 
@@ -1418,7 +1457,8 @@ void Regular_OBJ_Sub(s16 PL_id, s16 Dir) {
     effect_E0_init(Dir, 1, 0);
 }
 
-void Setup_History_OBJ() {
+/** @brief Build the VS history strip showing all previously fought opponents and their grades. */
+static void Setup_History_OBJ() {
     s16 q_index = Break_Com[Player_id][17];
     s16 xx;
     s16 ix;
@@ -1465,7 +1505,8 @@ void Setup_History_OBJ() {
     Offset_BG_X[3] -= 40;
 }
 
-void Setup_VS_OBJ(s16 Option) {
+/** @brief Spawn the versus-screen character portraits, name plates, and stage label. */
+static void Setup_VS_OBJ(s16 Option) {
     effect_38_init(0, 11, My_char[0], 1, 0);
     Order[11] = 3;
     Order_Timer[11] = 1;
@@ -1504,6 +1545,7 @@ void Setup_VS_OBJ(s16 Option) {
     }
 }
 
+/** @brief Check whether a bonus stage should be played next; set up stage/player if so. */
 s8 Check_Bonus_Stage() {
     Setup_ID();
     Bonus_Type = Check_Bonus_Type();
@@ -1528,14 +1570,15 @@ s8 Check_Bonus_Stage() {
     return Completion_Bonus[Player_id][Bonus_Type - 20] = 1;
 }
 
-s8 Check_Bonus_Type() {
-    if (Debug_w[0x2E] != 0) {
-        if (Debug_w[0x2E] == 1) {
+/** @brief Return the bonus stage ID (20 or 21) if one is available, else 0. */
+static s8 Check_Bonus_Type() {
+    if (Debug_w[DEBUG_BONUS_CHECK] != 0) {
+        if (Debug_w[DEBUG_BONUS_CHECK] == 1) {
             Completion_Bonus[Player_id][0] = 0;
             return 20;
         }
 
-        if (Debug_w[0x2E] == 2) {
+        if (Debug_w[DEBUG_BONUS_CHECK] == 2) {
             Completion_Bonus[Player_id][1] = 0;
             return 21;
         }
@@ -1566,7 +1609,8 @@ s8 Check_Bonus_Type() {
     return 0;
 }
 
-void Setup_Next_Stage(s16 dir_step) {
+/** @brief Spawn 4 stage-direction indicator objects at the given direction step. */
+static void Setup_Next_Stage(s16 dir_step) {
     s16 ix;
 
     for (ix = 0; ix < 4; ix++) {
@@ -1574,7 +1618,8 @@ void Setup_Next_Stage(s16 dir_step) {
     }
 }
 
-void Check_Auto_Cut() {
+/** @brief If a player presses any attack button, decrement the scroll-cut counter. */
+static void Check_Auto_Cut() {
     if (!Auto_Cut_Sub()) {
         return;
     }
@@ -1584,12 +1629,13 @@ void Check_Auto_Cut() {
     }
 }
 
+/** @brief Return 1 if any human operator pressed an attack button this frame. */
 s32 Auto_Cut_Sub() {
-    if (plw[0].wu.operator && ~p1sw_1 & p1sw_0 & 0xFF0) {
+    if (plw[0].wu.pl_operator && ~p1sw_1 & p1sw_0 & 0xFF0) {
         return 1;
     }
 
-    if (plw[1].wu.operator && ~p2sw_1 & p2sw_0 & 0xFF0) {
+    if (plw[1].wu.pl_operator && ~p2sw_1 & p2sw_0 & 0xFF0) {
         return 1;
     }
 

@@ -41,16 +41,20 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void normal_ending(s16 pl_num);
-void end_main_move(s16 pl_num);
-void end_reset_etc();
-void end_fade_bgm();
-s32 Cut_Cut_Cut_t();
+static void normal_ending(s16 pl_num);
+static void end_main_move(s16 pl_num);
+static void end_reset_etc();
+static void end_fade_bgm();
+static s32 Cut_Cut_Cut_t();
 
-void (*end_main_jp[20])(s16) = { end_00000, end_01000, end_02000, end_03000, end_04000, end_05000, end_06000,
-                                 end_07000, end_08000, end_09000, end_10000, end_11000, end_12000, end_13000,
-                                 end_14000, end_16000, end_17000, end_18000, end_19000, end_20000 };
+#define END_MAIN_COUNT 20
+#define ENDING_SKIP_BUTTON_MASK 0xFF0
 
+static void (*end_main_jp[20])(s16) = { end_00000, end_01000, end_02000, end_03000, end_04000, end_05000, end_06000,
+                                        end_07000, end_08000, end_09000, end_10000, end_11000, end_12000, end_13000,
+                                        end_14000, end_16000, end_17000, end_18000, end_19000, end_20000 };
+
+/** @brief Initialize ending sequence state variables. */
 void Ending_init() {
     end_w.r_no_0 = 0;
     end_w.r_no_1 = 0;
@@ -66,13 +70,15 @@ void Ending_init() {
     end_staff_flag = 0;
 }
 
+/** @brief Main ending entry point — advances the ending sequence each frame. */
 s8 Ending_main(s16 pl_num) {
     Game_timer++;
     normal_ending(pl_num);
     return ending_all_end;
 }
 
-void normal_ending(s16 pl_num) {
+/** @brief State machine for the normal ending flow (intro → scenes → staff roll → fade). */
+static void normal_ending(s16 pl_num) {
     switch (end_w.r_no_0) {
     case 0:
         end_w.r_no_0++;
@@ -80,6 +86,8 @@ void normal_ending(s16 pl_num) {
         Bg_Off_R(7);
         System_all_clear_Level_B();
         Cover_Timer = 29;
+        if (pl_num < 0 || pl_num >= END_MAIN_COUNT)
+            break;
         end_main_jp[pl_num](pl_num);
         break;
 
@@ -89,6 +97,8 @@ void normal_ending(s16 pl_num) {
         if (!(Cover_Timer -= 1)) {
             end_w.r_no_0++;
             Switch_Screen_Init(1);
+            if (pl_num < 0 || pl_num >= END_MAIN_COUNT)
+                break;
             end_main_jp[pl_num](pl_num);
         }
 
@@ -227,23 +237,30 @@ void normal_ending(s16 pl_num) {
     }
 }
 
-void end_main_move(s16 pl_num) {
+/** @brief Tick the per-character ending handler and process BGM fade. */
+static void end_main_move(s16 pl_num) {
+    if (pl_num < 0 || pl_num >= END_MAIN_COUNT)
+        return;
     end_main_jp[pl_num](pl_num);
     end_fade_bgm();
 }
 
+/** @brief Request a fade-out transition before the staff roll begins. */
 void fadeout_to_staff_roll() {
     Request_Fade(7);
     end_no_cut = 1;
     Forbid_Break = -1;
 }
 
+/** @brief Common ending initialization — load textures, set up backgrounds for the given character. */
 void common_end_init00(s16 pl_num) {
     s16 i;
 
     Family_Init();
     Scrn_Pos_Init();
     Zoomf_Init();
+    if (pl_num < 0 || pl_num >= END_MAIN_COUNT)
+        return;
     bg_w.bg_opaque = ending_opaque[pl_num];
     Screen_Switch = 0;
     Screen_Switch_Buffer = 0;
@@ -277,6 +294,7 @@ void common_end_init00(s16 pl_num) {
     }
 }
 
+/** @brief Second-stage common ending init — reset scroll, quake, and set up message layer. */
 void common_end_init01() {
     bg_w.scr_stop = 0;
     bg_w.frame_flag = 0;
@@ -299,6 +317,7 @@ void common_end_init01() {
     effect_F9_init(end_w.type);
 }
 
+/** @brief Update family (parallax layer) position for a single background layer. */
 void end_fam_set(s16 i) {
     s16 pos_work_x = bg_w.bgw[i].position_x;
     s16 pos_work_y = bg_w.bgw[i].position_y;
@@ -309,6 +328,7 @@ void end_fam_set(s16 i) {
     Family_Set_W(i + 1, pos_work_x, pos_work_y);
 }
 
+/** @brief Update family positions for all active background layers. */
 void end_fam_set2() {
     s16 i;
     s16 pos_work_x;
@@ -323,6 +343,7 @@ void end_fam_set2() {
     }
 }
 
+/** @brief Apply position offset correction to a single background layer. */
 void end_bg_pos_hosei(s16 bg_no) {
     s16 pos_work = bg_w.bgw[bg_no].abs_x & 0xFFFF;
     pos_work -= bg_w.pos_offset;
@@ -331,6 +352,7 @@ void end_bg_pos_hosei(s16 bg_no) {
     bg_w.bgw[bg_no].position_y = pos_work;
 }
 
+/** @brief Apply position offset correction to all active background layers. */
 void end_bg_pos_hosei2() {
     s16 bg_no;
     u16 pos_work;
@@ -344,6 +366,7 @@ void end_bg_pos_hosei2() {
     }
 }
 
+/** @brief Commit scroll positions for all active ending screens. */
 void end_scn_pos_set2() {
     s16 bg_no;
 
@@ -356,7 +379,8 @@ void end_scn_pos_set2() {
     }
 }
 
-void end_reset_etc() {
+/** @brief Reset sub-state and positions for all active background layers. */
+static void end_reset_etc() {
     s16 i;
 
     for (i = 0; i < bg_w.scno; i++) {
@@ -366,6 +390,7 @@ void end_reset_etc() {
     }
 }
 
+/** @brief Common ending cut command — turn off the current background layer. */
 void end_X_com01() {
     switch (bgw_ptr->r_no_1) {
     case 0:
@@ -378,7 +403,8 @@ void end_X_com01() {
     }
 }
 
-void end_fade_bgm() {
+/** @brief Count down the BGM fade timer each frame. */
+static void end_fade_bgm() {
     if (end_fade_flag != 0) {
         end_fade_timer -= 1;
 
@@ -388,6 +414,7 @@ void end_fade_bgm() {
     }
 }
 
+/** @brief Check whether the current screen fade has completed. */
 s16 end_fade_complete() {
     if (Check_Fade_Complete()) {
         Forbid_Break = -1;
@@ -397,7 +424,8 @@ s16 end_fade_complete() {
     return 0;
 }
 
-s32 Cut_Cut_Cut_t() {
+/** @brief Check if the player pressed a button to skip the current ending cut. */
+static s32 Cut_Cut_Cut_t() {
     u16 sw_w;
 
     if (end_no_cut == 0) {
@@ -407,7 +435,7 @@ s32 Cut_Cut_Cut_t() {
             sw_w = p1sw_0 & ~p1sw_1;
         }
 
-        if (sw_w & 0xFF0) {
+        if (sw_w & ENDING_SKIP_BUTTON_MASK) {
             return 1;
         }
     }

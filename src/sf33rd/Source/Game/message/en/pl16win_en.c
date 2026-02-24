@@ -1,8 +1,3 @@
-/**
- * @file pl16win_en.c
- * Makoto Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl16win_en.h"
 #include "common.h"
 
@@ -70,4 +65,4 @@ static s8 msgWinCtrPL16[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
 };
 
-MessageTable pl16win_usa_tbl = { msgWinAdrPL16, msgWinCtrPL16 };
+MessageTable pl16win_en_tbl = { msgWinAdrPL16, msgWinCtrPL16 };

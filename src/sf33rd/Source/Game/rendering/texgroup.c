@@ -130,8 +130,9 @@ const TexGroupData texgrpdat[100] = { { 0, -1, 0, 0, 0, 0, 0 },
                                       { 0, -1, 0, 0, 0, 0, 0 } };
 
 // forward decls
-s32 load_any_texture_grpnum(u8 grp, u8 kokey);
+static s32 load_any_texture_grpnum(u8 grp, u8 kokey);
 
+/** @brief Queue a texture group load request from the AFS archive. */
 void q_ldreq_texture_group(REQ* curr) {
     const TexGroupData* bsd;
     CharInitData* cit;
@@ -198,7 +199,10 @@ void q_ldreq_texture_group(REQ* curr) {
 
                 // A duplicate transfer occurred. File number: %d\n
                 flLogOut("二重転送が発生しました。ファイル番号：%d\n", bsd->apfn);
-                while (1) {}
+                // Original PS2 code hung here. Treat as already loaded and continue.
+                *curr->result |= lpr_wrdata[curr->id];
+                curr->be = 0;
+                return;
             }
 
             rckey_work[curr->lds->key].type = curr->kokey;
@@ -224,6 +228,13 @@ void q_ldreq_texture_group(REQ* curr) {
         curr->size = fsGetFileSize(curr->fnum);
         curr->sect = fsCalSectorSize(curr->size);
         curr->key = Pull_ramcnt_key(curr->sect << 0xB, curr->kokey, curr->group, curr->frre);
+        if (curr->key < 0) {
+            // Memory pool exhausted — abort this load request
+            fsClose(curr);
+            curr->be = 0;
+            curr->rno = 0;
+            return;
+        }
         curr->lds->key = curr->key;
         Set_size_data_ramcnt_key(curr->key, curr->size);
         curr->rno = 3;
@@ -332,6 +343,7 @@ void q_ldreq_texture_group(REQ* curr) {
     }
 }
 
+/** @brief Initialize all texture group load state entries. */
 void Init_texgrplds_work() {
     s16 i;
 
@@ -345,6 +357,7 @@ void Init_texgrplds_work() {
     }
 }
 
+/** @brief Reserve memory keys for the character select object. */
 void reservMemKeySelObj() {
     TEX_GRP_LD* lds;
     s32 size;
@@ -354,10 +367,12 @@ void reservMemKeySelObj() {
     lds->key = Pull_ramcnt_key(size, 0xD, 0, 1);
 
     if (lds->key < 0) {
-        while (1) {}
+        flLogOut("[texgroup] reservMemKeySelObj: failed to allocate memory key");
+        return;
     }
 }
 
+/** @brief Check if the select object file has finished loading. */
 void checkSelObjFileLoaded() {
     const TexGroupData* bsd;
     TEX_GRP_LD* lds;
@@ -392,10 +407,12 @@ void checkSelObjFileLoaded() {
     Clear_texcash_work();
 }
 
+/** @brief Purge the texture group that contains a specific pattern number. */
 void purge_texture_group_of_this(u16 patnum) {
     purge_texture_group(obj_group_table[patnum]);
 }
 
+/** @brief Purge all textures in a given texture group. */
 void purge_texture_group(u8 grp) {
     if (texgrplds[grp].ok != 0) {
         texgrplds[grp].ok = 0;
@@ -403,6 +420,7 @@ void purge_texture_group(u8 grp) {
     }
 }
 
+/** @brief Purge all textures belonging to a specific player. */
 void purge_player_texture(s16 id) {
     s16 emid;
     s16 pkey;
@@ -430,11 +448,13 @@ void purge_player_texture(s16 id) {
     }
 }
 
+/** @brief Load a texture by pattern number into the specified key slot. */
 s32 load_any_texture_patnum(u16 patnum, u8 kokey, u8 _unused) {
     return load_any_texture_grpnum(obj_group_table[patnum], kokey);
 }
 
-s32 load_any_texture_grpnum(u8 grp, u8 kokey) {
+/** @brief Load a texture by group number into the specified key slot. */
+static s32 load_any_texture_grpnum(u8 grp, u8 kokey) {
     const TexGroupData* bsd;
     TEX_GRP_LD* lds;
     uintptr_t ldadr;

@@ -1,6 +1,6 @@
 /**
  * @file eff84.c
- * TODO: identify what this effect does
+ * Effect: Time Data / Slow Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff84.h"

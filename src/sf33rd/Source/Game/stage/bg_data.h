@@ -74,11 +74,7 @@ extern const s16 rw190[26];
 extern const s16 rw191[11];
 extern const s16 rw192[11];
 
-#if defined(TARGET_PS2)
-extern const u32 bgrw_data_tbl[20][3];
-#else
 extern const bgrw_data_tbl_elem bgrw_data_tbl[20];
-#endif
 
 extern const s32 stage03rw_data_tbl[13];
 extern const u8 stage03_flash_tbl[16];
@@ -89,17 +85,13 @@ extern const u8 ake_bg_off[20];
 extern const s16 limit_tbl3[22][3][4];
 extern const s8 bg_index_tbl[22][3];
 extern const s32 bg_pos_tbl2[7][3][2];
-extern const s8 quake_x_tbl[130];
-extern const s8 quake_y_tbl[130];
+/** @brief Number of entries in the quake displacement tables. */
+#define QUAKE_TABLE_SIZE 130
+
+extern const s8 quake_x_tbl[QUAKE_TABLE_SIZE];
+extern const s8 quake_y_tbl[QUAKE_TABLE_SIZE];
 extern const u16* bg_map_tbl[][3];
 extern const u16* bg_map_tbl2[];
-
-// MARK: - Unhandled
-
-extern const u16* scr_bcm[4];
-extern BGW* bgw_ptr;
-
-// MARK: - Serialized
 
 extern s16 y_sitei_pos;
 extern u8 y_sitei_flag;
@@ -108,6 +100,7 @@ extern u8 c_kakikae;
 extern u8 g_number[2];
 extern u8 g_kakikae[2];
 extern u8 nosekae;
+extern const u16* scr_bcm[4];
 extern s16 scrn_adgjust_y;
 extern s16 scrn_adgjust_x;
 extern u16 zoom_add;
@@ -124,6 +117,7 @@ extern s16 chase_y;
 extern s16 chase_x;
 extern s8 demo_car_flag[2];
 extern Ideal_W ideal_w;
+extern BGW* bgw_ptr;
 extern s8 bg_app_stop;
 extern s16 bg_stop;
 extern s16 base_y_pos;

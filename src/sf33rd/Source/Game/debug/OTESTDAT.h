@@ -1,3 +1,10 @@
+/**
+ * @file OTESTDAT.h
+ * @brief Externs for vibration test work variables.
+ *
+ * Part of the debug module.
+ */
+
 #ifndef OTESTDAT_H
 #define OTESTDAT_H
 

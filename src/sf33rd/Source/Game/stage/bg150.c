@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg150.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/effect/eff06.h"
 #include "sf33rd/Source/Game/effect/eff12.h"
@@ -20,6 +21,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Old Temple, India stage. */
 void BG150() {
     bgw_ptr = &bg_w.bgw[1];
     bg1502();
@@ -32,11 +34,15 @@ void BG150() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Old Temple, India. */
 void bg1501() {
     void (*bg1501_jmp[2])() = { bg1501_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1501_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Old Temple, India. */
 void bg1501_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -44,11 +50,15 @@ void bg1501_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Background layer handler for Old Temple, India. */
 void bg1502() {
     void (*bg1502_jmp[2])() = { bg1502_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1502_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Old Temple, India. */
 void bg1502_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -65,6 +75,7 @@ void bg1502_init00() {
     effect_85_init();
 }
 
+/** @brief Synchronized parallax common handler for Old Temple, India. */
 void bg1502_sync_common() {
     switch (bgw_ptr->r_no_0) {
     case 0:

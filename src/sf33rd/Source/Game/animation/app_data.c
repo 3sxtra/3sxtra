@@ -1,6 +1,12 @@
 /**
  * @file app_data.c
- * Character Appear Data
+ * @brief Per-character entrance-animation type lookup tables.
+ *
+ * Contains `app_type_tbl` and `app_type_tbl2`, 20×20×22 tables that map
+ * (player-character, opponent-character, stage) to the entrance animation
+ * variant index used by `appear_player()`.
+ *
+ * Part of the animation module.
  */
 
 #include "sf33rd/Source/Game/animation/app_data.h"

@@ -1,6 +1,6 @@
 /**
  * @file eff26.c
- * TODO: identify what this effect does
+ * Effect: Stage / Background Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff26.h"
@@ -66,7 +66,7 @@ void effect_26_move(WORK_Other* ewk) {
     }
 }
 
-void eff26_00(WORK_Other* ewk) {
+static void eff26_00(WORK_Other* ewk) {
     WORK_Other* oya = (WORK_Other*)ewk->my_master;
 
     if (oya->wu.routine_no[1] > 1) {
@@ -80,7 +80,7 @@ void eff26_00(WORK_Other* ewk) {
     }
 }
 
-void eff26_01(WORK_Other* ewk) {
+static void eff26_01(WORK_Other* ewk) {
     WORK_Other* oya = (WORK_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
@@ -120,7 +120,7 @@ void eff26_01(WORK_Other* ewk) {
     }
 }
 
-void eff26_02(WORK_Other* ewk) {
+static void eff26_02(WORK_Other* ewk) {
     WORK_Other* oya = (WORK_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
@@ -169,7 +169,7 @@ void eff26_02(WORK_Other* ewk) {
     }
 }
 
-void eff26_03(WORK_Other* ewk) {
+static void eff26_03(WORK_Other* ewk) {
     WORK_Other* oya = (WORK_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
@@ -230,7 +230,7 @@ void eff26_03(WORK_Other* ewk) {
     }
 }
 
-void eff26_04(WORK_Other* ewk) {
+static void eff26_04(WORK_Other* ewk) {
     WORK_Other* oya = (WORK_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {
@@ -300,7 +300,7 @@ void eff26_04(WORK_Other* ewk) {
     }
 }
 
-void eff26_05(WORK_Other* ewk) {
+static void eff26_05(WORK_Other* ewk) {
     WORK_Other* oya = (WORK_Other*)ewk->my_master;
 
     switch (ewk->wu.routine_no[1]) {

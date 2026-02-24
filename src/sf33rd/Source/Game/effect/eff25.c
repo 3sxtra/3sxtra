@@ -1,6 +1,6 @@
 /**
  * @file eff25.c
- * TODO: identify what this effect does
+ * Effect: Stage / Background Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff25.h"

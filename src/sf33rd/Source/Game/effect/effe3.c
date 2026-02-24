@@ -1,6 +1,6 @@
 /**
  * @file effe3.c
- * TODO: identify what this effect does
+ * Effect: Gauge / Player Control Effect
  */
 
 #include "sf33rd/Source/Game/effect/effe3.h"
@@ -15,12 +15,11 @@
 
 void effect_E3_move(WORK_Other* ewk) {
     PLW* mwk = (PLW*)ewk->my_master;
-    s16 num;
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
         if ((mwk->wu.E3_work_index != ewk->wu.myself || ewk->wu.dead_f != 0) ||
-            (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING)) {
+            (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS)) {
             ewk->wu.routine_no[0] = 2;
             break;
         }
@@ -128,7 +127,7 @@ void effect_E3_move(WORK_Other* ewk) {
 
     case 1:
         if ((mwk->wu.E3_work_index != ewk->wu.myself || ewk->wu.dead_f != 0) ||
-            (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING)) {
+            (Mode_Type != MODE_NORMAL_TRAINING && Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS)) {
             ewk->wu.routine_no[0] = 2;
             break;
         }
@@ -146,133 +145,6 @@ void effect_E3_move(WORK_Other* ewk) {
 
         if (ewk->wu.direction == 0) {
             mwk->cp->waza_flag[7] = 2;
-
-            switch (Training[0].contents[0][0][2]) {
-            case 0:
-            sw1_case_0:
-                mwk->spmv_ng_flag2 |= 0x200;
-                break;
-
-            case 1:
-            sw1_case_1:
-                mwk->spmv_ng_flag2 &= 0xFFFFFDFF;
-                break;
-
-            default:
-                if (Game_timer & 0xF) {
-                    break;
-                }
-
-                switch (mwk->spmv_ng_flag2 & DIP2_QUICK_STAND_DISABLED) {
-                case 0:
-                    goto sw1_case_0;
-
-                default:
-                    goto sw1_case_1;
-                }
-
-                break;
-            }
-
-            switch (Training[0].contents[0][0][1]) {
-            case 0:
-                if (mwk->wu.routine_no[1] == 1 || mwk->wu.routine_no[1] == 3) {
-                    ewk->wu.dm_vital = 1;
-                    ewk->wu.dir_timer = 12;
-                } else {
-                    ewk->wu.dm_vital = 0;
-                }
-
-                if (ewk->wu.dm_vital) {
-                    mwk->spmv_ng_flag &= 0xFFFFFFBF;
-                } else {
-                    if (ewk->wu.dir_timer == 0) {
-                        mwk->spmv_ng_flag |= 0x40;
-                    } else {
-                        ewk->wu.dir_timer--;
-                    }
-                }
-
-                break;
-
-            case 5:
-                if ((Game_timer & 2) != 0) {
-                    goto sw2_case_3;
-                }
-
-            case 1:
-            sw2_case_1:
-                mwk->spmv_ng_flag |= 0x80;
-                mwk->spmv_ng_flag |= 0x40;
-                mwk->spmv_ng_flag |= 0x10;
-                break;
-
-            case 2:
-            sw2_case_2:
-                mwk->spmv_ng_flag |= 0x80;
-                mwk->spmv_ng_flag &= 0xFFFFFFBF;
-                mwk->spmv_ng_flag &= 0xFFFFFFEF;
-                break;
-
-            case 6:
-                num = Game_timer % 3;
-
-                if (num == 1) {
-                    goto sw2_case_1;
-                }
-
-                if (num == 2) {
-                    goto sw2_case_2;
-                }
-
-            case 3:
-            sw2_case_3:
-                mwk->spmv_ng_flag |= 0x40;
-                mwk->spmv_ng_flag &= 0xFFFFFF7F;
-                mwk->spmv_ng_flag &= 0xFFFFF0FF;
-                break;
-
-            case 4:
-                if ((mwk->wu.routine_no[1] == 1 && mwk->wu.routine_no[2] >= 4) && mwk->wu.routine_no[2] < 14) {
-                    ewk->wu.dm_vital = 1;
-                    ewk->wu.dir_timer = 12;
-                } else {
-                    ewk->wu.dm_vital = 0;
-                }
-
-                if (ewk->wu.dm_vital) {
-                    mwk->spmv_ng_flag &= 0xFFFFFFBF;
-                } else {
-                    if (ewk->wu.dir_timer == 0) {
-                        if ((Game_timer & 4) != 0) {
-                            mwk->spmv_ng_flag &= 0xFFFFFFBF;
-                        } else {
-                            mwk->spmv_ng_flag |= 0x40;
-                        }
-                    } else {
-                        ewk->wu.dir_timer--;
-                    }
-                }
-
-                break;
-            }
-        }
-
-        if (Training[0].contents[0][0][3] == 1) {
-            if ((mwk->wu.routine_no[1] == 1 && mwk->guard_chuu == 0) || mwk->wu.routine_no[1] == 3) {
-                ewk->wu.vitality = 1;
-                ewk->wu.dir_step = 20;
-            } else {
-                ewk->wu.vitality = 0;
-            }
-
-            if (ewk->wu.vitality == 0) {
-                if (ewk->wu.dir_step == 0) {
-                    mwk->py->now.quantity.h = mwk->py->genkai - 1;
-                } else {
-                    ewk->wu.dir_step--;
-                }
-            }
         }
 
         break;

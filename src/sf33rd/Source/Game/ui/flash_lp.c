@@ -1,6 +1,11 @@
 /**
  * @file flash_lp.c
- * Flash Lamp
+ * @brief Win-mark flash lamp animation.
+ *
+ * Drives the alternating flash on victory markers during gameplay.
+ * Skipped in training modes.
+ *
+ * Part of the ui module.
  */
 
 #include "sf33rd/Source/Game/ui/flash_lp.h"
@@ -11,15 +16,18 @@
 #include "sf33rd/Source/Game/ui/sc_data.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-const u8 Lamp_Flash_Data[2][2] = { { 0x07, 0x6F }, { 0x1E, 0x03 } };
+#define LAMP_FLASH_COUNT 2
 
+const u8 Lamp_Flash_Data[LAMP_FLASH_COUNT][2] = { { 0x07, 0x6F }, { 0x1E, 0x03 } };
+
+/** @brief Animate the win-mark lamps — alternate flash colors each frame. */
 void Flash_Lamp() {
     u8 ix;
     u8 ix2p;
     u8 mark;
     u8 color;
 
-    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
+    if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
         return;
     }
 
@@ -40,8 +48,11 @@ void Flash_Lamp() {
                 if (++Lamp_Index > 1) {
                     Lamp_Index = 0;
                 }
-                Lamp_Color = Lamp_Flash_Data[Lamp_Index][0];
-                Lamp_Timer = Lamp_Flash_Data[Lamp_Index][1];
+
+                if (Lamp_Index < LAMP_FLASH_COUNT) {
+                    Lamp_Color = Lamp_Flash_Data[Lamp_Index][0];
+                    Lamp_Timer = Lamp_Flash_Data[Lamp_Index][1];
+                }
             }
 
             break;

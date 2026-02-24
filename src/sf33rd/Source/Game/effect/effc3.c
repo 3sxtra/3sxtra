@@ -1,6 +1,6 @@
 /**
  * @file effc3.c
- * TODO: identify what this effect does
+ * Effect: Car Parts / NSC Effect
  */
 
 #include "sf33rd/Source/Game/effect/effc3.h"
@@ -19,11 +19,11 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
-void bs2_display_C3(WORK* wk);
-void set_display_car_parts(WORK_Other* wk);
-void clear_parts_hit_data(WORK* wk);
-void effC3_main_process(WORK_Other* ewk);
-s32 get_efffC3_nsc(WORK* wk, WORK* c2wk);
+static void bs2_display_C3(WORK* wk);
+static void set_display_car_parts(WORK_Other* wk);
+static void clear_parts_hit_data(WORK* wk);
+static void effC3_main_process(WORK_Other* ewk);
+static s32 get_efffC3_nsc(WORK* wk, WORK* c2wk);
 
 const u16 effC3_nsc[6] = { 0x7E1A, 0x7E1A, 0x7E1A, 0x7E1A, 0x7E1A, 0x7E1A };
 
@@ -1127,7 +1127,7 @@ void effect_C3_move(WORK_Other* ewk) {
     }
 }
 
-void bs2_display_C3(WORK* wk) {
+static void bs2_display_C3(WORK* wk) {
     wk->position_x = wk->xyz[0].disp.pos + wk->next_x;
     wk->position_y = wk->xyz[1].disp.pos + wk->next_y;
     wk->next_y = 0;
@@ -1135,7 +1135,7 @@ void bs2_display_C3(WORK* wk) {
     sort_push_request(wk);
 }
 
-void set_display_car_parts(WORK_Other* wk) {
+static void set_display_car_parts(WORK_Other* wk) {
     const u16* adrs;
 
     bs2_get_parts_break(&wk->wu);
@@ -1144,7 +1144,7 @@ void set_display_car_parts(WORK_Other* wk) {
     wk->wu.h_bod = wk->wu.body_adrs + (wk->wu.cg_hit_ix = adrs[1]);
 }
 
-void clear_parts_hit_data(WORK* wk) {
+static void clear_parts_hit_data(WORK* wk) {
     wk->cg_ja = wk->hit_ix_table[0];
     wk->h_bod = &wk->body_adrs[wk->cg_ja.boix];
     wk->h_cat = &wk->catch_adrs[wk->cg_ja.caix];
@@ -1154,7 +1154,7 @@ void clear_parts_hit_data(WORK* wk) {
     wk->h_han = &wk->hand_adrs[wk->cg_ja.bhix + wk->cg_ja.haix];
 }
 
-void effC3_main_process(WORK_Other* ewk) {
+static void effC3_main_process(WORK_Other* ewk) {
     if (ewk->wu.dir_old) {
         ewk->wu.routine_no[0] = 2;
         ewk->wu.routine_no[1] = 0;
@@ -1201,7 +1201,7 @@ void effC3_main_process(WORK_Other* ewk) {
     get_shizumi_guai(&ewk->wu);
 }
 
-s32 get_efffC3_nsc(WORK* wk, WORK* c2wk) {
+static s32 get_efffC3_nsc(WORK* wk, WORK* c2wk) {
     u16 num = c2wk->cg_number - 0x7DAA;
 
     wk->position_x = c2wk->position_x;

@@ -1,6 +1,6 @@
 /**
  * @file eff08.c
- * TODO: identify what this effect does
+ * Effect: Color / Palette Manipulation
  */
 
 #include "sf33rd/Source/Game/effect/eff08.h"

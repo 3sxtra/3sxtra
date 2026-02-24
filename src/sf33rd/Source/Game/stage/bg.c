@@ -5,6 +5,9 @@
 
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "common.h"
+#include "port/legacy_matrix.h"
+#include "port/modded_stage.h"
+#include "port/renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/MemMan.h"
 #include "sf33rd/Source/Common/PPGFile.h"
@@ -16,7 +19,6 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/system/ramcnt.h"
@@ -25,7 +27,7 @@
 
 // sbss
 Vertex scrDrawPos[4];
-Polygon bgpoly[4];
+RendererVertex bgpoly[4];
 u8 bg_priority[4];
 u16 Screen_Switch;
 u16 Screen_Switch_Buffer;
@@ -46,16 +48,21 @@ u8 bg_disp_off;
 s32 bgPalCodeOffset[8];
 
 // bss
-BG bg_w;
 RW_DATA rw_dat[20];
 
+/** @brief Update read/write work buffers for animated background tiles. */
 static void bgRWWorkUpdate();
+/** @brief Draw all visible chips for a single background screen. */
 static void bgDrawOneScreen(s32 bgnum, s32 gixbase, s32* xx, s32* yy, s32 /* unused */, s32 ofsPal,
                             PPGDataList* curDataList);
+/** @brief Draw a single background tile chip at the given position. */
 static void bgDrawOneChip(s32 x, s32 y, s32 xs, s32 ys, s32 gbix, u32 vtxCol, s32 ofsPal);
+/** @brief Draw the Akebono (dawn sky) background layer. */
 static void bgAkebonoDraw();
+/** @brief Calculate scroll position for PPG background rendering. */
 static void ppgCalScrPosition(s32 x, s32 y, s32 xs, s32 ys);
 
+/** @brief Initialize background texture resources. */
 void Bg_TexInit() {
     s32 i;
 
@@ -72,6 +79,7 @@ void Bg_TexInit() {
     ppgAkaneList.pal = &ppgAkanePal;
 }
 
+/** @brief Set up background tile rewriting tables for the current stage. */
 void Bg_Kakikae_Set() {
     u8 i;
     const bgrw_data_tbl_elem* rwtbl_ptr;
@@ -166,6 +174,7 @@ void Bg_Kakikae_Set() {
     }
 }
 
+/** @brief Set up ending-specific background tile rewrite tables. */
 void Ed_Kakikae_Set(s16 type) {
     u8 i;
     s8 rw;
@@ -215,6 +224,7 @@ void Ed_Kakikae_Set(s16 type) {
     }
 }
 
+/** @brief Release background resources (textures, memory, PPG data). */
 void Bg_Close() {
     u32 i;
 
@@ -233,8 +243,12 @@ void Bg_Close() {
     Screen_Switch = 0;
     Screen_Switch_Buffer = 0;
     bg_disp_off = 0;
+
+    /* Unload any modded stage textures */
+    ModdedStage_Unload();
 }
 
+/** @brief Load and configure background textures for the current stage. */
 void Bg_Texture_Load_EX() {
     void* loadAdrs;
     u32 loadSize;
@@ -359,8 +373,12 @@ void Bg_Texture_Load_EX() {
 
         ppgSourceDataReleased(&ppgAkeList);
     }
+
+    /* Try to load HD modded stage assets for this stage */
+    ModdedStage_LoadForStage(bg_w.stage);
 }
 
+/** @brief Load background textures for a secondary display mode. */
 void Bg_Texture_Load2(u8 type) {
     void* loadAdrs;
     u32 loadSize;
@@ -424,6 +442,7 @@ void Bg_Texture_Load2(u8 type) {
     bgPalCodeOffset[0] = etcBgPalCnvTable[type] + 144;
 }
 
+/** @brief Load background textures used during ending sequences. */
 void Bg_Texture_Load_Ending(s16 type) {
     void* loadAdrs;
     u32 loadSize;
@@ -545,6 +564,7 @@ void Bg_Texture_Load_Ending(s16 type) {
     ppgSourceDataReleased(&ppgAkeList);
 }
 
+/** @brief Transfer (render) a background screen layer to the display. */
 void scr_trans(u8 bgnm) {
     PPGDataList* curDataList;
     Vec3 point[2];
@@ -605,7 +625,7 @@ void scr_trans(u8 bgnm) {
     njTranslate(0, 0, 1024.0, PrioBase[bg_priority[bgnm]]);
     njScale(0, 1.0, -1.0, 1.0);
 
-    if (Debug_w[42]) {
+    if (Debug_w[DEBUG_BG_DRAW_OFF]) {
         return;
     }
 
@@ -1029,7 +1049,11 @@ void scr_trans(u8 bgnm) {
 
                 if (No_Trans == 0) {
                     ppgSetupCurrentPaletteNumber(0, x);
-                    njDrawTexture(bgpoly, 4, x, 0);
+                    // njDrawTexture(bgpoly, 4, x, 0);
+                    u16 tex = ppgGetUsingTextureHandle(NULL, x);
+                    u16 pal = ppgGetCurrentPaletteHandle();
+                    Renderer_SetTexture(tex | (pal << 16));
+                    Renderer_DrawTexturedQuad((const RendererVertex*)bgpoly, 4);
                 }
             }
         }
@@ -1047,6 +1071,7 @@ void scr_trans(u8 bgnm) {
     }
 }
 
+/** @brief Update read/write work buffers for animated background tiles. */
 void bgRWWorkUpdate() {
     s32 i;
 
@@ -1066,6 +1091,7 @@ void bgRWWorkUpdate() {
     }
 }
 
+/** @brief Draw all visible chips for a single background screen. */
 void bgDrawOneScreen(s32 bgnum, s32 gixbase, s32* xx, s32* yy, s32 /* unused */, s32 ofsPal, PPGDataList* curDataList) {
     s32 i, x, y, gbix;
 
@@ -1091,6 +1117,7 @@ void bgDrawOneScreen(s32 bgnum, s32 gixbase, s32* xx, s32* yy, s32 /* unused */,
     }
 }
 
+/** @brief Draw a single background tile chip at the given position. */
 void bgDrawOneChip(s32 x, s32 y, s32 xs, s32 ys, s32 gbix, u32 vtxCol, s32 ofsPal) {
     if ((No_Trans == 0) && ppgCheckTextureNumber(0, gbix)) {
         ppgCalScrPosition(x, y, xs, ys);
@@ -1104,6 +1131,7 @@ void bgDrawOneChip(s32 x, s32 y, s32 xs, s32 ys, s32 gbix, u32 vtxCol, s32 ofsPa
     }
 }
 
+/** @brief Draw the Akebono (dawn sky) background layer. */
 void bgAkebonoDraw() {
     s32 i;
 
@@ -1123,6 +1151,7 @@ void bgAkebonoDraw() {
     }
 }
 
+/** @brief Calculate scroll position for PPG background rendering. */
 void ppgCalScrPosition(s32 x, s32 y, s32 xs, s32 ys) {
     Vec3 point[2];
 
@@ -1148,6 +1177,7 @@ void ppgCalScrPosition(s32 x, s32 y, s32 xs, s32 ys) {
     scrDrawPos[2].t = scrDrawPos[3].t;
 }
 
+/** @brief Sub-routine for background tile rendering with suzi offset. */
 void scr_trans_sub2(s32 x, s32 y, s32 suzi) {
     Vec3 point[2];
     Vec3 spoint[2];
@@ -1166,27 +1196,28 @@ void scr_trans_sub2(s32 x, s32 y, s32 suzi) {
     bgpoly[0].z = point[0].z;
     bgpoly[0].u = 0.0f;
     bgpoly[0].v = 0.0f;
-    bgpoly[0].col = 0xFFFFFFFF;
+    bgpoly[0].color = 0xFFFFFFFF;
     bgpoly[1].x = spoint[1].x;
     bgpoly[1].y = point[0].y;
     bgpoly[1].z = point[0].z;
     bgpoly[1].u = 1.0f;
     bgpoly[1].v = 0.0f;
-    bgpoly[1].col = 0xFFFFFFFF;
+    bgpoly[1].color = 0xFFFFFFFF;
     bgpoly[2].x = point[0].x;
     bgpoly[2].y = point[1].y;
     bgpoly[2].z = point[1].z;
     bgpoly[2].u = 0.0f;
     bgpoly[2].v = 1.0f;
-    bgpoly[2].col = 0xFFFFFFFF;
+    bgpoly[2].color = 0xFFFFFFFF;
     bgpoly[3].x = point[1].x;
     bgpoly[3].y = point[1].y;
     bgpoly[3].z = point[1].z;
     bgpoly[3].u = 1.0f;
     bgpoly[3].v = 1.0f;
-    bgpoly[3].col = 0xFFFFFFFF;
+    bgpoly[3].color = 0xFFFFFFFF;
 }
 
+/** @brief Calculate scroll offset for a background layer (horizontal). */
 void scr_calc(u8 bgnm) {
     njUnitMatrix(NULL);
     njScale(NULL, scr_sc, scr_sc, 1.0f);
@@ -1196,6 +1227,7 @@ void scr_calc(u8 bgnm) {
     njGetMatrix(&BgMATRIX[bgnm + 1]);
 }
 
+/** @brief Calculate scroll offset for a background layer (vertical). */
 void scr_calc2(u8 bgnm) {
     njUnitMatrix(NULL);
     njScale(NULL, scr_sc, scr_sc, 1.0f);
@@ -1205,6 +1237,7 @@ void scr_calc2(u8 bgnm) {
     njGetMatrix(&BgMATRIX[bgnm + 1]);
 }
 
+/** @brief Restore parallax family positions after pause. */
 void Pause_Family_On() {
     njUnitMatrix(0);
     njTranslate(0, 0, 224, 0);
@@ -1212,6 +1245,7 @@ void Pause_Family_On() {
     njGetMatrix(&BgMATRIX[8]);
 }
 
+/** @brief Initialize the zoom frame system. */
 void Zoomf_Init() {
     zoom_add = 64;
     scr_sc = 1.0f;
@@ -1219,6 +1253,7 @@ void Zoomf_Init() {
     scrn_adgjust_y = 0;
 }
 
+/** @brief Set the zoom value for the stage frame. */
 void Zoom_Value_Set(u16 zadd) {
     f32 work;
     u16 add;
@@ -1240,6 +1275,7 @@ void Zoom_Value_Set(u16 zadd) {
     scr_sc = 1.0f / (add + work);
 }
 
+/** @brief Expand the visible stage frame outward. */
 void Frame_Up(u16 x, u16 y, u16 add) {
     if (zoom_add < 2) {
         scr_sc = 64.0f;
@@ -1251,6 +1287,7 @@ void Frame_Up(u16 x, u16 y, u16 add) {
     Frame_Adgjust(x, y);
 }
 
+/** @brief Shrink the visible stage frame inward. */
 void Frame_Down(u16 x, u16 y, u16 add) {
     if (zoom_add >= 0xFFC0) {
         scr_sc = 0.0009775171f;
@@ -1262,6 +1299,7 @@ void Frame_Down(u16 x, u16 y, u16 add) {
     Frame_Adgjust(x, y);
 }
 
+/** @brief Adjust the stage frame to match the current camera position. */
 void Frame_Adgjust(u16 pos_x, u16 pos_y) {
     u16 buff;
 
@@ -1306,6 +1344,7 @@ void Frame_Adgjust(u16 pos_x, u16 pos_y) {
     }
 }
 
+/** @brief Initialize all screen scroll positions to default. */
 void Scrn_Pos_Init() {
     u8 i;
 
@@ -1321,11 +1360,13 @@ void Scrn_Pos_Init() {
     }
 }
 
+/** @brief Set scroll delta for a background layer. */
 void Scrn_Move_Set(s8 bgnm, s16 x, s16 y) {
     bg_pos[bgnm].scr_x.word_pos.h = x;
     bg_pos[bgnm].scr_y.word_pos.h = y + 16;
 }
 
+/** @brief Initialize parallax family speed tables. */
 void Family_Init() {
     u8 i;
 
@@ -1337,6 +1378,7 @@ void Family_Init() {
     }
 }
 
+/** @brief Set parallax read position for a family layer. */
 void Family_Set_R(s8 fmnm, s16 x, s16 y) {
     fm_pos[fmnm].family_x.word_pos.h = x;
     fm_pos[fmnm].family_y.word_pos.h = y;
@@ -1344,6 +1386,7 @@ void Family_Set_R(s8 fmnm, s16 x, s16 y) {
     fm_pos[fmnm].family_y_buff.word_pos.h = y;
 }
 
+/** @brief Set parallax write position for a family layer. */
 void Family_Set_W(s8 fmnm, s16 x, s16 y) {
     fm_pos[fmnm].family_x.word_pos.h = x;
     fm_pos[fmnm].family_y.word_pos.h = y;
@@ -1351,32 +1394,38 @@ void Family_Set_W(s8 fmnm, s16 x, s16 y) {
     fm_pos[fmnm].family_y_buff.word_pos.h = y;
 }
 
+/** @brief Enable a background layer for reading. */
 void Bg_On_R(u16 s_prm) {
     Screen_Switch |= s_prm;
     Screen_Switch_Buffer = Screen_Switch;
 }
 
+/** @brief Enable a background layer for writing. */
 void Bg_On_W(u16 s_prm) {
     Screen_Switch |= s_prm;
     Screen_Switch_Buffer = Screen_Switch;
 }
 
+/** @brief Disable a background layer for reading. */
 void Bg_Off_R(u16 s_prm) {
     s_prm = ~s_prm;
     Screen_Switch &= s_prm;
     Screen_Switch_Buffer = Screen_Switch;
 }
 
+/** @brief Disable a background layer for writing. */
 void Bg_Off_W(u16 s_prm) {
     s_prm = ~s_prm;
     Screen_Switch &= s_prm;
     Screen_Switch_Buffer = Screen_Switch;
 }
 
+/** @brief Commit pending scroll positions for all layers. */
 void Scrn_Renew() {
     Screen_Switch_Buffer = Screen_Switch;
 }
 
+/** @brief Apply parallax family offsets to all layers. */
 void Irl_Family() {
     u8 i;
 
@@ -1388,6 +1437,7 @@ void Irl_Family() {
     }
 }
 
+/** @brief Apply final screen scroll positions. */
 void Irl_Scrn() {
     s8 i;
 
@@ -1399,6 +1449,7 @@ void Irl_Scrn() {
     }
 }
 
+/** @brief Update parallax family positions each frame. */
 void Family_Move() {
     u8 assign;
     u8 fam_ix;
@@ -1419,6 +1470,7 @@ void Family_Move() {
     (void)assign;
 }
 
+/** @brief Update parallax family positions for ending sequences. */
 void Ending_Family_Move() {
     u8 mask_val = ending_use_family[end_w.type];
     u8 assign;
@@ -1435,6 +1487,7 @@ void Ending_Family_Move() {
     scr_calc(3);
 }
 
+/** @brief Toggle background display on or off. */
 void Bg_Disp_Switch(u8 on_off) {
     bg_disp_off = on_off;
 }

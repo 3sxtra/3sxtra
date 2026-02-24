@@ -1,6 +1,6 @@
 /**
  * @file effd5.c
- * TODO: identify what this effect does
+ * Effect: Sound / Range Check Effect
  */
 
 #include "sf33rd/Source/Game/effect/effd5.h"
@@ -19,9 +19,9 @@
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 
-void effD5_main_process(WORK_Other* ewk);
-void cal_speeds(WORK_Other* ewk, PLW* /* unused */, PLW* twk);
-s32 my_rose_live_check(PLW* wk);
+static void effD5_main_process(WORK_Other* ewk);
+static void cal_speeds(WORK_Other* ewk, PLW* /* unused */, PLW* twk);
+static s32 my_rose_live_check(PLW* wk);
 
 const s16 dm_sp_sel_tbl[4][2] = { { 0, 14 }, { 1, 16 }, { 2, 18 }, { 3, 20 } };
 
@@ -92,7 +92,7 @@ void effect_D5_move(WORK_Other* ewk) {
     }
 }
 
-void effD5_main_process(WORK_Other* ewk) {
+static void effD5_main_process(WORK_Other* ewk) {
     s16 dsst;
 
     if (ewk->wu.hf.hit_flag) {
@@ -186,7 +186,7 @@ void effD5_main_process(WORK_Other* ewk) {
     }
 }
 
-void cal_speeds(WORK_Other* ewk, PLW* /* unused */, PLW* twk) {
+static void cal_speeds(WORK_Other* ewk, PLW* /* unused */, PLW* twk) {
     s16 tx = twk->wu.position_x;
     s16 rix = 0;
 
@@ -255,7 +255,7 @@ s32 effect_D5_init(WORK* wk, s32 /* unused */) {
     return 0;
 }
 
-s32 my_rose_live_check(PLW* wk) {
+static s32 my_rose_live_check(PLW* wk) {
     WORK_Other* twk;
     s16 ix;
 

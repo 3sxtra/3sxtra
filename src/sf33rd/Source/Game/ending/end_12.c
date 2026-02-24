@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff2.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
@@ -15,24 +16,25 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void end_C00_move();
-void end_C01_move();
+static void end_C00_move();
+static void end_C01_move();
 
-void end_C00_0000();
-void end_C00_1000();
-void end_C00_2000();
-void end_C00_3000();
-void end_C00_4000();
-void end_C00_5000();
-void end_C00_6000();
+static void end_C00_0000();
+static void end_C00_1000();
+static void end_C00_2000();
+static void end_C00_3000();
+static void end_C00_4000();
+static void end_C00_5000();
+static void end_C00_6000();
 
-void end_C01_0000();
+static void end_C01_0000();
 
 const s16 timer_c_tbl[7] = { 600, 600, 360, 420, 360, 540, 420 };
 
 const s16 end_c_pos[7][2] = { { 256, 32 },  { 768, 768 }, { 768, 768 }, { 768, 512 },
                               { 768, 768 }, { 768, 256 }, { 768, 256 } };
 
+/** @brief Sean's ending entry point — initialize and run all ending scenes. */
 void end_12000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -77,14 +79,18 @@ void end_12000(s16 pl_num) {
     }
 }
 
-void end_C00_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_C00_move() {
     void (*end_C00_jp[7])() = { end_C00_0000, end_C00_1000, end_C00_2000, end_C00_3000,
                                 end_C00_4000, end_C00_5000, end_C00_6000 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 7)
+        return;
     end_C00_jp[end_w.r_no_2]();
 }
 
-void end_C00_0000() {
+/** @brief Scene 0 — vertical scroll with particle effect trigger. */
+static void end_C00_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -119,7 +125,8 @@ void end_C00_0000() {
     }
 }
 
-void end_C00_1000() {
+/** @brief Scene 1 — effect with message and animation flags. */
+static void end_C00_1000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -138,7 +145,8 @@ void end_C00_1000() {
     }
 }
 
-void end_C00_2000() {
+/** @brief Scene 2 — fade to white panel. */
+static void end_C00_2000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         if (Request_Fade(3)) {
@@ -164,7 +172,8 @@ void end_C00_2000() {
     }
 }
 
-void end_C00_3000() {
+/** @brief Scene 3 — white panel fade out with message. */
+static void end_C00_3000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -194,7 +203,8 @@ void end_C00_3000() {
     }
 }
 
-void end_C00_4000() {
+/** @brief Scene 4 — effect with message and animation flags. */
+static void end_C00_4000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -211,7 +221,8 @@ void end_C00_4000() {
     }
 }
 
-void end_C00_5000() {
+/** @brief Scene 5 — static background with dual effects. */
+static void end_C00_5000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -227,7 +238,8 @@ void end_C00_5000() {
     }
 }
 
-void end_C00_6000() {
+/** @brief Scene 6 — timed wait then effect with fade timer. */
+static void end_C00_6000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -254,14 +266,18 @@ void end_C00_6000() {
     }
 }
 
-void end_C01_move() {
+/** @brief Dispatch to the current scene handler for background layer 1. */
+static void end_C01_move() {
     void (*end_c01_jp[7])() = { end_C01_0000, end_X_com01, end_X_com01, end_X_com01,
                                 end_X_com01,  end_X_com01, end_X_com01 };
     bgw_ptr = &bg_w.bgw[1];
+    if (end_w.r_no_2 >= 7)
+        return;
     end_c01_jp[end_w.r_no_2]();
 }
 
-void end_C01_0000() {
+/** @brief Layer 1 scene 0 — vertical scroll synced with layer 0 state. */
+static void end_C01_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;

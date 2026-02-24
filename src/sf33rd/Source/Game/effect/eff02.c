@@ -1,6 +1,6 @@
 /**
  * @file eff02.c
- * TODO: identify what this effect does
+ * Effect: Hit Marks / Sparks
  */
 
 #include "sf33rd/Source/Game/effect/eff02.h"
@@ -16,7 +16,7 @@
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-void urian_guard_se_check(WORK_Other* ewk, PLW* twk, u16 oto);
+static void urian_guard_se_check(WORK_Other* ewk, PLW* twk, u16 oto);
 
 const s16 hit_mark_dir_table[16] = { 0, -1, -2, -3, -4, -5, -6, -7, 8, 7, 6, 5, 4, 3, 2, 1 };
 
@@ -299,7 +299,7 @@ void effect_02_move(WORK_Other* ewk) {
     }
 }
 
-void urian_guard_se_check(WORK_Other* ewk, PLW* twk, u16 oto) {
+static void urian_guard_se_check(WORK_Other* ewk, PLW* twk, u16 oto) {
     if (twk->player_number == 13 && (oto == 266 || oto == 267)) {
         sound_effect_request[280](ewk, 280);
         Last_Called_SE = 280;

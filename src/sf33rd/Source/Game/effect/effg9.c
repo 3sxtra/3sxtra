@@ -1,6 +1,6 @@
 /**
  * @file effg9.c
- * TODO: identify what this effect does
+ * Effect: Position Hosei Effect
  */
 
 #include "sf33rd/Source/Game/effect/effg9.h"

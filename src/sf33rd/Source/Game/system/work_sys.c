@@ -1,6 +1,12 @@
 /**
  * @file work_sys.c
- * Global System State Variables
+ * @brief Global system state variable definitions.
+ *
+ * Defines all shared system-level variables (player input, timers,
+ * screen adjustments, game mode, save data, etc.) used throughout
+ * the game. Corresponding extern declarations live in work_sys.h.
+ *
+ * Part of the system module.
  */
 
 #include "common.h"

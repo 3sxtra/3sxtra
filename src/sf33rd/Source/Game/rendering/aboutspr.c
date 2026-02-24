@@ -5,13 +5,14 @@
 
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "common.h"
+#include "port/legacy_matrix.h"
+#include "port/renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charid.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texgroup.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
@@ -34,6 +35,7 @@ const u32 judge_area_attr[17][2] = { { 0x7FFFDFFF, 0x60 }, { 0x7FFFCFFF, 0x60 },
                                      { 0x7F00AFFF, 0x60 }, { 0x7F009FFF, 0x60 }, { 0x7FFFFFFF, 0x40 },
                                      { 0x7FFFFFFF, 0x20 }, { 0x7FFFFFFF, 0x60 } };
 
+/** @brief Initialize on-memory data for object groups. */
 void Init_load_on_memory_data() {
     copy_char_base_data();
     load_any_color(0x9C, 0x18);
@@ -49,6 +51,7 @@ void Init_load_on_memory_data() {
     dmwk_moji.work_id = 0x10;
 }
 
+/** @brief Set up Gill's extra SA object (resurrection form). */
 s32 setup_GILL_exsa_obj() {
     WORK* ewk;
     s16 i;
@@ -76,22 +79,27 @@ s32 setup_GILL_exsa_obj() {
     return 1;
 }
 
+/** @brief Set up Gill's opening ceremony object. */
 s32 setup_GILL_Opening_Ceremony() {
     return 1;
 }
 
+/** @brief Set up bonus stage car parts as DMA groups. */
 void setup_bonus_car_parts() {
     // Do nothing
 }
 
+/** @brief Register a DMA group for a given sprite number. */
 void setup_dma_group(u16 num, u32 /* unused */) {
     load_any_texture_patnum(num, 2, 0);
 }
 
+/** @brief Reset (unregister) a DMA group for a given sprite number. */
 void reset_dma_group(u16 num) {
     purge_texture_group_of_this(num);
 }
 
+/** @brief Render the judge area collision box sprite. */
 void set_judge_area_sprite(WORK_Other_JUDGE* wk, s16 bsy) {
     PAL_CURSOR_COL oricol;
     s16 i;
@@ -134,6 +142,7 @@ void set_judge_area_sprite(WORK_Other_JUDGE* wk, s16 bsy) {
     }
 }
 
+/** @brief Draw a hit/hurt box line in the debug display. */
 void draw_hit_judge_line(f64 arg0, f64 arg1, f64 arg2, f64 arg3, u32 col, u32 attr) {
     f32 px;
     f32 py;
@@ -164,9 +173,10 @@ void draw_hit_judge_line(f64 arg0, f64 arg1, f64 arg2, f64 arg3, u32 col, u32 at
     line.p[0].y = line.p[1].y = point[0].y;
     line.p[2].y = line.p[3].y = point[1].y;
     line.col[0].color = line.col[1].color = line.col[2].color = line.col[3].color = col;
-    njDrawPolygon2D(&line, 4, PrioBase[1], attr);
+    Renderer_Queue2DPrimitive((f32*)line.p, PrioBase[1], (uintptr_t)line.col[0].color, 0);
 }
 
+/** @brief Render the connection sprite for a juggle/link combo indicator. */
 s32 set_conn_sprite(WORK_Other_CONN* wk, s16 bsy) {
     s16 i;
 
@@ -197,10 +207,12 @@ s32 set_conn_sprite(WORK_Other_CONN* wk, s16 bsy) {
     return 2;
 }
 
+/** @brief Reset all character sprite pattern cache entries. */
 void all_cgps_put_back(WORK* wk) {
     // Do nothing
 }
 
+/** @brief Transform and render a character using the current trans mode. */
 void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
     if (mts_ok[wk->my_mts].be == 0) {
         // A display request was received before MTS initialization. MTS number: %d\n
@@ -226,7 +238,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
 
     switch (mts[wk->my_mts].mode) {
     case 17:
-        if ((Debug_w[0x24] != 1) || (Debug_w[0x27] != 1)) {
+        if ((Debug_w[DEBUG_NO_DISP_SPR_PAL] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 1)) {
             wk->colcd = exchange_current_colcd(wk);
             mlt_obj_trans(&mts[wk->my_mts], wk, bsy);
         }
@@ -234,7 +246,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
         break;
 
     case 18:
-        if ((Debug_w[0x25] != 1) || (Debug_w[0x27] != 1)) {
+        if ((Debug_w[DEBUG_NO_DISP_SPR_CP3] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 1)) {
             wk->colcd = wk->current_colcd;
             mlt_obj_trans_cp3(&mts[wk->my_mts], wk, bsy);
         }
@@ -242,7 +254,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
         break;
 
     case 20:
-        if ((Debug_w[0x26] != 1) || (Debug_w[0x27] != 1)) {
+        if ((Debug_w[DEBUG_NO_DISP_SPR_RGB] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 1)) {
             wk->colcd = wk->current_colcd;
             mlt_obj_trans_rgb(&mts[wk->my_mts], wk, bsy);
         }
@@ -250,7 +262,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
         break;
 
     case 33:
-        if ((Debug_w[0x24] != 1) || (Debug_w[0x27] != 2)) {
+        if ((Debug_w[DEBUG_NO_DISP_SPR_PAL] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 2)) {
             wk->colcd = wk->current_colcd;
             mlt_obj_disp(&mts[wk->my_mts], wk, (s32)bsy);
         }
@@ -258,18 +270,18 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
         break;
 
     case 34:
-        if (Debug_w[0x25] != 1) {
+        if (Debug_w[DEBUG_NO_DISP_SPR_CP3] != 1) {
             return;
         }
 
-        if ((u32)Debug_w[0x27] == 2) {
+        if ((u32)Debug_w[DEBUG_NO_DISP_TYPE_SB] == 2) {
             // Do nothing
         }
 
         break;
 
     case 36:
-        if ((Debug_w[0x26] != 1) || (Debug_w[0x27] != 2)) {
+        if ((Debug_w[DEBUG_NO_DISP_SPR_RGB] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 2)) {
             wk->colcd = wk->current_colcd;
             mlt_obj_disp_rgb(&mts[wk->my_mts], wk, (s32)bsy);
         }
@@ -278,6 +290,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
     }
 }
 
+/** @brief Look up and return the current color code for a character. */
 s16 exchange_current_colcd(WORK* wk) {
     WORK* mwk;
     s16 col = ((WORK_Other*)wk)->wu.current_colcd;
@@ -320,6 +333,7 @@ s16 exchange_current_colcd(WORK* wk) {
     return col;
 }
 
+/** @brief Push a sprite render request into the sort buffer (standard). */
 s32 sort_push_request(WORK* wk) {
     if (wk->my_mts == 0) {
         return 0;
@@ -361,6 +375,7 @@ s32 sort_push_request(WORK* wk) {
     return 2;
 }
 
+/** @brief Push a sprite render request for an Other-type work item. */
 s32 sort_push_request2(WORK_Other* wk) {
     if (wk->wu.disp_flag == 0) {
         return 1;
@@ -371,6 +386,7 @@ s32 sort_push_request2(WORK_Other* wk) {
     return 2;
 }
 
+/** @brief Push a sprite render request (variant 3, different priority calc). */
 s32 sort_push_request3(WORK* wk) {
     if (wk->my_mts == 0) {
         return 0;
@@ -401,6 +417,7 @@ s32 sort_push_request3(WORK* wk) {
     return 2;
 }
 
+/** @brief Push a sprite render request (variant 4, with color effects). */
 s32 sort_push_request4(WORK* wk) {
     if (wk->my_mts == 0) {
         return 0;
@@ -445,6 +462,7 @@ s32 sort_push_request4(WORK* wk) {
     return 2;
 }
 
+/** @brief Push a sprite render request (variant 8, simple priority). */
 s32 sort_push_request8(WORK* wk) {
     if (wk->cg_number >= 0x748F) {
         wk->my_mts = 2;
@@ -459,6 +477,7 @@ s32 sort_push_request8(WORK* wk) {
     return sort_push_request(wk);
 }
 
+/** @brief Push a sprite render request (variant A, with extended transform). */
 s32 sort_push_requestA(WORK* wk) {
     PAL_CURSOR_COL oricol;
     s16 i;
@@ -546,6 +565,7 @@ s32 sort_push_requestA(WORK* wk) {
     return 2;
 }
 
+/** @brief Push a sprite render request (variant B, with CP3 palette transform). */
 s32 sort_push_requestB(WORK* wk) {
     PAL_CURSOR_COL oricol;
     s16 i;
@@ -633,6 +653,7 @@ s32 sort_push_requestB(WORK* wk) {
     return 2;
 }
 
+/** @brief Set up shadow rendering parameters for a character. */
 void shadow_setup(WORK* wk, s16 bsy) {
     f32 base_y = (f32)bsy;
 
@@ -640,13 +661,14 @@ void shadow_setup(WORK* wk, s16 bsy) {
         return;
     }
 
-    njdp2d_sort(&base_y, (f32)PrioBase[wk->kage_prio], (uintptr_t)wk, 1);
+    Renderer_Queue2DPrimitive(&base_y, (f32)PrioBase[wk->kage_prio], (uintptr_t)wk, 1);
 }
 
+/** @brief Render a character's shadow sprite. */
 void shadow_drawing(WORK* wk, s16 bsy) {
     s16 shadow;
 
-    if (Debug_w[0x23]) {
+    if (Debug_w[DEBUG_NO_DISP_SHADOW]) {
         return;
     }
 
@@ -666,6 +688,7 @@ void shadow_drawing(WORK* wk, s16 bsy) {
     Mtrans_use_trans_mode(&dmwk_kage, bsy);
 }
 
+/** @brief Get the shadow width based on the character's Y position. */
 s8 get_kage_width(s16 cpy) {
     if (cpy <= 0) {
         return 0;

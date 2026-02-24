@@ -1,6 +1,6 @@
 /**
  * @file effd3.c
- * TODO: identify what this effect does
+ * Effect: Timer / Color Effect
  */
 
 #include "sf33rd/Source/Game/effect/effd3.h"

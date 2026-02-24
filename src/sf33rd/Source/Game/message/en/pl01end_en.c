@@ -1,8 +1,3 @@
-/**
- * @file pl01end_en.c
- * Alex Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl01end_en.h"
 #include "common.h"
 
@@ -64,4 +59,4 @@ static s8** msgEndAdrPL01[16] = {
 
 static s8 msgEndCtrPL01[16] = { 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 1, 2, 1, 2, 2, 1 };
 
-MessageTable pl01end_usa_tbl = { msgEndAdrPL01, msgEndCtrPL01 };
+MessageTable pl01end_en_tbl = { msgEndAdrPL01, msgEndCtrPL01 };

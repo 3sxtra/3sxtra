@@ -28,7 +28,7 @@ void move_effect_work(s16 index) {
     s16 curr_ix;
     s16 next_ix;
 
-    if (Debug_w[0x28]) {
+    if (Debug_w[DEBUG_EFF_NOT_MOVE]) {
         return;
     }
 
@@ -53,7 +53,7 @@ void disp_effect_work() {
     s32 px;
     s32 py;
 
-    if (Debug_w[0x29] == 0) {
+    if (Debug_w[DEBUG_EFF_NUM_DISP] == 0) {
         return;
     }
 
@@ -219,11 +219,9 @@ void push_effect_work(WORK* wkhd) {
     qix = wkhd->myself;
     c_addr = (WORK*)frw[qix];
 
-#if !defined(TARGET_PS2)
     if (qix < 0 || qix >= 128) {
         fatal_error("qix is out of range");
     }
-#endif
 
     switch ((qix == head_ix[lix]) + (qix == tail_ix[lix]) * 2) {
     case 0:

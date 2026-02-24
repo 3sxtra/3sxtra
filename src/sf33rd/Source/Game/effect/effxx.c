@@ -211,11 +211,11 @@
 #include "sf33rd/Source/Game/effect/effm8.h"
 #include "sf33rd/Source/Game/engine/plpat09.h"
 
-s32 effect_dummy_init() {
+static s32 effect_dummy_init() {
     return -1;
 }
 
-void effect_dummy_move() {
+static void effect_dummy_move() {
     // Do nothing
 }
 

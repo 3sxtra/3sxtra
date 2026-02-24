@@ -1,6 +1,6 @@
 /**
  * @file effc9.c
- * TODO: identify what this effect does
+ * Effect: Sound / Judge / Shadow Effect
  */
 
 #include "sf33rd/Source/Game/effect/effc9.h"

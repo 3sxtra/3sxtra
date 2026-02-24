@@ -12,13 +12,19 @@
 #include "sf33rd/Source/Game/engine/pls02.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl18_exatt_table[18])(PLW*);
 
+/** @brief Q: extra attack dispatcher. */
 void pl18_extra_attack(PLW* wk) {
-    pl18_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl18_exatt_table[idx](wk);
 }
 
-void Att_PL18_NINGENBAKUDAN(PLW* wk) {
+/** @brief Q: Ningen Bakudan (self-destruct human bomb SA). */
+static void Att_PL18_NINGENBAKUDAN(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
@@ -76,7 +82,8 @@ void Att_PL18_NINGENBAKUDAN(PLW* wk) {
     }
 }
 
-void Att_PL18_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Q: special action (tokushu koudou). */
+static void Att_PL18_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {

@@ -1,6 +1,6 @@
 /**
  * @file effl3.c
- * TODO: identify what this effect does
+ * Effect: Wait Timer / Data Table Effect
  */
 
 #include "sf33rd/Source/Game/effect/effl3.h"
@@ -18,11 +18,11 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 
-void effl3_0000(WORK_Other* ewk);
-void effl3_0001(WORK_Other* ewk);
-void effl3_0002(WORK_Other* ewk);
-void effl3_tobi(WORK_Other* ewk);
-void effl3_kie(WORK_Other* ewk);
+static void effl3_0000(WORK_Other* ewk);
+static void effl3_0001(WORK_Other* ewk);
+static void effl3_0002(WORK_Other* ewk);
+static void effl3_tobi(WORK_Other* ewk);
+static void effl3_kie(WORK_Other* ewk);
 
 const s16 effl3_wait_timer[8] = { 3, 0, 30, 50, 40, 8, 20, 1 };
 
@@ -57,7 +57,7 @@ void effect_L3_move(WORK_Other* ewk) {
     }
 }
 
-void effl3_0000(WORK_Other* ewk) {
+static void effl3_0000(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -110,7 +110,7 @@ void effl3_0000(WORK_Other* ewk) {
     }
 }
 
-void effl3_0001(WORK_Other* ewk) {
+static void effl3_0001(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -157,7 +157,7 @@ void effl3_0001(WORK_Other* ewk) {
     }
 }
 
-void effl3_0002(WORK_Other* ewk) {
+static void effl3_0002(WORK_Other* ewk) {
     s16 work;
 
     switch (ewk->wu.routine_no[3]) {
@@ -180,7 +180,7 @@ void effl3_0002(WORK_Other* ewk) {
     }
 }
 
-void effl3_tobi(WORK_Other* ewk) {
+static void effl3_tobi(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[4]) {
     case 0:
         ewk->wu.old_rno[4]--;
@@ -243,7 +243,7 @@ void effl3_tobi(WORK_Other* ewk) {
     }
 }
 
-void effl3_kie(WORK_Other* ewk) {
+static void effl3_kie(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[4]) {
     case 0:
         ewk->wu.old_rno[4]--;

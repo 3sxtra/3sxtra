@@ -4,6 +4,7 @@
  */
 
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effe6.h"
 #include "sf33rd/Source/Game/effect/efff9.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
@@ -14,17 +15,18 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void end_100_move();
+static void end_100_move();
 
-void end_100_0000();
-void end_100_0001();
-void end_100_0002();
-void end_100_0004();
+static void end_100_0000();
+static void end_100_0001();
+static void end_100_0002();
+static void end_100_0004();
 
 const s16 timer_1_tbl[5] = { 1200, 900, 1260, 240, 360 };
 
 const s16 end_1_pos[5][2] = { { 256, 768 }, { 256, 512 }, { 768, 512 }, { 256, 256 }, { 768, 240 } };
 
+/** @brief Alex's ending entry point — initialize and run all ending scenes. */
 void end_01000(s16 pl_num) {
     switch (end_w.r_no_1) {
     case 0:
@@ -68,13 +70,17 @@ void end_01000(s16 pl_num) {
     }
 }
 
-void end_100_move() {
+/** @brief Dispatch to the current scene handler for background layer 0. */
+static void end_100_move() {
     void (*end_100_jp[5])() = { end_100_0000, end_100_0001, end_100_0002, end_100_0002, end_100_0004 };
     bgw_ptr = &bg_w.bgw[0];
+    if (end_w.r_no_2 >= 5)
+        return;
     end_100_jp[end_w.r_no_2]();
 }
 
-void end_100_0000() {
+/** @brief Scene 0 — initial background pan and fade sequence. */
+static void end_100_0000() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -146,7 +152,8 @@ void end_100_0000() {
     }
 }
 
-void end_100_0001() {
+/** @brief Scene 1 — fade out and reposition with message display. */
+static void end_100_0001() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         overwrite_panel(0xFFFFFFFF, 0x17);
@@ -175,7 +182,8 @@ void end_100_0001() {
     }
 }
 
-void end_100_0002() {
+/** @brief Scene 2–3 — static background with message rewrite. */
+static void end_100_0002() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1++;
@@ -200,7 +208,8 @@ void end_100_0002() {
     }
 }
 
-void end_100_0004() {
+/** @brief Scene 4 — vertical scroll with fade timer for final scene. */
+static void end_100_0004() {
     switch (bgw_ptr->r_no_1) {
     case 0:
         bgw_ptr->r_no_1 += 1;

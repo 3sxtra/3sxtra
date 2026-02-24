@@ -1,10 +1,18 @@
 /**
  * @file opening.c
- * Opening
+ * @brief Opening cinematic sequence — scene animation, BG scrolling, and title screen.
+ *
+ * Implements the full ~30-second opening demo split into 19 timed scenes
+ * (`op_100_move`..`op_118_move`), each synchronised to the soundtrack via
+ * `sound_trg_move`. Three scrolling background layers are managed through
+ * per-scene BG-move callbacks (`op_bg0_*`, `op_bg1_*`, `op_bg2_*`).
+ *
+ * Part of the opening module.
  */
 
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "common.h"
+#include "port/renderer.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/MemMan.h"
@@ -22,7 +30,6 @@
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/sound/se.h"
@@ -37,20 +44,33 @@
 
 typedef const f32* ro_f32_ptr;
 
+/* === Named Constants === */
+#define OPENING_DEMO_PHASE_COUNT 3 /**< Phases in oh_opening_demo() dispatch */
+#define OPENING_SCENE_COUNT 19     /**< Scene handlers in opening_move_jp[] */
+#define OP_BG0_DISPATCH_COUNT 94   /**< Entries in op_bg0_move_jp[] */
+#define SOUND_TRG_TABLE_SIZE 257   /**< Entries in sound_time_tbl[] / sound_trg_tbl[] */
+#define OP_CHANGE_SOUND_COUNT 18   /**< Entries in op_change_sound_tbl[] */
+#define OP_QUAKE_Y_COUNT 16        /**< Entries in op_quake_y_tbl0[] */
+#define OPTSR_TABLE_SIZE 59        /**< Entries in optsr_tbl[] */
+#define TITLE_TYPE_COUNT 2         /**< Entries in title[] */
+#define OP_COLOR_FADE_STAGES 6     /**< Entries in ot_bg0_0004_tbl[] / ot_bg0_0015_tbl[] */
+#define OP_QUAKE_STEP_COUNT 16     /**< Entries in op_bg0_0005_tbl[] */
+
 static const f32 title00[25] = { 0.0f, 0.0f, 0.75f, 0.75f, -192.0f, -96.0f, 384.0f, 192.0f, -1.0f,
                                  0.0f, 0.0f, 0.0f,  0.0f,  0.0f,    0.0f,   0.0f,   0.0f,   0.0f,
                                  0.0f, 0.0f, 0.0f,  0.0f,  0.0f,    0.0f,   0.0f };
 
-static ro_f32_ptr title[2] = { title00, title00 };
+static ro_f32_ptr title[TITLE_TYPE_COUNT] = { title00, title00 };
 
-const s16 optsr_tbl[59] = { 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53,
-                            54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73,
-                            74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, -1 };
+const s16 optsr_tbl[OPTSR_TABLE_SIZE] = { 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
+                                          49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+                                          64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78,
+                                          79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, -1 };
 
-void (*opening_move_jp[19])() = { op_100_move, op_101_move, op_102_move, op_103_move, op_104_move,
-                                  op_105_move, op_106_move, op_107_move, op_108_move, op_109_move,
-                                  op_110_move, op_111_move, op_112_move, op_113_move, op_114_move,
-                                  op_115_move, op_116_move, op_117_move, op_118_move };
+void (*opening_move_jp[OPENING_SCENE_COUNT])() = { op_100_move, op_101_move, op_102_move, op_103_move, op_104_move,
+                                                   op_105_move, op_106_move, op_107_move, op_108_move, op_109_move,
+                                                   op_110_move, op_111_move, op_112_move, op_113_move, op_114_move,
+                                                   op_115_move, op_116_move, op_117_move, op_118_move };
 
 s16 op_obj_disp;
 s8 op_scrn_end;
@@ -66,6 +86,7 @@ s16 op_sound_status;
 MVXY op_bg_mvxy[3];
 OP_W op_w;
 
+/** @brief Top-level opening demo state machine (BG init → scroll → title). */
 s16 opening_demo() {
     switch (D_No[3]) {
     case 0:
@@ -115,6 +136,7 @@ s16 opening_demo() {
     return 0;
 }
 
+/** @brief Load the main title texture and prepare the title screen. */
 void TITLE_Init() {
     void* loadAdrs;
     u32 loadSize;
@@ -130,7 +152,7 @@ void TITLE_Init() {
     if (loadSize == 0) {
         // Main title texture could not be loaded.
         flLogOut("メインタイトルのテクスチャが読み込めませんでした。\n");
-        while (1) {}
+        return;
     }
 
     ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, 601, 1, 0, 0);
@@ -142,6 +164,7 @@ void TITLE_Init() {
     op_w.r_no_0 = 0;
 }
 
+/** @brief Animate and render the title logo with zoom. */
 s16 TITLE_Move(u16 type) {
     ppgSetupCurrentDataList(&ppgTitleList);
 
@@ -193,6 +216,7 @@ s16 TITLE_Move(u16 type) {
     }
 }
 
+/** @brief Load opening BG textures and initialise the cinematic sequence. */
 void OPBG_Init() {
     void* loadAdrs;
     size_t loadSize;
@@ -207,7 +231,7 @@ void OPBG_Init() {
     if ((key = Search_ramcnt_type(0x1D)) == 0) {
         // Opening demo texture has not been loaded.
         flLogOut("オープニングデモテクスチャが読み込まれていません。\n");
-        while (1) {}
+        return;
     }
 
     loadSize = Get_size_data_ramcnt_key(key);
@@ -227,6 +251,7 @@ void OPBG_Init() {
     Zoom_Value_Set(0x40);
 }
 
+/** @brief Tick the opening BG demo and render the scrolling layers. */
 s16 OPBG_Move(s32 /* unused */) {
     s16 flag = 0;
 
@@ -235,11 +260,12 @@ s16 OPBG_Move(s32 /* unused */) {
     return flag;
 }
 
+/** @brief Reset the music-synchronisation trigger state. */
 void sound_trg_init() {
     music_scene = music_time = 0;
 }
 
-const s16 sound_time_tbl[257] = {
+const s16 sound_time_tbl[SOUND_TRG_TABLE_SIZE] = {
     4,    11,   19,   26,   34,   41,   49,   56,   64,   71,   79,   86,   94,   101,  109,  116,  124,  131,  139,
     146,  154,  161,  169,  176,  184,  191,  199,  206,  214,  221,  229,  236,  244,  251,  259,  267,  274,  282,
     289,  297,  304,  312,  319,  327,  334,  342,  349,  357,  364,  372,  379,  387,  394,  402,  409,  417,  425,
@@ -256,7 +282,7 @@ const s16 sound_time_tbl[257] = {
     1857, 1864, 1872, 1880, 1887, 1895, 1902, 1910, 1917, -1
 };
 
-const s16 sound_trg_tbl[257] = {
+const s16 sound_trg_tbl[SOUND_TRG_TABLE_SIZE] = {
     101, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 102, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
     103, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 104, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
     105, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 106, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
@@ -268,8 +294,13 @@ const s16 sound_trg_tbl[257] = {
     -1
 };
 
+/** @brief Advance the sound trigger table to cue the next scene. */
 void sound_trg_move() {
     s16 buff;
+
+    if (music_scene < 0 || music_scene >= SOUND_TRG_TABLE_SIZE) {
+        return;
+    }
 
     if (op_plmove_timer >= sound_time_tbl[music_scene]) {
         if ((buff = sound_trg_tbl[music_scene]) >= 0) {
@@ -279,6 +310,7 @@ void sound_trg_move() {
     }
 }
 
+/** @brief Render all visible opening BG layers and optional debug overlay. */
 void OPBG_Trans() {
     s16 i;
     s16 j;
@@ -308,7 +340,7 @@ void OPBG_Trans() {
         opbg_trans(&op_w.bgw[2], bg_prm[2].bg_h_shift, bg_prm[2].bg_v_shift);
     }
 
-    if (Debug_w[0x30] & 1) {
+    if (Debug_w[DEBUG_OPENING_TEST] & 1) {
         for (k = 0; k < 3; k++) {
             for (j = 0; j < 4; j++) {
                 for (i = 0; i < 4; i++) {
@@ -321,7 +353,8 @@ void OPBG_Trans() {
     }
 }
 
-s16 oh_tsr_ck(s32 blk_no) {
+/** @brief Check whether a BG block number is in the persistent-texture table. */
+static s16 oh_tsr_ck(s32 blk_no) {
     s16 i;
 
     for (i = 0; optsr_tbl[i] != -1; i++) {
@@ -333,7 +366,8 @@ s16 oh_tsr_ck(s32 blk_no) {
     return 0;
 }
 
-void oh_reload_tex(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy) {
+/** @brief Release and mark a tile slot for reload if block changed. */
+static void oh_reload_tex(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy) {
     if (!oh_tsr_ck(blk_no) && (opbw->map[mapx][mapy].g_no != (blk_no + 0x259))) {
         if (opbw->map[mapx][mapy].g_no && !oh_tsr_ck(opbw->map[mapx][mapy].g_no - 0x259)) {
             ppgReleaseTextureHandle(&ppgOpnBgTex, opbw->map[mapx][mapy].g_no);
@@ -343,6 +377,7 @@ void oh_reload_tex(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy) {
     }
 }
 
+/** @brief Write a tile block into the BG map (no flip). */
 void oh_bg_blk_w(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans) {
     oh_reload_tex(opbw, blk_no, mapx, mapy);
     opbw->map[mapx][mapy].g_no = blk_no + 0x259;
@@ -352,6 +387,7 @@ void oh_bg_blk_w(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans) {
     opbw->map[mapx][mapy].col.full = 0xFFFFFFFF;
 }
 
+/** @brief Write a tile block into the BG map (horizontal flip). */
 void oh_bg_blk_wh(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans) {
     oh_reload_tex(opbw, blk_no, mapx, mapy);
     opbw->map[mapx][mapy].g_no = blk_no + 0x259;
@@ -361,6 +397,7 @@ void oh_bg_blk_wh(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans) {
     opbw->map[mapx][mapy].col.full = 0xFFFFFFFF;
 }
 
+/** @brief Write a tile block into the BG map (vertical flip). */
 void oh_bg_blk_wv(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans) {
     oh_reload_tex(opbw, blk_no, mapx, mapy);
     opbw->map[mapx][mapy].g_no = blk_no + 0x259;
@@ -370,6 +407,7 @@ void oh_bg_blk_wv(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans) {
     opbw->map[mapx][mapy].col.full = 0xFFFFFFFF;
 }
 
+/** @brief Write a tile block into the BG map (horizontal + vertical flip). */
 void oh_bg_blk_whv(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans) {
     oh_reload_tex(opbw, blk_no, mapx, mapy);
     opbw->map[mapx][mapy].g_no = blk_no + 0x259;
@@ -379,6 +417,7 @@ void oh_bg_blk_whv(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans) {
     opbw->map[mapx][mapy].col.full = 0xFFFFFFFF;
 }
 
+/** @brief Clear all opening work variables and initialise BG layer priorities. */
 void opening_init() {
     s16 i;
     s16 j;
@@ -404,6 +443,7 @@ void opening_init() {
     }
 }
 
+/** @brief Reset subroutine indices for all three opening BG layers. */
 void op_work_clear() {
     s16 i;
 
@@ -413,15 +453,22 @@ void op_work_clear() {
     }
 }
 
+/** @brief Dispatch the opening demo sub-phases (init → move → title). */
 s16 oh_opening_demo() {
-    void (*opening_demo_jp[3])() = { opening_init2, opening_move, opening_title };
+    void (*opening_demo_jp[OPENING_DEMO_PHASE_COUNT])() = { opening_init2, opening_move, opening_title };
 
     Game_timer += 1;
+
+    if (op_w.r_no_0 < 0 || op_w.r_no_0 >= OPENING_DEMO_PHASE_COUNT) {
+        return op_end_flag;
+    }
+
     opening_demo_jp[op_w.r_no_0]();
     Bg_Family_Set_op();
     return op_end_flag;
 }
 
+/** @brief Second-stage init — dispatch 3-part initialization sequence. */
 void opening_init2() {
     Game_timer = 0;
 
@@ -440,6 +487,7 @@ void opening_init2() {
     }
 }
 
+/** @brief Phase 0 init — set up BG families, screen, zoom, and work data. */
 void opning_init_00000() {
     s16 i;
 
@@ -485,6 +533,7 @@ void opning_init_00000() {
     bg_w.chase_flag = 0;
 }
 
+/** @brief Phase 1 init — turn off BG layers and set initial scroll position. */
 void opning_init_01000() {
     op_w.r_no_1++;
     Bg_Off_R(0xF);
@@ -494,6 +543,7 @@ void opning_init_01000() {
     base_y_pos = 40;
 }
 
+/** @brief Phase 2 init — countdown then advance to the main animation loop. */
 void opning_init_02000() {
     op_w.free_work--;
 
@@ -511,15 +561,16 @@ void opning_init_02000() {
     op_plmove_timer = 2;
 }
 
-const s16 op_change_sound_tbl[18] = { 101, 102, 103, 104, 105, 106, 107, 108, 109,
-                                      110, 111, 112, 113, 114, 115, 116, 117, 16 };
+const s16 op_change_sound_tbl[OP_CHANGE_SOUND_COUNT] = { 101, 102, 103, 104, 105, 106, 107, 108, 109,
+                                                         110, 111, 112, 113, 114, 115, 116, 117, 16 };
 
-const s16 op_quake_y_tbl0[16] = { 4, -8, 2, 1, -6, -3, 9, -3, 8, -2, 6, 3, -4, -9, 3, -1 };
+const s16 op_quake_y_tbl0[OP_QUAKE_Y_COUNT] = { 4, -8, 2, 1, -6, -3, 9, -3, 8, -2, 6, 3, -4, -9, 3, -1 };
 
+/** @brief Main opening move loop — track sound cues and dispatch scene handlers. */
 void opening_move() {
     s16 work2;
 
-    if (Debug_w[0x30]) {
+    if (Debug_w[DEBUG_OPENING_TEST]) {
         flPrintColor(0xFFFFFF8F);
         flPrintL(2, 1, "BAR %d", op_w.r_no_1);
     }
@@ -527,7 +578,7 @@ void opening_move() {
     op_plmove_timer += 1;
     sound_trg_move();
 
-    if (op_w.r_no_1 < 18) {
+    if (op_w.r_no_1 < OP_CHANGE_SOUND_COUNT) {
         work2 = gSeqStatus[0];
 
         if (op_sound_status != work2) {
@@ -539,10 +590,15 @@ void opening_move() {
         }
     }
 
+    if (op_w.r_no_1 < 0 || op_w.r_no_1 >= OPENING_SCENE_COUNT) {
+        return;
+    }
+
     opening_move_jp[op_w.r_no_1]();
     op_sound_status = gSeqStatus[0];
 }
 
+/** @brief Scene 100 — start BGM and immediately chain into scene 101. */
 void op_100_move() {
     op_w.r_no_1 += 1;
     Go_BGM();
@@ -552,6 +608,7 @@ void op_100_move() {
 
 const s16 op_101_sound[2] = { 0, 11 };
 
+/** @brief Scene 101 — first fight scene (fade in, effect init, BG scroll). */
 void op_101_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -584,6 +641,7 @@ void op_101_move() {
 
 const s16 op_102_sound[3] = { 0, 9, 12 };
 
+/** @brief Scene 102 — second fight scene (multi-phase with three sound cues). */
 void op_102_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -631,6 +689,7 @@ void op_102_move() {
 
 const s16 op_103_sound[12] = { 0, 1, 2, 3, 4, 5, 7, 8, 9, 11, 12, 13 };
 
+/** @brief Scene 103 — extended multi-phase scene (12 sound cues, 13 sub-phases). */
 void op_103_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -790,6 +849,7 @@ void op_103_move() {
 
 s16 op_104_sound[7] = { 0, 5, 6, 7, 9, 10, 11 };
 
+/** @brief Scene 104 — multi-phase scene (7 sound cues). */
 void op_104_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -885,6 +945,7 @@ void op_104_move() {
     }
 }
 
+/** @brief Scene 105 — short transitional scene. */
 void op_105_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -906,6 +967,7 @@ void op_105_move() {
 
 const s16 op_106_sound[4] = { 0, 1, 3, 7 };
 
+/** @brief Scene 106 — scene with 4 sound-triggered sub-phases. */
 void op_106_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -967,6 +1029,7 @@ void op_106_move() {
 
 const s16 op_107_sound[12] = { 0, 1, 2, 3, 4, 5, 7, 8, 9, 11, 12, 13 };
 
+/** @brief Scene 107 — extended scene (12 sound cues, multi-phase BG animation). */
 void op_107_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1125,6 +1188,7 @@ void op_107_move() {
 
 const s16 op_108_sound[13] = { 0, 4, 20, 24, 28, 32, 48, 52, 60, 64, 76, 80, 86 };
 
+/** @brief Scene 108 — long scene with 13 sound-triggered sub-phases. */
 void op_108_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1319,6 +1383,7 @@ void op_108_move() {
 
 const s16 op_109_sound[5] = { 0, 3, 5, 7, 11 };
 
+/** @brief Scene 109 — scene with 5 sound-triggered sub-phases. */
 void op_109_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1388,6 +1453,7 @@ void op_109_move() {
 
 const s16 op_110_sound[6] = { 0, 0, 3, 4, 7, 9 };
 
+/** @brief Scene 110 — scene with 6 sound-triggered sub-phases. */
 void op_110_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1470,6 +1536,7 @@ void op_110_move() {
 
 const s16 op_111_sound[5] = { 0, 2, 4, 7, 11 };
 
+/** @brief Scene 111 — scene with 5 sound-triggered sub-phases. */
 void op_111_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1534,6 +1601,7 @@ void op_111_move() {
 
 const s16 op_112_sound[9] = { 0, 8, 8, 14, 19, 26, 34, 40, 44 };
 
+/** @brief Scene 112 — extended scene with 9 sound-triggered sub-phases. */
 void op_112_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1669,6 +1737,7 @@ void op_112_move() {
 
 const s16 op_113_sound[4] = { 0, 3, 7, 11 };
 
+/** @brief Scene 113 — scene with 4 sound-triggered sub-phases. */
 void op_113_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1729,6 +1798,7 @@ void op_113_move() {
 
 const s16 op_114_sound[6] = { 0, 2, 3, 4, 7, 9 };
 
+/** @brief Scene 114 — scene with 6 sound-triggered sub-phases. */
 void op_114_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1811,6 +1881,7 @@ void op_114_move() {
 
 const s16 op_115_sound[2] = { 0, 7 };
 
+/** @brief Scene 115 — short scene with 2 sound-triggered sub-phases. */
 void op_115_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1839,6 +1910,7 @@ void op_115_move() {
     }
 }
 
+/** @brief Scene 116 — scene with screen quake and position reset. */
 void op_116_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1883,6 +1955,7 @@ void op_116_move() {
     }
 }
 
+/** @brief Scene 117 — fade-out transition scene. */
 void op_117_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1905,6 +1978,7 @@ void op_117_move() {
     }
 }
 
+/** @brief Scene 118 — final opening scene, advance to title screen. */
 void op_118_move() {
     switch (op_w.r_no_2) {
     case 0:
@@ -1959,14 +2033,16 @@ void op_118_move() {
     }
 }
 
+/** @brief Dispatch BG-move callbacks for all three background layers. */
 void op_bg_move(s16 r_index) {
     op_bg0_move(r_index);
     op_bg1_move(r_index);
     op_bg2_move(r_index);
 }
 
+/** @brief Dispatch background layer 0 sub-routine by op_w state. */
 void op_bg0_move(s16 r_index) {
-    void (*op_bg0_move_jp[94])(
+    void (*op_bg0_move_jp[OP_BG0_DISPATCH_COUNT])(
         s16) = { op_bg0_0000, op_bg0_0001, op_bg0_0000, op_bg0_0001, op_bg0_0001, op_bg0_0001, op_bg0_0000, op_bg0_0001,
                  op_bg0_0015, op_bg0_0001, op_bg0_0000, op_bg0_0001, op_bg0_0001, op_bg0_0000, op_bg0_0015, op_bg0_0001,
                  op_bg0_0000, op_bg0_0000, op_bg0_0001, op_bg0_0001, op_bg0_0000, op_bg0_0001, op_bg0_0001, op_bg0_0000,
@@ -1982,9 +2058,15 @@ void op_bg0_move(s16 r_index) {
 
     opw_ptr = &op_w.bgw[0];
     bgw_ptr = &bg_w.bgw[0];
+
+    if (r_index < 0 || r_index >= OP_BG0_DISPATCH_COUNT) {
+        return;
+    }
+
     op_bg0_move_jp[r_index](r_index);
 }
 
+/** @brief BG0 sub 0 — initial tile load and screen setup. */
 void op_bg0_0000(s16 /* unused */) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -1998,6 +2080,7 @@ void op_bg0_0000(s16 /* unused */) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 1 — animated tile-map updates driven by op_w.index. */
 void op_bg0_0001(s16 r_index) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2160,6 +2243,7 @@ void op_bg0_0001(s16 r_index) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 2 — timed tile transitions. */
 void op_bg0_0002(s16 r_index) {
     PAL_CURSOR beta_poly;
     PAL_CURSOR_P beta_p[4];
@@ -2188,14 +2272,14 @@ void op_bg0_0002(s16 r_index) {
         bgw_ptr->xy[1].cal = 0;
 
         if (!No_Trans) {
-            njDrawPolygon2D(&beta_poly, 4, PrioBase[75], 0x20);
+            Renderer_Queue2DPrimitive((f32*)beta_poly.p, PrioBase[75], (uintptr_t)beta_poly.col[0].color, 0);
         }
 
         break;
 
     case 1:
         if (!No_Trans) {
-            njDrawPolygon2D(&beta_poly, 4, PrioBase[75], 0x20);
+            Renderer_Queue2DPrimitive((f32*)beta_poly.p, PrioBase[75], (uintptr_t)beta_poly.col[0].color, 0);
         }
 
         break;
@@ -2204,6 +2288,7 @@ void op_bg0_0002(s16 r_index) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 3 — tile transitions with palette load. */
 void op_bg0_0003(s16 r_index) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2255,8 +2340,10 @@ void op_bg0_0003(s16 r_index) {
     op_scrn_pos_set2(0);
 }
 
-const s32 ot_bg0_0004_tbl[6] = { 0xFF00A0B0, 0xFF005888, 0xFF00A0B0, 0xFF005888, 0xFF000058, 0xFF000000 };
+const s32 ot_bg0_0004_tbl[OP_COLOR_FADE_STAGES] = { 0xFF00A0B0, 0xFF005888, 0xFF00A0B0,
+                                                    0xFF005888, 0xFF000058, 0xFF000000 };
 
+/** @brief BG0 sub 4 — progressive colour fade with tile updates. */
 void op_bg0_0004(s16 r_index) {
     PAL_CURSOR beta_poly;
     PAL_CURSOR_P beta_p[4];
@@ -2281,14 +2368,14 @@ void op_bg0_0004(s16 r_index) {
         bgw_ptr->xy[1].cal = 0;
 
         if (!No_Trans) {
-            njDrawPolygon2D(&beta_poly, 4, PrioBase[75], 0x20);
+            Renderer_Queue2DPrimitive((f32*)beta_poly.p, PrioBase[75], (uintptr_t)beta_poly.col[0].color, 0);
         }
 
         break;
 
     case 1:
         if (!No_Trans) {
-            njDrawPolygon2D(&beta_poly, 4, PrioBase[75], 0x20);
+            Renderer_Queue2DPrimitive((f32*)beta_poly.p, PrioBase[75], (uintptr_t)beta_poly.col[0].color, 0);
         }
 
         if (!op_scrn_end) {
@@ -2307,7 +2394,7 @@ void op_bg0_0004(s16 r_index) {
         if (bgw_ptr->free <= 0) {
             bgw_ptr->l_limit += 1;
 
-            if (bgw_ptr->l_limit >= 6) {
+            if (bgw_ptr->l_limit >= OP_COLOR_FADE_STAGES) {
                 opw_ptr->r_no_0 += 1;
             } else {
                 bgw_ptr->free = 1;
@@ -2317,7 +2404,7 @@ void op_bg0_0004(s16 r_index) {
         }
 
         if (!No_Trans) {
-            njDrawPolygon2D(&beta_poly, 4, PrioBase[75], 0x20);
+            Renderer_Queue2DPrimitive((f32*)beta_poly.p, PrioBase[75], (uintptr_t)beta_poly.col[0].color, 0);
         }
 
         break;
@@ -2326,7 +2413,7 @@ void op_bg0_0004(s16 r_index) {
         beta_col[0].color = beta_col[1].color = beta_col[2].color = beta_col[3].color = ot_bg0_0004_tbl[5];
 
         if (!No_Trans) {
-            njDrawPolygon2D(&beta_poly, 4, PrioBase[75], 0x20);
+            Renderer_Queue2DPrimitive((f32*)beta_poly.p, PrioBase[75], (uintptr_t)beta_poly.col[0].color, 0);
         }
 
         break;
@@ -2335,9 +2422,10 @@ void op_bg0_0004(s16 r_index) {
     op_scrn_pos_set2(0);
 }
 
-const s16 op_bg0_0005_tbl[16] = { 0x0008, 0xFFF8, 0x0007, 0xFFF9, 0x0005, 0xFFFB, 0x0004, 0xFFFC,
-                                  0x0002, 0xFFFE, 0x0001, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000 };
+const s16 op_bg0_0005_tbl[OP_QUAKE_STEP_COUNT] = { 0x0008, 0xFFF8, 0x0007, 0xFFF9, 0x0005, 0xFFFB, 0x0004, 0xFFFC,
+                                                   0x0002, 0xFFFE, 0x0001, 0xFFFF, 0x0000, 0x0000, 0x0000, 0x0000 };
 
+/** @brief BG0 sub 5 — screen shake via quake table and tile updates. */
 void op_bg0_0005(s16 /* unused */) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2373,7 +2461,7 @@ void op_bg0_0005(s16 /* unused */) {
     case 2:
         bgw_ptr->free += 1;
 
-        if (bgw_ptr->free >= 0x10) {
+        if (bgw_ptr->free >= OP_QUAKE_STEP_COUNT) {
             opw_ptr->r_no_0 += 1;
         } else {
             bgw_ptr->wxy[0].disp.pos += op_bg0_0005_tbl[bgw_ptr->free];
@@ -2386,6 +2474,7 @@ void op_bg0_0005(s16 /* unused */) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 6 — scrolling tile strip animation. */
 void op_bg0_0006(s16 /* unused */) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2412,6 +2501,7 @@ void op_bg0_0006(s16 /* unused */) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 7 — multi-frame tile-map update sequence. */
 void op_bg0_0007(s16 /* unused */) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2444,6 +2534,7 @@ void op_bg0_0007(s16 /* unused */) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 8 — rapid tile swap sequence. */
 void op_bg0_0008(s16 /* unused */) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2476,6 +2567,7 @@ void op_bg0_0008(s16 /* unused */) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 10 — animated tile reveal sequence. */
 void op_bg0_0010(s16 /* unused */) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2505,6 +2597,7 @@ void op_bg0_0010(s16 /* unused */) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 11 — multi-step tile-map animation. */
 void op_bg0_0011(s16 /* unused */) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2541,6 +2634,7 @@ void op_bg0_0011(s16 /* unused */) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 12 — animated tile update with timing. */
 void op_bg0_0012(s16 /* unused */) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2571,6 +2665,7 @@ void op_bg0_0012(s16 /* unused */) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 13 — final tile-map transition. */
 void op_bg0_0013(s16 /* unused */) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2598,12 +2693,15 @@ void op_bg0_0013(s16 /* unused */) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 14 — stub (no operation). */
 void op_bg0_0014(s16 r_index) {
     op_bg0_0000(r_index);
 }
 
-const s32 ot_bg0_0015_tbl[6] = { 0xFF00A0B0, 0xFF005888, 0xFF00A0B0, 0xFF005888, 0xFF000058, 0xFF000000 };
+const s32 ot_bg0_0015_tbl[OP_COLOR_FADE_STAGES] = { 0xFF00A0B0, 0xFF005888, 0xFF00A0B0,
+                                                    0xFF005888, 0xFF000058, 0xFF000000 };
 
+/** @brief BG0 sub 15 — progressive colour fade variant. */
 void op_bg0_0015(s16 r_index) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2638,7 +2736,7 @@ void op_bg0_0015(s16 r_index) {
         if (bgw_ptr->free <= 0) {
             bgw_ptr->l_limit += 1;
 
-            if (bgw_ptr->l_limit >= 6) {
+            if (bgw_ptr->l_limit >= OP_COLOR_FADE_STAGES) {
                 opw_ptr->r_no_0 += 1;
             } else {
                 bgw_ptr->free = 1;
@@ -2658,6 +2756,7 @@ void op_bg0_0015(s16 r_index) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief BG0 sub 16 — multi-frame tile animation with timing. */
 void op_bg0_0016(s16 /* unused */) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2699,6 +2798,7 @@ void op_bg0_0016(s16 /* unused */) {
     op_scrn_pos_set2(0);
 }
 
+/** @brief Dispatch background layer 1 sub-routine by op_w state. */
 void op_bg1_move(s16 r_index) {
     opw_ptr = &op_w.bgw[1];
     bgw_ptr = &bg_w.bgw[1];
@@ -2725,6 +2825,7 @@ void op_bg1_move(s16 r_index) {
     op_scrn_pos_set2(1);
 }
 
+/** @brief BG1 sub 0 — initial tile load for layer 1. */
 void op_bg1_0000(s16 /* unused */) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2740,6 +2841,7 @@ void op_bg1_0000(s16 /* unused */) {
     }
 }
 
+/** @brief BG1 sub 1 — timed tile-map updates for layer 1. */
 void op_bg1_0001(s16 r_index) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2767,6 +2869,7 @@ void op_bg1_0001(s16 r_index) {
     }
 }
 
+/** @brief BG1 sub 2 — alternating tile animation for layer 1. */
 void op_bg1_0002(s16 r_index) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2806,6 +2909,7 @@ void op_bg1_0002(s16 r_index) {
     }
 }
 
+/** @brief BG1 sub 3 — complex multi-step tile animation for layer 1. */
 void op_bg1_0003(s16 r_index) {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2852,6 +2956,7 @@ void op_bg1_0003(s16 r_index) {
     }
 }
 
+/** @brief Dispatch background layer 2 sub-routine by op_w state. */
 void op_bg2_move(s16 r_index) {
     opw_ptr = &op_w.bgw[2];
     bgw_ptr = &bg_w.bgw[2];
@@ -2878,6 +2983,7 @@ void op_bg2_move(s16 r_index) {
     op_scrn_pos_set2(2);
 }
 
+/** @brief BG2 sub 0 — initial tile load for layer 2. */
 void op_bg2_0000() {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2895,6 +3001,7 @@ void op_bg2_0000() {
     }
 }
 
+/** @brief BG2 sub 1 — tile-map update for layer 2. */
 void op_bg2_0001() {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2908,6 +3015,7 @@ void op_bg2_0001() {
     }
 }
 
+/** @brief BG2 sub 2 — further tile transitions for layer 2. */
 void op_bg2_0002() {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2925,6 +3033,7 @@ void op_bg2_0002() {
     }
 }
 
+/** @brief BG2 sub 3 — final tile animation for layer 2. */
 void op_bg2_0003() {
     switch (opw_ptr->r_no_0) {
     case 0:
@@ -2942,6 +3051,7 @@ void op_bg2_0003() {
     }
 }
 
+/** @brief Render the opening title card with zoom and screen effects. */
 void opening_title() {
     switch (op_w.r_no_1) {
     case 0:
@@ -2963,6 +3073,7 @@ void opening_title() {
     }
 }
 
+/** @brief Alternate title card rendering path (stage 01). */
 void opening_title_01() {
     s16 pos_work_x;
     s16 pos_work_y;
@@ -2989,12 +3100,14 @@ void opening_title_01() {
     bg_w.chase_flag = 0;
 }
 
+/** @brief Set screen scroll position for a given BG layer. */
 void op_scrn_pos_set2(s16 bg_no) {
     s16 pos_x = bg_w.bgw[bg_no].wxy[0].disp.pos;
     s16 pos_y = bg_w.bgw[bg_no].xy[1].disp.pos;
     Scrn_Move_Set(bg_no, pos_x - bg_w.pos_offset, pos_y);
 }
 
+/** @brief Configure BG family parameters for the opening cinematics. */
 void Bg_Family_Set_op() {
     s16 pos_work_x;
     s16 pos_work_y;

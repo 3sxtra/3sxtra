@@ -1,3 +1,12 @@
+/**
+ * @file OBJTEST.c
+ * @brief Vibration test data — snapshot current force-feedback state.
+ *
+ * Copies the live pulreq/pulpara arrays into local buffers for
+ * inspection by the object-test debug screen.
+ *
+ * Part of the debug module.
+ */
 #include "sf33rd/Source/Game/debug/OBJTEST.h"
 #include "common.h"
 #include "sf33rd/Source/Game/debug/OTESTDAT.h"
@@ -10,11 +19,12 @@ PPWORK_SUB_SUB ot_pulreq_xx[OT_PULREQ_XX_MAX];
 PULREQ ot_pulreq[OT_PULREQ_MAX];
 PULPARA ot_pulpara[OT_PULPARA_MAX];
 
+/** @brief Snapshot live vibration/force-feedback data into local buffers. */
 void ot_make_curr_vib_data() {
     const PPWORK_SUB_SUB* adrs;
     s16 i;
 
-    for (i = 0; i < (OT_PULPARA_MAX + 1); i++) {
+    for (i = 0; i < OT_PULPARA_MAX; i++) {
         ot_pulpara[i] = pulpara[i];
     }
 

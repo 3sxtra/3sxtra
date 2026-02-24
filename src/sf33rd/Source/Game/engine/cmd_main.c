@@ -14,11 +14,14 @@
 
 #include <SDL3/SDL.h>
 
+#define CHK_MOVE_COUNT 28
+
 void (*chk_move_jp[28])() = { check_init, check_0,  check_1,  check_2,  check_3,  check_4,  check_5,
                               check_6,    check_7,  check_7,  check_9,  check_10, check_11, check_12,
                               check_13,   check_14, check_15, check_16, check_16, check_18, check_19,
                               check_20,   check_21, check_22, check_23, check_24, check_25, check_26 };
 
+/** @brief Main move/command check dispatcher — scans for special move inputs. */
 void waza_check(PLW* pl) {
     cmd_pl = pl;
     cmd_id = cmd_pl->wu.id;
@@ -27,6 +30,7 @@ void waza_check(PLW* pl) {
     cmd_move();
 }
 
+/** @brief Passes lever input through without processing (used for disabled states). */
 void key_thru(PLW* pl) {
     cmd_pl = pl;
     cmd_id = cmd_pl->wu.id;
@@ -34,6 +38,7 @@ void key_thru(PLW* pl) {
     sw_pick_up();
 }
 
+/** @brief Initializes command sequence data tables from the move definition set. */
 void cmd_data_set(PLW* /* unused */, s16 i) {
     u8* ptr3;
     u16* ptr4;
@@ -71,6 +76,7 @@ void cmd_data_set(PLW* /* unused */, s16 i) {
     }
 }
 
+/** @brief Initializes the command input state machine for a player. */
 void cmd_init(PLW* pl) {
     s16 i;
     s16 j;
@@ -91,6 +97,7 @@ void cmd_init(PLW* pl) {
     waza_compel_all_init(pl);
 }
 
+/** @brief Advances all active command checks by one frame. */
 void cmd_move() {
     s16 j;
     intptr_t* adrs;
@@ -108,7 +115,8 @@ void cmd_move() {
             waza_type[cmd_id] = j;
             cmd_tbl_ptr = (s16*)adrs[j];
             waza_ptr = &waza_work[cmd_id][j];
-            chk_move_jp[waza_ptr->w_type]();
+            if (waza_ptr->w_type < CHK_MOVE_COUNT)
+                chk_move_jp[waza_ptr->w_type]();
         }
     }
 
@@ -120,6 +128,7 @@ void cmd_move() {
     }
 }
 
+/** @brief Initializes a command check for the current motion. */
 void check_init() {
     cmd_tbl_ptr += 12;
     waza_ptr->w_type = *cmd_tbl_ptr++;
@@ -133,9 +142,11 @@ void check_init() {
     waza_ptr->uni0.tame.shot_flag2 = 0;
     waza_ptr->shot_ok = 0;
     waza_ptr->free3 = 0;
-    chk_move_jp[waza_ptr->w_type]();
+    if (waza_ptr->w_type < CHK_MOVE_COUNT)
+        chk_move_jp[waza_ptr->w_type]();
 }
 
+/** @brief Advances to the next step of the current command sequence. */
 void check_next() {
     s16* next_ptr = waza_ptr->w_ptr;
 
@@ -147,10 +158,12 @@ void check_next() {
     waza_ptr->w_ptr = next_ptr;
 
     if (waza_ptr->w_type != 10) {
-        chk_move_jp[waza_ptr->w_type]();
+        if (waza_ptr->w_type < CHK_MOVE_COUNT)
+            chk_move_jp[waza_ptr->w_type]();
     }
 }
 
+/** @brief Check type 0: Directional input (single joystick direction match). */
 void check_0() {
     u16 sw_lever;
 
@@ -194,6 +207,7 @@ void check_0() {
     }
 }
 
+/** @brief Check type 1: Directional input with held requirement. */
 void check_1() {
     if (dead_lvr_check() == 0) {
         sw_work = waza_ptr->w_lvr & 0xF;
@@ -255,6 +269,7 @@ void check_1() {
     }
 }
 
+/** @brief Check type 2: Button press check (punch/kick). */
 void check_2() {
     sw_work = chk_pl->sw_new & waza_ptr->w_lvr;
 
@@ -288,6 +303,7 @@ void check_2() {
     }
 }
 
+/** @brief Check type 3: Button press with extra conditions (SA gauge, etc.). */
 void check_3() {
     s16 i;
     s16 w_flag;
@@ -335,6 +351,7 @@ void check_3() {
     }
 }
 
+/** @brief Check type 4: Charge-motion direction check (hold-back-then-forward). */
 void check_4() {
     if (waza_ptr->w_lvr == 0x10) {
         if (chk_pl->sw_now & 0x10) {
@@ -415,6 +432,7 @@ void check_4() {
     }
 }
 
+/** @brief Check type 5: Multi-button simultaneous press check. */
 void check_5() {
     waza_ptr->w_int--;
 
@@ -432,6 +450,7 @@ void check_5() {
     }
 }
 
+/** @brief Check type 6: Button release check. */
 void check_6() {
     s16 i;
     u16 lvr_work;
@@ -481,6 +500,7 @@ void check_6() {
     }
 }
 
+/** @brief Check type 7: Negative edge button release check. */
 void check_7() {
     s16 i;
     s16 w_flag;
@@ -538,6 +558,7 @@ void check_7() {
     }
 }
 
+/** @brief Check type 9: Direction-hold check with charge time. */
 void check_9() {
     waza_ptr->w_int--;
 
@@ -599,6 +620,7 @@ void check_9() {
     }
 }
 
+/** @brief Resets the parry miss input lock timer. */
 void paring_miss_init() {
     waza_ptr->free3 = 0;
     waza_ptr->w_type = 0;
@@ -606,6 +628,7 @@ void paring_miss_init() {
     wcp[cmd_id].waza_flag[waza_type[cmd_id]] = 0;
 }
 
+/** @brief Check type 10: Parry (blocking) input detection. */
 void check_10() {
     switch (waza_ptr->shot_ok) {
     case 0:
@@ -794,6 +817,7 @@ void check_10() {
     }
 }
 
+/** @brief Check type 11: Throw tech (ukemi) input detection. */
 void check_11() {
     if (dead_lvr_check()) {
         paring_miss_init();
@@ -824,6 +848,7 @@ void check_11() {
     }
 }
 
+/** @brief Check type 12: Super Art (SA) motion + button input. */
 void check_12() {
     switch (waza_ptr->shot_ok) {
     case 0:
@@ -1003,6 +1028,7 @@ void check_12() {
     }
 }
 
+/** @brief Check type 13: Air parry input detection. */
 void check_13() {
     u16 sw_w;
 
@@ -1029,6 +1055,7 @@ void check_13() {
     }
 }
 
+/** @brief Check type 14: EX special move input (two same-type buttons). */
 void check_14() {
     waza_ptr->w_int--;
 
@@ -1086,6 +1113,7 @@ void check_14() {
     }
 }
 
+/** @brief Check type 15: Kara-cancel input detection. */
 void check_15() {
     waza_ptr->w_int--;
 
@@ -1135,6 +1163,7 @@ void check_15() {
     }
 }
 
+/** @brief Check type 16: Personal action (taunt) input detection. */
 void check_16() {
     s16 i;
     u16 w_flag;
@@ -1178,6 +1207,7 @@ void check_16() {
     }
 }
 
+/** @brief Check type 18: Quick stand (recovery) input detection. */
 void check_18() {
     u16 sw_lever;
 
@@ -1212,6 +1242,7 @@ void check_18() {
     }
 }
 
+/** @brief Check type 19: Grab escape (tech throw) input detection. */
 void check_19() {
     u16 sw_lever;
 
@@ -1244,8 +1275,10 @@ void check_19() {
     }
 }
 
+/** @brief Check type 20: Unused/no-op check. */
 void check_20() {}
 
+/** @brief Check type 21: High jump input (down-up). */
 void check_21() {
     u16 sw_lever;
 
@@ -1297,6 +1330,7 @@ void check_21() {
     }
 }
 
+/** @brief Check type 22: Dash input (forward-forward or back-back). */
 void check_22() {
     s16 i;
 
@@ -1335,6 +1369,7 @@ void check_22() {
     }
 }
 
+/** @brief Check type 23: Target combo input detection. */
 void check_23() {
     switch (waza_ptr->shot_ok) {
     case 0:
@@ -1405,6 +1440,7 @@ void check_23() {
     }
 }
 
+/** @brief Check type 24: Chain combo input detection. */
 void check_24() {
     u16 sw_lever;
 
@@ -1450,6 +1486,7 @@ void check_24() {
     }
 }
 
+/** @brief Check type 25: Leap attack input detection (close + direction + button). */
 void check_25() {
     u16 sw_lever;
 
@@ -1495,6 +1532,7 @@ void check_25() {
     }
 }
 
+/** @brief Check type 26: Special grab/throw input detection. */
 void check_26() {
     u16 sw_lever = chk_pl->sw_now & 0xF;
     u16 sw_now_lvr = chk_pl->sw_lever & 0xF;
@@ -1517,6 +1555,7 @@ void check_26() {
     }
 }
 
+/** @brief Marks the current command check as successful and records the move. */
 void command_ok() {
     wcp[cmd_id].waza_flag[waza_type[cmd_id]] = wcp[cmd_id].reset[waza_type[cmd_id]];
 
@@ -1526,6 +1565,7 @@ void command_ok() {
     }
 }
 
+/** @brief Marks a specific move number as successfully detected. */
 void command_ok_move(s16 waza_num) {
     if (dead_lvr_check()) {
         wcp[cmd_id].waza_flag[waza_num] = 0;
@@ -1535,6 +1575,7 @@ void command_ok_move(s16 waza_num) {
     wcp[cmd_id].waza_flag[waza_num]--;
 }
 
+/** @brief Returns 1 if the lever is in a neutral (dead zone) position. */
 s32 dead_lvr_check() {
     if ((!waza_ptr->w_dead || waza_ptr->w_dead != chk_pl->sw_new) &&
         (!waza_ptr->w_dead2 || waza_ptr->w_dead2 != chk_pl->sw_new)) {
@@ -1545,6 +1586,7 @@ s32 dead_lvr_check() {
     return 1;
 }
 
+/** @brief Processes raw joystick input into the player's lever buffer. */
 void pl_lvr_set() {
     u16 sw_work;
     u16 work2;
@@ -1673,6 +1715,7 @@ void pl_lvr_set() {
     wcp[cmd_id].lgp += lever_gacha_tbl[(cmd_pl->cp->sw_now / 256) & 7] * 1;
 }
 
+/** @brief Picks up button presses and releases from the raw switch data. */
 void sw_pick_up() {
     s16 i;
     s16* cnt_address1;
@@ -1738,6 +1781,7 @@ void sw_pick_up() {
     wcp[cmd_id].calr = 0;
 }
 
+/** @brief Clears all dash-detection flags for a player. */
 void dash_flag_clear(s16 pl_id) {
     intptr_t* adrs;
 
@@ -1751,6 +1795,7 @@ void dash_flag_clear(s16 pl_id) {
     waza_compel_init(pl_id, 1, adrs);
 }
 
+/** @brief Clears all high-jump detection flags for a player. */
 void hi_jump_flag_clear(s16 pl_id) {
     intptr_t* adrs;
 
@@ -1763,6 +1808,7 @@ void hi_jump_flag_clear(s16 pl_id) {
     waza_compel_init(pl_id, 2, adrs);
 }
 
+/** @brief Clears the detection flag for a single move by its index. */
 void waza_flag_clear_only_1(s16 pl_id, s16 wznum) {
     intptr_t* adrs;
 
@@ -1775,6 +1821,7 @@ void waza_flag_clear_only_1(s16 pl_id, s16 wznum) {
     waza_compel_init(pl_id, wznum, adrs);
 }
 
+/** @brief Force-sets a command detection state for AI/scripted input. */
 void waza_compel_init(s16 pl_id, s16 num, intptr_t* adrs) {
     WAZA_WORK* w_ptr;
     s16* ptr;
@@ -1796,6 +1843,7 @@ void waza_compel_init(s16 pl_id, s16 num, intptr_t* adrs) {
     wcp[pl_id].waza_flag[num] = 0;
 }
 
+/** @brief Force-initializes all command detection slots for a player (AI). */
 void waza_compel_all_init(PLW* pl) {
     s16 i;
     intptr_t* adrs;
@@ -1870,6 +1918,7 @@ void waza_compel_all_init(PLW* pl) {
     }
 }
 
+/** @brief Simplified version of waza_compel_all_init for specific use cases. */
 void waza_compel_all_init2(PLW* pl) {
     s16 j;
 
@@ -1880,6 +1929,7 @@ void waza_compel_all_init2(PLW* pl) {
     }
 }
 
+/** @brief Applies directional mirroring to a lever/button data word. */
 u16 processed_lvbt(u16 lv_data) {
     return lv_data & 0xFFF;
 }

@@ -1,8 +1,3 @@
-/**
- * @file pl00end_en.c
- * Gill Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl00end_en.h"
 #include "common.h"
 
@@ -57,4 +52,4 @@ static s8** msgEndAdrPL00[18] = {
 
 static s8 msgEndCtrPL00[18] = { 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1, 1, 2, 1, 1, 2, 1 };
 
-MessageTable pl00end_usa_tbl = { msgEndAdrPL00, msgEndCtrPL00 };
+MessageTable pl00end_en_tbl = { msgEndAdrPL00, msgEndCtrPL00 };

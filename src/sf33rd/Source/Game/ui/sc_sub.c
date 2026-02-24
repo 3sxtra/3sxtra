@@ -1,10 +1,19 @@
 /**
  * @file sc_sub.c
- * HUD elements and screen transitions
+ * @brief HUD rendering: health bars, gauges, text, fades, wipes, training display.
+ *
+ * The main UI rendering file. Handles all in-game HUD elements including
+ * health/stun/super-art gauges, round timer display, screen font rendering
+ * (8×8, 16×16, scalable), screen transitions (wipe/fade/tone), player
+ * name/face display, combo messages, and training mode data overlay.
+ *
+ * Part of the ui module.
  */
 
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "common.h"
+#include "port/legacy_matrix.h"
+#include "port/renderer.h"
 #include "port/sdl/sdl_game_renderer.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -13,7 +22,6 @@
 #include "sf33rd/Source/Game/effect/eff76.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
-#include "sf33rd/Source/Game/rendering/dc_ghost.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/system/ramcnt.h"
@@ -26,151 +34,61 @@
 #define TO_UV_256_NEG(val) (TO_UV_256(val))
 #define TO_UV_128(val) ((val) / 128.0f)
 
-/// Trim values for ASCII characters (high nibble = left trim, low nibble = right trim)
-const u8 ascProData[128] = {
-    0x00, // 0x00
-    0x12, // 0x01
-    0x00, // 0x02
-    0x00, // 0x03
-    0x00, // 0x04
-    0x00, // 0x05
-    0x00, // 0x06
-    0x00, // 0x07
-    0x00, // 0x08
-    0x00, // 0x09
-    0x00, // 0x0A
-    0x00, // 0x0B
-    0x00, // 0x0C
-    0x00, // 0x0D
-    0x00, // 0x0E
-    0x00, // 0x0F
-    0x00, // 0x10
-    0x00, // 0x11
-    0x00, // 0x12
-    0x00, // 0x13
-    0x00, // 0x14
-    0x00, // 0x15
-    0x00, // 0x16
-    0x00, // 0x17
-    0x00, // 0x18
-    0x00, // 0x19
-    0x00, // 0x1A
-    0x00, // 0x1B
-    0x00, // 0x1C
-    0x00, // 0x1D
-    0x00, // 0x1E
-    0x00, // 0x1F
-    0x22, // space
-    0x13, // !
-    0x12, // "
-    0x00, // #
-    0x00, // $
-    0x00, // %
-    0x00, // &
-    0x22, // '
-    0x22, // (
-    0x22, // )
-    0x01, // *
-    0x01, // +
-    0x22, // ,
-    0x01, // -
-    0x22, // .
-    0x00, // /
-    0x00, // 0
-    0x12, // 1
-    0x00, // 2
-    0x00, // 3
-    0x00, // 4
-    0x00, // 5
-    0x00, // 6
-    0x00, // 7
-    0x00, // 8
-    0x00, // 9
-    0x22, // :
-    0x22, // ;
-    0x11, // <
-    0x00, // =
-    0x11, // >
-    0x00, // ?
-    0x00, // @
-    0x00, // A
-    0x00, // B
-    0x00, // C
-    0x00, // D
-    0x00, // E
-    0x00, // F
-    0x00, // G
-    0x00, // H
-    0x22, // I
-    0x00, // J
-    0x00, // K
-    0x00, // L
-    0x00, // M
-    0x00, // N
-    0x00, // O
-    0x00, // P
-    0x00, // Q
-    0x00, // R
-    0x00, // S
-    0x00, // T
-    0x00, // U
-    0x00, // V
-    0x00, // W
-    0x00, // X
-    0x00, // Y
-    0x00, // Z
-    0x11, // [
-    0x00, // backslash
-    0x11, // ]
-    0x01, // ^
-    0x00, // _
-    0x22, // `
-    0x00, // a
-    0x00, // b
-    0x00, // c
-    0x00, // d
-    0x00, // e
-    0x00, // f
-    0x00, // g
-    0x00, // h
-    0x22, // i
-    0x02, // j
-    0x00, // k
-    0x22, // l
-    0x00, // m
-    0x00, // n
-    0x00, // o
-    0x00, // p
-    0x00, // q
-    0x10, // r
-    0x00, // s
-    0x00, // t
-    0x00, // u
-    0x00, // v
-    0x00, // w
-    0x00, // x
-    0x00, // y
-    0x00, // z
-    0x12, // {
-    0x23, // |
-    0x21, // }
-    0x00, // ~
-    0x21, // 0x7F
-};
+/* === Named constants for array dimensions === */
+#define SA_FRAME_ROWS 3
+#define SA_FRAME_COLS 48
+#define SA_FRAME_Y_OFFSET 25
+#define SA_PLAYER_HALF 24
+#define SCRN_ADD_TEX_COUNT 9
+#define FADE_DATA_COUNT 10
+#define SC_RAM_VRAM_COUNT 8
 
-SAFrame sa_frame[3][48];
-Polygon scrscrntex[4];
+/* === Named constants for UI rendering magic numbers === */
+#define FADE_ALPHA_MAX 255        /**< Full alpha for fade transitions */
+#define LOGO_X_START 128          /**< SF3 logo animation X range start */
+#define LOGO_X_END 208            /**< SF3 logo animation X range end */
+#define GRADE_GOLD_THRESHOLD 0x18 /**< Grade index boundary for gold palette */
+#define DAMAGE_DISPLAY_CAP 999    /**< Maximum damage number shown on HUD */
+#define GRADE_POS_COUNT 32
+
+typedef struct {
+    s16 fade;
+    s16 fade_kind;
+    u8 fade_prio;
+} FadeData;
+
+typedef struct {
+    u8 atr;
+    u8 page;
+    u8 cx;
+    u8 cy;
+} SAFrame;
+
+// sdata
+u8 ascProData[128] = { 0, 18, 0, 0, 0,  0, 0,  0,  0,  0, 0,  0, 0, 0,  0,  0,  0, 0, 0,  0,  0,  0,  0, 0,  0, 0,
+                       0, 0,  0, 0, 0,  0, 34, 19, 18, 0, 0,  0, 0, 34, 34, 34, 1, 1, 34, 1,  34, 0,  0, 18, 0, 0,
+                       0, 0,  0, 0, 0,  0, 34, 34, 17, 0, 17, 0, 0, 0,  0,  0,  0, 0, 0,  0,  0,  34, 0, 0,  0, 0,
+                       0, 0,  0, 0, 0,  0, 0,  0,  0,  0, 0,  0, 0, 17, 0,  17, 1, 0, 34, 0,  0,  0,  0, 0,  0, 0,
+                       0, 34, 2, 0, 34, 0, 0,  0,  0,  0, 16, 0, 0, 0,  0,  0,  0, 0, 0,  18, 35, 33, 0, 33 };
+
+// bss
+SAFrame sa_frame[SA_FRAME_ROWS][SA_FRAME_COLS];
+
+// sbss
+RendererVertex scrscrntex[4];
 u8 WipeLimit;
 u8 FadeLimit;
 s16 Hnc_Num;
 FadeData fd_dat;
 
 // forward decls
-s32 SSGetDrawSizePro(const s8* str);
-s16 SSPutStrTexInputPro(u16 x, u16 y, u16 ix);
-void face_base_put();
-void silver_stun_put(u8 Pl_Num, s16 len);
+static s32 SSGetDrawSizePro(const s8* str);
+static s16 SSPutStrTexInputPro(u16 x, u16 y, u16 ix);
+static f32 SSPutStrTexInputProScale(f32 x, f32 y, u16 ix, f32 sc);
+static void face_base_put();
+static void silver_stun_put(u8 Pl_Num, s16 len);
 
+/** @brief Initialize the screen-font rendering system and palette data. */
 void Scrscreen_Init() {
     void* loadAdrs;
     u32 loadSize;
@@ -214,12 +132,13 @@ void Scrscreen_Init() {
     Sa_frame_Clear();
 }
 
+/** @brief Clear super-art frame state for both players. */
 void Sa_frame_Clear() {
     u8 i;
     u8 j;
 
-    for (j = 0; j < 3; j++) {
-        for (i = 0; i < 48; i++) {
+    for (j = 0; j < SA_FRAME_ROWS; j++) {
+        for (i = 0; i < SA_FRAME_COLS; i++) {
             sa_frame[j][i].atr = 0;
             sa_frame[j][i].page = 0;
             sa_frame[j][i].cx = 0;
@@ -228,12 +147,13 @@ void Sa_frame_Clear() {
     }
 }
 
+/** @brief Clear super-art frame state for a single player. */
 void Sa_frame_Clear2(u8 pl) {
     u8 i;
     u8 j;
 
-    for (j = 0; j < 3; j++) {
-        for (i = pl * 24; i < (pl * 24) + 24; i++) {
+    for (j = 0; j < SA_FRAME_ROWS; j++) {
+        for (i = pl * SA_PLAYER_HALF; i < (pl * SA_PLAYER_HALF) + SA_PLAYER_HALF; i++) {
             sa_frame[j][i].atr = 0;
             sa_frame[j][i].page = 0;
             sa_frame[j][i].cx = 0;
@@ -242,6 +162,7 @@ void Sa_frame_Clear2(u8 pl) {
     }
 }
 
+/** @brief Write queued super-art frame data to VRAM. */
 void Sa_frame_Write() {
     u8 i;
     u8 j;
@@ -257,8 +178,8 @@ void Sa_frame_Write() {
     ppgSetupCurrentDataList(&ppgScrList);
 
     if (omop_sa_bar_disp[0]) {
-        for (j = 0; j < 3; j++) {
-            for (i = 0; i < 24; i++) {
+        for (j = 0; j < SA_FRAME_ROWS; j++) {
+            for (i = 0; i < SA_PLAYER_HALF; i++) {
                 if (sa_frame[j][i].atr != 0) {
                     scfont_put(
                         i, j + 25, sa_frame[j][i].atr, sa_frame[j][i].page, sa_frame[j][i].cx, sa_frame[j][i].cy, 2);
@@ -268,8 +189,8 @@ void Sa_frame_Write() {
     }
 
     if (omop_sa_bar_disp[1]) {
-        for (j = 0; j < 3; j++) {
-            for (i = 24; i < 48; i++) {
+        for (j = 0; j < SA_FRAME_ROWS; j++) {
+            for (i = SA_PLAYER_HALF; i < SA_FRAME_COLS; i++) {
                 if (sa_frame[j][i].atr != 0) {
                     scfont_put(
                         i, j + 25, sa_frame[j][i].atr, sa_frame[j][i].page, sa_frame[j][i].cx, sa_frame[j][i].cy, 2);
@@ -279,7 +200,8 @@ void Sa_frame_Write() {
     }
 }
 
-void SSPutStrTexInput(u16 x, u16 y, const s8* str) {
+/** @brief Render a string using screen-font texture input (8×8 glyphs). */
+static void SSPutStrTexInput(u16 x, u16 y, const s8* str) {
     s32 u = ((*str & 0xF) * 8) + 0x80;
     s32 v = ((*str & 0xF0) >> 4) * 8;
 
@@ -293,7 +215,8 @@ void SSPutStrTexInput(u16 x, u16 y, const s8* str) {
     scrscrntex[3].y = (y + 8);
 }
 
-void SSPutStrTexInput2(u16 x, u16 y, u8 str) {
+/** @brief Render a single character using screen-font texture input. */
+static void SSPutStrTexInput2(u16 x, u16 y, u8 str) {
     s32 u;
 
     u = (str * 8) + 128;
@@ -308,16 +231,17 @@ void SSPutStrTexInput2(u16 x, u16 y, u8 str) {
     scrscrntex[3].y = (y + 8);
 }
 
+/** @brief Render a string using screen fonts with attribute coloring. */
 void SSPutStr(u16 x, u16 y, u8 atr, const s8* str) {
     if (No_Trans) {
         return;
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
-    scrscrntex[0].col = scrscrntex[3].col = 0xFFFFFFFF;
+
+    scrscrntex[0].color = scrscrntex[3].color = 0xFFFFFFFF;
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[2];
-    njSetPaletteBankNumG(1, atr & 0x3F);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
     x = x * 8;
     y = y * 8;
 
@@ -328,13 +252,15 @@ void SSPutStr(u16 x, u16 y, u8 atr, const s8* str) {
             SSPutStrTexInput(x, y + 2, str);
         }
 
-        njDrawSprite(scrscrntex, 4, 1, 1);
+        Renderer_SetTexture(1);
+        Renderer_DrawSprite(scrscrntex, 4);
         x += 8;
         str++;
     }
 }
 
-s32 SSPutStrPro(u16 flag, u16 x, u16 y, u8 atr, u32 vtxcol, const char* str) {
+/** @brief Render a proportional string with custom vertex color. */
+s32 SSPutStrPro(u16 flag, u16 x, u16 y, u8 atr, u32 vtxcol, s8* str) {
     s32 usex;
     s16 step;
 
@@ -343,10 +269,10 @@ s32 SSPutStrPro(u16 flag, u16 x, u16 y, u8 atr, u32 vtxcol, const char* str) {
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
-    scrscrntex[0].col = scrscrntex[3].col = vtxcol;
+
+    scrscrntex[0].color = scrscrntex[3].color = vtxcol;
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[2];
-    njSetPaletteBankNumG(1, atr & 0x3F);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
 
     if (flag) {
         x = (x - SSGetDrawSizePro(str)) / 2;
@@ -354,27 +280,102 @@ s32 SSPutStrPro(u16 flag, u16 x, u16 y, u8 atr, u32 vtxcol, const char* str) {
 
     usex = x;
 
-    while (*str != '\0') {
+    while (*str != 0) {
         if (*str != ',') {
             step = SSPutStrTexInputPro(x, y, *str);
         } else {
             step = SSPutStrTexInputPro(x, y + 2, *str);
         }
 
-        str++;
+        str += 1;
         x += step;
-        njDrawSprite(scrscrntex, 4, 1, 1);
+        Renderer_SetTexture(1);
+        Renderer_DrawSprite(scrscrntex, 4);
     }
 
     return usex;
 }
 
-s16 SSPutStrTexInputPro(u16 x, u16 y, u16 ix) {
+static f32 SSPutStrTexInputProScale(f32 x, f32 y, u16 ix, f32 sc) {
+    s16 sideL;
+    s16 sideR;
+    s32 u;
+    s32 v;
+    f32 slide;
+
+    if (ix >= sizeof(ascProData)) {
+        return 0.0f;
+    }
+
+    u = (ix & 0xF) * 8 + 0x80;
+    v = ((ix & 0xF0) >> 4) * 8;
+
+    sideL = (ascProData[ix] >> 4) & 0xF;
+    sideR = ascProData[ix] & 0xF;
+    
+    scrscrntex[0].u = scrscrntex[1].u = TO_UV_256(u + sideL);
+    scrscrntex[2].u = scrscrntex[3].u = TO_UV_256(u + 8 - sideR);
+    scrscrntex[0].v = scrscrntex[2].v = TO_UV_256(v);
+    scrscrntex[1].v = scrscrntex[3].v = TO_UV_256(v + 8);
+
+    slide = (f32)((8 - sideL) - sideR) * sc;
+    
+    scrscrntex[0].x = scrscrntex[1].x = x;
+    scrscrntex[2].x = scrscrntex[3].x = x + slide;
+    scrscrntex[0].y = scrscrntex[2].y = y;
+    scrscrntex[1].y = scrscrntex[3].y = y + (8.0f * sc);
+
+    return slide;
+}
+
+/** @brief Render a proportional string with custom vertex color and scale. */
+s32 SSPutStrPro_Scale(u16 flag, f32 x, f32 y, u8 atr, u32 vtxcol, s8* str, f32 sc) {
+    f32 usex;
+    f32 step;
+
+    if (No_Trans) {
+        return (s32)x;
+    }
+
+    ppgSetupCurrentDataList(&ppgScrList);
+
+    scrscrntex[0].color = scrscrntex[1].color = scrscrntex[2].color = scrscrntex[3].color = vtxcol;
+    scrscrntex[0].z = scrscrntex[1].z = scrscrntex[2].z = scrscrntex[3].z = PrioBase[2];
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
+
+    if (flag) {
+        x = x - ((f32)SSGetDrawSizePro(str) * sc) / 2.0f;
+    }
+
+    usex = x;
+
+    while (*str != 0) {
+        if (*str != ',') {
+            step = SSPutStrTexInputProScale(x, y, *str, sc);
+        } else {
+            step = SSPutStrTexInputProScale(x, y + (2.0f * sc), *str, sc);
+        }
+
+        str += 1;
+        x += step;
+        Renderer_SetTexture(1);
+        Renderer_DrawTexturedQuad(scrscrntex, 4);
+    }
+
+    return (s32)usex;
+}
+
+/** @brief Render a single glyph from the proportional font sheet. */
+static s16 SSPutStrTexInputPro(u16 x, u16 y, u16 ix) {
     s16 slide;
     s16 sideL;
     s16 sideR;
     s32 u;
     s32 v;
+
+    if (ix >= sizeof(ascProData)) {
+        return 0;
+    }
 
     u = (ix & 0xF) * 8 + 0x80;
     v = ((ix & 0xF0) >> 4) * 8;
@@ -393,7 +394,8 @@ s16 SSPutStrTexInputPro(u16 x, u16 y, u16 ix) {
     return slide;
 }
 
-s32 SSGetDrawSizePro(const s8* str) {
+/** @brief Calculate the pixel width of a proportional string. */
+static s32 SSGetDrawSizePro(const s8* str) {
     s32 ix;
     s32 size = 0;
 
@@ -406,28 +408,31 @@ s32 SSGetDrawSizePro(const s8* str) {
     return size;
 }
 
+/** @brief Render a string using screen fonts variant 2 (different palette). */
 void SSPutStr2(u16 x, u16 y, u8 atr, const s8* str) {
     if (No_Trans) {
         return;
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
-    scrscrntex[0].col = scrscrntex[3].col = -1;
+
+    scrscrntex[0].color = scrscrntex[3].color = -1;
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[1];
-    njSetPaletteBankNumG(1, atr & 0x3F);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
     x = x * 8;
     y = y * 8;
 
     while (*str != '\0') {
         SSPutStrTexInput(x, y, str);
-        njDrawSprite(scrscrntex, 4, 1, 1);
+        Renderer_SetTexture(1);
+        Renderer_DrawSprite(scrscrntex, 4);
         x += 8;
         str++;
     }
 }
 
-void SSPutStrTexInputB(f32 x, f32 y, s8* str, f32 sc) {
+/** @brief Render a scaled string using the bigger font sheet. */
+static void SSPutStrTexInputB(f32 x, f32 y, s8* str, f32 sc) {
     s32 u = ((*str & 0xF) * 8) + 128;
     s32 v = ((*str & 0xF0) >> 4) * 8;
 
@@ -441,7 +446,8 @@ void SSPutStrTexInputB(f32 x, f32 y, s8* str, f32 sc) {
     scrscrntex[1].y = scrscrntex[3].y = (y + (8.0f * sc));
 }
 
-void SSPutStrTexInputB2(f32 x, f32 y, s8 str) {
+/** @brief Render a single scaled character from the bigger font sheet. */
+static void SSPutStrTexInputB2(f32 x, f32 y, s8 str) {
     s32 u = str * 11;
 
     scrscrntex[0].u = scrscrntex[1].u = TO_UV_256(u);
@@ -454,6 +460,7 @@ void SSPutStrTexInputB2(f32 x, f32 y, s8 str) {
     scrscrntex[1].y = scrscrntex[3].y = (8.0f + y);
 }
 
+/** @brief Render a bigger/scaled string with custom color gradient and priority. */
 void SSPutStr_Bigger(u16 x, u16 y, u8 atr, s8* str, f32 sc, u8 gr, u16 priority) {
     f32 xx;
     f32 yy;
@@ -464,14 +471,13 @@ void SSPutStr_Bigger(u16 x, u16 y, u8 atr, s8* str, f32 sc, u8 gr, u16 priority)
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
 
     for (i = 0; i < 4; i++) {
-        scrscrntex[i].col = bigger_col_tbl[gr][i];
+        scrscrntex[i].color = bigger_col_tbl[gr][i];
     }
 
     scrscrntex[0].z = scrscrntex[1].z = scrscrntex[2].z = scrscrntex[3].z = PrioBase[priority];
-    njSetPaletteBankNumG(1, atr & 0x3F);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
     xx = x;
     yy = y;
 
@@ -483,12 +489,14 @@ void SSPutStr_Bigger(u16 x, u16 y, u8 atr, s8* str, f32 sc, u8 gr, u16 priority)
         }
 
         SSPutStrTexInputB(xx, yy, str, sc);
-        njDrawTexture(scrscrntex, 4, 1, 1);
+        Renderer_SetTexture(1);
+        Renderer_DrawTexturedQuad(scrscrntex, 4);
         xx += 8.0f * sc;
         str++;
     }
 }
 
+/** @brief Render a decimal number using screen fonts. */
 void SSPutDec(u16 x, u16 y, u8 atr, u8 dec, u8 size) {
     s8 str[3];
     u8 work;
@@ -505,10 +513,10 @@ void SSPutDec(u16 x, u16 y, u8 atr, u8 dec, u8 size) {
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
-    scrscrntex[0].col = scrscrntex[3].col = -1;
+
+    scrscrntex[0].color = scrscrntex[3].color = -1;
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[2];
-    njSetPaletteBankNumG(1, atr & 0x3F);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
     x = x * 8;
     y = y * 8;
     zero_sw = 0;
@@ -522,7 +530,8 @@ void SSPutDec(u16 x, u16 y, u8 atr, u8 dec, u8 size) {
     }
 
     SSPutStrTexInput2(x, y, str[2]);
-    njDrawSprite(scrscrntex, 4, 1, 1);
+    Renderer_SetTexture(1);
+    Renderer_DrawSprite(scrscrntex, 4);
 
     if (size == 0) {
         return;
@@ -532,7 +541,8 @@ void SSPutDec(u16 x, u16 y, u8 atr, u8 dec, u8 size) {
 
     if (size == 3 && str[0] != 0) {
         SSPutStrTexInput2(x, y, str[0]);
-        njDrawSprite(scrscrntex, 4, 1, 1);
+        Renderer_SetTexture(1);
+        Renderer_DrawSprite(scrscrntex, 4);
         zero_sw = 1;
     }
 
@@ -540,14 +550,17 @@ void SSPutDec(u16 x, u16 y, u8 atr, u8 dec, u8 size) {
 
     if (zero_sw == 1) {
         SSPutStrTexInput2(x, y, str[1]);
-        njDrawSprite(scrscrntex, 4, 1, 1);
+        Renderer_SetTexture(1);
+        Renderer_DrawSprite(scrscrntex, 4);
     } else if (size > 1 && str[1] != 0) {
         SSPutStrTexInput2(x, y, str[1]);
-        njDrawSprite(scrscrntex, 4, 1, 1);
+        Renderer_SetTexture(1);
+        Renderer_DrawSprite(scrscrntex, 4);
     }
 }
 
-void SSPutDec3(u16 x, u16 y, u8 atr, s16 dec, u8 size, u8 gr, u16 priority) {
+/** @brief Render a decimal number with custom gradient and priority. */
+static void SSPutDec3(u16 x, u16 y, u8 atr, s16 dec, u8 size, u8 gr, u16 priority) {
     s8 str[3];
     s16 work;
     u8 num;
@@ -561,14 +574,13 @@ void SSPutDec3(u16 x, u16 y, u8 atr, s16 dec, u8 size, u8 gr, u16 priority) {
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
 
     for (i = 0; i < 4; i++) {
-        scrscrntex[i].col = bigger_col_tbl[gr][i];
+        scrscrntex[i].color = bigger_col_tbl[gr][i];
     }
 
     scrscrntex[0].z = scrscrntex[1].z = scrscrntex[2].z = scrscrntex[3].z = PrioBase[priority];
-    njSetPaletteBankNumG(1, atr & 0x3F);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
 
     xx = x;
     yy = y;
@@ -583,7 +595,8 @@ void SSPutDec3(u16 x, u16 y, u8 atr, s16 dec, u8 size, u8 gr, u16 priority) {
     }
 
     SSPutStrTexInputB2(xx, yy, str[2]);
-    njDrawTexture(scrscrntex, 4, 4, 1);
+    Renderer_SetTexture(4);
+    Renderer_DrawTexturedQuad(scrscrntex, 4);
 
     if (size == 0) {
         return;
@@ -593,7 +606,8 @@ void SSPutDec3(u16 x, u16 y, u8 atr, s16 dec, u8 size, u8 gr, u16 priority) {
 
     if (size == 3 && str[0] != 0) {
         SSPutStrTexInputB2(xx, yy, str[0]);
-        njDrawSprite(scrscrntex, 4, 4, 1);
+        Renderer_SetTexture(4);
+        Renderer_DrawSprite(scrscrntex, 4);
         zero_sw = 1;
     }
 
@@ -601,13 +615,16 @@ void SSPutDec3(u16 x, u16 y, u8 atr, s16 dec, u8 size, u8 gr, u16 priority) {
 
     if (zero_sw == 1) {
         SSPutStrTexInputB2(xx, yy, str[1]);
-        njDrawSprite(scrscrntex, 4, 4, 1);
+        Renderer_SetTexture(4);
+        Renderer_DrawSprite(scrscrntex, 4);
     } else if (size > 1 && str[1] != 0) {
         SSPutStrTexInputB2(xx, yy, str[1]);
-        njDrawSprite(scrscrntex, 4, 4, 1);
+        Renderer_SetTexture(4);
+        Renderer_DrawSprite(scrscrntex, 4);
     }
 }
 
+/** @brief Render a single screen-font glyph at grid position. */
 void scfont_put(u16 x, u16 y, u8 atr, u8 page, u8 cx, u8 cy, u16 priority) {
     s32 u;
     s32 v;
@@ -617,10 +634,10 @@ void scfont_put(u16 x, u16 y, u8 atr, u8 page, u8 cx, u8 cy, u16 priority) {
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
-    scrscrntex[0].col = scrscrntex[3].col = -1;
+
+    scrscrntex[0].color = scrscrntex[3].color = -1;
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[priority];
-    njSetPaletteBankNumG(page, atr & 0x3F);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
     x = x * 8;
     y = y * 8;
     u = cx * 8;
@@ -646,16 +663,22 @@ void scfont_put(u16 x, u16 y, u8 atr, u8 page, u8 cx, u8 cy, u16 priority) {
     scrscrntex[3].x = (x + 8);
     scrscrntex[0].y = y;
     scrscrntex[3].y = (y + 8);
-    njDrawSprite(scrscrntex, 4, page, 1);
+    Renderer_SetTexture(page);
+    Renderer_DrawSprite(scrscrntex, 4);
 }
 
+/** @brief Render a screen-font glyph (variant 2 — fixed priority). */
 void scfont_put2(u16 x, u16 y, u8 atr, u8 page, u8 cx, u8 cy) {
-    sa_frame[y - 25][x].atr = atr;
-    sa_frame[y - 25][x].page = page;
-    sa_frame[y - 25][x].cx = cx;
-    sa_frame[y - 25][x].cy = cy;
+    if (y < SA_FRAME_Y_OFFSET || y - SA_FRAME_Y_OFFSET >= SA_FRAME_ROWS || x >= SA_FRAME_COLS) {
+        return;
+    }
+    sa_frame[y - SA_FRAME_Y_OFFSET][x].atr = atr;
+    sa_frame[y - SA_FRAME_Y_OFFSET][x].page = page;
+    sa_frame[y - SA_FRAME_Y_OFFSET][x].cx = cx;
+    sa_frame[y - SA_FRAME_Y_OFFSET][x].cy = cy;
 }
 
+/** @brief Render a rectangular screen-font region (multi-cell sprite). */
 void scfont_sqput(u16 x, u16 y, u8 atr, u8 page, u8 cx1, u8 cy1, u8 cx2, u8 cy2, u16 priority) {
     s32 u1;
     s32 u2;
@@ -667,11 +690,10 @@ void scfont_sqput(u16 x, u16 y, u8 atr, u8 page, u8 cx1, u8 cy1, u8 cx2, u8 cy2,
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
 
-    scrscrntex[0].col = scrscrntex[3].col = -1;
+    scrscrntex[0].color = scrscrntex[3].color = -1;
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[priority];
-    njSetPaletteBankNumG(page, atr & 0x3F);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
     x = x * 8;
     y = y * 8;
     u1 = cx1 * 8;
@@ -699,35 +721,46 @@ void scfont_sqput(u16 x, u16 y, u8 atr, u8 page, u8 cx1, u8 cy1, u8 cx2, u8 cy2,
     scrscrntex[3].x = (x + (u2 - u1));
     scrscrntex[0].y = y;
     scrscrntex[3].y = (y + (v2 - v1));
-    njDrawSprite(scrscrntex, 4, page, 1);
+    Renderer_SetTexture(page);
+    Renderer_DrawSprite(scrscrntex, 4);
 }
 
+/** @brief Render a rectangular font region with optional UV inversion. */
 void scfont_sqput2(u16 x, u16 y, u8 atr, u8 inverse, u8 page, u8 cx1, u8 cy1, u8 cx2, u8 cy2) {
     u8 i;
     u8 j;
 
     if (inverse == 0) {
         for (j = 0; j < cy2; j++) {
+            if (y - SA_FRAME_Y_OFFSET + j >= SA_FRAME_ROWS)
+                break;
             for (i = 0; i < cx2; i++) {
-                sa_frame[y - 25 + j][x + i].atr = atr;
-                sa_frame[y - 25 + j][x + i].page = page;
-                sa_frame[y - 25 + j][x + i].cx = cx1 + i;
-                sa_frame[y - 25 + j][x + i].cy = cy1 + j;
+                if (x + i >= SA_FRAME_COLS)
+                    break;
+                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].atr = atr;
+                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].page = page;
+                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].cx = cx1 + i;
+                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].cy = cy1 + j;
             }
         }
     } else {
         for (j = 0; j < cy2; j++) {
+            if (y - SA_FRAME_Y_OFFSET + j >= SA_FRAME_ROWS)
+                break;
             for (i = 0; i < cx2; i++) {
-                sa_frame[y - 25 + j][x + i].atr = atr;
-                sa_frame[y - 25 + j][x + i].page = page;
-                sa_frame[y - 25 + j][x + i].cx = (cx1 + (cx2 - 1)) - i;
-                sa_frame[y - 25 + j][x + i].cy = cy1 + j;
+                if (x + i >= SA_FRAME_COLS)
+                    break;
+                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].atr = atr;
+                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].page = page;
+                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].cx = (cx1 + (cx2 - 1)) - i;
+                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].cy = cy1 + j;
             }
         }
     }
 }
 
-void scfont_sqput3(u16 x, u16 y, u8 atr, u8 page, u16 cx1, u16 cy1, u16 cx2, u16 cy2, u8 gr, u16 priority) {
+/** @brief Render a rectangular font region with custom gradient and priority. */
+static void scfont_sqput3(u16 x, u16 y, u8 atr, u8 page, u16 cx1, u16 cy1, u16 cx2, u16 cy2, u8 gr, u16 priority) {
     s32 u1;
     s32 u2;
     s32 v1;
@@ -739,14 +772,13 @@ void scfont_sqput3(u16 x, u16 y, u8 atr, u8 page, u16 cx1, u16 cy1, u16 cx2, u16
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
 
     for (i = 0; i < 4; i++) {
-        scrscrntex[i].col = bigger_col_tbl[gr][i];
+        scrscrntex[i].color = bigger_col_tbl[gr][i];
     }
 
     scrscrntex[0].z = scrscrntex[1].z = scrscrntex[2].z = scrscrntex[3].z = PrioBase[priority];
-    njSetPaletteBankNumG(page, atr & 0x3F);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
     u1 = cx1;
     u2 = u1 + cx2;
     v1 = cy1;
@@ -760,23 +792,30 @@ void scfont_sqput3(u16 x, u16 y, u8 atr, u8 page, u16 cx1, u16 cy1, u16 cx2, u16
     scrscrntex[2].x = scrscrntex[3].x = (x + (u2 - u1));
     scrscrntex[0].y = scrscrntex[2].y = y;
     scrscrntex[1].y = scrscrntex[3].y = (y + (v2 - v1));
-    njDrawTexture(scrscrntex, 4, page, 1);
+    Renderer_SetTexture(page);
+    Renderer_DrawTexturedQuad(scrscrntex, 4);
 }
 
+/** @brief Clear a rectangular region of the screen font buffer. */
 void sc_clear(u16 sposx, u16 sposy, u16 eposx, u16 eposy) {
     u16 i;
     u16 j;
 
     for (j = 0; j < (eposy - sposy) + 1; j++) {
+        if (sposy - SA_FRAME_Y_OFFSET + j >= SA_FRAME_ROWS)
+            break;
         for (i = 0; i < (eposx - sposx) + 1; i++) {
-            sa_frame[sposy - 25 + j][sposx + i].atr = 0;
-            sa_frame[sposy - 25 + j][sposx + i].page = 0;
-            sa_frame[sposy - 25 + j][sposx + i].cx = 0;
-            sa_frame[sposy - 25 + j][sposx + i].cy = 0;
+            if (sposx + i >= SA_FRAME_COLS)
+                break;
+            sa_frame[sposy - SA_FRAME_Y_OFFSET + j][sposx + i].atr = 0;
+            sa_frame[sposy - SA_FRAME_Y_OFFSET + j][sposx + i].page = 0;
+            sa_frame[sposy - SA_FRAME_Y_OFFSET + j][sposx + i].cx = 0;
+            sa_frame[sposy - SA_FRAME_Y_OFFSET + j][sposx + i].cy = 0;
         }
     }
 }
 
+/** @brief Draw a player's health bar (filled/empty portions). */
 void vital_put(u8 Pl_Num, s8 atr, s16 vital, u8 kind, u16 priority) {
     if (No_Trans) {
         return;
@@ -793,7 +832,7 @@ void vital_put(u8 Pl_Num, s8 atr, s16 vital, u8 kind, u16 priority) {
     }
 
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[priority];
-    njSetPaletteBankNumG(0, atr & 0x3F);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
 
     if (kind) {
         scrscrntex[0].u = 0.0f;
@@ -817,11 +856,13 @@ void vital_put(u8 Pl_Num, s8 atr, s16 vital, u8 kind, u16 priority) {
 
     scrscrntex[0].y = 16.0f;
     scrscrntex[3].y = 24.0f;
-    njColorBlendingMode(0, 1);
-    scrscrntex[0].col = scrscrntex[3].col = -1;
-    njDrawSprite(scrscrntex, 4, 0, 1);
+
+    scrscrntex[0].color = scrscrntex[3].color = -1;
+    Renderer_SetTexture(0);
+    Renderer_DrawSprite(scrscrntex, 4);
 }
 
+/** @brief Draw the silver (recoverable) health bar overlay. */
 void silver_vital_put(u8 Pl_Num) {
     if (No_Trans) {
         return;
@@ -829,7 +870,7 @@ void silver_vital_put(u8 Pl_Num) {
 
     ppgSetupCurrentDataList(&ppgScrList);
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[2];
-    njSetPaletteBankNumG(0, 9);
+    ppgSetupCurrentPaletteNumber(0, 9);
     scrscrntex[0].u = 224.0f / 256.0f;
     scrscrntex[3].u = 232.0f / 256.0f;
     scrscrntex[0].v = TO_UV_256(176.0f);
@@ -845,11 +886,13 @@ void silver_vital_put(u8 Pl_Num) {
 
     scrscrntex[0].y = 16.0f;
     scrscrntex[3].y = 24.0f;
-    njColorBlendingMode(0, 1);
-    scrscrntex[0].col = scrscrntex[3].col = -1;
-    njDrawSprite(scrscrntex, 4, 0, 1);
+
+    scrscrntex[0].color = scrscrntex[3].color = -1;
+    Renderer_SetTexture(0);
+    Renderer_DrawSprite(scrscrntex, 4);
 }
 
+/** @brief Draw the health bar background/frame. */
 void vital_base_put(u8 Pl_Num) {
     PAL_CURSOR vtx;
     PAL_CURSOR_P pos[4];
@@ -859,7 +902,6 @@ void vital_base_put(u8 Pl_Num) {
         return;
     }
 
-    njColorBlendingMode(0, 1);
     vtx.p = pos;
     vtx.col = &col;
     col.color = 0x40000000;
@@ -878,9 +920,10 @@ void vital_base_put(u8 Pl_Num) {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    njDrawPolygon2D(&vtx, 4, PrioBase[4], 96);
+    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[4], (uintptr_t)col.color, 0);
 }
 
+/** @brief Draw the super-art gauge bar background. */
 void spgauge_base_put(u8 Pl_Num, s16 len) {
     PAL_CURSOR vtx;
     PAL_CURSOR_P pos[4];
@@ -898,7 +941,6 @@ void spgauge_base_put(u8 Pl_Num, s16 len) {
         return;
     }
 
-    njColorBlendingMode(0, 1);
     vtx.p = pos;
     vtx.col = &col;
     col.color = 0x80000000;
@@ -917,9 +959,10 @@ void spgauge_base_put(u8 Pl_Num, s16 len) {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    njDrawPolygon2D(&vtx, 4, PrioBase[4], 96);
+    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[4], (uintptr_t)col.color, 0);
 }
 
+/** @brief Draw the stun gauge fill. */
 void stun_put(u8 Pl_Num, u8 stun) {
     if (No_Trans) {
         return;
@@ -935,7 +978,7 @@ void stun_put(u8 Pl_Num, u8 stun) {
 
     ppgSetupCurrentDataList(&ppgScrList);
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[4];
-    njSetPaletteBankNumG(0, 10);
+    ppgSetupCurrentPaletteNumber(0, 10);
     scrscrntex[0].u = 0.0f;
     scrscrntex[3].u = 8.0f / 256.0f;
     scrscrntex[0].v = TO_UV_256(96.0f);
@@ -951,10 +994,12 @@ void stun_put(u8 Pl_Num, u8 stun) {
 
     scrscrntex[0].y = 24.0f;
     scrscrntex[3].y = 32.0f;
-    scrscrntex[0].col = scrscrntex[3].col = -1;
-    njDrawSprite(scrscrntex, 4, 0, 0);
+    scrscrntex[0].color = scrscrntex[3].color = -1;
+    Renderer_SetTexture(0);
+    Renderer_DrawSprite(scrscrntex, 4);
 }
 
+/** @brief Draw the stun gauge bar background. */
 void stun_base_put(u8 Pl_Num, s16 len) {
     PAL_CURSOR vtx;
     PAL_CURSOR_P pos[4];
@@ -964,7 +1009,6 @@ void stun_base_put(u8 Pl_Num, s16 len) {
         return;
     }
 
-    njColorBlendingMode(0, 1);
     vtx.p = pos;
     vtx.col = &col;
     col.color = 0x90000000;
@@ -983,13 +1027,15 @@ void stun_base_put(u8 Pl_Num, s16 len) {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    njDrawPolygon2D(&vtx, 4, PrioBase[4], 96);
+    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[4], (uintptr_t)col.color, 0);
 }
 
+/** @brief Initialize the screen wipe effect state. */
 void WipeInit() {
     WipeLimit = 0;
 }
 
+/** @brief Execute a screen wipe-out transition (screen goes black). */
 s32 WipeOut(u8 type) {
     PAL_CURSOR wipe_pc;
     PAL_CURSOR_P wipe_p[4];
@@ -1026,7 +1072,7 @@ s32 WipeOut(u8 type) {
             for (i = 224; i > 0; i -= 8) {
                 wipe_p[0].y = wipe_p[1].y = i;
                 wipe_p[2].y = wipe_p[3].y = (i - (dmylim + 1));
-                njDrawPolygon2D(&wipe_pc, 4, PrioBase[0], 32);
+                Renderer_Queue2DPrimitive((f32*)wipe_p, PrioBase[0], (uintptr_t)wipe_col[0].color, 0);
             }
         } else if (WipeLimit != 8) {
             wipe_p[0].y = wipe_p[1].y = 0.0f;
@@ -1037,7 +1083,7 @@ s32 WipeOut(u8 type) {
                 wipe_p[1].x = (i + dmylim + 1);
                 wipe_p[2].x = 224.0f + wipe_p[0].x;
                 wipe_p[3].x = 224.0f + wipe_p[1].x;
-                njDrawPolygon2D(&wipe_pc, 4, PrioBase[0], 32);
+                Renderer_Queue2DPrimitive((f32*)wipe_p, PrioBase[0], (uintptr_t)wipe_col[0].color, 0);
             }
         }
     }
@@ -1046,6 +1092,7 @@ s32 WipeOut(u8 type) {
     return 0;
 }
 
+/** @brief Execute a screen wipe-in transition (screen reveals). */
 s32 WipeIn(u8 type) {
     PAL_CURSOR wipe_pc;
     PAL_CURSOR_P wipe_p[4];
@@ -1070,7 +1117,7 @@ s32 WipeIn(u8 type) {
             for (i = 0; i < 224; i += 8) {
                 wipe_p[0].y = wipe_p[1].y = i;
                 wipe_p[2].y = wipe_p[3].y = ((i + 8) - (WipeLimit + 1));
-                njDrawPolygon2D(&wipe_pc, 4, PrioBase[0], 32);
+                Renderer_Queue2DPrimitive((f32*)wipe_p, PrioBase[0], (uintptr_t)wipe_col[0].color, 0);
             }
         } else {
             wipe_p[0].y = wipe_p[1].y = 0.0f;
@@ -1081,7 +1128,7 @@ s32 WipeIn(u8 type) {
                 wipe_p[1].x = ((i + 8) - (WipeLimit + 1));
                 wipe_p[2].x = 224.0f + wipe_p[0].x;
                 wipe_p[3].x = 224.0f + wipe_p[1].x;
-                njDrawPolygon2D(&wipe_pc, 4, PrioBase[0], 32);
+                Renderer_Queue2DPrimitive((f32*)wipe_p, PrioBase[0], (uintptr_t)wipe_col[0].color, 0);
             }
         }
     }
@@ -1090,10 +1137,12 @@ s32 WipeIn(u8 type) {
     return 0;
 }
 
+/** @brief Initialize the screen fade effect state. */
 void FadeInit() {
     FadeLimit = 1;
 }
 
+/** @brief Execute a screen fade-out transition. */
 s32 FadeOut(u8 type, u8 step, u8 priority) {
     PAL_CURSOR fade_pc;
     PAL_CURSOR_P fade_p[4];
@@ -1109,12 +1158,11 @@ s32 FadeOut(u8 type, u8 step, u8 priority) {
         return 0;
     }
 
-    njColorBlendingMode(0, 1);
     fade_pc.p = fade_p;
     fade_pc.col = fade_col;
     fade_pc.num = 4;
 
-    if ((FadeLimit * step) < 255) {
+    if ((FadeLimit * step) < FADE_ALPHA_MAX) {
         Alpha = (FadeLimit * step) << 24;
     } else {
         flag = 1;
@@ -1130,7 +1178,7 @@ s32 FadeOut(u8 type, u8 step, u8 priority) {
         fade_col[i].color = Alpha;
     }
 
-    njDrawPolygon2D(&fade_pc, 4, PrioBase[priority], 0x60);
+    Renderer_Queue2DPrimitive((f32*)fade_p, PrioBase[priority], (uintptr_t)fade_col[0].color, 0);
 
     if (flag) {
         return 1;
@@ -1140,6 +1188,7 @@ s32 FadeOut(u8 type, u8 step, u8 priority) {
     return 0;
 }
 
+/** @brief Execute a screen fade-in transition. */
 s32 FadeIn(u8 type, u8 step, u8 priority) {
     PAL_CURSOR fade_pc;
     PAL_CURSOR_P fade_p[4];
@@ -1151,13 +1200,16 @@ s32 FadeIn(u8 type, u8 step, u8 priority) {
     Alpha = 0;
     flag = 0;
 
-    njColorBlendingMode(0, 1);
+    if (No_Trans) {
+        return 0;
+    }
+
     fade_pc.p = fade_p;
     fade_pc.col = fade_col;
     fade_pc.num = 4;
 
-    if (FadeLimit * step < 255) {
-        Alpha = (255 - FadeLimit * step) << 24;
+    if (FadeLimit * step < FADE_ALPHA_MAX) {
+        Alpha = (FADE_ALPHA_MAX - FadeLimit * step) << 24;
     } else {
         flag = 1;
     }
@@ -1172,9 +1224,7 @@ s32 FadeIn(u8 type, u8 step, u8 priority) {
         fade_col[i].color = Alpha;
     }
 
-    if (!No_Trans) {
-        njDrawPolygon2D(&fade_pc, 4, PrioBase[priority], 0x60);
-    }
+    Renderer_Queue2DPrimitive((f32*)fade_p, PrioBase[priority], (uintptr_t)fade_col[0].color, 0);
 
     if (flag) {
         return 1;
@@ -1184,6 +1234,7 @@ s32 FadeIn(u8 type, u8 step, u8 priority) {
     return 0;
 }
 
+/** @brief Apply a tone-down (darken) overlay to the screen. */
 void ToneDown(u8 tone, u8 priority) {
     PAL_CURSOR tone_pc;
     PAL_CURSOR_P tone_p[4];
@@ -1194,7 +1245,6 @@ void ToneDown(u8 tone, u8 priority) {
         return;
     }
 
-    njColorBlendingMode(0, 1);
     tone_pc.p = tone_p;
     tone_pc.col = tone_col;
     tone_pc.num = 4;
@@ -1205,9 +1255,10 @@ void ToneDown(u8 tone, u8 priority) {
         tone_col[i].color = tone << 24;
     }
 
-    njDrawPolygon2D(&tone_pc, 4, PrioBase[priority], 0x60);
+    Renderer_Queue2DPrimitive((f32*)tone_p, PrioBase[priority], (uintptr_t)tone_col[0].color, 0);
 }
 
+/** @brief Draw player character names on the HUD. */
 void player_name() {
     u8 pl1;
     u8 pl2;
@@ -1229,6 +1280,7 @@ void player_name() {
     scfont_sqput(37, 3, 1, 1, Player_Name_Pos_TBL[pl2][0], Player_Name_Pos_TBL[pl2][1], 5, 1, 2);
 }
 
+/** @brief Draw the stun-mark indicator for a player. */
 void stun_mark_write(u8 Pl_Num, s16 Len) {
     s16 tlen;
 
@@ -1246,6 +1298,7 @@ void stun_mark_write(u8 Pl_Num, s16 Len) {
         smark_pos_tbl[tlen][Pl_Num], 3, 10, 0, (smark_kind_tbl[tlen] * 4) + 1, 2, smark_kind_tbl[tlen] + 4, 1, 2);
 }
 
+/** @brief Draw the “MAX” indicator when super-art gauge is full. */
 void max_mark_write(s8 Pl_Num, u8 Gauge_Len, u8 Mchar, u8 Mass_Len) {
     if (Pl_Num == 0) {
         scfont_sqput2(Mass_Len + 6, 26, 17, 0, 0, Max_Pos_TBL[Mchar - 5][0], Max_Pos_TBL[Mchar - 5][1], Mchar, 1);
@@ -1255,139 +1308,153 @@ void max_mark_write(s8 Pl_Num, u8 Gauge_Len, u8 Mchar, u8 Mass_Len) {
     }
 }
 
+/** @brief Render the SF3 logo animation (multi-step). */
 void SF3_logo(u8 step) {
     s32 i;
-    Vertex pos[4];
+    RendererVertex pos[4];
 
     if (No_Trans) {
         return;
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
-    njSetPaletteBankNumG(0, 29);
+
+    ppgSetupCurrentPaletteNumber(0, 29);
     pos[0].z = pos[1].z = pos[2].z = pos[3].z = PrioBase[2];
 
     if (step < 9) {
         pos[0].x = pos[1].x = 128.0f;
         pos[2].y = pos[3].y = 128.0f;
-        pos[0].s = pos[1].s = TO_UV_256(pos[0].x);
-        pos[2].t = pos[3].t = TO_UV_256(240.0f);
+        pos[0].u = pos[1].u = TO_UV_256(pos[0].x);
+        pos[2].v = pos[3].v = TO_UV_256(240.0f);
 
         for (i = 48; i > 0; i -= 8) {
             pos[0].y = i + 80;
             pos[1].y = pos[0].y - step;
             pos[2].x = 176 - i;
             pos[3].x = pos[2].x + step;
-            pos[0].t = TO_UV_256(i + 192);
-            pos[1].t = TO_UV_256((i + 192) - step);
-            pos[2].s = TO_UV_256(176 - i);
-            pos[3].s = TO_UV_256((176 - i) + step);
-            ppgWriteQuadWithST_B(pos, -1, NULL, 0, -1);
+            pos[0].v = TO_UV_256(i + 192);
+            pos[1].v = TO_UV_256((i + 192) - step);
+            pos[2].u = TO_UV_256(176 - i);
+            pos[3].u = TO_UV_256((176 - i) + step);
+            pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
+            Renderer_SetTexture(0);
+            Renderer_DrawTexturedQuad(pos, 4);
         }
 
         pos[0].y = pos[1].y = 80.0f;
         pos[2].y = pos[3].y = 128.0f;
-        pos[0].t = pos[1].t = TO_UV_256(192.0f);
-        pos[2].t = pos[3].t = TO_UV_256(240.0f);
+        pos[0].v = pos[1].v = TO_UV_256(192.0f);
+        pos[2].v = pos[3].v = TO_UV_256(240.0f);
 
-        for (i = 128; i < 208; i += 8) {
+        for (i = LOGO_X_START; i < LOGO_X_END; i += 8) {
             pos[0].x = i;
             pos[1].x = i + step;
             pos[2].x = 48.0f + pos[0].x;
             pos[3].x = 48.0f + pos[1].x;
-            pos[0].s = TO_UV_256(pos[0].x);
-            pos[1].s = TO_UV_256(pos[1].x);
-            pos[2].s = TO_UV_256(pos[2].x);
-            pos[3].s = TO_UV_256(pos[3].x);
-            ppgWriteQuadWithST_B(pos, -1, NULL, 0, -1);
+            pos[0].u = TO_UV_256(pos[0].x);
+            pos[1].u = TO_UV_256(pos[1].x);
+            pos[2].u = TO_UV_256(pos[2].x);
+            pos[3].u = TO_UV_256(pos[3].x);
+            pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
+            Renderer_SetTexture(0);
+            Renderer_DrawTexturedQuad(pos, 4);
         }
 
         pos[0].y = pos[1].y = 80.0f;
         pos[2].x = pos[3].x = 256.0f;
-        pos[0].t = pos[1].t = TO_UV_256(192.0f);
-        pos[2].s = pos[3].s = TO_UV_256(256.0f);
+        pos[0].v = pos[1].v = TO_UV_256(192.0f);
+        pos[2].u = pos[3].u = TO_UV_256(256.0f);
 
         for (i = 0; i < 48; i += 8) {
             pos[0].x = i + 208;
             pos[1].x = pos[0].x + step;
             pos[2].y = 128 - i;
             pos[3].y = pos[2].y - step;
-            pos[0].s = TO_UV_256(pos[0].x);
-            pos[1].s = TO_UV_256(pos[1].x);
-            pos[2].t = TO_UV_256(240 - i);
-            pos[3].t = TO_UV_256((240 - i) - step);
-            ppgWriteQuadWithST_B(pos, -1, NULL, 0, -1);
+            pos[0].u = TO_UV_256(pos[0].x);
+            pos[1].u = TO_UV_256(pos[1].x);
+            pos[2].v = TO_UV_256(240 - i);
+            pos[3].v = TO_UV_256((240 - i) - step);
+            pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
+            Renderer_SetTexture(0);
+            Renderer_DrawTexturedQuad(pos, 4);
         }
     } else {
         step -= 8;
         pos[0].x = pos[1].x = 128.0f;
         pos[2].y = pos[3].y = 128.0f;
-        pos[0].s = pos[1].s = TO_UV_256(pos[0].x);
-        pos[2].t = pos[3].t = TO_UV_256(240.0f);
+        pos[0].u = pos[1].u = TO_UV_256(pos[0].x);
+        pos[2].v = pos[3].v = TO_UV_256(240.0f);
 
         for (i = 40; i >= 0; i -= 8) {
             pos[1].y = i + 80;
             pos[0].y = (8.0f + pos[1].y) - step;
             pos[3].x = (176 - i);
             pos[2].x = (pos[3].x - 8.0f) + step;
-            pos[0].t = TO_UV_256((i + 200) - step);
-            pos[1].t = TO_UV_256(i + 192);
-            pos[2].s = TO_UV_256((168 - i) + step);
-            pos[3].s = TO_UV_256(176 - i);
-            ppgWriteQuadWithST_B(pos, -1, NULL, 0, -1);
+            pos[0].v = TO_UV_256((i + 200) - step);
+            pos[1].v = TO_UV_256(i + 192);
+            pos[2].u = TO_UV_256((168 - i) + step);
+            pos[3].u = TO_UV_256(176 - i);
+            pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
+            Renderer_SetTexture(0);
+            Renderer_DrawTexturedQuad(pos, 4);
         }
 
         pos[0].y = pos[1].y = 80.0f;
         pos[2].y = pos[3].y = 128.0f;
-        pos[0].t = pos[1].t = TO_UV_256(192.0f);
-        pos[2].t = pos[3].t = TO_UV_256(240.0f);
+        pos[0].v = pos[1].v = TO_UV_256(192.0f);
+        pos[2].v = pos[3].v = TO_UV_256(240.0f);
 
-        for (i = 128; i < 208; i += 8) {
+        for (i = LOGO_X_START; i < LOGO_X_END; i += 8) {
             pos[0].x = (i + step);
             pos[1].x = (i + 8);
             pos[2].x = 48.0f + pos[0].x;
             pos[3].x = 48.0f + pos[1].x;
-            pos[0].s = TO_UV_256(pos[0].x);
-            pos[1].s = TO_UV_256(pos[1].x);
-            pos[2].s = TO_UV_256(pos[2].x);
-            pos[3].s = TO_UV_256(pos[3].x);
-            ppgWriteQuadWithST_B(pos, -1, NULL, 0, -1);
+            pos[0].u = TO_UV_256(pos[0].x);
+            pos[1].u = TO_UV_256(pos[1].x);
+            pos[2].u = TO_UV_256(pos[2].x);
+            pos[3].u = TO_UV_256(pos[3].x);
+            pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
+            Renderer_SetTexture(0);
+            Renderer_DrawTexturedQuad(pos, 4);
         }
 
         pos[0].y = pos[1].y = 80.0f;
         pos[2].x = pos[3].x = 256.0f;
-        pos[0].t = pos[1].t = TO_UV_256(192.0f);
-        pos[2].s = pos[3].s = TO_UV_256(256.0f);
+        pos[0].v = pos[1].v = TO_UV_256(192.0f);
+        pos[2].u = pos[3].u = TO_UV_256(256.0f);
 
         for (i = 0; i < 48; i += 8) {
             pos[0].x = i + 208 + step;
             pos[1].x = i + 216;
             pos[2].y = 128 - i - step;
             pos[3].y = 120 - i;
-            pos[0].s = TO_UV_256(pos[0].x);
-            pos[1].s = TO_UV_256(pos[1].x);
-            pos[2].t = TO_UV_256(240 - i - step);
-            pos[3].t = TO_UV_256(232 - i);
-            ppgWriteQuadWithST_B(pos, -1, NULL, 0, -1);
+            pos[0].u = TO_UV_256(pos[0].x);
+            pos[1].u = TO_UV_256(pos[1].x);
+            pos[2].v = TO_UV_256(240 - i - step);
+            pos[3].v = TO_UV_256(232 - i);
+            pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
+            Renderer_SetTexture(0);
+            Renderer_DrawTexturedQuad(pos, 4);
         }
     }
 }
 
+/** @brief Initialize player face portrait state. */
 void player_face_init() {
     // Do nothing
 }
 
+/** @brief Render a face-portrait font region with custom priority. */
 void scfont_sqput_face(u16 x, u16 y, u16 atr, u8 page, u8 cx1, u8 cy1, u8 cx2, u8 cy2, u16 priority) {
     s32 u1;
     s32 u2;
     s32 v1;
     s32 v2;
 
-    njColorBlendingMode(0, 1);
-    scrscrntex[0].col = scrscrntex[3].col = -1;
+    scrscrntex[0].color = scrscrntex[3].color = -1;
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[priority];
-    njSetPaletteBankNumG(0, atr & 0x3FFF);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3FFF);
     x = x * 8;
     y = y * 8;
     u1 = cx1 * 8;
@@ -1415,9 +1482,11 @@ void scfont_sqput_face(u16 x, u16 y, u16 atr, u8 page, u8 cx1, u8 cy1, u8 cx2, u
     scrscrntex[3].x = (x + (u2 - u1));
     scrscrntex[0].y = y;
     scrscrntex[3].y = (y + (v2 - v1));
-    njDrawSprite(scrscrntex, 4, page, 1);
+    Renderer_SetTexture(page);
+    Renderer_DrawSprite(scrscrntex, 4);
 }
 
+/** @brief Draw player face portraits on the HUD. */
 void player_face() {
     u8 grade_tmp;
 
@@ -1479,14 +1548,19 @@ void player_face() {
 
     grade_tmp = Keep_Grade[Champion] - 1;
 
-    if (grade_tmp < 0x18) {
+    if (grade_tmp >= GRADE_POS_COUNT) {
+        return;
+    }
+
+    if (grade_tmp < GRADE_GOLD_THRESHOLD) {
         scfont_sqput((Champion * 41) + 1, 1, 27, 2, Grade_Pos_TBL[grade_tmp][0], Grade_Pos_TBL[grade_tmp][1], 5, 1, 2);
     } else {
         scfont_sqput((Champion * 41) + 1, 1, 28, 2, Grade_Pos_TBL[grade_tmp][0], Grade_Pos_TBL[grade_tmp][1], 5, 1, 2);
     }
 }
 
-void face_base_put() {
+/** @brief Draw the base frame behind player face portraits. */
+static void face_base_put() {
     PAL_CURSOR vtx;
     PAL_CURSOR_P pos[4];
     PAL_CURSOR_COL col;
@@ -1495,7 +1569,6 @@ void face_base_put() {
         return;
     }
 
-    njColorBlendingMode(0, 1);
     vtx.p = pos;
     vtx.col = &col;
     col.color = 0x50000000;
@@ -1507,14 +1580,15 @@ void face_base_put() {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    njDrawPolygon2D(&vtx, 4, PrioBase[4], 0x60);
+    Renderer_Queue2DPrimitive((f32*)pos, PrioBase[4], (uintptr_t)col.color, 0);
     pos[0].x = 348.8f;
     pos[3].x = 377.6f;
     pos[1].x = pos[3].x;
     pos[2].x = pos[0].x;
-    njDrawPolygon2D(&vtx, 4, PrioBase[4], 0x60);
+    Renderer_Queue2DPrimitive((f32*)pos, PrioBase[4], (uintptr_t)col.color, 0);
 }
 
+/** @brief Set up and display an HNC (hit/name/combo) overlay. */
 void hnc_set(u8 num, u8 atr) {
     u8 i;
 
@@ -1524,8 +1598,7 @@ void hnc_set(u8 num, u8 atr) {
 
     ppgSetupCurrentDataList(&ppgScrList);
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[2];
-    njSetPaletteBankNumG(1, atr & 0x3F);
-    njColorBlendingMode(0, 1);
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
 
     for (i = 0; i < 2; i++) {
         if (i) {
@@ -1546,13 +1619,15 @@ void hnc_set(u8 num, u8 atr) {
 
         scrscrntex[0].y = 88.0f;
         scrscrntex[3].y = 112.0f;
-        scrscrntex[0].col = scrscrntex[3].col = -1;
-        njDrawSprite(scrscrntex, 4, 1, 1);
+        scrscrntex[0].color = scrscrntex[3].color = -1;
+        Renderer_SetTexture(1);
+        Renderer_DrawSprite(scrscrntex, 4);
     }
 }
 
+/** @brief Initialize the HNC wipe-reveal animation. */
 void hnc_wipeinit(u8 atr) {
-    Polygon dmyvtx[4];
+    RendererVertex dmyvtx[4];
     u8 i;
     u8 j;
     u8 k;
@@ -1560,9 +1635,9 @@ void hnc_wipeinit(u8 atr) {
     ppgSetupCurrentDataList(&ppgScrList);
     Hnc_Num = 0;
     scrscrntex[0].z = scrscrntex[1].z = scrscrntex[2].z = scrscrntex[3].z = PrioBase[2];
-    njSetPaletteBankNumG(1, atr & 0x3F);
-    njColorBlendingMode(0, 1);
-    scrscrntex[0].col = scrscrntex[1].col = scrscrntex[2].col = scrscrntex[3].col = -1;
+    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
+
+    scrscrntex[0].color = scrscrntex[1].color = scrscrntex[2].color = scrscrntex[3].color = -1;
 
     for (i = 0; i < 2; i++) {
         for (j = 0; j < 26; j++) {
@@ -1575,14 +1650,15 @@ void hnc_wipeinit(u8 atr) {
             }
 
             if (!No_Trans) {
-                njDrawTexture(dmyvtx, 4, 1, 1);
+                Renderer_SetTexture(1);
+                Renderer_DrawTexturedQuad(dmyvtx, 4);
             }
         }
     }
 }
-
+/** @brief Execute one frame of the HNC wipe-out animation. */
 s32 hnc_wipeout(u8 atr) {
-    Polygon vtx[4];
+    RendererVertex vtx[4];
     u8 i;
     u8 j;
     u8 k;
@@ -1594,10 +1670,10 @@ s32 hnc_wipeout(u8 atr) {
 
     if (!No_Trans) {
         ppgSetupCurrentDataList(&ppgScrList);
-        njSetPaletteBankNumG(1, atr & 0x3F);
-        njColorBlendingMode(0, 1);
+        ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
+
         vtx[0].z = vtx[1].z = vtx[2].z = vtx[3].z = PrioBase[2];
-        vtx[0].col = vtx[1].col = vtx[2].col = vtx[3].col = -1;
+        vtx[0].color = vtx[1].color = vtx[2].color = vtx[3].color = -1;
         ipx = 8;
         ipy = 88;
         ipu = 8;
@@ -1624,7 +1700,8 @@ s32 hnc_wipeout(u8 atr) {
                     vtx[k].v /= 256.0f;
                 }
 
-                njDrawTexture(vtx, 4, 1, 1);
+                Renderer_SetTexture(1);
+                Renderer_DrawTexturedQuad(vtx, 4);
                 ipx += 8;
                 ipu += 8;
             }
@@ -1656,7 +1733,8 @@ s32 hnc_wipeout(u8 atr) {
                 vtx[k].v /= 256.0f;
             }
 
-            njDrawTexture(vtx, 4, 1, 1);
+            Renderer_SetTexture(1);
+            Renderer_DrawTexturedQuad(vtx, 4);
             ipy += 12;
             ipv += 12;
         }
@@ -1670,9 +1748,9 @@ s32 hnc_wipeout(u8 atr) {
 
     return 0;
 }
-
+/** @brief Set character-info overlay elements. */
 void ci_set(u8 type, u8 atr) {
-    if (No_Trans) {
+    if (No_Trans || type >= 7) {
         return;
     }
 
@@ -1688,6 +1766,7 @@ void ci_set(u8 type, u8 atr) {
                  2);
 }
 
+/** @brief Set name/win data overlay for a player. */
 void nw_set(u8 PL_num, u8 atr) {
     if (No_Trans) {
         return;
@@ -1707,6 +1786,7 @@ void nw_set(u8 PL_num, u8 atr) {
     scfont_sqput(nwdata_tbl[PL_num][5], 9, atr, 2, 17, 22, 13, 4, 2);
 }
 
+/** @brief Render an 8×16 score-font character. */
 void score8x16_put(u16 x, u16 y, u8 atr, u8 chr) {
     if (No_Trans) {
         return;
@@ -1716,6 +1796,7 @@ void score8x16_put(u16 x, u16 y, u8 atr, u8 chr) {
     scfont_sqput(x, y, atr, 0, chr, 6, 1, 2, 2);
 }
 
+/** @brief Render a 16×24 score-font character. */
 void score16x24_put(u16 x, u16 y, u8 atr, u8 chr) {
     if (No_Trans) {
         return;
@@ -1725,6 +1806,7 @@ void score16x24_put(u16 x, u16 y, u8 atr, u8 chr) {
     scfont_sqput(x, y, atr, 2, chr * 2, 6, 2, 3, 2);
 }
 
+/** @brief Display a combo message (hit count and type label). */
 void combo_message_set(u8 pl, u8 kind, u8 x, u8 num, u8 hi, u8 low) {
     u8 xw;
     u8 xw2;
@@ -1793,6 +1875,7 @@ void combo_message_set(u8 pl, u8 kind, u8 x, u8 num, u8 hi, u8 low) {
     }
 }
 
+/** @brief Display combo point values. */
 void combo_pts_set(u8 pl, u8 x, u8 num, s8* pts, s8 digit) {
     s8 i;
     s8 j;
@@ -1867,6 +1950,7 @@ void combo_pts_set(u8 pl, u8 x, u8 num, s8* pts, s8 digit) {
     }
 }
 
+/** @brief Set a naming character on the ranking entry screen. */
 void naming_set(u8 pl, s16 place, u16 atr, u16 chr) {
     if (No_Trans) {
         return;
@@ -1876,6 +1960,7 @@ void naming_set(u8 pl, s16 place, u16 atr, u16 chr) {
     scfont_put(place + 13 + (pl * 27), 0, atr, 0, rankname_pos_tbl[chr][0], rankname_pos_tbl[chr][1], 2);
 }
 
+/** @brief Draw the stun-gauge frame/border for both players. */
 void stun_gauge_waku_write(s16 p1len, s16 p2len) {
     if (omop_cockpit == 0) {
         return;
@@ -1904,14 +1989,15 @@ void stun_gauge_waku_write(s16 p1len, s16 p2len) {
     scfont_sqput(p2len + 27, 3, 1, 0, p2len + 2, p2len + 12, 10 - p2len, 1, 3);
 }
 
-void silver_stun_put(u8 Pl_Num, s16 len) {
+/** @brief Draw the silver (recoverable) stun gauge overlay. */
+static void silver_stun_put(u8 Pl_Num, s16 len) {
     if (No_Trans) {
         return;
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[3];
-    njSetPaletteBankNumG(0, 1);
+    ppgSetupCurrentPaletteNumber(0, 1);
 
     scrscrntex[0].u = 240.0f / 256.0f;
     scrscrntex[3].u = 248.0f / 256.0f;
@@ -1928,11 +2014,13 @@ void silver_stun_put(u8 Pl_Num, s16 len) {
 
     scrscrntex[0].y = 24.0f;
     scrscrntex[3].y = 32.0f;
-    njColorBlendingMode(0, 1);
-    scrscrntex[0].col = scrscrntex[3].col = 0xFFFFFFFF;
-    njDrawSprite(scrscrntex, 4, 0, 1);
+
+    scrscrntex[0].color = scrscrntex[3].color = 0xFFFFFFFF;
+    Renderer_SetTexture(0);
+    Renderer_DrawSprite(scrscrntex, 4);
 }
 
+/** @brief Draw a solid-color fullscreen panel overlay. */
 void overwrite_panel(u32 color, u8 priority) {
     PAL_CURSOR panel_pc;
     PAL_CURSOR_P panel_p[4];
@@ -1944,7 +2032,7 @@ void overwrite_panel(u32 color, u8 priority) {
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
+
     panel_pc.p = panel_p;
     panel_pc.col = panel_col;
     panel_pc.num = 4;
@@ -1955,9 +2043,10 @@ void overwrite_panel(u32 color, u8 priority) {
         panel_col[i].color = color;
     }
 
-    njDrawPolygon2D(&panel_pc, 4, PrioBase[priority], 0x60);
+    Renderer_Queue2DPrimitive((f32*)panel_p, PrioBase[priority], (uintptr_t)panel_col[0].color, 0);
 }
 
+/** @brief Transfer super-art stock indicator data to VRAM. */
 void sa_stock_trans(s16 St_Num, s16 Spg_Col, s8 Stpl_Num) {
     if (Stpl_Num == 0) {
         scfont_put2(3, 25, sa_color_data_tbl[Spg_Col], 2, St_Num + 21, 4);
@@ -1968,6 +2057,7 @@ void sa_stock_trans(s16 St_Num, s16 Spg_Col, s8 Stpl_Num) {
     }
 }
 
+/** @brief Transfer full super-art stock data to VRAM. */
 void sa_fullstock_trans(s16 St_Num, s16 Spg_Col, s8 Stpl_Num) {
     if (Stpl_Num == 0) {
         scfont_put2(1, 26, sa_color_data_tbl[Spg_Col], 2, St_Num + 21, 6);
@@ -1976,6 +2066,7 @@ void sa_fullstock_trans(s16 St_Num, s16 Spg_Col, s8 Stpl_Num) {
     }
 }
 
+/** @brief Write the super-art stock number display. */
 void sa_number_write(s8 Stpl_Num, u16 x) {
     if (Stpl_Num == 0) {
         if (My_char[0] == 0) {
@@ -1990,12 +2081,17 @@ void sa_number_write(s8 Stpl_Num, u16 x) {
     }
 }
 
+/** @brief Transfer screen-RAM tile data to VRAM for rendering. */
 void sc_ram_to_vram(s8 sc_num) {
     uintptr_t* sc_tbl_ptr;
     u8* sc_pos_ptr;
     u8* sc_uv_ptr;
     u16 loop;
     u16 i;
+
+    if (sc_num < 0 || sc_num >= SC_RAM_VRAM_COUNT) {
+        return;
+    }
 
     sc_tbl_ptr = (uintptr_t*)sc_ram_vram_tbl[sc_num];
     sc_pos_ptr = (u8*)*sc_tbl_ptr;
@@ -2012,6 +2108,7 @@ void sc_ram_to_vram(s8 sc_num) {
     }
 }
 
+/** @brief Transfer screen-RAM tile data to VRAM with custom offset and attribute. */
 void sc_ram_to_vram_opc(s8 sc_num, s8 x, s8 y, u16 atr) {
     uintptr_t* sc_tbl_ptr;
     u8* sc_pos_ptr;
@@ -2019,7 +2116,7 @@ void sc_ram_to_vram_opc(s8 sc_num, s8 x, s8 y, u16 atr) {
     u16 loop;
     u16 i;
 
-    if (No_Trans) {
+    if (No_Trans || sc_num < 0 || sc_num >= SC_RAM_VRAM_COUNT) {
         return;
     }
 
@@ -2038,24 +2135,36 @@ void sc_ram_to_vram_opc(s8 sc_num, s8 x, s8 y, u16 atr) {
     }
 }
 
+/** @brief Repaint a rectangular area of tile attributes. */
 void sq_paint_chenge(u16 x, u16 y, u16 sx, u16 sy, u16 atr) {
     u16 i;
     u16 j;
 
     for (j = 0; j < sy; j++) {
+        if (y - SA_FRAME_Y_OFFSET + j >= SA_FRAME_ROWS)
+            break;
         for (i = 0; i < sx; i++) {
-            sa_frame[y - 25 + j][x + i].atr = atr;
+            if (x + i >= SA_FRAME_COLS)
+                break;
+            sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].atr = atr;
         }
     }
 }
 
+/** @brief Initialize the automatic fade-transition controller. */
 void fade_cont_init() {
     FadeInit();
+
+    if (Fade_Number < 0 || Fade_Number >= FADE_DATA_COUNT) {
+        return;
+    }
+
     fd_dat.fade_kind = fade_data_tbl[Fade_Number][0];
     fd_dat.fade = fade_data_tbl[Fade_Number][1];
     fd_dat.fade_prio = fade_data_tbl[Fade_Number][2];
 }
 
+/** @brief Per-frame automatic fade-transition state machine. */
 void fade_cont_main() {
     u8 flag = 0;
 
@@ -2082,6 +2191,7 @@ void fade_cont_main() {
     }
 }
 
+/** @brief Draw the red “Akaobi” health-bar stripe overlay. */
 void Akaobi() {
     PAL_CURSOR apc;
     PAL_CURSOR_P ap[4];
@@ -2093,7 +2203,7 @@ void Akaobi() {
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    njColorBlendingMode(0, 1);
+
     apc.p = ap;
     apc.col = acol;
     apc.num = 4;
@@ -2104,9 +2214,10 @@ void Akaobi() {
         acol[i].color = 0xA0D00000;
     }
 
-    njDrawPolygon2D(&apc, 4, PrioBase[2], 0x60);
+    Renderer_Queue2DPrimitive((f32*)ap, PrioBase[2], (uintptr_t)acol[0].color, 0);
 }
 
+/** @brief Clear all training-mode display work data. */
 void Training_Disp_Work_Clear() {
     u8 i;
 
@@ -2121,6 +2232,7 @@ void Training_Disp_Work_Clear() {
     }
 }
 
+/** @brief Record a damage value into the training-mode display buffer. */
 void Training_Damage_Set(s16 damage, s16 arg1, u8 kezuri) {
     u8 j;
 
@@ -2136,8 +2248,8 @@ void Training_Damage_Set(s16 damage, s16 arg1, u8 kezuri) {
 
     tr_data[j].damage = damage;
 
-    if (tr_data[j].damage > 999) {
-        tr_data[j].damage = 999;
+    if (tr_data[j].damage > DAMAGE_DISPLAY_CAP) {
+        tr_data[j].damage = DAMAGE_DISPLAY_CAP;
     }
 
     if (kezuri) {
@@ -2148,11 +2260,12 @@ void Training_Damage_Set(s16 damage, s16 arg1, u8 kezuri) {
         tr_data[j].disp_total_damage = tr_data[j].total_damage;
     }
 
-    if (tr_data[j].disp_total_damage > 999) {
-        tr_data[j].disp_total_damage = 999;
+    if (tr_data[j].disp_total_damage > DAMAGE_DISPLAY_CAP) {
+        tr_data[j].disp_total_damage = DAMAGE_DISPLAY_CAP;
     }
 }
 
+/** @brief Render the full training-mode data overlay (damage, combos, inputs). */
 void Training_Data_Disp() {
     u8 i;
     u8 j;
@@ -2260,15 +2373,16 @@ void Training_Data_Disp() {
     }
 }
 
-const u8 scrnAddTex1UV[9][4] = { { 96, 0, 32, 32 },  { 63, 0, 32, 32 },  { 0, 96, 32, 32 },
-                                 { 0, 64, 32, 32 },  { 0, 0, 32, 32 },   { 31, 0, 32, 32 },
-                                 { 32, 96, 32, 32 }, { 32, 64, 32, 32 }, { 128, 0, 96, 128 } };
+const u8 scrnAddTex1UV[SCRN_ADD_TEX_COUNT][4] = { { 96, 0, 32, 32 },  { 63, 0, 32, 32 },  { 0, 96, 32, 32 },
+                                                  { 0, 64, 32, 32 },  { 0, 0, 32, 32 },   { 31, 0, 32, 32 },
+                                                  { 32, 96, 32, 32 }, { 32, 64, 32, 32 }, { 128, 0, 96, 128 } };
 
+/** @brief Render a button-prompt image from the controller texture atlas. */
 void dispButtonImage(s32 px, s32 py, s32 pz, s32 sx, s32 sy, s32 cl, s32 ix) {
     PAL_CURSOR_COL oricol;
     Sprite prm;
 
-    if (No_Trans) {
+    if (No_Trans || ix < 0 || ix >= SCRN_ADD_TEX_COUNT) {
         return;
     }
 
@@ -2290,11 +2404,12 @@ void dispButtonImage(s32 px, s32 py, s32 pz, s32 sx, s32 sy, s32 cl, s32 ix) {
     SDLGameRenderer_DrawSprite(&prm, oricol.color);
 }
 
+/** @brief Render a button-prompt image variant 2 (alternate UV mapping). */
 void dispButtonImage2(s32 px, s32 py, s32 pz, s32 sx, s32 sy, s32 cl, s32 ix) {
     PAL_CURSOR_COL oricol;
     Sprite prm;
 
-    if (No_Trans) {
+    if (No_Trans || ix < 0 || ix >= SCRN_ADD_TEX_COUNT) {
         return;
     }
 
@@ -2314,6 +2429,7 @@ void dispButtonImage2(s32 px, s32 py, s32 pz, s32 sx, s32 sy, s32 cl, s32 ix) {
     SDLGameRenderer_DrawSprite(&prm, oricol.color);
 }
 
+/** @brief Render the save/load title banner from event-work data. */
 void dispSaveLoadTitle(void* ewk) {
     WORK* wk;
     PAL_CURSOR_COL oricol;

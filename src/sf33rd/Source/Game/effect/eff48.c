@@ -1,6 +1,6 @@
 /**
  * @file eff48.c
- * TODO: identify what this effect does
+ * Effect: Numeric / Counter Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff48.h"
@@ -21,15 +21,15 @@ typedef const s16* ConstShortArray;
 extern ConstShortArray eff48_adrs_tbl[];
 extern const s16 eff48_num_tbl[22];
 
-void eff48_0000(WORK_Other*);
-void eff48_1000(WORK_Other*);
+static void eff48_0000(WORK_Other*);
+static void eff48_1000(WORK_Other*);
 
 void effect_48_move(WORK_Other* ewk) {
     void (*eff48_jp[3])(WORK_Other*) = { eff48_0000, eff48_1000, eff48_0000 };
     eff48_jp[ewk->wu.routine_no[0]](ewk);
 }
 
-void eff48_0000(WORK_Other* ewk) {
+static void eff48_0000(WORK_Other* ewk) {
     if (ewk->wu.old_rno[1] <= op_obj_disp) {
         ewk->wu.routine_no[1] = 0x63;
     }
@@ -56,7 +56,7 @@ void eff48_0000(WORK_Other* ewk) {
     }
 }
 
-void eff48_1000(WORK_Other* ewk) {
+static void eff48_1000(WORK_Other* ewk) {
     if (ewk->wu.old_rno[1] <= op_obj_disp) {
         ewk->wu.routine_no[1] = 0x63;
     }
@@ -120,7 +120,7 @@ s32 effect_48_init(s16 type) {
     s16 i;
     const s16* data_ptr;
 
-    if (Debug_w[0x30] & 8) {
+    if (Debug_w[DEBUG_OPENING_TEST] & 8) {
         return 0;
     }
 

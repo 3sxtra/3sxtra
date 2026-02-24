@@ -1,6 +1,6 @@
 /**
  * @file effb8.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect
  */
 
 #include "sf33rd/Source/Game/effect/effb8.h"
@@ -13,9 +13,9 @@
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
-u16 effb8_normal_or_senyou();
-u16 effb8_sel_1_by_8();
-void wk_set(WORK_Other_CONN* ewk);
+static u16 effb8_normal_or_senyou();
+static u16 effb8_sel_1_by_8();
+static void wk_set(WORK_Other_CONN* ewk);
 
 s16 test_pl_no;
 s16 test_mes_no;
@@ -128,7 +128,7 @@ s32 effect_B8_init(s8 WIN_PL_NO, s16 timer) {
     return 0;
 }
 
-u16 effb8_normal_or_senyou() {
+static u16 effb8_normal_or_senyou() {
     if (Country != 1) {
         return 0;
     }
@@ -136,7 +136,7 @@ u16 effb8_normal_or_senyou() {
     return random_16() & 1;
 }
 
-u16 effb8_sel_1_by_8() {
+static u16 effb8_sel_1_by_8() {
     u16 mes_no;
 
     mes_no = random_16() & 7;
@@ -161,7 +161,7 @@ u16 effb8_sel_1_by_8() {
     return mes_no;
 }
 
-void wk_set(WORK_Other_CONN* ewk) {
+static void wk_set(WORK_Other_CONN* ewk) {
     ewk->wu.be_flag = 1;
     ewk->wu.id = 118;
     ewk->wu.work_id = 16;

@@ -1,3 +1,13 @@
+/**
+ * @file Debug.c
+ * @brief In-game debug menu, pause control, and diagnostic displays.
+ *
+ * Provides a toggleable debug overlay (right-stick click) with 72 options
+ * arranged in a 3-column layout. Also includes inspection routines for
+ * object/BG positions, record time display, CPU state, and RNG state.
+ *
+ * Part of the debug module.
+ */
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "common.h"
 #include "main.h"
@@ -16,6 +26,15 @@
 
 #define COLOR_WHITE 0xFFFFFFFF
 #define COLOR_YELLOW 0xFFFFFF00
+
+/* === Named Constants === */
+#define DEBUG_JMP_COUNT 3                                        /**< Number of debug task states (Init, 1st, 2nd) */
+#define DEBUG_COLUMN_SIZE 24                                     /**< Number of options per column in the debug menu */
+#define DEBUG_COLUMN_COUNT 3                                     /**< Number of columns in the debug menu */
+#define DEBUG_GRID_SIZE (DEBUG_COLUMN_SIZE * DEBUG_COLUMN_COUNT) /**< Total debug options (72) */
+#define CPU_DATA_COUNT 16                                        /**< Number of entries in cpu_data[] label table */
+#define DEBUG_DELEY_COUNT 6                                      /**< Number of entries in Debug_Deley_Time[] */
+#define DEBUG_DELEY2_COUNT 4                                     /**< Number of entries in Debug_Deley_Time2[] */
 
 // sbss
 bool debug_menu_active;
@@ -41,23 +60,21 @@ u8 time_check_ix;
 // forward decls
 extern s8* cpu_data[];
 
+/** @brief Debug task entry point — dispatches to Init/1st/2nd and runs diagnostics. */
 void Debug_Task(struct _TASK* task_ptr) {
-    void (*Main_Jmp_Tbl[3])() = { Debug_Init, Debug_1st, Debug_2nd };
+    void (*Main_Jmp_Tbl[DEBUG_JMP_COUNT])() = { Debug_Init, Debug_1st, Debug_2nd };
+
+    if (task_ptr->r_no[0] < 0 || task_ptr->r_no[0] >= DEBUG_JMP_COUNT) {
+        return;
+    }
 
     Main_Jmp_Tbl[(task_ptr->r_no[0])](task_ptr);
-
-    if (permission_player[1].ok[0] == 0) {
-        permission_player[1].ok[0] = (u8)Debug_w[0x33];
-    }
-
-    if (Debug_w[0x3A]) {
-        save_w[1].Extra_Option = 1;
-    }
 
     Disp_Free_work();
     Disp_Random();
 }
 
+/** @brief Initialize debug state and load default configuration. */
 void Debug_Init(struct _TASK* task_ptr) {
     task_ptr->r_no[0] += 1;
     Debug_Index = 0;
@@ -69,16 +86,18 @@ void Debug_Init(struct _TASK* task_ptr) {
 #endif
 
     if ((flpad_adr[0]->sw | flpad_adr[0][1].sw) & 0x4000) {
-        Debug_w[0x2C] = 1;
+        Debug_w[DEBUG_PUB_BGM_OFF] = 1;
     }
 }
 
+/** @brief First-frame setup — enable fast-forward and advance to main loop. */
 void Debug_1st(struct _TASK* task_ptr) {
     task_ptr->r_no[0] += 1; // Progress to Debug_2nd
     sysFF = 1;
     return;
 }
 
+/** @brief Main debug loop — toggle menu visibility and process input. */
 void Debug_2nd(struct _TASK* task_ptr) {
 #if defined(DEBUG)
     // Check for toggle: right stick click to show/hide debug menu
@@ -120,6 +139,7 @@ void Debug_2nd(struct _TASK* task_ptr) {
 #endif
 }
 
+/** @brief Render the 3-column debug option list with current values. */
 void Debug_Menu_Disp(u32 /* unused */, u32 /* unused */) {
 #if defined(DEBUG)
     s16 side;
@@ -133,8 +153,8 @@ void Debug_Menu_Disp(u32 /* unused */, u32 /* unused */) {
     x = 1;
     y = 3;
 
-    for (; side < 3;) {
-        for (i = 0; i < 24;) {
+    for (; side < DEBUG_COLUMN_COUNT;) {
+        for (i = 0; i < DEBUG_COLUMN_SIZE;) {
             if (Debug_Index != ix) {
                 flPrintColor(COLOR_WHITE);
                 flPrintL(x, y, " ");
@@ -160,56 +180,57 @@ void Debug_Menu_Disp(u32 /* unused */, u32 /* unused */) {
 #endif
 }
 
+/** @brief Handle cursor movement through the debug menu grid. */
 void Debug_Move_Sub(u16 sw) {
     switch (sw) {
     case 1:
         Debug_Index -= 1;
         if (Debug_Index < 0) {
-            Debug_Index = 23;
+            Debug_Index = DEBUG_COLUMN_SIZE - 1;
             return;
         }
 
-        if (Debug_Index == 23) {
-            Debug_Index = 47;
+        if (Debug_Index == DEBUG_COLUMN_SIZE - 1) {
+            Debug_Index = (DEBUG_COLUMN_SIZE * 2) - 1;
             return;
         }
 
-        if (Debug_Index == 47) {
-            Debug_Index = 71;
+        if (Debug_Index == (DEBUG_COLUMN_SIZE * 2) - 1) {
+            Debug_Index = DEBUG_GRID_SIZE - 1;
             return;
         }
         break;
 
     case 2:
         Debug_Index += 1;
-        if (Debug_Index >= 72) {
-            Debug_Index = 48;
+        if (Debug_Index >= DEBUG_GRID_SIZE) {
+            Debug_Index = DEBUG_COLUMN_SIZE * 2;
             return;
         }
 
-        if (Debug_Index == 24) {
+        if (Debug_Index == DEBUG_COLUMN_SIZE) {
             Debug_Index = 0;
             return;
         }
 
-        if (Debug_Index == 48) {
-            Debug_Index = 24;
+        if (Debug_Index == DEBUG_COLUMN_SIZE * 2) {
+            Debug_Index = DEBUG_COLUMN_SIZE;
             return;
         }
         break;
 
     case 4:
-        Debug_Index -= 24;
+        Debug_Index -= DEBUG_COLUMN_SIZE;
         if (Debug_Index < 0) {
-            Debug_Index += 72;
+            Debug_Index += DEBUG_GRID_SIZE;
             return;
         }
         break;
 
     case 8:
-        Debug_Index += 24;
-        if (Debug_Index > 71) {
-            Debug_Index -= 72;
+        Debug_Index += DEBUG_COLUMN_SIZE;
+        if (Debug_Index > DEBUG_GRID_SIZE - 1) {
+            Debug_Index -= DEBUG_GRID_SIZE;
             return;
         }
         break;
@@ -220,8 +241,9 @@ void Debug_Move_Sub(u16 sw) {
     }
 }
 
-const u8 Debug_Deley_Time[6] = { 15, 10, 6, 15, 15, 15 };
+const u8 Debug_Deley_Time[DEBUG_DELEY_COUNT] = { 15, 10, 6, 15, 15, 15 };
 
+/** @brief Read directional input with auto-repeat for debug menu navigation. */
 s32 Debug_Menu_Lever() {
     u16 sw;
     u16 lever;
@@ -264,8 +286,9 @@ s32 Debug_Menu_Lever() {
     return 0;
 }
 
-const u8 Debug_Deley_Time2[4] = { 15, 10, 6, 4 };
+const u8 Debug_Deley_Time2[DEBUG_DELEY2_COUNT] = { 15, 10, 6, 4 };
 
+/** @brief Read button input with auto-repeat for debug option value changes. */
 u16 Debug_Menu_Shot() {
     u16 sw;
     u16 shot;
@@ -303,10 +326,11 @@ u16 Debug_Menu_Shot() {
     return 0;
 }
 
+/** @brief Display screen-check overlays triggered by shoulder/trigger buttons. */
 void Check_Check_Screen() {
     s16 ix;
 
-    if ((test_flag) || (Debug_w[70] != -16)) {
+    if ((test_flag) || (Debug_w[DEBUG_YOSHIZUMI_EXP] != -16)) {
         return;
     }
 
@@ -401,12 +425,14 @@ void Check_Check_Screen() {
     }
 }
 
+/** @brief Stub — lever display (unused). */
 void Disp_Lever(u16* /* unused */, u32 /* unused */, u32 /* unused */) {
     // do nothing
 }
 
+/** @brief Adjust and display object position using P4 pad (debug inspection). */
 void Check_Pos_OBJ(WORK_Other* ewk) {
-    if (Debug_w[0x46]) {
+    if (Debug_w[DEBUG_YOSHIZUMI_EXP]) {
         if (p4sw_0 & 1) {
             ewk->wu.xyz[1].disp.pos += 3;
         }
@@ -435,8 +461,9 @@ void Check_Pos_OBJ(WORK_Other* ewk) {
     }
 }
 
+/** @brief Adjust and display object position variant 2 (uses position_x/y directly). */
 void Check_Pos_OBJ2(WORK_Other* ewk) {
-    if (Debug_w[0x46]) {
+    if (Debug_w[DEBUG_YOSHIZUMI_EXP]) {
         if (p4sw_0 & 1) {
             ewk->wu.position_y += 3;
         }
@@ -462,32 +489,34 @@ void Check_Pos_OBJ2(WORK_Other* ewk) {
     }
 }
 
+/** @brief Adjust and display background layer position using P3 pad. */
 void Check_Pos_BG() {
-    if ((Debug_w[0x46]) == 9) {
+    if ((Debug_w[DEBUG_YOSHIZUMI_EXP]) == 9) {
         if (p3sw_0 & 1) {
-            bg_w.bgw[Debug_w[0x3E]].xy[1].disp.pos += 1;
+            bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].xy[1].disp.pos += 1;
         }
 
         if (p3sw_0 & 2) {
-            bg_w.bgw[Debug_w[0x3E]].xy[1].disp.pos -= 1;
+            bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].xy[1].disp.pos -= 1;
         }
 
         if (p3sw_0 & 8) {
-            bg_w.bgw[Debug_w[0x3E]].wxy[0].disp.pos += 1;
+            bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].wxy[0].disp.pos += 1;
         }
 
         if (p3sw_0 & 4) {
-            bg_w.bgw[Debug_w[0x3E]].wxy[0].disp.pos -= 1;
+            bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].wxy[0].disp.pos -= 1;
         }
 
         flPrintColor(COLOR_YELLOW);
         flPrintL(39, 13, "BG POSITION:");
-        flPrintL(51, 13, "%1X", Debug_w[0x3E]);
-        flPrintL(48, 14, "%4X", bg_w.bgw[Debug_w[0x3E]].wxy[0].disp.pos);
-        flPrintL(48, 15, "%4X", bg_w.bgw[Debug_w[0x3E]].xy[1].disp.pos);
+        flPrintL(51, 13, "%1X", Debug_w[DEBUG_BG_POSITION]);
+        flPrintL(48, 14, "%4X", bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].wxy[0].disp.pos);
+        flPrintL(48, 15, "%4X", bg_w.bgw[Debug_w[DEBUG_BG_POSITION]].xy[1].disp.pos);
     }
 }
 
+/** @brief Check if player 2 pressed the exit button (L1). */
 s32 Check_Exit_Check() {
     u16 sw = (p2sw_0 & 0xFF0);
 
@@ -498,12 +527,13 @@ s32 Check_Exit_Check() {
     return 0;
 }
 
+/** @brief Display recorded elapsed time in h:m:s format. */
 void Disp_Rec_Time(s16 PL_id, u32 time) {
     u32 time_buff;
     u8 rec_time[3];
     s16 offset_y;
 
-    if (Debug_w[0x46]) {
+    if (Debug_w[DEBUG_YOSHIZUMI_EXP]) {
         flPrintColor(COLOR_WHITE);
 
         if (PL_id) {
@@ -525,11 +555,12 @@ void Disp_Rec_Time(s16 PL_id, u32 time) {
     }
 }
 
+/** @brief Display CPU control mode/pattern for a player work structure. */
 void Disp_Mode(PLW* wk) {
     s16 x;
     s16 offset_y = 0;
 
-    if (Debug_w[0x38]) {
+    if (Debug_w[DEBUG_DISP_CPU_DATA]) {
         flPrintColor(COLOR_YELLOW);
 
         if (wk->wu.id) {
@@ -539,23 +570,29 @@ void Disp_Mode(PLW* wk) {
         }
 
         flPrintL(x, offset_y + 16, "%3X", Control_Time);
-        flPrintL(x + 1, offset_y + 17, cpu_data[CP_No[wk->wu.id][0]]);
+
+        if (CP_No[wk->wu.id][0] >= 0 && CP_No[wk->wu.id][0] < CPU_DATA_COUNT) {
+            flPrintL(x + 1, offset_y + 17, cpu_data[CP_No[wk->wu.id][0]]);
+        }
+
         flPrintL(x, offset_y + 18, "%3d", Pattern_Index[wk->wu.id]);
     }
 }
 
+/** @brief Display free-work counter diagnostic info. */
 void Disp_Free_work() {
-    if (Debug_w[0x39]) {
+    if (Debug_w[DEBUG_DISP_FREE_WORK]) {
         flPrintColor(COLOR_WHITE);
         flPrintL(1, 8, "%3d", frwctr);
         flPrintL(1, 9, "%3d", frwctr_min);
     }
 }
 
+/** @brief Display RNG indices, player positions, and timing diagnostics. */
 void Disp_Random() {
     s16 offset_y = -4;
 
-    if (Debug_w[0x3B]) {
+    if (Debug_w[DEBUG_DISP_RANDOM]) {
         flPrintColor(COLOR_YELLOW);
         flPrintL(8, offset_y + 32, "%4X", Random_ix16_com);
         flPrintL(8, offset_y + 33, "%4X", Random_ix32_com);
@@ -582,4 +619,5 @@ void Disp_Random() {
 }
 
 // sdata
-s8* cpu_data[16] = { "", "FR", "AC", "BF", "FW", "BP", "PS", "GD", "SH", "SG", "DM", "FL", "FP", "CT", "WL", "CH" };
+s8* cpu_data[CPU_DATA_COUNT] = { "",   "FR", "AC", "BF", "FW", "BP", "PS", "GD",
+                                 "SH", "SG", "DM", "FL", "FP", "CT", "WL", "CH" };

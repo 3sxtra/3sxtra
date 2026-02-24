@@ -1,3 +1,10 @@
+/**
+ * @file op_sub.h
+ * @brief Opening subroutines — texture release, tile rendering, palette copy.
+ *
+ * Part of the opening module.
+ */
+
 #ifndef OP_SUB_H
 #define OP_SUB_H
 

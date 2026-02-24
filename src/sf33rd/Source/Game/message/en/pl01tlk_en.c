@@ -1,8 +1,3 @@
-/**
- * @file pl01tlk_en.c
- * Alex Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl01tlk_en.h"
 #include "common.h"
 
@@ -30,4 +25,4 @@ static s8** msgTalkAdrPL01[5] = {
 
 static s8 msgTalkCtrPL01[5] = { 1, 2, 2, 2, 2 };
 
-MessageTable pl01tlk_usa_tbl = { msgTalkAdrPL01, msgTalkCtrPL01 };
+MessageTable pl01tlk_en_tbl = { msgTalkAdrPL01, msgTalkCtrPL01 };

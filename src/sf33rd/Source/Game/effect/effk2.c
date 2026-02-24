@@ -1,6 +1,6 @@
 /**
  * @file effk2.c
- * TODO: identify what this effect does
+ * Effect: Sound / Debris Effect
  */
 
 #include "sf33rd/Source/Game/effect/effk2.h"
@@ -16,8 +16,8 @@
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 
-void disp_effK2(WORK* wk, WORK* mk, DADD* hk);
-void set_next_next_y(WORK* wk, u8 flag);
+static void disp_effK2(WORK* wk, WORK* mk, DADD* hk);
+static void set_next_next_y(WORK* wk, u8 flag);
 
 const DADD hahen_dummy[1] = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
 
@@ -292,7 +292,7 @@ void effect_K2_move(WORK_Other* ewk) {
     }
 }
 
-void disp_effK2(WORK* wk, WORK* mk, DADD* hk) {
+static void disp_effK2(WORK* wk, WORK* mk, DADD* hk) {
     s16 flag;
     s16 hz;
 
@@ -328,7 +328,7 @@ void disp_effK2(WORK* wk, WORK* mk, DADD* hk) {
     sort_push_request(wk);
 }
 
-void effK2_parts_move_type_0(WORK_Other* ewk, DADD*) {
+static void effK2_parts_move_type_0(WORK_Other* ewk, DADD*) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -348,7 +348,7 @@ void effK2_parts_move_type_0(WORK_Other* ewk, DADD*) {
     }
 }
 
-void effK2_parts_move_type_1(WORK_Other* ewk, DADD* hahen) {
+static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* hahen) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         switch (ewk->wu.dm_attlv) {
@@ -433,7 +433,7 @@ void effK2_parts_move_type_1(WORK_Other* ewk, DADD* hahen) {
     }
 }
 
-void effK2_parts_move_type_2(WORK_Other* ewk, DADD* /* unused */) {
+static void effK2_parts_move_type_2(WORK_Other* ewk, DADD* /* unused */) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -454,7 +454,7 @@ void effK2_parts_move_type_2(WORK_Other* ewk, DADD* /* unused */) {
     }
 }
 
-void effK2_parts_move_type_3(WORK_Other* ewk, DADD* hahen) {
+static void effK2_parts_move_type_3(WORK_Other* ewk, DADD* hahen) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -486,7 +486,7 @@ void effK2_parts_move_type_3(WORK_Other* ewk, DADD* hahen) {
     }
 }
 
-void effK2_parts_move_type_4(WORK_Other* ewk, DADD* arg1) {
+static void effK2_parts_move_type_4(WORK_Other* ewk, DADD* arg1) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -511,7 +511,7 @@ void effK2_parts_move_type_4(WORK_Other* ewk, DADD* arg1) {
     }
 }
 
-void effK2_parts_move_type_5(WORK_Other* ewk, DADD* arg1) {
+static void effK2_parts_move_type_5(WORK_Other* ewk, DADD* arg1) {
     char_move(&ewk->wu);
 
     if (ewk->wu.dir_old) {
@@ -521,7 +521,7 @@ void effK2_parts_move_type_5(WORK_Other* ewk, DADD* arg1) {
     }
 }
 
-void effK2_parts_move_type_6(WORK_Other* ewk, DADD* arg1) {
+static void effK2_parts_move_type_6(WORK_Other* ewk, DADD* arg1) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.kage_prio = (random_16() & 7) + 28;
@@ -549,7 +549,7 @@ void effK2_parts_move_type_6(WORK_Other* ewk, DADD* arg1) {
     }
 }
 
-void effK2_parts_move_type_7(WORK_Other* ewk, DADD* arg1) {
+static void effK2_parts_move_type_7(WORK_Other* ewk, DADD* arg1) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);
@@ -563,7 +563,7 @@ void effK2_parts_move_type_7(WORK_Other* ewk, DADD* arg1) {
     }
 }
 
-void effK2_parts_move_type_8(WORK_Other* ewk, DADD* hahen) {
+static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* hahen) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         switch (ewk->wu.dm_attlv) {
@@ -652,7 +652,7 @@ void effK2_parts_move_type_8(WORK_Other* ewk, DADD* hahen) {
     }
 }
 
-void set_next_next_y(WORK* wk, u8 flag) {
+static void set_next_next_y(WORK* wk, u8 flag) {
     if (flag) {
         wk->next_y -= (random_16() & 4) + 2;
     } else {
@@ -660,7 +660,7 @@ void set_next_next_y(WORK* wk, u8 flag) {
     }
 }
 
-s32 effect_K2_init(WORK_Other* wk, u32* dad) {
+static s32 effect_K2_init(WORK_Other* wk, u32* dad) {
     WORK_Other* ewk;
     s16 ix;
 

@@ -1,6 +1,6 @@
 /**
  * @file eff58.c
- * TODO: identify what this effect does
+ * Effect: Sound / SE Request Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff58.h"
@@ -15,9 +15,9 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-s32 SF33rd_Logo(WORK_Other* ewk);
-void EFF58_Type_01(WORK_Other* ewk);
-void Fade_In_58_Sub(WORK_Other* ewk);
+static s32 SF33rd_Logo(WORK_Other* ewk);
+static void EFF58_Type_01(WORK_Other* ewk);
+static void Fade_In_58_Sub(WORK_Other* ewk);
 
 void effect_58_move(WORK_Other* ewk) {
     s16 xx;
@@ -225,7 +225,7 @@ s32 effect_58_init(s16 id, s16 time0, s16 option) {
     return 0;
 }
 
-s32 SF33rd_Logo(WORK_Other* ewk) {
+static s32 SF33rd_Logo(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;
@@ -275,7 +275,7 @@ s32 SF33rd_Logo(WORK_Other* ewk) {
     return ewk->wu.direction;
 }
 
-void EFF58_Type_01(WORK_Other* ewk) {
+static void EFF58_Type_01(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         Switch_Screen(1);
@@ -296,7 +296,7 @@ void EFF58_Type_01(WORK_Other* ewk) {
     }
 }
 
-void Fade_In_58_Sub(WORK_Other* ewk) {
+static void Fade_In_58_Sub(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         ewk->wu.routine_no[2]++;

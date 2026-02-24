@@ -1,6 +1,6 @@
 /**
  * @file efff0.c
- * TODO: identify what this effect does
+ * Effect: Texture / Visual Effect
  */
 
 #include "sf33rd/Source/Game/effect/efff0.h"

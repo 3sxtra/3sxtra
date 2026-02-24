@@ -17,16 +17,22 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void set_kabe_move_spd(WORK* wk, s16 tm);
-s32 kabe_check(WORK* wk);
+static void set_kabe_move_spd(WORK* wk, s16 tm);
+static s32 kabe_check(WORK* wk);
+
+#define EXATT_TABLE_SIZE 18
 
 void (*const pl17_exatt_table[18])(PLW*);
 
+/** @brief Makoto: extra attack dispatcher. */
 void pl17_extra_attack(PLW* wk) {
-    pl17_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl17_exatt_table[idx](wk);
 }
 
-void Att_PL17_AT1(PLW* wk) {
+/** @brief Makoto: attack 1 (Tanden Renki / Hayate chain). */
+static void Att_PL17_AT1(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -177,7 +183,8 @@ void Att_PL17_AT1(PLW* wk) {
     }
 }
 
-void set_kabe_move_spd(WORK* wk, s16 tm) {
+/** @brief Makoto: sets wall-bounce movement speed for timed duration. */
+static void set_kabe_move_spd(WORK* wk, s16 tm) {
     s16 tar_pos;
 
     tar_pos = get_center_position();
@@ -198,7 +205,8 @@ void set_kabe_move_spd(WORK* wk, s16 tm) {
     wk->mvxy.kop[0] = 1;
 }
 
-s32 kabe_check(WORK* wk) {
+/** @brief Makoto: checks if character has reached a stage wall. */
+static s32 kabe_check(WORK* wk) {
     s16 tar_pos;
 
     if (wk->xyz[1].disp.pos < 85) {
@@ -228,7 +236,8 @@ s32 kabe_check(WORK* wk) {
     return 0;
 }
 
-void Att_PL17_AT2(PLW* wk) {
+/** @brief Makoto: attack 2 (Seichusen Godanzuki). */
+static void Att_PL17_AT2(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -249,7 +258,8 @@ void Att_PL17_AT2(PLW* wk) {
     }
 }
 
-void Att_PL17_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Makoto: special action (tokushu koudou). */
+static void Att_PL17_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {

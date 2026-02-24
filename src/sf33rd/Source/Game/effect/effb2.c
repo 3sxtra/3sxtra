@@ -1,6 +1,6 @@
 /**
  * @file effb2.c
- * TODO: identify what this effect does
+ * Effect: Sound / Collision Effect
  */
 
 #include "sf33rd/Source/Game/effect/effb2.h"
@@ -28,8 +28,8 @@ s16 rf_b2_flag = 0;
 
 // Forward decls
 
-s32 b3_Break_Into_check(WORK_Other* ewk);
-s32 fight_col_chg_sub(WORK_Other* ewk);
+static s32 b3_Break_Into_check(WORK_Other* ewk);
+static s32 fight_col_chg_sub(WORK_Other* ewk);
 
 // Funcs
 
@@ -165,7 +165,7 @@ void effect_B2_move(WORK_Other* ewk) {
     }
 }
 
-s32 b3_Break_Into_check(WORK_Other* ewk) {
+static s32 b3_Break_Into_check(WORK_Other* ewk) {
     if (Break_Into) {
         ewk->wu.routine_no[0] = 99;
         return 1;
@@ -174,7 +174,7 @@ s32 b3_Break_Into_check(WORK_Other* ewk) {
     }
 }
 
-s32 fight_col_chg_sub(WORK_Other* ewk) {
+static s32 fight_col_chg_sub(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;
@@ -229,7 +229,7 @@ s32 effect_B2_init() {
 
     ewk = (WORK_Other*)frw[ix];
     ewk->wu.be_flag = 1;
-    ewk->wu.id = 112;
+    ewk->wu.id = 0x70;
     ewk->wu.work_id = 0x10;
     ewk->wu.my_family = 4;
     bg_w.bgw[3].xy[0].cal = bg_w.bgw[3].wxy[0].cal = 0x100000;

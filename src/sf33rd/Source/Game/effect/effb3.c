@@ -1,11 +1,12 @@
 /**
  * @file effb3.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect
  */
 
 #include "sf33rd/Source/Game/effect/effb3.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effb2.h"
 #include "sf33rd/Source/Game/effect/effb9.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -22,11 +23,11 @@ WORK_Other* oya_adrs = NULL;
 
 // Forward decls
 
-void round_move_init(WORK_Other* ewk);
-void round_move(WORK_Other* ewk);
-void fight_move(WORK_Other* ewk);
-void fight_col_move(WORK_Other* ewk);
-void fight_vanish(WORK_Other* ewk);
+static void round_move_init(WORK_Other* ewk);
+static void round_move(WORK_Other* ewk);
+static void fight_move(WORK_Other* ewk);
+static void fight_col_move(WORK_Other* ewk);
+static void fight_vanish(WORK_Other* ewk);
 
 // Funcs
 
@@ -81,7 +82,7 @@ void effect_B3_move(WORK_Other* ewk) {
     }
 }
 
-void round_move_init(WORK_Other* ewk) {
+static void round_move_init(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;
@@ -98,7 +99,7 @@ void round_move_init(WORK_Other* ewk) {
     }
 }
 
-void round_move(WORK_Other* ewk) {
+static void round_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;
@@ -126,7 +127,7 @@ void round_move(WORK_Other* ewk) {
     }
 }
 
-void fight_move(WORK_Other* ewk) {
+static void fight_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;
@@ -146,12 +147,12 @@ void fight_move(WORK_Other* ewk) {
     }
 }
 
-void fight_col_move(WORK_Other* ewk) {
+static void fight_col_move(WORK_Other* ewk) {
     ewk->wu.extra_col = oya_adrs->wu.extra_col;
     disp_pos_trans_entry5(ewk);
 }
 
-void fight_vanish(WORK_Other* ewk) {
+static void fight_vanish(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[1]) {
     case 0:
         ewk->wu.routine_no[1] += 1;

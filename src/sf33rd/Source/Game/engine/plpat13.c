@@ -13,17 +13,23 @@
 #include "sf33rd/Source/Game/engine/pls01.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 
+#define EXATT_TABLE_SIZE 18
+
 void (*const pl13_exatt_table[18])(PLW*);
 
 const s16 mnd_em_tall2[21][2] = { { 28, 56 }, { 24, 44 }, { 24, 40 }, { 20, 32 }, { 24, 48 }, { 24, 40 }, { 28, 60 },
                                   { 16, 44 }, { 32, 32 }, { 28, 24 }, { 20, 32 }, { 24, 40 }, { 24, 40 }, { 28, 56 },
                                   { 24, 40 }, { 24, 40 }, { 24, 40 }, { 24, 40 }, { 24, 40 }, { 24, 40 }, { 24, 40 } };
 
+/** @brief Urien: extra attack dispatcher. */
 void pl13_extra_attack(PLW* wk) {
-    pl13_exatt_table[wk->wu.routine_no[2] - 16](wk);
+    s16 idx = wk->wu.routine_no[2] - 16;
+    if (idx >= 0 && idx < EXATT_TABLE_SIZE)
+        pl13_exatt_table[idx](wk);
 }
 
-void Att_MOONSALT_KNEE_DROP2(PLW* wk) {
+/** @brief Urien: Moonsault Knee Drop variant 2 with homing. */
+static void Att_MOONSALT_KNEE_DROP2(PLW* wk) {
     PLW* twk;
     s16 ex;
     s16 ey;
@@ -74,7 +80,8 @@ void Att_MOONSALT_KNEE_DROP2(PLW* wk) {
     }
 }
 
-void Att_PL13_TOKUSHUKOUDOU(PLW* wk) {
+/** @brief Urien: special action (tokushu koudou). */
+static void Att_PL13_TOKUSHUKOUDOU(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {

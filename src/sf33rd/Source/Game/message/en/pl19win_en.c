@@ -1,8 +1,3 @@
-/**
- * @file pl19win_en.c
- * Remy Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl19win_en.h"
 #include "common.h"
 
@@ -67,4 +62,4 @@ static s8 msgWinCtrPL19[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 2, 2, 2, 2,
 };
 
-MessageTable pl19win_usa_tbl = { msgWinAdrPL19, msgWinCtrPL19 };
+MessageTable pl19win_en_tbl = { msgWinAdrPL19, msgWinCtrPL19 };

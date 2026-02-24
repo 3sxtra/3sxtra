@@ -1,8 +1,3 @@
-/**
- * @file pl04end_en.c
- * Dudley Ending Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl04end_en.h"
 #include "common.h"
 
@@ -46,4 +41,4 @@ static s8** msgEndAdrPL04[11] = {
 
 static s8 msgEndCtrPL04[11] = { 1, 2, 2, 2, 2, 1, 2, 1, 1, 2, 2 };
 
-MessageTable pl04end_usa_tbl = { msgEndAdrPL04, msgEndCtrPL04 };
+MessageTable pl04end_en_tbl = { msgEndAdrPL04, msgEndCtrPL04 };

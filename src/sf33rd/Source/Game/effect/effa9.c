@@ -1,6 +1,6 @@
 /**
  * @file effa9.c
- * TODO: identify what this effect does
+ * Effect: Visual Effect (Generic)
  */
 
 #include "sf33rd/Source/Game/effect/effa9.h"
@@ -17,7 +17,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
-void Setup_A9(WORK_Other* ewk, s16 Char_Index, s16 Option, s16 Option2);
+static void Setup_A9(WORK_Other* ewk, s16 Char_Index, s16 Option, s16 Option2);
 
 void effect_A9_move(WORK_Other* ewk) {
     switch (ewk->wu.routine_no[0]) {
@@ -115,7 +115,7 @@ s32 effect_A9_init(s16 Char_Index, s16 Option, s16 Pos_Index, s16 Option2) {
     return 0;
 }
 
-void Setup_A9(WORK_Other* ewk, s16 Char_Index, s16 Option, s16 Option2) {
+static void Setup_A9(WORK_Other* ewk, s16 Char_Index, s16 Option, s16 Option2) {
     switch (Char_Index) {
     case 32:
         if (Option2) {

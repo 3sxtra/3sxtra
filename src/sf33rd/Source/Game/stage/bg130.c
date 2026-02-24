@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/bg130.h"
 #include "common.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/eff05.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -13,6 +14,7 @@
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
+/** @brief Main handler for Underground Arena stage. */
 void BG130() {
     bgw_ptr = &bg_w.bgw[1];
     bg1301();
@@ -25,11 +27,15 @@ void BG130() {
     Bg_Family_Set();
 }
 
+/** @brief Background layer handler for Underground Arena. */
 void bg1301() {
     void (*bg1301_jmp[2])() = { bg1301_init00, bg_base_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1301_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Underground Arena. */
 void bg1301_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -38,11 +44,15 @@ void bg1301_init00() {
     effect_05_init();
 }
 
+/** @brief Background layer handler for Underground Arena. */
 void bg1300() {
     void (*bg1300_jmp[2])() = { bg1300_init00, bg_move_common };
+    if (bgw_ptr->r_no_0 >= 2)
+        return;
     bg1300_jmp[bgw_ptr->r_no_0]();
 }
 
+/** @brief Initialize background layer for Underground Arena. */
 void bg1300_init00() {
     bgw_ptr->r_no_0++;
     bgw_ptr->old_pos_x = bgw_ptr->xy[0].disp.pos = bgw_ptr->pos_x_work = 0x200;
@@ -50,6 +60,7 @@ void bg1300_init00() {
     bgw_ptr->zuubun = 0;
 }
 
+/** @brief Background layer handler for Underground Arena. */
 void bg1302() {
     switch (bgw_ptr->r_no_0) {
     case 0:

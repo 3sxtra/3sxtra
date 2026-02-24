@@ -1,6 +1,6 @@
 /**
  * @file eff00.c
- * TODO: identify what this effect does
+ * Effect: Judge / System Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff00.h"
@@ -12,10 +12,10 @@
 const u16 jdb[16] = { 0x8000, 0x80FF, 0xBC00, 0xBCFF, 0x8300, 0x83FF, 0xBF00, 0xBFFF,
                       0xC000, 0xC0FF, 0xFC00, 0xFCFF, 0xC300, 0xC3FF, 0xFF00, 0xFFFF };
 
-s32 get_dip_modoki(s16 from, s8 fl);
-s32 get_dip_modoki2(s16 from, s8 fl);
-void renewal_table_address(WORK_Other_JUDGE* ewk, WORK* twk);
-void renewal_table_data(WORK_Other_JUDGE* ewk);
+static s32 get_dip_modoki(s16 from, s8 fl);
+static s32 get_dip_modoki2(s16 from, s8 fl);
+static void renewal_table_address(WORK_Other_JUDGE* ewk, WORK* twk);
+static void renewal_table_data(WORK_Other_JUDGE* ewk);
 
 void effect_00_move(WORK_Other_JUDGE* ewk) {
     u16 dip;
@@ -66,7 +66,7 @@ void effect_00_move(WORK_Other_JUDGE* ewk) {
             dip2 = (dip2 / 256) & 0xF;
             ewk->ja_disp_bit = jdb[dip];
             ewk->ja_color_bit = jdb[dip2];
-            ewk->curr_ja = Debug_w[17];
+            ewk->curr_ja = Debug_w[DEBUG_CURRENT_BOX_DATA];
         }
 
         renewal_table_address(ewk, (WORK*)ewk->my_master);
@@ -85,7 +85,7 @@ void effect_00_move(WORK_Other_JUDGE* ewk) {
     }
 }
 
-s32 get_dip_modoki(s16 from, s8 fl) {
+static s32 get_dip_modoki(s16 from, s8 fl) {
     s16 rnum = 0;
 
     rnum += (Debug_w[from] != 0) << 12;
@@ -101,7 +101,7 @@ s32 get_dip_modoki(s16 from, s8 fl) {
     return rnum;
 }
 
-s32 get_dip_modoki2(s16 from, s8 fl) {
+static s32 get_dip_modoki2(s16 from, s8 fl) {
     s16 rnum = 0;
 
     rnum += (Debug_w[from] == 2) << 12;
@@ -117,7 +117,7 @@ s32 get_dip_modoki2(s16 from, s8 fl) {
     return rnum;
 }
 
-void renewal_table_address(WORK_Other_JUDGE* ewk, WORK* twk) {
+static void renewal_table_address(WORK_Other_JUDGE* ewk, WORK* twk) {
     ewk->wu.my_family = twk->my_family;
     ewk->wu.rl_flag = twk->rl_flag;
 
@@ -137,7 +137,7 @@ void renewal_table_address(WORK_Other_JUDGE* ewk, WORK* twk) {
     ewk->wu.position_y = twk->xyz[1].disp.pos;
 }
 
-void renewal_table_data(WORK_Other_JUDGE* ewk) {
+static void renewal_table_data(WORK_Other_JUDGE* ewk) {
     u16* mm;
     s16 i;
     s16 j;
@@ -177,7 +177,7 @@ s32 effect_00_init(WORK* wk) {
     WORK_Other_JUDGE* ewk;
     s16 ix;
 
-    if (Debug_w[18] == 0 && Debug_w[23] == 0) {
+    if (Debug_w[DEBUG_DISP_PLAYER_TYPE] == 0 && Debug_w[DEBUG_DISP_EFFECT_TYPE] == 0) {
         return 0;
     }
 

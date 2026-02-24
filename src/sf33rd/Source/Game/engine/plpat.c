@@ -36,11 +36,11 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 
-s16 ja_nmj_rno_change(WORK* wk);
-void Attack_07000(PLW* wk);
-void get_cancel_timer(PLW* wk);
-void check_ja_nmj_dummy_RTNM(PLW* wk);
-u8 get_cjdR(PLW*);
+static s16 ja_nmj_rno_change(WORK* wk);
+static void Attack_07000(PLW* wk);
+static void get_cancel_timer(PLW* wk);
+static void check_ja_nmj_dummy_RTNM(PLW* wk);
+static u8 get_cjdR(PLW*);
 
 void (*const plpat_lv_00[16])(PLW* wk);
 void (*const plxx_extra_attack_table[])();
@@ -50,6 +50,7 @@ const u8* cjdr_hits_table[20];
 const u8* cjdr_blocking_table[20];
 const u8* cjdr_defense_table[20];
 
+/** @brief Main player attack dispatcher — routes to attack level sub-handlers. */
 void Player_attack(PLW* wk) {
     wk->wu.next_z = wk->wu.my_priority;
     wk->running_f = 0;
@@ -107,7 +108,8 @@ void Player_attack(PLW* wk) {
     }
 }
 
-void Attack_00000(PLW* wk) {
+/** @brief Attack level 0: Ground normal attack start. */
+static void Attack_00000(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
@@ -133,7 +135,8 @@ void Attack_00000(PLW* wk) {
     }
 }
 
-void Attack_01000(PLW* wk) {
+/** @brief Attack level 1: Normal attack follow-up (cancel chain). */
+static void Attack_01000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -167,7 +170,8 @@ void Attack_01000(PLW* wk) {
     }
 }
 
-void Attack_02000(PLW* wk) {
+/** @brief Attack level 2: Special move attack execution. */
+static void Attack_02000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -208,7 +212,8 @@ void Attack_02000(PLW* wk) {
     }
 }
 
-void Attack_03000(PLW* wk) {
+/** @brief Attack level 3: Super Art activation and execution. */
+static void Attack_03000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -257,7 +262,8 @@ void Attack_03000(PLW* wk) {
     }
 }
 
-s16 ja_nmj_rno_change(WORK* wk) {
+/** @brief Handles routine number changes for jump-attack timing. */
+static s16 ja_nmj_rno_change(WORK* wk) {
     s16 rnum = 0;
 
     switch (wk->pat_status) {
@@ -310,7 +316,8 @@ s16 ja_nmj_rno_change(WORK* wk) {
     return rnum;
 }
 
-void check_ja_nmj_dummy_RTNM(PLW* wk) {
+/** @brief Checks and handles dummy RTN for jump normal/special transitions. */
+static void check_ja_nmj_dummy_RTNM(PLW* wk) {
     if (wk->wu.xyz[1].disp.pos <= 0) {
         wk->ja_nmj_rno = 0;
         return;
@@ -358,7 +365,8 @@ void check_ja_nmj_dummy_RTNM(PLW* wk) {
     }
 }
 
-u8 get_cjdR(PLW* wk) {
+/** @brief Gets the cancel-jump-dash routing data for the current state. */
+static u8 get_cjdR(PLW* wk) {
     s16 w_ix = (wk->wu.kind_of_waza & 6);
     w_ix += ((wk->wu.hf.hit.player & 0xA2) != 0);
 
@@ -391,7 +399,8 @@ case3:
     return cjdr_defense_table[wk->player_number][w_ix];
 }
 
-void Attack_04000(PLW* wk) {
+/** @brief Attack level 4: EX special move execution. */
+static void Attack_04000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -415,7 +424,8 @@ void Attack_04000(PLW* wk) {
     }
 }
 
-void Attack_05000(PLW* wk) {
+/** @brief Attack level 5: Command throw execution. */
+static void Attack_05000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.rl_flag = wk->wu.rl_waza;
@@ -455,12 +465,14 @@ void Attack_05000(PLW* wk) {
     }
 }
 
-void Attack_06000(PLW* wk) {
+/** @brief Attack level 6: Placeholder/unused attack level. */
+static void Attack_06000(PLW* wk) {
     wk->scr_pos_set_flag = 0;
     Attack_07000(wk);
 }
 
-void Attack_07000(PLW* wk) {
+/** @brief Attack level 7: Air throw execution. */
+static void Attack_07000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -488,7 +500,8 @@ void Attack_07000(PLW* wk) {
     }
 }
 
-void Attack_08000(PLW* wk) {
+/** @brief Attack level 8: Target combo execution. */
+static void Attack_08000(PLW* wk) {
     s16 ixx;
 
     switch (wk->wu.routine_no[3]) {
@@ -547,7 +560,8 @@ void Attack_08000(PLW* wk) {
     }
 }
 
-void Attack_09000(PLW* wk) {
+/** @brief Attack level 9: Chain combo execution. */
+static void Attack_09000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -591,7 +605,8 @@ void Attack_09000(PLW* wk) {
     }
 }
 
-void Attack_10000(PLW* wk) {
+/** @brief Attack level 10: Leap attack (overhead) execution. */
+static void Attack_10000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -661,7 +676,8 @@ void Attack_10000(PLW* wk) {
     }
 }
 
-void Attack_14000(PLW* wk) {
+/** @brief Attack level 14: Kara-cancel attack execution. */
+static void Attack_14000(PLW* wk) {
     wk->scr_pos_set_flag = 0;
     switch (wk->wu.routine_no[3]) {
     case 0:
@@ -683,7 +699,8 @@ void Attack_14000(PLW* wk) {
     }
 }
 
-void Attack_15000(PLW* wk) {
+/** @brief Attack level 15: Personal action (taunt) execution. */
+static void Attack_15000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
         wk->wu.routine_no[3]++;
@@ -734,7 +751,8 @@ void Attack_15000(PLW* wk) {
     }
 }
 
-void get_cancel_timer(PLW* wk) {
+/** @brief Retrieves the cancel timer value from the attack pattern data. */
+static void get_cancel_timer(PLW* wk) {
     if (wk->tc_1st_flag) {
         wk->cancel_timer = 0;
         return;
@@ -748,6 +766,7 @@ void get_cancel_timer(PLW* wk) {
     wk->cancel_timer = 2;
 }
 
+/** @brief Forces a landing if the player is airborne as a safety check. */
 void hoken_muriyari_chakuchi(PLW* wk) {
     if ((Bonus_Game_Flag == 20) && wk->bs2_on_car) {
         wk->wu.xyz[1].disp.pos = bs2_floor[2];

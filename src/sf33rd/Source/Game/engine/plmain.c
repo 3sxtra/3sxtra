@@ -28,19 +28,20 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 
-void plmv_1010(PLW* wk);
-void plmv_1020(PLW* wk, s16 step);
-void mpg_union(PLW* wk);
-void eag_union(PLW* wk);
-void sag_union(PLW* wk);
-void addSAAttribute(u8* kow, u16* koa);
-void check_omop_vital(PLW* wk);
-s16 select_hit_stop(s16 ms, s16 sb);
+static void plmv_1010(PLW* wk);
+static void plmv_1020(PLW* wk, s16 step);
+static void mpg_union(PLW* wk);
+static void eag_union(PLW* wk);
+static void sag_union(PLW* wk);
+static void addSAAttribute(u8* kow, u16* koa);
+static void check_omop_vital(PLW* wk);
+static s16 select_hit_stop(s16 ms, s16 sb);
 
+/** @brief Top-level per-frame player move update — processes input, state, and gauge. */
 void Player_move(PLW* wk, u16 lv_data) {
     s16 i;
 
-    if (wk->wu.operator) {
+    if (wk->wu.pl_operator) {
         wk->cp->sw_lvbt = lv_data;
     } else {
         wk->cp->sw_lvbt = processed_lvbt(cpu_algorithm(wk));
@@ -95,6 +96,7 @@ void Player_move(PLW* wk, u16 lv_data) {
     plmain_lv_00[wk->wu.routine_no[0]](wk);
 }
 
+/** @brief Sanitizes raw lever data by blocking illegal simultaneous directions. */
 u16 check_illegal_lever_data(u16 data) {
     u16 lever = data & 0xF;
 
@@ -102,7 +104,8 @@ u16 check_illegal_lever_data(u16 data) {
     return data;
 }
 
-void player_mv_0000(PLW* wk) {
+/** @brief Player move phase 0 — initial setup and work initialization. */
+static void player_mv_0000(PLW* wk) {
     s16 i;
 
     for (i = 0; i < 8; i++) {
@@ -176,7 +179,8 @@ void player_mv_0000(PLW* wk) {
     about_gauge_process(wk);
 }
 
-void player_mv_1000(PLW* wk) {
+/** @brief Player move phase 1 — appearance / entrance animation. */
+static void player_mv_1000(PLW* wk) {
     switch (appear_type) {
     case APPEAR_TYPE_NON_ANIMATED:
         plmv_1010(wk);
@@ -191,13 +195,13 @@ void player_mv_1000(PLW* wk) {
         Appear_end++;
         break;
 
-    case APPEAR_TYPE_UNKNOWN_3:
+    case APPEAR_TYPE_VICTORY:
         plmv_1010(wk);
         plmv_1020(wk, 0x80);
         break;
 
     case APPEAR_TYPE_ANIMATED:
-    case APPEAR_TYPE_UNKNOWN_2:
+    case APPEAR_TYPE_TRANSITIONAL:
         wk->wu.routine_no[0] = 2;
         wk->wu.routine_no[1] = 0;
         wk->wu.routine_no[2] = 0;
@@ -215,7 +219,8 @@ void player_mv_1000(PLW* wk) {
     about_gauge_process(wk);
 }
 
-void plmv_1010(PLW* wk) {
+/** @brief Sub-phase of entrance: sets initial routine numbers and display flags. */
+static void plmv_1010(PLW* wk) {
     wk->wu.routine_no[0] = 3;
     wk->wu.routine_no[1] = 0;
     wk->wu.routine_no[2] = 1;
@@ -226,7 +231,8 @@ void plmv_1010(PLW* wk) {
     }
 }
 
-void plmv_1020(PLW* wk, s16 step) {
+/** @brief Sub-phase of entrance: positions the player at the spawn offset. */
+static void plmv_1020(PLW* wk, s16 step) {
     if (wk->wu.id) {
         wk->wu.rl_flag = 0;
         wk->wu.xyz[0].disp.pos = step + get_center_position();
@@ -240,7 +246,8 @@ void plmv_1020(PLW* wk, s16 step) {
     about_gauge_process(wk);
 }
 
-void player_mv_2000(PLW* wk) {
+/** @brief Player move phase 2 — intro/cinematic wait state. */
+static void player_mv_2000(PLW* wk) {
     if (wk->wu.routine_no[2] == 1) {
         wk->wu.routine_no[0] = 3;
 
@@ -255,7 +262,8 @@ void player_mv_2000(PLW* wk) {
     about_gauge_process(wk);
 }
 
-void player_mv_3000(PLW* wk) {
+/** @brief Player move phase 3 — idle/standby before fight start. */
+static void player_mv_3000(PLW* wk) {
     if (gouki_app) {
         gouki_appear(wk);
     } else {
@@ -265,7 +273,8 @@ void player_mv_3000(PLW* wk) {
     about_gauge_process(wk);
 }
 
-void player_mv_4000(PLW* wk) {
+/** @brief Player move phase 4 — active gameplay state, processes all combat. */
+static void player_mv_4000(PLW* wk) {
     wk->permited_koa = 0;
     check_extra_jump_timer(wk);
 
@@ -300,6 +309,7 @@ void player_mv_4000(PLW* wk) {
     about_gauge_process(wk);
 }
 
+/** @brief Checks and processes hit-stop freeze frames for a player. */
 s16 check_hit_stop(PLW* wk) {
     s16 num;
     WORK* emwk = (WORK*)wk->wu.target_adrs;
@@ -355,7 +365,8 @@ s16 check_hit_stop(PLW* wk) {
     return num;
 }
 
-s16 select_hit_stop(s16 ms, s16 sb) {
+/** @brief Selects the effective hit-stop duration from master vs. sub values. */
+static s16 select_hit_stop(s16 ms, s16 sb) {
     s16 maf = 1;
 
     if (sb < 0) {
@@ -374,6 +385,7 @@ s16 select_hit_stop(s16 ms, s16 sb) {
     return ms * maf;
 }
 
+/** @brief Decrements and manages miscellaneous per-player timers each frame. */
 void look_after_timers(PLW* wk) {
     if (wk->tsukamarenai_flag) {
         wk->tsukamarenai_flag--;
@@ -411,7 +423,7 @@ void look_after_timers(PLW* wk) {
         }
     }
 
-    if (Debug_w[9]) {
+    if (Debug_w[DEBUG_1SHOT_SA]) {
         if (wk->sa->nmsa_g_ix != 0) {
             wk->cp->waza_flag[wk->sa->nmsa_g_ix] = 9;
         }
@@ -438,6 +450,7 @@ void look_after_timers(PLW* wk) {
     }
 }
 
+/** @brief Processes gauge-related logic (stun recovery, SA charge, MP, EX). */
 void about_gauge_process(PLW* wk) {
     eag_union(wk);
     sag_union(wk);
@@ -445,7 +458,8 @@ void about_gauge_process(PLW* wk) {
     add_sp_arts_gauge_maxbit(wk);
 }
 
-void mpg_union(PLW* wk) {
+/** @brief Updates the MP gauge (general meter) for a player. */
+static void mpg_union(PLW* wk) {
     switch (wk->sa->mp_rno) {
     case 0:
         if (wk->sa->store == wk->sa->store_max) {
@@ -505,7 +519,8 @@ void mpg_union(PLW* wk) {
     }
 }
 
-void eag_union(PLW* wk) {
+/** @brief Updates the EX gauge for a player. */
+static void eag_union(PLW* wk) {
     switch (wk->sa->ex_rno) {
     case 0:
         if (wk->player_number == 14 || wk->player_number == 0) {
@@ -574,7 +589,8 @@ void eag_union(PLW* wk) {
     }
 }
 
-void sag_union(PLW* wk) {
+/** @brief Updates the Super Art gauge charge and stock for a player. */
+static void sag_union(PLW* wk) {
     switch (wk->sa->sa_rno) {
     case 0:
         if (wk->sa->store) {
@@ -767,7 +783,8 @@ void sag_union(PLW* wk) {
     }
 }
 
-void addSAAttribute(u8* kow, u16* koa) {
+/** @brief Adds SA attribute flags to the current attack's kind-of-waza. */
+static void addSAAttribute(u8* kow, u16* koa) {
     switch (*kow & 0x78) {
     case 0:
     case 8:
@@ -783,6 +800,7 @@ void addSAAttribute(u8* kow, u16* koa) {
     }
 }
 
+/** @brief Force-fills the SA gauge to max during demo playback. */
 void demo_set_sa_full(SA_WORK* sa) {
     sa->sa_rno = 1;
     sa->ok = 1;
@@ -793,6 +811,7 @@ void demo_set_sa_full(SA_WORK* sa) {
     sa->dtm_mul = 1;
 }
 
+/** @brief Records recent movement amount for gameplay calculations. */
 void get_saikinnno_idouryou(PLW* wk) {
     s16 i;
 
@@ -806,6 +825,7 @@ void get_saikinnno_idouryou(PLW* wk) {
     wk->move_power >>= 3;
 }
 
+/** @brief Clears the attack number tracking in a WORK item. */
 void clear_attack_num(WORK* wk) {
     s16 i;
 
@@ -816,6 +836,7 @@ void clear_attack_num(WORK* wk) {
     wk->attack_num = 0;
 }
 
+/** @brief Clears throw/grab-related tracking flags for a player. */
 void clear_tk_flags(PLW* wk) {
     wk->tk_success = 0;
     wk->tk_dageki = 0;
@@ -840,7 +861,8 @@ const u8 plpdm_mvkind[32] = { 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 
 const u8 plpxx_kind[5] = { 0, 1, 0, 1, 0 };
 
-void check_omop_vital(PLW* wk) {
+/** @brief Applies operator-mode vitality adjustments based on settings. */
+static void check_omop_vital(PLW* wk) {
     if (pcon_dp_flag) {
         return;
     }

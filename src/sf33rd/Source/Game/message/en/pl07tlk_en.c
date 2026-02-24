@@ -1,8 +1,3 @@
-/**
- * @file pl07tlk_en.c
- * Ibuki Cutscene Text (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl07tlk_en.h"
 #include "common.h"
 
@@ -37,4 +32,4 @@ static s8** msgTalkAdrPL07[8] = {
 
 static s8 msgTalkCtrPL07[8] = { 1, 1, 2, 2, 2, 2, 1, 2 };
 
-MessageTable pl07tlk_usa_tbl = { msgTalkAdrPL07, msgTalkCtrPL07 };
+MessageTable pl07tlk_en_tbl = { msgTalkAdrPL07, msgTalkCtrPL07 };

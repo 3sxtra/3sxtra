@@ -1,6 +1,6 @@
 /**
  * @file effb6.c
- * TODO: identify what this effect does
+ * Effect: Message / Debug Text Effect
  */
 
 #include "sf33rd/Source/Game/effect/effb6.h"
@@ -12,13 +12,11 @@
 
 #include <string.h>
 
-#if !defined(TARGET_PS2)
 #include <strings.h>
-#endif
 
 void get_message_conn_data(WORK_Other_CONN* ewk, s16 kind, s16 pl, s16 msg);
-s32 msgConvertObjNum(u8* moji, s32* spc, s32* hz, u16* num, u8 hzSel);
-s32 msgCheckCodeSize(u8 data);
+static s32 msgConvertObjNum(u8* moji, s32* spc, s32* hz, u16* num, u8 hzSel);
+static s32 msgCheckCodeSize(u8 data);
 
 const s8* src_han_zen_conv[256] = {
     "\x81\x40", "\x81\x40", "\x81\x40", "\x81\x40", "\x81\x40", "\x81\x40", "\x81\x40", "\x81\x40", "\x81\x40",
@@ -423,7 +421,7 @@ void get_message_conn_data(WORK_Other_CONN* ewk, s16 kind, s16 pl, s16 msg) {
     ewk->num_of_conn = mjcnt;
 }
 
-s32 msgConvertObjNum(u8* moji, s32* spc, s32* hz, u16* num, u8 hzSel) {
+static s32 msgConvertObjNum(u8* moji, s32* spc, s32* hz, u16* num, u8 hzSel) {
     u8 tmpstr[4];
     s32 i;
     s32 j;
@@ -527,7 +525,7 @@ three:
     return 2;
 }
 
-s32 msgCheckCodeSize(u8 data) {
+static s32 msgCheckCodeSize(u8 data) {
     if (data >= 128 && data < 160) {
         return 2;
     }

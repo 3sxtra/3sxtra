@@ -1,6 +1,6 @@
 /**
  * @file eff44.c
- * TODO: identify what this effect does
+ * Effect: Screen Object (Multiple)
  */
 
 #include "sf33rd/Source/Game/effect/eff44.h"

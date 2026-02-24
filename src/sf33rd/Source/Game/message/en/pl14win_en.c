@@ -1,8 +1,3 @@
-/**
- * @file pl14win_en.c
- * Akuma/Gouki Win Quotes (English)
- */
-
 #include "sf33rd/Source/Game/message/en/pl14win_en.h"
 #include "common.h"
 
@@ -64,4 +59,4 @@ static s8 msgWinCtrPL14[28] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
 };
 
-MessageTable pl14win_usa_tbl = { msgWinAdrPL14, msgWinCtrPL14 };
+MessageTable pl14win_en_tbl = { msgWinAdrPL14, msgWinCtrPL14 };

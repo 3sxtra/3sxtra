@@ -1,6 +1,6 @@
 /**
  * @file eff23.c
- * TODO: identify what this effect does
+ * Effect: Quake Effect
  */
 
 #include "sf33rd/Source/Game/effect/eff23.h"
@@ -14,12 +14,12 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-void EFF23_WAIT(WORK_Other_CONN* ewk);
-void EFF23_SLIDE_IN(WORK_Other_CONN* ewk);
-void EFF23_CHAR_CHANGE(WORK_Other_CONN* /* unused */);
-void EFF23_SUDDENLY(WORK_Other_CONN* /* unused */);
-void Setup_23_Sub(WORK_Other_CONN* ewk);
-void Setup_Letter_23(WORK_Other_CONN* ewk, s16 disp_index);
+static void EFF23_WAIT(WORK_Other_CONN* ewk);
+static void EFF23_SLIDE_IN(WORK_Other_CONN* ewk);
+static void EFF23_CHAR_CHANGE(WORK_Other_CONN* /* unused */);
+static void EFF23_SUDDENLY(WORK_Other_CONN* /* unused */);
+static void Setup_23_Sub(WORK_Other_CONN* ewk);
+static void Setup_Letter_23(WORK_Other_CONN* ewk, s16 disp_index);
 
 const s8* Letter_Data_23[4][12] = { { "L.PUNCH",
                                       "M.PUNCH",
@@ -94,7 +94,7 @@ void effect_23_move(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF23_WAIT(WORK_Other_CONN* ewk) {
+static void EFF23_WAIT(WORK_Other_CONN* ewk) {
     if ((ewk->wu.routine_no[0] = Order[ewk->wu.dir_old])) {
         ewk->wu.routine_no[1] = 0;
     }
@@ -102,7 +102,7 @@ void EFF23_WAIT(WORK_Other_CONN* ewk) {
     Setup_23_Sub(ewk);
 }
 
-void EFF23_SLIDE_IN(WORK_Other_CONN* ewk) {
+static void EFF23_SLIDE_IN(WORK_Other_CONN* ewk) {
     s16 offset_x;
 
     if (Order[ewk->wu.dir_old] != 1) {
@@ -183,7 +183,7 @@ s32 effect_23_init(s16 id, u8 dir_old, s16 sync_bg, s16 master_player, s16 lette
     return 0;
 }
 
-void Setup_23_Sub(WORK_Other_CONN* ewk) {
+static void Setup_23_Sub(WORK_Other_CONN* ewk) {
     switch (ewk->master_priority) {
     case 0:
         Setup_Letter_23(ewk, Convert_Buff[1][ewk->master_id][ewk->wu.type]);
@@ -196,7 +196,7 @@ void Setup_23_Sub(WORK_Other_CONN* ewk) {
     }
 }
 
-void Setup_Letter_23(WORK_Other_CONN* ewk, s16 disp_index) {
+static void Setup_Letter_23(WORK_Other_CONN* ewk, s16 disp_index) {
     s16 x;
     s16 ix;
     s16 offset_x;
