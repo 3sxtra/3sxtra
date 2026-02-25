@@ -148,7 +148,7 @@ static bool run_resource_flow() {
  * next to the executable.
  */
 static void afs_init() {
-    // Try the standard resources path first (e.g. ~/.local/share/CrowdedStreet/3SX/resources/)
+    // Try the standard resources path first (e.g. AppData/Roaming/CrowdedStreet/3SX/resources/)
     char* file_path = Resources_GetPath("SF33RD.AFS");
 
     SDL_PathInfo info;

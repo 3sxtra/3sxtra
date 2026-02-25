@@ -4,7 +4,7 @@
  *
  * Supports dual-path resolution:
  *   1. Portable mode: <exe_dir>/config/  (if the folder exists)
- *   2. Standard mode: AppData/3sxtra/3SX/  (SDL_GetPrefPath)
+ *   2. Standard mode: AppData/CrowdedStreet/3SX/  (SDL_GetPrefPath)
  *
  * Portable mode is auto-detected at startup. To enable it, create a
  * "config" folder next to the game executable.
@@ -22,7 +22,7 @@ static int portable_mode = -1; /* -1=unchecked, 0=standard, 1=portable */
  * @brief Get the user preferences/save directory path (lazy-initialized).
  *
  * Checks for <exe_dir>/config/ first (portable mode).
- * Falls back to SDL_GetPrefPath("3sxtra", "3SX") (AppData).
+ * Falls back to SDL_GetPrefPath("CrowdedStreet", "3SX") (AppData).
  */
 const char* Paths_GetPrefPath() {
     if (pref_path != NULL) {
@@ -48,7 +48,7 @@ const char* Paths_GetPrefPath() {
     }
 
     /* Standard mode: AppData */
-    pref_path = SDL_GetPrefPath("3sxtra", "3SX");
+    pref_path = SDL_GetPrefPath("CrowdedStreet", "3SX");
     printf("[Paths] Standard mode: using %s\n", pref_path);
     return pref_path;
 }

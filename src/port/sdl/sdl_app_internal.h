@@ -21,6 +21,7 @@ void SDLApp_ToggleShaderMode();
 void SDLApp_CyclePreset();
 void SDLApp_ToggleBezel();
 void SDLApp_ToggleFrameRateUncap();
+void SDLApp_ToggleDebugHUD();
 
 // Window Management
 void SDLApp_HandleWindowResize(int w, int h);

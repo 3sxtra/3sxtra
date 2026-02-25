@@ -37,6 +37,7 @@ extern "C" {
 #define CFG_KEY_LOBBY_AUTO_CONNECT "lobby-auto-connect"
 #define CFG_KEY_LOBBY_AUTO_SEARCH "lobby-auto-search"
 #define CFG_KEY_VSYNC "vsync"
+#define CFG_KEY_DEBUG_HUD "debug-hud"
 
 /// Initialize config system
 void Config_Init();

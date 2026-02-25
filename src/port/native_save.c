@@ -6,7 +6,7 @@
  * with direct file I/O. Options and direction use human-readable INI format.
  * Replay data uses binary format (performance-sensitive, ~30KB per file).
  *
- * Save directory: SDL_GetPrefPath("3sxtra", "3SX") via Paths_GetPrefPath().
+ * Save directory: SDL_GetPrefPath("CrowdedStreet", "3SX") via Paths_GetPrefPath().
  * Files: options.ini, direction.ini, replays/replay_NN.bin, replays/replay_NN.meta
  */
 

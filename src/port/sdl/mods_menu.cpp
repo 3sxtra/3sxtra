@@ -190,6 +190,18 @@ extern "C" void mods_menu_render(int window_width, int window_height) {
 
     ImGui::Separator();
 
+    /* ===== DEBUG HUD ===== */
+    {
+        extern bool show_debug_hud;
+        if (ImGui::Checkbox("Show Debug HUD (FPS)", &show_debug_hud)) {
+            Config_SetBool(CFG_KEY_DEBUG_HUD, show_debug_hud);
+            Config_Save();
+        }
+        HelpMarker("Shows FPS counter and shader/scale-mode info overlay.");
+    }
+
+    ImGui::Separator();
+
     /* ===== STAGE RENDERING ===== */
     {
         bool render_off = ModdedStage_IsRenderingDisabled();
