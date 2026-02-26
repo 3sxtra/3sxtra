@@ -9,19 +9,6 @@
  * Controls:
  *   LEFT/RIGHT  — Manual page navigation
  *   Auto-cycles every ~10 seconds if no input
- *
- * Pages:
- *   0:  Fixed-Width — Full Charset & Palettes
- *   1:  Fixed-Width — Style Variations & Comparisons
- *   2:  Proportional — Charset, Centering, Width Comparison
- *   3:  Proportional — Vertex Colors & In-Game Messages
- *   4:  Proportional Scaled (SSPutStrPro_Scale)
- *   5:  Bigger/Scaled Fonts — Sizes & Gradients
- *   6:  Score Digits & Decimal Numbers
- *   7:  Tile Blocks & ATR Flips
- *   8:  Health, Stun, & HUD Bars
- *   9:  Screen Transitions (Animated)
- *  10:  In-Game HUD Recreation
  */
 
 #include "sf33rd/Source/Game/debug/font_test.h"
@@ -36,282 +23,297 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 
-#define PAGE_COUNT      11
+#define PAGE_COUNT      13
 #define FRAMES_PER_PAGE 596  /* ~10 seconds at 59.6 FPS */
 
 /* ════════════════════════════════════════════════════════════════
- *  Page 0: Fixed-Width — Full Charset & Palettes
+ *  Page 0: Fixed-Width 8x8 — Full Charset & All 16 Palettes
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page0(void) {
     u8 p;
-
     SSPutStr(1, 0, 4, "PAGE 1: FIXED 8x8 CHARSET");
-
-    SSPutStr(0, 2, 1, "UPPERCASE:");
-    SSPutStr(1, 3, 4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-
-    SSPutStr(0, 4, 1, "LOWERCASE:");
-    SSPutStr(1, 5, 4, "abcdefghijklmnopqrstuvwxyz");
-
-    SSPutStr(0, 6, 1, "DIGITS + SYMBOLS:");
-    SSPutStr(1, 7, 4, "0123456789 .:;!?+-=()[]<>");
-
-    SSPutStr(0, 9, 1, "COMMA TRICK (2PX DROP):");
-    SSPutStr(1, 10, 4, "NO COMMA: ABCDEFG");
-    SSPutStr(1, 11, 4, "W, COMMA: A,B,C,D,E,F,G");
-
-    SSPutStr(0, 13, 1, "ALL 16 PALETTES:");
-    for (p = 0; p < 16; p++) {
-        SSPutDec(0, 14 + p, 1, p, 2);
-        SSPutStr(3, 14 + p, p, "ABCDEF 012345 abcdef");
+    /* Full charset - 3 rows */
+    SSPutStr(0, 2, 4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    SSPutStr(0, 3, 4, "abcdefghijklmnopqrstuvwxyz");
+    SSPutStr(0, 4, 4, "0123456789 .:;!?+-=()<>[]");
+    /* Comma baseline trick */
+    SSPutStr(0, 5, 1, "COMMA: A,B,C,D,E,F  vs ABCDEF");
+    /* All 16 palettes - 2 columns to save space */
+    SSPutStr(0, 7, 1, "--- ALL 16 PALETTES ---");
+    for (p = 0; p < 8; p++) {
+        SSPutDec(0, 8 + p, 1, p, 2);
+        SSPutStr(3, 8 + p, p, "ABCDEF 0123");
+        SSPutDec(17, 8 + p, 1, p + 8, 2);
+        SSPutStr(20, 8 + p, p + 8, "ABCDEF 0123");
     }
+    /* SSPutStr2 (texture page 3) comparison */
+    SSPutStr(0, 17, 1, "--- SSPUTSTR2 (TEX PAGE 3) ---");
+    SSPutStr2(0, 18, 4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    SSPutStr2(0, 19, 4, "abcdefghijklmnopqrstuvwxyz");
+    SSPutStr2(0, 20, 4, "0123456789 .:;!?+-=()<>[]");
+    /* Side by side */
+    SSPutStr(0, 22, 1, "--- PAGE 1 vs PAGE 3 ---");
+    SSPutStr( 0, 23, 4, "PAGE1 ABCDEF 012345");
+    SSPutStr2(0, 24, 4, "PAGE3 ABCDEF 012345");
+    /* SSPutDec */
+    SSPutStr(0, 26, 1, "DEC:");
+    SSPutDec(5, 26, 4, 7, 1);
+    SSPutStr(7, 26, 1, "|");
+    SSPutDec(8, 26, 4, 42, 2);
+    SSPutStr(11, 26, 1, "|");
+    SSPutDec(12, 26, 4, 255, 3);
 }
 
 /* ════════════════════════════════════════════════════════════════
- *  Page 1: Fixed-Width — Style Variations
+ *  Page 1: Fixed-Width — Palette Showcase & Alignment
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page1(void) {
-    SSPutStr(1, 0, 4, "PAGE 2: FIXED 8x8 VARIATIONS");
-
-    SSPutStr(0, 2, 1, "SSPUTSTR (TEXTURE PAGE 1):");
-    SSPutStr(1, 3, 4, "STANDARD FIXED-WIDTH TEXT");
-    SSPutStr(1, 4, 1, "PALETTE 1 CYAN TEXT SAMPLE");
-    SSPutStr(1, 5, 8, "PALETTE 8 TEAL TEXT SAMPLE");
-    SSPutStr(1, 6, 9, "PALETTE 9 DARK RED SAMPLE");
-
-    SSPutStr(0, 8, 1, "SSPUTSTR2 (TEXTURE PAGE 3):");
-    SSPutStr2(1, 9, 4, "SSPUTSTR2 YELLOW PALETTE 4");
-    SSPutStr2(1, 10, 1, "SSPUTSTR2 CYAN   PALETTE 1");
-    SSPutStr2(1, 11, 8, "SSPUTSTR2 TEAL   PALETTE 8");
-
-    SSPutStr(0, 13, 1, "SIDE BY SIDE PAGE 1 VS 3:");
-    SSPutStr(1, 14, 4, "PAGE1: ABCDEF 012345");
-    SSPutStr2(1, 15, 4, "PAGE3: ABCDEF 012345");
-
-    SSPutStr(0, 17, 1, "SSPUTDEC (DECIMAL RENDER):");
-    SSPutStr(1, 18, 1, "SIZE=1:");
-    SSPutDec(9, 18, 4, 0, 1);
-    SSPutDec(11, 18, 4, 5, 1);
-    SSPutDec(13, 18, 4, 9, 1);
-    SSPutStr(1, 19, 1, "SIZE=2:");
-    SSPutDec(9, 19, 4, 0, 2);
-    SSPutDec(13, 19, 4, 42, 2);
-    SSPutDec(17, 19, 4, 99, 2);
-    SSPutStr(1, 20, 1, "SIZE=3:");
-    SSPutDec(9, 20, 4, 0, 3);
-    SSPutDec(14, 20, 4, 100, 3);
-    SSPutDec(19, 20, 4, 255, 3);
-
-    SSPutStr(0, 22, 1, "PALETTE + ALIGNMENT:");
-    SSPutStr(0, 23, 4, "LEFT ALIGN  X=0");
-    SSPutStr(16, 24, 4, "CENTER AREA X=16");
-    SSPutStr(24, 25, 4, "RIGHT AREA X=24");
+    SSPutStr(1, 0, 4, "PAGE 2: FIXED 8x8 STYLES");
+    /* Each line IS the style it demonstrates */
+    SSPutStr(0, 2, 0, "PAL 0: THE QUICK BROWN FOX...");
+    SSPutStr(0, 3, 1, "PAL 1: THE QUICK BROWN FOX...");
+    SSPutStr(0, 4, 2, "PAL 2: THE QUICK BROWN FOX...");
+    SSPutStr(0, 5, 3, "PAL 3: THE QUICK BROWN FOX...");
+    SSPutStr(0, 6, 4, "PAL 4: THE QUICK BROWN FOX...");
+    SSPutStr(0, 7, 5, "PAL 5: THE QUICK BROWN FOX...");
+    SSPutStr(0, 8, 6, "PAL 6: THE QUICK BROWN FOX...");
+    SSPutStr(0, 9, 7, "PAL 7: THE QUICK BROWN FOX...");
+    SSPutStr(0, 10, 8, "PAL 8: THE QUICK BROWN FOX...");
+    SSPutStr(0, 11, 9, "PAL 9: THE QUICK BROWN FOX...");
+    SSPutStr(0, 12, 10, "PAL10: THE QUICK BROWN FOX...");
+    SSPutStr(0, 13, 11, "PAL11: THE QUICK BROWN FOX...");
+    SSPutStr(0, 14, 12, "PAL12: THE QUICK BROWN FOX...");
+    SSPutStr(0, 15, 13, "PAL13: THE QUICK BROWN FOX...");
+    SSPutStr(0, 16, 14, "PAL14: THE QUICK BROWN FOX...");
+    SSPutStr(0, 17, 15, "PAL15: THE QUICK BROWN FOX...");
+    /* SSPutStr2 palettes */
+    SSPutStr(0, 19, 1, "--- SSPutStr2 PALETTES ---");
+    SSPutStr2(0, 20, 0, "P2-PAL0 ABCDEF 0123");
+    SSPutStr2(17, 20, 1, "P2-PAL1 ABCDEF");
+    SSPutStr2(0, 21, 4, "P2-PAL4 ABCDEF 0123");
+    SSPutStr2(17, 21, 8, "P2-PAL8 ABCDEF");
+    /* Alignment demo */
+    SSPutStr(0, 23, 1, "--- ALIGNMENT ---");
+    SSPutStr(0, 24, 4, "X= 0 LEFT");
+    SSPutStr(12, 25, 4, "X=12 MIDDLE");
+    SSPutStr(22, 26, 4, "X=22 RIGHT");
 }
 
 /* ════════════════════════════════════════════════════════════════
- *  Page 2: Proportional — Charset & Centering
+ *  Page 2: Proportional — Charset, Narrow/Wide, Centering
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page2(void) {
     s8 upper[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     s8 lower[] = "abcdefghijklmnopqrstuvwxyz";
-    s8 digits[] = "0123456789";
-    s8 narrow[] = "iIl1!.:;|";
-    s8 wide[] = "MWmwQOGD@";
-    s8 ctr[] = "CENTERED (FLAG=1)";
-    s8 left[] = "LEFT ALIGNED (FLAG=0)";
-    s8 fw_comp[] = "FIXED WIDTH";
-    s8 pr_comp[] = "FIXED WIDTH";
+    s8 digits[] = "0123456789 .:;!?+-=()";
+    s8 narrow[] = "iIl1!.:;| NARROW GLYPHS";
+    s8 wide[] = "MWmwQOGD@ WIDE GLYPHS";
+    s8 ctr[] = "THIS TEXT IS CENTERED";
+    s8 left[] = "THIS TEXT IS LEFT-ALIGNED";
+    s8 fixed_vs[] = "iIl1MWmw COMPARE";
 
-    SSPutStr(1, 0, 4, "PAGE 3: PROPORTIONAL CHARSET");
-
-    SSPutStr(0, 2, 1, "UPPERCASE:");
-    SSPutStrPro(0, 1 * 8, 3 * 8, 4, 0xFFFFFFFF, upper);
-
-    SSPutStr(0, 4, 1, "LOWERCASE:");
-    SSPutStrPro(0, 1 * 8, 5 * 8, 4, 0xFFFFFFFF, lower);
-
-    SSPutStr(0, 6, 1, "DIGITS:");
-    SSPutStrPro(0, 1 * 8, 7 * 8, 4, 0xFFFFFFFF, digits);
-
-    SSPutStr(0, 9, 1, "NARROW GLYPHS (TRIMMED SIDES):");
-    SSPutStrPro(0, 1 * 8, 10 * 8, 4, 0xFFFFFF00, narrow);
-
-    SSPutStr(0, 11, 1, "WIDE GLYPHS (FULL WIDTH):");
-    SSPutStrPro(0, 1 * 8, 12 * 8, 4, 0xFFFF8800, wide);
-
-    SSPutStr(0, 14, 1, "CENTERING FLAG:");
-    SSPutStrPro(1, 192, 15 * 8, 4, 0xFFFFFFFF, ctr);
-    SSPutStr(16, 15, 1, "|");
-    SSPutStrPro(0, 1 * 8, 16 * 8, 8, 0xFFFFFFFF, left);
-
-    SSPutStr(0, 18, 1, "FIXED (8PX) VS PROPORTIONAL:");
-    SSPutStr(1, 19, 4, "FIXED: iIl1MWQO");
-    SSPutStrPro(0, 1 * 8, 20 * 8, 8, 0xFFFFFFFF, narrow);
-    SSPutStrPro(0, 10 * 8, 20 * 8, 8, 0xFFFFFFFF, wide);
-
-    SSPutStr(0, 22, 1, "SAME TEXT BOTH FONTS:");
-    SSPutStr(1, 23, 4, "FIXED WIDTH");
-    SSPutStrPro(0, 1 * 8, 24 * 8, 8, 0xFFFFFFFF, pr_comp);
-
-    SSPutStr(0, 26, 1, "PROPORTIONAL PALETTES:");
-    SSPutStrPro(0, 1 * 8, 27 * 8, 1, 0xFFFFFFFF, fw_comp);
-    SSPutStrPro(0, 16 * 8, 27 * 8, 4, 0xFFFFFFFF, fw_comp);
+    SSPutStr(1, 0, 4, "PAGE 3: PROPORTIONAL FONT");
+    /* Proportional charset */
+    SSPutStrPro(0, 0, 2 * 8, 4, 0xFFFFFFFF, upper);
+    SSPutStrPro(0, 0, 3 * 8, 4, 0xFFFFFFFF, lower);
+    SSPutStrPro(0, 0, 4 * 8, 4, 0xFFFFFFFF, digits);
+    /* Narrow vs wide */
+    SSPutStrPro(0, 0, 6 * 8, 4, 0xFFFFFF00, narrow);
+    SSPutStrPro(0, 0, 7 * 8, 4, 0xFFFF8800, wide);
+    /* Centering */
+    SSPutStr(0, 9, 1, "CENTERING FLAG=1 (CENTER=|):");
+    SSPutStr(23, 9, 1, "|");
+    SSPutStrPro(1, 192, 10 * 8, 4, 0xFFFFFFFF, ctr);
+    SSPutStrPro(0, 0, 11 * 8, 8, 0xFFFFFFFF, left);
+    /* Fixed vs proportional side-by-side */
+    SSPutStr(0, 13, 1, "FIXED vs PROPORTIONAL:");
+    SSPutStr(0, 14, 4, "iIl1MWmw COMPARE");
+    SSPutStrPro(0, 0, 15 * 8, 8, 0xFFFFFFFF, fixed_vs);
+    /* All proportional palettes */
+    SSPutStr(0, 17, 1, "PROPORTIONAL PALETTES:");
+    {
+        s8 samp[] = "AaBb0123";
+        SSPutStrPro(0,   0, 18 * 8, 0, 0xFFFFFFFF, samp);
+        SSPutStrPro(0,  80, 18 * 8, 1, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 160, 18 * 8, 2, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 240, 18 * 8, 3, 0xFFFFFFFF, samp);
+        SSPutStrPro(0,   0, 19 * 8, 4, 0xFFFFFFFF, samp);
+        SSPutStrPro(0,  80, 19 * 8, 5, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 160, 19 * 8, 6, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 240, 19 * 8, 7, 0xFFFFFFFF, samp);
+        SSPutStrPro(0,   0, 20 * 8, 8, 0xFFFFFFFF, samp);
+        SSPutStrPro(0,  80, 20 * 8, 9, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 160, 20 * 8, 10, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 240, 20 * 8, 11, 0xFFFFFFFF, samp);
+    }
+    /* Vertex color previews */
+    SSPutStr(0, 22, 1, "VERTEX COLORS:");
+    {
+        s8 r[] = "RED";   s8 g[] = "GREEN"; s8 b[] = "BLUE";
+        s8 y[] = "YELLOW"; s8 c[] = "CYAN"; s8 m[] = "MAGENTA";
+        SSPutStrPro(0,   0, 23 * 8, 4, 0xFFFF0000, r);
+        SSPutStrPro(0,  48, 23 * 8, 4, 0xFF00FF00, g);
+        SSPutStrPro(0, 112, 23 * 8, 4, 0xFF0000FF, b);
+        SSPutStrPro(0, 176, 23 * 8, 4, 0xFFFFFF00, y);
+        SSPutStrPro(0, 248, 23 * 8, 4, 0xFF00FFFF, c);
+        SSPutStrPro(0, 312, 23 * 8, 4, 0xFFFF00FF, m);
+    }
+    /* Alpha */
+    {
+        s8 a1[] = "ALPHA FF (OPAQUE)";
+        s8 a2[] = "ALPHA 80 (SEMI)";
+        s8 a3[] = "ALPHA 40 (GHOST)";
+        SSPutStrPro(0, 0, 25 * 8, 4, 0xFFFFFFFF, a1);
+        SSPutStrPro(0, 0, 26 * 8, 4, 0x80FFFFFF, a2);
+        SSPutStrPro(0, 160, 26 * 8, 4, 0x40FFFFFF, a3);
+    }
 }
 
 /* ════════════════════════════════════════════════════════════════
- *  Page 3: Proportional — Vertex Colors & Messages
+ *  Page 3: Proportional — In-Game Messages & Colors
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page3(void) {
-    s8 red[] = "RED FF0000";
-    s8 grn[] = "GREEN 00FF00";
-    s8 blu[] = "BLUE 0000FF";
-    s8 ylw[] = "YELLOW FFFF00";
-    s8 cyn[] = "CYAN 00FFFF";
-    s8 mag[] = "MAGENTA FF00FF";
-    s8 org[] = "ORANGE FF8800";
-    s8 wht[] = "WHITE FFFFFF";
-    s8 a80[] = "ALPHA 80 (SEMI-TRANSPARENT)";
-    s8 a40[] = "ALPHA 40 (VERY TRANSPARENT)";
-    s8 r1[] = "ROUND 1";
-    s8 fgt[] = "FIGHT!";
-    s8 ko[] = "K.O.";
-    s8 win[] = "YOU WIN";
-    s8 perf[] = "PERFECT";
-    s8 dko[] = "DOUBLE K.O.";
-    s8 tov[] = "TIME OVER";
+    s8 r1[] = "ROUND 1";    s8 r2[] = "ROUND 2";    s8 r3[] = "ROUND 3";
+    s8 fgt[] = "FIGHT!";    s8 ko[] = "K.O.";
+    s8 win[] = "YOU WIN";   s8 perf[] = "PERFECT";
+    s8 dko[] = "DOUBLE K.O."; s8 tov[] = "TIME OVER";
+    s8 dr[] = "DRAW GAME";
+    s8 rdx[] = "FINAL ROUND";
+    s8 cont[] = "CONTINUE?";
+    s8 gover[] = "GAME OVER";
 
-    SSPutStr(1, 0, 4, "PAGE 4: PROPORTIONAL COLORS");
+    SSPutStr(1, 0, 4, "PAGE 4: IN-GAME MESSAGES");
+    /* Centered messages like actual game */
+    SSPutStrPro(1, 192, 2 * 8, 4, 0xFFFFFFFF, r1);
+    SSPutStrPro(1, 192, 3 * 8, 4, 0xFFFFFFFF, r2);
+    SSPutStrPro(1, 192, 4 * 8, 4, 0xFFFFFFFF, r3);
+    SSPutStrPro(1, 192, 5 * 8, 4, 0xFFFFFFFF, rdx);
+    SSPutStrPro(1, 192, 7 * 8, 4, 0xFFFF0000, fgt);
+    SSPutStrPro(1, 192, 9 * 8, 4, 0xFFFFFF00, ko);
+    SSPutStrPro(1, 192, 10 * 8, 4, 0xFFFF0000, dko);
+    SSPutStrPro(1, 192, 12 * 8, 4, 0xFF00FF00, win);
+    SSPutStrPro(0, 24 * 8, 12 * 8, 4, 0xFFFF00FF, perf);
+    SSPutStrPro(1, 192, 14 * 8, 4, 0xFFFFFF00, tov);
+    SSPutStrPro(1, 192, 15 * 8, 4, 0xFFFF8800, dr);
+    SSPutStrPro(1, 192, 17 * 8, 4, 0xFF00FFFF, cont);
+    SSPutStrPro(1, 192, 18 * 8, 4, 0xFFFF0000, gover);
 
-    SSPutStr(0, 2, 1, "VERTEX COLORS (0xAARRGGBB):");
-    SSPutStrPro(0, 1 * 8, 3 * 8, 4, 0xFFFF0000, red);
-    SSPutStrPro(0, 1 * 8, 4 * 8, 4, 0xFF00FF00, grn);
-    SSPutStrPro(0, 1 * 8, 5 * 8, 4, 0xFF0000FF, blu);
-    SSPutStrPro(0, 1 * 8, 6 * 8, 4, 0xFFFFFF00, ylw);
-    SSPutStrPro(0, 1 * 8, 7 * 8, 4, 0xFF00FFFF, cyn);
-    SSPutStrPro(0, 1 * 8, 8 * 8, 4, 0xFFFF00FF, mag);
-    SSPutStrPro(0, 1 * 8, 9 * 8, 4, 0xFFFF8800, org);
-    SSPutStrPro(0, 1 * 8, 10 * 8, 4, 0xFFFFFFFF, wht);
-
-    SSPutStr(0, 12, 1, "ALPHA BLENDING:");
-    SSPutStrPro(0, 1 * 8, 13 * 8, 4, 0x80FFFFFF, a80);
-    SSPutStrPro(0, 1 * 8, 14 * 8, 4, 0x40FFFFFF, a40);
-
-    SSPutStr(0, 16, 1, "IN-GAME MESSAGE STYLE:");
-    SSPutStrPro(1, 192, 17 * 8, 4, 0xFFFFFFFF, r1);
-    SSPutStrPro(1, 192, 18 * 8, 4, 0xFFFF0000, fgt);
-    SSPutStrPro(1, 192, 20 * 8, 4, 0xFFFFFF00, ko);
-    SSPutStrPro(1, 192, 22 * 8, 4, 0xFF00FF00, win);
-    SSPutStrPro(0, 20 * 8, 22 * 8, 4, 0xFFFF00FF, perf);
-    SSPutStrPro(1, 192, 24 * 8, 4, 0xFFFF0000, dko);
-    SSPutStrPro(1, 192, 26 * 8, 4, 0xFFFFFF00, tov);
+    /* More color combos */
+    SSPutStr(0, 20, 1, "COLOR + PALETTE COMBOS:");
+    {
+        s8 t1[] = "PAL0+RED"; s8 t2[] = "PAL1+GREEN"; s8 t3[] = "PAL4+BLUE";
+        s8 t4[] = "PAL8+YELLOW"; s8 t5[] = "PAL9+CYAN"; s8 t6[] = "PAL1+ORANGE";
+        SSPutStrPro(0,   0, 21 * 8, 0, 0xFFFF0000, t1);
+        SSPutStrPro(0, 112, 21 * 8, 1, 0xFF00FF00, t2);
+        SSPutStrPro(0, 248, 21 * 8, 4, 0xFF0000FF, t3);
+        SSPutStrPro(0,   0, 22 * 8, 8, 0xFFFFFF00, t4);
+        SSPutStrPro(0, 128, 22 * 8, 9, 0xFF00FFFF, t5);
+        SSPutStrPro(0, 264, 22 * 8, 1, 0xFFFF8800, t6);
+    }
+    /* Scaled messages */
+    SSPutStr(0, 24, 1, "SCALED MESSAGES:");
+    {
+        s8 s1[] = "FIGHT!"; s8 s2[] = "K.O."; s8 s3[] = "PERFECT";
+        SSPutStrPro_Scale(0, 0, 25 * 8, 4, 0xFFFF0000, s1, 1.5f);
+        SSPutStrPro_Scale(0, 112, 25 * 8, 4, 0xFFFFFF00, s2, 1.5f);
+        SSPutStrPro_Scale(0, 192, 25 * 8, 4, 0xFFFF00FF, s3, 1.5f);
+    }
 }
 
 /* ════════════════════════════════════════════════════════════════
  *  Page 4: Proportional Scaled (SSPutStrPro_Scale)
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page4(void) {
-    s8 s10[] = "Scale 1.0x";
+    s8 s10[] = "Scale 1.0x (normal)";
     s8 s12[] = "Scale 1.2x";
     s8 s15[] = "Scale 1.5x";
     s8 s20[] = "Scale 2.0x";
     s8 s25[] = "Scale 2.5x";
-    s8 s30[] = "Scale 3.0x";
+    s8 s30[] = "Scale 3x";
     s8 abc[] = "ABCDEFGHIJKL";
-    s8 mix[] = "Scaled Proportional";
 
-    SSPutStr(1, 0, 4, "PAGE 5: PRO_SCALE (SCALED PROP)");
-
-    SSPutStr(0, 2, 1, "SCALE COMPARISON:");
-    SSPutStrPro_Scale(0, 1 * 8, 3 * 8, 4, 0xFFFFFFFF, s10, 1.0f);
-    SSPutStrPro_Scale(0, 1 * 8, 4.5f * 8, 4, 0xFFFFFFFF, s12, 1.2f);
-    SSPutStrPro_Scale(0, 1 * 8, 6.0f * 8, 4, 0xFFFFFFFF, s15, 1.5f);
-    SSPutStrPro_Scale(0, 1 * 8, 8.0f * 8, 4, 0xFFFFFFFF, s20, 2.0f);
-    SSPutStrPro_Scale(0, 1 * 8, 10.5f * 8, 4, 0xFFFFFFFF, s25, 2.5f);
-    SSPutStrPro_Scale(0, 1 * 8, 13.5f * 8, 4, 0xFFFFFFFF, s30, 3.0f);
-
-    SSPutStr(0, 17, 1, "SCALED + VERTEX COLOR:");
-    SSPutStrPro_Scale(0, 1 * 8, 18 * 8, 4, 0xFFFF0000, abc, 1.5f);
-    SSPutStrPro_Scale(0, 1 * 8, 20 * 8, 4, 0xFF00FF00, abc, 1.5f);
-    SSPutStrPro_Scale(0, 1 * 8, 22 * 8, 4, 0xFFFFFF00, abc, 1.5f);
-
-    SSPutStr(0, 24, 1, "SCALED + CENTERED (FLAG=1):");
-    SSPutStrPro_Scale(1, 192, 25 * 8, 4, 0xFFFFFFFF, mix, 1.5f);
+    SSPutStr(1, 0, 4, "PAGE 5: PRO_SCALE SIZES");
+    /* Each line IS the scale it shows */
+    SSPutStrPro_Scale(0, 0, 2 * 8, 4, 0xFFFFFFFF, s10, 1.0f);
+    SSPutStrPro_Scale(0, 0, 3.5f * 8, 4, 0xFFFFFFFF, s12, 1.2f);
+    SSPutStrPro_Scale(0, 0, 5.0f * 8, 4, 0xFFFFFFFF, s15, 1.5f);
+    SSPutStrPro_Scale(0, 0, 7.0f * 8, 4, 0xFFFFFFFF, s20, 2.0f);
+    SSPutStrPro_Scale(0, 0, 9.5f * 8, 4, 0xFFFFFFFF, s25, 2.5f);
+    SSPutStrPro_Scale(0, 0, 12.5f * 8, 4, 0xFFFFFFFF, s30, 3.0f);
+    /* Scaled + color combos on same row */
+    SSPutStrPro_Scale(0,   0, 16 * 8, 4, 0xFFFF0000, abc, 1.5f);
+    SSPutStrPro_Scale(0, 192, 16 * 8, 4, 0xFF00FF00, abc, 1.5f);
+    SSPutStrPro_Scale(0,   0, 18 * 8, 4, 0xFFFFFF00, abc, 1.5f);
+    SSPutStrPro_Scale(0, 192, 18 * 8, 4, 0xFF00FFFF, abc, 1.5f);
+    SSPutStrPro_Scale(0,   0, 20 * 8, 4, 0xFFFF00FF, abc, 1.5f);
+    SSPutStrPro_Scale(0, 192, 20 * 8, 4, 0x80FFFFFF, abc, 1.5f);
+    /* Centered scaled */
+    {
+        s8 ctr1[] = "CENTERED 1.5x";
+        s8 ctr2[] = "CENTERED 2.0x";
+        SSPutStrPro_Scale(1, 192, 22 * 8, 4, 0xFFFFFFFF, ctr1, 1.5f);
+        SSPutStrPro_Scale(1, 192, 24 * 8, 4, 0xFFFFFF00, ctr2, 2.0f);
+    }
 }
 
 /* ════════════════════════════════════════════════════════════════
  *  Page 5: Bigger/Scaled Fonts — Sizes & Gradients
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page5(void) {
-    s8 s10[] = "SCALE 1X";
-    s8 s15[] = "SCALE 1.5";
-    s8 s20[] = "SCALE 2X";
-    s8 g0[] = "GRADIENT 0";
-    s8 g1[] = "GRADIENT 1";
-    s8 g2[] = "GRADIENT 2";
-    s8 half[] = "A$B$C$D";
+    s8 s10[] = "1.0X BIGGER FONT";
+    s8 s15[] = "1.5X BIGGER";
+    s8 s20[] = "2.0X BIGGER";
+    s8 g0[] = "GRADIENT 0 GOLD";
+    s8 g1[] = "GRADIENT 1 MULTI";
+    s8 g2[] = "GRADIENT 2 WARM";
 
-    SSPutStr(1, 0, 4, "PAGE 6: BIGGER FONT + GRADIENTS");
-
-    SSPutStr(0, 2, 1, "1.0X SCALE:");
-    SSPutStr_Bigger(1 * 8, 3 * 8, 4, s10, 1.0f, 0, 2);
-
-    SSPutStr(0, 5, 1, "1.5X SCALE:");
-    SSPutStr_Bigger(1 * 8, 6 * 8, 4, s15, 1.5f, 0, 2);
-
-    SSPutStr(0, 8, 1, "2.0X SCALE:");
-    SSPutStr_Bigger(1 * 8, 9 * 8, 4, s20, 2.0f, 0, 2);
-
-    SSPutStr(0, 12, 1, "GRADIENT 0 (GOLD):");
-    SSPutStr_Bigger(1 * 8, 13 * 8, 4, g0, 1.5f, 0, 2);
-
-    SSPutStr(0, 15, 1, "GRADIENT 1 (MULTI):");
-    SSPutStr_Bigger(1 * 8, 16 * 8, 4, g1, 1.5f, 1, 2);
-
-    SSPutStr(0, 18, 1, "GRADIENT 2 (WARM):");
-    SSPutStr_Bigger(1 * 8, 19 * 8, 4, g2, 1.5f, 2, 2);
-
-    SSPutStr(0, 22, 1, "HALF-SPACE ($) TOKEN:");
-    SSPutStr_Bigger(1 * 8, 23 * 8, 4, half, 2.0f, 0, 2);
-    SSPutStr(1, 25, 1, "$ = INLINE HALF-WIDTH SPACE");
+    SSPutStr(1, 0, 4, "PAGE 6: SSPUTSTR_BIGGER");
+    /* Each rendered in its own scale - no separate labels */
+    SSPutStr_Bigger(0, 2 * 8, 4, s10, 1.0f, 0, 2);
+    SSPutStr_Bigger(0, 4 * 8, 4, s15, 1.5f, 0, 2);
+    SSPutStr_Bigger(0, 7 * 8, 4, s20, 2.0f, 0, 2);
+    /* Gradients - each rendered with its gradient */
+    SSPutStr_Bigger(0, 11 * 8, 4, g0, 1.5f, 0, 2);
+    SSPutStr_Bigger(0, 13 * 8, 4, g1, 1.5f, 1, 2);
+    SSPutStr_Bigger(0, 15 * 8, 4, g2, 1.5f, 2, 2);
+    /* Gradient at 2x */
+    {
+        s8 g2x0[] = "GRAD0 2X";
+        s8 g2x1[] = "GRAD1 2X";
+        s8 g2x2[] = "GRAD2 2X";
+        SSPutStr_Bigger(0, 18 * 8, 4, g2x0, 2.0f, 0, 2);
+        SSPutStr_Bigger(0, 21 * 8, 4, g2x1, 2.0f, 1, 2);
+        SSPutStr_Bigger(0, 24 * 8, 4, g2x2, 2.0f, 2, 2);
+    }
 }
 
 /* ════════════════════════════════════════════════════════════════
- *  Page 6: Score Digits
+ *  Page 6: Score Digits — All Sizes
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page6(void) {
     u8 d;
-
-    SSPutStr(1, 0, 4, "PAGE 7: SCORE DIGIT FONTS");
-
-    SSPutStr(0, 2, 1, "SCORE 8x16 (SCORE8X16_PUT):");
-    for (d = 0; d < 10; d++) {
-        score8x16_put(1 + d, 3, 8, d);
-    }
-    SSPutStr(0, 5, 1, "SCORE 8x16 PAL 4:");
-    for (d = 0; d < 10; d++) {
-        score8x16_put(1 + d, 6, 4, d);
-    }
-
-    SSPutStr(0, 9, 1, "SCORE 16x24 (SCORE16X24_PUT):");
-    for (d = 0; d < 10; d++) {
-        score16x24_put(1 + (d * 2), 10, 8, d);
-    }
-
-    SSPutStr(0, 14, 1, "SCORE 16x24 PAL 4:");
-    for (d = 0; d < 5; d++) {
-        score16x24_put(1 + (d * 2), 15, 4, d);
-    }
-    for (d = 5; d < 10; d++) {
-        score16x24_put(1 + ((d - 5) * 2), 18, 4, d);
-    }
-
-    SSPutStr(0, 22, 1, "SSPUTDEC SIZES (1,2,3 DIGITS):");
-    SSPutStr(1, 23, 1, "1-DIG:");
-    SSPutDec(8, 23, 4, 7, 1);
-    SSPutStr(1, 24, 1, "2-DIG:");
-    SSPutDec(8, 24, 4, 42, 2);
-    SSPutStr(1, 25, 1, "3-DIG:");
-    SSPutDec(8, 25, 4, 255, 3);
+    SSPutStr(1, 0, 4, "PAGE 7: SCORE DIGITS");
+    /* 8x16 - two palette rows side by side */
+    SSPutStr(0, 2, 1, "SCORE 8x16:");
+    for (d = 0; d < 10; d++) score8x16_put(1 + d, 3, 8, d);
+    SSPutStr(14, 2, 1, "PAL4:");
+    for (d = 0; d < 10; d++) score8x16_put(14 + 1 + d, 3, 4, d);
+    /* 16x24 */
+    SSPutStr(0, 6, 1, "SCORE 16x24:");
+    for (d = 0; d < 10; d++) score16x24_put(d * 2, 7, 8, d);
+    SSPutStr(0, 10, 1, "SCORE 16x24 PAL4:");
+    for (d = 0; d < 10; d++) score16x24_put(d * 2, 11, 4, d);
+    /* Bigger palette variations */
+    SSPutStr(0, 14, 1, "SCORE 16x24 PAL1:");
+    for (d = 0; d < 10; d++) score16x24_put(d * 2, 15, 1, d);
+    SSPutStr(0, 18, 1, "SCORE 16x24 PAL9:");
+    for (d = 0; d < 10; d++) score16x24_put(d * 2, 19, 9, d);
+    /* SSPutDec comparison */
+    SSPutStr(0, 22, 1, "SSPUTDEC:");
+    SSPutStr(0, 23, 1, "1D:");  SSPutDec(4, 23, 4, 0, 1); SSPutDec(6, 23, 4, 5, 1); SSPutDec(8, 23, 4, 9, 1);
+    SSPutStr(10, 23, 1, "2D:"); SSPutDec(14, 23, 4, 0, 2); SSPutDec(17, 23, 4, 42, 2); SSPutDec(20, 23, 4, 99, 2);
+    SSPutStr(0, 24, 1, "3D:");  SSPutDec(4, 24, 4, 0, 3); SSPutDec(8, 24, 4, 100, 3); SSPutDec(12, 24, 4, 255, 3);
+    SSPutStr(16, 24, 1, "4D:"); SSPutDec(20, 24, 4, 0, 4); SSPutDec(25, 24, 4, 128, 4);
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -319,88 +321,83 @@ static void FontTest_Page6(void) {
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page7(void) {
     u8 t;
-
     SSPutStr(1, 0, 4, "PAGE 8: TILES & ATR FLIPS");
-
-    SSPutStr(0, 2, 1, "SCFONT_PUT PAGE 0 ROWS 0-3:");
-    for (t = 0; t < 20; t++) { scfont_put(1 + t, 3, 4, 0, t, 0, 2); }
-    for (t = 0; t < 20; t++) { scfont_put(1 + t, 4, 4, 0, t, 1, 2); }
-    for (t = 0; t < 20; t++) { scfont_put(1 + t, 5, 4, 0, t, 2, 2); }
-    for (t = 0; t < 20; t++) { scfont_put(1 + t, 6, 4, 0, t, 3, 2); }
-
-    SSPutStr(0, 8, 1, "SCFONT_PUT PAGE 2 ROWS 0-3:");
-    for (t = 0; t < 20; t++) { scfont_put(1 + t, 9, 4, 2, t, 0, 2); }
-    for (t = 0; t < 20; t++) { scfont_put(1 + t, 10, 4, 2, t, 1, 2); }
-    for (t = 0; t < 20; t++) { scfont_put(1 + t, 11, 4, 2, t, 2, 2); }
-    for (t = 0; t < 20; t++) { scfont_put(1 + t, 12, 4, 2, t, 3, 2); }
-
-    SSPutStr(0, 14, 1, "ATR FLIP BITS:");
-    SSPutStr(1, 15, 1, "NORMAL:");
-    scfont_put(10, 15, 0x04, 0, 1, 0, 2);
-    scfont_put(12, 15, 0x04, 0, 2, 0, 2);
-    scfont_put(14, 15, 0x04, 0, 3, 0, 2);
-    SSPutStr(1, 16, 1, "H-FLIP:");
-    scfont_put(10, 16, 0x84, 0, 1, 0, 2);
-    scfont_put(12, 16, 0x84, 0, 2, 0, 2);
-    scfont_put(14, 16, 0x84, 0, 3, 0, 2);
-    SSPutStr(1, 17, 1, "V-FLIP:");
-    scfont_put(10, 17, 0x44, 0, 1, 0, 2);
-    scfont_put(12, 17, 0x44, 0, 2, 0, 2);
-    scfont_put(14, 17, 0x44, 0, 3, 0, 2);
-    SSPutStr(1, 18, 1, "HV-FLIP:");
-    scfont_put(10, 18, 0xC4, 0, 1, 0, 2);
-    scfont_put(12, 18, 0xC4, 0, 2, 0, 2);
-    scfont_put(14, 18, 0xC4, 0, 3, 0, 2);
-
-    SSPutStr(0, 20, 1, "SCFONT_SQPUT (MULTI-CELL):");
-    scfont_sqput(1, 21, 4, 0, 0, 0, 4, 1, 2);
-    scfont_sqput(6, 21, 8, 0, 4, 0, 4, 1, 2);
-    scfont_sqput(11, 21, 1, 0, 8, 0, 4, 1, 2);
-    scfont_sqput(16, 21, 9, 0, 12, 0, 4, 1, 2);
-
-    SSPutStr(0, 23, 1, "SQPUT 2-ROW BLOCK:");
-    scfont_sqput(1, 24, 4, 0, 0, 0, 8, 2, 2);
-    scfont_sqput(10, 24, 8, 2, 0, 0, 8, 2, 2);
+    /* 4 rows tile page 0 */
+    SSPutStr(0, 2, 1, "SCFONT PAGE0 R0-3:");
+    for (t = 0; t < 20; t++) scfont_put(1 + t, 3, 4, 0, t, 0, 2);
+    for (t = 0; t < 20; t++) scfont_put(1 + t, 4, 4, 0, t, 1, 2);
+    for (t = 0; t < 20; t++) scfont_put(1 + t, 5, 4, 0, t, 2, 2);
+    for (t = 0; t < 20; t++) scfont_put(1 + t, 6, 4, 0, t, 3, 2);
+    /* 4 rows tile page 2 */
+    SSPutStr(0, 8, 1, "SCFONT PAGE2 R0-3:");
+    for (t = 0; t < 20; t++) scfont_put(1 + t, 9, 4, 2, t, 0, 2);
+    for (t = 0; t < 20; t++) scfont_put(1 + t, 10, 4, 2, t, 1, 2);
+    for (t = 0; t < 20; t++) scfont_put(1 + t, 11, 4, 2, t, 2, 2);
+    for (t = 0; t < 20; t++) scfont_put(1 + t, 12, 4, 2, t, 3, 2);
+    /* ATR flips - compact 2-column layout */
+    SSPutStr(0, 14, 1, "ATR FLIPS:");
+    SSPutStr(1, 15, 1, "NRM:");
+    scfont_put(5, 15, 0x04, 0, 1, 0, 2); scfont_put(6, 15, 0x04, 0, 2, 0, 2); scfont_put(7, 15, 0x04, 0, 3, 0, 2);
+    SSPutStr(10, 15, 1, "H:");
+    scfont_put(12, 15, 0x84, 0, 1, 0, 2); scfont_put(13, 15, 0x84, 0, 2, 0, 2); scfont_put(14, 15, 0x84, 0, 3, 0, 2);
+    SSPutStr(1, 16, 1, "V:");
+    scfont_put(5, 16, 0x44, 0, 1, 0, 2); scfont_put(6, 16, 0x44, 0, 2, 0, 2); scfont_put(7, 16, 0x44, 0, 3, 0, 2);
+    SSPutStr(10, 16, 1, "HV:");
+    scfont_put(13, 16, 0xC4, 0, 1, 0, 2); scfont_put(14, 16, 0xC4, 0, 2, 0, 2); scfont_put(15, 16, 0xC4, 0, 3, 0, 2);
+    /* SQPUT multi-cell */
+    SSPutStr(0, 18, 1, "SQPUT 4x1:");
+    scfont_sqput(0, 19, 4, 0, 0, 0, 4, 1, 2);
+    scfont_sqput(5, 19, 8, 0, 4, 0, 4, 1, 2);
+    scfont_sqput(10, 19, 1, 0, 8, 0, 4, 1, 2);
+    scfont_sqput(15, 19, 9, 0, 12, 0, 4, 1, 2);
+    SSPutStr(0, 21, 1, "SQPUT 8x2:");
+    scfont_sqput(0, 22, 4, 0, 0, 0, 8, 2, 2);
+    scfont_sqput(9, 22, 8, 2, 0, 0, 8, 2, 2);
+    scfont_sqput(18, 22, 1, 0, 8, 0, 8, 2, 2);
+    /* More palettes */
+    SSPutStr(0, 25, 1, "SQPUT PALETTES:");
+    scfont_sqput(0, 26, 0, 0, 0, 0, 4, 1, 2);
+    scfont_sqput(5, 26, 1, 0, 0, 0, 4, 1, 2);
+    scfont_sqput(10, 26, 4, 0, 0, 0, 4, 1, 2);
+    scfont_sqput(15, 26, 8, 0, 0, 0, 4, 1, 2);
+    scfont_sqput(20, 26, 9, 0, 0, 0, 4, 1, 2);
 }
 
 /* ════════════════════════════════════════════════════════════════
  *  Page 8: Health, Stun, & HUD Bars
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page8(void) {
-    SSPutStr(1, 0, 4, "PAGE 9: HEALTH, STUN, HUD");
-
-    SSPutStr(0, 2, 1, "VITAL_PUT (HP BARS Y=16-24PX):");
+    SSPutStr(1, 0, 4, "PAGE 9: HUD BARS & GAUGES");
+    /* HP bars */
+    SSPutStr(0, 2, 1, "VITAL_PUT HP=160 | HP=100:");
     vital_put(0, 8, 160, 0, 2);
     vital_put(1, 8, 100, 0, 2);
-
-    SSPutStr(0, 4, 1, "SILVER_VITAL_PUT (RECOVERABLE):");
+    SSPutStr(0, 4, 1, "SILVER_VITAL (RECOVERABLE):");
     silver_vital_put(0);
     silver_vital_put(1);
-
-    SSPutStr(0, 6, 1, "VITAL_BASE_PUT (HP SHADOW):");
+    SSPutStr(0, 6, 1, "VITAL_BASE (HP FRAME):");
     vital_base_put(0);
     vital_base_put(1);
-
-    SSPutStr(0, 8, 1, "STUN_PUT (Y=24-32PX):");
+    /* Stun */
+    SSPutStr(0, 8, 1, "STUN=100 | STUN=60:");
     omop_st_bar_disp[0] = 1;
     omop_st_bar_disp[1] = 1;
     stun_put(0, 100);
     stun_put(1, 60);
-
-    SSPutStr(0, 10, 1, "STUN_BASE_PUT (STUN FRAME):");
+    SSPutStr(0, 10, 1, "STUN_BASE + SPGAUGE_BASE:");
     stun_base_put(0, 160);
     stun_base_put(1, 160);
-
-    SSPutStr(0, 12, 1, "SPGAUGE_BASE_PUT (SA FRAME):");
     spgauge_base_put(0, 160);
     spgauge_base_put(1, 160);
-
-    SSPutStr(0, 15, 4, "NOTE: BARS USE HARDCODED POS");
-    SSPutStr(0, 16, 4, "HP: Y=16-24  STUN: Y=24-32");
-    SSPutStr(0, 17, 4, "P1: X=8-168  P2: X=216-376");
-
-    SSPutStr(0, 19, 1, "TONEDOWN (DARKEN OVERLAY):");
+    /* Notes */
+    SSPutStr(0, 13, 4, "HP: Y=16-24  STUN: Y=24-32");
+    SSPutStr(0, 14, 4, "P1: X=8-168  P2: X=216-376");
+    /* Tonedown */
+    SSPutStr(0, 16, 1, "TONEDOWN (DARKEN OVERLAY):");
     ToneDown(48, 0);
+    SSPutStr(0, 18, 4, "TONEDOWN DIMS ALL BELOW THIS");
+    SSPutStr(0, 19, 4, "IT AFFECTS THE ENTIRE SCREEN");
+    SSPutStr(0, 20, 4, "RENDERING STATE BELOW THE BAR");
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -410,47 +407,46 @@ static void FontTest_Page9(void) {
     static u8 anim_phase = 0;
 
     SSPutStr(1, 0, 4, "PAGE 10: SCREEN TRANSITIONS");
-
-    SSPutStr(0, 2, 1, "BACKGROUND TEXT FOR TRANSITIONS");
-    SSPutStr(1, 4, 4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    SSPutStr(1, 5, 4, "0123456789 THE QUICK FOX");
-    SSPutStr(1, 7, 8, "THIS TEXT SHOULD APPEAR AND");
-    SSPutStr(1, 8, 8, "DISAPPEAR DURING TRANSITIONS");
-    SSPutStr(1, 10, 4, "ROUND 1");
-    SSPutStr(1, 11, 4, "FIGHT!");
-    SSPutStr(1, 14, 1, "CYCLING: FADE->WIPE VARIANTS");
+    /* Dense background text to show transitions */
+    SSPutStr(0, 2, 4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123");
+    SSPutStr(0, 3, 8, "THE QUICK BROWN FOX JUMPS OVER");
+    SSPutStr(0, 4, 4, "THE LAZY DOG 0123456789 !?.,;:");
+    SSPutStr(0, 5, 1, "abcdefghijklmnopqrstuvwxyz");
+    SSPutStr(0, 7, 4, "ROUND 1    FIGHT!    K.O.");
+    SSPutStr(0, 8, 4, "YOU WIN    PERFECT   TIME OVER");
+    SSPutStr(0, 10, 1, "CYCLING: FADE+WIPE VARIANTS");
 
     switch (anim_phase) {
     case 0:
-        SSPutStr(1, 16, 4, ">> FADEOUT (BLACK)");
+        SSPutStr(0, 12, 4, ">> FADEOUT (BLACK)");
         if (FadeOut(0, 8, 0)) { anim_phase = 1; FadeInit(); }
         break;
     case 1:
-        SSPutStr(1, 16, 4, ">> FADEIN (BLACK)");
+        SSPutStr(0, 12, 4, ">> FADEIN (BLACK)");
         if (FadeIn(0, 8, 0)) { anim_phase = 2; FadeInit(); }
         break;
     case 2:
-        SSPutStr(1, 16, 4, ">> FADEOUT (WHITE)");
+        SSPutStr(0, 12, 4, ">> FADEOUT (WHITE)");
         if (FadeOut(1, 8, 0)) { anim_phase = 3; FadeInit(); }
         break;
     case 3:
-        SSPutStr(1, 16, 4, ">> FADEIN (WHITE)");
+        SSPutStr(0, 12, 4, ">> FADEIN (WHITE)");
         if (FadeIn(1, 8, 0)) { anim_phase = 4; WipeInit(); }
         break;
     case 4:
-        SSPutStr(1, 16, 4, ">> WIPEOUT (HORIZ)");
+        SSPutStr(0, 12, 4, ">> WIPEOUT (HORIZ)");
         if (WipeOut(0)) { anim_phase = 5; WipeInit(); }
         break;
     case 5:
-        SSPutStr(1, 16, 4, ">> WIPEIN (HORIZ)");
+        SSPutStr(0, 12, 4, ">> WIPEIN (HORIZ)");
         if (WipeIn(0)) { anim_phase = 6; WipeInit(); }
         break;
     case 6:
-        SSPutStr(1, 16, 4, ">> WIPEOUT (DIAG)");
+        SSPutStr(0, 12, 4, ">> WIPEOUT (DIAG)");
         if (WipeOut(1)) { anim_phase = 7; WipeInit(); }
         break;
     case 7:
-        SSPutStr(1, 16, 4, ">> WIPEIN (DIAG)");
+        SSPutStr(0, 12, 4, ">> WIPEIN (DIAG)");
         if (WipeIn(1)) { anim_phase = 0; FadeInit(); }
         break;
     }
@@ -464,42 +460,100 @@ static void FontTest_Page10(void) {
     s8 fgt[] = "FIGHT!";
 
     SSPutStr(1, 0, 4, "PAGE 11: IN-GAME HUD");
-
+    /* Full HUD setup */
     vital_base_put(0);
     vital_base_put(1);
     vital_put(0, 8, 120, 0, 2);
     vital_put(1, 8, 90, 0, 2);
-
     omop_st_bar_disp[0] = 1;
     omop_st_bar_disp[1] = 1;
     stun_base_put(0, 160);
     stun_base_put(1, 160);
     stun_put(0, 80);
     stun_put(1, 40);
-
-    SSPutStr(0, 5, 1, "TIMER DIGITS (SCFONT_SQPUT):");
+    /* Timer digits */
     scfont_sqput(22, 0, 4, 2, 18, 2, 2, 4, 2);
     scfont_sqput(24, 0, 4, 2, 18, 2, 2, 4, 2);
-
     scfont_sqput(21, 1, 9, 0, 12, 6, 1, 4, 2);
     scfont_sqput(26, 1, 137, 0, 12, 6, 1, 4, 2);
     scfont_sqput(22, 4, 9, 0, 3, 18, 4, 1, 2);
-
+    /* Round/Fight text */
     SSPutStr_Bigger(14 * 8, 8 * 8, 4, rnd, 2.0f, 0, 2);
     SSPutStr_Bigger(16 * 8, 11 * 8, 4, fgt, 2.0f, 1, 2);
-
-    SSPutStr(0, 14, 1, "COMBO MESSAGE:");
+    /* Combo + buttons */
+    SSPutStr(0, 14, 1, "COMBO:");
     combo_message_set(0, 0, 2, 5, 1, 2);
-
-    SSPutStr(0, 18, 1, "BUTTON ICONS:");
+    SSPutStr(0, 18, 1, "BUTTONS:");
     dispButtonImage(8, 160, 2, 16, 16, 0, 0);
     dispButtonImage(32, 160, 2, 16, 16, 0, 1);
     dispButtonImage(56, 160, 2, 16, 16, 0, 2);
     dispButtonImage(80, 160, 2, 16, 16, 0, 3);
+}
 
-    SSPutStr(0, 22, 1, "HNC WIPE / AKAOBI:");
-    SSPutStr(1, 23, 4, "ANIMATED SEQUENCES USING");
-    SSPutStr(1, 24, 4, "HARDCODED FRAME TABLES");
+/* ════════════════════════════════════════════════════════════════
+ *  Page 11: Menu Letter Sprites — Mode & Game Options
+ * ════════════════════════════════════════════════════════════════ */
+static void FontTest_Page11(void) {
+    SSPutStr(1, 0, 4, "PAGE 12: MENU SPRITES (CG OBJ)");
+    /* Mode menu - compact: index + name on same line */
+    SSPutStr(0, 2, 1, "MODE MENU (CG 0x7047, 14px):");
+    SSPutStr(0, 3, 4, " 0 ARCADE");       SSPutStr(16, 3, 4, " 1 VERSUS");
+    SSPutStr(0, 4, 4, " 2 TRAINING");      SSPutStr(16, 4, 4, " 3 NETWORK");
+    SSPutStr(0, 5, 4, " 4 REPLAY");        SSPutStr(16, 5, 4, " 5 OPTION");
+    SSPutStr(0, 6, 4, " 6 EXIT GAME");
+    /* Game option sub-menu */
+    SSPutStr(0, 8, 1, "OPTION SUB (CG 0x7047):");
+    SSPutStr(0, 9, 4, " 7 GAME OPTION");   SSPutStr(16, 9, 4, "10 SOUND");
+    SSPutStr(0, 10, 4, " 8 BUTTON CONFIG"); SSPutStr(16, 10, 4, "11 SAVE/LOAD");
+    SSPutStr(0, 11, 4, " 9 SYS DIRECTION"); SSPutStr(16, 11, 4, "12 EXTRA OPT");
+    SSPutStr(0, 12, 4, "13 EXIT");
+    /* Game options (smaller CG) */
+    SSPutStr(0, 14, 1, "GAME OPTS (CG 0x70A7, 8px):");
+    SSPutStr(0, 15, 8, "25 DIFFICULTY");    SSPutStr(16, 15, 8, "26 TIME LIMIT");
+    SSPutStr(0, 16, 8, "27 ROUNDS(1P)");    SSPutStr(16, 16, 8, "28 ROUNDS(VS)");
+    SSPutStr(0, 17, 8, "29 DAMAGE LVL");    SSPutStr(16, 17, 8, "30 GUARD JDG");
+    SSPutStr(0, 18, 8, "31 ANALOG STK");    SSPutStr(16, 18, 8, "32 HANDICAP");
+    SSPutStr(0, 19, 8, "33 PLAYER1(VS)");   SSPutStr(16, 19, 8, "34 PLAYER2(VS)");
+    SSPutStr(0, 20, 8, "35 DEFAULT SET");   SSPutStr(16, 20, 8, "36 EXIT");
+    /* Extra options */
+    SSPutStr(0, 22, 1, "EXTRA OPTS:");
+    SSPutStr(0, 23, 4, "14 X POSITION");    SSPutStr(16, 23, 4, "15 Y POSITION");
+    SSPutStr(0, 24, 4, "16 X RANGE");       SSPutStr(16, 24, 4, "17 Y RANGE");
+    SSPutStr(0, 25, 4, "18 FILTER");        SSPutStr(16, 25, 4, "19 DEFAULT SET");
+    SSPutStr(0, 26, 4, "20 EXIT");
+}
+
+/* ════════════════════════════════════════════════════════════════
+ *  Page 12: Menu Sprites — Sound, Training, Pause, Lobby, Save
+ * ════════════════════════════════════════════════════════════════ */
+static void FontTest_Page12(void) {
+    SSPutStr(1, 0, 4, "PAGE 13: MENU SPRITES (CONT)");
+    /* Save/Load */
+    SSPutStr(0, 2, 1, "SAVE/LOAD (CG 0x7047):");
+    SSPutStr(0, 3, 4, "21 SAVE DATA");     SSPutStr(16, 3, 4, "22 LOAD DATA");
+    SSPutStr(0, 4, 4, "23 AUTO SAVE");     SSPutStr(16, 4, 4, "24 EXIT");
+    /* Sound */
+    SSPutStr(0, 6, 1, "SOUND (CG 0x7047):");
+    SSPutStr(0, 7, 4, "58 AUDIO");         SSPutStr(16, 7, 4, "59 BGM LEVEL");
+    SSPutStr(0, 8, 4, "60 SE LEVEL");      SSPutStr(16, 8, 4, "61 BGM SELECT");
+    SSPutStr(0, 9, 4, "62 DEFAULT SET");   SSPutStr(16, 9, 4, "63 BGM TEST");
+    SSPutStr(0, 10, 4, "64 EXIT");
+    /* Training */
+    SSPutStr(0, 12, 1, "TRAINING (CG 0x7047):");
+    SSPutStr(0, 13, 4, "52 NORMAL TRAIN"); SSPutStr(16, 13, 4, "53 PARRY TRAIN");
+    SSPutStr(0, 14, 4, "54 EXIT");         SSPutStr(16, 14, 4, "65 TRIALS");
+    /* Pause menus */
+    SSPutStr(0, 16, 1, "PAUSE (CG 0x70A7):");
+    SSPutStr(0, 17, 8, "37 CONTINUE");     SSPutStr(16, 17, 8, "40 CONTINUE");
+    SSPutStr(0, 18, 8, "38 REPLAY SAVE");  SSPutStr(16, 18, 8, "41 REPLAY SAVE");
+    SSPutStr(0, 19, 8, "39 EXIT");         SSPutStr(16, 19, 8, "42 EXIT");
+    /* In-game option */
+    SSPutStr(0, 21, 1, "IN-GAME OPT (CG 0x7047):");
+    SSPutStr(0, 22, 4, "43 DIRECTION");    SSPutStr(16, 22, 4, "44 SAVE");
+    SSPutStr(0, 23, 4, "45 LOAD");         SSPutStr(16, 23, 4, "46 EXIT");
+    /* Network lobby */
+    SSPutStr(0, 25, 1, "LOBBY (CG 0x70A7):");
+    SSPutStr(0, 26, 8, "66 NET LOBBY");    SSPutStr(16, 26, 8, "67-72 CONN/EXIT");
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -553,6 +607,8 @@ void FontTest_Task(struct _TASK* task_ptr) {
     case 8:  FontTest_Page8();  break;
     case 9:  FontTest_Page9();  break;
     case 10: FontTest_Page10(); break;
+    case 11: FontTest_Page11(); break;
+    case 12: FontTest_Page12(); break;
     }
 
     /* ── Page indicator bar (bottom) ───────────────────────── */
@@ -567,16 +623,16 @@ void FontTest_Task(struct _TASK* task_ptr) {
     SSPutStr(13 + PAGE_COUNT, 27, 1, ">");
 
     /* Page number (handles 2-digit) */
-    if (current_page + 1 >= 10) {
-        page_str[0] = '1';
-        page_str[1] = '0' + ((current_page + 1) - 10);
-    } else {
-        page_str[0] = ' ';
-        page_str[1] = '0' + (current_page + 1);
+    {
+        s16 pg = current_page + 1;
+        s16 tot = PAGE_COUNT;
+        s16 k = 0;
+        if (pg >= 10) { page_str[k++] = '0' + (pg / 10); }
+        page_str[k++] = '0' + (pg % 10);
+        page_str[k++] = '/';
+        if (tot >= 10) { page_str[k++] = '0' + (tot / 10); }
+        page_str[k++] = '0' + (tot % 10);
+        page_str[k] = '\0';
+        SSPutStr(13 + PAGE_COUNT + 1, 27, 4, page_str);
     }
-    page_str[2] = '/';
-    page_str[3] = '1';
-    page_str[4] = '0' + (PAGE_COUNT - 10);
-    page_str[5] = '\0';
-    SSPutStr(13 + PAGE_COUNT + 1, 27, 4, page_str);
 }
