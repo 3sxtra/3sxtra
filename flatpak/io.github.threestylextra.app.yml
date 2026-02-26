@@ -2,6 +2,8 @@ app-id: io.github.threestylextra.app
 runtime: org.freedesktop.Platform
 runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
 command: 3sx
 
 finish-args:
@@ -31,8 +33,10 @@ modules:
     build-options:
       build-args:
         - --share=network
+      append-path: /usr/lib/sdk/rust-stable/bin
       env:
         CARGO_HOME: /run/build/3sx/cargo-home
+        RUSTUP_HOME: /usr/lib/sdk/rust-stable
     config-opts:
       - -DCMAKE_BUILD_TYPE=RelWithDebInfo
     sources:

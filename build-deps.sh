@@ -16,10 +16,8 @@ TARGET_ARCH="${TARGET_ARCH:-}"
 echo "Using cmake from: $(which cmake)"
 cmake --version
 
-if ! command -v cargo &> /dev/null; then
-    echo "Error: cargo (Rust) is required to build librashader. Please install Rust."
-    exit 1
-fi
+# Note: Rust/cargo is only needed for librashader. Check is deferred to that section
+# so all other deps (SDL3, glad, SDL_shadercross, etc.) still build without Rust.
 
 # -----------------------------
 # SDL3
@@ -48,12 +46,17 @@ else
 
     case "$OS" in
         Darwin|Linux)
+            CMAKE_EXTRA_ARGS=""
+            if [ "$OS" = "Darwin" ] && [ "$TARGET_ARCH" = "universal" ]; then
+                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+            fi
             cmake .. \
                 ${CC:+-DCMAKE_C_COMPILER=$CC} \
                 ${CXX:+-DCMAKE_CXX_COMPILER=$CXX} \
                 -DCMAKE_INSTALL_PREFIX="$SDL_BUILD" \
                 -DBUILD_SHARED_LIBS=ON \
-                -DSDL_STATIC=OFF
+                -DSDL_STATIC=OFF \
+                $CMAKE_EXTRA_ARGS
             ;;
         MINGW*|MSYS*|CYGWIN*)
             # Disable OpenGL ES to avoid missing EGL headers on MSYS2
@@ -148,15 +151,18 @@ if grep -q 'staging.as_mut_slice()?.copy_from_slice' "$LUTS_RS" 2>/dev/null; the
     sed 's|staging.as_mut_slice()?.copy_from_slice(\&image.bytes);|let staging_slice = staging.as_mut_slice()?;\n        staging_slice[..image.bytes.len()].copy_from_slice(\&image.bytes);|' "$LUTS_RS" > "$LUTS_RS.tmp" && mv "$LUTS_RS.tmp" "$LUTS_RS"
 fi
 
-# Build librashader-capi
-if [ -f "$LIBRASHADER_DIR/target/release/liblibrashader_capi.a" ]; then
+# Build librashader-capi (requires Rust/cargo)
+if ! command -v cargo &> /dev/null; then
+    echo "WARNING: cargo (Rust) not found — skipping librashader build."
+    echo "         librashader is required for shader support. Install Rust to enable it."
+elif [ -f "$LIBRASHADER_DIR/target/release/liblibrashader_capi.a" ]; then
     echo "librashader-capi already built."
 else
     echo "Building librashader-capi..."
     cd "$LIBRASHADER_DIR"
     cargo build --release -p librashader-capi --no-default-features --features runtime-opengl,runtime-vulkan,stable
     echo "librashader-capi built."
-    cd ../..
+    cd ../.. 
 fi
 
 # -----------------------------
@@ -203,12 +209,17 @@ else
 
     case "$OS" in
         Darwin|Linux)
+            CMAKE_EXTRA_ARGS=""
+            if [ "$OS" = "Darwin" ] && [ "$TARGET_ARCH" = "universal" ]; then
+                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+            fi
             cmake .. \
                 ${CC:+-DCMAKE_C_COMPILER=$CC} \
                 ${CXX:+-DCMAKE_CXX_COMPILER=$CXX} \
                 -DCMAKE_INSTALL_PREFIX="$SDL_IMAGE_BUILD" \
                 -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
-                -DBUILD_SHARED_LIBS=ON
+                -DBUILD_SHARED_LIBS=ON \
+                $CMAKE_EXTRA_ARGS
             ;;
         MINGW*|MSYS*|CYGWIN*)
             cmake .. \

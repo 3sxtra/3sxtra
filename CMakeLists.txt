@@ -363,8 +363,17 @@ if(APPLE)
     set_target_properties(3sx PROPERTIES
         INSTALL_RPATH "@executable_path/../Frameworks"
     )
-    target_sources(3sx PRIVATE src/port/macos/broadcast_syphon.mm)
-    target_link_libraries(3sx PRIVATE "-framework Syphon" "-framework OpenGL")
+    target_link_libraries(3sx PRIVATE "-framework OpenGL")
+
+    # Syphon framework is optional (not available on CI runners)
+    find_library(SYPHON_FRAMEWORK Syphon)
+    if(SYPHON_FRAMEWORK)
+        target_sources(3sx PRIVATE src/port/macos/broadcast_syphon.mm)
+        target_link_libraries(3sx PRIVATE "-framework Syphon")
+        message(STATUS "Syphon broadcast: enabled")
+    else()
+        message(STATUS "Syphon broadcast: disabled (framework not found)")
+    endif()
 elseif(UNIX AND NOT APPLE)
     set_target_properties(3sx PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"

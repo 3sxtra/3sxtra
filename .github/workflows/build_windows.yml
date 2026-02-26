@@ -46,10 +46,6 @@ jobs:
           - name: Build dependencies
             run: sh build-deps.sh
 
-          - name: Install Python dependencies for glad
-            shell: pwsh
-            run: python3 -m pip install jinja2
-
           - name: Build for Windows
             run: |
                 set -o pipefail
@@ -57,7 +53,8 @@ jobs:
                 CC=clang CXX=clang++ cmake -B build \
                     -DCMAKE_BUILD_TYPE=Debug \
                     -DENABLE_TESTS=OFF \
-                    -DMSYS2_LOCATION=${{ steps.msys2.outputs.msys2-location }}
+                    -DMSYS2_LOCATION=${{ steps.msys2.outputs.msys2-location }} \
+                    -DPython3_EXECUTABLE=$(which python3)
 
                 cmake --build build --parallel 2>&1 | tee build.log
 
