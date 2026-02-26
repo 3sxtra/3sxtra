@@ -27,7 +27,9 @@ SDL_DIR="$THIRD_PARTY/sdl3"
 SDL_SRC="$SDL_DIR/SDL"
 SDL_BUILD="$SDL_DIR/build"
 
-if [ -d "$SDL_BUILD" ]; then
+if [ "${SKIP_SDL3_BUILD:-}" = "1" ]; then
+    echo "SKIP_SDL3_BUILD=1 — skipping SDL3 (pre-installed)"
+elif [ -d "$SDL_BUILD" ]; then
     echo "SDL3 already built at $SDL_BUILD"
 else
     echo "Building SDL3..."
@@ -188,7 +190,9 @@ fi
 SDL_IMAGE_DIR="$THIRD_PARTY/sdl3_image"
 SDL_IMAGE_BUILD="$SDL_IMAGE_DIR/build"
 
-if [ -d "$SDL_IMAGE_BUILD" ]; then
+if [ "${SKIP_SDL3_BUILD:-}" = "1" ]; then
+    echo "SKIP_SDL3_BUILD=1 — skipping SDL3_image (pre-installed)"
+elif [ -d "$SDL_IMAGE_BUILD" ]; then
     echo "SDL3_image already built at $SDL_IMAGE_BUILD"
 else
     echo "Building SDL3_image..."

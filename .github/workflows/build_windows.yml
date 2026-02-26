@@ -50,14 +50,14 @@ jobs:
             run: |
                 set -o pipefail
 
-                # Ensure jinja2 is available for whichever Python cmake finds (glad needs it)
-                python3 -m pip install --quiet jinja2 || true
+                MSYS2_PYTHON=$(which python3)
 
                 CC=clang CXX=clang++ cmake -B build \
                     -DCMAKE_BUILD_TYPE=Debug \
                     -DENABLE_TESTS=OFF \
                     -DMSYS2_LOCATION=${{ steps.msys2.outputs.msys2-location }} \
-                    -DPython3_EXECUTABLE=$(which python3)
+                    -DPython3_EXECUTABLE=$MSYS2_PYTHON \
+                    -DPython_EXECUTABLE=$MSYS2_PYTHON
 
                 cmake --build build --parallel 2>&1 | tee build.log
 

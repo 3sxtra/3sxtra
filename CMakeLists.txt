@@ -21,9 +21,15 @@ else()
     set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/third_party")
 endif()
 
-# Execute the dependency build script (desktop builds only; RPi4 uses build-deps_rpi4.sh via Buildroot)
+# Execute the dependency build script (desktop builds only)
+# When SDL3_ROOT is pre-set (e.g. flatpak modules), skip SDL3/SDL3_image builds
 if(NOT PLATFORM_RPI4)
-    execute_process(COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/build-deps.sh WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    if(SDL3_ROOT)
+        set(ENV{SKIP_SDL3_BUILD} "1")
+    endif()
+    execute_process(COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/build-deps.sh
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND_ERROR_IS_FATAL ANY)
 endif()
 
 if(NOT SDL3_ROOT)
@@ -430,7 +436,15 @@ endif()
 # THIRD_PARTY_DIR is already set above based on PLATFORM_RPI4
 # SDL3_ROOT is already set above
 
-set(SDL3_IMAGE_ROOT "${THIRD_PARTY_DIR}/sdl3_image/build")
+# If SDL3_ROOT was set externally (e.g. -DSDL3_ROOT=/app for flatpak),
+# SDL3_image is also installed there. Otherwise use third_party path.
+if(NOT SDL3_IMAGE_ROOT)
+    if(SDL3_ROOT STREQUAL "${THIRD_PARTY_DIR}/sdl3/build")
+        set(SDL3_IMAGE_ROOT "${THIRD_PARTY_DIR}/sdl3_image/build")
+    else()
+        set(SDL3_IMAGE_ROOT "${SDL3_ROOT}")
+    endif()
+endif()
 
 include_directories(
     ${SDL3_ROOT}/include

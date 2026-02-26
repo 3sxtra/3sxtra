@@ -24,8 +24,10 @@ typedef double f64;
 
 typedef size_t strlen_t;
 
-// SCE types — guarded because winsock2.h _bsd_types.h defines these differently
-#ifndef _BSDTYPES_DEFINED
+// SCE types — guarded because:
+// - winsock2.h _bsd_types.h defines these differently on Windows
+// - macOS <sys/types.h> already provides these as BSD types
+#if !defined(_BSDTYPES_DEFINED) && !defined(__APPLE__)
 typedef uint8_t u_char;
 typedef uint16_t u_short;
 typedef uint32_t u_int;

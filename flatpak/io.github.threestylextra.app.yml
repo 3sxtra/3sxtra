@@ -28,6 +28,25 @@ modules:
         strip-components: 2
         dest: .
 
+  - name: sdl3
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_SHARED_LIBS=ON
+      - -DSDL_STATIC=OFF
+    sources:
+      - type: git
+        url: https://github.com/libsdl-org/SDL.git
+        branch: main
+
+  - name: sdl3-image
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_SHARED_LIBS=ON
+    sources:
+      - type: git
+        url: https://github.com/libsdl-org/SDL_image.git
+        branch: main
+
   - name: 3sx
     buildsystem: cmake-ninja
     build-options:
@@ -40,6 +59,7 @@ modules:
     config-opts:
       - -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - -DENABLE_TESTS=OFF
+      - -DSDL3_ROOT=/app
     sources:
       - type: dir
         path: ..
