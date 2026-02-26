@@ -26,7 +26,7 @@ jobs:
                 manifest-path: flatpak/io.github.threestylextra.app.yml
                 bundle: 3sx.flatpak
                 cache: true
-                cache-key: flatpak-builder-${{ hashFiles('io.github.threestylextra.app.yml') }}
+                cache-key: flatpak-builder-${{ hashFiles('flatpak/io.github.threestylextra.app.yml') }}
 
           - name: Save artifact (local act)
             if: ${{ env.ACT }}

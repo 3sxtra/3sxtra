@@ -21,6 +21,16 @@ jobs:
             with:
                 path: third_party_linux
                 key: linux-x64-deps-${{ hashFiles('build-deps.sh') }}
+                restore-keys: linux-x64-deps-
+
+          - name: Cache Rust/Cargo
+            uses: actions/cache@v4
+            with:
+                path: |
+                    ~/.cargo/registry
+                    ~/.cargo/git
+                key: linux-x64-cargo-${{ hashFiles('build-deps.sh') }}
+                restore-keys: linux-x64-cargo-
 
           - name: Install Rust toolchain
             uses: dtolnay/rust-toolchain@stable

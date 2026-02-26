@@ -41,13 +41,14 @@ jobs:
             with:
                 path: third_party
                 key: windows-x64-deps-${{ hashFiles('build-deps.sh') }}
+                restore-keys: windows-x64-deps-
 
           - name: Build dependencies
             run: sh build-deps.sh
 
           - name: Install Python dependencies for glad
             shell: pwsh
-            run: python3 -m pip install --break-system-packages jinja2
+            run: python3 -m pip install jinja2
 
           - name: Build for Windows
             run: |

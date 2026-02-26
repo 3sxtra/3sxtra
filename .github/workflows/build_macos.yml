@@ -23,6 +23,16 @@ jobs:
             with:
                 path: third_party
                 key: macos-universal-deps-${{ hashFiles('build-deps.sh') }}
+                restore-keys: macos-universal-deps-
+
+          - name: Cache Rust/Cargo
+            uses: actions/cache@v4
+            with:
+                path: |
+                    ~/.cargo/registry
+                    ~/.cargo/git
+                key: macos-cargo-${{ hashFiles('build-deps.sh') }}
+                restore-keys: macos-cargo-
 
           - name: Install Rust toolchain
             uses: dtolnay/rust-toolchain@stable

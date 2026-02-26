@@ -44,11 +44,14 @@ jobs:
 
           - name: Install Rust toolchain (cross-compile)
             run: |
-                export HOME=/root
+                export RUSTUP_HOME=/opt/rustup
+                export CARGO_HOME=/opt/cargo
                 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
-                . "$HOME/.cargo/env"
+                echo "RUSTUP_HOME=/opt/rustup" >> $GITHUB_ENV
+                echo "CARGO_HOME=/opt/cargo" >> $GITHUB_ENV
+                echo "/opt/cargo/bin" >> $GITHUB_PATH
+                . /opt/cargo/env
                 rustup target add aarch64-unknown-linux-gnu
-                echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
           - name: Checkout repository
             uses: actions/checkout@v4
@@ -60,6 +63,16 @@ jobs:
             with:
                 path: third_party_arm64
                 key: linux-arm64-cross-deps-${{ hashFiles('build-deps.sh') }}
+                restore-keys: linux-arm64-cross-deps-
+
+          - name: Cache Rust/Cargo
+            uses: actions/cache@v4
+            with:
+                path: |
+                    /opt/cargo/registry
+                    /opt/cargo/git
+                key: linux-arm64-cargo-${{ hashFiles('build-deps.sh') }}
+                restore-keys: linux-arm64-cargo-
 
           - name: Install ARM64 build dependencies
             env:
@@ -89,13 +102,12 @@ jobs:
                 PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
                 PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
             run: |
-                # Let build-deps.sh handle everything (SDL3, SDL3_image, librashader, etc.)
                 cd $GITHUB_WORKSPACE
                 export THIRD_PARTY_DIR=$THIRD_PARTY
                 chmod +x ./build-deps.sh
                 ./build-deps.sh
-                
-                # Copy librashader to the location CMake expects (cross-compiled to aarch64 target dir)
+
+                # Copy librashader to the location CMake expects
                 mkdir -p $THIRD_PARTY/librashader/target/release
                 cp $THIRD_PARTY/librashader/target/aarch64-unknown-linux-gnu/release/liblibrashader_capi.a $THIRD_PARTY/librashader/target/release/
             shell: bash
