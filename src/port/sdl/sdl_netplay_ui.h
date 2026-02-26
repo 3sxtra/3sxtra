@@ -57,7 +57,10 @@ void SDLNetplayUI_ConnectToPlayer(int index);
 // Pending internet invite (someone set connect_to = our room code)
 bool SDLNetplayUI_HasPendingInvite(void);
 const char* SDLNetplayUI_GetPendingInviteName(void);
+const char* SDLNetplayUI_GetPendingInviteRegion(void);
+int SDLNetplayUI_GetPendingInvitePing(void);
 void SDLNetplayUI_AcceptPendingInvite(void);
+void SDLNetplayUI_DeclinePendingInvite(void);
 
 #ifdef __cplusplus
 }

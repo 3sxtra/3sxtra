@@ -50,6 +50,9 @@ jobs:
             run: |
                 set -o pipefail
 
+                # Ensure jinja2 is available for whichever Python cmake finds (glad needs it)
+                python3 -m pip install --quiet jinja2 || true
+
                 CC=clang CXX=clang++ cmake -B build \
                     -DCMAKE_BUILD_TYPE=Debug \
                     -DENABLE_TESTS=OFF \

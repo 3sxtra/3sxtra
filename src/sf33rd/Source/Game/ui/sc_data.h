@@ -40,7 +40,7 @@ extern const u8 bb_uv_pos[111];
 extern const u16 sa_ram_vram_col[][2];
 extern const UV_POS_TBL sc_ram_vram_tbl[][2];
 extern const s16 fade_data_tbl[][3];
-extern const u32 bigger_col_tbl[][4];
+extern const u32 bigger_col_tbl[13][4];
 extern const u16 Training_combo_pos_tbl[];
 extern const u16 Training_combo_prio_tbl[];
 

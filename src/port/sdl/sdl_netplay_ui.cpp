@@ -71,6 +71,9 @@ static char lobby_pending_invite_name[32] = { 0 };
 static uint32_t lobby_pending_invite_ip = 0;
 static uint16_t lobby_pending_invite_port = 0;
 static char lobby_pending_invite_room[16] = { 0 };
+static char lobby_pending_invite_region[8] = { 0 };
+static int lobby_pending_invite_ping = -1; // ms, -1 = unknown
+static SDL_AtomicInt lobby_ping_probe_active = { 0 };
 static bool lobby_we_are_initiator = false; // true = we clicked Connect, false = they invited us
 
 // Forward declarations for functions used by lobby_poll_server
@@ -80,13 +83,14 @@ static void lobby_start_punch(uint32_t peer_ip, uint16_t peer_port);
 typedef struct {
     char player_id[128];
     char display_name[64];
+    char region[8];
     char room_code[32];
     char connect_to[32];
 } AsyncPresenceData;
 
 static int SDLCALL async_presence_fn(void* data) {
     AsyncPresenceData* d = (AsyncPresenceData*)data;
-    LobbyServer_UpdatePresence(d->player_id, d->display_name, "", d->room_code, d->connect_to);
+    LobbyServer_UpdatePresence(d->player_id, d->display_name, d->region, d->room_code, d->connect_to);
     free(d);
     return 0;
 }
@@ -99,6 +103,9 @@ static void AsyncUpdatePresence(const char* pid, const char* disp, const char* r
     snprintf(d->player_id, sizeof(d->player_id), "%s", pid);
     if (disp)
         snprintf(d->display_name, sizeof(d->display_name), "%s", disp);
+    const char* region = Config_GetString(CFG_KEY_LOBBY_REGION);
+    if (region && region[0])
+        snprintf(d->region, sizeof(d->region), "%s", region);
     if (rc)
         snprintf(d->room_code, sizeof(d->room_code), "%s", rc);
     if (ct)
@@ -156,6 +163,53 @@ static int SDLCALL lobby_poll_thread_fn(void* data) {
     return 0;
 }
 
+// Ping probe: send a few UDP packets to the peer's public endpoint and measure RTT.
+// Uses the STUN socket so it piggybacks on the existing NAT pinhole.
+typedef struct {
+    int socket_fd;
+    uint32_t peer_ip;
+    uint16_t peer_port;
+} PingProbeData;
+
+static int SDLCALL ping_probe_thread_fn(void* data) {
+    PingProbeData* p = (PingProbeData*)data;
+    char peer_endpoint[32];
+    char ip_str[16];
+    Stun_FormatIP(p->peer_ip, ip_str, sizeof(ip_str));
+    snprintf(peer_endpoint, sizeof(peer_endpoint), "%s:%u", ip_str, ntohs(p->peer_port));
+
+    // Send 3 probes, take the best RTT
+    int best_ms = -1;
+    const char probe_magic[] = "3SX_PING";
+    for (int attempt = 0; attempt < 3; attempt++) {
+        uint64_t send_time = SDL_GetTicksNS();
+        Stun_SocketSendTo(p->socket_fd, peer_endpoint, probe_magic, sizeof(probe_magic));
+
+        // Wait up to 500ms for any response
+        char buf[64];
+        char from[48];
+        uint64_t deadline = send_time + 500000000ULL; // 500ms in nanoseconds
+        while (SDL_GetTicksNS() < deadline) {
+            int r = Stun_SocketRecvFrom(p->socket_fd, buf, sizeof(buf), from, sizeof(from));
+            if (r > 0) {
+                int rtt = (int)((SDL_GetTicksNS() - send_time) / 1000000ULL);
+                if (best_ms < 0 || rtt < best_ms)
+                    best_ms = rtt;
+                break;
+            }
+            SDL_Delay(5);
+        }
+        if (!SDL_GetAtomicInt(&lobby_ping_probe_active))
+            break; // Cancelled
+    }
+
+    if (best_ms >= 0)
+        lobby_pending_invite_ping = best_ms;
+    SDL_SetAtomicInt(&lobby_ping_probe_active, 0);
+    free(p);
+    return 0;
+}
+
 // Server-polling helper — runs every frame while in lobby, independent of ImGui.
 // Polls the lobby server for player list AND checks for incoming connect_to invites.
 static void lobby_poll_server(void) {
@@ -200,6 +254,9 @@ static void lobby_poll_server(void) {
     if (cur_state != LOBBY_ASYNC_READY) {
         lobby_has_pending_invite = false;
         lobby_pending_invite_name[0] = '\0';
+        lobby_pending_invite_region[0] = '\0';
+        lobby_pending_invite_ping = -1;
+        SDL_SetAtomicInt(&lobby_ping_probe_active, 0);
         return;
     }
     bool found_invite = false;
@@ -213,6 +270,10 @@ static void lobby_poll_server(void) {
             if (!Stun_DecodeEndpoint(lobby_server_players[i].room_code, &peer_ip, &peer_port))
                 break;
 
+            // Check if this is a new invite (different player)
+            bool is_new_invite = !lobby_has_pending_invite ||
+                                 strcmp(lobby_pending_invite_name, lobby_server_players[i].display_name) != 0;
+
             // Always update pending invite state for native lobby indication
             found_invite = true;
             lobby_has_pending_invite = true;
@@ -224,6 +285,25 @@ static void lobby_poll_server(void) {
             lobby_pending_invite_port = peer_port;
             snprintf(
                 lobby_pending_invite_room, sizeof(lobby_pending_invite_room), "%s", lobby_server_players[i].room_code);
+            snprintf(
+                lobby_pending_invite_region, sizeof(lobby_pending_invite_region), "%s", lobby_server_players[i].region);
+
+            // Launch ping probe for new invites
+            if (is_new_invite && stun_result.socket_fd >= 0 && !SDL_GetAtomicInt(&lobby_ping_probe_active)) {
+                lobby_pending_invite_ping = -1;
+                SDL_SetAtomicInt(&lobby_ping_probe_active, 1);
+                PingProbeData* ppd = (PingProbeData*)malloc(sizeof(PingProbeData));
+                ppd->socket_fd = stun_result.socket_fd;
+                ppd->peer_ip = peer_ip;
+                ppd->peer_port = peer_port;
+                SDL_Thread* pt = SDL_CreateThread(ping_probe_thread_fn, "PingProbe", ppd);
+                if (pt)
+                    SDL_DetachThread(pt);
+                else {
+                    SDL_SetAtomicInt(&lobby_ping_probe_active, 0);
+                    free(ppd);
+                }
+            }
 
             if (lobby_auto) {
                 snprintf(lobby_status_msg,
@@ -251,6 +331,9 @@ static void lobby_poll_server(void) {
     if (!found_invite) {
         lobby_has_pending_invite = false;
         lobby_pending_invite_name[0] = '\0';
+        lobby_pending_invite_region[0] = '\0';
+        lobby_pending_invite_ping = -1;
+        SDL_SetAtomicInt(&lobby_ping_probe_active, 0);
     }
 }
 
@@ -342,6 +425,9 @@ static void lobby_reset(void) {
     // Clear pending invite state
     lobby_has_pending_invite = false;
     lobby_pending_invite_name[0] = '\0';
+    lobby_pending_invite_region[0] = '\0';
+    lobby_pending_invite_ping = -1;
+    SDL_SetAtomicInt(&lobby_ping_probe_active, 0);
     lobby_punch_peer_name[0] = '\0';
 }
 
@@ -1175,10 +1261,17 @@ bool SDLNetplayUI_HasPendingInvite() {
 const char* SDLNetplayUI_GetPendingInviteName() {
     return lobby_pending_invite_name;
 }
+const char* SDLNetplayUI_GetPendingInviteRegion() {
+    return lobby_pending_invite_region;
+}
+int SDLNetplayUI_GetPendingInvitePing() {
+    return lobby_pending_invite_ping;
+}
 
 void SDLNetplayUI_AcceptPendingInvite() {
     if (!lobby_has_pending_invite)
         return;
+    SDL_SetAtomicInt(&lobby_ping_probe_active, 0); // Cancel any running probe
     snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Connecting to %s...", lobby_pending_invite_name);
     snprintf(lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", lobby_pending_invite_name);
     const char* d2 = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
@@ -1188,6 +1281,17 @@ void SDLNetplayUI_AcceptPendingInvite() {
     lobby_has_pending_invite = false;
     lobby_we_are_initiator = false; // They invited us, we accepted
     lobby_start_punch(lobby_pending_invite_ip, lobby_pending_invite_port);
+}
+
+void SDLNetplayUI_DeclinePendingInvite() {
+    if (!lobby_has_pending_invite)
+        return;
+    SDL_SetAtomicInt(&lobby_ping_probe_active, 0);
+    lobby_has_pending_invite = false;
+    lobby_pending_invite_name[0] = '\0';
+    lobby_pending_invite_region[0] = '\0';
+    lobby_pending_invite_ping = -1;
+    snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Declined invite.");
 }
 
 } // extern "C"

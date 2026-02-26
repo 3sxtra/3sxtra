@@ -218,6 +218,7 @@ else
                 ${CXX:+-DCMAKE_CXX_COMPILER=$CXX} \
                 -DCMAKE_INSTALL_PREFIX="$SDL_IMAGE_BUILD" \
                 -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
+                -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
                 -DBUILD_SHARED_LIBS=ON \
                 $CMAKE_EXTRA_ARGS
             ;;
@@ -227,6 +228,7 @@ else
                 -DCMAKE_C_COMPILER=gcc \
                 -DCMAKE_INSTALL_PREFIX="$SDL_IMAGE_BUILD" \
                 -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
+                -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
                 -DBUILD_SHARED_LIBS=ON
             ;;
     esac

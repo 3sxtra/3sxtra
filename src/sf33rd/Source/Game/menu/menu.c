@@ -758,19 +758,103 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
                 if (!showing_status && SDLNetplayUI_IsDiscovering()) {
                     SSPutStr_Bigger(40 + sl, 215, 5, (s8*)"DISCOVERING...", 1.0f, 9, 1.0f);
-                    showing_status = true;
-                }
-
-                /* Internet pending invite indicator */
-                if (!showing_status && SDLNetplayUI_HasPendingInvite()) {
-                    char inv_buf[64];
-                    SDL_snprintf(inv_buf, sizeof(inv_buf), "INVITE FROM %s!", SDLNetplayUI_GetPendingInviteName());
-                    SSPutStr_Bigger(40 + sl, 215, 5, (s8*)inv_buf, 1.0f, 9, 1.0f);
                 }
             }
         }
 
-        /* === Handle confirm/cancel === */
+        /* === Incoming Challenge Popup === */
+        if (SDLNetplayUI_HasPendingInvite()) {
+            /* Dark semi-transparent overlay covering the whole screen */
+            {
+                PAL_CURSOR_P op[4];
+                PAL_CURSOR_COL ocol[4];
+                op[0].x = -2;  op[0].y = -2;
+                op[1].x = 386; op[1].y = -2;
+                op[2].x = -2;  op[2].y = 226;
+                op[3].x = 386; op[3].y = 226;
+                ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = 0xA0000000;
+                Renderer_Queue2DPrimitive((f32*)op, PrioBase[72], (uintptr_t)ocol[0].color, 0);
+            }
+            /* Centered popup box */
+            {
+                PAL_CURSOR_P bp[4];
+                PAL_CURSOR_COL bcol[4];
+                bp[0].x = 60;  bp[0].y = 60;
+                bp[1].x = 324; bp[1].y = 60;
+                bp[2].x = 60;  bp[2].y = 168;
+                bp[3].x = 324; bp[3].y = 168;
+                bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = 0xE0181818;
+                Renderer_Queue2DPrimitive((f32*)bp, PrioBase[73], (uintptr_t)bcol[0].color, 0);
+
+                /* Bright border */
+                PAL_CURSOR_P bb[4];
+                PAL_CURSOR_COL bbcol[4];
+                /* Top */
+                bb[0].x = 60;  bb[0].y = 59;
+                bb[1].x = 324; bb[1].y = 59;
+                bb[2].x = 60;  bb[2].y = 60;
+                bb[3].x = 324; bb[3].y = 60;
+                bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = 0xFFCC0000;
+                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[74], (uintptr_t)bbcol[0].color, 0);
+                /* Bottom */
+                bb[0].y = 168; bb[1].y = 168;
+                bb[2].y = 169; bb[3].y = 169;
+                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[74], (uintptr_t)bbcol[0].color, 0);
+            }
+
+            /* Title */
+            SSPutStr_Bigger(105, 68, 5, (s8*)"INCOMING CHALLENGE!", 1.0f, 9, 1.0f);
+
+            /* Challenger name + region */
+            {
+                const char* name = SDLNetplayUI_GetPendingInviteName();
+                const char* region = SDLNetplayUI_GetPendingInviteRegion();
+                char name_buf[64];
+                if (region[0])
+                    SDL_snprintf(name_buf, sizeof(name_buf), "> %s  [%s]", name, region);
+                else
+                    SDL_snprintf(name_buf, sizeof(name_buf), "> %s", name);
+                SSPutStr_Bigger(80, 90, 5, (s8*)name_buf, 1.0f, 0, 1.0f);
+            }
+
+            /* Ping (color-coded: green <80ms, yellow 80-150ms, red >150ms) */
+            {
+                int ping = SDLNetplayUI_GetPendingInvitePing();
+                char ping_buf[32];
+                u8 ping_color;
+                if (ping < 0) {
+                    SDL_snprintf(ping_buf, sizeof(ping_buf), "PING: ...");
+                    ping_color = 1; /* grey */
+                } else {
+                    SDL_snprintf(ping_buf, sizeof(ping_buf), "PING: %dms", ping);
+                    if (ping < 80)
+                        ping_color = 11; /* green */
+                    else if (ping <= 150)
+                        ping_color = 9;  /* yellow */
+                    else
+                        ping_color = 12; /* red */
+                }
+                SSPutStr_Bigger(80, 110, 5, (s8*)ping_buf, 1.0f, ping_color, 1.0f);
+            }
+
+            /* Accept/Decline prompt */
+            SSPutStr_Bigger(80, 140, 5, (s8*)"A=ACCEPT   B=DECLINE", 1.0f, 1, 1.0f);
+
+            /* Override input: accept on Confirm, decline on Cancel */
+            switch (IO_Result) {
+            case 0x100: /* Confirm = Accept */
+                SDLNetplayUI_AcceptPendingInvite();
+                SE_selected();
+                break;
+            case 0x200: /* Cancel = Decline */
+                SDLNetplayUI_DeclinePendingInvite();
+                SE_selected();
+                break;
+            default:
+                break;
+            }
+        } else {
+        /* === Handle confirm/cancel (normal lobby input) === */
         switch (IO_Result) {
         case 0x100: /* Confirm */
             switch (Menu_Cursor_Y[0]) {
@@ -810,11 +894,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 break;
             }
             case 4: /* NET CONNECT */
-                if (SDLNetplayUI_HasPendingInvite()) {
-                    /* Accept pending invite */
-                    SDLNetplayUI_AcceptPendingInvite();
-                    SE_selected();
-                } else if (SDLNetplayUI_IsSearching()) {
+                if (SDLNetplayUI_IsSearching()) {
                     int p_count = SDLNetplayUI_GetOnlinePlayerCount();
                     if (p_count > 0 && s_net_peer_idx >= 0 && s_net_peer_idx < p_count) {
                         SDLNetplayUI_ConnectToPlayer(s_net_peer_idx);
@@ -856,6 +936,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         default:
             break;
         }
+        } /* end else (no pending invite popup) */
         break;
     }
     }

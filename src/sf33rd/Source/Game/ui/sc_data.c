@@ -123,13 +123,15 @@ const UV_POS_TBL sc_ram_vram_tbl[8][2] = { { sa1p_pos, sa_uv_pos }, { sa2p_pos, 
 const s16 fade_data_tbl[10][3] = { { 0, 16, 22 },  { 1, 16, 22 }, { 2, 8, 22 },  { 3, 8, 22 }, { 0, 4, 22 },
                                    { 1, 255, 22 }, { 0, 2, 22 },  { 1, 16, 18 }, { 0, 2, 22 }, { 1, 8, 18 } };
 
-const u32 bigger_col_tbl[11][4] = {
+const u32 bigger_col_tbl[13][4] = {
     { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF }, { 0xFF888888, 0xFF888888, 0xFF888888, 0xFF888888 },
     { 0xFFFFFFFF, 0xFFFFFFFF, 0xFF6666FF, 0xFF6666FF }, { 0x86FFFFFF, 0x86FFFFFF, 0x86FFFFFF, 0x86FFFFFF },
     { 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000 }, { 0xA6FFFFFF, 0xA6FFFFFF, 0xA6FFFFFF, 0xA6FFFFFF },
     { 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000 }, { 0xB8FFFFFF, 0xB8FFFFFF, 0xB8FFFFFF, 0xB8FFFFFF },
     { 0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000 }, { 0xB8FFFF00, 0xB8FFFF00, 0xB8FFFF00, 0xB8FFFF00 },
-    { 0xFFCCAA00, 0xFFCCAA00, 0xFFCCAA00, 0xFFCCAA00 }
+    { 0xFFCCAA00, 0xFFCCAA00, 0xFFCCAA00, 0xFFCCAA00 },
+    { 0xFF44FF44, 0xFF44FF44, 0xFF44FF44, 0xFF44FF44 }, /* 11 = green (good ping) */
+    { 0xFFFF4444, 0xFFFF4444, 0xFFFF4444, 0xFFFF4444 }, /* 12 = red   (bad ping)  */
 };
 
 const u16 Training_combo_pos_tbl[2] = { 8, 208 };

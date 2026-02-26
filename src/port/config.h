@@ -36,6 +36,7 @@ extern "C" {
 #define CFG_KEY_LOBBY_DISPLAY_NAME "lobby-display-name"
 #define CFG_KEY_LOBBY_AUTO_CONNECT "lobby-auto-connect"
 #define CFG_KEY_LOBBY_AUTO_SEARCH "lobby-auto-search"
+#define CFG_KEY_LOBBY_REGION "lobby-region"
 #define CFG_KEY_VSYNC "vsync"
 #define CFG_KEY_DEBUG_HUD "debug-hud"
 

@@ -220,7 +220,7 @@ target_compile_definitions(3sx PRIVATE
     $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:NETPLAY_ENABLED>
     $<$<CONFIG:Release>:RELEASE>
     TARGET_SDL3
-    _POSIX_C_SOURCE
+    $<$<NOT:$<PLATFORM_ID:Darwin>>:_POSIX_C_SOURCE=200809L>
     $<$<BOOL:${PLATFORM_RPI4}>:PLATFORM_RPI4>
     $<$<BOOL:${ENABLE_TRACY}>:TRACY_ENABLE>
 )

@@ -94,7 +94,6 @@ jobs:
 
           - name: Pre-build dependencies
             env:
-                THIRD_PARTY: ${{ github.workspace }}/third_party_arm64
                 CARGO_BUILD_TARGET: aarch64-unknown-linux-gnu
                 CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
                 CC: aarch64-linux-gnu-gcc
@@ -103,6 +102,7 @@ jobs:
                 PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
             run: |
                 cd $GITHUB_WORKSPACE
+                export THIRD_PARTY=$GITHUB_WORKSPACE/third_party_arm64
                 export THIRD_PARTY_DIR=$THIRD_PARTY
                 chmod +x ./build-deps.sh
                 ./build-deps.sh
@@ -114,7 +114,6 @@ jobs:
 
           - name: Build for Linux ARM64
             env:
-                THIRD_PARTY: ${{ github.workspace }}/third_party_arm64
                 PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
                 PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
             run: |
@@ -123,7 +122,7 @@ jobs:
                     -DCMAKE_BUILD_TYPE=Debug \
                     -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-linux-gnu.cmake \
                     -DENABLE_TESTS=OFF \
-                    -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_arm64 \
+                    -DTHIRD_PARTY_DIR=$GITHUB_WORKSPACE/third_party_arm64 \
                     -G Ninja
                 cmake --build build-linux-arm64 --parallel 2>&1 | tee build.log
             shell: bash

@@ -94,7 +94,6 @@ jobs:
 
           - name: Pre-build dependencies
             env:
-                THIRD_PARTY: ${{ github.workspace }}/third_party_rpi4
                 CARGO_BUILD_TARGET: aarch64-unknown-linux-gnu
                 CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
                 CC: aarch64-linux-gnu-gcc
@@ -103,6 +102,7 @@ jobs:
                 PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
             run: |
                 cd $GITHUB_WORKSPACE
+                export THIRD_PARTY=$GITHUB_WORKSPACE/third_party_rpi4
                 export THIRD_PARTY_DIR=$THIRD_PARTY
                 chmod +x ./build-deps.sh
                 ./build-deps.sh
@@ -113,7 +113,6 @@ jobs:
 
           - name: Build 3SX for RPi4
             env:
-                THIRD_PARTY: ${{ github.workspace }}/third_party_rpi4
                 PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
                 PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
             run: |
@@ -123,7 +122,7 @@ jobs:
                     -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-linux-gnu.cmake \
                     -DPLATFORM_RPI4=ON \
                     -DENABLE_TESTS=OFF \
-                    -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_rpi4 \
+                    -DTHIRD_PARTY_DIR=$GITHUB_WORKSPACE/third_party_rpi4 \
                     -G Ninja
                 cmake --build build_rpi4 --parallel
             shell: bash

@@ -39,6 +39,7 @@ modules:
         RUSTUP_HOME: /usr/lib/sdk/rust-stable
     config-opts:
       - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - -DENABLE_TESTS=OFF
     sources:
       - type: dir
         path: ..
