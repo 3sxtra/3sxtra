@@ -18,6 +18,11 @@
 #include <miniupnpc/upnpcommands.h>
 #include <miniupnpc/upnperrors.h>
 
+/* miniupnpc API v18+ (v2.2.8) added wan_addr params to UPNP_GetValidIGD */
+#ifndef MINIUPNPC_API_VERSION
+#define MINIUPNPC_API_VERSION 0
+#endif
+
 #define UPNP_DISCOVER_TIMEOUT_MS 2000
 #define UPNP_LEASE_DURATION "3600" // 1 hour lease
 
@@ -39,7 +44,11 @@ bool Upnp_AddMapping(UpnpMapping* out, uint16_t internal_port, uint16_t external
     char lan_addr[64] = { 0 };
     char wan_addr[64] = { 0 };
 
+#if MINIUPNPC_API_VERSION >= 18
     int status = UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr), wan_addr, sizeof(wan_addr));
+#else
+    int status = UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr));
+#endif
 
     if (status != 1) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "UPnP: No valid IGD found (status %d)", status);
@@ -108,7 +117,11 @@ void Upnp_RemoveMapping(UpnpMapping* mapping) {
     char lan_addr[64] = { 0 };
     char wan_addr[64] = { 0 };
 
+#if MINIUPNPC_API_VERSION >= 18
     if (UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr), wan_addr, sizeof(wan_addr)) == 1) {
+#else
+    if (UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr)) == 1) {
+#endif
         char ext_port_str[8];
         snprintf(ext_port_str, sizeof(ext_port_str), "%u", mapping->external_port);
 
@@ -138,7 +151,11 @@ bool Upnp_GetExternalIP(char* out_ip, int ip_buf_size) {
     char wan_addr[64] = { 0 };
 
     bool success = false;
+#if MINIUPNPC_API_VERSION >= 18
     if (UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr), wan_addr, sizeof(wan_addr)) == 1) {
+#else
+    if (UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr)) == 1) {
+#endif
         char ext_ip[64] = { 0 };
         if (UPNP_GetExternalIPAddress(urls.controlURL, data.first.servicetype, ext_ip) == 0) {
             SDL_strlcpy(out_ip, ext_ip, ip_buf_size);
