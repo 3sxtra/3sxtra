@@ -663,7 +663,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             s16 lan_peer_y = 55;
             s16 net_peer_y = 108;
 
-            /* LAN Selected Peer (right side, top) */
+            /* LAN Selected Peer (right side, top) — styled like Internet */
             NetplayDiscoveredPeer d_peers[16];
             int d_count = Discovery_GetPeers(d_peers, 16);
             if (d_count > 0) {
@@ -672,11 +672,15 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 if (s_lobby_peer_idx < 0)
                     s_lobby_peer_idx = 0;
                 char buf[64];
-                SDL_snprintf(buf, sizeof(buf), "LAN PEER: %s", d_peers[s_lobby_peer_idx].ip);
+                SDL_snprintf(buf, sizeof(buf), "LAN: %d FOUND", d_count);
                 SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)buf, 1.0f, 9, 1.0f);
+
+                // Show selected peer name
+                SDL_snprintf(buf, sizeof(buf), "> %s", d_peers[s_lobby_peer_idx].name);
+                SSPutStr_Bigger(peer_x + sl, (u16)(lan_peer_y + 15), 5, (s8*)buf, 1.0f, 0, 1.0f);
             } else {
                 s_lobby_peer_idx = 0;
-                SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)"LAN PEER: NONE", 1.0f, 1, 1.0f);
+                SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)"LAN: NONE", 1.0f, 1, 1.0f);
             }
 
             /* Internet Online Players (right side, below LAN peer) */
