@@ -30,6 +30,7 @@ jobs:
           - name: Install dependencies
             run: |
                 brew install miniupnpc
+                python3 -m pip install --break-system-packages jinja2
                 sh build-deps.sh
 
           - name: Build for macOS

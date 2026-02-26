@@ -42,9 +42,9 @@ bool Upnp_AddMapping(UpnpMapping* out, uint16_t internal_port, uint16_t external
     struct UPNPUrls urls;
     struct IGDdatas data;
     char lan_addr[64] = { 0 };
-    char wan_addr[64] = { 0 };
 
 #if MINIUPNPC_API_VERSION >= 18
+    char wan_addr[64] = { 0 };
     int status = UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr), wan_addr, sizeof(wan_addr));
 #else
     int status = UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr));
@@ -115,9 +115,9 @@ void Upnp_RemoveMapping(UpnpMapping* mapping) {
     struct UPNPUrls urls;
     struct IGDdatas data;
     char lan_addr[64] = { 0 };
-    char wan_addr[64] = { 0 };
 
 #if MINIUPNPC_API_VERSION >= 18
+    char wan_addr[64] = { 0 };
     if (UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr), wan_addr, sizeof(wan_addr)) == 1) {
 #else
     if (UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr)) == 1) {
@@ -148,10 +148,10 @@ bool Upnp_GetExternalIP(char* out_ip, int ip_buf_size) {
     struct UPNPUrls urls;
     struct IGDdatas data;
     char lan_addr[64] = { 0 };
-    char wan_addr[64] = { 0 };
 
     bool success = false;
 #if MINIUPNPC_API_VERSION >= 18
+    char wan_addr[64] = { 0 };
     if (UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr), wan_addr, sizeof(wan_addr)) == 1) {
 #else
     if (UPNP_GetValidIGD(devlist, &urls, &data, lan_addr, sizeof(lan_addr)) == 1) {
