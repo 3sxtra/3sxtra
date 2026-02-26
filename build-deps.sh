@@ -58,6 +58,7 @@ else
                 -DCMAKE_INSTALL_PREFIX="$SDL_BUILD" \
                 -DBUILD_SHARED_LIBS=ON \
                 -DSDL_STATIC=OFF \
+                -DSDL_TESTS=OFF \
                 $CMAKE_EXTRA_ARGS
             ;;
         MINGW*|MSYS*|CYGWIN*)
@@ -67,6 +68,7 @@ else
                 -DCMAKE_C_COMPILER=gcc \
                 -DCMAKE_INSTALL_PREFIX="$SDL_BUILD" \
                 -DBUILD_SHARED_LIBS=ON \
+                -DSDL_TESTS=OFF \
                 -DSDL_OPENGLES=OFF
             ;;
     esac

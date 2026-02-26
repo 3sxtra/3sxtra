@@ -252,11 +252,7 @@ static void lobby_poll_server(void) {
     // Skip if we're already mid-connection (punching, UPnP, etc.)
     int cur_state = SDL_GetAtomicInt(&lobby_async_state);
     if (cur_state != LOBBY_ASYNC_READY) {
-        lobby_has_pending_invite = false;
-        lobby_pending_invite_name[0] = '\0';
-        lobby_pending_invite_region[0] = '\0';
-        lobby_pending_invite_ping = -1;
-        SDL_SetAtomicInt(&lobby_ping_probe_active, 0);
+        // Don't clear pending invite here — it persists until user accepts/declines
         return;
     }
     bool found_invite = false;
@@ -329,11 +325,8 @@ static void lobby_poll_server(void) {
         }
     }
     if (!found_invite) {
-        lobby_has_pending_invite = false;
-        lobby_pending_invite_name[0] = '\0';
-        lobby_pending_invite_region[0] = '\0';
-        lobby_pending_invite_ping = -1;
-        SDL_SetAtomicInt(&lobby_ping_probe_active, 0);
+        // Don't clear pending invite here — it persists until user accepts/declines
+        // This prevents the popup from flickering between poll cycles
     }
 }
 

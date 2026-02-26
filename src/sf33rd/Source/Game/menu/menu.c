@@ -773,7 +773,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 op[2].x = -2;  op[2].y = 226;
                 op[3].x = 386; op[3].y = 226;
                 ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = 0xA0000000;
-                Renderer_Queue2DPrimitive((f32*)op, PrioBase[72], (uintptr_t)ocol[0].color, 0);
+                Renderer_Queue2DPrimitive((f32*)op, PrioBase[0], (uintptr_t)ocol[0].color, 0);
             }
             /* Centered popup box */
             {
@@ -784,26 +784,25 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 bp[2].x = 60;  bp[2].y = 168;
                 bp[3].x = 324; bp[3].y = 168;
                 bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = 0xE0181818;
-                Renderer_Queue2DPrimitive((f32*)bp, PrioBase[73], (uintptr_t)bcol[0].color, 0);
+                Renderer_Queue2DPrimitive((f32*)bp, PrioBase[0], (uintptr_t)bcol[0].color, 0);
 
-                /* Bright border */
+                /* Red border - top */
                 PAL_CURSOR_P bb[4];
                 PAL_CURSOR_COL bbcol[4];
-                /* Top */
                 bb[0].x = 60;  bb[0].y = 59;
                 bb[1].x = 324; bb[1].y = 59;
-                bb[2].x = 60;  bb[2].y = 60;
-                bb[3].x = 324; bb[3].y = 60;
+                bb[2].x = 60;  bb[2].y = 61;
+                bb[3].x = 324; bb[3].y = 61;
                 bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = 0xFFCC0000;
-                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[74], (uintptr_t)bbcol[0].color, 0);
-                /* Bottom */
-                bb[0].y = 168; bb[1].y = 168;
+                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[0], (uintptr_t)bbcol[0].color, 0);
+                /* Red border - bottom */
+                bb[0].y = 167; bb[1].y = 167;
                 bb[2].y = 169; bb[3].y = 169;
-                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[74], (uintptr_t)bbcol[0].color, 0);
+                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[0], (uintptr_t)bbcol[0].color, 0);
             }
 
             /* Title */
-            SSPutStr_Bigger(105, 68, 5, (s8*)"INCOMING CHALLENGE!", 1.0f, 9, 1.0f);
+            SSPutStr2(16, 9, 9, "INCOMING CHALLENGE!");
 
             /* Challenger name + region */
             {
@@ -814,7 +813,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     SDL_snprintf(name_buf, sizeof(name_buf), "> %s  [%s]", name, region);
                 else
                     SDL_snprintf(name_buf, sizeof(name_buf), "> %s", name);
-                SSPutStr_Bigger(80, 90, 5, (s8*)name_buf, 1.0f, 0, 1.0f);
+                SSPutStr2(14, 12, 0, (const s8*)name_buf);
             }
 
             /* Ping (color-coded: green <80ms, yellow 80-150ms, red >150ms) */
@@ -828,17 +827,20 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 } else {
                     SDL_snprintf(ping_buf, sizeof(ping_buf), "PING: %dms", ping);
                     if (ping < 80)
-                        ping_color = 11; /* green */
+                        ping_color = 4; /* blue-ish */
                     else if (ping <= 150)
                         ping_color = 9;  /* yellow */
                     else
-                        ping_color = 12; /* red */
+                        ping_color = 8;  /* red-ish */
                 }
-                SSPutStr_Bigger(80, 110, 5, (s8*)ping_buf, 1.0f, ping_color, 1.0f);
+                SSPutStr2(14, 14, ping_color, (const s8*)ping_buf);
             }
 
-            /* Accept/Decline prompt */
-            SSPutStr_Bigger(80, 140, 5, (s8*)"A=ACCEPT   B=DECLINE", 1.0f, 1, 1.0f);
+            /* Accept/Decline with game button images */
+            dispButtonImage2(0x74, 0x80, 0, 0x13, 0xF, 0, 4);  /* A button */
+            SSPutStr2(17, 16, 0, "ACCEPT");
+            dispButtonImage2(0xB2, 0x80, 0, 0x13, 0xF, 0, 5);  /* B button */
+            SSPutStr2(25, 16, 0, "DECLINE");
 
             /* Override input: accept on Confirm, decline on Cancel */
             switch (IO_Result) {

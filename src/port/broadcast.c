@@ -20,7 +20,7 @@ static BroadcastPort* s_backend = NULL;
 #elif defined(_WIN32)
 extern BroadcastPort g_broadcast_port_win32;
 static BroadcastPort* s_backend = &g_broadcast_port_win32;
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) && defined(HAVE_SYPHON)
 extern BroadcastPort g_broadcast_port_macos;
 static BroadcastPort* s_backend = &g_broadcast_port_macos;
 #elif defined(__linux__)
