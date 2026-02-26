@@ -551,8 +551,8 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
         }
 
-        /* Handle cursor movement (6 items: 0..5) */
-        {
+        /* Handle cursor movement (6 items: 0..5) — suppressed when popup is active */
+        if (!SDLNetplayUI_HasPendingInvite()) {
             s16 prev_cursor = Menu_Cursor_Y[0];
             if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 5, 0xFF) == 0) {
                 MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 5, 0xFF);
@@ -567,7 +567,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         }
 
         /* === Left/right toggle handling for toggle items === */
-        {
+        if (!SDLNetplayUI_HasPendingInvite()) {
             u16 click = (~plsw_01[0] & plsw_00[0]) | (~plsw_01[1] & plsw_00[1]);
 
             if (click & 12) { // SWK_LEFT is 4, SWK_RIGHT is 8
@@ -773,7 +773,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 op[2].x = -2;  op[2].y = 226;
                 op[3].x = 386; op[3].y = 226;
                 ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = 0xA0000000;
-                Renderer_Queue2DPrimitive((f32*)op, PrioBase[0], (uintptr_t)ocol[0].color, 0);
+                Renderer_Queue2DPrimitive((f32*)op, PrioBase[2], (uintptr_t)ocol[0].color, 0);
             }
             /* Centered popup box */
             {
@@ -784,7 +784,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 bp[2].x = 60;  bp[2].y = 168;
                 bp[3].x = 324; bp[3].y = 168;
                 bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = 0xE0181818;
-                Renderer_Queue2DPrimitive((f32*)bp, PrioBase[0], (uintptr_t)bcol[0].color, 0);
+                Renderer_Queue2DPrimitive((f32*)bp, PrioBase[2], (uintptr_t)bcol[0].color, 0);
 
                 /* Red border - top */
                 PAL_CURSOR_P bb[4];
@@ -794,11 +794,11 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 bb[2].x = 60;  bb[2].y = 61;
                 bb[3].x = 324; bb[3].y = 61;
                 bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = 0xFFCC0000;
-                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[0], (uintptr_t)bbcol[0].color, 0);
+                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[2], (uintptr_t)bbcol[0].color, 0);
                 /* Red border - bottom */
                 bb[0].y = 167; bb[1].y = 167;
                 bb[2].y = 169; bb[3].y = 169;
-                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[0], (uintptr_t)bbcol[0].color, 0);
+                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[2], (uintptr_t)bbcol[0].color, 0);
             }
 
             /* Title */
@@ -825,7 +825,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     SDL_snprintf(ping_buf, sizeof(ping_buf), "PING: ...");
                     ping_color = 1; /* grey */
                 } else {
-                    SDL_snprintf(ping_buf, sizeof(ping_buf), "PING: %dms", ping);
+                    SDL_snprintf(ping_buf, sizeof(ping_buf), "PING: ~%dms", ping);
                     if (ping < 80)
                         ping_color = 4; /* blue-ish */
                     else if (ping <= 150)

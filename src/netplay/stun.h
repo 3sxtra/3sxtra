@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <SDL3/SDL_atomic.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +41,9 @@ void Stun_FormatIP(uint32_t ip_net, char* buf, int buf_size);
 /// using the STUN socket. Both peers must call this simultaneously.
 /// Returns true if a response was received from the peer (hole is open).
 /// punch_duration_ms: how long to keep punching (e.g. 5000ms).
-bool Stun_HolePunch(StunResult* local, uint32_t peer_ip, uint16_t peer_port, int punch_duration_ms);
+/// cancel_flag: optional atomic flag; if non-NULL and set to non-zero, punch exits early.
+bool Stun_HolePunch(StunResult* local, uint32_t peer_ip, uint16_t peer_port, int punch_duration_ms,
+                    SDL_AtomicInt* cancel_flag);
 
 /// Set the STUN socket to non-blocking mode (for use after hole punch succeeds)
 void Stun_SetNonBlocking(StunResult* result);

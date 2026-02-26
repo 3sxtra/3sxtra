@@ -501,10 +501,25 @@ static bool json_get_string(const char* json, const char* key, char* out, size_t
     return true;
 }
 
+/* Extract an integer value for a key like "key":123 */
+static int json_get_int(const char* json, const char* key, int default_val) {
+    char pattern[128];
+    snprintf(pattern, sizeof(pattern), "\"%s\":", key);
+    const char* p = strstr(json, pattern);
+    if (!p)
+        return default_val;
+    p += strlen(pattern);
+    /* Skip whitespace */
+    while (*p == ' ' || *p == '\t') p++;
+    if (*p == '-' || (*p >= '0' && *p <= '9'))
+        return atoi(p);
+    return default_val;
+}
+
 /* ======== Public API ======== */
 
 bool LobbyServer_UpdatePresence(const char* player_id, const char* display_name, const char* region,
-                                const char* room_code, const char* connect_to) {
+                                const char* room_code, const char* connect_to, int rtt_ms) {
     char esc_pid[128], esc_name[64], esc_region[16], esc_code[32], esc_ct[32];
     json_escape_string(player_id, esc_pid, sizeof(esc_pid));
     json_escape_string(display_name, esc_name, sizeof(esc_name));
@@ -516,12 +531,13 @@ bool LobbyServer_UpdatePresence(const char* player_id, const char* display_name,
     snprintf(
         body,
         sizeof(body),
-        "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"region\":\"%s\",\"room_code\":\"%s\",\"connect_to\":\"%s\"}",
+        "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"region\":\"%s\",\"room_code\":\"%s\",\"connect_to\":\"%s\",\"rtt_ms\":%d}",
         esc_pid,
         esc_name,
         esc_region,
         esc_code,
-        esc_ct);
+        esc_ct,
+        rtt_ms);
 
     char response[HTTP_BUF_SIZE];
     return http_request("POST", "/presence", body, response, sizeof(response));
@@ -592,6 +608,7 @@ int LobbyServer_GetSearching(LobbyPlayer* out_players, int max_players, const ch
         json_get_string(obj, "region", p->region, sizeof(p->region));
         json_get_string(obj, "room_code", p->room_code, sizeof(p->room_code));
         json_get_string(obj, "connect_to", p->connect_to, sizeof(p->connect_to));
+        p->rtt_ms = json_get_int(obj, "rtt_ms", -1);
 
         if (strlen(p->player_id) > 0)
             count++;

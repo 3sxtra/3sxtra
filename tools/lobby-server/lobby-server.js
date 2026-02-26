@@ -34,18 +34,18 @@ if (!SECRET) {
 
 // ---- Data Store ----
 
-/** @type {Map<string, {display_name: string, region: string, room_code: string, connect_to: string, status: string, last_seen: number}>} */
+/** @type {Map<string, {display_name: string, region: string, room_code: string, connect_to: string, status: string, rtt_ms: number, last_seen: number}>} */
 const players = new Map();
 
-// Cleanup stale players every 30 seconds
+// Cleanup stale players every 5 seconds
 const cleanupTimer = setInterval(() => {
     const now = Date.now();
     for (const [id, p] of players) {
-        if (now - p.last_seen > 60_000) {
+        if (now - p.last_seen > 10_000) {
             players.delete(id);
         }
     }
-}, 30_000);
+}, 5_000);
 
 // ---- Auth ----
 
@@ -178,7 +178,7 @@ async function handleRequest(req, res) {
         const data = parseJsonBody(res, body);
         if (!data) return;
 
-        const { player_id, display_name, region, room_code, connect_to } = data;
+        const { player_id, display_name, region, room_code, connect_to, rtt_ms } = data;
         if (!player_id || !display_name) {
             return json(res, 400, { error: 'Missing player_id or display_name' });
         }
@@ -190,6 +190,7 @@ async function handleRequest(req, res) {
             room_code: String(room_code || '').slice(0, 15),
             connect_to: String(connect_to || '').slice(0, 15),
             status: existing ? existing.status : 'idle',
+            rtt_ms: typeof rtt_ms === 'number' ? Math.max(0, Math.min(9999, rtt_ms)) : (existing ? existing.rtt_ms : -1),
             last_seen: Date.now(),
         });
 
@@ -237,6 +238,7 @@ async function handleRequest(req, res) {
                 region: p.region,
                 room_code: p.room_code,
                 connect_to: p.connect_to || '',
+                rtt_ms: p.rtt_ms || -1,
             });
         }
 

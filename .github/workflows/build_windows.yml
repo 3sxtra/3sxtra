@@ -43,6 +43,15 @@ jobs:
                 key: windows-x64-deps-${{ hashFiles('build-deps.sh') }}
                 restore-keys: windows-x64-deps-
 
+          - name: Cache Rust/Cargo
+            uses: actions/cache@v4
+            with:
+                path: |
+                    ~/.cargo/registry
+                    ~/.cargo/git
+                key: windows-cargo-${{ hashFiles('build-deps.sh') }}
+                restore-keys: windows-cargo-
+
           - name: Build dependencies
             run: sh build-deps.sh
 

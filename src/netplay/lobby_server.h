@@ -13,6 +13,7 @@ typedef struct {
     char region[8];
     char room_code[16];
     char connect_to[16];
+    int rtt_ms;           // Server RTT in ms (-1 = unknown)
 } LobbyPlayer;
 
 /// Initialize lobby server client — reads URL and key from config.ini.
@@ -24,8 +25,9 @@ bool LobbyServer_IsConfigured(void);
 
 /// Register or update player presence on the lobby server.
 /// connect_to may be NULL or "" (no connection intent) or a target room code.
+/// rtt_ms: our measured RTT to the lobby server in ms (-1 if unknown).
 bool LobbyServer_UpdatePresence(const char* player_id, const char* display_name, const char* region,
-                                const char* room_code, const char* connect_to);
+                                const char* room_code, const char* connect_to, int rtt_ms);
 
 /// Mark player as searching for a match.
 bool LobbyServer_StartSearching(const char* player_id);

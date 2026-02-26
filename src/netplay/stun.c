@@ -344,7 +344,8 @@ void Stun_SetNonBlocking(StunResult* result) {
 #endif
 }
 
-bool Stun_HolePunch(StunResult* local, uint32_t peer_ip, uint16_t peer_port, int punch_duration_ms) {
+bool Stun_HolePunch(StunResult* local, uint32_t peer_ip, uint16_t peer_port, int punch_duration_ms,
+                    SDL_AtomicInt* cancel_flag) {
     if (!local || local->socket_fd < 0)
         return false;
 
@@ -381,6 +382,11 @@ bool Stun_HolePunch(StunResult* local, uint32_t peer_ip, uint16_t peer_port, int
     bool received_response = false;
 
     while ((int)(SDL_GetTicks() - start) < punch_duration_ms) {
+        // Check for cancellation
+        if (cancel_flag && SDL_GetAtomicInt(cancel_flag)) {
+            SDL_Log("STUN: Hole punch cancelled by caller");
+            return false;
+        }
         uint32_t now = SDL_GetTicks();
 
         // Send punch packet periodically

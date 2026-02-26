@@ -5,6 +5,9 @@ on:
     branches:
       - "main"
 
+permissions:
+  contents: write
+
 jobs:
   build-linux:
     name: Build (Linux x86_64)
@@ -30,6 +33,15 @@ jobs:
           path: third_party_linux
           key: linux-x64-deps-${{ hashFiles('build-deps.sh') }}
 
+      - name: Cache Rust/Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: linux-x64-cargo-${{ hashFiles('build-deps.sh') }}
+          restore-keys: linux-x64-cargo-
+
       - name: Install build dependencies
         run: |
           apt-get install -y $(cat tools/requirements-ubuntu-sdl3.txt)
@@ -42,41 +54,29 @@ jobs:
           chmod +x build-deps.sh
           ./build-deps.sh
 
-      - name: Configure and build with CMake
+      - name: Configure and build
         run: |
           set -o pipefail
-          CC=clang CXX=clang++ cmake -B build-linux -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=OFF -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_linux
+          CC=clang CXX=clang++ cmake -B build-linux \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_TESTS=OFF \
+            -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_linux
           cmake --build build-linux --parallel
 
-      - name: Package artifact
+      - name: Package with CPack
         run: |
-          mkdir -p artifacts pkg/bin pkg/lib
-          cp build-linux/3sx pkg/bin/
-          cp third_party_linux/sdl3/build/lib/*.so* pkg/lib/
-          cp third_party_linux/sdl3_image/build/lib/*.so* pkg/lib/
-          cp dist/3sx.sh pkg/
-          chmod +x pkg/3sx.sh pkg/bin/3sx
-          # Runtime assets: fonts, bezels, controller images, stage mods
-          cp -r assets pkg/bin/
-          # GPU shaders (SPIR-V + OpenGL sources)
-          cp -r build-linux/shaders pkg/bin/
-          # Libretro slang-shader presets
-          cp -r third_party_linux/slang-shaders pkg/bin/shaders/libretro
-          cd pkg && zip -r ../artifacts/3sx-linux-x86_64.zip . && cd ..
+          SHORT_SHA="${GITHUB_SHA::7}"
+          cd build-linux
+          cpack -G TGZ --config CPackConfig.cmake
+          cd ..
+          ARCHIVE="$(find build-linux -maxdepth 1 -name '*.tar.gz' | head -1)"
+          mv "$ARCHIVE" "3SX-${SHORT_SHA}-linux-x86_64.tar.gz"
 
-      - name: Save artifact (local act)
-        if: ${{ env.ACT }}
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/build_output
-          cp artifacts/3sx-linux-x86_64.zip $GITHUB_WORKSPACE/build_output/
-          echo "✅ Artifact saved to build_output/3sx-linux-x86_64.zip"
-
-      - name: Upload artifact (GitHub)
-        if: ${{ !env.ACT }}
+      - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 3sx-linux-x86_64
-          path: artifacts/3sx-linux-x86_64.zip
+          name: release-assets-linux-x86_64
+          path: 3SX-*-linux-x86_64.tar.gz
 
   build-linux-arm64:
     name: Build (Linux ARM64 Cross-Compile)
@@ -92,17 +92,14 @@ jobs:
           apt-get update
           apt-get install -y git curl xz-utils nodejs
 
-          # ARM64 packages live on ports.ubuntu.com, not archive.ubuntu.com.
           dpkg --add-architecture arm64
 
-          # Pin existing DEB822 sources to amd64-only (ubuntu:25.04 format)
           for f in /etc/apt/sources.list.d/*.sources; do
               if [ -f "$f" ] && ! grep -q 'Architectures:' "$f"; then
                   sed -i '/^Types:/a Architectures: amd64' "$f"
               fi
           done
 
-          # Add arm64 sources from ports.ubuntu.com
           printf '%s\n' \
               'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports plucky main restricted universe multiverse' \
               'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports plucky-updates main restricted universe multiverse' \
@@ -123,6 +120,15 @@ jobs:
           path: third_party_arm64
           key: linux-arm64-cross-deps-${{ hashFiles('build-deps.sh') }}
 
+      - name: Cache Rust/Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            /opt/cargo/registry
+            /opt/cargo/git
+          key: linux-arm64-cargo-${{ hashFiles('build-deps.sh') }}
+          restore-keys: linux-arm64-cargo-
+
       - name: Install ARM64 build dependencies
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -142,75 +148,64 @@ jobs:
             wayland-protocols
 
       - name: Install Rust toolchain (cross-compile)
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-unknown-linux-gnu
+        run: |
+          export RUSTUP_HOME=/opt/rustup
+          export CARGO_HOME=/opt/cargo
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+          echo "RUSTUP_HOME=/opt/rustup" >> $GITHUB_ENV
+          echo "CARGO_HOME=/opt/cargo" >> $GITHUB_ENV
+          echo "/opt/cargo/bin" >> $GITHUB_PATH
+          . /opt/cargo/env
+          rustup target add aarch64-unknown-linux-gnu
 
       - name: Pre-build dependencies
         env:
-          THIRD_PARTY: ${{ github.workspace }}/third_party_arm64
-          CARGO_BUILD_TARGET: aarch64-unknown-linux-gnu
-          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
-          CC: aarch64-linux-gnu-gcc
-          CXX: aarch64-linux-gnu-g++
-          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
-          PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            CARGO_BUILD_TARGET: aarch64-unknown-linux-gnu
+            CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+            CC: aarch64-linux-gnu-gcc
+            CXX: aarch64-linux-gnu-g++
+            PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
         run: |
-          # Let build-deps.sh handle everything (SDL3, SDL3_image, librashader, etc.)
-          cd $GITHUB_WORKSPACE
-          export THIRD_PARTY_DIR=$THIRD_PARTY
-          chmod +x ./build-deps.sh
-          ./build-deps.sh
-          
-          # Copy librashader to the location CMake expects (cross-compiled to aarch64 target dir)
-          mkdir -p $THIRD_PARTY/librashader/target/release
-          cp $THIRD_PARTY/librashader/target/aarch64-unknown-linux-gnu/release/liblibrashader_capi.a $THIRD_PARTY/librashader/target/release/
+            export THIRD_PARTY="$GITHUB_WORKSPACE/third_party_arm64"
+            export THIRD_PARTY_DIR="$THIRD_PARTY"
+            cd $GITHUB_WORKSPACE
+            chmod +x ./build-deps.sh
+            ./build-deps.sh
+
+            mkdir -p $THIRD_PARTY/librashader/target/release
+            cp $THIRD_PARTY/librashader/target/aarch64-unknown-linux-gnu/release/liblibrashader_capi.a $THIRD_PARTY/librashader/target/release/
         shell: bash
 
-      - name: Build for Linux ARM64
+      - name: Build
         env:
-          THIRD_PARTY: ${{ github.workspace }}/third_party_arm64
-          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
-          PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
         run: |
-          set -o pipefail
-          cmake -B build-linux-arm64 \
-              -DCMAKE_BUILD_TYPE=Debug \
-              -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-linux-gnu.cmake \
-              -DENABLE_TESTS=OFF \
-              -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_arm64 \
-              -G Ninja
-          cmake --build build-linux-arm64 --parallel
+            set -o pipefail
+            cmake -B build-linux-arm64 \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-linux-gnu.cmake \
+                -DENABLE_TESTS=OFF \
+                -DTHIRD_PARTY_DIR=$GITHUB_WORKSPACE/third_party_arm64 \
+                -G Ninja
+            cmake --build build-linux-arm64 --parallel
         shell: bash
 
-      - name: Package artifact
+      - name: Package with CPack
         run: |
-          mkdir -p artifacts pkg/bin pkg/lib
-          cp build-linux-arm64/3sx pkg/bin/
-          cp third_party_arm64/sdl3/build/lib/*.so* pkg/lib/
-          cp dist/3sx.sh pkg/
-          chmod +x pkg/3sx.sh pkg/bin/3sx
-          # Runtime assets: fonts, bezels, controller images, stage mods
-          cp -r assets pkg/bin/
-          # GPU shaders (SPIR-V + OpenGL sources)
-          cp -r build-linux-arm64/shaders pkg/bin/
-          # Libretro slang-shader presets
-          cp -r third_party_arm64/slang-shaders pkg/bin/shaders/libretro
-          cd pkg && zip -r ../artifacts/3sx-linux-arm64.zip . && cd ..
+          SHORT_SHA="${GITHUB_SHA::7}"
+          cd build-linux-arm64
+          cpack -G TGZ --config CPackConfig.cmake
+          cd ..
+          ARCHIVE="$(find build-linux-arm64 -maxdepth 1 -name '*.tar.gz' | head -1)"
+          mv "$ARCHIVE" "3SX-${SHORT_SHA}-linux-arm64.tar.gz"
 
-      - name: Save artifact (local act)
-        if: ${{ env.ACT }}
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/build_output
-          cp artifacts/3sx-linux-arm64.zip $GITHUB_WORKSPACE/build_output/
-          echo "✅ Artifact saved to build_output/3sx-linux-arm64.zip"
-
-      - name: Upload artifact (GitHub)
-        if: ${{ !env.ACT }}
+      - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 3sx-linux-arm64
-          path: artifacts/3sx-linux-arm64.zip
+          name: release-assets-linux-arm64
+          path: 3SX-*-linux-arm64.tar.gz
 
   build-windows:
     name: Build (Windows x86_64)
@@ -220,6 +215,7 @@ jobs:
         shell: msys2 {0}
     steps:
       - name: Setup MSYS2
+        id: msys2
         uses: msys2/setup-msys2@v2
         with:
           update: true
@@ -235,6 +231,7 @@ jobs:
             mingw-w64-x86_64-headers-git
             mingw-w64-x86_64-rust
             mingw-w64-x86_64-python-jinja
+            mingw-w64-x86_64-miniupnpc
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -247,59 +244,51 @@ jobs:
           path: third_party
           key: Windows-deps-${{ hashFiles('build-deps.sh') }}
 
+      - name: Cache Rust/Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: windows-cargo-${{ hashFiles('build-deps.sh') }}
+          restore-keys: windows-cargo-
+
       - name: Build dependencies from source
         run: |
           chmod +x build-deps.sh
           ./build-deps.sh
 
-      - name: Install Python dependencies for glad
-        shell: pwsh
-        run: python3 -m pip install jinja2
-
-      - name: Configure and build with CMake
+      - name: Configure and build
         run: |
           set -o pipefail
+
+          MSYS2_PYTHON=$(which python3)
+
           CC=clang CXX=clang++ cmake -S . -B build \
             -G "Ninja" \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DENABLE_TESTS=OFF
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_TESTS=OFF \
+            -DMSYS2_LOCATION=${{ steps.msys2.outputs.msys2-location }} \
+            -DPython3_EXECUTABLE=$MSYS2_PYTHON \
+            -DPython_EXECUTABLE=$MSYS2_PYTHON
           cmake --build build --parallel
 
-      - name: Package artifact
+      - name: Install and package
         run: |
-          mkdir -p artifacts pkg
-          cp build/3sx.exe pkg/
-          cp /mingw64/bin/libwinpthread-1.dll pkg/
-          cp /mingw64/bin/libstdc++-6.dll pkg/
-          cp third_party/sdl3/build/bin/*.dll pkg/
-          cp third_party/sdl3_image/build/bin/*.dll pkg/
-          # Runtime assets: fonts, bezels, controller images, stage mods
-          cp -r assets pkg/
-          # GPU shaders (SPIR-V + OpenGL sources)
-          cp -r build/shaders pkg/
-          # Libretro slang-shader presets
-          cp -r third_party/slang-shaders pkg/shaders/libretro
-          cd pkg && zip -r ../artifacts/3sx-windows.zip . && cd ..
+          cmake --install build --prefix dist
+          SHORT_SHA="${GITHUB_SHA::7}"
+          cd dist && zip -r "../3SX-${SHORT_SHA}-windows.zip" . && cd ..
 
-      - name: Save artifact (local act)
-        if: ${{ env.ACT }}
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/build_output
-          cp artifacts/3sx-windows.zip $GITHUB_WORKSPACE/build_output/
-          echo "✅ Artifact saved to build_output/3sx-windows.zip"
-
-      - name: Upload artifact (GitHub)
-        if: ${{ !env.ACT }}
+      - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 3sx-windows
-          path: artifacts/3sx-windows.zip
+          name: release-assets-windows
+          path: 3SX-*-windows.zip
 
   build-macos:
-    name: Build (macOS Universal)
+    name: Build (macOS arm64)
     runs-on: macos-latest
-    env:
-      TARGET_ARCH: universal
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -310,57 +299,62 @@ jobs:
         uses: actions/cache@v4
         with:
           path: third_party
-          key: macos-universal-deps-${{ hashFiles('build-deps.sh') }}
+          key: macos-deps-${{ hashFiles('build-deps.sh') }}
+          restore-keys: macos-deps-
 
-      - name: Install packaging tool
-        run: brew install zip
+      - name: Cache Rust/Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: macos-cargo-${{ hashFiles('build-deps.sh') }}
+          restore-keys: macos-cargo-
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build dependencies from source
+      - name: Install dependencies
         run: |
-          chmod +x build-deps.sh
+          brew install miniupnpc
+          python3 -m pip install --break-system-packages jinja2
           sh build-deps.sh
 
-      - name: Configure and build with CMake
+      - name: Configure and build
         run: |
           set -o pipefail
           cmake -B build \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DENABLE_TESTS=OFF \
-            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_TESTS=OFF
           cmake --build build --parallel
+        shell: bash
 
-      - name: Package artifact
+      - name: Package DMG with CPack
         run: |
-          mkdir -p artifacts
-          # Bundle runtime assets inside the .app
-          cp -r assets build/3sx.app/Contents/Resources/assets
-          cp -r build/shaders build/3sx.app/Contents/Resources/shaders
-          cp -r third_party/slang-shaders build/3sx.app/Contents/Resources/shaders/libretro
-          cd build
-          zip -r ../artifacts/3sx-macos-universal.zip 3sx.app
+          set -euo pipefail
+          cpack -G DragNDrop --config build/CPackConfig.cmake
 
-      - name: Save artifact (local act)
-        if: ${{ env.ACT }}
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/build_output
-          cp artifacts/3sx-macos-universal.zip $GITHUB_WORKSPACE/build_output/
-          echo "✅ Artifact saved to build_output/3sx-macos-universal.zip"
+          DMG_PATH="$(find . -maxdepth 1 -type f -name '*.dmg' | head -n 1)"
+          if [ -z "${DMG_PATH}" ]; then
+            echo "No .dmg package found"
+            exit 1
+          fi
 
-      - name: Upload artifact (GitHub)
-        if: ${{ !env.ACT }}
+          SHORT_SHA="${GITHUB_SHA::7}"
+          mv "${DMG_PATH}" "3SX-${SHORT_SHA}-macos.dmg"
+        shell: bash
+
+      - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 3sx-macos-universal
-          path: artifacts/3sx-macos-universal.zip
+          name: release-assets-macos
+          path: 3SX-*-macos.dmg
 
   build-flatpak:
     name: Build Flatpak
     runs-on: ubuntu-latest
     container:
-      image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-24.08
       options: --privileged
     steps:
       - name: Checkout repository
@@ -371,68 +365,82 @@ jobs:
       - name: Build Flatpak bundle
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
-          manifest-path: flatpak/com.crowdedstreet.ThreeSX.yml
+          manifest-path: flatpak/io.github.threestylextra.app.yml
           bundle: 3sx.flatpak
-          cache: true
-          cache-key: flatpak-builder-${{ hashFiles('com.crowdedstreet.ThreeSX.yml') }}
+          arch: x86_64
+          cache-key: flatpak-builder-${{ hashFiles('flatpak/io.github.threestylextra.app.yml') }}
 
-      - name: Save artifact (local act)
-        if: ${{ env.ACT }}
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/build_output
-          cp 3sx.flatpak $GITHUB_WORKSPACE/build_output/
-          echo "✅ Artifact saved to build_output/3sx.flatpak"
-
-      - name: Upload artifact (GitHub)
-        if: ${{ !env.ACT }}
+      - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 3sx-flatpak
+          name: release-assets-flatpak
           path: 3sx.flatpak
 
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: [build-linux, build-linux-arm64, build-windows, build-macos, build-flatpak]
-    permissions:
-      contents: write
     steps:
-      - name: Download all artifacts
-        if: ${{ !env.ACT }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all release assets
         uses: actions/download-artifact@v4
         with:
+          pattern: release-assets-*
           merge-multiple: true
-          path: artifacts/
+          path: release-assets
 
-      - name: Generate release tag
-        id: tag
+      - name: Move rolling release tag
+        env:
+          TAG_NAME: rolling-pre-release
         run: |
-          TAG="build-$(date -u +'%Y%m%d-%H%M%S')"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "Generated tag: $TAG"
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f "${TAG_NAME}" "${GITHUB_SHA}"
+          git push origin "refs/tags/${TAG_NAME}" --force
 
-      - name: Create GitHub Release
-        if: ${{ !env.ACT }}
-        uses: softprops/action-gh-release@v2
-        with:
-          name: "Release ${{ steps.tag.outputs.tag }}"
-          tag_name: ${{ steps.tag.outputs.tag }}
-          files: |
-            artifacts/*.zip
-            artifacts/*.flatpak
-          body: |
-            Automated release from `main`
+      - name: Create or update GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: rolling-pre-release
+          FULL_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${FULL_SHA:0:7}"
 
-            **Commit:** `${{ github.sha }}`
+          cat > notes.md <<EOF
+          Automatic release for commit ${FULL_SHA}
 
-            ### Downloads
-            | Platform | Architecture | File |
-            |----------|-------------|------|
-            | Linux | x86_64 | `3sx-linux-x86_64.zip` |
-            | Linux | ARM64 | `3sx-linux-arm64.zip` |
-            | Windows | x86_64 | `3sx-windows.zip` |
-            | macOS | Universal (arm64 + x86_64) | `3sx-macos-universal.zip` |
-            | Linux (Flatpak) | x86_64 | `3sx.flatpak` |
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
+          ⚠️ **Disclaimer**: This is a __pre-release__ build. Expect bugs and instability.
 
+          ### Downloads
+          | Platform | Architecture | File |
+          |----------|-------------|------|
+          | Linux | x86_64 | \`3SX-${SHORT_SHA}-linux-x86_64.tar.gz\` |
+          | Linux | ARM64 | \`3SX-${SHORT_SHA}-linux-arm64.tar.gz\` |
+          | Windows | x86_64 | \`3SX-${SHORT_SHA}-windows.zip\` |
+          | macOS | arm64 | \`3SX-${SHORT_SHA}-macos.dmg\` |
+          | Linux (Flatpak) | x86_64 | \`3sx.flatpak\` |
+          EOF
+
+          if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            gh release edit "${TAG_NAME}" \
+              --title "${SHORT_SHA}" \
+              --prerelease \
+              --notes-file notes.md
+
+            for asset in $(gh release view "${TAG_NAME}" --json assets --jq '.assets[].name'); do
+              gh release delete-asset "${TAG_NAME}" "${asset}" --yes
+            done
+
+            gh release upload "${TAG_NAME}" release-assets/* --clobber
+          else
+            gh release create "${TAG_NAME}" release-assets/* \
+              --title "${SHORT_SHA}" \
+              --prerelease \
+              --notes-file notes.md
+          fi
