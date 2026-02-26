@@ -237,6 +237,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleCl
         -Wno-incompatible-pointer-types
         -Wno-pointer-sign
         -Wno-absolute-value
+        -Wno-implicit-function-declaration
     )
 elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set(C_DISABLED_WARNINGS
@@ -313,9 +314,17 @@ endif()
 
 if(UNIX)
     target_link_libraries(3sx PRIVATE dl pthread)
-    find_library(MINIUPNPC_LIB miniupnpc)
+
+    # Homebrew on macOS ARM installs to /opt/homebrew
+    if(APPLE)
+        list(APPEND CMAKE_PREFIX_PATH /opt/homebrew /usr/local)
+        include_directories(/opt/homebrew/include)
+        link_directories(/opt/homebrew/lib)
+    endif()
+
+    find_library(MINIUPNPC_LIB miniupnpc HINTS /opt/homebrew/lib /usr/local/lib)
     if(MINIUPNPC_LIB)
-        target_link_libraries(3sx PRIVATE miniupnpc)
+        target_link_libraries(3sx PRIVATE ${MINIUPNPC_LIB})
         target_compile_definitions(3sx PRIVATE HAVE_UPNP)
         message(STATUS "UPnP support: enabled (miniupnpc found)")
     else()
