@@ -42,6 +42,14 @@ jobs:
                 apt-get update
                 apt-get install -y crossbuild-essential-arm64 cmake ninja-build make pkg-config clang zip file qemu-user-static python3-jinja2
 
+          - name: Install Rust toolchain (cross-compile)
+            run: |
+                export HOME=/root
+                curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+                . "$HOME/.cargo/env"
+                rustup target add aarch64-unknown-linux-gnu
+                echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
           - name: Checkout repository
             uses: actions/checkout@v4
             with:
@@ -70,11 +78,6 @@ jobs:
                   libwayland-dev:arm64 libwayland-egl1:arm64 libdecor-0-dev:arm64 \
                   libminiupnpc-dev:arm64 \
                   wayland-protocols
-
-          - name: Install Rust toolchain (cross-compile)
-            uses: dtolnay/rust-toolchain@stable
-            with:
-                targets: aarch64-unknown-linux-gnu
 
           - name: Pre-build dependencies
             env:
