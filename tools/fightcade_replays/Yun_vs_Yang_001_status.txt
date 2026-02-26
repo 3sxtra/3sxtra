@@ -1,0 +1,5 @@
+COMPLETE
+frames=6921
+csv=Yun_vs_Yang_001_full.csv
+p1=Yun
+p2=Yang

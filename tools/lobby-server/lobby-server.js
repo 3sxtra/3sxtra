@@ -25,6 +25,7 @@ const crypto = require('node:crypto');
 
 const PORT = parseInt(process.env.LOBBY_PORT || '3000', 10);
 const SECRET = process.env.LOBBY_SECRET || '';
+const MAX_BODY_SIZE = 65536; // 64 KB
 
 if (!SECRET) {
     console.error('ERROR: LOBBY_SECRET environment variable is required.');
@@ -37,7 +38,7 @@ if (!SECRET) {
 const players = new Map();
 
 // Cleanup stale players every 30 seconds
-setInterval(() => {
+const cleanupTimer = setInterval(() => {
     const now = Date.now();
     for (const [id, p] of players) {
         if (now - p.last_seen > 60_000) {
@@ -70,6 +71,11 @@ function verifyRequest(method, path, body, headers) {
         .update(payload)
         .digest('hex');
 
+    // Validate signature is valid hex of correct length before timingSafeEqual
+    if (!/^[0-9a-f]{64}$/i.test(signature)) {
+        return { ok: false, reason: 'Bad signature' };
+    }
+
     if (!crypto.timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'))) {
         return { ok: false, reason: 'Bad signature' };
     }
@@ -91,10 +97,49 @@ function json(res, code, obj) {
 function readBody(req) {
     return new Promise((resolve, reject) => {
         let data = '';
-        req.on('data', chunk => { data += chunk; });
+        let size = 0;
+        req.on('data', chunk => {
+            size += chunk.length;
+            if (size > MAX_BODY_SIZE) {
+                req.destroy();
+                reject(new Error('Body too large'));
+                return;
+            }
+            data += chunk;
+        });
         req.on('end', () => resolve(data));
         req.on('error', reject);
     });
+}
+
+/**
+ * Parse JSON body, returning the parsed object or null on failure.
+ * Sends a 400 response if parsing fails.
+ */
+function parseJsonBody(res, bodyStr) {
+    try {
+        return JSON.parse(bodyStr);
+    } catch {
+        json(res, 400, { error: 'Invalid JSON' });
+        return null;
+    }
+}
+
+/**
+ * Server-side connect matching: if player A wants to connect to player B,
+ * automatically set B's connect_to = A's room_code so both sides see the
+ * mutual intent on their next poll.
+ */
+function resolveConnectMatch(player_id, display_name, room_code, connect_to) {
+    if (!connect_to || !room_code) return;
+    for (const [otherId, other] of players) {
+        if (otherId === player_id) continue;
+        if (other.room_code === connect_to) {
+            other.connect_to = String(room_code).slice(0, 15);
+            console.log(`[match] ${display_name} -> ${other.display_name} (mutual connect_to set)`);
+            break;
+        }
+    }
 }
 
 // ---- Routes ----
@@ -106,7 +151,12 @@ async function handleRequest(req, res) {
     const method = req.method;
 
     // Read body for POST
-    const body = method === 'POST' ? await readBody(req) : '';
+    let body;
+    try {
+        body = method === 'POST' ? await readBody(req) : '';
+    } catch (err) {
+        return json(res, 413, { error: 'Request body too large' });
+    }
 
     // --- Health endpoint (no auth required) ---
     if (method === 'GET' && path === '/') {
@@ -125,8 +175,8 @@ async function handleRequest(req, res) {
 
     // --- POST /presence ---
     if (method === 'POST' && path === '/presence') {
-        let data;
-        try { data = JSON.parse(body); } catch { return json(res, 400, { error: 'Invalid JSON' }); }
+        const data = parseJsonBody(res, body);
+        if (!data) return;
 
         const { player_id, display_name, region, room_code, connect_to } = data;
         if (!player_id || !display_name) {
@@ -143,27 +193,14 @@ async function handleRequest(req, res) {
             last_seen: Date.now(),
         });
 
-        // Server-side connect matching: if A wants to connect to B,
-        // automatically set B's connect_to to A's room_code so both
-        // sides see the mutual intent on their next poll.
-        if (connect_to && room_code) {
-            for (const [otherId, other] of players) {
-                if (otherId === player_id) continue;
-                if (other.room_code === connect_to) {
-                    other.connect_to = String(room_code).slice(0, 15);
-                    console.log(`[match] ${display_name} -> ${other.display_name} (mutual connect_to set)`);
-                    break;
-                }
-            }
-        }
-
+        resolveConnectMatch(player_id, display_name, room_code, connect_to);
         return json(res, 200, { ok: true });
     }
 
     // --- POST /searching/start ---
     if (method === 'POST' && path === '/searching/start') {
-        let data;
-        try { data = JSON.parse(body); } catch { return json(res, 400, { error: 'Invalid JSON' }); }
+        const data = parseJsonBody(res, body);
+        if (!data) return;
 
         const p = players.get(data.player_id);
         if (!p) return json(res, 404, { error: 'Player not found. Call /presence first.' });
@@ -175,8 +212,8 @@ async function handleRequest(req, res) {
 
     // --- POST /searching/stop ---
     if (method === 'POST' && path === '/searching/stop') {
-        let data;
-        try { data = JSON.parse(body); } catch { return json(res, 400, { error: 'Invalid JSON' }); }
+        const data = parseJsonBody(res, body);
+        if (!data) return;
 
         const p = players.get(data.player_id);
         if (!p) return json(res, 404, { error: 'Player not found' });
@@ -208,8 +245,8 @@ async function handleRequest(req, res) {
 
     // --- POST /leave ---
     if (method === 'POST' && path === '/leave') {
-        let data;
-        try { data = JSON.parse(body); } catch { return json(res, 400, { error: 'Invalid JSON' }); }
+        const data = parseJsonBody(res, body);
+        if (!data) return;
 
         players.delete(data.player_id);
         return json(res, 200, { ok: true });
@@ -233,3 +270,19 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`3SX Lobby Server listening on port ${PORT}`);
     console.log(`HMAC auth: enabled (key length: ${SECRET.length})`);
 });
+
+// ---- Graceful Shutdown ----
+
+function shutdown(signal) {
+    console.log(`\n${signal} received. Shutting down...`);
+    clearInterval(cleanupTimer);
+    server.close(() => {
+        console.log('Server closed.');
+        process.exit(0);
+    });
+    // Force exit after 5s if connections don't drain
+    setTimeout(() => process.exit(1), 5000);
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

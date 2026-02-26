@@ -279,16 +279,30 @@ static void compute_hmac(const char* payload, char* out_hex, size_t hex_size) {
     BCRYPT_HASH_HANDLE hHash = NULL;
     ULONG cbHashObject = 0, cbResult = 0;
     uint8_t* pbHashObject = NULL;
+    NTSTATUS status;
 
-    BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_SHA256_ALGORITHM, NULL, BCRYPT_ALG_HANDLE_HMAC_FLAG);
-    BCryptGetProperty(hAlg, BCRYPT_OBJECT_LENGTH, (PUCHAR)&cbHashObject, sizeof(ULONG), &cbResult, 0);
+    status = BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_SHA256_ALGORITHM, NULL, BCRYPT_ALG_HANDLE_HMAC_FLAG);
+    if (status < 0) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptOpenAlgorithmProvider failed: 0x%lx", status); goto hmac_done; }
+
+    status = BCryptGetProperty(hAlg, BCRYPT_OBJECT_LENGTH, (PUCHAR)&cbHashObject, sizeof(ULONG), &cbResult, 0);
+    if (status < 0) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptGetProperty failed: 0x%lx", status); goto hmac_done; }
+
     pbHashObject = (uint8_t*)malloc(cbHashObject);
-    BCryptCreateHash(hAlg, &hHash, pbHashObject, cbHashObject, (PUCHAR)server_key, (ULONG)strlen(server_key), 0);
-    BCryptHashData(hHash, (PUCHAR)payload, (ULONG)strlen(payload), 0);
-    BCryptFinishHash(hHash, hash, 32, 0);
-    BCryptDestroyHash(hHash);
+    if (!pbHashObject) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCrypt malloc failed"); goto hmac_done; }
+
+    status = BCryptCreateHash(hAlg, &hHash, pbHashObject, cbHashObject, (PUCHAR)server_key, (ULONG)strlen(server_key), 0);
+    if (status < 0) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptCreateHash failed: 0x%lx", status); goto hmac_done; }
+
+    status = BCryptHashData(hHash, (PUCHAR)payload, (ULONG)strlen(payload), 0);
+    if (status < 0) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptHashData failed: 0x%lx", status); goto hmac_done; }
+
+    status = BCryptFinishHash(hHash, hash, 32, 0);
+    if (status < 0) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptFinishHash failed: 0x%lx", status); goto hmac_done; }
+
+hmac_done:
+    if (hHash) BCryptDestroyHash(hHash);
     free(pbHashObject);
-    BCryptCloseAlgorithmProvider(hAlg, 0);
+    if (hAlg) BCryptCloseAlgorithmProvider(hAlg, 0);
 #else
     hmac_sha256((const uint8_t*)server_key, strlen(server_key), (const uint8_t*)payload, strlen(payload), hash);
 #endif

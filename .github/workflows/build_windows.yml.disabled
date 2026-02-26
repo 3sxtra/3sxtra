@@ -20,6 +20,7 @@ jobs:
                 update: true
                 msystem: MINGW64
                 install: >-
+                    git
                     make
                     mingw-w64-x86_64-cmake
                     mingw-w64-x86_64-ninja
@@ -33,7 +34,7 @@ jobs:
           - name: Checkout repository
             uses: actions/checkout@v4
             with:
-                submodules: true
+                submodules: recursive
 
           - name: Cache dependencies
             uses: actions/cache@v4

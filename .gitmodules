@@ -5,3 +5,6 @@
 [submodule "submodules/Spout2"]
 	path = submodules/Spout2
 	url = https://github.com/leadedge/Spout2
+[submodule "submodules/GekkoNet"]
+	path = submodules/GekkoNet
+	url = https://github.com/HeatXD/GekkoNet.git

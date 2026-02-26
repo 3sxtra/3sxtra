@@ -36,4 +36,4 @@ sudo systemctl status lobby-server --no-pager
 EOF
 
 echo "=== Deploy complete ==="
-echo "Test: curl http://$VPS_HOST:8080/"
+echo "Test: curl http://$VPS_HOST:3000/"
