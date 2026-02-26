@@ -145,7 +145,7 @@ fi
 LUTS_RS="$LIBRASHADER_DIR/librashader-runtime-vk/src/luts.rs"
 if grep -q 'staging.as_mut_slice()?.copy_from_slice' "$LUTS_RS" 2>/dev/null; then
     echo "Patching librashader luts.rs (Vulkan buffer alignment fix)..."
-    sed -i 's|staging.as_mut_slice()?.copy_from_slice(\&image.bytes);|let staging_slice = staging.as_mut_slice()?;\n        staging_slice[..image.bytes.len()].copy_from_slice(\&image.bytes);|' "$LUTS_RS"
+    sed 's|staging.as_mut_slice()?.copy_from_slice(\&image.bytes);|let staging_slice = staging.as_mut_slice()?;\n        staging_slice[..image.bytes.len()].copy_from_slice(\&image.bytes);|' "$LUTS_RS" > "$LUTS_RS.tmp" && mv "$LUTS_RS.tmp" "$LUTS_RS"
 fi
 
 # Build librashader-capi
