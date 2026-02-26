@@ -87,7 +87,7 @@ void push_texture_to_destroy(GLuint texture) {
 }
 
 static void push_texture_with_layer(GLuint texture, int layer, int pal_slot, float uv_sx, float uv_sy) {
-    if (gl_state.texture_count >= FL_PALETTE_MAX) {
+    if (gl_state.texture_count >= RENDER_TASK_MAX) {
         fatal_error("Texture stack overflow in push_texture");
     }
     gl_state.textures[gl_state.texture_count] = texture;

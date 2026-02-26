@@ -77,12 +77,12 @@ typedef struct {
     float batch_layers[RENDER_TASK_MAX * 4];
     float batch_pal_indices[RENDER_TASK_MAX * 4];
 
-    // Texture State Stack (per frame)
-    GLuint textures[FL_PALETTE_MAX];
-    int texture_layers[FL_PALETTE_MAX];
-    int texture_pal_slots[FL_PALETTE_MAX];
-    float texture_uv_sx[FL_PALETTE_MAX];
-    float texture_uv_sy[FL_PALETTE_MAX];
+    // Texture State Stack (per frame) — sized to match max render tasks
+    GLuint textures[RENDER_TASK_MAX];
+    int texture_layers[RENDER_TASK_MAX];
+    int texture_pal_slots[RENDER_TASK_MAX];
+    float texture_uv_sx[RENDER_TASK_MAX];
+    float texture_uv_sy[RENDER_TASK_MAX];
     int texture_count;
     unsigned int last_set_texture_th;
 
