@@ -47,6 +47,14 @@ modules:
         url: https://github.com/libsdl-org/SDL_image.git
         branch: main
 
+  - name: python3-jinja2
+    buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
+    build-commands:
+      - pip3 install --prefix=/app --no-build-isolation jinja2
+
   - name: 3sx
     buildsystem: cmake-ninja
     build-options:
