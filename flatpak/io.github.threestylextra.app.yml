@@ -21,8 +21,8 @@ modules:
       - -DUPNPC_BUILD_SAMPLE=OFF
     sources:
       - type: archive
-        url: https://github.com/nicboul/miniupnpc/archive/refs/tags/miniupnpc_2_3_3.tar.gz
-        sha256: 0684583cd8c6db2a22dada95b5cd76ce50a2c0c38ae1e3997c79447ae0e2513e
+        url: https://github.com/miniupnp/miniupnp/archive/refs/tags/miniupnpc_2_3_3.tar.gz
+        sha256: 8cf2c833b3e76fc4893ff29c2a376e3394962449e5970e373c0a91421724d222
         strip-components: 2
         dest: .
 
