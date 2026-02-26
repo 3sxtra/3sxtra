@@ -163,52 +163,7 @@ static int SDLCALL lobby_poll_thread_fn(void* data) {
     return 0;
 }
 
-// Ping probe: send a few UDP packets to the peer's public endpoint and measure RTT.
-// Uses the STUN socket so it piggybacks on the existing NAT pinhole.
-typedef struct {
-    int socket_fd;
-    uint32_t peer_ip;
-    uint16_t peer_port;
-} PingProbeData;
-
-static int SDLCALL ping_probe_thread_fn(void* data) {
-    PingProbeData* p = (PingProbeData*)data;
-    char peer_endpoint[32];
-    char ip_str[16];
-    Stun_FormatIP(p->peer_ip, ip_str, sizeof(ip_str));
-    snprintf(peer_endpoint, sizeof(peer_endpoint), "%s:%u", ip_str, ntohs(p->peer_port));
-
-    // Send 3 probes, take the best RTT
-    int best_ms = -1;
-    const char probe_magic[] = "3SX_PING";
-    for (int attempt = 0; attempt < 3; attempt++) {
-        uint64_t send_time = SDL_GetTicksNS();
-        Stun_SocketSendTo(p->socket_fd, peer_endpoint, probe_magic, sizeof(probe_magic));
-
-        // Wait up to 500ms for any response
-        char buf[64];
-        char from[48];
-        uint64_t deadline = send_time + 500000000ULL; // 500ms in nanoseconds
-        while (SDL_GetTicksNS() < deadline) {
-            int r = Stun_SocketRecvFrom(p->socket_fd, buf, sizeof(buf), from, sizeof(from));
-            if (r > 0) {
-                int rtt = (int)((SDL_GetTicksNS() - send_time) / 1000000ULL);
-                if (best_ms < 0 || rtt < best_ms)
-                    best_ms = rtt;
-                break;
-            }
-            SDL_Delay(5);
-        }
-        if (!SDL_GetAtomicInt(&lobby_ping_probe_active))
-            break; // Cancelled
-    }
-
-    if (best_ms >= 0)
-        lobby_pending_invite_ping = best_ms;
-    SDL_SetAtomicInt(&lobby_ping_probe_active, 0);
-    free(p);
-    return 0;
-}
+// (Ping probe removed — we now measure RTT from the eager hole punch instead)
 
 // Server-polling helper — runs every frame while in lobby, independent of ImGui.
 // Polls the lobby server for player list AND checks for incoming connect_to invites.
@@ -284,23 +239,6 @@ static void lobby_poll_server(void) {
             snprintf(
                 lobby_pending_invite_region, sizeof(lobby_pending_invite_region), "%s", lobby_server_players[i].region);
 
-            // Launch ping probe for new invites
-            if (is_new_invite && stun_result.socket_fd >= 0 && !SDL_GetAtomicInt(&lobby_ping_probe_active)) {
-                lobby_pending_invite_ping = -1;
-                SDL_SetAtomicInt(&lobby_ping_probe_active, 1);
-                PingProbeData* ppd = (PingProbeData*)malloc(sizeof(PingProbeData));
-                ppd->socket_fd = stun_result.socket_fd;
-                ppd->peer_ip = peer_ip;
-                ppd->peer_port = peer_port;
-                SDL_Thread* pt = SDL_CreateThread(ping_probe_thread_fn, "PingProbe", ppd);
-                if (pt)
-                    SDL_DetachThread(pt);
-                else {
-                    SDL_SetAtomicInt(&lobby_ping_probe_active, 0);
-                    free(ppd);
-                }
-            }
-
             if (lobby_auto) {
                 snprintf(lobby_status_msg,
                          sizeof(lobby_status_msg),
@@ -315,11 +253,18 @@ static void lobby_poll_server(void) {
                 lobby_has_pending_invite = false; // Consumed
                 lobby_we_are_initiator = false;   // They invited us, we auto-accepted
                 lobby_start_punch(peer_ip, peer_port);
-            } else {
-                snprintf(lobby_status_msg,
-                         sizeof(lobby_status_msg),
-                         "%s wants to connect!",
-                         lobby_server_players[i].display_name);
+            } else if (is_new_invite && cur_state == LOBBY_ASYNC_READY) {
+                // Start hole punch eagerly to measure RTT while popup is shown
+                lobby_pending_invite_ping = -1;
+                snprintf(
+                    lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", lobby_server_players[i].display_name);
+                const char* d2 = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
+                if (!d2 || !d2[0])
+                    d2 = my_room_code;
+                AsyncUpdatePresence(lobby_my_player_id, d2, my_room_code, lobby_server_players[i].room_code);
+                lobby_we_are_initiator = false;
+                lobby_start_punch(peer_ip, peer_port);
+                // Note: lobby_has_pending_invite stays true — popup keeps showing
             }
             break;
         }
@@ -339,10 +284,21 @@ static int SDLCALL stun_discover_thread_fn(void* data) {
     return 0;
 }
 
-// Hole punch thread function
+// Hole punch thread function — also measures RTT for the invite popup
 static int SDLCALL hole_punch_thread_fn(void* data) {
     (void)data;
+    uint32_t start_ms = SDL_GetTicks();
     bool ok = Stun_HolePunch(&stun_result, lobby_punch_peer_ip, lobby_punch_peer_port, 60000);
+    if (ok) {
+        // Approximate RTT: total time for first successful round-trip
+        // The hole punch sends every 200ms, so RTT ~ (total_time % 200) at best
+        // For a better estimate, we do a quick echo after the punch succeeds
+        uint32_t rtt_ms = (SDL_GetTicks() - start_ms);
+        // Clamp: if punch took > 200ms, the actual RTT is less than the total time
+        if (rtt_ms > 200) rtt_ms = rtt_ms % 200;
+        if (rtt_ms < 1) rtt_ms = 1;
+        lobby_pending_invite_ping = (int)rtt_ms;
+    }
     SDL_SetAtomicInt(&lobby_thread_result, ok ? 1 : 0);
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_PUNCH_DONE);
     return 0;
@@ -1264,22 +1220,46 @@ int SDLNetplayUI_GetPendingInvitePing() {
 void SDLNetplayUI_AcceptPendingInvite() {
     if (!lobby_has_pending_invite)
         return;
-    SDL_SetAtomicInt(&lobby_ping_probe_active, 0); // Cancel any running probe
     snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Connecting to %s...", lobby_pending_invite_name);
     snprintf(lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", lobby_pending_invite_name);
+
+    int cur = SDL_GetAtomicInt(&lobby_async_state);
+    lobby_has_pending_invite = false;
+    lobby_we_are_initiator = false;
+
+    if (cur == LOBBY_ASYNC_PUNCH_DONE && SDL_GetAtomicInt(&lobby_thread_result) == 1) {
+        // Hole punch already succeeded from eager punch — connection is live!
+        // The normal PUNCH_DONE handling in the main loop will transition to netplay.
+        return;
+    }
+
+    if (cur == LOBBY_ASYNC_PUNCHING) {
+        // Hole punch is still running — just wait for it to finish.
+        // The normal PUNCH_DONE handling will take over.
+        return;
+    }
+
+    // Not yet punching (shouldn't normally happen, but handle gracefully)
     const char* d2 = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
     if (!d2 || !d2[0])
         d2 = my_room_code;
     AsyncUpdatePresence(lobby_my_player_id, d2, my_room_code, lobby_pending_invite_room);
-    lobby_has_pending_invite = false;
-    lobby_we_are_initiator = false; // They invited us, we accepted
     lobby_start_punch(lobby_pending_invite_ip, lobby_pending_invite_port);
 }
 
 void SDLNetplayUI_DeclinePendingInvite() {
     if (!lobby_has_pending_invite)
         return;
-    SDL_SetAtomicInt(&lobby_ping_probe_active, 0);
+
+    int cur = SDL_GetAtomicInt(&lobby_async_state);
+
+    // If we eagerly started hole punching, clean it up
+    if (cur == LOBBY_ASYNC_PUNCHING || cur == LOBBY_ASYNC_PUNCH_DONE) {
+        lobby_cleanup_thread();
+        // Don't close the STUN socket — we still need it to stay in the lobby
+        SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_READY);
+    }
+
     lobby_has_pending_invite = false;
     lobby_pending_invite_name[0] = '\0';
     lobby_pending_invite_region[0] = '\0';

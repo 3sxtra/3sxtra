@@ -16,6 +16,11 @@ TARGET_ARCH="${TARGET_ARCH:-}"
 echo "Using cmake from: $(which cmake)"
 cmake --version
 
+# glad code generation needs jinja2 — ensure it's available for whichever Python cmake finds
+python3 -m pip install --quiet --break-system-packages jinja2 2>/dev/null \
+    || python3 -m pip install --quiet jinja2 2>/dev/null \
+    || true
+
 # Note: Rust/cargo is only needed for librashader. Check is deferred to that section
 # so all other deps (SDL3, glad, SDL_shadercross, etc.) still build without Rust.
 
