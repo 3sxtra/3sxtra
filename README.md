@@ -248,6 +248,8 @@ All files are written to your user profile folder automatically, or to a `config
 
 ## Netplay
 
+![Network Lobby](docs/images/network_lobby.gif)
+
 Built on the upstream GekkoNet GGPO rollback netcode base, with significant additions:
 
 - **STUN NAT hole-punching** — the client performs a STUN exchange to discover its public endpoint and punch through NAT, then hands the pre-punched UDP socket directly to GekkoNet so the NAT mapping is preserved.
@@ -264,6 +266,8 @@ Built on the upstream GekkoNet GGPO rollback netcode base, with significant addi
 ---
 
 ## Performance
+
+![VSync & Turbo Mode](docs/images/vsync_turbo.gif)
 
 50+ targeted optimizations — all fork-only, none in upstream:
 
