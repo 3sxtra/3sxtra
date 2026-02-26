@@ -30,17 +30,28 @@ static s8* msgEXTRA_028[1] = { "Show/Erase the Super Arts Gauge." };
 static s8* msgEXTRA_029[2] = { "Turn the \"PRESS START\" displayed", "onscreen on and off." };
 static s8* msgEXTRA_100[1] = { "Return to the previous page." };
 static s8* msgEXTRA_101[1] = { "Return to the Option Menu." };
-static s8* msgEXTRA_102[1] = { "Proceed to the next page." };
+static s8* msgEXTRA_102[1] = { "Restore the initial settings." };
+
+/* Network Lobby descriptions [35..40] */
+static s8* msgLOBBY_000[2] = { "Toggle automatic connection to", "discovered LAN peers." };
+static s8* msgLOBBY_001[2] = { "Connect to a LAN peer.", "Use Left/Right to select." };
+static s8* msgLOBBY_002[2] = { "Toggle automatic connection to", "internet opponents." };
+static s8* msgLOBBY_003[2] = { "Toggle automatic search for", "internet opponents." };
+static s8* msgLOBBY_004[2] = { "Search for and connect to", "online players." };
+static s8* msgLOBBY_005[1] = { "Return to the main menu." };
+
 static s8* msgEXTRA_xxx[1] = { "..." };
 
-static s8** msgExtraAdr[35] = { msgEXTRA_000, msgEXTRA_001, msgEXTRA_002, msgEXTRA_003, msgEXTRA_004, msgEXTRA_005,
+static s8** msgExtraAdr[41] = { msgEXTRA_000, msgEXTRA_001, msgEXTRA_002, msgEXTRA_003, msgEXTRA_004, msgEXTRA_005,
                                 msgEXTRA_006, msgEXTRA_xxx, msgEXTRA_008, msgEXTRA_009, msgEXTRA_010, msgEXTRA_011,
                                 msgEXTRA_012, msgEXTRA_013, msgEXTRA_014, msgEXTRA_xxx, msgEXTRA_016, msgEXTRA_017,
                                 msgEXTRA_018, msgEXTRA_019, msgEXTRA_xxx, msgEXTRA_xxx, msgEXTRA_xxx, msgEXTRA_xxx,
                                 msgEXTRA_024, msgEXTRA_025, msgEXTRA_026, msgEXTRA_027, msgEXTRA_028, msgEXTRA_029,
-                                msgEXTRA_xxx, msgEXTRA_xxx, msgEXTRA_100, msgEXTRA_101, msgEXTRA_102 };
+                                msgEXTRA_xxx, msgEXTRA_xxx, msgEXTRA_100, msgEXTRA_101, msgEXTRA_102,
+                                msgLOBBY_000, msgLOBBY_001, msgLOBBY_002, msgLOBBY_003, msgLOBBY_004, msgLOBBY_005 };
 
-static s8 msgExtraCtr[35] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1,
-                              2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1 };
+static s8 msgExtraCtr[41] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1,
+                              2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1,
+                              2, 2, 2, 2, 2, 1 };
 
 MessageTable msgExtraTbl_en = { msgExtraAdr, msgExtraCtr };

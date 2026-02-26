@@ -451,10 +451,13 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         Order_Dir[0x4E] = 1;
         effect_57_init(0x4E, 0, 0, 0x45, 0);
 
-        /* (Grey overlay bar effect removed based on user feedback) */
-        // effect_66_init(0x8A, 0x13, 1, 0, -1, -1, -0x8000);
-        // Order[0x8A] = 3;
-        // Order_Timer[0x8A] = 1;
+        /* Right-side grey overlay boxes (LAN and Internet peer areas) */
+        effect_66_init(0x8A, 42, 1, 0, -1, -1, -0x7FF0);  /* cg_type=16: LAN peer box (top, small) */
+        Order[0x8A] = 3;
+        Order_Timer[0x8A] = 1;
+        effect_66_init(0x8B, 42, 1, 0, -1, -1, -0x7FF1);  /* cg_type=15: Internet peer box (bottom, big) */
+        Order[0x8B] = 3;
+        Order_Timer[0x8B] = 1;
 
         /* No effect_04_init — effect_61 brightness handles cursor indication */
 
@@ -478,6 +481,15 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         Order_Timer[0x5F] = 0x12;
 
         Menu_Cursor_Move = 6;
+
+        /* Message system for description text (same font as Extra Option) */
+        Message_Data->pos_x = 0;
+        Message_Data->pos_y = 0x3E;
+        Message_Data->pos_z = 0x44;
+        Message_Data->request = 35;  /* lobby msg index 0 = LAN AUTO-CONN */
+        Message_Data->order = 0;
+        Message_Data->timer = 1;
+        effect_45_init(0, 0, 1);
 
         /* Enter lobby state — set native flag BEFORE changing session state
          * to prevent ImGui lobby from rendering a frame before the flag is set */
@@ -540,8 +552,18 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         }
 
         /* Handle cursor movement (6 items: 0..5) */
-        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 5, 0xFF) == 0) {
-            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 5, 0xFF);
+        {
+            s16 prev_cursor = Menu_Cursor_Y[0];
+            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 5, 0xFF) == 0) {
+                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 5, 0xFF);
+            }
+            /* Update description message on cursor change */
+            if (prev_cursor != Menu_Cursor_Y[0]) {
+                Message_Data->order = 1;
+                Message_Data->request = 35 + Menu_Cursor_Y[0];
+                Message_Data->timer = 2;
+                Message_Data->pos_y = 0x3E;
+            }
         }
 
         /* === Left/right toggle handling for toggle items === */
@@ -619,27 +641,29 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
         /* === Display toggle values (right of labels) === */
         {
-            /* LAN Column */
+            /* LAN toggle values (left column) */
             bool lan_ac = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-            SSPutStr_Bigger(136 + sl, 69, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
+            SSPutStr_Bigger(136 + sl, 67, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
 
-            /* NET Column */
+            /* NET toggle values (left column, below LAN) */
             bool net_ac = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
-            SSPutStr_Bigger(310 + sl, 69, 5, net_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, net_ac ? 9 : 1, 1.0f);
+            SSPutStr_Bigger(136 + sl, 121, 5, net_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, net_ac ? 9 : 1, 1.0f);
 
             bool auto_s = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
-            SSPutStr_Bigger(310 + sl, 84, 5, auto_s ? (s8*)"ON" : (s8*)"OFF", 1.0f, auto_s ? 9 : 1, 1.0f);
+            SSPutStr_Bigger(136 + sl, 136, 5, auto_s ? (s8*)"ON" : (s8*)"OFF", 1.0f, auto_s ? 9 : 1, 1.0f);
         }
 
-        /* === LAN / NET Headers === */
-        SSPutStr_Bigger(40 + sl, 45, 5, (s8*)"----- LAN -----", 1.0f, 0, 1.0f);
-        SSPutStr_Bigger(214 + sl, 45, 5, (s8*)"-- INTERNET --", 1.0f, 0, 1.0f);
+        /* === LAN / NET Headers (both on left, stacked) === */
+        SSPutStr_Bigger(40 + sl, 53, 5, (s8*)"----- LAN -----", 1.0f, 0, 1.0f);
+        SSPutStr_Bigger(40 + sl, 108, 5, (s8*)"-- INTERNET --", 1.0f, 0, 1.0f);
 
-        /* === Peer / Online Info (Bottom Area) === */
+        /* === Peer / Online Info (Right Side) === */
         {
-            s16 info_y = 145;
+            s16 peer_x = 214;
+            s16 lan_peer_y = 55;
+            s16 net_peer_y = 108;
 
-            /* LAN Selected Peer */
+            /* LAN Selected Peer (right side, top) */
             NetplayDiscoveredPeer d_peers[16];
             int d_count = Discovery_GetPeers(d_peers, 16);
             if (d_count > 0) {
@@ -649,13 +673,13 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     s_lobby_peer_idx = 0;
                 char buf[64];
                 SDL_snprintf(buf, sizeof(buf), "LAN PEER: %s", d_peers[s_lobby_peer_idx].ip);
-                SSPutStr_Bigger(20 + sl, info_y, 5, (s8*)buf, 1.0f, 9, 1.0f);
+                SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)buf, 1.0f, 9, 1.0f);
             } else {
                 s_lobby_peer_idx = 0;
-                SSPutStr_Bigger(20 + sl, info_y, 5, (s8*)"LAN PEER: NONE", 1.0f, 1, 1.0f);
+                SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)"LAN PEER: NONE", 1.0f, 1, 1.0f);
             }
 
-            /* Internet Online Players */
+            /* Internet Online Players (right side, below LAN peer) */
             if (SDLNetplayUI_IsSearching()) {
                 int online_count = SDLNetplayUI_GetOnlinePlayerCount();
                 char s_buf[64];
@@ -666,26 +690,40 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                         s_net_peer_idx = 0;
 
                     SDL_snprintf(s_buf, sizeof(s_buf), "INTERNET: %d ONLINE", online_count);
-                    SSPutStr_Bigger(214 + sl, info_y, 5, (s8*)s_buf, 1.0f, 9, 1.0f);
+                    SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)s_buf, 1.0f, 9, 1.0f);
 
                     // Show selected peer
                     SDL_snprintf(s_buf, sizeof(s_buf), "> %s", SDLNetplayUI_GetOnlinePlayerName(s_net_peer_idx));
-                    SSPutStr_Bigger(214 + sl, (u16)(info_y + 15), 5, (s8*)s_buf, 1.0f, 0, 1.0f);
+                    SSPutStr_Bigger(peer_x + sl, (u16)(net_peer_y + 15), 5, (s8*)s_buf, 1.0f, 0, 1.0f);
                 } else {
                     s_net_peer_idx = 0;
                     SDL_snprintf(s_buf, sizeof(s_buf), "INTERNET: SEARCHING");
-                    SSPutStr_Bigger(214 + sl, info_y, 5, (s8*)s_buf, 1.0f, 9, 1.0f);
+                    SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)s_buf, 1.0f, 9, 1.0f);
                 }
             } else {
-                SSPutStr_Bigger(214 + sl, info_y, 5, (s8*)"INTERNET: IDLE", 1.0f, 1, 1.0f);
+                SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)"INTERNET: IDLE", 1.0f, 1, 1.0f);
             }
+        }
+
+        /* === Grey description banner (between EXIT and status) === */
+        {
+            PAL_CURSOR_P dp[4];
+            PAL_CURSOR_COL dcol[4];
+            dp[0].x = -2;  dp[0].y = 175;
+            dp[1].x = 386; dp[1].y = 175;
+            dp[2].x = -2;  dp[2].y = 213;
+            dp[3].x = 386; dp[3].y = 213;
+            dcol[0].color = dcol[1].color = dcol[2].color = dcol[3].color = 0x80202020;
+            Renderer_Queue2DPrimitive((f32*)dp, PrioBase[70], (uintptr_t)dcol[0].color, 0);
+
+            /* Description text rendered by effect_45 message system */
         }
 
         /* === Status line (bottom area) === */
         {
             const char* status = SDLNetplayUI_GetStatusMsg();
             if (status[0]) {
-                SSPutStr_Bigger(20 + sl, 205, 5, (s8*)status, 1.0f, 9, 1.0f);
+                SSPutStr_Bigger(40 + sl, 215, 5, (s8*)status, 1.0f, 9, 1.0f);
             } else {
                 NetplayDiscoveredPeer c_peers[16];
                 int c_count = Discovery_GetPeers(c_peers, 16);
@@ -696,7 +734,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     if (c_peers[i].is_challenging_me) {
                         char c_buf[64];
                         SDL_snprintf(c_buf, sizeof(c_buf), "CHALLENGED BY %s!", c_peers[i].name);
-                        SSPutStr_Bigger(20 + sl, 205, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
+                        SSPutStr_Bigger(40 + sl, 215, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
                         showing_status = true;
                         break;
                     }
@@ -707,7 +745,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                         if ((int)c_peers[i].instance_id == current_target) {
                             char c_buf[64];
                             SDL_snprintf(c_buf, sizeof(c_buf), "CHALLENGING %s...", c_peers[i].name);
-                            SSPutStr_Bigger(20 + sl, 205, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
+                            SSPutStr_Bigger(40 + sl, 215, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
                             showing_status = true;
                             break;
                         }
@@ -715,7 +753,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 }
 
                 if (!showing_status && SDLNetplayUI_IsDiscovering()) {
-                    SSPutStr_Bigger(20 + sl, 205, 5, (s8*)"DISCOVERING...", 1.0f, 9, 1.0f);
+                    SSPutStr_Bigger(40 + sl, 215, 5, (s8*)"DISCOVERING...", 1.0f, 9, 1.0f);
                     showing_status = true;
                 }
 
@@ -723,7 +761,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 if (!showing_status && SDLNetplayUI_HasPendingInvite()) {
                     char inv_buf[64];
                     SDL_snprintf(inv_buf, sizeof(inv_buf), "INVITE FROM %s!", SDLNetplayUI_GetPendingInviteName());
-                    SSPutStr_Bigger(20 + sl, 205, 5, (s8*)inv_buf, 1.0f, 9, 1.0f);
+                    SSPutStr_Bigger(40 + sl, 215, 5, (s8*)inv_buf, 1.0f, 9, 1.0f);
                 }
             }
         }
