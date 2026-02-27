@@ -50,7 +50,7 @@
 | 6 | `plpnm.c` | 1324 | LONG | 50 functions. `Normal_42000`/`Normal_47000` share overall 5-case switch structure + preamble, but case-0 init differs substantially (different data tables, rl_flag sources, hit_stop setup, gauge functions). **Not cleanly consolidable** without a config struct that would obscure intent. | Med | Low |
 | 7 | `plmain.c` vs `plmain2.c` | 976+270 | DUP | `player_mv_0000`/`player_mvbs_0000` share ~35 lines of init, but differ in `auto_guard` value, SA gauge init (complex switch vs simple call), `resurrection_resv`/`omop_vital_timer` fields. Cross-file refactoring needed (shared header). Moderate benefit but higher risk. | Med | Low |
 | ~~8~~ | ~~`plpcu.c`~~ | ~~378~~ | ~~DUP~~ | ~~Consolidated scdmd stubs → dispatch table~~ | — | ✅ Done |
-| 9 | `plpat.c` | 827 | LONG | 16 attack-level handlers. `Attack_00000`/`Attack_01000` share pattern (setup, cancel-check, char_move). Moderate DUP. | Med | Med |
+| ~~9~~ | ~~`plpat.c`~~ | ~~827~~ | ~~LONG~~ | ~~Attack_00000/04000 → `attack_ground_init` helper; Attack_01000/02000 → `attack_special_init` helper~~ | — | ✅ Done |
 | ~~10~~ | ~~`pls02.c`~~ | ~~1189~~ | ~~LONG/DUP~~ | ~~10 RNG generators → `rng_next` inline helper~~ | — | ✅ Done |
 | 11 | `caldir.c` | 1099 | LONG | Mostly constant data tables (trig/direction). Not refactorable — it's ROM data. | N/A | Skip |
 | 12 | `plpatuni.c` | 844 | LONG | Character-specific attack functions. Moderate repetition in attack patterns. | Med | Low |
@@ -106,7 +106,7 @@
 | # | File | Lines | Tag | Description | Risk | Priority |
 |---|------|-------|-----|-------------|------|----------|
 | 29 | `end_00.c`–`end_20.c` | varies | DUP | 20+ per-character ending files. Likely follow similar init/move/display patterns. Cross-file DUP. | Med | Low |
-| 30 | `end_main.c` | — | — | Needs inspection for ending state machine DUP. | Med | Low |
+| ~~30~~ | ~~`end_main.c`~~ | ~~445~~ | ~~DUP~~ | ~~`end_fam_set2` and `end_bg_pos_hosei2` loop over single-layer helpers~~ | — | ✅ Done |
 
 ### system/
 

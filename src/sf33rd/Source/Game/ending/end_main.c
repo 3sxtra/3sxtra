@@ -331,15 +331,9 @@ void end_fam_set(s16 i) {
 /** @brief Update family positions for all active background layers. */
 void end_fam_set2() {
     s16 i;
-    s16 pos_work_x;
-    s16 pos_work_y;
 
     for (i = 0; i < bg_w.scno; i++) {
-        pos_work_x = bg_w.bgw[i].position_x;
-        pos_work_y = bg_w.bgw[i].position_y;
-        pos_work_x = pos_work_x & 0xFFFF;
-        pos_work_y = (pos_work_y + 16) & 0xFFFF;
-        Family_Set_W(i + 1, pos_work_x, pos_work_y);
+        end_fam_set(i);
     }
 }
 
@@ -355,14 +349,9 @@ void end_bg_pos_hosei(s16 bg_no) {
 /** @brief Apply position offset correction to all active background layers. */
 void end_bg_pos_hosei2() {
     s16 bg_no;
-    u16 pos_work;
 
     for (bg_no = 0; bg_no < bg_w.scno; bg_no++) {
-        pos_work = bg_w.bgw[bg_no].abs_x & 0xFFFF;
-        pos_work -= bg_w.pos_offset;
-        bg_w.bgw[bg_no].position_x = pos_work & 0xFFFF;
-        pos_work = bg_w.bgw[bg_no].abs_y & 0xFFFF;
-        bg_w.bgw[bg_no].position_y = pos_work;
+        end_bg_pos_hosei(bg_no);
     }
 }
 
