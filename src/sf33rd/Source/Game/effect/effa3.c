@@ -43,7 +43,7 @@ s8* Letter_Data_A3[24][8] = {
       NULL,
       NULL },
     { "NORMAL", "MAX START", "INFINITY", "MAXIMUM", NULL, NULL, NULL, NULL },
-    { "OFF", "ON", NULL, NULL, NULL, NULL, NULL, NULL },
+    { "OFF", "DATA", "DATA+HITBOXES", NULL, NULL, NULL, NULL, NULL },
     { "$ *", "$ **", "$ ***", "$ ****", NULL, NULL, NULL, NULL },
     { "$ *", "$ **", "$ ***", "$ ****", "$ *****", "$ ******", "$ *******", "$ ********" },
     { "DUMMY RECORDING",
@@ -78,7 +78,6 @@ void effect_A3_move(WORK_Other* ewk) {
     s16 color;
     s16 ix;
     s16 clear_level;
-    f32 zoom;
     f32 prio;
 
     if (Menu_Suicide[ewk->master_player]) {
@@ -112,10 +111,7 @@ void effect_A3_move(WORK_Other* ewk) {
     }
 
     if (ewk->master_priority == 99) {
-        zoom = 1.4f;
         color = 10;
-    } else {
-        zoom = 1.2f;
     }
 
     if (ewk->wu.type < 22) {
@@ -128,7 +124,7 @@ void effect_A3_move(WORK_Other* ewk) {
                     ewk->wu.xyz[1].disp.pos,
                     color,
                     Letter_Data_A3[ewk->wu.type][ix],
-                    zoom,
+                    1.0f,
                     clear_level,
                     prio);
 }

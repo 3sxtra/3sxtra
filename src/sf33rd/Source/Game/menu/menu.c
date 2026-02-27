@@ -2943,7 +2943,7 @@ static void Training_Menu(struct _TASK* task_ptr) {
     }
 
     SSPutStr_Bigger(
-        training_letter_data[Training_Index].pos_x, 0x16, 9, training_letter_data[Training_Index].menu, 1.5, 2, 1);
+        training_letter_data[Training_Index].pos_x, 0x18, 9, training_letter_data[Training_Index].menu, 1, 2, 1);
 }
 
 /** @brief Training initialisation â€” set up menu items and effects. */
@@ -2992,9 +2992,6 @@ static void Normal_Training(struct _TASK* task_ptr) {
 
         for (ix = 0; ix < 8; ix++, s2 = y += 16) {
             (void)s2;
-            if (ix == 1 || ix == 3 || ix == 7) {
-                y += 4;
-            }
 
             effect_A3_init(0, 0, ix, ix, 0, x, y, 0);
         }
@@ -3239,9 +3236,6 @@ static void Blocking_Training(struct _TASK* task_ptr) {
 
         for (ix = 0; ix < 6; ix++, s2 = y += 16) {
             (void)s2;
-            if (ix == 1 || ix == 2 || ix == 5) {
-                y += 4;
-            }
 
             effect_A3_init(1, 12, ix, ix, 0, x, y, 0);
         }
@@ -3359,9 +3353,9 @@ static void Blocking_Training(struct _TASK* task_ptr) {
     }
 }
 
-const LetterData training_letter_data[6] = { { 0x68, "NORMAL TRAINING" },   { 0x5C, "PARRYING TRAINING" },
-                                             { 0x7C, "DUMMY SETTING" },     { 0x6C, "TRAINING OPTION" },
-                                             { 0x64, "RECORDING SETTING" }, { 0x72, "BUTTON CONFIG." } };
+const LetterData training_letter_data[6] = { { 0x82, "NORMAL TRAINING" },   { 0x73, "PARRYING TRAINING" },
+                                             { 0x7C, "DUMMY SETTING" },     { 0x87, "TRAINING OPTION" },
+                                             { 0x7D, "RECORDING SETTING" }, { 0x8F, "BUTTON CONFIG." } };
 
 /** @brief Blocking Training option screen. */
 static void Blocking_Tr_Option(struct _TASK* task_ptr) {

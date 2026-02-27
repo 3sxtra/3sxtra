@@ -71,6 +71,8 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 
+static void apply_training_hitbox_display(bool force_off);
+
 /** @brief System Direction cursor move handler (up/down). */
 void System_Dir_Move_Sub(s16 PL_id) {
     u16 sw = ~plsw_01[PL_id] & plsw_00[PL_id]; // potential macro
@@ -1911,6 +1913,7 @@ void Control_Player_Tr() {
 void Next_Be_Tr_Menu(struct _TASK* task_ptr) {
     s16 ix;
 
+    apply_training_hitbox_display(true);
     task_ptr->r_no[0] = 11;
     task_ptr->r_no[1] = 0;
     task_ptr->r_no[2] = 0;
@@ -2143,6 +2146,8 @@ void Setup_NTr_Data(s16 ix) {
         Training[0] = Training[1];
         break;
     }
+
+    apply_training_hitbox_display(false);
 }
 
 /** @brief Check and skip replay at the given index. */
@@ -2304,8 +2309,20 @@ void Dummy_Move_Sub(struct _TASK* task_ptr, s16 PL_id, s16 id, s16 type, s16 max
     }
 }
 
-const u8 Menu_Max_Data_Tr[2][2][6] = { { { 4, 3, 4, 6, 6, 0 }, { 3, 1, 3, 7, 0, 0 } },
+const u8 Menu_Max_Data_Tr[2][2][6] = { { { 4, 3, 4, 6, 6, 0 }, { 3, 2, 3, 7, 0, 0 } },
                                        { { 2, 3, 1, 3, 0, 0 }, { 0, 0, 0, 0, 0, 0 } } };
+
+static bool is_data_plus_hitboxes_option_selected() {
+    return Training[0].contents[0][1][1] == 2;
+}
+
+static void apply_training_hitbox_display(bool force_off) {
+    if (force_off || Mode_Type != MODE_NORMAL_TRAINING || !is_data_plus_hitboxes_option_selected()) {
+        Set_Training_Hitbox_Display(false);
+    } else {
+        Set_Training_Hitbox_Display(true);
+    }
+}
 
 #include "sf33rd/Source/Game/training/training_dummy.h"
 
