@@ -45,6 +45,8 @@ static void Disp_00_0();
 static void Entry_01_Sub(s16 PL_id);
 static void Exit_Title_Sub_Entry();
 static void Entry_Main_Sub(s16 PL_id, s16 Jump_Index);
+static void entry_phase_1st(s16 jump_index);
+static void entry_end_2nd(s16 jump_index);
 static void Entry_03_1st();
 static void Entry_03_2nd();
 static void Entry_04_1st();
@@ -88,6 +90,7 @@ static void Break_Into_08(s16 PL_id);
 static void Break_Into_09(s16 PL_id);
 static void Break_Into_10(s16 PL_id);
 static void Continue_Score_Sub(s16 PL_id);
+static void activate_new_operators(void);
 
 #define ENTRY_JMP_COUNT 11
 
@@ -266,14 +269,7 @@ static void Entry_03() {
 
 /** @brief Entry_03 first sub-phase — dispatch both players' entry sub-states. */
 static void Entry_03_1st() {
-    switch (E_No[2]) {
-    case 0:
-        E_No[2] += 1;
-        break;
-    }
-
-    Entry_Main_Sub(0, 4);
-    Entry_Main_Sub(1, 4);
+    entry_phase_1st(4);
 }
 
 /** @brief Entry_03 second sub-phase — screen-switch transition and set up new challenger. */
@@ -407,16 +403,40 @@ static void Entry_06() {
     }
 }
 
-/** @brief Entry_06 first sub-phase — dispatch both players' entry sub-states. */
-static void Entry_06_1st() {
+/** @brief Common first sub-phase — increment E_No[2] and dispatch both players. */
+static void entry_phase_1st(s16 jump_index) {
     switch (E_No[2]) {
     case 0:
         E_No[2] += 1;
         break;
     }
 
-    Entry_Main_Sub(0, 7);
-    Entry_Main_Sub(1, 7);
+    Entry_Main_Sub(0, jump_index);
+    Entry_Main_Sub(1, jump_index);
+}
+
+/** @brief Entry_06 first sub-phase — dispatch both players' entry sub-states. */
+static void Entry_06_1st() {
+    entry_phase_1st(7);
+}
+
+/** @brief Activates newly-joined operators and resets break-in flags. */
+static void activate_new_operators(void) {
+    s16 i;
+
+    for (i = 0; i < 2; i++) {
+        if (E_07_Flag[i]) {
+            plw[i].wu.pl_operator = 1;
+            Operator_Status[i] = 1;
+
+            if (Continue_Coin[i] == 0) {
+                grade_check_work_1st_init(i, 0);
+            }
+        }
+    }
+
+    E_07_Flag[0] = 0;
+    E_07_Flag[1] = 0;
 }
 
 /** @brief Entry_06 second sub-phase — screen-switch and activate new operators. */
@@ -455,26 +475,7 @@ static void Entry_06_2nd() {
         E_No[3] = 0;
         Fade_Flag = 0;
 
-        if (E_07_Flag[0]) {
-            plw[0].wu.pl_operator = 1;
-            Operator_Status[0] = 1;
-
-            if (Continue_Coin[0] == 0) {
-                grade_check_work_1st_init(0, 0);
-            }
-        }
-
-        if (E_07_Flag[1]) {
-            plw[1].wu.pl_operator = 1;
-            Operator_Status[1] = 1;
-
-            if (Continue_Coin[1] == 0) {
-                grade_check_work_1st_init(1, 0);
-            }
-        }
-
-        E_07_Flag[0] = 0;
-        E_07_Flag[1] = 0;
+        activate_new_operators();
 
         if (E_Number[LOSER][0] == 5) {
             E_Number[LOSER][0] = 1;
@@ -499,14 +500,7 @@ static void Entry_07() {
 
 /** @brief Entry_07 first sub-phase — dispatch both players' entry sub-states. */
 static void Entry_07_1st() {
-    switch (E_No[2]) {
-    case 0:
-        E_No[2] += 1;
-        break;
-    }
-
-    Entry_Main_Sub(0, 8);
-    Entry_Main_Sub(1, 8);
+    entry_phase_1st(8);
 }
 
 /** @brief Entry_07 second sub-phase — timer-based screen switch and activate new operators. */
@@ -539,26 +533,7 @@ static void Entry_07_2nd() {
             E_No[2] = 0;
             E_No[3] = 0;
 
-            if (E_07_Flag[0]) {
-                plw[0].wu.pl_operator = 1;
-                Operator_Status[0] = 1;
-
-                if (Continue_Coin[0] == 0) {
-                    grade_check_work_1st_init(0, 0);
-                }
-            }
-
-            if (E_07_Flag[1]) {
-                plw[1].wu.pl_operator = 1;
-                Operator_Status[1] = 1;
-
-                if (Continue_Coin[1] == 0) {
-                    grade_check_work_1st_init(1, 0);
-                }
-            }
-
-            E_07_Flag[0] = 0;
-            E_07_Flag[1] = 0;
+            activate_new_operators();
         }
 
         break;
@@ -594,64 +569,7 @@ static void Entry_08_1st() {
 
 /** @brief Entry_08 second sub-phase — clear personal data, screen switch, reset rank displays. */
 static void Entry_08_2nd() {
-    if (E_07_Flag[0] == 0) {
-        Entry_Main_Sub(0, 9);
-    }
-
-    if (E_07_Flag[1] == 0) {
-        Entry_Main_Sub(1, 9);
-    }
-
-    switch (E_No[2]) {
-    case 0:
-        E_No[2] += 1;
-
-        if ((E_Number[LOSER][0] == 8) && (E_Number[LOSER][1] == 1)) {
-            Clear_Personal_Data(LOSER);
-        }
-
-        Switch_Screen_Init(1);
-        break;
-
-    default:
-        if (Switch_Screen(1) != 0) {
-            Cover_Timer = 23;
-            G_No[1] = 1;
-            G_No[2] = 0;
-            G_No[3] = 0;
-            E_No[0] = 2;
-            E_No[1] = 0;
-            E_No[2] = 0;
-            E_No[3] = 0;
-
-            if (E_07_Flag[0]) {
-                plw[0].wu.pl_operator = 1;
-                Operator_Status[0] = 1;
-
-                if (Continue_Coin[0] == 0) {
-                    grade_check_work_1st_init(0, 0);
-                }
-            }
-
-            if (E_07_Flag[1]) {
-                plw[1].wu.pl_operator = 1;
-                Operator_Status[1] = 1;
-
-                if (Continue_Coin[1] == 0) {
-                    grade_check_work_1st_init(1, 0);
-                }
-            }
-
-            E_07_Flag[0] = 0;
-            E_07_Flag[1] = 0;
-            Request_Disp_Rank[0][0] = -1;
-            Request_Disp_Rank[0][1] = -1;
-            Request_Disp_Rank[1][0] = -1;
-            Request_Disp_Rank[1][1] = -1;
-        }
-
-        break;
-    }
+    entry_end_2nd(9);
 }
 
 /** @brief Entry phase 10 — final/ending entry phase, compute rankings and dispatch sub-states. */
@@ -706,14 +624,14 @@ static void Entry_10_1st() {
     }
 }
 
-/** @brief Entry_10 second sub-phase — screen switch, clear personal data, reset rank displays. */
-static void Entry_10_2nd() {
+/** @brief Common end-phase second sub-phase — dispatch players, clear personal data, screen switch, reset ranks. */
+static void entry_end_2nd(s16 jump_index) {
     if (E_07_Flag[0] == 0) {
-        Entry_Main_Sub(0, 10);
+        Entry_Main_Sub(0, jump_index);
     }
 
     if (E_07_Flag[1] == 0) {
-        Entry_Main_Sub(1, 10);
+        Entry_Main_Sub(1, jump_index);
     }
 
     switch (E_No[2]) {
@@ -738,26 +656,7 @@ static void Entry_10_2nd() {
             E_No[2] = 0;
             E_No[3] = 0;
 
-            if (E_07_Flag[0]) {
-                plw[0].wu.pl_operator = 1;
-                Operator_Status[0] = 1;
-
-                if (Continue_Coin[0] == 0) {
-                    grade_check_work_1st_init(0, 0);
-                }
-            }
-
-            if (E_07_Flag[1]) {
-                plw[1].wu.pl_operator = 1;
-                Operator_Status[1] = 1;
-
-                if (Continue_Coin[1] == 0) {
-                    grade_check_work_1st_init(1, 0);
-                }
-            }
-
-            E_07_Flag[0] = 0;
-            E_07_Flag[1] = 0;
+            activate_new_operators();
             Request_Disp_Rank[0][0] = -1;
             Request_Disp_Rank[0][1] = -1;
             Request_Disp_Rank[1][0] = -1;
@@ -766,6 +665,11 @@ static void Entry_10_2nd() {
 
         break;
     }
+}
+
+/** @brief Entry_10 second sub-phase — screen switch, clear personal data, reset rank displays. */
+static void Entry_10_2nd() {
+    entry_end_2nd(10);
 }
 
 /** @brief Per-player entry sub-state dispatcher — handles credit, continue, naming, game-over flow. */

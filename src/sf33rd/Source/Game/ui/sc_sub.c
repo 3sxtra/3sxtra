@@ -231,8 +231,11 @@ static void SSPutStrTexInput2(u16 x, u16 y, u8 str) {
     scrscrntex[3].y = (y + 8);
 }
 
-/** @brief Render a string using screen fonts with attribute coloring. */
-void SSPutStr(u16 x, u16 y, u8 atr, const s8* str) {
+/** @brief Shared implementation for SSPutStr/SSPutStr2.
+ *  @param priority   PrioBase index for z-ordering.
+ *  @param handle_comma  When true, comma glyphs are offset downward by 2px.
+ */
+static void SSPutStr_impl(u16 x, u16 y, u8 atr, const s8* str, u16 priority, u8 handle_comma) {
     if (No_Trans) {
         return;
     }
@@ -240,16 +243,16 @@ void SSPutStr(u16 x, u16 y, u8 atr, const s8* str) {
     ppgSetupCurrentDataList(&ppgScrList);
 
     scrscrntex[0].color = scrscrntex[3].color = 0xFFFFFFFF;
-    scrscrntex[0].z = scrscrntex[3].z = PrioBase[2];
+    scrscrntex[0].z = scrscrntex[3].z = PrioBase[priority];
     ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
     x = x * 8;
     y = y * 8;
 
     while (*str != '\0') {
-        if (*str != ',') {
-            SSPutStrTexInput(x, y, str);
-        } else {
+        if (handle_comma && *str == ',') {
             SSPutStrTexInput(x, y + 2, str);
+        } else {
+            SSPutStrTexInput(x, y, str);
         }
 
         Renderer_SetTexture(1);
@@ -257,6 +260,11 @@ void SSPutStr(u16 x, u16 y, u8 atr, const s8* str) {
         x += 8;
         str++;
     }
+}
+
+/** @brief Render a string using screen fonts with attribute coloring. */
+void SSPutStr(u16 x, u16 y, u8 atr, const s8* str) {
+    SSPutStr_impl(x, y, atr, str, 2, 1);
 }
 
 /** @brief Render a proportional string with custom vertex color. */
@@ -410,25 +418,7 @@ static s32 SSGetDrawSizePro(const s8* str) {
 
 /** @brief Render a string using screen fonts variant 2 (different palette). */
 void SSPutStr2(u16 x, u16 y, u8 atr, const s8* str) {
-    if (No_Trans) {
-        return;
-    }
-
-    ppgSetupCurrentDataList(&ppgScrList);
-
-    scrscrntex[0].color = scrscrntex[3].color = -1;
-    scrscrntex[0].z = scrscrntex[3].z = PrioBase[1];
-    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
-    x = x * 8;
-    y = y * 8;
-
-    while (*str != '\0') {
-        SSPutStrTexInput(x, y, str);
-        Renderer_SetTexture(1);
-        Renderer_DrawSprite(scrscrntex, 4);
-        x += 8;
-        str++;
-    }
+    SSPutStr_impl(x, y, atr, str, 1, 0);
 }
 
 /** @brief Render a scaled string using the bigger font sheet. */
@@ -624,47 +614,11 @@ static void SSPutDec3(u16 x, u16 y, u8 atr, s16 dec, u8 size, u8 gr, u16 priorit
     }
 }
 
-/** @brief Render a single screen-font glyph at grid position. */
+/** @brief Render a single screen-font glyph at grid position.
+ *  Delegates to scfont_sqput with a 1×1 cell region.
+ */
 void scfont_put(u16 x, u16 y, u8 atr, u8 page, u8 cx, u8 cy, u16 priority) {
-    s32 u;
-    s32 v;
-
-    if (No_Trans) {
-        return;
-    }
-
-    ppgSetupCurrentDataList(&ppgScrList);
-
-    scrscrntex[0].color = scrscrntex[3].color = -1;
-    scrscrntex[0].z = scrscrntex[3].z = PrioBase[priority];
-    ppgSetupCurrentPaletteNumber(0, atr & 0x3F);
-    x = x * 8;
-    y = y * 8;
-    u = cx * 8;
-    v = cy * 8;
-
-    if (atr & 0x80) {
-        scrscrntex[3].u = TO_UV_256_NEG(u);
-        scrscrntex[0].u = TO_UV_256_NEG(u + 8);
-    } else {
-        scrscrntex[0].u = TO_UV_256(u);
-        scrscrntex[3].u = TO_UV_256(u + 8);
-    }
-
-    if (atr & 0x40) {
-        scrscrntex[3].v = TO_UV_256_NEG(v);
-        scrscrntex[0].v = TO_UV_256_NEG(v + 8);
-    } else {
-        scrscrntex[0].v = TO_UV_256(v);
-        scrscrntex[3].v = TO_UV_256(v + 8);
-    }
-
-    scrscrntex[0].x = x;
-    scrscrntex[3].x = (x + 8);
-    scrscrntex[0].y = y;
-    scrscrntex[3].y = (y + 8);
-    Renderer_SetTexture(page);
-    Renderer_DrawSprite(scrscrntex, 4);
+    scfont_sqput(x, y, atr, page, cx, cy, 1, 1, priority);
 }
 
 /** @brief Render a screen-font glyph (variant 2 — fixed priority). */
@@ -730,31 +684,16 @@ void scfont_sqput2(u16 x, u16 y, u8 atr, u8 inverse, u8 page, u8 cx1, u8 cy1, u8
     u8 i;
     u8 j;
 
-    if (inverse == 0) {
-        for (j = 0; j < cy2; j++) {
-            if (y - SA_FRAME_Y_OFFSET + j >= SA_FRAME_ROWS)
+    for (j = 0; j < cy2; j++) {
+        if (y - SA_FRAME_Y_OFFSET + j >= SA_FRAME_ROWS)
+            break;
+        for (i = 0; i < cx2; i++) {
+            if (x + i >= SA_FRAME_COLS)
                 break;
-            for (i = 0; i < cx2; i++) {
-                if (x + i >= SA_FRAME_COLS)
-                    break;
-                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].atr = atr;
-                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].page = page;
-                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].cx = cx1 + i;
-                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].cy = cy1 + j;
-            }
-        }
-    } else {
-        for (j = 0; j < cy2; j++) {
-            if (y - SA_FRAME_Y_OFFSET + j >= SA_FRAME_ROWS)
-                break;
-            for (i = 0; i < cx2; i++) {
-                if (x + i >= SA_FRAME_COLS)
-                    break;
-                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].atr = atr;
-                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].page = page;
-                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].cx = (cx1 + (cx2 - 1)) - i;
-                sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].cy = cy1 + j;
-            }
+            sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].atr = atr;
+            sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].page = page;
+            sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].cx = inverse ? (cx1 + (cx2 - 1)) - i : cx1 + i;
+            sa_frame[y - SA_FRAME_Y_OFFSET + j][x + i].cy = cy1 + j;
         }
     }
 }

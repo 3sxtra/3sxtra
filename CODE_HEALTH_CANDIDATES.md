@@ -29,6 +29,10 @@
 - `engine/pls02.c` — DUP: 10 RNG generators → `rng_next` inline helper
 - `rendering/aboutspr.c` — DUP: `sort_push_requestA`/`B` → shared `sort_push_request_box_impl` helper
 - `com/com_pl.c` — DUP: `Com_Active`/`Follow`/`Passive`/`VS_Shell` → `com_dispatch_char` helper
+- `screen/entry.c` — DUP: operator-activation block (4×) → `activate_new_operators` helper
+- `screen/entry.c` — DUP: 3 identical `_1st` + 2 identical `_2nd` → `entry_phase_1st`/`entry_end_2nd` helpers
+- `stage/bg_sub.c` — DUP: `Bg_Family_Set` 4 variants → `bg_family_set_layer` helper; `bg_pos_hosei_sub2`/`sub3` → `bg_pos_hosei_impl` helper
+- `engine/hitcheck.c` — DUP: `nise_combo_work`/`add_combo_work` → shared `add_combo_work_impl` helper
 
 ---
 
@@ -38,28 +42,28 @@
 
 | # | File | Lines | Tag | Description | Risk | Priority |
 |---|------|-------|-----|-------------|------|----------|
-| 1 | `manage.c` | 2620 | LONG/CMPLX | 99 functions, massive state machine. `Game_Manage_5_0`–`5_7`, `7_0`–`7_9`, `8_0`–`8_3`, `12_0`–`12_8` are many tiny near-identical dispatchers. Consider consolidating numbered sub-phases into table-driven dispatch. | Med | Med |
+| 1 | `manage.c` | 2620 | LONG/CMPLX | 99 functions, massive state machine. Sub-phases (`5_0`–`5_7`, `7_0`–`7_9`, `8_0`–`8_3`) **already use table-driven dispatch** (`SC5_Jmp_Tbl`, `SC7_Jmp_Tbl`). Individual sub-functions are all unique logic — **not DUP, just LONG**. | Med | Low |
 | 2 | `charset.c` | 2927 | LONG | 168 functions — script interpreter. Many `comm_*` functions are structurally identical (read params, apply, return). Could benefit from macro generation or table dispatch. Mostly functional though. | High | Low |
 | 3 | `cmd_main.c` | 1936 | LONG/DUP | `check_0`–`check_26` are 27 separate input-check functions. Many share the same template (read lever, compare, advance). Could benefit from parameterized dispatch for simpler checks. | High | Low |
-| 4 | `hitcheck.c` | 2066 | LONG/DUP | `sort_push_request`, `sort_push_request2/3/4/8/A/B` in `aboutspr.c` called from here. `defense_sky` duplicates guard vs parry logic that could share more with ground equivalents. | Med | Med |
+| ~~4~~ | ~~`hitcheck.c`~~ | ~~2066~~ | ~~LONG/DUP~~ | ~~`nise_combo_work`/`add_combo_work` → shared `add_combo_work_impl` helper. `defense_sky`/`defense_ground` already have extracted helpers~~ | — | ✅ Done |
 | 5 | `plcnt.c` | 1566 | LONG/MAGIC | Huge data tables (`super_arts_data[20][4]`, `super_arts_DATA[20][4]`) — duplicated with different values. Many magic numbers in init. | High | Low |
-| 6 | `plpnm.c` | 1324 | LONG | 50 functions — Normal state handler. `Normal_42000`/`Normal_47000` (parry stun) share significant logic with only stand/air difference. | Med | Med |
-| 7 | `plmain.c` vs `plmain2.c` | 976+270 | DUP | `player_mv_0000`/`player_mvbs_0000`, `player_mv_1000`/`player_mvbs_1000`, etc. share ~60% logic (init, appearance, timers). Could extract common init. | Med | Med |
-| 8 | `plpcu.c` | 378 | DUP | `scdmd_14000`–`scdmd_31000`: 13 tiny stub functions that mostly call `set_char_move_init` with different args. Could consolidate into a single parameterized function + dispatch table. | Low | High |
+| 6 | `plpnm.c` | 1324 | LONG | 50 functions. `Normal_42000`/`Normal_47000` share overall 5-case switch structure + preamble, but case-0 init differs substantially (different data tables, rl_flag sources, hit_stop setup, gauge functions). **Not cleanly consolidable** without a config struct that would obscure intent. | Med | Low |
+| 7 | `plmain.c` vs `plmain2.c` | 976+270 | DUP | `player_mv_0000`/`player_mvbs_0000` share ~35 lines of init, but differ in `auto_guard` value, SA gauge init (complex switch vs simple call), `resurrection_resv`/`omop_vital_timer` fields. Cross-file refactoring needed (shared header). Moderate benefit but higher risk. | Med | Low |
+| ~~8~~ | ~~`plpcu.c`~~ | ~~378~~ | ~~DUP~~ | ~~Consolidated scdmd stubs → dispatch table~~ | — | ✅ Done |
 | 9 | `plpat.c` | 827 | LONG | 16 attack-level handlers. `Attack_00000`/`Attack_01000` share pattern (setup, cancel-check, char_move). Moderate DUP. | Med | Med |
-| 10 | `pls02.c` | 1189 | LONG/DUP | 10 parallel RNG generators with identical structure: `random_16()`, `random_32()`, `random_16_ex()`, etc. Each is ~10 lines with the same index-wrap + table-lookup. Could use a macro or parameterized function. | Low | High |
+| ~~10~~ | ~~`pls02.c`~~ | ~~1189~~ | ~~LONG/DUP~~ | ~~10 RNG generators → `rng_next` inline helper~~ | — | ✅ Done |
 | 11 | `caldir.c` | 1099 | LONG | Mostly constant data tables (trig/direction). Not refactorable — it's ROM data. | N/A | Skip |
 | 12 | `plpatuni.c` | 844 | LONG | Character-specific attack functions. Moderate repetition in attack patterns. | Med | Low |
 | 13 | `plmain.c` | 976 | CMPLX | `sag_union` (lines 592–784) = 192 lines. Complex SA gauge update with nested conditionals. Could extract sub-helpers. | Med | Med |
-| 14 | `plmain.c` | 976 | CMPLX | `check_omop_vital` (lines 864–975) = 111 lines. Giant switch statement over 20 cases with similar structure. | Med | Med |
+| 14 | `plmain.c` | 976 | CMPLX | `check_omop_vital` (lines 864–975) = 111 lines. Switch has 5 cases (0,2,3,4 + fallthrough), each with distinct logic. Cases 3→4 share `vital_new++` with cap via intentional fallthrough. **Not DUP** — a complex state machine. | Med | Skip |
 
 ### screen/
 
 | # | File | Lines | Tag | Description | Risk | Priority |
 |---|------|-------|-----|-------------|------|----------|
-| 15 | `sel_pl.c` | 2134 | LONG/DUP | 83 functions. `PL_Sel_1st`–`5th`, `Face_1st`–`4th`, `Handicap_1`–`4` are near-identical phase dispatchers. Significant DUP in player-select logic (P1 vs P2 paths). | Med | Med |
-| 16 | `entry.c` | 1560 | LONG/DUP | 60 functions. `Entry_03/04/06/07/08_1st/2nd` follow identical patterns (dispatch both players, check completion, screen-switch). Could extract a common entry-phase template. | Med | Med |
-| 17 | `ranking.c` | 771 | DUP | `Ranking_00_2nd` vs `Ranking_01_2nd` share ~80% of their layout code (name, score, face, grade rendering). Could extract a common layout function. | Low | High |
+| 15 | `sel_pl.c` | 2134 | LONG | 83 functions. Despite similar naming, `PL_Sel_1st`–`5th`, `Face_1st`–`4th`, `Handicap_1`–`4` are **all distinct logic** (unique phase implementations). `Handicap_Vital_Move_Sub` mirrors P1/P2 directions but that's inherent game logic. **Not DUP** — just LONG due to many phases. | Med | Skip |
+| ~~16~~ | ~~`entry.c`~~ | ~~1560~~ | ~~LONG/DUP~~ | ~~Entry-phase template → `entry_phase_1st`/`entry_end_2nd` helpers~~ | — | ✅ Done |
+| ~~17~~ | ~~`ranking.c`~~ | ~~771~~ | ~~DUP~~ | ~~Extracted common ranking layout function~~ | — | ✅ Done |
 | 18 | `n_input.c` | 568 | MAGIC | `scfont_sqput`/`scfont_put` calls with raw position numbers. Could use named constants. | Low | Low |
 
 ### com/
@@ -67,7 +71,7 @@
 | # | File | Lines | Tag | Description | Risk | Priority |
 |---|------|-------|-----|-------------|------|----------|
 | 19 | `com_sub.c` | 5953 | LONG | **Largest file** — 192 functions. AI subroutine library. Many nearly-identical "Term" functions (`EM_Term`, `Jump_Term`, `JA_Term`, etc.) with similar parameter patterns. Major DUP candidate. | High | Med |
-| 20 | `com_pl.c` | 1941 | LONG/DUP | `Com_Active`/`Com_Follow`/`Com_Passive`/`Com_VS_Shell` are structurally identical (dispatch through character-specific table). Could extract a common dispatcher. `Com_Before_Follow`/`Com_Before_Passive` also very similar. | Med | High |
+| ~~20~~ | ~~`com_pl.c`~~ | ~~1941~~ | ~~LONG/DUP~~ | ~~Extracted `com_dispatch_char` helper~~ | — | ✅ Done |
 | 21 | `com_data.c` | — | MAGIC | Likely large data tables. Needs inspection. | Low | Low |
 
 ### effect/
@@ -80,21 +84,21 @@
 
 | # | File | Lines | Tag | Description | Risk | Priority |
 |---|------|-------|-----|-------------|------|----------|
-| 23 | `sc_sub.c` | 2473 | LONG/DUP | 77 functions. `SSPutStr`/`SSPutStr2`/`SSPutStrPro`/`SSPutStrPro_Scale`/`SSPutStrTexInput`/`SSPutStrTexInputB` are 6+ variants of the same string rendering pattern. `scfont_put`/`scfont_put2`/`scfont_sqput`/`scfont_sqput2`/`scfont_sqput3` — 5 variants. | Med | Med |
+| ~~23~~ | ~~`sc_sub.c`~~ | ~~2473~~ | ~~LONG/DUP~~ | ~~`SSPutStr`/`SSPutStr2` → `SSPutStr_impl` helper; `scfont_put` → delegates to `scfont_sqput`; `scfont_sqput2` inverse branches → single loop with ternary~~ | — | ✅ Done |
 | 24 | `flash_lp.c` | — | — | Needs inspection for DUP. | Low | Low |
 
 ### rendering/
 
 | # | File | Lines | Tag | Description | Risk | Priority |
 |---|------|-------|-----|-------------|------|----------|
-| 25 | `aboutspr.c` | 711 | DUP | `sort_push_request`/`2`/`3`/`4`/`8`/`A`/`B` — 7 variants. Most differ only in priority calculation and color effect handling. Could consolidate with a config struct or flag parameter. | Med | High |
+| ~~25~~ | ~~`aboutspr.c`~~ | ~~711~~ | ~~DUP~~ | ~~Extracted `sort_push_request_box_impl` helper~~ | — | ✅ Done |
 
 ### stage/
 
 | # | File | Lines | Tag | Description | Risk | Priority |
 |---|------|-------|-----|-------------|------|----------|
 | 26 | `bg.c` | 1494 | LONG/CMPLX | `scr_trans` alone is 505 lines (567–1072). Massive rendering function. `Bg_Texture_Load_EX`/`Bg_Texture_Load2`/`Bg_Texture_Load_Ending` share texture setup patterns. | Med | Med |
-| 27 | `bg_sub.c` | 1316 | LONG/DUP | `scr_10_20`–`scr_12_22`: 9 scroll handler functions with similar structure. `Bg_Family_Set`/`Bg_Family_Set_2`/`Bg_Family_Set_appoint`/`Bg_Family_Set_2_appoint`: 4 variants of the same family-position update. `bg_pos_hosei_sub2`/`bg_pos_hosei_sub3`: nearly identical with just Y-axis added. | Low | Med |
+| ~~27~~ | ~~`bg_sub.c`~~ | ~~1316~~ | ~~LONG/DUP~~ | ~~`Bg_Family_Set` 4 variants → `bg_family_set_layer` helper; `bg_pos_hosei_sub2`/`sub3` → `bg_pos_hosei_impl` helper~~ | — | ✅ Done |
 | 28 | `bg000.c`–`bg190.c` | varies | DUP | Per-stage background files. Many follow identical patterns. Cross-file DUP but risky to consolidate (stage-specific behavior). | High | Low |
 
 ### ending/
@@ -108,7 +112,7 @@
 
 | # | File | Lines | Tag | Description | Risk | Priority |
 |---|------|-------|-----|-------------|------|----------|
-| 31 | `pause.c` | 294 | DUP | `Setup_Pause`/`Setup_Come_Out` share ~80% logic (freeze, launch menu, dim BGM). Could extract common helper. | Low | High |
+| ~~31~~ | ~~`pause.c`~~ | ~~294~~ | ~~DUP~~ | ~~Extracted `setup_pause_common` helper~~ | — | ✅ Done |
 | 32 | `sys_sub.c`, `sys_sub2.c` | — | — | Needs inspection. | Low | Low |
 
 ### Root-level files
@@ -128,14 +132,23 @@
 
 ## Top Priority Quick Wins 🎯
 
-These candidates offer the best effort-to-impact ratio (low risk, high value):
+All original quick wins have been completed! ✅
 
-1. **#10 `pls02.c` RNG functions** — 10 identical generators → single macro/parameterized function
-2. **#8 `plpcu.c` scdmd stubs** — 13 tiny near-identical functions → parameterized dispatch
-3. **#17 `ranking.c` layout duplication** — `Ranking_00_2nd` vs `Ranking_01_2nd` → shared layout function
-4. **#31 `pause.c` Setup_Pause/Setup_Come_Out** — ~80% shared logic → extract common helper
-5. **#25 `aboutspr.c` sort_push_request variants** — 7 variants → consolidate with config flags
-6. **#20 `com_pl.c` Com_Active/Follow/Passive/VS_Shell** — identical dispatchers → common function
+1. ~~**#10 `pls02.c` RNG functions** → `rng_next` inline helper~~ ✅
+2. ~~**#8 `plpcu.c` scdmd stubs** → parameterized dispatch~~ ✅
+3. ~~**#17 `ranking.c` layout duplication** → shared layout function~~ ✅
+4. ~~**#31 `pause.c` Setup_Pause/Setup_Come_Out** → `setup_pause_common` helper~~ ✅
+5. ~~**#25 `aboutspr.c` sort_push_request variants** → `sort_push_request_box_impl` helper~~ ✅
+6. ~~**#20 `com_pl.c` Com_Active/Follow/Passive/VS_Shell** → `com_dispatch_char` helper~~ ✅
+
+### Next candidates to consider
+
+| Priority | # | File | Tag | Description |
+|----------|---|------|-----|-------------|
+| Med | 9 | `plpat.c` | LONG | Attack-level handlers share setup/cancel/char_move pattern |
+| Med | 13 | `plmain.c` | CMPLX | `sag_union` = 192 lines — could extract sub-helpers |
+| Med | 26 | `bg.c` | LONG/CMPLX | `Bg_Texture_Load_EX`/`Load2`/`Load_Ending` share texture setup |
+| Med | 19 | `com_sub.c` | LONG | Nearly-identical "Term" functions — major DUP candidate |
 
 ## Summary Statistics
 - Total candidates: **35** (excluding skips)

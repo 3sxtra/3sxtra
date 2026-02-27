@@ -911,62 +911,39 @@ void suzi_sync_pos_set(WORK_Other* ewk) {
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
 }
 
+/** @brief Update parallax family position for a single layer with Y offset. */
+static void bg_family_set_layer(s32 index, s16 y_offset) {
+    s16 x = bg_w.bgw[index].position_x;
+    s16 y = bg_w.bgw[index].position_y;
+    y += y_offset;
+    Scrn_Move_Set(index, x, y);
+    x = -x & 0xFFFF;
+    y = (768 - (y & 0xFFFF)) & 0xFFFF;
+    Family_Set_W(index + 1, x, y);
+}
+
 /** @brief Update parallax family positions for all active layers. */
 void Bg_Family_Set() {
     s8 i;
-    s16 x;
-    s16 y;
-
-    for (i = 0; i < bg_w.scno; i++) {
-        x = bg_w.bgw[i].position_x;
-        y = bg_w.bgw[i].position_y;
-        Scrn_Move_Set(i, x, y);
-        x = -x & 0xFFFF;
-        y = (768 - (y & 0xFFFF)) & 0xFFFF;
-        Family_Set_W(i + 1, x, y);
-    }
+    for (i = 0; i < bg_w.scno; i++)
+        bg_family_set_layer(i, 0);
 }
 
 /** @brief Update parallax family for a specific layer index. */
 void Bg_Family_Set_appoint(s32 num_of_bg) {
-    s16 x = bg_w.bgw[num_of_bg].position_x;
-    s16 y = bg_w.bgw[num_of_bg].position_y;
-
-    Scrn_Move_Set(num_of_bg, x, y);
-    x = -x & 0xFFFF;
-    y = (768 - (y & 0xFFFF)) & 0xFFFF;
-    Family_Set_W(num_of_bg + 1, x, y);
+    bg_family_set_layer(num_of_bg, 0);
 }
 
-/** @brief Update parallax family positions (alternate method). */
+/** @brief Update parallax family positions (alternate method, +8 Y offset). */
 void Bg_Family_Set_2() {
     s8 i;
-    s16 x;
-    s16 y;
-
-    for (i = 0; i < bg_w.scno; i++) {
-        x = bg_w.bgw[i].position_x;
-        y = bg_w.bgw[i].position_y;
-        y += 8;
-        Scrn_Move_Set(i, x, y);
-        x = -x & 0xFFFF;
-        y = (768 - (y & 0xFFFF)) & 0xFFFF;
-        Family_Set_W(i + 1, x, y);
-    }
+    for (i = 0; i < bg_w.scno; i++)
+        bg_family_set_layer(i, 8);
 }
 
-/** @brief Update parallax family for a specific layer (alternate). */
+/** @brief Update parallax family for a specific layer (alternate, +8 Y offset). */
 void Bg_Family_Set_2_appoint(s32 num_of_bg) {
-    s16 x;
-    s16 y;
-
-    x = bg_w.bgw[num_of_bg].position_x;
-    y = bg_w.bgw[num_of_bg].position_y;
-    y += 8;
-    Scrn_Move_Set(num_of_bg, x, y);
-    x = -x & 0xFFFF;
-    y = (768 - (y & 0xFFFF)) & 0xFFFF;
-    Family_Set_W(num_of_bg + 1, x, y);
+    bg_family_set_layer(num_of_bg, 8);
 }
 
 /** @brief Update parallax family for the Akebono (dawn) layer. */
@@ -982,38 +959,8 @@ void ake_Family_Set2() {
     Family_Set_W(4, x, y);
 }
 
-/** @brief Apply position correction to a single background layer. */
-void bg_pos_hosei_sub2(s16 bg_no) {
-    u16 pos;
-    s16 pos2;
-
-    pos2 = bg_w.bgw[bg_no].wxy[0].disp.pos;
-    pos = pos2 & 0xFFFF;
-
-    pos -= bg_w.pos_offset;
-    pos2 -= bg_w.pos_offset;
-    if (bg_w.quake_x_index >= QUAKE_TABLE_SIZE)
-        bg_w.quake_x_index = QUAKE_TABLE_SIZE - 1;
-    pos += quake_x_tbl[bg_w.quake_x_index];
-    pos2 += quake_x_tbl[bg_w.quake_x_index];
-
-    bg_w.bgw[bg_no].position_x = pos & 0xFFFF;
-    bg_w.bgw[bg_no].abs_x = pos2;
-
-    pos2 = bg_w.bgw[bg_no].xy[1].disp.pos;
-    pos = pos2 & 0xFFFF;
-
-    if (bg_w.quake_y_index >= QUAKE_TABLE_SIZE)
-        bg_w.quake_y_index = QUAKE_TABLE_SIZE - 1;
-    pos += quake_y_tbl[bg_w.quake_y_index];
-    pos2 += quake_y_tbl[bg_w.quake_y_index];
-
-    bg_w.bgw[bg_no].position_y = pos & 0xFFFF;
-    bg_w.bgw[bg_no].abs_y = pos2;
-}
-
-/** @brief Apply position correction with Y-axis to a bg layer. */
-void bg_pos_hosei_sub3(s16 bg_no) {
+/** @brief Apply position correction to a background layer, optionally with quake offsets. */
+static void bg_pos_hosei_impl(s16 bg_no, s16 apply_quake) {
     u16 pos;
     s16 pos2;
 
@@ -1023,15 +970,35 @@ void bg_pos_hosei_sub3(s16 bg_no) {
     pos -= bg_w.pos_offset;
     pos2 -= bg_w.pos_offset;
 
+    if (apply_quake) {
+        if (bg_w.quake_x_index >= QUAKE_TABLE_SIZE)
+            bg_w.quake_x_index = QUAKE_TABLE_SIZE - 1;
+        pos += quake_x_tbl[bg_w.quake_x_index];
+        pos2 += quake_x_tbl[bg_w.quake_x_index];
+    }
+
     bg_w.bgw[bg_no].position_x = pos & 0xFFFF;
     bg_w.bgw[bg_no].abs_x = pos2;
 
     pos2 = bg_w.bgw[bg_no].xy[1].disp.pos;
     pos = pos2 & 0xFFFF;
 
+    if (apply_quake) {
+        if (bg_w.quake_y_index >= QUAKE_TABLE_SIZE)
+            bg_w.quake_y_index = QUAKE_TABLE_SIZE - 1;
+        pos += quake_y_tbl[bg_w.quake_y_index];
+        pos2 += quake_y_tbl[bg_w.quake_y_index];
+    }
+
     bg_w.bgw[bg_no].position_y = pos & 0xFFFF;
     bg_w.bgw[bg_no].abs_y = pos2;
 }
+
+/** @brief Apply position correction to a single background layer (with quake). */
+void bg_pos_hosei_sub2(s16 bg_no) { bg_pos_hosei_impl(bg_no, 1); }
+
+/** @brief Apply position correction to a bg layer (without quake). */
+void bg_pos_hosei_sub3(s16 bg_no) { bg_pos_hosei_impl(bg_no, 0); }
 
 /** @brief Apply position correction to all active background layers. */
 void bg_pos_hosei2() {

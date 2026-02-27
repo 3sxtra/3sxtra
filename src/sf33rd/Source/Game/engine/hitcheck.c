@@ -1352,14 +1352,10 @@ void dm_status_copy(WORK* as, WORK* ds) {
     as->meoshi_hit_flag = 1;
 }
 
-/** @brief Adds a hit to the combo counter and updates combo display work. */
-void add_combo_work(PLW* as, PLW* ds) {
+/** @brief Core combo counter update — increments hit tracking arrays. */
+static void add_combo_work_impl(PLW* as, PLW* ds) {
     s16* kow;
     s16* cal;
-
-    if (ds->kezurijini_flag) {
-        return;
-    }
 
     ds->kizetsu_kow = ds->combo_type.new_dm = as->wu.kind_of_waza;
     kow = &ds->combo_type.kind_of[0][0][0];
@@ -1372,22 +1368,21 @@ void add_combo_work(PLW* as, PLW* ds) {
     ds->remake_power.total++;
 }
 
+/** @brief Adds a hit to the combo counter and updates combo display work. */
+void add_combo_work(PLW* as, PLW* ds) {
+    if (ds->kezurijini_flag) {
+        return;
+    }
+
+    add_combo_work_impl(as, ds);
+}
+
 /** @brief Adds fake combo hits (for multi-hit moves that don't combo normally). */
 void nise_combo_work(PLW* as, PLW* ds, s16 num) {
-    s16* kow;
-    s16* cal;
     s16 i;
 
     for (i = 0; i < num; i++) {
-        ds->kizetsu_kow = ds->combo_type.new_dm = as->wu.kind_of_waza;
-        kow = &ds->combo_type.kind_of[0][0][0];
-        cal = &calc_hit[ds->wu.id][0];
-        kow[as->wu.kind_of_waza]++;
-        cal[(as->wu.kind_of_waza & 120) / 8]++;
-        ds->combo_type.total++;
-        kow = &ds->remake_power.kind_of[0][0][0];
-        kow[as->wu.kind_of_waza]++;
-        ds->remake_power.total++;
+        add_combo_work_impl(as, ds);
     }
 }
 
