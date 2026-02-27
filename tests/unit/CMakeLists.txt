@@ -190,6 +190,13 @@ add_unit_test(test_lobby_server
 target_include_directories(test_lobby_server PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include)
 target_link_sdl3(test_lobby_server)
 
+add_unit_test(test_native_save
+    test_native_save.c
+    ${PROJECT_SOURCE_DIR}/src/port/native_save.c
+)
+target_include_directories(test_native_save PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${PROJECT_SOURCE_DIR}/src)
+target_link_sdl3(test_native_save)
+
 # -----------------------------------------------------------------------------
 # Bezel tests (use target_link_sdl3_glad)
 # -----------------------------------------------------------------------------
