@@ -72,100 +72,80 @@ static void draw_box(s16 left, s16 right, s16 top, s16 bottom, u32 color) {
     Renderer_DrawSolidQuad(v, 4);
 }
 
+/**
+ * Compute a bounding box from a 4-element array [x_off, width, y_off, height]
+ * relative to the player position and facing direction, then draw it.
+ *
+ * When clamp_min_size is true, zero-dimension boxes are expanded to a minimum
+ * visible size (used for throw-range boxes that may be 1-D checks).
+ */
+static void calc_and_draw_box(s16 pos_x, s16 pos_y, s8 flip,
+                               const s16 box[4], u32 color,
+                               int clamp_min_size) {
+    s16 l, r, t, b;
+    if (flip == 1) {
+        l = pos_x + box[0];
+        r = l + box[1];
+    } else {
+        l = pos_x - box[0] - box[1];
+        r = pos_x - box[0];
+    }
+    b = pos_y + box[2];
+    t = b + box[3];
+
+    if (clamp_min_size) {
+        if (l == r) { r += 2; l -= 2; }
+        if (t == b) { t += 100; b -= 10; }
+    }
+
+    draw_box(l, r, t, b, color);
+}
+
+/** Returns true if all four elements of a box array are zero. */
+static int is_empty_box(const s16 box[4]) {
+    return box[0] == 0 && box[1] == 0 && box[2] == 0 && box[3] == 0;
+}
+
 void training_hud_draw_hitboxes(PLW* player) {
     if (!player)
         return;
 
     s16 pos_x = player->wu.xyz[0].disp.pos;
     s16 pos_y = player->wu.xyz[1].disp.pos;
-    // Use rl_flag for facing direction (0=right, 1=left)
     s8 flip = player->wu.rl_flag ? -1 : 1;
 
-// Macro for unified bounding box computation
-#define CALC_BOX(arr)                                                                                                  \
-    s16 l, r, t, b;                                                                                                    \
-    if (flip == 1) {                                                                                                   \
-        l = pos_x + arr[0];                                                                                            \
-        r = l + arr[1];                                                                                                \
-    } else {                                                                                                           \
-        l = pos_x - arr[0] - arr[1];                                                                                   \
-        r = pos_x - arr[0];                                                                                            \
-    }                                                                                                                  \
-    b = pos_y + arr[2];                                                                                                \
-    t = b + arr[3];
-
-    // Compute center X of the screen to align
-    // Wait, the engine coordinate space automatically offsets based on screen center (192)?
-    // The camera bg_h_shift tracks player, but absolute pos_x starts around 0 or is relative to level bounds?
-    // Let's use the positions as they are.
-
-    // Draw Pushbox (Green) 0x8000FF00
+    // Pushbox (Green)
     if (g_training_menu_settings.show_pushboxes && player->wu.h_hos) {
-        UNK_6* hos = player->wu.h_hos;
-        CALC_BOX(hos->hos_box);
-        draw_box(l, r, t, b, 0x8000FF00); // Semi-transparent Green
+        calc_and_draw_box(pos_x, pos_y, flip, player->wu.h_hos->hos_box, 0x8000FF00, 0);
     }
 
-    // Draw Hurtbox (Blue) 0x400000FF (More transparent)
+    // Hurtboxes (Blue)
     if (g_training_menu_settings.show_hurtboxes && player->wu.h_bod) {
-        UNK_1* bod = player->wu.h_bod;
         for (int i = 0; i < 4; i++) {
-            if (bod->body_dm[i][1] != 0) { // Check width > 0
-                CALC_BOX(bod->body_dm[i]);
-                draw_box(l, r, t, b, 0x400000FF);
-            }
+            if (player->wu.h_bod->body_dm[i][1] != 0)
+                calc_and_draw_box(pos_x, pos_y, flip, player->wu.h_bod->body_dm[i], 0x400000FF, 0);
         }
     }
 
-    // Draw Hitbox (Red) 0xC0FF0000 (Less transparent)
+    // Hitboxes (Red)
     if (g_training_menu_settings.show_attackboxes && player->wu.h_att) {
-        UNK_5* att = player->wu.h_att;
         for (int i = 0; i < 4; i++) {
-            if (att->att_box[i][1] != 0) { // Check width > 0
-                CALC_BOX(att->att_box[i]);
-                draw_box(l, r, t, b, 0xC0FF0000);
-            }
+            if (player->wu.h_att->att_box[i][1] != 0)
+                calc_and_draw_box(pos_x, pos_y, flip, player->wu.h_att->att_box[i], 0xC0FF0000, 0);
         }
     }
 
-    // Draw Throwable Box (White/Pink) 0x60FF80FF
-    // The h_cau (caught/throwable box) defines where a character can be grabbed
+    // Throwable box (Pink) — clamped to minimum visible size
     if (g_training_menu_settings.show_throwboxes && player->wu.h_cau) {
-        UNK_4* cau = player->wu.h_cau;
-        // Verify it isn't an entirely empty 0,0,0,0 box
-        if (cau->cau_box[0] != 0 || cau->cau_box[1] != 0 || cau->cau_box[2] != 0 || cau->cau_box[3] != 0) {
-            CALC_BOX(cau->cau_box);
-            if (l == r) {
-                r += 2;
-                l -= 2;
-            } // Minimum width
-            if (t == b) {
-                t += 100;
-                b -= 10;
-            } // Minimum height for 1D checks
-            draw_box(l, r, t, b, 0x60FF80FF);
-        }
+        if (!is_empty_box(player->wu.h_cau->cau_box))
+            calc_and_draw_box(pos_x, pos_y, flip, player->wu.h_cau->cau_box, 0x60FF80FF, 1);
     }
 
-    // Draw Throw Hitbox (Yellow) 0x80FFFF00
+    // Throw hitbox (Yellow) — clamped to minimum visible size
     if (g_training_menu_settings.show_throwboxes && player->wu.h_cat) {
-        UNK_3* cat = player->wu.h_cat;
-        // Empty 0,0,0,0 boxes should be ignored, but 0-width boxes still indicate range
-        if (cat->cat_box[0] != 0 || cat->cat_box[1] != 0 || cat->cat_box[2] != 0 || cat->cat_box[3] != 0) {
-            CALC_BOX(cat->cat_box);
-            if (l == r) {
-                r += 2;
-                l -= 2;
-            } // Minimum width
-            if (t == b) {
-                t += 100;
-                b -= 10;
-            } // Minimum height for 1D checks
-            draw_box(l, r, t, b, 0x80FFFF00);
-        }
+        if (!is_empty_box(player->wu.h_cat->cat_box))
+            calc_and_draw_box(pos_x, pos_y, flip, player->wu.h_cat->cat_box, 0x80FFFF00, 1);
     }
-
-#undef CALC_BOX
 }
 
 void training_hud_draw() {
