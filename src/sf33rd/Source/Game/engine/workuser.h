@@ -1,3 +1,15 @@
+/**
+ * @file workuser.h
+ * @brief Extern declarations for gameplay globals (workuser).
+ *
+ * @netplay_sync
+ * All variables in the "Serialized" section below are saved/loaded as part of
+ * GameState in game_state.h. If you add a new global here, you must also add
+ * the corresponding field to GameState and to GameState_Save/GameState_Load.
+ *
+ * Variables in the "Non-serializable" section (pointers to ROM tables) do not
+ * affect determinism and are excluded from rollback state.
+ */
 #ifndef WORKUSER_H
 #define WORKUSER_H
 
@@ -395,7 +407,9 @@ extern s16 Area_Number[2];
 extern u16 Lever_Buff[2];
 extern u16 Lever_Pool[2];
 extern s16 Tech_Index[2];
+/// @netplay_sync RNG index — main 16-entry generator. See pls02.c.
 extern s16 Random_ix16;
+/// @netplay_sync RNG index — main 32-entry generator. See pls02.c.
 extern s16 Random_ix32;
 extern s16 M_Timer;
 extern s16 VS_Tech[2];
@@ -434,7 +448,9 @@ extern u16 SC_Personal_Time[2];
 extern s16 Guard_Counter[2];
 extern s16 Limit_Time;
 extern s16 Last_Pattern_Index[2];
+/// @netplay_sync RNG index — extended 16-entry generator.
 extern s16 Random_ix16_ex;
+/// @netplay_sync RNG index — extended 32-entry generator.
 extern s16 Random_ix32_ex;
 extern s16 DE_X[2];
 extern s16 Exit_Timer;
@@ -475,10 +491,15 @@ extern u16 plsw_00[2];
 extern u16 plsw_01[2];
 extern s16 Flash_Synchro;
 extern s16 Synchro_Level;
+/// @netplay_sync RNG index — CPU 16-entry generator.
 extern s16 Random_ix16_com;
+/// @netplay_sync RNG index — CPU 32-entry generator.
 extern s16 Random_ix32_com;
+/// @netplay_sync RNG index — CPU extended 16-entry generator.
 extern s16 Random_ix16_ex_com;
+/// @netplay_sync RNG index — CPU extended 32-entry generator.
 extern s16 Random_ix32_ex_com;
+/// @netplay_sync RNG index — background animation generator.
 extern s16 Random_ix16_bg;
 extern s16 Opening_Now;
 

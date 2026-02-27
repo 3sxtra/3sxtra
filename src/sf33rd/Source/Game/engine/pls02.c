@@ -1,6 +1,38 @@
 /**
  * @file pls02.c
- * Player System Utilities and Damage Scaling
+ * @brief Player system utilities, damage scaling, and RNG generators.
+ *
+ * @netplay_sync — RNG SYSTEM OVERVIEW
+ *
+ * This file contains 10 parallel pseudo-random number generators used by the
+ * game engine. Each is a simple table-lookup RNG: an index variable steps
+ * through a fixed lookup table and wraps around. The tables are ROM constants;
+ * only the index variables are mutable state.
+ *
+ * The 10 generators (5 index vars × 2 table sizes each):
+ *
+ *   Generator              Index variable          Table              Wrap
+ *   ──────────────────────  ─────────────────────   ────────────────   ────
+ *   random_16()            Random_ix16             random_tbl_16[64]  0x3F
+ *   random_32()            Random_ix32             random_tbl_32[128] 0x7F
+ *   random_16_ex()         Random_ix16_ex          random_tbl_16_ex[16]  0xF
+ *   random_32_ex()         Random_ix32_ex          random_tbl_32_ex[32]  0x1F
+ *   random_16_com()        Random_ix16_com         random_tbl_16_com[64] 0x3F
+ *   random_32_com()        Random_ix32_com         random_tbl_32_com[128] 0x7F
+ *   random_16_ex_com()     Random_ix16_ex_com      random_tbl_16_ex_com[16] 0xF
+ *   random_32_ex_com()     Random_ix32_ex_com      random_tbl_32_ex_com[32] 0x1F
+ *   random_16_bg()         Random_ix16_bg          random_tbl_16_bg[64] 0x3F
+ *   (no random_32_bg)      —                       —                  —
+ *
+ * The "com" variants delegate to the main generators when Play_Mode == 0
+ * (both players are human). The "bg" variant drives background animations.
+ *
+ * All 9 index variables are saved/loaded in GameState (game_state.h) and
+ * checksummed during desync detection in save_state() (netplay.c).
+ *
+ * @see GameState in game_state.h — fields Random_ix16 through Random_ix16_bg
+ * @see save_state() in netplay.c — RNG indices are part of the checksum whitelist
+ * @see setup_vs_mode() in netplay.c — Random_ix16/Random_ix32 zeroed at session start
  */
 
 #include "sf33rd/Source/Game/engine/pls02.h"
@@ -610,7 +642,7 @@ s16 check_work_position(WORK* p1, WORK* p2) {
     return num;
 }
 
-/** @brief Returns a 32-entry pseudo-random number. */
+/** @brief Returns a 32-entry pseudo-random number. @netplay_sync — index saved in GameState. */
 s32 random_32() {
     Random_ix32++;
 
@@ -622,7 +654,7 @@ s32 random_32() {
     return random_tbl_32[Random_ix32];
 }
 
-/** @brief Returns a 16-entry pseudo-random number. */
+/** @brief Returns a 16-entry pseudo-random number. @netplay_sync — index saved in GameState. */
 s32 random_16() {
     Random_ix16++;
 
@@ -634,7 +666,7 @@ s32 random_16() {
     return random_tbl_16[Random_ix16];
 }
 
-/** @brief Returns a 32-entry extended pseudo-random number. */
+/** @brief Returns a 32-entry extended pseudo-random number. @netplay_sync */
 static s32 random_32_ex() {
     Random_ix32_ex++;
 
@@ -646,7 +678,7 @@ static s32 random_32_ex() {
     return random_tbl_32_ex[Random_ix32_ex];
 }
 
-/** @brief Returns a 16-entry extended pseudo-random number. */
+/** @brief Returns a 16-entry extended pseudo-random number. @netplay_sync */
 static s32 random_16_ex() {
     Random_ix16_ex++;
 
@@ -658,7 +690,7 @@ static s32 random_16_ex() {
     return random_tbl_16_ex[Random_ix16_ex];
 }
 
-/** @brief Returns a 32-entry COM-side pseudo-random number. */
+/** @brief Returns a 32-entry COM-side pseudo-random number. @netplay_sync — delegates to random_32() when Play_Mode==0. */
 s32 random_32_com() {
     if (Play_Mode == 0) {
         return random_32();
@@ -674,7 +706,7 @@ s32 random_32_com() {
     return random_tbl_32_com[Random_ix32_com];
 }
 
-/** @brief Returns a 16-entry COM-side pseudo-random number. */
+/** @brief Returns a 16-entry COM-side pseudo-random number. @netplay_sync — delegates to random_16() when Play_Mode==0. */
 s32 random_16_com() {
     if (Play_Mode == 0) {
         return random_16();
@@ -690,7 +722,7 @@ s32 random_16_com() {
     return random_tbl_16_com[Random_ix16_com];
 }
 
-/** @brief Returns a 32-entry extended COM-side pseudo-random. */
+/** @brief Returns a 32-entry extended COM-side pseudo-random. @netplay_sync */
 s32 random_32_ex_com() {
     if (Play_Mode == 0) {
         return random_32_ex();
@@ -706,7 +738,7 @@ s32 random_32_ex_com() {
     return random_tbl_32_ex_com[Random_ix32_ex_com];
 }
 
-/** @brief Returns a 16-entry extended COM-side pseudo-random. */
+/** @brief Returns a 16-entry extended COM-side pseudo-random. @netplay_sync */
 s32 random_16_ex_com() {
     if (Play_Mode == 0) {
         return random_16_ex();
@@ -722,7 +754,7 @@ s32 random_16_ex_com() {
     return random_tbl_16_ex_com[Random_ix16_ex_com];
 }
 
-/** @brief Returns a 16-entry background pseudo-random number. */
+/** @brief Returns a 16-entry background pseudo-random number. @netplay_sync — saved but not checksummed. */
 s32 random_16_bg() {
     Random_ix16_bg++;
 

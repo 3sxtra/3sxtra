@@ -24,7 +24,6 @@ static std::map<void*, GPUTextureMetadata> s_gpu_textures;
 extern "C" void* TextureUtil_Load(const char* filename) {
     SDL_Surface* surface = IMG_Load(filename);
     if (surface == NULL) {
-        SDL_Log("Failed to load image: %s", SDL_GetError());
         return NULL;
     }
 

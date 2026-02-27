@@ -1,3 +1,27 @@
+/**
+ * @file game_state.h
+ * @brief Deterministic game state snapshot for netplay rollback.
+ *
+ * @netplay_sync — THIS ENTIRE STRUCT IS ROLLBACK-CRITICAL.
+ *
+ * GameState captures every mutable global variable that affects the deterministic
+ * game simulation. During netplay, GekkoNet saves and loads this struct (inside the
+ * larger `State` composite defined in netplay.c) on every frame to support rollback.
+ *
+ * **Rules for maintaining sync:**
+ *  1. Any new global that affects gameplay MUST be added here AND to both
+ *     GameState_Save() and GameState_Load() in game_state.c.
+ *  2. Fields are grouped by the source module that owns them (// comments).
+ *  3. setup_vs_mode() in netplay.c canonicalizes many of these fields before
+ *     the first synced frame to eliminate per-player divergence.
+ *  4. The debug checksum in save_state() only hashes a whitelist of gameplay-
+ *     critical fields (RNG indices, PLW, combat flags). UI-only fields are
+ *     still saved/loaded but excluded from the checksum.
+ *
+ * @see GameState_Save(), GameState_Load() in game_state.c
+ * @see State, EffectState, gather_state(), save_state(), load_state() in netplay.c
+ * @see setup_vs_mode() in netplay.c for pre-battle canonicalization
+ */
 #ifndef NETPLAY_GAME_STATE_H
 #define NETPLAY_GAME_STATE_H
 
@@ -17,6 +41,9 @@
 #include "types.h"
 
 typedef struct GameState {
+    // ======================================================================
+    // Round timer / count display (count.c)
+    // ======================================================================
     bool Scene_Cut;
     bool Time_Over;
 
@@ -32,6 +59,11 @@ typedef struct GameState {
 
     SelectTimerState select_timer_state;
 
+    // ======================================================================
+    // Character select rendering layers & scoring (workuser globals)
+    // Order[]: rendering layer visibility during character select UI.
+    // Score/Bonus: match scoring — UI-only but kept in sync.
+    // ======================================================================
     u8 Order[148];
     u8 Order_Timer[148];
     u8 Order_Dir[148];
@@ -48,15 +80,20 @@ typedef struct GameState {
     u32 Perfect_Bonus[2];
     u32 Keep_Score[2];
     u32 Disp_Score_Buff[2];
+    // ======================================================================
+    // Round / match management — GAMEPLAY-CRITICAL
+    // These control round outcomes, character identity, and match flow.
+    // Checksummed during desync detection.
+    // ======================================================================
     s8 Winner_id;
     s8 Loser_id;
     s8 Break_Into;
-    u8 My_char[2];
+    u8 My_char[2];          ///< @netplay_sync Character IDs — checksummed
     u8 Allow_a_battle_f;
-    u8 Round_num;
+    u8 Round_num;            ///< @netplay_sync Checksummed
     s8 Complete_Judgement;
     s8 Fade_Flag;
-    s8 Super_Arts[2];
+    s8 Super_Arts[2];        ///< @netplay_sync Selected super art — checksummed
     s8 Forbid_Break;
     s8 Request_Break[2];
     s8 Continue_Count[2];
@@ -77,6 +114,9 @@ typedef struct GameState {
     u8 S_No[4];
     s8 Select_Start[2];
 
+    // ======================================================================
+    // Round result / judge flow
+    // ======================================================================
     s8 request_message;
     s8 judge_flag;
     s8 WINNER;
@@ -124,15 +164,19 @@ typedef struct GameState {
     s8 Exec_Wipe;
     s8 Passive_Mode;
     s8 Passive_Flag[2];
-    s8 Flip_Flag[2];
-    s8 Lie_Flag[2];
-    s8 Counter_Attack[2];
-    s8 Attack_Flag[2];
+    // ======================================================================
+    // Combat flags — GAMEPLAY-CRITICAL
+    // These are checksummed during desync detection.
+    // ======================================================================
+    s8 Flip_Flag[2];         ///< @netplay_sync Checksummed
+    s8 Lie_Flag[2];          ///< @netplay_sync Checksummed
+    s8 Counter_Attack[2];    ///< @netplay_sync Checksummed
+    s8 Attack_Flag[2];       ///< @netplay_sync Checksummed
     s8 Limited_Flag[2];
     s8 Shell_Ignore_Timer[2];
     s8 Event_Judge_Gals;
     u8 EJG_index[4];
-    s8 Guard_Flag[2];
+    s8 Guard_Flag[2];        ///< @netplay_sync Checksummed
     s8 Pierce_Menu[2];
     s8 Face_MV_Time;
     s8 Before_Jump[2];
@@ -381,8 +425,14 @@ typedef struct GameState {
     u16 Lever_Buff[2];
     u16 Lever_Pool[2];
     s16 Tech_Index[2];
-    s16 Random_ix16;
-    s16 Random_ix32;
+    // ======================================================================
+    // RNG indices — GAMEPLAY-CRITICAL
+    // Index into lookup tables in pls02.c. Checksummed during desync detection.
+    // The tables are ROM constants; only these indices are mutable state.
+    // See also Random_ix16_ex, Random_ix32_ex, and COM/BG variants below.
+    // ======================================================================
+    s16 Random_ix16;          ///< @netplay_sync Main 16-entry RNG index — checksummed
+    s16 Random_ix32;          ///< @netplay_sync Main 32-entry RNG index — checksummed
     s16 M_Timer;
     s16 VS_Tech[2];
     u16 Guard_Type[2];
@@ -420,11 +470,11 @@ typedef struct GameState {
     s16 Guard_Counter[2];
     s16 Limit_Time;
     s16 Last_Pattern_Index[2];
-    s16 Random_ix16_ex;
-    s16 Random_ix32_ex;
+    s16 Random_ix16_ex;      ///< @netplay_sync Extended 16-entry RNG index — checksummed
+    s16 Random_ix32_ex;      ///< @netplay_sync Extended 32-entry RNG index — checksummed
     s16 DE_X[2];
     s16 Exit_Timer;
-    s16 Max_vitality;
+    s16 Max_vitality;        ///< @netplay_sync Checksummed
     s16 Bonus_Game_Flag;
     s16 Bonus_Game_Work;
     s16 Bonus_Game_result;
@@ -457,24 +507,32 @@ typedef struct GameState {
     u16 Keep_Grade[2];
     u16 IO_Result;
     u16 VS_Win_Record[2];
+    /// @netplay_sync Input state — fed by advance_game() in netplay.c.
+    /// PLsw[player][0] = current frame inputs, PLsw[player][1] = previous frame.
     u16 PLsw[2][2];
     u16 plsw_00[2];
     u16 plsw_01[2];
     s16 Flash_Synchro;
     s16 Synchro_Level;
-    s16 Random_ix16_com;
-    s16 Random_ix32_com;
-    s16 Random_ix16_ex_com;
-    s16 Random_ix32_ex_com;
-    s16 Random_ix16_bg;
+    s16 Random_ix16_com;     ///< @netplay_sync CPU 16-entry RNG index — checksummed
+    s16 Random_ix32_com;     ///< @netplay_sync CPU 32-entry RNG index — checksummed
+    s16 Random_ix16_ex_com;  ///< @netplay_sync CPU extended 16-entry RNG — checksummed
+    s16 Random_ix32_ex_com;  ///< @netplay_sync CPU extended 32-entry RNG — checksummed
+    s16 Random_ix16_bg;      ///< @netplay_sync Background animation RNG — saved but not checksummed
     s16 Opening_Now;
     struct _TASK task[11];
 
-    // plcnt
+    // ======================================================================
+    // Player state (plcnt) — GAMEPLAY-CRITICAL
+    // PLW[2] holds the full per-player simulation state (WORK base + player
+    // extensions). This is the single largest and most desync-sensitive
+    // section. Both PLW structs are checksummed (after sanitizing pointers
+    // and rendering bits) during desync detection.
+    // ======================================================================
 
-    PLW plw[2];
+    PLW plw[2];                      ///< @netplay_sync The two player structs — checksummed
     ZanzouTableEntry zanzou_table[2][48];
-    SA_WORK super_arts[2];
+    SA_WORK super_arts[2];           ///< @netplay_sync Super gauge state — checksummed
     PiyoriType piyori_type[2];
     AppearanceType appear_type;
     s16 pcon_rno[4];
@@ -488,13 +546,19 @@ typedef struct GameState {
     u16 vital_dec_timer;
     s16 sag_inc_timer[2];
 
-    // cmd_data
+    // ======================================================================
+    // Command / input processing (cmd_data)
+    // Holds per-player command interpreter state, lever history, and
+    // special move detection buffers.
+    // ======================================================================
 
     WORK_CP wcp[2];
     T_PL_LVR t_pl_lvr[2];
     WAZA_WORK waza_work[2][56];
 
-    // cmb_win
+    // ======================================================================
+    // Combo tracking (cmb_win)
+    // ======================================================================
 
     CMST_BUFF cmst_buff[2][5];
     s16 old_cmb_flag[2];
@@ -515,7 +579,9 @@ typedef struct GameState {
     u8 cst_read[2];
     u8 cst_write[2];
 
-    // bg
+    // ======================================================================
+    // Background / stage state (bg)
+    // ======================================================================
 
     BG bg_w;
     u16 Screen_Switch;
@@ -541,11 +607,13 @@ typedef struct GameState {
 
     u16 att_req;
 
-    // slowf
+    // ======================================================================
+    // Slow motion (slowf) — GAMEPLAY-CRITICAL (checksummed)
+    // ======================================================================
 
-    s16 SLOW_timer;
-    s16 SLOW_flag;
-    s16 EXE_flag;
+    s16 SLOW_timer;          ///< @netplay_sync Checksummed
+    s16 SLOW_flag;           ///< @netplay_sync Checksummed
+    s16 EXE_flag;            ///< @netplay_sync Checksummed
 
     // grade
 
@@ -556,7 +624,9 @@ typedef struct GameState {
     GradeData judge_item[2][2];
     u8 ji_sat[2][384];
 
-    // spgauge
+    // ======================================================================
+    // Super gauge display (spgauge)
+    // ======================================================================
 
     s8 Old_Stop_SG;
     s8 Exec_Wipe_F;
@@ -574,7 +644,9 @@ typedef struct GameState {
     s8 max_rno2[2];
     SPG_DAT spg_dat[2];
 
-    // stun
+    // ======================================================================
+    // Stun (piyori) gauge data
+    // ======================================================================
 
     SDAT sdat[2];
 
@@ -659,7 +731,11 @@ typedef struct GameState {
     s16 old_mes_no_pl;
     s16 mes_timer;
 
-    // work_sys — rollback-critical state
+    // ======================================================================
+    // System globals (work_sys) — rollback-critical
+    // BG scroll positions and system timer evolve every frame.
+    // Canonicalized to zero by setup_vs_mode() before the first synced frame.
+    // ======================================================================
 
     BG_POS bg_pos[8];
     FM_POS fm_pos[8];

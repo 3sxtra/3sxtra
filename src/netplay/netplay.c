@@ -56,6 +56,19 @@ extern void SDLGameRenderer_ResetBatchState(); // Reset texture stack between ne
 // 3SX-private: forward declaration for event queue (defined at end of file)
 static void push_event(NetplayEventType type);
 
+/**
+ * @brief Effect allocator state — saved/loaded alongside GameState for rollback.
+ *
+ * @netplay_sync
+ * The effect system (ramcnt.c) manages a pool of WORK slots for projectiles,
+ * hit sparks, stage effects, etc. These fields track the free list and execution
+ * timers. Without saving/loading these, rollback would reuse stale effect slots.
+ *
+ * frw[EFFECT_MAX][448]: raw byte arrays backing each WORK slot.
+ * frwque[]: free list ordering. head_ix/tail_ix: per-priority linked-list heads/tails.
+ * frwctr/frwctr_min: free slot count and low-water mark.
+ * exec_tm[]: per-priority execution timers.
+ */
 typedef struct EffectState {
     s16 frwctr;
     s16 frwctr_min;
@@ -66,6 +79,17 @@ typedef struct EffectState {
     s16 frwque[EFFECT_MAX];
 } EffectState;
 
+/**
+ * @brief Complete rollback state — passed to GekkoNet for save/load.
+ *
+ * @netplay_sync
+ * This is the top-level struct that GekkoNet snapshots every frame.
+ * It contains:
+ *  - gs (GameState): all deterministic game globals (~700+ fields)
+ *  - es (EffectState): effect allocator pool and free-list state
+ *
+ * sizeof(State) is logged at session start for desync debugging.
+ */
 typedef struct State {
     GameState gs;
     EffectState es;
@@ -135,11 +159,40 @@ static void clean_input_buffers() {
     SDL_zeroa(plsw_01);
 }
 
+/**
+ * @brief Canonicalize all game state before the first synced frame.
+ *
+ * @netplay_sync — THIS IS THE MOST IMPORTANT FUNCTION FOR INITIAL SYNC.
+ *
+ * Both peers enter netplay from slightly different local states (different
+ * menus, timers, button configs, character select progress). This function
+ * forces every divergent global to a known identical value so that the
+ * first rollback frame starts from the same state on both sides.
+ *
+ * Categories of things canonicalized:
+ *  - Task/state machine routing numbers (G_No, C_No, SC_No, E_No)
+ *  - Mode and play type (MODE_NETWORK, Play_Mode)
+ *  - Game settings (Time_Limit, Battle_Number, Damage_Level, etc.)
+ *  - Timers (Game_timer, Control_Time, E_Timer, G_Timer, etc.)
+ *  - RNG indices (Random_ix16, Random_ix32)
+ *  - Button config (Pad_Infor forced to identity, Check_Buff/Convert_Buff zeroed)
+ *  - Background state (bg_pos, fm_pos, bg_prm, Screen_Switch)
+ *  - Per-player globals (Champion, Connect_Status, Operator_Status, etc.)
+ *  - Input buffers (clean_input_buffers)
+ */
 static void setup_vs_mode() {
+    // Task timers and scratch data evolve independently per peer during menus.
+    // Zero them for deterministic start. DO NOT zero r_no or condition —
+    // those are game state machine routing fields set by the engine.
+    for (int i = 0; i < 11; i++) {
+        task[i].timer = 0;
+        SDL_zeroa(task[i].free);
+    }
+
     // This is pretty much a copy of logic from menu.c
     task[TASK_MENU].r_no[0] = 5; // go to idle routine (doing nothing)
     cpExitTask(TASK_SAVER);
-    task[TASK_SAVER].timer = 0; // Timer evolves independently per peer during menus
+
     plw[0].wu.pl_operator = 1;
     plw[1].wu.pl_operator = 1;
     Operator_Status[0] = 1;
@@ -204,6 +257,7 @@ static void setup_vs_mode() {
     Screen_Switch = 0;
     Screen_Switch_Buffer = 0;
     system_timer = 0;
+    Interrupt_Timer = 0;
 
     // Order[] tracks rendering layer visibility for character select UI elements.
     // Weak_PL picks the weaker CPU during demo/attract mode via random_16().
@@ -527,18 +581,61 @@ static void dump_state(const State* src, const char* filename) {
     SDL_CloseIO(io);
 }
 
+// Forward declarations for sanitization helpers (defined below).
+static void sanitize_work_pointers(WORK* w);
+static void sanitize_plw_pointers(PLW* p);
+
+/// Sanitize pointer fields in a State copy so the dump is free of ASLR noise.
+/// This makes compare_states.py output clean and comparable across peers.
+static void sanitize_state_pointers(State* dst) {
+    // GameState pointer fields
+    dst->gs.rw3col_ptr = NULL;
+    dst->gs.ci_pointer = NULL;
+
+    // _TASK function pointers
+    for (int i = 0; i < 11; i++) {
+        dst->gs.task[i].func_adrs = NULL;
+        dst->gs.task[i].callback_adrs = NULL;
+    }
+
+    // PLW pointer fields (both players)
+    for (int p = 0; p < 2; p++) {
+        sanitize_plw_pointers(&dst->gs.plw[p]);
+    }
+
+    // Effect WORK pointer fields
+    EffectState* es = &dst->es;
+    for (int i = 0; i < EFFECT_MAX; i++) {
+        WORK* w = (WORK*)es->frw[i];
+        if (w->be_flag != 0) {
+            sanitize_work_pointers(w);
+        }
+    }
+}
+
 static void dump_saved_state(int frame) {
-    const State* src = &state_buffer[frame % STATE_BUFFER_MAX];
+    // Copy and sanitize to avoid ASLR noise in the dump
+    static State sanitized;
+    SDL_memcpy(&sanitized, &state_buffer[frame % STATE_BUFFER_MAX], sizeof(State));
+    sanitize_state_pointers(&sanitized);
 
     char filename[100];
     SDL_snprintf(filename, sizeof(filename), "states/%d_%d", player_handle, frame);
 
-    dump_state(src, filename);
+    dump_state(&sanitized, filename);
 }
 #endif
 
 #define SDL_copya(dst, src) SDL_memcpy(dst, src, sizeof(src))
 
+/**
+ * @brief Snapshot the complete game state into a State struct.
+ *
+ * @netplay_sync
+ * Called by save_state() on every GekkoSaveEvent. Copies both the GameState
+ * (via GameState_Save) and the EffectState (effect pool + free list) into dst.
+ * This is the "save" half of the rollback save/load cycle.
+ */
 static void gather_state(State* dst) {
     // GameState
     GameState* gs = &dst->gs;
@@ -661,6 +758,19 @@ static State* note_state(const State* state, int frame) {
 }
 #endif
 
+/**
+ * @brief Save game state for rollback — GekkoNet callback.
+ *
+ * @netplay_sync
+ * Called by GekkoNet on every frame to save the current state. In DEBUG builds,
+ * also computes per-subsystem checksums for desync detection and saves sanitized
+ * PLW copies for binary comparison when a desync is detected.
+ *
+ * The checksum only covers a whitelist of gameplay-critical fields (PLW after
+ * pointer/rendering sanitization, RNG indices, round state, combat flags,
+ * slow-motion flags, super gauge, stun). UI-only fields are saved but not
+ * checksummed to reduce false positives from rendering-only divergence.
+ */
 static void save_state(GekkoGameEvent* event) {
     *event->data.save.state_len = sizeof(State);
     State* dst = (State*)event->data.save.state;
@@ -670,9 +780,11 @@ static void save_state(GekkoGameEvent* event) {
 #if defined(DEBUG)
     const int frame = event->data.save.frame;
 
-    if (battle_start_frame < 0 && G_No[1] == 2) {
+    // Activate checksumming from the very first synced frame (not just battle).
+    // This catches desyncs during character select, not only during gameplay.
+    if (battle_start_frame < 0) {
         battle_start_frame = frame;
-        SDL_Log("[P%d] battle detected at frame %d, checksumming active", local_port, frame);
+        SDL_Log("[P%d] checksumming active from frame %d (G_No[1]=%d)", local_port, frame, G_No[1]);
     }
 
     const bool checksumming_active = battle_start_frame >= 0;
@@ -816,6 +928,14 @@ static void save_state(GekkoGameEvent* event) {
 #endif
 }
 
+/**
+ * @brief Restore game state from a rollback — GekkoNet callback.
+ *
+ * @netplay_sync
+ * Called by GekkoNet when a rollback is needed. Restores all globals from the
+ * saved State snapshot: GameState_Load for game globals, then manually restores
+ * the effect pool state (frw, frwque, head_ix, tail_ix, frwctr, frwctr_min).
+ */
 static void load_state(const State* src) {
     // GameState
     const GameState* gs = &src->gs;
@@ -845,6 +965,21 @@ static bool need_to_catch_up() {
     return frames_behind >= 1;
 }
 
+/**
+ * @brief Execute one game simulation tick.
+ *
+ * @netplay_sync
+ * This is the atomic unit of deterministic simulation. GekkoNet calls this
+ * once per frame during normal play and multiple times during rollback replay.
+ *
+ * The sequence is:
+ *  1. SDLGameRenderer_ResetBatchState() — prevent texture stack overflow during
+ *     rapid rollback replays (each frame pushes to the stack via SetTexture).
+ *  2. No_Trans = !render — skip rendering during rollback replay frames.
+ *  3. njUserMain() — the game's main tick function.
+ *  4. seqsBeforeProcess() / seqsAfterProcess() — pre/post frame hooks.
+ *  5. Renderer_Flush2DPrimitives() — flush 2D draw calls between hooks.
+ */
 static void step_game(bool render) {
     // Reset renderer texture stack between sub-frames.
     // During rollback, GekkoNet replays many game frames within a single
@@ -862,6 +997,21 @@ static void step_game(bool render) {
     seqsAfterProcess();
 }
 
+/**
+ * @brief Advance one game frame with the given inputs — GekkoNet callback.
+ *
+ * @netplay_sync
+ * Called by GekkoNet for each AdvanceEvent (both during normal play and
+ * rollback replay). Injects the confirmed inputs for both players into the
+ * game's input globals:
+ *
+ *  - PLsw[p][0] (current frame) ← inputs[p] from GekkoNet
+ *  - PLsw[p][1] (previous frame) ← recall_input(p, frame - 1)
+ *  - p1sw_0/p2sw_0 ← mirrored copies for legacy code paths
+ *
+ * Input history is recorded via note_input() for future previous-frame lookups.
+ * Then step_game() runs the actual simulation tick.
+ */
 static void advance_game(GekkoGameEvent* event, bool render) {
     const u16* inputs = (u16*)event->data.adv.inputs;
     const int frame = event->data.adv.frame;

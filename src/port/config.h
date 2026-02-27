@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 #define CFG_KEY_FULLSCREEN "fullscreen"
+#define CFG_KEY_FULLSCREEN_WIDTH "fullscreen-width"
+#define CFG_KEY_FULLSCREEN_HEIGHT "fullscreen-height"
 #define CFG_KEY_WINDOW_WIDTH "window-width"
 #define CFG_KEY_WINDOW_HEIGHT "window-height"
 #define CFG_KEY_WINDOW_X "window-x"

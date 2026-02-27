@@ -485,6 +485,12 @@ int SDLApp_Init() {
         window_flags |= SDL_WINDOW_FULLSCREEN;
     }
 
+    // Apply user-defined fullscreen resolution (if any) before window creation
+    // so SDL3 knows the desired mode when the window starts fullscreen.
+    int fs_w = Config_GetInt(CFG_KEY_FULLSCREEN_WIDTH);
+    int fs_h = Config_GetInt(CFG_KEY_FULLSCREEN_HEIGHT);
+    bool has_fs_res = (fs_w > 0 && fs_h > 0);
+
     int width = (g_cli_window_width > 0) ? g_cli_window_width : Config_GetInt(CFG_KEY_WINDOW_WIDTH);
     int height = (g_cli_window_height > 0) ? g_cli_window_height : Config_GetInt(CFG_KEY_WINDOW_HEIGHT);
     if (width <= 0)
@@ -518,6 +524,21 @@ int SDLApp_Init() {
         if (!window) {
             SDL_Log("Couldn't create window: %s", SDL_GetError());
             return 1;
+        }
+    }
+
+    // Set the fullscreen display mode on the window before it goes fullscreen.
+    // When has_fs_res is true, SDL3 will enter exclusive fullscreen at the
+    // requested resolution; otherwise it uses desktop borderless.
+    if (has_fs_res) {
+        SDL_DisplayMode mode = { 0 };
+        mode.w = fs_w;
+        mode.h = fs_h;
+        if (!SDL_SetWindowFullscreenMode(window, &mode)) {
+            SDL_Log("SDLApp_Init: Could not set fullscreen mode %dx%d: %s",
+                    fs_w, fs_h, SDL_GetError());
+        } else {
+            SDL_Log("SDLApp_Init: Fullscreen mode set to %dx%d", fs_w, fs_h);
         }
     }
 
@@ -2054,6 +2075,23 @@ void SDLApp_ToggleFullscreen() {
         SDL_SetWindowFullscreen(window, false);
         Config_SetBool(CFG_KEY_FULLSCREEN, false);
     } else {
+        // Apply user-defined fullscreen resolution before entering fullscreen.
+        // If both dimensions are set, SDL3 enters exclusive fullscreen at that
+        // resolution; otherwise it falls back to desktop borderless.
+        int fs_w = Config_GetInt(CFG_KEY_FULLSCREEN_WIDTH);
+        int fs_h = Config_GetInt(CFG_KEY_FULLSCREEN_HEIGHT);
+        if (fs_w > 0 && fs_h > 0) {
+            SDL_DisplayMode mode = { 0 };
+            mode.w = fs_w;
+            mode.h = fs_h;
+            if (!SDL_SetWindowFullscreenMode(window, &mode)) {
+                SDL_Log("ToggleFullscreen: Could not set mode %dx%d: %s",
+                        fs_w, fs_h, SDL_GetError());
+            }
+        } else {
+            // Ensure desktop borderless (NULL = use desktop mode)
+            SDL_SetWindowFullscreenMode(window, NULL);
+        }
         SDL_SetWindowFullscreen(window, true);
         Config_SetBool(CFG_KEY_FULLSCREEN, true);
     }

@@ -1,3 +1,27 @@
+/**
+ * @file game_state.c
+ * @brief Save/load all deterministic game globals for netplay rollback.
+ *
+ * @netplay_sync — Adding a new global? You MUST add it to BOTH functions.
+ *
+ * GameState_Save() snapshots every global variable listed in GameState (see
+ * game_state.h) into a flat struct. GameState_Load() restores them. Together
+ * they are the core rollback primitives — GekkoNet calls save on every frame
+ * and load on every rollback.
+ *
+ * The GS_SAVE / GS_LOAD macros rely on the struct field name matching the
+ * global variable name exactly (e.g. `GS_SAVE(Random_ix16)` copies the
+ * global `Random_ix16` into `dst->Random_ix16`).
+ *
+ * Fields are organized by source module (// comments) to match game_state.h.
+ * If you add a new global that affects the simulation, add the corresponding
+ * GS_SAVE and GS_LOAD line in the same section, and add the field to the
+ * GameState struct in game_state.h.
+ *
+ * @see game_state.h for the struct definition and field documentation
+ * @see gather_state(), save_state(), load_state() in netplay.c for how these
+ *      are called from the rollback lifecycle
+ */
 #include "game_state.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/animation/win_pl.h"

@@ -2,6 +2,21 @@
  * @file structs.h
  * @brief Core data structures shared across the game engine (WORK, PLW,
  *        WORK_Other, MVXY, CharState, etc.).
+ *
+ * @netplay_sync — WORK and PLW are the primary per-entity simulation structs.
+ *
+ * During netplay, these structs are saved/loaded as part of the rollback state:
+ *  - PLW[2] (the two players) are stored in GameState.
+ *  - Effect WORK slots are stored in EffectState.frw[][].
+ *
+ * For desync detection, PLW copies are checksummed after sanitizing:
+ *  - Pointer fields (ASLR makes raw pointers differ between peers)
+ *  - Rendering-only fields (palette flags, colcd)
+ *  - Linked-list indices (before, behind, myself, listix, timing — allocation-order dependent)
+ *  - WORK_Other_CONN.conn[] tails past num_of_conn (uninitialized heap data)
+ *
+ * See sanitize_work_pointers(), sanitize_work_rendering(),
+ * sanitize_plw_pointers(), sanitize_work_other_conn() in netplay.c.
  */
 #ifndef STRUCTS_H
 #define STRUCTS_H
@@ -247,6 +262,17 @@ typedef struct {
     } body;
 } CharState;
 
+/**
+ * @brief Base entity struct — every game object (player, projectile, effect).
+ *
+ * @netplay_sync
+ * WORK is the base struct embedded in PLW (players) and WORK_Other (effects).
+ * Pointer fields (marked below) must be zeroed before checksumming because
+ * ASLR assigns different addresses on each peer. Rendering-only fields
+ * (colcd, current_colcd, extra_col, extra_col_2) need palette-flag masking.
+ * Linked-list fields (before, behind, myself, listix, timing) differ by
+ * allocation order and are excluded from checksums.
+ */
 typedef struct {
     s8 be_flag;
     s8 disp_flag;
@@ -258,24 +284,28 @@ typedef struct {
     s16 id;
     s8 rl_flag;
     s8 rl_waza;
-    void* target_adrs;
-    void* hit_adrs;
-    void* dmg_adrs;
+    void* target_adrs;        ///< @netplay_sync Pointer — zeroed for checksum
+    void* hit_adrs;           ///< @netplay_sync Pointer — zeroed for checksum
+    void* dmg_adrs;           ///< @netplay_sync Pointer — zeroed for checksum
 
     /// Index of the struct that is in front of this one in the list.
+    /// @netplay_sync Allocation-order dependent — excluded from checksums.
     s16 before;
 
     /// Index of this struct.
+    /// @netplay_sync Allocation-order dependent — excluded from checksums.
     s16 myself;
 
     /// Index of the struct that is behind this one in the list.
+    /// @netplay_sync Allocation-order dependent — excluded from checksums.
     s16 behind;
 
     /// Index of the list that this struct is a part of.
+    /// @netplay_sync Allocation-order dependent — excluded from checksums.
     s16 listix;
 
     s16 dead_f;
-    s16 timing;
+    s16 timing;               ///< @netplay_sync Allocation-order dependent — excluded from checksums
     s16 routine_no[8];
     s16 old_rno[8];
     s16 hit_stop;
@@ -349,7 +379,7 @@ typedef struct {
     s16 cg_ix;
     s16 now_koc;
     s16 char_index;
-    s16 current_colcd;
+    s16 current_colcd;        ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
 
     union {
         CharState char_state;
@@ -390,9 +420,9 @@ typedef struct {
     u16 old_cgnum;
     s16 floor;
     u16 ccoff;
-    s16 colcd;
+    s16 colcd;                ///< @netplay_sync Rendering-derived — fully zeroed for checksum
     s16 my_col_mode;
-    s16 my_col_code;
+    s16 my_col_code;          ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
     s16 my_priority;
     s16 my_family;
     s16 my_ext_pri;
@@ -489,8 +519,8 @@ typedef struct {
     void* my_effadrs;
     s16 shell_ix[8];
     s16 hm_dm_side;
-    s16 extra_col;
-    s16 extra_col_2;
+    s16 extra_col;            ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
+    s16 extra_col_2;          ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
     s16 original_vitality;
     u8 hit_work_id;
     u8 dmg_work_id;
@@ -569,9 +599,19 @@ typedef struct {
     s16 data_ix;
 } AS;
 
+/**
+ * @brief Player entity struct — extends WORK with player-specific state.
+ *
+ * @netplay_sync
+ * PLW[2] is the largest and most desync-sensitive section of the rollback state.
+ * Both players' PLW structs are checksummed after sanitizing pointers and
+ * rendering bits. The embedded WORK (wu) is sanitized via sanitize_work_pointers()
+ * and sanitize_work_rendering(). PLW-specific pointers (cp, dm_step_tbl, as, sa, py)
+ * are also zeroed via sanitize_plw_pointers().
+ */
 typedef struct {
     WORK wu;
-    WORK_CP* cp;
+    WORK_CP* cp;              ///< @netplay_sync Pointer — zeroed for checksum
     u32 spmv_ng_flag;
     u32 spmv_ng_flag2;
 
@@ -725,6 +765,15 @@ typedef struct {
     u16 chr;
 } CONN;
 
+/**
+ * @brief Effect entity with variable-length conn[] tail.
+ *
+ * @netplay_sync
+ * Entries in conn[] past num_of_conn are uninitialized heap data that
+ * differs between peers. sanitize_work_other_conn() in netplay.c zeroes
+ * the unused tail before checksumming. This was the root cause of the
+ * F1549 desync.
+ */
 typedef struct {
     WORK wu;
     u32* my_master;
@@ -733,7 +782,7 @@ typedef struct {
     s16 master_player;
     s16 master_priority;
     s16 prio_reverse;
-    s16 num_of_conn;
+    s16 num_of_conn;          ///< @netplay_sync Only conn[0..num_of_conn-1] are valid
     CONN conn[108];
 } WORK_Other_CONN;
 

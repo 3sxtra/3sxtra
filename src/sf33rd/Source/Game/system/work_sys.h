@@ -1,6 +1,12 @@
 /**
  * @file work_sys.h
  * @brief Extern declarations for global system state variables.
+ *
+ * @netplay_sync
+ * Several globals declared here are saved/loaded in GameState for rollback.
+ * Marked with @netplay_sync below. setup_vs_mode() in netplay.c canonicalizes
+ * bg_pos, fm_pos, bg_prm, Screen_Switch, and system_timer to zero before
+ * the first synced frame.
  */
 #ifndef WORK_SYS_H
 #define WORK_SYS_H
@@ -61,12 +67,16 @@ extern u16 p4sw_buff;
 extern u32 Interrupt_Timer;
 extern s8 Gill_Appear_Flag;
 
-/// Current and previous inputs for controllers 1 and 2
-/// `PLsw[i][0]` holds current inputs for controller `i`. `PLsw[i][1]` – previous button presses
+/// @netplay_sync Current and previous inputs for controllers 1 and 2.
+/// `PLsw[i][0]` holds current inputs for controller `i`. `PLsw[i][1]` – previous button presses.
+/// Fed by advance_game() in netplay.c during rollback simulation.
 extern u16 PLsw[2][2];
 
+/// @netplay_sync Background scroll positions — zeroed by setup_vs_mode().
 extern BG_POS bg_pos[8];
+/// @netplay_sync Foreground scroll positions.
 extern FM_POS fm_pos[8];
+/// @netplay_sync Background parameters — zeroed by setup_vs_mode().
 extern BackgroundParameters bg_prm[8];
 extern f32 scr_sc;
 
