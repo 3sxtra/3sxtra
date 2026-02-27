@@ -15,6 +15,15 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 
+#define CLAMP_MIN_ZERO(val) do { if ((val) < 0) (val) = 0; } while (0)
+
+/** @brief Sets routine numbers, clearing rno[1] and rno[3] to 0. */
+static inline void set_routine(PLW* wk, u8 rno2) {
+    wk->wu.routine_no[1] = 0;
+    wk->wu.routine_no[2] = rno2;
+    wk->wu.routine_no[3] = 0;
+}
+
 const u8 about_rno[6] = { 0, 1, 2, 1, 2, 0 };
 
 const s16 sel_hd_fg_hos[20][2] = { { 0, 92 }, { 24, 76 }, { 8, 76 },   { 20, 64 }, { 0, 84 }, { 4, 80 }, { 8, 88 },
@@ -75,17 +84,9 @@ void check_em_tk_power_off(PLW* wk, PLW* tk) {
     tk->tk_kizetsu -= wk->utk_kizetsu;
     wk->utk_dageki = wk->utk_nage = wk->utk_kizetsu = 0;
 
-    if (tk->tk_dageki < 0) {
-        tk->tk_dageki = 0;
-    }
-
-    if (tk->tk_nage < 0) {
-        tk->tk_nage = 0;
-    }
-
-    if (tk->tk_kizetsu < 0) {
-        tk->tk_kizetsu = 0;
-    }
+    CLAMP_MIN_ZERO(tk->tk_dageki);
+    CLAMP_MIN_ZERO(tk->tk_nage);
+    CLAMP_MIN_ZERO(tk->tk_kizetsu);
 }
 
 /** @brief Returns the ukemi (tech-roll) flag for the player. */
@@ -240,9 +241,7 @@ s32 check_air_jump(PLW* wk) {
         return 0;
     }
 
-    wk->wu.routine_no[1] = 0;
-    wk->wu.routine_no[2] = 53;
-    wk->wu.routine_no[3] = 0;
+    set_routine(wk, 53);
     wk->jpdir = 0;
     grade_add_command_waza(wk->wu.id);
     return 1;
@@ -271,9 +270,7 @@ s32 check_sankaku_tobi(PLW* wk) {
         return 0;
     }
 
-    wk->wu.routine_no[1] = 0;
-    wk->wu.routine_no[2] = 52;
-    wk->wu.routine_no[3] = 0;
+    set_routine(wk, 52);
     wk->jpdir = 0;
     grade_add_command_waza(wk->wu.id);
     return 1;
@@ -360,9 +357,7 @@ s16 check_F_R_dash(PLW* wk) {
         switch (num) {
         case 1:
             if (!(wk->spmv_ng_flag & DIP_FORWARD_DASH_DISABLED)) {
-                wk->wu.routine_no[1] = 0;
-                wk->wu.routine_no[2] = 5;
-                wk->wu.routine_no[3] = 0;
+                set_routine(wk, 5);
                 rnum = 1;
             }
 
@@ -370,9 +365,7 @@ s16 check_F_R_dash(PLW* wk) {
 
         case 2:
             if (!(wk->spmv_ng_flag & 8)) {
-                wk->wu.routine_no[1] = 0;
-                wk->wu.routine_no[2] = 6;
-                wk->wu.routine_no[3] = 0;
+                set_routine(wk, 6);
                 rnum = 1;
             }
 
@@ -407,18 +400,16 @@ s32 check_jump_ready(PLW* wk) {
     }
 
     if (!(wk->spmv_ng_flag & DIP_HIGH_JUMP_DISABLED) && wk->cp->waza_flag[2] != 0) {
-        wk->wu.routine_no[2] = 17;
+        set_routine(wk, 17);
         grade_add_command_waza(wk->wu.id);
     } else {
         if (wk->spmv_ng_flag & DIP_JUMP_DISABLED) {
             return 0;
         }
 
-        wk->wu.routine_no[2] = 16;
+        set_routine(wk, 16);
     }
 
-    wk->wu.routine_no[1] = 0;
-    wk->wu.routine_no[3] = 0;
     wk->jpdir = 0;
     return 1;
 }
@@ -441,9 +432,7 @@ s32 check_hijump_only(PLW* wk) {
         return 0;
     }
 
-    wk->wu.routine_no[1] = 0;
-    wk->wu.routine_no[2] = 17;
-    wk->wu.routine_no[3] = 0;
+    set_routine(wk, 17);
     wk->jpdir = 0;
     grade_add_command_waza(wk->wu.id);
     return 1;
@@ -455,9 +444,7 @@ s32 check_bend_myself(PLW* wk) {
         return 0;
     }
 
-    wk->wu.routine_no[1] = 0;
-    wk->wu.routine_no[2] = 8;
-    wk->wu.routine_no[3] = 0;
+    set_routine(wk, 8);
     return 1;
 }
 
@@ -467,16 +454,12 @@ s16 check_F_R_walk(PLW* wk) {
 
     switch (wk->cp->lever_dir) {
     case 1:
-        wk->wu.routine_no[1] = 0;
-        wk->wu.routine_no[2] = 3;
-        wk->wu.routine_no[3] = 0;
+        set_routine(wk, 3);
         rnum = 1;
         break;
 
     case 2:
-        wk->wu.routine_no[1] = 0;
-        wk->wu.routine_no[2] = 4;
-        wk->wu.routine_no[3] = 0;
+        set_routine(wk, 4);
         rnum = 1;
         break;
     }
@@ -499,13 +482,11 @@ s32 check_turn_to_back(PLW* wk) {
     }
 
     if (wk->cp->sw_lvbt & 2) {
-        wk->wu.routine_no[2] = 10;
+        set_routine(wk, 10);
     } else {
-        wk->wu.routine_no[2] = 2;
+        set_routine(wk, 2);
     }
 
-    wk->wu.routine_no[1] = 0;
-    wk->wu.routine_no[3] = 0;
     wk->wu.cg_type = 0;
     wk->hurimukenai_flag = 1;
     return 1;
@@ -552,13 +533,10 @@ s16 check_walking_lv_dir(PLW* wk) {
 
     if (rnum) {
         if (wk->wu.pat_status < 32) {
-            wk->wu.routine_no[2] = 1;
+            set_routine(wk, 1);
         } else {
-            wk->wu.routine_no[2] = 9;
+            set_routine(wk, 9);
         }
-
-        wk->wu.routine_no[1] = 0;
-        wk->wu.routine_no[3] = 0;
     }
 
     return rnum;
@@ -570,9 +548,7 @@ s32 check_stand_up(PLW* wk) {
         return 0;
     }
 
-    wk->wu.routine_no[1] = 0;
-    wk->wu.routine_no[2] = 7;
-    wk->wu.routine_no[3] = 0;
+    set_routine(wk, 7);
     return 1;
 }
 
@@ -587,15 +563,12 @@ s32 check_defense_lever(PLW* wk) {
     }
 
     if (wk->cp->sw_new & 2) {
-        wk->wu.routine_no[2] = 29;
+        set_routine(wk, 29);
     } else if (check_attbox_dir(wk)) {
-        wk->wu.routine_no[2] = 28;
+        set_routine(wk, 28);
     } else {
-        wk->wu.routine_no[2] = 27;
+        set_routine(wk, 27);
     }
-
-    wk->wu.routine_no[1] = 0;
-    wk->wu.routine_no[3] = 0;
     return 1;
 }
 
@@ -755,26 +728,18 @@ s32 check_ashimoto(PLW* wk) {
         return 0;
     }
 
-    wk->wu.routine_no[1] = 0;
-    wk->wu.routine_no[2] = 54;
-    wk->wu.routine_no[3] = 0;
+    set_routine(wk, 54);
     wk->jpdir = 0;
     return 1;
 }
 
 /** @brief Extended floor check with landing height threshold. */
 s32 check_floor_2(PLW* wk) {
-    WORK* efw;
-
-    if (wk->bs2_on_car == 0) {
+    if (check_floor(wk) == 0) {
         return 0;
     }
 
-    if (wk->bs2_area_car) {
-        return 0;
-    }
-
-    efw = (WORK*)((WORK*)wk->wu.target_adrs)->my_effadrs;
+    WORK* efw = (WORK*)((WORK*)wk->wu.target_adrs)->my_effadrs;
 
     if (hit_check_x_only(&wk->wu, efw, &wk->wu.hosei_adrs->hos_box[4], &efw->h_hos->hos_box[0]) != 0) {
         return 0;
@@ -789,8 +754,6 @@ s32 check_ashimoto_ex(PLW* wk) {
         return 0;
     }
 
-    wk->wu.routine_no[1] = 0;
-    wk->wu.routine_no[2] = 55;
-    wk->wu.routine_no[3] = 0;
+    set_routine(wk, 55);
     return 1;
 }

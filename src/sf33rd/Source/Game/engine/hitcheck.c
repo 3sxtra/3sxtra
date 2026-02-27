@@ -1044,6 +1044,24 @@ void same_dm_stop(WORK* as, WORK* ds) {
     }
 }
 
+/**
+ * @brief Common air-parry result: blocking point, hit flag, routine, and chip check.
+ *
+ * Every air-parry path in defense_sky sets the same constants, so no extra
+ * parameters are needed beyond the attacker/defender pair.
+ */
+static s32 apply_air_parry_result(PLW* as, PLW* ds) {
+    blocking_point_count_up(ds);
+    as->wu.hf.hit.player = 0x80;
+    ds->wu.routine_no[2] = 0x22;
+
+    if (check_dm_att_blocking(&as->wu, &ds->wu, 7)) {
+        return 2;
+    }
+
+    return 0;
+}
+
 /** @brief Processes air defence — guard or parry while airborne. */
 s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
     s8 just_now;
@@ -1069,26 +1087,10 @@ s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
         if (just_now) {
             if (!(ds->spmv_ng_flag & DIP_RED_PARRY_DISABLED) &&
                 (ds->cp->waza_flag[5] >= grdb2[ds->wu.id][attr_att] || abs)) {
-                blocking_point_count_up(ds);
-                as->wu.hf.hit.player = 0x80;
-                ds->wu.routine_no[2] = 0x22;
-
-                if (check_dm_att_blocking(&as->wu, &ds->wu, 7)) {
-                    return 2;
-                }
-
-                return 0;
+                return apply_air_parry_result(as, ds);
             }
         } else if (!(ds->spmv_ng_flag & DIP_AIR_PARRY_DISABLED) && ((ds->cp->waza_flag[5] != 0) || abs)) {
-            blocking_point_count_up(ds);
-            as->wu.hf.hit.player = 0x80;
-            ds->wu.routine_no[2] = 0x22;
-
-            if (check_dm_att_blocking(&as->wu, &ds->wu, 7)) {
-                return 2;
-            }
-
-            return 0;
+            return apply_air_parry_result(as, ds);
         }
     }
 
@@ -1142,6 +1144,24 @@ void blocking_point_count_up(PLW* wk) {
     }
 }
 
+/**
+ * @brief Common ground-parry result: blocking point, hit flag, routine, and chip check.
+ *
+ * @param routine_no  Defender routine to set (31/32 for stand-parry, 33 for crouch-parry).
+ * @param dnum        Chip-damage divisor passed to check_dm_att_blocking (5 or 6).
+ */
+static s32 apply_ground_parry_result(PLW* as, PLW* ds, s16 routine_no, s16 dnum) {
+    blocking_point_count_up(ds);
+    as->wu.hf.hit.player = 64;
+    ds->wu.routine_no[2] = routine_no;
+
+    if (check_dm_att_blocking(&as->wu, &ds->wu, dnum)) {
+        return 2;
+    }
+
+    return 0;
+}
+
 /** @brief Processes ground defence — stand/crouch guard or parry. */
 s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
     s8 just_now;
@@ -1165,57 +1185,20 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
 
     if (ds->py->flag == 0 && !(ds->guard_flag & 2) && as->wu.att.guard & 3) {
         if (as->wu.att.guard & 2) {
+            s16 stand_rno = check_attbox_dir(ds) == 0 ? 31 : 32;
+
             if (just_now) {
                 if (!(ds->spmv_ng_flag & DIP_RED_PARRY_DISABLED) &&
                     ((ds->cp->waza_flag[3] >= grdb[ds->wu.id][attr_att][0]) || abs)) {
-                    blocking_point_count_up(ds);
-                    as->wu.hf.hit.player = 64;
-
-                    if (check_attbox_dir(ds) == 0) {
-                        ds->wu.routine_no[2] = 31;
-                    } else {
-                        ds->wu.routine_no[2] = 32;
-                    }
-
-                    if (check_dm_att_blocking(&as->wu, &ds->wu, 5)) {
-                        return 2;
-                    }
-
-                    return 0;
+                    return apply_ground_parry_result(as, ds, stand_rno, 5);
                 }
             } else if (!(ds->spmv_ng_flag & DIP_UNKNOWN_8)) {
                 if (as->wu.jump_att_flag) {
                     if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) && (ds->cp->waza_flag[12] != 0 || abs)) {
-                        blocking_point_count_up(ds);
-                        as->wu.hf.hit.player = 64;
-
-                        if (check_attbox_dir(ds) == 0) {
-                            ds->wu.routine_no[2] = 31;
-                        } else {
-                            ds->wu.routine_no[2] = 32;
-                        }
-
-                        if (check_dm_att_blocking(&as->wu, &ds->wu, 5)) {
-                            return 2;
-                        }
-
-                        return 0;
+                        return apply_ground_parry_result(as, ds, stand_rno, 5);
                     }
                 } else if (ds->cp->waza_flag[3] != 0 || abs) {
-                    blocking_point_count_up(ds);
-                    as->wu.hf.hit.player = 64;
-
-                    if (check_attbox_dir(ds) == 0) {
-                        ds->wu.routine_no[2] = 31;
-                    } else {
-                        ds->wu.routine_no[2] = 32;
-                    }
-
-                    if (check_dm_att_blocking(&as->wu, &ds->wu, 5)) {
-                        return 2;
-                    }
-
-                    return 0;
+                    return apply_ground_parry_result(as, ds, stand_rno, 5);
                 }
             }
         }
@@ -1224,39 +1207,15 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
             if (just_now) {
                 if (!(ds->spmv_ng_flag & DIP_RED_PARRY_DISABLED) &&
                     (!(ds->cp->waza_flag[4] < grdb[ds->wu.id][attr_att][1]) || abs)) {
-                    blocking_point_count_up(ds);
-                    as->wu.hf.hit.player = 64;
-                    ds->wu.routine_no[2] = 33;
-
-                    if (check_dm_att_blocking(&as->wu, &ds->wu, 6)) {
-                        return 2;
-                    }
-
-                    return 0;
+                    return apply_ground_parry_result(as, ds, 33, 6);
                 }
             } else if (!(ds->spmv_ng_flag & DIP_UNKNOWN_9)) {
                 if (as->wu.jump_att_flag) {
                     if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) && (ds->cp->waza_flag[4] != 0 || abs)) {
-                        blocking_point_count_up(ds);
-                        as->wu.hf.hit.player = 64;
-                        ds->wu.routine_no[2] = 33;
-
-                        if (check_dm_att_blocking(&as->wu, &ds->wu, 6)) {
-                            return 2;
-                        }
-
-                        return 0;
+                        return apply_ground_parry_result(as, ds, 33, 6);
                     }
                 } else if (ds->cp->waza_flag[4] != 0 || abs) {
-                    blocking_point_count_up(ds);
-                    as->wu.hf.hit.player = 64;
-                    ds->wu.routine_no[2] = 33;
-
-                    if (check_dm_att_blocking(&as->wu, &ds->wu, 6)) {
-                        return 2;
-                    }
-
-                    return 0;
+                    return apply_ground_parry_result(as, ds, 33, 6);
                 }
             }
         }

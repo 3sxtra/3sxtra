@@ -45,56 +45,46 @@ static void process_normal(PLW* wk) {
         plpnm_xxxxx[wk->wu.routine_no[2]](wk);
 }
 
+/** @brief Initializes routine_no and cg_type for a normal-state transition. */
+static void TO_nm_init(WORK* wk, s16 r2, s16 r3) {
+    wk->routine_no[1] = 0;
+    wk->routine_no[2] = r2;
+    wk->routine_no[3] = r3;
+    wk->cg_type = 0;
+}
+
 /** @brief Transitions to normal state 01 (standing idle). */
 static void TO_nm_01000(WORK* wk) {
-    wk->routine_no[1] = 0;
-    wk->routine_no[2] = 1;
-    wk->routine_no[3] = 0;
-    wk->cg_type = 0;
+    TO_nm_init(wk, 1, 0);
     nm_01000((PLW*)wk);
 }
 
 /** @brief Transitions to normal state 36 (taunt). */
 static void TO_nm_36000(WORK* wk) {
-    wk->routine_no[1] = 0;
-    wk->routine_no[2] = 36;
-    wk->routine_no[3] = 0;
-    wk->cg_type = 0;
+    TO_nm_init(wk, 36, 0);
     nm_01000((PLW*)wk);
 }
 
 /** @brief Transitions to normal state 09 (crouching idle). */
 static void TO_nm_09000(WORK* wk) {
-    wk->routine_no[1] = 0;
-    wk->routine_no[2] = 9;
-    wk->routine_no[3] = 0;
-    wk->cg_type = 0;
+    TO_nm_init(wk, 9, 0);
     nm_09000((PLW*)wk);
 }
 
 /** @brief Transitions to normal state 37 (personal action). */
 static void TO_nm_37000(WORK* wk) {
-    wk->routine_no[1] = 0;
-    wk->routine_no[2] = 37;
-    wk->routine_no[3] = 0;
-    wk->cg_type = 0;
+    TO_nm_init(wk, 37, 0);
     nm_09000((PLW*)wk);
 }
 
 /** @brief Transitions to normal state 38 (wall-jump). */
 static void TO_nm_38000(WORK* wk) {
-    wk->routine_no[1] = 0;
-    wk->routine_no[2] = 38;
-    wk->routine_no[3] = 1;
-    wk->cg_type = 0;
+    TO_nm_init(wk, 38, 1);
 }
 
 /** @brief Transitions to airborne state 18 variant 01. */
 static void TO_nm_18000_01(WORK* wk) {
-    wk->routine_no[1] = 0;
-    wk->routine_no[2] = 18;
-    wk->routine_no[3] = 1;
-    wk->cg_type = 0;
+    TO_nm_init(wk, 18, 1);
     nm_18000((PLW*)wk);
 }
 
@@ -752,335 +742,126 @@ static void nm_18000(PLW* wk) {
     jumping_cg_type_check(wk);
 }
 
+/**
+ * @brief Common attack-check priority chain used by cg_type landing logic.
+ *
+ * Runs the standard 8-check sequence shared by case 2, 7, and 3 inside
+ * jumping_cg_type_check.  Returns 1 if any check consumed the input.
+ */
+static s32 cg_type_attack_chain(PLW* wk) {
+    if (check_full_gauge_attack(wk, 0))  return 1;
+    if (check_full_gauge_attack2(wk, 0)) return 1;
+    if (check_super_arts_attack(wk))     return 1;
+    if (check_special_attack(wk))        return 1;
+    if (check_chouhatsu(wk))             return 1;
+    if (check_catch_attack(wk))          return 1;
+    if (check_leap_attack(wk))           return 1;
+    if (check_nm_attack(wk))             return 1;
+    return 0;
+}
+
 /** @brief Determines grab type for airborne collision. */
 static void jumping_cg_type_check(PLW* wk) {
-    if (wk->wu.pat_status < 32) {
-        switch (wk->wu.cg_type) {
-        case 0xFF:
-            wk->guard_flag = 0;
-            clear_chainex_check(wk->wu.id);
+    s32 standing = wk->wu.pat_status < 32;
+
+    switch (wk->wu.cg_type) {
+    case 0xFF:
+        wk->guard_flag = 0;
+        clear_chainex_check(wk->wu.id);
+
+        if (standing) {
             TO_nm_01000(&wk->wu);
+        } else {
+            TO_nm_09000(&wk->wu);
+        }
+
+        break;
+
+    case 2:
+        wk->guard_flag = 0;
+        clear_chainex_check(wk->wu.id);
+
+        if (cg_type_attack_chain(wk)) {
             break;
+        }
 
-        case 2:
-            wk->guard_flag = 0;
-            clear_chainex_check(wk->wu.id);
-
-            if (check_full_gauge_attack(wk, 0)) {
-                break;
-            }
-
-            if (check_full_gauge_attack2(wk, 0)) {
-                break;
-            }
-
-            if (check_super_arts_attack(wk)) {
-                break;
-            }
-
-            if (check_special_attack(wk)) {
-                break;
-            }
-
-            if (check_chouhatsu(wk)) {
-                break;
-            }
-
-            if (check_catch_attack(wk)) {
-                break;
-            }
-
-            if (check_leap_attack(wk)) {
-                break;
-            }
-
-            if (check_nm_attack(wk)) {
-                break;
-            }
-
-            if (check_cg_cancel_data(wk)) {
-                break;
-            }
-
-            if (check_jump_ready(wk)) {
-                return;
-            }
-
+        if (check_cg_cancel_data(wk)) {
             break;
+        }
 
-        case 7:
-            wk->guard_flag = 0;
-            clear_chainex_check(wk->wu.id);
+        if (check_jump_ready(wk)) {
+            return;
+        }
 
-            if (check_full_gauge_attack(wk, 0)) {
-                break;
-            }
+        break;
 
-            if (check_full_gauge_attack2(wk, 0)) {
-                break;
-            }
+    case 7:
+        wk->guard_flag = 0;
+        clear_chainex_check(wk->wu.id);
 
-            if (check_super_arts_attack(wk)) {
-                break;
-            }
-
-            if (check_special_attack(wk)) {
-                break;
-            }
-
-            if (check_chouhatsu(wk)) {
-                break;
-            }
-
-            if (check_catch_attack(wk)) {
-                break;
-            }
-
-            if (check_leap_attack(wk)) {
-                break;
-            }
-
-            if (check_nm_attack(wk)) {
-                break;
-            }
-
-            if (check_cg_cancel_data(wk)) {
-                return;
-            }
-
+        if (cg_type_attack_chain(wk)) {
             break;
+        }
 
-        case 3:
-            wk->guard_flag = 0;
-            clear_chainex_check(wk->wu.id);
+        if (check_cg_cancel_data(wk)) {
+            return;
+        }
 
-            if (check_full_gauge_attack(wk, 0)) {
-                break;
-            }
+        break;
 
-            if (check_full_gauge_attack2(wk, 0)) {
-                break;
-            }
+    case 3:
+        wk->guard_flag = 0;
+        clear_chainex_check(wk->wu.id);
 
-            if (check_super_arts_attack(wk)) {
-                break;
-            }
+        if (cg_type_attack_chain(wk)) {
+            break;
+        }
 
-            if (check_special_attack(wk)) {
-                break;
-            }
+        if (check_cg_cancel_data(wk)) {
+            break;
+        }
 
-            if (check_chouhatsu(wk)) {
-                break;
-            }
+        if (check_turn_to_back(wk)) {
+            break;
+        }
 
-            if (check_catch_attack(wk)) {
-                break;
-            }
+        if (check_F_R_dash(wk)) {
+            break;
+        }
 
-            if (check_leap_attack(wk)) {
-                break;
-            }
+        if (check_jump_ready(wk)) {
+            break;
+        }
 
-            if (check_nm_attack(wk)) {
-                break;
-            }
-
-            if (check_cg_cancel_data(wk)) {
-                break;
-            }
-
-            if (check_turn_to_back(wk)) {
-                break;
-            }
-
-            if (check_F_R_dash(wk)) {
-                break;
-            }
-
-            if (check_jump_ready(wk)) {
-                break;
-            }
-
+        if (standing) {
             if (check_bend_myself(wk)) {
                 break;
             }
 
             check_F_R_walk(wk);
-            break;
-
-        case 64:
-            wk->guard_flag = 0;
-            clear_chainex_check(wk->wu.id);
-
-            if (wk->wu.pat_status < 14) {
-                TO_nm_36000(&wk->wu);
-                break;
-            }
-
-            TO_nm_38000(&wk->wu);
-            break;
-        }
-    } else {
-        switch (wk->wu.cg_type) {
-        case 0xFF:
-            wk->guard_flag = 0;
-            clear_chainex_check(wk->wu.id);
-            TO_nm_09000(&wk->wu);
-            break;
-
-        case 2:
-            wk->guard_flag = 0;
-            clear_chainex_check(wk->wu.id);
-
-            if (check_full_gauge_attack(wk, 0)) {
-                break;
-            }
-
-            if (check_full_gauge_attack2(wk, 0)) {
-                break;
-            }
-
-            if (check_super_arts_attack(wk)) {
-                break;
-            }
-
-            if (check_special_attack(wk)) {
-                break;
-            }
-
-            if (check_chouhatsu(wk)) {
-                break;
-            }
-
-            if (check_catch_attack(wk)) {
-                break;
-            }
-
-            if (check_leap_attack(wk)) {
-                break;
-            }
-
-            if (check_nm_attack(wk)) {
-                break;
-            }
-
-            if (check_cg_cancel_data(wk)) {
-                break;
-            }
-
-            if (check_jump_ready(wk)) {
-                return;
-            }
-
-            break;
-
-        case 7:
-            wk->guard_flag = 0;
-            clear_chainex_check(wk->wu.id);
-
-            if (check_full_gauge_attack(wk, 0)) {
-                break;
-            }
-
-            if (check_full_gauge_attack2(wk, 0)) {
-                break;
-            }
-
-            if (check_super_arts_attack(wk)) {
-                break;
-            }
-
-            if (check_special_attack(wk)) {
-                break;
-            }
-
-            if (check_chouhatsu(wk)) {
-                break;
-            }
-
-            if (check_catch_attack(wk)) {
-                break;
-            }
-
-            if (check_leap_attack(wk)) {
-                break;
-            }
-
-            if (check_nm_attack(wk)) {
-                break;
-            }
-
-            if (check_cg_cancel_data(wk)) {
-                return;
-            }
-
-            break;
-
-        case 3:
-            wk->guard_flag = 0;
-            clear_chainex_check(wk->wu.id);
-
-            if (check_full_gauge_attack(wk, 0)) {
-                break;
-            }
-
-            if (check_full_gauge_attack2(wk, 0)) {
-                break;
-            }
-
-            if (check_super_arts_attack(wk)) {
-                break;
-            }
-
-            if (check_special_attack(wk)) {
-                break;
-            }
-
-            if (check_chouhatsu(wk)) {
-                break;
-            }
-
-            if (check_catch_attack(wk)) {
-                break;
-            }
-
-            if (check_leap_attack(wk)) {
-                break;
-            }
-
-            if (check_nm_attack(wk)) {
-                break;
-            }
-
-            if (check_cg_cancel_data(wk)) {
-                break;
-            }
-
-            if (check_turn_to_back(wk)) {
-                break;
-            }
-
-            if (check_F_R_dash(wk)) {
-                break;
-            }
-
-            if (check_jump_ready(wk)) {
-                break;
-            }
-
+        } else {
             if (check_stand_up(wk)) {
                 return;
             }
-
-            break;
-
-        case 64:
-            wk->guard_flag = 0;
-            clear_chainex_check(wk->wu.id);
-            TO_nm_37000(&wk->wu);
-            break;
         }
+
+        break;
+
+    case 64:
+        wk->guard_flag = 0;
+        clear_chainex_check(wk->wu.id);
+
+        if (standing) {
+            if (wk->wu.pat_status < 14) {
+                TO_nm_36000(&wk->wu);
+            } else {
+                TO_nm_38000(&wk->wu);
+            }
+        } else {
+            TO_nm_37000(&wk->wu);
+        }
+
+        break;
     }
 }
 

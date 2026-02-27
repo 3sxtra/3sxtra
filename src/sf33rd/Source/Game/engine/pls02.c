@@ -642,52 +642,49 @@ s16 check_work_position(WORK* p1, WORK* p2) {
     return num;
 }
 
-/** @brief Returns a 32-entry pseudo-random number. @netplay_sync — index saved in GameState. */
-s32 random_32() {
-    Random_ix32++;
+/**
+ * @brief Shared RNG stepping helper.
+ *
+ * Every pseudo-random generator in this file follows the same pattern:
+ *   1. Increment the index
+ *   2. Reset to 0 when the debug random flag is set
+ *   3. Mask to table bounds
+ *   4. Return the table entry
+ *
+ * @param index  Pointer to the generator's index variable
+ * @param table  Lookup table for this generator
+ * @param mask   Bitmask for wrapping (e.g. 0x7F, 0x3F, 0x1F, 0xF)
+ * @return       The next pseudo-random value from the table
+ */
+static inline s32 rng_next(s16* index, const s16* table, s16 mask) {
+    (*index)++;
 
     if (Debug_w[DEBUG_DISP_RANDOM] == -32) {
-        Random_ix32 = 0;
+        *index = 0;
     }
 
-    Random_ix32 &= 0x7F;
-    return random_tbl_32[Random_ix32];
+    *index &= mask;
+    return table[*index];
+}
+
+/** @brief Returns a 32-entry pseudo-random number. @netplay_sync — index saved in GameState. */
+s32 random_32() {
+    return rng_next(&Random_ix32, random_tbl_32, 0x7F);
 }
 
 /** @brief Returns a 16-entry pseudo-random number. @netplay_sync — index saved in GameState. */
 s32 random_16() {
-    Random_ix16++;
-
-    if (Debug_w[DEBUG_DISP_RANDOM] == -32) {
-        Random_ix16 = 0;
-    }
-
-    Random_ix16 &= 0x3F;
-    return random_tbl_16[Random_ix16];
+    return rng_next(&Random_ix16, random_tbl_16, 0x3F);
 }
 
 /** @brief Returns a 32-entry extended pseudo-random number. @netplay_sync */
 static s32 random_32_ex() {
-    Random_ix32_ex++;
-
-    if (Debug_w[DEBUG_DISP_RANDOM] == -32) {
-        Random_ix32_ex = 0;
-    }
-
-    Random_ix32_ex &= 0x1F;
-    return random_tbl_32_ex[Random_ix32_ex];
+    return rng_next(&Random_ix32_ex, random_tbl_32_ex, 0x1F);
 }
 
 /** @brief Returns a 16-entry extended pseudo-random number. @netplay_sync */
 static s32 random_16_ex() {
-    Random_ix16_ex++;
-
-    if (Debug_w[DEBUG_DISP_RANDOM] == -32) {
-        Random_ix16_ex = 0;
-    }
-
-    Random_ix16_ex &= 0xF;
-    return random_tbl_16_ex[Random_ix16_ex];
+    return rng_next(&Random_ix16_ex, random_tbl_16_ex, 0xF);
 }
 
 /** @brief Returns a 32-entry COM-side pseudo-random number. @netplay_sync — delegates to random_32() when Play_Mode==0. */
@@ -695,15 +692,7 @@ s32 random_32_com() {
     if (Play_Mode == 0) {
         return random_32();
     }
-
-    Random_ix32_com++;
-
-    if (Debug_w[DEBUG_DISP_RANDOM] == -32) {
-        Random_ix32_com = 0;
-    }
-
-    Random_ix32_com &= 0x7F;
-    return random_tbl_32_com[Random_ix32_com];
+    return rng_next(&Random_ix32_com, random_tbl_32_com, 0x7F);
 }
 
 /** @brief Returns a 16-entry COM-side pseudo-random number. @netplay_sync — delegates to random_16() when Play_Mode==0. */
@@ -711,15 +700,7 @@ s32 random_16_com() {
     if (Play_Mode == 0) {
         return random_16();
     }
-
-    Random_ix16_com++;
-
-    if (Debug_w[DEBUG_DISP_RANDOM] == -32) {
-        Random_ix16_com = 0;
-    }
-
-    Random_ix16_com &= 0x3F;
-    return random_tbl_16_com[Random_ix16_com];
+    return rng_next(&Random_ix16_com, random_tbl_16_com, 0x3F);
 }
 
 /** @brief Returns a 32-entry extended COM-side pseudo-random. @netplay_sync */
@@ -727,15 +708,7 @@ s32 random_32_ex_com() {
     if (Play_Mode == 0) {
         return random_32_ex();
     }
-
-    Random_ix32_ex_com++;
-
-    if (Debug_w[DEBUG_DISP_RANDOM] == -32) {
-        Random_ix32_ex_com = 0;
-    }
-
-    Random_ix32_ex_com &= 0x1F;
-    return random_tbl_32_ex_com[Random_ix32_ex_com];
+    return rng_next(&Random_ix32_ex_com, random_tbl_32_ex_com, 0x1F);
 }
 
 /** @brief Returns a 16-entry extended COM-side pseudo-random. @netplay_sync */
@@ -743,27 +716,12 @@ s32 random_16_ex_com() {
     if (Play_Mode == 0) {
         return random_16_ex();
     }
-
-    Random_ix16_ex_com++;
-
-    if (Debug_w[DEBUG_DISP_RANDOM] == -32) {
-        Random_ix16_ex_com = 0;
-    }
-
-    Random_ix16_ex_com &= 0xF;
-    return random_tbl_16_ex_com[Random_ix16_ex_com];
+    return rng_next(&Random_ix16_ex_com, random_tbl_16_ex_com, 0xF);
 }
 
 /** @brief Returns a 16-entry background pseudo-random number. @netplay_sync — saved but not checksummed. */
 s32 random_16_bg() {
-    Random_ix16_bg++;
-
-    if (Debug_w[DEBUG_DISP_RANDOM] == -32) {
-        Random_ix16_bg = 0;
-    }
-
-    Random_ix16_bg &= 0x3F;
-    return random_tbl_16_bg[Random_ix16_bg];
+    return rng_next(&Random_ix16_bg, random_tbl_16_bg, 0x3F);
 }
 
 /** @brief Determines the guard direction between attacker and defender. */
@@ -1035,15 +993,15 @@ void add_sp_arts_gauge_paring(PLW* wk) {
     wk->wu.dm_arts_point = 0;
 }
 
-/** @brief Adds SA gauge for special (tokushu) moves. */
-void add_sp_arts_gauge_tokushu(PLW* wk) {
-    s16 asag;
-
+/**
+ * @brief Common helper: adds SA gauge for self-initiated actions.
+ * Checks work_id, applies difficulty adjustment, clamps, and calls
+ * add_super_arts_gauge. Used by tokushu, ukemi, and nagenuke.
+ */
+static void add_sp_arts_gauge_self(PLW* wk, s16 asag) {
     if (wk->wu.work_id != 1) {
         return;
     }
-
-    asag = (apagt_table[(wk->player_number)]);
 
     if (asag == 0) {
         return;
@@ -1058,56 +1016,21 @@ void add_sp_arts_gauge_tokushu(PLW* wk) {
     }
 
     add_super_arts_gauge(wk->sa, wk->wu.id, asag, wk->metamorphose);
+}
+
+/** @brief Adds SA gauge for special (tokushu) moves. */
+void add_sp_arts_gauge_tokushu(PLW* wk) {
+    add_sp_arts_gauge_self(wk, apagt_table[wk->player_number]);
 }
 
 /** @brief Adds SA gauge on successful ukemi (tech-roll). */
 void add_sp_arts_gauge_ukemi(PLW* wk) {
-    s16 asag;
-
-    if (wk->wu.work_id != 1) {
-        return;
-    }
-
-    asag = 3;
-
-    if (asag == 0) {
-        return;
-    }
-
-    if (wk->wu.pl_operator == 0) {
-        asag += asagh_zuru[save_w[Present_Mode].Difficulty];
-    }
-
-    if (asag <= 0) {
-        asag = (1);
-    }
-
-    add_super_arts_gauge(wk->sa, wk->wu.id, asag, wk->metamorphose);
+    add_sp_arts_gauge_self(wk, 3);
 }
 
 /** @brief Adds SA gauge on successful throw break. */
 void add_sp_arts_gauge_nagenuke(PLW* wk) {
-    s16 asag;
-
-    if (wk->wu.work_id != 1) {
-        return;
-    }
-
-    asag = 6;
-
-    if (asag == 0) {
-        return;
-    }
-
-    if (wk->wu.pl_operator == 0) {
-        asag += asagh_zuru[save_w[Present_Mode].Difficulty];
-    }
-
-    if (asag <= 0) {
-        asag = 1;
-    }
-
-    add_super_arts_gauge(wk->sa, wk->wu.id, asag, wk->metamorphose);
+    add_sp_arts_gauge_self(wk, 6);
 }
 
 /** @brief Clamps SA gauge to the maximum bit count. */

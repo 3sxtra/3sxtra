@@ -32,7 +32,7 @@ void stngauge_cont_init() {
         }
     }
 
-    stun_gauge_waku_write(sdat->slen, sdat[1].slen);
+    stun_gauge_waku_write(sdat[0].slen, sdat[1].slen);
 }
 
 /** @brief Per-frame stun gauge update — drives the animated stun bar display. */
@@ -40,25 +40,19 @@ void stngauge_cont_main() {
     u8 i;
 
     if (omop_cockpit != 0) {
-        if (gauge_stop_flag[0] == 0) {
-            stngauge_control(0);
-        } else {
-            stun_put(0, sdat->cstn);
-        }
-
-        if (gauge_stop_flag[1] == 0) {
-            stngauge_control(1);
-        } else {
-            stun_put(1, sdat[1].cstn);
-        }
-
         for (i = 0; i < 2; i++) {
+            if (gauge_stop_flag[i] == 0) {
+                stngauge_control(i);
+            } else {
+                stun_put(i, sdat[i].cstn);
+            }
+
             if (omop_st_bar_disp[i]) {
                 stun_base_put(i, sdat[i].slen);
             }
         }
 
-        stun_gauge_waku_write(sdat->slen, sdat[1].slen);
+        stun_gauge_waku_write(sdat[0].slen, sdat[1].slen);
     }
 }
 
@@ -136,18 +130,14 @@ void stngauge_control(u8 pl) {
 
 /** @brief Clears both players' stun gauge work and display. */
 void stngauge_work_clear() {
-    sdat[0].cstn = 0;
-    sdat[0].sflag = 0;
-    sdat[0].osflag = 0;
-    sdat[0].g_or_s = 0;
-    sdat[0].stimer = 2;
-    sdat[0].proccess_dead = 0;
-    stun_put(0, 0);
-    sdat[1].cstn = 0;
-    sdat[1].sflag = 0;
-    sdat[1].osflag = 0;
-    sdat[1].g_or_s = 0;
-    sdat[1].stimer = 2;
-    sdat[1].proccess_dead = 0;
-    stun_put(1, 0);
+    u8 i;
+    for (i = 0; i < 2; i++) {
+        sdat[i].cstn = 0;
+        sdat[i].sflag = 0;
+        sdat[i].osflag = 0;
+        sdat[i].g_or_s = 0;
+        sdat[i].stimer = 2;
+        sdat[i].proccess_dead = 0;
+        stun_put(i, 0);
+    }
 }

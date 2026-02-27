@@ -45,6 +45,14 @@ const u16 sagauge_colchg_tbl[4][2] = { { 17, 145 }, { 18, 146 }, { 19, 147 }, { 
 const u16* spgauge_puttbl[2] = { spgauge_tbl, spgauge_tbl };
 const u16* spgauge_postbl[2] = { spg1p_npos_tbl, spg2p_npos_tbl };
 
+/** Per-player spgcol_number constants: [player][color_index].
+ *  Index 0 = default/empty, 1 = filled/stock, 2 = timed-SA-active. */
+enum { SPG_COL_DEFAULT = 0, SPG_COL_FILLED = 1, SPG_COL_TIMED = 2 };
+static const s16 spg_player_colors[2][3] = {
+    { 17, 18, 14 },    /* P1 */
+    { 145, 146, 142 }, /* P2 */
+};
+
 static void spgauge_control(s8 Spg_Num);
 static void wipe_check();
 static void satime_ko_after_clear(s8 Stpl_Num);
@@ -60,6 +68,75 @@ static void spgauge_work_clear(s8 Stpl_Num);
 static void spgauge_wipe_write(s8 Stpl_Num);
 static void sa_waku_trans(s8 Stpl_Num, s8 Spg_Col);
 
+/**
+ * @brief Shared SA gauge initialization for a single player.
+ *
+ * Parameterized by @p full: when 0, gauge starts empty (match start);
+ * when 1, gauge starts full (demo/training-full).
+ *
+ * Both spgauge_cont_init/spgauge_cont_demo_init (two-player loop) and
+ * tr_spgauge_cont_init/tr_spgauge_cont_init2 (single-player) delegate here.
+ */
+static void spgauge_init_player(s8 pl, s8 full) {
+    if (full) {
+        demo_set_sa_full(&super_arts[pl]);
+        spg_dat[pl].current_spg = super_arts[pl].gauge_len;
+        spg_dat[pl].old_spg = super_arts[pl].gauge_len;
+        spg_dat[pl].spg_level = super_arts[pl].store;
+    } else {
+        spg_dat[pl].current_spg = 0;
+        spg_dat[pl].old_spg = 0;
+        spg_dat[pl].spg_level = 0;
+    }
+
+    spg_dat[pl].spgtbl_ptr = spgauge_puttbl[pl];
+    spg_dat[pl].spg_maxlevel = super_arts[pl].store_max;
+    spg_dat[pl].spg_len = super_arts[pl].gauge_len / 8;
+    spg_dat[pl].spg_dotlen = super_arts[pl].gauge_len;
+    spg_dat[pl].flag = full ? 1 : 0;
+    spg_dat[pl].flag2 = 0;
+    spg_dat[pl].level_flag = 0;
+    spg_dat[pl].timer = 51;
+    spg_dat[pl].timer2 = 2;
+    spg_dat[pl].kind = full ? 1 : 0;
+    spg_dat[pl].max = 0;
+    spg_dat[pl].max_old = full ? 1 : 0;
+    spg_dat[pl].max_rno = full ? 2 : 0;
+    spg_dat[pl].time_rno = full ? 5 : 0;
+    spg_dat[pl].gauge_flash_time = 2;
+    spg_dat[pl].gauge_flash_col = 0;
+    spg_dat[pl].sa_flag = 0;
+    spg_dat[pl].ex_flag = 0;
+    spg_dat[pl].no_chgcol = 0;
+    spg_dat[pl].time_no_clear = 0;
+    spg_dat[pl].sa_mukou = 0;
+    sa_gauge_flash[pl] = 0;
+    spg_dat[pl].spgptbl_ptr = spgauge_postbl[pl];
+
+    if (super_arts[pl].gauge_type == 1) {
+        spg_dat[pl].time = 1;
+        time_flag[pl] = 1;
+    } else {
+        spg_dat[pl].time = 0;
+        time_flag[pl] = 0;
+    }
+
+    spg_dat[pl].mass_len = spg_dat[pl].spg_len - 5;
+
+    if (spg_dat[pl].spg_len & 1) {
+        spg_dat[pl].mchar = 5;
+    } else {
+        spg_dat[pl].mass_len = spg_dat[pl].mass_len - 1;
+        spg_dat[pl].mchar = 6;
+    }
+
+    spg_dat[pl].mass_len /= 2;
+    time_operate[pl] = 0;
+    sast_now[pl] = 0;
+    max2[pl] = 0;
+    max_rno2[pl] = 0;
+}
+
 /** @brief Initializes the Super Art gauge controller for match start. */
 void spgauge_cont_init() {
     s8 lpy;
@@ -67,59 +144,11 @@ void spgauge_cont_init() {
     Sa_frame_Clear();
 
     for (lpy = 0; lpy < 2; lpy++) {
-        spg_dat[lpy].current_spg = 0;
-        spg_dat[lpy].old_spg = 0;
-        spg_dat[lpy].spgtbl_ptr = spgauge_puttbl[lpy];
-        spg_dat[lpy].spg_level = 0;
-        spg_dat[lpy].spg_maxlevel = super_arts[lpy].store_max;
-        spg_dat[lpy].spg_len = super_arts[lpy].gauge_len / 8;
-        spg_dat[lpy].spg_dotlen = super_arts[lpy].gauge_len;
-        spg_dat[lpy].flag = 0;
-        spg_dat[lpy].flag2 = 0;
-        spg_dat[lpy].level_flag = 0;
-        spg_dat[lpy].timer = 51;
-        spg_dat[lpy].timer2 = 2;
-        spg_dat[lpy].kind = 0;
-        spg_dat[lpy].max = 0;
-        spg_dat[lpy].max_old = 0;
-        spg_dat[lpy].max_rno = 0;
-        spg_dat[lpy].time_rno = 0;
-        spg_dat[lpy].gauge_flash_time = 2;
-        spg_dat[lpy].gauge_flash_col = 0;
-        spg_dat[lpy].sa_flag = 0;
-        spg_dat[lpy].ex_flag = 0;
-        spg_dat[lpy].no_chgcol = 0;
-        spg_dat[lpy].time_no_clear = 0;
-        spg_dat[lpy].sa_mukou = 0;
-        sa_gauge_flash[lpy] = 0;
-        spg_dat[lpy].spgptbl_ptr = spgauge_postbl[lpy];
-
-        if (super_arts[lpy].gauge_type == 1) {
-            spg_dat[lpy].time = 1;
-            time_flag[lpy] = 1;
-        } else {
-            spg_dat[lpy].time = 0;
-            time_flag[lpy] = 0;
-        }
-
-        spg_dat[lpy].mass_len = spg_dat[lpy].spg_len - 5;
-
-        if (spg_dat[lpy].spg_len & 1) {
-            spg_dat[lpy].mchar = 5;
-        } else {
-            spg_dat[lpy].mass_len = spg_dat[lpy].mass_len - 1;
-            spg_dat[lpy].mchar = 6;
-        }
-
-        spg_dat[lpy].mass_len /= 2;
-        time_operate[lpy] = 0;
-        sast_now[lpy] = 0;
-        max2[lpy] = 0;
-        max_rno2[lpy] = 0;
+        spgauge_init_player(lpy, 0);
     }
 
-    spg_dat[0].spgcol_number = 17;
-    spg_dat[1].spgcol_number = 145;
+    spg_dat[0].spgcol_number = spg_player_colors[0][SPG_COL_DEFAULT];
+    spg_dat[1].spgcol_number = spg_player_colors[1][SPG_COL_DEFAULT];
     sa_stock_trans(0, 0, 0);
     sa_stock_trans(0, 0, 1);
     sa_waku_trans(0, 0);
@@ -143,60 +172,11 @@ void spgauge_cont_demo_init() {
     Sa_frame_Clear();
 
     for (lpy = 0; lpy < 2; lpy++) {
-        demo_set_sa_full(&super_arts[lpy]);
-        spg_dat[lpy].current_spg = super_arts[lpy].gauge_len;
-        spg_dat[lpy].old_spg = super_arts[lpy].gauge_len;
-        spg_dat[lpy].spgtbl_ptr = spgauge_puttbl[lpy];
-        spg_dat[lpy].spg_level = super_arts[lpy].store;
-        spg_dat[lpy].spg_maxlevel = super_arts[lpy].store_max;
-        spg_dat[lpy].spg_len = super_arts[lpy].gauge_len / 8;
-        spg_dat[lpy].spg_dotlen = super_arts[lpy].gauge_len;
-        spg_dat[lpy].flag = 1;
-        spg_dat[lpy].flag2 = 0;
-        spg_dat[lpy].level_flag = 0;
-        spg_dat[lpy].timer = 51;
-        spg_dat[lpy].timer2 = 2;
-        spg_dat[lpy].kind = 1;
-        spg_dat[lpy].max = 0;
-        spg_dat[lpy].max_old = 1;
-        spg_dat[lpy].max_rno = 2;
-        spg_dat[lpy].time_rno = 5;
-        spg_dat[lpy].gauge_flash_time = 2;
-        spg_dat[lpy].gauge_flash_col = 0;
-        spg_dat[lpy].sa_flag = 0;
-        spg_dat[lpy].ex_flag = 0;
-        spg_dat[lpy].no_chgcol = 0;
-        spg_dat[lpy].time_no_clear = 0;
-        spg_dat[lpy].sa_mukou = 0;
-        sa_gauge_flash[lpy] = 0;
-        spg_dat[lpy].spgptbl_ptr = spgauge_postbl[lpy];
-
-        if (super_arts[lpy].gauge_type == 1) {
-            spg_dat[lpy].time = 1;
-            time_flag[lpy] = 1;
-        } else {
-            spg_dat[lpy].time = 0;
-            time_flag[lpy] = 0;
-        }
-
-        spg_dat[lpy].mass_len = spg_dat[lpy].spg_len - 5;
-
-        if (spg_dat[lpy].spg_len & 1) {
-            spg_dat[lpy].mchar = 5;
-        } else {
-            spg_dat[lpy].mass_len = spg_dat[lpy].mass_len - 1;
-            spg_dat[lpy].mchar = 6;
-        }
-
-        spg_dat[lpy].mass_len /= 2;
-        time_operate[lpy] = 0;
-        sast_now[lpy] = 0;
-        max2[lpy] = 0;
-        max_rno2[lpy] = 0;
+        spgauge_init_player(lpy, 1);
     }
 
-    spg_dat[0].spgcol_number = 17;
-    spg_dat[1].spgcol_number = 145;
+    spg_dat[0].spgcol_number = spg_player_colors[0][SPG_COL_DEFAULT];
+    spg_dat[1].spgcol_number = spg_player_colors[1][SPG_COL_DEFAULT];
     sa_stock_trans(spg_dat[0].spg_maxlevel, 1, 0);
     sa_stock_trans(spg_dat[1].spg_maxlevel, 1, 1);
     sa_waku_trans(0, 1);
@@ -351,6 +331,12 @@ static void spgauge_control(s8 Spg_Num) {
 
 /** @brief Checks and processes gauge wipe transitions (round start/end). */
 static void wipe_check() {
+    /* Per-player sc_clear coordinates: {x1, y1, x2, y2}. */
+    static const s8 wipe_clear_coords[2][4] = {
+        { 1, 25, 4, 26 },
+        { 43, 25, 46, 26 }
+    };
+
     if (Old_Stop_SG) {
         if (Exec_Wipe != 0) {
             return;
@@ -362,39 +348,27 @@ static void wipe_check() {
 
         Exec_Wipe_F = 1;
 
-        if (spg_dat[0].time == 1 && time_clear[0] == 1) {
-            if (spg_dat[0].time_no_clear == 0) {
-                spgauge_work_clear(0);
-                sc_clear(1, 25, 4, 26);
-                sast_color_chenge(0);
-                spgauge_wipe_write(0);
-            } else {
-                satime_ko_after_clear(0);
-            }
-        }
-
-        if (spg_dat[1].time == 1 && time_clear[1] == 1) {
-            if (spg_dat[1].time_no_clear == 0) {
-                spgauge_work_clear(1);
-                sc_clear(43, 25, 46, 26);
-                sast_color_chenge(1);
-                spgauge_wipe_write(1);
-            } else {
-                satime_ko_after_clear(1);
+        for (s8 pl = 0; pl < 2; pl++) {
+            if (spg_dat[pl].time == 1 && time_clear[pl] == 1) {
+                if (spg_dat[pl].time_no_clear == 0) {
+                    spgauge_work_clear(pl);
+                    sc_clear(wipe_clear_coords[pl][0], wipe_clear_coords[pl][1],
+                             wipe_clear_coords[pl][2], wipe_clear_coords[pl][3]);
+                    sast_color_chenge(pl);
+                    spgauge_wipe_write(pl);
+                } else {
+                    satime_ko_after_clear(pl);
+                }
             }
         }
 
     } else {
-        if (spg_dat[0].time_no_clear == 1 || plw[0].sa->ok == -1) {
-            plw[0].sa->ok = 0;
-            time_clear[0] = 1;
-            spg_dat[0].spg_level = plw[0].sa->store;
-        }
-
-        if (spg_dat[1].time_no_clear == 1 || plw[1].sa->ok == -1) {
-            plw[1].sa->ok = 0;
-            time_clear[1] = 1;
-            spg_dat[1].spg_level = plw[1].sa->store;
+        for (s8 pl = 0; pl < 2; pl++) {
+            if (spg_dat[pl].time_no_clear == 1 || plw[pl].sa->ok == -1) {
+                plw[pl].sa->ok = 0;
+                time_clear[pl] = 1;
+                spg_dat[pl].spg_level = plw[pl].sa->store;
+            }
         }
     }
 }
@@ -772,48 +746,22 @@ static void sast_control(s8 Stpl_Num) {
 static void sast_color_chenge(s8 Stpl_Num) {
     if (plw[Stpl_Num].sa->gauge_type == 1 && plw[Stpl_Num].sa->ok == -1) {
         col = 1;
-
-        if (Stpl_Num == 0) {
-            spg_dat[0].spgcol_number = 14;
-        } else {
-            spg_dat[1].spgcol_number = 142;
-        }
-
+        spg_dat[Stpl_Num].spgcol_number = spg_player_colors[Stpl_Num][SPG_COL_TIMED];
         return;
     } else if (plw[Stpl_Num].sa->store) {
         col = 1;
-
-        if (Stpl_Num == 0) {
-            spg_dat[0].spgcol_number = 18;
-        } else {
-            spg_dat[1].spgcol_number = 146;
-        }
+        spg_dat[Stpl_Num].spgcol_number = spg_player_colors[Stpl_Num][SPG_COL_FILLED];
     } else {
         col = 0;
-
-        if (Stpl_Num == 0) {
-            spg_dat[0].spgcol_number = 17;
-        } else {
-            spg_dat[1].spgcol_number = 145;
-        }
+        spg_dat[Stpl_Num].spgcol_number = spg_player_colors[Stpl_Num][SPG_COL_DEFAULT];
     }
 }
 
 /** @brief General SA color change handler (delegates to gauge or stock). */
 static void sa_color_chenge(s8 Stpl_Num) {
-    if (spg_dat[Stpl_Num].kind) {
-        if (Stpl_Num == 0) {
-            spg_dat[0].spgcol_number = 18;
-        } else {
-            spg_dat[1].spgcol_number = 146;
-        }
-    } else {
-        if (Stpl_Num == 0) {
-            spg_dat[0].spgcol_number = 17;
-        } else {
-            spg_dat[1].spgcol_number = 145;
-        }
-    }
+    spg_dat[Stpl_Num].spgcol_number = spg_dat[Stpl_Num].kind
+        ? spg_player_colors[Stpl_Num][SPG_COL_FILLED]
+        : spg_player_colors[Stpl_Num][SPG_COL_DEFAULT];
 }
 
 /** @brief Cycles colors for the SA gauge bar fill sprites. */
@@ -1026,64 +974,12 @@ static void sa_waku_trans(s8 Stpl_Num, s8 Spg_Col) {
     sa_fullstock_trans(spg_dat[1].spg_maxlevel, Spg_Col, 1);
 }
 
-/** @brief Initializes SA gauge for training mode (player 1 side). */
+/** @brief Initializes SA gauge for training mode (empty gauge). */
 void tr_spgauge_cont_init(s8 pl) {
     Sa_frame_Clear2(pl);
-    spg_dat[pl].current_spg = 0;
-    spg_dat[pl].old_spg = 0;
-    spg_dat[pl].spgtbl_ptr = spgauge_puttbl[pl];
-    spg_dat[pl].spg_level = 0;
-    spg_dat[pl].spg_maxlevel = super_arts[pl].store_max;
-    spg_dat[pl].spg_len = super_arts[pl].gauge_len / 8;
-    spg_dat[pl].spg_dotlen = super_arts[pl].gauge_len;
-    spg_dat[pl].flag = 0;
-    spg_dat[pl].flag2 = 0;
-    spg_dat[pl].level_flag = 0;
-    spg_dat[pl].timer = 51;
-    spg_dat[pl].timer2 = 2;
-    spg_dat[pl].kind = 0;
-    spg_dat[pl].max = 0;
-    spg_dat[pl].max_old = 0;
-    spg_dat[pl].max_rno = 0;
-    spg_dat[pl].time_rno = 0;
-    spg_dat[pl].gauge_flash_time = 2;
-    spg_dat[pl].gauge_flash_col = 0;
-    spg_dat[pl].sa_flag = 0;
-    spg_dat[pl].ex_flag = 0;
-    spg_dat[pl].no_chgcol = 0;
-    spg_dat[pl].time_no_clear = 0;
-    spg_dat[pl].sa_mukou = 0;
-    sa_gauge_flash[pl] = 0;
-    spg_dat[pl].spgptbl_ptr = spgauge_postbl[pl];
+    spgauge_init_player(pl, 0);
 
-    if (super_arts[pl].gauge_type == 1) {
-        spg_dat[pl].time = 1;
-        time_flag[pl] = 1;
-    } else {
-        spg_dat[pl].time = 0;
-        time_flag[pl] = 0;
-    }
-
-    spg_dat[pl].mass_len = spg_dat[pl].spg_len - 5;
-
-    if (spg_dat[pl].spg_len & 1) {
-        spg_dat[pl].mchar = 5;
-    } else {
-        spg_dat[pl].mass_len = spg_dat[pl].mass_len - 1;
-        spg_dat[pl].mchar = 6;
-    }
-
-    spg_dat[pl].mass_len /= 2;
-    time_operate[pl] = 0;
-    sast_now[pl] = 0;
-    max2[pl] = 0;
-    max_rno2[pl] = 0;
-
-    if (pl == 0) {
-        spg_dat[0].spgcol_number = 17;
-    } else {
-        spg_dat[1].spgcol_number = 145;
-    }
+    spg_dat[pl].spgcol_number = spg_player_colors[pl][SPG_COL_DEFAULT];
 
     sa_stock_trans(0, 0, pl);
     sa_waku_trans(pl, 0);
@@ -1097,65 +993,12 @@ void tr_spgauge_cont_init(s8 pl) {
     col = 0;
 }
 
-/** @brief Initializes SA gauge for training mode (player 2 side). */
+/** @brief Initializes SA gauge for training mode (full gauge). */
 void tr_spgauge_cont_init2(s8 pl) {
     Sa_frame_Clear2(pl);
-    demo_set_sa_full(&super_arts[pl]);
-    spg_dat[pl].current_spg = super_arts[pl].gauge_len;
-    spg_dat[pl].old_spg = super_arts[pl].gauge_len;
-    spg_dat[pl].spgtbl_ptr = spgauge_puttbl[pl];
-    spg_dat[pl].spg_level = super_arts[pl].store;
-    spg_dat[pl].spg_maxlevel = super_arts[pl].store_max;
-    spg_dat[pl].spg_len = super_arts[pl].gauge_len / 8;
-    spg_dat[pl].spg_dotlen = super_arts[pl].gauge_len;
-    spg_dat[pl].flag = 1;
-    spg_dat[pl].flag2 = 0;
-    spg_dat[pl].level_flag = 0;
-    spg_dat[pl].timer = 51;
-    spg_dat[pl].timer2 = 2;
-    spg_dat[pl].kind = 1;
-    spg_dat[pl].max = 0;
-    spg_dat[pl].max_old = 1;
-    spg_dat[pl].max_rno = 2;
-    spg_dat[pl].time_rno = 5;
-    spg_dat[pl].gauge_flash_time = 2;
-    spg_dat[pl].gauge_flash_col = 0;
-    spg_dat[pl].sa_flag = 0;
-    spg_dat[pl].ex_flag = 0;
-    spg_dat[pl].no_chgcol = 0;
-    spg_dat[pl].time_no_clear = 0;
-    spg_dat[pl].sa_mukou = 0;
-    sa_gauge_flash[pl] = 0;
-    spg_dat[pl].spgptbl_ptr = spgauge_postbl[pl];
+    spgauge_init_player(pl, 1);
 
-    if (super_arts[pl].gauge_type == 1) {
-        spg_dat[pl].time = 1;
-        time_flag[pl] = 1;
-    } else {
-        spg_dat[pl].time = 0;
-        time_flag[pl] = 0;
-    }
-
-    spg_dat[pl].mass_len = spg_dat[pl].spg_len - 5;
-
-    if (spg_dat[pl].spg_len & 1) {
-        spg_dat[pl].mchar = 5;
-    } else {
-        spg_dat[pl].mass_len = spg_dat[pl].mass_len - 1;
-        spg_dat[pl].mchar = 6;
-    }
-
-    spg_dat[pl].mass_len /= 2;
-    time_operate[pl] = 0;
-    sast_now[pl] = 0;
-    max2[pl] = 0;
-    max_rno2[pl] = 0;
-
-    if (pl == 0) {
-        spg_dat[0].spgcol_number = 17;
-    } else {
-        spg_dat[1].spgcol_number = 145;
-    }
+    spg_dat[pl].spgcol_number = spg_player_colors[pl][SPG_COL_DEFAULT];
 
     sa_stock_trans(spg_dat[pl].spg_maxlevel, 1, pl);
     sa_waku_trans(pl, 1);

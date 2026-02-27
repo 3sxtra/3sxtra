@@ -30,7 +30,7 @@ void training_hud_draw_stun(PLW* player, TrainingPlayerState* state) {
         if (state->combo_stun > 0 || piyori_type[p_index].now.timer > 0) {
             // Draw numerical text showing accumulated stun for this combo
             char stun_str[32];
-            sprintf(stun_str, "STUN: %d", state->combo_stun);
+            snprintf(stun_str, sizeof(stun_str), "STUN: %d", state->combo_stun);
 
             s16 hud_x = (p_index == 0) ? 10 : 250;
             s16 hud_y = 60;

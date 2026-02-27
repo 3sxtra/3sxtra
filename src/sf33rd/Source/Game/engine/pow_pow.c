@@ -9,22 +9,21 @@
 #include "sf33rd/Source/Game/engine/pow_data.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 
-/** @brief Calculates damage vitality for a player-vs-player attack. */
-void cal_damage_vitality(PLW* as, PLW* ds) {
-    u16 xx = as->wu.att.pow;
-    s16 yy;
-    s16 power = Power_Data[xx];
-
-    if (Play_Type == 1) {
-        yy = Pow_Control_Data_1[0][3];
-    } else {
-        yy = Pow_Control_Data_1[0][Round_Level];
-    }
+/**
+ * @brief Core damage calculation shared by player-vs-player and effect-vs-player paths.
+ *
+ * @param att_wu    Attacker's WORK data (for pow lookup and work_id check).
+ * @param att_plus  Attacker's attack multiplier (from the owning PLW).
+ * @param ds        Defender player work (receives dm_vital and applies def_plus).
+ */
+static void cal_damage_core(WORK* att_wu, s16 att_plus, PLW* ds) {
+    s16 power = Power_Data[att_wu->att.pow];
+    s16 yy = (Play_Type == 1) ? Pow_Control_Data_1[0][3] : Pow_Control_Data_1[0][Round_Level];
 
     ds->wu.dm_vital = (power * yy) / 100;
 
-    if (as->wu.work_id == 1) {
-        ds->wu.dm_vital = (ds->wu.dm_vital * as->att_plus) / 8;
+    if (att_wu->work_id == 1) {
+        ds->wu.dm_vital = (ds->wu.dm_vital * att_plus) / 8;
     }
 
     if (ds->wu.work_id == 1) {
@@ -32,27 +31,14 @@ void cal_damage_vitality(PLW* as, PLW* ds) {
     }
 }
 
+/** @brief Calculates damage vitality for a player-vs-player attack. */
+void cal_damage_vitality(PLW* as, PLW* ds) {
+    cal_damage_core(&as->wu, as->att_plus, ds);
+}
+
 /** @brief Calculates damage vitality for an effect-vs-player attack. */
 void cal_damage_vitality_eff(WORK_Other* as, PLW* ds) {
-    u16 xx = as->wu.att.pow;
-    s16 yy;
-    s16 power = Power_Data[xx];
-
-    if (Play_Type == 1) {
-        yy = Pow_Control_Data_1[0][3];
-    } else {
-        yy = Pow_Control_Data_1[0][Round_Level];
-    }
-
-    ds->wu.dm_vital = (power * yy) / 100;
-
-    if (as->wu.work_id == 1) {
-        ds->wu.dm_vital = (ds->wu.dm_vital * ((PLW*)as)->att_plus) / 8;
-    }
-
-    if (ds->wu.work_id == 1) {
-        ds->wu.dm_vital = (ds->wu.dm_vital * ds->def_plus) / 8;
-    }
+    cal_damage_core(&as->wu, ((PLW*)as)->att_plus, ds);
 }
 
 /** @brief Awards additional score for specific damage types (KO, special finish). */
@@ -79,17 +65,11 @@ void Additinal_Score_DM(WORK_Other* wk, u16 ix) {
         if (!plw[id].wu.pl_operator) {
             return;
         }
+    }
 
-        Score[id][Play_Type] += Score_Data[ix];
+    Score[id][Play_Type] += Score_Data[ix];
 
-        if (Score[id][Play_Type] >= 99999900) {
-            Score[id][Play_Type] = 99999900;
-        }
-    } else {
-        Score[id][Play_Type] += Score_Data[ix];
-
-        if (Score[id][Play_Type] >= 99999900) {
-            Score[id][Play_Type] = 99999900;
-        }
+    if (Score[id][Play_Type] >= 99999900) {
+        Score[id][Play_Type] = 99999900;
     }
 }

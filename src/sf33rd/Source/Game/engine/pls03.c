@@ -43,8 +43,14 @@ s16 cmdixconv(s16 ix) {
     return cmdixconv_table[ix - 20];
 }
 
-/** @brief Checks if a full-gauge Super Art attack can be used. */
-s32 check_full_gauge_attack(PLW* wk, s8 always) {
+/**
+ * @brief Shared implementation for full-gauge Super Art attack checks.
+ *
+ * Both check_full_gauge_attack() and check_full_gauge_attack2() are identical
+ * except for which SA index fields they use. This helper is parameterized by
+ * the ground and air indices to eliminate the duplication.
+ */
+static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
     u16* conpane;
     s16 j;
     u16 cusw;
@@ -63,19 +69,19 @@ s32 check_full_gauge_attack(PLW* wk, s8 always) {
             return 0;
         }
 
-        if (wk->sa->exsa_g_ix == 0) {
+        if (g_ix == 0) {
             return 0;
         }
 
-        if (wk->sa->exsa_g_ix > 0x1C) {
+        if (g_ix > 0x1C) {
             return 0;
         }
 
-        if (always && !(wk->cp->btix[wk->sa->exsa_g_ix] & 0x100)) {
+        if (always && !(wk->cp->btix[g_ix] & 0x100)) {
             return 0;
         }
 
-        if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_23) && (chainex_check[wk->wu.id][wk->sa->exsa_g_ix - 20])) {
+        if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_23) && (chainex_check[wk->wu.id][g_ix - 20])) {
             return 0;
         }
 
@@ -85,29 +91,29 @@ s32 check_full_gauge_attack(PLW* wk, s8 always) {
 
         conpane = &wk->cp->sw_lvbt;
 
-        if (wk->cp->waza_flag[wk->sa->exsa_g_ix] == -1) {
+        if (wk->cp->waza_flag[g_ix] == -1) {
             return 0;
         }
 
-        if (((wk->cp->btix[wk->sa->exsa_g_ix] & 0xFF) != 0x80) && (wk->cp->waza_flag[wk->sa->exsa_g_ix])) {
-            cusw = conpane[wk->cp->btix[wk->sa->exsa_g_ix] & 0xFF];
+        if (((wk->cp->btix[g_ix] & 0xFF) != 0x80) && (wk->cp->waza_flag[g_ix])) {
+            cusw = conpane[wk->cp->btix[g_ix] & 0xFF];
 
             for (j = 3; j >= 0; j--) {
-                if ((j == 3) && !(wk->cp->btix[wk->sa->exsa_g_ix] & 0x600)) {
+                if ((j == 3) && !(wk->cp->btix[g_ix] & 0x600)) {
                     continue;
                 }
 
-                exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[wk->sa->exsa_g_ix][j]];
+                exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[g_ix][j]];
 
-                if (exsw == cmdshot_conv_tbl[wk->cp->exdt[wk->sa->exsa_g_ix][j] & 0xF]) {
+                if (exsw == cmdshot_conv_tbl[wk->cp->exdt[g_ix][j] & 0xF]) {
                     setup_comm_back(&wk->wu);
-                    wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->exsa_g_ix)]
-                                             [j + ((wk->sa->exsa_g_ix - 20) * 4)];
+                    wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(g_ix)]
+                                             [j + ((g_ix - 20) * 4)];
                     wk->wu.cg_cancel = 0;
                     wk->sa->mp = -1;
-                    hissatsu_setup_union(wk, wk->cp->waza_r[wk->sa->exsa_g_ix][j]);
+                    hissatsu_setup_union(wk, wk->cp->waza_r[g_ix][j]);
                     waza_compel_all_init2(wk);
-                    chainex_check[wk->wu.id][wk->sa->exsa_g_ix - 20] = 1;
+                    chainex_check[wk->wu.id][g_ix - 20] = 1;
                     chainex_spat_cancel_kidou(&wk->wu);
                     return 1;
                 }
@@ -121,19 +127,19 @@ s32 check_full_gauge_attack(PLW* wk, s8 always) {
         return 0;
     }
 
-    if (wk->sa->exsa_a_ix == 0) {
+    if (a_ix == 0) {
         return 0;
     }
 
-    if ((wk->sa->exsa_a_ix) < 0x1C) {
+    if (a_ix < 0x1C) {
         return 0;
     }
 
-    if (always && !(wk->cp->btix[wk->sa->exsa_a_ix] & 0x100)) {
+    if (always && !(wk->cp->btix[a_ix] & 0x100)) {
         return 0;
     }
 
-    if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_23) && chainex_check[wk->wu.id][wk->sa->exsa_a_ix - 20]) {
+    if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_23) && chainex_check[wk->wu.id][a_ix - 20]) {
         return 0;
     }
 
@@ -143,29 +149,29 @@ s32 check_full_gauge_attack(PLW* wk, s8 always) {
 
     conpane = &wk->cp->sw_lvbt;
 
-    if (wk->cp->waza_flag[wk->sa->exsa_a_ix] == -1) {
+    if (wk->cp->waza_flag[a_ix] == -1) {
         return 0;
     }
 
-    if (((wk->cp->btix[wk->sa->exsa_a_ix] & 0xFF) != 0x80) && (wk->cp->waza_flag[wk->sa->exsa_a_ix])) {
-        cusw = conpane[wk->cp->btix[wk->sa->exsa_a_ix] & 0xFF];
+    if (((wk->cp->btix[a_ix] & 0xFF) != 0x80) && (wk->cp->waza_flag[a_ix])) {
+        cusw = conpane[wk->cp->btix[a_ix] & 0xFF];
 
         for (j = 3; j >= 0; j--) {
-            if ((j == 3) && !(wk->cp->btix[wk->sa->exsa_a_ix] & 0x600)) {
+            if ((j == 3) && !(wk->cp->btix[a_ix] & 0x600)) {
                 continue;
             }
 
-            exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[wk->sa->exsa_a_ix][j]];
+            exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[a_ix][j]];
 
-            if (exsw == cmdshot_conv_tbl[wk->cp->exdt[wk->sa->exsa_a_ix][j] & 0xF]) {
+            if (exsw == cmdshot_conv_tbl[wk->cp->exdt[a_ix][j] & 0xF]) {
                 setup_comm_back(&wk->wu);
-                wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->exsa_a_ix)]
-                                         [j + ((wk->sa->exsa_a_ix - 38) * 4)];
+                wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(a_ix)]
+                                         [j + ((a_ix - 38) * 4)];
                 wk->wu.cg_cancel = 0;
                 wk->sa->mp = -1;
-                hissatsu_setup_union(wk, wk->cp->waza_r[wk->sa->exsa_a_ix][j]);
+                hissatsu_setup_union(wk, wk->cp->waza_r[a_ix][j]);
                 waza_compel_all_init2(wk);
-                chainex_check[wk->wu.id][wk->sa->exsa_a_ix - 20] = 1;
+                chainex_check[wk->wu.id][a_ix - 20] = 1;
                 chainex_spat_cancel_kidou(&wk->wu);
                 return 1;
             }
@@ -175,136 +181,14 @@ s32 check_full_gauge_attack(PLW* wk, s8 always) {
     return 0;
 }
 
+/** @brief Checks if a full-gauge Super Art attack can be used. */
+s32 check_full_gauge_attack(PLW* wk, s8 always) {
+    return check_full_gauge_attack_inner(wk, always, wk->sa->exsa_g_ix, wk->sa->exsa_a_ix);
+}
+
 /** @brief Extended full-gauge check with additional cancel conditions. */
 s32 check_full_gauge_attack2(PLW* wk, s8 always) {
-    u16* conpane;
-    s16 j;
-    u16 cusw;
-    u16 exsw;
-
-    if (wk->sa->mp != 1) {
-        return 0;
-    }
-
-    if (pcon_dp_flag) {
-        return 0;
-    }
-
-    if (((Bonus_Game_Flag == 0x14) && (wk->bs2_on_car)) || (wk->wu.xyz[1].disp.pos <= 0)) {
-        if (wk->spmv_ng_flag & DIP_UNKNOWN_30) {
-            return 0;
-        }
-
-        if (wk->sa->exs2_g_ix == 0) {
-            return 0;
-        }
-
-        if (wk->sa->exs2_g_ix > 0x1C) {
-            return 0;
-        }
-
-        if (always && !(wk->cp->btix[wk->sa->exs2_g_ix] & 0x100)) {
-            return 0;
-        }
-
-        if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_23) && (chainex_check[wk->wu.id][wk->sa->exs2_g_ix - 20])) {
-            return 0;
-        }
-
-        if (wk->cancel_timer == 0) {
-            wk->permited_koa |= 0x40;
-        }
-
-        conpane = &wk->cp->sw_lvbt;
-
-        if (wk->cp->waza_flag[wk->sa->exs2_g_ix] == -1) {
-            return 0;
-        }
-
-        if (((wk->cp->btix[wk->sa->exs2_g_ix] & 0xFF) != 0x80) && (wk->cp->waza_flag[wk->sa->exs2_g_ix])) {
-            cusw = conpane[wk->cp->btix[wk->sa->exs2_g_ix] & 0xFF];
-
-            for (j = 3; j >= 0; j--) {
-                if ((j == 3) && !(wk->cp->btix[wk->sa->exs2_g_ix] & 0x600)) {
-                    continue;
-                }
-
-                exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[wk->sa->exs2_g_ix][j]];
-
-                if (exsw == cmdshot_conv_tbl[wk->cp->exdt[wk->sa->exs2_g_ix][j] & 0xF]) {
-                    setup_comm_back(&wk->wu);
-                    wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->exs2_g_ix)]
-                                             [j + ((wk->sa->exs2_g_ix - 20) * 4)];
-                    wk->wu.cg_cancel = 0;
-                    wk->sa->mp = -1;
-                    hissatsu_setup_union(wk, wk->cp->waza_r[wk->sa->exs2_g_ix][j]);
-                    waza_compel_all_init2(wk);
-                    chainex_check[wk->wu.id][wk->sa->exs2_g_ix - 20] = 1;
-                    chainex_spat_cancel_kidou(&wk->wu);
-                    return 1;
-                }
-            }
-        }
-
-        return 0;
-    }
-
-    if (wk->spmv_ng_flag & DIP_UNKNOWN_31) {
-        return 0;
-    }
-
-    if (wk->sa->exs2_a_ix == 0) {
-        return 0;
-    }
-
-    if ((wk->sa->exs2_a_ix) < 0x1C) {
-        return 0;
-    }
-
-    if (always && !(wk->cp->btix[wk->sa->exs2_a_ix] & 0x100)) {
-        return 0;
-    }
-
-    if ((wk->spmv_ng_flag2 & DIP2_UNKNOWN_23) && (chainex_check[wk->wu.id][wk->sa->exs2_a_ix - 20])) {
-        return 0;
-    }
-
-    if (wk->cancel_timer == 0) {
-        wk->permited_koa |= 0x40;
-    }
-
-    conpane = &wk->cp->sw_lvbt;
-
-    if (wk->cp->waza_flag[wk->sa->exs2_a_ix] == -1) {
-        return 0;
-    }
-
-    if (((wk->cp->btix[wk->sa->exs2_a_ix] & 0xFF) != 0x80) && (wk->cp->waza_flag[wk->sa->exs2_a_ix])) {
-        cusw = conpane[wk->cp->btix[wk->sa->exs2_a_ix] & 0xFF];
-
-        for (j = 3; j >= 0; j--) {
-            if ((j == 3) && !(wk->cp->btix[wk->sa->exs2_a_ix] & 0x600)) {
-                continue;
-            }
-
-            exsw = cusw & cmdshot_conv_tbl[wk->cp->exdt[wk->sa->exs2_a_ix][j]];
-
-            if (exsw == cmdshot_conv_tbl[wk->cp->exdt[wk->sa->exs2_a_ix][j] & 0xF]) {
-                setup_comm_back(&wk->wu);
-                wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(wk->sa->exs2_a_ix)]
-                                         [j + (((wk->sa->exs2_a_ix) - 38) * 4)];
-                wk->wu.cg_cancel = 0;
-                wk->sa->mp = -1;
-                hissatsu_setup_union(wk, wk->cp->waza_r[wk->sa->exs2_a_ix][j]);
-                waza_compel_all_init2(wk);
-                chainex_check[wk->wu.id][wk->sa->exs2_a_ix - 20] = 1;
-                chainex_spat_cancel_kidou(&wk->wu);
-                return 1;
-            }
-        }
-    }
-
-    return 0;
+    return check_full_gauge_attack_inner(wk, always, wk->sa->exs2_g_ix, wk->sa->exs2_a_ix);
 }
 
 /** @brief Checks if a Super Arts input command was detected. */
