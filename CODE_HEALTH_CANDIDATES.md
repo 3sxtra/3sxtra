@@ -70,7 +70,7 @@
 
 | # | File | Lines | Tag | Description | Risk | Priority |
 |---|------|-------|-----|-------------|------|----------|
-| 19 | `com_sub.c` | 5953 | LONG | **Largest file** — 192 functions. AI subroutine library. Many nearly-identical "Term" functions (`EM_Term`, `Jump_Term`, `JA_Term`, etc.) with similar parameter patterns. Major DUP candidate. | High | Med |
+| 19 | `com_sub.c` | 5953 | LONG | **Largest file** — 192 functions. `Check_Term_Sub`/`Check_Term_Sub_Air` → shared `check_term_sub_impl` helper ✅. Remaining "Term" function pairs (`Jump_Attack_Term`/`Hi_Jump_Attack_Term`, `ORO_JA_Term`/`ORO_HJA_Term`, etc.) share structural patterns but diverge per-case — **not cleanly consolidable**. | High | Low |
 | ~~20~~ | ~~`com_pl.c`~~ | ~~1941~~ | ~~LONG/DUP~~ | ~~Extracted `com_dispatch_char` helper~~ | — | ✅ Done |
 | 21 | `com_data.c` | — | MAGIC | Likely large data tables. Needs inspection. | Low | Low |
 
@@ -146,8 +146,6 @@ All original quick wins have been completed! ✅
 | Priority | # | File | Tag | Description |
 |----------|---|------|-----|-------------|
 | Med | 9 | `plpat.c` | LONG | Attack-level handlers share setup/cancel/char_move pattern |
-| Med | 26 | `bg.c` | LONG/CMPLX | `Bg_Texture_Load_EX`/`Load2`/`Load_Ending` share texture setup |
-| Med | 19 | `com_sub.c` | LONG | Nearly-identical "Term" functions — major DUP candidate |
 
 ## Summary Statistics
 - Total candidates: **35** (excluding skips)

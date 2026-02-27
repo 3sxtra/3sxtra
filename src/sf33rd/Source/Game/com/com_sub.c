@@ -1656,49 +1656,42 @@ void SHELL_Term(PLW* wk, s16 Next_Command, s16 Exit_Number, s16 Next_Action, s16
     }
 }
 
-/** @brief  */
-s32 Check_Term_Sub_Air(PLW* wk, s16 Distance, s16 Range) {
-    if (Range == -1) {
-        return 1;
-    }
-    if (!(Range & 0x8000)) {
-        if (Distance >= Range) {
-            return 1;
-        }
-        return 0;
-    } else {
-        Range += Correct_Unit_PL(wk);
-
-        if (Distance <= (Range & 0x7FFF)) {
-            return 1;
-        }
-        return 0;
-    }
-}
-
-/** @brief  */
-s32 Check_Term_Sub(PLW* wk, s16 Distance, s16 Range) {
-    if (Range == -1) {
-        return 1;
-    }
-    if (!(Range & 0x8000)) {
-        if (Distance >= Range) {
-            return 1;
-        }
-        return 0;
-    } else {
-        if (Distance <= (Range & 0x7FFF)) {
-            return 1;
-        }
-        return 0;
-    }
-}
-
 const s16 Correct_VS_Air_Data[0x14] = { 0, 0x20, 0, 0, 0, 0x20, 0x20, 0, 0x20, 0, 0, 0, 0, 0x20, 0, 0, 0, 0, 0, 0 };
 
 /** @brief  */
 s32 Correct_Unit_PL(PLW* wk) {
     return Correct_VS_Air_Data[My_char[Player_id]];
+}
+
+/** @brief Shared distance-vs-range check with optional correction offset.
+ *  When correction == 0 this is the standard ground check (Check_Term_Sub).
+ *  When correction != 0 (e.g. Correct_Unit_PL) this is the air check (Check_Term_Sub_Air). */
+static s32 check_term_sub_impl(PLW* wk, s16 Distance, s16 Range, s32 correction) {
+    if (Range == -1) {
+        return 1;
+    }
+    if (!(Range & 0x8000)) {
+        if (Distance >= Range) {
+            return 1;
+        }
+        return 0;
+    } else {
+        Range += correction;
+        if (Distance <= (Range & 0x7FFF)) {
+            return 1;
+        }
+        return 0;
+    }
+}
+
+/** @brief  */
+s32 Check_Term_Sub_Air(PLW* wk, s16 Distance, s16 Range) {
+    return check_term_sub_impl(wk, Distance, Range, Correct_Unit_PL(wk));
+}
+
+/** @brief  */
+s32 Check_Term_Sub(PLW* wk, s16 Distance, s16 Range) {
+    return check_term_sub_impl(wk, Distance, Range, 0);
 }
 
 /** @brief  */

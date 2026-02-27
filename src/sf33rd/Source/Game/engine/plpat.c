@@ -38,6 +38,8 @@
 
 static s16 ja_nmj_rno_change(WORK* wk);
 static void Attack_07000(PLW* wk);
+static void attack_ground_init(PLW* wk);
+static void attack_special_init(PLW* wk);
 static void get_cancel_timer(PLW* wk);
 static void check_ja_nmj_dummy_RTNM(PLW* wk);
 static u8 get_cjdR(PLW*);
@@ -108,18 +110,29 @@ void Player_attack(PLW* wk) {
     }
 }
 
+/** @brief Common case-0 preamble for ground-based attack init. */
+static void attack_ground_init(PLW* wk) {
+    wk->wu.routine_no[3]++;
+    hoken_muriyari_chakuchi(wk);
+    wk->wu.rl_flag = wk->wu.rl_waza;
+    setup_lvdir_after_autodir(wk);
+    get_cancel_timer(wk);
+    set_char_move_init(&wk->wu, 4, wk->as->char_ix);
+}
+
+/** @brief Common case-0 preamble for special/follow-up attacks (ground init + mvxy). */
+static void attack_special_init(PLW* wk) {
+    attack_ground_init(wk);
+    setup_mvxy_data(&wk->wu, wk->as->data_ix);
+}
+
 /** @brief Attack level 0: Ground normal attack start. */
 static void Attack_00000(PLW* wk) {
     wk->scr_pos_set_flag = 0;
 
     switch (wk->wu.routine_no[3]) {
     case 0:
-        wk->wu.routine_no[3]++;
-        hoken_muriyari_chakuchi(wk);
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        setup_lvdir_after_autodir(wk);
-        get_cancel_timer(wk);
-        set_char_move_init(&wk->wu, 4, wk->as->char_ix);
+        attack_ground_init(wk);
         break;
 
     case 1:
@@ -139,13 +152,7 @@ static void Attack_00000(PLW* wk) {
 static void Attack_01000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
-        wk->wu.routine_no[3]++;
-        hoken_muriyari_chakuchi(wk);
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        setup_lvdir_after_autodir(wk);
-        get_cancel_timer(wk);
-        set_char_move_init(&wk->wu, 4, wk->as->char_ix);
-        setup_mvxy_data(&wk->wu, wk->as->data_ix);
+        attack_special_init(wk);
         break;
 
     case 1:
@@ -174,13 +181,7 @@ static void Attack_01000(PLW* wk) {
 static void Attack_02000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
-        wk->wu.routine_no[3]++;
-        hoken_muriyari_chakuchi(wk);
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        setup_lvdir_after_autodir(wk);
-        get_cancel_timer(wk);
-        set_char_move_init(&wk->wu, 4, wk->as->char_ix);
-        setup_mvxy_data(&wk->wu, wk->as->data_ix);
+        attack_special_init(wk);
         break;
 
     case 1:
@@ -403,12 +404,7 @@ case3:
 static void Attack_04000(PLW* wk) {
     switch (wk->wu.routine_no[3]) {
     case 0:
-        wk->wu.routine_no[3]++;
-        hoken_muriyari_chakuchi(wk);
-        wk->wu.rl_flag = wk->wu.rl_waza;
-        setup_lvdir_after_autodir(wk);
-        get_cancel_timer(wk);
-        set_char_move_init(&wk->wu, 4, wk->as->char_ix);
+        attack_ground_init(wk);
         break;
 
     case 1:
