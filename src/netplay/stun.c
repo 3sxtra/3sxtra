@@ -224,6 +224,10 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
 
+    // NOTE: getaddrinfo() is a blocking syscall with no portable timeout control.
+    // If the DNS server is unresponsive, this can block for 30+ seconds.
+    // This function is only called from a background thread (stun_discover_thread_fn),
+    // so the main thread is not affected.
     if (getaddrinfo("stun.l.google.com", "19302", &hints, &res) != 0 || !res) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve stun.l.google.com");
         return false;

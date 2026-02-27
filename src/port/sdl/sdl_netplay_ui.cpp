@@ -38,8 +38,9 @@ static char lobby_status_msg[128] = { 0 };
 static bool lobby_server_registered = false;
 static bool lobby_server_searching = false;
 static LobbyPlayer lobby_server_players[16];
-static int lobby_server_player_count = 0;
+static SDL_AtomicInt lobby_server_player_count = { 0 };
 static uint32_t lobby_server_last_poll = 0;
+static uint32_t lobby_pending_invite_time = 0; // Timestamp when invite was detected (for expiry)
 static char lobby_my_player_id[64] = { 0 };
 #define LOBBY_POLL_INTERVAL_MS 2000
 
@@ -75,6 +76,7 @@ static char lobby_pending_invite_region[8] = { 0 };
 static int lobby_pending_invite_ping = -1; // ms, -1 = unknown
 static SDL_AtomicInt lobby_punch_cancel = { 0 }; // Set to 1 to cancel in-progress hole punch
 static bool lobby_we_are_initiator = false; // true = we clicked Connect, false = they invited us
+static char lobby_connect_to_intent[16] = { 0 }; // Current connect_to value preserved across heartbeats
 
 // Forward declarations for functions used by lobby_poll_server
 static void lobby_start_punch(uint32_t peer_ip, uint16_t peer_port);
@@ -89,10 +91,13 @@ typedef struct {
     int rtt_ms;
 } AsyncPresenceData;
 
+static SDL_AtomicInt async_presence_active = { 0 };
+
 static int SDLCALL async_presence_fn(void* data) {
     AsyncPresenceData* d = (AsyncPresenceData*)data;
     LobbyServer_UpdatePresence(d->player_id, d->display_name, d->region, d->room_code, d->connect_to, d->rtt_ms);
     free(d);
+    SDL_SetAtomicInt(&async_presence_active, 0);
     return 0;
 }
 
@@ -101,6 +106,9 @@ static int lobby_my_rtt_ms = -1; // Our measured RTT to the lobby server
 static void AsyncUpdatePresence(const char* pid, const char* disp, const char* rc, const char* ct) {
     if (!LobbyServer_IsConfigured() || !pid || !pid[0])
         return;
+    if (SDL_GetAtomicInt(&async_presence_active) != 0)
+        return; // Previous request still in-flight; skip to avoid thread accumulation
+    SDL_SetAtomicInt(&async_presence_active, 1);
     AsyncPresenceData* d = (AsyncPresenceData*)malloc(sizeof(AsyncPresenceData));
     memset(d, 0, sizeof(*d));
     snprintf(d->player_id, sizeof(d->player_id), "%s", pid);
@@ -115,16 +123,20 @@ static void AsyncUpdatePresence(const char* pid, const char* disp, const char* r
         snprintf(d->connect_to, sizeof(d->connect_to), "%s", ct);
     d->rtt_ms = lobby_my_rtt_ms;
     SDL_Thread* t = SDL_CreateThread(async_presence_fn, "AsyncPresence", d);
-    if (t)
+    if (t) {
         SDL_DetachThread(t);
-    else
+    } else {
         free(d);
+        SDL_SetAtomicInt(&async_presence_active, 0);
+    }
 }
 
 typedef struct {
     char player_id[128];
     int action;
 } AsyncActionData;
+
+static SDL_AtomicInt async_action_active = { 0 };
 
 static int SDLCALL async_action_fn(void* data) {
     AsyncActionData* d = (AsyncActionData*)data;
@@ -135,27 +147,33 @@ static int SDLCALL async_action_fn(void* data) {
     else if (d->action == 3)
         LobbyServer_Leave(d->player_id);
     free(d);
+    SDL_SetAtomicInt(&async_action_active, 0);
     return 0;
 }
 
 static void AsyncLobbyAction(const char* pid, int action) {
     if (!LobbyServer_IsConfigured() || !pid || !pid[0])
         return;
+    if (SDL_GetAtomicInt(&async_action_active) != 0)
+        return; // Previous action still in-flight; skip to avoid thread accumulation
+    SDL_SetAtomicInt(&async_action_active, 1);
     AsyncActionData* d = (AsyncActionData*)malloc(sizeof(AsyncActionData));
     snprintf(d->player_id, sizeof(d->player_id), "%s", pid);
     d->action = action;
     SDL_Thread* t = SDL_CreateThread(async_action_fn, "AsyncAction", d);
-    if (t)
+    if (t) {
         SDL_DetachThread(t);
-    else
+    } else {
         free(d);
+        SDL_SetAtomicInt(&async_action_active, 0);
+    }
 }
 
 static SDL_AtomicInt lobby_poll_active = { 0 };
 
 static int SDLCALL lobby_poll_thread_fn(void* data) {
     (void)data;
-    static LobbyPlayer temp_players[16];
+    LobbyPlayer temp_players[16]; // Stack-local — static here was a data race risk
 
     // Measure HTTP RTT to the lobby server
     uint32_t t0 = SDL_GetTicks();
@@ -166,7 +184,7 @@ static int SDLCALL lobby_poll_thread_fn(void* data) {
     SDL_MemoryBarrierRelease();
     memcpy(lobby_server_players, temp_players, sizeof(temp_players));
     SDL_MemoryBarrierRelease();
-    lobby_server_player_count = count;
+    SDL_SetAtomicInt(&lobby_server_player_count, count);
 
     SDL_SetAtomicInt(&lobby_poll_active, 0);
     return 0;
@@ -181,25 +199,21 @@ static void lobby_poll_server(void) {
     if (!lobby_server_registered || !my_room_code[0])
         return;
 
-    // Poll server for player list:
-    // - Always when searching (to see other players)
-    // - When not searching, only if auto-connect is on (to detect incoming invites)
+    // Always poll when registered — we need to detect incoming invites even when not searching
     bool lobby_auto = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
-    bool should_poll = lobby_server_searching || lobby_auto;
-    if (!should_poll)
-        return;
 
     uint32_t now = SDL_GetTicks();
     if (now - lobby_server_last_poll >= LOBBY_POLL_INTERVAL_MS || lobby_server_last_poll == 0) {
         if (SDL_GetAtomicInt(&lobby_poll_active) == 0) {
             SDL_SetAtomicInt(&lobby_poll_active, 1);
 
-            // Keep our presence alive (only when searching, so we appear in search results)
-            if (lobby_server_searching) {
+            // Keep our presence alive (heartbeat every poll cycle to avoid stale eviction)
+            // IMPORTANT: preserve connect_to if we have an active connection intent
+            {
                 const char* display = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
                 if (!display || !display[0])
                     display = my_room_code;
-                AsyncUpdatePresence(lobby_my_player_id, display, my_room_code, "");
+                AsyncUpdatePresence(lobby_my_player_id, display, my_room_code, lobby_connect_to_intent);
             }
 
             SDL_Thread* t = SDL_CreateThread(lobby_poll_thread_fn, "LobbyPoll", NULL);
@@ -220,7 +234,8 @@ static void lobby_poll_server(void) {
         return;
     }
     bool found_invite = false;
-    for (int i = 0; i < lobby_server_player_count; i++) {
+    int player_count = SDL_GetAtomicInt(&lobby_server_player_count);
+    for (int i = 0; i < player_count; i++) {
         if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
             continue;
         if (lobby_server_players[i].connect_to[0] && strcmp(lobby_server_players[i].connect_to, my_room_code) == 0) {
@@ -233,6 +248,7 @@ static void lobby_poll_server(void) {
             // Always update pending invite state for native lobby indication
             found_invite = true;
             lobby_has_pending_invite = true;
+            lobby_pending_invite_time = now;
             snprintf(lobby_pending_invite_name,
                      sizeof(lobby_pending_invite_name),
                      "%s",
@@ -270,9 +286,14 @@ static void lobby_poll_server(void) {
             break;
         }
     }
-    if (!found_invite) {
-        // Don't clear pending invite here — it persists until user accepts/declines
-        // This prevents the popup from flickering between poll cycles
+    if (!found_invite && lobby_has_pending_invite) {
+        // Expire stale invites after 10s to avoid ghost popups when peer disconnects
+        if (SDL_GetTicks() - lobby_pending_invite_time > 10000) {
+            lobby_has_pending_invite = false;
+            lobby_pending_invite_name[0] = '\0';
+            lobby_pending_invite_region[0] = '\0';
+            lobby_pending_invite_ping = -1;
+        }
     }
 }
 
@@ -290,10 +311,10 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
     (void)data;
     SDL_SetAtomicInt(&lobby_punch_cancel, 0);
     uint32_t start_ms = SDL_GetTicks();
-    bool ok = Stun_HolePunch(&stun_result, lobby_punch_peer_ip, lobby_punch_peer_port, 60000, &lobby_punch_cancel);
+    bool ok = Stun_HolePunch(&stun_result, lobby_punch_peer_ip, lobby_punch_peer_port, 10000, &lobby_punch_cancel);
     if (ok) {
         uint32_t rtt_ms = (SDL_GetTicks() - start_ms);
-        if (rtt_ms > 200) rtt_ms = rtt_ms % 200;
+        if (rtt_ms > 200) rtt_ms = 200;  // Cap at reasonable max for display
         if (rtt_ms < 1) rtt_ms = 1;
         lobby_pending_invite_ping = (int)rtt_ms;
     }
@@ -360,13 +381,15 @@ static void lobby_reset(void) {
     Upnp_RemoveMapping(&lobby_upnp_mapping);
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_IDLE);
 
-    // Clean up server browser state
+    // Clean up server browser state — only send Leave if no async action is in-flight
     if (lobby_server_registered && lobby_my_player_id[0]) {
-        AsyncLobbyAction(lobby_my_player_id, 3);
+        if (SDL_GetAtomicInt(&async_action_active) == 0) {
+            AsyncLobbyAction(lobby_my_player_id, 3);
+        }
     }
     lobby_server_registered = false;
     lobby_server_searching = false;
-    lobby_server_player_count = 0;
+    SDL_SetAtomicInt(&lobby_server_player_count, 0);
     lobby_server_last_poll = 0;
 
     // Clear pending invite state
@@ -376,15 +399,22 @@ static void lobby_reset(void) {
     lobby_pending_invite_ping = -1;
     SDL_SetAtomicInt(&lobby_punch_cancel, 1); // Cancel any in-flight punch
     lobby_punch_peer_name[0] = '\0';
+    lobby_connect_to_intent[0] = '\0';
+
+    // Reset async thread guards so lobby can restart cleanly
+    SDL_SetAtomicInt(&async_presence_active, 0);
+    SDL_SetAtomicInt(&async_action_active, 0);
 }
 
-// Simple ImGui spinner
+// Simple ImGui spinner (only used by deprecated ImGui lobby — see #if 0 below)
+#if 0
 static void ImGuiSpinner(const char* label) {
     float t = (float)SDL_GetTicks() / 1000.0f;
     const char* frames[] = { "|", "/", "-", "\\" };
     int idx = ((int)(t * 8.0f)) % 4;
     ImGui::Text("%s %s", frames[idx], label);
 }
+#endif
 
 // FPS history data (owned by sdl_app.c, just pointers here)
 static const float* s_fps_history = NULL;
@@ -850,7 +880,10 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
         // Run server polling/auto-connect regardless of which lobby UI is active
         lobby_poll_server();
 
-        // Skip ImGui window when native lobby is handling the UI
+        // [DEPRECATED] ImGui lobby window — discontinued in favor of native lobby.
+        // The underlying state machine (STUN, hole-punch, UPnP, server polling)
+        // continues to run above; only the ImGui rendering is disabled.
+#if 0
         if (!native_lobby_active) {
 
             // --- Fullscreen lobby window (matches F1/F2/F3 style) ---
@@ -948,7 +981,7 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                             if (ImGui::Button("Stop Searching")) {
                                 AsyncLobbyAction(lobby_my_player_id, 2);
                                 lobby_server_searching = false;
-                                lobby_server_player_count = 0;
+                                SDL_SetAtomicInt(&lobby_server_player_count, 0);
                             }
 
                             ImGui::Spacing();
@@ -956,7 +989,8 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
 
                             // Filter out ourselves
                             int shown = 0;
-                            for (int i = 0; i < lobby_server_player_count; i++) {
+                            int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+                            for (int i = 0; i < pc; i++) {
                                 if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
                                     continue;
 
@@ -977,7 +1011,6 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                                     uint32_t peer_ip = 0;
                                     uint16_t peer_port = 0;
                                     if (Stun_DecodeEndpoint(lobby_server_players[i].room_code, &peer_ip, &peer_port)) {
-                                        // Signal our intent to the other player via the server
                                         const char* display_ct = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
                                         if (!display_ct || !display_ct[0])
                                             display_ct = my_room_code;
@@ -985,12 +1018,12 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                                                             display_ct,
                                                             my_room_code,
                                                             lobby_server_players[i].room_code);
-                                        // Store peer name for status display
+                                        snprintf(lobby_connect_to_intent, sizeof(lobby_connect_to_intent), "%s", lobby_server_players[i].room_code);
                                         snprintf(lobby_punch_peer_name,
                                                  sizeof(lobby_punch_peer_name),
                                                  "%s",
                                                  lobby_server_players[i].display_name);
-                                        lobby_we_are_initiator = true; // We clicked Connect
+                                        lobby_we_are_initiator = true;
                                         lobby_start_punch(peer_ip, peer_port);
                                     } else {
                                         snprintf(lobby_status_msg,
@@ -1084,6 +1117,7 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
             ImGui::End();
             ImGui::GetIO().FontGlobalScale = 1.0f;
         } /* end if (!native_lobby_active) */
+#endif
     } else {
         // Reset lobby state when not in lobby
         if (SDL_GetAtomicInt(&lobby_async_state) != LOBBY_ASYNC_IDLE) {
@@ -1136,7 +1170,7 @@ void SDLNetplayUI_StopSearch() {
         return;
     AsyncLobbyAction(lobby_my_player_id, 2);
     lobby_server_searching = false;
-    lobby_server_player_count = 0;
+    SDL_SetAtomicInt(&lobby_server_player_count, 0);
 }
 
 bool SDLNetplayUI_IsSearching() {
@@ -1144,19 +1178,26 @@ bool SDLNetplayUI_IsSearching() {
 }
 
 int SDLNetplayUI_GetOnlinePlayerCount() {
-    // Exclude ourselves from the count
+    // Count only searching players, excluding ourselves
     int count = 0;
-    for (int i = 0; i < lobby_server_player_count; i++) {
-        if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) != 0)
-            count++;
+    int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+    for (int i = 0; i < pc; i++) {
+        if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
+            continue;
+        if (strcmp(lobby_server_players[i].status, "searching") != 0)
+            continue;
+        count++;
     }
     return count;
 }
 
 const char* SDLNetplayUI_GetOnlinePlayerName(int index) {
     int count = 0;
-    for (int i = 0; i < lobby_server_player_count; i++) {
+    int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+    for (int i = 0; i < pc; i++) {
         if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
+            continue;
+        if (strcmp(lobby_server_players[i].status, "searching") != 0)
             continue;
         if (count == index)
             return lobby_server_players[i].display_name;
@@ -1167,8 +1208,11 @@ const char* SDLNetplayUI_GetOnlinePlayerName(int index) {
 
 const char* SDLNetplayUI_GetOnlinePlayerRoomCode(int index) {
     int count = 0;
-    for (int i = 0; i < lobby_server_player_count; i++) {
+    int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+    for (int i = 0; i < pc; i++) {
         if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
+            continue;
+        if (strcmp(lobby_server_players[i].status, "searching") != 0)
             continue;
         if (count == index)
             return lobby_server_players[i].room_code;
@@ -1179,8 +1223,11 @@ const char* SDLNetplayUI_GetOnlinePlayerRoomCode(int index) {
 
 void SDLNetplayUI_ConnectToPlayer(int index) {
     int count = 0;
-    for (int i = 0; i < lobby_server_player_count; i++) {
+    int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+    for (int i = 0; i < pc; i++) {
         if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
+            continue;
+        if (strcmp(lobby_server_players[i].status, "searching") != 0)
             continue;
         if (count == index) {
             uint32_t peer_ip = 0;
@@ -1191,6 +1238,7 @@ void SDLNetplayUI_ConnectToPlayer(int index) {
                 if (!display_ct || !display_ct[0])
                     display_ct = my_room_code;
                 AsyncUpdatePresence(lobby_my_player_id, display_ct, my_room_code, lobby_server_players[i].room_code);
+                snprintf(lobby_connect_to_intent, sizeof(lobby_connect_to_intent), "%s", lobby_server_players[i].room_code);
                 snprintf(
                     lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", lobby_server_players[i].display_name);
                 lobby_we_are_initiator = true; // We clicked Connect
@@ -1224,6 +1272,7 @@ void SDLNetplayUI_AcceptPendingInvite() {
     if (!d2 || !d2[0])
         d2 = my_room_code;
     AsyncUpdatePresence(lobby_my_player_id, d2, my_room_code, lobby_pending_invite_room);
+    snprintf(lobby_connect_to_intent, sizeof(lobby_connect_to_intent), "%s", lobby_pending_invite_room);
     lobby_has_pending_invite = false;
     lobby_we_are_initiator = false;
     lobby_start_punch(lobby_pending_invite_ip, lobby_pending_invite_port);

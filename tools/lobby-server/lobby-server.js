@@ -135,6 +135,12 @@ function resolveConnectMatch(player_id, display_name, room_code, connect_to) {
     for (const [otherId, other] of players) {
         if (otherId === player_id) continue;
         if (other.room_code === connect_to) {
+            // Safety: if this player already has a connect_to set to a *different* room,
+            // don't overwrite it — could be a CGNAT/duplicate room_code collision.
+            if (other.connect_to && other.connect_to !== room_code && other.connect_to !== '') {
+                console.warn(`[match] skipped: ${other.display_name} already connecting to ${other.connect_to}`);
+                break;
+            }
             other.connect_to = String(room_code).slice(0, 15);
             console.log(`[match] ${display_name} -> ${other.display_name} (mutual connect_to set)`);
             break;
@@ -203,8 +209,12 @@ async function handleRequest(req, res) {
         const data = parseJsonBody(res, body);
         if (!data) return;
 
-        const p = players.get(data.player_id);
-        if (!p) return json(res, 404, { error: 'Player not found. Call /presence first.' });
+        let p = players.get(data.player_id);
+        if (!p) {
+            // Create minimal entry if presence hasn't arrived yet (race condition fix)
+            p = { display_name: data.player_id, region: '', room_code: '', connect_to: '', status: 'idle', rtt_ms: -1, last_seen: Date.now() };
+            players.set(data.player_id, p);
+        }
 
         p.status = 'searching';
         p.last_seen = Date.now();
@@ -225,12 +235,15 @@ async function handleRequest(req, res) {
     }
 
     // --- GET /searching ---
+    // Returns players that are either searching or have an active connect_to.
+    // The connect_to filter is needed so clients can detect incoming invites.
     if (method === 'GET' && path === '/searching') {
         const regionFilter = url.searchParams.get('region');
         const result = [];
 
         for (const [id, p] of players) {
-            if (p.status !== 'searching') continue;
+            // Only include players that are searching OR have an active connection intent
+            if (p.status !== 'searching' && !p.connect_to) continue;
             if (regionFilter && p.region !== regionFilter) continue;
             result.push({
                 player_id: id,
@@ -239,6 +252,7 @@ async function handleRequest(req, res) {
                 room_code: p.room_code,
                 connect_to: p.connect_to || '',
                 rtt_ms: p.rtt_ms || -1,
+                status: p.status || 'idle',
             });
         }
 

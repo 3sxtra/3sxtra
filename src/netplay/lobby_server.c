@@ -53,6 +53,8 @@ static bool configured = false;
 
 // Baked-in defaults (used if config.ini values are missing or empty)
 #define DEFAULT_LOBBY_URL "http://152.67.75.184:3000"
+// NOTE: The HMAC key is used as raw ASCII bytes (not base64-decoded).
+// The server does the same, so signing matches. This is intentional.
 #define DEFAULT_LOBBY_KEY "zqv0R11DN5DI8ZdRDhRmXzexQ2ciExSKXBvZSfXG0Z8="
 
 void LobbyServer_Init(void) {
@@ -331,6 +333,10 @@ static int http_connect(void) {
     char port_str[16];
     snprintf(port_str, sizeof(port_str), "%d", server_port);
 
+    // NOTE: getaddrinfo() is a blocking syscall with no portable timeout control.
+    // If the DNS server is unresponsive, this can block for 30+ seconds.
+    // This function is only called from background threads, so the main thread
+    // is not affected, but stalled threads may accumulate until DNS resolves.
     if (getaddrinfo(server_host, port_str, &hints, &res) != 0 || !res) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: DNS resolve failed for %s", server_host);
         return -1;
@@ -441,6 +447,18 @@ static bool http_request(const char* method, const char* path, const char* body,
         status = atoi(response + 9);
     }
 
+    if (status < 200 || status >= 300) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: HTTP %d for %s %s", status, method, path);
+        // Surface 403 reason (e.g. stale timestamp / clock drift) for debugging
+        if (status == 403) {
+            const char* reason = strstr(response, "\r\n\r\n");
+            if (reason) {
+                reason += 4;
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: 403 detail: %s", reason);
+            }
+        }
+    }
+
     /* Extract body (after \r\n\r\n) */
     const char* body_start = strstr(response, "\r\n\r\n");
     if (body_start) {
@@ -490,8 +508,14 @@ static bool json_get_string(const char* json, const char* key, char* out, size_t
     if (!p)
         return false;
     p += strlen(pattern);
-    const char* end = strchr(p, '"');
-    if (!end)
+    /* Find the closing quote, skipping escaped quotes */
+    const char* end = p;
+    while (*end) {
+        if (*end == '"' && (end == p || *(end - 1) != '\\'))
+            break;
+        end++;
+    }
+    if (!*end)
         return false;
     size_t len = (size_t)(end - p);
     if (len >= out_size)
@@ -608,6 +632,7 @@ int LobbyServer_GetSearching(LobbyPlayer* out_players, int max_players, const ch
         json_get_string(obj, "region", p->region, sizeof(p->region));
         json_get_string(obj, "room_code", p->room_code, sizeof(p->room_code));
         json_get_string(obj, "connect_to", p->connect_to, sizeof(p->connect_to));
+        json_get_string(obj, "status", p->status, sizeof(p->status));
         p->rtt_ms = json_get_int(obj, "rtt_ms", -1);
 
         if (strlen(p->player_id) > 0)

@@ -13,7 +13,8 @@ typedef struct {
     char region[8];
     char room_code[16];
     char connect_to[16];
-    int rtt_ms;           // Server RTT in ms (-1 = unknown)
+    char status[16];          // "searching" or "idle"
+    int rtt_ms;               // Server RTT in ms (-1 = unknown)
 } LobbyPlayer;
 
 /// Initialize lobby server client — reads URL and key from config.ini.

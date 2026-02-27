@@ -11,6 +11,7 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
+#include "port/sdl/sdl_netplay_ui.h"
 
 static void EFF61_WAIT(WORK_Other_CONN* ewk);
 static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
@@ -140,6 +141,12 @@ void effect_61_move(WORK_Other_CONN* ewk) {
         ewk->wu.my_clear_level = 179;
     } else {
         ewk->wu.my_clear_level = 128;
+    }
+
+    /* Lobby labels (char_index 68..73): hide behind incoming-challenge popup */
+    if (ewk->wu.char_index >= 68 && ewk->wu.char_index <= 73
+        && SDLNetplayUI_HasPendingInvite()) {
+        ewk->wu.my_clear_level = 255;
     }
 
     sort_push_request3(&ewk->wu);

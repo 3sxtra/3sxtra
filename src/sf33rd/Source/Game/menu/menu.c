@@ -551,14 +551,21 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
         }
 
-        /* Handle cursor movement (6 items: 0..5) — suppressed when popup is active */
-        if (!SDLNetplayUI_HasPendingInvite()) {
+        /* Handle cursor movement (6 items: 0..5)
+         * MC_Move_Sub MUST always run because it sets IO_Result from button presses.
+         * When the popup is active, we save/restore the cursor to suppress movement
+         * while still capturing confirm/cancel button events for the popup handler. */
+        {
             s16 prev_cursor = Menu_Cursor_Y[0];
+            bool popup_active = SDLNetplayUI_HasPendingInvite();
             if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 5, 0xFF) == 0) {
                 MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 5, 0xFF);
             }
-            /* Update description message on cursor change */
-            if (prev_cursor != Menu_Cursor_Y[0]) {
+            if (popup_active) {
+                /* Restore cursor — suppress movement while popup is showing */
+                Menu_Cursor_Y[0] = prev_cursor;
+            } else if (prev_cursor != Menu_Cursor_Y[0]) {
+                /* Update description message on cursor change */
                 Message_Data->order = 1;
                 Message_Data->request = 35 + Menu_Cursor_Y[0];
                 Message_Data->timer = 2;
@@ -639,6 +646,8 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             }
         }
 
+        /* === Background text — hide when popup covers the screen === */
+        if (!SDLNetplayUI_HasPendingInvite()) {
         /* === Display toggle values (right of labels) === */
         {
             /* LAN toggle values (left column) */
@@ -761,6 +770,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 }
             }
         }
+        } /* end !popup_active background text */
 
         /* === Incoming Challenge Popup === */
         if (SDLNetplayUI_HasPendingInvite()) {
