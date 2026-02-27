@@ -230,10 +230,6 @@ static void lobby_poll_server(void) {
             if (!Stun_DecodeEndpoint(lobby_server_players[i].room_code, &peer_ip, &peer_port))
                 break;
 
-            // Check if this is a new invite (different player)
-            bool is_new_invite = !lobby_has_pending_invite ||
-                                 strcmp(lobby_pending_invite_name, lobby_server_players[i].display_name) != 0;
-
             // Always update pending invite state for native lobby indication
             found_invite = true;
             lobby_has_pending_invite = true;
