@@ -54,7 +54,7 @@
 | ~~10~~ | ~~`pls02.c`~~ | ~~1189~~ | ~~LONG/DUP~~ | ~~10 RNG generators → `rng_next` inline helper~~ | — | ✅ Done |
 | 11 | `caldir.c` | 1099 | LONG | Mostly constant data tables (trig/direction). Not refactorable — it's ROM data. | N/A | Skip |
 | 12 | `plpatuni.c` | 844 | LONG | Character-specific attack functions. Moderate repetition in attack patterns. | Med | Low |
-| 13 | `plmain.c` | 976 | CMPLX | `sag_union` (lines 592–784) = 192 lines. Complex SA gauge update with nested conditionals. Could extract sub-helpers. | Med | Med |
+| ~~13~~ | ~~`plmain.c`~~ | ~~976~~ | ~~CMPLX~~ | ~~`sag_union` → `sag_decrement_store` helper + merged char-ID checks; `look_after_timers` → loop-ified `waza_flag` assignments~~ | — | ✅ Done |
 | 14 | `plmain.c` | 976 | CMPLX | `check_omop_vital` (lines 864–975) = 111 lines. Switch has 5 cases (0,2,3,4 + fallthrough), each with distinct logic. Cases 3→4 share `vital_new++` with cap via intentional fallthrough. **Not DUP** — a complex state machine. | Med | Skip |
 
 ### screen/
@@ -97,7 +97,7 @@
 
 | # | File | Lines | Tag | Description | Risk | Priority |
 |---|------|-------|-----|-------------|------|----------|
-| 26 | `bg.c` | 1494 | LONG/CMPLX | `scr_trans` alone is 505 lines (567–1072). Massive rendering function. `Bg_Texture_Load_EX`/`Bg_Texture_Load2`/`Bg_Texture_Load_Ending` share texture setup patterns. | Med | Med |
+| ~~26~~ | ~~`bg.c`~~ | ~~1494~~ | ~~LONG/DUP~~ | ~~`Bg_Texture_Load_EX`/`Bg_Texture_Load_Ending` shared priority + rewrite-screen patterns → `bg_extract_priorities` + `bg_setup_rewrite_textures` helpers~~ | — | ✅ Done |
 | ~~27~~ | ~~`bg_sub.c`~~ | ~~1316~~ | ~~LONG/DUP~~ | ~~`Bg_Family_Set` 4 variants → `bg_family_set_layer` helper; `bg_pos_hosei_sub2`/`sub3` → `bg_pos_hosei_impl` helper~~ | — | ✅ Done |
 | 28 | `bg000.c`–`bg190.c` | varies | DUP | Per-stage background files. Many follow identical patterns. Cross-file DUP but risky to consolidate (stage-specific behavior). | High | Low |
 
@@ -146,7 +146,6 @@ All original quick wins have been completed! ✅
 | Priority | # | File | Tag | Description |
 |----------|---|------|-----|-------------|
 | Med | 9 | `plpat.c` | LONG | Attack-level handlers share setup/cancel/char_move pattern |
-| Med | 13 | `plmain.c` | CMPLX | `sag_union` = 192 lines — could extract sub-helpers |
 | Med | 26 | `bg.c` | LONG/CMPLX | `Bg_Texture_Load_EX`/`Load2`/`Load_Ending` share texture setup |
 | Med | 19 | `com_sub.c` | LONG | Nearly-identical "Term" functions — major DUP candidate |
 

@@ -424,28 +424,16 @@ void look_after_timers(PLW* wk) {
     }
 
     if (Debug_w[DEBUG_1SHOT_SA]) {
-        if (wk->sa->nmsa_g_ix != 0) {
-            wk->cp->waza_flag[wk->sa->nmsa_g_ix] = 9;
-        }
+        const s16 sa_ixs[] = {
+            wk->sa->nmsa_g_ix, wk->sa->exsa_g_ix, wk->sa->exs2_g_ix,
+            wk->sa->nmsa_a_ix, wk->sa->exsa_a_ix, wk->sa->exs2_a_ix
+        };
+        s16 si;
 
-        if (wk->sa->exsa_g_ix != 0) {
-            wk->cp->waza_flag[wk->sa->exsa_g_ix] = 9;
-        }
-
-        if (wk->sa->exs2_g_ix != 0) {
-            wk->cp->waza_flag[wk->sa->exs2_g_ix] = 9;
-        }
-
-        if (wk->sa->nmsa_a_ix != 0) {
-            wk->cp->waza_flag[wk->sa->nmsa_a_ix] = 9;
-        }
-
-        if (wk->sa->exsa_a_ix != 0) {
-            wk->cp->waza_flag[wk->sa->exsa_a_ix] = 9;
-        }
-
-        if (wk->sa->exs2_a_ix != 0) {
-            wk->cp->waza_flag[wk->sa->exs2_a_ix] = 9;
+        for (si = 0; si < 6; si++) {
+            if (sa_ixs[si] != 0) {
+                wk->cp->waza_flag[sa_ixs[si]] = 9;
+            }
         }
     }
 }
@@ -589,6 +577,17 @@ static void eag_union(PLW* wk) {
     }
 }
 
+/** @brief Decrement SA store, respecting pcon_dp_flag and ex4th_exec. */
+static void sag_decrement_store(PLW* wk) {
+    if (!pcon_dp_flag) {
+        if (wk->sa->ex4th_exec) {
+            wk->sa->store = 0;
+        } else {
+            wk->sa->store--;
+        }
+    }
+}
+
 /** @brief Updates the Super Art gauge charge and stock for a player. */
 static void sag_union(PLW* wk) {
     switch (wk->sa->sa_rno) {
@@ -627,14 +626,7 @@ static void sag_union(PLW* wk) {
         case 0:
             switch (wk->sa->saeff_ok) {
             case -1:
-                if (!pcon_dp_flag) {
-                    if (wk->sa->ex4th_exec) {
-                        wk->sa->store = 0;
-                    } else {
-                        wk->sa->store--;
-                    }
-                }
-
+                sag_decrement_store(wk);
                 sag_bug_fix(wk->wu.id);
                 wk->sa->saeff_ok = 0;
                 wk->sa->sa_rno = 0;
@@ -658,14 +650,7 @@ static void sag_union(PLW* wk) {
             case 0:
                 switch (wk->sa->saeff_ok) {
                 case -1:
-                    if (!pcon_dp_flag) {
-                        if (wk->sa->ex4th_exec) {
-                            wk->sa->store = 0;
-                        } else {
-                            wk->sa->store--;
-                        }
-                    }
-
+                    sag_decrement_store(wk);
                     sag_bug_fix(wk->wu.id);
 
                     if (wk->sa->mp == 1) {
@@ -719,17 +704,7 @@ static void sag_union(PLW* wk) {
                     addSAAttribute(&wk->wu.kind_of_waza, &wk->wu.at_koa);
                 }
 
-                if (My_char[wk->wu.id] == 10) {
-                    wk->wu.kind_of_waza |= 32;
-                    wk->wu.at_koa = 128;
-                }
-
-                if (My_char[wk->wu.id] == 16) {
-                    wk->wu.kind_of_waza |= 32;
-                    wk->wu.at_koa = 128;
-                }
-
-                if (My_char[wk->wu.id] == 18) {
+                if (My_char[wk->wu.id] == 10 || My_char[wk->wu.id] == 16 || My_char[wk->wu.id] == 18) {
                     wk->wu.kind_of_waza |= 32;
                     wk->wu.at_koa = 128;
                 }

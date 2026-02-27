@@ -248,26 +248,56 @@ void Bg_Close() {
     ModdedStage_Unload();
 }
 
+/** @brief Extract per-layer priority bytes from a packed u32 value. */
+static void bg_extract_priorities(u32 prio_packed, u8 count) {
+    u32 pmask = 0xFF000000;
+    u8 shift = 0x18;
+    u32 assign;
+    u8 j;
+
+    for (j = 0; j < count; j++, shift -= 8, assign = pmask >>= 8) {
+        u32 prio = prio_packed & pmask;
+        prio >>= shift;
+        bg_priority[j] = prio;
+    }
+}
+
+/** @brief Set up rewrite-screen texture chunks if needed. */
+static u16 bg_setup_rewrite_textures(void* loadAdrs, u32 loadSize, u8 count, s32 base_gbix,
+                                     u16 accnum) {
+    u8 i;
+
+    if (count == 0) {
+        return accnum;
+    }
+
+    ppgSetupCurrentDataList(&ppgRwBgList);
+    ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, base_gbix, count, 0, 0);
+    ppgSetupTexChunk_1st_Accnum(0, accnum);
+
+    for (i = 0; i < count; i++) {
+        accnum = ppgSetupTexChunk_2nd(NULL, i + base_gbix);
+        ppgSetupTexChunk_3rd(NULL, i + base_gbix, 1);
+    }
+
+    return accnum;
+}
+
 /** @brief Load and configure background textures for the current stage. */
 void Bg_Texture_Load_EX() {
     void* loadAdrs;
     u32 loadSize;
     u32 tgbix;
-    u32 prio;
     u32 mask;
-    u32 pmask;
     s16 key1;
     u16 accnum;
     u8 i;
     u8 j;
-    u8 x;
-    u8 shift;
     u8 stg;
     u8* akeAdrs;
     s32 akeSize;
     s16 akeKey;
 
-    u32 assign1;
     u32 assign2;
     u8 assign3;
 
@@ -303,15 +333,7 @@ void Bg_Texture_Load_EX() {
     key1 = Search_ramcnt_type(0x12);
     loadAdrs = (void*)Get_ramcnt_address(key1);
     loadSize = Get_size_data_ramcnt_key(key1);
-    pmask = 0xFF000000;
-    shift = 0x18;
-
-    for (j = 0; j < 3; j++, shift -= 8, assign1 = pmask >>= 8) {
-        prio = stage_priority[bg_w.stage];
-        prio &= pmask;
-        prio >>= shift;
-        bg_priority[j] = prio;
-    }
+    bg_extract_priorities(stage_priority[bg_w.stage], 3);
 
     bg_priority[3] = 70;
     accnum = 0;
@@ -331,18 +353,8 @@ void Bg_Texture_Load_EX() {
         }
     }
 
-    x = rewrite_scr[bg_w.stage];
-
-    if (x) {
-        ppgSetupCurrentDataList(&ppgRwBgList);
-        ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, (stg * 64) + 0x64, x, 0, 0);
-        ppgSetupTexChunk_1st_Accnum(0, accnum);
-
-        for (i = 0; i < x; i++) {
-            accnum = ppgSetupTexChunk_2nd(NULL, i + ((stg * 64) + 0x64));
-            ppgSetupTexChunk_3rd(NULL, i + ((stg * 64) + 0x64), 1);
-        }
-    }
+    accnum = bg_setup_rewrite_textures(loadAdrs, loadSize, rewrite_scr[bg_w.stage],
+                                        (stg * 64) + 0x64, accnum);
 
     if (bg_w.stage == 7) {
         ppgSetupCurrentDataList(&ppgAkaneList);
@@ -448,17 +460,12 @@ void Bg_Texture_Load_Ending(s16 type) {
     u32 loadSize;
     u16 accnum;
     u32 tgbix[2];
-    u32 prio;
     u32 mask;
-    u32 pmask;
     s16 key1;
     u8 i;
     u8 j;
     u8 k;
-    u8 x;
-    u8 shift;
 
-    u32 assign;
     u32 assign2;
 
     mmDebWriteTag("\nENDING\n\n");
@@ -471,15 +478,7 @@ void Bg_Texture_Load_Ending(s16 type) {
     }
 
     loadSize = load_it_use_any_key2(bgtex_ending_file[type], &loadAdrs, &key1, 2, 0);
-    pmask = 0xFF000000;
-    shift = 0x18;
-
-    for (j = 0; j < 4; j++, shift -= 8, assign = pmask >>= 8) {
-        prio = ending_priority[0];
-        prio &= pmask;
-        prio >>= shift;
-        bg_priority[j] = prio;
-    }
+    bg_extract_priorities(ending_priority[0], 4);
 
     for (accnum = 0, j = 0; j < bg_w.scrno; j++) {
         tgbix[0] = bgtex_ending_gbix[type][j * 2];
@@ -501,18 +500,8 @@ void Bg_Texture_Load_Ending(s16 type) {
         }
     }
 
-    x = ending_rewrite_scr[type];
-
-    if (x) {
-        ppgSetupCurrentDataList(&ppgRwBgList);
-        ppgSetupTexChunk_1st(NULL, loadAdrs, loadSize, (j * 64) + 100, x, 0, 0);
-        ppgSetupTexChunk_1st_Accnum(0, accnum);
-
-        for (i = 0; i < x; i++) {
-            accnum = ppgSetupTexChunk_2nd(NULL, i + ((j * 64) + 100));
-            ppgSetupTexChunk_3rd(NULL, i + ((j * 64) + 100), 1);
-        }
-    }
+    accnum = bg_setup_rewrite_textures(loadAdrs, loadSize, ending_rewrite_scr[type],
+                                        (j * 64) + 100, accnum);
 
     switch (type) {
     case 14:
