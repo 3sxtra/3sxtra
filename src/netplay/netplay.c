@@ -155,6 +155,7 @@ static void setup_vs_mode() {
     G_No[1] = 12;
     G_No[2] = 1;
     Mode_Type = MODE_NETWORK;
+    Present_Mode = MODE_NETWORK;
     Play_Mode = 0;
     Replay_Status[0] = 0;
     Replay_Status[1] = 0;

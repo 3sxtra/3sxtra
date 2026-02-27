@@ -1095,8 +1095,15 @@ static void Reset_Sub0() {
     Play_Game = 0;
     Forbid_Break = 0;
     Extra_Break = 0;
-    Mode_Type = MODE_ARCADE;
-    Present_Mode = 1;
+
+    // Don't clobber netplay mode during soft resets
+    if (Mode_Type != MODE_NETWORK) {
+        Mode_Type = MODE_ARCADE;
+        Present_Mode = 1;
+    } else {
+        Present_Mode = MODE_NETWORK;
+    }
+
     Play_Mode = 0;
     Replay_Status[0] = 0;
     Replay_Status[1] = 0;
