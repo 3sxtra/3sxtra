@@ -71,9 +71,7 @@ static void GameOver_1st() {
         effect_58_init(0x10, 5, 2);
 
         if (Break_Com[WINNER][0]) {
-            effect_76_init(0x38);
-            Order[0x38] = 3;
-            Order_Timer[0x38] = 1;
+            spawn_effect_76(0x38, 3, 1);
             return;
         }
 
@@ -130,9 +128,7 @@ static void GameOver_2nd() {
             }
 
             Setup_Result_OBJ();
-            effect_76_init(0x41);
-            Order[0x41] = 3;
-            Order_Timer[0x41] = 1;
+            spawn_effect_76(0x41, 3, 1);
             return;
         }
 
@@ -210,13 +206,8 @@ static void GameOver_3rd() {
 
 /** @brief Spawn all visual effects/objects for the result screen (labels, character cards). */
 static void Setup_Result_OBJ() {
-    effect_76_init(0x32);
-    Order[0x32] = 3;
-    Order_Timer[0x32] = 1;
-
-    effect_76_init(0x33);
-    Order[0x33] = 3;
-    Order_Timer[0x33] = 1;
+    spawn_effect_76(0x32, 3, 1);
+    spawn_effect_76(0x33, 3, 1);
 
     effect_L1_init(7);
     effect_L1_init(8);

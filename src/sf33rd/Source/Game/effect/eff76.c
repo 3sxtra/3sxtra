@@ -634,3 +634,10 @@ s32 chkNameAkuma(s32 plnum, s32 rnum) {
 
     return 0;
 }
+
+/** @brief Spawn an effect-76 object and set its Order/Timer in one call. */
+void spawn_effect_76(u8 id, u8 order, u8 timer) {
+    Order[id] = order;
+    Order_Timer[id] = timer;
+    effect_76_init(id);
+}

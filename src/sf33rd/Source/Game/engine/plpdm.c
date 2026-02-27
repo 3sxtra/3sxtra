@@ -1464,59 +1464,76 @@ static void get_sky_dm_timer(PLW* wk) {
     wk->zuru_timer = sky_dm_zuru_table[omop_otedama_ix[(wk->wu.id + 1) & 1]][wk->zuru_ix_counter];
 }
 
-/** @brief Subtracts damage from the defender's vitality with scaling and attribute effects. */
-void subtract_dm_vital(PLW* wk) {
-    if (wk->dead_flag == 0) {
-        if (wk->wu.dm_vital && (wk->wu.routine_no[1] != 1 || wk->wu.routine_no[2] > 11 || wk->wu.routine_no[3] != 0)) {
-            Additinal_Score_DM((WORK_Other*)wk->wu.dmg_adrs, wk->wu.dm_ten_ix);
-        }
+/**
+ * @brief Core vitality subtraction shared by normal and aiuchi (trade) paths.
+ *
+ * Handles score tracking, vitality reduction, death/stun checks, and
+ * optionally charges the SA gauge.  Callers are responsible for the
+ * pp_pulpara and training-mode epilogue that differs between the two paths.
+ *
+ * @param add_sa_gauge  If true, call add_sp_arts_gauge_hit_dm (normal path).
+ */
+static void subtract_dm_vital_core(PLW* wk, bool add_sa_gauge) {
+    if (wk->dead_flag != 0) {
+        return;
+    }
 
+    if (wk->wu.dm_vital && (wk->wu.routine_no[1] != 1 || wk->wu.routine_no[2] > 11 || wk->wu.routine_no[3] != 0)) {
+        Additinal_Score_DM((WORK_Other*)wk->wu.dmg_adrs, wk->wu.dm_ten_ix);
+    }
+
+    if (add_sa_gauge) {
         add_sp_arts_gauge_hit_dm(wk);
+    }
 
-        if (wk->atemi_flag) {
-            wk->dm_vital_backup = wk->wu.dm_vital;
-        } else {
-            wk->dm_vital_backup = 0;
+    if (wk->atemi_flag) {
+        wk->dm_vital_backup = wk->wu.dm_vital;
+    } else {
+        wk->dm_vital_backup = 0;
+    }
+
+    wk->dm_vital_use = 0;
+
+    if (omop_vital_ix[wk->wu.id] == 5) {
+        wk->wu.dm_vital = 0;
+    }
+
+    wk->wu.vital_new -= wk->wu.dm_vital;
+
+    if (wk->wu.dm_guard_success == -1 && wk->wu.vital_old > 0 && wk->wu.vital_new < 0 && wk->wu.vital_new > -3) {
+        wk->wu.vital_new = 0;
+    }
+
+    if (wk->wu.dm_nodeathattack && wk->wu.vital_new < 0) {
+        wk->wu.vital_new = 0;
+    }
+
+    if (wk->wu.vital_new < 0) {
+        wk->wu.vital_new = -1;
+        wk->dead_flag = 1;
+        dead_voice_flag = true;
+
+        if (wk->wu.dm_guard_success != -1) {
+            wk->kezurijini_flag = 1;
         }
 
-        wk->dm_vital_use = 0;
-
-        if (omop_vital_ix[wk->wu.id] == 5) {
-            wk->wu.dm_vital = 0;
+        if (!round_slow_flag) {
+            set_conclusion_slow();
+            round_slow_flag = true;
         }
+    } else if (wk->py->flag == 0) {
+        wk->py->now.quantity.h += wk->wu.dm_piyo;
 
-        wk->wu.vital_new -= wk->wu.dm_vital;
-
-        if (wk->wu.dm_guard_success == -1 && wk->wu.vital_old > 0 && wk->wu.vital_new < 0 && wk->wu.vital_new > -3) {
-            wk->wu.vital_new = 0;
-        }
-
-        if (wk->wu.dm_nodeathattack && wk->wu.vital_new < 0) {
-            wk->wu.vital_new = 0;
-        }
-
-        if (wk->wu.vital_new < 0) {
-            wk->wu.vital_new = -1;
-            wk->dead_flag = 1;
-            dead_voice_flag = true;
-
-            if (wk->wu.dm_guard_success != -1) {
-                wk->kezurijini_flag = 1;
-            }
-
-            if (!round_slow_flag) {
-                set_conclusion_slow();
-                round_slow_flag = true;
-            }
-        } else if (wk->py->flag == 0) {
-            wk->py->now.quantity.h += wk->wu.dm_piyo;
-
-            if (wk->py->now.quantity.h >= wk->py->genkai) {
-                wk->py->now.timer = 0;
-                wk->py->flag = 1;
-            }
+        if (wk->py->now.quantity.h >= wk->py->genkai) {
+            wk->py->now.timer = 0;
+            wk->py->flag = 1;
         }
     }
+}
+
+/** @brief Subtracts damage from the defender's vitality with scaling and attribute effects. */
+void subtract_dm_vital(PLW* wk) {
+    subtract_dm_vital_core(wk, true);
 
     if (wk->guard_chuu == 0) {
         switch (wk->wu.routine_no[2]) {
@@ -1545,55 +1562,7 @@ void subtract_dm_vital(PLW* wk) {
 
 /** @brief Subtracts damage for a simultaneous-hit (aiuchi) trade situation. */
 void subtract_dm_vital_aiuchi(PLW* wk) {
-    if (wk->dead_flag == 0) {
-        if (wk->wu.dm_vital && (wk->wu.routine_no[1] != 1 || wk->wu.routine_no[2] > 11 || wk->wu.routine_no[3] != 0)) {
-            Additinal_Score_DM((WORK_Other*)wk->wu.dmg_adrs, wk->wu.dm_ten_ix);
-        }
-
-        if (wk->atemi_flag) {
-            wk->dm_vital_backup = wk->wu.dm_vital;
-        } else {
-            wk->dm_vital_backup = 0;
-        }
-
-        wk->dm_vital_use = 0;
-
-        if (omop_vital_ix[wk->wu.id] == 5) {
-            wk->wu.dm_vital = 0;
-        }
-
-        wk->wu.vital_new -= wk->wu.dm_vital;
-
-        if (wk->wu.dm_guard_success == -1 && wk->wu.vital_old > 0 && wk->wu.vital_new < 0 && wk->wu.vital_new > -3) {
-            wk->wu.vital_new = 0;
-        }
-
-        if (wk->wu.dm_nodeathattack && wk->wu.vital_new < 0) {
-            wk->wu.vital_new = 0;
-        }
-
-        if (wk->wu.vital_new < 0) {
-            wk->wu.vital_new = -1;
-            wk->dead_flag = 1;
-            dead_voice_flag = true;
-
-            if (wk->wu.dm_guard_success != -1) {
-                wk->kezurijini_flag = 1;
-            }
-
-            if (!round_slow_flag) {
-                set_conclusion_slow();
-                round_slow_flag = true;
-            }
-        } else if (wk->py->flag == 0) {
-            wk->py->now.quantity.h += wk->wu.dm_piyo;
-
-            if (wk->py->now.quantity.h >= wk->py->genkai) {
-                wk->py->now.timer = 0;
-                wk->py->flag = 1;
-            }
-        }
-    }
+    subtract_dm_vital_core(wk, false);
 
     pp_pulpara_remake_dm_all(&wk->wu);
 

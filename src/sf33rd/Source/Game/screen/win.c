@@ -102,38 +102,17 @@ static void Win_2nd() {
     Switch_Screen(0);
     M_No[0] += 1;
 
-    Order[0x37] = 1;
-    Order_Timer[0x37] = 1;
-    effect_76_init(0x37);
+    spawn_effect_76(0x37, 1, 1);
+    spawn_effect_76(0x35, 3, 1);
+    spawn_effect_76(0x34, 3, 1);
+    spawn_effect_76(0x2B, 3, 1);
+    spawn_effect_76(0x3A, 3, 1);
+    spawn_effect_76(0x2C, 3, 1);
 
-    Order[0x35] = 3;
-    Order_Timer[0x35] = 1;
-    effect_76_init(0x35);
-
-    Order[0x34] = 3;
-    Order_Timer[0x34] = 1;
-    effect_76_init(0x34);
-
-    Order[0x2B] = 3;
-    Order_Timer[0x2B] = 1;
-    effect_76_init(0x2B);
-
-    Order[0x3A] = 3;
-    Order_Timer[0x3A] = 1;
-    effect_76_init(0x3A);
-
-    Order[0x2C] = 3;
-    Order_Timer[0x2C] = 1;
-    effect_76_init(0x2C);
-
-    Order[0x2D] = 1;
     Order_Dir[0x2D] = 4;
-    Order_Timer[0x2D] = 0x1E;
-    effect_76_init(0x2D);
+    spawn_effect_76(0x2D, 1, 0x1E);
 
-    Order[0x38] = 6;
-    Order_Timer[0x38] = 1;
-    effect_76_init(0x38);
+    spawn_effect_76(0x38, 6, 1);
 
     WGJ_Score = Continue_Coin[Winner_id] + Score[Winner_id][Play_Type];
     WGJ_Win = Win_Record[Winner_id];
@@ -258,26 +237,13 @@ static void Lose_2nd() {
     Switch_Screen(0);
     M_No[0] += 1;
 
-    Order[0x37] = 1;
-    Order_Timer[0x37] = 1;
-    effect_76_init(0x37);
+    spawn_effect_76(0x37, 1, 1);
+    spawn_effect_76(0x40, 3, 1);
+    spawn_effect_76(0x36, 3, 1);
+    spawn_effect_76(0x39, 3, 1);
 
-    Order[0x40] = 3;
-    Order_Timer[0x40] = 1;
-    effect_76_init(0x40);
-
-    Order[0x36] = 3;
-    Order_Timer[0x36] = 1;
-    effect_76_init(0x36);
-
-    Order[0x39] = 3;
-    Order_Timer[0x39] = 1;
-    effect_76_init(0x39);
-
-    Order[0x2D] = 1;
     Order_Dir[0x2D] = 4;
-    Order_Timer[0x2D] = 30;
-    effect_76_init(0x2D);
+    spawn_effect_76(0x2D, 1, 30);
 
     effect_B8_init(WINNER, 0x3C);
 }
@@ -319,20 +285,10 @@ static void Setup_Wins_OBJ() {
     effect_L1_init(0);
 
     if (WGJ_Win > 1) {
-        effect_76_init(0x2F);
-        Order[0x2F] = 3;
-        Order_Timer[0x2F] = 1;
-
-        effect_76_init(0x31);
-        Order[0x31] = 3;
-        Order_Timer[0x31] = 1;
+        spawn_effect_76(0x2F, 3, 1);
+        spawn_effect_76(0x31, 3, 1);
     } else {
-        effect_76_init(0x2E);
-        Order[0x2E] = 3;
-        Order_Timer[0x2E] = 1;
-
-        effect_76_init(0x30);
-        Order[0x30] = 3;
-        Order_Timer[0x30] = 1;
+        spawn_effect_76(0x2E, 3, 1);
+        spawn_effect_76(0x30, 3, 1);
     }
 }

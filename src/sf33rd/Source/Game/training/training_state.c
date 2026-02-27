@@ -200,6 +200,45 @@ static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* oppone
     }
 }
 
+/**
+ * @brief Resolve frame-advantage tracking for one player.
+ *
+ * Called once per frame for each player who has advantage_active set.
+ * Determines when both players have returned to idle after an attack
+ * and computes the advantage value.
+ */
+static void resolve_advantage(TrainingPlayerState* self,
+                               TrainingPlayerState* opponent,
+                               u32 frame, const char* label) {
+    if (!self->advantage_active)
+        return;
+
+    if (opponent->has_just_become_idle || opponent->has_just_landed) {
+        self->opponent_idle_frame = frame;
+    }
+
+    if (self->player_idle_frame == 0)
+        return;
+
+    // If opponent is already idle, capture the frame now if we haven't
+    if (opponent->is_idle && self->opponent_idle_frame == 0) {
+        self->opponent_idle_frame = frame;
+    }
+
+    if (self->opponent_idle_frame != 0 && self->is_idle && opponent->is_idle) {
+        if (self->opponent_was_affected) {
+            self->advantage_value =
+                self->opponent_idle_frame - self->player_idle_frame;
+            SDL_Log("%s ADVANTAGE RESOLVED: %+d (%s idle %d, opp idle %d)",
+                    label, self->advantage_value, label,
+                    self->player_idle_frame, self->opponent_idle_frame);
+        } else {
+            self->advantage_value = 0; // Pure whiff
+        }
+        self->advantage_active = false;
+    }
+}
+
 void update_training_state(void) {
     g_training_state.is_in_match = true; // Assuming we're in match when this updates
     g_training_state.frame_number++;
@@ -210,61 +249,10 @@ void update_training_state(void) {
     update_player_state(&g_training_state.p2, &plw[1], &plw[0]);
 
     // Calculate Advantage cross-states
-    if (g_training_state.p1.advantage_active) {
-        if (g_training_state.p2.has_just_become_idle || g_training_state.p2.has_just_landed) {
-            g_training_state.p1.opponent_idle_frame = g_training_state.frame_number;
-        }
-
-        if (g_training_state.p1.player_idle_frame != 0) {
-            // If p2 is already idle, capture the frame now if we haven't
-            if (g_training_state.p2.is_idle && g_training_state.p1.opponent_idle_frame == 0) {
-                g_training_state.p1.opponent_idle_frame = g_training_state.frame_number;
-            }
-
-            if (g_training_state.p1.opponent_idle_frame != 0 && g_training_state.p1.is_idle &&
-                g_training_state.p2.is_idle) {
-                if (g_training_state.p1.opponent_was_affected) {
-                    g_training_state.p1.advantage_value =
-                        g_training_state.p1.opponent_idle_frame - g_training_state.p1.player_idle_frame;
-                    SDL_Log("P1 ADVANTAGE RESOLVED: %+d (P1 idle %d, P2 idle %d)",
-                            g_training_state.p1.advantage_value,
-                            g_training_state.p1.player_idle_frame,
-                            g_training_state.p1.opponent_idle_frame);
-                } else {
-                    g_training_state.p1.advantage_value = 0; // Pure whiff
-                }
-                g_training_state.p1.advantage_active = false;
-            }
-        }
-    }
-
-    if (g_training_state.p2.advantage_active) {
-        if (g_training_state.p1.has_just_become_idle || g_training_state.p1.has_just_landed) {
-            g_training_state.p2.opponent_idle_frame = g_training_state.frame_number;
-        }
-
-        if (g_training_state.p2.player_idle_frame != 0) {
-            // If p1 is already idle, capture the frame now if we haven't
-            if (g_training_state.p1.is_idle && g_training_state.p2.opponent_idle_frame == 0) {
-                g_training_state.p2.opponent_idle_frame = g_training_state.frame_number;
-            }
-
-            if (g_training_state.p2.opponent_idle_frame != 0 && g_training_state.p2.is_idle &&
-                g_training_state.p1.is_idle) {
-                if (g_training_state.p2.opponent_was_affected) {
-                    g_training_state.p2.advantage_value =
-                        g_training_state.p2.opponent_idle_frame - g_training_state.p2.player_idle_frame;
-                    SDL_Log("P2 ADVANTAGE RESOLVED: %+d (P2 idle %d, P1 idle %d)",
-                            g_training_state.p2.advantage_value,
-                            g_training_state.p2.player_idle_frame,
-                            g_training_state.p2.opponent_idle_frame);
-                } else {
-                    g_training_state.p2.advantage_value = 0; // Pure whiff
-                }
-                g_training_state.p2.advantage_active = false;
-            }
-        }
-    }
+    resolve_advantage(&g_training_state.p1, &g_training_state.p2,
+                      g_training_state.frame_number, "P1");
+    resolve_advantage(&g_training_state.p2, &g_training_state.p1,
+                      g_training_state.frame_number, "P2");
 
     trials_update();
 

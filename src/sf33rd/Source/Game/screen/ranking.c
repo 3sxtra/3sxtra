@@ -521,8 +521,17 @@ void Setup_Score(s16 y) {
     Rank_Pos_X += 24;
 }
 
-/** @brief Render a win-count (up to 3 digits) with a WINS label. */
-void Setup_Wins(s16 y) {
+/**
+ * @brief Decompose Ranking_Data[Rank].wins into 3 decimal digits and render
+ *        each one as an effect sprite.
+ *
+ * @param y             Effect layer parameter forwarded to effect_67_init.
+ * @param digit_offset  Sprite-index offset added to each digit value
+ *                      (130 for the normal table, 75 for the champion card).
+ * @param mid_nudge     Extra X pixels per digit position (1× for tens, 2× for ones;
+ *                      3 for the normal table, 0 for the champion card).
+ */
+static void render_wins_digits(s16 y, s16 digit_offset, s16 mid_nudge) {
     u32 Score_Buff;
     s16 Digit[3];
 
@@ -533,14 +542,14 @@ void Setup_Wins(s16 y) {
     Digit[0] = (Score_Buff -= (Digit[1] * 10));
 
     if (Digit[2]) {
-        effect_67_init(26, Rank_Pos_X, Rank_Pos_Y, 180, Digit[2] + 130, 10, y, 0);
+        effect_67_init(26, Rank_Pos_X, Rank_Pos_Y, 180, Digit[2] + digit_offset, 10, y, 0);
         Rank_Pos_X += 16;
-        effect_67_init(26, Rank_Pos_X + 3, Rank_Pos_Y, 180, Digit[1] + 130, 10, y, 0);
+        effect_67_init(26, Rank_Pos_X + mid_nudge, Rank_Pos_Y, 180, Digit[1] + digit_offset, 10, y, 0);
         Rank_Pos_X += 16;
     } else {
         Rank_Pos_X += 16;
         if (Digit[1]) {
-            effect_67_init(26, Rank_Pos_X + 3, Rank_Pos_Y, 180, Digit[1] + 130, 10, y, 0);
+            effect_67_init(26, Rank_Pos_X + mid_nudge, Rank_Pos_Y, 180, Digit[1] + digit_offset, 10, y, 0);
         }
 
         Rank_Pos_X += 16;
@@ -548,8 +557,13 @@ void Setup_Wins(s16 y) {
 
     Rank_X += 1;
     Flash_Rank_Time += Flash_Rank_Interval;
-    effect_67_init(26, Rank_Pos_X + 6, Rank_Pos_Y, 180, Digit[0] + 130, 10, y, 0);
+    effect_67_init(26, Rank_Pos_X + 2 * mid_nudge, Rank_Pos_Y, 180, Digit[0] + digit_offset, 10, y, 0);
     Rank_Pos_X += 40;
+}
+
+/** @brief Render a win-count (up to 3 digits) with a WINS label. */
+void Setup_Wins(s16 y) {
+    render_wins_digits(y, 130, 3);
     Rank_X += 1;
     Flash_Rank_Time += Flash_Rank_Interval;
     effect_67_init(24, Rank_Pos_X, Rank_Pos_Y, 180, 6, 10, y, 0);
@@ -559,33 +573,7 @@ void Setup_Wins(s16 y) {
 
 /** @brief Render a win-count variant for the champion card (top-entry). */
 void Setup_Wins2(s16 y) {
-    u32 Score_Buff;
-    s16 Digit[3];
-
-    Score_Buff = Ranking_Data[Rank].wins;
-    Digit[2] = Score_Buff / 100;
-    Score_Buff -= Digit[2] * 100;
-    Digit[1] = Score_Buff / 10;
-    Digit[0] = (Score_Buff -= (Digit[1] * 10));
-
-    if (Digit[2]) {
-        effect_67_init(26, Rank_Pos_X, Rank_Pos_Y, 180, Digit[2] + 75, 10, y, 0);
-        Rank_Pos_X += 16;
-        effect_67_init(26, Rank_Pos_X, Rank_Pos_Y, 180, Digit[1] + 75, 10, y, 0);
-        Rank_Pos_X += 16;
-    } else {
-        Rank_Pos_X += 16;
-        if (Digit[1]) {
-            effect_67_init(26, Rank_Pos_X, Rank_Pos_Y, 180, Digit[1] + 75, 10, y, 0);
-        }
-
-        Rank_Pos_X += 16;
-    }
-
-    Rank_X += 1;
-    Flash_Rank_Time += Flash_Rank_Interval;
-    effect_67_init(26, Rank_Pos_X, Rank_Pos_Y, 180, Digit[0] + 75, 10, y, 0);
-    Rank_Pos_X += 40;
+    render_wins_digits(y, 75, 0);
     effect_67_init(24, Rank_Pos_X, Rank_Pos_Y + 8, 180, 11, 10, y, 0);
     Rank_X += 1;
     Flash_Rank_Time += Flash_Rank_Interval;
