@@ -26,9 +26,6 @@ static void scdmd_12000(PLW* wk);
 static void scdmd_16000(PLW* wk);
 static void scdmd_17000(PLW* wk);
 static void scdmd_18000(PLW* wk);
-static void scdmd_19000(PLW* wk);
-static void scdmd_28000(PLW* wk);
-static void scdmd_30000(PLW* wk);
 
 #define PLPCU_DISPATCH_COUNT 4
 #define SETUP_CU_DM_COUNT 20
@@ -254,7 +251,7 @@ static s32 check_tsukamare_keizoku_check(PLW* wk, PLW* emwk) {
     return 0;
 }
 
-/** @brief Sets up caught-damage init data for state 12 (standing hit). */
+/** @brief Sets up caught-damage init data for states 12–13 (standing hit). */
 static void scdmd_12000(PLW* wk) {
     wk->dm_step_tbl = _dm_step_data[_select_hit_dsd[wk->wu.dm_impact][get_weight_point(&wk->wu)]];
 
@@ -269,19 +266,19 @@ static void scdmd_12000(PLW* wk) {
     }
 }
 
-/** @brief Sets up caught-damage init data for state 14 (launch). */
+/** @brief Sets up caught-damage init data for states 14–15, 21–22, 27 (launch/stagger/zero-Y). */
 static void scdmd_14000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
 }
 
-/** @brief Sets up caught-damage init data for state 16 (blow-away). */
+/** @brief Sets up caught-damage init data for states 16, 19, 30 (blow-away/ground-to-air/extended). */
 static void scdmd_16000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.dm_attlv], 0);
 }
 
-/** @brief Sets up caught-damage init data for state 17 (air hit). */
+/** @brief Sets up caught-damage init data for states 17, 28 (air hit/stun KO). */
 static void scdmd_17000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
     cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.dm_attlv], wk->wu.xyz[1].disp.pos);
@@ -303,21 +300,9 @@ static void scdmd_18000(PLW* wk) {
     }
 }
 
-/** @brief Sets up caught-damage init data for state 19 (ground-to-air). */
-static void scdmd_19000(PLW* wk) {
-    setup_butt_own_data(&wk->wu);
-    cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.dm_attlv], 0);
-}
-
-/** @brief Sets up caught-damage init data for state 20 (redirect). */
+/** @brief Sets up caught-damage init data for states 20, 26, 31 (redirect/groundbounce/throw release). */
 static void scdmd_20000(PLW* wk) {
     setup_butt_own_data(&wk->wu);
-}
-
-/** @brief Sets up caught-damage init data for state 21 (vertical launch). */
-static void scdmd_21000(PLW* wk) {
-    setup_butt_own_data(&wk->wu);
-    wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
 }
 
 /** @brief Sets up caught-damage init data for state 23 (crumple-fall). */
@@ -335,43 +320,16 @@ static void scdmd_24000(PLW* wk) {
     wk->wu.routine_no[3] = 1;
 }
 
-/** @brief Sets up caught-damage init data for state 25 (wallbounce). */
-static void scdmd_25000(PLW* wk) {}
+/** @brief No-op caught-damage init for states 25, 29 (wallbounce/SA cinematic). */
+static void scdmd_noop(PLW* wk) { (void)wk; }
 
-/** @brief Sets up caught-damage init data for state 26 (groundbounce). */
-static void scdmd_26000(PLW* wk) {
-    setup_butt_own_data(&wk->wu);
-}
-
-/** @brief Sets up caught-damage init data for state 27 (stagger). */
-static void scdmd_27000(PLW* wk) {
-    setup_butt_own_data(&wk->wu);
-    wk->wu.mvxy.a[1].sp = wk->wu.mvxy.d[1].sp = wk->wu.mvxy.kop[1] = 0;
-}
-
-/** @brief Sets up caught-damage init data for state 28 (stun KO). */
-static void scdmd_28000(PLW* wk) {
-    setup_butt_own_data(&wk->wu);
-    cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.dm_attlv], wk->wu.xyz[1].disp.pos);
-}
-
-/** @brief Sets up caught-damage init data for state 29 (SA cinematic). */
-static void scdmd_29000(PLW* wk) {}
-
-/** @brief Sets up caught-damage init data for state 30 (extended cinematic). */
-static void scdmd_30000(PLW* wk) {
-    setup_butt_own_data(&wk->wu);
-    cal_initial_speed_y(&wk->wu, _buttobi_time_table[wk->wu.char_index][wk->wu.dm_attlv], 0);
-}
-
-/** @brief Sets up caught-damage init data for state 31 (throw release). */
-static void scdmd_31000(PLW* wk) {
-    setup_butt_own_data(&wk->wu);
-}
-
+/*                                          idx: 12         13         14         15         16
+                                                  17         18         19         20         21
+                                                  22         23         24         25         26
+                                                  27         28         29         30         31  */
 void (*const setup_cu_dm_init_data[20])(PLW* wk) = { scdmd_12000, scdmd_12000, scdmd_14000, scdmd_14000, scdmd_16000,
-                                                     scdmd_17000, scdmd_18000, scdmd_19000, scdmd_20000, scdmd_21000,
-                                                     scdmd_21000, scdmd_23000, scdmd_24000, scdmd_25000, scdmd_26000,
-                                                     scdmd_27000, scdmd_28000, scdmd_29000, scdmd_30000, scdmd_31000 };
+                                                     scdmd_17000, scdmd_18000, scdmd_16000, scdmd_20000, scdmd_14000,
+                                                     scdmd_14000, scdmd_23000, scdmd_24000, scdmd_noop,  scdmd_20000,
+                                                     scdmd_14000, scdmd_17000, scdmd_noop,  scdmd_16000, scdmd_20000 };
 
 void (*const plpcu_lv_00[4])(PLW*, PLW*) = { Caught_00000, Caught_01000, Caught_02000, Caught_03000 };

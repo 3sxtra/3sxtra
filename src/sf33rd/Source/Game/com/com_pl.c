@@ -666,13 +666,21 @@ static s32 Ck_Exit_Guard_Sub(PLW* wk, WORK* em) {
     return 1;
 }
 
-/** @brief AI state 2: Execute the active AI pattern for the current character. */
-void Com_Active(PLW* wk) {
-    void (*Char_Jmp_Tbl[CHAR_COUNT])(PLW*) = { Computer00, Computer01, Computer02, Computer03, Computer04,
-                                               Computer05, Computer06, Computer07, Computer08, Computer09,
-                                               Computer10, Computer11, Computer12, Computer13, Computer14,
-                                               Computer15, Computer16, Computer17, Computer18, Computer19 };
-
+/**
+ * @brief Shared character-dispatch helper for AI states.
+ *
+ * All four character-dispatch AI states (Active, Follow, Passive, VS_Shell)
+ * share exactly the same structure: guard checks, pattern insurance, bounds
+ * check, then dispatch through a per-character table.
+ *
+ * @param wk         Player work area.
+ * @param table      Per-character function dispatch table (CHAR_COUNT entries).
+ * @param ins_kind   Kind_Of_Insurance parameter for Pattern_Insurance.
+ * @param ins_forced Forced_Number parameter for Pattern_Insurance.
+ */
+static void com_dispatch_char(PLW* wk,
+                              void (*const table[CHAR_COUNT])(PLW*),
+                              s16 ins_kind, s16 ins_forced) {
     if (Check_Damage(wk)) {
         return;
     }
@@ -685,95 +693,54 @@ void Com_Active(PLW* wk) {
         return;
     }
 
-    Pattern_Insurance(wk, 0, 0);
+    Pattern_Insurance(wk, ins_kind, ins_forced);
 
     if ((u32)wk->player_number >= CHAR_COUNT) {
         return;
     }
 
-    Char_Jmp_Tbl[wk->player_number](wk);
+    table[wk->player_number](wk);
 }
+
+static void (*const Active_Char_Tbl[CHAR_COUNT])(PLW*) = {
+    Computer00, Computer01, Computer02, Computer03, Computer04, Computer05, Computer06, Computer07, Computer08,
+    Computer09, Computer10, Computer11, Computer12, Computer13, Computer14, Computer15, Computer16, Computer17,
+    Computer18, Computer19
+};
+
+/** @brief AI state 2: Execute the active AI pattern for the current character. */
+void Com_Active(PLW* wk) {
+    com_dispatch_char(wk, Active_Char_Tbl, 0, 0);
+}
+
+static void (*const Follow_Char_Tbl[CHAR_COUNT])(PLW*) = {
+    Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02,
+    Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02
+};
 
 /** @brief AI state 4: Execute follow-up combo pattern for the current character. */
 void Com_Follow(PLW* wk) {
-    void (*Follow_Jmp_Tbl[CHAR_COUNT])(PLW*) = { Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02,
-                                                 Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02,
-                                                 Follow02, Follow02, Follow02, Follow02, Follow02, Follow02 };
-
-    if (Check_Damage(wk)) {
-        return;
-    }
-
-    if (Check_Caught(wk)) {
-        return;
-    }
-
-    if (Check_Flip(wk)) {
-        return;
-    }
-
-    Pattern_Insurance(wk, 3, 2);
-
-    if ((u32)wk->player_number >= CHAR_COUNT) {
-        return;
-    }
-
-    Follow_Jmp_Tbl[wk->player_number](wk);
+    com_dispatch_char(wk, Follow_Char_Tbl, 3, 2);
 }
+
+static void (*const Passive_Char_Tbl[CHAR_COUNT])(PLW*) = {
+    Passive00, Passive01, Passive02, Passive03, Passive04, Passive05, Passive06, Passive07, Passive08, Passive09,
+    Passive10, Passive11, Passive12, Passive13, Passive14, Passive15, Passive16, Passive17, Passive18, Passive19
+};
 
 /** @brief AI state 6: Execute passive reaction pattern for the current character. */
 void Com_Passive(PLW* wk) {
-    void (*Passive_Jmp_Tbl[CHAR_COUNT])(PLW*) = { Passive00, Passive01, Passive02, Passive03, Passive04,
-                                                  Passive05, Passive06, Passive07, Passive08, Passive09,
-                                                  Passive10, Passive11, Passive12, Passive13, Passive14,
-                                                  Passive15, Passive16, Passive17, Passive18, Passive19 };
-
-    if (Check_Damage(wk)) {
-        return;
-    }
-
-    if (Check_Caught(wk)) {
-        return;
-    }
-
-    if (Check_Flip(wk)) {
-        return;
-    }
-
-    Pattern_Insurance(wk, 1, 1);
-
-    if ((u32)wk->player_number >= CHAR_COUNT) {
-        return;
-    }
-
-    Passive_Jmp_Tbl[wk->player_number](wk);
+    com_dispatch_char(wk, Passive_Char_Tbl, 1, 1);
 }
+
+static void (*const VS_Shell_Char_Tbl[CHAR_COUNT])(PLW*) = {
+    Shell00, Shell01, Shell11, Shell03, Shell04, Shell05, Shell03, Shell07, Shell03, Shell03,
+    Shell03, Shell11, Shell12, Shell13, Shell14, Shell11, Shell11, Shell11, Shell11, Shell11
+};
 
 /** @brief AI state 8: Execute projectile response pattern for the current character. */
 void Com_VS_Shell(PLW* wk) {
-    void (*VS_Shell_Jmp_Tbl[CHAR_COUNT])(PLW*) = { Shell00, Shell01, Shell11, Shell03, Shell04, Shell05, Shell03,
-                                                   Shell07, Shell03, Shell03, Shell03, Shell11, Shell12, Shell13,
-                                                   Shell14, Shell11, Shell11, Shell11, Shell11, Shell11 };
-
-    if (Check_Damage(wk)) {
-        return;
-    }
-
-    if (Check_Caught(wk)) {
-        return;
-    }
-
-    if (Check_Flip(wk)) {
-        return;
-    }
-
-    Pattern_Insurance(wk, 2, 0);
-
-    if ((u32)wk->player_number >= CHAR_COUNT) {
-        return;
-    }
-
-    VS_Shell_Jmp_Tbl[wk->player_number](wk);
+    com_dispatch_char(wk, VS_Shell_Char_Tbl, 2, 0);
 }
 
 /** @brief AI state 10: Handle taking damage — dispatches through damage sub-states. */

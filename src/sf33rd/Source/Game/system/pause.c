@@ -233,15 +233,20 @@ static void Exit_Pause(struct _TASK* task_ptr) {
     SsBgmHalfVolume(0);
 }
 
-/** @brief Enter the standard pause state: freeze game, launch pause menu, dim BGM. */
-static void Setup_Pause(struct _TASK* task_ptr) {
+/**
+ * @brief Common pause-entry setup shared by Setup_Pause and Setup_Come_Out.
+ *
+ * @param task_ptr    The pause task.
+ * @param flash_phase Flash sub-state: 1 = standard pause text, 4 = controller-disconnected.
+ */
+static void setup_pause_common(struct _TASK* task_ptr, u8 flash_phase) {
     s16 ix;
 
     SE_selected();
     Pause_Down = 1;
     Game_pause = 0x81;
     task_ptr->r_no[0] = 1;
-    task_ptr->r_no[2] = 1;
+    task_ptr->r_no[2] = flash_phase;
     task_ptr->free[0] = 1;
     cpReadyTask(TASK_MENU, Menu_Task);
     task[TASK_MENU].r_no[0] = 1;
@@ -258,29 +263,14 @@ static void Setup_Pause(struct _TASK* task_ptr) {
     spu_all_off();
 }
 
+/** @brief Enter the standard pause state: freeze game, launch pause menu, dim BGM. */
+static void Setup_Pause(struct _TASK* task_ptr) {
+    setup_pause_common(task_ptr, 1);
+}
+
 /** @brief Enter the controller-disconnected pause state (similar to Setup_Pause but with phase 4 flash). */
 static void Setup_Come_Out(struct _TASK* task_ptr) {
-    s16 ix;
-
-    SE_selected();
-    Pause_Down = 1;
-    Game_pause = 0x81;
-    task_ptr->r_no[0] = 1;
-    task_ptr->r_no[2] = 4;
-    task_ptr->free[0] = 1;
-    cpReadyTask(TASK_MENU, Menu_Task);
-    task[TASK_MENU].r_no[0] = 1;
-    Exit_Menu = 0;
-
-    for (ix = 0; ix < 4; ix++) {
-        Menu_Suicide[(ix)] = 0;
-    }
-
-    Order[0x8A] = 3;
-    Order_Timer[0x8A] = 1;
-    effect_66_init(0x8A, 9, 2, 7, -1, -1, -0x3FFC);
-    SsBgmHalfVolume(1);
-    spu_all_off();
+    setup_pause_common(task_ptr, 4);
 }
 
 /** @brief Check whether the player is active in the current round (always 1 in VS mode). */
