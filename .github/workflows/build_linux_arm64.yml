@@ -5,6 +5,13 @@ on:
         branches: [ "main" ]
     pull_request:
         branches: [ "main" ]
+    workflow_call:
+        inputs:
+            release:
+                description: "Build in Release mode and produce release artifacts"
+                required: false
+                type: boolean
+                default: false
 
 jobs:
     build:
@@ -118,8 +125,9 @@ jobs:
                 PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
             run: |
                 set -o pipefail
+                BUILD_TYPE=${{ inputs.release && 'Release' || 'Debug' }}
                 cmake -B build-linux-arm64 \
-                    -DCMAKE_BUILD_TYPE=Debug \
+                    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
                     -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-linux-gnu.cmake \
                     -DENABLE_TESTS=OFF \
                     -DTHIRD_PARTY_DIR=$GITHUB_WORKSPACE/third_party_arm64 \
@@ -132,6 +140,24 @@ jobs:
                 file build-linux-arm64/3sx
                 file build-linux-arm64/3sx | grep -q "aarch64" && echo "✅ ARM64 binary confirmed" || (echo "❌ Not an ARM64 binary!" && exit 1)
 
+          - name: Package with CPack
+            if: ${{ inputs.release }}
+            run: |
+                SHORT_SHA="${GITHUB_SHA::7}"
+                cd build-linux-arm64
+                cpack -G TGZ --config CPackConfig.cmake
+                cd ..
+                ARCHIVE="$(find build-linux-arm64 -maxdepth 1 -name '*.tar.gz' | head -1)"
+                mv "$ARCHIVE" "3SX-${SHORT_SHA}-linux-arm64.tar.gz"
+            shell: bash
+
+          - name: Upload release artifact
+            if: ${{ inputs.release }}
+            uses: actions/upload-artifact@v4
+            with:
+                name: release-assets-linux-arm64
+                path: 3SX-*-linux-arm64.tar.gz
+
           - name: Save build log (local act)
             if: ${{ always() && env.ACT }}
             run: |
@@ -140,7 +166,7 @@ jobs:
                 echo "✅ Build log saved to build_output/build-log-arm64-cross.log"
 
           - name: Upload build log (GitHub)
-            if: ${{ always() && !env.ACT }}
+            if: ${{ always() && !env.ACT && !inputs.release }}
             uses: actions/upload-artifact@v4
             with:
                 name: build-log-arm64-cross

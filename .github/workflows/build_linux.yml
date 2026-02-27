@@ -5,6 +5,13 @@ on:
         branches: [ "main" ]
     pull_request:
         branches: [ "main" ]
+    workflow_call:
+        inputs:
+            release:
+                description: "Build in Release mode and produce release artifacts"
+                required: false
+                type: boolean
+                default: false
 
 jobs:
     build:
@@ -47,9 +54,31 @@ jobs:
                 THIRD_PARTY: ${{ github.workspace }}/third_party_linux
             run: |
                 set -o pipefail
-                CC=clang CXX=clang++ cmake -B build-linux -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=OFF -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_linux
+                BUILD_TYPE=${{ inputs.release && 'Release' || 'Debug' }}
+                CC=clang CXX=clang++ cmake -B build-linux \
+                    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+                    -DENABLE_TESTS=OFF \
+                    -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_linux
                 cmake --build build-linux --parallel 2>&1 | tee build.log
             shell: bash
+
+          - name: Package with CPack
+            if: ${{ inputs.release }}
+            run: |
+                SHORT_SHA="${GITHUB_SHA::7}"
+                cd build-linux
+                cpack -G TGZ --config CPackConfig.cmake
+                cd ..
+                ARCHIVE="$(find build-linux -maxdepth 1 -name '*.tar.gz' | head -1)"
+                mv "$ARCHIVE" "3SX-${SHORT_SHA}-linux-x86_64.tar.gz"
+            shell: bash
+
+          - name: Upload release artifact
+            if: ${{ inputs.release }}
+            uses: actions/upload-artifact@v4
+            with:
+                name: release-assets-linux-x86_64
+                path: 3SX-*-linux-x86_64.tar.gz
 
           - name: Save build log (local act)
             if: ${{ always() && env.ACT }}
@@ -59,7 +88,7 @@ jobs:
                 echo "✅ Build log saved to build_output/build-log-linux.log"
 
           - name: Upload build log (GitHub)
-            if: ${{ always() && !env.ACT }}
+            if: ${{ always() && !env.ACT && !inputs.release }}
             uses: actions/upload-artifact@v4
             with:
                 name: build-log

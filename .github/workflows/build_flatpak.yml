@@ -5,6 +5,13 @@ on:
         branches: [ "main" ]
     pull_request:
         branches: [ "main" ]
+    workflow_call:
+        inputs:
+            release:
+                description: "Produce release artifacts"
+                required: false
+                type: boolean
+                default: false
 
 jobs:
     build:
@@ -28,6 +35,13 @@ jobs:
                 cache: true
                 cache-key: flatpak-builder-${{ hashFiles('flatpak/io.github.threestylextra.app.yml') }}
 
+          - name: Upload release artifact
+            if: ${{ inputs.release }}
+            uses: actions/upload-artifact@v4
+            with:
+                name: release-assets-flatpak
+                path: 3sx.flatpak
+
           - name: Save artifact (local act)
             if: ${{ env.ACT }}
             run: |
@@ -36,7 +50,7 @@ jobs:
                 echo "✅ Artifact saved to build_output/3sx.flatpak"
 
           - name: Upload artifact (GitHub)
-            if: ${{ !env.ACT }}
+            if: ${{ !env.ACT && !inputs.release }}
             uses: actions/upload-artifact@v4
             with:
                 name: 3sx-flatpak

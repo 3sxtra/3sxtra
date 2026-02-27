@@ -601,8 +601,8 @@ elseif(WIN32)
 
     install(FILES
         "build/3sx.pdb"
-        "C:/msys64/mingw64/bin/zlib1.dll"
-        "C:/msys64/mingw64/bin/libpng16-16.dll"
+        "${binPath}/zlib1.dll"
+        "${binPath}/libpng16-16.dll"
         "${SDL3_ROOT}/bin/SDL3.dll"
         "${SDL3_IMAGE_ROOT}/bin/SDL3_image.dll"
         DESTINATION bin

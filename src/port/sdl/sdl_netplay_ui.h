@@ -62,6 +62,12 @@ int SDLNetplayUI_GetPendingInvitePing(void);
 void SDLNetplayUI_AcceptPendingInvite(void);
 void SDLNetplayUI_DeclinePendingInvite(void);
 
+// Outgoing challenge (we initiated a connection)
+bool SDLNetplayUI_HasOutgoingChallenge(void);
+const char* SDLNetplayUI_GetOutgoingChallengeName(void);
+int SDLNetplayUI_GetOutgoingChallengePing(void);
+void SDLNetplayUI_CancelOutgoingChallenge(void);
+
 #ifdef __cplusplus
 }
 #endif

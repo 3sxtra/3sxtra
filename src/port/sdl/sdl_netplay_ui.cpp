@@ -1288,4 +1288,40 @@ void SDLNetplayUI_DeclinePendingInvite() {
     snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Declined invite.");
 }
 
+bool SDLNetplayUI_HasOutgoingChallenge() {
+    int state = SDL_GetAtomicInt(&lobby_async_state);
+    return lobby_we_are_initiator &&
+           (state == LOBBY_ASYNC_PUNCHING || state == LOBBY_ASYNC_UPNP_TRYING);
+}
+
+const char* SDLNetplayUI_GetOutgoingChallengeName() {
+    return lobby_punch_peer_name;
+}
+
+int SDLNetplayUI_GetOutgoingChallengePing() {
+    return lobby_pending_invite_ping;
+}
+
+void SDLNetplayUI_CancelOutgoingChallenge() {
+    // Signal the hole punch thread to abort
+    SDL_SetAtomicInt(&lobby_punch_cancel, 1);
+
+    // Clear connection intent
+    lobby_connect_to_intent[0] = '\0';
+    lobby_we_are_initiator = false;
+    lobby_punch_peer_name[0] = '\0';
+
+    // Update server presence to clear connect_to
+    const char* display = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
+    if (!display || !display[0])
+        display = my_room_code;
+    AsyncUpdatePresence(lobby_my_player_id, display, my_room_code, "");
+
+    snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Challenge cancelled.");
+
+    // Wait for thread to finish, then reset state to READY
+    lobby_cleanup_thread();
+    SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_READY);
+}
+
 } // extern "C"

@@ -5,6 +5,13 @@ on:
         branches: [ "main" ]
     pull_request:
         branches: [ "main" ]
+    workflow_call:
+        inputs:
+            release:
+                description: "Build in Release mode and produce release artifacts"
+                required: false
+                type: boolean
+                default: false
 
 jobs:
     build:
@@ -44,11 +51,35 @@ jobs:
           - name: Build for macOS
             run: |
                 set -o pipefail
+                BUILD_TYPE=${{ inputs.release && 'Release' || 'Debug' }}
                 cmake -B build \
-                  -DCMAKE_BUILD_TYPE=Debug \
+                  -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
                   -DENABLE_TESTS=OFF
                 cmake --build build --parallel 2>&1 | tee build.log
             shell: bash
+
+          - name: Package DMG with CPack
+            if: ${{ inputs.release }}
+            run: |
+                set -euo pipefail
+                cpack -G DragNDrop --config build/CPackConfig.cmake
+
+                DMG_PATH="$(find . -maxdepth 1 -type f -name '*.dmg' | head -n 1)"
+                if [ -z "${DMG_PATH}" ]; then
+                  echo "No .dmg package found"
+                  exit 1
+                fi
+
+                SHORT_SHA="${GITHUB_SHA::7}"
+                mv "${DMG_PATH}" "3SX-${SHORT_SHA}-macos.dmg"
+            shell: bash
+
+          - name: Upload release artifact
+            if: ${{ inputs.release }}
+            uses: actions/upload-artifact@v4
+            with:
+                name: release-assets-macos
+                path: 3SX-*-macos.dmg
 
           - name: Save build log (local act)
             if: ${{ always() && env.ACT }}
@@ -58,7 +89,7 @@ jobs:
                 echo "✅ Build log saved to build_output/build-log-macos.log"
 
           - name: Upload build log (GitHub)
-            if: ${{ always() && !env.ACT }}
+            if: ${{ always() && !env.ACT && !inputs.release }}
             uses: actions/upload-artifact@v4
             with:
                 name: build-log

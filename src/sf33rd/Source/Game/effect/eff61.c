@@ -143,9 +143,9 @@ void effect_61_move(WORK_Other_CONN* ewk) {
         ewk->wu.my_clear_level = 128;
     }
 
-    /* Lobby labels (char_index 68..73): hide behind incoming-challenge popup */
+    /* Lobby labels (char_index 68..73): hide behind challenge popup */
     if (ewk->wu.char_index >= 68 && ewk->wu.char_index <= 73
-        && SDLNetplayUI_HasPendingInvite()) {
+        && (SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge())) {
         ewk->wu.my_clear_level = 255;
     }
 
