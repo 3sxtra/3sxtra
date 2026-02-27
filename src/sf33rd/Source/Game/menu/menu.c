@@ -414,6 +414,150 @@ static void Menu_in_Sub(struct _TASK* task_ptr) {
     Order_Timer[0x64] = 1;
 }
 
+/* ── Popup draw helpers (called from lobby and font_test) ──────── */
+
+void NetLobby_DrawIncomingPopup(const char* name, const char* region, int ping) {
+    /* Dark semi-transparent overlay covering the whole screen */
+    {
+        PAL_CURSOR_P op[4];
+        PAL_CURSOR_COL ocol[4];
+        op[0].x = -2;  op[0].y = -2;
+        op[1].x = 386; op[1].y = -2;
+        op[2].x = -2;  op[2].y = 226;
+        op[3].x = 386; op[3].y = 226;
+        ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = 0xA0000000;
+        Renderer_Queue2DPrimitive((f32*)op, PrioBase[3], (uintptr_t)ocol[0].color, 0);
+    }
+    /* Centered popup box */
+    {
+        PAL_CURSOR_P bp[4];
+        PAL_CURSOR_COL bcol[4];
+        bp[0].x = 60;  bp[0].y = 56;
+        bp[1].x = 324; bp[1].y = 56;
+        bp[2].x = 60;  bp[2].y = 168;
+        bp[3].x = 324; bp[3].y = 168;
+        bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = 0xE0181818;
+        Renderer_Queue2DPrimitive((f32*)bp, PrioBase[3], (uintptr_t)bcol[0].color, 0);
+
+        /* Red border - top */
+        PAL_CURSOR_P bb[4];
+        PAL_CURSOR_COL bbcol[4];
+        bb[0].x = 60;  bb[0].y = 55;
+        bb[1].x = 324; bb[1].y = 55;
+        bb[2].x = 60;  bb[2].y = 57;
+        bb[3].x = 324; bb[3].y = 57;
+        bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = 0xFFCC0000;
+        Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
+        /* Red border - bottom */
+        bb[0].y = 167; bb[1].y = 167;
+        bb[2].y = 169; bb[3].y = 169;
+        Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
+    }
+
+    /* Title */
+    SSPutStr2(15, 9, 9, "INCOMING CHALLENGE!");
+
+    /* Challenger name + region (centered dynamically) */
+    {
+        char name_buf[64];
+        if (region && region[0])
+            SDL_snprintf(name_buf, sizeof(name_buf), "> %s  [%s]", name, region);
+        else
+            SDL_snprintf(name_buf, sizeof(name_buf), "> %s", name);
+        int name_len = (int)SDL_strlen(name_buf);
+        u16 name_x = (u16)((192 - name_len * 4) / 8);
+        SSPutStr2(name_x, 12, 6, (const s8*)name_buf);
+    }
+
+    /* Ping (centered dynamically: label=pal5, value=pal8) */
+    {
+        char val_buf[32];
+        if (ping < 0)
+            SDL_snprintf(val_buf, sizeof(val_buf), "...");
+        else
+            SDL_snprintf(val_buf, sizeof(val_buf), "~%dms", ping);
+        /* Center the full "PING: <value>" string */
+        int full_len = 6 + (int)SDL_strlen(val_buf); /* "PING: " = 6 chars */
+        u16 ping_x = (u16)((192 - full_len * 4) / 8);
+        SSPutStr2(ping_x, 15, 5, "PING: ");
+        SSPutStr2((u16)(ping_x + 6), 15, 8, (const s8*)val_buf);
+    }
+
+    /* Accept/Decline with game button images */
+    dispButtonImage2(0x6C, 0x8E, 0, 0x13, 0xF, 0, 4);  /* A button */
+    SSPutStrPro(0, 128, 144, 4, 0xFF00FF00, (s8*)"ACCEPT");
+    dispButtonImage2(0xC0, 0x8E, 0, 0x13, 0xF, 0, 5);  /* B button */
+    SSPutStrPro(0, 216, 144, 4, 0xFFFF0000, (s8*)"DECLINE");
+}
+
+void NetLobby_DrawOutgoingPopup(const char* name, int ping) {
+    /* Dark semi-transparent overlay covering the whole screen */
+    {
+        PAL_CURSOR_P op[4];
+        PAL_CURSOR_COL ocol[4];
+        op[0].x = -2;  op[0].y = -2;
+        op[1].x = 386; op[1].y = -2;
+        op[2].x = -2;  op[2].y = 226;
+        op[3].x = 386; op[3].y = 226;
+        ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = 0xA0000000;
+        Renderer_Queue2DPrimitive((f32*)op, PrioBase[3], (uintptr_t)ocol[0].color, 0);
+    }
+    /* Centered popup box */
+    {
+        PAL_CURSOR_P bp[4];
+        PAL_CURSOR_COL bcol[4];
+        bp[0].x = 60;  bp[0].y = 56;
+        bp[1].x = 324; bp[1].y = 56;
+        bp[2].x = 60;  bp[2].y = 168;
+        bp[3].x = 324; bp[3].y = 168;
+        bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = 0xE0181818;
+        Renderer_Queue2DPrimitive((f32*)bp, PrioBase[3], (uintptr_t)bcol[0].color, 0);
+
+        /* Red border - top */
+        PAL_CURSOR_P bb[4];
+        PAL_CURSOR_COL bbcol[4];
+        bb[0].x = 60;  bb[0].y = 55;
+        bb[1].x = 324; bb[1].y = 55;
+        bb[2].x = 60;  bb[2].y = 57;
+        bb[3].x = 324; bb[3].y = 57;
+        bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = 0xFFCC0000;
+        Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
+        /* Red border - bottom */
+        bb[0].y = 167; bb[1].y = 167;
+        bb[2].y = 169; bb[3].y = 169;
+        Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
+    }
+
+    /* Title */
+    SSPutStr2(17, 9, 9, "CONNECTING...");
+
+    /* Peer name (centered dynamically) */
+    {
+        char out_buf[64];
+        SDL_snprintf(out_buf, sizeof(out_buf), "> %s", name);
+        int out_len = (int)SDL_strlen(out_buf);
+        u16 out_x = (u16)((192 - out_len * 4) / 8);
+        SSPutStr2(out_x, 12, 6, (const s8*)out_buf);
+    }
+
+    /* Ping estimate (centered dynamically: label=pal5, value=pal8) */
+    {
+        char val_buf[32];
+        if (ping < 0)
+            SDL_snprintf(val_buf, sizeof(val_buf), "...");
+        else
+            SDL_snprintf(val_buf, sizeof(val_buf), "~%dms", ping);
+        int full_len = 6 + (int)SDL_strlen(val_buf);
+        u16 out_px = (u16)((192 - full_len * 4) / 8);
+        SSPutStr2(out_px, 15, 5, "PING: ");
+        SSPutStr2((u16)(out_px + 6), 15, 8, (const s8*)val_buf);
+    }
+
+    /* Cancel button */
+    dispButtonImage2(0x98, 0x8E, 0, 0x13, 0xF, 0, 5);  /* B button */
+    SSPutStrPro(0, 176, 144, 4, 0xFFFF0000, (s8*)"CANCEL");
+}
+
 /** @brief Network Lobby screen — options-screen style with toggles and peer list.
  *  Uses effect_61 brightness for cursor indication (no effect_04 cursor bar). */
 static void Network_Lobby(struct _TASK* task_ptr) {
@@ -774,87 +918,10 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
         /* === Incoming Challenge Popup === */
         if (SDLNetplayUI_HasPendingInvite()) {
-            /* Dark semi-transparent overlay covering the whole screen */
-            {
-                PAL_CURSOR_P op[4];
-                PAL_CURSOR_COL ocol[4];
-                op[0].x = -2;  op[0].y = -2;
-                op[1].x = 386; op[1].y = -2;
-                op[2].x = -2;  op[2].y = 226;
-                op[3].x = 386; op[3].y = 226;
-                ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = 0xA0000000;
-                Renderer_Queue2DPrimitive((f32*)op, PrioBase[2], (uintptr_t)ocol[0].color, 0);
-            }
-            /* Centered popup box */
-            {
-                PAL_CURSOR_P bp[4];
-                PAL_CURSOR_COL bcol[4];
-                bp[0].x = 60;  bp[0].y = 56;
-                bp[1].x = 324; bp[1].y = 56;
-                bp[2].x = 60;  bp[2].y = 168;
-                bp[3].x = 324; bp[3].y = 168;
-                bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = 0xE0181818;
-                Renderer_Queue2DPrimitive((f32*)bp, PrioBase[2], (uintptr_t)bcol[0].color, 0);
-
-                /* Red border - top */
-                PAL_CURSOR_P bb[4];
-                PAL_CURSOR_COL bbcol[4];
-                bb[0].x = 60;  bb[0].y = 55;
-                bb[1].x = 324; bb[1].y = 55;
-                bb[2].x = 60;  bb[2].y = 57;
-                bb[3].x = 324; bb[3].y = 57;
-                bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = 0xFFCC0000;
-                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[2], (uintptr_t)bbcol[0].color, 0);
-                /* Red border - bottom */
-                bb[0].y = 167; bb[1].y = 167;
-                bb[2].y = 169; bb[3].y = 169;
-                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[2], (uintptr_t)bbcol[0].color, 0);
-            }
-
-            /* Title (centered in 264px-wide box: 60 + (264-152)/2 = 120 → x=15) */
-            SSPutStr2(15, 9, 9, "INCOMING CHALLENGE!");
-
-            /* Challenger name + region (centered dynamically) */
-            {
-                const char* name = SDLNetplayUI_GetPendingInviteName();
-                const char* region = SDLNetplayUI_GetPendingInviteRegion();
-                char name_buf[64];
-                if (region[0])
-                    SDL_snprintf(name_buf, sizeof(name_buf), "> %s  [%s]", name, region);
-                else
-                    SDL_snprintf(name_buf, sizeof(name_buf), "> %s", name);
-                int name_len = (int)SDL_strlen(name_buf);
-                u16 name_x = (u16)((192 - name_len * 4) / 8);
-                SSPutStr2(name_x, 12, 0, (const s8*)name_buf);
-            }
-
-            /* Ping (color-coded, centered dynamically) */
-            {
-                int ping = SDLNetplayUI_GetPendingInvitePing();
-                char ping_buf[32];
-                u8 ping_color;
-                if (ping < 0) {
-                    SDL_snprintf(ping_buf, sizeof(ping_buf), "PING: ...");
-                    ping_color = 1; /* grey */
-                } else {
-                    SDL_snprintf(ping_buf, sizeof(ping_buf), "PING: ~%dms", ping);
-                    if (ping < 80)
-                        ping_color = 4; /* blue-ish */
-                    else if (ping <= 150)
-                        ping_color = 9;  /* yellow */
-                    else
-                        ping_color = 8;  /* red-ish */
-                }
-                int ping_len = (int)SDL_strlen(ping_buf);
-                u16 ping_x = (u16)((192 - ping_len * 4) / 8);
-                SSPutStr2(ping_x, 15, ping_color, (const s8*)ping_buf);
-            }
-
-            /* Accept/Decline with game button images */
-            dispButtonImage2(0x6C, 0x90, 0, 0x13, 0xF, 0, 4);  /* A button */
-            SSPutStr2(16, 18, 0, "ACCEPT");
-            dispButtonImage2(0xC0, 0x90, 0, 0x13, 0xF, 0, 5);  /* B button */
-            SSPutStr2(27, 18, 0, "DECLINE");
+            NetLobby_DrawIncomingPopup(
+                SDLNetplayUI_GetPendingInviteName(),
+                SDLNetplayUI_GetPendingInviteRegion(),
+                SDLNetplayUI_GetPendingInvitePing());
 
             /* Override input: accept on Confirm, decline on Cancel */
             switch (IO_Result) {
@@ -871,81 +938,9 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             }
         } else if (SDLNetplayUI_HasOutgoingChallenge()) {
             /* === Outgoing Challenge Popup === */
-            /* Dark semi-transparent overlay covering the whole screen */
-            {
-                PAL_CURSOR_P op[4];
-                PAL_CURSOR_COL ocol[4];
-                op[0].x = -2;  op[0].y = -2;
-                op[1].x = 386; op[1].y = -2;
-                op[2].x = -2;  op[2].y = 226;
-                op[3].x = 386; op[3].y = 226;
-                ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = 0xA0000000;
-                Renderer_Queue2DPrimitive((f32*)op, PrioBase[2], (uintptr_t)ocol[0].color, 0);
-            }
-            /* Centered popup box */
-            {
-                PAL_CURSOR_P bp[4];
-                PAL_CURSOR_COL bcol[4];
-                bp[0].x = 60;  bp[0].y = 70;
-                bp[1].x = 324; bp[1].y = 70;
-                bp[2].x = 60;  bp[2].y = 158;
-                bp[3].x = 324; bp[3].y = 158;
-                bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = 0xE0181818;
-                Renderer_Queue2DPrimitive((f32*)bp, PrioBase[2], (uintptr_t)bcol[0].color, 0);
-
-                /* Red border - top */
-                PAL_CURSOR_P bb[4];
-                PAL_CURSOR_COL bbcol[4];
-                bb[0].x = 60;  bb[0].y = 69;
-                bb[1].x = 324; bb[1].y = 69;
-                bb[2].x = 60;  bb[2].y = 71;
-                bb[3].x = 324; bb[3].y = 71;
-                bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = 0xFFCC0000;
-                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[2], (uintptr_t)bbcol[0].color, 0);
-                /* Red border - bottom */
-                bb[0].y = 157; bb[1].y = 157;
-                bb[2].y = 159; bb[3].y = 159;
-                Renderer_Queue2DPrimitive((f32*)bb, PrioBase[2], (uintptr_t)bbcol[0].color, 0);
-            }
-
-            /* Title: "CONNECTING..." (centered: 13 chars * 8px = 104px, x = (192-52)/8 = 17) */
-            SSPutStr2(17, 10, 9, "CONNECTING...");
-
-            /* Peer name (centered dynamically) */
-            {
-                const char* out_name = SDLNetplayUI_GetOutgoingChallengeName();
-                char out_buf[64];
-                SDL_snprintf(out_buf, sizeof(out_buf), "> %s", out_name);
-                int out_len = (int)SDL_strlen(out_buf);
-                u16 out_x = (u16)((192 - out_len * 4) / 8);
-                SSPutStr2(out_x, 12, 0, (const s8*)out_buf);
-            }
-
-            /* Ping estimate (centered dynamically) */
-            {
-                int out_ping = SDLNetplayUI_GetOutgoingChallengePing();
-                char out_ping_buf[32];
-                u8 out_ping_color;
-                if (out_ping < 0) {
-                    SDL_snprintf(out_ping_buf, sizeof(out_ping_buf), "PING: ...");
-                    out_ping_color = 1;
-                } else {
-                    SDL_snprintf(out_ping_buf, sizeof(out_ping_buf), "PING: ~%dms", out_ping);
-                    if (out_ping < 80)
-                        out_ping_color = 4;
-                    else if (out_ping <= 150)
-                        out_ping_color = 9;
-                    else
-                        out_ping_color = 8;
-                }
-                int out_pl = (int)SDL_strlen(out_ping_buf);
-                u16 out_px = (u16)((192 - out_pl * 4) / 8);
-                SSPutStr2(out_px, 14, out_ping_color, (const s8*)out_ping_buf);
-            }
-
-            /* Cancel button (centered: B button + text) */
-            dispButtonImage2(0x98, 0x80, 0, 0x13, 0xF, 0, 5);  /* B button */
-            SSPutStr2(22, 16, 0, "CANCEL");
+            NetLobby_DrawOutgoingPopup(
+                SDLNetplayUI_GetOutgoingChallengeName(),
+                SDLNetplayUI_GetOutgoingChallengePing());
 
             /* Cancel on either Confirm or Cancel button press */
             if (IO_Result == 0x100 || IO_Result == 0x200) {

@@ -21,6 +21,7 @@
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/menu/menu_internal.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 
 #define PAGE_COUNT      13
@@ -491,69 +492,19 @@ static void FontTest_Page10(void) {
 }
 
 /* ════════════════════════════════════════════════════════════════
- *  Page 11: Menu Letter Sprites — Mode & Game Options
+ *  Page 11: Network Lobby — Incoming Challenge Popup
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page11(void) {
-    SSPutStr(1, 0, 4, "PAGE 12: MENU SPRITES (CG OBJ)");
-    /* Mode menu - compact: index + name on same line */
-    SSPutStr(0, 2, 1, "MODE MENU (CG 0x7047, 14px):");
-    SSPutStr(0, 3, 4, " 0 ARCADE");       SSPutStr(16, 3, 4, " 1 VERSUS");
-    SSPutStr(0, 4, 4, " 2 TRAINING");      SSPutStr(16, 4, 4, " 3 NETWORK");
-    SSPutStr(0, 5, 4, " 4 REPLAY");        SSPutStr(16, 5, 4, " 5 OPTION");
-    SSPutStr(0, 6, 4, " 6 EXIT GAME");
-    /* Game option sub-menu */
-    SSPutStr(0, 8, 1, "OPTION SUB (CG 0x7047):");
-    SSPutStr(0, 9, 4, " 7 GAME OPTION");   SSPutStr(16, 9, 4, "10 SOUND");
-    SSPutStr(0, 10, 4, " 8 BUTTON CONFIG"); SSPutStr(16, 10, 4, "11 SAVE/LOAD");
-    SSPutStr(0, 11, 4, " 9 SYS DIRECTION"); SSPutStr(16, 11, 4, "12 EXTRA OPT");
-    SSPutStr(0, 12, 4, "13 EXIT");
-    /* Game options (smaller CG) */
-    SSPutStr(0, 14, 1, "GAME OPTS (CG 0x70A7, 8px):");
-    SSPutStr(0, 15, 8, "25 DIFFICULTY");    SSPutStr(16, 15, 8, "26 TIME LIMIT");
-    SSPutStr(0, 16, 8, "27 ROUNDS(1P)");    SSPutStr(16, 16, 8, "28 ROUNDS(VS)");
-    SSPutStr(0, 17, 8, "29 DAMAGE LVL");    SSPutStr(16, 17, 8, "30 GUARD JDG");
-    SSPutStr(0, 18, 8, "31 ANALOG STK");    SSPutStr(16, 18, 8, "32 HANDICAP");
-    SSPutStr(0, 19, 8, "33 PLAYER1(VS)");   SSPutStr(16, 19, 8, "34 PLAYER2(VS)");
-    SSPutStr(0, 20, 8, "35 DEFAULT SET");   SSPutStr(16, 20, 8, "36 EXIT");
-    /* Extra options */
-    SSPutStr(0, 22, 1, "EXTRA OPTS:");
-    SSPutStr(0, 23, 4, "14 X POSITION");    SSPutStr(16, 23, 4, "15 Y POSITION");
-    SSPutStr(0, 24, 4, "16 X RANGE");       SSPutStr(16, 24, 4, "17 Y RANGE");
-    SSPutStr(0, 25, 4, "18 FILTER");        SSPutStr(16, 25, 4, "19 DEFAULT SET");
-    SSPutStr(0, 26, 4, "20 EXIT");
+    SSPutStr(1, 0, 4, "PAGE 12: INCOMING CHALLENGE");
+    NetLobby_DrawIncomingPopup("3sxtraP1Q", "US-W", 45);
 }
 
 /* ════════════════════════════════════════════════════════════════
- *  Page 12: Menu Sprites — Sound, Training, Pause, Lobby, Save
+ *  Page 12: Network Lobby — Outgoing Challenge Popup
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page12(void) {
-    SSPutStr(1, 0, 4, "PAGE 13: MENU SPRITES (CONT)");
-    /* Save/Load */
-    SSPutStr(0, 2, 1, "SAVE/LOAD (CG 0x7047):");
-    SSPutStr(0, 3, 4, "21 SAVE DATA");     SSPutStr(16, 3, 4, "22 LOAD DATA");
-    SSPutStr(0, 4, 4, "23 AUTO SAVE");     SSPutStr(16, 4, 4, "24 EXIT");
-    /* Sound */
-    SSPutStr(0, 6, 1, "SOUND (CG 0x7047):");
-    SSPutStr(0, 7, 4, "58 AUDIO");         SSPutStr(16, 7, 4, "59 BGM LEVEL");
-    SSPutStr(0, 8, 4, "60 SE LEVEL");      SSPutStr(16, 8, 4, "61 BGM SELECT");
-    SSPutStr(0, 9, 4, "62 DEFAULT SET");   SSPutStr(16, 9, 4, "63 BGM TEST");
-    SSPutStr(0, 10, 4, "64 EXIT");
-    /* Training */
-    SSPutStr(0, 12, 1, "TRAINING (CG 0x7047):");
-    SSPutStr(0, 13, 4, "52 NORMAL TRAIN"); SSPutStr(16, 13, 4, "53 PARRY TRAIN");
-    SSPutStr(0, 14, 4, "54 EXIT");         SSPutStr(16, 14, 4, "65 TRIALS");
-    /* Pause menus */
-    SSPutStr(0, 16, 1, "PAUSE (CG 0x70A7):");
-    SSPutStr(0, 17, 8, "37 CONTINUE");     SSPutStr(16, 17, 8, "40 CONTINUE");
-    SSPutStr(0, 18, 8, "38 REPLAY SAVE");  SSPutStr(16, 18, 8, "41 REPLAY SAVE");
-    SSPutStr(0, 19, 8, "39 EXIT");         SSPutStr(16, 19, 8, "42 EXIT");
-    /* In-game option */
-    SSPutStr(0, 21, 1, "IN-GAME OPT (CG 0x7047):");
-    SSPutStr(0, 22, 4, "43 DIRECTION");    SSPutStr(16, 22, 4, "44 SAVE");
-    SSPutStr(0, 23, 4, "45 LOAD");         SSPutStr(16, 23, 4, "46 EXIT");
-    /* Network lobby */
-    SSPutStr(0, 25, 1, "LOBBY (CG 0x70A7):");
-    SSPutStr(0, 26, 8, "66 NET LOBBY");    SSPutStr(16, 26, 8, "67-72 CONN/EXIT");
+    SSPutStr(1, 0, 4, "PAGE 13: OUTGOING CHALLENGE");
+    NetLobby_DrawOutgoingPopup("3sxtra", 120);
 }
 
 /* ════════════════════════════════════════════════════════════════

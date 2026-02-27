@@ -671,19 +671,23 @@ static void RenderDiagnostics() {
             if (y_min < 0.0f)
                 y_min = 0.0f;
 
-            int secs = s_fps_history_count / 60;
-            char overlay[64];
-            snprintf(overlay,
-                     sizeof(overlay),
-                     "avg: %.1f  |  %d:%02d  |  %d frames",
-                     avg,
-                     secs / 60,
-                     secs % 60,
-                     s_fps_history_count);
-
-            // Chart fills available card width, fixed height
+            // Chart fills available card width, fixed height (no overlay to avoid overlap)
             float avail_w = ImGui::GetContentRegionAvail().x;
-            ImGui::PlotLines("##fps_chart", plot_data, plot_count, 0, overlay, y_min, y_max, ImVec2(avail_w, 120));
+            ImGui::PlotLines("##fps_chart", plot_data, plot_count, 0, NULL, y_min, y_max, ImVec2(avail_w, 120));
+
+            // Stats below the chart
+            int secs = s_fps_history_count / 60;
+            ImGui::TextDisabled("avg: %.1f  |  %d:%02d", avg, secs / 60, secs % 60);
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize("00000000 frames").x);
+
+            // Large, highlighted frame counter
+            float old_scale = ImGui::GetFont()->Scale;
+            ImGui::GetFont()->Scale *= 1.4f;
+            ImGui::PushFont(ImGui::GetFont());
+            ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.3f, 1.0f), "%d frames", s_fps_history_count);
+            ImGui::GetFont()->Scale = old_scale;
+            ImGui::PopFont();
         } else {
             ImGui::TextDisabled("FPS: waiting for data...");
         }

@@ -51,6 +51,10 @@ void Setup_Button_Sub(s16 x, s16 y, s16 master_player);
 void Flash_1P_or_2P(struct _TASK* task_ptr);
 void Training_Disp_Sub(struct _TASK* task_ptr);
 
+/* === Lobby popup draw helpers (menu.c, also called from font_test) === */
+void NetLobby_DrawIncomingPopup(const char* name, const char* region, int ping);
+void NetLobby_DrawOutgoingPopup(const char* name, int ping);
+
 /* === Functions in menu_input.c === */
 u16 MC_Move_Sub(u16 sw, s16 cursor_id, s16 menu_max, s16 cansel_menu);
 void System_Dir_Move_Sub(s16 PL_id);

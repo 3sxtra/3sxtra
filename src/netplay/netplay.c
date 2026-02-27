@@ -152,6 +152,10 @@ static void setup_vs_mode() {
     grade_check_work_1st_init(1, 1);
     Setup_Training_Difficulty();
 
+    G_No[0] = 2;
+    E_No[0] = 1;
+    Demo_Flag = 1;
+
     G_No[1] = 12;
     G_No[2] = 1;
     Mode_Type = MODE_NETWORK;
