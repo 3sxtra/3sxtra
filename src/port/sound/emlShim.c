@@ -370,6 +370,7 @@ static void UpdateVolPanPitch(struct VWork* voice) {
     conf.volr = volr;
     conf.adsr1 = voice->adsr1;
     conf.adsr2 = voice->adsr2;
+    conf.pmon = 0; // Explicitly disable PMON by default
 
     SPU_VoiceSetConf(voice->voice_num, &conf);
 }

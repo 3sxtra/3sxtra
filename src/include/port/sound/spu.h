@@ -8,6 +8,7 @@ struct SPUVConf {
     u32 pitch;
     u32 voll, volr;
     u16 adsr1, adsr2;
+    u16 pmon;
 };
 
 extern SDL_Mutex* soundLock;

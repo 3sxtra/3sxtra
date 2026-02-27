@@ -152,6 +152,19 @@ add_unit_test(test_netplay_catchup
 )
 target_link_gekkonet_sdl3(test_netplay_catchup)
 
+add_unit_test(test_stun
+    test_stun.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
+)
+target_link_gekkonet_sdl3(test_stun)
+
+add_unit_test(test_netplay_run
+    test_netplay_run.c
+    mocks_netplay.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
+)
+target_link_gekkonet_sdl3(test_netplay_run)
+
 # -----------------------------------------------------------------------------
 # SDL3-only tests (use target_link_sdl3)
 # -----------------------------------------------------------------------------
@@ -170,6 +183,12 @@ add_unit_test(test_config
 )
 target_include_directories(test_config PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include)
 target_link_sdl3(test_config)
+
+add_unit_test(test_lobby_server
+    test_lobby_server.c
+)
+target_include_directories(test_lobby_server PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include)
+target_link_sdl3(test_lobby_server)
 
 # -----------------------------------------------------------------------------
 # Bezel tests (use target_link_sdl3_glad)

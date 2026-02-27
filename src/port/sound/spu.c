@@ -58,6 +58,8 @@ struct SPU_Voice {
     s32 voll, volr;
 
     u16 adsr1, adsr2;
+    bool pmon;
+    s32 last_sample;
 
     u8 adsr_phase;
     u32 adsr_counter;
@@ -234,7 +236,7 @@ static void SPU_VoiceDecode(struct SPU_Voice* v) {
     }
 }
 
-static void SPU_VoiceTick(struct SPU_Voice* v, s32* output) {
+static void SPU_VoiceTick(struct SPU_Voice* v, s32* output, s32 last_voice_sample) {
     s32 sample, pitchStep, decInc;
     u32 index;
 
@@ -249,7 +251,9 @@ static void SPU_VoiceTick(struct SPU_Voice* v, s32* output) {
     sample += ((v->decodeBuf[v->decRPos + 3] * interp_table[index][3]) >> 15);
 
     pitchStep = v->pitch;
-    // TODO pitch mod?
+    if (v->pmon) {
+        pitchStep = (pitchStep * (0x8000 + last_voice_sample)) >> 15;
+    }
     pitchStep = min(pitchStep, 0x3fff);
     v->counter += pitchStep;
 
@@ -259,6 +263,7 @@ static void SPU_VoiceTick(struct SPU_Voice* v, s32* output) {
     v->decLeft -= decInc;
 
     sample = SPU_ApplyVolume(sample, v->envx);
+    v->last_sample = sample;
     output[0] = SPU_ApplyVolume(sample, v->voll);
     output[1] = SPU_ApplyVolume(sample, v->volr);
 
@@ -295,6 +300,7 @@ void SPU_VoiceGetConf(int vnum, struct SPUVConf* conf) {
     conf->volr = v->volr;
     conf->adsr1 = v->adsr1;
     conf->adsr2 = v->adsr2;
+    conf->pmon = v->pmon;
 }
 
 void SPU_VoiceSetConf(int vnum, struct SPUVConf* conf) {
@@ -305,6 +311,7 @@ void SPU_VoiceSetConf(int vnum, struct SPUVConf* conf) {
     v->volr = conf->volr << 1;
     v->adsr1 = conf->adsr1;
     v->adsr2 = conf->adsr2;
+    v->pmon = conf->pmon;
 }
 
 void SPU_VoiceStart(int vnum, u32 start_addr) {
@@ -419,7 +426,12 @@ void SPU_Tick(s16* output) {
         int i = __builtin_ctzll(mask);
         mask &= mask - 1; // Clear lowest set bit
 
-        SPU_VoiceTick(&voices[i], vout);
+        s32 last_voice_sample = 0;
+        if (i > 0 && voices[i].pmon) {
+            last_voice_sample = voices[i - 1].last_sample;
+        }
+
+        SPU_VoiceTick(&voices[i], vout, last_voice_sample);
         acc[0] += vout[0];
         acc[1] += vout[1];
     }
