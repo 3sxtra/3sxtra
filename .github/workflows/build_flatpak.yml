@@ -26,8 +26,6 @@ jobs:
         steps:
           - name: Checkout repository
             uses: actions/checkout@v4
-            with:
-                submodules: recursive
 
           - name: Build Flatpak bundle
             uses: flatpak/flatpak-github-actions/flatpak-builder@v6

@@ -100,6 +100,7 @@ if [ ! -f "$BUILD_DIR/build.ninja" ] && [ ! -f "$BUILD_DIR/Makefile" ]; then
         -DCMAKE_SYSTEM_PROCESSOR=aarch64
         -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc
         -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++
+        -DFreetype_ROOT="$ROOT_DIR/third_party_rpi4/freetype/build"
     )
 
     if [ "$ENABLE_TRACY" = true ]; then

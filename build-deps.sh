@@ -122,7 +122,32 @@ if [ ! -f "$STB_DIR/stb_image.h" ]; then
 fi
 
 # -----------------------------
+# GekkoNet (rollback networking)
+# -----------------------------
 
+GEKKONET_DIR="$THIRD_PARTY/GekkoNet"
+
+if [ -d "$GEKKONET_DIR" ]; then
+    echo "GekkoNet already exists at $GEKKONET_DIR"
+else
+    echo "Cloning GekkoNet..."
+    git clone --depth 1 https://github.com/HeatXD/GekkoNet.git "$GEKKONET_DIR"
+    echo "GekkoNet cloned to $GEKKONET_DIR"
+fi
+
+# -----------------------------
+# Spout2 (Windows video broadcast)
+# -----------------------------
+
+SPOUT2_DIR="$THIRD_PARTY/Spout2"
+
+if [ -d "$SPOUT2_DIR" ]; then
+    echo "Spout2 already exists at $SPOUT2_DIR"
+else
+    echo "Cloning Spout2..."
+    git clone --depth 1 https://github.com/leadedge/Spout2.git "$SPOUT2_DIR"
+    echo "Spout2 cloned to $SPOUT2_DIR"
+fi
 
 # -----------------------------
 # glad
@@ -263,6 +288,20 @@ else
     echo "Cloning imgui..."
     git clone --branch docking https://github.com/ocornut/imgui.git "$IMGUI_DIR"
     echo "imgui cloned to $IMGUI_DIR"
+fi
+
+# -----------------------------
+# RmlUi
+# -----------------------------
+
+RMLUI_DIR="$THIRD_PARTY/rmlui"
+
+if [ -d "$RMLUI_DIR" ]; then
+    echo "rmlui already exists at $RMLUI_DIR"
+else
+    echo "Cloning RmlUi..."
+    git clone --depth 1 --branch 6.2 https://github.com/mikke89/RmlUi.git "$RMLUI_DIR"
+    echo "rmlui cloned to $RMLUI_DIR"
 fi
 
 # -----------------------------

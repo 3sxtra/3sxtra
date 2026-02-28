@@ -67,7 +67,7 @@ set(ENABLE_PGO "OFF" CACHE STRING "PGO mode: OFF, GENERATE, or USE")
 include(FetchContent)
 
 message(STATUS "DEBUG: Adding GekkoNet subdirectory...")
-add_subdirectory(submodules/GekkoNet)
+add_subdirectory("${THIRD_PARTY_DIR}/GekkoNet" GekkoNet)
 message(STATUS "DEBUG: GekkoNet added.")
 
 # SDL_ShaderCross — pre-cloned by build-deps.sh into third_party/
@@ -88,6 +88,19 @@ if(ENABLE_TRACY)
     )
     FetchContent_MakeAvailable(tracy)
 endif()
+
+# RmlUi — HTML/CSS UI library (always built alongside ImGui)
+# Pre-cloned by build-deps.sh into third_party/rmlui
+message(STATUS "Configuring RmlUi...")
+set(RMLUI_SDL_VERSION_MAJOR 3 CACHE STRING "" FORCE)
+set(RMLUI_SAMPLES OFF CACHE BOOL "" FORCE)
+set(RMLUI_TESTS OFF CACHE BOOL "" FORCE)
+set(RMLUI_LUA_BINDINGS OFF CACHE BOOL "" FORCE)
+set(RMLUI_SVG_PLUGIN OFF CACHE BOOL "" FORCE)
+set(RMLUI_LOTTIE_PLUGIN OFF CACHE BOOL "" FORCE)
+set(RMLUI_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+add_subdirectory("${THIRD_PARTY_DIR}/rmlui" rmlui)
+message(STATUS "RmlUi configured.")
 
 # ======================================
 # Static Analysis (clang-tidy)
@@ -115,8 +128,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
     ${PROJECT_SOURCE_DIR}/src/include/sdk
     ${PROJECT_SOURCE_DIR}/src/zlib
-    ${PROJECT_SOURCE_DIR}/submodules/GekkoNet/GekkoLib/include
-    ${PROJECT_SOURCE_DIR}/submodules/GekkoNet/GekkoLib/include
+    ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include
     ${THIRD_PARTY_DIR}/stb
 
     ${THIRD_PARTY_DIR}/librashader/include
@@ -126,7 +138,7 @@ include_directories(
     ${THIRD_PARTY_DIR}/sdl3/SDL/src/video/khronos
 )
 
-set(SPOUT2_DIR "${CMAKE_SOURCE_DIR}/submodules/Spout2")
+set(SPOUT2_DIR "${THIRD_PARTY_DIR}/Spout2")
 
 if(WIN32)
     include_directories(${SPOUT2_DIR}/SPOUTSDK/SpoutGL)
@@ -167,6 +179,23 @@ set_source_files_properties(${IMGUI_SRC} ${IMGUI_BACKEND_SRC} ${ZLIB_SRC} src/po
         CXX_CLANG_TIDY ""
 )
 
+# RmlUi backend sources: suppress warnings and set SDL3 version
+set_source_files_properties(
+    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
+    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
+    PROPERTIES
+        COMPILE_OPTIONS "-Wno-error"
+        COMPILE_DEFINITIONS "RMLUI_SDL_VERSION_MAJOR=3"
+        SKIP_LINTING ON
+        CXX_CLANG_TIDY ""
+)
+# Use our glad via RMLUI_GL3_CUSTOM_LOADER instead of RmlUi's bundled glad
+set_source_files_properties(
+    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
+    PROPERTIES
+        COMPILE_DEFINITIONS "RMLUI_GL3_CUSTOM_LOADER=<glad/gl.h>;RMLUI_SDL_VERSION_MAJOR=3"
+)
+
 if(WIN32)
     set_source_files_properties(src/port/win32/broadcast_spout.cpp PROPERTIES COMPILE_FLAGS "-Wno-error")
 endif()
@@ -203,6 +232,11 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/sdl/sdl_game_renderer_gl_draw.c
     src/port/sdl/sdl_game_renderer_sdl.c
     src/port/sdl/sdl_text_renderer_sdl.c
+    src/port/sdl/rmlui_wrapper.cpp
+    src/port/sdl/rmlui_mods_menu.cpp
+    # RmlUi backend sources (SDL3 platform + GL3 renderer)
+    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
+    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
 )
 
 
@@ -211,6 +245,7 @@ set_source_files_properties(${ZLIB_SRC} PROPERTIES COMPILE_OPTIONS "-Wno-format"
 target_include_directories(3sx PRIVATE
     ${THIRD_PARTY_DIR}/imgui
     ${THIRD_PARTY_DIR}/imgui/backends
+    ${THIRD_PARTY_DIR}/rmlui/Backends
 )
 
 set_target_properties(3sx PROPERTIES LINKER_LANGUAGE CXX)
@@ -229,6 +264,7 @@ target_compile_definitions(3sx PRIVATE
     $<$<NOT:$<PLATFORM_ID:Darwin>>:_POSIX_C_SOURCE=200809L>
     $<$<BOOL:${PLATFORM_RPI4}>:PLATFORM_RPI4>
     $<$<BOOL:${ENABLE_TRACY}>:TRACY_ENABLE>
+    RMLUI_SDL_VERSION_MAJOR=3
 )
 
 # Feature toggles
@@ -312,6 +348,7 @@ target_link_libraries(3sx PRIVATE
     glad_gl_core
     ${LIBRASHADER_LIB}
     SDL3_shadercross::SDL3_shadercross
+    rmlui
 )
 
 if(ENABLE_TRACY)

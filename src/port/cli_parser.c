@@ -6,6 +6,7 @@
  * window geometry overrides, and shared-memory suffix.
  */
 #include "port/broadcast.h"
+#include "port/config.h"
 #include "port/sdl/sdl_app.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -51,6 +52,7 @@ void ParseCLI(int argc, char* argv[]) {
             printf("  --enable-broadcast        Enable Spout/shared-memory broadcast\n");
             printf("  --shm-suffix <suffix>     Shared-memory name suffix for broadcast\n");
             printf("  --font-test               Boot into font debug visualization screen\n");
+            printf("  --ui <imgui|rmlui>        UI toolkit for overlay menus (default: imgui)\n");
             printf("  --help                    Show this help message\n");
             exit(0);
         } else if (strcmp(argv[i], "--volume") == 0 && i + 1 < argc) {
@@ -94,6 +96,10 @@ void ParseCLI(int argc, char* argv[]) {
             }
         } else if (strcmp(argv[i], "--font-test") == 0) {
             g_font_test_mode = true;
+        } else if (strcmp(argv[i], "--ui") == 0 && i + 1 < argc) {
+            const char* mode = argv[++i];
+            Config_SetString(CFG_KEY_UI_MODE, mode);
+            printf("[CLI] UI mode: %s\n", mode);
         }
     }
 }

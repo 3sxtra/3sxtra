@@ -24,7 +24,7 @@ endfunction()
 function(target_link_gekkonet_sdl3 TARGET_NAME)
     target_include_directories(${TARGET_NAME} PRIVATE 
         ${PROJECT_SOURCE_DIR}/include 
-        ${PROJECT_SOURCE_DIR}/submodules/GekkoNet/GekkoLib/include
+        ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include
     )
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PRIVATE 
@@ -247,7 +247,7 @@ if(WIN32)
     add_unit_test(test_broadcast_win32 test_broadcast_win32.cpp ${PROJECT_SOURCE_DIR}/src/port/win32/broadcast_spout.cpp)
     target_include_directories(test_broadcast_win32 PRIVATE 
         ${PROJECT_SOURCE_DIR}/include
-        ${PROJECT_SOURCE_DIR}/submodules/Spout2/SPOUTSDK/SpoutGL
+        ${THIRD_PARTY_DIR}/Spout2/SPOUTSDK/SpoutGL
     )
     target_link_libraries(test_broadcast_win32 PRIVATE Spout_static)
     target_compile_features(test_broadcast_win32 PRIVATE cxx_std_17)

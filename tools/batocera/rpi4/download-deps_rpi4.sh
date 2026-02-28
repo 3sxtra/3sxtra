@@ -146,4 +146,63 @@ else
     git clone --branch docking https://github.com/ocornut/imgui.git "$IMGUI_DIR"
 fi
 
+# -----------------------------
+# Freetype (required by RmlUi)
+# -----------------------------
+
+FREETYPE_DIR="$THIRD_PARTY/freetype"
+FREETYPE_BUILD="$FREETYPE_DIR/build"
+
+if [ -f "$FREETYPE_BUILD/lib/libfreetype.a" ]; then
+    echo "Freetype already built for aarch64."
+else
+    echo "Building Freetype for aarch64 cross-compilation..."
+    if [ ! -d "$FREETYPE_DIR/src" ]; then
+        FREETYPE_VER="2.13.3"
+        curl -L -o "$THIRD_PARTY/freetype-$FREETYPE_VER.tar.xz" \
+            "https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE_VER.tar.xz"
+        mkdir -p "$FREETYPE_DIR"
+        tar xf "$THIRD_PARTY/freetype-$FREETYPE_VER.tar.xz" -C "$FREETYPE_DIR" --strip-components=1
+        rm -f "$THIRD_PARTY/freetype-$FREETYPE_VER.tar.xz"
+    fi
+    cmake -S "$FREETYPE_DIR" -B "$FREETYPE_BUILD" \
+        -DCMAKE_SYSTEM_NAME=Linux \
+        -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+        -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DFT_DISABLE_HARFBUZZ=ON \
+        -DFT_DISABLE_BROTLI=ON \
+        -DFT_DISABLE_BZIP2=ON \
+        -DFT_DISABLE_PNG=ON \
+        -DFT_DISABLE_ZLIB=ON
+    cmake --build "$FREETYPE_BUILD" -j"$(nproc)"
+    cmake --install "$FREETYPE_BUILD" --prefix "$FREETYPE_BUILD"
+    echo "Freetype built successfully."
+fi
+
+# -----------------------------
+# RmlUi
+# -----------------------------
+
+RMLUI_DIR="$THIRD_PARTY/rmlui"
+
+if [ -d "$RMLUI_DIR" ]; then
+    echo "rmlui already exists."
+else
+    git clone --depth 1 --branch 6.2 https://github.com/mikke89/RmlUi.git "$RMLUI_DIR"
+fi
+
+# -----------------------------
+# GekkoNet (rollback networking)
+# -----------------------------
+
+GEKKONET_DIR="$THIRD_PARTY/GekkoNet"
+
+if [ -d "$GEKKONET_DIR" ]; then
+    echo "GekkoNet already exists."
+else
+    git clone --depth 1 https://github.com/HeatXD/GekkoNet.git "$GEKKONET_DIR"
+fi
+
 echo "All sources downloaded to $THIRD_PARTY"

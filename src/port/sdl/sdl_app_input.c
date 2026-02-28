@@ -12,6 +12,7 @@
 #include "port/modded_stage.h"
 #include "port/sdl/control_mapping.h"
 #include "port/sdl/imgui_wrapper.h"
+#include "port/sdl/rmlui_wrapper.h"
 #include "port/sdl/input_display.h"
 #include "port/sdl/mods_menu.h"
 #include "port/sdl/sdl_app.h"
@@ -67,8 +68,13 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
 
     // SDL2D mode: no ImGui, no NetplayUI — skip all UI processing
     if (SDLApp_GetRenderer() != RENDERER_SDL2D) {
-        // Process UI events
-        imgui_wrapper_process_event(event);
+        // Process UI events — dispatch to active UI system
+        extern bool use_rmlui;  // defined in sdl_app.c
+        if (use_rmlui) {
+            rmlui_wrapper_process_event(event);
+        } else {
+            imgui_wrapper_process_event(event);
+        }
         SDLNetplayUI_ProcessEvent(event);
 
         // Global Key Toggles
@@ -101,9 +107,17 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             }
         }
 
-        // Input Capture for UI
-        imgui_wrapper_capture_input(control_mapping_is_active());
-        if (imgui_wrapper_want_capture_mouse() || imgui_wrapper_want_capture_keyboard()) {
+        // Input Capture for UI — dispatch to active system
+        bool ui_wants_mouse, ui_wants_keyboard;
+        if (use_rmlui) {
+            ui_wants_mouse = rmlui_wrapper_want_capture_mouse();
+            ui_wants_keyboard = rmlui_wrapper_want_capture_keyboard();
+        } else {
+            imgui_wrapper_capture_input(control_mapping_is_active());
+            ui_wants_mouse = imgui_wrapper_want_capture_mouse();
+            ui_wants_keyboard = imgui_wrapper_want_capture_keyboard();
+        }
+        if (ui_wants_mouse || ui_wants_keyboard) {
             if (event->type == SDL_EVENT_QUIT) {
                 request_quit = true;
             }

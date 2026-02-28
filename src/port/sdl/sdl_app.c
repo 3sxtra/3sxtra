@@ -17,6 +17,8 @@
 #include "port/sdl/control_mapping.h"
 #include "port/sdl/frame_display.h"
 #include "port/sdl/imgui_wrapper.h"
+#include "port/sdl/rmlui_wrapper.h"
+#include "port/sdl/rmlui_mods_menu.h"
 #include "port/sdl/input_display.h"
 #include "port/sdl/mods_menu.h"
 #include "port/sdl/sdl_app_config.h"
@@ -236,6 +238,9 @@ static int fps_history_capacity = 0;
 
 // ⚡ Bolt: Bezel VBO dirty flag — skip redundant vertex uploads.
 static bool bezel_vbo_dirty = true;
+
+// UI mode flag — when true, RmlUi handles overlay menus instead of ImGui
+bool use_rmlui = false;
 
 static const /** @brief Return the display name for the current scale mode. */
     char*
@@ -682,6 +687,18 @@ int SDLApp_Init() {
     // Skip ImGui, bezels, shaders, and mod menus for SDL2D mode
     if (g_renderer_backend != RENDERER_SDL2D) {
         imgui_wrapper_init(window, gl_context);
+        rmlui_wrapper_init(window, gl_context);
+        rmlui_mods_menu_init();
+
+        // Check if user wants RmlUi mode
+        const char* ui_mode = Config_GetString(CFG_KEY_UI_MODE);
+        use_rmlui = (ui_mode && strcmp(ui_mode, "rmlui") == 0);
+        if (use_rmlui) {
+            SDL_Log("UI mode: RmlUi (overlay menus via HTML/CSS)");
+        } else {
+            SDL_Log("UI mode: ImGui (default)");
+        }
+
         input_display_init();
         frame_display_init();
         SDLNetplayUI_Init();
@@ -756,6 +773,7 @@ void SDLApp_Quit() {
             stage_config_menu_shutdown();
             training_menu_shutdown();
             imgui_wrapper_shutdown();
+            rmlui_wrapper_shutdown();
         } else {
             if (gpu_device) {
                 if (s_librashader_intermediate) {
@@ -818,7 +836,11 @@ void SDLApp_BeginFrame() {
     if (g_renderer_backend != RENDERER_SDL2D) {
         // Process any deferred preset switch
         SDLAppShader_ProcessPendingLoad();
-        imgui_wrapper_new_frame();
+        if (use_rmlui) {
+            rmlui_wrapper_new_frame();
+        } else {
+            imgui_wrapper_new_frame();
+        }
     }
 
     int win_w, win_h;
@@ -1145,9 +1167,13 @@ void SDLApp_EndFrame() {
         // and just submit the command buffer. Rendering to a NULL swapchain causes GPU device loss.
         if (!cb || !swapchain) {
 
-            // Must still end the ImGui frame to balance the NewFrame() call.
-            // imgui_wrapper_render() gracefully handles NULL swapchain internally.
-            imgui_wrapper_render();
+            // Must still end the UI frame to balance the NewFrame() call.
+            // imgui_wrapper_render() / rmlui_wrapper_render() gracefully handle NULL swapchain.
+            if (use_rmlui) {
+                rmlui_wrapper_render();
+            } else {
+                imgui_wrapper_render();
+            }
             goto gpu_end_frame_submit;
         }
 
@@ -1347,8 +1373,13 @@ void SDLApp_EndFrame() {
         if (show_menu) {
             imgui_wrapper_show_control_mapping_window(win_w, win_h);
         }
-        if (show_mods_menu)
-            mods_menu_render(win_w, win_h);
+        if (show_mods_menu) {
+            if (use_rmlui) {
+                rmlui_mods_menu_update();
+            } else {
+                mods_menu_render(win_w, win_h);
+            }
+        }
         if (show_shader_menu)
             shader_menu_render(win_w, win_h);
         stage_config_menu_render(win_w, win_h);
@@ -1357,7 +1388,11 @@ void SDLApp_EndFrame() {
         SDLNetplayUI_SetFPSHistory(fps_history, fps_history_count, (float)fps);
         SDLNetplayUI_Render(win_w, win_h);
 
-        imgui_wrapper_render();
+        if (use_rmlui) {
+            rmlui_wrapper_render();
+        } else {
+            imgui_wrapper_render();
+        }
         TRACE_SUB_END();
 
         if (show_debug_hud) {
@@ -1801,9 +1836,13 @@ void SDLApp_EndFrame() {
             shader_menu_render(w, h);
         }
         if (show_mods_menu) {
-            int w, h;
-            SDL_GetWindowSizeInPixels(window, &w, &h);
-            mods_menu_render(w, h);
+            if (use_rmlui) {
+                rmlui_mods_menu_update();
+            } else {
+                int w, h;
+                SDL_GetWindowSizeInPixels(window, &w, &h);
+                mods_menu_render(w, h);
+            }
         }
 
         {
@@ -1816,7 +1855,11 @@ void SDLApp_EndFrame() {
         SDLNetplayUI_SetFPSHistory(fps_history, fps_history_count, (float)fps);
         SDLNetplayUI_Render(win_w, win_h);
 
-        imgui_wrapper_render();
+        if (use_rmlui) {
+            rmlui_wrapper_render();
+        } else {
+            imgui_wrapper_render();
+        }
 
         // Final Output broadcast: capture the fully-composited frame
         if (broadcast_config.enabled && broadcast_config.source == BROADCAST_SOURCE_FINAL) {
@@ -2040,6 +2083,13 @@ void SDLApp_ToggleModsMenu() {
     game_paused = show_mods_menu || show_menu;
     if (show_mods_menu) {
         SDL_ShowCursor();
+    }
+    if (use_rmlui) {
+        if (show_mods_menu) {
+            rmlui_wrapper_show_document("mods");
+        } else {
+            rmlui_wrapper_hide_document("mods");
+        }
     }
 }
 

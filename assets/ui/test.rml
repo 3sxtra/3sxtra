@@ -1,0 +1,36 @@
+<rml>
+<head>
+    <title>3SXtra RmlUi Test</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <style>
+        body {
+            width: 100%;
+            height: 100%;
+        }
+        #test-panel {
+            position: absolute;
+            top: 20dp;
+            right: 20dp;
+            width: 300dp;
+            background-color: rgba(15, 15, 20, 0.92);
+            border-width: 1dp;
+            border-color: rgba(255, 255, 255, 0.15);
+            border-radius: 8dp;
+            padding: 16dp;
+        }
+        .version {
+            font-size: 12dp;
+            color: #888888;
+            margin-top: 8dp;
+        }
+    </style>
+</head>
+<body>
+    <div id="test-panel">
+        <h1>RmlUi Active</h1>
+        <p>The RmlUi overlay system is working.</p>
+        <p>This panel is rendered via HTML/CSS.</p>
+        <p class="version">3SXtra — RmlUi 6.2</p>
+    </div>
+</body>
+</rml>

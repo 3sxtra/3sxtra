@@ -1,0 +1,112 @@
+<rml>
+<head>
+    <title>Mods Menu</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="mods.rcss"/>
+</head>
+<body data-model="mods">
+    <div id="mods-panel">
+        <h1>MODS</h1>
+        <div class="divider"></div>
+
+        <!-- HD Stage Backgrounds -->
+        <div class="section">
+            <h2>HD Stage Backgrounds</h2>
+            <div class="control-row">
+                <input type="checkbox" data-checked="hd_enabled"/>
+                <label>Enable HD Backgrounds</label>
+                <span data-if="hd_active" class="status-ok"> (Active)</span>
+            </div>
+            <div class="control-row">
+                <input type="checkbox" data-checked="shader_bypass"/>
+                <label>Bypass Shaders on HD Stages</label>
+                <span data-if="shader_bypass" class="status-warn"> (No CRT/filters)</span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Bezels -->
+        <div class="section">
+            <h2>Bezels</h2>
+            <div class="control-row">
+                <input type="checkbox" data-checked="bezel_enabled"/>
+                <label>Enable Arcade Bezels</label>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Debug HUD -->
+        <div class="section">
+            <h2>Debug HUD</h2>
+            <div class="control-row">
+                <input type="checkbox" data-checked="debug_hud"/>
+                <label>Show Debug HUD (FPS)</label>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Stage Rendering -->
+        <div class="section">
+            <h2>Stage Rendering</h2>
+            <div class="control-row">
+                <input type="checkbox" data-checked="render_disabled"/>
+                <label>Disable All Stage Rendering</label>
+            </div>
+            <div class="control-row">
+                <input type="checkbox" data-checked="anims_disabled"/>
+                <label>Disable Stage Animations</label>
+            </div>
+            <div class="control-row">
+                <input type="checkbox" data-checked="bg_draw_off"/>
+                <label>BG Draw Off</label>
+            </div>
+            <div class="control-row">
+                <input type="checkbox" data-checked="blue_back"/>
+                <label>Blue Background</label>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Debug Options (gameplay only) -->
+        <div class="section">
+            <p data-if="!in_game" class="status-warn">Debug options: in-game only</p>
+            <h2>Debug Options</h2>
+            <div class="control-row" data-class-disabled="!in_game">
+                <input type="checkbox" data-checked="hide_shadows" data-attrif-disabled="!in_game"/>
+                <label>Hide Shadows</label>
+            </div>
+            <div class="control-row" data-class-disabled="!in_game">
+                <input type="checkbox" data-checked="hide_pal_sprites" data-attrif-disabled="!in_game"/>
+                <label>Hide Palette Sprites</label>
+            </div>
+            <div class="control-row" data-class-disabled="!in_game">
+                <input type="checkbox" data-checked="hide_cps3_sprites" data-attrif-disabled="!in_game"/>
+                <label>Hide CPS3 Sprites</label>
+            </div>
+            <div class="control-row" data-class-disabled="!in_game">
+                <input type="checkbox" data-checked="hide_rgb_sprites" data-attrif-disabled="!in_game"/>
+                <label>Hide RGB Sprites</label>
+            </div>
+            <div class="control-row" data-class-disabled="!in_game">
+                <label>Sprite Type SB</label>
+                <input type="range" min="0" max="3" step="1" data-value="sprite_type_sb" data-attrif-disabled="!in_game"/>
+            </div>
+            <div class="control-row" data-class-disabled="!in_game">
+                <input type="checkbox" data-checked="freeze_effects" data-attrif-disabled="!in_game"/>
+                <label>Freeze Effects</label>
+            </div>
+            <div class="control-row" data-class-disabled="!in_game">
+                <input type="checkbox" data-checked="mute_bgm" data-attrif-disabled="!in_game"/>
+                <label>Mute BGM</label>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="hint">Press F3 to close this menu</p>
+    </div>
+</body>
+</rml>

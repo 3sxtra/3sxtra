@@ -125,7 +125,7 @@ The community's external Lua training script has been rebuilt as a **native feat
 | Feature | Details |
 |---|---|
 | **Frame meter** | Color-coded startup / active / recovery / hitstun / blockstun bar, plus frame-advantage readout |
-| **Hitbox display** | Hurtboxes 🟢, attackboxes 🔴, throwboxes 🟡, pushboxes 🔵 — individually toggleable |
+| **Hitbox display** | Hurtboxes 🔵, attackboxes 🔴, throwboxes 🟡, pushboxes 🟢 — individually toggleable |
 | **Input display** | On-screen stick + button history for P1 and P2 with frame durations |
 | **Stun meter** | Live stun accumulation readout during combos |
 | **Dummy AI** | Block mode, parry (incl. red parry), stun mash, wakeup mash, wakeup reversal *(WIP — partially implemented)* |
@@ -273,44 +273,6 @@ Please refer to the comprehensive [Build Guide](docs/building.md) for instructio
 ├── shaders/              # GLSL and SPIR-V shader files
 └── tools/                # Development, netplay, and sync-test utilities
 ```
-
-### Developer Tools
-
-| Tool | Description |
-|---|---|
-| `tools/lobby-server/` | Node.js lobby/matchmaking server (zero dependencies, HMAC auth) |
-| `tools/ui_designer/` | Coordinate editing tool for replicating native menu layouts |
-| `tools/lua_trial_parser.py` | Python script to parse trial data for the native trials implementation |
-| `tools/compile_tests.bat` | Script to compile and run the CMocka unit tests |
-| `tools/1click_windows_v2.bat` | Automated one-click MSYS2 setup and build script for Windows |
-
-Additional root-level scripts: `compile.bat` (MSYS2 compilation), `lint.bat` (static analysis), `local_netplay.bat` (LAN sync test), and `build-deps.sh`.
-
-### Code Quality
-
-This fork applies a structured modernization pass across the entire codebase:
-
-| Metric | Upstream | This Fork |
-|---|---|---|
-| Doxygen comments | 3 | **4,074** |
-| Functions marked `static` | — | **3,400+** |
-| Files `clang-format`'d | — | **1,000+** |
-| Jump tables with bounds checks | — | **10+** |
-| Unit tests | 0 | **30+** |
-
-### CI / GitHub Actions
-
-Workflow definitions in `.github/workflows/`:
-
-| Workflow | Platform | Status |
-|---|---|---|
-| `build_windows.yml` | Windows (MSYS2 / MinGW64) | Active |
-| `build_linux.yml` | Linux x86_64 | Active |
-| `build_linux_arm64.yml` | Linux ARM64 (cross-compile) | Active |
-| `build_macos.yml` | macOS | Active |
-| `build_rpi4.yml` | Raspberry Pi 4 (cross-compile) | Planned |
-| `build_flatpak.yml` | Linux Flatpak | Active |
-| `release.yml` | Multi-platform release packaging | Active |
 
 ---
 
