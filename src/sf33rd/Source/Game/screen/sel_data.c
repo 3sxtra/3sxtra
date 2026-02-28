@@ -224,7 +224,7 @@ const s16 Slide_Pos_Data_61[74][2] = {
     { -24, 28 },
     { -53, 78 }, /* [66] TRIALS */
     /* Network Lobby strings [67-73] */
-    { -91, 203 }, /* [67] NETWORK LOBBY — centered on banner */
+    { -91, 203 },  /* [67] NETWORK LOBBY — centered on banner */
     { -150, 171 }, /* [68] AUTO-CONN (LAN)      screen y≈63  */
     { -150, 157 }, /* [69] CONNECT (LAN)         screen y≈77  */
     { -150, 119 }, /* [70] AUTO-CONN (NET)       screen y≈115 */
@@ -253,7 +253,7 @@ const s16 Suddenly_Pos_Data_66[43][3] = {
     { -176, 32, 70 }, { 16, 32, 70 },    { -96, 128, 71 },  { 96, 128, 71 },  { -96, 172, 23 }, { 96, 172, 23 },
     { 0, 44, 23 },    { 0, -32, 25 },    { -96, 172, 22 },  { 96, 172, 22 },  { 0, 44, 22 },    { -96, 172, 24 },
     { 96, 172, 24 },  { 0, 44, 24 },     { 0, 36, 22 },     { 208, 218, 68 }, { 204, 218, 68 }, { 0, 36, 22 },
-    { 0, 0, 68 }      /* [42] Lobby peer overlay boxes */
+    { 0, 0, 68 } /* [42] Lobby peer overlay boxes */
 };
 
 const s16 Slide_Pos_Data_66[2][3] = { { -24, 12, 70 }, { 168, 12, 70 } };

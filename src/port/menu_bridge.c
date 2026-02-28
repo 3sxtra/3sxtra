@@ -28,11 +28,11 @@
 #endif
 
 #include "game_state.h" // Includes headers for all the globals (workuser.h etc)
-#include "sf33rd/Source/Game/system/work_sys.h"
-#include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
+#include "sf33rd/Source/Game/system/sys_sub.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -129,7 +129,7 @@ void MenuBridge_StepGate(void) {
     /* Spin-wait for step_requested with timeout */
     Uint64 start = SDL_GetPerformanceCounter();
     Uint64 freq = SDL_GetPerformanceFrequency();
-    Uint64 timeout = freq * 5;  /* 5 seconds */
+    Uint64 timeout = freq * 5; /* 5 seconds */
 
     while (!g_bridge_state->step_requested) {
         Uint64 elapsed = SDL_GetPerformanceCounter() - start;
@@ -142,7 +142,7 @@ void MenuBridge_StepGate(void) {
         SDL_Delay(0);
     }
 
-    g_bridge_state->step_requested = 0;  /* Consumed */
+    g_bridge_state->step_requested = 0; /* Consumed */
 }
 
 /** @brief Inject overlay inputs into the game's pad state (called before game tick). */
@@ -197,20 +197,22 @@ void MenuBridge_PreTick(void) {
                (uint16_t)g_bridge_state->fm_rng_16_ex,
                (uint16_t)g_bridge_state->fm_rng_32_ex);
 
-        Random_ix16     = g_bridge_state->fm_rng_16;
-        Random_ix32     = g_bridge_state->fm_rng_32;
-        Random_ix16_ex  = g_bridge_state->fm_rng_16_ex;
-        Random_ix32_ex  = g_bridge_state->fm_rng_32_ex;
+        Random_ix16 = g_bridge_state->fm_rng_16;
+        Random_ix32 = g_bridge_state->fm_rng_32;
+        Random_ix16_ex = g_bridge_state->fm_rng_16_ex;
+        Random_ix32_ex = g_bridge_state->fm_rng_32_ex;
         // Mirror to COM and BG variants (matches Set_Replay_Header in sys_sub.c)
-        Random_ix16_com    = Random_ix16;
-        Random_ix32_com    = Random_ix32;
+        Random_ix16_com = Random_ix16;
+        Random_ix32_com = Random_ix32;
         Random_ix16_ex_com = Random_ix16_ex;
         Random_ix32_ex_com = Random_ix32_ex;
-        Random_ix16_bg     = Random_ix16;
+        Random_ix16_bg = Random_ix16;
 
         printf("[MenuBridge] RNG applied in PreTick: ix16=%04X ix32=%04X ix16ex=%04X ix32ex=%04X\n",
-               (uint16_t)Random_ix16, (uint16_t)Random_ix32,
-               (uint16_t)Random_ix16_ex, (uint16_t)Random_ix32_ex);
+               (uint16_t)Random_ix16,
+               (uint16_t)Random_ix32,
+               (uint16_t)Random_ix16_ex,
+               (uint16_t)Random_ix32_ex);
     }
 }
 
@@ -277,35 +279,39 @@ void MenuBridge_PostTick(void) {
 
     // Game state for parity testing
     g_bridge_state->game_timer = Game_timer;
-    g_bridge_state->p1_health  = plw[0].wu.vital_new;
-    g_bridge_state->p2_health  = plw[1].wu.vital_new;
-    g_bridge_state->p1_pos_x   = plw[0].wu.position_x;
-    g_bridge_state->p1_pos_y   = plw[0].wu.position_y;
-    g_bridge_state->p2_pos_x   = plw[1].wu.position_x;
-    g_bridge_state->p2_pos_y   = plw[1].wu.position_y;
-    g_bridge_state->p1_facing  = plw[0].wu.direction;
-    g_bridge_state->p2_facing  = plw[1].wu.direction;
-    g_bridge_state->p1_meter   = spg_dat[0].current_spg;
-    g_bridge_state->p2_meter   = spg_dat[1].current_spg;
-    g_bridge_state->p1_stun    = sdat[0].cstn;
-    g_bridge_state->p2_stun    = sdat[1].cstn;
-    g_bridge_state->p1_busy    = plw[0].do_not_move;
-    g_bridge_state->p2_busy    = plw[1].do_not_move;
+    g_bridge_state->p1_health = plw[0].wu.vital_new;
+    g_bridge_state->p2_health = plw[1].wu.vital_new;
+    g_bridge_state->p1_pos_x = plw[0].wu.position_x;
+    g_bridge_state->p1_pos_y = plw[0].wu.position_y;
+    g_bridge_state->p2_pos_x = plw[1].wu.position_x;
+    g_bridge_state->p2_pos_y = plw[1].wu.position_y;
+    g_bridge_state->p1_facing = plw[0].wu.direction;
+    g_bridge_state->p2_facing = plw[1].wu.direction;
+    g_bridge_state->p1_meter = spg_dat[0].current_spg;
+    g_bridge_state->p2_meter = spg_dat[1].current_spg;
+    g_bridge_state->p1_stun = sdat[0].cstn;
+    g_bridge_state->p2_stun = sdat[1].cstn;
+    g_bridge_state->p1_busy = plw[0].do_not_move;
+    g_bridge_state->p2_busy = plw[1].do_not_move;
 
     // RNG state for parity testing
-    g_bridge_state->rng_16     = Random_ix16;
-    g_bridge_state->rng_32     = Random_ix32;
-    g_bridge_state->rng_16_ex  = Random_ix16_ex;
-    g_bridge_state->rng_32_ex  = Random_ix32_ex;
+    g_bridge_state->rng_16 = Random_ix16;
+    g_bridge_state->rng_32 = Random_ix32;
+    g_bridge_state->rng_16_ex = Random_ix16_ex;
+    g_bridge_state->rng_32_ex = Random_ix32_ex;
 
     // Extended game state for parity testing
-    g_bridge_state->p1_action    = ((uint32_t)(uint16_t)plw[0].wu.routine_no[0]) | ((uint32_t)(uint16_t)plw[0].wu.routine_no[1] << 16);
-    g_bridge_state->p2_action    = ((uint32_t)(uint16_t)plw[1].wu.routine_no[0]) | ((uint32_t)(uint16_t)plw[1].wu.routine_no[1] << 16);
+    g_bridge_state->p1_action =
+        ((uint32_t)(uint16_t)plw[0].wu.routine_no[0]) | ((uint32_t)(uint16_t)plw[0].wu.routine_no[1] << 16);
+    g_bridge_state->p2_action =
+        ((uint32_t)(uint16_t)plw[1].wu.routine_no[0]) | ((uint32_t)(uint16_t)plw[1].wu.routine_no[1] << 16);
     g_bridge_state->p1_animation = plw[0].wu.cg_number;
     g_bridge_state->p2_animation = plw[1].wu.cg_number;
-    g_bridge_state->p1_posture   = plw[0].guard_flag;
-    g_bridge_state->p2_posture   = plw[1].guard_flag;
-    g_bridge_state->p1_freeze    = (uint8_t)(plw[0].wu.hit_stop > 255 ? 255 : (plw[0].wu.hit_stop < 0 ? 0 : plw[0].wu.hit_stop));
-    g_bridge_state->p2_freeze    = (uint8_t)(plw[1].wu.hit_stop > 255 ? 255 : (plw[1].wu.hit_stop < 0 ? 0 : plw[1].wu.hit_stop));
-    g_bridge_state->is_in_match  = Allow_a_battle_f;
+    g_bridge_state->p1_posture = plw[0].guard_flag;
+    g_bridge_state->p2_posture = plw[1].guard_flag;
+    g_bridge_state->p1_freeze =
+        (uint8_t)(plw[0].wu.hit_stop > 255 ? 255 : (plw[0].wu.hit_stop < 0 ? 0 : plw[0].wu.hit_stop));
+    g_bridge_state->p2_freeze =
+        (uint8_t)(plw[1].wu.hit_stop > 255 ? 255 : (plw[1].wu.hit_stop < 0 ? 0 : plw[1].wu.hit_stop));
+    g_bridge_state->is_in_match = Allow_a_battle_f;
 }

@@ -995,10 +995,14 @@ static void bg_pos_hosei_impl(s16 bg_no, s16 apply_quake) {
 }
 
 /** @brief Apply position correction to a single background layer (with quake). */
-void bg_pos_hosei_sub2(s16 bg_no) { bg_pos_hosei_impl(bg_no, 1); }
+void bg_pos_hosei_sub2(s16 bg_no) {
+    bg_pos_hosei_impl(bg_no, 1);
+}
 
 /** @brief Apply position correction to a bg layer (without quake). */
-void bg_pos_hosei_sub3(s16 bg_no) { bg_pos_hosei_impl(bg_no, 0); }
+void bg_pos_hosei_sub3(s16 bg_no) {
+    bg_pos_hosei_impl(bg_no, 0);
+}
 
 /** @brief Apply position correction to all active background layers. */
 void bg_pos_hosei2() {

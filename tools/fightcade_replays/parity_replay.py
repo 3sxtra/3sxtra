@@ -34,8 +34,6 @@ from tools.util.bridge_state import (
     connect_to_bridge,
     INPUT_UP,
     INPUT_DOWN,
-    INPUT_LEFT,
-    INPUT_RIGHT,
     INPUT_LK,
     INPUT_START,
 )
@@ -44,16 +42,16 @@ from tools.util.navigator import MenuNavigator
 # CPS3 character ID mapping (from replay_input_dumper_v3.lua - empirically validated)
 # VERIFIED: 11=Ken, 16=ChunLi from Fightcade replay testing
 CPS3_CHAR_NAMES = {
-    0: "GILD",   # Gill
-    1: "ALEX",   # Alex
-    2: "RUID",   # Ryu
-    3: "YUNG",   # Yun
-    4: "DDON",   # Dudley
-    5: "NEKO",   # Necro
-    6: "HUGO",   # Hugo
-    7: "IBAN",   # Ibuki
-    8: "ELNN",   # Elena
-    9: "OROO",   # Oro
+    0: "GILD",  # Gill
+    1: "ALEX",  # Alex
+    2: "RUID",  # Ryu
+    3: "YUNG",  # Yun
+    4: "DDON",  # Dudley
+    5: "NEKO",  # Necro
+    6: "HUGO",  # Hugo
+    7: "IBAN",  # Ibuki
+    8: "ELNN",  # Elena
+    9: "OROO",  # Oro
     10: "KONG",  # Yang
     11: "KENN",  # Ken (VERIFIED)
     12: "SEAN",  # Sean
@@ -71,16 +69,16 @@ CPS3_CHAR_NAMES = {
 #           7=Ibuki, 8=Elena, 9=Oro, 10=Yang, 11=Ken, 12=Sean, 13=Urien,
 #           14=Akuma, 15=ChunLi, 16=Makoto, 17=Q, 18=Twelve, 19=Remy
 CPS3_TO_3SX_CHAR = {
-    0: 0,    # Gill -> 0
-    1: 1,    # Alex -> 1
-    2: 2,    # Ryu -> 2
-    3: 3,    # Yun -> 3
-    4: 4,    # Dudley -> 4
-    5: 5,    # Necro -> 5
-    6: 6,    # Hugo -> 6
-    7: 7,    # Ibuki -> 7
-    8: 8,    # Elena -> 8
-    9: 9,    # Oro -> 9
+    0: 0,  # Gill -> 0
+    1: 1,  # Alex -> 1
+    2: 2,  # Ryu -> 2
+    3: 3,  # Yun -> 3
+    4: 4,  # Dudley -> 4
+    5: 5,  # Necro -> 5
+    6: 6,  # Hugo -> 6
+    7: 7,  # Ibuki -> 7
+    8: 8,  # Elena -> 8
+    9: 9,  # Oro -> 9
     10: 10,  # Yang -> 10
     11: 11,  # Ken -> 11
     12: 12,  # Sean -> 12
@@ -97,26 +95,26 @@ CPS3_TO_3SX_CHAR = {
 # Based on competitive meta / most commonly used
 # Indexed by CPS3 character ID
 CPS3_DEFAULT_SA = {
-    0: 0,    # Gill - SA1 (doesn't matter)
-    1: 2,    # Alex - SA3 (Stun Gun Headbutt)
-    2: 0,    # Ryu - SA1 (Shinkuu Hadouken) or SA2
-    3: 2,    # Yun - SA3 (Genei Jin)
-    4: 2,    # Dudley - SA3 (Corkscrew Blow)
-    5: 2,    # Necro - SA3 (Electric Snake)
-    6: 0,    # Hugo - SA1 (Gigas Breaker)
-    7: 0,    # Ibuki - SA1 (Kasumi Suzaku)
-    8: 1,    # Elena - SA2 (Brave Dance)
-    9: 1,    # Oro - SA2 (Yagyou Dama)
-    10: 2,   # Yang - SA3 (Seiei Enbu)
-    11: 2,   # Ken - SA3 (Shippu Jinrai Kyaku)
-    12: 2,   # Sean - SA3 (Hyper Tornado)
-    13: 2,   # Urien - SA3 (Aegis Reflector)
-    14: 0,   # Akuma - SA1 (Messatsu Gou Hadou)
-    15: 0,   # Makoto - SA1 (Seichusen Godanzuki) or SA2
-    16: 1,   # Chun-Li - SA2 (Houyoku Sen)
-    17: 0,   # Q - SA1 (Critical Combo Attack)
-    18: 0,   # Twelve - SA1 (X.N.D.L.)
-    19: 1,   # Remy - SA2 (Supreme Rising Rage Flash)
+    0: 0,  # Gill - SA1 (doesn't matter)
+    1: 2,  # Alex - SA3 (Stun Gun Headbutt)
+    2: 0,  # Ryu - SA1 (Shinkuu Hadouken) or SA2
+    3: 2,  # Yun - SA3 (Genei Jin)
+    4: 2,  # Dudley - SA3 (Corkscrew Blow)
+    5: 2,  # Necro - SA3 (Electric Snake)
+    6: 0,  # Hugo - SA1 (Gigas Breaker)
+    7: 0,  # Ibuki - SA1 (Kasumi Suzaku)
+    8: 1,  # Elena - SA2 (Brave Dance)
+    9: 1,  # Oro - SA2 (Yagyou Dama)
+    10: 2,  # Yang - SA3 (Seiei Enbu)
+    11: 2,  # Ken - SA3 (Shippu Jinrai Kyaku)
+    12: 2,  # Sean - SA3 (Hyper Tornado)
+    13: 2,  # Urien - SA3 (Aegis Reflector)
+    14: 0,  # Akuma - SA1 (Messatsu Gou Hadou)
+    15: 0,  # Makoto - SA1 (Seichusen Godanzuki) or SA2
+    16: 1,  # Chun-Li - SA2 (Houyoku Sen)
+    17: 0,  # Q - SA1 (Critical Combo Attack)
+    18: 0,  # Twelve - SA1 (X.N.D.L.)
+    19: 1,  # Remy - SA2 (Supreme Rising Rage Flash)
 }
 
 # FIGHT banner duration in frames (from 3SX effb2.c analysis):
@@ -133,9 +131,9 @@ CPS3_DEFAULT_SA = {
 FIGHT_BANNER_DURATION = 120
 
 # Banner timing (empirically validated)
-BANNER_DURATION_R1 = 142       # FIGHT banner duration for Round 1
+BANNER_DURATION_R1 = 142  # FIGHT banner duration for Round 1
 BANNER_DURATION_R2_PLUS = 146  # FIGHT banner duration for Round 2+
-BANNER_INJECT_WINDOW = 48      # Only inject last N frames of banner period
+BANNER_INJECT_WINDOW = 48  # Only inject last N frames of banner period
 
 
 def find_fight_banner_start(frames: list[dict]) -> int:
@@ -378,13 +376,13 @@ def load_csv(csv_path: Path) -> tuple[list[dict], int, int, int | None, int | No
         print(f" SA{p2_sa + 1}")
     else:
         print()
-        
+
     rng_seeds = {
         "rng_16": int(anchor_frame.get("rng_16", 0)),
         "rng_32": int(anchor_frame.get("rng_32", 0)),
         "rng_16_ex": int(anchor_frame.get("rng_16_ex", 0)),
         "rng_32_ex": int(anchor_frame.get("rng_32_ex", 0)),
-        "stage": int(anchor_frame.get("stage", 1))
+        "stage": int(anchor_frame.get("stage", 1)),
     }
     print(f"RNG Seeds Extracted: {rng_seeds}")
 
@@ -495,7 +493,7 @@ def navigate_to_gameplay(
     """
     # Convert CPS3 IDs to 3SX IDs
     p1_3sx = CPS3_TO_3SX_CHAR.get(p1_char_cps3, 11)  # Default Ken
-    p2_3sx = CPS3_TO_3SX_CHAR.get(p2_char_cps3, 2)   # Default Ryu
+    p2_3sx = CPS3_TO_3SX_CHAR.get(p2_char_cps3, 2)  # Default Ryu
 
     print("\n=== NAVIGATION ===")
     print(
@@ -550,7 +548,7 @@ def navigate_to_gameplay(
     # Phase 3.5: P2 Joins! (New Challenger)
     print("\nPhase 3.5: P2 Joins! (Pressing P2 Start)")
     nav.send_p2_input(INPUT_START)
-    
+
     print("Waiting for 'New Challenger' screen to pass...")
     # It takes a few seconds to go through the New Challenger animation
     # and return to the character select screen with both players active.
@@ -706,7 +704,7 @@ def run_parity_test(
         nav = MenuNavigator(state)
         if not navigate_to_gameplay(state, nav, p1_char, p2_char, p1_sa, p2_sa):
             raise RuntimeError("Failed to navigate to gameplay")
-        
+
         # RNG seeding is deferred to wait_for_banner_sync
         # (seeds applied at the exact moment allow_battle=1 fires)
 
@@ -757,12 +755,12 @@ def run_parity_test(
     # Multi-field parity comparison config
     # (csv_field, 3sx_field, format) — format is 'd' (decimal) or 'x' (hex)
     PARITY_FIELDS = [
-        ("p1_hp",       "p1_hp",       "d"),
-        ("p2_hp",       "p2_hp",       "d"),
-        ("p1_x",        "p1_x",        "d"),
-        ("p2_x",        "p2_x",        "d"),
-        ("p1_y",        "p1_y",        "d"),
-        ("p2_y",        "p2_y",        "d"),
+        ("p1_hp", "p1_hp", "d"),
+        ("p2_hp", "p2_hp", "d"),
+        ("p1_x", "p1_x", "d"),
+        ("p2_x", "p2_x", "d"),
+        ("p1_y", "p1_y", "d"),
+        ("p2_y", "p2_y", "d"),
         # Meter: CPS3 Lua reads rb() (1 byte) but 3SX current_spg is s16 — not comparable
         # ("p1_meter",    "p1_meter",    "d"),
         # ("p2_meter",    "p2_meter",    "d"),
@@ -772,13 +770,11 @@ def run_parity_test(
         # Facing indices on CPS3 do not map cleanly to 3SX's direction field
         # ("p1_facing",   "p1_facing",   "d"),
         # ("p2_facing",   "p2_facing",   "d"),
-        
-        # RNG 
-        ("rng_16",      "rng_16",      "d"),
-        ("rng_32",      "rng_32",      "d"),
-        ("rng_16_ex",   "rng_16_ex",   "d"),
-        ("rng_32_ex",   "rng_32_ex",   "d"),
-        
+        # RNG
+        ("rng_16", "rng_16", "d"),
+        ("rng_32", "rng_32", "d"),
+        ("rng_16_ex", "rng_16_ex", "d"),
+        ("rng_32_ex", "rng_32_ex", "d"),
         # Action/Animation/Posture/Freeze are fundamentally different internal indices
         # ("p1_action",   "p1_action",   "x"),
         # ("p2_action",   "p2_action",   "x"),
@@ -806,49 +802,53 @@ def run_parity_test(
         #
         def wait_for_banner_sync(round_num: int, round_anchor_idx: int) -> int:
             """Wait for 3SX FIGHT banner, then step until allow_battle=1.
-            
+
             Dynamically detects actual banner duration instead of hardcoding it.
             Injects CPS3 banner inputs during the last BANNER_INJECT_WINDOW frames
             before combat starts, timed against the expected banner duration.
-            
+
             Phase 1: Step with neutral inputs until near the inject window
             Phase 2: Inject actual CPS3 banner inputs for the last N frames
-            
+
             Args:
                 round_num: Round number (1-based)
                 round_anchor_idx: Index into frames[] for this round's is_in_match=1
-            
+
             Returns round_anchor_idx on success, -1 on failure.
             """
             print(f"\n=== SYNC POINT (ROUND {round_num}) ===")
             print("Waiting for 3SX FIGHT banner (nav_C_No[0]==1 AND nav_C_No[1]==4)...")
-            
+
             timeout = time.time() + 30.0
             while True:
                 if state.nav_C_No[0] == 1 and state.nav_C_No[1] == 4:
                     break
                 if time.time() > timeout:
-                    print(f"ERROR: Timeout waiting for banner")
+                    print("ERROR: Timeout waiting for banner")
                     return -1
                 state.step_requested = 1
                 time.sleep(0.001)
 
             print("3SX FIGHT banner started!")
-            
+
             # Determine expected banner duration and compute inject window
-            expected_banner = BANNER_DURATION_R1 if round_num == 1 else BANNER_DURATION_R2_PLUS
+            expected_banner = (
+                BANNER_DURATION_R1 if round_num == 1 else BANNER_DURATION_R2_PLUS
+            )
             neutral_phase = max(0, expected_banner - BANNER_INJECT_WINDOW)
-            
+
             # Gather CSV banner inputs (the last BANNER_INJECT_WINDOW frames before combat)
             banner_csv_start = max(0, round_anchor_idx - BANNER_INJECT_WINDOW)
             banner_csv_inputs = []
             for bi in range(banner_csv_start, round_anchor_idx):
                 if bi < len(frames):
-                    banner_csv_inputs.append((
-                        int(frames[bi]["p1_input"]),
-                        int(frames[bi]["p2_input"]),
-                    ))
-            
+                    banner_csv_inputs.append(
+                        (
+                            int(frames[bi]["p1_input"]),
+                            int(frames[bi]["p2_input"]),
+                        )
+                    )
+
             # Phase 1: Step through banner with neutral inputs
             banner_frames = 0
             timeout = time.time() + 30.0
@@ -856,18 +856,22 @@ def run_parity_test(
                 if state.allow_battle == 1:
                     break
                 if time.time() > timeout:
-                    print(f"ERROR: Timeout waiting for allow_battle (stepped {banner_frames} frames)")
+                    print(
+                        f"ERROR: Timeout waiting for allow_battle (stepped {banner_frames} frames)"
+                    )
                     return -1
                 inject_frame_and_wait(state, 0, 0)
                 banner_frames += 1
-            
+
             # Phase 2: Inject actual CPS3 banner inputs
             csv_input_idx = 0
             while True:
                 if state.allow_battle == 1:
                     break
                 if time.time() > timeout:
-                    print(f"ERROR: Timeout waiting for allow_battle (stepped {banner_frames} frames)")
+                    print(
+                        f"ERROR: Timeout waiting for allow_battle (stepped {banner_frames} frames)"
+                    )
                     return -1
                 # Use CSV inputs if available, otherwise neutral
                 if csv_input_idx < len(banner_csv_inputs):
@@ -879,11 +883,15 @@ def run_parity_test(
                 banner_frames += 1
 
             if csv_input_idx > 0:
-                print(f"3SX combat ready (allow_battle=1) after {banner_frames} banner frames "
-                      f"({csv_input_idx}/{len(banner_csv_inputs)} CSV banner inputs injected).")
+                print(
+                    f"3SX combat ready (allow_battle=1) after {banner_frames} banner frames "
+                    f"({csv_input_idx}/{len(banner_csv_inputs)} CSV banner inputs injected)."
+                )
             else:
-                print(f"3SX combat ready (allow_battle=1) after {banner_frames} banner frames.")
-            
+                print(
+                    f"3SX combat ready (allow_battle=1) after {banner_frames} banner frames."
+                )
+
             # Per-round RNG snapshot validation
             # Compare CPS3 CSV RNG seeds with 3SX RNG state at combat start
             csv_anchor = frames[round_anchor_idx]
@@ -892,10 +900,14 @@ def run_parity_test(
                 csv_rng = int(csv_anchor.get(rng_field, 0))
                 sx_rng = getattr(state, rng_field)
                 if csv_rng != sx_rng:
-                    print(f"  RNG MISMATCH at R{round_num} start: {rng_field} CPS3={csv_rng} 3SX={sx_rng}")
+                    print(
+                        f"  RNG MISMATCH at R{round_num} start: {rng_field} CPS3={csv_rng} 3SX={sx_rng}"
+                    )
                     rng_match = False
             if rng_match:
-                print(f"  RNG snapshot OK: all 4 indices match CPS3 at R{round_num} start")
+                print(
+                    f"  RNG snapshot OK: all 4 indices match CPS3 at R{round_num} start"
+                )
 
             # Seed RNG from this round's CSV anchor values
             # For R1 this uses the initial rng_seeds; for R2+ it uses the per-round values
@@ -915,7 +927,7 @@ def run_parity_test(
             # Do NOT step an extra frame here — the main injection loop's
             # first inject_frame_and_wait() will be when PreTick picks up
             # the seeds and the game tick runs with actual CSV inputs.
-            
+
             print(f"Starting combat injection from CSV anchor frame {round_anchor_idx}")
             return round_anchor_idx
 
@@ -936,9 +948,7 @@ def run_parity_test(
         # Banner inputs were already handled (neutral) during wait_for_banner_sync
         injection_frames = frames[combat_start:]
         print(f"Starting injection from CSV frame {combat_start} (is_in_match=1)")
-        print(
-            f"Total frames to inject: {len(injection_frames)}"
-        )
+        print(f"Total frames to inject: {len(injection_frames)}")
 
         skip_to_index = (
             -1
@@ -1199,17 +1209,19 @@ def run_parity_test(
         if first_divergence:
             print("\n=== FIRST DIVERGENCE PER FIELD ===")
             # Sort by frame number to show earliest divergence first
-            sorted_fields = sorted(first_divergence.items(), key=lambda x: x[1]["frame"])
+            sorted_fields = sorted(
+                first_divergence.items(), key=lambda x: x[1]["frame"]
+            )
             for field, info in sorted_fields:
                 fmt = info.get("fmt", "d")
                 if fmt == "x":
                     val_str = f"CPS3=0x{info['cps3_val']:X}  3SX=0x{info['sx_val']:X}"
                 else:
-                    delta = info['sx_val'] - info['cps3_val']
-                    val_str = f"CPS3={info['cps3_val']}  3SX={info['sx_val']}  (d={delta:+d})"
-                print(
-                    f"  {field:16s}: R{info['round']} F{info['frame']:5d}  {val_str}"
-                )
+                    delta = info["sx_val"] - info["cps3_val"]
+                    val_str = (
+                        f"CPS3={info['cps3_val']}  3SX={info['sx_val']}  (d={delta:+d})"
+                    )
+                print(f"  {field:16s}: R{info['round']} F{info['frame']:5d}  {val_str}")
             earliest = sorted_fields[0]
             print(
                 f"  >>> ROOT CAUSE CANDIDATE: '{earliest[0]}' first diverged at Round {earliest[1]['round']} Frame {earliest[1]['frame']}"

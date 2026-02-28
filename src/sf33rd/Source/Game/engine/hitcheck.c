@@ -1899,17 +1899,11 @@ void hit_push_request(WORK* hpr_wk) {
 
 /** @brief Clears the hit-push queue and processes all pending hit pushes. */
 void clear_hit_queue() {
-    s16 i;
-
     hpq_in = 0;
 
-    for (i = 0; i < 32; i++) {
-        mkm_wk[i] = 0;
-    }
-
-    for (i = 0; i < 32; i++) {
-        q_hit_push[i] = 0;
-    }
+    // ⚡ Bolt: bulk memset replaces per-element zeroing loops (called every frame)
+    memset(mkm_wk, 0, sizeof(mkm_wk));
+    memset(q_hit_push, 0, sizeof(q_hit_push));
 
     SDL_zeroa(hs);
 }

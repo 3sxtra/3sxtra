@@ -7,12 +7,12 @@
 // Types of trial requirements
 typedef enum {
     TRIAL_REQ_NONE = 0,
-    TRIAL_REQ_ATTACK_HIT,    // Normal/Special/Super attack connects
-    TRIAL_REQ_THROW_HIT,     // Throw connects
-    TRIAL_REQ_FIREBALL_HIT,  // Projectile connects
-    TRIAL_REQ_ACTIVE_MOVE,   // Player executes active move (Lua 'D'/'J'/'K' type)
-    TRIAL_REQ_SPECIAL_COND,  // Special conditions (Lua 'U' type, etc.)
-    TRIAL_REQ_ANIMATION      // Player or enemy enters specific animation
+    TRIAL_REQ_ATTACK_HIT,   // Normal/Special/Super attack connects
+    TRIAL_REQ_THROW_HIT,    // Throw connects
+    TRIAL_REQ_FIREBALL_HIT, // Projectile connects
+    TRIAL_REQ_ACTIVE_MOVE,  // Player executes active move (Lua 'D'/'J'/'K' type)
+    TRIAL_REQ_SPECIAL_COND, // Special conditions (Lua 'U' type, etc.)
+    TRIAL_REQ_ANIMATION     // Player or enemy enters specific animation
 } TrialRequirementType;
 
 #define MAX_WAZA_ALTERNATIVES 4
@@ -51,8 +51,8 @@ typedef struct {
     s16 current_step;
     bool step_completed_this_frame;
     bool failed;
-    bool completed;     // Successfully finished all steps
-    s32 success_timer;  // Frames since completion message shown
+    bool completed;    // Successfully finished all steps
+    s32 success_timer; // Frames since completion message shown
 
     s32 last_combo_hits; // To detect combo drops
 } TrialsState;

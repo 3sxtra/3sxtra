@@ -28,16 +28,16 @@ from pathlib import Path
 RECORD_SIZE = 10  # 5 bytes P1 + 5 bytes P2
 
 # FBNeo input bitmask (matches rl_bridge.h / Lua dumper)
-INP_UP    = 0x0001
-INP_DOWN  = 0x0002
-INP_LEFT  = 0x0004
+INP_UP = 0x0001
+INP_DOWN = 0x0002
+INP_LEFT = 0x0004
 INP_RIGHT = 0x0008
-INP_LP    = 0x0010
-INP_MP    = 0x0020
-INP_HP    = 0x0040
-INP_LK    = 0x0100
-INP_MK    = 0x0200
-INP_HK    = 0x0400
+INP_LP = 0x0010
+INP_MP = 0x0020
+INP_HP = 0x0040
+INP_LK = 0x0100
+INP_MK = 0x0200
+INP_HK = 0x0400
 INP_START = 0x0800
 INP_ATTACKS = INP_LP | INP_MP | INP_HP | INP_LK | INP_MK | INP_HK
 
@@ -75,16 +75,32 @@ def is_garbage_input(val: int) -> bool:
 
 # Face_Cursor_Data[3][8] from sel_data.c  (-1 = empty cell)
 FACE_GRID = [
-    [-1,  1, 12,  7,  5, 13, 14, -1],   # row 0
-    [10, 18, 16, 15, 17, 19,  3,  0],   # row 1
-    [11,  6,  8,  4,  9,  2, -1, -1],   # row 2
+    [-1, 1, 12, 7, 5, 13, 14, -1],  # row 0
+    [10, 18, 16, 15, 17, 19, 3, 0],  # row 1
+    [11, 6, 8, 4, 9, 2, -1, -1],  # row 2
 ]
 
 CHAR_NAMES = {
-    0: "Gill", 1: "Alex", 2: "Ryu", 3: "Yun", 4: "Dudley",
-    5: "Necro", 6: "Hugo", 7: "Ibuki", 8: "Elena", 9: "Oro",
-    10: "Yang", 11: "Ken", 12: "Sean", 13: "Urien", 14: "Akuma",
-    15: "Q", 16: "Chun-Li", 17: "Makoto", 18: "Twelve", 19: "Remy",
+    0: "Gill",
+    1: "Alex",
+    2: "Ryu",
+    3: "Yun",
+    4: "Dudley",
+    5: "Necro",
+    6: "Hugo",
+    7: "Ibuki",
+    8: "Elena",
+    9: "Oro",
+    10: "Yang",
+    11: "Ken",
+    12: "Sean",
+    13: "Urien",
+    14: "Akuma",
+    15: "Q",
+    16: "Chun-Li",
+    17: "Makoto",
+    18: "Twelve",
+    19: "Remy",
 }
 
 
@@ -348,9 +364,7 @@ def find_activity_start(inputs: list[tuple[int, int]], end: int) -> int:
 
 def get_metadata(replay_dir: Path) -> dict:
     """Extract player names and game info from summary.json."""
-    summary = json.loads(
-        (replay_dir / "summary.json").read_text(encoding="utf-8")
-    )
+    summary = json.loads((replay_dir / "summary.json").read_text(encoding="utf-8"))
     meta = {
         "game": summary.get("game", "sfiii3nr1"),
         "emulator": summary.get("emulator", "fbneo"),
@@ -425,7 +439,7 @@ def convert(
     clean_inputs = inputs[start:]
     p1_name = CHAR_NAMES.get(p1_char, f"ID{p1_char}")
     p2_name = CHAR_NAMES.get(p2_char, f"ID{p2_char}")
-    print(f"Output: {len(clean_inputs)} frames ({len(clean_inputs)/60:.1f}s)")
+    print(f"Output: {len(clean_inputs)} frames ({len(clean_inputs) / 60:.1f}s)")
     print(f"  P1={p1_name} SA{p1_sa}, P2={p2_name} SA{p2_sa}")
 
     # Build output path
@@ -434,16 +448,29 @@ def convert(
 
     # Write CSV matching the format expected by replay_inputs.py
     fieldnames = [
-        "frame", "p1_input", "p2_input",
-        "match_state", "is_in_match",
-        "timer", "p1_hp", "p2_hp",
-        "p1_x", "p1_y", "p2_x", "p2_y",
-        "p1_facing", "p2_facing",
-        "p1_meter", "p2_meter",
-        "p1_stun", "p2_stun",
-        "p1_char", "p2_char",
+        "frame",
+        "p1_input",
+        "p2_input",
+        "match_state",
+        "is_in_match",
+        "timer",
+        "p1_hp",
+        "p2_hp",
+        "p1_x",
+        "p1_y",
+        "p2_x",
+        "p2_y",
+        "p1_facing",
+        "p2_facing",
+        "p1_meter",
+        "p2_meter",
+        "p1_stun",
+        "p2_stun",
+        "p1_char",
+        "p2_char",
         "live",
-        "p1_sa", "p2_sa",
+        "p1_sa",
+        "p2_sa",
     ]
 
     with open(output_path, "w", newline="") as f:
@@ -451,29 +478,36 @@ def convert(
         writer.writeheader()
 
         for i, (p1, p2) in enumerate(clean_inputs):
-            writer.writerow({
-                "frame": i,
-                "p1_input": p1,
-                "p2_input": p2,
-                "match_state": 2,
-                "is_in_match": 1,
-                "timer": max(1, 99 - i // 60),
-                "p1_hp": 160,
-                "p2_hp": 160,
-                "p1_x": 0, "p1_y": 0,
-                "p2_x": 0, "p2_y": 0,
-                "p1_facing": 0, "p2_facing": 1,
-                "p1_meter": 0, "p2_meter": 0,
-                "p1_stun": 0, "p2_stun": 0,
-                "p1_char": p1_char,
-                "p2_char": p2_char,
-                "live": 1,
-                "p1_sa": p1_sa,
-                "p2_sa": p2_sa,
-            })
+            writer.writerow(
+                {
+                    "frame": i,
+                    "p1_input": p1,
+                    "p2_input": p2,
+                    "match_state": 2,
+                    "is_in_match": 1,
+                    "timer": max(1, 99 - i // 60),
+                    "p1_hp": 160,
+                    "p2_hp": 160,
+                    "p1_x": 0,
+                    "p1_y": 0,
+                    "p2_x": 0,
+                    "p2_y": 0,
+                    "p1_facing": 0,
+                    "p2_facing": 1,
+                    "p1_meter": 0,
+                    "p2_meter": 0,
+                    "p1_stun": 0,
+                    "p2_stun": 0,
+                    "p1_char": p1_char,
+                    "p2_char": p2_char,
+                    "live": 1,
+                    "p1_sa": p1_sa,
+                    "p2_sa": p2_sa,
+                }
+            )
 
     print(f"\nCSV written: {output_path}")
-    print(f"\nTo replay in 3SX:")
+    print("\nTo replay in 3SX:")
     print(f"  python tools/fightcade_replays/replay_inputs.py {output_path}")
     return output_path
 
@@ -490,28 +524,38 @@ def main():
         epilog=f"Character IDs: {char_help}",
     )
     parser.add_argument(
-        "replay_dir", type=Path,
+        "replay_dir",
+        type=Path,
         help="Directory containing summary.json and msg_*_minus13.bin files",
     )
     parser.add_argument("-o", "--output", type=Path, help="Output CSV path")
     parser.add_argument(
-        "--p1-char", type=int, default=None,
+        "--p1-char",
+        type=int,
+        default=None,
         help="P1 character ID (auto-detected if omitted)",
     )
     parser.add_argument(
-        "--p2-char", type=int, default=None,
+        "--p2-char",
+        type=int,
+        default=None,
         help="P2 character ID (auto-detected if omitted)",
     )
     parser.add_argument(
-        "--p1-sa", type=int, default=None,
+        "--p1-sa",
+        type=int,
+        default=None,
         help="P1 Super Art 1-3 (auto-detected if omitted)",
     )
     parser.add_argument(
-        "--p2-sa", type=int, default=None,
+        "--p2-sa",
+        type=int,
+        default=None,
         help="P2 Super Art 1-3 (auto-detected if omitted)",
     )
     parser.add_argument(
-        "--trim-idle", action="store_true",
+        "--trim-idle",
+        action="store_true",
         help="Trim leading idle frames (before first input)",
     )
 

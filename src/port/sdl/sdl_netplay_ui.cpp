@@ -73,9 +73,9 @@ static uint32_t lobby_pending_invite_ip = 0;
 static uint16_t lobby_pending_invite_port = 0;
 static char lobby_pending_invite_room[16] = { 0 };
 static char lobby_pending_invite_region[8] = { 0 };
-static int lobby_pending_invite_ping = -1; // ms, -1 = unknown
+static int lobby_pending_invite_ping = -1;       // ms, -1 = unknown
 static SDL_AtomicInt lobby_punch_cancel = { 0 }; // Set to 1 to cancel in-progress hole punch
-static bool lobby_we_are_initiator = false; // true = we clicked Connect, false = they invited us
+static bool lobby_we_are_initiator = false;      // true = we clicked Connect, false = they invited us
 static char lobby_connect_to_intent[16] = { 0 }; // Current connect_to value preserved across heartbeats
 
 // Forward declarations for functions used by lobby_poll_server
@@ -314,8 +314,10 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
     if (ok) {
         Stun_FormatIP(lobby_punch_peer_ip, lobby_punch_peer_ip_str, sizeof(lobby_punch_peer_ip_str));
         uint32_t rtt_ms = (SDL_GetTicks() - start_ms);
-        if (rtt_ms > 200) rtt_ms = 200;  // Cap at reasonable max for display
-        if (rtt_ms < 1) rtt_ms = 1;
+        if (rtt_ms > 200)
+            rtt_ms = 200; // Cap at reasonable max for display
+        if (rtt_ms < 1)
+            rtt_ms = 1;
         lobby_pending_invite_ping = (int)rtt_ms;
     }
     SDL_SetAtomicInt(&lobby_thread_result, ok ? 1 : 0);
@@ -1242,7 +1244,8 @@ void SDLNetplayUI_ConnectToPlayer(int index) {
                 if (!display_ct || !display_ct[0])
                     display_ct = my_room_code;
                 AsyncUpdatePresence(lobby_my_player_id, display_ct, my_room_code, lobby_server_players[i].room_code);
-                snprintf(lobby_connect_to_intent, sizeof(lobby_connect_to_intent), "%s", lobby_server_players[i].room_code);
+                snprintf(
+                    lobby_connect_to_intent, sizeof(lobby_connect_to_intent), "%s", lobby_server_players[i].room_code);
                 snprintf(
                     lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", lobby_server_players[i].display_name);
                 lobby_we_are_initiator = true; // We clicked Connect
@@ -1294,8 +1297,7 @@ void SDLNetplayUI_DeclinePendingInvite() {
 
 bool SDLNetplayUI_HasOutgoingChallenge() {
     int state = SDL_GetAtomicInt(&lobby_async_state);
-    return lobby_we_are_initiator &&
-           (state == LOBBY_ASYNC_PUNCHING || state == LOBBY_ASYNC_UPNP_TRYING);
+    return lobby_we_are_initiator && (state == LOBBY_ASYNC_PUNCHING || state == LOBBY_ASYNC_UPNP_TRYING);
 }
 
 const char* SDLNetplayUI_GetOutgoingChallengeName() {

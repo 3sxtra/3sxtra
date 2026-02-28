@@ -233,9 +233,8 @@ void grade_check_work_round_init(s16 ix) {
         judge_item[ix][Play_Type].grd_mcnt = 0;
     }
 
-    for (i = 0; i < 384; i++) {
-        ji_sat[ix][i] = 0;
-    }
+    // ⚡ Bolt: bulk memset replaces per-element zeroing loop (384 bytes)
+    memset(ji_sat[ix], 0, sizeof(ji_sat[ix]));
 
     judge_gals[ix].grade = 0;
     judge_gals[ix].offence_total = 0;
@@ -259,18 +258,13 @@ void grade_makeup_final_parameter(s16 ix, s16 pt) {
 
 /** @brief Updates the final judgement work with new grade data. */
 void renew_judge_final_work(s16 ix, s16 pt) {
-    u32* frsd;
-    s16 i;
 
     judge_final[ix][pt].all_clear = 0;
     judge_final[ix][pt].keizoku = 0;
     judge_final[ix][pt].sp_point = 0;
     judge_final[ix][pt].fr_ix = 0;
-    frsd = (u32*)judge_final[ix][pt].fr_sort_data;
-
-    for (i = 0; i < 16; i++) {
-        *frsd++ = 0;
-    }
+    // ⚡ Bolt: bulk memset replaces per-element pointer zeroing loop
+    memset(judge_final[ix][pt].fr_sort_data, 0, sizeof(judge_final[ix][pt].fr_sort_data));
 }
 
 /** @brief Computes the final letter grade from offence, defence, tech, and extra points. */
@@ -462,7 +456,8 @@ void grade_makeup_stage_parameter(s16 ix) {
 
     if (ix == WINNER) {
         if (Play_Type == 0) {
-            judge_item[ix][Play_Type].ex_point_total += grade_table_lookup(grade_t_straight, 10, judge_item[ix][Play_Type].no_lose);
+            judge_item[ix][Play_Type].ex_point_total +=
+                grade_table_lookup(grade_t_straight, 10, judge_item[ix][Play_Type].no_lose);
         } else if (judge_item[ix][Play_Type].renshou) {
             point += grade_table_lookup(grade_t_renshou, 7, judge_item[ix][Play_Type].renshou);
         } else {

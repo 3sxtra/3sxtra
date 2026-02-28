@@ -20,10 +20,12 @@
 #include <string.h>
 #include <time.h>
 
+// clang-format off
 #ifdef _WIN32
-#include <winsock2.h>
+#include <winsock2.h>  // Must precede bcrypt.h — provides LONG/ULONG via windows.h
 #include <ws2tcpip.h>
 #include <bcrypt.h>
+// clang-format on
 #ifndef BCRYPT_SHA256_ALGORITHM
 #define BCRYPT_SHA256_ALGORITHM L"SHA256"
 #endif
@@ -284,27 +286,54 @@ static void compute_hmac(const char* payload, char* out_hex, size_t hex_size) {
     NTSTATUS status;
 
     status = BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_SHA256_ALGORITHM, NULL, BCRYPT_ALG_HANDLE_HMAC_FLAG);
-    if (status < 0) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptOpenAlgorithmProvider failed: 0x%lx", status); goto hmac_done; }
+    if (status < 0) {
+        memset(hash, 0, 32);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptOpenAlgorithmProvider failed: 0x%lx", status);
+        goto hmac_done;
+    }
 
     status = BCryptGetProperty(hAlg, BCRYPT_OBJECT_LENGTH, (PUCHAR)&cbHashObject, sizeof(ULONG), &cbResult, 0);
-    if (status < 0) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptGetProperty failed: 0x%lx", status); goto hmac_done; }
+    if (status < 0) {
+        memset(hash, 0, 32);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptGetProperty failed: 0x%lx", status);
+        goto hmac_done;
+    }
 
     pbHashObject = (uint8_t*)malloc(cbHashObject);
-    if (!pbHashObject) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCrypt malloc failed"); goto hmac_done; }
+    if (!pbHashObject) {
+        memset(hash, 0, 32);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCrypt malloc failed");
+        goto hmac_done;
+    }
 
-    status = BCryptCreateHash(hAlg, &hHash, pbHashObject, cbHashObject, (PUCHAR)server_key, (ULONG)strlen(server_key), 0);
-    if (status < 0) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptCreateHash failed: 0x%lx", status); goto hmac_done; }
+    status =
+        BCryptCreateHash(hAlg, &hHash, pbHashObject, cbHashObject, (PUCHAR)server_key, (ULONG)strlen(server_key), 0);
+    if (status < 0) {
+        memset(hash, 0, 32);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptCreateHash failed: 0x%lx", status);
+        goto hmac_done;
+    }
 
     status = BCryptHashData(hHash, (PUCHAR)payload, (ULONG)strlen(payload), 0);
-    if (status < 0) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptHashData failed: 0x%lx", status); goto hmac_done; }
+    if (status < 0) {
+        memset(hash, 0, 32);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptHashData failed: 0x%lx", status);
+        goto hmac_done;
+    }
 
     status = BCryptFinishHash(hHash, hash, 32, 0);
-    if (status < 0) { memset(hash, 0, 32); SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptFinishHash failed: 0x%lx", status); goto hmac_done; }
+    if (status < 0) {
+        memset(hash, 0, 32);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptFinishHash failed: 0x%lx", status);
+        goto hmac_done;
+    }
 
 hmac_done:
-    if (hHash) BCryptDestroyHash(hHash);
+    if (hHash)
+        BCryptDestroyHash(hHash);
     free(pbHashObject);
-    if (hAlg) BCryptCloseAlgorithmProvider(hAlg, 0);
+    if (hAlg)
+        BCryptCloseAlgorithmProvider(hAlg, 0);
 #else
     hmac_sha256((const uint8_t*)server_key, strlen(server_key), (const uint8_t*)payload, strlen(payload), hash);
 #endif
@@ -534,7 +563,8 @@ static int json_get_int(const char* json, const char* key, int default_val) {
         return default_val;
     p += strlen(pattern);
     /* Skip whitespace */
-    while (*p == ' ' || *p == '\t') p++;
+    while (*p == ' ' || *p == '\t')
+        p++;
     if (*p == '-' || (*p >= '0' && *p <= '9'))
         return atoi(p);
     return default_val;
@@ -552,16 +582,16 @@ bool LobbyServer_UpdatePresence(const char* player_id, const char* display_name,
     json_escape_string(connect_to ? connect_to : "", esc_ct, sizeof(esc_ct));
 
     char body[512];
-    snprintf(
-        body,
-        sizeof(body),
-        "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"region\":\"%s\",\"room_code\":\"%s\",\"connect_to\":\"%s\",\"rtt_ms\":%d}",
-        esc_pid,
-        esc_name,
-        esc_region,
-        esc_code,
-        esc_ct,
-        rtt_ms);
+    snprintf(body,
+             sizeof(body),
+             "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"region\":\"%s\",\"room_code\":\"%s\",\"connect_to\":\"%"
+             "s\",\"rtt_ms\":%d}",
+             esc_pid,
+             esc_name,
+             esc_region,
+             esc_code,
+             esc_ct,
+             rtt_ms);
 
     char response[HTTP_BUF_SIZE];
     return http_request("POST", "/presence", body, response, sizeof(response));

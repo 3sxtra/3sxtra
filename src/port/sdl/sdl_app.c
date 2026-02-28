@@ -225,7 +225,7 @@ bool mods_menu_input_display_enabled = false;
 bool mods_menu_shader_bypass_enabled = false;
 bool game_paused = false;
 static bool frame_rate_uncapped = false;
-static bool vsync_enabled = true; // user preference, independent of frame_rate_uncapped
+static bool vsync_enabled = true;      // user preference, independent of frame_rate_uncapped
 static bool present_only_mode = false; // when true, EndFrame re-blits canvas without re-rendering game
 bool show_debug_hud = false;
 
@@ -535,8 +535,7 @@ int SDLApp_Init() {
         mode.w = fs_w;
         mode.h = fs_h;
         if (!SDL_SetWindowFullscreenMode(window, &mode)) {
-            SDL_Log("SDLApp_Init: Could not set fullscreen mode %dx%d: %s",
-                    fs_w, fs_h, SDL_GetError());
+            SDL_Log("SDLApp_Init: Could not set fullscreen mode %dx%d: %s", fs_w, fs_h, SDL_GetError());
         } else {
             SDL_Log("SDLApp_Init: Fullscreen mode set to %dx%d", fs_w, fs_h);
         }
@@ -2085,8 +2084,7 @@ void SDLApp_ToggleFullscreen() {
             mode.w = fs_w;
             mode.h = fs_h;
             if (!SDL_SetWindowFullscreenMode(window, &mode)) {
-                SDL_Log("ToggleFullscreen: Could not set mode %dx%d: %s",
-                        fs_w, fs_h, SDL_GetError());
+                SDL_Log("ToggleFullscreen: Could not set mode %dx%d: %s", fs_w, fs_h, SDL_GetError());
             }
         } else {
             // Ensure desktop borderless (NULL = use desktop mode)
@@ -2196,8 +2194,8 @@ bool SDLApp_IsFrameRateUncapped() {
  *  Used in decoupled mode to render at uncapped FPS while game ticks at 59.6. */
 void SDLApp_PresentOnly(void) {
     present_only_mode = true;
-    SDLApp_BeginFrame();  // skips SDLGameRenderer_BeginFrame (no FBO clear)
-    SDLApp_EndFrame();    // skips SDLGameRenderer_RenderFrame + audio, re-blits existing canvas
+    SDLApp_BeginFrame(); // skips SDLGameRenderer_BeginFrame (no FBO clear)
+    SDLApp_EndFrame();   // skips SDLGameRenderer_RenderFrame + audio, re-blits existing canvas
     present_only_mode = false;
 }
 

@@ -109,8 +109,6 @@ void njUserMain();
 void cpLoopTask();
 void cpInitTask();
 
-
-
 /**
  * @brief Initialize the AFS (Archive File System) for reading game data.
  *
@@ -224,7 +222,8 @@ int main(int argc, char* argv[]) {
             /* Cap elapsed to prevent spiral of death (~3 frames max) */
             Uint64 target_ns = SDLApp_GetTargetFrameTimeNS();
             Uint64 max_elapsed = target_ns * 3;
-            if (elapsed > max_elapsed) elapsed = max_elapsed;
+            if (elapsed > max_elapsed)
+                elapsed = max_elapsed;
 
             game_accumulator += elapsed;
             should_tick_game = (game_accumulator >= target_ns);
@@ -421,12 +420,12 @@ static void game_step_0() {
     if (current_net_state != NETPLAY_SESSION_IDLE) {
         TRACE_SUB_BEGIN("Netplay");
         Netplay_Run();
-        
+
         // Match upstream behavior from PR 146: Flush the 2D polygon buffer each
         // frame when the game's normal render loop isn't running, preventing
         // the 100-item limit from overflowing during connection and matchmaking waits.
         Renderer_Flush2DPrimitives();
-        
+
         TRACE_SUB_END();
 
         // Re-read state in case Netplay_Run changed it (e.g. EXITING -> IDLE)

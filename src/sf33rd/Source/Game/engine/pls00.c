@@ -749,14 +749,22 @@ static void nm_18000(PLW* wk) {
  * jumping_cg_type_check.  Returns 1 if any check consumed the input.
  */
 static s32 cg_type_attack_chain(PLW* wk) {
-    if (check_full_gauge_attack(wk, 0))  return 1;
-    if (check_full_gauge_attack2(wk, 0)) return 1;
-    if (check_super_arts_attack(wk))     return 1;
-    if (check_special_attack(wk))        return 1;
-    if (check_chouhatsu(wk))             return 1;
-    if (check_catch_attack(wk))          return 1;
-    if (check_leap_attack(wk))           return 1;
-    if (check_nm_attack(wk))             return 1;
+    if (check_full_gauge_attack(wk, 0))
+        return 1;
+    if (check_full_gauge_attack2(wk, 0))
+        return 1;
+    if (check_super_arts_attack(wk))
+        return 1;
+    if (check_special_attack(wk))
+        return 1;
+    if (check_chouhatsu(wk))
+        return 1;
+    if (check_catch_attack(wk))
+        return 1;
+    if (check_leap_attack(wk))
+        return 1;
+    if (check_nm_attack(wk))
+        return 1;
     return 0;
 }
 

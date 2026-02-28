@@ -36,9 +36,9 @@ class MenuBridgeState(ctypes.Structure):
         # Screen sub-state (for FIGHT banner detection: C_No[0]==1, C_No[1]==4)
         ("nav_C_No", ctypes.c_uint8 * 4),
         # Step-mode control (for frame-precise replay injection)
-        ("step_mode_active", ctypes.c_uint8),   # 1=game waits for step_requested
-        ("step_requested", ctypes.c_uint8),      # Python sets 1, C clears after frame
-        ("selfplay_active", ctypes.c_uint8),     # 1=inject P2 inputs during gameplay
+        ("step_mode_active", ctypes.c_uint8),  # 1=game waits for step_requested
+        ("step_requested", ctypes.c_uint8),  # Python sets 1, C clears after frame
+        ("selfplay_active", ctypes.c_uint8),  # 1=inject P2 inputs during gameplay
         # === FORCE MATCH INJECTION ===
         ("force_match_active", ctypes.c_uint8),
         ("fm_p1_char", ctypes.c_uint8),
@@ -51,36 +51,36 @@ class MenuBridgeState(ctypes.Structure):
         ("fm_rng_16_ex", ctypes.c_int16),
         ("fm_rng_32_ex", ctypes.c_int16),
         # === GAME STATE (for parity testing) ===
-        ("game_timer", ctypes.c_uint16),         # Round timer
-        ("p1_health", ctypes.c_int16),           # P1 vitality
-        ("p2_health", ctypes.c_int16),           # P2 vitality
-        ("p1_pos_x", ctypes.c_int16),            # P1 X position
-        ("p1_pos_y", ctypes.c_int16),            # P1 Y position
-        ("p2_pos_x", ctypes.c_int16),            # P2 X position
-        ("p2_pos_y", ctypes.c_int16),            # P2 Y position
-        ("p1_facing", ctypes.c_int16),           # P1 direction
-        ("p2_facing", ctypes.c_int16),           # P2 direction
-        ("p1_meter", ctypes.c_int16),            # P1 super meter
-        ("p2_meter", ctypes.c_int16),            # P2 super meter
-        ("p1_stun", ctypes.c_int16),             # P1 stun value
-        ("p2_stun", ctypes.c_int16),             # P2 stun value
-        ("p1_busy", ctypes.c_uint8),             # P1 can't-act flag
-        ("p2_busy", ctypes.c_uint8),             # P2 can't-act flag
+        ("game_timer", ctypes.c_uint16),  # Round timer
+        ("p1_health", ctypes.c_int16),  # P1 vitality
+        ("p2_health", ctypes.c_int16),  # P2 vitality
+        ("p1_pos_x", ctypes.c_int16),  # P1 X position
+        ("p1_pos_y", ctypes.c_int16),  # P1 Y position
+        ("p2_pos_x", ctypes.c_int16),  # P2 X position
+        ("p2_pos_y", ctypes.c_int16),  # P2 Y position
+        ("p1_facing", ctypes.c_int16),  # P1 direction
+        ("p2_facing", ctypes.c_int16),  # P2 direction
+        ("p1_meter", ctypes.c_int16),  # P1 super meter
+        ("p2_meter", ctypes.c_int16),  # P2 super meter
+        ("p1_stun", ctypes.c_int16),  # P1 stun value
+        ("p2_stun", ctypes.c_int16),  # P2 stun value
+        ("p1_busy", ctypes.c_uint8),  # P1 can't-act flag
+        ("p2_busy", ctypes.c_uint8),  # P2 can't-act flag
         # === RNG STATE (for parity testing) ===
-        ("rng_16", ctypes.c_int16),              # Random_ix16
-        ("rng_32", ctypes.c_int16),              # Random_ix32
-        ("rng_16_ex", ctypes.c_int16),           # Random_ix16_ex
-        ("rng_32_ex", ctypes.c_int16),           # Random_ix32_ex
+        ("rng_16", ctypes.c_int16),  # Random_ix16
+        ("rng_32", ctypes.c_int16),  # Random_ix32
+        ("rng_16_ex", ctypes.c_int16),  # Random_ix16_ex
+        ("rng_32_ex", ctypes.c_int16),  # Random_ix32_ex
         # === EXTENDED GAME STATE (for parity testing) ===
-        ("p1_action", ctypes.c_uint32),          # plw[0].wu.routine_no[0..1] packed
-        ("p2_action", ctypes.c_uint32),          # plw[1].wu.routine_no[0..1] packed
-        ("p1_animation", ctypes.c_uint16),       # plw[0].wu.cg_number
-        ("p2_animation", ctypes.c_uint16),       # plw[1].wu.cg_number
-        ("p1_posture", ctypes.c_uint8),          # plw[0].guard_flag
-        ("p2_posture", ctypes.c_uint8),          # plw[1].guard_flag
-        ("p1_freeze", ctypes.c_uint8),           # plw[0].wu.hit_stop
-        ("p2_freeze", ctypes.c_uint8),           # plw[1].wu.hit_stop
-        ("is_in_match", ctypes.c_uint8),         # Allow_a_battle_f
+        ("p1_action", ctypes.c_uint32),  # plw[0].wu.routine_no[0..1] packed
+        ("p2_action", ctypes.c_uint32),  # plw[1].wu.routine_no[0..1] packed
+        ("p1_animation", ctypes.c_uint16),  # plw[0].wu.cg_number
+        ("p2_animation", ctypes.c_uint16),  # plw[1].wu.cg_number
+        ("p1_posture", ctypes.c_uint8),  # plw[0].guard_flag
+        ("p2_posture", ctypes.c_uint8),  # plw[1].guard_flag
+        ("p1_freeze", ctypes.c_uint8),  # plw[0].wu.hit_stop
+        ("p2_freeze", ctypes.c_uint8),  # plw[1].wu.hit_stop
+        ("is_in_match", ctypes.c_uint8),  # Allow_a_battle_f
     ]
 
 

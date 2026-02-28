@@ -159,8 +159,13 @@ void Discovery_Update() {
             int peer_rdy = 0;
             unsigned int peer_challenge = 0;
             unsigned short peer_port = 50000; // fallback for old beacons
-            if (sscanf(buffer, "3SX_LOBBY|%u|%d|%d|%u|%hu", &peer_instance_id, &peer_auto, &peer_rdy, &peer_challenge, &peer_port) >=
-                1) {
+            if (sscanf(buffer,
+                       "3SX_LOBBY|%u|%d|%d|%u|%hu",
+                       &peer_instance_id,
+                       &peer_auto,
+                       &peer_rdy,
+                       &peer_challenge,
+                       &peer_port) >= 1) {
                 // Ignore our own broadcast
                 if (peer_instance_id != local_instance_id) {
                     char ip_str[64];

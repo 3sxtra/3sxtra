@@ -284,9 +284,9 @@ typedef struct {
     s16 id;
     s8 rl_flag;
     s8 rl_waza;
-    void* target_adrs;        ///< @netplay_sync Pointer — zeroed for checksum
-    void* hit_adrs;           ///< @netplay_sync Pointer — zeroed for checksum
-    void* dmg_adrs;           ///< @netplay_sync Pointer — zeroed for checksum
+    void* target_adrs; ///< @netplay_sync Pointer — zeroed for checksum
+    void* hit_adrs;    ///< @netplay_sync Pointer — zeroed for checksum
+    void* dmg_adrs;    ///< @netplay_sync Pointer — zeroed for checksum
 
     /// Index of the struct that is in front of this one in the list.
     /// @netplay_sync Allocation-order dependent — excluded from checksums.
@@ -305,7 +305,7 @@ typedef struct {
     s16 listix;
 
     s16 dead_f;
-    s16 timing;               ///< @netplay_sync Allocation-order dependent — excluded from checksums
+    s16 timing; ///< @netplay_sync Allocation-order dependent — excluded from checksums
     s16 routine_no[8];
     s16 old_rno[8];
     s16 hit_stop;
@@ -379,7 +379,7 @@ typedef struct {
     s16 cg_ix;
     s16 now_koc;
     s16 char_index;
-    s16 current_colcd;        ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
+    s16 current_colcd; ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
 
     union {
         CharState char_state;
@@ -420,9 +420,9 @@ typedef struct {
     u16 old_cgnum;
     s16 floor;
     u16 ccoff;
-    s16 colcd;                ///< @netplay_sync Rendering-derived — fully zeroed for checksum
+    s16 colcd; ///< @netplay_sync Rendering-derived — fully zeroed for checksum
     s16 my_col_mode;
-    s16 my_col_code;          ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
+    s16 my_col_code; ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
     s16 my_priority;
     s16 my_family;
     s16 my_ext_pri;
@@ -519,8 +519,8 @@ typedef struct {
     void* my_effadrs;
     s16 shell_ix[8];
     s16 hm_dm_side;
-    s16 extra_col;            ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
-    s16 extra_col_2;          ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
+    s16 extra_col;   ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
+    s16 extra_col_2; ///< @netplay_sync Rendering — 0x2000 palette flag masked for checksum
     s16 original_vitality;
     u8 hit_work_id;
     u8 dmg_work_id;
@@ -611,7 +611,7 @@ typedef struct {
  */
 typedef struct {
     WORK wu;
-    WORK_CP* cp;              ///< @netplay_sync Pointer — zeroed for checksum
+    WORK_CP* cp; ///< @netplay_sync Pointer — zeroed for checksum
     u32 spmv_ng_flag;
     u32 spmv_ng_flag2;
 
@@ -782,7 +782,7 @@ typedef struct {
     s16 master_player;
     s16 master_priority;
     s16 prio_reverse;
-    s16 num_of_conn;          ///< @netplay_sync Only conn[0..num_of_conn-1] are valid
+    s16 num_of_conn; ///< @netplay_sync Only conn[0..num_of_conn-1] are valid
     CONN conn[108];
 } WORK_Other_CONN;
 

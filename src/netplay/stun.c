@@ -343,13 +343,21 @@ void Stun_SetNonBlocking(StunResult* result) {
     u_long mode = 1;
     ioctlsocket(result->socket_fd, FIONBIO, &mode);
 
-    // Disable WSAECONNRESET behavior which breaks recvfrom() on Windows
-    #ifndef SIO_UDP_CONNRESET
-    #define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR, 12)
-    #endif
+// Disable WSAECONNRESET behavior which breaks recvfrom() on Windows
+#ifndef SIO_UDP_CONNRESET
+#define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR, 12)
+#endif
     BOOL bNewBehavior = FALSE;
     DWORD dwBytesReturned = 0;
-    WSAIoctl(result->socket_fd, SIO_UDP_CONNRESET, &bNewBehavior, sizeof(bNewBehavior), NULL, 0, &dwBytesReturned, NULL, NULL);
+    WSAIoctl(result->socket_fd,
+             SIO_UDP_CONNRESET,
+             &bNewBehavior,
+             sizeof(bNewBehavior),
+             NULL,
+             0,
+             &dwBytesReturned,
+             NULL,
+             NULL);
 #else
     int flags = fcntl(result->socket_fd, F_GETFL, 0);
     fcntl(result->socket_fd, F_SETFL, flags | O_NONBLOCK);
@@ -419,11 +427,11 @@ bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, i
             if (from_addr.sin_addr.s_addr == *peer_ip && strcmp(recv_buf, punch_msg) == 0) {
                 SDL_Log("STUN: Hole punch SUCCESS — received response from peer");
                 received_response = true;
-                
+
                 // Update with actual received endpoint (fixes Symmetric NAT port translation)
                 *peer_ip = from_addr.sin_addr.s_addr;
                 *peer_port = from_addr.sin_port;
-                
+
                 // Send a few more punches to ensure the peer also receives ours
                 for (int i = 0; i < 3; i++) {
                     sendto(sock, punch_msg, (int)strlen(punch_msg), 0, (struct sockaddr*)&peer_addr, sizeof(peer_addr));

@@ -207,9 +207,7 @@ static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* oppone
  * Determines when both players have returned to idle after an attack
  * and computes the advantage value.
  */
-static void resolve_advantage(TrainingPlayerState* self,
-                               TrainingPlayerState* opponent,
-                               u32 frame, const char* label) {
+static void resolve_advantage(TrainingPlayerState* self, TrainingPlayerState* opponent, u32 frame, const char* label) {
     if (!self->advantage_active)
         return;
 
@@ -227,11 +225,13 @@ static void resolve_advantage(TrainingPlayerState* self,
 
     if (self->opponent_idle_frame != 0 && self->is_idle && opponent->is_idle) {
         if (self->opponent_was_affected) {
-            self->advantage_value =
-                self->opponent_idle_frame - self->player_idle_frame;
+            self->advantage_value = self->opponent_idle_frame - self->player_idle_frame;
             SDL_Log("%s ADVANTAGE RESOLVED: %+d (%s idle %d, opp idle %d)",
-                    label, self->advantage_value, label,
-                    self->player_idle_frame, self->opponent_idle_frame);
+                    label,
+                    self->advantage_value,
+                    label,
+                    self->player_idle_frame,
+                    self->opponent_idle_frame);
         } else {
             self->advantage_value = 0; // Pure whiff
         }
@@ -249,10 +249,8 @@ void update_training_state(void) {
     update_player_state(&g_training_state.p2, &plw[1], &plw[0]);
 
     // Calculate Advantage cross-states
-    resolve_advantage(&g_training_state.p1, &g_training_state.p2,
-                      g_training_state.frame_number, "P1");
-    resolve_advantage(&g_training_state.p2, &g_training_state.p1,
-                      g_training_state.frame_number, "P2");
+    resolve_advantage(&g_training_state.p1, &g_training_state.p2, g_training_state.frame_number, "P1");
+    resolve_advantage(&g_training_state.p2, &g_training_state.p1, g_training_state.frame_number, "P2");
 
     trials_update();
 

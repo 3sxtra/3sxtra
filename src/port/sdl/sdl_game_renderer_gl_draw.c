@@ -28,17 +28,9 @@ static void push_render_task(GLuint texture, const SDL_Vertex* vertices, float z
     const int vertex_offset = gl_state.render_task_count * 4;
     memcpy(&gl_state.batch_vertices[vertex_offset], vertices, 4 * sizeof(SDL_Vertex));
 
-    const float layer_f = (float)array_layer;
-    gl_state.batch_layers[vertex_offset + 0] = layer_f;
-    gl_state.batch_layers[vertex_offset + 1] = layer_f;
-    gl_state.batch_layers[vertex_offset + 2] = layer_f;
-    gl_state.batch_layers[vertex_offset + 3] = layer_f;
-
-    const float pal_f = (float)pal_slot;
-    gl_state.batch_pal_indices[vertex_offset + 0] = pal_f;
-    gl_state.batch_pal_indices[vertex_offset + 1] = pal_f;
-    gl_state.batch_pal_indices[vertex_offset + 2] = pal_f;
-    gl_state.batch_pal_indices[vertex_offset + 3] = pal_f;
+    // ⚡ Bolt: SIMD broadcast — write same float to 4 consecutive slots
+    simde_mm_storeu_ps(&gl_state.batch_layers[vertex_offset], simde_mm_set1_ps((float)array_layer));
+    simde_mm_storeu_ps(&gl_state.batch_pal_indices[vertex_offset], simde_mm_set1_ps((float)pal_slot));
 
     RenderTask* task = &gl_state.render_tasks[gl_state.render_task_count];
     task->texture = texture;
@@ -163,22 +155,14 @@ void SDLGameRendererGL_RenderFrame(void) {
         float* layer_ptr = gl_state.persistent_layer_ptr[current_buffer_idx];
         float* pal_ptr = gl_state.persistent_pal_ptr[current_buffer_idx];
 
+        // ⚡ Bolt: SIMD broadcast — copy sorted layer/palette with single stores
         for (int i = 0; i < gl_state.render_task_count; i++) {
             const int src = gl_state.render_tasks[i].original_index * 4;
             const int dst = i * 4;
             memcpy(&vbo_ptr[dst], &gl_state.batch_vertices[src], 4 * sizeof(SDL_Vertex));
 
-            float lay = gl_state.batch_layers[src];
-            layer_ptr[dst + 0] = lay;
-            layer_ptr[dst + 1] = lay;
-            layer_ptr[dst + 2] = lay;
-            layer_ptr[dst + 3] = lay;
-
-            float pal = gl_state.batch_pal_indices[src];
-            pal_ptr[dst + 0] = pal;
-            pal_ptr[dst + 1] = pal;
-            pal_ptr[dst + 2] = pal;
-            pal_ptr[dst + 3] = pal;
+            simde_mm_storeu_ps(&layer_ptr[dst], simde_mm_set1_ps(gl_state.batch_layers[src]));
+            simde_mm_storeu_ps(&pal_ptr[dst], simde_mm_set1_ps(gl_state.batch_pal_indices[src]));
         }
     } else {
         current_buffer_idx = 0;
@@ -186,22 +170,14 @@ void SDLGameRendererGL_RenderFrame(void) {
         static float sorted_layers[RENDER_TASK_MAX * 4];
         static float sorted_pals[RENDER_TASK_MAX * 4];
 
+        // ⚡ Bolt: SIMD broadcast — copy sorted layer/palette with single stores
         for (int i = 0; i < gl_state.render_task_count; i++) {
             const int src = gl_state.render_tasks[i].original_index * 4;
             const int dst = i * 4;
             memcpy(&sorted_vertices[dst], &gl_state.batch_vertices[src], 4 * sizeof(SDL_Vertex));
 
-            float lay = gl_state.batch_layers[src];
-            sorted_layers[dst + 0] = lay;
-            sorted_layers[dst + 1] = lay;
-            sorted_layers[dst + 2] = lay;
-            sorted_layers[dst + 3] = lay;
-
-            float pal = gl_state.batch_pal_indices[src];
-            sorted_pals[dst + 0] = pal;
-            sorted_pals[dst + 1] = pal;
-            sorted_pals[dst + 2] = pal;
-            sorted_pals[dst + 3] = pal;
+            simde_mm_storeu_ps(&sorted_layers[dst], simde_mm_set1_ps(gl_state.batch_layers[src]));
+            simde_mm_storeu_ps(&sorted_pals[dst], simde_mm_set1_ps(gl_state.batch_pal_indices[src]));
         }
 
         glBindVertexArray(gl_state.persistent_vaos[0]);

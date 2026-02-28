@@ -47,11 +47,10 @@ static s8** msgExtraAdr[41] = { msgEXTRA_000, msgEXTRA_001, msgEXTRA_002, msgEXT
                                 msgEXTRA_012, msgEXTRA_013, msgEXTRA_014, msgEXTRA_xxx, msgEXTRA_016, msgEXTRA_017,
                                 msgEXTRA_018, msgEXTRA_019, msgEXTRA_xxx, msgEXTRA_xxx, msgEXTRA_xxx, msgEXTRA_xxx,
                                 msgEXTRA_024, msgEXTRA_025, msgEXTRA_026, msgEXTRA_027, msgEXTRA_028, msgEXTRA_029,
-                                msgEXTRA_xxx, msgEXTRA_xxx, msgEXTRA_100, msgEXTRA_101, msgEXTRA_102,
-                                msgLOBBY_000, msgLOBBY_001, msgLOBBY_002, msgLOBBY_003, msgLOBBY_004, msgLOBBY_005 };
+                                msgEXTRA_xxx, msgEXTRA_xxx, msgEXTRA_100, msgEXTRA_101, msgEXTRA_102, msgLOBBY_000,
+                                msgLOBBY_001, msgLOBBY_002, msgLOBBY_003, msgLOBBY_004, msgLOBBY_005 };
 
-static s8 msgExtraCtr[41] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1,
-                              2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1,
-                              2, 2, 2, 2, 2, 1 };
+static s8 msgExtraCtr[41] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 1,
+                              1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1 };
 
 MessageTable msgExtraTbl_en = { msgExtraAdr, msgExtraCtr };

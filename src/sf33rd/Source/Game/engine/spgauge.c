@@ -332,10 +332,7 @@ static void spgauge_control(s8 Spg_Num) {
 /** @brief Checks and processes gauge wipe transitions (round start/end). */
 static void wipe_check() {
     /* Per-player sc_clear coordinates: {x1, y1, x2, y2}. */
-    static const s8 wipe_clear_coords[2][4] = {
-        { 1, 25, 4, 26 },
-        { 43, 25, 46, 26 }
-    };
+    static const s8 wipe_clear_coords[2][4] = { { 1, 25, 4, 26 }, { 43, 25, 46, 26 } };
 
     if (Old_Stop_SG) {
         if (Exec_Wipe != 0) {
@@ -352,8 +349,10 @@ static void wipe_check() {
             if (spg_dat[pl].time == 1 && time_clear[pl] == 1) {
                 if (spg_dat[pl].time_no_clear == 0) {
                     spgauge_work_clear(pl);
-                    sc_clear(wipe_clear_coords[pl][0], wipe_clear_coords[pl][1],
-                             wipe_clear_coords[pl][2], wipe_clear_coords[pl][3]);
+                    sc_clear(wipe_clear_coords[pl][0],
+                             wipe_clear_coords[pl][1],
+                             wipe_clear_coords[pl][2],
+                             wipe_clear_coords[pl][3]);
                     sast_color_chenge(pl);
                     spgauge_wipe_write(pl);
                 } else {
@@ -759,9 +758,8 @@ static void sast_color_chenge(s8 Stpl_Num) {
 
 /** @brief General SA color change handler (delegates to gauge or stock). */
 static void sa_color_chenge(s8 Stpl_Num) {
-    spg_dat[Stpl_Num].spgcol_number = spg_dat[Stpl_Num].kind
-        ? spg_player_colors[Stpl_Num][SPG_COL_FILLED]
-        : spg_player_colors[Stpl_Num][SPG_COL_DEFAULT];
+    spg_dat[Stpl_Num].spgcol_number = spg_dat[Stpl_Num].kind ? spg_player_colors[Stpl_Num][SPG_COL_FILLED]
+                                                             : spg_player_colors[Stpl_Num][SPG_COL_DEFAULT];
 }
 
 /** @brief Cycles colors for the SA gauge bar fill sprites. */

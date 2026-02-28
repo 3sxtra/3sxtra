@@ -1575,11 +1575,8 @@ void appSetupBasePriority() {
 
 /** @brief Reset the temporary sprite priority table from the base. */
 void appSetupTempPriority() {
-    s32 i;
-
-    for (i = 0; i < PRIO_BASE_SIZE; i++) {
-        PrioBase[i] = PrioBaseOriginal[i];
-    }
+    // ⚡ Bolt: bulk memcpy replaces per-element loop (128 floats = 512 bytes per frame)
+    memcpy(PrioBase, PrioBaseOriginal, sizeof(PrioBase));
 }
 
 /** @brief Reserved: renew temporary priority for a single chip. */
@@ -1618,13 +1615,9 @@ u32 seqsGetUseMemorySize() {
 
 /** @brief Pre-frame reset of the sprite chip set system. */
 void seqsBeforeProcess() {
-    s32 i;
-
     seqs_w.sprTotal = 0;
-
-    for (i = 0; i < SPRITE_LAYERS_MAX; i++) {
-        seqs_w.up[i] = 0;
-    }
+    // ⚡ Bolt: bulk memset replaces per-element loop (24 bytes per frame)
+    memset(seqs_w.up, 0, sizeof(seqs_w.up));
 }
 
 /** @brief Post-frame processing: flush accumulated sprites for rendering. */

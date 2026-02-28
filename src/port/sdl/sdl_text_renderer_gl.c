@@ -177,11 +177,7 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
             // Draw rect using rect shader
             glUseProgram(s_rect_shader);
             glUniformMatrix4fv(s_rect_loc_projection, 1, GL_FALSE, &projection[0][0]);
-            glUniform4f(s_rect_loc_rectColor,
-                        s_bg_color[0],
-                        s_bg_color[1],
-                        s_bg_color[2],
-                        s_bg_color[3]);
+            glUniform4f(s_rect_loc_rectColor, s_bg_color[0], s_bg_color[1], s_bg_color[2], s_bg_color[3]);
 
             glBindBuffer(GL_ARRAY_BUFFER, s_text_vbo);
             glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(rect_verts), rect_verts);

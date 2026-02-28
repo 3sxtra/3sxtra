@@ -5,13 +5,13 @@
 
 #include "sf33rd/Source/Game/effect/eff61.h"
 #include "common.h"
+#include "port/sdl/sdl_netplay_ui.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
-#include "port/sdl/sdl_netplay_ui.h"
 
 static void EFF61_WAIT(WORK_Other_CONN* ewk);
 static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
@@ -134,7 +134,7 @@ void effect_61_move(WORK_Other_CONN* ewk) {
             ewk->wu.my_clear_level = 51;
         }
     } else if (ewk->wu.char_index == 67) {
-        ewk->wu.my_clear_level = 0;  /* title always full brightness */
+        ewk->wu.my_clear_level = 0; /* title always full brightness */
     } else if (Menu_Cursor_Y[ewk->master_id] == ewk->wu.type) {
         ewk->wu.my_clear_level = 0;
     } else if (ewk->wu.char_index == 1 && Connect_Status == 0) {
@@ -144,8 +144,8 @@ void effect_61_move(WORK_Other_CONN* ewk) {
     }
 
     /* Lobby labels (char_index 68..73): hide behind challenge popup */
-    if (ewk->wu.char_index >= 68 && ewk->wu.char_index <= 73
-        && (SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge())) {
+    if (ewk->wu.char_index >= 68 && ewk->wu.char_index <= 73 &&
+        (SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge())) {
         ewk->wu.my_clear_level = 255;
     }
 

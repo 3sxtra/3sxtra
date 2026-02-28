@@ -15,17 +15,17 @@
 #include "common.h"
 #include "main.h"
 #include "port/renderer.h"
+#include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/menu/menu_internal.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
-#include "sf33rd/Source/Game/menu/menu_internal.h"
-#include "sf33rd/AcrSDK/common/pad.h"
 
-#define PAGE_COUNT      13
-#define FRAMES_PER_PAGE 596  /* ~10 seconds at 59.6 FPS */
+#define PAGE_COUNT 13
+#define FRAMES_PER_PAGE 596 /* ~10 seconds at 59.6 FPS */
 
 /* ════════════════════════════════════════════════════════════════
  *  Page 0: Fixed-Width 8x8 — Full Charset & All 16 Palettes
@@ -54,7 +54,7 @@ static void FontTest_Page0(void) {
     SSPutStr2(0, 20, 4, "0123456789 .:;!?+-=()<>[]");
     /* Side by side */
     SSPutStr(0, 22, 1, "--- PAGE 1 vs PAGE 3 ---");
-    SSPutStr( 0, 23, 4, "PAGE1 ABCDEF 012345");
+    SSPutStr(0, 23, 4, "PAGE1 ABCDEF 012345");
     SSPutStr2(0, 24, 4, "PAGE3 ABCDEF 012345");
     /* SSPutDec */
     SSPutStr(0, 26, 1, "DEC:");
@@ -134,26 +134,30 @@ static void FontTest_Page2(void) {
     SSPutStr(0, 17, 1, "PROPORTIONAL PALETTES:");
     {
         s8 samp[] = "AaBb0123";
-        SSPutStrPro(0,   0, 18 * 8, 0, 0xFFFFFFFF, samp);
-        SSPutStrPro(0,  80, 18 * 8, 1, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 0, 18 * 8, 0, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 80, 18 * 8, 1, 0xFFFFFFFF, samp);
         SSPutStrPro(0, 160, 18 * 8, 2, 0xFFFFFFFF, samp);
         SSPutStrPro(0, 240, 18 * 8, 3, 0xFFFFFFFF, samp);
-        SSPutStrPro(0,   0, 19 * 8, 4, 0xFFFFFFFF, samp);
-        SSPutStrPro(0,  80, 19 * 8, 5, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 0, 19 * 8, 4, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 80, 19 * 8, 5, 0xFFFFFFFF, samp);
         SSPutStrPro(0, 160, 19 * 8, 6, 0xFFFFFFFF, samp);
         SSPutStrPro(0, 240, 19 * 8, 7, 0xFFFFFFFF, samp);
-        SSPutStrPro(0,   0, 20 * 8, 8, 0xFFFFFFFF, samp);
-        SSPutStrPro(0,  80, 20 * 8, 9, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 0, 20 * 8, 8, 0xFFFFFFFF, samp);
+        SSPutStrPro(0, 80, 20 * 8, 9, 0xFFFFFFFF, samp);
         SSPutStrPro(0, 160, 20 * 8, 10, 0xFFFFFFFF, samp);
         SSPutStrPro(0, 240, 20 * 8, 11, 0xFFFFFFFF, samp);
     }
     /* Vertex color previews */
     SSPutStr(0, 22, 1, "VERTEX COLORS:");
     {
-        s8 r[] = "RED";   s8 g[] = "GREEN"; s8 b[] = "BLUE";
-        s8 y[] = "YELLOW"; s8 c[] = "CYAN"; s8 m[] = "MAGENTA";
-        SSPutStrPro(0,   0, 23 * 8, 4, 0xFFFF0000, r);
-        SSPutStrPro(0,  48, 23 * 8, 4, 0xFF00FF00, g);
+        s8 r[] = "RED";
+        s8 g[] = "GREEN";
+        s8 b[] = "BLUE";
+        s8 y[] = "YELLOW";
+        s8 c[] = "CYAN";
+        s8 m[] = "MAGENTA";
+        SSPutStrPro(0, 0, 23 * 8, 4, 0xFFFF0000, r);
+        SSPutStrPro(0, 48, 23 * 8, 4, 0xFF00FF00, g);
         SSPutStrPro(0, 112, 23 * 8, 4, 0xFF0000FF, b);
         SSPutStrPro(0, 176, 23 * 8, 4, 0xFFFFFF00, y);
         SSPutStrPro(0, 248, 23 * 8, 4, 0xFF00FFFF, c);
@@ -174,10 +178,15 @@ static void FontTest_Page2(void) {
  *  Page 3: Proportional — In-Game Messages & Colors
  * ════════════════════════════════════════════════════════════════ */
 static void FontTest_Page3(void) {
-    s8 r1[] = "ROUND 1";    s8 r2[] = "ROUND 2";    s8 r3[] = "ROUND 3";
-    s8 fgt[] = "FIGHT!";    s8 ko[] = "K.O.";
-    s8 win[] = "YOU WIN";   s8 perf[] = "PERFECT";
-    s8 dko[] = "DOUBLE K.O."; s8 tov[] = "TIME OVER";
+    s8 r1[] = "ROUND 1";
+    s8 r2[] = "ROUND 2";
+    s8 r3[] = "ROUND 3";
+    s8 fgt[] = "FIGHT!";
+    s8 ko[] = "K.O.";
+    s8 win[] = "YOU WIN";
+    s8 perf[] = "PERFECT";
+    s8 dko[] = "DOUBLE K.O.";
+    s8 tov[] = "TIME OVER";
     s8 dr[] = "DRAW GAME";
     s8 rdx[] = "FINAL ROUND";
     s8 cont[] = "CONTINUE?";
@@ -202,19 +211,25 @@ static void FontTest_Page3(void) {
     /* More color combos */
     SSPutStr(0, 20, 1, "COLOR + PALETTE COMBOS:");
     {
-        s8 t1[] = "PAL0+RED"; s8 t2[] = "PAL1+GREEN"; s8 t3[] = "PAL4+BLUE";
-        s8 t4[] = "PAL8+YELLOW"; s8 t5[] = "PAL9+CYAN"; s8 t6[] = "PAL1+ORANGE";
-        SSPutStrPro(0,   0, 21 * 8, 0, 0xFFFF0000, t1);
+        s8 t1[] = "PAL0+RED";
+        s8 t2[] = "PAL1+GREEN";
+        s8 t3[] = "PAL4+BLUE";
+        s8 t4[] = "PAL8+YELLOW";
+        s8 t5[] = "PAL9+CYAN";
+        s8 t6[] = "PAL1+ORANGE";
+        SSPutStrPro(0, 0, 21 * 8, 0, 0xFFFF0000, t1);
         SSPutStrPro(0, 112, 21 * 8, 1, 0xFF00FF00, t2);
         SSPutStrPro(0, 248, 21 * 8, 4, 0xFF0000FF, t3);
-        SSPutStrPro(0,   0, 22 * 8, 8, 0xFFFFFF00, t4);
+        SSPutStrPro(0, 0, 22 * 8, 8, 0xFFFFFF00, t4);
         SSPutStrPro(0, 128, 22 * 8, 9, 0xFF00FFFF, t5);
         SSPutStrPro(0, 264, 22 * 8, 1, 0xFFFF8800, t6);
     }
     /* Scaled messages */
     SSPutStr(0, 24, 1, "SCALED MESSAGES:");
     {
-        s8 s1[] = "FIGHT!"; s8 s2[] = "K.O."; s8 s3[] = "PERFECT";
+        s8 s1[] = "FIGHT!";
+        s8 s2[] = "K.O.";
+        s8 s3[] = "PERFECT";
         SSPutStrPro_Scale(0, 0, 25 * 8, 4, 0xFFFF0000, s1, 1.5f);
         SSPutStrPro_Scale(0, 112, 25 * 8, 4, 0xFFFFFF00, s2, 1.5f);
         SSPutStrPro_Scale(0, 192, 25 * 8, 4, 0xFFFF00FF, s3, 1.5f);
@@ -242,11 +257,11 @@ static void FontTest_Page4(void) {
     SSPutStrPro_Scale(0, 0, 9.5f * 8, 4, 0xFFFFFFFF, s25, 2.5f);
     SSPutStrPro_Scale(0, 0, 12.5f * 8, 4, 0xFFFFFFFF, s30, 3.0f);
     /* Scaled + color combos on same row */
-    SSPutStrPro_Scale(0,   0, 16 * 8, 4, 0xFFFF0000, abc, 1.5f);
+    SSPutStrPro_Scale(0, 0, 16 * 8, 4, 0xFFFF0000, abc, 1.5f);
     SSPutStrPro_Scale(0, 192, 16 * 8, 4, 0xFF00FF00, abc, 1.5f);
-    SSPutStrPro_Scale(0,   0, 18 * 8, 4, 0xFFFFFF00, abc, 1.5f);
+    SSPutStrPro_Scale(0, 0, 18 * 8, 4, 0xFFFFFF00, abc, 1.5f);
     SSPutStrPro_Scale(0, 192, 18 * 8, 4, 0xFF00FFFF, abc, 1.5f);
-    SSPutStrPro_Scale(0,   0, 20 * 8, 4, 0xFFFF00FF, abc, 1.5f);
+    SSPutStrPro_Scale(0, 0, 20 * 8, 4, 0xFFFF00FF, abc, 1.5f);
     SSPutStrPro_Scale(0, 192, 20 * 8, 4, 0x80FFFFFF, abc, 1.5f);
     /* Centered scaled */
     {
@@ -296,25 +311,42 @@ static void FontTest_Page6(void) {
     SSPutStr(1, 0, 4, "PAGE 7: SCORE DIGITS");
     /* 8x16 - two palette rows side by side */
     SSPutStr(0, 2, 1, "SCORE 8x16:");
-    for (d = 0; d < 10; d++) score8x16_put(1 + d, 3, 8, d);
+    for (d = 0; d < 10; d++)
+        score8x16_put(1 + d, 3, 8, d);
     SSPutStr(14, 2, 1, "PAL4:");
-    for (d = 0; d < 10; d++) score8x16_put(14 + 1 + d, 3, 4, d);
+    for (d = 0; d < 10; d++)
+        score8x16_put(14 + 1 + d, 3, 4, d);
     /* 16x24 */
     SSPutStr(0, 6, 1, "SCORE 16x24:");
-    for (d = 0; d < 10; d++) score16x24_put(d * 2, 7, 8, d);
+    for (d = 0; d < 10; d++)
+        score16x24_put(d * 2, 7, 8, d);
     SSPutStr(0, 10, 1, "SCORE 16x24 PAL4:");
-    for (d = 0; d < 10; d++) score16x24_put(d * 2, 11, 4, d);
+    for (d = 0; d < 10; d++)
+        score16x24_put(d * 2, 11, 4, d);
     /* Bigger palette variations */
     SSPutStr(0, 14, 1, "SCORE 16x24 PAL1:");
-    for (d = 0; d < 10; d++) score16x24_put(d * 2, 15, 1, d);
+    for (d = 0; d < 10; d++)
+        score16x24_put(d * 2, 15, 1, d);
     SSPutStr(0, 18, 1, "SCORE 16x24 PAL9:");
-    for (d = 0; d < 10; d++) score16x24_put(d * 2, 19, 9, d);
+    for (d = 0; d < 10; d++)
+        score16x24_put(d * 2, 19, 9, d);
     /* SSPutDec comparison */
     SSPutStr(0, 22, 1, "SSPUTDEC:");
-    SSPutStr(0, 23, 1, "1D:");  SSPutDec(4, 23, 4, 0, 1); SSPutDec(6, 23, 4, 5, 1); SSPutDec(8, 23, 4, 9, 1);
-    SSPutStr(10, 23, 1, "2D:"); SSPutDec(14, 23, 4, 0, 2); SSPutDec(17, 23, 4, 42, 2); SSPutDec(20, 23, 4, 99, 2);
-    SSPutStr(0, 24, 1, "3D:");  SSPutDec(4, 24, 4, 0, 3); SSPutDec(8, 24, 4, 100, 3); SSPutDec(12, 24, 4, 255, 3);
-    SSPutStr(16, 24, 1, "4D:"); SSPutDec(20, 24, 4, 0, 4); SSPutDec(25, 24, 4, 128, 4);
+    SSPutStr(0, 23, 1, "1D:");
+    SSPutDec(4, 23, 4, 0, 1);
+    SSPutDec(6, 23, 4, 5, 1);
+    SSPutDec(8, 23, 4, 9, 1);
+    SSPutStr(10, 23, 1, "2D:");
+    SSPutDec(14, 23, 4, 0, 2);
+    SSPutDec(17, 23, 4, 42, 2);
+    SSPutDec(20, 23, 4, 99, 2);
+    SSPutStr(0, 24, 1, "3D:");
+    SSPutDec(4, 24, 4, 0, 3);
+    SSPutDec(8, 24, 4, 100, 3);
+    SSPutDec(12, 24, 4, 255, 3);
+    SSPutStr(16, 24, 1, "4D:");
+    SSPutDec(20, 24, 4, 0, 4);
+    SSPutDec(25, 24, 4, 128, 4);
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -325,26 +357,42 @@ static void FontTest_Page7(void) {
     SSPutStr(1, 0, 4, "PAGE 8: TILES & ATR FLIPS");
     /* 4 rows tile page 0 */
     SSPutStr(0, 2, 1, "SCFONT PAGE0 R0-3:");
-    for (t = 0; t < 20; t++) scfont_put(1 + t, 3, 4, 0, t, 0, 2);
-    for (t = 0; t < 20; t++) scfont_put(1 + t, 4, 4, 0, t, 1, 2);
-    for (t = 0; t < 20; t++) scfont_put(1 + t, 5, 4, 0, t, 2, 2);
-    for (t = 0; t < 20; t++) scfont_put(1 + t, 6, 4, 0, t, 3, 2);
+    for (t = 0; t < 20; t++)
+        scfont_put(1 + t, 3, 4, 0, t, 0, 2);
+    for (t = 0; t < 20; t++)
+        scfont_put(1 + t, 4, 4, 0, t, 1, 2);
+    for (t = 0; t < 20; t++)
+        scfont_put(1 + t, 5, 4, 0, t, 2, 2);
+    for (t = 0; t < 20; t++)
+        scfont_put(1 + t, 6, 4, 0, t, 3, 2);
     /* 4 rows tile page 2 */
     SSPutStr(0, 8, 1, "SCFONT PAGE2 R0-3:");
-    for (t = 0; t < 20; t++) scfont_put(1 + t, 9, 4, 2, t, 0, 2);
-    for (t = 0; t < 20; t++) scfont_put(1 + t, 10, 4, 2, t, 1, 2);
-    for (t = 0; t < 20; t++) scfont_put(1 + t, 11, 4, 2, t, 2, 2);
-    for (t = 0; t < 20; t++) scfont_put(1 + t, 12, 4, 2, t, 3, 2);
+    for (t = 0; t < 20; t++)
+        scfont_put(1 + t, 9, 4, 2, t, 0, 2);
+    for (t = 0; t < 20; t++)
+        scfont_put(1 + t, 10, 4, 2, t, 1, 2);
+    for (t = 0; t < 20; t++)
+        scfont_put(1 + t, 11, 4, 2, t, 2, 2);
+    for (t = 0; t < 20; t++)
+        scfont_put(1 + t, 12, 4, 2, t, 3, 2);
     /* ATR flips - compact 2-column layout */
     SSPutStr(0, 14, 1, "ATR FLIPS:");
     SSPutStr(1, 15, 1, "NRM:");
-    scfont_put(5, 15, 0x04, 0, 1, 0, 2); scfont_put(6, 15, 0x04, 0, 2, 0, 2); scfont_put(7, 15, 0x04, 0, 3, 0, 2);
+    scfont_put(5, 15, 0x04, 0, 1, 0, 2);
+    scfont_put(6, 15, 0x04, 0, 2, 0, 2);
+    scfont_put(7, 15, 0x04, 0, 3, 0, 2);
     SSPutStr(10, 15, 1, "H:");
-    scfont_put(12, 15, 0x84, 0, 1, 0, 2); scfont_put(13, 15, 0x84, 0, 2, 0, 2); scfont_put(14, 15, 0x84, 0, 3, 0, 2);
+    scfont_put(12, 15, 0x84, 0, 1, 0, 2);
+    scfont_put(13, 15, 0x84, 0, 2, 0, 2);
+    scfont_put(14, 15, 0x84, 0, 3, 0, 2);
     SSPutStr(1, 16, 1, "V:");
-    scfont_put(5, 16, 0x44, 0, 1, 0, 2); scfont_put(6, 16, 0x44, 0, 2, 0, 2); scfont_put(7, 16, 0x44, 0, 3, 0, 2);
+    scfont_put(5, 16, 0x44, 0, 1, 0, 2);
+    scfont_put(6, 16, 0x44, 0, 2, 0, 2);
+    scfont_put(7, 16, 0x44, 0, 3, 0, 2);
     SSPutStr(10, 16, 1, "HV:");
-    scfont_put(13, 16, 0xC4, 0, 1, 0, 2); scfont_put(14, 16, 0xC4, 0, 2, 0, 2); scfont_put(15, 16, 0xC4, 0, 3, 0, 2);
+    scfont_put(13, 16, 0xC4, 0, 1, 0, 2);
+    scfont_put(14, 16, 0xC4, 0, 2, 0, 2);
+    scfont_put(15, 16, 0xC4, 0, 3, 0, 2);
     /* SQPUT multi-cell */
     SSPutStr(0, 18, 1, "SQPUT 4x1:");
     scfont_sqput(0, 19, 4, 0, 0, 0, 4, 1, 2);
@@ -420,35 +468,59 @@ static void FontTest_Page9(void) {
     switch (anim_phase) {
     case 0:
         SSPutStr(0, 12, 4, ">> FADEOUT (BLACK)");
-        if (FadeOut(0, 8, 0)) { anim_phase = 1; FadeInit(); }
+        if (FadeOut(0, 8, 0)) {
+            anim_phase = 1;
+            FadeInit();
+        }
         break;
     case 1:
         SSPutStr(0, 12, 4, ">> FADEIN (BLACK)");
-        if (FadeIn(0, 8, 0)) { anim_phase = 2; FadeInit(); }
+        if (FadeIn(0, 8, 0)) {
+            anim_phase = 2;
+            FadeInit();
+        }
         break;
     case 2:
         SSPutStr(0, 12, 4, ">> FADEOUT (WHITE)");
-        if (FadeOut(1, 8, 0)) { anim_phase = 3; FadeInit(); }
+        if (FadeOut(1, 8, 0)) {
+            anim_phase = 3;
+            FadeInit();
+        }
         break;
     case 3:
         SSPutStr(0, 12, 4, ">> FADEIN (WHITE)");
-        if (FadeIn(1, 8, 0)) { anim_phase = 4; WipeInit(); }
+        if (FadeIn(1, 8, 0)) {
+            anim_phase = 4;
+            WipeInit();
+        }
         break;
     case 4:
         SSPutStr(0, 12, 4, ">> WIPEOUT (HORIZ)");
-        if (WipeOut(0)) { anim_phase = 5; WipeInit(); }
+        if (WipeOut(0)) {
+            anim_phase = 5;
+            WipeInit();
+        }
         break;
     case 5:
         SSPutStr(0, 12, 4, ">> WIPEIN (HORIZ)");
-        if (WipeIn(0)) { anim_phase = 6; WipeInit(); }
+        if (WipeIn(0)) {
+            anim_phase = 6;
+            WipeInit();
+        }
         break;
     case 6:
         SSPutStr(0, 12, 4, ">> WIPEOUT (DIAG)");
-        if (WipeOut(1)) { anim_phase = 7; WipeInit(); }
+        if (WipeOut(1)) {
+            anim_phase = 7;
+            WipeInit();
+        }
         break;
     case 7:
         SSPutStr(0, 12, 4, ">> WIPEIN (DIAG)");
-        if (WipeIn(1)) { anim_phase = 0; FadeInit(); }
+        if (WipeIn(1)) {
+            anim_phase = 0;
+            FadeInit();
+        }
         break;
     }
 }
@@ -528,12 +600,14 @@ void FontTest_Task(struct _TASK* task_ptr) {
 
     if (new_press & SWK_RIGHT) {
         current_page++;
-        if (current_page >= PAGE_COUNT) current_page = 0;
+        if (current_page >= PAGE_COUNT)
+            current_page = 0;
         frame_counter = 0;
     }
     if (new_press & SWK_LEFT) {
         current_page--;
-        if (current_page < 0) current_page = PAGE_COUNT - 1;
+        if (current_page < 0)
+            current_page = PAGE_COUNT - 1;
         frame_counter = 0;
     }
 
@@ -542,24 +616,51 @@ void FontTest_Task(struct _TASK* task_ptr) {
     if (frame_counter >= FRAMES_PER_PAGE) {
         frame_counter = 0;
         current_page++;
-        if (current_page >= PAGE_COUNT) current_page = 0;
+        if (current_page >= PAGE_COUNT)
+            current_page = 0;
     }
 
     /* ── Render current page ───────────────────────────────── */
     switch (current_page) {
-    case 0:  FontTest_Page0();  break;
-    case 1:  FontTest_Page1();  break;
-    case 2:  FontTest_Page2();  break;
-    case 3:  FontTest_Page3();  break;
-    case 4:  FontTest_Page4();  break;
-    case 5:  FontTest_Page5();  break;
-    case 6:  FontTest_Page6();  break;
-    case 7:  FontTest_Page7();  break;
-    case 8:  FontTest_Page8();  break;
-    case 9:  FontTest_Page9();  break;
-    case 10: FontTest_Page10(); break;
-    case 11: FontTest_Page11(); break;
-    case 12: FontTest_Page12(); break;
+    case 0:
+        FontTest_Page0();
+        break;
+    case 1:
+        FontTest_Page1();
+        break;
+    case 2:
+        FontTest_Page2();
+        break;
+    case 3:
+        FontTest_Page3();
+        break;
+    case 4:
+        FontTest_Page4();
+        break;
+    case 5:
+        FontTest_Page5();
+        break;
+    case 6:
+        FontTest_Page6();
+        break;
+    case 7:
+        FontTest_Page7();
+        break;
+    case 8:
+        FontTest_Page8();
+        break;
+    case 9:
+        FontTest_Page9();
+        break;
+    case 10:
+        FontTest_Page10();
+        break;
+    case 11:
+        FontTest_Page11();
+        break;
+    case 12:
+        FontTest_Page12();
+        break;
     }
 
     /* ── Page indicator bar (bottom) ───────────────────────── */
@@ -578,10 +679,14 @@ void FontTest_Task(struct _TASK* task_ptr) {
         s16 pg = current_page + 1;
         s16 tot = PAGE_COUNT;
         s16 k = 0;
-        if (pg >= 10) { page_str[k++] = '0' + (pg / 10); }
+        if (pg >= 10) {
+            page_str[k++] = '0' + (pg / 10);
+        }
         page_str[k++] = '0' + (pg % 10);
         page_str[k++] = '/';
-        if (tot >= 10) { page_str[k++] = '0' + (tot / 10); }
+        if (tot >= 10) {
+            page_str[k++] = '0' + (tot / 10);
+        }
         page_str[k++] = '0' + (tot % 10);
         page_str[k] = '\0';
         SSPutStr(13 + PAGE_COUNT + 1, 27, 4, page_str);

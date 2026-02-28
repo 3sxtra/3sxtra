@@ -17,6 +17,7 @@
 #include "netplay/netplay.h"
 #include "port/config.h"
 #include "port/native_save.h"
+#include "port/renderer.h"
 #include "port/sdl/sdl_app.h"
 #include "port/sdl/sdl_netplay_ui.h"
 #include "port/ui/replay_picker.h"
@@ -61,6 +62,7 @@
 #include "sf33rd/Source/Game/message/en/msgtable_en.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/rendering/mmtmcnt.h"
+#include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texgroup.h"
 #include "sf33rd/Source/Game/screen/entry.h"
 #include "sf33rd/Source/Game/sound/se.h"
@@ -77,10 +79,8 @@
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/count.h"
-#include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "sf33rd/Source/Game/ui/sc_data.h"
-#include "sf33rd/Source/Game/rendering/mtrans.h"
-#include "port/renderer.h"
+#include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 
 // forward decls
@@ -421,10 +421,14 @@ void NetLobby_DrawIncomingPopup(const char* name, const char* region, int ping) 
     {
         PAL_CURSOR_P op[4];
         PAL_CURSOR_COL ocol[4];
-        op[0].x = -2;  op[0].y = -2;
-        op[1].x = 386; op[1].y = -2;
-        op[2].x = -2;  op[2].y = 226;
-        op[3].x = 386; op[3].y = 226;
+        op[0].x = -2;
+        op[0].y = -2;
+        op[1].x = 386;
+        op[1].y = -2;
+        op[2].x = -2;
+        op[2].y = 226;
+        op[3].x = 386;
+        op[3].y = 226;
         ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = 0xA0000000;
         Renderer_Queue2DPrimitive((f32*)op, PrioBase[3], (uintptr_t)ocol[0].color, 0);
     }
@@ -432,25 +436,35 @@ void NetLobby_DrawIncomingPopup(const char* name, const char* region, int ping) 
     {
         PAL_CURSOR_P bp[4];
         PAL_CURSOR_COL bcol[4];
-        bp[0].x = 60;  bp[0].y = 56;
-        bp[1].x = 324; bp[1].y = 56;
-        bp[2].x = 60;  bp[2].y = 168;
-        bp[3].x = 324; bp[3].y = 168;
+        bp[0].x = 60;
+        bp[0].y = 56;
+        bp[1].x = 324;
+        bp[1].y = 56;
+        bp[2].x = 60;
+        bp[2].y = 168;
+        bp[3].x = 324;
+        bp[3].y = 168;
         bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = 0xE0181818;
         Renderer_Queue2DPrimitive((f32*)bp, PrioBase[3], (uintptr_t)bcol[0].color, 0);
 
         /* Red border - top */
         PAL_CURSOR_P bb[4];
         PAL_CURSOR_COL bbcol[4];
-        bb[0].x = 60;  bb[0].y = 55;
-        bb[1].x = 324; bb[1].y = 55;
-        bb[2].x = 60;  bb[2].y = 57;
-        bb[3].x = 324; bb[3].y = 57;
+        bb[0].x = 60;
+        bb[0].y = 55;
+        bb[1].x = 324;
+        bb[1].y = 55;
+        bb[2].x = 60;
+        bb[2].y = 57;
+        bb[3].x = 324;
+        bb[3].y = 57;
         bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = 0xFFCC0000;
         Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
         /* Red border - bottom */
-        bb[0].y = 167; bb[1].y = 167;
-        bb[2].y = 169; bb[3].y = 169;
+        bb[0].y = 167;
+        bb[1].y = 167;
+        bb[2].y = 169;
+        bb[3].y = 169;
         Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
     }
 
@@ -484,9 +498,9 @@ void NetLobby_DrawIncomingPopup(const char* name, const char* region, int ping) 
     }
 
     /* Accept/Decline with game button images */
-    dispButtonImage2(0x6C, 0x8E, 0, 0x13, 0xF, 0, 4);  /* A button */
+    dispButtonImage2(0x6C, 0x8E, 0, 0x13, 0xF, 0, 4); /* A button */
     SSPutStrPro(0, 128, 144, 4, 0xFF00FF00, (s8*)"ACCEPT");
-    dispButtonImage2(0xC0, 0x8E, 0, 0x13, 0xF, 0, 5);  /* B button */
+    dispButtonImage2(0xC0, 0x8E, 0, 0x13, 0xF, 0, 5); /* B button */
     SSPutStrPro(0, 216, 144, 4, 0xFFFF0000, (s8*)"DECLINE");
 }
 
@@ -495,10 +509,14 @@ void NetLobby_DrawOutgoingPopup(const char* name, int ping) {
     {
         PAL_CURSOR_P op[4];
         PAL_CURSOR_COL ocol[4];
-        op[0].x = -2;  op[0].y = -2;
-        op[1].x = 386; op[1].y = -2;
-        op[2].x = -2;  op[2].y = 226;
-        op[3].x = 386; op[3].y = 226;
+        op[0].x = -2;
+        op[0].y = -2;
+        op[1].x = 386;
+        op[1].y = -2;
+        op[2].x = -2;
+        op[2].y = 226;
+        op[3].x = 386;
+        op[3].y = 226;
         ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = 0xA0000000;
         Renderer_Queue2DPrimitive((f32*)op, PrioBase[3], (uintptr_t)ocol[0].color, 0);
     }
@@ -506,25 +524,35 @@ void NetLobby_DrawOutgoingPopup(const char* name, int ping) {
     {
         PAL_CURSOR_P bp[4];
         PAL_CURSOR_COL bcol[4];
-        bp[0].x = 60;  bp[0].y = 56;
-        bp[1].x = 324; bp[1].y = 56;
-        bp[2].x = 60;  bp[2].y = 168;
-        bp[3].x = 324; bp[3].y = 168;
+        bp[0].x = 60;
+        bp[0].y = 56;
+        bp[1].x = 324;
+        bp[1].y = 56;
+        bp[2].x = 60;
+        bp[2].y = 168;
+        bp[3].x = 324;
+        bp[3].y = 168;
         bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = 0xE0181818;
         Renderer_Queue2DPrimitive((f32*)bp, PrioBase[3], (uintptr_t)bcol[0].color, 0);
 
         /* Red border - top */
         PAL_CURSOR_P bb[4];
         PAL_CURSOR_COL bbcol[4];
-        bb[0].x = 60;  bb[0].y = 55;
-        bb[1].x = 324; bb[1].y = 55;
-        bb[2].x = 60;  bb[2].y = 57;
-        bb[3].x = 324; bb[3].y = 57;
+        bb[0].x = 60;
+        bb[0].y = 55;
+        bb[1].x = 324;
+        bb[1].y = 55;
+        bb[2].x = 60;
+        bb[2].y = 57;
+        bb[3].x = 324;
+        bb[3].y = 57;
         bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = 0xFFCC0000;
         Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
         /* Red border - bottom */
-        bb[0].y = 167; bb[1].y = 167;
-        bb[2].y = 169; bb[3].y = 169;
+        bb[0].y = 167;
+        bb[1].y = 167;
+        bb[2].y = 169;
+        bb[3].y = 169;
         Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
     }
 
@@ -554,7 +582,7 @@ void NetLobby_DrawOutgoingPopup(const char* name, int ping) {
     }
 
     /* Cancel button */
-    dispButtonImage2(0x98, 0x8E, 0, 0x13, 0xF, 0, 5);  /* B button */
+    dispButtonImage2(0x98, 0x8E, 0, 0x13, 0xF, 0, 5); /* B button */
     SSPutStrPro(0, 176, 144, 4, 0xFFFF0000, (s8*)"CANCEL");
 }
 
@@ -596,10 +624,10 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         effect_57_init(0x4E, 0, 0, 0x45, 0);
 
         /* Right-side grey overlay boxes (LAN and Internet peer areas) */
-        effect_66_init(0x8A, 42, 1, 0, -1, -1, -0x7FF0);  /* cg_type=16: LAN peer box (top, small) */
+        effect_66_init(0x8A, 42, 1, 0, -1, -1, -0x7FF0); /* cg_type=16: LAN peer box (top, small) */
         Order[0x8A] = 3;
         Order_Timer[0x8A] = 1;
-        effect_66_init(0x8B, 42, 1, 0, -1, -1, -0x7FF1);  /* cg_type=15: Internet peer box (bottom, big) */
+        effect_66_init(0x8B, 42, 1, 0, -1, -1, -0x7FF1); /* cg_type=15: Internet peer box (bottom, big) */
         Order[0x8B] = 3;
         Order_Timer[0x8B] = 1;
 
@@ -630,7 +658,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         Message_Data->pos_x = 0;
         Message_Data->pos_y = 0x3E;
         Message_Data->pos_z = 0x44;
-        Message_Data->request = 35;  /* lobby msg index 0 = LAN AUTO-CONN */
+        Message_Data->request = 35; /* lobby msg index 0 = LAN AUTO-CONN */
         Message_Data->order = 0;
         Message_Data->timer = 1;
         effect_45_init(0, 0, 1);
@@ -665,7 +693,8 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         /* Decelerate slide-in offset */
         if (s_slide_offset > 0) {
             s_slide_offset = (int)(s_slide_offset / 1.18f);
-            if (s_slide_offset < 2) s_slide_offset = 0;
+            if (s_slide_offset < 2)
+                s_slide_offset = 0;
         }
         const s16 sl = (s16)s_slide_offset;
 
@@ -677,21 +706,27 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             for (ci = 0; ci < 4; ci++) {
                 ap[ci].x = Akaobi_Pos_tbl[ci * 2];
                 ap[ci].y = Akaobi_Pos_tbl[(ci * 2) + 1];
-                acol[ci].color = 0xFFCC0000;  /* fully opaque vibrant red */
+                acol[ci].color = 0xFFCC0000; /* fully opaque vibrant red */
             }
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[69], (uintptr_t)acol[0].color, 0);
 
             /* White top border (1px, 1px gap above red) */
-            ap[0].x = -2;  ap[0].y = 14;
-            ap[1].x = 386; ap[1].y = 14;
-            ap[2].x = -2;  ap[2].y = 15;
-            ap[3].x = 386; ap[3].y = 15;
+            ap[0].x = -2;
+            ap[0].y = 14;
+            ap[1].x = 386;
+            ap[1].y = 14;
+            ap[2].x = -2;
+            ap[2].y = 15;
+            ap[3].x = 386;
+            ap[3].y = 15;
             acol[0].color = acol[1].color = acol[2].color = acol[3].color = 0xFFFFFFFF;
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
 
             /* White bottom border (1px, 1px gap below red) */
-            ap[0].y = 41;  ap[1].y = 41;
-            ap[2].y = 42;  ap[3].y = 42;
+            ap[0].y = 41;
+            ap[1].y = 41;
+            ap[2].y = 42;
+            ap[3].y = 42;
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
         }
 
@@ -708,8 +743,8 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 }
             }
         }
-        bool popup_active = SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge()
-                         || lan_incoming || lan_outgoing;
+        bool popup_active =
+            SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge() || lan_incoming || lan_outgoing;
 
         /* Handle cursor movement (6 items: 0..5)
          * MC_Move_Sub MUST always run because it sets IO_Result from button presses.
@@ -807,145 +842,148 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
         /* === Background text — hide when popup covers the screen === */
         if (!popup_active) {
-        /* === Display toggle values (right of labels) === */
-        {
-            /* LAN toggle values (left column) */
-            bool lan_ac = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-            SSPutStr_Bigger(136 + sl, 63, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
+            /* === Display toggle values (right of labels) === */
+            {
+                /* LAN toggle values (left column) */
+                bool lan_ac = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
+                SSPutStr_Bigger(136 + sl, 63, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
 
-            /* NET toggle values (left column, below LAN) */
-            bool net_ac = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
-            SSPutStr_Bigger(136 + sl, 115, 5, net_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, net_ac ? 9 : 1, 1.0f);
+                /* NET toggle values (left column, below LAN) */
+                bool net_ac = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
+                SSPutStr_Bigger(136 + sl, 115, 5, net_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, net_ac ? 9 : 1, 1.0f);
 
-            bool auto_s = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
-            SSPutStr_Bigger(136 + sl, 129, 5, auto_s ? (s8*)"ON" : (s8*)"OFF", 1.0f, auto_s ? 9 : 1, 1.0f);
-        }
-
-        /* === LAN / NET Headers (centered on screen, 384px wide) === */
-        {
-            const char* lan_hdr = "----- LAN -----";
-            int lan_hdr_px = (int)SDL_strlen(lan_hdr) * 8;
-            s16 lan_hdr_x = (s16)((384 - lan_hdr_px) / 2);
-            SSPutStr_Bigger(lan_hdr_x + sl, 50, 5, (s8*)lan_hdr, 1.0f, 0, 1.0f);
-        }
-        {
-            const char* net_hdr = "-- INTERNET --";
-            int net_hdr_px = (int)SDL_strlen(net_hdr) * 8;
-            s16 net_hdr_x = (s16)((384 - net_hdr_px) / 2);
-            SSPutStr_Bigger(net_hdr_x + sl, 102, 5, (s8*)net_hdr, 1.0f, 0, 1.0f);
-        }
-
-        /* === Peer / Online Info (Right Side, inside grey boxes) === */
-        {
-            s16 peer_x = 200;
-            s16 lan_peer_y = 63;
-            s16 net_peer_y = 115;
-
-            /* LAN Selected Peer (right side, top) — styled like Internet */
-            NetplayDiscoveredPeer d_peers[16];
-            int d_count = Discovery_GetPeers(d_peers, 16);
-            if (d_count > 0) {
-                if (s_lobby_peer_idx >= d_count)
-                    s_lobby_peer_idx = d_count - 1;
-                if (s_lobby_peer_idx < 0)
-                    s_lobby_peer_idx = 0;
-                char buf[64];
-                SDL_snprintf(buf, sizeof(buf), "%d FOUND", d_count);
-                SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)buf, 1.0f, 9, 1.0f);
-
-                // Show selected peer name
-                SDL_snprintf(buf, sizeof(buf), "> %s", d_peers[s_lobby_peer_idx].name);
-                SSPutStr_Bigger(peer_x + sl, (u16)(lan_peer_y + 15), 5, (s8*)buf, 1.0f, 0, 1.0f);
-            } else {
-                s_lobby_peer_idx = 0;
-                SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)"NONE", 1.0f, 1, 1.0f);
+                bool auto_s = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
+                SSPutStr_Bigger(136 + sl, 129, 5, auto_s ? (s8*)"ON" : (s8*)"OFF", 1.0f, auto_s ? 9 : 1, 1.0f);
             }
 
-            /* Internet Online Players (right side, below LAN peer) */
-            if (SDLNetplayUI_IsSearching()) {
-                int online_count = SDLNetplayUI_GetOnlinePlayerCount();
-                char s_buf[64];
-                if (online_count > 0) {
-                    if (s_net_peer_idx >= online_count)
-                        s_net_peer_idx = online_count - 1;
-                    if (s_net_peer_idx < 0)
-                        s_net_peer_idx = 0;
+            /* === LAN / NET Headers (centered on screen, 384px wide) === */
+            {
+                const char* lan_hdr = "----- LAN -----";
+                int lan_hdr_px = (int)SDL_strlen(lan_hdr) * 8;
+                s16 lan_hdr_x = (s16)((384 - lan_hdr_px) / 2);
+                SSPutStr_Bigger(lan_hdr_x + sl, 50, 5, (s8*)lan_hdr, 1.0f, 0, 1.0f);
+            }
+            {
+                const char* net_hdr = "-- INTERNET --";
+                int net_hdr_px = (int)SDL_strlen(net_hdr) * 8;
+                s16 net_hdr_x = (s16)((384 - net_hdr_px) / 2);
+                SSPutStr_Bigger(net_hdr_x + sl, 102, 5, (s8*)net_hdr, 1.0f, 0, 1.0f);
+            }
 
-                    SDL_snprintf(s_buf, sizeof(s_buf), "%d ONLINE", online_count);
-                    SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)s_buf, 1.0f, 9, 1.0f);
+            /* === Peer / Online Info (Right Side, inside grey boxes) === */
+            {
+                s16 peer_x = 200;
+                s16 lan_peer_y = 63;
+                s16 net_peer_y = 115;
 
-                    // Show selected peer
-                    SDL_snprintf(s_buf, sizeof(s_buf), "> %s", SDLNetplayUI_GetOnlinePlayerName(s_net_peer_idx));
-                    SSPutStr_Bigger(peer_x + sl, (u16)(net_peer_y + 15), 5, (s8*)s_buf, 1.0f, 0, 1.0f);
+                /* LAN Selected Peer (right side, top) — styled like Internet */
+                NetplayDiscoveredPeer d_peers[16];
+                int d_count = Discovery_GetPeers(d_peers, 16);
+                if (d_count > 0) {
+                    if (s_lobby_peer_idx >= d_count)
+                        s_lobby_peer_idx = d_count - 1;
+                    if (s_lobby_peer_idx < 0)
+                        s_lobby_peer_idx = 0;
+                    char buf[64];
+                    SDL_snprintf(buf, sizeof(buf), "%d FOUND", d_count);
+                    SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)buf, 1.0f, 9, 1.0f);
+
+                    // Show selected peer name
+                    SDL_snprintf(buf, sizeof(buf), "> %s", d_peers[s_lobby_peer_idx].name);
+                    SSPutStr_Bigger(peer_x + sl, (u16)(lan_peer_y + 15), 5, (s8*)buf, 1.0f, 0, 1.0f);
                 } else {
-                    s_net_peer_idx = 0;
-                    SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)"SEARCHING", 1.0f, 9, 1.0f);
+                    s_lobby_peer_idx = 0;
+                    SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)"NONE", 1.0f, 1, 1.0f);
                 }
-            } else {
-                SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)"IDLE", 1.0f, 1, 1.0f);
-            }
-        }
 
-        /* === Grey description banner (between EXIT and status) === */
-        {
-            PAL_CURSOR_P dp[4];
-            PAL_CURSOR_COL dcol[4];
-            dp[0].x = -2;  dp[0].y = 175;
-            dp[1].x = 386; dp[1].y = 175;
-            dp[2].x = -2;  dp[2].y = 213;
-            dp[3].x = 386; dp[3].y = 213;
-            dcol[0].color = dcol[1].color = dcol[2].color = dcol[3].color = 0x80202020;
-            Renderer_Queue2DPrimitive((f32*)dp, PrioBase[70], (uintptr_t)dcol[0].color, 0);
+                /* Internet Online Players (right side, below LAN peer) */
+                if (SDLNetplayUI_IsSearching()) {
+                    int online_count = SDLNetplayUI_GetOnlinePlayerCount();
+                    char s_buf[64];
+                    if (online_count > 0) {
+                        if (s_net_peer_idx >= online_count)
+                            s_net_peer_idx = online_count - 1;
+                        if (s_net_peer_idx < 0)
+                            s_net_peer_idx = 0;
 
-            /* Description text rendered by effect_45 message system */
-        }
+                        SDL_snprintf(s_buf, sizeof(s_buf), "%d ONLINE", online_count);
+                        SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)s_buf, 1.0f, 9, 1.0f);
 
-        /* === Status line (bottom area) === */
-        {
-            const char* status = SDLNetplayUI_GetStatusMsg();
-            if (status[0]) {
-                SSPutStr_Bigger(40 + sl, 215, 5, (s8*)status, 1.0f, 9, 1.0f);
-            } else {
-                NetplayDiscoveredPeer c_peers[16];
-                int c_count = Discovery_GetPeers(c_peers, 16);
-                int current_target = Discovery_GetChallengeTarget();
-                bool showing_status = false;
-
-                for (int i = 0; i < c_count; i++) {
-                    if (c_peers[i].is_challenging_me) {
-                        char c_buf[64];
-                        SDL_snprintf(c_buf, sizeof(c_buf), "CHALLENGED BY %s!", c_peers[i].name);
-                        SSPutStr_Bigger(40 + sl, 215, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
-                        showing_status = true;
-                        break;
+                        // Show selected peer
+                        SDL_snprintf(s_buf, sizeof(s_buf), "> %s", SDLNetplayUI_GetOnlinePlayerName(s_net_peer_idx));
+                        SSPutStr_Bigger(peer_x + sl, (u16)(net_peer_y + 15), 5, (s8*)s_buf, 1.0f, 0, 1.0f);
+                    } else {
+                        s_net_peer_idx = 0;
+                        SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)"SEARCHING", 1.0f, 9, 1.0f);
                     }
+                } else {
+                    SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)"IDLE", 1.0f, 1, 1.0f);
                 }
+            }
 
-                if (!showing_status && current_target != 0) {
+            /* === Grey description banner (between EXIT and status) === */
+            {
+                PAL_CURSOR_P dp[4];
+                PAL_CURSOR_COL dcol[4];
+                dp[0].x = -2;
+                dp[0].y = 175;
+                dp[1].x = 386;
+                dp[1].y = 175;
+                dp[2].x = -2;
+                dp[2].y = 213;
+                dp[3].x = 386;
+                dp[3].y = 213;
+                dcol[0].color = dcol[1].color = dcol[2].color = dcol[3].color = 0x80202020;
+                Renderer_Queue2DPrimitive((f32*)dp, PrioBase[70], (uintptr_t)dcol[0].color, 0);
+
+                /* Description text rendered by effect_45 message system */
+            }
+
+            /* === Status line (bottom area) === */
+            {
+                const char* status = SDLNetplayUI_GetStatusMsg();
+                if (status[0]) {
+                    SSPutStr_Bigger(40 + sl, 215, 5, (s8*)status, 1.0f, 9, 1.0f);
+                } else {
+                    NetplayDiscoveredPeer c_peers[16];
+                    int c_count = Discovery_GetPeers(c_peers, 16);
+                    int current_target = Discovery_GetChallengeTarget();
+                    bool showing_status = false;
+
                     for (int i = 0; i < c_count; i++) {
-                        if ((int)c_peers[i].instance_id == current_target) {
+                        if (c_peers[i].is_challenging_me) {
                             char c_buf[64];
-                            SDL_snprintf(c_buf, sizeof(c_buf), "CHALLENGING %s...", c_peers[i].name);
+                            SDL_snprintf(c_buf, sizeof(c_buf), "CHALLENGED BY %s!", c_peers[i].name);
                             SSPutStr_Bigger(40 + sl, 215, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
                             showing_status = true;
                             break;
                         }
                     }
-                }
 
-                if (!showing_status && SDLNetplayUI_IsDiscovering()) {
-                    SSPutStr_Bigger(40 + sl, 215, 5, (s8*)"DISCOVERING...", 1.0f, 9, 1.0f);
+                    if (!showing_status && current_target != 0) {
+                        for (int i = 0; i < c_count; i++) {
+                            if ((int)c_peers[i].instance_id == current_target) {
+                                char c_buf[64];
+                                SDL_snprintf(c_buf, sizeof(c_buf), "CHALLENGING %s...", c_peers[i].name);
+                                SSPutStr_Bigger(40 + sl, 215, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
+                                showing_status = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!showing_status && SDLNetplayUI_IsDiscovering()) {
+                        SSPutStr_Bigger(40 + sl, 215, 5, (s8*)"DISCOVERING...", 1.0f, 9, 1.0f);
+                    }
                 }
             }
-        }
         } /* end !popup_active background text */
 
         /* === Incoming Challenge Popup (Internet) === */
         if (SDLNetplayUI_HasPendingInvite()) {
-            NetLobby_DrawIncomingPopup(
-                SDLNetplayUI_GetPendingInviteName(),
-                SDLNetplayUI_GetPendingInviteRegion(),
-                SDLNetplayUI_GetPendingInvitePing());
+            NetLobby_DrawIncomingPopup(SDLNetplayUI_GetPendingInviteName(),
+                                       SDLNetplayUI_GetPendingInviteRegion(),
+                                       SDLNetplayUI_GetPendingInvitePing());
 
             /* Override input: accept on Confirm, decline on Cancel */
             switch (IO_Result) {
@@ -962,9 +1000,8 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             }
         } else if (SDLNetplayUI_HasOutgoingChallenge()) {
             /* === Outgoing Challenge Popup (Internet) === */
-            NetLobby_DrawOutgoingPopup(
-                SDLNetplayUI_GetOutgoingChallengeName(),
-                SDLNetplayUI_GetOutgoingChallengePing());
+            NetLobby_DrawOutgoingPopup(SDLNetplayUI_GetOutgoingChallengeName(),
+                                       SDLNetplayUI_GetOutgoingChallengePing());
 
             /* Cancel on either Confirm or Cancel button press */
             if (IO_Result == 0x100 || IO_Result == 0x200) {
@@ -1020,89 +1057,89 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     break;
                 }
             } else {
-        /* === Handle confirm/cancel (normal lobby input) === */
-        switch (IO_Result) {
-        case 0x100: /* Confirm */
-            switch (Menu_Cursor_Y[0]) {
-            case 0: { /* LAN AUTO-CONN toggle */
-                bool v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-                Config_SetBool(CFG_KEY_NETPLAY_AUTO_CONNECT, !v);
-                Config_Save();
-                SE_selected();
-                break;
-            }
-            case 1: { /* LAN CONNECT */
-                NetplayDiscoveredPeer cp_peers[16];
-                int cp_count = Discovery_GetPeers(cp_peers, 16);
-                if (cp_count > 0 && s_lobby_peer_idx >= 0 && s_lobby_peer_idx < cp_count) {
-                    NetplayDiscoveredPeer* p = &cp_peers[s_lobby_peer_idx];
-
-                    Discovery_SetChallengeTarget(p->instance_id);
-                    SE_selected();
-                } else {
-                    // No peer found
-                    SE_selected();
-                }
-                break;
-            }
-            case 2: { /* NET AUTO-CONN toggle */
-                bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
-                Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !v);
-                Config_Save();
-                SE_selected();
-                break;
-            }
-            case 3: { /* NET AUTO-SEARCH toggle */
-                bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
-                Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, !v);
-                Config_Save();
-                SE_selected();
-                break;
-            }
-            case 4: /* NET CONNECT */
-                if (SDLNetplayUI_IsSearching()) {
-                    int p_count = SDLNetplayUI_GetOnlinePlayerCount();
-                    if (p_count > 0 && s_net_peer_idx >= 0 && s_net_peer_idx < p_count) {
-                        SDLNetplayUI_ConnectToPlayer(s_net_peer_idx);
+                /* === Handle confirm/cancel (normal lobby input) === */
+                switch (IO_Result) {
+                case 0x100: /* Confirm */
+                    switch (Menu_Cursor_Y[0]) {
+                    case 0: { /* LAN AUTO-CONN toggle */
+                        bool v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
+                        Config_SetBool(CFG_KEY_NETPLAY_AUTO_CONNECT, !v);
+                        Config_Save();
                         SE_selected();
-                    } else {
-                        SDLNetplayUI_StopSearch();
-                        SE_selected();
+                        break;
                     }
-                } else {
-                    SDLNetplayUI_StartSearch();
+                    case 1: { /* LAN CONNECT */
+                        NetplayDiscoveredPeer cp_peers[16];
+                        int cp_count = Discovery_GetPeers(cp_peers, 16);
+                        if (cp_count > 0 && s_lobby_peer_idx >= 0 && s_lobby_peer_idx < cp_count) {
+                            NetplayDiscoveredPeer* p = &cp_peers[s_lobby_peer_idx];
+
+                            Discovery_SetChallengeTarget(p->instance_id);
+                            SE_selected();
+                        } else {
+                            // No peer found
+                            SE_selected();
+                        }
+                        break;
+                    }
+                    case 2: { /* NET AUTO-CONN toggle */
+                        bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
+                        Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !v);
+                        Config_Save();
+                        SE_selected();
+                        break;
+                    }
+                    case 3: { /* NET AUTO-SEARCH toggle */
+                        bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
+                        Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, !v);
+                        Config_Save();
+                        SE_selected();
+                        break;
+                    }
+                    case 4: /* NET CONNECT */
+                        if (SDLNetplayUI_IsSearching()) {
+                            int p_count = SDLNetplayUI_GetOnlinePlayerCount();
+                            if (p_count > 0 && s_net_peer_idx >= 0 && s_net_peer_idx < p_count) {
+                                SDLNetplayUI_ConnectToPlayer(s_net_peer_idx);
+                                SE_selected();
+                            } else {
+                                SDLNetplayUI_StopSearch();
+                                SE_selected();
+                            }
+                        } else {
+                            SDLNetplayUI_StartSearch();
+                            SE_selected();
+                        }
+                        break;
+
+                    case 5:
+                        /* EXIT */
+                        goto lobby_exit;
+                    }
+                    break;
+
+                case 0x200: /* Cancel */
+                    if (Discovery_GetChallengeTarget() != 0) {
+                        Discovery_SetChallengeTarget(0);
+                        SE_selected();
+                        break;
+                    }
+                lobby_exit:
                     SE_selected();
+                    SDLNetplayUI_SetNativeLobbyActive(false);
+                    Netplay_HandleMenuExit();
+                    Menu_Suicide[0] = 0;
+                    Menu_Suicide[1] = 1;   /* kill our items + blue BG */
+                    task_ptr->r_no[1] = 1; /* Mode_Select */
+                    task_ptr->r_no[2] = 0;
+                    task_ptr->r_no[3] = 0;
+                    task_ptr->free[0] = 0;
+                    break;
+
+                default:
+                    break;
                 }
-                break;
-
-            case 5:
-                /* EXIT */
-                goto lobby_exit;
             }
-            break;
-
-        case 0x200: /* Cancel */
-            if (Discovery_GetChallengeTarget() != 0) {
-                Discovery_SetChallengeTarget(0);
-                SE_selected();
-                break;
-            }
-        lobby_exit:
-            SE_selected();
-            SDLNetplayUI_SetNativeLobbyActive(false);
-            Netplay_HandleMenuExit();
-            Menu_Suicide[0] = 0;
-            Menu_Suicide[1] = 1;   /* kill our items + blue BG */
-            task_ptr->r_no[1] = 1; /* Mode_Select */
-            task_ptr->r_no[2] = 0;
-            task_ptr->r_no[3] = 0;
-            task_ptr->free[0] = 0;
-            break;
-
-        default:
-            break;
-        }
-        }
         } /* end LAN incoming / normal input */
         break;
     }

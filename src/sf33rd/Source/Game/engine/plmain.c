@@ -424,10 +424,8 @@ void look_after_timers(PLW* wk) {
     }
 
     if (Debug_w[DEBUG_1SHOT_SA]) {
-        const s16 sa_ixs[] = {
-            wk->sa->nmsa_g_ix, wk->sa->exsa_g_ix, wk->sa->exs2_g_ix,
-            wk->sa->nmsa_a_ix, wk->sa->exsa_a_ix, wk->sa->exs2_a_ix
-        };
+        const s16 sa_ixs[] = { wk->sa->nmsa_g_ix, wk->sa->exsa_g_ix, wk->sa->exs2_g_ix,
+                               wk->sa->nmsa_a_ix, wk->sa->exsa_a_ix, wk->sa->exs2_a_ix };
         s16 si;
 
         for (si = 0; si < 6; si++) {

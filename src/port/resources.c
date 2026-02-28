@@ -63,8 +63,7 @@ static void open_folder_dialog_callback(void* userdata, const char* const* filel
     /* filelist is NULL when the dialog is cancelled, closed, or unavailable
        (e.g. headless Linux / Batocera where no dialog backend exists). */
     if (!filelist || !filelist[0]) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "Folder dialog returned no selection (cancelled or unavailable)");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Folder dialog returned no selection (cancelled or unavailable)");
         flow_state = COPY_ERROR;
         return;
     }

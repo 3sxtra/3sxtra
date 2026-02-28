@@ -18,30 +18,45 @@ import os
 # Character names indexed 1-19 (Lua is 1-based)
 CHARA_NAMES = [
     None,  # 0 — unused
-    "Alex", "Ryu", "Ken", "Gouki", "Sean",
-    "Dudley", "Necro", "Hugo", "Ibuki", "Elena",
-    "Oro", "Makoto", "Yang", "Yun", "Chun-Li",
-    "Q", "Twelve", "Remy", "Urien",
+    "Alex",
+    "Ryu",
+    "Ken",
+    "Gouki",
+    "Sean",
+    "Dudley",
+    "Necro",
+    "Hugo",
+    "Ibuki",
+    "Elena",
+    "Oro",
+    "Makoto",
+    "Yang",
+    "Yun",
+    "Chun-Li",
+    "Q",
+    "Twelve",
+    "Remy",
+    "Urien",
 ]
 
 # Character IDs in the native engine (matching PLW chara_id)
 # These are the values used in sel_pl.c character select grid
 CHARA_IDS = [
     -1,  # 0 — unused
-    1,   # 1  Alex     (native 1)
-    2,   # 2  Ryu      (native 2)
+    1,  # 1  Alex     (native 1)
+    2,  # 2  Ryu      (native 2)
     11,  # 3  Ken      (native 11)
     14,  # 4  Gouki/Akuma (native 14)
     12,  # 5  Sean     (native 12)
-    4,   # 6  Dudley   (native 4)
-    5,   # 7  Necro    (native 5)
-    6,   # 8  Hugo     (native 6)
-    7,   # 9  Ibuki    (native 7)
-    8,   # 10 Elena    (native 8)
-    9,   # 11 Oro      (native 9)
+    4,  # 6  Dudley   (native 4)
+    5,  # 7  Necro    (native 5)
+    6,  # 8  Hugo     (native 6)
+    7,  # 9  Ibuki    (native 7)
+    8,  # 10 Elena    (native 8)
+    9,  # 11 Oro      (native 9)
     16,  # 12 Makoto   (native 16)
     10,  # 13 Yang     (native 10)
-    3,   # 14 Yun      (native 3)
+    3,  # 14 Yun      (native 3)
     15,  # 15 Chun-Li  (native 15)
     17,  # 16 Q        (native 17)
     18,  # 17 Twelve   (native 18)
@@ -63,7 +78,7 @@ def parse_waza_id(waza_str):
     prefix = waza_str[0]
     hex_part = waza_str[1:]
 
-    if prefix in ('A', 'S', 'N', 'G'):
+    if prefix in ("A", "S", "N", "G"):
         # Attack/Special: "A0046003a" → two 4-hex-digit values
         req_type = "TRIAL_REQ_ATTACK_HIT"
         if len(hex_part) == 8:
@@ -75,7 +90,7 @@ def parse_waza_id(waza_str):
         else:
             return None, []
 
-    elif prefix == 'T':
+    elif prefix == "T":
         req_type = "TRIAL_REQ_THROW_HIT"
         if len(hex_part) == 8:
             v1 = int(hex_part[0:4], 16)
@@ -86,7 +101,7 @@ def parse_waza_id(waza_str):
         else:
             return None, []
 
-    elif prefix == 'F':
+    elif prefix == "F":
         req_type = "TRIAL_REQ_FIREBALL_HIT"
         if len(hex_part) >= 4:
             values = [int(hex_part[0:4], 16)]
@@ -109,7 +124,7 @@ def parse_lua_trials(lua_path):
         difficulties: dict of {(chara, trial): int}
         gauge_max_flags: dict of {(chara, trial): int}
     """
-    with open(lua_path, 'r', encoding='utf-8', errors='replace') as f:
+    with open(lua_path, "r", encoding="utf-8", errors="replace") as f:
         content = f.read()
 
     combo_tests = {}
@@ -120,8 +135,7 @@ def parse_lua_trials(lua_path):
     # Parse comboTest[chara][trial] = { {step1}, {step2}, ... }
     # Pattern: comboTest[N][M]={  followed by multiple {fields} entries
     combo_pattern = re.compile(
-        r'comboTest\[(\d+)\]\[(\d+)\]\s*=\s*\{(.*?)\n\s*\}',
-        re.DOTALL
+        r"comboTest\[(\d+)\]\[(\d+)\]\s*=\s*\{(.*?)\n\s*\}", re.DOTALL
     )
 
     for match in combo_pattern.finditer(content):
@@ -131,7 +145,7 @@ def parse_lua_trials(lua_path):
 
         steps = []
         # Parse each step: {field1, field2, ...}
-        step_pattern = re.compile(r'\{([^{}]+)\}')
+        step_pattern = re.compile(r"\{([^{}]+)\}")
         for step_match in step_pattern.finditer(body):
             fields_raw = step_match.group(1)
             # Split by comma, handling quoted strings
@@ -141,7 +155,7 @@ def parse_lua_trials(lua_path):
             for ch in fields_raw:
                 if ch == '"':
                     in_quote = not in_quote
-                elif ch == ',' and not in_quote:
+                elif ch == "," and not in_quote:
                     fields.append(current.strip().strip('"'))
                     current = ""
                     continue
@@ -161,15 +175,11 @@ def parse_lua_trials(lua_path):
                     # but parse_waza_id handles hex strings starting with 'A/S/F/N'.
                     # Nested array ints don't matter to us because we just want the 'A00000000' part.
                     # We will collect all fields and let parse_waza_id filter out invalid ones.
-                    clean = fld.replace('{', '').replace('}', '').strip()
+                    clean = fld.replace("{", "").replace("}", "").strip()
                     if clean:
                         waza_fields.append(clean)
-                
-                step = {
-                    'name': fields[0],
-                    'type': fields[1],
-                    'waza_ids': waza_fields
-                }
+
+                step = {"name": fields[0], "type": fields[1], "waza_ids": waza_fields}
                 steps.append(step)
 
         if steps:
@@ -177,8 +187,7 @@ def parse_lua_trials(lua_path):
 
     # Parse kadai[chara][trial] = { {field}, {field} }
     kadai_pattern = re.compile(
-        r'kadai\[(\d+)\]\[(\d+)\]\s*=\s*\{(.*?)\n\s*\}',
-        re.DOTALL
+        r"kadai\[(\d+)\]\[(\d+)\]\s*=\s*\{(.*?)\n\s*\}", re.DOTALL
     )
 
     for match in kadai_pattern.finditer(content):
@@ -188,7 +197,7 @@ def parse_lua_trials(lua_path):
 
         steps = []
         # Parse each step: {field1, field2, ...}
-        step_pattern = re.compile(r'\{([^{}]+)\}')
+        step_pattern = re.compile(r"\{([^{}]+)\}")
         for step_match in step_pattern.finditer(body):
             fields_raw = step_match.group(1)
             # Find the first quoted string directly, avoid complex comma splitting
@@ -205,7 +214,7 @@ def parse_lua_trials(lua_path):
             kadais[(chara, trial)] = steps
 
     # Parse difficulty[chara][trial] = N
-    diff_pattern = re.compile(r'difficulty\[(\d+)\]\[(\d+)\]\s*=\s*(\d+)')
+    diff_pattern = re.compile(r"difficulty\[(\d+)\]\[(\d+)\]\s*=\s*(\d+)")
     for match in diff_pattern.finditer(content):
         chara = int(match.group(1))
         trial = int(match.group(2))
@@ -213,7 +222,7 @@ def parse_lua_trials(lua_path):
         difficulties[(chara, trial)] = diff
 
     # Parse gaugeMaxflg[chara][trial] = N
-    gauge_pattern = re.compile(r'gaugeMaxflg\[(\d+)\]\[(\d+)\]\s*=\s*(\d+)')
+    gauge_pattern = re.compile(r"gaugeMaxflg\[(\d+)\]\[(\d+)\]\s*=\s*(\d+)")
     for match in gauge_pattern.finditer(content):
         chara = int(match.group(1))
         trial = int(match.group(2))
@@ -238,7 +247,7 @@ def generate_c_data(combo_tests, kadais, difficulties, gauge_max_flags, output_p
     # Sort by character then trial
     sorted_keys = sorted(combo_tests.keys())
 
-    for (chara, trial) in sorted_keys:
+    for chara, trial in sorted_keys:
         if chara < 1 or chara > 19:
             continue
 
@@ -261,44 +270,44 @@ def generate_c_data(combo_tests, kadais, difficulties, gauge_max_flags, output_p
         lines.append(f"    .difficulty = {diff},")
         lines.append(f"    .gauge_max = {gauge_max},")
         lines.append(f"    .num_steps = {len(steps)},")
-        lines.append(f"    .steps = {{")
+        lines.append("    .steps = {")
 
         for i, step in enumerate(steps):
             # Determine the requirement type and collect all waza values
             all_waza_values = []
             req_type = "TRIAL_REQ_ATTACK_HIT"
 
-            step_type = step['type']
+            step_type = step["type"]
 
             # Map Lua type to C type
-            if step_type in ('H', 'HR'):
+            if step_type in ("H", "HR"):
                 req_type = "TRIAL_REQ_ATTACK_HIT"
-            elif step_type == 'T':
+            elif step_type == "T":
                 req_type = "TRIAL_REQ_THROW_HIT"
-            elif step_type == 'F':
+            elif step_type == "F":
                 req_type = "TRIAL_REQ_FIREBALL_HIT"
-            elif step_type == 'D':
+            elif step_type == "D":
                 req_type = "TRIAL_REQ_ACTIVE_MOVE"
-            elif step_type == 'J':
+            elif step_type == "J":
                 req_type = "TRIAL_REQ_ACTIVE_MOVE"
-            elif step_type == 'K':
+            elif step_type == "K":
                 req_type = "TRIAL_REQ_ACTIVE_MOVE"
-            elif step_type == 'K12K':
+            elif step_type == "K12K":
                 req_type = "TRIAL_REQ_ACTIVE_MOVE"
-            elif step_type == 'U':
+            elif step_type == "U":
                 req_type = "TRIAL_REQ_SPECIAL_COND"
-            elif step_type == 'ANIM2P':
+            elif step_type == "ANIM2P":
                 req_type = "TRIAL_REQ_ANIMATION"
             else:
                 req_type = "TRIAL_REQ_ATTACK_HIT"
 
             # Parse all waza ID strings for this step
-            for waza_str in step['waza_ids']:
+            for waza_str in step["waza_ids"]:
                 # Skip non-waza fields (timer values stored as plain numbers for J/K types)
                 if waza_str.isdigit():
                     continue
                 # Skip sub-arrays (some K12K steps have nested stuff)
-                if waza_str.startswith('{'):
+                if waza_str.startswith("{"):
                     continue
                 _, values = parse_waza_id(waza_str)
                 all_waza_values.extend(values)
@@ -311,8 +320,8 @@ def generate_c_data(combo_tests, kadais, difficulties, gauge_max_flags, output_p
                 all_waza_values.append(0xFFFF)
 
             # Escape display name for C string
-            display_name = step['name'].replace('"', '\\"')
-            
+            display_name = step["name"].replace('"', '\\"')
+
             # Fetch kadai input
             kadai_str = ""
             if i < len(kadai_list):
@@ -320,10 +329,12 @@ def generate_c_data(combo_tests, kadais, difficulties, gauge_max_flags, output_p
 
             waza_str_c = ", ".join(f"0x{v:04X}" for v in all_waza_values)
             comma = "," if i < len(steps) - 1 else ""
-            lines.append(f'        {{ {req_type}, {{ {waza_str_c} }}, "{display_name}", "{kadai_str}" }}{comma}')
+            lines.append(
+                f'        {{ {req_type}, {{ {waza_str_c} }}, "{display_name}", "{kadai_str}" }}{comma}'
+            )
 
-        lines.append(f"    }}")
-        lines.append(f"}};")
+        lines.append("    }")
+        lines.append("};")
         lines.append("")
 
     # Generate per-character trial lists
@@ -340,7 +351,7 @@ def generate_c_data(combo_tests, kadais, difficulties, gauge_max_flags, output_p
         lines.append(f"static const TrialDef* g_trials_{chara_name_c}[] = {{")
         for tn in trial_names:
             lines.append(f"    &{tn},")
-        lines.append(f"}};")
+        lines.append("};")
         lines.append("")
 
     # Generate master lookup table
@@ -355,16 +366,18 @@ def generate_c_data(combo_tests, kadais, difficulties, gauge_max_flags, output_p
         chara_name_c = chara_name.replace("-", "_").replace(" ", "_").lower()
         num_trials = len(char_trial_names[chara])
 
-        lines.append(f'    {{ {CHARA_IDS[chara]}, {num_trials}, g_trials_{chara_name_c}, "{chara_name}" }},')
+        lines.append(
+            f'    {{ {CHARA_IDS[chara]}, {num_trials}, g_trials_{chara_name_c}, "{chara_name}" }},'
+        )
 
     lines.append("};")
     lines.append("")
     lines.append(f"#define NUM_TRIAL_CHARACTERS {len(char_trial_names)}")
     lines.append("")
 
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(lines))
-        f.write('\n')
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+        f.write("\n")
 
     return len(combo_tests), len(char_trial_names)
 
@@ -390,7 +403,9 @@ def main():
     print(f"Found {len(gauge_max_flags)} gauge max flags")
 
     print(f"Generating {output_path}...")
-    num_trials, num_chars = generate_c_data(combo_tests, kadais, difficulties, gauge_max_flags, output_path)
+    num_trials, num_chars = generate_c_data(
+        combo_tests, kadais, difficulties, gauge_max_flags, output_path
+    )
 
     print(f"Done! Generated {num_trials} trials for {num_chars} characters")
 

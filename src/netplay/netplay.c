@@ -114,12 +114,12 @@ static int frame_max_rollback = 0;
 static NetworkStats network_stats = { 0 };
 
 // --- Dynamic delay from ping ---
-static int    dynamic_delay = DELAY_FRAMES_DEFAULT;
-static bool   dynamic_delay_applied = false;
-static float  ping_sum = 0;
-static float  jitter_sum = 0;
-static int    ping_sample_count = 0;
-static int    ping_sample_timer = 0;
+static int dynamic_delay = DELAY_FRAMES_DEFAULT;
+static bool dynamic_delay_applied = false;
+static float ping_sum = 0;
+static float jitter_sum = 0;
+static int ping_sample_count = 0;
+static int ping_sample_timer = 0;
 
 #if defined(DEBUG)
 static int battle_start_frame = -1;
@@ -397,10 +397,14 @@ static GekkoNetAdapter stun_adapter = { stun_adapter_send, stun_adapter_receive,
 
 static int compute_delay_from_ping(float avg_ping, float jitter) {
     float effective_rtt = avg_ping + jitter;
-    if (effective_rtt < 30.0f)  return 0;
-    if (effective_rtt < 70.0f)  return 1;
-    if (effective_rtt < 130.0f) return 2;
-    if (effective_rtt < 200.0f) return 3;
+    if (effective_rtt < 30.0f)
+        return 0;
+    if (effective_rtt < 70.0f)
+        return 1;
+    if (effective_rtt < 130.0f)
+        return 2;
+    if (effective_rtt < 200.0f)
+        return 3;
     return DELAY_FRAMES_MAX;
 }
 
@@ -1105,10 +1109,16 @@ static void process_session() {
                 char fn[100];
                 SDL_snprintf(fn, sizeof(fn), "states/%d_%d_plw0_san", player_handle, frame);
                 SDL_IOStream* io = SDL_IOFromFile(fn, "w");
-                if (io) { SDL_WriteIO(io, &sp[0], sizeof(PLW)); SDL_CloseIO(io); }
+                if (io) {
+                    SDL_WriteIO(io, &sp[0], sizeof(PLW));
+                    SDL_CloseIO(io);
+                }
                 SDL_snprintf(fn, sizeof(fn), "states/%d_%d_plw1_san", player_handle, frame);
                 io = SDL_IOFromFile(fn, "w");
-                if (io) { SDL_WriteIO(io, &sp[1], sizeof(PLW)); SDL_CloseIO(io); }
+                if (io) {
+                    SDL_WriteIO(io, &sp[1], sizeof(PLW));
+                    SDL_CloseIO(io);
+                }
             }
 
             // Per-field hash breakdown for the sanitized PLW
@@ -1116,49 +1126,50 @@ static void process_session() {
                 const PLW* sp = &saved_plw_scratch[frame % STATE_BUFFER_MAX][p];
                 const WORK* wu = &sp->wu;
                 printf("  plw[%d] field hashes:\n", p);
-                #define FIELD_HASH(label, ptr, sz) do { \
-                    uint32_t fh = djb2_init(); \
-                    fh = djb2_update_mem(fh, (const uint8_t*)(ptr), (sz)); \
-                    printf("    %-24s 0x%08x (%zu bytes)\n", label, fh, (size_t)(sz)); \
-                } while(0)
+#define FIELD_HASH(label, ptr, sz)                                                                                     \
+    do {                                                                                                               \
+        uint32_t fh = djb2_init();                                                                                     \
+        fh = djb2_update_mem(fh, (const uint8_t*)(ptr), (sz));                                                         \
+        printf("    %-24s 0x%08x (%zu bytes)\n", label, fh, (size_t)(sz));                                             \
+    } while (0)
 
-                FIELD_HASH("wu.be_flag..type",     &wu->be_flag, 6);
-                FIELD_HASH("wu.work_id+id",        &wu->work_id, 4);
-                FIELD_HASH("wu.dead_f",            &wu->dead_f, sizeof(wu->dead_f));
-                FIELD_HASH("wu.routine_no",        &wu->routine_no, sizeof(wu->routine_no));
-                FIELD_HASH("wu.old_rno",           &wu->old_rno, sizeof(wu->old_rno));
-                FIELD_HASH("wu.hit_stop+quake",    &wu->hit_stop, 4);
-                FIELD_HASH("wu.position_xyz",      &wu->position_x, 6);
-                FIELD_HASH("wu.next_xyz",          &wu->next_x, 6);
-                FIELD_HASH("wu.xyz",               &wu->xyz, sizeof(wu->xyz));
-                FIELD_HASH("wu.mvxy",              &wu->mvxy, sizeof(wu->mvxy));
-                FIELD_HASH("wu.direction",         &wu->direction, sizeof(wu->direction));
+                FIELD_HASH("wu.be_flag..type", &wu->be_flag, 6);
+                FIELD_HASH("wu.work_id+id", &wu->work_id, 4);
+                FIELD_HASH("wu.dead_f", &wu->dead_f, sizeof(wu->dead_f));
+                FIELD_HASH("wu.routine_no", &wu->routine_no, sizeof(wu->routine_no));
+                FIELD_HASH("wu.old_rno", &wu->old_rno, sizeof(wu->old_rno));
+                FIELD_HASH("wu.hit_stop+quake", &wu->hit_stop, 4);
+                FIELD_HASH("wu.position_xyz", &wu->position_x, 6);
+                FIELD_HASH("wu.next_xyz", &wu->next_x, 6);
+                FIELD_HASH("wu.xyz", &wu->xyz, sizeof(wu->xyz));
+                FIELD_HASH("wu.mvxy", &wu->mvxy, sizeof(wu->mvxy));
+                FIELD_HASH("wu.direction", &wu->direction, sizeof(wu->direction));
                 FIELD_HASH("wu.vitality+vital_new", &wu->vitality, 6);
-                FIELD_HASH("wu.cmoa..cmb3",        &wu->cmoa, 18 * sizeof(UNK11));
-                FIELD_HASH("wu.cmwk",              &wu->cmwk, sizeof(wu->cmwk));
-                FIELD_HASH("wu.char_state",        &sp->wu.char_state, sizeof(sp->wu.char_state));
-                FIELD_HASH("wu.att",               &wu->att, sizeof(wu->att));
-                FIELD_HASH("wu.hf+hit_mark",       &wu->hf, 8);
-                FIELD_HASH("wu.attpow+defpow",     &wu->attpow, 4);
-                FIELD_HASH("wu.shell_ix",          &wu->shell_ix, sizeof(wu->shell_ix));
-                FIELD_HASH("wu.wrd_free",          &wu->wrd_free, sizeof(wu->wrd_free));
-                FIELD_HASH("spmv_ng_flag",         &sp->spmv_ng_flag, 8);
-                FIELD_HASH("player_number",        &sp->player_number, sizeof(sp->player_number));
-                FIELD_HASH("zuru_*",               &sp->zuru_timer, 6);
-                FIELD_HASH("tsukami_*",            &sp->tsukami_num, 6);
-                FIELD_HASH("guard_*",              &sp->old_gdflag, 4);
-                FIELD_HASH("sa_related",           &sp->sa_stop_sai, 6);
-                FIELD_HASH("combo_type",           &sp->combo_type, sizeof(sp->combo_type));
-                FIELD_HASH("dead_flag",            &sp->dead_flag, sizeof(sp->dead_flag));
-                FIELD_HASH("ukemi_*",              &sp->ukemi_ok_timer, 6);
-                FIELD_HASH("old_pos_data",         &sp->old_pos_data, sizeof(sp->old_pos_data));
-                FIELD_HASH("image_setup+data",     &sp->image_setup_flag, 4);
-                FIELD_HASH("tk_dageki..konjyou",   &sp->tk_dageki, 8);
-                FIELD_HASH("reserv_add_y",         &sp->reserv_add_y, sizeof(sp->reserv_add_y));
+                FIELD_HASH("wu.cmoa..cmb3", &wu->cmoa, 18 * sizeof(UNK11));
+                FIELD_HASH("wu.cmwk", &wu->cmwk, sizeof(wu->cmwk));
+                FIELD_HASH("wu.char_state", &sp->wu.char_state, sizeof(sp->wu.char_state));
+                FIELD_HASH("wu.att", &wu->att, sizeof(wu->att));
+                FIELD_HASH("wu.hf+hit_mark", &wu->hf, 8);
+                FIELD_HASH("wu.attpow+defpow", &wu->attpow, 4);
+                FIELD_HASH("wu.shell_ix", &wu->shell_ix, sizeof(wu->shell_ix));
+                FIELD_HASH("wu.wrd_free", &wu->wrd_free, sizeof(wu->wrd_free));
+                FIELD_HASH("spmv_ng_flag", &sp->spmv_ng_flag, 8);
+                FIELD_HASH("player_number", &sp->player_number, sizeof(sp->player_number));
+                FIELD_HASH("zuru_*", &sp->zuru_timer, 6);
+                FIELD_HASH("tsukami_*", &sp->tsukami_num, 6);
+                FIELD_HASH("guard_*", &sp->old_gdflag, 4);
+                FIELD_HASH("sa_related", &sp->sa_stop_sai, 6);
+                FIELD_HASH("combo_type", &sp->combo_type, sizeof(sp->combo_type));
+                FIELD_HASH("dead_flag", &sp->dead_flag, sizeof(sp->dead_flag));
+                FIELD_HASH("ukemi_*", &sp->ukemi_ok_timer, 6);
+                FIELD_HASH("old_pos_data", &sp->old_pos_data, sizeof(sp->old_pos_data));
+                FIELD_HASH("image_setup+data", &sp->image_setup_flag, 4);
+                FIELD_HASH("tk_dageki..konjyou", &sp->tk_dageki, 8);
+                FIELD_HASH("reserv_add_y", &sp->reserv_add_y, sizeof(sp->reserv_add_y));
 
                 // Full PLW hash for cross-check
-                FIELD_HASH("FULL PLW",             sp, sizeof(PLW));
-                #undef FIELD_HASH
+                FIELD_HASH("FULL PLW", sp, sizeof(PLW));
+#undef FIELD_HASH
             }
 
             // Global context: player identity and key globals
@@ -1167,14 +1178,13 @@ static void process_session() {
                 const GameState* gs = &st->gs;
                 printf("  globals context:\n");
                 printf("    My_char: [%d, %d]  Player_Color: [%d, %d]\n",
-                       gs->My_char[0], gs->My_char[1],
-                       gs->Player_Color[0], gs->Player_Color[1]);
-                printf("    Random_ix16: %d  Random_ix32: %d\n",
-                       gs->Random_ix16, gs->Random_ix32);
-                printf("    Player_id: %d  Player_Number: %d\n",
-                       gs->Player_id, gs->Player_Number);
-                printf("    charset_id: plw0=%d plw1=%d\n",
-                       gs->plw[0].wu.charset_id, gs->plw[1].wu.charset_id);
+                       gs->My_char[0],
+                       gs->My_char[1],
+                       gs->Player_Color[0],
+                       gs->Player_Color[1]);
+                printf("    Random_ix16: %d  Random_ix32: %d\n", gs->Random_ix16, gs->Random_ix32);
+                printf("    Player_id: %d  Player_Number: %d\n", gs->Player_id, gs->Player_Number);
+                printf("    charset_id: plw0=%d plw1=%d\n", gs->plw[0].wu.charset_id, gs->plw[1].wu.charset_id);
             }
 #endif
 
@@ -1289,7 +1299,8 @@ static void run_netplay() {
         }
         gekko_set_local_delay(session, player_handle, dynamic_delay);
         SDL_Log("[netplay] dynamic delay set to %d (samples=%d, avg_ping=%.1f, jitter=%.1f)",
-                dynamic_delay, ping_sample_count,
+                dynamic_delay,
+                ping_sample_count,
                 ping_sample_count > 0 ? ping_sum / ping_sample_count : 0.f,
                 ping_sample_count > 0 ? jitter_sum / ping_sample_count : 0.f);
         dynamic_delay_applied = true;

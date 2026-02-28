@@ -263,8 +263,7 @@ static void bg_extract_priorities(u32 prio_packed, u8 count) {
 }
 
 /** @brief Set up rewrite-screen texture chunks if needed. */
-static u16 bg_setup_rewrite_textures(void* loadAdrs, u32 loadSize, u8 count, s32 base_gbix,
-                                     u16 accnum) {
+static u16 bg_setup_rewrite_textures(void* loadAdrs, u32 loadSize, u8 count, s32 base_gbix, u16 accnum) {
     u8 i;
 
     if (count == 0) {
@@ -353,8 +352,7 @@ void Bg_Texture_Load_EX() {
         }
     }
 
-    accnum = bg_setup_rewrite_textures(loadAdrs, loadSize, rewrite_scr[bg_w.stage],
-                                        (stg * 64) + 0x64, accnum);
+    accnum = bg_setup_rewrite_textures(loadAdrs, loadSize, rewrite_scr[bg_w.stage], (stg * 64) + 0x64, accnum);
 
     if (bg_w.stage == 7) {
         ppgSetupCurrentDataList(&ppgAkaneList);
@@ -500,8 +498,7 @@ void Bg_Texture_Load_Ending(s16 type) {
         }
     }
 
-    accnum = bg_setup_rewrite_textures(loadAdrs, loadSize, ending_rewrite_scr[type],
-                                        (j * 64) + 100, accnum);
+    accnum = bg_setup_rewrite_textures(loadAdrs, loadSize, ending_rewrite_scr[type], (j * 64) + 100, accnum);
 
     switch (type) {
     case 14:

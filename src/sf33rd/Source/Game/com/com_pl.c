@@ -678,9 +678,7 @@ static s32 Ck_Exit_Guard_Sub(PLW* wk, WORK* em) {
  * @param ins_kind   Kind_Of_Insurance parameter for Pattern_Insurance.
  * @param ins_forced Forced_Number parameter for Pattern_Insurance.
  */
-static void com_dispatch_char(PLW* wk,
-                              void (*const table[CHAR_COUNT])(PLW*),
-                              s16 ins_kind, s16 ins_forced) {
+static void com_dispatch_char(PLW* wk, void (*const table[CHAR_COUNT])(PLW*), s16 ins_kind, s16 ins_forced) {
     if (Check_Damage(wk)) {
         return;
     }
@@ -702,41 +700,40 @@ static void com_dispatch_char(PLW* wk,
     table[wk->player_number](wk);
 }
 
-static void (*const Active_Char_Tbl[CHAR_COUNT])(PLW*) = {
-    Computer00, Computer01, Computer02, Computer03, Computer04, Computer05, Computer06, Computer07, Computer08,
-    Computer09, Computer10, Computer11, Computer12, Computer13, Computer14, Computer15, Computer16, Computer17,
-    Computer18, Computer19
-};
+static void (*const Active_Char_Tbl[CHAR_COUNT])(PLW*) = { Computer00, Computer01, Computer02, Computer03, Computer04,
+                                                           Computer05, Computer06, Computer07, Computer08, Computer09,
+                                                           Computer10, Computer11, Computer12, Computer13, Computer14,
+                                                           Computer15, Computer16, Computer17, Computer18, Computer19 };
 
 /** @brief AI state 2: Execute the active AI pattern for the current character. */
 void Com_Active(PLW* wk) {
     com_dispatch_char(wk, Active_Char_Tbl, 0, 0);
 }
 
-static void (*const Follow_Char_Tbl[CHAR_COUNT])(PLW*) = {
-    Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02,
-    Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02, Follow02
-};
+static void (*const Follow_Char_Tbl[CHAR_COUNT])(PLW*) = { Follow02, Follow02, Follow02, Follow02, Follow02,
+                                                           Follow02, Follow02, Follow02, Follow02, Follow02,
+                                                           Follow02, Follow02, Follow02, Follow02, Follow02,
+                                                           Follow02, Follow02, Follow02, Follow02, Follow02 };
 
 /** @brief AI state 4: Execute follow-up combo pattern for the current character. */
 void Com_Follow(PLW* wk) {
     com_dispatch_char(wk, Follow_Char_Tbl, 3, 2);
 }
 
-static void (*const Passive_Char_Tbl[CHAR_COUNT])(PLW*) = {
-    Passive00, Passive01, Passive02, Passive03, Passive04, Passive05, Passive06, Passive07, Passive08, Passive09,
-    Passive10, Passive11, Passive12, Passive13, Passive14, Passive15, Passive16, Passive17, Passive18, Passive19
-};
+static void (*const Passive_Char_Tbl[CHAR_COUNT])(PLW*) = { Passive00, Passive01, Passive02, Passive03, Passive04,
+                                                            Passive05, Passive06, Passive07, Passive08, Passive09,
+                                                            Passive10, Passive11, Passive12, Passive13, Passive14,
+                                                            Passive15, Passive16, Passive17, Passive18, Passive19 };
 
 /** @brief AI state 6: Execute passive reaction pattern for the current character. */
 void Com_Passive(PLW* wk) {
     com_dispatch_char(wk, Passive_Char_Tbl, 1, 1);
 }
 
-static void (*const VS_Shell_Char_Tbl[CHAR_COUNT])(PLW*) = {
-    Shell00, Shell01, Shell11, Shell03, Shell04, Shell05, Shell03, Shell07, Shell03, Shell03,
-    Shell03, Shell11, Shell12, Shell13, Shell14, Shell11, Shell11, Shell11, Shell11, Shell11
-};
+static void (*const VS_Shell_Char_Tbl[CHAR_COUNT])(PLW*) = { Shell00, Shell01, Shell11, Shell03, Shell04,
+                                                             Shell05, Shell03, Shell07, Shell03, Shell03,
+                                                             Shell03, Shell11, Shell12, Shell13, Shell14,
+                                                             Shell11, Shell11, Shell11, Shell11, Shell11 };
 
 /** @brief AI state 8: Execute projectile response pattern for the current character. */
 void Com_VS_Shell(PLW* wk) {

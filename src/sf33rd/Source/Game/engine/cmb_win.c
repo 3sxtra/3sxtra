@@ -545,17 +545,12 @@ void combo_window_push(s8 PL, s8 KIND) {
 
 /** @brief Renders the combo message sprites for the current entry. */
 static void render_combo_message(s8 PL, const CMST_BUFF* b) {
-    combo_message_set(PL, b->kind,
-                      cmb_pos_tbl[PL][b->x_posnum[0] - 1],
-                      b->x_posnum[0], b->hit_hi, b->hit_low);
+    combo_message_set(PL, b->kind, cmb_pos_tbl[PL][b->x_posnum[0] - 1], b->x_posnum[0], b->hit_hi, b->hit_low);
 }
 
 /** @brief Renders the combo points sprites at final position for the current entry. */
 static void render_combo_pts(s8 PL, const CMST_BUFF* b) {
-    combo_pts_set(PL,
-                  cmb_pos_tbl[PL][b->x_posnum[1] - 1],
-                  (b->move[1] - 1),
-                  (s8*)&b->pts_digit[0], b->first_digit);
+    combo_pts_set(PL, cmb_pos_tbl[PL][b->x_posnum[1] - 1], (b->move[1] - 1), (s8*)&b->pts_digit[0], b->first_digit);
 }
 
 /** @brief Renders the combo window sprites — numbers, labels, and bonus text. */

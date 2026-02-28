@@ -320,14 +320,14 @@ static f32 SSPutStrTexInputProScale(f32 x, f32 y, u16 ix, f32 sc) {
 
     sideL = (ascProData[ix] >> 4) & 0xF;
     sideR = ascProData[ix] & 0xF;
-    
+
     scrscrntex[0].u = scrscrntex[1].u = TO_UV_256(u + sideL);
     scrscrntex[2].u = scrscrntex[3].u = TO_UV_256(u + 8 - sideR);
     scrscrntex[0].v = scrscrntex[2].v = TO_UV_256(v);
     scrscrntex[1].v = scrscrntex[3].v = TO_UV_256(v + 8);
 
     slide = (f32)((8 - sideL) - sideR) * sc;
-    
+
     scrscrntex[0].x = scrscrntex[1].x = x;
     scrscrntex[2].x = scrscrntex[3].x = x + slide;
     scrscrntex[0].y = scrscrntex[2].y = y;

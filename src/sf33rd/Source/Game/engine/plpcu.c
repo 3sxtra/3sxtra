@@ -321,7 +321,9 @@ static void scdmd_24000(PLW* wk) {
 }
 
 /** @brief No-op caught-damage init for states 25, 29 (wallbounce/SA cinematic). */
-static void scdmd_noop(PLW* wk) { (void)wk; }
+static void scdmd_noop(PLW* wk) {
+    (void)wk;
+}
 
 /*                                          idx: 12         13         14         15         16
                                                   17         18         19         20         21

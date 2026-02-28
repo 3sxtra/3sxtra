@@ -78,21 +78,14 @@ void cmd_data_set(PLW* /* unused */, s16 i) {
 
 /** @brief Initializes the command input state machine for a player. */
 void cmd_init(PLW* pl) {
-    s16 i;
-    s16 j;
-
     cmd_id = pl->wu.id;
     pl->cp = &wcp[cmd_id];
 
     SDL_zeroa(waza_work[cmd_id]);
 
-    for (i = 0; i < 56; i++) {
-        wcp[cmd_id].waza_flag[i] = 0;
-
-        for (j = 0; j < 4; j++) {
-            wcp[cmd_id].waza_r[i][j] = 0;
-        }
-    }
+    // ⚡ Bolt: bulk memset replaces nested per-element zeroing loops
+    memset(wcp[cmd_id].waza_flag, 0, sizeof(wcp[cmd_id].waza_flag));
+    memset(wcp[cmd_id].waza_r, 0, sizeof(wcp[cmd_id].waza_r));
 
     waza_compel_all_init(pl);
 }

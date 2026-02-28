@@ -1,0 +1,260 @@
+============================================================ 
+                   3SX Lint Report                              
+                   Generated: 28/02/2026 12:51:51.78                     
+============================================================ 
+ 
+------------------------------------------------------------ 
+[CLANG] C/C++ Code Styling and Analysis                      
+------------------------------------------------------------ 
+[CLANG-FORMAT] C/C++ Code Formatting Check
+[CLANG-TIDY] Static Analysis
+No compile_commands.json, skipping advanced clang-tidy! Build first.
+ 
+------------------------------------------------------------ 
+[RUFF] Code Style & Import Checks                           
+------------------------------------------------------------ 
+F841 Local variable `cps3_hp_valid` is assigned to but never used
+   --> tools\fightcade_replays\parity_replay.py:979:13
+    |
+977 |             cps3_p1_hp = int(cps3_row["p1_hp"])
+978 |             cps3_p2_hp = int(cps3_row["p2_hp"])
+979 |             cps3_hp_valid = cps3_p1_hp <= MAX_HP and cps3_p2_hp <= MAX_HP
+    |             ^^^^^^^^^^^^^
+980 |
+981 |             # Track round transitions for statistics only
+    |
+help: Remove assignment to unused variable `cps3_hp_valid`
+
+Found 1 error.
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+ 
+[RUFF] Auto-fix applied: 
+F841 Local variable `cps3_hp_valid` is assigned to but never used
+   --> tools\fightcade_replays\parity_replay.py:979:13
+    |
+977 |             cps3_p1_hp = int(cps3_row["p1_hp"])
+978 |             cps3_p2_hp = int(cps3_row["p2_hp"])
+979 |             cps3_hp_valid = cps3_p1_hp <= MAX_HP and cps3_p2_hp <= MAX_HP
+    |             ^^^^^^^^^^^^^
+980 |
+981 |             # Track round transitions for statistics only
+    |
+help: Remove assignment to unused variable `cps3_hp_valid`
+
+Found 1 error.
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+ 
+[RUFF] Formatting: 
+17 files left unchanged
+ 
+------------------------------------------------------------ 
+[VULTURE] Dead Code Analysis                                 
+------------------------------------------------------------ 
+tests\util\test_navigator_logic.py:20: unused attribute 'call_count' (60% confidence)
+tests\util\test_navigator_logic.py:43: unused variable 'mock_sleep' (100% confidence)
+tests\util\test_navigator_logic.py:57: unused variable 'mock_sleep' (100% confidence)
+tools\compare_states.py:445: unused function 'effect_offset' (60% confidence)
+tools\fightcade_replays\ggpo_to_csv.py:41: unused variable 'INP_START' (60% confidence)
+tools\fightcade_replays\parity_replay.py:208: unused function 'find_game02_start' (60% confidence)
+tools\fightcade_replays\parity_replay.py:392: unused function 'wait_for_shm_field' (60% confidence)
+tools\fightcade_replays\parity_replay.py:409: unused attribute 'step_requested' (60% confidence)
+tools\fightcade_replays\parity_replay.py:421: unused function 'wait_for_round_start' (60% confidence)
+tools\fightcade_replays\parity_replay.py:433: unused attribute 'step_requested' (60% confidence)
+tools\fightcade_replays\parity_replay.py:713: unused attribute 'selfplay_active' (60% confidence)
+tools\fightcade_replays\parity_replay.py:714: unused attribute 'step_mode_active' (60% confidence)
+tools\fightcade_replays\parity_replay.py:829: unused attribute 'step_requested' (60% confidence)
+tools\fightcade_replays\parity_replay.py:921: unused attribute 'fm_stage' (60% confidence)
+tools\fightcade_replays\parity_replay.py:922: unused attribute 'fm_rng_16' (60% confidence)
+tools\fightcade_replays\parity_replay.py:923: unused attribute 'fm_rng_32' (60% confidence)
+tools\fightcade_replays\parity_replay.py:924: unused attribute 'fm_rng_16_ex' (60% confidence)
+tools\fightcade_replays\parity_replay.py:925: unused attribute 'fm_rng_32_ex' (60% confidence)
+tools\fightcade_replays\parity_replay.py:926: unused attribute 'force_match_active' (60% confidence)
+tools\fightcade_replays\parity_replay.py:979: unused variable 'cps3_hp_valid' (60% confidence)
+tools\fightcade_replays\parity_replay.py:1047: unused attribute 'selfplay_active' (60% confidence)
+tools\fightcade_replays\parity_replay.py:1057: unused attribute 'step_requested' (60% confidence)
+tools\fightcade_replays\replay_inputs.py:183: unused attribute 'step_requested' (60% confidence)
+tools\fightcade_replays\replay_inputs.py:231: unused attribute 'step_requested' (60% confidence)
+tools\fightcade_replays\replay_inputs.py:251: unused attribute 'step_requested' (60% confidence)
+tools\fightcade_replays\replay_inputs.py:428: unused attribute 'step_mode_active' (60% confidence)
+tools\fightcade_replays\replay_inputs.py:429: unused attribute 'selfplay_active' (60% confidence)
+tools\fightcade_replays\replay_inputs.py:519: unused attribute 'step_requested' (60% confidence)
+tools\fightcade_replays\replay_inputs.py:526: unused attribute 'step_mode_active' (60% confidence)
+tools\fightcade_replays\replay_inputs.py:527: unused attribute 'selfplay_active' (60% confidence)
+tools\util\bridge_state.py:138: unused variable 'INPUT_LEFT' (60% confidence)
+tools\util\bridge_state.py:140: unused variable 'INPUT_LP' (60% confidence)
+tools\util\bridge_state.py:141: unused variable 'INPUT_MP' (60% confidence)
+tools\util\bridge_state.py:142: unused variable 'INPUT_HP' (60% confidence)
+tools\util\bridge_state.py:144: unused variable 'INPUT_MK' (60% confidence)
+tools\util\bridge_state.py:145: unused variable 'INPUT_HK' (60% confidence)
+tools\util\bridge_state.py:147: unused variable 'INPUT_SELECT' (60% confidence)
+ 
+------------------------------------------------------------ 
+[PYLINT] Code Quality Analysis                               
+------------------------------------------------------------ 
+************* Module tools.analyze_desync
+tools\analyze_desync.py:7:0: C0116: Missing function or method docstring (missing-function-docstring)
+tools\analyze_desync.py:7:0: R0914: Too many local variables (21/15) (too-many-locals)
+************* Module tools.compare_char_data
+tools\compare_char_data.py:248:0: C0301: Line too long (110/100) (line-too-long)
+tools\compare_char_data.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+tools\compare_char_data.py:32:0: C0103: Constant name "cps3_vram_offset" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:33:0: C0103: Constant name "cps3_chdata_array_offset" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:35:0: C0103: Constant name "gill" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:36:0: C0103: Constant name "alex" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:37:0: C0103: Constant name "ryu" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:38:0: C0103: Constant name "yun" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:39:0: C0103: Constant name "dudley" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:40:0: C0103: Constant name "necro" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:41:0: C0103: Constant name "hugo" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:42:0: C0103: Constant name "ibuki" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:43:0: C0103: Constant name "elena" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:44:0: C0103: Constant name "oro" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:45:0: C0103: Constant name "yang" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:46:0: C0103: Constant name "ken" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:47:0: C0103: Constant name "sean" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:48:0: C0103: Constant name "urien" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:49:0: C0103: Constant name "akuma" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:50:0: C0103: Constant name "chunli" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:51:0: C0103: Constant name "makoto" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:52:0: C0103: Constant name "q" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:53:0: C0103: Constant name "twelve" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:54:0: C0103: Constant name "remy" doesn't conform to UPPER_CASE naming style (invalid-name)
+tools\compare_char_data.py:134:0: C0115: Missing class docstring (missing-class-docstring)
+tools\compare_char_data.py:140:0: C0116: Missing function or method docstring (missing-function-docstring)
+tools\compare_char_data.py:153:0: C0116: Missing function or method docstring (missing-function-docstring)
+tools\compare_char_data.py:163:0: C0116: Missing function or method docstring (missing-function-docstring)
+tools\compare_char_data.py:168:0: C0116: Missing function or method docstring (missing-function-docstring)
+tools\compare_char_data.py:168:0: R0914: Too many local variables (17/15) (too-many-locals)
+tools\compare_char_data.py:171:47: R1735: Consider using '{}' instead of a call to 'dict'. (use-dict-literal)
+tools\compare_char_data.py:177:24: R1734: Consider using [] instead of list() (use-list-literal)
+tools\compare_char_data.py:210:0: C0116: Missing function or method docstring (missing-function-docstring)
+tools\compare_char_data.py:211:29: R1735: Consider using '{}' instead of a call to 'dict'. (use-dict-literal)
+tools\compare_char_data.py:226:0: C0116: Missing function or method docstring (missing-function-docstring)
+tools\compare_char_data.py:229:13: R1734: Consider using [] instead of list() (use-list-literal)
+tools\compare_char_data.py:244:0: C0116: Missing function or method docstring (missing-function-docstring)
+tools\compare_char_data.py:244:0: R0914: Too many local variables (22/15) (too-many-locals)
+************* Module tools.compare_states
+tools\compare_states.py:418:0: C0301: Line too long (107/100) (line-too-long)
+tools\compare_states.py:546:0: C0301: Line too long (108/100) (line-too-long)
+tools\compare_states.py:570:0: C0301: Line too long (104/100) (line-too-long)
+tools\compare_states.py:28:0: C0115: Missing class docstring (missing-class-docstring)
+tools\compare_states.py:36:0: C0115: Missing class docstring (missing-class-docstring)
+tools\compare_states.py:43:0: C0115: Missing class docstring (missing-class-docstring)
+tools\compare_states.py:44:4: C0115: Missing class docstring (missing-class-docstring)
+tools\compare_states.py:49:4: C0115: Missing class docstring (missing-class-docstring)
+tools\compare_states.py:67:4: C0116: Missing function or method docstring (missing-function-docstring)
+tools\compare_states.py:72:4: C0116: Missing function or method docstring (missing-function-docstring)
+tools\compare_states.py:72:4: R0914: Too many local variables (18/15) (too-many-locals)
+tools\compare_states.py:72:4: R0912: Too many branches (18/12) (too-many-branches)
+tools\compare_states.py:222:4: R0914: Too many local variables (20/15) (too-many-locals)
+tools\compare_states.py:222:4: R0912: Too many branches (43/12) (too-many-branches)
+tools\compare_states.py:222:4: R0915: Too many statements (108/50) (too-many-statements)
+tools\compare_states.py:405:8: W0201: Attribute 'struct_offset_to_struct' defined outside __init__ (attribute-defined-outside-init)
+tools\compare_states.py:475:0: R0914: Too many local variables (28/15) (too-many-locals)
+tools\compare_states.py:475:0: R0912: Too many branches (18/12) (too-many-branches)
+tools\compare_states.py:522:29: W0612: Unused variable 'metadata' (unused-variable)
+tools\compare_states.py:576:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module tools.compile_shaders
+tools\compile_shaders.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+tools\compile_shaders.py:68:0: C0116: Missing function or method docstring (missing-function-docstring)
+tools\compile_shaders.py:69:4: W0603: Using the global statement (global-statement)
+************* Module tools.lua_trial_parser
+tools\lua_trial_parser.py:169:0: C0301: Line too long (102/100) (line-too-long)
+tools\lua_trial_parser.py:174:0: C0301: Line too long (102/100) (line-too-long)
+tools\lua_trial_parser.py:176:0: C0301: Line too long (101/100) (line-too-long)
+tools\lua_trial_parser.py:333:0: C0301: Line too long (103/100) (line-too-long)
+tools\lua_trial_parser.py:68:0: R0912: Too many branches (13/12) (too-many-branches)
+tools\lua_trial_parser.py:117:0: R0914: Too many local variables (30/15) (too-many-locals)
+tools\lua_trial_parser.py:117:0: R0912: Too many branches (17/12) (too-many-branches)
+tools\lua_trial_parser.py:117:0: R0915: Too many statements (59/50) (too-many-statements)
+tools\lua_trial_parser.py:235:0: R0914: Too many local variables (32/15) (too-many-locals)
+tools\lua_trial_parser.py:235:0: R0912: Too many branches (24/12) (too-many-branches)
+tools\lua_trial_parser.py:235:0: R0915: Too many statements (93/50) (too-many-statements)
+tools\lua_trial_parser.py:385:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module tools.util.bridge_state
+tools\util\bridge_state.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+tools\util\bridge_state.py:6:0: R0903: Too few public methods (0/2) (too-few-public-methods)
+tools\util\bridge_state.py:87:0: C0115: Missing class docstring (missing-class-docstring)
+tools\util\bridge_state.py:100:4: C0116: Missing function or method docstring (missing-function-docstring)
+tools\util\bridge_state.py:130:11: W0718: Catching too general exception Exception (broad-exception-caught)
+************* Module tools.util.navigator
+tools\util\navigator.py:75:0: C0301: Line too long (116/100) (line-too-long)
+tools\util\navigator.py:80:0: C0301: Line too long (118/100) (line-too-long)
+tools\util\navigator.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+tools\util\navigator.py:109:8: C0103: Variable name "MAX_ATTEMPTS" doesn't conform to snake_case naming style (invalid-name)
+************* Module util.test_bridge_access
+tests\util\test_bridge_access.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+tests\util\test_bridge_access.py:9:0: C0115: Missing class docstring (missing-class-docstring)
+tests\util\test_bridge_access.py:13:12: C0415: Import outside toplevel (tools.util.bridge_state.MenuBridgeState) (import-outside-toplevel)
+tests\util\test_bridge_access.py:20:8: C0415: Import outside toplevel (tools.util.bridge_state.MenuBridgeState) (import-outside-toplevel)
+tests\util\test_bridge_access.py:21:8: C0415: Import outside toplevel (ctypes) (import-outside-toplevel)
+************* Module util.test_navigator_logic
+tests\util\test_navigator_logic.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+tests\util\test_navigator_logic.py:9:0: C0413: Import "from tools.util.bridge_state import INPUT_START, INPUT_LK, INPUT_RIGHT" should be placed at the top of the module (wrong-import-position)
+tests\util\test_navigator_logic.py:12:0: C0115: Missing class docstring (missing-class-docstring)
+tests\util\test_navigator_logic.py:14:8: C0103: Attribute name "nav_G_No" doesn't conform to snake_case naming style (invalid-name)
+tests\util\test_navigator_logic.py:15:8: C0103: Attribute name "nav_Cursor_Char" doesn't conform to snake_case naming style (invalid-name)
+tests\util\test_navigator_logic.py:12:0: R0903: Too few public methods (1/2) (too-few-public-methods)
+tests\util\test_navigator_logic.py:35:0: C0115: Missing class docstring (missing-class-docstring)
+tests\util\test_navigator_logic.py:38:8: C0415: Import outside toplevel (tools.util.navigator.MenuNavigator) (import-outside-toplevel)
+tests\util\test_navigator_logic.py:43:40: W0613: Unused argument 'mock_sleep' (unused-argument)
+tests\util\test_navigator_logic.py:57:45: W0613: Unused argument 'mock_sleep' (unused-argument)
+
+------------------------------------------------------------------
+Your code has been rated at 9.07/10 (previous run: 9.07/10, +0.00)
+
+ 
+------------------------------------------------------------ 
+[MYPY] Static Type Checks                                    
+------------------------------------------------------------ 
+tools\compare_states.py:60: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+tools\compare_states.py:61: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+tools\compare_states.py:64: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+tools\compare_states.py:65: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+tools\compare_states.py:217: error: Invalid index type "int | None" for "dict[int, str]"; expected type "int"  [index]
+tools\compare_states.py:264: error: Item "None" of "Struct | None" has no attribute "name"  [union-attr]
+tools\compare_states.py:265: error: Item "None" of "Struct | None" has no attribute "size"  [union-attr]
+tools\compare_states.py:266: error: Item "None" of "Struct | None" has no attribute "members"  [union-attr]
+tools\compare_states.py:268: error: Argument 1 to "append" of "list" has incompatible type "Struct | None"; expected "Struct"  [arg-type]
+tools\compare_states.py:278: error: Item "None" of "Struct | None" has no attribute "name"  [union-attr]
+tools\compare_states.py:278: error: Item "None" of "Struct | None" has no attribute "size"  [union-attr]
+tools\compare_states.py:279: error: Argument 1 to "append" of "list" has incompatible type "Struct | None"; expected "Struct"  [arg-type]
+tools\compare_states.py:319: error: Item "None" of "Struct | None" has no attribute "name"  [union-attr]
+tools\compare_states.py:324: error: Item "None" of "Struct | None" has no attribute "size"  [union-attr]
+tools\compare_states.py:333: error: Item "None" of "Struct | None" has no attribute "size"  [union-attr]
+tools\compare_states.py:345: error: Item "None" of "Struct | None" has no attribute "name"  [union-attr]
+tools\compare_states.py:346: error: Item "None" of "Struct | None" has no attribute "size"  [union-attr]
+tools\compare_states.py:347: error: Item "None" of "Struct | None" has no attribute "members"  [union-attr]
+tools\compare_states.py:349: error: Argument 1 to "append" of "list" has incompatible type "Struct | None"; expected "Struct"  [arg-type]
+tools\compare_states.py:372: error: Item "None" of "Member | None" has no attribute "name"  [union-attr]
+tools\compare_states.py:376: error: Item "None" of "Member | None" has no attribute "type"  [union-attr]
+tools\compare_states.py:377: error: Item "None" of "Member | None" has no attribute "typename"  [union-attr]
+tools\compare_states.py:378: error: Item "None" of "Member | None" has no attribute "type"  [union-attr]
+tools\compare_states.py:384: error: Item "None" of "Member | None" has no attribute "type"  [union-attr]
+tools\compare_states.py:386: error: Item "None" of "Member | None" has no attribute "typename"  [union-attr]
+tools\compare_states.py:387: error: Item "None" of "Member | None" has no attribute "type"  [union-attr]
+tools\compare_states.py:392: error: Item "None" of "Member | None" has no attribute "location"  [union-attr]
+tools\compare_states.py:393: error: Item "None" of "Struct | None" has no attribute "members"  [union-attr]
+tools\compare_states.py:393: error: Argument 1 to "append" of "list" has incompatible type "Member | None"; expected "Member"  [arg-type]
+tools\compare_states.py:398: error: Item "None" of "Member | None" has no attribute "location"  [union-attr]
+tools\compare_states.py:399: error: Item "None" of "Struct | None" has no attribute "members"  [union-attr]
+tools\compare_states.py:399: error: Argument 1 to "append" of "list" has incompatible type "Member | None"; expected "Member"  [arg-type]
+tools\compare_states.py:440: error: Argument 1 to "append" of "list" has incompatible type "tuple[Path, Path, int]"; expected "tuple[Path, Path]"  [arg-type]
+tools\compare_states.py:442: error: Incompatible return value type (got "list[tuple[Path, Path]]", expected "list[tuple[Path, Path, int]]")  [return-value]
+tools\compare_char_data.py:165: error: Incompatible return value type (got "str", expected "Path")  [return-value]
+tools\fightcade_replays\fcade_replay_tool.py:122: error: Incompatible types in assignment (expression has type "str", target has type "int")  [assignment]
+tools\fightcade_replays\fcade_replay_tool.py:141: error: Incompatible types in assignment (expression has type "list[str]", target has type "int")  [assignment]
+tools\fightcade_replays\fcade_replay_tool.py:142: error: Incompatible types in assignment (expression has type "str", target has type "int")  [assignment]
+tools\fightcade_replays\parity_replay.py:389: error: Incompatible return value type (got "tuple[list[dict[str | Any, str | Any]], int, int, int | None, int | None, dict[str, int]]", expected "tuple[list[dict[Any, Any]], int, int, int | None, int | None]")  [return-value]
+tools\fightcade_replays\parity_replay.py:612: error: Need more than 5 values to unpack (6 expected)  [misc]
+tools\fightcade_replays\parity_replay.py:789: error: Need type annotation for "divergences" (hint: "divergences: list[<type>] = ...")  [var-annotated]
+tools\fightcade_replays\parity_replay.py:937: error: Incompatible return value type (got "bool", expected "dict[Any, Any]")  [return-value]
+tools\fightcade_replays\parity_replay.py:1213: error: Argument "key" to "sorted" has incompatible type "Callable[[tuple[str, dict[str, object]]], object]"; expected "Callable[[tuple[str, dict[str, object]]], SupportsDunderLT[Any] | SupportsDunderGT[Any]]"  [arg-type]
+tools\fightcade_replays\parity_replay.py:1213: error: Incompatible return value type (got "object", expected "SupportsDunderLT[Any] | SupportsDunderGT[Any]")  [return-value]
+tools\fightcade_replays\parity_replay.py:1216: error: Incompatible types in assignment (expression has type "object", variable has type "str")  [assignment]
+tools\fightcade_replays\parity_replay.py:1220: error: Unsupported left operand type for - ("object")  [operator]
+Found 42 errors in 4 files (checked 17 source files)
+ 
+------------------------------------------------------------ 
+                        Summary                              
+------------------------------------------------------------ 

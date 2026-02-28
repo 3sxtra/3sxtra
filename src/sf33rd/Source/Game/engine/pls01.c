@@ -15,7 +15,11 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 
-#define CLAMP_MIN_ZERO(val) do { if ((val) < 0) (val) = 0; } while (0)
+#define CLAMP_MIN_ZERO(val)                                                                                            \
+    do {                                                                                                               \
+        if ((val) < 0)                                                                                                 \
+            (val) = 0;                                                                                                 \
+    } while (0)
 
 /** @brief Sets routine numbers, clearing rno[1] and rno[3] to 0. */
 static inline void set_routine(PLW* wk, u8 rno2) {

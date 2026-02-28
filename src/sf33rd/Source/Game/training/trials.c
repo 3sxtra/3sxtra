@@ -34,7 +34,7 @@ void trials_reset(void) {
     g_trials_state.failed = false;
     g_trials_state.completed = false;
     g_trials_state.success_timer = 0;
-    
+
     // Also reset combo tracking so if they are currently hitting it resets
     if (Mode_Type == MODE_TRIALS) {
         g_trials_state.last_combo_hits = g_training_state.p2.combo_hits;
@@ -45,8 +45,9 @@ void trials_reset(void) {
 
 void trials_select_character(s16 chara_id) {
     const TrialCharacterDef* cdef = get_char_def(chara_id);
-    if (!cdef) return; // Character has no trials
-    
+    if (!cdef)
+        return; // Character has no trials
+
     g_trials_state.current_chara_id = chara_id;
     g_trials_state.current_trial_index = 0;
     trials_reset();
@@ -54,8 +55,9 @@ void trials_select_character(s16 chara_id) {
 
 void trials_next(void) {
     const TrialCharacterDef* cdef = get_char_def(g_trials_state.current_chara_id);
-    if (!cdef) return;
-    
+    if (!cdef)
+        return;
+
     g_trials_state.current_trial_index++;
     if (g_trials_state.current_trial_index >= cdef->num_trials) {
         g_trials_state.current_trial_index = 0;
@@ -65,8 +67,9 @@ void trials_next(void) {
 
 void trials_prev(void) {
     const TrialCharacterDef* cdef = get_char_def(g_trials_state.current_chara_id);
-    if (!cdef) return;
-    
+    if (!cdef)
+        return;
+
     if (g_trials_state.current_trial_index == 0) {
         g_trials_state.current_trial_index = cdef->num_trials - 1;
     } else {
@@ -80,11 +83,11 @@ void trials_init(void) {
         return;
 
     g_trials_state.is_active = true;
-    
+
     // Set character based on P1's selection if not already set or invalid
     s16 current_player_char = My_char[0];
     const TrialCharacterDef* cdef = get_char_def(current_player_char);
-    
+
     if (cdef) {
         if (g_trials_state.current_chara_id != current_player_char) {
             trials_select_character(current_player_char);
@@ -99,8 +102,10 @@ void trials_init(void) {
 
 static bool match_waza(const TrialStep* step, s16 waza_id) {
     for (int i = 0; i < MAX_WAZA_ALTERNATIVES; i++) {
-        if (step->waza_ids[i] == (s16)0xFFFF) break; // End of list
-        if (step->waza_ids[i] == waza_id) return true;
+        if (step->waza_ids[i] == (s16)0xFFFF)
+            break; // End of list
+        if (step->waza_ids[i] == waza_id)
+            return true;
     }
     return false;
 }
@@ -110,7 +115,8 @@ void trials_update(void) {
         return;
 
     const TrialDef* cur_trial = get_current_trial_def();
-    if (!cur_trial) return;
+    if (!cur_trial)
+        return;
 
     TrainingPlayerState* p2 = &g_training_state.p2;
     PLW* pl1 = &plw[0];
@@ -150,7 +156,7 @@ void trials_update(void) {
     extern u16 p1sw_0;
     extern u16 p1sw_1;
     u16 edges = ~p1sw_1 & p1sw_0;
-    if (edges & (1 << 11)) { 
+    if (edges & (1 << 11)) {
         trials_prev();
         g_trials_state.last_combo_hits = current_hits;
         return;
@@ -168,7 +174,8 @@ void trials_update(void) {
         if (g_trials_state.current_step < cur_trial->num_steps) {
             const TrialStep* req = &cur_trial->steps[g_trials_state.current_step];
 
-            if (req->type == TRIAL_REQ_ATTACK_HIT || req->type == TRIAL_REQ_FIREBALL_HIT || req->type == TRIAL_REQ_THROW_HIT) {
+            if (req->type == TRIAL_REQ_ATTACK_HIT || req->type == TRIAL_REQ_FIREBALL_HIT ||
+                req->type == TRIAL_REQ_THROW_HIT) {
                 if (match_waza(req, kow)) {
                     g_trials_state.current_step++;
                     g_trials_state.step_completed_this_frame = true;
@@ -183,7 +190,8 @@ void trials_update(void) {
     }
 
     // Check for non-hit conditions (ACTIVE_MOVE)
-    if (g_trials_state.current_step < cur_trial->num_steps && !g_trials_state.failed && !g_trials_state.step_completed_this_frame) {
+    if (g_trials_state.current_step < cur_trial->num_steps && !g_trials_state.failed &&
+        !g_trials_state.step_completed_this_frame) {
         const TrialStep* req = &cur_trial->steps[g_trials_state.current_step];
         if (req->type == TRIAL_REQ_ACTIVE_MOVE) {
             if (match_waza(req, pl1->wu.kind_of_waza)) { // Active moves use P1's current animating waza
@@ -207,20 +215,24 @@ void trials_draw(void) {
         return;
 
     const TrialCharacterDef* cdef = get_char_def(g_trials_state.current_chara_id);
-    if (!cdef) return;
-    
+    if (!cdef)
+        return;
+
     const TrialDef* cur_trial = get_current_trial_def();
-    if (!cur_trial) return;
+    if (!cur_trial)
+        return;
 
     char buf[128];
 
     // Draw header
-    snprintf(buf, sizeof(buf), "TRIAL: %s %d/%d (L/R skip)", 
-             cdef->chara_name, 
-             g_trials_state.current_trial_index + 1, 
+    snprintf(buf,
+             sizeof(buf),
+             "TRIAL: %s %d/%d (L/R skip)",
+             cdef->chara_name,
+             g_trials_state.current_trial_index + 1,
              cdef->num_trials);
     SSPutStrPro_Scale(0, 16.0f, 40.0f, 9, 0xFFFFFFFF, (s8*)buf, 1.0f); // White header
-    
+
     if (cur_trial->gauge_max) {
         SSPutStrPro_Scale(0, 240.0f, 40.0f, 9, 0xFF00FFFF, (s8*)"MAX GAUGE", 1.0f); // Yellow alert
     }
@@ -229,7 +241,7 @@ void trials_draw(void) {
     s16 start_y = 100;
     for (int i = 0; i < cur_trial->num_steps; i++) {
         const TrialStep* step = &cur_trial->steps[i];
-        
+
         u32 color = 0xFFFFFFFF; // default white
         if (i < g_trials_state.current_step) {
             color = 0xFF00FF00; // green (completed)
@@ -266,29 +278,38 @@ void trials_draw(void) {
 // Engine Event Hooks
 // ----------------------------------------------------------------------------
 void trials_on_attack_hit(s16 attacker_id, s16 kind_of_waza) {
-    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active) return;
-    (void)attacker_id; (void)kind_of_waza;
+    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
+        return;
+    (void)attacker_id;
+    (void)kind_of_waza;
 }
 
 void trials_on_throw_hit(s16 attacker_id, s16 kind_of_waza) {
-    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active) return;
-    (void)attacker_id; (void)kind_of_waza;
+    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
+        return;
+    (void)attacker_id;
+    (void)kind_of_waza;
 }
 
 void trials_on_fireball_hit(s16 attacker_id, s16 kind_of_waza) {
-    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active) return;
-    (void)attacker_id; (void)kind_of_waza;
+    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
+        return;
+    (void)attacker_id;
+    (void)kind_of_waza;
 }
 
 void trials_on_parry(s16 defender_id) {
-    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active) return;
-    
-    // Example: If a trial step requires a parry (not actively used in standard trials 
+    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
+        return;
+
+    // Example: If a trial step requires a parry (not actively used in standard trials
     // outside of specific edge cases, but we have a hook ready).
     const TrialDef* cur_trial = get_current_trial_def();
-    if (!cur_trial) return;
+    if (!cur_trial)
+        return;
 
-    if (g_trials_state.current_step < cur_trial->num_steps && !g_trials_state.failed && !g_trials_state.step_completed_this_frame) {
+    if (g_trials_state.current_step < cur_trial->num_steps && !g_trials_state.failed &&
+        !g_trials_state.step_completed_this_frame) {
         const TrialStep* step = &cur_trial->steps[g_trials_state.current_step];
         // Lua N001B001B was parry. We check if active move matches 0x001B
         if (step->type == TRIAL_REQ_ACTIVE_MOVE && match_waza(step, 0x001B)) {
@@ -297,5 +318,3 @@ void trials_on_parry(s16 defender_id) {
         }
     }
 }
-
-

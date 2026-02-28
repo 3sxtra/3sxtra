@@ -107,8 +107,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
 
                 if (exsw == cmdshot_conv_tbl[wk->cp->exdt[g_ix][j] & 0xF]) {
                     setup_comm_back(&wk->wu);
-                    wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(g_ix)]
-                                             [j + ((g_ix - 20) * 4)];
+                    wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(g_ix)][j + ((g_ix - 20) * 4)];
                     wk->wu.cg_cancel = 0;
                     wk->sa->mp = -1;
                     hissatsu_setup_union(wk, wk->cp->waza_r[g_ix][j]);
@@ -165,8 +164,7 @@ static s32 check_full_gauge_attack_inner(PLW* wk, s8 always, u8 g_ix, u8 a_ix) {
 
             if (exsw == cmdshot_conv_tbl[wk->cp->exdt[a_ix][j] & 0xF]) {
                 setup_comm_back(&wk->wu);
-                wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(a_ix)]
-                                         [j + ((a_ix - 38) * 4)];
+                wk->as = &_assadr_lv_9900[wk->player_number][cmdixconv(a_ix)][j + ((a_ix - 38) * 4)];
                 wk->wu.cg_cancel = 0;
                 wk->sa->mp = -1;
                 hissatsu_setup_union(wk, wk->cp->waza_r[a_ix][j]);

@@ -184,7 +184,8 @@ s32 effect_00_init(WORK* wk) {
     WORK_Other_JUDGE* ewk;
     s16 ix;
 
-    if (Debug_w[DEBUG_DISP_PLAYER_TYPE] == 0 && Debug_w[DEBUG_DISP_EFFECT_TYPE] == 0 && !Is_Training_Hitbox_Display_Active()) {
+    if (Debug_w[DEBUG_DISP_PLAYER_TYPE] == 0 && Debug_w[DEBUG_DISP_EFFECT_TYPE] == 0 &&
+        !Is_Training_Hitbox_Display_Active()) {
         return 0;
     }
 

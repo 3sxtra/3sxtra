@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Compare sanitized PLW dumps between peers to find exact diverging bytes."""
-import struct
-import sys
+
 from pathlib import Path
 
 
@@ -58,7 +57,7 @@ def main():
             print()
 
         # Also print surrounding context for each diff
-        print(f"  Context around diffs:")
+        print("  Context around diffs:")
         for s, e in ranges[:10]:
             ctx_start = max(0, s - 8)
             ctx_end = min(len(d0), e + 9)

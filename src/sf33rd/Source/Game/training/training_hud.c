@@ -79,9 +79,7 @@ static void draw_box(s16 left, s16 right, s16 top, s16 bottom, u32 color) {
  * When clamp_min_size is true, zero-dimension boxes are expanded to a minimum
  * visible size (used for throw-range boxes that may be 1-D checks).
  */
-static void calc_and_draw_box(s16 pos_x, s16 pos_y, s8 flip,
-                               const s16 box[4], u32 color,
-                               int clamp_min_size) {
+static void calc_and_draw_box(s16 pos_x, s16 pos_y, s8 flip, const s16 box[4], u32 color, int clamp_min_size) {
     s16 l, r, t, b;
     if (flip == 1) {
         l = pos_x + box[0];
@@ -94,8 +92,14 @@ static void calc_and_draw_box(s16 pos_x, s16 pos_y, s8 flip,
     t = b + box[3];
 
     if (clamp_min_size) {
-        if (l == r) { r += 2; l -= 2; }
-        if (t == b) { t += 100; b -= 10; }
+        if (l == r) {
+            r += 2;
+            l -= 2;
+        }
+        if (t == b) {
+            t += 100;
+            b -= 10;
+        }
     }
 
     draw_box(l, r, t, b, color);

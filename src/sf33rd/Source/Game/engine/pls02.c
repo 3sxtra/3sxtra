@@ -687,7 +687,8 @@ static s32 random_16_ex() {
     return rng_next(&Random_ix16_ex, random_tbl_16_ex, 0xF);
 }
 
-/** @brief Returns a 32-entry COM-side pseudo-random number. @netplay_sync — delegates to random_32() when Play_Mode==0. */
+/** @brief Returns a 32-entry COM-side pseudo-random number. @netplay_sync — delegates to random_32() when Play_Mode==0.
+ */
 s32 random_32_com() {
     if (Play_Mode == 0) {
         return random_32();
@@ -695,7 +696,8 @@ s32 random_32_com() {
     return rng_next(&Random_ix32_com, random_tbl_32_com, 0x7F);
 }
 
-/** @brief Returns a 16-entry COM-side pseudo-random number. @netplay_sync — delegates to random_16() when Play_Mode==0. */
+/** @brief Returns a 16-entry COM-side pseudo-random number. @netplay_sync — delegates to random_16() when Play_Mode==0.
+ */
 s32 random_16_com() {
     if (Play_Mode == 0) {
         return random_16();

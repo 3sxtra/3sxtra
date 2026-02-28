@@ -88,12 +88,12 @@ typedef struct GameState {
     s8 Winner_id;
     s8 Loser_id;
     s8 Break_Into;
-    u8 My_char[2];          ///< @netplay_sync Character IDs — checksummed
+    u8 My_char[2]; ///< @netplay_sync Character IDs — checksummed
     u8 Allow_a_battle_f;
-    u8 Round_num;            ///< @netplay_sync Checksummed
+    u8 Round_num; ///< @netplay_sync Checksummed
     s8 Complete_Judgement;
     s8 Fade_Flag;
-    s8 Super_Arts[2];        ///< @netplay_sync Selected super art — checksummed
+    s8 Super_Arts[2]; ///< @netplay_sync Selected super art — checksummed
     s8 Forbid_Break;
     s8 Request_Break[2];
     s8 Continue_Count[2];
@@ -168,15 +168,15 @@ typedef struct GameState {
     // Combat flags — GAMEPLAY-CRITICAL
     // These are checksummed during desync detection.
     // ======================================================================
-    s8 Flip_Flag[2];         ///< @netplay_sync Checksummed
-    s8 Lie_Flag[2];          ///< @netplay_sync Checksummed
-    s8 Counter_Attack[2];    ///< @netplay_sync Checksummed
-    s8 Attack_Flag[2];       ///< @netplay_sync Checksummed
+    s8 Flip_Flag[2];      ///< @netplay_sync Checksummed
+    s8 Lie_Flag[2];       ///< @netplay_sync Checksummed
+    s8 Counter_Attack[2]; ///< @netplay_sync Checksummed
+    s8 Attack_Flag[2];    ///< @netplay_sync Checksummed
     s8 Limited_Flag[2];
     s8 Shell_Ignore_Timer[2];
     s8 Event_Judge_Gals;
     u8 EJG_index[4];
-    s8 Guard_Flag[2];        ///< @netplay_sync Checksummed
+    s8 Guard_Flag[2]; ///< @netplay_sync Checksummed
     s8 Pierce_Menu[2];
     s8 Face_MV_Time;
     s8 Before_Jump[2];
@@ -431,8 +431,8 @@ typedef struct GameState {
     // The tables are ROM constants; only these indices are mutable state.
     // See also Random_ix16_ex, Random_ix32_ex, and COM/BG variants below.
     // ======================================================================
-    s16 Random_ix16;          ///< @netplay_sync Main 16-entry RNG index — checksummed
-    s16 Random_ix32;          ///< @netplay_sync Main 32-entry RNG index — checksummed
+    s16 Random_ix16; ///< @netplay_sync Main 16-entry RNG index — checksummed
+    s16 Random_ix32; ///< @netplay_sync Main 32-entry RNG index — checksummed
     s16 M_Timer;
     s16 VS_Tech[2];
     u16 Guard_Type[2];
@@ -470,11 +470,11 @@ typedef struct GameState {
     s16 Guard_Counter[2];
     s16 Limit_Time;
     s16 Last_Pattern_Index[2];
-    s16 Random_ix16_ex;      ///< @netplay_sync Extended 16-entry RNG index — checksummed
-    s16 Random_ix32_ex;      ///< @netplay_sync Extended 32-entry RNG index — checksummed
+    s16 Random_ix16_ex; ///< @netplay_sync Extended 16-entry RNG index — checksummed
+    s16 Random_ix32_ex; ///< @netplay_sync Extended 32-entry RNG index — checksummed
     s16 DE_X[2];
     s16 Exit_Timer;
-    s16 Max_vitality;        ///< @netplay_sync Checksummed
+    s16 Max_vitality; ///< @netplay_sync Checksummed
     s16 Bonus_Game_Flag;
     s16 Bonus_Game_Work;
     s16 Bonus_Game_result;
@@ -514,11 +514,11 @@ typedef struct GameState {
     u16 plsw_01[2];
     s16 Flash_Synchro;
     s16 Synchro_Level;
-    s16 Random_ix16_com;     ///< @netplay_sync CPU 16-entry RNG index — checksummed
-    s16 Random_ix32_com;     ///< @netplay_sync CPU 32-entry RNG index — checksummed
-    s16 Random_ix16_ex_com;  ///< @netplay_sync CPU extended 16-entry RNG — checksummed
-    s16 Random_ix32_ex_com;  ///< @netplay_sync CPU extended 32-entry RNG — checksummed
-    s16 Random_ix16_bg;      ///< @netplay_sync Background animation RNG — saved but not checksummed
+    s16 Random_ix16_com;    ///< @netplay_sync CPU 16-entry RNG index — checksummed
+    s16 Random_ix32_com;    ///< @netplay_sync CPU 32-entry RNG index — checksummed
+    s16 Random_ix16_ex_com; ///< @netplay_sync CPU extended 16-entry RNG — checksummed
+    s16 Random_ix32_ex_com; ///< @netplay_sync CPU extended 32-entry RNG — checksummed
+    s16 Random_ix16_bg;     ///< @netplay_sync Background animation RNG — saved but not checksummed
     s16 Opening_Now;
     struct _TASK task[11];
 
@@ -530,9 +530,9 @@ typedef struct GameState {
     // and rendering bits) during desync detection.
     // ======================================================================
 
-    PLW plw[2];                      ///< @netplay_sync The two player structs — checksummed
+    PLW plw[2]; ///< @netplay_sync The two player structs — checksummed
     ZanzouTableEntry zanzou_table[2][48];
-    SA_WORK super_arts[2];           ///< @netplay_sync Super gauge state — checksummed
+    SA_WORK super_arts[2]; ///< @netplay_sync Super gauge state — checksummed
     PiyoriType piyori_type[2];
     AppearanceType appear_type;
     s16 pcon_rno[4];
@@ -611,9 +611,9 @@ typedef struct GameState {
     // Slow motion (slowf) — GAMEPLAY-CRITICAL (checksummed)
     // ======================================================================
 
-    s16 SLOW_timer;          ///< @netplay_sync Checksummed
-    s16 SLOW_flag;           ///< @netplay_sync Checksummed
-    s16 EXE_flag;            ///< @netplay_sync Checksummed
+    s16 SLOW_timer; ///< @netplay_sync Checksummed
+    s16 SLOW_flag;  ///< @netplay_sync Checksummed
+    s16 EXE_flag;   ///< @netplay_sync Checksummed
 
     // grade
 
