@@ -1,0 +1,29 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="memory_card.rcss"/>
+    <title>Memory Card</title>
+</head>
+<body data-model="memory_card">
+    <div id="memcard-panel" class="memcard-panel">
+        <div class="memcard-title">
+            <span>SAVE / LOAD</span>
+        </div>
+
+        <div class="slot-list">
+            <div class="slot-item">
+                <span class="slot-label">SLOT 1</span>
+            </div>
+            <div class="slot-item">
+                <span class="slot-label">SLOT 2</span>
+            </div>
+            <div class="slot-item">
+                <span class="slot-label">SLOT 3</span>
+            </div>
+            <div class="slot-item">
+                <span class="slot-label">SLOT 4</span>
+            </div>
+        </div>
+    </div>
+</body>
+</rml>

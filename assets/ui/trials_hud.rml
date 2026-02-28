@@ -1,0 +1,21 @@
+<rml>
+<head>
+    <title>Trials HUD</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="trials_hud.rcss"/>
+</head>
+<body data-model="trials_hud" id="trials-hud-root">
+    <div id="trials-container" data-if="trial_active">
+
+        <!-- Header: "TRIAL: CHARNAME N/M (L/R skip)" -->
+        <div id="trial-header">{{trial_header}}</div>
+
+        <!-- MAX GAUGE alert -->
+        <div id="trial-gauge-alert" data-if="trial_gauge_max">MAX GAUGE</div>
+
+        <!-- COMPLETE! flash -->
+        <div id="trial-complete" data-if="trial_completed" class="complete-flash">COMPLETE!</div>
+
+    </div>
+</body>
+</rml>

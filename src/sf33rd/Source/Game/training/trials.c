@@ -7,6 +7,10 @@
 #include <SDL3/SDL.h>
 #include <stdio.h> // for snprintf
 
+/* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
 // Include auto-generated data
 #include "sf33rd/Source/Game/training/trials_data.inc"
 
@@ -213,6 +217,8 @@ void trials_update(void) {
 void trials_draw(void) {
     if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
         return;
+    if (use_rmlui && rmlui_screen_trials)
+        return;
 
     const TrialCharacterDef* cdef = get_char_def(g_trials_state.current_chara_id);
     if (!cdef)
@@ -317,4 +323,21 @@ void trials_on_parry(s16 defender_id) {
             g_trials_state.step_completed_this_frame = true;
         }
     }
+}
+
+// ─── RmlUi helper accessors ──────────────────────────────────
+const char* trials_get_current_char_name(void) {
+    const TrialCharacterDef* cdef = get_char_def(g_trials_state.current_chara_id);
+    return cdef ? cdef->chara_name : NULL;
+}
+
+int trials_get_current_total(void) {
+    const TrialCharacterDef* cdef = get_char_def(g_trials_state.current_chara_id);
+    return cdef ? cdef->num_trials : 0;
+}
+
+bool trials_current_has_gauge_max(void) {
+    const TrialCharacterDef* cdef = get_char_def(g_trials_state.current_chara_id);
+    if (!cdef || g_trials_state.current_trial_index >= cdef->num_trials) return false;
+    return cdef->trials[g_trials_state.current_trial_index]->gauge_max != 0;
 }

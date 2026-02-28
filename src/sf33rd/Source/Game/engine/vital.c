@@ -12,6 +12,11 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
+/* Phase 3 RmlUi bypass */
+#include <stdbool.h>
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
 VIT vit[2];
 
 /** @brief Initializes the vitality bar display state for both players. */
@@ -40,8 +45,10 @@ void vital_cont_main() {
                 vital_control(1);
             }
         } else {
-            vital_parts_allwrite(0);
-            vital_parts_allwrite(1);
+            if (!use_rmlui || !rmlui_hud_health) {
+                vital_parts_allwrite(0);
+                vital_parts_allwrite(1);
+            }
         }
     }
 }
@@ -52,7 +59,8 @@ void vital_control(u8 pl) {
         if ((vit[pl].cyerw == plw[pl].wu.vital_new) && (vit[pl].cred == plw[pl].wu.vital_new) &&
             (vit[pl].ored != (plw[pl].wu.vital_new + 1))) {
             if (No_Trans == 0) {
-                vital_parts_allwrite(pl);
+                if (!use_rmlui || !rmlui_hud_health)
+                    vital_parts_allwrite(pl);
             }
             return;
         }
@@ -76,7 +84,8 @@ void vital_control(u8 pl) {
         }
 
         if (No_Trans == 0) {
-            vital_parts_allwrite(pl);
+            if (!use_rmlui || !rmlui_hud_health)
+                vital_parts_allwrite(pl);
         }
 
         vit[pl].ored = vit[pl].cred;

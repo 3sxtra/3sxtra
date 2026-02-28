@@ -1,0 +1,35 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="sound_menu.rcss"/>
+    <title>Sound Menu</title>
+</head>
+<body data-model="sound_menu">
+    <div id="sound-panel" class="sound-panel">
+        <div class="sound-title">
+            <span>SOUND</span>
+        </div>
+
+        <div class="option-list">
+            <div class="option-row">
+                <span class="option-label">MODE</span>
+                <span class="option-value" data-if="sound_mode == 0">STEREO</span>
+                <span class="option-value" data-if="sound_mode == 1">MONO</span>
+            </div>
+            <div class="option-row">
+                <span class="option-label">BGM LEVEL</span>
+                <span class="option-value">{{ bgm_level }}</span>
+            </div>
+            <div class="option-row">
+                <span class="option-label">SE LEVEL</span>
+                <span class="option-value">{{ se_level }}</span>
+            </div>
+            <div class="option-row">
+                <span class="option-label">BGM TYPE</span>
+                <span class="option-value" data-if="bgm_type == 0">ARRANGED</span>
+                <span class="option-value" data-if="bgm_type == 1">ORIGINAL</span>
+            </div>
+        </div>
+    </div>
+</body>
+</rml>

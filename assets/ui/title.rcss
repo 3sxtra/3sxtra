@@ -1,0 +1,70 @@
+/* ============================================================ *
+ *  title.rcss  —  Title screen "PRESS START BUTTON" overlay    *
+ *  CSS blink replaces the timer-based E_No cycle              *
+ * ============================================================ */
+
+body {
+    width: 384dp;
+    height: 224dp;
+    font-family: "Noto Sans JP Thin";
+}
+
+/* ── Main prompt ────────────────────────────────────────────── */
+#title-prompt {
+    display: block;
+    position: absolute;
+    bottom: 42dp;
+    left: 0dp;
+    width: 384dp;
+    text-align: center;
+}
+
+.press-start {
+    display: inline-block;
+    font-size: 12dp;
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 2dp;
+    text-shadow: 1dp 1dp rgba(0, 0, 0, 0.6);
+    animation: title-blink 1.33s step-end infinite;
+}
+
+/* ── Player prompts ─────────────────────────────────────────── */
+#player-prompts {
+    display: block;
+    position: absolute;
+    top: 4dp;
+    left: 0dp;
+    width: 384dp;
+}
+
+.prompt-1p {
+    display: inline-block;
+    position: absolute;
+    left: 20dp;
+    font-size: 8dp;
+    color: rgba(180, 220, 255, 0.85);
+    letter-spacing: 1dp;
+    animation: title-blink 1.33s step-end infinite;
+}
+
+.prompt-2p {
+    display: inline-block;
+    position: absolute;
+    right: 20dp;
+    font-size: 8dp;
+    color: rgba(255, 180, 180, 0.85);
+    letter-spacing: 1dp;
+    animation: title-blink 1.33s step-end infinite;
+}
+
+/* ── Blink animation ────────────────────────────────────────── *
+ *  Original: 50 frames visible (~0.83s at 60fps), 30 frames   *
+ *  hidden (~0.50s). Total ~1.33s.                             *
+ *  CSS step-end: 62.5% visible, 37.5% hidden.                *
+ * ──────────────────────────────────────────────────────────── */
+@keyframes title-blink {
+    0%   { opacity: 1; }
+    62%  { opacity: 1; }
+    63%  { opacity: 0; }
+    100% { opacity: 0; }
+}

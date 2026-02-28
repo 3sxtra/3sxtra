@@ -1,0 +1,123 @@
+/* ── Win Screen Stylesheet ──────────────────────────────────── */
+body {
+    width: 100%;
+    height: 100%;
+    font-family: "Noto Sans JP Thin";
+    font-size: 14dp;
+    color: #ffffffee;
+}
+
+.win-panel {
+    display: block;
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    margin-left: -160dp;
+    width: 320dp;
+    text-align: center;
+    animation: panel-fade-in 0.4s ease-out;
+}
+
+@keyframes panel-fade-in {
+    0% {
+        opacity: 0;
+        margin-top: 20dp;
+    }
+    100% {
+        opacity: 1;
+        margin-top: 0dp;
+    }
+}
+
+/* ── WINNER banner ──────────────────────────────────────────── */
+.winner-banner {
+    display: block;
+    margin-bottom: 8dp;
+}
+
+.banner-label {
+    display: inline-block;
+    font-size: 28dp;
+    font-weight: bold;
+    color: #ffd700;
+    text-align: center;
+    letter-spacing: 4dp;
+    text-shadow: 2dp 2dp 4dp #00000088;
+    animation: banner-glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes banner-glow {
+    0% {
+        color: #ffd700;
+    }
+    100% {
+        color: #fff8dc;
+    }
+}
+
+/* ── Character name ─────────────────────────────────────────── */
+.winner-name {
+    display: block;
+    font-size: 22dp;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 16dp;
+    text-shadow: 1dp 1dp 3dp #00000088;
+}
+
+/* ── Score block ────────────────────────────────────────────── */
+.score-block {
+    display: block;
+    margin-bottom: 12dp;
+    padding: 8dp 16dp;
+    background-color: #00000066;
+    border-width: 1dp;
+    border-color: #ffd70044;
+}
+
+.score-row {
+    display: block;
+    margin-bottom: 4dp;
+}
+
+.score-label {
+    display: inline-block;
+    width: 100dp;
+    text-align: left;
+    font-size: 12dp;
+    color: #cccccc;
+    letter-spacing: 2dp;
+}
+
+.score-value {
+    display: inline-block;
+    width: 140dp;
+    text-align: right;
+    font-size: 16dp;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+/* ── Streak block ───────────────────────────────────────────── */
+.streak-block {
+    display: block;
+    margin-top: 8dp;
+}
+
+.streak-text {
+    display: inline-block;
+    font-size: 16dp;
+    font-weight: bold;
+    color: #ff6600;
+    letter-spacing: 2dp;
+    animation: streak-pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes streak-pulse {
+    0% {
+        color: #ff6600;
+    }
+    100% {
+        color: #ffaa44;
+    }
+}

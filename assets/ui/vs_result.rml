@@ -1,0 +1,39 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="vs_result.rcss"/>
+    <title>VS Result</title>
+</head>
+<body data-model="vs_result">
+    <div id="vs-result-panel" class="vs-result-panel">
+        <div class="result-header">
+            <span>VS RESULT</span>
+        </div>
+
+        <div class="result-body">
+            <!-- P1 Side -->
+            <div class="player-side p1-side">
+                <div class="player-label">1P</div>
+                <div class="player-char">{{ p1_char }}</div>
+                <div class="player-wins">{{ p1_wins }}</div>
+                <div class="player-pct-label">WIN RATE</div>
+                <div class="player-pct">{{ p1_pct }}%</div>
+            </div>
+
+            <!-- Divider -->
+            <div class="vs-divider">
+                <span>VS</span>
+            </div>
+
+            <!-- P2 Side -->
+            <div class="player-side p2-side">
+                <div class="player-label">2P</div>
+                <div class="player-char">{{ p2_char }}</div>
+                <div class="player-wins">{{ p2_wins }}</div>
+                <div class="player-pct-label">WIN RATE</div>
+                <div class="player-pct">{{ p2_pct }}%</div>
+            </div>
+        </div>
+    </div>
+</body>
+</rml>

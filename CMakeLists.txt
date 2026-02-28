@@ -273,6 +273,29 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/sdl/rmlui_control_mapping.cpp
     src/port/sdl/rmlui_training_menu.cpp
     src/port/sdl/rmlui_netplay_ui.cpp
+    src/port/sdl/rmlui_game_hud.cpp
+    src/port/sdl/rmlui_mode_menu.cpp
+    src/port/sdl/rmlui_option_menu.cpp
+    src/port/sdl/rmlui_game_option.cpp
+    src/port/sdl/rmlui_title_screen.cpp
+    src/port/sdl/rmlui_win_screen.cpp
+    src/port/sdl/rmlui_continue.cpp
+    src/port/sdl/rmlui_gameover.cpp
+    src/port/sdl/rmlui_vs_result.cpp
+    src/port/sdl/rmlui_memory_card.cpp
+    src/port/sdl/rmlui_sound_menu.cpp
+    src/port/sdl/rmlui_sysdir.cpp
+    src/port/sdl/rmlui_network_lobby.cpp
+    src/port/sdl/rmlui_extra_option.cpp
+    src/port/sdl/rmlui_training_menus.cpp
+    src/port/sdl/rmlui_button_config.cpp
+    src/port/sdl/rmlui_char_select.cpp
+    src/port/sdl/rmlui_vs_screen.cpp
+    src/port/sdl/rmlui_replay_picker.cpp
+    src/port/sdl/rmlui_pause_overlay.cpp
+    src/port/sdl/rmlui_trials_hud.cpp
+    src/port/sdl/rmlui_copyright.cpp
+    src/port/sdl/rmlui_name_entry.cpp
     # RmlUi backend sources (SDL3 platform + GL3/SDL/SDL_GPU renderers)
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
@@ -390,6 +413,7 @@ target_link_libraries(3sx PRIVATE
     ${LIBRASHADER_LIB}
     SDL3_shadercross::SDL3_shadercross
     rmlui
+    rmlui_debugger
 )
 
 if(ENABLE_TRACY)

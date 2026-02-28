@@ -12,6 +12,11 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
+/* Phase 3 RmlUi bypass */
+#include <stdbool.h>
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
 SDAT sdat[2];
 
 /** @brief Initializes the stun gauge display state for both players. */
@@ -28,11 +33,13 @@ void stngauge_cont_init() {
         sdat[i].proccess_dead = 0;
 
         if (omop_st_bar_disp[i]) {
-            stun_base_put(i, sdat[i].slen);
+            if (!use_rmlui || !rmlui_hud_stun)
+                stun_base_put(i, sdat[i].slen);
         }
     }
 
-    stun_gauge_waku_write(sdat[0].slen, sdat[1].slen);
+    if (!use_rmlui || !rmlui_hud_stun)
+        stun_gauge_waku_write(sdat[0].slen, sdat[1].slen);
 }
 
 /** @brief Per-frame stun gauge update — drives the animated stun bar display. */
@@ -44,15 +51,18 @@ void stngauge_cont_main() {
             if (gauge_stop_flag[i] == 0) {
                 stngauge_control(i);
             } else {
-                stun_put(i, sdat[i].cstn);
+                if (!use_rmlui || !rmlui_hud_stun)
+                    stun_put(i, sdat[i].cstn);
             }
 
             if (omop_st_bar_disp[i]) {
-                stun_base_put(i, sdat[i].slen);
+                if (!use_rmlui || !rmlui_hud_stun)
+                    stun_base_put(i, sdat[i].slen);
             }
         }
 
-        stun_gauge_waku_write(sdat[0].slen, sdat[1].slen);
+        if (!use_rmlui || !rmlui_hud_stun)
+            stun_gauge_waku_write(sdat[0].slen, sdat[1].slen);
     }
 }
 
@@ -79,7 +89,7 @@ void stngauge_control(u8 pl) {
             }
 
             if (sdat[pl].g_or_s == 0) {
-                if (No_Trans == 0) {
+                if (No_Trans == 0 && (!use_rmlui || !rmlui_hud_stun)) {
                     stun_mark_write(pl, sdat[pl].slen);
                     stun_put(pl, sdat[pl].cstn);
                 }
@@ -89,7 +99,7 @@ void stngauge_control(u8 pl) {
                     sdat[pl].stimer = 2;
                 }
             } else {
-                if (No_Trans == 0) {
+                if (No_Trans == 0 && (!use_rmlui || !rmlui_hud_stun)) {
                     stun_put(pl, sdat[pl].cstn);
                 }
 

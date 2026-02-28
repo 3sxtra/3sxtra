@@ -25,6 +25,14 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 
+/* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui_title_screen.h"
+extern bool use_rmlui;
+
+/* Macro: skip SSPutStr if entry text RmlUi is active */
+#define ENTRY_TEXT_GATED (use_rmlui && rmlui_screen_entry_text)
+
 u8 letter_stack[40];
 u8 letter_counter;
 u8* letter_ptr;
@@ -160,6 +168,11 @@ static void Entry_00() {
 /** @brief Display the "PRESS START" and per-player start prompts on title screen. */
 static void Disp_00_0() {
     if (save_w[1].extra_option.contents[3][5] == 0) {
+        return;
+    }
+
+    if (use_rmlui && rmlui_screen_title) {
+        /* CSS blink animation handles the visibility cycle */
         return;
     }
 
@@ -899,7 +912,7 @@ static s32 Loser_Sub_1P() {
     if ((Ck_Break_Into(p1sw_0, p1sw_1, 0) == 0) && !Request_Break[0]) {
         if (LOSER == 0) {
             if (save_w[1].extra_option.contents[3][5]) {
-                SSPutStr(DE_X[0], 0, 9, "     CONTINUE?");
+                if (!ENTRY_TEXT_GATED) SSPutStr(DE_X[0], 0, 9, "     CONTINUE?");
             }
         } else {
             Flash_Start(0);
@@ -914,7 +927,7 @@ static s32 Loser_Sub_2P() {
     if ((Ck_Break_Into(p2sw_0, p2sw_1, 1) == 0) && !Request_Break[1]) {
         if (LOSER == 1) {
             if (save_w[1].extra_option.contents[3][5]) {
-                SSPutStr(DE_X[1], 0, 9, "     CONTINUE?");
+                if (!ENTRY_TEXT_GATED) SSPutStr(DE_X[1], 0, 9, "     CONTINUE?");
             }
         } else {
             Flash_Start(1);
@@ -965,8 +978,10 @@ static s32 Credit_Continue_2P() {
 /** @brief Continue-screen sub — countdown timer, check for cut, advance to ranking or game-over. */
 static void Entry_Continue_Sub(s16 PL_id) {
     if ((Continue_Count_Down[PL_id] == 0) && save_w[1].extra_option.contents[3][5]) {
-        SSPutStr(DE_X[PL_id], 0, 9, "     CONTINUE?");
-        Disp_Personal_Count(PL_id, Continue_Count[PL_id]);
+        if (!ENTRY_TEXT_GATED) {
+            SSPutStr(DE_X[PL_id], 0, 9, "     CONTINUE?");
+            Disp_Personal_Count(PL_id, Continue_Count[PL_id]);
+        }
     }
 
     switch (E_Number[PL_id][1]) {
@@ -1073,7 +1088,7 @@ static void In_Game_Sub(s16 PL_id) {
 
     case 2:
         if (save_w[1].extra_option.contents[3][5]) {
-            SSPutStr(DE_X[PL_id], 0, 9, "     GAME OVER");
+            if (!ENTRY_TEXT_GATED) SSPutStr(DE_X[PL_id], 0, 9, "     GAME OVER");
         }
 
         if (--Personal_Timer[PL_id] == 0) {
@@ -1108,7 +1123,7 @@ static void In_Over_Sub(s16 PL_id) {
     }
 
     if (save_w[1].extra_option.contents[3][5]) {
-        SSPutStr(DE_X[PL_id], 0, 9, "     GAME OVER");
+        if (!ENTRY_TEXT_GATED) SSPutStr(DE_X[PL_id], 0, 9, "     GAME OVER");
     }
 }
 
@@ -1135,9 +1150,9 @@ static s32 Flash_Start(s16 PL_id) {
 
             if (save_w[1].extra_option.contents[3][5]) {
                 if (PL_id) {
-                    SSPutStr(DE_X[1], 0, 9, "   PRESS 2P START");
+                    if (!ENTRY_TEXT_GATED) SSPutStr(DE_X[1], 0, 9, "   PRESS 2P START");
                 } else {
-                    SSPutStr(DE_X[0], 0, 9, "   PRESS 1P START");
+                    if (!ENTRY_TEXT_GATED) SSPutStr(DE_X[0], 0, 9, "   PRESS 1P START");
                 }
             }
         }
@@ -1148,9 +1163,9 @@ static s32 Flash_Start(s16 PL_id) {
         if (--F_Timer[PL_id]) {
             if (save_w[1].extra_option.contents[3][5]) {
                 if (PL_id) {
-                    SSPutStr(DE_X[1], 0, 9, "   PRESS 2P START");
+                    if (!ENTRY_TEXT_GATED) SSPutStr(DE_X[1], 0, 9, "   PRESS 2P START");
                 } else {
-                    SSPutStr(DE_X[0], 0, 9, "   PRESS 1P START");
+                    if (!ENTRY_TEXT_GATED) SSPutStr(DE_X[0], 0, 9, "   PRESS 1P START");
                 }
             }
         } else {
@@ -1166,7 +1181,7 @@ static s32 Flash_Start(s16 PL_id) {
 
     default:
         if (save_w[1].extra_option.contents[3][5]) {
-            SSPutStr(DE_X[1], 0, 9, "     CONTINUE?");
+            if (!ENTRY_TEXT_GATED) SSPutStr(DE_X[1], 0, 9, "     CONTINUE?");
         }
 
         break;
@@ -1198,7 +1213,7 @@ static s32 Flash_Please(s16 PL_id) {
 
     default:
         if (--F_Timer[PL_id]) {
-            SSPutStr(DE_X[PL_id], 0, 9, "    PLEASE WAIT");
+            if (!ENTRY_TEXT_GATED) SSPutStr(DE_X[PL_id], 0, 9, "    PLEASE WAIT");
         } else {
             F_No3[PL_id] -= 1;
             F_Timer[PL_id] = 30;

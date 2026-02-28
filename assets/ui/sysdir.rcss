@@ -1,0 +1,146 @@
+/* ─── System Direction / Dipswitch Menu ─────────────────────────── */
+
+#sysdir-panel {
+    display: block;
+    position: absolute;
+    top: 40dp;
+    left: 50dp;
+    width: 310dp;
+    padding: 10dp 14dp;
+    background-color: rgba(10, 15, 30, 0.88);
+    border-width: 1dp;
+    border-color: rgba(120, 140, 200, 0.35);
+    animation: slide-in 0.18s cubic-in-out;
+}
+
+@keyframes slide-in {
+    from { margin-left: -30dp; opacity: 0; }
+    to   { margin-left: 0;     opacity: 1; }
+}
+
+/* ─── Top-level nav items ───────────────────────────────────────── */
+
+#nav-section {
+    display: block;
+}
+
+.nav-item {
+    display: block;
+    padding: 4dp 8dp;
+    margin-bottom: 2dp;
+    color: rgba(200, 210, 240, 0.9);
+    font-size: 13dp;
+    border-left-width: 3dp;
+    border-left-color: transparent;
+    transition: background-color border-left-color 0.08s linear-in-out;
+}
+
+.nav-item.focused {
+    background-color: rgba(255, 220, 0, 0.12);
+    border-left-color: rgba(255, 210, 40, 0.95);
+    color: #fff;
+}
+
+.nav-label {
+    display: inline;
+    width: 200dp;
+}
+
+.nav-value {
+    display: inline;
+    text-align: right;
+    color: rgba(140, 200, 255, 0.9);
+    font-size: 13dp;
+}
+
+/* ─── Sub-page section ──────────────────────────────────────────── */
+
+#subpage-section {
+    display: block;
+}
+
+.page-indicator {
+    display: block;
+    text-align: center;
+    font-size: 11dp;
+    color: rgba(140, 170, 220, 0.7);
+    margin-bottom: 6dp;
+    padding-bottom: 4dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(100, 120, 180, 0.25);
+}
+
+/* ─── Toggle rows ───────────────────────────────────────────────── */
+
+.toggle-row {
+    display: block;
+    padding: 3dp 6dp;
+    margin-bottom: 1dp;
+    color: rgba(200, 210, 240, 0.85);
+    font-size: 12dp;
+    border-left-width: 3dp;
+    border-left-color: transparent;
+    transition: background-color border-left-color 0.08s linear-in-out;
+}
+
+.toggle-row.focused {
+    background-color: rgba(255, 220, 0, 0.12);
+    border-left-color: rgba(255, 210, 40, 0.95);
+    color: #fff;
+}
+
+.toggle-label {
+    display: inline;
+    width: 210dp;
+    font-size: 11dp;
+}
+
+.toggle-value {
+    display: inline;
+    text-align: right;
+    width: 70dp;
+    color: rgba(100, 220, 160, 0.95);
+    font-size: 12dp;
+}
+
+.toggle-row.focused .toggle-value {
+    color: rgba(120, 255, 180, 1.0);
+}
+
+/* ─── Nav row (◀ / EXIT / ▶) ─────────────────────────────────── */
+
+.nav-row {
+    margin-top: 4dp;
+    border-top-width: 1dp;
+    border-top-color: rgba(100, 120, 180, 0.2);
+    padding-top: 5dp;
+}
+
+.nav-arrow {
+    text-align: center;
+    width: 70dp;
+    color: rgba(180, 200, 255, 0.9);
+}
+
+.nav-row.focused .nav-arrow {
+    color: rgba(255, 220, 80, 1.0);
+}
+
+/* ─── Description area ──────────────────────────────────────────── */
+
+.desc-area {
+    display: block;
+    margin-top: 8dp;
+    padding: 6dp 8dp;
+    background-color: rgba(20, 30, 60, 0.6);
+    border-width: 1dp;
+    border-color: rgba(80, 100, 160, 0.25);
+    min-height: 28dp;
+}
+
+.desc-text {
+    display: block;
+    font-size: 10dp;
+    color: rgba(180, 190, 220, 0.85);
+    line-height: 1.3;
+}

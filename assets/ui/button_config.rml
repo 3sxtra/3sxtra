@@ -1,0 +1,23 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="button_config.rcss"/>
+    <title>Button Config</title>
+</head>
+<body data-model="button_config">
+    <div id="bc-panel" class="bc-panel">
+        <div class="bc-title"><span>BUTTON CONFIG</span></div>
+        <div class="option-list">
+            <div class="menu-item" data-class-focused="bc_cursor == 0"><span>{{ bc_label_0 }}</span></div>
+            <div class="menu-item" data-class-focused="bc_cursor == 1"><span>{{ bc_label_1 }}</span></div>
+            <div class="menu-item" data-class-focused="bc_cursor == 2"><span>{{ bc_label_2 }}</span></div>
+            <div class="menu-item" data-class-focused="bc_cursor == 3"><span>{{ bc_label_3 }}</span></div>
+            <div class="menu-item" data-class-focused="bc_cursor == 4"><span>{{ bc_label_4 }}</span></div>
+            <div class="menu-item" data-class-focused="bc_cursor == 5"><span>{{ bc_label_5 }}</span></div>
+            <div class="menu-item" data-class-focused="bc_cursor == 6"><span>{{ bc_label_6 }}</span></div>
+            <div class="menu-item" data-class-focused="bc_cursor == 7"><span>{{ bc_label_7 }}</span></div>
+            <div class="menu-item" data-class-focused="bc_cursor == 8"><span>{{ bc_label_8 }}</span></div>
+        </div>
+    </div>
+</body>
+</rml>

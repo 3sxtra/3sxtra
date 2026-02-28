@@ -1,0 +1,118 @@
+/* ── VS Result Screen Stylesheet ──────────────────────────── */
+body {
+    width: 100%;
+    height: 100%;
+    font-family: "Noto Sans JP Thin";
+    font-size: 14dp;
+    color: #ffffffee;
+}
+
+.vs-result-panel {
+    display: block;
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    margin-left: -200dp;
+    width: 400dp;
+    text-align: center;
+    animation: panel-fade-in 0.5s ease-out;
+}
+
+@keyframes panel-fade-in {
+    0% {
+        opacity: 0;
+        margin-top: 15dp;
+    }
+    100% {
+        opacity: 1;
+        margin-top: 0dp;
+    }
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.result-header {
+    display: block;
+    font-size: 24dp;
+    font-weight: bold;
+    color: #ffd700;
+    letter-spacing: 4dp;
+    margin-bottom: 16dp;
+    text-shadow: 2dp 2dp 4dp #00000088;
+}
+
+/* ── Body: split layout ─────────────────────────────────────── */
+.result-body {
+    display: block;
+    padding: 12dp;
+    background-color: #00000066;
+    border-width: 1dp;
+    border-color: #ffd70033;
+}
+
+.player-side {
+    display: inline-block;
+    width: 150dp;
+    vertical-align: top;
+    text-align: center;
+    padding: 8dp;
+}
+
+.p1-side {
+    border-right-width: 0dp;
+}
+
+.p2-side {
+    border-left-width: 0dp;
+}
+
+.vs-divider {
+    display: inline-block;
+    width: 60dp;
+    vertical-align: top;
+    text-align: center;
+    padding-top: 40dp;
+    font-size: 18dp;
+    font-weight: bold;
+    color: #888888;
+}
+
+/* ── Player elements ────────────────────────────────────────── */
+.player-label {
+    display: block;
+    font-size: 12dp;
+    color: #888888;
+    letter-spacing: 2dp;
+    margin-bottom: 4dp;
+}
+
+.player-char {
+    display: block;
+    font-size: 16dp;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 8dp;
+}
+
+.player-wins {
+    display: block;
+    font-size: 36dp;
+    font-weight: bold;
+    color: #ffd700;
+    margin-bottom: 4dp;
+    text-shadow: 1dp 1dp 3dp #00000066;
+}
+
+.player-pct-label {
+    display: block;
+    font-size: 10dp;
+    color: #666666;
+    letter-spacing: 1dp;
+    margin-bottom: 2dp;
+}
+
+.player-pct {
+    display: block;
+    font-size: 18dp;
+    font-weight: bold;
+    color: #cccccc;
+}

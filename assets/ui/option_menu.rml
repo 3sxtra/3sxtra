@@ -1,0 +1,73 @@
+<rml>
+<head>
+    <title>Option Menu</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="option_menu.rcss"/>
+</head>
+<body data-model="option_menu" id="option-menu-root">
+    <div id="option-panel">
+        <div class="menu-title">OPTION</div>
+
+        <div class="menu-items">
+
+            <!-- 0: Game Option -->
+            <button class="menu-item" id="opt-0"
+                    data-class-focused="option_cursor == 0"
+                    data-event-click="select_item(0)"
+                    nav-down="opt-1">
+                GAME OPTION
+            </button>
+
+            <!-- 1: Button Config -->
+            <button class="menu-item" id="opt-1"
+                    data-class-focused="option_cursor == 1"
+                    data-event-click="select_item(1)"
+                    nav-up="opt-0" nav-down="opt-2">
+                BUTTON CONFIG.
+            </button>
+
+            <!-- 2: Screen Adjust -->
+            <button class="menu-item" id="opt-2"
+                    data-class-focused="option_cursor == 2"
+                    data-event-click="select_item(2)"
+                    nav-up="opt-1" nav-down="opt-3">
+                SCREEN ADJUST
+            </button>
+
+            <!-- 3: Sound -->
+            <button class="menu-item" id="opt-3"
+                    data-class-focused="option_cursor == 3"
+                    data-event-click="select_item(3)"
+                    nav-up="opt-2" nav-down="opt-4">
+                SOUND
+            </button>
+
+            <!-- 4: Save / Load -->
+            <button class="menu-item" id="opt-4"
+                    data-class-focused="option_cursor == 4"
+                    data-event-click="select_item(4)"
+                    nav-up="opt-3" nav-down="opt-5">
+                SAVE / LOAD
+            </button>
+
+            <!-- 5: Extra Option (hidden if unavailable) -->
+            <button class="menu-item" id="opt-5"
+                    data-if="extra_option_available"
+                    data-class-focused="option_cursor == 5"
+                    data-event-click="select_item(5)"
+                    nav-up="opt-4" nav-down="opt-6">
+                EXTRA OPTION
+            </button>
+
+            <!-- 6 (or 5 when Extra Option locked): Exit -->
+            <button class="menu-item" id="opt-6"
+                    data-class-focused="(extra_option_available ? option_cursor == 6 : option_cursor == 5)"
+                    data-event-click="select_item(extra_option_available ? 6 : 5)"
+                    nav-up="opt-5">
+                EXIT
+            </button>
+
+        </div><!-- menu-items -->
+    </div><!-- option-panel -->
+</body>
+</rml>

@@ -4,6 +4,10 @@
  */
 
 #include "common.h"
+#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui_gameover.h"
+
+extern bool use_rmlui;
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/eff58.h"
 #include "sf33rd/Source/Game/effect/eff76.h"
@@ -71,7 +75,9 @@ static void GameOver_1st() {
         effect_58_init(0x10, 5, 2);
 
         if (Break_Com[WINNER][0]) {
-            spawn_effect_76(0x38, 3, 1);
+            if (!use_rmlui || !rmlui_screen_gameover) {
+                spawn_effect_76(0x38, 3, 1);
+            }
             return;
         }
 
@@ -127,8 +133,12 @@ static void GameOver_2nd() {
                 bg_etc_write(PL_Color_Data[My_char[Winner_id]]);
             }
 
-            Setup_Result_OBJ();
-            spawn_effect_76(0x41, 3, 1);
+            if (use_rmlui && rmlui_screen_gameover) {
+                rmlui_gameover_show();
+            } else {
+                Setup_Result_OBJ();
+                spawn_effect_76(0x41, 3, 1);
+            }
             return;
         }
 

@@ -1,0 +1,30 @@
+<rml>
+<head>
+    <title>Name Entry</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="name_entry.rcss"/>
+</head>
+<body data-model="name_entry" id="name-entry-root">
+    <div id="name-entry-container" data-if="ne_active">
+        <!-- Rank label -->
+        <div id="ne-rank">{{ne_rank}}</div>
+        <div id="ne-rank-suffix">
+            <span data-if="ne_rank == 1">ST</span>
+            <span data-if="ne_rank == 2">ND</span>
+            <span data-if="ne_rank == 3">RD</span>
+            <span data-if="ne_rank == 4">TH</span>
+            <span data-if="ne_rank == 5">TH</span>
+        </div>
+
+        <!-- Character slots -->
+        <div id="ne-chars">
+            <span data-attr-class="'ne-char' + (ne_cursor == 0 ? ' ne-active' : '')">{{ne_char0}}</span>
+            <span data-attr-class="'ne-char' + (ne_cursor == 1 ? ' ne-active' : '')">{{ne_char1}}</span>
+            <span data-attr-class="'ne-char' + (ne_cursor == 2 ? ' ne-active' : '')">{{ne_char2}}</span>
+        </div>
+
+        <!-- Player indicator -->
+        <div id="ne-player">{{ne_player}}P</div>
+    </div>
+</body>
+</rml>

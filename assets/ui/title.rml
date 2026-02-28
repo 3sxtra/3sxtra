@@ -1,0 +1,19 @@
+<rml>
+<head>
+    <title>Title Screen</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="title.rcss"/>
+</head>
+<body data-model="title_screen" id="title-root">
+
+    <div id="title-prompt">
+        <div class="press-start">PRESS START BUTTON</div>
+    </div>
+
+    <div id="player-prompts" data-if="show_2p_prompt">
+        <div class="prompt-1p">PRESS 1P START</div>
+        <div class="prompt-2p">PRESS 2P START</div>
+    </div>
+
+</body>
+</rml>

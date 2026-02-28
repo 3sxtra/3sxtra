@@ -1,0 +1,72 @@
+/* ── Sound Menu Stylesheet ────────────────────────────────── */
+body {
+    width: 100%;
+    height: 100%;
+    font-family: "Noto Sans JP Thin";
+    font-size: 14dp;
+    color: #ffffffee;
+}
+
+.sound-panel {
+    display: block;
+    position: absolute;
+    top: 22%;
+    left: 50%;
+    margin-left: -160dp;
+    width: 320dp;
+    text-align: center;
+    animation: panel-fade-in 0.4s ease-out;
+}
+
+@keyframes panel-fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* ── Title ──────────────────────────────────────────────────── */
+.sound-title {
+    display: block;
+    font-size: 20dp;
+    font-weight: bold;
+    color: #88ff88;
+    letter-spacing: 3dp;
+    margin-bottom: 16dp;
+    text-shadow: 1dp 1dp 3dp #00000088;
+}
+
+/* ── Option list ────────────────────────────────────────────── */
+.option-list {
+    display: block;
+    padding: 8dp 16dp;
+    background-color: #00000066;
+    border-width: 1dp;
+    border-color: #88ff8833;
+}
+
+.option-row {
+    display: block;
+    padding: 6dp 8dp;
+    margin-bottom: 4dp;
+}
+
+.option-label {
+    display: inline-block;
+    width: 140dp;
+    text-align: left;
+    font-size: 12dp;
+    color: #aaaaaa;
+    letter-spacing: 1dp;
+}
+
+.option-value {
+    display: inline-block;
+    width: 120dp;
+    text-align: right;
+    font-size: 14dp;
+    font-weight: bold;
+    color: #ffffff;
+}

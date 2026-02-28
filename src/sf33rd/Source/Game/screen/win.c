@@ -4,6 +4,10 @@
  */
 
 #include "common.h"
+#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui_win_screen.h"
+
+extern bool use_rmlui;
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/eff58.h"
 #include "sf33rd/Source/Game/effect/eff76.h"
@@ -102,21 +106,27 @@ static void Win_2nd() {
     Switch_Screen(0);
     M_No[0] += 1;
 
-    spawn_effect_76(0x37, 1, 1);
-    spawn_effect_76(0x35, 3, 1);
-    spawn_effect_76(0x34, 3, 1);
-    spawn_effect_76(0x2B, 3, 1);
-    spawn_effect_76(0x3A, 3, 1);
-    spawn_effect_76(0x2C, 3, 1);
-
-    Order_Dir[0x2D] = 4;
-    spawn_effect_76(0x2D, 1, 0x1E);
-
-    spawn_effect_76(0x38, 6, 1);
-
+    /* Score/win globals — always compute, even in RmlUi mode */
     WGJ_Score = Continue_Coin[Winner_id] + Score[Winner_id][Play_Type];
     WGJ_Win = Win_Record[Winner_id];
 
+    if (use_rmlui && rmlui_screen_winner) {
+        rmlui_win_screen_show();
+    } else {
+        spawn_effect_76(0x37, 1, 1);
+        spawn_effect_76(0x35, 3, 1);
+        spawn_effect_76(0x34, 3, 1);
+        spawn_effect_76(0x2B, 3, 1);
+        spawn_effect_76(0x3A, 3, 1);
+        spawn_effect_76(0x2C, 3, 1);
+
+        Order_Dir[0x2D] = 4;
+        spawn_effect_76(0x2D, 1, 0x1E);
+
+        spawn_effect_76(0x38, 6, 1);
+    }
+
+    /* Sparkle + character victory anim — always run */
     effect_L1_init(1);
     effect_L1_init(2);
     effect_L1_init(3);
@@ -124,7 +134,9 @@ static void Win_2nd() {
     effect_L1_init(5);
     effect_L1_init(6);
 
-    Setup_Wins_OBJ();
+    if (!use_rmlui || !rmlui_screen_winner) {
+        Setup_Wins_OBJ();
+    }
     effect_B8_init(WINNER, 0x3C);
 }
 
@@ -237,13 +249,17 @@ static void Lose_2nd() {
     Switch_Screen(0);
     M_No[0] += 1;
 
-    spawn_effect_76(0x37, 1, 1);
-    spawn_effect_76(0x40, 3, 1);
-    spawn_effect_76(0x36, 3, 1);
-    spawn_effect_76(0x39, 3, 1);
+    if (use_rmlui && rmlui_screen_winner) {
+        rmlui_win_screen_show();
+    } else {
+        spawn_effect_76(0x37, 1, 1);
+        spawn_effect_76(0x40, 3, 1);
+        spawn_effect_76(0x36, 3, 1);
+        spawn_effect_76(0x39, 3, 1);
 
-    Order_Dir[0x2D] = 4;
-    spawn_effect_76(0x2D, 1, 30);
+        Order_Dir[0x2D] = 4;
+        spawn_effect_76(0x2D, 1, 30);
+    }
 
     effect_B8_init(WINNER, 0x3C);
 }

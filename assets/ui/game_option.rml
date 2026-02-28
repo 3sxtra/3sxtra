@@ -1,0 +1,81 @@
+<rml>
+<head>
+    <title>Game Option</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="game_option.rcss"/>
+</head>
+<body data-model="game_option" id="game-option-root">
+    <div id="game-option-panel">
+        <div class="menu-title">GAME OPTION</div>
+
+        <div class="option-table">
+
+            <!-- Row 0: Difficulty -->
+            <div class="opt-row" data-class-focused="game_opt_cursor == 0">
+                <div class="opt-label">{{game_opt_label_0}}</div>
+                <div class="opt-value">{{game_opt_value_0}}</div>
+            </div>
+
+            <!-- Row 1: Time Limit -->
+            <div class="opt-row" data-class-focused="game_opt_cursor == 1">
+                <div class="opt-label">{{game_opt_label_1}}</div>
+                <div class="opt-value">{{game_opt_value_1}}</div>
+            </div>
+
+            <!-- Row 2: Rounds (1P) -->
+            <div class="opt-row" data-class-focused="game_opt_cursor == 2">
+                <div class="opt-label">{{game_opt_label_2}}</div>
+                <div class="opt-value">{{game_opt_value_2}}</div>
+            </div>
+
+            <!-- Row 3: Rounds (VS) -->
+            <div class="opt-row" data-class-focused="game_opt_cursor == 3">
+                <div class="opt-label">{{game_opt_label_3}}</div>
+                <div class="opt-value">{{game_opt_value_3}}</div>
+            </div>
+
+            <!-- Row 4: Damage Level -->
+            <div class="opt-row" data-class-focused="game_opt_cursor == 4">
+                <div class="opt-label">{{game_opt_label_4}}</div>
+                <div class="opt-value">{{game_opt_value_4}}</div>
+            </div>
+
+            <!-- Row 5: Guard Judgment -->
+            <div class="opt-row" data-class-focused="game_opt_cursor == 5">
+                <div class="opt-label">{{game_opt_label_5}}</div>
+                <div class="opt-value">{{game_opt_value_5}}</div>
+            </div>
+
+            <!-- Row 6: Analog Stick -->
+            <div class="opt-row" data-class-focused="game_opt_cursor == 6">
+                <div class="opt-label">{{game_opt_label_6}}</div>
+                <div class="opt-value">{{game_opt_value_6}}</div>
+            </div>
+
+            <!-- Row 7: Handicap (VS) -->
+            <div class="opt-row" data-class-focused="game_opt_cursor == 7">
+                <div class="opt-label">{{game_opt_label_7}}</div>
+                <div class="opt-value">{{game_opt_value_7}}</div>
+            </div>
+
+            <!-- Row 8: Player1 (VS) -->
+            <div class="opt-row" data-class-focused="game_opt_cursor == 8">
+                <div class="opt-label">{{game_opt_label_8}}</div>
+                <div class="opt-value">{{game_opt_value_8}}</div>
+            </div>
+
+            <!-- Row 9: Player2 (VS) -->
+            <div class="opt-row" data-class-focused="game_opt_cursor == 9">
+                <div class="opt-label">{{game_opt_label_9}}</div>
+                <div class="opt-value">{{game_opt_value_9}}</div>
+            </div>
+
+        </div><!-- option-table -->
+
+        <div class="footer-row">
+            <div class="footer-hint">◀ ▶ CHANGE VALUE</div>
+        </div>
+
+    </div><!-- game-option-panel -->
+</body>
+</rml>

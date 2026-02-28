@@ -1,0 +1,22 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="continue.rcss"/>
+    <title>Continue Screen</title>
+</head>
+<body data-model="continue_screen">
+    <div id="continue-panel" class="continue-panel">
+        <div class="continue-prompt">
+            <span>CONTINUE?</span>
+        </div>
+
+        <div class="countdown-display">
+            <span class="countdown-number">{{ continue_count }}</span>
+        </div>
+
+        <div class="loser-name">
+            <span>{{ loser_name }}</span>
+        </div>
+    </div>
+</body>
+</rml>

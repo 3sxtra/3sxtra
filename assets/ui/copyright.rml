@@ -1,0 +1,13 @@
+<rml>
+<head>
+    <title>Copyright</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="copyright.rcss"/>
+</head>
+<body data-model="copyright" id="copyright-root">
+    <div id="copyright-text" data-if="copyright_visible">
+        <div class="copyright-line">{{copyright_line1}}</div>
+        <div class="copyright-line" data-if="copyright_line2 != ''">{{copyright_line2}}</div>
+    </div>
+</body>
+</rml>

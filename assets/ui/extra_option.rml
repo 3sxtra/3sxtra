@@ -1,0 +1,54 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="extra_option.rcss"/>
+    <title>Extra Option</title>
+</head>
+<body data-model="extra_option">
+    <div id="extra-panel" class="extra-panel">
+        <div class="extra-title">
+            <span>EXTRA OPTION</span>
+        </div>
+        <div class="page-indicator">
+            <span class="page-arrow">◄</span>
+            <span class="page-num">PAGE {{ extra_page + 1 }} / 4</span>
+            <span class="page-arrow">►</span>
+        </div>
+
+        <div class="option-list">
+            <div class="option-row" data-class-focused="extra_cursor == 0" data-if="extra_row_count > 0">
+                <span class="opt-label">{{ extra_label_0 }}</span>
+                <span class="opt-value">{{ extra_value_0 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="extra_cursor == 1" data-if="extra_row_count > 1">
+                <span class="opt-label">{{ extra_label_1 }}</span>
+                <span class="opt-value">{{ extra_value_1 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="extra_cursor == 2" data-if="extra_row_count > 2">
+                <span class="opt-label">{{ extra_label_2 }}</span>
+                <span class="opt-value">{{ extra_value_2 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="extra_cursor == 3" data-if="extra_row_count > 3">
+                <span class="opt-label">{{ extra_label_3 }}</span>
+                <span class="opt-value">{{ extra_value_3 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="extra_cursor == 4" data-if="extra_row_count > 4">
+                <span class="opt-label">{{ extra_label_4 }}</span>
+                <span class="opt-value">{{ extra_value_4 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="extra_cursor == 5" data-if="extra_row_count > 5">
+                <span class="opt-label">{{ extra_label_5 }}</span>
+                <span class="opt-value">{{ extra_value_5 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="extra_cursor == 6" data-if="extra_row_count > 6">
+                <span class="opt-label">{{ extra_label_6 }}</span>
+                <span class="opt-value">{{ extra_value_6 }}</span>
+            </div>
+        </div>
+
+        <div class="footer-hint">
+            <span>◄ ► CHANGE PAGE   ◀ ▶ CHANGE VALUE</span>
+        </div>
+    </div>
+</body>
+</rml>

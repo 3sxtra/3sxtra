@@ -1,0 +1,33 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="win.rcss"/>
+    <title>Winner Screen</title>
+</head>
+<body data-model="win_screen">
+    <div id="win-panel" class="win-panel">
+        <div class="winner-banner">
+            <span class="banner-label">WINNER</span>
+        </div>
+
+        <div class="winner-name">
+            <span>{{ winner_name }}</span>
+        </div>
+
+        <div class="score-block" data-if="!is_loser">
+            <div class="score-row">
+                <span class="score-label">SCORE</span>
+                <span class="score-value">{{ winner_score }}</span>
+            </div>
+            <div class="score-row">
+                <span class="score-label">WINS</span>
+                <span class="score-value">{{ winner_wins }}</span>
+            </div>
+        </div>
+
+        <div class="streak-block" data-if="streak_text != ''">
+            <span class="streak-text">{{ streak_text }}</span>
+        </div>
+    </div>
+</body>
+</rml>

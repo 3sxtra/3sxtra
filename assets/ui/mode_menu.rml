@@ -1,0 +1,74 @@
+<rml>
+<head>
+    <title>Mode Select</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="mode_menu.rcss"/>
+</head>
+<body data-model="mode_menu" id="mode-menu-root">
+    <div id="mode-panel">
+        <div class="menu-title">STREET FIGHTER III</div>
+        <div class="menu-subtitle">3RD STRIKE</div>
+
+        <div class="menu-items">
+
+            <!-- 0: Arcade -->
+            <button class="menu-item" id="item-0"
+                    data-class-focused="menu_cursor == 0"
+                    data-event-click="select_item(0)"
+                    nav-down="item-1">
+                ARCADE
+            </button>
+
+            <!-- 1: Versus -->
+            <button class="menu-item" id="item-1"
+                    data-class-focused="menu_cursor == 1"
+                    data-event-click="select_item(1)"
+                    nav-up="item-0" nav-down="item-2">
+                VERSUS
+            </button>
+
+            <!-- 2: Training -->
+            <button class="menu-item" id="item-2"
+                    data-class-focused="menu_cursor == 2"
+                    data-event-click="select_item(2)"
+                    nav-up="item-1" nav-down="item-3">
+                TRAINING
+            </button>
+
+            <!-- 3: Network (disabled if unavailable) -->
+            <button class="menu-item" id="item-3"
+                    data-class-focused="menu_cursor == 3"
+                    data-class-item-disabled="!network_available"
+                    data-event-click="select_item(3)"
+                    nav-up="item-2" nav-down="item-4">
+                NETWORK
+            </button>
+
+            <!-- 4: Replay -->
+            <button class="menu-item" id="item-4"
+                    data-class-focused="menu_cursor == 4"
+                    data-event-click="select_item(4)"
+                    nav-up="item-3" nav-down="item-5">
+                REPLAY
+            </button>
+
+            <!-- 5: Option -->
+            <button class="menu-item" id="item-5"
+                    data-class-focused="menu_cursor == 5"
+                    data-event-click="select_item(5)"
+                    nav-up="item-4" nav-down="item-6">
+                OPTION
+            </button>
+
+            <!-- 6: Exit -->
+            <button class="menu-item" id="item-6"
+                    data-class-focused="menu_cursor == 6"
+                    data-event-click="select_item(6)"
+                    nav-up="item-5">
+                EXIT
+            </button>
+
+        </div><!-- menu-items -->
+    </div><!-- mode-panel -->
+</body>
+</rml>

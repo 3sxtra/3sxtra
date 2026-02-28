@@ -1,0 +1,33 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="gameover.rcss"/>
+    <title>Game Over</title>
+</head>
+<body data-model="gameover_screen">
+    <div id="gameover-panel" class="gameover-panel">
+        <div class="gameover-title">
+            <span>GAME OVER</span>
+        </div>
+
+        <div class="result-block">
+            <div class="result-row">
+                <span class="result-label">CHARACTER</span>
+                <span class="result-value">{{ gameover_char }}</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">SCORE</span>
+                <span class="result-value">{{ gameover_score }}</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">ROUNDS WON</span>
+                <span class="result-value">{{ gameover_rounds_won }}</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">ROUNDS LOST</span>
+                <span class="result-value">{{ gameover_rounds_lost }}</span>
+            </div>
+        </div>
+    </div>
+</body>
+</rml>

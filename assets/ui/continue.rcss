@@ -1,0 +1,79 @@
+/* ── Continue Screen Stylesheet ────────────────────────────── */
+body {
+    width: 100%;
+    height: 100%;
+    font-family: "Noto Sans JP Thin";
+    font-size: 14dp;
+    color: #ffffffee;
+}
+
+.continue-panel {
+    display: block;
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    margin-left: -140dp;
+    width: 280dp;
+    text-align: center;
+    animation: panel-slide-in 0.3s ease-out;
+}
+
+@keyframes panel-slide-in {
+    0% {
+        opacity: 0;
+        margin-top: -20dp;
+    }
+    100% {
+        opacity: 1;
+        margin-top: 0dp;
+    }
+}
+
+/* ── CONTINUE? prompt ───────────────────────────────────────── */
+.continue-prompt {
+    display: block;
+    font-size: 22dp;
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: 3dp;
+    margin-bottom: 16dp;
+    text-shadow: 2dp 2dp 4dp #00000088;
+}
+
+/* ── Countdown number ───────────────────────────────────────── */
+.countdown-display {
+    display: block;
+    margin-bottom: 16dp;
+}
+
+.countdown-number {
+    display: inline-block;
+    font-size: 64dp;
+    font-weight: bold;
+    color: #ff4444;
+    text-shadow: 3dp 3dp 6dp #00000088;
+    animation: count-pulse 1.0s ease-in-out infinite;
+}
+
+@keyframes count-pulse {
+    0% {
+        font-size: 64dp;
+        color: #ff4444;
+    }
+    50% {
+        font-size: 68dp;
+        color: #ffcc44;
+    }
+    100% {
+        font-size: 64dp;
+        color: #ff4444;
+    }
+}
+
+/* ── Loser character name ───────────────────────────────────── */
+.loser-name {
+    display: block;
+    font-size: 14dp;
+    color: #aaaaaa;
+    letter-spacing: 2dp;
+}

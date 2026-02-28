@@ -1,0 +1,15 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="replay_picker.rcss"/>
+    <title>Replay Picker</title>
+</head>
+<body data-model="replay_picker">
+    <div id="rp-panel" class="rp-panel">
+        <div class="rp-title"><span>REPLAY</span></div>
+        <div class="rp-hint">
+            <span>SELECT A REPLAY FILE</span>
+        </div>
+    </div>
+</body>
+</rml>

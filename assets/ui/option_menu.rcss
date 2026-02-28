@@ -1,0 +1,74 @@
+/* ============================================================ *
+ *  option_menu.rcss  —  Option Menu panel                      *
+ *  Glass panel sliding in from left, gold focus highlight      *
+ * ============================================================ */
+
+body {
+    width: 384dp;
+    height: 224dp;
+    font-family: "Noto Sans JP Thin";
+}
+
+/* ── Outer panel ────────────────────────────────────────────── */
+#option-panel {
+    display: block;
+    position: absolute;
+    top: 24dp;
+    left: 20dp;
+    width: 170dp;
+    background-color: rgba(10, 10, 20, 0.88);
+    border-width: 1dp;
+    border-color: rgba(200, 200, 255, 0.2);
+    padding: 12dp 0dp 8dp 0dp;
+    animation: slide-in 0.18s ease-out 1;
+}
+
+/* ── Title text ─────────────────────────────────────────────── */
+.menu-title {
+    display: block;
+    text-align: center;
+    font-size: 9dp;
+    color: rgba(255, 200, 80, 0.8);
+    letter-spacing: 1dp;
+    margin-bottom: 10dp;
+}
+
+/* ── Items container ────────────────────────────────────────── */
+.menu-items {
+    display: block;
+}
+
+/* ── Individual item ────────────────────────────────────────── */
+.menu-item {
+    display: block;
+    width: 100%;
+    height: 20dp;
+    line-height: 20dp;
+    padding: 0dp 16dp;
+    font-size: 10dp;
+    color: rgba(220, 220, 220, 0.85);
+    background-color: transparent;
+    border-width: 0dp;
+    text-align: left;
+    transition: color background-color 0.06s linear-in-out;
+}
+
+.menu-item:hover {
+    color: #FFFFFF;
+    background-color: rgba(255, 220, 0, 0.08);
+}
+
+/* Focused (cursor on this item) */
+.menu-item.focused {
+    color: #FFD700;
+    background-color: rgba(255, 220, 0, 0.15);
+    border-left-width: 3dp;
+    border-left-color: #FFD700;
+    padding-left: 13dp;
+}
+
+/* ── Slide-in animation ─────────────────────────────────────── */
+@keyframes slide-in {
+    from { margin-left: -190dp; opacity: 0; }
+    to   { margin-left: 0dp;    opacity: 1; }
+}

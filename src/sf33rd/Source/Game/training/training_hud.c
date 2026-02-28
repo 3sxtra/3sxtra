@@ -13,6 +13,10 @@
 #include <SDL3/SDL.h>
 #include <stdio.h>
 
+/* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
 void training_hud_init() {
     // Basic setup if required
 }
@@ -34,7 +38,8 @@ void training_hud_draw_stun(PLW* player, TrainingPlayerState* state) {
 
             s16 hud_x = (p_index == 0) ? 10 : 250;
             s16 hud_y = 60;
-            SSPutStr_Bigger(hud_x, hud_y, 5, stun_str, 1.0f, 0, 1.0f);
+            if (!use_rmlui || !rmlui_hud_training_stun)
+                SSPutStr_Bigger(hud_x, hud_y, 5, stun_str, 1.0f, 0, 1.0f);
         }
     }
 }

@@ -24,6 +24,10 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
+/* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
 #define PAUSE_JMP_COUNT 4
 #define FLASH_PAUSE_JMP_COUNT 5
 
@@ -121,12 +125,13 @@ static void Flash_Pause_1st(struct _TASK* task_ptr) {
 /** @brief Flash pause 2nd phase — display the "1P PAUSE" or "2P PAUSE" text. */
 static void Flash_Pause_2nd(struct _TASK* task_ptr) {
     if (--task_ptr->free[0]) {
-        if (Pause_ID == 0) {
-            SSPutStr2(20, 9, 9, "1P PAUSE");
-            return;
+        if (!use_rmlui || !rmlui_screen_pause) {
+            if (Pause_ID == 0) {
+                SSPutStr2(20, 9, 9, "1P PAUSE");
+            } else {
+                SSPutStr2(20, 9, 9, "2P PAUSE");
+            }
         }
-
-        SSPutStr2(20, 9, 9, "2P PAUSE");
         return;
     }
 
@@ -150,6 +155,8 @@ static void Flash_Pause_4th(struct _TASK* task_ptr) {
 
 /** @brief Display the "Please reconnect the controller" message at the given screen position. */
 void dispControllerWasRemovedMessage(s32 x, s32 y, s32 step) {
+    if (use_rmlui && rmlui_screen_pause)
+        return;
     SSPutStrPro(0, x, y, 9, -1, "Please reconnect");
     SSPutStrPro(0, x, (y + step), 9, -1, "the controller to");
 

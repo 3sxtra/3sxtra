@@ -10,6 +10,10 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
+/* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
 static void Name_Scs_Input_init();
 static void Name_Scs_Input_comm();
 static void Name_Input_wait();
@@ -409,6 +413,8 @@ static void name_work_init(s16 pl_id) {
 
 /** @brief Display the ranking position label and ordinal suffix for the current entry. */
 static void rank_display_set(s16 pl_id) {
+    if (use_rmlui && rmlui_screen_name_entry)
+        return;
     u16 pos_x;
     u8 rank;
 
@@ -534,6 +540,8 @@ static void start_cut_check(s16 pl_id) {
 
 /** @brief Render all 3 name characters (with cursor blink on the active slot). */
 static void all_name_display(s16 pl_id) {
+    if (use_rmlui && rmlui_screen_name_entry)
+        return;
     s16 i;
 
     for (i = 0; i < 3; i++) {
@@ -547,6 +555,8 @@ static void all_name_display(s16 pl_id) {
 
 /** @brief Render all 3 name characters with a colour-cycling flash effect after confirmation. */
 static void all_flash_display(s16 pl_id) {
+    if (use_rmlui && rmlui_screen_name_entry)
+        return;
     s16 i;
 
     for (i = 0; i < 3; i++) {

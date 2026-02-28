@@ -17,6 +17,10 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 
+/* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
 /* ---------- imgSelectGameButton ---------- */
 
 /** @brief Draw two select-game button images. */
@@ -85,13 +89,14 @@ void Flash_1P_or_2P(struct _TASK* task_ptr) {
     switch (task_ptr->r_no[3]) {
     case 0:
         if (--task_ptr->free[0]) {
-            if (Pause_ID == 0) {
-                SSPutStr2(20, 9, 9, "1P PAUSE");
-                break;
-            } else {
-                SSPutStr2(20, 9, 9, "2P PAUSE");
-                break;
+            if (!use_rmlui || !rmlui_screen_pause) {
+                if (Pause_ID == 0) {
+                    SSPutStr2(20, 9, 9, "1P PAUSE");
+                } else {
+                    SSPutStr2(20, 9, 9, "2P PAUSE");
+                }
             }
+            break;
         }
 
         task_ptr->r_no[3] = 1;

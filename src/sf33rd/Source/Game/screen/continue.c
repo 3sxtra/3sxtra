@@ -4,6 +4,10 @@
  */
 
 #include "common.h"
+#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui_continue.h"
+
+extern bool use_rmlui;
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/eff49.h"
 #include "sf33rd/Source/Game/effect/eff58.h"
@@ -61,7 +65,9 @@ static void Continue_1st() {
         Setup_Continue_OBJ();
         effect_A9_init(0x37, 0, 0x13, 0);
         BGM_Request(58);
-        spawn_effect_76(0x38, 3, 1);
+        if (!use_rmlui || !rmlui_screen_continue) {
+            spawn_effect_76(0x38, 3, 1);
+        }
         effect_58_init(0xC, 1, 3);
         effect_58_init(0xC, 1, 1);
         Suicide[2] = 1;
@@ -129,11 +135,15 @@ static void Setup_Continue_OBJ() {
     effect_95_init(1);
     effect_95_init(2);
 
-    spawn_effect_76(0x3B, 3, 1);
-    spawn_effect_76(0x3C, 3, 1);
-    spawn_effect_76(0x3D, 3, 1);
-    spawn_effect_76(0x3E, 3, 1);
-    spawn_effect_76(0x3F, 3, 1);
+    if (use_rmlui && rmlui_screen_continue) {
+        rmlui_continue_show();
+    } else {
+        spawn_effect_76(0x3B, 3, 1);
+        spawn_effect_76(0x3C, 3, 1);
+        spawn_effect_76(0x3D, 3, 1);
+        spawn_effect_76(0x3E, 3, 1);
+        spawn_effect_76(0x3F, 3, 1);
+    }
 }
 
 /** @brief Check whether both fighters have finished their exit animations; returns frame delay or 0. */

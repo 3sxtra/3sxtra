@@ -1,0 +1,56 @@
+/* ============================================================ *
+ *  trials_hud.rcss  —  Trial mode HUD overlay                 *
+ * ============================================================ */
+
+body {
+    width: 384dp;
+    height: 224dp;
+    font-family: "Noto Sans JP Thin";
+    font-size: 10dp;
+}
+
+#trials-container {
+    display: block;
+    position: absolute;
+    top: 40dp;
+    left: 16dp;
+    width: 280dp;
+}
+
+#trial-header {
+    display: block;
+    font-size: 9dp;
+    color: #FFFFFF;
+    text-shadow: 1dp 1dp #000000;
+    margin-bottom: 4dp;
+}
+
+#trial-gauge-alert {
+    display: block;
+    position: absolute;
+    top: 0dp;
+    left: 224dp;
+    font-size: 9dp;
+    color: #00FFFF;
+    text-shadow: 1dp 1dp #000000;
+}
+
+#trial-complete {
+    display: block;
+    position: absolute;
+    top: 110dp;
+    left: 134dp;
+    font-size: 14dp;
+    text-align: center;
+    text-shadow: 2dp 2dp #000000;
+}
+
+.complete-flash {
+    animation: trial-flash 0.27s steps(1) infinite;
+}
+
+@keyframes trial-flash {
+      0% { color: #00FF00; }
+     50% { color: #FFFFFF; }
+    100% { color: #00FF00; }
+}

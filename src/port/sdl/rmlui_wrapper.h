@@ -43,6 +43,21 @@ void rmlui_wrapper_hide_document(const char* name);
 /// Check if a named RmlUi document is currently visible
 bool rmlui_wrapper_is_document_visible(const char* name);
 
+/// Close and destroy a named RmlUi document (frees resources)
+void rmlui_wrapper_close_document(const char* name);
+
+/// Reload stylesheets for all loaded documents (preserves document state)
+void rmlui_wrapper_reload_stylesheets(void);
+
+/// Fully reload a named document from disk (resets state)
+void rmlui_wrapper_reload_document(const char* name);
+
+/// Fully reload all loaded documents from disk (resets state)
+void rmlui_wrapper_reload_all_documents(void);
+
+/// Release and force reload of all textures
+void rmlui_wrapper_release_textures(void);
+
 #ifdef __cplusplus
 }
 #endif

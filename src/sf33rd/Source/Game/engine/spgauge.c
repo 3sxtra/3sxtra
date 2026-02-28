@@ -13,6 +13,11 @@
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
+/* Phase 3 RmlUi bypass */
+#include <stdbool.h>
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
 // sbss - now declared in header as extern
 s8 Old_Stop_SG;
 s8 Exec_Wipe_F;
@@ -200,7 +205,8 @@ void spgauge_cont_main() {
     u8 i;
 
     for (i = 0; i < 2; i++) {
-        spgauge_base_put(i, spg_dat[i].spg_len);
+        if (!use_rmlui || !rmlui_hud_super)
+            spgauge_base_put(i, spg_dat[i].spg_len);
     }
 
     if ((Game_pause & 0x80) || EXE_flag) {

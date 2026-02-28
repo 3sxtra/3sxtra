@@ -75,4 +75,9 @@ void trials_prev(void);
 void trials_select_character(s16 chara_id);
 void trials_reset(void);
 
+// RmlUi helper accessors
+const char* trials_get_current_char_name(void);
+int trials_get_current_total(void);
+bool trials_current_has_gauge_max(void);
+
 #endif // TRIALS_H

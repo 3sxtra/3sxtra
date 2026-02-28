@@ -1,0 +1,114 @@
+<rml>
+<head>
+    <title>Fight HUD</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="game_hud.rcss"/>
+</head>
+<body data-model="game_hud" id="game-hud-root">
+    <!-- HUD is visible only during active fights -->
+    <div id="hud-container" class="hud-wrap" data-class-hud-hidden="!is_fight_active">
+
+        <!-- ═══ TOP BAR: Portraits + HP bars + Timer ═══ -->
+        <div id="hud-top">
+
+            <!-- P1 Side -->
+            <div class="player-side p1-side">
+                <div class="player-name p1-name" data-value="p1_name">RYU</div>
+                <div class="hp-bar-wrap p1-hp">
+                    <!-- Drain bar (red, trails behind) -->
+                    <div class="hp-drain" data-style-width="(p1_drain * 100 / (health_max > 0 ? health_max : 1)) + '%'"></div>
+                    <!-- Current HP fill -->
+                    <div data-attr-class="'hp-fill hp-col-' + p1_hp_color"
+                         data-style-width="(p1_health * 100 / (health_max > 0 ? health_max : 1)) + '%'"></div>
+                </div>
+            </div>
+
+            <!-- Center Timer -->
+            <div id="timer-block">
+                <div class="timer-digits" data-class-timer-flash="timer_flash">
+                    <span data-if="!timer_infinite" data-value="round_timer">99</span>
+                    <span data-if="timer_infinite">∞</span>
+                </div>
+                <!-- Win pips -->
+                <div class="win-row">
+                    <div class="win-pips p1-wins">
+                        <span class="win-pip" data-class-win-filled="p1_wins >= 1"></span>
+                        <span class="win-pip" data-class-win-filled="p1_wins >= 2"></span>
+                        <span class="win-pip" data-class-win-filled="p1_wins >= 3"></span>
+                    </div>
+                    <div class="win-sep">VS</div>
+                    <div class="win-pips p2-wins">
+                        <span class="win-pip" data-class-win-filled="p2_wins >= 1"></span>
+                        <span class="win-pip" data-class-win-filled="p2_wins >= 2"></span>
+                        <span class="win-pip" data-class-win-filled="p2_wins >= 3"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- P2 Side (mirrored) -->
+            <div class="player-side p2-side">
+                <div class="hp-bar-wrap p2-hp">
+                    <div class="hp-drain" data-style-width="(p2_drain * 100 / (health_max > 0 ? health_max : 1)) + '%'"></div>
+                    <div data-attr-class="'hp-fill hp-col-' + p2_hp_color"
+                         data-style-width="(p2_health * 100 / (health_max > 0 ? health_max : 1)) + '%'"></div>
+                </div>
+                <div class="player-name p2-name" data-value="p2_name">KEN</div>
+            </div>
+
+        </div><!-- hud-top -->
+
+        <!-- ═══ SECOND ROW: Stun + SA gauges ═══ -->
+        <div id="hud-gauges">
+
+            <!-- P1 Stun -->
+            <div class="stun-wrap p1-stun">
+                <div class="stun-fill" data-class-stun-active="p1_stun_active"
+                     data-style-width="(p1_stun * 100 / (p1_stun_max > 0 ? p1_stun_max : 1)) + '%'"></div>
+            </div>
+
+            <!-- P1 SA Gauge -->
+            <div class="sa-wrap p1-sa">
+                <div class="sa-fill" data-class-sa-active="p1_sa_active" data-class-sa-max="p1_sa_max"
+                     data-style-width="(p1_sa_fill * 100 / (p1_sa_fill_max > 0 ? p1_sa_fill_max : 1)) + '%'"></div>
+                <div class="sa-label" data-if="p1_sa_max">MAX</div>
+            </div>
+
+            <!-- Spacer -->
+            <div class="gauge-center-spacer"></div>
+
+            <!-- P2 SA Gauge (right side) -->
+            <div class="sa-wrap p2-sa">
+                <div class="sa-fill" data-class-sa-active="p2_sa_active" data-class-sa-max="p2_sa_max"
+                     data-style-width="(p2_sa_fill * 100 / (p2_sa_fill_max > 0 ? p2_sa_fill_max : 1)) + '%'"></div>
+                <div class="sa-label" data-if="p2_sa_max">MAX</div>
+            </div>
+
+            <!-- P2 Stun -->
+            <div class="stun-wrap p2-stun">
+                <div class="stun-fill" data-class-stun-active="p2_stun_active"
+                     data-style-width="(p2_stun * 100 / (p2_stun_max > 0 ? p2_stun_max : 1)) + '%'"></div>
+            </div>
+
+        </div><!-- hud-gauges -->
+
+        <!-- ═══ COMBO POPUPS ═══ -->
+        <div id="hud-combos">
+            <div class="combo-popup p1-combo" data-class-combo-visible="p1_combo_active">
+                <span class="combo-hits" data-value="p1_combo_count"></span>
+                <span class="combo-label"> HIT</span>
+            </div>
+            <div class="combo-popup p2-combo" data-class-combo-visible="p2_combo_active">
+                <span class="combo-hits" data-value="p2_combo_count"></span>
+                <span class="combo-label"> HIT</span>
+            </div>
+        </div>
+
+        <!-- ═══ TRAINING STUN COUNTER ═══ -->
+        <div id="hud-training-stun" data-if="training_stun_active">
+            <div class="stun-counter p1-stun-counter">STUN: {{p1_combo_stun}}</div>
+            <div class="stun-counter p2-stun-counter">STUN: {{p2_combo_stun}}</div>
+        </div>
+
+    </div><!-- hud-container -->
+</body>
+</rml>

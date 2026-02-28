@@ -1,0 +1,14 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="char_select.rcss"/>
+    <title>Character Select</title>
+</head>
+<body data-model="char_select">
+    <div id="sel-overlay" class="sel-overlay">
+        <div class="sel-timer">
+            <span>{{ sel_timer }}</span>
+        </div>
+    </div>
+</body>
+</rml>

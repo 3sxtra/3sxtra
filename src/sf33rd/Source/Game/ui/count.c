@@ -19,6 +19,14 @@
 #include "sf33rd/Source/Game/ui/sc_data.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
+/* Phase 3 RmlUi bypass */
+#include <stdbool.h>
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
+/* Helper: CPS3 timer render, skipped when RmlUi handles timer */
+#define COUNTER_WRITE_CPS3(atr) do { if (!use_rmlui || !rmlui_hud_timer) counter_write(atr); } while(0)
+
 /** @brief Initialize the round timer from Time_Limit (or set infinite mode). */
 void count_cont_init(u8 type) {
     if (Mode_Type == MODE_NETWORK) {
@@ -32,7 +40,7 @@ void count_cont_init(u8 type) {
         round_timer = 1;
 
         if (type == 0) {
-            counter_write(4);
+            if (!use_rmlui || !rmlui_hud_timer) counter_write(4);
         }
     } else {
         mugen_flag = false;
@@ -44,7 +52,7 @@ void count_cont_init(u8 type) {
         math_counter_low = Counter_hi - (math_counter_hi * 10);
 
         if (type == 0) {
-            counter_write(4);
+            if (!use_rmlui || !rmlui_hud_timer) counter_write(4);
         }
     }
 
@@ -60,32 +68,32 @@ void count_cont_main() {
     }
 
     if (count_end) {
-        counter_write(4);
+        if (!use_rmlui || !rmlui_hud_timer) counter_write(4);
         return;
     }
 
     if (Debug_w[DEBUG_TIME_STOP]) {
-        counter_write(counter_color);
+        if (!use_rmlui || !rmlui_hud_timer) counter_write(counter_color);
         return;
     }
 
     if (Allow_a_battle_f == 0 || Demo_Time_Stop != 0) {
-        counter_write(counter_color);
+        if (!use_rmlui || !rmlui_hud_timer) counter_write(counter_color);
         return;
     }
 
     if (Break_Into) {
-        counter_write(counter_color);
+        if (!use_rmlui || !rmlui_hud_timer) counter_write(counter_color);
         return;
     }
 
     if (sa_stop_check() != 0) {
-        counter_write(counter_color);
+        if (!use_rmlui || !rmlui_hud_timer) counter_write(counter_color);
         return;
     }
 
     if (mugen_flag) {
-        counter_write(4);
+        if (!use_rmlui || !rmlui_hud_timer) counter_write(4);
         return;
     }
 
@@ -94,14 +102,14 @@ void count_cont_main() {
         return;
     }
 
-    counter_write(counter_color);
+    if (!use_rmlui || !rmlui_hud_timer) counter_write(counter_color);
 }
 
 /** @brief Core countdown logic — decrement timer and trigger flash effects. */
 void counter_control() {
     if (Counter_hi == 0) {
         if (No_Trans == 0) {
-            counter_write(counter_color);
+            if (!use_rmlui || !rmlui_hud_timer) counter_write(counter_color);
         }
         return;
     }
@@ -125,7 +133,7 @@ void counter_control() {
         Counter_low -= 1;
 
         if (No_Trans == 0) {
-            counter_write(counter_color);
+            if (!use_rmlui || !rmlui_hud_timer) counter_write(counter_color);
         }
 
         return;
@@ -144,7 +152,7 @@ void counter_control() {
     math_counter_low = Counter_hi - (math_counter_hi * 10);
 
     if (No_Trans == 0) {
-        counter_write(counter_color);
+        if (!use_rmlui || !rmlui_hud_timer) counter_write(counter_color);
     }
 }
 

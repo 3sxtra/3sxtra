@@ -46,6 +46,10 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include <memory.h>
 
+/* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
 #define CONVERT_DATA_COUNT 12
 #define CANDIDATE_BUFF_SIZE 16
 #define EM_CANDIDATE_SLOTS 8
@@ -1772,6 +1776,8 @@ void Disp_Digit16x24(u32 Score_Buff, s16 Disp_X, s16 Disp_Y, s16 Color) {
 
 /** @brief Display the appropriate Capcom copyright text based on the Country setting. */
 void Disp_Copyright() {
+    if (use_rmlui && rmlui_screen_copyright)
+        return;
     s32 xres;
 
     switch (Country) {

@@ -1,0 +1,20 @@
+<rml>
+<head>
+    <title>Pause Overlay</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="pause.rcss"/>
+</head>
+<body data-model="pause_overlay" id="pause-root">
+    <!-- Pause text blink -->
+    <div id="pause-text" data-if="pause_visible">
+        <div class="pause-label">{{pause_label}}</div>
+    </div>
+
+    <!-- Controller disconnected message -->
+    <div id="ctrl-disconnect" data-if="ctrl_disconnected">
+        <div class="disconnect-line">Please reconnect</div>
+        <div class="disconnect-line">the controller to</div>
+        <div class="disconnect-line">controller port {{disconnect_port}}.</div>
+    </div>
+</body>
+</rml>

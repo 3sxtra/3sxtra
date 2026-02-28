@@ -1,0 +1,54 @@
+/* ============================================================ *
+ *  pause.rcss  —  Pause text overlay stylesheet                *
+ *  Blink cycle: 60 frames visible / 30 frames hidden           *
+ *  (1.0s on / 0.5s off at 60fps)                               *
+ * ============================================================ */
+
+body {
+    width: 384dp;
+    height: 224dp;
+    font-family: "Noto Sans JP Thin";
+    font-size: 12dp;
+}
+
+/* ── Pause text ────────────────────────────────────────────── */
+#pause-text {
+    display: block;
+    position: absolute;
+    top: 90dp;
+    left: 0dp;
+    width: 384dp;
+    text-align: center;
+}
+
+.pause-label {
+    display: inline-block;
+    font-size: 16dp;
+    color: #FFFFFF;
+    text-shadow: 2dp 2dp #000000;
+    animation: pause-blink 1.5s steps(1) infinite;
+}
+
+@keyframes pause-blink {
+      0% { visibility: visible; }
+     67% { visibility: hidden; }
+    100% { visibility: visible; }
+}
+
+/* ── Controller disconnect ─────────────────────────────────── */
+#ctrl-disconnect {
+    display: block;
+    position: absolute;
+    top: 82dp;
+    left: 132dp;
+    width: 120dp;
+}
+
+.disconnect-line {
+    display: block;
+    font-size: 9dp;
+    color: #FFFFFF;
+    text-shadow: 1dp 1dp #000000;
+    line-height: 16dp;
+    text-align: left;
+}

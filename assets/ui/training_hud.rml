@@ -1,0 +1,22 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="training_mode.rcss"/>
+    <title>Normal Training</title>
+</head>
+<body data-model="training_menus">
+    <div id="ntr-panel" class="tr-panel">
+        <div class="tr-title"><span>TRAINING</span></div>
+        <div class="option-list">
+            <div class="menu-item" data-class-focused="tr_cursor == 0"><span>{{ ntr_label_0 }}</span></div>
+            <div class="menu-item" data-class-focused="tr_cursor == 1"><span>{{ ntr_label_1 }}</span></div>
+            <div class="menu-item" data-class-focused="tr_cursor == 2"><span>{{ ntr_label_2 }}</span></div>
+            <div class="menu-item" data-class-focused="tr_cursor == 3"><span>{{ ntr_label_3 }}</span></div>
+            <div class="menu-item" data-class-focused="tr_cursor == 4"><span>{{ ntr_label_4 }}</span></div>
+            <div class="menu-item" data-class-focused="tr_cursor == 5"><span>{{ ntr_label_5 }}</span></div>
+            <div class="menu-item" data-class-focused="tr_cursor == 6"><span>{{ ntr_label_6 }}</span></div>
+            <div class="menu-item" data-class-focused="tr_cursor == 7"><span>{{ ntr_label_7 }}</span></div>
+        </div>
+    </div>
+</body>
+</rml>

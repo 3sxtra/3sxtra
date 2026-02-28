@@ -1,0 +1,260 @@
+/* ─── Network Lobby ─────────────────────────────────────────────── */
+
+#lobby-panel {
+    display: block;
+    position: absolute;
+    top: 20dp;
+    left: 20dp;
+    right: 20dp;
+    bottom: 20dp;
+    padding: 0;
+    background-color: rgba(8, 12, 24, 0.92);
+    border-width: 1dp;
+    border-color: rgba(100, 120, 180, 0.3);
+    animation: lobby-in 0.2s cubic-in-out;
+}
+
+@keyframes lobby-in {
+    from { margin-top: -20dp; opacity: 0; }
+    to   { margin-top: 0;     opacity: 1; }
+}
+
+/* ─── Title bar ─────────────────────────────────────────────────── */
+
+.lobby-title {
+    display: block;
+    text-align: center;
+    font-size: 15dp;
+    color: #fff;
+    padding: 6dp 0;
+    background-color: rgba(200, 0, 0, 0.85);
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 4dp;
+}
+
+/* ─── Content layout ────────────────────────────────────────────── */
+
+.lobby-content {
+    display: block;
+    padding: 4dp 8dp;
+}
+
+.lobby-menu {
+    display: block;
+    width: 210dp;
+}
+
+.peer-panels {
+    display: block;
+    position: absolute;
+    right: 8dp;
+    top: 34dp;
+    width: 140dp;
+}
+
+/* ─── Section headers ───────────────────────────────────────────── */
+
+.section-header {
+    display: block;
+    font-size: 10dp;
+    color: rgba(140, 170, 220, 0.65);
+    padding: 2dp 4dp;
+    margin-top: 2dp;
+    margin-bottom: 1dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(80, 100, 160, 0.2);
+}
+
+.net-header {
+    margin-top: 6dp;
+}
+
+/* ─── Menu items ────────────────────────────────────────────────── */
+
+.lobby-item {
+    display: block;
+    padding: 3dp 6dp;
+    margin-bottom: 1dp;
+    color: rgba(200, 210, 240, 0.85);
+    font-size: 12dp;
+    border-left-width: 3dp;
+    border-left-color: transparent;
+    transition: background-color border-left-color 0.08s linear-in-out;
+}
+
+.lobby-item.focused {
+    background-color: rgba(255, 220, 0, 0.12);
+    border-left-color: rgba(255, 210, 40, 0.95);
+    color: #fff;
+}
+
+.item-label {
+    display: inline;
+    width: 120dp;
+    font-size: 11dp;
+}
+
+.item-value {
+    display: inline;
+    text-align: right;
+    width: 70dp;
+    color: rgba(160, 160, 180, 0.8);
+    font-size: 11dp;
+}
+
+.item-value.on {
+    color: rgba(100, 220, 160, 0.95);
+}
+
+.peer-val {
+    color: rgba(140, 200, 255, 0.9);
+    font-size: 10dp;
+}
+
+.exit-item {
+    margin-top: 6dp;
+    border-top-width: 1dp;
+    border-top-color: rgba(100, 120, 180, 0.2);
+    padding-top: 5dp;
+}
+
+/* ─── Peer panels ───────────────────────────────────────────────── */
+
+.peer-panel {
+    display: block;
+    padding: 6dp 8dp;
+    margin-bottom: 6dp;
+    background-color: rgba(20, 30, 50, 0.7);
+    border-width: 1dp;
+    border-color: rgba(80, 100, 160, 0.25);
+}
+
+.peer-panel-title {
+    display: block;
+    font-size: 9dp;
+    color: rgba(140, 170, 220, 0.6);
+    margin-bottom: 3dp;
+}
+
+.peer-count {
+    display: block;
+    font-size: 11dp;
+    color: rgba(100, 220, 160, 0.9);
+}
+
+.peer-count.empty {
+    color: rgba(160, 160, 180, 0.5);
+}
+
+.peer-count.searching {
+    color: rgba(255, 200, 80, 0.8);
+}
+
+.peer-count.idle {
+    color: rgba(160, 160, 180, 0.5);
+}
+
+/* ─── Status bar ────────────────────────────────────────────────── */
+
+.status-bar {
+    display: block;
+    position: absolute;
+    bottom: 4dp;
+    left: 8dp;
+    right: 8dp;
+    padding: 4dp 8dp;
+    background-color: rgba(20, 30, 50, 0.6);
+    border-width: 1dp;
+    border-color: rgba(80, 100, 160, 0.2);
+}
+
+.status-text {
+    display: block;
+    font-size: 10dp;
+    color: rgba(255, 200, 80, 0.9);
+}
+
+/* ─── Popup overlay ─────────────────────────────────────────────── */
+
+#popup-scrim {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.65);
+}
+
+#popup-box {
+    display: block;
+    position: absolute;
+    top: 50dp;
+    left: 50dp;
+    right: 50dp;
+    padding: 10dp 14dp;
+    background-color: rgba(24, 24, 24, 0.95);
+    border-width: 2dp;
+    border-color: rgba(200, 0, 0, 0.85);
+}
+
+.popup-title {
+    display: block;
+    text-align: center;
+    font-size: 13dp;
+    color: rgba(255, 200, 80, 1.0);
+    margin-bottom: 6dp;
+}
+
+.popup-name {
+    display: block;
+    text-align: center;
+    font-size: 12dp;
+    color: #fff;
+    margin-bottom: 4dp;
+}
+
+.popup-ping {
+    display: block;
+    text-align: center;
+    font-size: 10dp;
+    color: rgba(140, 200, 255, 0.9);
+    margin-bottom: 4dp;
+}
+
+.popup-region {
+    display: block;
+    text-align: center;
+    font-size: 10dp;
+    color: rgba(160, 160, 180, 0.7);
+    margin-bottom: 6dp;
+}
+
+.popup-actions {
+    display: block;
+    text-align: center;
+    margin-top: 6dp;
+    padding-top: 4dp;
+    border-top-width: 1dp;
+    border-top-color: rgba(100, 100, 120, 0.3);
+}
+
+.popup-accept {
+    display: inline;
+    font-size: 11dp;
+    color: rgba(80, 220, 120, 1.0);
+    margin-right: 20dp;
+}
+
+.popup-decline {
+    display: inline;
+    font-size: 11dp;
+    color: rgba(255, 80, 80, 1.0);
+}
+
+.popup-cancel {
+    display: inline;
+    font-size: 11dp;
+    color: rgba(255, 80, 80, 1.0);
+}

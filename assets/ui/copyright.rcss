@@ -1,0 +1,28 @@
+/* ============================================================ *
+ *  copyright.rcss  —  Copyright text overlay stylesheet        *
+ *  Positioned at the bottom of the screen (matching CPS3 pos)  *
+ * ============================================================ */
+
+body {
+    width: 384dp;
+    height: 224dp;
+    font-family: "Noto Sans JP Thin";
+    font-size: 6dp;
+}
+
+#copyright-text {
+    display: block;
+    position: absolute;
+    bottom: 4dp;
+    left: 0dp;
+    width: 384dp;
+    text-align: center;
+}
+
+.copyright-line {
+    display: block;
+    font-size: 6dp;
+    color: #CCCCCC;
+    text-align: center;
+    line-height: 8dp;
+}

@@ -1,0 +1,74 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="sysdir.rcss"/>
+    <title>System Direction</title>
+</head>
+<body data-model="sysdir">
+<div id="sysdir-panel">
+
+    <!-- ── Top-level nav (SYSTEM / DIRECTION / SAVE / LOAD / EXIT) ── -->
+    <div data-if="!in_subpage" id="nav-section">
+        <div class="nav-item" data-class-focused="cursor_y == 0">
+            <span class="nav-label">DIRECTION</span>
+            <span class="nav-value">{{dir_working + 1}}</span>
+        </div>
+        <div class="nav-item" data-class-focused="cursor_y == 1">
+            <span class="nav-label">SYSTEM</span>
+        </div>
+        <div class="nav-item" data-class-focused="cursor_y == 2">
+            <span class="nav-label">SAVE</span>
+        </div>
+        <div class="nav-item" data-class-focused="cursor_y == 3">
+            <span class="nav-label">LOAD</span>
+        </div>
+        <div class="nav-item" data-class-focused="cursor_y == 4">
+            <span class="nav-label">EXIT</span>
+        </div>
+    </div>
+
+    <!-- ── Sub-page toggle table ── -->
+    <div data-if="in_subpage" id="subpage-section">
+        <div class="page-indicator">PAGE {{page + 1}} / {{page_max + 1}}</div>
+
+        <!-- Toggle rows (up to 6) -->
+        <div data-if="page_count > 0" class="toggle-row" data-class-focused="cursor_y == 0">
+            <span class="toggle-label">{{row_label_0}}</span>
+            <span class="toggle-value">{{row_value_0}}</span>
+        </div>
+        <div data-if="page_count > 1" class="toggle-row" data-class-focused="cursor_y == 1">
+            <span class="toggle-label">{{row_label_1}}</span>
+            <span class="toggle-value">{{row_value_1}}</span>
+        </div>
+        <div data-if="page_count > 2" class="toggle-row" data-class-focused="cursor_y == 2">
+            <span class="toggle-label">{{row_label_2}}</span>
+            <span class="toggle-value">{{row_value_2}}</span>
+        </div>
+        <div data-if="page_count > 3" class="toggle-row" data-class-focused="cursor_y == 3">
+            <span class="toggle-label">{{row_label_3}}</span>
+            <span class="toggle-value">{{row_value_3}}</span>
+        </div>
+        <div data-if="page_count > 4" class="toggle-row" data-class-focused="cursor_y == 4">
+            <span class="toggle-label">{{row_label_4}}</span>
+            <span class="toggle-value">{{row_value_4}}</span>
+        </div>
+        <div data-if="page_count > 5" class="toggle-row" data-class-focused="cursor_y == 5">
+            <span class="toggle-label">{{row_label_5}}</span>
+            <span class="toggle-value">{{row_value_5}}</span>
+        </div>
+
+        <!-- Navigation row (◀ / EXIT / ▶) -->
+        <div class="toggle-row nav-row" data-class-focused="cursor_y == page_count">
+            <span class="toggle-label"></span>
+            <span class="toggle-value nav-arrow">{{nav_row_value}}</span>
+        </div>
+
+        <!-- Description area -->
+        <div class="desc-area">
+            <span class="desc-text">{{row_desc}}</span>
+        </div>
+    </div>
+
+</div>
+</body>
+</rml>

@@ -16,6 +16,11 @@
 
 #include "sf33rd/Source/Game/game.h"
 #include "common.h"
+
+/* Phase 3 RmlUi bypass */
+#include <stdbool.h>
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
 #include "main.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Common/PPGWork.h"
@@ -593,15 +598,15 @@ void Game2_1() {
     if (Disp_Cockpit) {
         Time_Control();
         vital_cont_main();
-        player_face();
-        player_name();
+        if (!use_rmlui || !rmlui_hud_faces)  player_face();
+        if (!use_rmlui || !rmlui_hud_names)  player_name();
         combo_cont_main();
         stngauge_cont_main();
         spgauge_cont_main();
         Sa_frame_Write();
         Score_Sub();
         Flash_Lamp();
-        Disp_Win_Record();
+        if (!use_rmlui || !rmlui_hud_wins)   Disp_Win_Record();
     }
 
     ppgPurgeFromVRAM(0);

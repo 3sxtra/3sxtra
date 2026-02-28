@@ -13,10 +13,14 @@
 #include "port/sdl/sdl_game_renderer_internal.h"
 
 #include <RmlUi/Core.h>
+#ifdef DEBUG
+#include <RmlUi/Debugger.h>
+#endif
 #include <SDL3/SDL.h>
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 // -------------------------------------------------------------------
 // RmlUi requires three interfaces: System, Render, and File.
@@ -133,15 +137,29 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
         return;
     }
 
+    // Set initial DPI scaling from the platform
+    float dp_ratio = SDL_GetWindowDisplayScale(window);
+    if (dp_ratio > 0.0f) {
+        s_context->SetDensityIndependentPixelRatio(dp_ratio);
+    } else {
+        dp_ratio = 1.0f;
+    }
+
     // Backend-specific post-init
     if (s_render_gl3) {
         s_render_gl3->SetViewport(s_window_w, s_window_h);
     }
 
+    // Initialize debugger plugin (debug builds only)
+#ifdef DEBUG
+    Rml::Debugger::Initialise(s_context);
+    SDL_Log("[RmlUi] Debugger plugin initialized (F12 to toggle)");
+#endif
+
     const char* backend_name = (s_active_backend == RENDERER_SDLGPU)  ? "SDL_GPU"
                              : (s_active_backend == RENDERER_SDL2D)   ? "SDL2D"
                                                                       : "GL3";
-    SDL_Log("[RmlUi] Initialized (%s renderer, %dx%d)", backend_name, s_window_w, s_window_h);
+    SDL_Log("[RmlUi] Initialized (%s renderer, %dx%d, dp-ratio=%.2fx)", backend_name, s_window_w, s_window_h, dp_ratio);
 }
 
 // -------------------------------------------------------------------
@@ -159,9 +177,9 @@ extern "C" void rmlui_wrapper_shutdown(void) {
 
     // Backend-specific cleanup
     if (s_render_gl3) {
+        RmlGL3::Shutdown();  // Must shutdown GL state before deleting the interface
         delete s_render_gl3;
         s_render_gl3 = nullptr;
-        RmlGL3::Shutdown();
     }
     if (s_render_gpu) {
         s_render_gpu->Shutdown();
@@ -185,6 +203,25 @@ extern "C" void rmlui_wrapper_shutdown(void) {
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
     if (!s_context || !event) return;
+
+    // Toggle debugger with F12 (debug builds only)
+#ifdef DEBUG
+    if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F12) {
+        Rml::Debugger::SetVisible(!Rml::Debugger::IsVisible());
+        return;
+    }
+#endif
+
+    // Hot reload keybinds (Ctrl+F5 = stylesheets, Ctrl+Shift+F5 = all documents)
+    if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F5 &&
+        (event->key.mod & SDL_KMOD_CTRL) && !event->key.repeat) {
+        if (event->key.mod & SDL_KMOD_SHIFT) {
+            rmlui_wrapper_reload_all_documents();
+        } else {
+            rmlui_wrapper_reload_stylesheets();
+        }
+        return;
+    }
 
     // Let the SDL platform module handle the event
     RmlSDL::InputEventHandler(s_context, s_window, *event);
@@ -310,4 +347,96 @@ extern "C" bool rmlui_wrapper_is_document_visible(const char* name) {
         return it->second->IsVisible();
     }
     return false;
+}
+
+extern "C" void rmlui_wrapper_close_document(const char* name) {
+    if (!name) return;
+    auto it = s_documents.find(name);
+    if (it != s_documents.end()) {
+        it->second->Close();
+        s_documents.erase(it);
+        SDL_Log("[RmlUi] Closed document: %s", name);
+    }
+}
+
+// -------------------------------------------------------------------
+// Hot Reload
+// -------------------------------------------------------------------
+extern "C" void rmlui_wrapper_reload_stylesheets(void) {
+    if (!s_context) return;
+    int count = 0;
+    for (auto& [name, doc] : s_documents) {
+        if (doc) {
+            doc->ReloadStyleSheet();
+            count++;
+        }
+    }
+    SDL_Log("[RmlUi] Reloaded stylesheets for %d document(s)", count);
+}
+
+extern "C" void rmlui_wrapper_reload_document(const char* name) {
+    if (!s_context || !name) return;
+    auto it = s_documents.find(name);
+    if (it == s_documents.end()) return;
+
+    Rml::ElementDocument* old_doc = it->second;
+    bool was_visible = old_doc->IsVisible();
+    old_doc->Close();
+
+    // Clear caches so the fresh file is picked up
+    Rml::Factory::ClearStyleSheetCache();
+    Rml::Factory::ClearTemplateCache();
+
+    std::string path = s_ui_base_path + name + ".rml";
+    Rml::ElementDocument* new_doc = s_context->LoadDocument(path.c_str());
+    if (new_doc) {
+        if (was_visible) new_doc->Show();
+        it->second = new_doc;
+        SDL_Log("[RmlUi] Reloaded document: %s", name);
+    } else {
+        s_documents.erase(it);
+        SDL_Log("[RmlUi] Failed to reload document: %s", name);
+    }
+}
+
+extern "C" void rmlui_wrapper_reload_all_documents(void) {
+    if (!s_context) return;
+
+    // Clear caches once before reloading
+    Rml::Factory::ClearStyleSheetCache();
+    Rml::Factory::ClearTemplateCache();
+
+    // Snapshot names+visibility since we'll modify the map
+    struct DocInfo { std::string name; bool visible; };
+    std::vector<DocInfo> docs;
+    docs.reserve(s_documents.size());
+    for (auto& [name, doc] : s_documents) {
+        docs.push_back({name, doc && doc->IsVisible()});
+    }
+
+    // Close all
+    for (auto& [name, doc] : s_documents) {
+        if (doc) doc->Close();
+    }
+    s_documents.clear();
+
+    // Reload all
+    int count = 0;
+    for (auto& info : docs) {
+        std::string path = s_ui_base_path + info.name + ".rml";
+        Rml::ElementDocument* new_doc = s_context->LoadDocument(path.c_str());
+        if (new_doc) {
+            if (info.visible) new_doc->Show();
+            s_documents[info.name] = new_doc;
+            count++;
+        } else {
+            SDL_Log("[RmlUi] Failed to reload document: %s", info.name.c_str());
+        }
+    }
+    SDL_Log("[RmlUi] Reloaded %d/%zu document(s)", count, docs.size());
+}
+
+extern "C" void rmlui_wrapper_release_textures(void) {
+    Rml::ReleaseTextures();
+    SDL_Log("[RmlUi] Released all textures (will reload on next render)");
 }

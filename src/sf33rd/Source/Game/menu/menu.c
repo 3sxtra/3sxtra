@@ -83,6 +83,24 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 
+/* RmlUi Phase 3 bypass — per-component toggles + menu replacements */
+#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui_option_menu.h"
+#include "port/sdl/rmlui_game_option.h"
+#include "port/sdl/rmlui_vs_result.h"
+#include "port/sdl/rmlui_memory_card.h"
+#include "port/sdl/rmlui_sound_menu.h"
+#include "port/sdl/rmlui_extra_option.h"
+#include "port/sdl/rmlui_training_menus.h"
+#include "port/sdl/rmlui_sysdir.h"
+#include "port/sdl/rmlui_network_lobby.h"
+#include "port/sdl/rmlui_button_config.h"
+#include "port/sdl/rmlui_char_select.h"
+#include "port/sdl/rmlui_vs_screen.h"
+#include "port/sdl/rmlui_replay_picker.h"
+#include "port/sdl/rmlui_mode_menu.h"
+extern bool use_rmlui;
+
 // forward decls
 static void After_Title(struct _TASK* task_ptr);
 static void In_Game(struct _TASK* task_ptr);
@@ -293,13 +311,18 @@ static void Mode_Select(struct _TASK* task_ptr) {
         Order_Dir[0x64] = 8;
         Order_Timer[0x64] = 1;
         Menu_Suicide[0] = 0;
-        effect_04_init(0, 0, 0, 0x48);
 
-        for (ix = 0; ix < loop_counter; ix++) {
-            effect_61_init(0, ix + 0x50, 0, 0, (u32)ix, ix, 0x7047);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x14;
+        if (use_rmlui && rmlui_menu_mode) {
+            rmlui_mode_menu_show();
+        } else {
+            effect_04_init(0, 0, 0, 0x48);
+
+            for (ix = 0; ix < loop_counter; ix++) {
+                effect_61_init(0, ix + 0x50, 0, 0, (u32)ix, ix, 0x7047);
+                Order[ix + 0x50] = 1;
+                Order_Dir[ix + 0x50] = 4;
+                Order_Timer[ix + 0x50] = ix + 0x14;
+            }
         }
 
         Menu_Cursor_Move = loop_counter;
@@ -621,47 +644,52 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
         /* Red slide-in header bar */
         Order_Dir[0x4E] = 1;
-        effect_57_init(0x4E, 0, 0, 0x45, 0);
 
-        /* Right-side grey overlay boxes (LAN and Internet peer areas) */
-        effect_66_init(0x8A, 42, 1, 0, -1, -1, -0x7FF0); /* cg_type=16: LAN peer box (top, small) */
-        Order[0x8A] = 3;
-        Order_Timer[0x8A] = 1;
-        effect_66_init(0x8B, 42, 1, 0, -1, -1, -0x7FF1); /* cg_type=15: Internet peer box (bottom, big) */
-        Order[0x8B] = 3;
-        Order_Timer[0x8B] = 1;
+        if (use_rmlui && rmlui_menu_lobby) {
+            rmlui_network_lobby_show();
+        } else {
+            effect_57_init(0x4E, 0, 0, 0x45, 0);
 
-        /* No effect_04_init — effect_61 brightness handles cursor indication */
+            /* Right-side grey overlay boxes (LAN and Internet peer areas) */
+            effect_66_init(0x8A, 42, 1, 0, -1, -1, -0x7FF0); /* cg_type=16: LAN peer box (top, small) */
+            Order[0x8A] = 3;
+            Order_Timer[0x8A] = 1;
+            effect_66_init(0x8B, 42, 1, 0, -1, -1, -0x7FF1); /* cg_type=15: Internet peer box (bottom, big) */
+            Order[0x8B] = 3;
+            Order_Timer[0x8B] = 1;
 
-        /* Menu items: 6 items, 0x70A7 = compact 8px font, master_player=1
-         * 68=LAN AUTO-CONN, 69=NET AUTO-CONN, 70=AUTO-SEARCH,
-         * 71=CONNECT PEER, 72=SEARCH MATCH, 73=EXIT */
-        {
-            static const s16 lobby_strings[] = { 68, 69, 70, 71, 72, 73 };
-            for (ix = 0; ix < 6; ix++) {
-                effect_61_init(0, ix + 0x50, 0, 1, lobby_strings[ix], ix, 0x70A7);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
+            /* No effect_04_init — effect_61 brightness handles cursor indication */
+
+            /* Menu items: 6 items, 0x70A7 = compact 8px font, master_player=1
+             * 68=LAN AUTO-CONN, 69=NET AUTO-CONN, 70=AUTO-SEARCH,
+             * 71=CONNECT PEER, 72=SEARCH MATCH, 73=EXIT */
+            {
+                static const s16 lobby_strings[] = { 68, 69, 70, 71, 72, 73 };
+                for (ix = 0; ix < 6; ix++) {
+                    effect_61_init(0, ix + 0x50, 0, 1, lobby_strings[ix], ix, 0x70A7);
+                    Order[ix + 0x50] = 1;
+                    Order_Dir[ix + 0x50] = 4;
+                    Order_Timer[ix + 0x50] = ix + 0x14;
+                }
             }
+
+            /* Title: "NETWORK LOBBY" in big CG font (0x7047), string index 67 */
+            effect_61_init(0, 0x5F, 0, 1, 67, -1, 0x7047);
+            Order[0x5F] = 1;
+            Order_Dir[0x5F] = 4;
+            Order_Timer[0x5F] = 0x12;
+
+            /* Message system for description text (same font as Extra Option) */
+            Message_Data->pos_x = 0;
+            Message_Data->pos_y = 0x3E;
+            Message_Data->pos_z = 0x44;
+            Message_Data->request = 35; /* lobby msg index 0 = LAN AUTO-CONN */
+            Message_Data->order = 0;
+            Message_Data->timer = 1;
+            effect_45_init(0, 0, 1);
         }
 
-        /* Title: "NETWORK LOBBY" in big CG font (0x7047), string index 67 */
-        effect_61_init(0, 0x5F, 0, 1, 67, -1, 0x7047);
-        Order[0x5F] = 1;
-        Order_Dir[0x5F] = 4;
-        Order_Timer[0x5F] = 0x12;
-
         Menu_Cursor_Move = 6;
-
-        /* Message system for description text (same font as Extra Option) */
-        Message_Data->pos_x = 0;
-        Message_Data->pos_y = 0x3E;
-        Message_Data->pos_z = 0x44;
-        Message_Data->request = 35; /* lobby msg index 0 = LAN AUTO-CONN */
-        Message_Data->order = 0;
-        Message_Data->timer = 1;
-        effect_45_init(0, 0, 1);
 
         /* Enter lobby state — set native flag BEFORE changing session state
          * to prevent ImGui lobby from rendering a frame before the flag is set */
@@ -699,6 +727,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         const s16 sl = (s16)s_slide_offset;
 
         /* Custom red banner (brighter than default Akaobi 0xA0D00000) */
+        if (!use_rmlui || !rmlui_menu_lobby)
         {
             PAL_CURSOR_P ap[4];
             PAL_CURSOR_COL acol[4];
@@ -841,7 +870,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         }
 
         /* === Background text — hide when popup covers the screen === */
-        if (!popup_active) {
+        if ((!use_rmlui || !rmlui_menu_lobby) && !popup_active) {
             /* === Display toggle values (right of labels) === */
             {
                 /* LAN toggle values (left column) */
@@ -981,9 +1010,10 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
         /* === Incoming Challenge Popup (Internet) === */
         if (SDLNetplayUI_HasPendingInvite()) {
-            NetLobby_DrawIncomingPopup(SDLNetplayUI_GetPendingInviteName(),
-                                       SDLNetplayUI_GetPendingInviteRegion(),
-                                       SDLNetplayUI_GetPendingInvitePing());
+            if (!use_rmlui || !rmlui_menu_lobby)
+                NetLobby_DrawIncomingPopup(SDLNetplayUI_GetPendingInviteName(),
+                                           SDLNetplayUI_GetPendingInviteRegion(),
+                                           SDLNetplayUI_GetPendingInvitePing());
 
             /* Override input: accept on Confirm, decline on Cancel */
             switch (IO_Result) {
@@ -1000,8 +1030,9 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             }
         } else if (SDLNetplayUI_HasOutgoingChallenge()) {
             /* === Outgoing Challenge Popup (Internet) === */
-            NetLobby_DrawOutgoingPopup(SDLNetplayUI_GetOutgoingChallengeName(),
-                                       SDLNetplayUI_GetOutgoingChallengePing());
+            if (!use_rmlui || !rmlui_menu_lobby)
+                NetLobby_DrawOutgoingPopup(SDLNetplayUI_GetOutgoingChallengeName(),
+                                           SDLNetplayUI_GetOutgoingChallengePing());
 
             /* Cancel on either Confirm or Cancel button press */
             if (IO_Result == 0x100 || IO_Result == 0x200) {
@@ -1022,7 +1053,8 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                         break;
                     }
                 }
-                NetLobby_DrawOutgoingPopup(tgt_name, -1);
+                if (!use_rmlui || !rmlui_menu_lobby)
+                    NetLobby_DrawOutgoingPopup(tgt_name, -1);
             }
 
             /* Cancel on either Confirm or Cancel button press */
@@ -1043,7 +1075,8 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             }
 
             if (lan_challenger >= 0) {
-                NetLobby_DrawIncomingPopup(ip_peers[lan_challenger].name, "", -1);
+                if (!use_rmlui || !rmlui_menu_lobby)
+                    NetLobby_DrawIncomingPopup(ip_peers[lan_challenger].name, "", -1);
 
                 switch (IO_Result) {
                 case 0x100: /* Confirm = Accept (challenge them back) */
@@ -1127,6 +1160,8 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 lobby_exit:
                     SE_selected();
                     SDLNetplayUI_SetNativeLobbyActive(false);
+                    if (use_rmlui && rmlui_menu_lobby)
+                        rmlui_network_lobby_hide();
                     Netplay_HandleMenuExit();
                     Menu_Suicide[0] = 0;
                     Menu_Suicide[1] = 1;   /* kill our items + blue BG */
@@ -1257,14 +1292,18 @@ static void Training_Mode(struct _TASK* task_ptr) {
         Order[0x6F] = 1;
         Order_Dir[0x6F] = 8;
         Order_Timer[0x6F] = 1;
-        effect_04_init(1, 5, 0, 0x48);
+        if (use_rmlui && rmlui_menu_training) {
+            rmlui_training_mode_show();
+        } else {
+            effect_04_init(1, 5, 0, 0x48);
 
-        static const s16 menu_strings[] = { 0x35, 0x36, 66, 0x37 };
-        for (ix = 0; ix < 4; ix++) {
-            effect_61_init(0, ix + 0x50, 0, 1, menu_strings[ix], ix, 0x7047);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x14;
+            static const s16 menu_strings[] = { 0x35, 0x36, 66, 0x37 };
+            for (ix = 0; ix < 4; ix++) {
+                effect_61_init(0, ix + 0x50, 0, 1, menu_strings[ix], ix, 0x7047);
+                Order[ix + 0x50] = 1;
+                Order_Dir[ix + 0x50] = 4;
+                Order_Timer[ix + 0x50] = ix + 0x14;
+            }
         }
 
         Menu_Cursor_Move = 4;
@@ -1312,6 +1351,8 @@ static void Training_Mode(struct _TASK* task_ptr) {
             task_ptr->free[0] = 0;
             Order[0x6F] = 4;
             Order_Timer[0x6F] = 4;
+            if (use_rmlui && rmlui_menu_training)
+                rmlui_training_mode_hide();
             break;
         }
 
@@ -1359,12 +1400,37 @@ static void Option_Select(struct _TASK* task_ptr) {
         Order_Timer[0x4F] = 1;
 
         if (save_w[Present_Mode].Extra_Option == 0 && save_w[Present_Mode].Unlock_All == 0) {
-            effect_04_init(1, 4, 0, 0x48);
+            if (use_rmlui && rmlui_menu_option) {
+                rmlui_option_menu_show();
+            } else {
+                effect_04_init(1, 4, 0, 0x48);
+
+                ix = 0;
+                char_index = 0x2F;
+
+                while (ix < 6) {
+                    effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x70A7);
+                    Order[ix + 0x50] = 1;
+                    Order_Dir[ix + 0x50] = 4;
+                    Order_Timer[ix + 0x50] = ix + 0x14;
+                    ix++;
+                    char_index++;
+                }
+            }
+
+            Menu_Cursor_Move = 6;
+            break;
+        }
+
+        if (use_rmlui && rmlui_menu_option) {
+            rmlui_option_menu_show();
+        } else {
+            effect_04_init(1, 1, 0, 0x48);
 
             ix = 0;
-            char_index = 0x2F;
+            char_index = 7;
 
-            while (ix < 6) {
+            while (ix < 7) {
                 effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x70A7);
                 Order[ix + 0x50] = 1;
                 Order_Dir[ix + 0x50] = 4;
@@ -1372,23 +1438,6 @@ static void Option_Select(struct _TASK* task_ptr) {
                 ix++;
                 char_index++;
             }
-
-            Menu_Cursor_Move = 6;
-            break;
-        }
-
-        effect_04_init(1, 1, 0, 0x48);
-
-        ix = 0;
-        char_index = 7;
-
-        while (ix < 7) {
-            effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x70A7);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x14;
-            ix++;
-            char_index++;
         }
 
         Menu_Cursor_Move = 7;
@@ -1502,27 +1551,32 @@ static void System_Direction(struct _TASK* task_ptr) {
             Order_Dir[0x4E] = 3;
             Order_Timer[0x4E] = 1;
         }
-        effect_57_init(0x6D, 0xA, 0, 0x3F, 2);
-        Order[0x6D] = 1;
-        Order_Dir[0x6D] = 8;
-        Order_Timer[0x6D] = 1;
-        effect_04_init(1, 3, 0, 0x48);
         Convert_Buff[3][0][0] = Direction_Working[1];
-        effect_64_init(0x61U, 0, from_option ? 2 : 1, 0xA, 0, 0x7047, 0xB, 3, 0);
-        Order[0x61] = 1;
-        Order_Dir[0x61] = 4;
-        Order_Timer[0x61] = 0x14;
 
-        ix = 0;
-        char_index = 0x2B;
+        if (use_rmlui && rmlui_menu_sysdir) {
+            rmlui_sysdir_show();
+        } else {
+            effect_57_init(0x6D, 0xA, 0, 0x3F, 2);
+            Order[0x6D] = 1;
+            Order_Dir[0x6D] = 8;
+            Order_Timer[0x6D] = 1;
+            effect_04_init(1, 3, 0, 0x48);
+            effect_64_init(0x61U, 0, from_option ? 2 : 1, 0xA, 0, 0x7047, 0xB, 3, 0);
+            Order[0x61] = 1;
+            Order_Dir[0x61] = 4;
+            Order_Timer[0x61] = 0x14;
 
-        while (ix < 4) {
-            effect_61_init(0, ix + 0x50, 0, from_option ? 2 : 1, char_index, ix + 1, 0x7047);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x15;
-            ix++;
-            char_index++;
+            ix = 0;
+            char_index = 0x2B;
+
+            while (ix < 4) {
+                effect_61_init(0, ix + 0x50, 0, from_option ? 2 : 1, char_index, ix + 1, 0x7047);
+                Order[ix + 0x50] = 1;
+                Order_Dir[ix + 0x50] = 4;
+                Order_Timer[ix + 0x50] = ix + 0x15;
+                ix++;
+                char_index++;
+            }
         }
 
         Menu_Cursor_Move = 4;
@@ -1605,12 +1659,24 @@ static void Direction_Menu(struct _TASK* task_ptr) {
         Menu_Page = 0;
         Menu_Page_Buff = Menu_Page;
         Message_Data->kind_req = 3;
+        if (use_rmlui && rmlui_menu_sysdir)
+            rmlui_sysdir_enter_subpage();
         break;
 
     case 1:
         FadeOut(1, 0xFF, 8);
         task_ptr->r_no[2] += 1;
-        Setup_Next_Page(task_ptr, 0);
+        if (!use_rmlui || !rmlui_menu_sysdir)
+            Setup_Next_Page(task_ptr, 0);
+        else {
+            /* RmlUi mode: do data setup only — skip effect spawning */
+            Menu_Page_Buff = Menu_Page;
+            effect_work_init();
+            Menu_Common_Init();
+            Menu_Cursor_Y[0] = 0;
+            Menu_Max = Page_Data[Menu_Page];
+            system_dir[1].contents[Menu_Page][Menu_Max] = 1;
+        }
         /* fallthrough */
 
     case 2:
@@ -1669,6 +1735,8 @@ static void Direction_Menu(struct _TASK* task_ptr) {
             Menu_Suicide[1] = 0;
             Menu_Suicide[2] = 1;
             SE_dir_selected();
+            if (use_rmlui && rmlui_menu_sysdir)
+                rmlui_sysdir_exit_subpage();
             break;
 
         case 0x80:
@@ -1831,21 +1899,25 @@ static void Game_Option(struct _TASK* task_ptr) {
         Order_Dir[0x6A] = 8;
         Order_Timer[0x6A] = 1;
 
-        for (ix = 0, unused_s3 = char_index = 0x19; ix < 0xC; ix++, unused_s2 = char_index++) {
-            effect_61_init(0, ix + 0x50, 0, 2, char_index, ix, 0x70A7);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x14;
+        if (use_rmlui && rmlui_menu_game_option) {
+            rmlui_game_option_show();
+        } else {
+            for (ix = 0, unused_s3 = char_index = 0x19; ix < 0xC; ix++, unused_s2 = char_index++) {
+                effect_61_init(0, ix + 0x50, 0, 2, char_index, ix, 0x70A7);
+                Order[ix + 0x50] = 1;
+                Order_Dir[ix + 0x50] = 4;
+                Order_Timer[ix + 0x50] = ix + 0x14;
+            }
+
+            for (ix = 0; ix < 0xA; ix++) {
+                effect_64_init(ix + 0x5D, 0, 2, Setup_Index_64[ix], ix, 0x70A7, ix + 1, 0, 0);
+                Order[ix + 0x5D] = 1;
+                Order_Dir[ix + 0x5D] = 4;
+                Order_Timer[ix + 0x5D] = ix + 0x14;
+            }
         }
 
         Menu_Cursor_Move = 0xA;
-
-        for (ix = 0; ix < 0xA; ix++) {
-            effect_64_init(ix + 0x5D, 0, 2, Setup_Index_64[ix], ix, 0x70A7, ix + 1, 0, 0);
-            Order[ix + 0x5D] = 1;
-            Order_Dir[ix + 0x5D] = 4;
-            Order_Timer[ix + 0x5D] = ix + 0x14;
-        }
 
         break;
 
@@ -1902,43 +1974,47 @@ static void Button_Config(struct _TASK* task_ptr) {
         Order_Dir[0x6B] = 8;
         Order_Timer[0x6B] = 1;
 
-        for (ix = 0; ix < 12; ix++) {
-            effect_23_init(0, ix + 0x50, 0, 2, 2, ix, 0x70A7, ix + 9, 1);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x14;
-            effect_23_init(1, ix + 0x5C, 0, 2, 3, ix, 0x70A7, ix + 9, 1);
-            Order[ix + 0x5C] = 1;
-            Order_Dir[ix + 0x5C] = 4;
-            Order_Timer[ix + 0x5C] = ix + 0x14;
-        }
-
-        for (ix = 0; ix < 9; ix++) {
-            if (ix == 8) {
-                disp_index = 1;
-            } else {
-                disp_index = 0;
+        if (use_rmlui && rmlui_menu_button_config) {
+            rmlui_button_config_show();
+        } else {
+            for (ix = 0; ix < 12; ix++) {
+                effect_23_init(0, ix + 0x50, 0, 2, 2, ix, 0x70A7, ix + 9, 1);
+                Order[ix + 0x50] = 1;
+                Order_Dir[ix + 0x50] = 4;
+                Order_Timer[ix + 0x50] = ix + 0x14;
+                effect_23_init(1, ix + 0x5C, 0, 2, 3, ix, 0x70A7, ix + 9, 1);
+                Order[ix + 0x5C] = 1;
+                Order_Dir[ix + 0x5C] = 4;
+                Order_Timer[ix + 0x5C] = ix + 0x14;
             }
 
-            effect_23_init(0, ix + 0x78, 0, 2, disp_index, ix, 0x70A7, ix, 0);
-            Order[ix + 0x78] = 1;
-            Order_Dir[ix + 0x78] = 4;
-            Order_Timer[ix + 0x78] = ix + 0x14;
-            effect_23_init(1, ix + 0x81, 0, 2, disp_index, ix, 0x70A7, ix, 0);
-            Order[ix + 0x81] = 1;
-            Order_Dir[ix + 0x81] = 4;
-            Order_Timer[ix + 0x81] = ix + 0x14;
-        }
+            for (ix = 0; ix < 9; ix++) {
+                if (ix == 8) {
+                    disp_index = 1;
+                } else {
+                    disp_index = 0;
+                }
 
-        Menu_Cursor_Move = 0x22;
-        effect_66_init(0x8A, 7, 2, 0, -1, -1, -0x7FFF);
-        Order[0x8A] = 1;
-        Order_Dir[0x8A] = 4;
-        Order_Timer[0x8A] = 0x14;
-        effect_66_init(0x8B, 8, 2, 0, -1, -1, -0x7FFF);
-        Order[0x8B] = 1;
-        Order_Dir[0x8B] = 4;
-        Order_Timer[0x8B] = 0x14;
+                effect_23_init(0, ix + 0x78, 0, 2, disp_index, ix, 0x70A7, ix, 0);
+                Order[ix + 0x78] = 1;
+                Order_Dir[ix + 0x78] = 4;
+                Order_Timer[ix + 0x78] = ix + 0x14;
+                effect_23_init(1, ix + 0x81, 0, 2, disp_index, ix, 0x70A7, ix, 0);
+                Order[ix + 0x81] = 1;
+                Order_Dir[ix + 0x81] = 4;
+                Order_Timer[ix + 0x81] = ix + 0x14;
+            }
+
+            Menu_Cursor_Move = 0x22;
+            effect_66_init(0x8A, 7, 2, 0, -1, -1, -0x7FFF);
+            Order[0x8A] = 1;
+            Order_Dir[0x8A] = 4;
+            Order_Timer[0x8A] = 0x14;
+            effect_66_init(0x8B, 8, 2, 0, -1, -1, -0x7FFF);
+            Order[0x8B] = 1;
+            Order_Dir[0x8B] = 4;
+            Order_Timer[0x8B] = 0x14;
+        }
         break;
 
     case 1:
@@ -2002,41 +2078,46 @@ static void Sound_Test(struct _TASK* task_ptr) {
         Order[0x4E] = 2;
         Order_Dir[0x4E] = 2;
         Order_Timer[0x4E] = 1;
-        effect_57_init(0x72, 4, 0, 0x3F, 2);
-        Order[0x72] = 1;
-        Order_Dir[0x72] = 8;
-        Order_Timer[0x72] = 1;
-        effect_04_init(2, 6, 2, 0x48);
 
-        {
-            s32 ixSoundMenuItem[4] = { 10, 11, 11, 12 };
+        if (use_rmlui && rmlui_menu_sound) {
+            rmlui_sound_menu_show();
+        } else {
+            effect_57_init(0x72, 4, 0, 0x3F, 2);
+            Order[0x72] = 1;
+            Order_Dir[0x72] = 8;
+            Order_Timer[0x72] = 1;
+            effect_04_init(2, 6, 2, 0x48);
 
-            for (ix = 0; ix < 4; ix++) {
-                Order[ix + 0x57] = 1;
-                Order_Dir[ix + 0x57] = 4;
-                Order_Timer[ix + 0x57] = ix + 0x14;
-                effect_64_init(ix + 0x57, 0, 2, ixSoundMenuItem[ix] + 1, ix, 0x7047, ix + 0xC, 3, 1);
+            {
+                s32 ixSoundMenuItem[4] = { 10, 11, 11, 12 };
+
+                for (ix = 0; ix < 4; ix++) {
+                    Order[ix + 0x57] = 1;
+                    Order_Dir[ix + 0x57] = 4;
+                    Order_Timer[ix + 0x57] = ix + 0x14;
+                    effect_64_init(ix + 0x57, 0, 2, ixSoundMenuItem[ix] + 1, ix, 0x7047, ix + 0xC, 3, 1);
+                }
             }
-        }
 
-        Order_Dir[0x78] = 0;
-        effect_A8_init(0, 0x78, 0, 2, 5, 0x70A7, 0);
-        Order_Dir[0x79] = 1;
-        effect_A8_init(0, 0x79, 0, 2, 5, 0x70A7, 1);
-        effect_A8_init(3, 0x7A, 0, 2, 5, 0x70A7, 3);
-        Convert_Buff[3][1][5] = 0;
-        Order_Dir[0x7B] = 0;
-        effect_A8_init(2, 0x7B, 0, 2, 5, 0x70A7, 2);
+            Order_Dir[0x78] = 0;
+            effect_A8_init(0, 0x78, 0, 2, 5, 0x70A7, 0);
+            Order_Dir[0x79] = 1;
+            effect_A8_init(0, 0x79, 0, 2, 5, 0x70A7, 1);
+            effect_A8_init(3, 0x7A, 0, 2, 5, 0x70A7, 3);
+            Convert_Buff[3][1][5] = 0;
+            Order_Dir[0x7B] = 0;
+            effect_A8_init(2, 0x7B, 0, 2, 5, 0x70A7, 2);
 
-        {
-            s16 unused_s2;
-            s16 unused_s3;
+            {
+                s16 unused_s2;
+                s16 unused_s3;
 
-            for (ix = 0, unused_s3 = char_index = 0x3B; ix < 7; ix++, unused_s2 = char_index++) {
-                effect_61_init(0, ix + 0x50, 0, 2, char_index, ix, 0x7047);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
+                for (ix = 0, unused_s3 = char_index = 0x3B; ix < 7; ix++, unused_s2 = char_index++) {
+                    effect_61_init(0, ix + 0x50, 0, 2, char_index, ix, 0x7047);
+                    Order[ix + 0x50] = 1;
+                    Order_Dir[ix + 0x50] = 4;
+                    Order_Timer[ix + 0x50] = ix + 0x14;
+                }
             }
         }
 
@@ -2143,27 +2224,32 @@ static void Memory_Card(struct _TASK* task_ptr) {
         Order[0x4E] = 2;
         Order_Dir[0x4E] = 4;
         Order_Timer[0x4E] = 1;
-        effect_57_init(0x69, 5, 0, 0x3F, 2);
-        Order[0x69] = 1;
-        Order_Dir[0x69] = 8;
-        Order_Timer[0x69] = 1;
 
-        for (ix = 0, unused_s3 = char_index = 0x15; ix < 4; ix++, unused_s2 = char_index++) {
-            effect_61_init(0, ix + 0x50, 1, 2, char_index, ix, 0x7047);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x14;
+        if (use_rmlui && rmlui_menu_memory_card) {
+            rmlui_memory_card_show();
+        } else {
+            effect_57_init(0x69, 5, 0, 0x3F, 2);
+            Order[0x69] = 1;
+            Order_Dir[0x69] = 8;
+            Order_Timer[0x69] = 1;
+
+            for (ix = 0, unused_s3 = char_index = 0x15; ix < 4; ix++, unused_s2 = char_index++) {
+                effect_61_init(0, ix + 0x50, 1, 2, char_index, ix, 0x7047);
+                Order[ix + 0x50] = 1;
+                Order_Dir[ix + 0x50] = 4;
+                Order_Timer[ix + 0x50] = ix + 0x14;
+            }
+
+            Menu_Cursor_Move = 4;
+            effect_64_init(0x61, 1, 2, 0, 2, 0x7047, 0, 3, 0);
+            Order[0x61] = 1;
+            Order_Dir[0x61] = 4;
+            Order_Timer[0x61] = 0x18;
+            effect_66_init(0x8A, 8, 2, 1, -1, -1, -0x7FF5);
+            Order[0x8A] = 3;
+            Order_Timer[0x8A] = 1;
+            effect_04_init(2, 2, 2, 0x48);
         }
-
-        Menu_Cursor_Move = 4;
-        effect_64_init(0x61, 1, 2, 0, 2, 0x7047, 0, 3, 0);
-        Order[0x61] = 1;
-        Order_Dir[0x61] = 4;
-        Order_Timer[0x61] = 0x18;
-        effect_66_init(0x8A, 8, 2, 1, -1, -1, -0x7FF5);
-        Order[0x8A] = 3;
-        Order_Timer[0x8A] = 1;
-        effect_04_init(2, 2, 2, 0x48);
         Setup_File_Property(0, 0xFF);
         break;
 
@@ -2631,50 +2717,50 @@ static void VS_Result(struct _TASK* task_ptr) {
         Order[78] = 2;
         Order_Dir[78] = 0;
         Order_Timer[78] = 1;
-        effect_66_init(91, 12, 0, 0, 71, 9, 0);
-        Order[91] = 3;
-        Order_Timer[91] = 1;
-        effect_66_init(138, 24, 0, 0, -1, -1, -0x7FF9);
-        Order[138] = 3;
-        Order_Timer[138] = 1;
-        effect_66_init(139, 25, 0, 0, -1, -1, -0x7FF9);
-        Order[139] = 3;
-        Order_Timer[139] = 1;
-        effect_A0_init(0, VS_Win_Record[0], 0, 3, 0, 0, 0);
-        effect_A0_init(0, VS_Win_Record[1], 1, 3, 0, 0, 0);
-        total_battle = VS_Win_Record[0] + VS_Win_Record[1];
 
+        /* Compute percentages — always needed */
+        total_battle = VS_Win_Record[0] + VS_Win_Record[1];
         if (total_battle == 0) {
             total_battle = 1;
         }
-
         if (VS_Win_Record[0] >= VS_Win_Record[1]) {
             ave[1] = (VS_Win_Record[1] * 100) / total_battle;
-
             if (ave[1] == 0 && VS_Win_Record[1] > 0) {
                 ave[1] = 1;
             }
-
             ave[0] = 100 - ave[1];
         } else {
             ave[0] = (VS_Win_Record[0] * 100) / total_battle;
-
             if (ave[0] == 0 && VS_Win_Record[0] > 0) {
                 ave[0] = 1;
             }
-
             ave[1] = 100 - ave[0];
         }
 
-        effect_A0_init(0, ave[0], 2, 3, 0, 0, 0);
-        effect_A0_init(0, ave[1], 3, 3, 0, 0, 0);
+        if (use_rmlui && rmlui_screen_vs_result) {
+            rmlui_vs_result_show(VS_Win_Record[0], VS_Win_Record[1], ave[0], ave[1]);
+        } else {
+            effect_66_init(91, 12, 0, 0, 71, 9, 0);
+            Order[91] = 3;
+            Order_Timer[91] = 1;
+            effect_66_init(138, 24, 0, 0, -1, -1, -0x7FF9);
+            Order[138] = 3;
+            Order_Timer[138] = 1;
+            effect_66_init(139, 25, 0, 0, -1, -1, -0x7FF9);
+            Order[139] = 3;
+            Order_Timer[139] = 1;
+            effect_A0_init(0, VS_Win_Record[0], 0, 3, 0, 0, 0);
+            effect_A0_init(0, VS_Win_Record[1], 1, 3, 0, 0, 0);
+            effect_A0_init(0, ave[0], 2, 3, 0, 0, 0);
+            effect_A0_init(0, ave[1], 3, 3, 0, 0, 0);
 
-        for (ix = 0, s4 = char_ix2 = 22; ix < 3; ix++, s3 = char_ix2++) {
-            effect_91_init(0, ix, 0, 71, char_ix2, 0);
-            effect_91_init(1, ix, 0, 71, char_ix2, 0);
+            for (ix = 0, s4 = char_ix2 = 22; ix < 3; ix++, s3 = char_ix2++) {
+                effect_91_init(0, ix, 0, 71, char_ix2, 0);
+                effect_91_init(1, ix, 0, 71, char_ix2, 0);
+            }
+
+            Setup_Win_Lose_OBJ();
         }
-
-        Setup_Win_Lose_OBJ();
         Menu_Cursor_Move = 0;
         break;
 
@@ -3825,6 +3911,8 @@ static void Extra_Option(struct _TASK* task_ptr) {
         Page_Max = 3;
         Menu_Page_Buff = Menu_Page;
         Message_Data->kind_req = 4;
+        if (use_rmlui && rmlui_menu_extra_option)
+            rmlui_extra_option_show();
         break;
 
     case 1:
@@ -3885,6 +3973,8 @@ static void Extra_Option(struct _TASK* task_ptr) {
 
         switch (IO_Result) {
         case 0x200:
+            if (use_rmlui && rmlui_menu_extra_option)
+                rmlui_extra_option_hide();
             Return_Option_Mode_Sub(task_ptr);
             Order[115] = 4;
             Order_Timer[115] = 4;
@@ -3950,6 +4040,8 @@ static void Extra_Option(struct _TASK* task_ptr) {
                 break;
 
             default:
+                if (use_rmlui && rmlui_menu_extra_option)
+                    rmlui_extra_option_hide();
                 Return_Option_Mode_Sub(task_ptr);
                 save_w[4].extra_option = save_w[1].extra_option;
                 save_w[5].extra_option = save_w[1].extra_option;
