@@ -15,7 +15,7 @@ body {
     margin-left: -180dp;
     width: 360dp;
     text-align: center;
-    animation: panel-fade-in 0.4s ease-out;
+    animation: panel-fade-in 0.4s quadratic-out;
 }
 
 @keyframes panel-fade-in {
@@ -35,7 +35,7 @@ body {
     color: #ffcc44;
     letter-spacing: 3dp;
     margin-bottom: 8dp;
-    text-shadow: 1dp 1dp 3dp #00000088;
+    font-effect: shadow(1dp 1dp #00000088);
 }
 
 /* ── Page indicator ────────────────────────────────────────── */
@@ -74,7 +74,7 @@ body {
 }
 
 .option-row.focused {
-    background-color: rgba(255, 204, 68, 0.15);
+    background-color: rgba(255, 204, 68, 38);
     border-left-width: 3dp;
     border-left-color: #ffcc44;
 }

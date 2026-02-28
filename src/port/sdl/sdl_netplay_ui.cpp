@@ -493,7 +493,8 @@ void SDLNetplayUI_SetFPSHistory(const float* data, int count, float current_fps)
 }
 
 const float* SDLNetplayUI_GetFPSHistory(int* out_count) {
-    if (out_count) *out_count = s_fps_history_count;
+    if (out_count)
+        *out_count = s_fps_history_count;
     return s_fps_history;
 }
 

@@ -18,28 +18,30 @@ extern "C" {
 #endif
 
 /* ── Fight HUD ─────────────────────────────────────────────────── */
-extern bool rmlui_hud_health;   /** HP bar + drain bar */
-extern bool rmlui_hud_timer;    /** Round countdown timer */
-extern bool rmlui_hud_stun;     /** Stun gauge */
-extern bool rmlui_hud_super;    /** Super Art (SA) gauge */
-extern bool rmlui_hud_combo;    /** Combo window */
-extern bool rmlui_hud_names;    /** Player name text */
-extern bool rmlui_hud_faces;    /** Character portraits */
-extern bool rmlui_hud_wins;     /** Win-pip indicators */
+extern bool rmlui_hud_health;        /** HP bar + drain bar */
+extern bool rmlui_hud_timer;         /** Round countdown timer */
+extern bool rmlui_hud_stun;          /** Stun gauge */
+extern bool rmlui_hud_super;         /** Super Art (SA) gauge */
+extern bool rmlui_hud_combo;         /** Combo window */
+extern bool rmlui_hud_names;         /** Player name text */
+extern bool rmlui_hud_faces;         /** Character portraits */
+extern bool rmlui_hud_wins;          /** Win-pip indicators */
+extern bool rmlui_hud_score;         /** Score digits (Arcade/VS) */
 extern bool rmlui_hud_training_stun; /** Training combo stun counter */
+extern bool rmlui_hud_training_data; /** Training damage/combo data overlay */
 
 /* ── Menu screens ───────────────────────────────────────────────── */
-extern bool rmlui_menu_mode;        /** Mode Select (Arcade/VS/Training/…) */
-extern bool rmlui_menu_option;      /** Option Menu dispatcher */
-extern bool rmlui_menu_game_option; /** Game Option screen */
-extern bool rmlui_menu_button_config;/** Button Config */
-extern bool rmlui_menu_sound;       /** Sound Test / Screen Adjust */
-extern bool rmlui_menu_extra_option;/** Extra Option (4 pages) */
-extern bool rmlui_menu_sysdir;      /** System Direction dipswitch */
-extern bool rmlui_menu_training;    /** Training Mode selector */
-extern bool rmlui_menu_lobby;       /** Network Lobby */
-extern bool rmlui_menu_memory_card; /** Memory Card (Save/Load) */
-extern bool rmlui_menu_blocking_tr; /** Blocking Training pause menu */
+extern bool rmlui_menu_mode;            /** Mode Select (Arcade/VS/Training/…) */
+extern bool rmlui_menu_option;          /** Option Menu dispatcher */
+extern bool rmlui_menu_game_option;     /** Game Option screen */
+extern bool rmlui_menu_button_config;   /** Button Config */
+extern bool rmlui_menu_sound;           /** Sound Test / Screen Adjust */
+extern bool rmlui_menu_extra_option;    /** Extra Option (4 pages) */
+extern bool rmlui_menu_sysdir;          /** System Direction dipswitch */
+extern bool rmlui_menu_training;        /** Training Mode selector */
+extern bool rmlui_menu_lobby;           /** Network Lobby */
+extern bool rmlui_menu_memory_card;     /** Memory Card (Save/Load) */
+extern bool rmlui_menu_blocking_tr;     /** Blocking Training pause menu */
 extern bool rmlui_menu_blocking_tr_opt; /** Blocking Training option screen */
 
 /* ── Screen overlays ────────────────────────────────────────────── */

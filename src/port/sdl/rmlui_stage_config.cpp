@@ -18,8 +18,8 @@
 // ── C externs ──────────────────────────────────────────────────
 
 extern "C" {
-#include "port/stage_config.h"
 #include "port/modded_stage.h"
+#include "port/stage_config.h"
 }
 
 // ── Module state ───────────────────────────────────────────────
@@ -29,18 +29,18 @@ static int s_selected_layer = 0;
 
 // Snapshot for dirty-checking
 static struct {
-    int   stage_idx;
-    int   selected_layer;
+    int stage_idx;
+    int selected_layer;
     // Per-layer snapshots (active layer only)
-    bool  enabled;
-    char  filename[64];
-    int   scale_mode;
+    bool enabled;
+    char filename[64];
+    int scale_mode;
     float scale_factor_x, scale_factor_y;
     float parallax_x, parallax_y;
     float offset_x, offset_y;
-    int   original_bg_index;
-    int   z_index;
-    bool  loop_x, loop_y;
+    int original_bg_index;
+    int z_index;
+    bool loop_x, loop_y;
 } s_prev;
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -102,139 +102,126 @@ extern "C" void rmlui_stage_config_init() {
     }
 
     // ── Stage index (read-only) ──
-    c.BindFunc("stage_idx",
-        [](Rml::Variant& v) { v = ModdedStage_GetLoadedStageIndex(); }
-    );
+    c.BindFunc("stage_idx", [](Rml::Variant& v) { v = ModdedStage_GetLoadedStageIndex(); });
 
-    c.BindFunc("has_stage",
-        [](Rml::Variant& v) { v = (ModdedStage_GetLoadedStageIndex() >= 0); }
-    );
+    c.BindFunc("has_stage", [](Rml::Variant& v) { v = (ModdedStage_GetLoadedStageIndex() >= 0); });
 
     // ── Selected tab ──
-    c.BindFunc("selected_layer",
+    c.BindFunc(
+        "selected_layer",
         [](Rml::Variant& v) { v = s_selected_layer; },
-        [](const Rml::Variant& v) { s_selected_layer = v.Get<int>(); }
-    );
+        [](const Rml::Variant& v) { s_selected_layer = v.Get<int>(); });
 
     // ── Active layer properties (BindFunc — read/write active layer) ──
 
-    c.BindFunc("layer_enabled",
+    c.BindFunc(
+        "layer_enabled",
         [](Rml::Variant& v) { v = active_layer()->enabled; },
-        [](const Rml::Variant& v) { active_layer()->enabled = v.Get<bool>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->enabled = v.Get<bool>(); });
 
-    c.BindFunc("layer_filename",
+    c.BindFunc(
+        "layer_filename",
         [](Rml::Variant& v) { v = Rml::String(active_layer()->filename); },
         [](const Rml::Variant& v) {
             Rml::String s = v.Get<Rml::String>();
             snprintf(active_layer()->filename, sizeof(active_layer()->filename), "%s", s.c_str());
-        }
-    );
+        });
 
-    c.BindFunc("layer_scale_mode",
+    c.BindFunc(
+        "layer_scale_mode",
         [](Rml::Variant& v) { v = (int)active_layer()->scale_mode; },
-        [](const Rml::Variant& v) { active_layer()->scale_mode = (LayerScaleMode)v.Get<int>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->scale_mode = (LayerScaleMode)v.Get<int>(); });
 
-    c.BindFunc("is_manual_scale",
-        [](Rml::Variant& v) { v = (active_layer()->scale_mode == SCALE_MODE_MANUAL); }
-    );
+    c.BindFunc("is_manual_scale", [](Rml::Variant& v) { v = (active_layer()->scale_mode == SCALE_MODE_MANUAL); });
 
-    c.BindFunc("is_fit_height",
-        [](Rml::Variant& v) { v = (active_layer()->scale_mode == SCALE_MODE_FIT_HEIGHT); }
-    );
+    c.BindFunc("is_fit_height", [](Rml::Variant& v) { v = (active_layer()->scale_mode == SCALE_MODE_FIT_HEIGHT); });
 
-    c.BindFunc("layer_scale_x",
+    c.BindFunc(
+        "layer_scale_x",
         [](Rml::Variant& v) { v = active_layer()->scale_factor_x; },
-        [](const Rml::Variant& v) { active_layer()->scale_factor_x = v.Get<float>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->scale_factor_x = v.Get<float>(); });
 
-    c.BindFunc("layer_scale_y",
+    c.BindFunc(
+        "layer_scale_y",
         [](Rml::Variant& v) { v = active_layer()->scale_factor_y; },
-        [](const Rml::Variant& v) { active_layer()->scale_factor_y = v.Get<float>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->scale_factor_y = v.Get<float>(); });
 
-    c.BindFunc("layer_parallax_x",
+    c.BindFunc(
+        "layer_parallax_x",
         [](Rml::Variant& v) { v = active_layer()->parallax_x; },
-        [](const Rml::Variant& v) { active_layer()->parallax_x = v.Get<float>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->parallax_x = v.Get<float>(); });
 
-    c.BindFunc("layer_parallax_y",
+    c.BindFunc(
+        "layer_parallax_y",
         [](Rml::Variant& v) { v = active_layer()->parallax_y; },
-        [](const Rml::Variant& v) { active_layer()->parallax_y = v.Get<float>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->parallax_y = v.Get<float>(); });
 
-    c.BindFunc("layer_offset_x",
+    c.BindFunc(
+        "layer_offset_x",
         [](Rml::Variant& v) { v = active_layer()->offset_x; },
-        [](const Rml::Variant& v) { active_layer()->offset_x = v.Get<float>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->offset_x = v.Get<float>(); });
 
-    c.BindFunc("layer_offset_y",
+    c.BindFunc(
+        "layer_offset_y",
         [](Rml::Variant& v) { v = active_layer()->offset_y; },
-        [](const Rml::Variant& v) { active_layer()->offset_y = v.Get<float>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->offset_y = v.Get<float>(); });
 
-    c.BindFunc("layer_bg_index",
+    c.BindFunc(
+        "layer_bg_index",
         [](Rml::Variant& v) { v = active_layer()->original_bg_index; },
-        [](const Rml::Variant& v) { active_layer()->original_bg_index = v.Get<int>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->original_bg_index = v.Get<int>(); });
 
-    c.BindFunc("layer_z_index",
+    c.BindFunc(
+        "layer_z_index",
         [](Rml::Variant& v) { v = active_layer()->z_index; },
-        [](const Rml::Variant& v) { active_layer()->z_index = v.Get<int>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->z_index = v.Get<int>(); });
 
-    c.BindFunc("layer_loop_x",
+    c.BindFunc(
+        "layer_loop_x",
         [](Rml::Variant& v) { v = active_layer()->loop_x; },
-        [](const Rml::Variant& v) { active_layer()->loop_x = v.Get<bool>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->loop_x = v.Get<bool>(); });
 
-    c.BindFunc("layer_loop_y",
+    c.BindFunc(
+        "layer_loop_y",
         [](Rml::Variant& v) { v = active_layer()->loop_y; },
-        [](const Rml::Variant& v) { active_layer()->loop_y = v.Get<bool>(); }
-    );
+        [](const Rml::Variant& v) { active_layer()->loop_y = v.Get<bool>(); });
 
     // ── Event callbacks ──
 
-    c.BindEventCallback("save_config",
-        [](Rml::DataModelHandle handle, Rml::Event&, const Rml::VariantList&) {
-            int idx = ModdedStage_GetLoadedStageIndex();
-            if (idx >= 0) {
-                StageConfig_Save(idx);
-                SDL_Log("[RmlUi StageConfig] Saved config for stage %02d", idx);
-            }
+    c.BindEventCallback("save_config", [](Rml::DataModelHandle handle, Rml::Event&, const Rml::VariantList&) {
+        int idx = ModdedStage_GetLoadedStageIndex();
+        if (idx >= 0) {
+            StageConfig_Save(idx);
+            SDL_Log("[RmlUi StageConfig] Saved config for stage %02d", idx);
         }
-    );
+    });
 
-    c.BindEventCallback("load_config",
-        [](Rml::DataModelHandle handle, Rml::Event&, const Rml::VariantList&) {
-            int idx = ModdedStage_GetLoadedStageIndex();
-            if (idx >= 0) {
-                StageConfig_Load(idx);
-                dirty_all_layer_vars();
-                SDL_Log("[RmlUi StageConfig] Reloaded config for stage %02d", idx);
-            }
-        }
-    );
-
-    c.BindEventCallback("reset_config",
-        [](Rml::DataModelHandle handle, Rml::Event&, const Rml::VariantList&) {
-            StageConfig_Init();
+    c.BindEventCallback("load_config", [](Rml::DataModelHandle handle, Rml::Event&, const Rml::VariantList&) {
+        int idx = ModdedStage_GetLoadedStageIndex();
+        if (idx >= 0) {
+            StageConfig_Load(idx);
             dirty_all_layer_vars();
-            SDL_Log("[RmlUi StageConfig] Reset to defaults");
+            SDL_Log("[RmlUi StageConfig] Reloaded config for stage %02d", idx);
         }
-    );
+    });
 
-    c.BindEventCallback("select_tab",
-        [](Rml::DataModelHandle handle, Rml::Event&, const Rml::VariantList& args) {
-            if (args.empty()) return;
-            s_selected_layer = args[0].Get<int>();
-            if (s_selected_layer < 0) s_selected_layer = 0;
-            if (s_selected_layer >= MAX_STAGE_LAYERS) s_selected_layer = MAX_STAGE_LAYERS - 1;
-            handle.DirtyVariable("selected_layer");
-            dirty_all_layer_vars();
-        }
-    );
+    c.BindEventCallback("reset_config", [](Rml::DataModelHandle handle, Rml::Event&, const Rml::VariantList&) {
+        StageConfig_Init();
+        dirty_all_layer_vars();
+        SDL_Log("[RmlUi StageConfig] Reset to defaults");
+    });
+
+    c.BindEventCallback("select_tab", [](Rml::DataModelHandle handle, Rml::Event&, const Rml::VariantList& args) {
+        if (args.empty())
+            return;
+        s_selected_layer = args[0].Get<int>();
+        if (s_selected_layer < 0)
+            s_selected_layer = 0;
+        if (s_selected_layer >= MAX_STAGE_LAYERS)
+            s_selected_layer = MAX_STAGE_LAYERS - 1;
+        handle.DirtyVariable("selected_layer");
+        dirty_all_layer_vars();
+    });
 
     s_model_handle = c.GetModelHandle();
     snapshot_active_layer();
@@ -245,7 +232,8 @@ extern "C" void rmlui_stage_config_init() {
 // ── Per-frame update ───────────────────────────────────────────
 
 extern "C" void rmlui_stage_config_update() {
-    if (!s_model_handle) return;
+    if (!s_model_handle)
+        return;
 
     int stage_idx = ModdedStage_GetLoadedStageIndex();
     if (stage_idx != s_prev.stage_idx) {
@@ -267,8 +255,11 @@ extern "C" void rmlui_stage_config_update() {
     // Check active layer for external changes
     StageLayerConfig* L = active_layer();
 
-#define CHECK_DIRTY(field, var_name) \
-    if (L->field != s_prev.field) { s_prev.field = L->field; s_model_handle.DirtyVariable(var_name); }
+#define CHECK_DIRTY(field, var_name)                                                                                   \
+    if (L->field != s_prev.field) {                                                                                    \
+        s_prev.field = L->field;                                                                                       \
+        s_model_handle.DirtyVariable(var_name);                                                                        \
+    }
 
     CHECK_DIRTY(enabled, "layer_enabled");
     CHECK_DIRTY(scale_factor_x, "layer_scale_x");

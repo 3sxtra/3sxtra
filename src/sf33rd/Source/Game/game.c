@@ -18,8 +18,8 @@
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
-#include <stdbool.h>
 #include "port/sdl/rmlui_phase3_toggles.h"
+#include <stdbool.h>
 extern bool use_rmlui;
 #include "main.h"
 #include "sf33rd/AcrSDK/common/pad.h"
@@ -598,15 +598,19 @@ void Game2_1() {
     if (Disp_Cockpit) {
         Time_Control();
         vital_cont_main();
-        if (!use_rmlui || !rmlui_hud_faces)  player_face();
-        if (!use_rmlui || !rmlui_hud_names)  player_name();
+        if (!use_rmlui || !rmlui_hud_faces)
+            player_face();
+        if (!use_rmlui || !rmlui_hud_names)
+            player_name();
         combo_cont_main();
         stngauge_cont_main();
         spgauge_cont_main();
         Sa_frame_Write();
-        Score_Sub();
+        if (!use_rmlui || !rmlui_hud_score)
+            Score_Sub();
         Flash_Lamp();
-        if (!use_rmlui || !rmlui_hud_wins)   Disp_Win_Record();
+        if (!use_rmlui || !rmlui_hud_wins)
+            Disp_Win_Record();
     }
 
     ppgPurgeFromVRAM(0);

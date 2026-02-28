@@ -15,7 +15,7 @@ body {
     margin-left: -140dp;
     width: 280dp;
     text-align: center;
-    animation: panel-slide-in 0.3s ease-out;
+    animation: panel-slide-in 0.3s quadratic-out;
 }
 
 @keyframes panel-slide-in {
@@ -37,7 +37,7 @@ body {
     color: #ffffff;
     letter-spacing: 3dp;
     margin-bottom: 16dp;
-    text-shadow: 2dp 2dp 4dp #00000088;
+    font-effect: shadow(2dp 2dp #00000088);
 }
 
 /* ── Countdown number ───────────────────────────────────────── */
@@ -51,8 +51,8 @@ body {
     font-size: 64dp;
     font-weight: bold;
     color: #ff4444;
-    text-shadow: 3dp 3dp 6dp #00000088;
-    animation: count-pulse 1.0s ease-in-out infinite;
+    font-effect: shadow(3dp 3dp #00000088);
+    animation: count-pulse 1.0s sine-in-out infinite;
 }
 
 @keyframes count-pulse {

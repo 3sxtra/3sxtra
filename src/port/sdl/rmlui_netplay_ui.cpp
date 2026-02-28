@@ -11,9 +11,9 @@
  * The lobby state machine and C extern API remain in sdl_netplay_ui.cpp.
  */
 #include "port/sdl/rmlui_netplay_ui.h"
+#include "netplay/netplay.h"
 #include "port/sdl/rmlui_wrapper.h"
 #include "port/sdl/sdl_netplay_ui.h"
-#include "netplay/netplay.h"
 
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>
@@ -78,26 +78,27 @@ static int s_prev_toast_count = 0;
 
 // FPS and ping/rollback history are accessed via SDLNetplayUI_* getters.
 
-
 // ── Bar chart helper ───────────────────────────────────────────
-static void build_bar_chart(std::vector<BarCell>& bars,
-                            const float* data, int count,
-                            float max_val, int target_bars) {
+static void build_bar_chart(std::vector<BarCell>& bars, const float* data, int count, float max_val, int target_bars) {
     bars.clear();
-    if (count <= 0 || max_val <= 0.0f) return;
+    if (count <= 0 || max_val <= 0.0f)
+        return;
 
     // Downsample to target_bars
     int step = count / target_bars;
-    if (step < 1) step = 1;
+    if (step < 1)
+        step = 1;
     int actual_bars = (count + step - 1) / step;
-    if (actual_bars > target_bars) actual_bars = target_bars;
+    if (actual_bars > target_bars)
+        actual_bars = target_bars;
 
     bars.reserve(actual_bars);
     char buf[16];
     for (int i = 0; i < actual_bars; i++) {
         int start = i * step;
         int end = start + step;
-        if (end > count) end = count;
+        if (end > count)
+            end = count;
 
         float sum = 0.0f;
         for (int j = start; j < end; j++)
@@ -105,10 +106,12 @@ static void build_bar_chart(std::vector<BarCell>& bars,
         float avg = sum / (float)(end - start);
 
         float pct = (avg / max_val) * 100.0f;
-        if (pct < 0.0f) pct = 0.0f;
-        if (pct > 100.0f) pct = 100.0f;
+        if (pct < 0.0f)
+            pct = 0.0f;
+        if (pct > 100.0f)
+            pct = 100.0f;
         snprintf(buf, sizeof(buf), "%.0f%%", pct);
-        bars.push_back({Rml::String(buf)});
+        bars.push_back({ Rml::String(buf) });
     }
 }
 
@@ -264,8 +267,10 @@ extern "C" void rmlui_netplay_ui_update(void) {
             int chart_count = fps_count - chart_start;
             float max_fps = 0.0f;
             for (int i = chart_start; i < fps_count; i++)
-                if (fps_data[i] > max_fps) max_fps = fps_data[i];
-            if (max_fps < 5.0f) max_fps = 65.0f;
+                if (fps_data[i] > max_fps)
+                    max_fps = fps_data[i];
+            if (max_fps < 5.0f)
+                max_fps = 65.0f;
 
             build_bar_chart(s_fps_bars, fps_data + chart_start, chart_count, max_fps + 5.0f, 60);
             if (s_fps_bars.size() != s_prev_fps_bar_count) {
@@ -277,7 +282,8 @@ extern "C" void rmlui_netplay_ui_update(void) {
             float avg = 0.0f;
             for (int i = chart_start; i < fps_count; i++)
                 avg += fps_data[i];
-            if (chart_count > 0) avg /= (float)chart_count;
+            if (chart_count > 0)
+                avg /= (float)chart_count;
             int secs = fps_count / 60;
             snprintf(buf, sizeof(buf), "avg: %.1f | %d:%02d  %d frames", avg, secs / 60, secs % 60, fps_count);
             Rml::String new_fps_stats(buf);
@@ -329,7 +335,8 @@ extern "C" void rmlui_netplay_ui_update(void) {
             // We'll just format duration from the session start tick
             // Actually, we compute it here from our own observation of session start
             static uint64_t s_session_start = 0;
-            if (s_session_start == 0) s_session_start = SDL_GetTicks();
+            if (s_session_start == 0)
+                s_session_start = SDL_GetTicks();
             uint64_t dur = (SDL_GetTicks() - s_session_start) / 1000;
             int mins = (int)(dur / 60);
             int secs = (int)(dur % 60);
@@ -349,8 +356,10 @@ extern "C" void rmlui_netplay_ui_update(void) {
             if (hist_count > 0) {
                 float max_ping = 0.0f;
                 for (int i = 0; i < hist_count; i++)
-                    if (ping_hist[i] > max_ping) max_ping = ping_hist[i];
-                if (max_ping < 10.0f) max_ping = 10.0f;
+                    if (ping_hist[i] > max_ping)
+                        max_ping = ping_hist[i];
+                if (max_ping < 10.0f)
+                    max_ping = 10.0f;
 
                 build_bar_chart(s_ping_bars, ping_hist, hist_count, max_ping + 10.0f, 64);
                 s_model_handle.DirtyVariable("ping_bars");

@@ -338,6 +338,7 @@ int trials_get_current_total(void) {
 
 bool trials_current_has_gauge_max(void) {
     const TrialCharacterDef* cdef = get_char_def(g_trials_state.current_chara_id);
-    if (!cdef || g_trials_state.current_trial_index >= cdef->num_trials) return false;
+    if (!cdef || g_trials_state.current_trial_index >= cdef->num_trials)
+        return false;
     return cdef->trials[g_trials_state.current_trial_index]->gauge_max != 0;
 }

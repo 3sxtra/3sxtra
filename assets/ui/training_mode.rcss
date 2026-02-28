@@ -15,7 +15,7 @@ body {
     margin-left: -150dp;
     width: 300dp;
     text-align: center;
-    animation: panel-fade-in 0.3s ease-out;
+    animation: panel-fade-in 0.3s quadratic-out;
 }
 
 @keyframes panel-fade-in {
@@ -30,7 +30,7 @@ body {
     color: #66ccff;
     letter-spacing: 3dp;
     margin-bottom: 12dp;
-    text-shadow: 1dp 1dp 3dp #00000088;
+    font-effect: shadow(1dp 1dp #00000088);
 }
 
 .option-list {
@@ -52,7 +52,7 @@ body {
 }
 
 .menu-item.focused {
-    background-color: rgba(102, 204, 255, 0.15);
+    background-color: rgba(102, 204, 255, 38);
     border-left-width: 3dp;
     border-left-color: #66ccff;
     color: #ffffff;

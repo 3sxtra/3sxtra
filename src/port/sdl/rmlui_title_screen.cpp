@@ -33,16 +33,16 @@ static TitleCache s_cache = {};
 // ─── Init ─────────────────────────────────────────────────────────
 extern "C" void rmlui_title_screen_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("title_screen");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
-    ctor.BindFunc("show_2p_prompt", [](Rml::Variant& v){
-        v = (G_No[1] == 3 || G_No[1] == 5);
-    });
+    ctor.BindFunc("show_2p_prompt", [](Rml::Variant& v) { v = (G_No[1] == 3 || G_No[1] == 5); });
 
-    s_model_handle   = ctor.GetModelHandle();
+    s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
     SDL_Log("[RmlUi TitleScreen] Data model registered");
@@ -50,7 +50,8 @@ extern "C" void rmlui_title_screen_init(void) {
 
 // ─── Per-frame update ─────────────────────────────────────────────
 extern "C" void rmlui_title_screen_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
 
     bool show = (G_No[1] == 3 || G_No[1] == 5);
     if (show != s_cache.show_2p) {
@@ -73,7 +74,8 @@ extern "C" void rmlui_title_screen_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_document("title");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-        if (ctx) ctx->RemoveDataModel("title_screen");
+        if (ctx)
+            ctx->RemoveDataModel("title_screen");
         s_model_registered = false;
     }
 }

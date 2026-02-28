@@ -24,36 +24,36 @@ static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
 struct MemCardCache {
-    int  cursor_y;
-    int  cursor_x;
-    int  io_result;
+    int cursor_y;
+    int cursor_x;
+    int io_result;
 };
 static MemCardCache s_cache = {};
 
-#define DIRTY_INT(nm, expr) do { \
-    int _v = (expr); \
-    if (_v != s_cache.nm) { s_cache.nm = _v; s_model_handle.DirtyVariable(#nm); } \
-} while(0)
+#define DIRTY_INT(nm, expr)                                                                                            \
+    do {                                                                                                               \
+        int _v = (expr);                                                                                               \
+        if (_v != s_cache.nm) {                                                                                        \
+            s_cache.nm = _v;                                                                                           \
+            s_model_handle.DirtyVariable(#nm);                                                                         \
+        }                                                                                                              \
+    } while (0)
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_memory_card_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("memory_card");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
-    ctor.BindFunc("cursor_y", [](Rml::Variant& v){
-        v = (int)Menu_Cursor_Y[0];
-    });
-    ctor.BindFunc("cursor_x", [](Rml::Variant& v){
-        v = (int)Menu_Cursor_X[0];
-    });
-    ctor.BindFunc("io_result", [](Rml::Variant& v){
-        v = (int)IO_Result;
-    });
+    ctor.BindFunc("cursor_y", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
+    ctor.BindFunc("cursor_x", [](Rml::Variant& v) { v = (int)Menu_Cursor_X[0]; });
+    ctor.BindFunc("io_result", [](Rml::Variant& v) { v = (int)IO_Result; });
 
-    s_model_handle   = ctor.GetModelHandle();
+    s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
     SDL_Log("[RmlUi MemoryCard] Data model registered");
@@ -61,7 +61,8 @@ extern "C" void rmlui_memory_card_init(void) {
 
 // ─── Per-frame update ────────────────────────────────────────────
 extern "C" void rmlui_memory_card_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
 
     DIRTY_INT(cursor_y, (int)Menu_Cursor_Y[0]);
     DIRTY_INT(cursor_x, (int)Menu_Cursor_X[0]);
@@ -82,7 +83,8 @@ extern "C" void rmlui_memory_card_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_document("memory_card");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-        if (ctx) ctx->RemoveDataModel("memory_card");
+        if (ctx)
+            ctx->RemoveDataModel("memory_card");
         s_model_registered = false;
     }
 }

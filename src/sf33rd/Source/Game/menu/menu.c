@@ -84,21 +84,21 @@
 #include "structs.h"
 
 /* RmlUi Phase 3 bypass — per-component toggles + menu replacements */
-#include "port/sdl/rmlui_phase3_toggles.h"
-#include "port/sdl/rmlui_option_menu.h"
-#include "port/sdl/rmlui_game_option.h"
-#include "port/sdl/rmlui_vs_result.h"
-#include "port/sdl/rmlui_memory_card.h"
-#include "port/sdl/rmlui_sound_menu.h"
-#include "port/sdl/rmlui_extra_option.h"
-#include "port/sdl/rmlui_training_menus.h"
-#include "port/sdl/rmlui_sysdir.h"
-#include "port/sdl/rmlui_network_lobby.h"
 #include "port/sdl/rmlui_button_config.h"
 #include "port/sdl/rmlui_char_select.h"
-#include "port/sdl/rmlui_vs_screen.h"
-#include "port/sdl/rmlui_replay_picker.h"
+#include "port/sdl/rmlui_extra_option.h"
+#include "port/sdl/rmlui_game_option.h"
+#include "port/sdl/rmlui_memory_card.h"
 #include "port/sdl/rmlui_mode_menu.h"
+#include "port/sdl/rmlui_network_lobby.h"
+#include "port/sdl/rmlui_option_menu.h"
+#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui_replay_picker.h"
+#include "port/sdl/rmlui_sound_menu.h"
+#include "port/sdl/rmlui_sysdir.h"
+#include "port/sdl/rmlui_training_menus.h"
+#include "port/sdl/rmlui_vs_result.h"
+#include "port/sdl/rmlui_vs_screen.h"
 extern bool use_rmlui;
 
 // forward decls
@@ -727,8 +727,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         const s16 sl = (s16)s_slide_offset;
 
         /* Custom red banner (brighter than default Akaobi 0xA0D00000) */
-        if (!use_rmlui || !rmlui_menu_lobby)
-        {
+        if (!use_rmlui || !rmlui_menu_lobby) {
             PAL_CURSOR_P ap[4];
             PAL_CURSOR_COL acol[4];
             u8 ci;
@@ -3133,12 +3132,10 @@ static void Training_Menu(struct _TASK* task_ptr) {
     Akaobi();
     ToneDown(0xAA, 2);
 
-    if (Training_Index >= TRAINING_LETTER_COUNT) {
-        return;
+    if ((!use_rmlui || !rmlui_menu_training) && Training_Index < TRAINING_LETTER_COUNT) {
+        SSPutStr_Bigger(
+            training_letter_data[Training_Index].pos_x, 0x18, 9, training_letter_data[Training_Index].menu, 1, 2, 1);
     }
-
-    SSPutStr_Bigger(
-        training_letter_data[Training_Index].pos_x, 0x18, 9, training_letter_data[Training_Index].menu, 1, 2, 1);
 }
 
 /** @brief Training initialisation â€” set up menu items and effects. */

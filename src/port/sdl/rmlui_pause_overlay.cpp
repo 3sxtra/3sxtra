@@ -24,30 +24,28 @@ static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
 struct PauseCache {
-    int  pause_player;
+    int pause_player;
     bool pause_visible;
     bool ctrl_disconnected;
-    int  disconnect_port;
+    int disconnect_port;
 };
 static PauseCache s_cache = {};
 
 // ─── Init ────────────────────────────────────────────────────
 extern "C" void rmlui_pause_overlay_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("pause_overlay");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
-    ctor.BindFunc("pause_player", [](Rml::Variant& v){ v = (int)Pause_ID; });
-    ctor.BindFunc("pause_visible", [](Rml::Variant& v){ v = (bool)(Pause_Down != 0); });
-    ctor.BindFunc("pause_label", [](Rml::Variant& v){
-        v = Rml::String(Pause_ID == 0 ? "1P PAUSE" : "2P PAUSE");
-    });
-    ctor.BindFunc("ctrl_disconnected", [](Rml::Variant& v){
-        v = (bool)(Pause_Down != 0 && Pause_Type == 2);
-    });
-    ctor.BindFunc("disconnect_port", [](Rml::Variant& v){ v = (int)(Pause_ID + 1); });
+    ctor.BindFunc("pause_player", [](Rml::Variant& v) { v = (int)Pause_ID; });
+    ctor.BindFunc("pause_visible", [](Rml::Variant& v) { v = (bool)(Pause_Down != 0); });
+    ctor.BindFunc("pause_label", [](Rml::Variant& v) { v = Rml::String(Pause_ID == 0 ? "1P PAUSE" : "2P PAUSE"); });
+    ctor.BindFunc("ctrl_disconnected", [](Rml::Variant& v) { v = (bool)(Pause_Down != 0 && Pause_Type == 2); });
+    ctor.BindFunc("disconnect_port", [](Rml::Variant& v) { v = (int)(Pause_ID + 1); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -57,7 +55,8 @@ extern "C" void rmlui_pause_overlay_init(void) {
 
 // ─── Per-frame update ────────────────────────────────────────
 extern "C" void rmlui_pause_overlay_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
 
     bool visible = (Pause_Down != 0);
     if (visible != s_cache.pause_visible) {
@@ -90,7 +89,8 @@ extern "C" void rmlui_pause_overlay_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_document("pause");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-        if (ctx) ctx->RemoveDataModel("pause_overlay");
+        if (ctx)
+            ctx->RemoveDataModel("pause_overlay");
         s_model_registered = false;
     }
 }

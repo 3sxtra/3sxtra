@@ -21,7 +21,7 @@ body {
     display: block;
     font-size: 9dp;
     color: #FFFFFF;
-    text-shadow: 1dp 1dp #000000;
+    font-effect: shadow(1dp 1dp #000000);
     margin-bottom: 4dp;
 }
 
@@ -32,7 +32,7 @@ body {
     left: 224dp;
     font-size: 9dp;
     color: #00FFFF;
-    text-shadow: 1dp 1dp #000000;
+    font-effect: shadow(1dp 1dp #000000);
 }
 
 #trial-complete {
@@ -42,7 +42,7 @@ body {
     left: 134dp;
     font-size: 14dp;
     text-align: center;
-    text-shadow: 2dp 2dp #000000;
+    font-effect: shadow(2dp 2dp #000000);
 }
 
 .complete-flash {

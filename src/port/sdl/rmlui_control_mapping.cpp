@@ -24,12 +24,12 @@ void ControlMapping_ClaimDevice(int player_num, int device_index);
 void ControlMapping_UnclaimDevice(int player_num);
 void ControlMapping_StartMapping(int player_num);
 void ControlMapping_ResetMappings(int player_num);
-int  ControlMapping_GetMappingState(int player_num);
-int  ControlMapping_GetMappingActionIndex(int player_num);
-int  ControlMapping_GetAvailableDeviceCount();
+int ControlMapping_GetMappingState(int player_num);
+int ControlMapping_GetMappingActionIndex(int player_num);
+int ControlMapping_GetAvailableDeviceCount();
 const char* ControlMapping_GetAvailableDeviceName(int index);
-int  ControlMapping_GetAvailableDeviceId(int index);
-int  ControlMapping_GetPlayerMappingCount(int player_num);
+int ControlMapping_GetAvailableDeviceId(int index);
+int ControlMapping_GetPlayerMappingCount(int player_num);
 const char* ControlMapping_GetPlayerMappingAction(int player_num, int index);
 const char* ControlMapping_GetPlayerMappingInput(int player_num, int index);
 
@@ -41,7 +41,7 @@ int get_game_actions_count();
 
 struct DeviceEntry {
     Rml::String name;
-    int         device_id;
+    int device_id;
 };
 
 struct MappingEntry {
@@ -59,11 +59,11 @@ static std::vector<MappingEntry> s_p2_mappings;
 
 // Snapshot for dirty checking
 static struct {
-    bool  p1_has_device, p2_has_device;
-    int   p1_state, p2_state;
-    int   p1_action_idx, p2_action_idx;
-    int   avail_count;
-    int   p1_map_count, p2_map_count;
+    bool p1_has_device, p2_has_device;
+    int p1_state, p2_state;
+    int p1_action_idx, p2_action_idx;
+    int avail_count;
+    int p1_map_count, p2_map_count;
 } s_prev;
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -74,7 +74,8 @@ static void rebuild_available_devices() {
     for (int i = 0; i < count; i++) {
         const char* name = ControlMapping_GetAvailableDeviceName(i);
         int id = ControlMapping_GetAvailableDeviceId(i);
-        if (name) s_available_devices.push_back({name, id});
+        if (name)
+            s_available_devices.push_back({ name, id });
     }
 }
 
@@ -83,8 +84,8 @@ static void rebuild_mappings(int player_num, std::vector<MappingEntry>& vec) {
     int count = ControlMapping_GetPlayerMappingCount(player_num);
     for (int i = 0; i < count; i++) {
         const char* action = ControlMapping_GetPlayerMappingAction(player_num, i);
-        const char* input  = ControlMapping_GetPlayerMappingInput(player_num, i);
-        vec.push_back({action ? action : "", input ? input : ""});
+        const char* input = ControlMapping_GetPlayerMappingInput(player_num, i);
+        vec.push_back({ action ? action : "", input ? input : "" });
     }
 }
 
@@ -98,9 +99,12 @@ static Rml::String state_to_string(int state, int action_idx) {
         }
         return "Waiting for input...";
     }
-    case 2: return "Release all inputs...";
-    case 3: return "Mapping Complete!";
-    default: return "";
+    case 2:
+        return "Release all inputs...";
+    case 3:
+        return "Mapping Complete!";
+    default:
+        return "";
     }
 }
 
@@ -152,89 +156,73 @@ extern "C" void rmlui_control_mapping_init() {
 
     // Mapping state prompts
     c.BindFunc("p1_prompt", [](Rml::Variant& v) {
-        v = state_to_string(ControlMapping_GetMappingState(1),
-                            ControlMapping_GetMappingActionIndex(1));
+        v = state_to_string(ControlMapping_GetMappingState(1), ControlMapping_GetMappingActionIndex(1));
     });
     c.BindFunc("p2_prompt", [](Rml::Variant& v) {
-        v = state_to_string(ControlMapping_GetMappingState(2),
-                            ControlMapping_GetMappingActionIndex(2));
+        v = state_to_string(ControlMapping_GetMappingState(2), ControlMapping_GetMappingActionIndex(2));
     });
 
     c.BindFunc("p1_is_idle", [](Rml::Variant& v) { v = (ControlMapping_GetMappingState(1) == 0); });
     c.BindFunc("p2_is_idle", [](Rml::Variant& v) { v = (ControlMapping_GetMappingState(2) == 0); });
 
     // Event callbacks
-    c.BindEventCallback("claim_p1",
-        [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList& args) {
-            if (args.empty()) return;
-            ControlMapping_ClaimDevice(1, args[0].Get<int>());
-            h.DirtyVariable("p1_has_device");
-            h.DirtyVariable("p1_device_name");
-            h.DirtyVariable("available_devices");
-        }
-    );
+    c.BindEventCallback("claim_p1", [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList& args) {
+        if (args.empty())
+            return;
+        ControlMapping_ClaimDevice(1, args[0].Get<int>());
+        h.DirtyVariable("p1_has_device");
+        h.DirtyVariable("p1_device_name");
+        h.DirtyVariable("available_devices");
+    });
 
-    c.BindEventCallback("claim_p2",
-        [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList& args) {
-            if (args.empty()) return;
-            ControlMapping_ClaimDevice(2, args[0].Get<int>());
-            h.DirtyVariable("p2_has_device");
-            h.DirtyVariable("p2_device_name");
-            h.DirtyVariable("available_devices");
-        }
-    );
+    c.BindEventCallback("claim_p2", [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList& args) {
+        if (args.empty())
+            return;
+        ControlMapping_ClaimDevice(2, args[0].Get<int>());
+        h.DirtyVariable("p2_has_device");
+        h.DirtyVariable("p2_device_name");
+        h.DirtyVariable("available_devices");
+    });
 
-    c.BindEventCallback("unclaim_p1",
-        [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
-            ControlMapping_UnclaimDevice(1);
-            h.DirtyVariable("p1_has_device");
-            h.DirtyVariable("p1_device_name");
-            h.DirtyVariable("available_devices");
-        }
-    );
+    c.BindEventCallback("unclaim_p1", [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
+        ControlMapping_UnclaimDevice(1);
+        h.DirtyVariable("p1_has_device");
+        h.DirtyVariable("p1_device_name");
+        h.DirtyVariable("available_devices");
+    });
 
-    c.BindEventCallback("unclaim_p2",
-        [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
-            ControlMapping_UnclaimDevice(2);
-            h.DirtyVariable("p2_has_device");
-            h.DirtyVariable("p2_device_name");
-            h.DirtyVariable("available_devices");
-        }
-    );
+    c.BindEventCallback("unclaim_p2", [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
+        ControlMapping_UnclaimDevice(2);
+        h.DirtyVariable("p2_has_device");
+        h.DirtyVariable("p2_device_name");
+        h.DirtyVariable("available_devices");
+    });
 
-    c.BindEventCallback("map_p1",
-        [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
-            ControlMapping_StartMapping(1);
-            h.DirtyVariable("p1_prompt");
-            h.DirtyVariable("p1_is_idle");
-        }
-    );
+    c.BindEventCallback("map_p1", [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
+        ControlMapping_StartMapping(1);
+        h.DirtyVariable("p1_prompt");
+        h.DirtyVariable("p1_is_idle");
+    });
 
-    c.BindEventCallback("map_p2",
-        [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
-            ControlMapping_StartMapping(2);
-            h.DirtyVariable("p2_prompt");
-            h.DirtyVariable("p2_is_idle");
-        }
-    );
+    c.BindEventCallback("map_p2", [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
+        ControlMapping_StartMapping(2);
+        h.DirtyVariable("p2_prompt");
+        h.DirtyVariable("p2_is_idle");
+    });
 
-    c.BindEventCallback("reset_p1",
-        [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
-            ControlMapping_ResetMappings(1);
-            h.DirtyVariable("p1_mappings");
-            h.DirtyVariable("p1_prompt");
-            h.DirtyVariable("p1_is_idle");
-        }
-    );
+    c.BindEventCallback("reset_p1", [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
+        ControlMapping_ResetMappings(1);
+        h.DirtyVariable("p1_mappings");
+        h.DirtyVariable("p1_prompt");
+        h.DirtyVariable("p1_is_idle");
+    });
 
-    c.BindEventCallback("reset_p2",
-        [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
-            ControlMapping_ResetMappings(2);
-            h.DirtyVariable("p2_mappings");
-            h.DirtyVariable("p2_prompt");
-            h.DirtyVariable("p2_is_idle");
-        }
-    );
+    c.BindEventCallback("reset_p2", [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList&) {
+        ControlMapping_ResetMappings(2);
+        h.DirtyVariable("p2_mappings");
+        h.DirtyVariable("p2_prompt");
+        h.DirtyVariable("p2_is_idle");
+    });
 
     s_model_handle = c.GetModelHandle();
 
@@ -249,7 +237,8 @@ extern "C" void rmlui_control_mapping_init() {
 // ── Per-frame update ───────────────────────────────────────────
 
 extern "C" void rmlui_control_mapping_update() {
-    if (!s_model_handle) return;
+    if (!s_model_handle)
+        return;
 
     // Ensure document is shown (lazy-loads on first call)
     if (!rmlui_wrapper_is_document_visible("control_mapping")) {

@@ -10,9 +10,9 @@
  * the ImGui version.
  */
 #include "port/sdl/rmlui_frame_display.h"
+#include "common.h"
 #include "port/sdl/rmlui_wrapper.h"
 #include "port/sdl/training_menu.h"
-#include "common.h"
 #include "sf33rd/Source/Game/training/training_state.h"
 
 #include <RmlUi/Core.h>
@@ -24,12 +24,12 @@
 #include <vector>
 
 extern "C" {
-    extern bool show_training_menu;
+extern bool show_training_menu;
 }
 
 // ── Frame cell struct for data binding ─────────────────────────
 struct FrameCell {
-    Rml::String css_class;  // "startup", "active", "recovery", etc.
+    Rml::String css_class; // "startup", "active", "recovery", etc.
 };
 
 // ── Internal state (mirrors ImGui frame_display.cpp) ───────────
@@ -66,14 +66,21 @@ static bool s_prev_visible = false;
 // ── TrainingFrameState → CSS class ─────────────────────────────
 static Rml::String state_to_class(TrainingFrameState state) {
     switch (state) {
-    case FRAME_STATE_STARTUP:   return "startup";
-    case FRAME_STATE_ACTIVE:    return "active";
-    case FRAME_STATE_RECOVERY:  return "recovery";
-    case FRAME_STATE_HITSTUN:   return "hitstun";
-    case FRAME_STATE_BLOCKSTUN: return "blockstun";
-    case FRAME_STATE_DOWN:      return "down";
+    case FRAME_STATE_STARTUP:
+        return "startup";
+    case FRAME_STATE_ACTIVE:
+        return "active";
+    case FRAME_STATE_RECOVERY:
+        return "recovery";
+    case FRAME_STATE_HITSTUN:
+        return "hitstun";
+    case FRAME_STATE_BLOCKSTUN:
+        return "blockstun";
+    case FRAME_STATE_DOWN:
+        return "down";
     case FRAME_STATE_IDLE:
-    default:                    return "idle";
+    default:
+        return "idle";
     }
 }
 
@@ -109,9 +116,12 @@ static void build_stats(char* buf, size_t sz, const TrainingPlayerState& ps) {
 
 // ── Advantage → CSS class ──────────────────────────────────────
 static Rml::String advantage_class(s32 value, bool active, bool has_move) {
-    if (active || !has_move) return "neutral";
-    if (value > 0) return "positive";
-    if (value < 0) return "negative";
+    if (active || !has_move)
+        return "neutral";
+    if (value > 0)
+        return "positive";
+    if (value < 0)
+        return "negative";
     return "neutral";
 }
 
@@ -222,8 +232,8 @@ extern "C" void rmlui_frame_display_update(void) {
         s_p1_cells.clear();
         s_p2_cells.clear();
         for (const auto& rec : s_frame_history) {
-            s_p1_cells.push_back({state_to_class(rec.p1_state)});
-            s_p2_cells.push_back({state_to_class(rec.p2_state)});
+            s_p1_cells.push_back({ state_to_class(rec.p1_state) });
+            s_p2_cells.push_back({ state_to_class(rec.p2_state) });
         }
         s_prev_cell_count = s_frame_history.size();
         s_model_handle.DirtyVariable("p1_cells");
@@ -268,17 +278,18 @@ extern "C" void rmlui_frame_display_update(void) {
 
     // Advantage color classes
     bool p1_has_move = (g_training_state.p1.last_startup > 0 || g_training_state.p1.last_active > 0);
-    Rml::String new_p1_adv = advantage_class(g_training_state.p1.advantage_value,
-                                              g_training_state.p1.advantage_active, p1_has_move);
+    Rml::String new_p1_adv =
+        advantage_class(g_training_state.p1.advantage_value, g_training_state.p1.advantage_active, p1_has_move);
     if (new_p1_adv != s_p1_adv_class) {
         s_p1_adv_class = new_p1_adv;
         s_model_handle.DirtyVariable("p1_adv_class");
     }
 
     s32 p2_adv_val = p2_has_move ? g_training_state.p2.advantage_value : -g_training_state.p1.advantage_value;
-    bool p2_resolved = p2_has_move
-        ? (!g_training_state.p2.advantage_active && (g_training_state.p2.last_startup > 0 || g_training_state.p2.last_active > 0))
-        : (!g_training_state.p1.advantage_active && (g_training_state.p1.last_startup > 0 || g_training_state.p1.last_active > 0));
+    bool p2_resolved = p2_has_move ? (!g_training_state.p2.advantage_active &&
+                                      (g_training_state.p2.last_startup > 0 || g_training_state.p2.last_active > 0))
+                                   : (!g_training_state.p1.advantage_active &&
+                                      (g_training_state.p1.last_startup > 0 || g_training_state.p1.last_active > 0));
     Rml::String new_p2_adv = p2_resolved ? advantage_class(p2_adv_val, false, true) : "neutral";
     if (new_p2_adv != s_p2_adv_class) {
         s_p2_adv_class = new_p2_adv;

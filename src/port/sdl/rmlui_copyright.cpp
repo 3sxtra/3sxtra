@@ -27,17 +27,25 @@ static CopyrightCache s_cache = { -1 };
 
 extern "C" void rmlui_copyright_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("copyright");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
-    ctor.BindFunc("copyright_line1", [](Rml::Variant& v){
+    ctor.BindFunc("copyright_line1", [](Rml::Variant& v) {
         switch (Country) {
-        case 1: case 2: case 3: case 7: case 8:
+        case 1:
+        case 2:
+        case 3:
+        case 7:
+        case 8:
             v = Rml::String("\xC2\xA9 CAPCOM CO., LTD. 1999, 2004 ALL RIGHTS RESERVED.");
             break;
-        case 4: case 5: case 6:
+        case 4:
+        case 5:
+        case 6:
             v = Rml::String("\xC2\xA9 CAPCOM CO., LTD. 1999, 2004,");
             break;
         default:
@@ -45,9 +53,11 @@ extern "C" void rmlui_copyright_init(void) {
             break;
         }
     });
-    ctor.BindFunc("copyright_line2", [](Rml::Variant& v){
+    ctor.BindFunc("copyright_line2", [](Rml::Variant& v) {
         switch (Country) {
-        case 4: case 5: case 6:
+        case 4:
+        case 5:
+        case 6:
             v = Rml::String("\xC2\xA9 CAPCOM U.S.A., INC. 1999, 2004 ALL RIGHTS RESERVED.");
             break;
         default:
@@ -55,9 +65,8 @@ extern "C" void rmlui_copyright_init(void) {
             break;
         }
     });
-    ctor.BindFunc("copyright_visible", [](Rml::Variant& v){
-        v = (bool)(Country >= 1 && Country <= 8 && Country != 0);
-    });
+    ctor.BindFunc("copyright_visible",
+                  [](Rml::Variant& v) { v = (bool)(Country >= 1 && Country <= 8 && Country != 0); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -67,7 +76,8 @@ extern "C" void rmlui_copyright_init(void) {
 }
 
 extern "C" void rmlui_copyright_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
 
     int c = (int)Country;
     if (c != s_cache.country) {
@@ -82,7 +92,8 @@ extern "C" void rmlui_copyright_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_document("copyright");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-        if (ctx) ctx->RemoveDataModel("copyright");
+        if (ctx)
+            ctx->RemoveDataModel("copyright");
         s_model_registered = false;
     }
 }

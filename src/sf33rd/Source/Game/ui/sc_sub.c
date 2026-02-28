@@ -30,6 +30,10 @@
 #include "sf33rd/Source/Game/ui/sc_data.h"
 #include "structs.h"
 
+/* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
 #define TO_UV_256(val) ((val) / 256.0f)
 #define TO_UV_256_NEG(val) (TO_UV_256(val))
 #define TO_UV_128(val) ((val) / 128.0f)
@@ -2218,6 +2222,10 @@ void Training_Data_Disp() {
     ppgSetupCurrentDataList(&ppgScrList);
 
     if (Disp_Attack_Data == 0) {
+        return;
+    }
+
+    if (use_rmlui && rmlui_hud_training_data) {
         return;
     }
 

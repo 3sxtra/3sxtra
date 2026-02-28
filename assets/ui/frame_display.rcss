@@ -9,7 +9,7 @@
     margin-left: -252dp;  /* half of total width */
     width: 504dp;
     padding: 4dp;
-    background-color: rgba(0, 0, 0, 0.70);
+    background-color: rgba(0, 0, 0, 178);
     border-radius: 4dp;
 }
 
@@ -49,14 +49,14 @@
     background-color: #500000;  /* Dark Red */
 }
 .frame-cell.idle {
-    background-color: rgba(60, 60, 60, 0.60);  /* Dark Gray */
+    background-color: rgba(60, 60, 60, 153);  /* Dark Gray */
 }
 
 /* ── Stats text ── */
 .stats-text {
     display: block;
     font-size: 11dp;
-    color: rgba(255, 255, 255, 0.90);
+    color: rgba(255, 255, 255, 230);
     padding: 1dp 0dp;
 }
 

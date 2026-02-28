@@ -13,21 +13,19 @@
 #include <SDL3/SDL.h>
 
 extern "C" {
-#include "structs.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "structs.h"
 } // extern "C"
 
 // SF3:3S character roster (indexed by char_no)
-static const char* s_char_names[] = {
-    "ALEX", "YURI", "RYU", "KEN", "SEAN", "GOUKI",
-    "ORO", "IBUKI", "MAKOTO", "ELENA", "DUDLEY", "NECRO",
-    "HUGO", "URIEN", "REMY", "Q", "CHUNLI", "TWELVE",
-    "YANG", "GILL"
-};
+static const char* s_char_names[] = { "ALEX",  "YURI",   "RYU",    "KEN",    "SEAN",  "GOUKI", "ORO",
+                                      "IBUKI", "MAKOTO", "ELENA",  "DUDLEY", "NECRO", "HUGO",  "URIEN",
+                                      "REMY",  "Q",      "CHUNLI", "TWELVE", "YANG",  "GILL" };
 static const int s_char_count = sizeof(s_char_names) / sizeof(s_char_names[0]);
 
 static const char* get_char_name(int idx) {
-    if (idx >= 0 && idx < s_char_count) return s_char_names[idx];
+    if (idx >= 0 && idx < s_char_count)
+        return s_char_names[idx];
     return "???";
 }
 
@@ -36,25 +34,24 @@ static bool s_model_registered = false;
 
 extern "C" void rmlui_vs_screen_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("vs_screen");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
-    ctor.BindFunc("vs_p1_name", [](Rml::Variant& v){
-        v = Rml::String(get_char_name((int)plw[0].wu.char_index));
-    });
-    ctor.BindFunc("vs_p2_name", [](Rml::Variant& v){
-        v = Rml::String(get_char_name((int)plw[1].wu.char_index));
-    });
+    ctor.BindFunc("vs_p1_name", [](Rml::Variant& v) { v = Rml::String(get_char_name((int)plw[0].wu.char_index)); });
+    ctor.BindFunc("vs_p2_name", [](Rml::Variant& v) { v = Rml::String(get_char_name((int)plw[1].wu.char_index)); });
 
-    s_model_handle   = ctor.GetModelHandle();
+    s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
     SDL_Log("[RmlUi VSScreen] Data model registered");
 }
 
 extern "C" void rmlui_vs_screen_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
 }
 
 extern "C" void rmlui_vs_screen_show(void) {
@@ -73,7 +70,8 @@ extern "C" void rmlui_vs_screen_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_document("vs_screen");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-        if (ctx) ctx->RemoveDataModel("vs_screen");
+        if (ctx)
+            ctx->RemoveDataModel("vs_screen");
         s_model_registered = false;
     }
 }

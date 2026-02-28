@@ -22,14 +22,14 @@ body {
     display: inline-block;
     font-size: 18dp;
     color: #FFD700;
-    text-shadow: 2dp 2dp #000000;
+    font-effect: shadow(2dp 2dp #000000);
 }
 
 #ne-rank-suffix {
     display: inline-block;
     font-size: 10dp;
     color: #FFD700;
-    text-shadow: 1dp 1dp #000000;
+    font-effect: shadow(1dp 1dp #000000);
     margin-right: 12dp;
 }
 
@@ -46,9 +46,9 @@ body {
     font-size: 18dp;
     color: #FFFFFF;
     text-align: center;
-    text-shadow: 1dp 1dp #000000;
+    font-effect: shadow(1dp 1dp #000000);
     margin: 0dp 3dp;
-    border-bottom: 2dp solid #444444;
+    border-bottom: 2dp #444444;
 }
 
 .ne-active {

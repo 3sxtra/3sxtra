@@ -17,8 +17,8 @@
 
 extern "C" {
 #include "sf33rd/Source/Game/engine/workuser.h"
-#include "sf33rd/Source/Game/training/trials.h"
 #include "sf33rd/Source/Game/training/training_state.h"
+#include "sf33rd/Source/Game/training/trials.h"
 } // extern "C"
 
 // ─── Data model ──────────────────────────────────────────────
@@ -26,8 +26,8 @@ static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
 struct TrialsHudCache {
-    int  current_step;
-    int  trial_index;
+    int current_step;
+    int trial_index;
     bool completed;
     bool failed;
     bool is_active;
@@ -40,15 +40,16 @@ static TrialsHudCache s_cache = {};
 // ─── Init ────────────────────────────────────────────────────
 extern "C" void rmlui_trials_hud_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("trials_hud");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
-    ctor.BindFunc("trial_active", [](Rml::Variant& v){
-        v = (bool)(Mode_Type == MODE_TRIALS && g_trials_state.is_active);
-    });
-    ctor.BindFunc("trial_header", [](Rml::Variant& v){
+    ctor.BindFunc("trial_active",
+                  [](Rml::Variant& v) { v = (bool)(Mode_Type == MODE_TRIALS && g_trials_state.is_active); });
+    ctor.BindFunc("trial_header", [](Rml::Variant& v) {
         // Simplified: "TRIAL: <charname> N/M (L/R skip)"
         // We build this from the global state
         char buf[128];
@@ -58,16 +59,19 @@ extern "C" void rmlui_trials_hud_init(void) {
         const char* cname = trials_get_current_char_name();
         if (cname) {
             extern int trials_get_current_total(void);
-            snprintf(buf, sizeof(buf), "TRIAL: %s %d/%d (L/R skip)",
-                     cname, g_trials_state.current_trial_index + 1,
+            snprintf(buf,
+                     sizeof(buf),
+                     "TRIAL: %s %d/%d (L/R skip)",
+                     cname,
+                     g_trials_state.current_trial_index + 1,
                      trials_get_current_total());
         }
         v = Rml::String(buf);
     });
-    ctor.BindFunc("trial_step", [](Rml::Variant& v){ v = (int)g_trials_state.current_step; });
-    ctor.BindFunc("trial_completed", [](Rml::Variant& v){ v = (bool)g_trials_state.completed; });
-    ctor.BindFunc("trial_failed", [](Rml::Variant& v){ v = (bool)g_trials_state.failed; });
-    ctor.BindFunc("trial_gauge_max", [](Rml::Variant& v){
+    ctor.BindFunc("trial_step", [](Rml::Variant& v) { v = (int)g_trials_state.current_step; });
+    ctor.BindFunc("trial_completed", [](Rml::Variant& v) { v = (bool)g_trials_state.completed; });
+    ctor.BindFunc("trial_failed", [](Rml::Variant& v) { v = (bool)g_trials_state.failed; });
+    ctor.BindFunc("trial_gauge_max", [](Rml::Variant& v) {
         // Check if current trial has gauge_max
         extern bool trials_current_has_gauge_max(void);
         v = trials_current_has_gauge_max();
@@ -81,7 +85,8 @@ extern "C" void rmlui_trials_hud_init(void) {
 
 // ─── Per-frame update ────────────────────────────────────────
 extern "C" void rmlui_trials_hud_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
 
     bool active = (Mode_Type == MODE_TRIALS && g_trials_state.is_active);
     if (active != s_cache.is_active) {
@@ -93,7 +98,8 @@ extern "C" void rmlui_trials_hud_update(void) {
             rmlui_wrapper_hide_document("trials_hud");
     }
 
-    if (!active) return;
+    if (!active)
+        return;
 
     int step = (int)g_trials_state.current_step;
     if (step != s_cache.current_step) {
@@ -129,7 +135,8 @@ extern "C" void rmlui_trials_hud_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_document("trials_hud");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-        if (ctx) ctx->RemoveDataModel("trials_hud");
+        if (ctx)
+            ctx->RemoveDataModel("trials_hud");
         s_model_registered = false;
     }
 }

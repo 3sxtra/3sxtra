@@ -4,8 +4,8 @@
  */
 
 #include "common.h"
-#include "port/sdl/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui_gameover.h"
+#include "port/sdl/rmlui_phase3_toggles.h"
 
 extern bool use_rmlui;
 #include "sf33rd/Source/Game/debug/Debug.h"

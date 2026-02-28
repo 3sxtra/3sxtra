@@ -15,7 +15,7 @@ body {
     margin-left: -200dp;
     width: 400dp;
     text-align: center;
-    animation: panel-fade-in 0.5s ease-out;
+    animation: panel-fade-in 0.5s quadratic-out;
 }
 
 @keyframes panel-fade-in {
@@ -37,7 +37,7 @@ body {
     color: #ffd700;
     letter-spacing: 4dp;
     margin-bottom: 16dp;
-    text-shadow: 2dp 2dp 4dp #00000088;
+    font-effect: shadow(2dp 2dp #00000088);
 }
 
 /* ── Body: split layout ─────────────────────────────────────── */
@@ -99,7 +99,7 @@ body {
     font-weight: bold;
     color: #ffd700;
     margin-bottom: 4dp;
-    text-shadow: 1dp 1dp 3dp #00000066;
+    font-effect: shadow(1dp 1dp #00000066);
 }
 
 .player-pct-label {

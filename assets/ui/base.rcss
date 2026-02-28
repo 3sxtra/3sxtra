@@ -13,7 +13,7 @@ body {
 
 /* Semi-transparent dark panel backdrop */
 .panel {
-    background-color: rgba(15, 15, 20, 0.92);
+    background-color: rgba(15, 15, 20, 235);
     border-width: 1dp;
     border-color: #333;
     border-radius: 8dp;

@@ -25,7 +25,7 @@ body {
     display: inline-block;
     font-size: 16dp;
     color: #FFFFFF;
-    text-shadow: 2dp 2dp #000000;
+    font-effect: shadow(2dp 2dp #000000);
     animation: pause-blink 1.5s steps(1) infinite;
 }
 
@@ -48,7 +48,7 @@ body {
     display: block;
     font-size: 9dp;
     color: #FFFFFF;
-    text-shadow: 1dp 1dp #000000;
+    font-effect: shadow(1dp 1dp #000000);
     line-height: 16dp;
     text-align: left;
 }

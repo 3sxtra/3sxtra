@@ -12,9 +12,9 @@
 #include "port/modded_stage.h"
 #include "port/sdl/control_mapping.h"
 #include "port/sdl/imgui_wrapper.h"
-#include "port/sdl/rmlui_wrapper.h"
 #include "port/sdl/input_display.h"
 #include "port/sdl/mods_menu.h"
+#include "port/sdl/rmlui_wrapper.h"
 #include "port/sdl/sdl_app.h"
 #include "port/sdl/sdl_app_config.h"
 #include "port/sdl/sdl_app_internal.h"
@@ -69,7 +69,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
     // SDL2D mode: no ImGui, no NetplayUI — skip all UI processing
     if (SDLApp_GetRenderer() != RENDERER_SDL2D) {
         // Process UI events — dispatch to active UI system
-        extern bool use_rmlui;  // defined in sdl_app.c
+        extern bool use_rmlui; // defined in sdl_app.c
         if (use_rmlui) {
             rmlui_wrapper_process_event(event);
         } else {
@@ -130,15 +130,11 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
         if (event->type == SDL_EVENT_QUIT) {
             // Always handle quit
         } else if (ui_wants_mouse &&
-                   (event->type == SDL_EVENT_MOUSE_MOTION ||
-                    event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
-                    event->type == SDL_EVENT_MOUSE_BUTTON_UP ||
-                    event->type == SDL_EVENT_MOUSE_WHEEL)) {
+                   (event->type == SDL_EVENT_MOUSE_MOTION || event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+                    event->type == SDL_EVENT_MOUSE_BUTTON_UP || event->type == SDL_EVENT_MOUSE_WHEEL)) {
             return false; // UI consumed mouse
-        } else if (ui_wants_keyboard &&
-                   (event->type == SDL_EVENT_KEY_DOWN ||
-                    event->type == SDL_EVENT_KEY_UP ||
-                    event->type == SDL_EVENT_TEXT_INPUT)) {
+        } else if (ui_wants_keyboard && (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP ||
+                                         event->type == SDL_EVENT_TEXT_INPUT)) {
             return false; // UI consumed keyboard
         }
         // Gamepad, joystick, window events etc. always fall through
@@ -191,16 +187,12 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             }
             if (event->type != SDL_EVENT_QUIT) {
                 if (ui_wants_mouse &&
-                    (event->type == SDL_EVENT_MOUSE_MOTION ||
-                     event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
-                     event->type == SDL_EVENT_MOUSE_BUTTON_UP ||
-                     event->type == SDL_EVENT_MOUSE_WHEEL)) {
+                    (event->type == SDL_EVENT_MOUSE_MOTION || event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+                     event->type == SDL_EVENT_MOUSE_BUTTON_UP || event->type == SDL_EVENT_MOUSE_WHEEL)) {
                     return false;
                 }
-                if (ui_wants_keyboard &&
-                    (event->type == SDL_EVENT_KEY_DOWN ||
-                     event->type == SDL_EVENT_KEY_UP ||
-                     event->type == SDL_EVENT_TEXT_INPUT)) {
+                if (ui_wants_keyboard && (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP ||
+                                          event->type == SDL_EVENT_TEXT_INPUT)) {
                     return false;
                 }
             }

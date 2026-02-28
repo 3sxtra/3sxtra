@@ -111,7 +111,7 @@ body {
     line-height: 18dp;
 }
 .timer-digits.timer-flash {
-    animation: timer-pulse 0.4s ease-in-out infinite;
+    animation: timer-pulse 0.4s sine-in-out infinite;
 }
 
 /* ── Win pips ───────────────────────────────────────────────── */
@@ -195,7 +195,7 @@ body {
 }
 .sa-fill.sa-active {
     background-color: #E040E0;
-    animation: sa-active-pulse 0.2s ease-in-out infinite;
+    animation: sa-active-pulse 0.2s sine-in-out infinite;
 }
 .sa-fill.sa-max {
     background-color: #FFD700;
@@ -231,7 +231,7 @@ body {
     display: block;
     position: absolute;
     visibility: hidden;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 153);
     padding: 2dp 6dp;
 }
 .combo-popup.combo-visible {
@@ -285,7 +285,7 @@ body {
     position: absolute;
     font-size: 10dp;
     color: #40C0FF;
-    text-shadow: 1dp 1dp #000000;
+    font-effect: shadow(1dp 1dp #000000);
 }
 .p1-stun-counter { left: 10dp; }
 .p2-stun-counter { left: 250dp; }

@@ -18,9 +18,9 @@
 #include <SDL3/SDL.h>
 
 extern "C" {
-#include "structs.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/menu/ex_data.h"
+#include "structs.h"
 } // extern "C"
 
 // ─── Data model ──────────────────────────────────────────────────
@@ -41,9 +41,11 @@ static ExtraOptionCache s_cache = {};
 
 // Helper: get the label portion of Ex_Title_Data (strip trailing /.....)
 static Rml::String get_title_label(int page, int row) {
-    if (page < 0 || page > 3 || row < 0 || row >= 7) return "";
+    if (page < 0 || page > 3 || row < 0 || row >= 7)
+        return "";
     const char* raw = (const char*)Ex_Title_Data[page][row];
-    if (!raw) return "";
+    if (!raw)
+        return "";
     // Find '/' separator — label ends there
     const char* slash = strchr(raw, '/');
     if (slash) {
@@ -54,29 +56,35 @@ static Rml::String get_title_label(int page, int row) {
 
 // Helper: get value display string
 static Rml::String get_value_label(int page, int row, int value) {
-    if (page < 0 || page > 3 || row < 0 || row >= 7) return "";
-    if (value < 0 || value >= 17) return "";
+    if (page < 0 || page > 3 || row < 0 || row >= 7)
+        return "";
+    if (value < 0 || value >= 17)
+        return "";
     const char* raw = (const char*)Ex_Letter_Data[page][row][value];
-    if (!raw) return "";
+    if (!raw)
+        return "";
     return Rml::String(raw);
 }
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_extra_option_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("extra_option");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
-    ctor.BindFunc("extra_page", [](Rml::Variant& v){ v = (int)Menu_Page; });
-    ctor.BindFunc("extra_page_max", [](Rml::Variant& v){ v = 3; }); // 0-indexed max
+    ctor.BindFunc("extra_page", [](Rml::Variant& v) { v = (int)Menu_Page; });
+    ctor.BindFunc("extra_page_max", [](Rml::Variant& v) { v = 3; }); // 0-indexed max
 
-    ctor.BindFunc("extra_cursor", [](Rml::Variant& v){ v = (int)Menu_Cursor_Y[0]; });
+    ctor.BindFunc("extra_cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
 
-    ctor.BindFunc("extra_row_count", [](Rml::Variant& v){
+    ctor.BindFunc("extra_row_count", [](Rml::Variant& v) {
         int page = Menu_Page;
-        if (page < 0 || page > 3) page = 0;
+        if (page < 0 || page > 3)
+            page = 0;
         v = (int)Ex_Page_Data[page];
     });
 
@@ -86,24 +94,23 @@ extern "C" void rmlui_extra_option_init(void) {
             char name[32];
             snprintf(name, sizeof(name), "extra_label_%d", r);
             int row = r;
-            ctor.BindFunc(Rml::String(name), [row](Rml::Variant& v){
-                v = get_title_label(Menu_Page, row);
-            });
+            ctor.BindFunc(Rml::String(name), [row](Rml::Variant& v) { v = get_title_label(Menu_Page, row); });
         }
         {
             char name[32];
             snprintf(name, sizeof(name), "extra_value_%d", r);
             int row = r;
-            ctor.BindFunc(Rml::String(name), [row](Rml::Variant& v){
+            ctor.BindFunc(Rml::String(name), [row](Rml::Variant& v) {
                 int page = Menu_Page;
-                if (page < 0 || page > 3) page = 0;
+                if (page < 0 || page > 3)
+                    page = 0;
                 int val = save_w[1].extra_option.contents[page][row];
                 v = get_value_label(page, row, val);
             });
         }
     }
 
-    s_model_handle   = ctor.GetModelHandle();
+    s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
     SDL_Log("[RmlUi ExtraOption] Data model registered");
@@ -111,10 +118,12 @@ extern "C" void rmlui_extra_option_init(void) {
 
 // ─── Per-frame update ────────────────────────────────────────────
 extern "C" void rmlui_extra_option_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
 
     int page = (int)Menu_Page;
-    if (page < 0 || page > 3) page = 0;
+    if (page < 0 || page > 3)
+        page = 0;
 
     if (page != s_cache.page) {
         s_cache.page = page;
@@ -174,7 +183,8 @@ extern "C" void rmlui_extra_option_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_document("extra_option");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-        if (ctx) ctx->RemoveDataModel("extra_option");
+        if (ctx)
+            ctx->RemoveDataModel("extra_option");
         s_model_registered = false;
     }
 }

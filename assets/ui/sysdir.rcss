@@ -7,9 +7,9 @@
     left: 50dp;
     width: 310dp;
     padding: 10dp 14dp;
-    background-color: rgba(10, 15, 30, 0.88);
+    background-color: rgba(10, 15, 30, 224);
     border-width: 1dp;
-    border-color: rgba(120, 140, 200, 0.35);
+    border-color: rgba(120, 140, 200, 89);
     animation: slide-in 0.18s cubic-in-out;
 }
 
@@ -28,7 +28,7 @@
     display: block;
     padding: 4dp 8dp;
     margin-bottom: 2dp;
-    color: rgba(200, 210, 240, 0.9);
+    color: rgba(200, 210, 240, 230);
     font-size: 13dp;
     border-left-width: 3dp;
     border-left-color: transparent;
@@ -36,8 +36,8 @@
 }
 
 .nav-item.focused {
-    background-color: rgba(255, 220, 0, 0.12);
-    border-left-color: rgba(255, 210, 40, 0.95);
+    background-color: rgba(255, 220, 0, 31);
+    border-left-color: rgba(255, 210, 40, 242);
     color: #fff;
 }
 
@@ -49,7 +49,7 @@
 .nav-value {
     display: inline;
     text-align: right;
-    color: rgba(140, 200, 255, 0.9);
+    color: rgba(140, 200, 255, 230);
     font-size: 13dp;
 }
 
@@ -63,11 +63,11 @@
     display: block;
     text-align: center;
     font-size: 11dp;
-    color: rgba(140, 170, 220, 0.7);
+    color: rgba(140, 170, 220, 178);
     margin-bottom: 6dp;
     padding-bottom: 4dp;
     border-bottom-width: 1dp;
-    border-bottom-color: rgba(100, 120, 180, 0.25);
+    border-bottom-color: rgba(100, 120, 180, 64);
 }
 
 /* ─── Toggle rows ───────────────────────────────────────────────── */
@@ -76,7 +76,7 @@
     display: block;
     padding: 3dp 6dp;
     margin-bottom: 1dp;
-    color: rgba(200, 210, 240, 0.85);
+    color: rgba(200, 210, 240, 217);
     font-size: 12dp;
     border-left-width: 3dp;
     border-left-color: transparent;
@@ -84,8 +84,8 @@
 }
 
 .toggle-row.focused {
-    background-color: rgba(255, 220, 0, 0.12);
-    border-left-color: rgba(255, 210, 40, 0.95);
+    background-color: rgba(255, 220, 0, 31);
+    border-left-color: rgba(255, 210, 40, 242);
     color: #fff;
 }
 
@@ -99,12 +99,12 @@
     display: inline;
     text-align: right;
     width: 70dp;
-    color: rgba(100, 220, 160, 0.95);
+    color: rgba(100, 220, 160, 242);
     font-size: 12dp;
 }
 
 .toggle-row.focused .toggle-value {
-    color: rgba(120, 255, 180, 1.0);
+    color: rgba(120, 255, 180, 255);
 }
 
 /* ─── Nav row (◀ / EXIT / ▶) ─────────────────────────────────── */
@@ -112,18 +112,18 @@
 .nav-row {
     margin-top: 4dp;
     border-top-width: 1dp;
-    border-top-color: rgba(100, 120, 180, 0.2);
+    border-top-color: rgba(100, 120, 180, 51);
     padding-top: 5dp;
 }
 
 .nav-arrow {
     text-align: center;
     width: 70dp;
-    color: rgba(180, 200, 255, 0.9);
+    color: rgba(180, 200, 255, 230);
 }
 
 .nav-row.focused .nav-arrow {
-    color: rgba(255, 220, 80, 1.0);
+    color: rgba(255, 220, 80, 255);
 }
 
 /* ─── Description area ──────────────────────────────────────────── */
@@ -132,15 +132,15 @@
     display: block;
     margin-top: 8dp;
     padding: 6dp 8dp;
-    background-color: rgba(20, 30, 60, 0.6);
+    background-color: rgba(20, 30, 60, 153);
     border-width: 1dp;
-    border-color: rgba(80, 100, 160, 0.25);
+    border-color: rgba(80, 100, 160, 64);
     min-height: 28dp;
 }
 
 .desc-text {
     display: block;
     font-size: 10dp;
-    color: rgba(180, 190, 220, 0.85);
+    color: rgba(180, 190, 220, 217);
     line-height: 1.3;
 }

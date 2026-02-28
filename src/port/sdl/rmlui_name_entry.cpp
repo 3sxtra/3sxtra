@@ -31,60 +31,64 @@ static bool s_model_registered = false;
 
 struct NameEntryCache {
     bool active;
-    int  pl_id;
-    int  cursor_index;
-    int  char_codes[4];
-    int  rank_in;
+    int pl_id;
+    int cursor_index;
+    int char_codes[4];
+    int rank_in;
 };
 static NameEntryCache s_cache = {};
 
 #define NEDIRTY(nm) s_model_handle.DirtyVariable(#nm)
 
 static char char_for_code(int code) {
-    if (code >= 0 && code < 33) return s_name_chars[code];
-    if (code == 44) return ' ';  // space/blank
-    if (code == 45) return '<';  // backspace
-    if (code == 46) return '>';  // END
+    if (code >= 0 && code < 33)
+        return s_name_chars[code];
+    if (code == 44)
+        return ' '; // space/blank
+    if (code == 45)
+        return '<'; // backspace
+    if (code == 46)
+        return '>'; // END
     return '?';
 }
 
 extern "C" void rmlui_name_entry_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("name_entry");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
-    ctor.BindFunc("ne_active", [](Rml::Variant& v){
+    ctor.BindFunc("ne_active", [](Rml::Variant& v) {
         // Active when either player is in name entry state (E_Number[pl][0] == 2)
         v = (bool)(E_Number[0][0] == 2 || E_Number[1][0] == 2);
     });
-    ctor.BindFunc("ne_rank", [](Rml::Variant& v){
+    ctor.BindFunc("ne_rank", [](Rml::Variant& v) {
         int pl = (E_Number[0][0] == 2) ? 0 : 1;
         v = (int)(name_wk[pl].rank_in + 1);
     });
-    ctor.BindFunc("ne_char0", [](Rml::Variant& v){
+    ctor.BindFunc("ne_char0", [](Rml::Variant& v) {
         int pl = (E_Number[0][0] == 2) ? 0 : 1;
         char buf[2] = { char_for_code(name_wk[pl].code[0]), '\0' };
         v = Rml::String(buf);
     });
-    ctor.BindFunc("ne_char1", [](Rml::Variant& v){
+    ctor.BindFunc("ne_char1", [](Rml::Variant& v) {
         int pl = (E_Number[0][0] == 2) ? 0 : 1;
         char buf[2] = { char_for_code(name_wk[pl].code[1]), '\0' };
         v = Rml::String(buf);
     });
-    ctor.BindFunc("ne_char2", [](Rml::Variant& v){
+    ctor.BindFunc("ne_char2", [](Rml::Variant& v) {
         int pl = (E_Number[0][0] == 2) ? 0 : 1;
         char buf[2] = { char_for_code(name_wk[pl].code[2]), '\0' };
         v = Rml::String(buf);
     });
-    ctor.BindFunc("ne_cursor", [](Rml::Variant& v){
+    ctor.BindFunc("ne_cursor", [](Rml::Variant& v) {
         int pl = (E_Number[0][0] == 2) ? 0 : 1;
         v = (int)name_wk[pl].index;
     });
-    ctor.BindFunc("ne_player", [](Rml::Variant& v){
-        v = (int)((E_Number[0][0] == 2) ? 1 : 2);
-    });
+    ctor.BindFunc("ne_player", [](Rml::Variant& v) { v = (int)((E_Number[0][0] == 2) ? 1 : 2); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -93,7 +97,8 @@ extern "C" void rmlui_name_entry_init(void) {
 }
 
 extern "C" void rmlui_name_entry_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
 
     bool active = (E_Number[0][0] == 2 || E_Number[1][0] == 2);
     if (active != s_cache.active) {
@@ -105,7 +110,8 @@ extern "C" void rmlui_name_entry_update(void) {
             rmlui_wrapper_hide_document("name_entry");
     }
 
-    if (!active) return;
+    if (!active)
+        return;
 
     int pl = (E_Number[0][0] == 2) ? 0 : 1;
     if (pl != s_cache.pl_id) {
@@ -133,7 +139,8 @@ extern "C" void rmlui_name_entry_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_document("name_entry");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-        if (ctx) ctx->RemoveDataModel("name_entry");
+        if (ctx)
+            ctx->RemoveDataModel("name_entry");
         s_model_registered = false;
     }
 }

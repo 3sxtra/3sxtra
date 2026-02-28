@@ -15,7 +15,7 @@ body {
     margin-left: -160dp;
     width: 320dp;
     text-align: center;
-    animation: panel-fade-in 0.4s ease-out;
+    animation: panel-fade-in 0.4s quadratic-out;
 }
 
 @keyframes panel-fade-in {
@@ -42,8 +42,8 @@ body {
     color: #ffd700;
     text-align: center;
     letter-spacing: 4dp;
-    text-shadow: 2dp 2dp 4dp #00000088;
-    animation: banner-glow 1.5s ease-in-out infinite alternate;
+    font-effect: shadow(2dp 2dp #00000088);
+    animation: banner-glow 1.5s sine-in-out infinite alternate;
 }
 
 @keyframes banner-glow {
@@ -62,7 +62,7 @@ body {
     font-weight: bold;
     color: #ffffff;
     margin-bottom: 16dp;
-    text-shadow: 1dp 1dp 3dp #00000088;
+    font-effect: shadow(1dp 1dp #00000088);
 }
 
 /* ── Score block ────────────────────────────────────────────── */
@@ -110,7 +110,7 @@ body {
     font-weight: bold;
     color: #ff6600;
     letter-spacing: 2dp;
-    animation: streak-pulse 0.8s ease-in-out infinite alternate;
+    animation: streak-pulse 0.8s sine-in-out infinite alternate;
 }
 
 @keyframes streak-pulse {

@@ -896,14 +896,18 @@ InputID ControlMapping_GetPlayerMapping(int player_num, const char* action) {
 extern "C" {
 
 const char* ControlMapping_GetDeviceName(int player_num) {
-    if (player_num == 1 && p1Device) return p1Device->name.c_str();
-    if (player_num == 2 && p2Device) return p2Device->name.c_str();
+    if (player_num == 1 && p1Device)
+        return p1Device->name.c_str();
+    if (player_num == 2 && p2Device)
+        return p2Device->name.c_str();
     return nullptr;
 }
 
 bool ControlMapping_HasDevice(int player_num) {
-    if (player_num == 1) return p1Device != nullptr;
-    if (player_num == 2) return p2Device != nullptr;
+    if (player_num == 1)
+        return p1Device != nullptr;
+    if (player_num == 2)
+        return p2Device != nullptr;
     return false;
 }
 
@@ -948,8 +952,10 @@ void ControlMapping_StartMapping(int player_num) {
 
 void ControlMapping_ResetMappings(int player_num) {
     player_mappings[player_num].clear();
-    if (player_num == 1) p1MappingState = MappingState::Idle;
-    else p2MappingState = MappingState::Idle;
+    if (player_num == 1)
+        p1MappingState = MappingState::Idle;
+    else
+        p2MappingState = MappingState::Idle;
     save_mappings();
 }
 
@@ -968,18 +974,21 @@ int ControlMapping_GetAvailableDeviceCount() {
 }
 
 const char* ControlMapping_GetAvailableDeviceName(int index) {
-    if (index < 0 || index >= (int)availableDevices.size()) return nullptr;
+    if (index < 0 || index >= (int)availableDevices.size())
+        return nullptr;
     return availableDevices[index].name.c_str();
 }
 
 int ControlMapping_GetAvailableDeviceId(int index) {
-    if (index < 0 || index >= (int)availableDevices.size()) return -1;
+    if (index < 0 || index >= (int)availableDevices.size())
+        return -1;
     return availableDevices[index].id;
 }
 
 int ControlMapping_GetPlayerMappingCount(int player_num) {
     auto it = player_mappings.find(player_num);
-    if (it == player_mappings.end()) return 0;
+    if (it == player_mappings.end())
+        return 0;
     return (int)it->second.size();
 }
 
@@ -1000,4 +1009,3 @@ const char* ControlMapping_GetPlayerMappingInput(int player_num, int index) {
 }
 
 } // extern "C"
-

@@ -16,11 +16,11 @@ body {
     top: 24dp;
     left: 20dp;
     width: 160dp;
-    background-color: rgba(10, 10, 20, 0.88);
+    background-color: rgba(10, 10, 20, 224);
     border-width: 1dp;
-    border-color: rgba(200, 200, 255, 0.2);
+    border-color: rgba(200, 200, 255, 51);
     padding: 12dp 0dp 8dp 0dp;
-    animation: slide-in 0.18s ease-out 1;
+    animation: slide-in 0.18s quadratic-out 1;
 }
 
 /* ── Title text ─────────────────────────────────────────────── */
@@ -28,7 +28,7 @@ body {
     display: block;
     text-align: center;
     font-size: 9dp;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 128);
     letter-spacing: 1dp;
     margin-bottom: 2dp;
 }
@@ -36,7 +36,7 @@ body {
     display: block;
     text-align: center;
     font-size: 7dp;
-    color: rgba(255, 200, 80, 0.6);
+    color: rgba(255, 200, 80, 153);
     margin-bottom: 10dp;
 }
 
@@ -53,7 +53,7 @@ body {
     line-height: 20dp;
     padding: 0dp 16dp;
     font-size: 11dp;
-    color: rgba(220, 220, 220, 0.85);
+    color: rgba(220, 220, 220, 217);
     background-color: transparent;
     border-width: 0dp;
     text-align: left;
@@ -62,13 +62,13 @@ body {
 
 .menu-item:hover {
     color: #FFFFFF;
-    background-color: rgba(255, 220, 0, 0.08);
+    background-color: rgba(255, 220, 0, 20);
 }
 
 /* Focused (cursor on this item) */
 .menu-item.focused {
     color: #FFD700;
-    background-color: rgba(255, 220, 0, 0.15);
+    background-color: rgba(255, 220, 0, 38);
     border-left-width: 3dp;
     border-left-color: #FFD700;
     padding-left: 13dp;
@@ -76,11 +76,11 @@ body {
 
 /* Network item when GekkoNet not present */
 .menu-item.item-disabled {
-    color: rgba(120, 120, 120, 0.5);
+    color: rgba(120, 120, 120, 128);
 }
 .menu-item.item-disabled:hover {
     background-color: transparent;
-    color: rgba(120, 120, 120, 0.5);
+    color: rgba(120, 120, 120, 128);
 }
 
 /* ── Slide-in animation ─────────────────────────────────────── */

@@ -23,16 +23,16 @@ extern "C" {
 #include "include/port/broadcast.h"
 extern BroadcastConfig broadcast_config;
 
-int  SDLApp_GetScaleMode();
+int SDLApp_GetScaleMode();
 void SDLApp_SetScaleMode(int mode);
 const char* SDLApp_GetScaleModeName(int mode);
 
 bool SDLApp_GetShaderModeLibretro();
 void SDLApp_SetShaderModeLibretro(bool libretro);
 
-int  SDLApp_GetCurrentPresetIndex();
+int SDLApp_GetCurrentPresetIndex();
 void SDLApp_SetCurrentPresetIndex(int index);
-int  SDLApp_GetAvailablePresetCount();
+int SDLApp_GetAvailablePresetCount();
 const char* SDLApp_GetPresetName(int index);
 void SDLApp_LoadPreset(int index);
 
@@ -44,7 +44,7 @@ bool SDLApp_IsVSyncEnabled();
 
 struct FilteredPreset {
     Rml::String name;
-    int         index;
+    int index;
 };
 
 // ── Module state ───────────────────────────────────────────────
@@ -56,21 +56,20 @@ static bool s_filter_dirty = true;
 
 // Snapshot for dirty-checking
 static struct {
-    bool  is_libretro;
-    int   scale_mode;
-    int   current_preset;
-    int   preset_count;
-    bool  vsync;
-    bool  broadcast_enabled;
-    int   broadcast_source;
+    bool is_libretro;
+    int scale_mode;
+    int current_preset;
+    int preset_count;
+    bool vsync;
+    bool broadcast_enabled;
+    int broadcast_source;
 } s_prev;
 
 // ── Helpers ────────────────────────────────────────────────────
 
 static Rml::String to_lower(const Rml::String& s) {
     Rml::String out = s;
-    std::transform(out.begin(), out.end(), out.begin(),
-                   [](unsigned char c) { return (char)std::tolower(c); });
+    std::transform(out.begin(), out.end(), out.begin(), [](unsigned char c) { return (char)std::tolower(c); });
     return out;
 }
 
@@ -81,14 +80,15 @@ static void rebuild_filtered_presets() {
 
     for (int i = 0; i < count; i++) {
         const char* name = SDLApp_GetPresetName(i);
-        if (!name) continue;
+        if (!name)
+            continue;
 
         if (!filter_lower.empty()) {
             Rml::String name_lower = to_lower(name);
             if (name_lower.find(filter_lower) == Rml::String::npos)
                 continue;
         }
-        s_filtered_presets.push_back({name, i});
+        s_filtered_presets.push_back({ name, i });
     }
     s_filter_dirty = false;
 }
@@ -111,7 +111,7 @@ extern "C" void rmlui_shader_menu_init() {
 
     // ── Register FilteredPreset struct + array ──
     if (auto handle = constructor.RegisterStruct<FilteredPreset>()) {
-        handle.RegisterMember("name",  &FilteredPreset::name);
+        handle.RegisterMember("name", &FilteredPreset::name);
         handle.RegisterMember("index", &FilteredPreset::index);
     }
     constructor.RegisterArray<std::vector<FilteredPreset>>();
@@ -121,41 +121,38 @@ extern "C" void rmlui_shader_menu_init() {
 
     // ── Scalar BindFunc bindings ──
 
-    constructor.BindFunc("is_libretro",
+    constructor.BindFunc(
+        "is_libretro",
         [](Rml::Variant& v) { v = SDLApp_GetShaderModeLibretro(); },
-        [](const Rml::Variant& v) { SDLApp_SetShaderModeLibretro(v.Get<bool>()); }
-    );
+        [](const Rml::Variant& v) { SDLApp_SetShaderModeLibretro(v.Get<bool>()); });
 
-    constructor.BindFunc("scale_mode",
+    constructor.BindFunc(
+        "scale_mode",
         [](Rml::Variant& v) { v = SDLApp_GetScaleMode(); },
-        [](const Rml::Variant& v) { SDLApp_SetScaleMode(v.Get<int>()); }
-    );
+        [](const Rml::Variant& v) { SDLApp_SetScaleMode(v.Get<int>()); });
 
     // Scale mode names (read-only)
     for (int i = 0; i < 5; i++) {
         Rml::String var_name = "scale_mode_name_" + Rml::ToString(i);
-        constructor.BindFunc(var_name,
-            [i](Rml::Variant& v) {
-                const char* name = SDLApp_GetScaleModeName(i);
-                v = Rml::String(name ? name : "");
-            }
-        );
+        constructor.BindFunc(var_name, [i](Rml::Variant& v) {
+            const char* name = SDLApp_GetScaleModeName(i);
+            v = Rml::String(name ? name : "");
+        });
     }
 
-    constructor.BindFunc("preset_count",
-        [](Rml::Variant& v) { v = SDLApp_GetAvailablePresetCount(); }
-    );
+    constructor.BindFunc("preset_count", [](Rml::Variant& v) { v = SDLApp_GetAvailablePresetCount(); });
 
-    constructor.BindFunc("current_preset",
+    constructor.BindFunc(
+        "current_preset",
         [](Rml::Variant& v) { v = SDLApp_GetCurrentPresetIndex(); },
         [](const Rml::Variant& v) {
             int idx = v.Get<int>();
             SDLApp_SetCurrentPresetIndex(idx);
             SDLApp_LoadPreset(idx);
-        }
-    );
+        });
 
-    constructor.BindFunc("search_filter",
+    constructor.BindFunc(
+        "search_filter",
         [](Rml::Variant& v) { v = s_search_filter; },
         [](const Rml::Variant& v) {
             Rml::String new_val = v.Get<Rml::String>();
@@ -163,35 +160,34 @@ extern "C" void rmlui_shader_menu_init() {
                 s_search_filter = new_val;
                 s_filter_dirty = true;
             }
-        }
-    );
+        });
 
-    constructor.BindFunc("vsync",
+    constructor.BindFunc(
+        "vsync",
         [](Rml::Variant& v) { v = SDLApp_IsVSyncEnabled(); },
-        [](const Rml::Variant& v) { SDLApp_SetVSync(v.Get<bool>()); }
-    );
+        [](const Rml::Variant& v) { SDLApp_SetVSync(v.Get<bool>()); });
 
-    constructor.BindFunc("broadcast_enabled",
+    constructor.BindFunc(
+        "broadcast_enabled",
         [](Rml::Variant& v) { v = broadcast_config.enabled; },
-        [](const Rml::Variant& v) { broadcast_config.enabled = v.Get<bool>(); }
-    );
+        [](const Rml::Variant& v) { broadcast_config.enabled = v.Get<bool>(); });
 
-    constructor.BindFunc("broadcast_source",
+    constructor.BindFunc(
+        "broadcast_source",
         [](Rml::Variant& v) { v = (int)broadcast_config.source; },
-        [](const Rml::Variant& v) { broadcast_config.source = (BroadcastSource)v.Get<int>(); }
-    );
+        [](const Rml::Variant& v) { broadcast_config.source = (BroadcastSource)v.Get<int>(); });
 
     // ── Event callbacks ──
 
     constructor.BindEventCallback("select_preset",
-        [](Rml::DataModelHandle handle, Rml::Event& /*event*/, const Rml::VariantList& args) {
-            if (args.empty()) return;
-            int idx = args[0].Get<int>();
-            SDLApp_SetCurrentPresetIndex(idx);
-            SDLApp_LoadPreset(idx);
-            handle.DirtyVariable("current_preset");
-        }
-    );
+                                  [](Rml::DataModelHandle handle, Rml::Event& /*event*/, const Rml::VariantList& args) {
+                                      if (args.empty())
+                                          return;
+                                      int idx = args[0].Get<int>();
+                                      SDLApp_SetCurrentPresetIndex(idx);
+                                      SDLApp_LoadPreset(idx);
+                                      handle.DirtyVariable("current_preset");
+                                  });
 
     s_model_handle = constructor.GetModelHandle();
 
@@ -204,7 +200,8 @@ extern "C" void rmlui_shader_menu_init() {
 // ── Per-frame update ───────────────────────────────────────────
 
 extern "C" void rmlui_shader_menu_update() {
-    if (!s_model_handle) return;
+    if (!s_model_handle)
+        return;
 
     bool dirty = false;
 

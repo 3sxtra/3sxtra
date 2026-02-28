@@ -50,8 +50,8 @@ static Rml::RenderInterface* s_render_interface = nullptr;
 
 // Typed pointers for backend-specific init/shutdown/render calls.
 // Exactly one of these is non-null at a time.
-static RenderInterface_GL3*     s_render_gl3 = nullptr;
-static RenderInterface_SDL*     s_render_sdl = nullptr;
+static RenderInterface_GL3* s_render_gl3 = nullptr;
+static RenderInterface_SDL* s_render_sdl = nullptr;
 static RenderInterface_SDL_GPU* s_render_gpu = nullptr;
 
 static RendererBackend s_active_backend;
@@ -157,7 +157,7 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
 #endif
 
     const char* backend_name = (s_active_backend == RENDERER_SDLGPU)  ? "SDL_GPU"
-                             : (s_active_backend == RENDERER_SDL2D)   ? "SDL2D"
+                               : (s_active_backend == RENDERER_SDL2D) ? "SDL2D"
                                                                       : "GL3";
     SDL_Log("[RmlUi] Initialized (%s renderer, %dx%d, dp-ratio=%.2fx)", backend_name, s_window_w, s_window_h, dp_ratio);
 }
@@ -177,7 +177,7 @@ extern "C" void rmlui_wrapper_shutdown(void) {
 
     // Backend-specific cleanup
     if (s_render_gl3) {
-        RmlGL3::Shutdown();  // Must shutdown GL state before deleting the interface
+        RmlGL3::Shutdown(); // Must shutdown GL state before deleting the interface
         delete s_render_gl3;
         s_render_gl3 = nullptr;
     }
@@ -202,7 +202,8 @@ extern "C" void rmlui_wrapper_shutdown(void) {
 // Event processing
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
-    if (!s_context || !event) return;
+    if (!s_context || !event)
+        return;
 
     // Toggle debugger with F12 (debug builds only)
 #ifdef DEBUG
@@ -213,8 +214,8 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
 #endif
 
     // Hot reload keybinds (Ctrl+F5 = stylesheets, Ctrl+Shift+F5 = all documents)
-    if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F5 &&
-        (event->key.mod & SDL_KMOD_CTRL) && !event->key.repeat) {
+    if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F5 && (event->key.mod & SDL_KMOD_CTRL) &&
+        !event->key.repeat) {
         if (event->key.mod & SDL_KMOD_SHIFT) {
             rmlui_wrapper_reload_all_documents();
         } else {
@@ -242,7 +243,8 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
 // Frame update
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_new_frame(void) {
-    if (!s_context) return;
+    if (!s_context)
+        return;
     s_context->Update();
 }
 
@@ -250,7 +252,8 @@ extern "C" void rmlui_wrapper_new_frame(void) {
 // Render
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_render(void) {
-    if (!s_context || !s_render_interface) return;
+    if (!s_context || !s_render_interface)
+        return;
 
     if (s_render_gl3) {
         // GL3: simple begin/end frame
@@ -283,19 +286,23 @@ extern "C" void rmlui_wrapper_render(void) {
 // Input capture queries
 // -------------------------------------------------------------------
 extern "C" bool rmlui_wrapper_want_capture_mouse(void) {
-    if (!s_context) return false;
+    if (!s_context)
+        return false;
     Rml::Element* hover = s_context->GetHoverElement();
-    if (!hover || hover == s_context->GetRootElement()) return false;
+    if (!hover || hover == s_context->GetRootElement())
+        return false;
     // Only capture if the hovered element's owning document is visible
     Rml::ElementDocument* doc = hover->GetOwnerDocument();
     return (doc != nullptr && doc->IsVisible());
 }
 
 extern "C" bool rmlui_wrapper_want_capture_keyboard(void) {
-    if (!s_context) return false;
+    if (!s_context)
+        return false;
     // Only capture keyboard for text-input elements (input, textarea, select)
     Rml::Element* focus = s_context->GetFocusElement();
-    if (!focus || focus == s_context->GetRootElement()) return false;
+    if (!focus || focus == s_context->GetRootElement())
+        return false;
     const Rml::String& tag = focus->GetTagName();
     return (tag == "input" || tag == "textarea" || tag == "select");
 }
@@ -311,7 +318,8 @@ extern "C" void* rmlui_wrapper_get_context(void) {
 // Document management
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_show_document(const char* name) {
-    if (!s_context || !name) return;
+    if (!s_context || !name)
+        return;
 
     // Check if already loaded
     auto it = s_documents.find(name);
@@ -333,7 +341,8 @@ extern "C" void rmlui_wrapper_show_document(const char* name) {
 }
 
 extern "C" void rmlui_wrapper_hide_document(const char* name) {
-    if (!name) return;
+    if (!name)
+        return;
     auto it = s_documents.find(name);
     if (it != s_documents.end()) {
         it->second->Hide();
@@ -341,7 +350,8 @@ extern "C" void rmlui_wrapper_hide_document(const char* name) {
 }
 
 extern "C" bool rmlui_wrapper_is_document_visible(const char* name) {
-    if (!name) return false;
+    if (!name)
+        return false;
     auto it = s_documents.find(name);
     if (it != s_documents.end()) {
         return it->second->IsVisible();
@@ -350,7 +360,8 @@ extern "C" bool rmlui_wrapper_is_document_visible(const char* name) {
 }
 
 extern "C" void rmlui_wrapper_close_document(const char* name) {
-    if (!name) return;
+    if (!name)
+        return;
     auto it = s_documents.find(name);
     if (it != s_documents.end()) {
         it->second->Close();
@@ -363,7 +374,8 @@ extern "C" void rmlui_wrapper_close_document(const char* name) {
 // Hot Reload
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_reload_stylesheets(void) {
-    if (!s_context) return;
+    if (!s_context)
+        return;
     int count = 0;
     for (auto& [name, doc] : s_documents) {
         if (doc) {
@@ -375,9 +387,11 @@ extern "C" void rmlui_wrapper_reload_stylesheets(void) {
 }
 
 extern "C" void rmlui_wrapper_reload_document(const char* name) {
-    if (!s_context || !name) return;
+    if (!s_context || !name)
+        return;
     auto it = s_documents.find(name);
-    if (it == s_documents.end()) return;
+    if (it == s_documents.end())
+        return;
 
     Rml::ElementDocument* old_doc = it->second;
     bool was_visible = old_doc->IsVisible();
@@ -390,7 +404,8 @@ extern "C" void rmlui_wrapper_reload_document(const char* name) {
     std::string path = s_ui_base_path + name + ".rml";
     Rml::ElementDocument* new_doc = s_context->LoadDocument(path.c_str());
     if (new_doc) {
-        if (was_visible) new_doc->Show();
+        if (was_visible)
+            new_doc->Show();
         it->second = new_doc;
         SDL_Log("[RmlUi] Reloaded document: %s", name);
     } else {
@@ -400,23 +415,28 @@ extern "C" void rmlui_wrapper_reload_document(const char* name) {
 }
 
 extern "C" void rmlui_wrapper_reload_all_documents(void) {
-    if (!s_context) return;
+    if (!s_context)
+        return;
 
     // Clear caches once before reloading
     Rml::Factory::ClearStyleSheetCache();
     Rml::Factory::ClearTemplateCache();
 
     // Snapshot names+visibility since we'll modify the map
-    struct DocInfo { std::string name; bool visible; };
+    struct DocInfo {
+        std::string name;
+        bool visible;
+    };
     std::vector<DocInfo> docs;
     docs.reserve(s_documents.size());
     for (auto& [name, doc] : s_documents) {
-        docs.push_back({name, doc && doc->IsVisible()});
+        docs.push_back({ name, doc && doc->IsVisible() });
     }
 
     // Close all
     for (auto& [name, doc] : s_documents) {
-        if (doc) doc->Close();
+        if (doc)
+            doc->Close();
     }
     s_documents.clear();
 
@@ -426,7 +446,8 @@ extern "C" void rmlui_wrapper_reload_all_documents(void) {
         std::string path = s_ui_base_path + info.name + ".rml";
         Rml::ElementDocument* new_doc = s_context->LoadDocument(path.c_str());
         if (new_doc) {
-            if (info.visible) new_doc->Show();
+            if (info.visible)
+                new_doc->Show();
             s_documents[info.name] = new_doc;
             count++;
         } else {

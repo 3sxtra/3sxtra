@@ -17,41 +17,41 @@
 #include "port/sdl/control_mapping.h"
 #include "port/sdl/frame_display.h"
 #include "port/sdl/imgui_wrapper.h"
-#include "port/sdl/rmlui_wrapper.h"
+#include "port/sdl/rmlui_frame_display.h"
+#include "port/sdl/rmlui_input_display.h"
 #include "port/sdl/rmlui_mods_menu.h"
 #include "port/sdl/rmlui_shader_menu.h"
 #include "port/sdl/rmlui_stage_config.h"
-#include "port/sdl/rmlui_input_display.h"
-#include "port/sdl/rmlui_frame_display.h"
 #include "port/sdl/rmlui_training_menu.h"
+#include "port/sdl/rmlui_wrapper.h"
 /* Phase 3 — Fight HUD & Mode Menu */
-#include "port/sdl/rmlui_game_hud.h"
-#include "port/sdl/rmlui_mode_menu.h"
-#include "port/sdl/rmlui_option_menu.h"
-#include "port/sdl/rmlui_game_option.h"
-#include "port/sdl/rmlui_title_screen.h"
-#include "port/sdl/rmlui_win_screen.h"
-#include "port/sdl/rmlui_continue.h"
-#include "port/sdl/rmlui_gameover.h"
-#include "port/sdl/rmlui_vs_result.h"
-#include "port/sdl/rmlui_memory_card.h"
-#include "port/sdl/rmlui_sound_menu.h"
-#include "port/sdl/rmlui_sysdir.h"
-#include "port/sdl/rmlui_network_lobby.h"
-#include "port/sdl/rmlui_extra_option.h"
-#include "port/sdl/rmlui_training_menus.h"
-#include "port/sdl/rmlui_button_config.h"
-#include "port/sdl/rmlui_char_select.h"
-#include "port/sdl/rmlui_vs_screen.h"
-#include "port/sdl/rmlui_replay_picker.h"
-#include "port/sdl/rmlui_control_mapping.h"
-#include "port/sdl/rmlui_netplay_ui.h"
-#include "port/sdl/rmlui_pause_overlay.h"
-#include "port/sdl/rmlui_trials_hud.h"
-#include "port/sdl/rmlui_copyright.h"
-#include "port/sdl/rmlui_name_entry.h"
 #include "port/sdl/input_display.h"
 #include "port/sdl/mods_menu.h"
+#include "port/sdl/rmlui_button_config.h"
+#include "port/sdl/rmlui_char_select.h"
+#include "port/sdl/rmlui_continue.h"
+#include "port/sdl/rmlui_control_mapping.h"
+#include "port/sdl/rmlui_copyright.h"
+#include "port/sdl/rmlui_extra_option.h"
+#include "port/sdl/rmlui_game_hud.h"
+#include "port/sdl/rmlui_game_option.h"
+#include "port/sdl/rmlui_gameover.h"
+#include "port/sdl/rmlui_memory_card.h"
+#include "port/sdl/rmlui_mode_menu.h"
+#include "port/sdl/rmlui_name_entry.h"
+#include "port/sdl/rmlui_netplay_ui.h"
+#include "port/sdl/rmlui_network_lobby.h"
+#include "port/sdl/rmlui_option_menu.h"
+#include "port/sdl/rmlui_pause_overlay.h"
+#include "port/sdl/rmlui_replay_picker.h"
+#include "port/sdl/rmlui_sound_menu.h"
+#include "port/sdl/rmlui_sysdir.h"
+#include "port/sdl/rmlui_title_screen.h"
+#include "port/sdl/rmlui_training_menus.h"
+#include "port/sdl/rmlui_trials_hud.h"
+#include "port/sdl/rmlui_vs_result.h"
+#include "port/sdl/rmlui_vs_screen.h"
+#include "port/sdl/rmlui_win_screen.h"
 #include "port/sdl/sdl_app_config.h"
 #include "port/sdl/sdl_app_input.h"
 #include "port/sdl/sdl_app_internal.h"
@@ -1194,11 +1194,16 @@ void SDLApp_EndFrame() {
             rmlui_input_display_update();
             rmlui_frame_display_update();
 
-            if (show_menu) rmlui_control_mapping_update();
-            if (show_mods_menu) rmlui_mods_menu_update();
-            if (show_shader_menu) rmlui_shader_menu_update();
-            if (show_stage_config_menu) rmlui_stage_config_update();
-            if (show_training_menu) rmlui_training_menu_update();
+            if (show_menu)
+                rmlui_control_mapping_update();
+            if (show_mods_menu)
+                rmlui_mods_menu_update();
+            if (show_shader_menu)
+                rmlui_shader_menu_update();
+            if (show_stage_config_menu)
+                rmlui_stage_config_update();
+            if (show_training_menu)
+                rmlui_training_menu_update();
 
             SDLNetplayUI_SetFPSHistory(fps_history, fps_history_count, (float)fps);
             SDLNetplayUI_Render(win_w, win_h);
@@ -1510,8 +1515,10 @@ void SDLApp_EndFrame() {
             }
         }
         if (use_rmlui) {
-            if (show_stage_config_menu) rmlui_stage_config_update();
-            if (show_training_menu) rmlui_training_menu_update();
+            if (show_stage_config_menu)
+                rmlui_stage_config_update();
+            if (show_training_menu)
+                rmlui_training_menu_update();
         } else {
             stage_config_menu_render(win_w, win_h);
             training_menu_render(win_w, win_h);
@@ -1997,8 +2004,10 @@ void SDLApp_EndFrame() {
             int w, h;
             SDL_GetWindowSizeInPixels(window, &w, &h);
             if (use_rmlui) {
-                if (show_stage_config_menu) rmlui_stage_config_update();
-                if (show_training_menu) rmlui_training_menu_update();
+                if (show_stage_config_menu)
+                    rmlui_stage_config_update();
+                if (show_training_menu)
+                    rmlui_training_menu_update();
             } else {
                 stage_config_menu_render(w, h);
                 training_menu_render(w, h);

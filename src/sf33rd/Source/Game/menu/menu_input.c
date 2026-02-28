@@ -71,6 +71,10 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 
+/* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
+
 static void apply_training_hitbox_display(bool force_off);
 
 /** @brief System Direction cursor move handler (up/down). */
@@ -2085,7 +2089,7 @@ s32 Pause_in_Normal_Tr(struct _TASK* task_ptr) {
 s32 Pause_1st_Sub(struct _TASK* task_ptr) {
     u16 sw = ~plsw_01[Pause_ID] & plsw_00[Pause_ID];
 
-    if (Pause_Down) {
+    if (Pause_Down && (!use_rmlui || !rmlui_screen_pause)) {
         SSPutStr2(17, 12, 9, "PRESS   BUTTON");
         dispButtonImage2(0xB2, 0x5B, 1, 0x13, 0xF, 0, 4);
         SSPutStr2(18, 14, 9, "TO PAUSE MENU");

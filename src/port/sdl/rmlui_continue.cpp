@@ -22,16 +22,14 @@ extern "C" {
 } // extern "C"
 
 // ─── Character name table ────────────────────────────────────────
-static const char* const s_char_names[20] = {
-    "RYU",     "ALEX",   "YUEN",   "DUDLEY", "NECRO",
-    "HUGO",    "IBuki",  "ELENA",  "ORO",    "YANG",
-    "KEN",     "SEAN",   "MAKOTO", "REMY",   "Q",
-    "TWELVE",  "CHUN-LI","URIEN",  "GILL",   "AKUMA"
-};
+static const char* const s_char_names[20] = { "RYU",   "ALEX",   "YUEN",    "DUDLEY", "NECRO", "HUGO",   "IBuki",
+                                              "ELENA", "ORO",    "YANG",    "KEN",    "SEAN",  "MAKOTO", "REMY",
+                                              "Q",     "TWELVE", "CHUN-LI", "URIEN",  "GILL",  "AKUMA" };
 #define CHAR_NAME_COUNT 20
 
 static const char* char_name(int idx) {
-    if (idx >= 0 && idx < CHAR_NAME_COUNT) return s_char_names[idx];
+    if (idx >= 0 && idx < CHAR_NAME_COUNT)
+        return s_char_names[idx];
     return "???";
 }
 
@@ -40,46 +38,54 @@ static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
 struct ContinueCache {
-    int  continue_count;
+    int continue_count;
     bool continue_active;
     Rml::String loser_name;
 };
 static ContinueCache s_cache = {};
 
-#define DIRTY_INT(nm, expr) do { \
-    int _v = (expr); \
-    if (_v != s_cache.nm) { s_cache.nm = _v; s_model_handle.DirtyVariable(#nm); } \
-} while(0)
+#define DIRTY_INT(nm, expr)                                                                                            \
+    do {                                                                                                               \
+        int _v = (expr);                                                                                               \
+        if (_v != s_cache.nm) {                                                                                        \
+            s_cache.nm = _v;                                                                                           \
+            s_model_handle.DirtyVariable(#nm);                                                                         \
+        }                                                                                                              \
+    } while (0)
 
-#define DIRTY_BOOL(nm, expr) do { \
-    bool _v = (bool)(expr); \
-    if (_v != s_cache.nm) { s_cache.nm = _v; s_model_handle.DirtyVariable(#nm); } \
-} while(0)
+#define DIRTY_BOOL(nm, expr)                                                                                           \
+    do {                                                                                                               \
+        bool _v = (bool)(expr);                                                                                        \
+        if (_v != s_cache.nm) {                                                                                        \
+            s_cache.nm = _v;                                                                                           \
+            s_model_handle.DirtyVariable(#nm);                                                                         \
+        }                                                                                                              \
+    } while (0)
 
-#define DIRTY_STR(nm, expr) do { \
-    Rml::String _v = (expr); \
-    if (_v != s_cache.nm) { s_cache.nm = _v; s_model_handle.DirtyVariable(#nm); } \
-} while(0)
+#define DIRTY_STR(nm, expr)                                                                                            \
+    do {                                                                                                               \
+        Rml::String _v = (expr);                                                                                       \
+        if (_v != s_cache.nm) {                                                                                        \
+            s_cache.nm = _v;                                                                                           \
+            s_model_handle.DirtyVariable(#nm);                                                                         \
+        }                                                                                                              \
+    } while (0)
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_continue_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("continue_screen");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
-    ctor.BindFunc("continue_count", [](Rml::Variant& v){
-        v = (int)Continue_Count_Down[LOSER];
-    });
-    ctor.BindFunc("continue_active", [](Rml::Variant& v){
-        v = (bool)(Cont_No[0] < 2);
-    });
-    ctor.BindFunc("loser_name", [](Rml::Variant& v){
-        v = Rml::String(char_name(My_char[LOSER]));
-    });
+    ctor.BindFunc("continue_count", [](Rml::Variant& v) { v = (int)Continue_Count_Down[LOSER]; });
+    ctor.BindFunc("continue_active", [](Rml::Variant& v) { v = (bool)(Cont_No[0] < 2); });
+    ctor.BindFunc("loser_name", [](Rml::Variant& v) { v = Rml::String(char_name(My_char[LOSER])); });
 
-    s_model_handle   = ctor.GetModelHandle();
+    s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
     SDL_Log("[RmlUi Continue] Data model registered");
@@ -87,7 +93,8 @@ extern "C" void rmlui_continue_init(void) {
 
 // ─── Per-frame update ────────────────────────────────────────────
 extern "C" void rmlui_continue_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
 
     DIRTY_INT(continue_count, (int)Continue_Count_Down[LOSER]);
     DIRTY_BOOL(continue_active, Cont_No[0] < 2);
@@ -108,7 +115,8 @@ extern "C" void rmlui_continue_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_document("continue");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-        if (ctx) ctx->RemoveDataModel("continue_screen");
+        if (ctx)
+            ctx->RemoveDataModel("continue_screen");
         s_model_registered = false;
     }
 }

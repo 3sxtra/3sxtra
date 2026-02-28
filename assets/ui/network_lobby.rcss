@@ -8,9 +8,9 @@
     right: 20dp;
     bottom: 20dp;
     padding: 0;
-    background-color: rgba(8, 12, 24, 0.92);
+    background-color: rgba(8, 12, 24, 235);
     border-width: 1dp;
-    border-color: rgba(100, 120, 180, 0.3);
+    border-color: rgba(100, 120, 180, 76);
     animation: lobby-in 0.2s cubic-in-out;
 }
 
@@ -27,9 +27,9 @@
     font-size: 15dp;
     color: #fff;
     padding: 6dp 0;
-    background-color: rgba(200, 0, 0, 0.85);
+    background-color: rgba(200, 0, 0, 217);
     border-bottom-width: 1dp;
-    border-bottom-color: rgba(255, 255, 255, 0.4);
+    border-bottom-color: rgba(255, 255, 255, 102);
     margin-bottom: 4dp;
 }
 
@@ -58,12 +58,12 @@
 .section-header {
     display: block;
     font-size: 10dp;
-    color: rgba(140, 170, 220, 0.65);
+    color: rgba(140, 170, 220, 166);
     padding: 2dp 4dp;
     margin-top: 2dp;
     margin-bottom: 1dp;
     border-bottom-width: 1dp;
-    border-bottom-color: rgba(80, 100, 160, 0.2);
+    border-bottom-color: rgba(80, 100, 160, 51);
 }
 
 .net-header {
@@ -76,7 +76,7 @@
     display: block;
     padding: 3dp 6dp;
     margin-bottom: 1dp;
-    color: rgba(200, 210, 240, 0.85);
+    color: rgba(200, 210, 240, 217);
     font-size: 12dp;
     border-left-width: 3dp;
     border-left-color: transparent;
@@ -84,8 +84,8 @@
 }
 
 .lobby-item.focused {
-    background-color: rgba(255, 220, 0, 0.12);
-    border-left-color: rgba(255, 210, 40, 0.95);
+    background-color: rgba(255, 220, 0, 31);
+    border-left-color: rgba(255, 210, 40, 242);
     color: #fff;
 }
 
@@ -99,23 +99,23 @@
     display: inline;
     text-align: right;
     width: 70dp;
-    color: rgba(160, 160, 180, 0.8);
+    color: rgba(160, 160, 180, 204);
     font-size: 11dp;
 }
 
 .item-value.on {
-    color: rgba(100, 220, 160, 0.95);
+    color: rgba(100, 220, 160, 242);
 }
 
 .peer-val {
-    color: rgba(140, 200, 255, 0.9);
+    color: rgba(140, 200, 255, 230);
     font-size: 10dp;
 }
 
 .exit-item {
     margin-top: 6dp;
     border-top-width: 1dp;
-    border-top-color: rgba(100, 120, 180, 0.2);
+    border-top-color: rgba(100, 120, 180, 51);
     padding-top: 5dp;
 }
 
@@ -125,34 +125,34 @@
     display: block;
     padding: 6dp 8dp;
     margin-bottom: 6dp;
-    background-color: rgba(20, 30, 50, 0.7);
+    background-color: rgba(20, 30, 50, 178);
     border-width: 1dp;
-    border-color: rgba(80, 100, 160, 0.25);
+    border-color: rgba(80, 100, 160, 64);
 }
 
 .peer-panel-title {
     display: block;
     font-size: 9dp;
-    color: rgba(140, 170, 220, 0.6);
+    color: rgba(140, 170, 220, 153);
     margin-bottom: 3dp;
 }
 
 .peer-count {
     display: block;
     font-size: 11dp;
-    color: rgba(100, 220, 160, 0.9);
+    color: rgba(100, 220, 160, 230);
 }
 
 .peer-count.empty {
-    color: rgba(160, 160, 180, 0.5);
+    color: rgba(160, 160, 180, 128);
 }
 
 .peer-count.searching {
-    color: rgba(255, 200, 80, 0.8);
+    color: rgba(255, 200, 80, 204);
 }
 
 .peer-count.idle {
-    color: rgba(160, 160, 180, 0.5);
+    color: rgba(160, 160, 180, 128);
 }
 
 /* ─── Status bar ────────────────────────────────────────────────── */
@@ -164,15 +164,15 @@
     left: 8dp;
     right: 8dp;
     padding: 4dp 8dp;
-    background-color: rgba(20, 30, 50, 0.6);
+    background-color: rgba(20, 30, 50, 153);
     border-width: 1dp;
-    border-color: rgba(80, 100, 160, 0.2);
+    border-color: rgba(80, 100, 160, 51);
 }
 
 .status-text {
     display: block;
     font-size: 10dp;
-    color: rgba(255, 200, 80, 0.9);
+    color: rgba(255, 200, 80, 230);
 }
 
 /* ─── Popup overlay ─────────────────────────────────────────────── */
@@ -184,7 +184,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.65);
+    background-color: rgba(0, 0, 0, 166);
 }
 
 #popup-box {
@@ -194,16 +194,16 @@
     left: 50dp;
     right: 50dp;
     padding: 10dp 14dp;
-    background-color: rgba(24, 24, 24, 0.95);
+    background-color: rgba(24, 24, 24, 242);
     border-width: 2dp;
-    border-color: rgba(200, 0, 0, 0.85);
+    border-color: rgba(200, 0, 0, 217);
 }
 
 .popup-title {
     display: block;
     text-align: center;
     font-size: 13dp;
-    color: rgba(255, 200, 80, 1.0);
+    color: rgba(255, 200, 80, 255);
     margin-bottom: 6dp;
 }
 
@@ -219,7 +219,7 @@
     display: block;
     text-align: center;
     font-size: 10dp;
-    color: rgba(140, 200, 255, 0.9);
+    color: rgba(140, 200, 255, 230);
     margin-bottom: 4dp;
 }
 
@@ -227,7 +227,7 @@
     display: block;
     text-align: center;
     font-size: 10dp;
-    color: rgba(160, 160, 180, 0.7);
+    color: rgba(160, 160, 180, 178);
     margin-bottom: 6dp;
 }
 
@@ -237,24 +237,24 @@
     margin-top: 6dp;
     padding-top: 4dp;
     border-top-width: 1dp;
-    border-top-color: rgba(100, 100, 120, 0.3);
+    border-top-color: rgba(100, 100, 120, 76);
 }
 
 .popup-accept {
     display: inline;
     font-size: 11dp;
-    color: rgba(80, 220, 120, 1.0);
+    color: rgba(80, 220, 120, 255);
     margin-right: 20dp;
 }
 
 .popup-decline {
     display: inline;
     font-size: 11dp;
-    color: rgba(255, 80, 80, 1.0);
+    color: rgba(255, 80, 80, 255);
 }
 
 .popup-cancel {
     display: inline;
     font-size: 11dp;
-    color: rgba(255, 80, 80, 1.0);
+    color: rgba(255, 80, 80, 255);
 }

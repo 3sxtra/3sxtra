@@ -15,7 +15,7 @@ body {
     margin-left: -170dp;
     width: 340dp;
     text-align: center;
-    animation: gameover-fade-in 0.6s ease-out;
+    animation: gameover-fade-in 0.6s quadratic-out;
 }
 
 @keyframes gameover-fade-in {
@@ -35,7 +35,7 @@ body {
     color: #ff3333;
     letter-spacing: 4dp;
     margin-bottom: 24dp;
-    text-shadow: 2dp 2dp 4dp #00000088;
+    font-effect: shadow(2dp 2dp #00000088);
 }
 
 /* ── Result stats block ─────────────────────────────────────── */

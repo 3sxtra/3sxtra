@@ -13,8 +13,8 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
 /* Phase 3 RmlUi bypass */
-#include <stdbool.h>
 #include "port/sdl/rmlui_phase3_toggles.h"
+#include <stdbool.h>
 extern bool use_rmlui;
 
 SDAT sdat[2];

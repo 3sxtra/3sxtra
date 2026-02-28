@@ -24,10 +24,10 @@
 #include <cstring>
 
 extern "C" {
-#include "sf33rd/Source/Game/engine/workuser.h"
+#include "netplay/discovery.h"
 #include "port/config.h"
 #include "port/sdl/sdl_netplay_ui.h"
-#include "netplay/discovery.h"
+#include "sf33rd/Source/Game/engine/workuser.h"
 } // extern "C"
 
 // ─── Data model ──────────────────────────────────────────────────
@@ -35,14 +35,14 @@ static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
 struct LobbyCache {
-    int  cursor;
+    int cursor;
     bool lan_auto;
     bool net_auto;
     bool net_search_toggle;
     bool net_searching;
-    int  lan_peer_count;
-    int  net_peer_count;
-    int  popup_type;    // 0=none, 1=incoming, 2=outgoing
+    int lan_peer_count;
+    int net_peer_count;
+    int popup_type; // 0=none, 1=incoming, 2=outgoing
 };
 static LobbyCache s_cache = {};
 
@@ -52,48 +52,48 @@ static LobbyCache s_cache = {};
 // The peer selection index is tracked in menu.c's static variables;
 // we display the name by scanning peers matching the cursor context.
 
-#define DIRTY_INT(nm, expr) do { \
-    int _v = (expr); \
-    if (_v != s_cache.nm) { s_cache.nm = _v; s_model_handle.DirtyVariable(#nm); } \
-} while(0)
+#define DIRTY_INT(nm, expr)                                                                                            \
+    do {                                                                                                               \
+        int _v = (expr);                                                                                               \
+        if (_v != s_cache.nm) {                                                                                        \
+            s_cache.nm = _v;                                                                                           \
+            s_model_handle.DirtyVariable(#nm);                                                                         \
+        }                                                                                                              \
+    } while (0)
 
-#define DIRTY_BOOL(nm, expr) do { \
-    bool _v = (expr); \
-    if (_v != s_cache.nm) { s_cache.nm = _v; s_model_handle.DirtyVariable(#nm); } \
-} while(0)
+#define DIRTY_BOOL(nm, expr)                                                                                           \
+    do {                                                                                                               \
+        bool _v = (expr);                                                                                              \
+        if (_v != s_cache.nm) {                                                                                        \
+            s_cache.nm = _v;                                                                                           \
+            s_model_handle.DirtyVariable(#nm);                                                                         \
+        }                                                                                                              \
+    } while (0)
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_network_lobby_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("network_lobby");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
-    ctor.BindFunc("cursor", [](Rml::Variant& v){
-        v = (int)Menu_Cursor_Y[0];
-    });
+    ctor.BindFunc("cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
 
     // Toggle states
-    ctor.BindFunc("lan_auto", [](Rml::Variant& v){
-        v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-    });
-    ctor.BindFunc("net_auto", [](Rml::Variant& v){
-        v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
-    });
-    ctor.BindFunc("net_search_toggle", [](Rml::Variant& v){
-        v = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
-    });
-    ctor.BindFunc("net_searching", [](Rml::Variant& v){
-        v = SDLNetplayUI_IsSearching();
-    });
+    ctor.BindFunc("lan_auto", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT); });
+    ctor.BindFunc("net_auto", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT); });
+    ctor.BindFunc("net_search_toggle", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH); });
+    ctor.BindFunc("net_searching", [](Rml::Variant& v) { v = SDLNetplayUI_IsSearching(); });
 
     // LAN peer info
-    ctor.BindFunc("lan_peer_count", [](Rml::Variant& v){
+    ctor.BindFunc("lan_peer_count", [](Rml::Variant& v) {
         NetplayDiscoveredPeer peers[16];
         v = Discovery_GetPeers(peers, 16);
     });
-    ctor.BindFunc("lan_peer_name", [](Rml::Variant& v){
+    ctor.BindFunc("lan_peer_name", [](Rml::Variant& v) {
         NetplayDiscoveredPeer peers[16];
         int count = Discovery_GetPeers(peers, 16);
         if (count > 0) {
@@ -106,10 +106,8 @@ extern "C" void rmlui_network_lobby_init(void) {
     });
 
     // NET peer info
-    ctor.BindFunc("net_peer_count", [](Rml::Variant& v){
-        v = SDLNetplayUI_GetOnlinePlayerCount();
-    });
-    ctor.BindFunc("net_peer_name", [](Rml::Variant& v){
+    ctor.BindFunc("net_peer_count", [](Rml::Variant& v) { v = SDLNetplayUI_GetOnlinePlayerCount(); });
+    ctor.BindFunc("net_peer_name", [](Rml::Variant& v) {
         int count = SDLNetplayUI_GetOnlinePlayerCount();
         if (count > 0) {
             v = Rml::String(SDLNetplayUI_GetOnlinePlayerName(0));
@@ -121,7 +119,7 @@ extern "C" void rmlui_network_lobby_init(void) {
     });
 
     // Status text
-    ctor.BindFunc("status_text", [](Rml::Variant& v){
+    ctor.BindFunc("status_text", [](Rml::Variant& v) {
         const char* msg = SDLNetplayUI_GetStatusMsg();
         if (msg[0]) {
             v = Rml::String(msg);
@@ -158,28 +156,43 @@ extern "C" void rmlui_network_lobby_init(void) {
     });
 
     // Popup state
-    ctor.BindFunc("popup_type", [](Rml::Variant& v){
+    ctor.BindFunc("popup_type", [](Rml::Variant& v) {
         // 0=none, 1=incoming(internet), 2=outgoing(internet),
         // 3=outgoing(LAN), 4=incoming(LAN)
-        if (SDLNetplayUI_HasPendingInvite()) { v = 1; return; }
-        if (SDLNetplayUI_HasOutgoingChallenge()) { v = 2; return; }
-        if (Discovery_GetChallengeTarget() != 0) { v = 3; return; }
+        if (SDLNetplayUI_HasPendingInvite()) {
+            v = 1;
+            return;
+        }
+        if (SDLNetplayUI_HasOutgoingChallenge()) {
+            v = 2;
+            return;
+        }
+        if (Discovery_GetChallengeTarget() != 0) {
+            v = 3;
+            return;
+        }
         // Check LAN incoming
         NetplayDiscoveredPeer peers[16];
         int count = Discovery_GetPeers(peers, 16);
         for (int i = 0; i < count; i++) {
-            if (peers[i].is_challenging_me) { v = 4; return; }
+            if (peers[i].is_challenging_me) {
+                v = 4;
+                return;
+            }
         }
         v = 0;
     });
-    ctor.BindFunc("popup_title", [](Rml::Variant& v){
+    ctor.BindFunc("popup_title", [](Rml::Variant& v) {
         if (SDLNetplayUI_HasPendingInvite() || false) {
             // Check LAN incoming
             NetplayDiscoveredPeer peers[16];
             int count = Discovery_GetPeers(peers, 16);
             bool lan_in = false;
             for (int i = 0; i < count; i++) {
-                if (peers[i].is_challenging_me) { lan_in = true; break; }
+                if (peers[i].is_challenging_me) {
+                    lan_in = true;
+                    break;
+                }
             }
             if (SDLNetplayUI_HasPendingInvite() || lan_in) {
                 v = Rml::String("INCOMING CHALLENGE!");
@@ -201,7 +214,7 @@ extern "C" void rmlui_network_lobby_init(void) {
         }
         v = Rml::String("");
     });
-    ctor.BindFunc("popup_name", [](Rml::Variant& v){
+    ctor.BindFunc("popup_name", [](Rml::Variant& v) {
         if (SDLNetplayUI_HasPendingInvite()) {
             v = Rml::String(SDLNetplayUI_GetPendingInviteName());
             return;
@@ -235,26 +248,30 @@ extern "C" void rmlui_network_lobby_init(void) {
         }
         v = Rml::String("");
     });
-    ctor.BindFunc("popup_ping", [](Rml::Variant& v){
+    ctor.BindFunc("popup_ping", [](Rml::Variant& v) {
         if (SDLNetplayUI_HasPendingInvite()) {
             int ping = SDLNetplayUI_GetPendingInvitePing();
             char buf[32];
-            if (ping < 0) SDL_snprintf(buf, sizeof(buf), "...");
-            else SDL_snprintf(buf, sizeof(buf), "~%dms", ping);
+            if (ping < 0)
+                SDL_snprintf(buf, sizeof(buf), "...");
+            else
+                SDL_snprintf(buf, sizeof(buf), "~%dms", ping);
             v = Rml::String(buf);
             return;
         }
         if (SDLNetplayUI_HasOutgoingChallenge()) {
             int ping = SDLNetplayUI_GetOutgoingChallengePing();
             char buf[32];
-            if (ping < 0) SDL_snprintf(buf, sizeof(buf), "...");
-            else SDL_snprintf(buf, sizeof(buf), "~%dms", ping);
+            if (ping < 0)
+                SDL_snprintf(buf, sizeof(buf), "...");
+            else
+                SDL_snprintf(buf, sizeof(buf), "~%dms", ping);
             v = Rml::String(buf);
             return;
         }
         v = Rml::String("...");
     });
-    ctor.BindFunc("popup_region", [](Rml::Variant& v){
+    ctor.BindFunc("popup_region", [](Rml::Variant& v) {
         if (SDLNetplayUI_HasPendingInvite()) {
             const char* r = SDLNetplayUI_GetPendingInviteRegion();
             v = Rml::String(r ? r : "");
@@ -262,18 +279,24 @@ extern "C" void rmlui_network_lobby_init(void) {
         }
         v = Rml::String("");
     });
-    ctor.BindFunc("popup_is_incoming", [](Rml::Variant& v){
-        if (SDLNetplayUI_HasPendingInvite()) { v = true; return; }
+    ctor.BindFunc("popup_is_incoming", [](Rml::Variant& v) {
+        if (SDLNetplayUI_HasPendingInvite()) {
+            v = true;
+            return;
+        }
         NetplayDiscoveredPeer peers[16];
         int count = Discovery_GetPeers(peers, 16);
         bool outgoing = (Discovery_GetChallengeTarget() != 0);
         for (int i = 0; i < count; i++) {
-            if (peers[i].is_challenging_me && !outgoing) { v = true; return; }
+            if (peers[i].is_challenging_me && !outgoing) {
+                v = true;
+                return;
+            }
         }
         v = false;
     });
 
-    s_model_handle   = ctor.GetModelHandle();
+    s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
     SDL_Log("[RmlUi NetworkLobby] Data model registered");
@@ -281,7 +304,8 @@ extern "C" void rmlui_network_lobby_init(void) {
 
 // ─── Per-frame update ────────────────────────────────────────────
 extern "C" void rmlui_network_lobby_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
 
     DIRTY_INT(cursor, (int)Menu_Cursor_Y[0]);
     DIRTY_BOOL(lan_auto, Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT));
@@ -299,14 +323,20 @@ extern "C" void rmlui_network_lobby_update(void) {
     // Popup type check
     {
         int pt = 0;
-        if (SDLNetplayUI_HasPendingInvite()) pt = 1;
-        else if (SDLNetplayUI_HasOutgoingChallenge()) pt = 2;
-        else if (Discovery_GetChallengeTarget() != 0) pt = 3;
+        if (SDLNetplayUI_HasPendingInvite())
+            pt = 1;
+        else if (SDLNetplayUI_HasOutgoingChallenge())
+            pt = 2;
+        else if (Discovery_GetChallengeTarget() != 0)
+            pt = 3;
         else {
             NetplayDiscoveredPeer peers[16];
             int count = Discovery_GetPeers(peers, 16);
             for (int i = 0; i < count; i++) {
-                if (peers[i].is_challenging_me) { pt = 4; break; }
+                if (peers[i].is_challenging_me) {
+                    pt = 4;
+                    break;
+                }
             }
         }
         DIRTY_INT(popup_type, pt);
@@ -337,7 +367,8 @@ extern "C" void rmlui_network_lobby_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_document("network_lobby");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-        if (ctx) ctx->RemoveDataModel("network_lobby");
+        if (ctx)
+            ctx->RemoveDataModel("network_lobby");
         s_model_registered = false;
     }
 }

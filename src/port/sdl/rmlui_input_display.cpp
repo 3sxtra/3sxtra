@@ -9,9 +9,9 @@
  * Input tracking logic (history, inactivity timeout) is identical to the ImGui version.
  */
 #include "port/sdl/rmlui_input_display.h"
+#include "common.h"
 #include "port/sdl/rmlui_wrapper.h"
 #include "port/sdl/training_menu.h"
-#include "common.h"
 
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>
@@ -20,15 +20,15 @@
 #include <vector>
 
 extern "C" {
-    extern u16 p1sw_buff;
-    extern u16 p2sw_buff;
+extern u16 p1sw_buff;
+extern u16 p2sw_buff;
 }
 
 // ── Input row struct for data binding ──────────────────────────
 struct InputRow {
-    Rml::String direction;  // e.g. "↗", "↓", "" (neutral)
-    Rml::String buttons;    // e.g. "LP MP", "HK"
-    Rml::String frames;     // e.g. "3", "12"
+    Rml::String direction; // e.g. "↗", "↓", "" (neutral)
+    Rml::String buttons;   // e.g. "LP MP", "HK"
+    Rml::String frames;    // e.g. "3", "12"
 };
 
 // ── Internal tracking (mirrors ImGui input_display.cpp) ────────
@@ -65,15 +65,24 @@ static bool s_prev_visible = false;
 // ── Direction bitmask → arrow string ───────────────────────────
 static Rml::String direction_to_string(u32 dir) {
     switch (dir & 0xF) {
-    case 0x1:         return "\xe2\x86\x91";       // ↑
-    case 0x2:         return "\xe2\x86\x93";       // ↓
-    case 0x4:         return "\xe2\x86\x90";       // ←
-    case 0x8:         return "\xe2\x86\x92";       // →
-    case 0x1 | 0x4:   return "\xe2\x86\x96";       // ↖
-    case 0x1 | 0x8:   return "\xe2\x86\x97";       // ↗
-    case 0x2 | 0x4:   return "\xe2\x86\x99";       // ↙
-    case 0x2 | 0x8:   return "\xe2\x86\x98";       // ↘
-    default:          return "\xc2\xb7";            // · (neutral)
+    case 0x1:
+        return "\xe2\x86\x91"; // ↑
+    case 0x2:
+        return "\xe2\x86\x93"; // ↓
+    case 0x4:
+        return "\xe2\x86\x90"; // ←
+    case 0x8:
+        return "\xe2\x86\x92"; // →
+    case 0x1 | 0x4:
+        return "\xe2\x86\x96"; // ↖
+    case 0x1 | 0x8:
+        return "\xe2\x86\x97"; // ↗
+    case 0x2 | 0x4:
+        return "\xe2\x86\x99"; // ↙
+    case 0x2 | 0x8:
+        return "\xe2\x86\x98"; // ↘
+    default:
+        return "\xc2\xb7"; // · (neutral)
     }
 }
 
@@ -81,21 +90,48 @@ static Rml::String direction_to_string(u32 dir) {
 static Rml::String buttons_to_string(u32 mask) {
     Rml::String result;
     // Punches
-    if (mask & 0x10)  { if (!result.empty()) result += " "; result += "LP"; }
-    if (mask & 0x20)  { if (!result.empty()) result += " "; result += "MP"; }
-    if (mask & 0x40)  { if (!result.empty()) result += " "; result += "HP"; }
+    if (mask & 0x10) {
+        if (!result.empty())
+            result += " ";
+        result += "LP";
+    }
+    if (mask & 0x20) {
+        if (!result.empty())
+            result += " ";
+        result += "MP";
+    }
+    if (mask & 0x40) {
+        if (!result.empty())
+            result += " ";
+        result += "HP";
+    }
     // Kicks
-    if (mask & 0x100) { if (!result.empty()) result += " "; result += "LK"; }
-    if (mask & 0x200) { if (!result.empty()) result += " "; result += "MK"; }
-    if (mask & 0x400) { if (!result.empty()) result += " "; result += "HK"; }
+    if (mask & 0x100) {
+        if (!result.empty())
+            result += " ";
+        result += "LK";
+    }
+    if (mask & 0x200) {
+        if (!result.empty())
+            result += " ";
+        result += "MK";
+    }
+    if (mask & 0x400) {
+        if (!result.empty())
+            result += " ";
+        result += "HK";
+    }
     // Start
-    if (mask & 0x1000){ if (!result.empty()) result += " "; result += "ST"; }
+    if (mask & 0x1000) {
+        if (!result.empty())
+            result += " ";
+        result += "ST";
+    }
     return result;
 }
 
 // ── Build display rows from history (newest first) ─────────────
-static void build_rows(const std::vector<InputInfo>& history,
-                       std::vector<InputRow>& rows) {
+static void build_rows(const std::vector<InputInfo>& history, std::vector<InputRow>& rows) {
     rows.clear();
     for (auto it = history.rbegin(); it != history.rend(); ++it) {
         InputRow row;
@@ -149,9 +185,7 @@ extern "C" void rmlui_input_display_init(void) {
     ctor.Bind("p2_history", &s_rows_p2);
 
     // Bind visibility
-    ctor.BindFunc("visible",
-        [](Rml::Variant& v) { v = s_visible; }
-    );
+    ctor.BindFunc("visible", [](Rml::Variant& v) { v = s_visible; });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -186,7 +220,7 @@ extern "C" void rmlui_input_display_update(void) {
     // Track P1 inputs
     u32 current_p1 = p1sw_buff;
     if (current_p1 != s_last_input_p1) {
-        s_history_p1.push_back({current_p1, s_render_frame});
+        s_history_p1.push_back({ current_p1, s_render_frame });
         s_last_input_frame_p1 = s_render_frame;
         if (s_history_p1.size() > MAX_HISTORY_SIZE)
             s_history_p1.erase(s_history_p1.begin());
@@ -196,7 +230,7 @@ extern "C" void rmlui_input_display_update(void) {
     // Track P2 inputs
     u32 current_p2 = p2sw_buff;
     if (current_p2 != s_last_input_p2) {
-        s_history_p2.push_back({current_p2, s_render_frame});
+        s_history_p2.push_back({ current_p2, s_render_frame });
         s_last_input_frame_p2 = s_render_frame;
         if (s_history_p2.size() > MAX_HISTORY_SIZE)
             s_history_p2.erase(s_history_p2.begin());
@@ -216,8 +250,10 @@ extern "C" void rmlui_input_display_update(void) {
                     (!s_history_p2.empty() && s_history_p2.back().mask != s_prev_p2_head_mask);
 
     // Frame durations change every frame for the newest entry, so always rebuild if non-empty
-    if (!s_history_p1.empty()) p1_dirty = true;
-    if (!s_history_p2.empty()) p2_dirty = true;
+    if (!s_history_p1.empty())
+        p1_dirty = true;
+    if (!s_history_p2.empty())
+        p2_dirty = true;
 
     if (p1_dirty) {
         build_rows(s_history_p1, s_rows_p1);
