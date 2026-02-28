@@ -99,6 +99,17 @@ set(RMLUI_LUA_BINDINGS OFF CACHE BOOL "" FORCE)
 set(RMLUI_SVG_PLUGIN OFF CACHE BOOL "" FORCE)
 set(RMLUI_LOTTIE_PLUGIN OFF CACHE BOOL "" FORCE)
 set(RMLUI_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+
+# FreeType — built by build-deps.sh into third_party/freetype/build
+# RPi4 has it at third_party_rpi4/freetype/ (added as subdirectory)
+if(NOT Freetype_ROOT AND EXISTS "${THIRD_PARTY_DIR}/freetype/build")
+    set(Freetype_ROOT "${THIRD_PARTY_DIR}/freetype/build" CACHE PATH "" FORCE)
+    message(STATUS "FreeType: using bundled build at ${Freetype_ROOT}")
+elseif(PLATFORM_RPI4 AND EXISTS "${THIRD_PARTY_DIR}/freetype")
+    add_subdirectory("${THIRD_PARTY_DIR}/freetype" freetype)
+    message(STATUS "FreeType: using RPi4 subdirectory")
+endif()
+
 add_subdirectory("${THIRD_PARTY_DIR}/rmlui" rmlui)
 message(STATUS "RmlUi configured.")
 

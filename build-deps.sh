@@ -291,6 +291,57 @@ else
 fi
 
 # -----------------------------
+# FreeType (required by RmlUi)
+# -----------------------------
+
+FREETYPE_DIR="$THIRD_PARTY/freetype"
+FREETYPE_BUILD="$FREETYPE_DIR/build"
+
+if [ -d "$FREETYPE_BUILD" ]; then
+    echo "FreeType already built at $FREETYPE_BUILD"
+else
+    echo "Building FreeType..."
+    if [ ! -d "$FREETYPE_DIR" ]; then
+        git clone --depth 1 --branch VER-2-13-3 https://github.com/freetype/freetype.git "$FREETYPE_DIR"
+    fi
+    cd "$FREETYPE_DIR"
+    mkdir -p build_temp
+    cd build_temp
+
+    CMAKE_EXTRA_ARGS=""
+    case "$OS" in
+        Darwin)
+            if [ "$TARGET_ARCH" = "universal" ]; then
+                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+            fi
+            ;;
+        MINGW*|MSYS*|CYGWIN*)
+            CMAKE_EXTRA_ARGS="-G \"MSYS Makefiles\""
+            ;;
+    esac
+
+    eval cmake .. \
+        ${CC:+-DCMAKE_C_COMPILER=$CC} \
+        ${CXX:+-DCMAKE_CXX_COMPILER=$CXX} \
+        -DCMAKE_INSTALL_PREFIX="$FREETYPE_BUILD" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DFT_DISABLE_ZLIB=ON \
+        -DFT_DISABLE_BZIP2=ON \
+        -DFT_DISABLE_PNG=ON \
+        -DFT_DISABLE_HARFBUZZ=ON \
+        -DFT_DISABLE_BROTLI=ON \
+        $CMAKE_EXTRA_ARGS
+
+    cmake --build . -j$(nproc)
+    cmake --install .
+    echo "FreeType installed to $FREETYPE_BUILD"
+
+    cd "$FREETYPE_DIR"
+    rm -rf build_temp
+fi
+
+# -----------------------------
 # RmlUi
 # -----------------------------
 

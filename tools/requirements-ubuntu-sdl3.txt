@@ -33,3 +33,4 @@ libwayland-dev
 libdecor-0-dev
 liburing-dev
 libminiupnpc-dev
+libfreetype-dev
