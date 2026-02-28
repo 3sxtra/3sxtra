@@ -101,13 +101,24 @@ set(RMLUI_LOTTIE_PLUGIN OFF CACHE BOOL "" FORCE)
 set(RMLUI_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
 
 # FreeType — built by build-deps.sh into third_party/freetype/build
-# RPi4 has it at third_party_rpi4/freetype/ (added as subdirectory)
-if(NOT Freetype_ROOT AND EXISTS "${THIRD_PARTY_DIR}/freetype/build")
-    set(Freetype_ROOT "${THIRD_PARTY_DIR}/freetype/build" CACHE PATH "" FORCE)
-    message(STATUS "FreeType: using bundled build at ${Freetype_ROOT}")
-elseif(PLATFORM_RPI4 AND EXISTS "${THIRD_PARTY_DIR}/freetype")
-    add_subdirectory("${THIRD_PARTY_DIR}/freetype" freetype)
-    message(STATUS "FreeType: using RPi4 subdirectory")
+# We create the imported target directly so that RmlUi's find_package(Freetype)
+# finds it immediately. This avoids issues with cross-compile toolchains that
+# restrict FindFreetype's search paths (CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY).
+if(NOT TARGET Freetype::Freetype)
+    set(FREETYPE_BUILD_DIR "${THIRD_PARTY_DIR}/freetype/build")
+    if(EXISTS "${FREETYPE_BUILD_DIR}/lib/libfreetype.a")
+        add_library(Freetype::Freetype STATIC IMPORTED)
+        set_target_properties(Freetype::Freetype PROPERTIES
+            IMPORTED_LOCATION "${FREETYPE_BUILD_DIR}/lib/libfreetype.a"
+            INTERFACE_INCLUDE_DIRECTORIES "${FREETYPE_BUILD_DIR}/include/freetype2"
+        )
+        message(STATUS "FreeType: using bundled static lib at ${FREETYPE_BUILD_DIR}")
+    elseif(PLATFORM_RPI4 AND EXISTS "${THIRD_PARTY_DIR}/freetype/CMakeLists.txt")
+        add_subdirectory("${THIRD_PARTY_DIR}/freetype" freetype)
+        message(STATUS "FreeType: using RPi4 subdirectory")
+    else()
+        message(STATUS "FreeType: using system package")
+    endif()
 endif()
 
 add_subdirectory("${THIRD_PARTY_DIR}/rmlui" rmlui)
