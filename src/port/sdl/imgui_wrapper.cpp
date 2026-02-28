@@ -52,10 +52,10 @@ extern "C" __attribute__((used)) void imgui_wrapper_init(SDL_Window* window, voi
     bool font_loaded = false;
     if (font_path) {
         if (ImGuiFont_LoadJapaneseFont(font_path, 18.0f)) {
-            SDL_Log("Loaded Japanese font from: %s", font_path);
+            SDL_Log("Loaded font from: %s", font_path);
             font_loaded = true;
         } else {
-            SDL_Log("Failed to load Japanese font from: %s", font_path);
+            SDL_Log("Failed to load font from: %s", font_path);
         }
         SDL_free(font_path);
         font_path = NULL;

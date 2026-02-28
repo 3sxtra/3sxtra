@@ -11,6 +11,7 @@
 
 #include "sf33rd/Source/Game/demo/demo00.h"
 #include "common.h"
+#include "port/config.h"
 #include "port/renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/MemMan.h"
@@ -122,6 +123,15 @@ s32 Warning() {
 
 /** @brief Capcom logo sequence — load textures, animate, fade in/out. */
 s32 CAPCOM_Logo() {
+    if (Config_GetBool(CFG_KEY_SKIP_INTRO)) {
+        checkAdxFileLoaded();
+        checkSelObjFileLoaded();
+        Push_LDREQ_Queue_Direct(0x16, 2);
+        Push_LDREQ_Queue_Direct(0x17, 2);
+        Push_LDREQ_Queue_Direct(0x18, 2);
+        return 1;
+    }
+
     ppgSetupCurrentDataList(&ppgCapLogoList);
     Next_Demo = 0;
 

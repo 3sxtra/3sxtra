@@ -48,35 +48,59 @@ static void clear_render_tasks(void) {
     gl_state.render_task_count = 0;
 }
 
+/**
+ * ⚡ Bolt: Ping-pong merge sort — eliminates per-pass memcpy.
+ *
+ * Instead of merging into merge_temp and copying back every pass, we
+ * alternate source/destination buffers each pass.  Only one final memcpy
+ * is needed if the result lands in merge_temp.
+ *
+ * Impact: ~hundreds of render tasks per frame, each 28 bytes.
+ * Saves O(n × log n) bytes of memcpy per frame.
+ */
 static void stable_sort_render_tasks(void) {
     const int n = gl_state.render_task_count;
     if (n <= 1)
         return;
 
+    RenderTask* src = gl_state.render_tasks;
+    RenderTask* dst = gl_state.merge_temp;
+
     for (int width = 1; width < n; width *= 2) {
         for (int left = 0; left < n; left += 2 * width) {
             const int mid = left + width;
             int right = left + 2 * width;
-            if (mid >= n)
+            if (mid >= n) {
+                /* Left run covers rest — copy tail unchanged */
+                memcpy(&dst[left], &src[left], (size_t)(n - left) * sizeof(RenderTask));
                 break;
+            }
             if (right > n)
                 right = n;
 
-            int i = left, j = mid, k = 0;
+            int i = left, j = mid, k = left;
             while (i < mid && j < right) {
-                if (gl_state.render_tasks[i].z <= gl_state.render_tasks[j].z) {
-                    gl_state.merge_temp[k++] = gl_state.render_tasks[i++];
+                if (src[i].z <= src[j].z) {
+                    dst[k++] = src[i++];
                 } else {
-                    gl_state.merge_temp[k++] = gl_state.render_tasks[j++];
+                    dst[k++] = src[j++];
                 }
             }
             while (i < mid)
-                gl_state.merge_temp[k++] = gl_state.render_tasks[i++];
+                dst[k++] = src[i++];
             while (j < right)
-                gl_state.merge_temp[k++] = gl_state.render_tasks[j++];
-
-            memcpy(&gl_state.render_tasks[left], gl_state.merge_temp, (size_t)k * sizeof(RenderTask));
+                dst[k++] = src[j++];
         }
+
+        /* Swap source and destination for next pass */
+        RenderTask* tmp = src;
+        src = dst;
+        dst = tmp;
+    }
+
+    /* If the sorted result ended up in merge_temp, copy back */
+    if (src != gl_state.render_tasks) {
+        memcpy(gl_state.render_tasks, gl_state.merge_temp, (size_t)n * sizeof(RenderTask));
     }
 }
 

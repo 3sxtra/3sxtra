@@ -41,6 +41,7 @@ extern "C" {
 #define CFG_KEY_LOBBY_REGION "lobby-region"
 #define CFG_KEY_VSYNC "vsync"
 #define CFG_KEY_DEBUG_HUD "debug-hud"
+#define CFG_KEY_SKIP_INTRO "skip-intro"
 
 /// Initialize config system
 void Config_Init();

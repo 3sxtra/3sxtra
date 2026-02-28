@@ -24,7 +24,7 @@ bool ImGuiFont_LoadJapaneseFont(const char* fontPath, float size) {
     ImFont* font = io.Fonts->AddFontFromFileTTF(fontPath, size, NULL, io.Fonts->GetGlyphRangesJapanese());
 
     if (font == nullptr) {
-        fprintf(stderr, "Failed to load Japanese font from: %s\n", fontPath);
+        fprintf(stderr, "Failed to load font from: %s\n", fontPath);
         return false;
     }
 

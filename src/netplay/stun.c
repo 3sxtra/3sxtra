@@ -329,9 +329,7 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
     result->public_port = port;
     result->socket_fd = sock; // Keep open for hole punching!
 
-    char ip_str[32];
-    Stun_FormatIP(ip, ip_str, sizeof(ip_str));
-    SDL_Log("STUN: Discovered public endpoint %s:%u (local port %u)", ip_str, ntohs(port), result->local_port);
+    SDL_Log("STUN: Discovered public endpoint (local port %u)", result->local_port);
 
     return true;
 }
@@ -393,9 +391,7 @@ bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, i
     setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 #endif
 
-    char ip_str[32];
-    Stun_FormatIP(*peer_ip, ip_str, sizeof(ip_str));
-    SDL_Log("STUN: Hole punching to %s:%u for %dms...", ip_str, ntohs(*peer_port), punch_duration_ms);
+    SDL_Log("STUN: Hole punching for %dms...", punch_duration_ms);
 
     uint32_t start = SDL_GetTicks();
     uint32_t last_send = 0;

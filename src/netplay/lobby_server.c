@@ -99,7 +99,7 @@ void LobbyServer_Init(void) {
 
     snprintf(server_key, sizeof(server_key), "%s", key);
     configured = true;
-    SDL_Log("LobbyServer: Configured for %s:%d", server_host, server_port);
+    SDL_Log("LobbyServer: Configured (port %d)", server_port);
 }
 
 bool LobbyServer_IsConfigured(void) {
@@ -367,7 +367,7 @@ static int http_connect(void) {
     // This function is only called from background threads, so the main thread
     // is not affected, but stalled threads may accumulate until DNS resolves.
     if (getaddrinfo(server_host, port_str, &hints, &res) != 0 || !res) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: DNS resolve failed for %s", server_host);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: DNS resolve failed");
         return -1;
     }
 
@@ -391,7 +391,7 @@ static int http_connect(void) {
 #endif
 
     if (connect(sock, res->ai_addr, (socklen_t)res->ai_addrlen) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: connect() failed to %s:%d", server_host, server_port);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: connect() failed");
         closesocket(sock);
         freeaddrinfo(res);
         return -1;

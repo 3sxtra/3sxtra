@@ -82,35 +82,7 @@ void MenuBridge_Init(const char* shm_suffix) {
 
     memset(g_bridge_state, 0, sizeof(MenuBridgeState));
 
-    printf("[MenuBridge] Success! Initialized '%s' at %p\n", name, (void*)g_bridge_state);
-
-    // Diagnostic: find CPS3 0x3D1 offset mapping
-    printf("[MenuBridge] STRUCT OFFSETS (finding CPS3 0x3D1):\n");
-    printf("  sizeof(WORK)=%zu  sizeof(PLW)=%zu\n", sizeof(WORK), sizeof(PLW));
-    printf("  WORK.kezurare_flag = 0x%zx\n", offsetof(WORK, kezurare_flag));
-    printf("  WORK.wrd_free = 0x%zx\n", offsetof(WORK, wrd_free));
-    printf("  WORK.kow = 0x%zx\n", offsetof(WORK, kow));
-    printf("  WORK.swallow_no_effect = 0x%zx\n", offsetof(WORK, swallow_no_effect));
-    printf("  WORK.K5_init_flag = 0x%zx\n", offsetof(WORK, K5_init_flag));
-    printf("  WORK.K5_exec_ok = 0x%zx\n", offsetof(WORK, K5_exec_ok));
-    printf("  WORK.hit_work_id = 0x%zx\n", offsetof(WORK, hit_work_id));
-    printf("  WORK.dmg_work_id = 0x%zx\n", offsetof(WORK, dmg_work_id));
-    printf("  WORK.extra_col = 0x%zx\n", offsetof(WORK, extra_col));
-    printf("  WORK.extra_col_2 = 0x%zx\n", offsetof(WORK, extra_col_2));
-    printf("  WORK.original_vitality = 0x%zx\n", offsetof(WORK, original_vitality));
-    printf("  WORK.direction = 0x%zx\n", offsetof(WORK, direction));
-    printf("  WORK.routine_no = 0x%zx\n", offsetof(WORK, routine_no));
-    printf("  WORK.cg_number = 0x%zx\n", offsetof(WORK, cg_number));
-    printf("  WORK.position_y = 0x%zx\n", offsetof(WORK, position_y));
-    printf("  PLW.guard_flag = 0x%zx\n", offsetof(PLW, guard_flag));
-    printf("  WORK.direction = 0x%zx\n", offsetof(WORK, direction));
-    printf("  PLW.do_not_move = 0x%zx\n", offsetof(PLW, do_not_move));
-    printf("  PLW.guard_flag = 0x%zx\n", offsetof(PLW, guard_flag));
-    printf("  PLW.running_f = 0x%zx\n", offsetof(PLW, running_f));
-    printf("  PLW.cancel_timer = 0x%zx\n", offsetof(PLW, cancel_timer));
-    printf("  PLW.dead_flag = 0x%zx\n", offsetof(PLW, dead_flag));
-    printf("  PLW.tsukamare_f = 0x%zx\n", offsetof(PLW, tsukamare_f));
-    printf("  PLW.kind_of_blocking = 0x%zx\n", offsetof(PLW, kind_of_blocking));
+    SDL_Log("[MenuBridge] Initialized '%s'", name);
 #else
     printf("[MenuBridge] Shared Memory not implemented for this platform.\n");
 #endif

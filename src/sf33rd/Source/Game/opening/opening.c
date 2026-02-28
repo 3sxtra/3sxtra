@@ -12,6 +12,7 @@
 
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "common.h"
+#include "port/config.h"
 #include "port/renderer.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -88,6 +89,14 @@ OP_W op_w;
 
 /** @brief Top-level opening demo state machine (BG init → scroll → title). */
 s16 opening_demo() {
+    /* When skip-intro is enabled, bypass the cinematic (cases 0-1) and
+       jump straight to the title screen display (case 2). */
+    if (Config_GetBool(CFG_KEY_SKIP_INTRO) && D_No[3] < 2) {
+        TITLE_Init();
+        FadeInit();
+        D_No[3] = 2;
+    }
+
     switch (D_No[3]) {
     case 0:
         D_No[3] += 1;

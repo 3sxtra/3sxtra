@@ -62,6 +62,7 @@ static const ConfigEntry default_entries[] = {
     { .key = CFG_KEY_NETPLAY_AUTO_CONNECT, .type = CFG_BOOL, .value.b = true },
     { .key = CFG_KEY_LOBBY_AUTO_CONNECT, .type = CFG_BOOL, .value.b = true },
     { .key = CFG_KEY_LOBBY_AUTO_SEARCH, .type = CFG_BOOL, .value.b = true },
+    { .key = CFG_KEY_SKIP_INTRO, .type = CFG_BOOL, .value.b = false },
 };
 
 static ConfigEntry entries[CONFIG_ENTRIES_MAX] = { 0 };
