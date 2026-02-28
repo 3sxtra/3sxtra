@@ -192,6 +192,12 @@ static void setup_vs_mode() {
     // This is pretty much a copy of logic from menu.c
     task[TASK_MENU].r_no[0] = 5; // go to idle routine (doing nothing)
     cpExitTask(TASK_SAVER);
+    cpExitTask(TASK_PAUSE);
+
+    // Zero pause flags — if one peer was paused before entering netplay,
+    // these would differ on the first synced frame.
+    Pause = 0;
+    Game_pause = 0;
 
     plw[0].wu.pl_operator = 1;
     plw[1].wu.pl_operator = 1;
@@ -204,6 +210,12 @@ static void setup_vs_mode() {
     grade_check_work_1st_init(1, 0);
     grade_check_work_1st_init(1, 1);
     Setup_Training_Difficulty();
+
+    // Tear down stale backgrounds, reinitialize the effect pool, and stop
+    // the select timer. Without this, lingering effects from attract/demo
+    // mode start diverged between peers — and since we snapshot EffectState
+    // for rollback, every restore to an early frame would replay garbage.
+    System_all_clear_Level_B();
 
     G_No[0] = 2;
     E_No[0] = 1;

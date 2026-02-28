@@ -171,6 +171,7 @@ void Discovery_Update() {
                         if (peers[i].instance_id == peer_instance_id) {
                             strcpy(peers[i].ip, ip_str); // Update IP in case it changed
                             peers[i].port = peer_port;
+                            snprintf(peers[i].name, sizeof(peers[i].name), "%s:%hu", ip_str, peer_port);
                             peers[i].last_seen_ticks = now;
                             peers[i].wants_auto_connect = (peer_auto == 1);
                             peers[i].peer_ready = (peer_rdy == 1);
@@ -186,7 +187,7 @@ void Discovery_Update() {
                         p->wants_auto_connect = (peer_auto == 1);
                         p->peer_ready = (peer_rdy == 1);
                         p->is_challenging_me = (peer_challenge == local_instance_id);
-                        snprintf(p->name, sizeof(p->name), "%s", ip_str);
+                        snprintf(p->name, sizeof(p->name), "%s:%hu", ip_str, peer_port);
                         p->port = peer_port;
                         p->last_seen_ticks = now;
                     }

@@ -225,12 +225,12 @@ const s16 Slide_Pos_Data_61[74][2] = {
     { -53, 78 }, /* [66] TRIALS */
     /* Network Lobby strings [67-73] */
     { -91, 203 }, /* [67] NETWORK LOBBY — centered on banner */
-    { -150, 165 }, /* [68] AUTO-CONN (LAN)      screen y≈69  */
-    { -150, 150 }, /* [69] CONNECT (LAN)         screen y≈84  */
-    { -150, 112 }, /* [70] AUTO-CONN (NET)       screen y≈122 */
-    { -150, 97 },  /* [71] AUTO-SEARCH (NET)     screen y≈137 */
-    { -150, 82 },  /* [72] CONNECT (NET)         screen y≈152 */
-    { -150, 67 }   /* [73] EXIT */
+    { -150, 171 }, /* [68] AUTO-CONN (LAN)      screen y≈63  */
+    { -150, 157 }, /* [69] CONNECT (LAN)         screen y≈77  */
+    { -150, 119 }, /* [70] AUTO-CONN (NET)       screen y≈115 */
+    { -150, 105 }, /* [71] AUTO-SEARCH (NET)     screen y≈129 */
+    { -150, 91 },  /* [72] CONNECT (NET)         screen y≈143 */
+    { -150, 69 }   /* [73] EXIT                  screen y≈155 */
 };
 
 const s16 Slide_Pos_Data_63[5][2] = { { 40, 164 }, { 60, 142 }, { 80, 120 }, { 100, 98 }, { 120, 76 } };

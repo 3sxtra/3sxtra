@@ -106,6 +106,18 @@ Managed by `effect_66_init` (in `eff66.c`) and internally referred to as a "Half
 *   Critically, the opacity of these rectangles is controlled by the object's `my_clear_level` attribute (e.g., set to 42 for semi-transparent layers, up to 128 for others).
 *   It leverages the sprite sorting engine (`sort_push_request2`/`4`/`A`/`B`) and native hardware alpha-blending for execution.
 
+#### `EFF66_Half_OBJ_Data` Format
+Each entry is `{x_offset, width, y_offset, height, charset_id, clear_level, rl_waza}`. The first four fields define the box rectangle:
+*   **`y_offset`**: Controls vertical position. **Increasing `y_offset` moves the box UP on screen** (inverted Y-axis).
+*   **`height`**: Box height in pixels. Changing height also affects position — **reducing height shifts the box DOWN** because `screen_top ≈ 224 - y_offset - height`. To shrink a box while keeping its top edge stable, increase `y_offset` by the same amount you reduce `height`.
+*   **`x_offset`**: Horizontal position (standard: positive = rightward).
+*   **`width`**: Box width in pixels.
+
+Custom box entries (negative `option` parameter, e.g., `-0x7FF0`) use `cg_type = option & 0x3FFF` as the index into this array. Network lobby boxes use indices 15 (Internet) and 16 (LAN).
+
+#### Coordinate Alignment with `SSPutStr_Bigger`
+`SSPutStr_Bigger` uses **absolute pixel coordinates** in the 384×224 framebuffer, while Effect 66 boxes use sprite-relative coordinates with an inverted Y-axis. Aligning text inside boxes requires coordinating both systems — there is no shared coordinate space, so adjustments must be verified visually.
+
 ### Main Menu Entries (Effect 61 CG Sprites)
 Unlike most HUD text, the primary menu selection strings (e.g., "GAME OPTION", "BUTTON CONFIG.", "ARCADE") **do not use the standard screen-font text engine** (`sc_sub.c`). Instead, they are rendered entirely as **in-game sprite objects** (CPS3 "CG" sprites), specifically using **Effect 61** (`eff61.c`).
 
@@ -117,6 +129,13 @@ Unlike most HUD text, the primary menu selection strings (e.g., "GAME OPTION", "
    * A hash (`#`) creates a custom half-space offset.
    * A slash (`/`) creates a carriage return/line break (`nx -= 8; ny += 17;`).
 5. **Rendering**: Because they are constructed as standard characters with physics/rendering containers (`WORK_Other`), they submit to the game's main object rendering pipeline every frame via `sort_push_request3(&ewk->wu);` alongside player characters and fireballs, rather than the UI painter's algorithm.
+
+#### Vertical Positioning (`Slide_Pos_Data_61`)
+Each menu entry's screen position is controlled by `Slide_Pos_Data_61[char_ix]` in `sel_data.c`, a `{x, y}` table:
+*   **Increasing `y` moves the item UP on screen** (same inverted Y-axis as Effect 66).
+*   The position is **relative to the background origin** (`bg_w.bgw[my_family-1].wxy`), not absolute pixel coordinates.
+*   Network lobby entries occupy indices **67–73** (NETWORK LOBBY title, AUTO-CONN, CONNECT, etc.).
+*   When repositioning menu items, any `SSPutStr_Bigger` text rendered alongside (e.g., toggle ON/OFF values) must be updated separately to match, since the two systems use independent coordinate spaces.
 
 ---
 
