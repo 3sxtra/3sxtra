@@ -324,7 +324,7 @@ static void configure_lossy_adapter() {
 // preserving the NAT pinhole. The default ASIO adapter creates a new
 // socket which may get a different public port on Symmetric NAT.
 
-#define STUN_ADAPTER_RECV_BUF 1024
+#define STUN_ADAPTER_RECV_BUF 4096
 #define STUN_ADAPTER_MAX_RESULTS 64
 
 static GekkoNetResult* stun_recv_pool[STUN_ADAPTER_MAX_RESULTS];

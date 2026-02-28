@@ -421,6 +421,12 @@ static void game_step_0() {
     if (current_net_state != NETPLAY_SESSION_IDLE) {
         TRACE_SUB_BEGIN("Netplay");
         Netplay_Run();
+        
+        // Match upstream behavior from PR 146: Flush the 2D polygon buffer each
+        // frame when the game's normal render loop isn't running, preventing
+        // the 100-item limit from overflowing during connection and matchmaking waits.
+        Renderer_Flush2DPrimitives();
+        
         TRACE_SUB_END();
 
         // Re-read state in case Netplay_Run changed it (e.g. EXITING -> IDLE)

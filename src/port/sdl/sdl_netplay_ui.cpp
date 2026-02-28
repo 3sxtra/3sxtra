@@ -306,13 +306,13 @@ static int SDLCALL stun_discover_thread_fn(void* data) {
     return 0;
 }
 
-// Hole punch thread function — also measures RTT for the invite popup
 static int SDLCALL hole_punch_thread_fn(void* data) {
     (void)data;
     SDL_SetAtomicInt(&lobby_punch_cancel, 0);
     uint32_t start_ms = SDL_GetTicks();
-    bool ok = Stun_HolePunch(&stun_result, lobby_punch_peer_ip, lobby_punch_peer_port, 10000, &lobby_punch_cancel);
+    bool ok = Stun_HolePunch(&stun_result, &lobby_punch_peer_ip, &lobby_punch_peer_port, 10000, &lobby_punch_cancel);
     if (ok) {
+        Stun_FormatIP(lobby_punch_peer_ip, lobby_punch_peer_ip_str, sizeof(lobby_punch_peer_ip_str));
         uint32_t rtt_ms = (SDL_GetTicks() - start_ms);
         if (rtt_ms > 200) rtt_ms = 200;  // Cap at reasonable max for display
         if (rtt_ms < 1) rtt_ms = 1;

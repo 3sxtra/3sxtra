@@ -342,15 +342,23 @@ void Stun_SetNonBlocking(StunResult* result) {
 #ifdef _WIN32
     u_long mode = 1;
     ioctlsocket(result->socket_fd, FIONBIO, &mode);
+
+    // Disable WSAECONNRESET behavior which breaks recvfrom() on Windows
+    #ifndef SIO_UDP_CONNRESET
+    #define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR, 12)
+    #endif
+    BOOL bNewBehavior = FALSE;
+    DWORD dwBytesReturned = 0;
+    WSAIoctl(result->socket_fd, SIO_UDP_CONNRESET, &bNewBehavior, sizeof(bNewBehavior), NULL, 0, &dwBytesReturned, NULL, NULL);
 #else
     int flags = fcntl(result->socket_fd, F_GETFL, 0);
     fcntl(result->socket_fd, F_SETFL, flags | O_NONBLOCK);
 #endif
 }
 
-bool Stun_HolePunch(StunResult* local, uint32_t peer_ip, uint16_t peer_port, int punch_duration_ms,
+bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, int punch_duration_ms,
                     SDL_AtomicInt* cancel_flag) {
-    if (!local || local->socket_fd < 0)
+    if (!local || local->socket_fd < 0 || !peer_ip || !peer_port)
         return false;
 
     int sock = local->socket_fd;
@@ -359,8 +367,8 @@ bool Stun_HolePunch(StunResult* local, uint32_t peer_ip, uint16_t peer_port, int
     struct sockaddr_in peer_addr;
     memset(&peer_addr, 0, sizeof(peer_addr));
     peer_addr.sin_family = AF_INET;
-    peer_addr.sin_port = peer_port;      // Already network byte order
-    peer_addr.sin_addr.s_addr = peer_ip; // Already network byte order
+    peer_addr.sin_port = *peer_port;      // Already network byte order
+    peer_addr.sin_addr.s_addr = *peer_ip; // Already network byte order
 
     // Punch packet — a small identifiable payload
     const char punch_msg[] = "3SX_PUNCH";
@@ -378,8 +386,8 @@ bool Stun_HolePunch(StunResult* local, uint32_t peer_ip, uint16_t peer_port, int
 #endif
 
     char ip_str[32];
-    Stun_FormatIP(peer_ip, ip_str, sizeof(ip_str));
-    SDL_Log("STUN: Hole punching to %s:%u for %dms...", ip_str, ntohs(peer_port), punch_duration_ms);
+    Stun_FormatIP(*peer_ip, ip_str, sizeof(ip_str));
+    SDL_Log("STUN: Hole punching to %s:%u for %dms...", ip_str, ntohs(*peer_port), punch_duration_ms);
 
     uint32_t start = SDL_GetTicks();
     uint32_t last_send = 0;
@@ -408,9 +416,14 @@ bool Stun_HolePunch(StunResult* local, uint32_t peer_ip, uint16_t peer_port, int
         if (bytes > 0) {
             recv_buf[bytes] = '\0';
             // Check if it's a punch from our expected peer
-            if (from_addr.sin_addr.s_addr == peer_ip && strcmp(recv_buf, punch_msg) == 0) {
+            if (from_addr.sin_addr.s_addr == *peer_ip && strcmp(recv_buf, punch_msg) == 0) {
                 SDL_Log("STUN: Hole punch SUCCESS — received response from peer");
                 received_response = true;
+                
+                // Update with actual received endpoint (fixes Symmetric NAT port translation)
+                *peer_ip = from_addr.sin_addr.s_addr;
+                *peer_port = from_addr.sin_port;
+                
                 // Send a few more punches to ensure the peer also receives ours
                 for (int i = 0; i < 3; i++) {
                     sendto(sock, punch_msg, (int)strlen(punch_msg), 0, (struct sockaddr*)&peer_addr, sizeof(peer_addr));

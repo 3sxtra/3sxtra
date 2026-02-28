@@ -36,12 +36,24 @@ static int s_bg_enabled = 1;
 static float s_bg_color[4] = { 0.0f, 0.0f, 0.0f, 0.6f };
 static float s_bg_padding = 2.0f;
 
+// Cached uniform locations
+static GLint s_text_loc_projection = -1;
+static GLint s_text_loc_textColor = -1;
+static GLint s_rect_loc_projection = -1;
+static GLint s_rect_loc_rectColor = -1;
+
 void SDLTextRendererGL_Init(const char* base_path, const char* font_path) {
     (void)font_path; // Unused, we use internal 8x8 font
     SDL_Log("Initializing OpenGL text renderer...");
 
     s_text_shader = create_shader_program(base_path, "shaders/text.vert", "shaders/text.frag");
     s_rect_shader = create_shader_program(base_path, "shaders/rect.vert", "shaders/rect.frag");
+
+    s_text_loc_projection = glGetUniformLocation(s_text_shader, "projection");
+    s_text_loc_textColor = glGetUniformLocation(s_text_shader, "textColor");
+
+    s_rect_loc_projection = glGetUniformLocation(s_rect_shader, "projection");
+    s_rect_loc_rectColor = glGetUniformLocation(s_rect_shader, "rectColor");
 
     s_font_atlas.width = 128; // 16 chars per row * 8 pixels = 128 width
     s_font_atlas.height = 64; // 8 rows of chars * 8 pixels = 64 height
@@ -110,8 +122,8 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
                                      { 0.0f, -2.0f / target_height, 0.0f, 0.0f },
                                      { 0.0f, 0.0f, -1.0f, 0.0f },
                                      { -1.0f, 1.0f, 0.0f, 1.0f } };
-    glUniformMatrix4fv(glGetUniformLocation(s_text_shader, "projection"), 1, GL_FALSE, &projection[0][0]);
-    glUniform3f(glGetUniformLocation(s_text_shader, "textColor"), r, g, b);
+    glUniformMatrix4fv(s_text_loc_projection, 1, GL_FALSE, &projection[0][0]);
+    glUniform3f(s_text_loc_textColor, r, g, b);
 
     glBindTexture(GL_TEXTURE_2D, s_font_atlas.texture_id);
     glBindVertexArray(s_text_vao);
@@ -164,8 +176,8 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
 
             // Draw rect using rect shader
             glUseProgram(s_rect_shader);
-            glUniformMatrix4fv(glGetUniformLocation(s_rect_shader, "projection"), 1, GL_FALSE, &projection[0][0]);
-            glUniform4f(glGetUniformLocation(s_rect_shader, "rectColor"),
+            glUniformMatrix4fv(s_rect_loc_projection, 1, GL_FALSE, &projection[0][0]);
+            glUniform4f(s_rect_loc_rectColor,
                         s_bg_color[0],
                         s_bg_color[1],
                         s_bg_color[2],
@@ -180,8 +192,8 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
 
             // restore text shader before drawing glyphs
             glUseProgram(s_text_shader);
-            glUniformMatrix4fv(glGetUniformLocation(s_text_shader, "projection"), 1, GL_FALSE, &projection[0][0]);
-            glUniform3f(glGetUniformLocation(s_text_shader, "textColor"), r, g, b);
+            glUniformMatrix4fv(s_text_loc_projection, 1, GL_FALSE, &projection[0][0]);
+            glUniform3f(s_text_loc_textColor, r, g, b);
             glBindTexture(GL_TEXTURE_2D, s_font_atlas.texture_id);
             glBindVertexArray(s_text_vao);
         }
