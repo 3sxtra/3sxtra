@@ -1,0 +1,263 @@
+/* Stage config menu stylesheet — 3SXtra RmlUi overlay */
+
+body {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+#config-panel {
+    display: block;
+    width: 480dp;
+    max-height: 92%;
+    margin: auto;
+    margin-top: 2%;
+    background-color: rgba(15, 15, 20, 0.95);
+    border-width: 1dp;
+    border-color: #444;
+    border-radius: 10dp;
+    padding: 16dp 20dp;
+    overflow-y: auto;
+}
+
+/* Title */
+#config-panel h1 {
+    font-size: 20dp;
+    color: #ff9933;
+    margin-bottom: 6dp;
+    text-align: center;
+}
+
+/* Section headers */
+h2 {
+    font-size: 13dp;
+    color: #888;
+    margin-top: 4dp;
+    margin-bottom: 4dp;
+    text-transform: uppercase;
+    letter-spacing: 1dp;
+}
+
+/* Dividers */
+.divider {
+    display: block;
+    height: 1dp;
+    background-color: #333;
+    margin-top: 6dp;
+    margin-bottom: 6dp;
+}
+
+/* Stage info */
+.stage-info {
+    display: block;
+    color: #aaa;
+    font-size: 13dp;
+    margin-bottom: 6dp;
+}
+
+/* ─── Button row ─── */
+
+.button-row {
+    display: block;
+    margin-bottom: 4dp;
+}
+
+button {
+    display: inline-block;
+    padding: 5dp 12dp;
+    background-color: #2a2a30;
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 4dp;
+    color: #ddd;
+    font-size: 13dp;
+    cursor: pointer;
+    margin-right: 6dp;
+}
+
+button:hover {
+    background-color: #3a3a44;
+    border-color: #ff9933;
+}
+
+button:active {
+    background-color: #222;
+}
+
+.btn-danger {
+    border-color: #a33;
+    color: #f88;
+}
+
+.btn-danger:hover {
+    background-color: #3a2020;
+    border-color: #f44;
+}
+
+/* ─── Tab bar ─── */
+
+.tab-bar {
+    display: block;
+    margin-bottom: 6dp;
+}
+
+.tab {
+    display: inline-block;
+    padding: 5dp 14dp;
+    background-color: #1a1a20;
+    border-width: 1dp;
+    border-color: #333;
+    border-radius: 4dp 4dp 0 0;
+    color: #888;
+    font-size: 13dp;
+    cursor: pointer;
+    margin-right: 2dp;
+}
+
+.tab:hover {
+    background-color: #2a2a30;
+    color: #ccc;
+}
+
+.tab.active {
+    background-color: #2a2a30;
+    border-color: #ff9933;
+    border-bottom-color: #2a2a30;
+    color: #ff9933;
+}
+
+/* ─── Layer panel ─── */
+
+.layer-panel {
+    display: block;
+    background-color: rgba(42, 42, 48, 0.5);
+    border-width: 1dp;
+    border-color: #333;
+    border-radius: 0 4dp 4dp 4dp;
+    padding: 10dp 14dp;
+}
+
+/* Control rows */
+.control-row {
+    display: block;
+    padding: 3dp 0;
+}
+
+label {
+    font-size: 13dp;
+    color: #ccc;
+}
+
+/* Indent for sub-options */
+.indent {
+    display: block;
+    margin-left: 16dp;
+}
+
+/* ─── Text input ─── */
+
+input.text {
+    display: block;
+    width: 100%;
+    padding: 4dp 8dp;
+    background-color: #1a1a20;
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 3dp;
+    color: #fff;
+    font-size: 13dp;
+    margin-top: 2dp;
+    box-sizing: border-box;
+}
+
+input.text:focus {
+    border-color: #ff9933;
+}
+
+/* ─── Select ─── */
+
+select {
+    display: inline-block;
+    padding: 4dp 8dp;
+    background-color: #2a2a30;
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 3dp;
+    color: #ddd;
+    font-size: 13dp;
+    margin-left: 6dp;
+}
+
+select:hover {
+    border-color: #ff9933;
+}
+
+select selectbox {
+    background-color: #1a1a20;
+    border-width: 1dp;
+    border-color: #555;
+}
+
+select selectbox option {
+    padding: 3dp 8dp;
+}
+
+select selectbox option:hover {
+    background-color: #ff993344;
+}
+
+select selectbox option:checked {
+    background-color: #ff993366;
+    color: #fff;
+}
+
+/* ─── Range slider value display ─── */
+
+.value-display {
+    display: inline-block;
+    font-size: 12dp;
+    color: #ff9933;
+    margin-left: 6dp;
+    min-width: 40dp;
+}
+
+/* Status text */
+.status-error {
+    color: #ff4444;
+    font-size: 14dp;
+    display: block;
+    text-align: center;
+    padding: 20dp;
+}
+
+.status-hint {
+    color: #666;
+    font-size: 12dp;
+    display: block;
+    margin-left: 16dp;
+}
+
+.hint {
+    font-size: 12dp;
+    color: #555;
+    margin-top: 6dp;
+    text-align: center;
+}
+
+/* Scrollbar */
+#config-panel scrollbarvertical {
+    width: 8dp;
+}
+
+#config-panel scrollbarvertical sliderbar {
+    background-color: #555;
+    border-radius: 4dp;
+}
+
+#config-panel scrollbarvertical sliderbar:hover {
+    background-color: #777;
+}
+
+#config-panel scrollbarvertical slidertrack {
+    background-color: #222;
+}

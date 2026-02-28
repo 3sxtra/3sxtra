@@ -112,24 +112,96 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
         if (use_rmlui) {
             ui_wants_mouse = rmlui_wrapper_want_capture_mouse();
             ui_wants_keyboard = rmlui_wrapper_want_capture_keyboard();
+            // When control mapping (F1) is open, disable UI capture so all
+            // input reaches SDLPad handlers — mirrors imgui_wrapper_capture_input()
+            // which sets WantCapture* = false when control_mapping_is_active().
+            if (SDLApp_IsMenuVisible()) {
+                ui_wants_mouse = false;
+                ui_wants_keyboard = false;
+            }
         } else {
             imgui_wrapper_capture_input(control_mapping_is_active());
             ui_wants_mouse = imgui_wrapper_want_capture_mouse();
             ui_wants_keyboard = imgui_wrapper_want_capture_keyboard();
         }
-        if (ui_wants_mouse || ui_wants_keyboard) {
-            if (event->type == SDL_EVENT_QUIT) {
-                request_quit = true;
-            }
-            return request_quit; // UI consumed input
+        // Block events based on what the UI actually wants to capture.
+        // Mouse capture blocks only mouse events; keyboard capture blocks
+        // only keyboard events.  Gamepad/joystick always passes through.
+        if (event->type == SDL_EVENT_QUIT) {
+            // Always handle quit
+        } else if (ui_wants_mouse &&
+                   (event->type == SDL_EVENT_MOUSE_MOTION ||
+                    event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+                    event->type == SDL_EVENT_MOUSE_BUTTON_UP ||
+                    event->type == SDL_EVENT_MOUSE_WHEEL)) {
+            return false; // UI consumed mouse
+        } else if (ui_wants_keyboard &&
+                   (event->type == SDL_EVENT_KEY_DOWN ||
+                    event->type == SDL_EVENT_KEY_UP ||
+                    event->type == SDL_EVENT_TEXT_INPUT)) {
+            return false; // UI consumed keyboard
         }
+        // Gamepad, joystick, window events etc. always fall through
     } else {
-        // SDL2D mode: handle essential keys that don't require ImGui/shader subsystems
+        // SDL2D mode: no ImGui, no NetplayUI — but RmlUi is available
+        extern bool use_rmlui;
+        if (use_rmlui) {
+            rmlui_wrapper_process_event(event);
+        }
+
         if (event->type == SDL_EVENT_KEY_DOWN) {
+            handle_menu_toggle(&event->key);
+            handle_shader_menu_toggle(&event->key);
+            handle_mods_menu_toggle(&event->key);
+            set_screenshot_flag_if_needed(&event->key);
             handle_fullscreen_toggle(&event->key);
+            handle_scale_mode_toggle(&event->key);
+
+            if (event->key.key == SDLK_F7 && event->key.down && !event->key.repeat) {
+                SDLApp_ToggleTrainingMenu();
+            }
+
+            if (event->key.key == SDLK_F6 && event->key.down && !event->key.repeat) {
+                SDLApp_ToggleStageConfigMenu();
+            }
+
             if (event->key.key == SDLK_F5 && event->key.down && !event->key.repeat) {
                 if (!Netplay_IsEnabled()) {
                     SDLApp_ToggleFrameRateUncap();
+                }
+            }
+            if (event->key.key == SDLK_F4 && event->key.down && !event->key.repeat) {
+                SDLApp_ToggleShaderMode();
+            }
+            if (event->key.key == SDLK_F9 && event->key.down && !event->key.repeat) {
+                SDLApp_CyclePreset();
+            }
+            if (event->key.key == SDLK_F10 && event->key.down && !event->key.repeat) {
+                SDLNetplayUI_SetDiagnosticsVisible(!SDLNetplayUI_IsDiagnosticsVisible());
+            }
+        }
+
+        // Input capture for RmlUi in SDL2D mode
+        if (use_rmlui) {
+            bool ui_wants_mouse = rmlui_wrapper_want_capture_mouse();
+            bool ui_wants_keyboard = rmlui_wrapper_want_capture_keyboard();
+            if (SDLApp_IsMenuVisible()) {
+                ui_wants_mouse = false;
+                ui_wants_keyboard = false;
+            }
+            if (event->type != SDL_EVENT_QUIT) {
+                if (ui_wants_mouse &&
+                    (event->type == SDL_EVENT_MOUSE_MOTION ||
+                     event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+                     event->type == SDL_EVENT_MOUSE_BUTTON_UP ||
+                     event->type == SDL_EVENT_MOUSE_WHEEL)) {
+                    return false;
+                }
+                if (ui_wants_keyboard &&
+                    (event->type == SDL_EVENT_KEY_DOWN ||
+                     event->type == SDL_EVENT_KEY_UP ||
+                     event->type == SDL_EVENT_TEXT_INPUT)) {
+                    return false;
                 }
             }
         }

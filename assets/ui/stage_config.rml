@@ -1,0 +1,135 @@
+<rml>
+<head>
+    <title>HD Stage Config</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="stage_config.rcss"/>
+</head>
+<body data-model="stage_config">
+    <div id="config-panel">
+        <h1>HD STAGE CONFIG (F6)</h1>
+        <div class="divider"></div>
+
+        <!-- No stage loaded -->
+        <div data-if="!has_stage">
+            <p class="status-error">No active HD stage loaded.</p>
+        </div>
+
+        <!-- Stage loaded -->
+        <div data-if="has_stage">
+            <p class="stage-info">Stage {{stage_idx}}</p>
+
+            <!-- Action buttons -->
+            <div class="button-row">
+                <button data-event-click="save_config">Save</button>
+                <button data-event-click="load_config">Reload</button>
+                <button class="btn-danger" data-event-click="reset_config">Reset Defaults</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Layer tabs -->
+            <div class="tab-bar">
+                <div class="tab" data-class-active="selected_layer == 0"
+                     data-event-click="select_tab(0)">Layer 0</div>
+                <div class="tab" data-class-active="selected_layer == 1"
+                     data-event-click="select_tab(1)">Layer 1</div>
+                <div class="tab" data-class-active="selected_layer == 2"
+                     data-event-click="select_tab(2)">Layer 2</div>
+                <div class="tab" data-class-active="selected_layer == 3"
+                     data-event-click="select_tab(3)">Layer 3</div>
+            </div>
+
+            <!-- Active layer properties -->
+            <div class="layer-panel">
+                <div class="control-row">
+                    <input type="checkbox" data-checked="layer_enabled"/>
+                    <label>Enabled</label>
+                </div>
+
+                <div class="control-row">
+                    <label>Filename</label>
+                    <input type="text" data-value="layer_filename"/>
+                </div>
+
+                <div class="control-row">
+                    <label>Scale Mode</label>
+                    <select data-value="layer_scale_mode">
+                        <option value="0">Fit Height</option>
+                        <option value="1">Stretch</option>
+                        <option value="2">Native</option>
+                        <option value="3">Manual</option>
+                    </select>
+                </div>
+
+                <div data-if="is_manual_scale" class="indent">
+                    <div class="control-row">
+                        <label>Scale X</label>
+                        <input type="range" min="0.1" max="10" step="0.01" data-value="layer_scale_x"/>
+                        <span class="value-display">{{layer_scale_x}}</span>
+                    </div>
+                    <div class="control-row">
+                        <label>Scale Y</label>
+                        <input type="range" min="0.1" max="10" step="0.01" data-value="layer_scale_y"/>
+                        <span class="value-display">{{layer_scale_y}}</span>
+                    </div>
+                </div>
+                <p data-if="is_fit_height" class="status-hint">Scale auto-calculated from height.</p>
+
+                <div class="divider"></div>
+
+                <h2>Parallax</h2>
+                <div class="control-row">
+                    <label>Para X</label>
+                    <input type="range" min="0" max="2" step="0.01" data-value="layer_parallax_x"/>
+                    <span class="value-display">{{layer_parallax_x}}</span>
+                </div>
+                <div class="control-row">
+                    <label>Para Y</label>
+                    <input type="range" min="0" max="2" step="0.01" data-value="layer_parallax_y"/>
+                    <span class="value-display">{{layer_parallax_y}}</span>
+                </div>
+
+                <div class="control-row">
+                    <label>Original Layer ID</label>
+                    <input type="range" min="-1" max="7" step="1" data-value="layer_bg_index"/>
+                    <span class="value-display">{{layer_bg_index}}</span>
+                </div>
+
+                <div class="divider"></div>
+
+                <h2>Position</h2>
+                <div class="control-row">
+                    <label>Offset X</label>
+                    <input type="range" min="-1000" max="1000" step="1" data-value="layer_offset_x"/>
+                    <span class="value-display">{{layer_offset_x}}</span>
+                </div>
+                <div class="control-row">
+                    <label>Offset Y</label>
+                    <input type="range" min="-1000" max="1000" step="1" data-value="layer_offset_y"/>
+                    <span class="value-display">{{layer_offset_y}}</span>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="control-row">
+                    <label>Z-Index</label>
+                    <input type="range" min="-10" max="10" step="1" data-value="layer_z_index"/>
+                    <span class="value-display">{{layer_z_index}}</span>
+                </div>
+
+                <div class="control-row">
+                    <input type="checkbox" data-checked="layer_loop_x"/>
+                    <label>Loop X</label>
+                </div>
+                <div class="control-row">
+                    <input type="checkbox" data-checked="layer_loop_y"/>
+                    <label>Loop Y</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="hint">Press F6 to close</p>
+    </div>
+</body>
+</rml>

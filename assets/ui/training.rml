@@ -1,0 +1,68 @@
+<rml>
+<head>
+    <title>Training Options</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="training.rcss"/>
+</head>
+<body data-model="training">
+    <div id="training-panel" class="panel">
+        <h1>TRAINING OPTIONS</h1>
+        <div class="divider"></div>
+
+        <!-- Master Hitboxes Toggle -->
+        <div class="section">
+            <div class="control-row">
+                <input type="checkbox" data-checked="hitboxes"/>
+                <label>Master Hitboxes Toggle</label>
+            </div>
+            <p class="hint">Master switch for all collision overlays</p>
+
+            <!-- Sub-toggles (visually indented, disabled when hitboxes off) -->
+            <div class="sub-group" data-if="hitboxes">
+                <div class="control-row">
+                    <input type="checkbox" data-checked="pushboxes"/>
+                    <label>Pushboxes (Green)</label>
+                </div>
+                <div class="control-row">
+                    <input type="checkbox" data-checked="hurtboxes"/>
+                    <label>Hurtboxes (Blue)</label>
+                </div>
+                <div class="control-row">
+                    <input type="checkbox" data-checked="attackboxes"/>
+                    <label>Hitboxes (Red)</label>
+                </div>
+                <div class="control-row">
+                    <input type="checkbox" data-checked="throwboxes"/>
+                    <label>Throwboxes (Yellow/Pink)</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Data Overlays -->
+        <div class="section">
+            <h2>Data Overlays</h2>
+            <div class="control-row">
+                <input type="checkbox" data-checked="advantage"/>
+                <label>Show Frame Advantage</label>
+            </div>
+            <div class="control-row">
+                <input type="checkbox" data-checked="stun"/>
+                <label>Show Stun Timer</label>
+            </div>
+            <div class="control-row">
+                <input type="checkbox" data-checked="inputs"/>
+                <label>Show Input History</label>
+            </div>
+            <div class="control-row">
+                <input type="checkbox" data-checked="frame_meter"/>
+                <label>Show Frame Meter</label>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="hint">Press F7 to close this menu</p>
+    </div>
+</body>
+</rml>

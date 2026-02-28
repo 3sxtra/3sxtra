@@ -24,6 +24,9 @@ extern float g_master_volume;
 // Font test mode — boots into a debug font visualization screen
 bool g_font_test_mode = false;
 
+// UI mode flag — session-only, not persisted to config
+bool g_ui_mode_rmlui = false;
+
 // Netplay game port (default 50000). Set via --port to allow multiple local instances.
 unsigned short g_netplay_port = 50000;
 
@@ -98,7 +101,7 @@ void ParseCLI(int argc, char* argv[]) {
             g_font_test_mode = true;
         } else if (strcmp(argv[i], "--ui") == 0 && i + 1 < argc) {
             const char* mode = argv[++i];
-            Config_SetString(CFG_KEY_UI_MODE, mode);
+            g_ui_mode_rmlui = (strcmp(mode, "rmlui") == 0);
             printf("[CLI] UI mode: %s\n", mode);
         }
     }

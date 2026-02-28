@@ -1,0 +1,26 @@
+<rml>
+<head>
+    <title>Input Display</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="input_display.rcss"/>
+</head>
+<body data-model="input_display">
+    <!-- P1 Input History (left side) -->
+    <div id="p1-panel" data-if="visible">
+        <div data-for="row : p1_history" class="input-row">
+            <span class="direction">{{ row.direction }}</span>
+            <span class="buttons">{{ row.buttons }}</span>
+            <span class="frame-count">{{ row.frames }}</span>
+        </div>
+    </div>
+
+    <!-- P2 Input History (right side) -->
+    <div id="p2-panel" data-if="visible">
+        <div data-for="row : p2_history" class="input-row p2">
+            <span class="frame-count">{{ row.frames }}</span>
+            <span class="direction">{{ row.direction }}</span>
+            <span class="buttons">{{ row.buttons }}</span>
+        </div>
+    </div>
+</body>
+</rml>

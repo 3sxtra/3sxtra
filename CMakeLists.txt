@@ -183,11 +183,21 @@ set_source_files_properties(${IMGUI_SRC} ${IMGUI_BACKEND_SRC} ${ZLIB_SRC} src/po
 set_source_files_properties(
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
+    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL.cpp
+    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL_GPU.cpp
     PROPERTIES
         COMPILE_OPTIONS "-Wno-error"
         COMPILE_DEFINITIONS "RMLUI_SDL_VERSION_MAJOR=3"
         SKIP_LINTING ON
         CXX_CLANG_TIDY ""
+)
+# SDL_GPU backend header has abstract Command class with non-virtual dtor —
+# suppress the warning for files that include it (wrapper + backend itself)
+set_source_files_properties(
+    src/port/sdl/rmlui_wrapper.cpp
+    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL_GPU.cpp
+    PROPERTIES
+        COMPILE_OPTIONS "-Wno-error;-Wno-delete-abstract-non-virtual-dtor;-Wno-delete-non-abstract-non-virtual-dtor"
 )
 # Use our glad via RMLUI_GL3_CUSTOM_LOADER instead of RmlUi's bundled glad
 set_source_files_properties(
@@ -234,9 +244,18 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/sdl/sdl_text_renderer_sdl.c
     src/port/sdl/rmlui_wrapper.cpp
     src/port/sdl/rmlui_mods_menu.cpp
-    # RmlUi backend sources (SDL3 platform + GL3 renderer)
+    src/port/sdl/rmlui_shader_menu.cpp
+    src/port/sdl/rmlui_stage_config.cpp
+    src/port/sdl/rmlui_input_display.cpp
+    src/port/sdl/rmlui_frame_display.cpp
+    src/port/sdl/rmlui_control_mapping.cpp
+    src/port/sdl/rmlui_training_menu.cpp
+    src/port/sdl/rmlui_netplay_ui.cpp
+    # RmlUi backend sources (SDL3 platform + GL3/SDL/SDL_GPU renderers)
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
+    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL.cpp
+    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL_GPU.cpp
 )
 
 

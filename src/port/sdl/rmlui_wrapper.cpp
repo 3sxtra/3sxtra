@@ -10,6 +10,7 @@
 #include "port/config.h"
 #include "port/paths.h"
 #include "port/sdl/sdl_app.h"
+#include "port/sdl/sdl_game_renderer_internal.h"
 
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>
@@ -29,15 +30,27 @@
 // Platform (common to all SDL renderers)
 #include <RmlUi_Platform_SDL.h>
 
-// Renderer
+// Renderers
 #include <RmlUi_Renderer_GL3.h>
+#include <RmlUi_Renderer_SDL.h>
+#include <RmlUi_Renderer_SDL_GPU.h>
 
 // -------------------------------------------------------------------
 // State
 // -------------------------------------------------------------------
 static Rml::Context* s_context = nullptr;
 static SystemInterface_SDL* s_system_interface = nullptr;
-static RenderInterface_GL3* s_render_interface = nullptr;
+
+// Polymorphic base — used by Rml::SetRenderInterface() and context render
+static Rml::RenderInterface* s_render_interface = nullptr;
+
+// Typed pointers for backend-specific init/shutdown/render calls.
+// Exactly one of these is non-null at a time.
+static RenderInterface_GL3*     s_render_gl3 = nullptr;
+static RenderInterface_SDL*     s_render_sdl = nullptr;
+static RenderInterface_SDL_GPU* s_render_gpu = nullptr;
+
+static RendererBackend s_active_backend;
 
 static SDL_Window* s_window = nullptr;
 static int s_window_w = 0;
@@ -52,6 +65,7 @@ static std::string s_ui_base_path;
 extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     (void)gl_context;
     s_window = window;
+    s_active_backend = SDLApp_GetRenderer();
 
     // Determine assets/ui/ path
     const char* base_path = Paths_GetBasePath();
@@ -64,20 +78,37 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     // Get window dimensions
     SDL_GetWindowSize(window, &s_window_w, &s_window_h);
 
-    // Create system interface (SDL platform)
+    // Create system interface (SDL platform — shared by all renderers)
     s_system_interface = new SystemInterface_SDL();
     s_system_interface->SetWindow(window);
     Rml::SetSystemInterface(s_system_interface);
 
-    // Initialize the GL3 backend (loads GL functions via glad/SDL)
-    Rml::String gl_message;
-    if (!RmlGL3::Initialize(&gl_message)) {
-        SDL_Log("[RmlUi] Failed to initialize GL3 backend: %s", gl_message.c_str());
-        return;
+    // Create render interface based on active renderer
+    switch (s_active_backend) {
+    case RENDERER_OPENGL: {
+        Rml::String gl_message;
+        if (!RmlGL3::Initialize(&gl_message)) {
+            SDL_Log("[RmlUi] Failed to initialize GL3 backend: %s", gl_message.c_str());
+            return;
+        }
+        s_render_gl3 = new RenderInterface_GL3();
+        s_render_interface = s_render_gl3;
+        break;
+    }
+    case RENDERER_SDLGPU: {
+        SDL_GPUDevice* device = SDLApp_GetGPUDevice();
+        s_render_gpu = new RenderInterface_SDL_GPU(device, window);
+        s_render_interface = s_render_gpu;
+        break;
+    }
+    case RENDERER_SDL2D: {
+        SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+        s_render_sdl = new RenderInterface_SDL(renderer);
+        s_render_interface = s_render_sdl;
+        break;
+    }
     }
 
-    // Create render interface (GL3)
-    s_render_interface = new RenderInterface_GL3();
     Rml::SetRenderInterface(s_render_interface);
 
     // Initialize RmlUi core
@@ -102,21 +133,15 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
         return;
     }
 
-    // Initialize the GL3 render interface with the viewport
-    s_render_interface->SetViewport(s_window_w, s_window_h);
-
-    SDL_Log("[RmlUi] Initialized (GL3 renderer, %dx%d)", s_window_w, s_window_h);
-
-    // Try loading the test document
-    std::string test_path = s_ui_base_path + "test.rml";
-    Rml::ElementDocument* doc = s_context->LoadDocument(test_path.c_str());
-    if (doc) {
-        doc->Show();
-        s_documents["test"] = doc;
-        SDL_Log("[RmlUi] Loaded test document: %s", test_path.c_str());
-    } else {
-        SDL_Log("[RmlUi] No test document found at: %s (OK for first run)", test_path.c_str());
+    // Backend-specific post-init
+    if (s_render_gl3) {
+        s_render_gl3->SetViewport(s_window_w, s_window_h);
     }
+
+    const char* backend_name = (s_active_backend == RENDERER_SDLGPU)  ? "SDL_GPU"
+                             : (s_active_backend == RENDERER_SDL2D)   ? "SDL2D"
+                                                                      : "GL3";
+    SDL_Log("[RmlUi] Initialized (%s renderer, %dx%d)", backend_name, s_window_w, s_window_h);
 }
 
 // -------------------------------------------------------------------
@@ -132,10 +157,22 @@ extern "C" void rmlui_wrapper_shutdown(void) {
 
     Rml::Shutdown();
 
-    delete s_render_interface;
+    // Backend-specific cleanup
+    if (s_render_gl3) {
+        delete s_render_gl3;
+        s_render_gl3 = nullptr;
+        RmlGL3::Shutdown();
+    }
+    if (s_render_gpu) {
+        s_render_gpu->Shutdown();
+        delete s_render_gpu;
+        s_render_gpu = nullptr;
+    }
+    if (s_render_sdl) {
+        delete s_render_sdl;
+        s_render_sdl = nullptr;
+    }
     s_render_interface = nullptr;
-
-    RmlGL3::Shutdown();
 
     delete s_system_interface;
     s_system_interface = nullptr;
@@ -157,9 +194,10 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
         s_window_w = event->window.data1;
         s_window_h = event->window.data2;
         s_context->SetDimensions(Rml::Vector2i(s_window_w, s_window_h));
-        if (s_render_interface) {
-            s_render_interface->SetViewport(s_window_w, s_window_h);
+        if (s_render_gl3) {
+            s_render_gl3->SetViewport(s_window_w, s_window_h);
         }
+        // SDL_GPU and SDL2D handle dimensions per-frame, no resize callback needed
     }
 }
 
@@ -177,9 +215,31 @@ extern "C" void rmlui_wrapper_new_frame(void) {
 extern "C" void rmlui_wrapper_render(void) {
     if (!s_context || !s_render_interface) return;
 
-    s_render_interface->BeginFrame();
-    s_context->Render();
-    s_render_interface->EndFrame();
+    if (s_render_gl3) {
+        // GL3: simple begin/end frame
+        s_render_gl3->BeginFrame();
+        s_context->Render();
+        s_render_gl3->EndFrame();
+    } else if (s_render_gpu) {
+        // SDL_GPU: needs command buffer + swapchain texture each frame
+        SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
+        SDL_GPUTexture* swapchain = SDLGameRendererGPU_GetSwapchainTexture();
+        if (cb && swapchain) {
+            int w, h;
+            SDL_GetWindowSize(s_window, &w, &h);
+            s_render_gpu->BeginFrame(cb, swapchain, (uint32_t)w, (uint32_t)h);
+            s_context->Render();
+            s_render_gpu->EndFrame();
+        }
+    } else if (s_render_sdl) {
+        // SDL2D: do NOT call BeginFrame() — it calls SDL_RenderClear(),
+        // which would wipe the game canvas already blitted to the backbuffer.
+        // Just ensure render target is the window (not cps3_canvas).
+        SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+        SDL_SetRenderTarget(renderer, NULL);
+        s_context->Render();
+        // EndFrame() is a no-op in the SDL backend, skip it.
+    }
 }
 
 // -------------------------------------------------------------------
@@ -187,15 +247,20 @@ extern "C" void rmlui_wrapper_render(void) {
 // -------------------------------------------------------------------
 extern "C" bool rmlui_wrapper_want_capture_mouse(void) {
     if (!s_context) return false;
-    // RmlUi has hover detection — check if any element is under the mouse
     Rml::Element* hover = s_context->GetHoverElement();
-    return (hover != nullptr && hover != s_context->GetRootElement());
+    if (!hover || hover == s_context->GetRootElement()) return false;
+    // Only capture if the hovered element's owning document is visible
+    Rml::ElementDocument* doc = hover->GetOwnerDocument();
+    return (doc != nullptr && doc->IsVisible());
 }
 
 extern "C" bool rmlui_wrapper_want_capture_keyboard(void) {
     if (!s_context) return false;
+    // Only capture keyboard for text-input elements (input, textarea, select)
     Rml::Element* focus = s_context->GetFocusElement();
-    return (focus != nullptr && focus != s_context->GetRootElement());
+    if (!focus || focus == s_context->GetRootElement()) return false;
+    const Rml::String& tag = focus->GetTagName();
+    return (tag == "input" || tag == "textarea" || tag == "select");
 }
 
 // -------------------------------------------------------------------

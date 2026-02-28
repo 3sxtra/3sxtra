@@ -24,6 +24,9 @@
 #include "netplay/upnp.h"
 #include "port/config.h"
 
+// Defined in sdl_app.c — true when RmlUi is the active UI system
+extern bool use_rmlui;
+
 static bool hud_visible = true;
 static bool diagnostics_visible = false;
 static uint64_t session_start_ticks = 0;
@@ -489,6 +492,15 @@ void SDLNetplayUI_SetFPSHistory(const float* data, int count, float current_fps)
     s_fps_current = current_fps;
 }
 
+const float* SDLNetplayUI_GetFPSHistory(int* out_count) {
+    if (out_count) *out_count = s_fps_history_count;
+    return s_fps_history;
+}
+
+float SDLNetplayUI_GetCurrentFPS() {
+    return s_fps_current;
+}
+
 } // extern "C"
 
 struct Toast {
@@ -735,7 +747,8 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
     Netplay_GetNetworkStats(&stats);
     PushHistory((float)stats.ping, (float)stats.rollback);
 
-    if (hud_visible && Netplay_GetSessionState() == NETPLAY_SESSION_RUNNING) {
+    // ImGui HUD — skip when RmlUi is active (RmlUi netplay overlay handles this)
+    if (!use_rmlui && hud_visible && Netplay_GetSessionState() == NETPLAY_SESSION_RUNNING) {
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
                                         ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
                                         ImGuiWindowFlags_NoNav;
@@ -1131,8 +1144,11 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
         }
     }
 
-    RenderToasts();
-    RenderDiagnostics();
+    // ImGui toasts and diagnostics — skip when RmlUi is active
+    if (!use_rmlui) {
+        RenderToasts();
+        RenderDiagnostics();
+    }
 }
 
 void SDLNetplayUI_Shutdown() {}

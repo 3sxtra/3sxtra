@@ -1,0 +1,48 @@
+<rml>
+<head>
+    <title>Frame Display</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="frame_display.rcss"/>
+</head>
+<body data-model="frame_display">
+    <div id="frame-panel" data-if="visible">
+        <!-- P1 Stats -->
+        <div data-class-positive="p1_adv_class == 'positive'"
+             data-class-negative="p1_adv_class == 'negative'"
+             class="stats-text p1-stats">{{ p1_stats }}</div>
+
+        <!-- P1 Bar -->
+        <div class="frame-bar">
+            <div data-for="cell : p1_cells"
+                 data-class-startup="cell.css_class == 'startup'"
+                 data-class-active="cell.css_class == 'active'"
+                 data-class-recovery="cell.css_class == 'recovery'"
+                 data-class-hitstun="cell.css_class == 'hitstun'"
+                 data-class-blockstun="cell.css_class == 'blockstun'"
+                 data-class-down="cell.css_class == 'down'"
+                 data-class-idle="cell.css_class == 'idle'"
+                 class="frame-cell">
+            </div>
+        </div>
+
+        <!-- P2 Bar -->
+        <div class="frame-bar">
+            <div data-for="cell : p2_cells"
+                 data-class-startup="cell.css_class == 'startup'"
+                 data-class-active="cell.css_class == 'active'"
+                 data-class-recovery="cell.css_class == 'recovery'"
+                 data-class-hitstun="cell.css_class == 'hitstun'"
+                 data-class-blockstun="cell.css_class == 'blockstun'"
+                 data-class-down="cell.css_class == 'down'"
+                 data-class-idle="cell.css_class == 'idle'"
+                 class="frame-cell">
+            </div>
+        </div>
+
+        <!-- P2 Stats -->
+        <div data-class-positive="p2_adv_class == 'positive'"
+             data-class-negative="p2_adv_class == 'negative'"
+             class="stats-text p2-stats">{{ p2_stats }}</div>
+    </div>
+</body>
+</rml>

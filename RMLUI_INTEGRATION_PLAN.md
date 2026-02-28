@@ -102,10 +102,38 @@ Setting `-DRMLUI_GL3_CUSTOM_LOADER=<glad/gl.h>` makes RmlUi use our project's gl
 | `src/port/sdl/rmlui_wrapper.cpp` | RmlUi init, render, shutdown, document management (~250 lines) |
 | `src/port/sdl/rmlui_mods_menu.h` | C header for RmlUi mods menu (mirrors `mods_menu.h`) |
 | `src/port/sdl/rmlui_mods_menu.cpp` | Data model (17 BindFunc bindings) + per-frame dirty sync (~257 lines) |
-| `assets/ui/base.rcss` | Global RmlUi theme stylesheet |
+| `src/port/sdl/rmlui_shader_menu.h` | C header for RmlUi shader menu |
+| `src/port/sdl/rmlui_shader_menu.cpp` | Data model (10 bindings) + FilteredPreset struct/array + event callback (~280 lines) |
+| `src/port/sdl/rmlui_stage_config.h` | C header for RmlUi stage config menu |
+| `src/port/sdl/rmlui_stage_config.cpp` | Data model (13 layer bindings) + 4 event callbacks + dirty-check macro (~270 lines) |
+| `src/port/sdl/rmlui_input_display.h` | C header for RmlUi input display |
+| `src/port/sdl/rmlui_input_display.cpp` | InputRow struct + FGC notation (arrows+buttons) + 10-entry history per player (~254 lines) |
+| `src/port/sdl/rmlui_frame_display.h` | C header for RmlUi frame display |
+| `src/port/sdl/rmlui_frame_display.cpp` | FrameCell struct + 120-frame deque + state-to-CSS-class + advantage stats (~304 lines) |
+| `assets/ui/base.rcss` | Global RmlUi theme stylesheet + checkbox/radio/range control styles |
 | `assets/ui/test.rml` | Phase 1 test document (top-right overlay panel) |
-| `assets/ui/mods.rml` | Mods menu HTML document with data bindings (~137 lines) |
-| `assets/ui/mods.rcss` | Mods menu stylesheet — glass panel, form controls (~130 lines) |
+| `assets/ui/mods.rml` | Mods menu HTML document with data bindings (~110 lines) |
+| `assets/ui/mods.rcss` | Mods menu stylesheet — glass panel, form controls (~100 lines) |
+| `assets/ui/shaders.rml` | Shader menu — select, radio, data-for preset list, search (~110 lines) |
+| `assets/ui/shaders.rcss` | Shader menu stylesheet — scrollable preset list, select/radio (~210 lines) |
+| `assets/ui/stage_config.rml` | Stage config — tab bar, range sliders with value readout, action buttons (~140 lines) |
+| `assets/ui/stage_config.rcss` | Stage config stylesheet — tab bar, layer panel, button row (~250 lines) |
+| `src/port/sdl/rmlui_training_menu.h` | C header for RmlUi training menu |
+| `src/port/sdl/rmlui_training_menu.cpp` | 9 BindFunc bindings (checkboxes) + config persistence + dirty-check macro (~160 lines) |
+| `src/port/sdl/rmlui_control_mapping.h` | C header for RmlUi control mapping |
+| `src/port/sdl/rmlui_control_mapping.cpp` | Controller binding display + per-player layout (~321 lines) |
+| `src/port/sdl/rmlui_netplay_ui.h` | C header for RmlUi netplay overlay |
+| `src/port/sdl/rmlui_netplay_ui.cpp` | HUD badge + diagnostics panel + bar charts + toast system (~406 lines) |
+| `assets/ui/training.rml` | Training options — master hitbox toggle + sub-toggles + data overlays |
+| `assets/ui/training.rcss` | Training menu stylesheet |
+| `assets/ui/input_display.rml` | P1/P2 input history panels with data-for binding |
+| `assets/ui/input_display.rcss` | Input display stylesheet — transparent panels, arrow/button text |
+| `assets/ui/frame_display.rml` | Frame meter — centered bar with data-class state coloring |
+| `assets/ui/frame_display.rcss` | Frame display stylesheet — color-coded cells, stats text |
+| `assets/ui/control_mapping.rml` | Control mapping — per-player binding tables (~88 lines) |
+| `assets/ui/control_mapping.rcss` | Control mapping stylesheet (~226 lines) |
+| `assets/ui/netplay.rml` | Netplay overlay — HUD badge, diagnostics, bar charts, toasts (~72 lines) |
+| `assets/ui/netplay.rcss` | Netplay stylesheet — badge, graph bars, toast animation (~175 lines) |
 
 ### Modified Files
 
@@ -115,7 +143,7 @@ Setting `-DRMLUI_GL3_CUSTOM_LOADER=<glad/gl.h>` makes RmlUi use our project's gl
 | `build-deps.sh` | Added RmlUi 6.2 clone into `third_party/rmlui` |
 | `tools/batocera/rpi4/download-deps_rpi4.sh` | Added RmlUi 6.2 clone for cross-compile |
 | `src/port/config.h` | Added `CFG_KEY_UI_MODE` |
-| `src/port/cli_parser.c` | Added `--ui <imgui\|rmlui>` argument |
+| `src/port/cli_parser.c` | `--ui <imgui\|rmlui>` — session-only flag (not persisted to config) |
 | `src/port/sdl/sdl_app.c` | Init/shutdown/frame/render dispatch for both UI systems |
 | `src/port/sdl/sdl_app_input.c` | Event routing dispatch based on `use_rmlui` flag |
 
@@ -166,19 +194,31 @@ Port each ImGui overlay menu to an `.rml` + `.rcss` document pair with C++ data 
 
 - [x] Add data binding infrastructure to `rmlui_wrapper` (`get_context()` accessor)
 - [x] Mods menu → `rmlui_mods_menu.cpp` + `mods.rml` + `mods.rcss`
-- [ ] Shader menu
-- [ ] Stage config
-- [ ] Training overlay
-- [ ] Input display
-- [ ] Frame display
-- [ ] Control mapping
-- [ ] Netplay UI
+- [x] Shader menu → `rmlui_shader_menu.cpp` + `shaders.rml` + `shaders.rcss`
+- [x] Stage config → `rmlui_stage_config.cpp` + `stage_config.rml` + `stage_config.rcss`
+- [x] Input display → `rmlui_input_display.cpp` + `input_display.rml` + `input_display.rcss`
+- [x] Frame display → `rmlui_frame_display.cpp` + `frame_display.rml` + `frame_display.rcss`
+- [x] Training overlay → `rmlui_training_menu.cpp` + `training.rml` + `training.rcss`
+- [x] Control mapping → `rmlui_control_mapping.cpp` + `control_mapping.rml` + `control_mapping.rcss`
+- [x] Netplay UI → `rmlui_netplay_ui.cpp` + `netplay.rml` + `netplay.rcss`
 
 #### Key Technical Finding: Data Model API
 
 RmlUi 6.2 uses `ctx->CreateDataModel("name")` (not `GetDataModelConstructor`). The returned `DataModelConstructor` accepts `BindFunc()` for getter/setter lambdas — ideal for bridging C globals (`ModdedStage_*`, `Debug_w[]`, etc.) to the declarative HTML/CSS UI.
 
 The mods menu uses 17 `BindFunc` bindings with per-frame dirty-checking to sync external state changes.
+
+#### Key Technical Finding: Filtered Preset List (Shader Menu)
+
+The shader menu has 2,242+ Libretro presets. Rendering all via `data-for` is impractical. Solution:
+- `RegisterStruct<FilteredPreset>()` + `RegisterArray<vector<FilteredPreset>>()` to define the type
+- A C++ `std::vector<FilteredPreset>` is rebuilt when the search filter string changes (via setter)
+- The DOM only renders matching presets, keeping DOM size proportional to results
+- `BindEventCallback("select_preset", ...)` handles clicks on preset items
+
+#### Session-Only `--ui` Flag
+
+The `--ui` CLI flag was initially config-persisted (`Config_SetString`), causing all subsequent runs to default to the last-used mode. Fixed by switching to a session-only global `g_ui_mode_rmlui` — users must explicitly pass `--ui rmlui` each time.
 
 #### RCSS Gotchas (vs Standard CSS)
 
@@ -219,10 +259,10 @@ RmlUi requires Freetype for font rendering. On MSYS2/Windows it's auto-detected,
 | 3SXtra Renderer | RmlUi Backend | Header | Status |
 |---|---|---|---|
 | OpenGL (`--renderer gl`) | `RenderInterface_GL3` | `RmlUi_Renderer_GL3.h` | ✅ Integrated |
-| SDL GPU (`--renderer gpu`) | `RenderInterface_SDL` | `RmlUi_Renderer_SDL.h` | ⬜ Future |
-| SDL2D (`--renderer sdl`) | `RenderInterface_SDL` | `RmlUi_Renderer_SDL.h` | ⬜ Future |
+| SDL GPU (`--renderer gpu`) | `RenderInterface_SDL_GPU` | `RmlUi_Renderer_SDL_GPU.h` | ✅ Integrated |
+| SDL2D (`--renderer sdl`) | `RenderInterface_SDL` | `RmlUi_Renderer_SDL.h` | ✅ Integrated |
 
-Currently defaults to the GL3 renderer. GPU and SDL2D backends will be added when needed (they don't have the glad conflict issue).
+All three renderer backends are now supported. The wrapper (`rmlui_wrapper.cpp`) selects the appropriate `RenderInterface` at init time based on `SDLApp_GetRenderer()`.
 
 ---
 

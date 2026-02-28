@@ -1,0 +1,95 @@
+<rml>
+<head>
+    <title>Controller Setup</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="control_mapping.rcss"/>
+</head>
+<body data-model="control_mapping">
+    <div id="mapping-panel">
+        <h1>CONTROLLER SETUP</h1>
+        <div class="divider"></div>
+
+        <!-- 5-column row: P1 Prompt | P1 Device | Available | P2 Device | P2 Prompt -->
+        <div class="columns">
+            <!-- Col 1: P1 Mappings + Prompt -->
+            <div class="column col-prompt">
+                <h2>P1 Mappings</h2>
+                <div class="divider"></div>
+                <p data-if="!p1_is_idle" class="prompt">{{p1_prompt}}</p>
+                <div data-if="p1_mappings.size > 0">
+                    <div data-for="m : p1_mappings" class="mapping-row">
+                        <span class="map-action">{{m.action}}</span>
+                        <span class="map-arrow">→</span>
+                        <span class="map-input">{{m.input}}</span>
+                    </div>
+                </div>
+                <p data-if="p1_mappings.size == 0" class="status-hint">No custom mappings</p>
+            </div>
+
+            <!-- Col 2: P1 Device -->
+            <div class="column col-device">
+                <h2>P1 Device</h2>
+                <div class="divider"></div>
+                <div data-if="p1_has_device">
+                    <p class="device-name">{{p1_device_name}}</p>
+                    <button data-event-click="unclaim_p1">Unclaim</button>
+                    <button data-if="p1_is_idle" data-event-click="map_p1">Map Controls</button>
+                    <button class="btn-danger" data-event-click="reset_p1">Reset</button>
+                </div>
+                <div data-if="!p1_has_device">
+                    <p class="no-device">Not assigned</p>
+                </div>
+            </div>
+
+            <!-- Col 3: Available Devices -->
+            <div class="column col-center">
+                <h2>Available</h2>
+                <div class="divider"></div>
+                <div data-if="available_devices.size == 0">
+                    <p class="status-hint">None</p>
+                </div>
+                <div data-for="dev : available_devices" class="device-card">
+                    <p class="device-card-name">{{dev.name}}</p>
+                    <div class="assign-buttons">
+                        <button data-event-click="claim_p1(dev.device_id)">&lt;&lt;</button>
+                        <button data-event-click="claim_p2(dev.device_id)">&gt;&gt;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Col 4: P2 Device -->
+            <div class="column col-device">
+                <h2>P2 Device</h2>
+                <div class="divider"></div>
+                <div data-if="p2_has_device">
+                    <p class="device-name">{{p2_device_name}}</p>
+                    <button data-event-click="unclaim_p2">Unclaim</button>
+                    <button data-if="p2_is_idle" data-event-click="map_p2">Map Controls</button>
+                    <button class="btn-danger" data-event-click="reset_p2">Reset</button>
+                </div>
+                <div data-if="!p2_has_device">
+                    <p class="no-device">Not assigned</p>
+                </div>
+            </div>
+
+            <!-- Col 5: P2 Mappings + Prompt -->
+            <div class="column col-prompt">
+                <h2>P2 Mappings</h2>
+                <div class="divider"></div>
+                <p data-if="!p2_is_idle" class="prompt">{{p2_prompt}}</p>
+                <div data-if="p2_mappings.size > 0">
+                    <div data-for="m : p2_mappings" class="mapping-row">
+                        <span class="map-action">{{m.action}}</span>
+                        <span class="map-arrow">→</span>
+                        <span class="map-input">{{m.input}}</span>
+                    </div>
+                </div>
+                <p data-if="p2_mappings.size == 0" class="status-hint">No custom mappings</p>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="hint">F1: Close | In-game button config is inactive while mappings are set here</p>
+    </div>
+</body>
+</rml>

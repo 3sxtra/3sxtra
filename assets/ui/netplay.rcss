@@ -1,0 +1,175 @@
+/* Netplay overlay — HUD, diagnostics, toasts */
+
+/* ═══ Mini-HUD ═══ */
+#netplay-hud {
+    display: block;
+    position: absolute;
+    top: 10dp;
+    right: 10dp;
+    padding: 6dp 12dp;
+    background-color: rgba(0, 0, 0, 0.35);
+    border-radius: 4dp;
+}
+
+.hud-text {
+    font-size: 14dp;
+    font-weight: bold;
+    color: #ffffff;
+}
+.hud-text.ok {
+    color: #ffffff;
+}
+.hud-text.warn {
+    color: #ffe633;
+}
+.hud-text.error {
+    color: #ff3333;
+}
+
+/* ═══ Diagnostics Panel ═══ */
+#diag-panel {
+    display: block;
+    position: absolute;
+    top: 60dp;
+    left: 20dp;
+    width: 400dp;
+    max-height: 600dp;
+    overflow-y: auto;
+    padding: 12dp;
+    background-color: rgba(15, 15, 20, 0.92);
+    border-width: 1dp;
+    border-color: #333;
+    border-radius: 8dp;
+}
+
+#diag-panel h2 {
+    font-size: 16dp;
+    color: #cccccc;
+    margin-bottom: 8dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: #444;
+    padding-bottom: 4dp;
+}
+
+.diag-section {
+    display: block;
+    margin-bottom: 8dp;
+}
+
+.diag-separator {
+    display: block;
+    height: 1dp;
+    background-color: #444;
+    margin-top: 8dp;
+    margin-bottom: 8dp;
+}
+
+/* FPS text with color coding */
+.fps-text {
+    font-size: 16dp;
+    font-weight: bold;
+}
+.fps-text.ok {
+    color: #33ff66;
+}
+.fps-text.warn {
+    color: #ffe633;
+}
+.fps-text.error {
+    color: #ff4c4c;
+}
+
+/* Stats line (below charts) */
+.diag-stats {
+    display: block;
+    font-size: 11dp;
+    color: rgba(255, 255, 255, 0.50);
+    margin-top: 4dp;
+}
+
+/* Stat lines (ping, rollback, delay, duration) */
+.stat-line {
+    display: block;
+    font-size: 13dp;
+    color: #dddddd;
+    padding: 1dp 0dp;
+}
+
+/* Chart label */
+.chart-label {
+    display: block;
+    font-size: 11dp;
+    color: rgba(255, 255, 255, 0.60);
+    margin-top: 6dp;
+    margin-bottom: 2dp;
+}
+
+/* ═══ Bar Charts ═══ */
+.bar-chart {
+    display: block;
+    height: 60dp;
+    white-space: nowrap;
+    background-color: rgba(0, 0, 0, 0.30);
+    border-radius: 2dp;
+    padding: 2dp;
+    /* Bars are aligned to bottom via flex-end simulation */
+}
+
+.bar-cell {
+    display: inline-block;
+    width: 5dp;
+    height: 56dp;
+    margin-right: 1dp;
+    vertical-align: bottom;
+    position: relative;
+}
+
+.bar-fill {
+    display: block;
+    position: absolute;
+    bottom: 0dp;
+    left: 0dp;
+    width: 100%;
+    border-radius: 1dp;
+}
+
+/* FPS bar colors */
+.fps-bar .bar-fill {
+    background-color: rgba(50, 180, 255, 0.80);
+}
+
+/* Ping bar colors */
+.ping-bar .bar-fill {
+    background-color: rgba(255, 200, 50, 0.80);
+}
+
+/* Rollback bar colors */
+.rb-bar .bar-fill {
+    background-color: rgba(255, 100, 100, 0.80);
+}
+
+/* Net section */
+.net-section {
+    display: block;
+}
+
+/* ═══ Toast Notifications ═══ */
+#toast-container {
+    display: block;
+    position: absolute;
+    top: 50dp;
+    left: 50%;
+    margin-left: -150dp;
+    width: 300dp;
+}
+
+.toast-item {
+    display: block;
+    text-align: center;
+    padding: 8dp 16dp;
+    margin-bottom: 5dp;
+    background-color: rgba(0, 0, 0, 0.70);
+    border-radius: 4dp;
+    font-size: 14dp;
+    color: #ffffff;
+}

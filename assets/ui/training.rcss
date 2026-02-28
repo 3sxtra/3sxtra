@@ -1,0 +1,58 @@
+/* Training Options — F7 settings overlay */
+
+body {
+    width: 100%;
+    height: 100%;
+}
+
+/* ── Panel Positioning ── */
+#training-panel {
+    display: block;
+    position: absolute;
+    top: 50dp;
+    right: 30dp;
+    width: 320dp;
+    max-height: 450dp;
+}
+
+/* ── Sections ── */
+.section {
+    display: block;
+    margin-bottom: 4dp;
+}
+
+/* ── Control rows ── */
+.control-row {
+    display: block;
+    padding: 3dp 0dp;
+}
+
+.control-row label {
+    vertical-align: middle;
+    color: #dddddd;
+}
+
+/* ── Sub-group indentation ── */
+.sub-group {
+    display: block;
+    padding-left: 24dp;
+    margin-top: 4dp;
+}
+
+/* ── Divider ── */
+.divider {
+    display: block;
+    height: 1dp;
+    background-color: #444;
+    margin-top: 8dp;
+    margin-bottom: 8dp;
+}
+
+/* ── Hint text ── */
+.hint {
+    display: block;
+    font-size: 12dp;
+    color: #888888;
+    margin-top: 2dp;
+    margin-bottom: 4dp;
+}

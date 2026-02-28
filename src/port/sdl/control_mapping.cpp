@@ -890,3 +890,114 @@ InputID ControlMapping_GetPlayerMapping(int player_num, const char* action) {
 }
 
 } // extern "C"
+
+// ── Accessor functions for RmlUi module ─────────────────────────
+
+extern "C" {
+
+const char* ControlMapping_GetDeviceName(int player_num) {
+    if (player_num == 1 && p1Device) return p1Device->name.c_str();
+    if (player_num == 2 && p2Device) return p2Device->name.c_str();
+    return nullptr;
+}
+
+bool ControlMapping_HasDevice(int player_num) {
+    if (player_num == 1) return p1Device != nullptr;
+    if (player_num == 2) return p2Device != nullptr;
+    return false;
+}
+
+void ControlMapping_ClaimDevice(int player_num, int device_index) {
+    refresh_devices();
+    for (auto it = availableDevices.begin(); it != availableDevices.end(); ++it) {
+        if (it->id == device_index) {
+            if (player_num == 1) {
+                p1Device = std::make_unique<Device>(*it);
+                p1MappingState = MappingState::Idle;
+            } else {
+                p2Device = std::make_unique<Device>(*it);
+                p2MappingState = MappingState::Idle;
+            }
+            availableDevices.erase(it);
+            save_mappings();
+            return;
+        }
+    }
+}
+
+void ControlMapping_UnclaimDevice(int player_num) {
+    if (player_num == 1) {
+        p1Device.reset();
+        p1MappingState = MappingState::Idle;
+    } else {
+        p2Device.reset();
+        p2MappingState = MappingState::Idle;
+    }
+    save_mappings();
+}
+
+void ControlMapping_StartMapping(int player_num) {
+    if (player_num == 1 && p1Device) {
+        p1MappingState = MappingState::Waiting;
+        p1_mapping_action_index = 0;
+    } else if (player_num == 2 && p2Device) {
+        p2MappingState = MappingState::Waiting;
+        p2_mapping_action_index = 0;
+    }
+}
+
+void ControlMapping_ResetMappings(int player_num) {
+    player_mappings[player_num].clear();
+    if (player_num == 1) p1MappingState = MappingState::Idle;
+    else p2MappingState = MappingState::Idle;
+    save_mappings();
+}
+
+int ControlMapping_GetMappingState(int player_num) {
+    MappingState s = (player_num == 1) ? p1MappingState : p2MappingState;
+    return (int)s;
+}
+
+int ControlMapping_GetMappingActionIndex(int player_num) {
+    return (player_num == 1) ? p1_mapping_action_index : p2_mapping_action_index;
+}
+
+int ControlMapping_GetAvailableDeviceCount() {
+    refresh_devices();
+    return (int)availableDevices.size();
+}
+
+const char* ControlMapping_GetAvailableDeviceName(int index) {
+    if (index < 0 || index >= (int)availableDevices.size()) return nullptr;
+    return availableDevices[index].name.c_str();
+}
+
+int ControlMapping_GetAvailableDeviceId(int index) {
+    if (index < 0 || index >= (int)availableDevices.size()) return -1;
+    return availableDevices[index].id;
+}
+
+int ControlMapping_GetPlayerMappingCount(int player_num) {
+    auto it = player_mappings.find(player_num);
+    if (it == player_mappings.end()) return 0;
+    return (int)it->second.size();
+}
+
+const char* ControlMapping_GetPlayerMappingAction(int player_num, int index) {
+    auto it = player_mappings.find(player_num);
+    if (it == player_mappings.end() || index < 0 || index >= (int)it->second.size())
+        return nullptr;
+    return it->second[index].action.c_str();
+}
+
+const char* ControlMapping_GetPlayerMappingInput(int player_num, int index) {
+    auto it = player_mappings.find(player_num);
+    if (it == player_mappings.end() || index < 0 || index >= (int)it->second.size())
+        return nullptr;
+    static std::string s_input_name_buf; // static buffer for c_str() lifetime
+    s_input_name_buf = get_input_name(it->second[index].input_id);
+    return s_input_name_buf.c_str();
+}
+
+} // extern "C"
+

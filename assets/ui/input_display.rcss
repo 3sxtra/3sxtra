@@ -1,0 +1,67 @@
+/* Input Display — on-screen input history with text notation */
+
+/* ── Panels ── */
+#p1-panel {
+    display: block;
+    position: absolute;
+    top: 100dp;
+    left: 10dp;
+    width: 140dp;
+}
+
+#p2-panel {
+    display: block;
+    position: absolute;
+    top: 100dp;
+    right: 10dp;
+    width: 140dp;
+}
+
+/* ── Input rows ── */
+.input-row {
+    display: block;
+    margin-bottom: 2dp;
+    padding: 2dp 4dp;
+    background-color: rgba(0, 0, 0, 0.45);
+    border-radius: 3dp;
+    font-size: 14dp;
+    color: #ffffff;
+    white-space: nowrap;
+}
+
+/* ── Direction arrows ── */
+.direction {
+    display: inline;
+    font-size: 18dp;
+    color: #cccccc;
+    margin-right: 4dp;
+    width: 22dp;
+    text-align: center;
+}
+
+/* ── Button labels ── */
+.buttons {
+    display: inline;
+    font-size: 13dp;
+    color: #88ccff;
+    margin-right: 4dp;
+}
+
+/* ── Frame count ── */
+.frame-count {
+    display: inline;
+    font-size: 12dp;
+    color: #999999;
+    width: 24dp;
+    text-align: right;
+}
+
+/* P2 mirrored: frame count on left */
+.input-row.p2 .frame-count {
+    text-align: left;
+    margin-right: 4dp;
+}
+
+.input-row.p2 .buttons {
+    margin-right: 0dp;
+}

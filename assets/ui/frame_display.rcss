@@ -1,0 +1,69 @@
+/* Frame Display — color-coded frame meter with stats */
+
+/* ── Main panel: centered, below life bars ── */
+#frame-panel {
+    display: block;
+    position: absolute;
+    top: 64dp;
+    left: 50%;
+    margin-left: -252dp;  /* half of total width */
+    width: 504dp;
+    padding: 4dp;
+    background-color: rgba(0, 0, 0, 0.70);
+    border-radius: 4dp;
+}
+
+/* ── Frame bar container ── */
+.frame-bar {
+    display: block;
+    height: 6dp;
+    margin-bottom: 2dp;
+    white-space: nowrap;
+}
+
+/* ── Individual frame cell ── */
+.frame-cell {
+    display: inline-block;
+    width: 3dp;
+    height: 6dp;
+    margin-right: 1dp;
+}
+
+/* ── State colors (match ImGui frame_display.cpp) ── */
+.frame-cell.startup {
+    background-color: #00ff00;  /* Green */
+}
+.frame-cell.active {
+    background-color: #ff0000;  /* Red */
+}
+.frame-cell.recovery {
+    background-color: #0064ff;  /* Blue */
+}
+.frame-cell.hitstun {
+    background-color: #ff8000;  /* Orange */
+}
+.frame-cell.blockstun {
+    background-color: #ffff00;  /* Yellow */
+}
+.frame-cell.down {
+    background-color: #500000;  /* Dark Red */
+}
+.frame-cell.idle {
+    background-color: rgba(60, 60, 60, 0.60);  /* Dark Gray */
+}
+
+/* ── Stats text ── */
+.stats-text {
+    display: block;
+    font-size: 11dp;
+    color: rgba(255, 255, 255, 0.90);
+    padding: 1dp 0dp;
+}
+
+/* ── Advantage coloring ── */
+.stats-text.positive {
+    color: #66ff66;
+}
+.stats-text.negative {
+    color: #ff5959;
+}

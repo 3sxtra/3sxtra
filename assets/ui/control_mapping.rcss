@@ -1,0 +1,248 @@
+/* Control mapping menu stylesheet — 3SXtra RmlUi overlay */
+/* 5-column layout: P1 Prompt | P1 Device | Available | P2 Device | P2 Prompt */
+
+body {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.92);
+}
+
+#mapping-panel {
+    display: block;
+    width: 96%;
+    max-height: 96%;
+    margin: auto;
+    margin-top: 1%;
+    background-color: rgba(15, 15, 20, 0.95);
+    border-width: 1dp;
+    border-color: #444;
+    border-radius: 10dp;
+    padding: 12dp 16dp;
+    overflow-y: auto;
+}
+
+h1 {
+    font-size: 20dp;
+    color: #ff9933;
+    margin-bottom: 4dp;
+    text-align: center;
+}
+
+h2 {
+    font-size: 12dp;
+    color: #888;
+    margin-top: 2dp;
+    margin-bottom: 2dp;
+    text-transform: uppercase;
+    letter-spacing: 1dp;
+    text-align: center;
+}
+
+.divider {
+    display: block;
+    height: 1dp;
+    background-color: #333;
+    margin-top: 4dp;
+    margin-bottom: 4dp;
+}
+
+/* ─── 5-column layout ─── */
+
+.columns {
+    display: block;
+}
+
+.column {
+    display: inline-block;
+    vertical-align: top;
+    padding: 4dp;
+}
+
+.col-prompt {
+    width: 27%;
+}
+
+.col-device {
+    width: 14%;
+    border-left-width: 1dp;
+    border-left-color: #333;
+    padding-left: 8dp;
+}
+
+.col-center {
+    width: 13%;
+    border-left-width: 1dp;
+    border-left-color: #333;
+    border-right-width: 1dp;
+    border-right-color: #333;
+    padding-left: 8dp;
+    padding-right: 8dp;
+}
+
+/* ─── Device info ─── */
+
+.device-name {
+    display: block;
+    color: #66ccff;
+    font-size: 12dp;
+    margin-bottom: 3dp;
+    text-align: center;
+    word-break: break-word;
+}
+
+.no-device {
+    display: block;
+    color: #555;
+    font-size: 12dp;
+    text-align: center;
+    padding: 12dp 0;
+}
+
+/* ─── Buttons ─── */
+
+button {
+    display: block;
+    width: 100%;
+    padding: 3dp 6dp;
+    background-color: #2a2a30;
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 3dp;
+    color: #ddd;
+    font-size: 11dp;
+    cursor: pointer;
+    margin-bottom: 2dp;
+    text-align: center;
+}
+
+button:hover {
+    background-color: #3a3a44;
+    border-color: #ff9933;
+}
+
+button:active {
+    background-color: #222;
+}
+
+.btn-danger {
+    border-color: #a33;
+    color: #f88;
+}
+
+.btn-danger:hover {
+    background-color: #3a2020;
+    border-color: #f44;
+}
+
+/* ─── Mapping prompt ─── */
+
+.prompt {
+    display: block;
+    color: #ffcc33;
+    font-size: 13dp;
+    padding: 4dp 0;
+    text-align: center;
+}
+
+/* ─── Available device cards ─── */
+
+.device-card {
+    display: block;
+    background-color: rgba(255, 255, 255, 0.04);
+    border-width: 1dp;
+    border-color: #333;
+    border-radius: 3dp;
+    padding: 4dp;
+    margin-bottom: 4dp;
+}
+
+.device-card-name {
+    display: block;
+    color: #ccc;
+    font-size: 11dp;
+    text-align: center;
+    margin-bottom: 3dp;
+    word-break: break-word;
+}
+
+.assign-buttons {
+    display: block;
+    text-align: center;
+}
+
+.assign-buttons button {
+    display: inline-block;
+    width: 40%;
+    margin-right: 4dp;
+    font-size: 12dp;
+    font-weight: bold;
+}
+
+/* ─── Mapping rows ─── */
+
+.mapping-row {
+    display: block;
+    padding: 1dp 2dp;
+    border-radius: 2dp;
+}
+
+.mapping-row:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.map-action {
+    display: inline-block;
+    width: 40%;
+    color: #aaa;
+    font-size: 11dp;
+}
+
+.map-arrow {
+    display: inline-block;
+    width: 8%;
+    color: #555;
+    font-size: 11dp;
+    text-align: center;
+}
+
+.map-input {
+    display: inline-block;
+    width: 48%;
+    color: #66ff66;
+    font-size: 11dp;
+    text-align: right;
+}
+
+/* Status text */
+.status-hint {
+    color: #555;
+    font-size: 11dp;
+    display: block;
+    text-align: center;
+    padding: 4dp;
+}
+
+.hint {
+    font-size: 11dp;
+    color: #555;
+    margin-top: 4dp;
+    text-align: center;
+}
+
+/* Scrollbar */
+#mapping-panel scrollbarvertical {
+    width: 6dp;
+}
+
+#mapping-panel scrollbarvertical sliderbar {
+    background-color: #555;
+    border-radius: 3dp;
+}
+
+#mapping-panel scrollbarvertical sliderbar:hover {
+    background-color: #777;
+}
+
+#mapping-panel scrollbarvertical slidertrack {
+    background-color: #222;
+}

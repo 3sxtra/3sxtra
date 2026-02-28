@@ -1,0 +1,72 @@
+<rml>
+<head>
+    <title>Netplay</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="netplay.rcss"/>
+</head>
+<body data-model="netplay">
+    <!-- ═══ Mini-HUD: top-right ping/rollback badge ═══ -->
+    <div id="netplay-hud" data-if="hud_visible">
+        <span data-class-ok="hud_color_class == 'ok'"
+              data-class-warn="hud_color_class == 'warn'"
+              data-class-error="hud_color_class == 'error'"
+              class="hud-text">{{ hud_text }}</span>
+    </div>
+
+    <!-- ═══ Diagnostics panel [F10] ═══ -->
+    <div id="diag-panel" data-if="diag_visible" class="panel">
+        <h2>Diagnostics [F10]</h2>
+
+        <!-- FPS Section -->
+        <div class="diag-section">
+            <span data-class-ok="fps_color_class == 'ok'"
+                  data-class-warn="fps_color_class == 'warn'"
+                  data-class-error="fps_color_class == 'error'"
+                  class="fps-text">{{ fps_text }}</span>
+
+            <!-- FPS bar chart -->
+            <div class="bar-chart">
+                <div data-for="bar : fps_bars" class="bar-cell fps-bar">
+                    <div class="bar-fill" data-style-height="height_pct"></div>
+                </div>
+            </div>
+
+            <div class="diag-stats">{{ fps_stats }}</div>
+        </div>
+
+        <!-- Netplay Section -->
+        <div data-if="net_session_active" class="diag-section net-section">
+            <div class="diag-separator"></div>
+            <div class="stat-line">{{ net_ping }}</div>
+            <div class="stat-line">{{ net_rollback }}</div>
+            <div class="stat-line">{{ net_delay }}</div>
+            <div class="stat-line">{{ net_duration }}</div>
+
+            <div class="diag-separator"></div>
+
+            <!-- Ping history bar chart -->
+            <div class="chart-label">Ping History</div>
+            <div class="bar-chart">
+                <div data-for="bar : ping_bars" class="bar-cell ping-bar">
+                    <div class="bar-fill" data-style-height="height_pct"></div>
+                </div>
+            </div>
+
+            <!-- Rollback history bar chart -->
+            <div class="chart-label">Rollback History</div>
+            <div class="bar-chart">
+                <div data-for="bar : rb_bars" class="bar-cell rb-bar">
+                    <div class="bar-fill" data-style-height="height_pct"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ Toast notifications ═══ -->
+    <div id="toast-container">
+        <div data-for="toast : toasts" class="toast-item">
+            {{ toast.message }}
+        </div>
+    </div>
+</body>
+</rml>

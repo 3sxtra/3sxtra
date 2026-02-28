@@ -1,0 +1,108 @@
+<rml>
+<head>
+    <title>Shader Configuration</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="shaders.rcss"/>
+</head>
+<body data-model="shaders">
+    <div id="shader-panel">
+        <h1>SHADER CONFIGURATION</h1>
+        <div class="divider"></div>
+
+        <!-- Shader System Mode -->
+        <div class="section">
+            <h2>Shader System</h2>
+            <div class="control-row">
+                <select data-value="is_libretro">
+                    <option value="0">Internal Shaders</option>
+                    <option value="1">Libretro Shaders</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Scale Mode (Internal only) -->
+        <div data-if="!is_libretro" class="section">
+            <h2>Scale Mode</h2>
+            <div class="control-row">
+                <input type="radio" name="scale" value="0" data-checked="scale_mode"/>
+                <label>{{scale_mode_name_0}}</label>
+            </div>
+            <div class="control-row">
+                <input type="radio" name="scale" value="1" data-checked="scale_mode"/>
+                <label>{{scale_mode_name_1}}</label>
+            </div>
+            <div class="control-row">
+                <input type="radio" name="scale" value="2" data-checked="scale_mode"/>
+                <label>{{scale_mode_name_2}}</label>
+            </div>
+            <div class="control-row">
+                <input type="radio" name="scale" value="3" data-checked="scale_mode"/>
+                <label>{{scale_mode_name_3}}</label>
+            </div>
+            <div class="control-row">
+                <input type="radio" name="scale" value="4" data-checked="scale_mode"/>
+                <label>{{scale_mode_name_4}}</label>
+            </div>
+        </div>
+
+        <!-- Preset List (Libretro only) -->
+        <div data-if="is_libretro" class="section">
+            <h2>Shader Presets ({{preset_count}})</h2>
+            <div class="search-row">
+                <label>Search:</label>
+                <input type="text" id="preset-search" data-value="search_filter"/>
+            </div>
+            <div id="preset-list">
+                <div data-if="filtered_presets.size == 0" class="status-warn">
+                    No matching presets found.
+                </div>
+                <div data-for="preset : filtered_presets"
+                     class="preset-item"
+                     data-class-selected="preset.index == current_preset"
+                     data-event-click="select_preset(preset.index)">
+                    {{preset.name}}
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Display -->
+        <div class="section">
+            <h2>Display</h2>
+            <div class="control-row">
+                <input type="checkbox" data-checked="vsync"/>
+                <label>VSync</label>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Broadcast -->
+        <div class="section">
+            <h2>Video Broadcast</h2>
+            <div class="control-row">
+                <input type="checkbox" data-checked="broadcast_enabled"/>
+                <label>Enable Broadcast</label>
+            </div>
+            <div data-if="broadcast_enabled" class="indent">
+                <div class="control-row">
+                    <label>Source:</label>
+                    <select data-value="broadcast_source">
+                        <option value="0">Native (384x224)</option>
+                        <option value="1">Final Output (Scaled)</option>
+                    </select>
+                </div>
+                <p data-if="broadcast_source == 1" class="status-warn">
+                    Warning: Final Output broadcast may impact performance.
+                </p>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+        <p class="hint">Press F2 to close this menu</p>
+    </div>
+</body>
+</rml>

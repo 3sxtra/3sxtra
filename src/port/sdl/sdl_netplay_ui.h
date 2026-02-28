@@ -68,6 +68,10 @@ const char* SDLNetplayUI_GetOutgoingChallengeName(void);
 int SDLNetplayUI_GetOutgoingChallengePing(void);
 void SDLNetplayUI_CancelOutgoingChallenge(void);
 
+// FPS data access (for RmlUi netplay UI module)
+const float* SDLNetplayUI_GetFPSHistory(int* out_count);
+float SDLNetplayUI_GetCurrentFPS(void);
+
 #ifdef __cplusplus
 }
 #endif
