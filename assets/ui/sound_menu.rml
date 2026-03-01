@@ -2,6 +2,8 @@
 <head>
     <title>Sound Menu</title>
     <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="menu_shared.rcss"/>
+    <link type="text/rcss" href="settings_shared.rcss"/>
     <link type="text/rcss" href="sound_menu.rcss"/>
 </head>
 <body data-model="sound_menu" id="sound-menu-root">

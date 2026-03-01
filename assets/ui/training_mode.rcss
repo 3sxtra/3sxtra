@@ -1,12 +1,9 @@
-/* ── Training Mode / Training Sub-Menu Shared Stylesheet ── */
-body {
-    width: 384dp;
-    height: 224dp;
-    font-family: "Noto Sans JP Thin";
-    font-size: 14dp;
-    color: #ffffffee;
-}
+/* ============================================================ *
+ *  training_mode.rcss  —  Training Mode selector (overrides)    *
+ *  Inherits: base.rcss → menu_shared.rcss → this               *
+ * ============================================================ */
 
+/* ── Panel (position & size) ───────────────────────────────── */
 .tr-panel {
     display: block;
     position: absolute;
@@ -18,11 +15,7 @@ body {
     animation: panel-fade-in 0.3s quadratic-out;
 }
 
-@keyframes panel-fade-in {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-}
-
+/* ── Title: cyan accent ────────────────────────────────────── */
 .tr-title {
     display: block;
     font-size: 12dp;
@@ -33,27 +26,25 @@ body {
     font-effect: shadow(1dp 1dp #00000088);
 }
 
+/* ── Accent color overrides ────────────────────────────────── */
 .option-list {
-    display: block;
-    padding: 4dp 10dp;
-    background-color: #00000066;
-    border-width: 1dp;
     border-color: #66ccff33;
 }
 
 .menu-item {
-    display: block;
     padding: 2dp 8dp;
     margin-bottom: 1dp;
     font-size: 10dp;
     letter-spacing: 1dp;
     color: #cccccc;
+    height: auto;
+    line-height: 1.2;
     transition: background-color 0.12s linear-in-out;
 }
 
 .menu-item.focused {
     background-color: rgba(102, 204, 255, 38);
-    border-left-width: 3dp;
     border-left-color: #66ccff;
+    padding-left: 5dp;
     color: #ffffff;
 }

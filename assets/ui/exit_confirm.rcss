@@ -1,15 +1,9 @@
 /* ============================================================ *
- *  exit_confirm.rcss  —  Exit Confirmation panel                *
- *  Centered glass panel with slide-in animation                 *
+ *  exit_confirm.rcss  —  Exit Confirmation panel (overrides)    *
+ *  Inherits: base.rcss → menu_shared.rcss → this               *
  * ============================================================ */
 
-body {
-    width: 384dp;
-    height: 224dp;
-    font-family: "Noto Sans JP Thin";
-}
-
-/* ── Centered panel ─────────────────────────────────────────── */
+/* ── Centered panel ────────────────────────────────────────── */
 #exit-panel {
     display: block;
     position: absolute;
@@ -23,7 +17,7 @@ body {
     animation: slide-in 0.18s quadratic-out 1;
 }
 
-/* ── Title text ──────────────────────────────────────────────── */
+/* ── Title text ─────────────────────────────────────────────── */
 .exit-title {
     display: block;
     text-align: center;
@@ -41,12 +35,12 @@ body {
     margin-bottom: 16dp;
 }
 
-/* ── Items container ─────────────────────────────────────────── */
+/* ── Items container ────────────────────────────────────────── */
 .exit-items {
     display: block;
 }
 
-/* ── Info items ──────────────────────────────────────────────── */
+/* ── Info items ─────────────────────────────────────────────── */
 .exit-item {
     display: block;
     width: 100%;
@@ -63,7 +57,7 @@ body {
     color: rgba(150, 200, 150, 180);
 }
 
-/* ── Slide-in animation ──────────────────────────────────────── */
+/* ── Slide-in direction override (top, not left) ───────────── */
 @keyframes slide-in {
     from { margin-top: -30dp; opacity: 0; }
     to   { margin-top: 0dp;   opacity: 1; }

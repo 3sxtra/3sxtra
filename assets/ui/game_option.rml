@@ -2,6 +2,8 @@
 <head>
     <title>Game Option</title>
     <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="menu_shared.rcss"/>
+    <link type="text/rcss" href="settings_shared.rcss"/>
     <link type="text/rcss" href="game_option.rcss"/>
 </head>
 <body data-model="game_option" id="game-option-root">

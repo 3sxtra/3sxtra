@@ -1,0 +1,115 @@
+/* ============================================================ *
+ *  menu_shared.rcss  —  Shared styles for game-context menus    *
+ *                                                                *
+ *  Include via <link type="text/rcss" href="menu_shared.rcss"/>  *
+ *  AFTER base.rcss, BEFORE your per-menu .rcss.                  *
+ *                                                                *
+ *  Provides:                                                     *
+ *    body          — 384×224 viewport, font-family               *
+ *    .menu-title   — centered header (override color per-menu)   *
+ *    .menu-items   — items container                             *
+ *    .menu-item    — list item (base, :hover, .focused)          *
+ *    .item-disabled — greyed-out item                            *
+ *    .option-list  — boxed list variant (training/button-config) *
+ *    .footer-row / .footer-hint — bottom hint bar                *
+ *    @keyframes slide-in      — left-edge entrance               *
+ *    @keyframes panel-fade-in — opacity-only entrance            *
+ * ============================================================ */
+
+/* ── Game-context viewport ─────────────────────────────────── */
+body {
+    width: 384dp;
+    height: 224dp;
+    font-family: "Noto Sans JP Thin";
+    font-size: 14dp;
+    color: #ffffffee;
+}
+
+/* ── Title text (override color per-menu) ──────────────────── */
+.menu-title {
+    display: block;
+    text-align: center;
+    font-size: 9dp;
+    color: rgba(255, 200, 80, 204);
+    letter-spacing: 1dp;
+    margin-bottom: 6dp;
+}
+
+/* ── Items container ───────────────────────────────────────── */
+.menu-items {
+    display: block;
+}
+
+/* ── Individual item (list-menu pattern) ───────────────────── */
+.menu-item {
+    display: block;
+    width: 100%;
+    height: 20dp;
+    line-height: 20dp;
+    padding: 0dp 16dp;
+    font-size: 10dp;
+    color: rgba(220, 220, 220, 217);
+    background-color: transparent;
+    border-width: 0dp;
+    text-align: left;
+    transition: color background-color 0.06s linear-in-out;
+}
+
+.menu-item:hover {
+    color: #FFFFFF;
+    background-color: rgba(255, 220, 0, 20);
+}
+
+/* ── Focused (cursor on this item) ─────────────────────────── */
+.menu-item.focused {
+    color: #FFD700;
+    background-color: rgba(255, 220, 0, 38);
+    border-left-width: 3dp;
+    border-left-color: #FFD700;
+    padding-left: 13dp;
+}
+
+/* ── Disabled item (e.g. Network unavailable) ──────────────── */
+.menu-item.item-disabled {
+    color: rgba(120, 120, 120, 128);
+}
+.menu-item.item-disabled:hover {
+    background-color: transparent;
+    color: rgba(120, 120, 120, 128);
+}
+
+/* ── Boxed list variant (training / button-config menus) ───── */
+.option-list {
+    display: block;
+    padding: 4dp 10dp;
+    background-color: #00000066;
+    border-width: 1dp;
+    border-color: #ffffff22;
+}
+
+/* ── Footer hint bar ───────────────────────────────────────── */
+.footer-row {
+    display: block;
+    margin-top: 4dp;
+    padding: 2dp 12dp;
+    border-top-width: 1dp;
+    border-top-color: rgba(200, 200, 255, 38);
+}
+
+.footer-hint {
+    display: block;
+    font-size: 7dp;
+    color: rgba(180, 180, 180, 128);
+    text-align: center;
+}
+
+/* ── Entrance animations ───────────────────────────────────── */
+@keyframes slide-in {
+    from { margin-left: -180dp; opacity: 0; }
+    to   { margin-left: 0dp;    opacity: 1; }
+}
+
+@keyframes panel-fade-in {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+}

@@ -14,7 +14,7 @@
             <span class="nav-value">{{dir_working + 1}}</span>
         </div>
         <div class="nav-item" data-class-focused="cursor_y == 1">
-            <span class="nav-label">SYSTEM</span>
+            <span class="nav-label">DIRECTION</span>
         </div>
         <div class="nav-item" data-class-focused="cursor_y == 2">
             <span class="nav-label">SAVE</span>

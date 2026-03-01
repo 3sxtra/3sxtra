@@ -16,18 +16,6 @@
 
 #include "sf33rd/Source/Game/game.h"
 #include "common.h"
-
-/* Phase 3 RmlUi bypass */
-#include "port/sdl/rmlui_attract_overlay.h"
-#include "port/sdl/rmlui_continue.h"
-#include "port/sdl/rmlui_copyright.h"
-#include "port/sdl/rmlui_gameover.h"
-#include "port/sdl/rmlui_phase3_toggles.h"
-#include "port/sdl/rmlui_title_screen.h"
-#include "port/sdl/rmlui_win_screen.h"
-#include "port/sdl/rmlui_wrapper.h"
-#include <stdbool.h>
-extern bool use_rmlui;
 #include "main.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Common/PPGWork.h"
@@ -326,15 +314,6 @@ void Check_Back_Demo() {
 
     TexRelease(601);
     title_tex_flag = 0;
-
-    /* Hide RmlUi title screen before switching to demo loop */
-    if (use_rmlui && rmlui_screen_title) {
-        rmlui_title_screen_hide();
-    }
-    if (use_rmlui && rmlui_screen_attract_overlay) {
-        rmlui_attract_overlay_hide();
-    }
-
     Next_Demo_Loop();
     effect_work_init();
 }
@@ -394,10 +373,6 @@ void Game01() {
 
     switch (G_No[2]) {
     case 0:
-        /* Hide any leftover Phase 3 docs (win, continue, gameover, etc.)
-         * The attract_overlay is excluded from hide-all and managed separately. */
-        if (use_rmlui)
-            rmlui_wrapper_hide_all_game_documents();
         // The menu task resets Mode_Type to MODE_ARCADE between matches.
         // Restore it so all MODE_NETWORK-guarded paths (RNG seeding, Game2_0
         // initialization) work correctly for rematches.
@@ -631,21 +606,15 @@ void Game2_1() {
     if (Disp_Cockpit) {
         Time_Control();
         vital_cont_main();
-        if (!use_rmlui || !rmlui_hud_faces)
-            player_face();
-        if (!use_rmlui || !rmlui_hud_names)
-            player_name();
+        player_face();
+        player_name();
         combo_cont_main();
         stngauge_cont_main();
         spgauge_cont_main();
-        if (!use_rmlui || !rmlui_hud_super)
-            Sa_frame_Write();
-        if (!use_rmlui || !rmlui_hud_score)
-            Score_Sub();
-        if (!use_rmlui || !rmlui_hud_wins)
-            Flash_Lamp();
-        if (!use_rmlui || !rmlui_hud_wins)
-            Disp_Win_Record();
+        Sa_frame_Write();
+        Score_Sub();
+        Flash_Lamp();
+        Disp_Win_Record();
     }
 
     ppgPurgeFromVRAM(0);
@@ -835,9 +804,6 @@ void Game03() {
     switch (G_No[2]) {
     case 0:
         if (Winner_Scene() != 0) {
-            /* Hide win screen before transitioning to next state */
-            if (use_rmlui && rmlui_screen_winner)
-                rmlui_win_screen_hide();
             switch (Mode_Type) {
             case MODE_VERSUS:
             case MODE_NETWORK:
@@ -954,9 +920,6 @@ void Game04() {
     switch (G_No[2]) {
     case 0:
         if (Loser_Scene() != 0) {
-            /* Hide win/loser screen before transitioning */
-            if (use_rmlui && rmlui_screen_winner)
-                rmlui_win_screen_hide();
             if (Mode_Type == 5) {
                 G_No[2] = 5;
                 cpReadyTask(TASK_MENU, Menu_Task);
@@ -1087,9 +1050,6 @@ void Game06() {
 
         case 1:
             if (Game_Over()) {
-                /* Hide gameover screen once the game-over flow completes */
-                if (use_rmlui && rmlui_screen_gameover)
-                    rmlui_gameover_hide();
                 G_Timer = 60;
 
                 if (Check_Disp_Ranking() != 0) {
@@ -1320,9 +1280,6 @@ void Game07() {
     switch (G_No[2]) {
     case 0:
         if (Continue_Scene() != 0) {
-            /* Hide continue screen before entering game-over */
-            if (use_rmlui && rmlui_screen_continue)
-                rmlui_continue_hide();
             G_No[1] = 6;
             G_No[2] = 0;
         }
@@ -1737,17 +1694,6 @@ void Loop_Demo(struct _TASK* /* unused */) {
         Basic_Sub();
 
         if (Title()) {
-            /* Hide RmlUi title elements before transitioning to attract demo */
-            if (use_rmlui && rmlui_screen_title) {
-                rmlui_title_screen_hide();
-            }
-            if (use_rmlui && rmlui_screen_copyright) {
-                rmlui_copyright_hide();
-            }
-            /* Show attract overlay (small logo + PRESS START) for demo fight */
-            if (use_rmlui && rmlui_screen_attract_overlay) {
-                rmlui_attract_overlay_show();
-            }
             Loop_Demo_Sub();
             Insert_Y = 17;
             D_No[0] = 1;
@@ -1758,10 +1704,6 @@ void Loop_Demo(struct _TASK* /* unused */) {
 
     case 3:
         if (Play_Demo() != 0) {
-            /* Hide just the logo when demo fight ends — text persists */
-            if (use_rmlui && rmlui_screen_attract_overlay) {
-                rmlui_attract_overlay_hide_logo();
-            }
             Switch_Screen(1);
             Loop_Demo_Sub();
             Rank_Type = 0;
@@ -1785,10 +1727,6 @@ void Loop_Demo(struct _TASK* /* unused */) {
 
     case 5:
         if (Play_Demo() != 0) {
-            /* Hide just the logo when demo fight ends — text persists */
-            if (use_rmlui && rmlui_screen_attract_overlay) {
-                rmlui_attract_overlay_hide_logo();
-            }
             Loop_Demo_Sub();
             Demo_Type = 1;
             Rank_Type = 5;
@@ -1903,10 +1841,6 @@ void Next_Title_Sub() {
     Exec_Wipe = 0;
     Present_Mode = 1;
     Insert_Y = 23;
-    /* Hide attract overlay on coin insert */
-    if (use_rmlui && rmlui_screen_attract_overlay) {
-        rmlui_attract_overlay_hide();
-    }
     Before_Select_Sub();
     cpReadyTask(TASK_ENTRY, Entry_Task);
 }

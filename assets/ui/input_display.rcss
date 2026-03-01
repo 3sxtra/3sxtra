@@ -1,67 +1,114 @@
-/* Input Display — on-screen input history with text notation */
+/* Input Display — sprite-sheet icon history (window context, viewport-positioned) */
 
-/* ── Panels ── */
+/* ── Spritesheet: icons-capcom-32.png ──
+ * Image is 64×544 RGBA; each icon is 32×32, stacked vertically in the left half.
+ * Row order: Left(0) Right(1) Up(2) Down(3) UL(4) UR(5) DL(6) DR(7)
+ *            LP(8)  MP(9)    HP(10) LK(11)  MK(12) HK(13) Start(14)
+ *
+ * RmlUi @spritesheet uses pixel rects: x y width height
+ */
+@spritesheet capcom-icons {
+    src: ../icons-capcom-32.png;
+
+    /* Directions */
+    dir-left:    0px   0px 32px 32px;
+    dir-right:   0px  32px 32px 32px;
+    dir-up:      0px  64px 32px 32px;
+    dir-down:    0px  96px 32px 32px;
+    dir-ul:      0px 128px 32px 32px;
+    dir-ur:      0px 160px 32px 32px;
+    dir-dl:      0px 192px 32px 32px;
+    dir-dr:      0px 224px 32px 32px;
+
+    /* Punches */
+    btn-lp:      0px 256px 32px 32px;
+    btn-mp:      0px 288px 32px 32px;
+    btn-hp:      0px 320px 32px 32px;
+
+    /* Kicks */
+    btn-lk:      0px 352px 32px 32px;
+    btn-mk:      0px 384px 32px 32px;
+    btn-hk:      0px 416px 32px 32px;
+
+    /* Other */
+    btn-st:      0px 448px 32px 32px;
+
+    /* Neutral (no direction) */
+    dir-neutral: 0px 480px 32px 32px;
+}
+
+/* ── Panels ──
+ * Position/size set dynamically via data-style-* from the C++ data model
+ * (viewport-relative pixel values from get_letterbox_rect).
+ */
 #p1-panel {
     display: block;
     position: absolute;
-    top: 100dp;
-    left: 10dp;
-    width: 140dp;
+    /* left, top, width set by data-style-* */
 }
 
 #p2-panel {
     display: block;
     position: absolute;
-    top: 100dp;
-    right: 10dp;
-    width: 140dp;
+    /* right, top, width set by data-style-* */
 }
 
 /* ── Input rows ── */
 .input-row {
     display: block;
-    margin-bottom: 2dp;
-    padding: 2dp 4dp;
+    margin-bottom: 2px;
+    padding: 1px 3px;
     background-color: rgba(0, 0, 0, 115);
-    border-radius: 3dp;
-    font-size: 14dp;
-    color: #ffffff;
+    border-radius: 3px;
     white-space: nowrap;
+    width: auto;
 }
 
-/* ── Direction arrows ── */
-.direction {
+/* ── Icon base class ── */
+.icon {
+    display: inline-block;
+    /* width/height set by data-style-* from C++ */
+    margin-right: 1px;
+    vertical-align: middle;
+}
+
+/* ── Button wrapper (inline container from data-for) ── */
+.btn-wrap {
     display: inline;
-    font-size: 18dp;
-    color: #cccccc;
-    margin-right: 4dp;
-    width: 22dp;
-    text-align: center;
 }
 
-/* ── Button labels ── */
-.buttons {
-    display: inline;
-    font-size: 13dp;
-    color: #88ccff;
-    margin-right: 4dp;
-}
+/* ── Direction icon decorators ── */
+.dir-left    { decorator: image(dir-left); }
+.dir-right   { decorator: image(dir-right); }
+.dir-up      { decorator: image(dir-up); }
+.dir-down    { decorator: image(dir-down); }
+.dir-ul      { decorator: image(dir-ul); }
+.dir-ur      { decorator: image(dir-ur); }
+.dir-dl      { decorator: image(dir-dl); }
+.dir-dr      { decorator: image(dir-dr); }
+.dir-neutral { decorator: image(dir-neutral); }
 
-/* ── Frame count ── */
+/* ── Button icon decorators ── */
+.btn-lp { decorator: image(btn-lp); }
+.btn-mp { decorator: image(btn-mp); }
+.btn-hp { decorator: image(btn-hp); }
+.btn-lk { decorator: image(btn-lk); }
+.btn-mk { decorator: image(btn-mk); }
+.btn-hk { decorator: image(btn-hk); }
+.btn-st { decorator: image(btn-st); }
+
+/* ── Frame count — vertically centered with icons ── */
 .frame-count {
-    display: inline;
-    font-size: 12dp;
+    display: inline-block;
+    /* font-size set by data-style-* */
     color: #999999;
-    width: 24dp;
+    width: 30px;
     text-align: right;
+    vertical-align: middle;
 }
 
 /* P2 mirrored: frame count on left */
 .input-row.p2 .frame-count {
     text-align: left;
-    margin-right: 4dp;
-}
-
-.input-row.p2 .buttons {
-    margin-right: 0dp;
+    margin-right: 3px;
 }

@@ -1,12 +1,9 @@
-/* ── Memory Card Screen Stylesheet ────────────────────────── */
-body {
-    width: 384dp;
-    height: 224dp;
-    font-family: "Noto Sans JP Thin";
-    font-size: 14dp;
-    color: #ffffffee;
-}
+/* ============================================================ *
+ *  memory_card.rcss  —  Memory Card / Save-Load (overrides)     *
+ *  Inherits: base.rcss → menu_shared.rcss → this               *
+ * ============================================================ */
 
+/* ── Panel (centered) ──────────────────────────────────────── */
 .memcard-panel {
     display: block;
     position: absolute;
@@ -18,16 +15,7 @@ body {
     animation: panel-fade-in 0.4s quadratic-out;
 }
 
-@keyframes panel-fade-in {
-    0% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
-    }
-}
-
-/* ── Title ──────────────────────────────────────────────────── */
+/* ── Title ─────────────────────────────────────────────────── */
 .memcard-title {
     display: block;
     font-size: 20dp;
@@ -38,29 +26,33 @@ body {
     font-effect: shadow(1dp 1dp #00000088);
 }
 
-/* ── Slot list ──────────────────────────────────────────────── */
-.slot-list {
-    display: block;
-    padding: 8dp 12dp;
-    background-color: #00000066;
-    border-width: 1dp;
-    border-color: #88ccff33;
+/* ── Menu item overrides ───────────────────────────────────── */
+.menu-item {
+    padding: 6dp 16dp;
+    margin-bottom: 2dp;
 }
 
-.slot-item {
-    display: block;
-    padding: 8dp 16dp;
-    margin-bottom: 4dp;
-    background-color: #ffffff11;
-    text-align: left;
+.menu-item.focused {
+    background-color: rgba(255, 220, 0, 0.15);
+    border-left-color: #ffcc00;
 }
 
-.slot-item:hover {
-    background-color: #88ccff22;
-}
-
-.slot-label {
+/* ── Inline label/value spans ──────────────────────────────── */
+.item-label {
+    display: inline;
     font-size: 14dp;
     color: #cccccc;
+    letter-spacing: 2dp;
+}
+
+.focused .item-label {
+    color: #ffffff;
+}
+
+.item-value {
+    display: inline;
+    font-size: 14dp;
+    color: #ffcc00;
     letter-spacing: 1dp;
+    margin-left: 8dp;
 }

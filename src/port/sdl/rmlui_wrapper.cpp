@@ -469,6 +469,14 @@ extern "C" void rmlui_wrapper_hide_document(const char* name) {
     }
 }
 
+extern "C" void rmlui_wrapper_hide_all_documents(void) {
+    for (auto& [name, doc] : s_window_documents) {
+        if (doc && doc->IsVisible()) {
+            doc->Hide();
+        }
+    }
+}
+
 extern "C" bool rmlui_wrapper_is_document_visible(const char* name) {
     if (!name)
         return false;

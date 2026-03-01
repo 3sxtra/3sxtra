@@ -1,14 +1,10 @@
 /* ============================================================ *
- *  game_option.rcss  —  Game Option two-column settings table  *
+ *  game_option.rcss  —  Game Option screen (overrides only)     *
+ *  Inherits: base.rcss → menu_shared.rcss → settings_shared →  *
+ *            this                                                *
  * ============================================================ */
 
-body {
-    width: 384dp;
-    height: 224dp;
-    font-family: "Noto Sans JP Thin";
-}
-
-/* ── Outer panel ────────────────────────────────────────────── */
+/* ── Outer panel (position & size) ─────────────────────────── */
 #game-option-panel {
     display: block;
     position: absolute;
@@ -22,81 +18,7 @@ body {
     animation: slide-in 0.18s quadratic-out 1;
 }
 
-/* ── Title text ─────────────────────────────────────────────── */
-.menu-title {
-    display: block;
-    text-align: center;
-    font-size: 9dp;
-    color: rgba(255, 200, 80, 204);
-    letter-spacing: 1dp;
-    margin-bottom: 6dp;
-}
-
-/* ── Option table container ─────────────────────────────────── */
-.option-table {
-    display: block;
-    padding: 0dp 8dp;
-}
-
-/* ── Row (two-column: label + value) ───────────────────────── */
-.opt-row {
-    display: block;
-    width: 100%;
-    height: 14dp;
-    line-height: 14dp;
-    padding: 0dp 8dp;
-    transition: background-color 0.06s linear-in-out;
-}
-
-.opt-row.focused {
-    background-color: rgba(255, 220, 0, 38);
-    border-left-width: 3dp;
-    border-left-color: #FFD700;
-    padding-left: 5dp;
-}
-
-/* ── Label (left column) ───────────────────────────────────── */
-.opt-label {
-    display: inline-block;
-    width: 155dp;
-    font-size: 7dp;
-    color: rgba(220, 220, 220, 217);
-}
-
-.opt-row.focused .opt-label {
-    color: #FFD700;
-}
-
-/* ── Value (right column) ──────────────────────────────────── */
-.opt-value {
-    display: inline-block;
-    width: 90dp;
-    font-size: 7dp;
-    color: rgba(160, 220, 255, 230);
-    text-align: right;
-}
-
-.opt-row.focused .opt-value {
-    color: #FFFFFF;
-}
-
-/* ── Footer hint ────────────────────────────────────────────── */
-.footer-row {
-    display: block;
-    margin-top: 4dp;
-    padding: 2dp 12dp;
-    border-top-width: 1dp;
-    border-top-color: rgba(200, 200, 255, 38);
-}
-
-.footer-hint {
-    display: block;
-    font-size: 7dp;
-    color: rgba(180, 180, 180, 128);
-    text-align: center;
-}
-
-/* ── Slide-in animation ─────────────────────────────────────── */
+/* ── Slide-in direction override (top, not left) ───────────── */
 @keyframes slide-in {
     from { margin-top: -20dp; opacity: 0; }
     to   { margin-top: 0dp;   opacity: 1; }

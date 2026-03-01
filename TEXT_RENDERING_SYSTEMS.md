@@ -93,11 +93,44 @@ The game eschews a traditional depth buffer for a Painter's Algorithm layer arra
 
 The game features dynamic colored banners (e.g., the red banner at the top of the Training menu) and translucent grey backdrop rectangles (e.g., in Button Config, Replay menus). These are **not** drawn via simple 2D GL primitives. Instead, they are instantiated as standard CPS3 game objects/sprites using specific effect initializers.
 
-### Top Red Banners (Effect 57)
+### Full-Screen Colored Backgrounds & Top Banners (Effect 57)
 Managed by `effect_57_init` (in `eff57.c`).
 *   It initializes an object (ID `57`) assigned to use the `_sel_pl_char_table` (a global UI sprite table).
 *   It is given a specific color palette code (`0x1AC`).
 *   It utilizes a slide-in animation routine and loops its rendering updates, ultimately pushing to the sprite engine via `sort_push_request4`.
+
+#### Dual Role: Background + Banner
+Effect 57 serves **two distinct visual purposes** depending on its parameters:
+1.  **Full-screen colored background** — The textured blue/cyan/green backgrounds visible on menu screens (Extra Option, Network Lobby, System Direction, Sound Settings) are **not** tilemap layers from `Setup_BG`. They are Effect 57 instances initialized with a full-screen palette code.
+2.  **Top red header banner** — The narrow red slide-in banner at the top of sub-menus (e.g., "GAME OPTION", "EXTRA OPTION") is also an Effect 57 instance, but with different position/size parameters.
+
+Both roles coexist — a single screen typically has one Effect 57 for the background and another for the header banner, using different object IDs (e.g., `0x4E` for background, `0x73` for banner).
+
+#### Palette Codes
+The 4th parameter to `effect_57_init` selects the color palette:
+| Palette | Color | Used By |
+|---------|-------|---------|
+| `0x45`  | Blue/cyan textured | Extra Option, Network Lobby, System Direction |
+| `0x3F`  | Red (banner) | Sub-menu header banners |
+
+Example: `effect_57_init(0x4E, 0, 0, 0x45, 0)` creates a blue full-screen background. `effect_57_init(0x73, 6, 0, 0x3F, 2)` creates a red header banner.
+
+#### Critical: `effect_work_init()` Destroys Backgrounds
+Screens that call `effect_work_init()` (e.g., Network Lobby) destroy **all** effects, including the inherited Effect 57 background from the parent screen. The background must be **explicitly recreated** after `effect_work_init()`. Screens that do NOT call `effect_work_init()` (e.g., Extra Option, Sound Settings) inherit the background from their parent.
+
+When gating native effects behind `use_rmlui` checks, the Effect 57 background call **must remain unconditional** — it provides the colored background that shows through transparent RmlUI elements. Only the header banner, grey boxes (Effect 66), text sprites (Effect 61), and description text (Effect 45) should be gated.
+
+#### Reference: `Setup_Next_Page` (in `menu_input.c`)
+The `Setup_Next_Page` function (used by Extra Option and System Direction) demonstrates the correct pattern:
+```c
+effect_work_init();         // destroys all effects
+// ... setup Order/Timer ...
+effect_57_init(0x4E, 1, 0, 0x45, 0);  // recreate blue BG (unconditional)
+if (!use_rmlui || !rmlui_menu_extra_option)
+    effect_57_init(0x73, 6, 0, 0x3F, 2);  // red banner (native-only)
+effect_66_init(...);        // grey boxes
+effect_45_init(0, 0, 2);   // description text
+```
 
 ### Translucent Grey Rectangles (Effect 66)
 Managed by `effect_66_init` (in `eff66.c`) and internally referred to as a "Half-Object Flash" effect.

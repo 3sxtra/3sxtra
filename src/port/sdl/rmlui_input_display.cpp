@@ -2,15 +2,17 @@
  * @file rmlui_input_display.cpp
  * @brief RmlUi input history overlay — data model + per-frame tracking.
  *
- * Mirrors the ImGui input_display.cpp functionality using RmlUi data bindings.
- * Instead of sprite-sheet icons, uses FGC text notation (arrows + button labels)
- * which scales perfectly at all resolutions.
+ * Renders on the **window** context at native resolution for crisp icons,
+ * but positions panels relative to the game viewport (letterbox rect) so
+ * the display appears inside the game area, not over bezels.
  *
- * Input tracking logic (history, inactivity timeout) is identical to the ImGui version.
+ * Uses CSS class names for sprite-sheet icon rendering via @spritesheet
+ * decorators — matching the ImGui version's visual output.
  */
 #include "port/sdl/rmlui_input_display.h"
 #include "common.h"
 #include "port/sdl/rmlui_wrapper.h"
+#include "port/sdl/sdl_app.h"
 #include "port/sdl/training_menu.h"
 
 #include <RmlUi/Core.h>
@@ -24,14 +26,19 @@ extern u16 p1sw_buff;
 extern u16 p2sw_buff;
 }
 
+// ── Button icon struct for data binding ────────────────────────
+struct ButtonIcon {
+    Rml::String cls; // CSS class name, e.g. "icon btn-lp"
+};
+
 // ── Input row struct for data binding ──────────────────────────
 struct InputRow {
-    Rml::String direction; // e.g. "↗", "↓", "" (neutral)
-    Rml::String buttons;   // e.g. "LP MP", "HK"
+    Rml::String direction; // CSS class for direction icon, e.g. "icon dir-up"
+    std::vector<ButtonIcon> buttons; // one entry per pressed button
     Rml::String frames;    // e.g. "3", "12"
 };
 
-// ── Internal tracking (mirrors ImGui input_display.cpp) ────────
+// ── Internal tracking ──────────────────────────────────────────
 struct InputInfo {
     u32 mask;
     s32 frame;
@@ -55,79 +62,62 @@ static std::vector<InputRow> s_rows_p1;
 static std::vector<InputRow> s_rows_p2;
 static bool s_visible = false;
 
+// Viewport positioning (pixels, updated per-frame from letterbox rect)
+static Rml::String s_p1_left     = "10px";
+static Rml::String s_p1_top      = "100px";
+static Rml::String s_p2_right    = "10px";
+static Rml::String s_p2_top      = "100px";
+static Rml::String s_icon_size   = "24px";
+static Rml::String s_font_size   = "11px";
+static Rml::String s_panel_width = "120px";
+
 // Previous state for dirty checking
 static size_t s_prev_p1_size = 0;
 static size_t s_prev_p2_size = 0;
 static u32 s_prev_p1_head_mask = 0;
 static u32 s_prev_p2_head_mask = 0;
 static bool s_prev_visible = false;
+static int s_prev_win_w = 0;
+static int s_prev_win_h = 0;
 
-// ── Direction bitmask → arrow string ───────────────────────────
-static Rml::String direction_to_string(u32 dir) {
+// ── Direction bitmask → icon CSS class ─────────────────────────
+static Rml::String direction_to_class(u32 dir) {
     switch (dir & 0xF) {
-    case 0x1:
-        return "\xe2\x86\x91"; // ↑
-    case 0x2:
-        return "\xe2\x86\x93"; // ↓
-    case 0x4:
-        return "\xe2\x86\x90"; // ←
-    case 0x8:
-        return "\xe2\x86\x92"; // →
-    case 0x1 | 0x4:
-        return "\xe2\x86\x96"; // ↖
-    case 0x1 | 0x8:
-        return "\xe2\x86\x97"; // ↗
-    case 0x2 | 0x4:
-        return "\xe2\x86\x99"; // ↙
-    case 0x2 | 0x8:
-        return "\xe2\x86\x98"; // ↘
-    default:
-        return "\xc2\xb7"; // · (neutral)
+    case 0x1:          return "icon dir-up";
+    case 0x2:          return "icon dir-down";
+    case 0x4:          return "icon dir-left";
+    case 0x8:          return "icon dir-right";
+    case 0x1 | 0x4:    return "icon dir-ul";
+    case 0x1 | 0x8:    return "icon dir-ur";
+    case 0x2 | 0x4:    return "icon dir-dl";
+    case 0x2 | 0x8:    return "icon dir-dr";
+    default:           return "icon dir-neutral";
     }
 }
 
-// ── Button bitmask → label string ──────────────────────────────
-static Rml::String buttons_to_string(u32 mask) {
-    Rml::String result;
-    // Punches
-    if (mask & 0x10) {
-        if (!result.empty())
-            result += " ";
-        result += "LP";
+// ── Ordered button bits for consistent rendering order ─────────
+static const u32 s_button_bits[] = {
+    0x10, 0x20, 0x40,    // LP, MP, HP
+    0x100, 0x200, 0x400,  // LK, MK, HK
+    0x1000                // Start
+};
+static const char* s_button_classes[] = {
+    "icon btn-lp", "icon btn-mp", "icon btn-hp",
+    "icon btn-lk", "icon btn-mk", "icon btn-hk",
+    "icon btn-st"
+};
+static const int s_num_buttons = 7;
+
+// ── Build button icon list from mask ───────────────────────────
+static void buttons_to_icons(u32 mask, std::vector<ButtonIcon>& out) {
+    out.clear();
+    u32 actions = mask & ~0xF;
+    if (actions == 0) return;
+    for (int i = 0; i < s_num_buttons; i++) {
+        if (actions & s_button_bits[i]) {
+            out.push_back({ s_button_classes[i] });
+        }
     }
-    if (mask & 0x20) {
-        if (!result.empty())
-            result += " ";
-        result += "MP";
-    }
-    if (mask & 0x40) {
-        if (!result.empty())
-            result += " ";
-        result += "HP";
-    }
-    // Kicks
-    if (mask & 0x100) {
-        if (!result.empty())
-            result += " ";
-        result += "LK";
-    }
-    if (mask & 0x200) {
-        if (!result.empty())
-            result += " ";
-        result += "MK";
-    }
-    if (mask & 0x400) {
-        if (!result.empty())
-            result += " ";
-        result += "HK";
-    }
-    // Start
-    if (mask & 0x1000) {
-        if (!result.empty())
-            result += " ";
-        result += "ST";
-    }
-    return result;
 }
 
 // ── Build display rows from history (newest first) ─────────────
@@ -135,8 +125,8 @@ static void build_rows(const std::vector<InputInfo>& history, std::vector<InputR
     rows.clear();
     for (auto it = history.rbegin(); it != history.rend(); ++it) {
         InputRow row;
-        row.direction = direction_to_string(it->mask);
-        row.buttons = buttons_to_string(it->mask & ~0xF);
+        row.direction = direction_to_class(it->mask);
+        buttons_to_icons(it->mask, row.buttons);
 
         // Frame duration
         s32 next_frame;
@@ -158,8 +148,36 @@ static void build_rows(const std::vector<InputInfo>& history, std::vector<InputR
     }
 }
 
+// ── Helper: format a float as "Npx" string ─────────────────────
+static Rml::String px_str(float v) {
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%.0fpx", v);
+    return buf;
+}
+
+// ── Update viewport positioning strings ────────────────────────
+static void update_viewport_positions(int win_w, int win_h) {
+    SDL_FRect vp = get_letterbox_rect(win_w, win_h);
+    float scale = (vp.h / 480.0f) * 0.85f;
+    if (scale < 0.1f) scale = 0.1f;
+
+    float margin = 10.0f * scale;
+    float top_offset = 100.0f * scale;
+
+    s_p1_left     = px_str(vp.x + margin);
+    s_p1_top      = px_str(vp.y + top_offset);
+    // P2: distance from right window edge to right edge of panel
+    float p2_right = (float)win_w - (vp.x + vp.w - margin);
+    s_p2_right    = px_str(p2_right);
+    s_p2_top      = px_str(vp.y + top_offset);
+    s_icon_size   = px_str(32.0f * scale);
+    s_font_size   = px_str(14.0f * scale);
+    s_panel_width = px_str(120.0f * scale);
+}
+
 // ── Init ───────────────────────────────────────────────────────
 extern "C" void rmlui_input_display_init(void) {
+    // Window context: renders at native resolution for crisp icons
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
     if (!ctx) {
         SDL_Log("[RmlUi InputDisplay] No context available");
@@ -171,6 +189,12 @@ extern "C" void rmlui_input_display_init(void) {
         SDL_Log("[RmlUi InputDisplay] Failed to create data model");
         return;
     }
+
+    // Register ButtonIcon struct
+    if (auto sh = ctor.RegisterStruct<ButtonIcon>()) {
+        sh.RegisterMember("cls", &ButtonIcon::cls);
+    }
+    ctor.RegisterArray<std::vector<ButtonIcon>>();
 
     // Register InputRow struct
     if (auto sh = ctor.RegisterStruct<InputRow>()) {
@@ -186,6 +210,15 @@ extern "C" void rmlui_input_display_init(void) {
 
     // Bind visibility
     ctor.BindFunc("visible", [](Rml::Variant& v) { v = s_visible; });
+
+    // Bind viewport positioning
+    ctor.BindFunc("p1_left",     [](Rml::Variant& v) { v = s_p1_left; });
+    ctor.BindFunc("p1_top",      [](Rml::Variant& v) { v = s_p1_top; });
+    ctor.BindFunc("p2_right",    [](Rml::Variant& v) { v = s_p2_right; });
+    ctor.BindFunc("p2_top",      [](Rml::Variant& v) { v = s_p2_top; });
+    ctor.BindFunc("icon_size",   [](Rml::Variant& v) { v = s_icon_size; });
+    ctor.BindFunc("font_size",   [](Rml::Variant& v) { v = s_font_size; });
+    ctor.BindFunc("panel_width", [](Rml::Variant& v) { v = s_panel_width; });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -214,6 +247,23 @@ extern "C" void rmlui_input_display_update(void) {
 
     if (!s_visible)
         return;
+
+    // Update viewport positioning when window size changes
+    int win_w, win_h;
+    SDL_Window* win = SDLApp_GetWindow();
+    SDL_GetWindowSize(win, &win_w, &win_h);
+    if (win_w != s_prev_win_w || win_h != s_prev_win_h) {
+        s_prev_win_w = win_w;
+        s_prev_win_h = win_h;
+        update_viewport_positions(win_w, win_h);
+        s_model_handle.DirtyVariable("p1_left");
+        s_model_handle.DirtyVariable("p1_top");
+        s_model_handle.DirtyVariable("p2_right");
+        s_model_handle.DirtyVariable("p2_top");
+        s_model_handle.DirtyVariable("icon_size");
+        s_model_handle.DirtyVariable("font_size");
+        s_model_handle.DirtyVariable("panel_width");
+    }
 
     s_render_frame++;
 

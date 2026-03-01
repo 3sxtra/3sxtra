@@ -2,6 +2,7 @@
 <head>
     <title>Mode Select</title>
     <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="menu_shared.rcss"/>
     <link type="text/rcss" href="mode_menu.rcss"/>
 </head>
 <body data-model="mode_menu" id="mode-menu-root">

@@ -1,15 +1,9 @@
 /* ============================================================ *
- *  mode_menu.rcss  —  Mode Select panel                        *
- *  Glass panel sliding in from left, gold focus highlight      *
+ *  mode_menu.rcss  —  Mode Select panel (overrides only)        *
+ *  Inherits: base.rcss → menu_shared.rcss → this               *
  * ============================================================ */
 
-body {
-    width: 384dp;
-    height: 224dp;
-    font-family: "Noto Sans JP Thin";
-}
-
-/* ── Outer panel ────────────────────────────────────────────── */
+/* ── Outer panel (position & size) ─────────────────────────── */
 #mode-panel {
     display: block;
     position: absolute;
@@ -23,15 +17,12 @@ body {
     animation: slide-in 0.18s quadratic-out 1;
 }
 
-/* ── Title text ─────────────────────────────────────────────── */
+/* ── Title override ────────────────────────────────────────── */
 .menu-title {
-    display: block;
-    text-align: center;
-    font-size: 9dp;
     color: rgba(255, 255, 255, 128);
-    letter-spacing: 1dp;
     margin-bottom: 2dp;
 }
+
 .menu-subtitle {
     display: block;
     text-align: center;
@@ -40,51 +31,7 @@ body {
     margin-bottom: 10dp;
 }
 
-/* ── Items container ────────────────────────────────────────── */
-.menu-items {
-    display: block;
-}
-
-/* ── Individual item ────────────────────────────────────────── */
+/* ── Item override (slightly larger font) ──────────────────── */
 .menu-item {
-    display: block;
-    width: 100%;
-    height: 20dp;
-    line-height: 20dp;
-    padding: 0dp 16dp;
     font-size: 11dp;
-    color: rgba(220, 220, 220, 217);
-    background-color: transparent;
-    border-width: 0dp;
-    text-align: left;
-    transition: color background-color 0.06s linear-in-out;
-}
-
-.menu-item:hover {
-    color: #FFFFFF;
-    background-color: rgba(255, 220, 0, 20);
-}
-
-/* Focused (cursor on this item) */
-.menu-item.focused {
-    color: #FFD700;
-    background-color: rgba(255, 220, 0, 38);
-    border-left-width: 3dp;
-    border-left-color: #FFD700;
-    padding-left: 13dp;
-}
-
-/* Network item when GekkoNet not present */
-.menu-item.item-disabled {
-    color: rgba(120, 120, 120, 128);
-}
-.menu-item.item-disabled:hover {
-    background-color: transparent;
-    color: rgba(120, 120, 120, 128);
-}
-
-/* ── Slide-in animation ─────────────────────────────────────── */
-@keyframes slide-in {
-    from { margin-left: -180dp; opacity: 0; }
-    to   { margin-left: 0dp;    opacity: 1; }
 }

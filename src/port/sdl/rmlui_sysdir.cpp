@@ -73,14 +73,26 @@ static SysdirCache s_cache = {};
 
 /// Build the label string for a given page/row from msgSysDirTbl.
 /// Even indices (page*12 + row*2) are the label entries.
+/// Strips trailing dots (used for fixed-width font alignment in native).
 static const char* get_row_label(int page, int row) {
+    static char s_label_buf[64];
     int idx = page * 12 + row * 2;
     if (!msgSysDirTbl[0] || !msgSysDirTbl[0]->msgAdr)
         return "";
     s8** entry = msgSysDirTbl[0]->msgAdr[idx];
     if (!entry || !entry[0])
         return "";
-    return (const char*)entry[0];
+    const char* raw = (const char*)entry[0];
+    /* Copy and strip trailing dots */
+    size_t len = strlen(raw);
+    if (len >= sizeof(s_label_buf))
+        len = sizeof(s_label_buf) - 1;
+    memcpy(s_label_buf, raw, len);
+    s_label_buf[len] = '\0';
+    while (len > 0 && s_label_buf[len - 1] == '.') {
+        s_label_buf[--len] = '\0';
+    }
+    return s_label_buf;
 }
 
 /// Build the description string for a given page/row from msgSysDirTbl.

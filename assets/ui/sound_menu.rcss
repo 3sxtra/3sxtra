@@ -1,14 +1,10 @@
 /* ============================================================ *
- *  sound_menu.rcss  —  Sound Test settings table                *
+ *  sound_menu.rcss  —  Sound Test screen (overrides only)       *
+ *  Inherits: base.rcss → menu_shared.rcss → settings_shared →  *
+ *            this                                                *
  * ============================================================ */
 
-body {
-    width: 384dp;
-    height: 224dp;
-    font-family: "Noto Sans JP Thin";
-}
-
-/* ── Outer panel ────────────────────────────────────────────── */
+/* ── Outer panel (position & size) ─────────────────────────── */
 #sound-panel {
     display: block;
     position: absolute;
@@ -22,77 +18,18 @@ body {
     animation: slide-in 0.18s quadratic-out 1;
 }
 
-/* ── Title text ─────────────────────────────────────────────── */
+/* ── Title: green accent for sound ─────────────────────────── */
 .menu-title {
-    display: block;
-    text-align: center;
-    font-size: 9dp;
     color: rgba(136, 255, 136, 204);
     letter-spacing: 2dp;
-    margin-bottom: 6dp;
     font-effect: shadow(1dp 1dp #00000088);
 }
 
-/* ── Option table container ─────────────────────────────────── */
-.option-table {
-    display: block;
-    padding: 0dp 8dp;
-}
+/* ── Column width overrides ────────────────────────────────── */
+.opt-label { width: 105dp; }
+.opt-value { width: 140dp; }
 
-/* ── Row (two-column: label + value) ───────────────────────── */
-.opt-row {
-    display: block;
-    width: 100%;
-    height: 14dp;
-    line-height: 14dp;
-    padding: 0dp 8dp;
-    transition: background-color 0.06s linear-in-out;
-}
-
-.opt-row.focused {
-    background-color: rgba(255, 220, 0, 38);
-    border-left-width: 3dp;
-    border-left-color: #FFD700;
-    padding-left: 5dp;
-}
-
-/* ── Label (left column) ───────────────────────────────────── */
-.opt-label {
-    display: inline-block;
-    width: 105dp;
-    font-size: 7dp;
-    color: rgba(220, 220, 220, 217);
-}
-
-.opt-row.focused .opt-label {
-    color: #FFD700;
-}
-
-/* ── Value (right column) ──────────────────────────────────── */
-.opt-value {
-    display: inline-block;
-    width: 140dp;
-    font-size: 7dp;
-    color: rgba(160, 220, 255, 230);
-    text-align: right;
-}
-
-.opt-row.focused .opt-value {
-    color: #FFFFFF;
-}
-
-/* ── Action-only row (no value column) ─────────────────────── */
-.opt-action {
-    display: inline-block;
-    font-size: 7dp;
-    color: rgba(220, 220, 220, 217);
-}
-
-.opt-row.focused .opt-action {
-    color: #FFD700;
-}
-
-/* ── Level bar (BGM / SE) ──────────────────────────────────── */
+/* ── Level bar (BGM / SE) — sound-specific ─────────────────── */
 .opt-value-bar {
     display: inline-block;
     width: 140dp;
@@ -143,23 +80,7 @@ body {
     color: rgba(255, 215, 0, 200);
 }
 
-/* ── Footer hint ────────────────────────────────────────────── */
-.footer-row {
-    display: block;
-    margin-top: 4dp;
-    padding: 2dp 12dp;
-    border-top-width: 1dp;
-    border-top-color: rgba(200, 200, 255, 38);
-}
-
-.footer-hint {
-    display: block;
-    font-size: 7dp;
-    color: rgba(180, 180, 180, 128);
-    text-align: center;
-}
-
-/* ── Slide-in animation ─────────────────────────────────────── */
+/* ── Slide-in direction override (top, not left) ───────────── */
 @keyframes slide-in {
     from { margin-top: -20dp; opacity: 0; }
     to   { margin-top: 0dp;   opacity: 1; }

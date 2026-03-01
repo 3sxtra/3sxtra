@@ -7,9 +7,6 @@
 <body data-model="network_lobby">
 <div id="lobby-panel">
 
-    <!-- ── Title ── -->
-    <div class="lobby-title">NETWORK LOBBY</div>
-
     <!-- ── Main content: left menu + right peer panels ── -->
     <div class="lobby-content">
 

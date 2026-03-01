@@ -40,6 +40,9 @@ void rmlui_wrapper_show_document(const char* name);
 /// Hide a named RmlUi document
 void rmlui_wrapper_hide_document(const char* name);
 
+/// Hide all window-context RmlUi documents
+void rmlui_wrapper_hide_all_documents(void);
+
 /// Check if a named RmlUi document is currently visible
 bool rmlui_wrapper_is_document_visible(const char* name);
 

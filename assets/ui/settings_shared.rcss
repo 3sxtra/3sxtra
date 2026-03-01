@@ -1,0 +1,74 @@
+/* ============================================================ *
+ *  settings_shared.rcss  —  Shared key-value settings rows      *
+ *                                                                *
+ *  Include via <link type="text/rcss" href="settings_shared.rcss"/>  *
+ *  AFTER menu_shared.rcss, BEFORE your per-menu .rcss.           *
+ *                                                                *
+ *  Provides:                                                     *
+ *    .option-table — row container wrapper                       *
+ *    .opt-row      — row (base + .focused)                       *
+ *    .opt-label    — left label column (override width per-menu) *
+ *    .opt-value    — right value column (override width per-menu)*
+ *    .opt-action   — action-only row (no value)                  *
+ *                                                                *
+ *  Note: .footer-row / .footer-hint are in menu_shared.rcss     *
+ * ============================================================ */
+
+/* ── Option table container ────────────────────────────────── */
+.option-table {
+    display: block;
+    padding: 0dp 8dp;
+}
+
+/* ── Row (two-column: label + value) ───────────────────────── */
+.opt-row {
+    display: block;
+    width: 100%;
+    height: 14dp;
+    line-height: 14dp;
+    padding: 0dp 8dp;
+    transition: background-color 0.06s linear-in-out;
+}
+
+.opt-row.focused {
+    background-color: rgba(255, 220, 0, 38);
+    border-left-width: 3dp;
+    border-left-color: #FFD700;
+    padding-left: 5dp;
+}
+
+/* ── Label (left column) — override width per-menu ─────────── */
+.opt-label {
+    display: inline-block;
+    width: 155dp;
+    font-size: 7dp;
+    color: rgba(220, 220, 220, 217);
+}
+
+.opt-row.focused .opt-label {
+    color: #FFD700;
+}
+
+/* ── Value (right column) — override width per-menu ────────── */
+.opt-value {
+    display: inline-block;
+    width: 90dp;
+    font-size: 7dp;
+    color: rgba(160, 220, 255, 230);
+    text-align: right;
+}
+
+.opt-row.focused .opt-value {
+    color: #FFFFFF;
+}
+
+/* ── Action-only row (no value column) ─────────────────────── */
+.opt-action {
+    display: inline-block;
+    font-size: 7dp;
+    color: rgba(220, 220, 220, 217);
+}
+
+.opt-row.focused .opt-action {
+    color: #FFD700;
+}

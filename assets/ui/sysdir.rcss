@@ -1,20 +1,19 @@
 /* ─── System Direction / Dipswitch Menu ─────────────────────────── */
+/* Game canvas: 384×224dp. Budget every pixel carefully. */
 
 #sysdir-panel {
     display: block;
     position: absolute;
-    top: 40dp;
-    left: 50dp;
-    width: 310dp;
-    padding: 10dp 14dp;
-    background-color: rgba(10, 15, 30, 224);
-    border-width: 1dp;
-    border-color: rgba(120, 140, 200, 89);
-    animation: slide-in 0.18s cubic-in-out;
+    top: 6dp;
+    left: 10dp;
+    width: 364dp;
+    padding: 4dp 6dp;
+    background-color: transparent;
+    animation: slide-in 0.15s cubic-in-out;
 }
 
 @keyframes slide-in {
-    from { margin-left: -30dp; opacity: 0; }
+    from { margin-left: -20dp; opacity: 0; }
     to   { margin-left: 0;     opacity: 1; }
 }
 
@@ -22,14 +21,15 @@
 
 #nav-section {
     display: block;
+    margin-top: 30dp;
 }
 
 .nav-item {
     display: block;
-    padding: 4dp 8dp;
-    margin-bottom: 2dp;
+    padding: 3dp 6dp;
+    margin-bottom: 1dp;
     color: rgba(200, 210, 240, 230);
-    font-size: 13dp;
+    font-size: 12dp;
     border-left-width: 3dp;
     border-left-color: transparent;
     transition: background-color border-left-color 0.08s linear-in-out;
@@ -42,15 +42,15 @@
 }
 
 .nav-label {
-    display: inline;
+    display: inline-block;
     width: 200dp;
 }
 
 .nav-value {
-    display: inline;
+    display: inline-block;
     text-align: right;
     color: rgba(140, 200, 255, 230);
-    font-size: 13dp;
+    font-size: 12dp;
 }
 
 /* ─── Sub-page section ──────────────────────────────────────────── */
@@ -62,10 +62,10 @@
 .page-indicator {
     display: block;
     text-align: center;
-    font-size: 11dp;
+    font-size: 9dp;
     color: rgba(140, 170, 220, 178);
-    margin-bottom: 6dp;
-    padding-bottom: 4dp;
+    margin-bottom: 2dp;
+    padding-bottom: 2dp;
     border-bottom-width: 1dp;
     border-bottom-color: rgba(100, 120, 180, 64);
 }
@@ -74,11 +74,10 @@
 
 .toggle-row {
     display: block;
-    padding: 3dp 6dp;
-    margin-bottom: 1dp;
+    padding: 2dp 4dp;
     color: rgba(200, 210, 240, 217);
-    font-size: 12dp;
-    border-left-width: 3dp;
+    font-size: 11dp;
+    border-left-width: 2dp;
     border-left-color: transparent;
     transition: background-color border-left-color 0.08s linear-in-out;
 }
@@ -90,17 +89,17 @@
 }
 
 .toggle-label {
-    display: inline;
-    width: 210dp;
-    font-size: 11dp;
+    display: inline-block;
+    width: 260dp;
+    font-size: 10dp;
 }
 
 .toggle-value {
-    display: inline;
+    display: inline-block;
     text-align: right;
-    width: 70dp;
+    width: 80dp;
     color: rgba(100, 220, 160, 242);
-    font-size: 12dp;
+    font-size: 11dp;
 }
 
 .toggle-row.focused .toggle-value {
@@ -110,15 +109,25 @@
 /* ─── Nav row (◀ / EXIT / ▶) ─────────────────────────────────── */
 
 .nav-row {
-    margin-top: 4dp;
+    margin-top: 2dp;
     border-top-width: 1dp;
     border-top-color: rgba(100, 120, 180, 51);
-    padding-top: 5dp;
+    padding-top: 2dp;
+    text-align: center;
+}
+
+.nav-row .toggle-label {
+    display: none;
+}
+
+.nav-row .toggle-value {
+    width: auto;
+    text-align: center;
 }
 
 .nav-arrow {
     text-align: center;
-    width: 70dp;
+    width: 80dp;
     color: rgba(180, 200, 255, 230);
 }
 
@@ -130,17 +139,15 @@
 
 .desc-area {
     display: block;
-    margin-top: 8dp;
-    padding: 6dp 8dp;
-    background-color: rgba(20, 30, 60, 153);
-    border-width: 1dp;
-    border-color: rgba(80, 100, 160, 64);
-    min-height: 28dp;
+    margin-top: 4dp;
+    padding: 3dp 6dp;
+    background-color: rgba(0, 0, 0, 80);
+    min-height: 18dp;
 }
 
 .desc-text {
     display: block;
-    font-size: 10dp;
+    font-size: 9dp;
     color: rgba(180, 190, 220, 217);
-    line-height: 1.3;
+    line-height: 1.2;
 }

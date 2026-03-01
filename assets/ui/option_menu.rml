@@ -2,6 +2,7 @@
 <head>
     <title>Option Menu</title>
     <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="menu_shared.rcss"/>
     <link type="text/rcss" href="option_menu.rcss"/>
 </head>
 <body data-model="option_menu" id="option-menu-root">
@@ -26,12 +27,12 @@
                 BUTTON CONFIG.
             </button>
 
-            <!-- 2: Screen Adjust -->
+            <!-- 2: System Direction -->
             <button class="menu-item" id="opt-2"
                     data-class-focused="option_cursor == 2"
                     data-event-click="select_item(2)"
                     nav-up="opt-1" nav-down="opt-3">
-                SCREEN ADJUST
+                SYSTEM DIRECTION
             </button>
 
             <!-- 3: Sound -->

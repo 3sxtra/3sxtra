@@ -1,6 +1,7 @@
 <rml>
 <head>
     <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="menu_shared.rcss"/>
     <link type="text/rcss" href="memory_card.rcss"/>
     <title>Memory Card</title>
 </head>
@@ -10,18 +11,26 @@
             <span>SAVE / LOAD</span>
         </div>
 
-        <div class="slot-list">
-            <div class="slot-item">
-                <span class="slot-label">SLOT 1</span>
+        <div class="menu-items">
+            <!-- 0: Save Data -->
+            <div class="menu-item" data-class-focused="cursor_y == 0">
+                <span class="item-label">SAVE DATA</span>
             </div>
-            <div class="slot-item">
-                <span class="slot-label">SLOT 2</span>
+
+            <!-- 1: Load Data -->
+            <div class="menu-item" data-class-focused="cursor_y == 1">
+                <span class="item-label">LOAD DATA</span>
             </div>
-            <div class="slot-item">
-                <span class="slot-label">SLOT 3</span>
+
+            <!-- 2: Auto Save (with left/right toggle value) -->
+            <div class="menu-item" data-class-focused="cursor_y == 2">
+                <span class="item-label">AUTO SAVE</span>
+                <span class="item-value">{{auto_save_label}}</span>
             </div>
-            <div class="slot-item">
-                <span class="slot-label">SLOT 4</span>
+
+            <!-- 3: Exit -->
+            <div class="menu-item" data-class-focused="cursor_y == 3">
+                <span class="item-label">EXIT</span>
             </div>
         </div>
     </div>

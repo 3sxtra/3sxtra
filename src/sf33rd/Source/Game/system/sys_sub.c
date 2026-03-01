@@ -48,6 +48,7 @@
 
 /* RmlUi Phase 3 bypass */
 #include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui_wrapper.h"
 extern bool use_rmlui;
 
 #define CONVERT_DATA_COUNT 12
@@ -1075,6 +1076,12 @@ void Soft_Reset_Sub() {
 
     if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING) {
         Set_Training_Hitbox_Display(false);
+    }
+
+    /* Hide all RmlUi overlays so they don't persist across the reset. */
+    if (use_rmlui) {
+        rmlui_wrapper_hide_all_game_documents();
+        rmlui_wrapper_hide_all_documents();
     }
 
     if (task[TASK_GAME].condition == 0) {

@@ -2,6 +2,7 @@
 <head>
     <title>Exit Confirmation</title>
     <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="menu_shared.rcss"/>
     <link type="text/rcss" href="exit_confirm.rcss"/>
 </head>
 <body data-model="exit_confirm" id="exit-confirm-root">

@@ -28,6 +28,9 @@ extern "C" {
 #include "port/config.h"
 #include "port/sdl/sdl_netplay_ui.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+
+extern int g_lobby_peer_idx;
+extern int g_net_peer_idx;
 } // extern "C"
 
 // ─── Data model ──────────────────────────────────────────────────
@@ -42,6 +45,8 @@ struct LobbyCache {
     bool net_searching;
     int lan_peer_count;
     int net_peer_count;
+    int lan_peer_idx;
+    int net_peer_idx;
     int popup_type; // 0=none, 1=incoming, 2=outgoing
 };
 static LobbyCache s_cache = {};
@@ -97,26 +102,32 @@ extern "C" void rmlui_network_lobby_init(void) {
         NetplayDiscoveredPeer peers[16];
         int count = Discovery_GetPeers(peers, 16);
         if (count > 0) {
-            // Show the first peer name as a representative
-            // The actual selection is tracked by s_lobby_peer_idx in menu.c
-            v = Rml::String(peers[0].name);
+            int idx = g_lobby_peer_idx;
+            if (idx < 0) idx = 0;
+            if (idx >= count) idx = count - 1;
+            v = Rml::String(peers[idx].name);
         } else {
             v = Rml::String("NONE");
         }
     });
+    ctor.BindFunc("lan_peer_idx", [](Rml::Variant& v) { v = g_lobby_peer_idx; });
 
     // NET peer info
     ctor.BindFunc("net_peer_count", [](Rml::Variant& v) { v = SDLNetplayUI_GetOnlinePlayerCount(); });
     ctor.BindFunc("net_peer_name", [](Rml::Variant& v) {
         int count = SDLNetplayUI_GetOnlinePlayerCount();
         if (count > 0) {
-            v = Rml::String(SDLNetplayUI_GetOnlinePlayerName(0));
+            int idx = g_net_peer_idx;
+            if (idx < 0) idx = 0;
+            if (idx >= count) idx = count - 1;
+            v = Rml::String(SDLNetplayUI_GetOnlinePlayerName(idx));
         } else if (SDLNetplayUI_IsSearching()) {
             v = Rml::String("SEARCHING");
         } else {
             v = Rml::String("IDLE");
         }
     });
+    ctor.BindFunc("net_peer_idx", [](Rml::Variant& v) { v = g_net_peer_idx; });
 
     // Status text
     ctor.BindFunc("status_text", [](Rml::Variant& v) {
@@ -319,6 +330,8 @@ extern "C" void rmlui_network_lobby_update(void) {
         DIRTY_INT(lan_peer_count, c);
     }
     DIRTY_INT(net_peer_count, SDLNetplayUI_GetOnlinePlayerCount());
+    DIRTY_INT(lan_peer_idx, g_lobby_peer_idx);
+    DIRTY_INT(net_peer_idx, g_net_peer_idx);
 
     // Popup type check
     {
