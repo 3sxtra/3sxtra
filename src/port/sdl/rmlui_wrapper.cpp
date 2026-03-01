@@ -438,6 +438,14 @@ extern "C" void rmlui_wrapper_hide_game_document(const char* name) {
     }
 }
 
+extern "C" void rmlui_wrapper_hide_all_game_documents(void) {
+    for (auto& [name, doc] : s_game_documents) {
+        if (doc && doc->IsVisible()) {
+            doc->Hide();
+        }
+    }
+}
+
 extern "C" bool rmlui_wrapper_is_game_document_visible(const char* name) {
     if (!name)
         return false;

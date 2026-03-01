@@ -98,6 +98,7 @@
 #include "port/sdl/rmlui_sysdir.h"
 #include "port/sdl/rmlui_training_menus.h"
 #include "port/sdl/rmlui_vs_result.h"
+#include "port/sdl/rmlui_wrapper.h"
 #include "port/sdl/rmlui_vs_screen.h"
 extern bool use_rmlui;
 
@@ -432,6 +433,12 @@ static void Menu_in_Sub(struct _TASK* task_ptr) {
     task_ptr->r_no[2] += 1;
     task_ptr->timer = 5;
     Menu_Common_Init();
+
+    /* Hide all Phase 3 game documents when entering a new sub-menu.
+     * Each sub-menu's case 0 will show its own doc afterwards. */
+    if (use_rmlui)
+        rmlui_wrapper_hide_all_game_documents();
+
     Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
     Menu_Suicide[0] = 1;
     Menu_Suicide[1] = 0;
@@ -689,9 +696,9 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             Message_Data->order = 0;
             Message_Data->timer = 1;
             effect_45_init(0, 0, 1);
-        }
 
-        Menu_Cursor_Move = 6;
+            Menu_Cursor_Move = 6;
+        }
 
         /* Enter lobby state — set native flag BEFORE changing session state
          * to prevent ImGui lobby from rendering a frame before the flag is set */
@@ -1305,9 +1312,8 @@ static void Training_Mode(struct _TASK* task_ptr) {
                 Order_Dir[ix + 0x50] = 4;
                 Order_Timer[ix + 0x50] = ix + 0x14;
             }
+            Menu_Cursor_Move = 4;
         }
-
-        Menu_Cursor_Move = 4;
         system_dir[4] = system_dir[1];
         system_dir[5] = system_dir[1];
         break;
@@ -1358,6 +1364,10 @@ static void Training_Mode(struct _TASK* task_ptr) {
         }
 
         Decide_ID = PL_id;
+
+        /* Hide the training-mode overlay before going to char select */
+        if (use_rmlui && rmlui_menu_training)
+            rmlui_training_mode_hide();
 
         if (Menu_Cursor_Y[0] == 0) {
             Mode_Type = MODE_NORMAL_TRAINING;
@@ -1420,6 +1430,7 @@ static void Option_Select(struct _TASK* task_ptr) {
             }
 
             Menu_Cursor_Move = 6;
+            /* Mode Menu pattern: set cursor-move inside CPS3 branch only */
             break;
         }
 
@@ -1439,9 +1450,8 @@ static void Option_Select(struct _TASK* task_ptr) {
                 ix++;
                 char_index++;
             }
+            Menu_Cursor_Move = 7;
         }
-
-        Menu_Cursor_Move = 7;
         break;
 
     case 1:
@@ -1578,9 +1588,8 @@ static void System_Direction(struct _TASK* task_ptr) {
                 ix++;
                 char_index++;
             }
+            Menu_Cursor_Move = 4;
         }
-
-        Menu_Cursor_Move = 4;
         Page_Max = Check_SysDir_Page();
         break;
 
@@ -1916,9 +1925,8 @@ static void Game_Option(struct _TASK* task_ptr) {
                 Order_Dir[ix + 0x5D] = 4;
                 Order_Timer[ix + 0x5D] = ix + 0x14;
             }
+            Menu_Cursor_Move = 0xA;
         }
-
-        Menu_Cursor_Move = 0xA;
 
         break;
 
@@ -2120,9 +2128,9 @@ static void Sound_Test(struct _TASK* task_ptr) {
                     Order_Timer[ix + 0x50] = ix + 0x14;
                 }
             }
-        }
 
-        Menu_Cursor_Move = 5;
+            Menu_Cursor_Move = 5;
+        }
         break;
 
     case 1:

@@ -68,6 +68,7 @@ void rmlui_wrapper_show_game_document(const char* name);
 
 /// Hide a named document in the game context
 void rmlui_wrapper_hide_game_document(const char* name);
+void rmlui_wrapper_hide_all_game_documents(void);
 
 /// Check if a named game document is currently visible
 bool rmlui_wrapper_is_game_document_visible(const char* name);

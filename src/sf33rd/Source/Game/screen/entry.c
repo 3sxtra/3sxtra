@@ -28,6 +28,7 @@
 /* RmlUi Phase 3 bypass */
 #include "port/sdl/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui_title_screen.h"
+#include "port/sdl/rmlui_copyright.h"
 extern bool use_rmlui;
 
 /* Macro: skip SSPutStr if entry text RmlUi is active */
@@ -233,8 +234,10 @@ static void Entry_01_Sub(s16 PL_id) {
     Ignore_Entry[0] = 0;
     Ignore_Entry[1] = 0;
 
-    if (use_rmlui && rmlui_screen_title)
+    if (use_rmlui && rmlui_screen_title) {
         rmlui_title_screen_hide();
+        rmlui_copyright_hide();
+    }
 
     if (Continue_Coin[PL_id] == 0) {
         grade_check_work_1st_init(PL_id, 0);

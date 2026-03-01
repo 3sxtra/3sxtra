@@ -9,6 +9,8 @@ extern "C" {
 #endif
 
 void rmlui_copyright_init(void);
+void rmlui_copyright_show(void);
+void rmlui_copyright_hide(void);
 void rmlui_copyright_update(void);
 void rmlui_copyright_shutdown(void);
 

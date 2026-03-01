@@ -229,13 +229,14 @@ extern "C" void rmlui_frame_display_update(void) {
         cells_dirty = true;
 
     if (cells_dirty) {
-        s_p1_cells.clear();
-        s_p2_cells.clear();
-        for (const auto& rec : s_frame_history) {
-            s_p1_cells.push_back({ state_to_class(rec.p1_state) });
-            s_p2_cells.push_back({ state_to_class(rec.p2_state) });
+        size_t n = s_frame_history.size();
+        s_p1_cells.resize(n);
+        s_p2_cells.resize(n);
+        for (size_t i = 0; i < n; i++) {
+            s_p1_cells[i].css_class = state_to_class(s_frame_history[i].p1_state);
+            s_p2_cells[i].css_class = state_to_class(s_frame_history[i].p2_state);
         }
-        s_prev_cell_count = s_frame_history.size();
+        s_prev_cell_count = n;
         s_model_handle.DirtyVariable("p1_cells");
         s_model_handle.DirtyVariable("p2_cells");
     }

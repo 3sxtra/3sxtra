@@ -75,6 +75,14 @@ extern "C" void rmlui_copyright_init(void) {
     SDL_Log("[RmlUi Copyright] Data model registered");
 }
 
+extern "C" void rmlui_copyright_show(void) {
+    rmlui_wrapper_show_game_document("copyright");
+}
+
+extern "C" void rmlui_copyright_hide(void) {
+    rmlui_wrapper_hide_game_document("copyright");
+}
+
 extern "C" void rmlui_copyright_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
