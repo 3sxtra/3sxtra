@@ -32,6 +32,8 @@
 #include "port/sdl/rmlui_continue.h"
 #include "port/sdl/rmlui_control_mapping.h"
 #include "port/sdl/rmlui_copyright.h"
+#include "port/sdl/rmlui_exit_confirm.h"
+#include "port/sdl/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui_extra_option.h"
 #include "port/sdl/rmlui_game_hud.h"
 #include "port/sdl/rmlui_game_option.h"
@@ -749,6 +751,8 @@ int SDLApp_Init() {
     rmlui_trials_hud_init();
     rmlui_copyright_init();
     rmlui_name_entry_init();
+    rmlui_exit_confirm_init();
+    rmlui_attract_overlay_init();
 
     // Check if user wants RmlUi mode (set via --ui rmlui CLI flag, session-only)
     extern bool g_ui_mode_rmlui;
@@ -1168,6 +1172,7 @@ void SDLApp_EndFrame() {
         rmlui_trials_hud_update();
         rmlui_copyright_update();
         rmlui_name_entry_update();
+        rmlui_exit_confirm_update();
     }
 
     if (g_renderer_backend == RENDERER_SDL2D) {
@@ -1223,7 +1228,7 @@ void SDLApp_EndFrame() {
             SDLTextRenderer_Flush();
         }
 
-    // Render RmlUi overlay (if active)
+        // Render RmlUi overlay (if active)
         if (use_rmlui) {
             rmlui_input_display_update();
             rmlui_frame_display_update();

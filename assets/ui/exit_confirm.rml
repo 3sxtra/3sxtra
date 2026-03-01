@@ -1,0 +1,18 @@
+<rml>
+<head>
+    <title>Exit Confirmation</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="exit_confirm.rcss"/>
+</head>
+<body data-model="exit_confirm" id="exit-confirm-root">
+    <div id="exit-panel">
+        <div class="exit-title">EXIT GAME?</div>
+        <div class="exit-subtitle">Are you sure you want to quit?</div>
+
+        <div class="exit-items">
+            <div class="exit-item">Press CONFIRM to exit to desktop</div>
+            <div class="exit-item exit-hint-back">Press CANCEL to go back</div>
+        </div>
+    </div><!-- exit-panel -->
+</body>
+</rml>

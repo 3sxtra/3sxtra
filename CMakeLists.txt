@@ -296,6 +296,8 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/sdl/rmlui_trials_hud.cpp
     src/port/sdl/rmlui_copyright.cpp
     src/port/sdl/rmlui_name_entry.cpp
+    src/port/sdl/rmlui_exit_confirm.cpp
+    src/port/sdl/rmlui_attract_overlay.cpp
     # RmlUi backend sources (SDL3 platform + GL3/SDL/SDL_GPU renderers)
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp

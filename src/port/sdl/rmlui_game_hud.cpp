@@ -84,6 +84,8 @@ bool rmlui_screen_entry_text = true;
 bool rmlui_screen_trials = true;
 bool rmlui_screen_copyright = true;
 bool rmlui_screen_name_entry = true;
+bool rmlui_screen_exit_confirm = true;
+bool rmlui_screen_attract_overlay = true;
 
 // ─── Data model state ───────────────────────────────────────────
 static Rml::DataModelHandle s_model_handle;

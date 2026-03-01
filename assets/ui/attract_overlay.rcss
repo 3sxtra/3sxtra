@@ -1,0 +1,55 @@
+/* ============================================================ *
+ *  attract_overlay.rcss  —  Demo fight overlay (logo + prompt) *
+ *  Shown during attract-mode CPU vs CPU gameplay               *
+ * ============================================================ */
+
+body {
+    width: 384dp;
+    height: 224dp;
+    font-family: "Noto Sans JP Thin";
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* ── Small Logo — centered in top half of screen ─────────── */
+#attract-logo {
+    display: block;
+    position: absolute;
+    top: 30dp;
+    left: 0dp;
+    width: 384dp;
+    text-align: center;
+}
+
+#attract-logo-img {
+    display: inline-block;
+    width: 200dp;
+    height: auto;
+}
+
+/* ── PRESS START BUTTON — below logo, mid-screen ─────────── */
+/* Native renders at Insert_Y=17 (row 17 of 28 = ~136dp)     */
+#attract-prompt {
+    display: block;
+    position: absolute;
+    top: 140dp;
+    left: 0dp;
+    width: 384dp;
+    text-align: center;
+}
+
+.press-start {
+    display: inline-block;
+    font-size: 12dp;
+    color: rgba(255, 255, 255, 242);
+    letter-spacing: 2dp;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 153));
+    animation: attract-blink 1.33s step-end infinite;
+}
+
+/* ── Blink animation (same timing as title screen) ────────── */
+@keyframes attract-blink {
+    0%   { opacity: 1; }
+    62%  { opacity: 1; }
+    63%  { opacity: 0; }
+    100% { opacity: 0; }
+}

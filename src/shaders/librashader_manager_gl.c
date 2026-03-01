@@ -76,7 +76,7 @@ static void init_blit_resources(LibrashaderManagerGL* manager) {
     glAttachShader(manager->blit_program, vs);
     glAttachShader(manager->blit_program, fs);
     glLinkProgram(manager->blit_program);
-    
+
     manager->loc_source = glGetUniformLocation(manager->blit_program, "Source");
     manager->loc_original = glGetUniformLocation(manager->blit_program, "Original");
 

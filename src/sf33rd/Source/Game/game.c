@@ -18,9 +18,10 @@
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
+#include "port/sdl/rmlui_copyright.h"
 #include "port/sdl/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui_title_screen.h"
-#include "port/sdl/rmlui_copyright.h"
+#include "port/sdl/rmlui_attract_overlay.h"
 #include <stdbool.h>
 extern bool use_rmlui;
 #include "main.h"
@@ -312,6 +313,9 @@ void Check_Back_Demo() {
     /* Hide RmlUi title screen before switching to demo loop */
     if (use_rmlui && rmlui_screen_title) {
         rmlui_title_screen_hide();
+    }
+    if (use_rmlui && rmlui_screen_attract_overlay) {
+        rmlui_attract_overlay_hide();
     }
 
     Next_Demo_Loop();
@@ -1705,6 +1709,10 @@ void Loop_Demo(struct _TASK* /* unused */) {
             if (use_rmlui && rmlui_screen_copyright) {
                 rmlui_copyright_hide();
             }
+            /* Show attract overlay (small logo + PRESS START) for demo fight */
+            if (use_rmlui && rmlui_screen_attract_overlay) {
+                rmlui_attract_overlay_show();
+            }
             Loop_Demo_Sub();
             Insert_Y = 17;
             D_No[0] = 1;
@@ -1715,6 +1723,10 @@ void Loop_Demo(struct _TASK* /* unused */) {
 
     case 3:
         if (Play_Demo() != 0) {
+            /* Hide attract overlay when demo fight ends */
+            if (use_rmlui && rmlui_screen_attract_overlay) {
+                rmlui_attract_overlay_hide();
+            }
             Switch_Screen(1);
             Loop_Demo_Sub();
             Rank_Type = 0;
@@ -1738,6 +1750,10 @@ void Loop_Demo(struct _TASK* /* unused */) {
 
     case 5:
         if (Play_Demo() != 0) {
+            /* Hide attract overlay when demo fight ends */
+            if (use_rmlui && rmlui_screen_attract_overlay) {
+                rmlui_attract_overlay_hide();
+            }
             Loop_Demo_Sub();
             Demo_Type = 1;
             Rank_Type = 5;
@@ -1852,6 +1868,10 @@ void Next_Title_Sub() {
     Exec_Wipe = 0;
     Present_Mode = 1;
     Insert_Y = 23;
+    /* Hide attract overlay on coin insert */
+    if (use_rmlui && rmlui_screen_attract_overlay) {
+        rmlui_attract_overlay_hide();
+    }
     Before_Select_Sub();
     cpReadyTask(TASK_ENTRY, Entry_Task);
 }

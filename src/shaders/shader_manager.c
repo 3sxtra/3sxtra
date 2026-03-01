@@ -758,41 +758,20 @@ void ShaderManager_Render(ShaderManager* manager, GLuint input_texture, int inpu
         glUniform1i(pass_runtime->loc_OriginalHistory0, 1);
 
         // Sizes
-        glUniform4f(pass_runtime->loc_SourceSize,
-                    (float)current_w,
-                    (float)current_h,
-                    1.0f / current_w,
-                    1.0f / current_h);
+        glUniform4f(
+            pass_runtime->loc_SourceSize, (float)current_w, (float)current_h, 1.0f / current_w, 1.0f / current_h);
 
-        glUniform4f(pass_runtime->loc_OriginalSize,
-                    (float)input_w,
-                    (float)input_h,
-                    1.0f / input_w,
-                    1.0f / input_h);
+        glUniform4f(pass_runtime->loc_OriginalSize, (float)input_w, (float)input_h, 1.0f / input_w, 1.0f / input_h);
 
-        glUniform4f(pass_runtime->loc_OriginalHistorySize0,
-                    (float)input_w,
-                    (float)input_h,
-                    1.0f / input_w,
-                    1.0f / input_h);
+        glUniform4f(
+            pass_runtime->loc_OriginalHistorySize0, (float)input_w, (float)input_h, 1.0f / input_w, 1.0f / input_h);
 
-        glUniform4f(pass_runtime->loc_OutputSize,
-                    (float)target_w,
-                    (float)target_h,
-                    1.0f / target_w,
-                    1.0f / target_h);
+        glUniform4f(pass_runtime->loc_OutputSize, (float)target_w, (float)target_h, 1.0f / target_w, 1.0f / target_h);
 
-        glUniform4f(pass_runtime->loc_TextureSize,
-                    (float)current_w,
-                    (float)current_h,
-                    1.0f / current_w,
-                    1.0f / current_h);
+        glUniform4f(
+            pass_runtime->loc_TextureSize, (float)current_w, (float)current_h, 1.0f / current_w, 1.0f / current_h);
 
-        glUniform4f(pass_runtime->loc_InputSize,
-                    (float)input_w,
-                    (float)input_h,
-                    1.0f / input_w,
-                    1.0f / input_h);
+        glUniform4f(pass_runtime->loc_InputSize, (float)input_w, (float)input_h, 1.0f / input_w, 1.0f / input_h);
 
         int effective_frame_count = manager->frame_count;
         if (pass_info->frame_count_mod > 0) {

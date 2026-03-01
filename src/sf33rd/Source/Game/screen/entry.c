@@ -22,14 +22,16 @@
 #include "sf33rd/Source/Game/system/reset.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
+#include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 
 /* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui_copyright.h"
 #include "port/sdl/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui_title_screen.h"
-#include "port/sdl/rmlui_copyright.h"
 extern bool use_rmlui;
+#include "port/sdl/rmlui_attract_overlay.h"
 
 /* Macro: skip SSPutStr if entry text RmlUi is active */
 #define ENTRY_TEXT_GATED (use_rmlui && rmlui_screen_entry_text)
@@ -174,6 +176,11 @@ static void Disp_00_0() {
 
     if (use_rmlui && rmlui_screen_title && title_tex_flag) {
         /* CSS blink animation handles the visibility cycle (title screen only) */
+        return;
+    }
+
+    if (use_rmlui && rmlui_screen_attract_overlay && G_No[0] == 1 && G_No[1] >= 3) {
+        /* Attract overlay handles the logo + blink during demo fights */
         return;
     }
 

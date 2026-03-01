@@ -86,6 +86,7 @@
 /* RmlUi Phase 3 bypass — per-component toggles + menu replacements */
 #include "port/sdl/rmlui_button_config.h"
 #include "port/sdl/rmlui_char_select.h"
+#include "port/sdl/rmlui_exit_confirm.h"
 #include "port/sdl/rmlui_extra_option.h"
 #include "port/sdl/rmlui_game_option.h"
 #include "port/sdl/rmlui_memory_card.h"
@@ -98,8 +99,8 @@
 #include "port/sdl/rmlui_sysdir.h"
 #include "port/sdl/rmlui_training_menus.h"
 #include "port/sdl/rmlui_vs_result.h"
-#include "port/sdl/rmlui_wrapper.h"
 #include "port/sdl/rmlui_vs_screen.h"
+#include "port/sdl/rmlui_wrapper.h"
 extern bool use_rmlui;
 
 // forward decls
@@ -365,7 +366,8 @@ static void Mode_Select(struct _TASK* task_ptr) {
             case 0:
                 G_No[2] += 1;
                 Mode_Type = MODE_ARCADE;
-                if (use_rmlui && rmlui_menu_mode) rmlui_mode_menu_hide();
+                if (use_rmlui && rmlui_menu_mode)
+                    rmlui_mode_menu_hide();
                 task_ptr->r_no[0] = 5;
                 cpExitTask(TASK_SAVER);
                 Decide_PL(PL_id);
@@ -376,7 +378,8 @@ static void Mode_Select(struct _TASK* task_ptr) {
                 G_No[1] = 12;
                 G_No[2] = 1;
                 Mode_Type = MODE_VERSUS;
-                if (use_rmlui && rmlui_menu_mode) rmlui_mode_menu_hide();
+                if (use_rmlui && rmlui_menu_mode)
+                    rmlui_mode_menu_hide();
                 cpExitTask(TASK_MENU);
                 break;
 
@@ -406,7 +409,8 @@ static void Mode_Select(struct _TASK* task_ptr) {
         break;
 
     default:
-        if (use_rmlui && rmlui_menu_mode) rmlui_mode_menu_hide();
+        if (use_rmlui && rmlui_menu_mode)
+            rmlui_mode_menu_hide();
         Exit_Sub(task_ptr, 0, task_ptr->free[1]);
         break;
     }
@@ -1198,23 +1202,28 @@ static void toSelectGame(struct _TASK* task_ptr) {
         Forbid_Reset = 1;
         Menu_in_Sub(task_ptr);
         Setup_BG(1, 0x200, 0);
-        effect_66_init(0x8A, 8, 1, 0, -1, -1, -0x7FF2);
+        if (!use_rmlui || !rmlui_screen_exit_confirm)
+            effect_66_init(0x8A, 8, 1, 0, -1, -1, -0x7FF2);
         Order[0x8A] = 3;
         Order_Timer[0x8A] = 1;
         task_ptr->free[0] = 0;
         task_ptr->timer = 0x10;
+        if (use_rmlui && rmlui_screen_exit_confirm)
+            rmlui_exit_confirm_show();
         break;
 
     case 1:
         if (Menu_Sub_case1(task_ptr) != 0) {
-            Message_Data->kind_req = 5;
-            Message_Data->request = 0;
-            Message_Data->order = 1;
-            Message_Data->timer = 2;
-            Message_Data->pos_x = 0;
-            Message_Data->pos_y = 0xA0;
-            Message_Data->pos_z = 0x18;
-            effect_45_init(0, 0, 2);
+            if (!use_rmlui || !rmlui_screen_exit_confirm) {
+                Message_Data->kind_req = 5;
+                Message_Data->request = 0;
+                Message_Data->order = 1;
+                Message_Data->timer = 2;
+                Message_Data->pos_x = 0;
+                Message_Data->pos_y = 0xA0;
+                Message_Data->pos_z = 0x18;
+                effect_45_init(0, 0, 2);
+            }
         }
 
         break;
@@ -1224,11 +1233,13 @@ static void toSelectGame(struct _TASK* task_ptr) {
             task_ptr->r_no[2] += 1;
         }
 
-        imgSelectGameButton();
+        if (!use_rmlui || !rmlui_screen_exit_confirm)
+            imgSelectGameButton();
         break;
 
     case 3:
-        imgSelectGameButton();
+        if (!use_rmlui || !rmlui_screen_exit_confirm)
+            imgSelectGameButton();
         sw = (~plsw_01[0] & plsw_00[0]) | (~plsw_01[1] & plsw_00[1]); // potential macro
         sw &= (SWK_SOUTH | SWK_EAST);
 
@@ -1248,7 +1259,8 @@ static void toSelectGame(struct _TASK* task_ptr) {
         break;
 
     case 8:
-        imgSelectGameButton();
+        if (!use_rmlui || !rmlui_screen_exit_confirm)
+            imgSelectGameButton();
 
         if (FadeOut(1, 0x19, 8) != 0) {
             if (task_ptr->free[0]) {
@@ -1270,6 +1282,8 @@ static void toSelectGame(struct _TASK* task_ptr) {
         task_ptr->r_no[2] = 0;
         task_ptr->r_no[3] = 0;
         task_ptr->free[0] = 0;
+        if (use_rmlui && rmlui_screen_exit_confirm)
+            rmlui_exit_confirm_hide();
         FadeOut(1, 0xFF, 8);
         Forbid_Reset = 0;
         break;

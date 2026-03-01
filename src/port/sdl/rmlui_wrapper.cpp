@@ -182,7 +182,12 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
                                : (s_active_backend == RENDERER_SDL2D) ? "SDL2D"
                                                                       : "GL3";
     SDL_Log("[RmlUi] Initialized (%s renderer, %dx%d window + %dx%d game, dp-ratio=%.2fx)",
-            backend_name, s_window_w, s_window_h, GAME_W, GAME_H, dp_ratio);
+            backend_name,
+            s_window_w,
+            s_window_h,
+            GAME_W,
+            GAME_H,
+            dp_ratio);
 }
 
 // -------------------------------------------------------------------
@@ -476,7 +481,8 @@ extern "C" void rmlui_wrapper_update_game(void) {
     s_game_context->Update();
 }
 
-extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, float view_y, float view_w, float view_h) {
+extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, float view_y, float view_w,
+                                          float view_h) {
     if (!s_game_context || !s_render_interface)
         return;
 
@@ -487,15 +493,15 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
     const float dp_ratio = view_w / (float)GAME_W;
     s_game_context->SetDensityIndependentPixelRatio(dp_ratio);
 
-    const int ctx_w = (int)(GAME_W * dp_ratio + 0.5f);  // = view_w
-    const int ctx_h = (int)(GAME_H * dp_ratio + 0.5f);  // = 224 * view_w / 384
+    const int ctx_w = (int)(GAME_W * dp_ratio + 0.5f); // = view_w
+    const int ctx_h = (int)(GAME_H * dp_ratio + 0.5f); // = 224 * view_w / 384
     s_game_context->SetDimensions(Rml::Vector2i(ctx_w, ctx_h));
 
     const int phys_w = (int)(view_w + 0.5f);
     const int phys_h = (int)(view_h + 0.5f);
-    const int off_x  = (int)(view_x + 0.5f);
+    const int off_x = (int)(view_x + 0.5f);
     // OpenGL y=0 is bottom; convert from top-left origin
-    const int off_y  = win_h - (int)(view_y + 0.5f) - phys_h;
+    const int off_y = win_h - (int)(view_y + 0.5f) - phys_h;
 
     if (s_render_gl3) {
         // GL3: SetViewportEx uses ctx_w×ctx_h for projection and
@@ -532,10 +538,16 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
 extern "C" void rmlui_wrapper_reload_stylesheets(void) {
     int count = 0;
     for (auto& [name, doc] : s_window_documents) {
-        if (doc) { doc->ReloadStyleSheet(); count++; }
+        if (doc) {
+            doc->ReloadStyleSheet();
+            count++;
+        }
     }
     for (auto& [name, doc] : s_game_documents) {
-        if (doc) { doc->ReloadStyleSheet(); count++; }
+        if (doc) {
+            doc->ReloadStyleSheet();
+            count++;
+        }
     }
     SDL_Log("[RmlUi] Reloaded stylesheets for %d document(s)", count);
 }
@@ -579,13 +591,17 @@ extern "C" void rmlui_wrapper_reload_document(const char* name) {
 
 // Helper to reload all docs in a given context + map
 static int reload_all_in(Rml::Context* ctx, std::unordered_map<std::string, Rml::ElementDocument*>& doc_map) {
-    struct DocInfo { std::string name; bool visible; };
+    struct DocInfo {
+        std::string name;
+        bool visible;
+    };
     std::vector<DocInfo> docs;
     docs.reserve(doc_map.size());
     for (auto& [name, doc] : doc_map)
         docs.push_back({ name, doc && doc->IsVisible() });
     for (auto& [name, doc] : doc_map)
-        if (doc) doc->Close();
+        if (doc)
+            doc->Close();
     doc_map.clear();
 
     int count = 0;
@@ -593,7 +609,8 @@ static int reload_all_in(Rml::Context* ctx, std::unordered_map<std::string, Rml:
         std::string path = s_ui_base_path + info.name + ".rml";
         Rml::ElementDocument* new_doc = ctx->LoadDocument(path.c_str());
         if (new_doc) {
-            if (info.visible) new_doc->Show();
+            if (info.visible)
+                new_doc->Show();
             doc_map[info.name] = new_doc;
             count++;
         } else {

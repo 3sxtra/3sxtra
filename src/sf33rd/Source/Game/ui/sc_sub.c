@@ -31,6 +31,7 @@ extern bool use_rmlui;
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/system/ramcnt.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_data.h"
 #include "structs.h"
@@ -1265,8 +1266,10 @@ void SF3_logo(u8 step) {
         return;
     }
 
-    /* RmlUi bypass: suppress original sprite logo when RmlUi title screen is active */
-    if (use_rmlui && rmlui_screen_title) {
+    /* RmlUi bypass: suppress original sprite logo on the title screen only.
+     * title_tex_flag is set when the title PPG is loaded; during attract
+     * demo fights it is 0, so the small in-match logo still renders. */
+    if (use_rmlui && rmlui_screen_title && title_tex_flag) {
         return;
     }
 

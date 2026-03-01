@@ -1,0 +1,18 @@
+<rml>
+<head>
+    <title>Attract Overlay</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="attract_overlay.rcss"/>
+</head>
+<body id="attract-root">
+
+    <div id="attract-logo">
+        <img id="attract-logo-img" src="assets/logo_small.png" />
+    </div>
+
+    <div id="attract-prompt">
+        <div class="press-start">PRESS START BUTTON</div>
+    </div>
+
+</body>
+</rml>

@@ -178,15 +178,17 @@ void TITLE_Init() {
     ppgSourceDataReleased(NULL);
     title_tex_flag = 1;
     op_w.r_no_0 = 0;
+
+    /* Show the RmlUi title document once when the title PPG loads */
+    if (use_rmlui && rmlui_screen_title) {
+        rmlui_title_screen_show();
+    }
 }
 
 /** @brief Animate and render the title logo with zoom. */
 s16 TITLE_Move(u16 type) {
-    /* RmlUi bypass: suppress PPG title logo when RmlUi title screen is active.
-     * Also ensure the RmlUi title document is visible — TITLE_Move() is called
-     * earlier (during opening_demo) than Entry_01's show call. */
+    /* RmlUi bypass: suppress PPG title logo when RmlUi title screen is active */
     if (use_rmlui && rmlui_screen_title) {
-        rmlui_title_screen_show();
         return 0;
     }
 
