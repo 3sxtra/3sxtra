@@ -354,12 +354,14 @@ extern "C" void rmlui_game_hud_init(void) {
     ctor.BindFunc("p2_is_human", [](Rml::Variant& v) { v = (bool)(Operator_Status[1] != 0); });
 
     // ── SA Type Numeral ──
-    static const char* const sa_numerals[3] = {"I", "II", "III"};
+    static const char* const sa_numerals[3] = { "I", "II", "III" };
     ctor.BindFunc("p1_sa_type", [](Rml::Variant& v) {
-        int idx = Super_Arts[0]; v = Rml::String((idx >= 0 && idx < 3) ? sa_numerals[idx] : "");
+        int idx = Super_Arts[0];
+        v = Rml::String((idx >= 0 && idx < 3) ? sa_numerals[idx] : "");
     });
     ctor.BindFunc("p2_sa_type", [](Rml::Variant& v) {
-        int idx = Super_Arts[1]; v = Rml::String((idx >= 0 && idx < 3) ? sa_numerals[idx] : "");
+        int idx = Super_Arts[1];
+        v = Rml::String((idx >= 0 && idx < 3) ? sa_numerals[idx] : "");
     });
 
     // ── Parry Counter ──
@@ -395,28 +397,7 @@ extern "C" void rmlui_game_hud_update(void) {
         rmlui_wrapper_show_game_document("game_hud");
     }
 
-    // One-shot debug dump when fight first becomes active
-    static bool s_fight_logged = false;
-    if (Play_Game == 1 && !s_fight_logged) {
-        s_fight_logged = true;
-        SDL_Log("[RmlUi HUD DBG] P1 My_char=%d (%s)  P2 My_char=%d (%s)",
-                My_char[0],
-                char_name(My_char[0]),
-                My_char[1],
-                char_name(My_char[1]));
-        SDL_Log("[RmlUi HUD DBG] P1 SA: dotlen=%d maxlevel=%d max=%d time=%d",
-                spg_dat[0].spg_dotlen,
-                spg_dat[0].spg_maxlevel,
-                spg_dat[0].max,
-                spg_dat[0].time);
-        SDL_Log("[RmlUi HUD DBG] P2 SA: dotlen=%d maxlevel=%d max=%d time=%d",
-                spg_dat[1].spg_dotlen,
-                spg_dat[1].spg_maxlevel,
-                spg_dat[1].max,
-                spg_dat[1].time);
-    } else if (Play_Game != 1) {
-        s_fight_logged = false; // Reset so it logs again next fight
-    }
+
 
     DIRTY_INT(p1_health, (int)plw[0].wu.vital_new);
     DIRTY_INT(p2_health, (int)plw[1].wu.vital_new);
@@ -506,8 +487,9 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_INT(p2_parry_count, (int)paring_counter[1]);
 
     // ── SA type numeral ──
-    static const char* const sa_nums[3] = {"I", "II", "III"};
-    int sa0 = Super_Arts[0]; int sa1 = Super_Arts[1];
+    static const char* const sa_nums[3] = { "I", "II", "III" };
+    int sa0 = Super_Arts[0];
+    int sa1 = Super_Arts[1];
     DIRTY_STR(p1_sa_type, Rml::String((sa0 >= 0 && sa0 < 3) ? sa_nums[sa0] : ""));
     DIRTY_STR(p2_sa_type, Rml::String((sa1 >= 0 && sa1 < 3) ? sa_nums[sa1] : ""));
     // ── Round results ──

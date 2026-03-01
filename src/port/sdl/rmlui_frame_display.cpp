@@ -171,7 +171,9 @@ extern "C" void rmlui_frame_display_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
 
-    s_visible = g_training_menu_settings.show_frame_meter && !show_training_menu;
+    // Only show frame meter during active fights — not on menus/title screen
+    extern u8 Play_Game;
+    s_visible = g_training_menu_settings.show_frame_meter && !show_training_menu && (Play_Game == 1);
 
     // Show/hide document
     if (s_visible && !rmlui_wrapper_is_document_visible("frame_display")) {

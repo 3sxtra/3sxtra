@@ -1,35 +1,77 @@
 <rml>
 <head>
+    <title>Sound Menu</title>
     <link type="text/rcss" href="base.rcss"/>
     <link type="text/rcss" href="sound_menu.rcss"/>
-    <title>Sound Menu</title>
 </head>
-<body data-model="sound_menu">
-    <div id="sound-panel" class="sound-panel">
-        <div class="sound-title">
-            <span>SOUND</span>
+<body data-model="sound_menu" id="sound-menu-root">
+    <div id="sound-panel">
+        <div class="menu-title">SOUND</div>
+
+        <div class="option-table">
+
+            <!-- Row 0: Mode (Stereo/Mono) -->
+            <div class="opt-row" data-class-focused="cursor_y == 0">
+                <div class="opt-label">MODE</div>
+                <div class="opt-value" data-if="sound_mode == 0">STEREO</div>
+                <div class="opt-value" data-if="sound_mode == 1">MONO</div>
+            </div>
+
+            <!-- Row 1: BGM Level (0–15) -->
+            <div class="opt-row" data-class-focused="cursor_y == 1">
+                <div class="opt-label">BGM LEVEL</div>
+                <div class="opt-value-bar">
+                    <div class="bar-track">
+                        <div class="bar-fill" data-style-width="bgm_level_pct"/>
+                    </div>
+                    <div class="bar-num">{{ bgm_level }}</div>
+                </div>
+            </div>
+
+            <!-- Row 2: SE Level (0–15) -->
+            <div class="opt-row" data-class-focused="cursor_y == 2">
+                <div class="opt-label">SE LEVEL</div>
+                <div class="opt-value-bar">
+                    <div class="bar-track">
+                        <div class="bar-fill" data-style-width="se_level_pct"/>
+                    </div>
+                    <div class="bar-num">{{ se_level }}</div>
+                </div>
+            </div>
+
+            <!-- Row 3: BGM Type (Arranged/Original) -->
+            <div class="opt-row" data-class-focused="cursor_y == 3">
+                <div class="opt-label">BGM TYPE</div>
+                <div class="opt-value" data-if="bgm_type == 0">ARRANGED</div>
+                <div class="opt-value" data-if="bgm_type == 1">ORIGINAL</div>
+            </div>
+
+            <!-- Row 4: Default Setting -->
+            <div class="opt-row" data-class-focused="cursor_y == 4">
+                <div class="opt-action">DEFAULT SETTING</div>
+            </div>
+
+            <!-- Row 5: BGM Test (track 0–66) -->
+            <div class="opt-row" data-class-focused="cursor_y == 5">
+                <div class="opt-label">BGM TEST</div>
+                <div class="opt-value">
+                    <span class="arrow">◀</span>
+                    <span>{{ bgm_test_track }}</span>
+                    <span class="arrow">▶</span>
+                </div>
+            </div>
+
+            <!-- Row 6: Exit -->
+            <div class="opt-row" data-class-focused="cursor_y == 6">
+                <div class="opt-action">EXIT</div>
+            </div>
+
+        </div><!-- option-table -->
+
+        <div class="footer-row">
+            <div class="footer-hint">◀ ▶ CHANGE VALUE</div>
         </div>
 
-        <div class="option-list">
-            <div class="option-row">
-                <span class="option-label">MODE</span>
-                <span class="option-value" data-if="sound_mode == 0">STEREO</span>
-                <span class="option-value" data-if="sound_mode == 1">MONO</span>
-            </div>
-            <div class="option-row">
-                <span class="option-label">BGM LEVEL</span>
-                <span class="option-value">{{ bgm_level }}</span>
-            </div>
-            <div class="option-row">
-                <span class="option-label">SE LEVEL</span>
-                <span class="option-value">{{ se_level }}</span>
-            </div>
-            <div class="option-row">
-                <span class="option-label">BGM TYPE</span>
-                <span class="option-value" data-if="bgm_type == 0">ARRANGED</span>
-                <span class="option-value" data-if="bgm_type == 1">ORIGINAL</span>
-            </div>
-        </div>
-    </div>
+    </div><!-- sound-panel -->
 </body>
 </rml>

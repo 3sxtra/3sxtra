@@ -175,6 +175,17 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
 #ifdef DEBUG
     Rml::Debugger::Initialise(s_window_context);
     Rml::Debugger::SetContext(s_game_context);
+    // Hide debugger documents on init so they don't render when the debugger
+    // is not actively visible.  Debugger::SetVisible(false) only sets CSS
+    // visibility:hidden which still paints body backgrounds.
+    // - "rmlui-debug-menu"  in window context: toolbar with background:#888
+    // - "rmlui-debug-hook"  in game context:   context hook with styled body
+    if (Rml::ElementDocument* dbg_menu = s_window_context->GetDocument("rmlui-debug-menu")) {
+        dbg_menu->Hide();
+    }
+    if (Rml::ElementDocument* dbg_hook = s_game_context->GetDocument("rmlui-debug-hook")) {
+        dbg_hook->Hide();
+    }
     SDL_Log("[RmlUi] Debugger plugin initialized (F12 to toggle, inspecting game context)");
 #endif
 
@@ -241,7 +252,16 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
     // Toggle debugger with F12 (debug builds only)
 #ifdef DEBUG
     if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F12) {
-        Rml::Debugger::SetVisible(!Rml::Debugger::IsVisible());
+        bool new_vis = !Rml::Debugger::IsVisible();
+        Rml::Debugger::SetVisible(new_vis);
+        // Show/hide the debugger documents so their backgrounds don't
+        // render when the debugger is closed.
+        if (Rml::ElementDocument* dbg_menu = s_window_context->GetDocument("rmlui-debug-menu")) {
+            if (new_vis) dbg_menu->Show(); else dbg_menu->Hide();
+        }
+        if (Rml::ElementDocument* dbg_hook = s_game_context->GetDocument("rmlui-debug-hook")) {
+            if (new_vis) dbg_hook->Show(); else dbg_hook->Hide();
+        }
         return;
     }
 #endif
@@ -296,6 +316,7 @@ extern "C" void rmlui_wrapper_render(void) {
     if (s_render_gl3) {
         // GL3: simple begin/end frame
         s_render_gl3->BeginFrame();
+
         s_window_context->Render();
         s_render_gl3->EndFrame();
     } else if (s_render_gpu) {
@@ -520,19 +541,38 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
         // Restore window viewport for subsequent rendering (bezels, overlays)
         s_render_gl3->SetViewport(s_window_w, s_window_h);
     } else if (s_render_gpu) {
-        // SDL_GPU: render to the swapchain texture
+        // SDL_GPU: render to the swapchain texture with viewport offset
         SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
         SDL_GPUTexture* swapchain = SDLGameRendererGPU_GetSwapchainTexture();
         if (cb && swapchain) {
-            s_render_gpu->BeginFrame(cb, swapchain, (uint32_t)phys_w, (uint32_t)phys_h);
+            s_render_gpu->BeginFrame(cb, swapchain, (uint32_t)phys_w, (uint32_t)phys_h,
+                                     ctx_w, ctx_h, off_x, (int)(view_y + 0.5f));
             s_game_context->Render();
             s_render_gpu->EndFrame();
         }
     } else if (s_render_sdl) {
-        // SDL2D: render to the window (not the canvas texture)
+        // SDL2D: set viewport to the letterbox rect and scale from logical to physical
         SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
         SDL_SetRenderTarget(renderer, NULL);
+
+        // Confine rendering to the letterbox rectangle
+        SDL_Rect vp_rect;
+        vp_rect.x = (int)(view_x + 0.5f);
+        vp_rect.y = (int)(view_y + 0.5f);
+        vp_rect.w = phys_w;
+        vp_rect.h = phys_h;
+        SDL_SetRenderViewport(renderer, &vp_rect);
+
+        // Scale from logical (ctx_w × ctx_h) to physical (phys_w × phys_h)
+        float scale_x = (float)phys_w / (float)ctx_w;
+        float scale_y = (float)phys_h / (float)ctx_h;
+        SDL_SetRenderScale(renderer, scale_x, scale_y);
+
         s_game_context->Render();
+
+        // Restore viewport and scale
+        SDL_SetRenderViewport(renderer, NULL);
+        SDL_SetRenderScale(renderer, 1.0f, 1.0f);
     }
 }
 

@@ -1,6 +1,6 @@
 ============================================================ 
                    3SX Lint Report                              
-                   Generated: 01/03/2026 17:29:55.83                     
+                   Generated: 01/03/2026 18:59:27.19                     
 ============================================================ 
  
 ------------------------------------------------------------ 
@@ -160,18 +160,18 @@ tools\compile_shaders.py:1:0: C0114: Missing module docstring (missing-module-do
 tools\compile_shaders.py:68:0: C0116: Missing function or method docstring (missing-function-docstring)
 tools\compile_shaders.py:69:4: W0603: Using the global statement (global-statement)
 ************* Module tools.lua_trial_parser
-tools\lua_trial_parser.py:169:0: C0301: Line too long (102/100) (line-too-long)
-tools\lua_trial_parser.py:174:0: C0301: Line too long (102/100) (line-too-long)
-tools\lua_trial_parser.py:176:0: C0301: Line too long (101/100) (line-too-long)
-tools\lua_trial_parser.py:333:0: C0301: Line too long (103/100) (line-too-long)
-tools\lua_trial_parser.py:68:0: R0912: Too many branches (13/12) (too-many-branches)
-tools\lua_trial_parser.py:117:0: R0914: Too many local variables (30/15) (too-many-locals)
-tools\lua_trial_parser.py:117:0: R0912: Too many branches (17/12) (too-many-branches)
-tools\lua_trial_parser.py:117:0: R0915: Too many statements (59/50) (too-many-statements)
-tools\lua_trial_parser.py:235:0: R0914: Too many local variables (32/15) (too-many-locals)
-tools\lua_trial_parser.py:235:0: R0912: Too many branches (24/12) (too-many-branches)
-tools\lua_trial_parser.py:235:0: R0915: Too many statements (93/50) (too-many-statements)
-tools\lua_trial_parser.py:385:0: C0116: Missing function or method docstring (missing-function-docstring)
+tools\lua_trial_parser.py:170:0: C0301: Line too long (102/100) (line-too-long)
+tools\lua_trial_parser.py:175:0: C0301: Line too long (102/100) (line-too-long)
+tools\lua_trial_parser.py:177:0: C0301: Line too long (101/100) (line-too-long)
+tools\lua_trial_parser.py:334:0: C0301: Line too long (103/100) (line-too-long)
+tools\lua_trial_parser.py:69:0: R0912: Too many branches (13/12) (too-many-branches)
+tools\lua_trial_parser.py:118:0: R0914: Too many local variables (30/15) (too-many-locals)
+tools\lua_trial_parser.py:118:0: R0912: Too many branches (17/12) (too-many-branches)
+tools\lua_trial_parser.py:118:0: R0915: Too many statements (59/50) (too-many-statements)
+tools\lua_trial_parser.py:236:0: R0914: Too many local variables (32/15) (too-many-locals)
+tools\lua_trial_parser.py:236:0: R0912: Too many branches (24/12) (too-many-branches)
+tools\lua_trial_parser.py:236:0: R0915: Too many statements (93/50) (too-many-statements)
+tools\lua_trial_parser.py:386:0: C0116: Missing function or method docstring (missing-function-docstring)
 ************* Module tools.util.bridge_state
 tools\util\bridge_state.py:1:0: C0114: Missing module docstring (missing-module-docstring)
 tools\util\bridge_state.py:6:0: R0903: Too few public methods (0/2) (too-few-public-methods)
@@ -202,7 +202,7 @@ tests\util\test_navigator_logic.py:43:40: W0613: Unused argument 'mock_sleep' (u
 tests\util\test_navigator_logic.py:57:45: W0613: Unused argument 'mock_sleep' (unused-argument)
 
 ------------------------------------------------------------------
-Your code has been rated at 9.09/10 (previous run: 9.07/10, +0.02)
+Your code has been rated at 9.09/10 (previous run: 9.09/10, +0.00)
 
  
 ------------------------------------------------------------ 

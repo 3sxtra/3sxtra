@@ -17,10 +17,22 @@
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>
 
+#include <cstdio>
+
 extern "C" {
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 } // extern "C"
+
+// ─── Helpers ─────────────────────────────────────────────────────
+static Rml::String level_to_pct(int level) {
+    int pct = (level * 100) / 15;
+    if (pct > 100)
+        pct = 100;
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%d%%", pct);
+    return Rml::String(buf);
+}
 
 // ─── Data model ──────────────────────────────────────────────────
 static Rml::DataModelHandle s_model_handle;
@@ -31,6 +43,7 @@ struct SoundCache {
     int bgm_level;
     int se_level;
     int bgm_type; // 0=arranged, 1=original
+    int bgm_test_track;
     int cursor_y;
 };
 static SoundCache s_cache = {};
@@ -58,7 +71,10 @@ extern "C" void rmlui_sound_menu_init(void) {
     ctor.BindFunc("bgm_level", [](Rml::Variant& v) { v = (int)bgm_level; });
     ctor.BindFunc("se_level", [](Rml::Variant& v) { v = (int)se_level; });
     ctor.BindFunc("bgm_type", [](Rml::Variant& v) { v = (int)sys_w.bgm_type; });
+    ctor.BindFunc("bgm_test_track", [](Rml::Variant& v) { v = (int)Convert_Buff[3][1][5]; });
     ctor.BindFunc("cursor_y", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
+    ctor.BindFunc("bgm_level_pct", [](Rml::Variant& v) { v = level_to_pct((int)bgm_level); });
+    ctor.BindFunc("se_level_pct", [](Rml::Variant& v) { v = level_to_pct((int)se_level); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -71,11 +87,22 @@ extern "C" void rmlui_sound_menu_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
 
+    /* Capture old level values before DIRTY_INT updates the cache. */
+    int old_bgm = s_cache.bgm_level;
+    int old_se = s_cache.se_level;
+
     DIRTY_INT(sound_mode, (int)Convert_Buff[3][1][0]);
     DIRTY_INT(bgm_level, (int)bgm_level);
     DIRTY_INT(se_level, (int)se_level);
     DIRTY_INT(bgm_type, (int)sys_w.bgm_type);
+    DIRTY_INT(bgm_test_track, (int)Convert_Buff[3][1][5]);
     DIRTY_INT(cursor_y, (int)Menu_Cursor_Y[0]);
+
+    /* Derived percentage strings must be dirtied when the source level changes. */
+    if (old_bgm != s_cache.bgm_level)
+        s_model_handle.DirtyVariable("bgm_level_pct");
+    if (old_se != s_cache.se_level)
+        s_model_handle.DirtyVariable("se_level_pct");
 }
 
 // ─── Show / Hide ─────────────────────────────────────────────────

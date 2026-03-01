@@ -21,7 +21,7 @@ body {
     height: 224dp;
 }
 .hud-hidden {
-    visibility: hidden;
+    display: none;
 }
 
 /* ── Section containers (passthrough — span full area) ────── */

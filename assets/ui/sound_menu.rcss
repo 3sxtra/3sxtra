@@ -1,72 +1,166 @@
-/* ── Sound Menu Stylesheet ────────────────────────────────── */
+/* ============================================================ *
+ *  sound_menu.rcss  —  Sound Test settings table                *
+ * ============================================================ */
+
 body {
     width: 384dp;
     height: 224dp;
     font-family: "Noto Sans JP Thin";
-    font-size: 14dp;
-    color: #ffffffee;
 }
 
-.sound-panel {
+/* ── Outer panel ────────────────────────────────────────────── */
+#sound-panel {
     display: block;
     position: absolute;
-    top: 22%;
-    left: 50%;
-    margin-left: -160dp;
-    width: 320dp;
-    text-align: center;
-    animation: panel-fade-in 0.4s quadratic-out;
+    top: 16dp;
+    left: 50dp;
+    width: 280dp;
+    background-color: rgba(10, 10, 20, 230);
+    border-width: 1dp;
+    border-color: rgba(200, 200, 255, 51);
+    padding: 8dp 0dp 4dp 0dp;
+    animation: slide-in 0.18s quadratic-out 1;
 }
 
-@keyframes panel-fade-in {
-    0% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
-    }
-}
-
-/* ── Title ──────────────────────────────────────────────────── */
-.sound-title {
+/* ── Title text ─────────────────────────────────────────────── */
+.menu-title {
     display: block;
-    font-size: 20dp;
-    font-weight: bold;
-    color: #88ff88;
-    letter-spacing: 3dp;
-    margin-bottom: 16dp;
+    text-align: center;
+    font-size: 9dp;
+    color: rgba(136, 255, 136, 204);
+    letter-spacing: 2dp;
+    margin-bottom: 6dp;
     font-effect: shadow(1dp 1dp #00000088);
 }
 
-/* ── Option list ────────────────────────────────────────────── */
-.option-list {
+/* ── Option table container ─────────────────────────────────── */
+.option-table {
     display: block;
-    padding: 8dp 16dp;
-    background-color: #00000066;
-    border-width: 1dp;
-    border-color: #88ff8833;
+    padding: 0dp 8dp;
 }
 
-.option-row {
+/* ── Row (two-column: label + value) ───────────────────────── */
+.opt-row {
     display: block;
-    padding: 6dp 8dp;
-    margin-bottom: 4dp;
+    width: 100%;
+    height: 14dp;
+    line-height: 14dp;
+    padding: 0dp 8dp;
+    transition: background-color 0.06s linear-in-out;
 }
 
-.option-label {
+.opt-row.focused {
+    background-color: rgba(255, 220, 0, 38);
+    border-left-width: 3dp;
+    border-left-color: #FFD700;
+    padding-left: 5dp;
+}
+
+/* ── Label (left column) ───────────────────────────────────── */
+.opt-label {
+    display: inline-block;
+    width: 105dp;
+    font-size: 7dp;
+    color: rgba(220, 220, 220, 217);
+}
+
+.opt-row.focused .opt-label {
+    color: #FFD700;
+}
+
+/* ── Value (right column) ──────────────────────────────────── */
+.opt-value {
     display: inline-block;
     width: 140dp;
-    text-align: left;
-    font-size: 12dp;
-    color: #aaaaaa;
-    letter-spacing: 1dp;
+    font-size: 7dp;
+    color: rgba(160, 220, 255, 230);
+    text-align: right;
 }
 
-.option-value {
+.opt-row.focused .opt-value {
+    color: #FFFFFF;
+}
+
+/* ── Action-only row (no value column) ─────────────────────── */
+.opt-action {
     display: inline-block;
-    width: 120dp;
+    font-size: 7dp;
+    color: rgba(220, 220, 220, 217);
+}
+
+.opt-row.focused .opt-action {
+    color: #FFD700;
+}
+
+/* ── Level bar (BGM / SE) ──────────────────────────────────── */
+.opt-value-bar {
+    display: inline-block;
+    width: 140dp;
+    height: 14dp;
+    line-height: 14dp;
+}
+
+.bar-track {
+    display: inline-block;
+    width: 100dp;
+    height: 5dp;
+    margin-top: 4dp;
+    background-color: rgba(255, 255, 255, 30);
+    vertical-align: middle;
+}
+
+.bar-fill {
+    display: block;
+    height: 5dp;
+    background-color: rgba(136, 255, 136, 200);
+    transition: width 0.08s linear-in-out;
+}
+
+.opt-row.focused .bar-fill {
+    background-color: #FFD700;
+}
+
+.bar-num {
+    display: inline-block;
+    width: 30dp;
+    font-size: 7dp;
+    color: rgba(160, 220, 255, 230);
     text-align: right;
-    font-size: 14dp;
-    font-weight: bold;
-    color: #ffffff;
+    vertical-align: middle;
+}
+
+.opt-row.focused .bar-num {
+    color: #FFFFFF;
+}
+
+/* ── Track arrows ──────────────────────────────────────────── */
+.arrow {
+    font-size: 6dp;
+    color: rgba(160, 220, 255, 128);
+}
+
+.opt-row.focused .arrow {
+    color: rgba(255, 215, 0, 200);
+}
+
+/* ── Footer hint ────────────────────────────────────────────── */
+.footer-row {
+    display: block;
+    margin-top: 4dp;
+    padding: 2dp 12dp;
+    border-top-width: 1dp;
+    border-top-color: rgba(200, 200, 255, 38);
+}
+
+.footer-hint {
+    display: block;
+    font-size: 7dp;
+    color: rgba(180, 180, 180, 128);
+    text-align: center;
+}
+
+/* ── Slide-in animation ─────────────────────────────────────── */
+@keyframes slide-in {
+    from { margin-top: -20dp; opacity: 0; }
+    to   { margin-top: 0dp;   opacity: 1; }
 }

@@ -304,7 +304,8 @@ void Setup_Next_Page(struct _TASK* task_ptr, u8 /* unused */) {
         Order[0x73] = 3;
         Order_Dir[0x73] = 8;
         Order_Timer[0x73] = 1;
-        effect_57_init(0x73, 6, 0, 0x3F, 2);
+        if (!use_rmlui || !rmlui_menu_extra_option)
+            effect_57_init(0x73, 6, 0, 0x3F, 2);
         effect_66_init(0x5C, 0x27, 2, 0, 0x47, 0xB, 0);
         Order[0x5C] = 3;
         Order_Timer[0x5C] = 1;

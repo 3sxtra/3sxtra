@@ -19,48 +19,48 @@ import os
 # Verified by cross-referencing _SP_/_SA_ move tags in the generated trial data.
 CHARA_NAMES = [
     None,  # 0 — unused
-    "Alex",      # 1
-    "Ryu",       # 2
-    "Ken",       # 3
-    "Gouki",     # 4
-    "Sean",      # 5
-    "Ibuki",     # 6
-    "Chun-Li",   # 7
-    "Elena",     # 8
-    "Makoto",    # 9
-    "Yun",       # 10
-    "Yang",      # 11
-    "Oro",       # 12
-    "Dudley",    # 13
-    "Urien",     # 14
-    "Remy",      # 15
-    "Hugo",      # 16
-    "Necro",     # 17
-    "Twelve",    # 18
-    "Q",         # 19
+    "Alex",  # 1
+    "Ryu",  # 2
+    "Ken",  # 3
+    "Gouki",  # 4
+    "Sean",  # 5
+    "Ibuki",  # 6
+    "Chun-Li",  # 7
+    "Elena",  # 8
+    "Makoto",  # 9
+    "Yun",  # 10
+    "Yang",  # 11
+    "Oro",  # 12
+    "Dudley",  # 13
+    "Urien",  # 14
+    "Remy",  # 15
+    "Hugo",  # 16
+    "Necro",  # 17
+    "Twelve",  # 18
+    "Q",  # 19
 ]
 
 # Character IDs in the native engine (My_char values)
 # Maps Lua index → My_char value used in the game engine.
 CHARA_IDS = [
     -1,  # 0 — unused
-    1,   # 1  Alex     (My_char 1)
-    2,   # 2  Ryu      (My_char 2)
+    1,  # 1  Alex     (My_char 1)
+    2,  # 2  Ryu      (My_char 2)
     11,  # 3  Ken      (My_char 11)
     14,  # 4  Gouki    (My_char 14)
     12,  # 5  Sean     (My_char 12)
-    7,   # 6  Ibuki    (My_char 7)
+    7,  # 6  Ibuki    (My_char 7)
     15,  # 7  Chun-Li  (My_char 15)
-    8,   # 8  Elena    (My_char 8)
+    8,  # 8  Elena    (My_char 8)
     16,  # 9  Makoto   (My_char 16)
-    3,   # 10 Yun      (My_char 3)
+    3,  # 10 Yun      (My_char 3)
     10,  # 11 Yang     (My_char 10)
-    9,   # 12 Oro      (My_char 9)
-    4,   # 13 Dudley   (My_char 4)
+    9,  # 12 Oro      (My_char 9)
+    4,  # 13 Dudley   (My_char 4)
     13,  # 14 Urien    (My_char 13)
     19,  # 15 Remy     (My_char 19)
-    6,   # 16 Hugo     (My_char 6)
-    5,   # 17 Necro    (My_char 5)
+    6,  # 16 Hugo     (My_char 6)
+    5,  # 17 Necro    (My_char 5)
     18,  # 18 Twelve   (My_char 18)
     17,  # 19 Q        (My_char 17)
 ]

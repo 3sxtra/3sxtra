@@ -308,10 +308,12 @@ static void Mode_Select(struct _TASK* task_ptr) {
             Message_Data[ix].order = 3;
         }
 
-        effect_57_init(0x64, 0, 0, 0x3F, 2);
-        Order[0x64] = 1;
-        Order_Dir[0x64] = 8;
-        Order_Timer[0x64] = 1;
+        if (!use_rmlui || !rmlui_menu_mode) {
+            effect_57_init(0x64, 0, 0, 0x3F, 2);
+            Order[0x64] = 1;
+            Order_Dir[0x64] = 8;
+            Order_Timer[0x64] = 1;
+        }
         Menu_Suicide[0] = 0;
 
         if (use_rmlui && rmlui_menu_mode) {
@@ -1310,10 +1312,12 @@ static void Training_Mode(struct _TASK* task_ptr) {
     case 0:
         Menu_in_Sub(task_ptr);
         mpp_w.initTrainingData = true;
-        effect_57_init(0x6F, 0xB, 0, 0x3F, 2);
-        Order[0x6F] = 1;
-        Order_Dir[0x6F] = 8;
-        Order_Timer[0x6F] = 1;
+        if (!use_rmlui || !rmlui_menu_training) {
+            effect_57_init(0x6F, 0xB, 0, 0x3F, 2);
+            Order[0x6F] = 1;
+            Order_Dir[0x6F] = 8;
+            Order_Timer[0x6F] = 1;
+        }
         if (use_rmlui && rmlui_menu_training) {
             rmlui_training_mode_show();
         } else {
@@ -1419,10 +1423,12 @@ static void Option_Select(struct _TASK* task_ptr) {
         Order[0x4E] = 2;
         Order_Dir[0x4E] = 0;
         Order_Timer[0x4E] = 1;
-        effect_57_init(0x4F, 1, 0, 0x3F, 2);
-        Order[0x4F] = 1;
-        Order_Dir[0x4F] = 8;
-        Order_Timer[0x4F] = 1;
+        if (!use_rmlui || !rmlui_menu_option) {
+            effect_57_init(0x4F, 1, 0, 0x3F, 2);
+            Order[0x4F] = 1;
+            Order_Dir[0x4F] = 8;
+            Order_Timer[0x4F] = 1;
+        }
 
         if (save_w[Present_Mode].Extra_Option == 0 && save_w[Present_Mode].Unlock_All == 0) {
             if (use_rmlui && rmlui_menu_option) {
@@ -1930,10 +1936,12 @@ static void Game_Option(struct _TASK* task_ptr) {
         Order[0x4E] = 2;
         Order_Dir[0x4E] = 2;
         Order_Timer[0x4E] = 1;
-        effect_57_init(0x6A, 7, 0, 0x3F, 2);
-        Order[0x6A] = 1;
-        Order_Dir[0x6A] = 8;
-        Order_Timer[0x6A] = 1;
+        if (!use_rmlui || !rmlui_menu_game_option) {
+            effect_57_init(0x6A, 7, 0, 0x3F, 2);
+            Order[0x6A] = 1;
+            Order_Dir[0x6A] = 8;
+            Order_Timer[0x6A] = 1;
+        }
 
         if (use_rmlui && rmlui_menu_game_option) {
             rmlui_game_option_show();
@@ -2004,10 +2012,12 @@ static void Button_Config(struct _TASK* task_ptr) {
         Order[0x4E] = 2;
         Order_Dir[0x4E] = 2;
         Order_Timer[0x4E] = 1;
-        effect_57_init(0x6B, 2, 0, 0x3F, 2);
-        Order[0x6B] = 1;
-        Order_Dir[0x6B] = 8;
-        Order_Timer[0x6B] = 1;
+        if (!use_rmlui || !rmlui_menu_button_config) {
+            effect_57_init(0x6B, 2, 0, 0x3F, 2);
+            Order[0x6B] = 1;
+            Order_Dir[0x6B] = 8;
+            Order_Timer[0x6B] = 1;
+        }
 
         if (use_rmlui && rmlui_menu_button_config) {
             rmlui_button_config_show();

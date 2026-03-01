@@ -18,7 +18,7 @@
 #include <vector>
 
 extern "C" {
-#include "sf33rd/Source/Game/effect/eff76.h"   /* chkNameAkuma */
+#include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "structs.h"
 } // extern "C"
