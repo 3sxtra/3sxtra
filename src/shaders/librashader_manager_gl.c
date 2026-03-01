@@ -30,6 +30,8 @@ struct LibrashaderManagerGL {
     GLuint blit_program;
     GLuint vao;
     GLuint vbo;
+    GLint loc_source;
+    GLint loc_original;
 };
 
 // Helper to compile internal blit shader
@@ -74,6 +76,9 @@ static void init_blit_resources(LibrashaderManagerGL* manager) {
     glAttachShader(manager->blit_program, vs);
     glAttachShader(manager->blit_program, fs);
     glLinkProgram(manager->blit_program);
+    
+    manager->loc_source = glGetUniformLocation(manager->blit_program, "Source");
+    manager->loc_original = glGetUniformLocation(manager->blit_program, "Original");
 
     glDeleteShader(vs);
     glDeleteShader(fs);
@@ -224,11 +229,11 @@ void LibrashaderManager_Render_GL(LibrashaderManagerGL* manager, GLuint input_te
     glUseProgram(manager->blit_program);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, manager->output_texture);
-    glUniform1i(glGetUniformLocation(manager->blit_program, "Source"), 0);
+    glUniform1i(manager->loc_source, 0);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, input_texture);
-    glUniform1i(glGetUniformLocation(manager->blit_program, "Original"), 1);
+    glUniform1i(manager->loc_original, 1);
 
     // Clear background to black before blitting shader output
     // REMOVED: glClearColor/glClear - Caller (SDLApp_EndFrame) is responsible for

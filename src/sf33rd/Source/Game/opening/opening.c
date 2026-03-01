@@ -12,6 +12,13 @@
 
 #include "sf33rd/Source/Game/opening/opening.h"
 #include "common.h"
+
+/* Phase 3 RmlUi bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui_title_screen.h"
+#include <stdbool.h>
+extern bool use_rmlui;
+
 #include "port/config.h"
 #include "port/renderer.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
@@ -175,6 +182,14 @@ void TITLE_Init() {
 
 /** @brief Animate and render the title logo with zoom. */
 s16 TITLE_Move(u16 type) {
+    /* RmlUi bypass: suppress PPG title logo when RmlUi title screen is active.
+     * Also ensure the RmlUi title document is visible — TITLE_Move() is called
+     * earlier (during opening_demo) than Entry_01's show call. */
+    if (use_rmlui && rmlui_screen_title) {
+        rmlui_title_screen_show();
+        return 0;
+    }
+
     ppgSetupCurrentDataList(&ppgTitleList);
 
     switch (type) {

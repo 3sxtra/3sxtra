@@ -7,13 +7,33 @@ body {
     width: 384dp;
     height: 224dp;
     font-family: "Noto Sans JP Thin";
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* ── Logo ───────────────────────────────────────────────────── */
+/* Constrained so bottom edge stays above PRESS START (~190dp). */
+#title-logo {
+    display: block;
+    position: absolute;
+    top: 0dp;
+    left: 0dp;
+    width: 384dp;
+    height: 185dp;
+    text-align: center;
+}
+
+#logo-img {
+    display: inline-block;
+    width: 340dp;
+    height: 175dp;
+    margin-top: 10dp;
 }
 
 /* ── Main prompt ────────────────────────────────────────────── */
 #title-prompt {
     display: block;
     position: absolute;
-    bottom: 42dp;
+    bottom: 22dp;
     left: 0dp;
     width: 384dp;
     text-align: center;

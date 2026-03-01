@@ -389,6 +389,7 @@ ShaderManager* ShaderManager_Init(GLSLP_Preset* preset, const char* base_path) {
     glAttachShader(manager->blit_program, ivs);
     glAttachShader(manager->blit_program, ifs);
     glLinkProgram(manager->blit_program);
+    manager->loc_blit_source = glGetUniformLocation(manager->blit_program, "Source");
     glDeleteShader(ivs);
     glDeleteShader(ifs);
 
@@ -554,6 +555,20 @@ ShaderManager* ShaderManager_Init(GLSLP_Preset* preset, const char* base_path) {
         glBindAttribLocation(program, 1, "aTexCoord");
 
         glLinkProgram(program);
+        manager->passes[i].loc_MVPMatrix = glGetUniformLocation(program, "MVPMatrix");
+        manager->passes[i].loc_projection = glGetUniformLocation(program, "projection");
+        manager->passes[i].loc_Source = glGetUniformLocation(program, "Source");
+        manager->passes[i].loc_Texture = glGetUniformLocation(program, "Texture");
+        manager->passes[i].loc_Original = glGetUniformLocation(program, "Original");
+        manager->passes[i].loc_OriginalHistory0 = glGetUniformLocation(program, "OriginalHistory0");
+        manager->passes[i].loc_SourceSize = glGetUniformLocation(program, "SourceSize");
+        manager->passes[i].loc_OriginalSize = glGetUniformLocation(program, "OriginalSize");
+        manager->passes[i].loc_OriginalHistorySize0 = glGetUniformLocation(program, "OriginalHistorySize0");
+        manager->passes[i].loc_OutputSize = glGetUniformLocation(program, "OutputSize");
+        manager->passes[i].loc_TextureSize = glGetUniformLocation(program, "TextureSize");
+        manager->passes[i].loc_InputSize = glGetUniformLocation(program, "InputSize");
+        manager->passes[i].loc_FrameCount = glGetUniformLocation(program, "FrameCount");
+        manager->passes[i].loc_FrameDirection = glGetUniformLocation(program, "FrameDirection");
         glDeleteShader(vs);
         glDeleteShader(fs);
 
@@ -609,7 +624,7 @@ void ShaderManager_Render(ShaderManager* manager, GLuint input_texture, int inpu
     glUseProgram(manager->blit_program);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, input_texture);
-    glUniform1i(glGetUniformLocation(manager->blit_program, "Source"), 0);
+    glUniform1i(manager->loc_blit_source, 0);
 
     glBindVertexArray(manager->vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -727,53 +742,53 @@ void ShaderManager_Render(ShaderManager* manager, GLuint input_texture, int inpu
                             { 0.0f, -1.0f, 0.0f, 0.0f },
                             { 0.0f, 0.0f, 1.0f, 0.0f },
                             { 0.0f, 0.0f, 0.0f, 1.0f } };
-        glUniformMatrix4fv(glGetUniformLocation(pass_runtime->program, "MVPMatrix"), 1, GL_FALSE, (const float*)mvp);
-        glUniformMatrix4fv(glGetUniformLocation(pass_runtime->program, "projection"), 1, GL_FALSE, (const float*)mvp);
+        glUniformMatrix4fv(pass_runtime->loc_MVPMatrix, 1, GL_FALSE, (const float*)mvp);
+        glUniformMatrix4fv(pass_runtime->loc_projection, 1, GL_FALSE, (const float*)mvp);
 
         // Input Texture (Texture 0) - "Source"
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, current_input);
-        glUniform1i(glGetUniformLocation(pass_runtime->program, "Source"), 0);
-        glUniform1i(glGetUniformLocation(pass_runtime->program, "Texture"), 0);
+        glUniform1i(pass_runtime->loc_Source, 0);
+        glUniform1i(pass_runtime->loc_Texture, 0);
 
         // Original Texture (Texture 1) - "Original"
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, input_texture);
-        glUniform1i(glGetUniformLocation(pass_runtime->program, "Original"), 1);
-        glUniform1i(glGetUniformLocation(pass_runtime->program, "OriginalHistory0"), 1);
+        glUniform1i(pass_runtime->loc_Original, 1);
+        glUniform1i(pass_runtime->loc_OriginalHistory0, 1);
 
         // Sizes
-        glUniform4f(glGetUniformLocation(pass_runtime->program, "SourceSize"),
+        glUniform4f(pass_runtime->loc_SourceSize,
                     (float)current_w,
                     (float)current_h,
                     1.0f / current_w,
                     1.0f / current_h);
 
-        glUniform4f(glGetUniformLocation(pass_runtime->program, "OriginalSize"),
+        glUniform4f(pass_runtime->loc_OriginalSize,
                     (float)input_w,
                     (float)input_h,
                     1.0f / input_w,
                     1.0f / input_h);
 
-        glUniform4f(glGetUniformLocation(pass_runtime->program, "OriginalHistorySize0"),
+        glUniform4f(pass_runtime->loc_OriginalHistorySize0,
                     (float)input_w,
                     (float)input_h,
                     1.0f / input_w,
                     1.0f / input_h);
 
-        glUniform4f(glGetUniformLocation(pass_runtime->program, "OutputSize"),
+        glUniform4f(pass_runtime->loc_OutputSize,
                     (float)target_w,
                     (float)target_h,
                     1.0f / target_w,
                     1.0f / target_h);
 
-        glUniform4f(glGetUniformLocation(pass_runtime->program, "TextureSize"),
+        glUniform4f(pass_runtime->loc_TextureSize,
                     (float)current_w,
                     (float)current_h,
                     1.0f / current_w,
                     1.0f / current_h);
 
-        glUniform4f(glGetUniformLocation(pass_runtime->program, "InputSize"),
+        glUniform4f(pass_runtime->loc_InputSize,
                     (float)input_w,
                     (float)input_h,
                     1.0f / input_w,
@@ -783,8 +798,8 @@ void ShaderManager_Render(ShaderManager* manager, GLuint input_texture, int inpu
         if (pass_info->frame_count_mod > 0) {
             effective_frame_count = manager->frame_count % pass_info->frame_count_mod;
         }
-        glUniform1i(glGetUniformLocation(pass_runtime->program, "FrameCount"), effective_frame_count);
-        glUniform1i(glGetUniformLocation(pass_runtime->program, "FrameDirection"), 1);
+        glUniform1i(pass_runtime->loc_FrameCount, effective_frame_count);
+        glUniform1i(pass_runtime->loc_FrameDirection, 1);
 
         // Bind Parameters
         for (int p = 0; p < manager->parameter_count; p++) {

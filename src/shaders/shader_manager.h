@@ -11,6 +11,20 @@ typedef struct {
     int width;
     int height;
     GLSLP_ShaderPass* pass_info;
+    GLint loc_MVPMatrix;
+    GLint loc_projection;
+    GLint loc_Source;
+    GLint loc_Texture;
+    GLint loc_Original;
+    GLint loc_OriginalHistory0;
+    GLint loc_SourceSize;
+    GLint loc_OriginalSize;
+    GLint loc_OriginalHistorySize0;
+    GLint loc_OutputSize;
+    GLint loc_TextureSize;
+    GLint loc_InputSize;
+    GLint loc_FrameCount;
+    GLint loc_FrameDirection;
 } ShaderPassRuntime;
 
 typedef struct {
@@ -47,6 +61,7 @@ typedef struct {
     int history_index;
     GLuint history_fbo;
     GLuint blit_program;
+    GLint loc_blit_source;
 } ShaderManager;
 
 // Initialize the manager with a preset.

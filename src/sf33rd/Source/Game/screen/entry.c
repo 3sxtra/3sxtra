@@ -172,8 +172,8 @@ static void Disp_00_0() {
         return;
     }
 
-    if (use_rmlui && rmlui_screen_title) {
-        /* CSS blink animation handles the visibility cycle */
+    if (use_rmlui && rmlui_screen_title && title_tex_flag) {
+        /* CSS blink animation handles the visibility cycle (title screen only) */
         return;
     }
 

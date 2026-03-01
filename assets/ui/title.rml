@@ -6,6 +6,10 @@
 </head>
 <body data-model="title_screen" id="title-root">
 
+    <div id="title-logo">
+        <img id="logo-img" src="assets/logo.png" />
+    </div>
+
     <div id="title-prompt">
         <div class="press-start">PRESS START BUTTON</div>
     </div>

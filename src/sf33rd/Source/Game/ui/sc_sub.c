@@ -12,6 +12,11 @@
 
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "common.h"
+
+/* Phase 3 RmlUi bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+#include <stdbool.h>
+extern bool use_rmlui;
 #include "port/legacy_matrix.h"
 #include "port/renderer.h"
 #include "port/sdl/sdl_game_renderer.h"
@@ -1257,6 +1262,11 @@ void SF3_logo(u8 step) {
     RendererVertex pos[4];
 
     if (No_Trans) {
+        return;
+    }
+
+    /* RmlUi bypass: suppress original sprite logo when RmlUi title screen is active */
+    if (use_rmlui && rmlui_screen_title) {
         return;
     }
 

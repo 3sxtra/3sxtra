@@ -19,6 +19,8 @@
 
 /* Phase 3 RmlUi bypass */
 #include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui_title_screen.h"
+#include "port/sdl/rmlui_copyright.h"
 #include <stdbool.h>
 extern bool use_rmlui;
 #include "main.h"
@@ -306,6 +308,12 @@ void Check_Back_Demo() {
 
     TexRelease(601);
     title_tex_flag = 0;
+
+    /* Hide RmlUi title screen before switching to demo loop */
+    if (use_rmlui && rmlui_screen_title) {
+        rmlui_title_screen_hide();
+    }
+
     Next_Demo_Loop();
     effect_work_init();
 }
@@ -1690,6 +1698,13 @@ void Loop_Demo(struct _TASK* /* unused */) {
         Basic_Sub();
 
         if (Title()) {
+            /* Hide RmlUi title elements before transitioning to attract demo */
+            if (use_rmlui && rmlui_screen_title) {
+                rmlui_title_screen_hide();
+            }
+            if (use_rmlui && rmlui_screen_copyright) {
+                rmlui_copyright_hide();
+            }
             Loop_Demo_Sub();
             Insert_Y = 17;
             D_No[0] = 1;
