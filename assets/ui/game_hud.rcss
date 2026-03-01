@@ -1,6 +1,6 @@
 /* ============================================================ *
  *  game_hud.rcss  —  In-game fight HUD stylesheet              *
- *  SF3:3S color palette + animated transitions                 *
+ *  Positions matched to CPS3 sprite coords (384×224, 1dp=1px)  *
  * ============================================================ */
 
 /* ── Root body ─────────────────────────────────────────────── */
@@ -24,112 +24,126 @@ body {
     visibility: hidden;
 }
 
-/* ── Top bar ────────────────────────────────────────────────── */
-#hud-top {
+/* ── Section containers (passthrough — span full area) ────── */
+#hud-top, #hud-gauges, #hud-combos, #hud-training-stun {
     display: block;
     position: absolute;
-    top: 4dp;
+    top: 0dp;
     left: 0dp;
     width: 384dp;
-    height: 28dp;
+    height: 224dp;
 }
-
-/* Each player side occupies about 44% of width */
 .player-side {
     display: block;
     position: absolute;
     top: 0dp;
-    width: 160dp;
-    height: 28dp;
+    left: 0dp;
+    width: 384dp;
+    height: 224dp;
 }
-.p1-side { left: 0dp; }
-.p2-side { left: 224dp; }
 
-/* Player name */
+/* ── Player names ───────────────────────────────────────────── */
+/* CPS3: P1 tile(6,3)=48px,24px  P2 tile(37,3)=296px,24px      */
 .player-name {
     display: block;
-    height: 10dp;
-    font-size: 9dp;
+    position: absolute;
+    top: 24dp;
+    width: 40dp;
+    height: 8dp;
+    font-size: 8dp;
     color: #FFFFFF;
-    text-align: left;
-    margin-bottom: 2dp;
 }
-.p2-name { text-align: right; }
+.p1-name { left: 48dp; text-align: left; }
+.p2-name { left: 296dp; text-align: right; }
 
-/* HP bar container */
+/* ── HP bar container ───────────────────────────────────────── */
+/* CPS3: P1 x=8..168  P2 x=216..376  y=16..24 (8px tall)       */
 .hp-bar-wrap {
     display: block;
-    position: relative;
+    position: absolute;
+    top: 16dp;
     width: 160dp;
-    height: 10dp;
-    background-color: #181818;
+    height: 8dp;
+    background-color: rgba(0, 0, 0, 64);
 }
-.p2-hp { /* right side mirrors by anchoring from right edge */ }
+.p1-hp { left: 8dp; }
+.p2-hp { left: 216dp; }
 
-/* Drain (red trail) */
+/* Drain (red trail) — P1 right-to-left, P2 left-to-right */
 .hp-drain {
     display: block;
     position: absolute;
     top: 0dp;
-    left: 0dp;
-    height: 10dp;
+    height: 8dp;
     background-color: #C81010;
     transition: width 0.16s linear-in-out;
     max-width: 100%;
 }
+.p1-hp .hp-drain { right: 0dp; }
+.p2-hp .hp-drain { left: 0dp; }
 
 /* HP fill — colors by state class */
 .hp-fill {
     display: block;
     position: absolute;
     top: 0dp;
-    left: 0dp;
-    height: 10dp;
+    height: 8dp;
     transition: width 0.08s linear-in-out;
     max-width: 100%;
 }
+.p1-hp .hp-fill { right: 0dp; }
+.p2-hp .hp-fill { left: 0dp; }
+
 .hp-col-1 { background-color: #48C848; }   /* Green — full */
 .hp-col-2 { background-color: #E8C820; }   /* Yellow — mid */
 .hp-col-3 { background-color: #E82020; }   /* Red — low */
 
 /* ── Center timer ───────────────────────────────────────────── */
+/* CPS3: digits at tile(22,0)=176px (2×16=32px wide) y=0        */
 #timer-block {
     display: block;
     position: absolute;
     top: 0dp;
-    left: 152dp;
-    width: 80dp;
-    height: 28dp;
-    text-align: center;
+    left: 0dp;
+    width: 384dp;
+    height: 40dp;
 }
 
 .timer-digits {
     display: block;
-    font-size: 18dp;
+    position: absolute;
+    left: 168dp;
+    top: 0dp;
+    width: 48dp;
+    font-size: 28dp;
     color: #FFFFFF;
     text-align: center;
-    line-height: 18dp;
+    line-height: 32dp;
 }
 .timer-digits.timer-flash {
     animation: timer-pulse 0.4s sine-in-out infinite;
 }
 
 /* ── Win pips ───────────────────────────────────────────────── */
+/* CPS3: centered under timer, full width for proper centering  */
 .win-row {
     display: block;
+    position: absolute;
+    top: 32dp;
+    left: 0dp;
+    width: 384dp;
     text-align: center;
-    margin-top: 2dp;
 }
 .win-pips {
     display: inline-block;
 }
 .win-pip {
     display: inline-block;
-    width: 6dp;
-    height: 6dp;
-    border-radius: 3dp;
+    width: 8dp;
+    height: 8dp;
+    border-radius: 4dp;
     background-color: #333333;
-    margin: 0dp 1dp;
+    margin: 0dp 2dp;
 }
 .win-pip.win-filled {
     background-color: #FFD700;
@@ -138,61 +152,61 @@ body {
     display: inline-block;
     font-size: 7dp;
     color: #888888;
-    margin: 0dp 3dp;
+    margin: 0dp 4dp;
 }
 
-/* ── Gauge row (stun + SA) ──────────────────────────────────── */
-#hud-gauges {
-    display: block;
-    position: absolute;
-    top: 36dp;
-    left: 0dp;
-    width: 384dp;
-    height: 8dp;
-}
-
-/* Stun gauge */
+/* ── Stun gauge ─────────────────────────────────────────────── */
+/* CPS3: P1 anchors left 8dp, P2 anchors right 8dp. Width is dynamic per char. */
 .stun-wrap {
     display: block;
     position: absolute;
-    top: 0dp;
-    width: 130dp;
+    top: 26dp;
     height: 4dp;
-    background-color: #1A1A1A;
+    background-color: rgba(0, 0, 0, 144);
 }
-.p1-stun { left: 0dp; }
-.p2-stun { left: 254dp; }
+.p1-stun { right: 216dp; }
+.p2-stun { left: 216dp; }
 
 .stun-fill {
     display: block;
+    position: absolute;
+    top: 0dp;
     height: 4dp;
-    background-color: #40C0FF;
+    background-color: #C81010;
     max-width: 100%;
     transition: width 0.05s linear-in-out;
 }
+.p1-stun .stun-fill { right: 0dp; }
+.p2-stun .stun-fill { left: 0dp; }
+
 .stun-fill.stun-active {
-    animation: stun-blink 0.11s steps(1) infinite;
+    animation: stun-blink 0.11s sine-in-out infinite;
 }
 
-/* SA gauge */
+/* ── SA gauge ───────────────────────────────────────────────── */
+/* CPS3: fill at y=210, height 7. P1 anchors left 48, P2 anchors right 48. Width dynamic. */
 .sa-wrap {
     display: block;
     position: absolute;
-    top: 4dp;
-    width: 130dp;
-    height: 4dp;
-    background-color: #1A1A1A;
+    top: 210dp;
+    height: 7dp;
+    background-color: rgba(0, 0, 0, 144);
 }
-.p1-sa { left: 0dp; }
-.p2-sa { left: 254dp; }
+.p1-sa { left: 48dp; }
+.p2-sa { right: 48dp; }
 
 .sa-fill {
     display: block;
-    height: 4dp;
+    position: absolute;
+    top: 0dp;
+    height: 7dp;
     background-color: #6040E0;
     max-width: 100%;
     transition: width 0.08s linear-in-out;
 }
+.p1-sa .sa-fill { left: 0dp; }
+.p2-sa .sa-fill { right: 0dp; }
+
 .sa-fill.sa-active {
     background-color: #E040E0;
     animation: sa-active-pulse 0.2s sine-in-out infinite;
@@ -204,32 +218,34 @@ body {
 .sa-label {
     display: inline-block;
     position: absolute;
-    right: 0dp;
     top: -1dp;
     font-size: 5dp;
     color: #FFD700;
 }
+.p1-sa .sa-label { right: 102%; margin-right: 2dp; }
+.p2-sa .sa-label { left: 102%; margin-left: 2dp; }
+
+.sa-stock {
+    display: inline-block;
+    position: absolute;
+    top: -1dp;
+    font-size: 8dp;
+    color: #FFFFFF;
+    font-effect: shadow(1dp 1dp #000000);
+}
+.p1-sa .sa-stock { right: 102%; margin-right: 2dp; text-align: right; }
+.p2-sa .sa-stock { left: 102%; margin-left: 2dp; text-align: left; }
 
 .gauge-center-spacer {
-    display: block;
-    position: absolute;
-    left: 130dp;
-    width: 124dp;
+    display: none;
 }
 
 /* ── Combo popups ───────────────────────────────────────────── */
-#hud-combos {
-    display: block;
-    position: absolute;
-    top: 100dp;
-    left: 0dp;
-    width: 384dp;
-    height: 24dp;
-}
-
+/* CPS3: row 7 = y=56  P1 on RIGHT side, P2 on LEFT side       */
 .combo-popup {
     display: block;
     position: absolute;
+    top: 56dp;
     visibility: hidden;
     background-color: rgba(0, 0, 0, 153);
     padding: 2dp 6dp;
@@ -237,8 +253,8 @@ body {
 .combo-popup.combo-visible {
     visibility: visible;
 }
-.p1-combo { left: 8dp; }
-.p2-combo { right: 8dp; }
+.p1-combo { right: 8dp; }
+.p2-combo { left: 8dp; }
 
 .combo-hits {
     display: inline-block;
@@ -249,25 +265,6 @@ body {
     display: inline-block;
     font-size: 9dp;
     color: #FFFFFF;
-}
-
-/* ── Animations ─────────────────────────────────────────────── */
-@keyframes timer-pulse {
-      0% { color: #FFFFFF; }
-     50% { color: #FF4040; }
-    100% { color: #FFFFFF; }
-}
-
-@keyframes stun-blink {
-      0% { background-color: #40C0FF; }
-     50% { background-color: #A080FF; }
-    100% { background-color: #40C0FF; }
-}
-
-@keyframes sa-active-pulse {
-      0% { background-color: #E040E0; }
-     50% { background-color: #FFFFFF; }
-    100% { background-color: #E040E0; }
 }
 
 /* ── Training stun counter ──────────────────────────────────── */
@@ -289,3 +286,22 @@ body {
 }
 .p1-stun-counter { left: 10dp; }
 .p2-stun-counter { left: 250dp; }
+
+/* ── Animations ─────────────────────────────────────────────── */
+@keyframes timer-pulse {
+      0% { color: #FFFFFF; }
+     50% { color: #FF4040; }
+    100% { color: #FFFFFF; }
+}
+
+@keyframes stun-blink {
+      0% { background-color: #C81010; }
+     50% { background-color: #FF4040; }
+    100% { background-color: #C81010; }
+}
+
+@keyframes sa-active-pulse {
+      0% { background-color: #E040E0; }
+     50% { background-color: #FFFFFF; }
+    100% { background-color: #E040E0; }
+}

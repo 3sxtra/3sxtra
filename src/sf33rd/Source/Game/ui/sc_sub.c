@@ -916,6 +916,7 @@ void stun_put(u8 Pl_Num, u8 stun) {
     if (No_Trans) {
         return;
     }
+    if (use_rmlui && rmlui_hud_stun) return;
 
     if (stun == 0) {
         return;
@@ -957,6 +958,7 @@ void stun_base_put(u8 Pl_Num, s16 len) {
     if (No_Trans || SA_shadow_on) {
         return;
     }
+    if (use_rmlui && rmlui_hud_stun) return;
 
     vtx.p = pos;
     vtx.col = &col;
@@ -1266,10 +1268,13 @@ void SF3_logo(u8 step) {
         return;
     }
 
-    /* RmlUi bypass: suppress original sprite logo on the title screen only.
-     * title_tex_flag is set when the title PPG is loaded; during attract
-     * demo fights it is 0, so the small in-match logo still renders. */
-    if (use_rmlui && rmlui_screen_title && title_tex_flag) {
+    /* RmlUi bypass: suppress original sprite logo when an RmlUi screen
+     * provides its own logo. Two cases:
+     *   1. Title screen (title_tex_flag set) — large animated logo
+     *   2. Attract demo fights (G_No[0]==1, G_No[1]>=3) — small in-match logo
+     *      replaced by attract_overlay.rml's logo_small.png */
+    if (use_rmlui && ((rmlui_screen_title && title_tex_flag) ||
+                      (rmlui_screen_attract_overlay && G_No[0] == 1 && G_No[1] >= 3))) {
         return;
     }
 
@@ -1916,11 +1921,11 @@ void naming_set(u8 pl, s16 place, u16 atr, u16 chr) {
     scfont_put(place + 13 + (pl * 27), 0, atr, 0, rankname_pos_tbl[chr][0], rankname_pos_tbl[chr][1], 2);
 }
 
-/** @brief Draw the stun-gauge frame/border for both players. */
 void stun_gauge_waku_write(s16 p1len, s16 p2len) {
     if (omop_cockpit == 0) {
         return;
     }
+    if (use_rmlui && rmlui_hud_stun) return;
 
     if (No_Trans) {
         return;
@@ -1945,11 +1950,11 @@ void stun_gauge_waku_write(s16 p1len, s16 p2len) {
     scfont_sqput(p2len + 27, 3, 1, 0, p2len + 2, p2len + 12, 10 - p2len, 1, 3);
 }
 
-/** @brief Draw the silver (recoverable) stun gauge overlay. */
 static void silver_stun_put(u8 Pl_Num, s16 len) {
     if (No_Trans) {
         return;
     }
+    if (use_rmlui && rmlui_hud_stun) return;
 
     ppgSetupCurrentDataList(&ppgScrList);
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[3];

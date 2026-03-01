@@ -95,8 +95,23 @@ extern "C" void rmlui_option_menu_init(void) {
 extern "C" void rmlui_option_menu_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
-    DIRTY_INT(cursor, (int)Menu_Cursor_Y[0]);
-    DIRTY_BOOL(extra_available, extra_option_available());
+    /* Note: bound as "option_cursor", so we cannot use DIRTY_INT(cursor,...) —
+       the macro would dirty "cursor" instead of "option_cursor". */
+    {
+        int v = (int)Menu_Cursor_Y[0];
+        if (v != s_cache.cursor) {
+            s_cache.cursor = v;
+            s_model_handle.DirtyVariable("option_cursor");
+        }
+    }
+    /* Same naming issue: bound as "extra_option_available" */
+    {
+        bool v = extra_option_available();
+        if (v != s_cache.extra_available) {
+            s_cache.extra_available = v;
+            s_model_handle.DirtyVariable("extra_option_available");
+        }
+    }
 }
 
 // ─── Show / Hide ──────────────────────────────────────────────────

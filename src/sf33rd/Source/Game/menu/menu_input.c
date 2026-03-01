@@ -72,6 +72,10 @@
 #include "structs.h"
 
 /* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui_button_config.h"
+#include "port/sdl/rmlui_game_option.h"
+#include "port/sdl/rmlui_memory_card.h"
+#include "port/sdl/rmlui_option_menu.h"
 #include "port/sdl/rmlui_phase3_toggles.h"
 extern bool use_rmlui;
 
@@ -796,6 +800,8 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
     case 9:
         if (Menu_Cursor_Y[0] == 11 || IO_Result == 0x200) {
             SE_selected();
+            if (use_rmlui && rmlui_menu_game_option)
+                rmlui_game_option_hide();
             Return_Option_Mode_Sub(task_ptr);
             Order[0x6A] = 4;
             Order_Timer[0x6A] = 4;
@@ -823,6 +829,8 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
     case 10:
         if ((Menu_Cursor_Y[PL_id] == 10) || (IO_Result == 0x200)) {
             SE_selected();
+            if (use_rmlui && rmlui_menu_button_config)
+                rmlui_button_config_hide();
             Return_Option_Mode_Sub(task_ptr);
             Order[0x6B] = 4;
             Order_Timer[0x6B] = 4;
@@ -841,6 +849,8 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
     case 13:
         if (IO_Result == 0x200) {
             SE_selected();
+            if (use_rmlui && rmlui_menu_memory_card)
+                rmlui_memory_card_hide();
             Return_Option_Mode_Sub(task_ptr);
             Order[0x69] = 4;
             Order_Timer[0x69] = 4;
@@ -850,6 +860,8 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
         switch (Menu_Cursor_Y[0]) {
         case 3:
             SE_selected();
+            if (use_rmlui && rmlui_menu_memory_card)
+                rmlui_memory_card_hide();
             Return_Option_Mode_Sub(task_ptr);
             Order[0x69] = 4;
             Order_Timer[0x69] = 4;
@@ -887,6 +899,8 @@ void Return_Option_Mode_Sub(struct _TASK* task_ptr) {
     task_ptr->free[0] = 0;
     Cursor_Y_Pos[0][2] = Menu_Cursor_Y[0];
     Cursor_Y_Pos[1][2] = Menu_Cursor_Y[1];
+    if (use_rmlui && rmlui_menu_option)
+        rmlui_option_menu_show();
 }
 
 /** @brief Screen Adjust cursor sub-handler (up/down). */
@@ -1795,7 +1809,8 @@ void Setup_Save_Replay_1st(struct _TASK* task_ptr) {
     Menu_Suicide[2] = 0;
     Menu_Suicide[3] = 0;
     Setup_BG(1, 512, 0);
-    Setup_Replay_Sub(1, 110, 9, 1);
+    if (!(use_rmlui && rmlui_menu_replay))
+        Setup_Replay_Sub(1, 110, 9, 1);
     Setup_File_Property(1, 0xFF);
     Clear_Flash_Init(4);
 }

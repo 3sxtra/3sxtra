@@ -18,10 +18,14 @@
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
+#include "port/sdl/rmlui_attract_overlay.h"
+#include "port/sdl/rmlui_continue.h"
 #include "port/sdl/rmlui_copyright.h"
+#include "port/sdl/rmlui_gameover.h"
 #include "port/sdl/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui_title_screen.h"
-#include "port/sdl/rmlui_attract_overlay.h"
+#include "port/sdl/rmlui_win_screen.h"
+#include "port/sdl/rmlui_wrapper.h"
 #include <stdbool.h>
 extern bool use_rmlui;
 #include "main.h"
@@ -377,6 +381,11 @@ void Game01() {
 
     switch (G_No[2]) {
     case 0:
+        /* Hide any leftover Phase 3 docs (win, continue, gameover, etc.)
+         * Do not do this during attract mode (Demo_Flag == 0) to avoid killing
+         * the attract_overlay document. */
+        if (use_rmlui && Demo_Flag != 0)
+            rmlui_wrapper_hide_all_game_documents();
         // The menu task resets Mode_Type to MODE_ARCADE between matches.
         // Restore it so all MODE_NETWORK-guarded paths (RNG seeding, Game2_0
         // initialization) work correctly for rematches.
@@ -617,10 +626,12 @@ void Game2_1() {
         combo_cont_main();
         stngauge_cont_main();
         spgauge_cont_main();
-        Sa_frame_Write();
+        if (!use_rmlui || !rmlui_hud_super)
+            Sa_frame_Write();
         if (!use_rmlui || !rmlui_hud_score)
             Score_Sub();
-        Flash_Lamp();
+        if (!use_rmlui || !rmlui_hud_wins)
+            Flash_Lamp();
         if (!use_rmlui || !rmlui_hud_wins)
             Disp_Win_Record();
     }
@@ -812,6 +823,9 @@ void Game03() {
     switch (G_No[2]) {
     case 0:
         if (Winner_Scene() != 0) {
+            /* Hide win screen before transitioning to next state */
+            if (use_rmlui && rmlui_screen_winner)
+                rmlui_win_screen_hide();
             switch (Mode_Type) {
             case MODE_VERSUS:
             case MODE_NETWORK:
@@ -928,6 +942,9 @@ void Game04() {
     switch (G_No[2]) {
     case 0:
         if (Loser_Scene() != 0) {
+            /* Hide win/loser screen before transitioning */
+            if (use_rmlui && rmlui_screen_winner)
+                rmlui_win_screen_hide();
             if (Mode_Type == 5) {
                 G_No[2] = 5;
                 cpReadyTask(TASK_MENU, Menu_Task);
@@ -1058,6 +1075,9 @@ void Game06() {
 
         case 1:
             if (Game_Over()) {
+                /* Hide gameover screen once the game-over flow completes */
+                if (use_rmlui && rmlui_screen_gameover)
+                    rmlui_gameover_hide();
                 G_Timer = 60;
 
                 if (Check_Disp_Ranking() != 0) {
@@ -1288,6 +1308,9 @@ void Game07() {
     switch (G_No[2]) {
     case 0:
         if (Continue_Scene() != 0) {
+            /* Hide continue screen before entering game-over */
+            if (use_rmlui && rmlui_screen_continue)
+                rmlui_continue_hide();
             G_No[1] = 6;
             G_No[2] = 0;
         }

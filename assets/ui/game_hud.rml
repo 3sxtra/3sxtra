@@ -13,7 +13,7 @@
 
             <!-- P1 Side -->
             <div class="player-side p1-side">
-                <div class="player-name p1-name" data-value="p1_name">RYU</div>
+                <div class="player-name p1-name">{{p1_name}}</div>
                 <div class="hp-bar-wrap p1-hp">
                     <!-- Drain bar (red, trails behind) -->
                     <div class="hp-drain" data-style-width="(p1_drain * 100 / (health_max > 0 ? health_max : 1)) + '%'"></div>
@@ -26,7 +26,7 @@
             <!-- Center Timer -->
             <div id="timer-block">
                 <div class="timer-digits" data-class-timer-flash="timer_flash">
-                    <span data-if="!timer_infinite" data-value="round_timer">99</span>
+                    <span data-if="!timer_infinite">{{round_timer}}</span>
                     <span data-if="timer_infinite">∞</span>
                 </div>
                 <!-- Win pips -->
@@ -52,7 +52,7 @@
                     <div data-attr-class="'hp-fill hp-col-' + p2_hp_color"
                          data-style-width="(p2_health * 100 / (health_max > 0 ? health_max : 1)) + '%'"></div>
                 </div>
-                <div class="player-name p2-name" data-value="p2_name">KEN</div>
+                <div class="player-name p2-name">{{p2_name}}</div>
             </div>
 
         </div><!-- hud-top -->
@@ -61,30 +61,32 @@
         <div id="hud-gauges">
 
             <!-- P1 Stun -->
-            <div class="stun-wrap p1-stun">
+            <div class="stun-wrap p1-stun" data-style-width="p1_stun_width">
                 <div class="stun-fill" data-class-stun-active="p1_stun_active"
                      data-style-width="(p1_stun * 100 / (p1_stun_max > 0 ? p1_stun_max : 1)) + '%'"></div>
             </div>
 
             <!-- P1 SA Gauge -->
-            <div class="sa-wrap p1-sa">
+            <div class="sa-wrap p1-sa" data-style-width="p1_sa_width">
                 <div class="sa-fill" data-class-sa-active="p1_sa_active" data-class-sa-max="p1_sa_max"
-                     data-style-width="(p1_sa_fill * 100 / (p1_sa_fill_max > 0 ? p1_sa_fill_max : 1)) + '%'"></div>
+                     data-style-width="p1_sa_pct + '%'"></div>
                 <div class="sa-label" data-if="p1_sa_max">MAX</div>
+                <div class="sa-stock" data-if="p1_sa_stocks_max > 0">{{p1_sa_stocks}}/{{p1_sa_stocks_max}}</div>
             </div>
 
             <!-- Spacer -->
             <div class="gauge-center-spacer"></div>
 
             <!-- P2 SA Gauge (right side) -->
-            <div class="sa-wrap p2-sa">
+            <div class="sa-wrap p2-sa" data-style-width="p2_sa_width">
                 <div class="sa-fill" data-class-sa-active="p2_sa_active" data-class-sa-max="p2_sa_max"
-                     data-style-width="(p2_sa_fill * 100 / (p2_sa_fill_max > 0 ? p2_sa_fill_max : 1)) + '%'"></div>
+                     data-style-width="p2_sa_pct + '%'"></div>
                 <div class="sa-label" data-if="p2_sa_max">MAX</div>
+                <div class="sa-stock" data-if="p2_sa_stocks_max > 0">{{p2_sa_stocks}}/{{p2_sa_stocks_max}}</div>
             </div>
 
             <!-- P2 Stun -->
-            <div class="stun-wrap p2-stun">
+            <div class="stun-wrap p2-stun" data-style-width="p2_stun_width">
                 <div class="stun-fill" data-class-stun-active="p2_stun_active"
                      data-style-width="(p2_stun * 100 / (p2_stun_max > 0 ? p2_stun_max : 1)) + '%'"></div>
             </div>
@@ -94,11 +96,11 @@
         <!-- ═══ COMBO POPUPS ═══ -->
         <div id="hud-combos">
             <div class="combo-popup p1-combo" data-class-combo-visible="p1_combo_active">
-                <span class="combo-hits" data-value="p1_combo_count"></span>
+                <span class="combo-hits">{{p1_combo_count}}</span>
                 <span class="combo-label"> HIT</span>
             </div>
             <div class="combo-popup p2-combo" data-class-combo-visible="p2_combo_active">
-                <span class="combo-hits" data-value="p2_combo_count"></span>
+                <span class="combo-hits">{{p2_combo_count}}</span>
                 <span class="combo-label"> HIT</span>
             </div>
         </div>

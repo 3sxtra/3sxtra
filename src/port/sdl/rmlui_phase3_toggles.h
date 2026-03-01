@@ -43,20 +43,21 @@ extern bool rmlui_menu_lobby;           /** Network Lobby */
 extern bool rmlui_menu_memory_card;     /** Memory Card (Save/Load) */
 extern bool rmlui_menu_blocking_tr;     /** Blocking Training pause menu */
 extern bool rmlui_menu_blocking_tr_opt; /** Blocking Training option screen */
+extern bool rmlui_menu_replay;          /** Replay picker (load/save) */
 
 /* ── Screen overlays ────────────────────────────────────────────── */
-extern bool rmlui_screen_title;        /** Title / "PRESS START" */
-extern bool rmlui_screen_winner;       /** Winner/Loser banner */
-extern bool rmlui_screen_continue;     /** Continue countdown */
-extern bool rmlui_screen_gameover;     /** Game Over / Results */
-extern bool rmlui_screen_select;       /** Character Select text overlay */
-extern bool rmlui_screen_vs_result;    /** VS Result tally screen */
-extern bool rmlui_screen_pause;        /** Pause text overlay */
-extern bool rmlui_screen_entry_text;   /** Arcade-flow text (CONTINUE/GAME OVER/PRESS START) */
-extern bool rmlui_screen_trials;       /** Trial mode HUD overlay */
-extern bool rmlui_screen_copyright;    /** Copyright text overlay */
-extern bool rmlui_screen_name_entry;   /** Name entry / ranking screen */
-extern bool rmlui_screen_exit_confirm; /** Exit confirmation screen */
+extern bool rmlui_screen_title;           /** Title / "PRESS START" */
+extern bool rmlui_screen_winner;          /** Winner/Loser banner */
+extern bool rmlui_screen_continue;        /** Continue countdown */
+extern bool rmlui_screen_gameover;        /** Game Over / Results */
+extern bool rmlui_screen_select;          /** Character Select text overlay */
+extern bool rmlui_screen_vs_result;       /** VS Result tally screen */
+extern bool rmlui_screen_pause;           /** Pause text overlay */
+extern bool rmlui_screen_entry_text;      /** Arcade-flow text (CONTINUE/GAME OVER/PRESS START) */
+extern bool rmlui_screen_trials;          /** Trial mode HUD overlay */
+extern bool rmlui_screen_copyright;       /** Copyright text overlay */
+extern bool rmlui_screen_name_entry;      /** Name entry / ranking screen */
+extern bool rmlui_screen_exit_confirm;    /** Exit confirmation screen */
 extern bool rmlui_screen_attract_overlay; /** Attract demo overlay (small logo + PRESS START) */
 
 #ifdef __cplusplus

@@ -1515,6 +1515,9 @@ static void Option_Select(struct _TASK* task_ptr) {
             Order[0x4F] = 4;
             Order_Timer[0x4F] = 4;
 
+            if (use_rmlui && rmlui_menu_option)
+                rmlui_option_menu_hide();
+
             if (Check_Change_Contents()) {
                 if (save_w[Present_Mode].Auto_Save) {
                     task_ptr->r_no[0] = 4;
@@ -1539,6 +1542,8 @@ static void Option_Select(struct _TASK* task_ptr) {
         break;
 
     default:
+        if (use_rmlui && rmlui_menu_option)
+            rmlui_option_menu_hide();
         Exit_Sub(task_ptr, 1, Menu_Cursor_Y[0] + 9);
         break;
     }
@@ -1642,6 +1647,8 @@ static void System_Direction(struct _TASK* task_ptr) {
             if (Menu_Cursor_Y[0] == 4 || IO_Result == 0x200) {
                 if (from_option) {
                     /* Return to Option_Select */
+                    if (use_rmlui && rmlui_menu_sysdir)
+                        rmlui_sysdir_hide();
                     Return_Option_Mode_Sub(task_ptr);
                 } else {
                     /* Return to Mode_Select */
@@ -1843,14 +1850,18 @@ static void Load_Replay(struct _TASK* task_ptr) {
         Menu_in_Sub(task_ptr);
         Menu_Cursor_X[0] = 0;
         Setup_BG(1, 0x200, 0);
-        Setup_Replay_Sub(1, 0x6E, 9, 1);
+        if (!(use_rmlui && rmlui_menu_replay))
+            Setup_Replay_Sub(1, 0x6E, 9, 1);
         Clear_Flash_Init(4);
         Message_Data->kind_req = 5;
         break;
 
     case 1:
         if (Menu_Sub_case1(task_ptr) != 0) {
-            ReplayPicker_Open(0); /* load mode */
+            if (use_rmlui && rmlui_menu_replay)
+                rmlui_replay_picker_open(0);
+            else
+                ReplayPicker_Open(0); /* load mode */
         }
 
         break;
@@ -1865,9 +1876,13 @@ static void Load_Replay(struct _TASK* task_ptr) {
         break;
 
     case 3: {
-        int pick_result = ReplayPicker_Update();
+        int pick_result = (use_rmlui && rmlui_menu_replay)
+            ? rmlui_replay_picker_poll()
+            : ReplayPicker_Update();
         if (pick_result == 0) {
-            int slot = ReplayPicker_GetSelectedSlot();
+            int slot = (use_rmlui && rmlui_menu_replay)
+                ? rmlui_replay_picker_get_slot()
+                : ReplayPicker_GetSelectedSlot();
             if (NativeSave_LoadReplay(slot) == 0) {
                 Decide_ID = 0;
                 if (Interface_Type[0] == 0) {
@@ -2214,6 +2229,8 @@ static void Sound_Test(struct _TASK* task_ptr) {
 
         if (IO_Result == 0x200 || ((Menu_Cursor_Y[0] == 6) && (IO_Result == 0x100 || IO_Result == 0x4000))) {
             SE_selected();
+            if (use_rmlui && rmlui_menu_sound)
+                rmlui_sound_menu_hide();
             Return_Option_Mode_Sub(task_ptr);
             setupAlwaysSeamlessFlag(0);
             Order[0x72] = 4;
@@ -2869,7 +2886,10 @@ static void Save_Replay(struct _TASK* task_ptr) {
 
     case 1:
         if (Menu_Sub_case1(task_ptr) != 0) {
-            ReplayPicker_Open(1); /* save mode */
+            if (use_rmlui && rmlui_menu_replay)
+                rmlui_replay_picker_open(1);
+            else
+                ReplayPicker_Open(1); /* save mode */
         }
         Order[0x4E] = 2;
         Order_Dir[0x4E] = 0;
@@ -2881,9 +2901,13 @@ static void Save_Replay(struct _TASK* task_ptr) {
         break;
 
     case 3: {
-        int pick_result = ReplayPicker_Update();
+        int pick_result = (use_rmlui && rmlui_menu_replay)
+            ? rmlui_replay_picker_poll()
+            : ReplayPicker_Update();
         if (pick_result == 0) {
-            int slot = ReplayPicker_GetSelectedSlot();
+            int slot = (use_rmlui && rmlui_menu_replay)
+                ? rmlui_replay_picker_get_slot()
+                : ReplayPicker_GetSelectedSlot();
             NativeSave_SaveReplay(slot);
         }
         if (pick_result != 1) { /* done or cancelled */
@@ -3831,15 +3855,22 @@ static void After_Replay(struct _TASK* task_ptr) {
             Menu_Common_Init();
             Menu_Cursor_X[0] = 0;
             Setup_BG(1, 512, 0);
-            effect_57_init(110, 9, 0, 63, 999);
-            Order[110] = 3;
-            Order_Dir[110] = 8;
-            Order_Timer[110] = 1;
+            if (!(use_rmlui && rmlui_menu_replay)) {
+                effect_57_init(110, 9, 0, 63, 999);
+                Order[110] = 3;
+                Order_Dir[110] = 8;
+                Order_Timer[110] = 1;
+            }
             Setup_File_Property(1, 0xFF);
-            ReplayPicker_Open(1); /* save mode */
-            effect_66_init(138, 41, 0, 0, -1, -1, -0x7FF3);
-            Order[138] = 3;
-            Order_Timer[138] = 1;
+            if (use_rmlui && rmlui_menu_replay)
+                rmlui_replay_picker_open(1);
+            else
+                ReplayPicker_Open(1); /* save mode */
+            if (!(use_rmlui && rmlui_menu_replay)) {
+                effect_66_init(138, 41, 0, 0, -1, -1, -0x7FF3);
+                Order[138] = 3;
+                Order_Timer[138] = 1;
+            }
             break;
 
         case 1:
@@ -3851,9 +3882,14 @@ static void After_Replay(struct _TASK* task_ptr) {
             break;
 
         case 3: {
-            int pick_result = ReplayPicker_Update();
+            int pick_result = (use_rmlui && rmlui_menu_replay)
+                ? rmlui_replay_picker_poll()
+                : ReplayPicker_Update();
             if (pick_result == 0) {
-                NativeSave_SaveReplay(ReplayPicker_GetSelectedSlot());
+                int slot = (use_rmlui && rmlui_menu_replay)
+                    ? rmlui_replay_picker_get_slot()
+                    : ReplayPicker_GetSelectedSlot();
+                NativeSave_SaveReplay(slot);
             }
             if (pick_result == 1)
                 break; /* still active */

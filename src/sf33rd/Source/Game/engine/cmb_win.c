@@ -14,6 +14,11 @@
 #include "sf33rd/Source/Game/ui/sc_data.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
+/* Phase 3 RmlUi bypass */
+#include "port/sdl/rmlui_phase3_toggles.h"
+#include <stdbool.h>
+extern bool use_rmlui;
+
 #include <SDL3/SDL.h>
 
 #include <string.h>
@@ -578,7 +583,8 @@ void combo_window_trans(s8 PL) {
 
             case 1:
                 if (b->x_posnum[0] != 0) {
-                    render_combo_message(PL, b);
+                    if (!use_rmlui || !rmlui_hud_combo)
+                        render_combo_message(PL, b);
                 }
 
                 if (!(Game_pause & 0x80) && !(end_flag[PL] & 1)) {
@@ -598,14 +604,16 @@ void combo_window_trans(s8 PL) {
                         if ((b->x_posnum[1]) < ((b->move[1]) + 2)) {
                             if ((b->x_posnum[1]) < (b->move[1])) {
                                 if (b->x_posnum[1] != 0) {
-                                    combo_pts_set(PL,
-                                                  cmb_pos_tbl[PL][b->x_posnum[1] - 1],
-                                                  b->x_posnum[1],
-                                                  &b->pts_digit[0],
-                                                  b->first_digit);
+                                    if (!use_rmlui || !rmlui_hud_combo)
+                                        combo_pts_set(PL,
+                                                      cmb_pos_tbl[PL][b->x_posnum[1] - 1],
+                                                      b->x_posnum[1],
+                                                      &b->pts_digit[0],
+                                                      b->first_digit);
                                 }
                             } else if (b->x_posnum[1] != 0) {
-                                render_combo_pts(PL, b);
+                                if (!use_rmlui || !rmlui_hud_combo)
+                                    render_combo_pts(PL, b);
                             }
 
                             if (!(Game_pause & 0x80)) {
@@ -613,11 +621,13 @@ void combo_window_trans(s8 PL) {
                             }
                         } else {
                             end_flag[PL] |= 2;
-                            render_combo_pts(PL, b);
+                            if (!use_rmlui || !rmlui_hud_combo)
+                                render_combo_pts(PL, b);
                         }
                     }
                 } else {
-                    render_combo_pts(PL, b);
+                    if (!use_rmlui || !rmlui_hud_combo)
+                        render_combo_pts(PL, b);
                 }
 
                 if (!(Game_pause & 0x80) && ((end_flag[PL] & 3) == 3)) {
@@ -650,13 +660,17 @@ void combo_window_trans(s8 PL) {
                     b->timer[1]--;
 
                     if (b->timer[1]) {
-                        render_combo_message(PL, b);
-                        render_combo_pts(PL, b);
+                        if (!use_rmlui || !rmlui_hud_combo) {
+                            render_combo_message(PL, b);
+                            render_combo_pts(PL, b);
+                        }
                         return;
                     }
                 } else {
-                    render_combo_message(PL, b);
-                    render_combo_pts(PL, b);
+                    if (!use_rmlui || !rmlui_hud_combo) {
+                        render_combo_message(PL, b);
+                        render_combo_pts(PL, b);
+                    }
                     return;
                 }
 
@@ -687,7 +701,8 @@ void combo_window_trans(s8 PL) {
                     }
                 }
 
-                render_combo_message(PL, b);
+                if (!use_rmlui || !rmlui_hud_combo)
+                    render_combo_message(PL, b);
                 break;
 
             case 2:
@@ -695,11 +710,13 @@ void combo_window_trans(s8 PL) {
                     b->timer[1]--;
 
                     if (b->timer[1]) {
-                        render_combo_message(PL, b);
+                        if (!use_rmlui || !rmlui_hud_combo)
+                            render_combo_message(PL, b);
                         return;
                     }
                 } else {
-                    render_combo_message(PL, b);
+                    if (!use_rmlui || !rmlui_hud_combo)
+                        render_combo_message(PL, b);
                     return;
                 }
 

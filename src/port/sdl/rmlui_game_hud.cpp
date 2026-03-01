@@ -24,6 +24,7 @@ extern "C" {
 #include "sf33rd/Source/Game/engine/plcnt.h"   /* piyori_type[2] (PiyoriType), plw[2] */
 #include "sf33rd/Source/Game/engine/spgauge.h" /* SPG_DAT, spg_dat[2] — SA gauge */
 #include "sf33rd/Source/Game/engine/workuser.h" /* PLW, Super_Arts, My_char, Win_Record, Max_vitality, Mode_Type … (pulls structs.h) */
+#include "sf33rd/Source/Game/effect/eff76.h"   /* chkNameAkuma */
 #include "sf33rd/Source/Game/training/training_state.h" /* g_training_state — combo stun */
 
 /* VIT and SDAT are defined in structs.h (pulled by workuser.h).
@@ -42,10 +43,11 @@ extern u8 Play_Game;
 } // extern "C"
 
 // ─── Character name table (SF3:3S roster, index matches My_char) ───
-static const char* const s_char_names[20] = { "RYU",   "ALEX",   "YUEN",    "DUDLEY", "NECRO", "HUGO",   "IBuki",
-                                              "ELENA", "ORO",    "YANG",    "KEN",    "SEAN",  "MAKOTO", "REMY",
-                                              "Q",     "TWELVE", "CHUN-LI", "URIEN",  "GILL",  "AKUMA" };
-#define CHAR_NAME_COUNT 20
+// Index 0 = Gill (boss), then the standard roster order.
+static const char* const s_char_names[21] = { "GILL",  "ALEX",   "RYU",     "YUN",    "DUDLEY",  "NECRO", "HUGO",
+                                              "IBUKI", "ELENA",  "ORO",     "YANG",   "KEN",     "SEAN",  "URIEN",
+                                              "GOUKI", "CHUN-LI","MAKOTO",  "Q",      "TWELVE",  "REMY",  "AKUMA" };
+#define CHAR_NAME_COUNT 21
 
 // ─── Toggle globals (defined here, declared extern in rmlui_phase3_toggles.h) ───
 bool rmlui_hud_health = true;
@@ -72,6 +74,7 @@ bool rmlui_menu_lobby = true;
 bool rmlui_menu_memory_card = true;
 bool rmlui_menu_blocking_tr = true;
 bool rmlui_menu_blocking_tr_opt = true;
+bool rmlui_menu_replay = true;
 
 bool rmlui_screen_title = true;
 bool rmlui_screen_winner = true;
@@ -96,7 +99,7 @@ struct HudSnapshot {
     int p1_health, p2_health;
     int p1_drain, p2_drain;
     int p1_hp_color, p2_hp_color;
-    int round_timer_val;
+    int round_timer;
     bool timer_flash;
     bool timer_infinite;
     int p1_stun, p2_stun;
@@ -108,6 +111,9 @@ struct HudSnapshot {
     int p1_sa_fill_max, p2_sa_fill_max;
     bool p1_sa_active, p2_sa_active;
     bool p1_sa_max, p2_sa_max;
+    int p1_sa_pct, p2_sa_pct;
+    Rml::String p1_stun_width, p2_stun_width;
+    Rml::String p1_sa_width, p2_sa_width;
     int p1_combo_count, p2_combo_count;
     int p1_combo_kind, p2_combo_kind;
     bool p1_combo_active, p2_combo_active;
@@ -195,10 +201,10 @@ extern "C" void rmlui_game_hud_init(void) {
     // Super_Arts[N]   = selected SA variant (1/2/3) = max stocks possible
     // spg_dat[N].time = per-stock fill level
     // spg_dat[N].sa_flag nonzero while SA timer is running
-    ctor.BindFunc("p1_sa_stocks", [](Rml::Variant& v) { v = (int)spg_dat[0].max; });
-    ctor.BindFunc("p2_sa_stocks", [](Rml::Variant& v) { v = (int)spg_dat[1].max; });
-    ctor.BindFunc("p1_sa_stocks_max", [](Rml::Variant& v) { v = (int)Super_Arts[0]; });
-    ctor.BindFunc("p2_sa_stocks_max", [](Rml::Variant& v) { v = (int)Super_Arts[1]; });
+    ctor.BindFunc("p1_sa_stocks", [](Rml::Variant& v) { v = (int)spg_dat[0].spg_level; });
+    ctor.BindFunc("p2_sa_stocks", [](Rml::Variant& v) { v = (int)spg_dat[1].spg_level; });
+    ctor.BindFunc("p1_sa_stocks_max", [](Rml::Variant& v) { v = (int)spg_dat[0].spg_maxlevel; });
+    ctor.BindFunc("p2_sa_stocks_max", [](Rml::Variant& v) { v = (int)spg_dat[1].spg_maxlevel; });
     ctor.BindFunc("p1_sa_fill", [](Rml::Variant& v) { v = (int)spg_dat[0].time; });
     ctor.BindFunc("p2_sa_fill", [](Rml::Variant& v) { v = (int)spg_dat[1].time; });
     ctor.BindFunc("p1_sa_fill_max", [](Rml::Variant& v) { v = (int)spg_dat[0].spg_dotlen; });
@@ -206,9 +212,34 @@ extern "C" void rmlui_game_hud_init(void) {
     ctor.BindFunc("p1_sa_active", [](Rml::Variant& v) { v = (bool)(spg_dat[0].sa_flag != 0); });
     ctor.BindFunc("p2_sa_active", [](Rml::Variant& v) { v = (bool)(spg_dat[1].sa_flag != 0); });
     ctor.BindFunc("p1_sa_max",
-                  [](Rml::Variant& v) { v = (bool)(spg_dat[0].max >= Super_Arts[0] && Super_Arts[0] > 0); });
+                  [](Rml::Variant& v) { v = (bool)(spg_dat[0].spg_maxlevel > 0 && spg_dat[0].spg_level >= spg_dat[0].spg_maxlevel); });
     ctor.BindFunc("p2_sa_max",
-                  [](Rml::Variant& v) { v = (bool)(spg_dat[1].max >= Super_Arts[1] && Super_Arts[1] > 0); });
+                  [](Rml::Variant& v) { v = (bool)(spg_dat[1].spg_maxlevel > 0 && spg_dat[1].spg_level >= spg_dat[1].spg_maxlevel); });
+    // Pre-computed SA fill percentage (0-100) for all stocks combined
+    ctor.BindFunc("p1_sa_pct", [](Rml::Variant& v) {
+        int dotlen = spg_dat[0].spg_dotlen > 0 ? spg_dat[0].spg_dotlen : 1;
+        int max_stocks = spg_dat[0].spg_maxlevel > 0 ? spg_dat[0].spg_maxlevel : 1;
+        int pct = (spg_dat[0].spg_level * dotlen + spg_dat[0].current_spg) * 100 / (max_stocks * dotlen);
+        v = (pct > 100) ? 100 : pct;
+    });
+    ctor.BindFunc("p2_sa_pct", [](Rml::Variant& v) {
+        int dotlen = spg_dat[1].spg_dotlen > 0 ? spg_dat[1].spg_dotlen : 1;
+        int max_stocks = spg_dat[1].spg_maxlevel > 0 ? spg_dat[1].spg_maxlevel : 1;
+        int pct = (spg_dat[1].spg_level * dotlen + spg_dat[1].current_spg) * 100 / (max_stocks * dotlen);
+        v = (pct > 100) ? 100 : pct;
+    });
+    ctor.BindFunc("p1_stun_width", [](Rml::Variant& v) {
+        char b[32]; snprintf(b, sizeof(b), "%ddp", piyori_type[0].genkai); v = Rml::String(b);
+    });
+    ctor.BindFunc("p2_stun_width", [](Rml::Variant& v) {
+        char b[32]; snprintf(b, sizeof(b), "%ddp", piyori_type[1].genkai); v = Rml::String(b);
+    });
+    ctor.BindFunc("p1_sa_width", [](Rml::Variant& v) {
+        char b[32]; snprintf(b, sizeof(b), "%ddp", spg_dat[0].spg_dotlen); v = Rml::String(b);
+    });
+    ctor.BindFunc("p2_sa_width", [](Rml::Variant& v) {
+        char b[32]; snprintf(b, sizeof(b), "%ddp", spg_dat[1].spg_dotlen); v = Rml::String(b);
+    });
 
     // ── Combo ──
     ctor.BindFunc("p1_combo_count", [](Rml::Variant& v) {
@@ -255,13 +286,36 @@ extern "C" void rmlui_game_hud_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
 
+    // Game01() calls rmlui_wrapper_hide_all_game_documents() between rounds,
+    // which hides our HUD doc. Re-show it when a fight is active.
+    if (Play_Game == 1 && !rmlui_wrapper_is_game_document_visible("game_hud")) {
+        rmlui_wrapper_show_game_document("game_hud");
+    }
+
+    // One-shot debug dump when fight first becomes active
+    static bool s_fight_logged = false;
+    if (Play_Game == 1 && !s_fight_logged) {
+        s_fight_logged = true;
+        SDL_Log("[RmlUi HUD DBG] P1 My_char=%d (%s)  P2 My_char=%d (%s)",
+                My_char[0], char_name(My_char[0]),
+                My_char[1], char_name(My_char[1]));
+        SDL_Log("[RmlUi HUD DBG] P1 SA: dotlen=%d maxlevel=%d max=%d time=%d",
+                spg_dat[0].spg_dotlen, spg_dat[0].spg_maxlevel,
+                spg_dat[0].max, spg_dat[0].time);
+        SDL_Log("[RmlUi HUD DBG] P2 SA: dotlen=%d maxlevel=%d max=%d time=%d",
+                spg_dat[1].spg_dotlen, spg_dat[1].spg_maxlevel,
+                spg_dat[1].max, spg_dat[1].time);
+    } else if (Play_Game != 1) {
+        s_fight_logged = false;  // Reset so it logs again next fight
+    }
+
     DIRTY_INT(p1_health, (int)plw[0].wu.vital_new);
     DIRTY_INT(p2_health, (int)plw[1].wu.vital_new);
     DIRTY_INT(p1_drain, (int)vit[0].cred);
     DIRTY_INT(p2_drain, (int)vit[1].cred);
     DIRTY_INT(p1_hp_color, (int)vit[0].colnum);
     DIRTY_INT(p2_hp_color, (int)vit[1].colnum);
-    DIRTY_INT(round_timer_val, (int)round_timer);
+    DIRTY_INT(round_timer, (int)round_timer);
     DIRTY_BOOL(timer_flash, flash_r_num != 0);
     DIRTY_BOOL(timer_infinite, mugen_flag != 0);
     DIRTY_INT(p1_stun, (int)sdat[0].cstn);
@@ -270,16 +324,39 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_INT(p2_stun_max, (int)piyori_type[1].genkai);
     DIRTY_BOOL(p1_stun_active, sdat[0].sflag != 0);
     DIRTY_BOOL(p2_stun_active, sdat[1].sflag != 0);
-    DIRTY_INT(p1_sa_stocks, (int)spg_dat[0].max);
-    DIRTY_INT(p2_sa_stocks, (int)spg_dat[1].max);
+    DIRTY_INT(p1_sa_stocks, (int)spg_dat[0].spg_level);
+    DIRTY_INT(p2_sa_stocks, (int)spg_dat[1].spg_level);
     DIRTY_INT(p1_sa_fill, (int)spg_dat[0].time);
     DIRTY_INT(p2_sa_fill, (int)spg_dat[1].time);
     DIRTY_INT(p1_sa_fill_max, (int)spg_dat[0].spg_dotlen);
     DIRTY_INT(p2_sa_fill_max, (int)spg_dat[1].spg_dotlen);
     DIRTY_BOOL(p1_sa_active, spg_dat[0].sa_flag != 0);
     DIRTY_BOOL(p2_sa_active, spg_dat[1].sa_flag != 0);
-    DIRTY_BOOL(p1_sa_max, Super_Arts[0] > 0 && spg_dat[0].max >= Super_Arts[0]);
-    DIRTY_BOOL(p2_sa_max, Super_Arts[1] > 0 && spg_dat[1].max >= Super_Arts[1]);
+    DIRTY_BOOL(p1_sa_max, spg_dat[0].spg_maxlevel > 0 && spg_dat[0].spg_level >= spg_dat[0].spg_maxlevel);
+    DIRTY_BOOL(p2_sa_max, spg_dat[1].spg_maxlevel > 0 && spg_dat[1].spg_level >= spg_dat[1].spg_maxlevel);
+    DIRTY_INT(p1_sa_stocks_max, (int)spg_dat[0].spg_maxlevel);
+    DIRTY_INT(p2_sa_stocks_max, (int)spg_dat[1].spg_maxlevel);
+    {   // SA fill percentage (0-100) for all stocks combined
+        int dl0 = spg_dat[0].spg_dotlen > 0 ? spg_dat[0].spg_dotlen : 1;
+        int max0 = spg_dat[0].spg_maxlevel > 0 ? spg_dat[0].spg_maxlevel : 1;
+        int pct0 = (spg_dat[0].spg_level * dl0 + spg_dat[0].current_spg) * 100 / (max0 * dl0);
+        DIRTY_INT(p1_sa_pct, pct0 > 100 ? 100 : pct0);
+        
+        int dl1 = spg_dat[1].spg_dotlen > 0 ? spg_dat[1].spg_dotlen : 1;
+        int max1 = spg_dat[1].spg_maxlevel > 0 ? spg_dat[1].spg_maxlevel : 1;
+        int pct1 = (spg_dat[1].spg_level * dl1 + spg_dat[1].current_spg) * 100 / (max1 * dl1);
+        DIRTY_INT(p2_sa_pct, pct1 > 100 ? 100 : pct1);
+    }
+    
+    char dwb[32];
+    snprintf(dwb, sizeof(dwb), "%ddp", piyori_type[0].genkai);
+    DIRTY_STR(p1_stun_width, Rml::String(dwb));
+    snprintf(dwb, sizeof(dwb), "%ddp", piyori_type[1].genkai);
+    DIRTY_STR(p2_stun_width, Rml::String(dwb));
+    snprintf(dwb, sizeof(dwb), "%ddp", spg_dat[0].spg_dotlen);
+    DIRTY_STR(p1_sa_width, Rml::String(dwb));
+    snprintf(dwb, sizeof(dwb), "%ddp", spg_dat[1].spg_dotlen);
+    DIRTY_STR(p2_sa_width, Rml::String(dwb));
     DIRTY_BOOL(p1_combo_active, cmb_stock[0] > 0);
     DIRTY_BOOL(p2_combo_active, cmb_stock[1] > 0);
     if (cmb_stock[0] > 0) {
@@ -290,8 +367,8 @@ extern "C" void rmlui_game_hud_update(void) {
         DIRTY_INT(p2_combo_count, cmst_buff[1][cst_read[1]].hit_hi * 10 + cmst_buff[1][cst_read[1]].hit_low);
         DIRTY_INT(p2_combo_kind, (int)cmst_buff[1][cst_read[1]].kind);
     }
-    DIRTY_STR(p1_name, Rml::String(char_name(My_char[0])));
-    DIRTY_STR(p2_name, Rml::String(char_name(My_char[1])));
+    DIRTY_STR(p1_name, Rml::String(char_name(My_char[0] + chkNameAkuma(My_char[0], 6))));
+    DIRTY_STR(p2_name, Rml::String(char_name(My_char[1] + chkNameAkuma(My_char[1], 6))));
     DIRTY_INT(p1_wins, (Mode_Type == MODE_VERSUS) ? (int)VS_Win_Record[0] : (int)Win_Record[0]);
     DIRTY_INT(p2_wins, (Mode_Type == MODE_VERSUS) ? (int)VS_Win_Record[1] : (int)Win_Record[1]);
     DIRTY_BOOL(is_fight_active, Play_Game == 1);

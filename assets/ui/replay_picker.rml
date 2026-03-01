@@ -5,11 +5,24 @@
     <title>Replay Picker</title>
 </head>
 <body data-model="replay_picker">
-    <div id="rp-panel" class="rp-panel">
-        <div class="rp-title"><span>REPLAY</span></div>
-        <div class="rp-hint">
-            <span>SELECT A REPLAY FILE</span>
+    <div id="rp-panel" class="rp-panel" data-if="rp_open">
+        <div class="rp-title">
+            <span data-if="rp_mode == 0">LOAD REPLAY</span>
+            <span data-if="rp_mode == 1">SAVE REPLAY</span>
         </div>
+        <div class="rp-grid">
+            <div data-for="slot : rp_slots"
+                 class="rp-cell"
+                 data-class-selected="slot.index == rp_cursor"
+                 data-class-empty="!slot.exists">
+                <div class="rp-cell-num">{{slot.index + 1}}</div>
+                <div data-if="slot.exists" class="rp-cell-chars">{{slot.p1_name}}</div>
+                <div data-if="slot.exists" class="rp-cell-vs">vs</div>
+                <div data-if="slot.exists" class="rp-cell-chars">{{slot.p2_name}}</div>
+                <div data-if="!slot.exists" class="rp-cell-empty">empty</div>
+            </div>
+        </div>
+        <div class="rp-footer">UP/DOWN/LEFT/RIGHT: navigate  |  A: select  |  B: cancel</div>
     </div>
 </body>
 </rml>

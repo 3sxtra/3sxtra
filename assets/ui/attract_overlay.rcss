@@ -10,11 +10,11 @@ body {
     background-color: rgba(0, 0, 0, 0);
 }
 
-/* ── Small Logo — centered in top half of screen ─────────── */
+/* ── Small Logo — centered in mid-screen ─────────── */
 #attract-logo {
     display: block;
     position: absolute;
-    top: 30dp;
+    top: 76dp;
     left: 0dp;
     width: 384dp;
     text-align: center;
@@ -22,16 +22,15 @@ body {
 
 #attract-logo-img {
     display: inline-block;
-    width: 200dp;
-    height: auto;
+    width: 140dp;
+    height: 52dp; /* Aggressively squished to match native output */
 }
 
-/* ── PRESS START BUTTON — below logo, mid-screen ─────────── */
-/* Native renders at Insert_Y=17 (row 17 of 28 = ~136dp)     */
+/* ── PRESS START BUTTON — below logo, lower-screen ─────────── */
 #attract-prompt {
     display: block;
     position: absolute;
-    top: 140dp;
+    top: 122dp;
     left: 0dp;
     width: 384dp;
     text-align: center;
@@ -39,17 +38,16 @@ body {
 
 .press-start {
     display: inline-block;
-    font-size: 12dp;
-    color: rgba(255, 255, 255, 242);
+    font-size: 8dp;
+    font-weight: 900;
+    color: rgba(141, 227, 255, 255); /* Light blue */
     letter-spacing: 2dp;
-    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 153));
-    animation: attract-blink 1.33s step-end infinite;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 200));
+    animation: attract-blink-slow 1s sine-in-out infinite alternate;
 }
 
-/* ── Blink animation (same timing as title screen) ────────── */
-@keyframes attract-blink {
+/* ── Slow pulsating blink ────────── */
+@keyframes attract-blink-slow {
     0%   { opacity: 1; }
-    62%  { opacity: 1; }
-    63%  { opacity: 0; }
     100% { opacity: 0; }
 }

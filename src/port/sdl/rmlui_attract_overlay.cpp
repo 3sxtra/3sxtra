@@ -20,10 +20,12 @@ extern "C" void rmlui_attract_overlay_init(void) {
 
 // ─── Show / Hide ──────────────────────────────────────────────
 extern "C" void rmlui_attract_overlay_show(void) {
+    SDL_Log("[RmlUi AttractOverlay] show() called");
     rmlui_wrapper_show_game_document("attract_overlay");
 }
 
 extern "C" void rmlui_attract_overlay_hide(void) {
+    SDL_Log("[RmlUi AttractOverlay] hide() called");
     rmlui_wrapper_hide_game_document("attract_overlay");
 }
 
