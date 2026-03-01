@@ -72,7 +72,7 @@ static LobbyCache s_cache = {};
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_network_lobby_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -355,18 +355,18 @@ extern "C" void rmlui_network_lobby_update(void) {
 
 // ─── Show / Hide ─────────────────────────────────────────────────
 extern "C" void rmlui_network_lobby_show(void) {
-    rmlui_wrapper_show_document("network_lobby");
+    rmlui_wrapper_show_game_document("network_lobby");
 }
 
 extern "C" void rmlui_network_lobby_hide(void) {
-    rmlui_wrapper_hide_document("network_lobby");
+    rmlui_wrapper_hide_game_document("network_lobby");
 }
 
 // ─── Shutdown ────────────────────────────────────────────────────
 extern "C" void rmlui_network_lobby_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("network_lobby");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("network_lobby");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("network_lobby");
         s_model_registered = false;

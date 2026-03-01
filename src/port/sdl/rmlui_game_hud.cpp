@@ -154,7 +154,7 @@ static const char* char_name(int idx) {
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_game_hud_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx) {
         SDL_Log("[RmlUi HUD] No context available");
         return;
@@ -243,7 +243,7 @@ extern "C" void rmlui_game_hud_init(void) {
     s_model_registered = true;
 
     // Pre-load the HUD document (hidden initially; shown when is_fight_active is true)
-    rmlui_wrapper_show_document("game_hud");
+    rmlui_wrapper_show_game_document("game_hud");
 
     SDL_Log("[RmlUi HUD] Data model registered (36 bindings)");
 }
@@ -301,8 +301,8 @@ extern "C" void rmlui_game_hud_update(void) {
 // ─── Shutdown ────────────────────────────────────────────────────
 extern "C" void rmlui_game_hud_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("game_hud");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("game_hud");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("game_hud");
         s_model_registered = false;

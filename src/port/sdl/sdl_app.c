@@ -1142,6 +1142,34 @@ void SDLApp_EndFrame() {
     int win_w, win_h;
     SDL_GetWindowSize(window, &win_w, &win_h);
 
+    // Update Phase 3 data models immediately after game frame processing,
+    // before the renderer backends run rmlui_wrapper_update_game() which processes them.
+    if (use_rmlui) {
+        rmlui_game_hud_update();
+        rmlui_mode_menu_update();
+        rmlui_option_menu_update();
+        rmlui_game_option_update();
+        rmlui_title_screen_update();
+        rmlui_win_screen_update();
+        rmlui_continue_update();
+        rmlui_gameover_update();
+        rmlui_vs_result_update();
+        rmlui_memory_card_update();
+        rmlui_sound_menu_update();
+        rmlui_sysdir_update();
+        rmlui_network_lobby_update();
+        rmlui_extra_option_update();
+        rmlui_training_menus_update();
+        rmlui_button_config_update();
+        rmlui_char_select_update();
+        rmlui_vs_screen_update();
+        rmlui_replay_picker_update();
+        rmlui_pause_overlay_update();
+        rmlui_trials_hud_update();
+        rmlui_copyright_update();
+        rmlui_name_entry_update();
+    }
+
     if (g_renderer_backend == RENDERER_SDL2D) {
         // --- SDL2D Backend ---
         if (!game_paused && !present_only_mode) {
@@ -1155,6 +1183,12 @@ void SDLApp_EndFrame() {
         // Blit game canvas to window with letterboxing
         SDL_Texture* canvas = SDLGameRendererSDL_GetCanvas();
         SDL_RenderTexture(sdl_renderer, canvas, NULL, &dst_rect);
+
+        // Render RmlUi game context at window resolution (Phase 3 game screens)
+        if (use_rmlui) {
+            rmlui_wrapper_update_game();
+            rmlui_wrapper_render_game(win_w, win_h, dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h);
+        }
 
         // Debug text
         SDLTextRenderer_DrawDebugBuffer((float)win_w, (float)win_h);
@@ -1189,7 +1223,7 @@ void SDLApp_EndFrame() {
             SDLTextRenderer_Flush();
         }
 
-        // Render RmlUi overlay (if active)
+    // Render RmlUi overlay (if active)
         if (use_rmlui) {
             rmlui_input_display_update();
             rmlui_frame_display_update();
@@ -1208,31 +1242,6 @@ void SDLApp_EndFrame() {
             SDLNetplayUI_SetFPSHistory(fps_history, fps_history_count, (float)fps);
             SDLNetplayUI_Render(win_w, win_h);
             rmlui_netplay_ui_update();
-
-            /* Phase 3 — always update HUD data model each frame */
-            rmlui_game_hud_update();
-            rmlui_mode_menu_update();
-            rmlui_option_menu_update();
-            rmlui_game_option_update();
-            rmlui_title_screen_update();
-            rmlui_win_screen_update();
-            rmlui_continue_update();
-            rmlui_gameover_update();
-            rmlui_vs_result_update();
-            rmlui_memory_card_update();
-            rmlui_sound_menu_update();
-            rmlui_sysdir_update();
-            rmlui_network_lobby_update();
-            rmlui_extra_option_update();
-            rmlui_training_menus_update();
-            rmlui_button_config_update();
-            rmlui_char_select_update();
-            rmlui_vs_screen_update();
-            rmlui_replay_picker_update();
-            rmlui_pause_overlay_update();
-            rmlui_trials_hud_update();
-            rmlui_copyright_update();
-            rmlui_name_entry_update();
 
             rmlui_wrapper_render();
         }
@@ -1275,6 +1284,11 @@ void SDLApp_EndFrame() {
 
     if (g_renderer_backend == RENDERER_SDLGPU) {
         // --- GPU Backend ---
+
+        // Update RmlUi game context (render happens after canvas blit below)
+        if (use_rmlui) {
+            rmlui_wrapper_update_game();
+        }
 
         // 1. Post-Process (Canvas -> Swapchain)
         SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
@@ -1482,6 +1496,12 @@ void SDLApp_EndFrame() {
         }
         TRACE_SUB_END();
 
+        // Phase 3 game UI at window resolution (after canvas blit + bezels)
+        if (use_rmlui) {
+            const SDL_FRect gp_vp = get_letterbox_rect(win_w, win_h);
+            rmlui_wrapper_render_game(win_w, win_h, gp_vp.x, gp_vp.y, gp_vp.w, gp_vp.h);
+        }
+
         // UI Overlays
         TRACE_SUB_BEGIN("GPU:UIOverlays");
         if (use_rmlui) {
@@ -1590,6 +1610,12 @@ void SDLApp_EndFrame() {
 
     } else {
         // --- OpenGL Backend ---
+
+        // Update RmlUi game context (render happens after canvas blit below)
+        if (use_rmlui) {
+            rmlui_wrapper_update_game();
+        }
+
         if (broadcast_config.enabled && broadcast_config.source == BROADCAST_SOURCE_NATIVE) {
             Broadcast_Send(cps3_canvas_texture, 384, 224, true);
         }
@@ -1902,6 +1928,18 @@ void SDLApp_EndFrame() {
             }
         }
         TRACE_SUB_END();
+
+        // Phase 3 game UI at window resolution (after canvas blit + bezels)
+        if (use_rmlui) {
+            // Reset GL state to clean baseline before RmlUi rendering
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glUseProgram(0);
+            glBindVertexArray(0);
+            glViewport(0, 0, win_w, win_h);
+
+            rmlui_wrapper_render_game(win_w, win_h, viewport.x, viewport.y, viewport.w, viewport.h);
+        }
 
         if (show_debug_hud) {
             // Render debug text in screen space (on top of everything)

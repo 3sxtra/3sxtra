@@ -35,7 +35,7 @@ static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
 struct ModeMenuCache {
-    int cursor;
+    int menu_cursor;
     bool network_available;
 };
 static ModeMenuCache s_cache = {};
@@ -60,7 +60,7 @@ static ModeMenuCache s_cache = {};
 
 // ─── Init ─────────────────────────────────────────────────────────
 extern "C" void rmlui_mode_menu_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -92,27 +92,27 @@ extern "C" void rmlui_mode_menu_init(void) {
 extern "C" void rmlui_mode_menu_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
-    DIRTY_INT(cursor, (int)Menu_Cursor_Y[0]);
+    DIRTY_INT(menu_cursor, (int)Menu_Cursor_Y[0]);
     DIRTY_BOOL(network_available, netplay_is_available() != 0);
 }
 
 // ─── Show / Hide ──────────────────────────────────────────────────
 extern "C" void rmlui_mode_menu_show(void) {
-    rmlui_wrapper_show_document("mode_menu");
+    rmlui_wrapper_show_game_document("mode_menu");
     // Reset cursor binding on show
     if (s_model_handle)
         s_model_handle.DirtyVariable("menu_cursor");
 }
 
 extern "C" void rmlui_mode_menu_hide(void) {
-    rmlui_wrapper_hide_document("mode_menu");
+    rmlui_wrapper_hide_game_document("mode_menu");
 }
 
 // ─── Shutdown ─────────────────────────────────────────────────────
 extern "C" void rmlui_mode_menu_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("mode_menu");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("mode_menu");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("mode_menu");
         s_model_registered = false;

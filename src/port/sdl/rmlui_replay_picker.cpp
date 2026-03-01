@@ -26,7 +26,7 @@ struct ReplayPickerCache {
 static ReplayPickerCache s_cache = {};
 
 extern "C" void rmlui_replay_picker_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -52,19 +52,19 @@ extern "C" void rmlui_replay_picker_update(void) {
 }
 
 extern "C" void rmlui_replay_picker_show(void) {
-    rmlui_wrapper_show_document("replay_picker");
+    rmlui_wrapper_show_game_document("replay_picker");
     if (s_model_handle)
         s_model_handle.DirtyVariable("rp_cursor");
 }
 
 extern "C" void rmlui_replay_picker_hide(void) {
-    rmlui_wrapper_hide_document("replay_picker");
+    rmlui_wrapper_hide_game_document("replay_picker");
 }
 
 extern "C" void rmlui_replay_picker_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("replay_picker");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("replay_picker");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("replay_picker");
         s_model_registered = false;

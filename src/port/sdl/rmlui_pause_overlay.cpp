@@ -33,7 +33,7 @@ static PauseCache s_cache = {};
 
 // ─── Init ────────────────────────────────────────────────────
 extern "C" void rmlui_pause_overlay_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -64,9 +64,9 @@ extern "C" void rmlui_pause_overlay_update(void) {
         s_model_handle.DirtyVariable("pause_visible");
         s_model_handle.DirtyVariable("pause_label");
         if (visible)
-            rmlui_wrapper_show_document("pause");
+            rmlui_wrapper_show_game_document("pause");
         else
-            rmlui_wrapper_hide_document("pause");
+            rmlui_wrapper_hide_game_document("pause");
     }
 
     int pid = (int)Pause_ID;
@@ -87,8 +87,8 @@ extern "C" void rmlui_pause_overlay_update(void) {
 // ─── Shutdown ────────────────────────────────────────────────
 extern "C" void rmlui_pause_overlay_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("pause");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("pause");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("pause_overlay");
         s_model_registered = false;

@@ -193,6 +193,8 @@ static void Entry_01() {
         E_No[2] += 1;
         E_No[1] = 1;
         Break_Into = 0;
+        if (use_rmlui && rmlui_screen_title)
+            rmlui_title_screen_show();
         break;
 
     case 1:
@@ -230,6 +232,9 @@ static void Entry_01_Sub(s16 PL_id) {
     Operator_Status[PL_id ^ 1] = 0;
     Ignore_Entry[0] = 0;
     Ignore_Entry[1] = 0;
+
+    if (use_rmlui && rmlui_screen_title)
+        rmlui_title_screen_hide();
 
     if (Continue_Coin[PL_id] == 0) {
         grade_check_work_1st_init(PL_id, 0);

@@ -26,7 +26,7 @@ struct ButtonConfigCache {
 static ButtonConfigCache s_cache = {};
 
 extern "C" void rmlui_button_config_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -61,19 +61,19 @@ extern "C" void rmlui_button_config_update(void) {
 }
 
 extern "C" void rmlui_button_config_show(void) {
-    rmlui_wrapper_show_document("button_config");
+    rmlui_wrapper_show_game_document("button_config");
     if (s_model_handle)
         s_model_handle.DirtyVariable("bc_cursor");
 }
 
 extern "C" void rmlui_button_config_hide(void) {
-    rmlui_wrapper_hide_document("button_config");
+    rmlui_wrapper_hide_game_document("button_config");
 }
 
 extern "C" void rmlui_button_config_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("button_config");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("button_config");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("button_config");
         s_model_registered = false;

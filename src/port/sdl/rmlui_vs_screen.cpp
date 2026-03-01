@@ -33,7 +33,7 @@ static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
 extern "C" void rmlui_vs_screen_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -55,7 +55,7 @@ extern "C" void rmlui_vs_screen_update(void) {
 }
 
 extern "C" void rmlui_vs_screen_show(void) {
-    rmlui_wrapper_show_document("vs_screen");
+    rmlui_wrapper_show_game_document("vs_screen");
     if (s_model_handle) {
         s_model_handle.DirtyVariable("vs_p1_name");
         s_model_handle.DirtyVariable("vs_p2_name");
@@ -63,13 +63,13 @@ extern "C" void rmlui_vs_screen_show(void) {
 }
 
 extern "C" void rmlui_vs_screen_hide(void) {
-    rmlui_wrapper_hide_document("vs_screen");
+    rmlui_wrapper_hide_game_document("vs_screen");
 }
 
 extern "C" void rmlui_vs_screen_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("vs_screen");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("vs_screen");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("vs_screen");
         s_model_registered = false;

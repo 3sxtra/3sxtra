@@ -95,7 +95,7 @@ static GameOptionCache s_cache = {};
 
 // ─── Init ─────────────────────────────────────────────────────────
 extern "C" void rmlui_game_option_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -168,7 +168,7 @@ extern "C" void rmlui_game_option_update(void) {
 
 // ─── Show / Hide ──────────────────────────────────────────────────
 extern "C" void rmlui_game_option_show(void) {
-    rmlui_wrapper_show_document("game_option");
+    rmlui_wrapper_show_game_document("game_option");
     if (s_model_handle) {
         s_model_handle.DirtyVariable("game_opt_cursor");
         for (int i = 0; i < 10; i++) {
@@ -180,14 +180,14 @@ extern "C" void rmlui_game_option_show(void) {
 }
 
 extern "C" void rmlui_game_option_hide(void) {
-    rmlui_wrapper_hide_document("game_option");
+    rmlui_wrapper_hide_game_document("game_option");
 }
 
 // ─── Shutdown ─────────────────────────────────────────────────────
 extern "C" void rmlui_game_option_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("game_option");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("game_option");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("game_option");
         s_model_registered = false;

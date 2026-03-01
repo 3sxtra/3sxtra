@@ -73,7 +73,7 @@ static ContinueCache s_cache = {};
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_continue_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -103,18 +103,18 @@ extern "C" void rmlui_continue_update(void) {
 
 // ─── Show / Hide ─────────────────────────────────────────────────
 extern "C" void rmlui_continue_show(void) {
-    rmlui_wrapper_show_document("continue");
+    rmlui_wrapper_show_game_document("continue");
 }
 
 extern "C" void rmlui_continue_hide(void) {
-    rmlui_wrapper_hide_document("continue");
+    rmlui_wrapper_hide_game_document("continue");
 }
 
 // ─── Shutdown ────────────────────────────────────────────────────
 extern "C" void rmlui_continue_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("continue");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("continue");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("continue_screen");
         s_model_registered = false;

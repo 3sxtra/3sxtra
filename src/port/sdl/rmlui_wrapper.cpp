@@ -12,6 +12,11 @@
 #include "port/sdl/sdl_app.h"
 #include "port/sdl/sdl_game_renderer_internal.h"
 
+// GL header for RmlUi GL3 backend (glEnable, glBlendFunc, etc.)
+#if !defined(__APPLE__)
+#include <glad/gl.h>
+#endif
+
 #include <RmlUi/Core.h>
 #ifdef DEBUG
 #include <RmlUi/Debugger.h>
@@ -42,7 +47,15 @@
 // -------------------------------------------------------------------
 // State
 // -------------------------------------------------------------------
-static Rml::Context* s_context = nullptr;
+
+// Window context — Phase 2 overlay/debug menus (renders to window)
+static Rml::Context* s_window_context = nullptr;
+static std::unordered_map<std::string, Rml::ElementDocument*> s_window_documents;
+
+// Game context — Phase 3 game-replacement screens (renders to 384×224 canvas FBO)
+static Rml::Context* s_game_context = nullptr;
+static std::unordered_map<std::string, Rml::ElementDocument*> s_game_documents;
+
 static SystemInterface_SDL* s_system_interface = nullptr;
 
 // Polymorphic base — used by Rml::SetRenderInterface() and context render
@@ -60,7 +73,9 @@ static SDL_Window* s_window = nullptr;
 static int s_window_w = 0;
 static int s_window_h = 0;
 
-static std::unordered_map<std::string, Rml::ElementDocument*> s_documents;
+static constexpr int GAME_W = 384;
+static constexpr int GAME_H = 224;
+
 static std::string s_ui_base_path;
 
 // -------------------------------------------------------------------
@@ -130,20 +145,26 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
         Rml::LoadFontFace(fallback.c_str(), true);
     }
 
-    // Create the context with the window dimensions
-    s_context = Rml::CreateContext("main", Rml::Vector2i(s_window_w, s_window_h));
-    if (!s_context) {
-        SDL_Log("[RmlUi] Failed to create RmlUi context");
+    // --- Window context (Phase 2 overlays — window resolution) ---
+    s_window_context = Rml::CreateContext("window", Rml::Vector2i(s_window_w, s_window_h));
+    if (!s_window_context) {
+        SDL_Log("[RmlUi] Failed to create window context");
         return;
     }
-
-    // Set initial DPI scaling from the platform
     float dp_ratio = SDL_GetWindowDisplayScale(window);
     if (dp_ratio > 0.0f) {
-        s_context->SetDensityIndependentPixelRatio(dp_ratio);
+        s_window_context->SetDensityIndependentPixelRatio(dp_ratio);
     } else {
         dp_ratio = 1.0f;
     }
+
+    // --- Game context (Phase 3 game screens — CPS3 resolution) ---
+    s_game_context = Rml::CreateContext("game", Rml::Vector2i(GAME_W, GAME_H));
+    if (!s_game_context) {
+        SDL_Log("[RmlUi] Failed to create game context");
+        return;
+    }
+    s_game_context->SetDensityIndependentPixelRatio(1.0f);
 
     // Backend-specific post-init
     if (s_render_gl3) {
@@ -152,25 +173,32 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
 
     // Initialize debugger plugin (debug builds only)
 #ifdef DEBUG
-    Rml::Debugger::Initialise(s_context);
-    SDL_Log("[RmlUi] Debugger plugin initialized (F12 to toggle)");
+    Rml::Debugger::Initialise(s_window_context);
+    Rml::Debugger::SetContext(s_game_context);
+    SDL_Log("[RmlUi] Debugger plugin initialized (F12 to toggle, inspecting game context)");
 #endif
 
     const char* backend_name = (s_active_backend == RENDERER_SDLGPU)  ? "SDL_GPU"
                                : (s_active_backend == RENDERER_SDL2D) ? "SDL2D"
                                                                       : "GL3";
-    SDL_Log("[RmlUi] Initialized (%s renderer, %dx%d, dp-ratio=%.2fx)", backend_name, s_window_w, s_window_h, dp_ratio);
+    SDL_Log("[RmlUi] Initialized (%s renderer, %dx%d window + %dx%d game, dp-ratio=%.2fx)",
+            backend_name, s_window_w, s_window_h, GAME_W, GAME_H, dp_ratio);
 }
 
 // -------------------------------------------------------------------
 // Shutdown
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_shutdown(void) {
-    s_documents.clear();
+    s_window_documents.clear();
+    s_game_documents.clear();
 
-    if (s_context) {
-        Rml::RemoveContext("main");
-        s_context = nullptr;
+    if (s_game_context) {
+        Rml::RemoveContext("game");
+        s_game_context = nullptr;
+    }
+    if (s_window_context) {
+        Rml::RemoveContext("window");
+        s_window_context = nullptr;
     }
 
     Rml::Shutdown();
@@ -202,7 +230,7 @@ extern "C" void rmlui_wrapper_shutdown(void) {
 // Event processing
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
-    if (!s_context || !event)
+    if (!s_window_context || !event)
         return;
 
     // Toggle debugger with F12 (debug builds only)
@@ -224,41 +252,46 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
         return;
     }
 
-    // Let the SDL platform module handle the event
-    RmlSDL::InputEventHandler(s_context, s_window, *event);
+    // Route SDL events to the window context only (Phase 2 overlays use mouse).
+    // Game context (Phase 3) is driven entirely by the CPS3 input system
+    // (gamepad → SDLPad → plsw → Check_Menu_Lever → MC_Move_Sub → IO_Result).
+    // Do NOT feed events to s_game_context — it would cause RmlUi's spatial
+    // navigation to fight with the CPS3 state machine on screens with <button>
+    // elements, and mouse clicks would hit at wrong coordinates (window vs 384×224).
+    RmlSDL::InputEventHandler(s_window_context, s_window, *event);
 
     // Handle window resize
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {
         s_window_w = event->window.data1;
         s_window_h = event->window.data2;
-        s_context->SetDimensions(Rml::Vector2i(s_window_w, s_window_h));
+        s_window_context->SetDimensions(Rml::Vector2i(s_window_w, s_window_h));
         if (s_render_gl3) {
             s_render_gl3->SetViewport(s_window_w, s_window_h);
         }
-        // SDL_GPU and SDL2D handle dimensions per-frame, no resize callback needed
+        // Game context stays at GAME_W×GAME_H — no resize needed
     }
 }
 
 // -------------------------------------------------------------------
-// Frame update
+// Frame update (window context — Phase 2)
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_new_frame(void) {
-    if (!s_context)
+    if (!s_window_context)
         return;
-    s_context->Update();
+    s_window_context->Update();
 }
 
 // -------------------------------------------------------------------
 // Render
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_render(void) {
-    if (!s_context || !s_render_interface)
+    if (!s_window_context || !s_render_interface)
         return;
 
     if (s_render_gl3) {
         // GL3: simple begin/end frame
         s_render_gl3->BeginFrame();
-        s_context->Render();
+        s_window_context->Render();
         s_render_gl3->EndFrame();
     } else if (s_render_gpu) {
         // SDL_GPU: needs command buffer + swapchain texture each frame
@@ -268,7 +301,7 @@ extern "C" void rmlui_wrapper_render(void) {
             int w, h;
             SDL_GetWindowSize(s_window, &w, &h);
             s_render_gpu->BeginFrame(cb, swapchain, (uint32_t)w, (uint32_t)h);
-            s_context->Render();
+            s_window_context->Render();
             s_render_gpu->EndFrame();
         }
     } else if (s_render_sdl) {
@@ -277,7 +310,7 @@ extern "C" void rmlui_wrapper_render(void) {
         // Just ensure render target is the window (not cps3_canvas).
         SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
         SDL_SetRenderTarget(renderer, NULL);
-        s_context->Render();
+        s_window_context->Render();
         // EndFrame() is a no-op in the SDL backend, skip it.
     }
 }
@@ -286,10 +319,10 @@ extern "C" void rmlui_wrapper_render(void) {
 // Input capture queries
 // -------------------------------------------------------------------
 extern "C" bool rmlui_wrapper_want_capture_mouse(void) {
-    if (!s_context)
+    if (!s_window_context)
         return false;
-    Rml::Element* hover = s_context->GetHoverElement();
-    if (!hover || hover == s_context->GetRootElement())
+    Rml::Element* hover = s_window_context->GetHoverElement();
+    if (!hover || hover == s_window_context->GetRootElement())
         return false;
     // Only capture if the hovered element's owning document is visible
     Rml::ElementDocument* doc = hover->GetOwnerDocument();
@@ -297,54 +330,56 @@ extern "C" bool rmlui_wrapper_want_capture_mouse(void) {
 }
 
 extern "C" bool rmlui_wrapper_want_capture_keyboard(void) {
-    if (!s_context)
+    if (!s_window_context)
         return false;
     // Only capture keyboard for text-input elements (input, textarea, select)
-    Rml::Element* focus = s_context->GetFocusElement();
-    if (!focus || focus == s_context->GetRootElement())
+    Rml::Element* focus = s_window_context->GetFocusElement();
+    if (!focus || focus == s_window_context->GetRootElement())
         return false;
     const Rml::String& tag = focus->GetTagName();
     return (tag == "input" || tag == "textarea" || tag == "select");
 }
 
 // -------------------------------------------------------------------
-// Context accessor (for data model registration)
+// Context accessors (for data model registration)
 // -------------------------------------------------------------------
 extern "C" void* rmlui_wrapper_get_context(void) {
-    return static_cast<void*>(s_context);
+    return static_cast<void*>(s_window_context);
+}
+
+extern "C" void* rmlui_wrapper_get_game_context(void) {
+    return static_cast<void*>(s_game_context);
 }
 
 // -------------------------------------------------------------------
-// Document management
+// Document management — Window context (Phase 2)
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_show_document(const char* name) {
-    if (!s_context || !name)
+    if (!s_window_context || !name)
         return;
 
-    // Check if already loaded
-    auto it = s_documents.find(name);
-    if (it != s_documents.end()) {
+    auto it = s_window_documents.find(name);
+    if (it != s_window_documents.end()) {
         it->second->Show();
         return;
     }
 
-    // Load from assets/ui/<name>.rml
     std::string path = s_ui_base_path + name + ".rml";
-    Rml::ElementDocument* doc = s_context->LoadDocument(path.c_str());
+    Rml::ElementDocument* doc = s_window_context->LoadDocument(path.c_str());
     if (doc) {
         doc->Show();
-        s_documents[name] = doc;
-        SDL_Log("[RmlUi] Loaded document: %s", path.c_str());
+        s_window_documents[name] = doc;
+        SDL_Log("[RmlUi] Loaded window document: %s", path.c_str());
     } else {
-        SDL_Log("[RmlUi] Failed to load document: %s", path.c_str());
+        SDL_Log("[RmlUi] Failed to load window document: %s", path.c_str());
     }
 }
 
 extern "C" void rmlui_wrapper_hide_document(const char* name) {
     if (!name)
         return;
-    auto it = s_documents.find(name);
-    if (it != s_documents.end()) {
+    auto it = s_window_documents.find(name);
+    if (it != s_window_documents.end()) {
         it->second->Hide();
     }
 }
@@ -352,8 +387,8 @@ extern "C" void rmlui_wrapper_hide_document(const char* name) {
 extern "C" bool rmlui_wrapper_is_document_visible(const char* name) {
     if (!name)
         return false;
-    auto it = s_documents.find(name);
-    if (it != s_documents.end()) {
+    auto it = s_window_documents.find(name);
+    if (it != s_window_documents.end()) {
         return it->second->IsVisible();
     }
     return false;
@@ -362,11 +397,124 @@ extern "C" bool rmlui_wrapper_is_document_visible(const char* name) {
 extern "C" void rmlui_wrapper_close_document(const char* name) {
     if (!name)
         return;
-    auto it = s_documents.find(name);
-    if (it != s_documents.end()) {
+    auto it = s_window_documents.find(name);
+    if (it != s_window_documents.end()) {
         it->second->Close();
-        s_documents.erase(it);
-        SDL_Log("[RmlUi] Closed document: %s", name);
+        s_window_documents.erase(it);
+        SDL_Log("[RmlUi] Closed window document: %s", name);
+    }
+}
+
+// -------------------------------------------------------------------
+// Document management — Game context (Phase 3)
+// -------------------------------------------------------------------
+extern "C" void rmlui_wrapper_show_game_document(const char* name) {
+    if (!s_game_context || !name)
+        return;
+
+    auto it = s_game_documents.find(name);
+    if (it != s_game_documents.end()) {
+        it->second->Show();
+        return;
+    }
+
+    std::string path = s_ui_base_path + name + ".rml";
+    Rml::ElementDocument* doc = s_game_context->LoadDocument(path.c_str());
+    if (doc) {
+        doc->Show();
+        s_game_documents[name] = doc;
+        SDL_Log("[RmlUi] Loaded game document: %s", path.c_str());
+    } else {
+        SDL_Log("[RmlUi] Failed to load game document: %s", path.c_str());
+    }
+}
+
+extern "C" void rmlui_wrapper_hide_game_document(const char* name) {
+    if (!name)
+        return;
+    auto it = s_game_documents.find(name);
+    if (it != s_game_documents.end()) {
+        it->second->Hide();
+    }
+}
+
+extern "C" bool rmlui_wrapper_is_game_document_visible(const char* name) {
+    if (!name)
+        return false;
+    auto it = s_game_documents.find(name);
+    if (it != s_game_documents.end()) {
+        return it->second->IsVisible();
+    }
+    return false;
+}
+
+extern "C" void rmlui_wrapper_close_game_document(const char* name) {
+    if (!name)
+        return;
+    auto it = s_game_documents.find(name);
+    if (it != s_game_documents.end()) {
+        it->second->Close();
+        s_game_documents.erase(it);
+        SDL_Log("[RmlUi] Closed game document: %s", name);
+    }
+}
+
+// -------------------------------------------------------------------
+// Game context update + render-to-canvas
+// -------------------------------------------------------------------
+extern "C" void rmlui_wrapper_update_game(void) {
+    if (!s_game_context)
+        return;
+    s_game_context->Update();
+}
+
+extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, float view_y, float view_w, float view_h) {
+    if (!s_game_context || !s_render_interface)
+        return;
+
+    // Width-based dp_ratio: fonts rasterize at high resolution.
+    // Context dims are scaled by dp_ratio so dp-based RCSS fills the context.
+    // SetViewportEx maps this logical space to the physical 4:3 viewport,
+    // applying the CPS3 9/7 vertical PAR stretch automatically.
+    const float dp_ratio = view_w / (float)GAME_W;
+    s_game_context->SetDensityIndependentPixelRatio(dp_ratio);
+
+    const int ctx_w = (int)(GAME_W * dp_ratio + 0.5f);  // = view_w
+    const int ctx_h = (int)(GAME_H * dp_ratio + 0.5f);  // = 224 * view_w / 384
+    s_game_context->SetDimensions(Rml::Vector2i(ctx_w, ctx_h));
+
+    const int phys_w = (int)(view_w + 0.5f);
+    const int phys_h = (int)(view_h + 0.5f);
+    const int off_x  = (int)(view_x + 0.5f);
+    // OpenGL y=0 is bottom; convert from top-left origin
+    const int off_y  = win_h - (int)(view_y + 0.5f) - phys_h;
+
+    if (s_render_gl3) {
+        // GL3: SetViewportEx uses ctx_w×ctx_h for projection and
+        // phys_w×phys_h for FBOs + glViewport. The viewport transform
+        // applies the CPS3 9/7 vertical stretch.
+        s_render_gl3->SetViewportEx(ctx_w, ctx_h, phys_w, phys_h, off_x, off_y);
+
+        s_render_gl3->BeginFrame();
+        s_game_context->Render();
+        s_render_gl3->EndFrame();
+
+        // Restore window viewport for subsequent rendering (bezels, overlays)
+        s_render_gl3->SetViewport(s_window_w, s_window_h);
+    } else if (s_render_gpu) {
+        // SDL_GPU: render to the swapchain texture
+        SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
+        SDL_GPUTexture* swapchain = SDLGameRendererGPU_GetSwapchainTexture();
+        if (cb && swapchain) {
+            s_render_gpu->BeginFrame(cb, swapchain, (uint32_t)phys_w, (uint32_t)phys_h);
+            s_game_context->Render();
+            s_render_gpu->EndFrame();
+        }
+    } else if (s_render_sdl) {
+        // SDL2D: render to the window (not the canvas texture)
+        SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+        SDL_SetRenderTarget(renderer, NULL);
+        s_game_context->Render();
     }
 }
 
@@ -374,87 +522,90 @@ extern "C" void rmlui_wrapper_close_document(const char* name) {
 // Hot Reload
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_reload_stylesheets(void) {
-    if (!s_context)
-        return;
     int count = 0;
-    for (auto& [name, doc] : s_documents) {
-        if (doc) {
-            doc->ReloadStyleSheet();
-            count++;
-        }
+    for (auto& [name, doc] : s_window_documents) {
+        if (doc) { doc->ReloadStyleSheet(); count++; }
+    }
+    for (auto& [name, doc] : s_game_documents) {
+        if (doc) { doc->ReloadStyleSheet(); count++; }
     }
     SDL_Log("[RmlUi] Reloaded stylesheets for %d document(s)", count);
 }
 
-extern "C" void rmlui_wrapper_reload_document(const char* name) {
-    if (!s_context || !name)
-        return;
-    auto it = s_documents.find(name);
-    if (it == s_documents.end())
+// Helper to reload a document in a given context + document map
+static void reload_doc_in(Rml::Context* ctx, std::unordered_map<std::string, Rml::ElementDocument*>& docs,
+                          const char* name) {
+    auto it = docs.find(name);
+    if (it == docs.end())
         return;
 
     Rml::ElementDocument* old_doc = it->second;
     bool was_visible = old_doc->IsVisible();
     old_doc->Close();
 
-    // Clear caches so the fresh file is picked up
     Rml::Factory::ClearStyleSheetCache();
     Rml::Factory::ClearTemplateCache();
 
-    std::string path = s_ui_base_path + name + ".rml";
-    Rml::ElementDocument* new_doc = s_context->LoadDocument(path.c_str());
+    std::string path = s_ui_base_path + std::string(name) + ".rml";
+    Rml::ElementDocument* new_doc = ctx->LoadDocument(path.c_str());
     if (new_doc) {
         if (was_visible)
             new_doc->Show();
         it->second = new_doc;
         SDL_Log("[RmlUi] Reloaded document: %s", name);
     } else {
-        s_documents.erase(it);
+        docs.erase(it);
         SDL_Log("[RmlUi] Failed to reload document: %s", name);
     }
 }
 
-extern "C" void rmlui_wrapper_reload_all_documents(void) {
-    if (!s_context)
+extern "C" void rmlui_wrapper_reload_document(const char* name) {
+    if (!name)
         return;
+    // Try window documents first, then game documents
+    if (s_window_context && s_window_documents.count(name))
+        reload_doc_in(s_window_context, s_window_documents, name);
+    else if (s_game_context && s_game_documents.count(name))
+        reload_doc_in(s_game_context, s_game_documents, name);
+}
 
-    // Clear caches once before reloading
-    Rml::Factory::ClearStyleSheetCache();
-    Rml::Factory::ClearTemplateCache();
-
-    // Snapshot names+visibility since we'll modify the map
-    struct DocInfo {
-        std::string name;
-        bool visible;
-    };
+// Helper to reload all docs in a given context + map
+static int reload_all_in(Rml::Context* ctx, std::unordered_map<std::string, Rml::ElementDocument*>& doc_map) {
+    struct DocInfo { std::string name; bool visible; };
     std::vector<DocInfo> docs;
-    docs.reserve(s_documents.size());
-    for (auto& [name, doc] : s_documents) {
+    docs.reserve(doc_map.size());
+    for (auto& [name, doc] : doc_map)
         docs.push_back({ name, doc && doc->IsVisible() });
-    }
+    for (auto& [name, doc] : doc_map)
+        if (doc) doc->Close();
+    doc_map.clear();
 
-    // Close all
-    for (auto& [name, doc] : s_documents) {
-        if (doc)
-            doc->Close();
-    }
-    s_documents.clear();
-
-    // Reload all
     int count = 0;
     for (auto& info : docs) {
         std::string path = s_ui_base_path + info.name + ".rml";
-        Rml::ElementDocument* new_doc = s_context->LoadDocument(path.c_str());
+        Rml::ElementDocument* new_doc = ctx->LoadDocument(path.c_str());
         if (new_doc) {
-            if (info.visible)
-                new_doc->Show();
-            s_documents[info.name] = new_doc;
+            if (info.visible) new_doc->Show();
+            doc_map[info.name] = new_doc;
             count++;
         } else {
             SDL_Log("[RmlUi] Failed to reload document: %s", info.name.c_str());
         }
     }
-    SDL_Log("[RmlUi] Reloaded %d/%zu document(s)", count, docs.size());
+    return count;
+}
+
+extern "C" void rmlui_wrapper_reload_all_documents(void) {
+    Rml::Factory::ClearStyleSheetCache();
+    Rml::Factory::ClearTemplateCache();
+
+    int total = 0;
+    size_t total_docs = s_window_documents.size() + s_game_documents.size();
+    if (s_window_context)
+        total += reload_all_in(s_window_context, s_window_documents);
+    if (s_game_context)
+        total += reload_all_in(s_game_context, s_game_documents);
+    SDL_Log("[RmlUi] Reloaded %d/%zu document(s)", total, total_docs);
 }
 
 extern "C" void rmlui_wrapper_release_textures(void) {

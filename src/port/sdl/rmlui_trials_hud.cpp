@@ -39,7 +39,7 @@ static TrialsHudCache s_cache = {};
 
 // ─── Init ────────────────────────────────────────────────────
 extern "C" void rmlui_trials_hud_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -93,9 +93,9 @@ extern "C" void rmlui_trials_hud_update(void) {
         s_cache.is_active = active;
         TDIRTY(trial_active);
         if (active)
-            rmlui_wrapper_show_document("trials_hud");
+            rmlui_wrapper_show_game_document("trials_hud");
         else
-            rmlui_wrapper_hide_document("trials_hud");
+            rmlui_wrapper_hide_game_document("trials_hud");
     }
 
     if (!active)
@@ -133,8 +133,8 @@ extern "C" void rmlui_trials_hud_update(void) {
 // ─── Shutdown ────────────────────────────────────────────────
 extern "C" void rmlui_trials_hud_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("trials_hud");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("trials_hud");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("trials_hud");
         s_model_registered = false;

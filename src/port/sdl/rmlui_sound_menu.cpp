@@ -46,7 +46,7 @@ static SoundCache s_cache = {};
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_sound_menu_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -80,18 +80,18 @@ extern "C" void rmlui_sound_menu_update(void) {
 
 // ─── Show / Hide ─────────────────────────────────────────────────
 extern "C" void rmlui_sound_menu_show(void) {
-    rmlui_wrapper_show_document("sound_menu");
+    rmlui_wrapper_show_game_document("sound_menu");
 }
 
 extern "C" void rmlui_sound_menu_hide(void) {
-    rmlui_wrapper_hide_document("sound_menu");
+    rmlui_wrapper_hide_game_document("sound_menu");
 }
 
 // ─── Shutdown ────────────────────────────────────────────────────
 extern "C" void rmlui_sound_menu_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("sound_menu");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("sound_menu");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("sound_menu");
         s_model_registered = false;

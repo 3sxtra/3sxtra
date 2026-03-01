@@ -22,7 +22,7 @@ static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
 extern "C" void rmlui_char_select_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -46,17 +46,17 @@ extern "C" void rmlui_char_select_update(void) {
 }
 
 extern "C" void rmlui_char_select_show(void) {
-    rmlui_wrapper_show_document("char_select");
+    rmlui_wrapper_show_game_document("char_select");
 }
 
 extern "C" void rmlui_char_select_hide(void) {
-    rmlui_wrapper_hide_document("char_select");
+    rmlui_wrapper_hide_game_document("char_select");
 }
 
 extern "C" void rmlui_char_select_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("char_select");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("char_select");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("char_select");
         s_model_registered = false;

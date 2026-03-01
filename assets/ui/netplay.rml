@@ -27,7 +27,7 @@
             <!-- FPS bar chart -->
             <div class="bar-chart">
                 <div data-for="bar : fps_bars" class="bar-cell fps-bar">
-                    <div class="bar-fill" data-style-height="height_pct"></div>
+                    <div class="bar-fill" data-style-height="bar.height_pct"></div>
                 </div>
             </div>
 
@@ -48,7 +48,7 @@
             <div class="chart-label">Ping History</div>
             <div class="bar-chart">
                 <div data-for="bar : ping_bars" class="bar-cell ping-bar">
-                    <div class="bar-fill" data-style-height="height_pct"></div>
+                    <div class="bar-fill" data-style-height="bar.height_pct"></div>
                 </div>
             </div>
 
@@ -56,7 +56,7 @@
             <div class="chart-label">Rollback History</div>
             <div class="bar-chart">
                 <div data-for="bar : rb_bars" class="bar-cell rb-bar">
-                    <div class="bar-fill" data-style-height="height_pct"></div>
+                    <div class="bar-fill" data-style-height="bar.height_pct"></div>
                 </div>
             </div>
         </div>

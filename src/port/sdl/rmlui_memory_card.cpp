@@ -41,7 +41,7 @@ static MemCardCache s_cache = {};
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_memory_card_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -71,18 +71,18 @@ extern "C" void rmlui_memory_card_update(void) {
 
 // ─── Show / Hide ─────────────────────────────────────────────────
 extern "C" void rmlui_memory_card_show(void) {
-    rmlui_wrapper_show_document("memory_card");
+    rmlui_wrapper_show_game_document("memory_card");
 }
 
 extern "C" void rmlui_memory_card_hide(void) {
-    rmlui_wrapper_hide_document("memory_card");
+    rmlui_wrapper_hide_game_document("memory_card");
 }
 
 // ─── Shutdown ────────────────────────────────────────────────────
 extern "C" void rmlui_memory_card_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("memory_card");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("memory_card");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("memory_card");
         s_model_registered = false;

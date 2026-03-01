@@ -323,9 +323,8 @@ static void Mode_Select(struct _TASK* task_ptr) {
                 Order_Dir[ix + 0x50] = 4;
                 Order_Timer[ix + 0x50] = ix + 0x14;
             }
+            Menu_Cursor_Move = loop_counter;
         }
-
-        Menu_Cursor_Move = loop_counter;
         break;
 
     case 1:
@@ -365,6 +364,7 @@ static void Mode_Select(struct _TASK* task_ptr) {
             case 0:
                 G_No[2] += 1;
                 Mode_Type = MODE_ARCADE;
+                if (use_rmlui && rmlui_menu_mode) rmlui_mode_menu_hide();
                 task_ptr->r_no[0] = 5;
                 cpExitTask(TASK_SAVER);
                 Decide_PL(PL_id);
@@ -375,6 +375,7 @@ static void Mode_Select(struct _TASK* task_ptr) {
                 G_No[1] = 12;
                 G_No[2] = 1;
                 Mode_Type = MODE_VERSUS;
+                if (use_rmlui && rmlui_menu_mode) rmlui_mode_menu_hide();
                 cpExitTask(TASK_MENU);
                 break;
 
@@ -404,6 +405,7 @@ static void Mode_Select(struct _TASK* task_ptr) {
         break;
 
     default:
+        if (use_rmlui && rmlui_menu_mode) rmlui_mode_menu_hide();
         Exit_Sub(task_ptr, 0, task_ptr->free[1]);
         break;
     }

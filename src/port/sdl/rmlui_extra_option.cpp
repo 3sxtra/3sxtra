@@ -68,7 +68,7 @@ static Rml::String get_value_label(int page, int row, int value) {
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_extra_option_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -159,7 +159,7 @@ extern "C" void rmlui_extra_option_update(void) {
 
 // ─── Show / Hide ─────────────────────────────────────────────────
 extern "C" void rmlui_extra_option_show(void) {
-    rmlui_wrapper_show_document("extra_option");
+    rmlui_wrapper_show_game_document("extra_option");
     if (s_model_handle) {
         s_model_handle.DirtyVariable("extra_page");
         s_model_handle.DirtyVariable("extra_cursor");
@@ -175,14 +175,14 @@ extern "C" void rmlui_extra_option_show(void) {
 }
 
 extern "C" void rmlui_extra_option_hide(void) {
-    rmlui_wrapper_hide_document("extra_option");
+    rmlui_wrapper_hide_game_document("extra_option");
 }
 
 // ─── Shutdown ────────────────────────────────────────────────────
 extern "C" void rmlui_extra_option_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("extra_option");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("extra_option");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("extra_option");
         s_model_registered = false;

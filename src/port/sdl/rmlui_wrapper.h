@@ -58,6 +58,31 @@ void rmlui_wrapper_reload_all_documents(void);
 /// Release and force reload of all textures
 void rmlui_wrapper_release_textures(void);
 
+// ─── Game Context (Phase 3 screens — renders at window resolution) ───
+
+/// Get the game RmlUi context (for Phase 3 game screens)
+void* rmlui_wrapper_get_game_context(void);
+
+/// Load and show a named document in the game context
+void rmlui_wrapper_show_game_document(const char* name);
+
+/// Hide a named document in the game context
+void rmlui_wrapper_hide_game_document(const char* name);
+
+/// Check if a named game document is currently visible
+bool rmlui_wrapper_is_game_document_visible(const char* name);
+
+/// Close and destroy a named document in the game context
+void rmlui_wrapper_close_game_document(const char* name);
+
+/// Update the game context (call once per game frame)
+void rmlui_wrapper_update_game(void);
+
+/// Render the game context at window resolution within the letterbox viewport.
+/// view_x/y/w/h define the letterbox rect in window pixels.
+/// win_w/win_h are the full window dimensions.
+void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, float view_y, float view_w, float view_h);
+
 #ifdef __cplusplus
 }
 #endif

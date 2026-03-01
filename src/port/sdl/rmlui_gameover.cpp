@@ -64,7 +64,7 @@ static GameOverCache s_cache = {};
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_gameover_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -99,18 +99,18 @@ extern "C" void rmlui_gameover_update(void) {
 
 // ─── Show / Hide ─────────────────────────────────────────────────
 extern "C" void rmlui_gameover_show(void) {
-    rmlui_wrapper_show_document("gameover");
+    rmlui_wrapper_show_game_document("gameover");
 }
 
 extern "C" void rmlui_gameover_hide(void) {
-    rmlui_wrapper_hide_document("gameover");
+    rmlui_wrapper_hide_game_document("gameover");
 }
 
 // ─── Shutdown ────────────────────────────────────────────────────
 extern "C" void rmlui_gameover_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("gameover");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("gameover");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("gameover_screen");
         s_model_registered = false;

@@ -76,7 +76,7 @@ static WinCache s_cache = {};
 
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_win_screen_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -132,18 +132,18 @@ extern "C" void rmlui_win_screen_show(void) {
     s_cache.is_loser = false;
     if (s_model_handle)
         s_model_handle.DirtyVariable("is_loser");
-    rmlui_wrapper_show_document("win");
+    rmlui_wrapper_show_game_document("win");
 }
 
 extern "C" void rmlui_win_screen_hide(void) {
-    rmlui_wrapper_hide_document("win");
+    rmlui_wrapper_hide_game_document("win");
 }
 
 // ─── Shutdown ────────────────────────────────────────────────────
 extern "C" void rmlui_win_screen_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("win");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("win");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("win_screen");
         s_model_registered = false;

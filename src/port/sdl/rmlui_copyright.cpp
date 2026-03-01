@@ -26,7 +26,7 @@ struct CopyrightCache {
 static CopyrightCache s_cache = { -1 };
 
 extern "C" void rmlui_copyright_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
 
@@ -71,7 +71,7 @@ extern "C" void rmlui_copyright_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    rmlui_wrapper_show_document("copyright");
+    rmlui_wrapper_show_game_document("copyright");
     SDL_Log("[RmlUi Copyright] Data model registered");
 }
 
@@ -90,8 +90,8 @@ extern "C" void rmlui_copyright_update(void) {
 
 extern "C" void rmlui_copyright_shutdown(void) {
     if (s_model_registered) {
-        rmlui_wrapper_hide_document("copyright");
-        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+        rmlui_wrapper_hide_game_document("copyright");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("copyright");
         s_model_registered = false;

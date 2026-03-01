@@ -28,19 +28,36 @@
 ImGui and RmlUi are **both compiled into every build**. Only one is active at runtime, selected by config. This eliminates `#ifdef` complexity and ensures both paths are always tested by CI.
 
 ```
-┌─────────────────────────────────────────────┐
-│  Original CPS3 Menu System (menu.c)          │ ← Untouched
-├─────────────────────────────────────────────┤
-│  ImGui Overlay Menus (default)               │ ← Active when ui-mode=imgui
-│  mods_menu, shader_menu, training_menu, etc. │
-├────────────────────── OR ────────────────────┤
-│  RmlUi Overlay Menus                         │ ← Active when ui-mode=rmlui
-│  .rml documents + .rcss stylesheets          │
-│  Data binding to game state                  │
-├─────────────────────────────────────────────┤
-│  Port-Side SDL Text Renderer                 │ ← Always active (debug HUD)
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│  Original CPS3 Menu System (menu.c)                                │ ← Untouched
+├──────────────────────────────────┬──────────────────────────────────┤
+│  RmlUi GAME Context (384×224)    │  RmlUi WINDOW Context (win_w×h) │
+│  Phase 3 game-replacement screens│  Phase 2 overlay/debug menus     │
+│  Renders into CPS3 canvas FBO    │  Renders to window surface       │
+│  Scales with game, under bezels  │  On top of everything            │
+├──────────────────────────────────┴──────────────────────────────────┤
+│  ImGui Overlay Menus (fallback)                                     │ ← Active when ui-mode=imgui
+├─────────────────────────────────────────────────────────────────────┤
+│  Port-Side SDL Text Renderer                                        │ ← Always active (debug HUD)
+└─────────────────────────────────────────────────────────────────────┘
 ```
+
+**Dual-Context Architecture** (added during scaling/bezel fix):
+
+| Context | Resolution | dp_ratio | Renders to | Documents |
+|---------|-----------|----------|------------|----------|
+| `game` | 384×224 | 1.0 | Canvas FBO (`gl_state.cps3_canvas_fbo`) | All Phase 3 screens (mode menu, HUD, char select, etc.) |
+| `window` | win_w×win_h | SDL display scale | Window surface/swapchain | Phase 2 overlays (mods, shaders, training F7, input/frame display) |
+
+Game-context documents use `rmlui_wrapper_*_game_document()` API and register data models on `rmlui_wrapper_get_game_context()`. Window-context documents use the original `rmlui_wrapper_*_document()` API.
+
+Render pipeline order:
+1. Game sprites → canvas FBO (384×224)
+2. `rmlui_wrapper_render_game()` → composites Phase 3 UI into canvas FBO
+3. Canvas blit to window (scaled to letterbox rect)
+4. Bezels render on top
+5. `rmlui_wrapper_render()` → Phase 2 overlays on window surface
+6. Swap buffers
 
 ### Switching Mechanism
 
@@ -1391,35 +1408,7 @@ Each Phase 3.x sub-phase follows this pattern:
 | **Character Select complexity** | High | Treat as overlay-first (Phase 3.7) — replace text only, keep portrait sprites. Full replacement is optional stretch goal |
 | **Regression in ImGui mode** | Low | All bypasses gated on `use_rmlui`. Default mode is completely unchanged |
 
-## Tool Quirks & Workarounds
 
-### grep_search Tool
-
-#### Known Issues
-1. **Single-file SearchPath fails silently** — Using a file path as `SearchPath` returns "No results found" even when the pattern is present. The tool only reliably works with **directory** paths.
-2. **`.antigravityignore` path concatenation bug** — The tool concatenates the SearchPath + absolute ignore-file path instead of treating it as absolute. Cosmetic noise, doesn't block results.
-3. **50-result cap** — Large searches get exhausted on duplicates (e.g., `effect/`) before reaching relevant files.
-4. **`Includes` with directory names as filenames** — If the target file shares a name with a directory (e.g., `config.py` when `config/` exists), the filter may match the directory. Use the actual filename or a wildcard glob.
-
-#### Workarounds
-- **Never** use `SearchPath` pointing to a single file — use `view_file` or `view_code_item` instead.
-- **Always** use `Includes` globs to filter (e.g., `["*.c", "*.h"]`) and narrow `SearchPath` to the relevant subdirectory.
-- To target a specific file, use the **parent directory** as `SearchPath` + `Includes: ["filename.c"]`.
-- For tricky or broad searches, use `run_command` with `rg` directly — it works perfectly.
-- Exclude noisy directories by searching `src/sf33rd/Source/Game/<subfolder>/` directly instead of the entire tree.
-
-#### Parameter Reference
-
-| Parameter | Works? | Notes |
-|-----------|--------|-------|
-| `Query` (string) | ✅ | Required. Literal search string. |
-| `SearchPath` (string) | ⚠️ | Must be a **directory**, not a file. |
-| `MatchPerLine` (bool) | ✅ | `true` = lines + content, `false` = filenames only. |
-| `Includes` (array) | ✅ | Glob patterns like `["*.c"]`. Bare filenames work if unambiguous. |
-| `CaseInsensitive` (bool) | ✅ | Works as expected. |
-| `IsRegex` (bool) | ✅ | Enables regex in Query. |
-
----
 
 ### Phase 3 Implementation Notes (Lessons Learned)
 
@@ -1446,3 +1435,5 @@ Each Phase 3.x sub-phase follows this pattern:
 **Correct struct member names**: `WORK.char_no` doesn't exist — it's `WORK.char_index` (s16, line 381 of structs.h). `Timer_Value` doesn't exist — the select screen timer is `Select_Timer` (s8, line 76 of workuser.h). Always verify struct members with `grep_search` on the header before referencing them.
 
 **Batch implementation (Phases 3.11–3.20, 3.7–3.8)**: Once the pattern is proven, multiple components can be created in a single session. The skeleton for each is: (1) `.h` header with `extern "C"` init/update/show/hide/shutdown, (2) `.cpp` with `CreateDataModel` + `BindFunc` + `DirtyVariable`, (3) `.rml` with `data-model` + `data-class-focused`, (4) `.rcss` with panel layout + `.focused` highlight + accent color theme. Integration is mechanical: 3 lines in `sdl_app.c`, 1 line in `CMakeLists.txt`, 1 include + 2 bypass gates in `menu.c`.
+
+**Dual-context architecture (Scaling/Bezel fix)**: A single RmlUi context at window resolution caused Phase 3 screens to render tiny (384dp body in a ~1024px window) and overlap bezels. The fix: two RmlUi contexts — a **game context** (384×224, dp_ratio=1.0) that renders into the canvas FBO (so menus scale with the game and sit under bezels), and a **window context** (win_w×win_h) for Phase 2 overlays. Phase 3 components use `rmlui_wrapper_get_game_context()` / `rmlui_wrapper_show_game_document()`, Phase 2 uses the original `rmlui_wrapper_get_context()` / `rmlui_wrapper_show_document()`. Text renders at 384×224 resolution (matching CPS3 quality), which benefits from shader upscaling. Canvas FBO access: `gl_state.cps3_canvas_fbo` (GL3), `SDLGameRendererSDL_GetCanvas()` (SDL2D), `SDLGameRendererGPU_GetCanvasTexture()` (GPU).
