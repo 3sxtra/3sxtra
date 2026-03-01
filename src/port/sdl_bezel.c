@@ -33,6 +33,12 @@ static void SetTextureNearest(void* texture_ptr) {
     if (SDLApp_GetRenderer() == RENDERER_SDLGPU)
         return;
 
+    // SDL2D: use SDL_SetTextureScaleMode instead of GL calls (no GL context)
+    if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
+        SDL_SetTextureScaleMode((SDL_Texture*)texture_ptr, SDL_SCALEMODE_NEAREST);
+        return;
+    }
+
     GLuint tex = (GLuint)(intptr_t)texture_ptr;
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

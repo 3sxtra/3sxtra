@@ -94,6 +94,15 @@ extern "C" void* TextureUtil_Load(const char* filename) {
         SDL_DestroySurface(converted);
         return (void*)texture;
 
+    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
+        SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+        if (!renderer) {
+            SDL_DestroySurface(surface);
+            return NULL;
+        }
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_DestroySurface(surface);
+        return (void*)texture;
     } else {
         GLuint texture_id;
         glGenTextures(1, &texture_id);
@@ -128,6 +137,9 @@ extern "C" void TextureUtil_Free(void* texture_id) {
                 SDL_ReleaseGPUTexture(device, it->second.texture);
             s_gpu_textures.erase(it);
         }
+    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
+        SDL_Texture* tex = (SDL_Texture*)texture_id;
+        SDL_DestroyTexture(tex);
     } else {
         GLuint id = (GLuint)(intptr_t)texture_id;
         glDeleteTextures(1, &id);
@@ -155,6 +167,14 @@ extern "C" void TextureUtil_GetSize(void* texture_id, int* w, int* h) {
                 *w = 0;
             if (h)
                 *h = 0;
+        }
+    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
+        SDL_Texture* tex = (SDL_Texture*)texture_id;
+        if (w || h) {
+            float fw, fh;
+            SDL_GetTextureSize(tex, &fw, &fh);
+            if (w) *w = (int)fw;
+            if (h) *h = (int)fh;
         }
     } else {
         GLuint id = (GLuint)(intptr_t)texture_id;

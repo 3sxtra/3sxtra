@@ -763,29 +763,28 @@ int SDLApp_Init() {
         SDL_Log("UI mode: ImGui (default)");
     }
 
-    // Skip ImGui, bezels, shaders, and mod menus for SDL2D mode
+    // Skip ImGui, shaders, and mod menus for SDL2D mode
     if (g_renderer_backend != RENDERER_SDL2D) {
         imgui_wrapper_init(window, gl_context);
 
         input_display_init();
         frame_display_init();
         SDLNetplayUI_Init();
-        BezelSystem_Init();
         ModdedStage_Init();
         mods_menu_init();
         stage_config_menu_init();
         training_menu_init();
 
-        // Load bezel visibility
-        if (Config_HasKey(CFG_KEY_BEZEL_ENABLED)) {
-            BezelSystem_SetVisible(Config_GetBool(CFG_KEY_BEZEL_ENABLED));
-        }
-
-        BezelSystem_LoadTextures();
-
         // Initialize Shader Config
         SDLAppShader_Init(base_path);
     }
+
+    // Bezel system — available on all backends (GL, GPU, SDL2D)
+    BezelSystem_Init();
+    if (Config_HasKey(CFG_KEY_BEZEL_ENABLED)) {
+        BezelSystem_SetVisible(Config_GetBool(CFG_KEY_BEZEL_ENABLED));
+    }
+    BezelSystem_LoadTextures();
 
     SDL_free(base_path);
 
@@ -802,6 +801,7 @@ void SDLApp_Quit() {
 
     if (g_renderer_backend == RENDERER_SDL2D) {
         // SDL2D cleanup
+        BezelSystem_Shutdown();
         rmlui_wrapper_shutdown();
         if (sdl_renderer) {
             SDL_DestroyRenderer(sdl_renderer);
@@ -1188,6 +1188,31 @@ void SDLApp_EndFrame() {
         // Blit game canvas to window with letterboxing
         SDL_Texture* canvas = SDLGameRendererSDL_GetCanvas();
         SDL_RenderTexture(sdl_renderer, canvas, NULL, &dst_rect);
+
+        // Bezel rendering (SDL2D)
+        if (BezelSystem_IsVisible()) {
+            int p1 = My_char[0];
+            int p2 = My_char[1];
+            if (!(G_No[0] == 2 && G_No[1] >= 2)) {
+                p1 = -1;
+                p2 = -1;
+            }
+            if (p1 != last_p1_char || p2 != last_p2_char) {
+                last_p1_char = p1;
+                last_p2_char = p2;
+                BezelSystem_SetCharacters(last_p1_char, last_p2_char);
+            }
+
+            BezelTextures bezels;
+            BezelSystem_GetTextures(&bezels);
+            SDL_FRect left_dst, right_dst;
+            BezelSystem_CalculateLayout(win_w, win_h, &dst_rect, &left_dst, &right_dst);
+
+            if (bezels.left)
+                SDL_RenderTexture(sdl_renderer, (SDL_Texture*)bezels.left, NULL, &left_dst);
+            if (bezels.right)
+                SDL_RenderTexture(sdl_renderer, (SDL_Texture*)bezels.right, NULL, &right_dst);
+        }
 
         // Render RmlUi game context at window resolution (Phase 3 game screens)
         if (use_rmlui) {

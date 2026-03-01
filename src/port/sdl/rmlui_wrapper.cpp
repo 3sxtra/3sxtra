@@ -45,6 +45,65 @@
 #include <RmlUi_Renderer_SDL_GPU.h>
 
 // -------------------------------------------------------------------
+// GPU viewport adapter — overrides virtual SetTransform/SetScissorRegion
+// to bake viewport offset + scale into the rendering pipeline without
+// modifying the third-party RenderInterface_SDL_GPU class.
+// -------------------------------------------------------------------
+class GameViewportGPU : public RenderInterface_SDL_GPU {
+public:
+    using RenderInterface_SDL_GPU::RenderInterface_SDL_GPU;
+
+    /// Activate viewport correction for game-context rendering.
+    /// correction = Translate(off_x, off_y) * Scale(sx, sy)
+    /// Maps logical coords (0..ctx_w, 0..ctx_h) → window pixels at letterbox offset.
+    void ActivateGameViewport(int ctx_w, int ctx_h, int phys_w, int phys_h, int off_x, int off_y) {
+        m_active = true;
+        m_sx = (float)phys_w / (float)ctx_w;
+        m_sy = (float)phys_h / (float)ctx_h;
+        m_off_x = off_x;
+        m_off_y = off_y;
+        m_correction = Rml::Matrix4f::Translate((float)off_x, (float)off_y, 0)
+                     * Rml::Matrix4f::Scale(m_sx, m_sy, 1.0f);
+        SetTransform(nullptr); // Force transform update with correction
+    }
+
+    void DeactivateGameViewport() {
+        m_active = false;
+        SetTransform(nullptr); // Restore to identity
+    }
+
+    void SetTransform(const Rml::Matrix4f* transform) override {
+        if (!m_active) {
+            RenderInterface_SDL_GPU::SetTransform(transform);
+            return;
+        }
+        if (transform) {
+            Rml::Matrix4f modified = m_correction * (*transform);
+            RenderInterface_SDL_GPU::SetTransform(&modified);
+        } else {
+            RenderInterface_SDL_GPU::SetTransform(&m_correction);
+        }
+    }
+
+    void SetScissorRegion(Rml::Rectanglei region) override {
+        if (!m_active) {
+            RenderInterface_SDL_GPU::SetScissorRegion(region);
+            return;
+        }
+        Rml::Rectanglei adjusted = Rml::Rectanglei::FromPositionSize(
+            {(int)(region.Left() * m_sx + m_off_x), (int)(region.Top() * m_sy + m_off_y)},
+            {(int)(region.Width() * m_sx + 0.5f), (int)(region.Height() * m_sy + 0.5f)});
+        RenderInterface_SDL_GPU::SetScissorRegion(adjusted);
+    }
+
+private:
+    bool m_active = false;
+    float m_sx = 1.0f, m_sy = 1.0f;
+    int m_off_x = 0, m_off_y = 0;
+    Rml::Matrix4f m_correction;
+};
+
+// -------------------------------------------------------------------
 // State
 // -------------------------------------------------------------------
 
@@ -65,7 +124,7 @@ static Rml::RenderInterface* s_render_interface = nullptr;
 // Exactly one of these is non-null at a time.
 static RenderInterface_GL3* s_render_gl3 = nullptr;
 static RenderInterface_SDL* s_render_sdl = nullptr;
-static RenderInterface_SDL_GPU* s_render_gpu = nullptr;
+static GameViewportGPU* s_render_gpu = nullptr;
 
 static RendererBackend s_active_backend;
 
@@ -116,7 +175,7 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     }
     case RENDERER_SDLGPU: {
         SDL_GPUDevice* device = SDLApp_GetGPUDevice();
-        s_render_gpu = new RenderInterface_SDL_GPU(device, window);
+        s_render_gpu = new GameViewportGPU(device, window);
         s_render_interface = s_render_gpu;
         break;
     }
@@ -541,13 +600,19 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
         // Restore window viewport for subsequent rendering (bezels, overlays)
         s_render_gl3->SetViewport(s_window_w, s_window_h);
     } else if (s_render_gpu) {
-        // SDL_GPU: render to the swapchain texture with viewport offset
+        // SDL_GPU: render to the swapchain with viewport correction.
+        // BeginFrame uses full window dims so the projection covers the entire
+        // swapchain. The GameViewportGPU subclass then bakes a correction
+        // matrix (translate + scale) into SetTransform so RmlUi logical
+        // coordinates land at the correct letterbox position.
         SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
         SDL_GPUTexture* swapchain = SDLGameRendererGPU_GetSwapchainTexture();
         if (cb && swapchain) {
-            s_render_gpu->BeginFrame(cb, swapchain, (uint32_t)phys_w, (uint32_t)phys_h,
-                                     ctx_w, ctx_h, off_x, (int)(view_y + 0.5f));
+            const int top_y = (int)(view_y + 0.5f);
+            s_render_gpu->BeginFrame(cb, swapchain, (uint32_t)win_w, (uint32_t)win_h);
+            s_render_gpu->ActivateGameViewport(ctx_w, ctx_h, phys_w, phys_h, off_x, top_y);
             s_game_context->Render();
+            s_render_gpu->DeactivateGameViewport();
             s_render_gpu->EndFrame();
         }
     } else if (s_render_sdl) {
