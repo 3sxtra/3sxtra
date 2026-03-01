@@ -382,9 +382,8 @@ void Game01() {
     switch (G_No[2]) {
     case 0:
         /* Hide any leftover Phase 3 docs (win, continue, gameover, etc.)
-         * Do not do this during attract mode (Demo_Flag == 0) to avoid killing
-         * the attract_overlay document. */
-        if (use_rmlui && Demo_Flag != 0)
+         * The attract_overlay is excluded from hide-all and managed separately. */
+        if (use_rmlui)
             rmlui_wrapper_hide_all_game_documents();
         // The menu task resets Mode_Type to MODE_ARCADE between matches.
         // Restore it so all MODE_NETWORK-guarded paths (RNG seeding, Game2_0
@@ -1746,9 +1745,9 @@ void Loop_Demo(struct _TASK* /* unused */) {
 
     case 3:
         if (Play_Demo() != 0) {
-            /* Hide attract overlay when demo fight ends */
+            /* Hide just the logo when demo fight ends — text persists */
             if (use_rmlui && rmlui_screen_attract_overlay) {
-                rmlui_attract_overlay_hide();
+                rmlui_attract_overlay_hide_logo();
             }
             Switch_Screen(1);
             Loop_Demo_Sub();
@@ -1773,9 +1772,9 @@ void Loop_Demo(struct _TASK* /* unused */) {
 
     case 5:
         if (Play_Demo() != 0) {
-            /* Hide attract overlay when demo fight ends */
+            /* Hide just the logo when demo fight ends — text persists */
             if (use_rmlui && rmlui_screen_attract_overlay) {
-                rmlui_attract_overlay_hide();
+                rmlui_attract_overlay_hide_logo();
             }
             Loop_Demo_Sub();
             Demo_Type = 1;

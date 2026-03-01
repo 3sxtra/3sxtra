@@ -124,7 +124,7 @@ body {
     animation: timer-pulse 0.4s sine-in-out infinite;
 }
 
-/* ── Win pips ───────────────────────────────────────────────── */
+/* ── Round result bubbles ───────────────────────────────────── */
 /* CPS3: centered under timer, full width for proper centering  */
 .win-row {
     display: block;
@@ -137,17 +137,26 @@ body {
 .win-pips {
     display: inline-block;
 }
-.win-pip {
+.round-bubble {
     display: inline-block;
     width: 8dp;
     height: 8dp;
     border-radius: 4dp;
     background-color: #333333;
-    margin: 0dp 2dp;
+    margin: 0dp 1dp;
+    font-size: 6dp;
+    text-align: center;
+    line-height: 8dp;
+    color: #000000;
 }
-.win-pip.win-filled {
-    background-color: #FFD700;
-}
+/* Result type colors */
+.rt-1  { background-color: #FFD700; color: #222222; } /* V — Normal victory (gold) */
+.rt-3  { background-color: #00E5FF; color: #003333; } /* P — Perfect (cyan) */
+.rt-4  { background-color: #FF8C00; color: #331A00; } /* C — Chip/special (orange) */
+.rt-5  { background-color: #888888; color: #222222; } /* D — Draw (gray) */
+.rt-6  { background-color: #B388FF; color: #1A0033; } /* J — Judgement (purple) */
+.rt-7  { background-color: #FF4444; color: #330000; } /* S — SA finish (red) */
+.rt-0  { background-color: #333333; }                 /* Empty / unplayed */
 .win-sep {
     display: inline-block;
     font-size: 7dp;
@@ -200,7 +209,7 @@ body {
     position: absolute;
     top: 0dp;
     height: 7dp;
-    background-color: #6040E0;
+    background-color: #E0C020;
     max-width: 100%;
     transition: width 0.08s linear-in-out;
 }
@@ -211,19 +220,24 @@ body {
     background-color: #E040E0;
     animation: sa-active-pulse 0.2s sine-in-out infinite;
 }
+.sa-fill.sa-ready {
+    animation: sa-stock-flicker 0.3s sine-in-out infinite;
+}
 .sa-fill.sa-max {
-    background-color: #FFD700;
+    animation: sa-stock-flicker 0.2s sine-in-out infinite;
 }
 
 .sa-label {
     display: inline-block;
     position: absolute;
     top: -1dp;
-    font-size: 5dp;
+    left: 0dp;
+    width: 100%;
+    font-size: 6dp;
     color: #FFD700;
+    text-align: center;
+    font-effect: shadow(1dp 1dp #000000);
 }
-.p1-sa .sa-label { right: 102%; margin-right: 2dp; }
-.p2-sa .sa-label { left: 102%; margin-left: 2dp; }
 
 .sa-stock {
     display: inline-block;
@@ -240,6 +254,18 @@ body {
     display: none;
 }
 
+/* SA type numeral (I / II / III) outside gauge */
+.sa-type {
+    display: inline-block;
+    position: absolute;
+    top: -1dp;
+    font-size: 8dp;
+    color: rgba(255, 255, 255, 200);
+    font-effect: shadow(1dp 1dp #000000);
+}
+.p1-sa .sa-type { left: 102%; margin-left: 2dp; }
+.p2-sa .sa-type { right: 102%; margin-right: 2dp; }
+
 /* ── Combo popups ───────────────────────────────────────────── */
 /* CPS3: row 7 = y=56  P1 on RIGHT side, P2 on LEFT side       */
 .combo-popup {
@@ -249,9 +275,14 @@ body {
     visibility: hidden;
     background-color: rgba(0, 0, 0, 153);
     padding: 2dp 6dp;
+    opacity: 0;
 }
 .combo-popup.combo-visible {
     visibility: visible;
+    animation: combo-enter 0.6s sine-in-out;
+}
+.combo-popup.combo-visible.combo-sa {
+    animation: combo-enter 1.0s sine-in-out;
 }
 .p1-combo { right: 8dp; }
 .p2-combo { left: 8dp; }
@@ -260,12 +291,52 @@ body {
     display: inline-block;
     font-size: 16dp;
     color: #FFD700;
+    font-effect: shadow(1dp 1dp #000000);
 }
 .combo-label {
     display: inline-block;
     font-size: 9dp;
     color: #FFFFFF;
+    font-effect: shadow(1dp 1dp #000000);
 }
+
+/* Kind-specific label colors */
+.combo-lbl-hit   { color: #FFFFFF; }
+.combo-lbl-arts  { color: #E0C060; }
+.combo-lbl-sa    { color: #E040E0; }
+.combo-lbl-1st   { color: #FFD700; }
+.combo-lbl-rev   { color: #FF6040; }
+.combo-lbl-parry { color: #40C0FF; }
+
+/* Combo points below label */
+.combo-pts {
+    display: block;
+    font-size: 8dp;
+    color: #FFD700;
+    font-effect: shadow(1dp 1dp #000000);
+}
+.p1-combo .combo-pts { text-align: right; }
+.p2-combo .combo-pts { text-align: left; }
+
+/* ── Score display ──────────────────────────────────────────── */
+#hud-scores {
+    display: block;
+    position: absolute;
+    top: 0dp;
+    left: 0dp;
+    width: 384dp;
+    height: 224dp;
+}
+.score {
+    display: block;
+    position: absolute;
+    top: 0dp;
+    font-size: 7dp;
+    color: rgba(255, 255, 255, 180);
+    font-effect: shadow(1dp 1dp #000000);
+}
+.p1-score { left: 8dp; text-align: left; }
+.p2-score { left: 328dp; width: 48dp; text-align: right; }
 
 /* ── Training stun counter ──────────────────────────────────── */
 #hud-training-stun {
@@ -304,4 +375,17 @@ body {
       0% { background-color: #E040E0; }
      50% { background-color: #FFFFFF; }
     100% { background-color: #E040E0; }
+}
+
+@keyframes sa-stock-flicker {
+      0% { background-color: #4060FF; }
+     50% { background-color: #FFFFFF; }
+    100% { background-color: #4060FF; }
+}
+
+@keyframes combo-enter {
+      0% { opacity: 0; }
+     15% { opacity: 1; }
+     85% { opacity: 1; }
+    100% { opacity: 0; }
 }

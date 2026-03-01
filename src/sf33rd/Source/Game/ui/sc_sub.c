@@ -14,6 +14,7 @@
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
+#include "port/sdl/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui_phase3_toggles.h"
 #include <stdbool.h>
 extern bool use_rmlui;
@@ -27,11 +28,11 @@ extern bool use_rmlui;
 #include "sf33rd/Source/Game/effect/eff76.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
+#include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/system/ramcnt.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
-#include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_data.h"
 #include "structs.h"
@@ -916,7 +917,8 @@ void stun_put(u8 Pl_Num, u8 stun) {
     if (No_Trans) {
         return;
     }
-    if (use_rmlui && rmlui_hud_stun) return;
+    if (use_rmlui && rmlui_hud_stun)
+        return;
 
     if (stun == 0) {
         return;
@@ -958,7 +960,8 @@ void stun_base_put(u8 Pl_Num, s16 len) {
     if (No_Trans || SA_shadow_on) {
         return;
     }
-    if (use_rmlui && rmlui_hud_stun) return;
+    if (use_rmlui && rmlui_hud_stun)
+        return;
 
     vtx.p = pos;
     vtx.col = &col;
@@ -1273,8 +1276,18 @@ void SF3_logo(u8 step) {
      *   1. Title screen (title_tex_flag set) — large animated logo
      *   2. Attract demo fights (G_No[0]==1, G_No[1]>=3) — small in-match logo
      *      replaced by attract_overlay.rml's logo_small.png */
-    if (use_rmlui && ((rmlui_screen_title && title_tex_flag) ||
-                      (rmlui_screen_attract_overlay && G_No[0] == 1 && G_No[1] >= 3))) {
+    if (use_rmlui &&
+        ((rmlui_screen_title && title_tex_flag) || (rmlui_screen_attract_overlay && G_No[0] == 1 && G_No[1] >= 3))) {
+        /* Match native SF33rd_Logo timing:
+         *   step 0-7  = logo building tile-by-tile  → HD logo stays hidden
+         *   step == 8 = logo fully revealed          → show HD logo
+         *   step > 8  = logo disappearing            → hide HD logo */
+        if (rmlui_screen_attract_overlay && G_No[0] == 1 && G_No[1] >= 3) {
+            if (step == 8)
+                rmlui_attract_overlay_show_logo();
+            else if (step > 8)
+                rmlui_attract_overlay_hide_logo();
+        }
         return;
     }
 
@@ -1925,7 +1938,8 @@ void stun_gauge_waku_write(s16 p1len, s16 p2len) {
     if (omop_cockpit == 0) {
         return;
     }
-    if (use_rmlui && rmlui_hud_stun) return;
+    if (use_rmlui && rmlui_hud_stun)
+        return;
 
     if (No_Trans) {
         return;
@@ -1954,7 +1968,8 @@ static void silver_stun_put(u8 Pl_Num, s16 len) {
     if (No_Trans) {
         return;
     }
-    if (use_rmlui && rmlui_hud_stun) return;
+    if (use_rmlui && rmlui_hud_stun)
+        return;
 
     ppgSetupCurrentDataList(&ppgScrList);
     scrscrntex[0].z = scrscrntex[3].z = PrioBase[3];

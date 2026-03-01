@@ -1,7 +1,7 @@
 /* ── Training Mode / Training Sub-Menu Shared Stylesheet ── */
 body {
-    width: 100%;
-    height: 100%;
+    width: 384dp;
+    height: 224dp;
     font-family: "Noto Sans JP Thin";
     font-size: 14dp;
     color: #ffffffee;
@@ -10,10 +10,10 @@ body {
 .tr-panel {
     display: block;
     position: absolute;
-    top: 20%;
+    top: 10dp;
     left: 50%;
-    margin-left: -150dp;
-    width: 300dp;
+    margin-left: -130dp;
+    width: 260dp;
     text-align: center;
     animation: panel-fade-in 0.3s quadratic-out;
 }
@@ -25,17 +25,17 @@ body {
 
 .tr-title {
     display: block;
-    font-size: 18dp;
+    font-size: 12dp;
     font-weight: bold;
     color: #66ccff;
     letter-spacing: 3dp;
-    margin-bottom: 12dp;
+    margin-bottom: 6dp;
     font-effect: shadow(1dp 1dp #00000088);
 }
 
 .option-list {
     display: block;
-    padding: 8dp 16dp;
+    padding: 4dp 10dp;
     background-color: #00000066;
     border-width: 1dp;
     border-color: #66ccff33;
@@ -43,9 +43,9 @@ body {
 
 .menu-item {
     display: block;
-    padding: 6dp 12dp;
-    margin-bottom: 3dp;
-    font-size: 13dp;
+    padding: 2dp 8dp;
+    margin-bottom: 1dp;
+    font-size: 10dp;
     letter-spacing: 1dp;
     color: #cccccc;
     transition: background-color 0.12s linear-in-out;

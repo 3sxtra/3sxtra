@@ -14,6 +14,7 @@
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
+#include "port/sdl/rmlui_copyright.h"
 #include "port/sdl/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui_title_screen.h"
 #include <stdbool.h>
@@ -179,9 +180,12 @@ void TITLE_Init() {
     title_tex_flag = 1;
     op_w.r_no_0 = 0;
 
-    /* Show the RmlUi title document once when the title PPG loads */
+    /* Show the RmlUi title + copyright documents when the title PPG loads */
     if (use_rmlui && rmlui_screen_title) {
         rmlui_title_screen_show();
+    }
+    if (use_rmlui && rmlui_screen_copyright) {
+        rmlui_copyright_show();
     }
 }
 

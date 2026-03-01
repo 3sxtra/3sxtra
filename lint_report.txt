@@ -1,6 +1,6 @@
 ============================================================ 
                    3SX Lint Report                              
-                   Generated: 01/03/2026 14:06:21.84                     
+                   Generated: 01/03/2026 17:29:55.83                     
 ============================================================ 
  
 ------------------------------------------------------------ 
@@ -45,7 +45,7 @@ Found 1 error.
 No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
  
 [RUFF] Formatting: 
-17 files left unchanged
+18 files left unchanged
  
 ------------------------------------------------------------ 
 [VULTURE] Dead Code Analysis                                 
@@ -53,6 +53,7 @@ No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option
 tests\util\test_navigator_logic.py:20: unused attribute 'call_count' (60% confidence)
 tests\util\test_navigator_logic.py:43: unused variable 'mock_sleep' (100% confidence)
 tests\util\test_navigator_logic.py:57: unused variable 'mock_sleep' (100% confidence)
+tests\util\test_rcss_overflow.py:39: unused variable 'VIEWPORT_H' (60% confidence)
 tools\compare_states.py:445: unused function 'effect_offset' (60% confidence)
 tools\fightcade_replays\ggpo_to_csv.py:41: unused variable 'INP_START' (60% confidence)
 tools\fightcade_replays\parity_replay.py:208: unused function 'find_game02_start' (60% confidence)
@@ -201,7 +202,7 @@ tests\util\test_navigator_logic.py:43:40: W0613: Unused argument 'mock_sleep' (u
 tests\util\test_navigator_logic.py:57:45: W0613: Unused argument 'mock_sleep' (unused-argument)
 
 ------------------------------------------------------------------
-Your code has been rated at 9.07/10 (previous run: 9.07/10, +0.00)
+Your code has been rated at 9.09/10 (previous run: 9.07/10, +0.02)
 
  
 ------------------------------------------------------------ 
@@ -253,7 +254,7 @@ tools\fightcade_replays\parity_replay.py:1213: error: Argument "key" to "sorted"
 tools\fightcade_replays\parity_replay.py:1213: error: Incompatible return value type (got "object", expected "SupportsDunderLT[Any] | SupportsDunderGT[Any]")  [return-value]
 tools\fightcade_replays\parity_replay.py:1216: error: Incompatible types in assignment (expression has type "object", variable has type "str")  [assignment]
 tools\fightcade_replays\parity_replay.py:1220: error: Unsupported left operand type for - ("object")  [operator]
-Found 42 errors in 4 files (checked 17 source files)
+Found 42 errors in 4 files (checked 18 source files)
  
 ------------------------------------------------------------ 
                         Summary                              

@@ -19,10 +19,10 @@ void rmlui_replay_picker_shutdown(void);
 void rmlui_replay_picker_open(int mode);
 
 /** Poll the picker state. Returns 1=active, 0=slot selected, -1=cancelled. */
-int  rmlui_replay_picker_poll(void);
+int rmlui_replay_picker_poll(void);
 
 /** After poll() returns 0, get the selected slot index (0..19). */
-int  rmlui_replay_picker_get_slot(void);
+int rmlui_replay_picker_get_slot(void);
 
 #ifdef __cplusplus
 }

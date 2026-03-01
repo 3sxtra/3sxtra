@@ -15,6 +15,7 @@
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
+#include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/screen/n_input.h"
 #include "sf33rd/Source/Game/screen/ranking.h"
 #include "sf33rd/Source/Game/sound/se.h"
@@ -22,7 +23,6 @@
 #include "sf33rd/Source/Game/system/reset.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
-#include "sf33rd/Source/Game/opening/opening.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 

@@ -445,6 +445,10 @@ extern "C" void rmlui_wrapper_hide_game_document(const char* name) {
 
 extern "C" void rmlui_wrapper_hide_all_game_documents(void) {
     for (auto& [name, doc] : s_game_documents) {
+        /* Never hide the attract overlay or copyright — they persist through
+         * the attract-mode loop and are managed by their own show/hide calls. */
+        if (name == "attract_overlay" || name == "copyright")
+            continue;
         if (doc && doc->IsVisible()) {
             doc->Hide();
         }

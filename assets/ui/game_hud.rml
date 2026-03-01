@@ -29,18 +29,20 @@
                     <span data-if="!timer_infinite">{{round_timer}}</span>
                     <span data-if="timer_infinite">∞</span>
                 </div>
-                <!-- Win pips -->
+                <!-- Round result bubbles (dynamic count + V/J/C/S/P/D) -->
                 <div class="win-row">
                     <div class="win-pips p1-wins">
-                        <span class="win-pip" data-class-win-filled="p1_wins >= 1"></span>
-                        <span class="win-pip" data-class-win-filled="p1_wins >= 2"></span>
-                        <span class="win-pip" data-class-win-filled="p1_wins >= 3"></span>
+                        <span data-if="rounds_to_win >= 1" data-attr-class="'round-bubble rt-' + p1_r0">{{p1_r0_lbl}}</span>
+                        <span data-if="rounds_to_win >= 2" data-attr-class="'round-bubble rt-' + p1_r1">{{p1_r1_lbl}}</span>
+                        <span data-if="rounds_to_win >= 3" data-attr-class="'round-bubble rt-' + p1_r2">{{p1_r2_lbl}}</span>
+                        <span data-if="rounds_to_win >= 4" data-attr-class="'round-bubble rt-' + p1_r3">{{p1_r3_lbl}}</span>
                     </div>
                     <div class="win-sep">VS</div>
                     <div class="win-pips p2-wins">
-                        <span class="win-pip" data-class-win-filled="p2_wins >= 1"></span>
-                        <span class="win-pip" data-class-win-filled="p2_wins >= 2"></span>
-                        <span class="win-pip" data-class-win-filled="p2_wins >= 3"></span>
+                        <span data-if="rounds_to_win >= 1" data-attr-class="'round-bubble rt-' + p2_r0">{{p2_r0_lbl}}</span>
+                        <span data-if="rounds_to_win >= 2" data-attr-class="'round-bubble rt-' + p2_r1">{{p2_r1_lbl}}</span>
+                        <span data-if="rounds_to_win >= 3" data-attr-class="'round-bubble rt-' + p2_r2">{{p2_r2_lbl}}</span>
+                        <span data-if="rounds_to_win >= 4" data-attr-class="'round-bubble rt-' + p2_r3">{{p2_r3_lbl}}</span>
                     </div>
                 </div>
             </div>
@@ -69,8 +71,10 @@
             <!-- P1 SA Gauge -->
             <div class="sa-wrap p1-sa" data-style-width="p1_sa_width">
                 <div class="sa-fill" data-class-sa-active="p1_sa_active" data-class-sa-max="p1_sa_max"
+                     data-class-sa-ready="p1_sa_stocks >= 1"
                      data-style-width="p1_sa_pct + '%'"></div>
                 <div class="sa-label" data-if="p1_sa_max">MAX</div>
+                <div class="sa-type">{{p1_sa_type}}</div>
                 <div class="sa-stock" data-if="p1_sa_stocks_max > 0">{{p1_sa_stocks}}/{{p1_sa_stocks_max}}</div>
             </div>
 
@@ -80,8 +84,10 @@
             <!-- P2 SA Gauge (right side) -->
             <div class="sa-wrap p2-sa" data-style-width="p2_sa_width">
                 <div class="sa-fill" data-class-sa-active="p2_sa_active" data-class-sa-max="p2_sa_max"
+                     data-class-sa-ready="p2_sa_stocks >= 1"
                      data-style-width="p2_sa_pct + '%'"></div>
                 <div class="sa-label" data-if="p2_sa_max">MAX</div>
+                <div class="sa-type">{{p2_sa_type}}</div>
                 <div class="sa-stock" data-if="p2_sa_stocks_max > 0">{{p2_sa_stocks}}/{{p2_sa_stocks_max}}</div>
             </div>
 
@@ -93,16 +99,42 @@
 
         </div><!-- hud-gauges -->
 
-        <!-- ═══ COMBO POPUPS ═══ -->
+        <!-- ═══ COMBO POPUPS (kind-aware: 0=HIT, 1=ARTS, 2/3=SA FINISH, 4=1ST ATK, 5=REVERSAL, 6=PARRY) ═══ -->
         <div id="hud-combos">
-            <div class="combo-popup p1-combo" data-class-combo-visible="p1_combo_active">
-                <span class="combo-hits">{{p1_combo_count}}</span>
-                <span class="combo-label"> HIT</span>
+            <!-- P1 Combo -->
+            <div class="combo-popup p1-combo" data-class-combo-visible="p1_combo_active"
+                 data-class-combo-sa="p1_combo_kind == 2 || p1_combo_kind == 3">
+                <!-- Hit count (only for kinds that show it: 0=combo, 1=arts, 2=SA w/ combo) -->
+                <span class="combo-hits" data-if="p1_combo_kind <= 2">{{p1_combo_count}}</span>
+                <!-- Kind-specific label -->
+                <span class="combo-label combo-lbl-hit" data-if="p1_combo_kind == 0"> HIT</span>
+                <span class="combo-label combo-lbl-arts" data-if="p1_combo_kind == 1"> ARTS COMBO</span>
+                <span class="combo-label combo-lbl-sa" data-if="p1_combo_kind == 2 || p1_combo_kind == 3">S.A. FINISH</span>
+                <span class="combo-label combo-lbl-1st" data-if="p1_combo_kind == 4">1ST ATTACK</span>
+                <span class="combo-label combo-lbl-rev" data-if="p1_combo_kind == 5">REVERSAL</span>
+                <span class="combo-label combo-lbl-parry" data-if="p1_combo_kind == 6">PARRY ×{{p1_parry_count}}</span>
+                <!-- Points (shown when pts_flag is set) -->
+                <div class="combo-pts" data-if="p1_combo_pts_flag">{{p1_combo_pts}}</div>
             </div>
-            <div class="combo-popup p2-combo" data-class-combo-visible="p2_combo_active">
-                <span class="combo-hits">{{p2_combo_count}}</span>
-                <span class="combo-label"> HIT</span>
+
+            <!-- P2 Combo (mirrored) -->
+            <div class="combo-popup p2-combo" data-class-combo-visible="p2_combo_active"
+                 data-class-combo-sa="p2_combo_kind == 2 || p2_combo_kind == 3">
+                <span class="combo-hits" data-if="p2_combo_kind <= 2">{{p2_combo_count}}</span>
+                <span class="combo-label combo-lbl-hit" data-if="p2_combo_kind == 0"> HIT</span>
+                <span class="combo-label combo-lbl-arts" data-if="p2_combo_kind == 1"> ARTS COMBO</span>
+                <span class="combo-label combo-lbl-sa" data-if="p2_combo_kind == 2 || p2_combo_kind == 3">S.A. FINISH</span>
+                <span class="combo-label combo-lbl-1st" data-if="p2_combo_kind == 4">1ST ATTACK</span>
+                <span class="combo-label combo-lbl-rev" data-if="p2_combo_kind == 5">REVERSAL</span>
+                <span class="combo-label combo-lbl-parry" data-if="p2_combo_kind == 6">PARRY ×{{p2_parry_count}}</span>
+                <div class="combo-pts" data-if="p2_combo_pts_flag">{{p2_combo_pts}}</div>
             </div>
+        </div>
+
+        <!-- ═══ SCORE DISPLAY (hidden in training modes, matching native Score_Sub) ═══ -->
+        <div id="hud-scores" data-if="!training_stun_active">
+            <div class="score p1-score">{{p1_score}}</div>
+            <div class="score p2-score">{{p2_score}}</div>
         </div>
 
         <!-- ═══ TRAINING STUN COUNTER ═══ -->

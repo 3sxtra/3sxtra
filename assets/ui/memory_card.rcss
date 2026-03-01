@@ -1,7 +1,7 @@
 /* ── Memory Card Screen Stylesheet ────────────────────────── */
 body {
-    width: 100%;
-    height: 100%;
+    width: 384dp;
+    height: 224dp;
     font-family: "Noto Sans JP Thin";
     font-size: 14dp;
     color: #ffffffee;

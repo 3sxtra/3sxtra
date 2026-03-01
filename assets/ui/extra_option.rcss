@@ -1,7 +1,7 @@
 /* ── Extra Option Stylesheet ──────────────────────────────── */
 body {
-    width: 100%;
-    height: 100%;
+    width: 384dp;
+    height: 224dp;
     font-family: "Noto Sans JP Thin";
     font-size: 14dp;
     color: #ffffffee;
@@ -10,10 +10,10 @@ body {
 .extra-panel {
     display: block;
     position: absolute;
-    top: 18%;
+    top: 12dp;
     left: 50%;
-    margin-left: -180dp;
-    width: 360dp;
+    margin-left: -160dp;
+    width: 320dp;
     text-align: center;
     animation: panel-fade-in 0.4s quadratic-out;
 }
@@ -30,18 +30,18 @@ body {
 /* ── Title ──────────────────────────────────────────────────── */
 .extra-title {
     display: block;
-    font-size: 18dp;
+    font-size: 13dp;
     font-weight: bold;
     color: #ffcc44;
     letter-spacing: 3dp;
-    margin-bottom: 8dp;
+    margin-bottom: 4dp;
     font-effect: shadow(1dp 1dp #00000088);
 }
 
 /* ── Page indicator ────────────────────────────────────────── */
 .page-indicator {
     display: block;
-    margin-bottom: 12dp;
+    margin-bottom: 6dp;
     font-size: 12dp;
     color: #cccccc;
 }
@@ -68,8 +68,8 @@ body {
 
 .option-row {
     display: block;
-    padding: 5dp 8dp;
-    margin-bottom: 3dp;
+    padding: 3dp 6dp;
+    margin-bottom: 1dp;
     transition: background-color 0.15s linear-in-out;
 }
 
@@ -100,7 +100,7 @@ body {
 /* ── Footer hint ────────────────────────────────────────────── */
 .footer-hint {
     display: block;
-    margin-top: 12dp;
+    margin-top: 6dp;
     font-size: 10dp;
     color: #888888;
     letter-spacing: 1dp;

@@ -1876,13 +1876,10 @@ static void Load_Replay(struct _TASK* task_ptr) {
         break;
 
     case 3: {
-        int pick_result = (use_rmlui && rmlui_menu_replay)
-            ? rmlui_replay_picker_poll()
-            : ReplayPicker_Update();
+        int pick_result = (use_rmlui && rmlui_menu_replay) ? rmlui_replay_picker_poll() : ReplayPicker_Update();
         if (pick_result == 0) {
-            int slot = (use_rmlui && rmlui_menu_replay)
-                ? rmlui_replay_picker_get_slot()
-                : ReplayPicker_GetSelectedSlot();
+            int slot =
+                (use_rmlui && rmlui_menu_replay) ? rmlui_replay_picker_get_slot() : ReplayPicker_GetSelectedSlot();
             if (NativeSave_LoadReplay(slot) == 0) {
                 Decide_ID = 0;
                 if (Interface_Type[0] == 0) {
@@ -2901,13 +2898,10 @@ static void Save_Replay(struct _TASK* task_ptr) {
         break;
 
     case 3: {
-        int pick_result = (use_rmlui && rmlui_menu_replay)
-            ? rmlui_replay_picker_poll()
-            : ReplayPicker_Update();
+        int pick_result = (use_rmlui && rmlui_menu_replay) ? rmlui_replay_picker_poll() : ReplayPicker_Update();
         if (pick_result == 0) {
-            int slot = (use_rmlui && rmlui_menu_replay)
-                ? rmlui_replay_picker_get_slot()
-                : ReplayPicker_GetSelectedSlot();
+            int slot =
+                (use_rmlui && rmlui_menu_replay) ? rmlui_replay_picker_get_slot() : ReplayPicker_GetSelectedSlot();
             NativeSave_SaveReplay(slot);
         }
         if (pick_result != 1) { /* done or cancelled */
@@ -3882,13 +3876,10 @@ static void After_Replay(struct _TASK* task_ptr) {
             break;
 
         case 3: {
-            int pick_result = (use_rmlui && rmlui_menu_replay)
-                ? rmlui_replay_picker_poll()
-                : ReplayPicker_Update();
+            int pick_result = (use_rmlui && rmlui_menu_replay) ? rmlui_replay_picker_poll() : ReplayPicker_Update();
             if (pick_result == 0) {
-                int slot = (use_rmlui && rmlui_menu_replay)
-                    ? rmlui_replay_picker_get_slot()
-                    : ReplayPicker_GetSelectedSlot();
+                int slot =
+                    (use_rmlui && rmlui_menu_replay) ? rmlui_replay_picker_get_slot() : ReplayPicker_GetSelectedSlot();
                 NativeSave_SaveReplay(slot);
             }
             if (pick_result == 1)

@@ -1,7 +1,7 @@
 /* ── VS Result Screen Stylesheet ──────────────────────────── */
 body {
-    width: 100%;
-    height: 100%;
+    width: 384dp;
+    height: 224dp;
     font-family: "Noto Sans JP Thin";
     font-size: 14dp;
     color: #ffffffee;
@@ -12,8 +12,8 @@ body {
     position: absolute;
     top: 20%;
     left: 50%;
-    margin-left: -200dp;
-    width: 400dp;
+    margin-left: -180dp;
+    width: 360dp;
     text-align: center;
     animation: panel-fade-in 0.5s quadratic-out;
 }
@@ -51,7 +51,7 @@ body {
 
 .player-side {
     display: inline-block;
-    width: 150dp;
+    width: 130dp;
     vertical-align: top;
     text-align: center;
     padding: 8dp;
@@ -67,7 +67,7 @@ body {
 
 .vs-divider {
     display: inline-block;
-    width: 60dp;
+    width: 50dp;
     vertical-align: top;
     text-align: center;
     padding-top: 40dp;
@@ -95,7 +95,7 @@ body {
 
 .player-wins {
     display: block;
-    font-size: 36dp;
+    font-size: 28dp;
     font-weight: bold;
     color: #ffd700;
     margin-bottom: 4dp;
