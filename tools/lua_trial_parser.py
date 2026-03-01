@@ -16,52 +16,53 @@ import sys
 import os
 
 # Character names indexed 1-19 (Lua is 1-based)
+# Verified by cross-referencing _SP_/_SA_ move tags in the generated trial data.
 CHARA_NAMES = [
     None,  # 0 — unused
-    "Alex",
-    "Ryu",
-    "Ken",
-    "Gouki",
-    "Sean",
-    "Dudley",
-    "Necro",
-    "Hugo",
-    "Ibuki",
-    "Elena",
-    "Oro",
-    "Makoto",
-    "Yang",
-    "Yun",
-    "Chun-Li",
-    "Q",
-    "Twelve",
-    "Remy",
-    "Urien",
+    "Alex",      # 1
+    "Ryu",       # 2
+    "Ken",       # 3
+    "Gouki",     # 4
+    "Sean",      # 5
+    "Ibuki",     # 6
+    "Chun-Li",   # 7
+    "Elena",     # 8
+    "Makoto",    # 9
+    "Yun",       # 10
+    "Yang",      # 11
+    "Oro",       # 12
+    "Dudley",    # 13
+    "Urien",     # 14
+    "Remy",      # 15
+    "Hugo",      # 16
+    "Necro",     # 17
+    "Twelve",    # 18
+    "Q",         # 19
 ]
 
-# Character IDs in the native engine (matching PLW chara_id)
-# These are the values used in sel_pl.c character select grid
+# Character IDs in the native engine (My_char values)
+# Maps Lua index → My_char value used in the game engine.
 CHARA_IDS = [
     -1,  # 0 — unused
-    1,  # 1  Alex     (native 1)
-    2,  # 2  Ryu      (native 2)
-    11,  # 3  Ken      (native 11)
-    14,  # 4  Gouki/Akuma (native 14)
-    12,  # 5  Sean     (native 12)
-    4,  # 6  Dudley   (native 4)
-    5,  # 7  Necro    (native 5)
-    6,  # 8  Hugo     (native 6)
-    7,  # 9  Ibuki    (native 7)
-    8,  # 10 Elena    (native 8)
-    9,  # 11 Oro      (native 9)
-    16,  # 12 Makoto   (native 16)
-    10,  # 13 Yang     (native 10)
-    3,  # 14 Yun      (native 3)
-    15,  # 15 Chun-Li  (native 15)
-    17,  # 16 Q        (native 17)
-    18,  # 17 Twelve   (native 18)
-    19,  # 18 Remy     (native 19)
-    13,  # 19 Urien    (native 13)
+    1,   # 1  Alex     (My_char 1)
+    2,   # 2  Ryu      (My_char 2)
+    11,  # 3  Ken      (My_char 11)
+    14,  # 4  Gouki    (My_char 14)
+    12,  # 5  Sean     (My_char 12)
+    7,   # 6  Ibuki    (My_char 7)
+    15,  # 7  Chun-Li  (My_char 15)
+    8,   # 8  Elena    (My_char 8)
+    16,  # 9  Makoto   (My_char 16)
+    3,   # 10 Yun      (My_char 3)
+    10,  # 11 Yang     (My_char 10)
+    9,   # 12 Oro      (My_char 9)
+    4,   # 13 Dudley   (My_char 4)
+    13,  # 14 Urien    (My_char 13)
+    19,  # 15 Remy     (My_char 19)
+    6,   # 16 Hugo     (My_char 6)
+    5,   # 17 Necro    (My_char 5)
+    18,  # 18 Twelve   (My_char 18)
+    17,  # 19 Q        (My_char 17)
 ]
 
 

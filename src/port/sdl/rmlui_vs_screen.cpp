@@ -13,20 +13,24 @@
 #include <SDL3/SDL.h>
 
 extern "C" {
+#include "sf33rd/Source/Game/effect/eff76.h"   /* chkNameAkuma */
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "structs.h"
 } // extern "C"
 
-// SF3:3S character roster (indexed by char_no)
-static const char* s_char_names[] = { "ALEX",  "YURI",   "RYU",    "KEN",    "SEAN",  "GOUKI", "ORO",
-                                      "IBUKI", "MAKOTO", "ELENA",  "DUDLEY", "NECRO", "HUGO",  "URIEN",
-                                      "REMY",  "Q",      "CHUNLI", "TWELVE", "YANG",  "GILL" };
-static const int s_char_count = sizeof(s_char_names) / sizeof(s_char_names[0]);
+// SF3:3S character roster (index matches My_char)
+static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN",  "DUDLEY", "NECRO", "HUGO",
+                                              "IBUKI", "ELENA",   "ORO",    "YANG", "KEN",    "SEAN",  "URIEN",
+                                              "GOUKI", "CHUN-LI", "MAKOTO", "Q",    "TWELVE", "REMY",  "AKUMA" };
+#define CHAR_NAME_COUNT 21
 
-static const char* get_char_name(int idx) {
-    if (idx >= 0 && idx < s_char_count)
+static const char* safe_char_name(int idx) {
+    if (idx >= 0 && idx < CHAR_NAME_COUNT)
         return s_char_names[idx];
     return "???";
+}
+static const char* get_char_name(int my_char_id) {
+    return safe_char_name(my_char_id + chkNameAkuma(my_char_id, 6));
 }
 
 static Rml::DataModelHandle s_model_handle;
@@ -41,8 +45,8 @@ extern "C" void rmlui_vs_screen_init(void) {
     if (!ctor)
         return;
 
-    ctor.BindFunc("vs_p1_name", [](Rml::Variant& v) { v = Rml::String(get_char_name((int)plw[0].wu.char_index)); });
-    ctor.BindFunc("vs_p2_name", [](Rml::Variant& v) { v = Rml::String(get_char_name((int)plw[1].wu.char_index)); });
+    ctor.BindFunc("vs_p1_name", [](Rml::Variant& v) { v = Rml::String(get_char_name(My_char[0])); });
+    ctor.BindFunc("vs_p2_name", [](Rml::Variant& v) { v = Rml::String(get_char_name(My_char[1])); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;

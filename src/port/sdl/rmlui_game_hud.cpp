@@ -132,6 +132,7 @@ struct HudSnapshot {
     int p1_score, p2_score;
     int p1_parry_count, p2_parry_count;
     Rml::String p1_sa_type, p2_sa_type;
+    bool p1_is_human, p2_is_human;
     // Round result tracking
     int rounds_to_win;
     int p1_r0, p1_r1, p1_r2, p1_r3;
@@ -348,6 +349,10 @@ extern "C" void rmlui_game_hud_init(void) {
     ctor.BindFunc("p1_score", [](Rml::Variant& v) { v = (int)(Score[0][Play_Type] + Continue_Coin[0]); });
     ctor.BindFunc("p2_score", [](Rml::Variant& v) { v = (int)(Score[1][Play_Type] + Continue_Coin[1]); });
 
+    // ── Operator status (human vs CPU) ──
+    ctor.BindFunc("p1_is_human", [](Rml::Variant& v) { v = (bool)(Operator_Status[0] != 0); });
+    ctor.BindFunc("p2_is_human", [](Rml::Variant& v) { v = (bool)(Operator_Status[1] != 0); });
+
     // ── SA Type Numeral ──
     static const char* const sa_numerals[3] = {"I", "II", "III"};
     ctor.BindFunc("p1_sa_type", [](Rml::Variant& v) {
@@ -493,6 +498,8 @@ extern "C" void rmlui_game_hud_update(void) {
     // ── Score ──
     DIRTY_INT(p1_score, (int)(Score[0][Play_Type] + Continue_Coin[0]));
     DIRTY_INT(p2_score, (int)(Score[1][Play_Type] + Continue_Coin[1]));
+    DIRTY_BOOL(p1_is_human, Operator_Status[0] != 0);
+    DIRTY_BOOL(p2_is_human, Operator_Status[1] != 0);
 
     // ── Parry counter ──
     DIRTY_INT(p1_parry_count, (int)paring_counter[0]);

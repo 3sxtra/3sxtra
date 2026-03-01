@@ -18,19 +18,24 @@
 #include <SDL3/SDL.h>
 
 extern "C" {
+#include "sf33rd/Source/Game/effect/eff76.h"   /* chkNameAkuma */
 #include "sf33rd/Source/Game/engine/workuser.h"
 } // extern "C"
 
-// ─── Character name table (shared with game_hud) ────────────────
-static const char* const s_char_names[20] = { "RYU",   "ALEX",   "YUEN",    "DUDLEY", "NECRO", "HUGO",   "IBuki",
-                                              "ELENA", "ORO",    "YANG",    "KEN",    "SEAN",  "MAKOTO", "REMY",
-                                              "Q",     "TWELVE", "CHUN-LI", "URIEN",  "GILL",  "AKUMA" };
-#define CHAR_NAME_COUNT 20
+// ─── Character name table (SF3:3S roster, index matches My_char) ───
+// Index 0 = Gill (boss), then the standard roster order.
+static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN",  "DUDLEY", "NECRO", "HUGO",
+                                              "IBUKI", "ELENA",   "ORO",    "YANG", "KEN",    "SEAN",  "URIEN",
+                                              "GOUKI", "CHUN-LI", "MAKOTO", "Q",    "TWELVE", "REMY",  "AKUMA" };
+#define CHAR_NAME_COUNT 21
 
-static const char* char_name(int idx) {
+static const char* safe_char_name(int idx) {
     if (idx >= 0 && idx < CHAR_NAME_COUNT)
         return s_char_names[idx];
     return "???";
+}
+static const char* char_name(int my_char_id) {
+    return safe_char_name(my_char_id + chkNameAkuma(my_char_id, 6));
 }
 
 // ─── Data model ──────────────────────────────────────────────────

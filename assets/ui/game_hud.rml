@@ -131,10 +131,14 @@
             </div>
         </div>
 
-        <!-- ═══ SCORE DISPLAY (hidden in training modes, matching native Score_Sub) ═══ -->
+        <!-- ═══ SCORE / PRESS START DISPLAY ═══ -->
         <div id="hud-scores" data-if="!training_stun_active">
-            <div class="score p1-score">{{p1_score}}</div>
-            <div class="score p2-score">{{p2_score}}</div>
+            <!-- P1: show score if human, "PRESS 1P START" if CPU -->
+            <div class="score p1-score" data-if="p1_is_human">{{p1_score}}</div>
+            <div class="press-start p1-press-start" data-if="!p1_is_human">PRESS 1P START</div>
+            <!-- P2: show score if human, "PRESS 2P START" if CPU -->
+            <div class="score p2-score" data-if="p2_is_human">{{p2_score}}</div>
+            <div class="press-start p2-press-start" data-if="!p2_is_human">PRESS 2P START</div>
         </div>
 
         <!-- ═══ TRAINING STUN COUNTER ═══ -->

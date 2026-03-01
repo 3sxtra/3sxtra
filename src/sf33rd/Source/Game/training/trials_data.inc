@@ -473,9 +473,9 @@ static const TrialDef g_trial_sean_6 = {
     }
 };
 
-/* Dudley Trial 1 (difficulty 2) */
-static const TrialDef g_trial_dudley_1 = {
-    .chara_id = 4,
+/* Ibuki Trial 1 (difficulty 2) */
+static const TrialDef g_trial_ibuki_1 = {
+    .chara_id = 7,
     .difficulty = 2,
     .gauge_max = 0,
     .num_steps = 2,
@@ -485,9 +485,9 @@ static const TrialDef g_trial_dudley_1 = {
     }
 };
 
-/* Dudley Trial 2 (difficulty 3) */
-static const TrialDef g_trial_dudley_2 = {
-    .chara_id = 4,
+/* Ibuki Trial 2 (difficulty 3) */
+static const TrialDef g_trial_ibuki_2 = {
+    .chara_id = 7,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 4,
@@ -499,9 +499,9 @@ static const TrialDef g_trial_dudley_2 = {
     }
 };
 
-/* Dudley Trial 3 (difficulty 3) */
-static const TrialDef g_trial_dudley_3 = {
-    .chara_id = 4,
+/* Ibuki Trial 3 (difficulty 3) */
+static const TrialDef g_trial_ibuki_3 = {
+    .chara_id = 7,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 2,
@@ -511,9 +511,9 @@ static const TrialDef g_trial_dudley_3 = {
     }
 };
 
-/* Dudley Trial 6 (difficulty 5) */
-static const TrialDef g_trial_dudley_6 = {
-    .chara_id = 4,
+/* Ibuki Trial 6 (difficulty 5) */
+static const TrialDef g_trial_ibuki_6 = {
+    .chara_id = 7,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 6,
@@ -527,9 +527,9 @@ static const TrialDef g_trial_dudley_6 = {
     }
 };
 
-/* Dudley Trial 7 (difficulty 5) */
-static const TrialDef g_trial_dudley_7 = {
-    .chara_id = 4,
+/* Ibuki Trial 7 (difficulty 5) */
+static const TrialDef g_trial_ibuki_7 = {
+    .chara_id = 7,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 5,
@@ -542,9 +542,9 @@ static const TrialDef g_trial_dudley_7 = {
     }
 };
 
-/* Dudley Trial 8 (difficulty 6) */
-static const TrialDef g_trial_dudley_8 = {
-    .chara_id = 4,
+/* Ibuki Trial 8 (difficulty 6) */
+static const TrialDef g_trial_ibuki_8 = {
+    .chara_id = 7,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 8,
@@ -560,9 +560,9 @@ static const TrialDef g_trial_dudley_8 = {
     }
 };
 
-/* Dudley Trial 9 (difficulty 7) */
-static const TrialDef g_trial_dudley_9 = {
-    .chara_id = 4,
+/* Ibuki Trial 9 (difficulty 7) */
+static const TrialDef g_trial_ibuki_9 = {
+    .chara_id = 7,
     .difficulty = 7,
     .gauge_max = 0,
     .num_steps = 9,
@@ -579,9 +579,9 @@ static const TrialDef g_trial_dudley_9 = {
     }
 };
 
-/* Necro Trial 1 (difficulty 1) */
-static const TrialDef g_trial_necro_1 = {
-    .chara_id = 5,
+/* Chun-Li Trial 1 (difficulty 1) */
+static const TrialDef g_trial_chun_li_1 = {
+    .chara_id = 15,
     .difficulty = 1,
     .gauge_max = 0,
     .num_steps = 2,
@@ -591,9 +591,9 @@ static const TrialDef g_trial_necro_1 = {
     }
 };
 
-/* Necro Trial 2 (difficulty 3) */
-static const TrialDef g_trial_necro_2 = {
-    .chara_id = 5,
+/* Chun-Li Trial 2 (difficulty 3) */
+static const TrialDef g_trial_chun_li_2 = {
+    .chara_id = 15,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 4,
@@ -605,9 +605,9 @@ static const TrialDef g_trial_necro_2 = {
     }
 };
 
-/* Necro Trial 3 (difficulty 4) */
-static const TrialDef g_trial_necro_3 = {
-    .chara_id = 5,
+/* Chun-Li Trial 3 (difficulty 4) */
+static const TrialDef g_trial_chun_li_3 = {
+    .chara_id = 15,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -619,9 +619,9 @@ static const TrialDef g_trial_necro_3 = {
     }
 };
 
-/* Necro Trial 4 (difficulty 4) */
-static const TrialDef g_trial_necro_4 = {
-    .chara_id = 5,
+/* Chun-Li Trial 4 (difficulty 4) */
+static const TrialDef g_trial_chun_li_4 = {
+    .chara_id = 15,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 3,
@@ -632,9 +632,9 @@ static const TrialDef g_trial_necro_4 = {
     }
 };
 
-/* Necro Trial 5 (difficulty 4) */
-static const TrialDef g_trial_necro_5 = {
-    .chara_id = 5,
+/* Chun-Li Trial 5 (difficulty 4) */
+static const TrialDef g_trial_chun_li_5 = {
+    .chara_id = 15,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 5,
@@ -647,9 +647,9 @@ static const TrialDef g_trial_necro_5 = {
     }
 };
 
-/* Necro Trial 6 (difficulty 4) */
-static const TrialDef g_trial_necro_6 = {
-    .chara_id = 5,
+/* Chun-Li Trial 6 (difficulty 4) */
+static const TrialDef g_trial_chun_li_6 = {
+    .chara_id = 15,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 3,
@@ -660,9 +660,9 @@ static const TrialDef g_trial_necro_6 = {
     }
 };
 
-/* Necro Trial 7 (difficulty 4) */
-static const TrialDef g_trial_necro_7 = {
-    .chara_id = 5,
+/* Chun-Li Trial 7 (difficulty 4) */
+static const TrialDef g_trial_chun_li_7 = {
+    .chara_id = 15,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 8,
@@ -678,9 +678,9 @@ static const TrialDef g_trial_necro_7 = {
     }
 };
 
-/* Necro Trial 8 (difficulty 4) */
-static const TrialDef g_trial_necro_8 = {
-    .chara_id = 5,
+/* Chun-Li Trial 8 (difficulty 4) */
+static const TrialDef g_trial_chun_li_8 = {
+    .chara_id = 15,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 7,
@@ -695,9 +695,9 @@ static const TrialDef g_trial_necro_8 = {
     }
 };
 
-/* Hugo Trial 2 (difficulty 2) */
-static const TrialDef g_trial_hugo_2 = {
-    .chara_id = 6,
+/* Elena Trial 2 (difficulty 2) */
+static const TrialDef g_trial_elena_2 = {
+    .chara_id = 8,
     .difficulty = 2,
     .gauge_max = 0,
     .num_steps = 4,
@@ -709,9 +709,9 @@ static const TrialDef g_trial_hugo_2 = {
     }
 };
 
-/* Hugo Trial 3 (difficulty 4) */
-static const TrialDef g_trial_hugo_3 = {
-    .chara_id = 6,
+/* Elena Trial 3 (difficulty 4) */
+static const TrialDef g_trial_elena_3 = {
+    .chara_id = 8,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -723,9 +723,9 @@ static const TrialDef g_trial_hugo_3 = {
     }
 };
 
-/* Hugo Trial 4 (difficulty 4) */
-static const TrialDef g_trial_hugo_4 = {
-    .chara_id = 6,
+/* Elena Trial 4 (difficulty 4) */
+static const TrialDef g_trial_elena_4 = {
+    .chara_id = 8,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 5,
@@ -738,9 +738,9 @@ static const TrialDef g_trial_hugo_4 = {
     }
 };
 
-/* Hugo Trial 5 (difficulty 4) */
-static const TrialDef g_trial_hugo_5 = {
-    .chara_id = 6,
+/* Elena Trial 5 (difficulty 4) */
+static const TrialDef g_trial_elena_5 = {
+    .chara_id = 8,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 5,
@@ -753,9 +753,9 @@ static const TrialDef g_trial_hugo_5 = {
     }
 };
 
-/* Hugo Trial 7 (difficulty 5) */
-static const TrialDef g_trial_hugo_7 = {
-    .chara_id = 6,
+/* Elena Trial 7 (difficulty 5) */
+static const TrialDef g_trial_elena_7 = {
+    .chara_id = 8,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 8,
@@ -771,9 +771,9 @@ static const TrialDef g_trial_hugo_7 = {
     }
 };
 
-/* Ibuki Trial 2 (difficulty 3) */
-static const TrialDef g_trial_ibuki_2 = {
-    .chara_id = 7,
+/* Makoto Trial 2 (difficulty 3) */
+static const TrialDef g_trial_makoto_2 = {
+    .chara_id = 16,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 3,
@@ -784,9 +784,9 @@ static const TrialDef g_trial_ibuki_2 = {
     }
 };
 
-/* Ibuki Trial 4 (difficulty 4) */
-static const TrialDef g_trial_ibuki_4 = {
-    .chara_id = 7,
+/* Makoto Trial 4 (difficulty 4) */
+static const TrialDef g_trial_makoto_4 = {
+    .chara_id = 16,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 5,
@@ -799,9 +799,9 @@ static const TrialDef g_trial_ibuki_4 = {
     }
 };
 
-/* Ibuki Trial 5 (difficulty 4) */
-static const TrialDef g_trial_ibuki_5 = {
-    .chara_id = 7,
+/* Makoto Trial 5 (difficulty 4) */
+static const TrialDef g_trial_makoto_5 = {
+    .chara_id = 16,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 8,
@@ -817,9 +817,9 @@ static const TrialDef g_trial_ibuki_5 = {
     }
 };
 
-/* Ibuki Trial 6 (difficulty 5) */
-static const TrialDef g_trial_ibuki_6 = {
-    .chara_id = 7,
+/* Makoto Trial 6 (difficulty 5) */
+static const TrialDef g_trial_makoto_6 = {
+    .chara_id = 16,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 10,
@@ -837,9 +837,9 @@ static const TrialDef g_trial_ibuki_6 = {
     }
 };
 
-/* Ibuki Trial 7 (difficulty 5) */
-static const TrialDef g_trial_ibuki_7 = {
-    .chara_id = 7,
+/* Makoto Trial 7 (difficulty 5) */
+static const TrialDef g_trial_makoto_7 = {
+    .chara_id = 16,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 6,
@@ -853,9 +853,9 @@ static const TrialDef g_trial_ibuki_7 = {
     }
 };
 
-/* Ibuki Trial 8 (difficulty 6) */
-static const TrialDef g_trial_ibuki_8 = {
-    .chara_id = 7,
+/* Makoto Trial 8 (difficulty 6) */
+static const TrialDef g_trial_makoto_8 = {
+    .chara_id = 16,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 10,
@@ -873,9 +873,9 @@ static const TrialDef g_trial_ibuki_8 = {
     }
 };
 
-/* Ibuki Trial 9 (difficulty 6) */
-static const TrialDef g_trial_ibuki_9 = {
-    .chara_id = 7,
+/* Makoto Trial 9 (difficulty 6) */
+static const TrialDef g_trial_makoto_9 = {
+    .chara_id = 16,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 6,
@@ -889,9 +889,9 @@ static const TrialDef g_trial_ibuki_9 = {
     }
 };
 
-/* Ibuki Trial 10 (difficulty 7) */
-static const TrialDef g_trial_ibuki_10 = {
-    .chara_id = 7,
+/* Makoto Trial 10 (difficulty 7) */
+static const TrialDef g_trial_makoto_10 = {
+    .chara_id = 16,
     .difficulty = 7,
     .gauge_max = 0,
     .num_steps = 6,
@@ -905,9 +905,9 @@ static const TrialDef g_trial_ibuki_10 = {
     }
 };
 
-/* Elena Trial 2 (difficulty 3) */
-static const TrialDef g_trial_elena_2 = {
-    .chara_id = 8,
+/* Yun Trial 2 (difficulty 3) */
+static const TrialDef g_trial_yun_2 = {
+    .chara_id = 3,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 5,
@@ -920,9 +920,9 @@ static const TrialDef g_trial_elena_2 = {
     }
 };
 
-/* Elena Trial 3 (difficulty 3) */
-static const TrialDef g_trial_elena_3 = {
-    .chara_id = 8,
+/* Yun Trial 3 (difficulty 3) */
+static const TrialDef g_trial_yun_3 = {
+    .chara_id = 3,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 4,
@@ -934,9 +934,9 @@ static const TrialDef g_trial_elena_3 = {
     }
 };
 
-/* Elena Trial 4 (difficulty 4) */
-static const TrialDef g_trial_elena_4 = {
-    .chara_id = 8,
+/* Yun Trial 4 (difficulty 4) */
+static const TrialDef g_trial_yun_4 = {
+    .chara_id = 3,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -948,9 +948,9 @@ static const TrialDef g_trial_elena_4 = {
     }
 };
 
-/* Elena Trial 5 (difficulty 4) */
-static const TrialDef g_trial_elena_5 = {
-    .chara_id = 8,
+/* Yun Trial 5 (difficulty 4) */
+static const TrialDef g_trial_yun_5 = {
+    .chara_id = 3,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 7,
@@ -965,9 +965,9 @@ static const TrialDef g_trial_elena_5 = {
     }
 };
 
-/* Elena Trial 7 (difficulty 3) */
-static const TrialDef g_trial_elena_7 = {
-    .chara_id = 8,
+/* Yun Trial 7 (difficulty 3) */
+static const TrialDef g_trial_yun_7 = {
+    .chara_id = 3,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 5,
@@ -980,9 +980,9 @@ static const TrialDef g_trial_elena_7 = {
     }
 };
 
-/* Elena Trial 8 (difficulty 6) */
-static const TrialDef g_trial_elena_8 = {
-    .chara_id = 8,
+/* Yun Trial 8 (difficulty 6) */
+static const TrialDef g_trial_yun_8 = {
+    .chara_id = 3,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 12,
@@ -1002,9 +1002,9 @@ static const TrialDef g_trial_elena_8 = {
     }
 };
 
-/* Elena Trial 10 (difficulty 3) */
-static const TrialDef g_trial_elena_10 = {
-    .chara_id = 8,
+/* Yun Trial 10 (difficulty 3) */
+static const TrialDef g_trial_yun_10 = {
+    .chara_id = 3,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 13,
@@ -1025,9 +1025,9 @@ static const TrialDef g_trial_elena_10 = {
     }
 };
 
-/* Oro Trial 2 (difficulty 3) */
-static const TrialDef g_trial_oro_2 = {
-    .chara_id = 9,
+/* Yang Trial 2 (difficulty 3) */
+static const TrialDef g_trial_yang_2 = {
+    .chara_id = 10,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 5,
@@ -1040,9 +1040,9 @@ static const TrialDef g_trial_oro_2 = {
     }
 };
 
-/* Oro Trial 3 (difficulty 3) */
-static const TrialDef g_trial_oro_3 = {
-    .chara_id = 9,
+/* Yang Trial 3 (difficulty 3) */
+static const TrialDef g_trial_yang_3 = {
+    .chara_id = 10,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1054,9 +1054,9 @@ static const TrialDef g_trial_oro_3 = {
     }
 };
 
-/* Oro Trial 4 (difficulty 3) */
-static const TrialDef g_trial_oro_4 = {
-    .chara_id = 9,
+/* Yang Trial 4 (difficulty 3) */
+static const TrialDef g_trial_yang_4 = {
+    .chara_id = 10,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 5,
@@ -1069,9 +1069,9 @@ static const TrialDef g_trial_oro_4 = {
     }
 };
 
-/* Oro Trial 5 (difficulty 5) */
-static const TrialDef g_trial_oro_5 = {
-    .chara_id = 9,
+/* Yang Trial 5 (difficulty 5) */
+static const TrialDef g_trial_yang_5 = {
+    .chara_id = 10,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 5,
@@ -1084,9 +1084,9 @@ static const TrialDef g_trial_oro_5 = {
     }
 };
 
-/* Oro Trial 6 (difficulty 5) */
-static const TrialDef g_trial_oro_6 = {
-    .chara_id = 9,
+/* Yang Trial 6 (difficulty 5) */
+static const TrialDef g_trial_yang_6 = {
+    .chara_id = 10,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 11,
@@ -1105,9 +1105,9 @@ static const TrialDef g_trial_oro_6 = {
     }
 };
 
-/* Oro Trial 8 (difficulty 5) */
-static const TrialDef g_trial_oro_8 = {
-    .chara_id = 9,
+/* Yang Trial 8 (difficulty 5) */
+static const TrialDef g_trial_yang_8 = {
+    .chara_id = 10,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 3,
@@ -1118,9 +1118,9 @@ static const TrialDef g_trial_oro_8 = {
     }
 };
 
-/* Makoto Trial 1 (difficulty 2) */
-static const TrialDef g_trial_makoto_1 = {
-    .chara_id = 16,
+/* Oro Trial 1 (difficulty 2) */
+static const TrialDef g_trial_oro_1 = {
+    .chara_id = 9,
     .difficulty = 2,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1132,9 +1132,9 @@ static const TrialDef g_trial_makoto_1 = {
     }
 };
 
-/* Makoto Trial 4 (difficulty 4) */
-static const TrialDef g_trial_makoto_4 = {
-    .chara_id = 16,
+/* Oro Trial 4 (difficulty 4) */
+static const TrialDef g_trial_oro_4 = {
+    .chara_id = 9,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 7,
@@ -1149,9 +1149,9 @@ static const TrialDef g_trial_makoto_4 = {
     }
 };
 
-/* Makoto Trial 5 (difficulty 4) */
-static const TrialDef g_trial_makoto_5 = {
-    .chara_id = 16,
+/* Oro Trial 5 (difficulty 4) */
+static const TrialDef g_trial_oro_5 = {
+    .chara_id = 9,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 10,
@@ -1169,9 +1169,9 @@ static const TrialDef g_trial_makoto_5 = {
     }
 };
 
-/* Makoto Trial 6 (difficulty 5) */
-static const TrialDef g_trial_makoto_6 = {
-    .chara_id = 16,
+/* Oro Trial 6 (difficulty 5) */
+static const TrialDef g_trial_oro_6 = {
+    .chara_id = 9,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 6,
@@ -1185,9 +1185,9 @@ static const TrialDef g_trial_makoto_6 = {
     }
 };
 
-/* Makoto Trial 7 (difficulty 5) */
-static const TrialDef g_trial_makoto_7 = {
-    .chara_id = 16,
+/* Oro Trial 7 (difficulty 5) */
+static const TrialDef g_trial_oro_7 = {
+    .chara_id = 9,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 9,
@@ -1204,9 +1204,9 @@ static const TrialDef g_trial_makoto_7 = {
     }
 };
 
-/* Makoto Trial 8 (difficulty 6) */
-static const TrialDef g_trial_makoto_8 = {
-    .chara_id = 16,
+/* Oro Trial 8 (difficulty 6) */
+static const TrialDef g_trial_oro_8 = {
+    .chara_id = 9,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 13,
@@ -1227,9 +1227,9 @@ static const TrialDef g_trial_makoto_8 = {
     }
 };
 
-/* Makoto Trial 9 (difficulty 6) */
-static const TrialDef g_trial_makoto_9 = {
-    .chara_id = 16,
+/* Oro Trial 9 (difficulty 6) */
+static const TrialDef g_trial_oro_9 = {
+    .chara_id = 9,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 11,
@@ -1248,9 +1248,9 @@ static const TrialDef g_trial_makoto_9 = {
     }
 };
 
-/* Yang Trial 2 (difficulty 3) */
-static const TrialDef g_trial_yang_2 = {
-    .chara_id = 10,
+/* Dudley Trial 2 (difficulty 3) */
+static const TrialDef g_trial_dudley_2 = {
+    .chara_id = 4,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1262,9 +1262,9 @@ static const TrialDef g_trial_yang_2 = {
     }
 };
 
-/* Yang Trial 4 (difficulty 4) */
-static const TrialDef g_trial_yang_4 = {
-    .chara_id = 10,
+/* Dudley Trial 4 (difficulty 4) */
+static const TrialDef g_trial_dudley_4 = {
+    .chara_id = 4,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 6,
@@ -1278,9 +1278,9 @@ static const TrialDef g_trial_yang_4 = {
     }
 };
 
-/* Yang Trial 5 (difficulty 5) */
-static const TrialDef g_trial_yang_5 = {
-    .chara_id = 10,
+/* Dudley Trial 5 (difficulty 5) */
+static const TrialDef g_trial_dudley_5 = {
+    .chara_id = 4,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 7,
@@ -1295,9 +1295,9 @@ static const TrialDef g_trial_yang_5 = {
     }
 };
 
-/* Yang Trial 6 (difficulty 6) */
-static const TrialDef g_trial_yang_6 = {
-    .chara_id = 10,
+/* Dudley Trial 6 (difficulty 6) */
+static const TrialDef g_trial_dudley_6 = {
+    .chara_id = 4,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 12,
@@ -1317,9 +1317,9 @@ static const TrialDef g_trial_yang_6 = {
     }
 };
 
-/* Yang Trial 8 (difficulty 6) */
-static const TrialDef g_trial_yang_8 = {
-    .chara_id = 10,
+/* Dudley Trial 8 (difficulty 6) */
+static const TrialDef g_trial_dudley_8 = {
+    .chara_id = 4,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 5,
@@ -1332,9 +1332,9 @@ static const TrialDef g_trial_yang_8 = {
     }
 };
 
-/* Yang Trial 9 (difficulty 7) */
-static const TrialDef g_trial_yang_9 = {
-    .chara_id = 10,
+/* Dudley Trial 9 (difficulty 7) */
+static const TrialDef g_trial_dudley_9 = {
+    .chara_id = 4,
     .difficulty = 7,
     .gauge_max = 0,
     .num_steps = 7,
@@ -1349,9 +1349,9 @@ static const TrialDef g_trial_yang_9 = {
     }
 };
 
-/* Yun Trial 1 (difficulty 3) */
-static const TrialDef g_trial_yun_1 = {
-    .chara_id = 3,
+/* Urien Trial 1 (difficulty 3) */
+static const TrialDef g_trial_urien_1 = {
+    .chara_id = 13,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1363,9 +1363,9 @@ static const TrialDef g_trial_yun_1 = {
     }
 };
 
-/* Yun Trial 2 (difficulty 4) */
-static const TrialDef g_trial_yun_2 = {
-    .chara_id = 3,
+/* Urien Trial 2 (difficulty 4) */
+static const TrialDef g_trial_urien_2 = {
+    .chara_id = 13,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1377,9 +1377,9 @@ static const TrialDef g_trial_yun_2 = {
     }
 };
 
-/* Yun Trial 3 (difficulty 4) */
-static const TrialDef g_trial_yun_3 = {
-    .chara_id = 3,
+/* Urien Trial 3 (difficulty 4) */
+static const TrialDef g_trial_urien_3 = {
+    .chara_id = 13,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1391,9 +1391,9 @@ static const TrialDef g_trial_yun_3 = {
     }
 };
 
-/* Yun Trial 4 (difficulty 4) */
-static const TrialDef g_trial_yun_4 = {
-    .chara_id = 3,
+/* Urien Trial 4 (difficulty 4) */
+static const TrialDef g_trial_urien_4 = {
+    .chara_id = 13,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 6,
@@ -1407,9 +1407,9 @@ static const TrialDef g_trial_yun_4 = {
     }
 };
 
-/* Yun Trial 6 (difficulty 5) */
-static const TrialDef g_trial_yun_6 = {
-    .chara_id = 3,
+/* Urien Trial 6 (difficulty 5) */
+static const TrialDef g_trial_urien_6 = {
+    .chara_id = 13,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 5,
@@ -1422,9 +1422,9 @@ static const TrialDef g_trial_yun_6 = {
     }
 };
 
-/* Yun Trial 7 (difficulty 5) */
-static const TrialDef g_trial_yun_7 = {
-    .chara_id = 3,
+/* Urien Trial 7 (difficulty 5) */
+static const TrialDef g_trial_urien_7 = {
+    .chara_id = 13,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 11,
@@ -1443,9 +1443,9 @@ static const TrialDef g_trial_yun_7 = {
     }
 };
 
-/* Yun Trial 8 (difficulty 5) */
-static const TrialDef g_trial_yun_8 = {
-    .chara_id = 3,
+/* Urien Trial 8 (difficulty 5) */
+static const TrialDef g_trial_urien_8 = {
+    .chara_id = 13,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 11,
@@ -1464,9 +1464,9 @@ static const TrialDef g_trial_yun_8 = {
     }
 };
 
-/* Yun Trial 10 (difficulty 7) */
-static const TrialDef g_trial_yun_10 = {
-    .chara_id = 3,
+/* Urien Trial 10 (difficulty 7) */
+static const TrialDef g_trial_urien_10 = {
+    .chara_id = 13,
     .difficulty = 7,
     .gauge_max = 0,
     .num_steps = 10,
@@ -1484,9 +1484,9 @@ static const TrialDef g_trial_yun_10 = {
     }
 };
 
-/* Chun-Li Trial 1 (difficulty 1) */
-static const TrialDef g_trial_chun_li_1 = {
-    .chara_id = 15,
+/* Remy Trial 1 (difficulty 1) */
+static const TrialDef g_trial_remy_1 = {
+    .chara_id = 19,
     .difficulty = 1,
     .gauge_max = 0,
     .num_steps = 2,
@@ -1496,9 +1496,9 @@ static const TrialDef g_trial_chun_li_1 = {
     }
 };
 
-/* Chun-Li Trial 2 (difficulty 2) */
-static const TrialDef g_trial_chun_li_2 = {
-    .chara_id = 15,
+/* Remy Trial 2 (difficulty 2) */
+static const TrialDef g_trial_remy_2 = {
+    .chara_id = 19,
     .difficulty = 2,
     .gauge_max = 0,
     .num_steps = 3,
@@ -1509,9 +1509,9 @@ static const TrialDef g_trial_chun_li_2 = {
     }
 };
 
-/* Chun-Li Trial 3 (difficulty 3) */
-static const TrialDef g_trial_chun_li_3 = {
-    .chara_id = 15,
+/* Remy Trial 3 (difficulty 3) */
+static const TrialDef g_trial_remy_3 = {
+    .chara_id = 19,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1523,9 +1523,9 @@ static const TrialDef g_trial_chun_li_3 = {
     }
 };
 
-/* Chun-Li Trial 4 (difficulty 3) */
-static const TrialDef g_trial_chun_li_4 = {
-    .chara_id = 15,
+/* Remy Trial 4 (difficulty 3) */
+static const TrialDef g_trial_remy_4 = {
+    .chara_id = 19,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1537,9 +1537,9 @@ static const TrialDef g_trial_chun_li_4 = {
     }
 };
 
-/* Chun-Li Trial 5 (difficulty 3) */
-static const TrialDef g_trial_chun_li_5 = {
-    .chara_id = 15,
+/* Remy Trial 5 (difficulty 3) */
+static const TrialDef g_trial_remy_5 = {
+    .chara_id = 19,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 6,
@@ -1553,9 +1553,9 @@ static const TrialDef g_trial_chun_li_5 = {
     }
 };
 
-/* Chun-Li Trial 6 (difficulty 4) */
-static const TrialDef g_trial_chun_li_6 = {
-    .chara_id = 15,
+/* Remy Trial 6 (difficulty 4) */
+static const TrialDef g_trial_remy_6 = {
+    .chara_id = 19,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 5,
@@ -1568,9 +1568,9 @@ static const TrialDef g_trial_chun_li_6 = {
     }
 };
 
-/* Chun-Li Trial 7 (difficulty 4) */
-static const TrialDef g_trial_chun_li_7 = {
-    .chara_id = 15,
+/* Remy Trial 7 (difficulty 4) */
+static const TrialDef g_trial_remy_7 = {
+    .chara_id = 19,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1582,9 +1582,9 @@ static const TrialDef g_trial_chun_li_7 = {
     }
 };
 
-/* Q Trial 3 (difficulty 4) */
-static const TrialDef g_trial_q_3 = {
-    .chara_id = 17,
+/* Hugo Trial 3 (difficulty 4) */
+static const TrialDef g_trial_hugo_3 = {
+    .chara_id = 6,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1596,9 +1596,9 @@ static const TrialDef g_trial_q_3 = {
     }
 };
 
-/* Q Trial 4 (difficulty 4) */
-static const TrialDef g_trial_q_4 = {
-    .chara_id = 17,
+/* Hugo Trial 4 (difficulty 4) */
+static const TrialDef g_trial_hugo_4 = {
+    .chara_id = 6,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 7,
@@ -1613,9 +1613,9 @@ static const TrialDef g_trial_q_4 = {
     }
 };
 
-/* Q Trial 5 (difficulty 4) */
-static const TrialDef g_trial_q_5 = {
-    .chara_id = 17,
+/* Hugo Trial 5 (difficulty 4) */
+static const TrialDef g_trial_hugo_5 = {
+    .chara_id = 6,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1627,9 +1627,9 @@ static const TrialDef g_trial_q_5 = {
     }
 };
 
-/* Q Trial 6 (difficulty 5) */
-static const TrialDef g_trial_q_6 = {
-    .chara_id = 17,
+/* Hugo Trial 6 (difficulty 5) */
+static const TrialDef g_trial_hugo_6 = {
+    .chara_id = 6,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 1,
@@ -1638,9 +1638,9 @@ static const TrialDef g_trial_q_6 = {
     }
 };
 
-/* Q Trial 7 (difficulty 5) */
-static const TrialDef g_trial_q_7 = {
-    .chara_id = 17,
+/* Hugo Trial 7 (difficulty 5) */
+static const TrialDef g_trial_hugo_7 = {
+    .chara_id = 6,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 7,
@@ -1655,9 +1655,9 @@ static const TrialDef g_trial_q_7 = {
     }
 };
 
-/* Q Trial 8 (difficulty 6) */
-static const TrialDef g_trial_q_8 = {
-    .chara_id = 17,
+/* Hugo Trial 8 (difficulty 6) */
+static const TrialDef g_trial_hugo_8 = {
+    .chara_id = 6,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 7,
@@ -1672,9 +1672,9 @@ static const TrialDef g_trial_q_8 = {
     }
 };
 
-/* Q Trial 9 (difficulty 6) */
-static const TrialDef g_trial_q_9 = {
-    .chara_id = 17,
+/* Hugo Trial 9 (difficulty 6) */
+static const TrialDef g_trial_hugo_9 = {
+    .chara_id = 6,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 9,
@@ -1691,9 +1691,9 @@ static const TrialDef g_trial_q_9 = {
     }
 };
 
-/* Twelve Trial 3 (difficulty 3) */
-static const TrialDef g_trial_twelve_3 = {
-    .chara_id = 18,
+/* Necro Trial 3 (difficulty 3) */
+static const TrialDef g_trial_necro_3 = {
+    .chara_id = 5,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1705,9 +1705,9 @@ static const TrialDef g_trial_twelve_3 = {
     }
 };
 
-/* Twelve Trial 4 (difficulty 4) */
-static const TrialDef g_trial_twelve_4 = {
-    .chara_id = 18,
+/* Necro Trial 4 (difficulty 4) */
+static const TrialDef g_trial_necro_4 = {
+    .chara_id = 5,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1719,9 +1719,9 @@ static const TrialDef g_trial_twelve_4 = {
     }
 };
 
-/* Twelve Trial 5 (difficulty 4) */
-static const TrialDef g_trial_twelve_5 = {
-    .chara_id = 18,
+/* Necro Trial 5 (difficulty 4) */
+static const TrialDef g_trial_necro_5 = {
+    .chara_id = 5,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 3,
@@ -1732,9 +1732,9 @@ static const TrialDef g_trial_twelve_5 = {
     }
 };
 
-/* Twelve Trial 8 (difficulty 6) */
-static const TrialDef g_trial_twelve_8 = {
-    .chara_id = 18,
+/* Necro Trial 8 (difficulty 6) */
+static const TrialDef g_trial_necro_8 = {
+    .chara_id = 5,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 9,
@@ -1751,9 +1751,9 @@ static const TrialDef g_trial_twelve_8 = {
     }
 };
 
-/* Twelve Trial 9 (difficulty 6) */
-static const TrialDef g_trial_twelve_9 = {
-    .chara_id = 18,
+/* Necro Trial 9 (difficulty 6) */
+static const TrialDef g_trial_necro_9 = {
+    .chara_id = 5,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 7,
@@ -1768,9 +1768,9 @@ static const TrialDef g_trial_twelve_9 = {
     }
 };
 
-/* Remy Trial 1 (difficulty 1) */
-static const TrialDef g_trial_remy_1 = {
-    .chara_id = 19,
+/* Twelve Trial 1 (difficulty 1) */
+static const TrialDef g_trial_twelve_1 = {
+    .chara_id = 18,
     .difficulty = 1,
     .gauge_max = 0,
     .num_steps = 1,
@@ -1779,9 +1779,9 @@ static const TrialDef g_trial_remy_1 = {
     }
 };
 
-/* Remy Trial 2 (difficulty 2) */
-static const TrialDef g_trial_remy_2 = {
-    .chara_id = 19,
+/* Twelve Trial 2 (difficulty 2) */
+static const TrialDef g_trial_twelve_2 = {
+    .chara_id = 18,
     .difficulty = 2,
     .gauge_max = 0,
     .num_steps = 1,
@@ -1790,9 +1790,9 @@ static const TrialDef g_trial_remy_2 = {
     }
 };
 
-/* Remy Trial 3 (difficulty 3) */
-static const TrialDef g_trial_remy_3 = {
-    .chara_id = 19,
+/* Twelve Trial 3 (difficulty 3) */
+static const TrialDef g_trial_twelve_3 = {
+    .chara_id = 18,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1804,9 +1804,9 @@ static const TrialDef g_trial_remy_3 = {
     }
 };
 
-/* Remy Trial 4 (difficulty 4) */
-static const TrialDef g_trial_remy_4 = {
-    .chara_id = 19,
+/* Twelve Trial 4 (difficulty 4) */
+static const TrialDef g_trial_twelve_4 = {
+    .chara_id = 18,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1818,9 +1818,9 @@ static const TrialDef g_trial_remy_4 = {
     }
 };
 
-/* Remy Trial 5 (difficulty 4) */
-static const TrialDef g_trial_remy_5 = {
-    .chara_id = 19,
+/* Twelve Trial 5 (difficulty 4) */
+static const TrialDef g_trial_twelve_5 = {
+    .chara_id = 18,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 1,
@@ -1829,9 +1829,9 @@ static const TrialDef g_trial_remy_5 = {
     }
 };
 
-/* Remy Trial 6 (difficulty 4) */
-static const TrialDef g_trial_remy_6 = {
-    .chara_id = 19,
+/* Twelve Trial 6 (difficulty 4) */
+static const TrialDef g_trial_twelve_6 = {
+    .chara_id = 18,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 6,
@@ -1845,9 +1845,9 @@ static const TrialDef g_trial_remy_6 = {
     }
 };
 
-/* Remy Trial 7 (difficulty 5) */
-static const TrialDef g_trial_remy_7 = {
-    .chara_id = 19,
+/* Twelve Trial 7 (difficulty 5) */
+static const TrialDef g_trial_twelve_7 = {
+    .chara_id = 18,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1859,9 +1859,9 @@ static const TrialDef g_trial_remy_7 = {
     }
 };
 
-/* Remy Trial 8 (difficulty 5) */
-static const TrialDef g_trial_remy_8 = {
-    .chara_id = 19,
+/* Twelve Trial 8 (difficulty 5) */
+static const TrialDef g_trial_twelve_8 = {
+    .chara_id = 18,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1873,9 +1873,9 @@ static const TrialDef g_trial_remy_8 = {
     }
 };
 
-/* Remy Trial 9 (difficulty 5) */
-static const TrialDef g_trial_remy_9 = {
-    .chara_id = 19,
+/* Twelve Trial 9 (difficulty 5) */
+static const TrialDef g_trial_twelve_9 = {
+    .chara_id = 18,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 5,
@@ -1888,9 +1888,9 @@ static const TrialDef g_trial_remy_9 = {
     }
 };
 
-/* Remy Trial 10 (difficulty 6) */
-static const TrialDef g_trial_remy_10 = {
-    .chara_id = 19,
+/* Twelve Trial 10 (difficulty 6) */
+static const TrialDef g_trial_twelve_10 = {
+    .chara_id = 18,
     .difficulty = 6,
     .gauge_max = 0,
     .num_steps = 6,
@@ -1904,9 +1904,9 @@ static const TrialDef g_trial_remy_10 = {
     }
 };
 
-/* Urien Trial 2 (difficulty 3) */
-static const TrialDef g_trial_urien_2 = {
-    .chara_id = 13,
+/* Q Trial 2 (difficulty 3) */
+static const TrialDef g_trial_q_2 = {
+    .chara_id = 17,
     .difficulty = 3,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1918,9 +1918,9 @@ static const TrialDef g_trial_urien_2 = {
     }
 };
 
-/* Urien Trial 4 (difficulty 4) */
-static const TrialDef g_trial_urien_4 = {
-    .chara_id = 13,
+/* Q Trial 4 (difficulty 4) */
+static const TrialDef g_trial_q_4 = {
+    .chara_id = 17,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1932,9 +1932,9 @@ static const TrialDef g_trial_urien_4 = {
     }
 };
 
-/* Urien Trial 5 (difficulty 4) */
-static const TrialDef g_trial_urien_5 = {
-    .chara_id = 13,
+/* Q Trial 5 (difficulty 4) */
+static const TrialDef g_trial_q_5 = {
+    .chara_id = 17,
     .difficulty = 4,
     .gauge_max = 0,
     .num_steps = 4,
@@ -1946,9 +1946,9 @@ static const TrialDef g_trial_urien_5 = {
     }
 };
 
-/* Urien Trial 6 (difficulty 5) */
-static const TrialDef g_trial_urien_6 = {
-    .chara_id = 13,
+/* Q Trial 6 (difficulty 5) */
+static const TrialDef g_trial_q_6 = {
+    .chara_id = 17,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 2,
@@ -1958,9 +1958,9 @@ static const TrialDef g_trial_urien_6 = {
     }
 };
 
-/* Urien Trial 8 (difficulty 5) */
-static const TrialDef g_trial_urien_8 = {
-    .chara_id = 13,
+/* Q Trial 8 (difficulty 5) */
+static const TrialDef g_trial_q_8 = {
+    .chara_id = 17,
     .difficulty = 5,
     .gauge_max = 0,
     .num_steps = 6,
@@ -2023,93 +2023,14 @@ static const TrialDef* g_trials_sean[] = {
     &g_trial_sean_6,
 };
 
-static const TrialDef* g_trials_dudley[] = {
-    &g_trial_dudley_1,
-    &g_trial_dudley_2,
-    &g_trial_dudley_3,
-    &g_trial_dudley_6,
-    &g_trial_dudley_7,
-    &g_trial_dudley_8,
-    &g_trial_dudley_9,
-};
-
-static const TrialDef* g_trials_necro[] = {
-    &g_trial_necro_1,
-    &g_trial_necro_2,
-    &g_trial_necro_3,
-    &g_trial_necro_4,
-    &g_trial_necro_5,
-    &g_trial_necro_6,
-    &g_trial_necro_7,
-    &g_trial_necro_8,
-};
-
-static const TrialDef* g_trials_hugo[] = {
-    &g_trial_hugo_2,
-    &g_trial_hugo_3,
-    &g_trial_hugo_4,
-    &g_trial_hugo_5,
-    &g_trial_hugo_7,
-};
-
 static const TrialDef* g_trials_ibuki[] = {
+    &g_trial_ibuki_1,
     &g_trial_ibuki_2,
-    &g_trial_ibuki_4,
-    &g_trial_ibuki_5,
+    &g_trial_ibuki_3,
     &g_trial_ibuki_6,
     &g_trial_ibuki_7,
     &g_trial_ibuki_8,
     &g_trial_ibuki_9,
-    &g_trial_ibuki_10,
-};
-
-static const TrialDef* g_trials_elena[] = {
-    &g_trial_elena_2,
-    &g_trial_elena_3,
-    &g_trial_elena_4,
-    &g_trial_elena_5,
-    &g_trial_elena_7,
-    &g_trial_elena_8,
-    &g_trial_elena_10,
-};
-
-static const TrialDef* g_trials_oro[] = {
-    &g_trial_oro_2,
-    &g_trial_oro_3,
-    &g_trial_oro_4,
-    &g_trial_oro_5,
-    &g_trial_oro_6,
-    &g_trial_oro_8,
-};
-
-static const TrialDef* g_trials_makoto[] = {
-    &g_trial_makoto_1,
-    &g_trial_makoto_4,
-    &g_trial_makoto_5,
-    &g_trial_makoto_6,
-    &g_trial_makoto_7,
-    &g_trial_makoto_8,
-    &g_trial_makoto_9,
-};
-
-static const TrialDef* g_trials_yang[] = {
-    &g_trial_yang_2,
-    &g_trial_yang_4,
-    &g_trial_yang_5,
-    &g_trial_yang_6,
-    &g_trial_yang_8,
-    &g_trial_yang_9,
-};
-
-static const TrialDef* g_trials_yun[] = {
-    &g_trial_yun_1,
-    &g_trial_yun_2,
-    &g_trial_yun_3,
-    &g_trial_yun_4,
-    &g_trial_yun_6,
-    &g_trial_yun_7,
-    &g_trial_yun_8,
-    &g_trial_yun_10,
 };
 
 static const TrialDef* g_trials_chun_li[] = {
@@ -2120,24 +2041,75 @@ static const TrialDef* g_trials_chun_li[] = {
     &g_trial_chun_li_5,
     &g_trial_chun_li_6,
     &g_trial_chun_li_7,
+    &g_trial_chun_li_8,
 };
 
-static const TrialDef* g_trials_q[] = {
-    &g_trial_q_3,
-    &g_trial_q_4,
-    &g_trial_q_5,
-    &g_trial_q_6,
-    &g_trial_q_7,
-    &g_trial_q_8,
-    &g_trial_q_9,
+static const TrialDef* g_trials_elena[] = {
+    &g_trial_elena_2,
+    &g_trial_elena_3,
+    &g_trial_elena_4,
+    &g_trial_elena_5,
+    &g_trial_elena_7,
 };
 
-static const TrialDef* g_trials_twelve[] = {
-    &g_trial_twelve_3,
-    &g_trial_twelve_4,
-    &g_trial_twelve_5,
-    &g_trial_twelve_8,
-    &g_trial_twelve_9,
+static const TrialDef* g_trials_makoto[] = {
+    &g_trial_makoto_2,
+    &g_trial_makoto_4,
+    &g_trial_makoto_5,
+    &g_trial_makoto_6,
+    &g_trial_makoto_7,
+    &g_trial_makoto_8,
+    &g_trial_makoto_9,
+    &g_trial_makoto_10,
+};
+
+static const TrialDef* g_trials_yun[] = {
+    &g_trial_yun_2,
+    &g_trial_yun_3,
+    &g_trial_yun_4,
+    &g_trial_yun_5,
+    &g_trial_yun_7,
+    &g_trial_yun_8,
+    &g_trial_yun_10,
+};
+
+static const TrialDef* g_trials_yang[] = {
+    &g_trial_yang_2,
+    &g_trial_yang_3,
+    &g_trial_yang_4,
+    &g_trial_yang_5,
+    &g_trial_yang_6,
+    &g_trial_yang_8,
+};
+
+static const TrialDef* g_trials_oro[] = {
+    &g_trial_oro_1,
+    &g_trial_oro_4,
+    &g_trial_oro_5,
+    &g_trial_oro_6,
+    &g_trial_oro_7,
+    &g_trial_oro_8,
+    &g_trial_oro_9,
+};
+
+static const TrialDef* g_trials_dudley[] = {
+    &g_trial_dudley_2,
+    &g_trial_dudley_4,
+    &g_trial_dudley_5,
+    &g_trial_dudley_6,
+    &g_trial_dudley_8,
+    &g_trial_dudley_9,
+};
+
+static const TrialDef* g_trials_urien[] = {
+    &g_trial_urien_1,
+    &g_trial_urien_2,
+    &g_trial_urien_3,
+    &g_trial_urien_4,
+    &g_trial_urien_6,
+    &g_trial_urien_7,
+    &g_trial_urien_8,
+    &g_trial_urien_10,
 };
 
 static const TrialDef* g_trials_remy[] = {
@@ -2148,17 +2120,45 @@ static const TrialDef* g_trials_remy[] = {
     &g_trial_remy_5,
     &g_trial_remy_6,
     &g_trial_remy_7,
-    &g_trial_remy_8,
-    &g_trial_remy_9,
-    &g_trial_remy_10,
 };
 
-static const TrialDef* g_trials_urien[] = {
-    &g_trial_urien_2,
-    &g_trial_urien_4,
-    &g_trial_urien_5,
-    &g_trial_urien_6,
-    &g_trial_urien_8,
+static const TrialDef* g_trials_hugo[] = {
+    &g_trial_hugo_3,
+    &g_trial_hugo_4,
+    &g_trial_hugo_5,
+    &g_trial_hugo_6,
+    &g_trial_hugo_7,
+    &g_trial_hugo_8,
+    &g_trial_hugo_9,
+};
+
+static const TrialDef* g_trials_necro[] = {
+    &g_trial_necro_3,
+    &g_trial_necro_4,
+    &g_trial_necro_5,
+    &g_trial_necro_8,
+    &g_trial_necro_9,
+};
+
+static const TrialDef* g_trials_twelve[] = {
+    &g_trial_twelve_1,
+    &g_trial_twelve_2,
+    &g_trial_twelve_3,
+    &g_trial_twelve_4,
+    &g_trial_twelve_5,
+    &g_trial_twelve_6,
+    &g_trial_twelve_7,
+    &g_trial_twelve_8,
+    &g_trial_twelve_9,
+    &g_trial_twelve_10,
+};
+
+static const TrialDef* g_trials_q[] = {
+    &g_trial_q_2,
+    &g_trial_q_4,
+    &g_trial_q_5,
+    &g_trial_q_6,
+    &g_trial_q_8,
 };
 
 /* Master character-to-trials lookup */
@@ -2168,20 +2168,20 @@ static const TrialCharacterDef g_all_trial_characters[] = {
     { 11, 5, g_trials_ken, "Ken" },
     { 14, 7, g_trials_gouki, "Gouki" },
     { 12, 5, g_trials_sean, "Sean" },
-    { 4, 7, g_trials_dudley, "Dudley" },
-    { 5, 8, g_trials_necro, "Necro" },
-    { 6, 5, g_trials_hugo, "Hugo" },
-    { 7, 8, g_trials_ibuki, "Ibuki" },
-    { 8, 7, g_trials_elena, "Elena" },
-    { 9, 6, g_trials_oro, "Oro" },
-    { 16, 7, g_trials_makoto, "Makoto" },
+    { 7, 7, g_trials_ibuki, "Ibuki" },
+    { 15, 8, g_trials_chun_li, "Chun-Li" },
+    { 8, 5, g_trials_elena, "Elena" },
+    { 16, 8, g_trials_makoto, "Makoto" },
+    { 3, 7, g_trials_yun, "Yun" },
     { 10, 6, g_trials_yang, "Yang" },
-    { 3, 8, g_trials_yun, "Yun" },
-    { 15, 7, g_trials_chun_li, "Chun-Li" },
-    { 17, 7, g_trials_q, "Q" },
-    { 18, 5, g_trials_twelve, "Twelve" },
-    { 19, 10, g_trials_remy, "Remy" },
-    { 13, 5, g_trials_urien, "Urien" },
+    { 9, 7, g_trials_oro, "Oro" },
+    { 4, 6, g_trials_dudley, "Dudley" },
+    { 13, 8, g_trials_urien, "Urien" },
+    { 19, 7, g_trials_remy, "Remy" },
+    { 6, 7, g_trials_hugo, "Hugo" },
+    { 5, 5, g_trials_necro, "Necro" },
+    { 18, 10, g_trials_twelve, "Twelve" },
+    { 17, 5, g_trials_q, "Q" },
 };
 
 #define NUM_TRIAL_CHARACTERS 19

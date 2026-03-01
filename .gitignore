@@ -58,3 +58,4 @@ tools/lobby-server/.env
 /fightcade-fbneo
 *.log
 tools/gifx.sh
+/src/lua

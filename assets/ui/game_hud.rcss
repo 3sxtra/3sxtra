@@ -335,8 +335,23 @@ body {
     color: rgba(255, 255, 255, 180);
     font-effect: shadow(1dp 1dp #000000);
 }
-.p1-score { left: 8dp; text-align: left; }
-.p2-score { left: 328dp; width: 48dp; text-align: right; }
+/* Score: native right-aligns at tile 17 (P1) / tile 37 (P2) = 136dp / 296dp */
+.p1-score { left: 0dp; width: 136dp; text-align: right; }
+.p2-score { left: 0dp; width: 296dp; text-align: right; }
+
+/* "PRESS NP START" text for CPU-controlled sides */
+.press-start {
+    display: block;
+    position: absolute;
+    top: 0dp;
+    font-size: 8dp;
+    color: #4060FF;
+    font-effect: shadow(1dp 1dp #000000);
+    animation: press-start-blink 1.3s sine-in-out infinite;
+}
+/* Native: P1 at tile 5 (40dp), P2 at tile 30 (240dp), y=0 */
+.p1-press-start { left: 40dp; }
+.p2-press-start { left: 240dp; }
 
 /* ── Training stun counter ──────────────────────────────────── */
 #hud-training-stun {
@@ -387,5 +402,12 @@ body {
       0% { opacity: 0; }
      15% { opacity: 1; }
      85% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes press-start-blink {
+      0% { opacity: 1; }
+     62% { opacity: 1; }
+     63% { opacity: 0; }
     100% { opacity: 0; }
 }
