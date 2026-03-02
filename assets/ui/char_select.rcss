@@ -4,7 +4,7 @@ body {
     height: 224dp;
     font-family: "Noto Sans JP Thin";
     font-size: 14dp;
-    color: #ffffffee;
+    color: #ffffff;
 }
 
 .sel-overlay {
@@ -16,40 +16,65 @@ body {
     height: 100%;
 }
 
-/* ── Character Name ── */
+/* ── Base Name Plate ── */
 .sel-name {
     display: block;
     position: absolute;
-    font-size: 18dp;
     font-weight: bold;
     color: #ffffff;
     text-transform: uppercase;
     font-effect: shadow(2dp 2dp #000000cc);
 }
 
-/* 1P name: top-left area, matching EFF38 rest position for player 0 */
-.sel-name-1p {
-    top: 16dp;
-    left: 68dp;
+/* ── Single Player: one line, top-left ── */
+.sel-name-solo {
+    top: 10dp;
+    left: 28dp;
+    font-size: 20dp;
 }
 
-/* 2P name: top-right area, matching EFF38 rest position for player 1 */
-.sel-name-2p {
-    top: 16dp;
-    right: 68dp;
+/* ── Two Player: P1 bottom-left, two lines ── */
+.sel-name-dual-1p {
+    bottom: 32dp;
+    left: 18dp;
+    text-align: left;
+}
+
+/* ── Two Player: P2 top-right, two lines ── */
+.sel-name-dual-2p {
+    top: 14dp;
+    right: 18dp;
     text-align: right;
 }
 
-/* ── Timer ── */
+.sel-player-tag {
+    font-size: 18dp;
+}
+
+.sel-char-name {
+    font-size: 22dp;
+}
+
+/* ── Timer (shared base) ── */
 .sel-timer {
     display: block;
     position: absolute;
-    bottom: 10dp;
-    right: 48dp;
     width: 48dp;
     text-align: center;
     font-size: 20dp;
     font-weight: bold;
-    color: #ffcc44;
+    color: #ffffff;
     font-effect: shadow(2dp 2dp #000000aa);
+}
+
+/* Solo mode: bottom-right near native TIME label */
+.sel-timer-solo {
+    bottom: 6dp;
+    right: 22dp;
+}
+
+/* Dual mode: bottom, center-right */
+.sel-timer-dual {
+    bottom: 6dp;
+    left: 50%;
 }

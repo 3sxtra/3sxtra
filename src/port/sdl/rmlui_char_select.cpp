@@ -43,8 +43,13 @@ extern "C" void rmlui_char_select_init(void) {
     if (!ctor)
         return;
 
-    // Timer countdown (Select_Timer global)
-    ctor.BindFunc("sel_timer", [](Rml::Variant& v) { v = (int)Select_Timer; });
+    // Timer countdown — Select_Timer is BCD-encoded (0x30 = "30", 0x21 = "21")
+    ctor.BindFunc("sel_timer", [](Rml::Variant& v) {
+        int bcd = (int)Select_Timer;
+        int tens = (bcd >> 4) & 0xF;
+        int ones = bcd & 0xF;
+        v = tens * 10 + ones;
+    });
 
     // Character names — read from cursor position through ID_of_Face grid
     ctor.BindFunc("sel_p1_name", [](Rml::Variant& v) {
@@ -60,8 +65,17 @@ extern "C" void rmlui_char_select_init(void) {
         v = Rml::String(char_name(char_id));
     });
 
-    // State flags
-    ctor.BindFunc("sel_is_2p", [](Rml::Variant& v) { v = (bool)(Play_Type == 1); });
+    // Player visibility flags — three scenarios
+    // Select_Status[0] == 3 means both players; otherwise single player (Aborigine side)
+    ctor.BindFunc("sel_p1_solo", [](Rml::Variant& v) {
+        v = (bool)(Select_Status[0] != 3 && Aborigine == 0);
+    });
+    ctor.BindFunc("sel_p2_solo", [](Rml::Variant& v) {
+        v = (bool)(Select_Status[0] != 3 && Aborigine == 1);
+    });
+    ctor.BindFunc("sel_both_active", [](Rml::Variant& v) {
+        v = (bool)(Select_Status[0] == 3);
+    });
     ctor.BindFunc("sel_p1_confirmed", [](Rml::Variant& v) { v = (bool)(Sel_PL_Complete[0] != 0); });
     ctor.BindFunc("sel_p2_confirmed", [](Rml::Variant& v) { v = (bool)(Sel_PL_Complete[1] != 0); });
 
@@ -77,7 +91,9 @@ extern "C" void rmlui_char_select_update(void) {
     s_model_handle.DirtyVariable("sel_timer");
     s_model_handle.DirtyVariable("sel_p1_name");
     s_model_handle.DirtyVariable("sel_p2_name");
-    s_model_handle.DirtyVariable("sel_is_2p");
+    s_model_handle.DirtyVariable("sel_p1_solo");
+    s_model_handle.DirtyVariable("sel_p2_solo");
+    s_model_handle.DirtyVariable("sel_both_active");
     s_model_handle.DirtyVariable("sel_p1_confirmed");
     s_model_handle.DirtyVariable("sel_p2_confirmed");
 }

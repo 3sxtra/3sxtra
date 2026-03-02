@@ -52,6 +52,7 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "port/sdl/rmlui_char_select.h"
 #include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
 
 static void Switch_Work();
 static void Sel_PL_Control();
@@ -1622,6 +1623,9 @@ static void Check_Exit() {
 /** @brief Exit phase 1 — wait until all operators have arts complete, dismiss red lines, route to handicap or normal
  * exit. */
 static void Exit_1st() {
+    if (use_rmlui && rmlui_screen_select)
+        rmlui_char_select_hide();
+
     if (plw[0].wu.pl_operator != 0 && Sel_Arts_Complete[0] >= 0) {
         return;
     }

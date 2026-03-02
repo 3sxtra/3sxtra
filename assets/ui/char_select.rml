@@ -6,18 +6,32 @@
 </head>
 <body data-model="char_select">
     <div id="sel-overlay" class="sel-overlay">
-        <!-- 1P character name (always visible) -->
-        <div class="sel-name sel-name-1p">
-            <span>{{ sel_p1_name }}</span>
+
+        <!-- ═══ SINGLE PLAYER: one line at top-left ═══ -->
+        <div class="sel-name sel-name-solo" data-if="sel_p1_solo">
+            <span>1P {{ sel_p1_name }}</span>
+        </div>
+        <div class="sel-name sel-name-solo" data-if="sel_p2_solo">
+            <span>2P {{ sel_p2_name }}</span>
         </div>
 
-        <!-- 2P character name (visible in VS mode) -->
-        <div class="sel-name sel-name-2p" data-if="sel_is_2p">
-            <span>{{ sel_p2_name }}</span>
+        <!-- ═══ TWO PLAYER: two lines each ═══ -->
+        <div class="sel-name sel-name-dual-1p" data-if="sel_both_active">
+            <div class="sel-player-tag">1P</div>
+            <div class="sel-char-name">{{ sel_p1_name }}</div>
+        </div>
+        <div class="sel-name sel-name-dual-2p" data-if="sel_both_active">
+            <div class="sel-char-name">{{ sel_p2_name }}</div>
+            <div class="sel-player-tag">2P</div>
         </div>
 
-        <!-- Timer -->
-        <div class="sel-timer">
+        <!-- Timer: solo mode (bottom-right) -->
+        <div class="sel-timer sel-timer-solo" data-if="!sel_both_active">
+            <span>{{ sel_timer }}</span>
+        </div>
+
+        <!-- Timer: dual mode (top-center) -->
+        <div class="sel-timer sel-timer-dual" data-if="sel_both_active">
             <span>{{ sel_timer }}</span>
         </div>
     </div>
