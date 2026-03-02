@@ -14,6 +14,7 @@
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
+#include "port/sdl/rmlui_char_select.h"
 
 static void EFF42_SUDDENLY(WORK_Other* ewk);
 static void EFF42_SLIDE_IN(WORK_Other* ewk);
@@ -30,7 +31,8 @@ void effect_42_move(WORK_Other* ewk) {
     if (ewk->wu.be_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-        sort_push_request4(&ewk->wu);
+        if (!rmlui_char_select_visible)
+            sort_push_request4(&ewk->wu);
     }
 }
 

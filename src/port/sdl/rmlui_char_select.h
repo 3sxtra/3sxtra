@@ -15,6 +15,9 @@ void rmlui_char_select_show(void);
 void rmlui_char_select_hide(void);
 void rmlui_char_select_shutdown(void);
 
+/** True while the RmlUI char select overlay is visible (set by show/hide). */
+extern bool rmlui_char_select_visible;
+
 #ifdef __cplusplus
 }
 #endif

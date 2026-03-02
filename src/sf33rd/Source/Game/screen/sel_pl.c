@@ -1617,15 +1617,26 @@ static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
 static void Check_Exit() {
     void (*Sel_Exit_Tbl[10])() = { Exit_1st, Exit_2nd, Exit_3rd,     Exit_4th,     Exit_5th,
                                    Exit_6th, Exit_7th, Handicap_1st, Handicap_2nd, Handicap_3rd };
+
+    /* Hide the RmlUI char-select overlay once when the exit sequence starts.
+     * Exit_No==0 is the normal selection state (runs every frame);
+     * Exit_No>=1 means the player confirmed and the exit sequence began. */
+    static bool s_exit_hidden = false;
+    if (Exit_No >= 1 && use_rmlui && rmlui_screen_select) {
+        if (!s_exit_hidden) {
+            rmlui_char_select_hide();
+            s_exit_hidden = true;
+        }
+    } else {
+        s_exit_hidden = false;
+    }
+
     Sel_Exit_Tbl[Exit_No]();
 }
 
 /** @brief Exit phase 1 — wait until all operators have arts complete, dismiss red lines, route to handicap or normal
  * exit. */
 static void Exit_1st() {
-    if (use_rmlui && rmlui_screen_select)
-        rmlui_char_select_hide();
-
     if (plw[0].wu.pl_operator != 0 && Sel_Arts_Complete[0] >= 0) {
         return;
     }

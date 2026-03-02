@@ -33,6 +33,7 @@ static const char* char_name(int idx) {
 
 static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
+bool rmlui_char_select_visible = false;
 
 extern "C" void rmlui_char_select_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
@@ -100,13 +101,16 @@ extern "C" void rmlui_char_select_update(void) {
 
 extern "C" void rmlui_char_select_show(void) {
     rmlui_wrapper_show_game_document("char_select");
+    rmlui_char_select_visible = true;
 }
 
 extern "C" void rmlui_char_select_hide(void) {
     rmlui_wrapper_hide_game_document("char_select");
+    rmlui_char_select_visible = false;
 }
 
 extern "C" void rmlui_char_select_shutdown(void) {
+    rmlui_char_select_visible = false;
     if (s_model_registered) {
         rmlui_wrapper_hide_game_document("char_select");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
