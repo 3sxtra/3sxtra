@@ -70,45 +70,88 @@ extern "C" void rmlui_char_select_init(void) {
     if (!ctor)
         return;
 
+    // Phase flag: true during selection, false during VS screen transition
+    ctor.BindFunc("sel_phase_select", [](Rml::Variant& v) { v = (bool)(Exit_No == 0); });
+
     // Timer countdown — Select_Timer is BCD-encoded (0x30 = "30", 0x21 = "21")
     ctor.BindFunc("sel_timer", [](Rml::Variant& v) {
-        int bcd = (int)Select_Timer;
-        int tens = (bcd >> 4) & 0xF;
-        int ones = bcd & 0xF;
-        v = tens * 10 + ones;
+        if (Exit_No >= 1) {
+            v = Rml::String("");
+        } else {
+            int bcd = (int)Select_Timer;
+            int tens = (bcd >> 4) & 0xF;
+            int ones = bcd & 0xF;
+            v = Rml::String(std::to_string(tens)) + Rml::String(std::to_string(ones));
+        }
     });
 
     // Character names — read from cursor position through ID_of_Face grid
     ctor.BindFunc("sel_p1_name", [](Rml::Variant& v) {
-        int char_id = ID_of_Face[Cursor_Y[0]][Cursor_X[0]];
-        if (char_id < 0)
-            char_id = 0;
-        v = Rml::String(char_name(char_id));
+        if (Exit_No >= 1) {
+            v = Rml::String("");
+        } else {
+            int char_id = ID_of_Face[Cursor_Y[0]][Cursor_X[0]];
+            if (char_id < 0)
+                char_id = 0;
+            v = Rml::String(char_name(char_id));
+        }
     });
     ctor.BindFunc("sel_p2_name", [](Rml::Variant& v) {
-        int char_id = ID_of_Face[Cursor_Y[1]][Cursor_X[1]];
-        if (char_id < 0)
-            char_id = 0;
-        v = Rml::String(char_name(char_id));
+        if (Exit_No >= 1) {
+            v = Rml::String("");
+        } else {
+            int char_id = ID_of_Face[Cursor_Y[1]][Cursor_X[1]];
+            if (char_id < 0)
+                char_id = 0;
+            v = Rml::String(char_name(char_id));
+        }
     });
 
     // Player visibility flags — three scenarios
     // Select_Status[0] == 3 means both players; otherwise single player (Aborigine side)
+    // Only bind single/dual when players are not in the exit sequence
     ctor.BindFunc("sel_p1_solo", [](Rml::Variant& v) {
-        v = (bool)(Select_Status[0] != 3 && Aborigine == 0);
+        v = (bool)(plw[0].wu.pl_operator != 0 && plw[1].wu.pl_operator == 0 && Exit_No == 0);
     });
     ctor.BindFunc("sel_p2_solo", [](Rml::Variant& v) {
-        v = (bool)(Select_Status[0] != 3 && Aborigine == 1);
+        v = (bool)(plw[0].wu.pl_operator == 0 && plw[1].wu.pl_operator != 0 && Exit_No == 0);
     });
     ctor.BindFunc("sel_both_active", [](Rml::Variant& v) {
-        v = (bool)(Select_Status[0] == 3);
+        v = (bool)(plw[0].wu.pl_operator != 0 && plw[1].wu.pl_operator != 0 && Exit_No == 0);
     });
+    
+    ctor.BindFunc("sel_banner_visible", [](Rml::Variant& v) {
+        if (Exit_No >= 1) {
+            v = false;
+            return;
+        }
+        bool is_p1_solo = (plw[0].wu.pl_operator != 0 && plw[1].wu.pl_operator == 0);
+        bool is_p2_solo = (plw[0].wu.pl_operator == 0 && plw[1].wu.pl_operator != 0);
+        
+        if (is_p1_solo) {
+            v = (bool)(Sel_PL_Complete[0] == 0);
+        } else if (is_p2_solo) {
+            v = (bool)(Sel_PL_Complete[1] == 0);
+        } else {
+            v = false;
+        }
+    });
+
     ctor.BindFunc("sel_p1_confirmed", [](Rml::Variant& v) { v = (bool)(Sel_PL_Complete[0] != 0); });
     ctor.BindFunc("sel_p2_confirmed", [](Rml::Variant& v) { v = (bool)(Sel_PL_Complete[1] != 0); });
 
     ctor.BindFunc("sel_p1_sa_visible", [](Rml::Variant& v) {
-        // Visible when player has picked a character but hasn't finished the SA pick
-        v = (bool)(Sel_PL_Complete[0] != 0 && Sel_Arts_Complete[0] == 0);
+        if (Exit_No >= 1) {
+            // During the VS screen transition, show if they completed selection
+            v = (bool)(Sel_Arts_Complete[0] != 0);
+        } else {
+            // During select screen, show when they picked character but not finished art
+            v = (bool)(Sel_PL_Complete[0] != 0 && Sel_Arts_Complete[0] == 0);
+        }
+    });
+    ctor.BindFunc("sel_p1_sa_active", [](Rml::Variant& v) {
+        // Active when they are still picking (not confirmed and not exiting)
+        v = (bool)(Sel_Arts_Complete[0] == 0 && Exit_No == 0);
     });
     ctor.BindFunc("sel_p1_sa_current_name", [](Rml::Variant& v) {
         int char_idx = My_char[0];
@@ -126,7 +169,14 @@ extern "C" void rmlui_char_select_init(void) {
     });
 
     ctor.BindFunc("sel_p2_sa_visible", [](Rml::Variant& v) {
-        v = (bool)(Sel_PL_Complete[1] != 0 && Sel_Arts_Complete[1] == 0);
+        if (Exit_No >= 1) {
+            v = (bool)(Sel_Arts_Complete[1] != 0);
+        } else {
+            v = (bool)(Sel_PL_Complete[1] != 0 && Sel_Arts_Complete[1] == 0);
+        }
+    });
+    ctor.BindFunc("sel_p2_sa_active", [](Rml::Variant& v) {
+        v = (bool)(Sel_Arts_Complete[1] == 0 && Exit_No == 0);
     });
     ctor.BindFunc("sel_p2_sa_current_name", [](Rml::Variant& v) {
         int char_idx = My_char[1];
@@ -173,7 +223,9 @@ extern "C" void rmlui_char_select_update(void) {
         return;
 
     // All bindings are BindFunc (evaluated each frame), just dirty them
+    s_model_handle.DirtyVariable("sel_phase_select");
     s_model_handle.DirtyVariable("sel_timer");
+    s_model_handle.DirtyVariable("sel_banner_visible");
     s_model_handle.DirtyVariable("sel_p1_name");
     s_model_handle.DirtyVariable("sel_p2_name");
     s_model_handle.DirtyVariable("sel_p1_solo");
@@ -182,9 +234,11 @@ extern "C" void rmlui_char_select_update(void) {
     s_model_handle.DirtyVariable("sel_p1_confirmed");
     s_model_handle.DirtyVariable("sel_p2_confirmed");
     s_model_handle.DirtyVariable("sel_p1_sa_visible");
+    s_model_handle.DirtyVariable("sel_p1_sa_active");
     s_model_handle.DirtyVariable("sel_p1_sa_current_name");
     s_model_handle.DirtyVariable("sel_p1_sa_current_numeral");
     s_model_handle.DirtyVariable("sel_p2_sa_visible");
+    s_model_handle.DirtyVariable("sel_p2_sa_active");
     s_model_handle.DirtyVariable("sel_p2_sa_current_name");
     s_model_handle.DirtyVariable("sel_p2_sa_current_numeral");
 }

@@ -26,7 +26,7 @@
         </div>
 
         <!-- Timer: solo mode (bottom-right) -->
-        <div class="sel-timer sel-timer-solo" data-if="!sel_both_active">
+        <div class="sel-timer sel-timer-solo" data-if="sel_p1_solo || sel_p2_solo">
             <span class="sel-time-label">TIME</span>
             <span>{{ sel_timer }}</span>
         </div>
@@ -38,13 +38,13 @@
         </div>
 
         <!-- PLAYER SELECT banner (solo mode only) -->
-        <div class="sel-banner" data-if="!sel_both_active">
+        <div class="sel-banner" data-if="sel_banner_visible">
             <div class="sel-banner-text">PLAYER SELECT</div>
         </div>
 
         <!-- ═══ SUPER ARTS SELECTION P1 ═══ -->
         <div class="sa-container sa-p1" data-if="sel_p1_sa_visible">
-            <div class="sa-plate active">
+            <div class="sa-plate" data-class-active="sel_p1_sa_active">
                 <div class="sa-numeral">{{ sel_p1_sa_current_numeral }}</div>
                 <div class="sa-name-text">{{ sel_p1_sa_current_name }}</div>
                 <div class="sa-cursor sa-cursor-up"></div>
@@ -54,7 +54,7 @@
 
         <!-- ═══ SUPER ARTS SELECTION P2 ═══ -->
         <div class="sa-container sa-p2" data-if="sel_p2_sa_visible">
-            <div class="sa-plate active">
+            <div class="sa-plate" data-class-active="sel_p2_sa_active">
                 <div class="sa-numeral">{{ sel_p2_sa_current_numeral }}</div>
                 <div class="sa-name-text">{{ sel_p2_sa_current_name }}</div>
                 <div class="sa-cursor sa-cursor-up"></div>
