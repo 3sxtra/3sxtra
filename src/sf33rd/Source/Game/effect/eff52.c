@@ -6,6 +6,7 @@
 #include "sf33rd/Source/Game/effect/eff52.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "port/sdl/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/eff76.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
@@ -14,7 +15,6 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
-#include "port/sdl/rmlui_char_select.h"
 
 static void Setup_Char_52(WORK_Other* ewk);
 static void Setup_Pos_52(WORK_Other* ewk);

@@ -6,6 +6,7 @@
 #include "sf33rd/Source/Game/effect/effe0.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "port/sdl/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -94,7 +95,8 @@ void effect_E0_move(WORK_Other* ewk) {
 
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-        sort_push_request4(&ewk->wu);
+        if (!rmlui_char_select_visible)
+            sort_push_request4(&ewk->wu);
         return;
 
     default:
@@ -108,7 +110,8 @@ void effect_E0_move(WORK_Other* ewk) {
 
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-    sort_push_request4(&ewk->wu);
+    if (!rmlui_char_select_visible)
+        sort_push_request4(&ewk->wu);
 }
 
 static void Setup_Char_E0(WORK_Other* ewk) {

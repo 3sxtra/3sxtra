@@ -7,6 +7,8 @@
 
 #ifdef __cplusplus
 extern "C" {
+#else
+#include <stdbool.h>
 #endif
 
 void rmlui_char_select_init(void);

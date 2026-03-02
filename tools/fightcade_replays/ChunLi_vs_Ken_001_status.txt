@@ -1,0 +1,5 @@
+COMPLETE
+frames=14972
+csv=ChunLi_vs_Ken_001_full.csv
+p1=ChunLi
+p2=Ken

@@ -6,6 +6,7 @@
 #include "sf33rd/Source/Game/screen/next_cpu.h"
 #include "common.h"
 #include "constants.h"
+#include "port/sdl/rmlui_char_select.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/com/com_data.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -134,6 +135,10 @@ static void Next_CPU_1st() {
     }
 
     Setup_Regular_OBJ(Player_id);
+
+    /* Keep RmlUI overlay active so native timer/label effects stay gated */
+    rmlui_char_select_show();
+
     Moving_Plate[Player_id] = 0;
 
     if (G_No[1] == 5) {
@@ -270,6 +275,7 @@ static void Next_CPU_4th() {
     switch (SC_No[1]) {
     case 0:
         FadeInit();
+        rmlui_char_select_hide(); /* Hide RmlUI timer before VS screen */
         Next_CPU_4th_0_Sub();
         break;
 
@@ -1423,7 +1429,8 @@ static void Setup_Regular_OBJ(s16 PL_id) {
     if (VS_Index[Player_id] < 8) {
         Regular_OBJ_Sub(PL_id, 2);
         Regular_OBJ_Sub(PL_id, 1);
-        effect_A9_init(16, 5, 10, 0);
+        if (!rmlui_char_select_visible)
+            effect_A9_init(16, 5, 10, 0);
         effect_42_init(9);
         effect_42_init(10);
         Order[9] = 0;

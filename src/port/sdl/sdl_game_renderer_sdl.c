@@ -38,16 +38,17 @@ static SDL_Texture* cps3_canvas = NULL;
 static const int cps3_width = 384;
 static const int cps3_height = 224;
 
-static SDL_Surface* surfaces[FL_TEXTURE_MAX] = { NULL };
-static SDL_Palette* palettes[FL_PALETTE_MAX] = { NULL };
-static SDL_Texture* textures[FL_PALETTE_MAX] = { NULL };
-static int texture_count = 0;
-static SDL_Texture* texture_cache[FL_TEXTURE_MAX] = { NULL };
-
 // ⚡ Multi-palette cache for indexed (paletted) sprites.
 // Caches PALETTE_CACHE_SLOTS palette variants per texture, preventing
 // expensive SDL_CreateTextureFromSurface calls on every palette switch.
 #define PALETTE_CACHE_SLOTS 4
+
+static SDL_Surface* surfaces[FL_TEXTURE_MAX] = { NULL };
+static SDL_Palette* palettes[FL_PALETTE_MAX] = { NULL };
+static SDL_Texture* textures[FL_TEXTURE_MAX * PALETTE_CACHE_SLOTS] = { NULL };
+static int texture_count = 0;
+static SDL_Texture* texture_cache[FL_TEXTURE_MAX] = { NULL };
+
 static SDL_Texture* idx_tex_cache[FL_TEXTURE_MAX][PALETTE_CACHE_SLOTS];
 static int idx_tex_palette[FL_TEXTURE_MAX][PALETTE_CACHE_SLOTS];
 static int idx_tex_next_slot[FL_TEXTURE_MAX];
@@ -182,7 +183,7 @@ static void save_texture(const SDL_Surface* surface, const SDL_Palette* palette)
 // --- Texture Stack Management ---
 
 static void push_texture(SDL_Texture* texture) {
-    if (texture_count >= FL_PALETTE_MAX) {
+    if (texture_count >= FL_TEXTURE_MAX * PALETTE_CACHE_SLOTS) {
         fatal_error("Texture stack overflow in push_texture");
     }
     textures[texture_count] = texture;

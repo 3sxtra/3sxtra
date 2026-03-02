@@ -152,11 +152,14 @@ body {
     display: inline-block;
     font-size: 16dp;
     font-weight: bold;
-    color: #ffff00;
     font-effect: shadow(1dp 1dp #000000);
     margin-right: 6dp;
     vertical-align: middle;
 }
+
+.sa-numeral-0 { color: #ffff00; } /* Yellow */
+.sa-numeral-1 { color: #ff2020; } /* Red */
+.sa-numeral-2 { color: #2080ff; } /* Blue */
 
 .sa-name-text {
     display: inline-block;
@@ -197,4 +200,106 @@ body {
     bottom: -12dp;
     border-top-width: 10dp;
     border-top-color: #00aaff;
+}
+
+/* ── Stage Select Overlay ── */
+.stg-section {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Red banner: "FIRST STAGE" */
+.stg-banner {
+    display: block;
+    position: absolute;
+    top: 100dp;
+    left: 0;
+    width: 100%;
+    height: 26dp;
+    background-color: rgba(200, 20, 20, 200);
+    text-align: center;
+    padding-top: 2dp;
+}
+
+.stg-banner-text {
+    display: block;
+    font-size: 20dp;
+    font-weight: bold;
+    color: #ffffff;
+    font-effect: shadow(2dp 2dp #000000cc);
+    letter-spacing: 2dp;
+}
+
+/* Opponent info blocks */
+.stg-opponent {
+    display: block;
+    position: absolute;
+    left: 20dp;
+    width: 344dp;
+    height: 80dp;
+}
+
+.stg-top {
+    top: 16dp;
+}
+
+.stg-bot {
+    top: 130dp;
+}
+
+/* Country flag */
+.stg-flag {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 6dp;
+    width: 40dp;
+    height: 28dp;
+}
+
+/* Info block (country name) */
+.stg-info {
+    display: block;
+    position: absolute;
+    left: 48dp;
+    top: 2dp;
+}
+
+.stg-country {
+    display: block;
+    font-size: 18dp;
+    font-weight: bold;
+    color: #ffffff;
+    font-effect: shadow(2dp 2dp #000000cc);
+}
+
+/* Character name — large italic, right side */
+.stg-charname {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 18dp;
+    font-size: 28dp;
+    font-weight: bold;
+    color: #ffffff;
+    font-effect: shadow(3dp 3dp #000000cc);
+}
+
+/* Selection arrow — only visible when .selected class is toggled */
+.stg-arrow {
+    display: none;
+}
+
+.stg-opponent.selected .stg-arrow {
+    display: block;
+    position: absolute;
+    left: -14dp;
+    top: 28dp;
+    font-size: 14dp;
+    color: #ffdd00;
+    font-effect: shadow(1dp 1dp #000000);
 }

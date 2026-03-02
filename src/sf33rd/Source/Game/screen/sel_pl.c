@@ -7,6 +7,8 @@
 #include "common.h"
 #include "constants.h"
 #include "port/renderer.h"
+#include "port/sdl/rmlui_char_select.h"
+#include "port/sdl/rmlui_phase3_toggles.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/com/com_data.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -50,8 +52,6 @@
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
-#include "port/sdl/rmlui_char_select.h"
-#include "port/sdl/rmlui_phase3_toggles.h"
 extern bool use_rmlui;
 
 static void Switch_Work();
@@ -1618,18 +1618,12 @@ static void Check_Exit() {
     void (*Sel_Exit_Tbl[10])() = { Exit_1st, Exit_2nd, Exit_3rd,     Exit_4th,     Exit_5th,
                                    Exit_6th, Exit_7th, Handicap_1st, Handicap_2nd, Handicap_3rd };
 
-    /* Hide the RmlUI char-select overlay once when the exit sequence starts.
-     * Exit_No==0 is the normal selection state (runs every frame);
-     * Exit_No>=1 means the player confirmed and the exit sequence began. */
-    static bool s_exit_hidden = false;
-    if (Exit_No >= 1 && use_rmlui && rmlui_screen_select) {
-        if (!s_exit_hidden) {
-            rmlui_char_select_hide();
-            s_exit_hidden = true;
-        }
-    } else {
-        s_exit_hidden = false;
-    }
+    /* NOTE: Do NOT call rmlui_char_select_hide() here.
+     * Keeping rmlui_char_select_visible == true ensures native effects
+     * (eff42 timer, eff79 SA plates, etc.) stay gated through the exit
+     * transition.  All visible RmlUI elements already hide themselves
+     * via data bindings (Exit_No >= 1), and the auto-hide in
+     * rmlui_char_select_update() cleans up when Play_Game != 0. */
 
     Sel_Exit_Tbl[Exit_No]();
 }

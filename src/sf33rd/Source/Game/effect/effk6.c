@@ -6,6 +6,7 @@
 #include "sf33rd/Source/Game/effect/effk6.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "port/sdl/rmlui_char_select.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/eff76.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -17,7 +18,6 @@
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
-#include "port/sdl/rmlui_char_select.h"
 
 static void EFFK6_WAIT(WORK_Other* ewk);
 static void EFFK6_SLIDE_IN(WORK_Other* ewk);

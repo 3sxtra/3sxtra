@@ -213,8 +213,8 @@ body {
     max-width: 100%;
     transition: width 0.08s linear-in-out;
 }
-.p1-sa .sa-fill { left: 0dp; }
-.p2-sa .sa-fill { right: 0dp; }
+.p1-sa .sa-fill { right: 0dp; }
+.p2-sa .sa-fill { left: 0dp; }
 
 .sa-fill.sa-active {
     background-color: #E040E0;

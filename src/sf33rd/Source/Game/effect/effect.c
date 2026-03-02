@@ -80,17 +80,9 @@ void disp_effect_work() {
                     continue;
                 }
 
-                /* Shadow pass (black, offset +1,+1) */
-                flPrintColor(0xFF000000);
-                flPrintL(px + 1, py + 1, "%c%d",
-                         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[(c_addr->id / 10)],
-                         c_addr->id % 10);
-
-                /* Foreground pass (bright green) */
+                /* Bright green for visibility */
                 flPrintColor(0xFF00FF00);
-                flPrintL(px, py, "%c%d",
-                         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[(c_addr->id / 10)],
-                         c_addr->id % 10);
+                flPrintL(px, py, "%c%d", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[(c_addr->id / 10)], c_addr -> id % 10);
             }
         }
         /* Reset color to default white */
@@ -115,10 +107,16 @@ void disp_effect_work() {
 
             c_addr = (WORK*)frw[curr_ix];
             next_ix = c_addr->behind;
+
+            flPrintColor(0xFF00FFFF);
             flPrintL(px, py, "%c%d", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[(c_addr->id / 10)], c_addr -> id % 10);
+
             py += 2;
         }
     }
+
+    /* Reset color to default white */
+    flPrintColor(0xFFFFFFFF);
 }
 
 void effect_work_init() {

@@ -6,6 +6,7 @@
 #include "sf33rd/Source/Game/effect/eff59.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "port/sdl/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -13,7 +14,6 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
-#include "port/sdl/rmlui_char_select.h"
 
 const s16 EFF59_Correct_Data[6][2] = { { 0, 0 }, { 4, 0 }, { 0, 0 }, { 0, 0 }, { 0, -128 }, { 0, 0 } };
 

@@ -57,23 +57,6 @@ static const char* char_name(int idx) {
     return "???";
 }
 
-// ─── Stage select: country names indexed by character/stage ID ───
-static const char* const s_country_names[22] = { "GREECE",  "U.S.A.", "JAPAN", "CHINA",  "ENGLAND", "RUSSIA",
-                                                 "GERMANY", "JAPAN",  "KENYA", "BRAZIL", "CHINA",   "U.S.A.",
-                                                 "BRAZIL",  "GREECE", "JAPAN", "CHINA",  "JAPAN",   "???",
-                                                 "???",     "FRANCE", "JAPAN", "BRAZIL" };
-static const char* const s_flag_paths[22] = { "../flags/gr.png", "../flags/us.png", "../flags/jp.png", "../flags/cn.png",
-                                               "../flags/gb.png", "../flags/ru.png", "../flags/de.png", "../flags/jp.png",
-                                               "../flags/ke.png", "../flags/br.png", "../flags/cn.png", "../flags/us.png",
-                                               "../flags/br.png", "../flags/gr.png", "../flags/jp.png", "../flags/cn.png",
-                                               "../flags/jp.png", "",                "",                "../flags/fr.png",
-                                               "../flags/jp.png", "../flags/br.png" };
-static const char* const s_stage_labels[11] = { "FIRST STAGE", "2ND STAGE",  "3RD STAGE",  "4TH STAGE",
-                                                "5TH STAGE",   "6TH STAGE",  "7TH STAGE",  "8TH STAGE",
-                                                "9TH STAGE",   "10TH STAGE", "FINAL STAGE" };
-#define COUNTRY_COUNT 22
-#define STAGE_LABEL_COUNT 11
-
 static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 bool rmlui_char_select_visible = false;
@@ -87,95 +70,45 @@ extern "C" void rmlui_char_select_init(void) {
     if (!ctor)
         return;
 
-    // Phase flag: true during selection, false during VS screen transition
-    ctor.BindFunc("sel_phase_select", [](Rml::Variant& v) { v = (bool)(Exit_No == 0); });
-
     // Timer countdown — Select_Timer is BCD-encoded (0x30 = "30", 0x21 = "21")
     ctor.BindFunc("sel_timer", [](Rml::Variant& v) {
-        if (Exit_No >= 1) {
-            v = Rml::String("");
-        } else {
-            int bcd = (int)Select_Timer;
-            int tens = (bcd >> 4) & 0xF;
-            int ones = bcd & 0xF;
-            v = Rml::String(std::to_string(tens)) + Rml::String(std::to_string(ones));
-        }
+        int bcd = (int)Select_Timer;
+        int tens = (bcd >> 4) & 0xF;
+        int ones = bcd & 0xF;
+        v = tens * 10 + ones;
     });
 
     // Character names — read from cursor position through ID_of_Face grid
     ctor.BindFunc("sel_p1_name", [](Rml::Variant& v) {
-        if (Exit_No >= 1) {
-            v = Rml::String("");
-        } else {
-            int char_id = ID_of_Face[Cursor_Y[0]][Cursor_X[0]];
-            if (char_id < 0)
-                char_id = 0;
-            v = Rml::String(char_name(char_id));
-        }
+        int char_id = ID_of_Face[Cursor_Y[0]][Cursor_X[0]];
+        if (char_id < 0)
+            char_id = 0;
+        v = Rml::String(char_name(char_id));
     });
     ctor.BindFunc("sel_p2_name", [](Rml::Variant& v) {
-        if (Exit_No >= 1) {
-            v = Rml::String("");
-        } else {
-            int char_id = ID_of_Face[Cursor_Y[1]][Cursor_X[1]];
-            if (char_id < 0)
-                char_id = 0;
-            v = Rml::String(char_name(char_id));
-        }
+        int char_id = ID_of_Face[Cursor_Y[1]][Cursor_X[1]];
+        if (char_id < 0)
+            char_id = 0;
+        v = Rml::String(char_name(char_id));
     });
 
     // Player visibility flags — three scenarios
     // Select_Status[0] == 3 means both players; otherwise single player (Aborigine side)
-    // Only bind single/dual when players are not in the exit sequence
     ctor.BindFunc("sel_p1_solo", [](Rml::Variant& v) {
-        v = (bool)(plw[0].wu.pl_operator != 0 && plw[1].wu.pl_operator == 0 && Exit_No == 0);
+        v = (bool)(Select_Status[0] != 3 && Aborigine == 0);
     });
     ctor.BindFunc("sel_p2_solo", [](Rml::Variant& v) {
-        v = (bool)(plw[0].wu.pl_operator == 0 && plw[1].wu.pl_operator != 0 && Exit_No == 0);
+        v = (bool)(Select_Status[0] != 3 && Aborigine == 1);
     });
     ctor.BindFunc("sel_both_active", [](Rml::Variant& v) {
-        v = (bool)(plw[0].wu.pl_operator != 0 && plw[1].wu.pl_operator != 0 && Exit_No == 0);
+        v = (bool)(Select_Status[0] == 3);
     });
-    
-    ctor.BindFunc("sel_banner_visible", [](Rml::Variant& v) {
-        if (Exit_No >= 1) {
-            v = false;
-            return;
-        }
-        bool is_p1_solo = (plw[0].wu.pl_operator != 0 && plw[1].wu.pl_operator == 0);
-        bool is_p2_solo = (plw[0].wu.pl_operator == 0 && plw[1].wu.pl_operator != 0);
-        
-        if (is_p1_solo) {
-            v = (bool)(Sel_PL_Complete[0] == 0);
-        } else if (is_p2_solo) {
-            v = (bool)(Sel_PL_Complete[1] == 0);
-        } else {
-            v = false;
-        }
-    });
-
-    // Global timer visibility flag — hide during VS screen transitions (Exit_No > 0)
-    // AND hide during stage select transition (Sel_EM_Complete == 1)
-    ctor.BindFunc("sel_timer_visible", [](Rml::Variant& v) {
-        if (Exit_No != 0) {
-            v = false;
-        } else if (G_No[1] == 5) { // Stage Select Screen
-            v = (bool)(Sel_EM_Complete[Player_id] == 0);
-        } else {
-            v = true;
-        }
-    });
-
     ctor.BindFunc("sel_p1_confirmed", [](Rml::Variant& v) { v = (bool)(Sel_PL_Complete[0] != 0); });
     ctor.BindFunc("sel_p2_confirmed", [](Rml::Variant& v) { v = (bool)(Sel_PL_Complete[1] != 0); });
 
     ctor.BindFunc("sel_p1_sa_visible", [](Rml::Variant& v) {
         // Visible when player has picked a character but hasn't finished the SA pick
         v = (bool)(Sel_PL_Complete[0] != 0 && Sel_Arts_Complete[0] == 0);
-    });
-    ctor.BindFunc("sel_p1_sa_active", [](Rml::Variant& v) {
-        // Active when they are still picking (not confirmed and not exiting)
-        v = (bool)(Sel_Arts_Complete[0] == 0 && Exit_No == 0);
     });
     ctor.BindFunc("sel_p1_sa_current_name", [](Rml::Variant& v) {
         int char_idx = My_char[0];
@@ -191,18 +124,9 @@ extern "C" void rmlui_char_select_init(void) {
         else if (sa_idx == 2) v = Rml::String("III");
         else v = Rml::String("I");
     });
-    ctor.BindFunc("sel_p1_sa_index", [](Rml::Variant& v) {
-        int sa_idx = Arts_Y[0];
-        if (sa_idx < 0 || sa_idx > 2) sa_idx = 0;
-        v = sa_idx;
-    });
 
     ctor.BindFunc("sel_p2_sa_visible", [](Rml::Variant& v) {
-        // Visible when player has picked a character but hasn't finished the SA pick
         v = (bool)(Sel_PL_Complete[1] != 0 && Sel_Arts_Complete[1] == 0);
-    });
-    ctor.BindFunc("sel_p2_sa_active", [](Rml::Variant& v) {
-        v = (bool)(Sel_Arts_Complete[1] == 0 && Exit_No == 0);
     });
     ctor.BindFunc("sel_p2_sa_current_name", [](Rml::Variant& v) {
         int char_idx = My_char[1];
@@ -218,52 +142,10 @@ extern "C" void rmlui_char_select_init(void) {
         else if (sa_idx == 2) v = Rml::String("III");
         else v = Rml::String("I");
     });
-    ctor.BindFunc("sel_p2_sa_index", [](Rml::Variant& v) {
-        int sa_idx = Arts_Y[1];
-        if (sa_idx < 0 || sa_idx > 2) sa_idx = 0;
-        v = sa_idx;
-    });
-
-    // ─── Stage select bindings ───
-    ctor.BindFunc("stg_visible", [](Rml::Variant& v) { v = (bool)(Exit_No != 0 && Sel_EM_Complete[Player_id] == 0); });
-    ctor.BindFunc("stg_stage_label", [](Rml::Variant& v) {
-        int idx = VS_Index[Player_id];
-        if (idx < 0)
-            idx = 0;
-        if (idx >= STAGE_LABEL_COUNT)
-            idx = STAGE_LABEL_COUNT - 1;
-        v = Rml::String(s_stage_labels[idx]);
-    });
-    ctor.BindFunc("stg_em1_country", [](Rml::Variant& v) {
-        int id = EM_List[Player_id][0];
-        v = Rml::String((id >= 0 && id < COUNTRY_COUNT) ? s_country_names[id] : "???");
-    });
-    ctor.BindFunc("stg_em2_country", [](Rml::Variant& v) {
-        int id = EM_List[Player_id][1];
-        v = Rml::String((id >= 0 && id < COUNTRY_COUNT) ? s_country_names[id] : "???");
-    });
-    ctor.BindFunc("stg_em1_flag", [](Rml::Variant& v) {
-        int id = EM_List[Player_id][0];
-        v = Rml::String((id >= 0 && id < COUNTRY_COUNT) ? s_flag_paths[id] : "");
-    });
-    ctor.BindFunc("stg_em2_flag", [](Rml::Variant& v) {
-        int id = EM_List[Player_id][1];
-        v = Rml::String((id >= 0 && id < COUNTRY_COUNT) ? s_flag_paths[id] : "");
-    });
-    ctor.BindFunc("stg_em1_name", [](Rml::Variant& v) {
-        int id = EM_List[Player_id][0];
-        v = Rml::String(char_name(id));
-    });
-    ctor.BindFunc("stg_em2_name", [](Rml::Variant& v) {
-        int id = EM_List[Player_id][1];
-        v = Rml::String(char_name(id));
-    });
-    ctor.BindFunc("stg_sel_top", [](Rml::Variant& v) { v = (bool)(Temporary_EM[Player_id] == 1); });
-    ctor.BindFunc("stg_sel_bot", [](Rml::Variant& v) { v = (bool)(Temporary_EM[Player_id] == 2); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
-    SDL_Log("[RmlUi CharSelect] Data model registered");
+    SDL_Log("[RmlUi CharSelect] Data model registered (6 bindings)");
 }
 
 extern "C" void rmlui_char_select_update(void) {
@@ -291,10 +173,7 @@ extern "C" void rmlui_char_select_update(void) {
         return;
 
     // All bindings are BindFunc (evaluated each frame), just dirty them
-    s_model_handle.DirtyVariable("sel_phase_select");
-    s_model_handle.DirtyVariable("sel_timer_visible");
     s_model_handle.DirtyVariable("sel_timer");
-    s_model_handle.DirtyVariable("sel_banner_visible");
     s_model_handle.DirtyVariable("sel_p1_name");
     s_model_handle.DirtyVariable("sel_p2_name");
     s_model_handle.DirtyVariable("sel_p1_solo");
@@ -303,25 +182,11 @@ extern "C" void rmlui_char_select_update(void) {
     s_model_handle.DirtyVariable("sel_p1_confirmed");
     s_model_handle.DirtyVariable("sel_p2_confirmed");
     s_model_handle.DirtyVariable("sel_p1_sa_visible");
-    s_model_handle.DirtyVariable("sel_p1_sa_active");
     s_model_handle.DirtyVariable("sel_p1_sa_current_name");
     s_model_handle.DirtyVariable("sel_p1_sa_current_numeral");
-    s_model_handle.DirtyVariable("sel_p1_sa_index");
     s_model_handle.DirtyVariable("sel_p2_sa_visible");
-    s_model_handle.DirtyVariable("sel_p2_sa_active");
     s_model_handle.DirtyVariable("sel_p2_sa_current_name");
     s_model_handle.DirtyVariable("sel_p2_sa_current_numeral");
-    s_model_handle.DirtyVariable("sel_p2_sa_index");
-    s_model_handle.DirtyVariable("stg_visible");
-    s_model_handle.DirtyVariable("stg_stage_label");
-    s_model_handle.DirtyVariable("stg_em1_country");
-    s_model_handle.DirtyVariable("stg_em2_country");
-    s_model_handle.DirtyVariable("stg_em1_flag");
-    s_model_handle.DirtyVariable("stg_em2_flag");
-    s_model_handle.DirtyVariable("stg_em1_name");
-    s_model_handle.DirtyVariable("stg_em2_name");
-    s_model_handle.DirtyVariable("stg_sel_top");
-    s_model_handle.DirtyVariable("stg_sel_bot");
 }
 
 extern "C" void rmlui_char_select_show(void) {

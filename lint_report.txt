@@ -1,6 +1,6 @@
 ============================================================ 
                    3SX Lint Report                              
-                   Generated: 02/03/2026  0:24:54.53                     
+                   Generated: 02/03/2026 20:33:36.36                     
 ============================================================ 
  
 ------------------------------------------------------------ 
@@ -14,14 +14,14 @@ No compile_commands.json, skipping advanced clang-tidy! Build first.
 [RUFF] Code Style & Import Checks                           
 ------------------------------------------------------------ 
 F841 Local variable `cps3_hp_valid` is assigned to but never used
-   --> tools\fightcade_replays\parity_replay.py:979:13
+   --> tools\fightcade_replays\parity_replay.py:981:13
     |
-977 |             cps3_p1_hp = int(cps3_row["p1_hp"])
-978 |             cps3_p2_hp = int(cps3_row["p2_hp"])
-979 |             cps3_hp_valid = cps3_p1_hp <= MAX_HP and cps3_p2_hp <= MAX_HP
+979 |             cps3_p1_hp = int(cps3_row["p1_hp"])
+980 |             cps3_p2_hp = int(cps3_row["p2_hp"])
+981 |             cps3_hp_valid = cps3_p1_hp <= MAX_HP and cps3_p2_hp <= MAX_HP
     |             ^^^^^^^^^^^^^
-980 |
-981 |             # Track round transitions for statistics only
+982 |
+983 |             # Track round transitions for statistics only
     |
 help: Remove assignment to unused variable `cps3_hp_valid`
 
@@ -30,14 +30,14 @@ No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option
  
 [RUFF] Auto-fix applied: 
 F841 Local variable `cps3_hp_valid` is assigned to but never used
-   --> tools\fightcade_replays\parity_replay.py:979:13
+   --> tools\fightcade_replays\parity_replay.py:981:13
     |
-977 |             cps3_p1_hp = int(cps3_row["p1_hp"])
-978 |             cps3_p2_hp = int(cps3_row["p2_hp"])
-979 |             cps3_hp_valid = cps3_p1_hp <= MAX_HP and cps3_p2_hp <= MAX_HP
+979 |             cps3_p1_hp = int(cps3_row["p1_hp"])
+980 |             cps3_p2_hp = int(cps3_row["p2_hp"])
+981 |             cps3_hp_valid = cps3_p1_hp <= MAX_HP and cps3_p2_hp <= MAX_HP
     |             ^^^^^^^^^^^^^
-980 |
-981 |             # Track round transitions for statistics only
+982 |
+983 |             # Track round transitions for statistics only
     |
 help: Remove assignment to unused variable `cps3_hp_valid`
 
@@ -63,16 +63,16 @@ tools\fightcade_replays\parity_replay.py:421: unused function 'wait_for_round_st
 tools\fightcade_replays\parity_replay.py:433: unused attribute 'step_requested' (60% confidence)
 tools\fightcade_replays\parity_replay.py:713: unused attribute 'selfplay_active' (60% confidence)
 tools\fightcade_replays\parity_replay.py:714: unused attribute 'step_mode_active' (60% confidence)
-tools\fightcade_replays\parity_replay.py:829: unused attribute 'step_requested' (60% confidence)
-tools\fightcade_replays\parity_replay.py:921: unused attribute 'fm_stage' (60% confidence)
-tools\fightcade_replays\parity_replay.py:922: unused attribute 'fm_rng_16' (60% confidence)
-tools\fightcade_replays\parity_replay.py:923: unused attribute 'fm_rng_32' (60% confidence)
-tools\fightcade_replays\parity_replay.py:924: unused attribute 'fm_rng_16_ex' (60% confidence)
-tools\fightcade_replays\parity_replay.py:925: unused attribute 'fm_rng_32_ex' (60% confidence)
-tools\fightcade_replays\parity_replay.py:926: unused attribute 'force_match_active' (60% confidence)
-tools\fightcade_replays\parity_replay.py:979: unused variable 'cps3_hp_valid' (60% confidence)
-tools\fightcade_replays\parity_replay.py:1047: unused attribute 'selfplay_active' (60% confidence)
-tools\fightcade_replays\parity_replay.py:1057: unused attribute 'step_requested' (60% confidence)
+tools\fightcade_replays\parity_replay.py:831: unused attribute 'step_requested' (60% confidence)
+tools\fightcade_replays\parity_replay.py:923: unused attribute 'fm_stage' (60% confidence)
+tools\fightcade_replays\parity_replay.py:924: unused attribute 'fm_rng_16' (60% confidence)
+tools\fightcade_replays\parity_replay.py:925: unused attribute 'fm_rng_32' (60% confidence)
+tools\fightcade_replays\parity_replay.py:926: unused attribute 'fm_rng_16_ex' (60% confidence)
+tools\fightcade_replays\parity_replay.py:927: unused attribute 'fm_rng_32_ex' (60% confidence)
+tools\fightcade_replays\parity_replay.py:928: unused attribute 'force_match_active' (60% confidence)
+tools\fightcade_replays\parity_replay.py:981: unused variable 'cps3_hp_valid' (60% confidence)
+tools\fightcade_replays\parity_replay.py:1049: unused attribute 'selfplay_active' (60% confidence)
+tools\fightcade_replays\parity_replay.py:1059: unused attribute 'step_requested' (60% confidence)
 tools\fightcade_replays\replay_inputs.py:183: unused attribute 'step_requested' (60% confidence)
 tools\fightcade_replays\replay_inputs.py:231: unused attribute 'step_requested' (60% confidence)
 tools\fightcade_replays\replay_inputs.py:251: unused attribute 'step_requested' (60% confidence)
@@ -248,12 +248,12 @@ tools\fightcade_replays\fcade_replay_tool.py:141: error: Incompatible types in a
 tools\fightcade_replays\fcade_replay_tool.py:142: error: Incompatible types in assignment (expression has type "str", target has type "int")  [assignment]
 tools\fightcade_replays\parity_replay.py:389: error: Incompatible return value type (got "tuple[list[dict[str | Any, str | Any]], int, int, int | None, int | None, dict[str, int]]", expected "tuple[list[dict[Any, Any]], int, int, int | None, int | None]")  [return-value]
 tools\fightcade_replays\parity_replay.py:612: error: Need more than 5 values to unpack (6 expected)  [misc]
-tools\fightcade_replays\parity_replay.py:789: error: Need type annotation for "divergences" (hint: "divergences: list[<type>] = ...")  [var-annotated]
-tools\fightcade_replays\parity_replay.py:937: error: Incompatible return value type (got "bool", expected "dict[Any, Any]")  [return-value]
-tools\fightcade_replays\parity_replay.py:1213: error: Argument "key" to "sorted" has incompatible type "Callable[[tuple[str, dict[str, object]]], object]"; expected "Callable[[tuple[str, dict[str, object]]], SupportsDunderLT[Any] | SupportsDunderGT[Any]]"  [arg-type]
-tools\fightcade_replays\parity_replay.py:1213: error: Incompatible return value type (got "object", expected "SupportsDunderLT[Any] | SupportsDunderGT[Any]")  [return-value]
-tools\fightcade_replays\parity_replay.py:1216: error: Incompatible types in assignment (expression has type "object", variable has type "str")  [assignment]
-tools\fightcade_replays\parity_replay.py:1220: error: Unsupported left operand type for - ("object")  [operator]
+tools\fightcade_replays\parity_replay.py:791: error: Need type annotation for "divergences" (hint: "divergences: list[<type>] = ...")  [var-annotated]
+tools\fightcade_replays\parity_replay.py:939: error: Incompatible return value type (got "bool", expected "dict[Any, Any]")  [return-value]
+tools\fightcade_replays\parity_replay.py:1215: error: Argument "key" to "sorted" has incompatible type "Callable[[tuple[str, dict[str, object]]], object]"; expected "Callable[[tuple[str, dict[str, object]]], SupportsDunderLT[Any] | SupportsDunderGT[Any]]"  [arg-type]
+tools\fightcade_replays\parity_replay.py:1215: error: Incompatible return value type (got "object", expected "SupportsDunderLT[Any] | SupportsDunderGT[Any]")  [return-value]
+tools\fightcade_replays\parity_replay.py:1218: error: Incompatible types in assignment (expression has type "object", variable has type "str")  [assignment]
+tools\fightcade_replays\parity_replay.py:1222: error: Unsupported left operand type for - ("object")  [operator]
 Found 42 errors in 4 files (checked 18 source files)
  
 ------------------------------------------------------------ 

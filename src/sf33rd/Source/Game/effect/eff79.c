@@ -6,6 +6,7 @@
 #include "sf33rd/Source/Game/effect/eff79.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "port/sdl/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/eff80.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
@@ -14,7 +15,6 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
-#include "port/sdl/rmlui_char_select.h"
 
 static s32 Check_Play_Status_79(WORK_Other* ewk);
 static void Move_Move_79(WORK_Other* ewk);

@@ -18,7 +18,6 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 
-
 static void EFF38_WAIT(WORK_Other* ewk);
 static void EFF38_SUDDENLY(WORK_Other* ewk);
 static void EFF38_SLIDE_IN(WORK_Other* ewk);

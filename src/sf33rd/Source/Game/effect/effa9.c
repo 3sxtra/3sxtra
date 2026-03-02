@@ -6,6 +6,7 @@
 #include "sf33rd/Source/Game/effect/effa9.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "port/sdl/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/eff59.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
@@ -86,6 +87,17 @@ void effect_A9_move(WORK_Other* ewk) {
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos;
     ewk->wu.position_z = ewk->wu.xyz[2].disp.pos;
+
+    /* Gate text elements replaced by RmlUI on stage select:
+     * 32=stage banner, 33=name plate bg, 34=character name,
+     * 58/59=stage direction labels */
+    if (rmlui_char_select_visible) {
+        s16 ci = ewk->wu.char_index;
+        if (ci == 32 || ci == 33 || ci == 34 || ci == 58 || ci == 59) {
+            return;
+        }
+    }
+
     sort_push_request4(&ewk->wu);
 }
 

@@ -42,10 +42,16 @@
             <div class="sel-banner-text">PLAYER SELECT</div>
         </div>
 
+        <!-- Timer: stage select / VS screen phase -->
+        <div class="sel-timer sel-timer-solo" data-if="sel_timer_visible">
+            <span class="sel-time-label">TIME</span>
+            <span>{{ sel_timer }}</span>
+        </div>
+
         <!-- ═══ SUPER ARTS SELECTION P1 ═══ -->
         <div class="sa-container sa-p1" data-if="sel_p1_sa_visible">
             <div class="sa-plate" data-class-active="sel_p1_sa_active">
-                <div class="sa-numeral">{{ sel_p1_sa_current_numeral }}</div>
+                <div class="sa-numeral" data-class-sa-numeral-0="sel_p1_sa_index == 0" data-class-sa-numeral-1="sel_p1_sa_index == 1" data-class-sa-numeral-2="sel_p1_sa_index == 2">{{ sel_p1_sa_current_numeral }}</div>
                 <div class="sa-name-text">{{ sel_p1_sa_current_name }}</div>
                 <div class="sa-cursor sa-cursor-up"></div>
                 <div class="sa-cursor sa-cursor-down"></div>
@@ -55,10 +61,38 @@
         <!-- ═══ SUPER ARTS SELECTION P2 ═══ -->
         <div class="sa-container sa-p2" data-if="sel_p2_sa_visible">
             <div class="sa-plate" data-class-active="sel_p2_sa_active">
-                <div class="sa-numeral">{{ sel_p2_sa_current_numeral }}</div>
+                <div class="sa-numeral" data-class-sa-numeral-0="sel_p2_sa_index == 0" data-class-sa-numeral-1="sel_p2_sa_index == 1" data-class-sa-numeral-2="sel_p2_sa_index == 2">{{ sel_p2_sa_current_numeral }}</div>
                 <div class="sa-name-text">{{ sel_p2_sa_current_name }}</div>
                 <div class="sa-cursor sa-cursor-up"></div>
                 <div class="sa-cursor sa-cursor-down"></div>
+            </div>
+        </div>
+
+        <!-- ═══ STAGE SELECT OVERLAY ═══ -->
+        <div class="stg-section" data-if="stg_visible">
+            <!-- Red banner: "FIRST STAGE" etc. -->
+            <div class="stg-banner">
+                <div class="stg-banner-text">{{ stg_stage_label }}</div>
+            </div>
+
+            <!-- Top opponent (EM slot 1) -->
+            <div class="stg-opponent stg-top" data-class-selected="stg_sel_top">
+                <img class="stg-flag" data-attr-src="stg_em1_flag" />
+                <div class="stg-info">
+                    <div class="stg-country">{{ stg_em1_country }}</div>
+                </div>
+                <div class="stg-charname">{{ stg_em1_name }}</div>
+                <div class="stg-arrow">▶</div>
+            </div>
+
+            <!-- Bottom opponent (EM slot 2) -->
+            <div class="stg-opponent stg-bot" data-class-selected="stg_sel_bot">
+                <img class="stg-flag" data-attr-src="stg_em2_flag" />
+                <div class="stg-info">
+                    <div class="stg-country">{{ stg_em2_country }}</div>
+                </div>
+                <div class="stg-charname">{{ stg_em2_name }}</div>
+                <div class="stg-arrow">▶</div>
             </div>
         </div>
     </div>
