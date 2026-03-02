@@ -7,70 +7,18 @@
 
 ## Summary
 
-All 27 Phase 3 sub-phases are marked ✅ in [RMLUI_INTEGRATION_PLAN.md](file:///D:/3sxtra/RMLUI_INTEGRATION_PLAN.md). This audit identified **4 remaining gaps** that need RmlUI replacements — not just gating. Two previously flagged items (§3E `Pause_1st_Sub`, §3G `Flash_1P_or_2P`) were verified as already gated and have been removed.
+All 27 Phase 3 sub-phases are marked ✅ in [RMLUI_INTEGRATION_PLAN.md](file:///D:/3sxtra/RMLUI_INTEGRATION_PLAN.md). This audit identified **2 remaining gaps** that need RmlUI replacements — not just gating. Four previously flagged items (§3E `Pause_1st_Sub`, §3G `Flash_1P_or_2P`, §4 `effect_57` Save/Load banner, §1 Network Lobby) were verified as already gated and have been removed.
 
 | # | Gap | When Player Sees It | RmlUI Work Needed | Effort |
 |---|-----|--------------------|--------------------|--------|
-| **1** | [Network Lobby peer list & popups](#1-network-lobby-peer-list--popups) | Every network session — peer names, IPs, ON/OFF, challenge popups all render natively | Extend `rmlui_network_lobby.cpp` with peer array bindings + popup modal RML | Significant |
-| **2** | [Char select double-rendering](#2-character-select-double-rendering) | Every match — native `eff38` name plate and `eff42` timer render under RmlUI overlay | Extend `rmlui_char_select.cpp` to fully replace name plate + timer sprites | Medium |
-| **3** | [`effect_66` background rectangles](#3-effect_66-background-rectangles) | Many menus — grey translucent rects appear behind RmlUI panels | Add RmlUI `<div>` background panels in each affected `.rml` + suppress native draw | Medium |
-| **4** | [`effect_57` Save/Load Direction banner](#4-effect_57-saveload-direction-banner) | Option → System Direction → SAVE or LOAD page — red banner still renders | Gate 2 call sites + existing `sysdir.rml` already covers the content | Trivial |
+| **1** | [Char select double-rendering](#1-character-select-double-rendering) | Every match — native `eff38` name plate and `eff42` timer render under RmlUI overlay | Extend `rmlui_char_select.cpp` to fully replace name plate + timer sprites | Medium |
+| **2** | [`effect_66` background rectangles](#2-effect_66-background-rectangles) | Many menus — grey translucent rects appear behind RmlUI panels | Add RmlUI `<div>` background panels in each affected `.rml` + suppress native draw | Medium |
 
 ---
 
-## 1. Network Lobby Peer List & Popups
+## 1. Character Select Double-Rendering
 
-**Priority**: P0 — most visually broken screen in RmlUI mode.
-
-### When it fires
-
-Mode Menu → Network → any lobby phase with discovered peers or active challenge.
-
-### What renders natively (ungated)
-
-`Network_Lobby()` phases 4–8 in [menu.c](file:///D:/3sxtra/src/sf33rd/Source/Game/menu/menu.c):
-
-| Native Call | Lines | What it draws |
-|---|---|---|
-| `SSPutStr_Bigger` | 892–899 | "ON"/"OFF" toggle values for LAN/NET auto-connect |
-| `SSPutStr_Bigger` | 907–913 | Section headers: "LAN DISCOVERED", "INTERNET PEERS" |
-| `SSPutStr_Bigger` | 932–963 | Peer names + IP addresses (entire peer list) |
-| `SSPutStr_Bigger` | 989–1019 | Connection status bar text |
-| `NetLobby_DrawIncomingPopup()` | 471–542 | `Renderer_Queue2DPrimitive` bg + `SSPutStr2` "INCOMING CHALLENGE!" + name/ping + ACCEPT/DECLINE |
-| `NetLobby_DrawOutgoingPopup()` | 559–624 | `Renderer_Queue2DPrimitive` bg + "CONNECTING..." + target name + CANCEL |
-
-Phase 3.16/3.26 gated the 6 `effect_61` menu items but left all dynamic per-frame rendering running.
-
-### RmlUI replacement needed
-
-1. **Extend [rmlui_network_lobby.cpp](file:///D:/3sxtra/src/port/sdl/rmlui_network_lobby.cpp)** with:
-   - `lan_peers[]` array binding (name, IP, ping per entry) from `Discovery_GetPeers()`
-   - `net_peers[]` array binding
-   - `connection_status` string binding
-   - `lan_auto_connect` / `net_auto_connect` toggle bindings
-   - `incoming_popup_visible`, `outgoing_popup_visible` booleans
-   - `popup_challenger_name`, `popup_ping` string bindings
-
-2. **Extend [network_lobby.rml](file:///D:/3sxtra/assets/ui/network_lobby.rml)** with:
-   - `<div data-for="peer : lan_peers">` scrollable peer list panel
-   - `<div data-for="peer : net_peers">` internet peer panel
-   - Popup modal overlay (data-if on visibility booleans)
-
-3. **Gate** all `SSPutStr_Bigger` calls in phases 4–8 + both `NetLobby_Draw*` functions with `if (!use_rmlui || !rmlui_menu_lobby)`.
-
-### Resolved: Blue Background
-
-The blue textured background on the Network Lobby screen is rendered by `effect_57_init(0x4E, 0, 0, 0x45, 0)` — the same Effect 57 that renders header banners, but with **palette `0x45` (blue/cyan)**. This call was originally gated inside the native-only `else` block alongside the grey boxes, text sprites, and description text.
-
-Because `Network_Lobby` case 1 calls `effect_work_init()` (unlike most sub-menus which use `Menu_Suicide` to swap items without destroying effects), the inherited Effect 57 background from Mode_Select is destroyed. The fix was to move the `effect_57_init(0x4E, 0, 0, 0x45, 0)` call **outside** the RmlUI gate so it runs unconditionally. The RmlUI overlay renders transparently on top of the native blue background.
-
-Other native elements (Effect 66 grey boxes, Effect 61 text sprites, Effect 45 description text) remain correctly gated inside the native-only `else` block.
-
----
-
-## 2. Character Select Double-Rendering
-
-**Priority**: P1 — visible every match.
+**Priority**: P0 — visible every match.
 
 ### When it fires
 
@@ -104,9 +52,9 @@ The char select RmlUI overlay ([rmlui_char_select.cpp](file:///D:/3sxtra/src/por
 
 ---
 
-## 3. `effect_66` Background Rectangles
+## 2. `effect_66` Background Rectangles
 
-**Priority**: P2 — subtle visual layering, but affects many screens.
+**Priority**: P1 — subtle visual layering, but affects many screens.
 
 ### When it fires
 
@@ -136,45 +84,20 @@ Many of these are hardcoded into the `Order[]` sprite chain — gating at init r
 - Map each effect slot to its menu context (e.g., slots `0x8A`/`0x8B` in lobby → `rmlui_menu_lobby`, training slots → `rmlui_menu_training`, etc.)
 - Meanwhile, the existing `.rml` documents already have their own `<div>` backgrounds — the native rects are purely redundant when RmlUI is active
 
+> **Note**: The `effect_66_init` call inside `Setup_Replay_Sub()` (line 2945) is also ungated — covered here.
+
 ---
 
-## 4. `effect_57` Save/Load Direction Banner
+## Resolved Gaps
 
-> [!IMPORTANT]
-> Effect 57 serves a **dual role**: full-screen colored backgrounds (palette `0x45` = blue, `0x3F` = red) AND narrow header banners. When gating `effect_57_init` calls behind `use_rmlui`, only gate the **banner** instances — the background instance must remain unconditional. See [TEXT_RENDERING_SYSTEMS.md](file:///D:/3sxtra/TEXT_RENDERING_SYSTEMS.md) §3 for details.
+The following items were previously flagged but verified as already gated or not applicable:
 
-**Priority**: P3 — rarely accessed.
-
-### When it fires
-
-Option → System Direction → navigate to SAVE or LOAD page. The animated red banner header renders behind the existing RmlUI System Direction panel.
-
-### What's ungated
-
-`Setup_Replay_Sub()` at `menu.c:2940` calls `effect_57_init()` unconditionally. Two callers don't gate it:
-
-| Caller | File:Line |
+| Item | Resolution |
 |---|---|
-| `Save_Direction()` case 0 | `menu_input.c:393` |
-| `Load_Direction()` case 0 | `menu_input.c:432` |
-
-All other callers of `Setup_Replay_Sub()` are properly gated (Load_Replay, Setup_Save_Replay_1st).
-
-### RmlUI replacement needed
-
-The existing [sysdir.rml](file:///D:/3sxtra/assets/ui/sysdir.rml) already covers the content for this screen. Only the gate is missing:
-
-```c
-// menu_input.c:393 — wrap Setup_Replay_Sub call:
-if (!(use_rmlui && rmlui_menu_sysdir))
-    Setup_Replay_Sub(1, 0x70, 0xA, 2);
-
-// menu_input.c:432 — same:
-if (!(use_rmlui && rmlui_menu_sysdir))
-    Setup_Replay_Sub(1, 0x70, 0xA, 2);
-```
-
-> **Note**: The `effect_66_init` call inside `Setup_Replay_Sub()` (line 2945) is also ungated — covered by §3 above.
+| §3E `Pause_1st_Sub` | Already gated behind `use_rmlui` |
+| §3G `Flash_1P_or_2P` | Already gated behind `use_rmlui` |
+| §4 `effect_57` Save/Load Direction banner | Both `Save_Direction()` and `Load_Direction()` in `menu_input.c` already wrap `Setup_Replay_Sub()` with `if (!(use_rmlui && rmlui_menu_sysdir))` |
+| §1 Network Lobby peer list & popups | All native rendering fully gated: effect init (line 665), banner draw (750), SSPutStr_Bigger toggles/headers/peers/status (894), and all four `NetLobby_Draw*` popup calls (1034/1054/1077/1099) behind `use_rmlui && rmlui_menu_lobby` |
 
 ---
 

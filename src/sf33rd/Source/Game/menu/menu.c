@@ -1584,27 +1584,27 @@ static void System_Direction(struct _TASK* task_ptr) {
             Menu_Suicide[2] = 0; /* enable our items (master_player=2) */
             Order[0x4F] = 4;
             Order_Timer[0x4F] = 1;
-            Order[0x4E] = 5;
-            Order_Timer[0x4E] = 1;
+            Order[0x4E] = 2;
             Order_Dir[0x4E] = 2;
-            effect_57_init(0x4E, 0, 0, 0x45, 0);
-        } else {
-            /* Mode_Select context: original path */
-            Menu_in_Sub(task_ptr);
-            Order[0x4E] = 5;
             Order_Timer[0x4E] = 1;
+        } else {
+            /* Mode_Select context: inherit BG from Mode_Select */
+            Menu_in_Sub(task_ptr);
+            Order[0x4E] = 2;
             Order_Dir[0x4E] = 3;
-            effect_57_init(0x4E, 0, 0, 0x45, 0);
+            Order_Timer[0x4E] = 1;
         }
         Convert_Buff[3][0][0] = Direction_Working[1];
+
+        /* Orange/red background — unconditional (shows through transparent RmlUI) */
+        effect_57_init(0x6D, 0xA, 0, 0x3F, 2);
+        Order[0x6D] = 1;
+        Order_Dir[0x6D] = 8;
+        Order_Timer[0x6D] = 1;
 
         if (use_rmlui && rmlui_menu_sysdir) {
             rmlui_sysdir_show();
         } else {
-            effect_57_init(0x6D, 0xA, 0, 0x3F, 2);
-            Order[0x6D] = 1;
-            Order_Dir[0x6D] = 8;
-            Order_Timer[0x6D] = 1;
             effect_04_init(1, 3, 0, 0x48);
             effect_64_init(0x61U, 0, from_option ? 2 : 1, 0xA, 0, 0x7047, 0xB, 3, 0);
             Order[0x61] = 1;
@@ -1707,8 +1707,19 @@ static void Direction_Menu(struct _TASK* task_ptr) {
         Menu_Page = 0;
         Menu_Page_Buff = Menu_Page;
         Message_Data->kind_req = 3;
-        if (use_rmlui && rmlui_menu_sysdir)
+        if (use_rmlui && rmlui_menu_sysdir) {
             rmlui_sysdir_enter_subpage();
+            /* Replace the Mode_Select/SysDir backgrounds with the green subpage BG.
+               In native, Setup_Next_Page calls effect_work_init() which destroys
+               everything, then recreates 0x4E with palette 0x45. Since we skip
+               effect_work_init() in RmlUI mode, do the swap explicitly. */
+            Order[0x6D] = 4;         /* kill the orange SysDir overlay */
+            Order_Timer[0x6D] = 1;
+            Order[0x4E] = 5;
+            Order_Timer[0x4E] = 1;
+            Order_Dir[0x4E] = 3;
+            effect_57_init(0x4E, 0, 0, 0x45, 0);  /* green subpage BG */
+        }
         break;
 
     case 1:
@@ -1717,14 +1728,9 @@ static void Direction_Menu(struct _TASK* task_ptr) {
         if (!use_rmlui || !rmlui_menu_sysdir)
             Setup_Next_Page(task_ptr, 0);
         else {
-            /* RmlUi mode: do data setup only — skip effect spawning */
+            /* RmlUi mode: data setup only — no native effects to destroy,
+               so skip effect_work_init() to keep the BG alive (no flicker). */
             Menu_Page_Buff = Menu_Page;
-            effect_work_init();
-            /* Recreate blue BG — effect_work_init destroyed it */
-            Order[0x4E] = 5;
-            Order_Timer[0x4E] = 1;
-            Order_Dir[0x4E] = 3;
-            effect_57_init(0x4E, 0, 0, 0x45, 0);
             Menu_Common_Init();
             Menu_Cursor_Y[0] = 0;
             Menu_Max = Page_Data[Menu_Page];

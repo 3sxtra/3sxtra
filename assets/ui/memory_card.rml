@@ -6,32 +6,29 @@
     <title>Memory Card</title>
 </head>
 <body data-model="memory_card">
-    <div id="memcard-panel" class="memcard-panel">
-        <div class="memcard-title">
-            <span>SAVE / LOAD</span>
-        </div>
+    <div id="memcard-panel" class="menu-panel">
+        <div class="menu-title">SAVE / LOAD</div>
 
         <div class="menu-items">
             <!-- 0: Save Data -->
-            <div class="menu-item" data-class-focused="cursor_y == 0">
-                <span class="item-label">SAVE DATA</span>
-            </div>
+            <button class="menu-item" data-class-focused="cursor_y == 0">
+                SAVE DATA
+            </button>
 
             <!-- 1: Load Data -->
-            <div class="menu-item" data-class-focused="cursor_y == 1">
-                <span class="item-label">LOAD DATA</span>
-            </div>
+            <button class="menu-item" data-class-focused="cursor_y == 1">
+                LOAD DATA
+            </button>
 
             <!-- 2: Auto Save (with left/right toggle value) -->
-            <div class="menu-item" data-class-focused="cursor_y == 2">
-                <span class="item-label">AUTO SAVE</span>
-                <span class="item-value">{{auto_save_label}}</span>
-            </div>
+            <button class="menu-item" data-class-focused="cursor_y == 2">
+                AUTO SAVE  <span class="item-value">{{auto_save_label}}</span>
+            </button>
 
             <!-- 3: Exit -->
-            <div class="menu-item" data-class-focused="cursor_y == 3">
-                <span class="item-label">EXIT</span>
-            </div>
+            <button class="menu-item" data-class-focused="cursor_y == 3">
+                EXIT
+            </button>
         </div>
     </div>
 </body>

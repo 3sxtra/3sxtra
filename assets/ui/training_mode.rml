@@ -2,25 +2,24 @@
 <head>
     <link type="text/rcss" href="base.rcss"/>
     <link type="text/rcss" href="menu_shared.rcss"/>
-    <link type="text/rcss" href="training_mode.rcss"/>
     <title>Training Mode</title>
 </head>
 <body data-model="training_menus">
-    <div id="tr-mode-panel" class="tr-panel">
-        <div class="tr-title"><span>TRAINING MODE</span></div>
-        <div class="option-list">
-            <div class="menu-item" data-class-focused="tr_cursor == 0">
-                <span>{{ tr_mode_label_0 }}</span>
-            </div>
-            <div class="menu-item" data-class-focused="tr_cursor == 1">
-                <span>{{ tr_mode_label_1 }}</span>
-            </div>
-            <div class="menu-item" data-class-focused="tr_cursor == 2">
-                <span>{{ tr_mode_label_2 }}</span>
-            </div>
-            <div class="menu-item" data-class-focused="tr_cursor == 3">
-                <span>{{ tr_mode_label_3 }}</span>
-            </div>
+    <div id="tr-mode-panel" class="menu-panel">
+        <div class="menu-title">TRAINING</div>
+        <div class="menu-items">
+            <button class="menu-item" data-class-focused="tr_cursor == 0">
+                {{ tr_mode_label_0 }}
+            </button>
+            <button class="menu-item" data-class-focused="tr_cursor == 1">
+                {{ tr_mode_label_1 }}
+            </button>
+            <button class="menu-item" data-class-focused="tr_cursor == 2">
+                {{ tr_mode_label_2 }}
+            </button>
+            <button class="menu-item" data-class-focused="tr_cursor == 3">
+                {{ tr_mode_label_3 }}
+            </button>
         </div>
     </div>
 </body>

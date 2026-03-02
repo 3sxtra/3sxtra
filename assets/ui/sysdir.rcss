@@ -1,56 +1,20 @@
 /* ─── System Direction / Dipswitch Menu ─────────────────────────── */
-/* Game canvas: 384×224dp. Budget every pixel carefully. */
+/* Game canvas: 384×224dp. Budget every pixel carefully.            */
+/* Inherits: base.rcss → menu_shared.rcss → this                   */
 
-#sysdir-panel {
-    display: block;
-    position: absolute;
-    top: 6dp;
-    left: 10dp;
-    width: 364dp;
-    padding: 4dp 6dp;
-    background-color: transparent;
-    animation: slide-in 0.15s cubic-in-out;
-}
-
-@keyframes slide-in {
-    from { margin-left: -20dp; opacity: 0; }
-    to   { margin-left: 0;     opacity: 1; }
-}
-
-/* ─── Top-level nav items ───────────────────────────────────────── */
+/* Panel uses .menu-panel from menu_shared.rcss.
+ * The subpage needs more width, so override when in subpage mode. */
 
 #nav-section {
     display: block;
-    margin-top: 30dp;
 }
 
-.nav-item {
-    display: block;
-    padding: 3dp 6dp;
-    margin-bottom: 1dp;
-    color: rgba(200, 210, 240, 230);
-    font-size: 12dp;
-    border-left-width: 3dp;
-    border-left-color: transparent;
-    transition: background-color border-left-color 0.08s linear-in-out;
-}
-
-.nav-item.focused {
-    background-color: rgba(255, 220, 0, 31);
-    border-left-color: rgba(255, 210, 40, 242);
-    color: #fff;
-}
-
-.nav-label {
-    display: inline-block;
-    width: 200dp;
-}
-
+/* ── Inline direction number value ─────────────────────────────── */
 .nav-value {
-    display: inline-block;
-    text-align: right;
+    display: inline;
     color: rgba(140, 200, 255, 230);
-    font-size: 12dp;
+    font-size: 10dp;
+    margin-left: 4dp;
 }
 
 /* ─── Sub-page section ──────────────────────────────────────────── */
@@ -90,14 +54,14 @@
 
 .toggle-label {
     display: inline-block;
-    width: 260dp;
+    width: 100dp;
     font-size: 10dp;
 }
 
 .toggle-value {
     display: inline-block;
     text-align: right;
-    width: 80dp;
+    width: 40dp;
     color: rgba(100, 220, 160, 242);
     font-size: 11dp;
 }

@@ -18,6 +18,7 @@ extern "C" {
 /* Navigation globals from menu.c */
 extern short Menu_Cursor_Y[4];
 extern unsigned short IO_Result;
+extern short Connect_Status;
 
 } // extern "C"
 
@@ -37,6 +38,7 @@ static bool s_model_registered = false;
 struct ModeMenuCache {
     int menu_cursor;
     bool network_available;
+    bool versus_available;
 };
 static ModeMenuCache s_cache = {};
 
@@ -70,6 +72,7 @@ extern "C" void rmlui_mode_menu_init(void) {
 
     ctor.BindFunc("menu_cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
     ctor.BindFunc("network_available", [](Rml::Variant& v) { v = (bool)(netplay_is_available() != 0); });
+    ctor.BindFunc("versus_available",  [](Rml::Variant& v) { v = (bool)(Connect_Status != 0); });
 
     // Event: user clicked a menu item → feed back into the CPS3 state machine
     ctor.BindEventCallback("select_item",
@@ -94,6 +97,7 @@ extern "C" void rmlui_mode_menu_update(void) {
         return;
     DIRTY_INT(menu_cursor, (int)Menu_Cursor_Y[0]);
     DIRTY_BOOL(network_available, netplay_is_available() != 0);
+    DIRTY_BOOL(versus_available, Connect_Status != 0);
 }
 
 // ─── Show / Hide ──────────────────────────────────────────────────

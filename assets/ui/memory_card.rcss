@@ -3,56 +3,13 @@
  *  Inherits: base.rcss → menu_shared.rcss → this               *
  * ============================================================ */
 
-/* ── Panel (centered) ──────────────────────────────────────── */
-.memcard-panel {
-    display: block;
-    position: absolute;
-    top: 20%;
-    left: 50%;
-    margin-left: -160dp;
-    width: 320dp;
-    text-align: center;
-    animation: panel-fade-in 0.4s quadratic-out;
-}
+/* (panel styling inherited from .menu-panel in menu_shared.rcss) */
 
-/* ── Title ─────────────────────────────────────────────────── */
-.memcard-title {
-    display: block;
-    font-size: 20dp;
-    font-weight: bold;
-    color: #88ccff;
-    letter-spacing: 3dp;
-    margin-bottom: 16dp;
-    font-effect: shadow(1dp 1dp #00000088);
-}
-
-/* ── Menu item overrides ───────────────────────────────────── */
-.menu-item {
-    padding: 6dp 16dp;
-    margin-bottom: 2dp;
-}
-
-.menu-item.focused {
-    background-color: rgba(255, 220, 0, 0.15);
-    border-left-color: #ffcc00;
-}
-
-/* ── Inline label/value spans ──────────────────────────────── */
-.item-label {
-    display: inline;
-    font-size: 14dp;
-    color: #cccccc;
-    letter-spacing: 2dp;
-}
-
-.focused .item-label {
-    color: #ffffff;
-}
-
+/* ── Inline toggle value (e.g. "OFF" / "ON") ──────────────── */
 .item-value {
     display: inline;
-    font-size: 14dp;
+    font-size: 10dp;
     color: #ffcc00;
     letter-spacing: 1dp;
-    margin-left: 8dp;
+    margin-left: 4dp;
 }

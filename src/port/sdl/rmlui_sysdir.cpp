@@ -145,6 +145,9 @@ extern "C" void rmlui_sysdir_init(void) {
             v = 0;
     });
     ctor.BindFunc("dir_working", [](Rml::Variant& v) { v = (int)Convert_Buff[3][0][0]; });
+    ctor.BindFunc("dir_label", [](Rml::Variant& v) {
+        v = Rml::String(Convert_Buff[3][0][0] == 0 ? "NORMAL" : "CUSTOM");
+    });
     ctor.BindFunc("in_subpage", [](Rml::Variant& v) { v = s_in_subpage; });
 
     // Per-row labels (0-5)

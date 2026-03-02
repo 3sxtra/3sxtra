@@ -3,10 +3,9 @@
     <title>Option Menu</title>
     <link type="text/rcss" href="base.rcss"/>
     <link type="text/rcss" href="menu_shared.rcss"/>
-    <link type="text/rcss" href="option_menu.rcss"/>
 </head>
 <body data-model="option_menu" id="option-menu-root">
-    <div id="option-panel">
+    <div id="option-panel" class="menu-panel">
         <div class="menu-title">OPTION</div>
 
         <div class="menu-items">

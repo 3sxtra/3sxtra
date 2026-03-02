@@ -3,48 +3,6 @@
  *  Inherits: base.rcss → menu_shared.rcss → this               *
  * ============================================================ */
 
-/* ── Panel (position & size) ───────────────────────────────── */
-.tr-panel {
-    display: block;
-    position: absolute;
-    top: 10dp;
-    left: 50%;
-    margin-left: -130dp;
-    width: 260dp;
-    text-align: center;
-    animation: panel-fade-in 0.3s quadratic-out;
-}
-
-/* ── Title: cyan accent ────────────────────────────────────── */
-.tr-title {
-    display: block;
-    font-size: 12dp;
-    font-weight: bold;
-    color: #66ccff;
-    letter-spacing: 3dp;
-    margin-bottom: 6dp;
-    font-effect: shadow(1dp 1dp #00000088);
-}
-
-/* ── Accent color overrides ────────────────────────────────── */
-.option-list {
-    border-color: #66ccff33;
-}
-
-.menu-item {
-    padding: 2dp 8dp;
-    margin-bottom: 1dp;
-    font-size: 10dp;
-    letter-spacing: 1dp;
-    color: #cccccc;
-    height: auto;
-    line-height: 1.2;
-    transition: background-color 0.12s linear-in-out;
-}
-
-.menu-item.focused {
-    background-color: rgba(102, 204, 255, 38);
-    border-left-color: #66ccff;
-    padding-left: 5dp;
-    color: #ffffff;
-}
+/* Panel + title + item styling inherited from menu_shared.rcss.
+ * Add per-menu overrides below as needed. */
+#tr-mode-panel { }

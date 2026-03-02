@@ -1,29 +1,32 @@
 <rml>
 <head>
     <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="menu_shared.rcss"/>
     <link type="text/rcss" href="sysdir.rcss"/>
     <title>System Direction</title>
 </head>
 <body data-model="sysdir">
-<div id="sysdir-panel">
+<div id="sysdir-panel" class="menu-panel">
 
     <!-- ── Top-level nav (SYSTEM / DIRECTION / SAVE / LOAD / EXIT) ── -->
     <div data-if="!in_subpage" id="nav-section">
-        <div class="nav-item" data-class-focused="cursor_y == 0">
-            <span class="nav-label">DIRECTION</span>
-            <span class="nav-value">{{dir_working + 1}}</span>
-        </div>
-        <div class="nav-item" data-class-focused="cursor_y == 1">
-            <span class="nav-label">DIRECTION</span>
-        </div>
-        <div class="nav-item" data-class-focused="cursor_y == 2">
-            <span class="nav-label">SAVE</span>
-        </div>
-        <div class="nav-item" data-class-focused="cursor_y == 3">
-            <span class="nav-label">LOAD</span>
-        </div>
-        <div class="nav-item" data-class-focused="cursor_y == 4">
-            <span class="nav-label">EXIT</span>
+        <div class="menu-title">SYSTEM DIRECTION</div>
+        <div class="menu-items">
+            <button class="menu-item" data-class-focused="cursor_y == 0">
+                SYSTEM  <span class="nav-value">{{dir_label}}</span>
+            </button>
+            <button class="menu-item" data-class-focused="cursor_y == 1">
+                DIRECTION
+            </button>
+            <button class="menu-item" data-class-focused="cursor_y == 2">
+                SAVE
+            </button>
+            <button class="menu-item" data-class-focused="cursor_y == 3">
+                LOAD
+            </button>
+            <button class="menu-item" data-class-focused="cursor_y == 4">
+                EXIT
+            </button>
         </div>
     </div>
 

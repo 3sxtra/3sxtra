@@ -6,9 +6,8 @@
     <link type="text/rcss" href="mode_menu.rcss"/>
 </head>
 <body data-model="mode_menu" id="mode-menu-root">
-    <div id="mode-panel">
-        <div class="menu-title">STREET FIGHTER III</div>
-        <div class="menu-subtitle">3RD STRIKE</div>
+    <div id="mode-panel" class="menu-panel">
+        <div class="menu-title">MODE MENU</div>
 
         <div class="menu-items">
 
@@ -23,6 +22,7 @@
             <!-- 1: Versus -->
             <button class="menu-item" id="item-1"
                     data-class-focused="menu_cursor == 1"
+                    data-class-item-disabled="!versus_available"
                     data-event-click="select_item(1)"
                     nav-up="item-0" nav-down="item-2">
                 VERSUS
