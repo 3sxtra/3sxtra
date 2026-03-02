@@ -50,7 +50,7 @@
 // modifying the third-party RenderInterface_SDL_GPU class.
 // -------------------------------------------------------------------
 class GameViewportGPU : public RenderInterface_SDL_GPU {
-public:
+  public:
     using RenderInterface_SDL_GPU::RenderInterface_SDL_GPU;
 
     /// Activate viewport correction for game-context rendering.
@@ -62,8 +62,7 @@ public:
         m_sy = (float)phys_h / (float)ctx_h;
         m_off_x = off_x;
         m_off_y = off_y;
-        m_correction = Rml::Matrix4f::Translate((float)off_x, (float)off_y, 0)
-                     * Rml::Matrix4f::Scale(m_sx, m_sy, 1.0f);
+        m_correction = Rml::Matrix4f::Translate((float)off_x, (float)off_y, 0) * Rml::Matrix4f::Scale(m_sx, m_sy, 1.0f);
         SetTransform(nullptr); // Force transform update with correction
     }
 
@@ -91,12 +90,12 @@ public:
             return;
         }
         Rml::Rectanglei adjusted = Rml::Rectanglei::FromPositionSize(
-            {(int)(region.Left() * m_sx + m_off_x), (int)(region.Top() * m_sy + m_off_y)},
-            {(int)(region.Width() * m_sx + 0.5f), (int)(region.Height() * m_sy + 0.5f)});
+            { (int)(region.Left() * m_sx + m_off_x), (int)(region.Top() * m_sy + m_off_y) },
+            { (int)(region.Width() * m_sx + 0.5f), (int)(region.Height() * m_sy + 0.5f) });
         RenderInterface_SDL_GPU::SetScissorRegion(adjusted);
     }
 
-private:
+  private:
     bool m_active = false;
     float m_sx = 1.0f, m_sy = 1.0f;
     int m_off_x = 0, m_off_y = 0;
@@ -316,10 +315,16 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
         // Show/hide the debugger documents so their backgrounds don't
         // render when the debugger is closed.
         if (Rml::ElementDocument* dbg_menu = s_window_context->GetDocument("rmlui-debug-menu")) {
-            if (new_vis) dbg_menu->Show(); else dbg_menu->Hide();
+            if (new_vis)
+                dbg_menu->Show();
+            else
+                dbg_menu->Hide();
         }
         if (Rml::ElementDocument* dbg_hook = s_game_context->GetDocument("rmlui-debug-hook")) {
-            if (new_vis) dbg_hook->Show(); else dbg_hook->Hide();
+            if (new_vis)
+                dbg_hook->Show();
+            else
+                dbg_hook->Hide();
         }
         return;
     }

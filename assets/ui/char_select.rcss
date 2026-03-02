@@ -16,15 +16,39 @@ body {
     height: 100%;
 }
 
+/* ── Character Name ── */
+.sel-name {
+    display: block;
+    position: absolute;
+    font-size: 18dp;
+    font-weight: bold;
+    color: #ffffff;
+    text-transform: uppercase;
+    font-effect: shadow(2dp 2dp #000000cc);
+}
+
+/* 1P name: top-left area, matching EFF38 rest position for player 0 */
+.sel-name-1p {
+    top: 16dp;
+    left: 68dp;
+}
+
+/* 2P name: top-right area, matching EFF38 rest position for player 1 */
+.sel-name-2p {
+    top: 16dp;
+    right: 68dp;
+    text-align: right;
+}
+
+/* ── Timer ── */
 .sel-timer {
     display: block;
     position: absolute;
-    top: 4%;
-    left: 50%;
-    margin-left: -24dp;
+    bottom: 10dp;
+    right: 48dp;
     width: 48dp;
     text-align: center;
-    font-size: 24dp;
+    font-size: 20dp;
     font-weight: bold;
     color: #ffcc44;
     font-effect: shadow(2dp 2dp #000000aa);

@@ -397,8 +397,6 @@ extern "C" void rmlui_game_hud_update(void) {
         rmlui_wrapper_show_game_document("game_hud");
     }
 
-
-
     DIRTY_INT(p1_health, (int)plw[0].wu.vital_new);
     DIRTY_INT(p2_health, (int)plw[1].wu.vital_new);
     DIRTY_INT(p1_drain, (int)vit[0].cred);

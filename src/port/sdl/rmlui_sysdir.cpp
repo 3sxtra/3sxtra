@@ -145,9 +145,8 @@ extern "C" void rmlui_sysdir_init(void) {
             v = 0;
     });
     ctor.BindFunc("dir_working", [](Rml::Variant& v) { v = (int)Convert_Buff[3][0][0]; });
-    ctor.BindFunc("dir_label", [](Rml::Variant& v) {
-        v = Rml::String(Convert_Buff[3][0][0] == 0 ? "NORMAL" : "CUSTOM");
-    });
+    ctor.BindFunc("dir_label",
+                  [](Rml::Variant& v) { v = Rml::String(Convert_Buff[3][0][0] == 0 ? "NORMAL" : "CUSTOM"); });
     ctor.BindFunc("in_subpage", [](Rml::Variant& v) { v = s_in_subpage; });
 
     // Per-row labels (0-5)
@@ -264,6 +263,7 @@ extern "C" void rmlui_sysdir_update(void) {
     DIRTY_INT(page, (int)Menu_Page);
     DIRTY_INT(page_max, (int)Page_Max);
     DIRTY_INT(dir_working, (int)Convert_Buff[3][0][0]);
+    s_model_handle.DirtyVariable("dir_label");
     DIRTY_BOOL(in_subpage, s_in_subpage);
 
     int pg = Menu_Page;

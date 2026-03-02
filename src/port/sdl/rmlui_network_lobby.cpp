@@ -103,8 +103,10 @@ extern "C" void rmlui_network_lobby_init(void) {
         int count = Discovery_GetPeers(peers, 16);
         if (count > 0) {
             int idx = g_lobby_peer_idx;
-            if (idx < 0) idx = 0;
-            if (idx >= count) idx = count - 1;
+            if (idx < 0)
+                idx = 0;
+            if (idx >= count)
+                idx = count - 1;
             v = Rml::String(peers[idx].name);
         } else {
             v = Rml::String("NONE");
@@ -118,8 +120,10 @@ extern "C" void rmlui_network_lobby_init(void) {
         int count = SDLNetplayUI_GetOnlinePlayerCount();
         if (count > 0) {
             int idx = g_net_peer_idx;
-            if (idx < 0) idx = 0;
-            if (idx >= count) idx = count - 1;
+            if (idx < 0)
+                idx = 0;
+            if (idx >= count)
+                idx = count - 1;
             v = Rml::String(SDLNetplayUI_GetOnlinePlayerName(idx));
         } else if (SDLNetplayUI_IsSearching()) {
             v = Rml::String("SEARCHING");

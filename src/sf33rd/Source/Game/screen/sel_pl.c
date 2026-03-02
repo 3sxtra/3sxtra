@@ -50,6 +50,8 @@
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "port/sdl/rmlui_char_select.h"
+#include "port/sdl/rmlui_phase3_toggles.h"
 
 static void Switch_Work();
 static void Sel_PL_Control();
@@ -294,6 +296,9 @@ static void Sel_PL_Cont_1st() {
     pulpul_stop();
     pp_operator_check_flag(1);
     effect_58_init(6, 20, 157);
+
+    if (use_rmlui && rmlui_screen_select)
+        rmlui_char_select_show();
 }
 
 /** @brief Unlock Gill if the player has used every other character at least once. */
@@ -1791,6 +1796,9 @@ static void Exit_7th() {
     bg_w.stage = Battle_Country;
     bg_w.area = 0;
     SEL_PL_X = 1;
+
+    if (use_rmlui && rmlui_screen_select)
+        rmlui_char_select_hide();
 }
 
 /** @brief Handicap phase 1 — spawn handicap menu UI (vital bars, stage selector, labels). */

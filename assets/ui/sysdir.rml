@@ -6,7 +6,7 @@
     <title>System Direction</title>
 </head>
 <body data-model="sysdir">
-<div id="sysdir-panel" class="menu-panel">
+<div id="sysdir-panel" class="menu-panel" data-class-wide="in_subpage">
 
     <!-- ── Top-level nav (SYSTEM / DIRECTION / SAVE / LOAD / EXIT) ── -->
     <div data-if="!in_subpage" id="nav-section">

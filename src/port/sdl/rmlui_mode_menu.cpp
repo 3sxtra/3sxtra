@@ -72,7 +72,7 @@ extern "C" void rmlui_mode_menu_init(void) {
 
     ctor.BindFunc("menu_cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
     ctor.BindFunc("network_available", [](Rml::Variant& v) { v = (bool)(netplay_is_available() != 0); });
-    ctor.BindFunc("versus_available",  [](Rml::Variant& v) { v = (bool)(Connect_Status != 0); });
+    ctor.BindFunc("versus_available", [](Rml::Variant& v) { v = (bool)(Connect_Status != 0); });
 
     // Event: user clicked a menu item → feed back into the CPS3 state machine
     ctor.BindEventCallback("select_item",

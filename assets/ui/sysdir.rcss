@@ -9,6 +9,20 @@
     display: block;
 }
 
+/* ── Wide panel for sub-page mode (centered, full-width) ────── */
+#sysdir-panel.wide {
+    width: 280dp;
+    left: 52dp;
+}
+
+.wide .toggle-label {
+    width: 180dp;
+}
+
+.wide .toggle-value {
+    width: 60dp;
+}
+
 /* ── Inline direction number value ─────────────────────────────── */
 .nav-value {
     display: inline;

@@ -1596,11 +1596,13 @@ static void System_Direction(struct _TASK* task_ptr) {
         }
         Convert_Buff[3][0][0] = Direction_Working[1];
 
-        /* Orange/red background — unconditional (shows through transparent RmlUI) */
-        effect_57_init(0x6D, 0xA, 0, 0x3F, 2);
-        Order[0x6D] = 1;
-        Order_Dir[0x6D] = 8;
-        Order_Timer[0x6D] = 1;
+        /* Orange/red header — gated when RmlUI active */
+        if (!use_rmlui || !rmlui_menu_sysdir) {
+            effect_57_init(0x6D, 0xA, 0, 0x3F, 2);
+            Order[0x6D] = 1;
+            Order_Dir[0x6D] = 8;
+            Order_Timer[0x6D] = 1;
+        }
 
         if (use_rmlui && rmlui_menu_sysdir) {
             rmlui_sysdir_show();
@@ -1713,12 +1715,12 @@ static void Direction_Menu(struct _TASK* task_ptr) {
                In native, Setup_Next_Page calls effect_work_init() which destroys
                everything, then recreates 0x4E with palette 0x45. Since we skip
                effect_work_init() in RmlUI mode, do the swap explicitly. */
-            Order[0x6D] = 4;         /* kill the orange SysDir overlay */
+            Order[0x6D] = 4; /* kill the orange SysDir overlay */
             Order_Timer[0x6D] = 1;
             Order[0x4E] = 5;
             Order_Timer[0x4E] = 1;
             Order_Dir[0x4E] = 3;
-            effect_57_init(0x4E, 0, 0, 0x45, 0);  /* green subpage BG */
+            effect_57_init(0x4E, 0, 0, 0x45, 0); /* green subpage BG */
         }
         break;
 

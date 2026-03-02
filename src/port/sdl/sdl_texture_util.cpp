@@ -173,8 +173,10 @@ extern "C" void TextureUtil_GetSize(void* texture_id, int* w, int* h) {
         if (w || h) {
             float fw, fh;
             SDL_GetTextureSize(tex, &fw, &fh);
-            if (w) *w = (int)fw;
-            if (h) *h = (int)fh;
+            if (w)
+                *w = (int)fw;
+            if (h)
+                *h = (int)fh;
         }
     } else {
         GLuint id = (GLuint)(intptr_t)texture_id;

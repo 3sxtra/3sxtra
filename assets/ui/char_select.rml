@@ -6,6 +6,17 @@
 </head>
 <body data-model="char_select">
     <div id="sel-overlay" class="sel-overlay">
+        <!-- 1P character name (always visible) -->
+        <div class="sel-name sel-name-1p">
+            <span>{{ sel_p1_name }}</span>
+        </div>
+
+        <!-- 2P character name (visible in VS mode) -->
+        <div class="sel-name sel-name-2p" data-if="sel_is_2p">
+            <span>{{ sel_p2_name }}</span>
+        </div>
+
+        <!-- Timer -->
         <div class="sel-timer">
             <span>{{ sel_timer }}</span>
         </div>
