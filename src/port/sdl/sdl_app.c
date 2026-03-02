@@ -1971,20 +1971,21 @@ void SDLApp_EndFrame() {
             rmlui_wrapper_render_game(win_w, win_h, viewport.x, viewport.y, viewport.w, viewport.h);
         }
 
-        if (show_debug_hud) {
-            // Render debug text in screen space (on top of everything)
-            // Reset GL state that might have been changed by multi-pass shaders
+        // Debug text buffer (game debug menu, effect overlay, etc.)
+        // Must render independently of the FPS HUD toggle.
+        {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, 0);
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, 0);
             glActiveTexture(GL_TEXTURE0);
             glUseProgram(0);
-
-            // Reset viewport to full window for text rendering
             glViewport(0, 0, win_w, win_h);
 
             SDLTextRenderer_DrawDebugBuffer((float)win_w, (float)win_h);
+        }
+
+        if (show_debug_hud) {
 
             char debug_text[512];
             char fps_text[64];

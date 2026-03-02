@@ -20,6 +20,8 @@ static void Setup_Pos_52(WORK_Other* ewk);
 
 void (*const EFF52_Jmp_Tbl[5])();
 
+/* eff52 draws the player portrait (large character face) on the char select
+ * screen, NOT the "1P"/"2P" text labels.  Do NOT gate this effect. */
 void effect_52_move(WORK_Other* ewk) {
     EFF52_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 

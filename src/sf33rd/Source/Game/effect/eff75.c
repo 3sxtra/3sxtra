@@ -16,6 +16,8 @@
 
 void (*const EFF75_Jmp_Tbl[5])();
 
+/* eff75 draws portrait-related elements on the char select screen.
+ * Do NOT gate — suppressing this hides the player portraits. */
 void effect_75_move(WORK_Other* ewk) {
     EFF75_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 

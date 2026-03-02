@@ -88,6 +88,27 @@ extern "C" void rmlui_char_select_init(void) {
 extern "C" void rmlui_char_select_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+
+    /* Auto-hide: if the overlay is visible but the game has left the char
+     * select screen (Play_Game becomes non-zero when the fight starts),
+     * hide the overlay.  This covers exit paths that don't call hide(). */
+    if (rmlui_char_select_visible && Play_Game != 0) {
+        rmlui_char_select_hide();
+        return;
+    }
+
+    /* Detect external hides (e.g. rmlui_wrapper_hide_all_game_documents)
+     * that bypass rmlui_char_select_hide() and don't reset our flag. */
+    if (rmlui_char_select_visible &&
+        !rmlui_wrapper_is_game_document_visible("char_select")) {
+        rmlui_char_select_visible = false;
+        return;
+    }
+
+    /* Only dirty-update bindings when the overlay is actually visible. */
+    if (!rmlui_char_select_visible)
+        return;
+
     // All bindings are BindFunc (evaluated each frame), just dirty them
     s_model_handle.DirtyVariable("sel_timer");
     s_model_handle.DirtyVariable("sel_p1_name");

@@ -15,18 +15,22 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
+#include "port/sdl/rmlui_char_select.h"
 
 static void Setup_Clear_OBJ(WORK_Other* ewk);
 
 void (*const EFF69_Jmp_Tbl[5])();
 
+/* eff69 draws the "TIME" label and horizontal red lines on the char select
+ * screen.  Suppress rendering when the RmlUI overlay provides the same UI. */
 void effect_69_move(WORK_Other* ewk) {
     EFF69_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
     if (ewk->wu.be_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-        sort_push_request4(&ewk->wu);
+        if (!rmlui_char_select_visible)
+            sort_push_request4(&ewk->wu);
     }
 }
 

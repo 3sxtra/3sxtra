@@ -78,3 +78,28 @@ body {
     bottom: 6dp;
     left: 50%;
 }
+
+/* "TIME" label next to the timer digits */
+.sel-time-label {
+    font-size: 8dp;
+    color: #ffffffaa;
+    margin-right: 4dp;
+}
+
+/* ── PLAYER SELECT banner (solo mode, bottom-right) ── */
+.sel-banner {
+    display: block;
+    position: absolute;
+    bottom: 20dp;
+    right: 0;
+    padding: 6dp 12dp;
+    background-color: #cc0000;
+}
+
+.sel-banner-text {
+    font-size: 24dp;
+    font-weight: bold;
+    color: #ffffff;
+    text-transform: uppercase;
+    font-effect: shadow(2dp 2dp #000000aa);
+}

@@ -57,6 +57,48 @@ void disp_effect_work() {
         return;
     }
 
+    if (Debug_w[DEBUG_EFF_NUM_DISP] == 2) {
+        /* Mode 2: draw effect ID at each visual effect's screen position
+         * with a drop-shadow for readability against game graphics. */
+        for (index = 0; index <= 7; index += 1) {
+            for (curr_ix = head_ix[index]; curr_ix != -1; curr_ix = next_ix) {
+                c_addr = (WORK*)frw[curr_ix];
+                next_ix = c_addr->behind;
+
+                /* Skip non-visual effects */
+                if (c_addr->disp_flag == 0) {
+                    continue;
+                }
+
+                /* position_x/y are screen-relative (set by disp_pos_trans_entry).
+                 * Convert pixel coords to flPrintL's 8x8 character grid. */
+                px = (s32)(u16)c_addr->position_x / 8;
+                py = (s32)(u16)c_addr->position_y / 8;
+
+                /* Clamp to visible screen area (48x28 char grid for 384x224) */
+                if (px < 1 || px > 45 || py < 1 || py > 26) {
+                    continue;
+                }
+
+                /* Shadow pass (black, offset +1,+1) */
+                flPrintColor(0xFF000000);
+                flPrintL(px + 1, py + 1, "%c%d",
+                         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[(c_addr->id / 10)],
+                         c_addr->id % 10);
+
+                /* Foreground pass (bright green) */
+                flPrintColor(0xFF00FF00);
+                flPrintL(px, py, "%c%d",
+                         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[(c_addr->id / 10)],
+                         c_addr->id % 10);
+            }
+        }
+        /* Reset color to default white */
+        flPrintColor(0xFFFFFFFF);
+        return;
+    }
+
+    /* Mode 1: original grid layout */
     px = 7;
     py = 15;
 
@@ -74,7 +116,7 @@ void disp_effect_work() {
             c_addr = (WORK*)frw[curr_ix];
             next_ix = c_addr->behind;
             flPrintL(px, py, "%c%d", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[(c_addr->id / 10)], c_addr -> id % 10);
-            py++;
+            py += 2;
         }
     }
 }

@@ -27,12 +27,19 @@
 
         <!-- Timer: solo mode (bottom-right) -->
         <div class="sel-timer sel-timer-solo" data-if="!sel_both_active">
+            <span class="sel-time-label">TIME</span>
             <span>{{ sel_timer }}</span>
         </div>
 
-        <!-- Timer: dual mode (top-center) -->
+        <!-- Timer: dual mode (bottom-center) -->
         <div class="sel-timer sel-timer-dual" data-if="sel_both_active">
+            <span class="sel-time-label">TIME</span>
             <span>{{ sel_timer }}</span>
+        </div>
+
+        <!-- PLAYER SELECT banner (solo mode only) -->
+        <div class="sel-banner" data-if="!sel_both_active">
+            <div class="sel-banner-text">PLAYER SELECT</div>
         </div>
     </div>
 </body>

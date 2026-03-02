@@ -17,6 +17,7 @@
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
+#include "port/sdl/rmlui_char_select.h"
 
 static void EFFK6_WAIT(WORK_Other* ewk);
 static void EFFK6_SLIDE_IN(WORK_Other* ewk);
@@ -33,12 +34,15 @@ void (*const EFFK6_Jmp_Tbl[6])() = {
     EFFK6_WAIT, EFFK6_SLIDE_IN, EFFK6_SLIDE_OUT, EFFK6_SUDDENLY, EFFK6_MOVE, EFFK6_KILL
 };
 
+/* effk6 draws 1P/2P badges and name covers on the char select screen.
+ * Suppress rendering when the RmlUI overlay is active. */
 void effect_K6_move(WORK_Other* ewk) {
     Check_Pos_OBJ(ewk);
     EFFK6_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-    sort_push_request4(&ewk->wu);
+    if (!rmlui_char_select_visible)
+        sort_push_request4(&ewk->wu);
 }
 
 static void EFFK6_WAIT(WORK_Other* ewk) {
