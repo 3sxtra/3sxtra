@@ -32,6 +32,8 @@ void (*const EFF39_Jmp_Tbl[6])() = {
     EFF39_WAIT, EFF39_SLIDE_IN, EFF39_SLIDE_OUT, EFF39_SUDDENLY, EFF39_MOVE, EFF39_KILL
 };
 
+/* eff39 draws the character name labels on the char select screen.
+ * Suppress rendering when the RmlUI overlay provides the same UI. */
 void effect_39_move(WORK_Other* ewk) {
     EFF39_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 

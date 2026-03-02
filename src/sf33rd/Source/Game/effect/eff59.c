@@ -13,6 +13,7 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
+#include "port/sdl/rmlui_char_select.h"
 
 const s16 EFF59_Correct_Data[6][2] = { { 0, 0 }, { 4, 0 }, { 0, 0 }, { 0, 0 }, { 0, -128 }, { 0, 0 } };
 
@@ -88,7 +89,12 @@ void effect_59_move(WORK_Other* ewk) {
     EFF59_Trans(ewk);
 }
 
+/* eff59 draws the grey transparent rectangles on the char select screen:
+ * arg_ID 4 = banner behind PLAYER SELECT, arg_ID 5 = rect behind character name.
+ * Suppress rendering when the RmlUI overlay provides the same UI. */
 static void EFF59_Trans(WORK_Other* ewk) {
+    if (rmlui_char_select_visible)
+        return;
     if (ewk->wu.dm_vital == 4 || ewk->wu.dm_vital == 5) {
         sort_push_requestA(&ewk->wu);
     } else {

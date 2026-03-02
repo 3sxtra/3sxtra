@@ -25,6 +25,8 @@ static void Setup_Char_Index(WORK_Other* ewk);
 
 void (*const EFF42_Jmp_Tbl[5])();
 
+/* eff42 draws the timer/counter display on the char select screen.
+ * Suppress rendering when the RmlUI overlay provides the same UI. */
 void effect_42_move(WORK_Other* ewk) {
     EFF42_Jmp_Tbl[Order[ewk->wu.dir_old]](ewk);
 
