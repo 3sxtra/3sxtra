@@ -14,21 +14,26 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
+#include "port/sdl/rmlui_char_select.h"
 
 static void Setup_Char_52(WORK_Other* ewk);
 static void Setup_Pos_52(WORK_Other* ewk);
 
 void (*const EFF52_Jmp_Tbl[5])();
 
-/* eff52 draws the player portrait (large character face) on the char select
- * screen, NOT the "1P"/"2P" text labels.  Do NOT gate this effect. */
+/* eff52 draws the player portrait on the char select screen.
+ * dir_old == 37 (solo mode) uses char_index 16 which includes a white
+ * separator line — gate that variant when RmlUI is active.
+ * dir_old == 38/39 (2P mode) use char_index 18 (portrait face only)
+ * and must NOT be gated. */
 void effect_52_move(WORK_Other* ewk) {
     EFF52_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
     if (ewk->wu.be_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-        sort_push_request4(&ewk->wu);
+        if (!(rmlui_char_select_visible && ewk->wu.dir_old == 37))
+            sort_push_request4(&ewk->wu);
     }
 }
 

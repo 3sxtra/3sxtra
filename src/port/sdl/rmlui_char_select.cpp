@@ -25,6 +25,32 @@ static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN
                                               "GOUKI", "CHUN-LI", "MAKOTO", "Q",    "TWELVE", "REMY",  "AKUMA" };
 #define CHAR_NAME_COUNT 21
 
+// ─── Super Art name table (SF3:3S roster, index matches My_char) ───
+// 3 strings per character. Ordered same as s_char_names.
+static const char* const s_sa_names[21][3] = {
+    { "METEOR STRIKE", "SERAPHIC WING", "RESURRECTION" }, // GILL
+    { "HYPER BOMB", "BOOMERANG RAID", "STUNGUN HEADSHOT" }, // ALEX
+    { "SHINKUU-HADOU-KEN", "SHIN-SHOURYUU-KEN", "DENJIN-HADOU-KEN" }, // RYU
+    { "YOUHOU", "SOU-RAI-REN", "GEN-EI-JIN" }, // YUN
+    { "ROCKET UPPERCUT", "ROLLING THUNDER", "CORKSCREW BLOW" }, // DUDLEY
+    { "MAGNETIC STORM", "SLAM DANCE", "ELECTRIC SNAKE" }, // NECRO
+    { "GIGAS BREAKER", "MEGATON PRESS", "HAMMER MOUNTAIN" }, // HUGO
+    { "KASUMI-SUZAKU", "YOROIDOSHI", "YAMI-SHIGURE" }, // IBUKI
+    { "SPINNING BEAT", "BRAVE DANCE", "HEALING" }, // ELENA
+    { "KISHIN-TSUI", "YAGYOU-DAMA", "TENGU-STONE" }, // ORO
+    { "RAI-SHIN-MAHA-KEN", "TENSHIN-SENKYUU-TAI", "SEI-EI-ENBU" }, // YANG
+    { "SHOURYUU-REPPA", "SHINRYUU-KEN", "SHIPPUU-JINRAI-KYAKU" }, // KEN
+    { "HADOU-BURST", "SHOURYUU-CANNON", "HYPER TORNADO" }, // SEAN
+    { "TYRANT SLAUGHTER", "TEMPORAL THUNDER", "AEGIS REFLECTOR" }, // URIEN
+    { "MESSATSU-GOU-HADOU", "MESSATSU-GOU-SHOURYUU", "MESSATSU-GOU-RASEN" }, // GOUKI
+    { "KIKOU-SHOU", "HOUYOKU-SEN", "TENSEI-RANKA" }, // CHUN-LI
+    { "SEICHUSEN-GODANZUKI", "ABARE-TOSANAMI", "TANDEN-RENKI" }, // MAKOTO
+    { "CRITICAL STRIKE", "DEADLY DOUBLE", "TOTAL DESTRUCTION" }, // Q
+    { "X.N.D.L.", "X.F.L.A.T.", "X.C.O.P.Y." }, // TWELVE
+    { "LIGHT OF VIRTUE", "SUPREME RISING", "BLUE NOCTURNE" }, // REMY
+    { "KONGOU-KOKURETSU-ZAN", "MESSATSU-GOU-SHOURYUU", "MESSATSU-GOU-RASEN" } // AKUMA (Shin Gouki uses same SAs usually)
+};
+
 static const char* char_name(int idx) {
     if (idx >= 0 && idx < CHAR_NAME_COUNT)
         return s_char_names[idx];
@@ -80,6 +106,43 @@ extern "C" void rmlui_char_select_init(void) {
     ctor.BindFunc("sel_p1_confirmed", [](Rml::Variant& v) { v = (bool)(Sel_PL_Complete[0] != 0); });
     ctor.BindFunc("sel_p2_confirmed", [](Rml::Variant& v) { v = (bool)(Sel_PL_Complete[1] != 0); });
 
+    ctor.BindFunc("sel_p1_sa_visible", [](Rml::Variant& v) {
+        // Visible when player has picked a character but hasn't finished the SA pick
+        v = (bool)(Sel_PL_Complete[0] != 0 && Sel_Arts_Complete[0] == 0);
+    });
+    ctor.BindFunc("sel_p1_sa_current_name", [](Rml::Variant& v) {
+        int char_idx = My_char[0];
+        int sa_idx = Arts_Y[0];
+        if (sa_idx < 0 || sa_idx > 2) sa_idx = 0;
+        if (char_idx >= 0 && char_idx < CHAR_NAME_COUNT) v = Rml::String(s_sa_names[char_idx][sa_idx]);
+        else v = Rml::String("SA " + std::to_string(sa_idx + 1));
+    });
+    ctor.BindFunc("sel_p1_sa_current_numeral", [](Rml::Variant& v) {
+        int sa_idx = Arts_Y[0];
+        if (sa_idx == 0) v = Rml::String("I");
+        else if (sa_idx == 1) v = Rml::String("II");
+        else if (sa_idx == 2) v = Rml::String("III");
+        else v = Rml::String("I");
+    });
+
+    ctor.BindFunc("sel_p2_sa_visible", [](Rml::Variant& v) {
+        v = (bool)(Sel_PL_Complete[1] != 0 && Sel_Arts_Complete[1] == 0);
+    });
+    ctor.BindFunc("sel_p2_sa_current_name", [](Rml::Variant& v) {
+        int char_idx = My_char[1];
+        int sa_idx = Arts_Y[1];
+        if (sa_idx < 0 || sa_idx > 2) sa_idx = 0;
+        if (char_idx >= 0 && char_idx < CHAR_NAME_COUNT) v = Rml::String(s_sa_names[char_idx][sa_idx]);
+        else v = Rml::String("SA " + std::to_string(sa_idx + 1));
+    });
+    ctor.BindFunc("sel_p2_sa_current_numeral", [](Rml::Variant& v) {
+        int sa_idx = Arts_Y[1];
+        if (sa_idx == 0) v = Rml::String("I");
+        else if (sa_idx == 1) v = Rml::String("II");
+        else if (sa_idx == 2) v = Rml::String("III");
+        else v = Rml::String("I");
+    });
+
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
     SDL_Log("[RmlUi CharSelect] Data model registered (6 bindings)");
@@ -118,6 +181,12 @@ extern "C" void rmlui_char_select_update(void) {
     s_model_handle.DirtyVariable("sel_both_active");
     s_model_handle.DirtyVariable("sel_p1_confirmed");
     s_model_handle.DirtyVariable("sel_p2_confirmed");
+    s_model_handle.DirtyVariable("sel_p1_sa_visible");
+    s_model_handle.DirtyVariable("sel_p1_sa_current_name");
+    s_model_handle.DirtyVariable("sel_p1_sa_current_numeral");
+    s_model_handle.DirtyVariable("sel_p2_sa_visible");
+    s_model_handle.DirtyVariable("sel_p2_sa_current_name");
+    s_model_handle.DirtyVariable("sel_p2_sa_current_numeral");
 }
 
 extern "C" void rmlui_char_select_show(void) {

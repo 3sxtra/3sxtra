@@ -13,6 +13,7 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
+#include "port/sdl/rmlui_char_select.h"
 
 void effect_50_move(WORK_Other* ewk) {
     WORK_Other* pwk;
@@ -96,7 +97,8 @@ void effect_50_move(WORK_Other* ewk) {
     ewk->wu.xyz[1].disp.pos = ewk->wu.dmcal_d + Plate_Y[ewk->master_id][0];
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-    sort_push_request4(&ewk->wu);
+    if (!rmlui_char_select_visible)
+        sort_push_request4(&ewk->wu);
 }
 
 s32 effect_50_init(s16 PL_id, s16 Direction, s16 dm_vital) {

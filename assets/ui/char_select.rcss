@@ -103,3 +103,98 @@ body {
     text-transform: uppercase;
     font-effect: shadow(2dp 2dp #000000aa);
 }
+
+/* ── Super Arts Selection ── */
+.sa-container {
+    display: block;
+    position: absolute;
+    width: 200dp;
+}
+
+/* P1 sits around center-left */
+.sa-p1 {
+    top: 50dp;
+    left: 20dp;
+}
+
+/* P2 sits around center-right */
+.sa-p2 {
+    top: 50dp;
+    right: 20dp;
+}
+
+.sa-plate {
+    display: block;
+    position: relative;
+    width: 100%;
+    margin-bottom: 2dp;
+    padding: 2dp 8dp;
+    background-color: #222222cc;
+    border-width: 1dp;
+    border-color: #555555;
+    border-radius: 12dp;
+    text-align: center;
+    color: #888888;
+    transform: scale(0.85); /* Inactive is smaller */
+    transition: transform 0.1s, background-color 0.1s;
+}
+
+.sa-plate.active {
+    background-color: #e0e0e0;
+    border-width: 2dp;
+    border-color: #ff0000;
+    color: #000000;
+    transform: scale(1.0); /* Active is full size */
+    z-index: 10;
+}
+
+.sa-numeral {
+    display: inline-block;
+    font-size: 16dp;
+    font-weight: bold;
+    color: #ffff00;
+    font-effect: shadow(1dp 1dp #000000);
+    margin-right: 6dp;
+    vertical-align: middle;
+}
+
+.sa-name-text {
+    display: inline-block;
+    font-family: "Noto Sans JP Thin";
+    font-size: 11dp;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+.sa-plate.active .sa-name-text {
+    font-effect: shadow(1dp 1dp #ffffffaa);
+}
+
+/* ── Super Art Cursors (Blue Arrows) ── */
+.sa-cursor {
+    display: block;
+    position: absolute;
+    width: 0;
+    height: 0;
+    
+    /* Simulate triangle borders */
+    border-left-width: 8dp;
+    border-left-color: transparent;
+    border-right-width: 8dp;
+    border-right-color: transparent;
+
+    left: 50%;
+    margin-left: -8dp;
+}
+
+.sa-cursor-up {
+    top: -12dp;
+    border-bottom-width: 10dp;
+    border-bottom-color: #00aaff;
+}
+
+.sa-cursor-down {
+    bottom: -12dp;
+    border-top-width: 10dp;
+    border-top-color: #00aaff;
+}

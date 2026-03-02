@@ -14,6 +14,7 @@
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
 #include "sf33rd/Source/Game/stage/bg.h"
+#include "port/sdl/rmlui_char_select.h"
 
 static s32 Check_Play_Status_79(WORK_Other* ewk);
 static void Move_Move_79(WORK_Other* ewk);
@@ -325,7 +326,8 @@ void effect_79_move(WORK_Other* ewk) {
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
     ewk->wu.position_z = ewk->wu.xyz[2].disp.pos;
     PP_Priority[ewk->master_id][ewk->master_player] = ewk->wu.dmcal_m;
-    sort_push_request4(&ewk->wu);
+    if (!rmlui_char_select_visible)
+        sort_push_request4(&ewk->wu);
 }
 
 static s32 Check_Play_Status_79(WORK_Other* ewk) {

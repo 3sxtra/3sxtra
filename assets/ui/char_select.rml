@@ -41,6 +41,26 @@
         <div class="sel-banner" data-if="!sel_both_active">
             <div class="sel-banner-text">PLAYER SELECT</div>
         </div>
+
+        <!-- ═══ SUPER ARTS SELECTION P1 ═══ -->
+        <div class="sa-container sa-p1" data-if="sel_p1_sa_visible">
+            <div class="sa-plate active">
+                <div class="sa-numeral">{{ sel_p1_sa_current_numeral }}</div>
+                <div class="sa-name-text">{{ sel_p1_sa_current_name }}</div>
+                <div class="sa-cursor sa-cursor-up"></div>
+                <div class="sa-cursor sa-cursor-down"></div>
+            </div>
+        </div>
+
+        <!-- ═══ SUPER ARTS SELECTION P2 ═══ -->
+        <div class="sa-container sa-p2" data-if="sel_p2_sa_visible">
+            <div class="sa-plate active">
+                <div class="sa-numeral">{{ sel_p2_sa_current_numeral }}</div>
+                <div class="sa-name-text">{{ sel_p2_sa_current_name }}</div>
+                <div class="sa-cursor sa-cursor-up"></div>
+                <div class="sa-cursor sa-cursor-down"></div>
+            </div>
+        </div>
     </div>
 </body>
 </rml>

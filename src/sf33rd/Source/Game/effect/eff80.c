@@ -12,6 +12,7 @@
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
+#include "port/sdl/rmlui_char_select.h"
 
 void effect_80_move(WORK_Other* ewk) {
     WORK_Other* mwk = (WORK_Other*)ewk->my_master;
@@ -51,7 +52,8 @@ void effect_80_move(WORK_Other* ewk) {
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos = mwk->wu.position_x;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos = mwk->wu.position_y;
     ewk->wu.position_z = ewk->wu.xyz[2].disp.pos = mwk->wu.position_z - 1;
-    sort_push_request4(&ewk->wu);
+    if (!rmlui_char_select_visible)
+        sort_push_request4(&ewk->wu);
 }
 
 s32 effect_80_init(WORK_Other* mwk, s16 PL_id, s16 Plate_id, s16 Target_BG) {
