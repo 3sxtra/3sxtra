@@ -13,6 +13,7 @@
 
 #include "main.h"
 #include "common.h"
+#include "test/test_runner.h"
 #include "netplay/netplay.h"
 #include "port/renderer.h"
 #include "port/sdl/sdl_app.h"
@@ -85,6 +86,7 @@ extern bool game_paused;
 // sbss
 s32 system_init_level;
 MPP mpp_w;
+Configuration configuration = { 0 };
 
 const char* g_shm_suffix = NULL;
 
@@ -342,6 +344,10 @@ static void game_step_0() {
     keyConvert();
     TRACE_SUB_END();
 
+    if (configuration.test.enabled) {
+        TestRunner_Prologue();
+    }
+
 #if defined(DEBUG)
     if (!test_flag) {
         if (mpp_w.sysStop) {
@@ -490,6 +496,10 @@ static void game_step_1() {
     Irl_Family();
     Irl_Scrn();
     BGM_Server();
+
+    if (configuration.test.enabled) {
+        TestRunner_Epilogue();
+    }
 }
 
 u8 dctex_linear_mem[0x800];

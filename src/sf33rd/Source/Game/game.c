@@ -19,6 +19,7 @@
 
 /* Phase 3 RmlUi bypass */
 #include "port/sdl/rmlui_attract_overlay.h"
+#include "port/sdl/rmlui_char_select.h"
 #include "port/sdl/rmlui_continue.h"
 #include "port/sdl/rmlui_copyright.h"
 #include "port/sdl/rmlui_gameover.h"
@@ -1906,6 +1907,10 @@ void Next_Title_Sub() {
     /* Hide attract overlay on coin insert */
     if (use_rmlui && rmlui_screen_attract_overlay) {
         rmlui_attract_overlay_hide();
+    }
+    /* Hide char select overlay if it was visible during the attract demo */
+    if (use_rmlui && rmlui_screen_select && rmlui_char_select_visible) {
+        rmlui_char_select_hide();
     }
     Before_Select_Sub();
     cpReadyTask(TASK_ENTRY, Entry_Task);

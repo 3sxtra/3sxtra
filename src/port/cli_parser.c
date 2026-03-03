@@ -14,6 +14,7 @@
 #include <string.h>
 
 // Mock or include needed headers
+#include "main.h"
 #include "types.h"
 
 extern BroadcastConfig broadcast_config;
@@ -56,6 +57,11 @@ void ParseCLI(int argc, char* argv[]) {
             printf("  --shm-suffix <suffix>     Shared-memory name suffix for broadcast\n");
             printf("  --font-test               Boot into font debug visualization screen\n");
             printf("  --ui <imgui|rmlui>        UI toolkit for overlay menus (default: imgui)\n");
+#if defined(DEBUG)
+            printf("  --test-enable             Enable test runner (DEBUG only)\n");
+            printf("  --test-states <path>      Path to states directory (DEBUG only)\n");
+            printf("  --test-inputs <path>      Path to inputs file (DEBUG only)\n");
+#endif
             printf("  --help                    Show this help message\n");
             exit(0);
         } else if (strcmp(argv[i], "--volume") == 0 && i + 1 < argc) {
@@ -103,6 +109,17 @@ void ParseCLI(int argc, char* argv[]) {
             const char* mode = argv[++i];
             g_ui_mode_rmlui = (strcmp(mode, "rmlui") == 0);
             printf("[CLI] UI mode: %s\n", mode);
+#if defined(DEBUG)
+        } else if (strcmp(argv[i], "--test-enable") == 0) {
+            configuration.test.enabled = true;
+            printf("[CLI] Test runner: enabled\n");
+        } else if (strcmp(argv[i], "--test-states") == 0 && i + 1 < argc) {
+            configuration.test.states_path = argv[++i];
+            printf("[CLI] Test states path: %s\n", configuration.test.states_path);
+        } else if (strcmp(argv[i], "--test-inputs") == 0 && i + 1 < argc) {
+            configuration.test.inputs_path = argv[++i];
+            printf("[CLI] Test inputs path: %s\n", configuration.test.inputs_path);
+#endif
         }
     }
 }
