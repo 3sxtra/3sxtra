@@ -278,13 +278,10 @@ extern "C" void rmlui_char_select_update(void) {
         return;
     }
 
-    /* Detect external hides (e.g. rmlui_wrapper_hide_all_game_documents)
-     * that bypass rmlui_char_select_hide() and don't reset our flag. */
-    if (rmlui_char_select_visible &&
-        !rmlui_wrapper_is_game_document_visible("char_select")) {
-        rmlui_char_select_visible = false;
-        return;
-    }
+    /* NOTE: We no longer detect external hides via rmlui_wrapper_is_game_document_visible().
+     * That check was causing rmlui_char_select_visible to be reset to false prematurely
+     * during the VS screen transition, ungating native effects like eff79/eff80 SA plates.
+     * The flag is now only cleared through rmlui_char_select_hide() or Play_Game != 0. */
 
     /* Only dirty-update bindings when the overlay is actually visible. */
     if (!rmlui_char_select_visible)

@@ -365,8 +365,10 @@ extern "C" void rmlui_game_hud_init(void) {
     });
 
     // ── Parry Counter ──
-    ctor.BindFunc("p1_parry_count", [](Rml::Variant& v) { v = (int)paring_counter[0]; });
-    ctor.BindFunc("p2_parry_count", [](Rml::Variant& v) { v = (int)paring_counter[1]; });
+    // paring_ctr_vs[Play_Type][id] is the actual consecutive-parry count.
+    // Indices are swapped because parry combos display on the opponent's side.
+    ctor.BindFunc("p1_parry_count", [](Rml::Variant& v) { v = (int)paring_ctr_vs[Play_Type][1]; });
+    ctor.BindFunc("p2_parry_count", [](Rml::Variant& v) { v = (int)paring_ctr_vs[Play_Type][0]; });
 
     // ── HUD visibility ──
     ctor.BindFunc("is_fight_active", [](Rml::Variant& v) { v = (bool)(Play_Game == 1); });
@@ -481,8 +483,8 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_BOOL(p2_is_human, Operator_Status[1] != 0);
 
     // ── Parry counter ──
-    DIRTY_INT(p1_parry_count, (int)paring_counter[0]);
-    DIRTY_INT(p2_parry_count, (int)paring_counter[1]);
+    DIRTY_INT(p1_parry_count, (int)paring_ctr_vs[Play_Type][1]);
+    DIRTY_INT(p2_parry_count, (int)paring_ctr_vs[Play_Type][0]);
 
     // ── SA type numeral ──
     static const char* const sa_nums[3] = { "I", "II", "III" };

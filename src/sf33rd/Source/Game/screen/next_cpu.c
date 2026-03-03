@@ -275,7 +275,11 @@ static void Next_CPU_4th() {
     switch (SC_No[1]) {
     case 0:
         FadeInit();
-        rmlui_char_select_hide(); /* Hide RmlUI timer before VS screen */
+        /* NOTE: Do NOT call rmlui_char_select_hide() here.
+         * Keeping rmlui_char_select_visible == true ensures native effects
+         * (eff79 SA plates, eff42 timer, etc.) stay gated through the VS
+         * screen.  The auto-hide in rmlui_char_select_update() will clean
+         * up when Play_Game != 0. */
         Next_CPU_4th_0_Sub();
         break;
 

@@ -6,6 +6,7 @@
 #include "sf33rd/Source/Game/effect/eff75.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "port/sdl/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/eff57.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
@@ -16,15 +17,15 @@
 
 void (*const EFF75_Jmp_Tbl[5])();
 
-/* eff75 draws portrait-related elements on the char select screen.
- * Do NOT gate — suppressing this hides the player portraits. */
+/* eff75 draws the SA plate background oval on the char/stage select screen. */
 void effect_75_move(WORK_Other* ewk) {
     EFF75_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
     if (ewk->wu.be_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-        sort_push_request4(&ewk->wu);
+        if (!rmlui_char_select_visible)
+            sort_push_request4(&ewk->wu);
     }
 }
 

@@ -6,6 +6,7 @@
 #include "sf33rd/Source/Game/effect/eff98.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "port/sdl/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/eff80.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"
@@ -21,7 +22,9 @@ void effect_98_move(WORK_Other* ewk) {
     EFF98_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-    sort_push_request4(&ewk->wu);
+    if (rmlui_char_select_visible == 0) {
+        sort_push_request4(&ewk->wu);
+    }
 }
 
 static void EFF98_WAIT(WORK_Other* ewk) {
