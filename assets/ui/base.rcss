@@ -135,10 +135,10 @@ input.range:disabled {
 
 .red-banner-text {
     display: block;
-    font-size: 22dp;
+    font-size: 24dp;
     font-weight: bold;
     letter-spacing: 4dp;
-    color: rgba(140, 10, 10, 200);
-    font-effect: shadow(-1dp -1dp rgba(255, 255, 255, 40));
+    color: rgba(15, 10, 10, 220);
+    font-effect: shadow(-1dp -1dp rgba(255, 255, 255, 30));
     text-transform: uppercase;
 }

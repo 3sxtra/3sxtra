@@ -81,29 +81,34 @@
 
         <!-- ═══ STAGE SELECT OVERLAY ═══ -->
         <div class="stg-section" data-if="stg_visible">
+
             <!-- Red banner: "FIRST STAGE" etc. -->
             <div class="red-banner stg-banner">
                 <div class="red-banner-text">{{ stg_stage_label }}</div>
             </div>
 
+            <!-- Timer: bottom-right, same style as char select -->
+            <div class="sel-timer sel-timer-solo stg-timer">
+                <div class="sel-time-label">TIME</div>
+                <div class="sel-timer-value">{{ sel_timer }}</div>
+            </div>
+
             <!-- Top opponent (EM slot 1) -->
-            <div class="stg-opponent stg-top" data-class-selected="stg_sel_top">
+            <div class="stg-opponent stg-top" data-class-stg-selected="stg_sel_top">
                 <img class="stg-flag" data-attr-src="stg_em1_flag" />
-                <div class="stg-info">
+                <div class="stg-row-content">
                     <div class="stg-country">{{ stg_em1_country }}</div>
+                    <div class="stg-charname">{{ stg_em1_name }}</div>
                 </div>
-                <div class="stg-charname">{{ stg_em1_name }}</div>
-                <div class="stg-arrow">▶</div>
             </div>
 
             <!-- Bottom opponent (EM slot 2) -->
-            <div class="stg-opponent stg-bot" data-class-selected="stg_sel_bot">
+            <div class="stg-opponent stg-bot" data-class-stg-selected="stg_sel_bot">
                 <img class="stg-flag" data-attr-src="stg_em2_flag" />
-                <div class="stg-info">
+                <div class="stg-row-content">
                     <div class="stg-country">{{ stg_em2_country }}</div>
+                    <div class="stg-charname">{{ stg_em2_name }}</div>
                 </div>
-                <div class="stg-charname">{{ stg_em2_name }}</div>
-                <div class="stg-arrow">▶</div>
             </div>
         </div>
     </div>

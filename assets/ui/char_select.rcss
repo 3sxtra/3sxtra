@@ -201,6 +201,7 @@ body {
 
 .sa-numeral {
     display: inline-block;
+    font-family: "BoldPixels";
     font-size: 16dp;
     font-weight: bold;
     font-effect: shadow(1dp 1dp #000000);
@@ -264,77 +265,88 @@ body {
     height: 100%;
 }
 
-/* Red banner: "FIRST STAGE" — extends shared .red-banner from base */
+
+/* Red banner: "FIRST STAGE" — vertically centered on 224dp screen */
 .stg-banner {
-    top: 100dp;
+    top: 95dp;
+    z-index: 5;
 }
 
-/* Opponent info blocks */
+/* Timer on stage select: same pos as solo timer in char select, but above banner */
+.stg-timer {
+    bottom: 6dp;
+    right: 8dp;
+    z-index: 10;
+}
+
+/* Opponent row: full width, vertically centered content */
 .stg-opponent {
     display: block;
     position: absolute;
-    left: 20dp;
-    width: 344dp;
-    height: 80dp;
+    left: 0;
+    width: 100%;
+    height: 88dp;
+    box-sizing: border-box;
+    padding: 0 20dp;
+    z-index: 6;
 }
 
 .stg-top {
-    top: 16dp;
+    top: 8dp;
 }
 
 .stg-bot {
-    top: 130dp;
+    top: 124dp;
 }
+
 
 /* Country flag */
 .stg-flag {
     display: block;
     position: absolute;
-    left: 0;
-    top: 6dp;
-    width: 40dp;
-    height: 28dp;
+    left: 22dp;
+    top: 50%;
+    margin-top: -15dp;
+    width: 46dp;
+    height: 30dp;
 }
 
-/* Info block (country name) */
-.stg-info {
+/* Row content block: country + char name, right of the flag.
+   position:absolute with left+right lets it span from flag edge to row right edge. */
+.stg-row-content {
     display: block;
     position: absolute;
-    left: 48dp;
-    top: 2dp;
+    left: 76dp;
+    top: 0;
+    right: 0;
+    height: 88dp;
+    overflow: hidden;
 }
 
+/* Country name — vertically centered in the row */
 .stg-country {
     display: block;
-    font-size: 18dp;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    margin-top: -12dp;
+    font-size: 20dp;
     font-weight: bold;
     color: #ffffff;
     font-effect: shadow(2dp 2dp #000000cc);
+    text-transform: uppercase;
 }
 
-/* Character name — large italic, right side */
+/* Character name — large italic, right side, vertically centered */
 .stg-charname {
     display: block;
     position: absolute;
-    right: 0;
-    top: 18dp;
-    font-size: 28dp;
+    right: 10dp;
+    top: 50%;
+    margin-top: -16dp;
+    font-size: 30dp;
     font-weight: bold;
     color: #ffffff;
     font-effect: shadow(3dp 3dp #000000cc);
-}
-
-/* Selection arrow — only visible when .selected class is toggled */
-.stg-arrow {
-    display: none;
-}
-
-.stg-opponent.selected .stg-arrow {
-    display: block;
-    position: absolute;
-    left: -14dp;
-    top: 28dp;
-    font-size: 14dp;
-    color: #ffdd00;
-    font-effect: shadow(1dp 1dp #000000);
+    text-transform: uppercase;
 }

@@ -48,23 +48,24 @@ body {
     display: block;
     position: absolute;
     top: 24dp;
-    width: 40dp;
-    height: 8dp;
-    font-size: 8dp;
+    width: 80dp;
+    height: 10dp;
+    font-size: 10dp;
     color: #FFFFFF;
+    font-effect: shadow(1dp 1dp #000000);
 }
 .p1-name { left: 48dp; text-align: left; }
-.p2-name { left: 296dp; text-align: right; }
+.p2-name { right: 8dp; left: auto; text-align: right; }
 
 /* ── HP bar container ───────────────────────────────────────── */
-/* CPS3: P1 x=8..168  P2 x=216..376  y=16..24 (8px tall)       */
+/* CPS3: P1 x=8..168  P2 x=216..376  bottom=24dp, height trimmed from top */
 .hp-bar-wrap {
     display: block;
     position: absolute;
-    top: 16dp;
+    top: 18dp;
     width: 160dp;
-    height: 8dp;
-    background-color: rgba(0, 0, 0, 64);
+    height: 5dp;
+    background-color: rgba(0, 0, 0, 180);
 }
 .p1-hp { left: 8dp; }
 .p2-hp { left: 216dp; }
@@ -74,8 +75,8 @@ body {
     display: block;
     position: absolute;
     top: 0dp;
-    height: 8dp;
-    background-color: #C81010;
+    height: 5dp;
+    background-color: #800000;
     transition: width 0.16s linear-in-out;
     max-width: 100%;
 }
@@ -87,16 +88,16 @@ body {
     display: block;
     position: absolute;
     top: 0dp;
-    height: 8dp;
+    height: 5dp;
     transition: width 0.08s linear-in-out;
     max-width: 100%;
 }
 .p1-hp .hp-fill { right: 0dp; }
 .p2-hp .hp-fill { left: 0dp; }
 
-.hp-col-1 { background-color: #48C848; }   /* Green — full */
-.hp-col-2 { background-color: #E8C820; }   /* Yellow — mid */
-.hp-col-3 { background-color: #E82020; }   /* Red — low */
+.hp-col-1 { background-color: #40C840; }   /* Green — full */
+.hp-col-2 { background-color: #E8C000; }   /* Yellow — mid */
+.hp-col-3 { background-color: #E00000; }   /* Red — low */
 
 /* ── Center timer ───────────────────────────────────────────── */
 /* CPS3: digits at tile(22,0)=176px (2×16=32px wide) y=0        */
@@ -116,7 +117,8 @@ body {
     top: 0dp;
     width: 48dp;
     font-size: 28dp;
-    color: #FFFFFF;
+    color: #FFD700;
+    font-effect: shadow(2dp 2dp #000000);
     text-align: center;
     line-height: 32dp;
 }
@@ -125,18 +127,27 @@ body {
 }
 
 /* ── Round result bubbles ───────────────────────────────────── */
-/* CPS3: centered under timer, full width for proper centering  */
+/* Two groups: each below its stun bar, aligned in toward center */
 .win-row {
     display: block;
     position: absolute;
-    top: 32dp;
+    top: 24dp;
     left: 0dp;
     width: 384dp;
-    text-align: center;
+    margin: 0dp;
+    padding: 0dp;
 }
 .win-pips {
-    display: inline-block;
+    display: block;
+    position: absolute;
+    top: 0;
+    margin: 0dp;
+    padding: 0dp;
 }
+/* P1: right-aligned, ending where P1 stun bar ends (right: 216dp → x≈168dp) */
+.p1-wins { right: 216dp; text-align: right; }
+/* P2: left-aligned, starting where P2 stun bar starts */
+.p2-wins { left: 216dp; text-align: left; }
 .round-bubble {
     display: inline-block;
     width: 8dp;
@@ -156,21 +167,19 @@ body {
 .rt-5  { background-color: #888888; color: #222222; } /* D — Draw (gray) */
 .rt-6  { background-color: #B388FF; color: #1A0033; } /* J — Judgement (purple) */
 .rt-7  { background-color: #FF4444; color: #330000; } /* S — SA finish (red) */
-.rt-0  { background-color: #333333; }                 /* Empty / unplayed */
+.rt-0  { width: 4dp; height: 4dp; background-color: #FFFFFF; border-width: 0; vertical-align: bottom; margin-bottom: 0dp; } /* Empty — small white dot */
 .win-sep {
-    display: inline-block;
-    font-size: 7dp;
-    color: #888888;
-    margin: 0dp 4dp;
+    display: none;
 }
 
 /* ── Stun gauge ─────────────────────────────────────────────── */
 /* CPS3: P1 anchors left 8dp, P2 anchors right 8dp. Width is dynamic per char. */
+/* bottom=30dp, height trimmed from top */
 .stun-wrap {
     display: block;
     position: absolute;
-    top: 26dp;
-    height: 4dp;
+    top: 27dp;
+    height: 2dp;
     background-color: rgba(0, 0, 0, 144);
 }
 .p1-stun { right: 216dp; }
@@ -180,7 +189,7 @@ body {
     display: block;
     position: absolute;
     top: 0dp;
-    height: 4dp;
+    height: 2dp;
     background-color: #C81010;
     max-width: 100%;
     transition: width 0.05s linear-in-out;
@@ -193,13 +202,13 @@ body {
 }
 
 /* ── SA gauge ───────────────────────────────────────────────── */
-/* CPS3: fill at y=210, height 7. P1 anchors left 48, P2 anchors right 48. Width dynamic. */
+/* CPS3: bottom=217dp, height trimmed from top. P1 anchors left 48, P2 anchors right 48. */
 .sa-wrap {
     display: block;
     position: absolute;
-    top: 210dp;
-    height: 7dp;
-    background-color: rgba(0, 0, 0, 144);
+    top: 213dp;
+    height: 4dp;
+    background-color: rgba(0, 0, 0, 200);
 }
 .p1-sa { left: 48dp; }
 .p2-sa { right: 48dp; }
@@ -208,8 +217,8 @@ body {
     display: block;
     position: absolute;
     top: 0dp;
-    height: 7dp;
-    background-color: #E0C020;
+    height: 4dp;
+    background-color: #4080FF;
     max-width: 100%;
     transition: width 0.08s linear-in-out;
 }
@@ -254,17 +263,21 @@ body {
     display: none;
 }
 
-/* SA type numeral (I / II / III) outside gauge */
+/* SA type numeral (I / II / III) outside gauge — BoldPixels, color-coded by SA index */
 .sa-type {
     display: inline-block;
     position: absolute;
-    top: -1dp;
-    font-size: 8dp;
-    color: rgba(255, 255, 255, 200);
-    font-effect: shadow(1dp 1dp #000000);
+    top: -4dp;            /* centers 12dp glyph in the 4dp bar: (4/2) - (12/2) = -4dp */
+    font-family: "BoldPixels";
+    font-size: 12dp;
+    font-effect: outline(1dp #000000);
 }
 .p1-sa .sa-type { left: 102%; margin-left: 2dp; }
 .p2-sa .sa-type { right: 102%; margin-right: 2dp; }
+
+.sa-type-0 { color: #ffff00; } /* SA I  — Yellow */
+.sa-type-1 { color: #ff2020; } /* SA II — Red    */
+.sa-type-2 { color: #2080ff; } /* SA III — Blue  */
 
 /* ── Combo popups ───────────────────────────────────────────── */
 /* CPS3: row 7 = y=56  P1 on RIGHT side, P2 on LEFT side       */
@@ -273,7 +286,6 @@ body {
     position: absolute;
     top: 56dp;
     visibility: hidden;
-    background-color: rgba(0, 0, 0, 153);
     padding: 2dp 6dp;
     opacity: 0;
 }
@@ -289,15 +301,16 @@ body {
 
 .combo-hits {
     display: inline-block;
-    font-size: 16dp;
-    color: #FFD700;
-    font-effect: shadow(1dp 1dp #000000);
+    font-size: 18dp;
+    color: #FFFFFF;
+    font-effect: shadow(2dp 2dp #000000);
 }
 .combo-label {
     display: inline-block;
-    font-size: 9dp;
+    font-size: 10dp;
     color: #FFFFFF;
-    font-effect: shadow(1dp 1dp #000000);
+    letter-spacing: 1dp;
+    font-effect: shadow(2dp 2dp #000000);
 }
 
 /* Kind-specific label colors */
@@ -331,9 +344,9 @@ body {
     display: block;
     position: absolute;
     top: 0dp;
-    font-size: 7dp;
-    color: rgba(255, 255, 255, 180);
-    font-effect: shadow(1dp 1dp #000000);
+    font-size: 16dp;
+    color: #00E5FF;
+    font-effect: outline(1dp #000000);
 }
 /* Score: native right-aligns at tile 17 (P1) / tile 37 (P2) = 136dp / 296dp */
 .p1-score { left: 0dp; width: 136dp; text-align: right; }
@@ -344,7 +357,8 @@ body {
     display: block;
     position: absolute;
     top: 0dp;
-    font-size: 8dp;
+    font-family: "BoldPixels";
+    font-size: 10dp;
     color: #4060FF;
     font-effect: shadow(1dp 1dp #000000);
     animation: press-start-blink 1.3s sine-in-out infinite;
@@ -375,14 +389,14 @@ body {
 
 /* ── Animations ─────────────────────────────────────────────── */
 @keyframes timer-pulse {
-      0% { color: #FFFFFF; }
+      0% { color: #FFD700; }
      50% { color: #FF4040; }
-    100% { color: #FFFFFF; }
+    100% { color: #FFD700; }
 }
 
 @keyframes stun-blink {
       0% { background-color: #C81010; }
-     50% { background-color: #FF4040; }
+     50% { background-color: #FF8080; }
     100% { background-color: #C81010; }
 }
 
@@ -393,9 +407,9 @@ body {
 }
 
 @keyframes sa-stock-flicker {
-      0% { background-color: #4060FF; }
+      0% { background-color: #80C0FF; }
      50% { background-color: #FFFFFF; }
-    100% { background-color: #4060FF; }
+    100% { background-color: #80C0FF; }
 }
 
 @keyframes combo-enter {

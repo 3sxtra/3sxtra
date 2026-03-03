@@ -88,15 +88,18 @@ void effect_A9_move(WORK_Other* ewk) {
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos;
     ewk->wu.position_z = ewk->wu.xyz[2].disp.pos;
 
-    /* Gate text elements replaced by RmlUI on stage select:
-     * 32=stage banner, 33=name plate bg, 34=character name,
-     * 58/59=stage direction labels */
+    /* Gate stage-select elements replaced by RmlUI:
+     * 32=FIRST STAGE banner, 33=name plate (whole composite sprite),
+     * 34=character name, 58/59=stage direction labels.
+     * Native portrait circles (char_index 12) are NOT gated — they
+     * continue to show with their slide-in animation. */
     if (rmlui_char_select_visible) {
         s16 ci = ewk->wu.char_index;
         if (ci == 32 || ci == 33 || ci == 34 || ci == 58 || ci == 59) {
             return;
         }
     }
+
 
     sort_push_request4(&ewk->wu);
 }

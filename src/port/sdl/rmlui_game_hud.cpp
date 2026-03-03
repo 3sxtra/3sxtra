@@ -132,6 +132,7 @@ struct HudSnapshot {
     int p1_score, p2_score;
     int p1_parry_count, p2_parry_count;
     Rml::String p1_sa_type, p2_sa_type;
+    int p1_sa_index, p2_sa_index;
     bool p1_is_human, p2_is_human;
     // Round result tracking
     int rounds_to_win;
@@ -363,6 +364,8 @@ extern "C" void rmlui_game_hud_init(void) {
         int idx = Super_Arts[1];
         v = Rml::String((idx >= 0 && idx < 3) ? sa_numerals[idx] : "");
     });
+    ctor.BindFunc("p1_sa_index", [](Rml::Variant& v) { v = (int)Super_Arts[0]; });
+    ctor.BindFunc("p2_sa_index", [](Rml::Variant& v) { v = (int)Super_Arts[1]; });
 
     // ── Parry Counter ──
     // paring_ctr_vs[Play_Type][id] is the actual consecutive-parry count.
@@ -492,6 +495,8 @@ extern "C" void rmlui_game_hud_update(void) {
     int sa1 = Super_Arts[1];
     DIRTY_STR(p1_sa_type, Rml::String((sa0 >= 0 && sa0 < 3) ? sa_nums[sa0] : ""));
     DIRTY_STR(p2_sa_type, Rml::String((sa1 >= 0 && sa1 < 3) ? sa_nums[sa1] : ""));
+    DIRTY_INT(p1_sa_index, sa0);
+    DIRTY_INT(p2_sa_index, sa1);
     // ── Round results ──
     DIRTY_INT(rounds_to_win, (int)(save_w[Present_Mode].Battle_Number[Play_Type] + 1));
     DIRTY_INT(p1_round_wins, (int)PL_Wins[0]);

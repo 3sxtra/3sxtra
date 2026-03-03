@@ -194,13 +194,14 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
         return;
     }
 
-    // Load fonts
-    std::string font_path = s_ui_base_path + "../NotoSansJP-Regular.ttf";
-    if (!Rml::LoadFontFace(font_path.c_str(), true)) {
-        SDL_Log("[RmlUi] Failed to load font: %s", font_path.c_str());
-        // Try fallback
-        std::string fallback = s_ui_base_path + "../BoldPixels.ttf";
-        Rml::LoadFontFace(fallback.c_str(), true);
+    // Load fonts — both loaded unconditionally so they're available by family name
+    std::string font_noto = s_ui_base_path + "../NotoSansJP-Regular.ttf";
+    if (!Rml::LoadFontFace(font_noto.c_str(), true)) {
+        SDL_Log("[RmlUi] Failed to load font: %s", font_noto.c_str());
+    }
+    std::string font_bold = s_ui_base_path + "../BoldPixels.ttf";
+    if (!Rml::LoadFontFace(font_bold.c_str())) {
+        SDL_Log("[RmlUi] Failed to load font: %s", font_bold.c_str());
     }
 
     // --- Window context (Phase 2 overlays — window resolution) ---

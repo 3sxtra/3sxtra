@@ -95,7 +95,8 @@ void effect_E0_move(WORK_Other* ewk) {
 
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-        if (!rmlui_char_select_visible)
+        /* Show during stage select (Exit_No != 0); gate during char select only */
+        if (!rmlui_char_select_visible || Exit_No != 0)
             sort_push_request4(&ewk->wu);
         return;
 
@@ -110,7 +111,8 @@ void effect_E0_move(WORK_Other* ewk) {
 
     ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
     ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-    if (!rmlui_char_select_visible)
+    /* Show during stage select (Exit_No != 0); gate during char select only */
+    if (!rmlui_char_select_visible || Exit_No != 0)
         sort_push_request4(&ewk->wu);
 }
 

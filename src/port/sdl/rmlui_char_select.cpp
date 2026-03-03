@@ -91,16 +91,15 @@ extern "C" void rmlui_char_select_init(void) {
     ctor.BindFunc("sel_phase_select", [](Rml::Variant& v) { v = (bool)(Exit_No == 0); });
 
     // Timer countdown — Select_Timer is BCD-encoded (0x30 = "30", 0x21 = "21")
+    // Always decode — char-select and stage-select timers are mutually exclusive
+    // via their own data-if conditions (sel_timer_visible vs stg_visible).
     ctor.BindFunc("sel_timer", [](Rml::Variant& v) {
-        if (Exit_No >= 1) {
-            v = Rml::String("");
-        } else {
-            int bcd = (int)Select_Timer;
-            int tens = (bcd >> 4) & 0xF;
-            int ones = bcd & 0xF;
-            v = Rml::String(std::to_string(tens)) + Rml::String(std::to_string(ones));
-        }
+        int bcd = (int)Select_Timer;
+        int tens = (bcd >> 4) & 0xF;
+        int ones = bcd & 0xF;
+        v = Rml::String(std::to_string(tens)) + Rml::String(std::to_string(ones));
     });
+
 
     // Character names — read from cursor position through ID_of_Face grid
     ctor.BindFunc("sel_p1_name", [](Rml::Variant& v) {
@@ -231,7 +230,11 @@ extern "C" void rmlui_char_select_init(void) {
     });
 
     // ─── Stage select bindings ───
-    ctor.BindFunc("stg_visible", [](Rml::Variant& v) { v = (bool)(Exit_No != 0 && Sel_EM_Complete[Player_id] == 0); });
+    // stg_visible: show when player has exited char select (Exit_No becomes non-zero)
+    // but before they confirm EM. By this point Setup_EM_List() has already run.
+    ctor.BindFunc("stg_visible", [](Rml::Variant& v) {
+        v = (bool)(Exit_No != 0 && Sel_EM_Complete[Player_id] == 0);
+    });
     ctor.BindFunc("stg_stage_label", [](Rml::Variant& v) {
         int idx = VS_Index[Player_id];
         if (idx < 0)
@@ -264,8 +267,10 @@ extern "C" void rmlui_char_select_init(void) {
         int id = EM_List[Player_id][1];
         v = Rml::String(char_name(id));
     });
-    ctor.BindFunc("stg_sel_top", [](Rml::Variant& v) { v = (bool)(Temporary_EM[Player_id] == 1); });
-    ctor.BindFunc("stg_sel_bot", [](Rml::Variant& v) { v = (bool)(Temporary_EM[Player_id] == 2); });
+    ctor.BindFunc("stg_sel_top", [](Rml::Variant& v) { v = (bool)(Exit_No != 0 && Temporary_EM[Player_id] == 1); });
+    ctor.BindFunc("stg_sel_bot", [](Rml::Variant& v) { v = (bool)(Exit_No != 0 && Temporary_EM[Player_id] == 2); });
+
+
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
