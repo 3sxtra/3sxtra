@@ -7,13 +7,18 @@ body {
     color: #ffffffee;
 }
 
+/* Position the red banner at mid-screen */
+.gameover-banner {
+    top: 96dp;
+}
+
+/* Panel sits below banner — must fit in ~96dp (224-128) */
 .gameover-panel {
     display: block;
     position: absolute;
-    top: 25%;
-    left: 50%;
-    margin-left: -170dp;
-    width: 340dp;
+    top: 128dp;
+    left: 20dp;
+    width: 344dp;
     text-align: center;
     animation: gameover-fade-in 0.6s quadratic-out;
 }
@@ -27,21 +32,10 @@ body {
     }
 }
 
-/* ── GAME OVER title ────────────────────────────────────────── */
-.gameover-title {
-    display: block;
-    font-size: 32dp;
-    font-weight: bold;
-    color: #ff3333;
-    letter-spacing: 4dp;
-    margin-bottom: 24dp;
-    font-effect: shadow(2dp 2dp #00000088);
-}
-
 /* ── Result stats block ─────────────────────────────────────── */
 .result-block {
     display: block;
-    padding: 12dp 20dp;
+    padding: 6dp 12dp;
     background-color: #00000077;
     border-width: 1dp;
     border-color: #ff333344;
@@ -49,14 +43,14 @@ body {
 
 .result-row {
     display: block;
-    margin-bottom: 6dp;
+    margin-bottom: 4dp;
 }
 
 .result-label {
     display: inline-block;
     width: 140dp;
     text-align: left;
-    font-size: 11dp;
+    font-size: 10dp;
     color: #999999;
     letter-spacing: 1dp;
 }
@@ -65,7 +59,7 @@ body {
     display: inline-block;
     width: 140dp;
     text-align: right;
-    font-size: 15dp;
+    font-size: 13dp;
     font-weight: bold;
     color: #ffffff;
 }

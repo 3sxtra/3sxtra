@@ -120,3 +120,25 @@ input.range sliderarrowdec, input.range sliderarrowinc {
 input.range:disabled {
     opacity: 0.3;
 }
+
+/* ── Red Banner: "punched out" text ── */
+.red-banner {
+    display: block;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 28dp;
+    background-color: rgba(210, 20, 20, 220);
+    text-align: center;
+    padding-top: 2dp;
+}
+
+.red-banner-text {
+    display: block;
+    font-size: 22dp;
+    font-weight: bold;
+    letter-spacing: 4dp;
+    color: rgba(140, 10, 10, 200);
+    font-effect: shadow(-1dp -1dp rgba(255, 255, 255, 40));
+    text-transform: uppercase;
+}

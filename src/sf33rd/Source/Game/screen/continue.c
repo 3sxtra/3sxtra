@@ -63,7 +63,9 @@ static void Continue_1st() {
         Next_Step = 0;
 
         Setup_Continue_OBJ();
-        effect_A9_init(0x37, 0, 0x13, 0);
+        if (!use_rmlui || !rmlui_screen_continue) {
+            effect_A9_init(0x37, 0, 0x13, 0);
+        }
         BGM_Request(58);
         if (!use_rmlui || !rmlui_screen_continue) {
             spawn_effect_76(0x38, 3, 1);

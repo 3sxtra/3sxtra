@@ -5,11 +5,12 @@
     <title>Continue Screen</title>
 </head>
 <body data-model="continue_screen">
-    <div id="continue-panel" class="continue-panel">
-        <div class="continue-prompt">
-            <span>CONTINUE?</span>
-        </div>
+    <!-- Red banner: "CONTINUE?" -->
+    <div class="red-banner continue-banner">
+        <div class="red-banner-text">CONTINUE?</div>
+    </div>
 
+    <div id="continue-panel" class="continue-panel">
         <div class="countdown-display">
             <span class="countdown-number">{{ continue_count }}</span>
         </div>

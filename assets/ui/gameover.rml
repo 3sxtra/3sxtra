@@ -5,11 +5,13 @@
     <title>Game Over</title>
 </head>
 <body data-model="gameover_screen">
-    <div id="gameover-panel" class="gameover-panel">
-        <div class="gameover-title">
-            <span>GAME OVER</span>
-        </div>
+    <!-- Phase 1: Red banner during transition -->
+    <div class="red-banner gameover-banner" data-if="gameover_phase == 1">
+        <div class="red-banner-text">GAME OVER</div>
+    </div>
 
+    <!-- Phase 2: Results/recap screen -->
+    <div id="gameover-panel" class="gameover-panel" data-if="gameover_phase == 2">
         <div class="result-block">
             <div class="result-row">
                 <span class="result-label">CHARACTER</span>

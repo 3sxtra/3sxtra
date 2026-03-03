@@ -65,7 +65,11 @@ static void GameOver_1st() {
         Offset_BG_X[1] = 0;
         bg_mvxy.a[0].sp = 0xE0000;
         bg_mvxy.d[0].sp = 0;
-        effect_A9_init(0x20, 5, 0x12, 0);
+        if (use_rmlui && rmlui_screen_gameover) {
+            rmlui_gameover_show_banner();
+        } else {
+            effect_A9_init(0x20, 5, 0x12, 0);
+        }
         BGM_Request(59);
         Next_Step = 0;
 
@@ -134,7 +138,7 @@ static void GameOver_2nd() {
             }
 
             if (use_rmlui && rmlui_screen_gameover) {
-                rmlui_gameover_show();
+                rmlui_gameover_show_results();
             } else {
                 Setup_Result_OBJ();
                 spawn_effect_76(0x41, 3, 1);

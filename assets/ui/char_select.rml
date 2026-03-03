@@ -27,29 +27,38 @@
 
         <!-- Timer: solo mode (bottom-right) -->
         <div class="sel-timer sel-timer-solo" data-if="sel_p1_solo || sel_p2_solo">
-            <span class="sel-time-label">TIME</span>
-            <span>{{ sel_timer }}</span>
+            <div class="sel-time-label">TIME</div>
+            <div class="sel-timer-value">{{ sel_timer }}</div>
         </div>
 
         <!-- Timer: dual mode (bottom-center) -->
         <div class="sel-timer sel-timer-dual" data-if="sel_both_active">
-            <span class="sel-time-label">TIME</span>
-            <span>{{ sel_timer }}</span>
+            <div class="sel-time-label">TIME</div>
+            <div class="sel-timer-value">{{ sel_timer }}</div>
         </div>
 
-        <!-- PLAYER SELECT banner (solo mode only) -->
-        <div class="sel-banner" data-if="sel_banner_visible">
-            <div class="sel-banner-text">PLAYER SELECT</div>
+        <!-- PLAYER SELECT banner (solo mode, before character confirmed) -->
+        <div class="sel-screen-banner" data-if="sel_banner_visible">
+            <div class="sel-banner-line1">PLAYER</div>
+            <div class="sel-banner-line2">SELECT</div>
         </div>
 
-        <!-- Timer: stage select / VS screen phase -->
-        <div class="sel-timer sel-timer-solo" data-if="sel_timer_visible">
-            <span class="sel-time-label">TIME</span>
-            <span>{{ sel_timer }}</span>
+        <!-- SUPER ARTS SELECT banner (solo mode only — hidden in 2P) -->
+        <div class="sel-screen-banner" data-if="sel_sa_banner_visible && !sel_both_active">
+            <div class="sel-banner-line1">SUPER ARTS</div>
+            <div class="sel-banner-line2">SELECT</div>
+        </div>
+
+        <!-- Timer: stage select / VS screen phase (hidden in dual mode — that has its own center timer) -->
+        <div class="sel-timer sel-timer-solo" data-if="sel_timer_visible && !sel_both_active">
+            <div class="sel-time-label">TIME</div>
+            <div class="sel-timer-value">{{ sel_timer }}</div>
         </div>
 
         <!-- ═══ SUPER ARTS SELECTION P1 ═══ -->
-        <div class="sa-container sa-p1" data-if="sel_p1_sa_visible">
+        <div class="sa-container sa-p1" data-if="sel_p1_sa_visible"
+             data-class-sa-pos-1p-solo="sel_p1_solo"
+             data-class-sa-pos-dual-p1="sel_both_active">
             <div class="sa-plate" data-class-active="sel_p1_sa_active">
                 <div class="sa-numeral" data-class-sa-numeral-0="sel_p1_sa_index == 0" data-class-sa-numeral-1="sel_p1_sa_index == 1" data-class-sa-numeral-2="sel_p1_sa_index == 2">{{ sel_p1_sa_current_numeral }}</div>
                 <div class="sa-name-text">{{ sel_p1_sa_current_name }}</div>
@@ -59,7 +68,9 @@
         </div>
 
         <!-- ═══ SUPER ARTS SELECTION P2 ═══ -->
-        <div class="sa-container sa-p2" data-if="sel_p2_sa_visible">
+        <div class="sa-container sa-p2" data-if="sel_p2_sa_visible"
+             data-class-sa-pos-2p-solo="sel_p2_solo"
+             data-class-sa-pos-dual-p2="sel_both_active">
             <div class="sa-plate" data-class-active="sel_p2_sa_active">
                 <div class="sa-numeral" data-class-sa-numeral-0="sel_p2_sa_index == 0" data-class-sa-numeral-1="sel_p2_sa_index == 1" data-class-sa-numeral-2="sel_p2_sa_index == 2">{{ sel_p2_sa_current_numeral }}</div>
                 <div class="sa-name-text">{{ sel_p2_sa_current_name }}</div>
@@ -71,8 +82,8 @@
         <!-- ═══ STAGE SELECT OVERLAY ═══ -->
         <div class="stg-section" data-if="stg_visible">
             <!-- Red banner: "FIRST STAGE" etc. -->
-            <div class="stg-banner">
-                <div class="stg-banner-text">{{ stg_stage_label }}</div>
+            <div class="red-banner stg-banner">
+                <div class="red-banner-text">{{ stg_stage_label }}</div>
             </div>
 
             <!-- Top opponent (EM slot 1) -->

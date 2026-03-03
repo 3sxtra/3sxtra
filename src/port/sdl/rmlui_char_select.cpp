@@ -154,6 +154,12 @@ extern "C" void rmlui_char_select_init(void) {
         }
     });
 
+    ctor.BindFunc("sel_sa_banner_visible", [](Rml::Variant& v) {
+        bool p1_picking = (Sel_PL_Complete[0] != 0 && Sel_Arts_Complete[0] == 0 && Exit_No == 0);
+        bool p2_picking = (Sel_PL_Complete[1] != 0 && Sel_Arts_Complete[1] == 0 && Exit_No == 0);
+        v = (bool)(p1_picking || p2_picking);
+    });
+
     // Global timer visibility flag — hide during VS screen transitions (Exit_No > 0)
     // AND hide during stage select transition (Sel_EM_Complete == 1)
     ctor.BindFunc("sel_timer_visible", [](Rml::Variant& v) {
@@ -292,6 +298,7 @@ extern "C" void rmlui_char_select_update(void) {
     s_model_handle.DirtyVariable("sel_timer_visible");
     s_model_handle.DirtyVariable("sel_timer");
     s_model_handle.DirtyVariable("sel_banner_visible");
+    s_model_handle.DirtyVariable("sel_sa_banner_visible");
     s_model_handle.DirtyVariable("sel_p1_name");
     s_model_handle.DirtyVariable("sel_p2_name");
     s_model_handle.DirtyVariable("sel_p1_solo");

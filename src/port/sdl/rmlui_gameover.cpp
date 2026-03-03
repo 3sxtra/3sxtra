@@ -3,11 +3,11 @@
  * @brief RmlUi Game Over / Results Screen data model.
  *
  * Replaces CPS3's spawn_effect_76 + effect_L1 result text objects in
- * GameOver_2nd() with an RmlUi overlay showing "GAME OVER", score,
- * character name, and round wins/losses.
+ * GameOver_1st()/GameOver_2nd() with an RmlUi overlay showing the
+ * "GAME OVER" red banner (phase 1) and then score/results (phase 2).
  *
  * Key globals (from workuser.h):
- *   Score[2][3], My_char[], Win_Record[], Player_id, Play_Type
+ *   Score[2][3], My_char[], Win_Record[], Player_id, Play_Type, GO_No[]
  */
 
 #include "port/sdl/rmlui_gameover.h"
@@ -39,8 +39,10 @@ static const char* char_name(int my_char_id) {
 // ─── Data model ──────────────────────────────────────────────────
 static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
+static int s_gameover_phase = 0; /* 1 = banner/transition, 2 = results/recap */
 
 struct GameOverCache {
+    int gameover_phase;
     int gameover_score;
     Rml::String gameover_char;
     int gameover_rounds_won;
@@ -76,6 +78,7 @@ extern "C" void rmlui_gameover_init(void) {
     if (!ctor)
         return;
 
+    ctor.BindFunc("gameover_phase", [](Rml::Variant& v) { v = s_gameover_phase; });
     ctor.BindFunc("gameover_score", [](Rml::Variant& v) { v = (int)Score[Player_id][Play_Type]; });
     ctor.BindFunc("gameover_char", [](Rml::Variant& v) { v = Rml::String(char_name(My_char[Player_id])); });
     ctor.BindFunc("gameover_rounds_won", [](Rml::Variant& v) { v = (int)Win_Record[Player_id]; });
@@ -95,6 +98,7 @@ extern "C" void rmlui_gameover_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
 
+    DIRTY_INT(gameover_phase, s_gameover_phase);
     DIRTY_INT(gameover_score, (int)Score[Player_id][Play_Type]);
     DIRTY_STR(gameover_char, Rml::String(char_name(My_char[Player_id])));
     DIRTY_INT(gameover_rounds_won, (int)Win_Record[Player_id]);
@@ -102,11 +106,26 @@ extern "C" void rmlui_gameover_update(void) {
 }
 
 // ─── Show / Hide ─────────────────────────────────────────────────
-extern "C" void rmlui_gameover_show(void) {
+extern "C" void rmlui_gameover_show_banner(void) {
+    s_gameover_phase = 1;
+    if (s_model_handle)
+        s_model_handle.DirtyVariable("gameover_phase");
     rmlui_wrapper_show_game_document("gameover");
 }
 
+extern "C" void rmlui_gameover_show_results(void) {
+    s_gameover_phase = 2;
+    if (s_model_handle)
+        s_model_handle.DirtyVariable("gameover_phase");
+    rmlui_wrapper_show_game_document("gameover");
+}
+
+extern "C" void rmlui_gameover_show(void) {
+    rmlui_gameover_show_results();
+}
+
 extern "C" void rmlui_gameover_hide(void) {
+    s_gameover_phase = 0;
     rmlui_wrapper_hide_game_document("gameover");
 }
 
@@ -114,6 +133,7 @@ extern "C" void rmlui_gameover_hide(void) {
 extern "C" void rmlui_gameover_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_game_document("gameover");
+        s_gameover_phase = 0;
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)
             ctx->RemoveDataModel("gameover_screen");

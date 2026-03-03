@@ -59,68 +59,117 @@ body {
 .sel-timer {
     display: block;
     position: absolute;
-    width: 48dp;
-    text-align: center;
-    font-size: 20dp;
+    width: 56dp;
+    height: 30dp;
     font-weight: bold;
     color: #ffffff;
     font-effect: shadow(2dp 2dp #000000aa);
+    z-index: 10;
 }
 
-/* Solo mode: bottom-right near native TIME label */
+/* Solo mode: bottom-aligned with SELECT row, further right */
 .sel-timer-solo {
-    bottom: 6dp;
-    right: 22dp;
+    bottom: 2dp;
+    right: 8dp;
 }
 
-/* Dual mode: bottom, center-right */
+/* Dual mode: bottom-center, aligned with solo timer */
 .sel-timer-dual {
-    bottom: 6dp;
+    bottom: 2dp;
     left: 50%;
 }
 
-/* "TIME" label next to the timer digits */
+/* "TIME" label: top-left quadrant, right-aligned */
 .sel-time-label {
-    font-size: 8dp;
-    color: #ffffffaa;
-    margin-right: 4dp;
-}
-
-/* ── PLAYER SELECT banner (solo mode, bottom-right) ── */
-.sel-banner {
     display: block;
     position: absolute;
-    bottom: 20dp;
+    top: 0;
+    left: 0;
+    width: 50%;
+    text-align: right;
+    font-size: 8dp;
+    color: #ffffffaa;
+}
+
+/* Counter value: bottom-right quadrant, center-aligned */
+.sel-timer-value {
+    display: block;
+    position: absolute;
+    bottom: 0;
     right: 0;
-    padding: 6dp 12dp;
+    width: 50%;
+    text-align: center;
+    font-size: 20dp;
+}
+
+/* ── Reusable Screen-Phase Banner (PLAYER SELECT / SUPER ARTS SELECT) ── */
+.sel-screen-banner {
+    display: block;
+    position: absolute;
+    bottom: 2dp;
+    right: 0;
+    width: 36%;
+    padding: 2dp 6dp;
     background-color: #cc0000;
 }
 
-.sel-banner-text {
-    font-size: 24dp;
+/* Line 1: e.g. "PLAYER" or "SUPER ARTS" */
+.sel-banner-line1 {
+    display: block;
+    font-size: 14dp;
     font-weight: bold;
     color: #ffffff;
     text-transform: uppercase;
     font-effect: shadow(2dp 2dp #000000aa);
+    line-height: 1.0;
+    margin-bottom: 2dp;
+}
+
+/* Line 2: always "SELECT" */
+.sel-banner-line2 {
+    display: block;
+    font-size: 14dp;
+    font-weight: bold;
+    color: #ffffff;
+    text-transform: uppercase;
+    font-effect: shadow(2dp 2dp #000000aa);
+    line-height: 1.0;
 }
 
 /* ── Super Arts Selection ── */
 .sa-container {
     display: block;
     position: absolute;
-    width: 200dp;
+    width: 130dp;
 }
 
-/* P1 sits around center-left */
-.sa-p1 {
-    top: 50dp;
-    left: 20dp;
+/* Positional base — overridden by scenario classes below */
+.sa-p1 {}
+.sa-p2 {}
+
+/* ── Scenario-specific positions (from native Plate_Pos_Data_79) ── */
+/* Solo 1P: P1 plate — right-of-center, raised */
+.sa-pos-1p-solo {
+    left: 215dp;
+    top: 40dp;
 }
 
-/* P2 sits around center-right */
-.sa-p2 {
-    top: 50dp;
-    right: 20dp;
+/* Solo 2P: P2 plate — left-of-center, raised */
+.sa-pos-2p-solo {
+    left: 23dp;
+    top: 40dp;
+}
+
+/* Two Players P1: above the 1P label */
+.sa-pos-dual-p1 {
+    left: 0dp;
+    top: 100dp;
+}
+
+/* Two Players P2: under the 2P label */
+.sa-pos-dual-p2 {
+    left: 234dp;  /* 130dp container + 8dp padding = 146dp actual; 234+146=380dp right edge */
+    top: 72dp;
 }
 
 .sa-plate {
@@ -129,13 +178,15 @@ body {
     width: 100%;
     margin-bottom: 2dp;
     padding: 2dp 8dp;
+    overflow: hidden;
+    white-space: nowrap; /* keep numeral + name on one line always */
     background-color: #222222cc;
     border-width: 1dp;
     border-color: #555555;
     border-radius: 12dp;
     text-align: center;
     color: #888888;
-    transform: scale(0.85); /* Inactive is smaller */
+    transform: scale(0.85);
     transition: transform 0.1s, background-color 0.1s;
 }
 
@@ -154,6 +205,7 @@ body {
     font-weight: bold;
     font-effect: shadow(1dp 1dp #000000);
     margin-right: 6dp;
+    margin-top: -2dp;
     vertical-align: middle;
 }
 
@@ -164,7 +216,7 @@ body {
 .sa-name-text {
     display: inline-block;
     font-family: "Noto Sans JP Thin";
-    font-size: 11dp;
+    font-size: 9dp;
     font-weight: bold;
     vertical-align: middle;
 }
@@ -212,26 +264,9 @@ body {
     height: 100%;
 }
 
-/* Red banner: "FIRST STAGE" */
+/* Red banner: "FIRST STAGE" — extends shared .red-banner from base */
 .stg-banner {
-    display: block;
-    position: absolute;
     top: 100dp;
-    left: 0;
-    width: 100%;
-    height: 26dp;
-    background-color: rgba(200, 20, 20, 200);
-    text-align: center;
-    padding-top: 2dp;
-}
-
-.stg-banner-text {
-    display: block;
-    font-size: 20dp;
-    font-weight: bold;
-    color: #ffffff;
-    font-effect: shadow(2dp 2dp #000000cc);
-    letter-spacing: 2dp;
 }
 
 /* Opponent info blocks */

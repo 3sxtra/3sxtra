@@ -7,65 +7,48 @@ body {
     color: #ffffffee;
 }
 
+/* Position the red banner at mid-screen */
+.continue-banner {
+    top: 96dp;
+}
+
+/* Panel sits below the banner, centred */
 .continue-panel {
     display: block;
     position: absolute;
-    top: 50dp;
+    top: 128dp;
     left: 50%;
-    margin-left: -140dp;
-    width: 280dp;
+    margin-left: -120dp;
+    width: 240dp;
     text-align: center;
-    animation: panel-slide-in 0.3s quadratic-out;
-}
-
-@keyframes panel-slide-in {
-    0% {
-        opacity: 0;
-        margin-top: -20dp;
-    }
-    100% {
-        opacity: 1;
-        margin-top: 0dp;
-    }
-}
-
-/* ── CONTINUE? prompt ───────────────────────────────────────── */
-.continue-prompt {
-    display: block;
-    font-size: 18dp;
-    font-weight: bold;
-    color: #ffffff;
-    letter-spacing: 3dp;
-    margin-bottom: 10dp;
-    font-effect: shadow(2dp 2dp #00000088);
 }
 
 /* ── Countdown number ───────────────────────────────────────── */
 .countdown-display {
     display: block;
-    margin-bottom: 16dp;
+    margin-bottom: 8dp;
 }
 
 .countdown-number {
     display: inline-block;
-    font-size: 48dp;
+    font-size: 32dp;
     font-weight: bold;
     color: #ff4444;
-    font-effect: shadow(3dp 3dp #00000088);
+    font-effect: shadow(2dp 2dp #00000088);
     animation: count-pulse 1.0s sine-in-out infinite;
 }
 
 @keyframes count-pulse {
     0% {
-        font-size: 48dp;
+        font-size: 32dp;
         color: #ff4444;
     }
     50% {
-        font-size: 52dp;
+        font-size: 36dp;
         color: #ffcc44;
     }
     100% {
-        font-size: 48dp;
+        font-size: 32dp;
         color: #ff4444;
     }
 }
