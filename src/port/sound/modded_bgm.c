@@ -10,25 +10,42 @@
 #include <string.h>
 
 static bool is_initialized = false;
-static Mix_Music* current_music = NULL;
+static MIX_Mixer* mixer = NULL;
+static MIX_Track* music_track = NULL;
+static MIX_Audio* current_audio = NULL;
 
 void ModdedBGM_Init(void) {
     if (is_initialized)
         return;
 
-    // Use typical audio spec parameters. Mix_OpenAudio is usually straightforward in SDL3.
+    if (!MIX_Init()) {
+        fprintf(stderr, "ModdedBGM: MIX_Init failed: %s\n", SDL_GetError());
+        return;
+    }
+
     SDL_AudioSpec spec;
     spec.freq = 48000;
     spec.format = SDL_AUDIO_S16;
     spec.channels = 2;
 
-    if (!Mix_OpenAudio(0, &spec)) {
-        fprintf(stderr, "ModdedBGM: Mix_OpenAudio failed: %s\n", SDL_GetError());
+    mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
+    if (!mixer) {
+        fprintf(stderr, "ModdedBGM: MIX_CreateMixerDevice failed: %s\n", SDL_GetError());
+        MIX_Quit();
+        return;
+    }
+
+    music_track = MIX_CreateTrack(mixer);
+    if (!music_track) {
+        fprintf(stderr, "ModdedBGM: MIX_CreateTrack failed: %s\n", SDL_GetError());
+        MIX_DestroyMixer(mixer);
+        mixer = NULL;
+        MIX_Quit();
         return;
     }
 
     is_initialized = true;
-    current_music = NULL;
+    current_audio = NULL;
 }
 
 void ModdedBGM_Exit(void) {
@@ -36,16 +53,23 @@ void ModdedBGM_Exit(void) {
         return;
 
     ModdedBGM_Stop();
-    Mix_CloseAudio();
+
+    if (music_track) {
+        MIX_DestroyTrack(music_track);
+        music_track = NULL;
+    }
+    if (mixer) {
+        MIX_DestroyMixer(mixer);
+        mixer = NULL;
+    }
+    MIX_Quit();
     is_initialized = false;
 }
 
 static bool try_load_and_play(const char* ext, int file_id) {
-    char filename[256];
-    snprintf(filename, sizeof(filename), "bgm_mod/%d.%s", file_id, ext);
-
     char path[1024];
-    Paths_GetAssetPath(filename, path, sizeof(path));
+    const char* base = Paths_GetBasePath();
+    snprintf(path, sizeof(path), "%sassets/bgm_mod/%d.%s", base ? base : "", file_id, ext);
 
     // Check if file exists by opening via SDL IO
     SDL_IOStream* io = SDL_IOFromFile(path, "rb");
@@ -54,17 +78,24 @@ static bool try_load_and_play(const char* ext, int file_id) {
     }
     SDL_CloseIO(io);
 
-    current_music = Mix_LoadMUS(path);
-    if (!current_music) {
+    current_audio = MIX_LoadAudio(mixer, path, false);
+    if (!current_audio) {
         fprintf(stderr, "ModdedBGM: Found file %s but failed to load: %s\n", path, SDL_GetError());
         return false;
     }
 
-    // Play infinitely
-    if (Mix_PlayMusic(current_music, -1) == -1) {
+    MIX_SetTrackAudio(music_track, current_audio);
+
+    // Play with infinite looping
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetNumberProperty(props, MIX_PROP_PLAY_LOOPS_NUMBER, -1);
+    bool ok = MIX_PlayTrack(music_track, props);
+    SDL_DestroyProperties(props);
+
+    if (!ok) {
         fprintf(stderr, "ModdedBGM: Failed to play %s: %s\n", path, SDL_GetError());
-        Mix_FreeMusic(current_music);
-        current_music = NULL;
+        MIX_DestroyAudio(current_audio);
+        current_audio = NULL;
         return false;
     }
 
@@ -97,10 +128,11 @@ void ModdedBGM_Stop(void) {
     if (!is_initialized)
         return;
 
-    Mix_HaltMusic();
-    if (current_music) {
-        Mix_FreeMusic(current_music);
-        current_music = NULL;
+    MIX_StopTrack(music_track, 0);
+    if (current_audio) {
+        MIX_SetTrackAudio(music_track, NULL);
+        MIX_DestroyAudio(current_audio);
+        current_audio = NULL;
     }
 }
 
@@ -109,9 +141,9 @@ void ModdedBGM_Pause(bool pause) {
         return;
 
     if (pause) {
-        Mix_PauseMusic();
+        MIX_PauseTrack(music_track);
     } else {
-        Mix_ResumeMusic();
+        MIX_ResumeTrack(music_track);
     }
 }
 
@@ -120,14 +152,13 @@ void ModdedBGM_SetVolume(int volume_db10) {
         return;
 
     // volume_db10 comes in roughly between -999 and 0
-    // We convert it to linear gain (0.0 to 1.0) then scale to Mix_VolumeMusic (0 to MIX_MAX_VOLUME)
+    // Convert to linear gain (0.0 to 1.0) for MIX_SetTrackGain
     float gain = powf(10.0f, (float)volume_db10 / 200.0f);
-    int mix_vol = (int)(gain * MIX_MAX_VOLUME);
 
-    if (mix_vol < 0)
-        mix_vol = 0;
-    if (mix_vol > MIX_MAX_VOLUME)
-        mix_vol = MIX_MAX_VOLUME;
+    if (gain < 0.0f)
+        gain = 0.0f;
+    if (gain > 1.0f)
+        gain = 1.0f;
 
-    Mix_VolumeMusic(mix_vol);
+    MIX_SetTrackGain(music_track, gain);
 }
