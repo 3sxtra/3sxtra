@@ -238,6 +238,20 @@ else
         git clone --depth 1 https://github.com/libsdl-org/SDL_mixer.git "$SDL_MIXER_SRC"
     fi
 
+    # Clone vendored codec libraries (replaces git submodules)
+    MIXER_EXT="$SDL_MIXER_SRC/external"
+    clone_ext() { [ -d "$MIXER_EXT/$1" ] && [ "$(ls -A "$MIXER_EXT/$1")" ] || git clone --depth 1 --branch "$3" "$2" "$MIXER_EXT/$1"; }
+    clone_ext ogg       https://github.com/libsdl-org/ogg.git            v1.3.5-SDL
+    clone_ext vorbis    https://github.com/libsdl-org/vorbis.git         v1.3.7-SDL
+    clone_ext flac      https://github.com/libsdl-org/flac.git           1.3.4-SDL
+    clone_ext opus      https://github.com/libsdl-org/opus.git           v1.4.x-SDL
+    clone_ext opusfile  https://github.com/libsdl-org/opusfile.git       v0.13-git-SDL
+    clone_ext mpg123    https://github.com/libsdl-org/mpg123.git         v1.33.4-SDL
+    clone_ext libxmp    https://github.com/libsdl-org/libxmp.git         4.7.0-SDL
+    clone_ext libgme    https://github.com/libsdl-org/game-music-emu.git v0.6.4-SDL
+    clone_ext wavpack   https://github.com/libsdl-org/wavpack.git        5.9.0-SDL
+    clone_ext tremor    https://github.com/libsdl-org/tremor.git         v1.2.1-SDL
+
     cd "$SDL_MIXER_SRC"
 
     mkdir -p build

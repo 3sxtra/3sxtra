@@ -165,7 +165,8 @@ else
         -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
         -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
         -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
-        -DBUILD_SHARED_LIBS=ON
+        -DBUILD_SHARED_LIBS=ON \
+        -DSDLMIXER_VENDORED=ON
 
     cmake --build . -j$(nproc)
     cmake --install .
