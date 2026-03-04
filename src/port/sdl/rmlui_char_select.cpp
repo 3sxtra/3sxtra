@@ -28,27 +28,29 @@ static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN
 // ─── Super Art name table (SF3:3S roster, index matches My_char) ───
 // 3 strings per character. Ordered same as s_char_names.
 static const char* const s_sa_names[21][3] = {
-    { "METEOR STRIKE", "SERAPHIC WING", "RESURRECTION" }, // GILL
-    { "HYPER BOMB", "BOOMERANG RAID", "STUNGUN HEADSHOT" }, // ALEX
-    { "SHINKUU-HADOU-KEN", "SHIN-SHOURYUU-KEN", "DENJIN-HADOU-KEN" }, // RYU
-    { "YOUHOU", "SOU-RAI-REN", "GEN-EI-JIN" }, // YUN
-    { "ROCKET UPPERCUT", "ROLLING THUNDER", "CORKSCREW BLOW" }, // DUDLEY
-    { "MAGNETIC STORM", "SLAM DANCE", "ELECTRIC SNAKE" }, // NECRO
-    { "GIGAS BREAKER", "MEGATON PRESS", "HAMMER MOUNTAIN" }, // HUGO
-    { "KASUMI-SUZAKU", "YOROIDOSHI", "YAMI-SHIGURE" }, // IBUKI
-    { "SPINNING BEAT", "BRAVE DANCE", "HEALING" }, // ELENA
-    { "KISHIN-TSUI", "YAGYOU-DAMA", "TENGU-STONE" }, // ORO
-    { "RAI-SHIN-MAHA-KEN", "TENSHIN-SENKYUU-TAI", "SEI-EI-ENBU" }, // YANG
-    { "SHOURYUU-REPPA", "SHINRYUU-KEN", "SHIPPUU-JINRAI-KYAKU" }, // KEN
-    { "HADOU-BURST", "SHOURYUU-CANNON", "HYPER TORNADO" }, // SEAN
-    { "TYRANT SLAUGHTER", "TEMPORAL THUNDER", "AEGIS REFLECTOR" }, // URIEN
+    { "METEOR STRIKE", "SERAPHIC WING", "RESURRECTION" },                    // GILL
+    { "HYPER BOMB", "BOOMERANG RAID", "STUNGUN HEADSHOT" },                  // ALEX
+    { "SHINKUU-HADOU-KEN", "SHIN-SHOURYUU-KEN", "DENJIN-HADOU-KEN" },        // RYU
+    { "YOUHOU", "SOU-RAI-REN", "GEN-EI-JIN" },                               // YUN
+    { "ROCKET UPPERCUT", "ROLLING THUNDER", "CORKSCREW BLOW" },              // DUDLEY
+    { "MAGNETIC STORM", "SLAM DANCE", "ELECTRIC SNAKE" },                    // NECRO
+    { "GIGAS BREAKER", "MEGATON PRESS", "HAMMER MOUNTAIN" },                 // HUGO
+    { "KASUMI-SUZAKU", "YOROIDOSHI", "YAMI-SHIGURE" },                       // IBUKI
+    { "SPINNING BEAT", "BRAVE DANCE", "HEALING" },                           // ELENA
+    { "KISHIN-TSUI", "YAGYOU-DAMA", "TENGU-STONE" },                         // ORO
+    { "RAI-SHIN-MAHA-KEN", "TENSHIN-SENKYUU-TAI", "SEI-EI-ENBU" },           // YANG
+    { "SHOURYUU-REPPA", "SHINRYUU-KEN", "SHIPPUU-JINRAI-KYAKU" },            // KEN
+    { "HADOU-BURST", "SHOURYUU-CANNON", "HYPER TORNADO" },                   // SEAN
+    { "TYRANT SLAUGHTER", "TEMPORAL THUNDER", "AEGIS REFLECTOR" },           // URIEN
     { "MESSATSU-GOU-HADOU", "MESSATSU-GOU-SHOURYUU", "MESSATSU-GOU-RASEN" }, // GOUKI
-    { "KIKOU-SHOU", "HOUYOKU-SEN", "TENSEI-RANKA" }, // CHUN-LI
-    { "SEICHUSEN-GODANZUKI", "ABARE-TOSANAMI", "TANDEN-RENKI" }, // MAKOTO
-    { "CRITICAL STRIKE", "DEADLY DOUBLE", "TOTAL DESTRUCTION" }, // Q
-    { "X.N.D.L.", "X.F.L.A.T.", "X.C.O.P.Y." }, // TWELVE
-    { "LIGHT OF VIRTUE", "SUPREME RISING", "BLUE NOCTURNE" }, // REMY
-    { "KONGOU-KOKURETSU-ZAN", "MESSATSU-GOU-SHOURYUU", "MESSATSU-GOU-RASEN" } // AKUMA (Shin Gouki uses same SAs usually)
+    { "KIKOU-SHOU", "HOUYOKU-SEN", "TENSEI-RANKA" },                         // CHUN-LI
+    { "SEICHUSEN-GODANZUKI", "ABARE-TOSANAMI", "TANDEN-RENKI" },             // MAKOTO
+    { "CRITICAL STRIKE", "DEADLY DOUBLE", "TOTAL DESTRUCTION" },             // Q
+    { "X.N.D.L.", "X.F.L.A.T.", "X.C.O.P.Y." },                              // TWELVE
+    { "LIGHT OF VIRTUE", "SUPREME RISING", "BLUE NOCTURNE" },                // REMY
+    { "KONGOU-KOKURETSU-ZAN",
+      "MESSATSU-GOU-SHOURYUU",
+      "MESSATSU-GOU-RASEN" } // AKUMA (Shin Gouki uses same SAs usually)
 };
 
 static const char* char_name(int idx) {
@@ -62,12 +64,28 @@ static const char* const s_country_names[22] = { "GREECE",  "U.S.A.", "JAPAN", "
                                                  "GERMANY", "JAPAN",  "KENYA", "BRAZIL", "CHINA",   "U.S.A.",
                                                  "BRAZIL",  "GREECE", "JAPAN", "CHINA",  "JAPAN",   "???",
                                                  "???",     "FRANCE", "JAPAN", "BRAZIL" };
-static const char* const s_flag_paths[22] = { "../flags/gr.png", "../flags/us.png", "../flags/jp.png", "../flags/cn.png",
-                                               "../flags/gb.png", "../flags/ru.png", "../flags/de.png", "../flags/jp.png",
-                                               "../flags/ke.png", "../flags/br.png", "../flags/cn.png", "../flags/us.png",
-                                               "../flags/br.png", "../flags/gr.png", "../flags/jp.png", "../flags/cn.png",
-                                               "../flags/jp.png", "",                "",                "../flags/fr.png",
-                                               "../flags/jp.png", "../flags/br.png" };
+static const char* const s_flag_paths[22] = { "../flags/gr.png",
+                                              "../flags/us.png",
+                                              "../flags/jp.png",
+                                              "../flags/cn.png",
+                                              "../flags/gb.png",
+                                              "../flags/ru.png",
+                                              "../flags/de.png",
+                                              "../flags/jp.png",
+                                              "../flags/ke.png",
+                                              "../flags/br.png",
+                                              "../flags/cn.png",
+                                              "../flags/us.png",
+                                              "../flags/br.png",
+                                              "../flags/gr.png",
+                                              "../flags/jp.png",
+                                              "../flags/cn.png",
+                                              "../flags/jp.png",
+                                              "",
+                                              "",
+                                              "../flags/fr.png",
+                                              "../flags/jp.png",
+                                              "../flags/br.png" };
 static const char* const s_stage_labels[11] = { "FIRST STAGE", "2ND STAGE",  "3RD STAGE",  "4TH STAGE",
                                                 "5TH STAGE",   "6TH STAGE",  "7TH STAGE",  "8TH STAGE",
                                                 "9TH STAGE",   "10TH STAGE", "FINAL STAGE" };
@@ -99,7 +117,6 @@ extern "C" void rmlui_char_select_init(void) {
         int ones = bcd & 0xF;
         v = Rml::String(std::to_string(tens)) + Rml::String(std::to_string(ones));
     });
-
 
     // Character names — read from cursor position through ID_of_Face grid
     ctor.BindFunc("sel_p1_name", [](Rml::Variant& v) {
@@ -135,7 +152,7 @@ extern "C" void rmlui_char_select_init(void) {
     ctor.BindFunc("sel_both_active", [](Rml::Variant& v) {
         v = (bool)(plw[0].wu.pl_operator != 0 && plw[1].wu.pl_operator != 0 && Exit_No == 0);
     });
-    
+
     ctor.BindFunc("sel_banner_visible", [](Rml::Variant& v) {
         if (Exit_No >= 1) {
             v = false;
@@ -143,7 +160,7 @@ extern "C" void rmlui_char_select_init(void) {
         }
         bool is_p1_solo = (plw[0].wu.pl_operator != 0 && plw[1].wu.pl_operator == 0);
         bool is_p2_solo = (plw[0].wu.pl_operator == 0 && plw[1].wu.pl_operator != 0);
-        
+
         if (is_p1_solo) {
             v = (bool)(Sel_PL_Complete[0] == 0);
         } else if (is_p2_solo) {
@@ -185,20 +202,28 @@ extern "C" void rmlui_char_select_init(void) {
     ctor.BindFunc("sel_p1_sa_current_name", [](Rml::Variant& v) {
         int char_idx = My_char[0];
         int sa_idx = Arts_Y[0];
-        if (sa_idx < 0 || sa_idx > 2) sa_idx = 0;
-        if (char_idx >= 0 && char_idx < CHAR_NAME_COUNT) v = Rml::String(s_sa_names[char_idx][sa_idx]);
-        else v = Rml::String("SA " + std::to_string(sa_idx + 1));
+        if (sa_idx < 0 || sa_idx > 2)
+            sa_idx = 0;
+        if (char_idx >= 0 && char_idx < CHAR_NAME_COUNT)
+            v = Rml::String(s_sa_names[char_idx][sa_idx]);
+        else
+            v = Rml::String("SA " + std::to_string(sa_idx + 1));
     });
     ctor.BindFunc("sel_p1_sa_current_numeral", [](Rml::Variant& v) {
         int sa_idx = Arts_Y[0];
-        if (sa_idx == 0) v = Rml::String("I");
-        else if (sa_idx == 1) v = Rml::String("II");
-        else if (sa_idx == 2) v = Rml::String("III");
-        else v = Rml::String("I");
+        if (sa_idx == 0)
+            v = Rml::String("I");
+        else if (sa_idx == 1)
+            v = Rml::String("II");
+        else if (sa_idx == 2)
+            v = Rml::String("III");
+        else
+            v = Rml::String("I");
     });
     ctor.BindFunc("sel_p1_sa_index", [](Rml::Variant& v) {
         int sa_idx = Arts_Y[0];
-        if (sa_idx < 0 || sa_idx > 2) sa_idx = 0;
+        if (sa_idx < 0 || sa_idx > 2)
+            sa_idx = 0;
         v = sa_idx;
     });
 
@@ -206,35 +231,39 @@ extern "C" void rmlui_char_select_init(void) {
         // Visible when player has picked a character but hasn't finished the SA pick
         v = (bool)(Sel_PL_Complete[1] != 0 && Sel_Arts_Complete[1] == 0);
     });
-    ctor.BindFunc("sel_p2_sa_active", [](Rml::Variant& v) {
-        v = (bool)(Sel_Arts_Complete[1] == 0 && Exit_No == 0);
-    });
+    ctor.BindFunc("sel_p2_sa_active", [](Rml::Variant& v) { v = (bool)(Sel_Arts_Complete[1] == 0 && Exit_No == 0); });
     ctor.BindFunc("sel_p2_sa_current_name", [](Rml::Variant& v) {
         int char_idx = My_char[1];
         int sa_idx = Arts_Y[1];
-        if (sa_idx < 0 || sa_idx > 2) sa_idx = 0;
-        if (char_idx >= 0 && char_idx < CHAR_NAME_COUNT) v = Rml::String(s_sa_names[char_idx][sa_idx]);
-        else v = Rml::String("SA " + std::to_string(sa_idx + 1));
+        if (sa_idx < 0 || sa_idx > 2)
+            sa_idx = 0;
+        if (char_idx >= 0 && char_idx < CHAR_NAME_COUNT)
+            v = Rml::String(s_sa_names[char_idx][sa_idx]);
+        else
+            v = Rml::String("SA " + std::to_string(sa_idx + 1));
     });
     ctor.BindFunc("sel_p2_sa_current_numeral", [](Rml::Variant& v) {
         int sa_idx = Arts_Y[1];
-        if (sa_idx == 0) v = Rml::String("I");
-        else if (sa_idx == 1) v = Rml::String("II");
-        else if (sa_idx == 2) v = Rml::String("III");
-        else v = Rml::String("I");
+        if (sa_idx == 0)
+            v = Rml::String("I");
+        else if (sa_idx == 1)
+            v = Rml::String("II");
+        else if (sa_idx == 2)
+            v = Rml::String("III");
+        else
+            v = Rml::String("I");
     });
     ctor.BindFunc("sel_p2_sa_index", [](Rml::Variant& v) {
         int sa_idx = Arts_Y[1];
-        if (sa_idx < 0 || sa_idx > 2) sa_idx = 0;
+        if (sa_idx < 0 || sa_idx > 2)
+            sa_idx = 0;
         v = sa_idx;
     });
 
     // ─── Stage select bindings ───
     // stg_visible: show when player has exited char select (Exit_No becomes non-zero)
     // but before they confirm EM. By this point Setup_EM_List() has already run.
-    ctor.BindFunc("stg_visible", [](Rml::Variant& v) {
-        v = (bool)(Exit_No != 0 && Sel_EM_Complete[Player_id] == 0);
-    });
+    ctor.BindFunc("stg_visible", [](Rml::Variant& v) { v = (bool)(Exit_No != 0 && Sel_EM_Complete[Player_id] == 0); });
     ctor.BindFunc("stg_stage_label", [](Rml::Variant& v) {
         int idx = VS_Index[Player_id];
         if (idx < 0)
@@ -269,8 +298,6 @@ extern "C" void rmlui_char_select_init(void) {
     });
     ctor.BindFunc("stg_sel_top", [](Rml::Variant& v) { v = (bool)(Exit_No != 0 && Temporary_EM[Player_id] == 1); });
     ctor.BindFunc("stg_sel_bot", [](Rml::Variant& v) { v = (bool)(Exit_No != 0 && Temporary_EM[Player_id] == 2); });
-
-
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;

@@ -10,6 +10,7 @@
 #include "common.h"
 #include "port/io/afs.h"
 #include "port/sound/adx_decoder.h"
+#include "port/sound/modded_bgm.h"
 
 #include <SDL3/SDL.h>
 
@@ -85,6 +86,7 @@ typedef struct ADXTrack {
     int processed_samples;
     ADXLoopInfo loop_info;
     ADXContext ctx;
+    bool is_modded; // True if ModdedBGM is handling this track
 } ADXTrack;
 
 static SDL_AudioStream* stream = NULL;
@@ -122,6 +124,11 @@ static void* load_file(int file_id, int* size) {
 }
 
 static bool track_reached_eof(ADXTrack* track) {
+    if (track->is_modded) {
+        // Modded tracks handle their own EOF/looping internally
+        return false;
+    }
+
     // Check if we have enough bytes for at least one frame
     if (track->ctx.frame_size > 0) {
         return (track->size - (int)track->used_bytes) < track->ctx.frame_size;
@@ -130,6 +137,8 @@ static bool track_reached_eof(ADXTrack* track) {
 }
 
 static bool track_loop_filled(ADXTrack* track) {
+    if (track->is_modded)
+        return true;
     if (track->loop_info.looping_enabled) {
         return track->processed_samples >= track->loop_info.end_sample;
     } else {
@@ -138,6 +147,9 @@ static bool track_loop_filled(ADXTrack* track) {
 }
 
 static bool track_needs_decoding(ADXTrack* track) {
+    if (track->is_modded)
+        return false; // Handled externally
+
     if (track->loop_info.looping_enabled) {
         return !track_loop_filled(track);
     } else {
@@ -146,6 +158,9 @@ static bool track_needs_decoding(ADXTrack* track) {
 }
 
 static bool track_exhausted(ADXTrack* track) {
+    if (track->is_modded)
+        return false;
+
     if (track->loop_info.looping_enabled) {
         return false; // Track is never exhausted, because it can be looped infinitely
     } else {
@@ -229,6 +244,9 @@ static void loop_info_destroy(ADXLoopInfo* info) {
 }
 
 static void process_track(ADXTrack* track) {
+    if (track->is_modded)
+        return;
+
     // Decode samples and queue them for playback
     // Use a stack buffer for decoding chunk
     int16_t decode_buf[2048 * N_CHANNELS]; // 2048 samples per channel
@@ -287,6 +305,21 @@ static void track_init(ADXTrack* track, int file_id, void* buf, size_t buf_size,
     if (file_id == -1 && buf == NULL) {
         fatal_error("One of file_id or buf must be valid.");
     }
+
+    // Try Modded BGM first if it's a file ID
+    if (file_id != -1 && ModdedBGM_Play(file_id)) {
+        track->is_modded = true;
+        track->data = NULL;
+        track->size = 0;
+        track->should_free_data_after_use = false;
+        track->used_bytes = 0;
+        track->processed_samples = 0;
+        SDL_zerop(&track->loop_info);
+        SDL_zerop(&track->ctx);
+        return;
+    }
+
+    track->is_modded = false;
 
     if (file_id != -1) {
         track->data = load_file(file_id, &track->size);
@@ -367,17 +400,22 @@ void ADX_ProcessTracks() {
 void ADX_Init() {
     const SDL_AudioSpec spec = { .format = SDL_AUDIO_S16, .channels = N_CHANNELS, .freq = SAMPLE_RATE };
     stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
+
+    ModdedBGM_Init();
 }
 
 void ADX_Exit() {
     ADX_Stop();
     SDL_DestroyAudioStream(stream);
     stream = NULL;
+
+    ModdedBGM_Exit();
 }
 
 void ADX_Stop() {
     ADX_Pause(true);
     SDL_ClearAudioStream(stream);
+    ModdedBGM_Stop();
 
     for (int i = 0; i < num_tracks; i++) {
         const int j = (first_track_index + i) % TRACKS_MAX;
@@ -399,6 +437,7 @@ void ADX_Pause(int pause) {
     } else {
         SDL_ResumeAudioStreamDevice(stream);
     }
+    ModdedBGM_Pause(pause);
 }
 
 void ADX_StartMem(void* buf, size_t size) {
@@ -436,6 +475,7 @@ void ADX_SetOutVol(int volume) {
     // Convert volume (dB * 10) to linear gain
     const float gain = powf(10.0f, (float)volume / 200.0f);
     SDL_SetAudioStreamGain(stream, gain);
+    ModdedBGM_SetVolume(volume);
 }
 
 void ADX_SetMono(bool mono) {

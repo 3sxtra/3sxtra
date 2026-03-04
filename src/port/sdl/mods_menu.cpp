@@ -152,6 +152,20 @@ extern "C" void mods_menu_render(int window_width, int window_height) {
     ImGui::Separator();
     ImGui::Spacing();
 
+    /* ===== AUDIO MODS ===== */
+    {
+        bool modded_bgm_on = Config_GetBool(CFG_KEY_MODDED_BGM_ENABLED);
+        if (ImGui::Checkbox("Enable Modded BGM", &modded_bgm_on)) {
+            Config_SetBool(CFG_KEY_MODDED_BGM_ENABLED, modded_bgm_on);
+            Config_Save();
+        }
+        HelpMarker("Replaces original ADX music tracks with files from assets/bgm_mod/.\n"
+                   "Supported formats: .ogg, .mp3, .wav.\n"
+                   "Example: To replace Ken's theme (fnum 89), place '89.ogg' inside assets/bgm_mod/.");
+    }
+
+    ImGui::Separator();
+
     /* ===== HD STAGE BACKGROUNDS ===== */
     {
         bool stage_on = ModdedStage_IsEnabled();

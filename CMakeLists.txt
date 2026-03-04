@@ -542,7 +542,7 @@ endif()
 # SDL3_ROOT is already set above
 
 # If SDL3_ROOT was set externally (e.g. -DSDL3_ROOT=/app for flatpak),
-# SDL3_image is also installed there. Otherwise use third_party path.
+# SDL3_image and SDL3_mixer are also installed there. Otherwise use third_party path.
 if(NOT SDL3_IMAGE_ROOT)
     if(SDL3_ROOT STREQUAL "${THIRD_PARTY_DIR}/sdl3/build")
         set(SDL3_IMAGE_ROOT "${THIRD_PARTY_DIR}/sdl3_image/build")
@@ -551,20 +551,31 @@ if(NOT SDL3_IMAGE_ROOT)
     endif()
 endif()
 
+if(NOT SDL3_MIXER_ROOT)
+    if(SDL3_ROOT STREQUAL "${THIRD_PARTY_DIR}/sdl3/build")
+        set(SDL3_MIXER_ROOT "${THIRD_PARTY_DIR}/sdl3_mixer/build")
+    else()
+        set(SDL3_MIXER_ROOT "${SDL3_ROOT}")
+    endif()
+endif()
+
 include_directories(
     ${SDL3_ROOT}/include
     ${SDL3_IMAGE_ROOT}/include
+    ${SDL3_MIXER_ROOT}/include
 )
 
 if(APPLE)
     target_link_libraries(3sx PRIVATE
         ${SDL3_ROOT}/lib/libSDL3.0.dylib
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.dylib
+        ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.dylib
     )
 elseif(WIN32)
     target_link_libraries(3sx PRIVATE
         ${SDL3_ROOT}/lib/libSDL3.dll.a
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.dll.a
+        ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.dll.a
 		dbghelp
         Spout_static
     )
@@ -576,6 +587,7 @@ elseif(UNIX)
     target_link_libraries(3sx PRIVATE
         ${SDL3_ROOT}/lib/libSDL3.so
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.so
+        ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.so
     )
 endif()
 
@@ -682,6 +694,7 @@ if(APPLE)
     install(FILES
         ${SDL3_ROOT}/lib/libSDL3.0.dylib
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.dylib
+        ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.dylib
         DESTINATION 3SX.app/Contents/Frameworks
     )
 elseif(WIN32)
@@ -697,7 +710,7 @@ elseif(WIN32)
 	
 	# automatically copies all the dependent DLLS, and ignores the system ones because they aren't necessary
 	install(RUNTIME_DEPENDENCY_SET deps
-		DIRECTORIES ${binPath} "${SDL3_ROOT}/bin" "${SDL3_IMAGE_ROOT}/bin"
+		DIRECTORIES ${binPath} "${SDL3_ROOT}/bin" "${SDL3_IMAGE_ROOT}/bin" "${SDL3_MIXER_ROOT}/bin"
 		PRE_EXCLUDE_REGEXES "^api"
 		POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"
 		DESTINATION bin
@@ -708,6 +721,7 @@ elseif(WIN32)
         "${binPath}/zlib1.dll"
         "${SDL3_ROOT}/bin/SDL3.dll"
         "${SDL3_IMAGE_ROOT}/bin/SDL3_image.dll"
+        "${SDL3_MIXER_ROOT}/bin/SDL3_mixer.dll"
         DESTINATION bin
     )
 elseif(UNIX)
@@ -718,6 +732,7 @@ elseif(UNIX)
     install(FILES
         ${SDL3_ROOT}/lib/libSDL3.so
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.so
+        ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.so
         DESTINATION lib
     )
 endif()
@@ -739,6 +754,8 @@ else(UNIX)
 endif()
 
 include(CPack)
+
+target_sources(3sx PRIVATE src/port/sound/modded_bgm.c)
 
 # ======================================
 # Testing Framework (CMocka)
@@ -763,3 +780,6 @@ if(ENABLE_TESTS)
 
     add_subdirectory(tests)
 endif()
+
+# Modded BGM
+target_sources(3sx PRIVATE src/port/sound/modded_bgm.c)

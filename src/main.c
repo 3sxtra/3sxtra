@@ -13,7 +13,6 @@
 
 #include "main.h"
 #include "common.h"
-#include "test/test_runner.h"
 #include "netplay/netplay.h"
 #include "port/renderer.h"
 #include "port/sdl/sdl_app.h"
@@ -46,6 +45,7 @@
 #include "sf33rd/Source/Game/system/sys_sub2.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/training/training_hud.h"
+#include "test/test_runner.h"
 
 #include "menu_bridge.h"
 
