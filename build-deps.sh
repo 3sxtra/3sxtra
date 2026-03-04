@@ -215,6 +215,67 @@ else
 fi
 
 # -----------------------------
+# -----------------------------
+# SDL3_mixer
+# -----------------------------
+
+SDL_MIXER_DIR="$THIRD_PARTY/sdl3_mixer"
+SDL_MIXER_BUILD="$SDL_MIXER_DIR/build"
+
+if [ "${SKIP_SDL3_BUILD:-}" = "1" ]; then
+    echo "SKIP_SDL3_BUILD=1 — skipping SDL3_mixer (pre-installed)"
+elif [ -d "$SDL_MIXER_BUILD" ]; then
+    echo "SDL3_mixer already built at $SDL_MIXER_BUILD"
+else
+    echo "Building SDL3_mixer..."
+    mkdir -p "$SDL_MIXER_DIR"
+    cd "$SDL_MIXER_DIR"
+
+    SDL_MIXER_SRC="$SDL_MIXER_DIR/SDL_mixer"
+
+    if [ ! -d "$SDL_MIXER_SRC" ]; then
+        echo "Cloning SDL3_mixer from git..."
+        git clone --depth 1 https://github.com/libsdl-org/SDL_mixer.git "$SDL_MIXER_SRC"
+    fi
+
+    cd "$SDL_MIXER_SRC"
+
+    mkdir -p build
+    cd build
+
+    case "$OS" in
+        Darwin|Linux)
+            CMAKE_EXTRA_ARGS=""
+            if [ "$OS" = "Darwin" ] && [ "$TARGET_ARCH" = "universal" ]; then
+                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+            fi
+            cmake .. \
+                ${CC:+-DCMAKE_C_COMPILER=$CC} \
+                ${CXX:+-DCMAKE_CXX_COMPILER=$CXX} \
+                -DCMAKE_INSTALL_PREFIX="$SDL_MIXER_BUILD" \
+                -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
+                -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
+                -DBUILD_SHARED_LIBS=ON \
+                $CMAKE_EXTRA_ARGS
+            ;;
+        MINGW*|MSYS*|CYGWIN*)
+            cmake .. \
+                -G "MSYS Makefiles" \
+                -DCMAKE_C_COMPILER=gcc \
+                -DCMAKE_INSTALL_PREFIX="$SDL_MIXER_BUILD" \
+                -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
+                -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
+                -DBUILD_SHARED_LIBS=ON
+            ;;
+    esac
+
+    cmake --build . -j$(nproc)
+    cmake --install .
+    echo "SDL3_mixer installed to $SDL_MIXER_BUILD"
+
+    cd "$ROOT_DIR"
+fi
+
 # SDL3_image
 # -----------------------------
 

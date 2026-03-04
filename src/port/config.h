@@ -44,6 +44,7 @@ extern "C" {
 #define CFG_KEY_SKIP_INTRO "skip-intro"
 #define CFG_KEY_UI_MODE "ui-mode"
 #define CFG_KEY_HD_STAGES "hd-stages"
+#define CFG_KEY_MODDED_BGM_ENABLED "modded-bgm-enabled"
 
 /// Initialize config system
 void Config_Init();

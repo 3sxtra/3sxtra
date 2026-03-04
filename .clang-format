@@ -4,7 +4,6 @@ NamespaceIndentation: All
 BinPackArguments: false
 SpaceBeforeCpp11BracedList: true
 Cpp11BracedListStyle: false
-BreakTemplateDeclarations: true
 ColumnLimit: 120
 # BracketAlignmentStyle: BlockIndent
 AllowShortBlocksOnASingleLine: Empty

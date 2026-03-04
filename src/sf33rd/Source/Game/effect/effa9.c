@@ -100,7 +100,6 @@ void effect_A9_move(WORK_Other* ewk) {
         }
     }
 
-
     sort_push_request4(&ewk->wu);
 }
 

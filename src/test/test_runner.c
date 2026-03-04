@@ -153,7 +153,7 @@ static void initialize_data() {
             game_start_frame = frame_num;
         }
 
-        // Read character and SA indices until we get to game. 
+        // Read character and SA indices until we get to game.
         // This ensures we read the latest data
 
         if (in_game && !did_set_char_data) {
