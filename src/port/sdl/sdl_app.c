@@ -258,6 +258,7 @@ static bool show_shader_menu = false;
 static bool show_mods_menu = false;
 bool mods_menu_input_display_enabled = false;
 bool mods_menu_shader_bypass_enabled = false;
+bool mods_menu_fast_pre_game = false;
 bool game_paused = false;
 static bool frame_rate_uncapped = false;
 static bool vsync_enabled = true;      // user preference, independent of frame_rate_uncapped

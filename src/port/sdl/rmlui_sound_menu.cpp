@@ -29,7 +29,7 @@ static Rml::String level_to_pct(int level) {
     int pct = (level * 100) / 15;
     if (pct > 100)
         pct = 100;
-    char buf[8];
+    char buf[16];
     snprintf(buf, sizeof(buf), "%d%%", pct);
     return Rml::String(buf);
 }

@@ -310,6 +310,8 @@ static void Next_CPU_4th() {
     }
 }
 
+extern bool mods_menu_fast_pre_game;
+
 /** @brief Phase 4.0 — init fade, set up VS BG/objects, start BGM 51. */
 static void Next_CPU_4th_0_Sub() {
     FadeIn(0, 4, 8);
@@ -317,7 +319,7 @@ static void Next_CPU_4th_0_Sub() {
     Forbid_Break = 0;
     bgPalCodeOffset[0] = 144;
     BGM_Request(51);
-    S_Timer = 178;
+    S_Timer = mods_menu_fast_pre_game ? 1 : 178;
     Exit_Timer = 2;
     bg_w.bgw[0].wxy[0].disp.pos += 512;
     bg_w.bgw[1].wxy[1].disp.pos = 512;
@@ -429,7 +431,7 @@ static void Next_CPU_5th() {
             Suicide[3] = 1;
             effect_43_init(1, 0);
             BGM_Request(0x33);
-            S_Timer = 0xb2;
+            S_Timer = mods_menu_fast_pre_game ? 1 : 0xb2;
         }
 
         break;
@@ -1080,7 +1082,7 @@ static void Next_Q_3rd() {
         effect_43_init(1, 0);
         bgPalCodeOffset[0] = 144;
         BGM_Request(51);
-        S_Timer = 180;
+        S_Timer = mods_menu_fast_pre_game ? 1 : 180;
         effect_58_init(15, 5, 0);
         return;
 

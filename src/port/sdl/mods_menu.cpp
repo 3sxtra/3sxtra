@@ -33,6 +33,7 @@ bool ModdedStage_IsAnimationsDisabled(void);
 
 /* Shader bypass for HD stages — when true, skip librashader on HD backgrounds */
 extern bool mods_menu_shader_bypass_enabled;
+extern bool mods_menu_fast_pre_game;
 
 /* Engine debug options — Debug_w is either a macro (DEBUG builds)
  * or an extern array (release builds), both provided by debug_config.h */
@@ -189,6 +190,17 @@ extern "C" void mods_menu_render(int window_width, int window_height) {
             ImGui::SameLine();
             ImGui::TextColored(COLOR_WARN, "(No CRT/filters)");
         }
+    }
+
+    ImGui::Separator();
+
+    /* ===== PRE-GAME ===== */
+    {
+        bool fast_pre_game = mods_menu_fast_pre_game;
+        if (ImGui::Checkbox("Fast Pre-Game Sequences", &fast_pre_game)) {
+            mods_menu_fast_pre_game = fast_pre_game;
+        }
+        HelpMarker("Significantly reduces the duration of pre-match VS screens and stage intro sequences.");
     }
 
     ImGui::Separator();

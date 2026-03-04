@@ -26,6 +26,17 @@
 
         <div class="divider"></div>
 
+        <!-- Pre-Game -->
+        <div class="section">
+            <h2>Pre-Game</h2>
+            <div class="control-row">
+                <input type="checkbox" data-checked="fast_pre_game"/>
+                <label>Fast Pre-Game Sequences</label>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
         <!-- Bezels -->
         <div class="section">
             <h2>Bezels</h2>
