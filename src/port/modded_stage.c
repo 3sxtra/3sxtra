@@ -186,9 +186,6 @@ bool ModdedStage_IsRenderingDisabled(void) {
 
 void ModdedStage_SetAnimationsDisabled(bool disabled) {
     s_animations_disabled = disabled;
-    if (disabled) {
-        effect_work_quick_init();
-    }
 }
 
 bool ModdedStage_IsAnimationsDisabled(void) {
@@ -272,15 +269,6 @@ int ModdedStage_GetLoadedStageIndex(void) {
     return s_loaded_stage;
 }
 
-/* ---------- Rendering ---------- */
-
-#if 0
-static float fmod_wrap(float val, float max) {
-    val = fmodf(val, max);
-    if (val < 0.0f) val += max;
-    return val;
-}
-#endif
 
 static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, const BG* bg) {
     if (layer_index < 0 || layer_index >= MAX_STAGE_LAYERS)
@@ -324,11 +312,10 @@ static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, cons
     const float vp_h = 224.0f;
 
     /* Normalize scroll position using the engine's live scroll limits.
-     * bg_prm[bg_idx] contains the absolute pixel position (already parallax-adjusted
-     * by the msp speed table). The BGW struct's l_limit/r_limit define the
-     * scroll bounds for that layer. We remap the scroll from
-     *   [l_limit .. r_limit]  ->  [0 .. effective_w - viewport_w]
-     * so UV 0.0 = left edge of HD image, UV 1.0 = right edge.
+     * bg_h_shift = wxy.pos - pos_offset (set in bg_pos_hosei).
+     * wxy.pos is clamped to [l_limit2, r_limit2], so bg_h_shift ranges
+     * from (l_limit2 - pos_offset) to (r_limit2 - pos_offset).
+     * We remap this range to [0 .. effective_w - viewport_w].
      */
     int bg_idx = cfg->original_bg_index;
     float scroll_x, scroll_y;
@@ -338,19 +325,23 @@ static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, cons
         float raw_x = (float)(s16)bg_prm[bg_idx].bg_h_shift;
         float raw_y = (float)(s16)bg_prm[bg_idx].bg_v_shift;
 
-        /* bg_initialize() populates l_limit2/r_limit2/y_limit2 from limit_tbl3 */
-        float l_lim = (float)bgw->l_limit2;
-        float r_lim = (float)bgw->r_limit2;
+        /* bg_h_shift = wxy.pos - pos_offset  (see bg_pos_hosei / Irl_Scrn).
+         * wxy.pos is clamped to [l_limit2, r_limit2] by bg_base_x_move_check.
+         * So the runtime range of bg_h_shift is:
+         *   min = l_limit2 - pos_offset
+         *   max = r_limit2 - pos_offset
+         * We map this range to [0 .. effective_w - vp_w] in HD-image space. */
+        float native_range_x = (float)(bgw->r_limit2 - bgw->l_limit2);
         float y_lim = (float)bgw->y_limit2;
 
-        /* Horizontal: map [l_limit2 .. r_limit2] -> [0 .. effective_w - vp_w] */
-        float range_x = r_lim - l_lim;
-        if (range_x > 0.001f) {
-            float t = (raw_x - l_lim) / range_x;  /* 0.0 at left, 1.0 at right */
-            scroll_x = t * (effective_w - vp_w);
+        float min_shift = (float)bgw->l_limit2 - (float)bg->pos_offset;
+        float max_scroll_x = effective_w - vp_w;
+        if (native_range_x > 0.001f && max_scroll_x > 0.0f) {
+            float t = (raw_x - min_shift) / native_range_x;
+            scroll_x = t * max_scroll_x;
         } else {
             /* No horizontal scrolling — center the image */
-            scroll_x = (effective_w - vp_w) * 0.5f;
+            scroll_x = max_scroll_x * 0.5f;
         }
 
         /* Vertical: map [0 .. y_limit2] -> [bottom .. top] of HD image.
@@ -373,36 +364,10 @@ static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, cons
         scroll_y = cfg->offset_y;
     }
 
-    /*
-     * Wrap scroll position if looping is enabled.
-     * The texture coordinate logic essentially handles this,
-     * but we might want to clamp 'scroll_x' if loop_x is false.
-     *
-     * However, the simplest way is to just let UVs march on.
-     * CLAMP_TO_EDGE on the texture + shader sampling does the work for non-looping?
-     * No, if UV > 1.0 and we clamp, it smears edges. We want the quad to be bounded?
-     *
-     * For now, implementing standard infinite scroll loop via UVs.
-     */
-
-    // If loop is forced off in config, we might need a different UV calc,
-    // but typically stage backgrounds loop.
-
     float u0 = scroll_x / effective_w;
     float v0 = scroll_y / effective_h;
     float u1 = (scroll_x + vp_w) / effective_w;
     float v1 = (scroll_y + vp_h) / effective_h;
-
-    // Support non-looping layers by clamping UVs?
-    // Or just rely on GL_CLAMP_TO_EDGE if user intended it.
-    // The previous implementation used CLAMP_TO_EDGE universally.
-
-    // If user explicitly wants NO loop, we should probably set GL_CLAMP_TO_EDGE.
-    // If they WANT loop, we need GL_REPEAT.
-    // But the old code used CLAMP_TO_EDGE and handled looping via logic?
-    // Wait, ModdedStage_Render sets CLAMP_TO_EDGE.
-    // If we want wrapping, we need GL_REPEAT.
-    // Let's set the wrap mode based on config.
 
     float verts[] = {
         0.0f, 0.0f, u0, v0, 1.0f, 0.0f, u1, v0, 1.0f, 1.0f, u1, v1, 0.0f, 1.0f, u0, v1,
@@ -416,12 +381,8 @@ static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, cons
     glBindTexture(GL_TEXTURE_2D, tex_id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    GLint wrap_s = cfg->loop_x ? GL_REPEAT : GL_CLAMP_TO_EDGE;
-    GLint wrap_t = cfg->loop_y ? GL_REPEAT : GL_CLAMP_TO_EDGE;
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     if (layer_index > 0) {
         glEnable(GL_BLEND);

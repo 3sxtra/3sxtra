@@ -65,9 +65,7 @@ static void ta0_init00() {
 static void ta0_init01() {
     bg_w.bg_routine++;
     akebono_initialize();
-    /* Skip stage-specific handler when animations are disabled —
-     * this prevents stage effects from ever being spawned. */
-    if (!ModdedStage_IsAnimationsDisabled() && !ModdedStage_IsRenderingDisabled()) {
+    if (!ModdedStage_IsRenderingDisabled()) {
         ta_move_tbl[bg_w.bg_index]();
     }
 }
@@ -75,18 +73,14 @@ static void ta0_init01() {
 /** @brief Stage init phase 2 — run the stage-specific handler. */
 static void ta0_init02() {
     bg_w.bg_routine++;
-    if (!ModdedStage_IsAnimationsDisabled() && !ModdedStage_IsRenderingDisabled()) {
-        ta_move_tbl[bg_w.bg_index]();
-    }
+    ta_move_tbl[bg_w.bg_index]();
 }
 
 /** @brief Main per-frame stage animation tick. */
 static void ta0_move() {
-    /* Skip stage-specific animation handlers when animations are explicitly
-     * disabled or when all stage rendering is disabled.  This prevents
-     * animated background objects (crowd, fire, birds, etc.) from spawning.
+    /* Skip stage-specific animation handlers when all stage rendering is disabled.
      * Scroll state is kept alive via Scrn_Renew/Irl_*. */
-    if (!ModdedStage_IsAnimationsDisabled() && !ModdedStage_IsRenderingDisabled()) {
+    if (!ModdedStage_IsRenderingDisabled()) {
         ta_move_tbl[bg_w.bg_index]();
     }
 

@@ -125,10 +125,6 @@ extern "C" void stage_config_menu_render(int window_width, int window_height) {
                     ImGui::Separator();
                     ImGui::DragInt("Z-Index", &layer->z_index, 1);
 
-                    ImGui::Checkbox("Loop X", &layer->loop_x);
-                    ImGui::SameLine();
-                    ImGui::Checkbox("Loop Y", &layer->loop_y);
-
                     ImGui::EndTabItem();
                 }
             }

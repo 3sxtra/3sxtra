@@ -116,15 +116,6 @@
                     <input type="range" min="-10" max="10" step="1" data-value="layer_z_index"/>
                     <span class="value-display">{{layer_z_index}}</span>
                 </div>
-
-                <div class="control-row">
-                    <input type="checkbox" data-checked="layer_loop_x"/>
-                    <label>Loop X</label>
-                </div>
-                <div class="control-row">
-                    <input type="checkbox" data-checked="layer_loop_y"/>
-                    <label>Loop Y</label>
-                </div>
             </div>
         </div>
 

@@ -45,8 +45,6 @@ void StageConfig_SetDefaultLayer(int i) {
     layer->offset_y = 0.0f;
     layer->original_bg_index = -1; // Default to auto/none, will be resolved in Load
     layer->z_index = i * 10;
-    layer->loop_x = true;
-    layer->loop_y = true;
 }
 
 void StageConfig_Init(void) {
@@ -73,41 +71,26 @@ void StageConfig_Load(int stage_index) {
     // 1. Reset to defaults first
     StageConfig_Init();
 
-    // 2. Intelligent Defaults: Map Modded Layers to Original Active Layers
-    // Retrieve the list of active BG layers for this stage from the game data
-    int active_layers[3];
-    int active_count = 0;
+    // 2. Intelligent Defaults: determine the foreground BGW index for parallax.
+    //    use_real_scr[] tells us how many real scroll layers this stage has.
+    //    stage_bgw_number[][0..2] lists which bgw[] slots are active.
+    //
+    //    Rule:  1 layer  → foreground is stage_bgw_number[stage][0]
+    //           2+ layers → foreground is stage_bgw_number[stage][1]  (msp = 1.0x)
+    int foreground_bgw = -1;
 
-    // Safety check for stage index
     if (stage_index >= 0 && stage_index < 22) {
-        for (int k = 0; k < 3; k++) {
-            // stage_bgw_number contains the indices of active BGWs (e.g., {1, 2, 0})
-            // A value of 0 might mean Layer 0 is active, OR it might be padding if not used.
-            // We need to check use_real_scr or similar, but stage_bgw_number is usually reliable for ordering.
-            // However, 0 is a valid layer index. Let's rely on the order in stage_bgw_number.
-            // The game code iterates stage_bgw_number and calls Bg_On_R(1 << layer).
-            // So if stage_bgw_number has {1, 2, 0} and use_real_scr is 3, then layers 1, 2, and 0 are active.
-
-            // For now, let's just map them sequentially as they appear in the table.
-            active_layers[k] = stage_bgw_number[stage_index][k];
-        }
-        active_count = 3; // Max 3 primary layers usually
-    }
-
-    // Assign defaults based on active layers.
-    // Layer 0 (the primary HD replacement) should track the FOREGROUND layer
-    // (always stage_bgw_number[][1], which has msp = 1.0x for all 22 stages).
-    // This ensures the HD background scrolls 1:1 with the camera.
-    for (int i = 0; i < MAX_STAGE_LAYERS; i++) {
-        if (i == 0 && active_count > 1) {
-            // Primary layer → foreground (1:1 speed)
-            g_stage_config.layers[0].original_bg_index = active_layers[1];
-        } else if (i < active_count) {
-            g_stage_config.layers[i].original_bg_index = active_layers[i];
-        } else {
-            g_stage_config.layers[i].original_bg_index = -1;
+        int real_layers = use_real_scr[stage_index];
+        if (real_layers >= 2) {
+            foreground_bgw = stage_bgw_number[stage_index][1];
+        } else if (real_layers == 1) {
+            foreground_bgw = stage_bgw_number[stage_index][0];
         }
     }
+
+    // Primary HD layer (layer 0) tracks the foreground for 1:1 camera scrolling.
+    // Additional HD layers default to no reference (-1 = static).
+    g_stage_config.layers[0].original_bg_index = foreground_bgw;
 
     // 3. Construct path
     const char* base = Paths_GetBasePath();
@@ -195,10 +178,6 @@ void StageConfig_Load(int stage_index) {
                 layer->original_bg_index = atoi(val);
             else if (strcasecmp(key, "z_index") == 0)
                 layer->z_index = atoi(val);
-            else if (strcasecmp(key, "loop_x") == 0)
-                layer->loop_x = (atoi(val) != 0 || strcasecmp(val, "true") == 0);
-            else if (strcasecmp(key, "loop_y") == 0)
-                layer->loop_y = (atoi(val) != 0 || strcasecmp(val, "true") == 0);
         }
     }
 
@@ -249,9 +228,7 @@ void StageConfig_Save(int stage_index) {
         fprintf(f, "offset_x=%.1f\n", layer->offset_x);
         fprintf(f, "offset_y=%.1f\n", layer->offset_y);
         fprintf(f, "original_bg_index=%d\n", layer->original_bg_index);
-        fprintf(f, "z_index=%d\n", layer->z_index);
-        fprintf(f, "loop_x=%s\n", layer->loop_x ? "true" : "false");
-        fprintf(f, "loop_y=%s\n\n", layer->loop_y ? "true" : "false");
+        fprintf(f, "z_index=%d\n\n", layer->z_index);
     }
 
     fclose(f);

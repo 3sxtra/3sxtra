@@ -40,7 +40,6 @@ static struct {
     float offset_x, offset_y;
     int original_bg_index;
     int z_index;
-    bool loop_x, loop_y;
 } s_prev;
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -63,8 +62,6 @@ static void dirty_all_layer_vars() {
     s_model_handle.DirtyVariable("layer_offset_y");
     s_model_handle.DirtyVariable("layer_bg_index");
     s_model_handle.DirtyVariable("layer_z_index");
-    s_model_handle.DirtyVariable("layer_loop_x");
-    s_model_handle.DirtyVariable("layer_loop_y");
 }
 
 static void snapshot_active_layer() {
@@ -81,8 +78,6 @@ static void snapshot_active_layer() {
     s_prev.offset_y = L->offset_y;
     s_prev.original_bg_index = L->original_bg_index;
     s_prev.z_index = L->z_index;
-    s_prev.loop_x = L->loop_x;
-    s_prev.loop_y = L->loop_y;
 }
 
 // ── Init ───────────────────────────────────────────────────────
@@ -176,15 +171,7 @@ extern "C" void rmlui_stage_config_init() {
         [](Rml::Variant& v) { v = active_layer()->z_index; },
         [](const Rml::Variant& v) { active_layer()->z_index = v.Get<int>(); });
 
-    c.BindFunc(
-        "layer_loop_x",
-        [](Rml::Variant& v) { v = active_layer()->loop_x; },
-        [](const Rml::Variant& v) { active_layer()->loop_x = v.Get<bool>(); });
 
-    c.BindFunc(
-        "layer_loop_y",
-        [](Rml::Variant& v) { v = active_layer()->loop_y; },
-        [](const Rml::Variant& v) { active_layer()->loop_y = v.Get<bool>(); });
 
     // ── Event callbacks ──
 
@@ -270,8 +257,7 @@ extern "C" void rmlui_stage_config_update() {
     CHECK_DIRTY(offset_y, "layer_offset_y");
     CHECK_DIRTY(original_bg_index, "layer_bg_index");
     CHECK_DIRTY(z_index, "layer_z_index");
-    CHECK_DIRTY(loop_x, "layer_loop_x");
-    CHECK_DIRTY(loop_y, "layer_loop_y");
+
 
     if ((int)L->scale_mode != s_prev.scale_mode) {
         s_prev.scale_mode = (int)L->scale_mode;

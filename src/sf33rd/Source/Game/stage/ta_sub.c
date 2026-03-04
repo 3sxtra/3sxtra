@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "common.h"
+#include "port/modded_stage.h"
 #include "sf33rd/Source/Game/animation/lose_pl.h"
 #include "sf33rd/Source/Game/animation/win_pl.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"
@@ -175,7 +176,7 @@ void add_y_sub2(WORK* wk) {
 
 /** @brief Check whether the current round needs no-display mode. */
 s32 obr_no_disp_check() {
-    if (aku_flag | akebono_flag | sa_pa_flag | seraph_flag) {
+    if (aku_flag | akebono_flag | sa_pa_flag | seraph_flag | ModdedStage_IsAnimationsDisabled()) {
         return 1;
     }
 

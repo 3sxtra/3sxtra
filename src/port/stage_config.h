@@ -28,8 +28,6 @@ typedef struct {
     float offset_y;
     int original_bg_index; // Original game layer index to copy speed from (-1 = default/none)
     int z_index;           // Draw order (lower = back)
-    bool loop_x;
-    bool loop_y;
 } StageLayerConfig;
 
 typedef struct {
