@@ -23,6 +23,10 @@ body {
 .hud-hidden {
     display: none;
 }
+/* Elements hidden until cockpit appears (synced with round banner) */
+.hud-pre-cockpit {
+    opacity: 0;
+}
 
 /* ── Section containers (passthrough — span full area) ────── */
 #hud-top, #hud-gauges, #hud-combos, #hud-training-stun {
@@ -52,10 +56,10 @@ body {
     height: 10dp;
     font-size: 10dp;
     color: #FFFFFF;
-    font-effect: shadow(1dp 1dp #000000);
+    font-effect: outline(1dp #000000);
 }
 .p1-name { left: 48dp; text-align: left; }
-.p2-name { right: 8dp; left: auto; text-align: right; }
+.p2-name { left: 296dp; text-align: left; }
 
 /* ── HP bar container ───────────────────────────────────────── */
 /* CPS3: P1 x=8..168  P2 x=216..376  bottom=24dp, height trimmed from top */
@@ -239,20 +243,22 @@ body {
 .sa-label {
     display: inline-block;
     position: absolute;
-    top: -1dp;
+    top: -4dp;
     left: 0dp;
     width: 100%;
-    font-size: 6dp;
+    font-family: "BoldPixels";
+    font-size: 12dp;
     color: #FFD700;
     text-align: center;
-    font-effect: shadow(1dp 1dp #000000);
+    font-effect: outline(1dp #CC6600);
 }
 
 .sa-stock {
     display: inline-block;
     position: absolute;
-    top: -1dp;
-    font-size: 8dp;
+    top: -4dp;
+    font-family: "BoldPixels";
+    font-size: 12dp;
     color: #FFFFFF;
     font-effect: shadow(1dp 1dp #000000);
 }
@@ -320,6 +326,7 @@ body {
 .combo-lbl-1st   { color: #FFD700; }
 .combo-lbl-rev   { color: #FF6040; }
 .combo-lbl-parry { color: #40C0FF; }
+.parry-red { color: #FF4040; }
 
 /* Combo points below label */
 .combo-pts {
@@ -345,7 +352,7 @@ body {
     position: absolute;
     top: 0dp;
     font-size: 16dp;
-    color: #00E5FF;
+    color: #00EDD0;
     font-effect: outline(1dp #000000);
 }
 /* Score: native right-aligns at tile 17 (P1) / tile 37 (P2) = 136dp / 296dp */
@@ -357,10 +364,13 @@ body {
     display: block;
     position: absolute;
     top: 0dp;
+    margin: 0dp;
+    padding: 0dp;
     font-family: "BoldPixels";
-    font-size: 10dp;
-    color: #4060FF;
-    font-effect: shadow(1dp 1dp #000000);
+    font-size: 12dp;
+    line-height: 12dp;
+    color: #A8ECFF;
+    font-effect: outline(1dp #1A2866);
     animation: press-start-blink 1.3s sine-in-out infinite;
 }
 /* Native: P1 at tile 5 (40dp), P2 at tile 30 (240dp), y=0 */

@@ -38,11 +38,12 @@ body {
 
 .press-start {
     display: inline-block;
-    font-size: 8dp;
-    font-weight: 900;
-    color: rgba(141, 227, 255, 255); /* Light blue */
+    font-family: "BoldPixels";
+    font-size: 12dp;
+    line-height: 12dp;
+    color: #A8ECFF;
     letter-spacing: 2dp;
-    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 200));
+    font-effect: outline(1dp #1A2866);
     animation: attract-blink-slow 1s sine-in-out infinite alternate;
 }
 

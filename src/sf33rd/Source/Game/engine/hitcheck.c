@@ -349,6 +349,7 @@ void set_caught_status(s16 ix) {
     paring_ctr_vs[Play_Type][ds->wu.id] = 0;
     paring_counter[ds->wu.id] = 0;
     paring_bonus_r[ds->wu.id] = 0;
+    last_parry_red[ds->wu.id] = 0;
     pp_pulpara_hit(&as->wu);
     return;
 
@@ -577,6 +578,7 @@ void plef_at_vs_player_damage_union(PLW* as, PLW* ds, s8 gddir) {
     paring_ctr_vs[Play_Type][ds->wu.id] = 0;
     paring_counter[ds->wu.id] = 0;
     paring_bonus_r[ds->wu.id] = 0;
+    last_parry_red[ds->wu.id] = 0;
     return;
 
 set_guard_status:
@@ -1087,9 +1089,11 @@ s32 defense_sky(PLW* as, PLW* ds, s8 gddir) {
         if (just_now) {
             if (!(ds->spmv_ng_flag & DIP_RED_PARRY_DISABLED) &&
                 (ds->cp->waza_flag[5] >= grdb2[ds->wu.id][attr_att] || abs)) {
+                last_parry_red[ds->wu.id] = 1;
                 return apply_air_parry_result(as, ds);
             }
         } else if (!(ds->spmv_ng_flag & DIP_AIR_PARRY_DISABLED) && ((ds->cp->waza_flag[5] != 0) || abs)) {
+            last_parry_red[ds->wu.id] = 0;
             return apply_air_parry_result(as, ds);
         }
     }
@@ -1190,14 +1194,17 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
             if (just_now) {
                 if (!(ds->spmv_ng_flag & DIP_RED_PARRY_DISABLED) &&
                     ((ds->cp->waza_flag[3] >= grdb[ds->wu.id][attr_att][0]) || abs)) {
+                    last_parry_red[ds->wu.id] = 1;
                     return apply_ground_parry_result(as, ds, stand_rno, 5);
                 }
             } else if (!(ds->spmv_ng_flag & DIP_UNKNOWN_8)) {
                 if (as->wu.jump_att_flag) {
                     if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) && (ds->cp->waza_flag[12] != 0 || abs)) {
+                        last_parry_red[ds->wu.id] = 0;
                         return apply_ground_parry_result(as, ds, stand_rno, 5);
                     }
                 } else if (ds->cp->waza_flag[3] != 0 || abs) {
+                    last_parry_red[ds->wu.id] = 0;
                     return apply_ground_parry_result(as, ds, stand_rno, 5);
                 }
             }
@@ -1207,14 +1214,17 @@ s32 defense_ground(PLW* as, PLW* ds, s8 gddir) {
             if (just_now) {
                 if (!(ds->spmv_ng_flag & DIP_RED_PARRY_DISABLED) &&
                     (!(ds->cp->waza_flag[4] < grdb[ds->wu.id][attr_att][1]) || abs)) {
+                    last_parry_red[ds->wu.id] = 1;
                     return apply_ground_parry_result(as, ds, 33, 6);
                 }
             } else if (!(ds->spmv_ng_flag & DIP_UNKNOWN_9)) {
                 if (as->wu.jump_att_flag) {
                     if (!(ds->spmv_ng_flag & DIP_ANTI_AIR_PARRY_DISABLED) && (ds->cp->waza_flag[4] != 0 || abs)) {
+                        last_parry_red[ds->wu.id] = 0;
                         return apply_ground_parry_result(as, ds, 33, 6);
                     }
                 } else if (ds->cp->waza_flag[4] != 0 || abs) {
+                    last_parry_red[ds->wu.id] = 0;
                     return apply_ground_parry_result(as, ds, 33, 6);
                 }
             }

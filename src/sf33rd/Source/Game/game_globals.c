@@ -216,6 +216,7 @@ u8 paring_counter[2];
 u8 paring_bonus_r[2];
 u8 paring_ctr_vs[2][2];
 u8 paring_ctr_ori[2];
+u8 last_parry_red[2];
 u8 Attack_Count_Buff[2][4];
 u8 Attack_Count_Index[2];
 u8 CC_Value[2];

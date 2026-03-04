@@ -196,6 +196,7 @@ extern u8 paring_counter[2];
 extern u8 paring_bonus_r[2];
 extern u8 paring_ctr_vs[2][2];
 extern u8 paring_ctr_ori[2];
+extern u8 last_parry_red[2];
 extern u8 Attack_Count_Buff[2][4];
 extern u8 Attack_Count_Index[2];
 extern u8 CC_Value[2];

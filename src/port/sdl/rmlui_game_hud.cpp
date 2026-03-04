@@ -127,10 +127,12 @@ struct HudSnapshot {
     Rml::String p1_name, p2_name;
     int p1_wins, p2_wins;
     bool is_fight_active;
+    bool cockpit_visible;
     int p1_combo_stun, p2_combo_stun;
     bool training_stun_active;
     int p1_score, p2_score;
     int p1_parry_count, p2_parry_count;
+    bool p1_parry_red, p2_parry_red;
     Rml::String p1_sa_type, p2_sa_type;
     int p1_sa_index, p2_sa_index;
     bool p1_is_human, p2_is_human;
@@ -372,9 +374,13 @@ extern "C" void rmlui_game_hud_init(void) {
     // Indices are swapped because parry combos display on the opponent's side.
     ctor.BindFunc("p1_parry_count", [](Rml::Variant& v) { v = (int)paring_ctr_vs[Play_Type][1]; });
     ctor.BindFunc("p2_parry_count", [](Rml::Variant& v) { v = (int)paring_ctr_vs[Play_Type][0]; });
+    // Red parry flag (swapped same as parry count — shows on opponent's side)
+    ctor.BindFunc("p1_parry_red", [](Rml::Variant& v) { v = (bool)(last_parry_red[1] != 0); });
+    ctor.BindFunc("p2_parry_red", [](Rml::Variant& v) { v = (bool)(last_parry_red[0] != 0); });
 
     // ── HUD visibility ──
     ctor.BindFunc("is_fight_active", [](Rml::Variant& v) { v = (bool)(Play_Game == 1); });
+    ctor.BindFunc("cockpit_visible", [](Rml::Variant& v) { v = (bool)(Disp_Cockpit != 0); });
 
     // ── Training Stun Counter ──
     ctor.BindFunc("p1_combo_stun", [](Rml::Variant& v) { v = (int)g_training_state.p1.combo_stun; });
@@ -411,6 +417,7 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_INT(round_timer, (int)round_timer);
     DIRTY_BOOL(timer_flash, flash_r_num != 0);
     DIRTY_BOOL(timer_infinite, mugen_flag != 0);
+    DIRTY_BOOL(cockpit_visible, Disp_Cockpit != 0);
     DIRTY_INT(p1_stun, (int)sdat[0].cstn);
     DIRTY_INT(p2_stun, (int)sdat[1].cstn);
     DIRTY_INT(p1_stun_max, (int)piyori_type[0].genkai);
@@ -488,6 +495,8 @@ extern "C" void rmlui_game_hud_update(void) {
     // ── Parry counter ──
     DIRTY_INT(p1_parry_count, (int)paring_ctr_vs[Play_Type][1]);
     DIRTY_INT(p2_parry_count, (int)paring_ctr_vs[Play_Type][0]);
+    DIRTY_BOOL(p1_parry_red, (bool)(last_parry_red[1] != 0));
+    DIRTY_BOOL(p2_parry_red, (bool)(last_parry_red[0] != 0));
 
     // ── SA type numeral ──
     static const char* const sa_nums[3] = { "I", "II", "III" };

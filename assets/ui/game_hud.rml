@@ -5,11 +5,11 @@
     <link type="text/rcss" href="game_hud.rcss"/>
 </head>
 <body data-model="game_hud" id="game-hud-root">
-    <!-- HUD is visible only during active fights -->
+    <!-- HUD is visible during active fights -->
     <div id="hud-container" class="hud-wrap" data-class-hud-hidden="!is_fight_active">
 
         <!-- ═══ TOP BAR: Portraits + HP bars + Timer ═══ -->
-        <div id="hud-top">
+        <div id="hud-top" data-class-hud-pre-cockpit="!cockpit_visible">
 
             <!-- P1 Side -->
             <div class="player-side p1-side">
@@ -61,7 +61,7 @@
         </div><!-- hud-top -->
 
         <!-- ═══ SECOND ROW: Stun + SA gauges ═══ -->
-        <div id="hud-gauges">
+        <div id="hud-gauges" data-class-hud-pre-cockpit="!cockpit_visible">
 
             <!-- P1 Stun -->
             <div class="stun-wrap p1-stun" data-style-width="p1_stun_width">
@@ -113,7 +113,7 @@
                 <span class="combo-label combo-lbl-sa" data-if="p1_combo_kind == 2 || p1_combo_kind == 3">S.A. FINISH</span>
                 <span class="combo-label combo-lbl-1st" data-if="p1_combo_kind == 4">1ST ATTACK</span>
                 <span class="combo-label combo-lbl-rev" data-if="p1_combo_kind == 5">REVERSAL</span>
-                <span class="combo-label combo-lbl-parry" data-if="p1_combo_kind == 6">PARRY ×{{p1_parry_count}}</span>
+                <span class="combo-label combo-lbl-parry" data-if="p1_combo_kind == 6" data-class-parry-red="p1_parry_red">PARRY ×{{p1_parry_count}}</span>
                 <!-- Points (shown when pts_flag is set) -->
                 <div class="combo-pts" data-if="p1_combo_pts_flag">{{p1_combo_pts}}</div>
             </div>
@@ -127,13 +127,13 @@
                 <span class="combo-label combo-lbl-sa" data-if="p2_combo_kind == 2 || p2_combo_kind == 3">S.A. FINISH</span>
                 <span class="combo-label combo-lbl-1st" data-if="p2_combo_kind == 4">1ST ATTACK</span>
                 <span class="combo-label combo-lbl-rev" data-if="p2_combo_kind == 5">REVERSAL</span>
-                <span class="combo-label combo-lbl-parry" data-if="p2_combo_kind == 6">PARRY ×{{p2_parry_count}}</span>
+                <span class="combo-label combo-lbl-parry" data-if="p2_combo_kind == 6" data-class-parry-red="p2_parry_red">PARRY ×{{p2_parry_count}}</span>
                 <div class="combo-pts" data-if="p2_combo_pts_flag">{{p2_combo_pts}}</div>
             </div>
         </div>
 
         <!-- ═══ SCORE / PRESS START DISPLAY ═══ -->
-        <div id="hud-scores" data-if="!training_stun_active">
+        <div id="hud-scores" data-if="!training_stun_active" data-class-hud-pre-cockpit="!cockpit_visible">
             <!-- P1: show score if human, "PRESS 1P START" if CPU -->
             <div class="score p1-score" data-if="p1_is_human">{{p1_score}}</div>
             <div class="press-start p1-press-start" data-if="!p1_is_human">PRESS 1P START</div>
