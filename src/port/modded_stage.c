@@ -258,7 +258,14 @@ void ModdedStage_Unload(void) {
 /* ---------- Query ---------- */
 
 bool ModdedStage_IsActiveForCurrentStage(void) {
-    return s_enabled && s_layer_res_count > 0 && s_loaded_stage == bg_w.stage;
+    static int dbg_cnt = 0;
+    bool result = s_enabled && s_layer_res_count > 0 && s_loaded_stage == bg_w.stage;
+    if (!result && dbg_cnt < 10) {
+        SDL_Log("ModdedStage_IsActive=false: enabled=%d layers=%d loaded=%d bgw.stage=%d",
+                s_enabled, s_layer_res_count, s_loaded_stage, bg_w.stage);
+        dbg_cnt++;
+    }
+    return result;
 }
 
 int ModdedStage_GetLayerCount(void) {

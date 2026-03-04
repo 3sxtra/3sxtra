@@ -99,6 +99,7 @@ static bool try_load_and_play(const char* ext, int file_id) {
         return false;
     }
 
+    fprintf(stderr, "ModdedBGM: Playing %s\n", path);
     return true;
 }
 
@@ -113,13 +114,17 @@ bool ModdedBGM_Play(int file_id) {
 
     ModdedBGM_Stop();
 
-    // Check extensions in order of preference
-    if (try_load_and_play("ogg", file_id))
-        return true;
-    if (try_load_and_play("mp3", file_id))
-        return true;
-    if (try_load_and_play("wav", file_id))
-        return true;
+    // Supported formats (SDL3_mixer decoders):
+    //   ogg  — Vorbis (stb_vorbis / libvorbisfile)
+    //   flac — FLAC (drflac / libflac)
+    //   opus — Opus (libopusfile)
+    //   mp3  — MP3 (drmp3 / mpg123)
+    //   wav  — WAV (built-in)
+    static const char* extensions[] = { "ogg", "flac", "opus", "mp3", "wav" };
+    for (int i = 0; i < (int)(sizeof(extensions) / sizeof(extensions[0])); i++) {
+        if (try_load_and_play(extensions[i], file_id))
+            return true;
+    }
 
     return false;
 }

@@ -50,6 +50,21 @@ else
 fi
 
 # -----------------------------
+# SDL3_mixer
+# -----------------------------
+
+SDL_MIXER_DIR="$THIRD_PARTY/sdl3_mixer"
+mkdir -p "$SDL_MIXER_DIR"
+
+if [ -d "$SDL_MIXER_DIR/SDL_mixer" ]; then
+    echo "SDL3_mixer source already exists."
+else
+    echo "Cloning SDL3_mixer..."
+    git clone --depth 1 https://github.com/libsdl-org/SDL_mixer.git "$SDL_MIXER_DIR/SDL_mixer"
+    echo "SDL3_mixer cloned."
+fi
+
+# -----------------------------
 # stb (header-only)
 # -----------------------------
 

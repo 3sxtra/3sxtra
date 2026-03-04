@@ -256,6 +256,7 @@ else
                 -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
                 -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
                 -DBUILD_SHARED_LIBS=ON \
+                -DSDLMIXER_VENDORED=ON \
                 $CMAKE_EXTRA_ARGS
             ;;
         MINGW*|MSYS*|CYGWIN*)
@@ -265,7 +266,8 @@ else
                 -DCMAKE_INSTALL_PREFIX="$SDL_MIXER_BUILD" \
                 -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
                 -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
-                -DBUILD_SHARED_LIBS=ON
+                -DBUILD_SHARED_LIBS=ON \
+                -DSDLMIXER_VENDORED=ON
             ;;
     esac
 

@@ -122,6 +122,59 @@ else
 fi
 
 # -----------------------------
+# SDL3_mixer
+# -----------------------------
+
+SDL_MIXER_DIR="$THIRD_PARTY/sdl3_mixer"
+SDL_MIXER_BUILD="$SDL_MIXER_DIR/build"
+
+if [ -d "$SDL_MIXER_BUILD" ]; then
+    echo "SDL3_mixer already built at $SDL_MIXER_BUILD"
+else
+    echo "Cross-compiling SDL3_mixer for aarch64..."
+
+    SDL_MIXER_SRC="$SDL_MIXER_DIR/SDL_mixer"
+
+    if [ ! -d "$SDL_MIXER_SRC" ]; then
+        echo "ERROR: SDL_mixer source not found. Run download-deps_rpi4.sh first."
+        exit 1
+    fi
+
+    # Clean any stale in-source build cache from a previous failed attempt
+    rm -rf "$SDL_MIXER_SRC/build"
+
+    cd "$SDL_MIXER_SRC"
+    mkdir -p build && cd build
+
+    # Ubuntu multiarch fix: when CMAKE_SYSROOT is skipped (linker script issue),
+    # the compiler may pick up x86_64 host headers via CMake-added include paths.
+    # Explicitly prioritise the aarch64 system includes.
+    CROSS_C_FLAGS=""
+    if [ ${#SYSROOT_FLAGS[@]} -eq 0 ] && [ -d "/usr/aarch64-linux-gnu/include" ]; then
+        CROSS_C_FLAGS="-isystem /usr/aarch64-linux-gnu/include"
+        echo "  (Ubuntu multiarch: adding aarch64 isystem include)"
+    fi
+
+    cmake .. \
+        -DCMAKE_C_COMPILER="$CC" \
+        -DCMAKE_CXX_COMPILER="$CXX" \
+        "${SYSROOT_FLAGS[@]}" \
+        ${CROSS_C_FLAGS:+-DCMAKE_C_FLAGS="$CROSS_C_FLAGS"} \
+        -DCMAKE_INSTALL_PREFIX="$SDL_MIXER_BUILD" \
+        -DCMAKE_SYSTEM_NAME=Linux \
+        -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+        -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
+        -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
+        -DBUILD_SHARED_LIBS=ON
+
+    cmake --build . -j$(nproc)
+    cmake --install .
+    echo "SDL3_mixer cross-compiled to $SDL_MIXER_BUILD"
+
+    cd ../..
+fi
+
+# -----------------------------
 # librashader (Rust cross-compile)
 # -----------------------------
 

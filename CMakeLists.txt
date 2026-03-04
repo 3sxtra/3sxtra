@@ -781,5 +781,3 @@ if(ENABLE_TESTS)
     add_subdirectory(tests)
 endif()
 
-# Modded BGM
-target_sources(3sx PRIVATE src/port/sound/modded_bgm.c)

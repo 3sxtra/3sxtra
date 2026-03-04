@@ -59,3 +59,4 @@ tools/lobby-server/.env
 *.log
 tools/gifx.sh
 /src/lua
+/assets/bgm_mod
