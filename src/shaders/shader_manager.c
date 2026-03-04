@@ -566,9 +566,74 @@ ShaderManager* ShaderManager_Init(GLSLP_Preset* preset, const char* base_path) {
         manager->passes[i].loc_OriginalHistorySize0 = glGetUniformLocation(program, "OriginalHistorySize0");
         manager->passes[i].loc_OutputSize = glGetUniformLocation(program, "OutputSize");
         manager->passes[i].loc_TextureSize = glGetUniformLocation(program, "TextureSize");
+
         manager->passes[i].loc_InputSize = glGetUniformLocation(program, "InputSize");
         manager->passes[i].loc_FrameCount = glGetUniformLocation(program, "FrameCount");
         manager->passes[i].loc_FrameDirection = glGetUniformLocation(program, "FrameDirection");
+
+        // ⚡ Bolt: Cache parameter locations
+        for (int p = 0; p < manager->parameter_count; p++) {
+            manager->passes[i].loc_parameters[p] = glGetUniformLocation(program, manager->parameters[p].name);
+        }
+
+        // ⚡ Bolt: Cache history locations
+        for (int h = 0; h < 8; h++) {
+            char name[64];
+            snprintf(name, sizeof(name), "OriginalHistory%d", h);
+            manager->passes[i].loc_history[h] = glGetUniformLocation(program, name);
+            snprintf(name, sizeof(name), "OriginalHistorySize%d", h);
+            manager->passes[i].loc_history_size[h] = glGetUniformLocation(program, name);
+        }
+
+        // ⚡ Bolt: Cache LUT locations
+        for (int t = 0; t < manager->texture_count; t++) {
+            manager->passes[i].loc_lut[t] = glGetUniformLocation(program, manager->textures[t].name);
+            char size_name[128];
+            snprintf(size_name, sizeof(size_name), "%sSize", manager->textures[t].name);
+            manager->passes[i].loc_lut_size[t] = glGetUniformLocation(program, size_name);
+        }
+
+        // ⚡ Bolt: Cache Alias locations (depends on pass_info->alias populated earlier)
+        // This loops over ALL passes since an alias can refer to any previous pass.
+        // During init, we loop up to pass_count to cache everything.
+        for (int prev = 0; prev < manager->pass_count; prev++) {
+            manager->passes[i].loc_alias[prev] = -1;
+            manager->passes[i].loc_alias_size[prev] = -1;
+            if (preset->passes[prev].alias[0] != '\0') {
+                manager->passes[i].loc_alias[prev] = glGetUniformLocation(program, preset->passes[prev].alias);
+                char size_name[128];
+                snprintf(size_name, sizeof(size_name), "%sSize", preset->passes[prev].alias);
+                manager->passes[i].loc_alias_size[prev] = glGetUniformLocation(program, size_name);
+            }
+        }
+
+        // ⚡ Bolt: Cache PassOutput locations
+        for (int n = 0; n < manager->pass_count; n++) {
+            char name[64];
+            snprintf(name, sizeof(name), "PassOutput%d", n);
+            manager->passes[i].loc_pass_output[n] = glGetUniformLocation(program, name);
+            snprintf(name, sizeof(name), "PassOutputSize%d", n);
+            manager->passes[i].loc_pass_output_size[n] = glGetUniformLocation(program, name);
+        }
+
+        // ⚡ Bolt: Cache PassPrevNTexture locations
+        for (int n = 0; n < manager->pass_count; n++) {
+            char name[64];
+            snprintf(name, sizeof(name), "PassPrev%dTexture", n);
+            manager->passes[i].loc_pass_prev_texture[n] = glGetUniformLocation(program, name);
+            snprintf(name, sizeof(name), "PassPrev%dTextureSize", n);
+            manager->passes[i].loc_pass_prev_texture_size[n] = glGetUniformLocation(program, name);
+            snprintf(name, sizeof(name), "PassPrev%dInputSize", n);
+            manager->passes[i].loc_pass_prev_input_size[n] = glGetUniformLocation(program, name);
+        }
+
+        // ⚡ Bolt: Cache Legacy Prev locations
+        const char* prev_names[] = { "PrevTexture",  "Prev1Texture", "Prev2Texture", "Prev3Texture",
+                                     "Prev4Texture", "Prev5Texture", "Prev6Texture" };
+        for (int k = 0; k < 7; k++) {
+            manager->passes[i].loc_legacy_prev[k] = glGetUniformLocation(program, prev_names[k]);
+        }
+
         glDeleteShader(vs);
         glDeleteShader(fs);
 
@@ -782,7 +847,7 @@ void ShaderManager_Render(ShaderManager* manager, GLuint input_texture, int inpu
 
         // Bind Parameters
         for (int p = 0; p < manager->parameter_count; p++) {
-            GLint loc = glGetUniformLocation(pass_runtime->program, manager->parameters[p].name);
+            GLint loc = pass_runtime->loc_parameters[p];
             if (loc != -1) {
                 glUniform1f(loc, manager->parameters[p].value);
             }
@@ -797,16 +862,13 @@ void ShaderManager_Render(ShaderManager* manager, GLuint input_texture, int inpu
             if (h_tex == 0)
                 h_tex = input_texture;
 
-            char name[64];
-            snprintf(name, sizeof(name), "OriginalHistory%d", h);
-            GLint loc = glGetUniformLocation(pass_runtime->program, name);
+            GLint loc = pass_runtime->loc_history[h];
             if (loc != -1) {
                 glActiveTexture(GL_TEXTURE0 + tex_unit);
                 glBindTexture(GL_TEXTURE_2D, h_tex);
                 glUniform1i(loc, tex_unit);
 
-                snprintf(name, sizeof(name), "OriginalHistorySize%d", h);
-                GLint locSize = glGetUniformLocation(pass_runtime->program, name);
+                GLint locSize = pass_runtime->loc_history_size[h];
                 if (locSize != -1) {
                     float w = (float)manager->history_width[h_idx];
                     float h = (float)manager->history_height[h_idx];
@@ -822,16 +884,13 @@ void ShaderManager_Render(ShaderManager* manager, GLuint input_texture, int inpu
 
         // Bind LUTs
         for (int t = 0; t < manager->texture_count; t++) {
-            GLint loc = glGetUniformLocation(pass_runtime->program, manager->textures[t].name);
+            GLint loc = pass_runtime->loc_lut[t];
             if (loc != -1) {
                 glActiveTexture(GL_TEXTURE0 + tex_unit);
                 glBindTexture(GL_TEXTURE_2D, manager->textures[t].id);
                 glUniform1i(loc, tex_unit);
 
-                // Size uniform
-                char size_name[128];
-                snprintf(size_name, sizeof(size_name), "%sSize", manager->textures[t].name);
-                GLint size_loc = glGetUniformLocation(pass_runtime->program, size_name);
+                GLint size_loc = pass_runtime->loc_lut_size[t];
                 if (size_loc != -1) {
                     float w = (float)manager->textures[t].width;
                     float h = (float)manager->textures[t].height;
@@ -844,41 +903,32 @@ void ShaderManager_Render(ShaderManager* manager, GLuint input_texture, int inpu
 
         // Bind Aliases (Previous Passes)
         for (int prev = 0; prev < i; prev++) {
-            if (manager->passes[prev].pass_info->alias[0] != '\0') {
-                char* alias = manager->passes[prev].pass_info->alias;
-                GLint loc = glGetUniformLocation(pass_runtime->program, alias);
-                if (loc != -1) {
-                    glActiveTexture(GL_TEXTURE0 + tex_unit);
-                    glBindTexture(GL_TEXTURE_2D, manager->passes[prev].texture);
-                    glUniform1i(loc, tex_unit);
+            GLint loc = pass_runtime->loc_alias[prev];
+            if (loc != -1) {
+                glActiveTexture(GL_TEXTURE0 + tex_unit);
+                glBindTexture(GL_TEXTURE_2D, manager->passes[prev].texture);
+                glUniform1i(loc, tex_unit);
 
-                    // Size uniform
-                    char size_name[128];
-                    snprintf(size_name, sizeof(size_name), "%sSize", alias);
-                    GLint size_loc = glGetUniformLocation(pass_runtime->program, size_name);
-                    if (size_loc != -1) {
-                        float w = (float)manager->passes[prev].width;
-                        float h = (float)manager->passes[prev].height;
-                        glUniform4f(size_loc, w, h, 1.0f / w, 1.0f / h);
-                    }
-
-                    tex_unit++;
+                GLint size_loc = pass_runtime->loc_alias_size[prev];
+                if (size_loc != -1) {
+                    float w = (float)manager->passes[prev].width;
+                    float h = (float)manager->passes[prev].height;
+                    glUniform4f(size_loc, w, h, 1.0f / w, 1.0f / h);
                 }
+
+                tex_unit++;
             }
         }
 
         // Bind PassOutputN (Absolute)
         for (int n = 0; n < i; n++) {
-            char name[64];
-            snprintf(name, sizeof(name), "PassOutput%d", n);
-            GLint loc = glGetUniformLocation(pass_runtime->program, name);
+            GLint loc = pass_runtime->loc_pass_output[n];
             if (loc != -1) {
                 glActiveTexture(GL_TEXTURE0 + tex_unit);
                 glBindTexture(GL_TEXTURE_2D, manager->passes[n].texture);
                 glUniform1i(loc, tex_unit);
 
-                snprintf(name, sizeof(name), "PassOutputSize%d", n);
-                GLint size_loc = glGetUniformLocation(pass_runtime->program, name);
+                GLint size_loc = pass_runtime->loc_pass_output_size[n];
                 if (size_loc != -1) {
                     float w = (float)manager->passes[n].width;
                     float h = (float)manager->passes[n].height;
@@ -891,25 +941,21 @@ void ShaderManager_Render(ShaderManager* manager, GLuint input_texture, int inpu
 
         // Bind PassPrevNTexture (Relative Legacy)
         for (int n = 1; n <= i; n++) {
-            char name[64];
-            snprintf(name, sizeof(name), "PassPrev%dTexture", n);
-            GLint loc = glGetUniformLocation(pass_runtime->program, name);
+            GLint loc = pass_runtime->loc_pass_prev_texture[n];
             if (loc != -1) {
                 int target_pass = i - n;
                 glActiveTexture(GL_TEXTURE0 + tex_unit);
                 glBindTexture(GL_TEXTURE_2D, manager->passes[target_pass].texture);
                 glUniform1i(loc, tex_unit);
 
-                snprintf(name, sizeof(name), "PassPrev%dTextureSize", n);
-                GLint size_loc = glGetUniformLocation(pass_runtime->program, name);
+                GLint size_loc = pass_runtime->loc_pass_prev_texture_size[n];
                 if (size_loc != -1) {
                     float w = (float)manager->passes[target_pass].width;
                     float h = (float)manager->passes[target_pass].height;
                     glUniform4f(size_loc, w, h, 1.0f / w, 1.0f / h);
                 }
 
-                snprintf(name, sizeof(name), "PassPrev%dInputSize", n);
-                GLint locInputSize = glGetUniformLocation(pass_runtime->program, name);
+                GLint locInputSize = pass_runtime->loc_pass_prev_input_size[n];
                 if (locInputSize != -1) {
                     float w = (float)manager->passes[target_pass].width;
                     float h = (float)manager->passes[target_pass].height;
@@ -921,10 +967,8 @@ void ShaderManager_Render(ShaderManager* manager, GLuint input_texture, int inpu
         }
 
         // Legacy Prev binding
-        const char* prev_names[] = { "PrevTexture",  "Prev1Texture", "Prev2Texture", "Prev3Texture",
-                                     "Prev4Texture", "Prev5Texture", "Prev6Texture" };
         for (int k = 0; k < 7; k++) {
-            GLint loc = glGetUniformLocation(pass_runtime->program, prev_names[k]);
+            GLint loc = pass_runtime->loc_legacy_prev[k];
             if (loc != -1) {
                 if (i == 0) {
                     int h_idx = (manager->history_index - (k + 1) + 8) % 8;

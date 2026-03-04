@@ -25,6 +25,21 @@ typedef struct {
     GLint loc_InputSize;
     GLint loc_FrameCount;
     GLint loc_FrameDirection;
+
+    // --- Cached uniform locations for inner loops ---
+    GLint loc_parameters[MAX_PARAMETERS];
+    GLint loc_history[8];
+    GLint loc_history_size[8];
+    GLint loc_lut[MAX_TEXTURES];
+    GLint loc_lut_size[MAX_TEXTURES];
+    GLint loc_alias[MAX_SHADERS];
+    GLint loc_alias_size[MAX_SHADERS];
+    GLint loc_pass_output[MAX_SHADERS];
+    GLint loc_pass_output_size[MAX_SHADERS];
+    GLint loc_pass_prev_texture[MAX_SHADERS];
+    GLint loc_pass_prev_texture_size[MAX_SHADERS];
+    GLint loc_pass_prev_input_size[MAX_SHADERS];
+    GLint loc_legacy_prev[7];
 } ShaderPassRuntime;
 
 typedef struct {
