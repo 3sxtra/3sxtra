@@ -33,6 +33,7 @@ bool ModdedStage_IsAnimationsDisabled(void);
 
 /* Shader bypass for HD stages */
 extern bool mods_menu_shader_bypass_enabled;
+extern bool mods_menu_fast_pre_game;
 
 /* Engine debug options */
 #include "sf33rd/Source/Game/debug/debug_config.h"
@@ -55,6 +56,7 @@ struct ModsSnapshot {
     bool hd_enabled;
     bool hd_active;
     bool shader_bypass;
+    bool fast_pre_game;
     bool bezel_enabled;
     bool debug_hud;
     bool render_disabled;
@@ -113,6 +115,12 @@ extern "C" void rmlui_mods_menu_init(void) {
         "shader_bypass",
         [](Rml::Variant& v) { v = mods_menu_shader_bypass_enabled; },
         [](const Rml::Variant& v) { mods_menu_shader_bypass_enabled = v.Get<bool>(); });
+
+    // --- Pre-Game ---
+    constructor.BindFunc(
+        "fast_pre_game",
+        [](Rml::Variant& v) { v = mods_menu_fast_pre_game; },
+        [](const Rml::Variant& v) { mods_menu_fast_pre_game = v.Get<bool>(); });
 
     // --- Bezels ---
     constructor.BindFunc(
@@ -226,6 +234,7 @@ extern "C" void rmlui_mods_menu_update(void) {
     DIRTY_BOOL(hd_enabled, ModdedStage_IsEnabled());
     DIRTY_BOOL(hd_active, ModdedStage_IsActiveForCurrentStage());
     DIRTY_BOOL(shader_bypass, mods_menu_shader_bypass_enabled);
+    DIRTY_BOOL(fast_pre_game, mods_menu_fast_pre_game);
     DIRTY_BOOL(bezel_enabled, BezelSystem_IsVisible());
     DIRTY_BOOL(debug_hud, show_debug_hud);
     DIRTY_BOOL(render_disabled, ModdedStage_IsRenderingDisabled());

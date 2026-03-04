@@ -602,10 +602,9 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
     const int off_y = win_h - (int)(view_y + 0.5f) - phys_h;
 
     if (s_render_gl3) {
-        // GL3: SetViewportEx uses ctx_w×ctx_h for projection and
-        // phys_w×phys_h for FBOs + glViewport. The viewport transform
+        // GL3: SetViewport uses phys_w×phys_h for FBOs + glViewport. The viewport transform
         // applies the CPS3 9/7 vertical stretch.
-        s_render_gl3->SetViewportEx(ctx_w, ctx_h, phys_w, phys_h, off_x, off_y);
+        s_render_gl3->SetViewport(phys_w, phys_h, off_x, off_y);
 
         s_render_gl3->BeginFrame();
         s_game_context->Render();
