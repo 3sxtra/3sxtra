@@ -129,9 +129,9 @@ void SDLGameRendererGL_BeginFrame(void) {
     const float r = ((flPs2State.FrameClearColor >> 16) & 0xFF) / 255.0f;
     const float g = ((flPs2State.FrameClearColor >> 8) & 0xFF) / 255.0f;
     const float b = (flPs2State.FrameClearColor & 0xFF) / 255.0f;
-    float a = 1.0f; // Force opaque alpha for RmlUi blending
-
-    // Don't clear to transparent for modded stages, otherwise RmlUi pre-multiplied alpha text turns invisible
+    // Use transparent alpha when HD stage is active so the background shows through.
+    // Otherwise opaque alpha for correct RmlUi pre-multiplied text blending.
+    float a = ModdedStage_IsActiveForCurrentStage() ? 0.0f : 1.0f;
 
     glBindFramebuffer(GL_FRAMEBUFFER, gl_state.cps3_canvas_fbo);
     glViewport(0, 0, 384, 224);

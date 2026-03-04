@@ -107,7 +107,11 @@ extern "C" void rmlui_mods_menu_init(void) {
     constructor.BindFunc(
         "hd_enabled",
         [](Rml::Variant& v) { v = ModdedStage_IsEnabled(); },
-        [](const Rml::Variant& v) { ModdedStage_SetEnabled(v.Get<bool>()); });
+        [](const Rml::Variant& v) {
+            bool on = v.Get<bool>();
+            ModdedStage_SetEnabled(on);
+            Config_SetBool(CFG_KEY_HD_STAGES, on);
+        });
     constructor.BindFunc("hd_active", [](Rml::Variant& v) { v = ModdedStage_IsActiveForCurrentStage(); });
     constructor.BindFunc(
         "shader_bypass",

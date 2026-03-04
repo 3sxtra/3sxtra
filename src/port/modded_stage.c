@@ -11,6 +11,7 @@
  * struct — this system owns zero gameplay state and is purely cosmetic.
  */
 #include "port/modded_stage.h"
+#include "port/config.h"
 #include "port/paths.h"
 #include "port/sdl/sdl_texture_util.h"
 #include "port/stage_config.h"
@@ -142,7 +143,7 @@ static void init_shader(void) {
 /* ---------- Lifecycle ---------- */
 
 void ModdedStage_Init(void) {
-    s_enabled = false;
+    s_enabled = Config_HasKey(CFG_KEY_HD_STAGES) ? Config_GetBool(CFG_KEY_HD_STAGES) : true;
     s_rendering_disabled = false;
     s_animations_disabled = false;
     s_loaded_stage = -1;

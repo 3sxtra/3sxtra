@@ -157,6 +157,7 @@ extern "C" void mods_menu_render(int window_width, int window_height) {
         bool stage_on = ModdedStage_IsEnabled();
         if (ImGui::Checkbox("Enable HD Backgrounds", &stage_on)) {
             ModdedStage_SetEnabled(stage_on);
+            Config_SetBool(CFG_KEY_HD_STAGES, stage_on);
         }
         HelpMarker("Replaces original stage backgrounds with high-definition PNG layers.\nRequires HD stage files in "
                    "the stages/ folder.");
