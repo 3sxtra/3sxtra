@@ -53,6 +53,7 @@ static bool s_model_registered = false;
 
 // Cached snapshot for dirty detection
 struct ModsSnapshot {
+    bool modded_bgm_enabled;
     bool hd_enabled;
     bool hd_active;
     bool shader_bypass;
@@ -104,6 +105,16 @@ extern "C" void rmlui_mods_menu_init(void) {
         SDL_Log("[RmlUi Mods] Failed to create data model constructor");
         return;
     }
+
+    // --- Modded BGM ---
+    constructor.BindFunc(
+        "modded_bgm_enabled",
+        [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_MODDED_BGM_ENABLED); },
+        [](const Rml::Variant& v) {
+            bool on = v.Get<bool>();
+            Config_SetBool(CFG_KEY_MODDED_BGM_ENABLED, on);
+            Config_Save();
+        });
 
     // --- HD Stage Backgrounds ---
     constructor.BindFunc(
@@ -235,6 +246,7 @@ extern "C" void rmlui_mods_menu_update(void) {
         }                                                                                                              \
     } while (0)
 
+    DIRTY_BOOL(modded_bgm_enabled, Config_GetBool(CFG_KEY_MODDED_BGM_ENABLED));
     DIRTY_BOOL(hd_enabled, ModdedStage_IsEnabled());
     DIRTY_BOOL(hd_active, ModdedStage_IsActiveForCurrentStage());
     DIRTY_BOOL(shader_bypass, mods_menu_shader_bypass_enabled);

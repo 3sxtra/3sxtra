@@ -9,6 +9,17 @@
         <h1>MODS</h1>
         <div class="divider"></div>
 
+        <!-- Audio Mods -->
+        <div class="section">
+            <h2>Audio Mods</h2>
+            <div class="control-row">
+                <input type="checkbox" data-checked="modded_bgm_enabled"/>
+                <label>Enable Modded BGM</label>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
         <!-- HD Stage Backgrounds -->
         <div class="section">
             <h2>HD Stage Backgrounds</h2>

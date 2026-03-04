@@ -25,8 +25,9 @@
 
 StageConfig g_stage_config;
 
-// Default parallax values mirroring the hardcoded ones in modded_stage.c
-static const float DEFAULT_PARALLAX[] = { 0.2f, 0.5f, 0.8f, 1.0f };
+// Default parallax multiplier applied ON TOP of bg_prm (which already contains
+// engine parallax from the msp speed table). 1.0 = pass-through / no extra scaling.
+static const float DEFAULT_PARALLAX[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 void StageConfig_SetDefaultLayer(int i) {
     if (i < 0 || i >= MAX_STAGE_LAYERS)
@@ -93,12 +94,18 @@ void StageConfig_Load(int stage_index) {
         active_count = 3; // Max 3 primary layers usually
     }
 
-    // Assign defaults based on active layers
+    // Assign defaults based on active layers.
+    // Layer 0 (the primary HD replacement) should track the FOREGROUND layer
+    // (always stage_bgw_number[][1], which has msp = 1.0x for all 22 stages).
+    // This ensures the HD background scrolls 1:1 with the camera.
     for (int i = 0; i < MAX_STAGE_LAYERS; i++) {
-        if (i < active_count) {
+        if (i == 0 && active_count > 1) {
+            // Primary layer → foreground (1:1 speed)
+            g_stage_config.layers[0].original_bg_index = active_layers[1];
+        } else if (i < active_count) {
             g_stage_config.layers[i].original_bg_index = active_layers[i];
         } else {
-            g_stage_config.layers[i].original_bg_index = -1; // No mapping by default for extra layers
+            g_stage_config.layers[i].original_bg_index = -1;
         }
     }
 

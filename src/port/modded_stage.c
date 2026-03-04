@@ -282,7 +282,7 @@ static float fmod_wrap(float val, float max) {
 }
 #endif
 
-static void draw_layer(int layer_index, const BackgroundParameters* bg_prm) {
+static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, const BG* bg) {
     if (layer_index < 0 || layer_index >= MAX_STAGE_LAYERS)
         return;
 
@@ -323,35 +323,55 @@ static void draw_layer(int layer_index, const BackgroundParameters* bg_prm) {
     const float vp_w = 384.0f;
     const float vp_h = 224.0f;
 
-    /* Get native scroll position (absolute camera pos) */
-    // Note: 'bg->bgw[0].wxy' isn't always reliable directly for all layers?
-    // Using bg_prm shift values gives us the "engine computed" shift for a standard layer.
-    // To support CUSTOM parallax, we need the *delta* or the *absolute camera*.
-    // bg_prm[0] usually tracks the main camera.
-
+    /* Normalize scroll position using the engine's live scroll limits.
+     * bg_prm[bg_idx] contains the absolute pixel position (already parallax-adjusted
+     * by the msp speed table). The BGW struct's l_limit/r_limit define the
+     * scroll bounds for that layer. We remap the scroll from
+     *   [l_limit .. r_limit]  ->  [0 .. effective_w - viewport_w]
+     * so UV 0.0 = left edge of HD image, UV 1.0 = right edge.
+     */
     int bg_idx = cfg->original_bg_index;
-    float base_x = 0.0f;
-    float base_y = 0.0f;
+    float scroll_x, scroll_y;
 
-    // Look up referencing original layer speed
-    if (bg_idx >= 0 && bg_idx < 8) {
-        base_x = (float)(s16)bg_prm[bg_idx].bg_h_shift;
-        base_y = (float)(s16)bg_prm[bg_idx].bg_v_shift;
+    if (bg_idx >= 0 && bg_idx < BGW_ARRAY_SIZE && bg != NULL) {
+        const BGW* bgw = &bg->bgw[bg_idx];
+        float raw_x = (float)(s16)bg_prm[bg_idx].bg_h_shift;
+        float raw_y = (float)(s16)bg_prm[bg_idx].bg_v_shift;
+
+        /* bg_initialize() populates l_limit2/r_limit2/y_limit2 from limit_tbl3 */
+        float l_lim = (float)bgw->l_limit2;
+        float r_lim = (float)bgw->r_limit2;
+        float y_lim = (float)bgw->y_limit2;
+
+        /* Horizontal: map [l_limit2 .. r_limit2] -> [0 .. effective_w - vp_w] */
+        float range_x = r_lim - l_lim;
+        if (range_x > 0.001f) {
+            float t = (raw_x - l_lim) / range_x;  /* 0.0 at left, 1.0 at right */
+            scroll_x = t * (effective_w - vp_w);
+        } else {
+            /* No horizontal scrolling — center the image */
+            scroll_x = (effective_w - vp_w) * 0.5f;
+        }
+
+        /* Vertical: map [0 .. y_limit2] -> [bottom .. top] of HD image.
+         * At ground level (v_shift=0) we show the BOTTOM of the image.
+         * As fighters jump (v_shift increases), the camera pans up showing more sky. */
+        float max_scroll_y = effective_h - vp_h;
+        if (y_lim > 0.001f) {
+            float t = raw_y / y_lim;  /* 0.0 at ground, 1.0 at max jump height */
+            scroll_y = max_scroll_y * (1.0f - t);  /* invert: ground=bottom, sky=top */
+        } else {
+            scroll_y = max_scroll_y;  /* no vertical scroll — show bottom */
+        }
+
+        /* Apply config multiplier and offset */
+        scroll_x = scroll_x * cfg->parallax_x + cfg->offset_x;
+        scroll_y = scroll_y * cfg->parallax_y + cfg->offset_y;
     } else {
-        // Fallback: If no original layer assigned, assume static (0.0) base
-        // or potentially specific behavior. For now, 0.0 makes sense for strict manual control.
-        // If user wants legacy behavior (track layer 0), they should set index 0.
-        // Defaults are handled in StageConfig_Load.
-        base_x = 0.0f;
-        base_y = 0.0f;
+        /* No BG reference — static with offset only */
+        scroll_x = cfg->offset_x;
+        scroll_y = cfg->offset_y;
     }
-
-    // Config parallax application
-    // If standard mode, base_x is 1.0x native speed.
-    // We want parallax_x * base_x.
-
-    float scroll_x = base_x * cfg->parallax_x + cfg->offset_x;
-    float scroll_y = base_y * cfg->parallax_y + cfg->offset_y;
 
     /*
      * Wrap scroll position if looping is enabled.
@@ -480,7 +500,7 @@ void ModdedStage_Render(const BG* bg) {
     }
 
     for (int i = 0; i < count; i++) {
-        draw_layer(sort_buf[i].index, bg_prm); // Pass global bg_prm array
+        draw_layer(sort_buf[i].index, bg_prm, bg); // Pass global bg_prm array + BG struct
     }
 
     /* Restore previous GL state */
