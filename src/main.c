@@ -393,7 +393,9 @@ static void game_step_0() {
         }
     }
 
+    TRACE_SUB_BEGIN("MenuBridge_PreTick");
     MenuBridge_PreTick();
+    TRACE_SUB_END();
 
     appCopyKeyData();
 
@@ -451,13 +453,21 @@ static void game_step_0() {
         TRACE_SUB_END();
     }
 
+    TRACE_SUB_BEGIN("Effects");
     disp_effect_work();
+    TRACE_SUB_END();
 
+    TRACE_SUB_BEGIN("MenuBridge_PostTick");
     MenuBridge_PostTick();
+    TRACE_SUB_END();
 
+    TRACE_SUB_BEGIN("TrainingHUD");
     training_hud_draw();
+    TRACE_SUB_END();
 
+    TRACE_SUB_BEGIN("FlFlip");
     flFlip(0);
+    TRACE_SUB_END();
 }
 
 /**

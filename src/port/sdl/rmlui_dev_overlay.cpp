@@ -21,7 +21,9 @@
 #include <vector>
 
 // ── Globals ───────────────────────────────────────────────────
-extern "C" bool show_dev_overlay = false;
+extern "C" {
+    bool show_dev_overlay = false;
+}
 
 // ── Internal types ────────────────────────────────────────────
 

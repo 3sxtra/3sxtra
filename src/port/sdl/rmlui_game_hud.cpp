@@ -33,7 +33,7 @@ extern VIT vit[2];
 extern SDAT sdat[2];
 
 /* Timer globals (declared in count.c, no public header) */
-extern s16 round_timer;
+extern s8 round_timer;
 extern s8 flash_r_num;
 extern s8 mugen_flag;
 

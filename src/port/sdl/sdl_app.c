@@ -133,6 +133,15 @@ static GLint s_pt_loc_filter_type = -1;
 
 static const float display_target_ratio = 4.0 / 3.0;
 
+// ⚡ Letterbox rect cache — avoid recomputing every frame when geometry is stable.
+static SDL_FRect cached_letterbox_rect = { 0 };
+static int cached_lb_win_w = 0;
+static int cached_lb_win_h = 0;
+static int cached_lb_scale_mode = -1;
+
+// ⚡ Track whether letterbox bars are visible — skip redundant backbuffer clears when not.
+static bool last_had_letterbox_bars = true;
+
 SDL_FRect get_letterbox_rect(int win_w, int win_h);
 /** @brief Read an entire shader source file into a heap-allocated string. */
 static char* read_shader_source(const char* path) {
@@ -929,7 +938,8 @@ void SDLApp_BeginFrame() {
     }
 
     // SDL2D: clear the window backbuffer
-    if (g_renderer_backend == RENDERER_SDL2D) {
+    // ⚡ Skip clear when no letterbox bars are visible — the canvas blit will overwrite everything
+    if (g_renderer_backend == RENDERER_SDL2D && last_had_letterbox_bars) {
         SDL_SetRenderDrawColor(sdl_renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_SetRenderTarget(sdl_renderer, NULL);
         SDL_RenderClear(sdl_renderer);
@@ -1021,26 +1031,44 @@ static /** @brief Compute the largest integer-scaled rectangle for pixel-perfect
 
 /** @brief Get the current letterbox/viewport rectangle based on scale mode. */
 SDL_FRect get_letterbox_rect(int win_w, int win_h) {
+    // ⚡ Return cached result if inputs haven't changed
+    if (win_w == cached_lb_win_w && win_h == cached_lb_win_h && scale_mode == cached_lb_scale_mode) {
+        return cached_letterbox_rect;
+    }
+
+    SDL_FRect result;
     switch (scale_mode) {
     case SCALEMODE_NEAREST:
     case SCALEMODE_LINEAR:
     case SCALEMODE_SOFT_LINEAR:
-        return fit_4_by_3_rect(win_w, win_h);
+        result = fit_4_by_3_rect(win_w, win_h);
+        break;
 
     case SCALEMODE_INTEGER:
         // In order to scale a 384x224 buffer to 4:3 we need to stretch the image vertically by 9 / 7
-        return fit_integer_rect(win_w, win_h, 7, 9);
+        result = fit_integer_rect(win_w, win_h, 7, 9);
+        break;
 
     case SCALEMODE_PIXEL_ART:
-        return fit_4_by_3_rect(win_w, win_h);
+        result = fit_4_by_3_rect(win_w, win_h);
+        break;
 
     case SCALEMODE_SQUARE_PIXELS:
-        return fit_integer_rect(win_w, win_h, 1, 1);
+        result = fit_integer_rect(win_w, win_h, 1, 1);
+        break;
 
     case SCALEMODE_COUNT:
-        return fit_4_by_3_rect(win_w, win_h);
+    default:
+        result = fit_4_by_3_rect(win_w, win_h);
+        break;
     }
-    return fit_4_by_3_rect(win_w, win_h);
+
+    // Update cache
+    cached_lb_win_w = win_w;
+    cached_lb_win_h = win_h;
+    cached_lb_scale_mode = scale_mode;
+    cached_letterbox_rect = result;
+    return result;
 }
 
 /** @brief Record the current time for FPS calculation. */
@@ -1187,6 +1215,10 @@ void SDLApp_EndFrame() {
         SDL_SetRenderTarget(sdl_renderer, NULL);
 
         const SDL_FRect dst_rect = get_letterbox_rect(win_w, win_h);
+
+        // ⚡ Track whether letterbox bars are visible for conditional clear in BeginFrame
+        last_had_letterbox_bars = (dst_rect.x > 0.5f || dst_rect.y > 0.5f ||
+                                   dst_rect.w < (win_w - 0.5f) || dst_rect.h < (win_h - 0.5f));
 
         // Blit game canvas to window with letterboxing
         SDL_Texture* canvas = SDLGameRendererSDL_GetCanvas();

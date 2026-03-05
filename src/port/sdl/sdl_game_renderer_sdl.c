@@ -41,7 +41,9 @@ static const int cps3_height = 224;
 // ⚡ Multi-palette cache for indexed (paletted) sprites.
 // Caches PALETTE_CACHE_SLOTS palette variants per texture, preventing
 // expensive SDL_CreateTextureFromSurface calls on every palette switch.
-#define PALETTE_CACHE_SLOTS 4
+// 16 slots covers typical SF3 usage (base, hit flash, shadow, super,
+// alt colors) without risking GPU memory on low-end targets.
+#define PALETTE_CACHE_SLOTS 16
 
 static SDL_Surface* surfaces[FL_TEXTURE_MAX] = { NULL };
 static SDL_Palette* palettes[FL_PALETTE_MAX] = { NULL };
@@ -53,11 +55,30 @@ static SDL_Texture* idx_tex_cache[FL_TEXTURE_MAX][PALETTE_CACHE_SLOTS];
 static int idx_tex_palette[FL_TEXTURE_MAX][PALETTE_CACHE_SLOTS];
 static int idx_tex_next_slot[FL_TEXTURE_MAX];
 
+// ⚡ Reverse index: for each palette, which texture indices reference it.
+// Eliminates O(FL_TEXTURE_MAX × PALETTE_CACHE_SLOTS) linear scan in invalidation.
+#define PALETTE_REVERSE_MAX 32
+static struct {
+    int texture_indices[PALETTE_REVERSE_MAX];
+    int count;
+} palette_reverse[FL_PALETTE_MAX];
+
+// Forward declarations for reverse index helpers (used by DestroyTexture before definition)
+static void palette_reverse_add(int palette_handle, int texture_index);
+static void palette_reverse_remove(int palette_handle, int texture_index);
+
 static SDL_Texture* textures_to_destroy[TEXTURES_TO_DESTROY_MAX] = { NULL };
 static int textures_to_destroy_count = 0;
 static RenderTask render_tasks[RENDER_TASK_MAX];
 static int render_task_count = 0;
 static int render_task_order[RENDER_TASK_MAX]; // ⚡ Sorted indices for indirect sort
+
+// ⚡ Sortedness tracking — count inversions during draw_quad to decide sort strategy
+static int sort_inversions = 0;
+static float last_submitted_z = -1e30f;
+
+// ⚡ Cached texture binding — skip redundant SetTexture lookups
+static unsigned int last_set_texture_th = 0;
 
 // Pre-allocated batch buffers for optimized rendering
 static SDL_Vertex batch_vertices[RENDER_TASK_MAX * 4];
@@ -83,13 +104,58 @@ static void read_rgba32_color(Uint32 pixel, SDL_Color* color) {
     color->a = (pixel >> 24) & 0xFF;
 }
 
+// ⚡ LUT-based byte-to-float conversion — eliminates 4 float divisions per call.
+// Pre-computed at compile time; used by read_rgba32_fcolor in the draw hot path.
+static const float rgba8_to_float[256] = {
+    0.0f/255, 1.0f/255, 2.0f/255, 3.0f/255, 4.0f/255, 5.0f/255, 6.0f/255, 7.0f/255,
+    8.0f/255, 9.0f/255, 10.0f/255, 11.0f/255, 12.0f/255, 13.0f/255, 14.0f/255, 15.0f/255,
+    16.0f/255, 17.0f/255, 18.0f/255, 19.0f/255, 20.0f/255, 21.0f/255, 22.0f/255, 23.0f/255,
+    24.0f/255, 25.0f/255, 26.0f/255, 27.0f/255, 28.0f/255, 29.0f/255, 30.0f/255, 31.0f/255,
+    32.0f/255, 33.0f/255, 34.0f/255, 35.0f/255, 36.0f/255, 37.0f/255, 38.0f/255, 39.0f/255,
+    40.0f/255, 41.0f/255, 42.0f/255, 43.0f/255, 44.0f/255, 45.0f/255, 46.0f/255, 47.0f/255,
+    48.0f/255, 49.0f/255, 50.0f/255, 51.0f/255, 52.0f/255, 53.0f/255, 54.0f/255, 55.0f/255,
+    56.0f/255, 57.0f/255, 58.0f/255, 59.0f/255, 60.0f/255, 61.0f/255, 62.0f/255, 63.0f/255,
+    64.0f/255, 65.0f/255, 66.0f/255, 67.0f/255, 68.0f/255, 69.0f/255, 70.0f/255, 71.0f/255,
+    72.0f/255, 73.0f/255, 74.0f/255, 75.0f/255, 76.0f/255, 77.0f/255, 78.0f/255, 79.0f/255,
+    80.0f/255, 81.0f/255, 82.0f/255, 83.0f/255, 84.0f/255, 85.0f/255, 86.0f/255, 87.0f/255,
+    88.0f/255, 89.0f/255, 90.0f/255, 91.0f/255, 92.0f/255, 93.0f/255, 94.0f/255, 95.0f/255,
+    96.0f/255, 97.0f/255, 98.0f/255, 99.0f/255, 100.0f/255, 101.0f/255, 102.0f/255, 103.0f/255,
+    104.0f/255, 105.0f/255, 106.0f/255, 107.0f/255, 108.0f/255, 109.0f/255, 110.0f/255, 111.0f/255,
+    112.0f/255, 113.0f/255, 114.0f/255, 115.0f/255, 116.0f/255, 117.0f/255, 118.0f/255, 119.0f/255,
+    120.0f/255, 121.0f/255, 122.0f/255, 123.0f/255, 124.0f/255, 125.0f/255, 126.0f/255, 127.0f/255,
+    128.0f/255, 129.0f/255, 130.0f/255, 131.0f/255, 132.0f/255, 133.0f/255, 134.0f/255, 135.0f/255,
+    136.0f/255, 137.0f/255, 138.0f/255, 139.0f/255, 140.0f/255, 141.0f/255, 142.0f/255, 143.0f/255,
+    144.0f/255, 145.0f/255, 146.0f/255, 147.0f/255, 148.0f/255, 149.0f/255, 150.0f/255, 151.0f/255,
+    152.0f/255, 153.0f/255, 154.0f/255, 155.0f/255, 156.0f/255, 157.0f/255, 158.0f/255, 159.0f/255,
+    160.0f/255, 161.0f/255, 162.0f/255, 163.0f/255, 164.0f/255, 165.0f/255, 166.0f/255, 167.0f/255,
+    168.0f/255, 169.0f/255, 170.0f/255, 171.0f/255, 172.0f/255, 173.0f/255, 174.0f/255, 175.0f/255,
+    176.0f/255, 177.0f/255, 178.0f/255, 179.0f/255, 180.0f/255, 181.0f/255, 182.0f/255, 183.0f/255,
+    184.0f/255, 185.0f/255, 186.0f/255, 187.0f/255, 188.0f/255, 189.0f/255, 190.0f/255, 191.0f/255,
+    192.0f/255, 193.0f/255, 194.0f/255, 195.0f/255, 196.0f/255, 197.0f/255, 198.0f/255, 199.0f/255,
+    200.0f/255, 201.0f/255, 202.0f/255, 203.0f/255, 204.0f/255, 205.0f/255, 206.0f/255, 207.0f/255,
+    208.0f/255, 209.0f/255, 210.0f/255, 211.0f/255, 212.0f/255, 213.0f/255, 214.0f/255, 215.0f/255,
+    216.0f/255, 217.0f/255, 218.0f/255, 219.0f/255, 220.0f/255, 221.0f/255, 222.0f/255, 223.0f/255,
+    224.0f/255, 225.0f/255, 226.0f/255, 227.0f/255, 228.0f/255, 229.0f/255, 230.0f/255, 231.0f/255,
+    232.0f/255, 233.0f/255, 234.0f/255, 235.0f/255, 236.0f/255, 237.0f/255, 238.0f/255, 239.0f/255,
+    240.0f/255, 241.0f/255, 242.0f/255, 243.0f/255, 244.0f/255, 245.0f/255, 246.0f/255, 247.0f/255,
+    248.0f/255, 249.0f/255, 250.0f/255, 251.0f/255, 252.0f/255, 253.0f/255, 254.0f/255, 255.0f/255,
+};
+
+// ⚡ Single-entry color cache — exploits repeated vertex colors in hot path.
+static Uint32 cached_fcolor_pixel = 0xDEADBEEF; // sentinel: impossible initial value
+static SDL_FColor cached_fcolor_value;
+
 static void read_rgba32_fcolor(Uint32 pixel, SDL_FColor* fcolor) {
-    SDL_Color color;
-    read_rgba32_color(pixel, &color);
-    fcolor->r = (float)color.r / 255.0f;
-    fcolor->g = (float)color.g / 255.0f;
-    fcolor->b = (float)color.b / 255.0f;
-    fcolor->a = (float)color.a / 255.0f;
+    if (pixel == cached_fcolor_pixel) {
+        *fcolor = cached_fcolor_value;
+        return;
+    }
+    fcolor->b = rgba8_to_float[pixel & 0xFF];
+    fcolor->g = rgba8_to_float[(pixel >> 8) & 0xFF];
+    fcolor->r = rgba8_to_float[(pixel >> 16) & 0xFF];
+    fcolor->a = rgba8_to_float[(pixel >> 24) & 0xFF];
+    cached_fcolor_pixel = pixel;
+    cached_fcolor_value = *fcolor;
 }
 
 static void read_rgba16_color(Uint16 pixel, SDL_Color* color) {
@@ -256,6 +322,9 @@ static void destroy_textures(void) {
 static void clear_render_tasks(void) {
     // ⚡ Only reset count — no need to zero ~800KB of static data every frame
     render_task_count = 0;
+    // ⚡ Reset sortedness tracking for next frame
+    sort_inversions = 0;
+    last_submitted_z = -1e30f;
 }
 
 // --- Render Task Sorting ---
@@ -281,6 +350,27 @@ static int compare_render_task_indices(const void* a, const void* b) {
         return 1;
 
     return 0;
+}
+
+// ⚡ Insertion sort for near-sorted index arrays — O(n) when already sorted.
+// The game submits sprites roughly in z-order, so most frames have few inversions.
+#define INSERTION_SORT_THRESHOLD 16
+static void insertion_sort_render_task_indices(int* order, int count) {
+    for (int i = 1; i < count; i++) {
+        const int key = order[i];
+        const float key_z = render_tasks[key].z;
+        int j = i - 1;
+        while (j >= 0) {
+            const int oj = order[j];
+            const float oj_z = render_tasks[oj].z;
+            // Compare: sort by z ascending, then by index descending (reverse submission order)
+            if (oj_z < key_z || (oj_z == key_z && oj > key))
+                break;
+            order[j + 1] = oj;
+            j--;
+        }
+        order[j + 1] = key;
+    }
 }
 
 // --- Public API ---
@@ -394,7 +484,14 @@ void SDLGameRendererSDL_RenderFrame(void) {
     for (int i = 0; i < render_task_count; i++) {
         render_task_order[i] = i;
     }
-    qsort(render_task_order, render_task_count, sizeof(int), compare_render_task_indices);
+
+    // ⚡ Adaptive sort: use insertion sort for near-sorted queues, qsort otherwise.
+    // Most gameplay frames submit sprites in z-order, yielding 0 inversions.
+    if (sort_inversions <= INSERTION_SORT_THRESHOLD) {
+        insertion_sort_render_task_indices(render_task_order, render_task_count);
+    } else {
+        qsort(render_task_order, render_task_count, sizeof(int), compare_render_task_indices);
+    }
 
     // Batch rendering: group consecutive tasks with same texture
     int batch_start = 0;
@@ -540,6 +637,9 @@ void SDLGameRendererSDL_DestroyTexture(unsigned int texture_handle) {
         return;
     }
 
+    // ⚡ Invalidate texture binding cache when a texture is destroyed
+    last_set_texture_th = 0;
+
     // Destroy non-indexed cached texture
     if (texture_cache[texture_index] != NULL) {
         push_texture_to_destroy(texture_cache[texture_index]);
@@ -550,6 +650,8 @@ void SDLGameRendererSDL_DestroyTexture(unsigned int texture_handle) {
     for (int s = 0; s < PALETTE_CACHE_SLOTS; s++) {
         if (idx_tex_cache[texture_index][s] != NULL) {
             push_texture_to_destroy(idx_tex_cache[texture_index][s]);
+            // ⚡ Clean up reverse index entry
+            palette_reverse_remove(idx_tex_palette[texture_index][s], texture_index);
             idx_tex_cache[texture_index][s] = NULL;
             idx_tex_palette[texture_index][s] = 0;
         }
@@ -623,10 +725,42 @@ void SDLGameRendererSDL_CreatePalette(unsigned int ph) {
     palettes[palette_index] = palette;
 }
 
+// ⚡ Register a texture→palette association in the reverse index.
+static void palette_reverse_add(int palette_handle, int texture_index) {
+    if (palette_handle <= 0 || palette_handle > FL_PALETTE_MAX)
+        return;
+    int pi = palette_handle - 1;
+    // Check if already registered
+    for (int i = 0; i < palette_reverse[pi].count; i++) {
+        if (palette_reverse[pi].texture_indices[i] == texture_index)
+            return;
+    }
+    if (palette_reverse[pi].count < PALETTE_REVERSE_MAX) {
+        palette_reverse[pi].texture_indices[palette_reverse[pi].count++] = texture_index;
+    }
+}
+
+// ⚡ Remove a texture from a palette's reverse index.
+static void palette_reverse_remove(int palette_handle, int texture_index) {
+    if (palette_handle <= 0 || palette_handle > FL_PALETTE_MAX)
+        return;
+    int pi = palette_handle - 1;
+    for (int i = 0; i < palette_reverse[pi].count; i++) {
+        if (palette_reverse[pi].texture_indices[i] == texture_index) {
+            palette_reverse[pi].texture_indices[i] = palette_reverse[pi].texture_indices[--palette_reverse[pi].count];
+            return;
+        }
+    }
+}
+
 // ⚡ Invalidate all multi-palette cache entries that use a specific palette.
-// Called when a palette is destroyed/updated so stale textures aren't reused.
+// Uses reverse index — O(entries_using_this_palette) instead of O(FL_TEXTURE_MAX × PALETTE_CACHE_SLOTS).
 static void invalidate_palette_cache_entries(int palette_handle) {
-    for (int t = 0; t < FL_TEXTURE_MAX; t++) {
+    if (palette_handle <= 0 || palette_handle > FL_PALETTE_MAX)
+        return;
+    int pi = palette_handle - 1;
+    for (int i = 0; i < palette_reverse[pi].count; i++) {
+        int t = palette_reverse[pi].texture_indices[i];
         for (int s = 0; s < PALETTE_CACHE_SLOTS; s++) {
             if (idx_tex_cache[t][s] != NULL && idx_tex_palette[t][s] == palette_handle) {
                 push_texture_to_destroy(idx_tex_cache[t][s]);
@@ -635,6 +769,7 @@ static void invalidate_palette_cache_entries(int palette_handle) {
             }
         }
     }
+    palette_reverse[pi].count = 0;
 }
 
 void SDLGameRendererSDL_DestroyPalette(unsigned int palette_handle) {
@@ -644,6 +779,9 @@ void SDLGameRendererSDL_DestroyPalette(unsigned int palette_handle) {
         SDL_Log("Warning: Attempted to destroy invalid palette handle: %u", palette_handle);
         return;
     }
+
+    // ⚡ Invalidate texture binding cache when a palette is destroyed
+    last_set_texture_th = 0;
 
     // Invalidate cached textures that used this palette (prevents stale reuse)
     invalidate_palette_cache_entries(palette_handle);
@@ -655,6 +793,16 @@ void SDLGameRendererSDL_DestroyPalette(unsigned int palette_handle) {
 }
 
 void SDLGameRendererSDL_SetTexture(unsigned int th) {
+    // ⚡ Cached texture binding — skip full lookup when same texture+palette was just set
+    if (th == last_set_texture_th) {
+        // Re-push the same texture that's already on top of the stack
+        if (texture_count > 0) {
+            push_texture(textures[texture_count - 1]);
+            return;
+        }
+    }
+    last_set_texture_th = th;
+
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
     const int texture_handle = LO_16_BITS(th);
     const int palette_handle = HI_16_BITS(th);
@@ -704,6 +852,8 @@ void SDLGameRendererSDL_SetTexture(unsigned int th) {
             const int slot = idx_tex_next_slot[texture_index];
             if (idx_tex_cache[texture_index][slot] != NULL) {
                 push_texture_to_destroy(idx_tex_cache[texture_index][slot]);
+                // ⚡ Clean up reverse index for evicted palette association
+                palette_reverse_remove(idx_tex_palette[texture_index][slot], texture_index);
             }
 
             texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -716,6 +866,9 @@ void SDLGameRendererSDL_SetTexture(unsigned int th) {
             idx_tex_cache[texture_index][slot] = texture;
             idx_tex_palette[texture_index][slot] = palette_handle;
             idx_tex_next_slot[texture_index] = (slot + 1) % PALETTE_CACHE_SLOTS;
+
+            // ⚡ Register in reverse index for fast invalidation
+            palette_reverse_add(palette_handle, texture_index);
         }
 
         push_texture(texture);
@@ -742,6 +895,12 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     task->texture = textured ? get_texture() : NULL;
     task->z = flPS2ConvScreenFZ(vertices[0].coord.z);
     task->original_index = render_task_count;
+
+    // ⚡ Track sortedness: count inversions to decide sort strategy in RenderFrame
+    if (task->z < last_submitted_z) {
+        sort_inversions++;
+    }
+    last_submitted_z = task->z;
 
     for (int i = 0; i < 4; i++) {
         task->vertices[i].position.x = vertices[i].coord.x;

@@ -349,10 +349,12 @@ void SPU_SDL_CB(void* user, SDL_AudioStream* stream, int additional_amount, int 
     static int cb_timer = 192;
 
     while (samples_per_channel) {
-        // ⚡ Bolt: Cap at 2048 — each SPU_Tick writes 2 s16 (L+R) into outbuf,
-        // so 2048 ticks × 2 = 4096 elements = full buffer. Previously capped
-        // at 4096, which would write 8192 elements — a 2× buffer overrun.
-        u32 batch_count = min(samples_per_channel, 2048);
+        // ⚡ Bolt: Cap at 256 — previously 2048, which held soundLock for up to
+        // ~42ms at 48kHz. Game-thread sound calls (emlShimStartSound, SeKeyOff)
+        // blocked on this lock, causing ~17ms spikes in GameTasks. 256 samples
+        // caps worst-case hold to ~5ms while the outer loop still processes the
+        // full request.
+        u32 batch_count = min(samples_per_channel, 256);
 
         // ⚡ Bolt: Hold soundLock only during the mixing loop — not during
         // SDL_PutAudioStreamData (which may block on SDL's internal lock).

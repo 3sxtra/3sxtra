@@ -14,11 +14,12 @@
 #include <SDL3/SDL.h>
 
 extern "C" {
+#include "types.h"
 
 /* Navigation globals from menu.c */
-extern short Menu_Cursor_Y[4];
+extern s8 Menu_Cursor_Y[2];
 extern unsigned short IO_Result;
-extern short Connect_Status;
+extern u8 Connect_Status;
 
 } // extern "C"
 
