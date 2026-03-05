@@ -244,16 +244,12 @@ int main(int argc, char* argv[]) {
             SDLApp_BeginFrame();
             step_0();
             SDLApp_EndFrame();
-            TRACE_SUB_BEGIN("PollEvents");
             is_running = SDLApp_PollEvents();
-            TRACE_SUB_END();
             step_1();
         } else {
             /* Re-present the existing canvas (no game logic, no FBO clear) */
             SDLApp_PresentOnly();
-            TRACE_SUB_BEGIN("PollEvents");
             is_running = SDLApp_PollEvents();
-            TRACE_SUB_END();
         }
         TRACE_FRAME_MARK();
     }
@@ -420,7 +416,6 @@ static void game_step_0() {
     // Only run game loop directly if we are in IDLE or LOBBY mode.
     // In TRANSITIONING, CONNECTING, and RUNNING modes, Netplay_Run() calls step_game() automatically.
     if (current_net_state == NETPLAY_SESSION_IDLE || current_net_state == NETPLAY_SESSION_LOBBY) {
-        TRACE_SUB_BEGIN("GameTasks");
         njUserMain();
 
         // ⚡ Bolt: Input Lag Test Detection
@@ -444,7 +439,6 @@ static void game_step_0() {
         }
 
         seqsBeforeProcess();
-        TRACE_SUB_END();
 
         TRACE_SUB_BEGIN("Render2D");
         Renderer_Flush2DPrimitives();
@@ -458,9 +452,7 @@ static void game_step_0() {
 
     training_hud_draw();
 
-    TRACE_SUB_BEGIN("FlFlip");
     flFlip(0);
-    TRACE_SUB_END();
 }
 
 /**

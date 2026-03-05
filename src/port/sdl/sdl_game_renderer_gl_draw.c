@@ -148,9 +148,7 @@ void SDLGameRendererGL_RenderFrame(void) {
         return;
     }
 
-    TRACE_SUB_BEGIN("GL:Sort");
     stable_sort_render_tasks();
-    TRACE_SUB_END();
 
     static const float projection[4][4] = { { 2.0f / 384.0f, 0.0f, 0.0f, 0.0f },
                                             { 0.0f, -2.0f / 224.0f, 0.0f, 0.0f },

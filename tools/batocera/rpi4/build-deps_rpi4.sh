@@ -71,7 +71,9 @@ else
         -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
         -DBUILD_SHARED_LIBS=ON \
         -DSDL_STATIC=OFF \
-        -DSDL_TESTS=OFF
+        -DSDL_TESTS=OFF \
+        -DSDL_VULKAN=ON \
+        -DSDL_GPU_VULKAN=ON
 
     cmake --build . -j$(nproc)
     cmake --install .

@@ -523,7 +523,6 @@ void emlShimStartSound(CSE_SYS_PARAM_SNDSTART* param) {
 }
 
 void emlShimSeKeyOff(CSE_REQP* pReqp) {
-    TRACE_ZONE_NC("SoundLock:SeKeyOff", TRACE_COLOR_SOUND);
     u32 cond = makeConditions(pReqp);
     struct VWork* i;
 
@@ -539,7 +538,6 @@ void emlShimSeKeyOff(CSE_REQP* pReqp) {
 
     SDL_UnlockMutex(soundLock);
     TRACE_LOCK_UNLOCK(soundLockCtx);
-    TRACE_ZONE_END();
 }
 
 void emlShimSeStop(CSE_REQP* pReqp) {

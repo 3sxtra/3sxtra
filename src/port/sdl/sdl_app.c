@@ -615,9 +615,52 @@ int SDLApp_Init() {
         if (gpu_debug)
             SDL_Log("GPU debug mode ENABLED (Vulkan validation layers active).");
         gpu_device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, gpu_debug, NULL);
+#ifdef PLATFORM_RPI4
+        // V3D GPU: retry with reduced feature set if default creation failed
         if (!gpu_device) {
-            SDL_Log("Failed to create SDL_GPU device: %s", SDL_GetError());
-            return 1;
+            SDL_Log("SDL_GPU: Retrying with reduced features for V3D...");
+            SDL_PropertiesID props = SDL_CreateProperties();
+            SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, true);
+            SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, gpu_debug);
+            // Disable features V3D doesn't support
+            SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, false);
+            SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, false);
+            SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, false);
+            SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, false);
+            // Disable 'near universal' features not supported by V3D (patched in SDL3)
+            SDL_SetBooleanProperty(props, "SDL.gpu.device.create.feature.image_cube_array", false);
+            SDL_SetBooleanProperty(props, "SDL.gpu.device.create.feature.independent_blend", false);
+            SDL_SetBooleanProperty(props, "SDL.gpu.device.create.feature.sample_rate_shading", false);
+            gpu_device = SDL_CreateGPUDeviceWithProperties(props);
+            SDL_DestroyProperties(props);
+        }
+#endif
+        if (!gpu_device) {
+            SDL_Log("Failed to create SDL_GPU device: %s — falling back to OpenGL", SDL_GetError());
+            g_renderer_backend = RENDERER_OPENGL;
+            // Re-create window with OpenGL flags
+            if (window) {
+                SDL_DestroyWindow(window);
+                window = NULL;
+            }
+#ifdef PLATFORM_RPI4
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+#else
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+#endif
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#ifndef PLATFORM_RPI4
+            SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+#endif
+            window_flags |= SDL_WINDOW_OPENGL;
+            window = SDL_CreateWindow(app_name, width, height, window_flags);
+            if (!window) {
+                SDL_Log("OpenGL fallback window creation failed: %s", SDL_GetError());
+                return 1;
+            }
+            goto opengl_init;
         }
         if (!SDL_ClaimWindowForGPUDevice(gpu_device, window)) {
             SDL_Log("Failed to claim SDL_GPU window: %s", SDL_GetError());
@@ -633,6 +676,7 @@ int SDLApp_Init() {
                                       vsync_enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_IMMEDIATE);
         SDL_Log("VSync: %s (SDL_GPU)", vsync_enabled ? "ON" : "OFF");
     } else if (g_renderer_backend == RENDERER_OPENGL) {
+    opengl_init:
         // OpenGL Backend Initialization
         gl_context = SDL_GL_CreateContext(window);
         if (!gl_context) {
@@ -1480,7 +1524,6 @@ void SDLApp_EndFrame() {
 #endif
 
         // Bezel Rendering
-        TRACE_SUB_BEGIN("GPU:BezelRender");
         if (BezelSystem_IsVisible()) {
             int p1 = My_char[0];
             int p2 = My_char[1];
@@ -1565,8 +1608,6 @@ void SDLApp_EndFrame() {
                 }
             }
         }
-        TRACE_SUB_END();
-
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
         if (use_rmlui) {
             const SDL_FRect gp_vp = get_letterbox_rect(win_w, win_h);
@@ -1574,7 +1615,6 @@ void SDLApp_EndFrame() {
         }
 
         // UI Overlays
-        TRACE_SUB_BEGIN("GPU:UIOverlays");
         if (use_rmlui) {
             rmlui_input_display_update();
             rmlui_frame_display_update();
@@ -1628,8 +1668,6 @@ void SDLApp_EndFrame() {
         } else {
             imgui_wrapper_render();
         }
-        TRACE_SUB_END();
-
         if (show_debug_hud) {
             // Debug Text Overlay
             char debug_text[512];
@@ -1915,7 +1953,6 @@ void SDLApp_EndFrame() {
         TRACE_SUB_END();
 
         // Bezel Rendering (OpenGL)
-        TRACE_SUB_BEGIN("GL:BezelRender");
         if (BezelSystem_IsVisible()) {
             int p1 = My_char[0];
             int p2 = My_char[1];
@@ -2000,8 +2037,6 @@ void SDLApp_EndFrame() {
                 glBindVertexArray(0);
             }
         }
-        TRACE_SUB_END();
-
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
         if (use_rmlui) {
             // Reset GL state to clean baseline before RmlUi rendering
@@ -2188,11 +2223,9 @@ void SDLApp_EndFrame() {
 
     // Run sound processing — after GPU submit so CPU audio decode
     // overlaps with GPU processing the submitted command buffer.
-    TRACE_SUB_BEGIN("AudioProcess");
     if (!game_paused && !present_only_mode) {
         ADX_ProcessTracks();
     }
-    TRACE_SUB_END();
 
     if (should_save_screenshot) {
         save_screenshot("screenshot.bmp");

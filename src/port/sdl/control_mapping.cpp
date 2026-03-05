@@ -12,7 +12,6 @@
 #include "imgui_wrapper.h"
 #include "port/input_definition.h"
 #include "port/paths.h"
-#include "port/tracy_zones.h"
 #include "sdl_pad.h"
 #include "sf33rd/Source/Game/io/ioconv.h"
 #include <algorithm>
@@ -687,11 +686,9 @@ static void check_connections() {
 }
 
 extern "C" void control_mapping_update() {
-    TRACE_SUB_BEGIN("ControlMapping");
     check_connections();
     handle_player_mapping_update(1, p1Device.get(), p1MappingState, p1_mapping_action_index);
     handle_player_mapping_update(2, p2Device.get(), p2MappingState, p2_mapping_action_index);
-    TRACE_SUB_END();
 }
 
 static float render_available_devices(bool dry_run = false) {

@@ -173,9 +173,7 @@ static void Game_UpdateFrame(struct _TASK* task_ptr, s32 is_last_frame) {
     init_texcash_before_process();
     TRACE_SUB_END();
 
-    TRACE_SUB_BEGIN("seqsBefore");
     seqsBeforeProcess();
-    TRACE_SUB_END();
 
     if (nowSoftReset() == 0) {
         if (G_No[0] < MAIN_JMP_COUNT) {
@@ -191,13 +189,9 @@ static void Game_UpdateFrame(struct _TASK* task_ptr, s32 is_last_frame) {
     texture_cash_update();
     TRACE_SUB_END();
 
-    TRACE_SUB_BEGIN("pulpul");
     move_pulpul_work();
-    TRACE_SUB_END();
 
-    TRACE_SUB_BEGIN("LDREQ");
     Check_LDREQ_Queue();
-    TRACE_SUB_END();
 }
 
 /**
