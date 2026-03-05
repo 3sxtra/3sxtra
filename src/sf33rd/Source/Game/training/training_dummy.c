@@ -18,7 +18,14 @@
 #include "sf33rd/Source/Game/engine/pls02.h"    /* random_32_com() */
 #include "sf33rd/Source/Game/engine/workuser.h" /* Lever_Buff[] */
 
-DummySettings g_dummy_settings = { 0 };
+DummySettings g_dummy_settings = {
+    .block_type = DUMMY_BLOCK_NONE,
+    .parry_type = DUMMY_PARRY_NONE,
+    .stun_mash = DUMMY_MASH_NONE,
+    .wakeup_mash = DUMMY_MASH_NONE,
+    .wakeup_reversal = false,
+    .guard_low_default = true,
+};
 
 /* ------------------------------------------------------------------ */
 /*  Lever_Buff helpers                                                 */
@@ -69,37 +76,49 @@ static void inject_mash(s16 dummy_id, DummyMashType type) {
 /*  Wakeup reversal (DP input injection)                               */
 /* ------------------------------------------------------------------ */
 
+/**
+ * @brief Attempt a DP (SRK) reversal on wakeup.
+ *
+ * Gated on g_dummy_settings.wakeup_reversal (independent of mash).
+ * Injects forward → down → down-forward+LP during last 4 frames of
+ * getup so the button press lands on the first actionable frame.
+ */
 static bool try_wakeup_reversal(PLW* wk, s16 dummy_id) {
     TrainingPlayerState* dummy = get_training_player(dummy_id);
     if (!dummy)
         return false;
-    if (g_dummy_settings.wakeup_mash == DUMMY_MASH_NONE)
+
+    /* Gate on the dedicated reversal flag, NOT on mash */
+    if (!g_dummy_settings.wakeup_reversal)
         return false;
 
+    /* Reset reversal state machine when NOT in knockdown */
     if (dummy->current_frame_state != FRAME_STATE_DOWN) {
         g_dummy_settings.reversal_step = 0;
         return false;
     }
 
-    /* Inject DP motion during last 5 frames of getup */
-    if (dummy->remaining_wakeup_time > 0 && dummy->remaining_wakeup_time <= 5) {
+    /* Inject DP motion during last 4 frames of getup.
+       Frame budget: fwd(1) → down(1) → df+btn(1) → df+btn(hold)
+       remaining_wakeup_time counts down: 4,3,2,1,0 */
+    if (dummy->remaining_wakeup_time > 0 && dummy->remaining_wakeup_time <= 4) {
         u16 fwd = forward_lever(wk);
         u16 dfwd = down_forward_lever(wk);
 
         switch (g_dummy_settings.reversal_step) {
-        case 0:
+        case 0: /* Frame -4: forward */
             Lever_Buff[dummy_id] = fwd;
             g_dummy_settings.reversal_step = 1;
             break;
-        case 1:
+        case 1: /* Frame -3: down */
             Lever_Buff[dummy_id] = 0x02;
             g_dummy_settings.reversal_step = 2;
             break;
-        case 2:
+        case 2: /* Frame -2: down-forward + LP */
             Lever_Buff[dummy_id] = dfwd | 0x10;
             g_dummy_settings.reversal_step = 3;
             break;
-        default:
+        default: /* Frame -1 and beyond: hold df + LP */
             Lever_Buff[dummy_id] = dfwd | 0x10;
             break;
         }
@@ -109,11 +128,16 @@ static bool try_wakeup_reversal(PLW* wk, s16 dummy_id) {
     return false;
 }
 
+/**
+ * @brief Try mashing during wakeup/hitstun/recovery (for escaping).
+ * Only runs if mash is configured AND reversal didn't claim this frame.
+ */
 static void try_wakeup_mash(PLW* wk, s16 dummy_id) {
     TrainingPlayerState* dummy = get_training_player(dummy_id);
     if (!dummy)
         return;
 
+    /* Reversal gets exclusive priority over mash on wakeup */
     if (dummy->current_frame_state == FRAME_STATE_DOWN) {
         if (try_wakeup_reversal(wk, dummy_id))
             return;
@@ -147,8 +171,8 @@ static void try_stun_mash(s16 dummy_id) {
  *   2. Then lever at forward direction (sw_lever == w_lvr)
  *
  * We alternate: even frames = neutral, odd frames = forward.
- * We also directly set waza_flag[3] (high) or waza_flag[4] (low) to a
- * high value (0x10) so the hitcheck threshold (grdb) is met.
+ * We also directly set waza_flag[3] (high) or waza_flag[4] (low) to
+ * 0xFF so ANY grdb threshold is exceeded.
  */
 static void inject_parry(PLW* wk, s16 dummy_id, bool low) {
     /* Alternate neutral/forward to create the transition check_10 needs */
@@ -165,12 +189,12 @@ static void inject_parry(PLW* wk, s16 dummy_id, bool low) {
     }
 
     /* Directly set waza_flag to guarantee parry detection in hitcheck.
-       Value 0x10 exceeds any grdb threshold. */
+       Value 0xFF exceeds any grdb threshold. */
     if (wk->cp) {
         if (low) {
-            wk->cp->waza_flag[4] = 0x10;
+            wk->cp->waza_flag[4] = 0xFF;
         } else {
-            wk->cp->waza_flag[3] = 0x10;
+            wk->cp->waza_flag[3] = 0xFF;
         }
     }
 }
@@ -182,22 +206,29 @@ static void inject_parry(PLW* wk, s16 dummy_id, bool low) {
  * to parry the next hit. hitcheck checks just_now = (guard_chuu < 5)
  * and waza_flag[3/4] >= grdb threshold.
  *
- * So we set waza_flag directly to 0x10 while guard_chuu is active.
+ * We use the same neutral→forward alternation as normal parry but
+ * also set waza_flag to 0xFF to guarantee the threshold is met.
+ * The engine will only grant the red parry when guard_chuu is < 5.
  */
 static void inject_red_parry(PLW* wk, s16 dummy_id, bool low) {
-    /* Set the direction lever — forward (or down for low) */
-    if (low) {
-        Lever_Buff[dummy_id] = 0x02;
+    /* Alternate neutral/forward — engine needs the lever transition
+       even during blockstun for the parry validity to register */
+    if (g_training_state.frame_number & 1) {
+        if (low) {
+            Lever_Buff[dummy_id] = 0x02; /* Down */
+        } else {
+            Lever_Buff[dummy_id] = forward_lever(wk);
+        }
     } else {
-        Lever_Buff[dummy_id] = forward_lever(wk);
+        Lever_Buff[dummy_id] = 0;
     }
 
-    /* Directly set parry flag to high value to exceed grdb threshold */
+    /* Set waza_flag high enough to exceed any grdb threshold */
     if (wk->cp) {
         if (low) {
-            wk->cp->waza_flag[4] = 0x10;
+            wk->cp->waza_flag[4] = 0xFF;
         } else {
-            wk->cp->waza_flag[3] = 0x10;
+            wk->cp->waza_flag[3] = 0xFF;
         }
     }
 }
@@ -224,8 +255,12 @@ static void execute_block_or_parry(PLW* wk, s16 dummy_id) {
     bool try_red_parry = false;
     bool parry_low = false;
 
+    /* is_threat: opponent is doing something we need to react to */
     bool is_threat = opponent->is_attacking || opponent->has_just_attacked || dummy->is_blocking ||
                      dummy->is_in_recovery || dummy->has_just_blocked;
+
+    /* has_active_hitbox: opponent has a hitbox out RIGHT NOW — stricter condition for parry */
+    bool has_active_hitbox = opponent->has_hitboxes;
 
     /* 1. Determine Blocking */
     switch (g_dummy_settings.block_type) {
@@ -298,17 +333,43 @@ static void execute_block_or_parry(PLW* wk, s16 dummy_id) {
         break;
     }
 
-    /* 3. Inject Inputs — parry takes priority over block */
+    /* 3. Resolve priority when BOTH block and parry are configured.
+     *
+     * When block_type is set AND parry_type is set (excluding RED which
+     * handles its own block/parry switching above):
+     *   - Default to blocking (wider coverage)
+     *   - Only parry when opponent has active hitboxes (closer to hit)
+     *   - This prevents the dummy from parrying every single frame and
+     *     accidentally dashing/getting hit by never holding block
+     */
+    if (should_block && try_parry && g_dummy_settings.parry_type != DUMMY_PARRY_RED) {
+        if (has_active_hitbox) {
+            /* Opponent has a hitbox out — go for the parry */
+            should_block = false;
+        } else {
+            /* No active hitbox yet — hold block as default defense */
+            try_parry = false;
+        }
+    }
+
+    /* 4. Inject Inputs — parry/red-parry take priority over block */
     if (try_red_parry) {
         inject_red_parry(wk, dummy_id, parry_low);
     } else if (try_parry) {
         inject_parry(wk, dummy_id, parry_low);
     } else if (should_block) {
         u16 back = guard_back_lever(wk);
-        if (opponent->is_crouching) {
+
+        /* Guard direction:
+         * Default to down-back (crouching guard) to block lows, which are
+         * the most common attacks. Only stand-block if guard_low_default
+         * is explicitly disabled. The Lua reference uses hit prediction
+         * from frame data; without that, crouch-guarding is the safest
+         * default — it blocks everything except overheads. */
+        if (g_dummy_settings.guard_low_default || opponent->is_crouching) {
             Lever_Buff[dummy_id] = back | 0x02; /* Down-Back */
         } else {
-            Lever_Buff[dummy_id] = back; /* Back */
+            Lever_Buff[dummy_id] = back; /* Back (standing guard) */
         }
     }
 }

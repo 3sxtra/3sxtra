@@ -26,6 +26,7 @@
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/training/training_state.h"
+#include "sf33rd/Source/Game/training/trials.h"
 
 #include <SDL3/SDL.h>
 
@@ -960,6 +961,10 @@ void set_damage_and_piyo(PLW* as, PLW* ds) {
 
     // Add natively to training state
     training_state_add_combo_hit(ds->wu.id, ds->wu.dm_piyo);
+    // Notify trials mode of the hit (P1's player_number == 0 is the attacker)
+    if (as->wu.work_id == 1) {
+        trials_on_hit_registered(((PLW*)as)->player_number, as->wu.kind_of_waza);
+    }
 
     if (ds->wu.dm_vital) {
         if (as->wu.routine_no[1] == 2) {

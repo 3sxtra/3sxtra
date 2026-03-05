@@ -15,12 +15,14 @@
 #include "port/sdl/input_display.h"
 #include "port/sdl/mods_menu.h"
 #include "port/sdl/rmlui_wrapper.h"
+#include "port/sdl/rmlui_dev_overlay.h"
 #include "port/sdl/sdl_app.h"
 #include "port/sdl/sdl_app_config.h"
 #include "port/sdl/sdl_app_internal.h"
 #include "port/sdl/sdl_netplay_ui.h"
 #include "port/sdl/sdl_pad.h"
 #include "port/sdl_bezel.h"
+#include "port/sdl/sdl_game_renderer.h"
 
 // Key handlers
 static void handle_menu_toggle(SDL_KeyboardEvent* event) {
@@ -63,6 +65,13 @@ static void handle_scale_mode_toggle(SDL_KeyboardEvent* event) {
     }
 }
 
+static void handle_texture_dump(SDL_KeyboardEvent* event) {
+    if (event->key == SDLK_F12 && event->down && !event->repeat) {
+        SDL_Log("[TextureDump] F12 pressed — dumping textures to textures/");
+        SDLGameRenderer_DumpTextures();
+    }
+}
+
 bool SDLAppInput_HandleEvent(SDL_Event* event) {
     bool request_quit = false;
 
@@ -85,6 +94,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             set_screenshot_flag_if_needed(&event->key);
             handle_fullscreen_toggle(&event->key);
             handle_scale_mode_toggle(&event->key);
+            // handle_texture_dump(&event->key); // Disabled — F12 now opens Dev Overlay
 
             if (event->key.key == SDLK_F7 && event->key.down && !event->key.repeat) {
                 SDLApp_ToggleTrainingMenu();
@@ -92,6 +102,10 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
 
             if (event->key.key == SDLK_F6 && event->key.down && !event->key.repeat) {
                 SDLApp_ToggleStageConfigMenu();
+            }
+
+            if (event->key.key == SDLK_F12 && event->key.down && !event->key.repeat) {
+                SDLApp_ToggleDevOverlay();
             }
 
             if (event->key.key == SDLK_F4 && event->key.down && !event->key.repeat) {
@@ -152,6 +166,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             set_screenshot_flag_if_needed(&event->key);
             handle_fullscreen_toggle(&event->key);
             handle_scale_mode_toggle(&event->key);
+            handle_texture_dump(&event->key);
 
             if (event->key.key == SDLK_F7 && event->key.down && !event->key.repeat) {
                 SDLApp_ToggleTrainingMenu();
@@ -172,8 +187,12 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             if (event->key.key == SDLK_F9 && event->key.down && !event->key.repeat) {
                 SDLApp_CyclePreset();
             }
-            if (event->key.key == SDLK_F10 && event->key.down && !event->key.repeat) {
-                SDLNetplayUI_SetDiagnosticsVisible(!SDLNetplayUI_IsDiagnosticsVisible());
+            if (event->key.key == SDLK_F12 && event->key.down && !event->key.repeat) {
+                if (Netplay_IsEnabled()) {
+                    SDLNetplayUI_SetDiagnosticsVisible(!SDLNetplayUI_IsDiagnosticsVisible());
+                } else {
+                    SDLApp_ToggleDevOverlay();
+                }
             }
         }
 

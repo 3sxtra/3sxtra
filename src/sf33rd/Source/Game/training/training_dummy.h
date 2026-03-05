@@ -33,6 +33,8 @@ typedef struct {
     DummyParryType parry_type;
     DummyMashType stun_mash;
     DummyMashType wakeup_mash;
+    bool wakeup_reversal;        // Independent SRK/DP on wakeup (not tied to mash)
+    bool guard_low_default;      // If true, default guard direction is down-back (blocks lows)
 
     // Internal state tracking
     bool is_currently_blocking;  // Latched random-block decision per attack string
@@ -46,5 +48,6 @@ extern DummySettings g_dummy_settings;
 
 // Called every frame during input polling to override the dummy's Lever_Buff
 void training_dummy_update_input(PLW* wk, s16 dummy_id);
+void sync_dummy_settings_from_menu(void);
 
 #endif // TRAINING_DUMMY_H

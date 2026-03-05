@@ -180,6 +180,35 @@ static void save_texture(const SDL_Surface* surface, const SDL_Palette* palette)
     debug_texture_index = (debug_texture_index + 1) % 10000;
 }
 
+void SDLGameRendererSDL_DumpTextures(void) {
+    SDL_CreateDirectory("textures");
+    debug_texture_index = 0;
+    int count = 0;
+
+    // idx_tex_palette[ti][slot] records the palette handle actually paired with each texture slot.
+    // Use that as the ground-truth association, same as SetTexture.
+    for (int ti = 0; ti < FL_TEXTURE_MAX; ti++) {
+        SDL_Surface* surf = surfaces[ti];
+        if (!surf || !SDL_ISPIXELFORMAT_INDEXED(surf->format))
+            continue;
+
+        for (int slot = 0; slot < PALETTE_CACHE_SLOTS; slot++) {
+            int ph = idx_tex_palette[ti][slot];
+            if (ph <= 0 || ph > FL_PALETTE_MAX)
+                continue;
+            SDL_Palette* pal = palettes[ph - 1];
+            if (!pal)
+                continue;
+
+            save_texture(surf, pal);
+            count++;
+        }
+    }
+
+    SDL_Log("[TextureDump] Wrote %d texture(s) to textures/", count);
+}
+
+
 // --- Texture Stack Management ---
 
 static void push_texture(SDL_Texture* texture) {

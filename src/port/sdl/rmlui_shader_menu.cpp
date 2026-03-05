@@ -158,7 +158,12 @@ extern "C" void rmlui_shader_menu_init() {
             Rml::String new_val = v.Get<Rml::String>();
             if (new_val != s_search_filter) {
                 s_search_filter = new_val;
-                s_filter_dirty = true;
+                // Rebuild immediately so the vector is consistent before
+                // RmlUi re-evaluates the data-for loop in this same frame.
+                // Deferring to update() caused stale indices (out-of-bounds).
+                rebuild_filtered_presets();
+                if (s_model_handle)
+                    s_model_handle.DirtyVariable("filtered_presets");
             }
         });
 

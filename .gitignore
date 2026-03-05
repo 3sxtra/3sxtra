@@ -60,3 +60,5 @@ tools/lobby-server/.env
 tools/gifx.sh
 /src/lua
 /assets/bgm_mod
+/assets/ui/assets/charactersportraits/temp
+/assets/ui/assets/charactersportraits

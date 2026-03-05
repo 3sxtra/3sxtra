@@ -25,6 +25,7 @@ void SDLGameRendererGL_DrawSolidQuad(const Quad* vertices, unsigned int color);
 void SDLGameRendererGL_DrawSprite(const Sprite* sprite, unsigned int color);
 void SDLGameRendererGL_DrawSprite2(const Sprite2* sprite2);
 unsigned int SDLGameRendererGL_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);
+void SDLGameRendererGL_DumpTextures(void);
 
 // GPU Backend
 void SDLGameRendererGPU_Init(void);
@@ -47,6 +48,7 @@ void SDLGameRendererGPU_DrawSolidQuad(const Quad* vertices, unsigned int color);
 void SDLGameRendererGPU_DrawSprite(const Sprite* sprite, unsigned int color);
 void SDLGameRendererGPU_DrawSprite2(const Sprite2* sprite2);
 unsigned int SDLGameRendererGPU_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);
+void SDLGameRendererGPU_DumpTextures(void);
 
 // SDL2D Backend (SDL_Renderer software/accelerated 2D)
 void SDLGameRendererSDL_Init(void);
@@ -66,6 +68,7 @@ void SDLGameRendererSDL_DrawSolidQuad(const Quad* vertices, unsigned int color);
 void SDLGameRendererSDL_DrawSprite(const Sprite* sprite, unsigned int color);
 void SDLGameRendererSDL_DrawSprite2(const Sprite2* sprite2);
 unsigned int SDLGameRendererSDL_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);
+void SDLGameRendererSDL_DumpTextures(void);
 SDL_Texture* SDLGameRendererSDL_GetCanvas(void);
 
 #ifdef __cplusplus

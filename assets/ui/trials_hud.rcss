@@ -35,6 +35,34 @@ body {
     font-effect: shadow(1dp 1dp #000000);
 }
 
+#trial-step-list {
+    display: block;
+    margin-top: 4dp;
+}
+
+.step-item {
+    display: block;
+    font-size: 8dp;
+    font-effect: shadow(1dp 1dp #000000);
+    margin-bottom: 2dp;
+}
+
+.step-item.pending {
+    color: #CCCCCC;
+}
+
+.step-item.active {
+    color: #FFFF00;
+}
+
+.step-item.completed {
+    color: #00FF00;
+}
+
+.step-item.failed {
+    color: #FF0000;
+}
+
 #trial-complete {
     display: block;
     position: absolute;

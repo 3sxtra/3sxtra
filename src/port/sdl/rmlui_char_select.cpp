@@ -25,6 +25,37 @@ static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN
                                               "GOUKI", "CHUN-LI", "MAKOTO", "Q",    "TWELVE", "REMY",  "AKUMA" };
 #define CHAR_NAME_COUNT 21
 
+// ─── Character portrait paths (SF3:3S roster, index matches My_char) ───
+static const char* const s_portrait_paths[21] = {
+    "",                                          // 0 GILL (no portrait)
+    "assets/charactersportraits/alex.png",       // 1 ALEX
+    "assets/charactersportraits/ryu.png",        // 2 RYU
+    "assets/charactersportraits/yun.png",        // 3 YUN
+    "assets/charactersportraits/dudley.png",     // 4 DUDLEY
+    "assets/charactersportraits/necro.png",      // 5 NECRO
+    "assets/charactersportraits/hugo.png",       // 6 HUGO
+    "assets/charactersportraits/ibuki.png",      // 7 IBUKI
+    "assets/charactersportraits/elena.png",      // 8 ELENA
+    "assets/charactersportraits/oro.png",        // 9 ORO
+    "assets/charactersportraits/yang.png",       // 10 YANG
+    "assets/charactersportraits/ken.png",        // 11 KEN
+    "assets/charactersportraits/sean.png",       // 12 SEAN
+    "assets/charactersportraits/urien.png",      // 13 URIEN
+    "assets/charactersportraits/akuma.png",      // 14 GOUKI
+    "assets/charactersportraits/chunli.png",     // 15 CHUN-LI
+    "assets/charactersportraits/makoto.png",     // 16 MAKOTO
+    "assets/charactersportraits/q.png",          // 17 Q
+    "assets/charactersportraits/twelve.png",     // 18 TWELVE
+    "assets/charactersportraits/remy.png",       // 19 REMY
+    "assets/charactersportraits/akuma.png",      // 20 AKUMA (Shin)
+};
+
+static const char* portrait_path(int idx) {
+    if (idx >= 0 && idx < CHAR_NAME_COUNT)
+        return s_portrait_paths[idx];
+    return "";
+}
+
 // ─── Super Art name table (SF3:3S roster, index matches My_char) ───
 // 3 strings per character. Ordered same as s_char_names.
 static const char* const s_sa_names[21][3] = {
@@ -137,6 +168,28 @@ extern "C" void rmlui_char_select_init(void) {
             if (char_id < 0)
                 char_id = 0;
             v = Rml::String(char_name(char_id));
+        }
+    });
+
+    // Character portraits
+    ctor.BindFunc("sel_p1_portrait", [](Rml::Variant& v) {
+        if (Exit_No >= 1) {
+            v = Rml::String("");
+        } else {
+            int char_id = ID_of_Face[Cursor_Y[0]][Cursor_X[0]];
+            if (char_id < 0)
+                char_id = 0;
+            v = Rml::String(portrait_path(char_id));
+        }
+    });
+    ctor.BindFunc("sel_p2_portrait", [](Rml::Variant& v) {
+        if (Exit_No >= 1) {
+            v = Rml::String("");
+        } else {
+            int char_id = ID_of_Face[Cursor_Y[1]][Cursor_X[1]];
+            if (char_id < 0)
+                char_id = 0;
+            v = Rml::String(portrait_path(char_id));
         }
     });
 
@@ -263,7 +316,11 @@ extern "C" void rmlui_char_select_init(void) {
     // ─── Stage select bindings ───
     // stg_visible: show when player has exited char select (Exit_No becomes non-zero)
     // but before they confirm EM. By this point Setup_EM_List() has already run.
-    ctor.BindFunc("stg_visible", [](Rml::Variant& v) { v = (bool)(Exit_No != 0 && Sel_EM_Complete[Player_id] == 0); });
+    ctor.BindFunc("stg_visible", [](Rml::Variant& v) {
+        // No stage select phase in 2P vs mode — hide entirely when both sides are human
+        bool is_2p_vs = (plw[0].wu.pl_operator != 0 && plw[1].wu.pl_operator != 0);
+        v = (bool)(!is_2p_vs && Exit_No != 0 && Sel_EM_Complete[Player_id] == 0);
+    });
     ctor.BindFunc("stg_stage_label", [](Rml::Variant& v) {
         int idx = VS_Index[Player_id];
         if (idx < 0)
@@ -333,6 +390,8 @@ extern "C" void rmlui_char_select_update(void) {
     s_model_handle.DirtyVariable("sel_sa_banner_visible");
     s_model_handle.DirtyVariable("sel_p1_name");
     s_model_handle.DirtyVariable("sel_p2_name");
+    s_model_handle.DirtyVariable("sel_p1_portrait");
+    s_model_handle.DirtyVariable("sel_p2_portrait");
     s_model_handle.DirtyVariable("sel_p1_solo");
     s_model_handle.DirtyVariable("sel_p2_solo");
     s_model_handle.DirtyVariable("sel_both_active");

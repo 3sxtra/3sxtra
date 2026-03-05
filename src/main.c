@@ -309,28 +309,6 @@ static void game_init() {
  * scheduler via njUserMain(), flushes 2D primitives, runs effects, then flips.
  */
 static void game_step_0() {
-    // ⚡ Bolt: Input Lag Test Trigger (F12)
-    {
-        static bool s_f12_prev = false;
-        const Uint8* s = SDL_GetKeyboardState(NULL);
-        bool f12_down = s[SDL_SCANCODE_F12];
-        if (f12_down && !s_f12_prev && !g_sim_lag_active) {
-            // Only start if character is in sub-routine 0 (Idle/Neutral) to ensure clean test
-            if (plw[0].wu.routine_no[1] == 0) {
-                g_sim_lag_active = true;
-                g_sim_lag_frame = system_timer;
-                s_lag_test_start_ticks = SDL_GetPerformanceCounter();
-                // plw[0] is Player 1
-                s_lag_test_initial_routine = plw[0].wu.routine_no[0];
-                s_lag_test_initial_routine_1 = plw[0].wu.routine_no[1];
-                SDL_Log("Bolt: Lag Test STARTED at frame %d. Waiting for state change...", g_sim_lag_frame);
-            } else {
-                SDL_Log("Bolt: Lag Test SKIPPED. Character not idle (R1=%d).", plw[0].wu.routine_no[1]);
-            }
-        }
-        s_f12_prev = f12_down;
-    }
-
     flSetRenderState(FLRENDER_BACKCOLOR, 0xFF000000);
 
     if (Debug_w[DEBUG_BLUE_BACK]) {

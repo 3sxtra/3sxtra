@@ -22,6 +22,7 @@
 #include "port/sdl/rmlui_mods_menu.h"
 #include "port/sdl/rmlui_shader_menu.h"
 #include "port/sdl/rmlui_stage_config.h"
+#include "port/sdl/rmlui_dev_overlay.h"
 #include "port/sdl/rmlui_training_menu.h"
 #include "port/sdl/rmlui_wrapper.h"
 /* Phase 3 — Fight HUD & Mode Menu */
@@ -754,6 +755,7 @@ int SDLApp_Init() {
     rmlui_name_entry_init();
     rmlui_exit_confirm_init();
     rmlui_attract_overlay_init();
+    rmlui_dev_overlay_init();
 
     // Check if user wants RmlUi mode (set via --ui rmlui CLI flag, session-only)
     extern bool g_ui_mode_rmlui;
@@ -875,7 +877,7 @@ void SDLApp_Quit() {
 static /** @brief Hide the cursor after 2 seconds of inactivity. */
     void
     hide_cursor_if_needed() {
-    if (show_menu || show_shader_menu || show_stage_config_menu || show_training_menu) {
+    if (show_menu || show_shader_menu || show_stage_config_menu || show_training_menu || show_dev_overlay) {
         return;
     }
     const Uint64 now = SDL_GetTicks();
@@ -1267,6 +1269,8 @@ void SDLApp_EndFrame() {
                 rmlui_shader_menu_update();
             if (show_stage_config_menu)
                 rmlui_stage_config_update();
+            if (show_dev_overlay)
+                rmlui_dev_overlay_update();
             if (show_training_menu)
                 rmlui_training_menu_update();
 
@@ -1568,6 +1572,8 @@ void SDLApp_EndFrame() {
         if (use_rmlui) {
             if (show_stage_config_menu)
                 rmlui_stage_config_update();
+            if (show_dev_overlay)
+                rmlui_dev_overlay_update();
             if (show_training_menu)
                 rmlui_training_menu_update();
         } else {
@@ -2076,6 +2082,8 @@ void SDLApp_EndFrame() {
             if (use_rmlui) {
                 if (show_stage_config_menu)
                     rmlui_stage_config_update();
+                if (show_dev_overlay)
+                    rmlui_dev_overlay_update();
                 if (show_training_menu)
                     rmlui_training_menu_update();
             } else {
@@ -2357,6 +2365,19 @@ void SDLApp_ToggleStageConfigMenu() {
             rmlui_wrapper_show_document("stage_config");
         } else {
             rmlui_wrapper_hide_document("stage_config");
+        }
+    }
+}
+
+void SDLApp_ToggleDevOverlay() {
+    show_dev_overlay = !show_dev_overlay;
+    if (show_dev_overlay)
+        SDL_ShowCursor();
+    if (use_rmlui) {
+        if (show_dev_overlay) {
+            rmlui_wrapper_show_document("dev_overlay");
+        } else {
+            rmlui_wrapper_hide_document("dev_overlay");
         }
     }
 }

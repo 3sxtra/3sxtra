@@ -1,0 +1,164 @@
+<rml>
+<head>
+    <title>Dev Overlay</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="dev_overlay.rcss"/>
+</head>
+<body data-model="dev_overlay">
+    <div id="dev-panel">
+        <handle move_target="#dev-panel">
+            <h1>🔧 DEV OVERLAY (F12)</h1>
+        </handle>
+        <div class="divider"></div>
+
+        <!-- Document list -->
+        <div class="section">
+            <div class="section-header">
+                <h2>DOCUMENTS</h2>
+                <button class="btn-sm" data-event-click="refresh_docs">↻ Refresh</button>
+            </div>
+            <div class="doc-list" data-if="doc_count > 0">
+                <div data-for="doc : doc_list"
+                     class="doc-item"
+                     data-class-doc-selected="selected_doc == doc.index"
+                     data-class-doc-hidden="!doc.visible"
+                     data-event-click="select_doc(doc.index)">
+                    <span class="doc-ctx">{{doc.context_label}}</span>
+                    <span class="doc-name">{{doc.name}}</span>
+                    <span class="doc-vis" data-if="doc.visible">●</span>
+                    <span class="doc-vis-off" data-if="!doc.visible">○</span>
+                </div>
+            </div>
+            <p class="status-hint" data-if="doc_count == 0">No documents loaded. Click Refresh.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Element tree -->
+        <div class="section">
+            <h2>ELEMENT TREE</h2>
+            <div class="elem-list" data-if="elem_count > 0">
+                <div data-for="el : elem_list"
+                     class="elem-item"
+                     data-class-elem-selected="selected_elem == el.index"
+                     data-event-click="select_elem(el.index)"
+                     data-style-padding-left="(el.depth * 12) + 'dp'">
+                    {{el.label}}
+                </div>
+            </div>
+            <p class="status-hint" data-if="elem_count == 0">Select a document above.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Property inspector -->
+        <div class="section" data-if="has_selection">
+            <h2>INSPECTOR</h2>
+            <p class="elem-breadcrumb">{{sel_path}}</p>
+
+            <!-- Visibility toggle -->
+            <div class="control-row">
+                <input type="checkbox" data-checked="sel_visible"/>
+                <label>Visible</label>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Margins -->
+            <h3>Margin</h3>
+            <div class="control-row">
+                <label>Top</label>
+                <input type="range" min="-200" max="200" step="1" data-value="sel_margin_top"/>
+                <span class="value-display">{{sel_margin_top}}</span>
+            </div>
+            <div class="control-row">
+                <label>Right</label>
+                <input type="range" min="-200" max="200" step="1" data-value="sel_margin_right"/>
+                <span class="value-display">{{sel_margin_right}}</span>
+            </div>
+            <div class="control-row">
+                <label>Bottom</label>
+                <input type="range" min="-200" max="200" step="1" data-value="sel_margin_bottom"/>
+                <span class="value-display">{{sel_margin_bottom}}</span>
+            </div>
+            <div class="control-row">
+                <label>Left</label>
+                <input type="range" min="-200" max="200" step="1" data-value="sel_margin_left"/>
+                <span class="value-display">{{sel_margin_left}}</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Padding -->
+            <h3>Padding</h3>
+            <div class="control-row">
+                <label>Top</label>
+                <input type="range" min="0" max="100" step="1" data-value="sel_padding_top"/>
+                <span class="value-display">{{sel_padding_top}}</span>
+            </div>
+            <div class="control-row">
+                <label>Right</label>
+                <input type="range" min="0" max="100" step="1" data-value="sel_padding_right"/>
+                <span class="value-display">{{sel_padding_right}}</span>
+            </div>
+            <div class="control-row">
+                <label>Bottom</label>
+                <input type="range" min="0" max="100" step="1" data-value="sel_padding_bottom"/>
+                <span class="value-display">{{sel_padding_bottom}}</span>
+            </div>
+            <div class="control-row">
+                <label>Left</label>
+                <input type="range" min="0" max="100" step="1" data-value="sel_padding_left"/>
+                <span class="value-display">{{sel_padding_left}}</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Size -->
+            <h3>Size</h3>
+            <div class="control-row">
+                <label>Width</label>
+                <input type="text" data-value="sel_width"/>
+            </div>
+            <div class="control-row">
+                <label>Height</label>
+                <input type="text" data-value="sel_height"/>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Typography -->
+            <h3>Typography</h3>
+            <div class="control-row">
+                <label>Font Size</label>
+                <input type="range" min="6" max="80" step="1" data-value="sel_font_size"/>
+                <span class="value-display">{{sel_font_size}}</span>
+            </div>
+            <div class="control-row">
+                <label>Color</label>
+                <input type="text" data-value="sel_color"/>
+            </div>
+            <div class="control-row">
+                <label>Opacity</label>
+                <input type="range" min="0" max="1" step="0.05" data-value="sel_opacity"/>
+                <span class="value-display">{{sel_opacity}}</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Actions -->
+            <div class="button-row">
+                <button data-event-click="reset_elem">Reset</button>
+                <button class="btn-accent" data-event-click="copy_rcss">📋 Copy RCSS</button>
+            </div>
+        </div>
+
+        <div data-if="!has_selection" class="no-selection">
+            <p class="status-hint">Select an element to inspect.</p>
+        </div>
+
+        <div class="divider"></div>
+        <p class="hint">Drag header to move • Press F12 to close</p>
+    </div>
+</body>
+</rml>

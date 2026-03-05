@@ -350,3 +350,23 @@ body {
     font-effect: shadow(3dp 3dp #000000cc);
     text-transform: uppercase;
 }
+
+/* ── Character Portraits ── */
+.sel-portrait {
+    display: block;
+    position: absolute;
+    width: auto;
+    height: 180dp;
+}
+
+/* Solo / P1 side — left of screen */
+.sel-portrait-p1 {
+    left: 0;
+    bottom: 0;
+}
+
+/* P2 side — right of screen */
+.sel-portrait-p2 {
+    right: 0;
+    bottom: 0;
+}

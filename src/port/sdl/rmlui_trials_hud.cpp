@@ -15,6 +15,8 @@
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>
 
+#include <vector>
+
 extern "C" {
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/training/training_state.h"
@@ -25,6 +27,11 @@ extern "C" {
 static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
+struct TrialStepData {
+    Rml::String name;
+    int state; // 0: pending, 1: active, 2: completed, 3: failed
+};
+
 struct TrialsHudCache {
     int current_step;
     int trial_index;
@@ -32,6 +39,7 @@ struct TrialsHudCache {
     bool failed;
     bool is_active;
     bool gauge_max;
+    std::vector<TrialStepData> steps;
 };
 static TrialsHudCache s_cache = {};
 
@@ -77,6 +85,13 @@ extern "C" void rmlui_trials_hud_init(void) {
         v = trials_current_has_gauge_max();
     });
 
+    if (auto sh = ctor.RegisterStruct<TrialStepData>()) {
+        sh.RegisterMember("name", &TrialStepData::name);
+        sh.RegisterMember("state", &TrialStepData::state);
+    }
+    ctor.RegisterArray<std::vector<TrialStepData>>();
+    ctor.Bind("trial_steps", &s_cache.steps);
+
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
@@ -89,8 +104,10 @@ extern "C" void rmlui_trials_hud_update(void) {
         return;
 
     bool active = (Mode_Type == MODE_TRIALS && g_trials_state.is_active);
+    bool just_activated = false;
     if (active != s_cache.is_active) {
         s_cache.is_active = active;
+        just_activated = active;
         TDIRTY(trial_active);
         if (active)
             rmlui_wrapper_show_game_document("trials_hud");
@@ -101,30 +118,60 @@ extern "C" void rmlui_trials_hud_update(void) {
     if (!active)
         return;
 
+    bool steps_dirty = just_activated;
+
+    int idx = g_trials_state.current_trial_index;
+    if (idx != s_cache.trial_index || just_activated) {
+        s_cache.trial_index = idx;
+        TDIRTY(trial_header);
+        TDIRTY(trial_gauge_max);
+
+        s_cache.steps.clear();
+        const TrialDef* def = trials_get_current_def();
+        if (def) {
+            for (int i = 0; i < def->num_steps; i++) {
+                TrialStepData tsd;
+                tsd.name = def->steps[i].display_name;
+                tsd.state = 0;
+                s_cache.steps.push_back(tsd);
+            }
+        }
+        steps_dirty = true;
+    }
+
     int step = (int)g_trials_state.current_step;
     if (step != s_cache.current_step) {
         s_cache.current_step = step;
         TDIRTY(trial_step);
         TDIRTY(trial_header);
-    }
-
-    int idx = g_trials_state.current_trial_index;
-    if (idx != s_cache.trial_index) {
-        s_cache.trial_index = idx;
-        TDIRTY(trial_header);
-        TDIRTY(trial_gauge_max);
+        steps_dirty = true;
     }
 
     bool comp = g_trials_state.completed;
     if (comp != s_cache.completed) {
         s_cache.completed = comp;
         TDIRTY(trial_completed);
+        steps_dirty = true;
     }
 
     bool fail = g_trials_state.failed;
     if (fail != s_cache.failed) {
         s_cache.failed = fail;
         TDIRTY(trial_failed);
+        steps_dirty = true;
+    }
+
+    if (steps_dirty) {
+        for (size_t i = 0; i < s_cache.steps.size(); i++) {
+            if ((int)i < g_trials_state.current_step || g_trials_state.completed) {
+                s_cache.steps[i].state = 2; // completed
+            } else if ((int)i == g_trials_state.current_step) {
+                s_cache.steps[i].state = g_trials_state.failed ? 3 : 1; // failed vs active
+            } else {
+                s_cache.steps[i].state = 0; // pending
+            }
+        }
+        TDIRTY(trial_steps);
     }
 }
 

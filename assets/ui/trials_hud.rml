@@ -13,6 +13,17 @@
         <!-- MAX GAUGE alert -->
         <div id="trial-gauge-alert" data-if="trial_gauge_max">MAX GAUGE</div>
 
+        <!-- Step List -->
+        <div id="trial-step-list">
+            <div data-for="s : trial_steps" class="step-item"
+                 data-class-pending="s.state == 0"
+                 data-class-active="s.state == 1"
+                 data-class-completed="s.state == 2"
+                 data-class-failed="s.state == 3">
+                {{s.name}}
+            </div>
+        </div>
+
         <!-- COMPLETE! flash -->
         <div id="trial-complete" data-if="trial_completed" class="complete-flash">COMPLETE!</div>
 

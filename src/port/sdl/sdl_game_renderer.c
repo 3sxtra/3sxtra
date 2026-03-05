@@ -198,3 +198,15 @@ unsigned int SDLGameRenderer_GetCachedGLTexture(unsigned int texture_handle, uns
         return SDLGameRendererGL_GetCachedGLTexture(texture_handle, palette_handle);
     }
 }
+
+void SDLGameRenderer_DumpTextures(void) {
+    RendererBackend r = SDLApp_GetRenderer();
+    if (r == RENDERER_SDLGPU) {
+        SDLGameRendererGPU_DumpTextures();
+    } else if (r == RENDERER_SDL2D) {
+        SDLGameRendererSDL_DumpTextures();
+    } else {
+        SDLGameRendererGL_DumpTextures();
+    }
+}
+

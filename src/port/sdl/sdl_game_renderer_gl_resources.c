@@ -671,3 +671,59 @@ unsigned int SDLGameRendererGL_GetCachedGLTexture(unsigned int texture_handle, u
     SDLGameRendererGL_SetTexture(combined);
     return gl_state.texture_cache[texture_handle - 1][palette_handle];
 }
+
+void SDLGameRendererGL_DumpTextures(void) {
+    SDL_CreateDirectory("textures");
+    int tex_index = 0;
+    int count = 0;
+
+    // Use tcache_live — the authoritative list of tex+pal pairs that have been rendered.
+    for (int li = 0; li < gl_state.tcache_live_count; li++) {
+        int ti = gl_state.tcache_live[li].tex_idx;
+        int pi = gl_state.tcache_live[li].pal_idx;
+
+        SDL_Surface* surf = gl_state.surfaces[ti];
+        if (!surf || !SDL_ISPIXELFORMAT_INDEXED(surf->format))
+            continue;
+
+        SDL_Palette* pal = (pi > 0 && pi <= FL_PALETTE_MAX) ? gl_state.palettes[pi - 1] : NULL;
+        if (!pal)
+            continue;
+
+        char filename[128];
+        snprintf(filename, sizeof(filename), "textures/%d_t%d_p%d.tga", tex_index++, ti, pi);
+        FILE* f = fopen(filename, "wb");
+        if (!f)
+            continue;
+
+        const Uint8* pixels = (const Uint8*)surf->pixels;
+        const int w = surf->w, h = surf->h;
+        uint8_t header[18] = { 0 };
+        header[2] = 2;
+        header[12] = w & 0xFF; header[13] = (w >> 8) & 0xFF;
+        header[14] = h & 0xFF; header[15] = (h >> 8) & 0xFF;
+        header[16] = 32; header[17] = 0x20;
+        fwrite(header, 1, 18, f);
+
+        for (int i = 0; i < w * h; i++) {
+            Uint8 idx;
+            if (pal->ncolors == 16) {
+                Uint8 byte = pixels[i / 2];
+                idx = (i & 1) ? (byte >> 4) : (byte & 0x0F);
+            } else {
+                idx = pixels[i];
+            }
+            // GL palette has R and B swapped vs SDL convention (bits16-23 of PS2 uint32 → .r)
+            // so write .r as TGA-B and .b as TGA-R to get correct display
+            const SDL_Color* c = &pal->colors[idx];
+            Uint8 bgra[] = { c->b, c->g, c->r, c->a };
+            fwrite(bgra, 1, 4, f);
+        }
+        fclose(f);
+        count++;
+    }
+
+    SDL_Log("[TextureDump] Wrote %d texture(s) to textures/", count);
+}
+
+

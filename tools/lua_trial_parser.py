@@ -79,8 +79,9 @@ def parse_waza_id(waza_str):
     prefix = waza_str[0]
     hex_part = waza_str[1:]
 
-    if prefix in ("A", "S", "N", "G"):
+    if prefix in ("A", "S", "N", "G", "M"):
         # Attack/Special: "A0046003a" → two 4-hex-digit values
+        # M prefix is the same format (e.g. "M00230008")
         req_type = "TRIAL_REQ_ATTACK_HIT"
         if len(hex_part) == 8:
             v1 = int(hex_part[0:4], 16)
@@ -146,7 +147,7 @@ def parse_lua_trials(lua_path):
 
         steps = []
         # Parse each step: {field1, field2, ...}
-        step_pattern = re.compile(r"\{([^{}]+)\}")
+        step_pattern = re.compile(r"\{((?:[^{}]|\{[^{}]*\})+)\}")
         for step_match in step_pattern.finditer(body):
             fields_raw = step_match.group(1)
             # Split by comma, handling quoted strings
@@ -167,20 +168,31 @@ def parse_lua_trials(lua_path):
             if len(fields) >= 2:
                 # Handle sub-arrays for waza IDs like {"A00000000", {0x422A,0x42E9}}
                 # Our simple split by comma might split the sub-array improperly.
-                # Actually, the parsing logic above is a bit basic. It might have given us fields like
-                # ['"ANIM2P"', '"A00000000"', '{0x422A', '0x42E9}'] instead of extracting correctly.
-                # Let's clean up the list of waza_ids manually.
+                # We collect waza ID strings AND extract hex integers from nested arrays.
                 waza_fields = []
+                anim2p_ids = []  # For ANIM2P sub-array hex integers
                 for fld in fields[2:]:
-                    # If it's something like '{0x422A', remove braces and try to parse it if we cared,
-                    # but parse_waza_id handles hex strings starting with 'A/S/F/N'.
-                    # Nested array ints don't matter to us because we just want the 'A00000000' part.
-                    # We will collect all fields and let parse_waza_id filter out invalid ones.
                     clean = fld.replace("{", "").replace("}", "").strip()
-                    if clean:
+                    if not clean:
+                        continue
+                    # Check if it's a bare hex integer like 0x422A (from sub-arrays)
+                    if clean.startswith("0x") or clean.startswith("0X"):
+                        try:
+                            anim2p_ids.append(int(clean, 16))
+                        except ValueError:
+                            pass
+                    # Check if it's a plain integer (timer values for J/K types)
+                    elif clean.isdigit():
+                        pass  # Skip timer values
+                    else:
                         waza_fields.append(clean)
 
-                step = {"name": fields[0], "type": fields[1], "waza_ids": waza_fields}
+                step = {
+                    "name": fields[0],
+                    "type": fields[1],
+                    "waza_ids": waza_fields,
+                    "anim2p_ids": anim2p_ids,
+                }
                 steps.append(step)
 
         if steps:
@@ -313,11 +325,15 @@ def generate_c_data(combo_tests, kadais, difficulties, gauge_max_flags, output_p
                 _, values = parse_waza_id(waza_str)
                 all_waza_values.extend(values)
 
-            # Deduplicate and limit to MAX_WAZA_ALTERNATIVES (4)
-            all_waza_values = list(dict.fromkeys(all_waza_values))[:4]
+            # For ANIM2P steps, also include the extracted sub-array hex IDs
+            if step.get("anim2p_ids"):
+                all_waza_values.extend(step["anim2p_ids"])
 
-            # Pad to 4 using 0xFFFF (so 0x0000 is a valid waza)
-            while len(all_waza_values) < 4:
+            # Deduplicate and limit to MAX_WAZA_ALTERNATIVES (8)
+            all_waza_values = list(dict.fromkeys(all_waza_values))[:8]
+
+            # Pad to 8 using 0xFFFF (so 0x0000 is a valid waza)
+            while len(all_waza_values) < 8:
                 all_waza_values.append(0xFFFF)
 
             # Escape display name for C string

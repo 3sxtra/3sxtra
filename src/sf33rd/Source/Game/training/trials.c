@@ -25,7 +25,7 @@ static const TrialCharacterDef* get_char_def(s16 chara_id) {
     return NULL;
 }
 
-static const TrialDef* get_current_trial_def(void) {
+const TrialDef* trials_get_current_def(void) {
     const TrialCharacterDef* cdef = get_char_def(g_trials_state.current_chara_id);
     if (cdef && g_trials_state.current_trial_index < cdef->num_trials) {
         return cdef->trials[g_trials_state.current_trial_index];
@@ -38,6 +38,10 @@ void trials_reset(void) {
     g_trials_state.failed = false;
     g_trials_state.completed = false;
     g_trials_state.success_timer = 0;
+    g_trials_state.pending_hit = false;
+    g_trials_state.last_hit_type = TRIAL_REQ_NONE;
+    g_trials_state.last_hit_waza = -1;
+    g_trials_state.combo_drop_grace = 0;
 
     // Also reset combo tracking so if they are currently hitting it resets
     if (Mode_Type == MODE_TRIALS) {
@@ -118,23 +122,18 @@ void trials_update(void) {
     if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
         return;
 
-    const TrialDef* cur_trial = get_current_trial_def();
+    const TrialDef* cur_trial = trials_get_current_def();
     if (!cur_trial)
         return;
 
     TrainingPlayerState* p2 = &g_training_state.p2;
     PLW* pl1 = &plw[0];
+    PLW* pl2 = &plw[1];
 
     s32 current_hits = p2->combo_hits;
-    // The engine stores the move that *caused* the damage on the defender's WORK struct
-    s16 kow = plw[1].wu.dm_kind_of_waza;
 
     if (g_trials_state.completed) {
         g_trials_state.success_timer++;
-        // Keep tracking hits just to detect combo end for visual reset if desired
-        if (current_hits == 0 && g_trials_state.last_combo_hits > 0) {
-            // Auto-advance to next trial after completion? Leaving manual for now.
-        }
         g_trials_state.last_combo_hits = current_hits;
         return;
     }
@@ -147,12 +146,30 @@ void trials_update(void) {
         }
     }
 
-    // Detect combo drop (only drop if we're past step 1 and the combo resets natively)
+    // Detect combo drop with grace period
+    // Some trials (SA activations, fireballs) legitimately reset the combo counter
+    // We give a 3-frame grace period before declaring a drop
     if (current_hits == 0 && g_trials_state.last_combo_hits > 0) {
         if (g_trials_state.current_step > 0 && g_trials_state.current_step < cur_trial->num_steps) {
-            // Give a 1-frame grace period for multi-hit linkage, or fail if it truly dropped
-            g_trials_state.failed = true;
-            g_trials_state.current_step = 0; // Reset
+            g_trials_state.combo_drop_grace = 3; // Start grace countdown
+        }
+    }
+    if (g_trials_state.combo_drop_grace > 0) {
+        g_trials_state.combo_drop_grace--;
+        if (current_hits > 0) {
+            // Combo resumed within grace period — no drop
+            g_trials_state.combo_drop_grace = 0;
+        } else if (g_trials_state.combo_drop_grace == 0) {
+            // Grace expired with no new hits — real drop
+            // But don't fail if the next step is a non-hit type (ACTIVE_MOVE, etc.)
+            const TrialStep* next = &cur_trial->steps[g_trials_state.current_step];
+            bool next_is_hit = (next->type == TRIAL_REQ_ATTACK_HIT ||
+                                next->type == TRIAL_REQ_THROW_HIT ||
+                                next->type == TRIAL_REQ_FIREBALL_HIT);
+            if (next_is_hit) {
+                g_trials_state.failed = true;
+                g_trials_state.current_step = 0;
+            }
         }
     }
 
@@ -171,37 +188,60 @@ void trials_update(void) {
         return;
     }
 
-    // Detect new hit (ATTACK_HIT, FIREBALL_HIT, THROW_HIT)
-    if (current_hits > 0 && current_hits > g_trials_state.last_combo_hits) {
-        g_trials_state.failed = false;
+    g_trials_state.step_completed_this_frame = false;
+
+    // ─── Hit-based step matching (uses pending_hit from engine hooks) ───
+    // The waza ID is globally unique across attacks/throws/fireballs so
+    // we match any pending hit against any hit-requiring step type.
+    if (g_trials_state.pending_hit && !g_trials_state.failed) {
+        g_trials_state.pending_hit = false;
 
         if (g_trials_state.current_step < cur_trial->num_steps) {
             const TrialStep* req = &cur_trial->steps[g_trials_state.current_step];
+            bool step_is_hit = (req->type == TRIAL_REQ_ATTACK_HIT ||
+                                req->type == TRIAL_REQ_THROW_HIT ||
+                                req->type == TRIAL_REQ_FIREBALL_HIT);
 
-            if (req->type == TRIAL_REQ_ATTACK_HIT || req->type == TRIAL_REQ_FIREBALL_HIT ||
-                req->type == TRIAL_REQ_THROW_HIT) {
-                if (match_waza(req, kow)) {
+            if (step_is_hit) {
+                if (match_waza(req, g_trials_state.last_hit_waza)) {
                     g_trials_state.current_step++;
                     g_trials_state.step_completed_this_frame = true;
-                } else if (g_trials_state.current_step > 0) { // Only fail if they used a wrong move mid-combo
+                } else if (g_trials_state.current_step > 0) {
+                    // Wrong waza mid-combo — fail and reset
                     g_trials_state.failed = true;
                     g_trials_state.current_step = 0;
                 }
             }
+            // If the step is not a hit type (ACTIVE_MOVE, ANIMATION…) ignore the
+            // pending hit — it will be processed by the non-hit block below.
         }
-    } else {
-        g_trials_state.step_completed_this_frame = false;
     }
 
-    // Check for non-hit conditions (ACTIVE_MOVE)
+    // ─── Non-hit conditions: ACTIVE_MOVE, ANIMATION, SPECIAL_COND ───
     if (g_trials_state.current_step < cur_trial->num_steps && !g_trials_state.failed &&
         !g_trials_state.step_completed_this_frame) {
         const TrialStep* req = &cur_trial->steps[g_trials_state.current_step];
+
         if (req->type == TRIAL_REQ_ACTIVE_MOVE) {
-            if (match_waza(req, pl1->wu.kind_of_waza)) { // Active moves use P1's current animating waza
+            // Check P1's currently executing move
+            if (match_waza(req, pl1->wu.kind_of_waza)) {
                 g_trials_state.current_step++;
                 g_trials_state.step_completed_this_frame = true;
             }
+        } else if (req->type == TRIAL_REQ_ANIMATION) {
+            // ANIM2P: check if P2 is in a specific animation state
+            // The waza_ids contain both the P1 waza (index 0) and P2 animation IDs
+            // We check P1's waza OR P2's animation against any of the stored IDs
+            if (match_waza(req, pl1->wu.kind_of_waza) ||
+                match_waza(req, pl2->wu.kind_of_waza)) {
+                g_trials_state.current_step++;
+                g_trials_state.step_completed_this_frame = true;
+            }
+        } else if (req->type == TRIAL_REQ_SPECIAL_COND) {
+            // Special conditions — placeholder for future implementation
+            // For now, treat as auto-pass to not block trial progression
+            g_trials_state.current_step++;
+            g_trials_state.step_completed_this_frame = true;
         }
     }
 
@@ -224,7 +264,7 @@ void trials_draw(void) {
     if (!cdef)
         return;
 
-    const TrialDef* cur_trial = get_current_trial_def();
+    const TrialDef* cur_trial = trials_get_current_def();
     if (!cur_trial)
         return;
 
@@ -282,42 +322,33 @@ void trials_draw(void) {
 
 // ----------------------------------------------------------------------------
 // Engine Event Hooks
+// These are called by the engine when hits/throws/fireballs connect.
+// They record the hit type and waza ID for trials_update() to consume.
 // ----------------------------------------------------------------------------
-void trials_on_attack_hit(s16 attacker_id, s16 kind_of_waza) {
+void trials_on_hit_registered(s16 attacker_id, s16 kind_of_waza) {
     if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
         return;
-    (void)attacker_id;
-    (void)kind_of_waza;
-}
+    // Only track P1's hits (attacker player_number == 0)
+    if (attacker_id != 0)
+        return;
 
-void trials_on_throw_hit(s16 attacker_id, s16 kind_of_waza) {
-    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
-        return;
-    (void)attacker_id;
-    (void)kind_of_waza;
-}
-
-void trials_on_fireball_hit(s16 attacker_id, s16 kind_of_waza) {
-    if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
-        return;
-    (void)attacker_id;
-    (void)kind_of_waza;
+    g_trials_state.last_hit_waza = kind_of_waza;
+    g_trials_state.pending_hit = true;
 }
 
 void trials_on_parry(s16 defender_id) {
     if (Mode_Type != MODE_TRIALS || !g_trials_state.is_active)
         return;
 
-    // Example: If a trial step requires a parry (not actively used in standard trials
-    // outside of specific edge cases, but we have a hook ready).
-    const TrialDef* cur_trial = get_current_trial_def();
+    // Parry is used by specific trial steps (Ken Trial 8 — parry Chun-Li's SA)
+    const TrialDef* cur_trial = trials_get_current_def();
     if (!cur_trial)
         return;
 
     if (g_trials_state.current_step < cur_trial->num_steps && !g_trials_state.failed &&
         !g_trials_state.step_completed_this_frame) {
         const TrialStep* step = &cur_trial->steps[g_trials_state.current_step];
-        // Lua N001B001B was parry. We check if active move matches 0x001B
+        // In the Lua, parry was type "J" with waza N001B001B. We handle it as ACTIVE_MOVE.
         if (step->type == TRIAL_REQ_ACTIVE_MOVE && match_waza(step, 0x001B)) {
             g_trials_state.current_step++;
             g_trials_state.step_completed_this_frame = true;

@@ -1,0 +1,326 @@
+/* Dev overlay stylesheet — 3SXtra RmlUi developer tool */
+
+body {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 127);
+}
+
+#dev-panel {
+    display: block;
+    position: absolute;
+    width: 420dp;
+    max-height: 95%;
+    top: 10dp;
+    right: 10dp;
+    background-color: rgba(12, 12, 18, 245);
+    border-width: 1dp;
+    border-color: #2a6af0;
+    border-radius: 8dp;
+    padding: 12dp 16dp;
+    overflow-y: auto;
+}
+
+/* Drag handle */
+#dev-panel handle {
+    display: block;
+    cursor: move;
+    padding: 4dp 0;
+    border-bottom-width: 1dp;
+    border-bottom-color: #222240;
+    margin-bottom: 4dp;
+}
+
+#dev-panel handle:hover {
+    background-color: #1a1a30;
+    border-radius: 4dp 4dp 0 0;
+}
+
+/* Title */
+#dev-panel h1 {
+    font-size: 18dp;
+    color: #4a9eff;
+    margin-bottom: 4dp;
+    text-align: center;
+}
+
+/* Section headers */
+h2 {
+    font-size: 12dp;
+    color: #6a6a80;
+    margin-top: 2dp;
+    margin-bottom: 4dp;
+    text-transform: uppercase;
+    letter-spacing: 1dp;
+}
+
+h3 {
+    font-size: 11dp;
+    color: #4a9eff;
+    margin-top: 4dp;
+    margin-bottom: 2dp;
+    text-transform: uppercase;
+    letter-spacing: 0.5dp;
+}
+
+/* Dividers */
+.divider {
+    display: block;
+    height: 1dp;
+    background-color: #222240;
+    margin-top: 4dp;
+    margin-bottom: 4dp;
+}
+
+/* Section */
+.section {
+    display: block;
+    margin-bottom: 2dp;
+}
+
+.section-header {
+    display: block;
+}
+
+.section-header h2 {
+    display: inline-block;
+}
+
+.section-header .btn-sm {
+    display: inline-block;
+    float: right;
+    padding: 2dp 8dp;
+    font-size: 11dp;
+    background-color: #1a1a2a;
+    border-width: 1dp;
+    border-color: #444;
+    border-radius: 3dp;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.section-header .btn-sm:hover {
+    border-color: #4a9eff;
+    color: #4a9eff;
+}
+
+/* ─── Document list ─── */
+
+.doc-list {
+    display: block;
+    max-height: 120dp;
+    overflow-y: auto;
+}
+
+.doc-item {
+    display: block;
+    padding: 3dp 8dp;
+    font-size: 12dp;
+    color: #bbb;
+    cursor: pointer;
+    border-radius: 3dp;
+}
+
+.doc-item:hover {
+    background-color: #1a1a30;
+}
+
+.doc-item.doc-selected {
+    background-color: #1a2a50;
+    color: #4a9eff;
+    border-width: 0 0 0 2dp;
+    border-color: #4a9eff;
+}
+
+.doc-item.doc-hidden {
+    color: #555;
+}
+
+.doc-ctx {
+    display: inline-block;
+    font-size: 10dp;
+    color: #666;
+    min-width: 50dp;
+}
+
+.doc-name {
+    display: inline-block;
+}
+
+.doc-vis {
+    display: inline-block;
+    font-size: 10dp;
+    color: #44cc44;
+    margin-left: 6dp;
+}
+
+.doc-vis-off {
+    display: inline-block;
+    font-size: 10dp;
+    color: #444;
+    margin-left: 6dp;
+}
+
+/* ─── Element list ─── */
+
+.elem-list {
+    display: block;
+    max-height: 180dp;
+    overflow-y: auto;
+}
+
+.elem-item {
+    display: block;
+    padding: 2dp 6dp;
+    font-size: 11dp;
+    color: #999;
+    cursor: pointer;
+    border-radius: 2dp;
+}
+
+.elem-item:hover {
+    background-color: #181830;
+    color: #ccc;
+}
+
+.elem-item.elem-selected {
+    background-color: #1a2a50;
+    color: #4af0ff;
+}
+
+/* ─── Inspector ─── */
+
+.elem-breadcrumb {
+    font-size: 11dp;
+    color: #4af0ff;
+    margin-bottom: 4dp;
+    display: block;
+}
+
+/* Control rows */
+.control-row {
+    display: block;
+    padding: 2dp 0;
+}
+
+label {
+    display: inline-block;
+    font-size: 11dp;
+    color: #999;
+    min-width: 55dp;
+}
+
+input.text {
+    display: inline-block;
+    width: 120dp;
+    padding: 2dp 6dp;
+    background-color: #0f0f1a;
+    border-width: 1dp;
+    border-color: #333;
+    border-radius: 3dp;
+    color: #ddd;
+    font-size: 11dp;
+    margin-left: 4dp;
+}
+
+input.text:focus {
+    border-color: #4a9eff;
+}
+
+/* Range slider value display */
+.value-display {
+    display: inline-block;
+    font-size: 10dp;
+    color: #4a9eff;
+    margin-left: 4dp;
+    min-width: 30dp;
+}
+
+/* ─── Buttons ─── */
+
+.button-row {
+    display: block;
+    margin-top: 4dp;
+}
+
+button {
+    display: inline-block;
+    padding: 4dp 10dp;
+    background-color: #1a1a2a;
+    border-width: 1dp;
+    border-color: #444;
+    border-radius: 4dp;
+    color: #ccc;
+    font-size: 12dp;
+    cursor: pointer;
+    margin-right: 6dp;
+}
+
+button:hover {
+    background-color: #252540;
+    border-color: #4a9eff;
+}
+
+button:active {
+    background-color: #111;
+}
+
+.btn-accent {
+    border-color: #4a9eff;
+    color: #4a9eff;
+}
+
+.btn-accent:hover {
+    background-color: #1a2a50;
+}
+
+.no-selection {
+    display: block;
+    padding: 20dp;
+    text-align: center;
+}
+
+/* Status/hint text */
+.status-hint {
+    color: #444;
+    font-size: 11dp;
+    display: block;
+    text-align: center;
+    padding: 8dp;
+}
+
+.hint {
+    font-size: 10dp;
+    color: #333;
+    margin-top: 4dp;
+    text-align: center;
+}
+
+/* Scrollbar */
+#dev-panel scrollbarvertical {
+    width: 6dp;
+}
+
+#dev-panel scrollbarvertical sliderbar {
+    background-color: #333;
+    border-radius: 3dp;
+}
+
+#dev-panel scrollbarvertical sliderbar:hover {
+    background-color: #4a9eff;
+}
+
+#dev-panel scrollbarvertical slidertrack {
+    background-color: #111;
+}
+
+.doc-list scrollbarvertical,
+.elem-list scrollbarvertical {
+    width: 4dp;
+}
+
+.doc-list scrollbarvertical sliderbar,
+.elem-list scrollbarvertical sliderbar {
+    background-color: #2a2a40;
+    border-radius: 2dp;
+}

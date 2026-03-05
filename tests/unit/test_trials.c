@@ -60,29 +60,39 @@ static void test_trial_validation_flow(void **state) {
     p1sw_0 = 0;
     p1sw_1 = 0;
     assert_int_equal(g_trials_state.current_step, 0);
-    
+
     g_training_state.p2.combo_hits = 1;
-    plw[1].wu.dm_kind_of_waza = 0x0000;
+    trials_on_hit_registered(0, 0x0000);
     trials_update();
-    
+
     // Should advance to step 1
     assert_int_equal(g_trials_state.current_step, 1);
     assert_false(g_trials_state.failed);
-    
+
     // Step 1: CLP (0x0012)
     g_training_state.p2.combo_hits = 2;
-    plw[1].wu.dm_kind_of_waza = 0x0012; 
+    trials_on_hit_registered(0, 0x0012);
     trials_update();
-    
+
     // Should advance to step 2
     assert_int_equal(g_trials_state.current_step, 2);
     assert_false(g_trials_state.failed);
 
-    // Drop combo manually
+    // Drop combo manually (grace 3)
     g_training_state.p2.combo_hits = 0;
     trials_update();
-    
-    // Should fail and reset
+    assert_false(g_trials_state.failed);
+
+    // Grace 2
+    trials_update();
+    assert_false(g_trials_state.failed);
+
+    // Grace 1
+    trials_update();
+    assert_false(g_trials_state.failed);
+
+    // Grace 0 - Fails here
+    trials_update();
     assert_true(g_trials_state.failed);
     assert_int_equal(g_trials_state.current_step, 0);
 }

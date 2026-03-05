@@ -48,6 +48,7 @@
 #include "sf33rd/Source/Game/io/vm_sub.h"
 #include "sf33rd/Source/Game/menu/dir_data.h"
 #include "sf33rd/Source/Game/menu/ex_data.h"
+#include "sf33rd/Source/Game/training/training_dummy.h"
 #include "sf33rd/Source/Game/menu/menu_internal.h"
 #include "sf33rd/Source/Game/message/en/msgtable_en.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
@@ -2176,6 +2177,7 @@ void Setup_NTr_Data(s16 ix) {
     }
 
     apply_training_hitbox_display(false);
+    sync_dummy_settings_from_menu();
 }
 
 /** @brief Check and skip replay at the given index. */
@@ -2352,8 +2354,6 @@ static void apply_training_hitbox_display(bool force_off) {
     }
 }
 
-#include "sf33rd/Source/Game/training/training_dummy.h"
-
 void sync_dummy_settings_from_menu() {
     // Mapping from Menu UI array (Training[2].contents[x][y][z]) to our DummySettings struct
     // Menu Index 1 (Action): 0=None, 1=Jump, 2=Crouch, etc. (Handle natively)
@@ -2369,6 +2369,14 @@ void sync_dummy_settings_from_menu() {
 
     // Menu Index 4 (Wakeup Mash): 0=None, 1=Fast, 2=Normal, 3=Random
     g_dummy_settings.wakeup_mash = (DummyMashType)Training[2].contents[0][0][4];
+
+    // Wakeup reversal (DP on wakeup): enabled when wakeup mash is configured
+    // TODO: Add a dedicated menu entry for this when the UI supports it
+    g_dummy_settings.wakeup_reversal = (g_dummy_settings.wakeup_mash != DUMMY_MASH_NONE);
+
+    // Default guard direction: always crouch-block (covers lows)
+    // TODO: Add a dedicated menu entry for this when the UI supports it
+    g_dummy_settings.guard_low_default = true;
 }
 
 /** @brief Dummy cursor move left/right value toggle handler. */

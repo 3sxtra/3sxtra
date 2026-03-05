@@ -17,6 +17,8 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
+#include "port/sdl/rmlui_char_select.h"
+#include "port/sdl/rmlui_phase3_toggles.h"
 
 static void EFF38_WAIT(WORK_Other* ewk);
 static void EFF38_SUDDENLY(WORK_Other* ewk);
@@ -35,16 +37,22 @@ const s16 EFF38_Base_XY[2][2][2] = { { { -64, 16 }, { -128, 32 } }, { { 64, 16 }
 void (*const EFF38_Jmp_Tbl[7])() = { EFF38_WAIT,  EFF38_SLIDE_IN, EFF38_SLIDE_OUT, EFF38_SUDDENLY,
                                      EFF38_SHIFT, EFF38_MOVE,     EFF38_KILL };
 
-/* eff38 draws the character portrait (body sprite) on the char select screen.
- * Do NOT gate behind rmlui_char_select_visible — the portrait must always
- * render, even when the RmlUI overlay is active. */
+/* eff38 draws the character portrait (body sprite) on the char select screen. */
 void effect_38_move(WORK_Other* ewk) {
     EFF38_Jmp_Tbl[ewk->wu.routine_no[0]](ewk);
 
     if (ewk->wu.be_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-        sort_push_request4(&ewk->wu);
+        
+        bool suppress_native = false;
+        if (rmlui_screen_select && rmlui_char_select_visible) {
+            suppress_native = true;
+        }
+
+        if (!suppress_native) {
+            sort_push_request4(&ewk->wu);
+        }
     }
 }
 

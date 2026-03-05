@@ -9,9 +9,9 @@ static const TrialDef g_trial_alex_1 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_THROW_HIT, { 0x0015, 0x0016, 0xFFFF, 0xFFFF }, "EX_Air Knee Smash", "_COMMON_EX _SP_ALEX2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_THROW_HIT, { 0x0015, 0x0016, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Air Knee Smash", "_COMMON_EX _SP_ALEX2" }
     }
 };
 
@@ -22,8 +22,8 @@ static const TrialDef g_trial_alex_2 = {
     .gauge_max = 0,
     .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Slash Elbow (Hit from behind Ryu)", "_TR_ALEX1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0x0029, 0x002A, 0xFFFF }, "Boomerang Raid", "_SA_ALEX2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Slash Elbow (Hit from behind Ryu)", "_TR_ALEX1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0x0029, 0x002A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Boomerang Raid", "_SA_ALEX2" }
     }
 };
 
@@ -34,10 +34,10 @@ static const TrialDef g_trial_alex_3 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF }, "L_SlashElbow", "_COMMON_L _SP_ALEX4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0x0011, 0xFFFF }, "SHK", "_NM_SHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_THROW_HIT, { 0x0015, 0x0016, 0xFFFF, 0xFFFF }, "EX_Air Knee Smash", "_COMMON_EX _SP_ALEX2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_SlashElbow", "_COMMON_L _SP_ALEX4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0x0011, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_THROW_HIT, { 0x0015, 0x0016, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Air Knee Smash", "_COMMON_EX _SP_ALEX2" }
     }
 };
 
@@ -48,8 +48,8 @@ static const TrialDef g_trial_alex_4 = {
     .gauge_max = 0,
     .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Flash Chop (Avoid throwing with HJC)", "_TR_ALEX2" },
-        { TRIAL_REQ_THROW_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF }, "Hyper Bomb", "_SA_ALEX1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Flash Chop (Avoid throwing with HJC)", "_TR_ALEX2" },
+        { TRIAL_REQ_THROW_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Hyper Bomb", "_SA_ALEX1" }
     }
 };
 
@@ -60,10 +60,10 @@ static const TrialDef g_trial_alex_5 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_THROW_HIT, { 0x0015, 0x0016, 0xFFFF, 0xFFFF }, "EX_Air Knee Smash", "_COMMON_EX _SP_ALEX2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_THROW_HIT, { 0x0015, 0x0016, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Air Knee Smash", "_COMMON_EX _SP_ALEX2" }
     }
 };
 
@@ -74,10 +74,10 @@ static const TrialDef g_trial_alex_6 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF }, "6MP", "_NM_6MP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0x0035, 0xFFFF, 0xFFFF }, "J2HP", "_NM_J2HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x0036, 0xFFFF, 0xFFFF }, "H_Air Stampede", "_COMMON_H _SP_ALEX3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "6MP", "_NM_6MP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0x0035, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J2HP", "_NM_J2HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x0036, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Air Stampede", "_COMMON_H _SP_ALEX3" }
     }
 };
 
@@ -88,10 +88,10 @@ static const TrialDef g_trial_alex_8 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "2HP", "_NM_CHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Slash Elbow", "_COMMON_M _SP_ALEX4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Flash Chop", "_COMMON_EX _SP_ALEX1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "2HP", "_NM_CHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Slash Elbow", "_COMMON_M _SP_ALEX4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Flash Chop", "_COMMON_EX _SP_ALEX1" }
     }
 };
 
@@ -102,14 +102,14 @@ static const TrialDef g_trial_alex_10 = {
     .gauge_max = 0,
     .num_steps = 8,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Slash Elbow", "_COMMON_L _SP_ALEX4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF }, "6HP", "_NM_6HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Flash Chop", "_COMMON_H _SP_ALEX1" },
-        { TRIAL_REQ_THROW_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "Stun Gun Headbutt", "_SA_ALEX3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Flash Chop", "_COMMON_H _SP_ALEX1" },
-        { TRIAL_REQ_THROW_HIT, { 0x0000, 0x0001, 0x001D, 0x001E }, "4HP", "_NM_4HP" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Slash Elbow", "_COMMON_L _SP_ALEX4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "6HP", "_NM_6HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Flash Chop", "_COMMON_H _SP_ALEX1" },
+        { TRIAL_REQ_THROW_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Stun Gun Headbutt", "_SA_ALEX3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Flash Chop", "_COMMON_H _SP_ALEX1" },
+        { TRIAL_REQ_THROW_HIT, { 0x0000, 0x0001, 0x001D, 0x001E, 0x001F, 0xFFFF, 0xFFFF, 0xFFFF }, "4HP", "_NM_4HP" }
     }
 };
 
@@ -120,10 +120,10 @@ static const TrialDef g_trial_ryu_2 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tatsumaki Senpuu Kyaku", "_COMMON_EX _SP_RYU3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F }, "Shouryuu Ken", "_SP_RYU2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tatsumaki Senpuu Kyaku", "_COMMON_EX _SP_RYU3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shouryuu Ken", "_SP_RYU2" }
     }
 };
 
@@ -134,11 +134,11 @@ static const TrialDef g_trial_ryu_3 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0028, 0x0040, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Joudan Sokutou Geri", "_COMMON_EX _SP_RYU5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tatsumaki Senpuu Kyaku", "_COMMON_EX _SP_RYU3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Shouryuu Ken", "_COMMON_EX _SP_RYU2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0028, 0x0040, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Joudan Sokutou Geri", "_COMMON_EX _SP_RYU5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tatsumaki Senpuu Kyaku", "_COMMON_EX _SP_RYU3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Shouryuu Ken", "_COMMON_EX _SP_RYU2" }
     }
 };
 
@@ -149,13 +149,13 @@ static const TrialDef g_trial_ryu_4 = {
     .gauge_max = 0,
     .num_steps = 7,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0028, 0x0040, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Hadou Ken", "_COMMON_L _SP_RYU1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x000A, 0xFFFF, 0xFFFF, 0xFFFF }, "LV3_Denjin Hadou Ken", "_SA_RYU3_3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x002E, 0x0046, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tatsumaki Senpuu Kyaku", "_COMMON_H _SP_RYU3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0028, 0x0040, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Hadou Ken", "_COMMON_L _SP_RYU1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x000A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "LV3_Denjin Hadou Ken", "_SA_RYU3_3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x002E, 0x0046, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tatsumaki Senpuu Kyaku", "_COMMON_H _SP_RYU3" }
     }
 };
 
@@ -166,8 +166,8 @@ static const TrialDef g_trial_ryu_5 = {
     .gauge_max = 0,
     .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Shouryuu Ken", "_COMMON_L _SP_RYU2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0008, 0xFFFF, 0xFFFF, 0xFFFF }, "LV1_Denjin Hadou Ken", "_SA_RYU3_1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Shouryuu Ken", "_COMMON_L _SP_RYU2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0008, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "LV1_Denjin Hadou Ken", "_SA_RYU3_1" }
     }
 };
 
@@ -178,12 +178,12 @@ static const TrialDef g_trial_ryu_6 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tatsumaki Senpuu Kyaku", "_COMMON_EX _SP_RYU3" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF }, "Shinkuu Hadou Ken", "_SA_RYU1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Joudan Sokutou Geri", "_COMMON_EX _SP_RYU5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tatsumaki Senpuu Kyaku", "_COMMON_H _SP_RYU3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tatsumaki Senpuu Kyaku", "_COMMON_EX _SP_RYU3" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shinkuu Hadou Ken", "_SA_RYU1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Joudan Sokutou Geri", "_COMMON_EX _SP_RYU5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tatsumaki Senpuu Kyaku", "_COMMON_H _SP_RYU3" }
     }
 };
 
@@ -194,11 +194,11 @@ static const TrialDef g_trial_ryu_7 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Shouryuu Ken", "_COMMON_L _SP_RYU2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF }, "Shinkuu Hadou Ken", "_SA_RYU1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0002, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Hadou Ken", "_COMMON_H _SP_RYU1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF }, "Shinkuu Hadou Ken", "_SA_RYU1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0002, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Hadou Ken", "_COMMON_H _SP_RYU1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Shouryuu Ken", "_COMMON_L _SP_RYU2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shinkuu Hadou Ken", "_SA_RYU1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0002, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Hadou Ken", "_COMMON_H _SP_RYU1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shinkuu Hadou Ken", "_SA_RYU1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0002, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Hadou Ken", "_COMMON_H _SP_RYU1" }
     }
 };
 
@@ -209,16 +209,16 @@ static const TrialDef g_trial_ryu_8 = {
     .gauge_max = 0,
     .num_steps = 10,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHP", "_NM_SCHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Shouryuu Ken", "_COMMON_H _SP_RYU2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0043, 0x0044, 0xFFFF, 0xFFFF }, "Shin Shouryuu Ken", "_SA_RYU2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0028, 0x0040, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0xFFFF, 0xFFFF, 0xFFFF }, "Universal Overhead", "_LEAP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x0044, 0x002C, 0xFFFF }, "JMK", "_NM_JMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003D, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Joudan Sokutou Geri", "_COMMON_M _SP_RYU5" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHP", "_NM_SCHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Shouryuu Ken", "_COMMON_H _SP_RYU2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0043, 0x0044, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shin Shouryuu Ken", "_SA_RYU2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0028, 0x0040, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Universal Overhead", "_LEAP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x0044, 0x002C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JMK", "_NM_JMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Joudan Sokutou Geri", "_COMMON_M _SP_RYU5" }
     }
 };
 
@@ -229,10 +229,10 @@ static const TrialDef g_trial_ryu_9 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0037, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Air Tatsumaki Senpuu Kyaku", "_COMMON_EX _SP_RYU4" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF }, "Shinkuu Hadou Ken", "_SA_RYU1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Hadou Ken", "_COMMON_EX _SP_RYU1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tatsumaki Senpuu Kyaku", "_COMMON_H _SP_RYU3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0037, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Air Tatsumaki Senpuu Kyaku", "_COMMON_EX _SP_RYU4" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shinkuu Hadou Ken", "_SA_RYU1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Hadou Ken", "_COMMON_EX _SP_RYU1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tatsumaki Senpuu Kyaku", "_COMMON_H _SP_RYU3" }
     }
 };
 
@@ -243,8 +243,8 @@ static const TrialDef g_trial_ken_1 = {
     .gauge_max = 0,
     .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF }, "CMK (Whiff punish)", "_TR_KEN1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF }, "Shippuu Jinrai Kyaku", "_SA_KEN3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMK (Whiff punish)", "_TR_KEN1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shippuu Jinrai Kyaku", "_SA_KEN3" }
     }
 };
 
@@ -255,10 +255,10 @@ static const TrialDef g_trial_ken_2 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Shouryuu Ken", "_COMMON_EX _SP_RYU2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF }, "Shippuu Jinrai Kyaku", "_SA_KEN3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Shouryuu Ken", "_COMMON_EX _SP_RYU2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shippuu Jinrai Kyaku", "_SA_KEN3" }
     }
 };
 
@@ -269,10 +269,10 @@ static const TrialDef g_trial_ken_5 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_FIREBALL_HIT, { 0x002B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Hadou ken", "_COMMON_EX _SP_RYU1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF }, "Shippuu Jinrai Kyaku", "_SA_KEN3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tatsumaki Senpuu Kyaku", "_COMMON_L _SP_RYU3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" }
+        { TRIAL_REQ_FIREBALL_HIT, { 0x002B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Hadou ken", "_COMMON_EX _SP_RYU1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shippuu Jinrai Kyaku", "_SA_KEN3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tatsumaki Senpuu Kyaku", "_COMMON_L _SP_RYU3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" }
     }
 };
 
@@ -283,9 +283,9 @@ static const TrialDef g_trial_ken_7 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0033, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Air Tatsumaki Senpuu Kyaku (Cross-up)", "_COMMON_ME _COMMON_EX _SP_RYU4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Shouryuu Ken", "_COMMON_L _SP_RYU2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Shouryuu Ken", "_COMMON_L _SP_RYU2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0033, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Air Tatsumaki Senpuu Kyaku (Cross-up)", "_COMMON_ME _COMMON_EX _SP_RYU4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Shouryuu Ken", "_COMMON_L _SP_RYU2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Shouryuu Ken", "_COMMON_L _SP_RYU2" }
     }
 };
 
@@ -296,11 +296,11 @@ static const TrialDef g_trial_ken_8 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "parry Chun-Li's SA (Finally in the air)", "_TR_KEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF }, "CMK", "_NM_CMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Shouryuu Ken", "_COMMON_M _SP_RYU2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF }, "Shippuu Jinrai Kyaku", "_SA_KEN3" }
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "parry Chun-Li's SA (Finally in the air)", "_TR_KEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMK", "_NM_CMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Shouryuu Ken", "_COMMON_M _SP_RYU2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shippuu Jinrai Kyaku", "_SA_KEN3" }
     }
 };
 
@@ -311,8 +311,8 @@ static const TrialDef g_trial_gouki_2 = {
     .gauge_max = 0,
     .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0870, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Shakunetsu Hadouken", "_COMMON_H _SP_GOU3" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x086F, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Shakunetsu Hadouken", "_COMMON_M _SP_GOU3" }
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0870, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Shakunetsu Hadouken", "_COMMON_H _SP_GOU3" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x086F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Shakunetsu Hadouken", "_COMMON_M _SP_GOU3" }
     }
 };
 
@@ -323,9 +323,9 @@ static const TrialDef g_trial_gouki_3 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF }, "NJHP", "_COMMON_JS _NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
-        { TRIAL_REQ_THROW_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "Shun Goku Satsu", "_SA_GOU4" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "NJHP", "_COMMON_JS _NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
+        { TRIAL_REQ_THROW_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shun Goku Satsu", "_SA_GOU4" }
     }
 };
 
@@ -336,11 +336,11 @@ static const TrialDef g_trial_gouki_4 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF }, "J2MK", "_NM_J2MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tatsumaki Zankuu Kyaku", "_COMMON_L _SP_GOU5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "0x422A", "_NM_SCLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF }, "Kongou Kokuretsu Zan", "_SA_GOU5" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J2MK", "_NM_J2MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tatsumaki Zankuu Kyaku", "_COMMON_L _SP_GOU5" },
+        { TRIAL_REQ_ANIMATION, { 0x0000, 0x422A, 0x42E9, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kongou Kokuretsu Zan", "_SA_GOU5" }
     }
 };
 
@@ -351,9 +351,9 @@ static const TrialDef g_trial_gouki_5 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHP", "_NM_SCHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tatsumaki Zankuu Kyaku", "_COMMON_M _SP_GOU5" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0076, 0xFFFF, 0xFFFF, 0xFFFF }, "Temma Gou Zankuu", "_SA_GOU1_2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHP", "_NM_SCHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tatsumaki Zankuu Kyaku", "_COMMON_M _SP_GOU5" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0076, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Temma Gou Zankuu", "_SA_GOU1_2" }
     }
 };
 
@@ -364,8 +364,8 @@ static const TrialDef g_trial_gouki_6 = {
     .gauge_max = 0,
     .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0054, 0x0056, 0xFFFF, 0xFFFF }, "Hyakki Goujin (Swing away)", "_SP_GOU7_4 SPACE32 _COMMON_KARABURI" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x003E, 0xFFFF, 0xFFFF, 0xFFFF }, "Shun Goku Satsu (Within 10 frames)", "_SA_GOU4_D SPACE32 SPACE32 SPACE-8 _COMMON_FRAME_LE_10" }
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0054, 0x0056, 0x57BC, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Hyakki Goujin (Swing away)", "_SP_GOU7_4 SPACE32 _COMMON_KARABURI" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x003E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shun Goku Satsu (Within 10 frames)", "_SA_GOU4_D SPACE32 SPACE32 SPACE-8 _COMMON_FRAME_LE_10" }
     }
 };
 
@@ -376,13 +376,13 @@ static const TrialDef g_trial_gouki_7 = {
     .gauge_max = 0,
     .num_steps = 7,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tatsumaki Zankuu Kyaku", "_COMMON_M _SP_GOU5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Gou Shouryuu Ken", "_COMMON_M _SP_GOU4" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0069, 0xFFFF, 0xFFFF, 0xFFFF }, "Messatsu Gou Hadou", "_SA_GOU1_1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0069, 0xFFFF, 0xFFFF, 0xFFFF }, "Messatsu Gou Hadou", "_SA_GOU1_1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Gou Shouryuu Ken", "_COMMON_M _SP_GOU4" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tatsumaki Zankuu Kyaku", "_COMMON_M _SP_GOU5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Gou Shouryuu Ken", "_COMMON_M _SP_GOU4" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0069, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Messatsu Gou Hadou", "_SA_GOU1_1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0069, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Messatsu Gou Hadou", "_SA_GOU1_1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Gou Shouryuu Ken", "_COMMON_M _SP_GOU4" }
     }
 };
 
@@ -393,10 +393,10 @@ static const TrialDef g_trial_gouki_9 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0035, 0x0036, 0xFFFF }, "Air Tatsumaki Zankuu Kyaku", "_SP_GOU6" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tatsumaki Zankuu Kyaku", "_COMMON_H _SP_GOU5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0035, 0x0036, 0xFFFF }, "Air Tatsumaki Zankuu Kyaku", "_SP_GOU6" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x004C, 0x004D, 0x004E, 0xFFFF }, "Messatsu Gou Senpuu", "_SA_GOU3_2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0035, 0x0036, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Air Tatsumaki Zankuu Kyaku", "_SP_GOU6" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tatsumaki Zankuu Kyaku", "_COMMON_H _SP_GOU5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0035, 0x0036, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Air Tatsumaki Zankuu Kyaku", "_SP_GOU6" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x004C, 0x004D, 0x004E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Messatsu Gou Senpuu", "_SA_GOU3_2" }
     }
 };
 
@@ -407,9 +407,9 @@ static const TrialDef g_trial_sean_1 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF }, "CMK", "_NM_CMK" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0938, 0xFFFF, 0xFFFF, 0xFFFF }, "Hadou Burst", "_SA_SEA1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMK", "_NM_CMK" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0938, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Hadou Burst", "_SA_SEA1" }
     }
 };
 
@@ -420,12 +420,12 @@ static const TrialDef g_trial_sean_3 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0938, 0xFFFF, 0xFFFF, 0xFFFF }, "Hadou Burst", "_SA_SEA1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0938, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Hadou Burst", "_SA_SEA1" }
     }
 };
 
@@ -436,9 +436,9 @@ static const TrialDef g_trial_sean_4 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0x009C, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF }, "Hyper Tornado", "_SA_SEA3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0x009C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Hyper Tornado", "_SA_SEA3" }
     }
 };
 
@@ -449,9 +449,9 @@ static const TrialDef g_trial_sean_5 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0938, 0xFFFF, 0xFFFF, 0xFFFF }, "Hadou Burst", "_SA_SEA1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0938, 0xFFFF, 0xFFFF, 0xFFFF }, "Hadou Burst", "_SA_SEA1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0938, 0xFFFF, 0xFFFF, 0xFFFF }, "Hadou Burst", "_SA_SEA1" }
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0938, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Hadou Burst", "_SA_SEA1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0938, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Hadou Burst", "_SA_SEA1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0938, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Hadou Burst", "_SA_SEA1" }
     }
 };
 
@@ -462,14 +462,14 @@ static const TrialDef g_trial_sean_6 = {
     .gauge_max = 0,
     .num_steps = 8,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0B01, 0xFFFF, 0xFFFF, 0xFFFF }, "Taunt", "_PA" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHP", "_NM_SCHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0xFFFF, 0xFFFF, 0xFFFF }, "M_dragon Smash", "_COMMON_M _SP_SEA2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF }, "Shouryuu Canon", "_SA_SEA2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0xFFFF, 0xFFFF, 0xFFFF }, "M_dragon Smash", "_COMMON_M _SP_SEA2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF }, "Shouryuu Canon", "_SA_SEA2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHK", "_NM_SCHK" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0B01, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Taunt", "_PA" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHP", "_NM_SCHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_dragon Smash", "_COMMON_M _SP_SEA2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shouryuu Canon", "_SA_SEA2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_dragon Smash", "_COMMON_M _SP_SEA2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Shouryuu Canon", "_SA_SEA2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHK", "_NM_SCHK" }
     }
 };
 
@@ -480,8 +480,8 @@ static const TrialDef g_trial_ibuki_1 = {
     .gauge_max = 0,
     .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0010, 0xFFFF, 0xFFFF, 0xFFFF }, "SFHK", "_NM_SDHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0ED5, 0x0ED6, 0x0ED7, 0x0ED8 }, "Yami Shigure", "_SA_IBU3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0010, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SFHK", "_NM_SDHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0ED5, 0x0ED6, 0x0ED7, 0x0ED8, 0x0ED9, 0x0EDA, 0x0EDB, 0x0EDC }, "Yami Shigure", "_SA_IBU3" }
     }
 };
 
@@ -492,10 +492,10 @@ static const TrialDef g_trial_ibuki_2 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0001, 0xFFFF, 0xFFFF, 0xFFFF }, "SFLP", "_NM_SDLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0001, 0x0004, 0xFFFF, 0xFFFF }, "SFMP", "_NM_SDMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0ED5, 0x0ED6, 0x0ED7, 0x0ED8 }, "Yami Shigure", "_SA_IBU3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SFLP", "_NM_SDLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0001, 0x0004, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SFMP", "_NM_SDMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0ED5, 0x0ED6, 0x0ED7, 0x0ED8, 0x0ED9, 0x0EDA, 0x0EDB, 0x0EDC }, "Yami Shigure", "_SA_IBU3" }
     }
 };
 
@@ -506,8 +506,8 @@ static const TrialDef g_trial_ibuki_3 = {
     .gauge_max = 0,
     .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_THROW_HIT, { 0x000A, 0xFFFF, 0xFFFF, 0xFFFF }, "Yoroi Dooshi (Throw)", "_SA_IBU2_T" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_THROW_HIT, { 0x000A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Yoroi Dooshi (Throw)", "_SA_IBU2_T" }
     }
 };
 
@@ -518,12 +518,12 @@ static const TrialDef g_trial_ibuki_6 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF }, "JLP", "_NM_JLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0x009F, 0x0030, 0xFFFF }, "J6HP", "_NM_J6HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHK", "_NM_SCHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x009E, 0x0028, 0x0034 }, "J6MK", "_NM_J6MK" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JLP", "_NM_JLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0x009F, 0x0030, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J6HP", "_NM_J6HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHK", "_NM_SCHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x009E, 0x0028, 0x0034, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J6MK", "_NM_J6MK" }
     }
 };
 
@@ -534,11 +534,11 @@ static const TrialDef g_trial_ibuki_7 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHK", "_NM_SCHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP", "_NM_4MP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0x00A5, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_THROW_HIT, { 0x0004, 0x0005, 0x0006, 0x0015 }, "Kubiori", "_SP_IBU2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHK", "_NM_SCHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP", "_NM_4MP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0x00A5, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_THROW_HIT, { 0x0004, 0x0005, 0x0006, 0x0015, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kubiori", "_SP_IBU2" }
     }
 };
 
@@ -549,14 +549,14 @@ static const TrialDef g_trial_ibuki_8 = {
     .gauge_max = 0,
     .num_steps = 8,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0042, 0x0036, 0x002A, 0xFFFF }, "JLK (Cross-up)", "_COMMON_ME _NM_JLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0042, 0x009E, 0x0036, 0xFFFF }, "J6MK (Cross-up)", "_COMMON_ME _NM_J6MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x00A2, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x00A5, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000D, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0x0019, 0x001A, 0x001B }, "Kazekiri", "_SP_IBU3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x0039, 0x003A, 0xFFFF }, "Yoroi Dooshi (Attack)", "_SA_IBU2_H" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0042, 0x0036, 0x002A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JLK (Cross-up)", "_COMMON_ME _NM_JLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0042, 0x009E, 0x0036, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J6MK (Cross-up)", "_COMMON_ME _NM_J6MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x00A2, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x00A5, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0x0019, 0x001A, 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kazekiri", "_SP_IBU3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x0039, 0x003A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Yoroi Dooshi (Attack)", "_SA_IBU2_H" }
     }
 };
 
@@ -567,15 +567,15 @@ static const TrialDef g_trial_ibuki_9 = {
     .gauge_max = 0,
     .num_steps = 9,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x009E, 0x0028, 0x0034 }, "J6MK", "_NM_J6MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0009, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x00A0, 0x0009, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Kazekiri", "_COMMON_EX _SP_IBU3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF }, "JLP", "_NM_JLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0x009F, 0x0030, 0xFFFF }, "J6HP", "_NM_J6HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Kazekiri", "_COMMON_EX _SP_IBU3" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0339, 0x033A, 0x033B, 0x033C }, "Kasumi Suzaku", "_SA_IBU1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x009E, 0x0028, 0x0034, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J6MK", "_NM_J6MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0009, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x00A0, 0x0009, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Kazekiri", "_COMMON_EX _SP_IBU3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JLP", "_NM_JLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0x009F, 0x0030, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J6HP", "_NM_J6HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Kazekiri", "_COMMON_EX _SP_IBU3" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0339, 0x033A, 0x033B, 0x033C, 0x033D, 0x033E, 0x033F, 0x0340 }, "Kasumi Suzaku", "_SA_IBU1" }
     }
 };
 
@@ -586,8 +586,8 @@ static const TrialDef g_trial_chun_li_1 = {
     .gauge_max = 0,
     .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHK", "_NM_SCHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0035, 0x0036, 0xFFFF }, "Tensei Ranka", "_SA_CHU3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHK", "_NM_SCHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0035, 0x0036, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Tensei Ranka", "_SA_CHU3" }
     }
 };
 
@@ -598,10 +598,10 @@ static const TrialDef g_trial_chun_li_2 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x002E, 0xFFFF, 0xFFFF, 0xFFFF }, "NJHK", "_COMMON_JS _NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x00D3, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Kikouken", "_COMMON_EX _SP_CHU2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0035, 0x0036, 0xFFFF }, "Tensei Ranka", "_SA_CHU3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "NJHK", "_COMMON_JS _NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x00D3, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Kikouken", "_COMMON_EX _SP_CHU2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0035, 0x0036, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Tensei Ranka", "_SA_CHU3" }
     }
 };
 
@@ -612,10 +612,10 @@ static const TrialDef g_trial_chun_li_3 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF }, "J2MK", "_NM_J2MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0035, 0xFFFF, 0xFFFF, 0xFFFF }, "J2HP", "_NM_J2HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF }, "Kikosho", "_SA_CHU1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J2MK", "_NM_J2MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0035, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J2HP", "_NM_J2HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kikosho", "_SA_CHU1" }
     }
 };
 
@@ -626,9 +626,9 @@ static const TrialDef g_trial_chun_li_4 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF }, "J2MK", "_NM_J2MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF }, "J2MK", "_NM_J2MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF }, "J2MK", "_NM_J2MK" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J2MK", "_NM_J2MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J2MK", "_NM_J2MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J2MK", "_NM_J2MK" }
     }
 };
 
@@ -639,11 +639,11 @@ static const TrialDef g_trial_chun_li_5 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0x0035, 0xFFFF, 0xFFFF }, "J2HP", "_NM_J2HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP", "_NM_4MP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP (2nd attack)", "_NM_4MP SPACE16 _HIT2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Spinning Bird Kick", "_COMMON_EX _SP_CHU3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF }, "Houyoku Sen", "_SA_CHU2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0x0035, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J2HP", "_NM_J2HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP", "_NM_4MP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP (2nd attack)", "_NM_4MP SPACE16 _HIT2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Spinning Bird Kick", "_COMMON_EX _SP_CHU3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Houyoku Sen", "_SA_CHU2" }
     }
 };
 
@@ -654,9 +654,9 @@ static const TrialDef g_trial_chun_li_6 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x0044, 0x002C, 0xFFFF }, "JMK", "_NM_JMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0043, 0x001C, 0x0024, 0x0020 }, "L_Hyakuretsu Kyaku", "_COMMON_L _SP_CHU1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF }, "Houyoku Sen", "_SA_CHU2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x0044, 0x002C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JMK", "_NM_JMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0043, 0x001C, 0x0024, 0x0020, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Hyakuretsu Kyaku", "_COMMON_L _SP_CHU1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Houyoku Sen", "_SA_CHU2" }
     }
 };
 
@@ -667,14 +667,14 @@ static const TrialDef g_trial_chun_li_7 = {
     .gauge_max = 0,
     .num_steps = 8,
     .steps = {
-        { TRIAL_REQ_FIREBALL_HIT, { 0x00D3, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Kikouken", "_COMMON_EX _SP_CHU2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP", "_NM_4MP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP (2nd attack)", "_NM_4MP SPACE16 _HIT2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x00D0, 0x00D1, 0x00D2, 0x00D3 }, "Kikouken", "_SP_CHU2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF }, "Houyoku Sen", "_SA_CHU2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF }, "JHP", "_NM_JHP" }
+        { TRIAL_REQ_FIREBALL_HIT, { 0x00D3, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Kikouken", "_COMMON_EX _SP_CHU2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP", "_NM_4MP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP (2nd attack)", "_NM_4MP SPACE16 _HIT2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x00D0, 0x00D1, 0x00D2, 0x00D3, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kikouken", "_SP_CHU2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Houyoku Sen", "_SA_CHU2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" }
     }
 };
 
@@ -685,13 +685,13 @@ static const TrialDef g_trial_chun_li_8 = {
     .gauge_max = 0,
     .num_steps = 7,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x0044, 0x002C, 0xFFFF }, "JMK", "_NM_JMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF }, "Houyoku Sen", "_SA_CHU2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0045, 0x002D, 0x0039, 0xFFFF }, "J2MK", "_NM_J2MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x0044, 0x002C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JMK", "_NM_JMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Houyoku Sen", "_SA_CHU2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0045, 0x002D, 0x0039, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J2MK", "_NM_J2MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" }
     }
 };
 
@@ -702,10 +702,10 @@ static const TrialDef g_trial_elena_2 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF }, "JLP", "_NM_JLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x009C, 0x003C, 0x0024, 0x0030 }, "JMK", "_NM_JMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x000D, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x009F, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JLP", "_NM_JLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x009C, 0x003C, 0x0024, 0x0030, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JMK", "_NM_JMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x000D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x009F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" }
     }
 };
 
@@ -716,10 +716,10 @@ static const TrialDef g_trial_elena_3 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Spin Scythe", "_COMMON_EX _SP_ELE4" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0004, 0xFFFF, 0xFFFF, 0xFFFF }, "Dash Forward", "_NM_FDASH" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Scratch Wheel", "_COMMON_H _SP_ELE1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Spin Scythe", "_COMMON_EX _SP_ELE4" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0004, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Dash Forward", "_NM_FDASH" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Scratch Wheel", "_COMMON_H _SP_ELE1" }
     }
 };
 
@@ -730,11 +730,11 @@ static const TrialDef g_trial_elena_4 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Spin Scythe", "_COMMON_EX _SP_ELE4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF }, "Spinning Beat", "_SA_ELE1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF }, "Spinning Beat", "_SA_ELE1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Spin Scythe", "_COMMON_EX _SP_ELE4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Spinning Beat", "_SA_ELE1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Spinning Beat", "_SA_ELE1" }
     }
 };
 
@@ -745,11 +745,11 @@ static const TrialDef g_trial_elena_5 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Mallet Smash", "_COMMON_EX _SP_ELE3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0009, 0x000A, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Scratch Wheel", "_COMMON_H _SP_ELE1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0x0029, 0x002A, 0xFFFF }, "Brave Dance", "_SA_ELE2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Scratch Wheel", "_COMMON_M _SP_ELE1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0008, 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Mallet Smash", "_COMMON_EX _SP_ELE3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0009, 0x000A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Scratch Wheel", "_COMMON_H _SP_ELE1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0x0029, 0x002A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Brave Dance", "_SA_ELE2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Scratch Wheel", "_COMMON_M _SP_ELE1" }
     }
 };
 
@@ -760,14 +760,14 @@ static const TrialDef g_trial_elena_7 = {
     .gauge_max = 0,
     .num_steps = 8,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x003E, 0x0026, 0xFFFF }, "JMP", "_NM_JMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x009D, 0x003E, 0x0026, 0x0032 }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Spin Scythe", "_COMMON_EX _SP_ELE4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Spin Scythe", "_COMMON_L _SP_ELE4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Spin Scythe", "_COMMON_L _SP_ELE4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x003E, 0x0026, 0xFFFF }, "JMP", "_NM_JMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x009D, 0x003E, 0x0026, 0x0032 }, "JHP", "_NM_JHP" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x003E, 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JMP", "_NM_JMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x009D, 0x003E, 0x0026, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Spin Scythe", "_COMMON_EX _SP_ELE4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Spin Scythe", "_COMMON_L _SP_ELE4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Spin Scythe", "_COMMON_L _SP_ELE4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x003E, 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JMP", "_NM_JMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x009D, 0x003E, 0x0026, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" }
     }
 };
 
@@ -778,9 +778,9 @@ static const TrialDef g_trial_makoto_2 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Oroshi", "_COMMON_EX _SP_MAK3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0044, 0x001F, 0xFFFF, 0xFFFF }, "EX_Hayate", "_COMMON_EX _SP_MAK1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Oroshi", "_COMMON_EX _SP_MAK3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0044, 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Hayate", "_COMMON_EX _SP_MAK1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" }
     }
 };
 
@@ -791,11 +791,11 @@ static const TrialDef g_trial_makoto_4 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x004B, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tsurugi", "_COMMON_M _SP_MAK5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x004B, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tsurugi", "_COMMON_M _SP_MAK5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0x003E, 0x003F, 0x0040 }, "M_Hayate", "_COMMON_M _SP_MAK1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0043, 0x003B, 0x003C }, "Seichuu Sen Godan zuki", "_SA_MAK1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x004B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tsurugi", "_COMMON_M _SP_MAK5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x004B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tsurugi", "_COMMON_M _SP_MAK5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0x003E, 0x003F, 0x0040, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Hayate", "_COMMON_M _SP_MAK1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0043, 0x003B, 0x003C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Seichuu Sen Godan zuki", "_SA_MAK1" }
     }
 };
 
@@ -806,14 +806,14 @@ static const TrialDef g_trial_makoto_5 = {
     .gauge_max = 0,
     .num_steps = 8,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF }, "NJHP", "_COMMON_JS _NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0036, 0x0037, 0x0038, 0x0039 }, "Tanden Renki-Seme no Kata", "_SA_MAK3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0009, 0x000A, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x003E, 0xFFFF, 0xFFFF }, "L_Hayate", "_COMMON_L _SP_MAK1" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x001C, 0x0046, 0xFFFF, 0xFFFF }, "Taunt", "_PA" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "NJHP", "_COMMON_JS _NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0036, 0x0037, 0x0038, 0x0039, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Tanden Renki-Seme no Kata", "_SA_MAK3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0009, 0x000A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x003E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Hayate", "_COMMON_L _SP_MAK1" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x001C, 0x0046, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Taunt", "_PA" }
     }
 };
 
@@ -824,16 +824,16 @@ static const TrialDef g_trial_makoto_6 = {
     .gauge_max = 0,
     .num_steps = 10,
     .steps = {
-        { TRIAL_REQ_THROW_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "Karakusa", "_SP_MAK4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0x002C, 0x002D, 0xFFFF }, "Abare ToSanami Kudaki", "_SA_MAK2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0025, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Fukiage", "_COMMON_M _SP_MAK2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF }, "Taunt", "_PA" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0044, 0x001F, 0xFFFF, 0xFFFF }, "EX_Hayate", "_COMMON_EX _SP_MAK1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x000D, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" }
+        { TRIAL_REQ_THROW_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Karakusa", "_SP_MAK4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0x002C, 0x002D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Abare ToSanami Kudaki", "_SA_MAK2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0025, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Fukiage", "_COMMON_M _SP_MAK2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Taunt", "_PA" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0044, 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Hayate", "_COMMON_EX _SP_MAK1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x000D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" }
     }
 };
 
@@ -844,12 +844,12 @@ static const TrialDef g_trial_makoto_7 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0046, 0x002E, 0x003A, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0x002C, 0x002D, 0xFFFF }, "Abare ToSanami Kudaki", "_SA_MAK2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x004B, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tsurugi", "_COMMON_M _SP_MAK5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0025, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Fukiage", "_COMMON_M _SP_MAK2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF }, "JHP", "_NM_JHP" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0046, 0x002E, 0x003A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0x002C, 0x002D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Abare ToSanami Kudaki", "_SA_MAK2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x004B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tsurugi", "_COMMON_M _SP_MAK5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0025, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Fukiage", "_COMMON_M _SP_MAK2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" }
     }
 };
 
@@ -860,16 +860,16 @@ static const TrialDef g_trial_makoto_8 = {
     .gauge_max = 0,
     .num_steps = 10,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Oroshi", "_COMMON_EX _SP_MAK3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0x002C, 0x002D, 0xFFFF }, "Abare ToSanami Kudaki", "_SA_MAK2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0025, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Fukiage", "_COMMON_M _SP_MAK2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Fukiage", "_COMMON_L _SP_MAK2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0046, 0x002E, 0x003A, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0044, 0x001F, 0xFFFF, 0xFFFF }, "EX_Hayate", "_COMMON_EX _SP_MAK1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Oroshi", "_COMMON_EX _SP_MAK3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0x002C, 0x002D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Abare ToSanami Kudaki", "_SA_MAK2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0025, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Fukiage", "_COMMON_M _SP_MAK2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Fukiage", "_COMMON_L _SP_MAK2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0046, 0x002E, 0x003A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0044, 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Hayate", "_COMMON_EX _SP_MAK1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" }
     }
 };
 
@@ -880,12 +880,12 @@ static const TrialDef g_trial_makoto_9 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_THROW_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "Karakusa", "_SP_MAK4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0x002C, 0x002D, 0xFFFF }, "Abare ToSanami Kudaki", "_SA_MAK2" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x000F, 0x0010, 0xFFFF, 0xFFFF }, "SHK (Kara Cancel)", "_COMMON_KARACAN _NM_SHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0025, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Fukiage", "_COMMON_M _SP_MAK2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Fukiage", "_COMMON_L _SP_MAK2" }
+        { TRIAL_REQ_THROW_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Karakusa", "_SP_MAK4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0x002C, 0x002D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Abare ToSanami Kudaki", "_SA_MAK2" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x000F, 0x0010, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK (Kara Cancel)", "_COMMON_KARACAN _NM_SHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0025, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Fukiage", "_COMMON_M _SP_MAK2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Fukiage", "_COMMON_L _SP_MAK2" }
     }
 };
 
@@ -896,12 +896,12 @@ static const TrialDef g_trial_makoto_10 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_THROW_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "Karakusa", "_SP_MAK4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0x002C, 0x002D, 0xFFFF }, "Abare ToSanami Kudaki", "_SA_MAK2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0xFFFF, 0xFFFF }, "LorM_Fukiage", "_COMMON_L _COMMON_OR _COMMON_M _SP_MAK2" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0009, 0x000A, 0xFFFF, 0xFFFF }, "SLK (Kara Cancel)", "_COMMON_KARACAN _NM_SLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Fukiage", "_COMMON_L _SP_MAK2" }
+        { TRIAL_REQ_THROW_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Karakusa", "_SP_MAK4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0x002C, 0x002D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Abare ToSanami Kudaki", "_SA_MAK2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "LorM_Fukiage", "_COMMON_L _COMMON_OR _COMMON_M _SP_MAK2" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0009, 0x000A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK (Kara Cancel)", "_COMMON_KARACAN _NM_SLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Fukiage", "_COMMON_L _SP_MAK2" }
     }
 };
 
@@ -912,11 +912,11 @@ static const TrialDef g_trial_yun_2 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_THROW_HIT, { 0x0003, 0x0006, 0x0007, 0x0008 }, "N_Throw", "_N_THROW" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x0060, 0x002D, 0x002E }, "YouHou", "_SA_YUN1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0058, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tetsuzankou", "_COMMON_M _SP_YUN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF }, "JLP", "_NM_JLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x009C, 0x003C, 0x0024, 0x0030 }, "J6HP", "_NM_J6HP" }
+        { TRIAL_REQ_THROW_HIT, { 0x0003, 0x0006, 0x0007, 0x0008, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "N_Throw", "_N_THROW" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x0060, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "YouHou", "_SA_YUN1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0058, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tetsuzankou", "_COMMON_M _SP_YUN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JLP", "_NM_JLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x009C, 0x003C, 0x0024, 0x0030, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J6HP", "_NM_J6HP" }
     }
 };
 
@@ -927,10 +927,10 @@ static const TrialDef g_trial_yun_3 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "Zenpou Tenshin", "_SP_YUN5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Nishoukyaku", "_COMMON_EX _SP_YUN3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Nishoukyaku", "_COMMON_EX _SP_YUN3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Nishoukyaku", "_COMMON_EX _SP_YUN3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Zenpou Tenshin", "_SP_YUN5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Nishoukyaku", "_COMMON_EX _SP_YUN3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Nishoukyaku", "_COMMON_EX _SP_YUN3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Nishoukyaku", "_COMMON_EX _SP_YUN3" }
     }
 };
 
@@ -941,10 +941,10 @@ static const TrialDef g_trial_yun_4 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF }, "Kobokushi", "_SP_YUN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0057, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tetsuzankou", "_COMMON_L _SP_YUN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x005A, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tetsuzankou", "_COMMON_EX _SP_YUN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF }, "Sourai rengeki", "_SA_YUN2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kobokushi", "_SP_YUN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0057, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tetsuzankou", "_COMMON_L _SP_YUN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x005A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tetsuzankou", "_COMMON_EX _SP_YUN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Sourai rengeki", "_SA_YUN2" }
     }
 };
 
@@ -955,13 +955,13 @@ static const TrialDef g_trial_yun_5 = {
     .gauge_max = 0,
     .num_steps = 7,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF }, "JLP", "_NM_JLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x009C, 0x003C, 0x0030, 0xFFFF }, "J6HP", "_NM_J6HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x0060, 0x002D, 0x002E }, "YouHou", "_SA_YUN1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Nishoukyaku", "_COMMON_M _SP_YUN3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF }, "CMK", "_NM_CMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Nishoukyaku", "_COMMON_L _SP_YUN3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JLP", "_NM_JLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x009C, 0x003C, 0x0030, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J6HP", "_NM_J6HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x0060, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "YouHou", "_SA_YUN1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Nishoukyaku", "_COMMON_M _SP_YUN3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMK", "_NM_CMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Nishoukyaku", "_COMMON_L _SP_YUN3" }
     }
 };
 
@@ -972,11 +972,11 @@ static const TrialDef g_trial_yun_7 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF }, "Kobokushi", "_SP_YUN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Nishoukyaku", "_COMMON_EX _SP_YUN3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0008, 0xFFFF, 0xFFFF, 0xFFFF }, "6HP", "_NM_6HP" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0009, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK (Kara Cancel)", "_NM_SLK SPACE16 SPACE8 _COMMON_KARABURI" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF }, "L_ZesshouHohou", "_COMMON_L _SP_YUN1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kobokushi", "_SP_YUN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Nishoukyaku", "_COMMON_EX _SP_YUN3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0008, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "6HP", "_NM_6HP" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0009, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK (Kara Cancel)", "_NM_SLK SPACE16 SPACE8 _COMMON_KARABURI" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_ZesshouHohou", "_COMMON_L _SP_YUN1" }
     }
 };
 
@@ -987,18 +987,18 @@ static const TrialDef g_trial_yun_8 = {
     .gauge_max = 0,
     .num_steps = 12,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF }, "Kobokushi", "_SP_YUN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0057, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tetsuzankou", "_COMMON_L _SP_YUN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x0060, 0x002D, 0x002E }, "YouHou", "_SA_YUN1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0057, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tetsuzankou", "_COMMON_L _SP_YUN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SFHP", "_NM_SDHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF }, "JLP", "_NM_JLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x009C, 0x003C, 0x0024, 0x0030 }, "J6HP", "_NM_J6HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x00A2, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Nishoukyaku", "_COMMON_EX _SP_YUN3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Nishoukyaku", "_COMMON_H _SP_YUN3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Nishoukyaku (2nd attack)", "_COMMON_H _SP_YUN3 SPACE16 SPACE8 _HIT2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kobokushi", "_SP_YUN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0057, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tetsuzankou", "_COMMON_L _SP_YUN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0x0060, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "YouHou", "_SA_YUN1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0057, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tetsuzankou", "_COMMON_L _SP_YUN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SFHP", "_NM_SDHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x003C, 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JLP", "_NM_JLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x009C, 0x003C, 0x0024, 0x0030, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J6HP", "_NM_J6HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x00A2, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Nishoukyaku", "_COMMON_EX _SP_YUN3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Nishoukyaku", "_COMMON_H _SP_YUN3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Nishoukyaku (2nd attack)", "_COMMON_H _SP_YUN3 SPACE16 SPACE8 _HIT2" }
     }
 };
 
@@ -1009,19 +1009,19 @@ static const TrialDef g_trial_yun_10 = {
     .gauge_max = 0,
     .num_steps = 13,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x003D, 0x003E, 0x003F, 0xFFFF }, "Gen Ei Jin", "_SA_YUN3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0x001C, 0x001D, 0x001E }, "Kobokushi", "_SP_YUN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0x001C, 0x001D, 0x001E }, "Kobokushi", "_SP_YUN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x00D6, 0x000E, 0xFFFF, 0xFFFF }, "6MK", "_NM_6MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0x001C, 0x001D, 0x001E }, "Kobokushi", "_SP_YUN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0x001C, 0x001D, 0x001E }, "Kobokushi", "_SP_YUN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0x001C, 0x001D, 0x001E }, "Kobokushi", "_SP_YUN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0x0044, 0xFFFF, 0xFFFF }, "H_Nishoukyaku", "_COMMON_H _SP_YUN3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0057, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tetsuzankou", "_COMMON_L _SP_YUN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0008, 0xFFFF, 0xFFFF, 0xFFFF }, "6HP", "_NM_6HP" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0009, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK (Kara Cancel)", "_NM_SLK SPACE16 SPACE8 _COMMON_KARABURI" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF }, "L_ZesshouHohou", "_COMMON_L _SP_YUN1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x003D, 0x003E, 0x003F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Gen Ei Jin", "_SA_YUN3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0x001C, 0x001D, 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kobokushi", "_SP_YUN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0x001C, 0x001D, 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kobokushi", "_SP_YUN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x00D6, 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "6MK", "_NM_6MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0x001C, 0x001D, 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kobokushi", "_SP_YUN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0x001C, 0x001D, 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kobokushi", "_SP_YUN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0041, 0x001C, 0x001D, 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kobokushi", "_SP_YUN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0022, 0x0044, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Nishoukyaku", "_COMMON_H _SP_YUN3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0057, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tetsuzankou", "_COMMON_L _SP_YUN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0008, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "6HP", "_NM_6HP" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0009, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK (Kara Cancel)", "_NM_SLK SPACE16 SPACE8 _COMMON_KARABURI" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_ZesshouHohou", "_COMMON_L _SP_YUN1" }
     }
 };
 
@@ -1032,11 +1032,11 @@ static const TrialDef g_trial_yang_2 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0004, 0xFFFF, 0xFFFF, 0xFFFF }, "SFMP", "_NM_SDMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0004, 0x009E, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0004, 0x009F, 0xFFFF, 0xFFFF }, "4HP", "_NM_4HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x004B, 0x002C, 0x002D, 0x002E }, "Tenshin Senkyuu Tai", "_SA_YANG2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0004, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SFMP", "_NM_SDMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0004, 0x009E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0004, 0x009F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4HP", "_NM_4HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x004B, 0x002C, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Tenshin Senkyuu Tai", "_SA_YANG2" }
     }
 };
 
@@ -1047,10 +1047,10 @@ static const TrialDef g_trial_yang_3 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF }, "Raishin Mahhaken", "_SA_YANG1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Raishin Mahhaken", "_SA_YANG1" }
     }
 };
 
@@ -1061,11 +1061,11 @@ static const TrialDef g_trial_yang_4 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x003E, 0x0038, 0xFFFF }, "JMK", "_NM_JMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x009C, 0x0044, 0xFFFF }, "J3MK", "_NM_J3MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF }, "NJHP", "_NM_NJHP" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x003E, 0x0038, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JMK", "_NM_JMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x009C, 0x0044, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J3MK", "_NM_J3MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "NJHP", "_NM_NJHP" }
     }
 };
 
@@ -1076,11 +1076,11 @@ static const TrialDef g_trial_yang_5 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x003E, 0x0038, 0xFFFF }, "JMK (Cross-up)", "_COMMON_ME _NM_JMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x009C, 0x0044, 0xFFFF }, "J3MK (Cross-up)", "_COMMON_ME _NM_J3MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x003B, 0xFFFF, 0xFFFF, 0xFFFF }, "J3HK (Swing away)", "_NM_J3HK SPACE32 SPACE16 SPACE8 _COMMON_KARABURI" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x004B, 0x002C, 0x002D, 0x002E }, "Tenshin Senkyuu Tai", "_SA_YANG2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x003E, 0x0038, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JMK (Cross-up)", "_COMMON_ME _NM_JMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0038, 0x009C, 0x0044, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J3MK (Cross-up)", "_COMMON_ME _NM_J3MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x003B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J3HK (Swing away)", "_NM_J3HK SPACE32 SPACE16 SPACE8 _COMMON_KARABURI" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x004B, 0x002C, 0x002D, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Tenshin Senkyuu Tai", "_SA_YANG2" }
     }
 };
 
@@ -1091,17 +1091,17 @@ static const TrialDef g_trial_yang_6 = {
     .gauge_max = 0,
     .num_steps = 11,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF }, "CMK", "_NM_CMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x005B, 0x0027, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0026, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tourou Zan", "_COMMON_H _SP_YANG1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF }, "L_Tourou Zan", "_COMMON_L _SP_YANG1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF }, "L_Tourou Zan", "_COMMON_L _SP_YANG1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMK", "_NM_CMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x005B, 0x0027, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tourou Zan", "_COMMON_H _SP_YANG1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tourou Zan", "_COMMON_L _SP_YANG1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Tourou Zan", "_COMMON_L _SP_YANG1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" }
     }
 };
 
@@ -1112,9 +1112,9 @@ static const TrialDef g_trial_yang_8 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF }, "Byakko Soushou Da", "_SP_YANG4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0x005B, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Byakko Soushou Da", "_SP_YANG4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0027, 0x005B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tourou Zan", "_COMMON_EX _SP_YANG1" }
     }
 };
 
@@ -1125,10 +1125,10 @@ static const TrialDef g_trial_oro_1 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF }, "JHP (2nd attack)", "_NM_JHP SPACE32 SPACE16 _HIT2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_THROW_HIT, { 0x000D, 0xFFFF, 0xFFFF, 0xFFFF }, "Kishin Tsui", "_SA_ORO1_3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP (2nd attack)", "_NM_JHP SPACE32 SPACE16 _HIT2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_THROW_HIT, { 0x000D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kishin Tsui", "_SA_ORO1_3" }
     }
 };
 
@@ -1139,13 +1139,13 @@ static const TrialDef g_trial_oro_4 = {
     .gauge_max = 0,
     .num_steps = 7,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Jinchu Watari", "_COMMON_H _SP_ORO3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0004, 0xFFFF, 0xFFFF, 0xFFFF }, "Dash Forward", "_NM_FDASH" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Oniyamma", "_COMMON_M _SP_ORO2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Jinchu Watari", "_COMMON_H _SP_ORO3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0004, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Dash Forward", "_NM_FDASH" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Oniyamma", "_COMMON_M _SP_ORO2" }
     }
 };
 
@@ -1156,16 +1156,16 @@ static const TrialDef g_trial_oro_5 = {
     .gauge_max = 0,
     .num_steps = 10,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x002F, 0xFFFF, 0xFFFF, 0xFFFF }, "Tengu Midareishi", "_SA_ORO3_2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0009, 0x000A, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0x0004, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x000D, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x002F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Tengu Midareishi", "_SA_ORO3_2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0009, 0x000A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0x0004, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x000D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0x0010, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" }
     }
 };
 
@@ -1176,12 +1176,12 @@ static const TrialDef g_trial_oro_6 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_THROW_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF }, "Kishin Kuuchuu Jigoku Guruma", "_SA_ORO1_2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_THROW_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Kishin Kuuchuu Jigoku Guruma", "_SA_ORO1_2" }
     }
 };
 
@@ -1192,15 +1192,15 @@ static const TrialDef g_trial_oro_7 = {
     .gauge_max = 0,
     .num_steps = 9,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF }, "Jinchu Nobori", "_SP_ORO4" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0004, 0xFFFF, 0xFFFF, 0xFFFF }, "Dash Forward", "_NM_FDASH" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Jinchu Watari", "_COMMON_M _SP_ORO3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0004, 0xFFFF, 0xFFFF, 0xFFFF }, "Dash Forward", "_NM_FDASH" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Oni Yamma", "_COMMON_M _SP_ORO2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0039, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Jinchu Nobori", "_SP_ORO4" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0004, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Dash Forward", "_NM_FDASH" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Jinchu Watari", "_COMMON_M _SP_ORO3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0004, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Dash Forward", "_NM_FDASH" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Oni Yamma", "_COMMON_M _SP_ORO2" }
     }
 };
 
@@ -1211,19 +1211,19 @@ static const TrialDef g_trial_oro_8 = {
     .gauge_max = 0,
     .num_steps = 13,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Jinchu Watari", "_COMMON_M _SP_ORO3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0B9F, 0xFFFF, 0xFFFF, 0xFFFF }, "Yagyou Oodama", "_SA_ORO2_2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Jinchu Watari", "_COMMON_M _SP_ORO3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Jinchu Watari", "_COMMON_M _SP_ORO3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Oniyamma", "_COMMON_M _SP_ORO2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Jinchu Watari", "_COMMON_M _SP_ORO3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0B9F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Yagyou Oodama", "_SA_ORO2_2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Jinchu Watari", "_COMMON_M _SP_ORO3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Jinchu Watari", "_COMMON_M _SP_ORO3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Oniyamma", "_COMMON_M _SP_ORO2" }
     }
 };
 
@@ -1234,17 +1234,17 @@ static const TrialDef g_trial_oro_9 = {
     .gauge_max = 0,
     .num_steps = 11,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0026, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Yagyou Dama", "_COMMON_H _SA_ORO2_1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0025, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Yagyou Dama", "_COMMON_M _SA_ORO2_1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF }, "JHP (2nd attack)", "_NM_JHP SPACE32 SPACE16 _HIT2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Yagyou Dama", "_COMMON_L _SA_ORO2_1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x000D, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Sun Disk Palm", "_COMMON_M _SP_ORO1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Oniyamma", "_COMMON_L _SP_ORO2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Yagyou Dama", "_COMMON_H _SA_ORO2_1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0025, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Yagyou Dama", "_COMMON_M _SA_ORO2_1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP (2nd attack)", "_NM_JHP SPACE32 SPACE16 _HIT2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0024, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Yagyou Dama", "_COMMON_L _SA_ORO2_1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Sun Disk Palm", "_COMMON_H _SP_ORO1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x000D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Sun Disk Palm", "_COMMON_M _SP_ORO1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Oniyamma", "_COMMON_L _SP_ORO2" }
     }
 };
 
@@ -1255,10 +1255,10 @@ static const TrialDef g_trial_dudley_2 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF }, "Corkscrew Blow", "_SA_DUD3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Corkscrew Blow", "_SA_DUD3" }
     }
 };
 
@@ -1269,12 +1269,12 @@ static const TrialDef g_trial_dudley_4 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x003E, 0x0026, 0xFFFF }, "JMP", "_NM_JMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0002, 0xFFFF, 0xFFFF, 0xFFFF }, "6LP", "_NM_6LP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0002, 0xFFFF, 0xFFFF, 0xFFFF }, "6LP", "_NM_6LP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0002, 0x00A7, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0039, 0x003A, 0x003B, 0xFFFF }, "Ducking", "_SP_DUD2_1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF }, "Rocket Upper", "_SA_DUD1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0032, 0x003E, 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JMP", "_NM_JMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0002, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "6LP", "_NM_6LP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0002, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "6LP", "_NM_6LP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0002, 0x00A7, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0039, 0x003A, 0x003B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Ducking", "_SP_DUD2_1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Rocket Upper", "_SA_DUD1" }
     }
 };
 
@@ -1285,13 +1285,13 @@ static const TrialDef g_trial_dudley_5 = {
     .gauge_max = 0,
     .num_steps = 7,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Machinegun Blow", "_COMMON_L _SP_DUD3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Machinegun Blow", "_COMMON_L _SP_DUD3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Machinegun Blow", "_COMMON_L _SP_DUD3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "6MK", "_NM_6MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Jet Upper", "_COMMON_H _SP_DUD1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF }, "Corkscrew Blow", "_SA_DUD3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Machinegun Blow", "_COMMON_L _SP_DUD3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Machinegun Blow", "_COMMON_L _SP_DUD3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Machinegun Blow", "_COMMON_L _SP_DUD3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "6MK", "_NM_6MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Jet Upper", "_COMMON_H _SP_DUD1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Corkscrew Blow", "_SA_DUD3" }
     }
 };
 
@@ -1302,18 +1302,18 @@ static const TrialDef g_trial_dudley_6 = {
     .gauge_max = 0,
     .num_steps = 12,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Short Swing Blow", "_COMMON_L _SP_DUD6" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0x0021, 0x0022, 0xFFFF }, "Rolling Thunder", "_SA_DUD2" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0053, 0xFFFF, 0xFFFF, 0xFFFF }, "Taunt", "_PA" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x00A3, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x00A4, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Machinegun Blow", "_COMMON_M _SP_DUD3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x00A5, 0xFFFF, 0xFFFF }, "SMH", "_NM_SHK" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Short Swing Blow", "_COMMON_L _SP_DUD6" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0x0021, 0x0022, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Rolling Thunder", "_SA_DUD2" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0053, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Taunt", "_PA" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x00A3, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x00A4, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Machinegun Blow", "_COMMON_M _SP_DUD3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x00A5, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMH", "_NM_SHK" }
     }
 };
 
@@ -1324,11 +1324,11 @@ static const TrialDef g_trial_dudley_8 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x004B, 0x0041, 0xFFFF, 0xFFFF }, "L_Punch and Cross (Swing away)", "_COMMON_L _COMMON_KARABURI _SP_DUD5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Machinegun Blow", "_COMMON_EX _SP_DUD3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x004D, 0x0043, 0xFFFF, 0xFFFF }, "H_Punch and Cross", "_COMMON_H _SP_DUD5" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x004B, 0x0041, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Punch and Cross (Swing away)", "_COMMON_L _COMMON_KARABURI _SP_DUD5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHK", "_NM_SHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Machinegun Blow", "_COMMON_EX _SP_DUD3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x004D, 0x0043, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Punch and Cross", "_COMMON_H _SP_DUD5" }
     }
 };
 
@@ -1339,13 +1339,13 @@ static const TrialDef g_trial_dudley_9 = {
     .gauge_max = 0,
     .num_steps = 7,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Machinegun Blow", "_COMMON_L _SP_DUD3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002F, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Short Swing Blow", "_COMMON_EX _SP_DUD6" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Jet Upper", "_COMMON_H _SP_DUD1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF }, "Rocket Upper", "_SA_DUD1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0021, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHK", "_NM_CHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Machinegun Blow", "_COMMON_L _SP_DUD3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Short Swing Blow", "_COMMON_EX _SP_DUD6" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Jet Upper", "_COMMON_H _SP_DUD1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Rocket Upper", "_SA_DUD1" }
     }
 };
 
@@ -1356,10 +1356,10 @@ static const TrialDef g_trial_urien_1 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Chariot Tackle", "_COMMON_L _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Chariot Tackle", "_COMMON_L _SP_URIEN2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Chariot Tackle", "_COMMON_L _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Chariot Tackle", "_COMMON_L _SP_URIEN2" }
     }
 };
 
@@ -1370,10 +1370,10 @@ static const TrialDef g_trial_urien_2 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003D, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Chariot Tackle", "_COMMON_EX _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0068, 0xFFFF, 0xFFFF, 0xFFFF }, "Temporal Thunder", "_SA_URIEN2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Chariot Tackle", "_COMMON_EX _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0068, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Temporal Thunder", "_SA_URIEN2" }
     }
 };
 
@@ -1384,10 +1384,10 @@ static const TrialDef g_trial_urien_3 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003B, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Chariot Tackle", "_COMMON_M _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Chariot Tackle", "_COMMON_L _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Dangerous Headbutt", "_COMMON_L _SP_URIEN4" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Chariot Tackle", "_COMMON_M _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Chariot Tackle", "_COMMON_L _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Dangerous Headbutt", "_COMMON_L _SP_URIEN4" }
     }
 };
 
@@ -1398,12 +1398,12 @@ static const TrialDef g_trial_urien_4 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0084, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Metallic Sphere", "_COMMON_EX _SP_URIEN1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x009E, 0x0001, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003D, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Chariot Tackle", "_COMMON_EX _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003D, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Chariot Tackle (2nd attack)", "_COMMON_EX _SP_URIEN2 SPACE64 SPACE32 SPACE8 _HIT2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0068, 0xFFFF, 0xFFFF, 0xFFFF }, "Temporal Thunder", "_SA_URIEN2" }
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0084, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Metallic Sphere", "_COMMON_EX _SP_URIEN1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x009E, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Chariot Tackle", "_COMMON_EX _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Chariot Tackle (2nd attack)", "_COMMON_EX _SP_URIEN2 SPACE64 SPACE32 SPACE8 _HIT2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0068, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Temporal Thunder", "_SA_URIEN2" }
     }
 };
 
@@ -1414,11 +1414,11 @@ static const TrialDef g_trial_urien_6 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x009E, 0x0001, 0x0003 }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002A, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Dangerous Headbutt", "_COMMON_M _SP_URIEN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003D, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Chariot Tackle", "_COMMON_EX _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0068, 0xFFFF, 0xFFFF, 0xFFFF }, "Temporal Thunder", "_SA_URIEN2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x009E, 0x0001, 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Dangerous Headbutt", "_COMMON_M _SP_URIEN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Chariot Tackle", "_COMMON_EX _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0068, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Temporal Thunder", "_SA_URIEN2" }
     }
 };
 
@@ -1429,17 +1429,17 @@ static const TrialDef g_trial_urien_7 = {
     .gauge_max = 0,
     .num_steps = 11,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Dangerous Headbutt", "_COMMON_EX _SP_URIEN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003B, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Chariot Tackle", "_COMMON_M _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Dangerous Headbutt", "_COMMON_EX _SP_URIEN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP (2nd attack)", "_NM_CHP SPACE32 SPACE16 _HIT2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Chariot Tackle", "_COMMON_L _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0046, 0x0047, 0x0048, 0xFFFF }, "Tyrant Slaughter", "_SA_URIEN1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0046, 0x0047, 0x0048, 0xFFFF }, "Tyrant Slaughter (5th attack)", "_SA_URIEN1 SPACE32 SPACE32 SPACE32 SPACE8 _HIT5" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Dangerous Headbutt", "_COMMON_EX _SP_URIEN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Chariot Tackle", "_COMMON_M _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Dangerous Headbutt", "_COMMON_EX _SP_URIEN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP (2nd attack)", "_NM_CHP SPACE32 SPACE16 _HIT2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Chariot Tackle", "_COMMON_L _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0046, 0x0047, 0x0048, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Tyrant Slaughter", "_SA_URIEN1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0046, 0x0047, 0x0048, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Tyrant Slaughter (5th attack)", "_SA_URIEN1 SPACE32 SPACE32 SPACE32 SPACE8 _HIT5" }
     }
 };
 
@@ -1450,17 +1450,17 @@ static const TrialDef g_trial_urien_8 = {
     .gauge_max = 0,
     .num_steps = 11,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x002E, 0x0046, 0x003A, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Dangerous Headbutt", "_COMMON_EX _SP_URIEN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0068, 0xFFFF, 0xFFFF, 0xFFFF }, "Temporal Thunder", "_SA_URIEN2" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0037, 0xFFFF, 0xFFFF, 0xFFFF }, "Taunt", "_PA" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003B, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Chariot Tackle", "_COMMON_M _SP_URIEN2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0068, 0xFFFF, 0xFFFF, 0xFFFF }, "Temporal Thunder", "_SA_URIEN2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x002E, 0x0046, 0x003A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Dangerous Headbutt", "_COMMON_EX _SP_URIEN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0068, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Temporal Thunder", "_SA_URIEN2" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0037, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Taunt", "_PA" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0028, 0x0034, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Chariot Tackle", "_COMMON_M _SP_URIEN2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0068, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Temporal Thunder", "_SA_URIEN2" }
     }
 };
 
@@ -1471,16 +1471,16 @@ static const TrialDef g_trial_urien_10 = {
     .gauge_max = 0,
     .num_steps = 10,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x077B, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Aegis Reflector", "_COMMON_L _SA_URIEN3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x009E, 0x0001, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002A, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Dangerous Headbutt", "_COMMON_M _SP_URIEN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Chariot Tackle", "_COMMON_L _SP_URIEN2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x077C, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Aegis Reflector", "_COMMON_M _SA_URIEN3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Violence Knee Drop", "_COMMON_H _SP_URIEN3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x077B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Aegis Reflector", "_COMMON_L _SA_URIEN3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Chariot Tackle", "_COMMON_H _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x009E, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Dangerous Headbutt", "_COMMON_M _SP_URIEN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Chariot Tackle", "_COMMON_L _SP_URIEN2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x077C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Aegis Reflector", "_COMMON_M _SA_URIEN3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Violence Knee Drop", "_COMMON_H _SP_URIEN3" }
     }
 };
 
@@ -1491,8 +1491,8 @@ static const TrialDef g_trial_remy_1 = {
     .gauge_max = 0,
     .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHK (Anti air)", "_COMMON_ANTI_AIR _NM_SCHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F }, "Rising Rage Flash", "_SP_REM3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x000F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCHK (Anti air)", "_COMMON_ANTI_AIR _NM_SCHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Rising Rage Flash", "_SP_REM3" }
     }
 };
 
@@ -1503,9 +1503,9 @@ static const TrialDef g_trial_remy_2 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0001, 0x009C, 0xFFFF, 0xFFFF }, "N_Throw	", "_N_THROW" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0003, 0x0004, 0xFFFF, 0xFFFF }, "SMP (Kara Cancel)", "_COMMON_KARACAN _NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F }, "Rising Rage Flash", "_SP_REM3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0001, 0x009C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "N_Throw	", "_N_THROW" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0003, 0x0004, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP (Kara Cancel)", "_COMMON_KARACAN _NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Rising Rage Flash", "_SP_REM3" }
     }
 };
 
@@ -1516,10 +1516,10 @@ static const TrialDef g_trial_remy_3 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002E, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Cold Blue Kick", "_COMMON_L _SP_REM4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F }, "Rising Rage Flash", "_SP_REM3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Cold Blue Kick", "_COMMON_L _SP_REM4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Rising Rage Flash", "_SP_REM3" }
     }
 };
 
@@ -1530,10 +1530,10 @@ static const TrialDef g_trial_remy_4 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_COMMON_L _NM_CLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F }, "Rising Rage Flash", "_SP_REM3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMP", "_NM_SCMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_COMMON_L _NM_CLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Rising Rage Flash", "_SP_REM3" }
     }
 };
 
@@ -1544,12 +1544,12 @@ static const TrialDef g_trial_remy_5 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_FIREBALL_HIT, { 0x00C6, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Light of Virtue (P)", "_COMMON_L _SP_REM1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x00CE, 0x0CCF, 0xFFFF, 0xFFFF }, "EX_Light of Virtue (K)", "_COMMON_EX _SP_REM2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x00C9, 0x0CCA, 0xFFFF, 0xFFFF }, "EX_Light of Virtue (P)", "_COMMON_EX _SP_REM1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x00CE, 0x0CCF, 0xFFFF, 0xFFFF }, "EX_Light of Virtue (K)", "_COMMON_EX _SP_REM2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x00C9, 0x0CCA, 0xFFFF, 0xFFFF }, "EX_Light of Virtue (P)", "_COMMON_EX _SP_REM1" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x00CE, 0x0CCF, 0xFFFF, 0xFFFF }, "EX_Light of Virtue (K)", "_COMMON_EX _SP_REM2" }
+        { TRIAL_REQ_FIREBALL_HIT, { 0x00C6, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Light of Virtue (P)", "_COMMON_L _SP_REM1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x00CE, 0x0CCF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Light of Virtue (K)", "_COMMON_EX _SP_REM2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x00C9, 0x0CCA, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Light of Virtue (P)", "_COMMON_EX _SP_REM1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x00CE, 0x0CCF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Light of Virtue (K)", "_COMMON_EX _SP_REM2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x00C9, 0x0CCA, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Light of Virtue (P)", "_COMMON_EX _SP_REM1" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x00CE, 0x0CCF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Light of Virtue (K)", "_COMMON_EX _SP_REM2" }
     }
 };
 
@@ -1560,11 +1560,11 @@ static const TrialDef g_trial_remy_6 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x00C6, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Light of Virtue (P)", "_COMMON_L _SP_REM1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000A, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x003B, 0x001E, 0x003C }, "Supreme Rising Rage Flash", "_SA_REM2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0040, 0x0034, 0x0028, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCMK", "_NM_SCMK" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x00C6, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Light of Virtue (P)", "_COMMON_L _SP_REM1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLK", "_NM_SLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x003B, 0x001E, 0x003C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Supreme Rising Rage Flash", "_SA_REM2" }
     }
 };
 
@@ -1575,10 +1575,10 @@ static const TrialDef g_trial_remy_7 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0009, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLK", "_NM_SCLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F }, "Rising Rage Flash", "_SP_REM3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0009, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLK", "_NM_SCLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001C, 0x001D, 0x001E, 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Rising Rage Flash", "_SP_REM3" }
     }
 };
 
@@ -1589,10 +1589,10 @@ static const TrialDef g_trial_hugo_3 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_THROW_HIT, { 0x0014, 0x0015, 0x0016, 0xFFFF }, "Ultra Throw", "_SP_HUGO2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
-        { TRIAL_REQ_THROW_HIT, { 0x001C, 0xFFFF, 0xFFFF, 0xFFFF }, "Megaton Press", "_SA_HUGO2" }
+        { TRIAL_REQ_THROW_HIT, { 0x0014, 0x0015, 0x0016, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Ultra Throw", "_SP_HUGO2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
+        { TRIAL_REQ_THROW_HIT, { 0x001C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Megaton Press", "_SA_HUGO2" }
     }
 };
 
@@ -1603,13 +1603,13 @@ static const TrialDef g_trial_hugo_4 = {
     .gauge_max = 0,
     .num_steps = 7,
     .steps = {
-        { TRIAL_REQ_THROW_HIT, { 0x0014, 0x0015, 0x0016, 0xFFFF }, "Ultra Throw", "_SP_HUGO2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_THROW_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Monster Lariat", "_COMMON_M _SP_HUGO6" }
+        { TRIAL_REQ_THROW_HIT, { 0x0014, 0x0015, 0x0016, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Ultra Throw", "_SP_HUGO2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_THROW_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Monster Lariat", "_COMMON_M _SP_HUGO6" }
     }
 };
 
@@ -1620,10 +1620,10 @@ static const TrialDef g_trial_hugo_5 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0x0035, 0xFFFF, 0xFFFF }, "J2HP (Cross Up)", "_COMMON_ME _NM_J2HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Monster Lariat", "_COMMON_EX _SP_HUGO6" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0x0035, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "J2HP (Cross Up)", "_COMMON_ME _NM_J2HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Monster Lariat", "_COMMON_EX _SP_HUGO6" }
     }
 };
 
@@ -1634,7 +1634,7 @@ static const TrialDef g_trial_hugo_6 = {
     .gauge_max = 0,
     .num_steps = 1,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "Gigas Breaker (Standing)", "_TR_HUGO1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Gigas Breaker (Standing)", "_TR_HUGO1" }
     }
 };
 
@@ -1645,13 +1645,13 @@ static const TrialDef g_trial_hugo_7 = {
     .gauge_max = 0,
     .num_steps = 7,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Giant Palm Bomber", "_COMMON_M _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Giant Palm Bomber", "_COMMON_L _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0035, 0x0036, 0xFFFF }, "Hammer Frenzy", "_SA_HUGO3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Giant Palm Bomber", "_COMMON_M _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF }, "6HP", "_NM_6HP" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Giant Palm Bomber", "_COMMON_M _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Giant Palm Bomber", "_COMMON_L _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0034, 0x0035, 0x0036, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Hammer Frenzy", "_SA_HUGO3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Giant Palm Bomber", "_COMMON_M _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0007, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "6HP", "_NM_6HP" }
     }
 };
 
@@ -1662,13 +1662,13 @@ static const TrialDef g_trial_hugo_8 = {
     .gauge_max = 0,
     .num_steps = 7,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Giant Palm Bomber", "_COMMON_M _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Giant Palm Bomber", "_COMMON_L _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Monster Lariat", "_COMMON_EX _SP_HUGO6" },
-        { TRIAL_REQ_THROW_HIT, { 0x0014, 0x0015, 0x0016, 0xFFFF }, "Ultra Throw", "_SP_HUGO2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Giant Palm Bomber", "_COMMON_M _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0010, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Shootdown Backbreaker", "_COMMON_H _SP_HUGO3" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Giant Palm Bomber", "_COMMON_M _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Giant Palm Bomber", "_COMMON_L _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Monster Lariat", "_COMMON_EX _SP_HUGO6" },
+        { TRIAL_REQ_THROW_HIT, { 0x0014, 0x0015, 0x0016, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Ultra Throw", "_SP_HUGO2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Giant Palm Bomber", "_COMMON_M _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0010, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Shootdown Backbreaker", "_COMMON_H _SP_HUGO3" }
     }
 };
 
@@ -1679,15 +1679,15 @@ static const TrialDef g_trial_hugo_9 = {
     .gauge_max = 0,
     .num_steps = 9,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Giant Palm Bomber", "_COMMON_EX _SP_HUGO5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Giant Palm Bomber", "_COMMON_H _SP_HUGO5" }
     }
 };
 
@@ -1698,10 +1698,10 @@ static const TrialDef g_trial_necro_3 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x000B, 0xFFFF, 0xFFFF, 0xFFFF }, "4LK", "_NM_4LK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000B, 0xFFFF, 0xFFFF, 0xFFFF }, "4LK", "_NM_4LK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000B, 0x009C, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF }, "Magnetic Storm", "_SA_NEC1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x000B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4LK", "_NM_4LK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4LK", "_NM_4LK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000B, 0x009C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Magnetic Storm", "_SA_NEC1" }
     }
 };
 
@@ -1712,10 +1712,10 @@ static const TrialDef g_trial_necro_4 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0011, 0xFFFF, 0xFFFF, 0xFFFF }, "4HK", "_NM_4HK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF }, "Magnetic Storm", "_SA_NEC1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0011, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4HK", "_NM_4HK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Magnetic Storm", "_SA_NEC1" }
     }
 };
 
@@ -1726,9 +1726,9 @@ static const TrialDef g_trial_necro_5 = {
     .gauge_max = 0,
     .num_steps = 3,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0008, 0xFFFF, 0xFFFF, 0xFFFF }, "4HP", "_NM_4HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
-        { TRIAL_REQ_THROW_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF }, "Slam Dance", "_SA_NEC2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0008, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4HP", "_NM_4HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
+        { TRIAL_REQ_THROW_HIT, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Slam Dance", "_SA_NEC2" }
     }
 };
 
@@ -1739,15 +1739,15 @@ static const TrialDef g_trial_necro_8 = {
     .gauge_max = 0,
     .num_steps = 9,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x002E, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "4MK", "_NM_4MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tornado Hook", "_COMMON_M _SP_NEC2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x0114, 0x0115, 0xFFFF, 0xFFFF }, "Electric Snake", "_SA_NEC3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Electric Blast", "_COMMON_L _SP_NEC1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tornado Hook", "_COMMON_H _SP_NEC2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0011, 0xFFFF, 0xFFFF, 0xFFFF }, "4HK", "_NM_4HK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tornado Hook", "_COMMON_EX _SP_NEC2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x002E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4MK", "_NM_4MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Tornado Hook", "_COMMON_M _SP_NEC2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x0114, 0x0115, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Electric Snake", "_SA_NEC3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Electric Blast", "_COMMON_L _SP_NEC1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0006, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SHP", "_NM_SHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Tornado Hook", "_COMMON_H _SP_NEC2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0011, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4HK", "_NM_4HK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_Tornado Hook", "_COMMON_EX _SP_NEC2" }
     }
 };
 
@@ -1758,13 +1758,13 @@ static const TrialDef g_trial_necro_9 = {
     .gauge_max = 0,
     .num_steps = 7,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF }, "Magnetic Storm", "_SA_NEC1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "1HP", "_NM_1HP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0024, 0x0025, 0x0026, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Magnetic Storm", "_SA_NEC1" }
     }
 };
 
@@ -1773,9 +1773,10 @@ static const TrialDef g_trial_twelve_1 = {
     .chara_id = 18,
     .difficulty = 1,
     .gauge_max = 0,
-    .num_steps = 1,
+    .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_FIREBALL_HIT, { 0x01A8, 0x01A9, 0x01AA, 0x01AB }, "X.N.D.L", "_6_THROW" }
+        { TRIAL_REQ_ANIMATION, { 0x0000, 0x3720, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "6_Throw", "_6_THROW" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x01A8, 0x01A9, 0x01AA, 0x01AB, 0x01AC, 0x01AE, 0x01B0, 0x01B2 }, "X.N.D.L", "_SA_TWE1" }
     }
 };
 
@@ -1784,9 +1785,10 @@ static const TrialDef g_trial_twelve_2 = {
     .chara_id = 18,
     .difficulty = 2,
     .gauge_max = 0,
-    .num_steps = 1,
+    .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0043, 0xFFFF, 0xFFFF, 0xFFFF }, "X.F.L.A.T", "_N_THROW" }
+        { TRIAL_REQ_ANIMATION, { 0x0004, 0x2529, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "N_Throw", "_N_THROW" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0043, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "X.F.L.A.T", "_SA_TWE2" }
     }
 };
 
@@ -1797,10 +1799,10 @@ static const TrialDef g_trial_twelve_3 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF }, "Taunt", "_PA" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLK", "_NM_CLK" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x003F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Taunt", "_PA" }
     }
 };
 
@@ -1811,10 +1813,10 @@ static const TrialDef g_trial_twelve_4 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0x00A1 }, "JHK (Cross Up)", "_COMMON_ME _NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "4MK", "_NM_4MK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_A.X.E.", "_COMMON_EX _SP_TWE2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x01A8, 0x01A9, 0x01AA, 0x01AB }, "X.N.D.L", "_SA_TWE1" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0x00A1, 0x001D, 0x001C, 0x0041, 0xFFFF }, "JHK (Cross Up)", "_COMMON_ME _NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4MK", "_NM_4MK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0023, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "EX_A.X.E.", "_COMMON_EX _SP_TWE2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x01A8, 0x01A9, 0x01AA, 0x01AB, 0x01AC, 0x01AE, 0x01B0, 0x01B2 }, "X.N.D.L", "_SA_TWE1" }
     }
 };
 
@@ -1825,7 +1827,7 @@ static const TrialDef g_trial_twelve_5 = {
     .gauge_max = 0,
     .num_steps = 1,
     .steps = {
-        { TRIAL_REQ_SPECIAL_COND, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF }, "Don't drop enemy to the ground with combo for 3 seconds!", "_SECOND_COMBO_DE SPACE16 SPACE8 _NUM_3 SPACE-8 _SECOND_FLOAT" }
+        { TRIAL_REQ_SPECIAL_COND, { 0x001B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Don't drop enemy to the ground with combo for 3 seconds!", "_SECOND_COMBO_DE SPACE16 SPACE8 _NUM_3 SPACE-8 _SECOND_FLOAT" }
     }
 };
 
@@ -1836,12 +1838,12 @@ static const TrialDef g_trial_twelve_6 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x001C, 0x0041, 0x001D, 0xFFFF }, "Kakku", "_SP_TWE5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x00A1, 0x001D, 0x001C, 0x0041 }, "JHK (Cross Up)", "_COMMON_ME _NM_JHK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF }, "L_A.X.E", "_COMMON_L _SP_TWE2" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x01A8, 0x01A9, 0x01AA, 0x01AB }, "X.N.D.L", "_SA_TWE1" }
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x001C, 0x0041, 0x001D, 0x6C22, 0x6E13, 0xFFFF, 0xFFFF, 0xFFFF }, "Kakku", "_SP_TWE5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x00A1, 0x001D, 0x001C, 0x0041, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK (Cross Up)", "_COMMON_ME _NM_JHK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0015, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CMP", "_NM_CMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_A.X.E", "_COMMON_L _SP_TWE2" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x01A8, 0x01A9, 0x01AA, 0x01AB, 0x01AC, 0x01AE, 0x01B0, 0x01B2 }, "X.N.D.L", "_SA_TWE1" }
     }
 };
 
@@ -1852,10 +1854,10 @@ static const TrialDef g_trial_twelve_7 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x001C, 0x0041, 0x001D, 0xFFFF }, "Kakku", "_SP_TWE5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0x009D, 0x001C, 0x0041 }, "JMP", "_NM_JMP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x000D, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
-        { TRIAL_REQ_FIREBALL_HIT, { 0x01A8, 0x01A9, 0x01AA, 0x01AB }, "X.N.D.L", "_SA_TWE1" }
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x001C, 0x0041, 0x001D, 0x6C22, 0x6E13, 0xFFFF, 0xFFFF, 0xFFFF }, "Kakku", "_SP_TWE5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0x009D, 0x001C, 0x0041, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JMP", "_NM_JMP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x000D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
+        { TRIAL_REQ_FIREBALL_HIT, { 0x01A8, 0x01A9, 0x01AA, 0x01AB, 0x01AC, 0x01AE, 0x01B0, 0x01B2 }, "X.N.D.L", "_SA_TWE1" }
     }
 };
 
@@ -1866,10 +1868,10 @@ static const TrialDef g_trial_twelve_8 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x001C, 0x0041, 0x001D, 0xFFFF }, "Kakku", "_SP_TWE5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0x009E, 0x001C, 0x0041 }, "JHP", "_NM_JHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x000D, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0043, 0xFFFF, 0xFFFF, 0xFFFF }, "X.F.L.A.T", "_SA_TWE2" }
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x001C, 0x0041, 0x001D, 0x6C22, 0x6E13, 0xFFFF, 0xFFFF, 0xFFFF }, "Kakku", "_SP_TWE5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0x009E, 0x001C, 0x0041, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHP", "_NM_JHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x000C, 0x000D, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMK", "_NM_SMK" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0043, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "X.F.L.A.T", "_SA_TWE2" }
     }
 };
 
@@ -1880,11 +1882,11 @@ static const TrialDef g_trial_twelve_9 = {
     .gauge_max = 0,
     .num_steps = 5,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0x0021, 0x0022, 0xFFFF }, "A.X.E", "_SP_TWE2" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0032, 0xFFFF, 0xFFFF, 0xFFFF }, "X.C.O.P.Y", "_SA_TWE3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Dangerous Headbutt", "_COMMON_L _SP_URIEN4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0020, 0x0021, 0x0022, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "A.X.E", "_SP_TWE2" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "X.C.O.P.Y", "_SA_TWE3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0012, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CLP", "_NM_CLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Dangerous Headbutt", "_COMMON_L _SP_URIEN4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0003, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SMP", "_NM_SMP" }
     }
 };
 
@@ -1895,12 +1897,12 @@ static const TrialDef g_trial_twelve_10 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0x00A1 }, "JHK (Cross Up)", "_COMMON_ME _NM_JHK" },
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0032, 0xFFFF, 0xFFFF, 0xFFFF }, "X.C.O.P.Y", "_SA_TWE3" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0x002A, 0x002B, 0xFFFF }, "Psycho Headbutt", "_SP_GILL4" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0x001E, 0x001F, 0xFFFF }, "Cyber lariat", "_SP_GILL2" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x003A, 0x0046, 0x002E, 0x00A1, 0x001D, 0x001C, 0x0041, 0xFFFF }, "JHK (Cross Up)", "_COMMON_ME _NM_JHK" },
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "X.C.O.P.Y", "_SA_TWE3" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0x0001, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SLP", "_NM_SLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "CHP", "_NM_CHP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0029, 0x002A, 0x002B, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Psycho Headbutt", "_SP_GILL4" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001D, 0x001E, 0x001F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Cyber lariat", "_SP_GILL2" }
     }
 };
 
@@ -1911,10 +1913,10 @@ static const TrialDef g_trial_q_2 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_THROW_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Capture and Deadly Blow", "_COMMON_H _SP_Q5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0x0020, 0xFFFF, 0xFFFF }, "L_Dashing Head Attack (OverHead)", "_COMMON_L _SP_Q2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Dashing Head Attack", "_COMMON_M _SP_Q1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF }, "Deadly Double Combination", "_SA_Q2" }
+        { TRIAL_REQ_THROW_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Capture and Deadly Blow", "_COMMON_H _SP_Q5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0x0020, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Dashing Head Attack (OverHead)", "_COMMON_L _SP_Q2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0019, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "M_Dashing Head Attack", "_COMMON_M _SP_Q1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Deadly Double Combination", "_SA_Q2" }
     }
 };
 
@@ -1925,10 +1927,10 @@ static const TrialDef g_trial_q_4 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_THROW_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Capture and Deadly Blow", "_COMMON_H _SP_Q5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Dashing Head Attack (Cross Up)", "_COMMON_H _SP_Q1 SPACE32 SPACE32 SPACE16 _COMMON_URA" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Dashing Head Attack", "_COMMON_H _SP_Q1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF }, "Deadly Double Combination", "_SA_Q2" }
+        { TRIAL_REQ_THROW_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Capture and Deadly Blow", "_COMMON_H _SP_Q5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Dashing Head Attack (Cross Up)", "_COMMON_H _SP_Q1 SPACE32 SPACE32 SPACE16 _COMMON_URA" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Dashing Head Attack", "_COMMON_H _SP_Q1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Deadly Double Combination", "_SA_Q2" }
     }
 };
 
@@ -1939,10 +1941,10 @@ static const TrialDef g_trial_q_5 = {
     .gauge_max = 0,
     .num_steps = 4,
     .steps = {
-        { TRIAL_REQ_THROW_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Capture and Deadly Blow", "_COMMON_L _SP_Q5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF }, "Deadly Double Combination", "_SA_Q2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x002E, 0x0046, 0x003A, 0xFFFF }, "JHK", "_NM_JHK" }
+        { TRIAL_REQ_THROW_HIT, { 0x000C, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Capture and Deadly Blow", "_COMMON_L _SP_Q5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "SCLP", "_NM_SCLP" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0030, 0x0031, 0x0032, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Deadly Double Combination", "_SA_Q2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x002E, 0x0046, 0x003A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "JHK", "_NM_JHK" }
     }
 };
 
@@ -1953,8 +1955,8 @@ static const TrialDef g_trial_q_6 = {
     .gauge_max = 0,
     .num_steps = 2,
     .steps = {
-        { TRIAL_REQ_ACTIVE_MOVE, { 0x0005, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP (Kara Cancel)", "_COMMON_KARACAN _NM_4MP" },
-        { TRIAL_REQ_THROW_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Capture and Deadly Blow", "_COMMON_H _SP_Q5" }
+        { TRIAL_REQ_ACTIVE_MOVE, { 0x0005, 0x6ADE, 0x662E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4MP (Kara Cancel)", "_COMMON_KARACAN _NM_4MP" },
+        { TRIAL_REQ_THROW_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Capture and Deadly Blow", "_COMMON_H _SP_Q5" }
     }
 };
 
@@ -1965,12 +1967,12 @@ static const TrialDef g_trial_q_8 = {
     .gauge_max = 0,
     .num_steps = 6,
     .steps = {
-        { TRIAL_REQ_ATTACK_HIT, { 0x0035, 0x0019, 0xFFFF, 0xFFFF }, "Total Destruction (Attack)", "_SA_Q3_1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Dashing Head Attack", "_COMMON_H _SP_Q1" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0035, 0xFFFF, 0xFFFF, 0xFFFF }, "Total Destruction (Attack)", "_SA_Q3_1" },
-        { TRIAL_REQ_THROW_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Capture and Deadly Blow", "_COMMON_H _SP_Q5" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0x0020, 0xFFFF, 0xFFFF }, "L_Dashing Head Attack (OverHead)", "_COMMON_L _SP_Q2" },
-        { TRIAL_REQ_ATTACK_HIT, { 0x0011, 0xFFFF, 0xFFFF, 0xFFFF }, "4HK", "_NM_4HK" }
+        { TRIAL_REQ_ATTACK_HIT, { 0x0035, 0x0019, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Total Destruction (Attack)", "_SA_Q3_1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x001A, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Dashing Head Attack", "_COMMON_H _SP_Q1" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0035, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "Total Destruction (Attack)", "_SA_Q3_1" },
+        { TRIAL_REQ_THROW_HIT, { 0x000E, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "H_Capture and Deadly Blow", "_COMMON_H _SP_Q5" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0018, 0x0020, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "L_Dashing Head Attack (OverHead)", "_COMMON_L _SP_Q2" },
+        { TRIAL_REQ_ATTACK_HIT, { 0x0011, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, "4HK", "_NM_4HK" }
     }
 };
 

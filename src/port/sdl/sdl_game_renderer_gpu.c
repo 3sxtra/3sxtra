@@ -914,6 +914,64 @@ void SDLGameRendererGPU_DestroyPalette(unsigned int palette_handle) {
     }
 }
 
+void SDLGameRendererGPU_DumpTextures(void) {
+    SDL_CreateDirectory("textures");
+    int tex_index = 0;
+    int count = 0;
+
+    // tex_array_layer[ti][pi] >= 0 means ti+pi have been rendered together — ground-truth pairing
+    for (int ti = 0; ti < FL_TEXTURE_MAX; ti++) {
+        SDL_Surface* surf = surfaces[ti];
+        if (!surf || !SDL_ISPIXELFORMAT_INDEXED(surf->format))
+            continue;
+
+        for (int pi = 1; pi <= FL_PALETTE_MAX; pi++) {
+            if (tex_array_layer[ti][pi] < 0)
+                continue;
+            SDL_Palette* pal = palettes[pi - 1];
+            if (!pal)
+                continue;
+
+            char filename[128];
+            snprintf(filename, sizeof(filename), "textures/%d_t%d_p%d.tga", tex_index++, ti, pi);
+            FILE* f = fopen(filename, "wb");
+            if (!f)
+                continue;
+
+            const Uint8* pixels = (const Uint8*)surf->pixels;
+            const int w = surf->w, h = surf->h;
+            uint8_t header[18] = { 0 };
+            header[2] = 2;
+            header[12] = w & 0xFF; header[13] = (w >> 8) & 0xFF;
+            header[14] = h & 0xFF; header[15] = (h >> 8) & 0xFF;
+            header[16] = 32; header[17] = 0x20;
+            fwrite(header, 1, 18, f);
+
+            for (int i = 0; i < w * h; i++) {
+                Uint8 idx;
+                if (pal->ncolors == 16) {
+                    Uint8 byte = pixels[i / 2];
+                    idx = (i & 1) ? (byte >> 4) : (byte & 0x0F);
+                } else {
+                    idx = pixels[i];
+                }
+                // GPU read_rgba32_color: R→.r, G→.g, B→.b (correct SDL convention)
+                // TGA stores BGRA in memory, so write { b, g, r, a }
+                const SDL_Color* c = &pal->colors[idx];
+                Uint8 bgra[] = { c->b, c->g, c->r, c->a };
+                fwrite(bgra, 1, 4, f);
+            }
+            fclose(f);
+            count++;
+        }
+    }
+
+    SDL_Log("[TextureDump] Wrote %d texture(s) to textures/", count);
+}
+
+
+
+
 void SDLGameRendererGPU_UnlockTexture(unsigned int th) {
     const int idx = th - 1;
     if (idx >= 0 && idx < FL_TEXTURE_MAX) {

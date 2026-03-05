@@ -11,6 +11,7 @@
 #include "port/paths.h"
 #include "port/sdl/sdl_app.h"
 #include "port/sdl/sdl_game_renderer_internal.h"
+#include "port/sdl/sdl_texture_util.h"
 
 // GL header for RmlUi GL3 backend (glEnable, glBlendFunc, etc.)
 #if !defined(__APPLE__)
@@ -22,6 +23,7 @@
 #include <RmlUi/Debugger.h>
 #endif
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 
 #include <string>
 #include <unordered_map>
@@ -45,17 +47,105 @@
 #include <RmlUi_Renderer_SDL_GPU.h>
 
 // -------------------------------------------------------------------
-// GPU viewport adapter — overrides virtual SetTransform/SetScissorRegion
+// Viewport adapters — override virtual SetTransform/SetScissorRegion
 // to bake viewport offset + scale into the rendering pipeline without
-// modifying the third-party RenderInterface_SDL_GPU class.
+// modifying any third-party RenderInterface classes.
 // -------------------------------------------------------------------
+
+// GL3 viewport adapter — maps logical (ctx_w × ctx_h) coordinates
+// to the physical viewport (phys_w × phys_h) at letterbox offset.
+// SetViewport is called with physical dims; the subclass scales
+// RmlUi's logical geometry and scissor rects to physical space.
+class GameViewportGL3 : public RenderInterface_GL3 {
+  public:
+    using RenderInterface_GL3::RenderInterface_GL3;
+
+    void ActivateGameViewport(int ctx_w, int ctx_h, int phys_w, int phys_h) {
+        m_active = true;
+        m_sx = (float)phys_w / (float)ctx_w;
+        m_sy = (float)phys_h / (float)ctx_h;
+        m_correction = Rml::Matrix4f::Scale(m_sx, m_sy, 1.0f);
+        SetTransform(nullptr);
+    }
+
+    void DeactivateGameViewport() {
+        m_active = false;
+        SetTransform(nullptr);
+    }
+
+    void SetTransform(const Rml::Matrix4f* transform) override {
+        if (!m_active) {
+            RenderInterface_GL3::SetTransform(transform);
+            return;
+        }
+        if (transform) {
+            Rml::Matrix4f modified = m_correction * (*transform);
+            RenderInterface_GL3::SetTransform(&modified);
+        } else {
+            RenderInterface_GL3::SetTransform(&m_correction);
+        }
+    }
+
+    void SetScissorRegion(Rml::Rectanglei region) override {
+        if (!m_active) {
+            RenderInterface_GL3::SetScissorRegion(region);
+            return;
+        }
+        Rml::Rectanglei adjusted = Rml::Rectanglei::FromPositionSize(
+            { (int)(region.Left() * m_sx + 0.5f), (int)(region.Top() * m_sy + 0.5f) },
+            { (int)(region.Width() * m_sx + 0.5f), (int)(region.Height() * m_sy + 0.5f) });
+        RenderInterface_GL3::SetScissorRegion(adjusted);
+    }
+
+    Rml::TextureHandle LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source) override {
+        // RmlUi GL3 backend natively only supports TGAs. We override this to use
+        // SDL_image to load PNG/JPG files. RmlUi also expects pre-multiplied alpha,
+        // so we must do the conversion here before forwarding to GenerateTexture.
+        SDL_Surface* surface = IMG_Load(source.c_str());
+        if (!surface) return 0;
+
+        if (surface->format != SDL_PIXELFORMAT_RGBA32) {
+            SDL_Surface* converted_surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+            SDL_DestroySurface(surface);
+            if (!converted_surface) return 0;
+            surface = converted_surface;
+        }
+
+        // Convert colors to premultiplied alpha (RmlUi uses glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA))
+        const size_t pixels_byte_size = surface->w * surface->h * 4;
+        uint8_t* pixels = static_cast<uint8_t*>(surface->pixels);
+        for (size_t i = 0; i < pixels_byte_size; i += 4) {
+            const uint8_t alpha = pixels[i + 3];
+            for (size_t j = 0; j < 3; ++j) {
+                pixels[i + j] = (uint8_t)((int(pixels[i + j]) * int(alpha)) / 255);
+            }
+        }
+
+        texture_dimensions.x = surface->w;
+        texture_dimensions.y = surface->h;
+
+        Rml::Span<const Rml::byte> data{static_cast<const Rml::byte*>(surface->pixels), static_cast<size_t>(surface->pitch * surface->h)};
+        Rml::TextureHandle handle = RenderInterface_GL3::GenerateTexture(data, texture_dimensions);
+
+        SDL_DestroySurface(surface);
+        return handle;
+    }
+
+    void ReleaseTexture(Rml::TextureHandle texture_handle) override {
+        RenderInterface_GL3::ReleaseTexture(texture_handle);
+    }
+
+  private:
+    bool m_active = false;
+    float m_sx = 1.0f, m_sy = 1.0f;
+    Rml::Matrix4f m_correction;
+};
+
+// GPU viewport adapter — same pattern for SDL_GPU backend.
 class GameViewportGPU : public RenderInterface_SDL_GPU {
   public:
     using RenderInterface_SDL_GPU::RenderInterface_SDL_GPU;
 
-    /// Activate viewport correction for game-context rendering.
-    /// correction = Translate(off_x, off_y) * Scale(sx, sy)
-    /// Maps logical coords (0..ctx_w, 0..ctx_h) → window pixels at letterbox offset.
     void ActivateGameViewport(int ctx_w, int ctx_h, int phys_w, int phys_h, int off_x, int off_y) {
         m_active = true;
         m_sx = (float)phys_w / (float)ctx_w;
@@ -63,12 +153,12 @@ class GameViewportGPU : public RenderInterface_SDL_GPU {
         m_off_x = off_x;
         m_off_y = off_y;
         m_correction = Rml::Matrix4f::Translate((float)off_x, (float)off_y, 0) * Rml::Matrix4f::Scale(m_sx, m_sy, 1.0f);
-        SetTransform(nullptr); // Force transform update with correction
+        SetTransform(nullptr);
     }
 
     void DeactivateGameViewport() {
         m_active = false;
-        SetTransform(nullptr); // Restore to identity
+        SetTransform(nullptr);
     }
 
     void SetTransform(const Rml::Matrix4f* transform) override {
@@ -121,7 +211,7 @@ static Rml::RenderInterface* s_render_interface = nullptr;
 
 // Typed pointers for backend-specific init/shutdown/render calls.
 // Exactly one of these is non-null at a time.
-static RenderInterface_GL3* s_render_gl3 = nullptr;
+static GameViewportGL3* s_render_gl3 = nullptr;
 static RenderInterface_SDL* s_render_sdl = nullptr;
 static GameViewportGPU* s_render_gpu = nullptr;
 
@@ -168,7 +258,7 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
             SDL_Log("[RmlUi] Failed to initialize GL3 backend: %s", gl_message.c_str());
             return;
         }
-        s_render_gl3 = new RenderInterface_GL3();
+        s_render_gl3 = new GameViewportGL3();
         s_render_interface = s_render_gl3;
         break;
     }
@@ -308,8 +398,9 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
     if (!s_window_context || !event)
         return;
 
-        // Toggle debugger with F12 (debug builds only)
-#ifdef DEBUG
+        // F12 debugger toggle disabled — F12 is now mapped to the Dev Overlay.
+        // Use the RmlUi debugger programmatically via Rml::Debugger API if needed.
+#if 0
     if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F12) {
         bool new_vis = !Rml::Debugger::IsVisible();
         Rml::Debugger::SetVisible(new_vis);
@@ -586,7 +677,7 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
 
     // Width-based dp_ratio: fonts rasterize at high resolution.
     // Context dims are scaled by dp_ratio so dp-based RCSS fills the context.
-    // SetViewportEx maps this logical space to the physical 4:3 viewport,
+    // The GameViewportGL3 adapter maps this logical space to the physical 4:3 viewport,
     // applying the CPS3 9/7 vertical PAR stretch automatically.
     const float dp_ratio = view_w / (float)GAME_W;
     s_game_context->SetDensityIndependentPixelRatio(dp_ratio);
@@ -602,15 +693,18 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
     const int off_y = win_h - (int)(view_y + 0.5f) - phys_h;
 
     if (s_render_gl3) {
-        // GL3: SetViewportEx uses ctx_w×ctx_h for projection and
-        // phys_w×phys_h for FBOs + glViewport. The viewport transform
-        // applies the CPS3 9/7 vertical stretch.
-        s_render_gl3->SetViewportEx(ctx_w, ctx_h, phys_w, phys_h, off_x, off_y);
+        // GL3: Set physical viewport and use the GameViewportGL3 adapter
+        // to scale RmlUi's logical coordinates to physical pixels.
+        // The adapter bakes the ctx→phys scale into SetTransform/SetScissorRegion
+        // (same pattern as GameViewportGPU), applying the CPS3 9/7 vertical stretch.
+        s_render_gl3->SetViewport(phys_w, phys_h, off_x, off_y);
+        s_render_gl3->ActivateGameViewport(ctx_w, ctx_h, phys_w, phys_h);
 
         s_render_gl3->BeginFrame();
         s_game_context->Render();
         s_render_gl3->EndFrame();
 
+        s_render_gl3->DeactivateGameViewport();
         // Restore window viewport for subsequent rendering (bezels, overlays)
         s_render_gl3->SetViewport(s_window_w, s_window_h);
     } else if (s_render_gpu) {

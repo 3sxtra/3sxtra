@@ -15,7 +15,7 @@ typedef enum {
     TRIAL_REQ_ANIMATION     // Player or enemy enters specific animation
 } TrialRequirementType;
 
-#define MAX_WAZA_ALTERNATIVES 4
+#define MAX_WAZA_ALTERNATIVES 8
 
 // Standard signature of a waza (move)
 typedef struct {
@@ -54,7 +54,11 @@ typedef struct {
     bool completed;    // Successfully finished all steps
     s32 success_timer; // Frames since completion message shown
 
-    s32 last_combo_hits; // To detect combo drops
+    s32 last_combo_hits;      // To detect combo drops
+    TrialRequirementType last_hit_type; // Set by engine hooks (ATTACK/THROW/FIREBALL)
+    s16 last_hit_waza;        // Waza ID from the last engine hook
+    bool pending_hit;         // True when a hook fires, consumed by update
+    s32 combo_drop_grace;     // Frames to wait before declaring combo drop
 } TrialsState;
 
 extern TrialsState g_trials_state;
@@ -63,10 +67,8 @@ void trials_init(void);
 void trials_update(void);
 void trials_draw(void);
 
-// Engine hooks
-void trials_on_attack_hit(s16 attacker_id, s16 kind_of_waza);
-void trials_on_throw_hit(s16 attacker_id, s16 kind_of_waza);
-void trials_on_fireball_hit(s16 attacker_id, s16 kind_of_waza);
+// Engine hooks — called from hitcheck.c
+void trials_on_hit_registered(s16 attacker_id, s16 kind_of_waza); // Unified: covers attacks/throws/fireballs
 void trials_on_parry(s16 defender_id);
 
 // Navigation
@@ -79,5 +81,6 @@ void trials_reset(void);
 const char* trials_get_current_char_name(void);
 int trials_get_current_total(void);
 bool trials_current_has_gauge_max(void);
+const TrialDef* trials_get_current_def(void);
 
 #endif // TRIALS_H

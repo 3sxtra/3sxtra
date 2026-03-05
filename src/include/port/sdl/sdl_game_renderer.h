@@ -57,4 +57,7 @@ void SDLGameRenderer_DrawSprite2(const Sprite2* sprite2);
 // Used by ImGui to render game textures. Returns 0 if not found/invalid.
 unsigned int SDLGameRenderer_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);
 
+// Dumps all currently loaded textures to textures/*.tga
+void SDLGameRenderer_DumpTextures(void);
+
 #endif
