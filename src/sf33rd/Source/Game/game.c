@@ -66,6 +66,8 @@ extern bool use_rmlui;
 
 #include "netplay/netplay.h"
 
+#include "port/tracy_zones.h"
+
 /* === Named Constants === */
 #define MAIN_JMP_COUNT 3         /**< Number of top-level game modes (Wait_Auto_Load, Loop_Demo, Game) */
 #define GAME_STATE_COUNT 13      /**< Number of game states (Game00–Game12) */
@@ -167,8 +169,13 @@ static void Game_UpdateFrame(struct _TASK* task_ptr, s32 is_last_frame) {
         system_timer += 1;
     }
 
+    TRACE_SUB_BEGIN("texcash_before");
     init_texcash_before_process();
+    TRACE_SUB_END();
+
+    TRACE_SUB_BEGIN("seqsBefore");
     seqsBeforeProcess();
+    TRACE_SUB_END();
 
     if (nowSoftReset() == 0) {
         if (G_No[0] < MAIN_JMP_COUNT) {
@@ -176,10 +183,21 @@ static void Game_UpdateFrame(struct _TASK* task_ptr, s32 is_last_frame) {
         }
     }
 
+    TRACE_SUB_BEGIN("seqsAfter");
     seqsAfterProcess();
+    TRACE_SUB_END();
+
+    TRACE_SUB_BEGIN("texcash_update");
     texture_cash_update();
+    TRACE_SUB_END();
+
+    TRACE_SUB_BEGIN("pulpul");
     move_pulpul_work();
+    TRACE_SUB_END();
+
+    TRACE_SUB_BEGIN("LDREQ");
     Check_LDREQ_Queue();
+    TRACE_SUB_END();
 }
 
 /**

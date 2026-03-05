@@ -209,7 +209,9 @@ void emlShimInit() {
 
     SPU_Init(workTick);
 
+    TRACE_LOCK_BEFORE(soundLockCtx);
     SDL_LockMutex(soundLock);
+    TRACE_LOCK_AFTER(soundLockCtx);
 
     masterVolume = 0x3fff;
     for (int i = 0; i < 16; i++) {
@@ -224,13 +226,16 @@ void emlShimInit() {
     }
 
     SDL_UnlockMutex(soundLock);
+    TRACE_LOCK_UNLOCK(soundLockCtx);
 }
 
 static int gcVoices() {
     struct VWork *i, *n;
     int numFreed = 0;
 
+    TRACE_LOCK_BEFORE(soundLockCtx);
     SDL_LockMutex(soundLock);
+    TRACE_LOCK_AFTER(soundLockCtx);
 
     list_for_each_safe (i, n, &active_voices, list) {
         if (SPU_VoiceIsFinished(i->voice_num)) {
@@ -241,6 +246,7 @@ static int gcVoices() {
     }
 
     SDL_UnlockMutex(soundLock);
+    TRACE_LOCK_UNLOCK(soundLockCtx);
 
     return numFreed;
 }
@@ -459,12 +465,15 @@ static int doSeDrop(CSE_REQP* reqp) {
 }
 
 void emlShimStartSound(CSE_SYS_PARAM_SNDSTART* param) {
-    TRACE_ZONE_N("SoundLock:StartSound");
+    TRACE_ZONE_NC("SoundLock:StartSound", TRACE_COLOR_SOUND);
     struct VWork* voice;
 
+    TRACE_LOCK_BEFORE(soundLockCtx);
     SDL_LockMutex(soundLock);
+    TRACE_LOCK_AFTER(soundLockCtx);
     if (!doSeDrop(&param->reqp)) {
         SDL_UnlockMutex(soundLock);
+    TRACE_LOCK_UNLOCK(soundLockCtx);
         TRACE_ZONE_END();
         return;
     }
@@ -473,6 +482,7 @@ void emlShimStartSound(CSE_SYS_PARAM_SNDSTART* param) {
     if (!voice) {
         printf("no free voices!\n");
         SDL_UnlockMutex(soundLock);
+    TRACE_LOCK_UNLOCK(soundLockCtx);
         TRACE_ZONE_END();
         return;
     }
@@ -508,15 +518,18 @@ void emlShimStartSound(CSE_SYS_PARAM_SNDSTART* param) {
     SPU_VoiceStart(voice->voice_num, param->phdp.s_addr >> 1);
 
     SDL_UnlockMutex(soundLock);
+    TRACE_LOCK_UNLOCK(soundLockCtx);
     TRACE_ZONE_END();
 }
 
 void emlShimSeKeyOff(CSE_REQP* pReqp) {
-    TRACE_ZONE_N("SoundLock:SeKeyOff");
+    TRACE_ZONE_NC("SoundLock:SeKeyOff", TRACE_COLOR_SOUND);
     u32 cond = makeConditions(pReqp);
     struct VWork* i;
 
+    TRACE_LOCK_BEFORE(soundLockCtx);
     SDL_LockMutex(soundLock);
+    TRACE_LOCK_AFTER(soundLockCtx);
 
     list_for_each (i, &active_voices, list) {
         if (checkConditions(&i->id, pReqp, cond)) {
@@ -525,15 +538,18 @@ void emlShimSeKeyOff(CSE_REQP* pReqp) {
     }
 
     SDL_UnlockMutex(soundLock);
+    TRACE_LOCK_UNLOCK(soundLockCtx);
     TRACE_ZONE_END();
 }
 
 void emlShimSeStop(CSE_REQP* pReqp) {
-    TRACE_ZONE_N("SoundLock:SeStop");
+    TRACE_ZONE_NC("SoundLock:SeStop", TRACE_COLOR_SOUND);
     u32 cond = makeConditions(pReqp);
     struct VWork* i;
 
+    TRACE_LOCK_BEFORE(soundLockCtx);
     SDL_LockMutex(soundLock);
+    TRACE_LOCK_AFTER(soundLockCtx);
 
     list_for_each (i, &active_voices, list) {
         if (checkConditions(&i->id, pReqp, cond)) {
@@ -542,23 +558,29 @@ void emlShimSeStop(CSE_REQP* pReqp) {
     }
 
     SDL_UnlockMutex(soundLock);
+    TRACE_LOCK_UNLOCK(soundLockCtx);
     TRACE_ZONE_END();
 }
 
 void emlShimSeStopAll() {
     struct VWork* i;
 
+    TRACE_LOCK_BEFORE(soundLockCtx);
     SDL_LockMutex(soundLock);
+    TRACE_LOCK_AFTER(soundLockCtx);
 
     list_for_each (i, &active_voices, list) {
         SPU_VoiceStop(i->voice_num);
     }
 
     SDL_UnlockMutex(soundLock);
+    TRACE_LOCK_UNLOCK(soundLockCtx);
 }
 
 void emlShimSysSetVolume(CSE_SYS_PARAM_BANKVOL* param) {
+    TRACE_LOCK_BEFORE(soundLockCtx);
     SDL_LockMutex(soundLock);
+    TRACE_LOCK_AFTER(soundLockCtx);
 
     if (param->bank == 0xff) {
         masterVolume = param->vol ? (param->vol * 0x3fff) / 0x7f : 0;
@@ -571,13 +593,16 @@ void emlShimSysSetVolume(CSE_SYS_PARAM_BANKVOL* param) {
     }
 
     SDL_UnlockMutex(soundLock);
+    TRACE_LOCK_UNLOCK(soundLockCtx);
 }
 
 void emlShimSeSetLfo(CSE_SYS_PARAM_LFO* param) {
     u32 cond = makeConditions(&param->reqp);
     struct VWork* i;
 
+    TRACE_LOCK_BEFORE(soundLockCtx);
     SDL_LockMutex(soundLock);
+    TRACE_LOCK_AFTER(soundLockCtx);
 
     list_for_each (i, &active_voices, list) {
         if (checkConditions(&i->id, &param->reqp, cond)) {
@@ -592,6 +617,7 @@ void emlShimSeSetLfo(CSE_SYS_PARAM_LFO* param) {
     }
 
     SDL_UnlockMutex(soundLock);
+    TRACE_LOCK_UNLOCK(soundLockCtx);
 }
 
 void emlShimSysSetMono(CSE_SYS_PARAM_MONO* param) {

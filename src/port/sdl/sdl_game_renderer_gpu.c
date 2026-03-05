@@ -68,6 +68,10 @@ static float texture_uv_sx[FL_PALETTE_MAX];
 static float texture_uv_sy[FL_PALETTE_MAX];
 static int texture_count = 0;
 
+// ⚡ Back-to-back early-out cache — avoids redundant SetTexture work when the
+// same texture+palette combo is set consecutively (common in sprite batches).
+static unsigned int s_last_set_texture_handle = 0;
+
 static SDL_Surface* surfaces[FL_TEXTURE_MAX] = { NULL };
 static SDL_Palette* palettes[FL_PALETTE_MAX] = { NULL };
 
@@ -560,6 +564,7 @@ void SDLGameRendererGPU_BeginFrame(void) {
     quad_count = 0;
     texture_count = 0;
     s_compute_job_count = 0;
+    s_last_set_texture_handle = 0; // ⚡ Reset back-to-back cache each frame
 
     if (s_compute_drops_last_frame > 0) {
         SDL_LogWarn(SDL_LOG_CATEGORY_RENDER,
@@ -1037,11 +1042,27 @@ void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
     }
 }
 
+
 /** @brief Prepare a texture for rendering, uploading to the GPU array if needed. */
 void SDLGameRendererGPU_SetTexture(unsigned int th) {
     TRACE_ZONE_N("GPU:SetTexture");
     if ((th & 0xFFFF) == 0)
         th = (th & 0xFFFF0000) | 1000;
+
+    // ⚡ Back-to-back early-out: if the same handle was just set, re-push
+    // the cached layer/UV without re-doing the lookup or staging work.
+    if (th == s_last_set_texture_handle && texture_count > 0) {
+        if (texture_count < FL_PALETTE_MAX) {
+            texture_layers[texture_count] = texture_layers[texture_count - 1];
+            texture_uv_sx[texture_count] = texture_uv_sx[texture_count - 1];
+            texture_uv_sy[texture_count] = texture_uv_sy[texture_count - 1];
+            texture_count++;
+        }
+        TRACE_ZONE_END();
+        return;
+    }
+    s_last_set_texture_handle = th;
+
     const int texture_handle = LO_16_BITS(th);
     const int palette_handle = HI_16_BITS(th);
 
@@ -1294,6 +1315,83 @@ void SDLGameRendererGPU_DrawSprite2(const Sprite2* sprite2) {
     vertices[2].tex_coord.t = vertices[3].tex_coord.t;
 
     draw_quad(vertices, true);
+}
+/**
+ * @brief ⚡ Batch sprite flush for GPU backend (Opt 2+4).
+ *
+ * Inlines SetTexture + draw_quad to avoid per-sprite function call overhead,
+ * and pre-computes color floats once per sprite.
+ * Preserves original submission order — no tex_code sorting, because sprites
+ * with the same Z value rely on draw order for correct layering.
+ */
+void SDLGameRendererGPU_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count) {
+    if (!mapped_vertex_ptr || count <= 0)
+        return;
+
+    unsigned int last_tex_code = 0;
+
+    for (int i = 0; i < count; i++) {
+        if (!active_layers[chips[i].id])
+            continue;
+
+        if (vertex_count + 4 > MAX_VERTICES)
+            break;
+
+        const Sprite2* spr = &chips[i];
+
+        // Inlined SetTexture — only call when tex_code changes
+        unsigned int tc = spr->tex_code;
+        if (tc != last_tex_code) {
+            last_tex_code = tc;
+            SDLGameRendererGPU_SetTexture(tc);
+        }
+
+        // --- Inlined draw_quad with pre-computed color ---
+        float layer = 0.0f;
+        float uv_sx = 1.0f, uv_sy = 1.0f;
+
+        if (texture_count > 0) {
+            layer = (float)texture_layers[texture_count - 1];
+            uv_sx = texture_uv_sx[texture_count - 1];
+            uv_sy = texture_uv_sy[texture_count - 1];
+        }
+
+        GPUVertex* v = (GPUVertex*)(mapped_vertex_ptr) + vertex_count;
+
+        // Pre-compute color floats once per sprite
+        const Uint32 c = spr->vertex_color;
+        const float cb = (c & 0xFF) / 255.0f;
+        const float cg = ((c >> 8) & 0xFF) / 255.0f;
+        const float cr = ((c >> 16) & 0xFF) / 255.0f;
+        const float ca = ((c >> 24) & 0xFF) / 255.0f;
+
+        // Expand Sprite2 (2 corners) to 4-vertex quad
+        const float x0 = spr->v[0].x;
+        const float y0 = spr->v[0].y;
+        const float x1 = spr->v[1].x;
+        const float y1 = spr->v[1].y;
+        const float s0 = spr->t[0].s * uv_sx;
+        const float t0 = spr->t[0].t * uv_sy;
+        const float s1 = spr->t[1].s * uv_sx;
+        const float t1 = spr->t[1].t * uv_sy;
+
+        v[0].x = x0; v[0].y = y0; v[0].r = cr; v[0].g = cg; v[0].b = cb; v[0].a = ca;
+        v[0].u = s0; v[0].v = t0; v[0].layer = layer;
+        v[1].x = x1; v[1].y = y0; v[1].r = cr; v[1].g = cg; v[1].b = cb; v[1].a = ca;
+        v[1].u = s1; v[1].v = t0; v[1].layer = layer;
+        v[2].x = x0; v[2].y = y1; v[2].r = cr; v[2].g = cg; v[2].b = cb; v[2].a = ca;
+        v[2].u = s0; v[2].v = t1; v[2].layer = layer;
+        v[3].x = x1; v[3].y = y1; v[3].r = cr; v[3].g = cg; v[3].b = cb; v[3].a = ca;
+        v[3].u = s1; v[3].v = t1; v[3].layer = layer;
+
+        if (quad_count < MAX_QUADS) {
+            quad_sort_keys[quad_count].z = flPS2ConvScreenFZ(spr->v[0].z);
+            quad_sort_keys[quad_count].original_index = quad_count;
+            quad_count++;
+        }
+
+        vertex_count += 4;
+    }
 }
 
 unsigned int SDLGameRendererGPU_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle) {

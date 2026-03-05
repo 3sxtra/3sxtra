@@ -8,6 +8,7 @@
  * maximum compatibility on low-end devices (RPi4, old GPUs).
  */
 #include "common.h"
+#include "port/tracy_zones.h"
 #include "port/sdl/sdl_app.h"
 #include "port/sdl/sdl_game_renderer.h"
 #include "port/sdl/sdl_game_renderer_internal.h"
@@ -69,6 +70,9 @@ static void palette_reverse_remove(int palette_handle, int texture_index);
 
 static SDL_Texture* textures_to_destroy[TEXTURES_TO_DESTROY_MAX] = { NULL };
 static int textures_to_destroy_count = 0;
+
+// ⚡ Tracy: palette cache miss counter — emitted as a plot each frame
+static int palette_cache_misses_frame = 0;
 static RenderTask render_tasks[RENDER_TASK_MAX];
 static int render_task_count = 0;
 static int render_task_order[RENDER_TASK_MAX]; // ⚡ Sorted indices for indirect sort
@@ -473,6 +477,9 @@ void SDLGameRendererSDL_BeginFrame(void) {
 }
 
 void SDLGameRendererSDL_RenderFrame(void) {
+    TRACE_PLOT_INT("PalCacheMiss", palette_cache_misses_frame);
+    TRACE_PLOT_INT("RenderTasks", render_task_count);
+    palette_cache_misses_frame = 0;
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
     SDL_SetRenderTarget(renderer, cps3_canvas);
 
@@ -857,6 +864,7 @@ void SDLGameRendererSDL_SetTexture(unsigned int th) {
             }
 
             texture = SDL_CreateTextureFromSurface(renderer, surface);
+            palette_cache_misses_frame++;
             if (!texture) {
                 fatal_error("Failed to create texture from surface: %s", SDL_GetError());
             }

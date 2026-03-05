@@ -70,6 +70,9 @@ struct SPU_Voice {
 };
 
 SDL_Mutex* soundLock;
+#ifdef TRACY_ENABLE
+TracyCLockCtx soundLockCtx;
+#endif
 
 static void (*timer_cb)();
 static SDL_AudioStream* stream;
@@ -339,6 +342,8 @@ void SPU_VoiceStart(int vnum, u32 start_addr) {
 
 void SPU_SDL_CB(void* user, SDL_AudioStream* stream, int additional_amount, int total_amount) {
     TRACE_ZONE_N("SPU_AudioCB");
+    static bool thread_named = false;
+    if (!thread_named) { TRACE_THREAD_NAME("Audio/SPU"); thread_named = true; }
     u32 samples_per_channel = (additional_amount / sizeof(s16)) >> 1;
     // ⚡ Bolt: outbuf holds interleaved stereo samples (2 × s16 per tick).
     // SPU_Tick writes 2 elements per call, so max safe batch = 4096 / 2 = 2048.
@@ -361,7 +366,9 @@ void SPU_SDL_CB(void* user, SDL_AudioStream* stream, int additional_amount, int 
         // Previously the lock spanned the entire callback, causing the game
         // thread to stall whenever it needed soundLock (voice setup, key-off,
         // volume changes). Now the game thread only contends during mixing.
+        TRACE_LOCK_BEFORE(soundLockCtx);
         SDL_LockMutex(soundLock);
+        TRACE_LOCK_AFTER(soundLockCtx);
 
         s16* p = outbuf;
         for (int i = 0; i < batch_count; i++) {
@@ -376,6 +383,7 @@ void SPU_SDL_CB(void* user, SDL_AudioStream* stream, int additional_amount, int 
         }
 
         SDL_UnlockMutex(soundLock);
+        TRACE_LOCK_UNLOCK(soundLockCtx);
 
         SDL_PutAudioStreamData(stream, outbuf, (batch_count * sizeof(s16)) << 1);
         samples_per_channel -= batch_count;
@@ -395,6 +403,8 @@ void SPU_Init(void (*cb)()) {
 
     memset(voices, 0, sizeof(voices));
     soundLock = SDL_CreateMutex();
+    TRACE_LOCK_ANNOUNCE(soundLockCtx);
+    TRACE_LOCK_NAME(soundLockCtx, "soundLock", 9);
 
     spec.channels = 2;
     spec.format = SDL_AUDIO_S16;
@@ -409,11 +419,14 @@ void SPU_Init(void (*cb)()) {
 }
 
 void SPU_Upload(u32 dst, void* src, u32 size) {
+    TRACE_LOCK_BEFORE(soundLockCtx);
     SDL_LockMutex(soundLock);
+    TRACE_LOCK_AFTER(soundLockCtx);
 
     memcpy(&ram[dst >> 1], src, size);
 
     SDL_UnlockMutex(soundLock);
+    TRACE_LOCK_UNLOCK(soundLockCtx);
 }
 
 void SPU_Tick(s16* output) {

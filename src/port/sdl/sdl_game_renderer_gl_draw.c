@@ -481,3 +481,21 @@ void SDLGameRendererGL_DrawSprite2(const Sprite2* sprite2) {
 
     draw_quad(vertices, true);
 }
+
+/**
+ * @brief ⚡ GL batch sprite flush — simple per-sprite loop (no tex_code sorting).
+ * GL backend preserves submission order for correct Z via stable_sort_render_tasks.
+ */
+void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count) {
+    unsigned int keep = 0;
+    for (int i = 0; i < count; i++) {
+        if (active_layers[chips[i].id]) {
+            unsigned int val = chips[i].tex_code;
+            if (keep != val) {
+                keep = val;
+                flSetRenderState(FLRENDER_TEXSTAGE0, val);
+            }
+            SDLGameRendererGL_DrawSprite2(&chips[i]);
+        }
+    }
+}

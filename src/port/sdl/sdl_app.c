@@ -565,9 +565,14 @@ int SDLApp_Init() {
         SDL_Log("Renderer: SDL2D (SDL_Renderer)");
 
         // Apply vsync from config (default on)
+        // ⚡ When native frame pacing is active (!frame_rate_uncapped), disable VSync
+        // so SDL_RenderPresent returns immediately — our FramePacing loop handles timing.
+        // This prevents double-waiting (VSync + FramePacing) which added ~1.7ms latency on Pi4.
         vsync_enabled = !Config_HasKey(CFG_KEY_VSYNC) || Config_GetBool(CFG_KEY_VSYNC);
-        SDL_SetRenderVSync(sdl_renderer, vsync_enabled ? 1 : 0);
-        SDL_Log("VSync: %s (SDL2D)", vsync_enabled ? "ON" : "OFF");
+        bool sdl2d_vsync = vsync_enabled && frame_rate_uncapped;
+        SDL_SetRenderVSync(sdl_renderer, sdl2d_vsync ? 1 : 0);
+        SDL_Log("VSync: %s (SDL2D, native pacing: %s)", sdl2d_vsync ? "ON" : "OFF",
+                frame_rate_uncapped ? "off" : "on");
     } else {
         window = SDL_CreateWindow(app_name, width, height, window_flags);
         if (!window) {
@@ -902,12 +907,14 @@ bool SDLApp_PollEvents() {
     SDL_Event event;
     bool continue_running = true;
 
+    TRACE_SUB_BEGIN("SDLEventPump");
     while (SDL_PollEvent(&event)) {
         bool request_quit = SDLAppInput_HandleEvent(&event);
         if (request_quit) {
             continue_running = false;
         }
     }
+    TRACE_SUB_END();
 
     control_mapping_update();
 
@@ -1180,6 +1187,7 @@ void SDLApp_EndFrame() {
     // Update Phase 3 data models immediately after game frame processing,
     // before the renderer backends run rmlui_wrapper_update_game() which processes them.
     if (use_rmlui) {
+        TRACE_SUB_BEGIN("RmlUiUpdates");
         rmlui_game_hud_update();
         rmlui_mode_menu_update();
         rmlui_option_menu_update();
@@ -1204,6 +1212,7 @@ void SDLApp_EndFrame() {
         rmlui_copyright_update();
         rmlui_name_entry_update();
         rmlui_exit_confirm_update();
+        TRACE_SUB_END();
     }
 
     if (g_renderer_backend == RENDERER_SDL2D) {
@@ -1264,24 +1273,15 @@ void SDLApp_EndFrame() {
             float base_x = dst_rect.x + (10.0f * overlay_scale);
             float base_y = dst_rect.y + (2.0f * overlay_scale);
 
-            SDLTextRenderer_DrawText(
-                debug_text, base_x - 1, base_y - 1, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
+            // ⚡ 4-direction shadow (cardinal only) — reduced from 8 to save draw calls
             SDLTextRenderer_DrawText(
                 debug_text, base_x, base_y - 1, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
-            SDLTextRenderer_DrawText(
-                debug_text, base_x + 1, base_y - 1, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
-
             SDLTextRenderer_DrawText(
                 debug_text, base_x - 1, base_y, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
             SDLTextRenderer_DrawText(
                 debug_text, base_x + 1, base_y, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
-
-            SDLTextRenderer_DrawText(
-                debug_text, base_x - 1, base_y + 1, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
             SDLTextRenderer_DrawText(
                 debug_text, base_x, base_y + 1, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
-            SDLTextRenderer_DrawText(
-                debug_text, base_x + 1, base_y + 1, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
 
             SDLTextRenderer_DrawText(
                 debug_text, base_x, base_y, overlay_scale, 1.0f, 1.0f, 1.0f, (float)win_w, (float)win_h);
@@ -1313,13 +1313,16 @@ void SDLApp_EndFrame() {
             rmlui_wrapper_render();
         }
 
+        TRACE_SUB_BEGIN("RenderPresent");
         SDL_RenderPresent(sdl_renderer);
+        TRACE_SUB_END();
 
         SDLGameRenderer_EndFrame();
         hide_cursor_if_needed();
 
         // Frame pacing
         Uint64 now = SDL_GetTicksNS();
+        TRACE_SUB_BEGIN("FramePacing");
         if (!frame_rate_uncapped) {
             if (frame_deadline == 0) {
                 frame_deadline = now + target_frame_time_ns;
@@ -1340,6 +1343,7 @@ void SDLApp_EndFrame() {
                 frame_deadline = now + target_frame_time_ns;
             }
         }
+        TRACE_SUB_END();
 
         frame_counter += 1;
         note_frame_end_time();
@@ -2526,7 +2530,10 @@ void SDLApp_SetVSync(bool enabled) {
                                       SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
                                       enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_IMMEDIATE);
     } else if (g_renderer_backend == RENDERER_SDL2D && sdl_renderer) {
-        SDL_SetRenderVSync(sdl_renderer, enabled ? 1 : 0);
+        // ⚡ Only enable VSync on SDL2D renderer when native frame pacing is off.
+        // When native pacing is active, we want RenderPresent to return immediately.
+        bool sdl2d_vsync = enabled && frame_rate_uncapped;
+        SDL_SetRenderVSync(sdl_renderer, sdl2d_vsync ? 1 : 0);
     }
 
     Config_SetBool(CFG_KEY_VSYNC, enabled);
@@ -2540,9 +2547,12 @@ bool SDLApp_IsVSyncEnabled() {
 void SDLApp_ToggleFrameRateUncap() {
     frame_rate_uncapped = !frame_rate_uncapped;
 
-    // VSync is never touched here — the VSync checkbox controls it independently.
-    // When uncapped + VSync ON:  rendering is decoupled, game stays at 59.6 fps
-    // When uncapped + VSync OFF: full speed benchmarking (no pacer, no vsync)
+    // ⚡ Re-apply SDL2D VSync state: native pacing requires VSync off on the
+    // renderer to prevent double-waiting (RenderPresent + FramePacing).
+    if (g_renderer_backend == RENDERER_SDL2D && sdl_renderer) {
+        bool sdl2d_vsync = vsync_enabled && frame_rate_uncapped;
+        SDL_SetRenderVSync(sdl_renderer, sdl2d_vsync ? 1 : 0);
+    }
 
     // Reset frame deadline so the pacer doesn't spiral on re-enable
     frame_deadline = 0;

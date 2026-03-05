@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "common.h"
+#include "port/tracy_zones.h"
 #include "port/legacy_matrix.h"
 #include "port/renderer.h"
 #include "port/sdl/sdl_game_renderer.h"
@@ -1615,18 +1616,23 @@ u32 seqsGetUseMemorySize() {
 
 /** @brief Pre-frame reset of the sprite chip set system. */
 void seqsBeforeProcess() {
+    TRACE_PLOT_INT("Sprites", seqs_w.sprTotal);
     seqs_w.sprTotal = 0;
     // ⚡ Bolt: bulk memset replaces per-element loop (24 bytes per frame)
     memset(seqs_w.up, 0, sizeof(seqs_w.up));
 }
 
-/** @brief Post-frame processing: flush accumulated sprites for rendering. */
+/** @brief Post-frame processing: flush accumulated sprites for rendering.
+ *
+ * ⚡ Bolt: Phase 2 uses the batch flush API which:
+ *  - GPU backend: sorts by tex_code, inlines SetTexture + vertex writes
+ *  - GL backend: simple per-sprite loop (preserves Z-order)
+ */
 void seqsAfterProcess() {
     s32 i;
-    u32 keep = 0;
-    u32 val = 0;
 
     if ((Debug_w[DEBUG_NO_DISP_TYPE_SB] != 3) && (seqs_w.sprTotal != 0)) {
+        // Phase 1: Upload dirty texture data
         for (i = 0; i < SPRITE_LAYERS_MAX; i++) {
             if (seqs_w.up[i]) {
                 if (Debug_w[DEBUG_NO_UPDATE_TEXCASH]) {
@@ -1643,18 +1649,8 @@ void seqsAfterProcess() {
             seqs_w.sprMax = seqs_w.sprTotal;
         }
 
-        for (i = 0; i < seqs_w.sprTotal; i++) {
-            if (seqs_w.up[seqs_w.chip[i].id]) {
-                val = seqs_w.chip[i].tex_code;
-
-                if (keep != val) {
-                    keep = val;
-                    flSetRenderState(FLRENDER_TEXSTAGE0, val);
-                }
-
-                SDLGameRenderer_DrawSprite2(&seqs_w.chip[i]);
-            }
-        }
+        // Phase 2: ⚡ Batch flush all sprites in one call
+        SDLGameRenderer_FlushSprite2Batch(seqs_w.chip, seqs_w.up, seqs_w.sprTotal);
     }
 }
 

@@ -2,6 +2,7 @@
 #define SPU_H_
 
 #include "common.h"
+#include "port/tracy_zones.h"
 #include <SDL3/SDL_mutex.h>
 
 struct SPUVConf {
@@ -12,6 +13,9 @@ struct SPUVConf {
 };
 
 extern SDL_Mutex* soundLock;
+#ifdef TRACY_ENABLE
+extern TracyCLockCtx soundLockCtx;
+#endif
 
 void SPU_Init(void (*cb)());
 void SPU_Upload(u32 dst, void* src, u32 size);

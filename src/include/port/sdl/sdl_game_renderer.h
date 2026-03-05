@@ -53,6 +53,10 @@ void SDLGameRenderer_DrawSolidQuad(const Quad* vertices, unsigned int color);
 void SDLGameRenderer_DrawSprite(const Sprite* sprite, unsigned int color);
 void SDLGameRenderer_DrawSprite2(const Sprite2* sprite2);
 
+// ⚡ Batch flush: submits all sprites in one call with tex_code sorting (GPU) and inlined vertex setup.
+// `active_layers` is a bitmask array — sprite i is only drawn if active_layers[chip[i].id] != 0.
+void SDLGameRenderer_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
+
 // Returns the cached GL texture ID for a given texture+palette combination.
 // Used by ImGui to render game textures. Returns 0 if not found/invalid.
 unsigned int SDLGameRenderer_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);

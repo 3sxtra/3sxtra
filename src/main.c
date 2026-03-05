@@ -289,6 +289,7 @@ static void game_init() {
 #endif
 
     flInitialize();
+    TRACE_THREAD_NAME("Main/Game");
     flSetRenderState(FLRENDER_BACKCOLOR, 0);
     system_init_level = 0;
     ppgWorkInitializeApprication();
@@ -393,9 +394,7 @@ static void game_step_0() {
         }
     }
 
-    TRACE_SUB_BEGIN("MenuBridge_PreTick");
     MenuBridge_PreTick();
-    TRACE_SUB_END();
 
     appCopyKeyData();
 
@@ -453,17 +452,11 @@ static void game_step_0() {
         TRACE_SUB_END();
     }
 
-    TRACE_SUB_BEGIN("Effects");
     disp_effect_work();
-    TRACE_SUB_END();
 
-    TRACE_SUB_BEGIN("MenuBridge_PostTick");
     MenuBridge_PostTick();
-    TRACE_SUB_END();
 
-    TRACE_SUB_BEGIN("TrainingHUD");
     training_hud_draw();
-    TRACE_SUB_END();
 
     TRACE_SUB_BEGIN("FlFlip");
     flFlip(0);
@@ -638,6 +631,22 @@ void njUserMain() {
  * Tasks in condition 2 (ready) transition to active next frame.
  * Tasks in condition 0 or 3 are inactive/paused.
  */
+
+// ⚡ Static task slot name table for Tracy — zero-cost string lookup per slot.
+static const struct { const char* name; size_t len; } task_slot_names[TASK_SLOT_COUNT] = {
+    {"Task:Init",   9},   // 0 - TASK_INIT
+    {"Task:Entry",  10},  // 1 - TASK_ENTRY
+    {"Task:Reset",  10},  // 2 - TASK_RESET
+    {"Task:Menu",   9},   // 3 - TASK_MENU
+    {"Task:Pause",  10},  // 4 - TASK_PAUSE
+    {"Task:Game",   9},   // 5 - TASK_GAME
+    {"Task:Saver",  10},  // 6 - TASK_SAVER
+    {"Task:Slot7",  10},  // 7 - unused
+    {"Task:Slot8",  10},  // 8 - unused
+    {"Task:Debug",  10},  // 9 - TASK_DEBUG
+    {"Task:Slot10", 11},  // 10 - unused
+};
+
 void cpLoopTask() {
     disp_ramcnt_free_area();
 
@@ -657,7 +666,9 @@ void cpLoopTask() {
 
         switch (task_ptr->condition) {
         case 1:
+            TRACE_SUB_DYN_BEGIN(task_slot_names[i].name, task_slot_names[i].len);
             task_ptr->func_adrs(task_ptr);
+            TRACE_SUB_END();
             break;
 
         case 2:
