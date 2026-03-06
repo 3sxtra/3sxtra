@@ -258,3 +258,6 @@ endif()
 add_unit_test(test_menu_bridge test_menu_bridge.c ${PROJECT_SOURCE_DIR}/src/port/menu_bridge.c)
 add_unit_test(test_trials test_trials.c ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/training/trials.c)
 target_include_directories(test_trials PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
+add_unit_test(test_radix_sort test_radix_sort.c)
+target_include_directories(test_radix_sort PRIVATE ${PROJECT_SOURCE_DIR}/src)

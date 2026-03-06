@@ -728,7 +728,18 @@ void SDLGameRendererGPU_BeginFrame(void) {
         }
         SDLGameRendererGPU_CreatePalette((i + 1) << 16);
         s_palette_uploaded[i] = false; // Mark for re-upload to palette atlas
-        s_pal_upload_dirty_indices[s_pal_upload_dirty_count++] = i; // ⚡ Opt9b
+        
+        bool already_queued = false;
+        for (int d = 0; d < s_pal_upload_dirty_count; d++) {
+            if (s_pal_upload_dirty_indices[d] == i) {
+                already_queued = true;
+                break;
+            }
+        }
+        if (!already_queued && s_pal_upload_dirty_count < FL_PALETTE_MAX) {
+            s_pal_upload_dirty_indices[s_pal_upload_dirty_count++] = i; // ⚡ Opt9b
+        }
+
         palette_dirty_flags[i] = false;
     }
     dirty_palette_count = 0;
@@ -1340,7 +1351,17 @@ void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
         }
         SDLGameRendererGPU_CreatePalette((idx + 1) << 16);
         s_palette_uploaded[idx] = false; // ⚡ Mark for re-upload to palette atlas
-        s_pal_upload_dirty_indices[s_pal_upload_dirty_count++] = idx; // ⚡ Opt9b
+
+        bool already_queued = false;
+        for (int d = 0; d < s_pal_upload_dirty_count; d++) {
+            if (s_pal_upload_dirty_indices[d] == idx) {
+                already_queued = true;
+                break;
+            }
+        }
+        if (!already_queued && s_pal_upload_dirty_count < FL_PALETTE_MAX) {
+            s_pal_upload_dirty_indices[s_pal_upload_dirty_count++] = idx; // ⚡ Opt9b
+        }
     }
 }
 
