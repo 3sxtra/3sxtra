@@ -10,31 +10,17 @@
 #include "common.h"
 #include <string.h>
 
-// ⚡ Bolt: SIMDe for portable SIMD intrinsics (SSE/FMA on x86, NEON on ARM)
-#include <simde/x86/sse.h>
-#include <simde/x86/fma.h>
-
 MTX cmtx;
 
-/** @brief Multiply two 4×4 matrices: dst = a × b (safe for dst aliasing a or b).
- *  ⚡ Bolt: SIMD — loads B's 4 rows once, then for each A row broadcasts each
- *  element across a vector and FMAs against B's rows. ~20 FLOPs+overhead → 4×FMA. */
+/** @brief Multiply two 4×4 matrices: dst = a × b (safe for dst aliasing a or b). */
 static void matmul(MTX* dst, const MTX* a, const MTX* b) {
     MTX result;
 
-    // Pre-load all 4 rows of B
-    const simde__m128 b0 = simde_mm_loadu_ps(b->a[0]);
-    const simde__m128 b1 = simde_mm_loadu_ps(b->a[1]);
-    const simde__m128 b2 = simde_mm_loadu_ps(b->a[2]);
-    const simde__m128 b3 = simde_mm_loadu_ps(b->a[3]);
-
     for (int i = 0; i < 4; i++) {
-        // Broadcast each element of A's row i
-        simde__m128 r = simde_mm_mul_ps(simde_mm_set1_ps(a->a[i][0]), b0);
-        r = simde_mm_fmadd_ps(simde_mm_set1_ps(a->a[i][1]), b1, r);
-        r = simde_mm_fmadd_ps(simde_mm_set1_ps(a->a[i][2]), b2, r);
-        r = simde_mm_fmadd_ps(simde_mm_set1_ps(a->a[i][3]), b3, r);
-        simde_mm_storeu_ps(result.a[i], r);
+        for (int j = 0; j < 4; j++) {
+            result.a[i][j] =
+                a->a[i][0] * b->a[0][j] + a->a[i][1] * b->a[1][j] + a->a[i][2] * b->a[2][j] + a->a[i][3] * b->a[3][j];
+        }
     }
 
     memcpy(dst, &result, sizeof(MTX));
@@ -67,16 +53,17 @@ void njSetMatrix(MTX* md, MTX* ms) {
     *md = *ms;
 }
 
-/** @brief Apply a scale transform to the matrix (NULL → global cmtx).
- *  ⚡ Bolt: SIMD — 3× load-mul-store instead of 12 scalar multiplies. */
+/** @brief Apply a scale transform to the matrix (NULL → global cmtx). */
 void njScale(MTX* mtx, f32 x, f32 y, f32 z) {
     if (mtx == NULL) {
         mtx = &cmtx;
     }
 
-    simde_mm_storeu_ps(mtx->a[0], simde_mm_mul_ps(simde_mm_loadu_ps(mtx->a[0]), simde_mm_set1_ps(x)));
-    simde_mm_storeu_ps(mtx->a[1], simde_mm_mul_ps(simde_mm_loadu_ps(mtx->a[1]), simde_mm_set1_ps(y)));
-    simde_mm_storeu_ps(mtx->a[2], simde_mm_mul_ps(simde_mm_loadu_ps(mtx->a[2]), simde_mm_set1_ps(z)));
+    for (int i = 0; i < 4; i++) {
+        mtx->a[0][i] *= x;
+        mtx->a[1][i] *= y;
+        mtx->a[2][i] *= z;
+    }
 }
 
 /** @brief Apply a translation to the matrix via pre-multiplication (NULL → global cmtx). */
@@ -135,46 +122,7 @@ void njCalcPoints(MTX* mtx, Vec3* ps, Vec3* pd, s32 num) {
         mtx = &cmtx;
     }
 
-    // ⚡ Bolt: SIMD — Batch transform 4 points at a time
-    for (i = 0; i <= num - 4; i += 4) {
-        // Load X coords for 4 vectors: x0, x1, x2, x3
-        simde__m128 vx = simde_mm_set_ps(ps[i+3].x, ps[i+2].x, ps[i+1].x, ps[i].x);
-        // Load Y coords for 4 vectors: y0, y1, y2, y3
-        simde__m128 vy = simde_mm_set_ps(ps[i+3].y, ps[i+2].y, ps[i+1].y, ps[i].y);
-        // Load Z coords for 4 vectors: z0, z1, z2, z3
-        simde__m128 vz = simde_mm_set_ps(ps[i+3].z, ps[i+2].z, ps[i+1].z, ps[i].z);
-
-        // Vectorized multiplication for all X elements across 4 points
-        simde__m128 px_x = simde_mm_mul_ps(vx, simde_mm_set1_ps(mtx->a[0][0]));
-        px_x = simde_mm_fmadd_ps(vy, simde_mm_set1_ps(mtx->a[1][0]), px_x);
-        px_x = simde_mm_fmadd_ps(vz, simde_mm_set1_ps(mtx->a[2][0]), px_x);
-        px_x = simde_mm_add_ps(px_x, simde_mm_set1_ps(mtx->a[3][0]));
-
-        simde__m128 px_y = simde_mm_mul_ps(vx, simde_mm_set1_ps(mtx->a[0][1]));
-        px_y = simde_mm_fmadd_ps(vy, simde_mm_set1_ps(mtx->a[1][1]), px_y);
-        px_y = simde_mm_fmadd_ps(vz, simde_mm_set1_ps(mtx->a[2][1]), px_y);
-        px_y = simde_mm_add_ps(px_y, simde_mm_set1_ps(mtx->a[3][1]));
-
-        simde__m128 px_z = simde_mm_mul_ps(vx, simde_mm_set1_ps(mtx->a[0][2]));
-        px_z = simde_mm_fmadd_ps(vy, simde_mm_set1_ps(mtx->a[1][2]), px_z);
-        px_z = simde_mm_fmadd_ps(vz, simde_mm_set1_ps(mtx->a[2][2]), px_z);
-        px_z = simde_mm_add_ps(px_z, simde_mm_set1_ps(mtx->a[3][2]));
-        
-        f32 rx[4];
-        f32 ry[4];
-        f32 rz[4];
-        simde_mm_storeu_ps(rx, px_x);
-        simde_mm_storeu_ps(ry, px_y);
-        simde_mm_storeu_ps(rz, px_z);
-
-        pd[i+0].x = rx[0]; pd[i+0].y = ry[0]; pd[i+0].z = rz[0];
-        pd[i+1].x = rx[1]; pd[i+1].y = ry[1]; pd[i+1].z = rz[1];
-        pd[i+2].x = rx[2]; pd[i+2].y = ry[2]; pd[i+2].z = rz[2];
-        pd[i+3].x = rx[3]; pd[i+3].y = ry[3]; pd[i+3].z = rz[3];
-    }
-
-    // Process remainder
-    for (; i < num; i++) {
-        njCalcPoint(mtx, &ps[i], &pd[i]);
+    for (i = 0; i < num; i++) {
+        njCalcPoint(mtx, ps++, pd++);
     }
 }

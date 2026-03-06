@@ -8,8 +8,8 @@
     <div id="sel-overlay" class="sel-overlay">
 
         <!-- ═══ PORTRAITS ═══ -->
-        <img class="sel-portrait sel-portrait-p1" data-if="sel_p1_solo || sel_both_active" data-attr-src="sel_p1_portrait" />
-        <img class="sel-portrait sel-portrait-p2" data-if="sel_p2_solo || sel_both_active" data-attr-src="sel_p2_portrait" />
+        <img class="sel-portrait sel-portrait-p1" data-if="sel_p1_solo || sel_both_active || vs_active" data-attr-src="sel_p1_portrait" />
+        <img class="sel-portrait sel-portrait-p2" data-if="sel_p2_solo || sel_both_active || vs_active" data-attr-src="sel_p2_portrait" />
 
         <!-- ═══ SINGLE PLAYER: one line at top-left ═══ -->
         <div class="sel-name sel-name-solo" data-if="sel_p1_solo">
@@ -114,6 +114,12 @@
                     <div class="stg-charname">{{ stg_em2_name }}</div>
                 </div>
             </div>
+        </div>
+
+        <!-- ═══ VS SCREEN NAME PLATES ═══ -->
+        <div class="vs-section" data-if="vs_active">
+            <div class="vs-name vs-name-p1">{{ sel_p1_name }}</div>
+            <div class="vs-name vs-name-p2">{{ sel_p2_name }}</div>
         </div>
     </div>
 </body>

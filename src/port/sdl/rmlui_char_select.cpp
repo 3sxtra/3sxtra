@@ -139,6 +139,9 @@ extern "C" void rmlui_char_select_init(void) {
     // Phase flag: true during selection, false during VS screen transition
     ctor.BindFunc("sel_phase_select", [](Rml::Variant& v) { v = (bool)(Exit_No == 0); });
 
+    // VS screen active flag: true when VS screen is displaying (Exit_4th spawns VS objects)
+    ctor.BindFunc("vs_active", [](Rml::Variant& v) { v = (bool)(Exit_No >= 4); });
+
     // Timer countdown — Select_Timer is BCD-encoded (0x30 = "30", 0x21 = "21")
     // Always decode — char-select and stage-select timers are mutually exclusive
     // via their own data-if conditions (sel_timer_visible vs stg_visible).
@@ -152,7 +155,7 @@ extern "C" void rmlui_char_select_init(void) {
     // Character names — read from cursor position through ID_of_Face grid
     ctor.BindFunc("sel_p1_name", [](Rml::Variant& v) {
         if (Exit_No >= 1) {
-            v = Rml::String("");
+            v = Rml::String(char_name(My_char[0]));
         } else {
             int char_id = ID_of_Face[Cursor_Y[0]][Cursor_X[0]];
             if (char_id < 0)
@@ -162,7 +165,7 @@ extern "C" void rmlui_char_select_init(void) {
     });
     ctor.BindFunc("sel_p2_name", [](Rml::Variant& v) {
         if (Exit_No >= 1) {
-            v = Rml::String("");
+            v = Rml::String(char_name(My_char[1]));
         } else {
             int char_id = ID_of_Face[Cursor_Y[1]][Cursor_X[1]];
             if (char_id < 0)
@@ -174,7 +177,7 @@ extern "C" void rmlui_char_select_init(void) {
     // Character portraits
     ctor.BindFunc("sel_p1_portrait", [](Rml::Variant& v) {
         if (Exit_No >= 1) {
-            v = Rml::String("");
+            v = Rml::String(portrait_path(My_char[0]));
         } else {
             int char_id = ID_of_Face[Cursor_Y[0]][Cursor_X[0]];
             if (char_id < 0)
@@ -184,7 +187,7 @@ extern "C" void rmlui_char_select_init(void) {
     });
     ctor.BindFunc("sel_p2_portrait", [](Rml::Variant& v) {
         if (Exit_No >= 1) {
-            v = Rml::String("");
+            v = Rml::String(portrait_path(My_char[1]));
         } else {
             int char_id = ID_of_Face[Cursor_Y[1]][Cursor_X[1]];
             if (char_id < 0)
@@ -384,6 +387,7 @@ extern "C" void rmlui_char_select_update(void) {
 
     // All bindings are BindFunc (evaluated each frame), just dirty them
     s_model_handle.DirtyVariable("sel_phase_select");
+    s_model_handle.DirtyVariable("vs_active");
     s_model_handle.DirtyVariable("sel_timer_visible");
     s_model_handle.DirtyVariable("sel_timer");
     s_model_handle.DirtyVariable("sel_banner_visible");
@@ -422,6 +426,9 @@ extern "C" void rmlui_char_select_update(void) {
 extern "C" void rmlui_char_select_show(void) {
     rmlui_wrapper_show_game_document("char_select");
     rmlui_char_select_visible = true;
+    /* Force-dirty vs_active so it evaluates correctly on first frame */
+    if (s_model_registered && s_model_handle)
+        s_model_handle.DirtyVariable("vs_active");
 }
 
 extern "C" void rmlui_char_select_hide(void) {

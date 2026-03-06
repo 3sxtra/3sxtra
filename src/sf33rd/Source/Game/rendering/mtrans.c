@@ -95,6 +95,12 @@ typedef struct {
 
 static CGTileCacheEntry s_cg_tile_cache[CG_TILE_CACHE_SLOTS];
 
+// ⚡ Tracy: Per-frame counters for cache/decode statistics
+static s32 s_lz77_decode_count;
+static s32 s_tile_cache_hits;
+static s32 s_tile_cache_misses;
+static s32 s_cg_cache_hits;
+
 static inline u32 cg_cache_hash(u32 cg_number) {
     return (cg_number * 2654435761u) >> (32 - CG_TILE_CACHE_BITS);
 }
@@ -167,6 +173,7 @@ static CGTileCacheEntry* cg_lookup_tile_descs(u32 cg_number) {
         u32 idx = (h + p) & CG_TILE_CACHE_MASK;
         CGTileCacheEntry* e = &s_cg_tile_cache[idx];
         if (e->key == cg_number) {
+            s_cg_cache_hits++;
             return e;  // Cache hit
         }
         if (e->key == 0) {
@@ -304,6 +311,9 @@ static u16 x32_mapping_set(PatternMap* map, s32 code);
 static void lz77_gpu_or_cpu(u8* src, u32 comp_bound, u32 size,
                              MultiTexture* mt, s32 gix_base, s32 code,
                              s32 pal_bits, int is32) {
+    TRACE_ZONE_NC("LZ77:GpuOrCpu", TRACE_COLOR_RENDER);
+    s_lz77_decode_count++;
+
     s32 code_offset = is32 ? (code >> 6) : (code >> 8);
     s32 code_local  = is32 ? (code & 0x3F) : (code & 0xFF);
     u32 tile_dim    = is32 ? 32 : ((size == 0x40) ? 8 : 16);
@@ -316,12 +326,14 @@ static void lz77_gpu_or_cpu(u8* src, u32 comp_bound, u32 size,
         Renderer_LZ77Enqueue(src, comp_bound, size,
                               tex_handle, pal_handle,
                               (u32)code_local, tile_dim)) {
+        TRACE_ZONE_END();
         return;  // GPU path succeeded
     }
 
     // CPU fallback
     lz_ext_p6_fx(src, mt->mltbuf, size);
     Renderer_UpdateTexture(gix_base + code_offset, mt->mltbuf, code_local, size, 0, 0);
+    TRACE_ZONE_END();
 }
 
 /** @brief Replace tile map entries matching a source code/attribute with new values. */
@@ -846,6 +858,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
  * the CGTileDesc cache instead of being re-parsed from TileMapEntry[].
  */
 void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
+    TRACE_ZONE_NC("mlt_obj_trans", TRACE_COLOR_RENDER);
     s32 rnum;
     s32 attr;
     s32 palo;
@@ -856,12 +869,14 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     if (mt->ext) {
         mlt_obj_trans_ext(mt, wk, base_y);
+        TRACE_ZONE_END();
         return;
     }
 
     // ⚡ Opt4: Look up pre-built tile descriptors for this CG number
     CGTileCacheEntry* cge = cg_lookup_tile_descs(wk->cg_number);
     if (cge == NULL || cge->count == 0) {
+        TRACE_ZONE_END();
         return;
     }
 
@@ -938,6 +953,7 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     seqs_w.up[mt->id] = 1;
     appRenewTempPriority(wk->position_z);
+    TRACE_ZONE_END();
 }
 
 
@@ -1200,6 +1216,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
  * `+"`u{26A1}`+" Opt4: Uses pre-built CG tile descriptors to skip the per-frame tile map walk.
  */
 void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
+    TRACE_ZONE_NC("mlt_obj_trans_cp3", TRACE_COLOR_RENDER);
     s32 rnum;
     s32 flip;
     s32 palo;
@@ -1212,6 +1229,7 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     if (mt->ext) {
         mlt_obj_trans_cp3_ext(mt, wk, base_y);
+        TRACE_ZONE_END();
         return;
     }
 
@@ -1297,6 +1315,7 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     seqs_w.up[mt->id] = 1;
     appRenewTempPriority(wk->position_z);
+    TRACE_ZONE_END();
 }
 
 /** @brief Transform and render in RGB mode (extended variant). */
@@ -1542,6 +1561,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
  * `+"`u{26A1}`+" Opt4: Uses pre-built CG tile descriptors to skip the per-frame tile map walk.
  */
 void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
+    TRACE_ZONE_NC("mlt_obj_trans_rgb", TRACE_COLOR_RENDER);
     s32 rnum;
     s32 flip;
     s32 palo;
@@ -1554,6 +1574,7 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     if (mt->ext) {
         mlt_obj_trans_rgb_ext(mt, wk, base_y);
+        TRACE_ZONE_END();
         return;
     }
 
@@ -1633,6 +1654,7 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     seqs_w.up[mt->id] = 1;
     appRenewTempPriority(wk->position_z);
+    TRACE_ZONE_END();
 }
 
 /** @brief Set up the transformation matrix for a multi-texture object.
@@ -1732,7 +1754,17 @@ u32 seqsGetUseMemorySize() {
  * may still read from the previous frame's data.
  */
 void seqsBeforeProcess() {
+    // ⚡ Tracy: Emit per-frame counters before reset
     TRACE_PLOT_INT("Sprites", seqs_w.sprTotal);
+    TRACE_PLOT_INT("LZ77Decodes", s_lz77_decode_count);
+    TRACE_PLOT_INT("TileCacheHits", s_tile_cache_hits);
+    TRACE_PLOT_INT("TileCacheMisses", s_tile_cache_misses);
+    TRACE_PLOT_INT("CGCacheHits", s_cg_cache_hits);
+    s_lz77_decode_count = 0;
+    s_tile_cache_hits = 0;
+    s_tile_cache_misses = 0;
+    s_cg_cache_hits = 0;
+
     seqs_w.sprTotal = 0;
     // ⚡ Bolt: bulk memset replaces per-element loop (24 bytes per frame)
     memset(seqs_w.up, 0, sizeof(seqs_w.up));
@@ -1753,6 +1785,8 @@ void seqsAfterProcess() {
 
     if ((Debug_w[DEBUG_NO_DISP_TYPE_SB] != 3) && (seqs_w.sprTotal != 0)) {
         // Phase 1: Upload dirty texture data
+        TRACE_SUB_BEGIN("TexUpload");
+        s32 dirty_count = 0;
         for (i = 0; i < SPRITE_LAYERS_MAX; i++) {
             if (seqs_w.up[i]) {
                 if (Debug_w[DEBUG_NO_UPDATE_TEXCASH]) {
@@ -1761,16 +1795,22 @@ void seqsAfterProcess() {
                     }
                 } else if (ppgRenewTexChunkSeqs(mts[i].texList.tex) == 0) {
                     seqs_w.up[i] = 0;
+                } else {
+                    dirty_count++;
                 }
             }
         }
+        TRACE_PLOT_INT("DirtyTextures", dirty_count);
+        TRACE_SUB_END();
 
         if (seqs_w.sprMax < seqs_w.sprTotal) {
             seqs_w.sprMax = seqs_w.sprTotal;
         }
 
         // Phase 2: ⚡ Batch flush all sprites in one call
+        TRACE_SUB_BEGIN("FlushSprite2Batch");
         SDLGameRenderer_FlushSprite2Batch(seqs_w.chip, seqs_w.up, seqs_w.sprTotal);
+        TRACE_SUB_END();
     }
 }
 
@@ -1898,11 +1938,13 @@ static s32 get_mltbuf16(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
             // ⚡ Opt2P2: Cache hit — boost lifetime so frequently-used tiles persist longer
             mt->mltcsh16[ht[idx].slot].time = mt->mltcshtime16 * TILE_CACHE_BOOST;
             *ret = ht[idx].slot;
+            s_tile_cache_hits++;
             return 0;
         }
     }
 
     // Cache miss — find a free slot in the PatternState array
+    s_tile_cache_misses++;
     s32 b = -1;
     PatternState* mc = mt->mltcsh16;
     for (s32 i = 0; i < mt->mltnum16; i++) {

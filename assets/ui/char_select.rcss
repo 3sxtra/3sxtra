@@ -370,3 +370,33 @@ body {
     right: 0;
     bottom: 0;
 }
+
+/* ── VS Screen Name Plates ── */
+.vs-section {
+    display: block;
+    position: absolute;
+    top: 8dp;
+    left: 0;
+    width: 384dp;
+}
+
+.vs-name {
+    display: block;
+    position: absolute;
+    top: 0;
+    font-size: 18dp;
+    font-weight: bold;
+    color: #ffffff;
+    text-transform: uppercase;
+    font-effect: shadow(2dp 2dp #000000cc);
+}
+
+.vs-name-p1 {
+    left: 16dp;
+    text-align: left;
+}
+
+.vs-name-p2 {
+    right: 16dp;
+    text-align: right;
+}

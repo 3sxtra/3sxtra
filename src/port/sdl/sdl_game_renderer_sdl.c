@@ -50,27 +50,8 @@ static SDL_Palette* palettes[FL_PALETTE_MAX] = { NULL };
 
 static SDL_Texture* texture_cache[FL_TEXTURE_MAX] = { NULL };
 
-// ⚡ Optimization C: Texture Atlas Merging
-// Pack all indexed textures into a few large 2048x2048 atlas pages to massively reduce draw calls.
-#define ATLAS_SIZE 2048
-#define ATLAS_PAGES 4
-
-typedef struct {
-    uint32_t generation;
-    uint8_t page;
-    int palette_handle;
-    float u_scale, v_scale;
-    float u_offset, v_offset;
-} AtlasEntry;
-
-static SDL_Texture* atlas_pages[ATLAS_PAGES] = { NULL };
-static int current_atlas_page = 0;
-static int atlas_x = 0;
-static int atlas_y = 0;
-static int atlas_shelf_height = 0;
-static uint32_t atlas_generation = 1;
-
-static AtlasEntry idx_atlas_cache[FL_TEXTURE_MAX][PALETTE_CACHE_SLOTS];
+static SDL_Texture* idx_tex_cache[FL_TEXTURE_MAX][PALETTE_CACHE_SLOTS];
+static int idx_tex_palette[FL_TEXTURE_MAX][PALETTE_CACHE_SLOTS];
 static int idx_tex_next_slot[FL_TEXTURE_MAX];
 
 // ⚡ Pre-allocated RGBA conversion surface per texture index.
@@ -104,6 +85,7 @@ static float last_submitted_z = -1e30f;
 
 // ⚡ Cached texture binding — skip redundant SetTexture lookups
 static unsigned int last_set_texture_th = 0;
+static SDL_Texture* last_set_texture = NULL;
 
 // Pre-allocated batch buffers for optimized rendering
 static SDL_Vertex batch_vertices[RENDER_TASK_MAX * 4];
@@ -314,15 +296,11 @@ void SDLGameRendererSDL_DumpTextures(void) {
             continue;
 
         for (int slot = 0; slot < PALETTE_CACHE_SLOTS; slot++) {
-            if (idx_atlas_cache[ti][slot].generation == 0)
-                continue;
-            
-            int ph = idx_atlas_cache[ti][slot].palette_handle;
-            if (ph <= 0 || ph > FL_PALETTE_MAX)
-                continue;
+            if (idx_tex_cache[ti][slot] == NULL) continue;
+            int ph = idx_tex_palette[ti][slot];
+            if (ph <= 0 || ph > FL_PALETTE_MAX) continue;
             SDL_Palette* pal = palettes[ph - 1];
-            if (!pal)
-                continue;
+            if (!pal) continue;
 
             save_texture(surf, pal);
             count++;
@@ -335,32 +313,20 @@ void SDLGameRendererSDL_DumpTextures(void) {
 
 // --- Texture Stack Management ---
 
-typedef struct {
-    SDL_Texture* texture;
-    float u_scale, v_scale;
-    float u_offset, v_offset;
-} BoundTexture;
+static SDL_Texture* textures[RENDER_TASK_MAX] = { NULL };
+static int texture_count = 0;
 
-static BoundTexture current_bound_textures[RENDER_TASK_MAX];
-static int bound_texture_count = 0;
-
-static void push_bound_texture(SDL_Texture* texture, float us, float vs, float uo, float vo) {
-    if (bound_texture_count >= RENDER_TASK_MAX) {
-        fatal_error("Texture stack overflow in push_bound_texture");
+static void push_texture(SDL_Texture* texture) {
+    if (texture_count >= RENDER_TASK_MAX) {
+        fatal_error("Texture stack overflow in push_texture");
     }
-    BoundTexture* bt = &current_bound_textures[bound_texture_count++];
-    bt->texture = texture;
-    bt->u_scale = us;
-    bt->v_scale = vs;
-    bt->u_offset = uo;
-    bt->v_offset = vo;
+    textures[texture_count] = texture;
+    texture_count += 1;
 }
 
-static const BoundTexture* get_bound_texture(void) {
-    if (bound_texture_count == 0) {
-        fatal_error("No textures to get");
-    }
-    return &current_bound_textures[bound_texture_count - 1];
+static SDL_Texture* get_texture(void) {
+    if (texture_count == 0) { fatal_error("No textures to get"); }
+    return textures[texture_count - 1];
 }
 
 // --- Deferred Texture Destruction ---
@@ -376,8 +342,10 @@ static void push_texture_to_destroy(SDL_Texture* texture) {
 }
 
 static void destroy_textures(void) {
-    // ⚡ Bound textures are transient per-frame indices, no textures to destroy here
-    bound_texture_count = 0;
+    for (int i = 0; i < texture_count; i++) {
+        textures[i] = NULL;
+    }
+    texture_count = 0;
 
     for (int i = 0; i < textures_to_destroy_count; i++) {
         SDL_DestroyTexture(textures_to_destroy[i]);
@@ -460,17 +428,14 @@ void SDLGameRendererSDL_Shutdown(void) {
         }
     }
 
-    // Destroy atlas pages
-    for (int i = 0; i < ATLAS_PAGES; i++) {
-        if (atlas_pages[i] != NULL) {
-            SDL_DestroyTexture(atlas_pages[i]);
-            atlas_pages[i] = NULL;
-        }
-    }
-    
-    // Clear atlas cache
+    // Destroy all cached indexed (multi-palette) streaming textures
     for (int i = 0; i < FL_TEXTURE_MAX; i++) {
-        SDL_zero(idx_atlas_cache[i]);
+        for (int s = 0; s < PALETTE_CACHE_SLOTS; s++) {
+            if (idx_tex_cache[i][s] != NULL) {
+                SDL_DestroyTexture(idx_tex_cache[i][s]);
+                idx_tex_cache[i][s] = NULL;
+            }
+        }
         idx_tex_next_slot[i] = 0;
     }
 
@@ -512,6 +477,7 @@ void SDLGameRendererSDL_Shutdown(void) {
 }
 
 void SDLGameRendererSDL_BeginFrame(void) {
+    TRACE_SUB_BEGIN("SDL2D:BeginFrame");
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
 
     // Clear canvas
@@ -528,9 +494,11 @@ void SDLGameRendererSDL_BeginFrame(void) {
 
     SDL_SetRenderTarget(renderer, cps3_canvas);
     SDL_RenderClear(renderer);
+    TRACE_SUB_END();
 }
 
 void SDLGameRendererSDL_RenderFrame(void) {
+    TRACE_SUB_BEGIN("SDL2D:RenderFrame");
     TRACE_PLOT_INT("PalCacheMiss", palette_cache_misses_frame);
     TRACE_PLOT_INT("RenderTasks", render_task_count);
     palette_cache_misses_frame = 0;
@@ -609,11 +577,14 @@ void SDLGameRendererSDL_RenderFrame(void) {
             SDL_RenderRect(renderer, &border_rect);
         }
     }
+    TRACE_SUB_END();
 }
 
 void SDLGameRendererSDL_EndFrame(void) {
+    TRACE_SUB_BEGIN("SDL2D:EndFrame");
     destroy_textures();
     clear_render_tasks();
+    TRACE_SUB_END();
 }
 
 void SDLGameRendererSDL_UnlockPalette(unsigned int ph) {
@@ -643,6 +614,7 @@ void SDLGameRendererSDL_UnlockTexture(unsigned int th) {
 
     /* Invalidate texture binding cache */
     last_set_texture_th = 0;
+    last_set_texture = NULL;
 
     /* Invalidate non-indexed GPU texture */
     if (texture_cache[texture_index] != NULL) {
@@ -650,13 +622,13 @@ void SDLGameRendererSDL_UnlockTexture(unsigned int th) {
         texture_cache[texture_index] = NULL;
     }
 
-    /* Invalidate all indexed (multi-palette) atlas entries for this texture.
-     * Pixel data changed, so the mappings must be cleared and lazily recreated.
-     * The atlas pixels are left as garbage data to be eventually overwritten. */
+    /* Invalidate all indexed (multi-palette) streaming textures for this texture. */
     for (int s = 0; s < PALETTE_CACHE_SLOTS; s++) {
-        if (idx_atlas_cache[texture_index][s].generation != 0) {
-            palette_reverse_remove(idx_atlas_cache[texture_index][s].palette_handle, texture_index);
-            SDL_zero(idx_atlas_cache[texture_index][s]);
+        if (idx_tex_cache[texture_index][s] != NULL) {
+            push_texture_to_destroy(idx_tex_cache[texture_index][s]);
+            palette_reverse_remove(idx_tex_palette[texture_index][s], texture_index);
+            idx_tex_cache[texture_index][s] = NULL;
+            idx_tex_palette[texture_index][s] = 0;
         }
     }
     idx_tex_next_slot[texture_index] = 0;
@@ -763,12 +735,13 @@ void SDLGameRendererSDL_DestroyTexture(unsigned int texture_handle) {
         texture_cache[texture_index] = NULL;
     }
 
-    // ⚡ Clear all indexed (multi-palette) atlas mappings for this texture
+    // ⚡ Destroy all indexed (multi-palette) streaming textures for this texture
     for (int s = 0; s < PALETTE_CACHE_SLOTS; s++) {
-        if (idx_atlas_cache[texture_index][s].generation != 0) {
-            // ⚡ Clean up reverse index entry
-            palette_reverse_remove(idx_atlas_cache[texture_index][s].palette_handle, texture_index);
-            SDL_zero(idx_atlas_cache[texture_index][s]);
+        if (idx_tex_cache[texture_index][s] != NULL) {
+            push_texture_to_destroy(idx_tex_cache[texture_index][s]);
+            palette_reverse_remove(idx_tex_palette[texture_index][s], texture_index);
+            idx_tex_cache[texture_index][s] = NULL;
+            idx_tex_palette[texture_index][s] = 0;
         }
     }
     idx_tex_next_slot[texture_index] = 0;
@@ -883,10 +856,10 @@ static void invalidate_palette_cache_entries(int palette_handle) {
     for (int i = 0; i < palette_reverse[pi].count; i++) {
         int t = palette_reverse[pi].texture_indices[i];
         for (int s = 0; s < PALETTE_CACHE_SLOTS; s++) {
-            if (idx_atlas_cache[t][s].generation != 0 && idx_atlas_cache[t][s].palette_handle == palette_handle) {
-                // ⚡ Orphan the atlas mapping — just clear palette tag
-                // so SetTexture will re-blit with the new palette data.
-                idx_atlas_cache[t][s].palette_handle = 0;
+            if (idx_tex_cache[t][s] != NULL && idx_tex_palette[t][s] == palette_handle) {
+                // ⚡ Streaming texture stays allocated — just clear palette tag
+                // SetTexture will re-blit with the new palette data on next use.
+                idx_tex_palette[t][s] = 0;
             }
         }
     }
@@ -903,6 +876,7 @@ void SDLGameRendererSDL_DestroyPalette(unsigned int palette_handle) {
 
     // ⚡ Invalidate texture binding cache when a palette is destroyed
     last_set_texture_th = 0;
+    last_set_texture = NULL;
 
     // Invalidate cached textures that used this palette (prevents stale reuse)
     invalidate_palette_cache_entries(palette_handle);
@@ -916,12 +890,13 @@ void SDLGameRendererSDL_DestroyPalette(unsigned int palette_handle) {
 void SDLGameRendererSDL_SetTexture(unsigned int th) {
     // ⚡ Cached texture binding — skip full lookup when same texture+palette was just set
     if (th == last_set_texture_th) {
-        // Re-push the same texture that's already on top of the stack
-        if (bound_texture_count > 0) {
-            BoundTexture* last_bt = &current_bound_textures[bound_texture_count - 1];
-            push_bound_texture(last_bt->texture, last_bt->u_scale, last_bt->v_scale, last_bt->u_offset, last_bt->v_offset);
-            return;
+        if (texture_count > 0) {
+            push_texture(textures[texture_count - 1]);
+        } else if (last_set_texture != NULL) {
+            // Stack might be empty at start of frame, but we know the actual texture
+            push_texture(last_set_texture);
         }
+        return;
     }
     last_set_texture_th = th;
 
@@ -951,115 +926,70 @@ void SDLGameRendererSDL_SetTexture(unsigned int th) {
         save_texture(surface, palette);
     }
 
-    // ⚡ For indexed textures: use dynamic texture atlas to pack multiple
-    // texture+palette variants into the same global SDL_Texture.
-    // This massively reduces draw calls by batching sprites naturally.
+    // ⚡ For indexed textures: use multi-palette cache to avoid recreating
+    // GPU textures on every palette switch. Each texture caches up to
+    // PALETTE_CACHE_SLOTS different palette variants.
     if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
-        AtlasEntry* entry = NULL;
+        SDL_Texture* texture = NULL;
 
-        // Search multi-palette cache for this texture+palette combo
+        // Search cache for this texture+palette
         for (int s = 0; s < PALETTE_CACHE_SLOTS; s++) {
-            AtlasEntry* e = &idx_atlas_cache[texture_index][s];
-            if (e->generation == atlas_generation && e->palette_handle == palette_handle) {
-                entry = e;
+            if (idx_tex_cache[texture_index][s] != NULL && idx_tex_palette[texture_index][s] == palette_handle) {
+                texture = idx_tex_cache[texture_index][s];
                 break;
             }
         }
 
-        if (!entry) {
-            // ⚡ Cache miss — pack into the atlas
+        if (!texture) {
+            // ⚡ Cache miss — use streaming texture (pre-allocated, reused)
             palette_cache_misses_frame++;
 
-            if (palette != NULL) {
-                SDL_SetSurfacePalette(surface, palette);
-            }
+            if (palette != NULL) SDL_SetSurfacePalette(surface, palette);
 
             const int slot = idx_tex_next_slot[texture_index];
-            entry = &idx_atlas_cache[texture_index][slot];
 
-            // ⚡ Clean up reverse index for evicted palette association
-            if (entry->palette_handle != 0) {
-                palette_reverse_remove(entry->palette_handle, texture_index);
+            if (idx_tex_palette[texture_index][slot] != 0)
+                palette_reverse_remove(idx_tex_palette[texture_index][slot], texture_index);
+
+            // ⚡ Lazily create the streaming texture
+            if (idx_tex_cache[texture_index][slot] == NULL) {
+                texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                    SDL_TEXTUREACCESS_STREAMING, surface->w, surface->h);
+                if (!texture)
+                    fatal_error("Failed to create streaming texture: %s", SDL_GetError());
+                SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+                SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+                idx_tex_cache[texture_index][slot] = texture;
+            } else {
+                texture = idx_tex_cache[texture_index][slot];
             }
 
-            // ⚡ Lazily create the RGBA conversion surface (one-time per texture index)
+            // ⚡ Lazily create the RGBA conversion surface
             if (rgba_conversion[texture_index] == NULL) {
                 rgba_conversion[texture_index] = SDL_CreateSurface(
                     surface->w, surface->h, SDL_PIXELFORMAT_RGBA8888);
-                if (!rgba_conversion[texture_index]) {
+                if (!rgba_conversion[texture_index])
                     fatal_error("Failed to create RGBA conversion surface: %s", SDL_GetError());
-                }
             }
 
-            // ⚡ Shelf Allocator: find space in the atlas for this texture
-            const int w = surface->w;
-            const int h = surface->h;
-            
-            if (atlas_x + w > ATLAS_SIZE) {
-                // Next row
-                atlas_x = 0;
-                atlas_y += atlas_shelf_height;
-                atlas_shelf_height = 0;
-            }
-            if (atlas_y + h > ATLAS_SIZE) {
-                // Next page
-                current_atlas_page = (current_atlas_page + 1) % ATLAS_PAGES;
-                atlas_x = 0;
-                atlas_y = 0;
-                atlas_shelf_height = 0;
-                // If we wrapped back to 0, invalidate all older mappings globally
-                if (current_atlas_page == 0) {
-                    atlas_generation++;
-                    if (atlas_generation == 0) atlas_generation = 1; // avoid 0
-                    SDL_Log("[Atlas] Generation advanced to %u", atlas_generation);
-                }
-            }
-
-            // Lazily allocate the atlas page texture
-            if (atlas_pages[current_atlas_page] == NULL) {
-                atlas_pages[current_atlas_page] = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                    SDL_TEXTUREACCESS_STREAMING, ATLAS_SIZE, ATLAS_SIZE);
-                if (!atlas_pages[current_atlas_page]) {
-                    fatal_error("Failed to create atlas page: %s", SDL_GetError());
-                }
-                SDL_SetTextureScaleMode(atlas_pages[current_atlas_page], SDL_SCALEMODE_NEAREST);
-                SDL_SetTextureBlendMode(atlas_pages[current_atlas_page], SDL_BLENDMODE_BLEND);
-            }
-
-            const SDL_Rect dest_rect = { atlas_x, atlas_y, w, h };
-            if (h > atlas_shelf_height) atlas_shelf_height = h;
-
-            // ⚡ Blit indexed→RGBA using the palette, then upload to atlas sub-region.
             SDL_BlitSurface(surface, NULL, rgba_conversion[texture_index], NULL);
-            SDL_UpdateTexture(atlas_pages[current_atlas_page], &dest_rect,
+            SDL_UpdateTexture(texture, NULL,
                 rgba_conversion[texture_index]->pixels,
                 rgba_conversion[texture_index]->pitch);
 
-            // Record UV mapping
-            entry->generation = atlas_generation;
-            entry->page = current_atlas_page;
-            entry->palette_handle = palette_handle;
-            entry->u_scale = (float)w / ATLAS_SIZE;
-            entry->v_scale = (float)h / ATLAS_SIZE;
-            entry->u_offset = (float)atlas_x / ATLAS_SIZE;
-            entry->v_offset = (float)atlas_y / ATLAS_SIZE;
-
-            atlas_x += w;
-
+            idx_tex_palette[texture_index][slot] = palette_handle;
             idx_tex_next_slot[texture_index] = (slot + 1) % PALETTE_CACHE_SLOTS;
-
-            // ⚡ Register in reverse index for fast invalidation
             palette_reverse_add(palette_handle, texture_index);
         }
 
-        push_bound_texture(atlas_pages[entry->page], entry->u_scale, entry->v_scale, entry->u_offset, entry->v_offset);
+        push_texture(texture);
+        last_set_texture = texture;
     } else {
-        // Non-indexed texture — use simple 1:1 cache without UV modification
+        // Non-indexed texture — simple 1:1 cache
         SDL_Texture* texture = texture_cache[texture_index];
-        if (texture == NULL) {
-            return;
-        }
-        push_bound_texture(texture, 1.0f, 1.0f, 0.0f, 0.0f);
+        if (texture == NULL) return;
+        push_texture(texture);
+        last_set_texture = texture;
     }
 }
 
@@ -1072,23 +1002,20 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     }
 
     const int task_idx = render_task_count;
-    const BoundTexture* bt = textured ? get_bound_texture() : NULL;
-    task_texture[task_idx] = bt ? bt->texture : NULL;
+    task_texture[task_idx] = textured ? get_texture() : NULL;
     task_z[task_idx] = flPS2ConvScreenFZ(vertices[0].coord.z);
 
-    // ⚡ Track sortedness: count inversions to decide sort strategy in RenderFrame
-    if (task_z[task_idx] < last_submitted_z) {
-        sort_inversions++;
-    }
+    // ⚡ Track sortedness
+    if (task_z[task_idx] < last_submitted_z) sort_inversions++;
     last_submitted_z = task_z[task_idx];
 
     for (int i = 0; i < 4; i++) {
         task_verts[task_idx][i].position.x = vertices[i].coord.x;
         task_verts[task_idx][i].position.y = vertices[i].coord.y;
 
-        if (textured && bt) {
-            task_verts[task_idx][i].tex_coord.x = bt->u_offset + vertices[i].tex_coord.s * bt->u_scale;
-            task_verts[task_idx][i].tex_coord.y = bt->v_offset + vertices[i].tex_coord.t * bt->v_scale;
+        if (textured) {
+            task_verts[task_idx][i].tex_coord.x = vertices[i].tex_coord.s;
+            task_verts[task_idx][i].tex_coord.y = vertices[i].tex_coord.t;
         } else {
             task_verts[task_idx][i].tex_coord.x = 0.0f;
             task_verts[task_idx][i].tex_coord.y = 0.0f;
@@ -1201,6 +1128,7 @@ unsigned int SDLGameRendererSDL_GetCachedGLTexture(unsigned int texture_handle, 
  * SetTexture is still called per tex_code change for palette cache lookup.
  */
 void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count) {
+    TRACE_SUB_BEGIN("SDL2D:FlushBatch");
     unsigned int last_tex_code = 0;
 
     for (int i = 0; i < count; i++) {
@@ -1221,17 +1149,12 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
 
         /* --- Inlined draw_quad: Sprite2 → RenderTask directly --- */
         const int task_idx = render_task_count;
-        const BoundTexture* bt = (bound_texture_count > 0) ? get_bound_texture() : NULL;
-        task_texture[task_idx] = bt ? bt->texture : NULL;
+        task_texture[task_idx] = last_set_texture;
         task_z[task_idx] = flPS2ConvScreenFZ(spr->v[0].z);
 
-        /* Track sortedness for adaptive sort in RenderFrame */
-        if (task_z[task_idx] < last_submitted_z) {
-            sort_inversions++;
-        }
+        if (task_z[task_idx] < last_submitted_z) sort_inversions++;
         last_submitted_z = task_z[task_idx];
 
-        /* Pre-compute color floats once per sprite using the fast LUT (inlined) */
         const Uint32 color = spr->vertex_color;
         const SDL_FColor fc = {
             .b = rgba8_to_float[color & 0xFF],
@@ -1240,13 +1163,11 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
             .a = rgba8_to_float[(color >> 24) & 0xFF]
         };
 
-        /* Expand Sprite2 (2 corners) → 4 vertices, applying atlas UV scale/offset */
+        /* Expand Sprite2 → 4 vertices */
         const float x0 = spr->v[0].x, y0 = spr->v[0].y;
         const float x1 = spr->v[1].x, y1 = spr->v[1].y;
-        const float s0 = bt ? bt->u_offset + spr->t[0].s * bt->u_scale : 0.0f;
-        const float t0 = bt ? bt->v_offset + spr->t[0].t * bt->v_scale : 0.0f;
-        const float s1 = bt ? bt->u_offset + spr->t[1].s * bt->u_scale : 0.0f;
-        const float t1 = bt ? bt->v_offset + spr->t[1].t * bt->v_scale : 0.0f;
+        const float s0 = spr->t[0].s, t0 = spr->t[0].t;
+        const float s1 = spr->t[1].s, t1 = spr->t[1].t;
 
         task_verts[task_idx][0].position.x = x0; task_verts[task_idx][0].position.y = y0;
         task_verts[task_idx][0].tex_coord.x = s0; task_verts[task_idx][0].tex_coord.y = t0;
@@ -1266,4 +1187,5 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
 
         render_task_count++;
     }
+    TRACE_SUB_END();
 }

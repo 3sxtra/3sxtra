@@ -1816,6 +1816,10 @@ void Loop_Demo(struct _TASK* /* unused */) {
         Basic_Sub();
 
         if (Ranking() != 0) {
+            /* Hide attract overlay before cycling back to title screen */
+            if (use_rmlui && rmlui_screen_attract_overlay) {
+                rmlui_attract_overlay_hide();
+            }
             Switch_Screen(1);
             Loop_Demo_Sub();
             System_all_clear_Level_B();

@@ -857,14 +857,12 @@ void SDLGameRendererGPU_RenderFrame(void) {
     // This avoids the per-row transfer buffer cycling issue where copy commands
     // would all resolve to the last-written buffer.
     // ⚡ Opt10b: Lazily map the staging buffer only when dirty palettes exist.
-    if (s_pal_upload_dirty_count > 0) {
+    if (s_compute_staging_ptr || true) {
         if (!s_compute_staging_ptr) {
             s_compute_staging_ptr = (u8*)SDL_MapGPUTransferBuffer(device, s_compute_staging_buffer, true);
             s_compute_staging_offset = 0;
         }
-        // ⚡ Opt9b: Iterate only dirty palettes instead of scanning all 1088 slots
-        for (int d = 0; d < s_pal_upload_dirty_count; d++) {
-            int i = s_pal_upload_dirty_indices[d];
+        for (int i = 0; i < FL_PALETTE_MAX && i < PALETTE_TEX_HEIGHT; i++) {
             if (s_palette_uploaded[i] || !palettes[i])
                 continue;
             size_t pal_size = (size_t)PALETTE_TEX_WIDTH * 4; // 256 colors × 4 bytes = 1024
@@ -1212,6 +1210,21 @@ void SDLGameRendererGPU_CreatePalette(unsigned int ph) {
         SDL_DestroyPalette(palettes[palette_index]);
     palettes[palette_index] = SDL_CreatePalette(color_count);
     SDL_SetPaletteColors(palettes[palette_index], colors, 0, color_count);
+
+    // ⚡ Fix: Ensure naturally created palettes (like static PPL UI fonts) are actually
+    // queued for upload to the GPU atlas!
+    s_palette_uploaded[palette_index] = false;
+
+    bool already_queued = false;
+    for (int d = 0; d < s_pal_upload_dirty_count; d++) {
+        if (s_pal_upload_dirty_indices[d] == palette_index) {
+            already_queued = true;
+            break;
+        }
+    }
+    if (!already_queued && s_pal_upload_dirty_count < FL_PALETTE_MAX) {
+        s_pal_upload_dirty_indices[s_pal_upload_dirty_count++] = palette_index;
+    }
 }
 
 /** @brief Mark a palette for destruction. */
@@ -1588,7 +1601,9 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
     bool is_indexed_format = (fl_tex_info->format == SCE_GS_PSMT4 || fl_tex_info->format == SCE_GS_PSMT8);
     float palIdx = -1.0f;
     if (is_indexed_format) {
-        palIdx = (palette_handle > 0) ? (float)(palette_handle - 1) : 0.0f;
+        // If no palette assigned, fall back to the identity grayscale ramp at DEFAULT_PALETTE_ROW.
+        // Using row 0 samples an uninitialized/wrong palette for native UI (main menu, HUD, etc.).
+        palIdx = (palette_handle > 0) ? (float)(palette_handle - 1) : (float)DEFAULT_PALETTE_ROW;
     }
 
     texture_layers[texture_count] = layer;
@@ -1605,7 +1620,7 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES)
         return;
 
-    float layer = -1.0f;
+    float layer = 0.0f;
     float uv_sx = 1.0f, uv_sy = 1.0f;
     float palIdx = -1.0f;
 

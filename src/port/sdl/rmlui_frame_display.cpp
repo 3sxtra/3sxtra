@@ -200,6 +200,11 @@ extern "C" void rmlui_frame_display_update(void) {
             s_consecutive_idle++;
             if (s_consecutive_idle >= 90 && !s_frame_history.empty()) {
                 s_frame_history.clear();
+                s_p1_cells.clear();
+                s_p2_cells.clear();
+                s_prev_cell_count = 0;
+                s_model_handle.DirtyVariable("p1_cells");
+                s_model_handle.DirtyVariable("p2_cells");
             }
         }
     } else {

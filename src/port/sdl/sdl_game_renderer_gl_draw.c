@@ -481,22 +481,116 @@ void SDLGameRendererGL_DrawSprite2(const Sprite2* sprite2) {
 }
 
 /**
- * @brief ⚡ GL batch sprite flush — simple per-sprite loop (no tex_code sorting).
+ * @brief ⚡ Inlined GL batch sprite flush — writes directly to batch buffers.
+ *
+ * Eliminates the 3-deep call chain (DrawSprite2 → draw_quad → push_render_task)
+ * and 2 intermediate vertex arrays per sprite. Caches texture/layer/palette state
+ * on tex_code change and performs color swizzle + UV scale + Z conversion inline.
+ *
  * GL backend preserves submission order for correct Z via stable_sort_render_tasks.
  */
 void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count) {
     // ⚡ Bolt: Batch stale-promotion — single O(pending + live) pass before draw
     SDLGameRendererGL_FlushPendingUnlocks();
 
-    unsigned int keep = 0;
+    unsigned int last_tex_code = 0;
+
+    // Cached texture state — refreshed on tex_code change
+    int    cur_layer   = -1;
+    int    cur_pal     = 0;
+    float  cur_uv_sx   = 1.0f;
+    float  cur_uv_sy   = 1.0f;
+    GLuint cur_texture  = 0;
+
     for (int i = 0; i < count; i++) {
-        if (active_layers[chips[i].id]) {
-            unsigned int val = chips[i].tex_code;
-            if (keep != val) {
-                keep = val;
-                flSetRenderState(FLRENDER_TEXSTAGE0, val);
+        if (!active_layers[chips[i].id])
+            continue;
+
+        if (gl_state.render_task_count >= RENDER_TASK_MAX)
+            break;
+
+        const Sprite2* spr = &chips[i];
+
+        // --- tex_code change: call SetTexture, then cache the result ---
+        const unsigned int tc = spr->tex_code;
+        if (tc != last_tex_code) {
+            last_tex_code = tc;
+            flSetRenderState(FLRENDER_TEXSTAGE0, tc);
+
+            // Cache the texture stack top for all subsequent sprites with same tex_code
+            if (gl_state.texture_count > 0) {
+                const int top = gl_state.texture_count - 1;
+                cur_texture = gl_state.textures[top];
+                cur_layer   = gl_state.texture_layers[top];
+                cur_pal     = gl_state.texture_pal_slots[top];
+                cur_uv_sx   = gl_state.texture_uv_sx[top];
+                cur_uv_sy   = gl_state.texture_uv_sy[top];
             }
-            SDLGameRendererGL_DrawSprite2(&chips[i]);
         }
+        // Same tex_code: reuse cached cur_texture/cur_layer/cur_pal/cur_uv — no stack push needed
+
+        // --- Inline vertex construction (was: DrawSprite2 → draw_quad → push_render_task) ---
+        const int task_idx = gl_state.render_task_count;
+        const int vo = task_idx * 4;  // vertex offset
+
+        // Color swizzle: Sprite2 stores BGRA, GL shader expects RGBA byte order
+        const Uint32 src_color = spr->vertex_color;
+        const Uint32 color = ((src_color & 0xFF) << 16) | (src_color & 0xFF00FF00u) | ((src_color >> 16) & 0xFF);
+
+        // Positions: v[0] = top-left, v[1] = bottom-right; expand to 4 corners
+        const float x0 = spr->v[0].x;
+        const float y0 = spr->v[0].y;
+        const float x1 = spr->v[1].x;
+        const float y1 = spr->v[1].y;
+
+        // UVs: t[0] = top-left, t[1] = bottom-right; expand to 4 corners
+        float s0 = spr->t[0].s;
+        float t0 = spr->t[0].t;
+        float s1 = spr->t[1].s;
+        float t1 = spr->t[1].t;
+
+        // Apply array-texture UV scale
+        if (cur_layer >= 0) {
+            s0 *= cur_uv_sx;  t0 *= cur_uv_sy;
+            s1 *= cur_uv_sx;  t1 *= cur_uv_sy;
+        }
+
+        // Z depth conversion
+        const float z = flPS2ConvScreenFZ(spr->v[0].z);
+
+        // Write 4 vertices directly to batch buffer
+        SDL_Vertex* v = &gl_state.batch_vertices[vo];
+
+        v[0].position.x = x0; v[0].position.y = y0;
+        v[0].tex_coord.x = s0; v[0].tex_coord.y = t0;
+        memcpy(&v[0].color, &color, sizeof(Uint32));
+
+        v[1].position.x = x1; v[1].position.y = y0;
+        v[1].tex_coord.x = s1; v[1].tex_coord.y = t0;
+        memcpy(&v[1].color, &color, sizeof(Uint32));
+
+        v[2].position.x = x0; v[2].position.y = y1;
+        v[2].tex_coord.x = s0; v[2].tex_coord.y = t1;
+        memcpy(&v[2].color, &color, sizeof(Uint32));
+
+        v[3].position.x = x1; v[3].position.y = y1;
+        v[3].tex_coord.x = s1; v[3].tex_coord.y = t1;
+        memcpy(&v[3].color, &color, sizeof(Uint32));
+
+        // Write layer + palette with SIMD broadcast
+        simde_mm_storeu_ps(&gl_state.batch_layers[vo], simde_mm_set1_ps((float)cur_layer));
+        simde_mm_storeu_ps(&gl_state.batch_pal_indices[vo], simde_mm_set1_ps((float)cur_pal));
+
+        // Fill render task metadata
+        RenderTask* task = &gl_state.render_tasks[task_idx];
+        task->texture = cur_texture;
+        task->vertex_offset = vo;
+        task->z = z;
+        task->original_index = task_idx;
+        task->index = task_idx;
+        task->array_layer = cur_layer;
+        task->palette_slot = cur_pal;
+
+        gl_state.render_task_count++;
     }
 }

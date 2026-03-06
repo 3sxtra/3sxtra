@@ -30,6 +30,8 @@
 
 #include <SDL3/SDL.h>
 
+#include "port/tracy_zones.h"
+
 // bss
 HS hs[32];
 
@@ -64,6 +66,7 @@ void make_red_blocking_time(s16 id, s16 ix, s16 num) {
 
 /** @brief Main hit-check processing — runs catch checks, attack checks, and the hit queue. */
 void hit_check_main_process() {
+    TRACE_ZONE_NC("HitCheck", TRACE_COLOR_GAME);
     aiuchi_flag = 0;
 
     if (hpq_in > 1) {
@@ -79,6 +82,7 @@ void hit_check_main_process() {
     }
 
     clear_hit_queue();
+    TRACE_ZONE_END();
 }
 
 /** @brief Evaluates round judge result — KO, time-over, or double-KO. */
