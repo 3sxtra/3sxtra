@@ -71,6 +71,7 @@ void SDLGameRendererSDL_DrawSprite(const Sprite* sprite, unsigned int color);
 void SDLGameRendererSDL_DrawSprite2(const Sprite2* sprite2);
 unsigned int SDLGameRendererSDL_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);
 void SDLGameRendererSDL_DumpTextures(void);
+void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
 SDL_Texture* SDLGameRendererSDL_GetCanvas(void);
 
 #ifdef __cplusplus

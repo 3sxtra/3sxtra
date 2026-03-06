@@ -217,17 +217,6 @@ void SDLGameRenderer_FlushSprite2Batch(Sprite2* chips, const unsigned char* acti
     } else if (r == RENDERER_OPENGL) {
         SDLGameRendererGL_FlushSprite2Batch(chips, active_layers, count);
     } else {
-        // SDL2D: fall back to per-sprite calls (no batch API)
-        unsigned int keep = 0;
-        for (int i = 0; i < count; i++) {
-            if (active_layers[chips[i].id]) {
-                unsigned int val = chips[i].tex_code;
-                if (keep != val) {
-                    keep = val;
-                    SDLGameRenderer_SetTexture(val);
-                }
-                SDLGameRendererSDL_DrawSprite2(&chips[i]);
-            }
-        }
+        SDLGameRendererSDL_FlushSprite2Batch(chips, active_layers, count);
     }
 }

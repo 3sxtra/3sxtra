@@ -569,12 +569,56 @@ void SDLGameRendererSDL_UnlockPalette(unsigned int ph) {
     }
 }
 
+/**
+ * ⚡ Lightweight texture invalidation — replaces the old destroy+recreate cycle.
+ *
+ * The SDL_Surface created by CreateTexture references the system buffer via
+ * pointer (SDL_CreateSurfaceFrom).  Since the caller (ppgRenewTexChunkSeqs)
+ * writes directly into that system buffer, the surface already reflects the
+ * new pixel data.  We only need to invalidate the GPU-side texture caches
+ * so that SetTexture will recreate them from the (now-updated) surface.
+ */
 void SDLGameRendererSDL_UnlockTexture(unsigned int th) {
-    const int texture_handle = th;
+    const int texture_index = th - 1;
 
-    if ((texture_handle > 0) && (texture_handle < FL_TEXTURE_MAX)) {
-        SDLGameRendererSDL_DestroyTexture(texture_handle);
-        SDLGameRendererSDL_CreateTexture(th);
+    if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX) {
+        return;
+    }
+
+    /* Invalidate texture binding cache */
+    last_set_texture_th = 0;
+
+    /* Invalidate non-indexed GPU texture */
+    if (texture_cache[texture_index] != NULL) {
+        push_texture_to_destroy(texture_cache[texture_index]);
+        texture_cache[texture_index] = NULL;
+    }
+
+    /* Invalidate all indexed (multi-palette) GPU textures for this texture */
+    for (int s = 0; s < PALETTE_CACHE_SLOTS; s++) {
+        if (idx_tex_cache[texture_index][s] != NULL) {
+            push_texture_to_destroy(idx_tex_cache[texture_index][s]);
+            palette_reverse_remove(idx_tex_palette[texture_index][s], texture_index);
+            idx_tex_cache[texture_index][s] = NULL;
+            idx_tex_palette[texture_index][s] = 0;
+        }
+    }
+    idx_tex_next_slot[texture_index] = 0;
+
+    /* Surface stays alive — it still references the (now-updated) system buffer.
+     * SetTexture will lazily create a new GPU texture from it on next use. */
+
+    /* For non-indexed formats, eagerly recreate the GPU texture since there is
+     * no lazy path in SetTexture for non-indexed textures. */
+    SDL_Surface* surface = surfaces[texture_index];
+    if (surface != NULL && !SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
+        SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        if (texture) {
+            SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+            SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+            texture_cache[texture_index] = texture;
+        }
     }
 }
 
@@ -1017,4 +1061,75 @@ unsigned int SDLGameRendererSDL_GetCachedGLTexture(unsigned int texture_handle, 
     (void)palette_handle;
     // SDL2D mode has no GL textures — return 0 (callers must handle gracefully)
     return 0;
+}
+
+/**
+ * ⚡ Batch sprite flush for SDL2D — inlines Sprite2 → RenderTask conversion.
+ *
+ * Eliminates three layers of per-sprite function calls:
+ *   DrawSprite2 → DrawSprite → draw_quad
+ * by writing directly into the render_tasks array.
+ *
+ * SetTexture is still called per tex_code change for palette cache lookup.
+ */
+void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count) {
+    unsigned int last_tex_code = 0;
+
+    for (int i = 0; i < count; i++) {
+        if (!active_layers[chips[i].id])
+            continue;
+
+        if (render_task_count >= RENDER_TASK_MAX)
+            break;
+
+        const Sprite2* spr = &chips[i];
+
+        /* SetTexture on tex_code change — needed for palette cache lookup */
+        unsigned int tc = spr->tex_code;
+        if (tc != last_tex_code) {
+            last_tex_code = tc;
+            SDLGameRendererSDL_SetTexture(tc);
+        }
+
+        /* --- Inlined draw_quad: Sprite2 → RenderTask directly --- */
+        RenderTask* task = &render_tasks[render_task_count];
+        task->index = render_task_count;
+        task->texture = (texture_count > 0) ? textures[texture_count - 1] : NULL;
+        task->z = flPS2ConvScreenFZ(spr->v[0].z);
+        task->original_index = render_task_count;
+
+        /* Track sortedness for adaptive sort in RenderFrame */
+        if (task->z < last_submitted_z) {
+            sort_inversions++;
+        }
+        last_submitted_z = task->z;
+
+        /* Pre-compute color floats once per sprite (same as GPU batch path) */
+        SDL_FColor fc;
+        read_rgba32_fcolor(spr->vertex_color, &fc);
+
+        /* Expand Sprite2 (2 corners) → 4 vertices */
+        const float x0 = spr->v[0].x, y0 = spr->v[0].y;
+        const float x1 = spr->v[1].x, y1 = spr->v[1].y;
+        const float s0 = spr->t[0].s,  t0 = spr->t[0].t;
+        const float s1 = spr->t[1].s,  t1 = spr->t[1].t;
+
+        task->vertices[0].position.x = x0; task->vertices[0].position.y = y0;
+        task->vertices[0].tex_coord.x = s0; task->vertices[0].tex_coord.y = t0;
+        task->vertices[0].color = fc;
+
+        task->vertices[1].position.x = x1; task->vertices[1].position.y = y0;
+        task->vertices[1].tex_coord.x = s1; task->vertices[1].tex_coord.y = t0;
+        task->vertices[1].color = fc;
+
+        task->vertices[2].position.x = x0; task->vertices[2].position.y = y1;
+        task->vertices[2].tex_coord.x = s0; task->vertices[2].tex_coord.y = t1;
+        task->vertices[2].color = fc;
+
+        task->vertices[3].position.x = x1; task->vertices[3].position.y = y1;
+        task->vertices[3].tex_coord.x = s1; task->vertices[3].tex_coord.y = t1;
+        task->vertices[3].color = fc;
+
+        render_task_count++;
+    }
 }

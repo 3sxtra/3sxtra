@@ -24,15 +24,166 @@
 
 #include <SDL3/SDL.h>
 
+// ⚡ Opt5: SIMDe for portable SIMD intrinsics (SSE+FMA on x86, NEON on ARM)
+#include <simde/x86/sse.h>
+#include <simde/x86/fma.h>
+
 #define PRIO_BASE_SIZE 128
 #define SPRITE_LAYERS_MAX 24 // Maximum number of sprite layers (matches MultiTexture mts[] array)
 
 typedef struct {
-    Sprite2* chip;
+    Sprite2* chip;      // Active buffer (written by CPU this frame)
+    Sprite2* chip_buf0; // ⚡ Opt8: Double-buffer A
+    Sprite2* chip_buf1; // ⚡ Opt8: Double-buffer B
     u16 sprTotal;
     u16 sprMax;
     s8 up[SPRITE_LAYERS_MAX];
+    u8 buf_index;       // ⚡ Opt8: Current buffer index (0 or 1)
 } SpriteChipSet;
+
+// ⚡ Hash-based tile cache lookup — O(1) replacement for linear get_mltbuf16/32 scans.
+// Direct-mapped hash table per MTS slot. Knuth multiplicative hash with linear probing.
+#define MLT_HASH_BITS 8
+#define MLT_HASH_SIZE (1 << MLT_HASH_BITS)
+#define MLT_HASH_MASK (MLT_HASH_SIZE - 1)
+#define MLT_HASH_EMPTY (-1)
+
+// ⚡ Opt2P2: Persistent tile cache — boost tile lifetime on cache hit.
+// Tiles survive TILE_CACHE_BOOST × base_lifetime frames of disuse before eviction.
+// This eliminates redundant LZ77 decompression for frequently-reused tiles.
+#define TILE_CACHE_BOOST 4
+
+typedef struct {
+    u32 code;  // PatternCode that was cached
+    s32 slot;  // index into mltcsh16/32, or MLT_HASH_EMPTY
+} MltHashEntry;
+
+static MltHashEntry s_hash16[MULTITEXTURE_MAX][MLT_HASH_SIZE];
+static MltHashEntry s_hash32[MULTITEXTURE_MAX][MLT_HASH_SIZE];
+
+static inline u32 mlt_hash(u32 code) {
+    return (code * 2654435761u) >> (32 - MLT_HASH_BITS);
+}
+
+// ⚡ Opt4: CG Frame Pre-built Tile Descriptor Cache
+// Pre-computes the tile map walk (X/Y offsets, TEX dimensions, tile sizes) once per
+// cg_number. Eliminates per-frame TileMapEntry[] parsing and TEX pointer resolution.
+#define CG_CACHE_MAX_TILES 128  // Max tiles per CG frame (game max observed: ~60)
+#define CG_TILE_CACHE_BITS 10
+#define CG_TILE_CACHE_SLOTS (1 << CG_TILE_CACHE_BITS)
+#define CG_TILE_CACHE_MASK (CG_TILE_CACHE_SLOTS - 1)
+
+typedef struct {
+    f32 cum_x;      // Accumulated X offset (positive direction, before flip)
+    f32 cum_y;      // Accumulated Y offset (positive direction, before flip)
+    s32 dw;         // Tile width  (from TEX.wh)
+    s32 dh;         // Tile height (from TEX.wh)
+    s32 wh;         // Tile class: 1, 2, or 4
+    s32 size;       // Decoded tile size in bytes: (wh*wh) << 6
+    u16 tile_code;  // trsptr->code (index into texture table)
+    u16 attr;       // trsptr->attr (raw, before XOR with WORK flip)
+    u8* tex_data;   // Pointer to compressed tile data (&((u8*)texptr)[1])
+} CGTileDesc;
+
+typedef struct {
+    u32 key;            // cg_number, or 0 = empty
+    u16 count;          // Number of tiles
+    u8  group;          // obj_group_table index
+    u8  _pad;
+    CGTileDesc tiles[CG_CACHE_MAX_TILES];
+} CGTileCacheEntry;
+
+static CGTileCacheEntry s_cg_tile_cache[CG_TILE_CACHE_SLOTS];
+
+static inline u32 cg_cache_hash(u32 cg_number) {
+    return (cg_number * 2654435761u) >> (32 - CG_TILE_CACHE_BITS);
+}
+
+/** @brief Build tile descriptors for a CG number (cache miss path).
+ *
+ * Performs the tile map walk once, pre-computing cumulative X/Y offsets,
+ * TEX dimensions, and tile data pointers. All values are stored in the
+ * "unflipped" direction — flip is applied at render time.
+ */
+static CGTileCacheEntry* cg_build_tile_descs(u32 cg_number) {
+    u32 h = cg_cache_hash(cg_number);
+    // Linear probing — find empty slot or our slot
+    for (u32 p = 0; p < CG_TILE_CACHE_SLOTS; p++) {
+        u32 idx = (h + p) & CG_TILE_CACHE_MASK;
+        CGTileCacheEntry* e = &s_cg_tile_cache[idx];
+        if (e->key == 0 || e->key == cg_number) {
+            // Use this slot
+            s32 i = obj_group_table[cg_number];
+            if (i == 0 || texgrplds[i].ok == 0) {
+                e->key = cg_number;
+                e->count = 0;
+                e->group = (u8)i;
+                return e;
+            }
+
+            u32 n = cg_number - texgrpdat[i].num_of_1st;
+            u16* trsbas = (u16*)(texgrplds[i].trans_table + ((u32*)texgrplds[i].trans_table)[n]);
+            u32* textbl = (u32*)texgrplds[i].texture_table;
+            s32 count = *trsbas;
+            trsbas++;
+            TileMapEntry* trsptr = (TileMapEntry*)trsbas;
+
+            e->key = cg_number;
+            e->group = (u8)i;
+            e->count = (count > CG_CACHE_MAX_TILES) ? CG_CACHE_MAX_TILES : (u16)count;
+
+            f32 cx = 0.0f, cy = 0.0f;
+            for (s32 t = 0; t < e->count; t++, trsptr++) {
+                CGTileDesc* d = &e->tiles[t];
+                // Accumulate offsets in the unflipped (positive) direction
+                cx += trsptr->x;
+                cy += trsptr->y;
+                d->cum_x = cx;
+                d->cum_y = cy;
+                d->tile_code = trsptr->code;
+                d->attr = trsptr->attr;
+
+                // Resolve TEX pointer and parse dimensions
+                TEX* texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
+                d->dw = (texptr->wh & 0xE0) >> 2;
+                d->dh = (texptr->wh & 0x1C) * 2;
+                d->wh = (texptr->wh & 3) + 1;
+                d->size = (d->wh * d->wh) << 6;
+                d->tex_data = &((u8*)texptr)[1];
+            }
+            return e;
+        }
+    }
+    // Table full — shouldn't happen with 1024 slots. Return NULL (caller falls back).
+    return NULL;
+}
+
+/** @brief Look up or build cached tile descriptors for a CG number.
+ * Returns NULL if cg_number has no valid group data.
+ */
+static CGTileCacheEntry* cg_lookup_tile_descs(u32 cg_number) {
+    u32 h = cg_cache_hash(cg_number);
+    for (u32 p = 0; p < CG_TILE_CACHE_SLOTS; p++) {
+        u32 idx = (h + p) & CG_TILE_CACHE_MASK;
+        CGTileCacheEntry* e = &s_cg_tile_cache[idx];
+        if (e->key == cg_number) {
+            return e;  // Cache hit
+        }
+        if (e->key == 0) {
+            break;  // Empty slot — miss
+        }
+    }
+    // Cache miss — build and insert
+    return cg_build_tile_descs(cg_number);
+}
+
+/** @brief Invalidate the CG tile descriptor cache.
+ * Call when texture group data is reloaded. */
+static void cg_cache_invalidate(void) {
+    for (s32 i = 0; i < CG_TILE_CACHE_SLOTS; i++) {
+        s_cg_tile_cache[i].key = 0;
+    }
+}
 
 // sbss
 s32 curr_bright;
@@ -109,6 +260,14 @@ static const u32 bright_type[4][16] = { { 0x00FFFFFF,
                                           0x002222FF,
                                           0x001111FF,
                                           0x000000FF } };
+
+// ⚡ Opt3: Cached matrix elements for inlined per-chip transform.
+// Extracted once per character in mlt_obj_matrix(), used N times in seqsStoreChip().
+// Since input z==0 for all chips, the z-row contributions are eliminated (saves 4 mults/chip).
+static f32 s_mtx_00, s_mtx_10, s_mtx_tx;  // X row: out.x = in.x*m00 + in.y*m10 + tx
+static f32 s_mtx_01, s_mtx_11, s_mtx_ty;  // Y row: out.y = in.x*m01 + in.y*m11 + ty
+static f32 s_mtx_02, s_mtx_12, s_mtx_tz;  // Z row: out.z = in.x*m02 + in.y*m12 + tz
+static f32 s_mtx_z_step;                   // Per-chip Z increment (cmtx.a[2][2] * 1/65536)
 
 // forward decls
 static void DebugLine(f32 x, f32 y, f32 w, f32 h);
@@ -646,26 +805,18 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 }
 
-/** @brief Transform and render a multi-texture object with pattern caching. */
+/** @brief Transform and render a multi-texture object with pattern caching.
+ *
+ * ⚡ Opt4: Uses pre-built CG tile descriptors to skip the per-frame tile map walk.
+ * The accumulated X/Y positions, TEX dimensions, and tile sizes are read from
+ * the CGTileDesc cache instead of being re-parsed from TileMapEntry[].
+ */
 void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
-    u32* textbl;
-    u16* trsbas;
-    TileMapEntry* trsptr;
-    TEX* texptr;
     s32 rnum;
     s32 attr;
-    s32 count;
     s32 palo;
-    s32 n;
-    s32 i;
-    f32 x;
-    f32 y;
-    PatternCode cc;
-    s32 size;
     s32 code;
-    s32 wh;
-    s32 dw;
-    s32 dh;
+    PatternCode cc;
 
     ppgSetupCurrentDataList(&mt->texList);
 
@@ -674,26 +825,12 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
         return;
     }
 
-    n = wk->cg_number;
-    i = obj_group_table[n];
-
-    if (i == 0) {
+    // ⚡ Opt4: Look up pre-built tile descriptors for this CG number
+    CGTileCacheEntry* cge = cg_lookup_tile_descs(wk->cg_number);
+    if (cge == NULL || cge->count == 0) {
         return;
     }
 
-    if (texgrplds[i].ok == 0) {
-        // The trans data is not valid. Group number: %d\n
-        flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
-        return;
-    }
-
-    n -= texgrpdat[i].num_of_1st;
-    trsbas = (u16*)(texgrplds[i].trans_table + ((u32*)texgrplds[i].trans_table)[n]);
-    textbl = (u32*)texgrplds[i].texture_table;
-    count = *trsbas;
-    trsbas++;
-    trsptr = (TileMapEntry*)trsbas;
-    x = y = 0.0f;
     attr = flptbl[wk->cg_flip ^ wk->rl_flag];
     palo = wk->colcd;
 
@@ -705,68 +842,58 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     mlt_obj_matrix(wk, base_y);
-    cc.parts.group = i;
+    cc.parts.group = cge->group;
 
-    while (count--) {
-        if (attr & 0x8000) {
-            x += trsptr->x;
-        } else {
-            x -= trsptr->x;
-        }
+    // ⚡ Opt4: Iterate pre-built tile descriptors instead of walking TileMapEntry[]
+    for (s32 t = 0; t < cge->count; t++) {
+        const CGTileDesc* d = &cge->tiles[t];
 
-        if (attr & 0x4000) {
-            y -= trsptr->y;
-        } else {
-            y += trsptr->y;
-        }
+        // Apply flip to cached cumulative offsets
+        f32 x = (attr & 0x8000) ?  d->cum_x : -d->cum_x;
+        f32 y = (attr & 0x4000) ? -d->cum_y :  d->cum_y;
 
-        texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
-        dw = (texptr->wh & 0xE0) >> 2;
-        dh = (texptr->wh & 0x1C) * 2;
-        wh = (texptr->wh & 3) + 1;
-        size = (wh * wh) << 6;
-        cc.parts.offset = trsptr->code;
+        cc.parts.offset = d->tile_code;
 
-        switch (wh) {
+        switch (d->wh) {
         case 1:
         case 2:
             if (get_mltbuf16(mt, cc.code, 0, &code) != 0) {
-                lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
+                lz_ext_p6_fx(d->tex_data, mt->mltbuf, d->size);
+                Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, d->size, 0, 0);
             }
 
             if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
-                DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
+                DebugLine(x - (d->dw & ((s16)attr >> 0x10)), y + (d->dh & ((s16)(attr * 2) >> 16)), d->dw, d->dh);
             }
 
-            rnum = seqsStoreChip(x - (dw * BOOL(attr & 0x8000)),
-                                 y + (dh * BOOL(attr & 0x4000)),
-                                 dw,
-                                 dh,
+            rnum = seqsStoreChip(x - (d->dw * BOOL(attr & 0x8000)),
+                                 y + (d->dh * BOOL(attr & 0x4000)),
+                                 d->dw,
+                                 d->dh,
                                  mt->mltgidx16,
                                  code,
-                                 palo | ((trsptr->attr ^ attr) & 0xC000),
+                                 palo | ((d->attr ^ attr) & 0xC000),
                                  wk->my_clear_level,
                                  mt->id);
             break;
 
         case 4:
             if (get_mltbuf32(mt, cc.code, 0, &code) != 0) {
-                lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
+                lz_ext_p6_fx(d->tex_data, mt->mltbuf, d->size);
+                Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, d->size, 0, 0);
             }
 
             if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
-                DebugLine(x - (dw & ((s16)attr >> 0x10)), y + (dh & ((s16)(attr * 2) >> 16)), dw, dh);
+                DebugLine(x - (d->dw & ((s16)attr >> 0x10)), y + (d->dh & ((s16)(attr * 2) >> 16)), d->dw, d->dh);
             }
 
-            rnum = seqsStoreChip(x - (dw * BOOL(attr & 0x8000)),
-                                 y + (dh * BOOL(attr & 0x4000)),
-                                 dw,
-                                 dh,
+            rnum = seqsStoreChip(x - (d->dw * BOOL(attr & 0x8000)),
+                                 y + (d->dh * BOOL(attr & 0x4000)),
+                                 d->dw,
+                                 d->dh,
                                  mt->mltgidx32,
                                  code,
-                                 palo | (((trsptr->attr ^ attr) & 0xC000) | 0x2000),
+                                 palo | (((d->attr ^ attr) & 0xC000) | 0x2000),
                                  wk->my_clear_level,
                                  mt->id);
             break;
@@ -775,13 +902,12 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
         if (rnum == 0) {
             break;
         }
-
-        trsptr++;
     }
 
     seqs_w.up[mt->id] = 1;
     appRenewTempPriority(wk->position_z);
 }
+
 
 /** @brief Transform and render with CP3 palette (extended variant). */
 void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
@@ -1041,28 +1167,18 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 }
 
-/** @brief Transform and render with CP3 palette mapping. */
+/** @brief Transform and render with CP3 palette mapping.
+ *
+ * `+"`u{26A1}`+" Opt4: Uses pre-built CG tile descriptors to skip the per-frame tile map walk.
+ */
 void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
-    u32* textbl;
-    u16* trsbas;
-    TileMapEntry* trsptr;
-    TEX* texptr;
     s32 rnum;
     s32 flip;
-    s32 count;
     s32 palo;
-    s32 n;
-    s32 i;
-    f32 x;
-    f32 y;
-    PatternCode cc;
-    s32 size;
     s32 code;
-    s32 wh;
-    s32 dw;
-    s32 dh;
     s32 attr;
     s32 palt;
+    PatternCode cc;
 
     ppgSetupCurrentDataList(&mt->texList);
 
@@ -1071,26 +1187,12 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
         return;
     }
 
-    n = wk->cg_number;
-    i = obj_group_table[n];
-
-    if (i == 0) {
+    // `+"`u{26A1}`+" Opt4: Look up pre-built tile descriptors for this CG number
+    CGTileCacheEntry* cge = cg_lookup_tile_descs(wk->cg_number);
+    if (cge == NULL || cge->count == 0) {
         return;
     }
 
-    if (texgrplds[i].ok == 0) {
-        // The trans data is not valid. Group number: %d\n
-        flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
-        return;
-    }
-
-    n -= texgrpdat[i].num_of_1st;
-    trsbas = (u16*)(texgrplds[i].trans_table + ((u32*)texgrplds[i].trans_table)[n]);
-    textbl = (u32*)texgrplds[i].texture_table;
-    count = *trsbas;
-    trsbas++;
-    trsptr = (TileMapEntry*)trsbas;
-    x = y = 0.0f;
     flip = flptbl[wk->cg_flip ^ wk->rl_flag];
     palo = wk->colcd;
 
@@ -1102,47 +1204,37 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     mlt_obj_matrix(wk, base_y);
-    cc.parts.group = i;
+    cc.parts.group = cge->group;
 
-    while (count--) {
-        if (flip & 0x8000) {
-            x += trsptr->x;
-        } else {
-            x -= trsptr->x;
-        }
+    // `+"`u{26A1}`+" Opt4: Iterate pre-built tile descriptors instead of walking TileMapEntry[]
+    for (s32 t = 0; t < cge->count; t++) {
+        const CGTileDesc* d = &cge->tiles[t];
 
-        if (flip & 0x4000) {
-            y -= trsptr->y;
-        } else {
-            y += trsptr->y;
-        }
+        // Apply flip to cached cumulative offsets
+        f32 x = (flip & 0x8000) ?  d->cum_x : -d->cum_x;
+        f32 y = (flip & 0x4000) ? -d->cum_y :  d->cum_y;
 
-        texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
-        dw = (s32)(texptr->wh & 0xE0) >> 2;
-        dh = (texptr->wh & 0x1C) * 2;
-        wh = (texptr->wh & 3) + 1;
-        size = (wh * wh) << 6;
-        attr = trsptr->attr;
+        attr = d->attr;
         palt = (attr & 0x1FF) + palo;
         attr = (attr ^ flip) & 0xC000;
-        cc.parts.offset = trsptr->code;
+        cc.parts.offset = d->tile_code;
 
-        switch (wh) {
+        switch (d->wh) {
         case 1:
         case 2:
             if (get_mltbuf16(mt, cc.code, 0, &code) != 0) {
-                lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
+                lz_ext_p6_fx(d->tex_data, mt->mltbuf, d->size);
+                Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, d->size, 0, 0);
             }
 
             if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
-                DebugLine(x - (dw & ((s16)flip >> 0x10)), y + (dh & ((s16)(flip * 2) >> 16)), dw, dh);
+                DebugLine(x - (d->dw & ((s16)flip >> 0x10)), y + (d->dh & ((s16)(flip * 2) >> 16)), d->dw, d->dh);
             }
 
-            rnum = seqsStoreChip(x - (dw * BOOL(flip & 0x8000)),
-                                 y + (dh * BOOL(flip & 0x4000)),
-                                 dw,
-                                 dh,
+            rnum = seqsStoreChip(x - (d->dw * BOOL(flip & 0x8000)),
+                                 y + (d->dh * BOOL(flip & 0x4000)),
+                                 d->dw,
+                                 d->dh,
                                  mt->mltgidx16,
                                  code,
                                  attr | palt,
@@ -1152,18 +1244,18 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
 
         case 4:
             if (get_mltbuf32(mt, cc.code, 0, &code) != 0) {
-                lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
+                lz_ext_p6_fx(d->tex_data, mt->mltbuf, d->size);
+                Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, d->size, 0, 0);
             }
 
             if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
-                DebugLine(x - (dw & ((s16)flip >> 0x10)), y + (dh & ((s16)(flip * 2) >> 16)), dw, dh);
+                DebugLine(x - (d->dw & ((s16)flip >> 0x10)), y + (d->dh & ((s16)(flip * 2) >> 16)), d->dw, d->dh);
             }
 
-            rnum = seqsStoreChip(x - (dw * BOOL(flip & 0x8000)),
-                                 y + (dh * BOOL(flip & 0x4000)),
-                                 dw,
-                                 dh,
+            rnum = seqsStoreChip(x - (d->dw * BOOL(flip & 0x8000)),
+                                 y + (d->dh * BOOL(flip & 0x4000)),
+                                 d->dw,
+                                 d->dh,
                                  mt->mltgidx32,
                                  code,
                                  attr | 0x2000 | palt,
@@ -1175,8 +1267,6 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
         if (rnum == 0) {
             break;
         }
-
-        trsptr++;
     }
 
     seqs_w.up[mt->id] = 1;
@@ -1421,28 +1511,18 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 }
 
-/** @brief Transform and render in RGB mode with pattern caching. */
+/** @brief Transform and render in RGB mode with pattern caching.
+ *
+ * `+"`u{26A1}`+" Opt4: Uses pre-built CG tile descriptors to skip the per-frame tile map walk.
+ */
 void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
-    u32* textbl;
-    u16* trsbas;
-    TileMapEntry* trsptr;
-    TEX* texptr;
     s32 rnum;
     s32 flip;
     s32 palo;
-    s32 count;
-    s32 n;
-    s32 i;
-    f32 x;
-    f32 y;
-    PatternCode cc;
-    s32 size;
     s32 code;
     s32 attr;
     s32 palt;
-    s32 wh;
-    s32 dw;
-    s32 dh;
+    PatternCode cc;
 
     ppgSetupCurrentDataList(&mt->texList);
 
@@ -1451,26 +1531,12 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
         return;
     }
 
-    n = wk->cg_number;
-    i = obj_group_table[n];
-
-    if (i == 0) {
+    // `+"`u{26A1}`+" Opt4: Look up pre-built tile descriptors for this CG number
+    CGTileCacheEntry* cge = cg_lookup_tile_descs(wk->cg_number);
+    if (cge == NULL || cge->count == 0) {
         return;
     }
 
-    if (texgrplds[i].ok == 0) {
-        // The trans data is not valid. Group number: %d\n
-        flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
-        return;
-    }
-
-    n -= texgrpdat[i].num_of_1st;
-    trsbas = (u16*)(texgrplds[i].trans_table + ((u32*)texgrplds[i].trans_table)[n]);
-    textbl = (u32*)texgrplds[i].texture_table;
-    count = *trsbas;
-    trsbas++;
-    trsptr = (TileMapEntry*)trsbas;
-    x = y = 0.0f;
     flip = flptbl[wk->cg_flip ^ wk->rl_flag];
     palo = wk->colcd;
 
@@ -1482,43 +1548,33 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     mlt_obj_matrix(wk, base_y);
-    cc.parts.group = i;
+    cc.parts.group = cge->group;
 
-    while (count--) {
-        if (flip & 0x8000) {
-            x += trsptr->x;
-        } else {
-            x -= trsptr->x;
-        }
+    // `+"`u{26A1}`+" Opt4: Iterate pre-built tile descriptors instead of walking TileMapEntry[]
+    for (s32 t = 0; t < cge->count; t++) {
+        const CGTileDesc* d = &cge->tiles[t];
 
-        if (flip & 0x4000) {
-            y -= trsptr->y;
-        } else {
-            y += trsptr->y;
-        }
+        // Apply flip to cached cumulative offsets
+        f32 x = (flip & 0x8000) ?  d->cum_x : -d->cum_x;
+        f32 y = (flip & 0x4000) ? -d->cum_y :  d->cum_y;
 
-        texptr = (TEX*)((uintptr_t)textbl + ((u32*)textbl)[trsptr->code]);
-        dw = (texptr->wh & 0xE0) >> 2;
-        dh = (texptr->wh & 0x1C) * 2;
-        wh = (texptr->wh & 3) + 1;
-        size = (wh * wh) << 6;
-        attr = trsptr->attr;
+        attr = d->attr;
         palt = (attr & 0x1FF) + palo;
         attr = (attr ^ flip) & 0xC000;
-        cc.parts.offset = trsptr->code;
+        cc.parts.offset = d->tile_code;
 
-        switch (wh) {
+        switch (d->wh) {
         case 1:
         case 2:
             if (get_mltbuf16(mt, cc.code, palt, &code) != 0) {
-                lz_ext_p6_cx(&((u8*)texptr)[1], (u16*)mt->mltbuf, size, (u16*)(ColorRAM[palt]));
-                Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size * 2, 0, 0);
+                lz_ext_p6_cx(d->tex_data, (u16*)mt->mltbuf, d->size, (u16*)(ColorRAM[palt]));
+                Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, d->size * 2, 0, 0);
             }
 
-            rnum = seqsStoreChip(x - (dw * BOOL(flip & 0x8000)),
-                                 y + (dh * BOOL(flip & 0x4000)),
-                                 dw,
-                                 dh,
+            rnum = seqsStoreChip(x - (d->dw * BOOL(flip & 0x8000)),
+                                 y + (d->dh * BOOL(flip & 0x4000)),
+                                 d->dw,
+                                 d->dh,
                                  mt->mltgidx16,
                                  code,
                                  attr,
@@ -1528,14 +1584,14 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
 
         case 4:
             if (get_mltbuf32(mt, cc.code, palt, &code) != 0) {
-                lz_ext_p6_cx(&((u8*)texptr)[1], (u16*)mt->mltbuf, size, (u16*)(ColorRAM[palt]));
-                Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size * 2, 0, 0);
+                lz_ext_p6_cx(d->tex_data, (u16*)mt->mltbuf, d->size, (u16*)(ColorRAM[palt]));
+                Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, d->size * 2, 0, 0);
             }
 
-            rnum = seqsStoreChip(x - (dw * BOOL(flip & 0x8000)),
-                                 y + (dh * BOOL(flip & 0x4000)),
-                                 dw,
-                                 dh,
+            rnum = seqsStoreChip(x - (d->dw * BOOL(flip & 0x8000)),
+                                 y + (d->dh * BOOL(flip & 0x4000)),
+                                 d->dw,
+                                 d->dh,
                                  mt->mltgidx32,
                                  code,
                                  attr | 0x2000,
@@ -1547,15 +1603,17 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
         if (rnum == 0) {
             break;
         }
-
-        trsptr++;
     }
 
     seqs_w.up[mt->id] = 1;
     appRenewTempPriority(wk->position_z);
 }
 
-/** @brief Set up the transformation matrix for a multi-texture object. */
+/** @brief Set up the transformation matrix for a multi-texture object.
+ *
+ * ⚡ Opt3: After building the matrix, cache its elements into statics
+ * for inlined per-chip transforms in seqsStoreChip().
+ */
 void mlt_obj_matrix(WORK* wk, s32 base_y) {
     njSetMatrix(NULL, &BgMATRIX[wk->my_family]);
     njTranslate(NULL, wk->position_x, wk->position_y + base_y, PrioBase[wk->position_z]);
@@ -1563,6 +1621,16 @@ void mlt_obj_matrix(WORK* wk, s32 base_y) {
     if (wk->my_mr_flag) {
         njScale(NULL, (1.0f / 64.0f) * (wk->my_mr.size.x + 1), (1.0f / 64.0f) * (wk->my_mr.size.y + 1), 1.0f);
     }
+
+    // ⚡ Opt3: Cache matrix elements for inlined transform.
+    // Since chip input z==0, we only need rows 0,1,3 (skip row 2 multiply).
+    // row 2 only matters for Z-step via appRenewTempPriority_1_Chip.
+    MTX cached;
+    njGetMatrix(&cached);
+    s_mtx_00 = cached.a[0][0]; s_mtx_01 = cached.a[0][1]; s_mtx_02 = cached.a[0][2];
+    s_mtx_10 = cached.a[1][0]; s_mtx_11 = cached.a[1][1]; s_mtx_12 = cached.a[1][2];
+    s_mtx_tx = cached.a[3][0]; s_mtx_ty = cached.a[3][1]; s_mtx_tz = cached.a[3][2];
+    s_mtx_z_step = cached.a[2][2] * (1.0f / 65536.0f);
 }
 
 /** @brief Initialize the base sprite priority table. */
@@ -1580,10 +1648,16 @@ void appSetupTempPriority() {
     memcpy(PrioBase, PrioBaseOriginal, sizeof(PrioBase));
 }
 
-/** @brief Reserved: renew temporary priority for a single chip. */
+/** @brief Reserved: renew temporary priority for a single chip.
+ *
+ * ⚡ Opt3: Inlines the Z bump for the cached matrix elements,
+ * keeping both the real cmtx and the cached statics in sync.
+ */
 void appRenewTempPriority_1_Chip() {
     // ⚡ Bolt: Z-only translate avoids full 4×4 matmul (~130 FLOPs → 8 FLOPs)
     njTranslateZ(1.0f / 65536.0f);
+    // ⚡ Opt3: Also bump the cached Z translation for inlined transforms
+    s_mtx_tz += s_mtx_z_step;
 }
 
 /** @brief Renew the temporary priority based on the given Z position. */
@@ -1593,14 +1667,23 @@ static void appRenewTempPriority(s32 z) {
     PrioBase[z] = mtx.a[3][2];
 }
 
-/** @brief Initialize the sprite chip set system with the given memory. */
+/** @brief Initialize the sprite chip set system with the given memory.
+ *
+ * ⚡ Opt8: Allocates two buffers for double-buffering.
+ */
 void seqsInitialize(void* adrs) {
     if (adrs == NULL) {
         flLogOut("[mtrans] seqsInitialize: NULL address");
         return;
     }
 
-    seqs_w.chip = (Sprite2*)adrs;
+    // ⚡ Opt8: Split the allocated memory into two halves for double-buffering.
+    // Total memory is 0xD000 bytes — each buffer gets half.
+    const u32 half = seqsGetUseMemorySize() / 2;
+    seqs_w.chip_buf0 = (Sprite2*)adrs;
+    seqs_w.chip_buf1 = (Sprite2*)((u8*)adrs + half);
+    seqs_w.chip = seqs_w.chip_buf0;
+    seqs_w.buf_index = 0;
     seqs_w.sprMax = 0;
 }
 
@@ -1609,17 +1692,28 @@ u16 seqsGetSprMax() {
     return seqs_w.sprMax;
 }
 
-/** @brief Get the memory usage of the sprite chip set system. */
+/** @brief Get the memory usage of the sprite chip set system.
+ *
+ * ⚡ Opt8: Doubled to accommodate two buffers.
+ */
 u32 seqsGetUseMemorySize() {
-    return 0xD000;
+    return 0xD000 * 2;
 }
 
-/** @brief Pre-frame reset of the sprite chip set system. */
+/** @brief Pre-frame reset of the sprite chip set system.
+ *
+ * ⚡ Opt8: Swaps to the alternate buffer each frame so the GPU
+ * may still read from the previous frame's data.
+ */
 void seqsBeforeProcess() {
     TRACE_PLOT_INT("Sprites", seqs_w.sprTotal);
     seqs_w.sprTotal = 0;
     // ⚡ Bolt: bulk memset replaces per-element loop (24 bytes per frame)
     memset(seqs_w.up, 0, sizeof(seqs_w.up));
+
+    // ⚡ Opt8: Swap to the other buffer
+    seqs_w.buf_index ^= 1;
+    seqs_w.chip = seqs_w.buf_index ? seqs_w.chip_buf1 : seqs_w.chip_buf0;
 }
 
 /** @brief Post-frame processing: flush accumulated sprites for rendering.
@@ -1654,7 +1748,17 @@ void seqsAfterProcess() {
     }
 }
 
-/** @brief Store a sprite chip into the chip set for deferred rendering. */
+/** @brief Store a sprite chip into the chip set for deferred rendering.
+ *
+ * ⚡ Opt3: Replaces njCalcPoints() call with inlined affine transform using
+ * pre-cached matrix elements from mlt_obj_matrix(). Since input z==0 for all
+ * chips, the z-row multiply is eliminated entirely. Per-chip Z increment is
+ * also inlined — just a float add instead of the njTranslateZ → 4-float update.
+ *
+ * Savings per chip: eliminates function call chain (seqsStoreChip → njCalcPoints
+ * → njCalcPoint × 2) with its NULL checks, loop overhead, and z-row multiplies.
+ * Net: ~20 FLOPs + overhead → ~12 FLOPs flat.
+ */
 static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr, s32 alpha, s32 id) {
     Sprite2* chip;
     s32 u;
@@ -1664,13 +1768,39 @@ static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr
     const f32 dy = 0;
 
     chip = &seqs_w.chip[seqs_w.sprTotal];
-    chip->v[0].x = x;
-    chip->v[0].y = y;
-    chip->v[1].x = x + w;
-    chip->v[1].y = y - h;
-    chip->v[0].z = chip->v[1].z = 0.0f;
-    // ⚡ Bolt: batch two njCalcPoint calls → one njCalcPoints (saves function call + NULL check per chip)
-    njCalcPoints(NULL, &chip->v[0], &chip->v[0], 2);
+
+    // ⚡ Opt5: SIMD affine transform — process both points in parallel.
+    // Layout: vec = {x0, x1, -, -} for each component multiply.
+    // Uses FMA (fused multiply-add) for better precision and throughput.
+    {
+        const f32 x1 = x + w;
+        const f32 y1 = y - h;
+
+        // Pack both points' x and y coords into SIMD lanes: [x0, x1, x0, x1]
+        const simde__m128 vx = simde_mm_set_ps(x1, x, x1, x);
+        const simde__m128 vy = simde_mm_set_ps(y1, y, y1, y);
+
+        // Matrix elements broadcast: [m00, m00, m01, m01], etc.
+        const simde__m128 vm0 = simde_mm_set_ps(s_mtx_01, s_mtx_01, s_mtx_00, s_mtx_00);
+        const simde__m128 vm1 = simde_mm_set_ps(s_mtx_11, s_mtx_11, s_mtx_10, s_mtx_10);
+        const simde__m128 vt  = simde_mm_set_ps(s_mtx_ty, s_mtx_ty, s_mtx_tx, s_mtx_tx);
+
+        // result = vx * vm0 + vy * vm1 + vt  (X0, X1, Y0, Y1)
+        simde__m128 result = simde_mm_fmadd_ps(vx, vm0, vt);
+        result = simde_mm_fmadd_ps(vy, vm1, result);
+
+        // Extract results
+        simde_float32 SIMDE_VECTOR(16) r;
+        simde_mm_store_ps((simde_float32*)&r, result);
+        chip->v[0].x = ((simde_float32*)&r)[0];
+        chip->v[1].x = ((simde_float32*)&r)[1];
+        chip->v[0].y = ((simde_float32*)&r)[2];
+        chip->v[1].y = ((simde_float32*)&r)[3];
+
+        // Z is cheap enough to stay scalar (2 FMAs)
+        chip->v[0].z = x  * s_mtx_02 + y  * s_mtx_12 + s_mtx_tz;
+        chip->v[1].z = x1 * s_mtx_02 + y1 * s_mtx_12 + s_mtx_tz;
+    }
 
     if ((chip->v[0].x >= 384.0f) || (chip->v[1].x < 0.0f) || (chip->v[0].y >= 224.0f) || (chip->v[1].y < 0.0f)) {
         return 1;
@@ -1686,7 +1816,11 @@ static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr
         chip->tex_code = ppgGetUsingTextureHandle(NULL, gix + (code >> 6));
     }
 
-    appRenewTempPriority_1_Chip();
+    // ⚡ Opt3: Inlined Z bump — replaces appRenewTempPriority_1_Chip() → njTranslateZ.
+    // Update both the real cmtx (for non-seqsStoreChip callers like DebugLine, appRenewTempPriority)
+    // and the cached statics.
+    njTranslateZ(1.0f / 65536.0f);
+    s_mtx_tz += s_mtx_z_step;
 
     if (attr & 0x8000) {
         chip->t[1].s = (u - dx) / 256.0f;
@@ -1707,6 +1841,8 @@ static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr
     chip->tex_code |= ppgGetUsingPaletteHandle(NULL, attr & 0x1FF) << 16;
     chip->vertex_color = curr_bright | ((0xFF - alpha) << 24);
     chip->id = id;
+    chip->modelX = 0.0f;
+    chip->modelY = 0.0f;
     seqs_w.sprTotal += 1;
 
     if (seqs_w.sprTotal > 0x400) {
@@ -1718,82 +1854,158 @@ static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr
     return 1;
 }
 
-/** @brief Look up or allocate a 16×16 tile buffer slot. */
+/** @brief Look up or allocate a 16×16 tile buffer slot.
+ *  ⚡ Uses hash table for O(1) lookup instead of linear scan.
+ *  ⚡ Opt2P2: Boost-on-hit + LRU eviction for persistent tile caching. */
 static s32 get_mltbuf16(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
-    s32 i;
+    MltHashEntry* ht = s_hash16[mt->id];
+    u32 h = mlt_hash(code);
+    s32 probe;
+
+    // Hash probe: look for existing entry
+    for (probe = 0; probe < MLT_HASH_SIZE; probe++) {
+        u32 idx = (h + probe) & MLT_HASH_MASK;
+        if (ht[idx].slot == MLT_HASH_EMPTY) {
+            break; // Empty slot — not in cache
+        }
+        if (ht[idx].code == code && mt->mltcsh16[ht[idx].slot].state == palt) {
+            // ⚡ Opt2P2: Cache hit — boost lifetime so frequently-used tiles persist longer
+            mt->mltcsh16[ht[idx].slot].time = mt->mltcshtime16 * TILE_CACHE_BOOST;
+            *ret = ht[idx].slot;
+            return 0;
+        }
+    }
+
+    // Cache miss — find a free slot in the PatternState array
     s32 b = -1;
     PatternState* mc = mt->mltcsh16;
-
-    i = mt->mltnum16;
-
-    while (1) {
-        if ((mc->cs.code == code) && (mc->state == palt)) {
-            mc->time = mt->mltcshtime16;
-            *ret = mt->mltnum16 - i;
-            return 0;
-        }
-
-        if ((mc->cs.code == -1) && (b < 0)) {
+    for (s32 i = 0; i < mt->mltnum16; i++) {
+        if (mc[i].cs.code == (u32)-1) {
             b = i;
-        }
-
-        mc++;
-        i -= 1;
-
-        if (i <= 0) {
-            if (b >= 0) {
-                b = mt->mltnum16 - b;
-                mt->mltcsh16[b].time = mt->mltcshtime16;
-                mt->mltcsh16[b].state = palt;
-                mt->mltcsh16[b].cs.code = code;
-                *ret = b;
-                return 1;
-            }
-
-            // CG cache is full. 16x16: %d\n
-            flLogOut("ＣＧキャッシュが一杯になりました。１６×１６ : %d\n", mt->id);
-            return 0;
+            break;
         }
     }
+
+    if (b < 0) {
+        // ⚡ Opt2P2: LRU eviction — find the slot with the smallest time value
+        s32 min_time = INT32_MAX;
+        for (s32 k = 0; k < mt->mltnum16; k++) {
+            if (mc[k].time < min_time) {
+                min_time = mc[k].time;
+                b = k;
+            }
+        }
+        if (b >= 0) {
+            // Invalidate the old hash entry before overwriting
+            u32 old_code = mc[b].cs.code;
+            u32 oh = mlt_hash(old_code);
+            for (s32 p = 0; p < MLT_HASH_SIZE; p++) {
+                u32 oi = (oh + p) & MLT_HASH_MASK;
+                if (ht[oi].slot == MLT_HASH_EMPTY) break;
+                if (ht[oi].code == old_code && ht[oi].slot == b) {
+                    ht[oi].slot = MLT_HASH_EMPTY;
+                    ht[oi].code = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Populate the cache slot
+    mt->mltcsh16[b].time = mt->mltcshtime16;
+    mt->mltcsh16[b].state = palt;
+    mt->mltcsh16[b].cs.code = code;
+    *ret = b;
+
+    // Insert into hash table
+    u32 ins = mlt_hash(code);
+    for (probe = 0; probe < MLT_HASH_SIZE; probe++) {
+        u32 idx = (ins + probe) & MLT_HASH_MASK;
+        if (ht[idx].slot == MLT_HASH_EMPTY) {
+            ht[idx].code = code;
+            ht[idx].slot = b;
+            break;
+        }
+    }
+
+    return 1;
 }
 
-/** @brief Look up or allocate a 32×32 tile buffer slot. */
+/** @brief Look up or allocate a 32×32 tile buffer slot.
+ *  ⚡ Uses hash table for O(1) lookup instead of linear scan.
+ *  ⚡ Opt2P2: Boost-on-hit + LRU eviction for persistent tile caching. */
 static s32 get_mltbuf32(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
-    s32 i;
-    s32 b = -1;
-    PatternState* mc = mt->mltcsh32;
+    MltHashEntry* ht = s_hash32[mt->id];
+    u32 h = mlt_hash(code);
+    s32 probe;
 
-    i = mt->mltnum32;
-
-    while (1) {
-        if ((mc->cs.code == code) && (mc->state == palt)) {
-            mc->time = mt->mltcshtime32;
-            *ret = mt->mltnum32 - i;
-            return 0;
+    // Hash probe: look for existing entry
+    for (probe = 0; probe < MLT_HASH_SIZE; probe++) {
+        u32 idx = (h + probe) & MLT_HASH_MASK;
+        if (ht[idx].slot == MLT_HASH_EMPTY) {
+            break; // Empty slot — not in cache
         }
-
-        if ((mc->cs.code == -1) && (b < 0)) {
-            b = i;
-        }
-
-        mc++;
-        i -= 1;
-
-        if (i <= 0) {
-            if (b >= 0) {
-                b = mt->mltnum32 - b;
-                mt->mltcsh32[b].time = mt->mltcshtime32;
-                mt->mltcsh32[b].state = palt;
-                mt->mltcsh32[b].cs.code = code;
-                *ret = b;
-                return 1;
-            }
-
-            // CG cache is full. 32x32 : %d\n
-            flLogOut("ＣＧキャッシュが一杯になりました。３２×３２ : %d\n", mt->id);
+        if (ht[idx].code == code && mt->mltcsh32[ht[idx].slot].state == palt) {
+            // ⚡ Opt2P2: Cache hit — boost lifetime so frequently-used tiles persist longer
+            mt->mltcsh32[ht[idx].slot].time = mt->mltcshtime32 * TILE_CACHE_BOOST;
+            *ret = ht[idx].slot;
             return 0;
         }
     }
+
+    // Cache miss — find a free slot in the PatternState array
+    s32 b = -1;
+    PatternState* mc = mt->mltcsh32;
+    for (s32 i = 0; i < mt->mltnum32; i++) {
+        if (mc[i].cs.code == (u32)-1) {
+            b = i;
+            break;
+        }
+    }
+
+    if (b < 0) {
+        // ⚡ Opt2P2: LRU eviction — find the slot with the smallest time value
+        s32 min_time = INT32_MAX;
+        for (s32 k = 0; k < mt->mltnum32; k++) {
+            if (mc[k].time < min_time) {
+                min_time = mc[k].time;
+                b = k;
+            }
+        }
+        if (b >= 0) {
+            // Invalidate the old hash entry before overwriting
+            u32 old_code = mc[b].cs.code;
+            u32 oh = mlt_hash(old_code);
+            for (s32 p = 0; p < MLT_HASH_SIZE; p++) {
+                u32 oi = (oh + p) & MLT_HASH_MASK;
+                if (ht[oi].slot == MLT_HASH_EMPTY) break;
+                if (ht[oi].code == old_code && ht[oi].slot == b) {
+                    ht[oi].slot = MLT_HASH_EMPTY;
+                    ht[oi].code = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Populate the cache slot
+    mt->mltcsh32[b].time = mt->mltcshtime32;
+    mt->mltcsh32[b].state = palt;
+    mt->mltcsh32[b].cs.code = code;
+    *ret = b;
+
+    // Insert into hash table
+    u32 ins = mlt_hash(code);
+    for (probe = 0; probe < MLT_HASH_SIZE; probe++) {
+        u32 idx = (ins + probe) & MLT_HASH_MASK;
+        if (ht[idx].slot == MLT_HASH_EMPTY) {
+            ht[idx].code = code;
+            ht[idx].slot = b;
+            break;
+        }
+    }
+
+    return 1;
 }
 
 /** @brief Look up or allocate a 16×16 tile buffer slot (extended, with cache). */
@@ -2060,6 +2272,21 @@ static void lz_ext_p6_cx(u8* srcptr, u16* dstptr, u32 len, u16* palptr) {
             flg = tmp & 0x30;
             tmp = (tmp & 0xF) + 2;
 
+            // ⚡ Bolt: 4× unroll — improves ILP for the palette gather pattern.
+            // CPU can pipeline 4 independent load→index→store sequences.
+            while (tmp >= 4) {
+                dstptr[0] = palptr[flg | (srcptr[0] >> 4)];
+                dstptr[1] = palptr[flg | (srcptr[0] & 0xF)];
+                dstptr[2] = palptr[flg | (srcptr[1] >> 4)];
+                dstptr[3] = palptr[flg | (srcptr[1] & 0xF)];
+                dstptr[4] = palptr[flg | (srcptr[2] >> 4)];
+                dstptr[5] = palptr[flg | (srcptr[2] & 0xF)];
+                dstptr[6] = palptr[flg | (srcptr[3] >> 4)];
+                dstptr[7] = palptr[flg | (srcptr[3] & 0xF)];
+                srcptr += 4;
+                dstptr += 8;
+                tmp -= 4;
+            }
             while (tmp--) {
                 *dstptr++ = palptr[flg | (*srcptr >> 4)];
                 *dstptr++ = palptr[flg | (*srcptr++ & 0xF)];
@@ -2118,6 +2345,14 @@ void mlt_obj_trans_init(MultiTexture* mt, s32 mode, u8* adrs) {
             mc->cs.code = -1;
             mc++;
         }
+
+        // ⚡ Bolt: memset replaces per-element loop — 0xFF fills both code (0xFFFFFFFF)
+        // and slot (MLT_HASH_EMPTY = -1) correctly since both are all-bits-one sentinels.
+        memset(s_hash16[mt->id], 0xFF, sizeof(s_hash16[0]));
+        memset(s_hash32[mt->id], 0xFF, sizeof(s_hash32[0]));
+
+    // `+"`u{26A1}`+" Opt4: Invalidate CG tile descriptor cache when texture groups are reloaded
+    cg_cache_invalidate();
     }
 }
 
@@ -2132,6 +2367,19 @@ void mlt_obj_trans_update(MultiTexture* mt) {
     for (mc = mt->mltcsh16, i = 0; i < mt->mltnum16; i++, mc += 1, assign1 = mc) {
         if (mc->time) {
             if (--mc->time == 0) {
+                // ⚡ Invalidate hash entry for evicted tile
+                u32 evict_code = mc->cs.code;
+                MltHashEntry* ht16 = s_hash16[mt->id];
+                u32 h = mlt_hash(evict_code);
+                for (s32 p = 0; p < MLT_HASH_SIZE; p++) {
+                    u32 idx = (h + p) & MLT_HASH_MASK;
+                    if (ht16[idx].slot == MLT_HASH_EMPTY) break;
+                    if (ht16[idx].code == evict_code && ht16[idx].slot == i) {
+                        ht16[idx].slot = MLT_HASH_EMPTY;
+                        ht16[idx].code = 0;
+                        break;
+                    }
+                }
                 mc->cs.code = -1;
             }
         }
@@ -2140,6 +2388,19 @@ void mlt_obj_trans_update(MultiTexture* mt) {
     for (mc = mt->mltcsh32, i = 0; i < mt->mltnum32; i++, mc += 1, assign2 = mc) {
         if (mc->time) {
             if (--mc->time == 0) {
+                // ⚡ Invalidate hash entry for evicted tile
+                u32 evict_code = mc->cs.code;
+                MltHashEntry* ht32 = s_hash32[mt->id];
+                u32 h = mlt_hash(evict_code);
+                for (s32 p = 0; p < MLT_HASH_SIZE; p++) {
+                    u32 idx = (h + p) & MLT_HASH_MASK;
+                    if (ht32[idx].slot == MLT_HASH_EMPTY) break;
+                    if (ht32[idx].code == evict_code && ht32[idx].slot == i) {
+                        ht32[idx].slot = MLT_HASH_EMPTY;
+                        ht32[idx].code = 0;
+                        break;
+                    }
+                }
                 mc->cs.code = -1U;
             }
         }

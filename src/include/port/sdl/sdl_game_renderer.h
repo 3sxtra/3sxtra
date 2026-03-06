@@ -31,6 +31,8 @@ typedef struct Sprite2 {
     unsigned int vertex_color;
     unsigned int tex_code;
     unsigned int id;
+    float modelX;  // Per-character X offset (vertex shader model transform, Opt #3)
+    float modelY;  // Per-character Y offset (vertex shader model transform, Opt #3)
 } Sprite2;
 
 extern unsigned int cps3_canvas_texture;

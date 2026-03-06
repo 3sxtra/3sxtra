@@ -248,35 +248,37 @@ static void refresh_doc_list() {
     add_from(static_cast<Rml::Context*>(rmlui_wrapper_get_game_context()), "game");
 }
 
-// ── Deferred element list management ──────────────────────────
-// RmlUi event callbacks fire DURING Context::Update(). Modifying
-// the backing array mid-update causes OOB errors because existing
-// data-for children still evaluate stale expressions.
+// ── Two-phase element list management ────────────────────────
+// RmlUi's data-for reconciliation evaluates OLD DOM children before
+// removing them. If the backing array shrinks, stale children access
+// out-of-bounds indices.
 //
-// Fix: event callbacks only record a pending doc index. The actual
-// array modification happens in rmlui_dev_overlay_update() which
-// runs AFTER Context::Update(), so changes are safely picked up
-// by the NEXT frame's update.
+// Fix: two-phase state machine, each phase runs in update() (after
+// Context::Update), so the dirty flag is processed on the NEXT frame:
+//   Phase 1: clear array to empty + dirty → next Update removes all children
+//   Phase 2: populate from empty + dirty → next Update creates fresh children
+//
+// s_populate_phase: 0=idle, 1=need-clear, 2=need-populate
+static int s_populate_phase = 0;
 
-static int s_pending_doc_populate = -1;  // doc index awaiting population
-
-static void populate_elem_list() {
+static void do_clear_elem_list() {
     s_elements.clear();
     s_selected_elem = -1;
     s_active_elem = nullptr;
-
-    if (s_selected_doc < 0 || s_selected_doc >= (int)s_doc_ptrs.size()) {
-        if (s_model) {
-            s_model.DirtyVariable("elem_list");
-            s_model.DirtyVariable("elem_count");
-        }
-        return;
+    if (s_model) {
+        s_model.DirtyVariable("elem_list");
+        s_model.DirtyVariable("elem_count");
     }
+}
+
+static void do_populate_elem_list() {
+    // Array should already be empty from phase 1
+    if (s_selected_doc < 0 || s_selected_doc >= (int)s_doc_ptrs.size())
+        return;
 
     Rml::ElementDocument* doc = s_doc_ptrs[s_selected_doc];
     if (!doc) return;
 
-    // Use QuerySelectorAll("*") to get ALL descendant elements
     Rml::ElementList all_elements;
     doc->QuerySelectorAll(all_elements, "*");
 
@@ -285,7 +287,6 @@ static void populate_elem_list() {
     for (size_t i = 0; i < all_elements.size(); i++) {
         Rml::Element* el = all_elements[i];
         const Rml::String& tag = el->GetTagName();
-        // Skip internal RmlUi elements
         if (tag == "#text" || tag == "handle" || tag == "scrollbarvertical" ||
             tag == "scrollbarhorizontal" || tag == "sliderarrowdec" ||
             tag == "sliderarrowinc" || tag == "sliderbar" || tag == "slidertrack")
@@ -357,12 +358,11 @@ static void dirty_all_props() {
 }
 
 // Called from event callbacks (runs DURING Context::Update).
-// Do NOT modify s_elements here — only record the pending selection.
+// Do NOT modify s_elements here — only schedule the state machine.
 static void do_select_doc(int idx) {
-    SDL_Log("[DevOverlay] Scheduling document %d for next frame", idx);
-    s_pending_doc_populate = idx;
-    // Update selected_doc immediately for UI highlight
+    SDL_Log("[DevOverlay] Scheduling document %d", idx);
     s_selected_doc = idx;
+    s_populate_phase = 1;  // Start two-phase populate
     if (s_model) {
         s_model.DirtyVariable("selected_doc");
     }
@@ -716,33 +716,31 @@ extern "C" void rmlui_dev_overlay_update() {
     // processed the dirty flags from the reset, and setters were suppressed.
     s_suppress_apply = false;
 
-    // Deferred population: event callbacks recorded a pending doc index.
-    // We run AFTER Context::Update(), so modifying the array here is safe —
-    // changes will be picked up by the NEXT frame's Context::Update().
-    if (s_pending_doc_populate >= 0) {
-        int pending = s_pending_doc_populate;
-        s_pending_doc_populate = -1;
-        if (pending == s_selected_doc) {
-            populate_elem_list();
-            dirty_all_props();
-        }
+    // Two-phase populate state machine:
+    //   Phase 1 (this frame): clear array to empty, dirty → next Update removes DOM children
+    //   Phase 2 (next frame): populate from empty, dirty → next Update creates fresh children
+    if (s_populate_phase == 1) {
+        do_clear_elem_list();
+        s_populate_phase = 2;
+    } else if (s_populate_phase == 2) {
+        do_populate_elem_list();
+        dirty_all_props();
+        s_populate_phase = 0;
     }
 
     // On first open, refresh and auto-select first visible document.
-    // Since we run after Context::Update(), we can directly populate.
     if (s_first_open && show_dev_overlay) {
         s_first_open = false;
         refresh_doc_list();
         s_model.DirtyVariable("doc_list");
         s_model.DirtyVariable("doc_count");
 
-        // Auto-select first visible doc and populate directly
+        // Auto-select first visible doc → start two-phase populate
         for (int i = 0; i < (int)s_docs.size(); i++) {
             if (s_docs[i].visible) {
                 s_selected_doc = i;
                 s_model.DirtyVariable("selected_doc");
-                populate_elem_list();
-                dirty_all_props();
+                s_populate_phase = 1;  // Will run on next iteration
                 break;
             }
         }

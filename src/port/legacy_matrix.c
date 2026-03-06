@@ -10,17 +10,31 @@
 #include "common.h"
 #include <string.h>
 
+// ⚡ Bolt: SIMDe for portable SIMD intrinsics (SSE/FMA on x86, NEON on ARM)
+#include <simde/x86/sse.h>
+#include <simde/x86/fma.h>
+
 MTX cmtx;
 
-/** @brief Multiply two 4×4 matrices: dst = a × b (safe for dst aliasing a or b). */
+/** @brief Multiply two 4×4 matrices: dst = a × b (safe for dst aliasing a or b).
+ *  ⚡ Bolt: SIMD — loads B's 4 rows once, then for each A row broadcasts each
+ *  element across a vector and FMAs against B's rows. ~20 FLOPs+overhead → 4×FMA. */
 static void matmul(MTX* dst, const MTX* a, const MTX* b) {
     MTX result;
 
+    // Pre-load all 4 rows of B
+    const simde__m128 b0 = simde_mm_loadu_ps(b->a[0]);
+    const simde__m128 b1 = simde_mm_loadu_ps(b->a[1]);
+    const simde__m128 b2 = simde_mm_loadu_ps(b->a[2]);
+    const simde__m128 b3 = simde_mm_loadu_ps(b->a[3]);
+
     for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            result.a[i][j] =
-                a->a[i][0] * b->a[0][j] + a->a[i][1] * b->a[1][j] + a->a[i][2] * b->a[2][j] + a->a[i][3] * b->a[3][j];
-        }
+        // Broadcast each element of A's row i
+        simde__m128 r = simde_mm_mul_ps(simde_mm_set1_ps(a->a[i][0]), b0);
+        r = simde_mm_fmadd_ps(simde_mm_set1_ps(a->a[i][1]), b1, r);
+        r = simde_mm_fmadd_ps(simde_mm_set1_ps(a->a[i][2]), b2, r);
+        r = simde_mm_fmadd_ps(simde_mm_set1_ps(a->a[i][3]), b3, r);
+        simde_mm_storeu_ps(result.a[i], r);
     }
 
     memcpy(dst, &result, sizeof(MTX));
@@ -53,17 +67,16 @@ void njSetMatrix(MTX* md, MTX* ms) {
     *md = *ms;
 }
 
-/** @brief Apply a scale transform to the matrix (NULL → global cmtx). */
+/** @brief Apply a scale transform to the matrix (NULL → global cmtx).
+ *  ⚡ Bolt: SIMD — 3× load-mul-store instead of 12 scalar multiplies. */
 void njScale(MTX* mtx, f32 x, f32 y, f32 z) {
     if (mtx == NULL) {
         mtx = &cmtx;
     }
 
-    for (int i = 0; i < 4; i++) {
-        mtx->a[0][i] *= x;
-        mtx->a[1][i] *= y;
-        mtx->a[2][i] *= z;
-    }
+    simde_mm_storeu_ps(mtx->a[0], simde_mm_mul_ps(simde_mm_loadu_ps(mtx->a[0]), simde_mm_set1_ps(x)));
+    simde_mm_storeu_ps(mtx->a[1], simde_mm_mul_ps(simde_mm_loadu_ps(mtx->a[1]), simde_mm_set1_ps(y)));
+    simde_mm_storeu_ps(mtx->a[2], simde_mm_mul_ps(simde_mm_loadu_ps(mtx->a[2]), simde_mm_set1_ps(z)));
 }
 
 /** @brief Apply a translation to the matrix via pre-multiplication (NULL → global cmtx). */

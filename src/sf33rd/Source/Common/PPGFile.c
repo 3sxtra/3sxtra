@@ -17,6 +17,7 @@
 #include "sf33rd/AcrSDK/common/plcommon.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/flps2vram.h"
+#include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/MemMan.h"
 #include "sf33rd/Source/Compress/Lz77/Lz77Dec.h"
@@ -998,7 +999,15 @@ void ppgMakeConvTableTexDC() {
     }
 }
 
-/** @brief Upload dirty texture data from CPU source buffers to GPU. */
+/**
+ * @brief Upload dirty texture data from CPU source buffers to GPU.
+ *
+ * ⚡ Fast path: For textures with a valid system memory handle, bypasses the
+ * full flLockTexture/flUnlockTexture call chain.  Case 3 of flPS2LockTexture
+ * simply returns flPS2GetSystemBuffAdrs(mem_handle), and case 3 of
+ * flPS2UnlockTexture is a no-op.  We skip both and write directly into the
+ * system buffer, then call SDLGameRenderer_UnlockTexture for GPU invalidation.
+ */
 s32 ppgRenewTexChunkSeqs(Texture* tch) {
     plContext bits;
     s32 i;
@@ -1020,11 +1029,28 @@ s32 ppgRenewTexChunkSeqs(Texture* tch) {
     for (i = 0; i < tch->total; i++) {
         if (tch->handle[i].b16[1] & PPG_TEX_FLAG_DIRTY) {
             tch->handle[i].b16[1] &= PPG_TEX_DIRTY_CLEAR;
-            flLockTexture(NULL, tch->handle[i].b16[0], &bits, 3);
-            dstRam = bits.ptr;
-            srcRam = (s32*)(tch->srcAdrs + tch->srcSize * i);
-            SDL_memmove(dstRam, srcRam, tch->srcSize);
-            flUnlockTexture(tch->handle[i].b16[0]);
+
+            const u16 th = tch->handle[i].b16[0];
+            if (th == 0 || th > FL_TEXTURE_MAX) {
+                continue;
+            }
+
+            const FLTexture* fl = &flTexture[th - 1];
+
+            /* ⚡ Fast path: write directly to system buffer, skip lock/unlock */
+            if (fl->mem_handle != 0) {
+                dstRam = (s32*)flPS2GetSystemBuffAdrs(fl->mem_handle);
+                srcRam = (s32*)(tch->srcAdrs + tch->srcSize * i);
+                SDL_memmove(dstRam, srcRam, tch->srcSize);
+                SDLGameRenderer_UnlockTexture(th);
+            } else {
+                /* Fallback: full lock/unlock path for textures without system memory */
+                flLockTexture(NULL, th, &bits, 3);
+                dstRam = bits.ptr;
+                srcRam = (s32*)(tch->srcAdrs + tch->srcSize * i);
+                SDL_memmove(dstRam, srcRam, tch->srcSize);
+                flUnlockTexture(th);
+            }
         }
     }
 

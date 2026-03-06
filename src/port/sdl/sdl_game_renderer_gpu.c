@@ -27,7 +27,9 @@ static SDL_GPUDevice* device = NULL;
 static SDL_Window* window = NULL;
 static SDL_GPUCommandBuffer* current_cmd_buf = NULL;
 static SDL_GPUGraphicsPipeline* pipeline = NULL;
-static SDL_GPUComputePipeline* s_compute_pipeline = NULL; // Palette conversion pipeline
+static SDL_GPUTexture* s_palette_texture = NULL;           // 256×256 RGBA8 palette atlas
+static SDL_GPUTransferBuffer* s_palette_transfer = NULL;   // CPU-to-GPU palette upload
+static SDL_GPUSampler* palette_sampler = NULL;
 static SDL_GPUSampler* sampler = NULL;
 
 static SDL_GPUBuffer* vertex_buffer = NULL;
@@ -39,9 +41,8 @@ static SDL_GPUTransferBuffer* transfer_buffers[VERTEX_TRANSFER_BUFFER_COUNT] = {
 static SDL_GPUTransferBuffer* index_transfer_buffer = NULL; // Dynamic index uploads each frame
 static int current_transfer_idx = 0;
 
-// Compute Shader Resources
-#define COMPUTE_STORAGE_SIZE (16 * 1024 * 1024)                // 16MB shared buffer for raw pixels + palettes
-static SDL_GPUBuffer* s_compute_storage_buffer = NULL;         // GPU-resident
+// Texture Staging Resources
+#define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024)                // 32MB — RGBA8 texture uploads (4 bytes/pixel)
 static SDL_GPUTransferBuffer* s_compute_staging_buffer = NULL; // CPU-to-GPU transfer
 static u8* s_compute_staging_ptr = NULL;                       // Mapped pointer
 static size_t s_compute_staging_offset = 0;
@@ -66,7 +67,13 @@ static int16_t tex_array_layer[FL_TEXTURE_MAX][FL_PALETTE_MAX + 1];
 static int texture_layers[FL_PALETTE_MAX];
 static float texture_uv_sx[FL_PALETTE_MAX];
 static float texture_uv_sy[FL_PALETTE_MAX];
+static float texture_palette_idx[FL_PALETTE_MAX]; // palette row in palette atlas (-1 = direct color)
 static int texture_count = 0;
+
+// Palette upload tracking
+#define PALETTE_TEX_WIDTH 256
+#define PALETTE_TEX_HEIGHT FL_PALETTE_MAX  // 1088 rows — one per palette
+static bool s_palette_uploaded[FL_PALETTE_MAX]; // per-palette dirty flag for atlas upload
 
 // ⚡ Back-to-back early-out cache — avoids redundant SetTexture work when the
 // same texture+palette combo is set consecutively (common in sprite batches).
@@ -100,19 +107,25 @@ static inline uint32_t hash_memory(const void* ptr, size_t len) {
     return h;
 }
 
-// Compute Job Queue
+// Texture Upload Job Queue (R8 indexed pixels → texture array)
 #define MAX_COMPUTE_JOBS 256
 typedef struct {
     Uint32 width;
     Uint32 height;
-    Uint32 format; // 0=8bit, 1=4bit, 2=16bit
     Uint32 layer;
-    Uint32 pixel_offset;
-    Uint32 palette_offset;
-    Uint32 pitch;
-} ComputeJob;
-static ComputeJob s_compute_jobs[MAX_COMPUTE_JOBS];
-static int s_compute_job_count = 0;
+    Uint32 offset;
+} TextureUploadJob;
+static TextureUploadJob s_tex_upload_jobs[MAX_COMPUTE_JOBS];
+static int s_tex_upload_count = 0;
+
+// Palette Upload Job Queue (palette rows staged in s_compute_staging_buffer)
+typedef struct {
+    Uint32 row;    // palette index (row in palette atlas)
+    Uint32 offset; // byte offset in staging buffer
+} PaletteUploadJob;
+static PaletteUploadJob s_pal_upload_jobs[MAX_COMPUTE_JOBS];
+static int s_pal_upload_count = 0;
+
 
 #define MAX_VERTICES 65536
 #define MAX_QUADS (MAX_VERTICES / 4)
@@ -133,6 +146,7 @@ typedef struct GPUVertex {
     float r, g, b, a;
     float u, v;
     float layer;
+    float paletteIdx; // palette row in atlas, or -1.0 for direct RGBA
 } GPUVertex;
 
 // --- CLUT Shuffle for PS2 ---
@@ -194,40 +208,6 @@ static SDL_GPUShader* CreateGPUShader(const char* filename, SDL_GPUShaderStage s
     return shader;
 }
 
-static SDL_GPUComputePipeline* CreateGPUComputePipeline(const char* filename) {
-    size_t size;
-    void* code = LoadShaderCode(filename, &size);
-    if (!code)
-        return NULL;
-
-    SDL_ShaderCross_SPIRV_Info info;
-    SDL_zero(info);
-    info.bytecode = (const Uint8*)code;
-    info.bytecode_size = size;
-    info.entrypoint = "main";
-    info.shader_stage = SDL_SHADERCROSS_SHADERSTAGE_COMPUTE;
-
-    SDL_ShaderCross_ComputePipelineMetadata* metadata =
-        SDL_ShaderCross_ReflectComputeSPIRV(info.bytecode, info.bytecode_size, 0);
-
-    if (!metadata) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to reflect Compute SPIRV: %s", filename);
-        SDL_free(code);
-        return NULL;
-    }
-
-    SDL_GPUComputePipeline* pipeline = SDL_ShaderCross_CompileComputePipelineFromSPIRV(device, &info, metadata, 0);
-
-    if (!pipeline) {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_RENDER, "CompileComputePipelineFromSPIRV failed for %s: %s", filename, SDL_GetError());
-    }
-
-    SDL_free(metadata);
-    SDL_free(code);
-    return pipeline;
-}
-
 /** @brief Initialize the SDL_GPU renderer backend (Device, Window, Shaders, Pipelines). */
 void SDLGameRendererGPU_Init(void) {
     SDL_Log("SDLGameRendererGPU_Init: Initializing SDL_GPU renderer backend.");
@@ -248,28 +228,17 @@ void SDLGameRendererGPU_Init(void) {
     const char* base_path = SDL_GetBasePath();
     char vert_path[1024];
     char frag_path[1024];
-    char comp_path[1024];
     snprintf(vert_path, sizeof(vert_path), "%sshaders/vert.spv", base_path);
     snprintf(frag_path, sizeof(frag_path), "%sshaders/scene.spv", base_path);
-    snprintf(comp_path, sizeof(comp_path), "%sshaders/palette_convert.comp.spv", base_path);
-
     SDL_GPUShader* vert_shader = CreateGPUShader(vert_path, SDL_GPU_SHADERSTAGE_VERTEX);
     SDL_GPUShader* frag_shader = CreateGPUShader(frag_path, SDL_GPU_SHADERSTAGE_FRAGMENT);
-    s_compute_pipeline = CreateGPUComputePipeline(comp_path);
 
     if (!vert_shader || !frag_shader) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to create graphics shaders.");
         return;
     }
-    if (!s_compute_pipeline) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER,
-                     "Failed to create compute pipeline: %s. "
-                     "GPU backend requires compute shader support. "
-                     "Use --renderer gl for devices without compute shaders.",
-                     SDL_GetError());
-        return;
-    }
-    SDL_Log("GPU Compute palette conversion pipeline initialized successfully.");
+
+    SDL_Log("GPU palette lookup via fragment shader (no compute pipeline needed).");
 
     // Create Graphics Pipeline
     SDL_GPUGraphicsPipelineCreateInfo pipeline_info;
@@ -278,7 +247,7 @@ void SDLGameRendererGPU_Init(void) {
     pipeline_info.vertex_shader = vert_shader;
     pipeline_info.fragment_shader = frag_shader;
 
-    SDL_GPUVertexAttribute attributes[4];
+    SDL_GPUVertexAttribute attributes[5];
     SDL_zero(attributes);
     // Pos
     attributes[0].location = 0;
@@ -300,14 +269,19 @@ void SDLGameRendererGPU_Init(void) {
     attributes[3].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT;
     attributes[3].offset = 8 * sizeof(float);
     attributes[3].buffer_slot = 0;
+    // PaletteIdx
+    attributes[4].location = 4;
+    attributes[4].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT;
+    attributes[4].offset = 9 * sizeof(float);
+    attributes[4].buffer_slot = 0;
 
     pipeline_info.vertex_input_state.vertex_attributes = attributes;
-    pipeline_info.vertex_input_state.num_vertex_attributes = 4;
+    pipeline_info.vertex_input_state.num_vertex_attributes = 5;
 
     SDL_GPUVertexBufferDescription bindings[1];
     SDL_zero(bindings);
     bindings[0].slot = 0;
-    bindings[0].pitch = 9 * sizeof(float);
+    bindings[0].pitch = 10 * sizeof(float);
     bindings[0].input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
 
     pipeline_info.vertex_input_state.vertex_buffer_descriptions = bindings;
@@ -359,12 +333,7 @@ void SDLGameRendererGPU_Init(void) {
         transfer_buffers[i] = SDL_CreateGPUTransferBuffer(device, &tb_info);
     }
 
-    // Create Compute Storage Buffer (GPU Resident)
-    SDL_GPUBufferCreateInfo sb_info = { .usage = SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ,
-                                        .size = COMPUTE_STORAGE_SIZE };
-    s_compute_storage_buffer = SDL_CreateGPUBuffer(device, &sb_info);
-
-    // Create Compute Staging Buffer (Transfer)
+    // Create Staging Buffer for texture pixel uploads
     SDL_GPUTransferBufferCreateInfo ttb_info = { .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
                                                  .size = COMPUTE_STORAGE_SIZE };
     s_compute_staging_buffer = SDL_CreateGPUTransferBuffer(device, &ttb_info);
@@ -383,8 +352,7 @@ void SDLGameRendererGPU_Init(void) {
         if (!transfer_buffers[i])
             any_transfer_missing = true;
     }
-    if (!vertex_buffer || any_transfer_missing || !s_compute_staging_buffer || !index_buffer ||
-        !s_compute_storage_buffer) {
+    if (!vertex_buffer || any_transfer_missing || !s_compute_staging_buffer || !index_buffer) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to create GPU buffers: %s", SDL_GetError());
         return;
     }
@@ -437,19 +405,50 @@ void SDLGameRendererGPU_Init(void) {
     sampler_info.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     sampler = SDL_CreateGPUSampler(device, &sampler_info);
 
-    // Create Texture Array
+    // Create Texture Array (RGBA8: indexed textures store index in R channel,
+    // 16-bit direct color textures store full RGBA)
     SDL_GPUTextureCreateInfo tex_info;
     SDL_zero(tex_info);
     tex_info.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;
     tex_info.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    // Note: Added COMPUTE_STORAGE_WRITE usage
-    tex_info.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
+    tex_info.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
     tex_info.width = TEX_ARRAY_SIZE;
     tex_info.height = TEX_ARRAY_SIZE;
     tex_info.layer_count_or_depth = TEX_ARRAY_MAX_LAYERS;
     tex_info.num_levels = 1;
 
     texture_array = SDL_CreateGPUTexture(device, &tex_info);
+
+    // Create Palette Atlas (256×256, RGBA8 — each row is a 256-color palette)
+    SDL_GPUTextureCreateInfo pal_info;
+    SDL_zero(pal_info);
+    pal_info.type = SDL_GPU_TEXTURETYPE_2D;
+    pal_info.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+    pal_info.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+    pal_info.width = PALETTE_TEX_WIDTH;
+    pal_info.height = PALETTE_TEX_HEIGHT;
+    pal_info.layer_count_or_depth = 1;
+    pal_info.num_levels = 1;
+    s_palette_texture = SDL_CreateGPUTexture(device, &pal_info);
+
+    // Transfer buffer for palette uploads (256 colors × 4 bytes × 256 palettes = 256KB)
+    SDL_GPUTransferBufferCreateInfo ptb_info;
+    SDL_zero(ptb_info);
+    ptb_info.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+    ptb_info.size = PALETTE_TEX_WIDTH * 4; // One row at a time (1KB)
+    s_palette_transfer = SDL_CreateGPUTransferBuffer(device, &ptb_info);
+
+    // Palette sampler (NEAREST for exact palette lookup)
+    SDL_GPUSamplerCreateInfo pal_sampler_info;
+    SDL_zero(pal_sampler_info);
+    pal_sampler_info.min_filter = SDL_GPU_FILTER_NEAREST;
+    pal_sampler_info.mag_filter = SDL_GPU_FILTER_NEAREST;
+    pal_sampler_info.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
+    pal_sampler_info.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+    pal_sampler_info.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+    palette_sampler = SDL_CreateGPUSampler(device, &pal_sampler_info);
+
+    memset(s_palette_uploaded, 0, sizeof(s_palette_uploaded));
 
     // Create Canvas Texture (384x224)
     SDL_GPUTextureCreateInfo canvas_info;
@@ -484,8 +483,6 @@ void SDLGameRendererGPU_Init(void) {
 void SDLGameRendererGPU_Shutdown(void) {
     if (pipeline)
         SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
-    if (s_compute_pipeline)
-        SDL_ReleaseGPUComputePipeline(device, s_compute_pipeline);
     if (vertex_buffer)
         SDL_ReleaseGPUBuffer(device, vertex_buffer);
     if (index_buffer)
@@ -496,8 +493,12 @@ void SDLGameRendererGPU_Shutdown(void) {
     }
     if (s_compute_staging_buffer)
         SDL_ReleaseGPUTransferBuffer(device, s_compute_staging_buffer);
-    if (s_compute_storage_buffer)
-        SDL_ReleaseGPUBuffer(device, s_compute_storage_buffer);
+    if (s_palette_texture)
+        SDL_ReleaseGPUTexture(device, s_palette_texture);
+    if (s_palette_transfer)
+        SDL_ReleaseGPUTransferBuffer(device, s_palette_transfer);
+    if (palette_sampler)
+        SDL_ReleaseGPUSampler(device, palette_sampler);
     if (texture_array)
         SDL_ReleaseGPUTexture(device, texture_array);
     if (s_canvas_texture)
@@ -549,6 +550,7 @@ void SDLGameRendererGPU_BeginFrame(void) {
             palettes[i] = NULL;
         }
         SDLGameRendererGPU_CreatePalette((i + 1) << 16);
+        s_palette_uploaded[i] = false; // Mark for re-upload to palette atlas
         palette_dirty_flags[i] = false;
     }
     dirty_palette_count = 0;
@@ -563,7 +565,8 @@ void SDLGameRendererGPU_BeginFrame(void) {
     vertex_count = 0;
     quad_count = 0;
     texture_count = 0;
-    s_compute_job_count = 0;
+    s_tex_upload_count = 0;
+    s_pal_upload_count = 0;
     s_last_set_texture_handle = 0; // ⚡ Reset back-to-back cache each frame
 
     if (s_compute_drops_last_frame > 0) {
@@ -650,21 +653,85 @@ void SDLGameRendererGPU_RenderFrame(void) {
     SDL_UnmapGPUTransferBuffer(device, transfer_buffers[current_transfer_idx]);
     mapped_vertex_ptr = NULL;
 
+    // Stage dirty palette data into the main staging buffer BEFORE unmapping.
+    // This avoids the per-row transfer buffer cycling issue where copy commands
+    // would all resolve to the last-written buffer.
+    if (s_compute_staging_ptr) {
+        for (int i = 0; i < FL_PALETTE_MAX && i < PALETTE_TEX_HEIGHT; i++) {
+            if (s_palette_uploaded[i] || !palettes[i])
+                continue;
+            size_t pal_size = (size_t)PALETTE_TEX_WIDTH * 4; // 256 colors × 4 bytes = 1024
+            if (s_pal_upload_count >= MAX_COMPUTE_JOBS ||
+                s_compute_staging_offset + pal_size > COMPUTE_STORAGE_SIZE)
+                break;
+
+            u32* dst = (u32*)(s_compute_staging_ptr + s_compute_staging_offset);
+            SDL_Palette* pal = palettes[i];
+            // Write palette colors
+            int c;
+            for (c = 0; c < pal->ncolors && c < PALETTE_TEX_WIDTH; c++) {
+                SDL_Color col = pal->colors[c];
+                dst[c] = (col.a << 24) | (col.b << 16) | (col.g << 8) | col.r;
+            }
+            // Zero remaining entries (important for 16-color palettes)
+            for (; c < PALETTE_TEX_WIDTH; c++) {
+                dst[c] = 0;
+            }
+
+            PaletteUploadJob* job = &s_pal_upload_jobs[s_pal_upload_count++];
+            job->row = i;
+            job->offset = (Uint32)s_compute_staging_offset;
+            s_compute_staging_offset += pal_size;
+            // ⚡ Vulkan/SDL_GPU requires copy offsets to be highly aligned (typically 256/512 bytes)
+            s_compute_staging_offset = (s_compute_staging_offset + 511) & ~511;
+            s_palette_uploaded[i] = true;
+        }
+    }
+
     // Unmap staging buffer
     SDL_UnmapGPUTransferBuffer(device, s_compute_staging_buffer);
     s_compute_staging_ptr = NULL;
 
-    // --- 1. Copy Pass (Buffers) ---
-    if (s_compute_staging_offset > 0 || vertex_count > 0 || index_count > 0) {
+    // --- 1. Copy Pass (Textures + Palettes + Buffers) ---
+    {
         SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(current_cmd_buf);
 
-        // Upload Compute Staging -> Compute Storage
-        if (s_compute_staging_offset > 0) {
-            SDL_GPUTransferBufferLocation src = { .transfer_buffer = s_compute_staging_buffer, .offset = 0 };
-            SDL_GPUBufferRegion dst = { .buffer = s_compute_storage_buffer,
-                                        .offset = 0,
-                                        .size = s_compute_staging_offset };
-            SDL_UploadToGPUBuffer(copy_pass, &src, &dst, true);
+        // Upload RGBA8 textures to texture array layers
+        for (int i = 0; i < s_tex_upload_count; i++) {
+            TextureUploadJob* job = &s_tex_upload_jobs[i];
+            SDL_GPUTextureTransferInfo src = {
+                .transfer_buffer = s_compute_staging_buffer,
+                .offset = job->offset,
+                .pixels_per_row = job->width,
+                .rows_per_layer = job->height,
+            };
+            SDL_GPUTextureRegion dst = {
+                .texture = texture_array,
+                .layer = job->layer,
+                .w = job->width,
+                .h = job->height,
+                .d = 1,
+            };
+            SDL_UploadToGPUTexture(copy_pass, &src, &dst, false);
+        }
+
+        // Upload dirty palettes to the palette atlas (from staging buffer offsets)
+        for (int i = 0; i < s_pal_upload_count; i++) {
+            PaletteUploadJob* job = &s_pal_upload_jobs[i];
+            SDL_GPUTextureTransferInfo pal_src = {
+                .transfer_buffer = s_compute_staging_buffer,
+                .offset = job->offset,
+                .pixels_per_row = PALETTE_TEX_WIDTH,
+                .rows_per_layer = 1,
+            };
+            SDL_GPUTextureRegion pal_dst = {
+                .texture = s_palette_texture,
+                .y = job->row,
+                .w = PALETTE_TEX_WIDTH,
+                .h = 1,
+                .d = 1,
+            };
+            SDL_UploadToGPUTexture(copy_pass, &pal_src, &pal_dst, false);
         }
 
         // Upload Vertex Data
@@ -687,46 +754,7 @@ void SDLGameRendererGPU_RenderFrame(void) {
         SDL_EndGPUCopyPass(copy_pass);
     }
 
-    // --- 2. Compute Pass (Palette Conversion) ---
-    if (s_compute_job_count > 0 && s_compute_pipeline) {
-        // Each job needs a different array layer as write target.
-        // Read-write storage textures must be bound at pass creation via
-        // SDL_BeginGPUComputePass, so we create one pass per job.
-
-        for (int i = 0; i < s_compute_job_count; i++) {
-            ComputeJob* job = &s_compute_jobs[i];
-
-            SDL_GPUStorageTextureReadWriteBinding rw_binding = {
-                .texture = texture_array, .mip_level = 0, .layer = job->layer, .cycle = false
-            };
-
-            SDL_GPUComputePass* compute_pass =
-                SDL_BeginGPUComputePass(current_cmd_buf,
-                                        &rw_binding,
-                                        1, // Read-write storage texture (imageStore target)
-                                        NULL,
-                                        0 // No read-write storage buffers
-                );
-
-            SDL_BindGPUComputePipeline(compute_pass, s_compute_pipeline);
-
-            // Bind raw pixel+palette data as read-only storage buffer
-            SDL_GPUBuffer* storage_buffers[] = { s_compute_storage_buffer };
-            SDL_BindGPUComputeStorageBuffers(compute_pass, 0, storage_buffers, 1);
-
-            Uint32 uniforms[7] = { job->width,        job->height,         job->format, 0,
-                                   job->pixel_offset, job->palette_offset, job->pitch };
-            SDL_PushGPUComputeUniformData(current_cmd_buf, 0, uniforms, sizeof(uniforms));
-
-            uint32_t group_x = (job->width + 7) / 8;
-            uint32_t group_y = (job->height + 7) / 8;
-            SDL_DispatchGPUCompute(compute_pass, group_x, group_y, 1);
-
-            SDL_EndGPUComputePass(compute_pass);
-        }
-    }
-
-    // --- 3. Render Pass ---
+    // --- 2. Render Pass ---
     if (s_canvas_texture) {
         SDL_GPUColorTargetInfo color_target;
         SDL_zero(color_target);
@@ -771,10 +799,13 @@ void SDLGameRendererGPU_RenderFrame(void) {
                 ib_binding.offset = 0;
                 SDL_BindGPUIndexBuffer(pass, &ib_binding, SDL_GPU_INDEXELEMENTSIZE_16BIT);
 
-                SDL_GPUTextureSamplerBinding tex_binding;
-                tex_binding.texture = texture_array;
-                tex_binding.sampler = sampler;
-                SDL_BindGPUFragmentSamplers(pass, 0, &tex_binding, 1);
+                // Bind 2 fragment samplers: indexed texture array + palette atlas
+                SDL_GPUTextureSamplerBinding tex_bindings[2];
+                tex_bindings[0].texture = texture_array;
+                tex_bindings[0].sampler = sampler;
+                tex_bindings[1].texture = s_palette_texture;
+                tex_bindings[1].sampler = palette_sampler;
+                SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 2);
 
                 SDL_DrawGPUIndexedPrimitives(pass, index_count, 1, 0, 0, 0);
             }
@@ -1056,6 +1087,7 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
             texture_layers[texture_count] = texture_layers[texture_count - 1];
             texture_uv_sx[texture_count] = texture_uv_sx[texture_count - 1];
             texture_uv_sy[texture_count] = texture_uv_sy[texture_count - 1];
+            texture_palette_idx[texture_count] = texture_palette_idx[texture_count - 1];
             texture_count++;
         }
         TRACE_ZONE_END();
@@ -1088,60 +1120,152 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
             const SDL_Palette* palette = (palette_handle > 0) ? palettes[palette_handle - 1] : NULL;
             const FLTexture* fl_texture = &flTexture[texture_handle - 1];
 
-            // Calculate sizes
-            // Pitch is already in surface->pitch (which comes from fl_texture->width or (width+1)/2)
-            size_t pixel_data_size = surface->h * surface->pitch;
-            size_t palette_data_size = 0;
-            if (palette)
-                palette_data_size = palette->ncolors * 4; // RGBA8888 packed
+            // Upload as RGBA8 (4 bytes/pixel) to staging buffer
+            int w = surface->w;
+            int h = surface->h;
+            size_t rgba_size = (size_t)w * h * 4;
 
-            size_t total_size = pixel_data_size + palette_data_size;
+            if (s_tex_upload_count < MAX_COMPUTE_JOBS &&
+                s_compute_staging_offset + rgba_size <= COMPUTE_STORAGE_SIZE) {
 
-            // Check if we have space in staging buffer
-            if (s_compute_job_count < MAX_COMPUTE_JOBS &&
-                s_compute_staging_offset + total_size <= COMPUTE_STORAGE_SIZE) {
+                Uint32 out_offset = (Uint32)s_compute_staging_offset;
+                u32* dst = (u32*)(s_compute_staging_ptr + s_compute_staging_offset);
 
-                // Copy Pixel Data
-                Uint32 pixel_offset = (Uint32)s_compute_staging_offset;
-                memcpy(s_compute_staging_ptr + s_compute_staging_offset, surface->pixels, pixel_data_size);
-                s_compute_staging_offset += pixel_data_size;
-
-                // Ensure 4-byte alignment for palette data (required for u32* cast and Shader uint reading)
-                s_compute_staging_offset = (s_compute_staging_offset + 3) & ~3;
-
-                // Copy Palette Data
-                Uint32 palette_offset = 0;
-                if (palette) {
-                    palette_offset = (Uint32)s_compute_staging_offset;
-                    u32* pal_dest = (u32*)(s_compute_staging_ptr + s_compute_staging_offset);
-                    for (int i = 0; i < palette->ncolors; i++) {
-                        SDL_Color c = palette->colors[i];
-                        // Pack RGBA8888
-                        pal_dest[i] = (c.a << 24) | (c.b << 16) | (c.g << 8) | c.r;
+                if (fl_texture->format == SCE_GS_PSMT4 && palette) {
+                    // ⚡ Bolt: SIMD 4-bit indexed → RGBA32 (palette index in R channel)
+                    // Process 16 input bytes (32 pixels) at a time via nibble unpack.
+                    const u8* src = (const u8*)surface->pixels;
+                    int pitch = surface->pitch;
+                    const simde__m128i lo_mask = simde_mm_set1_epi8(0x0F);
+                    const simde__m128i alpha   = simde_mm_set1_epi32((int)0xFF000000u);
+                    const simde__m128i zero    = simde_mm_setzero_si128();
+                    for (int y = 0; y < h; y++) {
+                        const u8* row = src + y * pitch;
+                        u32* out_row = dst + y * w;
+                        int x = 0;
+                        // Process 16 bytes = 32 pixels at a time
+                        for (; x + 31 < w; x += 32) {
+                            simde__m128i packed = simde_mm_loadu_si128((const simde__m128i*)(row + x / 2));
+                            simde__m128i lo = simde_mm_and_si128(packed, lo_mask);       // low nibbles
+                            simde__m128i hi = simde_mm_and_si128(simde_mm_srli_epi16(packed, 4), lo_mask); // high nibbles
+                            // Interleave: lo[0],hi[0], lo[1],hi[1], ...
+                            simde__m128i interleaved_lo = simde_mm_unpacklo_epi8(lo, hi);
+                            simde__m128i interleaved_hi = simde_mm_unpackhi_epi8(lo, hi);
+                            // Expand bytes to u32 and OR with alpha
+                            // interleaved_lo has 16 bytes → 4 groups of 4 u32s
+                            simde__m128i a0 = simde_mm_unpacklo_epi8(interleaved_lo, zero);
+                            simde__m128i a1 = simde_mm_unpackhi_epi8(interleaved_lo, zero);
+                            simde__m128i a2 = simde_mm_unpacklo_epi8(interleaved_hi, zero);
+                            simde__m128i a3 = simde_mm_unpackhi_epi8(interleaved_hi, zero);
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x +  0), simde_mm_or_si128(simde_mm_unpacklo_epi16(a0, zero), alpha));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x +  4), simde_mm_or_si128(simde_mm_unpackhi_epi16(a0, zero), alpha));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x +  8), simde_mm_or_si128(simde_mm_unpacklo_epi16(a1, zero), alpha));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x + 12), simde_mm_or_si128(simde_mm_unpackhi_epi16(a1, zero), alpha));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x + 16), simde_mm_or_si128(simde_mm_unpacklo_epi16(a2, zero), alpha));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x + 20), simde_mm_or_si128(simde_mm_unpackhi_epi16(a2, zero), alpha));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x + 24), simde_mm_or_si128(simde_mm_unpacklo_epi16(a3, zero), alpha));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x + 28), simde_mm_or_si128(simde_mm_unpackhi_epi16(a3, zero), alpha));
+                        }
+                        // Scalar tail
+                        for (; x < w; x += 2) {
+                            u8 byte = row[x / 2];
+                            out_row[x]     = 0xFF000000u | (u32)(byte & 0x0F);
+                            if (x + 1 < w)
+                                out_row[x + 1] = 0xFF000000u | (u32)((byte >> 4) & 0x0F);
+                        }
                     }
-                    s_compute_staging_offset += palette_data_size;
+                } else if (fl_texture->format == SCE_GS_PSMCT16) {
+                    // ⚡ Bolt: SIMD 16-bit direct color → RGBA32
+                    // Process 8 pixels at a time using integer SIMD for bit extraction.
+                    const u8* src = (const u8*)surface->pixels;
+                    int pitch = surface->pitch;
+                    const simde__m128i mask5  = simde_mm_set1_epi32(0x1F);
+                    const simde__m128i mask_a = simde_mm_set1_epi32(0x8000);
+                    const simde__m128i alpha_ff = simde_mm_set1_epi32((int)0xFF000000u);
+                    const simde__m128i zero = simde_mm_setzero_si128();
+                    for (int y = 0; y < h; y++) {
+                        const u16* row = (const u16*)(src + y * pitch);
+                        u32* out_row = dst + y * w;
+                        int x = 0;
+                        for (; x + 7 < w; x += 8) {
+                            // Load 8 u16 pixels and expand to 2×4 u32
+                            simde__m128i px = simde_mm_loadu_si128((const simde__m128i*)(row + x));
+                            simde__m128i lo32 = simde_mm_unpacklo_epi16(px, zero);
+                            simde__m128i hi32 = simde_mm_unpackhi_epi16(px, zero);
+                            // Process lo32 (4 pixels)
+                            for (int half = 0; half < 2; half++) {
+                                simde__m128i v = (half == 0) ? lo32 : hi32;
+                                simde__m128i r = simde_mm_and_si128(v, mask5);                                 // R: bits 0-4
+                                simde__m128i g = simde_mm_and_si128(simde_mm_srli_epi32(v, 5), mask5);         // G: bits 5-9
+                                simde__m128i b = simde_mm_and_si128(simde_mm_srli_epi32(v, 10), mask5);        // B: bits 10-14
+                                simde__m128i a = simde_mm_and_si128(v, mask_a);                                 // A: bit 15
+                                // Scale 5-bit to 8-bit: val * 255 / 31 ≈ (val * 8 + val / 4) = (val << 3) | (val >> 2)
+                                r = simde_mm_or_si128(simde_mm_slli_epi32(r, 3), simde_mm_srli_epi32(r, 2));
+                                g = simde_mm_or_si128(simde_mm_slli_epi32(g, 3), simde_mm_srli_epi32(g, 2));
+                                b = simde_mm_or_si128(simde_mm_slli_epi32(b, 3), simde_mm_srli_epi32(b, 2));
+                                // Alpha: 0x8000 → 0xFF000000, 0 → 0
+                                a = simde_mm_and_si128(simde_mm_cmpeq_epi32(a, mask_a), alpha_ff);
+                                // Pack: a | (b << 16) | (g << 8) | r
+                                simde__m128i result = simde_mm_or_si128(a, r);
+                                result = simde_mm_or_si128(result, simde_mm_slli_epi32(g, 8));
+                                result = simde_mm_or_si128(result, simde_mm_slli_epi32(b, 16));
+                                simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
+                            }
+                        }
+                        // Scalar tail
+                        for (; x < w; x++) {
+                            SDL_Color c;
+                            read_rgba16_color(row[x], &c);
+                            out_row[x] = (c.a << 24) | (c.b << 16) | (c.g << 8) | c.r;
+                        }
+                    }
+                } else if (palette) {
+                    // ⚡ Bolt: SIMD 8-bit indexed → RGBA32 (palette index in R channel)
+                    // Process 16 pixels at a time: load 16 u8 → expand to 4×__m128i of u32 → OR with 0xFF000000.
+                    const u8* src = (const u8*)surface->pixels;
+                    int pitch = surface->pitch;
+                    const simde__m128i alpha = simde_mm_set1_epi32((int)0xFF000000u);
+                    const simde__m128i zero  = simde_mm_setzero_si128();
+                    for (int y = 0; y < h; y++) {
+                        const u8* row = src + y * pitch;
+                        u32* out_row = dst + y * w;
+                        int x = 0;
+                        // Process 16 bytes (pixels) at a time
+                        for (; x + 15 < w; x += 16) {
+                            simde__m128i bytes = simde_mm_loadu_si128((const simde__m128i*)(row + x));
+                            // Expand bytes → u16 (2 groups)
+                            simde__m128i w0 = simde_mm_unpacklo_epi8(bytes, zero);
+                            simde__m128i w1 = simde_mm_unpackhi_epi8(bytes, zero);
+                            // Expand u16 → u32 (4 groups) and OR with alpha mask
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x +  0), simde_mm_or_si128(simde_mm_unpacklo_epi16(w0, zero), alpha));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x +  4), simde_mm_or_si128(simde_mm_unpackhi_epi16(w0, zero), alpha));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x +  8), simde_mm_or_si128(simde_mm_unpacklo_epi16(w1, zero), alpha));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x + 12), simde_mm_or_si128(simde_mm_unpackhi_epi16(w1, zero), alpha));
+                        }
+                        // Scalar tail
+                        for (; x < w; x++) {
+                            out_row[x] = 0xFF000000u | (u32)row[x];
+                        }
+                    }
+                } else {
+                    // 32-bit direct (no palette, no conversion needed)
+                    memcpy(dst, surface->pixels, rgba_size);
                 }
 
-                // Add Job
-                ComputeJob* job = &s_compute_jobs[s_compute_job_count++];
-                job->width = surface->w;
-                job->height = surface->h;
+                s_compute_staging_offset += rgba_size;
+                // ⚡ Vulkan/SDL_GPU requires copy offsets to be highly aligned (typically 256/512 bytes)
+                s_compute_staging_offset = (s_compute_staging_offset + 511) & ~511;
+
+                TextureUploadJob* job = &s_tex_upload_jobs[s_tex_upload_count++];
+                job->width = w;
+                job->height = h;
                 job->layer = layer;
-                job->pixel_offset = pixel_offset;
-                job->palette_offset = palette_offset; // Byte offset
-                job->pitch = surface->pitch;
-
-                if (fl_texture->format == SCE_GS_PSMT4)
-                    job->format = 1;
-                else if (fl_texture->format == SCE_GS_PSMCT16)
-                    job->format = 2;
-                else
-                    job->format = 0; // 8-bit
-
+                job->offset = out_offset;
             } else {
                 s_compute_drops_last_frame++;
                 tex_array_free[tex_array_free_count++] = layer;
                 tex_array_layer[texture_handle - 1][palette_handle] = -1;
+                layer = -1;
             }
         }
     }
@@ -1154,9 +1278,20 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
     if (layer < 0)
         layer = 0;
 
+    // Determine palette index for the palette atlas.
+    // Only enable palette lookup for INDEXED textures (PSMT4/PSMT8) with a valid palette.
+    // Direct-color textures (PSMCT16, 32-bit) always get palIdx = -1 even if palette_handle != 0.
+    const FLTexture* fl_tex_info = &flTexture[texture_handle - 1];
+    bool is_indexed_format = (fl_tex_info->format == SCE_GS_PSMT4 || fl_tex_info->format == SCE_GS_PSMT8);
+    float palIdx = -1.0f;
+    if (is_indexed_format && palette_handle > 0 && palette_handle <= FL_PALETTE_MAX && palettes[palette_handle - 1]) {
+        palIdx = (float)(palette_handle - 1); // row in the palette atlas
+    }
+
     texture_layers[texture_count] = layer;
     texture_uv_sx[texture_count] = (float)surfaces[texture_handle - 1]->w / TEX_ARRAY_SIZE;
     texture_uv_sy[texture_count] = (float)surfaces[texture_handle - 1]->h / TEX_ARRAY_SIZE;
+    texture_palette_idx[texture_count] = palIdx;
     texture_count++;
     TRACE_ZONE_END();
 }
@@ -1167,11 +1302,13 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
 
     float layer = 0.0f;
     float uv_sx = 1.0f, uv_sy = 1.0f;
+    float palIdx = -1.0f;
 
     if (textured && texture_count > 0) {
         layer = (float)texture_layers[texture_count - 1];
         uv_sx = texture_uv_sx[texture_count - 1];
         uv_sy = texture_uv_sy[texture_count - 1];
+        palIdx = texture_palette_idx[texture_count - 1];
     }
 
     GPUVertex* v = (GPUVertex*)(mapped_vertex_ptr) + vertex_count;
@@ -1182,45 +1319,18 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     float r = ((c >> 16) & 0xFF) / 255.0f;
     float a = ((c >> 24) & 0xFF) / 255.0f;
 
-    v[0].x = vertices[0].coord.x;
-    v[0].y = vertices[0].coord.y;
-    v[0].r = r;
-    v[0].g = g;
-    v[0].b = b;
-    v[0].a = a;
-    v[0].u = vertices[0].tex_coord.s * uv_sx;
-    v[0].v = vertices[0].tex_coord.t * uv_sy;
-    v[0].layer = layer;
-
-    v[1].x = vertices[1].coord.x;
-    v[1].y = vertices[1].coord.y;
-    v[1].r = r;
-    v[1].g = g;
-    v[1].b = b;
-    v[1].a = a;
-    v[1].u = vertices[1].tex_coord.s * uv_sx;
-    v[1].v = vertices[1].tex_coord.t * uv_sy;
-    v[1].layer = layer;
-
-    v[2].x = vertices[2].coord.x;
-    v[2].y = vertices[2].coord.y;
-    v[2].r = r;
-    v[2].g = g;
-    v[2].b = b;
-    v[2].a = a;
-    v[2].u = vertices[2].tex_coord.s * uv_sx;
-    v[2].v = vertices[2].tex_coord.t * uv_sy;
-    v[2].layer = layer;
-
-    v[3].x = vertices[3].coord.x;
-    v[3].y = vertices[3].coord.y;
-    v[3].r = r;
-    v[3].g = g;
-    v[3].b = b;
-    v[3].a = a;
-    v[3].u = vertices[3].tex_coord.s * uv_sx;
-    v[3].v = vertices[3].tex_coord.t * uv_sy;
-    v[3].layer = layer;
+    for (int i = 0; i < 4; i++) {
+        v[i].x = vertices[i].coord.x;
+        v[i].y = vertices[i].coord.y;
+        v[i].r = r;
+        v[i].g = g;
+        v[i].b = b;
+        v[i].a = a;
+        v[i].u = vertices[i].tex_coord.s * uv_sx;
+        v[i].v = vertices[i].tex_coord.t * uv_sy;
+        v[i].layer = layer;
+        v[i].paletteIdx = palIdx;
+    }
 
     if (quad_count < MAX_QUADS) {
         quad_sort_keys[quad_count].z = flPS2ConvScreenFZ(vertices[0].coord.z);
@@ -1358,12 +1468,14 @@ void SDLGameRendererGPU_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
 
         GPUVertex* v = (GPUVertex*)(mapped_vertex_ptr) + vertex_count;
 
-        // Pre-compute color floats once per sprite
+        // ⚡ Bolt: SIMD color unpack — extract 4 u8 channels to floats in one shot
         const Uint32 c = spr->vertex_color;
-        const float cb = (c & 0xFF) / 255.0f;
-        const float cg = ((c >> 8) & 0xFF) / 255.0f;
-        const float cr = ((c >> 16) & 0xFF) / 255.0f;
-        const float ca = ((c >> 24) & 0xFF) / 255.0f;
+        const simde__m128i ci = simde_mm_set_epi32(
+            (c >> 24) & 0xFF, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF);
+        const simde__m128 cf = simde_mm_mul_ps(simde_mm_cvtepi32_ps(ci), simde_mm_set1_ps(1.0f / 255.0f));
+        float color_f[4];
+        simde_mm_storeu_ps(color_f, cf);
+        const float cb = color_f[0], cg = color_f[1], cr = color_f[2], ca = color_f[3];
 
         // Expand Sprite2 (2 corners) to 4-vertex quad
         const float x0 = spr->v[0].x;
@@ -1375,14 +1487,15 @@ void SDLGameRendererGPU_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         const float s1 = spr->t[1].s * uv_sx;
         const float t1 = spr->t[1].t * uv_sy;
 
+        float palIdx = (texture_count > 0) ? texture_palette_idx[texture_count - 1] : -1.0f;
         v[0].x = x0; v[0].y = y0; v[0].r = cr; v[0].g = cg; v[0].b = cb; v[0].a = ca;
-        v[0].u = s0; v[0].v = t0; v[0].layer = layer;
+        v[0].u = s0; v[0].v = t0; v[0].layer = layer; v[0].paletteIdx = palIdx;
         v[1].x = x1; v[1].y = y0; v[1].r = cr; v[1].g = cg; v[1].b = cb; v[1].a = ca;
-        v[1].u = s1; v[1].v = t0; v[1].layer = layer;
+        v[1].u = s1; v[1].v = t0; v[1].layer = layer; v[1].paletteIdx = palIdx;
         v[2].x = x0; v[2].y = y1; v[2].r = cr; v[2].g = cg; v[2].b = cb; v[2].a = ca;
-        v[2].u = s0; v[2].v = t1; v[2].layer = layer;
+        v[2].u = s0; v[2].v = t1; v[2].layer = layer; v[2].paletteIdx = palIdx;
         v[3].x = x1; v[3].y = y1; v[3].r = cr; v[3].g = cg; v[3].b = cb; v[3].a = ca;
-        v[3].u = s1; v[3].v = t1; v[3].layer = layer;
+        v[3].u = s1; v[3].v = t1; v[3].layer = layer; v[3].paletteIdx = palIdx;
 
         if (quad_count < MAX_QUADS) {
             quad_sort_keys[quad_count].z = flPS2ConvScreenFZ(spr->v[0].z);
