@@ -1070,6 +1070,7 @@ void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
             palettes[idx] = NULL;
         }
         SDLGameRendererGPU_CreatePalette((idx + 1) << 16);
+        s_palette_uploaded[idx] = false; // ⚡ Mark for re-upload to palette atlas
     }
 }
 
