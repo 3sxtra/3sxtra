@@ -3393,24 +3393,27 @@ static void Dummy_Setting(struct _TASK* task_ptr) {
         Menu_Suicide[0] = 1;
         Training_Index = 2;
 
-        for (ix = 0, s6 = y = 80; ix < 6; ix++, s5 = y += 16) {
+        for (ix = 0, s6 = y = 80; ix < 8; ix++, s5 = y += 16) {
             effect_A3_init(0, 1, ix, ix, 1, 48, y, 0);
         }
 
-        for (ix = 0, y = 80, s4 = group = 2; ix < 5; ix++, group++, s3 = y += 16) {
+        for (ix = 0, y = 80, s4 = group = 2; ix < 7; ix++, group++, s3 = y += 16) {
             effect_A3_init(0, group, ix, ix, 1, 0xE6, y, 0);
         }
 
         break;
 
     case 1:
-        Dummy_Move_Sub(task_ptr, Champion, 0, 0, 5);
+        Dummy_Move_Sub(task_ptr, Champion, 0, 0, 7);
 
-        if (Menu_Cursor_Y[0] == 4 && IO_Result & 0x100) {
+        if (Menu_Cursor_Y[0] == 6 && IO_Result & 0x100) {
             Training[2].contents[0][0][0] = 0;
             Training[2].contents[0][0][1] = 0;
             Training[2].contents[0][0][2] = 0;
             Training[2].contents[0][0][3] = 0;
+            Training[2].contents[0][0][4] = 0;
+            Training[2].contents[0][0][5] = 0;
+            Training[2].contents[0][0][6] = 0;
             SE_selected();
         }
 
@@ -3448,10 +3451,10 @@ static void Training_Option(struct _TASK* task_ptr) {
         Training_Index = 3;
 
         for (ix = 0, s6 = y = 72; ix < 6; ix++, s5 = y += 16) {
-            effect_A3_init(0, 7, ix, ix, 1, 48, y, 1);
+            effect_A3_init(0, 9, ix, ix, 1, 48, y, 1);
         }
 
-        for (ix = 0, y = 72, s4 = group = 8; ix < 4; ix++, group++, s3 = y += 16) {
+        for (ix = 0, y = 72, s4 = group = 10; ix < 4; ix++, group++, s3 = y += 16) {
             effect_A3_init(0, group, ix, ix, 1, 230, y, 1);
         }
 
@@ -3505,7 +3508,7 @@ static void Blocking_Training(struct _TASK* task_ptr) {
         for (ix = 0; ix < 6; ix++, s2 = y += 16) {
             (void)s2;
 
-            effect_A3_init(1, 12, ix, ix, 0, x, y, 0);
+            effect_A3_init(1, 14, ix, ix, 0, x, y, 0);
         }
 
         break;
@@ -3644,8 +3647,8 @@ static void Blocking_Tr_Option(struct _TASK* task_ptr) {
         Menu_Cursor_Y[1] = 0;
         Menu_Suicide[0] = 1;
         Training_Index = 3;
-        effect_A3_init(1, 22, 99, 0, 1, 51, 56, 1);
-        effect_A3_init(1, 22, 99, 1, 1, 51, 106, 1);
+        effect_A3_init(1, 24, 99, 0, 1, 51, 56, 1);
+        effect_A3_init(1, 24, 99, 1, 1, 51, 106, 1);
 
         for (ix = 0, s6 = y = 72; ix < 6; ix++, s5 = y += 16) {
             if (ix == 2) {
@@ -3656,7 +3659,7 @@ static void Blocking_Tr_Option(struct _TASK* task_ptr) {
                 y += 8;
             }
 
-            effect_A3_init(1, 17, ix, ix, 1, 64, y, 0);
+            effect_A3_init(1, 19, ix, ix, 1, 64, y, 0);
         }
 
         for (ix = 0, y = 72, s4 = group = 18; ix < 4; ix++, group++, s3 = y += 16) {
@@ -3664,7 +3667,7 @@ static void Blocking_Tr_Option(struct _TASK* task_ptr) {
                 y += 20;
             }
 
-            effect_A3_init(1, group, ix, ix, 1, 264, y, 0);
+            effect_A3_init(1, group + 2, ix, ix, 1, 264, y, 0);
         }
 
         break;
@@ -3773,7 +3776,7 @@ void Default_Training_Data(s32 flag) {
 
     for (ix = 0; ix < 2; ix++) {
         for (ix2 = 0; ix2 < 2; ix2++) {
-            for (ix3 = 0; ix3 < 4; ix3++) {
+            for (ix3 = 0; ix3 < 8; ix3++) {
                 Training[0].contents[ix][ix2][ix3] = 0;
             }
         }
@@ -4156,8 +4159,8 @@ static void End_Replay_Menu(struct _TASK* task_ptr) {
         Pause_ID = Decide_ID;
         Pause_Down = 1;
         Game_pause = 0x81;
-        effect_A3_init(1, 0x17, 0x63, 0, 3, 0x82, 0x48, 1);
-        effect_A3_init(1, 0x17, 0x63, 1, 3, 0x88, 0x58, 1);
+        effect_A3_init(1, 0x19, 0x63, 0, 3, 0x82, 0x48, 1);
+        effect_A3_init(1, 0x19, 0x63, 1, 3, 0x88, 0x58, 1);
         Order[0x8A] = 3;
         Order_Timer[0x8A] = 1;
         effect_66_init(0x8A, 0xA, 2, 7, -1, -1, -0x3FF6);

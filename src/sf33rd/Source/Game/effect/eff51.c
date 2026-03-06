@@ -1,6 +1,12 @@
 /**
  * @file eff51.c
- * TODO: System Direction selected values
+ * @brief System Direction menu — selected-value label renderer.
+ *
+ * Each row in the System Direction (dipswitch) menu shows a selectable
+ * value such as "ON"/"OFF" or a gauge level like "S/##/L".  Effect 51
+ * renders these labels by looking up the current selection via
+ * `system_dir[1].contents[page][row]` into the `Letter_Data_51` string
+ * table, and highlights non-default values with colour code 0x18.
  */
 
 #include "sf33rd/Source/Game/effect/eff51.h"

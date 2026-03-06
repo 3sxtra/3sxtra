@@ -2339,8 +2339,8 @@ void Dummy_Move_Sub(struct _TASK* task_ptr, s16 PL_id, s16 id, s16 type, s16 max
     }
 }
 
-const u8 Menu_Max_Data_Tr[2][2][6] = { { { 4, 3, 4, 6, 6, 0 }, { 3, 2, 3, 7, 0, 0 } },
-                                       { { 2, 3, 1, 3, 0, 0 }, { 0, 0, 0, 0, 0, 0 } } };
+const u8 Menu_Max_Data_Tr[2][2][8] = { { { 4, 3, 4, 6, 6, 1, 1, 0 }, { 3, 2, 3, 7, 0, 0, 0, 0 } },
+                                       { { 2, 3, 1, 3, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0, 0, 0 } } };
 
 static bool is_data_plus_hitboxes_option_selected() {
     return Training[0].contents[0][1][1] == 2;
@@ -2370,13 +2370,13 @@ void sync_dummy_settings_from_menu() {
     // Menu Index 4 (Wakeup Mash): 0=None, 1=Fast, 2=Normal, 3=Random
     g_dummy_settings.wakeup_mash = (DummyMashType)Training[2].contents[0][0][4];
 
-    // Wakeup reversal (DP on wakeup): enabled when wakeup mash is configured
-    // TODO: Add a dedicated menu entry for this when the UI supports it
-    g_dummy_settings.wakeup_reversal = (g_dummy_settings.wakeup_mash != DUMMY_MASH_NONE);
+    // Wakeup reversal (DP on wakeup): dedicated menu toggle
+    // Menu Index 5: 0=OFF, 1=ON
+    g_dummy_settings.wakeup_reversal = (Training[2].contents[0][0][5] != 0);
 
-    // Default guard direction: always crouch-block (covers lows)
-    // TODO: Add a dedicated menu entry for this when the UI supports it
-    g_dummy_settings.guard_low_default = true;
+    // Default guard direction
+    // Menu Index 6: 0=CROUCH (guard_low_default=true), 1=STAND (guard_low_default=false)
+    g_dummy_settings.guard_low_default = (Training[2].contents[0][0][6] == 0);
 }
 
 /** @brief Dummy cursor move left/right value toggle handler. */

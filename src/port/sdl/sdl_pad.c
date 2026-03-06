@@ -629,9 +629,6 @@ bool SDLPad_IsAnyInputActive(int device_index) {
                 return true;
         }
     } else if (input_sources[device_index].type == SDLPAD_INPUT_JOYSTICK) {
-        // TODO: Check generic joystick active inputs if needed?
-        // Currently ioconv polls, but Mapping UI waits for release.
-        // We can check buttons at least.
         SDL_Joystick* joy = input_sources[device_index].joystick.joystick;
         int buttons = SDL_GetNumJoystickButtons(joy);
         for (int i = 0; i < buttons; i++) {
@@ -641,6 +638,11 @@ bool SDLPad_IsAnyInputActive(int device_index) {
         int axes = SDL_GetNumJoystickAxes(joy);
         for (int i = 0; i < axes; i++) {
             if (abs(SDL_GetJoystickAxis(joy, i)) > 20000)
+                return true;
+        }
+        int hats = SDL_GetNumJoystickHats(joy);
+        for (int i = 0; i < hats; i++) {
+            if (SDL_GetJoystickHat(joy, i) != SDL_HAT_CENTERED)
                 return true;
         }
     }

@@ -90,6 +90,7 @@ static const u16 NotePitchTable[] = {
 
 static void UpdateVolPanPitch(struct VWork* voice);
 static int gcVoices();
+static struct VWork* getLowestPrioWk(CSE_REQP* reqp);
 
 // Note to pitch from ps2sdk
 static u16 sceSdNote2Pitch(u16 center_note, u16 center_fine, u16 note, short fine) {
@@ -256,9 +257,21 @@ static struct VWork* allocVoice() {
 
     if (list_empty(&free_voices)) {
         if (!gcVoices()) {
-            return NULL;
+            /* No naturally finished voices — steal the lowest priority one.
+             * Use a match-all request (flags=0) so getLowestPrioWk scans
+             * every active voice and picks the one with the lowest prio
+             * (oldest tick as tiebreaker). */
+            CSE_REQP steal_req;
+            memset(&steal_req, 0, sizeof(steal_req));
+            struct VWork* victim = getLowestPrioWk(&steal_req);
+            if (victim) {
+                SPU_VoiceKeyOff(victim->voice_num);
+                list_remove(&victim->list);
+                list_insert(&free_voices, &victim->list);
+            } else {
+                return NULL;
+            }
         }
-        // TODO use voice priority to find a voice to reuse?
     }
 
     voice = list_first_entry(&free_voices, struct VWork, list);

@@ -89,18 +89,27 @@ static void ini_trim(char* s) {
 
 static int ini_read_int(FILE* f, const char* key, int def) {
     char line[256];
-    char found_key[128];
-    int val;
 
     rewind(f);
     while (fgets(line, sizeof(line), f)) {
         ini_trim(line);
         if (line[0] == '#' || line[0] == '[' || line[0] == '\0')
             continue;
-        if (sscanf(line, "%127[^=]=%d", found_key, &val) == 2) {
-            ini_trim(found_key);
-            if (strcmp(found_key, key) == 0)
-                return val;
+        char* eq = strchr(line, '=');
+        if (!eq || eq == line)
+            continue;
+        size_t key_len = (size_t)(eq - line);
+        char found_key[128];
+        if (key_len >= sizeof(found_key))
+            continue;
+        memcpy(found_key, line, key_len);
+        found_key[key_len] = '\0';
+        ini_trim(found_key);
+        if (strcmp(found_key, key) == 0) {
+            char* endp;
+            long v = strtol(eq + 1, &endp, 10);
+            if (endp != eq + 1)
+                return (int)v;
         }
     }
     return def;
@@ -108,50 +117,60 @@ static int ini_read_int(FILE* f, const char* key, int def) {
 
 static void ini_read_bytes(FILE* f, const char* key, u8* dst, int count) {
     char line[1024];
-    char found_key[128];
-    char values[512];
 
     rewind(f);
     while (fgets(line, sizeof(line), f)) {
         ini_trim(line);
         if (line[0] == '#' || line[0] == '[' || line[0] == '\0')
             continue;
-        if (sscanf(line, "%127[^=]=%511[^\n]", found_key, values) == 2) {
-            ini_trim(found_key);
-            if (strcmp(found_key, key) == 0) {
-                char* p = values;
-                for (int i = 0; i < count && *p; i++) {
-                    dst[i] = (u8)strtol(p, &p, 10);
-                    if (*p == ',')
-                        p++;
-                }
-                return;
+        char* eq = strchr(line, '=');
+        if (!eq || eq == line)
+            continue;
+        size_t key_len = (size_t)(eq - line);
+        char found_key[128];
+        if (key_len >= sizeof(found_key))
+            continue;
+        memcpy(found_key, line, key_len);
+        found_key[key_len] = '\0';
+        ini_trim(found_key);
+        if (strcmp(found_key, key) == 0) {
+            char* p = eq + 1;
+            for (int i = 0; i < count && *p; i++) {
+                dst[i] = (u8)strtol(p, &p, 10);
+                if (*p == ',')
+                    p++;
             }
+            return;
         }
     }
 }
 
 static void ini_read_s8_array(FILE* f, const char* key, s8* dst, int count) {
     char line[1024];
-    char found_key[128];
-    char values[512];
 
     rewind(f);
     while (fgets(line, sizeof(line), f)) {
         ini_trim(line);
         if (line[0] == '#' || line[0] == '[' || line[0] == '\0')
             continue;
-        if (sscanf(line, "%127[^=]=%511[^\n]", found_key, values) == 2) {
-            ini_trim(found_key);
-            if (strcmp(found_key, key) == 0) {
-                char* p = values;
-                for (int i = 0; i < count && *p; i++) {
-                    dst[i] = (s8)strtol(p, &p, 10);
-                    if (*p == ',')
-                        p++;
-                }
-                return;
+        char* eq = strchr(line, '=');
+        if (!eq || eq == line)
+            continue;
+        size_t key_len = (size_t)(eq - line);
+        char found_key[128];
+        if (key_len >= sizeof(found_key))
+            continue;
+        memcpy(found_key, line, key_len);
+        found_key[key_len] = '\0';
+        ini_trim(found_key);
+        if (strcmp(found_key, key) == 0) {
+            char* p = eq + 1;
+            for (int i = 0; i < count && *p; i++) {
+                dst[i] = (s8)strtol(p, &p, 10);
+                if (*p == ',')
+                    p++;
             }
+            return;
         }
     }
 }

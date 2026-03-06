@@ -156,40 +156,20 @@ void check_next() {
     }
 }
 
-/** @brief Check type 0: Directional input (single joystick direction match). */
-void check_0() {
-    u16 sw_lever;
+/**
+ * @brief Common lever-direction dispatch: exact (0x8000) / neutral / bitmask.
+ *
+ * Tests the current lever value against waza_ptr->w_lvr using the standard
+ * three-branch pattern.  On match, advances to command_ok() or check_next().
+ *
+ * @param sw_lever  Masked lever value to test (caller chooses the source).
+ * @param guard     Extra bitmask guard for the else-branch (0xF to skip).
+ */
+static void lvr_match_or_next(u16 sw_lever, u16 guard) {
+    if (waza_ptr->w_lvr & 0x8000) {
+        sw_work = waza_ptr->w_lvr & 0xF;
 
-    waza_ptr->w_int--;
-
-    if (waza_ptr->w_int < 0) {
-        waza_ptr->w_type = 0;
-    }
-
-    sw_lever = chk_pl->sw_lever & 0xF;
-
-    if (dead_lvr_check() == 0) {
-        if (waza_ptr->w_lvr & 0x8000) {
-            sw_work = waza_ptr->w_lvr & 0xF;
-
-            if (sw_lever == sw_work) {
-                if (*waza_ptr->w_ptr == 28) {
-                    command_ok();
-                    return;
-                }
-
-                check_next();
-            }
-        } else if (waza_ptr->w_lvr == 0) {
-            if (sw_lever == 0) {
-                if (*waza_ptr->w_ptr == 28) {
-                    command_ok();
-                    return;
-                }
-
-                check_next();
-            }
-        } else if (chk_pl->now_lvbt & 0xF && sw_lever & waza_ptr->w_lvr) {
+        if (sw_lever == sw_work) {
             if (*waza_ptr->w_ptr == 28) {
                 command_ok();
                 return;
@@ -197,7 +177,35 @@ void check_0() {
 
             check_next();
         }
+    } else if (waza_ptr->w_lvr == 0) {
+        if (sw_lever == 0) {
+            if (*waza_ptr->w_ptr == 28) {
+                command_ok();
+                return;
+            }
+
+            check_next();
+        }
+    } else if (guard && (sw_lever & waza_ptr->w_lvr)) {
+        if (*waza_ptr->w_ptr == 28) {
+            command_ok();
+            return;
+        }
+
+        check_next();
     }
+}
+
+/** @brief Check type 0: Directional input (single joystick direction match). */
+void check_0() {
+    waza_ptr->w_int--;
+
+    if (waza_ptr->w_int < 0) {
+        waza_ptr->w_type = 0;
+    }
+
+    if (dead_lvr_check() == 0)
+        lvr_match_or_next(chk_pl->sw_lever & 0xF, chk_pl->now_lvbt & 0xF);
 }
 
 /** @brief Check type 1: Directional input with held requirement. */
@@ -1435,94 +1443,26 @@ void check_23() {
 
 /** @brief Check type 24: Chain combo input detection. */
 void check_24() {
-    u16 sw_lever;
-
     waza_ptr->w_int--;
 
     if (waza_ptr->w_int < 0) {
         waza_ptr->w_type = 0;
     }
 
-    sw_lever = chk_pl->now_lvbt & 0xF;
-
-    if (!dead_lvr_check()) {
-        if (waza_ptr->w_lvr & 0x8000) {
-            sw_work = waza_ptr->w_lvr & 0xF;
-
-            if (sw_lever == sw_work) {
-                if (*waza_ptr->w_ptr == 28) {
-                    command_ok();
-                    return;
-                }
-
-                check_next();
-            }
-        } else if (waza_ptr->w_lvr == 0) {
-            if (sw_lever == 0) {
-                if (*waza_ptr->w_ptr == 28) {
-                    command_ok();
-                    return;
-                }
-
-                check_next();
-            }
-        } else {
-            if (sw_lever & waza_ptr->w_lvr) {
-                if (*waza_ptr->w_ptr == 28) {
-                    command_ok();
-                    return;
-                }
-
-                check_next();
-            }
-        }
-    }
+    if (!dead_lvr_check())
+        lvr_match_or_next(chk_pl->now_lvbt & 0xF, 0xF);
 }
 
 /** @brief Check type 25: Leap attack input detection (close + direction + button). */
 void check_25() {
-    u16 sw_lever;
-
     waza_ptr->w_int--;
 
     if (waza_ptr->w_int < 0) {
         waza_ptr->w_type = 0;
     }
 
-    sw_lever = chk_pl->sw_lever & 0xF;
-
-    if (!dead_lvr_check()) {
-        if (waza_ptr->w_lvr & 0x8000) {
-            sw_work = waza_ptr->w_lvr & 0xF;
-
-            if (sw_lever == sw_work) {
-                if (*waza_ptr->w_ptr == 28) {
-                    command_ok();
-                    return;
-                }
-
-                check_next();
-            }
-        } else if (waza_ptr->w_lvr == 0) {
-            if (sw_lever == 0) {
-                if (*waza_ptr->w_ptr == 28) {
-                    command_ok();
-                    return;
-                }
-
-                check_next();
-            }
-        } else {
-            if (sw_lever & waza_ptr->w_lvr) {
-                if (*waza_ptr->w_ptr == 28) {
-                    command_ok();
-                    return;
-                }
-
-                check_next();
-            }
-        }
-    }
+    if (!dead_lvr_check())
+        lvr_match_or_next(chk_pl->sw_lever & 0xF, 0xF);
 }
 
 /** @brief Check type 26: Special grab/throw input detection. */

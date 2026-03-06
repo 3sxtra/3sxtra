@@ -38,7 +38,7 @@ extern const LetterData training_letter_data[TRAINING_LETTER_COUNT];
 extern const u8 Menu_Deley_Time[MENU_DELAY_COUNT];
 extern const u8 Game_Option_Index_Data[10];
 extern const u8 Sound_Data_Max[3][6];
-extern const u8 Menu_Max_Data_Tr[2][2][6];
+extern const u8 Menu_Max_Data_Tr[2][2][8];
 
 /* === Functions in menu.c called from other menu_*.c files === */
 s32 Exit_Sub(struct _TASK* task_ptr, s16 cursor_ix, s16 next_routine);

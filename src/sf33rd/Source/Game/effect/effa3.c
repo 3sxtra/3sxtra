@@ -10,9 +10,9 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-const u8 Contents_Check_Data_A3[24] = { 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0 };
+const u8 Contents_Check_Data_A3[26] = { 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0 };
 
-s8* Letter_Data_A3[24][8] = {
+s8* Letter_Data_A3[26][8] = {
     { "NORMAL MODE",
       "RECORDING MODE",
       "REPLAY",
@@ -26,14 +26,16 @@ s8* Letter_Data_A3[24][8] = {
       "PARRY TYPE$........",
       "STUN MASH$.........",
       "WAKEUP MASH$.......",
-      "DEFAULT SETTING",
-      "EXIT",
-      NULL },
+      "WAKEUP REVERSAL$...",
+      "GUARD DIRECTION$...",
+      "DEFAULT SETTING" },
     { "STAND", "CROUCH", "JUMP", "CPU", "HUMAN", NULL, NULL, NULL },
     { "NONE", "ALWAYS", "FIRST HIT", "RANDOM", NULL, NULL, NULL, NULL },
     { "NONE", "HIGH", "LOW", "ALL", "RED", NULL, NULL, NULL },
     { "NONE", "RANDOM FAST", "RANDOM SLOW", "THROW", "CROUCH JAB", "CROUCH SHORT", "SHORYUKEN", NULL },
     { "NONE", "RANDOM FAST", "RANDOM SLOW", "THROW", "CROUCH JAB", "CROUCH SHORT", "SHORYUKEN", NULL },
+    { "OFF", "ON", NULL, NULL, NULL, NULL, NULL, NULL },
+    { "CROUCH", "STAND", NULL, NULL, NULL, NULL, NULL, NULL },
     { "S.A.GAUGE$.............",
       "ATTACK DATA$...........",
       "DAMAGE$................$L    $H",
@@ -114,7 +116,7 @@ void effect_A3_move(WORK_Other* ewk) {
         color = 10;
     }
 
-    if (ewk->wu.type < 22) {
+    if (ewk->wu.type < 24) {
         prio = 1.0f;
     } else {
         prio = 2.0f;

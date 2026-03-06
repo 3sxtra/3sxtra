@@ -190,15 +190,19 @@ static void SPU_VoiceDecode(struct SPU_Voice* v) {
     shift = header & 0xf;
     filter = (header >> 4) & 7;
 
+    /* Real SPU2 clamps shift to 12; values 13-15 behave as 12 */
+    if (shift > 12) shift = 12;
+    /* Filter 0-4 are valid; 5-7 are undefined on hardware — treat as 0 (no filter) */
+    if (filter > 4) filter = 0;
+
     for (int i = 0; i < 4; i++) {
         s32 sample = (s16)((data & 0xF) << 12);
         sample >>= shift;
 
-        // TODO do the right thing for invalid shift/filter values
         sample += (adpcm_coefs[filter][0] * v->decodeHist[0]) >> 6;
         sample += (adpcm_coefs[filter][1] * v->decodeHist[1]) >> 6;
 
-        // We do get overflow here otherwise, should we?
+        /* Real SPU2 saturates to s16 range */
         sample = clamp(sample, INT16_MIN, INT16_MAX);
 
         v->decodeHist[1] = v->decodeHist[0];
