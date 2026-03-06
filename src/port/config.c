@@ -93,8 +93,12 @@ static void trim(char* str) {
 
 /** @brief Return true if the string is a valid integer (optional leading minus). */
 static bool is_int(const char* str) {
-    for (int i = 0; i < SDL_strlen(str); i++) {
-        if (SDL_isdigit(str[i]) || ((i == 0) && (str[i] == '-'))) {
+    if (str == NULL) {
+        return false;
+    }
+
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (SDL_isdigit((unsigned char)str[i]) || ((i == 0) && (str[i] == '-'))) {
             continue;
         } else {
             return false;

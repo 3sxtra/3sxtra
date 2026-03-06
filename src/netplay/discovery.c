@@ -169,12 +169,12 @@ void Discovery_Update() {
                 // Ignore our own broadcast
                 if (peer_instance_id != local_instance_id) {
                     char ip_str[64];
-                    strcpy(ip_str, inet_ntoa(sender_addr.sin_addr));
+                    SDL_strlcpy(ip_str, inet_ntoa(sender_addr.sin_addr), sizeof(ip_str));
 
                     bool found = false;
                     for (int i = 0; i < num_peers; i++) {
                         if (peers[i].instance_id == peer_instance_id) {
-                            strcpy(peers[i].ip, ip_str); // Update IP in case it changed
+                            SDL_strlcpy(peers[i].ip, ip_str, sizeof(peers[i].ip)); // Update IP in case it changed
                             peers[i].port = peer_port;
                             snprintf(peers[i].name, sizeof(peers[i].name), "%s:%hu", ip_str, peer_port);
                             peers[i].last_seen_ticks = now;
@@ -187,7 +187,7 @@ void Discovery_Update() {
                     }
                     if (!found && num_peers < MAX_PEERS) {
                         NetplayDiscoveredPeer* p = &peers[num_peers++];
-                        strcpy(p->ip, ip_str);
+                        SDL_strlcpy(p->ip, ip_str, sizeof(p->ip));
                         p->instance_id = peer_instance_id;
                         p->wants_auto_connect = (peer_auto == 1);
                         p->peer_ready = (peer_rdy == 1);

@@ -1200,8 +1200,7 @@ const s16 cnmc_Z_lever_data[16][6] = { { 0, -1, -1, -1, -1, -1 }, { 1, -1, -1, -
                                        { 4, 5, -1, -1, -1, -1 },  { 5, 6, -1, -1, -1, -1 },  { 4, 6, -1, -1, -1, -1 },
                                        { 4, 5, 6, -1, -1, -1 } };
 
-// TODO: rename to cnmc_z_lever_data
-const s16 _cnmc_z_lever_data[16][8] = { { -1, -1, -1, -1, -1, -1, -1, -1 }, { 4, 1, 2, -1, -1, -1, -1, -1 },
+const s16 cnmc_z_lever_data[16][8] = { { -1, -1, -1, -1, -1, -1, -1, -1 }, { 4, 1, 2, -1, -1, -1, -1, -1 },
                                         { 1, 2, 3, -1, -1, -1, -1, -1 },    { 2, 3, 6, -1, -1, -1, -1, -1 },
                                         { 1, 4, 7, -1, -1, -1, -1, -1 },    { 1, 2, 3, 4, 6, 7, 8, 9 },
                                         { 3, 6, 9, -1, -1, -1, -1, -1 },    { 4, 7, 8, -1, -1, -1, -1, -1 },
@@ -1242,11 +1241,11 @@ s32 check_meoshi_cancel(PLW* wk) {
                 }
             } else {
                 for (i = 0; i < 8; i++) {
-                    if (_cnmc_z_lever_data[tdat][i] == -1) {
+                    if (cnmc_z_lever_data[tdat][i] == -1) {
                         return 0;
                     }
 
-                    if (wdat == _cnmc_z_lever_data[tdat][i]) {
+                    if (wdat == cnmc_z_lever_data[tdat][i]) {
                         goto case_0;
                     }
                 }
