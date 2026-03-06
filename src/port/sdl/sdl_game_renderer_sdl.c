@@ -28,6 +28,7 @@
 
 typedef struct RenderTask {
     SDL_Texture* texture;
+    SDLGameRenderer_BlendMode blend_mode;
     SDL_Vertex vertices[4];
     float z;
     int index;
@@ -83,6 +84,7 @@ static float last_submitted_z = -1e30f;
 
 // ⚡ Cached texture binding — skip redundant SetTexture lookups
 static unsigned int last_set_texture_th = 0;
+static SDLGameRenderer_BlendMode s_CurrentBlendMode = SDL_GAME_RENDERER_BLEND_NORMAL;
 
 // Pre-allocated batch buffers for optimized rendering
 static SDL_Vertex batch_vertices[RENDER_TASK_MAX * 4];
@@ -459,6 +461,7 @@ void SDLGameRendererSDL_Shutdown(void) {
 
 void SDLGameRendererSDL_BeginFrame(void) {
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+    s_CurrentBlendMode = SDL_GAME_RENDERER_BLEND_NORMAL;
 
     // Clear canvas
     const Uint8 r = (flPs2State.FrameClearColor >> 16) & 0xFF;
@@ -500,18 +503,29 @@ void SDLGameRendererSDL_RenderFrame(void) {
         qsort(render_task_order, render_task_count, sizeof(int), compare_render_task_indices);
     }
 
-    // Batch rendering: group consecutive tasks with same texture
+    // Batch rendering: group consecutive tasks with same texture and blend mode
     int batch_start = 0;
     SDL_Texture* current_texture = render_tasks[render_task_order[0]].texture;
+    SDLGameRenderer_BlendMode current_blend_mode = render_tasks[render_task_order[0]].blend_mode;
 
     for (int i = 0; i <= render_task_count; i++) {
-        const bool should_flush =
-            (i == render_task_count) || (render_tasks[render_task_order[i]].texture != current_texture);
+        const bool should_flush = (i == render_task_count) ||
+                                  (render_tasks[render_task_order[i]].texture != current_texture) ||
+                                  (render_tasks[render_task_order[i]].blend_mode != current_blend_mode);
 
         if (should_flush) {
             const int batch_size = i - batch_start;
             if (batch_size > 0) {
                 SDL_assert(batch_size <= RENDER_TASK_MAX);
+
+                // Apply blend mode
+                SDL_BlendMode sdl_blend =
+                    (current_blend_mode == SDL_GAME_RENDERER_BLEND_ADD) ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_BLEND;
+                if (current_texture) {
+                    SDL_SetTextureBlendMode(current_texture, sdl_blend);
+                } else {
+                    SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
+                }
 
                 // Copy vertices to batch buffer via sorted indices
                 for (int j = 0; j < batch_size; j++) {
@@ -527,6 +541,7 @@ void SDLGameRendererSDL_RenderFrame(void) {
 
             if (i < render_task_count) {
                 current_texture = render_tasks[render_task_order[i]].texture;
+                current_blend_mode = render_tasks[render_task_order[i]].blend_mode;
                 batch_start = i;
             }
         }
@@ -799,6 +814,10 @@ void SDLGameRendererSDL_DestroyPalette(unsigned int palette_handle) {
     }
 }
 
+void SDLGameRendererSDL_SetBlendMode(SDLGameRenderer_BlendMode mode) {
+    s_CurrentBlendMode = mode;
+}
+
 void SDLGameRendererSDL_SetTexture(unsigned int th) {
     // ⚡ Cached texture binding — skip full lookup when same texture+palette was just set
     if (th == last_set_texture_th) {
@@ -901,6 +920,7 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     RenderTask* task = &render_tasks[render_task_count];
     task->index = render_task_count;
     task->texture = textured ? get_texture() : NULL;
+    task->blend_mode = s_CurrentBlendMode;
     task->z = flPS2ConvScreenFZ(vertices[0].coord.z);
     task->original_index = render_task_count;
 

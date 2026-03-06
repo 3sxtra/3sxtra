@@ -144,6 +144,17 @@ void SDLGameRenderer_SetTexture(unsigned int th) {
     }
 }
 
+void SDLGameRenderer_SetBlendMode(SDLGameRenderer_BlendMode mode) {
+    RendererBackend r = SDLApp_GetRenderer();
+    if (r == RENDERER_SDLGPU) {
+        SDLGameRendererGPU_SetBlendMode(mode);
+    } else if (r == RENDERER_SDL2D) {
+        SDLGameRendererSDL_SetBlendMode(mode);
+    } else {
+        SDLGameRendererGL_SetBlendMode(mode);
+    }
+}
+
 void SDLGameRenderer_DrawTexturedQuad(const Sprite* sprite, unsigned int color) {
     RendererBackend r = SDLApp_GetRenderer();
     if (r == RENDERER_SDLGPU) {

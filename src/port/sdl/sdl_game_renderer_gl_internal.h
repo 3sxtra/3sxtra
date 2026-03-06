@@ -28,6 +28,7 @@ typedef struct {
 
 typedef struct RenderTask {
     GLuint texture;
+    SDLGameRenderer_BlendMode blend_mode;
     int vertex_offset; // Offset into the global batch_vertices buffer
     float z;
     int index;
@@ -85,6 +86,7 @@ typedef struct {
     float texture_uv_sy[RENDER_TASK_MAX];
     int texture_count;
     unsigned int last_set_texture_th;
+    SDLGameRenderer_BlendMode current_blend_mode;
 
     // Caches & Dirty Tracking
     SDL_Surface* surfaces[FL_TEXTURE_MAX];

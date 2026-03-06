@@ -25,6 +25,11 @@ typedef struct Sprite {
     unsigned int tex_code;
 } Sprite;
 
+typedef enum {
+    SDL_GAME_RENDERER_BLEND_NORMAL,
+    SDL_GAME_RENDERER_BLEND_ADD,
+} SDLGameRenderer_BlendMode;
+
 typedef struct Sprite2 {
     Vec3 v[2];
     TexCoord t[2];
@@ -42,6 +47,7 @@ void SDLGameRenderer_RenderFrame();
 void SDLGameRenderer_EndFrame();
 
 void SDLGameRenderer_CreateTexture(unsigned int th);
+void SDLGameRenderer_SetBlendMode(SDLGameRenderer_BlendMode mode);
 void SDLGameRenderer_DestroyTexture(unsigned int texture_handle);
 void SDLGameRenderer_UnlockTexture(unsigned int th);
 void SDLGameRenderer_CreatePalette(unsigned int ph);

@@ -30,6 +30,10 @@ void SDLGameRenderer_SetTexture(unsigned int texture_handle) {
     // Mock implementation
 }
 
+void SDLGameRenderer_SetBlendMode(SDLGameRenderer_BlendMode mode) {
+    check_expected(mode);
+}
+
 // Mocking shadow_drawing from aboutspr.c
 void shadow_drawing(WORK* wk, s16 bsy) {
     check_expected(wk);
@@ -116,6 +120,16 @@ static void test_queue_and_flush_2d_primitives(void **state) {
     Renderer_Flush2DPrimitives();
 }
 
+static void test_set_blend_mode(void** state) {
+    (void)state;
+
+    expect_value(SDLGameRenderer_SetBlendMode, mode, SDL_GAME_RENDERER_BLEND_ADD);
+    Renderer_SetBlendMode(RENDERER_BLEND_ADD);
+
+    expect_value(SDLGameRenderer_SetBlendMode, mode, SDL_GAME_RENDERER_BLEND_NORMAL);
+    Renderer_SetBlendMode(RENDERER_BLEND_NORMAL);
+}
+
 static void test_update_texture(void **state) {
     (void) state;
     
@@ -136,6 +150,7 @@ int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_draw_textured_quad),
         cmocka_unit_test(test_queue_and_flush_2d_primitives),
+        cmocka_unit_test(test_set_blend_mode),
         cmocka_unit_test(test_update_texture),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);

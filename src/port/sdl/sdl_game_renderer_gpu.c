@@ -27,6 +27,7 @@ static SDL_GPUDevice* device = NULL;
 static SDL_Window* window = NULL;
 static SDL_GPUCommandBuffer* current_cmd_buf = NULL;
 static SDL_GPUGraphicsPipeline* pipeline = NULL;
+static SDL_GPUGraphicsPipeline* additive_pipeline = NULL;
 static SDL_GPUComputePipeline* s_compute_pipeline = NULL; // Palette conversion pipeline
 static SDL_GPUSampler* sampler = NULL;
 
@@ -71,6 +72,7 @@ static int texture_count = 0;
 // ⚡ Back-to-back early-out cache — avoids redundant SetTexture work when the
 // same texture+palette combo is set consecutively (common in sprite batches).
 static unsigned int s_last_set_texture_handle = 0;
+static SDLGameRenderer_BlendMode s_CurrentBlendMode = SDL_GAME_RENDERER_BLEND_NORMAL;
 
 static SDL_Surface* surfaces[FL_TEXTURE_MAX] = { NULL };
 static SDL_Palette* palettes[FL_PALETTE_MAX] = { NULL };
@@ -120,6 +122,7 @@ static int s_compute_job_count = 0;
 // Z-depth sorting
 typedef struct {
     float z;
+    SDLGameRenderer_BlendMode blend_mode;
     int original_index; // quad index in submission order
 } QuadSortKey;
 static QuadSortKey quad_sort_keys[MAX_QUADS];
@@ -336,10 +339,18 @@ void SDLGameRendererGPU_Init(void) {
     pipeline_info.target_info.num_color_targets = 1;
 
     pipeline = SDL_CreateGPUGraphicsPipeline(device, &pipeline_info);
+
+    // Create Additive Pipeline
+    color_target_desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+    color_target_desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    color_target_desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    color_target_desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    additive_pipeline = SDL_CreateGPUGraphicsPipeline(device, &pipeline_info);
+
     SDL_ReleaseGPUShader(device, vert_shader);
     SDL_ReleaseGPUShader(device, frag_shader);
 
-    if (!pipeline) {
+    if (!pipeline || !additive_pipeline) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to create GPU pipeline: %s", SDL_GetError());
         return;
     }
@@ -484,6 +495,8 @@ void SDLGameRendererGPU_Init(void) {
 void SDLGameRendererGPU_Shutdown(void) {
     if (pipeline)
         SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
+    if (additive_pipeline)
+        SDL_ReleaseGPUGraphicsPipeline(device, additive_pipeline);
     if (s_compute_pipeline)
         SDL_ReleaseGPUComputePipeline(device, s_compute_pipeline);
     if (vertex_buffer)
@@ -565,6 +578,7 @@ void SDLGameRendererGPU_BeginFrame(void) {
     texture_count = 0;
     s_compute_job_count = 0;
     s_last_set_texture_handle = 0; // ⚡ Reset back-to-back cache each frame
+    s_CurrentBlendMode = SDL_GAME_RENDERER_BLEND_NORMAL;
 
     if (s_compute_drops_last_frame > 0) {
         SDL_LogWarn(SDL_LOG_CATEGORY_RENDER,
@@ -757,8 +771,6 @@ void SDLGameRendererGPU_RenderFrame(void) {
                                        { 0.0f, -2.0f / 224.0f, 0.0f, 0.0f },
                                        { 0.0f, 0.0f, -1.0f, 0.0f },
                                        { -1.0f, 1.0f, 0.0f, 1.0f } };
-                SDL_BindGPUGraphicsPipeline(pass, pipeline);
-
                 SDL_PushGPUVertexUniformData(current_cmd_buf, 0, matrix, sizeof(matrix));
 
                 SDL_GPUBufferBinding vb_binding;
@@ -776,7 +788,24 @@ void SDLGameRendererGPU_RenderFrame(void) {
                 tex_binding.sampler = sampler;
                 SDL_BindGPUFragmentSamplers(pass, 0, &tex_binding, 1);
 
-                SDL_DrawGPUIndexedPrimitives(pass, index_count, 1, 0, 0, 0);
+                // Draw quads in batches, switching pipeline if blend mode changes
+                unsigned int batch_start = 0;
+                SDLGameRenderer_BlendMode current_blend = (quad_count > 0) ? quad_sort_keys[0].blend_mode : SDL_GAME_RENDERER_BLEND_NORMAL;
+                SDL_BindGPUGraphicsPipeline(pass, (current_blend == SDL_GAME_RENDERER_BLEND_ADD) ? additive_pipeline : pipeline);
+
+                for (unsigned int i = 1; i <= quad_count; i++) {
+                    const bool should_flush = (i == quad_count) || (quad_sort_keys[i].blend_mode != current_blend);
+                    if (should_flush) {
+                        const unsigned int batch_quads = i - batch_start;
+                        SDL_DrawGPUIndexedPrimitives(pass, batch_quads * 6, 1, batch_start * 6, 0, 0);
+
+                        if (i < quad_count) {
+                            batch_start = i;
+                            current_blend = quad_sort_keys[i].blend_mode;
+                            SDL_BindGPUGraphicsPipeline(pass, (current_blend == SDL_GAME_RENDERER_BLEND_ADD) ? additive_pipeline : pipeline);
+                        }
+                    }
+                }
             }
             SDL_EndGPURenderPass(pass);
         }
@@ -1013,6 +1042,10 @@ void SDLGameRendererGPU_UnlockTexture(unsigned int th) {
     }
 }
 
+void SDLGameRendererGPU_SetBlendMode(SDLGameRenderer_BlendMode mode) {
+    s_CurrentBlendMode = mode;
+}
+
 void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
     const int idx = ph - 1;
     if (idx >= 0 && idx < FL_PALETTE_MAX) {
@@ -1224,6 +1257,7 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
 
     if (quad_count < MAX_QUADS) {
         quad_sort_keys[quad_count].z = flPS2ConvScreenFZ(vertices[0].coord.z);
+        quad_sort_keys[quad_count].blend_mode = s_CurrentBlendMode;
         quad_sort_keys[quad_count].original_index = quad_count;
         quad_count++;
     }
@@ -1386,6 +1420,7 @@ void SDLGameRendererGPU_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
 
         if (quad_count < MAX_QUADS) {
             quad_sort_keys[quad_count].z = flPS2ConvScreenFZ(spr->v[0].z);
+            quad_sort_keys[quad_count].blend_mode = s_CurrentBlendMode;
             quad_sort_keys[quad_count].original_index = quad_count;
             quad_count++;
         }

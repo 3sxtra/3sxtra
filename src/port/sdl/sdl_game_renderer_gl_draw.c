@@ -17,6 +17,10 @@
 #include <stddef.h>
 #include <string.h>
 
+void SDLGameRendererGL_SetBlendMode(SDLGameRenderer_BlendMode mode) {
+    gl_state.current_blend_mode = mode;
+}
+
 // --- Render Task Management ---
 
 static void push_render_task(GLuint texture, const SDL_Vertex* vertices, float z, int array_layer, int pal_slot) {
@@ -34,6 +38,7 @@ static void push_render_task(GLuint texture, const SDL_Vertex* vertices, float z
 
     RenderTask* task = &gl_state.render_tasks[gl_state.render_task_count];
     task->texture = texture;
+    task->blend_mode = gl_state.current_blend_mode;
     task->vertex_offset = vertex_offset;
     task->z = z;
     task->original_index = gl_state.render_task_count;
@@ -109,6 +114,7 @@ static void stable_sort_render_tasks(void) {
 void SDLGameRendererGL_BeginFrame(void) {
     TRACE_ZONE_N("BeginFrame");
     gl_state.last_set_texture_th = 0;
+    gl_state.current_blend_mode = SDL_GAME_RENDERER_BLEND_NORMAL;
 
     for (int i = 0; i < gl_state.dirty_texture_count; i++) {
         const int idx = gl_state.dirty_texture_indices[i];
@@ -216,6 +222,8 @@ void SDLGameRendererGL_RenderFrame(void) {
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    SDLGameRenderer_BlendMode current_blend_mode = SDL_GAME_RENDERER_BLEND_NORMAL;
+
     glActiveTexture(GL_TEXTURE0);
 
     TRACE_GPU_ZONE("RenderFrame");
@@ -230,6 +238,16 @@ void SDLGameRendererGL_RenderFrame(void) {
     int i = 0;
     while (i < gl_state.render_task_count) {
         const bool is_array_task = (gl_state.render_tasks[i].array_layer >= 0);
+        const SDLGameRenderer_BlendMode task_blend_mode = gl_state.render_tasks[i].blend_mode;
+
+        if (current_blend_mode != task_blend_mode) {
+            current_blend_mode = task_blend_mode;
+            if (current_blend_mode == SDL_GAME_RENDERER_BLEND_ADD) {
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            } else {
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
+        }
 
         if (is_array_task) {
             if (current_shader_type != SHADER_ARRAY) {
@@ -258,7 +276,8 @@ void SDLGameRendererGL_RenderFrame(void) {
 
             int batch_count = 0;
             int start_index = i;
-            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer >= 0) {
+            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer >= 0 &&
+                   gl_state.render_tasks[i].blend_mode == current_blend_mode) {
                 batch_count++;
                 i++;
             }
@@ -280,13 +299,15 @@ void SDLGameRendererGL_RenderFrame(void) {
                 glUniform1i(gl_state.loc_source, 0);
             }
 
-            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer < 0) {
+            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer < 0 &&
+                   gl_state.render_tasks[i].blend_mode == current_blend_mode) {
                 const GLuint current_texture = gl_state.render_tasks[i].texture;
                 int batch_count = 0;
                 int start_index = i;
 
                 while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer < 0 &&
-                       gl_state.render_tasks[i].texture == current_texture) {
+                       gl_state.render_tasks[i].texture == current_texture &&
+                       gl_state.render_tasks[i].blend_mode == current_blend_mode) {
                     batch_count++;
                     i++;
                 }
