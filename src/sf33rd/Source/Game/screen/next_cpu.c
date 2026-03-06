@@ -7,6 +7,8 @@
 #include "common.h"
 #include "constants.h"
 #include "port/sdl/rmlui_char_select.h"
+#include "port/sdl/rmlui_phase3_toggles.h"
+extern bool use_rmlui;
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/com/com_data.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -137,7 +139,8 @@ static void Next_CPU_1st() {
     Setup_Regular_OBJ(Player_id);
 
     /* Keep RmlUI overlay active so native timer/label effects stay gated */
-    rmlui_char_select_show();
+    if (use_rmlui && rmlui_screen_select)
+        rmlui_char_select_show();
 
     Moving_Plate[Player_id] = 0;
 
