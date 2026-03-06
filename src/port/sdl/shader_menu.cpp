@@ -126,9 +126,7 @@ extern "C" void shader_menu_render(int window_width, int window_height) {
             ImGui::Text("Available Presets (%d):", preset_count);
 
             if (ImGui::BeginChild("PresetList", ImVec2(0, window_height * 0.6f), true)) {
-                std::string filter_lower = search_filter;
-                std::transform(filter_lower.begin(), filter_lower.end(), filter_lower.begin(), ::tolower);
-                const bool has_filter = !filter_lower.empty();
+                const bool has_filter = (search_filter[0] != '\0');
 
                 for (int i = 0; i < preset_count; i++) {
                     const char* preset_name = SDLApp_GetPresetName(i);
@@ -136,23 +134,8 @@ extern "C" void shader_menu_render(int window_width, int window_height) {
                         continue;
 
                     // Apply search filter (case-insensitive substring match)
-                    if (has_filter) {
-                        bool found = false;
-                        size_t name_len = strlen(preset_name);
-                        size_t filt_len = filter_lower.length();
-                        if (name_len >= filt_len) {
-                            for (size_t j = 0; j <= name_len - filt_len; j++) {
-                                bool match = true;
-                                for (size_t k = 0; k < filt_len; k++) {
-                                    if (tolower((unsigned char)preset_name[j + k]) != filter_lower[k]) {
-                                        match = false;
-                                        break;
-                                    }
-                                }
-                                if (match) { found = true; break; }
-                            }
-                        }
-                        if (!found) continue;
+                    if (has_filter && SDL_strcasestr(preset_name, search_filter) == nullptr) {
+                        continue;
                     }
 
                     bool is_selected = (i == current_preset);
