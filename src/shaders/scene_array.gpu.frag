@@ -14,14 +14,17 @@ layout(set = 2, binding = 1) uniform sampler2D PaletteTex;
 
 void main()
 {
-    if (PaletteIdx >= 0.0) {
+    if (TexLayer < 0.0) {
+        // Untextured solid color quad
+        FragColor = FgColor;
+    } else if (PaletteIdx >= 0.0) {
         // Indexed texture: R channel holds the raw palette index (0.0..1.0 = 0..255)
         float idx = texture(TexArray, vec3(TexCoord, TexLayer)).r;
         // Map index → palette atlas UV
         //   U: (idx * 255 + 0.5) / 256  — texel center for exact palette color
-        //   V: (paletteRow + 0.5) / 1088 — texel center for the palette row
+        //   V: (paletteRow + 0.5) / 1089 — texel center for the palette row
         vec2 palUV = vec2((idx * 255.0 + 0.5) / 256.0,
-                          (PaletteIdx + 0.5) / 1088.0);
+                          (PaletteIdx + 0.5) / 1089.0);
         FragColor = texture(PaletteTex, palUV) * FgColor;
     } else {
         // Direct color (PSMCT16, 32-bit): sample from same RGBA8 array

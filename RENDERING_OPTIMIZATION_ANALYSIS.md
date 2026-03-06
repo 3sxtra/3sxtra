@@ -315,3 +315,36 @@ During a codebase scan for further SIMD vectorization targets, the following hig
 - **Function**: `lz_ext_p6_cx(u8* srcptr, u16* dstptr, u32 len, u16* palptr)`
 - **Pattern**: CPU-side decompression loops with nibble unpacking and palette gathers.
 - **Opportunity**: While the 4× unrolling (already implemented) helps instruction-level parallelism, further SIMD optimization could unpack the 4-bit nibbles into 16-bit integers in parallel vectors (`_mm_srai_epi16`, `_mm_and_si128`), though the scalar palette gather is harder to vectorize cross-platform without AVX2 `gather` instructions. Reliance on the GPU Compute Shader (Opt #6) is the better path here.
+
+---
+
+## 10. Real-World Profiling: Raspberry Pi 4 (OpenGL Backend)
+
+Profiling data captured from a Raspberry Pi 4 running the `OpenGL` backend over ~30,813 frames (~8.5 minutes at 60fps) demonstrates the immense success of the current optimizations. Total active CPU time per frame is roughly ~3.8ms, leaving an enormous ~12.8ms of headroom before hitting the 16.6ms budget.
+
+| Function | File | Count | Avg ms / call | Avg ms / frame | % of active CPU |
+|----------|------|-------|---------------|----------------|-----------------|
+| `EndFrame` | `sdl_app.c` | 30,813 | 1.77 ms | 1.77 ms | ~45% |
+| ↳ `SwapWindow` | `sdl_app.c` | 30,813 | 1.55 ms | 1.55 ms | ~40% |
+| `seqsAfter` | `game.c` | 30,807 | 1.21 ms | 1.21 ms | ~31% |
+| ↳ `GL:BatchDraw` | `sdl_game_renderer_gl_draw.c`| 30,622 | 0.49 ms | 0.49 ms | ~13% |
+| `cpLoopTask` | `main.c` | 150,101 | 0.07 ms | 0.33 ms | ~8% |
+| `RenderFrame` | `sdl_game_renderer_gl_draw.c` | 30,813 | 0.30 ms | 0.30 ms | ~8% |
+| ↳ `SceneBlit` | `sdl_app.c` | 30,813 | 0.16 ms | 0.16 ms | ~4% |
+| `SDLEventPump` | `sdl_app.c` | 30,813 | 0.08 ms | 0.08 ms | ~2% |
+| `Render2D` | `main.c` | 30,813 | 0.08 ms | 0.08 ms | ~2% |
+| `SPU_AudioCB` | `spu.c` | 9,040 | 0.10 ms | 0.03 ms | < 1% |
+| `texcash_before` | `game.c` | 30,807 | 0.03 ms | 0.03 ms | < 1% |
+| `BeginFrame` | `sdl_game_renderer_gl_draw.c` | 30,813 | 0.07 ms | 0.07 ms | < 1% |
+| `FramePacing` | `sdl_app.c` | 30,813 | 0.02 ms | 0.02 ms | < 1% |
+| `Input` | `main.c` | 30,813 | 0.01 ms | 0.01 ms | < 1% |
+| `texcash_update` | `game.c` | 30,807 | 0.01 ms | 0.01 ms | < 1% |
+| `PostRender` | `main.c` | 30,813 | 0.01 ms | 0.01 ms | < 1% |
+| `GameLogic` | `main.c` | 30,813 | 0.01 ms | 0.01 ms | < 1% |
+| `SoundLock:StartSound`| `emlShim.c` | 811 | 0.01 ms | < 0.01 ms | < 1% |
+
+### Key Takeaways
+1. **Exceptional Headroom**: The entire game simulation + rendering pipeline consumes barely 20-25% of the frame budget on low-end hardware (RPi4).
+2. **GPU Driver Bottleneck**: The single largest cost is `SwapWindow` (1.55ms) inside `EndFrame` (1.77ms), which reflects GPU driver and compositing overhead rather than application inefficiency.
+3. **Pipeline Efficiency**: `seqsAfter` (sprite processing) takes only 1.21ms per frame, including the 0.49ms for `GL:BatchDraw`. The persistent tile atlas, hash caches, and SIMD optimizations have effectively eliminated CPU-side bottlenecks here.
+4. **Negligible Caching Overhead**: Operations like `texcash_before` and `texcash_update` take an incredibly small ~0.03ms per frame combined, confirming that the hash cache and O(1) lookups are performing perfectly.

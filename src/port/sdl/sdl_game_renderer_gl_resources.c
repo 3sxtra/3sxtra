@@ -63,8 +63,26 @@ static inline uint32_t hash_palette(const void* data, size_t size) {
 }
 
 // --- CLUT Shuffle for PS2 ---
-#define clut_shuf(x) (((x) & ~0x18) | ((((x) & 0x08) << 1) | (((x) & 0x10) >> 1)))
-
+// The PS2 GS stores 256-color CLUTs in a non-linear memory order.
+// This LUT maps linear index (0-255) to the shuffled GS index.
+static const Uint8 ps2_clut_shuffle[256] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
+    8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31,
+    32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
+    40, 41, 42, 43, 44, 45, 46, 47, 56, 57, 58, 59, 60, 61, 62, 63,
+    64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
+    72, 73, 74, 75, 76, 77, 78, 79, 88, 89, 90, 91, 92, 93, 94, 95,
+    96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119,
+    104, 105, 106, 107, 108, 109, 110, 111, 120, 121, 122, 123, 124, 125, 126, 127,
+    128, 129, 130, 131, 132, 133, 134, 135, 144, 145, 146, 147, 148, 149, 150, 151,
+    136, 137, 138, 139, 140, 141, 142, 143, 152, 153, 154, 155, 156, 157, 158, 159,
+    160, 161, 162, 163, 164, 165, 166, 167, 176, 177, 178, 179, 180, 181, 182, 183,
+    168, 169, 170, 171, 172, 173, 174, 175, 184, 185, 186, 187, 188, 189, 190, 191,
+    192, 193, 194, 195, 196, 197, 198, 199, 208, 209, 210, 211, 212, 213, 214, 215,
+    200, 201, 202, 203, 204, 205, 206, 207, 216, 217, 218, 219, 220, 221, 222, 223,
+    224, 225, 226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247,
+    232, 233, 234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254, 255
+};
 void tcache_live_init(void) {
     gl_state.tcache_live_count = 0;
 }
@@ -324,6 +342,10 @@ void SDLGameRendererGL_CreateTexture(unsigned int th) {
         pixel_format = SDL_PIXELFORMAT_ABGR1555;
         pitch = fl_texture->width * 2;
         break;
+    case SCE_GS_PSMCT32:
+        pixel_format = SDL_PIXELFORMAT_ABGR8888;
+        pitch = fl_texture->width * 4;
+        break;
     default:
         return;
     }
@@ -415,7 +437,7 @@ void SDLGameRendererGL_CreatePalette(unsigned int ph) {
             const simde__m128 inv255 = simde_mm_set1_ps(1.0f / 255.0f);
             for (int i = 0; i < 256; i += 4) {
                 for (int j = 0; j < 4; j++) {
-                    Uint32 px = rgba32[clut_shuf(i + j)];
+                    Uint32 px = rgba32[ps2_clut_shuffle[i + j]];
                     simde__m128i ci = simde_mm_set_epi32(
                         (px >> 24) & 0xFF, (px >> 16) & 0xFF,
                         (px >> 8) & 0xFF, px & 0xFF);
@@ -426,7 +448,7 @@ void SDLGameRendererGL_CreatePalette(unsigned int ph) {
         } else {
             const Uint16* rgba16 = (const Uint16*)pixels;
             for (int i = 0; i < 256; i++)
-                read_rgba16_color(rgba16[clut_shuf(i)], &color_data[i * 4]);
+                read_rgba16_color(rgba16[ps2_clut_shuffle[i]], &color_data[i * 4]);
         }
         color_data[3] = 0.0f;
         break;
@@ -525,30 +547,64 @@ void SDLGameRendererGL_UnlockPalette(unsigned int ph) {
     }
 }
 
+/**
+ * ⚡ Bolt: O(1) deferred unlock — pushes tex_idx to pending batch instead of
+ * scanning tcache_live per call. The actual stale promotion happens in
+ * SDLGameRendererGL_FlushPendingUnlocks() as a single O(pending + live) pass.
+ */
 void SDLGameRendererGL_UnlockTexture(unsigned int th) {
     const int texture_handle = th;
     if (texture_handle > 0 && texture_handle <= FL_TEXTURE_MAX) {
         const int tex_idx = texture_handle - 1;
 
-        for (int i = gl_state.tcache_live_count - 1; i >= 0; i--) {
-            if (gl_state.tcache_live[i].tex_idx == (uint16_t)tex_idx) {
-                int pal = gl_state.tcache_live[i].pal_idx;
-                GLuint* texture_p = &gl_state.texture_cache[tex_idx][pal];
-                if (*texture_p != 0) {
-                    GLuint stale = gl_state.stale_texture_cache[tex_idx][pal];
-                    if (stale != 0)
-                        push_texture_to_destroy(stale);
-                    gl_state.stale_texture_cache[tex_idx][pal] = *texture_p;
-                    *texture_p = 0;
-                }
-                gl_state.tcache_live[i] = gl_state.tcache_live[--gl_state.tcache_live_count];
-            }
+        // ⚡ Bolt: Defer tcache_live scan — just push to pending batch
+        if (!gl_state.pending_unlock_flags[tex_idx]) {
+            gl_state.pending_unlock_flags[tex_idx] = true;
+            gl_state.pending_unlock_indices[gl_state.pending_unlock_count++] = tex_idx;
         }
+
         if (!gl_state.texture_dirty_flags[texture_handle - 1]) {
             gl_state.texture_dirty_flags[texture_handle - 1] = true;
             gl_state.dirty_texture_indices[gl_state.dirty_texture_count++] = texture_handle - 1;
         }
     }
+}
+
+/**
+ * ⚡ Bolt: Batch stale-promotion pass — single O(pending + live) scan replaces
+ * the previous O(dirty × live) per-UnlockTexture approach.
+ *
+ * For each tcache_live entry whose tex_idx is in the pending set, promotes
+ * texture_cache → stale_texture_cache (so SetTexture can reuse the GL object
+ * via glTexSubImage2D instead of glGenTextures). Called once between Phase 1
+ * (texture upload) and Phase 2 (sprite draw) of seqsAfterProcess.
+ */
+void SDLGameRendererGL_FlushPendingUnlocks(void) {
+    if (gl_state.pending_unlock_count == 0)
+        return;
+
+    // Single reverse pass through tcache_live — check each entry against the boolean lookup
+    for (int i = gl_state.tcache_live_count - 1; i >= 0; i--) {
+        const int tex_idx = gl_state.tcache_live[i].tex_idx;
+        if (gl_state.pending_unlock_flags[tex_idx]) {
+            int pal = gl_state.tcache_live[i].pal_idx;
+            GLuint* texture_p = &gl_state.texture_cache[tex_idx][pal];
+            if (*texture_p != 0) {
+                GLuint stale = gl_state.stale_texture_cache[tex_idx][pal];
+                if (stale != 0)
+                    push_texture_to_destroy(stale);
+                gl_state.stale_texture_cache[tex_idx][pal] = *texture_p;
+                *texture_p = 0;
+            }
+            gl_state.tcache_live[i] = gl_state.tcache_live[--gl_state.tcache_live_count];
+        }
+    }
+
+    // Clear the pending set
+    for (int i = 0; i < gl_state.pending_unlock_count; i++) {
+        gl_state.pending_unlock_flags[gl_state.pending_unlock_indices[i]] = false;
+    }
+    gl_state.pending_unlock_count = 0;
 }
 
 void SDLGameRendererGL_SetTexture(unsigned int th) {

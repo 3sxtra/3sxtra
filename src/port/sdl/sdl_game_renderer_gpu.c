@@ -10,6 +10,7 @@
 #include "port/sdl/sdl_app.h"
 #include "port/sdl/sdl_game_renderer_internal.h"
 #include "port/tracy_zones.h"
+#include "port/modded_stage.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -97,16 +98,20 @@ static int tex_array_free_count = 0;
 // Map (texture_handle-1, palette_handle) → array layer index, or -1 if not in array
 static int16_t tex_array_layer[FL_TEXTURE_MAX][FL_PALETTE_MAX + 1];
 
+#define MAX_VERTICES 65536
+#define MAX_QUADS (MAX_VERTICES / 4)
+
 // Stacks for current frame texture state
-static int texture_layers[FL_PALETTE_MAX];
-static float texture_uv_sx[FL_PALETTE_MAX];
-static float texture_uv_sy[FL_PALETTE_MAX];
-static float texture_palette_idx[FL_PALETTE_MAX]; // palette row in palette atlas (-1 = direct color)
+static int texture_layers[MAX_VERTICES];
+static float texture_uv_sx[MAX_VERTICES];
+static float texture_uv_sy[MAX_VERTICES];
+static float texture_palette_idx[MAX_VERTICES]; // palette row in palette atlas (-1 = direct color)
 static int texture_count = 0;
 
 // Palette upload tracking
 #define PALETTE_TEX_WIDTH 256
-#define PALETTE_TEX_HEIGHT FL_PALETTE_MAX  // 1088 rows — one per palette
+#define PALETTE_TEX_HEIGHT (FL_PALETTE_MAX + 1)  // 1089 rows — one per palette + 1 default identity row
+#define DEFAULT_PALETTE_ROW FL_PALETTE_MAX         // Row 1088: identity grayscale ramp for palette-less indexed textures
 static bool s_palette_uploaded[FL_PALETTE_MAX]; // per-palette dirty flag for atlas upload
 
 // ⚡ Opt9b: Palette upload dirty list — avoids scanning all 1088 slots each frame.
@@ -171,8 +176,6 @@ static PaletteUploadJob s_pal_upload_jobs[MAX_COMPUTE_JOBS];
 static int s_pal_upload_count = 0;
 
 
-#define MAX_VERTICES 65536
-#define MAX_QUADS (MAX_VERTICES / 4)
 
 // Z-depth sorting
 typedef struct {
@@ -194,8 +197,26 @@ typedef struct GPUVertex {
 } GPUVertex;
 
 // --- CLUT Shuffle for PS2 ---
-#define clut_shuf(x) (((x) & ~0x18) | ((((x) & 0x08) << 1) | (((x) & 0x10) >> 1)))
-
+// The PS2 GS stores 256-color CLUTs in a non-linear memory order.
+// This LUT maps linear index (0-255) to the shuffled GS index.
+static const Uint8 ps2_clut_shuffle[256] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
+    8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31,
+    32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
+    40, 41, 42, 43, 44, 45, 46, 47, 56, 57, 58, 59, 60, 61, 62, 63,
+    64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
+    72, 73, 74, 75, 76, 77, 78, 79, 88, 89, 90, 91, 92, 93, 94, 95,
+    96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119,
+    104, 105, 106, 107, 108, 109, 110, 111, 120, 121, 122, 123, 124, 125, 126, 127,
+    128, 129, 130, 131, 132, 133, 134, 135, 144, 145, 146, 147, 148, 149, 150, 151,
+    136, 137, 138, 139, 140, 141, 142, 143, 152, 153, 154, 155, 156, 157, 158, 159,
+    160, 161, 162, 163, 164, 165, 166, 167, 176, 177, 178, 179, 180, 181, 182, 183,
+    168, 169, 170, 171, 172, 173, 174, 175, 184, 185, 186, 187, 188, 189, 190, 191,
+    192, 193, 194, 195, 196, 197, 198, 199, 208, 209, 210, 211, 212, 213, 214, 215,
+    200, 201, 202, 203, 204, 205, 206, 207, 216, 217, 218, 219, 220, 221, 222, 223,
+    224, 225, 226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247,
+    232, 233, 234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254, 255
+};
 static void read_rgba32_color(Uint32 pixel, SDL_Color* color) {
     color->r = (pixel >> 0) & 0xFF;
     color->g = (pixel >> 8) & 0xFF;
@@ -493,6 +514,39 @@ void SDLGameRendererGPU_Init(void) {
     palette_sampler = SDL_CreateGPUSampler(device, &pal_sampler_info);
 
     memset(s_palette_uploaded, 0, sizeof(s_palette_uploaded));
+
+    // Upload default identity palette to row DEFAULT_PALETTE_ROW (1088).
+    // This is a 256-entry grayscale ramp: index i → (i, i, i, i==0 ? 0 : 255).
+    // Used as fallback for indexed textures with no palette assigned.
+    {
+        u32* pal_ptr = (u32*)SDL_MapGPUTransferBuffer(device, s_palette_transfer, false);
+        if (pal_ptr) {
+            pal_ptr[0] = 0x00000000; // Index 0 is transparent black
+            for (int i = 1; i < PALETTE_TEX_WIDTH; i++) {
+                pal_ptr[i] = 0xFF000000u | ((u32)i << 16) | ((u32)i << 8) | (u32)i;
+            }
+            SDL_UnmapGPUTransferBuffer(device, s_palette_transfer);
+
+            SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(device);
+            SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
+            SDL_GPUTextureTransferInfo src = {
+                .transfer_buffer = s_palette_transfer,
+                .offset = 0,
+                .pixels_per_row = PALETTE_TEX_WIDTH,
+                .rows_per_layer = 1,
+            };
+            SDL_GPUTextureRegion dst = {
+                .texture = s_palette_texture,
+                .y = DEFAULT_PALETTE_ROW,
+                .w = PALETTE_TEX_WIDTH,
+                .h = 1,
+                .d = 1,
+            };
+            SDL_UploadToGPUTexture(cp, &src, &dst, false);
+            SDL_EndGPUCopyPass(cp);
+            SDL_SubmitGPUCommandBuffer(cb);
+        }
+    }
 
     // Create Canvas Texture (384x224)
     SDL_GPUTextureCreateInfo canvas_info;
@@ -960,7 +1014,10 @@ void SDLGameRendererGPU_RenderFrame(void) {
         SDL_GPUColorTargetInfo color_target;
         SDL_zero(color_target);
         color_target.texture = s_canvas_texture;
-        color_target.clear_color = (SDL_FColor) { 0.0f, 0.0f, 0.0f, 1.0f };
+        color_target.clear_color.r = ((flPs2State.FrameClearColor >> 16) & 0xFF) / 255.0f;
+        color_target.clear_color.g = ((flPs2State.FrameClearColor >> 8) & 0xFF) / 255.0f;
+        color_target.clear_color.b = (flPs2State.FrameClearColor & 0xFF) / 255.0f;
+        color_target.clear_color.a = ModdedStage_IsActiveForCurrentStage() ? 0.0f : 1.0f;
         color_target.load_op = SDL_GPU_LOADOP_CLEAR;
         color_target.store_op = SDL_GPU_STOREOP_STORE;
         color_target.cycle = true;
@@ -1069,6 +1126,10 @@ void SDLGameRendererGPU_CreateTexture(unsigned int th) {
         pixel_format = SDL_PIXELFORMAT_ABGR1555;
         pitch = fl_texture->width * 2;
         break;
+    case SCE_GS_PSMCT32:
+        pixel_format = SDL_PIXELFORMAT_ABGR8888;
+        pitch = fl_texture->width * 4;
+        break;
     default:
         return;
     }
@@ -1124,13 +1185,13 @@ void SDLGameRendererGPU_CreatePalette(unsigned int ph) {
         if (color_size == 4) {
             const Uint32* rgba32 = (const Uint32*)pixels;
             for (int i = 0; i < 256; i++) {
-                read_rgba32_color(rgba32[clut_shuf(i)], &colors[i]);
+                read_rgba32_color(rgba32[ps2_clut_shuffle[i]], &colors[i]);
                 colors[i].a = (colors[i].a == 0x80) ? 0xFF : (colors[i].a << 1);
             }
         } else {
             const Uint16* rgba16 = (const Uint16*)pixels;
             for (int i = 0; i < 256; i++)
-                read_rgba16_color(rgba16[clut_shuf(i)], &colors[i]);
+                read_rgba16_color(rgba16[ps2_clut_shuffle[i]], &colors[i]);
         }
         colors[0].a = 0;
         break;
@@ -1293,7 +1354,7 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
     // ⚡ Back-to-back early-out: if the same handle was just set, re-push
     // the cached layer/UV without re-doing the lookup or staging work.
     if (th == s_last_set_texture_handle && texture_count > 0) {
-        if (texture_count < FL_PALETTE_MAX) {
+        if (texture_count < MAX_VERTICES) {
             texture_layers[texture_count] = texture_layers[texture_count - 1];
             texture_uv_sx[texture_count] = texture_uv_sx[texture_count - 1];
             texture_uv_sy[texture_count] = texture_uv_sy[texture_count - 1];
@@ -1332,7 +1393,6 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
             tex_array_layer[texture_handle - 1][palette_handle] = layer;
 
             SDL_Surface* surface = surfaces[texture_handle - 1];
-            const SDL_Palette* palette = (palette_handle > 0) ? palettes[palette_handle - 1] : NULL;
             const FLTexture* fl_texture = &flTexture[texture_handle - 1];
 
             // Upload as RGBA8 (4 bytes/pixel) to staging buffer
@@ -1346,36 +1406,43 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
                 Uint32 out_offset = (Uint32)s_compute_staging_offset;
                 u32* dst = (u32*)(s_compute_staging_ptr + s_compute_staging_offset);
 
-                if (fl_texture->format == SCE_GS_PSMT4 && palette) {
+                if (fl_texture->format == SCE_GS_PSMT4) {
                     // ⚡ Bolt: SIMD 4-bit indexed → RGBA32 (palette index in R channel)
                     // Process 16 input bytes (32 pixels) at a time via nibble unpack.
                     const u8* src = (const u8*)surface->pixels;
                     int pitch = surface->pitch;
-                    const simde__m128i lo_mask = simde_mm_set1_epi8(0x0F);
-                    const simde__m128i alpha   = simde_mm_set1_epi32((int)0xFF000000u);
-                    const simde__m128i zero    = simde_mm_setzero_si128();
+                    const simde__m128i alpha = simde_mm_set1_epi32((int)0xFF000000u);
+                    const simde__m128i zero  = simde_mm_setzero_si128();
+                    const simde__m128i mask  = simde_mm_set1_epi8(0x0F);
                     for (int y = 0; y < h; y++) {
                         const u8* row = src + y * pitch;
                         u32* out_row = dst + y * w;
                         int x = 0;
-                        // Process 16 bytes = 32 pixels at a time
                         for (; x + 31 < w; x += 32) {
-                            simde__m128i packed = simde_mm_loadu_si128((const simde__m128i*)(row + x / 2));
-                            simde__m128i lo = simde_mm_and_si128(packed, lo_mask);       // low nibbles
-                            simde__m128i hi = simde_mm_and_si128(simde_mm_srli_epi16(packed, 4), lo_mask); // high nibbles
-                            // Interleave: lo[0],hi[0], lo[1],hi[1], ...
-                            simde__m128i interleaved_lo = simde_mm_unpacklo_epi8(lo, hi);
-                            simde__m128i interleaved_hi = simde_mm_unpackhi_epi8(lo, hi);
-                            // Expand bytes to u32 and OR with alpha
-                            // interleaved_lo has 16 bytes → 4 groups of 4 u32s
+                            // Load 16 bytes (32 pixels, each 4 bits)
+                            simde__m128i bytes = simde_mm_loadu_si128((const simde__m128i*)(row + x / 2));
+                            // Extract low nibbles line
+                            simde__m128i lo_nibbles = simde_mm_and_si128(bytes, mask);
+                            // Extract high nibbles line
+                            simde__m128i hi_nibbles = simde_mm_and_si128(simde_mm_srli_epi16(bytes, 4), mask);
+                            // Interleave lo and hi so we get [lo, hi, lo, hi...]
+                            // Example: byte0=(h0<<4)|l0 -> we want l0, h0.
+                            // unpacklo/hi_epi8 interleaves byte-by-byte.
+                            simde__m128i interleaved_lo = simde_mm_unpacklo_epi8(lo_nibbles, hi_nibbles);
+                            simde__m128i interleaved_hi = simde_mm_unpackhi_epi8(lo_nibbles, hi_nibbles);
+                            // Now interleaved_lo has the first 16 pixels (as 8-bit values),
+                            // interleaved_hi has the next 16 pixels.
+                            // Expand to 32-bit and OR with 0xFF000000
+                            // 1) First 8 pixels from interleaved_lo
                             simde__m128i a0 = simde_mm_unpacklo_epi8(interleaved_lo, zero);
                             simde__m128i a1 = simde_mm_unpackhi_epi8(interleaved_lo, zero);
-                            simde__m128i a2 = simde_mm_unpacklo_epi8(interleaved_hi, zero);
-                            simde__m128i a3 = simde_mm_unpackhi_epi8(interleaved_hi, zero);
                             simde_mm_storeu_si128((simde__m128i*)(out_row + x +  0), simde_mm_or_si128(simde_mm_unpacklo_epi16(a0, zero), alpha));
                             simde_mm_storeu_si128((simde__m128i*)(out_row + x +  4), simde_mm_or_si128(simde_mm_unpackhi_epi16(a0, zero), alpha));
                             simde_mm_storeu_si128((simde__m128i*)(out_row + x +  8), simde_mm_or_si128(simde_mm_unpacklo_epi16(a1, zero), alpha));
                             simde_mm_storeu_si128((simde__m128i*)(out_row + x + 12), simde_mm_or_si128(simde_mm_unpackhi_epi16(a1, zero), alpha));
+                            // 2) Next 8 pixels from interleaved_hi
+                            simde__m128i a2 = simde_mm_unpacklo_epi8(interleaved_hi, zero);
+                            simde__m128i a3 = simde_mm_unpackhi_epi8(interleaved_hi, zero);
                             simde_mm_storeu_si128((simde__m128i*)(out_row + x + 16), simde_mm_or_si128(simde_mm_unpacklo_epi16(a2, zero), alpha));
                             simde_mm_storeu_si128((simde__m128i*)(out_row + x + 20), simde_mm_or_si128(simde_mm_unpackhi_epi16(a2, zero), alpha));
                             simde_mm_storeu_si128((simde__m128i*)(out_row + x + 24), simde_mm_or_si128(simde_mm_unpacklo_epi16(a3, zero), alpha));
@@ -1434,7 +1501,7 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
                             out_row[x] = (c.a << 24) | (c.b << 16) | (c.g << 8) | c.r;
                         }
                     }
-                } else if (palette) {
+                } else if (fl_texture->format == SCE_GS_PSMT8) {
                     // ⚡ Bolt: SIMD 8-bit indexed → RGBA32 (palette index in R channel)
                     // Process 16 pixels at a time: load 16 u8 → expand to 4×__m128i of u32 → OR with 0xFF000000.
                     const u8* src = (const u8*)surface->pixels;
@@ -1485,7 +1552,7 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
         }
     }
 
-    if (texture_count >= FL_PALETTE_MAX) {
+    if (texture_count >= MAX_VERTICES) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Texture stack overflow!");
         return;
     }
@@ -1499,8 +1566,8 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
     const FLTexture* fl_tex_info = &flTexture[texture_handle - 1];
     bool is_indexed_format = (fl_tex_info->format == SCE_GS_PSMT4 || fl_tex_info->format == SCE_GS_PSMT8);
     float palIdx = -1.0f;
-    if (is_indexed_format && palette_handle > 0 && palette_handle <= FL_PALETTE_MAX && palettes[palette_handle - 1]) {
-        palIdx = (float)(palette_handle - 1); // row in the palette atlas
+    if (is_indexed_format) {
+        palIdx = (palette_handle > 0) ? (float)(palette_handle - 1) : 0.0f;
     }
 
     texture_layers[texture_count] = layer;
@@ -1517,7 +1584,7 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES)
         return;
 
-    float layer = 0.0f;
+    float layer = -1.0f;
     float uv_sx = 1.0f, uv_sy = 1.0f;
     float palIdx = -1.0f;
 

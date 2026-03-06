@@ -105,6 +105,11 @@ typedef struct {
     int dirty_texture_indices[FL_TEXTURE_MAX];
     int dirty_texture_count;
 
+    // ⚡ Bolt: Deferred UnlockTexture batch — avoids O(dirty × live) tcache_live scans
+    int pending_unlock_indices[FL_TEXTURE_MAX];
+    int pending_unlock_count;
+    bool pending_unlock_flags[FL_TEXTURE_MAX];
+
     bool palette_dirty_flags[FL_PALETTE_MAX];
     int dirty_palette_indices[FL_PALETTE_MAX];
     int dirty_palette_count;
@@ -134,5 +139,6 @@ extern GLRendererState gl_state;
 void check_gl_error(const char* operation);
 void push_texture_to_destroy(GLuint texture);
 void tcache_live_add(int tex_idx, int pal_idx);
+void SDLGameRendererGL_FlushPendingUnlocks(void);
 
 #endif // SDL_GAME_RENDERER_GL_INTERNAL_H
