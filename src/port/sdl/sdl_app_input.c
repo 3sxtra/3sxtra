@@ -104,15 +104,12 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
                 SDLApp_ToggleStageConfigMenu();
             }
 
-            if (event->key.key == SDLK_F12 && event->key.down && !event->key.repeat) {
+            if (event->key.key == SDLK_F9 && event->key.down && !event->key.repeat) {
                 SDLApp_ToggleDevOverlay();
             }
 
             if (event->key.key == SDLK_F4 && event->key.down && !event->key.repeat) {
                 SDLApp_ToggleShaderMode();
-            }
-            if (event->key.key == SDLK_F9 && event->key.down && !event->key.repeat) {
-                SDLApp_CyclePreset();
             }
             if (event->key.key == SDLK_F5 && event->key.down && !event->key.repeat) {
                 if (!Netplay_IsEnabled()) {
@@ -185,9 +182,6 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
                 SDLApp_ToggleShaderMode();
             }
             if (event->key.key == SDLK_F9 && event->key.down && !event->key.repeat) {
-                SDLApp_CyclePreset();
-            }
-            if (event->key.key == SDLK_F12 && event->key.down && !event->key.repeat) {
                 if (Netplay_IsEnabled()) {
                     SDLNetplayUI_SetDiagnosticsVisible(!SDLNetplayUI_IsDiagnosticsVisible());
                 } else {

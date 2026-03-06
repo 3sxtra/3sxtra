@@ -6,8 +6,8 @@
 </head>
 <body data-model="dev_overlay">
     <div id="dev-panel">
-        <handle move_target="#dev-panel">
-            <h1>🔧 DEV OVERLAY (F12)</h1>
+        <handle move_target="dev-panel">
+            <h1>🔧 DEV OVERLAY (F9)</h1>
         </handle>
         <div class="divider"></div>
 
@@ -60,6 +60,35 @@
             <div class="control-row">
                 <input type="checkbox" data-checked="sel_visible"/>
                 <label>Visible</label>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Display & Position -->
+            <h3>Layout</h3>
+            <div class="control-row">
+                <label>Display</label>
+                <input type="text" data-value="sel_display"/>
+            </div>
+            <div class="control-row">
+                <label>Position</label>
+                <input type="text" data-value="sel_position"/>
+            </div>
+            <div class="control-row">
+                <label>Top</label>
+                <input type="text" data-value="sel_top"/>
+            </div>
+            <div class="control-row">
+                <label>Right</label>
+                <input type="text" data-value="sel_right"/>
+            </div>
+            <div class="control-row">
+                <label>Bottom</label>
+                <input type="text" data-value="sel_bottom"/>
+            </div>
+            <div class="control-row">
+                <label>Left</label>
+                <input type="text" data-value="sel_left"/>
             </div>
 
             <div class="divider"></div>
@@ -127,6 +156,34 @@
 
             <div class="divider"></div>
 
+            <!-- Border -->
+            <h3>Border</h3>
+            <div class="control-row">
+                <label>Width</label>
+                <input type="range" min="0" max="10" step="1" data-value="sel_border_width"/>
+                <span class="value-display">{{sel_border_width}}</span>
+            </div>
+            <div class="control-row">
+                <label>Color</label>
+                <input type="text" data-value="sel_border_color"/>
+            </div>
+            <div class="control-row">
+                <label>Radius</label>
+                <input type="range" min="0" max="50" step="1" data-value="sel_border_radius"/>
+                <span class="value-display">{{sel_border_radius}}</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Background -->
+            <h3>Background</h3>
+            <div class="control-row">
+                <label>Color</label>
+                <input type="text" data-value="sel_bg_color"/>
+            </div>
+
+            <div class="divider"></div>
+
             <!-- Typography -->
             <h3>Typography</h3>
             <div class="control-row">
@@ -146,6 +203,85 @@
 
             <div class="divider"></div>
 
+            <!-- Text -->
+            <h3>Text</h3>
+            <div class="control-row">
+                <label>Align</label>
+                <input type="text" data-value="sel_text_align"/>
+            </div>
+            <div class="control-row">
+                <label>Line Ht</label>
+                <input type="range" min="8" max="60" step="1" data-value="sel_line_height"/>
+                <span class="value-display">{{sel_line_height}}</span>
+            </div>
+            <div class="control-row">
+                <label>Spacing</label>
+                <input type="range" min="-5" max="20" step="1" data-value="sel_letter_spacing"/>
+                <span class="value-display">{{sel_letter_spacing}}</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Flex -->
+            <h3>Flex</h3>
+            <div class="control-row">
+                <label>Direction</label>
+                <input type="text" data-value="sel_flex_direction"/>
+            </div>
+            <div class="control-row">
+                <label>Justify</label>
+                <input type="text" data-value="sel_justify_content"/>
+            </div>
+            <div class="control-row">
+                <label>Align</label>
+                <input type="text" data-value="sel_align_items"/>
+            </div>
+            <div class="control-row">
+                <label>Gap</label>
+                <input type="range" min="0" max="50" step="1" data-value="sel_gap"/>
+                <span class="value-display">{{sel_gap}}</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Overflow -->
+            <h3>Overflow</h3>
+            <div class="control-row">
+                <label>Mode</label>
+                <input type="text" data-value="sel_overflow"/>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Computed Info (read-only) -->
+            <h3>Info</h3>
+            <div class="info-row">
+                <span class="info-label">Tag</span>
+                <span class="info-value">{{info_tag}}</span>
+            </div>
+            <div class="info-row" data-if="info_id != ''">
+                <span class="info-label">ID</span>
+                <span class="info-value info-accent">{{info_id}}</span>
+            </div>
+            <div class="info-row" data-if="info_classes != ''">
+                <span class="info-label">Classes</span>
+                <span class="info-value">{{info_classes}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Box</span>
+                <span class="info-value">{{info_box}}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Children</span>
+                <span class="info-value">{{info_children}}</span>
+            </div>
+            <div class="info-row" data-if="info_source != ''">
+                <span class="info-label">Source</span>
+                <span class="info-value">{{info_source}}</span>
+            </div>
+
+            <div class="divider"></div>
+
             <!-- Actions -->
             <div class="button-row">
                 <button data-event-click="reset_elem">Reset</button>
@@ -158,7 +294,7 @@
         </div>
 
         <div class="divider"></div>
-        <p class="hint">Drag header to move • Press F12 to close</p>
+        <p class="hint">Drag header to move • Press F9 to close</p>
     </div>
 </body>
 </rml>

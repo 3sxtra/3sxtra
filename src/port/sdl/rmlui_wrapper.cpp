@@ -398,9 +398,8 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
     if (!s_window_context || !event)
         return;
 
-        // F12 debugger toggle disabled — F12 is now mapped to the Dev Overlay.
-        // Use the RmlUi debugger programmatically via Rml::Debugger API if needed.
-#if 0
+    // F12 debugger toggle (debug builds only)
+#ifdef DEBUG
     if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F12) {
         bool new_vis = !Rml::Debugger::IsVisible();
         Rml::Debugger::SetVisible(new_vis);
