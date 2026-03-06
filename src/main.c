@@ -62,6 +62,15 @@
 
 #include <SDL3/SDL.h>
 
+#if !defined(_WIN32)
+#include <signal.h>
+static volatile sig_atomic_t g_signal_quit = 0;
+static void signal_handler(int sig) {
+    (void)sig;
+    g_signal_quit = 1;
+}
+#endif
+
 #include "port/tracy_zones.h"
 
 /* === Named Constants === */
@@ -197,6 +206,11 @@ int main(int argc, char* argv[]) {
 #endif
     }
 
+#if !defined(_WIN32)
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+#endif
+
     afs_init();
     game_init();
 
@@ -245,11 +259,17 @@ int main(int argc, char* argv[]) {
             step_0();
             SDLApp_EndFrame();
             is_running = SDLApp_PollEvents();
+#if !defined(_WIN32)
+            if (g_signal_quit) is_running = false;
+#endif
             step_1();
         } else {
             /* Re-present the existing canvas (no game logic, no FBO clear) */
             SDLApp_PresentOnly();
             is_running = SDLApp_PollEvents();
+#if !defined(_WIN32)
+            if (g_signal_quit) is_running = false;
+#endif
         }
         TRACE_FRAME_MARK();
     }

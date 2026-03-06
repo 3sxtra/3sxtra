@@ -71,12 +71,12 @@ The GPU backend currently does CPU-side palette conversion in `SDLGameRendererGP
 - Pass the palette row index per-vertex (already in `GPUVertex.paletteIdx`)
 - Fragment shader: `texture(palette_atlas, vec2(index / 256.0, palIdx))`
 
-**Savings**: Eliminates entire CPU palette conversion. Phase 2 (R8 format) will also reduce upload volume by **4×** (1 byte vs 4 bytes per pixel).
+**Savings**: Eliminates entire CPU palette conversion. A future Phase 2 (R8_UNORM format) could also reduce upload volume by **4×** (1 byte vs 4 bytes per pixel).
 
 > [!NOTE]
-> **Phase 1: ✅ IMPLEMENTED** — Fragment shader reads palette index from R channel of RGBA8 texture array and looks up color from palette atlas. `SetTexture()` writes `(idx, 0, 0, 0xFF)` for PSMT4/PSMT8 instead of CPU palette loops. PSMCT16/32-bit direct paths are unchanged. `FlushSprite2Batch` paletteIdx bug also fixed.
+> **Phase 1: ✅ IMPLEMENTED** — Fragment shader reads palette index from R channel of RGBA8 texture array and looks up color from palette atlas. `SetTexture()` writes `(idx, 0, 0, 0xFF)` for PSMT4/PSMT8 instead of CPU palette loops. PSMCT16/32-bit direct-color textures write full RGBA via SIMD. `FlushSprite2Batch` paletteIdx bug also fixed. Fragment shader binds 2 samplers: texture array (RGBA8) + palette atlas.
 >
-> **Phase 2: ✅ IMPLEMENTED** — Dual texture array architecture: `indexed_texture_array` (R8_UNORM, 1 byte/pixel) for PSMT4/PSMT8 and `direct_texture_array` (RGBA8) for PSMCT16/32-bit (Gill, special FX). Upload volume reduced **4×** for indexed textures. PSMT8 path is now a zero-conversion `memcpy`. PSMT4 uses SIMD nibble-to-byte unpack (no u32 expansion). Fragment shader uses 3 samplers: `IdxArray` (R8), `PaletteTex`, `DirArray` (RGBA8). Layer encoding uses sign-convention macros (`TEX_LAYER_IDX`/`TEX_LAYER_DIR`) for correct routing.
+> **Phase 2: 📋 NOT YET IMPLEMENTED** — The planned dual texture array architecture (`R8_UNORM` indexed + `RGBA8` direct-color arrays, 3 samplers, `TEX_LAYER_*` macros) has not been built. Currently all textures share a single `RGBA8` array with palette index stored in the R channel. Upload volume remains 4 bytes/pixel for indexed textures. PSMT4 uses SIMD nibble-to-u32 unpack. PSMT8 writes `0xFF000000 | idx` per pixel (not a zero-conversion memcpy).
 
 **Backend applicability**:
 
@@ -138,7 +138,30 @@ Currently `njCalcPoints()` multiplies 2 points per chip through a 4×4 matrix on
 
 ### 🟡 Medium Impact
 
-#### 4. SIMD Batch Transforms (alternative to #3)
+#### 4. CG Frame → Pre-built Tile Descriptor Cache
+
+For each `cg_number`, the tile layout is deterministic (tile codes, relative positions, sizes). Pre-compute:
+
+- List of tiles, UVs, and relative offsets per CG at load time
+- At render time, apply flip + world position to the pre-built vertex array
+- "Sprite sheet instancing" — CG defines the mesh, WORK defines the instance
+
+**Savings**: Eliminates the per-frame tile map walk loop in `mlt_obj_trans()`.
+
+> [!NOTE]
+> **✅ IMPLEMENTED** — `CGTileDesc` struct caches per-tile cumulative X/Y offsets, TEX dimensions (`dw`, `dh`, `wh`), decoded tile sizes, and compressed data pointers. `CGTileCacheEntry` hash table (1024 slots, Knuth multiplicative hash with linear probing) stores pre-built arrays per `cg_number`. Three non-ext variants refactored: `mlt_obj_trans()`, `mlt_obj_trans_cp3()`, `mlt_obj_trans_rgb()`. The `_ext` variants (which already have `PatternCollection` caching) are left unchanged for now. Cache invalidated in `mlt_obj_trans_init()` when texture groups are reloaded (gated by `!(mode & 0x20)`).
+
+**Backend applicability**:
+
+| Backend | Applicable | Notes |
+|---------|-----------|-------|
+| **SDL GPU** | ✅ **Yes** | Shared `mtrans.c` optimization — benefits all backends equally |
+| **OpenGL** | ✅ **Yes** | Same — tile map walk is backend-agnostic |
+| **SDL 2D** | ✅ **Yes** | Same — and has biggest relative impact on low-end devices |
+
+---
+
+#### 5. SIMD Batch Transforms (alternative to #3)
 
 If moving transforms fully to the vertex shader is too invasive, or to accelerate the SDL 2D backend, batch all chip corners into a contiguous buffer and transform with SSE/NEON intrinsics:
 
@@ -160,29 +183,6 @@ njCalcPointsBatch(matrix, corners, count);  // SSE4: 4 transforms per instructio
 
 ---
 
-#### 5. CG Frame → Pre-built Tile Descriptor Cache
-
-For each `cg_number`, the tile layout is deterministic (tile codes, relative positions, sizes). Pre-compute:
-
-- List of tiles, UVs, and relative offsets per CG at load time
-- At render time, apply flip + world position to the pre-built vertex array
-- "Sprite sheet instancing" — CG defines the mesh, WORK defines the instance
-
-**Savings**: Eliminates the per-frame tile map walk loop in `mlt_obj_trans()`.
-
-> [!NOTE]
-> **✅ IMPLEMENTED** — `CGTileDesc` struct caches per-tile cumulative X/Y offsets, TEX dimensions (`dw`, `dh`, `wh`), decoded tile sizes, and compressed data pointers. `CGTileCacheEntry` hash table (1024 slots, Knuth multiplicative hash with linear probing) stores pre-built arrays per `cg_number`. Three non-ext variants refactored: `mlt_obj_trans()`, `mlt_obj_trans_cp3()`, `mlt_obj_trans_rgb()`. The `_ext` variants (which already have `PatternCollection` caching) are left unchanged for now. Cache invalidated in `mlt_obj_trans_init()` when texture groups are reloaded.
-
-**Backend applicability**:
-
-| Backend | Applicable | Notes |
-|---------|-----------|-------|
-| **SDL GPU** | ✅ **Yes** | Shared `mtrans.c` optimization — benefits all backends equally |
-| **OpenGL** | ✅ **Yes** | Same — tile map walk is backend-agnostic |
-| **SDL 2D** | ✅ **Yes** | Same — and has biggest relative impact on low-end devices |
-
----
-
 #### 6. GPU Compute Shader for LZ77 Decompression
 
 Move `lz_ext_p6_fx()` / `lz_ext_p6_cx()` to a compute shader:
@@ -201,8 +201,8 @@ Move `lz_ext_p6_fx()` / `lz_ext_p6_cx()` to a compute shader:
 | **OpenGL** | ◐ **Possible** | Requires GL 4.3+ compute shaders. Not available on all targets (e.g., macOS, older hardware). Could use SSBO approach |
 | **SDL 2D** | ❌ **No** | No GPU compute — must keep CPU decompression |
 
-> [!NOTE]
-> **✅ IMPLEMENTED** — GLSL compute shader (`lz77_decode.gpu.comp`) decompresses LZ77 tiles directly into the R8_UNORM indexed texture array via `imageStore`. One workgroup per tile, serial decoder matching the CPU's 4-case format (literal, short backref, long backref, packed nibbles). Includes `dctex_linear` swizzle LUT as a readonly storage buffer. Jobs queued per-frame via `Renderer_LZ77Enqueue()` with CPU fallback when staging is full or compute unavailable. Dispatch runs between copy and render passes. Swizzle table uploaded once on first use.
+> [!WARNING]
+> **⏸️ INFRASTRUCTURE COMPLETE, DISABLED AT RUNTIME** — GLSL compute shader (`lz77_decode.gpu.comp`) decompresses LZ77 tiles directly into the RGBA8 texture array via `imageStore` (palette index in R channel). One workgroup per tile, serial decoder matching the CPU's 4-case format (literal, short backref, long backref, packed nibbles). Includes `dctex_linear` swizzle LUT as a readonly storage buffer. Dispatch runs between copy and render passes. Swizzle table uploaded once on first use. **However**, `SDLGameRendererGPU_LZ77Enqueue()` currently returns 0 ("force CPU fallback to isolate visual corruption"), so all LZ77 decodes use the CPU path. The GPU path needs visual corruption debugging before re-enabling.
 
 ---
 
@@ -245,20 +245,40 @@ Write next frame's `seqs_w.chip[]` while the GPU consumes the current frame. Cur
 | **OpenGL** | ✅ **Yes** | Uses persistent-mapped VBOs — can double-buffer the source array |
 | **SDL 2D** | ✅ **Yes** | Benefits any backend — logic is in shared `mtrans.c` |
 
+#### 9. Frame Pipeline — Async Submit, Dirty Lists, CRC32
+
+Three micro-optimizations to reduce per-frame GPU renderer overhead:
+
+- **9a. Fence-based async GPU submit**: Replace blocking `SDL_SubmitGPUCommandBuffer()` with `SDL_SubmitGPUCommandBufferAndAcquireFence()`. Fences stored in a ring buffer (size 3, matching triple-buffered vertex transfers). Oldest fence waited on at the top of `BeginFrame` before mapping transfer buffers. Eliminates the ~4.29ms mean `GPU:EndFrame` CPU stall. Zero input latency impact (frame pacing already pins CPU to target rate).
+- **9b. Palette upload dirty list**: Replace the 1088-slot linear scan in `RenderFrame` (`for i in 0..FL_PALETTE_MAX`) with a dirty-index list (`s_pal_upload_dirty_indices[]`). Pushed in `UnlockPalette` and `BeginFrame` palette drain. Typically 0–5 entries vs 1088 iterations.
+- **9c. CRC32 hardware hash**: Replace byte-at-a-time FNV-1a `hash_memory()` with `simde_mm_crc32_u32()` processing 4 bytes/cycle. Used in `UnlockTexture` and `UnlockPalette` for dirty detection. SIMDe auto-translates to ARM CRC32 on RPi4.
+
+> [!NOTE]
+> **✅ IMPLEMENTED** — All three sub-optimizations applied. Fence ring buffer (size 3), palette dirty list, and CRC32 hash via `simde/x86/sse4.2.h`.
+
+**Backend applicability**:
+
+| Backend | Applicable | Notes |
+|---------|-----------|-------|
+| **SDL GPU** | ✅ **Primary target** | All three changes are GPU-backend-specific (in `sdl_game_renderer_gpu.c`) |
+| **OpenGL** | ❌ **N/A** | Uses different submit model (GL swap) |
+| **SDL 2D** | ❌ **N/A** | Uses `SDL_RenderPresent` |
+
 ---
 
 ## Recommended Priority Order
 
 | Priority | Optimization | Effort | Impact | Status |
 |----------|-------------|--------|--------|--------|
-| **1** | Fragment shader palette lookup | Medium | High — eliminates CPU palette conversion, 4× less upload | **✅ Done** (Phase 1: CPU elim · Phase 2: R8 dual arrays) |
+| **1** | Fragment shader palette lookup | Medium | High — eliminates CPU palette conversion | **✅ Done** (Phase 1: idx-in-R · Phase 2: R8 arrays pending) |
 | **2** | Persistent tile atlas + hash cache | Medium | High — eliminates repeated LZ77 decode | **✅ Done** (hash cache + boost-on-hit + LRU eviction) |
 | **3** | Vertex shader model transform | Low | Medium — eliminates CPU matrix math | **✅ Done** (inlined transform) |
 | **4** | CG frame pre-built tile desc cache | Medium | Medium — eliminates tile map walk | **✅ Done** (non-ext variants) |
 | **5** | SIMD batch transforms | Low | Medium — fallback if #3 too invasive | **✅ Done** (SIMDe FMA) |
-| **6** | GPU compute LZ77 | High | Medium — frees CPU, complex to implement | **✅ Done** (compute shader + CPU fallback) |
+| **6** | GPU compute LZ77 | High | Medium — frees CPU, complex to implement | **⏸️ Disabled** (infra done, CPU fallback active) |
 | **7** | Instanced rendering | Medium | Low — reduces vertex buffer size | Pending |
 | **8** | Double-buffer sprite array | Low | Low — minor latency win | **✅ Done** |
+| **9** | Frame pipeline async + deferred | Low | High — eliminates ~4ms EndFrame stall | **✅ Done** (fence + dirty list + CRC32) |
 
 ## Benefit Summary by Renderer Backend
 
@@ -267,10 +287,31 @@ Write next frame's `seqs_w.chip[]` while the GPU consumes the current frame. Cur
 | 1. Frag shader palette | ✅ Primary | ✅ Yes | ❌ No shaders |
 | 2. Persistent atlas + hash | ✅ Yes | ✅ Yes | ✅ Yes (shared) |
 | 3. Inlined model xform | ✅ Yes (shared) | ✅ Yes (shared) | ✅ Yes (shared) |
-| 4. SIMD transforms | ✅ Yes (shared) | ✅ Yes (shared) | ✅ Yes (shared) |
-| 5. CG vertex cache | ✅ Yes | ✅ Yes | ✅ Yes (shared) |
+| 4. CG vertex cache | ✅ Yes (shared) | ✅ Yes (shared) | ✅ Yes (shared) |
+| 5. SIMD transforms | ✅ Yes (shared) | ✅ Yes (shared) | ✅ Yes (shared) |
 | 6. GPU compute LZ77 | ✅ Primary | ◐ GL 4.3+ | ❌ No compute |
 | 7. Instanced rendering | ✅ Yes | ✅ Yes | ❌ No instancing |
 | 8. Double-buffer sprites | ✅ Yes (shared) | ✅ Yes (shared) | ✅ Yes (shared) |
 
 > ✅ = Full benefit · ◐ = Partial/conditional · ❌ = Not applicable
+
+---
+
+## 9. Future SIMD Opportunities Identified in Scan
+
+During a codebase scan for further SIMD vectorization targets, the following high-value opportunities were identified:
+
+### A. Palette Block Shuffle (`color3rd.c`)
+- **Function**: `palConvRowTim2CI8Clut(u16* src, u16* dst, s32 size)`
+- **Pattern**: A fixed-pattern rearrange of 32-element blocks using a static LUT (`clut_tbl`).
+- **Opportunity**: This is a perfect candidate for SIMD shuffle instructions (e.g., `_mm_shuffle_epi8` / `vpshufb` or NEON `vqtbl1q_u8`). Since the block size is typically 64 (`0x40`), processing 16 bytes at a time via SIMD will completely eliminate the scalar loop and LUT memory accesses.
+
+### B. Collision Detection Broadphase (`hitcheck.c`)
+- **Function**: `attack_hit_check()` and `hit_check_subroutine()`
+- **Pattern**: Deeply nested loops (`hpq_in` × `hpq_in` × 4 × 11) testing Axis-Aligned Bounding Boxes (AABBs) for overlap.
+- **Opportunity**: Converting the array of collision boxes into a Structure-of-Arrays (SoA) layout would allow checking one attack box against 4 or 8 hurtboxes simultaneously using SIMD comparisons (`_mm_cmpgt_epi16`, etc.) and bitmasks (`_mm_movemask_epi8`). This is a classic SIMD acceleration pattern for physics/collision engines.
+
+### C. LZ77 CPU Fallback (`mtrans.c`)
+- **Function**: `lz_ext_p6_cx(u8* srcptr, u16* dstptr, u32 len, u16* palptr)`
+- **Pattern**: CPU-side decompression loops with nibble unpacking and palette gathers.
+- **Opportunity**: While the 4× unrolling (already implemented) helps instruction-level parallelism, further SIMD optimization could unpack the 4-bit nibbles into 16-bit integers in parallel vectors (`_mm_srai_epi16`, `_mm_and_si128`), though the scalar palette gather is harder to vectorize cross-platform without AVX2 `gather` instructions. Reliance on the GPU Compute Shader (Opt #6) is the better path here.

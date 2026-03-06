@@ -932,6 +932,12 @@ void SDLApp_Quit() {
     SDL_Quit();
 }
 
+/** @brief Check if a quit event is pending without consuming events. */
+static bool has_pending_quit(void) {
+    SDL_Event peek;
+    return SDL_PeepEvents(&peek, 1, SDL_PEEKEVENT, SDL_EVENT_QUIT, SDL_EVENT_QUIT) > 0;
+}
+
 static /** @brief Hide the cursor after 2 seconds of inactivity. */
     void
     hide_cursor_if_needed() {
@@ -1378,6 +1384,7 @@ void SDLApp_EndFrame() {
                     SDL_DelayNS(sleep_time - spin_threshold_ns);
                 }
                 while (SDL_GetTicksNS() < frame_deadline) {
+                    if (has_pending_quit()) break;
                     SDL_CPUPauseInstruction();
                 }
                 now = SDL_GetTicksNS();
@@ -2256,6 +2263,7 @@ void SDLApp_EndFrame() {
             // Spin-wait for remaining time — SDL_CPUPauseInstruction emits
             // 'yield' on ARM (reduces power/heat) or 'pause' on x86.
             while (SDL_GetTicksNS() < frame_deadline) {
+                if (has_pending_quit()) break;
                 SDL_CPUPauseInstruction();
             }
             now = SDL_GetTicksNS();

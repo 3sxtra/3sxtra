@@ -22,6 +22,7 @@
 // ⚡ Bolt: SIMDe — portable SIMD intrinsics (SSE2 on x86, NEON on ARM, scalar fallback).
 #include <simde/x86/sse2.h>
 #include <simde/x86/ssse3.h> // pshufb for 4-bit palette LUT vectorization
+#include <simde/x86/sse4.2.h> // ⚡ Opt9c: CRC32 hardware hash
 
 static SDL_GPUDevice* device = NULL;
 static SDL_Window* window = NULL;
@@ -40,6 +41,13 @@ static SDL_GPUBuffer* index_buffer = NULL;
 static SDL_GPUTransferBuffer* transfer_buffers[VERTEX_TRANSFER_BUFFER_COUNT] = { NULL };
 static SDL_GPUTransferBuffer* index_transfer_buffer = NULL; // Dynamic index uploads each frame
 static int current_transfer_idx = 0;
+
+// ⚡ Opt9: Fence-based async submit — decouple CPU from GPU completion.
+// Ring depth matches VERTEX_TRANSFER_BUFFER_COUNT so that when we wait on
+// fence[oldest], the transfer buffer from that frame is guaranteed released.
+#define GPU_FENCE_RING_SIZE VERTEX_TRANSFER_BUFFER_COUNT
+static SDL_GPUFence* s_frame_fences[GPU_FENCE_RING_SIZE] = { NULL };
+static int s_fence_write_idx = 0;
 
 // Texture Staging Resources
 #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024)                // 32MB — RGBA8 texture uploads (4 bytes/pixel)
@@ -101,6 +109,10 @@ static int texture_count = 0;
 #define PALETTE_TEX_HEIGHT FL_PALETTE_MAX  // 1088 rows — one per palette
 static bool s_palette_uploaded[FL_PALETTE_MAX]; // per-palette dirty flag for atlas upload
 
+// ⚡ Opt9b: Palette upload dirty list — avoids scanning all 1088 slots each frame.
+static int s_pal_upload_dirty_indices[FL_PALETTE_MAX];
+static int s_pal_upload_dirty_count = 0;
+
 // ⚡ Back-to-back early-out cache — avoids redundant SetTexture work when the
 // same texture+palette combo is set consecutively (common in sprite batches).
 static unsigned int s_last_set_texture_handle = 0;
@@ -122,15 +134,21 @@ static int dirty_palette_count = 0;
 static uint32_t palette_hash[FL_PALETTE_MAX] = { 0 };
 static uint32_t texture_hash[FL_TEXTURE_MAX] = { 0 };
 
-// FNV-1a hash of a raw memory block
+// ⚡ Opt9c: CRC32 hardware hash — 4 bytes/cycle vs FNV-1a's 1 byte/cycle.
+// SIMDe auto-translates to ARM CRC32 on NEON targets.
 static inline uint32_t hash_memory(const void* ptr, size_t len) {
-    uint32_t h = 2166136261u;
-    const uint8_t* data = (const uint8_t*)ptr;
-    for (size_t i = 0; i < len; i++) {
-        h ^= data[i];
-        h *= 16777619u;
+    uint32_t crc = 0xFFFFFFFFu;
+    const uint32_t* data32 = (const uint32_t*)ptr;
+    size_t count32 = len / 4;
+    for (size_t i = 0; i < count32; i++) {
+        crc = simde_mm_crc32_u32(crc, data32[i]);
     }
-    return h;
+    const uint8_t* tail = (const uint8_t*)(data32 + count32);
+    size_t remaining = len & 3;
+    for (size_t i = 0; i < remaining; i++) {
+        crc = simde_mm_crc32_u8(crc, tail[i]);
+    }
+    return crc ^ 0xFFFFFFFFu;
 }
 
 // Texture Upload Job Queue (R8 indexed pixels → texture array)
@@ -557,6 +575,14 @@ void SDLGameRendererGPU_Init(void) {
 
 /** @brief Shutdown the SDL_GPU renderer and release all resources. */
 void SDLGameRendererGPU_Shutdown(void) {
+    // ⚡ Opt9: Release any outstanding fences before tearing down resources
+    for (int i = 0; i < GPU_FENCE_RING_SIZE; i++) {
+        if (s_frame_fences[i]) {
+            SDL_WaitForGPUFences(device, true, &s_frame_fences[i], 1);
+            SDL_ReleaseGPUFence(device, s_frame_fences[i]);
+            s_frame_fences[i] = NULL;
+        }
+    }
     if (pipeline)
         SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
     if (vertex_buffer)
@@ -601,6 +627,18 @@ void SDLGameRendererGPU_BeginFrame(void) {
         return;
     }
 
+    // ⚡ Opt9: Wait on the oldest in-flight fence before reusing its resources.
+    // With ring size == 3: we wait on frame N-3's fence, which is ≥2 frames old.
+    // In practice this never actually blocks because the GPU finishes in <16ms.
+    {
+        int wait_idx = s_fence_write_idx; // oldest slot (write_idx has wrapped past it)
+        if (s_frame_fences[wait_idx]) {
+            SDL_WaitForGPUFences(device, true, &s_frame_fences[wait_idx], 1);
+            SDL_ReleaseGPUFence(device, s_frame_fences[wait_idx]);
+            s_frame_fences[wait_idx] = NULL;
+        }
+    }
+
     current_cmd_buf = SDL_AcquireGPUCommandBuffer(device);
     s_swapchain_texture = NULL; // Acquired lazily via GetSwapchainTexture()
 
@@ -636,6 +674,7 @@ void SDLGameRendererGPU_BeginFrame(void) {
         }
         SDLGameRendererGPU_CreatePalette((i + 1) << 16);
         s_palette_uploaded[i] = false; // Mark for re-upload to palette atlas
+        s_pal_upload_dirty_indices[s_pal_upload_dirty_count++] = i; // ⚡ Opt9b
         palette_dirty_flags[i] = false;
     }
     dirty_palette_count = 0;
@@ -749,7 +788,9 @@ void SDLGameRendererGPU_RenderFrame(void) {
     // This avoids the per-row transfer buffer cycling issue where copy commands
     // would all resolve to the last-written buffer.
     if (s_compute_staging_ptr) {
-        for (int i = 0; i < FL_PALETTE_MAX && i < PALETTE_TEX_HEIGHT; i++) {
+        // ⚡ Opt9b: Iterate only dirty palettes instead of scanning all 1088 slots
+        for (int d = 0; d < s_pal_upload_dirty_count; d++) {
+            int i = s_pal_upload_dirty_indices[d];
             if (s_palette_uploaded[i] || !palettes[i])
                 continue;
             size_t pal_size = (size_t)PALETTE_TEX_WIDTH * 4; // 256 colors × 4 bytes = 1024
@@ -778,6 +819,7 @@ void SDLGameRendererGPU_RenderFrame(void) {
             s_compute_staging_offset = (s_compute_staging_offset + 511) & ~511;
             s_palette_uploaded[i] = true;
         }
+        s_pal_upload_dirty_count = 0;
     }
 
     // Unmap staging buffer
@@ -969,7 +1011,14 @@ void SDLGameRendererGPU_EndFrame(void) {
     TRACE_ZONE_N("GPU:EndFrame");
 
     if (current_cmd_buf) {
-        SDL_SubmitGPUCommandBuffer(current_cmd_buf);
+        // ⚡ Opt9: Non-blocking submit — acquire fence for deferred wait in BeginFrame
+        SDL_GPUFence* fence = SDL_SubmitGPUCommandBufferAndAcquireFence(current_cmd_buf);
+        // Store in ring, releasing any old fence still in this slot
+        if (s_frame_fences[s_fence_write_idx]) {
+            SDL_ReleaseGPUFence(device, s_frame_fences[s_fence_write_idx]);
+        }
+        s_frame_fences[s_fence_write_idx] = fence;
+        s_fence_write_idx = (s_fence_write_idx + 1) % GPU_FENCE_RING_SIZE;
         current_cmd_buf = NULL;
     }
     s_swapchain_texture = NULL;
@@ -1219,6 +1268,7 @@ void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
         }
         SDLGameRendererGPU_CreatePalette((idx + 1) << 16);
         s_palette_uploaded[idx] = false; // ⚡ Mark for re-upload to palette atlas
+        s_pal_upload_dirty_indices[s_pal_upload_dirty_count++] = idx; // ⚡ Opt9b
     }
 }
 
