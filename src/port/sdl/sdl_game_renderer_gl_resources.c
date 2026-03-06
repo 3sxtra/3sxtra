@@ -13,6 +13,7 @@
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include <libgraph.h>
+#include <simde/x86/sse4.2.h> // ⚡ Bolt: CRC32 intrinsics for fast palette hashing
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -43,15 +44,22 @@ static void read_rgba16_color(Uint16 pixel, float* out_rgba) {
     out_rgba[3] = ((pixel & 0x8000) ? 1.0f : 0.0f);
 }
 
-// FNV-1a hash of palette color data — fast, good distribution, 1 cache line
+// ⚡ Bolt: CRC32 hash — 4 bytes/cycle via SSE4.2 intrinsics (SIMDe portable)
 static inline uint32_t hash_palette(const void* data, size_t size) {
-    uint32_t h = 2166136261u;
+    uint32_t h = 0xFFFFFFFFu;
     const uint8_t* p = (const uint8_t*)data;
-    for (size_t i = 0; i < size; i++) {
-        h ^= p[i];
-        h *= 16777619u;
+    size_t i = 0;
+    // Process 4 bytes at a time
+    for (; i + 3 < size; i += 4) {
+        uint32_t word;
+        memcpy(&word, p + i, 4);
+        h = simde_mm_crc32_u32(h, word);
     }
-    return h;
+    // Scalar tail
+    for (; i < size; i++) {
+        h = simde_mm_crc32_u8(h, p[i]);
+    }
+    return h ^ 0xFFFFFFFFu;
 }
 
 // --- CLUT Shuffle for PS2 ---
@@ -402,9 +410,19 @@ void SDLGameRendererGL_CreatePalette(unsigned int ph) {
 
     case 256:
         if (color_size == 4) {
+            // ⚡ Bolt: SIMD RGBA32→float4 — process 4 colors per iteration
             const Uint32* rgba32 = (const Uint32*)pixels;
-            for (int i = 0; i < 256; i++)
-                read_rgba32_color(rgba32[clut_shuf(i)], &color_data[i * 4]);
+            const simde__m128 inv255 = simde_mm_set1_ps(1.0f / 255.0f);
+            for (int i = 0; i < 256; i += 4) {
+                for (int j = 0; j < 4; j++) {
+                    Uint32 px = rgba32[clut_shuf(i + j)];
+                    simde__m128i ci = simde_mm_set_epi32(
+                        (px >> 24) & 0xFF, (px >> 16) & 0xFF,
+                        (px >> 8) & 0xFF, px & 0xFF);
+                    simde__m128 cf = simde_mm_mul_ps(simde_mm_cvtepi32_ps(ci), inv255);
+                    simde_mm_storeu_ps(&color_data[(i + j) * 4], cf);
+                }
+            }
         } else {
             const Uint16* rgba16 = (const Uint16*)pixels;
             for (int i = 0; i < 256; i++)
@@ -418,12 +436,31 @@ void SDLGameRendererGL_CreatePalette(unsigned int ph) {
     glBufferSubData(GL_TEXTURE_BUFFER, slot * 256 * 4 * sizeof(float), color_count * 4 * sizeof(float), color_data);
     glBindBuffer(GL_TEXTURE_BUFFER, 0);
 
+    // ⚡ Bolt: SIMD float→u8 pack — 4 colors (16 floats → 16 bytes) per iteration
     SDL_Color sdl_colors[256];
-    for (int i = 0; i < color_count; ++i) {
-        sdl_colors[i].r = (Uint8)(color_data[i * 4 + 0] * 255.0f);
-        sdl_colors[i].g = (Uint8)(color_data[i * 4 + 1] * 255.0f);
-        sdl_colors[i].b = (Uint8)(color_data[i * 4 + 2] * 255.0f);
-        sdl_colors[i].a = (Uint8)(color_data[i * 4 + 3] * 255.0f);
+    {
+        const simde__m128 scale = simde_mm_set1_ps(255.0f);
+        int i = 0;
+        for (; i + 3 < color_count; i += 4) {
+            // Load 4 colors (16 floats), scale to 0–255, convert to int32
+            simde__m128i c0 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i+0)*4]), scale));
+            simde__m128i c1 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i+1)*4]), scale));
+            simde__m128i c2 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i+2)*4]), scale));
+            simde__m128i c3 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i+3)*4]), scale));
+            // Pack i32→i16→u8: [R,G,B,A, R,G,B,A, R,G,B,A, R,G,B,A] → 16 bytes
+            simde__m128i p01 = simde_mm_packs_epi32(c0, c1); // 8 × i16
+            simde__m128i p23 = simde_mm_packs_epi32(c2, c3); // 8 × i16
+            simde__m128i packed = simde_mm_packus_epi16(p01, p23); // 16 × u8
+            // Store 16 bytes = 4 SDL_Color structs
+            simde_mm_storeu_si128((simde__m128i*)&sdl_colors[i], packed);
+        }
+        // Scalar tail
+        for (; i < color_count; ++i) {
+            sdl_colors[i].r = (Uint8)(color_data[i * 4 + 0] * 255.0f);
+            sdl_colors[i].g = (Uint8)(color_data[i * 4 + 1] * 255.0f);
+            sdl_colors[i].b = (Uint8)(color_data[i * 4 + 2] * 255.0f);
+            sdl_colors[i].a = (Uint8)(color_data[i * 4 + 3] * 255.0f);
+        }
     }
     SDL_Palette* palette = SDL_CreatePalette(color_count);
     SDL_SetPaletteColors(palette, sdl_colors, 0, color_count);
@@ -580,13 +617,29 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
                 const int pixel_count = surface->w * surface->h;
 
                 if (fl_texture->format == SCE_GS_PSMT4) {
+                    // ⚡ Bolt: SIMD 4-bit → R8 nibble unpack (ported from GPU backend)
                     const Uint8* src = (const Uint8*)surface->pixels;
+                    const simde__m128i lo_mask = simde_mm_set1_epi8(0x0F);
                     for (int y = 0; y < surface->h; ++y) {
                         const Uint8* row = src + y * surface->pitch;
                         Uint8* dst_row = pixel_data + y * surface->w;
-                        for (int x = 0; x < surface->w; ++x) {
+                        int x = 0;
+                        // Process 16 input bytes = 32 output bytes at a time
+                        for (; x + 31 < surface->w; x += 32) {
+                            simde__m128i packed = simde_mm_loadu_si128((const simde__m128i*)(row + x / 2));
+                            simde__m128i lo = simde_mm_and_si128(packed, lo_mask);
+                            simde__m128i hi = simde_mm_and_si128(simde_mm_srli_epi16(packed, 4), lo_mask);
+                            simde__m128i out_lo = simde_mm_unpacklo_epi8(lo, hi);
+                            simde__m128i out_hi = simde_mm_unpackhi_epi8(lo, hi);
+                            simde_mm_storeu_si128((simde__m128i*)(dst_row + x),      out_lo);
+                            simde_mm_storeu_si128((simde__m128i*)(dst_row + x + 16), out_hi);
+                        }
+                        // Scalar tail
+                        for (; x < surface->w; x += 2) {
                             Uint8 b = row[x / 2];
-                            dst_row[x] = (x & 1) ? (b >> 4) : (b & 0xF);
+                            dst_row[x] = b & 0x0F;
+                            if (x + 1 < surface->w)
+                                dst_row[x + 1] = (b >> 4) & 0x0F;
                         }
                     }
                 } else {
@@ -614,12 +667,44 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
             const int pixel_count = surface->w * surface->h;
 
             if (fl_texture->format == SCE_GS_PSMCT16) {
-                const Uint16* src = (const Uint16*)surface->pixels;
-                for (int i = 0; i < pixel_count; ++i) {
-                    float rgba[4];
-                    read_rgba16_color(src[i], rgba);
-                    conv_buf[i] = ((Uint32)(rgba[3] * 255) << 24) | ((Uint32)(rgba[2] * 255) << 16) |
-                                  ((Uint32)(rgba[1] * 255) << 8) | (Uint32)(rgba[0] * 255);
+                // ⚡ Bolt: SIMD 16-bit → RGBA32 (ported from GPU backend)
+                const simde__m128i mask5  = simde_mm_set1_epi32(0x1F);
+                const simde__m128i mask_a = simde_mm_set1_epi32(0x8000);
+                const simde__m128i alpha_ff = simde_mm_set1_epi32((int)0xFF000000u);
+                const simde__m128i zero = simde_mm_setzero_si128();
+                const Uint8* src_bytes = (const Uint8*)surface->pixels;
+                for (int y = 0; y < surface->h; y++) {
+                    const Uint16* row = (const Uint16*)(src_bytes + y * surface->pitch);
+                    u32* out_row = conv_buf + y * surface->w;
+                    int x = 0;
+                    for (; x + 7 < surface->w; x += 8) {
+                        simde__m128i px = simde_mm_loadu_si128((const simde__m128i*)(row + x));
+                        simde__m128i lo32 = simde_mm_unpacklo_epi16(px, zero);
+                        simde__m128i hi32 = simde_mm_unpackhi_epi16(px, zero);
+                        for (int half = 0; half < 2; half++) {
+                            simde__m128i v = (half == 0) ? lo32 : hi32;
+                            simde__m128i r = simde_mm_and_si128(v, mask5);
+                            simde__m128i g = simde_mm_and_si128(simde_mm_srli_epi32(v, 5), mask5);
+                            simde__m128i b = simde_mm_and_si128(simde_mm_srli_epi32(v, 10), mask5);
+                            simde__m128i a = simde_mm_and_si128(v, mask_a);
+                            // 5-bit → 8-bit expand: (val << 3) | (val >> 2)
+                            r = simde_mm_or_si128(simde_mm_slli_epi32(r, 3), simde_mm_srli_epi32(r, 2));
+                            g = simde_mm_or_si128(simde_mm_slli_epi32(g, 3), simde_mm_srli_epi32(g, 2));
+                            b = simde_mm_or_si128(simde_mm_slli_epi32(b, 3), simde_mm_srli_epi32(b, 2));
+                            a = simde_mm_and_si128(simde_mm_cmpeq_epi32(a, mask_a), alpha_ff);
+                            simde__m128i result = simde_mm_or_si128(a, r);
+                            result = simde_mm_or_si128(result, simde_mm_slli_epi32(g, 8));
+                            result = simde_mm_or_si128(result, simde_mm_slli_epi32(b, 16));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
+                        }
+                    }
+                    // Scalar tail
+                    for (; x < surface->w; x++) {
+                        float rgba[4];
+                        read_rgba16_color(row[x], rgba);
+                        out_row[x] = ((Uint32)(rgba[3] * 255) << 24) | ((Uint32)(rgba[2] * 255) << 16) |
+                                     ((Uint32)(rgba[1] * 255) << 8) | (Uint32)(rgba[0] * 255);
+                    }
                 }
             } else if (palette_handle > 0) {
                 SDL_Palette* pal = gl_state.palettes[palette_handle - 1];

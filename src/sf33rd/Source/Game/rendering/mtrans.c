@@ -286,6 +286,44 @@ static void lz_ext_p6_cx(u8* srcptr, u16* dstptr, u32 len, u16* palptr);
 static u16 x16_mapping_set(PatternMap* map, s32 code);
 static u16 x32_mapping_set(PatternMap* map, s32 code);
 
+/**
+ * @brief ⚡ Opt6: GPU compute LZ77 decode with automatic CPU fallback.
+ *
+ * Tries to enqueue the tile for GPU compute decompression. If that fails
+ * (staging full, GPU unavailable, etc.), falls back to CPU decode + upload.
+ *
+ * @param src        Compressed data pointer
+ * @param comp_bound Upper bound on compressed size
+ * @param size       Expected decompressed byte count
+ * @param mt         MultiTexture context
+ * @param gix_base   Base gix (mt->mltgidx16 or mt->mltgidx32)
+ * @param code       Tile code from get_mltbuf16/32
+ * @param pal_bits   Palette index bits (palo or palt, lower 9 bits used)
+ * @param is32       true if 32×32 tile (wh=4), false if 8/16×16
+ */
+static void lz77_gpu_or_cpu(u8* src, u32 comp_bound, u32 size,
+                             MultiTexture* mt, s32 gix_base, s32 code,
+                             s32 pal_bits, int is32) {
+    s32 code_offset = is32 ? (code >> 6) : (code >> 8);
+    s32 code_local  = is32 ? (code & 0x3F) : (code & 0xFF);
+    u32 tile_dim    = is32 ? 32 : ((size == 0x40) ? 8 : 16);
+
+    // Resolve ppg handles to match what seqsStoreChip/SetTexture will use
+    s32 tex_handle = ppgGetUsingTextureHandle(NULL, gix_base + code_offset);
+    s32 pal_handle = ppgGetUsingPaletteHandle(NULL, pal_bits & 0x1FF);
+
+    if (tex_handle > 0 &&
+        Renderer_LZ77Enqueue(src, comp_bound, size,
+                              tex_handle, pal_handle,
+                              (u32)code_local, tile_dim)) {
+        return;  // GPU path succeeded
+    }
+
+    // CPU fallback
+    lz_ext_p6_fx(src, mt->mltbuf, size);
+    Renderer_UpdateTexture(gix_base + code_offset, mt->mltbuf, code_local, size, 0, 0);
+}
+
 /** @brief Replace tile map entries matching a source code/attribute with new values. */
 static void search_trsptr(uintptr_t trstbl, s32 i, s32 n, s32 cods, s32 atrs, s32 codd, s32 atrd) {
     s32 j;
@@ -659,8 +697,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                 case 1:
                 case 2:
                     if (get_mltbuf16_ext_2(mt, cc.code, 0, &code, cp) != 0) {
-                        lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                        Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
+                        lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx16, code, palo, 0);
                     }
 
                     if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -680,8 +717,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
                 case 4:
                     if (get_mltbuf32_ext_2(mt, cc.code, 0, &code, cp) != 0) {
-                        lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                        Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
+                        lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx32, code, palo, 1);
                     }
 
                     if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -752,8 +788,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
             case 1:
             case 2:
                 if (get_mltbuf16_ext_2(mt, cc.code, 0, &code, cp) != 0) {
-                    lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                    Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
+                    lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx16, code, palo, 0);
                 }
 
                 if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -773,8 +808,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
             case 4:
                 if (get_mltbuf32_ext_2(mt, cc.code, 0, &code, cp) != 0) {
-                    lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                    Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
+                    lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx32, code, palo, 1);
                 }
 
                 if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -858,8 +892,7 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
         case 1:
         case 2:
             if (get_mltbuf16(mt, cc.code, 0, &code) != 0) {
-                lz_ext_p6_fx(d->tex_data, mt->mltbuf, d->size);
-                Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, d->size, 0, 0);
+                lz77_gpu_or_cpu(d->tex_data, d->size * 2, d->size, mt, mt->mltgidx16, code, palo, 0);
             }
 
             if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -879,8 +912,7 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
 
         case 4:
             if (get_mltbuf32(mt, cc.code, 0, &code) != 0) {
-                lz_ext_p6_fx(d->tex_data, mt->mltbuf, d->size);
-                Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, d->size, 0, 0);
+                lz77_gpu_or_cpu(d->tex_data, d->size * 2, d->size, mt, mt->mltgidx32, code, palo, 1);
             }
 
             if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -1014,8 +1046,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
                 case 1:
                 case 2:
                     if (get_mltbuf16_ext_2(mt, cc.code, 0, &code, cp) != 0) {
-                        lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                        Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
+                        lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx16, code, palt, 0);
                     }
 
                     if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -1035,8 +1066,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
                 case 4:
                     if (get_mltbuf32_ext_2(mt, cc.code, 0, &code, cp) != 0) {
-                        lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                        Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
+                        lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx32, code, palt, 1);
                     }
 
                     if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -1114,8 +1144,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
             case 1:
             case 2:
                 if (get_mltbuf16_ext_2(mt, cc.code, 0, &code, cp) != 0) {
-                    lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                    Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, size, 0, 0);
+                    lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx16, code, palt, 0);
                 }
 
                 if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -1135,8 +1164,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
             case 4:
                 if (get_mltbuf32_ext_2(mt, cc.code, 0, &code, cp) != 0) {
-                    lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                    Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, size, 0, 0);
+                    lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx32, code, palt, 1);
                 }
 
                 if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -1223,8 +1251,7 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
         case 1:
         case 2:
             if (get_mltbuf16(mt, cc.code, 0, &code) != 0) {
-                lz_ext_p6_fx(d->tex_data, mt->mltbuf, d->size);
-                Renderer_UpdateTexture(mt->mltgidx16 + (code >> 8), mt->mltbuf, code & 0xFF, d->size, 0, 0);
+                lz77_gpu_or_cpu(d->tex_data, d->size * 2, d->size, mt, mt->mltgidx16, code, palt, 0);
             }
 
             if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -1244,8 +1271,7 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
 
         case 4:
             if (get_mltbuf32(mt, cc.code, 0, &code) != 0) {
-                lz_ext_p6_fx(d->tex_data, mt->mltbuf, d->size);
-                Renderer_UpdateTexture(mt->mltgidx32 + (code >> 6), mt->mltbuf, code & 0x3F, d->size, 0, 0);
+                lz77_gpu_or_cpu(d->tex_data, d->size * 2, d->size, mt, mt->mltgidx32, code, palt, 1);
             }
 
             if (Debug_w[DEBUG_OBJ_SIZE_LINE]) {
@@ -2519,8 +2545,7 @@ void mlt_obj_melt2(MultiTexture* mt, u16 cg_number) {
                 switch (wh) {
                 case 1:
                 case 2:
-                    lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                    Renderer_UpdateTexture(mt->mltgidx16 + (cd16 >> 8), mt->mltbuf, cd16 & 0xFF, size, 0, 0);
+                    lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx16, cd16, palt, 0);
                     attr = (attr & 0xC000) | 0x1000 | dd;
                     trsptr->attr |= 0x1000;
                     attr |= palt;
@@ -2531,8 +2556,7 @@ void mlt_obj_melt2(MultiTexture* mt, u16 cg_number) {
                     break;
 
                 case 4:
-                    lz_ext_p6_fx(&((u8*)texptr)[1], mt->mltbuf, size);
-                    Renderer_UpdateTexture(mt->mltgidx32 + (cd32 >> 6), mt->mltbuf, cd32 & 0x3F, size, 0, 0);
+                    lz77_gpu_or_cpu(&((u8*)texptr)[1], size * 2, size, mt, mt->mltgidx32, cd32, palt, 1);
                     attr = (attr & 0xC000) | 0x3000 | dd;
                     trsptr->attr |= 0x1000;
                     attr |= palt;

@@ -61,5 +61,9 @@ void Renderer_Flush2DPrimitives(void);
 
 // Texture Management
 void Renderer_UpdateTexture(int textureId, const void* data, int x, int y, int width, int height);
+// ⚡ Opt6: LZ77 GPU compute decompression
+int Renderer_LZ77Available(void);
+int Renderer_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 decomp_size,
+                          int texture_handle, int palette_handle, u32 code, u32 tile_dim);
 
 #endif // PORT_RENDERER_H

@@ -51,6 +51,10 @@ void SDLGameRendererGPU_DrawSprite2(const Sprite2* sprite2);
 unsigned int SDLGameRendererGPU_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);
 void SDLGameRendererGPU_DumpTextures(void);
 void SDLGameRendererGPU_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
+// ⚡ Opt6: LZ77 GPU compute decompression
+int SDLGameRendererGPU_LZ77Available(void);
+int SDLGameRendererGPU_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 decomp_size,
+                                    int texture_handle, int palette_handle, u32 code, u32 tile_dim);
 
 // SDL2D Backend (SDL_Renderer software/accelerated 2D)
 void SDLGameRendererSDL_Init(void);

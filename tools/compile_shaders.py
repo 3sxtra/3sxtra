@@ -19,6 +19,7 @@ SHADERS = [
     ("blit.gpu.vert", "blit.vert.spv", "vertex"),
     ("blit.gpu.frag", "blit.frag.spv", "fragment"),
     ("palette_convert.gpu.comp", "palette_convert.comp.spv", "compute"),
+    ("lz77_decode.gpu.comp", "lz77_decode.comp.spv", "compute"),
 ]
 
 

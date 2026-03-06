@@ -1,0 +1,152 @@
+#version 450
+/**
+ * LZ77 Tile Decompression Compute Shader
+ *
+ * ⚡ Opt6: Decompresses LZ77-compressed tile data directly into the
+ * texture array (RGBA8) via imageStore.
+ * One workgroup = one tile = one serial decoder.
+ *
+ * SDL_GPU SPIR-V binding convention:
+ *   Set 0: read-only storage textures, then read-only storage buffers
+ *   Set 1: read-write storage textures, then read-write storage buffers
+ *   Set 2: uniform buffers
+ *
+ * The CPS3/Dreamcast LZ77 format has 4 command types (bits 7:6 of each byte):
+ *   00: Literal byte (copy to output)
+ *   01: Short back-reference (offset ≤15, length 2–5)
+ *   10: Long back-reference (offset ≤8191, length 2–65, 2-byte command)
+ *   11: Packed nibbles (flag bits + 4-bit pairs)
+ */
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+// --- Set 0: Read-only storage buffers ---
+// Compressed tile data (all tiles concatenated)
+layout(std430, set = 0, binding = 0) readonly buffer CompressedData {
+    uint data[];
+} compressed;
+
+// dctex_linear swizzle table (1024 entries, stored as uint for alignment)
+layout(std430, set = 0, binding = 1) readonly buffer SwizzleTable {
+    uint swizzle[1024];
+} swiz;
+
+// --- Set 1: Read-write storage textures ---
+// Output: texture array (RGBA8 — palette index stored in R channel)
+layout(set = 1, binding = 0, rgba8) uniform writeonly image2DArray out_texture;
+
+// --- Set 2: Uniform buffers ---
+struct LZ77Job {
+    uint src_offset;   // byte offset in compressed buffer
+    uint src_size;     // max compressed bytes to read (safety bound)
+    uint dst_size;     // expected decompressed byte count
+    uint dst_layer;    // texture array layer (0-based)
+    uint dst_x;        // pixel X offset in layer
+    uint dst_y;        // pixel Y offset in layer
+    uint tile_dim;     // tile dimension (8, 16, or 32)
+    uint _pad;
+};
+
+#define MAX_JOBS 64
+
+layout(std140, set = 2, binding = 0) uniform JobUniforms {
+    uint job_count;
+    uint _pad1;
+    uint _pad2;
+    uint _pad3;
+    LZ77Job jobs[MAX_JOBS];
+} u;
+
+// Read a single byte from the uint-packed compressed buffer
+uint read_byte(uint byte_offset) {
+    uint word_idx = byte_offset >> 2u;
+    uint shift = (byte_offset & 3u) * 8u;
+    return (compressed.data[word_idx] >> shift) & 0xFFu;
+}
+
+void main() {
+    uint job_idx = gl_WorkGroupID.x;
+    if (job_idx >= u.job_count)
+        return;
+
+    LZ77Job job = u.jobs[job_idx];
+
+    // Decompress into a local array (max 1024 bytes for 32×32 tiles)
+    uint decoded[1024];
+    uint src_pos = job.src_offset;
+    uint src_end = job.src_offset + job.src_size;
+    uint dst_pos = 0;
+    uint dst_end = min(job.dst_size, 1024u);
+
+    while (dst_pos < dst_end && src_pos < src_end) {
+        uint tmp = read_byte(src_pos++);
+        uint cmd = tmp & 0xC0u;
+
+        if (cmd == 0x00u) {
+            // Case 0: Literal byte
+            decoded[dst_pos++] = tmp;
+        }
+        else if (cmd == 0x40u) {
+            // Case 1: Short back-reference
+            tmp &= 0x3Fu;
+            uint ref_offset = (tmp >> 2u) + 1u;
+            uint ref_len = (tmp & 3u) + 2u;
+            uint ref_pos = dst_pos - ref_offset;
+            for (uint i = 0u; i < ref_len && dst_pos < dst_end; i++) {
+                decoded[dst_pos++] = decoded[ref_pos++];
+            }
+        }
+        else if (cmd == 0x80u) {
+            // Case 2: Long back-reference (2-byte command)
+            uint b2 = read_byte(src_pos++);
+            tmp = ((tmp & 0x3Fu) << 8u) | b2;
+            uint ref_offset = (tmp >> 6u) + 1u;
+            uint ref_len = (tmp & 0x3Fu) + 2u;
+            uint ref_pos = dst_pos - ref_offset;
+            for (uint i = 0u; i < ref_len && dst_pos < dst_end; i++) {
+                decoded[dst_pos++] = decoded[ref_pos++];
+            }
+        }
+        else {
+            // Case 3: Packed nibbles with flag bits
+            uint flg = tmp & 0x30u;
+            uint count = (tmp & 0x0Fu) + 2u;
+            for (uint i = 0u; i < count && dst_pos < dst_end; i++) {
+                uint src_byte = read_byte(src_pos);
+                decoded[dst_pos++] = flg | (src_byte >> 4u);
+                if (dst_pos < dst_end) {
+                    decoded[dst_pos++] = flg | (src_byte & 0x0Fu);
+                }
+                src_pos++;
+            }
+        }
+    }
+
+    // Apply dctex_linear swizzle and write to texture array as RGBA8
+    // (palette index in R channel, matched by fragment shader palette lookup)
+    uint dim = job.tile_dim;
+
+    if (dim <= 16u) {
+        // 8×8 or 16×16 tiles: swizzle[j + (i << 5)]
+        for (uint row = 0u; row < dim; row++) {
+            for (uint col = 0u; col < dim; col++) {
+                uint swiz_idx = swiz.swizzle[col + (row << 5u)];
+                uint idx = (swiz_idx < job.dst_size) ? decoded[swiz_idx] : 0u;
+                imageStore(out_texture,
+                           ivec3(int(job.dst_x + col), int(job.dst_y + row), int(job.dst_layer)),
+                           vec4(float(idx) / 255.0, 0.0, 0.0, 1.0));
+            }
+        }
+    } else {
+        // 32×32 tiles: sequential swizzle (full 1024-entry table)
+        uint swiz_pos = 0u;
+        for (uint row = 0u; row < 32u; row++) {
+            for (uint col = 0u; col < 32u; col++) {
+                uint swiz_idx = swiz.swizzle[swiz_pos++];
+                uint idx = (swiz_idx < job.dst_size) ? decoded[swiz_idx] : 0u;
+                imageStore(out_texture,
+                           ivec3(int(job.dst_x + col), int(job.dst_y + row), int(job.dst_layer)),
+                           vec4(float(idx) / 255.0, 0.0, 0.0, 1.0));
+            }
+        }
+    }
+}

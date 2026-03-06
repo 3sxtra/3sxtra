@@ -48,6 +48,32 @@ static u8* s_compute_staging_ptr = NULL;                       // Mapped pointer
 static size_t s_compute_staging_offset = 0;
 static int s_compute_drops_last_frame = 0;
 
+// ⚡ Opt6: LZ77 GPU compute decompression
+#define LZ77_MAX_JOBS 64
+#define LZ77_INPUT_SIZE (512 * 1024)    // 512KB compressed data staging
+#define LZ77_SWIZZLE_SIZE (1024 * 4)   // 1024 uint entries
+
+typedef struct {
+    Uint32 src_offset, src_size, dst_size, dst_layer;
+    Uint32 dst_x, dst_y, tile_dim, _pad;
+} LZ77Job;
+
+static struct {
+    Uint32 job_count;
+    Uint32 _pad1, _pad2, _pad3;
+    LZ77Job jobs[LZ77_MAX_JOBS];
+} s_lz77_uniforms;
+
+static SDL_GPUComputePipeline* s_lz77_pipeline = NULL;
+static SDL_GPUBuffer* s_lz77_input_buffer = NULL;
+static SDL_GPUBuffer* s_lz77_swizzle_buffer = NULL;
+static SDL_GPUTransferBuffer* s_lz77_upload_buf = NULL;
+static u8* s_lz77_upload_ptr = NULL;
+static size_t s_lz77_upload_offset = 0;
+static int s_lz77_job_count = 0;
+static bool s_lz77_available = false;
+static bool s_lz77_swizzle_uploaded = false;
+
 static float* mapped_vertex_ptr = NULL;
 static unsigned int vertex_count = 0;
 
@@ -411,7 +437,7 @@ void SDLGameRendererGPU_Init(void) {
     SDL_zero(tex_info);
     tex_info.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;
     tex_info.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    tex_info.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+    tex_info.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
     tex_info.width = TEX_ARRAY_SIZE;
     tex_info.height = TEX_ARRAY_SIZE;
     tex_info.layer_count_or_depth = TEX_ARRAY_MAX_LAYERS;
@@ -476,6 +502,56 @@ void SDLGameRendererGPU_Init(void) {
     }
     memset(tex_array_layer, -1, sizeof(tex_array_layer));
 
+    // ⚡ Opt6: LZ77 Compute Pipeline
+    {
+        char comp_path[1024];
+        const char* bp = SDL_GetBasePath();
+        snprintf(comp_path, sizeof(comp_path), "%sshaders/lz77_decode.comp.spv", bp ? bp : "");
+        size_t comp_size;
+        void* comp_code = LoadShaderCode(comp_path, &comp_size);
+        if (comp_code && comp_size > 0) {
+            SDL_ShaderCross_SPIRV_Info spirv_info;
+            SDL_zero(spirv_info);
+            spirv_info.bytecode = (const Uint8*)comp_code;
+            spirv_info.bytecode_size = comp_size;
+            spirv_info.entrypoint = "main";
+            spirv_info.shader_stage = SDL_SHADERCROSS_SHADERSTAGE_COMPUTE;
+            SDL_ShaderCross_ComputePipelineMetadata* meta =
+                SDL_ShaderCross_ReflectComputeSPIRV(
+                    (const Uint8*)comp_code, comp_size, 0);
+            if (meta) {
+                s_lz77_pipeline = SDL_ShaderCross_CompileComputePipelineFromSPIRV(
+                    device, &spirv_info, meta, 0);
+                SDL_free(meta);
+            }
+            SDL_free(comp_code);
+        }
+        if (s_lz77_pipeline) {
+            SDL_GPUBufferCreateInfo input_info;
+            SDL_zero(input_info);
+            input_info.usage = SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ;
+            input_info.size = LZ77_INPUT_SIZE;
+            s_lz77_input_buffer = SDL_CreateGPUBuffer(device, &input_info);
+
+            SDL_GPUBufferCreateInfo swiz_info;
+            SDL_zero(swiz_info);
+            swiz_info.usage = SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ;
+            swiz_info.size = LZ77_SWIZZLE_SIZE;
+            s_lz77_swizzle_buffer = SDL_CreateGPUBuffer(device, &swiz_info);
+
+            SDL_GPUTransferBufferCreateInfo upload_info;
+            SDL_zero(upload_info);
+            upload_info.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+            upload_info.size = LZ77_INPUT_SIZE;
+            s_lz77_upload_buf = SDL_CreateGPUTransferBuffer(device, &upload_info);
+
+            s_lz77_available = (s_lz77_input_buffer && s_lz77_swizzle_buffer && s_lz77_upload_buf);
+            if (s_lz77_available) {
+                SDL_Log("LZ77 GPU compute pipeline: ready");
+            }
+        }
+    }
+
     SDL_Log("SDLGameRendererGPU_Init: Complete.");
 }
 
@@ -505,6 +581,15 @@ void SDLGameRendererGPU_Shutdown(void) {
         SDL_ReleaseGPUTexture(device, s_canvas_texture);
     if (sampler)
         SDL_ReleaseGPUSampler(device, sampler);
+    // ⚡ Opt6: LZ77 compute resources
+    if (s_lz77_pipeline)
+        SDL_ReleaseGPUComputePipeline(device, s_lz77_pipeline);
+    if (s_lz77_input_buffer)
+        SDL_ReleaseGPUBuffer(device, s_lz77_input_buffer);
+    if (s_lz77_swizzle_buffer)
+        SDL_ReleaseGPUBuffer(device, s_lz77_swizzle_buffer);
+    if (s_lz77_upload_buf)
+        SDL_ReleaseGPUTransferBuffer(device, s_lz77_upload_buf);
     SDL_ShaderCross_Quit();
 }
 
@@ -568,6 +653,13 @@ void SDLGameRendererGPU_BeginFrame(void) {
     s_tex_upload_count = 0;
     s_pal_upload_count = 0;
     s_last_set_texture_handle = 0; // ⚡ Reset back-to-back cache each frame
+
+    // ⚡ Opt6: Reset LZ77 job queue and map upload buffer
+    s_lz77_job_count = 0;
+    s_lz77_upload_offset = 0;
+    if (s_lz77_available) {
+        s_lz77_upload_ptr = (u8*)SDL_MapGPUTransferBuffer(device, s_lz77_upload_buf, true);
+    }
 
     if (s_compute_drops_last_frame > 0) {
         SDL_LogWarn(SDL_LOG_CATEGORY_RENDER,
@@ -751,7 +843,63 @@ void SDLGameRendererGPU_RenderFrame(void) {
             SDL_UploadToGPUBuffer(copy_pass, &loc, &region, true);
         }
 
+        // ⚡ Opt6: Upload compressed tile data for LZ77 compute
+        if (s_lz77_available && s_lz77_job_count > 0 && s_lz77_upload_offset > 0) {
+            SDL_UnmapGPUTransferBuffer(device, s_lz77_upload_buf);
+            s_lz77_upload_ptr = NULL;
+
+            SDL_GPUTransferBufferLocation lz_src = { .transfer_buffer = s_lz77_upload_buf, .offset = 0 };
+            SDL_GPUBufferRegion lz_dst = { .buffer = s_lz77_input_buffer, .offset = 0,
+                                            .size = (Uint32)s_lz77_upload_offset };
+            SDL_UploadToGPUBuffer(copy_pass, &lz_src, &lz_dst, false);
+
+            // One-time upload of dctex_linear swizzle LUT
+            if (!s_lz77_swizzle_uploaded) {
+                extern u32 dctex_linear[1024];
+                SDL_GPUTransferBufferCreateInfo swiz_tb_info = {
+                    .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+                    .size = LZ77_SWIZZLE_SIZE
+                };
+                SDL_GPUTransferBuffer* swiz_tb = SDL_CreateGPUTransferBuffer(device, &swiz_tb_info);
+                if (swiz_tb) {
+                    void* p = SDL_MapGPUTransferBuffer(device, swiz_tb, false);
+                    if (p) {
+                        memcpy(p, dctex_linear, LZ77_SWIZZLE_SIZE);
+                        SDL_UnmapGPUTransferBuffer(device, swiz_tb);
+                        SDL_GPUTransferBufferLocation ssrc = { .transfer_buffer = swiz_tb, .offset = 0 };
+                        SDL_GPUBufferRegion sdst = { .buffer = s_lz77_swizzle_buffer, .offset = 0,
+                                                      .size = LZ77_SWIZZLE_SIZE };
+                        SDL_UploadToGPUBuffer(copy_pass, &ssrc, &sdst, false);
+                        s_lz77_swizzle_uploaded = true;
+                    }
+                    SDL_ReleaseGPUTransferBuffer(device, swiz_tb);
+                }
+            }
+        } else if (s_lz77_upload_ptr) {
+            SDL_UnmapGPUTransferBuffer(device, s_lz77_upload_buf);
+            s_lz77_upload_ptr = NULL;
+        }
+
         SDL_EndGPUCopyPass(copy_pass);
+    }
+
+    // --- 1.5. Compute Pass (⚡ Opt6: LZ77 decode) ---
+    if (s_lz77_available && s_lz77_job_count > 0) {
+        s_lz77_uniforms.job_count = s_lz77_job_count;
+
+        SDL_GPUComputePass* comp = SDL_BeginGPUComputePass(
+            current_cmd_buf,
+            &(SDL_GPUStorageTextureReadWriteBinding){ .texture = texture_array },
+            1, NULL, 0);
+        if (comp) {
+            SDL_BindGPUComputePipeline(comp, s_lz77_pipeline);
+            SDL_GPUBuffer* lz77_ro_bufs[2] = { s_lz77_input_buffer, s_lz77_swizzle_buffer };
+            SDL_BindGPUComputeStorageBuffers(comp, 0, lz77_ro_bufs, 2);
+            SDL_PushGPUComputeUniformData(current_cmd_buf, 0,
+                &s_lz77_uniforms, sizeof(s_lz77_uniforms));
+            SDL_DispatchGPUCompute(comp, s_lz77_job_count, 1, 1);
+            SDL_EndGPUComputePass(comp);
+        }
     }
 
     // --- 2. Render Pass ---
@@ -1523,4 +1671,67 @@ SDL_GPUTexture* SDLGameRendererGPU_GetSwapchainTexture(void) {
 
 SDL_GPUTexture* SDLGameRendererGPU_GetCanvasTexture(void) {
     return s_canvas_texture;
+}
+
+// ⚡ Opt6: LZ77 GPU compute API
+int SDLGameRendererGPU_LZ77Available(void) {
+    return s_lz77_available ? 1 : 0;
+}
+
+int SDLGameRendererGPU_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 decomp_size,
+                                    int texture_handle, int palette_handle,
+                                    u32 code, u32 tile_dim) {
+    return 0; // TEMP: force CPU fallback to isolate visual corruption
+    if (!s_lz77_available || !s_lz77_upload_ptr)
+        return 0;
+
+    if (s_lz77_job_count >= LZ77_MAX_JOBS)
+        return 0;
+
+    // Check staging space (align to 4 bytes for uint access in shader)
+    size_t aligned_size = (comp_size + 3u) & ~3u;
+    if (s_lz77_upload_offset + aligned_size > LZ77_INPUT_SIZE)
+        return 0;
+
+    // Pre-allocate a texture array layer for this texture+palette combo
+    int ti = texture_handle - 1;
+    if (ti < 0 || ti >= FL_TEXTURE_MAX)
+        return 0;
+    if (palette_handle < 0 || palette_handle > FL_PALETTE_MAX)
+        return 0;
+
+    int layer = tex_array_layer[ti][palette_handle];
+    if (layer < 0) {
+        if (tex_array_free_count <= 0)
+            return 0;
+        layer = tex_array_free[--tex_array_free_count];
+        tex_array_layer[ti][palette_handle] = layer;
+    }
+
+    // Compute destination pixel coordinates from tile code
+    u32 dst_x, dst_y;
+    if (tile_dim <= 16) {
+        dst_x = (code & 0x0Fu) * 16u;
+        dst_y = ((code >> 4u) & 0x0Fu) * 16u;
+    } else {
+        dst_x = (code & 7u) * 32u;
+        dst_y = ((code >> 3u) & 7u) * 32u;
+    }
+
+    // Copy compressed data to staging buffer
+    memcpy(s_lz77_upload_ptr + s_lz77_upload_offset, compressed, comp_size);
+
+    // Record job descriptor
+    LZ77Job* job = &s_lz77_uniforms.jobs[s_lz77_job_count++];
+    job->src_offset = (Uint32)s_lz77_upload_offset;
+    job->src_size = comp_size;
+    job->dst_size = decomp_size;
+    job->dst_layer = layer;
+    job->dst_x = dst_x;
+    job->dst_y = dst_y;
+    job->tile_dim = tile_dim;
+    job->_pad = 0;
+
+    s_lz77_upload_offset += aligned_size;
+    return 1;
 }

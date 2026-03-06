@@ -2,7 +2,7 @@
 
 > **Date**: 2026-03-06  
 > **Scope**: Native in-game character sprite rendering (`mtrans.c`, `aboutspr.c`, `sdl_game_renderer*.c`)  
-> **Status**: Optimizations #1 (frag shader palette, phase 1), #2 (hash cache + persistent atlas), #3 (inlined model transform), #4 (CG tile desc cache), #5 (SIMD transform), and #8 (double-buffer sprites) implemented. Others pending.
+> **Status**: Optimizations #1 (frag shader palette, phase 1+2), #2 (hash cache + persistent atlas), #3 (inlined model transform), #4 (CG tile desc cache), #5 (SIMD transform), #6 (GPU compute LZ77), and #8 (double-buffer sprites) implemented. #7 (instanced rendering) pending.
 
 ## Current Pipeline
 
@@ -74,7 +74,9 @@ The GPU backend currently does CPU-side palette conversion in `SDLGameRendererGP
 **Savings**: Eliminates entire CPU palette conversion. Phase 2 (R8 format) will also reduce upload volume by **4×** (1 byte vs 4 bytes per pixel).
 
 > [!NOTE]
-> **Phase 1: ✅ IMPLEMENTED** — Fragment shader reads palette index from R channel of RGBA8 texture array and looks up color from palette atlas. `SetTexture()` writes `(idx, 0, 0, 0xFF)` for PSMT4/PSMT8 instead of CPU palette loops. PSMCT16/32-bit direct paths are unchanged. `FlushSprite2Batch` paletteIdx bug also fixed. Phase 2 (R8_UNORM texture array for 4× upload reduction) is pending.
+> **Phase 1: ✅ IMPLEMENTED** — Fragment shader reads palette index from R channel of RGBA8 texture array and looks up color from palette atlas. `SetTexture()` writes `(idx, 0, 0, 0xFF)` for PSMT4/PSMT8 instead of CPU palette loops. PSMCT16/32-bit direct paths are unchanged. `FlushSprite2Batch` paletteIdx bug also fixed.
+>
+> **Phase 2: ✅ IMPLEMENTED** — Dual texture array architecture: `indexed_texture_array` (R8_UNORM, 1 byte/pixel) for PSMT4/PSMT8 and `direct_texture_array` (RGBA8) for PSMCT16/32-bit (Gill, special FX). Upload volume reduced **4×** for indexed textures. PSMT8 path is now a zero-conversion `memcpy`. PSMT4 uses SIMD nibble-to-byte unpack (no u32 expansion). Fragment shader uses 3 samplers: `IdxArray` (R8), `PaletteTex`, `DirArray` (RGBA8). Layer encoding uses sign-convention macros (`TEX_LAYER_IDX`/`TEX_LAYER_DIR`) for correct routing.
 
 **Backend applicability**:
 
@@ -199,6 +201,9 @@ Move `lz_ext_p6_fx()` / `lz_ext_p6_cx()` to a compute shader:
 | **OpenGL** | ◐ **Possible** | Requires GL 4.3+ compute shaders. Not available on all targets (e.g., macOS, older hardware). Could use SSBO approach |
 | **SDL 2D** | ❌ **No** | No GPU compute — must keep CPU decompression |
 
+> [!NOTE]
+> **✅ IMPLEMENTED** — GLSL compute shader (`lz77_decode.gpu.comp`) decompresses LZ77 tiles directly into the R8_UNORM indexed texture array via `imageStore`. One workgroup per tile, serial decoder matching the CPU's 4-case format (literal, short backref, long backref, packed nibbles). Includes `dctex_linear` swizzle LUT as a readonly storage buffer. Jobs queued per-frame via `Renderer_LZ77Enqueue()` with CPU fallback when staging is full or compute unavailable. Dispatch runs between copy and render passes. Swizzle table uploaded once on first use.
+
 ---
 
 ### 🟢 Lower Impact
@@ -246,12 +251,12 @@ Write next frame's `seqs_w.chip[]` while the GPU consumes the current frame. Cur
 
 | Priority | Optimization | Effort | Impact | Status |
 |----------|-------------|--------|--------|--------|
-| **1** | Fragment shader palette lookup | Medium | High — eliminates CPU palette conversion, 4× less upload | **Phase 1: ✅ Done** (CPU elim) · Phase 2: Pending (R8 format) |
+| **1** | Fragment shader palette lookup | Medium | High — eliminates CPU palette conversion, 4× less upload | **✅ Done** (Phase 1: CPU elim · Phase 2: R8 dual arrays) |
 | **2** | Persistent tile atlas + hash cache | Medium | High — eliminates repeated LZ77 decode | **✅ Done** (hash cache + boost-on-hit + LRU eviction) |
 | **3** | Vertex shader model transform | Low | Medium — eliminates CPU matrix math | **✅ Done** (inlined transform) |
 | **4** | CG frame pre-built tile desc cache | Medium | Medium — eliminates tile map walk | **✅ Done** (non-ext variants) |
 | **5** | SIMD batch transforms | Low | Medium — fallback if #3 too invasive | **✅ Done** (SIMDe FMA) |
-| **6** | GPU compute LZ77 | High | Medium — frees CPU, complex to implement | Pending |
+| **6** | GPU compute LZ77 | High | Medium — frees CPU, complex to implement | **✅ Done** (compute shader + CPU fallback) |
 | **7** | Instanced rendering | Medium | Low — reduces vertex buffer size | Pending |
 | **8** | Double-buffer sprite array | Low | Low — minor latency win | **✅ Done** |
 
