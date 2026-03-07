@@ -8,8 +8,10 @@
     <div id="sel-overlay" class="sel-overlay">
 
         <!-- ═══ PORTRAITS ═══ -->
-        <img class="sel-portrait sel-portrait-p1" data-if="sel_p1_solo || sel_both_active || vs_active" data-attr-src="sel_p1_portrait" />
-        <img class="sel-portrait sel-portrait-p2" data-if="sel_p2_solo || sel_both_active || vs_active" data-attr-src="sel_p2_portrait" />
+        <img class="sel-portrait sel-portrait-p1" data-if="sel_p1_solo || sel_both_active || vs_active" data-attr-src="sel_p1_portrait" data-class-vs-portrait="vs_active"
+             data-style-transform="'scaleY(' + sel_portrait_scale_y + ')'" />
+        <img class="sel-portrait sel-portrait-p2" data-if="sel_p2_solo || sel_both_active || vs_active" data-attr-src="sel_p2_portrait" data-class-vs-portrait="vs_active"
+             data-style-transform="'scaleY(' + sel_portrait_scale_y + ')'" />
 
         <!-- ═══ SINGLE PLAYER: one line at top-left ═══ -->
         <div class="sel-name sel-name-solo" data-if="sel_p1_solo">

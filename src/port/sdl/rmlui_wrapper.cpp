@@ -224,6 +224,11 @@ static int s_window_h = 0;
 static constexpr int GAME_W = 384;
 static constexpr int GAME_H = 224;
 
+// PAR correction factor for portrait images: 1.0 / (m_sy / m_sx).
+// = (GAME_H * view_w) / (GAME_W * view_h)
+// In 4:3 modes this is 7/9 ≈ 0.778; in square-pixel mode it is 1.0.
+static float s_par_correct_y = 1.0f;
+
 static std::string s_ui_base_path;
 
 // ⚡ Helper: check if any document in a context map is currently visible.
@@ -704,6 +709,15 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
     const float dp_ratio = view_w / (float)GAME_W;
     s_game_context->SetDensityIndependentPixelRatio(dp_ratio);
 
+    // Compute PAR correction factor: the viewport adapter applies m_sy/m_sx vertical
+    // stretch (9/7 ≈ 1.286 at 4:3). Portrait images need the inverse to stay square.
+    // par_correct_y = m_sx / m_sy = (view_w / ctx_w) / (view_h / ctx_h)
+    //               = (view_w * GAME_H) / (view_h * GAME_W)
+    if (view_h > 0.0f)
+        s_par_correct_y = (view_w * (float)GAME_H) / (view_h * (float)GAME_W);
+    else
+        s_par_correct_y = 1.0f;
+
     const int ctx_w = (int)(GAME_W * dp_ratio + 0.5f); // = view_w
     const int ctx_h = (int)(GAME_H * dp_ratio + 0.5f); // = 224 * view_w / 384
     s_game_context->SetDimensions(Rml::Vector2i(ctx_w, ctx_h));
@@ -769,6 +783,13 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
         SDL_SetRenderViewport(renderer, NULL);
         SDL_SetRenderScale(renderer, 1.0f, 1.0f);
     }
+}
+
+// -------------------------------------------------------------------
+// PAR Correction Accessor
+// -------------------------------------------------------------------
+extern "C" float rmlui_wrapper_get_par_correct_y(void) {
+    return s_par_correct_y;
 }
 
 // -------------------------------------------------------------------

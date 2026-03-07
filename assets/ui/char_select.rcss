@@ -352,24 +352,48 @@ body {
 }
 
 /* ── Character Portraits ── */
+/* height-constrained: RmlUI computes proportional width via intrinsic_ratio.
+   Confirmed in CalculateSizeForReplacedElement: when auto_width=true and
+   auto_height=false, content_size.x = content_size.y * intrinsic_ratio.
+   Using height ensures no overflow above the screen top.
+   transform-origin bottom: PAR scaleY correction (data-style-transform) anchors at bottom. */
 .sel-portrait {
     display: block;
     position: absolute;
     width: auto;
-    height: 180dp;
+    height: 224dp;
+    transform-origin: 50% 100%;
 }
 
-/* Solo / P1 side — left of screen */
+/* Solo / P1 side: right-edge at screen center, overflows leftward off-screen */
 .sel-portrait-p1 {
-    left: 0;
+    right: 50%;
     bottom: 0;
 }
 
-/* P2 side — right of screen */
+/* P2 side: left-edge at screen center, overflows rightward off-screen */
 .sel-portrait-p2 {
-    right: 0;
+    left: 50%;
     bottom: 0;
 }
+
+/* ── VS Screen portrait overrides (full-body fas set) ── */
+/* Confined to outer 1/3 zones — center 1/3 is the VS logo no-go zone.
+ * P1: right edge at ~128dp (right:66%), extends leftward off-screen.
+ * P2: left edge at ~256dp (left:66%), extends rightward off-screen.
+ * Outer overflow (off screen edges) is acceptable; center is never crossed. */
+.sel-portrait-p1.vs-portrait {
+    height: 224dp;
+    width: auto;
+    right: 66%;
+}
+
+.sel-portrait-p2.vs-portrait {
+    height: 224dp;
+    width: auto;
+    left: 66%;
+}
+
 
 /* ── VS Screen Name Plates ── */
 .vs-section {

@@ -171,6 +171,12 @@ extern "C" void rmlui_char_select_init(void) {
     // VS screen active flag: true when VS screen is displaying (Exit_4th spawns VS objects)
     ctor.BindFunc("vs_active", [](Rml::Variant& v) { v = (bool)(Exit_No >= 4); });
 
+    // PAR correction scaleY for portrait images — counters the CPS3 9/7 vertical PAR stretch
+    // applied by the GameViewport adapter (7/9 ≈ 0.778 at 4:3, 1.0 at square-pixel mode).
+    ctor.BindFunc("sel_portrait_scale_y", [](Rml::Variant& v) {
+        v = (double)rmlui_wrapper_get_par_correct_y();
+    });
+
     // Timer countdown — Select_Timer is BCD-encoded (0x30 = "30", 0x21 = "21")
     // Always decode — char-select and stage-select timers are mutually exclusive
     // via their own data-if conditions (sel_timer_visible vs stg_visible).
@@ -417,6 +423,7 @@ extern "C" void rmlui_char_select_update(void) {
     // All bindings are BindFunc (evaluated each frame), just dirty them
     s_model_handle.DirtyVariable("sel_phase_select");
     s_model_handle.DirtyVariable("vs_active");
+    s_model_handle.DirtyVariable("sel_portrait_scale_y");
     s_model_handle.DirtyVariable("sel_timer_visible");
     s_model_handle.DirtyVariable("sel_timer");
     s_model_handle.DirtyVariable("sel_banner_visible");
@@ -455,9 +462,11 @@ extern "C" void rmlui_char_select_update(void) {
 extern "C" void rmlui_char_select_show(void) {
     rmlui_wrapper_show_game_document("char_select");
     rmlui_char_select_visible = true;
-    /* Force-dirty vs_active so it evaluates correctly on first frame */
-    if (s_model_registered && s_model_handle)
+    /* Force-dirty vs_active and sel_portrait_scale_y so they evaluate correctly on first frame */
+    if (s_model_registered && s_model_handle) {
         s_model_handle.DirtyVariable("vs_active");
+        s_model_handle.DirtyVariable("sel_portrait_scale_y");
+    }
 }
 
 extern "C" void rmlui_char_select_hide(void) {

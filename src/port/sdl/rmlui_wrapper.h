@@ -87,6 +87,10 @@ void rmlui_wrapper_update_game(void);
 /// win_w/win_h are the full window dimensions.
 void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, float view_y, float view_w, float view_h);
 
+/// Returns the PAR correction scaleY factor for portrait images.
+/// This is (GAME_H * view_w) / (GAME_W * view_h): 7/9 ≈ 0.778 at 4:3, 1.0 at square pixels.
+float rmlui_wrapper_get_par_correct_y(void);
+
 #ifdef __cplusplus
 }
 #endif
