@@ -855,11 +855,13 @@ static void save_state(GekkoGameEvent* event) {
             plw_scratch[p].wu.listix = 0;
             plw_scratch[p].wu.timing = 0;
 
-            // Sweep remaining pointer-like values in PLW
-            uintptr_t* words = (uintptr_t*)&plw_scratch[p];
-            const size_t count = sizeof(PLW) / sizeof(uintptr_t);
+            // Sweep remaining pointer-like values in PLW.
+            // Use fixed uint64_t stride so both 32-bit and 64-bit platforms
+            // scan the same bytes and produce identical checksums.
+            uint64_t* words = (uint64_t*)&plw_scratch[p];
+            const size_t count = sizeof(PLW) / sizeof(uint64_t);
             for (size_t i = 0; i < count; i++) {
-                uintptr_t v = words[i];
+                uint64_t v = words[i];
                 if (v > 0x100000000ULL && (v >> 47) == 0) {
                     words[i] = 0;
                 }
@@ -1406,7 +1408,14 @@ void Netplay_Run() {
                     if (peers[i].is_challenging_me || peers[i].wants_auto_connect) {
                         target_peer = &peers[i];
                         should_be_ready = true;
-                        we_initiated = true; // We set ChallengeTarget first
+                        // Mutual challenge (both challenged each other, e.g. accept = challenge back).
+                        // Use instance_id tiebreaker so both peers agree on who initiated.
+                        if (peers[i].is_challenging_me) {
+                            uint32_t local_id = Discovery_GetLocalInstanceID();
+                            we_initiated = (local_id < peers[i].instance_id);
+                        } else {
+                            we_initiated = true; // Only we challenged, they have auto-connect
+                        }
                         break;
                     }
                 }

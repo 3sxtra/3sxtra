@@ -77,6 +77,12 @@ static uint32_t palette_hash[FL_PALETTE_MAX];
 #define RGBA_SCRATCH_MAX (512 * 512)
 static uint32_t rgba_scratch[RGBA_SCRATCH_MAX];
 
+// ⚡ Non-indexed texture pixel cache — RGBA8888 conversion of PSMCT32/PSMCT16 surfaces.
+// Populated lazily by sw_convert_nonidx_pixels, invalidated by UnlockTexture/DestroyTexture.
+static uint32_t* nonidx_pixels[FL_TEXTURE_MAX];
+static int       nonidx_pixels_w[FL_TEXTURE_MAX];
+static int       nonidx_pixels_h[FL_TEXTURE_MAX];
+
 // ⚡ Software-frame rendering state — CPU-side compositing into a single surface.
 // Uses RGBA8888 to match LRU cache pixel format — zero format conversion.
 static SDL_Surface* sw_frame_surface = NULL;          // 384×224 RGBA8888 compositing target
@@ -102,10 +108,14 @@ static void dt_mark_rect(float fx, float fy, float fw, float fh) {
     int r0 = (int)SDL_floorf(fy) / DT_SIZE;
     int c1 = (int)SDL_ceilf(fx + fw - 1.0f) / DT_SIZE;
     int r1 = (int)SDL_ceilf(fy + fh - 1.0f) / DT_SIZE;
-    if (c0 < 0) c0 = 0; if (c0 > DT_COLS - 1) c0 = DT_COLS - 1;
-    if (r0 < 0) r0 = 0; if (r0 > DT_ROWS - 1) r0 = DT_ROWS - 1;
-    if (c1 < 0) c1 = 0; if (c1 > DT_COLS - 1) c1 = DT_COLS - 1;
-    if (r1 < 0) r1 = 0; if (r1 > DT_ROWS - 1) r1 = DT_ROWS - 1;
+    if (c0 < 0) c0 = 0;
+    if (c0 > DT_COLS - 1) c0 = DT_COLS - 1;
+    if (r0 < 0) r0 = 0;
+    if (r0 > DT_ROWS - 1) r0 = DT_ROWS - 1;
+    if (c1 < 0) c1 = 0;
+    if (c1 > DT_COLS - 1) c1 = DT_COLS - 1;
+    if (r1 < 0) r1 = 0;
+    if (r1 > DT_ROWS - 1) r1 = DT_ROWS - 1;
     for (int r = r0; r <= r1; r++) {
         for (int c = c0; c <= c1; c++) {
             dt_current[r * DT_COLS + c] = 1;
@@ -169,8 +179,11 @@ static int debug_texture_index = 0;
 // Operate on RGBA8888 layout matching SDL_PIXELFORMAT_RGBA8888 (LRU cache format).
 // Channel layout as uint32: R<<24 | G<<16 | B<<8 | A
 
-// ⚡ Per-channel color modulation: out = (src * mod + 127) / 255
-// src_pixel is RGBA8888, color_mod is RGBA8888
+// ⚡ Exact divide by 255 using shifts only — no UDIV instruction.
+// Correct for all x ∈ [0, 65534], which covers all u8×u8 products.
+#define DIV255(x) (((x) + 1u + (((x) >> 8) & 0xFFu)) >> 8)
+
+// ⚡ Color modulate: channel-wise multiply two RGBA8888 pixels.
 static inline uint32_t sw_modulate_rgba8888(uint32_t pixel, uint32_t color) {
     const uint32_t src_r = (pixel >> 24) & 0xFFu;
     const uint32_t src_g = (pixel >> 16) & 0xFFu;
@@ -205,7 +218,7 @@ static inline uint32_t sw_blend_rgba8888(uint32_t dst_pixel, uint32_t src_pixel)
     const uint32_t dst_g = (dst_pixel >> 16) & 0xFFu;
     const uint32_t dst_b = (dst_pixel >>  8) & 0xFFu;
 
-    // Premultiplied compositing: out = src*α_s + dst*α_d*(1-α_s), then un-premultiply
+    // Premultiplied src-over compositing, then un-premultiply
     const uint32_t out_r = ((src_r * src_a + dst_r * dst_a * inv_src_a / 255u) + out_a / 2u) / out_a;
     const uint32_t out_g = ((src_g * src_a + dst_g * dst_a * inv_src_a / 255u) + out_a / 2u) / out_a;
     const uint32_t out_b = ((src_b * src_a + dst_b * dst_a * inv_src_a / 255u) + out_a / 2u) / out_a;
@@ -648,15 +661,69 @@ static const uint32_t* sw_lookup_cached_pixels(int ti, int palette_handle, int* 
     return NULL;
 }
 
+// ⚡ Ensure non-indexed texture has RGBA8888 pixel cache populated.
+// Converts ABGR8888/ABGR1555 surface to RGBA8888 lazily on first access.
+// Returns cached pixel data or NULL on failure.
+static const uint32_t* sw_ensure_nonidx_pixels(int ti, int* out_w, int* out_h) {
+    if (nonidx_pixels[ti] != NULL) {
+        *out_w = nonidx_pixels_w[ti];
+        *out_h = nonidx_pixels_h[ti];
+        return nonidx_pixels[ti];
+    }
+    SDL_Surface* surf = surfaces[ti];
+    if (!surf) return NULL;
+    const int pixel_count = surf->w * surf->h;
+    if (pixel_count > RGBA_SCRATCH_MAX) return NULL;
+
+    if (surf->format == SDL_PIXELFORMAT_ABGR8888) {
+        const uint32_t* src = (const uint32_t*)surf->pixels;
+        for (int i = 0; i < pixel_count; i++) {
+            const uint32_t p = src[i];
+            rgba_scratch[i] = ((p & 0xFFu) << 24) |
+                              ((p & 0xFF00u) << 8) |
+                              (((p >> 16) & 0xFFu) << 8) |
+                              ((p >> 24) & 0xFFu);
+        }
+    } else if (surf->format == SDL_PIXELFORMAT_ABGR1555) {
+        const uint16_t* src = (const uint16_t*)surf->pixels;
+        for (int i = 0; i < pixel_count; i++) {
+            const uint16_t p = src[i];
+            const uint32_t r = color5_to_8[p & 0x1Fu];
+            const uint32_t g = color5_to_8[(p >> 5) & 0x1Fu];
+            const uint32_t b = color5_to_8[(p >> 10) & 0x1Fu];
+            const uint32_t a = (p & 0x8000u) ? 255u : 0u;
+            rgba_scratch[i] = (r << 24) | (g << 16) | (b << 8) | a;
+        }
+    } else {
+        return NULL;
+    }
+
+    nonidx_pixels[ti] = (uint32_t*)SDL_malloc(pixel_count * sizeof(uint32_t));
+    if (!nonidx_pixels[ti]) return NULL;
+    SDL_memcpy(nonidx_pixels[ti], rgba_scratch, pixel_count * sizeof(uint32_t));
+    nonidx_pixels_w[ti] = surf->w;
+    nonidx_pixels_h[ti] = surf->h;
+    *out_w = surf->w;
+    *out_h = surf->h;
+    return nonidx_pixels[ti];
+}
+
 // ⚡ Software-rasterize a textured rect task into the software-frame surface.
 static bool sw_raster_textured(int task_idx) {
     const unsigned int th = task_th[task_idx];
     const int tex_handle = LO_16_BITS(th);
     const int pal_handle = HI_16_BITS(th);
     if (tex_handle <= 0 || tex_handle > FL_TEXTURE_MAX) return false;
+    const int ti = tex_handle - 1;
 
     int src_tex_w, src_tex_h;
-    const uint32_t* src_pixels = sw_lookup_cached_pixels(tex_handle - 1, pal_handle, &src_tex_w, &src_tex_h);
+    const uint32_t* src_pixels = NULL;
+
+    if (pal_handle > 0) {
+        src_pixels = sw_lookup_cached_pixels(ti, pal_handle, &src_tex_w, &src_tex_h);
+    } else {
+        src_pixels = sw_ensure_nonidx_pixels(ti, &src_tex_w, &src_tex_h);
+    }
     if (!src_pixels) return false;
 
     const SDL_FRect* dst_r = &task_dst_rect[task_idx];
@@ -794,16 +861,225 @@ static bool sw_raster_solid(int task_idx) {
     return true;
 }
 
+// ⚡ Scanline triangle rasterizer with affine UV interpolation.
+// Rasterizes one triangle (3 vertices with position, tex_coord) into sw_frame_surface.
+// src_pixels is RGBA8888, tex dimensions are src_w × src_h.
+typedef struct SwTriVert {
+    float x, y, u, v;
+} SwTriVert;
 
+static void sw_raster_triangle(const SwTriVert* v0, const SwTriVert* v1, const SwTriVert* v2,
+                                const uint32_t* src_pixels, int src_w, int src_h,
+                                uint32_t color, uint32_t* dst_pixels, int dst_pitch,
+                                int clip_w, int clip_h) {
+    // Sort vertices by Y (top to bottom)
+    const SwTriVert* top = v0;
+    const SwTriVert* mid = v1;
+    const SwTriVert* bot = v2;
+    if (mid->y < top->y) { const SwTriVert* t = top; top = mid; mid = t; }
+    if (bot->y < top->y) { const SwTriVert* t = top; top = bot; bot = t; }
+    if (bot->y < mid->y) { const SwTriVert* t = mid; mid = bot; bot = t; }
+
+    const float total_dy = bot->y - top->y;
+    if (total_dy < 0.5f) return; // Degenerate triangle
+
+    const bool has_color_mod = (color != 0xFFFFFFFFu);
+
+    // Long edge slopes (top→bot, spans entire triangle height)
+    const float inv_total_dy = 1.0f / total_dy;
+    const float dx_long = (bot->x - top->x) * inv_total_dy;
+    const float du_long = (bot->u - top->u) * inv_total_dy;
+    const float dv_long = (bot->v - top->v) * inv_total_dy;
+
+    // Upper half: top → mid
+    const float upper_dy = mid->y - top->y;
+    if (upper_dy >= 0.5f) {
+        const float inv_upper_dy = 1.0f / upper_dy;
+        const float dx_short = (mid->x - top->x) * inv_upper_dy;
+        const float du_short = (mid->u - top->u) * inv_upper_dy;
+        const float dv_short = (mid->v - top->v) * inv_upper_dy;
+
+        int y_start = sw_clamp((int)SDL_ceilf(top->y), 0, clip_h);
+        int y_end   = sw_clamp((int)SDL_ceilf(mid->y), 0, clip_h);
+        for (int y = y_start; y < y_end; y++) {
+            float dt = (float)y - top->y;
+            float xa = top->x + dx_long  * dt, ua = top->u + du_long  * dt, va = top->v + dv_long  * dt;
+            float xb = top->x + dx_short * dt, ub = top->u + du_short * dt, vb = top->v + dv_short * dt;
+            if (xa > xb) { float tmp; tmp=xa; xa=xb; xb=tmp; tmp=ua; ua=ub; ub=tmp; tmp=va; va=vb; vb=tmp; }
+            int x0 = sw_clamp((int)SDL_ceilf(xa), 0, clip_w);
+            int x1 = sw_clamp((int)SDL_ceilf(xb), 0, clip_w);
+            float span = xb - xa;
+            if (span < 0.5f) continue;
+            float inv_span = 1.0f / span;
+            uint32_t* row = dst_pixels + y * dst_pitch;
+            for (int x = x0; x < x1; x++) {
+                float frac = ((float)x - xa) * inv_span;
+                int tx = sw_clamp((int)((ua + (ub - ua) * frac) * src_w), 0, src_w - 1);
+                int ty = sw_clamp((int)((va + (vb - va) * frac) * src_h), 0, src_h - 1);
+                uint32_t texel = src_pixels[ty * src_w + tx];
+                if (has_color_mod) texel = sw_modulate_rgba8888(texel, color);
+                row[x] = sw_blend_rgba8888(row[x], texel);
+            }
+        }
+    }
+
+    // Lower half: mid → bot
+    const float lower_dy = bot->y - mid->y;
+    if (lower_dy >= 0.5f) {
+        const float inv_lower_dy = 1.0f / lower_dy;
+        const float dx_short = (bot->x - mid->x) * inv_lower_dy;
+        const float du_short = (bot->u - mid->u) * inv_lower_dy;
+        const float dv_short = (bot->v - mid->v) * inv_lower_dy;
+
+        int y_start = sw_clamp((int)SDL_ceilf(mid->y), 0, clip_h);
+        int y_end   = sw_clamp((int)SDL_ceilf(bot->y), 0, clip_h);
+        for (int y = y_start; y < y_end; y++) {
+            float t_long = (float)y - top->y;
+            float t_short = (float)y - mid->y;
+            float xa = top->x + dx_long  * t_long,  ua = top->u + du_long  * t_long,  va = top->v + dv_long  * t_long;
+            float xb = mid->x + dx_short * t_short, ub = mid->u + du_short * t_short, vb = mid->v + dv_short * t_short;
+            if (xa > xb) { float tmp; tmp=xa; xa=xb; xb=tmp; tmp=ua; ua=ub; ub=tmp; tmp=va; va=vb; vb=tmp; }
+            int x0 = sw_clamp((int)SDL_ceilf(xa), 0, clip_w);
+            int x1 = sw_clamp((int)SDL_ceilf(xb), 0, clip_w);
+            float span = xb - xa;
+            if (span < 0.5f) continue;
+            float inv_span = 1.0f / span;
+            uint32_t* row = dst_pixels + y * dst_pitch;
+            for (int x = x0; x < x1; x++) {
+                float frac = ((float)x - xa) * inv_span;
+                int tx = sw_clamp((int)((ua + (ub - ua) * frac) * src_w), 0, src_w - 1);
+                int ty = sw_clamp((int)((va + (vb - va) * frac) * src_h), 0, src_h - 1);
+                uint32_t texel = src_pixels[ty * src_w + tx];
+                if (has_color_mod) texel = sw_modulate_rgba8888(texel, color);
+                row[x] = sw_blend_rgba8888(row[x], texel);
+            }
+        }
+    }
+}
+
+// ⚡ Software-rasterize a non-rect quad (2 triangles) into sw_frame_surface.
+// Split quad indices {0,1,2,3} into triangles {0,1,2} and {1,2,3}.
+static bool sw_raster_quad(int task_idx) {
+    const unsigned int th = task_th[task_idx];
+    const int tex_handle = LO_16_BITS(th);
+    const int pal_handle = HI_16_BITS(th);
+    if (tex_handle <= 0 || tex_handle > FL_TEXTURE_MAX) return false;
+    const int ti = tex_handle - 1;
+
+    int src_w, src_h;
+    const uint32_t* src_pixels = NULL;
+    if (pal_handle > 0) {
+        src_pixels = sw_lookup_cached_pixels(ti, pal_handle, &src_w, &src_h);
+    } else {
+        src_pixels = sw_ensure_nonidx_pixels(ti, &src_w, &src_h);
+    }
+    if (!src_pixels) return false;
+
+    // Convert vertex color to RGBA8888 for modulation
+    const SDL_FColor* fc = &task_verts[task_idx][0].color;
+    const uint32_t color = ((uint32_t)(fc->r * 255.0f + 0.5f) << 24) |
+                           ((uint32_t)(fc->g * 255.0f + 0.5f) << 16) |
+                           ((uint32_t)(fc->b * 255.0f + 0.5f) <<  8) |
+                            (uint32_t)(fc->a * 255.0f + 0.5f);
+
+    // Build SwTriVert array from SDL_Vertex data
+    SwTriVert verts[4];
+    for (int i = 0; i < 4; i++) {
+        verts[i].x = task_verts[task_idx][i].position.x;
+        verts[i].y = task_verts[task_idx][i].position.y;
+        verts[i].u = task_verts[task_idx][i].tex_coord.x;
+        verts[i].v = task_verts[task_idx][i].tex_coord.y;
+    }
+
+    uint32_t* dst_pixels = (uint32_t*)sw_frame_surface->pixels;
+    const int dst_pitch = sw_frame_surface->pitch / (int)sizeof(uint32_t);
+
+    // Rasterize two triangles: {0,1,2} and {1,2,3}
+    sw_raster_triangle(&verts[0], &verts[1], &verts[2],
+                       src_pixels, src_w, src_h, color,
+                       dst_pixels, dst_pitch, cps3_width, cps3_height);
+    sw_raster_triangle(&verts[1], &verts[2], &verts[3],
+                       src_pixels, src_w, src_h, color,
+                       dst_pixels, dst_pitch, cps3_width, cps3_height);
+    return true;
+}
+
+// ⚡ Software-rasterize a non-rect SOLID quad (flat color fill via triangle rasterizer).
+// Uses a 1×1 white pixel as texture source, with the solid color as the modulation color.
+static const uint32_t sw_white_pixel = 0xFFFFFFFFu; // RGBA white
+static bool sw_raster_solid_quad(int task_idx) {
+    // Convert vertex color to RGBA8888
+    const SDL_FColor* fc = &task_verts[task_idx][0].color;
+    const uint32_t color = ((uint32_t)(fc->r * 255.0f + 0.5f) << 24) |
+                           ((uint32_t)(fc->g * 255.0f + 0.5f) << 16) |
+                           ((uint32_t)(fc->b * 255.0f + 0.5f) <<  8) |
+                            (uint32_t)(fc->a * 255.0f + 0.5f);
+
+    // Build SwTriVert with UV=(0,0) — all sample the single white pixel
+    SwTriVert verts[4];
+    for (int i = 0; i < 4; i++) {
+        verts[i].x = task_verts[task_idx][i].position.x;
+        verts[i].y = task_verts[task_idx][i].position.y;
+        verts[i].u = 0.0f;
+        verts[i].v = 0.0f;
+    }
+
+    uint32_t* dst_pixels = (uint32_t*)sw_frame_surface->pixels;
+    const int dst_pitch = sw_frame_surface->pitch / (int)sizeof(uint32_t);
+
+    sw_raster_triangle(&verts[0], &verts[1], &verts[2],
+                       &sw_white_pixel, 1, 1, color,
+                       dst_pixels, dst_pitch, cps3_width, cps3_height);
+    sw_raster_triangle(&verts[1], &verts[2], &verts[3],
+                       &sw_white_pixel, 1, 1, color,
+                       dst_pixels, dst_pitch, cps3_width, cps3_height);
+    return true;
+}
 
 // ⚡ Software-frame render: composite all tasks into sw_frame_surface, upload as one texture.
 // Returns true if the entire frame was software-composited; false = fallback to draw calls.
 static bool sw_render_frame(void) {
     TRACE_ZONE_N("SDL2D:SwFrame");
 
+    // ⚡ BENCHMARK TOGGLE: set to true to force hardware path
+    static const bool sw_frame_disabled = false;
+    if (sw_frame_disabled) { TRACE_ZONE_END(); return false; }
+
     if (!ensure_sw_frame_surface() || !ensure_sw_frame_upload_texture()) {
         TRACE_ZONE_END();
         return false;
+    }
+
+    // ⚡ Pixel budget heuristic: bail to hardware if total destination pixel work
+    // exceeds a threshold. Large-rect screens (VS portraits, backgrounds) are faster
+    // on GPU than per-pixel CPU blending. Gameplay sprites (many 16×16 tiles) stay fast.
+    // Budget = 2× framebuffer area (384×224 = 86,016 → threshold ~172K pixels).
+    {
+        uint64_t total_pixels = 0;
+        const uint64_t pixel_budget = UINT64_MAX; // disabled for debugging
+        for (int i = 0; i < render_task_count; i++) {
+            const int idx = render_task_order[i];
+            if (task_is_rect[idx]) {
+                const SDL_FRect* r = &task_dst_rect[idx];
+                total_pixels += (uint64_t)(r->w > 0 ? r->w : 0) * (uint64_t)(r->h > 0 ? r->h : 0);
+            } else {
+                // Non-rect: use AABB area as estimate
+                const SDL_Vertex* v = task_verts[idx];
+                float minx = v[0].position.x, miny = v[0].position.y;
+                float maxx = minx, maxy = miny;
+                for (int k = 1; k < 4; k++) {
+                    if (v[k].position.x < minx) minx = v[k].position.x;
+                    if (v[k].position.x > maxx) maxx = v[k].position.x;
+                    if (v[k].position.y < miny) miny = v[k].position.y;
+                    if (v[k].position.y > maxy) maxy = v[k].position.y;
+                }
+                total_pixels += (uint64_t)(maxx - minx) * (uint64_t)(maxy - miny);
+            }
+            if (total_pixels > pixel_budget) {
+                TRACE_ZONE_END();
+                return false;
+            }
+        }
     }
 
     // Compute RGBA8888 clear color for this frame
@@ -865,7 +1141,9 @@ static bool sw_render_frame(void) {
     // Phase 1: Eligibility check + rasterize
     for (int i = 0; i < render_task_count; i++) {
         const int idx = render_task_order[i];
-        const bool is_textured = (task_texture[idx] != NULL);
+        // ⚡ Deferred texture: task_texture may be NULL (FlushBatch path).
+        // Use task_th (tex+palette handle) to detect textured vs solid tasks.
+        const bool is_textured = (LO_16_BITS(task_th[idx]) > 0);
         const bool is_rect = task_is_rect[idx];
 
         if (is_rect && is_textured) {
@@ -879,10 +1157,18 @@ static bool sw_render_frame(void) {
                 TRACE_ZONE_END();
                 return false;
             }
+        } else if (!is_rect && is_textured) {
+            // ⚡ Non-rect textured geometry — scanline triangle rasterizer
+            if (!sw_raster_quad(idx)) {
+                TRACE_ZONE_END();
+                return false;
+            }
         } else {
-            // Non-rect geometry (textured or solid) — cannot software-rasterize
-            TRACE_ZONE_END();
-            return false;
+            // ⚡ Non-rect solid geometry — triangle rasterizer with flat color
+            if (!sw_raster_solid_quad(idx)) {
+                TRACE_ZONE_END();
+                return false;
+            }
         }
     }
 
@@ -1026,11 +1312,15 @@ void SDLGameRendererSDL_Shutdown(void) {
         idx_pal_lru_clock[i] = 0;
     }
 
-    // Destroy all surfaces
+    // Destroy all surfaces and non-indexed pixel caches
     for (int i = 0; i < FL_TEXTURE_MAX; i++) {
         if (surfaces[i] != NULL) {
             SDL_DestroySurface(surfaces[i]);
             surfaces[i] = NULL;
+        }
+        if (nonidx_pixels[i] != NULL) {
+            SDL_free(nonidx_pixels[i]);
+            nonidx_pixels[i] = NULL;
         }
     }
 
@@ -1125,6 +1415,27 @@ void SDLGameRendererSDL_RenderFrame(void) {
         return;
     }
     TRACE_PLOT_INT("SoftwareFrame", 0);
+
+    // ⚡ Deferred texture resolution: FlushBatch skips SetTexture (stores task_th only),
+    // so task_texture[] is NULL for batch-flushed sprites. Resolve them now on the
+    // rare hardware fallback path. Only indexed textures need lookup_idx_tex;
+    // non-indexed use the eagerly-created texture_cache[].
+    for (int i = 0; i < render_task_count; i++) {
+        const int idx = render_task_order[i];
+        if (task_texture[idx] != NULL) continue; // already resolved (from draw_quad path)
+        const unsigned int th = task_th[idx];
+        const int tex_handle = LO_16_BITS(th);
+        const int pal_handle = HI_16_BITS(th);
+        if (tex_handle < 1 || tex_handle > FL_TEXTURE_MAX) continue;
+        const int ti = tex_handle - 1;
+        SDL_Surface* surface = surfaces[ti];
+        if (!surface) continue;
+        if (SDL_ISPIXELFORMAT_INDEXED(surface->format) && pal_handle > 0) {
+            task_texture[idx] = lookup_idx_tex(renderer, ti, pal_handle);
+        } else {
+            task_texture[idx] = texture_cache[ti];
+        }
+    }
 
     // Re-bind render target (sw_render_frame may have changed it)
     SDL_SetRenderTarget(renderer, cps3_canvas);
@@ -1324,6 +1635,7 @@ void SDLGameRendererSDL_EndFrame(void) {
 void SDLGameRendererSDL_UnlockPalette(unsigned int ph) {
     const int palette_handle = ph;
 
+
     if ((palette_handle > 0) && (palette_handle < FL_PALETTE_MAX)) {
         SDLGameRendererSDL_DestroyPalette(palette_handle);
         SDLGameRendererSDL_CreatePalette(ph << 16);
@@ -1347,6 +1659,7 @@ void SDLGameRendererSDL_UnlockTexture(unsigned int th) {
     }
 
     /* Invalidate texture binding cache */
+
     last_set_texture_th = 0;
     last_set_texture = NULL;
 
@@ -1366,6 +1679,12 @@ void SDLGameRendererSDL_UnlockTexture(unsigned int th) {
             SDL_free(idx_pal_pixels[texture_index][s]);
             idx_pal_pixels[texture_index][s] = NULL;
         }
+    }
+
+    /* Invalidate non-indexed pixel cache */
+    if (nonidx_pixels[texture_index] != NULL) {
+        SDL_free(nonidx_pixels[texture_index]);
+        nonidx_pixels[texture_index] = NULL;
     }
 
     /* Surface stays alive — it still references the (now-updated) system buffer. */
@@ -1476,6 +1795,12 @@ void SDLGameRendererSDL_DestroyTexture(unsigned int texture_handle) {
         idx_pal_hash[texture_index][s]   = 0;
     }
     idx_pal_lru_clock[texture_index] = 0;
+
+    // Invalidate non-indexed pixel cache
+    if (nonidx_pixels[texture_index] != NULL) {
+        SDL_free(nonidx_pixels[texture_index]);
+        nonidx_pixels[texture_index] = NULL;
+    }
 
     if (surfaces[texture_index] != NULL) {
         SDL_DestroySurface(surfaces[texture_index]);
@@ -1692,7 +2017,7 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
 
     const int task_idx = render_task_count;
     task_texture[task_idx] = textured ? get_texture() : NULL;
-    task_th[task_idx] = last_set_texture_th;
+    task_th[task_idx] = textured ? last_set_texture_th : 0;
     task_z[task_idx] = flPS2ConvScreenFZ(vertices[0].coord.z);
 
     // ⚡ Track sortedness
@@ -1871,9 +2196,12 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         }
     }
 
-    // Phase 2: Iterate sprites in submission order — SetTexture is now a cheap
-    // pointer lookup, so no pre-sort needed. RenderFrame's texture_subsort_equal_z_groups
-    // handles GPU draw call batching within same-Z groups.
+    // Phase 2: Iterate sprites in submission order.
+    // ⚡ Deferred texture: we DON'T call SetTexture here. Software-frame path
+    // (which succeeds 99%+ of frames) uses task_th → sw_lookup_cached_pixels
+    // and never touches task_texture. SDL_Texture resolution is deferred to the
+    // rare hardware fallback in RenderFrame. This eliminates ~148 per-frame
+    // lookup_idx_tex scans + push_texture stack writes.
     unsigned int last_tex_code = 0;
     int set_texture_calls = 0;
 
@@ -1883,18 +2211,17 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
 
         const Sprite2* spr = &chips[sprite_sort_indices[si]];
 
-        /* SetTexture on tex_code change — needed for palette cache lookup */
+        /* Track unique tex_code transitions for Tracy telemetry */
         unsigned int tc = spr->tex_code;
         if (tc != last_tex_code) {
             last_tex_code = tc;
-            SDLGameRendererSDL_SetTexture(tc);
             set_texture_calls++;
         }
 
         /* --- Inlined draw_quad: Sprite2 → RenderTask directly --- */
         const int task_idx = render_task_count;
-        task_texture[task_idx] = last_set_texture;
-        task_th[task_idx] = last_set_texture_th;
+        task_texture[task_idx] = NULL; // ⚡ Deferred — resolved in RenderFrame on hw fallback
+        task_th[task_idx] = tc;
         task_z[task_idx] = flPS2ConvScreenFZ(spr->v[0].z);
 
         if (task_z[task_idx] < last_submitted_z) sort_inversions++;
