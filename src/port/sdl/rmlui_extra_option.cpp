@@ -120,6 +120,9 @@ extern "C" void rmlui_extra_option_init(void) {
 extern "C" void rmlui_extra_option_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("extra_option"))
+        return;
 
     int page = (int)Menu_Page;
     if (page < 0 || page > 3)

@@ -72,6 +72,9 @@ extern "C" void rmlui_memory_card_init(void) {
 extern "C" void rmlui_memory_card_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("memory_card"))
+        return;
 
     DIRTY_INT(cursor_y, (int)Menu_Cursor_Y[0]);
 

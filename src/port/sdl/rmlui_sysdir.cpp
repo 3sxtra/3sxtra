@@ -258,6 +258,9 @@ extern "C" void rmlui_sysdir_init(void) {
 extern "C" void rmlui_sysdir_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("sysdir"))
+        return;
 
     DIRTY_INT(cursor_y, (int)Menu_Cursor_Y[0]);
     DIRTY_INT(page, (int)Menu_Page);

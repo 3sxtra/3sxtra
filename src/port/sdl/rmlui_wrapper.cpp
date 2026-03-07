@@ -226,6 +226,16 @@ static constexpr int GAME_H = 224;
 
 static std::string s_ui_base_path;
 
+// ⚡ Helper: check if any document in a context map is currently visible.
+// Used to skip expensive Update/Render cycles when no UI is showing.
+static bool has_visible_docs(const std::unordered_map<std::string, Rml::ElementDocument*>& docs) {
+    for (const auto& [name, doc] : docs) {
+        if (doc && doc->IsVisible())
+            return true;
+    }
+    return false;
+}
+
 // -------------------------------------------------------------------
 // Init
 // -------------------------------------------------------------------
@@ -458,6 +468,9 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
 extern "C" void rmlui_wrapper_new_frame(void) {
     if (!s_window_context)
         return;
+    // ⚡ Skip context update when no window documents are visible
+    if (!has_visible_docs(s_window_documents))
+        return;
     s_window_context->Update();
 }
 
@@ -466,6 +479,10 @@ extern "C" void rmlui_wrapper_new_frame(void) {
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_render(void) {
     if (!s_window_context || !s_render_interface)
+        return;
+    // ⚡ Skip entire BeginFrame/Render/EndFrame when no window documents are visible.
+    // Saves ~60 GL state save/restore calls per frame when no overlays are open.
+    if (!has_visible_docs(s_window_documents))
         return;
 
     if (s_render_gl3) {
@@ -666,12 +683,18 @@ extern "C" void rmlui_wrapper_close_game_document(const char* name) {
 extern "C" void rmlui_wrapper_update_game(void) {
     if (!s_game_context)
         return;
+    // ⚡ Skip context update when no game documents are visible
+    if (!has_visible_docs(s_game_documents))
+        return;
     s_game_context->Update();
 }
 
 extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, float view_y, float view_w,
                                           float view_h) {
     if (!s_game_context || !s_render_interface)
+        return;
+    // ⚡ Skip entire render pass when no game documents are visible
+    if (!has_visible_docs(s_game_documents))
         return;
 
     // Width-based dp_ratio: fonts rasterize at high resolution.

@@ -148,6 +148,9 @@ extern "C" void rmlui_game_option_init(void) {
 extern "C" void rmlui_game_option_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("game_option"))
+        return;
 
     int cur = (int)Menu_Cursor_Y[0];
     if (cur != s_cache.cursor) {

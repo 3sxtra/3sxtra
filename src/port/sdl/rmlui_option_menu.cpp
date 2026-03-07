@@ -95,6 +95,9 @@ extern "C" void rmlui_option_menu_init(void) {
 extern "C" void rmlui_option_menu_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("option_menu"))
+        return;
     /* Note: bound as "option_cursor", so we cannot use DIRTY_INT(cursor,...) —
        the macro would dirty "cursor" instead of "option_cursor". */
     {

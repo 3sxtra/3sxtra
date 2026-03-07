@@ -64,7 +64,7 @@ static int s_compute_drops_last_frame = 0;
 
 typedef struct {
     Uint32 src_offset, src_size, dst_size, dst_layer;
-    Uint32 dst_x, dst_y, tile_dim, _pad;
+    Uint32 dst_x, dst_y, tile_dim, texture_index;
 } LZ77Job;
 
 static struct {
@@ -997,20 +997,32 @@ void SDLGameRendererGPU_RenderFrame(void) {
 
     // --- 1.5. Compute Pass (⚡ Opt6: LZ77 decode) ---
     if (s_lz77_available && s_lz77_job_count > 0) {
-        s_lz77_uniforms.job_count = s_lz77_job_count;
+        // Filter out stale jobs (if the texture was destroyed/layer freed after enqueue)
+        int valid_jobs = 0;
+        for (int i = 0; i < s_lz77_job_count; i++) {
+            LZ77Job* job = &s_lz77_uniforms.jobs[i];
+            if (tex_array_layer[job->texture_index] == (int)job->dst_layer) {
+                s_lz77_uniforms.jobs[valid_jobs++] = *job;
+            }
+        }
+        s_lz77_job_count = valid_jobs;
 
-        SDL_GPUComputePass* comp = SDL_BeginGPUComputePass(
-            current_cmd_buf,
-            &(SDL_GPUStorageTextureReadWriteBinding){ .texture = texture_array },
-            1, NULL, 0);
-        if (comp) {
-            SDL_BindGPUComputePipeline(comp, s_lz77_pipeline);
-            SDL_GPUBuffer* lz77_ro_bufs[2] = { s_lz77_input_buffer, s_lz77_swizzle_buffer };
-            SDL_BindGPUComputeStorageBuffers(comp, 0, lz77_ro_bufs, 2);
-            SDL_PushGPUComputeUniformData(current_cmd_buf, 0,
-                &s_lz77_uniforms, sizeof(s_lz77_uniforms));
-            SDL_DispatchGPUCompute(comp, s_lz77_job_count, 1, 1);
-            SDL_EndGPUComputePass(comp);
+        if (s_lz77_job_count > 0) {
+            s_lz77_uniforms.job_count = s_lz77_job_count;
+
+            SDL_GPUComputePass* comp = SDL_BeginGPUComputePass(
+                current_cmd_buf,
+                &(SDL_GPUStorageTextureReadWriteBinding){ .texture = texture_array },
+                1, NULL, 0);
+            if (comp) {
+                SDL_BindGPUComputePipeline(comp, s_lz77_pipeline);
+                SDL_GPUBuffer* lz77_ro_bufs[2] = { s_lz77_input_buffer, s_lz77_swizzle_buffer };
+                SDL_BindGPUComputeStorageBuffers(comp, 0, lz77_ro_bufs, 2);
+                SDL_PushGPUComputeUniformData(current_cmd_buf, 0,
+                    &s_lz77_uniforms, sizeof(s_lz77_uniforms));
+                SDL_DispatchGPUCompute(comp, s_lz77_job_count, 1, 1);
+                SDL_EndGPUComputePass(comp);
+            }
         }
     }
 
@@ -1899,7 +1911,7 @@ int SDLGameRendererGPU_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 deco
     job->dst_x = dst_x;
     job->dst_y = dst_y;
     job->tile_dim = tile_dim;
-    job->_pad = 0;
+    job->texture_index = ti;
 
     s_lz77_upload_offset += aligned_size;
     return 1;

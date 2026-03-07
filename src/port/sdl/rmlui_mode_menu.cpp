@@ -96,6 +96,9 @@ extern "C" void rmlui_mode_menu_init(void) {
 extern "C" void rmlui_mode_menu_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("mode_menu"))
+        return;
     DIRTY_INT(menu_cursor, (int)Menu_Cursor_Y[0]);
     DIRTY_BOOL(network_available, netplay_is_available() != 0);
     DIRTY_BOOL(versus_available, Connect_Status != 0);

@@ -86,6 +86,9 @@ extern "C" void rmlui_copyright_hide(void) {
 extern "C" void rmlui_copyright_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("copyright"))
+        return;
 
     int c = (int)Country;
     if (c != s_cache.country) {

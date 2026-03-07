@@ -52,6 +52,9 @@ extern "C" void rmlui_title_screen_init(void) {
 extern "C" void rmlui_title_screen_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("title"))
+        return;
 
     bool show = (G_No[1] == 3 || G_No[1] == 5);
     if (show != s_cache.show_2p) {

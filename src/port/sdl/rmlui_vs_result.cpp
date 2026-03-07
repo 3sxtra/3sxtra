@@ -92,6 +92,9 @@ extern "C" void rmlui_vs_result_init(void) {
 extern "C" void rmlui_vs_result_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("vs_result"))
+        return;
 
     DIRTY_INT(p1_wins, (int)VS_Win_Record[0]);
     DIRTY_INT(p2_wins, (int)VS_Win_Record[1]);

@@ -129,6 +129,9 @@ extern "C" void rmlui_replay_picker_init(void) {
 extern "C" void rmlui_replay_picker_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("replay_picker"))
+        return;
 
     if (s_cursor != s_cache.cursor) {
         s_cache.cursor = s_cursor;

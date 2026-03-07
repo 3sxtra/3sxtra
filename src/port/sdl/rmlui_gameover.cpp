@@ -97,6 +97,9 @@ extern "C" void rmlui_gameover_init(void) {
 extern "C" void rmlui_gameover_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("gameover"))
+        return;
 
     DIRTY_INT(gameover_phase, s_gameover_phase);
     DIRTY_INT(gameover_score, (int)Score[Player_id][Play_Type]);

@@ -86,6 +86,9 @@ extern "C" void rmlui_sound_menu_init(void) {
 extern "C" void rmlui_sound_menu_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("sound_menu"))
+        return;
 
     /* Capture old level values before DIRTY_INT updates the cache. */
     int old_bgm = s_cache.bgm_level;

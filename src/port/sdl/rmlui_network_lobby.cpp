@@ -321,6 +321,9 @@ extern "C" void rmlui_network_lobby_init(void) {
 extern "C" void rmlui_network_lobby_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("network_lobby"))
+        return;
 
     DIRTY_INT(cursor, (int)Menu_Cursor_Y[0]);
     DIRTY_BOOL(lan_auto, Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT));

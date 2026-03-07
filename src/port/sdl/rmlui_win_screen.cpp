@@ -115,6 +115,9 @@ extern "C" void rmlui_win_screen_init(void) {
 extern "C" void rmlui_win_screen_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("win"))
+        return;
 
     DIRTY_STR(winner_name, Rml::String(char_name(My_char[Winner_id])));
     DIRTY_INT(winner_score, (int)WGJ_Score);

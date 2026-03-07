@@ -99,6 +99,9 @@ extern "C" void rmlui_continue_init(void) {
 extern "C" void rmlui_continue_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("continue"))
+        return;
 
     DIRTY_INT(continue_count, (int)Continue_Count_Down[LOSER]);
     DIRTY_BOOL(continue_active, Cont_No[0] < 2);

@@ -222,11 +222,20 @@ set_source_files_properties(
         COMPILE_OPTIONS "-Wno-error;-Wno-delete-abstract-non-virtual-dtor;-Wno-delete-non-abstract-non-virtual-dtor"
 )
 # Use our glad via RMLUI_GL3_CUSTOM_LOADER instead of RmlUi's bundled glad
-set_source_files_properties(
-    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
-    PROPERTIES
-        COMPILE_DEFINITIONS "RMLUI_GL3_CUSTOM_LOADER=<glad/gl.h>;RMLUI_SDL_VERSION_MAJOR=3"
-)
+# ⚡ On Pi4, disable MSAA (wasteful at 384×224 on tile-based V3D GPU)
+if(PLATFORM_RPI4)
+    set_source_files_properties(
+        ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
+        PROPERTIES
+            COMPILE_DEFINITIONS "RMLUI_GL3_CUSTOM_LOADER=<glad/gl.h>;RMLUI_SDL_VERSION_MAJOR=3;RMLUI_NUM_MSAA_SAMPLES=0"
+    )
+else()
+    set_source_files_properties(
+        ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
+        PROPERTIES
+            COMPILE_DEFINITIONS "RMLUI_GL3_CUSTOM_LOADER=<glad/gl.h>;RMLUI_SDL_VERSION_MAJOR=3"
+    )
+endif()
 
 if(WIN32)
     set_source_files_properties(src/port/win32/broadcast_spout.cpp PROPERTIES COMPILE_FLAGS "-Wno-error")

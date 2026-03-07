@@ -53,6 +53,9 @@ extern "C" void rmlui_button_config_init(void) {
 extern "C" void rmlui_button_config_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when document is hidden
+    if (!rmlui_wrapper_is_game_document_visible("button_config"))
+        return;
     int cur = (int)Menu_Cursor_Y[0];
     if (cur != s_cache.cursor) {
         s_cache.cursor = cur;

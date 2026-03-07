@@ -66,6 +66,14 @@ extern "C" void rmlui_training_menus_init(void) {
 extern "C" void rmlui_training_menus_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+    // ⚡ Skip when none of the training sub-documents are visible
+    if (!rmlui_wrapper_is_game_document_visible("training_mode") &&
+        !rmlui_wrapper_is_game_document_visible("normal_training") &&
+        !rmlui_wrapper_is_game_document_visible("dummy_setting") &&
+        !rmlui_wrapper_is_game_document_visible("training_option") &&
+        !rmlui_wrapper_is_game_document_visible("blocking_training") &&
+        !rmlui_wrapper_is_game_document_visible("blocking_tr_option"))
+        return;
 
     int cur = (int)Menu_Cursor_Y[0];
     if (cur != s_cache.cursor) {
