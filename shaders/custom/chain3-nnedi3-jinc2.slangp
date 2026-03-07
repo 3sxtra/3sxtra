@@ -1,0 +1,57 @@
+# Chain 3: "Best of Both" — NNEDI3 4x + Jinc2 Viewport
+#
+# NNEDI3 (passes 0-5): Neural network 4x upscale.
+#   Round 1: nns64 (64 neurons, highest quality) → 2x
+#   Round 2: nns32 (32 neurons) → 4x cumulative
+#   Each round: pass1 (vertical 2x) → pass2 (horizontal 2x) → jinc2 correction
+#
+# Jinc2 (pass 6): Windowed sinc filter for the final stretch to
+# monitor resolution. Razor-sharp, minimal ringing.
+#
+# Combines the AI precision of NNEDI3 with the audiophile-grade
+# final scaling of Jinc2.
+
+shaders = 7
+
+# ── NNEDI3 Round 1: nns64 (2x) ───────────────────────────
+shader0 = ../edge-smoothing/nnedi3/shaders/nnedi3-nns64-win8x4-pass1-rgb.slang
+filter_linear0 = false
+scale_type0 = source
+scale_x0 = 1.0
+scale_y0 = 2.0
+
+shader1 = ../edge-smoothing/nnedi3/shaders/nnedi3-nns64-win8x4-pass2-rgb.slang
+filter_linear1 = false
+scale_type1 = source
+scale_x1 = 2.0
+scale_y1 = 1.0
+
+shader2 = ../edge-smoothing/nnedi3/shaders/jinc2-cshift-rgb.slang
+filter_linear2 = false
+scale_type2 = source
+scale_x2 = 1.0
+scale_y2 = 1.0
+
+# ── NNEDI3 Round 2: nns32 (4x cumulative) ────────────────
+shader3 = ../edge-smoothing/nnedi3/shaders/nnedi3-nns32-win8x4-pass1-rgb.slang
+filter_linear3 = false
+scale_type3 = source
+scale_x3 = 1.0
+scale_y3 = 2.0
+
+shader4 = ../edge-smoothing/nnedi3/shaders/nnedi3-nns32-win8x4-pass2-rgb.slang
+filter_linear4 = false
+scale_type4 = source
+scale_x4 = 2.0
+scale_y4 = 1.0
+
+shader5 = ../edge-smoothing/nnedi3/shaders/jinc2-cshift-rgb.slang
+filter_linear5 = false
+scale_type5 = source
+scale_x5 = 1.0
+scale_y5 = 1.0
+
+# ── Final Jinc2 viewport scale ────────────────────────────
+shader6 = ../interpolation/shaders/jinc2.slang
+filter_linear6 = true
+scale_type6 = viewport

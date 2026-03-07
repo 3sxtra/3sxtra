@@ -99,7 +99,7 @@
 
 #define TRACE_SUB_DYN_BEGIN(name_ptr, name_len)                                                                        \
     {                                                                                                                  \
-        ((void)0)
+        (void)(name_ptr); (void)(name_len)
 
 #define TRACE_FRAME_MARK() ((void)0)
 
@@ -110,8 +110,8 @@
 #define TRACE_LOCK_UNLOCK(lock)      ((void)0)
 #define TRACE_LOCK_NAME(lock, n, l)  ((void)0)
 
-#define TRACE_PLOT_INT(name, val)    ((void)0)
-#define TRACE_PLOT_FLOAT(name, val)  ((void)0)
+#define TRACE_PLOT_INT(name, val)    ((void)(name), (void)(val))
+#define TRACE_PLOT_FLOAT(name, val)  ((void)(name), (void)(val))
 #define TRACE_PLOT_CONFIG(name, type, step, fill, color) ((void)0)
 
 #define TRACE_MSG(txt)               ((void)0)

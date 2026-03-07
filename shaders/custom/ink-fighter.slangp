@@ -1,0 +1,36 @@
+# Ink Fighter — Sharp Pixel Art + Ink Outline Cel Shading
+#
+# Pass 0: Sharp-bilinear upscaler
+#          Crisp nearest-neighbor with smooth pixel-boundary transitions.
+#          No edge detection = no artifacts. Just clean scaling.
+#
+# Pass 1: Ink outlines (Sobel at native res) + cel-shading
+#          Only strong edges get ink — small icons stay clean.
+#
+# All parameters are runtime-tunable via librashader.
+
+shaders = 2
+
+# ── Pass 0: Sharp Upscaler ────────────────────────────────
+shader0 = edge-smooth.slang
+filter_linear0 = false
+scale_type0 = viewport
+
+# ── Pass 1: Ink Outline + Cel Shade ───────────────────────
+shader1 = ink-cel.slang
+filter_linear1 = false
+scale_type1 = source
+
+# ── Default parameter overrides ───────────────────────────
+# Sharp upscaler
+SMOOTH_BLEND = "0.4"
+
+# Ink-Cel pass
+INK_STRENGTH = "0.45"
+INK_THICKNESS = "0.12"
+INK_COLOR_R = "0.03"
+INK_COLOR_G = "0.03"
+INK_COLOR_B = "0.06"
+CEL_LEVELS = "16.0"
+CEL_STRENGTH = "0.25"
+SATURATION_BOOST = "1.05"

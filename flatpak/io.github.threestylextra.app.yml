@@ -47,6 +47,15 @@ modules:
         url: https://github.com/libsdl-org/SDL_image.git
         branch: main
 
+  - name: sdl3-mixer
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_SHARED_LIBS=ON
+    sources:
+      - type: git
+        url: https://github.com/libsdl-org/SDL_mixer.git
+        branch: main
+
   - name: python3-jinja2
     buildsystem: simple
     build-options:

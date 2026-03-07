@@ -715,10 +715,13 @@ add_custom_command(TARGET 3sx POST_BUILD
     ${CMAKE_SOURCE_DIR}/src/shaders $<TARGET_FILE_DIR:3sx>/shaders
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${THIRD_PARTY_DIR}/slang-shaders $<TARGET_FILE_DIR:3sx>/shaders/libretro
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/shaders/custom $<TARGET_FILE_DIR:3sx>/shaders/libretro/custom
 )
 
 install(DIRECTORY src/shaders DESTINATION bin)
 install(DIRECTORY ${THIRD_PARTY_DIR}/slang-shaders/ DESTINATION bin/shaders/libretro)
+install(DIRECTORY shaders/custom/ DESTINATION bin/shaders/libretro/custom)
 install(DIRECTORY assets DESTINATION bin)
 
 
