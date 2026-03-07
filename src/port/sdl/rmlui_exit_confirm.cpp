@@ -31,7 +31,7 @@ extern "C" void rmlui_exit_confirm_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_Log("[RmlUi ExitConfirm] Data model registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi ExitConfirm] Data model registered");
 }
 
 // ─── Per-frame update ─────────────────────────────────────────────

@@ -181,9 +181,7 @@ static void Game_UpdateFrame(struct _TASK* task_ptr, s32 is_last_frame) {
         }
     }
 
-    TRACE_SUB_BEGIN("seqsAfter");
     seqsAfterProcess();
-    TRACE_SUB_END();
 
     TRACE_SUB_BEGIN("texcash_update");
     texture_cash_update();

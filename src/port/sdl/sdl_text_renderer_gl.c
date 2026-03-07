@@ -57,7 +57,7 @@ void SDLTextRendererGL_Init(const char* base_path, const char* font_path) {
 
     s_font_atlas.width = 128; // 16 chars per row * 8 pixels = 128 width
     s_font_atlas.height = 64; // 8 rows of chars * 8 pixels = 64 height
-    unsigned char* bitmap = (unsigned char*)calloc(1, s_font_atlas.width * s_font_atlas.height);
+    unsigned char* bitmap = (unsigned char*)SDL_calloc(1, s_font_atlas.width * s_font_atlas.height);
 
     // Unpack font8x8_basic into the texture atlas
     // The font map is 128 characters, each is 8 bytes.
@@ -85,7 +85,7 @@ void SDLTextRendererGL_Init(const char* base_path, const char* font_path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    free(bitmap);
+    SDL_free(bitmap);
 
     glGenVertexArrays(1, &s_text_vao);
     glGenBuffers(1, &s_text_vbo);

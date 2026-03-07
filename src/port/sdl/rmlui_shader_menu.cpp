@@ -199,7 +199,7 @@ extern "C" void rmlui_shader_menu_init() {
     // Initial preset list build
     rebuild_filtered_presets();
 
-    SDL_Log("[RmlUi Shaders] Data model registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Shaders] Data model registered");
 }
 
 // ── Per-frame update ───────────────────────────────────────────

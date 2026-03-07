@@ -394,7 +394,7 @@ extern "C" void rmlui_game_hud_init(void) {
     // Pre-load the HUD document (hidden initially; shown when is_fight_active is true)
     rmlui_wrapper_show_game_document("game_hud");
 
-    SDL_Log("[RmlUi HUD] Data model registered (52 bindings)");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi HUD] Data model registered (52 bindings)");
 }
 
 // ─── Per-frame update ────────────────────────────────────────────

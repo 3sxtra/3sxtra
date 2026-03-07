@@ -231,7 +231,7 @@ extern "C" void rmlui_control_mapping_init() {
     rebuild_mappings(1, s_p1_mappings);
     rebuild_mappings(2, s_p2_mappings);
 
-    SDL_Log("[RmlUi ControlMapping] Data model registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi ControlMapping] Data model registered");
 }
 
 // ── Per-frame update ───────────────────────────────────────────

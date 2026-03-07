@@ -71,7 +71,7 @@ static void scan_presets_recursive(const char* base_path, const char* relative_p
                         *capacity *= 2;
                         if (*capacity == 0)
                             *capacity = 16;
-                        *list = (char**)realloc(*list, *capacity * sizeof(char*));
+                        *list = (char**)SDL_realloc(*list, *capacity * sizeof(char*));
                     }
 
                     char preset_rel_path[1024];
@@ -162,14 +162,14 @@ void SDLAppShader_Init(const char* base_path) {
     snprintf(shaders_path, sizeof(shaders_path), "%s%s", g_base_path, "shaders/libretro");
 
     int capacity = 64;
-    available_presets = (char**)malloc(capacity * sizeof(char*));
+    available_presets = (char**)SDL_malloc(capacity * sizeof(char*));
     available_preset_count = 0;
 
     scan_presets_recursive(shaders_path, "", &available_presets, &available_preset_count, &capacity);
 
     if (available_preset_count > 0) {
         qsort(available_presets, available_preset_count, sizeof(char*), compare_strings);
-        SDL_Log("Found %d shader presets.", available_preset_count);
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Found %d shader presets.", available_preset_count);
     }
 
     const char* saved_shader = Config_GetString(CFG_KEY_SHADER_PATH);
@@ -197,7 +197,7 @@ void SDLAppShader_Shutdown() {
         for (int i = 0; i < available_preset_count; i++) {
             SDL_free(available_presets[i]);
         }
-        free(available_presets);
+        SDL_free(available_presets);
         available_presets = NULL;
     }
     if (g_base_path) {

@@ -45,7 +45,7 @@ extern "C" void rmlui_title_screen_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_Log("[RmlUi TitleScreen] Data model registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi TitleScreen] Data model registered");
 }
 
 // ─── Per-frame update ─────────────────────────────────────────────

@@ -151,16 +151,13 @@ static void afs_init() {
  * Skipped when the game is paused.
  */
 static void step_0() {
-    TRACE_ZONE_N("GameLogic");
     if (game_paused) {
-        TRACE_ZONE_END();
         return;
     }
 
     MenuBridge_StepGate();
     AFS_RunServer();
     game_step_0();
-    TRACE_ZONE_END();
 }
 
 /**
@@ -169,14 +166,11 @@ static void step_0() {
  * Runs after the frame has been rendered to the screen.
  */
 static void step_1() {
-    TRACE_ZONE_N("PostRender");
     if (game_paused) {
-        TRACE_ZONE_END();
         return;
     }
 
     game_step_1();
-    TRACE_ZONE_END();
 }
 
 /** @brief Application entry point. Parses CLI, runs SDL frame loop. */
@@ -334,10 +328,8 @@ static void game_step_0() {
 
     appSetupTempPriority();
 
-    TRACE_SUB_BEGIN("Input");
     flPADGetALL();
     keyConvert();
-    TRACE_SUB_END();
 
     if (configuration.test.enabled) {
         TestRunner_Prologue();
@@ -460,10 +452,8 @@ static void game_step_0() {
 
         seqsBeforeProcess();
 
-        TRACE_SUB_BEGIN("Render2D");
         Renderer_Flush2DPrimitives();
         seqsAfterProcess();
-        TRACE_SUB_END();
     }
 
     disp_effect_work();

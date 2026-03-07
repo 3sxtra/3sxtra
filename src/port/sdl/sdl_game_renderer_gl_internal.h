@@ -14,7 +14,8 @@
 #define RENDER_TASK_MAX 8192
 #define TEXTURES_TO_DESTROY_MAX 1024
 #define TEX_ARRAY_SIZE 512
-#define TEX_ARRAY_MAX_LAYERS 128
+#define TEX_ARRAY_MAX_LAYERS 384
+#define TEX_ARRAY_RGBA_MAX_LAYERS 64
 #define PALETTE_BUFFER_SIZE (FL_PALETTE_MAX * 256 * 4 * sizeof(float))
 #define OFFSET_BUFFER_COUNT 3
 #define CONVERSION_BUFFER_MAX_PIXELS (512 * 512)
@@ -43,6 +44,11 @@ typedef struct {
     int tex_array_free[TEX_ARRAY_MAX_LAYERS];
     int tex_array_free_count;
     int16_t tex_array_layer[FL_TEXTURE_MAX][FL_PALETTE_MAX + 1];
+
+    GLuint tex_array_rgba_id;
+    int tex_array_rgba_free[TEX_ARRAY_RGBA_MAX_LAYERS];
+    int tex_array_rgba_free_count;
+    int16_t tex_array_rgba_layer[FL_TEXTURE_MAX][FL_PALETTE_MAX + 1];
 
     GLuint palette_tbo;
     GLuint palette_buffer;
@@ -126,6 +132,10 @@ typedef struct {
     GLint arr_loc_projection;
     GLint arr_loc_source;
     GLint arr_loc_palette;
+    GLint arr_loc_source_rgba;
+
+    // Solid-color quad support — white pixel in RGBA array
+    int white_array_layer;
 
     // Config
     bool draw_rect_borders;

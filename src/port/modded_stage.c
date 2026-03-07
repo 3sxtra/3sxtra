@@ -240,7 +240,7 @@ void ModdedStage_LoadForStage(int stage_index) {
 
     if (loaded > 0) {
         s_loaded_stage = stage_index;
-        SDL_Log("ModdedStage: Stage %d loaded with %d active layers", stage_index, loaded);
+        SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "ModdedStage: Stage %d loaded with %d active layers", stage_index, loaded);
     }
 }
 
@@ -258,14 +258,7 @@ void ModdedStage_Unload(void) {
 /* ---------- Query ---------- */
 
 bool ModdedStage_IsActiveForCurrentStage(void) {
-    static int dbg_cnt = 0;
-    bool result = s_enabled && s_layer_res_count > 0 && s_loaded_stage == bg_w.stage;
-    if (!result && dbg_cnt < 10) {
-        SDL_Log("ModdedStage_IsActive=false: enabled=%d layers=%d loaded=%d bgw.stage=%d",
-                s_enabled, s_layer_res_count, s_loaded_stage, bg_w.stage);
-        dbg_cnt++;
-    }
-    return result;
+    return s_enabled && s_layer_res_count > 0 && s_loaded_stage == bg_w.stage;
 }
 
 int ModdedStage_GetLayerCount(void) {

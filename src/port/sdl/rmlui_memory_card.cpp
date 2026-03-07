@@ -65,7 +65,7 @@ extern "C" void rmlui_memory_card_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_Log("[RmlUi MemoryCard] Data model registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi MemoryCard] Data model registered");
 }
 
 // ─── Per-frame update ────────────────────────────────────────────

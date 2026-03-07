@@ -213,7 +213,7 @@ extern "C" void rmlui_stage_config_init() {
     s_model_handle = c.GetModelHandle();
     snapshot_active_layer();
 
-    SDL_Log("[RmlUi StageConfig] Data model registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi StageConfig] Data model registered");
 }
 
 // ── Per-frame update ───────────────────────────────────────────

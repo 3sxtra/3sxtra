@@ -314,7 +314,7 @@ extern "C" void rmlui_network_lobby_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_Log("[RmlUi NetworkLobby] Data model registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi NetworkLobby] Data model registered");
 }
 
 // ─── Per-frame update ────────────────────────────────────────────

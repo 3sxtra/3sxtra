@@ -211,7 +211,7 @@ extern "C" void rmlui_mods_menu_init(void) {
     s_model_handle = constructor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_Log("[RmlUi Mods] Data model registered (17 bindings)");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Mods] Data model registered (17 bindings)");
 }
 
 // -------------------------------------------------------------------

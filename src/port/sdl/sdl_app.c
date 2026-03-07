@@ -145,21 +145,9 @@ static bool last_had_letterbox_bars = true;
 SDL_FRect get_letterbox_rect(int win_w, int win_h);
 /** @brief Read an entire shader source file into a heap-allocated string. */
 static char* read_shader_source(const char* path) {
-    FILE* file = fopen(path, "rb");
-    if (file == NULL) {
-        return NULL;
-    }
-
-    fseek(file, 0, SEEK_END);
-    long length = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    char* buffer = (char*)malloc(length + 1);
-    size_t read_size = fread(buffer, 1, length, file);
-    buffer[read_size] = '\0';
-
-    fclose(file);
-    return buffer;
+    size_t length = 0;
+    char* buffer = (char*)SDL_LoadFile(path, &length);
+    return buffer; // caller frees with SDL_free
 }
 
 /** @brief Compile vertex + fragment shaders and link into a GL program. */
@@ -215,8 +203,8 @@ GLuint create_shader_program(const char* base_path, const char* vertex_path, con
 
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
-    free(vertex_source);
-    free(fragment_source);
+    SDL_free(vertex_source);
+    SDL_free(fragment_source);
 
     return program;
 }

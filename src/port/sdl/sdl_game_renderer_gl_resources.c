@@ -258,6 +258,30 @@ void SDLGameRendererGL_Init() {
     }
     memset(gl_state.tex_array_layer, -1, sizeof(gl_state.tex_array_layer));
 
+    // RGBA8 texture array for direct-color textures (PSMCT16/PSMCT32)
+    glGenTextures(1, &gl_state.tex_array_rgba_id);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, gl_state.tex_array_rgba_id);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, TEX_ARRAY_SIZE, TEX_ARRAY_SIZE, TEX_ARRAY_RGBA_MAX_LAYERS);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    gl_state.tex_array_rgba_free_count = TEX_ARRAY_RGBA_MAX_LAYERS;
+    for (int i = 0; i < gl_state.tex_array_rgba_free_count; i++) {
+        gl_state.tex_array_rgba_free[i] = TEX_ARRAY_RGBA_MAX_LAYERS - 1 - i;
+    }
+    memset(gl_state.tex_array_rgba_layer, -1, sizeof(gl_state.tex_array_rgba_layer));
+
+    // Reserve one RGBA array layer for the white pixel (solid-color quad support)
+    {
+        gl_state.white_array_layer = gl_state.tex_array_rgba_free[--gl_state.tex_array_rgba_free_count];
+        const u32 white_pixel = 0xFFFFFFFFu;
+        glBindTexture(GL_TEXTURE_2D_ARRAY, gl_state.tex_array_rgba_id);
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, gl_state.white_array_layer,
+                        1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &white_pixel);
+    }
+
     tcache_live_init();
 
     glGenBuffers(1, &gl_state.palette_buffer);
@@ -287,6 +311,7 @@ void SDLGameRendererGL_Init() {
     gl_state.arr_loc_projection = -1;
     gl_state.arr_loc_source = -1;
     gl_state.arr_loc_palette = -1;
+    gl_state.arr_loc_source_rgba = -1;
 }
 
 void SDLGameRendererGL_Shutdown() {
@@ -308,6 +333,8 @@ void SDLGameRendererGL_Shutdown() {
         glDeleteBuffers(1, &gl_state.pbo_upload);
     if (gl_state.tex_array_id)
         glDeleteTextures(1, &gl_state.tex_array_id);
+    if (gl_state.tex_array_rgba_id)
+        glDeleteTextures(1, &gl_state.tex_array_rgba_id);
     if (gl_state.palette_tbo)
         glDeleteTextures(1, &gl_state.palette_tbo);
     if (gl_state.palette_buffer)
@@ -379,6 +406,10 @@ void SDLGameRendererGL_DestroyTexture(unsigned int texture_handle) {
             if (gl_state.tex_array_layer[texture_index][pal] >= 0) {
                 gl_state.tex_array_free[gl_state.tex_array_free_count++] = gl_state.tex_array_layer[texture_index][pal];
                 gl_state.tex_array_layer[texture_index][pal] = -1;
+            }
+            if (gl_state.tex_array_rgba_layer[texture_index][pal] >= 0) {
+                gl_state.tex_array_rgba_free[gl_state.tex_array_rgba_free_count++] = gl_state.tex_array_rgba_layer[texture_index][pal];
+                gl_state.tex_array_rgba_layer[texture_index][pal] = -1;
             }
             gl_state.tcache_live[i] = gl_state.tcache_live[--gl_state.tcache_live_count];
         }
@@ -513,6 +544,11 @@ void SDLGameRendererGL_DestroyPalette(unsigned int palette_handle) {
                 gl_state.tex_array_free[gl_state.tex_array_free_count++] =
                     gl_state.tex_array_layer[tex][palette_handle];
                 gl_state.tex_array_layer[tex][palette_handle] = -1;
+            }
+            if (gl_state.tex_array_rgba_layer[tex][palette_handle] >= 0) {
+                gl_state.tex_array_rgba_free[gl_state.tex_array_rgba_free_count++] =
+                    gl_state.tex_array_rgba_layer[tex][palette_handle];
+                gl_state.tex_array_rgba_layer[tex][palette_handle] = -1;
             }
             gl_state.tcache_live[i] = gl_state.tcache_live[--gl_state.tcache_live_count];
         }
@@ -654,21 +690,75 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
         }
         glBindTexture(GL_TEXTURE_2D, texture);
 
-        int direct_layer = gl_state.tex_array_layer[texture_handle - 1][palette_handle];
-        if (direct_layer < 0 && surface->w <= TEX_ARRAY_SIZE && surface->h <= TEX_ARRAY_SIZE &&
-            gl_state.tex_array_free_count > 0) {
-            direct_layer = gl_state.tex_array_free[--gl_state.tex_array_free_count];
-            gl_state.tex_array_layer[texture_handle - 1][palette_handle] = (int16_t)direct_layer;
-        }
+        const bool is_16bit = (fl_texture->format == SCE_GS_PSMCT16);
 
-        if (direct_layer >= 0) {
-            bool is_16bit = (fl_texture->format == SCE_GS_PSMCT16);
+        if (is_16bit) {
+            // PSMCT16: direct-color — go straight to RGBA array, skip R8UI entirely
+            int rgba_layer = gl_state.tex_array_rgba_layer[texture_handle - 1][palette_handle];
+            if (rgba_layer < 0 && surface->w <= TEX_ARRAY_SIZE && surface->h <= TEX_ARRAY_SIZE &&
+                gl_state.tex_array_rgba_free_count > 0) {
+                rgba_layer = gl_state.tex_array_rgba_free[--gl_state.tex_array_rgba_free_count];
+                gl_state.tex_array_rgba_layer[texture_handle - 1][palette_handle] = (int16_t)rgba_layer;
+            }
 
-            if (is_16bit) {
-                gl_state.tex_array_free[gl_state.tex_array_free_count++] = direct_layer;
-                gl_state.tex_array_layer[texture_handle - 1][palette_handle] = -1;
-                direct_layer = -1;
-            } else {
+            if (rgba_layer >= 0) {
+                // Convert PSMCT16 → RGBA8 into conversion_buffer
+                u32* conv_buf = gl_state.conversion_buffer;
+                const simde__m128i mask5  = simde_mm_set1_epi32(0x1F);
+                const simde__m128i mask_a = simde_mm_set1_epi32(0x8000);
+                const simde__m128i alpha_ff = simde_mm_set1_epi32((int)0xFF000000u);
+                const simde__m128i zero = simde_mm_setzero_si128();
+                const Uint8* src_bytes = (const Uint8*)surface->pixels;
+                for (int y = 0; y < surface->h; y++) {
+                    const Uint16* row = (const Uint16*)(src_bytes + y * surface->pitch);
+                    u32* out_row = conv_buf + y * surface->w;
+                    int x = 0;
+                    for (; x + 7 < surface->w; x += 8) {
+                        simde__m128i px = simde_mm_loadu_si128((const simde__m128i*)(row + x));
+                        simde__m128i lo32 = simde_mm_unpacklo_epi16(px, zero);
+                        simde__m128i hi32 = simde_mm_unpackhi_epi16(px, zero);
+                        for (int half = 0; half < 2; half++) {
+                            simde__m128i v = (half == 0) ? lo32 : hi32;
+                            simde__m128i r = simde_mm_and_si128(v, mask5);
+                            simde__m128i g = simde_mm_and_si128(simde_mm_srli_epi32(v, 5), mask5);
+                            simde__m128i b = simde_mm_and_si128(simde_mm_srli_epi32(v, 10), mask5);
+                            simde__m128i a = simde_mm_and_si128(v, mask_a);
+                            r = simde_mm_or_si128(simde_mm_slli_epi32(r, 3), simde_mm_srli_epi32(r, 2));
+                            g = simde_mm_or_si128(simde_mm_slli_epi32(g, 3), simde_mm_srli_epi32(g, 2));
+                            b = simde_mm_or_si128(simde_mm_slli_epi32(b, 3), simde_mm_srli_epi32(b, 2));
+                            a = simde_mm_and_si128(simde_mm_cmpeq_epi32(a, mask_a), alpha_ff);
+                            simde__m128i result = simde_mm_or_si128(a, r);
+                            result = simde_mm_or_si128(result, simde_mm_slli_epi32(g, 8));
+                            result = simde_mm_or_si128(result, simde_mm_slli_epi32(b, 16));
+                            simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
+                        }
+                    }
+                    for (; x < surface->w; x++) {
+                        float rgba[4];
+                        read_rgba16_color(row[x], rgba);
+                        out_row[x] = ((Uint32)(rgba[3] * 255) << 24) | ((Uint32)(rgba[2] * 255) << 16) |
+                                     ((Uint32)(rgba[1] * 255) << 8) | (Uint32)(rgba[0] * 255);
+                    }
+                }
+
+                // Upload to RGBA texture array
+                glBindTexture(GL_TEXTURE_2D_ARRAY, gl_state.tex_array_rgba_id);
+                glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, rgba_layer,
+                                surface->w, surface->h, 1,
+                                GL_RGBA, GL_UNSIGNED_BYTE, conv_buf);
+                glBindTexture(GL_TEXTURE_2D, texture);
+            }
+            // If rgba_layer < 0 (array full), falls through to legacy path below
+        } else {
+            // Indexed formats (PSMT8/PSMT4/PSMCT32): use R8UI array
+            int direct_layer = gl_state.tex_array_layer[texture_handle - 1][palette_handle];
+            if (direct_layer < 0 && surface->w <= TEX_ARRAY_SIZE && surface->h <= TEX_ARRAY_SIZE &&
+                gl_state.tex_array_free_count > 0) {
+                direct_layer = gl_state.tex_array_free[--gl_state.tex_array_free_count];
+                gl_state.tex_array_layer[texture_handle - 1][palette_handle] = (int16_t)direct_layer;
+            }
+
+            if (direct_layer >= 0) {
                 Uint8* pixel_data = (Uint8*)gl_state.conversion_buffer;
                 const int pixel_count = surface->w * surface->h;
 
@@ -715,15 +805,47 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
                                 GL_UNSIGNED_BYTE,
                                 pixel_data);
                 glBindTexture(GL_TEXTURE_2D, texture);
+            } else if (palette_handle > 0 && surface->w <= TEX_ARRAY_SIZE && surface->h <= TEX_ARRAY_SIZE) {
+                // R8UI array full — fall back to RGBA array with pre-resolved palette
+                int rgba_layer = gl_state.tex_array_rgba_layer[texture_handle - 1][palette_handle];
+                if (rgba_layer < 0 && gl_state.tex_array_rgba_free_count > 0) {
+                    rgba_layer = gl_state.tex_array_rgba_free[--gl_state.tex_array_rgba_free_count];
+                    gl_state.tex_array_rgba_layer[texture_handle - 1][palette_handle] = (int16_t)rgba_layer;
+                }
+                if (rgba_layer >= 0) {
+                    u32* conv_buf = gl_state.conversion_buffer;
+                    SDL_Palette* pal = gl_state.palettes[palette_handle - 1];
+                    const Uint8* src = (const Uint8*)surface->pixels;
+                    const int pixel_count = surface->w * surface->h;
+                    for (int pi = 0; pi < pixel_count; ++pi) {
+                        int idx;
+                        if (fl_texture->format == SCE_GS_PSMT4) {
+                            Uint8 b = src[pi / 2];
+                            idx = (pi & 1) ? (b >> 4) : (b & 0xF);
+                        } else {
+                            idx = src[pi];
+                        }
+                        SDL_Color c = pal->colors[idx];
+                        conv_buf[pi] = (c.a << 24) | (c.b << 16) | (c.g << 8) | c.r;
+                    }
+
+                    glBindTexture(GL_TEXTURE_2D_ARRAY, gl_state.tex_array_rgba_id);
+                    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, rgba_layer,
+                                    surface->w, surface->h, 1,
+                                    GL_RGBA, GL_UNSIGNED_BYTE, conv_buf);
+                    glBindTexture(GL_TEXTURE_2D, texture);
+                }
             }
         }
 
-        if (direct_layer < 0) {
+        // Legacy fallback: only if BOTH R8UI and RGBA arrays don't have a layer
+        if (gl_state.tex_array_layer[texture_handle - 1][palette_handle] < 0 &&
+            gl_state.tex_array_rgba_layer[texture_handle - 1][palette_handle] < 0) {
             u32* conv_buf = gl_state.conversion_buffer;
             const int pixel_count = surface->w * surface->h;
 
             if (fl_texture->format == SCE_GS_PSMCT16) {
-                // ⚡ Bolt: SIMD 16-bit → RGBA32 (ported from GPU backend)
+                // PSMCT16 legacy fallback (RGBA array was full)
                 const simde__m128i mask5  = simde_mm_set1_epi32(0x1F);
                 const simde__m128i mask_a = simde_mm_set1_epi32(0x8000);
                 const simde__m128i alpha_ff = simde_mm_set1_epi32((int)0xFF000000u);
@@ -743,7 +865,6 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
                             simde__m128i g = simde_mm_and_si128(simde_mm_srli_epi32(v, 5), mask5);
                             simde__m128i b = simde_mm_and_si128(simde_mm_srli_epi32(v, 10), mask5);
                             simde__m128i a = simde_mm_and_si128(v, mask_a);
-                            // 5-bit → 8-bit expand: (val << 3) | (val >> 2)
                             r = simde_mm_or_si128(simde_mm_slli_epi32(r, 3), simde_mm_srli_epi32(r, 2));
                             g = simde_mm_or_si128(simde_mm_slli_epi32(g, 3), simde_mm_srli_epi32(g, 2));
                             b = simde_mm_or_si128(simde_mm_slli_epi32(b, 3), simde_mm_srli_epi32(b, 2));
@@ -754,7 +875,6 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
                             simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
                         }
                     }
-                    // Scalar tail
                     for (; x < surface->w; x++) {
                         float rgba[4];
                         read_rgba16_color(row[x], rgba);
@@ -791,6 +911,13 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
 
     {
         int layer = gl_state.tex_array_layer[texture_handle - 1][palette_handle];
+        if (layer < 0) {
+            // Check RGBA array — encode as negative: -(rgba_layer + 2)
+            int rgba_layer = gl_state.tex_array_rgba_layer[texture_handle - 1][palette_handle];
+            if (rgba_layer >= 0) {
+                layer = -(rgba_layer + 2);
+            }
+        }
         int pal_slot = (palette_handle > 0) ? gl_state.palette_slots[palette_handle - 1] : 0;
         float uv_sx = (float)surface->w / (float)TEX_ARRAY_SIZE;
         float uv_sy = (float)surface->h / (float)TEX_ARRAY_SIZE;

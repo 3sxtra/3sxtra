@@ -478,7 +478,6 @@ static int doSeDrop(CSE_REQP* reqp) {
 }
 
 void emlShimStartSound(CSE_SYS_PARAM_SNDSTART* param) {
-    TRACE_ZONE_NC("SoundLock:StartSound", TRACE_COLOR_SOUND);
     struct VWork* voice;
 
     TRACE_LOCK_BEFORE(soundLockCtx);
@@ -487,7 +486,6 @@ void emlShimStartSound(CSE_SYS_PARAM_SNDSTART* param) {
     if (!doSeDrop(&param->reqp)) {
         SDL_UnlockMutex(soundLock);
     TRACE_LOCK_UNLOCK(soundLockCtx);
-        TRACE_ZONE_END();
         return;
     }
 
@@ -496,7 +494,6 @@ void emlShimStartSound(CSE_SYS_PARAM_SNDSTART* param) {
         printf("no free voices!\n");
         SDL_UnlockMutex(soundLock);
     TRACE_LOCK_UNLOCK(soundLockCtx);
-        TRACE_ZONE_END();
         return;
     }
 
@@ -532,7 +529,6 @@ void emlShimStartSound(CSE_SYS_PARAM_SNDSTART* param) {
 
     SDL_UnlockMutex(soundLock);
     TRACE_LOCK_UNLOCK(soundLockCtx);
-    TRACE_ZONE_END();
 }
 
 void emlShimSeKeyOff(CSE_REQP* pReqp) {
@@ -554,7 +550,6 @@ void emlShimSeKeyOff(CSE_REQP* pReqp) {
 }
 
 void emlShimSeStop(CSE_REQP* pReqp) {
-    TRACE_ZONE_NC("SoundLock:SeStop", TRACE_COLOR_SOUND);
     u32 cond = makeConditions(pReqp);
     struct VWork* i;
 
@@ -570,7 +565,6 @@ void emlShimSeStop(CSE_REQP* pReqp) {
 
     SDL_UnlockMutex(soundLock);
     TRACE_LOCK_UNLOCK(soundLockCtx);
-    TRACE_ZONE_END();
 }
 
 void emlShimSeStopAll() {

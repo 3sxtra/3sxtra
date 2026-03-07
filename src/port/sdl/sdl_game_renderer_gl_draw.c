@@ -232,7 +232,10 @@ void SDLGameRendererGL_RenderFrame(void) {
     int stat_draw_calls = 0;
     TRACE_SUB_BEGIN("GL:BatchDraw");
     while (i < gl_state.render_task_count) {
-        const bool is_array_task = (gl_state.render_tasks[i].array_layer >= 0);
+        // array_layer >= 0  → R8UI indexed array
+        // array_layer <= -2 → RGBA8 direct-color array
+        // array_layer == -1 → legacy individual texture (fallback)
+        const bool is_array_task = (gl_state.render_tasks[i].array_layer != -1);
 
         if (is_array_task) {
             if (current_shader_type != SHADER_ARRAY) {
@@ -251,17 +254,25 @@ void SDLGameRendererGL_RenderFrame(void) {
                     gl_state.arr_loc_palette = glGetUniformLocation(arr_shader, "PaletteBuffer");
                 glUniform1i(gl_state.arr_loc_palette, 1);
 
+                if (gl_state.arr_loc_source_rgba == -1)
+                    gl_state.arr_loc_source_rgba = glGetUniformLocation(arr_shader, "SourceRGBA");
+                glUniform1i(gl_state.arr_loc_source_rgba, 2);
+
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, gl_state.tex_array_id);
 
                 glActiveTexture(GL_TEXTURE1);
                 glBindTexture(GL_TEXTURE_BUFFER, gl_state.palette_tbo);
+
+                glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, gl_state.tex_array_rgba_id);
+
                 glActiveTexture(GL_TEXTURE0);
             }
 
             int batch_count = 0;
             int start_index = i;
-            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer >= 0) {
+            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer != -1) {
                 batch_count++;
                 i++;
             }
@@ -285,12 +296,12 @@ void SDLGameRendererGL_RenderFrame(void) {
                 glUniform1i(gl_state.loc_source, 0);
             }
 
-            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer < 0) {
+            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer == -1) {
                 const GLuint current_texture = gl_state.render_tasks[i].texture;
                 int batch_count = 0;
                 int start_index = i;
 
-                while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer < 0 &&
+                while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer == -1 &&
                        gl_state.render_tasks[i].texture == current_texture) {
                     batch_count++;
                     i++;
@@ -308,6 +319,8 @@ void SDLGameRendererGL_RenderFrame(void) {
     TRACE_PLOT_INT("ArraySprites", stat_array_sprites);
     TRACE_PLOT_INT("LegacySprites", stat_legacy_sprites);
     TRACE_PLOT_INT("DrawCalls", stat_draw_calls);
+    TRACE_PLOT_INT("R8UIFree", gl_state.tex_array_free_count);
+    TRACE_PLOT_INT("RGBAFree", gl_state.tex_array_rgba_free_count);
 
     TRACE_GPU_ZONE_END();
 
@@ -398,7 +411,7 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
             pal_slot = 0;
         }
 
-        if (array_layer >= 0 && gl_state.texture_count > 0) {
+        if (array_layer != -1 && gl_state.texture_count > 0) {
             const float sx = gl_state.texture_uv_sx[gl_state.texture_count - 1];
             const float sy = gl_state.texture_uv_sy[gl_state.texture_count - 1];
             for (int i = 0; i < 4; i++) {
@@ -407,8 +420,8 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
             }
         }
     } else {
-        tex = gl_state.white_texture;
-        array_layer = -1;
+        tex = 0;
+        array_layer = -(gl_state.white_array_layer + 2); // RGBA array encoding
         pal_slot = 0;
     }
     push_render_task(tex, sdl_vertices, flPS2ConvScreenFZ(vertices[0].coord.z), array_layer, pal_slot);
@@ -559,8 +572,8 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
         float s1 = spr->t[1].s;
         float t1 = spr->t[1].t;
 
-        // Apply array-texture UV scale
-        if (cur_layer >= 0) {
+        // Apply array-texture UV scale (both indexed >= 0 and RGBA <= -2)
+        if (cur_layer != -1) {
             s0 *= cur_uv_sx;  t0 *= cur_uv_sy;
             s1 *= cur_uv_sx;  t1 *= cur_uv_sy;
         }

@@ -858,7 +858,6 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
  * the CGTileDesc cache instead of being re-parsed from TileMapEntry[].
  */
 void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
-    TRACE_ZONE_NC("mlt_obj_trans", TRACE_COLOR_RENDER);
     s32 rnum;
     s32 attr;
     s32 palo;
@@ -869,14 +868,12 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     if (mt->ext) {
         mlt_obj_trans_ext(mt, wk, base_y);
-        TRACE_ZONE_END();
         return;
     }
 
     // ⚡ Opt4: Look up pre-built tile descriptors for this CG number
     CGTileCacheEntry* cge = cg_lookup_tile_descs(wk->cg_number);
     if (cge == NULL || cge->count == 0) {
-        TRACE_ZONE_END();
         return;
     }
 
@@ -953,7 +950,6 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     seqs_w.up[mt->id] = 1;
     appRenewTempPriority(wk->position_z);
-    TRACE_ZONE_END();
 }
 
 
@@ -1808,9 +1804,7 @@ void seqsAfterProcess() {
         }
 
         // Phase 2: ⚡ Batch flush all sprites in one call
-        TRACE_SUB_BEGIN("FlushSprite2Batch");
         SDLGameRenderer_FlushSprite2Batch(seqs_w.chip, seqs_w.up, seqs_w.sprTotal);
-        TRACE_SUB_END();
     }
 }
 

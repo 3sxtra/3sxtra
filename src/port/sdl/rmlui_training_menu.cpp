@@ -131,7 +131,7 @@ extern "C" void rmlui_training_menu_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_Log("[RmlUi Training] Data model registered (9 bindings)");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Training] Data model registered (9 bindings)");
 }
 
 // -------------------------------------------------------------------

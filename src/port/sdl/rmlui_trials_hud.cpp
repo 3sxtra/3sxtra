@@ -95,7 +95,7 @@ extern "C" void rmlui_trials_hud_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_Log("[RmlUi TrialsHud] Data model registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi TrialsHud] Data model registered");
 }
 
 // ─── Per-frame update ────────────────────────────────────────

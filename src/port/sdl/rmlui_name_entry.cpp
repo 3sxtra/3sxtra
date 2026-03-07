@@ -93,7 +93,7 @@ extern "C" void rmlui_name_entry_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_Log("[RmlUi NameEntry] Data model registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi NameEntry] Data model registered");
 }
 
 extern "C" void rmlui_name_entry_update(void) {

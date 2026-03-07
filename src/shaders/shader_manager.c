@@ -6,8 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <SDL3_image/SDL_image.h>
 
 #ifdef _WIN32
 #define PATH_SEPARATOR '\\'
@@ -222,12 +221,22 @@ static char* read_file(const char* path) {
 }
 
 static GLuint load_texture(const char* path, bool linear, bool mipmap, const char* wrap_mode) {
-    int w, h, c;
-    unsigned char* data = stbi_load(path, &w, &h, &c, 4);
-    if (!data) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load texture: %s", path);
+    SDL_Surface* raw = IMG_Load(path);
+    if (!raw) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load texture: %s (%s)", path, SDL_GetError());
         return 0;
     }
+
+    // Convert to RGBA32 for consistent GL upload
+    SDL_Surface* surface = SDL_ConvertSurface(raw, SDL_PIXELFORMAT_RGBA32);
+    SDL_DestroySurface(raw);
+    if (!surface) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to convert texture to RGBA: %s", SDL_GetError());
+        return 0;
+    }
+
+    int w = surface->w;
+    int h = surface->h;
 
     GLuint tex;
     glGenTextures(1, &tex);
@@ -255,12 +264,12 @@ static GLuint load_texture(const char* path, bool linear, bool mipmap, const cha
     // ⚡ Bolt: Immutable texture storage — driver skips reallocation checks on upload.
     int mip_levels = mipmap ? (int)(log2(w > h ? w : h)) + 1 : 1;
     glTexStorage2D(GL_TEXTURE_2D, mip_levels, GL_RGBA8, w, h);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 
     if (mipmap)
         glGenerateMipmap(GL_TEXTURE_2D);
 
-    stbi_image_free(data);
+    SDL_DestroySurface(surface);
     return tex;
 }
 
