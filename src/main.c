@@ -248,22 +248,24 @@ int main(int argc, char* argv[]) {
             game_accumulator = 0;
         }
 
+        // Poll events BEFORE EndFrame so quit is consumed before any
+        // potentially-blocking buffer swap (fixes Alt+F4 hang on KMS/DRM).
         if (should_tick_game) {
             SDLApp_BeginFrame();
             step_0();
-            SDLApp_EndFrame();
             is_running = SDLApp_PollEvents();
 #if !defined(_WIN32)
             if (g_signal_quit) is_running = false;
 #endif
+            SDLApp_EndFrame();
             step_1();
         } else {
             /* Re-present the existing canvas (no game logic, no FBO clear) */
-            SDLApp_PresentOnly();
             is_running = SDLApp_PollEvents();
 #if !defined(_WIN32)
             if (g_signal_quit) is_running = false;
 #endif
+            SDLApp_PresentOnly();
         }
         TRACE_FRAME_MARK();
     }

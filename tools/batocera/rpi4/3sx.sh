@@ -11,4 +11,4 @@ export MESA_GLSL_VERSION_OVERRIDE=330
 # Use OpenGL — profiling shows GL render pipe is ~4ms vs SDL_GPU's 13ms
 # driver stall in SDL_SubmitGPUCommandBuffer on VideoCore VI.
 # Override with: --renderer gpu  or  --renderer sdl2d
-exec "$SCRIPT_DIR/3sx" --renderer gl --ui rmlui "$@"
+exec "$SCRIPT_DIR/3sx" --renderer gl "$@"

@@ -1352,7 +1352,9 @@ void SDLApp_EndFrame() {
         }
 
         TRACE_SUB_BEGIN("RenderPresent");
-        SDL_RenderPresent(sdl_renderer);
+        if (!has_pending_quit()) {
+            SDL_RenderPresent(sdl_renderer);
+        }
         TRACE_SUB_END();
 
         SDLGameRenderer_EndFrame();
@@ -2208,7 +2210,9 @@ void SDLApp_EndFrame() {
 
         // Swap the window to display the final rendered frame
         TRACE_SUB_BEGIN("SwapWindow");
-        SDL_GL_SwapWindow(window);
+        if (!has_pending_quit()) {
+            SDL_GL_SwapWindow(window);
+        }
         TRACE_SUB_END();
     }
     TRACE_GPU_COLLECT();

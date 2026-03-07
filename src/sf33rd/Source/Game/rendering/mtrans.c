@@ -326,8 +326,13 @@ static void lz77_gpu_or_cpu(u8* src, u32 comp_bound, u32 size,
         Renderer_LZ77Enqueue(src, comp_bound, size,
                               tex_handle, pal_handle,
                               (u32)code_local, tile_dim)) {
+        // GPU path succeeded — but also decompress to CPU buffer so that
+        // ppgRenewTexChunkSeqs → UnlockTexture → SetTexture re-uploads
+        // will contain correct tile data (not stale/empty buffer content).
+        lz_ext_p6_fx(src, mt->mltbuf, size);
+        Renderer_UpdateTexture(gix_base + code_offset, mt->mltbuf, code_local, size, 0, 0);
         TRACE_ZONE_END();
-        return;  // GPU path succeeded
+        return;
     }
 
     // CPU fallback

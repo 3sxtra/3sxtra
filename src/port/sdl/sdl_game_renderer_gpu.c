@@ -95,8 +95,8 @@ static SDL_GPUTexture* s_canvas_texture = NULL;
 static SDL_GPUTexture* texture_array = NULL;
 static int tex_array_free[TEX_ARRAY_MAX_LAYERS];
 static int tex_array_free_count = 0;
-// Map (texture_handle-1, palette_handle) → array layer index, or -1 if not in array
-static int16_t tex_array_layer[FL_TEXTURE_MAX][FL_PALETTE_MAX + 1];
+// Map texture_handle-1 → array layer index, or -1 if not in array (decoupled from palette)
+static int16_t tex_array_layer[FL_TEXTURE_MAX];
 
 #define MAX_VERTICES 65536
 #define MAX_QUADS (MAX_VERTICES / 4)
@@ -572,7 +572,7 @@ void SDLGameRendererGPU_Init(void) {
     for (int i = 0; i < tex_array_free_count; i++) {
         tex_array_free[i] = TEX_ARRAY_MAX_LAYERS - 1 - i;
     }
-    memset(tex_array_layer, -1, sizeof(tex_array_layer));
+    memset(tex_array_layer, -1, sizeof(tex_array_layer));  // 1D: per-texture only
 
     // ⚡ Opt6: LZ77 Compute Pipeline
     {
@@ -699,11 +699,10 @@ void SDLGameRendererGPU_BeginFrame(void) {
     // Drain dirty-index lists
     for (int d = 0; d < dirty_texture_count; d++) {
         const int i = dirty_texture_indices[d];
-        for (int pal = 0; pal <= FL_PALETTE_MAX; ++pal) {
-            if (tex_array_layer[i][pal] >= 0) {
-                tex_array_free[tex_array_free_count++] = tex_array_layer[i][pal];
-                tex_array_layer[i][pal] = -1;
-            }
+        // 1D: free the single layer for this texture
+        if (tex_array_layer[i] >= 0) {
+            tex_array_free[tex_array_free_count++] = tex_array_layer[i];
+            tex_array_layer[i] = -1;
         }
         if (surfaces[i]) {
             SDL_DestroySurface(surfaces[i]);
@@ -716,12 +715,8 @@ void SDLGameRendererGPU_BeginFrame(void) {
 
     for (int d = 0; d < dirty_palette_count; d++) {
         const int i = dirty_palette_indices[d];
-        for (int tex = 0; tex < FL_TEXTURE_MAX; ++tex) {
-            if (tex_array_layer[tex][i + 1] >= 0) {
-                tex_array_free[tex_array_free_count++] = tex_array_layer[tex][i + 1];
-                tex_array_layer[tex][i + 1] = -1;
-            }
-        }
+        // Palette changes don't invalidate indexed texture array layers —
+        // the palette row is looked up separately by the fragment shader.
         if (palettes[i]) {
             SDL_DestroyPalette(palettes[i]);
             palettes[i] = NULL;
@@ -1249,15 +1244,15 @@ void SDLGameRendererGPU_DumpTextures(void) {
     int tex_index = 0;
     int count = 0;
 
-    // tex_array_layer[ti][pi] >= 0 means ti+pi have been rendered together — ground-truth pairing
+    // tex_array_layer[ti] >= 0 means this texture is in the array
     for (int ti = 0; ti < FL_TEXTURE_MAX; ti++) {
         SDL_Surface* surf = surfaces[ti];
         if (!surf || !SDL_ISPIXELFORMAT_INDEXED(surf->format))
             continue;
+        if (tex_array_layer[ti] < 0)
+            continue;
 
         for (int pi = 1; pi <= FL_PALETTE_MAX; pi++) {
-            if (tex_array_layer[ti][pi] < 0)
-                continue;
             SDL_Palette* pal = palettes[pi - 1];
             if (!pal)
                 continue;
@@ -1329,11 +1324,10 @@ void SDLGameRendererGPU_UnlockTexture(unsigned int th) {
             }
             texture_hash[idx] = new_hash;
         }
-        for (int pal = 0; pal <= FL_PALETTE_MAX; ++pal) {
-            if (tex_array_layer[idx][pal] >= 0) {
-                tex_array_free[tex_array_free_count++] = tex_array_layer[idx][pal];
-                tex_array_layer[idx][pal] = -1;
-            }
+        // 1D: free the single layer for this texture
+        if (tex_array_layer[idx] >= 0) {
+            tex_array_free[tex_array_free_count++] = tex_array_layer[idx];
+            tex_array_layer[idx] = -1;
         }
     }
 }
@@ -1353,12 +1347,8 @@ void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
             }
             palette_hash[idx] = new_hash;
         }
-        for (int tex = 0; tex < FL_TEXTURE_MAX; ++tex) {
-            if (tex_array_layer[tex][idx + 1] >= 0) {
-                tex_array_free[tex_array_free_count++] = tex_array_layer[tex][idx + 1];
-                tex_array_layer[tex][idx + 1] = -1;
-            }
-        }
+        // Palette changes don't invalidate indexed texture array layers —
+        // the palette row is looked up separately by the fragment shader.
         if (palettes[idx]) {
             SDL_DestroyPalette(palettes[idx]);
             palettes[idx] = NULL;
@@ -1416,7 +1406,7 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
         return;
     }
 
-    int layer = tex_array_layer[texture_handle - 1][palette_handle];
+    int layer = tex_array_layer[texture_handle - 1];  // 1D: keyed by texture only
 
     if (layer < 0) {
         // ⚡ Opt10b: Lazily map the staging buffer on first texture cache miss this frame.
@@ -1426,7 +1416,7 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
         }
         if (tex_array_free_count > 0 && s_compute_staging_ptr) {
             layer = tex_array_free[--tex_array_free_count];
-            tex_array_layer[texture_handle - 1][palette_handle] = layer;
+            tex_array_layer[texture_handle - 1] = layer;  // 1D
 
             SDL_Surface* surface = surfaces[texture_handle - 1];
             const FLTexture* fl_texture = &flTexture[texture_handle - 1];
@@ -1582,7 +1572,7 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
             } else {
                 s_compute_drops_last_frame++;
                 tex_array_free[tex_array_free_count++] = layer;
-                tex_array_layer[texture_handle - 1][palette_handle] = -1;
+                tex_array_layer[texture_handle - 1] = -1;  // 1D
                 layer = -1;
             }
         }
@@ -1622,7 +1612,7 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES)
         return;
 
-    float layer = 0.0f;
+    float layer = -1.0f;  // Bug 2 fix: negative sentinel → shader uses FgColor for solid quads
     float uv_sx = 1.0f, uv_sy = 1.0f;
     float palIdx = -1.0f;
 
@@ -1879,12 +1869,12 @@ int SDLGameRendererGPU_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 deco
     if (palette_handle < 0 || palette_handle > FL_PALETTE_MAX)
         return 0;
 
-    int layer = tex_array_layer[ti][palette_handle];
+    int layer = tex_array_layer[ti];  // 1D: keyed by texture only
     if (layer < 0) {
         if (tex_array_free_count <= 0)
             return 0;
         layer = tex_array_free[--tex_array_free_count];
-        tex_array_layer[ti][palette_handle] = layer;
+        tex_array_layer[ti] = layer;  // 1D
     }
 
     // Compute destination pixel coordinates from tile code
