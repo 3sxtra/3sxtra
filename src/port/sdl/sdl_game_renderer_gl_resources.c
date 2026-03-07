@@ -403,16 +403,18 @@ void SDLGameRendererGL_DestroyTexture(unsigned int texture_handle) {
             gl_state.texture_cache_w[texture_index][pal] = 0;
             gl_state.texture_cache_h[texture_index][pal] = 0;
 
-            if (gl_state.tex_array_layer[texture_index][pal] >= 0) {
-                gl_state.tex_array_free[gl_state.tex_array_free_count++] = gl_state.tex_array_layer[texture_index][pal];
-                gl_state.tex_array_layer[texture_index][pal] = -1;
-            }
             if (gl_state.tex_array_rgba_layer[texture_index][pal] >= 0) {
                 gl_state.tex_array_rgba_free[gl_state.tex_array_rgba_free_count++] = gl_state.tex_array_rgba_layer[texture_index][pal];
                 gl_state.tex_array_rgba_layer[texture_index][pal] = -1;
             }
             gl_state.tcache_live[i] = gl_state.tcache_live[--gl_state.tcache_live_count];
         }
+    }
+
+    // R8UI layer is per-texture (shared across palettes) — free once
+    if (gl_state.tex_array_layer[texture_index] >= 0) {
+        gl_state.tex_array_free[gl_state.tex_array_free_count++] = gl_state.tex_array_layer[texture_index];
+        gl_state.tex_array_layer[texture_index] = -1;
     }
 
     if (gl_state.surfaces[texture_index] != NULL) {
@@ -540,11 +542,7 @@ void SDLGameRendererGL_DestroyPalette(unsigned int palette_handle) {
             }
             gl_state.texture_cache_w[tex][palette_handle] = 0;
             gl_state.texture_cache_h[tex][palette_handle] = 0;
-            if (gl_state.tex_array_layer[tex][palette_handle] >= 0) {
-                gl_state.tex_array_free[gl_state.tex_array_free_count++] =
-                    gl_state.tex_array_layer[tex][palette_handle];
-                gl_state.tex_array_layer[tex][palette_handle] = -1;
-            }
+            // R8UI layer is per-texture, not per-palette — don't free here
             if (gl_state.tex_array_rgba_layer[tex][palette_handle] >= 0) {
                 gl_state.tex_array_rgba_free[gl_state.tex_array_rgba_free_count++] =
                     gl_state.tex_array_rgba_layer[tex][palette_handle];
@@ -751,11 +749,11 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
             // If rgba_layer < 0 (array full), falls through to legacy path below
         } else {
             // Indexed formats (PSMT8/PSMT4/PSMCT32): use R8UI array
-            int direct_layer = gl_state.tex_array_layer[texture_handle - 1][palette_handle];
+            int direct_layer = gl_state.tex_array_layer[texture_handle - 1];
             if (direct_layer < 0 && surface->w <= TEX_ARRAY_SIZE && surface->h <= TEX_ARRAY_SIZE &&
                 gl_state.tex_array_free_count > 0) {
                 direct_layer = gl_state.tex_array_free[--gl_state.tex_array_free_count];
-                gl_state.tex_array_layer[texture_handle - 1][palette_handle] = (int16_t)direct_layer;
+                gl_state.tex_array_layer[texture_handle - 1] = (int16_t)direct_layer;
             }
 
             if (direct_layer >= 0) {
@@ -839,7 +837,7 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
         }
 
         // Legacy fallback: only if BOTH R8UI and RGBA arrays don't have a layer
-        if (gl_state.tex_array_layer[texture_handle - 1][palette_handle] < 0 &&
+        if (gl_state.tex_array_layer[texture_handle - 1] < 0 &&
             gl_state.tex_array_rgba_layer[texture_handle - 1][palette_handle] < 0) {
             u32* conv_buf = gl_state.conversion_buffer;
             const int pixel_count = surface->w * surface->h;
@@ -910,7 +908,7 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
     }
 
     {
-        int layer = gl_state.tex_array_layer[texture_handle - 1][palette_handle];
+        int layer = gl_state.tex_array_layer[texture_handle - 1];
         if (layer < 0) {
             // Check RGBA array — encode as negative: -(rgba_layer + 2)
             int rgba_layer = gl_state.tex_array_rgba_layer[texture_handle - 1][palette_handle];

@@ -969,7 +969,7 @@ void SDLGameRendererGPU_RenderFrame(void) {
 
             // One-time upload of dctex_linear swizzle LUT
             if (!s_lz77_swizzle_uploaded) {
-                extern u32 dctex_linear[1024];
+                extern s16* dctex_linear;
                 SDL_GPUTransferBufferCreateInfo swiz_tb_info = {
                     .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
                     .size = LZ77_SWIZZLE_SIZE
@@ -978,7 +978,10 @@ void SDLGameRendererGPU_RenderFrame(void) {
                 if (swiz_tb) {
                     void* p = SDL_MapGPUTransferBuffer(device, swiz_tb, false);
                     if (p) {
-                        memcpy(p, dctex_linear, LZ77_SWIZZLE_SIZE);
+                        // Widen s16 entries to u32 for the GPU shader's uint swizzle[1024]
+                        u32* dst = (u32*)p;
+                        for (int i = 0; i < 1024; i++)
+                            dst[i] = (u32)dctex_linear[i];
                         SDL_UnmapGPUTransferBuffer(device, swiz_tb);
                         SDL_GPUTransferBufferLocation ssrc = { .transfer_buffer = swiz_tb, .offset = 0 };
                         SDL_GPUBufferRegion sdst = { .buffer = s_lz77_swizzle_buffer, .offset = 0,
