@@ -207,6 +207,7 @@ void SDLGameRenderer_DumpTextures(void) {
         SDLGameRendererSDL_DumpTextures();
     } else {
         SDLGameRendererGL_DumpTextures();
+        SDLGameRendererGL_DumpPaletteStats();
     }
 }
 

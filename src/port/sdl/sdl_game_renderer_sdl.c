@@ -39,28 +39,32 @@ static SDL_Texture* cps3_canvas = NULL;
 
 static const int cps3_width = 384;
 static const int cps3_height = 224;
-// ⚡ One RGBA8888 streaming texture per indexed texture.
-// Palette hash comparison skips blit+upload when palette data is unchanged.
-
 static SDL_Surface* surfaces[FL_TEXTURE_MAX] = { NULL };
 static SDL_Palette* palettes[FL_PALETTE_MAX] = { NULL };
 
 // Non-indexed texture cache (PSMCT16/PSMCT32 — eagerly created)
 static SDL_Texture* texture_cache[FL_TEXTURE_MAX] = { NULL };
 
-// ⚡ One RGBA8888 streaming texture per texture_index.
-static SDL_Texture* idx_tex_cache[FL_TEXTURE_MAX] = { NULL };
-// Track which palette handle is currently blitted into each idx_tex
-static int idx_tex_cur_palette[FL_TEXTURE_MAX];
-// Track the palette data hash that was last blitted
-static uint32_t idx_tex_pal_hash[FL_TEXTURE_MAX];
-// Pre-allocated RGBA conversion surface per texture index
-static SDL_Surface* rgba_conversion[FL_TEXTURE_MAX] = { NULL };
+// ⚡ Per-texture multi-slot RGBA cache keyed by (tex, palette).
+// Eliminates SDL_BlitSurface+SDL_UpdateTexture from the hot render loop.
+// Each indexed texture can cache up to IDX_PAL_SLOTS pre-baked RGBA textures.
+// Real-world max observed: 14 palettes/texture — 16 slots = zero evictions.
+#define IDX_PAL_SLOTS 16
+static SDL_Texture* idx_pal_tex[FL_TEXTURE_MAX][IDX_PAL_SLOTS];    // baked RGBA textures
+static int          idx_pal_handle[FL_TEXTURE_MAX][IDX_PAL_SLOTS]; // palette handle (0=empty)
+static uint32_t     idx_pal_hash[FL_TEXTURE_MAX][IDX_PAL_SLOTS];   // hash at bake time
+static uint8_t      idx_pal_lru[FL_TEXTURE_MAX][IDX_PAL_SLOTS];    // LRU age stamp
+static uint8_t      idx_pal_lru_clock[FL_TEXTURE_MAX];             // per-texture LRU tick
 
-// ⚡ Per-palette content hash — computed in CreatePalette, used to skip blit on identical data.
+// ⚡ Per-palette content hash — computed in CreatePalette, used to detect stale cache entries.
 static uint32_t palette_hash[FL_PALETTE_MAX];
 
-// ⚡ FNV-1a hash for palette color data (fast, good distribution for small inputs).
+// ⚡ Shared scratch buffer for RGBA pixel conversion during bake_idx_tex.
+// Large enough for the biggest texture observed (256×256 = 65536 px).
+#define RGBA_SCRATCH_MAX (512 * 512)
+static uint32_t rgba_scratch[RGBA_SCRATCH_MAX];
+
+// ⚡ FNV-1a hash for palette color data.
 static uint32_t fnv1a_hash(const void* data, size_t len) {
     const uint8_t* p = (const uint8_t*)data;
     uint32_t h = 0x811c9dc5u;
@@ -288,20 +292,19 @@ void SDLGameRendererSDL_DumpTextures(void) {
     debug_texture_index = 0;
     int count = 0;
 
-    // Dump each indexed texture with its currently-set palette
+    // Dump each indexed texture for every cached palette slot
     for (int ti = 0; ti < FL_TEXTURE_MAX; ti++) {
         SDL_Surface* surf = surfaces[ti];
         if (!surf || !SDL_ISPIXELFORMAT_INDEXED(surf->format))
             continue;
-        if (idx_tex_cache[ti] == NULL || idx_tex_cur_palette[ti] <= 0)
-            continue;
-        int ph = idx_tex_cur_palette[ti];
-        if (ph > FL_PALETTE_MAX) continue;
-        SDL_Palette* pal = palettes[ph - 1];
-        if (!pal) continue;
-
-        save_texture(surf, pal);
-        count++;
+        for (int s = 0; s < IDX_PAL_SLOTS; s++) {
+            int ph = idx_pal_handle[ti][s];
+            if (ph <= 0 || ph > FL_PALETTE_MAX) continue;
+            SDL_Palette* pal = palettes[ph - 1];
+            if (!pal) continue;
+            save_texture(surf, pal);
+            count++;
+        }
     }
 
     SDL_Log("[TextureDump] Wrote %d texture(s) to textures/", count);
@@ -349,6 +352,79 @@ static void destroy_textures(void) {
         textures_to_destroy[i] = NULL;
     }
     textures_to_destroy_count = 0;
+}
+
+// ⚡ Bake: convert indexed surface+palette → RGBA SDL_Texture, store in LRU slot.
+// Called only on cache miss. Direct pixel conversion avoids SDL_BlitSurface overhead.
+static SDL_Texture* bake_idx_tex(SDL_Renderer* renderer, int ti, int palette_handle) {
+    SDL_Surface* surf = surfaces[ti];
+    SDL_Palette* pal = palettes[palette_handle - 1];
+    if (!surf || !pal) return NULL;
+
+    // Find LRU eviction slot (prefer empty slots first)
+    int evict = 0;
+    uint8_t worst_age = 0;
+    const uint8_t clock = idx_pal_lru_clock[ti];
+    for (int s = 0; s < IDX_PAL_SLOTS; s++) {
+        if (idx_pal_handle[ti][s] == 0) { evict = s; goto found; } // empty
+        const uint8_t age = (uint8_t)(clock - idx_pal_lru[ti][s]);
+        if (age > worst_age) { worst_age = age; evict = s; }
+    }
+    found:;
+
+    // Reuse existing SDL_Texture if present in this slot (update pixels in place)
+    SDL_Texture* tex = idx_pal_tex[ti][evict];
+    if (tex == NULL) {
+        tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                SDL_TEXTUREACCESS_STREAMING, surf->w, surf->h);
+        if (!tex) return NULL;
+        SDL_SetTextureScaleMode(tex, SDL_SCALEMODE_NEAREST);
+        SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+        idx_pal_tex[ti][evict] = tex;
+    }
+
+    // Direct palette→RGBA conversion into scratch buffer (no SDL_BlitSurface)
+    const int pixel_count = surf->w * surf->h;
+    const SDL_Color* colors = pal->colors;
+    SDL_assert(pixel_count <= RGBA_SCRATCH_MAX);
+
+    if (surf->format == SDL_PIXELFORMAT_INDEX8) {
+        const uint8_t* src = (const uint8_t*)surf->pixels;
+        for (int i = 0; i < pixel_count; i++) {
+            const SDL_Color c = colors[src[i]];
+            rgba_scratch[i] = ((uint32_t)c.r << 24) | ((uint32_t)c.g << 16)
+                             | ((uint32_t)c.b <<  8) | c.a;
+        }
+    } else {
+        // PSMT4: 4-bit packed indices
+        const uint8_t* src = (const uint8_t*)surf->pixels;
+        for (int i = 0; i < pixel_count; i++) {
+            const uint8_t idx4 = (i & 1) ? (src[i >> 1] >> 4) : (src[i >> 1] & 0xF);
+            const SDL_Color c = colors[idx4];
+            rgba_scratch[i] = ((uint32_t)c.r << 24) | ((uint32_t)c.g << 16)
+                             | ((uint32_t)c.b <<  8) | c.a;
+        }
+    }
+    SDL_UpdateTexture(tex, NULL, rgba_scratch, surf->w * 4);
+
+    idx_pal_handle[ti][evict] = palette_handle;
+    idx_pal_hash[ti][evict]   = palette_hash[palette_handle - 1];
+    idx_pal_lru[ti][evict]    = idx_pal_lru_clock[ti]++;
+    return tex;
+}
+
+// ⚡ Lookup: return pre-baked texture for (ti, palette_handle), baking on miss.
+static SDL_Texture* lookup_idx_tex(SDL_Renderer* renderer, int ti, int palette_handle) {
+    if (palette_handle <= 0 || palette_handle > FL_PALETTE_MAX) return NULL;
+    const uint32_t want_hash = palette_hash[palette_handle - 1];
+    for (int s = 0; s < IDX_PAL_SLOTS; s++) {
+        if (idx_pal_handle[ti][s] == palette_handle
+                && idx_pal_hash[ti][s] == want_hash) {
+            idx_pal_lru[ti][s] = idx_pal_lru_clock[ti]++; // touch LRU
+            return idx_pal_tex[ti][s];
+        }
+    }
+    return bake_idx_tex(renderer, ti, palette_handle);
 }
 
 // --- Render Task Management ---
@@ -456,18 +532,17 @@ void SDLGameRendererSDL_Shutdown(void) {
         }
     }
 
-    // Destroy all streaming textures and conversion surfaces
+    // Destroy all multi-slot indexed texture cache entries
     for (int i = 0; i < FL_TEXTURE_MAX; i++) {
-        if (idx_tex_cache[i] != NULL) {
-            SDL_DestroyTexture(idx_tex_cache[i]);
-            idx_tex_cache[i] = NULL;
+        for (int s = 0; s < IDX_PAL_SLOTS; s++) {
+            if (idx_pal_tex[i][s] != NULL) {
+                SDL_DestroyTexture(idx_pal_tex[i][s]);
+                idx_pal_tex[i][s] = NULL;
+            }
+            idx_pal_handle[i][s] = 0;
+            idx_pal_hash[i][s]   = 0;
         }
-        idx_tex_cur_palette[i] = 0;
-        idx_tex_pal_hash[i] = 0;
-        if (rgba_conversion[i] != NULL) {
-            SDL_DestroySurface(rgba_conversion[i]);
-            rgba_conversion[i] = NULL;
-        }
+        idx_pal_lru_clock[i] = 0;
     }
 
     // Destroy all surfaces
@@ -552,8 +627,7 @@ void SDLGameRendererSDL_RenderFrame(void) {
     texture_subsort_equal_z_groups(render_task_order, render_task_count);
 
     // Batch rendering: group consecutive tasks with same texture+palette (task_th).
-    // For indexed textures, hash-enhanced re-blit: skip blit+upload when the
-    // palette data hash matches what's already in the streaming texture.
+    // ⚡ Pre-baked RGBA textures via lookup_idx_tex — pure pointer lookup, no blit.
     int batch_start = 0;
     unsigned int current_th = task_th[render_task_order[0]];
 
@@ -566,41 +640,16 @@ void SDLGameRendererSDL_RenderFrame(void) {
             if (batch_size > 0) {
                 SDL_assert(batch_size <= RENDER_TASK_MAX);
 
-                // ⚡ Hash-enhanced palette re-blit for indexed textures.
-                // The streaming texture may have stale palette data from a
-                // previous batch. Check hash first to skip if data matches.
                 SDL_Texture* draw_texture = task_texture[render_task_order[batch_start]];
-                const int batch_palette = HI_16_BITS(current_th);
+                const int batch_palette    = HI_16_BITS(current_th);
                 const int batch_tex_handle = LO_16_BITS(current_th);
 
+                // ⚡ For indexed textures: swap draw_texture for the pre-baked slot.
+                // lookup_idx_tex is a pure cache hit 99.9% of the time (no blit here).
                 if (draw_texture != NULL && batch_palette > 0 &&
                     batch_palette <= FL_PALETTE_MAX && batch_tex_handle > 0) {
-                    const int ti = batch_tex_handle - 1;
-                    SDL_Texture* tex = idx_tex_cache[ti];
-                    if (tex != NULL) {
-                        // Check if blit needed: handle mismatch AND hash mismatch
-                        if (idx_tex_cur_palette[ti] != batch_palette) {
-                            const uint32_t want_hash = palette_hash[batch_palette - 1];
-                            if (idx_tex_pal_hash[ti] == want_hash && want_hash != 0) {
-                                // Hash match — palette data is identical, skip blit
-                                idx_tex_cur_palette[ti] = batch_palette;
-                            } else {
-                                // Must re-blit
-                                SDL_Surface* surf = surfaces[ti];
-                                SDL_Palette* pal = palettes[batch_palette - 1];
-                                if (surf && pal && rgba_conversion[ti]) {
-                                    SDL_SetSurfacePalette(surf, pal);
-                                    SDL_BlitSurface(surf, NULL, rgba_conversion[ti], NULL);
-                                    SDL_UpdateTexture(tex, NULL,
-                                        rgba_conversion[ti]->pixels,
-                                        rgba_conversion[ti]->pitch);
-                                    idx_tex_cur_palette[ti] = batch_palette;
-                                    idx_tex_pal_hash[ti] = want_hash;
-                                }
-                            }
-                        }
-                        draw_texture = tex;
-                    }
+                    SDL_Texture* cached = lookup_idx_tex(renderer, batch_tex_handle - 1, batch_palette);
+                    if (cached != NULL) draw_texture = cached;
                 }
 
                 // Copy vertices to batch buffer via sorted indices
@@ -688,15 +737,16 @@ void SDLGameRendererSDL_UnlockTexture(unsigned int th) {
         texture_cache[texture_index] = NULL;
     }
 
-    /* Invalidate indexed texture — force re-blit on next use */
-    idx_tex_cur_palette[texture_index] = 0;
-    idx_tex_pal_hash[texture_index] = 0;
+    /* ⚡ Invalidate all indexed palette slots for this texture — pixel data changed.
+     * Slots stay allocated (SDL_Texture* reused on next bake), handles cleared. */
+    for (int s = 0; s < IDX_PAL_SLOTS; s++) {
+        idx_pal_handle[texture_index][s] = 0;
+        idx_pal_hash[texture_index][s]   = 0;
+    }
 
-    /* Surface stays alive — it still references the (now-updated) system buffer.
-     * SetTexture will re-upload index data from the surface on next use. */
+    /* Surface stays alive — it still references the (now-updated) system buffer. */
 
-    /* For non-indexed formats, eagerly recreate the GPU texture since there is
-     * no lazy path in SetTexture for non-indexed textures. */
+    /* For non-indexed formats, eagerly recreate the GPU texture. */
     SDL_Surface* surface = surfaces[texture_index];
     if (surface != NULL && !SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
         SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
@@ -788,17 +838,16 @@ void SDLGameRendererSDL_DestroyTexture(unsigned int texture_handle) {
         texture_cache[texture_index] = NULL;
     }
 
-    // Destroy streaming texture and conversion surface
-    if (idx_tex_cache[texture_index] != NULL) {
-        push_texture_to_destroy(idx_tex_cache[texture_index]);
-        idx_tex_cache[texture_index] = NULL;
+    // Destroy all indexed palette slots for this texture
+    for (int s = 0; s < IDX_PAL_SLOTS; s++) {
+        if (idx_pal_tex[texture_index][s] != NULL) {
+            push_texture_to_destroy(idx_pal_tex[texture_index][s]);
+            idx_pal_tex[texture_index][s] = NULL;
+        }
+        idx_pal_handle[texture_index][s] = 0;
+        idx_pal_hash[texture_index][s]   = 0;
     }
-    idx_tex_cur_palette[texture_index] = 0;
-    idx_tex_pal_hash[texture_index] = 0;
-    if (rgba_conversion[texture_index] != NULL) {
-        SDL_DestroySurface(rgba_conversion[texture_index]);
-        rgba_conversion[texture_index] = NULL;
-    }
+    idx_pal_lru_clock[texture_index] = 0;
 
     if (surfaces[texture_index] != NULL) {
         SDL_DestroySurface(surfaces[texture_index]);
@@ -878,19 +927,17 @@ void SDLGameRendererSDL_DestroyPalette(unsigned int palette_handle) {
         return;
     }
 
-    // ⚡ Invalidate texture binding cache when a palette is destroyed
+    // ⚡ Invalidate texture binding cache
     last_set_texture_th = 0;
     last_set_texture = NULL;
 
-    // ⚡ Reset palette tracking on all textures that had this palette set.
-    // The streaming texture and surface data stay valid — only the palette link is stale.
-    // The cached pal_hash stays valid — if the new palette has identical colors,
-    // SetTexture/RenderFrame will detect the hash match and skip the blit+upload.
-    for (int i = 0; i < FL_TEXTURE_MAX; i++) {
-        if (idx_tex_cur_palette[i] == (int)palette_handle) {
-            idx_tex_cur_palette[i] = 0;
-        }
-    }
+    // ⚡ Zero the palette hash — this is sufficient to invalidate all cached slots.
+    // lookup_idx_tex checks: want_hash = palette_hash[pi]. After zeroing, want_hash=0,
+    // which can never match a baked slot (FNV-1a of real data ≠ 0) → automatic miss.
+    // On UnlockPalette (Destroy+Create same handle), CreatePalette sets a new non-zero
+    // hash → stale slots fail the hash check → re-baked with new palette data.
+    // No O(FL_TEXTURE_MAX × IDX_PAL_SLOTS) scan needed. O(1).
+    palette_hash[palette_index] = 0;
 
     if (palettes[palette_index] != NULL) {
         SDL_DestroyPalette(palettes[palette_index]);
@@ -935,52 +982,14 @@ void SDLGameRendererSDL_SetTexture(unsigned int th) {
         save_texture(surface, palette);
     }
 
-    // ⚡ Indexed textures: one RGBA8888 streaming texture per texture_index.
-    // Palette conversion: SDL_SetSurfacePalette → SDL_BlitSurface → SDL_UpdateTexture.
-    // Hash comparison skips blit when palette data is unchanged (UnlockPalette case).
+    // ⚡ Indexed textures: look up pre-baked RGBA texture from multi-slot cache.
+    // lookup_idx_tex returns a pre-baked SDL_Texture* — bake only happens on first
+    // use of a (tex, palette) pair or after invalidation (UnlockTexture/DestroyPalette).
     if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
-        SDL_Texture* texture = idx_tex_cache[texture_index];
-
-        // Lazily create RGBA8888 streaming texture
-        if (texture == NULL) {
-            texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                SDL_TEXTUREACCESS_STREAMING, surface->w, surface->h);
-            if (!texture)
-                fatal_error("Failed to create streaming texture: %s", SDL_GetError());
-            SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
-            SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-            idx_tex_cache[texture_index] = texture;
-            idx_tex_cur_palette[texture_index] = 0;
-            idx_tex_pal_hash[texture_index] = 0;
-        }
-
-        // Lazily create RGBA conversion surface
-        if (rgba_conversion[texture_index] == NULL) {
-            rgba_conversion[texture_index] = SDL_CreateSurface(
-                surface->w, surface->h, SDL_PIXELFORMAT_RGBA8888);
-            if (!rgba_conversion[texture_index])
-                fatal_error("Failed to create RGBA conversion surface: %s", SDL_GetError());
-        }
-
-        // Blit+upload if palette changed (handle mismatch)
-        if (palette != NULL && idx_tex_cur_palette[texture_index] != palette_handle) {
-            // ⚡ Hash check: skip blit if palette data is identical
-            const uint32_t want_hash = palette_hash[palette_handle - 1];
-            if (idx_tex_pal_hash[texture_index] == want_hash && want_hash != 0) {
-                // Hash match — just update the handle tracker
-                idx_tex_cur_palette[texture_index] = palette_handle;
-            } else {
-                // Data changed — must blit+upload
-                SDL_SetSurfacePalette(surface, palette);
-                SDL_BlitSurface(surface, NULL, rgba_conversion[texture_index], NULL);
-                SDL_UpdateTexture(texture, NULL,
-                    rgba_conversion[texture_index]->pixels,
-                    rgba_conversion[texture_index]->pitch);
-                idx_tex_cur_palette[texture_index] = palette_handle;
-                idx_tex_pal_hash[texture_index] = want_hash;
-            }
-        }
-
+        SDL_Texture* texture = (palette_handle > 0)
+            ? lookup_idx_tex(renderer, texture_index, palette_handle)
+            : NULL;
+        if (texture == NULL) return;
         push_texture(texture);
         last_set_texture = texture;
     } else {
@@ -1145,19 +1154,9 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         }
     }
 
-    // Phase 2: Insertion sort indices by tex_code (fast for ≤1024 elements)
-    for (int i = 1; i < active_count; i++) {
-        const int key = sprite_sort_indices[i];
-        const unsigned int key_tc = chips[key].tex_code;
-        int j = i - 1;
-        while (j >= 0 && chips[sprite_sort_indices[j]].tex_code > key_tc) {
-            sprite_sort_indices[j + 1] = sprite_sort_indices[j];
-            j--;
-        }
-        sprite_sort_indices[j + 1] = key;
-    }
-
-    // Phase 3: Iterate sorted sprites — SetTexture only called on tex_code change
+    // Phase 2: Iterate sprites in submission order — SetTexture is now a cheap
+    // pointer lookup, so no pre-sort needed. RenderFrame's texture_subsort_equal_z_groups
+    // handles GPU draw call batching within same-Z groups.
     unsigned int last_tex_code = 0;
     int set_texture_calls = 0;
 

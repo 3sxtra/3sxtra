@@ -26,6 +26,7 @@ void SDLGameRendererGL_DrawSprite(const Sprite* sprite, unsigned int color);
 void SDLGameRendererGL_DrawSprite2(const Sprite2* sprite2);
 unsigned int SDLGameRendererGL_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);
 void SDLGameRendererGL_DumpTextures(void);
+void SDLGameRendererGL_DumpPaletteStats(void);
 void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
 
 // GPU Backend

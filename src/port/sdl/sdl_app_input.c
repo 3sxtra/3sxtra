@@ -94,7 +94,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             set_screenshot_flag_if_needed(&event->key);
             handle_fullscreen_toggle(&event->key);
             handle_scale_mode_toggle(&event->key);
-            // handle_texture_dump(&event->key); // Disabled — F12 now opens Dev Overlay
+            // handle_texture_dump(&event->key); // F12 reserved for RmlUi native debugger
 
             if (event->key.key == SDLK_F7 && event->key.down && !event->key.repeat) {
                 SDLApp_ToggleTrainingMenu();

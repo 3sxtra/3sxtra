@@ -992,4 +992,61 @@ void SDLGameRendererGL_DumpTextures(void) {
     SDL_Log("[TextureDump] Wrote %d texture(s) to textures/", count);
 }
 
+/**
+ * Scans tcache_live and prints per-texture palette-count stats.
+ * Run in-game (same trigger as DumpTextures) to calibrate IDX_PAL_SLOTS
+ * for the SDL2D multi-slot palette cache.
+ */
+void SDLGameRendererGL_DumpPaletteStats(void) {
+    // Count palettes per texture index
+    static uint8_t pal_count[FL_TEXTURE_MAX];
+    memset(pal_count, 0, sizeof(pal_count));
+
+    int total_pairs = gl_state.tcache_live_count;
+    for (int li = 0; li < total_pairs; li++) {
+        int ti = gl_state.tcache_live[li].tex_idx;
+        if (ti >= 0 && ti < FL_TEXTURE_MAX && pal_count[ti] < 255)
+            pal_count[ti]++;
+    }
+
+    // Build histogram: how many textures have exactly N palettes
+    int hist[33] = { 0 }; // 0..31, overflow bucket at [32]
+    int max_pals = 0;
+    int textures_with_pals = 0;
+    for (int ti = 0; ti < FL_TEXTURE_MAX; ti++) {
+        if (pal_count[ti] == 0) continue;
+        textures_with_pals++;
+        if (pal_count[ti] > max_pals) max_pals = pal_count[ti];
+        int bucket = (pal_count[ti] <= 32) ? pal_count[ti] : 32;
+        hist[bucket]++;
+    }
+
+    SDL_Log("[PaletteStats] tcache_live=%d pairs, %d textures with palettes, max_pals_per_tex=%d",
+            total_pairs, textures_with_pals, max_pals);
+
+    // Print histogram
+    for (int n = 1; n <= (max_pals < 32 ? max_pals : 32); n++) {
+        if (hist[n] > 0)
+            SDL_Log("[PaletteStats]   %2d pal(s): %d texture(s)", n, hist[n]);
+    }
+    if (hist[32] > 0)
+        SDL_Log("[PaletteStats]  >32 pal(s): %d texture(s)", hist[32]);
+
+    // Print top outliers (textures with the most palettes)
+    SDL_Log("[PaletteStats] Top outliers (tex_idx: pal_count: WxH):");
+    for (int rank = 0; rank < 10; rank++) {
+        int best_ti = -1, best_n = 0;
+        for (int ti = 0; ti < FL_TEXTURE_MAX; ti++) {
+            if (pal_count[ti] > best_n) { best_n = pal_count[ti]; best_ti = ti; }
+        }
+        if (best_ti < 0 || best_n == 0) break;
+        SDL_Surface* surf = gl_state.surfaces[best_ti];
+        if (surf)
+            SDL_Log("[PaletteStats]   tex[%4d]: %d palettes (%dx%d)", best_ti, best_n, surf->w, surf->h);
+        else
+            SDL_Log("[PaletteStats]   tex[%4d]: %d palettes (no surface)", best_ti, best_n);
+        pal_count[best_ti] = 0; // remove from future ranking
+    }
+}
+
 
