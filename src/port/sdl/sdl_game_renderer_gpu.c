@@ -762,12 +762,10 @@ void SDLGameRendererGPU_BeginFrame(void) {
     s_pal_upload_count = 0;
     s_last_set_texture_handle = 0; // ⚡ Reset back-to-back cache each frame
 
-    // ⚡ Opt6: Reset LZ77 job queue and map upload buffer
+    // ⚡ Opt6: Reset LZ77 job queue — buffer mapped lazily on first job
     s_lz77_job_count = 0;
     s_lz77_upload_offset = 0;
-    if (s_lz77_available) {
-        s_lz77_upload_ptr = (u8*)SDL_MapGPUTransferBuffer(device, s_lz77_upload_buf, true);
-    }
+    s_lz77_upload_ptr = NULL;  // ⚡ Deferred: mapped on first LZ77 submission
 
     if (s_compute_drops_last_frame > 0) {
         SDL_LogWarn(SDL_LOG_CATEGORY_RENDER,
@@ -1381,12 +1379,13 @@ void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
 
 /** @brief Prepare a texture for rendering, uploading to the GPU array if needed. */
 void SDLGameRendererGPU_SetTexture(unsigned int th) {
-    TRACE_ZONE_N("GPU:SetTexture");
     if ((th & 0xFFFF) == 0)
         th = (th & 0xFFFF0000) | 1000;
 
     // ⚡ Back-to-back early-out: if the same handle was just set, re-push
     // the cached layer/UV without re-doing the lookup or staging work.
+    // NOTE: Trace zone intentionally placed BELOW this check — the early-out
+    // path fires ~80% of the time, and the trace overhead was ~1.25s/session.
     if (th == s_last_set_texture_handle && texture_count > 0) {
         if (texture_count < MAX_VERTICES) {
             texture_layers[texture_count] = texture_layers[texture_count - 1];
@@ -1395,10 +1394,10 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
             texture_palette_idx[texture_count] = texture_palette_idx[texture_count - 1];
             texture_count++;
         }
-        TRACE_ZONE_END();
         return;
     }
     s_last_set_texture_handle = th;
+    TRACE_ZONE_N("GPU:SetTexture");
 
     const int texture_handle = LO_16_BITS(th);
     const int palette_handle = HI_16_BITS(th);
@@ -1852,9 +1851,15 @@ int SDLGameRendererGPU_LZ77Available(void) {
 int SDLGameRendererGPU_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 decomp_size,
                                     int texture_handle, int palette_handle,
                                     u32 code, u32 tile_dim) {
-    return 0; // TEMP: force CPU fallback to isolate visual corruption
-    if (!s_lz77_available || !s_lz77_upload_ptr)
+    if (!s_lz77_available)
         return 0;
+
+    // ⚡ Lazy map: only map the upload buffer on first LZ77 job this frame
+    if (!s_lz77_upload_ptr) {
+        s_lz77_upload_ptr = (u8*)SDL_MapGPUTransferBuffer(device, s_lz77_upload_buf, true);
+        if (!s_lz77_upload_ptr)
+            return 0;
+    }
 
     if (s_lz77_job_count >= LZ77_MAX_JOBS)
         return 0;

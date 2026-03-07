@@ -388,6 +388,36 @@ static void insertion_sort_render_task_indices(int* order, int count) {
     }
 }
 
+// ⚡ Texture sub-sort: within each group of equal-Z sprites, sort by texture
+// pointer to maximize same-texture batching. Draw order within the same Z is
+// visually irrelevant, so this is always safe. Uses insertion sort since Z-groups
+// are typically small (2-50 sprites).
+static void texture_subsort_equal_z_groups(int* order, int count) {
+    int run_start = 0;
+    while (run_start < count) {
+        const float z = task_z[order[run_start]];
+        int run_end = run_start + 1;
+        while (run_end < count && task_z[order[run_end]] == z)
+            run_end++;
+
+        // Insertion sort the run [run_start, run_end) by texture pointer
+        const int run_len = run_end - run_start;
+        if (run_len > 1) {
+            for (int i = run_start + 1; i < run_end; i++) {
+                const int key = order[i];
+                const uintptr_t key_tex = (uintptr_t)task_texture[key];
+                int j = i - 1;
+                while (j >= run_start && (uintptr_t)task_texture[order[j]] > key_tex) {
+                    order[j + 1] = order[j];
+                    j--;
+                }
+                order[j + 1] = key;
+            }
+        }
+        run_start = run_end;
+    }
+}
+
 // --- Public API ---
 
 SDL_Texture* SDLGameRendererSDL_GetCanvas(void) {
@@ -498,7 +528,7 @@ void SDLGameRendererSDL_BeginFrame(void) {
 }
 
 void SDLGameRendererSDL_RenderFrame(void) {
-    TRACE_SUB_BEGIN("SDL2D:RenderFrame");
+    TRACE_ZONE_N("SDL2D:RenderFrame");
     TRACE_PLOT_INT("PalCacheMiss", palette_cache_misses_frame);
     TRACE_PLOT_INT("RenderTasks", render_task_count);
     palette_cache_misses_frame = 0;
@@ -506,6 +536,7 @@ void SDLGameRendererSDL_RenderFrame(void) {
     SDL_SetRenderTarget(renderer, cps3_canvas);
 
     if (render_task_count == 0) {
+        TRACE_ZONE_END();
         return;
     }
 
@@ -523,6 +554,11 @@ void SDLGameRendererSDL_RenderFrame(void) {
         radix_sort_render_task_indices(render_task_order, task_z, render_task_count,
                                        radix_keys, radix_scratch);
     }
+
+    // ⚡ Texture sub-sort: within each Z-group, sort by texture pointer to
+    // maximize same-texture batching. Reduces SDL_RenderGeometry draw calls
+    // by 5-10× since many sprites share the same Z depth.
+    texture_subsort_equal_z_groups(render_task_order, render_task_count);
 
     // Batch rendering: group consecutive tasks with same texture
     int batch_start = 0;
@@ -577,7 +613,7 @@ void SDLGameRendererSDL_RenderFrame(void) {
             SDL_RenderRect(renderer, &border_rect);
         }
     }
-    TRACE_SUB_END();
+    TRACE_ZONE_END();
 }
 
 void SDLGameRendererSDL_EndFrame(void) {

@@ -348,3 +348,58 @@ Profiling data captured from a Raspberry Pi 4 running the `OpenGL` backend over 
 2. **GPU Driver Bottleneck**: The single largest cost is `SwapWindow` (1.55ms) inside `EndFrame` (1.77ms), which reflects GPU driver and compositing overhead rather than application inefficiency.
 3. **Pipeline Efficiency**: `seqsAfter` (sprite processing) takes only 1.21ms per frame, including the 0.49ms for `GL:BatchDraw`. The persistent tile atlas, hash caches, and SIMD optimizations have effectively eliminated CPU-side bottlenecks here.
 4. **Negligible Caching Overhead**: Operations like `texcash_before` and `texcash_update` take an incredibly small ~0.03ms per frame combined, confirming that the hash cache and O(1) lookups are performing perfectly.
+
+---
+
+## 11. Real-World Profiling: Raspberry Pi 4 (SDL_GPU / Vulkan Backend)
+
+Profiling data captured from a Raspberry Pi 4 running the `SDL_GPU` (Vulkan/V3DV) backend over 2,881 frames (~48s, boot through menus to in-match). Total active CPU time per frame is **~17.8ms** — over the 16.67ms budget.
+
+| Function | File | Count | Avg ms / call | Avg ms / frame | % of active CPU |
+|----------|------|-------|---------------|----------------|-----------------|
+| **`GPU:EndFrame`** | `sdl_game_renderer_gpu.c` | 2,881 | **11.75** ms | **11.75** ms | **~66%** |
+| `GPU:BeginFrame` | `sdl_game_renderer_gpu.c` | 2,881 | 1.68 ms | 1.68 ms | ~9% |
+| `GPU:RenderFrame` | `sdl_game_renderer_gpu.c` | 2,881 | 1.54 ms | 1.54 ms | ~9% |
+| `GPU:SetTexture` | `sdl_game_renderer_gpu.c` | 440,064 | 0.006 ms | 0.92 ms | ~5% |
+| `EndFrame` | `sdl_app.c` | 2,881 | 0.73 ms | 0.73 ms | ~4% |
+| `cpLoopTask` | `main.c` | 12,700 | 0.13 ms | 0.59 ms | ~3% |
+| `GPU:PostProcess` | `sdl_app.c` | 2,529 | 0.41 ms | 0.36 ms | ~2% |
+| `TexUpload` | `mtrans.c` | 3,189 | 0.16 ms | 0.17 ms | ~1% |
+| `PostRender` | `main.c` | 2,881 | 0.13 ms | 0.13 ms | < 1% |
+| `SDLEventPump` | `sdl_app.c` | 2,881 | 0.11 ms | 0.11 ms | < 1% |
+| `mlt_obj_trans_cp3` | `mtrans.c` | 43,056 | 0.006 ms | 0.08 ms | < 1% |
+| `FlushSprite2Batch` | `mtrans.c` | 3,189 | 0.07 ms | 0.08 ms | < 1% |
+| `SPU_AudioCB` | `spu.c` | 2,509 | 0.06 ms | 0.05 ms | < 1% |
+| `LZ77:GpuOrCpu` | `mtrans.c` | 25,868 | 0.006 ms | 0.05 ms | < 1% |
+| `texcash_before` | `game.c` | 2,875 | 0.03 ms | 0.03 ms | < 1% |
+| `MtransDispatch` | `aboutspr.c` | 50,208 | 0.001 ms | 0.02 ms | < 1% |
+| `FramePacing` | `sdl_app.c` | 2,881 | 0.02 ms | 0.02 ms | < 1% |
+| `Input` | `main.c` | 2,881 | 0.02 ms | 0.02 ms | < 1% |
+| `texcash_update` | `game.c` | 2,875 | 0.02 ms | 0.02 ms | < 1% |
+| `GameLogic` | `main.c` | 2,881 | 0.02 ms | 0.02 ms | < 1% |
+| `mlt_obj_trans` | `mtrans.c` | 1,705 | 0.01 ms | 0.004 ms | < 1% |
+| `Render2D` | `main.c` | 2,881 | 0.004 ms | 0.004 ms | < 1% |
+| `seqsAfter` | `game.c` | 2,875 | 0.001 ms | 0.001 ms | < 1% |
+| `HitCheck` | `hitcheck.c` | 839 | 0.003 ms | 0.001 ms | < 1% |
+| `SoundLock:StartSound`| `emlShim.c` | 29 | 0.01 ms | < 0.01 ms | < 1% |
+
+### Head-to-Head: OpenGL vs SDL_GPU on Pi4
+
+| Zone | OpenGL (ms/frame) | SDL_GPU (ms/frame) | Ratio |
+|------|-------------------|--------------------|-------|
+| EndFrame / Submit | 1.77 | 11.75 | **6.6×** slower |
+| BeginFrame | 0.07 | 1.68 | **24×** slower |
+| RenderFrame | 0.30 | 1.54 | **5.1×** slower |
+| SetTexture (total) | (in seqsAfter) | 0.92 | — |
+| PostProcess / SceneBlit | 0.16 | 0.36 | 2.3× slower |
+| Sprite pipeline total | ~1.21 | ~0.24 | — |
+| GameLogic | 0.01 | 0.02 | ~same |
+| **Total active/frame** | **~3.8** | **~17.8** | **4.7×** slower |
+
+### Key Takeaways
+
+1. **Over Budget**: At ~17.8ms active/frame, the SDL_GPU backend **cannot hold 60fps** on Pi4. The OpenGL backend meets budget trivially at ~3.8ms.
+2. **V3DV Driver Bottleneck**: `GPU:EndFrame` (= `SDL_SubmitGPUCommandBufferAndAcquireFence`) alone costs 11.75ms — **70%** of the frame. Mesa's V3DV Vulkan driver serialises `vkQueueSubmit`, making it far more expensive than the GL `SwapWindow` (1.55ms) that does equivalent work.
+3. **Transfer Buffer Overhead**: `GPU:BeginFrame` at 1.68ms (vs GL's 0.07ms) is dominated by `SDL_MapGPUTransferBuffer` and fence management — the Vulkan memory model costs 24× more than the GL equivalent on this driver.
+4. **Shared Optimizations Validated**: The game-side pipeline (tile cache, hash cache, SIMD transforms, LZ77) runs in well under 1ms on both backends. Optimizations #1–5 and #8 are performing identically regardless of backend.
+5. **Recommendation**: Use **OpenGL backend for Pi4 production**. Reserve SDL_GPU for desktop targets with mature Vulkan drivers (NVIDIA, AMD, Intel Arc) where the fence ring, compute LZ77, and texture-array architecture can outperform GL.

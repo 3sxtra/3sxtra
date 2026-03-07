@@ -8,6 +8,7 @@ export LD_LIBRARY_PATH="$SCRIPT_DIR/lib:$LD_LIBRARY_PATH"
 export MESA_GL_VERSION_OVERRIDE=3.3
 export MESA_GLSL_VERSION_OVERRIDE=330
 
-# Use SDL_GPU (Vulkan via V3DV) — faster than GL on Pi4.
-# Fall back to GL with: --renderer gl
-exec "$SCRIPT_DIR/3sx" --renderer gpu "$@"
+# Use OpenGL — profiling shows GL render pipe is ~4ms vs SDL_GPU's 13ms
+# driver stall in SDL_SubmitGPUCommandBuffer on VideoCore VI.
+# Override with: --renderer gpu  or  --renderer sdl2d
+exec "$SCRIPT_DIR/3sx" --renderer gl "$@"
