@@ -9,8 +9,8 @@
 #include "common.h"
 #include "main.h"
 #include "netplay/netplay.h"
-#include "port/native_save.h"
-#include "port/sdl/sdl_app.h"
+#include "port/save/native_save.h"
+#include "port/sdl/app/sdl_app.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -73,11 +73,11 @@
 #include "structs.h"
 
 /* RmlUi Phase 3 bypass */
-#include "port/sdl/rmlui_button_config.h"
-#include "port/sdl/rmlui_game_option.h"
-#include "port/sdl/rmlui_memory_card.h"
-#include "port/sdl/rmlui_option_menu.h"
-#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui/rmlui_button_config.h"
+#include "port/sdl/rmlui/rmlui_game_option.h"
+#include "port/sdl/rmlui/rmlui_memory_card.h"
+#include "port/sdl/rmlui/rmlui_option_menu.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 extern bool use_rmlui;
 
 static void apply_training_hitbox_display(bool force_off);

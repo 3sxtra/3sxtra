@@ -5,7 +5,7 @@
 
 #include "common.h"
 #include "game_state.h"
-#include "port/renderer.h"
+#include "port/rendering/renderer.h"
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "sf33rd/Source/Game/effect/effe6.h"

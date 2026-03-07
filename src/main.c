@@ -14,9 +14,9 @@
 #include "main.h"
 #include "common.h"
 #include "netplay/netplay.h"
-#include "port/renderer.h"
-#include "port/sdl/sdl_app.h"
-#include "port/sdl/sdl_app_config.h"
+#include "port/rendering/renderer.h"
+#include "port/sdl/app/sdl_app.h"
+#include "port/sdl/app/sdl_app_config.h"
 #include "sf33rd/AcrSDK/common/mlPAD.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
@@ -49,16 +49,16 @@
 
 #include "menu_bridge.h"
 
-#include "port/native_save.h"
+#include "port/save/native_save.h"
 #include "structs.h"
 
 #if defined(DEBUG)
 #include "sf33rd/Source/Game/debug/debug_config.h"
 #endif
 
-#include "port/cli_parser.h"
+#include "port/config/cli_parser.h"
 #include "port/io/afs.h"
-#include "port/resources.h"
+#include "port/rendering/resources.h"
 
 #include <SDL3/SDL.h>
 

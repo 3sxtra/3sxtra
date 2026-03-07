@@ -7,7 +7,7 @@ extern unsigned short g_netplay_port;
 #include "gekkonet.h"
 #include "main.h"
 #include "port/char_data.h"
-#include "port/config.h"
+#include "port/config/config.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/grade.h"
@@ -19,10 +19,10 @@ extern unsigned short g_netplay_port;
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "stun.h"
 // dc_ghost.h does not exist in our repo; njdp2d_draw was renamed to Renderer_Flush2DPrimitives.
-#include "port/renderer.h"
+#include "port/rendering/renderer.h"
 extern void njUserMain();
 extern void SDLGameRenderer_ResetBatchState(); // Reset texture stack between netplay sub-frames
-#include "port/sdl/sdl_netplay_ui.h"
+#include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"

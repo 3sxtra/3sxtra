@@ -15,7 +15,7 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "common.h"
 #include "main.h"
-#include "port/modded_stage.h"
+#include "port/mods/modded_stage.h"
 #include "sf33rd/AcrSDK/common/mlPAD.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/Source/Game/com/com_data.h"
@@ -47,8 +47,8 @@
 #include <memory.h>
 
 /* RmlUi Phase 3 bypass */
-#include "port/sdl/rmlui_phase3_toggles.h"
-#include "port/sdl/rmlui_wrapper.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui/rmlui_wrapper.h"
 extern bool use_rmlui;
 
 #define CONVERT_DATA_COUNT 12

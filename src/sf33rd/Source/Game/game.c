@@ -18,15 +18,15 @@
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
-#include "port/sdl/rmlui_attract_overlay.h"
-#include "port/sdl/rmlui_char_select.h"
-#include "port/sdl/rmlui_continue.h"
-#include "port/sdl/rmlui_copyright.h"
-#include "port/sdl/rmlui_gameover.h"
-#include "port/sdl/rmlui_phase3_toggles.h"
-#include "port/sdl/rmlui_title_screen.h"
-#include "port/sdl/rmlui_win_screen.h"
-#include "port/sdl/rmlui_wrapper.h"
+#include "port/sdl/rmlui/rmlui_attract_overlay.h"
+#include "port/sdl/rmlui/rmlui_char_select.h"
+#include "port/sdl/rmlui/rmlui_continue.h"
+#include "port/sdl/rmlui/rmlui_copyright.h"
+#include "port/sdl/rmlui/rmlui_gameover.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui/rmlui_title_screen.h"
+#include "port/sdl/rmlui/rmlui_win_screen.h"
+#include "port/sdl/rmlui/rmlui_wrapper.h"
 #include <stdbool.h>
 extern bool use_rmlui;
 #include "main.h"

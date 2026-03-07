@@ -12,8 +12,8 @@
  */
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "common.h"
-#include "port/renderer.h"
-#include "port/sdl/sdl_game_renderer.h"
+#include "port/rendering/renderer.h"
+#include "port/sdl/renderer/sdl_game_renderer.h"
 #include "sf33rd/AcrSDK/common/plcommon.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/flps2vram.h"

@@ -5,7 +5,7 @@
 
 #include "sf33rd/Source/Game/effect/effe9.h"
 #include "common.h"
-#include "port/renderer.h"
+#include "port/rendering/renderer.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/workuser.h"

@@ -17,8 +17,8 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
-#include "port/sdl/rmlui_char_select.h"
-#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui/rmlui_char_select.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 
 static void EFF38_WAIT(WORK_Other* ewk);
 static void EFF38_SUDDENLY(WORK_Other* ewk);

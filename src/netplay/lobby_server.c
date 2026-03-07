@@ -13,7 +13,7 @@
 #define _GNU_SOURCE // Must be before any includes for getaddrinfo/timeval
 #endif
 #include "lobby_server.h"
-#include "port/config.h"
+#include "port/config/config.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>

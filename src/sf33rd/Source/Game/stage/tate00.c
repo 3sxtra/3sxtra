@@ -5,7 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/tate00.h"
 #include "common.h"
-#include "port/modded_stage.h"
+#include "port/mods/modded_stage.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg000.h"

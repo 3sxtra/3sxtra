@@ -7,7 +7,7 @@
  * pressure-sensitive buttons, and rumble/vibration passthrough.
  */
 #include "common.h"
-#include "port/sdl/sdl_pad.h"
+#include "port/sdl/input/sdl_pad.h"
 
 #include <libpad2.h>
 

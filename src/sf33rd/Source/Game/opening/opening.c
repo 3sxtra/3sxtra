@@ -14,14 +14,14 @@
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
-#include "port/sdl/rmlui_copyright.h"
-#include "port/sdl/rmlui_phase3_toggles.h"
-#include "port/sdl/rmlui_title_screen.h"
+#include "port/sdl/rmlui/rmlui_copyright.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui/rmlui_title_screen.h"
 #include <stdbool.h>
 extern bool use_rmlui;
 
-#include "port/config.h"
-#include "port/renderer.h"
+#include "port/config/config.h"
+#include "port/rendering/renderer.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/MemMan.h"

@@ -18,7 +18,7 @@
 #include "structs.h"
 
 /* RmlUi Phase 3 bypass */
-#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 extern bool use_rmlui;
 
 /* ---------- imgSelectGameButton ---------- */

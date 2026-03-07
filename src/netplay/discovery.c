@@ -1,5 +1,5 @@
 #include "discovery.h"
-#include "port/config.h"
+#include "port/config/config.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <string.h>

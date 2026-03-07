@@ -6,8 +6,8 @@
 #include "sf33rd/Source/Game/screen/next_cpu.h"
 #include "common.h"
 #include "constants.h"
-#include "port/sdl/rmlui_char_select.h"
-#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui/rmlui_char_select.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 extern bool use_rmlui;
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/com/com_data.h"

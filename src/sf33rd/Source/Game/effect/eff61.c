@@ -5,7 +5,7 @@
 
 #include "sf33rd/Source/Game/effect/eff61.h"
 #include "common.h"
-#include "port/sdl/sdl_netplay_ui.h"
+#include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"

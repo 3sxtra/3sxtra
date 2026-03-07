@@ -25,7 +25,7 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
 /* RmlUi Phase 3 bypass */
-#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 extern bool use_rmlui;
 
 #define PAUSE_JMP_COUNT 4

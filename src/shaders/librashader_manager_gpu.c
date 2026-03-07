@@ -1,6 +1,6 @@
 #include "librashader_manager.h"
-#include "port/sdl/sdl_app.h"
-#include "port/sdl/sdl_librashader_hack.h"
+#include "port/sdl/app/sdl_app.h"
+#include "port/sdl/renderer/sdl_librashader_hack.h"
 #include <SDL3/SDL.h>
 #include <stdlib.h>
 

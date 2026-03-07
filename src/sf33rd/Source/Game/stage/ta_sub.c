@@ -5,7 +5,7 @@
 
 #include "sf33rd/Source/Game/stage/ta_sub.h"
 #include "common.h"
-#include "port/modded_stage.h"
+#include "port/mods/modded_stage.h"
 #include "sf33rd/Source/Game/animation/lose_pl.h"
 #include "sf33rd/Source/Game/animation/win_pl.h"
 #include "sf33rd/Source/Game/engine/hitcheck.h"

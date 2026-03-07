@@ -6,7 +6,7 @@
 #include "sf33rd/Source/Game/effect/effa9.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
-#include "port/sdl/rmlui_char_select.h"
+#include "port/sdl/rmlui/rmlui_char_select.h"
 #include "sf33rd/Source/Game/effect/eff59.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/charset.h"

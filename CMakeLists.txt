@@ -158,6 +158,26 @@ include_directories(
     ${glad_SOURCE_DIR}/include
     ${CMAKE_BINARY_DIR}/gladsources/glad/include
     ${THIRD_PARTY_DIR}/sdl3/SDL/src/video/khronos
+
+    # Subdirectories under src/port/sdl/ (bare-filename includes)
+    ${PROJECT_SOURCE_DIR}/src/port/sdl/app
+    ${PROJECT_SOURCE_DIR}/src/port/sdl/renderer
+    ${PROJECT_SOURCE_DIR}/src/port/sdl/input
+    ${PROJECT_SOURCE_DIR}/src/port/sdl/imgui
+    ${PROJECT_SOURCE_DIR}/src/port/sdl/netplay
+    ${PROJECT_SOURCE_DIR}/src/port/sdl/rmlui
+    # Subdirectories under src/port/ (bare-filename includes)
+    ${PROJECT_SOURCE_DIR}/src/port/config
+    ${PROJECT_SOURCE_DIR}/src/port/save
+    ${PROJECT_SOURCE_DIR}/src/port/mods
+    ${PROJECT_SOURCE_DIR}/src/port/rendering
+    # Mirrored subdirectories under src/include/port/ (public headers)
+    ${PROJECT_SOURCE_DIR}/src/include/port/sdl/app
+    ${PROJECT_SOURCE_DIR}/src/include/port/sdl/renderer
+    ${PROJECT_SOURCE_DIR}/src/include/port/sdl/input
+    ${PROJECT_SOURCE_DIR}/src/include/port/config
+    ${PROJECT_SOURCE_DIR}/src/include/port/save
+    ${PROJECT_SOURCE_DIR}/src/include/port/rendering
 )
 
 set(SPOUT2_DIR "${THIRD_PARTY_DIR}/Spout2")
@@ -216,7 +236,7 @@ set_source_files_properties(
 # SDL_GPU backend header has abstract Command class with non-virtual dtor —
 # suppress the warning for files that include it (wrapper + backend itself)
 set_source_files_properties(
-    src/port/sdl/rmlui_wrapper.cpp
+    src/port/sdl/rmlui/rmlui_wrapper.cpp
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL_GPU.cpp
     PROPERTIES
         COMPILE_OPTIONS "-Wno-error;-Wno-delete-abstract-non-virtual-dtor;-Wno-delete-non-abstract-non-virtual-dtor"
@@ -250,64 +270,72 @@ add_executable(3sx MACOSX_BUNDLE
     ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/MemMan.c
     ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/PPGFile.c
     ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/PPGWork.c
-    src/port/sdl/imgui_wrapper.cpp
-    src/port/sdl/sdl_texture_util.cpp
-    src/port/sdl/control_mapping.cpp
-    src/port/sdl/input_display.cpp
-    src/port/sdl/frame_display.cpp
-    src/port/sdl/shader_menu.cpp
-    src/port/sdl/mods_menu.cpp
-    src/port/sdl/stage_config_menu.cpp
-    src/port/sdl/training_menu.cpp
+    # --- sdl/imgui/ ---
+    src/port/sdl/imgui/imgui_wrapper.cpp
+    src/port/sdl/imgui/input_display.cpp
+    src/port/sdl/imgui/frame_display.cpp
+    src/port/sdl/imgui/shader_menu.cpp
+    src/port/sdl/imgui/mods_menu.cpp
+    src/port/sdl/imgui/stage_config_menu.cpp
+    src/port/sdl/imgui/training_menu.cpp
+    # --- sdl/renderer/ ---
+    src/port/sdl/renderer/sdl_texture_util.cpp
+    # --- sdl/input/ ---
+    src/port/sdl/input/control_mapping.cpp
+    # --- port/ (unchanged locations) ---
     src/port/input_definition.cpp
     src/port/imgui_font.cpp
     src/port/ui/replay_picker.cpp
-    src/port/sdl/sdl_netplay_ui.cpp
     src/port/char_data.c
     src/port/broadcast.c
     src/port/tracy_gpu.cpp
-    src/port/sdl/sdl_app_input.c
-    src/port/sdl/sdl_app_shader_config.c
-    src/port/sdl/sdl_game_renderer_gl_context.c
-    src/port/sdl/sdl_game_renderer_gl_resources.c
-    src/port/sdl/sdl_game_renderer_gl_draw.c
-    src/port/sdl/sdl_game_renderer_sdl.c
-    src/port/sdl/sdl_text_renderer_sdl.c
-    src/port/sdl/rmlui_wrapper.cpp
-    src/port/sdl/rmlui_mods_menu.cpp
-    src/port/sdl/rmlui_shader_menu.cpp
-    src/port/sdl/rmlui_stage_config.cpp
-    src/port/sdl/rmlui_input_display.cpp
-    src/port/sdl/rmlui_frame_display.cpp
-    src/port/sdl/rmlui_control_mapping.cpp
-    src/port/sdl/rmlui_training_menu.cpp
-    src/port/sdl/rmlui_netplay_ui.cpp
-    src/port/sdl/rmlui_game_hud.cpp
-    src/port/sdl/rmlui_mode_menu.cpp
-    src/port/sdl/rmlui_option_menu.cpp
-    src/port/sdl/rmlui_game_option.cpp
-    src/port/sdl/rmlui_title_screen.cpp
-    src/port/sdl/rmlui_win_screen.cpp
-    src/port/sdl/rmlui_continue.cpp
-    src/port/sdl/rmlui_gameover.cpp
-    src/port/sdl/rmlui_vs_result.cpp
-    src/port/sdl/rmlui_memory_card.cpp
-    src/port/sdl/rmlui_sound_menu.cpp
-    src/port/sdl/rmlui_sysdir.cpp
-    src/port/sdl/rmlui_network_lobby.cpp
-    src/port/sdl/rmlui_extra_option.cpp
-    src/port/sdl/rmlui_training_menus.cpp
-    src/port/sdl/rmlui_button_config.cpp
-    src/port/sdl/rmlui_char_select.cpp
-    src/port/sdl/rmlui_vs_screen.cpp
-    src/port/sdl/rmlui_replay_picker.cpp
-    src/port/sdl/rmlui_pause_overlay.cpp
-    src/port/sdl/rmlui_trials_hud.cpp
-    src/port/sdl/rmlui_copyright.cpp
-    src/port/sdl/rmlui_name_entry.cpp
-    src/port/sdl/rmlui_exit_confirm.cpp
-    src/port/sdl/rmlui_attract_overlay.cpp
-    src/port/sdl/rmlui_dev_overlay.cpp
+    # --- sdl/netplay/ ---
+    src/port/sdl/netplay/sdl_netplay_ui.cpp
+    # --- sdl/app/ ---
+    src/port/sdl/app/sdl_app_input.c
+    src/port/sdl/app/sdl_app_shader_config.c
+    # --- sdl/renderer/ ---
+    src/port/sdl/renderer/sdl_game_renderer_gl_context.c
+    src/port/sdl/renderer/sdl_game_renderer_gl_resources.c
+    src/port/sdl/renderer/sdl_game_renderer_gl_draw.c
+    src/port/sdl/renderer/sdl_game_renderer_sdl.c
+    src/port/sdl/renderer/sdl_text_renderer_sdl.c
+    # --- sdl/rmlui/ ---
+    src/port/sdl/rmlui/rmlui_wrapper.cpp
+    src/port/sdl/rmlui/rmlui_mods_menu.cpp
+    src/port/sdl/rmlui/rmlui_shader_menu.cpp
+    src/port/sdl/rmlui/rmlui_stage_config.cpp
+    src/port/sdl/rmlui/rmlui_input_display.cpp
+    src/port/sdl/rmlui/rmlui_frame_display.cpp
+    src/port/sdl/rmlui/rmlui_control_mapping.cpp
+    src/port/sdl/rmlui/rmlui_training_menu.cpp
+    src/port/sdl/rmlui/rmlui_netplay_ui.cpp
+    src/port/sdl/rmlui/rmlui_game_hud.cpp
+    src/port/sdl/rmlui/rmlui_mode_menu.cpp
+    src/port/sdl/rmlui/rmlui_option_menu.cpp
+    src/port/sdl/rmlui/rmlui_game_option.cpp
+    src/port/sdl/rmlui/rmlui_title_screen.cpp
+    src/port/sdl/rmlui/rmlui_win_screen.cpp
+    src/port/sdl/rmlui/rmlui_continue.cpp
+    src/port/sdl/rmlui/rmlui_gameover.cpp
+    src/port/sdl/rmlui/rmlui_vs_result.cpp
+    src/port/sdl/rmlui/rmlui_memory_card.cpp
+    src/port/sdl/rmlui/rmlui_sound_menu.cpp
+    src/port/sdl/rmlui/rmlui_sysdir.cpp
+    src/port/sdl/rmlui/rmlui_network_lobby.cpp
+    src/port/sdl/rmlui/rmlui_extra_option.cpp
+    src/port/sdl/rmlui/rmlui_training_menus.cpp
+    src/port/sdl/rmlui/rmlui_button_config.cpp
+    src/port/sdl/rmlui/rmlui_char_select.cpp
+    src/port/sdl/rmlui/rmlui_vs_screen.cpp
+    src/port/sdl/rmlui/rmlui_replay_picker.cpp
+    src/port/sdl/rmlui/rmlui_pause_overlay.cpp
+    src/port/sdl/rmlui/rmlui_trials_hud.cpp
+    src/port/sdl/rmlui/rmlui_copyright.cpp
+    src/port/sdl/rmlui/rmlui_name_entry.cpp
+    src/port/sdl/rmlui/rmlui_exit_confirm.cpp
+    src/port/sdl/rmlui/rmlui_attract_overlay.cpp
+    src/port/sdl/rmlui/rmlui_dev_overlay.cpp
     # RmlUi backend sources (SDL3 platform + GL3/SDL/SDL_GPU renderers)
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp

@@ -1,6 +1,6 @@
 #include "port/sound/modded_bgm.h"
-#include "port/config.h"
-#include "port/paths.h"
+#include "port/config/config.h"
+#include "port/config/paths.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>

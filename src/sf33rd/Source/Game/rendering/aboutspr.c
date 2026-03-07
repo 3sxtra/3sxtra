@@ -5,8 +5,8 @@
 
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "common.h"
-#include "port/legacy_matrix.h"
-#include "port/renderer.h"
+#include "port/rendering/legacy_matrix.h"
+#include "port/rendering/renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"

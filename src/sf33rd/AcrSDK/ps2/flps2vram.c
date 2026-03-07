@@ -19,7 +19,7 @@
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 
-#include "port/sdl/sdl_game_renderer.h"
+#include "port/sdl/renderer/sdl_game_renderer.h"
 
 #include <libgraph.h>
 

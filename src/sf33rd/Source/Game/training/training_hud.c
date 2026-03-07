@@ -1,7 +1,7 @@
 #include "training_hud.h"
 #include "game_state.h"
-#include "port/renderer.h"
-#include "port/sdl/training_menu.h"
+#include "port/rendering/renderer.h"
+#include "port/sdl/imgui/training_menu.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/game.h"
@@ -14,7 +14,7 @@
 #include <stdio.h>
 
 /* RmlUi Phase 3 bypass */
-#include "port/sdl/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 extern bool use_rmlui;
 
 void training_hud_init() {

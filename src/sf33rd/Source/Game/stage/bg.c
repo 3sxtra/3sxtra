@@ -5,9 +5,9 @@
 
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "common.h"
-#include "port/legacy_matrix.h"
-#include "port/modded_stage.h"
-#include "port/renderer.h"
+#include "port/rendering/legacy_matrix.h"
+#include "port/mods/modded_stage.h"
+#include "port/rendering/renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/MemMan.h"
 #include "sf33rd/Source/Common/PPGFile.h"
