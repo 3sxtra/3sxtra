@@ -36,6 +36,12 @@ static unsigned int task_th[RENDER_TASK_MAX]; // combined texture+palette handle
 static SDL_Vertex task_verts[RENDER_TASK_MAX][4];
 static bool task_is_rect[RENDER_TASK_MAX];          // ⚡ true = axis-aligned rect eligible for SDL_RenderTexture
 
+// ⚡ Software-frame SoA extensions — populated at enqueue time, consumed by sw_render_frame().
+static SDL_FRect task_src_rect[RENDER_TASK_MAX];     // Source UV rect (normalized 0–1) for textured rects
+static SDL_FRect task_dst_rect[RENDER_TASK_MAX];     // Destination pixel rect (screen space)
+static SDL_FlipMode task_flip[RENDER_TASK_MAX];      // Horizontal/vertical flip flags
+static uint32_t task_color32[RENDER_TASK_MAX];       // Packed RGBA8888 color for modulation
+
 static SDL_Texture* cps3_canvas = NULL;
 
 static const int cps3_width = 384;
@@ -57,6 +63,12 @@ static uint32_t     idx_pal_hash[FL_TEXTURE_MAX][IDX_PAL_SLOTS];   // hash at ba
 static uint8_t      idx_pal_lru[FL_TEXTURE_MAX][IDX_PAL_SLOTS];    // LRU age stamp
 static uint8_t      idx_pal_lru_clock[FL_TEXTURE_MAX];             // per-texture LRU tick
 
+// ⚡ Parallel pixel cache — persistent RGBA8888 pixel data alongside SDL_Texture.
+// Populated during bake_idx_tex, read by sw_raster_textured (zero per-frame bake cost).
+static uint32_t*    idx_pal_pixels[FL_TEXTURE_MAX][IDX_PAL_SLOTS]; // cached RGBA8888 pixel buffers
+static int          idx_pal_pixels_w[FL_TEXTURE_MAX][IDX_PAL_SLOTS]; // pixel buffer width
+static int          idx_pal_pixels_h[FL_TEXTURE_MAX][IDX_PAL_SLOTS]; // pixel buffer height
+
 // ⚡ Per-palette content hash — computed in CreatePalette, used to detect stale cache entries.
 static uint32_t palette_hash[FL_PALETTE_MAX];
 
@@ -64,6 +76,42 @@ static uint32_t palette_hash[FL_PALETTE_MAX];
 // Large enough for the biggest texture observed (256×256 = 65536 px).
 #define RGBA_SCRATCH_MAX (512 * 512)
 static uint32_t rgba_scratch[RGBA_SCRATCH_MAX];
+
+// ⚡ Software-frame rendering state — CPU-side compositing into a single surface.
+// Uses RGBA8888 to match LRU cache pixel format — zero format conversion.
+static SDL_Surface* sw_frame_surface = NULL;          // 384×224 RGBA8888 compositing target
+static SDL_Texture* sw_frame_upload_tex = NULL;       // Streaming texture for single-upload to GPU
+
+// ⚡ Dirty tile tracking — 16×16 tile grid over 384×224 framebuffer.
+// Only tiles touched by current OR previous frame need clearing/redrawing.
+// Saves memset + compositing cost on static screens (menus, pause).
+enum {
+    DT_SIZE  = 16,
+    DT_COLS  = 24,   // 384 / 16
+    DT_ROWS  = 14,   // 224 / 16
+    DT_TOTAL = DT_COLS * DT_ROWS,  // 336
+};
+static uint8_t  dt_current[DT_TOTAL];    // tiles covered this frame
+static uint8_t  dt_previous[DT_TOTAL];   // tiles covered last frame
+static uint32_t dt_prev_clear_color = 0; // previous frame's RGBA8888 clear color
+static bool     dt_prev_clear_valid = false;  // whether dt_prev_clear_color is initialized
+
+// ⚡ Mark all tiles overlapping a screen-space rect as dirty in dt_current[].
+static void dt_mark_rect(float fx, float fy, float fw, float fh) {
+    int c0 = (int)SDL_floorf(fx) / DT_SIZE;
+    int r0 = (int)SDL_floorf(fy) / DT_SIZE;
+    int c1 = (int)SDL_ceilf(fx + fw - 1.0f) / DT_SIZE;
+    int r1 = (int)SDL_ceilf(fy + fh - 1.0f) / DT_SIZE;
+    if (c0 < 0) c0 = 0; if (c0 > DT_COLS - 1) c0 = DT_COLS - 1;
+    if (r0 < 0) r0 = 0; if (r0 > DT_ROWS - 1) r0 = DT_ROWS - 1;
+    if (c1 < 0) c1 = 0; if (c1 > DT_COLS - 1) c1 = DT_COLS - 1;
+    if (r1 < 0) r1 = 0; if (r1 > DT_ROWS - 1) r1 = DT_ROWS - 1;
+    for (int r = r0; r <= r1; r++) {
+        for (int c = c0; c <= c1; c++) {
+            dt_current[r * DT_COLS + c] = 1;
+        }
+    }
+}
 
 // ⚡ FNV-1a hash for palette color data.
 static uint32_t fnv1a_hash(const void* data, size_t len) {
@@ -101,10 +149,116 @@ static bool batch_buffers_initialized = false;
 static uint32_t radix_keys[RENDER_TASK_MAX];
 static int      radix_scratch[RENDER_TASK_MAX];
 
+
+// ⚡ Epsilon for float comparison in rect detection (matches MiSTer's rect_task_epsilon)
+static const float sw_rect_epsilon = 0.001f;
+static inline bool sw_nearly_equal(float a, float b) {
+    return SDL_fabsf(a - b) <= sw_rect_epsilon;
+}
+
+// Forward declarations for rect detection/normalization (used in RenderFrame before definition)
+static bool is_axis_aligned_rect(const SDL_Vertex verts[4]);
+static void normalize_rect_verts(SDL_Vertex verts[4]);
+
 // Debugging and statistics
 static bool draw_rect_borders = false;
 static bool dump_textures = false;
 static int debug_texture_index = 0;
+
+// --- Per-Pixel Blending Utilities (ported from MiSTer FPGA build) ---
+// Operate on RGBA8888 layout matching SDL_PIXELFORMAT_RGBA8888 (LRU cache format).
+// Channel layout as uint32: R<<24 | G<<16 | B<<8 | A
+
+// ⚡ Per-channel color modulation: out = (src * mod + 127) / 255
+// src_pixel is RGBA8888, color_mod is RGBA8888
+static inline uint32_t sw_modulate_rgba8888(uint32_t pixel, uint32_t color) {
+    const uint32_t src_r = (pixel >> 24) & 0xFFu;
+    const uint32_t src_g = (pixel >> 16) & 0xFFu;
+    const uint32_t src_b = (pixel >>  8) & 0xFFu;
+    const uint32_t src_a = pixel & 0xFFu;
+    const uint32_t mod_r = (color >> 24) & 0xFFu;
+    const uint32_t mod_g = (color >> 16) & 0xFFu;
+    const uint32_t mod_b = (color >>  8) & 0xFFu;
+    const uint32_t mod_a = color & 0xFFu;
+    return (((src_r * mod_r + 127u) / 255u) << 24) |
+           (((src_g * mod_g + 127u) / 255u) << 16) |
+           (((src_b * mod_b + 127u) / 255u) <<  8) |
+            ((src_a * mod_a + 127u) / 255u);
+}
+
+// ⚡ Alpha composite (src-over): early-out for α=0/255, full Porter-Duff otherwise.
+// Both pixels are RGBA8888: R<<24 | G<<16 | B<<8 | A
+static inline uint32_t sw_blend_rgba8888(uint32_t dst_pixel, uint32_t src_pixel) {
+    const uint32_t src_a = src_pixel & 0xFFu;
+    if (src_a == 0u) return dst_pixel;
+    if (src_a == 255u) return src_pixel;
+
+    const uint32_t dst_a = dst_pixel & 0xFFu;
+    const uint32_t inv_src_a = 255u - src_a;
+    const uint32_t out_a = src_a + ((dst_a * inv_src_a + 127u) / 255u);
+    if (out_a == 0u) return 0u;
+
+    const uint32_t src_r = (src_pixel >> 24) & 0xFFu;
+    const uint32_t src_g = (src_pixel >> 16) & 0xFFu;
+    const uint32_t src_b = (src_pixel >>  8) & 0xFFu;
+    const uint32_t dst_r = (dst_pixel >> 24) & 0xFFu;
+    const uint32_t dst_g = (dst_pixel >> 16) & 0xFFu;
+    const uint32_t dst_b = (dst_pixel >>  8) & 0xFFu;
+
+    // Premultiplied compositing: out = src*α_s + dst*α_d*(1-α_s), then un-premultiply
+    const uint32_t out_r = ((src_r * src_a + dst_r * dst_a * inv_src_a / 255u) + out_a / 2u) / out_a;
+    const uint32_t out_g = ((src_g * src_a + dst_g * dst_a * inv_src_a / 255u) + out_a / 2u) / out_a;
+    const uint32_t out_b = ((src_b * src_a + dst_b * dst_a * inv_src_a / 255u) + out_a / 2u) / out_a;
+    return (out_r << 24) | (out_g << 16) | (out_b << 8) | out_a;
+}
+
+// ⚡ Convert engine ARGB8888 color to RGBA8888 for software-frame path.
+// Engine: A<<24|R<<16|G<<8|B  →  RGBA: R<<24|G<<16|B<<8|A
+static inline uint32_t sw_argb_to_rgba(uint32_t argb) {
+    return (argb << 8) | (argb >> 24);
+}
+
+// ⚡ Clamp integer to [lo, hi]
+static inline int sw_clamp(int val, int lo, int hi) {
+    if (val < lo) return lo;
+    if (val > hi) return hi;
+    return val;
+}
+
+// ⚡ Pre-multiplied solid blend (ported from MiSTer's blend_solid_argb8888).
+// Pre-computes src channel premul values ONCE, then applies per-pixel.
+// Fast path for dst_a==255 (opaque destination — the common case).
+// All channels in RGBA8888 layout: R<<24|G<<16|B<<8|A
+static inline uint32_t sw_blend_solid_rgba8888(uint32_t dst_pixel,
+                                               uint32_t src_a,
+                                               uint32_t inv_src_a,
+                                               uint32_t src_r_premul,
+                                               uint32_t src_g_premul,
+                                               uint32_t src_b_premul) {
+    const uint32_t dst_a = dst_pixel & 0xFFu;
+    const uint32_t dst_r = (dst_pixel >> 24) & 0xFFu;
+    const uint32_t dst_g = (dst_pixel >> 16) & 0xFFu;
+    const uint32_t dst_b = (dst_pixel >>  8) & 0xFFu;
+
+    if (dst_a == 255u) {
+        // Fast path: opaque destination — no alpha compositing needed
+        const uint32_t out_r = (src_r_premul + (dst_r * inv_src_a) + 127u) / 255u;
+        const uint32_t out_g = (src_g_premul + (dst_g * inv_src_a) + 127u) / 255u;
+        const uint32_t out_b = (src_b_premul + (dst_b * inv_src_a) + 127u) / 255u;
+        return (out_r << 24) | (out_g << 16) | (out_b << 8) | 0xFFu;
+    }
+
+    const uint32_t out_a = src_a + ((dst_a * inv_src_a + 127u) / 255u);
+    if (out_a == 0u) return 0u;
+
+    const uint32_t dst_r_premul = dst_r * dst_a;
+    const uint32_t dst_g_premul = dst_g * dst_a;
+    const uint32_t dst_b_premul = dst_b * dst_a;
+    const uint32_t out_r = ((src_r_premul + ((dst_r_premul * inv_src_a + 127u) / 255u)) + (out_a / 2u)) / out_a;
+    const uint32_t out_g = ((src_g_premul + ((dst_g_premul * inv_src_a + 127u) / 255u)) + (out_a / 2u)) / out_a;
+    const uint32_t out_b = ((src_b_premul + ((dst_b_premul * inv_src_a + 127u) / 255u)) + (out_a / 2u)) / out_a;
+    return (out_r << 24) | (out_g << 16) | (out_b << 8) | out_a;
+}
 
 // --- PlayStation 2 Graphics Synthesizer CLUT index shuffle ---
 // The PS2 GS stores 256-color CLUTs in a non-linear memory order.
@@ -408,6 +562,22 @@ static SDL_Texture* bake_idx_tex(SDL_Renderer* renderer, int ti, int palette_han
     }
     SDL_UpdateTexture(tex, NULL, rgba_scratch, surf->w * 4);
 
+    // ⚡ Persist pixel data for software-frame path (zero per-frame bake cost).
+    // Free old buffer if evicting a slot with different dimensions.
+    if (idx_pal_pixels[ti][evict] != NULL &&
+        (idx_pal_pixels_w[ti][evict] != surf->w || idx_pal_pixels_h[ti][evict] != surf->h)) {
+        SDL_free(idx_pal_pixels[ti][evict]);
+        idx_pal_pixels[ti][evict] = NULL;
+    }
+    if (idx_pal_pixels[ti][evict] == NULL) {
+        idx_pal_pixels[ti][evict] = (uint32_t*)SDL_malloc(pixel_count * sizeof(uint32_t));
+    }
+    if (idx_pal_pixels[ti][evict] != NULL) {
+        SDL_memcpy(idx_pal_pixels[ti][evict], rgba_scratch, pixel_count * sizeof(uint32_t));
+        idx_pal_pixels_w[ti][evict] = surf->w;
+        idx_pal_pixels_h[ti][evict] = surf->h;
+    }
+
     idx_pal_handle[ti][evict] = palette_handle;
     idx_pal_hash[ti][evict]   = palette_hash[palette_handle - 1];
     idx_pal_lru[ti][evict]    = idx_pal_lru_clock[ti]++;
@@ -428,6 +598,310 @@ static SDL_Texture* lookup_idx_tex(SDL_Renderer* renderer, int ti, int palette_h
     return bake_idx_tex(renderer, ti, palette_handle);
 }
 
+// --- Software-Frame Lifecycle ---
+
+static bool ensure_sw_frame_surface(void) {
+    if (sw_frame_surface != NULL) return true;
+    sw_frame_surface = SDL_CreateSurface(cps3_width, cps3_height, SDL_PIXELFORMAT_RGBA8888);
+    return sw_frame_surface != NULL;
+}
+
+static bool ensure_sw_frame_upload_texture(void) {
+    if (sw_frame_upload_tex != NULL) return true;
+    SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+    sw_frame_upload_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                            SDL_TEXTUREACCESS_STREAMING, cps3_width, cps3_height);
+    if (!sw_frame_upload_tex) return false;
+    SDL_SetTextureScaleMode(sw_frame_upload_tex, SDL_SCALEMODE_NEAREST);
+    SDL_SetTextureBlendMode(sw_frame_upload_tex, SDL_BLENDMODE_NONE);
+    return true;
+}
+
+// ⚡ Look up cached RGBA8888 pixels from the LRU cache for a given (tex, palette).
+// Returns pointer to persistent pixel data populated during bake_idx_tex.
+// Zero per-frame cost on cache hit (pixel data was baked on texture/palette change).
+static const uint32_t* sw_lookup_cached_pixels(int ti, int palette_handle, int* out_w, int* out_h) {
+    if (palette_handle <= 0 || palette_handle > FL_PALETTE_MAX) return NULL;
+    const uint32_t want_hash = palette_hash[palette_handle - 1];
+    for (int s = 0; s < IDX_PAL_SLOTS; s++) {
+        if (idx_pal_handle[ti][s] == palette_handle
+                && idx_pal_hash[ti][s] == want_hash
+                && idx_pal_pixels[ti][s] != NULL) {
+            *out_w = idx_pal_pixels_w[ti][s];
+            *out_h = idx_pal_pixels_h[ti][s];
+            return idx_pal_pixels[ti][s];
+        }
+    }
+    // Cache miss — trigger a bake (which will also populate idx_pal_pixels)
+    SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+    SDL_Texture* tex = lookup_idx_tex(renderer, ti, palette_handle);
+    if (!tex) return NULL;
+    // After bake, the pixel data should be in the cache
+    for (int s = 0; s < IDX_PAL_SLOTS; s++) {
+        if (idx_pal_handle[ti][s] == palette_handle
+                && idx_pal_pixels[ti][s] != NULL) {
+            *out_w = idx_pal_pixels_w[ti][s];
+            *out_h = idx_pal_pixels_h[ti][s];
+            return idx_pal_pixels[ti][s];
+        }
+    }
+    return NULL;
+}
+
+// ⚡ Software-rasterize a textured rect task into the software-frame surface.
+static bool sw_raster_textured(int task_idx) {
+    const unsigned int th = task_th[task_idx];
+    const int tex_handle = LO_16_BITS(th);
+    const int pal_handle = HI_16_BITS(th);
+    if (tex_handle <= 0 || tex_handle > FL_TEXTURE_MAX) return false;
+
+    int src_tex_w, src_tex_h;
+    const uint32_t* src_pixels = sw_lookup_cached_pixels(tex_handle - 1, pal_handle, &src_tex_w, &src_tex_h);
+    if (!src_pixels) return false;
+
+    const SDL_FRect* dst_r = &task_dst_rect[task_idx];
+    const SDL_FRect* src_uv = &task_src_rect[task_idx];
+    const SDL_FlipMode flip = task_flip[task_idx];
+    const uint32_t color = task_color32[task_idx];
+
+    // Convert UV to pixel coords
+    const int src_x = (int)SDL_roundf(src_uv->x * (float)src_tex_w);
+    const int src_y = (int)SDL_roundf(src_uv->y * (float)src_tex_h);
+    const int src_w = (int)SDL_roundf(src_uv->w * (float)src_tex_w);
+    const int src_h = (int)SDL_roundf(src_uv->h * (float)src_tex_h);
+    if (src_w <= 0 || src_h <= 0) return true; // degenerate — skip
+
+    const int dst_x = (int)SDL_roundf(dst_r->x);
+    const int dst_y = (int)SDL_roundf(dst_r->y);
+    const int dst_w = (int)SDL_roundf(dst_r->w);
+    const int dst_h = (int)SDL_roundf(dst_r->h);
+    if (dst_w <= 0 || dst_h <= 0) return true; // degenerate — skip
+
+    // Clamp destination to surface bounds
+    const int dst_x0 = sw_clamp(dst_x, 0, cps3_width);
+    const int dst_y0 = sw_clamp(dst_y, 0, cps3_height);
+    const int dst_x1 = sw_clamp(dst_x + dst_w, 0, cps3_width);
+    const int dst_y1 = sw_clamp(dst_y + dst_h, 0, cps3_height);
+    if (dst_x1 <= dst_x0 || dst_y1 <= dst_y0) return true; // fully clipped
+
+    uint32_t* dst_pixels = (uint32_t*)sw_frame_surface->pixels;
+    const int dst_pitch = sw_frame_surface->pitch / (int)sizeof(uint32_t);
+    const bool flip_h = (flip & SDL_FLIP_HORIZONTAL) != 0;
+    const bool flip_v = (flip & SDL_FLIP_VERTICAL) != 0;
+    const bool has_color_mod = (color != 0xFFFFFFFFu);
+
+    if (src_w == dst_w && src_h == dst_h) {
+        // ⚡ Exact copy path: 1:1 pixel mapping with flip/clip/color-mod support
+        const int clip_left = dst_x0 - dst_x;
+        const int clip_top = dst_y0 - dst_y;
+        const int src_x_step = flip_h ? -1 : 1;
+        const int src_y_step = flip_v ? -1 : 1;
+        const int src_start_x = flip_h ? (src_x + src_w - 1 - clip_left) : (src_x + clip_left);
+        const int src_start_y = flip_v ? (src_y + src_h - 1 - clip_top) : (src_y + clip_top);
+
+        for (int row = 0; row < (dst_y1 - dst_y0); row++) {
+            const int sy = src_start_y + row * src_y_step;
+            if (sy < 0 || sy >= src_tex_h) continue;
+            const uint32_t* src_row = src_pixels + sy * src_tex_w;
+            uint32_t* dst_row = dst_pixels + (dst_y0 + row) * dst_pitch + dst_x0;
+            int sx = src_start_x;
+            for (int col = 0; col < (dst_x1 - dst_x0); col++) {
+                if (sx >= 0 && sx < src_tex_w) {
+                    uint32_t px = src_row[sx];
+                    if (has_color_mod) px = sw_modulate_rgba8888(px, color);
+                    dst_row[col] = sw_blend_rgba8888(dst_row[col], px);
+                }
+                sx += src_x_step;
+            }
+        }
+    } else {
+        // ⚡ Scaled copy path: pre-computed LUT eliminates float UV math per pixel.
+        // Ported from MiSTer's populate_scaled_lookup_table + try_fast_copy_fast_textured_task.
+        const int visible_w = dst_x1 - dst_x0;
+        const int visible_h = dst_y1 - dst_y0;
+
+        // Pre-compute per-destination-pixel source coordinate lookup tables
+        int src_x_lut[384]; // max cps3_width
+        int src_y_lut[224]; // max cps3_height
+        for (int i = 0; i < visible_w; i++) {
+            const int dst_off = (dst_x0 + i) - dst_x;
+            const int src_off = (((dst_off * 2) + 1) * src_w) / (dst_w * 2);
+            src_x_lut[i] = sw_clamp(flip_h ? (src_x + src_w - 1 - src_off) : (src_x + src_off),
+                                    0, src_tex_w - 1);
+        }
+        for (int i = 0; i < visible_h; i++) {
+            const int dst_off = (dst_y0 + i) - dst_y;
+            const int src_off = (((dst_off * 2) + 1) * src_h) / (dst_h * 2);
+            src_y_lut[i] = sw_clamp(flip_v ? (src_y + src_h - 1 - src_off) : (src_y + src_off),
+                                    0, src_tex_h - 1);
+        }
+
+        for (int row = 0; row < visible_h; row++) {
+            const uint32_t* src_row = src_pixels + src_y_lut[row] * src_tex_w;
+            uint32_t* dst_row = dst_pixels + (dst_y0 + row) * dst_pitch + dst_x0;
+            for (int col = 0; col < visible_w; col++) {
+                uint32_t px = src_row[src_x_lut[col]];
+                if (has_color_mod) px = sw_modulate_rgba8888(px, color);
+                dst_row[col] = sw_blend_rgba8888(dst_row[col], px);
+            }
+        }
+    }
+    return true;
+}
+
+// ⚡ Software-rasterize a solid color rect task.
+// task_dst_rect and task_color32 must be populated before calling.
+static bool sw_raster_solid(int task_idx) {
+    const SDL_FRect* dst_r = &task_dst_rect[task_idx];
+    const uint32_t color = task_color32[task_idx]; // RGBA8888 format
+    const uint32_t src_a = color & 0xFFu; // Alpha is low byte in RGBA8888
+    if (src_a == 0u) return true; // fully transparent — skip
+
+    const int x0 = sw_clamp((int)SDL_floorf(dst_r->x), 0, cps3_width);
+    const int y0 = sw_clamp((int)SDL_floorf(dst_r->y), 0, cps3_height);
+    const int x1 = sw_clamp((int)SDL_ceilf(dst_r->x + dst_r->w), 0, cps3_width);
+    const int y1 = sw_clamp((int)SDL_ceilf(dst_r->y + dst_r->h), 0, cps3_height);
+    if (x1 <= x0 || y1 <= y0) return true;
+
+    uint32_t* dst_pixels = (uint32_t*)sw_frame_surface->pixels;
+    const int dst_pitch = sw_frame_surface->pitch / (int)sizeof(uint32_t);
+    const int fill_w = x1 - x0;
+
+    if (src_a == 255u) {
+        // Opaque fill — direct write
+        for (int y = y0; y < y1; y++) {
+            uint32_t* row = dst_pixels + y * dst_pitch + x0;
+            for (int i = 0; i < fill_w; i++) row[i] = color;
+        }
+    } else {
+        // ⚡ Semi-transparent — pre-multiplied solid blend (MiSTer optimization).
+        // Pre-compute src channel premul values ONCE outside the pixel loop.
+        const uint32_t inv_src_a = 255u - src_a;
+        const uint32_t src_r = (color >> 24) & 0xFFu;
+        const uint32_t src_g = (color >> 16) & 0xFFu;
+        const uint32_t src_b = (color >>  8) & 0xFFu;
+        const uint32_t src_r_premul = src_r * src_a;
+        const uint32_t src_g_premul = src_g * src_a;
+        const uint32_t src_b_premul = src_b * src_a;
+        for (int y = y0; y < y1; y++) {
+            uint32_t* row = dst_pixels + y * dst_pitch + x0;
+            for (int i = 0; i < fill_w; i++) {
+                row[i] = sw_blend_solid_rgba8888(row[i], src_a, inv_src_a,
+                                                 src_r_premul, src_g_premul, src_b_premul);
+            }
+        }
+    }
+    return true;
+}
+
+
+
+// ⚡ Software-frame render: composite all tasks into sw_frame_surface, upload as one texture.
+// Returns true if the entire frame was software-composited; false = fallback to draw calls.
+static bool sw_render_frame(void) {
+    TRACE_ZONE_N("SDL2D:SwFrame");
+
+    if (!ensure_sw_frame_surface() || !ensure_sw_frame_upload_texture()) {
+        TRACE_ZONE_END();
+        return false;
+    }
+
+    // Compute RGBA8888 clear color for this frame
+    const Uint8 cr = (flPs2State.FrameClearColor >> 16) & 0xFF;
+    const Uint8 cg = (flPs2State.FrameClearColor >>  8) & 0xFF;
+    const Uint8 cb = flPs2State.FrameClearColor & 0xFF;
+    const Uint8 ca = flPs2State.FrameClearColor >> 24;
+    const uint32_t clear_rgba = (ca != SDL_ALPHA_TRANSPARENT)
+        ? ((uint32_t)cr << 24) | ((uint32_t)cg << 16) | ((uint32_t)cb << 8) | ca
+        : 0x000000FFu; // opaque black fallback (R=0,G=0,B=0,A=255)
+
+    // ⚡ Phase 0: Build current-frame tile coverage from all task rects.
+    SDL_memset(dt_current, 0, sizeof(dt_current));
+    for (int i = 0; i < render_task_count; i++) {
+        const int idx = render_task_order[i];
+        if (task_is_rect[idx]) {
+            const SDL_FRect* r = &task_dst_rect[idx];
+            dt_mark_rect(r->x, r->y, r->w, r->h);
+        } else {
+            // Non-rect: compute AABB from vertex positions
+            const SDL_Vertex* v = task_verts[idx];
+            float minx = v[0].position.x, miny = v[0].position.y;
+            float maxx = minx, maxy = miny;
+            for (int k = 1; k < 4; k++) {
+                if (v[k].position.x < minx) minx = v[k].position.x;
+                if (v[k].position.x > maxx) maxx = v[k].position.x;
+                if (v[k].position.y < miny) miny = v[k].position.y;
+                if (v[k].position.y > maxy) maxy = v[k].position.y;
+            }
+            dt_mark_rect(minx, miny, maxx - minx, maxy - miny);
+        }
+    }
+
+    // ⚡ Compute dirty tile union (current | previous) and selectively clear.
+    // If clear color changed, force all tiles dirty.
+    const bool clear_color_changed = !dt_prev_clear_valid || (clear_rgba != dt_prev_clear_color);
+    int dirty_count = 0;
+    uint32_t* dst_pixels = (uint32_t*)sw_frame_surface->pixels;
+    const int dst_pitch = sw_frame_surface->pitch / (int)sizeof(uint32_t);
+
+    for (int t = 0; t < DT_TOTAL; t++) {
+        if (clear_color_changed || dt_current[t] || dt_previous[t]) {
+            dirty_count++;
+            // Clear this 16×16 tile to the clear color
+            const int col = t % DT_COLS;
+            const int row = t / DT_COLS;
+            const int px = col * DT_SIZE;
+            const int py = row * DT_SIZE;
+            for (int y = py; y < py + DT_SIZE; y++) {
+                uint32_t* row_ptr = dst_pixels + y * dst_pitch + px;
+                SDL_memset4(row_ptr, clear_rgba, DT_SIZE);
+            }
+        }
+    }
+    dt_prev_clear_color = clear_rgba;
+    dt_prev_clear_valid = true;
+    (void)dirty_count; // reserved for Tracy TRACE_PLOT_INT("DirtyTiles", dirty_count)
+
+    // Phase 1: Eligibility check + rasterize
+    for (int i = 0; i < render_task_count; i++) {
+        const int idx = render_task_order[i];
+        const bool is_textured = (task_texture[idx] != NULL);
+        const bool is_rect = task_is_rect[idx];
+
+        if (is_rect && is_textured) {
+            if (!sw_raster_textured(idx)) {
+                TRACE_ZONE_END();
+                return false;
+            }
+        } else if (is_rect && !is_textured) {
+            // Solid rect — dst_rect and color32 were populated at enqueue time
+            if (!sw_raster_solid(idx)) {
+                TRACE_ZONE_END();
+                return false;
+            }
+        } else {
+            // Non-rect geometry (textured or solid) — cannot software-rasterize
+            TRACE_ZONE_END();
+            return false;
+        }
+    }
+
+    // Phase 2: Upload to GPU as a single texture
+    if (!SDL_UpdateTexture(sw_frame_upload_tex, NULL,
+                           sw_frame_surface->pixels, sw_frame_surface->pitch)) {
+        TRACE_ZONE_END();
+        return false;
+    }
+
+    SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+    SDL_SetRenderTarget(renderer, cps3_canvas);
+    const SDL_FRect dst = { 0.0f, 0.0f, (float)cps3_width, (float)cps3_height };
+    SDL_RenderTexture(renderer, sw_frame_upload_tex, NULL, &dst);
+
+    TRACE_ZONE_END();
+    return true;
+}
+
 // --- Render Task Management ---
 
 static void clear_render_tasks(void) {
@@ -436,6 +910,8 @@ static void clear_render_tasks(void) {
     // ⚡ Reset sortedness tracking for next frame
     sort_inversions = 0;
     last_submitted_z = -1e30f;
+    // ⚡ Rotate dirty tile maps: current → previous for next frame
+    SDL_memcpy(dt_previous, dt_current, sizeof(dt_previous));
 }
 
 // --- Render Task Sorting ---
@@ -540,6 +1016,10 @@ void SDLGameRendererSDL_Shutdown(void) {
                 SDL_DestroyTexture(idx_pal_tex[i][s]);
                 idx_pal_tex[i][s] = NULL;
             }
+            if (idx_pal_pixels[i][s] != NULL) {
+                SDL_free(idx_pal_pixels[i][s]);
+                idx_pal_pixels[i][s] = NULL;
+            }
             idx_pal_handle[i][s] = 0;
             idx_pal_hash[i][s]   = 0;
         }
@@ -569,6 +1049,16 @@ void SDLGameRendererSDL_Shutdown(void) {
     if (cps3_canvas != NULL) {
         SDL_DestroyTexture(cps3_canvas);
         cps3_canvas = NULL;
+    }
+
+    // Destroy software-frame resources
+    if (sw_frame_surface != NULL) {
+        SDL_DestroySurface(sw_frame_surface);
+        sw_frame_surface = NULL;
+    }
+    if (sw_frame_upload_tex != NULL) {
+        SDL_DestroyTexture(sw_frame_upload_tex);
+        sw_frame_upload_tex = NULL;
     }
 
     clear_render_tasks();
@@ -626,6 +1116,18 @@ void SDLGameRendererSDL_RenderFrame(void) {
     // maximize same-texture batching. Reduces SDL_RenderGeometry draw calls
     // by 5-10× since many sprites share the same Z depth.
     texture_subsort_equal_z_groups(render_task_order, render_task_count);
+
+    // ⚡ Software-frame path: try CPU compositing before draw calls.
+    // Replaces hundreds of per-sprite draw calls with a single SDL_UpdateTexture upload.
+    if (sw_render_frame()) {
+        TRACE_PLOT_INT("SoftwareFrame", 1);
+        TRACE_ZONE_END();
+        return;
+    }
+    TRACE_PLOT_INT("SoftwareFrame", 0);
+
+    // Re-bind render target (sw_render_frame may have changed it)
+    SDL_SetRenderTarget(renderer, cps3_canvas);
 
     // Batch rendering: group consecutive tasks with same texture+palette (task_th)
     // AND same rect/geometry classification.
@@ -705,6 +1207,66 @@ void SDLGameRendererSDL_RenderFrame(void) {
                     SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
                     SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
                     rect_fast_path_count += batch_size;
+                } else if (draw_texture != NULL && !current_is_rect) {
+                    // ⚡ Retroactive rect recovery: re-examine geometry tasks to see if
+                    // they actually form axis-aligned rects. Catches quads missed by
+                    // is_axis_aligned_rect at enqueue time (MiSTer's try_resolve_geometry_task_as_rect_copy).
+                    float tex_w, tex_h;
+                    SDL_GetTextureSize(draw_texture, &tex_w, &tex_h);
+                    int geo_start = 0;
+                    for (int j = 0; j < batch_size; j++) {
+                        const int task_idx = render_task_order[batch_start + j];
+                        if (is_axis_aligned_rect(task_verts[task_idx])) {
+                            // Flush pending non-rect geometry before this rect
+                            if (j > geo_start) {
+                                const int geo_count = j - geo_start;
+                                for (int k = 0; k < geo_count; k++) {
+                                    const int gi = render_task_order[batch_start + geo_start + k];
+                                    memcpy(&batch_vertices[k * 4], task_verts[gi], 4 * sizeof(SDL_Vertex));
+                                }
+                                SDL_RenderGeometry(renderer, draw_texture, batch_vertices,
+                                                   geo_count * 4, batch_indices, geo_count * 6);
+                            }
+                            // ⚡ Normalize vertex order so v[0]=TL, v[3]=BR
+                            normalize_rect_verts(task_verts[task_idx]);
+                            // Submit as rect
+                            const SDL_Vertex* v = task_verts[task_idx];
+                            float rx = v[0].tex_coord.x * tex_w;
+                            float ry = v[0].tex_coord.y * tex_h;
+                            float rw = (v[3].tex_coord.x - v[0].tex_coord.x) * tex_w;
+                            float rh = (v[3].tex_coord.y - v[0].tex_coord.y) * tex_h;
+                            SDL_FlipMode rflip = SDL_FLIP_NONE;
+                            if (rw < 0) { rflip |= SDL_FLIP_HORIZONTAL; rx += rw; rw = -rw; }
+                            if (rh < 0) { rflip |= SDL_FLIP_VERTICAL;   ry += rh; rh = -rh; }
+                            const SDL_FRect rsrc = { rx, ry, rw, rh };
+                            const SDL_FRect rdst = {
+                                v[0].position.x, v[0].position.y,
+                                v[3].position.x - v[0].position.x,
+                                v[3].position.y - v[0].position.y
+                            };
+                            SDL_SetTextureColorModFloat(draw_texture, v[0].color.r, v[0].color.g, v[0].color.b);
+                            SDL_SetTextureAlphaModFloat(draw_texture, v[0].color.a);
+                            if (rflip != SDL_FLIP_NONE) {
+                                SDL_RenderTextureRotated(renderer, draw_texture, &rsrc, &rdst, 0.0, NULL, rflip);
+                            } else {
+                                SDL_RenderTexture(renderer, draw_texture, &rsrc, &rdst);
+                            }
+                            SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
+                            SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
+                            rect_fast_path_count++;
+                            geo_start = j + 1;
+                        }
+                    }
+                    // Flush remaining non-rect geometry
+                    if (geo_start < batch_size) {
+                        const int geo_count = batch_size - geo_start;
+                        for (int k = 0; k < geo_count; k++) {
+                            const int gi = render_task_order[batch_start + geo_start + k];
+                            memcpy(&batch_vertices[k * 4], task_verts[gi], 4 * sizeof(SDL_Vertex));
+                        }
+                        SDL_RenderGeometry(renderer, draw_texture, batch_vertices,
+                                           geo_count * 4, batch_indices, geo_count * 6);
+                    }
                 } else {
                     // Standard geometry path: copy vertices to batch buffer
                     for (int j = 0; j < batch_size; j++) {
@@ -795,10 +1357,15 @@ void SDLGameRendererSDL_UnlockTexture(unsigned int th) {
     }
 
     /* ⚡ Invalidate all indexed palette slots for this texture — pixel data changed.
-     * Slots stay allocated (SDL_Texture* reused on next bake), handles cleared. */
+     * Slots stay allocated (SDL_Texture* reused on next bake), handles cleared.
+     * Pixel cache must also be freed — stale data. */
     for (int s = 0; s < IDX_PAL_SLOTS; s++) {
         idx_pal_handle[texture_index][s] = 0;
         idx_pal_hash[texture_index][s]   = 0;
+        if (idx_pal_pixels[texture_index][s] != NULL) {
+            SDL_free(idx_pal_pixels[texture_index][s]);
+            idx_pal_pixels[texture_index][s] = NULL;
+        }
     }
 
     /* Surface stays alive — it still references the (now-updated) system buffer. */
@@ -900,6 +1467,10 @@ void SDLGameRendererSDL_DestroyTexture(unsigned int texture_handle) {
         if (idx_pal_tex[texture_index][s] != NULL) {
             push_texture_to_destroy(idx_pal_tex[texture_index][s]);
             idx_pal_tex[texture_index][s] = NULL;
+        }
+        if (idx_pal_pixels[texture_index][s] != NULL) {
+            SDL_free(idx_pal_pixels[texture_index][s]);
+            idx_pal_pixels[texture_index][s] = NULL;
         }
         idx_pal_handle[texture_index][s] = 0;
         idx_pal_hash[texture_index][s]   = 0;
@@ -1059,18 +1630,56 @@ void SDLGameRendererSDL_SetTexture(unsigned int th) {
 }
 
 // ⚡ Rect fast path: detect axis-aligned quads eligible for SDL_RenderTexture.
-// Checks: (1) positions form an axis-aligned box, (2) uniform vertex color.
+// Checks: (1) positions form an axis-aligned box (any winding order), (2) uniform vertex color.
+// ⚡ Winding-order agnostic: computes AABB and verifies each vertex sits on a corner.
+// This handles {TL,TR,BL,BR}, {TL,BL,TR,BR}, and any other permutation.
 static bool is_axis_aligned_rect(const SDL_Vertex verts[4]) {
-    // TL=(x0,y0), TR=(x1,y0), BL=(x0,y1), BR=(x1,y1)
-    if (verts[0].position.y != verts[1].position.y) return false;  // top edge horizontal
-    if (verts[2].position.y != verts[3].position.y) return false;  // bottom edge horizontal
-    if (verts[0].position.x != verts[2].position.x) return false;  // left edge vertical
-    if (verts[1].position.x != verts[3].position.x) return false;  // right edge vertical
+    // Compute AABB from all 4 vertices
+    float xmin = verts[0].position.x, xmax = xmin;
+    float ymin = verts[0].position.y, ymax = ymin;
+    for (int i = 1; i < 4; i++) {
+        if (verts[i].position.x < xmin) xmin = verts[i].position.x;
+        if (verts[i].position.x > xmax) xmax = verts[i].position.x;
+        if (verts[i].position.y < ymin) ymin = verts[i].position.y;
+        if (verts[i].position.y > ymax) ymax = verts[i].position.y;
+    }
+    // Each vertex must sit on a corner of the AABB (epsilon-based — handles float imprecision)
+    for (int i = 0; i < 4; i++) {
+        const bool on_x = sw_nearly_equal(verts[i].position.x, xmin) || sw_nearly_equal(verts[i].position.x, xmax);
+        const bool on_y = sw_nearly_equal(verts[i].position.y, ymin) || sw_nearly_equal(verts[i].position.y, ymax);
+        if (!on_x || !on_y) return false;
+    }
     // Uniform vertex color (no per-vertex interpolation needed)
-    if (SDL_memcmp(&verts[0].color, &verts[1].color, sizeof(SDL_FColor)) != 0) return false;
-    if (SDL_memcmp(&verts[0].color, &verts[2].color, sizeof(SDL_FColor)) != 0) return false;
-    if (SDL_memcmp(&verts[0].color, &verts[3].color, sizeof(SDL_FColor)) != 0) return false;
+    for (int i = 1; i < 4; i++) {
+        if (SDL_memcmp(&verts[0].color, &verts[i].color, sizeof(SDL_FColor)) != 0) return false;
+    }
     return true;
+}
+
+// ⚡ Normalize 4 vertices to canonical {TL, TR, BL, BR} order.
+// After this, v[0]=TL, v[1]=TR, v[2]=BL, v[3]=BR.
+// Prerequisite: is_axis_aligned_rect() returned true.
+static void normalize_rect_verts(SDL_Vertex verts[4]) {
+    // Compute AABB
+    float xmin = verts[0].position.x, xmax = xmin;
+    float ymin = verts[0].position.y, ymax = ymin;
+    for (int i = 1; i < 4; i++) {
+        if (verts[i].position.x < xmin) xmin = verts[i].position.x;
+        if (verts[i].position.x > xmax) xmax = verts[i].position.x;
+        if (verts[i].position.y < ymin) ymin = verts[i].position.y;
+        if (verts[i].position.y > ymax) ymax = verts[i].position.y;
+    }
+    // Classify each vertex into its canonical slot
+    SDL_Vertex sorted[4];
+    for (int i = 0; i < 4; i++) {
+        const bool is_left = sw_nearly_equal(verts[i].position.x, xmin);
+        const bool is_top  = sw_nearly_equal(verts[i].position.y, ymin);
+        if      ( is_left &&  is_top) sorted[0] = verts[i]; // TL
+        else if (!is_left &&  is_top) sorted[1] = verts[i]; // TR
+        else if ( is_left && !is_top) sorted[2] = verts[i]; // BL
+        else                          sorted[3] = verts[i]; // BR
+    }
+    SDL_memcpy(verts, sorted, sizeof(sorted));
 }
 
 // ⚡ Write directly into the render_tasks array, avoiding a 104-byte stack
@@ -1105,8 +1714,41 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
         read_rgba32_fcolor(vertices[i].color, &task_verts[task_idx][i].color);
     }
 
-    // ⚡ Rect fast path: classify after vertices are written
-    task_is_rect[task_idx] = textured && is_axis_aligned_rect(task_verts[task_idx]);
+    // ⚡ Rect fast path: classify after vertices are written (both textured and solid)
+    task_is_rect[task_idx] = is_axis_aligned_rect(task_verts[task_idx]);
+
+    // ⚡ Normalize vertex order to canonical {TL, TR, BL, BR} so all
+    // downstream consumers (rect fast path, software frame) can use v[0]/v[3].
+    if (task_is_rect[task_idx]) {
+        normalize_rect_verts(task_verts[task_idx]);
+    }
+
+    // ⚡ Software-frame data: populate rect/flip/color for rect tasks.
+    // For non-rect tasks these are unused (sw_render_frame falls back).
+    if (task_is_rect[task_idx]) {
+        const SDL_Vertex* v = task_verts[task_idx];
+        if (textured) {
+            float src_x = v[0].tex_coord.x;
+            float src_y = v[0].tex_coord.y;
+            float src_w = v[3].tex_coord.x - v[0].tex_coord.x;
+            float src_h = v[3].tex_coord.y - v[0].tex_coord.y;
+            SDL_FlipMode flip = SDL_FLIP_NONE;
+            if (src_w < 0) { flip |= SDL_FLIP_HORIZONTAL; src_x += src_w; src_w = -src_w; }
+            if (src_h < 0) { flip |= SDL_FLIP_VERTICAL;   src_y += src_h; src_h = -src_h; }
+            task_src_rect[task_idx] = (SDL_FRect){ src_x, src_y, src_w, src_h };
+            task_flip[task_idx] = flip;
+        }
+        task_dst_rect[task_idx] = (SDL_FRect){
+            v[0].position.x, v[0].position.y,
+            v[3].position.x - v[0].position.x,
+            v[3].position.y - v[0].position.y
+        };
+        // Store color in RGBA8888 format: R<<24|G<<16|B<<8|A
+        task_color32[task_idx] = ((uint32_t)(v[0].color.r * 255.0f + 0.5f) << 24) |
+                                ((uint32_t)(v[0].color.g * 255.0f + 0.5f) << 16) |
+                                ((uint32_t)(v[0].color.b * 255.0f + 0.5f) <<  8) |
+                                 (uint32_t)(v[0].color.a * 255.0f + 0.5f);
+    }
 
     render_task_count++;
 }
@@ -1290,6 +1932,27 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
 
         // ⚡ Sprite2 always produces axis-aligned rects with uniform color
         task_is_rect[task_idx] = true;
+
+        // ⚡ Software-frame data: pre-compute rect/flip/color for Sprite2 tasks.
+        {
+            float uv_w = s1 - s0;
+            float uv_h = t1 - t0;
+            float uv_x = s0;
+            float uv_y = t0;
+            SDL_FlipMode spr_flip = SDL_FLIP_NONE;
+            if (uv_w < 0) { spr_flip |= SDL_FLIP_HORIZONTAL; uv_x += uv_w; uv_w = -uv_w; }
+            if (uv_h < 0) { spr_flip |= SDL_FLIP_VERTICAL;   uv_y += uv_h; uv_h = -uv_h; }
+            task_src_rect[task_idx] = (SDL_FRect){ uv_x, uv_y, uv_w, uv_h };
+            task_dst_rect[task_idx] = (SDL_FRect){
+                x0, y0,
+                x1 - x0,
+                y1 - y0
+            };
+            task_flip[task_idx] = spr_flip;
+            // Store color in RGBA8888 format: R<<24|G<<16|B<<8|A
+            // Engine color is ARGB (A<<24|R<<16|G<<8|B), convert via sw_argb_to_rgba.
+            task_color32[task_idx] = sw_argb_to_rgba(color);
+        }
 
         render_task_count++;
     }
