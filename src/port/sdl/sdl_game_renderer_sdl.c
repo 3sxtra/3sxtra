@@ -34,6 +34,7 @@ static float task_z[RENDER_TASK_MAX];
 static SDL_Texture* task_texture[RENDER_TASK_MAX];
 static unsigned int task_th[RENDER_TASK_MAX]; // combined texture+palette handle for batch-breaking
 static SDL_Vertex task_verts[RENDER_TASK_MAX][4];
+static bool task_is_rect[RENDER_TASK_MAX];          // ⚡ true = axis-aligned rect eligible for SDL_RenderTexture
 
 static SDL_Texture* cps3_canvas = NULL;
 
@@ -626,14 +627,19 @@ void SDLGameRendererSDL_RenderFrame(void) {
     // by 5-10× since many sprites share the same Z depth.
     texture_subsort_equal_z_groups(render_task_order, render_task_count);
 
-    // Batch rendering: group consecutive tasks with same texture+palette (task_th).
+    // Batch rendering: group consecutive tasks with same texture+palette (task_th)
+    // AND same rect/geometry classification.
     // ⚡ Pre-baked RGBA textures via lookup_idx_tex — pure pointer lookup, no blit.
     int batch_start = 0;
     unsigned int current_th = task_th[render_task_order[0]];
+    bool current_is_rect = task_is_rect[render_task_order[0]];
+    int rect_fast_path_count = 0;
 
     for (int i = 0; i <= render_task_count; i++) {
         const bool should_flush =
-            (i == render_task_count) || (task_th[render_task_order[i]] != current_th);
+            (i == render_task_count) ||
+            (task_th[render_task_order[i]] != current_th) ||
+            (task_is_rect[render_task_order[i]] != current_is_rect);
 
         if (should_flush) {
             const int batch_size = i - batch_start;
@@ -652,24 +658,75 @@ void SDLGameRendererSDL_RenderFrame(void) {
                     if (cached != NULL) draw_texture = cached;
                 }
 
-                // Copy vertices to batch buffer via sorted indices
-                for (int j = 0; j < batch_size; j++) {
-                    const int task_idx = render_task_order[batch_start + j];
-                    const int vert_offset = j * 4;
-                    memcpy(&batch_vertices[vert_offset], task_verts[task_idx], 4 * sizeof(SDL_Vertex));
-                }
+                // ⚡ Rect fast path: use SDL_RenderTexture for axis-aligned rects.
+                // SDL_RenderTexture can use optimized hardware blit paths vs.
+                // the generic triangle rasterization of SDL_RenderGeometry.
+                if (current_is_rect && draw_texture != NULL) {
+                    // Query texture size once per batch (all tasks share same texture)
+                    float tex_w, tex_h;
+                    SDL_GetTextureSize(draw_texture, &tex_w, &tex_h);
 
-                // Single draw call for entire batch
-                SDL_RenderGeometry(
-                    renderer, draw_texture, batch_vertices, batch_size * 4, batch_indices, batch_size * 6);
+                    for (int j = 0; j < batch_size; j++) {
+                        const int task_idx = render_task_order[batch_start + j];
+                        const SDL_Vertex* v = task_verts[task_idx];
+
+                        // Compute source rect — detect flipped axes via negative dimensions
+                        float src_x = v[0].tex_coord.x * tex_w;
+                        float src_y = v[0].tex_coord.y * tex_h;
+                        float src_w = (v[3].tex_coord.x - v[0].tex_coord.x) * tex_w;
+                        float src_h = (v[3].tex_coord.y - v[0].tex_coord.y) * tex_h;
+
+                        SDL_FlipMode flip = SDL_FLIP_NONE;
+                        if (src_w < 0) { flip |= SDL_FLIP_HORIZONTAL; src_x += src_w; src_w = -src_w; }
+                        if (src_h < 0) { flip |= SDL_FLIP_VERTICAL;   src_y += src_h; src_h = -src_h; }
+
+                        const SDL_FRect src = { src_x, src_y, src_w, src_h };
+
+                        // Destination rect from vertex positions
+                        const SDL_FRect dst = {
+                            v[0].position.x,
+                            v[0].position.y,
+                            v[3].position.x - v[0].position.x,
+                            v[3].position.y - v[0].position.y
+                        };
+
+                        // Apply color + alpha modulation from uniform vertex color
+                        SDL_SetTextureColorModFloat(draw_texture, v[0].color.r, v[0].color.g, v[0].color.b);
+                        SDL_SetTextureAlphaModFloat(draw_texture, v[0].color.a);
+
+                        if (flip != SDL_FLIP_NONE) {
+                            SDL_RenderTextureRotated(renderer, draw_texture, &src, &dst, 0.0, NULL, flip);
+                        } else {
+                            SDL_RenderTexture(renderer, draw_texture, &src, &dst);
+                        }
+                    }
+                    // ⚡ Reset color/alpha mod to prevent leaking into subsequent
+                    // SDL_RenderGeometry batches that may share this texture.
+                    SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
+                    SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
+                    rect_fast_path_count += batch_size;
+                } else {
+                    // Standard geometry path: copy vertices to batch buffer
+                    for (int j = 0; j < batch_size; j++) {
+                        const int task_idx = render_task_order[batch_start + j];
+                        const int vert_offset = j * 4;
+                        memcpy(&batch_vertices[vert_offset], task_verts[task_idx], 4 * sizeof(SDL_Vertex));
+                    }
+
+                    // Single draw call for entire batch
+                    SDL_RenderGeometry(
+                        renderer, draw_texture, batch_vertices, batch_size * 4, batch_indices, batch_size * 6);
+                }
             }
 
             if (i < render_task_count) {
                 current_th = task_th[render_task_order[i]];
+                current_is_rect = task_is_rect[render_task_order[i]];
                 batch_start = i;
             }
         }
     }
+    TRACE_PLOT_INT("RectFastPath", rect_fast_path_count);
 
     // Debug visualization: draw colored borders around quads
     if (draw_rect_borders) {
@@ -1001,6 +1058,21 @@ void SDLGameRendererSDL_SetTexture(unsigned int th) {
     }
 }
 
+// ⚡ Rect fast path: detect axis-aligned quads eligible for SDL_RenderTexture.
+// Checks: (1) positions form an axis-aligned box, (2) uniform vertex color.
+static bool is_axis_aligned_rect(const SDL_Vertex verts[4]) {
+    // TL=(x0,y0), TR=(x1,y0), BL=(x0,y1), BR=(x1,y1)
+    if (verts[0].position.y != verts[1].position.y) return false;  // top edge horizontal
+    if (verts[2].position.y != verts[3].position.y) return false;  // bottom edge horizontal
+    if (verts[0].position.x != verts[2].position.x) return false;  // left edge vertical
+    if (verts[1].position.x != verts[3].position.x) return false;  // right edge vertical
+    // Uniform vertex color (no per-vertex interpolation needed)
+    if (SDL_memcmp(&verts[0].color, &verts[1].color, sizeof(SDL_FColor)) != 0) return false;
+    if (SDL_memcmp(&verts[0].color, &verts[2].color, sizeof(SDL_FColor)) != 0) return false;
+    if (SDL_memcmp(&verts[0].color, &verts[3].color, sizeof(SDL_FColor)) != 0) return false;
+    return true;
+}
+
 // ⚡ Write directly into the render_tasks array, avoiding a 104-byte stack
 // struct allocation + copy that the old push_render_task pattern required.
 static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
@@ -1032,6 +1104,9 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
 
         read_rgba32_fcolor(vertices[i].color, &task_verts[task_idx][i].color);
     }
+
+    // ⚡ Rect fast path: classify after vertices are written
+    task_is_rect[task_idx] = textured && is_axis_aligned_rect(task_verts[task_idx]);
 
     render_task_count++;
 }
@@ -1212,6 +1287,9 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         task_verts[task_idx][3].position.x = x1; task_verts[task_idx][3].position.y = y1;
         task_verts[task_idx][3].tex_coord.x = s1; task_verts[task_idx][3].tex_coord.y = t1;
         task_verts[task_idx][3].color = fc;
+
+        // ⚡ Sprite2 always produces axis-aligned rects with uniform color
+        task_is_rect[task_idx] = true;
 
         render_task_count++;
     }
