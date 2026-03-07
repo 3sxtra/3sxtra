@@ -226,8 +226,11 @@ void SDLGameRendererGL_RenderFrame(void) {
     const GLuint arr_shader = SDLApp_GetSceneArrayShaderProgram();
     const GLuint leg_shader = SDLApp_GetSceneShaderProgram();
 
-    TRACE_SUB_BEGIN("GL:BatchDraw");
     int i = 0;
+    int stat_array_sprites = 0;
+    int stat_legacy_sprites = 0;
+    int stat_draw_calls = 0;
+    TRACE_SUB_BEGIN("GL:BatchDraw");
     while (i < gl_state.render_task_count) {
         const bool is_array_task = (gl_state.render_tasks[i].array_layer >= 0);
 
@@ -263,6 +266,8 @@ void SDLGameRendererGL_RenderFrame(void) {
                 i++;
             }
 
+            stat_array_sprites += batch_count;
+            stat_draw_calls++;
             const size_t offset_bytes = (size_t)start_index * 6 * sizeof(int);
             glDrawElements(GL_TRIANGLES, batch_count * 6, GL_UNSIGNED_INT, (void*)offset_bytes);
 
@@ -291,6 +296,8 @@ void SDLGameRendererGL_RenderFrame(void) {
                     i++;
                 }
 
+                stat_legacy_sprites += batch_count;
+                stat_draw_calls++;
                 glBindTexture(GL_TEXTURE_2D, current_texture);
                 const size_t offset_bytes = (size_t)start_index * 6 * sizeof(int);
                 glDrawElements(GL_TRIANGLES, batch_count * 6, GL_UNSIGNED_INT, (void*)offset_bytes);
@@ -298,6 +305,9 @@ void SDLGameRendererGL_RenderFrame(void) {
         }
     }
     TRACE_SUB_END();
+    TRACE_PLOT_INT("ArraySprites", stat_array_sprites);
+    TRACE_PLOT_INT("LegacySprites", stat_legacy_sprites);
+    TRACE_PLOT_INT("DrawCalls", stat_draw_calls);
 
     TRACE_GPU_ZONE_END();
 

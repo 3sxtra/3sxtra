@@ -26,33 +26,62 @@ static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN
 #define CHAR_NAME_COUNT 21
 
 // ─── Character portrait paths (SF3:3S roster, index matches My_char) ───
-static const char* const s_portrait_paths[21] = {
-    "",                                          // 0 GILL (no portrait)
-    "assets/charactersportraits/alex.png",       // 1 ALEX
-    "assets/charactersportraits/ryu.png",        // 2 RYU
-    "assets/charactersportraits/yun.png",        // 3 YUN
-    "assets/charactersportraits/dudley.png",     // 4 DUDLEY
-    "assets/charactersportraits/necro.png",      // 5 NECRO
-    "assets/charactersportraits/hugo.png",       // 6 HUGO
-    "assets/charactersportraits/ibuki.png",      // 7 IBUKI
-    "assets/charactersportraits/elena.png",      // 8 ELENA
-    "assets/charactersportraits/oro.png",        // 9 ORO
-    "assets/charactersportraits/yang.png",       // 10 YANG
-    "assets/charactersportraits/ken.png",        // 11 KEN
-    "assets/charactersportraits/sean.png",       // 12 SEAN
-    "assets/charactersportraits/urien.png",      // 13 URIEN
-    "assets/charactersportraits/akuma.png",      // 14 GOUKI
-    "assets/charactersportraits/chunli.png",     // 15 CHUN-LI
-    "assets/charactersportraits/makoto.png",     // 16 MAKOTO
-    "assets/charactersportraits/q.png",          // 17 Q
-    "assets/charactersportraits/twelve.png",     // 18 TWELVE
-    "assets/charactersportraits/remy.png",       // 19 REMY
-    "assets/charactersportraits/akuma.png",      // 20 AKUMA (Shin)
+// Select screen: bust portraits (204_ set)
+static const char* const s_select_portrait_paths[21] = {
+    "",                                                 // 0 GILL (no portrait)
+    "assets/charactersportraits/select/alex.png",       // 1 ALEX
+    "assets/charactersportraits/select/ryu.png",        // 2 RYU
+    "assets/charactersportraits/select/yun.png",        // 3 YUN
+    "assets/charactersportraits/select/dudley.png",     // 4 DUDLEY
+    "assets/charactersportraits/select/necro.png",      // 5 NECRO
+    "assets/charactersportraits/select/hugo.png",       // 6 HUGO
+    "assets/charactersportraits/select/ibuki.png",      // 7 IBUKI
+    "assets/charactersportraits/select/elena.png",      // 8 ELENA
+    "assets/charactersportraits/select/oro.png",        // 9 ORO
+    "assets/charactersportraits/select/yang.png",       // 10 YANG
+    "assets/charactersportraits/select/ken.png",        // 11 KEN
+    "assets/charactersportraits/select/sean.png",       // 12 SEAN
+    "assets/charactersportraits/select/urien.png",      // 13 URIEN
+    "assets/charactersportraits/select/akuma.png",      // 14 GOUKI
+    "assets/charactersportraits/select/chunli.png",     // 15 CHUN-LI
+    "assets/charactersportraits/select/makoto.png",     // 16 MAKOTO
+    "assets/charactersportraits/select/q.png",          // 17 Q
+    "assets/charactersportraits/select/twelve.png",     // 18 TWELVE
+    "assets/charactersportraits/select/remy.png",       // 19 REMY
+    "assets/charactersportraits/select/akuma.png",      // 20 AKUMA (Shin)
+};
+// Versus screen: full-body fighting poses (fas set)
+static const char* const s_versus_portrait_paths[21] = {
+    "",                                                 // 0 GILL (no portrait)
+    "assets/charactersportraits/versus/alex.png",       // 1 ALEX
+    "assets/charactersportraits/versus/ryu.png",        // 2 RYU
+    "assets/charactersportraits/versus/yun.png",        // 3 YUN
+    "assets/charactersportraits/versus/dudley.png",     // 4 DUDLEY
+    "assets/charactersportraits/versus/necro.png",      // 5 NECRO
+    "assets/charactersportraits/versus/hugo.png",       // 6 HUGO
+    "assets/charactersportraits/versus/ibuki.png",      // 7 IBUKI
+    "assets/charactersportraits/versus/elena.png",      // 8 ELENA
+    "assets/charactersportraits/versus/oro.png",        // 9 ORO
+    "assets/charactersportraits/versus/yang.png",       // 10 YANG
+    "assets/charactersportraits/versus/ken.png",        // 11 KEN
+    "assets/charactersportraits/versus/sean.png",       // 12 SEAN
+    "assets/charactersportraits/versus/urien.png",      // 13 URIEN
+    "assets/charactersportraits/versus/akuma.png",      // 14 GOUKI
+    "assets/charactersportraits/versus/chunli.png",     // 15 CHUN-LI
+    "assets/charactersportraits/versus/makoto.png",     // 16 MAKOTO
+    "assets/charactersportraits/versus/q.png",          // 17 Q
+    "assets/charactersportraits/versus/twelve.png",     // 18 TWELVE
+    "assets/charactersportraits/versus/remy.png",       // 19 REMY
+    "assets/charactersportraits/versus/akuma.png",      // 20 AKUMA (Shin)
 };
 
 static const char* portrait_path(int idx) {
-    if (idx >= 0 && idx < CHAR_NAME_COUNT)
-        return s_portrait_paths[idx];
+    if (idx >= 0 && idx < CHAR_NAME_COUNT) {
+        // VS screen (Exit_No >= 4) uses full-body poses; char select uses busts
+        if (Exit_No >= 4)
+            return s_versus_portrait_paths[idx];
+        return s_select_portrait_paths[idx];
+    }
     return "";
 }
 

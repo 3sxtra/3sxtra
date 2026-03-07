@@ -34,9 +34,11 @@ if [ -d "$THIRD_PARTY/slang-shaders" ]; then
     cp -r "$THIRD_PARTY/slang-shaders/"* "$DEPLOY_DIR/3sx/shaders/libretro/"
 fi
 
-# Copy launcher
-cp "$ROOT_DIR/tools/batocera/rpi4/3sx.sh" "$DEPLOY_DIR/3sx/"
-chmod +x "$DEPLOY_DIR/3sx/3sx.sh"
+# Copy launchers (one per renderer backend)
+for launcher in 3sx.sh 3sx-gl.sh 3sx-gpu.sh 3sx-sdl2d.sh; do
+    cp "$ROOT_DIR/tools/batocera/rpi4/$launcher" "$DEPLOY_DIR/3sx/"
+    chmod +x "$DEPLOY_DIR/3sx/$launcher"
+done
 
 # Create tarball (files at archive root, no wrapping directory)
 cd "$DEPLOY_DIR/3sx"

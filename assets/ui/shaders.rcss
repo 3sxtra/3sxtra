@@ -8,7 +8,8 @@ body {
 
 #shader-panel {
     display: block;
-    width: 520dp;
+    width: 60%;
+    min-width: 280dp;
     max-height: 90%;
     margin: auto;
     margin-top: 3%;
@@ -16,7 +17,7 @@ body {
     border-width: 1dp;
     border-color: #444;
     border-radius: 10dp;
-    padding: 20dp 24dp;
+    padding: 16dp 18dp;
     overflow-y: auto;
 }
 
@@ -30,12 +31,13 @@ body {
 
 /* Section headers */
 #shader-panel h2 {
-    font-size: 14dp;
+    font-size: 12dp;
     color: #888;
     margin-top: 6dp;
     margin-bottom: 6dp;
     text-transform: uppercase;
     letter-spacing: 1dp;
+    white-space: nowrap;
 }
 
 /* Sections */
@@ -53,10 +55,21 @@ body {
     margin-bottom: 8dp;
 }
 
-/* Control rows */
+/* Control rows — horizontal: radio/checkbox + label on one line */
 .control-row {
     display: block;
-    padding: 4dp 6dp;
+    padding: 3dp 4dp;
+    white-space: nowrap;
+}
+
+.control-row input {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.control-row label {
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .control-row:hover {
@@ -66,9 +79,10 @@ body {
 
 /* Labels */
 label {
-    font-size: 14dp;
+    font-size: 12dp;
     color: #dddddd;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 /* Indent for sub-options */

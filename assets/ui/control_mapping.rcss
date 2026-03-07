@@ -22,20 +22,22 @@ body {
 }
 
 h1 {
-    font-size: 20dp;
+    font-size: 16dp;
     color: #ff9933;
     margin-bottom: 4dp;
     text-align: center;
+    white-space: nowrap;
 }
 
 h2 {
-    font-size: 12dp;
+    font-size: 11dp;
     color: #888;
     margin-top: 2dp;
     margin-bottom: 2dp;
     text-transform: uppercase;
     letter-spacing: 1dp;
     text-align: center;
+    white-space: nowrap;
 }
 
 .divider {
@@ -50,33 +52,35 @@ h2 {
 
 .columns {
     display: block;
+    white-space: nowrap;
 }
 
 .column {
     display: inline-block;
     vertical-align: top;
-    padding: 4dp;
+    padding: 2dp;
+    white-space: normal;
 }
 
 .col-prompt {
-    width: 27%;
+    width: 25%;
 }
 
 .col-device {
     width: 14%;
     border-left-width: 1dp;
     border-left-color: #333;
-    padding-left: 8dp;
+    padding-left: 4dp;
 }
 
 .col-center {
-    width: 13%;
+    width: 14%;
     border-left-width: 1dp;
     border-left-color: #333;
     border-right-width: 1dp;
     border-right-color: #333;
-    padding-left: 8dp;
-    padding-right: 8dp;
+    padding-left: 4dp;
+    padding-right: 4dp;
 }
 
 /* ─── Device info ─── */
@@ -174,8 +178,9 @@ button:active {
     display: inline-block;
     width: 40%;
     margin-right: 4dp;
-    font-size: 12dp;
+    font-size: 11dp;
     font-weight: bold;
+    white-space: nowrap;
 }
 
 /* ─── Mapping rows ─── */

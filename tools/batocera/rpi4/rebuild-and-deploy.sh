@@ -162,7 +162,7 @@ echo -e "${GREEN}✔ Process stopped (or wasn't running)${NC}"
 # ── Step 8: Extract on Pi ─────────────────────────────────────
 step "Extracting on Pi4..."
 sshpass -p "$PI_PASS" ssh -o StrictHostKeyChecking=no "$PI_USER@$PI_IP" \
-    "cd $PI_DEST && tar xzf game_deployment.tar.gz --overwrite && chmod +x 3sx 3sx.sh && rm game_deployment.tar.gz" \
+    "cd $PI_DEST && tar xzf game_deployment.tar.gz --overwrite && chmod +x 3sx 3sx.sh 3sx-gl.sh 3sx-gpu.sh 3sx-sdl2d.sh && rm game_deployment.tar.gz" \
     || die "Remote extraction failed!"
 echo -e "${GREEN}✔ Deployed successfully!${NC}"
 
