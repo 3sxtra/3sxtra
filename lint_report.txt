@@ -1,6 +1,6 @@
 ============================================================ 
                    3SX Lint Report                              
-                   Generated: 08/03/2026 19:19:18.15                     
+                   Generated: 08/03/2026 20:02:57.19                     
 ============================================================ 
  
 ------------------------------------------------------------ 
@@ -8,9 +8,7 @@
 ------------------------------------------------------------ 
 [CLANG-FORMAT] C/C++ Code Formatting Check
 [CLANG-TIDY] Static Analysis
-find: ‘clang-tidy’: No such file or directory
-find: ‘clang-tidy’: No such file or directory
-clang-tidy found issues.
+No compile_commands.json, skipping advanced clang-tidy! Build first.
  
 ------------------------------------------------------------ 
 [RUFF] Code Style & Import Checks                           

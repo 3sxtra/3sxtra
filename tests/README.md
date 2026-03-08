@@ -36,11 +36,11 @@ This directory contains unit tests for the 3SX engine, utilizing the [CMocka](ht
 | `test_imgui_font.c` | ImGui font subsystem | ImGui font loading |
 | `test_state_differ.c` | `state_differ.c` | State diff / desync detection |
 | `test_effect_state_persistence.c` | effect state | Effect state save/restore |
-| `test_legacy_matrix.c` | `port/rendering/legacy_matrix.c` | Matrix identity, scale, translate, calcPoint, get/set round-trip *(new — PRD Task 1)* |
-| `test_adx_decoder.c` | `port/sound/adx_decoder.c` | ADX ADPCM header init validation, synthetic decode *(new — PRD Task 2)* |
-| `test_stage_config.c` | `port/mods/stage_config.c` | INI load/save, defaults, boundary, round-trip *(new — PRD Task 3)* |
-| `test_afs_validation.c` | `port/io/afs.c` (validation logic) | AFS attribute bounds checking (pure logic, no I/O) *(new — PRD Task 4)* |
-| `test_char_data.c` | `port/char_data.c` | CharData_ApplyFixups: Akuma fixup, non-Akuma unchanged, NULL safety *(new — PRD Task 6)* |
+| `test_legacy_matrix.c` | `port/rendering/legacy_matrix.c` | Matrix identity, scale, translate, calcPoint, get/set round-trip |
+| `test_adx_decoder.c` | `port/sound/adx_decoder.c` | ADX ADPCM header init validation, synthetic decode |
+| `test_stage_config.c` | `port/mods/stage_config.c` | INI load/save, defaults, boundary, round-trip |
+| `test_afs_validation.c` | `port/io/afs.c` (validation logic) | AFS attribute bounds checking (pure logic, no I/O) |
+| `test_char_data.c` | `port/char_data.c` | CharData_ApplyFixups: Akuma fixup, non-Akuma unchanged, NULL safety |
 
 
 

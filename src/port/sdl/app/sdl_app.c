@@ -1276,6 +1276,72 @@ static void render_debug_hud(int win_w, int win_h, const SDL_FRect* viewport) {
     SDLTextRenderer_SetBackgroundEnabled(0);
 }
 
+/** @brief Dispatch menu/overlay rendering and flush the UI framework (RmlUi or ImGui).
+ *  Handles input/frame display updates, all menu overlays, netplay UI, and the
+ *  final rmlui_wrapper_render() / imgui_wrapper_render() flush.
+ *  @param win_w  Window width (logical) for overlay sizing.
+ *  @param win_h  Window height (logical) for overlay sizing. */
+static void render_overlays(int win_w, int win_h) {
+    /* Input / frame-data overlays */
+    if (use_rmlui) {
+        rmlui_input_display_update();
+        rmlui_frame_display_update();
+    } else {
+        if (g_training_menu_settings.show_inputs) {
+            input_display_render();
+        }
+        frame_display_render();
+    }
+
+    /* Menu overlays — dispatch to RmlUi or ImGui */
+    if (show_menu) {
+        if (use_rmlui) {
+            rmlui_control_mapping_update();
+        } else {
+            imgui_wrapper_show_control_mapping_window(win_w, win_h);
+        }
+    }
+    if (show_mods_menu) {
+        if (use_rmlui) {
+            rmlui_mods_menu_update();
+        } else {
+            mods_menu_render(win_w, win_h);
+        }
+    }
+    if (show_shader_menu) {
+        if (use_rmlui) {
+            rmlui_shader_menu_update();
+        } else {
+            shader_menu_render(win_w, win_h);
+        }
+    }
+    if (use_rmlui) {
+        if (show_stage_config_menu)
+            rmlui_stage_config_update();
+        if (show_dev_overlay)
+            rmlui_dev_overlay_update();
+        if (show_training_menu)
+            rmlui_training_menu_update();
+    } else {
+        stage_config_menu_render(win_w, win_h);
+        training_menu_render(win_w, win_h);
+    }
+
+    /* Netplay overlay */
+    SDLNetplayUI_SetFPSHistory(fps_history, fps_history_count, (float)fps);
+    SDLNetplayUI_Render(win_w, win_h);
+    if (use_rmlui) {
+        rmlui_netplay_ui_update();
+    }
+
+    /* Flush the active UI framework */
+    if (use_rmlui) {
+        rmlui_wrapper_render();
+    } else {
+        imgui_wrapper_render();
+    }
+}
+
 /** @brief End the frame: render game to FBO, apply shaders, draw bezels/UI, swap buffers. */
 void SDLApp_EndFrame() {
     TRACE_ZONE_N("EndFrame");
@@ -1394,30 +1460,8 @@ void SDLApp_EndFrame() {
             SDLTextRenderer_Flush();
         }
 
-        // Render RmlUi overlay (if active)
-        if (use_rmlui) {
-            rmlui_input_display_update();
-            rmlui_frame_display_update();
-
-            if (show_menu)
-                rmlui_control_mapping_update();
-            if (show_mods_menu)
-                rmlui_mods_menu_update();
-            if (show_shader_menu)
-                rmlui_shader_menu_update();
-            if (show_stage_config_menu)
-                rmlui_stage_config_update();
-            if (show_dev_overlay)
-                rmlui_dev_overlay_update();
-            if (show_training_menu)
-                rmlui_training_menu_update();
-
-            SDLNetplayUI_SetFPSHistory(fps_history, fps_history_count, (float)fps);
-            SDLNetplayUI_Render(win_w, win_h);
-            rmlui_netplay_ui_update();
-
-            rmlui_wrapper_render();
-        }
+        // Render overlays (menus, netplay, UI flush)
+        render_overlays(win_w, win_h);
 
         TRACE_SUB_BEGIN("RenderPresent");
         if (!has_pending_quit()) {
@@ -1680,60 +1724,8 @@ void SDLApp_EndFrame() {
             rmlui_wrapper_render_game(win_w, win_h, gp_vp.x, gp_vp.y, gp_vp.w, gp_vp.h);
         }
 
-        // UI Overlays
-        if (use_rmlui) {
-            rmlui_input_display_update();
-            rmlui_frame_display_update();
-        } else {
-            if (g_training_menu_settings.show_inputs) {
-                input_display_render();
-            }
-            frame_display_render();
-        }
-        if (show_menu) {
-            if (use_rmlui) {
-                rmlui_control_mapping_update();
-            } else {
-                imgui_wrapper_show_control_mapping_window(win_w, win_h);
-            }
-        }
-        if (show_mods_menu) {
-            if (use_rmlui) {
-                rmlui_mods_menu_update();
-            } else {
-                mods_menu_render(win_w, win_h);
-            }
-        }
-        if (show_shader_menu) {
-            if (use_rmlui) {
-                rmlui_shader_menu_update();
-            } else {
-                shader_menu_render(win_w, win_h);
-            }
-        }
-        if (use_rmlui) {
-            if (show_stage_config_menu)
-                rmlui_stage_config_update();
-            if (show_dev_overlay)
-                rmlui_dev_overlay_update();
-            if (show_training_menu)
-                rmlui_training_menu_update();
-        } else {
-            stage_config_menu_render(win_w, win_h);
-            training_menu_render(win_w, win_h);
-        }
-
-        SDLNetplayUI_SetFPSHistory(fps_history, fps_history_count, (float)fps);
-        SDLNetplayUI_Render(win_w, win_h);
-        if (use_rmlui) {
-            rmlui_netplay_ui_update();
-        }
-
-        if (use_rmlui) {
-            rmlui_wrapper_render();
-        } else {
-            imgui_wrapper_render();
-        }
+        // Render overlays (menus, netplay, UI flush)
+        render_overlays(win_w, win_h);
         if (show_debug_hud) {
             const SDL_FRect viewport = get_letterbox_rect(win_w, win_h);
             render_debug_hud(win_w, win_h, &viewport);
@@ -2064,71 +2056,8 @@ void SDLApp_EndFrame() {
             render_debug_hud(win_w, win_h, &viewport);
         }
 
-        if (use_rmlui) {
-            rmlui_input_display_update();
-            rmlui_frame_display_update();
-        } else {
-            if (g_training_menu_settings.show_inputs) {
-                input_display_render();
-            }
-            frame_display_render();
-        }
-
-        if (show_menu) {
-            int w, h;
-            SDL_GetWindowSizeInPixels(window, &w, &h);
-            if (use_rmlui) {
-                rmlui_control_mapping_update();
-            } else {
-                imgui_wrapper_show_control_mapping_window(w, h);
-            }
-        }
-        if (show_shader_menu) {
-            if (use_rmlui) {
-                rmlui_shader_menu_update();
-            } else {
-                int w, h;
-                SDL_GetWindowSizeInPixels(window, &w, &h);
-                shader_menu_render(w, h);
-            }
-        }
-        if (show_mods_menu) {
-            if (use_rmlui) {
-                rmlui_mods_menu_update();
-            } else {
-                int w, h;
-                SDL_GetWindowSizeInPixels(window, &w, &h);
-                mods_menu_render(w, h);
-            }
-        }
-
-        {
-            int w, h;
-            SDL_GetWindowSizeInPixels(window, &w, &h);
-            if (use_rmlui) {
-                if (show_stage_config_menu)
-                    rmlui_stage_config_update();
-                if (show_dev_overlay)
-                    rmlui_dev_overlay_update();
-                if (show_training_menu)
-                    rmlui_training_menu_update();
-            } else {
-                stage_config_menu_render(w, h);
-                training_menu_render(w, h);
-            }
-        }
-
-        SDLNetplayUI_SetFPSHistory(fps_history, fps_history_count, (float)fps);
-        SDLNetplayUI_Render(win_w, win_h);
-        if (use_rmlui) {
-            rmlui_netplay_ui_update();
-        }
-
-        if (use_rmlui) {
-            rmlui_wrapper_render();
-        } else {
-            imgui_wrapper_render();
-        }
+        // Render overlays (menus, netplay, UI flush)
+        render_overlays(win_w, win_h);
 
         // Final Output broadcast: capture the fully-composited frame
         if (broadcast_config.enabled && broadcast_config.source == BROADCAST_SOURCE_FINAL) {

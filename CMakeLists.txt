@@ -89,13 +89,20 @@ if(ENABLE_TRACY)
     FetchContent_MakeAvailable(tracy)
 endif()
 
+# Lua 5.4 — vendored static library for RmlUi Lua bindings
+# Must be added BEFORE RmlUi so the Lua::Lua target exists when
+# RmlUi's Dependencies.cmake runs.
+message(STATUS "Configuring Lua 5.4...")
+add_subdirectory("${THIRD_PARTY_DIR}/lua" lua)
+message(STATUS "Lua 5.4 configured.")
+
 # RmlUi — HTML/CSS UI library (always built alongside ImGui)
 # Pre-cloned by build-deps.sh into third_party/rmlui
 message(STATUS "Configuring RmlUi...")
 set(RMLUI_SDL_VERSION_MAJOR 3 CACHE STRING "" FORCE)
 set(RMLUI_SAMPLES OFF CACHE BOOL "" FORCE)
 set(RMLUI_TESTS OFF CACHE BOOL "" FORCE)
-set(RMLUI_LUA_BINDINGS OFF CACHE BOOL "" FORCE)
+set(RMLUI_LUA_BINDINGS ON CACHE BOOL "" FORCE)
 set(RMLUI_SVG_PLUGIN OFF CACHE BOOL "" FORCE)
 set(RMLUI_LOTTIE_PLUGIN OFF CACHE BOOL "" FORCE)
 set(RMLUI_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
@@ -338,6 +345,8 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/sdl/rmlui/rmlui_exit_confirm.cpp
     src/port/sdl/rmlui/rmlui_attract_overlay.cpp
     src/port/sdl/rmlui/rmlui_dev_overlay.cpp
+    src/port/sdl/rmlui/lua_engine_bridge.cpp
+    src/port/sdl/rmlui/lua_trials_loader.cpp
     # RmlUi backend sources (SDL3 platform + GL3/SDL/SDL_GPU renderers)
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
@@ -454,7 +463,9 @@ target_link_libraries(3sx PRIVATE
     ${LIBRASHADER_LIB}
     SDL3_shadercross::SDL3_shadercross
     rmlui
+    rmlui_lua
     rmlui_debugger
+    lua_static
 )
 
 if(ENABLE_TRACY)
@@ -720,6 +731,13 @@ add_custom_command(TARGET 3sx POST_BUILD
     ${THIRD_PARTY_DIR}/slang-shaders $<TARGET_FILE_DIR:3sx>/shaders/libretro
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/shaders/custom $<TARGET_FILE_DIR:3sx>/shaders/libretro/custom
+    # Lua scripts for trials/training
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:3sx>/lua
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_SOURCE_DIR}/src/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua $<TARGET_FILE_DIR:3sx>/lua/sf3_3rd_trial_clean.lua
+    # Lua compat modules (FBNeo API shim)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/src/lua/compat $<TARGET_FILE_DIR:3sx>/lua/compat
 )
 
 install(DIRECTORY src/shaders DESTINATION bin)

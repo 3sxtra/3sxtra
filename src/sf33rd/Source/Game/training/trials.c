@@ -11,12 +11,27 @@
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 extern bool use_rmlui;
 
-// Include auto-generated data
+// Include auto-generated data (static fallback)
 #include "sf33rd/Source/Game/training/trials_data.inc"
+
+// Runtime Lua loader (preferred when available)
+#include "port/sdl/rmlui/lua_trials_loader.h"
 
 TrialsState g_trials_state = { 0 };
 
 static const TrialCharacterDef* get_char_def(s16 chara_id) {
+    // Prefer runtime-loaded Lua trial data
+    int lua_count = 0;
+    const TrialCharacterDef* lua_chars = lua_trials_get_characters(&lua_count);
+    if (lua_chars) {
+        for (int i = 0; i < lua_count; i++) {
+            if (lua_chars[i].chara_id == chara_id) {
+                return &lua_chars[i];
+            }
+        }
+    }
+
+    // Fallback to static trials_data.inc
     for (int i = 0; i < NUM_TRIAL_CHARACTERS; i++) {
         if (g_all_trial_characters[i].chara_id == chara_id) {
             return &g_all_trial_characters[i];

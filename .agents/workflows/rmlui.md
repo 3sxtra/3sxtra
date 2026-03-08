@@ -50,7 +50,7 @@ Read `.jules/rmlui.md` (create if missing). Log only critical RCSS/binding/heade
 
 **Bypass gaps**: ungated `SSPutStr`/`SSPutDec`/`spawn_effect_76`/`Renderer_Queue2DPrimitive` calls.
 
-**Ungated (3.21–3.27)**: Arcade-Flow Text · Pause Text · Trial HUD · Training Stun · Win Counter · Lobby Peers · Name Entry.
+**All 26 Phase 3 components are gated** (as of 2026-03-08). Focus on binding correctness, RCSS fixes, and visual polish.
 
 ### 2. 🎯 SELECT — highest impact, single session, verifiable
 

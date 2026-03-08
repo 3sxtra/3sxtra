@@ -1,168 +1,137 @@
-# PRD: Code Health — Systematic Refactoring
+# PRD: Code Health II — Logging Consistency & Extern Cleanup
 
 ## Overview
-Clean up code health issues across the 3SX port layer.
-Focus: dead code removal, god-file decomposition, duplicated logic consolidation, and naming consistency.
+Second pass of code health improvements across the 3SX port layer.
+Focus: inconsistent logging APIs, scattered `extern` declarations, and file-level organization.
 All changes are behavior-preserving — no new features, no game logic changes.
 
 ## Goals
-- Remove dead code (`#if 0` blocks, deprecated functions, unused variables)
-- Reduce file size of oversized source files via extract-function/extract-file refactoring
-- Eliminate duplicated logic by introducing small helper functions
+- Unify all logging to `SDL_Log` (eliminate raw `printf`/`fprintf` in non-fatal paths)
+- Centralize scattered `extern` declarations into shared headers
+- Reduce boilerplate across files that repeat the same patterns
 - Improve readability and maintainability without changing behavior
 
 ## Conventions (DO NOT deviate)
 - Run `.\lint.bat` and `.\recompile.bat` after every task — both must pass
 - Keep each task to ≤ 50 lines changed where possible
 - Preserve all public API signatures — no breaking changes
-- Preserve all `extern` declarations and header contracts
+- Do NOT touch `CMakeLists.txt` unless absolutely required
 - Do NOT touch game logic, netplay protocol, or shader pipelines
-- Do NOT modify `CMakeLists.txt` unless absolutely required by the refactor
 
 ---
 
-## Task 1: Remove deprecated ImGui lobby dead code from `sdl_netplay_ui.cpp`
-File: `src/port/sdl/netplay/sdl_netplay_ui.cpp` (1350 lines, 53 KB)
+## Task 1: Replace `fprintf(stderr)` with `SDL_Log` in `modded_bgm.c`
+File: `src/port/sound/modded_bgm.c`
 
-Two `#if 0` blocks contain ~242 lines of dead code from the deprecated ImGui lobby:
-- Lines 414–422: `ImGuiSpinner()` function and its comment
-- Lines 906–1140: Entire deprecated ImGui lobby rendering window
-
-**Action:**
-1. Delete both `#if 0` / `#endif` blocks and all code between them
-2. Delete the comment on line 414 referencing the deprecated code
-3. Delete the comment on lines 903–905 referencing the deprecated ImGui rendering
-4. Verify the file still compiles and the lobby (native + RmlUi) works as before
-
-Acceptance criteria:
-- Both `#if 0` blocks are gone — no dead code remains
-- `.\recompile.bat` succeeds
-- `.\lint.bat` passes (or only has pre-existing issues)
-- Net reduction: ~242 lines
-
----
-
-## Task 2: Extract `SDLApp_Toggle*` helpers to reduce duplication in `sdl_app.c`
-File: `src/port/sdl/app/sdl_app.c` (2630 lines, 97 KB)
-
-Six toggle functions follow nearly identical patterns:
-- `SDLApp_ToggleModsMenu()` (line 2401)
-- `SDLApp_ToggleShaderMenu()` (line 2416)
-- `SDLApp_ToggleStageConfigMenu()` (line 2431)
-- `SDLApp_ToggleDevOverlay()` (line 2444)
-- `SDLApp_ToggleTrainingMenu()` (line 2457)
-
-Each does: toggle a `show_*` bool → update `game_paused` → `SDL_ShowCursor()` → show/hide RmlUi document.
-`SDLApp_ToggleMenu()` (line 2388) is slightly different (no RmlUi show, only hide) — keep it as-is.
+7 calls use `fprintf(stderr, "ModdedBGM: ...")` for logging. The rest of the port layer uses `SDL_Log()`.
+These are not fatal errors — they're init failures, load warnings, and playback status messages.
 
 **Action:**
-1. Create a `static void toggle_overlay(bool* flag, const char* rmlui_doc_name)` helper
-2. Refactor the 5 similar toggle functions to call the helper
-3. Keep `SDLApp_ToggleMenu()`, `SDLApp_ToggleFullscreen()`, `SDLApp_ToggleBezel()`, and `SDLApp_ToggleDebugHUD()` as-is (they have unique logic)
+1. Replace all 7 `fprintf(stderr, "ModdedBGM: ...")` calls with `SDL_Log("ModdedBGM: ...")`
+2. Remove the `#include <stdio.h>` if no other `printf`/`fprintf`/`snprintf` calls remain (check `snprintf` usage first — keep if still needed)
 
 Acceptance criteria:
-- All 5 toggle functions use the shared helper
-- `.\recompile.bat` succeeds
-- `.\lint.bat` passes
-- Total toggle code reduced by ~40 lines
-
----
-
-## Task 3: Extract shader/preset pass-through wrappers
-File: `src/port/sdl/app/sdl_app.c`
-
-Seven functions are pure one-line pass-throughs to `SDLAppShader_*`:
-- `SDLApp_GetShaderModeLibretro()` → `SDLAppShader_IsLibretroMode()`
-- `SDLApp_SetShaderModeLibretro()` → `SDLAppShader_SetMode()`
-- `SDLApp_GetCurrentPresetIndex()` → `SDLAppShader_GetCurrentIndex()`
-- `SDLApp_SetCurrentPresetIndex()` → `SDLAppShader_SetCurrentIndex()`
-- `SDLApp_GetAvailablePresetCount()` → `SDLAppShader_GetAvailableCount()`
-- `SDLApp_GetPresetName()` → `SDLAppShader_GetPresetName()`
-- `SDLApp_LoadPreset()` → `SDLAppShader_LoadPreset()`
-- `SDLApp_ToggleShaderMode()` → `SDLAppShader_ToggleMode()`
-- `SDLApp_CyclePreset()` → `SDLAppShader_CyclePreset()`
-- `SDLApp_CycleScaleMode()` → `cycle_scale_mode()`
-
-These are only called from the input handler (`control_mapping.cpp` or RmlUi) and could potentially be replaced by direct calls to `SDLAppShader_*` if the callers already include the shader header, eliminating ~30 lines of boilerplate.
-
-**Action:**
-1. Check all callers of each `SDLApp_*Shader*` / `SDLApp_*Preset*` wrapper
-2. If all callers already have access to `SDLAppShader_*` functions, update callers to call the shader layer directly
-3. Remove the now-unused wrappers from `sdl_app.c` and `sdl_app.h`
-4. If some callers cannot easily include the shader header (e.g., C callers needing a C-compatible header), keep the wrapper and document why
-
-Acceptance criteria:
-- `.\recompile.bat` succeeds
-- `.\lint.bat` passes
-- Every wrapper either removed (with callers updated) or documented as necessary
-- Net reduction: ~20–30 lines if all can be removed
-
----
-
-## Task 4: Deduplicate bezel draw-left / draw-right in `SDLApp_EndFrame()`
-File: `src/port/sdl/app/sdl_app.c`
-
-The bezel rendering section (lines ~2001–2034) has two nearly identical blocks:
-```c
-// Draw Left
-if (cached_bezels.left) {
-    GLuint tex = (GLuint)(intptr_t)cached_bezels.left;
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glUniform1i(s_pt_loc_source, 0);
-    int tw = 0, th = 0;
-    TextureUtil_GetSize(cached_bezels.left, &tw, &th);
-    glUniform4f(s_pt_loc_source_size, ...);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-}
-// Draw Right  — identical except `cached_bezels.right` and vertex offset 6
-```
-
-**Action:**
-1. Extract a `static void draw_bezel_quad(void* texture, int vertex_offset)` helper
-2. Replace both blocks with two calls to the helper
-3. Net reduction: ~15 lines
-
-Acceptance criteria:
-- Bezel rendering works identically (both bezels still draw)
+- All 7 calls converted
 - `.\recompile.bat` succeeds
 - `.\lint.bat` passes
 
 ---
 
-## Task 5: Extract debug HUD rendering from `SDLApp_EndFrame()`
-File: `src/port/sdl/app/sdl_app.c`
+## Task 2: Replace `fprintf(stderr)` with `SDL_Log` in `adx.c` and `imgui_font.cpp`
+Files:
+- `src/port/sound/adx.c` — 2 `fprintf(stderr)` calls (ADX decoding error, init failure)
+- `src/port/imgui_font.cpp` — 2 `fprintf(stderr)` calls (font load failures)
 
-The debug HUD text rendering (lines ~2066–2110) is a self-contained 44-line block inside the massive `SDLApp_EndFrame()` function. It builds three formatted strings (fps_text, mode_text, shader_text), composites them, and draws with `SDLTextRenderer_DrawText()`.
+These are operational error messages, not fatal crashes. The rest of these subsystems use `SDL_Log`.
 
 **Action:**
-1. Extract a `static void render_debug_hud(int win_w, int win_h, const SDL_FRect* viewport)` function
-2. Move the entire block (lines ~2066–2110) into it
-3. Call it from `SDLApp_EndFrame()` with `if (show_debug_hud) render_debug_hud(...);`
+1. Replace all 4 `fprintf(stderr, ...)` calls with `SDL_Log(...)` equivalents
+2. Keep `src/port/utils.c` fprintf calls as-is — those are in the fatal error handler where SDL may not be initialized
 
 Acceptance criteria:
-- Debug HUD renders identically when toggled on
+- 4 calls converted (2 in `adx.c`, 2 in `imgui_font.cpp`)
+- `utils.c` left unchanged
 - `.\recompile.bat` succeeds
 - `.\lint.bat` passes
-- `SDLApp_EndFrame()` is ~44 lines shorter
 
 ---
 
-## Task 6: Extract menu rendering dispatch from `SDLApp_EndFrame()`
-File: `src/port/sdl/app/sdl_app.c`
+## Task 3: Replace `printf` with `SDL_Log` in `native_save.c`
+File: `src/port/save/native_save.c`
 
-The menu/overlay rendering dispatch block (lines ~2112–2176) is another self-contained section that dispatches between RmlUi and ImGui for each overlay type (menu, shader, mods, stage config, dev overlay, training, netplay).
+2 diagnostic `printf` calls for non-file-I/O logging:
+- `printf("[NativeSave] ERROR: rename %s -> %s failed: ...")` (line ~210)
+- `printf("[NativeSave] Save directory: %s\n", ...)` (line ~227)
+
+The `fprintf(f, ...)` calls that write save-file data must stay — those write to actual files, not logs.
 
 **Action:**
-1. Extract a `static void render_overlays(int win_w, int win_h)` function
-2. Move the dispatch logic into it
-3. Call it from `SDLApp_EndFrame()`
+1. Replace only the 2 `printf(...)` diagnostic calls with `SDL_Log(...)`
+2. Keep all `fprintf(f, ...)` calls — those are file I/O, not logging
+3. Remove the `\n` from the format string (SDL_Log adds its own newline)
 
 Acceptance criteria:
-- All overlays (menu, shader, mods, stage config, dev, training, netplay) render identically
+- 2 `printf` calls converted to `SDL_Log`
+- All `fprintf(f, ...)` file writes unchanged
 - `.\recompile.bat` succeeds
 - `.\lint.bat` passes
-- `SDLApp_EndFrame()` is ~65 lines shorter
+
+---
+
+## Task 4: Centralize `extern bool use_rmlui` into a shared header
+Currently, 25 files each have their own `extern bool use_rmlui;` declaration at file scope.
+This should be in a single shared header that all files include.
+
+The toggle globals are already properly centralized in `rmlui_phase3_toggles.h`. 
+`use_rmlui` is the master switch defined in `sdl_app.c` — it belongs in a port-layer header
+that game-side code can include.
+
+**Action:**
+1. Add `extern bool use_rmlui;` to `rmlui_phase3_toggles.h` (this header is already included by all 25 game-side files that need it, and it already has the correct `extern "C"` guards)
+2. Remove the per-file `extern bool use_rmlui;` from all 25 files
+3. For `sdl_app_input.c` and `sdl_netplay_ui.cpp` (which don't include the toggles header), either add the include or keep the local extern — whichever is simpler
+
+Acceptance criteria:
+- `extern bool use_rmlui` appears in exactly one header
+- All 25+ per-file declarations removed
+- `.\recompile.bat` succeeds
+- `.\lint.bat` passes
+- No behavioral changes
+
+---
+
+## Task 5: Remove stale `extern` declarations in `sdl_app_input.c`
+File: `src/port/sdl/app/sdl_app_input.c`
+
+This file has two `extern bool use_rmlui;` declarations (lines 88 and 162) — both inside function bodies.
+These are unusual (function-scoped extern is a code smell) and should be handled by the header from Task 4.
+
+**Action:**
+1. After Task 4, verify `sdl_app_input.c` includes the header (or add it)
+2. Remove both function-scoped `extern bool use_rmlui;` declarations
+3. Check for any other function-scoped `extern` declarations in this file and clean them up
+
+Acceptance criteria:
+- No function-scoped `extern` declarations remain
+- `.\recompile.bat` succeeds
+- `.\lint.bat` passes
+
+---
+
+## Task 6: Add `/** @brief */` doc comments to undocumented public functions in `native_save.c`
+File: `src/port/save/native_save.c`
+
+Many of the public `NativeSave_*` functions lack doc comments. This is inconsistent with the rest
+of the port layer (e.g., `sdl_app.c` functions all have `/** @brief */` after the code health loop).
+
+**Action:**
+1. Add `/** @brief */` doc comments to all public (non-static) `NativeSave_*` functions
+2. Do not modify function logic or signatures
+
+Acceptance criteria:
+- All public functions in `native_save.c` have `/** @brief */` comments
+- `.\recompile.bat` succeeds
+- `.\lint.bat` passes
 
 ---
 
@@ -172,23 +141,21 @@ After all refactoring tasks, run the complete build and lint pipeline.
 Steps:
 1. `.\lint.bat` — all C/C++ and Python checks
 2. `.\recompile.bat` — full incremental build
-3. `cd build_tests && ctest --output-on-failure` — all unit tests still pass (if test build is configured)
 
 Acceptance criteria:
 - `.\lint.bat` passes without new issues
 - `.\recompile.bat` succeeds
-- No regressions in any existing unit tests
-- Total line reduction across all tasks: ~380–400 lines
+- No regressions
 
 ---
 
 ## Task 8: Clean up and document
 Review all changed files for:
-- Consistent doc comments on new helper functions
-- No orphaned forward declarations
-- No orphaned `#include` directives that were only used by removed code
+- No orphaned `#include <stdio.h>` that were only used by removed `printf`/`fprintf` calls
+- No duplicate `extern` declarations remaining
+- Consistent formatting
 
 Acceptance criteria:
-- All new helper functions have `/** @brief */` doc comments
-- No dead `#include` lines remain
-- No dead forward declarations remain
+- No dead `#include` lines
+- No duplicate `extern` declarations
+- All changes verified as behavior-preserving

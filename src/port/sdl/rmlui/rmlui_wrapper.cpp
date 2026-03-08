@@ -18,7 +18,10 @@
 #include <glad/gl.h>
 #endif
 
+#include "lua_engine_bridge.h"
+#include "lua_trials_loader.h"
 #include <RmlUi/Core.h>
+#include <RmlUi/Lua.h>
 #ifdef DEBUG
 #include <RmlUi/Debugger.h>
 #endif
@@ -301,6 +304,32 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     if (!Rml::Initialise()) {
         SDL_Log("[RmlUi] Failed to initialize RmlUi core");
         return;
+    }
+
+    // Initialize RmlUi Lua plugin — creates lua_State, registers all RmlUi
+    // types (Element, Document, Context, Event, form controls), and replaces
+    // the <body> instancer with LuaDocument for inline <script> support.
+    Rml::Lua::Initialise();
+    SDL_Log("[RmlUi Lua] Initialised");
+
+    // Register engine API so Lua scripts can access game state
+    lua_engine_bridge_init();
+    SDL_Log("[RmlUi Lua] Engine bridge registered");
+
+    // Set up Lua package.path so compat modules can be found
+    // and pre-load FBNeo compatibility globals (joypad, emu, gui, memory)
+    Rml::Lua::Interpreter::DoString(
+        "package.path = 'lua/?.lua;lua/?/init.lua;' .. package.path\n"
+        "joypad = require('compat.joypad')\n"
+        "emu    = require('compat.emu')\n"
+        "gui    = require('compat.gui')\n"
+        "memory = require('compat.memory')\n"
+    );
+    SDL_Log("[RmlUi Lua] FBNeo compat modules loaded");
+
+    // Load trial definitions from Lua at runtime
+    if (!lua_trials_load("lua/sf3_3rd_trial_clean.lua")) {
+        SDL_Log("[RmlUi Lua] Runtime trial loading failed, using static data");
     }
 
     // Load fonts — both loaded unconditionally so they're available by family name

@@ -19,7 +19,7 @@ void ModdedBGM_Init(void) {
         return;
 
     if (!MIX_Init()) {
-        fprintf(stderr, "ModdedBGM: MIX_Init failed: %s\n", SDL_GetError());
+        SDL_Log("ModdedBGM: MIX_Init failed: %s", SDL_GetError());
         return;
     }
 
@@ -30,14 +30,14 @@ void ModdedBGM_Init(void) {
 
     mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
     if (!mixer) {
-        fprintf(stderr, "ModdedBGM: MIX_CreateMixerDevice failed: %s\n", SDL_GetError());
+        SDL_Log("ModdedBGM: MIX_CreateMixerDevice failed: %s", SDL_GetError());
         MIX_Quit();
         return;
     }
 
     music_track = MIX_CreateTrack(mixer);
     if (!music_track) {
-        fprintf(stderr, "ModdedBGM: MIX_CreateTrack failed: %s\n", SDL_GetError());
+        SDL_Log("ModdedBGM: MIX_CreateTrack failed: %s", SDL_GetError());
         MIX_DestroyMixer(mixer);
         mixer = NULL;
         MIX_Quit();
@@ -80,7 +80,7 @@ static bool try_load_and_play(const char* ext, int file_id) {
 
     current_audio = MIX_LoadAudio(mixer, path, false);
     if (!current_audio) {
-        fprintf(stderr, "ModdedBGM: Found file %s but failed to load: %s\n", path, SDL_GetError());
+        SDL_Log("ModdedBGM: Found file %s but failed to load: %s", path, SDL_GetError());
         return false;
     }
 
@@ -93,13 +93,13 @@ static bool try_load_and_play(const char* ext, int file_id) {
     SDL_DestroyProperties(props);
 
     if (!ok) {
-        fprintf(stderr, "ModdedBGM: Failed to play %s: %s\n", path, SDL_GetError());
+        SDL_Log("ModdedBGM: Failed to play %s: %s", path, SDL_GetError());
         MIX_DestroyAudio(current_audio);
         current_audio = NULL;
         return false;
     }
 
-    fprintf(stderr, "ModdedBGM: Playing %s\n", path);
+    SDL_Log("ModdedBGM: Playing %s", path);
     return true;
 }
 
