@@ -197,8 +197,12 @@ list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/PS2/mc/savesub\\.c$")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/PS2/mc/mcsub\\.c$")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdk/sdk_libmc\\.c$")
 
-file(GLOB_RECURSE ZLIB_SRC src/zlib/*.c)
-
+if(UNIX AND NOT PLATFORM_RPI4 AND NOT APPLE)
+    find_package(ZLIB REQUIRED)
+    set(ZLIB_SRC "") # Don't use bundled zlib
+else()
+    file(GLOB_RECURSE ZLIB_SRC src/zlib/*.c)
+endif()
 file(GLOB IMGUI_SRC ${THIRD_PARTY_DIR}/imgui/*.cpp)
 file(GLOB IMGUI_BACKEND_SRC ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdl3.cpp ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_opengl3.cpp ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdlgpu3.cpp)
 
@@ -209,9 +213,11 @@ set(GAME_SRC ${GAME_SRC} ${COMMON_SRC})
 
 
 
-set_source_files_properties(${ZLIB_SRC}
-    PROPERTIES COMPILE_OPTIONS "-Wno-error=format"
-)
+if(ZLIB_SRC)
+    set_source_files_properties(${ZLIB_SRC}
+        PROPERTIES COMPILE_OPTIONS "-Wno-error=format"
+    )
+endif()
 
 # Disable clang-tidy for all third-party sources
 set_source_files_properties(${IMGUI_SRC} ${IMGUI_BACKEND_SRC} ${ZLIB_SRC} src/port/win32/broadcast_spout.cpp
@@ -344,7 +350,9 @@ add_executable(3sx MACOSX_BUNDLE
 )
 
 
-set_source_files_properties(${ZLIB_SRC} PROPERTIES COMPILE_OPTIONS "-Wno-format")
+if(ZLIB_SRC)
+    set_source_files_properties(${ZLIB_SRC} PROPERTIES COMPILE_OPTIONS "-Wno-format")
+endif()
 
 target_include_directories(3sx PRIVATE
     ${THIRD_PARTY_DIR}/imgui
@@ -462,6 +470,10 @@ endif()
 
 if(UNIX)
     target_link_libraries(3sx PRIVATE dl pthread)
+
+    if(NOT PLATFORM_RPI4 AND NOT APPLE)
+        target_link_libraries(3sx PRIVATE ZLIB::ZLIB)
+    endif()
 
     # Homebrew on macOS ARM installs to /opt/homebrew
     if(APPLE)
@@ -767,13 +779,13 @@ elseif(WIN32)
     )
 elseif(UNIX)
     install(TARGETS 3sx
+        RUNTIME_DEPENDENCY_SET deps
         RUNTIME DESTINATION bin
     )
 
-    install(FILES
-        ${SDL3_ROOT}/lib/libSDL3.so
-        ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.so
-        ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.so
+    install(RUNTIME_DEPENDENCY_SET deps
+        DIRECTORIES "${SDL3_ROOT}/lib" "${SDL3_IMAGE_ROOT}/lib" "${SDL3_MIXER_ROOT}/lib" "${THIRD_PARTY_DIR}/SDL_shadercross/build"
+        POST_EXCLUDE_REGEXES "^/lib" "^/usr" "^/opt"
         DESTINATION lib
     )
 endif()
