@@ -120,6 +120,7 @@ typedef struct {
     int dirty_palette_indices[FL_PALETTE_MAX];
     int dirty_palette_count;
     uint32_t palette_hash[FL_PALETTE_MAX];
+    uint32_t texture_hash[FL_TEXTURE_MAX];
 
     // Upload & Conversion
     u32 conversion_buffer[CONVERSION_BUFFER_MAX_PIXELS];

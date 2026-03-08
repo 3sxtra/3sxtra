@@ -970,10 +970,8 @@ void SDLApp_BeginFrame() {
         }
     }
 
-    // RmlUi frame update runs on all backends
-    if (use_rmlui) {
-        rmlui_wrapper_new_frame();
-    }
+    // RmlUi frame update runs on ALL backends — Fx overlay menus always use RmlUi
+    rmlui_wrapper_new_frame();
 
     int win_w, win_h;
     SDL_GetWindowSize(window, &win_w, &win_h);
@@ -1293,51 +1291,30 @@ static void render_overlays(int win_w, int win_h) {
         frame_display_render();
     }
 
-    /* Menu overlays — dispatch to RmlUi or ImGui */
-    if (show_menu) {
-        if (use_rmlui) {
-            rmlui_control_mapping_update();
-        } else {
-            imgui_wrapper_show_control_mapping_window(win_w, win_h);
-        }
-    }
-    if (show_mods_menu) {
-        if (use_rmlui) {
-            rmlui_mods_menu_update();
-        } else {
-            mods_menu_render(win_w, win_h);
-        }
-    }
-    if (show_shader_menu) {
-        if (use_rmlui) {
-            rmlui_shader_menu_update();
-        } else {
-            shader_menu_render(win_w, win_h);
-        }
-    }
-    if (use_rmlui) {
-        if (show_stage_config_menu)
-            rmlui_stage_config_update();
-        if (show_dev_overlay)
-            rmlui_dev_overlay_update();
-        if (show_training_menu)
-            rmlui_training_menu_update();
-    } else {
-        stage_config_menu_render(win_w, win_h);
-        training_menu_render(win_w, win_h);
-    }
+    /* Menu overlays — always use RmlUi for Fx-key menus */
+    if (show_menu)
+        rmlui_control_mapping_update();
+    if (show_mods_menu)
+        rmlui_mods_menu_update();
+    if (show_shader_menu)
+        rmlui_shader_menu_update();
+    if (show_stage_config_menu)
+        rmlui_stage_config_update();
+    if (show_dev_overlay)
+        rmlui_dev_overlay_update();
+    if (show_training_menu)
+        rmlui_training_menu_update();
 
-    /* Netplay overlay */
+    /* Netplay overlay — SDLNetplayUI_Render uses ImGui, which is not initialized on SDL2D */
     SDLNetplayUI_SetFPSHistory(fps_history, fps_history_count, (float)fps);
-    SDLNetplayUI_Render(win_w, win_h);
-    if (use_rmlui) {
-        rmlui_netplay_ui_update();
+    if (!is_sdl2d_backend(g_renderer_backend)) {
+        SDLNetplayUI_Render(win_w, win_h);
     }
+    rmlui_netplay_ui_update();
 
-    /* Flush the active UI framework */
-    if (use_rmlui) {
-        rmlui_wrapper_render();
-    } else {
+    /* Flush UI frameworks — RmlUi always (Fx menus), ImGui only when active */
+    rmlui_wrapper_render();
+    if (!use_rmlui && !is_sdl2d_backend(g_renderer_backend)) {
         imgui_wrapper_render();
     }
 }
@@ -2246,10 +2223,9 @@ void SDLApp_ToggleMenu() {
     if (show_menu) {
         SDL_ShowCursor();
     }
-    if (use_rmlui) {
-        if (!show_menu) {
-            rmlui_wrapper_hide_document("control_mapping");
-        }
+    /* Fx menus always use RmlUi — sync document visibility unconditionally */
+    if (!show_menu) {
+        rmlui_wrapper_hide_document("control_mapping");
     }
 }
 
@@ -2263,12 +2239,11 @@ static void toggle_overlay(bool* flag, const char* doc_name, bool pauses_game) {
         game_paused = *flag || show_menu;
     if (*flag)
         SDL_ShowCursor();
-    if (use_rmlui) {
-        if (*flag)
-            rmlui_wrapper_show_document(doc_name);
-        else
-            rmlui_wrapper_hide_document(doc_name);
-    }
+    /* Fx menus always use RmlUi — sync document visibility unconditionally */
+    if (*flag)
+        rmlui_wrapper_show_document(doc_name);
+    else
+        rmlui_wrapper_hide_document(doc_name);
 }
 
 void SDLApp_ToggleModsMenu() {
@@ -2306,14 +2281,13 @@ void SDLApp_CloseAllMenus() {
     game_paused = false;
     SDLNetplayUI_SetDiagnosticsVisible(false);
 
-    if (use_rmlui) {
-        rmlui_wrapper_hide_document("control_mapping");
-        rmlui_wrapper_hide_document("shaders");
-        rmlui_wrapper_hide_document("mods");
-        rmlui_wrapper_hide_document("stage_config");
-        rmlui_wrapper_hide_document("training");
-        rmlui_wrapper_hide_document("dev_overlay");
-    }
+    /* Fx menus always use RmlUi — hide documents unconditionally */
+    rmlui_wrapper_hide_document("control_mapping");
+    rmlui_wrapper_hide_document("shaders");
+    rmlui_wrapper_hide_document("mods");
+    rmlui_wrapper_hide_document("stage_config");
+    rmlui_wrapper_hide_document("training");
+    rmlui_wrapper_hide_document("dev_overlay");
 }
 
 /** @brief Public wrapper for cycle_scale_mode() — needed because the static

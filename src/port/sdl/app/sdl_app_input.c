@@ -85,10 +85,9 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
 
     // SDL2D mode: no ImGui, no NetplayUI — skip all UI processing
     if (!is_sdl2d_backend(SDLApp_GetRenderer())) {
-        // Process UI events — dispatch to active UI system
-        if (use_rmlui) {
-            rmlui_wrapper_process_event(event);
-        } else {
+        // Process UI events — always send to RmlUi (Fx menus), plus ImGui when active
+        rmlui_wrapper_process_event(event);
+        if (!use_rmlui) {
             imgui_wrapper_process_event(event);
         }
         SDLNetplayUI_ProcessEvent(event);
@@ -126,22 +125,19 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             }
         }
 
-        // Input Capture for UI — dispatch to active system
-        bool ui_wants_mouse, ui_wants_keyboard;
-        if (use_rmlui) {
-            ui_wants_mouse = rmlui_wrapper_want_capture_mouse();
-            ui_wants_keyboard = rmlui_wrapper_want_capture_keyboard();
-            // When control mapping (F1) is open, disable UI capture so all
-            // input reaches SDLPad handlers — mirrors imgui_wrapper_capture_input()
-            // which sets WantCapture* = false when control_mapping_is_active().
-            if (SDLApp_IsMenuVisible()) {
-                ui_wants_mouse = false;
-                ui_wants_keyboard = false;
-            }
-        } else {
+        // Input Capture for UI — RmlUi always active for Fx menus
+        bool ui_wants_mouse = rmlui_wrapper_want_capture_mouse();
+        bool ui_wants_keyboard = rmlui_wrapper_want_capture_keyboard();
+        // When control mapping (F1) is open, disable UI capture so all
+        // input reaches SDLPad handlers.
+        if (SDLApp_IsMenuVisible()) {
+            ui_wants_mouse = false;
+            ui_wants_keyboard = false;
+        }
+        if (!use_rmlui) {
             imgui_wrapper_capture_input(control_mapping_is_active());
-            ui_wants_mouse = imgui_wrapper_want_capture_mouse();
-            ui_wants_keyboard = imgui_wrapper_want_capture_keyboard();
+            ui_wants_mouse = ui_wants_mouse || imgui_wrapper_want_capture_mouse();
+            ui_wants_keyboard = ui_wants_keyboard || imgui_wrapper_want_capture_keyboard();
         }
         // Block events based on what the UI actually wants to capture.
         // Mouse capture blocks only mouse events; keyboard capture blocks
@@ -158,10 +154,8 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
         }
         // Gamepad, joystick, window events etc. always fall through
     } else {
-        // SDL2D mode: no ImGui, no NetplayUI — but RmlUi is available
-        if (use_rmlui) {
-            rmlui_wrapper_process_event(event);
-        }
+        // SDL2D mode: no ImGui, no NetplayUI — RmlUi always available for Fx menus
+        rmlui_wrapper_process_event(event);
 
         if (event->type == SDL_EVENT_KEY_DOWN) {
             handle_menu_toggle(&event->key);
@@ -196,10 +190,13 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
                     SDLApp_ToggleDevOverlay();
                 }
             }
+            if (event->key.key == SDLK_F10 && event->key.down && !event->key.repeat) {
+                SDLNetplayUI_SetDiagnosticsVisible(!SDLNetplayUI_IsDiagnosticsVisible());
+            }
         }
 
-        // Input capture for RmlUi in SDL2D mode
-        if (use_rmlui) {
+        // Input capture for RmlUi in SDL2D mode — always active for Fx menus
+        {
             bool ui_wants_mouse = rmlui_wrapper_want_capture_mouse();
             bool ui_wants_keyboard = rmlui_wrapper_want_capture_keyboard();
             if (SDLApp_IsMenuVisible()) {

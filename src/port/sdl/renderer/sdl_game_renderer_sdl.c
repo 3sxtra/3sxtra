@@ -84,6 +84,9 @@ static uint32_t* nonidx_pixels[FL_TEXTURE_MAX];
 static int nonidx_pixels_w[FL_TEXTURE_MAX];
 static int nonidx_pixels_h[FL_TEXTURE_MAX];
 
+// ⚡ Per-texture content hash — computed in UnlockTexture, used to skip no-op invalidations.
+static uint32_t texture_hash[FL_TEXTURE_MAX];
+
 // ⚡ FNV-1a hash for palette color data.
 static uint32_t fnv1a_hash(const void* data, size_t len) {
     const uint8_t* p = (const uint8_t*)data;
@@ -1022,6 +1025,17 @@ void SDLGameRendererSDL_UnlockPalette(unsigned int ph) {
     const int palette_handle = ph;
 
     if ((palette_handle > 0) && (palette_handle < FL_PALETTE_MAX)) {
+        // ⚡ Hash-guard: skip destroy+create if palette data hasn't changed.
+        const FLTexture* fl_pal = &flPalette[palette_handle - 1];
+        const void* pixels = flPS2GetSystemBuffAdrs(fl_pal->mem_handle);
+        if (pixels) {
+            size_t color_size = (fl_pal->format == SCE_GS_PSMCT32) ? 4 : 2;
+            size_t data_size = (size_t)(fl_pal->width * fl_pal->height) * color_size;
+            uint32_t new_hash = fnv1a_hash(pixels, data_size);
+            if (new_hash == palette_hash[palette_handle - 1] && palettes[palette_handle - 1] != NULL) {
+                return; // No-op: palette data unchanged
+            }
+        }
         SDLGameRendererSDL_DestroyPalette(palette_handle);
         SDLGameRendererSDL_CreatePalette(ph << 16);
     }
@@ -1041,6 +1055,29 @@ void SDLGameRendererSDL_UnlockTexture(unsigned int th) {
 
     if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX) {
         return;
+    }
+
+    // ⚡ Hash-guard: skip full invalidation if texture data hasn't changed.
+    // Only check if we have a surface — otherwise flTexture may be uninitialized.
+    if (surfaces[texture_index] != NULL) {
+        const FLTexture* fl_tex = &flTexture[texture_index];
+        const void* pixels = flPS2GetSystemBuffAdrs(fl_tex->mem_handle);
+        if (pixels) {
+            size_t data_size = 0;
+            switch (fl_tex->format) {
+            case SCE_GS_PSMT8:  data_size = (size_t)fl_tex->width * fl_tex->height; break;
+            case SCE_GS_PSMT4:  data_size = (size_t)((fl_tex->width + 1) / 2) * fl_tex->height; break;
+            case SCE_GS_PSMCT16: data_size = (size_t)fl_tex->width * fl_tex->height * 2; break;
+            default:            data_size = (size_t)fl_tex->width * fl_tex->height * 4; break;
+            }
+            if (data_size > 0) {
+                uint32_t new_hash = fnv1a_hash(pixels, data_size);
+                if (new_hash == texture_hash[texture_index]) {
+                    return; // No-op: texture data unchanged
+                }
+                texture_hash[texture_index] = new_hash;
+            }
+        }
     }
 
     /* Invalidate texture binding cache */
@@ -1191,6 +1228,8 @@ void SDLGameRendererSDL_DestroyTexture(unsigned int texture_handle) {
         SDL_DestroySurface(surfaces[texture_index]);
         surfaces[texture_index] = NULL;
     }
+
+    texture_hash[texture_index] = 0; // ⚡ Reset hash on destroy
 }
 
 void SDLGameRendererSDL_CreatePalette(unsigned int ph) {

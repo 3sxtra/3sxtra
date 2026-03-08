@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+#include "port/config/paths.h"
+
 // ── C externs (accessor functions from control_mapping.cpp) ────
 
 extern "C" {
@@ -71,6 +73,19 @@ static struct {
 
 // ── Helpers ────────────────────────────────────────────────────
 
+/** @brief Build an absolute path from a relative icon path.
+ *  ControlMapping returns relative paths like "assets/keyboard.png" but
+ *  RmlUi resolves \<img src\> relative to the document base (assets/ui/),
+ *  so we prepend the application base path to make them absolute. */
+static Rml::String make_absolute_icon_path(const char* relative_path) {
+    if (!relative_path || !relative_path[0])
+        return "";
+    const char* base = Paths_GetBasePath();
+    if (base)
+        return Rml::String(base) + relative_path;
+    return relative_path;
+}
+
 static void rebuild_available_devices() {
     s_available_devices.clear();
     int count = ControlMapping_GetAvailableDeviceCount();
@@ -79,7 +94,7 @@ static void rebuild_available_devices() {
         const char* icon = ControlMapping_GetAvailableDeviceIconPath(i);
         int id = ControlMapping_GetAvailableDeviceId(i);
         if (name)
-            s_available_devices.push_back({ name, icon ? icon : "", id });
+            s_available_devices.push_back({ name, make_absolute_icon_path(icon), id });
     }
 }
 
@@ -161,11 +176,11 @@ extern "C" void rmlui_control_mapping_init() {
 
     c.BindFunc("p1_device_icon", [](Rml::Variant& v) {
         const char* p = ControlMapping_GetDeviceIconPath(1);
-        v = Rml::String(p ? p : "");
+        v = make_absolute_icon_path(p);
     });
     c.BindFunc("p2_device_icon", [](Rml::Variant& v) {
         const char* p = ControlMapping_GetDeviceIconPath(2);
-        v = Rml::String(p ? p : "");
+        v = make_absolute_icon_path(p);
     });
 
     // Mapping state prompts

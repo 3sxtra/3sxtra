@@ -79,7 +79,7 @@
     color: #ff4c4c;
 }
 
-/* Stats line (below charts) */
+/* Stats line (below charts) — mean, median, duration, frame count */
 .diag-stats {
     display: block;
     font-size: 11dp;
@@ -104,27 +104,26 @@
     margin-bottom: 2dp;
 }
 
-/* ═══ Bar Charts ═══ */
-.bar-chart {
+/* ═══ Line Charts (1px-wide bar strips) ═══ */
+.line-chart {
     display: block;
     height: 60dp;
     white-space: nowrap;
     background-color: rgba(0, 0, 0, 76);
     border-radius: 2dp;
     padding: 2dp;
-    /* Bars are aligned to bottom via flex-end simulation */
 }
 
-.bar-cell {
+/* Each bar is a 3px-wide strip — creates a smooth line chart effect */
+.line-bar {
     display: inline-block;
-    width: 5dp;
+    width: 3dp;
     height: 56dp;
-    margin-right: 1dp;
     vertical-align: bottom;
     position: relative;
 }
 
-.bar-fill {
+.line-fill {
     display: block;
     position: absolute;
     bottom: 0dp;
@@ -133,18 +132,18 @@
     border-radius: 1dp;
 }
 
-/* FPS bar colors */
-.fps-bar .bar-fill {
+/* FPS line color — blue */
+.fps-bar .line-fill {
     background-color: rgba(50, 180, 255, 204);
 }
 
-/* Ping bar colors */
-.ping-bar .bar-fill {
+/* Ping line color — yellow */
+.ping-bar .line-fill {
     background-color: rgba(255, 200, 50, 204);
 }
 
-/* Rollback bar colors */
-.rb-bar .bar-fill {
+/* Rollback line color — red */
+.rb-bar .line-fill {
     background-color: rgba(255, 100, 100, 204);
 }
 

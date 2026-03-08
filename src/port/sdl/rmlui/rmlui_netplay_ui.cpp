@@ -5,7 +5,7 @@
  * Mirrors the ImGui rendering in sdl_netplay_ui.cpp using RmlUi data bindings.
  * Three overlay regions:
  *   1. Mini-HUD (top-right ping/rollback badge)
- *   2. Diagnostics panel (FPS bar chart, netplay stats, ping/rb bar charts)
+ *   2. Diagnostics panel (FPS line chart, netplay stats, ping/rb line charts)
  *   3. Toast notifications (centered top, timed pop-ups)
  *
  * The lobby state machine and C extern API remain in sdl_netplay_ui.cpp.
@@ -24,7 +24,8 @@
 #include <string>
 #include <vector>
 
-// ── Bar cell struct for graph rendering ────────────────────────
+// ── Bar cell struct for line chart rendering ──────────────────
+// Each bar is styled as a 1px-wide strip, creating a line chart effect.
 struct BarCell {
     Rml::String height_pct; // "0%" .. "100%"
 };
@@ -68,7 +69,6 @@ static bool s_prev_diag_visible = false;
 static Rml::String s_prev_fps_text;
 static Rml::String s_prev_fps_color_class;
 static Rml::String s_prev_fps_stats;
-static size_t s_prev_fps_bar_count = 0;
 static bool s_prev_net_session_active = false;
 static Rml::String s_prev_net_ping;
 static Rml::String s_prev_net_rollback;
@@ -78,7 +78,7 @@ static int s_prev_toast_count = 0;
 
 // FPS and ping/rollback history are accessed via SDLNetplayUI_* getters.
 
-// ── Bar chart helper ───────────────────────────────────────────
+// ── Bar/line chart helper ─────────────────────────────────────
 static void build_bar_chart(std::vector<BarCell>& bars, const float* data, int count, float max_val, int target_bars) {
     bars.clear();
     if (count <= 0 || max_val <= 0.0f)
@@ -233,6 +233,12 @@ extern "C" void rmlui_netplay_ui_update(void) {
     }
 
     if (s_diag_visible) {
+        // Throttle chart rebuilds to ~10 Hz (every 6 frames at 60fps).
+        // Text stats use dirty-checking and update only when values change.
+        static int s_diag_frame_counter = 0;
+        s_diag_frame_counter++;
+        bool update_charts = (s_diag_frame_counter % 6 == 0);
+
         // FPS
         int fps_count = 0;
         const float* fps_data = SDLNetplayUI_GetFPSHistory(&fps_count);
@@ -262,30 +268,46 @@ extern "C" void rmlui_netplay_ui_update(void) {
                 s_model_handle.DirtyVariable("fps_color_class");
             }
 
-            // FPS bar chart (last N samples)
+            if (update_charts) {
+                // FPS line chart (last 120 samples)
+                int chart_start = fps_count > 120 ? fps_count - 120 : 0;
+                int chart_count = fps_count - chart_start;
+                float max_fps = 0.0f;
+                for (int i = chart_start; i < fps_count; i++)
+                    if (fps_data[i] > max_fps)
+                        max_fps = fps_data[i];
+                if (max_fps < 5.0f)
+                    max_fps = 65.0f;
+
+                build_bar_chart(s_fps_bars, fps_data + chart_start, chart_count, max_fps + 5.0f, 120);
+                s_model_handle.DirtyVariable("fps_bars");
+            }
+
+            // FPS stats line — mean + median
             int chart_start = fps_count > 120 ? fps_count - 120 : 0;
             int chart_count = fps_count - chart_start;
-            float max_fps = 0.0f;
-            for (int i = chart_start; i < fps_count; i++)
-                if (fps_data[i] > max_fps)
-                    max_fps = fps_data[i];
-            if (max_fps < 5.0f)
-                max_fps = 65.0f;
-
-            build_bar_chart(s_fps_bars, fps_data + chart_start, chart_count, max_fps + 5.0f, 60);
-            if (s_fps_bars.size() != s_prev_fps_bar_count) {
-                s_prev_fps_bar_count = s_fps_bars.size();
-            }
-            s_model_handle.DirtyVariable("fps_bars");
-
-            // FPS stats line
             float avg = 0.0f;
             for (int i = chart_start; i < fps_count; i++)
                 avg += fps_data[i];
             if (chart_count > 0)
                 avg /= (float)chart_count;
+
+            // Compute median via partial sort
+            float median = avg;
+            if (chart_count > 0) {
+                std::vector<float> sorted(fps_data + chart_start, fps_data + fps_count);
+                size_t mid = sorted.size() / 2;
+                std::nth_element(sorted.begin(), sorted.begin() + mid, sorted.end());
+                median = sorted[mid];
+                if (sorted.size() % 2 == 0 && mid > 0) {
+                    float lo = *std::max_element(sorted.begin(), sorted.begin() + mid);
+                    median = (lo + median) / 2.0f;
+                }
+            }
+
             int secs = fps_count / 60;
-            snprintf(buf, sizeof(buf), "avg: %.1f | %d:%02d  %d frames", avg, secs / 60, secs % 60, fps_count);
+            snprintf(buf, sizeof(buf), "mean: %.1f | med: %.1f | %d:%02d | %d frames",
+                     avg, median, secs / 60, secs % 60, fps_count);
             Rml::String new_fps_stats(buf);
             if (new_fps_stats != s_prev_fps_stats) {
                 s_fps_stats = new_fps_stats;
@@ -331,9 +353,7 @@ extern "C" void rmlui_netplay_ui_update(void) {
                 s_model_handle.DirtyVariable("net_delay");
             }
 
-            // Session duration — read from sdl_netplay_ui via re-computing from ticks
-            // We'll just format duration from the session start tick
-            // Actually, we compute it here from our own observation of session start
+            // Session duration
             static uint64_t s_session_start = 0;
             if (s_session_start == 0)
                 s_session_start = SDL_GetTicks();
@@ -348,27 +368,28 @@ extern "C" void rmlui_netplay_ui_update(void) {
                 s_model_handle.DirtyVariable("net_duration");
             }
 
-            // Ping/rollback bar charts from history
-            float ping_hist[128], rb_hist[128];
-            int hist_count = 0;
-            SDLNetplayUI_GetHistory(ping_hist, rb_hist, &hist_count);
+            // Ping/rollback charts — throttled
+            if (update_charts) {
+                float ping_hist[128], rb_hist[128];
+                int hist_count = 0;
+                SDLNetplayUI_GetHistory(ping_hist, rb_hist, &hist_count);
 
-            if (hist_count > 0) {
-                float max_ping = 0.0f;
-                for (int i = 0; i < hist_count; i++)
-                    if (ping_hist[i] > max_ping)
-                        max_ping = ping_hist[i];
-                if (max_ping < 10.0f)
-                    max_ping = 10.0f;
+                if (hist_count > 0) {
+                    float max_ping = 0.0f;
+                    for (int i = 0; i < hist_count; i++)
+                        if (ping_hist[i] > max_ping)
+                            max_ping = ping_hist[i];
+                    if (max_ping < 10.0f)
+                        max_ping = 10.0f;
 
-                build_bar_chart(s_ping_bars, ping_hist, hist_count, max_ping + 10.0f, 64);
-                s_model_handle.DirtyVariable("ping_bars");
+                    build_bar_chart(s_ping_bars, ping_hist, hist_count, max_ping + 10.0f, 128);
+                    s_model_handle.DirtyVariable("ping_bars");
 
-                build_bar_chart(s_rb_bars, rb_hist, hist_count, 10.0f, 64);
-                s_model_handle.DirtyVariable("rb_bars");
+                    build_bar_chart(s_rb_bars, rb_hist, hist_count, 10.0f, 128);
+                    s_model_handle.DirtyVariable("rb_bars");
+                }
             }
         } else {
-            // Reset session timer when not running
             static bool s_was_running = false;
             if (s_was_running) {
                 s_was_running = false;
@@ -377,22 +398,8 @@ extern "C" void rmlui_netplay_ui_update(void) {
     }
 
     // --- Toasts ---
-    // Read active toasts from the ImGui system
     int toast_count = SDLNetplayUI_GetActiveToastCount();
-    (void)toast_count; // TODO: use for RmlUi toast interception
-    // We can't directly read toast messages from ImGui's private state,
-    // so we rely on the netplay event system for our own toast tracking.
-    // For RmlUi mode, we process events ourselves.
-
-    // The toast system is managed by ProcessEvents() in sdl_netplay_ui.cpp
-    // which is called from SDLNetplayUI_Render(). When in RmlUi mode,
-    // SDLNetplayUI_Render() still runs (it handles lobby state machine too),
-    // so toasts are tracked there. We just need to mirror the count.
-    // Since we can't access the toast text directly, we'll track our own.
-
-    // For now, toasts continue to render via ImGui since SDLNetplayUI_Render()
-    // still runs. The RmlUi version can be enhanced later to intercept events.
-    // Clear our toast list to avoid stale data.
+    (void)toast_count;
     if ((int)s_toasts.size() != s_prev_toast_count) {
         s_prev_toast_count = (int)s_toasts.size();
         s_model_handle.DirtyVariable("toasts");

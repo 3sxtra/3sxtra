@@ -24,10 +24,10 @@
                   data-class-error="fps_color_class == 'error'"
                   class="fps-text">{{ fps_text }}</span>
 
-            <!-- FPS bar chart -->
-            <div class="bar-chart">
-                <div data-for="bar : fps_bars" class="bar-cell fps-bar">
-                    <div class="bar-fill" data-style-height="bar.height_pct"></div>
+            <!-- FPS line chart (1px-wide bars) -->
+            <div class="line-chart">
+                <div data-for="bar : fps_bars" class="line-bar fps-bar">
+                    <div class="line-fill" data-style-height="bar.height_pct"></div>
                 </div>
             </div>
 
@@ -44,19 +44,19 @@
 
             <div class="diag-separator"></div>
 
-            <!-- Ping history bar chart -->
+            <!-- Ping history line chart -->
             <div class="chart-label">Ping History</div>
-            <div class="bar-chart">
-                <div data-for="bar : ping_bars" class="bar-cell ping-bar">
-                    <div class="bar-fill" data-style-height="bar.height_pct"></div>
+            <div class="line-chart">
+                <div data-for="bar : ping_bars" class="line-bar ping-bar">
+                    <div class="line-fill" data-style-height="bar.height_pct"></div>
                 </div>
             </div>
 
-            <!-- Rollback history bar chart -->
+            <!-- Rollback history line chart -->
             <div class="chart-label">Rollback History</div>
-            <div class="bar-chart">
-                <div data-for="bar : rb_bars" class="bar-cell rb-bar">
-                    <div class="bar-fill" data-style-height="bar.height_pct"></div>
+            <div class="line-chart">
+                <div data-for="bar : rb_bars" class="line-bar rb-bar">
+                    <div class="line-fill" data-style-height="bar.height_pct"></div>
                 </div>
             </div>
         </div>
