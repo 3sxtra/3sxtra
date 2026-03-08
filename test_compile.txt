@@ -1,0 +1,213 @@
+[92m============================================[0m
+[92m   3sx - Compile Tests                      [0m
+[92m============================================[0m
+
+[92m[V] Using MSYS2 at: "C:\msys64"[0m
+
+[93m[*] Building in: D:\3sxtra\[0m
+
+[92m[*] Starting MSYS2 MinGW64 build pipeline...[0m
+
+warning: make-4.4.1-2 is up to date -- skipping
+warning: mingw-w64-x86_64-cmake-4.1.1-2 is up to date -- skipping
+warning: mingw-w64-x86_64-ninja-1.13.1-1 is up to date -- skipping
+warning: mingw-w64-x86_64-clang-21.1.1-2 is up to date -- skipping
+warning: mingw-w64-x86_64-headers-git-13.0.0.r179.g8181947cc-1 is up to date -- skipping
+warning: sed-4.9-1 is up to date -- skipping
+ there is nothing to do
+-- The C compiler identification is Clang 21.1.1
+-- The CXX compiler identification is GNU 15.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/msys64/mingw64/bin/clang.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/msys64/mingw64/bin/c++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+Detected OS: MINGW64_NT-10.0-26200
+Using cmake from: /mingw64/bin/cmake
+cmake version 4.1.1
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+SDL3 already built at /d/3sxtra/third_party/sdl3/build
+simde already exists at /d/3sxtra/third_party/simde
+GekkoNet already exists at /d/3sxtra/third_party/GekkoNet
+Spout2 already exists at /d/3sxtra/third_party/Spout2
+glad already exists at /d/3sxtra/third_party/glad
+librashader already exists at /d/3sxtra/third_party/librashader
+librashader-capi already built.
+slang-shaders already exists at /d/3sxtra/third_party/slang-shaders
+SDL3_mixer already built at /d/3sxtra/third_party/sdl3_mixer/build
+SDL3_image already built at /d/3sxtra/third_party/sdl3_image/build
+imgui already exists at /d/3sxtra/third_party/imgui
+FreeType already built at /d/3sxtra/third_party/freetype/build
+rmlui already exists at /d/3sxtra/third_party/rmlui
+SDL_shadercross already exists at /d/3sxtra/third_party/SDL_shadercross
+All dependencies installed successfully in /d/3sxtra/third_party
+-- LTO: Enabled for Release builds
+-- DEBUG: Adding GekkoNet subdirectory...
+-- DEBUG: GekkoNet added.
+-- Detecting Target CPU Architecture
+-- Detecting Target CPU Architecture - X64
+CMake Deprecation Warning at third_party/SDL_shadercross/external/SPIRV-Cross/CMakeLists.txt:22 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- SPIRV-Cross: Finding Git version for SPIRV-Cross.
+-- Found Git: C:/msys64/usr/bin/git.exe (found version "2.51.0")
+-- SPIRV-Cross: Git hash: d1d4adb
+-- Found Python3: C:/Python313/python.exe (found version "3.13.5") found components: Interpreter
+Skipping symbol exports test for SPIRV-Tools-opt
+Skipping symbol exports test for SPIRV-Tools-reduce
+Skipping symbol exports test for SPIRV-Tools-link
+Skipping symbol exports test for SPIRV-Tools-lint
+Skipping symbol exports test for SPIRV-Tools-diff
+Skipping symbol exports test for SPIRV-Tools-shared
+Skipping symbol exports test for SPIRV-Tools-static
+-- Did not find googletest, tests will not be built. To enable tests place googletest in '<spirv-dir>/external/googletest'.
+-- Performing Test HAVE_WL_NO_UNDEFINED
+-- Performing Test HAVE_WL_NO_UNDEFINED - Success
+-- Configuring Lua 5.4...
+-- Lua 5.4 configured.
+-- Configuring RmlUi...
+-- FreeType: using bundled static lib at D:/3sxtra/third_party/freetype/build
+-- Found Freetype: C:/msys64/mingw64/lib/libfreetype.dll.a (found version "2.14.1")
+-- Found Freetype::Freetype - Freetype font engine enabled
+-- Found Lua::Lua - Lua bindings enabled
+-- RmlUi configured.
+-- Glad Library 'glad_gl_core'
+-- Found Python: C:/Python313/python.exe (found version "3.13.5") found components: Interpreter
+-- Configuring CMocka...
+CMake Deprecation Warning at build_tests/_deps/cmocka-src/CMakeLists.txt:2 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Could NOT find NSIS (missing: NSIS_MAKE) 
+CMake Warning at C:/msys64/mingw64/share/cmake/Modules/CPack.cmake:514 (message):
+  CPack.cmake has already been included!!
+Call Stack (most recent call first):
+  build_tests/_deps/cmocka-src/CPackConfig.cmake:54 (include)
+  build_tests/_deps/cmocka-src/CMakeLists.txt:37 (include)
+
+
+-- Looking for assert.h
+-- Looking for assert.h - found
+-- Looking for inttypes.h
+-- Looking for inttypes.h - found
+-- Looking for io.h
+-- Looking for io.h - found
+-- Looking for malloc.h
+-- Looking for malloc.h - found
+-- Looking for memory.h
+-- Looking for memory.h - found
+-- Looking for setjmp.h
+-- Looking for setjmp.h - found
+-- Looking for signal.h
+-- Looking for signal.h - found
+-- Looking for stdarg.h
+-- Looking for stdarg.h - found
+-- Looking for stddef.h
+-- Looking for stddef.h - found
+-- Looking for stdint.h
+-- Looking for stdint.h - found
+-- Looking for stdio.h
+-- Looking for stdio.h - found
+-- Looking for stdlib.h
+-- Looking for stdlib.h - found
+-- Looking for string.h
+-- Looking for string.h - found
+-- Looking for strings.h
+-- Looking for strings.h - found
+-- Looking for sys/stat.h
+-- Looking for sys/stat.h - found
+-- Looking for sys/types.h
+-- Looking for sys/types.h - found
+-- Looking for time.h
+-- Looking for time.h - found
+-- Looking for unistd.h
+-- Looking for unistd.h - found
+-- Performing Test HAVE_STRUCT_TIMESPEC
+-- Performing Test HAVE_STRUCT_TIMESPEC - Success
+-- Check size of uintptr_t
+-- Check size of uintptr_t - done
+-- Looking for calloc
+-- Looking for calloc - found
+-- Looking for exit
+-- Looking for exit - found
+-- Looking for fprintf
+-- Looking for fprintf - found
+-- Looking for free
+-- Looking for free - found
+-- Looking for longjmp
+-- Looking for longjmp - found
+-- Looking for siglongjmp
+-- Looking for siglongjmp - not found
+-- Looking for malloc
+-- Looking for malloc - found
+-- Looking for memcpy
+-- Looking for memcpy - found
+-- Looking for memset
+-- Looking for memset - found
+-- Looking for printf
+-- Looking for printf - found
+-- Looking for setjmp
+-- Looking for setjmp - found
+-- Looking for signal
+-- Looking for signal - found
+-- Looking for strsignal
+-- Looking for strsignal - not found
+-- Looking for strcmp
+-- Looking for strcmp - found
+-- Looking for clock_gettime
+-- Looking for clock_gettime - found
+-- Looking for _vsnprintf_s
+-- Looking for _vsnprintf_s - found
+-- Looking for _vsnprintf
+-- Looking for _vsnprintf - found
+-- Looking for _snprintf
+-- Looking for _snprintf - found
+-- Looking for _snprintf_s
+-- Looking for _snprintf_s - found
+-- Looking for snprintf
+-- Looking for snprintf - found
+-- Looking for vsnprintf
+-- Looking for vsnprintf - found
+-- Performing Test HAVE_GCC_THREAD_LOCAL_STORAGE
+-- Performing Test HAVE_GCC_THREAD_LOCAL_STORAGE - Success
+-- Performing Test HAVE_MSVC_THREAD_LOCAL_STORAGE
+-- Performing Test HAVE_MSVC_THREAD_LOCAL_STORAGE - Success
+-- Performing Test HAVE_CLOCK_REALTIME
+-- Performing Test HAVE_CLOCK_REALTIME - Success
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+CMake Error: failed to create symbolic link 'D:/3sxtra/build_tests/_deps/cmocka-src/compile_commands.json': A required privilege is not held by the client.
+
+-- CMocka configured.
+-- Configuring done (20.4s)
+-- Generating done (0.3s)
+-- Build files have been written to: D:/3sxtra/build_tests
+[1/6] Building C object tests/unit/CMakeFiles/test_trials.dir/mocks_globals.c.obj
+[2/6] Building C object tests/unit/CMakeFiles/test_trials.dir/test_trials.c.obj
+[3/6] Building C object tests/unit/CMakeFiles/test_trials.dir/__/__/src/sf33rd/Source/Game/training/trials.c.obj
+[4/6] Building C object _deps/cmocka-build/src/CMakeFiles/cmocka.dir/cmocka.c.obj
+[5/6] Linking C static library _deps\cmocka-build\src\libcmocka.a
+[6/6] Linking C executable tests\unit\test_trials.exe
+FAILED: tests/unit/test_trials.exe 
+C:\WINDOWS\system32\cmd.exe /C "cd . && C:\msys64\mingw64\bin\clang.exe   tests/unit/CMakeFiles/test_trials.dir/test_trials.c.obj tests/unit/CMakeFiles/test_trials.dir/__/__/src/sf33rd/Source/Game/training/trials.c.obj tests/unit/CMakeFiles/test_trials.dir/mocks_globals.c.obj -o tests\unit\test_trials.exe -Wl,--out-implib,tests\unit\libtest_trials.dll.a -Wl,--major-image-version,0,--minor-image-version,0  _deps/cmocka-build/src/libcmocka.a  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 && cd ."
+C:/msys64/mingw64/bin/ld: tests/unit/CMakeFiles/test_trials.dir/__/__/src/sf33rd/Source/Game/training/trials.c.obj:trials.c:(.text+0x77): undefined reference to `lua_trials_get_characters'
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+[91m[X] Build failed with exit code: 1[0m

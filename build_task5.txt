@@ -1,0 +1,65 @@
+[92m============================================[0m
+[92m   3sx - Incremental Recompile              [0m
+[92m============================================[0m
+
+[92m[V] Using MSYS2 at: "C:\msys64"[0m
+
+[93m[*] Incremental build in: D:\3sxtra\[0m
+
+[92m[*] Starting MSYS2 MinGW64 incremental build...[0m
+
+[1/586] Building C object CMakeFiles/3sx.dir/src/port/char_data.c.obj
+[2/586] Building C object CMakeFiles/3sx.dir/src/bin2obj/asstbl.c.obj
+[3/586] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlMemMap.c.obj
+[4/586] Building C object CMakeFiles/3sx.dir/src/port/rendering/legacy_matrix.c.obj
+[5/586] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/eflSpuMap.c.obj
+[6/586] Building C object CMakeFiles/3sx.dir/src/port/config/cli_parser.c.obj
+[7/586] Building C object CMakeFiles/3sx.dir/src/port/mods/stage_config.c.obj
+[8/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c.obj
+FAILED: [code=1] CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c.obj 
+C:\msys64\mingw64\bin\clang.exe -DDEBUG -DGEKKONET_STATIC -DHAVE_UPNP -DNETPLAY_ENABLED -DRMLUI_SDL_VERSION_MAJOR=3 -DRMLUI_STATIC_LIB -DTARGET_SDL3 -DTRACY_ENABLE -D_POSIX_C_SOURCE=200809L -ID:/3sxtra/src -ID:/3sxtra/src/include -ID:/3sxtra/src/include/sdk -ID:/3sxtra/src/zlib -ID:/3sxtra/third_party/GekkoNet/GekkoLib/include -ID:/3sxtra/third_party/stb -ID:/3sxtra/third_party/librashader/include -ID:/3sxtra/third_party/simde -I/include -ID:/3sxtra/build/gladsources/glad/include -ID:/3sxtra/third_party/sdl3/SDL/src/video/khronos -ID:/3sxtra/src/port/sdl/app -ID:/3sxtra/src/port/sdl/renderer -ID:/3sxtra/src/port/sdl/input -ID:/3sxtra/src/port/sdl/imgui -ID:/3sxtra/src/port/sdl/netplay -ID:/3sxtra/src/port/sdl/rmlui -ID:/3sxtra/src/port/config -ID:/3sxtra/src/port/save -ID:/3sxtra/src/port/mods -ID:/3sxtra/src/port/rendering -ID:/3sxtra/src/include/port/sdl/app -ID:/3sxtra/src/include/port/sdl/renderer -ID:/3sxtra/src/include/port/sdl/input -ID:/3sxtra/src/include/port/config -ID:/3sxtra/src/include/port/save -ID:/3sxtra/src/include/port/rendering -ID:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL -ID:/3sxtra/third_party/imgui -ID:/3sxtra/third_party/imgui/backends -ID:/3sxtra/third_party/rmlui/Backends -ID:/3sxtra/third_party/sdl3/build/include -ID:/3sxtra/third_party/sdl3_image/build/include -ID:/3sxtra/third_party/sdl3_mixer/build/include -ID:/3sxtra/build/gladsources/glad_gl_core/include -ID:/3sxtra/third_party/SDL_shadercross/include -ID:/3sxtra/third_party/rmlui/Include -isystem D:/3sxtra/third_party/lua/src -isystem D:/3sxtra/build/_deps/tracy-src/public -O2 -g -DNDEBUG -std=gnu11 -Wall -Werror -fno-strict-aliasing -Wpointer-to-int-cast -Wno-deprecated-non-prototype -Wno-tautological-overlap-compare -Wno-c2x-extensions -Wno-incompatible-pointer-types -Wno-pointer-sign -Wno-absolute-value -Wno-implicit-function-declaration -mavx2 -mfma -MD -MT CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c.obj -MF CMakeFiles\3sx.dir\src\port\sdl\renderer\sdl_game_renderer_sdl_sw.c.obj.d -o CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c.obj -c D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c
+D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c:1:124: error: expected identifier or '('
+    1 | /**\r\n * @file sdl_game_renderer_sdl_sw.c\r\n * @brief CPU-side software rasterizer for the SDL2D renderer backend.\r\n */\r\n#include "common.h"
+      |                                                                                                                            ^
+In file included from D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c:2:
+In file included from D:/3sxtra/src/port/sdl/app/sdl_app.h:4:
+In file included from D:/3sxtra/third_party/sdl3/build/include/SDL3/SDL.h:34:
+In file included from D:/3sxtra/third_party/sdl3/build/include/SDL3/SDL_stdinc.h:52:
+In file included from C:/msys64/mingw64/include/string.h:9:
+In file included from C:/msys64/mingw64/include/crtdefs.h:10:
+In file included from C:/msys64/mingw64/include/corecrt.h:10:
+In file included from C:/msys64/mingw64/include/_mingw.h:306:
+In file included from C:/msys64/mingw64/lib/clang/21/include/vadefs.h:12:
+C:/msys64/mingw64/include/vadefs.h:31:11: error: unknown type name '__gnuc_va_list'
+   31 |   typedef __gnuc_va_list va_list;
+      |           ^
+2 errors generated.
+[9/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/renderer.c.obj
+[10/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/app/sdl_app_input.c.obj
+[11/586] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlRefPhd.c.obj
+[12/586] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/common/fbms.c.obj
+[13/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_game_renderer.c.obj
+[14/586] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/common/memfound.c.obj
+[15/586] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlTSB.c.obj
+[16/586] Building C object CMakeFiles/3sx.dir/src/port/sound/emlShim.c.obj
+[17/586] Building C object CMakeFiles/3sx.dir/src/netplay/netplay.c.obj
+[18/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_text_renderer_gpu.c.obj
+[19/586] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/common/memmgr.c.obj
+[20/586] Building C object CMakeFiles/3sx.dir/src/port/mods/modded_stage.c.obj
+[21/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_game_renderer_classic.c.obj
+[22/586] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/common/prilay.c.obj
+[23/586] Building C object CMakeFiles/3sx.dir/src/port/save/native_save.c.obj
+[24/586] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/common/mlPAD.c.obj
+[25/586] Building C object CMakeFiles/3sx.dir/src/netplay/game_state.c.obj
+[26/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/app/sdl_app.c.obj
+[27/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_game_renderer_gl_context.c.obj
+[28/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_game_renderer_sdl.c.obj
+[29/586] Building C object CMakeFiles/3sx.dir/src/main.c.obj
+[30/586] Building C object CMakeFiles/3sx.dir/src/port/menu_bridge.c.obj
+[31/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_game_renderer_gl_draw.c.obj
+[32/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_game_renderer_gl_resources.c.obj
+[33/586] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_game_renderer_gpu.c.obj
+ninja: build stopped: subcommand failed.
+
+[91m[X] Build failed with exit code: 1[0m
+Press any key to continue . . . 

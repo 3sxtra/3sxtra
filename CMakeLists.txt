@@ -308,6 +308,8 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/sdl/renderer/sdl_game_renderer_gl_resources.c
     src/port/sdl/renderer/sdl_game_renderer_gl_draw.c
     src/port/sdl/renderer/sdl_game_renderer_sdl.c
+    src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c
+    src/port/sdl/renderer/sdl_game_renderer_gpu_lz77.c
     src/port/sdl/renderer/sdl_text_renderer_sdl.c
     # --- sdl/rmlui/ ---
     src/port/sdl/rmlui/rmlui_wrapper.cpp
@@ -744,6 +746,9 @@ add_custom_command(TARGET 3sx POST_BUILD
     # Effie's training Lua modules (data, tools, prediction)
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/src/lua/3rd_training_lua-main/src $<TARGET_FILE_DIR:3sx>/lua/src
+    # Effie's framedata JSONs
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/src/lua/3rd_training_lua-main/data $<TARGET_FILE_DIR:3sx>/lua/data
 )
 
 install(DIRECTORY src/shaders DESTINATION bin)
@@ -755,6 +760,7 @@ install(DIRECTORY src/lua/compat DESTINATION bin/lua)
 install(FILES src/lua/training_main.lua DESTINATION bin/lua)
 install(FILES src/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua DESTINATION bin/lua)
 install(DIRECTORY src/lua/3rd_training_lua-main/src DESTINATION bin/lua)
+install(DIRECTORY src/lua/3rd_training_lua-main/data DESTINATION bin/lua)
 
 
 

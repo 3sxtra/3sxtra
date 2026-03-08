@@ -1,0 +1,73 @@
+[92m============================================[0m
+[92m   3sx - Incremental Recompile              [0m
+[92m============================================[0m
+
+[92m[V] Using MSYS2 at: "C:\msys64"[0m
+
+[93m[*] Incremental build in: D:\3sxtra\[0m
+
+[92m[*] Starting MSYS2 MinGW64 incremental build...[0m
+
+[1/19] Linking CXX static library third_party\Spout2\lib\libSpout_static.a
+[2/19] Linking CXX static library librmlui_lua.a
+[3/19] Building C object CMakeFiles/3sx.dir/src/netplay/netplay.c.obj
+FAILED: [code=1] CMakeFiles/3sx.dir/src/netplay/netplay.c.obj 
+C:\msys64\mingw64\bin\clang.exe -DDEBUG -DGEKKONET_STATIC -DHAVE_UPNP -DNETPLAY_ENABLED -DRMLUI_SDL_VERSION_MAJOR=3 -DRMLUI_STATIC_LIB -DTARGET_SDL3 -DTRACY_ENABLE -D_POSIX_C_SOURCE=200809L -ID:/3sxtra/src -ID:/3sxtra/src/include -ID:/3sxtra/src/include/sdk -ID:/3sxtra/src/zlib -ID:/3sxtra/third_party/GekkoNet/GekkoLib/include -ID:/3sxtra/third_party/stb -ID:/3sxtra/third_party/librashader/include -ID:/3sxtra/third_party/simde -I/include -ID:/3sxtra/build/gladsources/glad/include -ID:/3sxtra/third_party/sdl3/SDL/src/video/khronos -ID:/3sxtra/src/port/sdl/app -ID:/3sxtra/src/port/sdl/renderer -ID:/3sxtra/src/port/sdl/input -ID:/3sxtra/src/port/sdl/imgui -ID:/3sxtra/src/port/sdl/netplay -ID:/3sxtra/src/port/sdl/rmlui -ID:/3sxtra/src/port/config -ID:/3sxtra/src/port/save -ID:/3sxtra/src/port/mods -ID:/3sxtra/src/port/rendering -ID:/3sxtra/src/include/port/sdl/app -ID:/3sxtra/src/include/port/sdl/renderer -ID:/3sxtra/src/include/port/sdl/input -ID:/3sxtra/src/include/port/config -ID:/3sxtra/src/include/port/save -ID:/3sxtra/src/include/port/rendering -ID:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL -ID:/3sxtra/third_party/imgui -ID:/3sxtra/third_party/imgui/backends -ID:/3sxtra/third_party/rmlui/Backends -ID:/3sxtra/third_party/sdl3/build/include -ID:/3sxtra/third_party/sdl3_image/build/include -ID:/3sxtra/third_party/sdl3_mixer/build/include -ID:/3sxtra/build/gladsources/glad_gl_core/include -ID:/3sxtra/third_party/SDL_shadercross/include -ID:/3sxtra/third_party/rmlui/Include -isystem D:/3sxtra/third_party/lua/src -isystem D:/3sxtra/build/_deps/tracy-src/public -O2 -g -DNDEBUG -std=gnu11 -Wall -Werror -fno-strict-aliasing -Wpointer-to-int-cast -Wno-deprecated-non-prototype -Wno-tautological-overlap-compare -Wno-c2x-extensions -Wno-incompatible-pointer-types -Wno-pointer-sign -Wno-absolute-value -Wno-implicit-function-declaration -mavx2 -mfma -MD -MT CMakeFiles/3sx.dir/src/netplay/netplay.c.obj -MF CMakeFiles\3sx.dir\src\netplay\netplay.c.obj.d -o CMakeFiles/3sx.dir/src/netplay/netplay.c.obj -c D:/3sxtra/src/netplay/netplay.c
+D:/3sxtra/src/netplay/netplay.c:654:2: error: unterminated conditional directive
+  654 | #if defined(DEBUG)
+      |  ^
+1 error generated.
+[4/19] Building C object CMakeFiles/3sx.dir/src/netplay/game_state.c.obj
+FAILED: [code=1] CMakeFiles/3sx.dir/src/netplay/game_state.c.obj 
+C:\msys64\mingw64\bin\clang.exe -DDEBUG -DGEKKONET_STATIC -DHAVE_UPNP -DNETPLAY_ENABLED -DRMLUI_SDL_VERSION_MAJOR=3 -DRMLUI_STATIC_LIB -DTARGET_SDL3 -DTRACY_ENABLE -D_POSIX_C_SOURCE=200809L -ID:/3sxtra/src -ID:/3sxtra/src/include -ID:/3sxtra/src/include/sdk -ID:/3sxtra/src/zlib -ID:/3sxtra/third_party/GekkoNet/GekkoLib/include -ID:/3sxtra/third_party/stb -ID:/3sxtra/third_party/librashader/include -ID:/3sxtra/third_party/simde -I/include -ID:/3sxtra/build/gladsources/glad/include -ID:/3sxtra/third_party/sdl3/SDL/src/video/khronos -ID:/3sxtra/src/port/sdl/app -ID:/3sxtra/src/port/sdl/renderer -ID:/3sxtra/src/port/sdl/input -ID:/3sxtra/src/port/sdl/imgui -ID:/3sxtra/src/port/sdl/netplay -ID:/3sxtra/src/port/sdl/rmlui -ID:/3sxtra/src/port/config -ID:/3sxtra/src/port/save -ID:/3sxtra/src/port/mods -ID:/3sxtra/src/port/rendering -ID:/3sxtra/src/include/port/sdl/app -ID:/3sxtra/src/include/port/sdl/renderer -ID:/3sxtra/src/include/port/sdl/input -ID:/3sxtra/src/include/port/config -ID:/3sxtra/src/include/port/save -ID:/3sxtra/src/include/port/rendering -ID:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL -ID:/3sxtra/third_party/imgui -ID:/3sxtra/third_party/imgui/backends -ID:/3sxtra/third_party/rmlui/Backends -ID:/3sxtra/third_party/sdl3/build/include -ID:/3sxtra/third_party/sdl3_image/build/include -ID:/3sxtra/third_party/sdl3_mixer/build/include -ID:/3sxtra/build/gladsources/glad_gl_core/include -ID:/3sxtra/third_party/SDL_shadercross/include -ID:/3sxtra/third_party/rmlui/Include -isystem D:/3sxtra/third_party/lua/src -isystem D:/3sxtra/build/_deps/tracy-src/public -O2 -g -DNDEBUG -std=gnu11 -Wall -Werror -fno-strict-aliasing -Wpointer-to-int-cast -Wno-deprecated-non-prototype -Wno-tautological-overlap-compare -Wno-c2x-extensions -Wno-incompatible-pointer-types -Wno-pointer-sign -Wno-absolute-value -Wno-implicit-function-declaration -mavx2 -mfma -MD -MT CMakeFiles/3sx.dir/src/netplay/game_state.c.obj -MF CMakeFiles\3sx.dir\src\netplay\game_state.c.obj.d -o CMakeFiles/3sx.dir/src/netplay/game_state.c.obj -c D:/3sxtra/src/netplay/game_state.c
+D:/3sxtra/src/netplay/game_state.c:1458:13: error: unused function 'dump_saved_state' [-Werror,-Wunused-function]
+ 1458 | static void dump_saved_state(int frame) {
+      |             ^~~~~~~~~~~~~~~~
+1 error generated.
+[5/19] Linking C executable SDL_shadercross\shadercross.exe
+[6/19] Building CXX object CMakeFiles/3sx.dir/src/port/sdl/rmlui/lua_engine_bridge.cpp.obj
+FAILED: [code=1] CMakeFiles/3sx.dir/src/port/sdl/rmlui/lua_engine_bridge.cpp.obj 
+C:\msys64\mingw64\bin\clang++.exe -DDEBUG -DGEKKONET_STATIC -DHAVE_UPNP -DNETPLAY_ENABLED -DRMLUI_SDL_VERSION_MAJOR=3 -DRMLUI_STATIC_LIB -DTARGET_SDL3 -DTRACY_ENABLE -D_POSIX_C_SOURCE=200809L -ID:/3sxtra/src -ID:/3sxtra/src/include -ID:/3sxtra/src/include/sdk -ID:/3sxtra/src/zlib -ID:/3sxtra/third_party/GekkoNet/GekkoLib/include -ID:/3sxtra/third_party/stb -ID:/3sxtra/third_party/librashader/include -ID:/3sxtra/third_party/simde -I/include -ID:/3sxtra/build/gladsources/glad/include -ID:/3sxtra/third_party/sdl3/SDL/src/video/khronos -ID:/3sxtra/src/port/sdl/app -ID:/3sxtra/src/port/sdl/renderer -ID:/3sxtra/src/port/sdl/input -ID:/3sxtra/src/port/sdl/imgui -ID:/3sxtra/src/port/sdl/netplay -ID:/3sxtra/src/port/sdl/rmlui -ID:/3sxtra/src/port/config -ID:/3sxtra/src/port/save -ID:/3sxtra/src/port/mods -ID:/3sxtra/src/port/rendering -ID:/3sxtra/src/include/port/sdl/app -ID:/3sxtra/src/include/port/sdl/renderer -ID:/3sxtra/src/include/port/sdl/input -ID:/3sxtra/src/include/port/config -ID:/3sxtra/src/include/port/save -ID:/3sxtra/src/include/port/rendering -ID:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL -ID:/3sxtra/third_party/imgui -ID:/3sxtra/third_party/imgui/backends -ID:/3sxtra/third_party/rmlui/Backends -ID:/3sxtra/third_party/sdl3/build/include -ID:/3sxtra/third_party/sdl3_image/build/include -ID:/3sxtra/third_party/sdl3_mixer/build/include -ID:/3sxtra/build/gladsources/glad_gl_core/include -ID:/3sxtra/third_party/SDL_shadercross/include -ID:/3sxtra/third_party/rmlui/Include -isystem D:/3sxtra/third_party/lua/src -isystem D:/3sxtra/build/_deps/tracy-src/public -O2 -g -DNDEBUG -Wall -Werror -fno-strict-aliasing -mavx2 -mfma -MD -MT CMakeFiles/3sx.dir/src/port/sdl/rmlui/lua_engine_bridge.cpp.obj -MF CMakeFiles\3sx.dir\src\port\sdl\rmlui\lua_engine_bridge.cpp.obj.d -o CMakeFiles/3sx.dir/src/port/sdl/rmlui/lua_engine_bridge.cpp.obj -c D:/3sxtra/src/port/sdl/rmlui/lua_engine_bridge.cpp
+D:/3sxtra/src/port/sdl/rmlui/lua_engine_bridge.cpp:444:18: error: use of undeclared identifier 'Netplay_GetPlayerNumber'; did you mean 'Netplay_GetPlayerHandle'?
+  444 |     int player = Netplay_GetPlayerNumber() + 1; // 1 for P1, 2 for P2
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~
+      |                  Netplay_GetPlayerHandle
+D:/3sxtra/src/include/game_state.h:791:5: note: 'Netplay_GetPlayerHandle' declared here
+  791 | int Netplay_GetPlayerHandle(void);
+      |     ^
+1 error generated.
+[7/19] Building CXX object third_party/Spout2/SPOUTSDK/SpoutGL/CMakeFiles/Spout.dir/SpoutSharedMemory.cpp.obj
+[8/19] Building CXX object third_party/Spout2/SPOUTSDK/SpoutGL/CMakeFiles/Spout.dir/SpoutGLextensions.cpp.obj
+[9/19] Building CXX object third_party/Spout2/SPOUTSDK/SpoutGL/CMakeFiles/Spout.dir/SpoutFrameCount.cpp.obj
+[10/19] Building CXX object third_party/Spout2/SPOUTSDK/SpoutGL/CMakeFiles/Spout.dir/SpoutReceiver.cpp.obj
+[11/19] Building CXX object third_party/Spout2/SPOUTSDK/SpoutGL/CMakeFiles/Spout.dir/SpoutDirectX.cpp.obj
+[12/19] Building CXX object third_party/Spout2/SPOUTSDK/SpoutGL/CMakeFiles/Spout.dir/SpoutSender.cpp.obj
+[13/19] Building CXX object third_party/Spout2/SPOUTSDK/SpoutGL/CMakeFiles/Spout.dir/SpoutSenderNames.cpp.obj
+[14/19] Building CXX object third_party/Spout2/SPOUTSDK/SpoutGL/CMakeFiles/Spout.dir/SpoutCopy.cpp.obj
+[15/19] Building CXX object third_party/Spout2/SPOUTSDK/SpoutGL/CMakeFiles/Spout.dir/Spout.cpp.obj
+D:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL/Spout.cpp:1919:31: warning: address of array 'driverversion' will always evaluate to 'true' [-Wpointer-bool-conversion]
+ 1919 |                         if (!driverdescription || !driverversion) {
+      |                                                   ~^~~~~~~~~~~~~
+D:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL/Spout.cpp:1919:9: warning: address of array 'driverdescription' will always evaluate to 'true' [-Wpointer-bool-conversion]
+ 1919 |                         if (!driverdescription || !driverversion) {
+      |                             ~^~~~~~~~~~~~~~~~~
+2 warnings generated.
+[16/19] Building CXX object third_party/Spout2/SPOUTSDK/SpoutGL/CMakeFiles/Spout.dir/SpoutUtils.cpp.obj
+[17/19] Building CXX object third_party/Spout2/SPOUTSDK/SpoutGL/CMakeFiles/Spout.dir/SpoutGL.cpp.obj
+D:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL/SpoutGL.cpp:798:8: warning: comparison of different enumeration types in switch statement ('DXGI_FORMAT' and '_D3DFORMAT') [-Wenum-compare-switch]
+  795 |         switch (d3dformat) {
+      |                 ~~~~~~~~~
+  796 |                 // DirectX 9
+  797 |                 case D3DFMT_A8R8G8B8:
+  798 |                 case D3DFMT_X8R8G8B8:
+      |                      ^~~~~~~~~~~~~~~
+D:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL/SpoutGL.cpp:797:8: warning: comparison of different enumeration types in switch statement ('DXGI_FORMAT' and '_D3DFORMAT') [-Wenum-compare-switch]
+  795 |         switch (d3dformat) {
+      |                 ~~~~~~~~~
+  796 |                 // DirectX 9
+  797 |                 case D3DFMT_A8R8G8B8:
+      |                      ^~~~~~~~~~~~~~~
+2 warnings generated.
+ninja: build stopped: subcommand failed.
+
+[91m[X] Build failed with exit code: 1[0m

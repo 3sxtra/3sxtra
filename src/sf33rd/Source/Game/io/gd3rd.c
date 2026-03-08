@@ -22,8 +22,6 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "structs.h"
 
-#include "port/io/afs.h"
-
 typedef struct {
     u8 type;
     u8 ix;
@@ -52,8 +50,6 @@ u8 ldreq_break;
 REQ q_ldreq[LDREQ_QUEUE_SIZE];
 u8 ldreq_result[LDREQ_TBL_SIZE];
 
-static AFSHandle afs_handle = AFS_NONE;
-
 // forward decls
 static s32 Push_LDREQ_Queue(REQ* ldreq);
 static void Push_LDREQ_Queue_Metamor();
@@ -68,180 +64,30 @@ const LDREQ_TBL ldreq_tbl[LDREQ_TBL_SIZE];
 const s16 ldreq_ix[LDREQ_IX_SIZE][2];
 
 /** @brief Open an AFS file by request number. */
-s32 fsOpen(REQ* req) {
-    if (req->fnum >= AFS_GetFileCount()) {
-        return 0;
-    }
-
-    if (afs_handle != AFS_NONE) {
-        AFS_Close(afs_handle);
-    }
-
-    afs_handle = AFS_Open(req->fnum);
-
-    req->info.number = 1;
-    return 1;
-}
 
 /** @brief Close an AFS file (no-op on modern platform). */
-void fsClose(REQ* /* unused */) {
-    AFS_Close(afs_handle);
-    afs_handle = AFS_NONE;
-}
 
 /** @brief Return the file size for the given AFS file number. */
-u32 fsGetFileSize(u16 fnum) {
-    if (fnum >= AFS_GetFileCount()) {
-        return 0;
-    }
-
-    return AFS_GetSize(fnum);
-}
 
 /** @brief Round a byte size up to the nearest sector boundary. */
-u32 fsCalSectorSize(u32 size) {
-    return (size + 2048 - 1) / 2048;
-}
 
 /** @brief Cancel a pending file request (stub). */
-static s32 fsCansel(REQ* /* unused */) {
-    if ((afs_handle != AFS_NONE) && (AFS_GetState(afs_handle) == AFS_READ_STATE_READING)) {
-        AFS_Stop(afs_handle);
-    }
-
-    return 1;
-}
 
 /** @brief Check whether a file command is still executing. */
-s32 fsCheckCommandExecuting() {
-    if (afs_handle == AFS_NONE) {
-        return 0;
-    }
-
-    const AFSReadState state = AFS_GetState(afs_handle);
-
-    switch (state) {
-    case AFS_READ_STATE_READING:
-    case AFS_READ_STATE_ERROR:
-        return 1;
-
-    case AFS_READ_STATE_IDLE:
-    case AFS_READ_STATE_FINISHED:
-        return 0;
-
-    default:
-        fatal_error("Unhandled AFS state: %d", state);
-    }
-}
 
 /** @brief Issue an asynchronous file-read request. */
-s32 fsRequestFileRead(REQ* /* unused */, u32 sec, void* buff) {
-    AFS_Read(afs_handle, sec, buff);
-    return 1;
-}
 
 /** @brief Check whether an asynchronous file read has completed. */
-s32 fsCheckFileReaded(REQ* /* unused */) {
-    const AFSReadState state = AFS_GetState(afs_handle);
-
-    switch (state) {
-    case AFS_READ_STATE_ERROR:
-        return 2;
-
-    case AFS_READ_STATE_READING:
-        return 0;
-
-    case AFS_READ_STATE_IDLE:
-    case AFS_READ_STATE_FINISHED:
-        return 1;
-
-    default:
-        fatal_error("Unhandled AFS state: %d", state);
-    }
-}
 
 /** @brief Synchronous file read — request and wait for completion. */
-s32 fsFileReadSync(REQ* req, u32 sec, void* buff) {
-    AFS_ReadSync(afs_handle, sec, buff);
-    const s32 rnum = fsCheckFileReaded(req);
-    return (rnum == 1) ? 1 : 0;
-}
 
 /** @brief Dummy vsync wait (no-op on modern platform). */
-void waitVsyncDummy() {
-    // AFS_RunServer is called here intentionally to keep streaming operational during
-    // synchronous file reads. This prevents audio/streaming stalls when the main loop
-    // is blocked on file I/O. Moving this to only the main loop would break sync reads.
-    AFS_RunServer();
-    mlTsbExecServer();
-}
 
 /** @brief Load a file by number, allocating a key from any pool. */
-s32 load_it_use_any_key2(u16 fnum, void** adrs, s16* key, u8 kokey, u8 group) {
-    u32 size;
-    u32 err;
-
-    if (fnum >= AFS_GetFileCount()) {
-        flLogOut("ファイルナンバーに異常があります。ファイル番号：%d\n", fnum);
-        return 0;
-    }
-
-    size = fsGetFileSize(fnum);
-    *key = Pull_ramcnt_key(fsCalSectorSize(size) << 11, kokey, group, 0);
-    *adrs = (void*)Get_ramcnt_address(*key);
-
-    err = load_it_use_this_key(fnum, *key);
-
-    if (err != 0) {
-        return size;
-    }
-
-    Push_ramcnt_key(*key);
-    return 0;
-}
 
 /** @brief Load a file by number, returning an allocated key. */
-s16 load_it_use_any_key(u16 fnum, u8 kokey, u8 group) {
-    u32 err;
-    void* adrs;
-    s16 key;
-
-    err = load_it_use_any_key2(fnum, &adrs, &key, kokey, group);
-
-    if (err != 0) {
-        return key;
-    }
-
-    return 0;
-}
 
 /** @brief Load a file by number using a specific pre-allocated key. */
-s32 load_it_use_this_key(u16 fnum, s16 key) {
-    REQ req;
-    u32 err;
-
-    req.fnum = fnum;
-
-    while (1) {
-        err = fsOpen(&req);
-
-        if (err == 0) {
-            continue;
-        }
-
-        req.size = fsGetFileSize(req.fnum);
-        req.sect = fsCalSectorSize(req.size);
-        err = fsFileReadSync(&req, req.sect, (void*)Get_ramcnt_address(key));
-        fsClose(&req);
-        Set_size_data_ramcnt_key(key, req.size);
-
-        if (err != 0) {
-            return 1;
-        }
-
-        flLogOut("ファイルの読み込みに失敗しました。ファイル番号：%d\n", fnum);
-    }
-}
 
 /** @brief First-time init of the load-request queue. */
 void Init_Load_Request_Queue_1st() {

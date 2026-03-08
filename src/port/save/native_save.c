@@ -245,7 +245,7 @@ int NativeSave_LoadOptions(void) {
 
     FILE* f = fopen(path, "r");
     if (!f) {
-        printf("[NativeSave] No options.ini found — using defaults\n");
+        SDL_Log("[NativeSave] No options.ini found — using defaults");
         return -1;
     }
 
@@ -341,7 +341,7 @@ int NativeSave_LoadOptions(void) {
     }
     sys_w.screen_mode = sw->Screen_Mode;
 
-    printf("[NativeSave] Options loaded from %s\n", path);
+    SDL_Log("[NativeSave] Options loaded from %s", path);
     return 0;
 }
 
@@ -354,7 +354,7 @@ void NativeSave_SaveOptions(void) {
 
     FILE* f = atomic_open(path, tmp, sizeof(tmp));
     if (!f) {
-        printf("[NativeSave] ERROR: Cannot create %s: %s\n", tmp, strerror(errno));
+        SDL_Log("[NativeSave] ERROR: Cannot create %s: %s", tmp, strerror(errno));
         return;
     }
 
@@ -422,7 +422,7 @@ void NativeSave_SaveOptions(void) {
 
     fclose(f);
     atomic_commit(path, tmp);
-    printf("[NativeSave] Options saved to %s\n", path);
+    SDL_Log("[NativeSave] Options saved to %s", path);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -436,7 +436,7 @@ int NativeSave_LoadDirection(void) {
 
     FILE* f = fopen(path, "r");
     if (!f) {
-        printf("[NativeSave] No direction.ini found — using defaults\n");
+        SDL_Log("[NativeSave] No direction.ini found — using defaults");
         return -1;
     }
 
@@ -462,7 +462,7 @@ int NativeSave_LoadDirection(void) {
         }
     }
 
-    printf("[NativeSave] Direction loaded from %s\n", path);
+    SDL_Log("[NativeSave] Direction loaded from %s", path);
     return 0;
 }
 
@@ -473,7 +473,7 @@ void NativeSave_SaveDirection(void) {
 
     FILE* f = atomic_open(path, tmp, sizeof(tmp));
     if (!f) {
-        printf("[NativeSave] ERROR: Cannot create %s: %s\n", tmp, strerror(errno));
+        SDL_Log("[NativeSave] ERROR: Cannot create %s: %s", tmp, strerror(errno));
         return;
     }
 
@@ -490,7 +490,7 @@ void NativeSave_SaveDirection(void) {
 
     fclose(f);
     atomic_commit(path, tmp);
-    printf("[NativeSave] Direction saved to %s\n", path);
+    SDL_Log("[NativeSave] Direction saved to %s", path);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -573,27 +573,27 @@ int NativeSave_LoadReplay(int slot) {
 
     FILE* f = fopen(path, "rb");
     if (!f) {
-        printf("[NativeSave] Replay %d not found\n", slot);
+        SDL_Log("[NativeSave] Replay %d not found", slot);
         return -1;
     }
 
     /* Read and validate header */
     NativeReplayHeader hdr;
     if (fread(&hdr, 1, sizeof(hdr), f) != sizeof(hdr)) {
-        printf("[NativeSave] Replay %d: header read error\n", slot);
+        SDL_Log("[NativeSave] Replay %d: header read error", slot);
         fclose(f);
         return -2;
     }
 
     if (hdr.magic != NATIVE_REPLAY_MAGIC) {
-        printf("[NativeSave] Replay %d: bad magic 0x%08X\n", slot, hdr.magic);
+        SDL_Log("[NativeSave] Replay %d: bad magic 0x%08X", slot, hdr.magic);
         fclose(f);
         return -2;
     }
 
     if (hdr.data_size != sizeof(_REPLAY_W)) {
-        printf(
-            "[NativeSave] Replay %d: size mismatch (file=%u, expected=%zu)\n", slot, hdr.data_size, sizeof(_REPLAY_W));
+        SDL_Log(
+            "[NativeSave] Replay %d: size mismatch (file=%u, expected=%zu)", slot, hdr.data_size, sizeof(_REPLAY_W));
         /* Still try to load — forward compat */
     }
 
@@ -604,11 +604,11 @@ int NativeSave_LoadReplay(int slot) {
     fclose(f);
 
     if (got < to_read) {
-        printf("[NativeSave] Replay %d: short read (%zu/%zu)\n", slot, got, to_read);
+        SDL_Log("[NativeSave] Replay %d: short read (%zu/%zu)", slot, got, to_read);
         return -2;
     }
 
-    printf("[NativeSave] Replay %d loaded from %s\n", slot, path);
+    SDL_Log("[NativeSave] Replay %d loaded from %s", slot, path);
     return 0;
 }
 
@@ -640,7 +640,7 @@ int NativeSave_SaveReplay(int slot) {
     /* Write binary data */
     FILE* f = atomic_open_bin(bin_path, bin_tmp, sizeof(bin_tmp));
     if (!f) {
-        printf("[NativeSave] ERROR: Cannot create %s: %s\n", bin_tmp, strerror(errno));
+        SDL_Log("[NativeSave] ERROR: Cannot create %s: %s", bin_tmp, strerror(errno));
         return -1;
     }
 
@@ -665,7 +665,7 @@ int NativeSave_SaveReplay(int slot) {
         atomic_commit(meta_path, meta_tmp);
     }
 
-    printf("[NativeSave] Replay %d saved to %s\n", slot, bin_path);
+    SDL_Log("[NativeSave] Replay %d saved to %s", slot, bin_path);
     return 0;
 }
 
@@ -680,6 +680,6 @@ int NativeSave_DeleteReplay(int slot) {
     make_replay_path(path, sizeof(path), slot, ".meta");
     remove(path);
 
-    printf("[NativeSave] Replay %d deleted\n", slot);
+    SDL_Log("[NativeSave] Replay %d deleted", slot);
     return 0;
 }

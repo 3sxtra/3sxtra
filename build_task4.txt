@@ -1,0 +1,26 @@
+[92m============================================[0m
+[92m   3sx - Incremental Recompile              [0m
+[92m============================================[0m
+
+[92m[V] Using MSYS2 at: "C:\msys64"[0m
+
+[93m[*] Incremental build in: D:\3sxtra\[0m
+
+[92m[*] Starting MSYS2 MinGW64 incremental build...[0m
+
+[1/2] Building C object CMakeFiles/3sx.dir/src/netplay/game_state.c.obj
+[2/2] Linking CXX executable 3sx.exe
+FAILED: [code=1] 3sx.exe 
+C:\WINDOWS\system32\cmd.exe /C "cd . && C:\msys64\mingw64\bin\clang++.exe -O2 -g -DNDEBUG -fuse-ld=lld --for-linker --pdb=3sx.pdb @CMakeFiles\3sx.rsp -o 3sx.exe -Wl,--out-implib,lib3sx.dll.a -Wl,--major-image-version,0,--minor-image-version,0 && C:\WINDOWS\system32\cmd.exe /C "cd /D D:\3sxtra\build && C:\msys64\mingw64\bin\cmake.exe -E copy_directory D:/3sxtra/assets D:/3sxtra/build/assets && C:\msys64\mingw64\bin\cmake.exe -E copy_directory D:/3sxtra/src/shaders D:/3sxtra/build/shaders && C:\msys64\mingw64\bin\cmake.exe -E copy_directory D:/3sxtra/third_party/slang-shaders D:/3sxtra/build/shaders/libretro && C:\msys64\mingw64\bin\cmake.exe -E copy_directory D:/3sxtra/shaders/custom D:/3sxtra/build/shaders/libretro/custom && C:\msys64\mingw64\bin\cmake.exe -E make_directory D:/3sxtra/build/lua && C:\msys64\mingw64\bin\cmake.exe -E copy_if_different D:/3sxtra/src/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua D:/3sxtra/build/lua/sf3_3rd_trial_clean.lua && C:\msys64\mingw64\bin\cmake.exe -E copy_directory D:/3sxtra/src/lua/compat D:/3sxtra/build/lua/compat && C:\msys64\mingw64\bin\cmake.exe -E copy_if_different D:/3sxtra/src/lua/training_main.lua D:/3sxtra/build/lua/training_main.lua && C:\msys64\mingw64\bin\cmake.exe -E copy_directory D:/3sxtra/src/lua/3rd_training_lua-main/src D:/3sxtra/build/lua/src && C:\msys64\mingw64\bin\cmake.exe -E copy_directory D:/3sxtra/src/lua/3rd_training_lua-main/data D:/3sxtra/build/lua/data""
+ld.lld: error: undefined symbol: is_work_other_conn
+>>> referenced by D:/3sxtra/src/netplay/game_state.c:1572
+>>>               CMakeFiles/3sx.dir/src/netplay/game_state.c.obj:(save_state)
+
+ld.lld: error: undefined symbol: sanitize_work_other_conn
+>>> referenced by D:/3sxtra/src/netplay/game_state.c:1573
+>>>               CMakeFiles/3sx.dir/src/netplay/game_state.c.obj:(save_state)
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+[91m[X] Build failed with exit code: 1[0m
+Press any key to continue . . . 

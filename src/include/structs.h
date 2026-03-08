@@ -16,7 +16,7 @@
  *  - WORK_Other_CONN.conn[] tails past num_of_conn (uninitialized heap data)
  *
  * See sanitize_work_pointers(), sanitize_work_rendering(),
- * sanitize_plw_pointers(), sanitize_work_other_conn() in netplay.c.
+ * sanitize_plw_pointers(), sanitize_work_other_conn() in game_state.c.
  */
 #ifndef STRUCTS_H
 #define STRUCTS_H
@@ -770,7 +770,7 @@ typedef struct {
  *
  * @netplay_sync
  * Entries in conn[] past num_of_conn are uninitialized heap data that
- * differs between peers. sanitize_work_other_conn() in netplay.c zeroes
+ * differs between peers. sanitize_work_other_conn() in game_state.c zeroes
  * the unused tail before checksumming. This was the root cause of the
  * F1549 desync.
  */

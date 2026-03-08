@@ -25,6 +25,7 @@
 #ifndef NETPLAY_GAME_STATE_H
 #define NETPLAY_GAME_STATE_H
 
+#include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/cmb_win.h"
 #include "sf33rd/Source/Game/engine/grade.h"
@@ -39,6 +40,16 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 #include "types.h"
+
+typedef struct EffectState {
+    s16 frwctr;
+    s16 frwctr_min;
+    s16 head_ix[8];
+    s16 tail_ix[8];
+    s16 exec_tm[8];
+    uintptr_t frw[EFFECT_MAX][448];
+    s16 frwque[EFFECT_MAX];
+} EffectState;
 
 typedef struct GameState {
     // ======================================================================
@@ -768,7 +779,18 @@ typedef struct GameState {
     s32 Y_Adjust_Buff[3];
 } GameState;
 
+typedef struct State {
+    GameState gs;
+    EffectState es;
+} State;
+
 void GameState_Save(GameState* dst);
 void GameState_Load(const GameState* src);
+
+struct GekkoGameEvent;
+int Netplay_GetPlayerHandle(void);
+int Netplay_GetBattleStartFrame(void);
+void save_state(const struct GekkoGameEvent* event);
+void load_state_from_event(const struct GekkoGameEvent* event);
 
 #endif

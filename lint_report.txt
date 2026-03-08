@@ -1,6 +1,6 @@
 ============================================================ 
                    3SX Lint Report                              
-                   Generated: 08/03/2026 20:50:53.91                     
+                   Generated: 08/03/2026 22:16:02.38                     
 ============================================================ 
  
 ------------------------------------------------------------ 
@@ -13,6 +13,29 @@ No compile_commands.json, skipping advanced clang-tidy! Build first.
 ------------------------------------------------------------ 
 [RUFF] Code Style & Import Checks                           
 ------------------------------------------------------------ 
+E741 Ambiguous variable name: `l`
+   --> move_gd3rd.py:195:9
+    |
+193 |     h_lines = h_text.split("\n")
+194 |     new_h_lines = []
+195 |     for l in h_lines:
+    |         ^
+196 |         ok = True
+197 |         for f in fs_funcs + fl_funcs:
+    |
+
+F841 Local variable `end_str` is assigned to but never used
+  --> move_state.py:66:5
+   |
+64 |     start_idx = np_c.find(start_str)
+65 |
+66 |     end_str = "} Game GekkoGame"
+   |     ^^^^^^^
+67 |     # Actually, after `load_state_from_event` is `static bool game_ready_to_run_character_select`
+68 |     end_idx = np_c.find("static bool game_ready_to_run_character_select")
+   |
+help: Remove assignment to unused variable `end_str`
+
 F841 Local variable `cps3_hp_valid` is assigned to but never used
    --> tools\fightcade_replays\parity_replay.py:981:13
     |
@@ -25,10 +48,33 @@ F841 Local variable `cps3_hp_valid` is assigned to but never used
     |
 help: Remove assignment to unused variable `cps3_hp_valid`
 
-Found 1 error.
-No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+Found 3 errors.
+No fixes available (2 hidden fixes can be enabled with the `--unsafe-fixes` option).
  
 [RUFF] Auto-fix applied: 
+E741 Ambiguous variable name: `l`
+   --> move_gd3rd.py:195:9
+    |
+193 |     h_lines = h_text.split("\n")
+194 |     new_h_lines = []
+195 |     for l in h_lines:
+    |         ^
+196 |         ok = True
+197 |         for f in fs_funcs + fl_funcs:
+    |
+
+F841 Local variable `end_str` is assigned to but never used
+  --> move_state.py:66:5
+   |
+64 |     start_idx = np_c.find(start_str)
+65 |
+66 |     end_str = "} Game GekkoGame"
+   |     ^^^^^^^
+67 |     # Actually, after `load_state_from_event` is `static bool game_ready_to_run_character_select`
+68 |     end_idx = np_c.find("static bool game_ready_to_run_character_select")
+   |
+help: Remove assignment to unused variable `end_str`
+
 F841 Local variable `cps3_hp_valid` is assigned to but never used
    --> tools\fightcade_replays\parity_replay.py:981:13
     |
@@ -41,15 +87,16 @@ F841 Local variable `cps3_hp_valid` is assigned to but never used
     |
 help: Remove assignment to unused variable `cps3_hp_valid`
 
-Found 1 error.
-No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+Found 3 errors.
+No fixes available (2 hidden fixes can be enabled with the `--unsafe-fixes` option).
  
 [RUFF] Formatting: 
-18 files left unchanged
+23 files left unchanged
  
 ------------------------------------------------------------ 
 [VULTURE] Dead Code Analysis                                 
 ------------------------------------------------------------ 
+move_gd3rd.py:4: unused function 'extract_block' (60% confidence)
 tests\util\test_navigator_logic.py:20: unused attribute 'call_count' (60% confidence)
 tests\util\test_navigator_logic.py:43: unused variable 'mock_sleep' (100% confidence)
 tests\util\test_navigator_logic.py:57: unused variable 'mock_sleep' (100% confidence)

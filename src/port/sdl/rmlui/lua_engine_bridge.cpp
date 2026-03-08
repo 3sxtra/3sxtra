@@ -27,6 +27,7 @@ extern "C" {
 }
 
 extern "C" {
+#include "netplay/netplay.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/training/training_state.h"
@@ -270,7 +271,7 @@ static int l_read_player(lua_State* L) {
 // ---- engine.read_globals() ----
 
 static int l_read_globals(lua_State* L) {
-    lua_createtable(L, 0, 10);
+    lua_createtable(L, 0, 14);
     int t = lua_gettop(L);
 
     PUSH_INT(L, t, "frame_number", g_training_state.frame_number);
@@ -283,6 +284,11 @@ static int l_read_globals(lua_State* L) {
     // Screen scroll position (BG layer 0 target)
     extern s16 Target_BG_X[6];
     PUSH_INT(L, t, "screen_x", Target_BG_X[0]);
+
+    // Player operator status (1 = human, 0 = CPU/empty)
+    extern s8 Operator_Status[2];
+    PUSH_INT(L, t, "operator_p1", Operator_Status[0]);
+    PUSH_INT(L, t, "operator_p2", Operator_Status[1]);
 
     return 1;
 }
@@ -409,6 +415,61 @@ static int l_tick(lua_State* L) {
     return 0;
 }
 
+// ---- engine.read_file_text(path) ----
+// Reads entire file and returns string, or nil on error.
+// Safer alternative to exposing the full Lua 'io' library.
+// If path is relative, prepends SDL_GetBasePath() (exe directory).
+static int l_read_file_text(lua_State* L) {
+    const char* path = luaL_checkstring(L, 1);
+
+    // Build absolute path for relative paths
+    char abs_path[1024];
+    bool is_absolute = false;
+#ifdef _WIN32
+    is_absolute = (path[0] && path[1] == ':') || path[0] == '\\' || path[0] == '/';
+#else
+    is_absolute = path[0] == '/';
+#endif
+
+    const char* open_path = path;
+    if (!is_absolute) {
+        const char* base = SDL_GetBasePath();
+        if (base) {
+            SDL_snprintf(abs_path, sizeof(abs_path), "%s%s", base, path);
+            open_path = abs_path;
+        }
+    }
+
+    SDL_IOStream* rw = SDL_IOFromFile(open_path, "rb");
+    if (!rw) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    Sint64 size = SDL_GetIOSize(rw);
+    if (size < 0) {
+        SDL_CloseIO(rw);
+        lua_pushnil(L);
+        return 1;
+    }
+
+    char* buf = (char*)SDL_malloc((size_t)size + 1);
+    Sint64 read = SDL_ReadIO(rw, buf, (size_t)size);
+    SDL_CloseIO(rw);
+
+    buf[read] = '\0';
+    lua_pushstring(L, buf);
+    SDL_free(buf);
+
+    return 1;
+}
+
+static int l_get_local_player(lua_State* L) {
+    int player = Netplay_GetPlayerHandle() + 1; // 1 for P1, 2 for P2
+    lua_pushinteger(L, player);
+    return 1;
+}
+
 // ---- Registration ----
 
 static const luaL_Reg engine_funcs[] = {
@@ -419,10 +480,12 @@ static const luaL_Reg engine_funcs[] = {
     { "get_frame_number", l_get_frame_number },
     { "is_in_match", l_is_in_match },
     { "get_player_state", l_get_player_state },
+    { "get_local_player", l_get_local_player },
     { "get_input", l_get_input },
     { "set_lever_buff", l_set_lever_buff },
     { "write_field", l_write_field },
     { "tick", l_tick },
+    { "read_file_text", l_read_file_text },
     { NULL, NULL }
 };
 
