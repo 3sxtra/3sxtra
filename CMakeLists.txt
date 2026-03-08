@@ -196,6 +196,8 @@ file(GLOB_RECURSE GAME_SRC src/*.c)
 list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/PS2/mc/savesub\\.c$")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/PS2/mc/mcsub\\.c$")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdk/sdk_libmc\\.c$")
+# Exclude bundled zlib — built separately as 3sx_zlib static library
+list(FILTER GAME_SRC EXCLUDE REGEX "src/zlib/")
 
 # Build bundled zlib as a separate static library so we can reliably
 # suppress format warnings and hide symbols on every build system.

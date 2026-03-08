@@ -1042,7 +1042,7 @@ static bool sw_render_frame(void) {
     TRACE_ZONE_N("SDL2D:SwFrame");
 
     // ⚡ BENCHMARK TOGGLE: set to true to force hardware path
-    static const bool sw_frame_disabled = false;
+    static const bool sw_frame_disabled = true;
     if (sw_frame_disabled) { TRACE_ZONE_END(); return false; }
 
     if (!ensure_sw_frame_surface() || !ensure_sw_frame_upload_texture()) {

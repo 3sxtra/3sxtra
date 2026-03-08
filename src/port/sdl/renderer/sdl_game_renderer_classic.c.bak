@@ -175,14 +175,6 @@ void SDLGameRendererClassic_Init(void) {
 }
 
 void SDLGameRendererClassic_Shutdown(void) {
-    // Flush deferred texture destruction first
-    for (int i = 0; i < cl_textures_to_destroy_count; i++) {
-        SDL_DestroyTexture(cl_textures_to_destroy[i]);
-        cl_textures_to_destroy[i] = NULL;
-    }
-    cl_textures_to_destroy_count = 0;
-
-    // Destroy all cached textures
     for (int i = 0; i < FL_TEXTURE_MAX; i++) {
         if (cl_surfaces[i]) {
             SDL_DestroySurface(cl_surfaces[i]);
@@ -205,8 +197,6 @@ void SDLGameRendererClassic_Shutdown(void) {
         SDL_DestroyTexture(cps3_canvas_classic);
         cps3_canvas_classic = NULL;
     }
-    cl_current_texture = NULL;
-    cl_current_th = 0;
     cl_render_task_count = 0;
     cl_batch_buffers_initialized = false;
 }
