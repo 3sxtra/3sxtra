@@ -16,7 +16,7 @@
 
 #include <math.h>
 #include <stddef.h>
-#include <stdio.h>
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -264,7 +264,7 @@ static void process_track(ADXTrack* track) {
                              &bytes_consumed);
 
         if (ret < 0) {
-            fprintf(stderr, "ADX decoding error\n");
+            SDL_Log("ADX decoding error");
             break;
         }
 
@@ -332,7 +332,7 @@ static void track_init(ADXTrack* track, int file_id, void* buf, size_t buf_size,
 
     // Initialize Decoder
     if (ADX_InitContext(&track->ctx, track->data, track->size) < 0) {
-        fprintf(stderr, "Failed to initialize ADX context\n");
+        SDL_Log("Failed to initialize ADX context");
         // Handle error gracefully?
         return;
     }

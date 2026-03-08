@@ -4,6 +4,7 @@
  */
 #include "port/imgui_font.h"
 #include "imgui.h"
+#include <SDL3/SDL.h>
 #include <stdio.h>
 
 /** @brief Verify that ImGui is initialized (context exists). */
@@ -23,7 +24,7 @@ bool ImGuiFont_LoadJapaneseFont(const char* fontPath, float size) {
     // Check if file exists to prevent ImGui from asserting and crashing
     FILE* f = fopen(fontPath, "rb");
     if (!f) {
-        fprintf(stderr, "Failed to load font from: %s (file not found)\n", fontPath);
+        SDL_Log("Failed to load font from: %s (file not found)", fontPath);
         return false;
     }
     fclose(f);
@@ -32,7 +33,7 @@ bool ImGuiFont_LoadJapaneseFont(const char* fontPath, float size) {
     ImFont* font = io.Fonts->AddFontFromFileTTF(fontPath, size, NULL, io.Fonts->GetGlyphRangesJapanese());
 
     if (font == nullptr) {
-        fprintf(stderr, "Failed to load font from: %s\n", fontPath);
+        SDL_Log("Failed to load font from: %s", fontPath);
         return false;
     }
 
