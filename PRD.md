@@ -142,22 +142,100 @@ Acceptance criteria:
 
 ---
 
-## Task 5: Build and run all new tests
-Build the project with tests enabled and run the full test suite.
+## Task 5: Edge cases in existing test files
+Several existing tests are missing edge case and error path coverage. Add test functions to the **existing** test files:
+
+### `test_stun.c` — add:
+- `test_decode_endpoint_null_args` — NULL code, NULL out_ip, NULL out_port → returns false
+- `test_decode_endpoint_empty_string` — empty string → returns false
+- `test_decode_endpoint_malformed` — truncated or garbage input → returns false
+- `test_socket_recv_from_bad_fd` — invalid fd (-1) → returns error
+- `test_socket_recv_from_zero_buf` — buf_size = 0 → returns 0 or error
+
+### `test_paths.c` — add:
+- `test_is_portable_with_marker_file` — create a temp marker file, verify returns 1
+- `test_is_portable_without_marker` — no marker file, verify returns 0
+
+### `test_bezel_assets.c` or `test_bezel_layout.c` — add:
+- `test_bezel_shutdown_null_safe` — call `BezelSystem_Shutdown()` when not initialized → no crash
+- `test_bezel_set_characters_valid` — call `BezelSystem_SetCharacters(0, 1)` with valid indices
+- `test_bezel_set_characters_out_of_range` — call with invalid character indices → handled gracefully
+
+### `test_netplay_run.c` or `test_netplay_refactor.c` — add:
+- `test_handle_menu_exit_not_connected` — call `Netplay_HandleMenuExit()` when netplay is not active → no crash
+
+### `test_menu_bridge.c` — add:
+- `test_step_gate_no_active_gate` — call `MenuBridge_StepGate()` when no gate is set → no crash, returns expected default
+
+### `test_lobby_server.c` — add:
+- `test_update_presence_not_connected` — call `LobbyServer_UpdatePresence()` when not connected → graceful no-op
+
+### `test_stun.c` — also add:
+- `test_parse_binding_response_truncated` — truncated STUN response → returns error
+- `test_parse_binding_response_wrong_type` — valid STUN header but wrong message type → returns error
+
+Acceptance criteria:
+- All new test functions compile and pass
+- No regressions in the existing tests in those files
+- Each edge case tests a distinct boundary or error condition
+
+---
+
+## Task 6: CharData_ApplyFixups — `char_data.c`
+Create `tests/unit/test_char_data.c`.
+Source under test: `src/port/char_data.c`.
+Header: `src/port/char_data.h` (depends on `structs.h` for `CharInitData`).
+
+Test cases:
+- `test_fixups_akuma` — character_id 14 (Akuma), verify `hiit[0x5A..0x5D].cuix` are zeroed
+- `test_fixups_other_chars` — character_id != 14, verify data is unchanged
+- `test_fixups_null_data` — NULL data pointer → no crash (if the function handles it; if not, document)
+
+Add to CMakeLists.txt:
+```cmake
+add_unit_test(test_char_data
+    test_char_data.c
+    ${PROJECT_SOURCE_DIR}/src/port/char_data.c
+)
+target_include_directories(test_char_data PRIVATE ${PROJECT_SOURCE_DIR}/include)
+```
+
+Acceptance criteria:
+- All test cases pass via `ctest -R test_char_data`
+- Akuma fixup behavior is verified against actual hitbox indices
+
+---
+
+## Task 7: Verify all existing tests still pass
+Before adding new tests, run the full existing suite to establish a green baseline.
 
 Steps:
-1. `cmake -B build` (or reconfigure existing build)
-2. `cmake --build build`
-3. `cd build && ctest --output-on-failure`
+1. `CC=clang cmake -B build_tests -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON`
+2. `cmake --build build_tests`
+3. `cd build_tests && ctest --output-on-failure`
+
+Acceptance criteria:
+- All pre-existing tests pass
+- Build has no errors (warnings are acceptable)
+
+---
+
+## Task 8: Build and run all new tests
+Rebuild with all new test files and run the complete suite.
+
+Steps:
+1. `CC=clang cmake -B build_tests -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON`
+2. `cmake --build build_tests`
+3. `cd build_tests && ctest --output-on-failure`
 
 Acceptance criteria:
 - All existing tests still pass (no regressions)
-- All 4 new test targets pass
+- All new test targets pass
 - No compiler warnings in test files
 
 ---
 
-## Task 6: Clean up and document
+## Task 9: Clean up and document
 Update `tests/README.md` to mention the new test files.
 Ensure all new test files have proper file-level doc comments following the existing pattern.
 

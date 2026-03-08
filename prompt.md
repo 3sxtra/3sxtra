@@ -19,10 +19,16 @@ Work on exactly one task per iteration.
 - Source files are compiled directly into test targets (not linked from a library)
 
 ## Build and verify
-- Build: `cmake --build build`
-- Test: `cd build && ctest --output-on-failure -R <test_name>`
+- Tests use a **separate build directory**: `build_tests` (not `build`)
+- The build pipeline uses **MSYS2 MinGW64** with **Clang** and **Ninja**
+- Configure: `CC=clang cmake -B build_tests -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON`
+- Build a specific test: `cmake --build build_tests --target <test_name>`
+- Run a specific test: `./build_tests/tests/unit/<test_name>.exe`
+- Run all tests: `cd build_tests && ctest --output-on-failure`
+- Run filtered: `cd build_tests && ctest --output-on-failure -R <pattern>`
 - Run relevant tests before marking a task complete
 - If a build or test fails, fix it before proceeding
+- See `tools/compile_tests.bat` for the full Windows build pipeline reference
 
 ## If blocked
 - Write the blocker clearly in progress.txt

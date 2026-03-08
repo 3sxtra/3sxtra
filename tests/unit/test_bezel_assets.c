@@ -49,7 +49,7 @@ static void test_bezel_load_success(void **state) {
     BezelSystem_Init();
     bool res = BezelSystem_LoadTextures();
     assert_true(res);
-    
+
     BezelTextures tex;
     BezelSystem_GetTextures(&tex);
     assert_ptr_equal(tex.left, (void*)0x1234);
@@ -61,7 +61,7 @@ static void test_bezel_character_switch(void **state) {
     BezelSystem_Init();
     // Test switch to Ryu (index 2)
     BezelSystem_SetCharacters(2, 2);
-    
+
     BezelTextures tex;
     BezelSystem_GetTextures(&tex);
     assert_ptr_equal(tex.left, (void*)0x1234);
@@ -94,6 +94,44 @@ static void test_bezel_mapping_correctness(void **state) {
     assert_string_equal(BezelSystem_GetCharacterAssetPrefix(19), "remy");
 }
 
+/* ------------------------------------------------------------------ */
+/* Task 5 edge case additions                                           */
+/* ------------------------------------------------------------------ */
+
+/* Calling Shutdown when the system was never initialised must not crash. */
+static void test_bezel_shutdown_null_safe(void **state) {
+    (void) state;
+    /* No prior Init() call — Shutdown must return silently. */
+    BezelSystem_Shutdown();
+    /* Call twice to be sure repeated calls are also safe. */
+    BezelSystem_Shutdown();
+}
+
+/* SetCharacters with valid, in-range indices (P1 = 0, P2 = 1). */
+static void test_bezel_set_characters_valid(void **state) {
+    (void) state;
+    BezelSystem_Init();
+    /* P1 = Gill (0), P2 = Alex (1) — both valid; no crash expected. */
+    BezelSystem_SetCharacters(0, 1);
+    /* After the call the system should still report some asset prefix */
+    const char* prefix = BezelSystem_GetCharacterAssetPrefix(0);
+    assert_non_null(prefix);
+}
+
+/* SetCharacters with an out-of-range index — must not crash and must
+   fall back gracefully (implementation returns "common" for bad ids). */
+static void test_bezel_set_characters_out_of_range(void **state) {
+    (void) state;
+    BezelSystem_Init();
+    /* -1 and 999 are both well outside the valid 0-19 range. */
+    BezelSystem_SetCharacters(-1, 999);
+    /* GetCharacterAssetPrefix for out-of-range ids returns "common" */
+    const char* prefix_neg = BezelSystem_GetCharacterAssetPrefix(-1);
+    const char* prefix_big = BezelSystem_GetCharacterAssetPrefix(999);
+    assert_non_null(prefix_neg);
+    assert_non_null(prefix_big);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_bezel_init),
@@ -103,6 +141,10 @@ int main(void) {
         cmocka_unit_test_setup_teardown(test_bezel_character_switch, setup_gl_stubs, NULL),
         cmocka_unit_test(test_bezel_visibility_toggle),
         cmocka_unit_test(test_bezel_mapping_correctness),
+        /* Task 5 additions */
+        cmocka_unit_test(test_bezel_shutdown_null_safe),
+        cmocka_unit_test_setup_teardown(test_bezel_set_characters_valid, setup_gl_stubs, NULL),
+        cmocka_unit_test_setup_teardown(test_bezel_set_characters_out_of_range, setup_gl_stubs, NULL),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

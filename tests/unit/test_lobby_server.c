@@ -130,6 +130,18 @@ static void test_init_missing_key_from_config_uses_default(void **state) {
     assert_string_equal(server_key, DEFAULT_LOBBY_KEY);
 }
 
+/* Task 5: UpdatePresence when NOT configured (configured == false).
+   http_request() returns false immediately without opening any socket. */
+static void test_update_presence_not_connected(void **state) {
+    (void) state;
+    /* Reset the module state: call Init with NULL returns from Config_GetString
+       but that would consume mock expectations.  Instead, force configured=false
+       directly via the static variable accessible through the #include "*.c" pattern. */
+    configured = false;
+    bool result = LobbyServer_UpdatePresence("pid", "Player", "US", "CODE", NULL, -1);
+    assert_false(result);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_with_defaults),
@@ -138,6 +150,8 @@ int main(void) {
         cmocka_unit_test(test_init_with_custom_url_no_scheme),
         cmocka_unit_test(test_init_with_trailing_slash),
         cmocka_unit_test(test_init_missing_key_from_config_uses_default),
+        /* Task 5 addition */
+        cmocka_unit_test(test_update_presence_not_connected),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -55,7 +55,7 @@ add_unit_test(test_charset_poc
 
 add_unit_test(test_renderer_interface
     test_renderer_interface.c
-    ${PROJECT_SOURCE_DIR}/src/port/sdl/renderer.c
+    ${PROJECT_SOURCE_DIR}/src/port/sdl/renderer/renderer.c
 )
 
 add_unit_test(test_game_state
@@ -100,7 +100,7 @@ target_link_gekkonet_sdl3(test_netplay_events)
 
 add_unit_test(test_netplay_ui
     test_netplay_ui.c
-    ${PROJECT_SOURCE_DIR}/src/port/sdl/sdl_netplay_ui.cpp
+    ${PROJECT_SOURCE_DIR}/src/port/sdl/netplay/sdl_netplay_ui.cpp
     mocks_netplay_ui_deps.c
     mocks_netplay.c
     test_netplay_ui_helper.cpp
@@ -171,7 +171,7 @@ target_link_gekkonet_sdl3(test_netplay_run)
 
 add_unit_test(test_paths
     test_paths.c
-    ${PROJECT_SOURCE_DIR}/src/port/paths.c
+    ${PROJECT_SOURCE_DIR}/src/port/config/paths.c
 )
 target_include_directories(test_paths PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include)
 target_link_sdl3(test_paths)
@@ -179,7 +179,7 @@ target_link_sdl3(test_paths)
 add_unit_test(test_config
     test_config.c
     mocks_paths.c
-    ${PROJECT_SOURCE_DIR}/src/port/config.c
+    ${PROJECT_SOURCE_DIR}/src/port/config/config.c
 )
 target_include_directories(test_config PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include)
 target_link_sdl3(test_config)
@@ -192,7 +192,7 @@ target_link_sdl3(test_lobby_server)
 
 add_unit_test(test_native_save
     test_native_save.c
-    ${PROJECT_SOURCE_DIR}/src/port/native_save.c
+    ${PROJECT_SOURCE_DIR}/src/port/save/native_save.c
 )
 target_include_directories(test_native_save PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${PROJECT_SOURCE_DIR}/src)
 target_link_sdl3(test_native_save)
@@ -203,8 +203,8 @@ target_link_sdl3(test_native_save)
 
 add_unit_test(test_bezel_assets
     test_bezel_assets.c
-    ${PROJECT_SOURCE_DIR}/src/port/sdl_bezel.c
-    ${PROJECT_SOURCE_DIR}/src/port/paths.c
+    ${PROJECT_SOURCE_DIR}/src/port/rendering/sdl_bezel.c
+    ${PROJECT_SOURCE_DIR}/src/port/config/paths.c
     mocks_imgui_wrapper.c
 )
 target_include_directories(test_bezel_assets PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include)
@@ -212,8 +212,8 @@ target_link_sdl3_glad(test_bezel_assets)
 
 add_unit_test(test_bezel_layout
     test_bezel_layout.c
-    ${PROJECT_SOURCE_DIR}/src/port/sdl_bezel.c
-    ${PROJECT_SOURCE_DIR}/src/port/paths.c
+    ${PROJECT_SOURCE_DIR}/src/port/rendering/sdl_bezel.c
+    ${PROJECT_SOURCE_DIR}/src/port/config/paths.c
     mocks_imgui_wrapper.c
 )
 target_include_directories(test_bezel_layout PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include)
@@ -240,7 +240,7 @@ target_include_directories(test_game_state_roundtrip PRIVATE ${PROJECT_SOURCE_DI
 add_unit_test(test_broadcast_config test_broadcast_config.c)
 target_include_directories(test_broadcast_config PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
-add_unit_test(test_cli test_cli.c ${PROJECT_SOURCE_DIR}/src/port/cli_parser.c)
+add_unit_test(test_cli test_cli.c ${PROJECT_SOURCE_DIR}/src/port/config/cli_parser.c)
 target_include_directories(test_cli PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 if(WIN32)
@@ -261,3 +261,28 @@ target_include_directories(test_trials PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 add_unit_test(test_radix_sort test_radix_sort.c)
 target_include_directories(test_radix_sort PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
+add_unit_test(test_legacy_matrix
+    test_legacy_matrix.c
+    ${PROJECT_SOURCE_DIR}/src/port/rendering/legacy_matrix.c
+)
+target_include_directories(test_legacy_matrix PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
+add_unit_test(test_adx_decoder
+    test_adx_decoder.c
+    ${PROJECT_SOURCE_DIR}/src/port/sound/adx_decoder.c
+)
+target_include_directories(test_adx_decoder PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
+add_unit_test(test_stage_config
+    test_stage_config.c
+    mocks_stage_config.c
+    ${PROJECT_SOURCE_DIR}/src/port/mods/stage_config.c
+)
+target_include_directories(test_stage_config PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src
+)
+
+add_unit_test(test_afs_validation test_afs_validation.c)
+target_include_directories(test_afs_validation PRIVATE ${PROJECT_SOURCE_DIR}/src)

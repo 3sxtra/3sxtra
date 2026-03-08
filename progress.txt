@@ -3,3 +3,45 @@
 [2026-03-08 12:54] Identified gaps: legacy_matrix.c, adx_decoder.c, stage_config.c, afs.c validation
 [2026-03-08 12:54] PRD created with 6 tasks ordered by testability
 [2026-03-08 12:54] Ready to start: Task 1 - Matrix math tests
+
+[2026-03-08 13:30] Task 1 COMPLETE: Matrix math — legacy_matrix.c
+  - test_legacy_matrix.c already existed with 18 test functions (previously created)
+  - CMakeLists.txt entry already existed (lines 265-269)
+  - Fixed: ENABLE_TESTS=OFF in CMake cache — reconfigured via MSYS2 with -DENABLE_TESTS=ON
+  - Fixed: Stale source paths in tests/unit/CMakeLists.txt after directory reorganization:
+      * src/port/sdl/renderer.c → src/port/sdl/renderer/renderer.c
+      * src/port/sdl/sdl_netplay_ui.cpp → src/port/sdl/netplay/sdl_netplay_ui.cpp
+      * src/port/paths.c → src/port/config/paths.c
+      * src/port/config.c → src/port/config/config.c
+      * src/port/native_save.c → src/port/save/native_save.c
+      * src/port/sdl_bezel.c → src/port/rendering/sdl_bezel.c
+      * src/port/cli_parser.c → src/port/config/cli_parser.c
+  - Fixed: assert_float_equal name collision with CMocka macro → renamed to assert_float_eq
+  - Build: cmake --build build --target test_legacy_matrix → SUCCESS
+  - Run: 18/18 tests PASSED (identity, scale, translate, translateZ, calcPoint, calcPoints, get/set roundtrip)
+  - Acceptance criteria met: 18 test functions (≥8 required), covers identity/scale/translate/translateZ/calcPoint + edge cases
+
+[2026-03-08 14:00] Task 2 COMPLETE: ADX decoder — adx_decoder.c
+  - test_adx_decoder.c created with 8 test functions (init validation, synthetic decode)
+  - Registered in tests/unit/CMakeLists.txt
+  - Fixed: execute_process bash absolute path issue in root CMakeLists.txt (used relative path)
+  - Fixed: WSL bash shadowing MSYS2 bash issue (explicitly added MSYS2 to PATH during build)
+  - Build: cmake --build build --target test_adx_decoder → SUCCESS
+  - Run: 8/8 tests PASSED (init valid/invalid, args, synthetic decode)
+  - Acceptance criteria met: 8 test functions (≥6 required), covers init validation and basic decode
+
+[2026-03-08 13:52] Task 3 COMPLETE: Stage config parser — stage_config.c
+  - Created mocks_stage_config.c with stubs for Paths_GetBasePath(), use_real_scr[], stage_bgw_number[][]
+  - Created test_stage_config.c with 8 test functions
+  - Registered test_stage_config in tests/unit/CMakeLists.txt
+  - Build: cmake --build build --target test_stage_config → SUCCESS
+  - Run: 8/8 tests PASSED (init, defaults, boundary, load missing, load INI, save/load roundtrip, malformed INI, bg_index defaults)
+  - Acceptance criteria met: 8 test functions (>=6 required), covers init/defaults/load/save/roundtrip + edge cases
+
+[2026-03-08 14:15] Task 4 COMPLETE: AFS archive validation — afs.c (header parsing only)
+  - test_afs_validation.c created with validation logic copied from afs.c
+  - Registered in tests/unit/CMakeLists.txt
+  - Configured via MSYS2 MinGW64 with Ninja and Clang
+  - Build: cmake --build build_tests --target test_afs_validation → SUCCESS
+  - Run: 6/6 tests PASSED (zero params, bounds, size, offset, valid)
+  - Acceptance criteria met: 6 test functions, covers all validation branches
