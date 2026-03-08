@@ -271,7 +271,7 @@ else
                 -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
                 -DBUILD_SHARED_LIBS=ON \
                 -DSDLMIXER_VENDORED=ON \
-                -DSDL3MIXER_SAMPLES=OFF \
+                -DSDLMIXER_EXAMPLES=OFF \
                 $CMAKE_EXTRA_ARGS
             ;;
         MINGW*|MSYS*|CYGWIN*)
@@ -283,7 +283,7 @@ else
                 -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
                 -DBUILD_SHARED_LIBS=ON \
                 -DSDLMIXER_VENDORED=ON \
-                -DSDL3MIXER_SAMPLES=OFF
+                -DSDLMIXER_EXAMPLES=OFF
             ;;
     esac
 

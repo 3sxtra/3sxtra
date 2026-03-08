@@ -51,7 +51,7 @@ modules:
     buildsystem: cmake-ninja
     config-opts:
       - -DBUILD_SHARED_LIBS=ON
-      - -DSDL3MIXER_SAMPLES=OFF
+      - -DSDLMIXER_EXAMPLES=OFF
     sources:
       - type: git
         url: https://github.com/libsdl-org/SDL_mixer.git
