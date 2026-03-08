@@ -562,43 +562,9 @@ static void ProcessEvents() {
     }
 }
 
-static void RenderToasts() {
-    float dt = ImGui::GetIO().DeltaTime;
+// RenderToasts() removed — replaced by RmlUI netplay overlay.
 
-    const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    ImVec2 work_pos = viewport->WorkPos;
-    ImVec2 work_size = viewport->WorkSize;
 
-    float y_offset = 50.0f;
-
-    for (int i = 0; i < MAX_TOASTS; ++i) {
-        if (toasts[i].active) {
-            if (toasts[i].duration >= 0.0f) {
-                toasts[i].timer += dt;
-                if (toasts[i].timer >= toasts[i].duration) {
-                    toasts[i].active = false;
-                    continue;
-                }
-            }
-
-            ImGui::SetNextWindowPos(
-                ImVec2(work_pos.x + work_size.x * 0.5f, work_pos.y + y_offset), ImGuiCond_Always, ImVec2(0.5f, 0.0f));
-            ImGui::SetNextWindowBgAlpha(0.7f);
-            char window_id[32];
-            snprintf(window_id, sizeof(window_id), "##Toast%d", i);
-
-            if (ImGui::Begin(window_id,
-                             NULL,
-                             ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
-                                 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
-                                 ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs)) {
-                ImGui::Text("%s", toasts[i].message);
-            }
-            y_offset += ImGui::GetWindowHeight() + 5.0f;
-            ImGui::End();
-        }
-    }
-}
 
 static void PushHistory(float ping, float rb) {
     ping_history[history_offset] = ping;
@@ -608,126 +574,9 @@ static void PushHistory(float ping, float rb) {
         history_full = true;
 }
 
-static void RenderDiagnostics() {
-    if (!diagnostics_visible)
-        return;
+// RenderDiagnostics() removed — replaced by RmlUI netplay overlay.
 
-    ImGui::SetNextWindowSizeConstraints(ImVec2(400, 0), ImVec2(FLT_MAX, FLT_MAX));
-    if (ImGui::Begin("Diagnostics [F10]", &diagnostics_visible)) {
-        // --- FPS Section (always visible) ---
-        if (s_fps_history && s_fps_history_count > 0) {
-            // Color-coded FPS
-            ImVec4 fps_color;
-            if (s_fps_current >= 55.0f)
-                fps_color = ImVec4(0.2f, 1.0f, 0.4f, 1.0f);
-            else if (s_fps_current >= 45.0f)
-                fps_color = ImVec4(1.0f, 0.9f, 0.2f, 1.0f);
-            else
-                fps_color = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
 
-            ImGui::TextColored(fps_color, "FPS: %.1f", s_fps_current);
-            ImGui::SameLine();
-            float ft_ms = s_fps_current > 0.0f ? 1000.0f / s_fps_current : 0.0f;
-            ImGui::TextDisabled("(%.2f ms)", ft_ms);
-
-            // Downsample for display
-            static const int DISPLAY_MAX = 600;
-            static float display_buf[600];
-            const float* plot_data;
-            int plot_count;
-
-            if (s_fps_history_count <= DISPLAY_MAX) {
-                plot_data = s_fps_history;
-                plot_count = s_fps_history_count;
-            } else {
-                float bucket_size = (float)s_fps_history_count / DISPLAY_MAX;
-                for (int i = 0; i < DISPLAY_MAX; i++) {
-                    int start = (int)(i * bucket_size);
-                    int end = (int)((i + 1) * bucket_size);
-                    if (end > s_fps_history_count)
-                        end = s_fps_history_count;
-                    float sum = 0.0f;
-                    for (int j = start; j < end; j++)
-                        sum += s_fps_history[j];
-                    display_buf[i] = sum / (end - start);
-                }
-                plot_data = display_buf;
-                plot_count = DISPLAY_MAX;
-            }
-
-            // Compute stats for overlay and Y-axis
-            float avg = 0.0f;
-            float min_fps = plot_data[0], max_fps = plot_data[0];
-            for (int i = 0; i < plot_count; i++) {
-                avg += plot_data[i];
-                if (plot_data[i] < min_fps)
-                    min_fps = plot_data[i];
-                if (plot_data[i] > max_fps)
-                    max_fps = plot_data[i];
-            }
-            avg /= plot_count;
-
-            // Dynamic Y-axis: pad around actual range, minimum 5 FPS span
-            float range = max_fps - min_fps;
-            if (range < 5.0f)
-                range = 5.0f;
-            float y_min = min_fps - range * 0.15f;
-            float y_max = max_fps + range * 0.15f;
-            if (y_min < 0.0f)
-                y_min = 0.0f;
-
-            // Chart fills available card width, fixed height (no overlay to avoid overlap)
-            float avail_w = ImGui::GetContentRegionAvail().x;
-            ImGui::PlotLines("##fps_chart", plot_data, plot_count, 0, NULL, y_min, y_max, ImVec2(avail_w, 120));
-
-            // Stats below the chart
-            int secs = s_fps_history_count / 60;
-            ImGui::TextDisabled("avg: %.1f  |  %d:%02d", avg, secs / 60, secs % 60);
-            ImGui::SameLine();
-            ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize("00000000 frames").x);
-
-            // Large, highlighted frame counter
-            float old_scale = ImGui::GetFont()->Scale;
-            ImGui::GetFont()->Scale *= 1.4f;
-            ImGui::PushFont(ImGui::GetFont());
-            ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.3f, 1.0f), "%d frames", s_fps_history_count);
-            ImGui::GetFont()->Scale = old_scale;
-            ImGui::PopFont();
-        } else {
-            ImGui::TextDisabled("FPS: waiting for data...");
-        }
-
-        // --- Netplay Section (only during active sessions) ---
-        if (Netplay_GetSessionState() == NETPLAY_SESSION_RUNNING) {
-            ImGui::Separator();
-
-            NetworkStats metrics;
-            Netplay_GetNetworkStats(&metrics);
-
-            ImGui::Text("Current Ping: %d ms", metrics.ping);
-            ImGui::Text("Current Rollback: %d frames", metrics.rollback);
-            ImGui::Text("Delay: %d frames", metrics.delay);
-
-            uint64_t duration = (SDL_GetTicks() - session_start_ticks) / 1000;
-            int mins = (int)(duration / 60);
-            int secs = (int)(duration % 60);
-            ImGui::Text("Session Duration: %02d:%02d", mins, secs);
-
-            ImGui::Separator();
-
-            float max_ping = 0;
-            for (int i = 0; i < HISTORY_MAX; ++i)
-                if (ping_history[i] > max_ping)
-                    max_ping = ping_history[i];
-
-            ImGui::PlotLines(
-                "Ping History", ping_history, HISTORY_MAX, history_offset, NULL, 0.0f, max_ping + 10.0f, ImVec2(0, 80));
-            ImGui::PlotLines(
-                "Rollback History", rb_history, HISTORY_MAX, history_offset, NULL, 0.0f, 10.0f, ImVec2(0, 80));
-        }
-    }
-    ImGui::End();
-}
 
 extern "C" {
 
@@ -738,41 +587,7 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
     Netplay_GetNetworkStats(&stats);
     PushHistory((float)stats.ping, (float)stats.rollback);
 
-    // ImGui HUD — skip when RmlUi is active (RmlUi netplay overlay handles this)
-    if (!use_rmlui && hud_visible && Netplay_GetSessionState() == NETPLAY_SESSION_RUNNING) {
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
-                                        ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
-                                        ImGuiWindowFlags_NoNav;
-
-        const float PAD = 10.0f;
-        const ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImVec2 work_pos = viewport->WorkPos;
-        ImVec2 work_size = viewport->WorkSize;
-        ImVec2 window_pos, window_pos_pivot;
-        window_pos.x = work_pos.x + work_size.x - PAD;
-        window_pos.y = work_pos.y + PAD;
-        window_pos_pivot.x = 1.0f;
-        window_pos_pivot.y = 0.0f;
-        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-        ImGui::SetNextWindowBgAlpha(0.35f);
-
-        if (ImGui::Begin("Netplay Mini-HUD", NULL, window_flags)) {
-            char buffer[128];
-            SDLNetplayUI_GetHUDText(buffer, sizeof(buffer));
-
-            ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-            if (stats.ping > 150)
-                color = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); // Red
-            else if (stats.ping > 80)
-                color = ImVec4(1.0f, 0.9f, 0.2f, 1.0f); // Yellow
-
-            if (stats.rollback > 3)
-                color = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); // Red
-
-            ImGui::TextColored(color, "%s", buffer);
-        }
-        ImGui::End();
-    }
+    // HUD is handled by RmlUi (rmlui_netplay_ui_update in render_overlays)
 
     if (Netplay_GetSessionState() == NETPLAY_SESSION_LOBBY) {
         int state = SDL_GetAtomicInt(&lobby_async_state);
@@ -897,11 +712,11 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
         }
     }
 
-    // ImGui toasts and diagnostics — skip when RmlUi is active
-    if (!use_rmlui) {
-        RenderToasts();
-        RenderDiagnostics();
-    }
+    // ImGui toasts and diagnostics — RmlUi now handles the F10 diagnostics panel
+    // on all backends, so skip ImGui rendering. Keep the calls for when use_rmlui
+    // is false and backend is not SDL2D (legacy fallback path, if needed).
+    // In practice this is dead code since RmlUi Fx menus are always active.
+
 }
 
 void SDLNetplayUI_Shutdown() {}

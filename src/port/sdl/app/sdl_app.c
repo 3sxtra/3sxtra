@@ -14,8 +14,6 @@
 #include "port/broadcast.h"
 #include "port/config/config.h"
 #include "port/mods/modded_stage.h"
-#include "port/sdl/imgui/frame_display.h"
-#include "port/sdl/imgui/imgui_wrapper.h"
 #include "port/sdl/input/control_mapping.h"
 #include "port/sdl/rmlui/rmlui_dev_overlay.h"
 #include "port/sdl/rmlui/rmlui_frame_display.h"
@@ -31,10 +29,7 @@
 #include "port/sdl/app/sdl_app_input.h"
 #include "port/sdl/app/sdl_app_internal.h"
 #include "port/sdl/app/sdl_app_shader_config.h"
-#include "port/sdl/imgui/input_display.h"
-#include "port/sdl/imgui/mods_menu.h"
-#include "port/sdl/imgui/shader_menu.h"
-#include "port/sdl/imgui/stage_config_menu.h"
+
 #include "port/sdl/imgui/training_menu.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
@@ -254,6 +249,13 @@ static bool cursor_visible = true;           // Track cursor state to avoid redu
 static bool show_menu = false;
 static bool show_shader_menu = false;
 static bool show_mods_menu = false;
+bool show_stage_config_menu = false;
+bool show_training_menu = false;
+TrainingMenuSettings g_training_menu_settings = {0};
+// Stubs for training_menu.h API — real logic is now in rmlui_training_menu.cpp
+void training_menu_init(void)    { /* no-op */ }
+void training_menu_render(int w, int h) { (void)w; (void)h; }
+void training_menu_shutdown(void) { /* no-op */ }
 bool mods_menu_input_display_enabled = false;
 bool mods_menu_shader_bypass_enabled = false;
 bool mods_menu_fast_pre_game = false;
@@ -815,15 +817,8 @@ int SDLApp_Init() {
 
     // Skip ImGui, shaders, and mod menus for SDL2D mode
     if (!is_sdl2d_backend(g_renderer_backend)) {
-        imgui_wrapper_init(window, gl_context);
-
-        input_display_init();
-        frame_display_init();
         SDLNetplayUI_Init();
         ModdedStage_Init();
-        mods_menu_init();
-        stage_config_menu_init();
-        training_menu_init();
 
         // Initialize Shader Config
         SDLAppShader_Init(base_path);
@@ -865,15 +860,9 @@ void SDLApp_Quit() {
         }
 
         // Shared UI shutdown (GL + GPU)
-        input_display_shutdown();
-        frame_display_shutdown();
         SDLNetplayUI_Shutdown();
         BezelSystem_Shutdown();
         ModdedStage_Shutdown();
-        mods_menu_shutdown();
-        stage_config_menu_shutdown();
-        training_menu_shutdown();
-        imgui_wrapper_shutdown();
         rmlui_wrapper_shutdown();
 
         if (g_renderer_backend == RENDERER_OPENGL) {
@@ -960,14 +949,11 @@ bool SDLApp_PollEvents() {
     return continue_running;
 }
 
-/** @brief Begin a new frame — start ImGui frame and clear the GL viewport. */
+/** @brief Begin a new frame — clear the GL viewport. */
 void SDLApp_BeginFrame() {
     if (!is_sdl2d_backend(g_renderer_backend)) {
         // Process any deferred preset switch
         SDLAppShader_ProcessPendingLoad();
-        if (!use_rmlui) {
-            imgui_wrapper_new_frame();
-        }
     }
 
     // RmlUi frame update runs on ALL backends — Fx overlay menus always use RmlUi
@@ -1276,20 +1262,13 @@ static void render_debug_hud(int win_w, int win_h, const SDL_FRect* viewport) {
 
 /** @brief Dispatch menu/overlay rendering and flush the UI framework (RmlUi or ImGui).
  *  Handles input/frame display updates, all menu overlays, netplay UI, and the
- *  final rmlui_wrapper_render() / imgui_wrapper_render() flush.
+ *  final rmlui_wrapper_render() flush.
  *  @param win_w  Window width (logical) for overlay sizing.
  *  @param win_h  Window height (logical) for overlay sizing. */
 static void render_overlays(int win_w, int win_h) {
-    /* Input / frame-data overlays */
-    if (use_rmlui) {
-        rmlui_input_display_update();
-        rmlui_frame_display_update();
-    } else {
-        if (g_training_menu_settings.show_inputs) {
-            input_display_render();
-        }
-        frame_display_render();
-    }
+    /* Input / frame-data overlays — always RmlUi */
+    rmlui_input_display_update();
+    rmlui_frame_display_update();
 
     /* Menu overlays — always use RmlUi for Fx-key menus */
     if (show_menu)
@@ -1312,11 +1291,8 @@ static void render_overlays(int win_w, int win_h) {
     }
     rmlui_netplay_ui_update();
 
-    /* Flush UI frameworks — RmlUi always (Fx menus), ImGui only when active */
+    /* Flush UI framework */
     rmlui_wrapper_render();
-    if (!use_rmlui && !is_sdl2d_backend(g_renderer_backend)) {
-        imgui_wrapper_render();
-    }
 }
 
 /** @brief End the frame: render game to FBO, apply shaders, draw bezels/UI, swap buffers. */
@@ -1502,12 +1478,8 @@ void SDLApp_EndFrame() {
         if (!cb || !swapchain) {
 
             // Must still end the UI frame to balance the NewFrame() call.
-            // imgui_wrapper_render() / rmlui_wrapper_render() gracefully handle NULL swapchain.
-            if (use_rmlui) {
-                rmlui_wrapper_render();
-            } else {
-                imgui_wrapper_render();
-            }
+            // rmlui_wrapper_render() gracefully handles NULL swapchain.
+            rmlui_wrapper_render();
             goto gpu_end_frame_submit;
         }
 

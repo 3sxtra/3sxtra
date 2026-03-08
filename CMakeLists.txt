@@ -281,12 +281,6 @@ add_executable(3sx MACOSX_BUNDLE
     ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/PPGWork.c
     # --- sdl/imgui/ ---
     src/port/sdl/imgui/imgui_wrapper.cpp
-    src/port/sdl/imgui/input_display.cpp
-    src/port/sdl/imgui/frame_display.cpp
-    src/port/sdl/imgui/shader_menu.cpp
-    src/port/sdl/imgui/mods_menu.cpp
-    src/port/sdl/imgui/stage_config_menu.cpp
-    src/port/sdl/imgui/training_menu.cpp
     # --- sdl/renderer/ ---
     src/port/sdl/renderer/sdl_texture_util.cpp
     # --- sdl/input/ ---

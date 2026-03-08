@@ -1,0 +1,151 @@
+[92m============================================[0m
+[92m   3sx - Incremental Recompile              [0m
+[92m============================================[0m
+
+[92m[V] Using MSYS2 at: "C:\msys64"[0m
+
+[93m[*] Incremental build in: D:\3sxtra\[0m
+
+[92m[*] Starting MSYS2 MinGW64 incremental build...[0m
+
+[0/1] Re-running CMake...
+Detected OS: MINGW64_NT-10.0-26200
+Using cmake from: /mingw64/bin/cmake
+cmake version 4.1.1
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+SDL3 already built at /d/3sxtra/third_party/sdl3/build
+simde already exists at /d/3sxtra/third_party/simde
+GekkoNet already exists at /d/3sxtra/third_party/GekkoNet
+Spout2 already exists at /d/3sxtra/third_party/Spout2
+glad already exists at /d/3sxtra/third_party/glad
+librashader already exists at /d/3sxtra/third_party/librashader
+librashader-capi already built.
+slang-shaders already exists at /d/3sxtra/third_party/slang-shaders
+SDL3_mixer already built at /d/3sxtra/third_party/sdl3_mixer/build
+SDL3_image already built at /d/3sxtra/third_party/sdl3_image/build
+imgui already exists at /d/3sxtra/third_party/imgui
+FreeType already built at /d/3sxtra/third_party/freetype/build
+rmlui already exists at /d/3sxtra/third_party/rmlui
+SDL_shadercross already exists at /d/3sxtra/third_party/SDL_shadercross
+All dependencies installed successfully in /d/3sxtra/third_party
+-- LTO: Not supported by this compiler
+-- DEBUG: Adding GekkoNet subdirectory...
+-- DEBUG: GekkoNet added.
+CMake Deprecation Warning at third_party/SDL_shadercross/external/SPIRV-Cross/CMakeLists.txt:22 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- SPIRV-Cross: Finding Git version for SPIRV-Cross.
+-- SPIRV-Cross: Git hash: d1d4adb
+Skipping symbol exports test for SPIRV-Tools-opt
+Skipping symbol exports test for SPIRV-Tools-reduce
+Skipping symbol exports test for SPIRV-Tools-link
+Skipping symbol exports test for SPIRV-Tools-lint
+Skipping symbol exports test for SPIRV-Tools-diff
+Skipping symbol exports test for SPIRV-Tools-shared
+Skipping symbol exports test for SPIRV-Tools-static
+-- Did not find googletest, tests will not be built. To enable tests place googletest in '<spirv-dir>/external/googletest'.
+-- Tracy profiler: ENABLED
+Parsing public/common/TracyVersion.hpp file
+VERSION 0.13.1
+-- Could NOT find rocprofiler-sdk (missing: rocprofiler-sdk_DIR)
+-- TRACY_ENABLE: ON
+-- TRACY_ON_DEMAND: OFF
+-- TRACY_CALLSTACK: OFF
+-- TRACY_NO_CALLSTACK: OFF
+-- TRACY_NO_CALLSTACK_INLINES: OFF
+-- TRACY_ONLY_LOCALHOST: OFF
+-- TRACY_NO_BROADCAST: OFF
+-- TRACY_ONLY_IPV4: OFF
+-- TRACY_NO_CODE_TRANSFER: OFF
+-- TRACY_NO_CONTEXT_SWITCH: OFF
+-- TRACY_NO_EXIT: OFF
+-- TRACY_NO_SAMPLING: OFF
+-- TRACY_NO_VERIFY: OFF
+-- TRACY_NO_VSYNC_CAPTURE: OFF
+-- TRACY_NO_FRAME_IMAGE: OFF
+-- TRACY_NO_SYSTEM_TRACING: OFF
+-- TRACY_PATCHABLE_NOPSLEDS: OFF
+-- TRACY_DELAYED_INIT: OFF
+-- TRACY_MANUAL_LIFETIME: OFF
+-- TRACY_FIBERS: OFF
+-- TRACY_NO_CRASH_HANDLER: OFF
+-- TRACY_TIMER_FALLBACK: OFF
+-- TRACY_LIBUNWIND_BACKTRACE: OFF
+-- TRACY_SYMBOL_OFFLINE_RESOLVE: OFF
+-- TRACY_LIBBACKTRACE_ELF_DYNLOAD_SUPPORT: OFF
+-- TRACY_DEBUGINFOD: OFF
+-- TRACY_IGNORE_MEMORY_FAULTS: OFF
+-- TRACY_VERBOSE: OFF
+-- TRACY_DEMANGLE: OFF
+-- Configuring Lua 5.4...
+-- Lua 5.4 configured.
+-- Configuring RmlUi...
+-- FreeType: using bundled static lib at D:/3sxtra/third_party/freetype/build
+-- Found Freetype::Freetype - Freetype font engine enabled
+-- Found Lua::Lua - Lua bindings enabled
+-- RmlUi configured.
+-- Glad Library 'glad_gl_core'
+-- Configuring done (2.1s)
+-- Generating done (0.2s)
+-- Build files have been written to: D:/3sxtra/build
+[1/670] Building C object CMakeFiles/3sx.dir/src/port/sdl/app/sdl_app_input.c.obj
+FAILED: [code=1] CMakeFiles/3sx.dir/src/port/sdl/app/sdl_app_input.c.obj 
+C:\msys64\mingw64\bin\clang.exe -DDEBUG -DGEKKONET_STATIC -DHAVE_UPNP -DNETPLAY_ENABLED -DRMLUI_SDL_VERSION_MAJOR=3 -DRMLUI_STATIC_LIB -DTARGET_SDL3 -DTRACY_ENABLE -D_POSIX_C_SOURCE=200809L -ID:/3sxtra/src -ID:/3sxtra/src/include -ID:/3sxtra/src/include/sdk -ID:/3sxtra/src/zlib -ID:/3sxtra/third_party/GekkoNet/GekkoLib/include -ID:/3sxtra/third_party/stb -ID:/3sxtra/third_party/librashader/include -ID:/3sxtra/third_party/simde -ID:/3sxtra/third_party/glad/cmake/include -ID:/3sxtra/build/gladsources/glad/include -ID:/3sxtra/third_party/sdl3/SDL/src/video/khronos -ID:/3sxtra/src/port/sdl/app -ID:/3sxtra/src/port/sdl/renderer -ID:/3sxtra/src/port/sdl/input -ID:/3sxtra/src/port/sdl/imgui -ID:/3sxtra/src/port/sdl/netplay -ID:/3sxtra/src/port/sdl/rmlui -ID:/3sxtra/src/port/config -ID:/3sxtra/src/port/save -ID:/3sxtra/src/port/mods -ID:/3sxtra/src/port/rendering -ID:/3sxtra/src/include/port/sdl/app -ID:/3sxtra/src/include/port/sdl/renderer -ID:/3sxtra/src/include/port/sdl/input -ID:/3sxtra/src/include/port/config -ID:/3sxtra/src/include/port/save -ID:/3sxtra/src/include/port/rendering -ID:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL -ID:/3sxtra/third_party/imgui -ID:/3sxtra/third_party/imgui/backends -ID:/3sxtra/third_party/rmlui/Backends -ID:/3sxtra/third_party/sdl3/build/include -ID:/3sxtra/third_party/sdl3_image/build/include -ID:/3sxtra/third_party/sdl3_mixer/build/include -ID:/3sxtra/build/gladsources/glad_gl_core/include -ID:/3sxtra/third_party/SDL_shadercross/include -ID:/3sxtra/third_party/rmlui/Include -isystem D:/3sxtra/third_party/lua/src -isystem D:/3sxtra/build/_deps/tracy-src/public -O2 -g -DNDEBUG -std=gnu11 -Wall -Werror -fno-strict-aliasing -Wpointer-to-int-cast -Wno-deprecated-non-prototype -Wno-tautological-overlap-compare -Wno-c2x-extensions -Wno-incompatible-pointer-types -Wno-pointer-sign -Wno-absolute-value -Wno-implicit-function-declaration -mavx2 -mfma -MD -MT CMakeFiles/3sx.dir/src/port/sdl/app/sdl_app_input.c.obj -MF CMakeFiles\3sx.dir\src\port\sdl\app\sdl_app_input.c.obj.d -o CMakeFiles/3sx.dir/src/port/sdl/app/sdl_app_input.c.obj -c D:/3sxtra/src/port/sdl/app/sdl_app_input.c
+D:/3sxtra/src/port/sdl/app/sdl_app_input.c:19:10: fatal error: 'port/sdl/imgui/input_display.h' file not found
+   19 | #include "port/sdl/imgui/input_display.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+[2/670] Building C object CMakeFiles/3sx.dir/src/port/sound/adx_decoder.c.obj
+[3/670] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_text_renderer_sdl.c.obj
+[4/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlMemMap.c.obj
+[5/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlRefPhd.c.obj
+[6/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/eflSpuMap.c.obj
+[7/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/common/memfound.c.obj
+[8/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/common/fbms.c.obj
+[9/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/ps2/flPADUSR.c.obj
+[10/670] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_text_renderer.c.obj
+[11/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlTSB.c.obj
+[12/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/ps2/flps2etc.c.obj
+[13/670] Building C object CMakeFiles/3sx.dir/src/port/sound/modded_bgm.c.obj
+[14/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/ps2/flps2debug.c.obj
+[15/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/common/memmgr.c.obj
+[16/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/common/prilay.c.obj
+[17/670] Building C object CMakeFiles/3sx.dir/src/port/sound/adx.c.obj
+[18/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/ps2/flps2render.c.obj
+[19/670] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_text_renderer_gpu.c.obj
+[20/670] Building C object CMakeFiles/3sx.dir/src/port/sdl/renderer/sdl_text_renderer_gl.c.obj
+[21/670] Building C object CMakeFiles/3sx.dir/src/port/sound/spu.c.obj
+[22/670] Building C object CMakeFiles/3sx.dir/src/port/sound/emlShim.c.obj
+[23/670] Building C object CMakeFiles/3sx.dir/src/sf33rd/AcrSDK/common/mlPAD.c.obj
+[24/670] Building C object CMakeFiles/3sx.dir/src/port/sdl/app/sdl_app.c.obj
+FAILED: [code=1] CMakeFiles/3sx.dir/src/port/sdl/app/sdl_app.c.obj 
+C:\msys64\mingw64\bin\clang.exe -DDEBUG -DGEKKONET_STATIC -DHAVE_UPNP -DNETPLAY_ENABLED -DRMLUI_SDL_VERSION_MAJOR=3 -DRMLUI_STATIC_LIB -DTARGET_SDL3 -DTRACY_ENABLE -D_POSIX_C_SOURCE=200809L -ID:/3sxtra/src -ID:/3sxtra/src/include -ID:/3sxtra/src/include/sdk -ID:/3sxtra/src/zlib -ID:/3sxtra/third_party/GekkoNet/GekkoLib/include -ID:/3sxtra/third_party/stb -ID:/3sxtra/third_party/librashader/include -ID:/3sxtra/third_party/simde -ID:/3sxtra/third_party/glad/cmake/include -ID:/3sxtra/build/gladsources/glad/include -ID:/3sxtra/third_party/sdl3/SDL/src/video/khronos -ID:/3sxtra/src/port/sdl/app -ID:/3sxtra/src/port/sdl/renderer -ID:/3sxtra/src/port/sdl/input -ID:/3sxtra/src/port/sdl/imgui -ID:/3sxtra/src/port/sdl/netplay -ID:/3sxtra/src/port/sdl/rmlui -ID:/3sxtra/src/port/config -ID:/3sxtra/src/port/save -ID:/3sxtra/src/port/mods -ID:/3sxtra/src/port/rendering -ID:/3sxtra/src/include/port/sdl/app -ID:/3sxtra/src/include/port/sdl/renderer -ID:/3sxtra/src/include/port/sdl/input -ID:/3sxtra/src/include/port/config -ID:/3sxtra/src/include/port/save -ID:/3sxtra/src/include/port/rendering -ID:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL -ID:/3sxtra/third_party/imgui -ID:/3sxtra/third_party/imgui/backends -ID:/3sxtra/third_party/rmlui/Backends -ID:/3sxtra/third_party/sdl3/build/include -ID:/3sxtra/third_party/sdl3_image/build/include -ID:/3sxtra/third_party/sdl3_mixer/build/include -ID:/3sxtra/build/gladsources/glad_gl_core/include -ID:/3sxtra/third_party/SDL_shadercross/include -ID:/3sxtra/third_party/rmlui/Include -isystem D:/3sxtra/third_party/lua/src -isystem D:/3sxtra/build/_deps/tracy-src/public -O2 -g -DNDEBUG -std=gnu11 -Wall -Werror -fno-strict-aliasing -Wpointer-to-int-cast -Wno-deprecated-non-prototype -Wno-tautological-overlap-compare -Wno-c2x-extensions -Wno-incompatible-pointer-types -Wno-pointer-sign -Wno-absolute-value -Wno-implicit-function-declaration -mavx2 -mfma -MD -MT CMakeFiles/3sx.dir/src/port/sdl/app/sdl_app.c.obj -MF CMakeFiles\3sx.dir\src\port\sdl\app\sdl_app.c.obj.d -o CMakeFiles/3sx.dir/src/port/sdl/app/sdl_app.c.obj -c D:/3sxtra/src/port/sdl/app/sdl_app.c
+D:/3sxtra/src/port/sdl/app/sdl_app.c:919:42: error: use of undeclared identifier 'show_stage_config_menu'
+  919 |     if (show_menu || show_shader_menu || show_stage_config_menu || show_training_menu || show_dev_overlay) {
+      |                                          ^~~~~~~~~~~~~~~~~~~~~~
+D:/3sxtra/src/port/sdl/app/sdl_app.c:1277:9: error: use of undeclared identifier 'show_stage_config_menu'
+ 1277 |     if (show_stage_config_menu)
+      |         ^~~~~~~~~~~~~~~~~~~~~~
+D:/3sxtra/src/port/sdl/app/sdl_app.c:2227:21: error: use of undeclared identifier 'show_stage_config_menu'
+ 2227 |     toggle_overlay(&show_stage_config_menu, "stage_config", false);
+      |                     ^~~~~~~~~~~~~~~~~~~~~~
+D:/3sxtra/src/port/sdl/app/sdl_app.c:2239:72: error: use of undeclared identifier 'show_stage_config_menu'
+ 2239 |     bool any_open = show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu || show_training_menu ||
+      |                                                                        ^~~~~~~~~~~~~~~~~~~~~~
+D:/3sxtra/src/port/sdl/app/sdl_app.c:2247:5: error: use of undeclared identifier 'show_stage_config_menu'
+ 2247 |     show_stage_config_menu = false;
+      |     ^~~~~~~~~~~~~~~~~~~~~~
+5 errors generated.
+[25/670] Building C object CMakeFiles/3sx.dir/src/port/utils.c.obj
+[26/670] Building CXX object SDL_shadercross/external/SPIRV-Cross/CMakeFiles/spirv-cross-c-shared.dir/spirv_cross_c.cpp.obj
+ninja: build stopped: subcommand failed.
+
+[91m[X] Build failed with exit code: 1[0m
+Press any key to continue . . . 

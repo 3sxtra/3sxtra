@@ -15,9 +15,6 @@
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/app/sdl_app_internal.h"
 #include "port/sdl/app/sdl_app_shader_config.h"
-#include "port/sdl/imgui/imgui_wrapper.h"
-#include "port/sdl/imgui/input_display.h"
-#include "port/sdl/imgui/mods_menu.h"
 #include "port/sdl/input/control_mapping.h"
 #include "port/sdl/input/sdl_pad.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
@@ -85,11 +82,8 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
 
     // SDL2D mode: no ImGui, no NetplayUI — skip all UI processing
     if (!is_sdl2d_backend(SDLApp_GetRenderer())) {
-        // Process UI events — always send to RmlUi (Fx menus), plus ImGui when active
+        // Process UI events — always send to RmlUi
         rmlui_wrapper_process_event(event);
-        if (!use_rmlui) {
-            imgui_wrapper_process_event(event);
-        }
         SDLNetplayUI_ProcessEvent(event);
 
         // Global Key Toggles
@@ -134,11 +128,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             ui_wants_mouse = false;
             ui_wants_keyboard = false;
         }
-        if (!use_rmlui) {
-            imgui_wrapper_capture_input(control_mapping_is_active());
-            ui_wants_mouse = ui_wants_mouse || imgui_wrapper_want_capture_mouse();
-            ui_wants_keyboard = ui_wants_keyboard || imgui_wrapper_want_capture_keyboard();
-        }
+
         // Block events based on what the UI actually wants to capture.
         // Mouse capture blocks only mouse events; keyboard capture blocks
         // only keyboard events.  Gamepad/joystick always passes through.
