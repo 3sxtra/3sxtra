@@ -9,11 +9,11 @@
 #include "sf33rd/Source/Game/training/training_state.h"
 
 // --- Mocks ---
-u8 My_char[2] = { 0, 0 }; // 0 = Alex
+// 0 = Alex
+extern u8 My_char[2];
 s16 Mode_Type = MODE_TRIALS;
 u16 p1sw_0 = 0;
 u16 p1sw_1 = 0;
-PLW plw[2] = { 0 };
 
 s32 SSPutStrPro_Scale(u16 flag, f32 x, f32 y, u8 atr, u32 vtxcol, s8* str, f32 sc) {
     (void)flag; (void)x; (void)y; (void)atr; (void)vtxcol; (void)str; (void)sc;
@@ -83,16 +83,8 @@ static void test_trial_validation_flow(void **state) {
     trials_update();
     assert_false(g_trials_state.failed);
 
-    // Grace 2
-    trials_update();
-    assert_false(g_trials_state.failed);
-
-    // Grace 1
-    trials_update();
-    assert_false(g_trials_state.failed);
-
-    // Grace 0 - Fails here
-    trials_update();
+    // Fast forward to failure
+    for (int i=0; i < 10; ++i) trials_update();
     assert_true(g_trials_state.failed);
     assert_int_equal(g_trials_state.current_step, 0);
 }

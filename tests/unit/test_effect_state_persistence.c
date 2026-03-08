@@ -6,12 +6,29 @@
 #include "cmocka.h"
 
 #include "netplay/netplay.h"
+#include "game_state.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "gekkonet.h"
 
+// Re-declare internal types from netplay.c since they are not exposed in headers
+typedef struct EffectState {
+    s16 frwctr;
+    s16 frwctr_min;
+    s16 head_ix[8];
+    s16 tail_ix[8];
+    s16 exec_tm[8];
+    uintptr_t frw[EFFECT_MAX][448];
+    s16 frwque[EFFECT_MAX];
+} EffectState;
+
+typedef struct State {
+    GameState gs;
+    EffectState es;
+} State;
+
 // Externs for functions made non-static
-void save_state(GekkoGameEvent* event);
-void load_state(GekkoGameEvent* event);
+void save_state(const GekkoGameEvent* event);
+void load_state_from_event(const GekkoGameEvent* event);
 
 static void test_effect_persistence(void **state) {
     (void) state;
@@ -31,8 +48,8 @@ static void test_effect_persistence(void **state) {
     size_t len = sizeof(State);
     uint32_t checksum = 0;
 
-    event.type = SaveEvent;
-    event.data.save.state = &saved_state_storage;
+    event.type = GekkoSaveEvent;
+    event.data.save.state = (unsigned char*)&saved_state_storage;
     event.data.save.state_len = &len;
     event.data.save.checksum = &checksum;
     event.data.save.frame = 0;
@@ -45,11 +62,11 @@ static void test_effect_persistence(void **state) {
     frwctr = 0;
 
     // 4. Load
-    event.type = LoadEvent;
-    event.data.load.state = &saved_state_storage;
+    event.type = GekkoLoadEvent;
+    event.data.load.state = (unsigned char*)&saved_state_storage;
     event.data.load.state_len = len;
     
-    load_state(&event);
+    load_state_from_event(&event);
 
     // 5. Verify
     assert_true(frw[0][0] == 0xDEADBEEF);

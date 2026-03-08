@@ -20,6 +20,14 @@ bool ImGuiFont_LoadJapaneseFont(const char* fontPath, float size) {
         return false;
     }
 
+    // Check if file exists to prevent ImGui from asserting and crashing
+    FILE* f = fopen(fontPath, "rb");
+    if (!f) {
+        fprintf(stderr, "Failed to load font from: %s (file not found)\n", fontPath);
+        return false;
+    }
+    fclose(f);
+
     ImGuiIO& io = ImGui::GetIO();
     ImFont* font = io.Fonts->AddFontFromFileTTF(fontPath, size, NULL, io.Fonts->GetGlyphRangesJapanese());
 

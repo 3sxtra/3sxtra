@@ -7,6 +7,7 @@
 #include "common.h"
 #include "port/config/paths.h"
 #include "port/rendering/legacy_matrix.h"
+#include <SDL3/SDL.h>
 #include "port/mods/modded_stage.h"
 #include "port/rendering/renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -51,17 +52,13 @@ s32 bgPalCodeOffset[8];
 // bss
 RW_DATA rw_dat[20];
 
-/** @brief Maximum number of 64-entry palette slots the alternative palette can cover. */
-#define GOUKI_ALT_PAL_MAX_SLOTS 32
+/** @brief Number of 64-entry palette slots the Shin Gouki XOR diff covers. */
+#define GOUKI_XOR_PAL_SLOTS 17
 
-/** @brief Whether the Shin Gouki alternative stage palette is currently active (1) or not (0). */
-u8 gouki_alt_stage_pal_active;
-/** @brief Raw alternative palette loaded from shin_gouki_palette.bin (native u16 format). */
-static u16 s_gouki_alt_pal[GOUKI_ALT_PAL_MAX_SLOTS * 64];
-/** @brief Stashed original ColorRAM entries overwritten while the alternative is active. */
-static u16 s_gouki_orig_pal[GOUKI_ALT_PAL_MAX_SLOTS * 64];
-/** @brief Number of 64-entry slots in the loaded alternative palette (0 = not loaded). */
-static s32 s_gouki_alt_pal_slots;
+#include "shin_gouki_xor_diff.h"
+
+/** @brief Non-zero when the Shin Gouki palette XOR has been applied to ColorRAM. */
+static u8 s_gouki_pal_xored;
 
 /** @brief Update read/write work buffers for animated background tiles. */
 static void bgRWWorkUpdate();
@@ -259,8 +256,7 @@ void Bg_Close() {
 
     /* Unload any modded stage textures */
     ModdedStage_Unload();
-    gouki_alt_stage_pal_active = 0;
-    s_gouki_alt_pal_slots = 0;
+    s_gouki_pal_xored = 0;
 }
 
 /** @brief Extract per-layer priority bytes from a packed u32 value. */
@@ -402,27 +398,8 @@ void Bg_Texture_Load_EX() {
     /* Try to load HD modded stage assets for this stage */
     ModdedStage_LoadForStage(bg_w.stage);
 
-    /* Load Shin Gouki alternative stage palette for stage 14 */
-    gouki_alt_stage_pal_active = 0;
-    s_gouki_alt_pal_slots = 0;
-    if (bg_w.stage == 14) {
-        char pal_path[512];
-        const char* base = Paths_GetBasePath();
-        snprintf(pal_path, sizeof(pal_path), "%sassets/stages/stage_14/shin_gouki_palette.bin",
-                 base ? base : "");
-        SDL_IOStream* io = SDL_IOFromFile(pal_path, "rb");
-        if (io) {
-            Sint64 file_size = SDL_GetIOSize(io);
-            if (file_size > 0) {
-                s32 slots = (s32)(file_size / 2 / 64);
-                if (slots > GOUKI_ALT_PAL_MAX_SLOTS)
-                    slots = GOUKI_ALT_PAL_MAX_SLOTS;
-                SDL_ReadIO(io, s_gouki_alt_pal, (size_t)(slots * 64 * 2));
-                s_gouki_alt_pal_slots = slots;
-            }
-            SDL_CloseIO(io);
-        }
-    }
+    /* Reset Shin Gouki palette state on stage load. */
+    s_gouki_pal_xored = 0;
 }
 
 /** @brief Load background textures for a secondary display mode. */
@@ -1513,4 +1490,20 @@ void Ending_Family_Move() {
 /** @brief Toggle background display on or off. */
 void Bg_Disp_Switch(u8 on_off) {
     bg_disp_off = on_off;
+}
+
+/** @brief Toggle the Shin Gouki palette on stage 14 by XORing the diff against ColorRAM.
+ *  Calling this an even number of times restores the original palette. */
+void Bg_ToggleShinGoukiPalette(void) {
+    s32 i;
+    for (i = 0; i < GOUKI_XOR_PAL_SLOTS * 64; i++) {
+        ColorRAM[300 + (i / 64)][i % 64] ^= s_gouki_xor_diff[i];
+    }
+    palUpdateGhostCP3(300, GOUKI_XOR_PAL_SLOTS);
+    s_gouki_pal_xored = !s_gouki_pal_xored;
+}
+
+/** @brief Return whether the Shin Gouki palette is currently applied. */
+u8 Bg_IsShinGoukiPalActive(void) {
+    return s_gouki_pal_xored;
 }

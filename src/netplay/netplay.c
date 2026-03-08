@@ -42,6 +42,12 @@ extern void SDLGameRenderer_ResetBatchState(); // Reset texture stack between ne
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#endif
+
 #define INPUT_HISTORY_MAX 120
 #define FRAME_SKIP_TIMER_MAX 60 // Allow skipping a frame roughly every second
 #define STATS_UPDATE_TIMER_MAX 60
@@ -248,6 +254,8 @@ static void setup_vs_mode() {
     Deley_Shot_Timer[0] = 15;
     Deley_Shot_Timer[1] = 15;
     Random_ix16 = 0;
+    Round_num = 0;
+    Game_timer = 0;
     Random_ix32 = 0;
     Clear_Flash_Init(4);
 
@@ -787,7 +795,7 @@ static State* note_state(const State* state, int frame) {
  * slow-motion flags, super gauge, stun). UI-only fields are saved but not
  * checksummed to reduce false positives from rendering-only divergence.
  */
-static void save_state(GekkoGameEvent* event) {
+void save_state(const GekkoGameEvent* event) {
     *event->data.save.state_len = sizeof(State);
     State* dst = (State*)event->data.save.state;
 
@@ -970,7 +978,7 @@ static void load_state(const State* src) {
     frwctr_min = es->frwctr_min;
 }
 
-static void load_state_from_event(GekkoGameEvent* event) {
+void load_state_from_event(const GekkoGameEvent* event) {
     const State* src = (State*)event->data.load.state;
     load_state(src);
 }
@@ -1376,6 +1384,11 @@ void Netplay_Begin() {
 #if defined(DEBUG)
     // Reset so checksumming activates correctly for rematches.
     battle_start_frame = -1;
+#ifdef _WIN32
+    _mkdir("states");
+#else
+    mkdir("states", 0777);
+#endif
 #endif
 
     session_state = NETPLAY_SESSION_TRANSITIONING;

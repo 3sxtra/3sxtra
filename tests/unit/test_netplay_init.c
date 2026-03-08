@@ -50,7 +50,7 @@ void test_states_directory_creation(void **state) {
     // In netplay.c: return g_GameState.gs_G_No[1] == 1;
     // NOTE: Netplay_Begin calls setup_vs_mode which sets G_No[1] = 12. 
     // We must overwrite it here to simulate the game reaching the character select screen.
-    g_GameState.gs_G_No[1] = 1;
+    G_No[1] = 1;
 
     // Run one step of netplay loop
     Netplay_Run(); 
@@ -65,23 +65,21 @@ void test_deterministic_initialization(void **state) {
     (void) state;
 
     // First run
-    memset(&g_GameState, 0, sizeof(GameState));
     Netplay_Begin();
-    GameState state1 = g_GameState;
 
     // Introduce noise (simulate previous state or random garbage)
-    g_GameState.gs_Random_ix16 = 999;
-    g_GameState.gs_Round_num = 5;
-    g_GameState.gs_Game_timer = 1234;
+    Random_ix16 = 999;
+    Round_num = 5;
+    Game_timer = 1234;
 
     // Second run
     Netplay_Begin();
-    GameState state2 = g_GameState;
 
     // Compare
     // This expects Netplay_Begin -> setup_vs_mode to fully reset critical fields.
-    // If gs_Random_ix16 is not reset, this will fail.
-    assert_memory_equal(&state1, &state2, sizeof(GameState));
+    assert_int_equal(Random_ix16, 0);
+    assert_int_equal(Round_num, 0);
+    assert_int_equal(Game_timer, 0);
 }
 
 int main(void) {

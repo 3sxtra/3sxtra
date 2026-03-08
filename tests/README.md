@@ -7,6 +7,43 @@ This directory contains unit tests for the 3SX engine, utilizing the [CMocka](ht
 - `unit/`: Contains unit test source files (`test_*.c`).
 - `CMakeLists.txt`: Main test configuration.
 
+## Test Files
+
+| Test file | Source under test | What it covers |
+|-----------|-------------------|----------------|
+| `test_smoke.c` | — | Basic sanity / framework self-test |
+| `test_memman.c` | `memman.c` | Memory manager alloc/free |
+| `test_renderer_interface.c` | `renderer.c` | Renderer API compile-time interface |
+| `test_font_rendering.c` | `font_rendering.c` | Font/glyph rendering utilities |
+| `test_game_state.c` | `netplay/game_state.c` | Save/load round-trip, NULL safety |
+| `test_game_state_roundtrip.c` | `netplay/game_state.c` | Extended round-trip scenarios |
+| `test_stun.c` | `stun.c` | STUN endpoint decode, socket recv edge cases |
+| `test_netplay_*.c` | `netplay/*.c` | Netplay subsystem (metrics, events, OOB, init, catchup, run, refactor, UI) |
+| `test_paths.c` | `config/paths.c` | Path helpers, portable-marker detection |
+| `test_config.c` | `config/config.c` | INI config load/save |
+| `test_lobby_server.c` | `lobby_server.c` | Lobby server presence updates |
+| `test_bezel_assets.c` | `rendering/sdl_bezel.c` | Bezel asset loading, shutdown, character selection |
+| `test_bezel_layout.c` | `rendering/sdl_bezel.c` | Bezel layout calculations |
+| `test_menu_bridge.c` | `menu_bridge.c` | MenuBridge gate step / no-gate edge case |
+| `test_globals_access.c` | — | Global variable read/write sanity |
+| `test_broadcast_win32.c` | `broadcast_win32.c` | Windows broadcast socket |
+| `test_broadcast_config.c` | `broadcast_config.c` | Broadcast configuration |
+| `test_cli.c` | `config/cli_parser.c` | CLI argument parsing |
+| `test_native_save.c` | `save/native_save.c` | Native save-file I/O |
+| `test_trials.c` | `trials.c` | Trials mode logic |
+| `test_radix_sort.c` | *(inline)* | Radix sort algorithm |
+| `test_charset_poc.c` | `charset.c` | Character-set proof of concept |
+| `test_imgui_font.c` | ImGui font subsystem | ImGui font loading |
+| `test_state_differ.c` | `state_differ.c` | State diff / desync detection |
+| `test_effect_state_persistence.c` | effect state | Effect state save/restore |
+| `test_legacy_matrix.c` | `port/rendering/legacy_matrix.c` | Matrix identity, scale, translate, calcPoint, get/set round-trip *(new — PRD Task 1)* |
+| `test_adx_decoder.c` | `port/sound/adx_decoder.c` | ADX ADPCM header init validation, synthetic decode *(new — PRD Task 2)* |
+| `test_stage_config.c` | `port/mods/stage_config.c` | INI load/save, defaults, boundary, round-trip *(new — PRD Task 3)* |
+| `test_afs_validation.c` | `port/io/afs.c` (validation logic) | AFS attribute bounds checking (pure logic, no I/O) *(new — PRD Task 4)* |
+| `test_char_data.c` | `port/char_data.c` | CharData_ApplyFixups: Akuma fixup, non-Akuma unchanged, NULL safety *(new — PRD Task 6)* |
+
+
+
 ## Running Tests
 
 Tests are integrated into the CMake build system.

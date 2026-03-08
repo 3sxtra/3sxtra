@@ -12,7 +12,6 @@ typedef struct _TASK TASK;
 
 // Dummy variables
 u8 No_Trans;
-u16 PLsw[2][2];
 s16 exec_tm[8];
 uintptr_t frw[EFFECT_MAX][448];
 s16 frwctr;
@@ -26,17 +25,19 @@ u16 p1sw_buff;
 u16 p2sw_0;
 u16 p2sw_1;
 u16 p2sw_buff;
-u8 G_No[4];
-s8 Check_Buff[4][2][12];
+
 struct _SAVE_W save_w[6];
-s8 Exec_Wipe;
-PLW plw[2];
-u16 plsw_01[2];
-u8 Connect_Status;
-u16 plsw_00[2];
-u16 players_timer;
+int player_1 = 0;
+int player_2 = 1;
+
+unsigned short g_netplay_port = 20002;
+
+void njUserMain(void) {}
+
+void Clear_Flash_Init(void) {}
+void System_all_clear_Level_B(void) {}
+u32 Interrupt_Timer = 0;
 s16 tail_ix[8];
-TASK task[TASK_MAX];
 
 // Dummy functions
 void init_color_trans_req() {}
@@ -65,7 +66,10 @@ int Discovery_GetPeers(NetplayDiscoveredPeer* out_peers, int max_peers) { return
 
 // Mocks for Config
 bool Config_GetBool(const char* key) { return false; }
+void Input_SetGamepadEventCallback(void (*cb)(int gamepad_id, int event_type, int button_or_axis, int value)) {}
+#ifndef MOCK_SUPPRESS_UI
 void SDLNetplayUI_SetNativeLobbyActive(bool active) {}
+#endif
 
 // Missing declarations
 void Clear_Personal_Data(int p) {}

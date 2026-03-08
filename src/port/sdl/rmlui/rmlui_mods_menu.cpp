@@ -43,6 +43,10 @@ extern unsigned char Play_Game;
 
 /* Debug HUD toggle */
 extern bool show_debug_hud;
+
+/* Shin Gouki palette toggle (bg.c) */
+void Bg_ToggleShinGoukiPalette(void);
+unsigned char Bg_IsShinGoukiPalActive(void);
 }
 
 // -------------------------------------------------------------------
@@ -64,6 +68,7 @@ struct ModsSnapshot {
     bool anims_disabled;
     bool bg_draw_off;
     bool blue_back;
+    bool shin_gouki_pal;
     bool hide_shadows;
     bool hide_pal_sprites;
     bool hide_cps3_sprites;
@@ -177,6 +182,14 @@ extern "C" void rmlui_mods_menu_init(void) {
         [](Rml::Variant& v) { v = (Debug_w[DEBUG_BLUE_BACK] != 0); },
         [](const Rml::Variant& v) { Debug_w[DEBUG_BLUE_BACK] = v.Get<bool>() ? 1 : 0; });
     constructor.BindFunc(
+        "shin_gouki_pal",
+        [](Rml::Variant& v) { v = (Bg_IsShinGoukiPalActive() != 0); },
+        [](const Rml::Variant& v) {
+            bool want = v.Get<bool>();
+            bool cur = (Bg_IsShinGoukiPalActive() != 0);
+            if (want != cur) Bg_ToggleShinGoukiPalette();
+        });
+    constructor.BindFunc(
         "hide_shadows",
         [](Rml::Variant& v) { v = (Debug_w[DEBUG_NO_DISP_SHADOW] != 0); },
         [](const Rml::Variant& v) { Debug_w[DEBUG_NO_DISP_SHADOW] = v.Get<bool>() ? 1 : 0; });
@@ -257,6 +270,7 @@ extern "C" void rmlui_mods_menu_update(void) {
     DIRTY_BOOL(anims_disabled, ModdedStage_IsAnimationsDisabled());
     DIRTY_BOOL(bg_draw_off, Debug_w[DEBUG_BG_DRAW_OFF] != 0);
     DIRTY_BOOL(blue_back, Debug_w[DEBUG_BLUE_BACK] != 0);
+    DIRTY_BOOL(shin_gouki_pal, Bg_IsShinGoukiPalActive() != 0);
     DIRTY_BOOL(hide_shadows, Debug_w[DEBUG_NO_DISP_SHADOW] != 0);
     DIRTY_BOOL(hide_pal_sprites, Debug_w[DEBUG_NO_DISP_SPR_PAL] != 0);
     DIRTY_BOOL(hide_cps3_sprites, Debug_w[DEBUG_NO_DISP_SPR_CP3] != 0);

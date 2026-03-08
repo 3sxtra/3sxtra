@@ -1907,10 +1907,13 @@ void Next_Title_Sub() {
     G_No[0] = 2;
     G_No[2] = 2;          /* Skip Game0_0/Game0_1 (redundant title screen),
                               go directly to Game0_2 (fade-to-menu transition) */
+    G_No[3] = 2;          /* Skip Game0_2 cases 0-1 (they render texture 601
+                              which was never loaded since we skipped Game0_0) */
     E_No[0] = 1;          /* Entry_01 will still run ... */
     E_No[1] = 1;          /* ... pre-init its sub-state (what case 0 would set) ... */
     E_No[2] = 3;          /* ... and skip to default → Exit_Title_Sub_Entry() immediately */
     Break_Into = 0;       /* What Entry_01 case 0 would have set */
+    title_tex_flag = 0;   /* Title texture was never loaded */
     task[TASK_INIT].r_no[0] = 1;
     Demo_Flag = 1;
     Game_pause = 0;

@@ -12,7 +12,6 @@
 
 // Globals used by netplay.c
 extern GameState g_GameState;
-unsigned short g_netplay_port = 50000;
 
 // Need to reset session state for testing. Since Netplay_GetSessionState is available, we can read it.
 // We can manipulate it by calling HandleMenuExit to go to EXITING, then Run to IDLE.

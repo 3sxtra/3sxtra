@@ -38,7 +38,7 @@ static void test_netplay_ui_init(void **state) {
     
     // Just verify lifecycle calls don't crash with context active
     TestHelper_NewFrame();
-    SDLNetplayUI_Render();
+    SDLNetplayUI_Render(0, 0);
     TestHelper_EndFrame();
 }
 
@@ -67,7 +67,7 @@ static void test_toast_notifications(void **state) {
     
     // Render frame (should poll event and create toast)
     TestHelper_NewFrame();
-    SDLNetplayUI_Render();
+    SDLNetplayUI_Render(0, 0);
     TestHelper_EndFrame();
     
     // Verify toast active
@@ -76,7 +76,7 @@ static void test_toast_notifications(void **state) {
     // Simulate time passing (5.0f seconds). Toast should dismiss.
     TestHelper_SetDeltaTime(5.0f);
     TestHelper_NewFrame();
-    SDLNetplayUI_Render();
+    SDLNetplayUI_Render(0, 0);
     TestHelper_EndFrame();
     
     // Verify toast gone
@@ -106,13 +106,13 @@ static void test_diagnostics_history(void **state) {
     // Set metric 1
     MockNetplay_SetStats(0, 50, 1);
     TestHelper_NewFrame();
-    SDLNetplayUI_Render();
+    SDLNetplayUI_Render(0, 0);
     TestHelper_EndFrame();
     
     // Set metric 2
     MockNetplay_SetStats(0, 100, 3);
     TestHelper_NewFrame();
-    SDLNetplayUI_Render();
+    SDLNetplayUI_Render(0, 0);
     TestHelper_EndFrame();
     
     SDLNetplayUI_GetHistory(ping_hist, rb_hist, &count);
@@ -159,7 +159,7 @@ static void test_extreme_conditions(void **state) {
     // Verify diagnostics render with extreme values doesn't crash
     SDLNetplayUI_SetDiagnosticsVisible(true);
     TestHelper_NewFrame();
-    SDLNetplayUI_Render();
+    SDLNetplayUI_Render(0, 0);
     TestHelper_EndFrame();
 }
 

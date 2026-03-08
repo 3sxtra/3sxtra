@@ -7,7 +7,7 @@
 #include "game_state.h"
 
 // Note: config.h is in src/port/ so we might need special include path or use relative
-#include "../../src/port/config.h"
+#include "../../src/port/config/config.h"
 
 static void test_broadcast_interface_exists(void **state) {
     (void) state;
@@ -25,15 +25,15 @@ static void test_broadcast_interface_exists(void **state) {
 
 static void test_game_state_has_broadcast_config(void **state) {
     (void) state;
-    GameState gs;
+    struct _SAVE_W gs;
     gs.broadcast_config.enabled = true;
     assert_true(gs.broadcast_config.enabled);
 }
 
 static void test_game_state_roundtrip(void **state) {
     (void) state;
-    GameState src = {0};
-    GameState dst = {0};
+    struct _SAVE_W src = {0};
+    struct _SAVE_W dst = {0};
     
     src.broadcast_config.enabled = true;
     src.broadcast_config.source = BROADCAST_SOURCE_FINAL;

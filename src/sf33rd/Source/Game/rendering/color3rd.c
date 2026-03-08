@@ -17,6 +17,7 @@
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/rendering/meta_col.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
+#include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/ramcnt.h"
 
 typedef struct {

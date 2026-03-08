@@ -50,3 +50,18 @@ void Netplay_SetEnabled(bool enabled) {}
 void Netplay_SetPlayer(int player) {}
 void Netplay_Begin() {}
 void Netplay_Run() {}
+
+bool LobbyServer_IsConfigured() { return false; }
+const char* Config_GetString(const char* key, const char* default_val) { return default_val; }
+void Netplay_SetRemoteIP(const char* ip) {}
+void Netplay_SetRemotePort(unsigned short port) {}
+void Netplay_SetLocalPort(unsigned short port) {}
+void Netplay_SetStunSocket(int fd) {}
+void Netplay_SetPlayerNumber(int player) {}
+bool Upnp_AddMapping(int port) { return false; }
+bool Upnp_RemoveMapping(int port) { return false; }
+void LobbyServer_UpdatePresence(const char* game, const char* status, const char* state, const char* connection_info) {}
+void LobbyServer_StartSearching(const char* game, int max_results) {}
+void LobbyServer_StopSearching() {}
+void LobbyServer_Leave() {}
+bool LobbyServer_GetSearching() { return false; }

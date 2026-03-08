@@ -1,245 +1,194 @@
-# PRD: Test Scaffolding — Systematic Unit Test Coverage
+# PRD: Code Health — Systematic Refactoring
 
 ## Overview
-Add unit tests for untested modules in the 3SX engine.
-All tests use the **CMocka** framework and follow the existing conventions in `tests/unit/`.
-The project already has ~33 unit tests covering netplay, game state, config, CLI, paths, bezels,
-broadcasting, renderer interface, radix sort, menu bridge, trials, and font rendering.
-This PRD targets the remaining high-value gaps.
+Clean up code health issues across the 3SX port layer.
+Focus: dead code removal, god-file decomposition, duplicated logic consolidation, and naming consistency.
+All changes are behavior-preserving — no new features, no game logic changes.
 
 ## Goals
-- Cover every testable public API that currently lacks unit tests
-- Keep each test file self-contained (no hardware, no SDL window, no GPU)
-- Register every new test in `tests/unit/CMakeLists.txt` so `ctest` picks it up
-- Maintain the existing conventions: CMocka, `add_unit_test()` helper, organized link groups
+- Remove dead code (`#if 0` blocks, deprecated functions, unused variables)
+- Reduce file size of oversized source files via extract-function/extract-file refactoring
+- Eliminate duplicated logic by introducing small helper functions
+- Improve readability and maintainability without changing behavior
 
 ## Conventions (DO NOT deviate)
-- Test files live in `tests/unit/test_<name>.c`
-- Source under test is compiled into the test target directly (see existing CMake patterns)
-- Include dirs: use `target_include_directories` for `${PROJECT_SOURCE_DIR}/include`, `${SDL3_ROOT}/include`, etc.
-- Link helpers already defined: `target_link_sdl3()`, `target_link_sdl3_glad()`, `target_link_gekkonet_sdl3()`
-- Mock files: `mocks_*.c` in `tests/unit/` — create new mocks only if strictly necessary
-- Existing test examples to follow: `test_radix_sort.c` (header-only algo), `test_config.c` (with mocks)
+- Run `.\lint.bat` and `.\recompile.bat` after every task — both must pass
+- Keep each task to ≤ 50 lines changed where possible
+- Preserve all public API signatures — no breaking changes
+- Preserve all `extern` declarations and header contracts
+- Do NOT touch game logic, netplay protocol, or shader pipelines
+- Do NOT modify `CMakeLists.txt` unless absolutely required by the refactor
 
 ---
 
-## Task 1: Matrix math — `legacy_matrix.c`
-Create `tests/unit/test_legacy_matrix.c`.
-Source under test: `src/port/rendering/legacy_matrix.c`.
-Header: `src/include/port/rendering/legacy_matrix.h`.
-Dependencies: `common.h` → `types.h`, `structs.h` (type definitions only, no runtime deps).
+## Task 1: Remove deprecated ImGui lobby dead code from `sdl_netplay_ui.cpp`
+File: `src/port/sdl/netplay/sdl_netplay_ui.cpp` (1350 lines, 53 KB)
 
-Test the following functions:
-- `njUnitMatrix` — identity on explicit matrix and on NULL (global cmtx)
-- `njScale` — known scale factors, verify matrix elements
-- `njTranslate` — translate by (x,y,z), verify row 3
-- `njTranslateZ` — fast-path equivalent to njTranslate(NULL, 0, 0, z)
-- `njCalcPoint` — transform a point, compare to hand-computed result
-- `njCalcPoints` — array variant
-- `njGetMatrix` / `njSetMatrix` — round-trip copy
+Two `#if 0` blocks contain ~242 lines of dead code from the deprecated ImGui lobby:
+- Lines 414–422: `ImGuiSpinner()` function and its comment
+- Lines 906–1140: Entire deprecated ImGui lobby rendering window
 
-Add to CMakeLists.txt:
-```cmake
-add_unit_test(test_legacy_matrix
-    test_legacy_matrix.c
-    ${PROJECT_SOURCE_DIR}/src/port/rendering/legacy_matrix.c
-)
-target_include_directories(test_legacy_matrix PRIVATE ${PROJECT_SOURCE_DIR}/include)
+**Action:**
+1. Delete both `#if 0` / `#endif` blocks and all code between them
+2. Delete the comment on line 414 referencing the deprecated code
+3. Delete the comment on lines 903–905 referencing the deprecated ImGui rendering
+4. Verify the file still compiles and the lobby (native + RmlUi) works as before
+
+Acceptance criteria:
+- Both `#if 0` blocks are gone — no dead code remains
+- `.\recompile.bat` succeeds
+- `.\lint.bat` passes (or only has pre-existing issues)
+- Net reduction: ~242 lines
+
+---
+
+## Task 2: Extract `SDLApp_Toggle*` helpers to reduce duplication in `sdl_app.c`
+File: `src/port/sdl/app/sdl_app.c` (2630 lines, 97 KB)
+
+Six toggle functions follow nearly identical patterns:
+- `SDLApp_ToggleModsMenu()` (line 2401)
+- `SDLApp_ToggleShaderMenu()` (line 2416)
+- `SDLApp_ToggleStageConfigMenu()` (line 2431)
+- `SDLApp_ToggleDevOverlay()` (line 2444)
+- `SDLApp_ToggleTrainingMenu()` (line 2457)
+
+Each does: toggle a `show_*` bool → update `game_paused` → `SDL_ShowCursor()` → show/hide RmlUi document.
+`SDLApp_ToggleMenu()` (line 2388) is slightly different (no RmlUi show, only hide) — keep it as-is.
+
+**Action:**
+1. Create a `static void toggle_overlay(bool* flag, const char* rmlui_doc_name)` helper
+2. Refactor the 5 similar toggle functions to call the helper
+3. Keep `SDLApp_ToggleMenu()`, `SDLApp_ToggleFullscreen()`, `SDLApp_ToggleBezel()`, and `SDLApp_ToggleDebugHUD()` as-is (they have unique logic)
+
+Acceptance criteria:
+- All 5 toggle functions use the shared helper
+- `.\recompile.bat` succeeds
+- `.\lint.bat` passes
+- Total toggle code reduced by ~40 lines
+
+---
+
+## Task 3: Extract shader/preset pass-through wrappers
+File: `src/port/sdl/app/sdl_app.c`
+
+Seven functions are pure one-line pass-throughs to `SDLAppShader_*`:
+- `SDLApp_GetShaderModeLibretro()` → `SDLAppShader_IsLibretroMode()`
+- `SDLApp_SetShaderModeLibretro()` → `SDLAppShader_SetMode()`
+- `SDLApp_GetCurrentPresetIndex()` → `SDLAppShader_GetCurrentIndex()`
+- `SDLApp_SetCurrentPresetIndex()` → `SDLAppShader_SetCurrentIndex()`
+- `SDLApp_GetAvailablePresetCount()` → `SDLAppShader_GetAvailableCount()`
+- `SDLApp_GetPresetName()` → `SDLAppShader_GetPresetName()`
+- `SDLApp_LoadPreset()` → `SDLAppShader_LoadPreset()`
+- `SDLApp_ToggleShaderMode()` → `SDLAppShader_ToggleMode()`
+- `SDLApp_CyclePreset()` → `SDLAppShader_CyclePreset()`
+- `SDLApp_CycleScaleMode()` → `cycle_scale_mode()`
+
+These are only called from the input handler (`control_mapping.cpp` or RmlUi) and could potentially be replaced by direct calls to `SDLAppShader_*` if the callers already include the shader header, eliminating ~30 lines of boilerplate.
+
+**Action:**
+1. Check all callers of each `SDLApp_*Shader*` / `SDLApp_*Preset*` wrapper
+2. If all callers already have access to `SDLAppShader_*` functions, update callers to call the shader layer directly
+3. Remove the now-unused wrappers from `sdl_app.c` and `sdl_app.h`
+4. If some callers cannot easily include the shader header (e.g., C callers needing a C-compatible header), keep the wrapper and document why
+
+Acceptance criteria:
+- `.\recompile.bat` succeeds
+- `.\lint.bat` passes
+- Every wrapper either removed (with callers updated) or documented as necessary
+- Net reduction: ~20–30 lines if all can be removed
+
+---
+
+## Task 4: Deduplicate bezel draw-left / draw-right in `SDLApp_EndFrame()`
+File: `src/port/sdl/app/sdl_app.c`
+
+The bezel rendering section (lines ~2001–2034) has two nearly identical blocks:
+```c
+// Draw Left
+if (cached_bezels.left) {
+    GLuint tex = (GLuint)(intptr_t)cached_bezels.left;
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glUniform1i(s_pt_loc_source, 0);
+    int tw = 0, th = 0;
+    TextureUtil_GetSize(cached_bezels.left, &tw, &th);
+    glUniform4f(s_pt_loc_source_size, ...);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+// Draw Right  — identical except `cached_bezels.right` and vertex offset 6
 ```
 
+**Action:**
+1. Extract a `static void draw_bezel_quad(void* texture, int vertex_offset)` helper
+2. Replace both blocks with two calls to the helper
+3. Net reduction: ~15 lines
+
 Acceptance criteria:
-- All test cases pass via `ctest -R test_legacy_matrix`
-- At least 8 test functions covering identity, scale, translate, translateZ, calcPoint
-- Edge cases: NULL matrix pointer (uses global cmtx), zero scale, negative translate
+- Bezel rendering works identically (both bezels still draw)
+- `.\recompile.bat` succeeds
+- `.\lint.bat` passes
 
 ---
 
-## Task 2: ADX decoder — `adx_decoder.c`
-Create `tests/unit/test_adx_decoder.c`.
-Source under test: `src/port/sound/adx_decoder.c`.
-Header: `src/port/sound/adx_decoder.h`.
-Dependencies: `types.h` only (no SDL, no file I/O).
+## Task 5: Extract debug HUD rendering from `SDLApp_EndFrame()`
+File: `src/port/sdl/app/sdl_app.c`
 
-Test the following functions:
-- `ADX_InitContext` — valid mono header, valid stereo header, invalid magic, too-small header, bad channels
-- `ADX_Decode` — NULL args return -1, zero frame_size return -1
-- Construct a minimal synthetic ADX frame (18-byte block with known scale + nibbles), decode it, verify output samples match hand-computed ADPCM
+The debug HUD text rendering (lines ~2066–2110) is a self-contained 44-line block inside the massive `SDLApp_EndFrame()` function. It builds three formatted strings (fps_text, mode_text, shader_text), composites them, and draws with `SDLTextRenderer_DrawText()`.
 
-Add to CMakeLists.txt:
-```cmake
-add_unit_test(test_adx_decoder
-    test_adx_decoder.c
-    ${PROJECT_SOURCE_DIR}/src/port/sound/adx_decoder.c
-)
-target_include_directories(test_adx_decoder PRIVATE ${PROJECT_SOURCE_DIR}/src)
-```
+**Action:**
+1. Extract a `static void render_debug_hud(int win_w, int win_h, const SDL_FRect* viewport)` function
+2. Move the entire block (lines ~2066–2110) into it
+3. Call it from `SDLApp_EndFrame()` with `if (show_debug_hud) render_debug_hud(...);`
 
 Acceptance criteria:
-- All test cases pass via `ctest -R test_adx_decoder`
-- At least 6 test functions covering init validation and basic decode
-- Edge cases: 0-channel, oversized channel count, minimum header size
+- Debug HUD renders identically when toggled on
+- `.\recompile.bat` succeeds
+- `.\lint.bat` passes
+- `SDLApp_EndFrame()` is ~44 lines shorter
 
 ---
 
-## Task 3: Stage config parser — `stage_config.c`
-Create `tests/unit/test_stage_config.c`.
-Source under test: `src/port/mods/stage_config.c`.
-Header: `src/port/mods/stage_config.h`.
-Dependencies: `paths.h` (`Paths_GetBasePath()`) — mock it. Also needs `bg_data.h` externs (`use_real_scr`, `stage_bgw_number`) — provide small stubs.
+## Task 6: Extract menu rendering dispatch from `SDLApp_EndFrame()`
+File: `src/port/sdl/app/sdl_app.c`
 
-Test the following functions:
-- `StageConfig_Init` — all layers get expected defaults
-- `StageConfig_SetDefaultLayer` — boundary: -1, 0, MAX_STAGE_LAYERS-1, MAX_STAGE_LAYERS
-- `StageConfig_Load` — write a temp INI, load it, verify fields. Test missing file (defaults preserved).
-- `StageConfig_Save` + `StageConfig_Load` round-trip — save then reload, compare fields
+The menu/overlay rendering dispatch block (lines ~2112–2176) is another self-contained section that dispatches between RmlUi and ImGui for each overlay type (menu, shader, mods, stage config, dev overlay, training, netplay).
 
-Create `tests/unit/mocks_stage_config.c` with stub for `Paths_GetBasePath()` (return temp dir) and minimal `use_real_scr[]` / `stage_bgw_number[][]` arrays.
-
-Add to CMakeLists.txt:
-```cmake
-add_unit_test(test_stage_config
-    test_stage_config.c
-    mocks_stage_config.c
-    ${PROJECT_SOURCE_DIR}/src/port/mods/stage_config.c
-)
-target_include_directories(test_stage_config PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src)
-```
+**Action:**
+1. Extract a `static void render_overlays(int win_w, int win_h)` function
+2. Move the dispatch logic into it
+3. Call it from `SDLApp_EndFrame()`
 
 Acceptance criteria:
-- All test cases pass via `ctest -R test_stage_config`
-- At least 6 test functions covering init, defaults, load, save, round-trip
-- Edge cases: out-of-range layer index, missing INI file, malformed INI line
+- All overlays (menu, shader, mods, stage config, dev, training, netplay) render identically
+- `.\recompile.bat` succeeds
+- `.\lint.bat` passes
+- `SDLApp_EndFrame()` is ~65 lines shorter
 
 ---
 
-## Task 4: AFS archive validation — `afs.c` (header parsing only)
-Create `tests/unit/test_afs_validation.c`.
-Source under test: Only the `is_valid_attribute_data()` function from `src/port/io/afs.c`.
-Since `is_valid_attribute_data` is `static`, either:
-  (a) Copy it into the test file for isolated testing, or
-  (b) Use `#include "../../src/port/io/afs.c"` pattern (not ideal but acceptable for static functions).
-
-Option (a) is preferred. Copy the function signature and body; it is pure logic with no dependencies.
-
-Test cases:
-- Zero offset or size → false
-- Size exceeds file bounds → false
-- Size less than entries * entry_size → false
-- Offset before entries_end → false
-- Offset after file_size - size → false
-- Valid parameters → true
-
-Add to CMakeLists.txt:
-```cmake
-add_unit_test(test_afs_validation test_afs_validation.c)
-target_include_directories(test_afs_validation PRIVATE ${PROJECT_SOURCE_DIR}/src)
-```
-
-Acceptance criteria:
-- All test cases pass via `ctest -R test_afs_validation`
-- At least 6 test functions covering each validation branch
-- No SDL dependency required (pure integer logic)
-
----
-
-## Task 5: Edge cases in existing test files
-Several existing tests are missing edge case and error path coverage. Add test functions to the **existing** test files:
-
-### `test_stun.c` — add:
-- `test_decode_endpoint_null_args` — NULL code, NULL out_ip, NULL out_port → returns false
-- `test_decode_endpoint_empty_string` — empty string → returns false
-- `test_decode_endpoint_malformed` — truncated or garbage input → returns false
-- `test_socket_recv_from_bad_fd` — invalid fd (-1) → returns error
-- `test_socket_recv_from_zero_buf` — buf_size = 0 → returns 0 or error
-
-### `test_paths.c` — add:
-- `test_is_portable_with_marker_file` — create a temp marker file, verify returns 1
-- `test_is_portable_without_marker` — no marker file, verify returns 0
-
-### `test_bezel_assets.c` or `test_bezel_layout.c` — add:
-- `test_bezel_shutdown_null_safe` — call `BezelSystem_Shutdown()` when not initialized → no crash
-- `test_bezel_set_characters_valid` — call `BezelSystem_SetCharacters(0, 1)` with valid indices
-- `test_bezel_set_characters_out_of_range` — call with invalid character indices → handled gracefully
-
-### `test_netplay_run.c` or `test_netplay_refactor.c` — add:
-- `test_handle_menu_exit_not_connected` — call `Netplay_HandleMenuExit()` when netplay is not active → no crash
-
-### `test_menu_bridge.c` — add:
-- `test_step_gate_no_active_gate` — call `MenuBridge_StepGate()` when no gate is set → no crash, returns expected default
-
-### `test_lobby_server.c` — add:
-- `test_update_presence_not_connected` — call `LobbyServer_UpdatePresence()` when not connected → graceful no-op
-
-### `test_stun.c` — also add:
-- `test_parse_binding_response_truncated` — truncated STUN response → returns error
-- `test_parse_binding_response_wrong_type` — valid STUN header but wrong message type → returns error
-
-Acceptance criteria:
-- All new test functions compile and pass
-- No regressions in the existing tests in those files
-- Each edge case tests a distinct boundary or error condition
-
----
-
-## Task 6: CharData_ApplyFixups — `char_data.c`
-Create `tests/unit/test_char_data.c`.
-Source under test: `src/port/char_data.c`.
-Header: `src/port/char_data.h` (depends on `structs.h` for `CharInitData`).
-
-Test cases:
-- `test_fixups_akuma` — character_id 14 (Akuma), verify `hiit[0x5A..0x5D].cuix` are zeroed
-- `test_fixups_other_chars` — character_id != 14, verify data is unchanged
-- `test_fixups_null_data` — NULL data pointer → no crash (if the function handles it; if not, document)
-
-Add to CMakeLists.txt:
-```cmake
-add_unit_test(test_char_data
-    test_char_data.c
-    ${PROJECT_SOURCE_DIR}/src/port/char_data.c
-)
-target_include_directories(test_char_data PRIVATE ${PROJECT_SOURCE_DIR}/include)
-```
-
-Acceptance criteria:
-- All test cases pass via `ctest -R test_char_data`
-- Akuma fixup behavior is verified against actual hitbox indices
-
----
-
-## Task 7: Verify all existing tests still pass
-Before adding new tests, run the full existing suite to establish a green baseline.
+## Task 7: Verify full build and lint pass
+After all refactoring tasks, run the complete build and lint pipeline.
 
 Steps:
-1. `CC=clang cmake -B build_tests -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON`
-2. `cmake --build build_tests`
-3. `cd build_tests && ctest --output-on-failure`
+1. `.\lint.bat` — all C/C++ and Python checks
+2. `.\recompile.bat` — full incremental build
+3. `cd build_tests && ctest --output-on-failure` — all unit tests still pass (if test build is configured)
 
 Acceptance criteria:
-- All pre-existing tests pass
-- Build has no errors (warnings are acceptable)
+- `.\lint.bat` passes without new issues
+- `.\recompile.bat` succeeds
+- No regressions in any existing unit tests
+- Total line reduction across all tasks: ~380–400 lines
 
 ---
 
-## Task 8: Build and run all new tests
-Rebuild with all new test files and run the complete suite.
-
-Steps:
-1. `CC=clang cmake -B build_tests -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON`
-2. `cmake --build build_tests`
-3. `cd build_tests && ctest --output-on-failure`
+## Task 8: Clean up and document
+Review all changed files for:
+- Consistent doc comments on new helper functions
+- No orphaned forward declarations
+- No orphaned `#include` directives that were only used by removed code
 
 Acceptance criteria:
-- All existing tests still pass (no regressions)
-- All new test targets pass
-- No compiler warnings in test files
-
----
-
-## Task 9: Clean up and document
-Update `tests/README.md` to mention the new test files.
-Ensure all new test files have proper file-level doc comments following the existing pattern.
-
-Acceptance criteria:
-- README lists the new test files
-- Each new file has a `@file` / `@brief` doc comment
-- No orphan files or dead code
+- All new helper functions have `/** @brief */` doc comments
+- No dead `#include` lines remain
+- No dead forward declarations remain

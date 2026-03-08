@@ -41,6 +41,10 @@ extern bool mods_menu_fast_pre_game;
 
 /* Game state — 0 = in menus, 1-2 = in gameplay */
 extern unsigned char Play_Game;
+
+/* Shin Gouki palette toggle (bg.c) */
+void Bg_ToggleShinGoukiPalette(void);
+unsigned char Bg_IsShinGoukiPalActive(void);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -247,6 +251,23 @@ extern "C" void mods_menu_render(int window_width, int window_height) {
         HelpMarker("Engine-level toggle: disables original background rendering.");
         debug_checkbox("Blue Background", DEBUG_BLUE_BACK);
         HelpMarker("Replaces the stage with a solid blue backdrop.\nUseful for compositing or visibility.");
+
+        /* ── Shin Gouki stage palette ── */
+        {
+            bool disabled = !is_in_game();
+            if (disabled)
+                ImGui::BeginDisabled();
+
+            bool pal_on = Bg_IsShinGoukiPalActive() != 0;
+            if (ImGui::Checkbox("Shin Gouki Stage Palette", &pal_on)) {
+                Bg_ToggleShinGoukiPalette();
+            }
+            HelpMarker("Swaps Gouki's stage (stage 14) to the Shin Gouki colour palette.\n"
+                       "Only has a visible effect on stage 14.");
+
+            if (disabled)
+                ImGui::EndDisabled();
+        }
     }
 
     ImGui::Separator();

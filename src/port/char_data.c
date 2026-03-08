@@ -1,8 +1,7 @@
 #include "port/char_data.h"
 
 void CharData_ApplyFixups(CharInitData* data, int character_id) {
-    if (!data)
-        return;
+    if (!data) return;
     switch (character_id) {
     case 14: // Akuma/Gouki
         // Remove throw box from overhead chop

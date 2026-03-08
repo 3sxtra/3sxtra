@@ -14,6 +14,7 @@
 BroadcastConfig broadcast_config;
 int g_resolution_scale = 1;
 const char* g_shm_suffix = NULL;
+int g_master_volume = 100;
 
 // Mock state
 static RendererBackend last_renderer_backend = RENDERER_OPENGL;
@@ -44,28 +45,12 @@ static void test_cli_enable_broadcast(void **state) {
     bool netplay_mode = false;
     bool sync_test = false;
     
-    ParseCLI(argc, argv, &player, &ip, &netplay_mode, &sync_test);
+    ParseCLI(argc, argv);
     
     assert_true(broadcast_config.enabled);
 }
 
-static void test_cli_sync_test(void **state) {
-    (void) state;
-    char* argv[] = {"3sx", "--sync-test"};
-    int argc = 2;
-    
-    s32 player = 0;
-    const char* ip = NULL;
-    bool netplay_mode = false;
-    bool sync_test = false;
-    
-    ParseCLI(argc, argv, &player, &ip, &netplay_mode, &sync_test);
-    
-    assert_int_equal(player, 1);
-    assert_true(netplay_mode);
-    assert_true(sync_test);
-    assert_string_equal(ip, "127.0.0.1");
-}
+
 
 static void test_cli_renderer_gpu(void **state) {
     (void) state;
@@ -79,7 +64,7 @@ static void test_cli_renderer_gpu(void **state) {
     bool netplay_mode = false;
     bool sync_test = false;
     
-    ParseCLI(argc, argv, &player, &ip, &netplay_mode, &sync_test);
+    ParseCLI(argc, argv);
     
     assert_int_equal(last_renderer_backend, RENDERER_SDLGPU);
 }
@@ -96,7 +81,7 @@ static void test_cli_renderer_gl(void **state) {
     bool netplay_mode = false;
     bool sync_test = false;
     
-    ParseCLI(argc, argv, &player, &ip, &netplay_mode, &sync_test);
+    ParseCLI(argc, argv);
     
     assert_int_equal(last_renderer_backend, RENDERER_OPENGL);
 }
@@ -113,7 +98,7 @@ static void test_cli_renderer_sdl(void **state) {
     bool netplay_mode = false;
     bool sync_test = false;
     
-    ParseCLI(argc, argv, &player, &ip, &netplay_mode, &sync_test);
+    ParseCLI(argc, argv);
     
     assert_int_equal(last_renderer_backend, RENDERER_SDL2D);
 }
@@ -130,7 +115,7 @@ static void test_cli_renderer_sdl2d(void **state) {
     bool netplay_mode = false;
     bool sync_test = false;
     
-    ParseCLI(argc, argv, &player, &ip, &netplay_mode, &sync_test);
+    ParseCLI(argc, argv);
     
     assert_int_equal(last_renderer_backend, RENDERER_SDL2D);
 }
@@ -138,7 +123,6 @@ static void test_cli_renderer_sdl2d(void **state) {
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_cli_enable_broadcast),
-        cmocka_unit_test(test_cli_sync_test),
         cmocka_unit_test(test_cli_renderer_gpu),
         cmocka_unit_test(test_cli_renderer_gl),
         cmocka_unit_test(test_cli_renderer_sdl),
