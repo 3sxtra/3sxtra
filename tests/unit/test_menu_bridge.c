@@ -24,36 +24,59 @@
 // Includes required to define the mocked globals types
 #include "game_state.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
+#include "sf33rd/Source/Game/engine/spgauge.h"
+#include "sf33rd/Source/Game/engine/stun.h"
+#include "sf33rd/Source/Game/engine/plcnt.h"
 
-// === MOCKS FOR LINKING ===
-// Used in PreTick
+// ==========================================================================
+// STUBS FOR LINKING — all globals referenced by menu_bridge.c
+// ==========================================================================
+
+// PreTick: input injection
 u16 p1sw_0;
 u16 p1sw_buff;
 u16 p2sw_0;
 u16 p2sw_buff;
-u16 PLsw[2][2];
 
-// Used in PostTick
+// PreTick: player control mode (from pulpul.h / slowf.h / workuser.h)
+u8 Replay_Status[2];
+s8 Operator_Status[2];
+PLW plw[2];
+
+// PreTick: RNG (from workuser.h)
+s16 Random_ix16;
+s16 Random_ix32;
+s16 Random_ix16_ex;
+s16 Random_ix32_ex;
+s16 Random_ix16_com;
+s16 Random_ix32_com;
+s16 Random_ix16_ex_com;
+s16 Random_ix32_ex_com;
+s16 Random_ix16_bg;
+
+// PostTick: navigation state (from workuser.h / game_state.h)
 u8 G_No[4];
 u8 S_No[4];
 u8 Play_Type;
 u8 Play_Game;
 u8 My_char[2];
-s8 Super_Arts[2]; // note: s8 in game_state.h struct, let's verify type if build fails
+s8 Super_Arts[2];
 s8 Cursor_X[2];
 s8 Cursor_Y[2];
 s8 ID_of_Face[3][8];
+u8 Allow_a_battle_f;
+s16 Arts_Y[2];
+u8 C_No[4];
 
-// Note: game_state.h says:
-// u8 My_char[2];
-// s8 Super_Arts[2];
-// s8 Cursor_X[2];
-// s8 ID_of_Face[3][8];
-// u8 G_No[4];
-// u8 Play_Type;
-// u8 Play_Game;
+// PostTick: timing (from work_sys.h)
+u32 Interrupt_Timer;
+u16 Game_timer;
 
-// =========================
+// PostTick: battle meters/positions (from spgauge.h, stun.h)
+SPG_DAT spg_dat[2];
+SDAT sdat[2];
+
+// ==========================================================================
 
 static void test_struct_packing(void **state) {
     (void) state;

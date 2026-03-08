@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include "types.h"
 #include "structs.h"
+#include "sf33rd/Source/Game/engine/cmb_win.h"
+#include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "game_state.h"
 #include "netplay/discovery.h"
@@ -24,6 +26,15 @@ u16 p1sw_buff;
 u16 p2sw_0;
 u16 p2sw_1;
 u16 p2sw_buff;
+u8 G_No[4];
+s8 Check_Buff[4][2][12];
+struct _SAVE_W save_w[6];
+s8 Exec_Wipe;
+PLW plw[2];
+u16 plsw_01[2];
+u8 Connect_Status;
+u16 plsw_00[2];
+u16 players_timer;
 s16 tail_ix[8];
 TASK task[TASK_MAX];
 

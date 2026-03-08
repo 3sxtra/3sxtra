@@ -1,4 +1,4 @@
-#include "port/paths.h"
+#include "port/config/paths.h"
 
 static const char* mock_pref_path = "./test_config_dir/";
 

@@ -3,7 +3,7 @@
 #include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
-#include "port/sdl/sdl_netplay_ui.h"
+#include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "netplay/netplay.h" // For event types
 #include <SDL3/SDL.h>
 #include <string.h>

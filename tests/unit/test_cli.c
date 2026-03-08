@@ -6,9 +6,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-#include "port/cli_parser.h"
+#include "port/config/cli_parser.h"
 #include "port/broadcast.h"
-#include "port/sdl/sdl_app.h"
+#include "port/sdl/app/sdl_app.h"
 
 // Globals needed by ParseCLI
 BroadcastConfig broadcast_config;

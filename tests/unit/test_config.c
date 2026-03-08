@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <cmocka.h>
 #include <stdlib.h>
-#include "port/config.h"
+#include "port/config/config.h"
 
 // Forward declarations for API that doesn't exist yet
 void Config_SetInt(const char* key, int value);

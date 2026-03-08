@@ -5,7 +5,7 @@
 #include <cmocka.h>
 #include <string.h>
 #include <glad/gl.h>
-#include "port/sdl_bezel.h"
+#include "port/rendering/sdl_bezel.h"
 
 // Stub GL functions
 void stub_glBindTexture(GLenum target, GLuint texture) { (void)target; (void)texture; }

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <cmocka.h>
 #include <SDL3/SDL.h>
-#include "port/sdl_bezel.h"
+#include "port/rendering/sdl_bezel.h"
 
 // We'll mock the texture size function in the test or expect it to be linked
 // CalculateLayout calls imgui_wrapper_get_texture_size.

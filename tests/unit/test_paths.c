@@ -3,7 +3,7 @@
 #include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
-#include "port/paths.h"
+#include "port/config/paths.h"
 
 static void test_paths_get_pref_path(void **state) {
     (void) state;

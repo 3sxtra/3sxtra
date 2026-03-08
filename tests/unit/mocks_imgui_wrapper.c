@@ -1,4 +1,11 @@
 #include <stddef.h>
+#include "port/sdl/app/sdl_app.h"
+
+/* ─── SDLApp stub ─── */
+
+RendererBackend SDLApp_GetRenderer(void) {
+    return RENDERER_OPENGL;
+}
 
 /* ─── TextureUtil (new standalone API) ─── */
 

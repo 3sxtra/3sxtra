@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include "cmocka.h"
 
-#include "port/renderer.h"
-#include "port/sdl/sdl_game_renderer.h"
+#include "port/rendering/renderer.h"
+#include "port/sdl/renderer/sdl_game_renderer.h"
 #include "structs.h" // For WORK definition
 #include "sf33rd/Source/Game/rendering/aboutspr.h" // For shadow_drawing signature
 #include "sf33rd/Source/Common/PPGFile.h" // For ppgRenewDotDataSeqs signature

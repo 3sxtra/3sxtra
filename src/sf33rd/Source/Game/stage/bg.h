@@ -94,6 +94,7 @@ extern BG bg_w;
 // MARK: - Unhandled
 
 extern s32 bgPalCodeOffset[8];
+extern u8 gouki_alt_stage_pal_active;
 extern u16 Screen_Switch_Buffer;
 extern u16 Screen_Switch;
 
@@ -146,5 +147,7 @@ void Irl_Scrn();
 void Family_Move();
 void Ending_Family_Move();
 void Bg_Disp_Switch(u8 on_off);
+/** @brief Apply or revert the Shin Gouki alternative stage palette based on Shin_Gouki_BGM state. */
+void Bg_ShinGoukiPalUpdate(void);
 
 #endif

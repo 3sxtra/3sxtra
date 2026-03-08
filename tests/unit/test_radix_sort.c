@@ -11,7 +11,7 @@
 #include "cmocka.h"
 
 /* Include the header-only radix sort implementation */
-#include "port/sdl/radix_sort.h"
+#include "port/sdl/renderer/radix_sort.h"
 
 /* Scratch buffers shared across tests */
 #define TEST_MAX 1024

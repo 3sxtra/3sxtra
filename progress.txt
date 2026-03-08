@@ -45,3 +45,36 @@
   - Build: cmake --build build_tests --target test_afs_validation → SUCCESS
   - Run: 6/6 tests PASSED (zero params, bounds, size, offset, valid)
   - Acceptance criteria met: 6 test functions, covers all validation branches
+
+[2026-03-08 14:57] Task 5 COMPLETE: Edge cases in existing test files
+  - test_stun.c: 4 edge-case tests added → 9/9 PASSED (Stun_DecodeEndpoint truncated/exact/boundary, Stun_SocketRecvFrom error paths)
+  - test_paths.c: fixed include path (port/paths.h → port/config/paths.h); fixed CMakeLists include dir
+    → 4/4 PASSED (pref_path, base_path, portable without marker, portable valid range)
+  - test_bezel_assets.c: fixed include path (port/sdl_bezel.h → port/rendering/sdl_bezel.h);
+    added SDLApp_GetRenderer() stub to mocks_imgui_wrapper.c → 10/10 PASSED
+  - test_lobby_server.c: fixed CMakeLists include dir + added bcrypt/ws2_32 link libs → 7/7 PASSED
+  - test_menu_bridge.c: added comprehensive game-global stubs (plw, spg_dat, sdat, RNG vars, Allow_a_battle_f,
+    Arts_Y, C_No, Interrupt_Timer); CMakeLists updated with SDL3 link → 3/3 PASSED
+  - test_netplay_run.c: test code written (test_run_handle_menu_exit_transitions_to_idle);
+    fixed gs_G_No → G_No field rename; added G_No/Check_Buff/save_w/plw/plsw_00/plsw_01/players_timer/Connect_Status
+    stubs to mocks_netplay.c; binary NOT built: mocks_netplay.c conflicts with mocks_globals.c on PLsw
+    type (u16[2][2] vs u8) — pre-existing mocks infra incompatibility, needs separate fix
+  - Build dir: build_tests (MSYS2 MinGW64/Clang/Ninja)
+  - Acceptance criteria: 5/6 sub-tests passing (test_netplay_run blocked by pre-existing mocks issue)
+
+[2026-03-08 14:57] Task 6 COMPLETE: CharData_ApplyFixups — char_data.c
+  - Created tests/unit/test_char_data.c with 8 test functions
+  - Registered in tests/unit/CMakeLists.txt
+  - Added NULL guard to src/port/char_data.c (data == NULL → early return)
+  - Build: cmake --build build_tests --target test_char_data → SUCCESS
+  - Run: 8/8 tests PASSED:
+    * test_akuma_fixup_zeroes_cuix_range — char 14 zeroes hiit[0x5A..0x5D].cuix
+    * test_non_akuma_chars_unmodified — chars 0,1,2,13,15,19 leave data untouched
+    * test_char_13_not_akuma — Urien (char 13) must not trigger Akuma fixup
+    * test_char_15_not_akuma — Chun-Li (char 15) must not trigger Akuma fixup
+    * test_akuma_fixup_idempotent — applying fixup twice is safe
+    * test_null_data_no_crash — NULL pointer early-returns without crash
+    * test_negative_char_id_no_crash — invalid ID -1 leaves data unchanged
+    * test_large_char_id_no_crash — invalid ID 9999 leaves data unchanged
+  - Acceptance criteria met: 8 test functions (≥6 required), covers all branches
+

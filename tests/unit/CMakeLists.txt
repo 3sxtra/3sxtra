@@ -173,7 +173,7 @@ add_unit_test(test_paths
     test_paths.c
     ${PROJECT_SOURCE_DIR}/src/port/config/paths.c
 )
-target_include_directories(test_paths PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include)
+target_include_directories(test_paths PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${SDL3_ROOT}/include)
 target_link_sdl3(test_paths)
 
 add_unit_test(test_config
@@ -187,8 +187,17 @@ target_link_sdl3(test_config)
 add_unit_test(test_lobby_server
     test_lobby_server.c
 )
-target_include_directories(test_lobby_server PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include)
+target_include_directories(test_lobby_server PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${SDL3_ROOT}/include)
 target_link_sdl3(test_lobby_server)
+if(WIN32)
+    target_link_libraries(test_lobby_server PRIVATE ws2_32 bcrypt)
+endif()
+
+add_unit_test(test_char_data
+    test_char_data.c
+    ${PROJECT_SOURCE_DIR}/src/port/char_data.c
+)
+target_include_directories(test_char_data PRIVATE ${PROJECT_SOURCE_DIR}/src/include)
 
 add_unit_test(test_native_save
     test_native_save.c
@@ -255,7 +264,12 @@ if(WIN32)
     set_source_files_properties(test_broadcast_win32.cpp ${PROJECT_SOURCE_DIR}/src/port/win32/broadcast_spout.cpp PROPERTIES COMPILE_FLAGS "-Wno-error")
 endif()
 
-add_unit_test(test_menu_bridge test_menu_bridge.c ${PROJECT_SOURCE_DIR}/src/port/menu_bridge.c)
+add_unit_test(test_menu_bridge
+    test_menu_bridge.c
+    ${PROJECT_SOURCE_DIR}/src/port/menu_bridge.c
+)
+target_include_directories(test_menu_bridge PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${SDL3_ROOT}/include)
+target_link_sdl3(test_menu_bridge)
 add_unit_test(test_trials test_trials.c ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/training/trials.c)
 target_include_directories(test_trials PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
