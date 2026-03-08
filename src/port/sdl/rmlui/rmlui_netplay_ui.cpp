@@ -12,8 +12,8 @@
  */
 #include "port/sdl/rmlui/rmlui_netplay_ui.h"
 #include "netplay/netplay.h"
-#include "port/sdl/rmlui/rmlui_wrapper.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
+#include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>

@@ -30,8 +30,10 @@ extern bool use_rmlui;
 
 #define PAUSE_JMP_COUNT 4
 #define FLASH_PAUSE_JMP_COUNT 5
+#define PAUSE_HOLD_FRAMES 150 /**< Start must be held this many frames to pause (2.5s × 60fps) */
 
 u8 PAUSE_X;
+static u16 start_hold_frames[2]; /**< Per-player frame counter for Start hold */
 
 void Pause_Task(struct _TASK* task_ptr);
 
@@ -71,8 +73,8 @@ void Pause_Task(struct _TASK* task_ptr) {
 static void Pause_Check(struct _TASK* task_ptr) {
     PAUSE_X = 0;
 
-    if (Check_Pause_Term(~PLsw[0][1] & PLsw[0][0], 0) == 0) {
-        Check_Pause_Term(~PLsw[1][1] & PLsw[1][0], 1);
+    if (Check_Pause_Term(PLsw[0][0], 0) == 0) {
+        Check_Pause_Term(PLsw[1][0], 1);
     }
 
     switch (PAUSE_X) {
@@ -193,8 +195,14 @@ static s32 Check_Pause_Term(u16 sw, u8 PL_id) {
     }
 
     if (sw & SWK_START) {
-        Pause_Type = 1;
-        return PAUSE_X = 1;
+        if (++start_hold_frames[PL_id] >= PAUSE_HOLD_FRAMES) {
+            start_hold_frames[PL_id] = 0;
+            Pause_Type = 1;
+            return PAUSE_X = 1;
+        }
+        return 0;
+    } else {
+        start_hold_frames[PL_id] = 0;
     }
 
     // This skips checking controller connection status during gameplay testing
@@ -229,6 +237,8 @@ static void Exit_Pause(struct _TASK* task_ptr) {
     Game_pause = 0;
     Pause = 0;
     Pause_Down = 0;
+    start_hold_frames[0] = 0;
+    start_hold_frames[1] = 0;
 
     for (ix = 0; ix < 4; ix++) {
         task_ptr->r_no[ix] = 0;

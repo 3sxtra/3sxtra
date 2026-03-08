@@ -255,7 +255,8 @@ int main(int argc, char* argv[]) {
             step_0();
             is_running = SDLApp_PollEvents();
 #if !defined(_WIN32)
-            if (g_signal_quit) is_running = false;
+            if (g_signal_quit)
+                is_running = false;
 #endif
             SDLApp_EndFrame();
             step_1();
@@ -263,7 +264,8 @@ int main(int argc, char* argv[]) {
             /* Re-present the existing canvas (no game logic, no FBO clear) */
             is_running = SDLApp_PollEvents();
 #if !defined(_WIN32)
-            if (g_signal_quit) is_running = false;
+            if (g_signal_quit)
+                is_running = false;
 #endif
             SDLApp_PresentOnly();
         }
@@ -637,18 +639,21 @@ void njUserMain() {
  */
 
 // ⚡ Static task slot name table for Tracy — zero-cost string lookup per slot.
-static const struct { const char* name; size_t len; } task_slot_names[TASK_SLOT_COUNT] = {
-    {"Task:Init",   9},   // 0 - TASK_INIT
-    {"Task:Entry",  10},  // 1 - TASK_ENTRY
-    {"Task:Reset",  10},  // 2 - TASK_RESET
-    {"Task:Menu",   9},   // 3 - TASK_MENU
-    {"Task:Pause",  10},  // 4 - TASK_PAUSE
-    {"Task:Game",   9},   // 5 - TASK_GAME
-    {"Task:Saver",  10},  // 6 - TASK_SAVER
-    {"Task:Slot7",  10},  // 7 - unused
-    {"Task:Slot8",  10},  // 8 - unused
-    {"Task:Debug",  10},  // 9 - TASK_DEBUG
-    {"Task:Slot10", 11},  // 10 - unused
+static const struct {
+    const char* name;
+    size_t len;
+} task_slot_names[TASK_SLOT_COUNT] = {
+    { "Task:Init", 9 },    // 0 - TASK_INIT
+    { "Task:Entry", 10 },  // 1 - TASK_ENTRY
+    { "Task:Reset", 10 },  // 2 - TASK_RESET
+    { "Task:Menu", 9 },    // 3 - TASK_MENU
+    { "Task:Pause", 10 },  // 4 - TASK_PAUSE
+    { "Task:Game", 9 },    // 5 - TASK_GAME
+    { "Task:Saver", 10 },  // 6 - TASK_SAVER
+    { "Task:Slot7", 10 },  // 7 - unused
+    { "Task:Slot8", 10 },  // 8 - unused
+    { "Task:Debug", 10 },  // 9 - TASK_DEBUG
+    { "Task:Slot10", 11 }, // 10 - unused
 };
 
 void cpLoopTask() {

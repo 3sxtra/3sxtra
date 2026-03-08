@@ -10,19 +10,20 @@
 #include "netplay/netplay.h"
 #include "port/config/config.h"
 #include "port/mods/modded_stage.h"
-#include "port/sdl/input/control_mapping.h"
-#include "port/sdl/imgui/imgui_wrapper.h"
-#include "port/sdl/imgui/input_display.h"
-#include "port/sdl/imgui/mods_menu.h"
-#include "port/sdl/rmlui/rmlui_wrapper.h"
-#include "port/sdl/rmlui/rmlui_dev_overlay.h"
+#include "port/rendering/sdl_bezel.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/app/sdl_app_internal.h"
-#include "port/sdl/netplay/sdl_netplay_ui.h"
+#include "port/sdl/app/sdl_app_shader_config.h"
+#include "port/sdl/imgui/imgui_wrapper.h"
+#include "port/sdl/imgui/input_display.h"
+#include "port/sdl/imgui/mods_menu.h"
+#include "port/sdl/input/control_mapping.h"
 #include "port/sdl/input/sdl_pad.h"
-#include "port/rendering/sdl_bezel.h"
+#include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
+#include "port/sdl/rmlui/rmlui_dev_overlay.h"
+#include "port/sdl/rmlui/rmlui_wrapper.h"
 
 // Key handlers
 static void handle_menu_toggle(SDL_KeyboardEvent* event) {
@@ -116,7 +117,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             }
 
             if (event->key.key == SDLK_F4 && event->key.down && !event->key.repeat) {
-                SDLApp_ToggleShaderMode();
+                SDLAppShader_ToggleMode();
             }
             if (event->key.key == SDLK_F5 && event->key.down && !event->key.repeat) {
                 if (!Netplay_IsEnabled()) {
@@ -187,7 +188,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
                 }
             }
             if (event->key.key == SDLK_F4 && event->key.down && !event->key.repeat) {
-                SDLApp_ToggleShaderMode();
+                SDLAppShader_ToggleMode();
             }
             if (event->key.key == SDLK_F9 && event->key.down && !event->key.repeat) {
                 if (Netplay_IsEnabled()) {

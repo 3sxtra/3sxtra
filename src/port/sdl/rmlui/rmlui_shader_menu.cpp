@@ -21,20 +21,12 @@
 
 extern "C" {
 #include "include/port/broadcast.h"
+#include "port/sdl/app/sdl_app_shader_config.h"
 extern BroadcastConfig broadcast_config;
 
 int SDLApp_GetScaleMode();
 void SDLApp_SetScaleMode(int mode);
 const char* SDLApp_GetScaleModeName(int mode);
-
-bool SDLApp_GetShaderModeLibretro();
-void SDLApp_SetShaderModeLibretro(bool libretro);
-
-int SDLApp_GetCurrentPresetIndex();
-void SDLApp_SetCurrentPresetIndex(int index);
-int SDLApp_GetAvailablePresetCount();
-const char* SDLApp_GetPresetName(int index);
-void SDLApp_LoadPreset(int index);
 
 void SDLApp_SetVSync(bool enabled);
 bool SDLApp_IsVSyncEnabled();
@@ -79,7 +71,7 @@ static int s_filtered_count = 0;
 static void rebuild_filtered_presets() {
     /* Build into a temp list first. */
     int match_count = 0;
-    int count = SDLApp_GetAvailablePresetCount();
+    int count = SDLAppShader_GetAvailableCount();
     Rml::String filter_lower = to_lower(s_search_filter);
 
     /* Ensure the vector is always exactly FILTERED_PRESETS_MAX entries.
@@ -89,7 +81,7 @@ static void rebuild_filtered_presets() {
     s_filtered_presets.resize(FILTERED_PRESETS_MAX);
 
     for (int i = 0; i < count && match_count < FILTERED_PRESETS_MAX; i++) {
-        const char* name = SDLApp_GetPresetName(i);
+        const char* name = SDLAppShader_GetPresetName(i);
         if (!name)
             continue;
 
@@ -141,8 +133,8 @@ extern "C" void rmlui_shader_menu_init() {
 
     constructor.BindFunc(
         "is_libretro",
-        [](Rml::Variant& v) { v = SDLApp_GetShaderModeLibretro(); },
-        [](const Rml::Variant& v) { SDLApp_SetShaderModeLibretro(v.Get<bool>()); });
+        [](Rml::Variant& v) { v = SDLAppShader_IsLibretroMode(); },
+        [](const Rml::Variant& v) { SDLAppShader_SetMode(v.Get<bool>()); });
 
     constructor.BindFunc(
         "scale_mode",
@@ -158,15 +150,15 @@ extern "C" void rmlui_shader_menu_init() {
         });
     }
 
-    constructor.BindFunc("preset_count", [](Rml::Variant& v) { v = SDLApp_GetAvailablePresetCount(); });
+    constructor.BindFunc("preset_count", [](Rml::Variant& v) { v = SDLAppShader_GetAvailableCount(); });
 
     constructor.BindFunc(
         "current_preset",
-        [](Rml::Variant& v) { v = SDLApp_GetCurrentPresetIndex(); },
+        [](Rml::Variant& v) { v = SDLAppShader_GetCurrentIndex(); },
         [](const Rml::Variant& v) {
             int idx = v.Get<int>();
-            SDLApp_SetCurrentPresetIndex(idx);
-            SDLApp_LoadPreset(idx);
+            SDLAppShader_SetCurrentIndex(idx);
+            SDLAppShader_LoadPreset(idx);
         });
 
     constructor.BindFunc(
@@ -205,8 +197,8 @@ extern "C" void rmlui_shader_menu_init() {
                                       if (args.empty())
                                           return;
                                       int idx = args[0].Get<int>();
-                                      SDLApp_SetCurrentPresetIndex(idx);
-                                      SDLApp_LoadPreset(idx);
+                                      SDLAppShader_SetCurrentIndex(idx);
+                                      SDLAppShader_LoadPreset(idx);
                                       handle.DirtyVariable("current_preset");
                                   });
 
@@ -226,7 +218,7 @@ extern "C" void rmlui_shader_menu_update() {
 
     bool dirty = false;
 
-    bool is_libretro = SDLApp_GetShaderModeLibretro();
+    bool is_libretro = SDLAppShader_IsLibretroMode();
     if (is_libretro != s_prev.is_libretro) {
         s_prev.is_libretro = is_libretro;
         s_model_handle.DirtyVariable("is_libretro");
@@ -240,14 +232,14 @@ extern "C" void rmlui_shader_menu_update() {
         dirty = true;
     }
 
-    int current_preset = SDLApp_GetCurrentPresetIndex();
+    int current_preset = SDLAppShader_GetCurrentIndex();
     if (current_preset != s_prev.current_preset) {
         s_prev.current_preset = current_preset;
         s_model_handle.DirtyVariable("current_preset");
         dirty = true;
     }
 
-    int preset_count = SDLApp_GetAvailablePresetCount();
+    int preset_count = SDLAppShader_GetAvailableCount();
     if (preset_count != s_prev.preset_count) {
         s_prev.preset_count = preset_count;
         s_model_handle.DirtyVariable("preset_count");

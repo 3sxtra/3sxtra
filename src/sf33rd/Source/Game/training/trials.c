@@ -163,8 +163,7 @@ void trials_update(void) {
             // Grace expired with no new hits — real drop
             // But don't fail if the next step is a non-hit type (ACTIVE_MOVE, etc.)
             const TrialStep* next = &cur_trial->steps[g_trials_state.current_step];
-            bool next_is_hit = (next->type == TRIAL_REQ_ATTACK_HIT ||
-                                next->type == TRIAL_REQ_THROW_HIT ||
+            bool next_is_hit = (next->type == TRIAL_REQ_ATTACK_HIT || next->type == TRIAL_REQ_THROW_HIT ||
                                 next->type == TRIAL_REQ_FIREBALL_HIT);
             if (next_is_hit) {
                 g_trials_state.failed = true;
@@ -198,8 +197,7 @@ void trials_update(void) {
 
         if (g_trials_state.current_step < cur_trial->num_steps) {
             const TrialStep* req = &cur_trial->steps[g_trials_state.current_step];
-            bool step_is_hit = (req->type == TRIAL_REQ_ATTACK_HIT ||
-                                req->type == TRIAL_REQ_THROW_HIT ||
+            bool step_is_hit = (req->type == TRIAL_REQ_ATTACK_HIT || req->type == TRIAL_REQ_THROW_HIT ||
                                 req->type == TRIAL_REQ_FIREBALL_HIT);
 
             if (step_is_hit) {
@@ -232,8 +230,7 @@ void trials_update(void) {
             // ANIM2P: check if P2 is in a specific animation state
             // The waza_ids contain both the P1 waza (index 0) and P2 animation IDs
             // We check P1's waza OR P2's animation against any of the stored IDs
-            if (match_waza(req, pl1->wu.kind_of_waza) ||
-                match_waza(req, pl2->wu.kind_of_waza)) {
+            if (match_waza(req, pl1->wu.kind_of_waza) || match_waza(req, pl2->wu.kind_of_waza)) {
                 g_trials_state.current_step++;
                 g_trials_state.step_completed_this_frame = true;
             }

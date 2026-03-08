@@ -33,8 +33,8 @@ typedef struct {
     DummyParryType parry_type;
     DummyMashType stun_mash;
     DummyMashType wakeup_mash;
-    bool wakeup_reversal;        // Independent SRK/DP on wakeup (not tied to mash)
-    bool guard_low_default;      // If true, default guard direction is down-back (blocks lows)
+    bool wakeup_reversal;   // Independent SRK/DP on wakeup (not tied to mash)
+    bool guard_low_default; // If true, default guard direction is down-back (blocks lows)
 
     // Internal state tracking
     bool is_currently_blocking;  // Latched random-block decision per attack string

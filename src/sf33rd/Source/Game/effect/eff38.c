@@ -6,6 +6,8 @@
 #include "sf33rd/Source/Game/effect/eff38.h"
 #include "bin2obj/char_table.h"
 #include "common.h"
+#include "port/sdl/rmlui/rmlui_char_select.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/caldir.h"
 #include "sf33rd/Source/Game/engine/charset.h"
@@ -17,8 +19,6 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
-#include "port/sdl/rmlui/rmlui_char_select.h"
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 
 static void EFF38_WAIT(WORK_Other* ewk);
 static void EFF38_SUDDENLY(WORK_Other* ewk);
@@ -44,7 +44,7 @@ void effect_38_move(WORK_Other* ewk) {
     if (ewk->wu.be_flag != 0) {
         ewk->wu.position_x = ewk->wu.xyz[0].disp.pos & 0xFFFF;
         ewk->wu.position_y = ewk->wu.xyz[1].disp.pos & 0xFFFF;
-        
+
         bool suppress_native = false;
         if (rmlui_screen_select && rmlui_char_select_visible) {
             suppress_native = true;

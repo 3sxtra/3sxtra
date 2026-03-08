@@ -11,11 +11,11 @@
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlgpu3.h"
-#include "port/imgui_font.h"
 #include "port/config/paths.h"
+#include "port/imgui_font.h"
 #include "port/rendering/resources.h"
-#include "port/sdl/input/control_mapping.h"
 #include "port/sdl/app/sdl_app.h"
+#include "port/sdl/input/control_mapping.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
 #include <SDL3/SDL.h>

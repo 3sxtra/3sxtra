@@ -5,10 +5,10 @@
 
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "common.h"
-#include "port/tracy_zones.h"
 #include "port/rendering/legacy_matrix.h"
 #include "port/rendering/renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
+#include "port/tracy_zones.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/PPGFile.h"
@@ -25,8 +25,8 @@
 #include <SDL3/SDL.h>
 
 // ⚡ Opt5: SIMDe for portable SIMD intrinsics (SSE+FMA on x86, NEON on ARM)
-#include <simde/x86/sse.h>
 #include <simde/x86/fma.h>
+#include <simde/x86/sse.h>
 
 #define PRIO_BASE_SIZE 128
 #define SPRITE_LAYERS_MAX 24 // Maximum number of sprite layers (matches MultiTexture mts[] array)
@@ -38,7 +38,7 @@ typedef struct {
     u16 sprTotal;
     u16 sprMax;
     s8 up[SPRITE_LAYERS_MAX];
-    u8 buf_index;       // ⚡ Opt8: Current buffer index (0 or 1)
+    u8 buf_index; // ⚡ Opt8: Current buffer index (0 or 1)
 } SpriteChipSet;
 
 // ⚡ Hash-based tile cache lookup — O(1) replacement for linear get_mltbuf16/32 scans.
@@ -54,8 +54,8 @@ typedef struct {
 #define TILE_CACHE_BOOST 4
 
 typedef struct {
-    u32 code;  // PatternCode that was cached
-    s32 slot;  // index into mltcsh16/32, or MLT_HASH_EMPTY
+    u32 code; // PatternCode that was cached
+    s32 slot; // index into mltcsh16/32, or MLT_HASH_EMPTY
 } MltHashEntry;
 
 static MltHashEntry s_hash16[MULTITEXTURE_MAX][MLT_HASH_SIZE];
@@ -68,28 +68,28 @@ static inline u32 mlt_hash(u32 code) {
 // ⚡ Opt4: CG Frame Pre-built Tile Descriptor Cache
 // Pre-computes the tile map walk (X/Y offsets, TEX dimensions, tile sizes) once per
 // cg_number. Eliminates per-frame TileMapEntry[] parsing and TEX pointer resolution.
-#define CG_CACHE_MAX_TILES 128  // Max tiles per CG frame (game max observed: ~60)
+#define CG_CACHE_MAX_TILES 128 // Max tiles per CG frame (game max observed: ~60)
 #define CG_TILE_CACHE_BITS 10
 #define CG_TILE_CACHE_SLOTS (1 << CG_TILE_CACHE_BITS)
 #define CG_TILE_CACHE_MASK (CG_TILE_CACHE_SLOTS - 1)
 
 typedef struct {
-    f32 cum_x;      // Accumulated X offset (positive direction, before flip)
-    f32 cum_y;      // Accumulated Y offset (positive direction, before flip)
-    s32 dw;         // Tile width  (from TEX.wh)
-    s32 dh;         // Tile height (from TEX.wh)
-    s32 wh;         // Tile class: 1, 2, or 4
-    s32 size;       // Decoded tile size in bytes: (wh*wh) << 6
-    u16 tile_code;  // trsptr->code (index into texture table)
-    u16 attr;       // trsptr->attr (raw, before XOR with WORK flip)
-    u8* tex_data;   // Pointer to compressed tile data (&((u8*)texptr)[1])
+    f32 cum_x;     // Accumulated X offset (positive direction, before flip)
+    f32 cum_y;     // Accumulated Y offset (positive direction, before flip)
+    s32 dw;        // Tile width  (from TEX.wh)
+    s32 dh;        // Tile height (from TEX.wh)
+    s32 wh;        // Tile class: 1, 2, or 4
+    s32 size;      // Decoded tile size in bytes: (wh*wh) << 6
+    u16 tile_code; // trsptr->code (index into texture table)
+    u16 attr;      // trsptr->attr (raw, before XOR with WORK flip)
+    u8* tex_data;  // Pointer to compressed tile data (&((u8*)texptr)[1])
 } CGTileDesc;
 
 typedef struct {
-    u32 key;            // cg_number, or 0 = empty
-    u16 count;          // Number of tiles
-    u8  group;          // obj_group_table index
-    u8  _pad;
+    u32 key;   // cg_number, or 0 = empty
+    u16 count; // Number of tiles
+    u8 group;  // obj_group_table index
+    u8 _pad;
     CGTileDesc tiles[CG_CACHE_MAX_TILES];
 } CGTileCacheEntry;
 
@@ -174,10 +174,10 @@ static CGTileCacheEntry* cg_lookup_tile_descs(u32 cg_number) {
         CGTileCacheEntry* e = &s_cg_tile_cache[idx];
         if (e->key == cg_number) {
             s_cg_cache_hits++;
-            return e;  // Cache hit
+            return e; // Cache hit
         }
         if (e->key == 0) {
-            break;  // Empty slot — miss
+            break; // Empty slot — miss
         }
     }
     // Cache miss — build and insert
@@ -271,10 +271,10 @@ static const u32 bright_type[4][16] = { { 0x00FFFFFF,
 // ⚡ Opt3: Cached matrix elements for inlined per-chip transform.
 // Extracted once per character in mlt_obj_matrix(), used N times in seqsStoreChip().
 // Since input z==0 for all chips, the z-row contributions are eliminated (saves 4 mults/chip).
-static f32 s_mtx_00, s_mtx_10, s_mtx_tx;  // X row: out.x = in.x*m00 + in.y*m10 + tx
-static f32 s_mtx_01, s_mtx_11, s_mtx_ty;  // Y row: out.y = in.x*m01 + in.y*m11 + ty
-static f32 s_mtx_02, s_mtx_12, s_mtx_tz;  // Z row: out.z = in.x*m02 + in.y*m12 + tz
-static f32 s_mtx_z_step;                   // Per-chip Z increment (cmtx.a[2][2] * 1/65536)
+static f32 s_mtx_00, s_mtx_10, s_mtx_tx; // X row: out.x = in.x*m00 + in.y*m10 + tx
+static f32 s_mtx_01, s_mtx_11, s_mtx_ty; // Y row: out.y = in.x*m01 + in.y*m11 + ty
+static f32 s_mtx_02, s_mtx_12, s_mtx_tz; // Z row: out.z = in.x*m02 + in.y*m12 + tz
+static f32 s_mtx_z_step;                 // Per-chip Z increment (cmtx.a[2][2] * 1/65536)
 
 // forward decls
 static void DebugLine(f32 x, f32 y, f32 w, f32 h);
@@ -308,24 +308,21 @@ static u16 x32_mapping_set(PatternMap* map, s32 code);
  * @param pal_bits   Palette index bits (palo or palt, lower 9 bits used)
  * @param is32       true if 32×32 tile (wh=4), false if 8/16×16
  */
-static void lz77_gpu_or_cpu(u8* src, u32 comp_bound, u32 size,
-                             MultiTexture* mt, s32 gix_base, s32 code,
-                             s32 pal_bits, int is32) {
+static void lz77_gpu_or_cpu(u8* src, u32 comp_bound, u32 size, MultiTexture* mt, s32 gix_base, s32 code, s32 pal_bits,
+                            int is32) {
     TRACE_ZONE_NC("LZ77:GpuOrCpu", TRACE_COLOR_RENDER);
     s_lz77_decode_count++;
 
     s32 code_offset = is32 ? (code >> 6) : (code >> 8);
-    s32 code_local  = is32 ? (code & 0x3F) : (code & 0xFF);
-    u32 tile_dim    = is32 ? 32 : ((size == 0x40) ? 8 : 16);
+    s32 code_local = is32 ? (code & 0x3F) : (code & 0xFF);
+    u32 tile_dim = is32 ? 32 : ((size == 0x40) ? 8 : 16);
 
     // Resolve ppg handles to match what seqsStoreChip/SetTexture will use
     s32 tex_handle = ppgGetUsingTextureHandle(NULL, gix_base + code_offset);
     s32 pal_handle = ppgGetUsingPaletteHandle(NULL, pal_bits & 0x1FF);
 
     if (tex_handle > 0 &&
-        Renderer_LZ77Enqueue(src, comp_bound, size,
-                              tex_handle, pal_handle,
-                              (u32)code_local, tile_dim)) {
+        Renderer_LZ77Enqueue(src, comp_bound, size, tex_handle, pal_handle, (u32)code_local, tile_dim)) {
         // GPU path succeeded — but also decompress to CPU buffer so that
         // ppgRenewTexChunkSeqs → UnlockTexture → SetTexture re-uploads
         // will contain correct tile data (not stale/empty buffer content).
@@ -900,8 +897,8 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
         const CGTileDesc* d = &cge->tiles[t];
 
         // Apply flip to cached cumulative offsets
-        f32 x = (attr & 0x8000) ?  d->cum_x : -d->cum_x;
-        f32 y = (attr & 0x4000) ? -d->cum_y :  d->cum_y;
+        f32 x = (attr & 0x8000) ? d->cum_x : -d->cum_x;
+        f32 y = (attr & 0x4000) ? -d->cum_y : d->cum_y;
 
         cc.parts.offset = d->tile_code;
 
@@ -956,7 +953,6 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
     seqs_w.up[mt->id] = 1;
     appRenewTempPriority(wk->position_z);
 }
-
 
 /** @brief Transform and render with CP3 palette (extended variant). */
 void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
@@ -1258,8 +1254,8 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
         const CGTileDesc* d = &cge->tiles[t];
 
         // Apply flip to cached cumulative offsets
-        f32 x = (flip & 0x8000) ?  d->cum_x : -d->cum_x;
-        f32 y = (flip & 0x4000) ? -d->cum_y :  d->cum_y;
+        f32 x = (flip & 0x8000) ? d->cum_x : -d->cum_x;
+        f32 y = (flip & 0x4000) ? -d->cum_y : d->cum_y;
 
         attr = d->attr;
         palt = (attr & 0x1FF) + palo;
@@ -1603,8 +1599,8 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
         const CGTileDesc* d = &cge->tiles[t];
 
         // Apply flip to cached cumulative offsets
-        f32 x = (flip & 0x8000) ?  d->cum_x : -d->cum_x;
-        f32 y = (flip & 0x4000) ? -d->cum_y :  d->cum_y;
+        f32 x = (flip & 0x8000) ? d->cum_x : -d->cum_x;
+        f32 y = (flip & 0x4000) ? -d->cum_y : d->cum_y;
 
         attr = d->attr;
         palt = (attr & 0x1FF) + palo;
@@ -1676,9 +1672,15 @@ void mlt_obj_matrix(WORK* wk, s32 base_y) {
     // row 2 only matters for Z-step via appRenewTempPriority_1_Chip.
     MTX cached;
     njGetMatrix(&cached);
-    s_mtx_00 = cached.a[0][0]; s_mtx_01 = cached.a[0][1]; s_mtx_02 = cached.a[0][2];
-    s_mtx_10 = cached.a[1][0]; s_mtx_11 = cached.a[1][1]; s_mtx_12 = cached.a[1][2];
-    s_mtx_tx = cached.a[3][0]; s_mtx_ty = cached.a[3][1]; s_mtx_tz = cached.a[3][2];
+    s_mtx_00 = cached.a[0][0];
+    s_mtx_01 = cached.a[0][1];
+    s_mtx_02 = cached.a[0][2];
+    s_mtx_10 = cached.a[1][0];
+    s_mtx_11 = cached.a[1][1];
+    s_mtx_12 = cached.a[1][2];
+    s_mtx_tx = cached.a[3][0];
+    s_mtx_ty = cached.a[3][1];
+    s_mtx_tz = cached.a[3][2];
     s_mtx_z_step = cached.a[2][2] * (1.0f / 65536.0f);
 }
 
@@ -1848,7 +1850,7 @@ static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr
         // Matrix elements broadcast: [m00, m00, m01, m01], etc.
         const simde__m128 vm0 = simde_mm_set_ps(s_mtx_01, s_mtx_01, s_mtx_00, s_mtx_00);
         const simde__m128 vm1 = simde_mm_set_ps(s_mtx_11, s_mtx_11, s_mtx_10, s_mtx_10);
-        const simde__m128 vt  = simde_mm_set_ps(s_mtx_ty, s_mtx_ty, s_mtx_tx, s_mtx_tx);
+        const simde__m128 vt = simde_mm_set_ps(s_mtx_ty, s_mtx_ty, s_mtx_tx, s_mtx_tx);
 
         // result = vx * vm0 + vy * vm1 + vt  (X0, X1, Y0, Y1)
         simde__m128 result = simde_mm_fmadd_ps(vx, vm0, vt);
@@ -1863,7 +1865,7 @@ static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr
         chip->v[1].y = ((simde_float32*)&r)[3];
 
         // Z is cheap enough to stay scalar (2 FMAs)
-        chip->v[0].z = x  * s_mtx_02 + y  * s_mtx_12 + s_mtx_tz;
+        chip->v[0].z = x * s_mtx_02 + y * s_mtx_12 + s_mtx_tz;
         chip->v[1].z = x1 * s_mtx_02 + y1 * s_mtx_12 + s_mtx_tz;
     }
 
@@ -1968,7 +1970,8 @@ static s32 get_mltbuf16(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
             u32 oh = mlt_hash(old_code);
             for (s32 p = 0; p < MLT_HASH_SIZE; p++) {
                 u32 oi = (oh + p) & MLT_HASH_MASK;
-                if (ht[oi].slot == MLT_HASH_EMPTY) break;
+                if (ht[oi].slot == MLT_HASH_EMPTY)
+                    break;
                 if (ht[oi].code == old_code && ht[oi].slot == b) {
                     ht[oi].slot = MLT_HASH_EMPTY;
                     ht[oi].code = 0;
@@ -2045,7 +2048,8 @@ static s32 get_mltbuf32(MultiTexture* mt, u32 code, u32 palt, s32* ret) {
             u32 oh = mlt_hash(old_code);
             for (s32 p = 0; p < MLT_HASH_SIZE; p++) {
                 u32 oi = (oh + p) & MLT_HASH_MASK;
-                if (ht[oi].slot == MLT_HASH_EMPTY) break;
+                if (ht[oi].slot == MLT_HASH_EMPTY)
+                    break;
                 if (ht[oi].code == old_code && ht[oi].slot == b) {
                     ht[oi].slot = MLT_HASH_EMPTY;
                     ht[oi].code = 0;
@@ -2418,8 +2422,8 @@ void mlt_obj_trans_init(MultiTexture* mt, s32 mode, u8* adrs) {
         memset(s_hash16[mt->id], 0xFF, sizeof(s_hash16[0]));
         memset(s_hash32[mt->id], 0xFF, sizeof(s_hash32[0]));
 
-    // `+"`u{26A1}`+" Opt4: Invalidate CG tile descriptor cache when texture groups are reloaded
-    cg_cache_invalidate();
+        // `+"`u{26A1}`+" Opt4: Invalidate CG tile descriptor cache when texture groups are reloaded
+        cg_cache_invalidate();
     }
 }
 
@@ -2440,7 +2444,8 @@ void mlt_obj_trans_update(MultiTexture* mt) {
                 u32 h = mlt_hash(evict_code);
                 for (s32 p = 0; p < MLT_HASH_SIZE; p++) {
                     u32 idx = (h + p) & MLT_HASH_MASK;
-                    if (ht16[idx].slot == MLT_HASH_EMPTY) break;
+                    if (ht16[idx].slot == MLT_HASH_EMPTY)
+                        break;
                     if (ht16[idx].code == evict_code && ht16[idx].slot == i) {
                         ht16[idx].slot = MLT_HASH_EMPTY;
                         ht16[idx].code = 0;
@@ -2461,7 +2466,8 @@ void mlt_obj_trans_update(MultiTexture* mt) {
                 u32 h = mlt_hash(evict_code);
                 for (s32 p = 0; p < MLT_HASH_SIZE; p++) {
                     u32 idx = (h + p) & MLT_HASH_MASK;
-                    if (ht32[idx].slot == MLT_HASH_EMPTY) break;
+                    if (ht32[idx].slot == MLT_HASH_EMPTY)
+                        break;
                     if (ht32[idx].code == evict_code && ht32[idx].slot == i) {
                         ht32[idx].slot = MLT_HASH_EMPTY;
                         ht32[idx].code = 0;

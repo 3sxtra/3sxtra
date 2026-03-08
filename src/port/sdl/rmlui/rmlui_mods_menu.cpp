@@ -12,8 +12,8 @@
  */
 #include "port/sdl/rmlui/rmlui_mods_menu.h"
 #include "port/config/config.h"
-#include "port/sdl/rmlui/rmlui_wrapper.h"
 #include "port/rendering/sdl_bezel.h"
+#include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>
@@ -187,7 +187,8 @@ extern "C" void rmlui_mods_menu_init(void) {
         [](const Rml::Variant& v) {
             bool want = v.Get<bool>();
             bool cur = (Bg_IsShinGoukiPalActive() != 0);
-            if (want != cur) Bg_ToggleShinGoukiPalette();
+            if (want != cur)
+                Bg_ToggleShinGoukiPalette();
         });
     constructor.BindFunc(
         "hide_shadows",

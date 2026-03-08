@@ -268,11 +268,11 @@ int Renderer_LZ77Available(void) {
     return 0;
 }
 
-int Renderer_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 decomp_size,
-                          int texture_handle, int palette_handle, u32 code, u32 tile_dim) {
+int Renderer_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 decomp_size, int texture_handle, int palette_handle,
+                         u32 code, u32 tile_dim) {
     if (SDLApp_GetRenderer() == RENDERER_SDLGPU) {
-        return SDLGameRendererGPU_LZ77Enqueue(compressed, comp_size, decomp_size,
-                                               texture_handle, palette_handle, code, tile_dim);
+        return SDLGameRendererGPU_LZ77Enqueue(
+            compressed, comp_size, decomp_size, texture_handle, palette_handle, code, tile_dim);
     }
     return 0;
 }

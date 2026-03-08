@@ -171,8 +171,6 @@ extern "C" void rmlui_stage_config_init() {
         [](Rml::Variant& v) { v = active_layer()->z_index; },
         [](const Rml::Variant& v) { active_layer()->z_index = v.Get<int>(); });
 
-
-
     // ── Event callbacks ──
 
     c.BindEventCallback("save_config", [](Rml::DataModelHandle handle, Rml::Event&, const Rml::VariantList&) {
@@ -257,7 +255,6 @@ extern "C" void rmlui_stage_config_update() {
     CHECK_DIRTY(offset_y, "layer_offset_y");
     CHECK_DIRTY(original_bg_index, "layer_bg_index");
     CHECK_DIRTY(z_index, "layer_z_index");
-
 
     if ((int)L->scale_mode != s_prev.scale_mode) {
         s_prev.scale_mode = (int)L->scale_mode;

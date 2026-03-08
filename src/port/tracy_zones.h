@@ -22,12 +22,12 @@
 #pragma once
 
 // ⚡ Subsystem color constants for zone categorization
-#define TRACE_COLOR_GAME     0xE06060  // Red — game logic / task scheduler
-#define TRACE_COLOR_RENDER   0x60E060  // Green — rendering pipeline
-#define TRACE_COLOR_SOUND    0x6060E0  // Blue — audio / SPU
-#define TRACE_COLOR_UI       0xE060E0  // Magenta — UI / menu bridge
-#define TRACE_COLOR_NET      0xE0E060  // Yellow — netplay
-#define TRACE_COLOR_IO       0x60E0E0  // Cyan — I/O / file loading
+#define TRACE_COLOR_GAME 0xE06060   // Red — game logic / task scheduler
+#define TRACE_COLOR_RENDER 0x60E060 // Green — rendering pipeline
+#define TRACE_COLOR_SOUND 0x6060E0  // Blue — audio / SPU
+#define TRACE_COLOR_UI 0xE060E0     // Magenta — UI / menu bridge
+#define TRACE_COLOR_NET 0xE0E060    // Yellow — netplay
+#define TRACE_COLOR_IO 0x60E0E0     // Cyan — I/O / file loading
 
 #ifdef TRACY_ENABLE
 #include <tracy/TracyC.h>
@@ -58,28 +58,27 @@
 #define TRACE_FRAME_MARK() TracyCFrameMark
 
 // ── Lock contention tracking ──
-#define TRACE_LOCK_ANNOUNCE(lock)    TracyCLockAnnounce(lock)
-#define TRACE_LOCK_TERMINATE(lock)   TracyCLockTerminate(lock)
-#define TRACE_LOCK_BEFORE(lock)      TracyCLockBeforeLock(lock)
-#define TRACE_LOCK_AFTER(lock)       TracyCLockAfterLock(lock)
-#define TRACE_LOCK_UNLOCK(lock)      TracyCLockAfterUnlock(lock)
-#define TRACE_LOCK_NAME(lock, n, l)  TracyCLockCustomName(lock, n, l)
+#define TRACE_LOCK_ANNOUNCE(lock) TracyCLockAnnounce(lock)
+#define TRACE_LOCK_TERMINATE(lock) TracyCLockTerminate(lock)
+#define TRACE_LOCK_BEFORE(lock) TracyCLockBeforeLock(lock)
+#define TRACE_LOCK_AFTER(lock) TracyCLockAfterLock(lock)
+#define TRACE_LOCK_UNLOCK(lock) TracyCLockAfterUnlock(lock)
+#define TRACE_LOCK_NAME(lock, n, l) TracyCLockCustomName(lock, n, l)
 
 // ── Plots — time-series graphs on the timeline ──
-#define TRACE_PLOT_INT(name, val)    TracyCPlotI(name, val)
-#define TRACE_PLOT_FLOAT(name, val)  TracyCPlotF(name, val)
-#define TRACE_PLOT_CONFIG(name, type, step, fill, color) \
-    TracyCPlotConfig(name, type, step, fill, color)
+#define TRACE_PLOT_INT(name, val) TracyCPlotI(name, val)
+#define TRACE_PLOT_FLOAT(name, val) TracyCPlotF(name, val)
+#define TRACE_PLOT_CONFIG(name, type, step, fill, color) TracyCPlotConfig(name, type, step, fill, color)
 
 // ── Messages — event markers on the timeline ──
-#define TRACE_MSG(txt)               TracyCMessageL(txt)
-#define TRACE_MSG_COLOR(txt, color)  TracyCMessageLC(txt, color)
+#define TRACE_MSG(txt) TracyCMessageL(txt)
+#define TRACE_MSG_COLOR(txt, color) TracyCMessageLC(txt, color)
 
 // ── Thread naming ──
-#define TRACE_THREAD_NAME(name)      TracyCSetThreadName(name)
+#define TRACE_THREAD_NAME(name) TracyCSetThreadName(name)
 
 // ── Connection check ──
-#define TRACE_IS_CONNECTED()         TracyCIsConnected
+#define TRACE_IS_CONNECTED() TracyCIsConnected
 
 #else /* !TRACY_ENABLE */
 
@@ -99,26 +98,27 @@
 
 #define TRACE_SUB_DYN_BEGIN(name_ptr, name_len)                                                                        \
     {                                                                                                                  \
-        (void)(name_ptr); (void)(name_len)
+        (void)(name_ptr);                                                                                              \
+        (void)(name_len)
 
 #define TRACE_FRAME_MARK() ((void)0)
 
-#define TRACE_LOCK_ANNOUNCE(lock)    ((void)0)
-#define TRACE_LOCK_TERMINATE(lock)   ((void)0)
-#define TRACE_LOCK_BEFORE(lock)      ((void)0)
-#define TRACE_LOCK_AFTER(lock)       ((void)0)
-#define TRACE_LOCK_UNLOCK(lock)      ((void)0)
-#define TRACE_LOCK_NAME(lock, n, l)  ((void)0)
+#define TRACE_LOCK_ANNOUNCE(lock) ((void)0)
+#define TRACE_LOCK_TERMINATE(lock) ((void)0)
+#define TRACE_LOCK_BEFORE(lock) ((void)0)
+#define TRACE_LOCK_AFTER(lock) ((void)0)
+#define TRACE_LOCK_UNLOCK(lock) ((void)0)
+#define TRACE_LOCK_NAME(lock, n, l) ((void)0)
 
-#define TRACE_PLOT_INT(name, val)    ((void)(name), (void)(val))
-#define TRACE_PLOT_FLOAT(name, val)  ((void)(name), (void)(val))
+#define TRACE_PLOT_INT(name, val) ((void)(name), (void)(val))
+#define TRACE_PLOT_FLOAT(name, val) ((void)(name), (void)(val))
 #define TRACE_PLOT_CONFIG(name, type, step, fill, color) ((void)0)
 
-#define TRACE_MSG(txt)               ((void)0)
-#define TRACE_MSG_COLOR(txt, color)  ((void)0)
+#define TRACE_MSG(txt) ((void)0)
+#define TRACE_MSG_COLOR(txt, color) ((void)0)
 
-#define TRACE_THREAD_NAME(name)      ((void)0)
+#define TRACE_THREAD_NAME(name) ((void)0)
 
-#define TRACE_IS_CONNECTED()         0
+#define TRACE_IS_CONNECTED() 0
 
 #endif

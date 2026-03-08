@@ -45,7 +45,8 @@
 #define GS_SAVE(member) SDL_memcpy(&dst->member, &member, sizeof(member))
 
 void GameState_Save(GameState* dst) {
-    if (!dst) return;
+    if (!dst)
+        return;
     GS_SAVE(Scene_Cut);
     GS_SAVE(Time_Over);
     GS_SAVE(round_timer);
@@ -715,7 +716,8 @@ void GameState_Save(GameState* dst) {
 #define GS_LOAD(member) SDL_memcpy(&member, &src->member, sizeof(member))
 
 void GameState_Load(const GameState* src) {
-    if (!src) return;
+    if (!src)
+        return;
     GS_LOAD(Scene_Cut);
     GS_LOAD(Time_Over);
     GS_LOAD(round_timer);

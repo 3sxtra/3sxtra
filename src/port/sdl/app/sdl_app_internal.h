@@ -17,8 +17,6 @@ void SDLApp_CycleScaleMode();
 void SDLApp_ToggleFullscreen();
 void SDLApp_HandleMouseMotion();
 void SDLApp_SaveScreenshot();
-void SDLApp_ToggleShaderMode();
-void SDLApp_CyclePreset();
 void SDLApp_ToggleBezel();
 void SDLApp_ToggleFrameRateUncap();
 void SDLApp_ToggleDebugHUD();

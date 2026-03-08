@@ -14,20 +14,30 @@
 #include "port/broadcast.h"
 #include "port/config/config.h"
 #include "port/mods/modded_stage.h"
-#include "port/sdl/input/control_mapping.h"
 #include "port/sdl/imgui/frame_display.h"
 #include "port/sdl/imgui/imgui_wrapper.h"
+#include "port/sdl/input/control_mapping.h"
+#include "port/sdl/rmlui/rmlui_dev_overlay.h"
 #include "port/sdl/rmlui/rmlui_frame_display.h"
 #include "port/sdl/rmlui/rmlui_input_display.h"
 #include "port/sdl/rmlui/rmlui_mods_menu.h"
 #include "port/sdl/rmlui/rmlui_shader_menu.h"
 #include "port/sdl/rmlui/rmlui_stage_config.h"
-#include "port/sdl/rmlui/rmlui_dev_overlay.h"
 #include "port/sdl/rmlui/rmlui_training_menu.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 /* Phase 3 — Fight HUD & Mode Menu */
+#include "port/rendering/sdl_bezel.h"
+#include "port/sdl/app/sdl_app_config.h"
+#include "port/sdl/app/sdl_app_input.h"
+#include "port/sdl/app/sdl_app_internal.h"
+#include "port/sdl/app/sdl_app_shader_config.h"
 #include "port/sdl/imgui/input_display.h"
 #include "port/sdl/imgui/mods_menu.h"
+#include "port/sdl/imgui/shader_menu.h"
+#include "port/sdl/imgui/stage_config_menu.h"
+#include "port/sdl/imgui/training_menu.h"
+#include "port/sdl/netplay/sdl_netplay_ui.h"
+#include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/sdl/rmlui/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui/rmlui_button_config.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -55,23 +65,13 @@
 #include "port/sdl/rmlui/rmlui_vs_result.h"
 #include "port/sdl/rmlui/rmlui_vs_screen.h"
 #include "port/sdl/rmlui/rmlui_win_screen.h"
-#include "port/sdl/app/sdl_app_config.h"
-#include "port/sdl/app/sdl_app_input.h"
-#include "port/sdl/app/sdl_app_internal.h"
-#include "port/sdl/app/sdl_app_shader_config.h"
-#include "port/sdl/netplay/sdl_netplay_ui.h"
-#include "port/sdl/renderer/sdl_texture_util.h"
-#include "port/sdl/imgui/shader_menu.h"
-#include "port/sdl/imgui/stage_config_menu.h"
-#include "port/sdl/imgui/training_menu.h"
-#include "port/rendering/sdl_bezel.h"
 #include "port/tracy_gpu.h"
 #include "port/tracy_zones.h"
 
 int g_resolution_scale = 1;
+#include "port/sdl/input/sdl_pad.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
-#include "port/sdl/input/sdl_pad.h"
 #include "port/sdl/renderer/sdl_text_renderer.h"
 #include "port/sound/adx.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -560,8 +560,7 @@ int SDLApp_Init() {
         vsync_enabled = !Config_HasKey(CFG_KEY_VSYNC) || Config_GetBool(CFG_KEY_VSYNC);
         bool sdl2d_vsync = vsync_enabled && frame_rate_uncapped;
         SDL_SetRenderVSync(sdl_renderer, sdl2d_vsync ? 1 : 0);
-        SDL_Log("VSync: %s (SDL2D, native pacing: %s)", sdl2d_vsync ? "ON" : "OFF",
-                frame_rate_uncapped ? "off" : "on");
+        SDL_Log("VSync: %s (SDL2D, native pacing: %s)", sdl2d_vsync ? "ON" : "OFF", frame_rate_uncapped ? "off" : "on");
     } else {
         window = SDL_CreateWindow(app_name, width, height, window_flags);
         if (!window) {
@@ -615,7 +614,8 @@ int SDLApp_Init() {
             SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, false);
             SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, false);
             SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, false);
-            SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, false);
+            SDL_SetBooleanProperty(
+                props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, false);
             // Disable 'near universal' features not supported by V3D (patched in SDL3)
             SDL_SetBooleanProperty(props, "SDL.gpu.device.create.feature.image_cube_array", false);
             SDL_SetBooleanProperty(props, "SDL.gpu.device.create.feature.independent_blend", false);
@@ -1210,6 +1210,72 @@ static /** @brief Build NDC vertices for a bezel quad from an SDL_FRect. */
     out[23] = 0.0f;
 }
 
+/** @brief Draw a single bezel quad using the passthrough shader.
+ *  @param texture       Opaque texture handle (cast to GLuint internally).
+ *  @param vertex_offset First vertex index in the bezel VAO (0 = left, 6 = right). */
+static void draw_bezel_quad(void* texture, int vertex_offset) {
+    GLuint tex = (GLuint)(intptr_t)texture;
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glUniform1i(s_pt_loc_source, 0);
+
+    int tw = 0, th = 0;
+    TextureUtil_GetSize(texture, &tw, &th);
+    glUniform4f(
+        s_pt_loc_source_size, (float)tw, (float)th, tw > 0 ? 1.0f / (float)tw : 0.0f, th > 0 ? 1.0f / (float)th : 0.0f);
+
+    glDrawArrays(GL_TRIANGLES, vertex_offset, 6);
+}
+
+/** @brief Render the debug HUD text overlay (FPS, shader mode, scale mode).
+ *  @param win_w    Window width in pixels.
+ *  @param win_h    Window height in pixels.
+ *  @param viewport Letterboxed viewport rect for positioning. */
+static void render_debug_hud(int win_w, int win_h, const SDL_FRect* viewport) {
+    char debug_text[512];
+    char fps_text[64];
+    char mode_text[128];
+    char shader_text[128];
+
+    snprintf(fps_text, sizeof(fps_text), "FPS: %.2f%s", fps, frame_rate_uncapped ? " UNCAPPED [F5]" : "");
+
+    if (SDLAppShader_IsLibretroMode()) {
+        if (SDLAppShader_GetAvailableCount() > 0) {
+            snprintf(mode_text,
+                     sizeof(mode_text),
+                     "Preset: %s [F9]",
+                     SDLAppShader_GetPresetName(SDLAppShader_GetCurrentIndex()));
+        } else {
+            snprintf(mode_text, sizeof(mode_text), "Preset: None found");
+        }
+    } else {
+        snprintf(mode_text,
+                 sizeof(mode_text),
+                 "Scale: %s [F8]%s",
+                 scale_mode_name(),
+                 BezelSystem_IsVisible() ? " (Bezels On)" : "");
+    }
+
+    snprintf(shader_text,
+             sizeof(shader_text),
+             "Shader Mode: %s [F4]",
+             SDLAppShader_IsLibretroMode() ? "Libretro" : "Internal");
+
+    snprintf(debug_text, sizeof(debug_text), "%s | %s | %s", fps_text, shader_text, mode_text);
+
+    float overlay_scale = ((float)win_h / 480.0f) * 0.8f;
+    float base_x = viewport->x + (10.0f * overlay_scale);
+    float base_y = 0.0f;
+
+    SDLTextRenderer_SetBackgroundEnabled(1);
+    SDLTextRenderer_SetBackgroundColor(0.0f, 0.0f, 0.0f, 0.5f);
+
+    SDLTextRenderer_DrawText(debug_text, base_x + 1, base_y + 1, overlay_scale, 0.0f, 0.0f, 0.0f, win_w, win_h);
+    SDLTextRenderer_DrawText(debug_text, base_x, base_y, overlay_scale, 1.0f, 1.0f, 1.0f, win_w, win_h);
+
+    SDLTextRenderer_SetBackgroundEnabled(0);
+}
+
 /** @brief End the frame: render game to FBO, apply shaders, draw bezels/UI, swap buffers. */
 void SDLApp_EndFrame() {
     TRACE_ZONE_N("EndFrame");
@@ -1265,13 +1331,12 @@ void SDLApp_EndFrame() {
         const SDL_FRect dst_rect = get_letterbox_rect(win_w, win_h);
 
         // ⚡ Track whether letterbox bars are visible for conditional clear in BeginFrame
-        last_had_letterbox_bars = (dst_rect.x > 0.5f || dst_rect.y > 0.5f ||
-                                   dst_rect.w < (win_w - 0.5f) || dst_rect.h < (win_h - 0.5f));
+        last_had_letterbox_bars =
+            (dst_rect.x > 0.5f || dst_rect.y > 0.5f || dst_rect.w < (win_w - 0.5f) || dst_rect.h < (win_h - 0.5f));
 
         // Blit game canvas to window with letterboxing
-        SDL_Texture* canvas = (g_renderer_backend == RENDERER_SDL2D_CLASSIC)
-                               ? SDLGameRendererClassic_GetCanvas()
-                               : SDLGameRendererSDL_GetCanvas();
+        SDL_Texture* canvas = (g_renderer_backend == RENDERER_SDL2D_CLASSIC) ? SDLGameRendererClassic_GetCanvas()
+                                                                             : SDLGameRendererSDL_GetCanvas();
         SDL_RenderTexture(sdl_renderer, canvas, NULL, &dst_rect);
 
         // Bezel rendering (SDL2D)
@@ -1377,7 +1442,8 @@ void SDLApp_EndFrame() {
                     SDL_DelayNS(sleep_time - spin_threshold_ns);
                 }
                 while (SDL_GetTicksNS() < frame_deadline) {
-                    if (has_pending_quit()) break;
+                    if (has_pending_quit())
+                        break;
                     SDL_CPUPauseInstruction();
                 }
                 now = SDL_GetTicksNS();
@@ -1669,49 +1735,8 @@ void SDLApp_EndFrame() {
             imgui_wrapper_render();
         }
         if (show_debug_hud) {
-            // Debug Text Overlay
-            char debug_text[512];
-            char fps_text[64];
-            char mode_text[128];
-            char shader_text[128];
             const SDL_FRect viewport = get_letterbox_rect(win_w, win_h);
-            float overlay_scale = ((float)win_h / 480.0f) * 0.8f;
-            float base_x = viewport.x + (10.0f * overlay_scale);
-            float base_y = 0.0f;
-
-            snprintf(fps_text, sizeof(fps_text), "FPS: %.2f%s", fps, frame_rate_uncapped ? " UNCAPPED [F5]" : "");
-
-            if (SDLAppShader_IsLibretroMode()) {
-                if (SDLAppShader_GetAvailableCount() > 0) {
-                    snprintf(mode_text,
-                             sizeof(mode_text),
-                             "Preset: %s [F9]",
-                             SDLAppShader_GetPresetName(SDLAppShader_GetCurrentIndex()));
-                } else {
-                    snprintf(mode_text, sizeof(mode_text), "Preset: None found");
-                }
-            } else {
-                snprintf(mode_text,
-                         sizeof(mode_text),
-                         "Scale: %s [F8]%s",
-                         scale_mode_name(),
-                         BezelSystem_IsVisible() ? " (Bezels On)" : "");
-            }
-
-            snprintf(shader_text,
-                     sizeof(shader_text),
-                     "Shader Mode: %s [F4]",
-                     SDLAppShader_IsLibretroMode() ? "Libretro" : "Internal");
-
-            snprintf(debug_text, sizeof(debug_text), "%s | %s | %s", fps_text, shader_text, mode_text);
-
-            SDLTextRenderer_SetBackgroundEnabled(1);
-            SDLTextRenderer_SetBackgroundColor(0.0f, 0.0f, 0.0f, 0.5f);
-
-            SDLTextRenderer_DrawText(debug_text, base_x + 1, base_y + 1, overlay_scale, 0.0f, 0.0f, 0.0f, win_w, win_h);
-            SDLTextRenderer_DrawText(debug_text, base_x, base_y, overlay_scale, 1.0f, 1.0f, 1.0f, win_w, win_h);
-
-            SDLTextRenderer_SetBackgroundEnabled(0);
+            render_debug_hud(win_w, win_h, &viewport);
         }
 
         // Flush Text Renderer (draws buffered text)
@@ -1999,39 +2024,11 @@ void SDLApp_EndFrame() {
                 glBindVertexArray(bezel_vao);
 
                 // Draw Left
-                if (cached_bezels.left) {
-                    GLuint tex = (GLuint)(intptr_t)cached_bezels.left;
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, tex);
-                    glUniform1i(s_pt_loc_source, 0);
-
-                    int tw = 0, th = 0;
-                    TextureUtil_GetSize(cached_bezels.left, &tw, &th);
-                    glUniform4f(s_pt_loc_source_size,
-                                (float)tw,
-                                (float)th,
-                                tw > 0 ? 1.0f / (float)tw : 0.0f,
-                                th > 0 ? 1.0f / (float)th : 0.0f);
-
-                    glDrawArrays(GL_TRIANGLES, 0, 6);
-                }
+                if (cached_bezels.left)
+                    draw_bezel_quad(cached_bezels.left, 0);
                 // Draw Right
-                if (cached_bezels.right) {
-                    GLuint tex = (GLuint)(intptr_t)cached_bezels.right;
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, tex);
-                    glUniform1i(s_pt_loc_source, 0);
-
-                    int tw = 0, th = 0;
-                    TextureUtil_GetSize(cached_bezels.right, &tw, &th);
-                    glUniform4f(s_pt_loc_source_size,
-                                (float)tw,
-                                (float)th,
-                                tw > 0 ? 1.0f / (float)tw : 0.0f,
-                                th > 0 ? 1.0f / (float)th : 0.0f);
-
-                    glDrawArrays(GL_TRIANGLES, 6, 6);
-                }
+                if (cached_bezels.right)
+                    draw_bezel_quad(cached_bezels.right, 6);
 
                 glDisable(GL_BLEND);
                 glBindVertexArray(0);
@@ -2064,49 +2061,7 @@ void SDLApp_EndFrame() {
         }
 
         if (show_debug_hud) {
-
-            char debug_text[512];
-            char fps_text[64];
-            char mode_text[128];
-            char shader_text[128];
-
-            snprintf(fps_text, sizeof(fps_text), "FPS: %.2f%s", fps, frame_rate_uncapped ? " UNCAPPED [F5]" : "");
-
-            if (SDLAppShader_IsLibretroMode()) {
-                if (SDLAppShader_GetAvailableCount() > 0) {
-                    snprintf(mode_text,
-                             sizeof(mode_text),
-                             "Preset: %s [F9]",
-                             SDLAppShader_GetPresetName(SDLAppShader_GetCurrentIndex()));
-                } else {
-                    snprintf(mode_text, sizeof(mode_text), "Preset: None found");
-                }
-            } else {
-                snprintf(mode_text,
-                         sizeof(mode_text),
-                         "Scale: %s [F8]%s",
-                         scale_mode_name(),
-                         BezelSystem_IsVisible() ? " (Bezels On)" : "");
-            }
-
-            snprintf(shader_text,
-                     sizeof(shader_text),
-                     "Shader Mode: %s [F4]",
-                     SDLAppShader_IsLibretroMode() ? "Libretro" : "Internal");
-
-            snprintf(debug_text, sizeof(debug_text), "%s | %s | %s", fps_text, shader_text, mode_text);
-
-            float overlay_scale = ((float)win_h / 480.0f) * 0.8f;
-            float base_x = viewport.x + (10.0f * overlay_scale);
-            float base_y = 0.0f;
-
-            SDLTextRenderer_SetBackgroundEnabled(1);
-            SDLTextRenderer_SetBackgroundColor(0.0f, 0.0f, 0.0f, 0.5f);
-
-            SDLTextRenderer_DrawText(debug_text, base_x + 1, base_y + 1, overlay_scale, 0.0f, 0.0f, 0.0f, win_w, win_h);
-            SDLTextRenderer_DrawText(debug_text, base_x, base_y, overlay_scale, 1.0f, 1.0f, 1.0f, win_w, win_h);
-
-            SDLTextRenderer_SetBackgroundEnabled(0);
+            render_debug_hud(win_w, win_h, &viewport);
         }
 
         if (use_rmlui) {
@@ -2258,7 +2213,8 @@ void SDLApp_EndFrame() {
             // Spin-wait for remaining time — SDL_CPUPauseInstruction emits
             // 'yield' on ARM (reduces power/heat) or 'pause' on x86.
             while (SDL_GetTicksNS() < frame_deadline) {
-                if (has_pending_quit()) break;
+                if (has_pending_quit())
+                    break;
                 SDL_CPUPauseInstruction();
             }
             now = SDL_GetTicksNS();
@@ -2321,36 +2277,6 @@ const char* SDLApp_GetScaleModeName(int mode) {
     return name;
 }
 
-// Shader Mode accessors
-bool SDLApp_GetShaderModeLibretro() {
-    return SDLAppShader_IsLibretroMode();
-}
-
-void SDLApp_SetShaderModeLibretro(bool libretro) {
-    SDLAppShader_SetMode(libretro);
-}
-
-// Preset accessors
-int SDLApp_GetCurrentPresetIndex() {
-    return SDLAppShader_GetCurrentIndex();
-}
-
-void SDLApp_SetCurrentPresetIndex(int index) {
-    SDLAppShader_SetCurrentIndex(index);
-}
-
-int SDLApp_GetAvailablePresetCount() {
-    return SDLAppShader_GetAvailableCount();
-}
-
-const char* SDLApp_GetPresetName(int index) {
-    return SDLAppShader_GetPresetName(index);
-}
-
-void SDLApp_LoadPreset(int index) {
-    SDLAppShader_LoadPreset(index);
-}
-
 void SDLApp_SetWindowPosition(int x, int y) {
     g_cli_window_x = x;
     g_cli_window_y = y;
@@ -2398,79 +2324,47 @@ void SDLApp_ToggleMenu() {
     }
 }
 
-void SDLApp_ToggleModsMenu() {
-    show_mods_menu = !show_mods_menu;
-    game_paused = show_mods_menu || show_menu;
-    if (show_mods_menu) {
+/** @brief Toggle an overlay flag and sync RmlUi document visibility.
+ *  @param flag        Pointer to the overlay's show_* bool.
+ *  @param doc_name    RmlUi document name (e.g. "mods", "shaders").
+ *  @param pauses_game If true, update game_paused based on the new flag state. */
+static void toggle_overlay(bool* flag, const char* doc_name, bool pauses_game) {
+    *flag = !*flag;
+    if (pauses_game)
+        game_paused = *flag || show_menu;
+    if (*flag)
         SDL_ShowCursor();
-    }
     if (use_rmlui) {
-        if (show_mods_menu) {
-            rmlui_wrapper_show_document("mods");
-        } else {
-            rmlui_wrapper_hide_document("mods");
-        }
+        if (*flag)
+            rmlui_wrapper_show_document(doc_name);
+        else
+            rmlui_wrapper_hide_document(doc_name);
     }
+}
+
+void SDLApp_ToggleModsMenu() {
+    toggle_overlay(&show_mods_menu, "mods", true);
 }
 
 void SDLApp_ToggleShaderMenu() {
-    show_shader_menu = !show_shader_menu;
-    game_paused = show_shader_menu || show_menu;
-    if (show_shader_menu) {
-        SDL_ShowCursor();
-    }
-    if (use_rmlui) {
-        if (show_shader_menu) {
-            rmlui_wrapper_show_document("shaders");
-        } else {
-            rmlui_wrapper_hide_document("shaders");
-        }
-    }
+    toggle_overlay(&show_shader_menu, "shaders", true);
 }
 
 void SDLApp_ToggleStageConfigMenu() {
-    show_stage_config_menu = !show_stage_config_menu;
-    if (show_stage_config_menu)
-        SDL_ShowCursor();
-    if (use_rmlui) {
-        if (show_stage_config_menu) {
-            rmlui_wrapper_show_document("stage_config");
-        } else {
-            rmlui_wrapper_hide_document("stage_config");
-        }
-    }
+    toggle_overlay(&show_stage_config_menu, "stage_config", false);
 }
 
 void SDLApp_ToggleDevOverlay() {
-    show_dev_overlay = !show_dev_overlay;
-    if (show_dev_overlay)
-        SDL_ShowCursor();
-    if (use_rmlui) {
-        if (show_dev_overlay) {
-            rmlui_wrapper_show_document("dev_overlay");
-        } else {
-            rmlui_wrapper_hide_document("dev_overlay");
-        }
-    }
+    toggle_overlay(&show_dev_overlay, "dev_overlay", false);
 }
 
 void SDLApp_ToggleTrainingMenu() {
-    show_training_menu = !show_training_menu;
-    if (show_training_menu)
-        SDL_ShowCursor();
-    if (use_rmlui) {
-        if (show_training_menu) {
-            rmlui_wrapper_show_document("training");
-        } else {
-            rmlui_wrapper_hide_document("training");
-        }
-    }
+    toggle_overlay(&show_training_menu, "training", false);
 }
 
 void SDLApp_CloseAllMenus() {
-    bool any_open = show_menu || show_shader_menu || show_mods_menu ||
-                    show_stage_config_menu || show_training_menu || show_dev_overlay ||
-                    SDLNetplayUI_IsDiagnosticsVisible();
+    bool any_open = show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu || show_training_menu ||
+                    show_dev_overlay || SDLNetplayUI_IsDiagnosticsVisible();
     if (!any_open)
         return;
 
@@ -2493,6 +2387,8 @@ void SDLApp_CloseAllMenus() {
     }
 }
 
+/** @brief Public wrapper for cycle_scale_mode() — needed because the static
+ *  helper accesses file-scoped state (scale_mode, bezel_vbo_dirty). */
 void SDLApp_CycleScaleMode() {
     cycle_scale_mode();
 }
@@ -2535,14 +2431,6 @@ void SDLApp_HandleMouseMotion() {
 
 void SDLApp_SaveScreenshot() {
     should_save_screenshot = true;
-}
-
-void SDLApp_ToggleShaderMode() {
-    SDLAppShader_ToggleMode();
-}
-
-void SDLApp_CyclePreset() {
-    SDLAppShader_CyclePreset();
 }
 
 void SDLApp_ToggleBezel() {

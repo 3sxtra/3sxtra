@@ -10,8 +10,8 @@
 #include "control_mapping_bindings.h"
 #include "imgui.h"
 #include "imgui_wrapper.h"
-#include "port/input_definition.h"
 #include "port/config/paths.h"
+#include "port/input_definition.h"
 #include "sdl_pad.h"
 #include "sf33rd/Source/Game/io/ioconv.h"
 #include <algorithm>

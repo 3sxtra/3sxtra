@@ -11,9 +11,9 @@
  */
 #include "port/sdl/rmlui/rmlui_input_display.h"
 #include "common.h"
-#include "port/sdl/rmlui/rmlui_wrapper.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/imgui/training_menu.h"
+#include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>

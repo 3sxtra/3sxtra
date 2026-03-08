@@ -6,7 +6,12 @@
 
 extern SDL_Window* window;
 
-typedef enum RendererBackend { RENDERER_OPENGL, RENDERER_SDLGPU, RENDERER_SDL2D, RENDERER_SDL2D_CLASSIC } RendererBackend;
+typedef enum RendererBackend {
+    RENDERER_OPENGL,
+    RENDERER_SDLGPU,
+    RENDERER_SDL2D,
+    RENDERER_SDL2D_CLASSIC
+} RendererBackend;
 
 // Returns true for any SDL2D variant (optimized or classic benchmark)
 static inline bool is_sdl2d_backend(RendererBackend r) {

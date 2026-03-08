@@ -19,22 +19,11 @@ extern BroadcastConfig broadcast_config;
 
 // Forward declarations for accessing sdl_app.c state
 extern "C" {
-// Shader mode getters/setters
+#include "port/sdl/app/sdl_app_shader_config.h"
+
 int SDLApp_GetScaleMode();
 void SDLApp_SetScaleMode(int mode);
 const char* SDLApp_GetScaleModeName(int mode);
-
-// Obsolete shader modes removed
-
-bool SDLApp_GetShaderModeLibretro();
-void SDLApp_SetShaderModeLibretro(bool libretro);
-
-int SDLApp_GetCurrentPresetIndex();
-void SDLApp_SetCurrentPresetIndex(int index);
-int SDLApp_GetAvailablePresetCount();
-const char* SDLApp_GetPresetName(int index);
-
-void SDLApp_LoadPreset(int index);
 
 // VSync control
 void SDLApp_SetVSync(bool enabled);
@@ -79,12 +68,12 @@ extern "C" void shader_menu_render(int window_width, int window_height) {
     ImGui::Text("Shader System:");
     ImGui::SameLine();
 
-    bool is_libretro = SDLApp_GetShaderModeLibretro();
+    bool is_libretro = SDLAppShader_IsLibretroMode();
     const char* mode_items[] = { "Internal Shaders", "Libretro Shaders" };
     int current_mode = is_libretro ? 1 : 0;
 
     if (ImGui::Combo("##ShaderSystem", &current_mode, mode_items, 2)) {
-        SDLApp_SetShaderModeLibretro(current_mode == 1);
+        SDLAppShader_SetMode(current_mode == 1);
     }
 
     ImGui::Separator();
@@ -117,8 +106,8 @@ extern "C" void shader_menu_render(int window_width, int window_height) {
 
         ImGui::Spacing();
 
-        int preset_count = SDLApp_GetAvailablePresetCount();
-        int current_preset = SDLApp_GetCurrentPresetIndex();
+        int preset_count = SDLAppShader_GetAvailableCount();
+        int current_preset = SDLAppShader_GetCurrentIndex();
 
         if (preset_count == 0) {
             ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f), "No Libretro shader presets found!");
@@ -129,7 +118,7 @@ extern "C" void shader_menu_render(int window_width, int window_height) {
                 const bool has_filter = (search_filter[0] != '\0');
 
                 for (int i = 0; i < preset_count; i++) {
-                    const char* preset_name = SDLApp_GetPresetName(i);
+                    const char* preset_name = SDLAppShader_GetPresetName(i);
                     if (!preset_name)
                         continue;
 
@@ -145,8 +134,8 @@ extern "C" void shader_menu_render(int window_width, int window_height) {
                     }
 
                     if (ImGui::Selectable(preset_name, is_selected)) {
-                        SDLApp_SetCurrentPresetIndex(i);
-                        SDLApp_LoadPreset(i);
+                        SDLAppShader_SetCurrentIndex(i);
+                        SDLAppShader_LoadPreset(i);
                     }
 
                     if (is_selected) {

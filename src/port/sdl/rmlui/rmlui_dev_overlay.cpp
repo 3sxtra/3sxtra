@@ -22,7 +22,7 @@
 
 // ── Globals ───────────────────────────────────────────────────
 extern "C" {
-    bool show_dev_overlay = false;
+bool show_dev_overlay = false;
 }
 
 // ── Internal types ────────────────────────────────────────────
@@ -110,9 +110,11 @@ static Rml::String extract_basename(const Rml::String& src) {
 static Rml::String make_label(Rml::Element* el) {
     Rml::String label = el->GetTagName();
     const Rml::String& id = el->GetId();
-    if (!id.empty()) label += "#" + id;
+    if (!id.empty())
+        label += "#" + id;
     const Rml::String& cls = el->GetClassNames();
-    if (!cls.empty()) label += "." + cls;
+    if (!cls.empty())
+        label += "." + cls;
     return label;
 }
 
@@ -120,7 +122,10 @@ static Rml::String make_label(Rml::Element* el) {
 static int get_depth(Rml::Element* el) {
     int d = 0;
     Rml::Element* p = el->GetParentNode();
-    while (p) { d++; p = p->GetParentNode(); }
+    while (p) {
+        d++;
+        p = p->GetParentNode();
+    }
     return d;
 }
 
@@ -128,7 +133,8 @@ static float read_dp(Rml::Element* el, const Rml::String& prop) {
     // Use GetProperty() (resolved) instead of GetLocalProperty() (local-only)
     // so we read the actual computed value including stylesheet rules.
     const Rml::Property* p = el->GetProperty(prop);
-    if (!p) return 0;
+    if (!p)
+        return 0;
     return p->Get<float>();
 }
 
@@ -139,7 +145,8 @@ static void set_dp(Rml::Element* el, const Rml::String& prop, float val) {
 }
 
 static void snapshot_element(Rml::Element* el) {
-    if (!el) return;
+    if (!el)
+        return;
     // Use resolved properties (GetProperty) so sliders show actual values,
     // not just explicitly-set local overrides.
     s_margin_top = read_dp(el, "margin-top");
@@ -204,17 +211,16 @@ static void snapshot_element(Rml::Element* el) {
     s_info_classes = el->GetClassNames();
     auto box = el->GetBox();
     char box_buf[128];
-    snprintf(box_buf, sizeof(box_buf), "%.0f × %.0f",
-             box.GetSize().x, box.GetSize().y);
+    snprintf(box_buf, sizeof(box_buf), "%.0f × %.0f", box.GetSize().x, box.GetSize().y);
     s_info_box = box_buf;
     s_info_children = el->GetNumChildren();
     // Walk up to find document for source URL
     Rml::Element* doc_el = el;
-    while (doc_el && doc_el->GetParentNode()) doc_el = doc_el->GetParentNode();
+    while (doc_el && doc_el->GetParentNode())
+        doc_el = doc_el->GetParentNode();
     Rml::ElementDocument* src_doc = dynamic_cast<Rml::ElementDocument*>(doc_el);
     s_info_source = src_doc ? extract_basename(src_doc->GetSourceURL()) : "";
 }
-
 
 // ── Document & element enumeration ────────────────────────────
 
@@ -224,18 +230,23 @@ static void refresh_doc_list() {
     int idx = 0;
 
     auto add_from = [&](Rml::Context* ctx, const char* ctx_label) {
-        if (!ctx) return;
+        if (!ctx)
+            return;
         for (int i = 0; i < ctx->GetNumDocuments(); i++) {
             Rml::ElementDocument* doc = ctx->GetDocument(i);
-            if (!doc) continue;
+            if (!doc)
+                continue;
             const Rml::String& src = doc->GetSourceURL();
-            if (src.find("dev_overlay") != Rml::String::npos) continue;
-            if (src.find("rmlui-debug") != Rml::String::npos) continue;
+            if (src.find("dev_overlay") != Rml::String::npos)
+                continue;
+            if (src.find("rmlui-debug") != Rml::String::npos)
+                continue;
 
             DocEntry e;
             Rml::String title = doc->GetTitle();
             e.name = title.empty() ? extract_basename(src) : title;
-            if (e.name.empty()) e.name = "(untitled)";
+            if (e.name.empty())
+                e.name = "(untitled)";
             e.context_label = ctx_label;
             e.visible = doc->IsVisible();
             e.index = idx++;
@@ -277,7 +288,8 @@ static void do_populate_elem_list() {
         return;
 
     Rml::ElementDocument* doc = s_doc_ptrs[s_selected_doc];
-    if (!doc) return;
+    if (!doc)
+        return;
 
     Rml::ElementList all_elements;
     doc->QuerySelectorAll(all_elements, "*");
@@ -287,9 +299,8 @@ static void do_populate_elem_list() {
     for (size_t i = 0; i < all_elements.size(); i++) {
         Rml::Element* el = all_elements[i];
         const Rml::String& tag = el->GetTagName();
-        if (tag == "#text" || tag == "handle" || tag == "scrollbarvertical" ||
-            tag == "scrollbarhorizontal" || tag == "sliderarrowdec" ||
-            tag == "sliderarrowinc" || tag == "sliderbar" || tag == "slidertrack")
+        if (tag == "#text" || tag == "handle" || tag == "scrollbarvertical" || tag == "scrollbarhorizontal" ||
+            tag == "sliderarrowdec" || tag == "sliderarrowinc" || tag == "sliderbar" || tag == "slidertrack")
             continue;
 
         ElemEntry entry;
@@ -311,7 +322,8 @@ static void do_populate_elem_list() {
 }
 
 static void dirty_all_props() {
-    if (!s_model) return;
+    if (!s_model)
+        return;
     s_model.DirtyVariable("sel_margin_top");
     s_model.DirtyVariable("sel_margin_right");
     s_model.DirtyVariable("sel_margin_bottom");
@@ -362,7 +374,7 @@ static void dirty_all_props() {
 static void do_select_doc(int idx) {
     SDL_Log("[DevOverlay] Scheduling document %d", idx);
     s_selected_doc = idx;
-    s_populate_phase = 1;  // Start two-phase populate
+    s_populate_phase = 1; // Start two-phase populate
     if (s_model) {
         s_model.DirtyVariable("selected_doc");
     }
@@ -448,29 +460,30 @@ extern "C" void rmlui_dev_overlay_init() {
     // ── Selected element properties ──
     // Each setter applies ONLY its own CSS property (not all of them).
 
-#define BIND_DP(var_name, cpp_var, css_prop)                               \
-    c.BindFunc(                                                            \
-        var_name,                                                          \
-        [](Rml::Variant& v) { v = cpp_var; },                             \
-        [](const Rml::Variant& v) {                                        \
-            cpp_var = v.Get<float>();                                       \
-            if (s_active_elem && !s_suppress_apply)                        \
-                set_dp(s_active_elem, css_prop, cpp_var);                  \
+#define BIND_DP(var_name, cpp_var, css_prop)                                                                           \
+    c.BindFunc(                                                                                                        \
+        var_name,                                                                                                      \
+        [](Rml::Variant& v) { v = cpp_var; },                                                                          \
+        [](const Rml::Variant& v) {                                                                                    \
+            cpp_var = v.Get<float>();                                                                                  \
+            if (s_active_elem && !s_suppress_apply)                                                                    \
+                set_dp(s_active_elem, css_prop, cpp_var);                                                              \
         })
 
-    BIND_DP("sel_margin_top",     s_margin_top,     "margin-top");
-    BIND_DP("sel_margin_right",   s_margin_right,   "margin-right");
-    BIND_DP("sel_margin_bottom",  s_margin_bottom,  "margin-bottom");
-    BIND_DP("sel_margin_left",    s_margin_left,    "margin-left");
-    BIND_DP("sel_padding_top",    s_padding_top,    "padding-top");
-    BIND_DP("sel_padding_right",  s_padding_right,  "padding-right");
+    BIND_DP("sel_margin_top", s_margin_top, "margin-top");
+    BIND_DP("sel_margin_right", s_margin_right, "margin-right");
+    BIND_DP("sel_margin_bottom", s_margin_bottom, "margin-bottom");
+    BIND_DP("sel_margin_left", s_margin_left, "margin-left");
+    BIND_DP("sel_padding_top", s_padding_top, "padding-top");
+    BIND_DP("sel_padding_right", s_padding_right, "padding-right");
     BIND_DP("sel_padding_bottom", s_padding_bottom, "padding-bottom");
-    BIND_DP("sel_padding_left",   s_padding_left,   "padding-left");
+    BIND_DP("sel_padding_left", s_padding_left, "padding-left");
 
 #undef BIND_DP
 
     // Font-size uses dp units
-    c.BindFunc("sel_font_size",
+    c.BindFunc(
+        "sel_font_size",
         [](Rml::Variant& v) { v = s_font_size; },
         [](const Rml::Variant& v) {
             s_font_size = v.Get<float>();
@@ -482,7 +495,8 @@ extern "C" void rmlui_dev_overlay_init() {
         });
 
     // Opacity is unitless (0–1)
-    c.BindFunc("sel_opacity",
+    c.BindFunc(
+        "sel_opacity",
         [](Rml::Variant& v) { v = s_opacity; },
         [](const Rml::Variant& v) {
             s_opacity = v.Get<float>();
@@ -493,28 +507,32 @@ extern "C" void rmlui_dev_overlay_init() {
             }
         });
 
-    c.BindFunc("sel_width",
+    c.BindFunc(
+        "sel_width",
         [](Rml::Variant& v) { v = s_width_str; },
         [](const Rml::Variant& v) {
             s_width_str = v.Get<Rml::String>();
             if (s_active_elem && !s_suppress_apply && !s_width_str.empty())
                 s_active_elem->SetProperty("width", s_width_str);
         });
-    c.BindFunc("sel_height",
+    c.BindFunc(
+        "sel_height",
         [](Rml::Variant& v) { v = s_height_str; },
         [](const Rml::Variant& v) {
             s_height_str = v.Get<Rml::String>();
             if (s_active_elem && !s_suppress_apply && !s_height_str.empty())
                 s_active_elem->SetProperty("height", s_height_str);
         });
-    c.BindFunc("sel_color",
+    c.BindFunc(
+        "sel_color",
         [](Rml::Variant& v) { v = s_color_hex; },
         [](const Rml::Variant& v) {
             s_color_hex = v.Get<Rml::String>();
             if (s_active_elem && !s_suppress_apply && !s_color_hex.empty())
                 s_active_elem->SetProperty("color", s_color_hex);
         });
-    c.BindFunc("sel_visible",
+    c.BindFunc(
+        "sel_visible",
         [](Rml::Variant& v) { v = s_elem_visible; },
         [](const Rml::Variant& v) {
             s_elem_visible = v.Get<bool>();
@@ -525,29 +543,30 @@ extern "C" void rmlui_dev_overlay_init() {
 
     // ── Tier 1 additions ──
 
-#define BIND_STR(var_name, cpp_var, css_prop)                               \
-    c.BindFunc(                                                            \
-        var_name,                                                          \
-        [](Rml::Variant& v) { v = cpp_var; },                             \
-        [](const Rml::Variant& v) {                                        \
-            cpp_var = v.Get<Rml::String>();                                 \
-            if (s_active_elem && !s_suppress_apply && !cpp_var.empty())     \
-                s_active_elem->SetProperty(css_prop, cpp_var);             \
+#define BIND_STR(var_name, cpp_var, css_prop)                                                                          \
+    c.BindFunc(                                                                                                        \
+        var_name,                                                                                                      \
+        [](Rml::Variant& v) { v = cpp_var; },                                                                          \
+        [](const Rml::Variant& v) {                                                                                    \
+            cpp_var = v.Get<Rml::String>();                                                                            \
+            if (s_active_elem && !s_suppress_apply && !cpp_var.empty())                                                \
+                s_active_elem->SetProperty(css_prop, cpp_var);                                                         \
         })
 
-    BIND_STR("sel_position",    s_position_str, "position");
-    BIND_STR("sel_top",         s_top_str,      "top");
-    BIND_STR("sel_right",       s_right_str,    "right");
-    BIND_STR("sel_bottom",      s_bottom_str,   "bottom");
-    BIND_STR("sel_left",        s_left_str,     "left");
-    BIND_STR("sel_bg_color",    s_bg_color,     "background-color");
-    BIND_STR("sel_border_color",s_border_color, "border-color");
-    BIND_STR("sel_display",     s_display_str,  "display");
+    BIND_STR("sel_position", s_position_str, "position");
+    BIND_STR("sel_top", s_top_str, "top");
+    BIND_STR("sel_right", s_right_str, "right");
+    BIND_STR("sel_bottom", s_bottom_str, "bottom");
+    BIND_STR("sel_left", s_left_str, "left");
+    BIND_STR("sel_bg_color", s_bg_color, "background-color");
+    BIND_STR("sel_border_color", s_border_color, "border-color");
+    BIND_STR("sel_display", s_display_str, "display");
 
 #undef BIND_STR
 
     // Border width — uniform, uses dp
-    c.BindFunc("sel_border_width",
+    c.BindFunc(
+        "sel_border_width",
         [](Rml::Variant& v) { v = s_border_width; },
         [](const Rml::Variant& v) {
             s_border_width = v.Get<float>();
@@ -559,7 +578,8 @@ extern "C" void rmlui_dev_overlay_init() {
         });
 
     // Border radius — uniform, uses dp
-    c.BindFunc("sel_border_radius",
+    c.BindFunc(
+        "sel_border_radius",
         [](Rml::Variant& v) { v = s_border_radius; },
         [](const Rml::Variant& v) {
             s_border_radius = v.Get<float>();
@@ -572,26 +592,27 @@ extern "C" void rmlui_dev_overlay_init() {
 
     // ── Tier 2 additions ──
 
-#define BIND_STR2(var_name, cpp_var, css_prop)                              \
-    c.BindFunc(                                                            \
-        var_name,                                                          \
-        [](Rml::Variant& v) { v = cpp_var; },                             \
-        [](const Rml::Variant& v) {                                        \
-            cpp_var = v.Get<Rml::String>();                                 \
-            if (s_active_elem && !s_suppress_apply && !cpp_var.empty())     \
-                s_active_elem->SetProperty(css_prop, cpp_var);             \
+#define BIND_STR2(var_name, cpp_var, css_prop)                                                                         \
+    c.BindFunc(                                                                                                        \
+        var_name,                                                                                                      \
+        [](Rml::Variant& v) { v = cpp_var; },                                                                          \
+        [](const Rml::Variant& v) {                                                                                    \
+            cpp_var = v.Get<Rml::String>();                                                                            \
+            if (s_active_elem && !s_suppress_apply && !cpp_var.empty())                                                \
+                s_active_elem->SetProperty(css_prop, cpp_var);                                                         \
         })
 
-    BIND_STR2("sel_text_align",      s_text_align,      "text-align");
-    BIND_STR2("sel_flex_direction",   s_flex_direction,   "flex-direction");
-    BIND_STR2("sel_justify_content",  s_justify_content,  "justify-content");
-    BIND_STR2("sel_align_items",      s_align_items,      "align-items");
-    BIND_STR2("sel_overflow",         s_overflow,         "overflow");
+    BIND_STR2("sel_text_align", s_text_align, "text-align");
+    BIND_STR2("sel_flex_direction", s_flex_direction, "flex-direction");
+    BIND_STR2("sel_justify_content", s_justify_content, "justify-content");
+    BIND_STR2("sel_align_items", s_align_items, "align-items");
+    BIND_STR2("sel_overflow", s_overflow, "overflow");
 
 #undef BIND_STR2
 
     // Line height — uses dp
-    c.BindFunc("sel_line_height",
+    c.BindFunc(
+        "sel_line_height",
         [](Rml::Variant& v) { v = s_line_height; },
         [](const Rml::Variant& v) {
             s_line_height = v.Get<float>();
@@ -603,7 +624,8 @@ extern "C" void rmlui_dev_overlay_init() {
         });
 
     // Letter spacing — uses dp
-    c.BindFunc("sel_letter_spacing",
+    c.BindFunc(
+        "sel_letter_spacing",
         [](Rml::Variant& v) { v = s_letter_spacing; },
         [](const Rml::Variant& v) {
             s_letter_spacing = v.Get<float>();
@@ -615,7 +637,8 @@ extern "C" void rmlui_dev_overlay_init() {
         });
 
     // Gap — uses dp
-    c.BindFunc("sel_gap",
+    c.BindFunc(
+        "sel_gap",
         [](Rml::Variant& v) { v = s_gap; },
         [](const Rml::Variant& v) {
             s_gap = v.Get<float>();
@@ -627,12 +650,12 @@ extern "C" void rmlui_dev_overlay_init() {
         });
 
     // ── Tier 3: read-only computed info ──
-    c.BindFunc("info_tag",      [](Rml::Variant& v) { v = s_info_tag; });
-    c.BindFunc("info_id",       [](Rml::Variant& v) { v = s_info_id; });
-    c.BindFunc("info_classes",  [](Rml::Variant& v) { v = s_info_classes; });
-    c.BindFunc("info_box",      [](Rml::Variant& v) { v = s_info_box; });
+    c.BindFunc("info_tag", [](Rml::Variant& v) { v = s_info_tag; });
+    c.BindFunc("info_id", [](Rml::Variant& v) { v = s_info_id; });
+    c.BindFunc("info_classes", [](Rml::Variant& v) { v = s_info_classes; });
+    c.BindFunc("info_box", [](Rml::Variant& v) { v = s_info_box; });
     c.BindFunc("info_children", [](Rml::Variant& v) { v = s_info_children; });
-    c.BindFunc("info_source",   [](Rml::Variant& v) { v = s_info_source; });
+    c.BindFunc("info_source", [](Rml::Variant& v) { v = s_info_source; });
 
     // ── Event callbacks ──
 
@@ -644,7 +667,10 @@ extern "C" void rmlui_dev_overlay_init() {
     });
 
     c.BindEventCallback("select_doc", [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList& args) {
-        if (args.empty()) { SDL_Log("[DevOverlay] select_doc: no args!"); return; }
+        if (args.empty()) {
+            SDL_Log("[DevOverlay] select_doc: no args!");
+            return;
+        }
         int idx = args[0].Get<int>();
         SDL_Log("[DevOverlay] select_doc event: index=%d", idx);
         do_select_doc(idx);
@@ -652,7 +678,10 @@ extern "C" void rmlui_dev_overlay_init() {
     });
 
     c.BindEventCallback("select_elem", [](Rml::DataModelHandle h, Rml::Event&, const Rml::VariantList& args) {
-        if (args.empty()) { SDL_Log("[DevOverlay] select_elem: no args!"); return; }
+        if (args.empty()) {
+            SDL_Log("[DevOverlay] select_elem: no args!");
+            return;
+        }
         int idx = args[0].Get<int>();
         SDL_Log("[DevOverlay] select_elem event: index=%d", idx);
         do_select_elem(idx);
@@ -660,15 +689,42 @@ extern "C" void rmlui_dev_overlay_init() {
     });
 
     c.BindEventCallback("reset_elem", [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
-        if (!s_active_elem) return;
-        const char* props[] = {"margin-top","margin-right","margin-bottom","margin-left",
-            "padding-top","padding-right","padding-bottom","padding-left",
-            "font-size","opacity","width","height","color","visibility",
-            "position","top","right","bottom","left",
-            "background-color","border-width","border-color","border-radius","display",
-            "text-align","line-height","letter-spacing",
-            "flex-direction","justify-content","align-items","gap","overflow"};
-        for (auto p : props) s_active_elem->RemoveProperty(p);
+        if (!s_active_elem)
+            return;
+        const char* props[] = { "margin-top",
+                                "margin-right",
+                                "margin-bottom",
+                                "margin-left",
+                                "padding-top",
+                                "padding-right",
+                                "padding-bottom",
+                                "padding-left",
+                                "font-size",
+                                "opacity",
+                                "width",
+                                "height",
+                                "color",
+                                "visibility",
+                                "position",
+                                "top",
+                                "right",
+                                "bottom",
+                                "left",
+                                "background-color",
+                                "border-width",
+                                "border-color",
+                                "border-radius",
+                                "display",
+                                "text-align",
+                                "line-height",
+                                "letter-spacing",
+                                "flex-direction",
+                                "justify-content",
+                                "align-items",
+                                "gap",
+                                "overflow" };
+        for (auto p : props)
+            s_active_elem->RemoveProperty(p);
         snapshot_element(s_active_elem);
         s_suppress_apply = true;
         dirty_all_props();
@@ -676,25 +732,48 @@ extern "C" void rmlui_dev_overlay_init() {
     });
 
     c.BindEventCallback("copy_rcss", [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
-        if (!s_active_elem) return;
+        if (!s_active_elem)
+            return;
         std::ostringstream ss;
         ss << "/* Dev Overlay export for: " << s_elem_path.c_str() << " */\n";
         ss << make_label(s_active_elem).c_str() << " {\n";
         auto emit = [&](const char* prop) {
             const Rml::Property* p = s_active_elem->GetLocalProperty(prop);
-            if (p) ss << "    " << prop << ": " << p->ToString().c_str() << ";\n";
+            if (p)
+                ss << "    " << prop << ": " << p->ToString().c_str() << ";\n";
         };
-        emit("position"); emit("display");
-        emit("top"); emit("right"); emit("bottom"); emit("left");
-        emit("margin-top"); emit("margin-right"); emit("margin-bottom"); emit("margin-left");
-        emit("padding-top"); emit("padding-right"); emit("padding-bottom"); emit("padding-left");
-        emit("width"); emit("height");
-        emit("border-width"); emit("border-color"); emit("border-radius");
+        emit("position");
+        emit("display");
+        emit("top");
+        emit("right");
+        emit("bottom");
+        emit("left");
+        emit("margin-top");
+        emit("margin-right");
+        emit("margin-bottom");
+        emit("margin-left");
+        emit("padding-top");
+        emit("padding-right");
+        emit("padding-bottom");
+        emit("padding-left");
+        emit("width");
+        emit("height");
+        emit("border-width");
+        emit("border-color");
+        emit("border-radius");
         emit("background-color");
-        emit("font-size"); emit("opacity"); emit("color"); emit("visibility");
-        emit("text-align"); emit("line-height"); emit("letter-spacing");
-        emit("flex-direction"); emit("justify-content"); emit("align-items");
-        emit("gap"); emit("overflow");
+        emit("font-size");
+        emit("opacity");
+        emit("color");
+        emit("visibility");
+        emit("text-align");
+        emit("line-height");
+        emit("letter-spacing");
+        emit("flex-direction");
+        emit("justify-content");
+        emit("align-items");
+        emit("gap");
+        emit("overflow");
         ss << "}\n";
         SDL_Log("[DevOverlay] ─── RCSS Export ───\n%s", ss.str().c_str());
         SDL_SetClipboardText(ss.str().c_str());
@@ -710,7 +789,8 @@ extern "C" void rmlui_dev_overlay_init() {
 static bool s_first_open = true;
 
 extern "C" void rmlui_dev_overlay_update() {
-    if (!s_model) return;
+    if (!s_model)
+        return;
 
     // Clear the reset guard — by this point, Context::Update() has already
     // processed the dirty flags from the reset, and setters were suppressed.
@@ -740,7 +820,7 @@ extern "C" void rmlui_dev_overlay_update() {
             if (s_docs[i].visible) {
                 s_selected_doc = i;
                 s_model.DirtyVariable("selected_doc");
-                s_populate_phase = 1;  // Will run on next iteration
+                s_populate_phase = 1; // Will run on next iteration
                 break;
             }
         }

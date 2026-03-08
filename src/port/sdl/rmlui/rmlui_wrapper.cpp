@@ -102,12 +102,14 @@ class GameViewportGL3 : public RenderInterface_GL3 {
         // SDL_image to load PNG/JPG files. RmlUi also expects pre-multiplied alpha,
         // so we must do the conversion here before forwarding to GenerateTexture.
         SDL_Surface* surface = IMG_Load(source.c_str());
-        if (!surface) return 0;
+        if (!surface)
+            return 0;
 
         if (surface->format != SDL_PIXELFORMAT_RGBA32) {
             SDL_Surface* converted_surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
             SDL_DestroySurface(surface);
-            if (!converted_surface) return 0;
+            if (!converted_surface)
+                return 0;
             surface = converted_surface;
         }
 
@@ -124,7 +126,8 @@ class GameViewportGL3 : public RenderInterface_GL3 {
         texture_dimensions.x = surface->w;
         texture_dimensions.y = surface->h;
 
-        Rml::Span<const Rml::byte> data{static_cast<const Rml::byte*>(surface->pixels), static_cast<size_t>(surface->pitch * surface->h)};
+        Rml::Span<const Rml::byte> data { static_cast<const Rml::byte*>(surface->pixels),
+                                          static_cast<size_t>(surface->pitch * surface->h) };
         Rml::TextureHandle handle = RenderInterface_GL3::GenerateTexture(data, texture_dimensions);
 
         SDL_DestroySurface(surface);

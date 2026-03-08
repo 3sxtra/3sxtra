@@ -46,15 +46,11 @@ static inline uint32_t radix_float_to_sortable(float f) {
  * @param keys        Scratch: uint32_t[count] for sortable keys
  * @param scratch     Scratch: int[count] for intermediate permutation
  */
-static inline void radix_sort_render_task_indices(
-    int*       order,
-    const float* z_values,
-    int        count,
-    uint32_t*  keys,
-    int*       scratch)
-{
+static inline void radix_sort_render_task_indices(int* order, const float* z_values, int count, uint32_t* keys,
+                                                  int* scratch) {
     if (count <= 1) {
-        if (count == 1) order[0] = 0;
+        if (count == 1)
+            order[0] = 0;
         return;
     }
 
@@ -88,7 +84,7 @@ static inline void radix_sort_render_task_indices(
 
     for (int pass = 0; pass < 4; pass++) {
         const int shift = pass * 8;
-        int counts[256] = {0};
+        int counts[256] = { 0 };
 
         /* Count occurrences of each radix digit */
         for (int i = 0; i < count; i++) {

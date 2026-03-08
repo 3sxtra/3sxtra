@@ -28,51 +28,51 @@ static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN
 // ─── Character portrait paths (SF3:3S roster, index matches My_char) ───
 // Select screen: bust portraits (204_ set)
 static const char* const s_select_portrait_paths[21] = {
-    "",                                                 // 0 GILL (no portrait)
-    "assets/charactersportraits/select/alex.png",       // 1 ALEX
-    "assets/charactersportraits/select/ryu.png",        // 2 RYU
-    "assets/charactersportraits/select/yun.png",        // 3 YUN
-    "assets/charactersportraits/select/dudley.png",     // 4 DUDLEY
-    "assets/charactersportraits/select/necro.png",      // 5 NECRO
-    "assets/charactersportraits/select/hugo.png",       // 6 HUGO
-    "assets/charactersportraits/select/ibuki.png",      // 7 IBUKI
-    "assets/charactersportraits/select/elena.png",      // 8 ELENA
-    "assets/charactersportraits/select/oro.png",        // 9 ORO
-    "assets/charactersportraits/select/yang.png",       // 10 YANG
-    "assets/charactersportraits/select/ken.png",        // 11 KEN
-    "assets/charactersportraits/select/sean.png",       // 12 SEAN
-    "assets/charactersportraits/select/urien.png",      // 13 URIEN
-    "assets/charactersportraits/select/akuma.png",      // 14 GOUKI
-    "assets/charactersportraits/select/chunli.png",     // 15 CHUN-LI
-    "assets/charactersportraits/select/makoto.png",     // 16 MAKOTO
-    "assets/charactersportraits/select/q.png",          // 17 Q
-    "assets/charactersportraits/select/twelve.png",     // 18 TWELVE
-    "assets/charactersportraits/select/remy.png",       // 19 REMY
-    "assets/charactersportraits/select/akuma.png",      // 20 AKUMA (Shin)
+    "",                                             // 0 GILL (no portrait)
+    "assets/charactersportraits/select/alex.png",   // 1 ALEX
+    "assets/charactersportraits/select/ryu.png",    // 2 RYU
+    "assets/charactersportraits/select/yun.png",    // 3 YUN
+    "assets/charactersportraits/select/dudley.png", // 4 DUDLEY
+    "assets/charactersportraits/select/necro.png",  // 5 NECRO
+    "assets/charactersportraits/select/hugo.png",   // 6 HUGO
+    "assets/charactersportraits/select/ibuki.png",  // 7 IBUKI
+    "assets/charactersportraits/select/elena.png",  // 8 ELENA
+    "assets/charactersportraits/select/oro.png",    // 9 ORO
+    "assets/charactersportraits/select/yang.png",   // 10 YANG
+    "assets/charactersportraits/select/ken.png",    // 11 KEN
+    "assets/charactersportraits/select/sean.png",   // 12 SEAN
+    "assets/charactersportraits/select/urien.png",  // 13 URIEN
+    "assets/charactersportraits/select/akuma.png",  // 14 GOUKI
+    "assets/charactersportraits/select/chunli.png", // 15 CHUN-LI
+    "assets/charactersportraits/select/makoto.png", // 16 MAKOTO
+    "assets/charactersportraits/select/q.png",      // 17 Q
+    "assets/charactersportraits/select/twelve.png", // 18 TWELVE
+    "assets/charactersportraits/select/remy.png",   // 19 REMY
+    "assets/charactersportraits/select/akuma.png",  // 20 AKUMA (Shin)
 };
 // Versus screen: full-body fighting poses (fas set)
 static const char* const s_versus_portrait_paths[21] = {
-    "",                                                 // 0 GILL (no portrait)
-    "assets/charactersportraits/versus/alex.png",       // 1 ALEX
-    "assets/charactersportraits/versus/ryu.png",        // 2 RYU
-    "assets/charactersportraits/versus/yun.png",        // 3 YUN
-    "assets/charactersportraits/versus/dudley.png",     // 4 DUDLEY
-    "assets/charactersportraits/versus/necro.png",      // 5 NECRO
-    "assets/charactersportraits/versus/hugo.png",       // 6 HUGO
-    "assets/charactersportraits/versus/ibuki.png",      // 7 IBUKI
-    "assets/charactersportraits/versus/elena.png",      // 8 ELENA
-    "assets/charactersportraits/versus/oro.png",        // 9 ORO
-    "assets/charactersportraits/versus/yang.png",       // 10 YANG
-    "assets/charactersportraits/versus/ken.png",        // 11 KEN
-    "assets/charactersportraits/versus/sean.png",       // 12 SEAN
-    "assets/charactersportraits/versus/urien.png",      // 13 URIEN
-    "assets/charactersportraits/versus/akuma.png",      // 14 GOUKI
-    "assets/charactersportraits/versus/chunli.png",     // 15 CHUN-LI
-    "assets/charactersportraits/versus/makoto.png",     // 16 MAKOTO
-    "assets/charactersportraits/versus/q.png",          // 17 Q
-    "assets/charactersportraits/versus/twelve.png",     // 18 TWELVE
-    "assets/charactersportraits/versus/remy.png",       // 19 REMY
-    "assets/charactersportraits/versus/akuma.png",      // 20 AKUMA (Shin)
+    "",                                             // 0 GILL (no portrait)
+    "assets/charactersportraits/versus/alex.png",   // 1 ALEX
+    "assets/charactersportraits/versus/ryu.png",    // 2 RYU
+    "assets/charactersportraits/versus/yun.png",    // 3 YUN
+    "assets/charactersportraits/versus/dudley.png", // 4 DUDLEY
+    "assets/charactersportraits/versus/necro.png",  // 5 NECRO
+    "assets/charactersportraits/versus/hugo.png",   // 6 HUGO
+    "assets/charactersportraits/versus/ibuki.png",  // 7 IBUKI
+    "assets/charactersportraits/versus/elena.png",  // 8 ELENA
+    "assets/charactersportraits/versus/oro.png",    // 9 ORO
+    "assets/charactersportraits/versus/yang.png",   // 10 YANG
+    "assets/charactersportraits/versus/ken.png",    // 11 KEN
+    "assets/charactersportraits/versus/sean.png",   // 12 SEAN
+    "assets/charactersportraits/versus/urien.png",  // 13 URIEN
+    "assets/charactersportraits/versus/akuma.png",  // 14 GOUKI
+    "assets/charactersportraits/versus/chunli.png", // 15 CHUN-LI
+    "assets/charactersportraits/versus/makoto.png", // 16 MAKOTO
+    "assets/charactersportraits/versus/q.png",      // 17 Q
+    "assets/charactersportraits/versus/twelve.png", // 18 TWELVE
+    "assets/charactersportraits/versus/remy.png",   // 19 REMY
+    "assets/charactersportraits/versus/akuma.png",  // 20 AKUMA (Shin)
 };
 
 static const char* portrait_path(int idx) {
@@ -173,9 +173,7 @@ extern "C" void rmlui_char_select_init(void) {
 
     // PAR correction scaleY for portrait images — counters the CPS3 9/7 vertical PAR stretch
     // applied by the GameViewport adapter (7/9 ≈ 0.778 at 4:3, 1.0 at square-pixel mode).
-    ctor.BindFunc("sel_portrait_scale_y", [](Rml::Variant& v) {
-        v = (double)rmlui_wrapper_get_par_correct_y();
-    });
+    ctor.BindFunc("sel_portrait_scale_y", [](Rml::Variant& v) { v = (double)rmlui_wrapper_get_par_correct_y(); });
 
     // Timer countdown — Select_Timer is BCD-encoded (0x30 = "30", 0x21 = "21")
     // Always decode — char-select and stage-select timers are mutually exclusive

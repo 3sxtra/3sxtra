@@ -13,10 +13,10 @@
  * Access: --renderer classic
  */
 #include "common.h"
-#include "port/tracy_zones.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
+#include "port/tracy_zones.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -67,22 +67,18 @@ static bool cl_batch_buffers_initialized = false;
 
 // PS2 CLUT shuffle table
 static const Uint8 cl_ps2_clut_shuffle[256] = {
-    0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
-    8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31,
-    32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
-    40, 41, 42, 43, 44, 45, 46, 47, 56, 57, 58, 59, 60, 61, 62, 63,
-    64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
-    72, 73, 74, 75, 76, 77, 78, 79, 88, 89, 90, 91, 92, 93, 94, 95,
-    96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119,
-    104, 105, 106, 107, 108, 109, 110, 111, 120, 121, 122, 123, 124, 125, 126, 127,
-    128, 129, 130, 131, 132, 133, 134, 135, 144, 145, 146, 147, 148, 149, 150, 151,
-    136, 137, 138, 139, 140, 141, 142, 143, 152, 153, 154, 155, 156, 157, 158, 159,
-    160, 161, 162, 163, 164, 165, 166, 167, 176, 177, 178, 179, 180, 181, 182, 183,
-    168, 169, 170, 171, 172, 173, 174, 175, 184, 185, 186, 187, 188, 189, 190, 191,
-    192, 193, 194, 195, 196, 197, 198, 199, 208, 209, 210, 211, 212, 213, 214, 215,
-    200, 201, 202, 203, 204, 205, 206, 207, 216, 217, 218, 219, 220, 221, 222, 223,
-    224, 225, 226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247,
-    232, 233, 234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254, 255
+    0,   1,   2,   3,   4,   5,   6,   7,   16,  17,  18,  19,  20,  21,  22,  23,  8,   9,   10,  11,  12,  13,
+    14,  15,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  48,  49,  50,  51,
+    52,  53,  54,  55,  40,  41,  42,  43,  44,  45,  46,  47,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,
+    66,  67,  68,  69,  70,  71,  80,  81,  82,  83,  84,  85,  86,  87,  72,  73,  74,  75,  76,  77,  78,  79,
+    88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,  99,  100, 101, 102, 103, 112, 113, 114, 115, 116, 117,
+    118, 119, 104, 105, 106, 107, 108, 109, 110, 111, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131,
+    132, 133, 134, 135, 144, 145, 146, 147, 148, 149, 150, 151, 136, 137, 138, 139, 140, 141, 142, 143, 152, 153,
+    154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 176, 177, 178, 179, 180, 181, 182, 183,
+    168, 169, 170, 171, 172, 173, 174, 175, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197,
+    198, 199, 208, 209, 210, 211, 212, 213, 214, 215, 200, 201, 202, 203, 204, 205, 206, 207, 216, 217, 218, 219,
+    220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247, 232, 233,
+    234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254, 255
 };
 
 // --- Color reading helpers ---
@@ -119,14 +115,17 @@ static void cl_read_color(const void* pixels, int index, size_t color_size, SDL_
 static int cl_compare_render_tasks(const void* a, const void* b) {
     const RenderTask* ta = (const RenderTask*)a;
     const RenderTask* tb = (const RenderTask*)b;
-    if (ta->z < tb->z) return -1;
-    if (ta->z > tb->z) return 1;
+    if (ta->z < tb->z)
+        return -1;
+    if (ta->z > tb->z)
+        return 1;
     return ta->original_index - tb->original_index;
 }
 
 // --- draw_quad: enqueue a rendering task ---
 static void cl_draw_quad(SDL_Vertex vertices[4], SDL_Texture* texture, float z) {
-    if (cl_render_task_count >= RENDER_TASK_MAX) return;
+    if (cl_render_task_count >= RENDER_TASK_MAX)
+        return;
 
     RenderTask* task = &cl_render_tasks[cl_render_task_count];
     task->texture = texture;
@@ -148,8 +147,8 @@ static void cl_push_texture_to_destroy(SDL_Texture* texture) {
 
 void SDLGameRendererClassic_Init(void) {
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
-    cps3_canvas_classic = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                            SDL_TEXTUREACCESS_TARGET, cps3_width, cps3_height);
+    cps3_canvas_classic =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, cps3_width, cps3_height);
     SDL_SetTextureScaleMode(cps3_canvas_classic, SDL_SCALEMODE_NEAREST);
     SDL_SetTextureBlendMode(cps3_canvas_classic, SDL_BLENDMODE_BLEND);
 
@@ -253,19 +252,21 @@ void SDLGameRendererClassic_RenderFrame(void) {
     SDL_Texture* current_batch_texture = cl_render_tasks[0].texture;
 
     for (int i = 0; i <= cl_render_task_count; i++) {
-        bool should_flush = (i == cl_render_task_count) ||
-                            (cl_render_tasks[i].texture != current_batch_texture);
+        bool should_flush = (i == cl_render_task_count) || (cl_render_tasks[i].texture != current_batch_texture);
 
         if (should_flush) {
             int batch_size = i - batch_start;
             if (batch_size > 0) {
                 for (int j = 0; j < batch_size; j++) {
-                    memcpy(&cl_batch_vertices[j * 4], cl_render_tasks[batch_start + j].vertices,
-                           4 * sizeof(SDL_Vertex));
+                    memcpy(
+                        &cl_batch_vertices[j * 4], cl_render_tasks[batch_start + j].vertices, 4 * sizeof(SDL_Vertex));
                 }
-                SDL_RenderGeometry(renderer, current_batch_texture,
-                                   cl_batch_vertices, batch_size * 4,
-                                   cl_batch_indices, batch_size * 6);
+                SDL_RenderGeometry(renderer,
+                                   current_batch_texture,
+                                   cl_batch_vertices,
+                                   batch_size * 4,
+                                   cl_batch_indices,
+                                   batch_size * 6);
             }
 
             if (i < cl_render_task_count) {
@@ -339,8 +340,8 @@ void SDLGameRendererClassic_CreateTexture(unsigned int th) {
         return;
     }
 
-    SDL_Surface* surface = SDL_CreateSurfaceFrom(fl_texture->width, fl_texture->height,
-                                                  pixel_format, (void*)pixels, pitch);
+    SDL_Surface* surface =
+        SDL_CreateSurfaceFrom(fl_texture->width, fl_texture->height, pixel_format, (void*)pixels, pitch);
     if (!surface) {
         TRACE_ZONE_END();
         return;
@@ -364,7 +365,8 @@ void SDLGameRendererClassic_CreateTexture(unsigned int th) {
 
 void SDLGameRendererClassic_DestroyTexture(unsigned int texture_handle) {
     const int texture_index = texture_handle - 1;
-    if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX) return;
+    if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX)
+        return;
 
     if (cl_surfaces[texture_index]) {
         SDL_DestroySurface(cl_surfaces[texture_index]);
@@ -380,7 +382,8 @@ void SDLGameRendererClassic_DestroyTexture(unsigned int texture_handle) {
 
 void SDLGameRendererClassic_UnlockTexture(unsigned int th) {
     const int texture_index = LO_16_BITS(th) - 1;
-    if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX) return;
+    if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX)
+        return;
 
     // Invalidate all cached textures for this surface
     for (int j = 0; j <= FL_PALETTE_MAX; j++) {
@@ -423,8 +426,12 @@ void SDLGameRendererClassic_CreatePalette(unsigned int ph) {
     }
 
     switch (fl_palette->format) {
-    case SCE_GS_PSMCT32: color_size = 4; break;
-    case SCE_GS_PSMCT16: color_size = 2; break;
+    case SCE_GS_PSMCT32:
+        color_size = 4;
+        break;
+    case SCE_GS_PSMCT16:
+        color_size = 2;
+        break;
     default:
         TRACE_ZONE_END();
         return;
@@ -453,7 +460,8 @@ void SDLGameRendererClassic_CreatePalette(unsigned int ph) {
 
 void SDLGameRendererClassic_DestroyPalette(unsigned int palette_handle) {
     const int pi = palette_handle - 1;
-    if (pi < 0 || pi >= FL_PALETTE_MAX) return;
+    if (pi < 0 || pi >= FL_PALETTE_MAX)
+        return;
 
     if (cl_palettes[pi]) {
         SDL_DestroyPalette(cl_palettes[pi]);
@@ -470,7 +478,8 @@ void SDLGameRendererClassic_DestroyPalette(unsigned int palette_handle) {
 
 void SDLGameRendererClassic_UnlockPalette(unsigned int ph) {
     const int pi = ph - 1;
-    if (pi < 0 || pi >= FL_PALETTE_MAX) return;
+    if (pi < 0 || pi >= FL_PALETTE_MAX)
+        return;
 
     // Re-create palette from updated data (shift to HI_16_BITS format for CreatePalette)
     SDLGameRendererClassic_CreatePalette(ph << 16);
@@ -528,13 +537,17 @@ void SDLGameRendererClassic_SetTexture(unsigned int th) {
                     cl_tex_cache[texture_index][palette_handle] = sdl_texture;
                     cl_current_texture = sdl_texture;
                 } else {
-                    SDL_Log("Classic SetTexture: SDL_CreateTextureFromSurface failed for texture %d, palette %d: %s", texture_handle, palette_handle, SDL_GetError());
+                    SDL_Log("Classic SetTexture: SDL_CreateTextureFromSurface failed for texture %d, palette %d: %s",
+                            texture_handle,
+                            palette_handle,
+                            SDL_GetError());
                 }
             } else {
                 SDL_Log("Classic SetTexture: Palette %d is NULL for texture %d", palette_handle, texture_handle);
             }
         } else {
-            SDL_Log("Classic SetTexture: Invalid palette_handle %d for indexed texture %d", palette_handle, texture_handle);
+            SDL_Log(
+                "Classic SetTexture: Invalid palette_handle %d for indexed texture %d", palette_handle, texture_handle);
         }
     } else {
         // Non-indexed: use eagerly created texture at slot 0

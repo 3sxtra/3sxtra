@@ -2,3 +2,51 @@
 [2026-03-08 17:25] Audited port layer for code health issues
 [2026-03-08 17:25] PRD created with 8 tasks: dead code removal, toggle dedup, wrapper cleanup, bezel dedup, debug HUD extract, overlay extract, build verify, documentation
 [2026-03-08 17:25] Ready to start: Task 1 - Remove deprecated ImGui lobby dead code
+[2026-03-08 18:08] Task 1 COMPLETE - Removed deprecated ImGui lobby dead code from sdl_netplay_ui.cpp
+  - Deleted #if 0 block at lines 414-422: ImGuiSpinner() function + comment (9 lines)
+  - Deleted #if 0 block at lines 903-1140: Entire deprecated ImGui lobby rendering window + comment (238 lines)
+  - Net reduction: 249 lines (1351 → 1102)
+  - recompile.bat: PASS (Build Completed Successfully)
+  - lint.bat: PASS (no new issues — all reported issues are pre-existing, none in sdl_netplay_ui.cpp)
+[2026-03-08 18:18] Task 2 COMPLETE - Extracted toggle_overlay() helper to reduce duplication in sdl_app.c
+  - Created static void toggle_overlay(bool* flag, const char* doc_name, bool pauses_game) helper
+  - Refactored 5 toggle functions to delegate to the helper:
+    - SDLApp_ToggleModsMenu()        → toggle_overlay(&show_mods_menu, "mods", true)
+    - SDLApp_ToggleShaderMenu()      → toggle_overlay(&show_shader_menu, "shaders", true)
+    - SDLApp_ToggleStageConfigMenu() → toggle_overlay(&show_stage_config_menu, "stage_config", false)
+    - SDLApp_ToggleDevOverlay()      → toggle_overlay(&show_dev_overlay, "dev_overlay", false)
+    - SDLApp_ToggleTrainingMenu()    → toggle_overlay(&show_training_menu, "training", false)
+  - pauses_game param preserves behavioral difference: Mods/Shader update game_paused, others don't
+  - SDLApp_ToggleMenu(), SDLApp_ToggleFullscreen(), SDLApp_ToggleBezel(), SDLApp_ToggleDebugHUD() left as-is (unique logic)
+  - Net reduction: 32 lines (2657 → 2625)
+  - recompile.bat: PASS (Build Completed Successfully)
+  - lint.bat: PASS (no new issues in sdl_app.c)
+[2026-03-08 18:56] Task 3 COMPLETE - Extract shader/preset pass-through wrappers from sdl_app.c
+  - 9 of the 10 wrapper functions listed in PRD no longer exist — already removed in prior work:
+    SDLApp_GetShaderModeLibretro, SDLApp_SetShaderModeLibretro, SDLApp_GetCurrentPresetIndex,
+    SDLApp_SetCurrentPresetIndex, SDLApp_GetAvailablePresetCount, SDLApp_GetPresetName,
+    SDLApp_LoadPreset, SDLApp_ToggleShaderMode, SDLApp_CyclePreset
+  - All callers already call SDLAppShader_* directly (verified via rg)
+  - SDLApp_CycleScaleMode() kept as necessary wrapper — cycle_scale_mode() is static and
+    accesses file-scoped state (scale_mode, bezel_vbo_dirty). Added /** @brief */ doc comment.
+  - Net change: +2 lines (doc comment only — wrappers were already gone)
+  - recompile.bat: PASS (Build Completed Successfully)
+  - lint.bat: PASS (no new issues in sdl_app.c)
+[2026-03-08 19:10] Task 4 COMPLETE - Deduplicated bezel draw-left / draw-right in SDLApp_EndFrame()
+  - Created static void draw_bezel_quad(void* texture, int vertex_offset) helper with /** @brief */ doc
+  - Replaced two near-identical 17-line blocks (Draw Left + Draw Right) with one-line calls each
+  - Helper binds GL texture, queries texture size via TextureUtil_GetSize, sets SourceSize uniform, draws
+  - Only differences were: cached_bezels.left vs .right, and vertex_offset 0 vs 6
+  - Net reduction: 12 lines (2590 → 2578)
+  - recompile.bat: PASS (Build Completed Successfully)
+  - lint.bat: PASS (no new issues in sdl_app.c)
+[2026-03-08 19:17] Task 5 COMPLETE - Extracted debug HUD rendering from SDLApp_EndFrame()
+  - Created static void render_debug_hud(int win_w, int win_h, const SDL_FRect* viewport) with /** @brief */ doc
+  - Extracted duplicated HUD text composition logic (FPS, shader mode, scale mode strings) into the helper
+  - Replaced BOTH inline copies: SDL_GPU backend (was lines 1688-1732) AND OpenGL backend (was lines 2055-2099)
+  - Both call sites now: `if (show_debug_hud) { render_debug_hud(win_w, win_h, &viewport); }`
+  - GPU path still computes viewport locally via get_letterbox_rect(); OpenGL path uses existing viewport variable
+  - Helper placed before SDLApp_EndFrame() (alongside draw_bezel_quad) to satisfy C forward-declaration rules
+  - Net reduction: 34 lines (2578 → 2544) — eliminated ~90 lines of duplicate inline code, added ~49-line helper
+  - recompile.bat: PASS (Build Completed Successfully)
+  - lint.bat: PASS (no new issues in sdl_app.c)

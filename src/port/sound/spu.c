@@ -191,9 +191,11 @@ static void SPU_VoiceDecode(struct SPU_Voice* v) {
     filter = (header >> 4) & 7;
 
     /* Real SPU2 clamps shift to 12; values 13-15 behave as 12 */
-    if (shift > 12) shift = 12;
+    if (shift > 12)
+        shift = 12;
     /* Filter 0-4 are valid; 5-7 are undefined on hardware — treat as 0 (no filter) */
-    if (filter > 4) filter = 0;
+    if (filter > 4)
+        filter = 0;
 
     for (int i = 0; i < 4; i++) {
         s32 sample = (s16)((data & 0xF) << 12);
@@ -347,7 +349,10 @@ void SPU_VoiceStart(int vnum, u32 start_addr) {
 void SPU_SDL_CB(void* user, SDL_AudioStream* stream, int additional_amount, int total_amount) {
     TRACE_ZONE_N("SPU_AudioCB");
     static bool thread_named = false;
-    if (!thread_named) { TRACE_THREAD_NAME("Audio/SPU"); thread_named = true; }
+    if (!thread_named) {
+        TRACE_THREAD_NAME("Audio/SPU");
+        thread_named = true;
+    }
     u32 samples_per_channel = (additional_amount / sizeof(s16)) >> 1;
     // ⚡ Bolt: outbuf holds interleaved stereo samples (2 × s16 per tick).
     // SPU_Tick writes 2 elements per call, so max safe batch = 4096 / 2 = 2048.

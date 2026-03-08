@@ -8,7 +8,12 @@
 extern "C" {
 #endif
 
-typedef enum RendererBackend { RENDERER_OPENGL, RENDERER_SDLGPU, RENDERER_SDL2D, RENDERER_SDL2D_CLASSIC } RendererBackend;
+typedef enum RendererBackend {
+    RENDERER_OPENGL,
+    RENDERER_SDLGPU,
+    RENDERER_SDL2D,
+    RENDERER_SDL2D_CLASSIC
+} RendererBackend;
 
 // Returns true for any SDL2D variant (optimized or classic benchmark)
 static inline bool is_sdl2d_backend(RendererBackend r) {
@@ -38,17 +43,6 @@ unsigned int SDLApp_GetSceneArrayShaderProgram();
 int SDLApp_GetScaleMode();
 void SDLApp_SetScaleMode(int mode);
 const char* SDLApp_GetScaleModeName(int mode);
-
-// Shader Mode (Internal vs Libretro)
-bool SDLApp_GetShaderModeLibretro();
-void SDLApp_SetShaderModeLibretro(bool libretro);
-
-// Preset Management
-int SDLApp_GetCurrentPresetIndex();
-void SDLApp_SetCurrentPresetIndex(int index);
-int SDLApp_GetAvailablePresetCount();
-const char* SDLApp_GetPresetName(int index);
-void SDLApp_LoadPreset(int index);
 
 // CLI / Config Accessors
 void SDLApp_SetWindowPosition(int x, int y);

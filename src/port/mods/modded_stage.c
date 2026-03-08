@@ -13,8 +13,8 @@
 #include "port/mods/modded_stage.h"
 #include "port/config/config.h"
 #include "port/config/paths.h"
-#include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/mods/stage_config.h"
+#include "port/sdl/renderer/sdl_texture_util.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
@@ -240,7 +240,8 @@ void ModdedStage_LoadForStage(int stage_index) {
 
     if (loaded > 0) {
         s_loaded_stage = stage_index;
-        SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "ModdedStage: Stage %d loaded with %d active layers", stage_index, loaded);
+        SDL_LogDebug(
+            SDL_LOG_CATEGORY_RENDER, "ModdedStage: Stage %d loaded with %d active layers", stage_index, loaded);
     }
 }
 
@@ -268,7 +269,6 @@ int ModdedStage_GetLayerCount(void) {
 int ModdedStage_GetLoadedStageIndex(void) {
     return s_loaded_stage;
 }
-
 
 static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, const BG* bg) {
     if (layer_index < 0 || layer_index >= MAX_STAGE_LAYERS)
@@ -349,10 +349,10 @@ static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, cons
          * As fighters jump (v_shift increases), the camera pans up showing more sky. */
         float max_scroll_y = effective_h - vp_h;
         if (y_lim > 0.001f) {
-            float t = raw_y / y_lim;  /* 0.0 at ground, 1.0 at max jump height */
-            scroll_y = max_scroll_y * (1.0f - t);  /* invert: ground=bottom, sky=top */
+            float t = raw_y / y_lim;              /* 0.0 at ground, 1.0 at max jump height */
+            scroll_y = max_scroll_y * (1.0f - t); /* invert: ground=bottom, sky=top */
         } else {
-            scroll_y = max_scroll_y;  /* no vertical scroll — show bottom */
+            scroll_y = max_scroll_y; /* no vertical scroll — show bottom */
         }
 
         /* Apply config multiplier and offset */

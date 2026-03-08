@@ -485,7 +485,7 @@ void emlShimStartSound(CSE_SYS_PARAM_SNDSTART* param) {
     TRACE_LOCK_AFTER(soundLockCtx);
     if (!doSeDrop(&param->reqp)) {
         SDL_UnlockMutex(soundLock);
-    TRACE_LOCK_UNLOCK(soundLockCtx);
+        TRACE_LOCK_UNLOCK(soundLockCtx);
         return;
     }
 
@@ -493,7 +493,7 @@ void emlShimStartSound(CSE_SYS_PARAM_SNDSTART* param) {
     if (!voice) {
         printf("no free voices!\n");
         SDL_UnlockMutex(soundLock);
-    TRACE_LOCK_UNLOCK(soundLockCtx);
+        TRACE_LOCK_UNLOCK(soundLockCtx);
         return;
     }
 

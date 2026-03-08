@@ -519,11 +519,11 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
     unsigned int last_tex_code = 0;
 
     // Cached texture state — refreshed on tex_code change
-    int    cur_layer   = -1;
-    int    cur_pal     = 0;
-    float  cur_uv_sx   = 1.0f;
-    float  cur_uv_sy   = 1.0f;
-    GLuint cur_texture  = 0;
+    int cur_layer = -1;
+    int cur_pal = 0;
+    float cur_uv_sx = 1.0f;
+    float cur_uv_sy = 1.0f;
+    GLuint cur_texture = 0;
 
     for (int i = 0; i < count; i++) {
         if (!active_layers[chips[i].id])
@@ -544,17 +544,17 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
             if (gl_state.texture_count > 0) {
                 const int top = gl_state.texture_count - 1;
                 cur_texture = gl_state.textures[top];
-                cur_layer   = gl_state.texture_layers[top];
-                cur_pal     = gl_state.texture_pal_slots[top];
-                cur_uv_sx   = gl_state.texture_uv_sx[top];
-                cur_uv_sy   = gl_state.texture_uv_sy[top];
+                cur_layer = gl_state.texture_layers[top];
+                cur_pal = gl_state.texture_pal_slots[top];
+                cur_uv_sx = gl_state.texture_uv_sx[top];
+                cur_uv_sy = gl_state.texture_uv_sy[top];
             }
         }
         // Same tex_code: reuse cached cur_texture/cur_layer/cur_pal/cur_uv — no stack push needed
 
         // --- Inline vertex construction (was: DrawSprite2 → draw_quad → push_render_task) ---
         const int task_idx = gl_state.render_task_count;
-        const int vo = task_idx * 4;  // vertex offset
+        const int vo = task_idx * 4; // vertex offset
 
         // Color swizzle: Sprite2 stores BGRA, GL shader expects RGBA byte order
         const Uint32 src_color = spr->vertex_color;
@@ -574,8 +574,10 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
 
         // Apply array-texture UV scale (both indexed >= 0 and RGBA <= -2)
         if (cur_layer != -1) {
-            s0 *= cur_uv_sx;  t0 *= cur_uv_sy;
-            s1 *= cur_uv_sx;  t1 *= cur_uv_sy;
+            s0 *= cur_uv_sx;
+            t0 *= cur_uv_sy;
+            s1 *= cur_uv_sx;
+            t1 *= cur_uv_sy;
         }
 
         // Z depth conversion
@@ -584,20 +586,28 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
         // Write 4 vertices directly to batch buffer
         SDL_Vertex* v = &gl_state.batch_vertices[vo];
 
-        v[0].position.x = x0; v[0].position.y = y0;
-        v[0].tex_coord.x = s0; v[0].tex_coord.y = t0;
+        v[0].position.x = x0;
+        v[0].position.y = y0;
+        v[0].tex_coord.x = s0;
+        v[0].tex_coord.y = t0;
         memcpy(&v[0].color, &color, sizeof(Uint32));
 
-        v[1].position.x = x1; v[1].position.y = y0;
-        v[1].tex_coord.x = s1; v[1].tex_coord.y = t0;
+        v[1].position.x = x1;
+        v[1].position.y = y0;
+        v[1].tex_coord.x = s1;
+        v[1].tex_coord.y = t0;
         memcpy(&v[1].color, &color, sizeof(Uint32));
 
-        v[2].position.x = x0; v[2].position.y = y1;
-        v[2].tex_coord.x = s0; v[2].tex_coord.y = t1;
+        v[2].position.x = x0;
+        v[2].position.y = y1;
+        v[2].tex_coord.x = s0;
+        v[2].tex_coord.y = t1;
         memcpy(&v[2].color, &color, sizeof(Uint32));
 
-        v[3].position.x = x1; v[3].position.y = y1;
-        v[3].tex_coord.x = s1; v[3].tex_coord.y = t1;
+        v[3].position.x = x1;
+        v[3].position.y = y1;
+        v[3].tex_coord.x = s1;
+        v[3].tex_coord.y = t1;
         memcpy(&v[3].color, &color, sizeof(Uint32));
 
         // Write layer + palette with SIMD broadcast

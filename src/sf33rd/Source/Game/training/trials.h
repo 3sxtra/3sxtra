@@ -54,11 +54,11 @@ typedef struct {
     bool completed;    // Successfully finished all steps
     s32 success_timer; // Frames since completion message shown
 
-    s32 last_combo_hits;      // To detect combo drops
+    s32 last_combo_hits;                // To detect combo drops
     TrialRequirementType last_hit_type; // Set by engine hooks (ATTACK/THROW/FIREBALL)
-    s16 last_hit_waza;        // Waza ID from the last engine hook
-    bool pending_hit;         // True when a hook fires, consumed by update
-    s32 combo_drop_grace;     // Frames to wait before declaring combo drop
+    s16 last_hit_waza;                  // Waza ID from the last engine hook
+    bool pending_hit;                   // True when a hook fires, consumed by update
+    s32 combo_drop_grace;               // Frames to wait before declaring combo drop
 } TrialsState;
 
 extern TrialsState g_trials_state;

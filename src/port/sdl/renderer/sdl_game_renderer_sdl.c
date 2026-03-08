@@ -8,10 +8,10 @@
  * maximum compatibility on low-end devices (RPi4, old GPUs).
  */
 #include "common.h"
-#include "port/tracy_zones.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
+#include "port/tracy_zones.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -34,13 +34,13 @@ static float task_z[RENDER_TASK_MAX];
 static SDL_Texture* task_texture[RENDER_TASK_MAX];
 static unsigned int task_th[RENDER_TASK_MAX]; // combined texture+palette handle for batch-breaking
 static SDL_Vertex task_verts[RENDER_TASK_MAX][4];
-static bool task_is_rect[RENDER_TASK_MAX];          // ⚡ true = axis-aligned rect eligible for SDL_RenderTexture
+static bool task_is_rect[RENDER_TASK_MAX]; // ⚡ true = axis-aligned rect eligible for SDL_RenderTexture
 
 // ⚡ Software-frame SoA extensions — populated at enqueue time, consumed by sw_render_frame().
-static SDL_FRect task_src_rect[RENDER_TASK_MAX];     // Source UV rect (normalized 0–1) for textured rects
-static SDL_FRect task_dst_rect[RENDER_TASK_MAX];     // Destination pixel rect (screen space)
-static SDL_FlipMode task_flip[RENDER_TASK_MAX];      // Horizontal/vertical flip flags
-static uint32_t task_color32[RENDER_TASK_MAX];       // Packed RGBA8888 color for modulation
+static SDL_FRect task_src_rect[RENDER_TASK_MAX]; // Source UV rect (normalized 0–1) for textured rects
+static SDL_FRect task_dst_rect[RENDER_TASK_MAX]; // Destination pixel rect (screen space)
+static SDL_FlipMode task_flip[RENDER_TASK_MAX];  // Horizontal/vertical flip flags
+static uint32_t task_color32[RENDER_TASK_MAX];   // Packed RGBA8888 color for modulation
 
 static SDL_Texture* cps3_canvas = NULL;
 
@@ -57,17 +57,17 @@ static SDL_Texture* texture_cache[FL_TEXTURE_MAX] = { NULL };
 // Each indexed texture can cache up to IDX_PAL_SLOTS pre-baked RGBA textures.
 // Real-world max observed: 14 palettes/texture — 16 slots = zero evictions.
 #define IDX_PAL_SLOTS 16
-static SDL_Texture* idx_pal_tex[FL_TEXTURE_MAX][IDX_PAL_SLOTS];    // baked RGBA textures
-static int          idx_pal_handle[FL_TEXTURE_MAX][IDX_PAL_SLOTS]; // palette handle (0=empty)
-static uint32_t     idx_pal_hash[FL_TEXTURE_MAX][IDX_PAL_SLOTS];   // hash at bake time
-static uint8_t      idx_pal_lru[FL_TEXTURE_MAX][IDX_PAL_SLOTS];    // LRU age stamp
-static uint8_t      idx_pal_lru_clock[FL_TEXTURE_MAX];             // per-texture LRU tick
+static SDL_Texture* idx_pal_tex[FL_TEXTURE_MAX][IDX_PAL_SLOTS]; // baked RGBA textures
+static int idx_pal_handle[FL_TEXTURE_MAX][IDX_PAL_SLOTS];       // palette handle (0=empty)
+static uint32_t idx_pal_hash[FL_TEXTURE_MAX][IDX_PAL_SLOTS];    // hash at bake time
+static uint8_t idx_pal_lru[FL_TEXTURE_MAX][IDX_PAL_SLOTS];      // LRU age stamp
+static uint8_t idx_pal_lru_clock[FL_TEXTURE_MAX];               // per-texture LRU tick
 
 // ⚡ Parallel pixel cache — persistent RGBA8888 pixel data alongside SDL_Texture.
 // Populated during bake_idx_tex, read by sw_raster_textured (zero per-frame bake cost).
-static uint32_t*    idx_pal_pixels[FL_TEXTURE_MAX][IDX_PAL_SLOTS]; // cached RGBA8888 pixel buffers
-static int          idx_pal_pixels_w[FL_TEXTURE_MAX][IDX_PAL_SLOTS]; // pixel buffer width
-static int          idx_pal_pixels_h[FL_TEXTURE_MAX][IDX_PAL_SLOTS]; // pixel buffer height
+static uint32_t* idx_pal_pixels[FL_TEXTURE_MAX][IDX_PAL_SLOTS]; // cached RGBA8888 pixel buffers
+static int idx_pal_pixels_w[FL_TEXTURE_MAX][IDX_PAL_SLOTS];     // pixel buffer width
+static int idx_pal_pixels_h[FL_TEXTURE_MAX][IDX_PAL_SLOTS];     // pixel buffer height
 
 // ⚡ Per-palette content hash — computed in CreatePalette, used to detect stale cache entries.
 static uint32_t palette_hash[FL_PALETTE_MAX];
@@ -80,27 +80,27 @@ static uint32_t rgba_scratch[RGBA_SCRATCH_MAX];
 // ⚡ Non-indexed texture pixel cache — RGBA8888 conversion of PSMCT32/PSMCT16 surfaces.
 // Populated lazily by sw_convert_nonidx_pixels, invalidated by UnlockTexture/DestroyTexture.
 static uint32_t* nonidx_pixels[FL_TEXTURE_MAX];
-static int       nonidx_pixels_w[FL_TEXTURE_MAX];
-static int       nonidx_pixels_h[FL_TEXTURE_MAX];
+static int nonidx_pixels_w[FL_TEXTURE_MAX];
+static int nonidx_pixels_h[FL_TEXTURE_MAX];
 
 // ⚡ Software-frame rendering state — CPU-side compositing into a single surface.
 // Uses RGBA8888 to match LRU cache pixel format — zero format conversion.
-static SDL_Surface* sw_frame_surface = NULL;          // 384×224 RGBA8888 compositing target
-static SDL_Texture* sw_frame_upload_tex = NULL;       // Streaming texture for single-upload to GPU
+static SDL_Surface* sw_frame_surface = NULL;    // 384×224 RGBA8888 compositing target
+static SDL_Texture* sw_frame_upload_tex = NULL; // Streaming texture for single-upload to GPU
 
 // ⚡ Dirty tile tracking — 16×16 tile grid over 384×224 framebuffer.
 // Only tiles touched by current OR previous frame need clearing/redrawing.
 // Saves memset + compositing cost on static screens (menus, pause).
 enum {
-    DT_SIZE  = 16,
-    DT_COLS  = 24,   // 384 / 16
-    DT_ROWS  = 14,   // 224 / 16
-    DT_TOTAL = DT_COLS * DT_ROWS,  // 336
+    DT_SIZE = 16,
+    DT_COLS = 24,                 // 384 / 16
+    DT_ROWS = 14,                 // 224 / 16
+    DT_TOTAL = DT_COLS * DT_ROWS, // 336
 };
-static uint8_t  dt_current[DT_TOTAL];    // tiles covered this frame
-static uint8_t  dt_previous[DT_TOTAL];   // tiles covered last frame
+static uint8_t dt_current[DT_TOTAL];     // tiles covered this frame
+static uint8_t dt_previous[DT_TOTAL];    // tiles covered last frame
 static uint32_t dt_prev_clear_color = 0; // previous frame's RGBA8888 clear color
-static bool     dt_prev_clear_valid = false;  // whether dt_prev_clear_color is initialized
+static bool dt_prev_clear_valid = false; // whether dt_prev_clear_color is initialized
 
 // ⚡ Mark all tiles overlapping a screen-space rect as dirty in dt_current[].
 static void dt_mark_rect(float fx, float fy, float fw, float fh) {
@@ -108,14 +108,22 @@ static void dt_mark_rect(float fx, float fy, float fw, float fh) {
     int r0 = (int)SDL_floorf(fy) / DT_SIZE;
     int c1 = (int)SDL_ceilf(fx + fw - 1.0f) / DT_SIZE;
     int r1 = (int)SDL_ceilf(fy + fh - 1.0f) / DT_SIZE;
-    if (c0 < 0) c0 = 0;
-    if (c0 > DT_COLS - 1) c0 = DT_COLS - 1;
-    if (r0 < 0) r0 = 0;
-    if (r0 > DT_ROWS - 1) r0 = DT_ROWS - 1;
-    if (c1 < 0) c1 = 0;
-    if (c1 > DT_COLS - 1) c1 = DT_COLS - 1;
-    if (r1 < 0) r1 = 0;
-    if (r1 > DT_ROWS - 1) r1 = DT_ROWS - 1;
+    if (c0 < 0)
+        c0 = 0;
+    if (c0 > DT_COLS - 1)
+        c0 = DT_COLS - 1;
+    if (r0 < 0)
+        r0 = 0;
+    if (r0 > DT_ROWS - 1)
+        r0 = DT_ROWS - 1;
+    if (c1 < 0)
+        c1 = 0;
+    if (c1 > DT_COLS - 1)
+        c1 = DT_COLS - 1;
+    if (r1 < 0)
+        r1 = 0;
+    if (r1 > DT_ROWS - 1)
+        r1 = DT_ROWS - 1;
     for (int r = r0; r <= r1; r++) {
         for (int c = c0; c <= c1; c++) {
             dt_current[r * DT_COLS + c] = 1;
@@ -137,7 +145,6 @@ static uint32_t fnv1a_hash(const void* data, size_t len) {
 static SDL_Texture* textures_to_destroy[TEXTURES_TO_DESTROY_MAX] = { NULL };
 static int textures_to_destroy_count = 0;
 
-
 // (RenderTask AoS replaced by SoA arrays)
 static int render_task_count = 0;
 static int render_task_order[RENDER_TASK_MAX]; // ⚡ Sorted indices for indirect sort
@@ -157,8 +164,7 @@ static bool batch_buffers_initialized = false;
 
 // ⚡ Radix sort scratch buffers (used when sort_inversions > INSERTION_SORT_THRESHOLD)
 static uint32_t radix_keys[RENDER_TASK_MAX];
-static int      radix_scratch[RENDER_TASK_MAX];
-
+static int radix_scratch[RENDER_TASK_MAX];
 
 // ⚡ Epsilon for float comparison in rect detection (matches MiSTer's rect_task_epsilon)
 static const float sw_rect_epsilon = 0.001f;
@@ -187,36 +193,37 @@ static int debug_texture_index = 0;
 static inline uint32_t sw_modulate_rgba8888(uint32_t pixel, uint32_t color) {
     const uint32_t src_r = (pixel >> 24) & 0xFFu;
     const uint32_t src_g = (pixel >> 16) & 0xFFu;
-    const uint32_t src_b = (pixel >>  8) & 0xFFu;
+    const uint32_t src_b = (pixel >> 8) & 0xFFu;
     const uint32_t src_a = pixel & 0xFFu;
     const uint32_t mod_r = (color >> 24) & 0xFFu;
     const uint32_t mod_g = (color >> 16) & 0xFFu;
-    const uint32_t mod_b = (color >>  8) & 0xFFu;
+    const uint32_t mod_b = (color >> 8) & 0xFFu;
     const uint32_t mod_a = color & 0xFFu;
-    return (((src_r * mod_r + 127u) / 255u) << 24) |
-           (((src_g * mod_g + 127u) / 255u) << 16) |
-           (((src_b * mod_b + 127u) / 255u) <<  8) |
-            ((src_a * mod_a + 127u) / 255u);
+    return (((src_r * mod_r + 127u) / 255u) << 24) | (((src_g * mod_g + 127u) / 255u) << 16) |
+           (((src_b * mod_b + 127u) / 255u) << 8) | ((src_a * mod_a + 127u) / 255u);
 }
 
 // ⚡ Alpha composite (src-over): early-out for α=0/255, full Porter-Duff otherwise.
 // Both pixels are RGBA8888: R<<24 | G<<16 | B<<8 | A
 static inline uint32_t sw_blend_rgba8888(uint32_t dst_pixel, uint32_t src_pixel) {
     const uint32_t src_a = src_pixel & 0xFFu;
-    if (src_a == 0u) return dst_pixel;
-    if (src_a == 255u) return src_pixel;
+    if (src_a == 0u)
+        return dst_pixel;
+    if (src_a == 255u)
+        return src_pixel;
 
     const uint32_t dst_a = dst_pixel & 0xFFu;
     const uint32_t inv_src_a = 255u - src_a;
     const uint32_t out_a = src_a + ((dst_a * inv_src_a + 127u) / 255u);
-    if (out_a == 0u) return 0u;
+    if (out_a == 0u)
+        return 0u;
 
     const uint32_t src_r = (src_pixel >> 24) & 0xFFu;
     const uint32_t src_g = (src_pixel >> 16) & 0xFFu;
-    const uint32_t src_b = (src_pixel >>  8) & 0xFFu;
+    const uint32_t src_b = (src_pixel >> 8) & 0xFFu;
     const uint32_t dst_r = (dst_pixel >> 24) & 0xFFu;
     const uint32_t dst_g = (dst_pixel >> 16) & 0xFFu;
-    const uint32_t dst_b = (dst_pixel >>  8) & 0xFFu;
+    const uint32_t dst_b = (dst_pixel >> 8) & 0xFFu;
 
     // Premultiplied src-over compositing, then un-premultiply
     const uint32_t out_r = ((src_r * src_a + dst_r * dst_a * inv_src_a / 255u) + out_a / 2u) / out_a;
@@ -233,8 +240,10 @@ static inline uint32_t sw_argb_to_rgba(uint32_t argb) {
 
 // ⚡ Clamp integer to [lo, hi]
 static inline int sw_clamp(int val, int lo, int hi) {
-    if (val < lo) return lo;
-    if (val > hi) return hi;
+    if (val < lo)
+        return lo;
+    if (val > hi)
+        return hi;
     return val;
 }
 
@@ -242,16 +251,12 @@ static inline int sw_clamp(int val, int lo, int hi) {
 // Pre-computes src channel premul values ONCE, then applies per-pixel.
 // Fast path for dst_a==255 (opaque destination — the common case).
 // All channels in RGBA8888 layout: R<<24|G<<16|B<<8|A
-static inline uint32_t sw_blend_solid_rgba8888(uint32_t dst_pixel,
-                                               uint32_t src_a,
-                                               uint32_t inv_src_a,
-                                               uint32_t src_r_premul,
-                                               uint32_t src_g_premul,
-                                               uint32_t src_b_premul) {
+static inline uint32_t sw_blend_solid_rgba8888(uint32_t dst_pixel, uint32_t src_a, uint32_t inv_src_a,
+                                               uint32_t src_r_premul, uint32_t src_g_premul, uint32_t src_b_premul) {
     const uint32_t dst_a = dst_pixel & 0xFFu;
     const uint32_t dst_r = (dst_pixel >> 24) & 0xFFu;
     const uint32_t dst_g = (dst_pixel >> 16) & 0xFFu;
-    const uint32_t dst_b = (dst_pixel >>  8) & 0xFFu;
+    const uint32_t dst_b = (dst_pixel >> 8) & 0xFFu;
 
     if (dst_a == 255u) {
         // Fast path: opaque destination — no alpha compositing needed
@@ -262,7 +267,8 @@ static inline uint32_t sw_blend_solid_rgba8888(uint32_t dst_pixel,
     }
 
     const uint32_t out_a = src_a + ((dst_a * inv_src_a + 127u) / 255u);
-    if (out_a == 0u) return 0u;
+    if (out_a == 0u)
+        return 0u;
 
     const uint32_t dst_r_premul = dst_r * dst_a;
     const uint32_t dst_g_premul = dst_g * dst_a;
@@ -277,22 +283,18 @@ static inline uint32_t sw_blend_solid_rgba8888(uint32_t dst_pixel,
 // The PS2 GS stores 256-color CLUTs in a non-linear memory order.
 // This LUT maps linear index (0-255) to the shuffled GS index.
 static const Uint8 ps2_clut_shuffle[256] = {
-    0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
-    8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31,
-    32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
-    40, 41, 42, 43, 44, 45, 46, 47, 56, 57, 58, 59, 60, 61, 62, 63,
-    64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
-    72, 73, 74, 75, 76, 77, 78, 79, 88, 89, 90, 91, 92, 93, 94, 95,
-    96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119,
-    104, 105, 106, 107, 108, 109, 110, 111, 120, 121, 122, 123, 124, 125, 126, 127,
-    128, 129, 130, 131, 132, 133, 134, 135, 144, 145, 146, 147, 148, 149, 150, 151,
-    136, 137, 138, 139, 140, 141, 142, 143, 152, 153, 154, 155, 156, 157, 158, 159,
-    160, 161, 162, 163, 164, 165, 166, 167, 176, 177, 178, 179, 180, 181, 182, 183,
-    168, 169, 170, 171, 172, 173, 174, 175, 184, 185, 186, 187, 188, 189, 190, 191,
-    192, 193, 194, 195, 196, 197, 198, 199, 208, 209, 210, 211, 212, 213, 214, 215,
-    200, 201, 202, 203, 204, 205, 206, 207, 216, 217, 218, 219, 220, 221, 222, 223,
-    224, 225, 226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247,
-    232, 233, 234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254, 255
+    0,   1,   2,   3,   4,   5,   6,   7,   16,  17,  18,  19,  20,  21,  22,  23,  8,   9,   10,  11,  12,  13,
+    14,  15,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  48,  49,  50,  51,
+    52,  53,  54,  55,  40,  41,  42,  43,  44,  45,  46,  47,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,
+    66,  67,  68,  69,  70,  71,  80,  81,  82,  83,  84,  85,  86,  87,  72,  73,  74,  75,  76,  77,  78,  79,
+    88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,  99,  100, 101, 102, 103, 112, 113, 114, 115, 116, 117,
+    118, 119, 104, 105, 106, 107, 108, 109, 110, 111, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131,
+    132, 133, 134, 135, 144, 145, 146, 147, 148, 149, 150, 151, 136, 137, 138, 139, 140, 141, 142, 143, 152, 153,
+    154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 176, 177, 178, 179, 180, 181, 182, 183,
+    168, 169, 170, 171, 172, 173, 174, 175, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197,
+    198, 199, 208, 209, 210, 211, 212, 213, 214, 215, 200, 201, 202, 203, 204, 205, 206, 207, 216, 217, 218, 219,
+    220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247, 232, 233,
+    234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254, 255
 };
 
 // --- Color Reading Functions ---
@@ -307,38 +309,38 @@ static void read_rgba32_color(Uint32 pixel, SDL_Color* color) {
 // ⚡ LUT-based byte-to-float conversion — eliminates 4 float divisions per call.
 // Pre-computed at compile time; used by read_rgba32_fcolor in the draw hot path.
 static const float rgba8_to_float[256] = {
-    0.0f/255, 1.0f/255, 2.0f/255, 3.0f/255, 4.0f/255, 5.0f/255, 6.0f/255, 7.0f/255,
-    8.0f/255, 9.0f/255, 10.0f/255, 11.0f/255, 12.0f/255, 13.0f/255, 14.0f/255, 15.0f/255,
-    16.0f/255, 17.0f/255, 18.0f/255, 19.0f/255, 20.0f/255, 21.0f/255, 22.0f/255, 23.0f/255,
-    24.0f/255, 25.0f/255, 26.0f/255, 27.0f/255, 28.0f/255, 29.0f/255, 30.0f/255, 31.0f/255,
-    32.0f/255, 33.0f/255, 34.0f/255, 35.0f/255, 36.0f/255, 37.0f/255, 38.0f/255, 39.0f/255,
-    40.0f/255, 41.0f/255, 42.0f/255, 43.0f/255, 44.0f/255, 45.0f/255, 46.0f/255, 47.0f/255,
-    48.0f/255, 49.0f/255, 50.0f/255, 51.0f/255, 52.0f/255, 53.0f/255, 54.0f/255, 55.0f/255,
-    56.0f/255, 57.0f/255, 58.0f/255, 59.0f/255, 60.0f/255, 61.0f/255, 62.0f/255, 63.0f/255,
-    64.0f/255, 65.0f/255, 66.0f/255, 67.0f/255, 68.0f/255, 69.0f/255, 70.0f/255, 71.0f/255,
-    72.0f/255, 73.0f/255, 74.0f/255, 75.0f/255, 76.0f/255, 77.0f/255, 78.0f/255, 79.0f/255,
-    80.0f/255, 81.0f/255, 82.0f/255, 83.0f/255, 84.0f/255, 85.0f/255, 86.0f/255, 87.0f/255,
-    88.0f/255, 89.0f/255, 90.0f/255, 91.0f/255, 92.0f/255, 93.0f/255, 94.0f/255, 95.0f/255,
-    96.0f/255, 97.0f/255, 98.0f/255, 99.0f/255, 100.0f/255, 101.0f/255, 102.0f/255, 103.0f/255,
-    104.0f/255, 105.0f/255, 106.0f/255, 107.0f/255, 108.0f/255, 109.0f/255, 110.0f/255, 111.0f/255,
-    112.0f/255, 113.0f/255, 114.0f/255, 115.0f/255, 116.0f/255, 117.0f/255, 118.0f/255, 119.0f/255,
-    120.0f/255, 121.0f/255, 122.0f/255, 123.0f/255, 124.0f/255, 125.0f/255, 126.0f/255, 127.0f/255,
-    128.0f/255, 129.0f/255, 130.0f/255, 131.0f/255, 132.0f/255, 133.0f/255, 134.0f/255, 135.0f/255,
-    136.0f/255, 137.0f/255, 138.0f/255, 139.0f/255, 140.0f/255, 141.0f/255, 142.0f/255, 143.0f/255,
-    144.0f/255, 145.0f/255, 146.0f/255, 147.0f/255, 148.0f/255, 149.0f/255, 150.0f/255, 151.0f/255,
-    152.0f/255, 153.0f/255, 154.0f/255, 155.0f/255, 156.0f/255, 157.0f/255, 158.0f/255, 159.0f/255,
-    160.0f/255, 161.0f/255, 162.0f/255, 163.0f/255, 164.0f/255, 165.0f/255, 166.0f/255, 167.0f/255,
-    168.0f/255, 169.0f/255, 170.0f/255, 171.0f/255, 172.0f/255, 173.0f/255, 174.0f/255, 175.0f/255,
-    176.0f/255, 177.0f/255, 178.0f/255, 179.0f/255, 180.0f/255, 181.0f/255, 182.0f/255, 183.0f/255,
-    184.0f/255, 185.0f/255, 186.0f/255, 187.0f/255, 188.0f/255, 189.0f/255, 190.0f/255, 191.0f/255,
-    192.0f/255, 193.0f/255, 194.0f/255, 195.0f/255, 196.0f/255, 197.0f/255, 198.0f/255, 199.0f/255,
-    200.0f/255, 201.0f/255, 202.0f/255, 203.0f/255, 204.0f/255, 205.0f/255, 206.0f/255, 207.0f/255,
-    208.0f/255, 209.0f/255, 210.0f/255, 211.0f/255, 212.0f/255, 213.0f/255, 214.0f/255, 215.0f/255,
-    216.0f/255, 217.0f/255, 218.0f/255, 219.0f/255, 220.0f/255, 221.0f/255, 222.0f/255, 223.0f/255,
-    224.0f/255, 225.0f/255, 226.0f/255, 227.0f/255, 228.0f/255, 229.0f/255, 230.0f/255, 231.0f/255,
-    232.0f/255, 233.0f/255, 234.0f/255, 235.0f/255, 236.0f/255, 237.0f/255, 238.0f/255, 239.0f/255,
-    240.0f/255, 241.0f/255, 242.0f/255, 243.0f/255, 244.0f/255, 245.0f/255, 246.0f/255, 247.0f/255,
-    248.0f/255, 249.0f/255, 250.0f/255, 251.0f/255, 252.0f/255, 253.0f/255, 254.0f/255, 255.0f/255,
+    0.0f / 255,   1.0f / 255,   2.0f / 255,   3.0f / 255,   4.0f / 255,   5.0f / 255,   6.0f / 255,   7.0f / 255,
+    8.0f / 255,   9.0f / 255,   10.0f / 255,  11.0f / 255,  12.0f / 255,  13.0f / 255,  14.0f / 255,  15.0f / 255,
+    16.0f / 255,  17.0f / 255,  18.0f / 255,  19.0f / 255,  20.0f / 255,  21.0f / 255,  22.0f / 255,  23.0f / 255,
+    24.0f / 255,  25.0f / 255,  26.0f / 255,  27.0f / 255,  28.0f / 255,  29.0f / 255,  30.0f / 255,  31.0f / 255,
+    32.0f / 255,  33.0f / 255,  34.0f / 255,  35.0f / 255,  36.0f / 255,  37.0f / 255,  38.0f / 255,  39.0f / 255,
+    40.0f / 255,  41.0f / 255,  42.0f / 255,  43.0f / 255,  44.0f / 255,  45.0f / 255,  46.0f / 255,  47.0f / 255,
+    48.0f / 255,  49.0f / 255,  50.0f / 255,  51.0f / 255,  52.0f / 255,  53.0f / 255,  54.0f / 255,  55.0f / 255,
+    56.0f / 255,  57.0f / 255,  58.0f / 255,  59.0f / 255,  60.0f / 255,  61.0f / 255,  62.0f / 255,  63.0f / 255,
+    64.0f / 255,  65.0f / 255,  66.0f / 255,  67.0f / 255,  68.0f / 255,  69.0f / 255,  70.0f / 255,  71.0f / 255,
+    72.0f / 255,  73.0f / 255,  74.0f / 255,  75.0f / 255,  76.0f / 255,  77.0f / 255,  78.0f / 255,  79.0f / 255,
+    80.0f / 255,  81.0f / 255,  82.0f / 255,  83.0f / 255,  84.0f / 255,  85.0f / 255,  86.0f / 255,  87.0f / 255,
+    88.0f / 255,  89.0f / 255,  90.0f / 255,  91.0f / 255,  92.0f / 255,  93.0f / 255,  94.0f / 255,  95.0f / 255,
+    96.0f / 255,  97.0f / 255,  98.0f / 255,  99.0f / 255,  100.0f / 255, 101.0f / 255, 102.0f / 255, 103.0f / 255,
+    104.0f / 255, 105.0f / 255, 106.0f / 255, 107.0f / 255, 108.0f / 255, 109.0f / 255, 110.0f / 255, 111.0f / 255,
+    112.0f / 255, 113.0f / 255, 114.0f / 255, 115.0f / 255, 116.0f / 255, 117.0f / 255, 118.0f / 255, 119.0f / 255,
+    120.0f / 255, 121.0f / 255, 122.0f / 255, 123.0f / 255, 124.0f / 255, 125.0f / 255, 126.0f / 255, 127.0f / 255,
+    128.0f / 255, 129.0f / 255, 130.0f / 255, 131.0f / 255, 132.0f / 255, 133.0f / 255, 134.0f / 255, 135.0f / 255,
+    136.0f / 255, 137.0f / 255, 138.0f / 255, 139.0f / 255, 140.0f / 255, 141.0f / 255, 142.0f / 255, 143.0f / 255,
+    144.0f / 255, 145.0f / 255, 146.0f / 255, 147.0f / 255, 148.0f / 255, 149.0f / 255, 150.0f / 255, 151.0f / 255,
+    152.0f / 255, 153.0f / 255, 154.0f / 255, 155.0f / 255, 156.0f / 255, 157.0f / 255, 158.0f / 255, 159.0f / 255,
+    160.0f / 255, 161.0f / 255, 162.0f / 255, 163.0f / 255, 164.0f / 255, 165.0f / 255, 166.0f / 255, 167.0f / 255,
+    168.0f / 255, 169.0f / 255, 170.0f / 255, 171.0f / 255, 172.0f / 255, 173.0f / 255, 174.0f / 255, 175.0f / 255,
+    176.0f / 255, 177.0f / 255, 178.0f / 255, 179.0f / 255, 180.0f / 255, 181.0f / 255, 182.0f / 255, 183.0f / 255,
+    184.0f / 255, 185.0f / 255, 186.0f / 255, 187.0f / 255, 188.0f / 255, 189.0f / 255, 190.0f / 255, 191.0f / 255,
+    192.0f / 255, 193.0f / 255, 194.0f / 255, 195.0f / 255, 196.0f / 255, 197.0f / 255, 198.0f / 255, 199.0f / 255,
+    200.0f / 255, 201.0f / 255, 202.0f / 255, 203.0f / 255, 204.0f / 255, 205.0f / 255, 206.0f / 255, 207.0f / 255,
+    208.0f / 255, 209.0f / 255, 210.0f / 255, 211.0f / 255, 212.0f / 255, 213.0f / 255, 214.0f / 255, 215.0f / 255,
+    216.0f / 255, 217.0f / 255, 218.0f / 255, 219.0f / 255, 220.0f / 255, 221.0f / 255, 222.0f / 255, 223.0f / 255,
+    224.0f / 255, 225.0f / 255, 226.0f / 255, 227.0f / 255, 228.0f / 255, 229.0f / 255, 230.0f / 255, 231.0f / 255,
+    232.0f / 255, 233.0f / 255, 234.0f / 255, 235.0f / 255, 236.0f / 255, 237.0f / 255, 238.0f / 255, 239.0f / 255,
+    240.0f / 255, 241.0f / 255, 242.0f / 255, 243.0f / 255, 244.0f / 255, 245.0f / 255, 246.0f / 255, 247.0f / 255,
+    248.0f / 255, 249.0f / 255, 250.0f / 255, 251.0f / 255, 252.0f / 255, 253.0f / 255, 254.0f / 255, 255.0f / 255,
 };
 
 // ⚡ Single-entry color cache — exploits repeated vertex colors in hot path.
@@ -360,12 +362,8 @@ static void read_rgba32_fcolor(Uint32 pixel, SDL_FColor* fcolor) {
 
 // ⚡ LUT for 5-bit to 8-bit color conversion (16-bit PSMCT16 palettes)
 // Used in read_rgba16_color to avoid 3 multiplications and 3 divisions per pixel.
-static const Uint8 color5_to_8[32] = {
-      0,   8,  16,  24,  32,  41,  49,  57,
-     65,  74,  82,  90,  98, 106, 115, 123,
-    131, 139, 148, 156, 164, 172, 180, 189,
-    197, 205, 213, 222, 230, 238, 246, 255
-};
+static const Uint8 color5_to_8[32] = { 0,   8,   16,  24,  32,  41,  49,  57,  65,  74,  82,  90,  98,  106, 115, 123,
+                                       131, 139, 148, 156, 164, 172, 180, 189, 197, 205, 213, 222, 230, 238, 246, 255 };
 
 static void read_rgba16_color(Uint16 pixel, SDL_Color* color) {
     color->r = color5_to_8[pixel & 0x1F];
@@ -467,9 +465,11 @@ void SDLGameRendererSDL_DumpTextures(void) {
             continue;
         for (int s = 0; s < IDX_PAL_SLOTS; s++) {
             int ph = idx_pal_handle[ti][s];
-            if (ph <= 0 || ph > FL_PALETTE_MAX) continue;
+            if (ph <= 0 || ph > FL_PALETTE_MAX)
+                continue;
             SDL_Palette* pal = palettes[ph - 1];
-            if (!pal) continue;
+            if (!pal)
+                continue;
             save_texture(surf, pal);
             count++;
         }
@@ -477,7 +477,6 @@ void SDLGameRendererSDL_DumpTextures(void) {
 
     SDL_Log("[TextureDump] Wrote %d texture(s) to textures/", count);
 }
-
 
 // --- Texture Stack Management ---
 
@@ -493,7 +492,9 @@ static void push_texture(SDL_Texture* texture) {
 }
 
 static SDL_Texture* get_texture(void) {
-    if (texture_count == 0) { fatal_error("No textures to get"); }
+    if (texture_count == 0) {
+        fatal_error("No textures to get");
+    }
     return textures[texture_count - 1];
 }
 
@@ -527,25 +528,32 @@ static void destroy_textures(void) {
 static SDL_Texture* bake_idx_tex(SDL_Renderer* renderer, int ti, int palette_handle) {
     SDL_Surface* surf = surfaces[ti];
     SDL_Palette* pal = palettes[palette_handle - 1];
-    if (!surf || !pal) return NULL;
+    if (!surf || !pal)
+        return NULL;
 
     // Find LRU eviction slot (prefer empty slots first)
     int evict = 0;
     uint8_t worst_age = 0;
     const uint8_t clock = idx_pal_lru_clock[ti];
     for (int s = 0; s < IDX_PAL_SLOTS; s++) {
-        if (idx_pal_handle[ti][s] == 0) { evict = s; goto found; } // empty
+        if (idx_pal_handle[ti][s] == 0) {
+            evict = s;
+            goto found;
+        } // empty
         const uint8_t age = (uint8_t)(clock - idx_pal_lru[ti][s]);
-        if (age > worst_age) { worst_age = age; evict = s; }
+        if (age > worst_age) {
+            worst_age = age;
+            evict = s;
+        }
     }
-    found:;
+found:;
 
     // Reuse existing SDL_Texture if present in this slot (update pixels in place)
     SDL_Texture* tex = idx_pal_tex[ti][evict];
     if (tex == NULL) {
-        tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                SDL_TEXTUREACCESS_STREAMING, surf->w, surf->h);
-        if (!tex) return NULL;
+        tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, surf->w, surf->h);
+        if (!tex)
+            return NULL;
         SDL_SetTextureScaleMode(tex, SDL_SCALEMODE_NEAREST);
         SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
         idx_pal_tex[ti][evict] = tex;
@@ -560,8 +568,7 @@ static SDL_Texture* bake_idx_tex(SDL_Renderer* renderer, int ti, int palette_han
         const uint8_t* src = (const uint8_t*)surf->pixels;
         for (int i = 0; i < pixel_count; i++) {
             const SDL_Color c = colors[src[i]];
-            rgba_scratch[i] = ((uint32_t)c.r << 24) | ((uint32_t)c.g << 16)
-                             | ((uint32_t)c.b <<  8) | c.a;
+            rgba_scratch[i] = ((uint32_t)c.r << 24) | ((uint32_t)c.g << 16) | ((uint32_t)c.b << 8) | c.a;
         }
     } else {
         // PSMT4: 4-bit packed indices
@@ -569,8 +576,7 @@ static SDL_Texture* bake_idx_tex(SDL_Renderer* renderer, int ti, int palette_han
         for (int i = 0; i < pixel_count; i++) {
             const uint8_t idx4 = (i & 1) ? (src[i >> 1] >> 4) : (src[i >> 1] & 0xF);
             const SDL_Color c = colors[idx4];
-            rgba_scratch[i] = ((uint32_t)c.r << 24) | ((uint32_t)c.g << 16)
-                             | ((uint32_t)c.b <<  8) | c.a;
+            rgba_scratch[i] = ((uint32_t)c.r << 24) | ((uint32_t)c.g << 16) | ((uint32_t)c.b << 8) | c.a;
         }
     }
     SDL_UpdateTexture(tex, NULL, rgba_scratch, surf->w * 4);
@@ -592,18 +598,18 @@ static SDL_Texture* bake_idx_tex(SDL_Renderer* renderer, int ti, int palette_han
     }
 
     idx_pal_handle[ti][evict] = palette_handle;
-    idx_pal_hash[ti][evict]   = palette_hash[palette_handle - 1];
-    idx_pal_lru[ti][evict]    = idx_pal_lru_clock[ti]++;
+    idx_pal_hash[ti][evict] = palette_hash[palette_handle - 1];
+    idx_pal_lru[ti][evict] = idx_pal_lru_clock[ti]++;
     return tex;
 }
 
 // ⚡ Lookup: return pre-baked texture for (ti, palette_handle), baking on miss.
 static SDL_Texture* lookup_idx_tex(SDL_Renderer* renderer, int ti, int palette_handle) {
-    if (palette_handle <= 0 || palette_handle > FL_PALETTE_MAX) return NULL;
+    if (palette_handle <= 0 || palette_handle > FL_PALETTE_MAX)
+        return NULL;
     const uint32_t want_hash = palette_hash[palette_handle - 1];
     for (int s = 0; s < IDX_PAL_SLOTS; s++) {
-        if (idx_pal_handle[ti][s] == palette_handle
-                && idx_pal_hash[ti][s] == want_hash) {
+        if (idx_pal_handle[ti][s] == palette_handle && idx_pal_hash[ti][s] == want_hash) {
             idx_pal_lru[ti][s] = idx_pal_lru_clock[ti]++; // touch LRU
             return idx_pal_tex[ti][s];
         }
@@ -614,17 +620,20 @@ static SDL_Texture* lookup_idx_tex(SDL_Renderer* renderer, int ti, int palette_h
 // --- Software-Frame Lifecycle ---
 
 static bool ensure_sw_frame_surface(void) {
-    if (sw_frame_surface != NULL) return true;
+    if (sw_frame_surface != NULL)
+        return true;
     sw_frame_surface = SDL_CreateSurface(cps3_width, cps3_height, SDL_PIXELFORMAT_RGBA8888);
     return sw_frame_surface != NULL;
 }
 
 static bool ensure_sw_frame_upload_texture(void) {
-    if (sw_frame_upload_tex != NULL) return true;
+    if (sw_frame_upload_tex != NULL)
+        return true;
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
-    sw_frame_upload_tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                            SDL_TEXTUREACCESS_STREAMING, cps3_width, cps3_height);
-    if (!sw_frame_upload_tex) return false;
+    sw_frame_upload_tex =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, cps3_width, cps3_height);
+    if (!sw_frame_upload_tex)
+        return false;
     SDL_SetTextureScaleMode(sw_frame_upload_tex, SDL_SCALEMODE_NEAREST);
     SDL_SetTextureBlendMode(sw_frame_upload_tex, SDL_BLENDMODE_NONE);
     return true;
@@ -634,12 +643,12 @@ static bool ensure_sw_frame_upload_texture(void) {
 // Returns pointer to persistent pixel data populated during bake_idx_tex.
 // Zero per-frame cost on cache hit (pixel data was baked on texture/palette change).
 static const uint32_t* sw_lookup_cached_pixels(int ti, int palette_handle, int* out_w, int* out_h) {
-    if (palette_handle <= 0 || palette_handle > FL_PALETTE_MAX) return NULL;
+    if (palette_handle <= 0 || palette_handle > FL_PALETTE_MAX)
+        return NULL;
     const uint32_t want_hash = palette_hash[palette_handle - 1];
     for (int s = 0; s < IDX_PAL_SLOTS; s++) {
-        if (idx_pal_handle[ti][s] == palette_handle
-                && idx_pal_hash[ti][s] == want_hash
-                && idx_pal_pixels[ti][s] != NULL) {
+        if (idx_pal_handle[ti][s] == palette_handle && idx_pal_hash[ti][s] == want_hash &&
+            idx_pal_pixels[ti][s] != NULL) {
             *out_w = idx_pal_pixels_w[ti][s];
             *out_h = idx_pal_pixels_h[ti][s];
             return idx_pal_pixels[ti][s];
@@ -648,11 +657,11 @@ static const uint32_t* sw_lookup_cached_pixels(int ti, int palette_handle, int* 
     // Cache miss — trigger a bake (which will also populate idx_pal_pixels)
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
     SDL_Texture* tex = lookup_idx_tex(renderer, ti, palette_handle);
-    if (!tex) return NULL;
+    if (!tex)
+        return NULL;
     // After bake, the pixel data should be in the cache
     for (int s = 0; s < IDX_PAL_SLOTS; s++) {
-        if (idx_pal_handle[ti][s] == palette_handle
-                && idx_pal_pixels[ti][s] != NULL) {
+        if (idx_pal_handle[ti][s] == palette_handle && idx_pal_pixels[ti][s] != NULL) {
             *out_w = idx_pal_pixels_w[ti][s];
             *out_h = idx_pal_pixels_h[ti][s];
             return idx_pal_pixels[ti][s];
@@ -671,18 +680,18 @@ static const uint32_t* sw_ensure_nonidx_pixels(int ti, int* out_w, int* out_h) {
         return nonidx_pixels[ti];
     }
     SDL_Surface* surf = surfaces[ti];
-    if (!surf) return NULL;
+    if (!surf)
+        return NULL;
     const int pixel_count = surf->w * surf->h;
-    if (pixel_count > RGBA_SCRATCH_MAX) return NULL;
+    if (pixel_count > RGBA_SCRATCH_MAX)
+        return NULL;
 
     if (surf->format == SDL_PIXELFORMAT_ABGR8888) {
         const uint32_t* src = (const uint32_t*)surf->pixels;
         for (int i = 0; i < pixel_count; i++) {
             const uint32_t p = src[i];
-            rgba_scratch[i] = ((p & 0xFFu) << 24) |
-                              ((p & 0xFF00u) << 8) |
-                              (((p >> 16) & 0xFFu) << 8) |
-                              ((p >> 24) & 0xFFu);
+            rgba_scratch[i] =
+                ((p & 0xFFu) << 24) | ((p & 0xFF00u) << 8) | (((p >> 16) & 0xFFu) << 8) | ((p >> 24) & 0xFFu);
         }
     } else if (surf->format == SDL_PIXELFORMAT_ABGR1555) {
         const uint16_t* src = (const uint16_t*)surf->pixels;
@@ -699,7 +708,8 @@ static const uint32_t* sw_ensure_nonidx_pixels(int ti, int* out_w, int* out_h) {
     }
 
     nonidx_pixels[ti] = (uint32_t*)SDL_malloc(pixel_count * sizeof(uint32_t));
-    if (!nonidx_pixels[ti]) return NULL;
+    if (!nonidx_pixels[ti])
+        return NULL;
     SDL_memcpy(nonidx_pixels[ti], rgba_scratch, pixel_count * sizeof(uint32_t));
     nonidx_pixels_w[ti] = surf->w;
     nonidx_pixels_h[ti] = surf->h;
@@ -713,7 +723,8 @@ static bool sw_raster_textured(int task_idx) {
     const unsigned int th = task_th[task_idx];
     const int tex_handle = LO_16_BITS(th);
     const int pal_handle = HI_16_BITS(th);
-    if (tex_handle <= 0 || tex_handle > FL_TEXTURE_MAX) return false;
+    if (tex_handle <= 0 || tex_handle > FL_TEXTURE_MAX)
+        return false;
     const int ti = tex_handle - 1;
 
     int src_tex_w, src_tex_h;
@@ -724,7 +735,8 @@ static bool sw_raster_textured(int task_idx) {
     } else {
         src_pixels = sw_ensure_nonidx_pixels(ti, &src_tex_w, &src_tex_h);
     }
-    if (!src_pixels) return false;
+    if (!src_pixels)
+        return false;
 
     const SDL_FRect* dst_r = &task_dst_rect[task_idx];
     const SDL_FRect* src_uv = &task_src_rect[task_idx];
@@ -736,20 +748,23 @@ static bool sw_raster_textured(int task_idx) {
     const int src_y = (int)SDL_roundf(src_uv->y * (float)src_tex_h);
     const int src_w = (int)SDL_roundf(src_uv->w * (float)src_tex_w);
     const int src_h = (int)SDL_roundf(src_uv->h * (float)src_tex_h);
-    if (src_w <= 0 || src_h <= 0) return true; // degenerate — skip
+    if (src_w <= 0 || src_h <= 0)
+        return true; // degenerate — skip
 
     const int dst_x = (int)SDL_roundf(dst_r->x);
     const int dst_y = (int)SDL_roundf(dst_r->y);
     const int dst_w = (int)SDL_roundf(dst_r->w);
     const int dst_h = (int)SDL_roundf(dst_r->h);
-    if (dst_w <= 0 || dst_h <= 0) return true; // degenerate — skip
+    if (dst_w <= 0 || dst_h <= 0)
+        return true; // degenerate — skip
 
     // Clamp destination to surface bounds
     const int dst_x0 = sw_clamp(dst_x, 0, cps3_width);
     const int dst_y0 = sw_clamp(dst_y, 0, cps3_height);
     const int dst_x1 = sw_clamp(dst_x + dst_w, 0, cps3_width);
     const int dst_y1 = sw_clamp(dst_y + dst_h, 0, cps3_height);
-    if (dst_x1 <= dst_x0 || dst_y1 <= dst_y0) return true; // fully clipped
+    if (dst_x1 <= dst_x0 || dst_y1 <= dst_y0)
+        return true; // fully clipped
 
     uint32_t* dst_pixels = (uint32_t*)sw_frame_surface->pixels;
     const int dst_pitch = sw_frame_surface->pitch / (int)sizeof(uint32_t);
@@ -768,14 +783,16 @@ static bool sw_raster_textured(int task_idx) {
 
         for (int row = 0; row < (dst_y1 - dst_y0); row++) {
             const int sy = src_start_y + row * src_y_step;
-            if (sy < 0 || sy >= src_tex_h) continue;
+            if (sy < 0 || sy >= src_tex_h)
+                continue;
             const uint32_t* src_row = src_pixels + sy * src_tex_w;
             uint32_t* dst_row = dst_pixels + (dst_y0 + row) * dst_pitch + dst_x0;
             int sx = src_start_x;
             for (int col = 0; col < (dst_x1 - dst_x0); col++) {
                 if (sx >= 0 && sx < src_tex_w) {
                     uint32_t px = src_row[sx];
-                    if (has_color_mod) px = sw_modulate_rgba8888(px, color);
+                    if (has_color_mod)
+                        px = sw_modulate_rgba8888(px, color);
                     dst_row[col] = sw_blend_rgba8888(dst_row[col], px);
                 }
                 sx += src_x_step;
@@ -793,14 +810,12 @@ static bool sw_raster_textured(int task_idx) {
         for (int i = 0; i < visible_w; i++) {
             const int dst_off = (dst_x0 + i) - dst_x;
             const int src_off = (((dst_off * 2) + 1) * src_w) / (dst_w * 2);
-            src_x_lut[i] = sw_clamp(flip_h ? (src_x + src_w - 1 - src_off) : (src_x + src_off),
-                                    0, src_tex_w - 1);
+            src_x_lut[i] = sw_clamp(flip_h ? (src_x + src_w - 1 - src_off) : (src_x + src_off), 0, src_tex_w - 1);
         }
         for (int i = 0; i < visible_h; i++) {
             const int dst_off = (dst_y0 + i) - dst_y;
             const int src_off = (((dst_off * 2) + 1) * src_h) / (dst_h * 2);
-            src_y_lut[i] = sw_clamp(flip_v ? (src_y + src_h - 1 - src_off) : (src_y + src_off),
-                                    0, src_tex_h - 1);
+            src_y_lut[i] = sw_clamp(flip_v ? (src_y + src_h - 1 - src_off) : (src_y + src_off), 0, src_tex_h - 1);
         }
 
         for (int row = 0; row < visible_h; row++) {
@@ -808,7 +823,8 @@ static bool sw_raster_textured(int task_idx) {
             uint32_t* dst_row = dst_pixels + (dst_y0 + row) * dst_pitch + dst_x0;
             for (int col = 0; col < visible_w; col++) {
                 uint32_t px = src_row[src_x_lut[col]];
-                if (has_color_mod) px = sw_modulate_rgba8888(px, color);
+                if (has_color_mod)
+                    px = sw_modulate_rgba8888(px, color);
                 dst_row[col] = sw_blend_rgba8888(dst_row[col], px);
             }
         }
@@ -821,14 +837,16 @@ static bool sw_raster_textured(int task_idx) {
 static bool sw_raster_solid(int task_idx) {
     const SDL_FRect* dst_r = &task_dst_rect[task_idx];
     const uint32_t color = task_color32[task_idx]; // RGBA8888 format
-    const uint32_t src_a = color & 0xFFu; // Alpha is low byte in RGBA8888
-    if (src_a == 0u) return true; // fully transparent — skip
+    const uint32_t src_a = color & 0xFFu;          // Alpha is low byte in RGBA8888
+    if (src_a == 0u)
+        return true; // fully transparent — skip
 
     const int x0 = sw_clamp((int)SDL_floorf(dst_r->x), 0, cps3_width);
     const int y0 = sw_clamp((int)SDL_floorf(dst_r->y), 0, cps3_height);
     const int x1 = sw_clamp((int)SDL_ceilf(dst_r->x + dst_r->w), 0, cps3_width);
     const int y1 = sw_clamp((int)SDL_ceilf(dst_r->y + dst_r->h), 0, cps3_height);
-    if (x1 <= x0 || y1 <= y0) return true;
+    if (x1 <= x0 || y1 <= y0)
+        return true;
 
     uint32_t* dst_pixels = (uint32_t*)sw_frame_surface->pixels;
     const int dst_pitch = sw_frame_surface->pitch / (int)sizeof(uint32_t);
@@ -838,7 +856,8 @@ static bool sw_raster_solid(int task_idx) {
         // Opaque fill — direct write
         for (int y = y0; y < y1; y++) {
             uint32_t* row = dst_pixels + y * dst_pitch + x0;
-            for (int i = 0; i < fill_w; i++) row[i] = color;
+            for (int i = 0; i < fill_w; i++)
+                row[i] = color;
         }
     } else {
         // ⚡ Semi-transparent — pre-multiplied solid blend (MiSTer optimization).
@@ -846,15 +865,14 @@ static bool sw_raster_solid(int task_idx) {
         const uint32_t inv_src_a = 255u - src_a;
         const uint32_t src_r = (color >> 24) & 0xFFu;
         const uint32_t src_g = (color >> 16) & 0xFFu;
-        const uint32_t src_b = (color >>  8) & 0xFFu;
+        const uint32_t src_b = (color >> 8) & 0xFFu;
         const uint32_t src_r_premul = src_r * src_a;
         const uint32_t src_g_premul = src_g * src_a;
         const uint32_t src_b_premul = src_b * src_a;
         for (int y = y0; y < y1; y++) {
             uint32_t* row = dst_pixels + y * dst_pitch + x0;
             for (int i = 0; i < fill_w; i++) {
-                row[i] = sw_blend_solid_rgba8888(row[i], src_a, inv_src_a,
-                                                 src_r_premul, src_g_premul, src_b_premul);
+                row[i] = sw_blend_solid_rgba8888(row[i], src_a, inv_src_a, src_r_premul, src_g_premul, src_b_premul);
             }
         }
     }
@@ -869,19 +887,31 @@ typedef struct SwTriVert {
 } SwTriVert;
 
 static void sw_raster_triangle(const SwTriVert* v0, const SwTriVert* v1, const SwTriVert* v2,
-                                const uint32_t* src_pixels, int src_w, int src_h,
-                                uint32_t color, uint32_t* dst_pixels, int dst_pitch,
-                                int clip_w, int clip_h) {
+                               const uint32_t* src_pixels, int src_w, int src_h, uint32_t color, uint32_t* dst_pixels,
+                               int dst_pitch, int clip_w, int clip_h) {
     // Sort vertices by Y (top to bottom)
     const SwTriVert* top = v0;
     const SwTriVert* mid = v1;
     const SwTriVert* bot = v2;
-    if (mid->y < top->y) { const SwTriVert* t = top; top = mid; mid = t; }
-    if (bot->y < top->y) { const SwTriVert* t = top; top = bot; bot = t; }
-    if (bot->y < mid->y) { const SwTriVert* t = mid; mid = bot; bot = t; }
+    if (mid->y < top->y) {
+        const SwTriVert* t = top;
+        top = mid;
+        mid = t;
+    }
+    if (bot->y < top->y) {
+        const SwTriVert* t = top;
+        top = bot;
+        bot = t;
+    }
+    if (bot->y < mid->y) {
+        const SwTriVert* t = mid;
+        mid = bot;
+        bot = t;
+    }
 
     const float total_dy = bot->y - top->y;
-    if (total_dy < 0.5f) return; // Degenerate triangle
+    if (total_dy < 0.5f)
+        return; // Degenerate triangle
 
     const bool has_color_mod = (color != 0xFFFFFFFFu);
 
@@ -900,16 +930,28 @@ static void sw_raster_triangle(const SwTriVert* v0, const SwTriVert* v1, const S
         const float dv_short = (mid->v - top->v) * inv_upper_dy;
 
         int y_start = sw_clamp((int)SDL_ceilf(top->y), 0, clip_h);
-        int y_end   = sw_clamp((int)SDL_ceilf(mid->y), 0, clip_h);
+        int y_end = sw_clamp((int)SDL_ceilf(mid->y), 0, clip_h);
         for (int y = y_start; y < y_end; y++) {
             float dt = (float)y - top->y;
-            float xa = top->x + dx_long  * dt, ua = top->u + du_long  * dt, va = top->v + dv_long  * dt;
+            float xa = top->x + dx_long * dt, ua = top->u + du_long * dt, va = top->v + dv_long * dt;
             float xb = top->x + dx_short * dt, ub = top->u + du_short * dt, vb = top->v + dv_short * dt;
-            if (xa > xb) { float tmp; tmp=xa; xa=xb; xb=tmp; tmp=ua; ua=ub; ub=tmp; tmp=va; va=vb; vb=tmp; }
+            if (xa > xb) {
+                float tmp;
+                tmp = xa;
+                xa = xb;
+                xb = tmp;
+                tmp = ua;
+                ua = ub;
+                ub = tmp;
+                tmp = va;
+                va = vb;
+                vb = tmp;
+            }
             int x0 = sw_clamp((int)SDL_ceilf(xa), 0, clip_w);
             int x1 = sw_clamp((int)SDL_ceilf(xb), 0, clip_w);
             float span = xb - xa;
-            if (span < 0.5f) continue;
+            if (span < 0.5f)
+                continue;
             float inv_span = 1.0f / span;
             uint32_t* row = dst_pixels + y * dst_pitch;
             for (int x = x0; x < x1; x++) {
@@ -917,7 +959,8 @@ static void sw_raster_triangle(const SwTriVert* v0, const SwTriVert* v1, const S
                 int tx = sw_clamp((int)((ua + (ub - ua) * frac) * src_w), 0, src_w - 1);
                 int ty = sw_clamp((int)((va + (vb - va) * frac) * src_h), 0, src_h - 1);
                 uint32_t texel = src_pixels[ty * src_w + tx];
-                if (has_color_mod) texel = sw_modulate_rgba8888(texel, color);
+                if (has_color_mod)
+                    texel = sw_modulate_rgba8888(texel, color);
                 row[x] = sw_blend_rgba8888(row[x], texel);
             }
         }
@@ -932,17 +975,29 @@ static void sw_raster_triangle(const SwTriVert* v0, const SwTriVert* v1, const S
         const float dv_short = (bot->v - mid->v) * inv_lower_dy;
 
         int y_start = sw_clamp((int)SDL_ceilf(mid->y), 0, clip_h);
-        int y_end   = sw_clamp((int)SDL_ceilf(bot->y), 0, clip_h);
+        int y_end = sw_clamp((int)SDL_ceilf(bot->y), 0, clip_h);
         for (int y = y_start; y < y_end; y++) {
             float t_long = (float)y - top->y;
             float t_short = (float)y - mid->y;
-            float xa = top->x + dx_long  * t_long,  ua = top->u + du_long  * t_long,  va = top->v + dv_long  * t_long;
+            float xa = top->x + dx_long * t_long, ua = top->u + du_long * t_long, va = top->v + dv_long * t_long;
             float xb = mid->x + dx_short * t_short, ub = mid->u + du_short * t_short, vb = mid->v + dv_short * t_short;
-            if (xa > xb) { float tmp; tmp=xa; xa=xb; xb=tmp; tmp=ua; ua=ub; ub=tmp; tmp=va; va=vb; vb=tmp; }
+            if (xa > xb) {
+                float tmp;
+                tmp = xa;
+                xa = xb;
+                xb = tmp;
+                tmp = ua;
+                ua = ub;
+                ub = tmp;
+                tmp = va;
+                va = vb;
+                vb = tmp;
+            }
             int x0 = sw_clamp((int)SDL_ceilf(xa), 0, clip_w);
             int x1 = sw_clamp((int)SDL_ceilf(xb), 0, clip_w);
             float span = xb - xa;
-            if (span < 0.5f) continue;
+            if (span < 0.5f)
+                continue;
             float inv_span = 1.0f / span;
             uint32_t* row = dst_pixels + y * dst_pitch;
             for (int x = x0; x < x1; x++) {
@@ -950,7 +1005,8 @@ static void sw_raster_triangle(const SwTriVert* v0, const SwTriVert* v1, const S
                 int tx = sw_clamp((int)((ua + (ub - ua) * frac) * src_w), 0, src_w - 1);
                 int ty = sw_clamp((int)((va + (vb - va) * frac) * src_h), 0, src_h - 1);
                 uint32_t texel = src_pixels[ty * src_w + tx];
-                if (has_color_mod) texel = sw_modulate_rgba8888(texel, color);
+                if (has_color_mod)
+                    texel = sw_modulate_rgba8888(texel, color);
                 row[x] = sw_blend_rgba8888(row[x], texel);
             }
         }
@@ -963,7 +1019,8 @@ static bool sw_raster_quad(int task_idx) {
     const unsigned int th = task_th[task_idx];
     const int tex_handle = LO_16_BITS(th);
     const int pal_handle = HI_16_BITS(th);
-    if (tex_handle <= 0 || tex_handle > FL_TEXTURE_MAX) return false;
+    if (tex_handle <= 0 || tex_handle > FL_TEXTURE_MAX)
+        return false;
     const int ti = tex_handle - 1;
 
     int src_w, src_h;
@@ -973,14 +1030,13 @@ static bool sw_raster_quad(int task_idx) {
     } else {
         src_pixels = sw_ensure_nonidx_pixels(ti, &src_w, &src_h);
     }
-    if (!src_pixels) return false;
+    if (!src_pixels)
+        return false;
 
     // Convert vertex color to RGBA8888 for modulation
     const SDL_FColor* fc = &task_verts[task_idx][0].color;
-    const uint32_t color = ((uint32_t)(fc->r * 255.0f + 0.5f) << 24) |
-                           ((uint32_t)(fc->g * 255.0f + 0.5f) << 16) |
-                           ((uint32_t)(fc->b * 255.0f + 0.5f) <<  8) |
-                            (uint32_t)(fc->a * 255.0f + 0.5f);
+    const uint32_t color = ((uint32_t)(fc->r * 255.0f + 0.5f) << 24) | ((uint32_t)(fc->g * 255.0f + 0.5f) << 16) |
+                           ((uint32_t)(fc->b * 255.0f + 0.5f) << 8) | (uint32_t)(fc->a * 255.0f + 0.5f);
 
     // Build SwTriVert array from SDL_Vertex data
     SwTriVert verts[4];
@@ -995,12 +1051,28 @@ static bool sw_raster_quad(int task_idx) {
     const int dst_pitch = sw_frame_surface->pitch / (int)sizeof(uint32_t);
 
     // Rasterize two triangles: {0,1,2} and {1,2,3}
-    sw_raster_triangle(&verts[0], &verts[1], &verts[2],
-                       src_pixels, src_w, src_h, color,
-                       dst_pixels, dst_pitch, cps3_width, cps3_height);
-    sw_raster_triangle(&verts[1], &verts[2], &verts[3],
-                       src_pixels, src_w, src_h, color,
-                       dst_pixels, dst_pitch, cps3_width, cps3_height);
+    sw_raster_triangle(&verts[0],
+                       &verts[1],
+                       &verts[2],
+                       src_pixels,
+                       src_w,
+                       src_h,
+                       color,
+                       dst_pixels,
+                       dst_pitch,
+                       cps3_width,
+                       cps3_height);
+    sw_raster_triangle(&verts[1],
+                       &verts[2],
+                       &verts[3],
+                       src_pixels,
+                       src_w,
+                       src_h,
+                       color,
+                       dst_pixels,
+                       dst_pitch,
+                       cps3_width,
+                       cps3_height);
     return true;
 }
 
@@ -1010,10 +1082,8 @@ static const uint32_t sw_white_pixel = 0xFFFFFFFFu; // RGBA white
 static bool sw_raster_solid_quad(int task_idx) {
     // Convert vertex color to RGBA8888
     const SDL_FColor* fc = &task_verts[task_idx][0].color;
-    const uint32_t color = ((uint32_t)(fc->r * 255.0f + 0.5f) << 24) |
-                           ((uint32_t)(fc->g * 255.0f + 0.5f) << 16) |
-                           ((uint32_t)(fc->b * 255.0f + 0.5f) <<  8) |
-                            (uint32_t)(fc->a * 255.0f + 0.5f);
+    const uint32_t color = ((uint32_t)(fc->r * 255.0f + 0.5f) << 24) | ((uint32_t)(fc->g * 255.0f + 0.5f) << 16) |
+                           ((uint32_t)(fc->b * 255.0f + 0.5f) << 8) | (uint32_t)(fc->a * 255.0f + 0.5f);
 
     // Build SwTriVert with UV=(0,0) — all sample the single white pixel
     SwTriVert verts[4];
@@ -1027,12 +1097,10 @@ static bool sw_raster_solid_quad(int task_idx) {
     uint32_t* dst_pixels = (uint32_t*)sw_frame_surface->pixels;
     const int dst_pitch = sw_frame_surface->pitch / (int)sizeof(uint32_t);
 
-    sw_raster_triangle(&verts[0], &verts[1], &verts[2],
-                       &sw_white_pixel, 1, 1, color,
-                       dst_pixels, dst_pitch, cps3_width, cps3_height);
-    sw_raster_triangle(&verts[1], &verts[2], &verts[3],
-                       &sw_white_pixel, 1, 1, color,
-                       dst_pixels, dst_pitch, cps3_width, cps3_height);
+    sw_raster_triangle(
+        &verts[0], &verts[1], &verts[2], &sw_white_pixel, 1, 1, color, dst_pixels, dst_pitch, cps3_width, cps3_height);
+    sw_raster_triangle(
+        &verts[1], &verts[2], &verts[3], &sw_white_pixel, 1, 1, color, dst_pixels, dst_pitch, cps3_width, cps3_height);
     return true;
 }
 
@@ -1043,7 +1111,10 @@ static bool sw_render_frame(void) {
 
     // ⚡ BENCHMARK TOGGLE: set to true to force hardware path
     static const bool sw_frame_disabled = true;
-    if (sw_frame_disabled) { TRACE_ZONE_END(); return false; }
+    if (sw_frame_disabled) {
+        TRACE_ZONE_END();
+        return false;
+    }
 
     if (!ensure_sw_frame_surface() || !ensure_sw_frame_upload_texture()) {
         TRACE_ZONE_END();
@@ -1068,10 +1139,14 @@ static bool sw_render_frame(void) {
                 float minx = v[0].position.x, miny = v[0].position.y;
                 float maxx = minx, maxy = miny;
                 for (int k = 1; k < 4; k++) {
-                    if (v[k].position.x < minx) minx = v[k].position.x;
-                    if (v[k].position.x > maxx) maxx = v[k].position.x;
-                    if (v[k].position.y < miny) miny = v[k].position.y;
-                    if (v[k].position.y > maxy) maxy = v[k].position.y;
+                    if (v[k].position.x < minx)
+                        minx = v[k].position.x;
+                    if (v[k].position.x > maxx)
+                        maxx = v[k].position.x;
+                    if (v[k].position.y < miny)
+                        miny = v[k].position.y;
+                    if (v[k].position.y > maxy)
+                        maxy = v[k].position.y;
                 }
                 total_pixels += (uint64_t)(maxx - minx) * (uint64_t)(maxy - miny);
             }
@@ -1084,12 +1159,12 @@ static bool sw_render_frame(void) {
 
     // Compute RGBA8888 clear color for this frame
     const Uint8 cr = (flPs2State.FrameClearColor >> 16) & 0xFF;
-    const Uint8 cg = (flPs2State.FrameClearColor >>  8) & 0xFF;
+    const Uint8 cg = (flPs2State.FrameClearColor >> 8) & 0xFF;
     const Uint8 cb = flPs2State.FrameClearColor & 0xFF;
     const Uint8 ca = flPs2State.FrameClearColor >> 24;
     const uint32_t clear_rgba = (ca != SDL_ALPHA_TRANSPARENT)
-        ? ((uint32_t)cr << 24) | ((uint32_t)cg << 16) | ((uint32_t)cb << 8) | ca
-        : 0x000000FFu; // opaque black fallback (R=0,G=0,B=0,A=255)
+                                    ? ((uint32_t)cr << 24) | ((uint32_t)cg << 16) | ((uint32_t)cb << 8) | ca
+                                    : 0x000000FFu; // opaque black fallback (R=0,G=0,B=0,A=255)
 
     // ⚡ Phase 0: Build current-frame tile coverage from all task rects.
     SDL_memset(dt_current, 0, sizeof(dt_current));
@@ -1104,10 +1179,14 @@ static bool sw_render_frame(void) {
             float minx = v[0].position.x, miny = v[0].position.y;
             float maxx = minx, maxy = miny;
             for (int k = 1; k < 4; k++) {
-                if (v[k].position.x < minx) minx = v[k].position.x;
-                if (v[k].position.x > maxx) maxx = v[k].position.x;
-                if (v[k].position.y < miny) miny = v[k].position.y;
-                if (v[k].position.y > maxy) maxy = v[k].position.y;
+                if (v[k].position.x < minx)
+                    minx = v[k].position.x;
+                if (v[k].position.x > maxx)
+                    maxx = v[k].position.x;
+                if (v[k].position.y < miny)
+                    miny = v[k].position.y;
+                if (v[k].position.y > maxy)
+                    maxy = v[k].position.y;
             }
             dt_mark_rect(minx, miny, maxx - minx, maxy - miny);
         }
@@ -1173,8 +1252,7 @@ static bool sw_render_frame(void) {
     }
 
     // Phase 2: Upload to GPU as a single texture
-    if (!SDL_UpdateTexture(sw_frame_upload_tex, NULL,
-                           sw_frame_surface->pixels, sw_frame_surface->pitch)) {
+    if (!SDL_UpdateTexture(sw_frame_upload_tex, NULL, sw_frame_surface->pixels, sw_frame_surface->pitch)) {
         TRACE_ZONE_END();
         return false;
     }
@@ -1307,7 +1385,7 @@ void SDLGameRendererSDL_Shutdown(void) {
                 idx_pal_pixels[i][s] = NULL;
             }
             idx_pal_handle[i][s] = 0;
-            idx_pal_hash[i][s]   = 0;
+            idx_pal_hash[i][s] = 0;
         }
         idx_pal_lru_clock[i] = 0;
     }
@@ -1398,8 +1476,7 @@ void SDLGameRendererSDL_RenderFrame(void) {
     } else {
         // ⚡ Radix sort: O(n) worst-case, replaces qsort's O(n log n) + branch mispredictions.
         // Uses float-to-sortable-uint bit trick for correct IEEE 754 ordering.
-        radix_sort_render_task_indices(render_task_order, task_z, render_task_count,
-                                       radix_keys, radix_scratch);
+        radix_sort_render_task_indices(render_task_order, task_z, render_task_count, radix_keys, radix_scratch);
     }
 
     // ⚡ Texture sub-sort: within each Z-group, sort by texture pointer to
@@ -1422,14 +1499,17 @@ void SDLGameRendererSDL_RenderFrame(void) {
     // non-indexed use the eagerly-created texture_cache[].
     for (int i = 0; i < render_task_count; i++) {
         const int idx = render_task_order[i];
-        if (task_texture[idx] != NULL) continue; // already resolved (from draw_quad path)
+        if (task_texture[idx] != NULL)
+            continue; // already resolved (from draw_quad path)
         const unsigned int th = task_th[idx];
         const int tex_handle = LO_16_BITS(th);
         const int pal_handle = HI_16_BITS(th);
-        if (tex_handle < 1 || tex_handle > FL_TEXTURE_MAX) continue;
+        if (tex_handle < 1 || tex_handle > FL_TEXTURE_MAX)
+            continue;
         const int ti = tex_handle - 1;
         SDL_Surface* surface = surfaces[ti];
-        if (!surface) continue;
+        if (!surface)
+            continue;
         if (SDL_ISPIXELFORMAT_INDEXED(surface->format) && pal_handle > 0) {
             task_texture[idx] = lookup_idx_tex(renderer, ti, pal_handle);
         } else {
@@ -1449,10 +1529,8 @@ void SDLGameRendererSDL_RenderFrame(void) {
     int rect_fast_path_count = 0;
 
     for (int i = 0; i <= render_task_count; i++) {
-        const bool should_flush =
-            (i == render_task_count) ||
-            (task_th[render_task_order[i]] != current_th) ||
-            (task_is_rect[render_task_order[i]] != current_is_rect);
+        const bool should_flush = (i == render_task_count) || (task_th[render_task_order[i]] != current_th) ||
+                                  (task_is_rect[render_task_order[i]] != current_is_rect);
 
         if (should_flush) {
             const int batch_size = i - batch_start;
@@ -1460,15 +1538,16 @@ void SDLGameRendererSDL_RenderFrame(void) {
                 SDL_assert(batch_size <= RENDER_TASK_MAX);
 
                 SDL_Texture* draw_texture = task_texture[render_task_order[batch_start]];
-                const int batch_palette    = HI_16_BITS(current_th);
+                const int batch_palette = HI_16_BITS(current_th);
                 const int batch_tex_handle = LO_16_BITS(current_th);
 
                 // ⚡ For indexed textures: swap draw_texture for the pre-baked slot.
                 // lookup_idx_tex is a pure cache hit 99.9% of the time (no blit here).
-                if (draw_texture != NULL && batch_palette > 0 &&
-                    batch_palette <= FL_PALETTE_MAX && batch_tex_handle > 0) {
+                if (draw_texture != NULL && batch_palette > 0 && batch_palette <= FL_PALETTE_MAX &&
+                    batch_tex_handle > 0) {
                     SDL_Texture* cached = lookup_idx_tex(renderer, batch_tex_handle - 1, batch_palette);
-                    if (cached != NULL) draw_texture = cached;
+                    if (cached != NULL)
+                        draw_texture = cached;
                 }
 
                 // ⚡ Rect fast path: use SDL_RenderTexture for axis-aligned rects.
@@ -1490,18 +1569,24 @@ void SDLGameRendererSDL_RenderFrame(void) {
                         float src_h = (v[3].tex_coord.y - v[0].tex_coord.y) * tex_h;
 
                         SDL_FlipMode flip = SDL_FLIP_NONE;
-                        if (src_w < 0) { flip |= SDL_FLIP_HORIZONTAL; src_x += src_w; src_w = -src_w; }
-                        if (src_h < 0) { flip |= SDL_FLIP_VERTICAL;   src_y += src_h; src_h = -src_h; }
+                        if (src_w < 0) {
+                            flip |= SDL_FLIP_HORIZONTAL;
+                            src_x += src_w;
+                            src_w = -src_w;
+                        }
+                        if (src_h < 0) {
+                            flip |= SDL_FLIP_VERTICAL;
+                            src_y += src_h;
+                            src_h = -src_h;
+                        }
 
                         const SDL_FRect src = { src_x, src_y, src_w, src_h };
 
                         // Destination rect from vertex positions
-                        const SDL_FRect dst = {
-                            v[0].position.x,
-                            v[0].position.y,
-                            v[3].position.x - v[0].position.x,
-                            v[3].position.y - v[0].position.y
-                        };
+                        const SDL_FRect dst = { v[0].position.x,
+                                                v[0].position.y,
+                                                v[3].position.x - v[0].position.x,
+                                                v[3].position.y - v[0].position.y };
 
                         // Apply color + alpha modulation from uniform vertex color
                         SDL_SetTextureColorModFloat(draw_texture, v[0].color.r, v[0].color.g, v[0].color.b);
@@ -1535,8 +1620,12 @@ void SDLGameRendererSDL_RenderFrame(void) {
                                     const int gi = render_task_order[batch_start + geo_start + k];
                                     memcpy(&batch_vertices[k * 4], task_verts[gi], 4 * sizeof(SDL_Vertex));
                                 }
-                                SDL_RenderGeometry(renderer, draw_texture, batch_vertices,
-                                                   geo_count * 4, batch_indices, geo_count * 6);
+                                SDL_RenderGeometry(renderer,
+                                                   draw_texture,
+                                                   batch_vertices,
+                                                   geo_count * 4,
+                                                   batch_indices,
+                                                   geo_count * 6);
                             }
                             // ⚡ Normalize vertex order so v[0]=TL, v[3]=BR
                             normalize_rect_verts(task_verts[task_idx]);
@@ -1547,14 +1636,21 @@ void SDLGameRendererSDL_RenderFrame(void) {
                             float rw = (v[3].tex_coord.x - v[0].tex_coord.x) * tex_w;
                             float rh = (v[3].tex_coord.y - v[0].tex_coord.y) * tex_h;
                             SDL_FlipMode rflip = SDL_FLIP_NONE;
-                            if (rw < 0) { rflip |= SDL_FLIP_HORIZONTAL; rx += rw; rw = -rw; }
-                            if (rh < 0) { rflip |= SDL_FLIP_VERTICAL;   ry += rh; rh = -rh; }
+                            if (rw < 0) {
+                                rflip |= SDL_FLIP_HORIZONTAL;
+                                rx += rw;
+                                rw = -rw;
+                            }
+                            if (rh < 0) {
+                                rflip |= SDL_FLIP_VERTICAL;
+                                ry += rh;
+                                rh = -rh;
+                            }
                             const SDL_FRect rsrc = { rx, ry, rw, rh };
-                            const SDL_FRect rdst = {
-                                v[0].position.x, v[0].position.y,
-                                v[3].position.x - v[0].position.x,
-                                v[3].position.y - v[0].position.y
-                            };
+                            const SDL_FRect rdst = { v[0].position.x,
+                                                     v[0].position.y,
+                                                     v[3].position.x - v[0].position.x,
+                                                     v[3].position.y - v[0].position.y };
                             SDL_SetTextureColorModFloat(draw_texture, v[0].color.r, v[0].color.g, v[0].color.b);
                             SDL_SetTextureAlphaModFloat(draw_texture, v[0].color.a);
                             if (rflip != SDL_FLIP_NONE) {
@@ -1575,8 +1671,8 @@ void SDLGameRendererSDL_RenderFrame(void) {
                             const int gi = render_task_order[batch_start + geo_start + k];
                             memcpy(&batch_vertices[k * 4], task_verts[gi], 4 * sizeof(SDL_Vertex));
                         }
-                        SDL_RenderGeometry(renderer, draw_texture, batch_vertices,
-                                           geo_count * 4, batch_indices, geo_count * 6);
+                        SDL_RenderGeometry(
+                            renderer, draw_texture, batch_vertices, geo_count * 4, batch_indices, geo_count * 6);
                     }
                 } else {
                     // Standard geometry path: copy vertices to batch buffer
@@ -1635,7 +1731,6 @@ void SDLGameRendererSDL_EndFrame(void) {
 void SDLGameRendererSDL_UnlockPalette(unsigned int ph) {
     const int palette_handle = ph;
 
-
     if ((palette_handle > 0) && (palette_handle < FL_PALETTE_MAX)) {
         SDLGameRendererSDL_DestroyPalette(palette_handle);
         SDLGameRendererSDL_CreatePalette(ph << 16);
@@ -1674,7 +1769,7 @@ void SDLGameRendererSDL_UnlockTexture(unsigned int th) {
      * Pixel cache must also be freed — stale data. */
     for (int s = 0; s < IDX_PAL_SLOTS; s++) {
         idx_pal_handle[texture_index][s] = 0;
-        idx_pal_hash[texture_index][s]   = 0;
+        idx_pal_hash[texture_index][s] = 0;
         if (idx_pal_pixels[texture_index][s] != NULL) {
             SDL_free(idx_pal_pixels[texture_index][s]);
             idx_pal_pixels[texture_index][s] = NULL;
@@ -1792,7 +1887,7 @@ void SDLGameRendererSDL_DestroyTexture(unsigned int texture_handle) {
             idx_pal_pixels[texture_index][s] = NULL;
         }
         idx_pal_handle[texture_index][s] = 0;
-        idx_pal_hash[texture_index][s]   = 0;
+        idx_pal_hash[texture_index][s] = 0;
     }
     idx_pal_lru_clock[texture_index] = 0;
 
@@ -1939,16 +2034,16 @@ void SDLGameRendererSDL_SetTexture(unsigned int th) {
     // lookup_idx_tex returns a pre-baked SDL_Texture* — bake only happens on first
     // use of a (tex, palette) pair or after invalidation (UnlockTexture/DestroyPalette).
     if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
-        SDL_Texture* texture = (palette_handle > 0)
-            ? lookup_idx_tex(renderer, texture_index, palette_handle)
-            : NULL;
-        if (texture == NULL) return;
+        SDL_Texture* texture = (palette_handle > 0) ? lookup_idx_tex(renderer, texture_index, palette_handle) : NULL;
+        if (texture == NULL)
+            return;
         push_texture(texture);
         last_set_texture = texture;
     } else {
         // Non-indexed texture — simple 1:1 cache
         SDL_Texture* texture = texture_cache[texture_index];
-        if (texture == NULL) return;
+        if (texture == NULL)
+            return;
         push_texture(texture);
         last_set_texture = texture;
     }
@@ -1963,20 +2058,26 @@ static bool is_axis_aligned_rect(const SDL_Vertex verts[4]) {
     float xmin = verts[0].position.x, xmax = xmin;
     float ymin = verts[0].position.y, ymax = ymin;
     for (int i = 1; i < 4; i++) {
-        if (verts[i].position.x < xmin) xmin = verts[i].position.x;
-        if (verts[i].position.x > xmax) xmax = verts[i].position.x;
-        if (verts[i].position.y < ymin) ymin = verts[i].position.y;
-        if (verts[i].position.y > ymax) ymax = verts[i].position.y;
+        if (verts[i].position.x < xmin)
+            xmin = verts[i].position.x;
+        if (verts[i].position.x > xmax)
+            xmax = verts[i].position.x;
+        if (verts[i].position.y < ymin)
+            ymin = verts[i].position.y;
+        if (verts[i].position.y > ymax)
+            ymax = verts[i].position.y;
     }
     // Each vertex must sit on a corner of the AABB (epsilon-based — handles float imprecision)
     for (int i = 0; i < 4; i++) {
         const bool on_x = sw_nearly_equal(verts[i].position.x, xmin) || sw_nearly_equal(verts[i].position.x, xmax);
         const bool on_y = sw_nearly_equal(verts[i].position.y, ymin) || sw_nearly_equal(verts[i].position.y, ymax);
-        if (!on_x || !on_y) return false;
+        if (!on_x || !on_y)
+            return false;
     }
     // Uniform vertex color (no per-vertex interpolation needed)
     for (int i = 1; i < 4; i++) {
-        if (SDL_memcmp(&verts[0].color, &verts[i].color, sizeof(SDL_FColor)) != 0) return false;
+        if (SDL_memcmp(&verts[0].color, &verts[i].color, sizeof(SDL_FColor)) != 0)
+            return false;
     }
     return true;
 }
@@ -1989,20 +2090,28 @@ static void normalize_rect_verts(SDL_Vertex verts[4]) {
     float xmin = verts[0].position.x, xmax = xmin;
     float ymin = verts[0].position.y, ymax = ymin;
     for (int i = 1; i < 4; i++) {
-        if (verts[i].position.x < xmin) xmin = verts[i].position.x;
-        if (verts[i].position.x > xmax) xmax = verts[i].position.x;
-        if (verts[i].position.y < ymin) ymin = verts[i].position.y;
-        if (verts[i].position.y > ymax) ymax = verts[i].position.y;
+        if (verts[i].position.x < xmin)
+            xmin = verts[i].position.x;
+        if (verts[i].position.x > xmax)
+            xmax = verts[i].position.x;
+        if (verts[i].position.y < ymin)
+            ymin = verts[i].position.y;
+        if (verts[i].position.y > ymax)
+            ymax = verts[i].position.y;
     }
     // Classify each vertex into its canonical slot
     SDL_Vertex sorted[4];
     for (int i = 0; i < 4; i++) {
         const bool is_left = sw_nearly_equal(verts[i].position.x, xmin);
-        const bool is_top  = sw_nearly_equal(verts[i].position.y, ymin);
-        if      ( is_left &&  is_top) sorted[0] = verts[i]; // TL
-        else if (!is_left &&  is_top) sorted[1] = verts[i]; // TR
-        else if ( is_left && !is_top) sorted[2] = verts[i]; // BL
-        else                          sorted[3] = verts[i]; // BR
+        const bool is_top = sw_nearly_equal(verts[i].position.y, ymin);
+        if (is_left && is_top)
+            sorted[0] = verts[i]; // TL
+        else if (!is_left && is_top)
+            sorted[1] = verts[i]; // TR
+        else if (is_left && !is_top)
+            sorted[2] = verts[i]; // BL
+        else
+            sorted[3] = verts[i]; // BR
     }
     SDL_memcpy(verts, sorted, sizeof(sorted));
 }
@@ -2021,7 +2130,8 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     task_z[task_idx] = flPS2ConvScreenFZ(vertices[0].coord.z);
 
     // ⚡ Track sortedness
-    if (task_z[task_idx] < last_submitted_z) sort_inversions++;
+    if (task_z[task_idx] < last_submitted_z)
+        sort_inversions++;
     last_submitted_z = task_z[task_idx];
 
     for (int i = 0; i < 4; i++) {
@@ -2058,21 +2168,26 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
             float src_w = v[3].tex_coord.x - v[0].tex_coord.x;
             float src_h = v[3].tex_coord.y - v[0].tex_coord.y;
             SDL_FlipMode flip = SDL_FLIP_NONE;
-            if (src_w < 0) { flip |= SDL_FLIP_HORIZONTAL; src_x += src_w; src_w = -src_w; }
-            if (src_h < 0) { flip |= SDL_FLIP_VERTICAL;   src_y += src_h; src_h = -src_h; }
-            task_src_rect[task_idx] = (SDL_FRect){ src_x, src_y, src_w, src_h };
+            if (src_w < 0) {
+                flip |= SDL_FLIP_HORIZONTAL;
+                src_x += src_w;
+                src_w = -src_w;
+            }
+            if (src_h < 0) {
+                flip |= SDL_FLIP_VERTICAL;
+                src_y += src_h;
+                src_h = -src_h;
+            }
+            task_src_rect[task_idx] = (SDL_FRect) { src_x, src_y, src_w, src_h };
             task_flip[task_idx] = flip;
         }
-        task_dst_rect[task_idx] = (SDL_FRect){
-            v[0].position.x, v[0].position.y,
-            v[3].position.x - v[0].position.x,
-            v[3].position.y - v[0].position.y
+        task_dst_rect[task_idx] = (SDL_FRect) {
+            v[0].position.x, v[0].position.y, v[3].position.x - v[0].position.x, v[3].position.y - v[0].position.y
         };
         // Store color in RGBA8888 format: R<<24|G<<16|B<<8|A
-        task_color32[task_idx] = ((uint32_t)(v[0].color.r * 255.0f + 0.5f) << 24) |
-                                ((uint32_t)(v[0].color.g * 255.0f + 0.5f) << 16) |
-                                ((uint32_t)(v[0].color.b * 255.0f + 0.5f) <<  8) |
-                                 (uint32_t)(v[0].color.a * 255.0f + 0.5f);
+        task_color32[task_idx] =
+            ((uint32_t)(v[0].color.r * 255.0f + 0.5f) << 24) | ((uint32_t)(v[0].color.g * 255.0f + 0.5f) << 16) |
+            ((uint32_t)(v[0].color.b * 255.0f + 0.5f) << 8) | (uint32_t)(v[0].color.a * 255.0f + 0.5f);
     }
 
     render_task_count++;
@@ -2224,16 +2339,15 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         task_th[task_idx] = tc;
         task_z[task_idx] = flPS2ConvScreenFZ(spr->v[0].z);
 
-        if (task_z[task_idx] < last_submitted_z) sort_inversions++;
+        if (task_z[task_idx] < last_submitted_z)
+            sort_inversions++;
         last_submitted_z = task_z[task_idx];
 
         const Uint32 color = spr->vertex_color;
-        const SDL_FColor fc = {
-            .b = rgba8_to_float[color & 0xFF],
-            .g = rgba8_to_float[(color >> 8) & 0xFF],
-            .r = rgba8_to_float[(color >> 16) & 0xFF],
-            .a = rgba8_to_float[(color >> 24) & 0xFF]
-        };
+        const SDL_FColor fc = { .b = rgba8_to_float[color & 0xFF],
+                                .g = rgba8_to_float[(color >> 8) & 0xFF],
+                                .r = rgba8_to_float[(color >> 16) & 0xFF],
+                                .a = rgba8_to_float[(color >> 24) & 0xFF] };
 
         /* Expand Sprite2 → 4 vertices */
         const float x0 = spr->v[0].x, y0 = spr->v[0].y;
@@ -2241,20 +2355,28 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         const float s0 = spr->t[0].s, t0 = spr->t[0].t;
         const float s1 = spr->t[1].s, t1 = spr->t[1].t;
 
-        task_verts[task_idx][0].position.x = x0; task_verts[task_idx][0].position.y = y0;
-        task_verts[task_idx][0].tex_coord.x = s0; task_verts[task_idx][0].tex_coord.y = t0;
+        task_verts[task_idx][0].position.x = x0;
+        task_verts[task_idx][0].position.y = y0;
+        task_verts[task_idx][0].tex_coord.x = s0;
+        task_verts[task_idx][0].tex_coord.y = t0;
         task_verts[task_idx][0].color = fc;
 
-        task_verts[task_idx][1].position.x = x1; task_verts[task_idx][1].position.y = y0;
-        task_verts[task_idx][1].tex_coord.x = s1; task_verts[task_idx][1].tex_coord.y = t0;
+        task_verts[task_idx][1].position.x = x1;
+        task_verts[task_idx][1].position.y = y0;
+        task_verts[task_idx][1].tex_coord.x = s1;
+        task_verts[task_idx][1].tex_coord.y = t0;
         task_verts[task_idx][1].color = fc;
 
-        task_verts[task_idx][2].position.x = x0; task_verts[task_idx][2].position.y = y1;
-        task_verts[task_idx][2].tex_coord.x = s0; task_verts[task_idx][2].tex_coord.y = t1;
+        task_verts[task_idx][2].position.x = x0;
+        task_verts[task_idx][2].position.y = y1;
+        task_verts[task_idx][2].tex_coord.x = s0;
+        task_verts[task_idx][2].tex_coord.y = t1;
         task_verts[task_idx][2].color = fc;
 
-        task_verts[task_idx][3].position.x = x1; task_verts[task_idx][3].position.y = y1;
-        task_verts[task_idx][3].tex_coord.x = s1; task_verts[task_idx][3].tex_coord.y = t1;
+        task_verts[task_idx][3].position.x = x1;
+        task_verts[task_idx][3].position.y = y1;
+        task_verts[task_idx][3].tex_coord.x = s1;
+        task_verts[task_idx][3].tex_coord.y = t1;
         task_verts[task_idx][3].color = fc;
 
         // ⚡ Sprite2 always produces axis-aligned rects with uniform color
@@ -2267,14 +2389,18 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
             float uv_x = s0;
             float uv_y = t0;
             SDL_FlipMode spr_flip = SDL_FLIP_NONE;
-            if (uv_w < 0) { spr_flip |= SDL_FLIP_HORIZONTAL; uv_x += uv_w; uv_w = -uv_w; }
-            if (uv_h < 0) { spr_flip |= SDL_FLIP_VERTICAL;   uv_y += uv_h; uv_h = -uv_h; }
-            task_src_rect[task_idx] = (SDL_FRect){ uv_x, uv_y, uv_w, uv_h };
-            task_dst_rect[task_idx] = (SDL_FRect){
-                x0, y0,
-                x1 - x0,
-                y1 - y0
-            };
+            if (uv_w < 0) {
+                spr_flip |= SDL_FLIP_HORIZONTAL;
+                uv_x += uv_w;
+                uv_w = -uv_w;
+            }
+            if (uv_h < 0) {
+                spr_flip |= SDL_FLIP_VERTICAL;
+                uv_y += uv_h;
+                uv_h = -uv_h;
+            }
+            task_src_rect[task_idx] = (SDL_FRect) { uv_x, uv_y, uv_w, uv_h };
+            task_dst_rect[task_idx] = (SDL_FRect) { x0, y0, x1 - x0, y1 - y0 };
             task_flip[task_idx] = spr_flip;
             // Store color in RGBA8888 format: R<<24|G<<16|B<<8|A
             // Engine color is ARGB (A<<24|R<<16|G<<8|B), convert via sw_argb_to_rgba.

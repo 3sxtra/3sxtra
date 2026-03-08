@@ -66,22 +66,18 @@ static inline uint32_t hash_palette(const void* data, size_t size) {
 // The PS2 GS stores 256-color CLUTs in a non-linear memory order.
 // This LUT maps linear index (0-255) to the shuffled GS index.
 static const Uint8 ps2_clut_shuffle[256] = {
-    0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
-    8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31,
-    32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
-    40, 41, 42, 43, 44, 45, 46, 47, 56, 57, 58, 59, 60, 61, 62, 63,
-    64, 65, 66, 67, 68, 69, 70, 71, 80, 81, 82, 83, 84, 85, 86, 87,
-    72, 73, 74, 75, 76, 77, 78, 79, 88, 89, 90, 91, 92, 93, 94, 95,
-    96, 97, 98, 99, 100, 101, 102, 103, 112, 113, 114, 115, 116, 117, 118, 119,
-    104, 105, 106, 107, 108, 109, 110, 111, 120, 121, 122, 123, 124, 125, 126, 127,
-    128, 129, 130, 131, 132, 133, 134, 135, 144, 145, 146, 147, 148, 149, 150, 151,
-    136, 137, 138, 139, 140, 141, 142, 143, 152, 153, 154, 155, 156, 157, 158, 159,
-    160, 161, 162, 163, 164, 165, 166, 167, 176, 177, 178, 179, 180, 181, 182, 183,
-    168, 169, 170, 171, 172, 173, 174, 175, 184, 185, 186, 187, 188, 189, 190, 191,
-    192, 193, 194, 195, 196, 197, 198, 199, 208, 209, 210, 211, 212, 213, 214, 215,
-    200, 201, 202, 203, 204, 205, 206, 207, 216, 217, 218, 219, 220, 221, 222, 223,
-    224, 225, 226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247,
-    232, 233, 234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254, 255
+    0,   1,   2,   3,   4,   5,   6,   7,   16,  17,  18,  19,  20,  21,  22,  23,  8,   9,   10,  11,  12,  13,
+    14,  15,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  48,  49,  50,  51,
+    52,  53,  54,  55,  40,  41,  42,  43,  44,  45,  46,  47,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,
+    66,  67,  68,  69,  70,  71,  80,  81,  82,  83,  84,  85,  86,  87,  72,  73,  74,  75,  76,  77,  78,  79,
+    88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,  99,  100, 101, 102, 103, 112, 113, 114, 115, 116, 117,
+    118, 119, 104, 105, 106, 107, 108, 109, 110, 111, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131,
+    132, 133, 134, 135, 144, 145, 146, 147, 148, 149, 150, 151, 136, 137, 138, 139, 140, 141, 142, 143, 152, 153,
+    154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 176, 177, 178, 179, 180, 181, 182, 183,
+    168, 169, 170, 171, 172, 173, 174, 175, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197,
+    198, 199, 208, 209, 210, 211, 212, 213, 214, 215, 200, 201, 202, 203, 204, 205, 206, 207, 216, 217, 218, 219,
+    220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247, 232, 233,
+    234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254, 255
 };
 void tcache_live_init(void) {
     gl_state.tcache_live_count = 0;
@@ -278,8 +274,8 @@ void SDLGameRendererGL_Init() {
         gl_state.white_array_layer = gl_state.tex_array_rgba_free[--gl_state.tex_array_rgba_free_count];
         const u32 white_pixel = 0xFFFFFFFFu;
         glBindTexture(GL_TEXTURE_2D_ARRAY, gl_state.tex_array_rgba_id);
-        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, gl_state.white_array_layer,
-                        1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &white_pixel);
+        glTexSubImage3D(
+            GL_TEXTURE_2D_ARRAY, 0, 0, 0, gl_state.white_array_layer, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &white_pixel);
     }
 
     tcache_live_init();
@@ -404,7 +400,8 @@ void SDLGameRendererGL_DestroyTexture(unsigned int texture_handle) {
             gl_state.texture_cache_h[texture_index][pal] = 0;
 
             if (gl_state.tex_array_rgba_layer[texture_index][pal] >= 0) {
-                gl_state.tex_array_rgba_free[gl_state.tex_array_rgba_free_count++] = gl_state.tex_array_rgba_layer[texture_index][pal];
+                gl_state.tex_array_rgba_free[gl_state.tex_array_rgba_free_count++] =
+                    gl_state.tex_array_rgba_layer[texture_index][pal];
                 gl_state.tex_array_rgba_layer[texture_index][pal] = -1;
             }
             gl_state.tcache_live[i] = gl_state.tcache_live[--gl_state.tcache_live_count];
@@ -471,9 +468,8 @@ void SDLGameRendererGL_CreatePalette(unsigned int ph) {
             for (int i = 0; i < 256; i += 4) {
                 for (int j = 0; j < 4; j++) {
                     Uint32 px = rgba32[ps2_clut_shuffle[i + j]];
-                    simde__m128i ci = simde_mm_set_epi32(
-                        (px >> 24) & 0xFF, (px >> 16) & 0xFF,
-                        (px >> 8) & 0xFF, px & 0xFF);
+                    simde__m128i ci =
+                        simde_mm_set_epi32((px >> 24) & 0xFF, (px >> 16) & 0xFF, (px >> 8) & 0xFF, px & 0xFF);
                     simde__m128 cf = simde_mm_mul_ps(simde_mm_cvtepi32_ps(ci), inv255);
                     simde_mm_storeu_ps(&color_data[(i + j) * 4], cf);
                 }
@@ -498,13 +494,13 @@ void SDLGameRendererGL_CreatePalette(unsigned int ph) {
         int i = 0;
         for (; i + 3 < color_count; i += 4) {
             // Load 4 colors (16 floats), scale to 0–255, convert to int32
-            simde__m128i c0 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i+0)*4]), scale));
-            simde__m128i c1 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i+1)*4]), scale));
-            simde__m128i c2 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i+2)*4]), scale));
-            simde__m128i c3 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i+3)*4]), scale));
+            simde__m128i c0 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i + 0) * 4]), scale));
+            simde__m128i c1 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i + 1) * 4]), scale));
+            simde__m128i c2 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i + 2) * 4]), scale));
+            simde__m128i c3 = simde_mm_cvtps_epi32(simde_mm_mul_ps(simde_mm_loadu_ps(&color_data[(i + 3) * 4]), scale));
             // Pack i32→i16→u8: [R,G,B,A, R,G,B,A, R,G,B,A, R,G,B,A] → 16 bytes
-            simde__m128i p01 = simde_mm_packs_epi32(c0, c1); // 8 × i16
-            simde__m128i p23 = simde_mm_packs_epi32(c2, c3); // 8 × i16
+            simde__m128i p01 = simde_mm_packs_epi32(c0, c1);       // 8 × i16
+            simde__m128i p23 = simde_mm_packs_epi32(c2, c3);       // 8 × i16
             simde__m128i packed = simde_mm_packus_epi16(p01, p23); // 16 × u8
             // Store 16 bytes = 4 SDL_Color structs
             simde_mm_storeu_si128((simde__m128i*)&sdl_colors[i], packed);
@@ -702,7 +698,7 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
             if (rgba_layer >= 0) {
                 // Convert PSMCT16 → RGBA8 into conversion_buffer
                 u32* conv_buf = gl_state.conversion_buffer;
-                const simde__m128i mask5  = simde_mm_set1_epi32(0x1F);
+                const simde__m128i mask5 = simde_mm_set1_epi32(0x1F);
                 const simde__m128i mask_a = simde_mm_set1_epi32(0x8000);
                 const simde__m128i alpha_ff = simde_mm_set1_epi32((int)0xFF000000u);
                 const simde__m128i zero = simde_mm_setzero_si128();
@@ -741,9 +737,17 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
 
                 // Upload to RGBA texture array
                 glBindTexture(GL_TEXTURE_2D_ARRAY, gl_state.tex_array_rgba_id);
-                glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, rgba_layer,
-                                surface->w, surface->h, 1,
-                                GL_RGBA, GL_UNSIGNED_BYTE, conv_buf);
+                glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
+                                0,
+                                0,
+                                0,
+                                rgba_layer,
+                                surface->w,
+                                surface->h,
+                                1,
+                                GL_RGBA,
+                                GL_UNSIGNED_BYTE,
+                                conv_buf);
                 glBindTexture(GL_TEXTURE_2D, texture);
             }
             // If rgba_layer < 0 (array full), falls through to legacy path below
@@ -775,7 +779,7 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
                             simde__m128i hi = simde_mm_and_si128(simde_mm_srli_epi16(packed, 4), lo_mask);
                             simde__m128i out_lo = simde_mm_unpacklo_epi8(lo, hi);
                             simde__m128i out_hi = simde_mm_unpackhi_epi8(lo, hi);
-                            simde_mm_storeu_si128((simde__m128i*)(dst_row + x),      out_lo);
+                            simde_mm_storeu_si128((simde__m128i*)(dst_row + x), out_lo);
                             simde_mm_storeu_si128((simde__m128i*)(dst_row + x + 16), out_hi);
                         }
                         // Scalar tail
@@ -828,9 +832,17 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
                     }
 
                     glBindTexture(GL_TEXTURE_2D_ARRAY, gl_state.tex_array_rgba_id);
-                    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, rgba_layer,
-                                    surface->w, surface->h, 1,
-                                    GL_RGBA, GL_UNSIGNED_BYTE, conv_buf);
+                    glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
+                                    0,
+                                    0,
+                                    0,
+                                    rgba_layer,
+                                    surface->w,
+                                    surface->h,
+                                    1,
+                                    GL_RGBA,
+                                    GL_UNSIGNED_BYTE,
+                                    conv_buf);
                     glBindTexture(GL_TEXTURE_2D, texture);
                 }
             }
@@ -844,7 +856,7 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
 
             if (fl_texture->format == SCE_GS_PSMCT16) {
                 // PSMCT16 legacy fallback (RGBA array was full)
-                const simde__m128i mask5  = simde_mm_set1_epi32(0x1F);
+                const simde__m128i mask5 = simde_mm_set1_epi32(0x1F);
                 const simde__m128i mask_a = simde_mm_set1_epi32(0x8000);
                 const simde__m128i alpha_ff = simde_mm_set1_epi32((int)0xFF000000u);
                 const simde__m128i zero = simde_mm_setzero_si128();
@@ -966,9 +978,12 @@ void SDLGameRendererGL_DumpTextures(void) {
         const int w = surf->w, h = surf->h;
         uint8_t header[18] = { 0 };
         header[2] = 2;
-        header[12] = w & 0xFF; header[13] = (w >> 8) & 0xFF;
-        header[14] = h & 0xFF; header[15] = (h >> 8) & 0xFF;
-        header[16] = 32; header[17] = 0x20;
+        header[12] = w & 0xFF;
+        header[13] = (w >> 8) & 0xFF;
+        header[14] = h & 0xFF;
+        header[15] = (h >> 8) & 0xFF;
+        header[16] = 32;
+        header[17] = 0x20;
         fwrite(header, 1, 18, f);
 
         for (int i = 0; i < w * h; i++) {
@@ -1014,15 +1029,19 @@ void SDLGameRendererGL_DumpPaletteStats(void) {
     int max_pals = 0;
     int textures_with_pals = 0;
     for (int ti = 0; ti < FL_TEXTURE_MAX; ti++) {
-        if (pal_count[ti] == 0) continue;
+        if (pal_count[ti] == 0)
+            continue;
         textures_with_pals++;
-        if (pal_count[ti] > max_pals) max_pals = pal_count[ti];
+        if (pal_count[ti] > max_pals)
+            max_pals = pal_count[ti];
         int bucket = (pal_count[ti] <= 32) ? pal_count[ti] : 32;
         hist[bucket]++;
     }
 
     SDL_Log("[PaletteStats] tcache_live=%d pairs, %d textures with palettes, max_pals_per_tex=%d",
-            total_pairs, textures_with_pals, max_pals);
+            total_pairs,
+            textures_with_pals,
+            max_pals);
 
     // Print histogram
     for (int n = 1; n <= (max_pals < 32 ? max_pals : 32); n++) {
@@ -1037,9 +1056,13 @@ void SDLGameRendererGL_DumpPaletteStats(void) {
     for (int rank = 0; rank < 10; rank++) {
         int best_ti = -1, best_n = 0;
         for (int ti = 0; ti < FL_TEXTURE_MAX; ti++) {
-            if (pal_count[ti] > best_n) { best_n = pal_count[ti]; best_ti = ti; }
+            if (pal_count[ti] > best_n) {
+                best_n = pal_count[ti];
+                best_ti = ti;
+            }
         }
-        if (best_ti < 0 || best_n == 0) break;
+        if (best_ti < 0 || best_n == 0)
+            break;
         SDL_Surface* surf = gl_state.surfaces[best_ti];
         if (surf)
             SDL_Log("[PaletteStats]   tex[%4d]: %d palettes (%dx%d)", best_ti, best_n, surf->w, surf->h);
@@ -1048,5 +1071,3 @@ void SDLGameRendererGL_DumpPaletteStats(void) {
         pal_count[best_ti] = 0; // remove from future ranking
     }
 }
-
-
