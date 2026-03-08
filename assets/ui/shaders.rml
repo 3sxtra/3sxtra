@@ -59,6 +59,7 @@
                     No matching presets found.
                 </div>
                 <div data-for="preset : filtered_presets"
+                     data-if="preset.index >= 0"
                      class="preset-item"
                      data-class-selected="preset.index == current_preset"
                      data-event-click="select_preset(preset.index)">

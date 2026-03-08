@@ -43,6 +43,12 @@ static void handle_shader_menu_toggle(SDL_KeyboardEvent* event) {
     }
 }
 
+static void handle_close_all_menus(SDL_KeyboardEvent* event) {
+    if (event->key == SDLK_ESCAPE && event->down && !event->repeat) {
+        SDLApp_CloseAllMenus();
+    }
+}
+
 static void set_screenshot_flag_if_needed(SDL_KeyboardEvent* event) {
     if ((event->key == SDLK_GRAVE) && event->down && !event->repeat) {
         SDLApp_SaveScreenshot();
@@ -91,6 +97,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             handle_menu_toggle(&event->key);
             handle_shader_menu_toggle(&event->key);
             handle_mods_menu_toggle(&event->key);
+            handle_close_all_menus(&event->key);
             set_screenshot_flag_if_needed(&event->key);
             handle_fullscreen_toggle(&event->key);
             handle_scale_mode_toggle(&event->key);
@@ -160,6 +167,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             handle_menu_toggle(&event->key);
             handle_shader_menu_toggle(&event->key);
             handle_mods_menu_toggle(&event->key);
+            handle_close_all_menus(&event->key);
             set_screenshot_flag_if_needed(&event->key);
             handle_fullscreen_toggle(&event->key);
             handle_scale_mode_toggle(&event->key);

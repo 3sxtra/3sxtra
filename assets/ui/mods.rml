@@ -89,6 +89,10 @@
                 <input type="checkbox" data-checked="blue_back"/>
                 <label>Blue Background</label>
             </div>
+            <div class="control-row" data-class-disabled="!in_game">
+                <input type="checkbox" data-checked="shin_gouki_pal" data-attrif-disabled="!in_game"/>
+                <label>Shin Gouki Stage Palette</label>
+            </div>
         </div>
 
         <div class="divider"></div>

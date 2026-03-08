@@ -2467,6 +2467,32 @@ void SDLApp_ToggleTrainingMenu() {
     }
 }
 
+void SDLApp_CloseAllMenus() {
+    bool any_open = show_menu || show_shader_menu || show_mods_menu ||
+                    show_stage_config_menu || show_training_menu || show_dev_overlay ||
+                    SDLNetplayUI_IsDiagnosticsVisible();
+    if (!any_open)
+        return;
+
+    show_menu = false;
+    show_shader_menu = false;
+    show_mods_menu = false;
+    show_stage_config_menu = false;
+    show_training_menu = false;
+    show_dev_overlay = false;
+    game_paused = false;
+    SDLNetplayUI_SetDiagnosticsVisible(false);
+
+    if (use_rmlui) {
+        rmlui_wrapper_hide_document("control_mapping");
+        rmlui_wrapper_hide_document("shaders");
+        rmlui_wrapper_hide_document("mods");
+        rmlui_wrapper_hide_document("stage_config");
+        rmlui_wrapper_hide_document("training");
+        rmlui_wrapper_hide_document("dev_overlay");
+    }
+}
+
 void SDLApp_CycleScaleMode() {
     cycle_scale_mode();
 }

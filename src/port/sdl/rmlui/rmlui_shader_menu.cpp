@@ -73,12 +73,22 @@ static Rml::String to_lower(const Rml::String& s) {
     return out;
 }
 
+static constexpr int FILTERED_PRESETS_MAX = 50;
+static int s_filtered_count = 0;
+
 static void rebuild_filtered_presets() {
-    s_filtered_presets.clear();
+    /* Build into a temp list first. */
+    int match_count = 0;
     int count = SDLApp_GetAvailablePresetCount();
     Rml::String filter_lower = to_lower(s_search_filter);
 
-    for (int i = 0; i < count; i++) {
+    /* Ensure the vector is always exactly FILTERED_PRESETS_MAX entries.
+     * RmlUi's data-for creates DOM nodes based on vector size; if the
+     * size changes, stale nodes evaluate out-of-bounds indices before
+     * the DOM is reconciled.  Keeping a fixed size avoids this. */
+    s_filtered_presets.resize(FILTERED_PRESETS_MAX);
+
+    for (int i = 0; i < count && match_count < FILTERED_PRESETS_MAX; i++) {
         const char* name = SDLApp_GetPresetName(i);
         if (!name)
             continue;
@@ -88,8 +98,16 @@ static void rebuild_filtered_presets() {
             if (name_lower.find(filter_lower) == Rml::String::npos)
                 continue;
         }
-        s_filtered_presets.push_back({ name, i });
+        s_filtered_presets[match_count] = { name, i };
+        match_count++;
     }
+
+    /* Fill remaining slots with sentinel (index = -1, hidden in template). */
+    for (int i = match_count; i < FILTERED_PRESETS_MAX; i++) {
+        s_filtered_presets[i] = { Rml::String(), -1 };
+    }
+
+    s_filtered_count = match_count;
     s_filter_dirty = false;
 }
 
@@ -158,12 +176,10 @@ extern "C" void rmlui_shader_menu_init() {
             Rml::String new_val = v.Get<Rml::String>();
             if (new_val != s_search_filter) {
                 s_search_filter = new_val;
-                // Rebuild immediately so the vector is consistent before
-                // RmlUi re-evaluates the data-for loop in this same frame.
-                // Deferring to update() caused stale indices (out-of-bounds).
                 rebuild_filtered_presets();
-                if (s_model_handle)
+                if (s_model_handle) {
                     s_model_handle.DirtyVariable("filtered_presets");
+                }
             }
         });
 
