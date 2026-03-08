@@ -101,7 +101,6 @@
 #include "port/sdl/rmlui/rmlui_vs_result.h"
 #include "port/sdl/rmlui/rmlui_vs_screen.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
-extern bool use_rmlui;
 
 // forward decls
 static void After_Title(struct _TASK* task_ptr);

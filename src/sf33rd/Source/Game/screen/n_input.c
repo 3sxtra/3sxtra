@@ -12,7 +12,6 @@
 
 /* RmlUi Phase 3 bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
-extern bool use_rmlui;
 
 static void Name_Scs_Input_init();
 static void Name_Scs_Input_comm();

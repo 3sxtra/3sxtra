@@ -94,6 +94,20 @@ h2 {
     word-break: break-word;
 }
 
+.device-icon {
+    display: block;
+    width: 80dp;
+    height: 80dp;
+    margin: 4dp auto;
+}
+
+.device-icon-small {
+    display: block;
+    width: 48dp;
+    height: 48dp;
+    margin: 2dp auto;
+}
+
 .no-device {
     display: block;
     color: #555;

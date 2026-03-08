@@ -18,6 +18,9 @@ void lua_engine_bridge_init(void);
 /** Shutdown the Lua engine bridge. */
 void lua_engine_bridge_shutdown(void);
 
+/** Per-frame tick — fires emu._fire_before() callbacks in Lua. */
+void lua_engine_bridge_tick(void);
+
 #ifdef __cplusplus
 }
 #endif

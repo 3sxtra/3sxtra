@@ -318,19 +318,21 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
 
     // Set up Lua package.path so compat modules can be found
     // and pre-load FBNeo compatibility globals (joypad, emu, gui, memory)
-    Rml::Lua::Interpreter::DoString(
-        "package.path = 'lua/?.lua;lua/?/init.lua;' .. package.path\n"
-        "joypad = require('compat.joypad')\n"
-        "emu    = require('compat.emu')\n"
-        "gui    = require('compat.gui')\n"
-        "memory = require('compat.memory')\n"
-    );
+    Rml::Lua::Interpreter::DoString("package.path = 'lua/?.lua;lua/?/init.lua;' .. package.path\n"
+                                    "joypad = require('compat.joypad')\n"
+                                    "emu    = require('compat.emu')\n"
+                                    "gui    = require('compat.gui')\n"
+                                    "memory = require('compat.memory')\n");
     SDL_Log("[RmlUi Lua] FBNeo compat modules loaded");
 
     // Load trial definitions from Lua at runtime
     if (!lua_trials_load("lua/sf3_3rd_trial_clean.lua")) {
         SDL_Log("[RmlUi Lua] Runtime trial loading failed, using static data");
     }
+
+    // Load training mode bootstrap: gamestate adapter + per-frame callback
+    Rml::Lua::Interpreter::DoString("require('training_main')");
+    SDL_Log("[RmlUi Lua] Training modules loaded");
 
     // Load fonts — both loaded unconditionally so they're available by family name
     std::string font_noto = s_ui_base_path + "../NotoSansJP-Regular.ttf";

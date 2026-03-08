@@ -411,12 +411,23 @@ bool lua_trials_load(const char* lua_path) {
 
     SDL_Log("[Lua Trials] Loading %s...", lua_path);
 
-    // The Lua file expects joypad.get() to exist (called at line 96).
-    // Provide a stub so the file loads without error.
+    // The Lua file expects joypad.get() to exist (called at line 96)
+    // and gd.createFromPng() for image loading (line 2200+, FBNeo GUI only).
+    // Provide stubs so the file loads without error.
     Rml::Lua::Interpreter::DoString("joypad = joypad or {}\n"
-                                    "joypad.get = joypad.get or function() return {} end\n");
+                                    "joypad.get = joypad.get or function() return {} end\n"
+                                    "do\n"
+                                    "  local img = { gdStr = function() return '' end }\n"
+                                    "  local mt = { __index = img }\n"
+                                    "  gd = { createFromPng = function() return setmetatable({}, mt) end }\n"
+                                    "  package.preload['gd'] = function() return gd end\n"
+                                    "end\n");
 
-    if (luaL_dofile(L, lua_path) != LUA_OK) {
+    // Resolve path relative to exe directory (user may run from any CWD)
+    const char* base = SDL_GetBasePath();
+    std::string abs_path = base ? (std::string(base) + lua_path) : lua_path;
+
+    if (luaL_dofile(L, abs_path.c_str()) != LUA_OK) {
         SDL_Log("[Lua Trials] ERROR loading: %s", lua_tostring(L, -1));
         lua_pop(L, 1);
         return false;

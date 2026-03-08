@@ -17,6 +17,9 @@
 extern "C" {
 #endif
 
+/* ── Master switch (defined in sdl_app.c) ──────────────────────── */
+extern bool use_rmlui; /** Master RmlUi enable/disable toggle */
+
 /* ── Fight HUD ─────────────────────────────────────────────────── */
 extern bool rmlui_hud_health;        /** HP bar + drain bar */
 extern bool rmlui_hud_timer;         /** Round countdown timer */

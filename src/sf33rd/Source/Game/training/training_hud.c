@@ -15,7 +15,6 @@
 
 /* RmlUi Phase 3 bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
-extern bool use_rmlui;
 
 void training_hud_init() {
     // Basic setup if required

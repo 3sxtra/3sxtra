@@ -19,6 +19,8 @@
 
 extern "C" {
 const char* ControlMapping_GetDeviceName(int player_num);
+const char* ControlMapping_GetDeviceIconPath(int player_num);
+const char* ControlMapping_GetAvailableDeviceIconPath(int index);
 bool ControlMapping_HasDevice(int player_num);
 void ControlMapping_ClaimDevice(int player_num, int device_index);
 void ControlMapping_UnclaimDevice(int player_num);
@@ -41,6 +43,7 @@ int get_game_actions_count();
 
 struct DeviceEntry {
     Rml::String name;
+    Rml::String icon_path;
     int device_id;
 };
 
@@ -73,9 +76,10 @@ static void rebuild_available_devices() {
     int count = ControlMapping_GetAvailableDeviceCount();
     for (int i = 0; i < count; i++) {
         const char* name = ControlMapping_GetAvailableDeviceName(i);
+        const char* icon = ControlMapping_GetAvailableDeviceIconPath(i);
         int id = ControlMapping_GetAvailableDeviceId(i);
         if (name)
-            s_available_devices.push_back({ name, id });
+            s_available_devices.push_back({ name, icon ? icon : "", id });
     }
 }
 
@@ -126,6 +130,7 @@ extern "C" void rmlui_control_mapping_init() {
     // Register structs
     if (auto sh = c.RegisterStruct<DeviceEntry>()) {
         sh.RegisterMember("name", &DeviceEntry::name);
+        sh.RegisterMember("icon_path", &DeviceEntry::icon_path);
         sh.RegisterMember("device_id", &DeviceEntry::device_id);
     }
     c.RegisterArray<std::vector<DeviceEntry>>();
@@ -152,6 +157,15 @@ extern "C" void rmlui_control_mapping_init() {
     c.BindFunc("p2_device_name", [](Rml::Variant& v) {
         const char* n = ControlMapping_GetDeviceName(2);
         v = Rml::String(n ? n : "");
+    });
+
+    c.BindFunc("p1_device_icon", [](Rml::Variant& v) {
+        const char* p = ControlMapping_GetDeviceIconPath(1);
+        v = Rml::String(p ? p : "");
+    });
+    c.BindFunc("p2_device_icon", [](Rml::Variant& v) {
+        const char* p = ControlMapping_GetDeviceIconPath(2);
+        v = Rml::String(p ? p : "");
     });
 
     // Mapping state prompts
@@ -259,12 +273,14 @@ extern "C" void rmlui_control_mapping_update() {
         s_prev.p1_has_device = p1_has;
         s_model_handle.DirtyVariable("p1_has_device");
         s_model_handle.DirtyVariable("p1_device_name");
+        s_model_handle.DirtyVariable("p1_device_icon");
     }
 
     if (p2_has != s_prev.p2_has_device) {
         s_prev.p2_has_device = p2_has;
         s_model_handle.DirtyVariable("p2_has_device");
         s_model_handle.DirtyVariable("p2_device_name");
+        s_model_handle.DirtyVariable("p2_device_icon");
     }
 
     if (p1_state != s_prev.p1_state || p1_idx != s_prev.p1_action_idx) {

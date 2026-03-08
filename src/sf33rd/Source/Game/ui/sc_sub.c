@@ -14,13 +14,11 @@
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
-#include "port/sdl/rmlui/rmlui_attract_overlay.h"
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
-#include <stdbool.h>
-extern bool use_rmlui;
 #include "port/rendering/legacy_matrix.h"
 #include "port/rendering/renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
+#include "port/sdl/rmlui/rmlui_attract_overlay.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "sf33rd/Source/Common/PPGFile.h"
@@ -36,10 +34,7 @@ extern bool use_rmlui;
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_data.h"
 #include "structs.h"
-
-/* RmlUi Phase 3 bypass */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
-extern bool use_rmlui;
+#include <stdbool.h>
 
 #define TO_UV_256(val) ((val) / 256.0f)
 #define TO_UV_256_NEG(val) (TO_UV_256(val))

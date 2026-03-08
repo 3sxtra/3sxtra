@@ -1008,4 +1008,23 @@ const char* ControlMapping_GetPlayerMappingInput(int player_num, int index) {
     return s_input_name_buf.c_str();
 }
 
+const char* ControlMapping_GetDeviceIconPath(int player_num) {
+    const char* name = ControlMapping_GetDeviceName(player_num);
+    if (!name)
+        return nullptr;
+    std::string device_type = detect_device_type(name);
+    static std::string s_icon_path_buf;
+    s_icon_path_buf = get_device_icon_path(device_type);
+    return s_icon_path_buf.c_str();
+}
+
+const char* ControlMapping_GetAvailableDeviceIconPath(int index) {
+    if (index < 0 || index >= (int)availableDevices.size())
+        return nullptr;
+    std::string device_type = detect_device_type(availableDevices[index].name);
+    static std::string s_avail_icon_path_buf;
+    s_avail_icon_path_buf = get_device_icon_path(device_type);
+    return s_avail_icon_path_buf.c_str();
+}
+
 } // extern "C"

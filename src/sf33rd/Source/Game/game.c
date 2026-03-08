@@ -18,6 +18,7 @@
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
+#include "main.h"
 #include "port/sdl/rmlui/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "port/sdl/rmlui/rmlui_continue.h"
@@ -27,9 +28,6 @@
 #include "port/sdl/rmlui/rmlui_title_screen.h"
 #include "port/sdl/rmlui/rmlui_win_screen.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
-#include <stdbool.h>
-extern bool use_rmlui;
-#include "main.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Common/PPGWork.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -62,6 +60,7 @@ extern bool use_rmlui;
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/training/trials.h"
 #include <SDL3/SDL.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "netplay/netplay.h"

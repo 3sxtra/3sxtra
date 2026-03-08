@@ -9,7 +9,6 @@
 
 /* RmlUi Phase 3 bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
-extern bool use_rmlui;
 
 // Include auto-generated data (static fallback)
 #include "sf33rd/Source/Game/training/trials_data.inc"

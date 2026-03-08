@@ -5,6 +5,7 @@
  */
 
 #include "training_state.h"
+#include "port/sdl/rmlui/lua_engine_bridge.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/plmain.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -253,6 +254,9 @@ void update_training_state(void) {
     resolve_advantage(&g_training_state.p2, &g_training_state.p1, g_training_state.frame_number, "P2");
 
     trials_update();
+
+    // Fire Lua per-frame callbacks (emu._fire_before)
+    lua_engine_bridge_tick();
 
     static bool printed_offsets = false;
     if (!printed_offsets) {

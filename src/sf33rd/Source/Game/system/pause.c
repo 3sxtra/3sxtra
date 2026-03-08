@@ -26,7 +26,6 @@
 
 /* RmlUi Phase 3 bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
-extern bool use_rmlui;
 
 #define PAUSE_JMP_COUNT 4
 #define FLASH_PAUSE_JMP_COUNT 5

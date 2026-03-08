@@ -7,7 +7,6 @@
 #include "port/sdl/rmlui/rmlui_continue.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 
-extern bool use_rmlui;
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/eff49.h"
 #include "sf33rd/Source/Game/effect/eff58.h"

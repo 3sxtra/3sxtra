@@ -78,7 +78,6 @@
 #include "port/sdl/rmlui/rmlui_memory_card.h"
 #include "port/sdl/rmlui/rmlui_option_menu.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
-extern bool use_rmlui;
 
 static void apply_training_hitbox_display(bool force_off);
 

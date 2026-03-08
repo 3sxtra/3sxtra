@@ -27,11 +27,10 @@
 #include "structs.h"
 
 /* RmlUi Phase 3 bypass */
+#include "port/sdl/rmlui/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui/rmlui_copyright.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_title_screen.h"
-extern bool use_rmlui;
-#include "port/sdl/rmlui/rmlui_attract_overlay.h"
 
 /* Macro: skip SSPutStr if entry text RmlUi is active */
 #define ENTRY_TEXT_GATED (use_rmlui && rmlui_screen_entry_text)

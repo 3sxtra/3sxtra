@@ -22,7 +22,6 @@
 /* Phase 3 RmlUi bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include <stdbool.h>
-extern bool use_rmlui;
 
 /* Helper: CPS3 timer render, skipped when RmlUi handles timer */
 #define COUNTER_WRITE_CPS3(atr)                                                                                        \

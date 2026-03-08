@@ -52,7 +52,6 @@
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
-extern bool use_rmlui;
 
 static void Switch_Work();
 static void Sel_PL_Control();

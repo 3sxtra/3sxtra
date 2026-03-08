@@ -21,7 +21,6 @@
 /* Phase 3 RmlUi bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include <stdbool.h>
-extern bool use_rmlui;
 
 const u8 Lamp_Flash_Data[LAMP_FLASH_COUNT][2] = { { 0x07, 0x6F }, { 0x1E, 0x03 } };
 

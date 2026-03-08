@@ -49,7 +49,6 @@
 /* RmlUi Phase 3 bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
-extern bool use_rmlui;
 
 #define CONVERT_DATA_COUNT 12
 #define CANDIDATE_BUFF_SIZE 16

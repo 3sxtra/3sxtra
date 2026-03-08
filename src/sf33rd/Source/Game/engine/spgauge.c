@@ -16,7 +16,6 @@
 /* Phase 3 RmlUi bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include <stdbool.h>
-extern bool use_rmlui;
 
 // sbss - now declared in header as extern
 s8 Old_Stop_SG;

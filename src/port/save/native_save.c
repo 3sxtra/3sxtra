@@ -207,7 +207,7 @@ static int atomic_commit(const char* path, const char* tmp_path) {
     unlink(path);
 #endif
     if (rename(tmp_path, path) != 0) {
-        printf("[NativeSave] ERROR: rename %s -> %s failed: %s\n", tmp_path, path, strerror(errno));
+        SDL_Log("[NativeSave] ERROR: rename %s -> %s failed: %s", tmp_path, path, strerror(errno));
         return -1;
     }
     return 0;
@@ -222,11 +222,13 @@ static FILE* atomic_open_bin(const char* path, char* tmp_path, size_t tmp_size) 
 
 /* ── Lifecycle ─────────────────────────────────────────────────────── */
 
+/** @brief Initialize the native save system. Call once at startup. */
 void NativeSave_Init(void) {
     ensure_save_dir();
-    printf("[NativeSave] Save directory: %s\n", save_dir);
+    SDL_Log("[NativeSave] Save directory: %s", save_dir);
 }
 
+/** @brief Get the save directory path (for debug display). */
 const char* NativeSave_GetSavePath(void) {
     ensure_save_dir();
     return save_dir;
@@ -236,6 +238,7 @@ const char* NativeSave_GetSavePath(void) {
  *  OPTIONS  —  INI format
  * ═══════════════════════════════════════════════════════════════════ */
 
+/** @brief Load options from options.ini into save_w[Present_Mode]. */
 int NativeSave_LoadOptions(void) {
     char path[512];
     make_path(path, sizeof(path), "options.ini");
@@ -342,6 +345,7 @@ int NativeSave_LoadOptions(void) {
     return 0;
 }
 
+/** @brief Save current options from save_w[Present_Mode] to options.ini. */
 void NativeSave_SaveOptions(void) {
     char path[512], tmp[520];
     make_path(path, sizeof(path), "options.ini");
@@ -425,6 +429,7 @@ void NativeSave_SaveOptions(void) {
  *  DIRECTION  —  INI format
  * ═══════════════════════════════════════════════════════════════════ */
 
+/** @brief Load direction config from direction.ini. */
 int NativeSave_LoadDirection(void) {
     char path[512];
     make_path(path, sizeof(path), "direction.ini");
@@ -461,6 +466,7 @@ int NativeSave_LoadDirection(void) {
     return 0;
 }
 
+/** @brief Save current direction config to direction.ini. */
 void NativeSave_SaveDirection(void) {
     char path[512], tmp[520];
     make_path(path, sizeof(path), "direction.ini");
@@ -524,6 +530,7 @@ static void get_current_date(memcard_date* md) {
     }
 }
 
+/** @brief Check if a replay slot has a saved file. Returns 1 if exists, 0 if empty. */
 int NativeSave_ReplayExists(int slot) {
     if (slot < 0 || slot >= NATIVE_SAVE_REPLAY_SLOTS)
         return 0;
@@ -538,6 +545,7 @@ int NativeSave_ReplayExists(int slot) {
     return 1;
 }
 
+/** @brief Get metadata for a replay slot without loading full data. */
 int NativeSave_GetReplayInfo(int slot, _sub_info* out) {
     if (slot < 0 || slot >= NATIVE_SAVE_REPLAY_SLOTS || !out)
         return -1;
@@ -555,6 +563,7 @@ int NativeSave_GetReplayInfo(int slot, _sub_info* out) {
     return (read == sizeof(_sub_info)) ? 0 : -1;
 }
 
+/** @brief Load replay data from the given slot into Replay_w. */
 int NativeSave_LoadReplay(int slot) {
     if (slot < 0 || slot >= NATIVE_SAVE_REPLAY_SLOTS)
         return -1;
@@ -603,6 +612,7 @@ int NativeSave_LoadReplay(int slot) {
     return 0;
 }
 
+/** @brief Save current replay data to the given slot. */
 int NativeSave_SaveReplay(int slot) {
     if (slot < 0 || slot >= NATIVE_SAVE_REPLAY_SLOTS)
         return -1;
@@ -659,6 +669,7 @@ int NativeSave_SaveReplay(int slot) {
     return 0;
 }
 
+/** @brief Delete a replay slot (removes both .bin and .meta files). */
 int NativeSave_DeleteReplay(int slot) {
     if (slot < 0 || slot >= NATIVE_SAVE_REPLAY_SLOTS)
         return -1;

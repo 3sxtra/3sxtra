@@ -24,8 +24,8 @@
 #include "netplay/upnp.h"
 #include "port/config/config.h"
 
-// Defined in sdl_app.c — true when RmlUi is the active UI system
-extern bool use_rmlui;
+// Master RmlUi toggle + per-component toggles
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 
 static bool hud_visible = true;
 static bool diagnostics_visible = false;

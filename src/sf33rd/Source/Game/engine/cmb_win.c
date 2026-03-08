@@ -17,7 +17,6 @@
 /* Phase 3 RmlUi bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include <stdbool.h>
-extern bool use_rmlui;
 
 #include <SDL3/SDL.h>
 

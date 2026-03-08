@@ -738,12 +738,23 @@ add_custom_command(TARGET 3sx POST_BUILD
     # Lua compat modules (FBNeo API shim)
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/src/lua/compat $<TARGET_FILE_DIR:3sx>/lua/compat
+    # Training mode bootstrap
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_SOURCE_DIR}/src/lua/training_main.lua $<TARGET_FILE_DIR:3sx>/lua/training_main.lua
+    # Effie's training Lua modules (data, tools, prediction)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/src/lua/3rd_training_lua-main/src $<TARGET_FILE_DIR:3sx>/lua/src
 )
 
 install(DIRECTORY src/shaders DESTINATION bin)
 install(DIRECTORY ${THIRD_PARTY_DIR}/slang-shaders/ DESTINATION bin/shaders/libretro)
 install(DIRECTORY shaders/custom/ DESTINATION bin/shaders/libretro/custom)
 install(DIRECTORY assets DESTINATION bin)
+# Lua runtime files
+install(DIRECTORY src/lua/compat DESTINATION bin/lua)
+install(FILES src/lua/training_main.lua DESTINATION bin/lua)
+install(FILES src/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua DESTINATION bin/lua)
+install(DIRECTORY src/lua/3rd_training_lua-main/src DESTINATION bin/lua)
 
 
 

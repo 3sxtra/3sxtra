@@ -18,7 +18,6 @@
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_title_screen.h"
 #include <stdbool.h>
-extern bool use_rmlui;
 
 #include "port/config/config.h"
 #include "port/rendering/renderer.h"

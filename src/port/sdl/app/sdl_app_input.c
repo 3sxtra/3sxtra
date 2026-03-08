@@ -23,6 +23,7 @@
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/rmlui/rmlui_dev_overlay.h"
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 // Key handlers
@@ -85,7 +86,6 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
     // SDL2D mode: no ImGui, no NetplayUI — skip all UI processing
     if (!is_sdl2d_backend(SDLApp_GetRenderer())) {
         // Process UI events — dispatch to active UI system
-        extern bool use_rmlui; // defined in sdl_app.c
         if (use_rmlui) {
             rmlui_wrapper_process_event(event);
         } else {
@@ -159,7 +159,6 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
         // Gamepad, joystick, window events etc. always fall through
     } else {
         // SDL2D mode: no ImGui, no NetplayUI — but RmlUi is available
-        extern bool use_rmlui;
         if (use_rmlui) {
             rmlui_wrapper_process_event(event);
         }
