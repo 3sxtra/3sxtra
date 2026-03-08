@@ -49,7 +49,7 @@ void ParseCLI(int argc, char* argv[]) {
             printf("Options:\n");
             printf("  --scale <factor>          Internal resolution multiplier (default: 1)\n");
             printf("  --volume <0-100>          Master volume percentage (default: 100)\n");
-            printf("  --renderer <gl|gpu|sdl>   Renderer backend (default: gl)\n");
+            printf("  --renderer <gl|gpu|sdl|classic>  Renderer backend (default: gl)\n");
             printf("  --port <number>           Netplay game port (default: 50000)\n");
             printf("  --window-pos <x>,<y>      Initial window position\n");
             printf("  --window-size <w>x<h>     Initial window size\n");
@@ -100,6 +100,8 @@ void ParseCLI(int argc, char* argv[]) {
                 SDLApp_SetRenderer(RENDERER_SDLGPU);
             } else if (strcmp(backend, "sdl") == 0 || strcmp(backend, "sdl2d") == 0) {
                 SDLApp_SetRenderer(RENDERER_SDL2D);
+            } else if (strcmp(backend, "classic") == 0) {
+                SDLApp_SetRenderer(RENDERER_SDL2D_CLASSIC);
             } else {
                 SDLApp_SetRenderer(RENDERER_OPENGL);
             }

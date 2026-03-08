@@ -15,7 +15,7 @@ void SDLTextRenderer_Init(const char* base_path, const char* font_path) {
     RendererBackend r = SDLApp_GetRenderer();
     if (r == RENDERER_SDLGPU) {
         SDLTextRendererGPU_Init(base_path, font_path);
-    } else if (r == RENDERER_SDL2D) {
+    } else if (is_sdl2d_backend(r)) {
         SDLTextRendererSDL_Init(base_path, font_path);
     } else {
         SDLTextRendererGL_Init(base_path, font_path);
@@ -26,7 +26,7 @@ void SDLTextRenderer_Shutdown(void) {
     RendererBackend r = SDLApp_GetRenderer();
     if (r == RENDERER_SDLGPU) {
         SDLTextRendererGPU_Shutdown();
-    } else if (r == RENDERER_SDL2D) {
+    } else if (is_sdl2d_backend(r)) {
         SDLTextRendererSDL_Shutdown();
     } else {
         SDLTextRendererGL_Shutdown();
@@ -38,7 +38,7 @@ void SDLTextRenderer_DrawText(const char* text, float x, float y, float scale, f
     RendererBackend rend = SDLApp_GetRenderer();
     if (rend == RENDERER_SDLGPU) {
         SDLTextRendererGPU_DrawText(text, x, y, scale, r, g, b, target_width, target_height);
-    } else if (rend == RENDERER_SDL2D) {
+    } else if (is_sdl2d_backend(rend)) {
         SDLTextRendererSDL_DrawText(text, x, y, scale, r, g, b, target_width, target_height);
     } else {
         SDLTextRendererGL_DrawText(text, x, y, scale, r, g, b, target_width, target_height);
@@ -49,7 +49,7 @@ void SDLTextRenderer_Flush(void) {
     RendererBackend r = SDLApp_GetRenderer();
     if (r == RENDERER_SDLGPU) {
         SDLTextRendererGPU_Flush();
-    } else if (r == RENDERER_SDL2D) {
+    } else if (is_sdl2d_backend(r)) {
         SDLTextRendererSDL_Flush();
     } else {
         SDLTextRendererGL_Flush();
@@ -60,7 +60,7 @@ void SDLTextRenderer_SetYOffset(float y_offset) {
     RendererBackend r = SDLApp_GetRenderer();
     if (r == RENDERER_SDLGPU) {
         SDLTextRendererGPU_SetYOffset(y_offset);
-    } else if (r == RENDERER_SDL2D) {
+    } else if (is_sdl2d_backend(r)) {
         SDLTextRendererSDL_SetYOffset(y_offset);
     } else {
         SDLTextRendererGL_SetYOffset(y_offset);
@@ -71,7 +71,7 @@ void SDLTextRenderer_SetBackgroundEnabled(int enabled) {
     RendererBackend r = SDLApp_GetRenderer();
     if (r == RENDERER_SDLGPU) {
         SDLTextRendererGPU_SetBackgroundEnabled(enabled);
-    } else if (r == RENDERER_SDL2D) {
+    } else if (is_sdl2d_backend(r)) {
         SDLTextRendererSDL_SetBackgroundEnabled(enabled);
     } else {
         SDLTextRendererGL_SetBackgroundEnabled(enabled);
@@ -82,7 +82,7 @@ void SDLTextRenderer_SetBackgroundColor(float r, float g, float b, float a) {
     RendererBackend rend = SDLApp_GetRenderer();
     if (rend == RENDERER_SDLGPU) {
         SDLTextRendererGPU_SetBackgroundColor(r, g, b, a);
-    } else if (rend == RENDERER_SDL2D) {
+    } else if (is_sdl2d_backend(rend)) {
         SDLTextRendererSDL_SetBackgroundColor(r, g, b, a);
     } else {
         SDLTextRendererGL_SetBackgroundColor(r, g, b, a);
@@ -93,7 +93,7 @@ void SDLTextRenderer_SetBackgroundPadding(float px) {
     RendererBackend r = SDLApp_GetRenderer();
     if (r == RENDERER_SDLGPU) {
         SDLTextRendererGPU_SetBackgroundPadding(px);
-    } else if (r == RENDERER_SDL2D) {
+    } else if (is_sdl2d_backend(r)) {
         SDLTextRendererSDL_SetBackgroundPadding(px);
     } else {
         SDLTextRendererGL_SetBackgroundPadding(px);

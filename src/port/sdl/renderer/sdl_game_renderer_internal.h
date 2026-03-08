@@ -79,6 +79,28 @@ void SDLGameRendererSDL_DumpTextures(void);
 void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
 SDL_Texture* SDLGameRendererSDL_GetCanvas(void);
 
+// SDL2D Classic Backend (simple reference renderer for benchmarking)
+void SDLGameRendererClassic_Init(void);
+void SDLGameRendererClassic_Shutdown(void);
+void SDLGameRendererClassic_BeginFrame(void);
+void SDLGameRendererClassic_RenderFrame(void);
+void SDLGameRendererClassic_EndFrame(void);
+void SDLGameRendererClassic_CreateTexture(unsigned int th);
+void SDLGameRendererClassic_DestroyTexture(unsigned int texture_handle);
+void SDLGameRendererClassic_UnlockTexture(unsigned int th);
+void SDLGameRendererClassic_CreatePalette(unsigned int ph);
+void SDLGameRendererClassic_DestroyPalette(unsigned int palette_handle);
+void SDLGameRendererClassic_UnlockPalette(unsigned int ph);
+void SDLGameRendererClassic_SetTexture(unsigned int th);
+void SDLGameRendererClassic_DrawTexturedQuad(const Sprite* sprite, unsigned int color);
+void SDLGameRendererClassic_DrawSolidQuad(const Quad* vertices, unsigned int color);
+void SDLGameRendererClassic_DrawSprite(const Sprite* sprite, unsigned int color);
+void SDLGameRendererClassic_DrawSprite2(const Sprite2* sprite2);
+unsigned int SDLGameRendererClassic_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);
+void SDLGameRendererClassic_DumpTextures(void);
+void SDLGameRendererClassic_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
+SDL_Texture* SDLGameRendererClassic_GetCanvas(void);
+
 #ifdef __cplusplus
 }
 #endif

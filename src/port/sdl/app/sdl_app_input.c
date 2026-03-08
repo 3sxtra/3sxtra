@@ -76,7 +76,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
     bool request_quit = false;
 
     // SDL2D mode: no ImGui, no NetplayUI — skip all UI processing
-    if (SDLApp_GetRenderer() != RENDERER_SDL2D) {
+    if (!is_sdl2d_backend(SDLApp_GetRenderer())) {
         // Process UI events — dispatch to active UI system
         extern bool use_rmlui; // defined in sdl_app.c
         if (use_rmlui) {

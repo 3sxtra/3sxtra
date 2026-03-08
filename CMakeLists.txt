@@ -197,12 +197,14 @@ list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/PS2/mc/savesub\\.c$")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/PS2/mc/mcsub\\.c$")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdk/sdk_libmc\\.c$")
 
-if(UNIX AND NOT PLATFORM_RPI4 AND NOT APPLE)
-    find_package(ZLIB REQUIRED)
-    set(ZLIB_SRC "") # Don't use bundled zlib
-else()
-    file(GLOB_RECURSE ZLIB_SRC src/zlib/*.c)
-endif()
+# Build bundled zlib as a separate static library so we can reliably
+# suppress format warnings and hide symbols on every build system.
+file(GLOB_RECURSE ZLIB_SRC src/zlib/*.c)
+add_library(3sx_zlib STATIC ${ZLIB_SRC})
+target_include_directories(3sx_zlib PUBLIC ${PROJECT_SOURCE_DIR}/src/zlib)
+target_compile_options(3sx_zlib PRIVATE -Wno-format -Wno-error=format -fvisibility=hidden)
+set_target_properties(3sx_zlib PROPERTIES C_CLANG_TIDY "")
+
 file(GLOB IMGUI_SRC ${THIRD_PARTY_DIR}/imgui/*.cpp)
 file(GLOB IMGUI_BACKEND_SRC ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdl3.cpp ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_opengl3.cpp ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdlgpu3.cpp)
 
@@ -211,16 +213,8 @@ file(GLOB COMMON_SRC src/sf33rd/Source/Common/*.c)
 
 set(GAME_SRC ${GAME_SRC} ${COMMON_SRC})
 
-
-
-if(ZLIB_SRC)
-    set_source_files_properties(${ZLIB_SRC}
-        PROPERTIES COMPILE_OPTIONS "-Wno-error=format"
-    )
-endif()
-
 # Disable clang-tidy for all third-party sources
-set_source_files_properties(${IMGUI_SRC} ${IMGUI_BACKEND_SRC} ${ZLIB_SRC} src/port/win32/broadcast_spout.cpp
+set_source_files_properties(${IMGUI_SRC} ${IMGUI_BACKEND_SRC} src/port/win32/broadcast_spout.cpp
     PROPERTIES
         SKIP_LINTING ON
         C_CLANG_TIDY ""
@@ -271,7 +265,7 @@ endif()
 # On RPi4, broadcast_pipewire.cpp is excluded (below), so broadcast.c uses the null backend.
 
 add_executable(3sx MACOSX_BUNDLE
-    ${GAME_SRC} ${BIN2OBJ_SRC} ${PORT_SRC} ${ZLIB_SRC} ${IMGUI_SRC} ${IMGUI_BACKEND_SRC}
+    ${GAME_SRC} ${BIN2OBJ_SRC} ${PORT_SRC} ${IMGUI_SRC} ${IMGUI_BACKEND_SRC}
     # Explicitly added Source/Common files (CMake GLOB doesn't include them for unknown reason)
     ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/MemMan.c
     ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/PPGFile.c
@@ -349,10 +343,6 @@ add_executable(3sx MACOSX_BUNDLE
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL_GPU.cpp
 )
 
-
-if(ZLIB_SRC)
-    set_source_files_properties(${ZLIB_SRC} PROPERTIES COMPILE_OPTIONS "-Wno-format")
-endif()
 
 target_include_directories(3sx PRIVATE
     ${THIRD_PARTY_DIR}/imgui
@@ -458,6 +448,7 @@ target_link_libraries(3sx PRIVATE
     GekkoNet
     stdc++
     glad_gl_core
+    3sx_zlib
     ${LIBRASHADER_LIB}
     SDL3_shadercross::SDL3_shadercross
     rmlui
@@ -471,9 +462,7 @@ endif()
 if(UNIX)
     target_link_libraries(3sx PRIVATE dl pthread)
 
-    if(NOT PLATFORM_RPI4 AND NOT APPLE)
-        target_link_libraries(3sx PRIVATE ZLIB::ZLIB)
-    endif()
+
 
     # Homebrew on macOS ARM installs to /opt/homebrew
     if(APPLE)

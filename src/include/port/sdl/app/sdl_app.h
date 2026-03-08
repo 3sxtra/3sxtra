@@ -6,7 +6,12 @@
 
 extern SDL_Window* window;
 
-typedef enum { RENDERER_OPENGL, RENDERER_SDLGPU } RendererBackend;
+typedef enum RendererBackend { RENDERER_OPENGL, RENDERER_SDLGPU, RENDERER_SDL2D, RENDERER_SDL2D_CLASSIC } RendererBackend;
+
+// Returns true for any SDL2D variant (optimized or classic benchmark)
+static inline bool is_sdl2d_backend(RendererBackend r) {
+    return r == RENDERER_SDL2D || r == RENDERER_SDL2D_CLASSIC;
+}
 
 GLuint create_shader_program(const char* base_path, const char* vertex_path, const char* fragment_path);
 int SDLApp_Init();

@@ -1905,7 +1905,12 @@ void Next_Title_Sub() {
     }
 
     G_No[0] = 2;
-    E_No[0] = 1;
+    G_No[2] = 2;          /* Skip Game0_0/Game0_1 (redundant title screen),
+                              go directly to Game0_2 (fade-to-menu transition) */
+    E_No[0] = 1;          /* Entry_01 will still run ... */
+    E_No[1] = 1;          /* ... pre-init its sub-state (what case 0 would set) ... */
+    E_No[2] = 3;          /* ... and skip to default → Exit_Title_Sub_Entry() immediately */
+    Break_Into = 0;       /* What Entry_01 case 0 would have set */
     task[TASK_INIT].r_no[0] = 1;
     Demo_Flag = 1;
     Game_pause = 0;
@@ -1925,6 +1930,14 @@ void Next_Title_Sub() {
     /* Hide char select overlay if it was visible during the attract demo */
     if (use_rmlui && rmlui_screen_select && rmlui_char_select_visible) {
         rmlui_char_select_hide();
+    }
+    /* Hide title screen + copyright — Entry_01_Sub normally does this
+       but we're fast-forwarding past it */
+    if (use_rmlui && rmlui_screen_title) {
+        rmlui_title_screen_hide();
+    }
+    if (use_rmlui && rmlui_screen_copyright) {
+        rmlui_copyright_hide();
     }
     Before_Select_Sub();
     cpReadyTask(TASK_ENTRY, Entry_Task);

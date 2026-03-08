@@ -94,7 +94,7 @@ extern "C" void* TextureUtil_Load(const char* filename) {
         SDL_DestroySurface(converted);
         return (void*)texture;
 
-    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
+    } else if (is_sdl2d_backend(SDLApp_GetRenderer())) {
         SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
         if (!renderer) {
             SDL_DestroySurface(surface);
@@ -137,7 +137,7 @@ extern "C" void TextureUtil_Free(void* texture_id) {
                 SDL_ReleaseGPUTexture(device, it->second.texture);
             s_gpu_textures.erase(it);
         }
-    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
+    } else if (is_sdl2d_backend(SDLApp_GetRenderer())) {
         SDL_Texture* tex = (SDL_Texture*)texture_id;
         SDL_DestroyTexture(tex);
     } else {
@@ -168,7 +168,7 @@ extern "C" void TextureUtil_GetSize(void* texture_id, int* w, int* h) {
             if (h)
                 *h = 0;
         }
-    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
+    } else if (is_sdl2d_backend(SDLApp_GetRenderer())) {
         SDL_Texture* tex = (SDL_Texture*)texture_id;
         if (w || h) {
             float fw, fh;

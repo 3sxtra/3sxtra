@@ -535,16 +535,17 @@ int SDLApp_Init() {
     if (height <= 0)
         height = 480;
 
-    const char* backend_name = (g_renderer_backend == RENDERER_SDLGPU)  ? "SDL_GPU"
-                               : (g_renderer_backend == RENDERER_SDL2D) ? "SDL2D"
-                                                                        : "OpenGL";
+    const char* backend_name = (g_renderer_backend == RENDERER_SDLGPU)          ? "SDL_GPU"
+                               : (g_renderer_backend == RENDERER_SDL2D)         ? "SDL2D"
+                               : (g_renderer_backend == RENDERER_SDL2D_CLASSIC) ? "SDL2D-Classic"
+                                                                                : "OpenGL";
     SDL_Log("SDLApp_Init: Creating window %dx%d, Fullscreen: %d, Backend: %s",
             width,
             height,
             (window_flags & SDL_WINDOW_FULLSCREEN) ? 1 : 0,
             backend_name);
 
-    if (g_renderer_backend == RENDERER_SDL2D) {
+    if (is_sdl2d_backend(g_renderer_backend)) {
         // SDL2D: use SDL_CreateWindowAndRenderer — no GL context, no GPU device
         if (!SDL_CreateWindowAndRenderer(app_name, width, height, window_flags, &window, &sdl_renderer)) {
             fatal_error("SDL2D: Couldn't create window/renderer: %s", SDL_GetError());
@@ -813,7 +814,7 @@ int SDLApp_Init() {
     }
 
     // Skip ImGui, shaders, and mod menus for SDL2D mode
-    if (g_renderer_backend != RENDERER_SDL2D) {
+    if (!is_sdl2d_backend(g_renderer_backend)) {
         imgui_wrapper_init(window, gl_context);
 
         input_display_init();
@@ -848,7 +849,7 @@ void SDLApp_Quit() {
     SDLGameRenderer_Shutdown();
     SDLTextRenderer_Shutdown();
 
-    if (g_renderer_backend == RENDERER_SDL2D) {
+    if (is_sdl2d_backend(g_renderer_backend)) {
         // SDL2D cleanup
         BezelSystem_Shutdown();
         rmlui_wrapper_shutdown();
@@ -961,7 +962,7 @@ bool SDLApp_PollEvents() {
 
 /** @brief Begin a new frame — start ImGui frame and clear the GL viewport. */
 void SDLApp_BeginFrame() {
-    if (g_renderer_backend != RENDERER_SDL2D) {
+    if (!is_sdl2d_backend(g_renderer_backend)) {
         // Process any deferred preset switch
         SDLAppShader_ProcessPendingLoad();
         if (!use_rmlui) {
@@ -984,7 +985,7 @@ void SDLApp_BeginFrame() {
 
     // SDL2D: clear the window backbuffer
     // ⚡ Skip clear when no letterbox bars are visible — the canvas blit will overwrite everything
-    if (g_renderer_backend == RENDERER_SDL2D && last_had_letterbox_bars) {
+    if (is_sdl2d_backend(g_renderer_backend) && last_had_letterbox_bars) {
         SDL_SetRenderDrawColor(sdl_renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_SetRenderTarget(sdl_renderer, NULL);
         SDL_RenderClear(sdl_renderer);
@@ -1253,7 +1254,7 @@ void SDLApp_EndFrame() {
         TRACE_SUB_END();
     }
 
-    if (g_renderer_backend == RENDERER_SDL2D) {
+    if (is_sdl2d_backend(g_renderer_backend)) {
         // --- SDL2D Backend ---
         if (!game_paused && !present_only_mode) {
             ADX_ProcessTracks();
@@ -1268,7 +1269,9 @@ void SDLApp_EndFrame() {
                                    dst_rect.w < (win_w - 0.5f) || dst_rect.h < (win_h - 0.5f));
 
         // Blit game canvas to window with letterboxing
-        SDL_Texture* canvas = SDLGameRendererSDL_GetCanvas();
+        SDL_Texture* canvas = (g_renderer_backend == RENDERER_SDL2D_CLASSIC)
+                               ? SDLGameRendererClassic_GetCanvas()
+                               : SDLGameRendererSDL_GetCanvas();
         SDL_RenderTexture(sdl_renderer, canvas, NULL, &dst_rect);
 
         // Bezel rendering (SDL2D)
@@ -2562,7 +2565,7 @@ void SDLApp_SetVSync(bool enabled) {
                                       window,
                                       SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
                                       enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_IMMEDIATE);
-    } else if (g_renderer_backend == RENDERER_SDL2D && sdl_renderer) {
+    } else if (is_sdl2d_backend(g_renderer_backend) && sdl_renderer) {
         // ⚡ Only enable VSync on SDL2D renderer when native frame pacing is off.
         // When native pacing is active, we want RenderPresent to return immediately.
         bool sdl2d_vsync = enabled && frame_rate_uncapped;
@@ -2582,7 +2585,7 @@ void SDLApp_ToggleFrameRateUncap() {
 
     // ⚡ Re-apply SDL2D VSync state: native pacing requires VSync off on the
     // renderer to prevent double-waiting (RenderPresent + FramePacing).
-    if (g_renderer_backend == RENDERER_SDL2D && sdl_renderer) {
+    if (is_sdl2d_backend(g_renderer_backend) && sdl_renderer) {
         bool sdl2d_vsync = vsync_enabled && frame_rate_uncapped;
         SDL_SetRenderVSync(sdl_renderer, sdl2d_vsync ? 1 : 0);
     }

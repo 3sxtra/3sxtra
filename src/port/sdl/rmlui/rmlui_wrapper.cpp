@@ -283,7 +283,8 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
         s_render_interface = s_render_gpu;
         break;
     }
-    case RENDERER_SDL2D: {
+    case RENDERER_SDL2D:
+    case RENDERER_SDL2D_CLASSIC: {
         SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
         s_render_sdl = new RenderInterface_SDL(renderer);
         s_render_interface = s_render_sdl;
@@ -353,9 +354,9 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     SDL_Log("[RmlUi] Debugger plugin initialized (F12 to toggle, inspecting game context)");
 #endif
 
-    const char* backend_name = (s_active_backend == RENDERER_SDLGPU)  ? "SDL_GPU"
-                               : (s_active_backend == RENDERER_SDL2D) ? "SDL2D"
-                                                                      : "GL3";
+    const char* backend_name = (s_active_backend == RENDERER_SDLGPU) ? "SDL_GPU"
+                               : is_sdl2d_backend(s_active_backend)  ? "SDL2D"
+                                                                     : "GL3";
     SDL_Log("[RmlUi] Initialized (%s renderer, %dx%d window + %dx%d game, dp-ratio=%.2fx)",
             backend_name,
             s_window_w,

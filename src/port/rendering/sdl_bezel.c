@@ -34,7 +34,7 @@ static void SetTextureNearest(void* texture_ptr) {
         return;
 
     // SDL2D: use SDL_SetTextureScaleMode instead of GL calls (no GL context)
-    if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
+    if (is_sdl2d_backend(SDLApp_GetRenderer())) {
         SDL_SetTextureScaleMode((SDL_Texture*)texture_ptr, SDL_SCALEMODE_NEAREST);
         return;
     }
