@@ -23,7 +23,7 @@ If you prefer to use an existing MSYS2 installation:
 1. Launch the **MinGW64** shell.
 2. Install the required packages:
    ```bash
-   pacman -S make mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-clang mingw-w64-x86_64-headers-git
+   pacman -S --needed $(cat tools/requirements-windows.txt)
    ```
 
 ### Linux (Ubuntu / Debian)
@@ -32,10 +32,7 @@ You will need the standard build tools, Clang, plus the dependencies required to
 
 ```bash
 sudo apt-get update
-# Install SDL3 dependencies (including PipeWire, Wayland, X11, ALSA, PulseAudio, etc.)
-sudo apt-get install -y $(cat tools/requirements-ubuntu-sdl3.txt)
-# Install compiler and build tools
-sudo apt-get install -y clang curl cmake ninja-build
+sudo apt-get install -y $(cat tools/requirements-ubuntu.txt)
 ```
 
 ### macOS

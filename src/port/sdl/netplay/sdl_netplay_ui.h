@@ -1,3 +1,7 @@
+/**
+ * @file sdl_netplay_ui.h
+ * @brief SDL netplay UI overlay API.
+ */
 #ifndef SDL_NETPLAY_UI_H
 #define SDL_NETPLAY_UI_H
 

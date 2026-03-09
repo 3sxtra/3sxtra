@@ -9,8 +9,6 @@
 #include "port/sdl/renderer/sdl_text_renderer.h"
 #include "port/sdl/renderer/sdl_text_renderer_internal.h"
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "types.h"

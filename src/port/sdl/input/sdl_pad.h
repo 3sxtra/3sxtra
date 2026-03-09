@@ -1,3 +1,7 @@
+/**
+ * @file sdl_pad.h
+ * @brief SDL gamepad/joystick input types and polling API.
+ */
 #pragma once
 
 #include <SDL3/SDL.h>

@@ -1,3 +1,7 @@
+/**
+ * @file paths.h
+ * @brief SDL path helpers with portable mode support.
+ */
 #ifndef PORT_PATHS_H
 #define PORT_PATHS_H
 

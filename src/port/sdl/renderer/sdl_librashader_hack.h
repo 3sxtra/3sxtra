@@ -1,3 +1,7 @@
+/**
+ * @file sdl_librashader_hack.h
+ * @brief Reverse-engineered SDL_sysgpu / Vulkan internals for librashader integration.
+ */
 #ifndef SDL_LIBRASHADER_HACK_H
 #define SDL_LIBRASHADER_HACK_H
 

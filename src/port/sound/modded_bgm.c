@@ -1,3 +1,7 @@
+/**
+ * @file modded_bgm.c
+ * @brief Modded background music playback via SDL_mixer.
+ */
 #include "port/sound/modded_bgm.h"
 #include "port/config/config.h"
 #include "port/config/paths.h"
@@ -6,7 +10,6 @@
 #include <SDL3_mixer/SDL_mixer.h>
 #include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 static bool is_initialized = false;

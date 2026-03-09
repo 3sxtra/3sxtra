@@ -16,6 +16,17 @@
 
 #define INPUT_SOURCES_MAX 4
 
+/** Minimum |axis value| to register a raw-joystick axis event. */
+#define SDLPAD_AXIS_EVENT_THRESHOLD 24000
+/** Minimum |axis value| to count a raw-joystick as "any input active". */
+#define SDLPAD_AXIS_ACTIVE_THRESHOLD 20000
+/** Minimum |axis value| to register a joystick axis direction. */
+#define SDLPAD_AXIS_DIR_THRESHOLD 16000
+/** Minimum trigger value to count the trigger as pressed. */
+#define SDLPAD_TRIGGER_THRESHOLD 8000
+/** Minimum |stick value| to count an analog stick as deflected. */
+#define SDLPAD_STICK_THRESHOLD 8000
+
 typedef enum SDLPad_InputType {
     SDLPAD_INPUT_NONE = 0,
     SDLPAD_INPUT_GAMEPAD,
@@ -238,7 +249,7 @@ void SDLPad_HandleJoystickAxisEvent(SDL_JoyAxisEvent* event) {
     if (index < 0 || input_sources[index].type != SDLPAD_INPUT_JOYSTICK)
         return;
 
-    if (abs(event->value) > 24000) { // Threshold
+    if (abs(event->value) > SDLPAD_AXIS_EVENT_THRESHOLD) {
         int axis_idx = event->axis * 2 + (event->value < 0 ? 1 : 0);
         last_joy_input[index] = INPUT_ID_JOY_AXIS_BASE + axis_idx;
     }
@@ -595,12 +606,12 @@ bool SDLPad_GetLastInput(int device_index, char* out_button_name, int name_len) 
     CHECK_BUTTON(west, "Button West");
     CHECK_BUTTON(north, "Button North");
 
-    CHECK_AXIS(left_trigger, "Left Trigger", "Left Trigger", 8000);
-    CHECK_AXIS(right_trigger, "Right Trigger", "Right Trigger", 8000);
-    CHECK_AXIS(left_stick_x, "Left Stick X+", "Left Stick X-", 8000);
-    CHECK_AXIS(left_stick_y, "Left Stick Y+", "Left Stick Y-", 8000);
-    CHECK_AXIS(right_stick_x, "Right Stick X+", "Right Stick X-", 8000);
-    CHECK_AXIS(right_stick_y, "Right Stick Y+", "Right Stick Y-", 8000);
+    CHECK_AXIS(left_trigger, "Left Trigger", "Left Trigger", SDLPAD_TRIGGER_THRESHOLD);
+    CHECK_AXIS(right_trigger, "Right Trigger", "Right Trigger", SDLPAD_TRIGGER_THRESHOLD);
+    CHECK_AXIS(left_stick_x, "Left Stick X+", "Left Stick X-", SDLPAD_STICK_THRESHOLD);
+    CHECK_AXIS(left_stick_y, "Left Stick Y+", "Left Stick Y-", SDLPAD_STICK_THRESHOLD);
+    CHECK_AXIS(right_stick_x, "Right Stick X+", "Right Stick X-", SDLPAD_STICK_THRESHOLD);
+    CHECK_AXIS(right_stick_y, "Right Stick Y+", "Right Stick Y-", SDLPAD_STICK_THRESHOLD);
 
     return false;
 }
@@ -637,7 +648,7 @@ bool SDLPad_IsAnyInputActive(int device_index) {
         }
         int axes = SDL_GetNumJoystickAxes(joy);
         for (int i = 0; i < axes; i++) {
-            if (abs(SDL_GetJoystickAxis(joy, i)) > 20000)
+            if (abs(SDL_GetJoystickAxis(joy, i)) > SDLPAD_AXIS_ACTIVE_THRESHOLD)
                 return true;
         }
         int hats = SDL_GetNumJoystickHats(joy);
@@ -657,17 +668,15 @@ bool SDLPad_IsAnyInputActive(int device_index) {
     }
 
     // Check triggers with a threshold
-    const Sint16 trigger_threshold = 8000;
-    if (state->left_trigger > trigger_threshold || state->right_trigger > trigger_threshold) {
+    if (state->left_trigger > SDLPAD_TRIGGER_THRESHOLD || state->right_trigger > SDLPAD_TRIGGER_THRESHOLD) {
         return true;
     }
 
     // Check analog sticks with a threshold
-    const Sint16 stick_threshold = 8000;
-    if (state->left_stick_x > stick_threshold || state->left_stick_x < -stick_threshold ||
-        state->left_stick_y > stick_threshold || state->left_stick_y < -stick_threshold ||
-        state->right_stick_x > stick_threshold || state->right_stick_x < -stick_threshold ||
-        state->right_stick_y > stick_threshold || state->right_stick_y < -stick_threshold) {
+    if (state->left_stick_x > SDLPAD_STICK_THRESHOLD || state->left_stick_x < -SDLPAD_STICK_THRESHOLD ||
+        state->left_stick_y > SDLPAD_STICK_THRESHOLD || state->left_stick_y < -SDLPAD_STICK_THRESHOLD ||
+        state->right_stick_x > SDLPAD_STICK_THRESHOLD || state->right_stick_x < -SDLPAD_STICK_THRESHOLD ||
+        state->right_stick_y > SDLPAD_STICK_THRESHOLD || state->right_stick_y < -SDLPAD_STICK_THRESHOLD) {
         return true;
     }
 
@@ -733,9 +742,9 @@ bool SDLPad_GetJoystickAxis(int device_index, int axis, int sign) {
         return false;
     Sint16 val = SDL_GetJoystickAxis(input_sources[device_index].joystick.joystick, axis);
     if (sign == 0)
-        return val > 16000; // +
+        return val > SDLPAD_AXIS_DIR_THRESHOLD; // +
     else
-        return val < -16000; // -
+        return val < -SDLPAD_AXIS_DIR_THRESHOLD; // -
 }
 
 bool SDLPad_GetJoystickHat(int device_index, int hat, int dir) {

@@ -1,3 +1,7 @@
+/**
+ * @file sdl_app_shader_config.h
+ * @brief Shader preset discovery and cycling API.
+ */
 #ifndef SDL_APP_SHADER_CONFIG_H
 #define SDL_APP_SHADER_CONFIG_H
 

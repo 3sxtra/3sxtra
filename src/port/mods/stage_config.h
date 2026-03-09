@@ -1,3 +1,7 @@
+/**
+ * @file stage_config.h
+ * @brief Per-stage INI configuration types and API.
+ */
 #ifndef STAGE_CONFIG_H
 #define STAGE_CONFIG_H
 

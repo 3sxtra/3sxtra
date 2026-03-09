@@ -1,3 +1,7 @@
+/**
+ * @file adx.h
+ * @brief ADX audio playback and streaming API.
+ */
 #ifndef SOUND_ADX_H
 #define SOUND_ADX_H
 

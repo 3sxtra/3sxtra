@@ -1,3 +1,7 @@
+/**
+ * @file adx_decoder.h
+ * @brief CRI ADX audio decoder types and API.
+ */
 #ifndef ADX_DECODER_H
 #define ADX_DECODER_H
 

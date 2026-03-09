@@ -25,7 +25,6 @@
 
 #include <SDL3/SDL.h>
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #define RENDER_TASK_MAX 8192

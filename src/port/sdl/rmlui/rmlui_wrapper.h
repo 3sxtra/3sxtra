@@ -1,3 +1,7 @@
+/**
+ * @file rmlui_wrapper.h
+ * @brief C-callable RmlUi context management and document API.
+ */
 #pragma once
 
 #include <stdbool.h>

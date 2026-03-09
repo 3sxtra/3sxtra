@@ -30,20 +30,13 @@ jobs:
             with:
                 update: true
                 msystem: MINGW64
-                install: >-
-                    git
-                    zip
-                    make
-                    mingw-w64-x86_64-cmake
-                    mingw-w64-x86_64-ninja
-                    mingw-w64-x86_64-clang
-                    mingw-w64-x86_64-headers-git
-                    mingw-w64-x86_64-rust
-                    mingw-w64-x86_64-python-jinja
-                    mingw-w64-x86_64-miniupnpc
 
           - name: Checkout repository
             uses: actions/checkout@v4
+
+          - name: Install MSYS2 packages
+            run: tr -d '\r' < tools/requirements-windows.txt | xargs pacman -S --needed --noconfirm
+
 
           - name: Cache dependencies
             uses: actions/cache@v4

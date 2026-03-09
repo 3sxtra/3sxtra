@@ -1,3 +1,7 @@
+/**
+ * @file modded_bgm.h
+ * @brief Modded background music API.
+ */
 #ifndef MODDED_BGM_H
 #define MODDED_BGM_H
 

@@ -157,7 +157,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/src/include
     ${PROJECT_SOURCE_DIR}/src/include/sdk
-    ${PROJECT_SOURCE_DIR}/src/zlib
     ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include
     ${THIRD_PARTY_DIR}/stb
 
@@ -203,16 +202,10 @@ file(GLOB_RECURSE GAME_SRC src/*.c)
 list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/PS2/mc/savesub\\.c$")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/PS2/mc/mcsub\\.c$")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdk/sdk_libmc\\.c$")
-# Exclude bundled zlib — built separately as 3sx_zlib static library
+# Exclude vendored zlib sources (now using system zlib)
 list(FILTER GAME_SRC EXCLUDE REGEX "src/zlib/")
 
-# Build bundled zlib as a separate static library so we can reliably
-# suppress format warnings and hide symbols on every build system.
-file(GLOB_RECURSE ZLIB_SRC src/zlib/*.c)
-add_library(3sx_zlib STATIC ${ZLIB_SRC})
-target_include_directories(3sx_zlib PUBLIC ${PROJECT_SOURCE_DIR}/src/zlib)
-target_compile_options(3sx_zlib PRIVATE -Wno-format -Wno-error=format -fvisibility=hidden)
-set_target_properties(3sx_zlib PROPERTIES C_CLANG_TIDY "")
+find_package(ZLIB REQUIRED)
 
 
 
@@ -453,7 +446,7 @@ target_link_libraries(3sx PRIVATE
     GekkoNet
     stdc++
     glad_gl_core
-    3sx_zlib
+    ZLIB::ZLIB
     ${LIBRASHADER_LIB}
     SDL3_shadercross::SDL3_shadercross
     rmlui

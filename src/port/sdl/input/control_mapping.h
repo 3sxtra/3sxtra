@@ -1,3 +1,7 @@
+/**
+ * @file control_mapping.h
+ * @brief Control mapping overlay lifecycle API.
+ */
 #pragma once
 
 #ifdef __cplusplus

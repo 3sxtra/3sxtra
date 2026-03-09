@@ -1,3 +1,7 @@
+/**
+ * @file sdl_game_renderer_gl_internal.h
+ * @brief OpenGL renderer internal state and batch data.
+ */
 #ifndef SDL_GAME_RENDERER_GL_INTERNAL_H
 #define SDL_GAME_RENDERER_GL_INTERNAL_H
 

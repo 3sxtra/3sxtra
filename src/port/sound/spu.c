@@ -13,7 +13,6 @@
 #include "common.h"
 #include <SDL3/SDL.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <string.h>
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))

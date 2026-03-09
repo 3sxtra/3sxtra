@@ -1,3 +1,7 @@
+/**
+ * @file afs.h
+ * @brief AFS archive reader API (preloaded RAM cache, async I/O).
+ */
 #ifndef PORT_IO_AFS_H
 #define PORT_IO_AFS_H
 

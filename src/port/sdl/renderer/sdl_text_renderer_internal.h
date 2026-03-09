@@ -1,3 +1,7 @@
+/**
+ * @file sdl_text_renderer_internal.h
+ * @brief Text renderer backend function declarations (GL / GPU / SDL2D).
+ */
 #ifndef SDL_TEXT_RENDERER_INTERNAL_H
 #define SDL_TEXT_RENDERER_INTERNAL_H
 

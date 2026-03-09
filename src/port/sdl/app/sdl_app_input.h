@@ -1,3 +1,7 @@
+/**
+ * @file sdl_app_input.h
+ * @brief SDL input event dispatch API.
+ */
 #ifndef SDL_APP_INPUT_H
 #define SDL_APP_INPUT_H
 

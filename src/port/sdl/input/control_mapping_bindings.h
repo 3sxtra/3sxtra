@@ -1,3 +1,7 @@
+/**
+ * @file control_mapping_bindings.h
+ * @brief Per-player device and action mapping queries.
+ */
 #pragma once
 
 #include "port/input_definition.h"

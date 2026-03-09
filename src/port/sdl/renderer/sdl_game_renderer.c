@@ -1,3 +1,7 @@
+/**
+ * @file sdl_game_renderer.c
+ * @brief Game renderer backend dispatch (GPU / GL / SDL2D).
+ */
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"

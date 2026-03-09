@@ -1,5 +1,7 @@
-// tracy_gpu.h — C-callable GPU profiling wrapper for Tracy.
-// Provides init, per-frame collect, and named GPU zone helpers.
+/**
+ * @file tracy_gpu.h
+ * @brief C-callable GPU profiling wrapper for Tracy.
+ */
 #pragma once
 
 #ifdef __cplusplus

@@ -1,3 +1,7 @@
+/**
+ * @file sdl_app.h
+ * @brief SDL application lifecycle, window, and renderer API.
+ */
 #ifndef SDL_APP_H
 #define SDL_APP_H
 

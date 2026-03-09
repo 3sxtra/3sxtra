@@ -1,3 +1,7 @@
+/**
+ * @file sdl_app_internal.h
+ * @brief Internal app-state toggles and helpers.
+ */
 #ifndef SDL_APP_INTERNAL_H
 #define SDL_APP_INTERNAL_H
 

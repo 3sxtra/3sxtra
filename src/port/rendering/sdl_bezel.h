@@ -1,3 +1,7 @@
+/**
+ * @file sdl_bezel.h
+ * @brief Bezel metadata and rendering types.
+ */
 #ifndef SDL_BEZEL_H
 #define SDL_BEZEL_H
 

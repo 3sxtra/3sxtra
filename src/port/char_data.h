@@ -1,3 +1,7 @@
+/**
+ * @file char_data.h
+ * @brief Character data fixup API.
+ */
 #ifndef CHAR_DATA_H
 #define CHAR_DATA_H
 

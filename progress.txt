@@ -22,3 +22,41 @@
     - recompile.bat: PASS
     - lint.bat: PASS (clang-format clean; clang-tidy missing from env — pre-existing)
     - ctest: 35/35 PASS (fixed DLL PATH issue in tests/CMakeLists.txt — added MinGW bin to test ENVIRONMENT)
+
+[2026-03-09 13:59] ✅ Task 2 COMPLETE — Audited and removed unnecessary #include <stdio.h> and <stdlib.h>
+  Methodology: searched all 24 port-layer files with #include <stdio.h> for actual stdio function usage
+    (printf, fprintf, snprintf, sprintf, sscanf, fopen, fclose, fread, fwrite, fgets, fputs, FILE, perror).
+    Also checked all 18 files with #include <stdlib.h> for stdlib usage
+    (malloc, calloc, realloc, free, exit, atoi, strtol, qsort, abs, etc.).
+  Removed <stdio.h> from (3 files — only used SDL_Log, no stdio functions):
+    - src/port/sound/spu.c
+    - src/port/sdl/renderer/sdl_text_renderer_gl.c
+    - src/port/sdl/renderer/sdl_game_renderer_classic.c
+  Removed <stdlib.h> from (2 files — no stdlib functions used):
+    - src/port/sdl/renderer/sdl_text_renderer_gl.c (uses SDL_calloc/SDL_free, not stdlib)
+    - src/port/sound/modded_bgm.c (no malloc/free/exit/atoi/qsort)
+  Kept <stdio.h> in 21 files that use snprintf, printf, fopen, FILE, etc.
+  Kept <stdlib.h> in 16 files that use qsort, malloc, calloc, free, exit, atoi, etc.
+  Verification:
+    - recompile.bat: PASS
+    - lint.bat: PASS (clang-format + clang-tidy clean)
+    - ctest: 35/35 PASS
+
+[2026-03-09 14:23] ✅ Task 3 COMPLETE — Replaced magic number thresholds in sdl_pad.c
+  Defined 5 named constants at file scope (after INPUT_SOURCES_MAX):
+    - SDLPAD_AXIS_EVENT_THRESHOLD  (24000) — raw-joystick axis event registration
+    - SDLPAD_AXIS_ACTIVE_THRESHOLD (20000) — raw-joystick "any input active" check
+    - SDLPAD_AXIS_DIR_THRESHOLD    (16000) — joystick axis direction detection
+    - SDLPAD_TRIGGER_THRESHOLD      (8000) — trigger pressed threshold
+    - SDLPAD_STICK_THRESHOLD        (8000) — analog stick deflection threshold
+  Replaced all magic numbers:
+    - Line 251: 24000 → SDLPAD_AXIS_EVENT_THRESHOLD
+    - Lines 608-613: 8000 (×6 CHECK_AXIS calls) → SDLPAD_TRIGGER_THRESHOLD / SDLPAD_STICK_THRESHOLD
+    - Line 650: 20000 → SDLPAD_AXIS_ACTIVE_THRESHOLD
+    - Lines 668-679: local trigger_threshold/stick_threshold → removed, use file-level constants
+    - Lines 746/748: 16000 → SDLPAD_AXIS_DIR_THRESHOLD
+  Each constant has a /** doc comment */.
+  Verification:
+    - recompile.bat: PASS
+    - lint.bat: PASS (clang-format + clang-tidy clean)
+    - ctest: 35/35 PASS

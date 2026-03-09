@@ -45,8 +45,7 @@ jobs:
           - name: Install dependencies
             run: |
                 sudo apt update
-                sudo apt install -y $(cat tools/requirements-ubuntu-sdl3.txt)
-                sudo apt install -y clang curl python3-jinja2
+                sudo apt install -y $(cat tools/requirements-ubuntu.txt)
             shell: bash
 
           - name: Build for Linux

@@ -1,3 +1,7 @@
+/**
+ * @file char_data.c
+ * @brief Character data fixups for CPS3 balance parity.
+ */
 #include "port/char_data.h"
 
 void CharData_ApplyFixups(CharInitData* data, int character_id) {

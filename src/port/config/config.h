@@ -1,3 +1,7 @@
+/**
+ * @file config.h
+ * @brief INI-style configuration system API.
+ */
 #ifndef PORT_CONFIG_H
 #define PORT_CONFIG_H
 

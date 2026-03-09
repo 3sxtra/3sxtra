@@ -25,8 +25,7 @@ export CXX=clang++
 if [[ "${1:-}" == "--install-deps" ]]; then
     echo "==> Installing system build dependencies..."
     sudo apt-get update
-    sudo apt-get install -y $(cat "$ROOT_DIR/tools/requirements-ubuntu-sdl3.txt")
-    sudo apt-get install -y clang curl python3-jinja2 zip
+    sudo apt-get install -y $(cat "$ROOT_DIR/tools/requirements-ubuntu.txt") zip
     shift
 fi
 

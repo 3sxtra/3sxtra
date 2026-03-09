@@ -4,6 +4,7 @@ make
 pkg-config 
 cmake 
 ninja-build
+zlib1g-dev
 gnome-desktop-testing 
 libasound2-dev 
 libpulse-dev
@@ -34,3 +35,6 @@ libdecor-0-dev
 liburing-dev
 libminiupnpc-dev
 libfreetype-dev
+clang
+curl
+python3-jinja2

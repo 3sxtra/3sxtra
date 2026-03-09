@@ -1,3 +1,7 @@
+/**
+ * @file sdl_game_renderer_internal.h
+ * @brief Backend-specific renderer vtable declarations.
+ */
 #ifndef SDL_GAME_RENDERER_INTERNAL_H
 #define SDL_GAME_RENDERER_INTERNAL_H
 
