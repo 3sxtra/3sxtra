@@ -4,6 +4,8 @@
 #include <SDL3/SDL.h>
 #include <stdbool.h>
 
+#include "port/sdl/app/sdl_app_scale.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -57,7 +59,6 @@ SDL_Renderer* SDLApp_GetSDLRenderer(void);
 SDL_Window* SDLApp_GetWindow(void);
 
 // Utils
-SDL_FRect get_letterbox_rect(int win_w, int win_h);
 unsigned int create_shader_program(const char* base_path, const char* vertex_path, const char* fragment_path);
 
 #ifdef __cplusplus

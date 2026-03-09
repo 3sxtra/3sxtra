@@ -6,9 +6,9 @@
 #include <SDL3/SDL.h>
 #include "port/rendering/sdl_bezel.h"
 
-// We'll mock the texture size function in the test or expect it to be linked
-// CalculateLayout calls imgui_wrapper_get_texture_size.
-// Provided by mocks_imgui_wrapper.c
+// We'll mock the texture size function in the test or expect it to be linked.
+// CalculateLayout calls TextureUtil_GetSize.
+// Provided by mocks_imgui_wrapper.c (TextureUtil stubs).
 
 static void test_bezel_layout_basic(void **state) {
     (void) state;

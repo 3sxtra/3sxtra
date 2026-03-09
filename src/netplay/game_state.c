@@ -53,7 +53,7 @@ static State state_buffer[STATE_BUFFER_MAX];
 #undef Game
 #include "sf33rd/utils/djb2_hash.h"
 
-extern unsigned short g_netplay_port;
+#include "port/config/cli_parser.h"
 
 #define GS_SAVE(member) SDL_memcpy(&dst->member, &member, sizeof(member))
 

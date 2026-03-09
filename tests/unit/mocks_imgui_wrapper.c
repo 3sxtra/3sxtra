@@ -34,17 +34,3 @@ void TextureUtil_GetSize(void* texture_id, int* w, int* h) {
 void TextureUtil_Shutdown(void) {
     // No-op in test mock
 }
-
-/* ─── Legacy imgui_wrapper names (backward compat wrappers) ─── */
-
-void* imgui_wrapper_load_texture(const char* filename) {
-    return TextureUtil_Load(filename);
-}
-
-void imgui_wrapper_free_texture(void* texture_id) {
-    TextureUtil_Free(texture_id);
-}
-
-void imgui_wrapper_get_texture_size(void* texture_id, int* w, int* h) {
-    TextureUtil_GetSize(texture_id, w, h);
-}

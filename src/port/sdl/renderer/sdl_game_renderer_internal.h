@@ -28,6 +28,7 @@ unsigned int SDLGameRendererGL_GetCachedGLTexture(unsigned int texture_handle, u
 void SDLGameRendererGL_DumpTextures(void);
 void SDLGameRendererGL_DumpPaletteStats(void);
 void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count);
+void SDLGameRendererGL_ResetBatchState(void);
 
 // GPU Backend
 void SDLGameRendererGPU_Init(void);

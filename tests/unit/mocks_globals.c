@@ -156,3 +156,20 @@ s32 bs2_floor;
 
 bool use_rmlui = false;
 void* rmlui_screen_trials = NULL;
+
+// Effect globals needed by game_state.c (gather_state / load_state).
+// Only defined when mocks_netplay.c is NOT linked (it provides its own copies).
+#ifndef MOCK_HAS_NETPLAY
+#include "sf33rd/Source/Game/effect/effect.h"
+s16 exec_tm[8];
+uintptr_t frw[EFFECT_MAX][448];
+s16 frwctr;
+s16 frwctr_min;
+s16 frwque[EFFECT_MAX];
+s16 head_ix[8];
+s16 tail_ix[8];
+
+// Stubs for functions called by save_state/load_state_from_event in game_state.c
+int Netplay_GetPlayerHandle(void) { return 0; }
+int Netplay_GetBattleStartFrame(void) { return -1; }
+#endif

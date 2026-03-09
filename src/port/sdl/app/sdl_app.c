@@ -25,13 +25,17 @@
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 /* Phase 3 — Fight HUD & Mode Menu */
 #include "port/rendering/sdl_bezel.h"
+#include "port/sdl/app/sdl_app_bezel.h"
 #include "port/sdl/app/sdl_app_config.h"
+#include "port/sdl/app/sdl_app_debug_hud.h"
 #include "port/sdl/app/sdl_app_input.h"
 #include "port/sdl/app/sdl_app_internal.h"
+#include "port/sdl/app/sdl_app_scale.h"
+#include "port/sdl/app/sdl_app_screenshot.h"
 #include "port/sdl/app/sdl_app_shader_config.h"
 
+#include "port/config/cli_parser.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
-#include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/sdl/rmlui/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui/rmlui_button_config.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
@@ -76,15 +80,12 @@ int g_resolution_scale = 1;
 #include <glad/gl.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_opengl.h>
-#include <SDL3_shadercross/SDL_shadercross.h>
 // clang-format on
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "shaders/librashader_manager.h"
-
-// ... existing includes ...
 
 // Intermediate render target for librashader GPU output (matches GL backend's approach)
 static SDL_GPUTexture* s_librashader_intermediate = NULL;
@@ -102,8 +103,6 @@ static GLuint scene_shader_program;
 static GLuint scene_array_shader_program; // ⚡ Bolt: Texture array variant (sampler2DArray)
 static GLuint vao;
 static GLuint vbo;
-static GLuint bezel_vao;
-static GLuint bezel_vbo;
 
 // ⚡ Bolt: Composition FBO for full-scene shading (HD Stage + Sprites)
 // Used when "Bypass Shaders on HD Stages" is OFF.
@@ -126,18 +125,8 @@ static GLint s_pt_loc_source = -1;
 static GLint s_pt_loc_source_size = -1;
 static GLint s_pt_loc_filter_type = -1;
 
-static const float display_target_ratio = 4.0 / 3.0;
-
-// ⚡ Letterbox rect cache — avoid recomputing every frame when geometry is stable.
-static SDL_FRect cached_letterbox_rect = { 0 };
-static int cached_lb_win_w = 0;
-static int cached_lb_win_h = 0;
-static int cached_lb_scale_mode = -1;
-
 // ⚡ Track whether letterbox bars are visible — skip redundant backbuffer clears when not.
 static bool last_had_letterbox_bars = true;
-
-SDL_FRect get_letterbox_rect(int win_w, int win_h);
 /** @brief Read an entire shader source file into a heap-allocated string. */
 static char* read_shader_source(const char* path) {
     size_t length = 0;
@@ -204,18 +193,6 @@ GLuint create_shader_program(const char* base_path, const char* vertex_path, con
     return program;
 }
 
-#define FRAME_END_TIMES_MAX 30
-
-typedef enum ScaleMode {
-    SCALEMODE_NEAREST,
-    SCALEMODE_LINEAR,
-    SCALEMODE_SOFT_LINEAR,
-    SCALEMODE_SQUARE_PIXELS,
-    SCALEMODE_INTEGER,
-    SCALEMODE_PIXEL_ART,
-    SCALEMODE_COUNT
-} ScaleMode;
-
 static const char* app_name = "Street Fighter III: 3rd Strike";
 static const double target_fps = 59.59949;
 static const Uint64 target_frame_time_ns = 1000000000.0 / target_fps;
@@ -225,24 +202,9 @@ static RendererBackend g_renderer_backend = RENDERER_OPENGL; // SDL_GPU opt-in v
 static SDL_GPUDevice* gpu_device = NULL;
 static SDL_Renderer* sdl_renderer = NULL; // Only used in SDL2D mode
 
-// GPU Bezel Resources
-static SDL_GPUGraphicsPipeline* s_bezel_pipeline = NULL;
-static SDL_GPUSampler* s_bezel_sampler = NULL;
-static SDL_GPUBuffer* s_bezel_vertex_buffer = NULL;
-static SDL_GPUTransferBuffer* s_bezel_transfer_buffer = NULL;
-
-static ScaleMode scale_mode = SCALEMODE_NEAREST;
-
 static Uint64 frame_deadline = 0;
-static Uint64 frame_end_times[FRAME_END_TIMES_MAX];
-static int frame_end_times_index = 0;
-static bool frame_end_times_filled = false;
-static double fps = 0;
 static Uint64 frame_counter = 0;
-static int last_p1_char = -1;
-static int last_p2_char = -1;
 
-static bool should_save_screenshot = false;
 static Uint64 last_mouse_motion_time = 0;
 static const int mouse_hide_delay_ms = 2000; // 2 seconds
 static bool cursor_visible = true;           // Track cursor state to avoid redundant SDL calls
@@ -266,214 +228,9 @@ bool game_paused = false;
 static bool frame_rate_uncapped = false;
 static bool vsync_enabled = true;      // user preference, independent of frame_rate_uncapped
 static bool present_only_mode = false; // when true, EndFrame re-blits canvas without re-rendering game
-bool show_debug_hud = false;
-
-// FPS history — unbounded, grows since game start
-static float* fps_history = NULL;
-static int fps_history_count = 0;
-static int fps_history_capacity = 0;
-
-// ⚡ Bolt: Bezel VBO dirty flag — skip redundant vertex uploads.
-static bool bezel_vbo_dirty = true;
 
 // UI mode flag — when true, RmlUi handles overlay menus
 bool use_rmlui = false;
-
-static const /** @brief Return the display name for the current scale mode. */
-    char*
-    scale_mode_name() {
-    switch (scale_mode) {
-    case SCALEMODE_NEAREST:
-        return "Nearest";
-    case SCALEMODE_LINEAR:
-        return "Linear";
-    case SCALEMODE_SOFT_LINEAR:
-        return "Soft Linear";
-    case SCALEMODE_SQUARE_PIXELS:
-        return "Square Pixels";
-    case SCALEMODE_INTEGER:
-        return "Integer";
-    case SCALEMODE_PIXEL_ART:
-        return "Pixel Art";
-    case SCALEMODE_COUNT:
-        return "Unknown";
-    }
-    return "Unknown";
-}
-
-static const /** @brief Convert a ScaleMode enum to its config-file string key. */
-    char*
-    scale_mode_to_config_string(ScaleMode mode) {
-    switch (mode) {
-    case SCALEMODE_NEAREST:
-        return "nearest";
-    case SCALEMODE_LINEAR:
-        return "linear";
-    case SCALEMODE_SOFT_LINEAR:
-        return "soft-linear";
-    case SCALEMODE_SQUARE_PIXELS:
-        return "square-pixels";
-    case SCALEMODE_INTEGER:
-        return "integer";
-    case SCALEMODE_PIXEL_ART:
-        return "pixel-art";
-    default:
-        return "nearest";
-    }
-}
-
-static /** @brief Parse a config-file string into a ScaleMode enum. */
-    ScaleMode
-    config_string_to_scale_mode(const char* string) {
-    if (SDL_strcmp(string, "nearest") == 0) {
-        return SCALEMODE_NEAREST;
-    }
-    if (SDL_strcmp(string, "linear") == 0) {
-        return SCALEMODE_LINEAR;
-    }
-    if (SDL_strcmp(string, "soft-linear") == 0) {
-        return SCALEMODE_SOFT_LINEAR;
-    }
-    if (SDL_strcmp(string, "square-pixels") == 0) {
-        return SCALEMODE_SQUARE_PIXELS;
-    }
-    if (SDL_strcmp(string, "integer") == 0) {
-        return SCALEMODE_INTEGER;
-    }
-    if (SDL_strcmp(string, "pixel-art") == 0) {
-        return SCALEMODE_PIXEL_ART;
-    }
-    return SCALEMODE_NEAREST;
-}
-
-static /** @brief Advance to the next scale mode (wrapping). */
-    void
-    cycle_scale_mode() {
-    scale_mode = (scale_mode + 1) % SCALEMODE_COUNT;
-    Config_SetString(CFG_KEY_SCALEMODE, scale_mode_to_config_string(scale_mode));
-    bezel_vbo_dirty = true; // Viewport changed, recalculate bezel positions
-    SDL_Log("Scale mode: %s", scale_mode_name());
-}
-
-static SDL_GPUShader* CreateGPUShader(const char* filename, SDL_GPUShaderStage stage) {
-    size_t size;
-    void* code = SDL_LoadFile(filename, &size);
-    if (!code) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Failed to load shader: %s", filename);
-        return NULL;
-    }
-
-    SDL_ShaderCross_SPIRV_Info info;
-    SDL_zero(info);
-    info.bytecode = (const Uint8*)code;
-    info.bytecode_size = size;
-    info.entrypoint = "main";
-    info.shader_stage = (SDL_ShaderCross_ShaderStage)stage;
-
-    SDL_ShaderCross_GraphicsShaderMetadata* metadata =
-        SDL_ShaderCross_ReflectGraphicsSPIRV(info.bytecode, info.bytecode_size, 0);
-
-    if (!metadata) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to reflect SPIRV: %s", filename);
-        SDL_free(code);
-        return NULL;
-    }
-
-    SDL_GPUShader* shader =
-        SDL_ShaderCross_CompileGraphicsShaderFromSPIRV(gpu_device, &info, &metadata->resource_info, 0);
-
-    SDL_free(metadata);
-    SDL_free(code);
-    return shader;
-}
-
-static void InitBezelGPU(const char* base_path) {
-    char vert_path[1024];
-    char frag_path[1024];
-    snprintf(vert_path, sizeof(vert_path), "%sshaders/blit.vert.spv", base_path);
-    snprintf(frag_path, sizeof(frag_path), "%sshaders/blit.frag.spv", base_path);
-
-    SDL_GPUShader* vert = CreateGPUShader(vert_path, SDL_GPU_SHADERSTAGE_VERTEX);
-    SDL_GPUShader* frag = CreateGPUShader(frag_path, SDL_GPU_SHADERSTAGE_FRAGMENT);
-
-    if (!vert || !frag)
-        return;
-
-    SDL_GPUGraphicsPipelineCreateInfo pipeline_info;
-    SDL_zero(pipeline_info);
-    pipeline_info.vertex_shader = vert;
-    pipeline_info.fragment_shader = frag;
-
-    // Attributes: Pos (vec2), UV (vec2)
-    SDL_GPUVertexAttribute attrs[2];
-    attrs[0].location = 0;
-    attrs[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
-    attrs[0].offset = 0;
-    attrs[0].buffer_slot = 0;
-
-    attrs[1].location = 1;
-    attrs[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
-    attrs[1].offset = 2 * sizeof(float);
-    attrs[1].buffer_slot = 0;
-
-    pipeline_info.vertex_input_state.vertex_attributes = attrs;
-    pipeline_info.vertex_input_state.num_vertex_attributes = 2;
-
-    SDL_GPUVertexBufferDescription bindings[1];
-    bindings[0].slot = 0;
-    bindings[0].pitch = 4 * sizeof(float);
-    bindings[0].input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
-
-    pipeline_info.vertex_input_state.vertex_buffer_descriptions = bindings;
-    pipeline_info.vertex_input_state.num_vertex_buffers = 1;
-    pipeline_info.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
-
-    SDL_GPUColorTargetDescription target_desc;
-    SDL_zero(target_desc);
-    target_desc.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, window);
-    target_desc.blend_state.enable_blend = true;
-    target_desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
-    target_desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-    target_desc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-    target_desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-    target_desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-    target_desc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
-
-    pipeline_info.target_info.color_target_descriptions = &target_desc;
-    pipeline_info.target_info.num_color_targets = 1;
-
-    s_bezel_pipeline = SDL_CreateGPUGraphicsPipeline(gpu_device, &pipeline_info);
-    SDL_ReleaseGPUShader(gpu_device, vert);
-    SDL_ReleaseGPUShader(gpu_device, frag);
-
-    // Sampler
-    SDL_GPUSamplerCreateInfo sampler_info;
-    SDL_zero(sampler_info);
-    sampler_info.min_filter = SDL_GPU_FILTER_NEAREST;
-    sampler_info.mag_filter = SDL_GPU_FILTER_NEAREST;
-    sampler_info.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
-    s_bezel_sampler = SDL_CreateGPUSampler(gpu_device, &sampler_info);
-
-    // Buffers
-    size_t buf_size = 48 * sizeof(float); // 2 quads * 6 verts * 4 floats
-
-    SDL_GPUBufferCreateInfo b_info = { .usage = SDL_GPU_BUFFERUSAGE_VERTEX, .size = buf_size };
-    s_bezel_vertex_buffer = SDL_CreateGPUBuffer(gpu_device, &b_info);
-
-    SDL_GPUTransferBufferCreateInfo tb_info = { .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD, .size = buf_size };
-    s_bezel_transfer_buffer = SDL_CreateGPUTransferBuffer(gpu_device, &tb_info);
-}
-
-static void ShutdownBezelGPU() {
-    if (s_bezel_pipeline)
-        SDL_ReleaseGPUGraphicsPipeline(gpu_device, s_bezel_pipeline);
-    if (s_bezel_sampler)
-        SDL_ReleaseGPUSampler(gpu_device, s_bezel_sampler);
-    if (s_bezel_vertex_buffer)
-        SDL_ReleaseGPUBuffer(gpu_device, s_bezel_vertex_buffer);
-    if (s_bezel_transfer_buffer)
-        SDL_ReleaseGPUTransferBuffer(gpu_device, s_bezel_transfer_buffer);
-}
 
 /** @brief Initialize SDL3, create window + GL context, compile shaders, load config. */
 int SDLApp_Init() {
@@ -485,7 +242,7 @@ int SDLApp_Init() {
         scale_mode = config_string_to_scale_mode(cfg_scale);
     }
 
-    show_debug_hud = Config_GetBool(CFG_KEY_DEBUG_HUD);
+    show_debug_hud = Config_GetBool(CFG_KEY_DEBUG_HUD); // defined in sdl_app_debug_hud.c
 
     // shader_mode_libretro = Config_GetBool(CFG_KEY_SHADER_MODE_LIBRETRO); // Moved to SDLAppShader_Init
 
@@ -711,7 +468,7 @@ int SDLApp_Init() {
 
     // Initialize bezel GPU resources
     if (g_renderer_backend == RENDERER_SDLGPU) {
-        InitBezelGPU(SDL_GetBasePath());
+        SDLAppBezel_InitGPU(SDL_GetBasePath());
         SDL_Log("Bezel GPU resources initialized.");
     }
 
@@ -758,24 +515,14 @@ int SDLApp_Init() {
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
-        // Create bezel resources
-        glGenVertexArrays(1, &bezel_vao);
-        glGenBuffers(1, &bezel_vbo);
-
-        glBindVertexArray(bezel_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, bezel_vbo);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-        glBindVertexArray(0);
+        // Create bezel resources (GL backend)
+        SDLAppBezel_InitGL();
     }
 
     // RmlUi overlay: available on ALL backends (GL, GPU, SDL2D)
     rmlui_wrapper_init(window, gl_context);
 
     // Check if user wants RmlUi mode (set via --ui rmlui CLI flag, session-only)
-    extern bool g_ui_mode_rmlui;
     use_rmlui = g_ui_mode_rmlui;
 
     // Core RmlUi components — always initialized (replay picker always uses RmlUi)
@@ -844,8 +591,6 @@ int SDLApp_Init() {
     return 0;
 }
 
-extern BroadcastConfig broadcast_config;
-
 /** @brief Shut down SDL, release shaders, destroy window. */
 void SDLApp_Quit() {
     Broadcast_Shutdown();
@@ -863,9 +608,7 @@ void SDLApp_Quit() {
     } else {
         SDLAppShader_Shutdown();
 
-        if (g_renderer_backend == RENDERER_SDLGPU) {
-            ShutdownBezelGPU();
-        }
+        SDLAppBezel_Shutdown();
 
         // Shared UI shutdown (GL + GPU)
         SDLNetplayUI_Shutdown();
@@ -876,8 +619,6 @@ void SDLApp_Quit() {
         if (g_renderer_backend == RENDERER_OPENGL) {
             glDeleteVertexArrays(1, &vao);
             glDeleteBuffers(1, &vbo);
-            glDeleteVertexArrays(1, &bezel_vao);
-            glDeleteBuffers(1, &bezel_vbo);
             glDeleteProgram(passthru_shader_program);
 
             glDeleteProgram(scene_shader_program);
@@ -905,7 +646,7 @@ void SDLApp_Quit() {
 
     // Sync vsync config
     Config_SetBool(CFG_KEY_VSYNC, vsync_enabled);
-    Config_SetBool(CFG_KEY_DEBUG_HUD, show_debug_hud);
+    Config_SetBool(CFG_KEY_DEBUG_HUD, SDLAppDebugHud_IsVisible());
 
     // Sync broadcast config
     Config_SetBool(CFG_KEY_BROADCAST_ENABLED, broadcast_config.enabled);
@@ -988,286 +729,6 @@ void SDLApp_BeginFrame() {
     }
 }
 
-static /** @brief Center an SDL_FRect within the window. */
-    void
-    center_rect(SDL_FRect* rect, int win_w, int win_h) {
-    rect->x = (win_w - rect->w) / 2;
-    rect->y = (win_h - rect->h) / 2;
-}
-
-static /** @brief Compute the largest 4:3 rectangle that fits the window (letterboxed). */
-    SDL_FRect
-    fit_4_by_3_rect(int win_w, int win_h) {
-    SDL_FRect rect;
-    rect.w = win_w;
-    rect.h = win_w / display_target_ratio;
-
-    if (rect.h > win_h) {
-        rect.h = win_h;
-        rect.w = win_h * display_target_ratio;
-    }
-
-    center_rect(&rect, win_w, win_h);
-    return rect;
-}
-
-static /** @brief Compute the largest integer-scaled rectangle for pixel-perfect display. */
-    SDL_FRect
-    fit_integer_rect(int win_w, int win_h, int pixel_w, int pixel_h) {
-    SDL_FRect rect;
-
-    // Try pixel-ratio-aware integer scale first (true pixel-perfect at target ratio)
-    int scale_w = win_w / (384 * pixel_w);
-    int scale_h = win_h / (224 * pixel_h);
-    int scale = (scale_h < scale_w) ? scale_h : scale_w;
-
-    if (scale >= 1) {
-        // Pixel-perfect at the target pixel ratio
-        rect.w = (float)(scale * 384 * pixel_w);
-        rect.h = (float)(scale * 224 * pixel_h);
-    } else {
-        // Window too small for full pixel-ratio scaling.
-        // Fall back to integer-scaling the base 384x224 resolution,
-        // then apply the pixel aspect ratio via the output rect dimensions.
-        scale_w = win_w / 384;
-        scale_h = win_h / 224;
-        scale = (scale_h < scale_w) ? scale_h : scale_w;
-        if (scale < 1)
-            scale = 1;
-
-        int base_w = scale * 384;
-        int base_h = scale * 224;
-
-        // Apply pixel aspect ratio and fit within window
-        float aspect = (float)(base_w * pixel_w) / (float)(base_h * pixel_h);
-        if ((float)base_w / (float)win_w > (float)base_h / (float)win_h) {
-            // Width-constrained
-            rect.w = (float)base_w;
-            rect.h = (float)base_w / aspect;
-        } else {
-            // Height-constrained
-            rect.h = (float)base_h;
-            rect.w = (float)base_h * aspect;
-        }
-
-        // Clamp to window bounds
-        if (rect.w > win_w) {
-            float s = (float)win_w / rect.w;
-            rect.w = (float)win_w;
-            rect.h *= s;
-        }
-        if (rect.h > win_h) {
-            float s = (float)win_h / rect.h;
-            rect.h = (float)win_h;
-            rect.w *= s;
-        }
-    }
-
-    center_rect(&rect, win_w, win_h);
-    return rect;
-}
-
-/** @brief Get the current letterbox/viewport rectangle based on scale mode. */
-SDL_FRect get_letterbox_rect(int win_w, int win_h) {
-    // ⚡ Return cached result if inputs haven't changed
-    if (win_w == cached_lb_win_w && win_h == cached_lb_win_h && scale_mode == cached_lb_scale_mode) {
-        return cached_letterbox_rect;
-    }
-
-    SDL_FRect result;
-    switch (scale_mode) {
-    case SCALEMODE_NEAREST:
-    case SCALEMODE_LINEAR:
-    case SCALEMODE_SOFT_LINEAR:
-        result = fit_4_by_3_rect(win_w, win_h);
-        break;
-
-    case SCALEMODE_INTEGER:
-        // In order to scale a 384x224 buffer to 4:3 we need to stretch the image vertically by 9 / 7
-        result = fit_integer_rect(win_w, win_h, 7, 9);
-        break;
-
-    case SCALEMODE_PIXEL_ART:
-        result = fit_4_by_3_rect(win_w, win_h);
-        break;
-
-    case SCALEMODE_SQUARE_PIXELS:
-        result = fit_integer_rect(win_w, win_h, 1, 1);
-        break;
-
-    case SCALEMODE_COUNT:
-    default:
-        result = fit_4_by_3_rect(win_w, win_h);
-        break;
-    }
-
-    // Update cache
-    cached_lb_win_w = win_w;
-    cached_lb_win_h = win_h;
-    cached_lb_scale_mode = scale_mode;
-    cached_letterbox_rect = result;
-    return result;
-}
-
-/** @brief Record the current time for FPS calculation. */
-void note_frame_end_time() {
-    frame_end_times[frame_end_times_index] = SDL_GetTicksNS();
-    frame_end_times_index += 1;
-    frame_end_times_index %= FRAME_END_TIMES_MAX;
-
-    if (frame_end_times_index == 0) {
-        frame_end_times_filled = true;
-    }
-}
-
-static /** @brief Compute and display FPS from the rolling frame-time buffer. */
-    void
-    update_fps() {
-    if (!frame_end_times_filled) {
-        return;
-    }
-
-    double total_frame_time_ms = 0;
-
-    for (int i = 0; i < FRAME_END_TIMES_MAX - 1; i++) {
-        const int cur = (frame_end_times_index + i) % FRAME_END_TIMES_MAX;
-        const int next = (cur + 1) % FRAME_END_TIMES_MAX;
-        total_frame_time_ms += (double)(frame_end_times[next] - frame_end_times[cur]) / 1e6;
-    }
-
-    double average_frame_time_ms = total_frame_time_ms / (FRAME_END_TIMES_MAX - 1);
-    fps = 1000 / average_frame_time_ms;
-
-    // Push into FPS history (grows dynamically)
-    if (fps_history_count >= fps_history_capacity) {
-        fps_history_capacity = fps_history_capacity ? fps_history_capacity * 2 : 1024;
-        fps_history = (float*)realloc(fps_history, fps_history_capacity * sizeof(float));
-    }
-    fps_history[fps_history_count++] = (float)fps;
-}
-
-static /** @brief Capture the current framebuffer to a PNG file. */
-    void
-    save_screenshot(const char* filename) {
-    int w, h;
-    SDL_GetWindowSize(window, &w, &h);
-    SDL_Surface* surface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGB24);
-    glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, surface->pixels);
-    SDL_SaveBMP(surface, filename);
-    SDL_DestroySurface(surface);
-}
-
-// ⚡ Bolt: Pre-build NDC vertex data for a bezel quad into a caller-provided array.
-// This separates vertex computation from GL upload so both bezels can be batched
-// into a single VBO upload when the layout changes (resize/character switch).
-static /** @brief Build NDC vertices for a bezel quad from an SDL_FRect. */
-    void
-    build_bezel_vertices(const SDL_FRect* rect, int win_w, int win_h, float* out) {
-    if (rect->w <= 0 || rect->h <= 0) {
-        memset(out, 0, 6 * 4 * sizeof(float));
-        return;
-    }
-
-    // Convert to NDC
-    float x1 = (rect->x / win_w) * 2.0f - 1.0f;
-    float y1 = 1.0f - (rect->y / win_h) * 2.0f;
-    float x2 = ((rect->x + rect->w) / win_w) * 2.0f - 1.0f;
-    float y2 = 1.0f - ((rect->y + rect->h) / win_h) * 2.0f;
-
-    // Triangle 1
-    out[0] = x1;
-    out[1] = y1;
-    out[2] = 0.0f;
-    out[3] = 0.0f;
-    out[4] = x1;
-    out[5] = y2;
-    out[6] = 0.0f;
-    out[7] = 1.0f;
-    out[8] = x2;
-    out[9] = y2;
-    out[10] = 1.0f;
-    out[11] = 1.0f;
-    // Triangle 2
-    out[12] = x1;
-    out[13] = y1;
-    out[14] = 0.0f;
-    out[15] = 0.0f;
-    out[16] = x2;
-    out[17] = y2;
-    out[18] = 1.0f;
-    out[19] = 1.0f;
-    out[20] = x2;
-    out[21] = y1;
-    out[22] = 1.0f;
-    out[23] = 0.0f;
-}
-
-/** @brief Draw a single bezel quad using the passthrough shader.
- *  @param texture       Opaque texture handle (cast to GLuint internally).
- *  @param vertex_offset First vertex index in the bezel VAO (0 = left, 6 = right). */
-static void draw_bezel_quad(void* texture, int vertex_offset) {
-    GLuint tex = (GLuint)(intptr_t)texture;
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glUniform1i(s_pt_loc_source, 0);
-
-    int tw = 0, th = 0;
-    TextureUtil_GetSize(texture, &tw, &th);
-    glUniform4f(
-        s_pt_loc_source_size, (float)tw, (float)th, tw > 0 ? 1.0f / (float)tw : 0.0f, th > 0 ? 1.0f / (float)th : 0.0f);
-
-    glDrawArrays(GL_TRIANGLES, vertex_offset, 6);
-}
-
-/** @brief Render the debug HUD text overlay (FPS, shader mode, scale mode).
- *  @param win_w    Window width in pixels.
- *  @param win_h    Window height in pixels.
- *  @param viewport Letterboxed viewport rect for positioning. */
-static void render_debug_hud(int win_w, int win_h, const SDL_FRect* viewport) {
-    char debug_text[512];
-    char fps_text[64];
-    char mode_text[128];
-    char shader_text[128];
-
-    snprintf(fps_text, sizeof(fps_text), "FPS: %.2f%s", fps, frame_rate_uncapped ? " UNCAPPED [F5]" : "");
-
-    if (SDLAppShader_IsLibretroMode()) {
-        if (SDLAppShader_GetAvailableCount() > 0) {
-            snprintf(mode_text,
-                     sizeof(mode_text),
-                     "Preset: %s [F9]",
-                     SDLAppShader_GetPresetName(SDLAppShader_GetCurrentIndex()));
-        } else {
-            snprintf(mode_text, sizeof(mode_text), "Preset: None found");
-        }
-    } else {
-        snprintf(mode_text,
-                 sizeof(mode_text),
-                 "Scale: %s [F8]%s",
-                 scale_mode_name(),
-                 BezelSystem_IsVisible() ? " (Bezels On)" : "");
-    }
-
-    snprintf(shader_text,
-             sizeof(shader_text),
-             "Shader Mode: %s [F4]",
-             SDLAppShader_IsLibretroMode() ? "Libretro" : "Internal");
-
-    snprintf(debug_text, sizeof(debug_text), "%s | %s | %s", fps_text, shader_text, mode_text);
-
-    float overlay_scale = ((float)win_h / 480.0f) * 0.8f;
-    float base_x = viewport->x + (10.0f * overlay_scale);
-    float base_y = 0.0f;
-
-    SDLTextRenderer_SetBackgroundEnabled(1);
-    SDLTextRenderer_SetBackgroundColor(0.0f, 0.0f, 0.0f, 0.5f);
-
-    SDLTextRenderer_DrawText(debug_text, base_x + 1, base_y + 1, overlay_scale, 0.0f, 0.0f, 0.0f, win_w, win_h);
-    SDLTextRenderer_DrawText(debug_text, base_x, base_y, overlay_scale, 1.0f, 1.0f, 1.0f, win_w, win_h);
-
-    SDLTextRenderer_SetBackgroundEnabled(0);
-}
-
 /** @brief Dispatch menu/overlay rendering and flush the UI framework (RmlUi).
  *  Handles input/frame display updates, all menu overlays, netplay UI, and the
  *  final rmlui_wrapper_render() flush.
@@ -1293,7 +754,9 @@ static void render_overlays(int win_w, int win_h) {
         rmlui_training_menu_update();
 
     /* Netplay overlay — SDLNetplayUI_Render is not initialized on SDL2D */
-    SDLNetplayUI_SetFPSHistory(fps_history, fps_history_count, (float)fps);
+    int hud_fps_count = 0;
+    const float* hud_fps_history = SDLAppDebugHud_GetFPSHistory(&hud_fps_count);
+    SDLNetplayUI_SetFPSHistory(hud_fps_history, hud_fps_count, (float)SDLAppDebugHud_GetFPS());
     if (!is_sdl2d_backend(g_renderer_backend)) {
         SDLNetplayUI_Render(win_w, win_h);
     }
@@ -1369,29 +832,7 @@ void SDLApp_EndFrame() {
         SDL_RenderTexture(sdl_renderer, canvas, NULL, &dst_rect);
 
         // Bezel rendering (SDL2D)
-        if (BezelSystem_IsVisible()) {
-            int p1 = My_char[0];
-            int p2 = My_char[1];
-            if (!(G_No[0] == 2 && G_No[1] >= 2)) {
-                p1 = -1;
-                p2 = -1;
-            }
-            if (p1 != last_p1_char || p2 != last_p2_char) {
-                last_p1_char = p1;
-                last_p2_char = p2;
-                BezelSystem_SetCharacters(last_p1_char, last_p2_char);
-            }
-
-            BezelTextures bezels;
-            BezelSystem_GetTextures(&bezels);
-            SDL_FRect left_dst, right_dst;
-            BezelSystem_CalculateLayout(win_w, win_h, &dst_rect, &left_dst, &right_dst);
-
-            if (bezels.left)
-                SDL_RenderTexture(sdl_renderer, (SDL_Texture*)bezels.left, NULL, &left_dst);
-            if (bezels.right)
-                SDL_RenderTexture(sdl_renderer, (SDL_Texture*)bezels.right, NULL, &right_dst);
-        }
+        SDLAppBezel_RenderSDL2D(sdl_renderer, win_w, win_h, &dst_rect);
 
         // Render RmlUi game context at window resolution (Phase 3 game screens)
         rmlui_wrapper_update_game();
@@ -1399,26 +840,8 @@ void SDLApp_EndFrame() {
 
         // Debug text
         SDLTextRenderer_DrawDebugBuffer((float)win_w, (float)win_h);
-        if (show_debug_hud) {
-            char debug_text[64];
-            snprintf(debug_text, sizeof(debug_text), "FPS: %.2f", fps);
-            float overlay_scale = (float)win_h / 480.0f;
-            float base_x = dst_rect.x + (10.0f * overlay_scale);
-            float base_y = dst_rect.y + (2.0f * overlay_scale);
-
-            // ⚡ 4-direction shadow (cardinal only) — reduced from 8 to save draw calls
-            SDLTextRenderer_DrawText(
-                debug_text, base_x, base_y - 1, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
-            SDLTextRenderer_DrawText(
-                debug_text, base_x - 1, base_y, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
-            SDLTextRenderer_DrawText(
-                debug_text, base_x + 1, base_y, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
-            SDLTextRenderer_DrawText(
-                debug_text, base_x, base_y + 1, overlay_scale, 0.0f, 0.0f, 0.0f, (float)win_w, (float)win_h);
-
-            SDLTextRenderer_DrawText(
-                debug_text, base_x, base_y, overlay_scale, 1.0f, 1.0f, 1.0f, (float)win_w, (float)win_h);
-            SDLTextRenderer_Flush();
+        if (SDLAppDebugHud_IsVisible()) {
+            SDLAppDebugHud_RenderSDL2D(win_w, win_h, &dst_rect);
         }
 
         // Render overlays (menus, netplay, UI flush)
@@ -1461,8 +884,8 @@ void SDLApp_EndFrame() {
         TRACE_SUB_END();
 
         frame_counter += 1;
-        note_frame_end_time();
-        update_fps();
+        SDLAppDebugHud_NoteFrameEnd();
+        SDLAppDebugHud_UpdateFPS();
         SDLPad_UpdatePreviousState();
         TRACE_ZONE_END();
         return;
@@ -1588,91 +1011,8 @@ void SDLApp_EndFrame() {
         SDLTextRenderer_DrawDebugBuffer((float)win_w, (float)win_h);
 #endif
 
-        // Bezel Rendering
-        if (BezelSystem_IsVisible()) {
-            int p1 = My_char[0];
-            int p2 = My_char[1];
-
-            if (!(G_No[0] == 2 && G_No[1] >= 2)) {
-                p1 = -1;
-                p2 = -1;
-            }
-
-            if (p1 != last_p1_char || p2 != last_p2_char) {
-                last_p1_char = p1;
-                last_p2_char = p2;
-                BezelSystem_SetCharacters(last_p1_char, last_p2_char);
-                bezel_vbo_dirty = true;
-            }
-
-            static SDL_FRect cached_left = { 0 }, cached_right = { 0 };
-            static BezelTextures cached_bezels = { 0 };
-            static float bezel_vertex_data[2 * 6 * 4] = { 0 };
-
-            if (bezel_vbo_dirty) {
-                const SDL_FRect viewport = get_letterbox_rect(win_w, win_h);
-                BezelSystem_CalculateLayout(win_w, win_h, &viewport, &cached_left, &cached_right);
-                BezelSystem_GetTextures(&cached_bezels);
-
-                build_bezel_vertices(&cached_left, win_w, win_h, &bezel_vertex_data[0]);
-                build_bezel_vertices(&cached_right, win_w, win_h, &bezel_vertex_data[24]);
-
-                // Upload to GPU
-                void* ptr = SDL_MapGPUTransferBuffer(gpu_device, s_bezel_transfer_buffer, true);
-                if (ptr) {
-                    memcpy(ptr, bezel_vertex_data, sizeof(bezel_vertex_data));
-                    SDL_UnmapGPUTransferBuffer(gpu_device, s_bezel_transfer_buffer);
-
-                    SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
-                    if (cb) {
-                        SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
-                        SDL_GPUTransferBufferLocation src = { .transfer_buffer = s_bezel_transfer_buffer, .offset = 0 };
-                        SDL_GPUBufferRegion dst = { .buffer = s_bezel_vertex_buffer,
-                                                    .offset = 0,
-                                                    .size = sizeof(bezel_vertex_data) };
-                        SDL_UploadToGPUBuffer(cp, &src, &dst, false);
-                        SDL_EndGPUCopyPass(cp);
-                    }
-                }
-                bezel_vbo_dirty = false;
-            }
-
-            SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
-            if (cb && s_bezel_pipeline) {
-                SDL_GPUTexture* swapchain = SDLGameRendererGPU_GetSwapchainTexture();
-                if (swapchain) {
-                    SDL_GPUColorTargetInfo target;
-                    SDL_zero(target);
-                    target.texture = swapchain;
-                    target.load_op = SDL_GPU_LOADOP_LOAD;
-                    target.store_op = SDL_GPU_STOREOP_STORE;
-
-                    SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(cb, &target, 1, NULL);
-                    if (pass) {
-                        SDL_BindGPUGraphicsPipeline(pass, s_bezel_pipeline);
-
-                        SDL_GPUBufferBinding vb = { .buffer = s_bezel_vertex_buffer, .offset = 0 };
-                        SDL_BindGPUVertexBuffers(pass, 0, &vb, 1);
-
-                        // Draw Left
-                        if (cached_bezels.left) {
-                            SDL_GPUTextureSamplerBinding tb = { .texture = (SDL_GPUTexture*)cached_bezels.left,
-                                                                .sampler = s_bezel_sampler };
-                            SDL_BindGPUFragmentSamplers(pass, 0, &tb, 1);
-                            SDL_DrawGPUPrimitives(pass, 6, 1, 0, 0);
-                        }
-                        // Draw Right
-                        if (cached_bezels.right) {
-                            SDL_GPUTextureSamplerBinding tb = { .texture = (SDL_GPUTexture*)cached_bezels.right,
-                                                                .sampler = s_bezel_sampler };
-                            SDL_BindGPUFragmentSamplers(pass, 0, &tb, 1);
-                            SDL_DrawGPUPrimitives(pass, 6, 1, 6, 0);
-                        }
-                        SDL_EndGPURenderPass(pass);
-                    }
-                }
-            }
-        }
+        // Bezel Rendering (GPU)
+        SDLAppBezel_RenderGPU(win_w, win_h);
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
         {
             const SDL_FRect gp_vp = get_letterbox_rect(win_w, win_h);
@@ -1681,9 +1021,9 @@ void SDLApp_EndFrame() {
 
         // Render overlays (menus, netplay, UI flush)
         render_overlays(win_w, win_h);
-        if (show_debug_hud) {
+        if (SDLAppDebugHud_IsVisible()) {
             const SDL_FRect viewport = get_letterbox_rect(win_w, win_h);
-            render_debug_hud(win_w, win_h, &viewport);
+            SDLAppDebugHud_Render(win_w, win_h, &viewport);
         }
 
         // Flush Text Renderer (draws buffered text)
@@ -1923,62 +1263,7 @@ void SDLApp_EndFrame() {
         TRACE_SUB_END();
 
         // Bezel Rendering (OpenGL)
-        if (BezelSystem_IsVisible()) {
-            int p1 = My_char[0];
-            int p2 = My_char[1];
-
-            if (!(G_No[0] == 2 && G_No[1] >= 2)) {
-                p1 = -1;
-                p2 = -1;
-            }
-
-            if (p1 != last_p1_char || p2 != last_p2_char) {
-                last_p1_char = p1;
-                last_p2_char = p2;
-                BezelSystem_SetCharacters(last_p1_char, last_p2_char);
-                bezel_vbo_dirty = true;
-            }
-
-            static SDL_FRect cached_left = { 0 }, cached_right = { 0 };
-            static BezelTextures cached_bezels = { 0 };
-            static float bezel_vertex_data[2 * 6 * 4] = { 0 };
-
-            if (bezel_vbo_dirty) {
-                BezelSystem_CalculateLayout(win_w, win_h, &viewport, &cached_left, &cached_right);
-                BezelSystem_GetTextures(&cached_bezels);
-
-                build_bezel_vertices(&cached_left, win_w, win_h, &bezel_vertex_data[0]);
-                build_bezel_vertices(&cached_right, win_w, win_h, &bezel_vertex_data[24]);
-
-                glBindBuffer(GL_ARRAY_BUFFER, bezel_vbo);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(bezel_vertex_data), bezel_vertex_data, GL_DYNAMIC_DRAW);
-                bezel_vbo_dirty = false;
-            }
-
-            if (cached_bezels.left || cached_bezels.right) {
-                // Reset viewport to full window for NDC-based bezel quads
-                glViewport(0, 0, win_w, win_h);
-
-                glUseProgram(passthru_shader_program);
-                glUniformMatrix4fv(s_pt_loc_projection, 1, GL_FALSE, (const float*)identity);
-                glUniform1i(s_pt_loc_filter_type, 0); // nearest for bezels
-
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-                glBindVertexArray(bezel_vao);
-
-                // Draw Left
-                if (cached_bezels.left)
-                    draw_bezel_quad(cached_bezels.left, 0);
-                // Draw Right
-                if (cached_bezels.right)
-                    draw_bezel_quad(cached_bezels.right, 6);
-
-                glDisable(GL_BLEND);
-                glBindVertexArray(0);
-            }
-        }
+        SDLAppBezel_RenderGL(win_w, win_h, &viewport, passthru_shader_program, (const float*)identity);
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
         {
             // Reset GL state to clean baseline before RmlUi rendering
@@ -2005,8 +1290,8 @@ void SDLApp_EndFrame() {
             SDLTextRenderer_DrawDebugBuffer((float)win_w, (float)win_h);
         }
 
-        if (show_debug_hud) {
-            render_debug_hud(win_w, win_h, &viewport);
+        if (SDLAppDebugHud_IsVisible()) {
+            SDLAppDebugHud_Render(win_w, win_h, &viewport);
         }
 
         // Render overlays (menus, netplay, UI flush)
@@ -2066,10 +1351,7 @@ void SDLApp_EndFrame() {
         ADX_ProcessTracks();
     }
 
-    if (should_save_screenshot) {
-        save_screenshot("screenshot.bmp");
-        should_save_screenshot = false;
-    }
+    SDLAppScreenshot_ProcessPending();
 
     // Handle cursor hiding
     hide_cursor_if_needed();
@@ -2113,8 +1395,8 @@ void SDLApp_EndFrame() {
 
     // Measure
     frame_counter += 1;
-    note_frame_end_time();
-    update_fps();
+    SDLAppDebugHud_NoteFrameEnd();
+    SDLAppDebugHud_UpdateFPS();
     SDLPad_UpdatePreviousState();
     TRACE_ZONE_END();
 }
@@ -2266,10 +1548,14 @@ void SDLApp_CloseAllMenus() {
     rmlui_wrapper_hide_document("dev_overlay");
 }
 
-/** @brief Public wrapper for cycle_scale_mode() — needed because the static
- *  helper accesses file-scoped state (scale_mode, bezel_vbo_dirty). */
+/** @brief Public wrapper for cycle_scale_mode(). */
 void SDLApp_CycleScaleMode() {
     cycle_scale_mode();
+}
+
+/** @brief Mark the bezel VBO as dirty so it gets re-uploaded next frame. */
+void SDLApp_MarkBezelDirty() {
+    SDLAppBezel_MarkDirty();
 }
 
 void SDLApp_ToggleFullscreen() {
@@ -2309,7 +1595,7 @@ void SDLApp_HandleMouseMotion() {
 }
 
 void SDLApp_SaveScreenshot() {
-    should_save_screenshot = true;
+    SDLAppScreenshot_RequestCapture();
 }
 
 void SDLApp_ToggleBezel() {
@@ -2320,7 +1606,7 @@ void SDLApp_ToggleBezel() {
 }
 
 void SDLApp_HandleWindowResize(int w, int h) {
-    bezel_vbo_dirty = true; // ⚡ Bolt: Force bezel VBO re-upload
+    SDLAppBezel_MarkDirty(); // Force bezel VBO re-upload
 
     // Check fullscreen using SDL3 API directly if needed, or rely on window
     // SDL_GetWindowFlags(window) should work
@@ -2417,7 +1703,5 @@ void SDLApp_ClearLibrashaderIntermediate() {
 }
 
 void SDLApp_ToggleDebugHUD() {
-    show_debug_hud = !show_debug_hud;
-    Config_SetBool(CFG_KEY_DEBUG_HUD, show_debug_hud);
-    SDL_Log("Debug HUD %s", show_debug_hud ? "ON" : "OFF");
+    SDLAppDebugHud_Toggle();
 }

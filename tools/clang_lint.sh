@@ -21,9 +21,13 @@ fi
 
 echo "[CLANG-TIDY] Static Analysis"
 if [ -f build/compile_commands.json ]; then
-    find src -type d -name 'zlib' -prune -o -type f \( -name '*.c' -o -name '*.cpp' \) -exec clang-tidy -p build {} + || CLANG_TIDY_ISSUES=1
+    # Only lint port-layer and netplay code — legacy game code is out of scope.
+    # Exclude platform dirs not buildable on the current host (linux/, macos/).
+    find src/port src/netplay -type f \( -name '*.c' -o -name '*.cpp' \) \
+        -not -path '*/linux/*' -not -path '*/macos/*' \
+        | xargs clang-tidy -p build --quiet 2>&1 || CLANG_TIDY_ISSUES=1
 else
-    echo "No compile_commands.json, skipping advanced clang-tidy! Build first."
+    echo "No compile_commands.json found. Run cmake configure first (CMAKE_EXPORT_COMPILE_COMMANDS is ON)."
 fi
 
 if [ $CLANG_TIDY_ISSUES -ne 0 ]; then

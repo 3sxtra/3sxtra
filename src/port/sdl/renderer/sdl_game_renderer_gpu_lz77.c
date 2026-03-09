@@ -4,6 +4,7 @@
  */
 
 #include "port/sdl/renderer/sdl_game_renderer_gpu_lz77.h"
+#include "sf33rd/Source/Common/PPGFile.h"
 #include <SDL3_shadercross/SDL_shadercross.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -180,7 +181,7 @@ void LZ77_Upload(LZ77Context* ctx, SDL_GPUDevice* device, SDL_GPUCopyPass* copy_
 
         // One-time upload of dctex_linear swizzle LUT
         if (!ctx->swizzle_uploaded) {
-            extern Sint16* dctex_linear;
+
             SDL_GPUTransferBufferCreateInfo swiz_tb_info = { .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
                                                              .size = LZ77_SWIZZLE_SIZE };
             SDL_GPUTransferBuffer* swiz_tb = SDL_CreateGPUTransferBuffer(device, &swiz_tb_info);

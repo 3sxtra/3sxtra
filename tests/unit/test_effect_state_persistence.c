@@ -10,25 +10,7 @@
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "gekkonet.h"
 
-// Re-declare internal types from netplay.c since they are not exposed in headers
-typedef struct EffectState {
-    s16 frwctr;
-    s16 frwctr_min;
-    s16 head_ix[8];
-    s16 tail_ix[8];
-    s16 exec_tm[8];
-    uintptr_t frw[EFFECT_MAX][448];
-    s16 frwque[EFFECT_MAX];
-} EffectState;
-
-typedef struct State {
-    GameState gs;
-    EffectState es;
-} State;
-
-// Externs for functions made non-static
-void save_state(const GekkoGameEvent* event);
-void load_state_from_event(const GekkoGameEvent* event);
+// EffectState, State, save_state, load_state_from_event are now declared in game_state.h
 
 static void test_effect_persistence(void **state) {
     (void) state;
@@ -45,7 +27,7 @@ static void test_effect_persistence(void **state) {
     // Initialize storage to 0 to avoid garbage
     memset(&saved_state_storage, 0, sizeof(State));
     
-    size_t len = sizeof(State);
+    unsigned int len = sizeof(State);
     uint32_t checksum = 0;
 
     event.type = GekkoSaveEvent;

@@ -77,3 +77,9 @@ void Renderer_Flush2DPrimitives() {}
 void SDLGameRenderer_ResetBatchState() {}
 u16 Remap_Buttons(u16 inputs, const void* pad_infor) { return inputs; }
 void Soft_Reset_Sub() {}
+
+// save_state/load_state_from_event moved to game_state.c but netplay.c calls them.
+// Netplay tests don't link game_state.c, so we provide no-op stubs here.
+#include "gekkonet.h"
+void save_state(const GekkoGameEvent* event) { (void)event; }
+void load_state_from_event(const GekkoGameEvent* event) { (void)event; }

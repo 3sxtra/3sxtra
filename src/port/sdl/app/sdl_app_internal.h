@@ -30,6 +30,9 @@ void SDLApp_HandleWindowMove(int x, int y);
 // Internal state accessors if needed
 bool SDLApp_IsMenuVisible();
 
+// Bezel VBO re-upload notification (used by scale module)
+void SDLApp_MarkBezelDirty();
+
 // GPU Resource Management Hooks
 void SDLApp_ClearLibrashaderIntermediate();
 

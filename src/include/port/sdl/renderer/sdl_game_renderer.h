@@ -63,6 +63,9 @@ void SDLGameRenderer_FlushSprite2Batch(Sprite2* chips, const unsigned char* acti
 // Used by ImGui to render game textures. Returns 0 if not found/invalid.
 unsigned int SDLGameRenderer_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);
 
+// Reset texture batch state between sub-frames (used by netplay rollback).
+void SDLGameRenderer_ResetBatchState(void);
+
 // Dumps all currently loaded textures to textures/*.tga
 void SDLGameRenderer_DumpTextures(void);
 

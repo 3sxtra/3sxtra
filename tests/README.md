@@ -33,7 +33,7 @@ This directory contains unit tests for the 3SX engine, utilizing the [CMocka](ht
 | `test_trials.c` | `trials.c` | Trials mode logic |
 | `test_radix_sort.c` | *(inline)* | Radix sort algorithm |
 | `test_charset_poc.c` | `charset.c` | Character-set proof of concept |
-| `test_imgui_font.c` | ImGui font subsystem | ImGui font loading |
+
 | `test_state_differ.c` | `state_differ.c` | State diff / desync detection |
 | `test_effect_state_persistence.c` | effect state | Effect state save/restore |
 | `test_legacy_matrix.c` | `port/rendering/legacy_matrix.c` | Matrix identity, scale, translate, calcPoint, get/set round-trip |

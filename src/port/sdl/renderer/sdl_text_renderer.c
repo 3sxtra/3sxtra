@@ -9,6 +9,8 @@
 #include "port/sdl/renderer/sdl_text_renderer.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_text_renderer_internal.h"
+#include "sf33rd/AcrSDK/ps2/flps2etc.h"
+#include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "types.h"
 
 void SDLTextRenderer_Init(const char* base_path, const char* font_path) {
@@ -102,12 +104,6 @@ void SDLTextRenderer_SetBackgroundPadding(float px) {
 
 void SDLTextRenderer_DrawDebugBuffer(float target_width, float target_height) {
 #if defined(DEBUG)
-    // Import globals from PS2 debug system
-    extern u32 flDebugStrHan;
-    extern u32 flDebugStrCtr;
-
-    // Forward declaration for the buffer accessor
-    extern void* flPS2GetSystemBuffAdrs(unsigned int handle);
 
     if (flDebugStrCtr == 0) {
         return;

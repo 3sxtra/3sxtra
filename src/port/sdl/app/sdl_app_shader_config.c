@@ -22,8 +22,7 @@ static int available_preset_count = 0;
 static int current_preset_index = 0;
 static int s_pending_preset_index = -1;
 static bool shader_mode_libretro = false;
-static char* g_base_path =
-    NULL;
+static char* g_base_path = NULL;
 static bool s_shader_initialized = false;
 
 // Recursive scanner helper

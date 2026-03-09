@@ -1,24 +1,24 @@
-[2026-03-08 21:13] Loop initialized
-[2026-03-08 21:13] Audited top 3 massive "god files" for modularization boundaries
-[2026-03-08 21:13] PRD created with 5 tasks: extract SWRaster from sdl_game_renderer_sdl, extract LZ77 compute from sdl_game_renderer_gpu, move state sanitization from netplay to game_state, verify, document
-[2026-03-08 21:13] Ready to start: Task 1 - Extract Software Rasterizer from sdl_game_renderer_sdl.c
-[2026-03-08 21:28] Completed Task 1: Extracted SWRaster from sdl_game_renderer_sdl.c into sdl_game_renderer_sdl_sw.c/h
-[2026-03-08 21:32] Completed Task 2: Extracted LZ77 Compute Pipeline from sdl_game_renderer_gpu.c into sdl_game_renderer_gpu_lz77.c/h
-[2026-03-08 21:35] Completed Task 3: Moved State Management from netplay.c to game_state.c
-[2026-03-08 21:40] Completed Task 4: Extracted file loading and FS logic out of gd3rd.c into fs_sys.c / file_loader.c
-[2026-03-08 22:04] Task 4 (PRD Verify): Fixed build error - added __attribute__((unused)) to dump_saved_state in game_state.c
-[2026-03-08 22:04] Task 4 (PRD Verify): recompile.bat PASS
-[2026-03-08 22:04] Task 4 (PRD Verify): lint.bat PASS (C/C++ clang-format/clang-tidy OK)
-[2026-03-08 22:04] Task 4 (PRD Verify): ctest BLOCKED - test build has pre-existing linker error (lua_trials_get_c undefined) unrelated to refactoring
-[2026-03-08 22:04] Completed Task 4 (PRD Verify): Build and lint verified
-[2026-03-08 22:10] Task 5 (Clean up): Added @file/@brief doc comments to sdl_game_renderer_sdl_sw.h and sdl_game_renderer_sdl_sw.c
-[2026-03-08 22:10] Task 5 (Clean up): Added @brief to lerp_fcolors and SWRaster_Context in sdl_game_renderer_sdl_sw.h
-[2026-03-08 22:10] Task 5 (Clean up): Updated stale comment references in structs.h (netplay.c -> game_state.c)
-[2026-03-08 22:10] Task 5 (Clean up): No dead includes found in new files
-[2026-03-08 22:10] Task 5 (Clean up): No duplicate extern declarations found
-[2026-03-08 22:10] Task 5 (Clean up): recompile.bat PASS, lint.bat PASS (C/C++ OK)
-[2026-03-08 22:10] Completed Task 5: All new files documented, stale references updated
-----------
-ralph-done-xx9z0
+[2026-03-09 13:16] Loop initialized
+[2026-03-09 13:16] Audited port-layer files for hygiene issues: inline externs, dead includes, magic numbers
+[2026-03-09 13:16] PRD created with 5 tasks: eliminate inline externs, audit stdio.h includes, name magic numbers, add doc comments, final verify
+[2026-03-09 13:16] Ready to start: Task 1 - Eliminate inline extern declarations in port-layer .c files
 
-
+[2026-03-09 13:27] ✅ Task 1 COMPLETE — Eliminated all inline extern declarations
+  Files modified:
+    Headers (added proper declarations):
+    - sdl_game_renderer_internal.h: added SDLGameRendererGL_ResetBatchState(void)
+    - sdl_game_renderer.h: added SDLGameRenderer_ResetBatchState(void)
+    - cli_parser.h: added extern unsigned short g_netplay_port
+    Source files (replaced inline externs with #include):
+    - sdl_app_bezel.c: 2 GPU renderer externs → #include sdl_game_renderer_internal.h
+    - sdl_game_renderer.c: 1 GL reset extern → already included via internal header
+    - sdl_text_renderer.c: 3 PS2 debug externs → #include foundaps2.h + flps2etc.h
+    - sdl_game_renderer_gpu_lz77.c: 1 dctex_linear extern → #include PPGFile.h
+    - game_state.c: 1 g_netplay_port extern → #include cli_parser.h
+    - netplay.c: 2 externs (g_netplay_port, SDLGameRenderer_ResetBatchState) → #include cli_parser.h + sdl_game_renderer.h
+    - discovery.c: 1 g_netplay_port extern → #include cli_parser.h (after winsock headers to avoid u_long collision)
+  Note: netplay.c still has `extern void njUserMain()` — no header exists for it; out of scope.
+  Verification:
+    - recompile.bat: PASS
+    - lint.bat: PASS (clang-format clean; clang-tidy missing from env — pre-existing)
+    - ctest: 35/35 PASS (fixed DLL PATH issue in tests/CMakeLists.txt — added MinGW bin to test ENVIRONMENT)

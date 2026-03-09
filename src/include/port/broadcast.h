@@ -34,6 +34,9 @@ typedef struct BroadcastPort {
     void (*UpdateConfig)(const BroadcastConfig* config);
 } BroadcastPort;
 
+/** @brief Global broadcast configuration (defined in game_globals.c). */
+extern BroadcastConfig broadcast_config;
+
 // Public API
 void Broadcast_Initialize(void);
 void Broadcast_Shutdown(void);

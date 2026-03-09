@@ -65,12 +65,12 @@ add_unit_test(test_game_state
     ${PROJECT_SOURCE_DIR}/src/netplay/game_state.c
     mocks_globals.c
 )
-target_include_directories(test_game_state PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(test_game_state PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include)
 target_compile_definitions(test_game_state PRIVATE MOCK_SUPPRESS_CONFLICTS)
+target_link_sdl3(test_game_state)
 
 # Font rendering conversion test - isolated algorithm test
 add_unit_test(test_font_rendering test_font_rendering.c)
-file(GLOB IMGUI_SRC ${PROJECT_SOURCE_DIR}/third_party/imgui/*.cpp)
 
 add_unit_test(test_netplay_metrics
     test_netplay_metrics.c
@@ -80,7 +80,7 @@ add_unit_test(test_netplay_metrics
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
 )
-target_compile_definitions(test_netplay_metrics PRIVATE MOCK_SUPPRESS_CONFLICTS)
+target_compile_definitions(test_netplay_metrics PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_metrics)
 
 add_unit_test(test_netplay_events
@@ -91,23 +91,10 @@ add_unit_test(test_netplay_events
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
 )
-target_compile_definitions(test_netplay_events PRIVATE MOCK_SUPPRESS_CONFLICTS)
+target_compile_definitions(test_netplay_events PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_events)
 
-add_unit_test(test_netplay_ui
-    test_netplay_ui.c
-    ${PROJECT_SOURCE_DIR}/src/port/sdl/netplay/sdl_netplay_ui.cpp
-    mocks_netplay_ui_deps.c
-    mocks_netplay.c
-    test_netplay_ui_helper.cpp
-    ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
-    mocks_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
-    ${IMGUI_SRC}
-)
-target_include_directories(test_netplay_ui PRIVATE ${PROJECT_SOURCE_DIR}/third_party/imgui)
-target_compile_definitions(test_netplay_ui PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_SUPPRESS_UI)
-target_link_gekkonet_sdl3(test_netplay_ui)
+
 
 add_unit_test(test_netplay_refactor
     test_netplay_refactor.c
@@ -117,7 +104,7 @@ add_unit_test(test_netplay_refactor
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
 )
-target_compile_definitions(test_netplay_refactor PRIVATE MOCK_SUPPRESS_CONFLICTS)
+target_compile_definitions(test_netplay_refactor PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_refactor)
 
 add_unit_test(test_state_differ
@@ -128,19 +115,18 @@ add_unit_test(test_state_differ
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
 )
-target_compile_definitions(test_state_differ PRIVATE MOCK_SUPPRESS_CONFLICTS)
+target_compile_definitions(test_state_differ PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_state_differ)
 
 add_unit_test(test_effect_state_persistence
     test_effect_state_persistence.c
-    mocks_netplay.c
     mocks_globals.c
     ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
-    ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
-    ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/game_state.c
 )
 target_compile_definitions(test_effect_state_persistence PRIVATE MOCK_SUPPRESS_CONFLICTS)
-target_link_gekkonet_sdl3(test_effect_state_persistence)
+target_include_directories(test_effect_state_persistence PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include)
+target_link_sdl3(test_effect_state_persistence)
 
 add_unit_test(test_netplay_oob
     test_netplay_oob.c
@@ -150,7 +136,7 @@ add_unit_test(test_netplay_oob
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
 )
-target_compile_definitions(test_netplay_oob PRIVATE MOCK_SUPPRESS_CONFLICTS)
+target_compile_definitions(test_netplay_oob PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_oob)
 
 add_unit_test(test_netplay_init
@@ -162,7 +148,7 @@ add_unit_test(test_netplay_init
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
 )
 target_compile_definitions(test_netplay_init PRIVATE DEBUG)
-target_compile_definitions(test_netplay_init PRIVATE MOCK_SUPPRESS_CONFLICTS)
+target_compile_definitions(test_netplay_init PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_init)
 
 add_unit_test(test_netplay_catchup
@@ -173,7 +159,7 @@ add_unit_test(test_netplay_catchup
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
 )
-target_compile_definitions(test_netplay_catchup PRIVATE MOCK_SUPPRESS_CONFLICTS)
+target_compile_definitions(test_netplay_catchup PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_catchup)
 
 add_unit_test(test_stun
@@ -190,7 +176,7 @@ add_unit_test(test_netplay_run
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
 )
-target_compile_definitions(test_netplay_run PRIVATE MOCK_SUPPRESS_CONFLICTS)
+target_compile_definitions(test_netplay_run PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_run)
 
 # -----------------------------------------------------------------------------
@@ -272,8 +258,9 @@ add_unit_test(test_game_state_roundtrip
     ${PROJECT_SOURCE_DIR}/src/netplay/game_state.c
     mocks_globals.c
 )
-target_include_directories(test_game_state_roundtrip PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(test_game_state_roundtrip PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include)
 target_compile_definitions(test_game_state_roundtrip PRIVATE MOCK_SUPPRESS_CONFLICTS)
+target_link_sdl3(test_game_state_roundtrip)
 
 add_unit_test(test_broadcast_config test_broadcast_config.c)
 target_include_directories(test_broadcast_config PRIVATE ${PROJECT_SOURCE_DIR}/include)

@@ -1,12 +1,11 @@
 #include "netplay.h"
 #include "discovery.h"
 
-// Defined in cli_parser.c; default 50000, overridable via --port.
-extern unsigned short g_netplay_port;
 #include "game_state.h"
 #include "gekkonet.h"
 #include "main.h"
 #include "port/char_data.h"
+#include "port/config/cli_parser.h"
 #include "port/config/config.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -21,8 +20,8 @@ extern unsigned short g_netplay_port;
 // dc_ghost.h does not exist in our repo; njdp2d_draw was renamed to Renderer_Flush2DPrimitives.
 #include "port/rendering/renderer.h"
 extern void njUserMain();
-extern void SDLGameRenderer_ResetBatchState(); // Reset texture stack between netplay sub-frames
 #include "port/sdl/netplay/sdl_netplay_ui.h"
+#include "port/sdl/renderer/sdl_game_renderer.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"

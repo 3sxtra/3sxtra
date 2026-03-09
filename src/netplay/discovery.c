@@ -4,9 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// Defined in cli_parser.c; default 50000, overridable via --port.
-extern unsigned short g_netplay_port;
-
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -20,6 +17,8 @@ typedef int socklen_t;
 #include <unistd.h>
 #define closesocket close
 #endif
+
+#include "port/config/cli_parser.h"
 
 #define DISCOVERY_PORT 7999
 #define BROADCAST_INTERVAL_MS 500

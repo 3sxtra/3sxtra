@@ -67,7 +67,6 @@ void SDLGameRenderer_EndFrame() {
     }
 }
 
-extern void SDLGameRendererGL_ResetBatchState(void);
 void SDLGameRenderer_ResetBatchState() {
     RendererBackend r = SDLApp_GetRenderer();
     if (r == RENDERER_OPENGL) {

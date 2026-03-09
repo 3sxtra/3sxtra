@@ -41,6 +41,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ⚡ Bolt: LTO — cross-TU inlining of hot functions.
 # Use -DENABLE_LTO=ON to force LTO on any build type (e.g. Debug).
@@ -291,6 +292,10 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/sdl/netplay/sdl_netplay_ui.cpp
     # --- sdl/app/ ---
     src/port/sdl/app/sdl_app_input.c
+    src/port/sdl/app/sdl_app_scale.c
+    src/port/sdl/app/sdl_app_bezel.c
+    src/port/sdl/app/sdl_app_debug_hud.c
+    src/port/sdl/app/sdl_app_screenshot.c
     src/port/sdl/app/sdl_app_shader_config.c
     # --- sdl/renderer/ ---
     src/port/sdl/renderer/sdl_game_renderer_gl_context.c

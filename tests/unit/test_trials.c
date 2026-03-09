@@ -21,6 +21,13 @@ s32 SSPutStrPro_Scale(u16 flag, f32 x, f32 y, u8 atr, u32 vtxcol, s8* str, f32 s
 }
 
 TrainingGameState g_training_state = { 0 };
+
+// Stub: Lua trials loader (trials.c calls this, returns NULL → falls back to static data)
+#include "sf33rd/Source/Game/training/trials.h"
+const TrialCharacterDef* lua_trials_get_characters(int* out_count) {
+    if (out_count) *out_count = 0;
+    return NULL;
+}
 // -----------
 
 static void test_trial_navigation(void **state) {
