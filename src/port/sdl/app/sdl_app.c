@@ -1330,7 +1330,6 @@ void SDLApp_EndFrame() {
         rmlui_button_config_update();
         rmlui_char_select_update();
         rmlui_vs_screen_update();
-        rmlui_replay_picker_update();
         rmlui_pause_overlay_update();
         rmlui_trials_hud_update();
         rmlui_copyright_update();
@@ -1338,6 +1337,9 @@ void SDLApp_EndFrame() {
         rmlui_exit_confirm_update();
         TRACE_SUB_END();
     }
+
+    /* Replay picker always uses RmlUI — update outside use_rmlui gate */
+    rmlui_replay_picker_update();
 
     if (is_sdl2d_backend(g_renderer_backend)) {
         // --- SDL2D Backend ---
@@ -1384,10 +1386,8 @@ void SDLApp_EndFrame() {
         }
 
         // Render RmlUi game context at window resolution (Phase 3 game screens)
-        if (use_rmlui) {
-            rmlui_wrapper_update_game();
-            rmlui_wrapper_render_game(win_w, win_h, dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h);
-        }
+        rmlui_wrapper_update_game();
+        rmlui_wrapper_render_game(win_w, win_h, dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h);
 
         // Debug text
         SDLTextRenderer_DrawDebugBuffer((float)win_w, (float)win_h);
@@ -1464,9 +1464,7 @@ void SDLApp_EndFrame() {
         // --- GPU Backend ---
 
         // Update RmlUi game context (render happens after canvas blit below)
-        if (use_rmlui) {
-            rmlui_wrapper_update_game();
-        }
+        rmlui_wrapper_update_game();
 
         // 1. Post-Process (Canvas -> Swapchain)
         SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
@@ -1668,7 +1666,7 @@ void SDLApp_EndFrame() {
             }
         }
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
-        if (use_rmlui) {
+        {
             const SDL_FRect gp_vp = get_letterbox_rect(win_w, win_h);
             rmlui_wrapper_render_game(win_w, win_h, gp_vp.x, gp_vp.y, gp_vp.w, gp_vp.h);
         }
@@ -1689,9 +1687,7 @@ void SDLApp_EndFrame() {
         // --- OpenGL Backend ---
 
         // Update RmlUi game context (render happens after canvas blit below)
-        if (use_rmlui) {
-            rmlui_wrapper_update_game();
-        }
+        rmlui_wrapper_update_game();
 
         if (broadcast_config.enabled && broadcast_config.source == BROADCAST_SOURCE_NATIVE) {
             Broadcast_Send(cps3_canvas_texture, 384, 224, true);
@@ -1976,7 +1972,7 @@ void SDLApp_EndFrame() {
             }
         }
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
-        if (use_rmlui) {
+        {
             // Reset GL state to clean baseline before RmlUi rendering
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, 0);

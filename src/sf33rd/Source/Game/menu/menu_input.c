@@ -1818,8 +1818,7 @@ void Setup_Save_Replay_1st(struct _TASK* task_ptr) {
     Menu_Suicide[2] = 0;
     Menu_Suicide[3] = 0;
     Setup_BG(1, 512, 0);
-    if (!(use_rmlui && rmlui_menu_replay))
-        Setup_Replay_Sub(1, 110, 9, 1);
+    /* Native replay setup skipped — RmlUI replay picker always used */
     Setup_File_Property(1, 0xFF);
     Clear_Flash_Init(4);
 }

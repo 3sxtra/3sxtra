@@ -1,24 +1,22 @@
 /* ── Replay Picker Stylesheet — 5×4 Grid ─────────────────── */
 /* Viewport: 384×224 dp (CPS3 native)                         */
-/* Cell total width  = 56 + 4pad + 2brd + 2mrg = 64dp         */
-/* 5 × 64 = 320dp — fits in 354dp (360 panel - 4pad - 2brd)   */
-/* Cell total height = 34 + 4pad + 2brd + 2mrg = 42dp          */
-/* 4 × 42 = 168dp — fits in 190dp (224 - 10top - 14title - 10footer) */
+/* Panel sits inside the native grey shaded rectangle          */
+/* (~52dp top, ~140dp available height)                        */
 
 body {
     width: 384dp;
     height: 224dp;
     font-family: "Noto Sans JP Thin";
-    font-size: 7dp;
+    font-size: 6dp;
     color: #ffffffee;
 }
 
 .rp-panel {
     display: block;
     position: absolute;
-    top: 8dp;
-    left: 12dp;
-    width: 360dp;
+    top: 65dp;
+    left: 18dp;
+    width: 348dp;
     animation: panel-fade-in 0.25s quadratic-out;
 }
 
@@ -28,33 +26,24 @@ body {
 }
 
 .rp-title {
-    display: block;
-    font-size: 10dp;
-    font-weight: bold;
-    color: #88dd88;
-    letter-spacing: 2dp;
-    margin-bottom: 3dp;
-    text-align: center;
-    font-effect: shadow(1dp 1dp #000000cc);
+    display: none;
 }
 
 /* ── Grid container ─────────────────────────────────────── */
 .rp-grid {
     display: block;
-    background-color: #000000aa;
-    border-width: 1dp;
-    border-color: #88dd8833;
-    padding: 2dp;
+    background-color: transparent;
+    padding: 1dp;
     text-align: center;
 }
 
 /* ── Individual cell ─────────────────────────────────────── */
 .rp-cell {
     display: inline-block;
-    width: 56dp;
-    height: 34dp;
+    width: 54dp;
+    height: 22dp;
     margin: 1dp;
-    padding: 2dp;
+    padding: 1dp;
     background-color: #ffffff08;
     border-width: 1dp;
     border-color: #ffffff11;
@@ -82,7 +71,7 @@ body {
 /* ── Cell contents ───────────────────────────────────────── */
 .rp-cell-num {
     display: block;
-    font-size: 7dp;
+    font-size: 6dp;
     font-weight: bold;
     color: #88dd88;
 }
@@ -115,7 +104,7 @@ body {
     display: block;
     font-size: 5dp;
     color: #444444;
-    margin-top: 4dp;
+    margin-top: 2dp;
 }
 
 .rp-cell.selected .rp-cell-empty {
@@ -126,7 +115,7 @@ body {
 .rp-footer {
     display: block;
     text-align: center;
-    font-size: 5dp;
+    font-size: 4dp;
     color: #666666;
     margin-top: 1dp;
 }
