@@ -47,13 +47,13 @@ extern "C" {
 #define CFG_KEY_MODDED_BGM_ENABLED "modded-bgm-enabled"
 
 /// Initialize config system
-void Config_Init();
+void Config_Init(void);
 
 /// Destroy resources used by config system
-void Config_Destroy();
+void Config_Destroy(void);
 
 /// Save configuration to disk
-void Config_Save();
+void Config_Save(void);
 
 /// Check if a key exists in the configuration
 bool Config_HasKey(const char* key);

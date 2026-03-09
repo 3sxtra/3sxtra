@@ -167,9 +167,29 @@ static bool init_afs(const char* file_path) {
         }
     }
 
+    SDL_CloseIO(io);
+    return true;
+}
+
+static SDL_AtomicInt preload_shutdown_flag;
+static SDL_Thread* preload_thread = NULL;
+
+static int preload_thread_func(void* ptr) {
+    char* file_path = (char*)ptr;
+    SDL_IOStream* io = SDL_IOFromFile(file_path, "rb");
+
+    if (io == NULL) {
+        SDL_free(file_path);
+        return 0;
+    }
+
     // Preload non-BGM files into RAM for zero-copy reads.
     // BGM files (indices 91-1362) are large and streamed via async I/O.
     for (int i = 0; i < afs.entry_count; i++) {
+        if (SDL_GetAtomicInt(&preload_shutdown_flag)) {
+            break;
+        }
+
         if (i >= AFS_BGM_START_INDEX && i <= AFS_BGM_END_INDEX) {
             continue;
         }
@@ -178,17 +198,21 @@ static bool init_afs(const char* file_path) {
 
         if ((entry->offset != 0) && (entry->size > 0)) {
             const unsigned int sector_aligned_size = (entry->size + 2048 - 1) & ~(2048 - 1);
-            entry->data = SDL_malloc(sector_aligned_size);
+            void* preloaded_data = SDL_malloc(sector_aligned_size);
 
-            if (entry->data) {
+            if (preloaded_data) {
                 SDL_SeekIO(io, entry->offset, SDL_IO_SEEK_SET);
-                SDL_ReadIO(io, entry->data, sector_aligned_size);
+                SDL_ReadIO(io, preloaded_data, sector_aligned_size);
+
+                // Atomically set data so main thread sees it safely
+                SDL_SetAtomicPointer(&entry->data, preloaded_data);
             }
         }
     }
 
     SDL_CloseIO(io);
-    return true;
+    SDL_free(file_path);
+    return 0;
 }
 
 static bool init_asyncio(const char* file_path) {
@@ -215,10 +239,23 @@ bool AFS_Init(const char* file_path) {
         return false;
     }
 
-    return init_asyncio(file_path);
+    if (!init_asyncio(file_path)) {
+        return false;
+    }
+
+    SDL_SetAtomicInt(&preload_shutdown_flag, 0);
+    preload_thread = SDL_CreateThread(preload_thread_func, "AFS_Preload", SDL_strdup(file_path));
+
+    return true;
 }
 
 void AFS_Finish() {
+    SDL_SetAtomicInt(&preload_shutdown_flag, 1);
+    if (preload_thread) {
+        SDL_WaitThread(preload_thread, NULL);
+        preload_thread = NULL;
+    }
+
     // ⚡ Bolt: Close the persistent async I/O handle before destroying the queue.
     if (persistent_asyncio != NULL) {
         SDL_CloseAsyncIO(persistent_asyncio, true, asyncio_queue, NULL);
@@ -350,14 +387,15 @@ void AFS_Read(AFSHandle handle, int sectors, void* buf) {
     AFSEntry* entry = &afs.entries[request->file_num];
 
     // Fast path: preloaded data — zero-copy memcpy, no I/O
-    if (entry->data) {
-        SDL_memcpy(buf, (Uint8*)entry->data + request->sector * 2048, sectors * 2048);
+    void* preloaded_data = SDL_GetAtomicPointer(&entry->data);
+    if (preloaded_data) {
+        SDL_memcpy(buf, (Uint8*)preloaded_data + request->sector * 2048, sectors * 2048);
         request->sector += sectors;
         request->state = AFS_READ_STATE_FINISHED;
         return;
     }
 
-    // Slow path: async I/O via persistent handle (BGM files only)
+    // Slow path: async I/O via persistent handle (BGM files and preloading fallback)
     const Uint64 offset = entry->offset + request->sector * 2048;
 
     request->state = AFS_READ_STATE_READING;

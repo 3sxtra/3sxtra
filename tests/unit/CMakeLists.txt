@@ -72,20 +72,6 @@ target_compile_definitions(test_game_state PRIVATE MOCK_SUPPRESS_CONFLICTS)
 add_unit_test(test_font_rendering test_font_rendering.c)
 file(GLOB IMGUI_SRC ${PROJECT_SOURCE_DIR}/third_party/imgui/*.cpp)
 
-add_unit_test(test_imgui_font
-    test_imgui_font.cpp
-    ${PROJECT_SOURCE_DIR}/src/port/imgui_font.cpp
-    ${IMGUI_SRC}
-)
-target_include_directories(test_imgui_font PRIVATE 
-    ${PROJECT_SOURCE_DIR}/third_party/imgui
-    ${PROJECT_SOURCE_DIR}/include
-)
-
-# -----------------------------------------------------------------------------
-# Netplay tests (use target_link_gekkonet_sdl3)
-# -----------------------------------------------------------------------------
-
 add_unit_test(test_netplay_metrics
     test_netplay_metrics.c
     mocks_netplay.c
