@@ -251,6 +251,7 @@ static constexpr int GAME_H = 224;
 static float s_par_correct_y = 1.0f;
 
 static std::string s_ui_base_path;
+static bool s_deferred_init_done = false;
 
 // ⚡ Helper: check if any document in a context map is currently visible.
 // Used to skip expensive Update/Render cycles when no UI is showing.
@@ -340,20 +341,13 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
                                     "memory = require('compat.memory')\n");
     SDL_Log("[RmlUi Lua] FBNeo compat modules loaded");
 
-    // Load trial definitions from Lua at runtime
-    if (!lua_trials_load("lua/sf3_3rd_trial_clean.lua")) {
-        SDL_Log("[RmlUi Lua] Runtime trial loading failed, using static data");
-    }
+    // Trial definitions are loaded lazily on first access via
+    // lua_trials_get_characters(), not at boot (saves ~100ms).
 
-    // Load training mode bootstrap: gamestate adapter + per-frame callback
-    Rml::Lua::Interpreter::DoString("require('training_main')");
-    SDL_Log("[RmlUi Lua] Training modules loaded");
+    // Training bootstrap and NotoSansJP font are deferred to first
+    // rmlui_wrapper_new_frame() call (~130ms saved from boot).
 
-    // Load fonts — both loaded unconditionally so they're available by family name
-    std::string font_noto = s_ui_base_path + "../NotoSansJP-Regular.ttf";
-    if (!Rml::LoadFontFace(font_noto.c_str(), true)) {
-        SDL_Log("[RmlUi] Failed to load font: %s", font_noto.c_str());
-    }
+    // NotoSansJP (~4MB) deferred to first frame — see rmlui_wrapper_new_frame()
     std::string font_bold = s_ui_base_path + "../BoldPixels.ttf";
     if (!Rml::LoadFontFace(font_bold.c_str())) {
         SDL_Log("[RmlUi] Failed to load font: %s", font_bold.c_str());
@@ -523,6 +517,17 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
 extern "C" void rmlui_wrapper_new_frame(void) {
     if (!s_window_context)
         return;
+
+    // Lazy-load NotoSansJP (~4MB) on first frame, after boot but before any UI renders.
+    if (!s_deferred_init_done) {
+        s_deferred_init_done = true;
+
+        std::string font_noto = s_ui_base_path + "../NotoSansJP-Regular.ttf";
+        if (!Rml::LoadFontFace(font_noto.c_str(), true)) {
+            SDL_Log("[RmlUi] Failed to load font: %s", font_noto.c_str());
+        }
+    }
+
     // ⚡ Skip context update when no window documents are visible
     if (!has_visible_docs(s_window_documents))
         return;

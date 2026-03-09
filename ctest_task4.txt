@@ -1,2 +1,0 @@
-Test project D:/3sxtra/build_tests
-No tests were found!!!

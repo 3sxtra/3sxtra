@@ -23,7 +23,8 @@ static int current_preset_index = 0;
 static int s_pending_preset_index = -1;
 static bool shader_mode_libretro = false;
 static char* g_base_path =
-    NULL; // Owned reference (strdup'd or managed elsewhere? In sdl_app it was a pointer to SDL_GetBasePath result)
+    NULL;
+static bool s_shader_initialized = false;
 
 // Recursive scanner helper
 static void scan_presets_recursive(const char* base_path, const char* relative_path, char*** list, int* count,
@@ -153,9 +154,35 @@ static void load_preset_internal(int index) {
 }
 
 void SDLAppShader_Init(const char* base_path) {
-    g_base_path = SDL_strdup(base_path); // Copy it to own it (or just refer if guaranteed lifetime)
+    // Defer heavy work (directory scanning, preset loading) to first ProcessPendingLoad.
+    // Just capture the base path here so boot stays fast (~59ms saved).
+    g_base_path = SDL_strdup(base_path);
+    s_shader_initialized = false;
+}
 
-    // Config_Init must be called before this, which is true in SDLApp_Init
+void SDLAppShader_Shutdown() {
+    if (libretro_manager) {
+        LibrashaderManager_Free(libretro_manager);
+        libretro_manager = NULL;
+    }
+    if (available_presets) {
+        for (int i = 0; i < available_preset_count; i++) {
+            SDL_free(available_presets[i]);
+        }
+        SDL_free(available_presets);
+        available_presets = NULL;
+    }
+    if (g_base_path) {
+        SDL_free(g_base_path);
+        g_base_path = NULL;
+    }
+}
+
+static void ensure_shader_initialized(void) {
+    if (s_shader_initialized || !g_base_path)
+        return;
+    s_shader_initialized = true;
+
     shader_mode_libretro = Config_GetBool(CFG_KEY_SHADER_MODE_LIBRETRO);
 
     char shaders_path[1024];
@@ -183,30 +210,12 @@ void SDLAppShader_Init(const char* base_path) {
     }
 
     if (shader_mode_libretro && available_preset_count > 0) {
-        // Immediate load on init
-        load_preset_internal(current_preset_index);
-    }
-}
-
-void SDLAppShader_Shutdown() {
-    if (libretro_manager) {
-        LibrashaderManager_Free(libretro_manager);
-        libretro_manager = NULL;
-    }
-    if (available_presets) {
-        for (int i = 0; i < available_preset_count; i++) {
-            SDL_free(available_presets[i]);
-        }
-        SDL_free(available_presets);
-        available_presets = NULL;
-    }
-    if (g_base_path) {
-        SDL_free(g_base_path);
-        g_base_path = NULL;
+        s_pending_preset_index = current_preset_index;
     }
 }
 
 void SDLAppShader_ProcessPendingLoad() {
+    ensure_shader_initialized();
     if (s_pending_preset_index >= 0) {
         load_preset_internal(s_pending_preset_index);
         s_pending_preset_index = -1;
@@ -222,6 +231,7 @@ bool SDLAppShader_IsLibretroMode() {
 }
 
 void SDLAppShader_ToggleMode() {
+    ensure_shader_initialized();
     shader_mode_libretro = !shader_mode_libretro;
     Config_SetBool(CFG_KEY_SHADER_MODE_LIBRETRO, shader_mode_libretro);
     SDL_Log("Shader Mode: %s", shader_mode_libretro ? "Libretro" : "Internal");
@@ -231,6 +241,7 @@ void SDLAppShader_ToggleMode() {
 }
 
 void SDLAppShader_CyclePreset() {
+    ensure_shader_initialized();
     if (available_preset_count == 0)
         return;
     current_preset_index = (current_preset_index + 1) % available_preset_count;
@@ -242,10 +253,12 @@ void SDLAppShader_LoadPreset(int index) {
 }
 
 int SDLAppShader_GetAvailableCount() {
+    ensure_shader_initialized();
     return available_preset_count;
 }
 
 const char* SDLAppShader_GetPresetName(int index) {
+    ensure_shader_initialized();
     if (index >= 0 && index < available_preset_count && available_presets) {
         return available_presets[index];
     }

@@ -509,7 +509,7 @@ int SDLApp_Init() {
 
     // SDL2D path: skip GL attributes entirely
 
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
@@ -773,49 +773,54 @@ int SDLApp_Init() {
 
     // RmlUi overlay: available on ALL backends (GL, GPU, SDL2D)
     rmlui_wrapper_init(window, gl_context);
-    rmlui_mods_menu_init();
-    rmlui_shader_menu_init();
-    rmlui_stage_config_init();
-    rmlui_input_display_init();
-    rmlui_frame_display_init();
-    rmlui_netplay_ui_init();
-    rmlui_training_menu_init();
-    rmlui_control_mapping_init();
-    /* Phase 3 — Fight HUD & Mode Menu */
-    rmlui_game_hud_init();
-    rmlui_mode_menu_init();
-    rmlui_option_menu_init();
-    rmlui_game_option_init();
-    rmlui_title_screen_init();
-    rmlui_win_screen_init();
-    rmlui_continue_init();
-    rmlui_gameover_init();
-    rmlui_vs_result_init();
-    rmlui_memory_card_init();
-    rmlui_sound_menu_init();
-    rmlui_sysdir_init();
-    rmlui_network_lobby_init();
-    rmlui_extra_option_init();
-    rmlui_training_menus_init();
-    rmlui_button_config_init();
-    rmlui_char_select_init();
-    rmlui_vs_screen_init();
-    rmlui_replay_picker_init();
-    rmlui_pause_overlay_init();
-    rmlui_trials_hud_init();
-    rmlui_copyright_init();
-    rmlui_name_entry_init();
-    rmlui_exit_confirm_init();
-    rmlui_attract_overlay_init();
-    rmlui_dev_overlay_init();
 
     // Check if user wants RmlUi mode (set via --ui rmlui CLI flag, session-only)
     extern bool g_ui_mode_rmlui;
     use_rmlui = g_ui_mode_rmlui;
+
+    // Core RmlUi components — always initialized (replay picker always uses RmlUi)
+    rmlui_replay_picker_init();
+    rmlui_dev_overlay_init();
+
     if (use_rmlui) {
         SDL_Log("UI mode: RmlUi (overlay menus via HTML/CSS)");
+
+        // Phase 2 — Overlay menus
+        rmlui_mods_menu_init();
+        rmlui_shader_menu_init();
+        rmlui_stage_config_init();
+        rmlui_input_display_init();
+        rmlui_frame_display_init();
+        rmlui_netplay_ui_init();
+        rmlui_training_menu_init();
+        rmlui_control_mapping_init();
+        /* Phase 3 — Fight HUD & Mode Menu */
+        rmlui_game_hud_init();
+        rmlui_mode_menu_init();
+        rmlui_option_menu_init();
+        rmlui_game_option_init();
+        rmlui_title_screen_init();
+        rmlui_win_screen_init();
+        rmlui_continue_init();
+        rmlui_gameover_init();
+        rmlui_vs_result_init();
+        rmlui_memory_card_init();
+        rmlui_sound_menu_init();
+        rmlui_sysdir_init();
+        rmlui_network_lobby_init();
+        rmlui_extra_option_init();
+        rmlui_training_menus_init();
+        rmlui_button_config_init();
+        rmlui_char_select_init();
+        rmlui_vs_screen_init();
+        rmlui_pause_overlay_init();
+        rmlui_trials_hud_init();
+        rmlui_copyright_init();
+        rmlui_name_entry_init();
+        rmlui_exit_confirm_init();
+        rmlui_attract_overlay_init();
     } else {
-        SDL_Log("UI mode: RmlUi (default)");
+        SDL_Log("UI mode: Native (default)");
     }
 
     // Skip shaders and mod menus for SDL2D mode

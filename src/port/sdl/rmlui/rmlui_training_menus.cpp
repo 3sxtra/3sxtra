@@ -17,6 +17,7 @@
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
+#include <RmlUi/Lua/Interpreter.h>
 #include <SDL3/SDL.h>
 
 extern "C" {
@@ -90,6 +91,15 @@ extern "C" void rmlui_training_menus_update(void) {
 // ─── Show / Hide for each screen ─────────────────────────────────
 
 extern "C" void rmlui_training_mode_show(void) {
+    // Lazy-load training bootstrap on first training mode entry.
+    // Loads prediction, dummy_control, inputs Lua modules (~50ms, only paid once).
+    static bool s_training_loaded = false;
+    if (!s_training_loaded) {
+        s_training_loaded = true;
+        Rml::Lua::Interpreter::DoString("require('training_main')");
+        SDL_Log("[RmlUi Lua] Training modules loaded (on training entry)");
+    }
+
     rmlui_wrapper_show_game_document("training_mode");
     if (s_model_handle)
         s_model_handle.DirtyVariable("tr_cursor");

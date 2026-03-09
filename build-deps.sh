@@ -408,6 +408,68 @@ else
 fi
 
 # -----------------------------
+# Lua 5.4 (required by RmlUi Lua bindings)
+# -----------------------------
+
+LUA_DIR="$THIRD_PARTY/lua"
+
+if [ -d "$LUA_DIR/src" ]; then
+    echo "Lua 5.4 already exists at $LUA_DIR"
+else
+    echo "Cloning Lua 5.4..."
+    mkdir -p "$LUA_DIR"
+    git clone --depth 1 --branch v5.4.7 https://github.com/lua/lua.git "$LUA_DIR/src_repo"
+    # Move source files into the expected layout (src/ directory)
+    mkdir -p "$LUA_DIR/src"
+    cp "$LUA_DIR/src_repo/"*.c "$LUA_DIR/src/"
+    cp "$LUA_DIR/src_repo/"*.h "$LUA_DIR/src/"
+    rm -rf "$LUA_DIR/src_repo"
+
+    # Create CMakeLists.txt for building Lua as a static library
+    cat > "$LUA_DIR/CMakeLists.txt" << 'LUACMAKE'
+# Lua 5.4 — built as a static C library for RmlUi Lua bindings
+# This CMakeLists.txt builds the core Lua library (liblua) without
+# the standalone interpreter (lua.c) or compiler (luac.c).
+
+cmake_minimum_required(VERSION 3.10)
+project(lua LANGUAGES C)
+
+set(LUA_SRC
+    src/lapi.c src/lauxlib.c src/lbaselib.c src/lcode.c src/lcorolib.c
+    src/lctype.c src/ldblib.c src/ldebug.c src/ldo.c src/ldump.c
+    src/lfunc.c src/lgc.c src/linit.c src/liolib.c src/llex.c
+    src/lmathlib.c src/lmem.c src/loadlib.c src/lobject.c src/lopcodes.c
+    src/loslib.c src/lparser.c src/lstate.c src/lstring.c src/lstrlib.c
+    src/ltable.c src/ltablib.c src/ltm.c src/lundump.c src/lutf8lib.c
+    src/lvm.c src/lzio.c
+)
+
+add_library(lua_static STATIC ${LUA_SRC})
+target_include_directories(lua_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+# Suppress warnings in vendored Lua source
+target_compile_options(lua_static PRIVATE -w)
+
+# Create the Lua::Lua IMPORTED target that RmlUi's Dependencies.cmake expects.
+# We use INTERFACE IMPORTED (not ALIAS) so RmlUi can alias it again as
+# RmlUi::External::Lua without hitting CMake's alias-of-alias restriction.
+add_library(Lua::Lua INTERFACE IMPORTED GLOBAL)
+set_target_properties(Lua::Lua PROPERTIES
+    INTERFACE_LINK_LIBRARIES lua_static
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
+
+# Also set the variables that FindLua would normally set
+set(LUA_FOUND TRUE PARENT_SCOPE)
+set(LUA_LIBRARIES lua_static PARENT_SCOPE)
+set(LUA_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src" PARENT_SCOPE)
+set(LUA_VERSION_STRING "5.4.7" PARENT_SCOPE)
+LUACMAKE
+
+    echo "Lua 5.4 installed to $LUA_DIR"
+fi
+
+# -----------------------------
 # RmlUi
 # -----------------------------
 
