@@ -563,8 +563,6 @@ static void ProcessEvents() {
 
 // RenderToasts() removed — replaced by RmlUI netplay overlay.
 
-
-
 static void PushHistory(float ping, float rb) {
     ping_history[history_offset] = ping;
     rb_history[history_offset] = rb;
@@ -574,8 +572,6 @@ static void PushHistory(float ping, float rb) {
 }
 
 // RenderDiagnostics() removed — replaced by RmlUI netplay overlay.
-
-
 
 extern "C" {
 
@@ -715,7 +711,6 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
     // on all backends, so skip ImGui rendering. Keep the calls for when use_rmlui
     // is false and backend is not SDL2D (legacy fallback path, if needed).
     // In practice this is dead code since RmlUi Fx menus are always active.
-
 }
 
 void SDLNetplayUI_Shutdown() {}

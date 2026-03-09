@@ -1065,10 +1065,18 @@ void SDLGameRendererSDL_UnlockTexture(unsigned int th) {
         if (pixels) {
             size_t data_size = 0;
             switch (fl_tex->format) {
-            case SCE_GS_PSMT8:  data_size = (size_t)fl_tex->width * fl_tex->height; break;
-            case SCE_GS_PSMT4:  data_size = (size_t)((fl_tex->width + 1) / 2) * fl_tex->height; break;
-            case SCE_GS_PSMCT16: data_size = (size_t)fl_tex->width * fl_tex->height * 2; break;
-            default:            data_size = (size_t)fl_tex->width * fl_tex->height * 4; break;
+            case SCE_GS_PSMT8:
+                data_size = (size_t)fl_tex->width * fl_tex->height;
+                break;
+            case SCE_GS_PSMT4:
+                data_size = (size_t)((fl_tex->width + 1) / 2) * fl_tex->height;
+                break;
+            case SCE_GS_PSMCT16:
+                data_size = (size_t)fl_tex->width * fl_tex->height * 2;
+                break;
+            default:
+                data_size = (size_t)fl_tex->width * fl_tex->height * 4;
+                break;
             }
             if (data_size > 0) {
                 uint32_t new_hash = fnv1a_hash(pixels, data_size);

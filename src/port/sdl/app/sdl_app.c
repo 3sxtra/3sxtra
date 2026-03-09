@@ -30,7 +30,6 @@
 #include "port/sdl/app/sdl_app_internal.h"
 #include "port/sdl/app/sdl_app_shader_config.h"
 
-#include "port/training_menu.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/sdl/rmlui/rmlui_attract_overlay.h"
@@ -62,6 +61,7 @@
 #include "port/sdl/rmlui/rmlui_win_screen.h"
 #include "port/tracy_gpu.h"
 #include "port/tracy_zones.h"
+#include "port/training_menu.h"
 
 int g_resolution_scale = 1;
 #include "port/sdl/input/sdl_pad.h"
@@ -251,10 +251,13 @@ static bool show_shader_menu = false;
 static bool show_mods_menu = false;
 bool show_stage_config_menu = false;
 bool show_training_menu = false;
-TrainingMenuSettings g_training_menu_settings = {0};
+TrainingMenuSettings g_training_menu_settings = { 0 };
 // Stubs for training_menu.h API — real logic is now in rmlui_training_menu.cpp
-void training_menu_init(void)    { /* no-op */ }
-void training_menu_render(int w, int h) { (void)w; (void)h; }
+void training_menu_init(void) { /* no-op */ }
+void training_menu_render(int w, int h) {
+    (void)w;
+    (void)h;
+}
 void training_menu_shutdown(void) { /* no-op */ }
 bool mods_menu_input_display_enabled = false;
 bool mods_menu_shader_bypass_enabled = false;

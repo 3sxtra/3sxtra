@@ -306,8 +306,14 @@ extern "C" void rmlui_netplay_ui_update(void) {
             }
 
             int secs = fps_count / 60;
-            snprintf(buf, sizeof(buf), "mean: %.1f | med: %.1f | %d:%02d | %d frames",
-                     avg, median, secs / 60, secs % 60, fps_count);
+            snprintf(buf,
+                     sizeof(buf),
+                     "mean: %.1f | med: %.1f | %d:%02d | %d frames",
+                     avg,
+                     median,
+                     secs / 60,
+                     secs % 60,
+                     fps_count);
             Rml::String new_fps_stats(buf);
             if (new_fps_stats != s_prev_fps_stats) {
                 s_fps_stats = new_fps_stats;

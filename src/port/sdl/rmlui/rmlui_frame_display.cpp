@@ -11,8 +11,8 @@
  */
 #include "port/sdl/rmlui/rmlui_frame_display.h"
 #include "common.h"
-#include "port/training_menu.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
+#include "port/training_menu.h"
 #include "sf33rd/Source/Game/training/training_state.h"
 
 #include <RmlUi/Core.h>

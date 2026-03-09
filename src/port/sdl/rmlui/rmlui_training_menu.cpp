@@ -8,8 +8,8 @@
  */
 #include "port/sdl/rmlui/rmlui_training_menu.h"
 #include "port/config/config.h"
-#include "port/training_menu.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
+#include "port/training_menu.h"
 
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>

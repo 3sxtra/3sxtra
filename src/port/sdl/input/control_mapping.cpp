@@ -30,8 +30,6 @@ struct Device {
 
 static const std::string MAPPINGS_FILE = "mappings.ini";
 
-
-
 struct Mapping {
     std::string action;
     InputID input_id;
@@ -259,7 +257,6 @@ static void load_mappings() {
     }
 }
 
-
 // Helper to detect device type from name
 static std::string detect_device_type(const std::string& device_name) {
     std::string lower_name = device_name;
@@ -335,13 +332,9 @@ static std::string get_device_icon_path(const std::string& device_type) {
     }
 }
 
-
 extern "C" void control_mapping_init() {
     load_mappings();
 }
-
-
-
 
 static void handle_player_mapping_update(int player_num, Device* playerDevice, MappingState& mappingState,
                                          int& mapping_action_index) {
@@ -472,9 +465,9 @@ extern "C" void control_mapping_update() {
     handle_player_mapping_update(2, p2Device.get(), p2MappingState, p2_mapping_action_index);
 }
 
-
 extern "C" void control_mapping_render(int window_width, int window_height) {
-    (void)window_width; (void)window_height;
+    (void)window_width;
+    (void)window_height;
 }
 
 extern "C" bool control_mapping_is_active() {
