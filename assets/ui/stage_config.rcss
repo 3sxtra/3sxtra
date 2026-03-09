@@ -8,34 +8,36 @@ body {
 
 #config-panel {
     display: block;
-    width: 480dp;
+    width: 96%;
     max-height: 92%;
     margin: auto;
-    margin-top: 2%;
+    margin-top: 1%;
     background-color: rgba(15, 15, 20, 242);
     border-width: 1dp;
     border-color: #444;
-    border-radius: 10dp;
-    padding: 16dp 20dp;
+    border-radius: 6dp;
+    padding: 6dp 8dp;
     overflow-y: auto;
 }
 
 /* Title */
 #config-panel h1 {
-    font-size: 20dp;
+    font-size: 14dp;
     color: #ff9933;
-    margin-bottom: 6dp;
+    margin-bottom: 3dp;
     text-align: center;
+    white-space: nowrap;
 }
 
 /* Section headers */
 h2 {
-    font-size: 13dp;
+    font-size: 9dp;
     color: #888;
-    margin-top: 4dp;
-    margin-bottom: 4dp;
+    margin-top: 2dp;
+    margin-bottom: 2dp;
     text-transform: uppercase;
     letter-spacing: 1dp;
+    white-space: nowrap;
 }
 
 /* Dividers */
@@ -43,16 +45,16 @@ h2 {
     display: block;
     height: 1dp;
     background-color: #333;
-    margin-top: 6dp;
-    margin-bottom: 6dp;
+    margin-top: 3dp;
+    margin-bottom: 3dp;
 }
 
 /* Stage info */
 .stage-info {
     display: block;
     color: #aaa;
-    font-size: 13dp;
-    margin-bottom: 6dp;
+    font-size: 9dp;
+    margin-bottom: 3dp;
 }
 
 /* ─── Button row ─── */
@@ -64,15 +66,15 @@ h2 {
 
 button {
     display: inline-block;
-    padding: 5dp 12dp;
+    padding: 3dp 8dp;
     background-color: #2a2a30;
     border-width: 1dp;
     border-color: #555;
-    border-radius: 4dp;
+    border-radius: 3dp;
     color: #ddd;
-    font-size: 13dp;
+    font-size: 10dp;
     cursor: pointer;
-    margin-right: 6dp;
+    margin-right: 4dp;
 }
 
 button:hover {
@@ -103,13 +105,13 @@ button:active {
 
 .tab {
     display: inline-block;
-    padding: 5dp 14dp;
+    padding: 3dp 8dp;
     background-color: #1a1a20;
     border-width: 1dp;
     border-color: #333;
-    border-radius: 4dp 4dp 0 0;
+    border-radius: 3dp 3dp 0 0;
     color: #888;
-    font-size: 13dp;
+    font-size: 9dp;
     cursor: pointer;
     margin-right: 2dp;
 }
@@ -134,24 +136,24 @@ button:active {
     border-width: 1dp;
     border-color: #333;
     border-radius: 0 4dp 4dp 4dp;
-    padding: 10dp 14dp;
+    padding: 4dp 6dp;
 }
 
 /* Control rows */
 .control-row {
     display: block;
-    padding: 3dp 0;
+    padding: 1dp 0;
 }
 
 label {
-    font-size: 13dp;
+    font-size: 10dp;
     color: #ccc;
 }
 
 /* Indent for sub-options */
 .indent {
     display: block;
-    margin-left: 16dp;
+    margin-left: 10dp;
 }
 
 /* ─── Text input ─── */
@@ -165,7 +167,7 @@ input.text {
     border-color: #555;
     border-radius: 3dp;
     color: #fff;
-    font-size: 13dp;
+    font-size: 10dp;
     margin-top: 2dp;
     box-sizing: border-box;
 }
@@ -184,8 +186,8 @@ select {
     border-color: #555;
     border-radius: 3dp;
     color: #ddd;
-    font-size: 13dp;
-    margin-left: 6dp;
+    font-size: 10dp;
+    margin-left: 4dp;
 }
 
 select:hover {
@@ -215,32 +217,32 @@ select selectbox option:checked {
 
 .value-display {
     display: inline-block;
-    font-size: 12dp;
+    font-size: 9dp;
     color: #ff9933;
-    margin-left: 6dp;
-    min-width: 40dp;
+    margin-left: 4dp;
+    min-width: 30dp;
 }
 
 /* Status text */
 .status-error {
     color: #ff4444;
-    font-size: 14dp;
+    font-size: 10dp;
     display: block;
     text-align: center;
-    padding: 20dp;
+    padding: 8dp;
 }
 
 .status-hint {
     color: #666;
-    font-size: 12dp;
+    font-size: 9dp;
     display: block;
-    margin-left: 16dp;
+    margin-left: 10dp;
 }
 
 .hint {
-    font-size: 12dp;
+    font-size: 8dp;
     color: #555;
-    margin-top: 6dp;
+    margin-top: 3dp;
     text-align: center;
 }
 

@@ -17,12 +17,12 @@ body {
     border-width: 1dp;
     border-color: #444;
     border-radius: 10dp;
-    padding: 12dp 16dp;
+    padding: 6dp 8dp;
     overflow-y: auto;
 }
 
 h1 {
-    font-size: 16dp;
+    font-size: 12dp;
     color: #ff9933;
     margin-bottom: 4dp;
     text-align: center;
@@ -96,24 +96,24 @@ h2 {
 
 .device-icon {
     display: block;
-    width: 80dp;
-    height: 80dp;
-    margin: 4dp auto;
+    width: 50dp;
+    height: 50dp;
+    margin: 2dp auto;
 }
 
 .device-icon-small {
     display: block;
-    width: 48dp;
-    height: 48dp;
+    width: 30dp;
+    height: 30dp;
     margin: 2dp auto;
 }
 
 .no-device {
     display: block;
     color: #555;
-    font-size: 12dp;
+    font-size: 9dp;
     text-align: center;
-    padding: 12dp 0;
+    padding: 4dp 0;
 }
 
 /* ─── Buttons ─── */

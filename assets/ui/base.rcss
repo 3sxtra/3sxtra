@@ -9,7 +9,7 @@ body {
     width: 100%;
     height: 100%;
     font-family: "Noto Sans JP Thin";
-    font-size: 16dp;
+    font-size: 10dp;
     color: #ffffff;
 }
 
@@ -19,26 +19,26 @@ body {
     border-width: 1dp;
     border-color: #333;
     border-radius: 8dp;
-    padding: 16dp;
+    padding: 6dp;
 }
 
 /* Section headers */
 h1 {
     display: block;
-    font-size: 24dp;
+    font-size: 14dp;
     color: #ff9933;
-    margin-bottom: 12dp;
+    margin-bottom: 4dp;
 }
 
 h2 {
     display: block;
-    font-size: 18dp;
+    font-size: 11dp;
     color: #cccccc;
-    margin-top: 16dp;
-    margin-bottom: 8dp;
+    margin-top: 6dp;
+    margin-bottom: 4dp;
     border-bottom-width: 1dp;
     border-bottom-color: #444;
-    padding-bottom: 4dp;
+    padding-bottom: 2dp;
 }
 
 /* Utility: centered text */
@@ -63,13 +63,13 @@ h2 {
 
 /* Checkbox: styled as a small colored square */
 input.checkbox {
-    width: 16dp;
-    height: 16dp;
+    width: 10dp;
+    height: 10dp;
     border-width: 1dp;
     border-color: #666;
     background-color: #333;
-    border-radius: 3dp;
-    margin-right: 6dp;
+    border-radius: 2dp;
+    margin-right: 4dp;
     vertical-align: middle;
 }
 input.checkbox:hover {
@@ -89,9 +89,9 @@ input.checkbox:disabled {
 
 /* Range slider */
 input.range {
-    width: 120dp;
-    height: 18dp;
-    margin-left: 8dp;
+    width: 80dp;
+    height: 12dp;
+    margin-left: 4dp;
     vertical-align: middle;
 }
 input.range slidertrack {

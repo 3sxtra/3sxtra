@@ -1,5 +1,5 @@
 /* Shader menu stylesheet — 3SXtra RmlUi overlay
- * Full-width layout, optimized for low resolution */
+ * Compact full-width layout for low-res windows */
 
 body {
     width: 100%;
@@ -12,30 +12,30 @@ body {
     width: 96%;
     max-height: 90%;
     margin: auto;
-    margin-top: 2%;
+    margin-top: 1%;
     background-color: rgba(15, 15, 20, 242);
     border-width: 1dp;
     border-color: #444;
     border-radius: 6dp;
-    padding: 10dp 12dp;
+    padding: 6dp 8dp;
     overflow-y: auto;
 }
 
 /* Title */
 #shader-panel h1 {
-    font-size: 16dp;
+    font-size: 14dp;
     color: #ff9933;
-    margin-bottom: 4dp;
+    margin-bottom: 3dp;
     text-align: center;
     white-space: nowrap;
 }
 
 /* Section headers */
 #shader-panel h2 {
-    font-size: 10dp;
+    font-size: 9dp;
     color: #888;
-    margin-top: 4dp;
-    margin-bottom: 4dp;
+    margin-top: 3dp;
+    margin-bottom: 2dp;
     text-transform: uppercase;
     letter-spacing: 1dp;
     white-space: nowrap;
@@ -52,14 +52,14 @@ body {
     display: block;
     height: 1dp;
     background-color: #333;
-    margin-top: 4dp;
-    margin-bottom: 4dp;
+    margin-top: 3dp;
+    margin-bottom: 3dp;
 }
 
-/* Control rows — follows stage_config pattern: block, no nowrap */
+/* Control rows */
 .control-row {
     display: block;
-    padding: 2dp 0;
+    padding: 1dp 0;
 }
 
 .control-row input {
@@ -75,7 +75,7 @@ body {
 
 .control-row:hover {
     background-color: rgba(255, 255, 255, 13);
-    border-radius: 4dp;
+    border-radius: 3dp;
 }
 
 /* Labels */
@@ -88,20 +88,20 @@ label {
 /* Indent for sub-options */
 .indent {
     display: block;
-    margin-left: 14dp;
+    margin-left: 12dp;
 }
 
-/* ─── Select/Dropdown — inline-block per stage_config pattern ─── */
+/* ─── Select/Dropdown ─── */
 
 select {
     display: inline-block;
-    padding: 4dp 8dp;
+    padding: 2dp 6dp;
     background-color: #2a2a30;
     border-width: 1dp;
     border-color: #555;
-    border-radius: 4dp;
+    border-radius: 3dp;
     color: #ddd;
-    font-size: 11dp;
+    font-size: 10dp;
 }
 
 select:hover {
@@ -115,7 +115,7 @@ select selectbox {
 }
 
 select selectbox option {
-    padding: 3dp 6dp;
+    padding: 2dp 6dp;
 }
 
 select selectbox option:hover {
@@ -130,12 +130,12 @@ select selectbox option:checked {
 /* ─── Radio buttons ─── */
 
 input.radio {
-    width: 12dp;
-    height: 12dp;
+    width: 10dp;
+    height: 10dp;
     border-width: 1dp;
     border-color: #666;
     background-color: #333;
-    border-radius: 6dp;
+    border-radius: 5dp;
     margin-right: 4dp;
     vertical-align: middle;
 }
@@ -153,21 +153,19 @@ input.radio:checked {
 
 .search-row {
     display: block;
-    margin-bottom: 4dp;
+    margin-bottom: 3dp;
 }
 
 input.text {
-    display: block;
-    width: 100%;
-    padding: 4dp 8dp;
+    display: inline-block;
+    padding: 2dp 6dp;
     background-color: #1a1a20;
     border-width: 1dp;
     border-color: #555;
-    border-radius: 4dp;
+    border-radius: 3dp;
     color: #fff;
-    font-size: 11dp;
+    font-size: 10dp;
     margin-top: 2dp;
-    box-sizing: border-box;
 }
 
 input.text:focus {
@@ -178,22 +176,22 @@ input.text:focus {
 
 #preset-list {
     display: block;
-    max-height: 30vh;
+    max-height: 40vh;
     overflow-y: auto;
     background-color: rgba(0, 0, 0, 76);
     border-width: 1dp;
     border-color: #333;
-    border-radius: 4dp;
+    border-radius: 3dp;
     padding: 2dp;
 }
 
 .preset-item {
     display: block;
-    padding: 2dp 6dp;
-    font-size: 10dp;
+    padding: 1dp 6dp;
+    font-size: 9dp;
     color: #bbb;
     cursor: pointer;
-    border-radius: 3dp;
+    border-radius: 2dp;
 }
 
 .preset-item:hover {
@@ -209,26 +207,26 @@ input.text:focus {
 /* Status / footer */
 .status-warn {
     color: #ffcc33;
-    font-size: 10dp;
+    font-size: 9dp;
     display: block;
     padding: 2dp 6dp;
 }
 
 .hint {
-    font-size: 9dp;
+    font-size: 8dp;
     color: #555;
-    margin-top: 6dp;
+    margin-top: 4dp;
     text-align: center;
 }
 
 /* Scrollbar styling */
 #preset-list scrollbarvertical {
-    width: 8dp;
+    width: 6dp;
 }
 
 #preset-list scrollbarvertical sliderbar {
     background-color: #555;
-    border-radius: 4dp;
+    border-radius: 3dp;
 }
 
 #preset-list scrollbarvertical sliderbar:hover {

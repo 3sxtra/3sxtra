@@ -4,13 +4,13 @@
 #frame-panel {
     display: block;
     position: absolute;
-    top: 64dp;
+    top: 10%;
     left: 50%;
-    margin-left: -252dp;  /* half of total width */
-    width: 504dp;
-    padding: 4dp;
+    margin-left: -40%;
+    width: 80%;
+    padding: 2dp;
     background-color: rgba(0, 0, 0, 178);
-    border-radius: 4dp;
+    border-radius: 3dp;
 }
 
 /* ── Frame bar container ── */
@@ -55,7 +55,7 @@
 /* ── Stats text ── */
 .stats-text {
     display: block;
-    font-size: 11dp;
+    font-size: 9dp;
     color: rgba(255, 255, 255, 230);
     padding: 1dp 0dp;
 }

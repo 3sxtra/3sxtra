@@ -9,16 +9,16 @@ body {
 #dev-panel {
     display: block;
     position: absolute;
-    width: 420dp;
+    width: 50%;
     max-height: 95%;
-    top: 10dp;
+    top: 1%;
     left: auto;
-    right: 10dp;
+    right: 1%;
     background-color: rgba(12, 12, 18, 245);
     border-width: 1dp;
     border-color: #2a6af0;
-    border-radius: 8dp;
-    padding: 12dp 16dp;
+    border-radius: 6dp;
+    padding: 6dp 8dp;
     overflow-y: auto;
 }
 
@@ -39,27 +39,28 @@ body {
 
 /* Title */
 #dev-panel h1 {
-    font-size: 18dp;
+    font-size: 12dp;
     color: #4a9eff;
-    margin-bottom: 4dp;
+    margin-bottom: 2dp;
     text-align: center;
+    white-space: nowrap;
 }
 
 /* Section headers */
 h2 {
-    font-size: 12dp;
+    font-size: 9dp;
     color: #6a6a80;
     margin-top: 2dp;
-    margin-bottom: 4dp;
+    margin-bottom: 2dp;
     text-transform: uppercase;
     letter-spacing: 1dp;
 }
 
 h3 {
-    font-size: 11dp;
+    font-size: 8dp;
     color: #4a9eff;
-    margin-top: 4dp;
-    margin-bottom: 2dp;
+    margin-top: 2dp;
+    margin-bottom: 1dp;
     text-transform: uppercase;
     letter-spacing: 0.5dp;
 }
@@ -109,14 +110,14 @@ h3 {
 
 .doc-list {
     display: block;
-    max-height: 120dp;
+    max-height: 80dp;
     overflow-y: auto;
 }
 
 .doc-item {
     display: block;
-    padding: 3dp 8dp;
-    font-size: 12dp;
+    padding: 2dp 6dp;
+    font-size: 9dp;
     color: #bbb;
     cursor: pointer;
     border-radius: 3dp;
@@ -166,14 +167,14 @@ h3 {
 
 .elem-list {
     display: block;
-    max-height: 180dp;
+    max-height: 120dp;
     overflow-y: auto;
 }
 
 .elem-item {
     display: block;
-    padding: 2dp 6dp;
-    font-size: 11dp;
+    padding: 1dp 4dp;
+    font-size: 9dp;
     color: #999;
     cursor: pointer;
     border-radius: 2dp;
@@ -206,22 +207,22 @@ h3 {
 
 label {
     display: inline-block;
-    font-size: 11dp;
+    font-size: 9dp;
     color: #999;
-    min-width: 55dp;
+    min-width: 40dp;
 }
 
 input.text {
     display: inline-block;
-    width: 120dp;
-    padding: 2dp 6dp;
+    width: 80dp;
+    padding: 1dp 4dp;
     background-color: #0f0f1a;
     border-width: 1dp;
     border-color: #333;
-    border-radius: 3dp;
+    border-radius: 2dp;
     color: #ddd;
-    font-size: 11dp;
-    margin-left: 4dp;
+    font-size: 9dp;
+    margin-left: 2dp;
 }
 
 input.text:focus {
@@ -241,9 +242,9 @@ input.text:focus {
 
 input.range {
     display: inline-block;
-    width: 140dp;
-    height: 16dp;
-    margin-left: 4dp;
+    width: 90dp;
+    height: 12dp;
+    margin-left: 2dp;
     vertical-align: middle;
 }
 
@@ -332,13 +333,13 @@ input.checkbox:checked {
 
 button {
     display: inline-block;
-    padding: 4dp 10dp;
+    padding: 3dp 8dp;
     background-color: #1a1a2a;
     border-width: 1dp;
     border-color: #444;
-    border-radius: 4dp;
+    border-radius: 3dp;
     color: #ccc;
-    font-size: 12dp;
+    font-size: 9dp;
     cursor: pointer;
     margin-right: 6dp;
 }

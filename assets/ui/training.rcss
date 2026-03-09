@@ -1,4 +1,5 @@
-/* Training Options — F7 settings overlay */
+/* Training Options — F7 settings overlay
+ * Compact layout for low-res windows */
 
 body {
     width: 100%;
@@ -9,22 +10,23 @@ body {
 #training-panel {
     display: block;
     position: absolute;
-    top: 50dp;
-    right: 30dp;
-    width: 320dp;
-    max-height: 450dp;
+    top: 2%;
+    right: 2%;
+    width: 45%;
+    max-height: 90%;
+    overflow-y: auto;
 }
 
 /* ── Sections ── */
 .section {
     display: block;
-    margin-bottom: 4dp;
+    margin-bottom: 2dp;
 }
 
 /* ── Control rows ── */
 .control-row {
     display: block;
-    padding: 3dp 0dp;
+    padding: 1dp 0dp;
 }
 
 .control-row label {
@@ -35,8 +37,8 @@ body {
 /* ── Sub-group indentation ── */
 .sub-group {
     display: block;
-    padding-left: 24dp;
-    margin-top: 4dp;
+    padding-left: 12dp;
+    margin-top: 2dp;
 }
 
 /* ── Divider ── */
@@ -44,15 +46,16 @@ body {
     display: block;
     height: 1dp;
     background-color: #444;
-    margin-top: 8dp;
-    margin-bottom: 8dp;
+    margin-top: 3dp;
+    margin-bottom: 3dp;
 }
 
 /* ── Hint text ── */
 .hint {
     display: block;
-    font-size: 12dp;
+    font-size: 8dp;
     color: #888888;
     margin-top: 2dp;
-    margin-bottom: 4dp;
+    margin-bottom: 2dp;
+    white-space: nowrap;
 }

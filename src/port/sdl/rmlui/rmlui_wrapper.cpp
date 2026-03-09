@@ -226,6 +226,21 @@ static RendererBackend s_active_backend;
 static SDL_Window* s_window = nullptr;
 static int s_window_w = 0;
 static int s_window_h = 0;
+static float s_hidpi_ratio = 1.0f;
+
+// Reference width for dp-ratio scaling: menus are designed for ~1280px windows.
+// At smaller windows, dp values shrink proportionally; at larger, they grow.
+static constexpr float REFERENCE_W = 1280.0f;
+
+static float compute_window_dp_ratio(int window_w) {
+    float size_scale = (float)window_w / REFERENCE_W;
+    // Clamp to avoid extremes (too tiny or too huge)
+    if (size_scale < 0.3f)
+        size_scale = 0.3f;
+    if (size_scale > 3.0f)
+        size_scale = 3.0f;
+    return s_hidpi_ratio * size_scale;
+}
 
 static constexpr int GAME_W = 384;
 static constexpr int GAME_H = 224;
@@ -350,12 +365,11 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
         SDL_Log("[RmlUi] Failed to create window context");
         return;
     }
-    float dp_ratio = SDL_GetWindowDisplayScale(window);
-    if (dp_ratio > 0.0f) {
-        s_window_context->SetDensityIndependentPixelRatio(dp_ratio);
-    } else {
-        dp_ratio = 1.0f;
-    }
+    s_hidpi_ratio = SDL_GetWindowDisplayScale(window);
+    if (s_hidpi_ratio <= 0.0f)
+        s_hidpi_ratio = 1.0f;
+    float dp_ratio = compute_window_dp_ratio(s_window_w);
+    s_window_context->SetDensityIndependentPixelRatio(dp_ratio);
 
     // --- Game context (Phase 3 game screens — CPS3 resolution) ---
     s_game_context = Rml::CreateContext("game", Rml::Vector2i(GAME_W, GAME_H));
@@ -495,6 +509,7 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
         s_window_w = event->window.data1;
         s_window_h = event->window.data2;
         s_window_context->SetDimensions(Rml::Vector2i(s_window_w, s_window_h));
+        s_window_context->SetDensityIndependentPixelRatio(compute_window_dp_ratio(s_window_w));
         if (s_render_gl3) {
             s_render_gl3->SetViewport(s_window_w, s_window_h);
         }

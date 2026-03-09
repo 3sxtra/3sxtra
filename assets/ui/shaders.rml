@@ -52,7 +52,7 @@
             <h2>Shader Presets ({{preset_count}})</h2>
             <div class="search-row">
                 <label>Search:</label>
-                <input type="text" id="preset-search" data-value="search_filter"/>
+                <input type="text" id="preset-search" size="60" data-value="search_filter"/>
             </div>
             <div id="preset-list">
                 <div data-if="filtered_presets.size == 0" class="status-warn">

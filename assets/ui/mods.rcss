@@ -1,41 +1,41 @@
-/* Mods menu stylesheet — 3SXtra RmlUi overlay */
+/* Mods menu stylesheet — 3SXtra RmlUi overlay
+ * Compact full-width layout for low-res windows */
 
 body {
     width: 100%;
     height: 100%;
-    /* Full-screen dark backdrop */
     background-color: rgba(0, 0, 0, 191);
 }
 
 #mods-panel {
     display: block;
-    width: 55%;
-    min-width: 280dp;
+    width: 96%;
     max-height: 90%;
     margin: auto;
-    margin-top: 5%;
+    margin-top: 1%;
     background-color: rgba(15, 15, 20, 242);
     border-width: 1dp;
     border-color: #444;
-    border-radius: 10dp;
-    padding: 16dp 18dp;
+    border-radius: 6dp;
+    padding: 6dp 8dp;
     overflow-y: auto;
 }
 
 /* Title */
 #mods-panel h1 {
-    font-size: 22dp;
+    font-size: 14dp;
     color: #ff9933;
-    margin-bottom: 8dp;
+    margin-bottom: 3dp;
     text-align: center;
+    white-space: nowrap;
 }
 
 /* Section headers */
 #mods-panel h2 {
-    font-size: 12dp;
+    font-size: 9dp;
     color: #888;
-    margin-top: 6dp;
-    margin-bottom: 6dp;
+    margin-top: 3dp;
+    margin-bottom: 2dp;
     text-transform: uppercase;
     letter-spacing: 1dp;
     white-space: nowrap;
@@ -44,7 +44,7 @@ body {
 /* Sections */
 .section {
     display: block;
-    margin-bottom: 4dp;
+    margin-bottom: 2dp;
 }
 
 /* Horizontal dividers */
@@ -52,14 +52,14 @@ body {
     display: block;
     height: 1dp;
     background-color: #333;
-    margin-top: 8dp;
-    margin-bottom: 8dp;
+    margin-top: 3dp;
+    margin-bottom: 3dp;
 }
 
-/* Control rows — horizontal: checkbox + label on one line */
+/* Control rows */
 .control-row {
     display: block;
-    padding: 3dp 4dp;
+    padding: 1dp 4dp;
     white-space: nowrap;
 }
 
@@ -75,18 +75,18 @@ body {
 
 .control-row:hover {
     background-color: rgba(255, 255, 255, 13);
-    border-radius: 4dp;
+    border-radius: 3dp;
 }
 
 /* Labels */
 label {
-    font-size: 12dp;
+    font-size: 10dp;
     color: #dddddd;
     cursor: pointer;
     white-space: nowrap;
 }
 
-/* Disabled state — applied via data-class-disabled */
+/* Disabled state */
 .disabled {
     opacity: 0.35;
 }
@@ -94,20 +94,22 @@ label {
 /* Status indicator text */
 .status-ok {
     color: #66ff66;
-    font-size: 13dp;
+    font-size: 9dp;
 }
 
 .status-warn {
     color: #ffcc33;
-    font-size: 13dp;
+    font-size: 9dp;
     display: block;
-    margin-bottom: 4dp;
+    margin-bottom: 2dp;
+    white-space: nowrap;
 }
 
 /* Footer hint text */
 .hint {
-    font-size: 12dp;
+    font-size: 8dp;
     color: #555;
-    margin-top: 10dp;
+    margin-top: 4dp;
     text-align: center;
+    white-space: nowrap;
 }
