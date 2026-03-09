@@ -2,8 +2,8 @@
  * @file sdl_texture_util.cpp
  * @brief Standalone texture loading, sizing, and cleanup.
  *
- * Extracted from imgui_wrapper.cpp to decouple texture management from ImGui.
- * Supports both OpenGL and SDL_GPU backends.
+ * Standalone texture loading, sizing, and cleanup for all renderer backends.
+ * Supports OpenGL, SDL_GPU, and SDL2D.
  */
 #include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/sdl/app/sdl_app.h"

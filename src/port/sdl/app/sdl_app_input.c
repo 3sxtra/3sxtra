@@ -80,7 +80,7 @@ static void handle_texture_dump(SDL_KeyboardEvent* event) {
 bool SDLAppInput_HandleEvent(SDL_Event* event) {
     bool request_quit = false;
 
-    // SDL2D mode: no ImGui, no NetplayUI — skip all UI processing
+    // SDL2D mode: no NetplayUI — skip UI processing
     if (!is_sdl2d_backend(SDLApp_GetRenderer())) {
         // Process UI events — always send to RmlUi
         rmlui_wrapper_process_event(event);
@@ -144,7 +144,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
         }
         // Gamepad, joystick, window events etc. always fall through
     } else {
-        // SDL2D mode: no ImGui, no NetplayUI — RmlUi always available for Fx menus
+        // SDL2D mode: no NetplayUI — RmlUi always available for Fx menus
         rmlui_wrapper_process_event(event);
 
         if (event->type == SDL_EVENT_KEY_DOWN) {

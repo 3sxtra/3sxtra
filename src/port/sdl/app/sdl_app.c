@@ -30,7 +30,7 @@
 #include "port/sdl/app/sdl_app_internal.h"
 #include "port/sdl/app/sdl_app_shader_config.h"
 
-#include "port/sdl/imgui/training_menu.h"
+#include "port/training_menu.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/sdl/rmlui/rmlui_attract_overlay.h"
@@ -273,7 +273,7 @@ static int fps_history_capacity = 0;
 // ⚡ Bolt: Bezel VBO dirty flag — skip redundant vertex uploads.
 static bool bezel_vbo_dirty = true;
 
-// UI mode flag — when true, RmlUi handles overlay menus instead of ImGui
+// UI mode flag — when true, RmlUi handles overlay menus
 bool use_rmlui = false;
 
 static const /** @brief Return the display name for the current scale mode. */
@@ -812,10 +812,10 @@ int SDLApp_Init() {
     if (use_rmlui) {
         SDL_Log("UI mode: RmlUi (overlay menus via HTML/CSS)");
     } else {
-        SDL_Log("UI mode: ImGui (default)");
+        SDL_Log("UI mode: RmlUi (default)");
     }
 
-    // Skip ImGui, shaders, and mod menus for SDL2D mode
+    // Skip shaders and mod menus for SDL2D mode
     if (!is_sdl2d_backend(g_renderer_backend)) {
         SDLNetplayUI_Init();
         ModdedStage_Init();
@@ -1260,7 +1260,7 @@ static void render_debug_hud(int win_w, int win_h, const SDL_FRect* viewport) {
     SDLTextRenderer_SetBackgroundEnabled(0);
 }
 
-/** @brief Dispatch menu/overlay rendering and flush the UI framework (RmlUi or ImGui).
+/** @brief Dispatch menu/overlay rendering and flush the UI framework (RmlUi).
  *  Handles input/frame display updates, all menu overlays, netplay UI, and the
  *  final rmlui_wrapper_render() flush.
  *  @param win_w  Window width (logical) for overlay sizing.
@@ -1284,7 +1284,7 @@ static void render_overlays(int win_w, int win_h) {
     if (show_training_menu)
         rmlui_training_menu_update();
 
-    /* Netplay overlay — SDLNetplayUI_Render uses ImGui, which is not initialized on SDL2D */
+    /* Netplay overlay — SDLNetplayUI_Render is not initialized on SDL2D */
     SDLNetplayUI_SetFPSHistory(fps_history, fps_history_count, (float)fps);
     if (!is_sdl2d_backend(g_renderer_backend)) {
         SDLNetplayUI_Render(win_w, win_h);

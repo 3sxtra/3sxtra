@@ -1,7 +1,7 @@
 #include "training_hud.h"
 #include "game_state.h"
 #include "port/rendering/renderer.h"
-#include "port/sdl/imgui/training_menu.h"
+#include "port/training_menu.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/game.h"

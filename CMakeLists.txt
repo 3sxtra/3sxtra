@@ -170,7 +170,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/port/sdl/app
     ${PROJECT_SOURCE_DIR}/src/port/sdl/renderer
     ${PROJECT_SOURCE_DIR}/src/port/sdl/input
-    ${PROJECT_SOURCE_DIR}/src/port/sdl/imgui
     ${PROJECT_SOURCE_DIR}/src/port/sdl/netplay
     ${PROJECT_SOURCE_DIR}/src/port/sdl/rmlui
     # Subdirectories under src/port/ (bare-filename includes)
@@ -214,8 +213,7 @@ target_include_directories(3sx_zlib PUBLIC ${PROJECT_SOURCE_DIR}/src/zlib)
 target_compile_options(3sx_zlib PRIVATE -Wno-format -Wno-error=format -fvisibility=hidden)
 set_target_properties(3sx_zlib PROPERTIES C_CLANG_TIDY "")
 
-file(GLOB IMGUI_SRC ${THIRD_PARTY_DIR}/imgui/*.cpp)
-file(GLOB IMGUI_BACKEND_SRC ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdl3.cpp ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_opengl3.cpp ${THIRD_PARTY_DIR}/imgui/backends/imgui_impl_sdlgpu3.cpp)
+
 
 # Explicitly include Source/Common files (workaround for GLOB_RECURSE linking issue)
 file(GLOB COMMON_SRC src/sf33rd/Source/Common/*.c)
@@ -223,7 +221,7 @@ file(GLOB COMMON_SRC src/sf33rd/Source/Common/*.c)
 set(GAME_SRC ${GAME_SRC} ${COMMON_SRC})
 
 # Disable clang-tidy for all third-party sources
-set_source_files_properties(${IMGUI_SRC} ${IMGUI_BACKEND_SRC} src/port/win32/broadcast_spout.cpp
+set_source_files_properties(src/port/win32/broadcast_spout.cpp
     PROPERTIES
         SKIP_LINTING ON
         C_CLANG_TIDY ""
@@ -274,20 +272,17 @@ endif()
 # On RPi4, broadcast_pipewire.cpp is excluded (below), so broadcast.c uses the null backend.
 
 add_executable(3sx MACOSX_BUNDLE
-    ${GAME_SRC} ${BIN2OBJ_SRC} ${PORT_SRC} ${IMGUI_SRC} ${IMGUI_BACKEND_SRC}
+    ${GAME_SRC} ${BIN2OBJ_SRC} ${PORT_SRC}
     # Explicitly added Source/Common files (CMake GLOB doesn't include them for unknown reason)
     ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/MemMan.c
     ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/PPGFile.c
     ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/PPGWork.c
-    # --- sdl/imgui/ ---
-    src/port/sdl/imgui/imgui_wrapper.cpp
     # --- sdl/renderer/ ---
     src/port/sdl/renderer/sdl_texture_util.cpp
     # --- sdl/input/ ---
     src/port/sdl/input/control_mapping.cpp
     # --- port/ (unchanged locations) ---
     src/port/input_definition.cpp
-    src/port/imgui_font.cpp
     src/port/ui/replay_picker.cpp
     src/port/char_data.c
     src/port/broadcast.c
@@ -352,8 +347,6 @@ add_executable(3sx MACOSX_BUNDLE
 
 
 target_include_directories(3sx PRIVATE
-    ${THIRD_PARTY_DIR}/imgui
-    ${THIRD_PARTY_DIR}/imgui/backends
     ${THIRD_PARTY_DIR}/rmlui/Backends
 )
 

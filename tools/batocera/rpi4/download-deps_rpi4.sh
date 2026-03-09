@@ -163,17 +163,6 @@ else
     cd "$ROOT_DIR"
 fi
 
-# -----------------------------
-# imgui
-# -----------------------------
-
-IMGUI_DIR="$THIRD_PARTY/imgui"
-
-if [ -d "$IMGUI_DIR" ]; then
-    echo "imgui already exists."
-else
-    git clone --branch docking https://github.com/ocornut/imgui.git "$IMGUI_DIR"
-fi
 
 # -----------------------------
 # Freetype (required by RmlUi)

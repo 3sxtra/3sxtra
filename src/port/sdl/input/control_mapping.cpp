@@ -8,8 +8,6 @@
  */
 #include "port/sdl/input/control_mapping.h"
 #include "control_mapping_bindings.h"
-#include "imgui.h"
-#include "imgui_wrapper.h"
 #include "port/config/paths.h"
 #include "port/input_definition.h"
 #include "sdl_pad.h"
@@ -32,26 +30,8 @@ struct Device {
 
 static const std::string MAPPINGS_FILE = "mappings.ini";
 
-// Device icon textures
-static std::map<std::string, void*> device_icon_textures;
 
-// Helper to render centered text using ImGui.
-static float render_centered_text(const char* text, bool dry_run = false) {
-    if (text == nullptr)
-        return 0.0f;
-    float height = ImGui::GetTextLineHeightWithSpacing();
-    if (!dry_run) {
-        float window_width = ImGui::GetContentRegionAvail().x;
-        float text_width = ImGui::CalcTextSize(text).x;
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (window_width - text_width) / 2);
-        ImGui::Text("%s", text);
-    }
-    return height;
-}
 
-static float get_separator_height() {
-    return ImGui::GetStyle().ItemSpacing.y * 2.0f + 1.0f; // Approximate separator height
-}
 struct Mapping {
     std::string action;
     InputID input_id;
@@ -279,36 +259,6 @@ static void load_mappings() {
     }
 }
 
-static void* capcom_icons_texture = nullptr;
-
-// UV coordinates for each icon in the sprite sheet
-
-const float ICON_HEIGHT = 32.0f;
-// Texture dimensions will be queried at runtime
-
-#define UV_RECT(y_offset)                                                                                              \
-    ImVec2(0.0f, (y_offset * ICON_HEIGHT) / 544.0f), ImVec2(0.5f, ((y_offset + 1) * ICON_HEIGHT) / 544.0f)
-
-static const std::map<std::string, std::pair<ImVec2, ImVec2>> action_to_uv = {
-    // Directions
-    { "Left", { UV_RECT(0) } },
-    { "Right", { UV_RECT(1) } },
-    { "Up", { UV_RECT(2) } },
-    { "Down", { UV_RECT(3) } },
-    // Punches
-    { "Light Punch", { UV_RECT(8) } },
-    { "Medium Punch", { UV_RECT(9) } },
-    { "Hard Punch", { UV_RECT(10) } },
-    // Kicks
-    { "Light Kick", { UV_RECT(11) } },
-    { "Medium Kick", { UV_RECT(12) } },
-    { "Hard Kick", { UV_RECT(13) } },
-    // Other
-    { "Start", { UV_RECT(14) } },
-    { "Select", { UV_RECT(15) } },
-    // Neutral (no directional input)
-    { "Neutral", { UV_RECT(16) } }
-};
 
 // Helper to detect device type from name
 static std::string detect_device_type(const std::string& device_name) {
@@ -385,182 +335,13 @@ static std::string get_device_icon_path(const std::string& device_type) {
     }
 }
 
-// Helper to load device icon texture
-static void* get_device_icon_texture(const std::string& device_name) {
-    std::string device_type = detect_device_type(device_name);
-
-    // Check if already loaded
-    if (device_icon_textures.find(device_type) != device_icon_textures.end()) {
-        return device_icon_textures[device_type];
-    }
-
-    // Load the texture
-    std::string icon_path = get_device_icon_path(device_type);
-    if (!icon_path.empty()) {
-        const char* base_path = Paths_GetBasePath();
-        if (base_path) {
-            std::string full_path = std::string(base_path) + icon_path;
-            void* texture = imgui_wrapper_load_texture(full_path.c_str());
-            if (texture) {
-                device_icon_textures[device_type] = texture;
-                return texture;
-            }
-        }
-    }
-
-    return nullptr;
-}
 
 extern "C" void control_mapping_init() {
     load_mappings();
-    capcom_icons_texture = imgui_wrapper_get_capcom_icons_texture();
 }
 
-static float handle_player_column(int player_num, std::unique_ptr<Device>& playerDevice, MappingState& mappingState,
-                                  int& mapping_action_index, float icon_size, bool dry_run = false) {
-    float total_height = 0.0f;
-    std::string player_str = "P" + std::to_string(player_num);
-    std::string title = player_str + "'s Device";
 
-    total_height += render_centered_text(title.c_str(), dry_run);
 
-    if (!dry_run)
-        ImGui::Separator();
-    total_height += get_separator_height();
-
-    if (playerDevice) {
-        // Render device icon instead of name
-        void* device_texture = get_device_icon_texture(playerDevice->name);
-        if (device_texture && !dry_run) {
-            int tex_w = 0, tex_h = 0;
-            imgui_wrapper_get_texture_size(device_texture, &tex_w, &tex_h);
-
-            // Calculate icon size to fit nicely (smaller than action icons)
-            float device_icon_height = icon_size * 2.0f; // Make it bigger for visibility
-            float aspect = (float)tex_w / (float)tex_h;
-            float device_icon_width = device_icon_height * aspect;
-
-            // Center the icon
-            float window_width = ImGui::GetContentRegionAvail().x;
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (window_width - device_icon_width) / 2);
-            ImGui::Image(device_texture, ImVec2(device_icon_width, device_icon_height));
-            total_height += device_icon_height + ImGui::GetStyle().ItemSpacing.y;
-        } else {
-            // Fallback to text if no icon available
-            if (!dry_run)
-                ImGui::Text("%s", playerDevice->name.c_str());
-            total_height += ImGui::GetTextLineHeightWithSpacing();
-        }
-
-        if (!dry_run) {
-            if (ImGui::Button(("Unclaim##" + player_str).c_str())) {
-                playerDevice.reset();
-                mappingState = MappingState::Idle;
-                save_mappings();
-            }
-        }
-        total_height += ImGui::GetFrameHeightWithSpacing();
-
-        if (mappingState == MappingState::Idle) {
-            if (!dry_run) {
-                if (ImGui::Button(("Map Controls##" + player_str).c_str())) {
-                    mappingState = MappingState::Waiting;
-                    mapping_action_index = 0;
-                }
-            }
-            total_height += ImGui::GetFrameHeightWithSpacing();
-        }
-        if (!dry_run) {
-            std::string reset_popup_id = "ConfirmReset##" + player_str;
-            if (ImGui::Button(("Reset to Defaults##" + player_str).c_str())) {
-                ImGui::OpenPopup(reset_popup_id.c_str());
-            }
-            if (ImGui::BeginPopupModal(reset_popup_id.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                ImGui::Text("Reset all %s mappings to defaults?", player_str.c_str());
-                ImGui::Spacing();
-                if (ImGui::Button("OK", ImVec2(120, 0))) {
-                    player_mappings[player_num].clear();
-                    mappingState = MappingState::Idle;
-                    save_mappings();
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
-            }
-        }
-        total_height += ImGui::GetFrameHeightWithSpacing();
-    }
-    return total_height;
-}
-
-static float render_prompt(MappingState state, int action_index, float icon_size, bool dry_run = false) {
-    float total_height = 0.0f;
-    if (state == MappingState::Waiting) {
-        if (action_index < get_game_actions_count()) {
-            const char* action = game_actions[action_index];
-            if (action_to_uv.count(action)) {
-                if (!dry_run) {
-                    auto uv = action_to_uv.at(action);
-                    int tex_w = 0, tex_h = 0;
-                    imgui_wrapper_get_texture_size(capcom_icons_texture, &tex_w, &tex_h);
-                    // Since we are cropping to half width (0.5), the aspect ratio is based on 32px width
-                    float aspect = 1.0f;
-                    if (capcom_icons_texture)
-                        ImGui::Image(capcom_icons_texture, ImVec2(icon_size * aspect, icon_size), uv.first, uv.second);
-                    ImGui::SameLine();
-                }
-            }
-            if (!dry_run)
-                ImGui::TextWrapped("Press a button for %s", action);
-            // Height is max of icon and text, roughly
-            total_height += std::max(icon_size, ImGui::GetTextLineHeightWithSpacing());
-        } else {
-            if (!dry_run)
-                ImGui::Text("Waiting for input...");
-            total_height += ImGui::GetTextLineHeightWithSpacing();
-        }
-    } else if (state == MappingState::WaitingForKeyRelease) {
-        if (!dry_run)
-            ImGui::Text("Please release all inputs.");
-        total_height += ImGui::GetTextLineHeightWithSpacing();
-    } else if (state == MappingState::Done) {
-        if (!dry_run)
-            ImGui::Text("Mapping Complete!");
-        total_height += ImGui::GetTextLineHeightWithSpacing();
-    } else {
-        if (!dry_run)
-            ImGui::Text("Assign & Map");
-        total_height += ImGui::GetTextLineHeightWithSpacing();
-    }
-    return total_height;
-}
-
-static float show_mappings(int player_num, float icon_size, bool dry_run = false) {
-    float total_height = 0.0f;
-    if (player_mappings.find(player_num) != player_mappings.end()) {
-        for (const auto& mapping : player_mappings.at(player_num)) {
-            if (action_to_uv.count(mapping.action)) {
-                if (!dry_run) {
-                    auto uv = action_to_uv.at(mapping.action);
-                    int tex_w = 0, tex_h = 0;
-                    imgui_wrapper_get_texture_size(capcom_icons_texture, &tex_w, &tex_h);
-                    // Since we are cropping to half width (0.5), the aspect ratio is based on 32px width
-                    float aspect = 1.0f;
-                    if (capcom_icons_texture)
-                        ImGui::Image(capcom_icons_texture, ImVec2(icon_size * aspect, icon_size), uv.first, uv.second);
-                    ImGui::SameLine();
-                }
-            }
-            if (!dry_run)
-                ImGui::TextWrapped("%s", get_input_name(mapping.input_id).c_str());
-            total_height += std::max(icon_size, ImGui::GetTextLineHeightWithSpacing());
-        }
-    }
-    return total_height;
-}
 
 static void handle_player_mapping_update(int player_num, Device* playerDevice, MappingState& mappingState,
                                          int& mapping_action_index) {
@@ -691,170 +472,9 @@ extern "C" void control_mapping_update() {
     handle_player_mapping_update(2, p2Device.get(), p2MappingState, p2_mapping_action_index);
 }
 
-static float render_available_devices(bool dry_run = false) {
-    float total_height = 0.0f;
-    total_height += render_centered_text("Available Devices", dry_run);
-
-    if (!dry_run)
-        ImGui::Separator();
-    total_height += get_separator_height();
-
-    for (auto it = availableDevices.begin(); it != availableDevices.end();) {
-        if (!dry_run) {
-            // Render device icon instead of name
-            void* device_texture = get_device_icon_texture(it->name);
-            float window_width = ImGui::GetContentRegionAvail().x;
-
-            if (device_texture) {
-                int tex_w = 0, tex_h = 0;
-                imgui_wrapper_get_texture_size(device_texture, &tex_w, &tex_h);
-
-                // Calculate icon size - bigger for central column
-                float device_icon_height = 100.0f; // Increased size for better visibility
-                float aspect = (float)tex_w / (float)tex_h;
-                float device_icon_width = device_icon_height * aspect;
-
-                // Center the icon
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (window_width - device_icon_width) / 2);
-                ImGui::Image(device_texture, ImVec2(device_icon_width, device_icon_height));
-            } else {
-                // Fallback to text if no icon available
-                float text_width = ImGui::CalcTextSize(it->name.c_str()).x;
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (window_width - text_width) / 2);
-                ImGui::Text("%s", it->name.c_str());
-            }
-
-            // Buttons on next line
-
-            // Calculate button group width for centering (properly this time)
-            std::string p1_label = "<<##p1_" + std::to_string(it->id);
-            std::string p2_label = ">>##p2_" + std::to_string(it->id);
-            // CalcTextSize only on visible text ("<<" and ">>")
-            float p1_btn_w = ImGui::CalcTextSize("<<").x + ImGui::GetStyle().FramePadding.x * 2.0f;
-            float p2_btn_w = ImGui::CalcTextSize(">>").x + ImGui::GetStyle().FramePadding.x * 2.0f;
-            float spacing = ImGui::GetStyle().ItemSpacing.x;
-            float total_btn_width = p1_btn_w + spacing + p2_btn_w;
-
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (window_width - total_btn_width) / 2);
-
-            // Check button clicks before processing to prevent double-claiming
-            bool p1_clicked = ImGui::Button(p1_label.c_str());
-            ImGui::SameLine();
-            bool p2_clicked = ImGui::Button(p2_label.c_str());
-
-            // Only process one claim per frame
-            if (p1_clicked && !p2_clicked) {
-                p1Device = std::make_unique<Device>(*it);
-                it = availableDevices.erase(it);
-                save_mappings();
-            } else if (p2_clicked && !p1_clicked) {
-                p2Device = std::make_unique<Device>(*it);
-                it = availableDevices.erase(it);
-                save_mappings();
-            } else {
-                // If both clicked or neither clicked, just advance
-                ++it;
-            }
-        } else {
-            // In dry run, account for text line AND button line
-            ++it;
-        }
-        total_height += ImGui::GetTextLineHeightWithSpacing(); // Name
-        total_height += ImGui::GetFrameHeightWithSpacing();    // Buttons
-    }
-    return total_height;
-}
 
 extern "C" void control_mapping_render(int window_width, int window_height) {
-    refresh_devices();
-
-    ImVec2 window_size(window_width, window_height);
-    ImVec2 window_pos(0, 0);
-
-    ImGui::SetNextWindowPos(window_pos);
-    ImGui::SetNextWindowSize(window_size);
-    ImGui::Begin("Symmetrical Control Mapper",
-                 NULL,
-                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-
-    float font_scale = window_height / 480.0f;
-    ImGui::SetWindowFontScale(font_scale);
-
-    // Title header
-    ImGui::Spacing();
-    render_centered_text("CONTROLLER SETUP");
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-    float icon_size = window_height * 0.05f;
-
-    // Reserve space for footer so table doesn't overflow
-    float footer_h = ImGui::GetTextLineHeightWithSpacing() * 2.0f + get_separator_height();
-    float table_h = ImGui::GetContentRegionAvail().y - footer_h;
-    if (table_h < 100.0f)
-        table_h = 100.0f;
-
-    // Subtle styling: no hard grid lines, just column separators and row shading
-    ImGuiTableFlags table_flags = ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInnerV |
-                                  ImGuiTableFlags_RowBg | ImGuiTableFlags_PadOuterX;
-
-    if (ImGui::BeginTable("ControlMapping", 5, table_flags, ImVec2(0, table_h))) {
-        // Set explicit column proportions: Prompt(28%) | Device(15%) | Available(14%) | Device(15%) | Prompt(28%)
-        float total_w = (float)window_width;
-        ImGui::TableSetupColumn("P1Prompt", ImGuiTableColumnFlags_WidthStretch, 0.28f * total_w);
-        ImGui::TableSetupColumn("P1Device", ImGuiTableColumnFlags_WidthStretch, 0.15f * total_w);
-        ImGui::TableSetupColumn("Available", ImGuiTableColumnFlags_WidthStretch, 0.14f * total_w);
-        ImGui::TableSetupColumn("P2Device", ImGuiTableColumnFlags_WidthStretch, 0.15f * total_w);
-        ImGui::TableSetupColumn("P2Prompt", ImGuiTableColumnFlags_WidthStretch, 0.28f * total_w);
-
-        ImGui::TableNextRow(ImGuiTableRowFlags_None, table_h);
-
-        // Column 1: P1 Prompt
-        ImGui::TableNextColumn();
-        ImGui::Spacing();
-        render_centered_text("P1 Mappings");
-        ImGui::Separator();
-        ImGui::Spacing();
-        render_prompt(p1MappingState, p1_mapping_action_index, icon_size);
-        ImGui::Separator();
-        show_mappings(1, icon_size);
-
-        // Column 2: P1 Device
-        ImGui::TableNextColumn();
-        ImGui::Spacing();
-        handle_player_column(1, p1Device, p1MappingState, p1_mapping_action_index, icon_size);
-
-        // Column 3: Available Devices
-        ImGui::TableNextColumn();
-        ImGui::Spacing();
-        render_available_devices();
-
-        // Column 4: P2 Device
-        ImGui::TableNextColumn();
-        ImGui::Spacing();
-        handle_player_column(2, p2Device, p2MappingState, p2_mapping_action_index, icon_size);
-
-        // Column 5: P2 Prompt
-        ImGui::TableNextColumn();
-        ImGui::Spacing();
-        render_centered_text("P2 Mappings");
-        ImGui::Separator();
-        ImGui::Spacing();
-        render_prompt(p2MappingState, p2_mapping_action_index, icon_size);
-        ImGui::Separator();
-        show_mappings(2, icon_size);
-
-        ImGui::EndTable();
-    }
-
-    // Footer
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-    render_centered_text("F1: Close | Note: In-game Button Config is inactive while mappings are set here");
-
-    ImGui::End();
+    (void)window_width; (void)window_height;
 }
 
 extern "C" bool control_mapping_is_active() {
@@ -863,7 +483,7 @@ extern "C" bool control_mapping_is_active() {
 }
 
 extern "C" void control_mapping_shutdown() {
-    // Textures are now managed by the imgui_wrapper, so this is no longer needed.
+    // No-op — textures managed by TextureUtil.
 }
 
 extern "C" {

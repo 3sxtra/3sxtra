@@ -355,19 +355,6 @@ else
     cd "$SDL_IMAGE_DIR"
 fi
 
-# -----------------------------
-# ImGui
-# -----------------------------
-
-IMGUI_DIR="$THIRD_PARTY/imgui"
-
-if [ -d "$IMGUI_DIR" ]; then
-    echo "imgui already exists at $IMGUI_DIR"
-else
-    echo "Cloning imgui..."
-    git clone --branch docking https://github.com/ocornut/imgui.git "$IMGUI_DIR"
-    echo "imgui cloned to $IMGUI_DIR"
-fi
 
 # -----------------------------
 # FreeType (required by RmlUi)

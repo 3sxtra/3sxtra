@@ -1,9 +1,10 @@
 /**
  * @file replay_picker.cpp
- * @brief ImGui overlay for selecting replay slots (load/save).
+ * @brief Replay slot picker — input/state logic.
  *
  * Shows a list of 20 replay slots with character names and dates.
  * Supports controller navigation (up/down/confirm/cancel) and mouse.
+ * ImGui rendering removed — UI handled by rmlui_replay_picker.
  */
 
 #include "port/ui/replay_picker.h"
@@ -14,7 +15,6 @@ extern "C" {
 #include "sf33rd/Source/Game/engine/workuser.h"
 }
 
-#include <imgui.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -24,6 +24,7 @@ static const char* s_char_names[20] = { "Gill",  "Alex",    "Ryu",    "Yun",  "D
                                         "Ibuki", "Elena",   "Oro",    "Yang", "Ken",    "Sean",  "Urien",
                                         "Akuma", "Chun-Li", "Makoto", "Q",    "Twelve", "Remy" };
 
+static const char* get_char_name(int id) __attribute__((unused));
 static const char* get_char_name(int id) {
     if (id >= 0 && id < 20)
         return s_char_names[id];
@@ -111,88 +112,6 @@ extern "C" int ReplayPicker_Update(void) {
         }
     }
 
-    /* ── Render ──────────────────────────────────────────────────── */
-
-    ImGuiIO& io = ImGui::GetIO();
-    float scale = io.DisplaySize.y / 480.0f;
-    if (scale < 1.0f)
-        scale = 1.0f;
-
-    ImGui::SetNextWindowPos(
-        ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-    ImGui::SetNextWindowSize(ImVec2(420 * scale, 360 * scale), ImGuiCond_Always);
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f * scale);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12 * scale, 12 * scale));
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.08f, 0.08f, 0.12f, 0.95f));
-    ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0.15f, 0.15f, 0.25f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.2f, 0.2f, 0.35f, 1.0f));
-
-    const char* title = (s_mode == 0) ? "Load Replay" : "Save Replay";
-    bool visible = true;
-
-    if (ImGui::Begin(title,
-                     &visible,
-                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-                         ImGuiWindowFlags_NoScrollbar)) {
-
-        float row_h = 22.0f * scale;
-        float list_h = ImGui::GetContentRegionAvail().y - 30 * scale;
-
-        if (ImGui::BeginChild("ReplayList", ImVec2(0, list_h), true)) {
-            for (int i = 0; i < NATIVE_SAVE_REPLAY_SLOTS; i++) {
-                bool selected = (i == s_cursor);
-                char label[128];
-
-                if (s_slot_exists[i]) {
-                    const _sub_info* info = &s_slot_info[i];
-                    snprintf(label,
-                             sizeof(label),
-                             "%02d  %s vs %s  %04d-%02d-%02d %02d:%02d",
-                             i + 1,
-                             get_char_name(info->player[0]),
-                             get_char_name(info->player[1]),
-                             info->date.year,
-                             info->date.month,
-                             info->date.day,
-                             info->date.hour,
-                             info->date.min);
-                } else {
-                    snprintf(label, sizeof(label), "%02d  --- empty ---", i + 1);
-                }
-
-                if (ImGui::Selectable(label, selected, 0, ImVec2(0, row_h))) {
-                    s_cursor = i;
-                    /* Double-click or click to select */
-                    if (s_mode == 1 || s_slot_exists[i]) {
-                        s_selected_slot = i;
-                        s_open = false;
-                        s_result = 0;
-                    }
-                }
-
-                /* Auto-scroll to cursor */
-                if (selected) {
-                    ImGui::SetScrollHereY();
-                }
-            }
-        }
-        ImGui::EndChild();
-
-        /* Footer */
-        ImGui::Separator();
-        ImGui::TextDisabled("UP/DOWN: navigate  |  A: select  |  B: cancel");
-    }
-    ImGui::End();
-
-    ImGui::PopStyleColor(3);
-    ImGui::PopStyleVar(2);
-
-    if (!visible) {
-        s_open = false;
-        s_result = -1;
-        return -1;
-    }
-
+    /* ImGui rendering removed — UI handled by rmlui_replay_picker */
     return 1;
 }

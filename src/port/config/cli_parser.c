@@ -56,7 +56,7 @@ void ParseCLI(int argc, char* argv[]) {
             printf("  --enable-broadcast        Enable Spout/shared-memory broadcast\n");
             printf("  --shm-suffix <suffix>     Shared-memory name suffix for broadcast\n");
             printf("  --font-test               Boot into font debug visualization screen\n");
-            printf("  --ui <imgui|rmlui>        UI toolkit for overlay menus (default: imgui)\n");
+            printf("  --ui <rmlui>              UI toolkit for overlay menus (default: rmlui)\n");
 #if defined(DEBUG)
             printf("  --test-enable             Enable test runner (DEBUG only)\n");
             printf("  --test-states <path>      Path to states directory (DEBUG only)\n");

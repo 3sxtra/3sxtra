@@ -6,7 +6,6 @@
  * and timed toast messages using ImGui during netplay sessions.
  */
 #include "port/sdl/netplay/sdl_netplay_ui.h"
-#include "imgui.h"
 #include "netplay/netplay.h"
 #include <SDL3/SDL.h>
 #include <float.h>
