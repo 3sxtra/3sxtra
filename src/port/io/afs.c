@@ -204,7 +204,10 @@ static int preload_thread_func(void* ptr) {
                 SDL_SeekIO(io, entry->offset, SDL_IO_SEEK_SET);
                 SDL_ReadIO(io, preloaded_data, sector_aligned_size);
 
-                // Atomically set data so main thread sees it safely
+                // Ensure all data writes are visible before publishing the pointer.
+                // Without this barrier, ARM cores could see the pointer but read
+                // partially-written data behind it.
+                SDL_MemoryBarrierRelease();
                 SDL_SetAtomicPointer(&entry->data, preloaded_data);
             }
         }
@@ -244,7 +247,11 @@ bool AFS_Init(const char* file_path) {
     }
 
     SDL_SetAtomicInt(&preload_shutdown_flag, 0);
-    preload_thread = SDL_CreateThread(preload_thread_func, "AFS_Preload", SDL_strdup(file_path));
+    char* path_copy = SDL_strdup(file_path);
+    preload_thread = SDL_CreateThread(preload_thread_func, "AFS_Preload", path_copy);
+    if (preload_thread == NULL) {
+        SDL_free(path_copy);
+    }
 
     return true;
 }
@@ -389,6 +396,9 @@ void AFS_Read(AFSHandle handle, int sectors, void* buf) {
     // Fast path: preloaded data — zero-copy memcpy, no I/O
     void* preloaded_data = SDL_GetAtomicPointer(&entry->data);
     if (preloaded_data) {
+        // Pair with the release barrier in the preload thread to ensure
+        // all file data writes are visible before we memcpy.
+        SDL_MemoryBarrierAcquire();
         SDL_memcpy(buf, (Uint8*)preloaded_data + request->sector * 2048, sectors * 2048);
         request->sector += sectors;
         request->state = AFS_READ_STATE_FINISHED;
