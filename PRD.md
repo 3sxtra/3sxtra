@@ -1,141 +1,117 @@
-# PRD: Code Health V — Hygiene Sweep (Inline Externs, Dead Includes, Magic Numbers)
+# PRD: Advanced Training Mode — Fix Lua Dummy Integration
 
 ## Overview
-Fifth pass of code health improvements across the 3SX port layer.
-Focus: eliminating inline `extern` declarations in `.c` files, auditing and removing unnecessary `#include <stdio.h>` / `<stdlib.h>`, and replacing magic numbers with named constants.
-All changes are behavior-preserving — no new features, no game logic changes.
+Static analysis revealed two root causes preventing the Lua dummy from working:
 
-## Skills Available
-The agent should leverage these skills from `.agents/skills/`:
-- **kaizen** — small, incremental changes; verify after each task
-- **memory-safety-patterns** — init/shutdown pairs, guard clauses
-- **code-review-checklist** — structured review after each change
-- **c-cpp-pro** — idiomatic C patterns, const correctness
+1. **The C dummy overwrites Lua.** In `plcnt_move()`, `lua_engine_bridge_tick()` runs first (line 576→259), then `Player_move()` runs later (line 914→47→184). Inside `CPU_Sub()`, `Lever_Buff[id]` is cleared to 0 (line 191) then `training_dummy_update_input()` overwrites it (line 205). All Lua output is destroyed.
 
-## Goals
-- Replace all inline `extern` declarations in `.c` files with proper `#include` of the declaring header
-- Audit `#include <stdio.h>` across all port layer files — remove where only `SDL_Log` is used (no `printf/fprintf/snprintf/sprintf/sscanf/fopen/fclose/fgets/fputs/FILE`)
-- Replace magic number thresholds in `sdl_pad.c` with named constants
-- Add missing `@file`/`@brief` doc comments to files that lack them
+2. **12+ derived player fields are nil.** `engine_gamestate.lua` (360 LOC) is a minimal shim that copies raw C bridge fields. The original `gamestate.lua` (1779 LOC) computes dozens of derived fields (`standing_state`, `is_waking_up`, `has_just_been_thrown`, `can_fast_wakeup`, `idle_time`, `stun_just_began`, etc.) that `dummy_control.lua` depends on. These fields are `nil` at runtime, silently breaking every advanced feature.
 
-## Conventions (DO NOT deviate)
-- Run `.\lint.bat` and `.\recompile.bat` after every task — both must pass
-- Run `cd build_tests && ctest --output-on-failure` after every task
-- Preserve all public API signatures — no breaking changes
-- Do NOT touch game logic, netplay protocol, or shader pipelines
-- Read the `kaizen` and `code-review-checklist` skills before starting
+### Reference
+- Detailed findings: see `training_audit.md` in brain artifacts
+- Original gamestate: `src/lua/3rd_training_lua-main/src/gamestate.lua` (1779 LOC)
+- Compat shim: `src/lua/compat/engine_gamestate.lua` (360 LOC)
+- C overwrite path: `com_pl.c:191,205` → `CPU_Sub()`
 
 ---
 
-## Task 1: Eliminate inline `extern` declarations in port-layer `.c` files
-The following files have inline `extern` declarations that should be replaced with proper `#include`:
-
-1. `src/port/sdl/app/sdl_app_bezel.c` — lines 30-31:
-   `extern SDL_GPUCommandBuffer* SDLGameRendererGPU_GetCommandBuffer(void);`
-   `extern SDL_GPUTexture* SDLGameRendererGPU_GetSwapchainTexture(void);`
-   → Move to `sdl_game_renderer_gpu.h` or `sdl_game_renderer_internal.h`, then `#include`
-
-2. `src/port/sdl/renderer/sdl_game_renderer.c` — line 70:
-   `extern void SDLGameRendererGL_ResetBatchState(void);`
-   → Move to `sdl_game_renderer_internal.h` or appropriate header, then `#include`
-
-3. `src/port/sdl/renderer/sdl_text_renderer.c` — lines 106-110:
-   `extern u32 flDebugStrHan;`
-   `extern u32 flDebugStrCtr;`
-   `extern void* flPS2GetSystemBuffAdrs(unsigned int handle);`
-   → Find or create the proper header for these CPS3 stubs, then `#include`
-
-4. `src/port/sdl/renderer/sdl_game_renderer_gpu_lz77.c` — line 183:
-   `extern Sint16* dctex_linear;`
-   → Find the declaring header (likely in the CPS3 engine headers), then `#include`
-
-5. `src/netplay/game_state.c` — line 56:
-   `extern unsigned short g_netplay_port;`
-   → Should be in `netplay.h`, then `#include`
+## Task 1: Stop C Dummy From Overwriting Lua Output
+`CPU_Sub()` clears `Lever_Buff[id] = 0` (com_pl.c:191) then calls `training_dummy_update_input()` (com_pl.c:205), destroying whatever Lua wrote.
 
 **Action:**
-- For each inline `extern`, find or create the proper header declaration
-- Replace the inline `extern` with a proper `#include`
-- Verify no circular dependencies are introduced
+1. In `com_pl.c`, skip BOTH the `Lever_Buff[id] = 0` clear AND `training_dummy_update_input()` when Lua dummy is active.
+2. Add `bool g_lua_dummy_active` to `training_state.h`. Set to `true` by `training_main.lua` via a new bridge function `engine.set_lua_dummy_active(true)`.
+3. In `CPU_Sub()`, gate the Lever_Buff clear and training_dummy_update_input call: `if (!g_lua_dummy_active) { ... }`
+4. Keep the C dummy as fallback when Lua doesn't load.
 
-Acceptance criteria:
-- Zero inline `extern` declarations remaining in port-layer `.c` files
-- `.\recompile.bat` succeeds
-- `.\lint.bat` passes
-- `ctest` passes
+**Acceptance:**
+- When Lua is active, Lua's `Lever_Buff` writes survive to `Player_move()`.
+- When Lua is not active, C dummy still functions.
+- `.\recompile.bat` passes.
 
 ---
 
-## Task 2: Audit and remove unnecessary `#include <stdio.h>`
-24 port-layer files include `<stdio.h>`. Many of these only use `SDL_Log` for output and `snprintf` (which is provided by `<stdio.h>`).
+## Task 2: Add Missing C Bridge Fields
+`engine_gamestate.lua` needs three raw fields from `l_read_player()` that are not currently exposed:
 
 **Action:**
-1. For each file that includes `<stdio.h>`, search for actual `stdio.h` usage: `printf`, `fprintf`, `snprintf`, `sprintf`, `sscanf`, `scanf`, `fopen`, `fclose`, `fread`, `fwrite`, `fgets`, `fputs`, `FILE`, `perror`
-2. If the file uses `snprintf` (very common for path building), `<stdio.h>` is still needed — skip it
-3. If the file uses ONLY `SDL_Log` and no `stdio.h` functions, remove the `#include <stdio.h>`
-4. Also check if `<stdlib.h>` is truly needed (any `malloc/calloc/realloc/free/exit/atoi/strtol`?)
+1. Find the correct struct offsets for these fields in PLW/WORK:
+   - `standing_state` — the original gamestate reads this from base+0x204
+   - `can_fast_wakeup` — original reads from base+0x1B3
+   - `received_connection_marker` — for hit confirmation
+2. Add `PUSH_INT()` lines to `l_read_player()` in `lua_engine_bridge.cpp`.
+3. Verify field names match what `engine_gamestate.lua` will use.
 
-Acceptance criteria:
-- Unnecessary `<stdio.h>` includes removed
-- `.\recompile.bat` succeeds
-- `.\lint.bat` passes
-- `ctest` passes
+**Acceptance:**
+- `engine.read_player(id)` returns the three new fields.
+- `.\recompile.bat` passes.
 
 ---
 
-## Task 3: Replace magic number thresholds in `sdl_pad.c`
-`sdl_pad.c` uses several unlabeled numeric thresholds for joystick input:
-- `24000` (joystick axis event threshold, line 241)
-- `20000` (keyboard "any input active" joystick check, line 640)
-- `16000` (joystick axis direction detection, lines 736/738)
-- `8000` (trigger/stick threshold for `IsAnyInputActive`, used in 6+ places)
+## Task 3: Add Missing Derived Fields to engine_gamestate.lua
+The compat shim needs to compute derived fields that `dummy_control.lua` reads.
 
 **Action:**
-1. Define named constants at the top of `sdl_pad.c`:
-   ```c
-   #define SDLPAD_AXIS_EVENT_THRESHOLD  24000
-   #define SDLPAD_AXIS_ACTIVE_THRESHOLD 20000
-   #define SDLPAD_AXIS_DIR_THRESHOLD    16000
-   #define SDLPAD_TRIGGER_THRESHOLD      8000
-   #define SDLPAD_STICK_THRESHOLD        8000
-   ```
-2. Replace all magic numbers with the named constants
-3. Add a brief comment explaining what each threshold means
+Add to `update_player()` in `engine_gamestate.lua`:
 
-Acceptance criteria:
-- Zero magic number thresholds in `sdl_pad.c`
-- `.\recompile.bat` succeeds
-- `.\lint.bat` passes
-- `ctest` passes
+1. **`standing_state`**: read from the new bridge field (Task 2).
+2. **`previous_posture`**: store `player.posture` before overwriting with new value.
+3. **`is_waking_up`**: `= player.posture == 0x26`
+4. **`has_just_been_thrown`**: track `is_being_thrown` transition (false→true).
+5. **`idle_time`**: counter, increment when idle, reset otherwise.
+6. **`stun_just_began`**: track `is_stunned` transition (false→true).
+7. **`just_received_connection`**: derive from new `received_connection_marker` field or `hit_flag` changes.
+8. **`can_fast_wakeup`** / **`previous_can_fast_wakeup`**: read from new bridge field, track transitions.
+9. **`is_past_fast_wakeup_frame`**: derive from `can_fast_wakeup` transition (1→0).
+10. **`has_just_landed`**: derive from `standing_state` transition (air→ground).
+
+Reference: original `gamestate.lua` lines 481-934 for exact computation logic.
+
+**Acceptance:**
+- All fields return correct values (not nil) when checked in Lua.
+- `dummy_control.update_pose()` correctly detects ground state.
 
 ---
 
-## Task 4: Add missing `@file`/`@brief` doc comments
-Scan all port-layer `.c` and `.h` files for missing `@file`/`@brief` doc comments.
-Focus on files modified in prior loops (the new sub-modules should already have them).
+## Task 4: Wire Menu Settings to Lua Dummy
+`training_main.lua` hardcodes all settings to OFF:
+```lua
+dummy_control.update_mash_inputs(input, dummy_player, 1)  -- OFF
+dummy_control.update_fast_wake_up(input, dummy_player, 1) -- OFF
+dummy_control.update_tech_throws(input, dummy_player, 1)  -- OFF
+```
 
 **Action:**
-1. Check `sdl_app_input.c`, `sdl_app_shader_config.c`, `config.c`, `cli_parser.c`, `paths.c`, `menu_bridge.c`, `modded_stage.c`, `stage_config.c`, `afs.c`, `native_save.c`
-2. Add `@file` and `@brief` doc comments to any file that lacks them
-3. Follow the pattern already established in new files (e.g., `sdl_app_scale.c`)
+1. Add `engine.get_dummy_settings()` to `lua_engine_bridge.cpp` that reads `g_dummy_settings`.
+2. In `training_main.lua`, call it each frame and map C enum values to Lua enum values.
+3. Pass mapped values to `dummy_control.update_*()` calls instead of hardcoded `1`.
 
-Acceptance criteria:
-- All port-layer `.c` files have `@file`/`@brief` headers
-- `.\recompile.bat` succeeds
-- `.\lint.bat` passes
+**Acceptance:**
+- Changing menu settings changes Lua dummy behavior.
+- `.\recompile.bat` passes.
 
 ---
 
-## Task 5: Final verification and summary
-Run the complete pipeline to ensure absolute parity.
+## Task 5: Add Missing Menu Items
+The Lua dummy supports features not in the C training menu.
 
-Steps:
-1. `.\lint.bat` — all C/C++ checks
-2. `.\recompile.bat` — full incremental build
+**Action:**
+1. Add `tech_throw_type`, `fast_wakeup`, `counter_attack_type` fields to `DummySettings`.
+2. Add menu mappings in `sync_dummy_settings_from_menu()`.
+3. Expose all new fields in `engine.get_dummy_settings()`.
+4. Add the `DUMMY_BLOCK_AFTER_FIRST_HIT` enum value (Lua has both FIRST_HIT and AFTER_FIRST_HIT).
+5. Fix mash enum overflow (values 4-6 exceed `DummyMashType`).
+
+**Acceptance:**
+- All Lua dummy features configurable from training menu.
+
+---
+
+## Task 6: Final Verification
+
+1. `.\lint.bat`
+2. `.\recompile.bat`
 3. `cd build_tests && ctest --output-on-failure`
 
-Acceptance criteria:
-- `.\lint.bat` passes without new issues
-- `.\recompile.bat` succeeds
-- `ctest` passes
-- All inline externs eliminated, dead includes removed, magic numbers named
+**Acceptance:**
+- All pass. No regressions.

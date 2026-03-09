@@ -94,7 +94,7 @@ label {
 /* ─── Select/Dropdown ─── */
 
 select {
-    display: inline-block;
+    display: block;
     padding: 2dp 6dp;
     background-color: #2a2a30;
     border-width: 1dp;
@@ -102,6 +102,7 @@ select {
     border-radius: 3dp;
     color: #ddd;
     font-size: 10dp;
+    white-space: nowrap;
 }
 
 select:hover {

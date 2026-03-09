@@ -6,13 +6,19 @@
  * Registered as the `engine` global table in the Lua state.
  *
  * Lua API:
- *   engine.read_player(id)       -> full player table (50+ fields from PLW/WORK)
- *   engine.read_globals()        -> global game state table
- *   engine.get_player_state(id)  -> TrainingPlayerState table (derived fields)
- *   engine.get_frame_number()    -> integer
- *   engine.is_in_match()         -> boolean
- *   engine.get_input(id)         -> integer (raw p1sw_0 / p2sw_0)
- *   engine.set_lever_buff(id, v) -> nil (writes Lever_Buff[id])
+ *   engine.read_player(id)              -> full player table (50+ fields from PLW/WORK)
+ *                                          Includes raw-offset fields: standing_state,
+ *                                          can_fast_wakeup, received_connection_marker
+ *   engine.read_globals()               -> global game state table
+ *   engine.get_player_state(id)         -> TrainingPlayerState table (derived fields)
+ *   engine.get_frame_number()           -> integer
+ *   engine.is_in_match()                -> boolean
+ *   engine.get_input(id)                -> integer (raw p1sw_0 / p2sw_0)
+ *   engine.set_lever_buff(id, v)        -> nil (writes Lever_Buff[id])
+ *   engine.set_lua_dummy_active(active) -> nil (gates C dummy override)
+ *   engine.get_dummy_settings()         -> table {block_type, parry_type, stun_mash,
+ *                                          wakeup_mash, wakeup_reversal, guard_low_default,
+ *                                          tech_throw_type, fast_wakeup}
  */
 
 #include "lua_engine_bridge.h"
@@ -30,6 +36,7 @@ extern "C" {
 #include "netplay/netplay.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/training/training_dummy.h"
 #include "sf33rd/Source/Game/training/training_state.h"
 #include "structs.h"
 }
@@ -265,6 +272,24 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "def_plus", wk->def_plus);
     PUSH_INT(L, t, "high_jump_flag", wk->high_jump_flag);
 
+    // --- Raw-offset fields (no named struct member) ---
+    // These match the FBNeo memory.readbyte/readword offsets in
+    // 3rd_training_lua-main/src/control/memory_addresses.lua.
+    {
+        const u8* base = (const u8*)wk;
+
+        // standing_state: base + 0x297 (byte)
+        PUSH_INT(L, t, "standing_state", base[0x297]);
+
+        // can_fast_wakeup: base + 0x402 (byte)
+        PUSH_INT(L, t, "can_fast_wakeup", base[0x402]);
+
+        // received_connection_marker: base + 0x32E (word, little-endian)
+        u16 rcm;
+        memcpy(&rcm, &base[0x32E], sizeof(u16));
+        PUSH_INT(L, t, "received_connection_marker", rcm);
+    }
+
     return 1;
 }
 
@@ -470,6 +495,31 @@ static int l_get_local_player(lua_State* L) {
     return 1;
 }
 
+/** @brief Set whether Lua controls the dummy — gates the C dummy override in CPU_Sub(). */
+static int l_set_lua_dummy_active(lua_State* L) {
+    int active = lua_toboolean(L, 1);
+    g_lua_dummy_active = (bool)active;
+    SDL_Log("[Lua Bridge] set_lua_dummy_active(%s)", active ? "true" : "false");
+    return 0;
+}
+
+/** @brief Return the current dummy settings from the C training menu as a Lua table. */
+static int l_get_dummy_settings(lua_State* L) {
+    lua_createtable(L, 0, 8);
+    int t = lua_gettop(L);
+
+    PUSH_INT(L, t, "block_type", (int)g_dummy_settings.block_type);
+    PUSH_INT(L, t, "parry_type", (int)g_dummy_settings.parry_type);
+    PUSH_INT(L, t, "stun_mash", (int)g_dummy_settings.stun_mash);
+    PUSH_INT(L, t, "wakeup_mash", (int)g_dummy_settings.wakeup_mash);
+    PUSH_BOOL(L, t, "wakeup_reversal", g_dummy_settings.wakeup_reversal);
+    PUSH_BOOL(L, t, "guard_low_default", g_dummy_settings.guard_low_default);
+    PUSH_INT(L, t, "tech_throw_type", (int)g_dummy_settings.tech_throw_type);
+    PUSH_INT(L, t, "fast_wakeup", (int)g_dummy_settings.fast_wakeup);
+
+    return 1;
+}
+
 // ---- Registration ----
 
 static const luaL_Reg engine_funcs[] = {
@@ -486,6 +536,8 @@ static const luaL_Reg engine_funcs[] = {
     { "write_field", l_write_field },
     { "tick", l_tick },
     { "read_file_text", l_read_file_text },
+    { "set_lua_dummy_active", l_set_lua_dummy_active },
+    { "get_dummy_settings", l_get_dummy_settings },
     { NULL, NULL }
 };
 

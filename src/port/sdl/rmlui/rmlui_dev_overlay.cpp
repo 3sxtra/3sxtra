@@ -259,33 +259,35 @@ static void refresh_doc_list() {
     add_from(static_cast<Rml::Context*>(rmlui_wrapper_get_game_context()), "game");
 }
 
-// ── Two-phase element list management ────────────────────────
+// ── Grow-only element list management ────────────────────────
 // RmlUi's data-for reconciliation evaluates OLD DOM children before
-// removing them. If the backing array shrinks, stale children access
-// out-of-bounds indices.
+// removing them.  If the backing array shrinks, stale children
+// access out-of-bounds indices ("Data array index out of bounds").
 //
-// Fix: two-phase state machine, each phase runs in update() (after
-// Context::Update), so the dirty flag is processed on the NEXT frame:
-//   Phase 1: clear array to empty + dirty → next Update removes all children
-//   Phase 2: populate from empty + dirty → next Update creates fresh children
-//
-// s_populate_phase: 0=idle, 1=need-clear, 2=need-populate
-static int s_populate_phase = 0;
+// Fix: the backing vector NEVER shrinks while the overlay is open.
+// A separate s_real_elem_count tracks how many entries are valid.
+// The RML uses data-if="el.index < elem_count" to hide padding.
+// Since the array only grows, data-for reconciliation can always
+// access any previously-valid index without OOB.
 
-static void do_clear_elem_list() {
-    s_elements.clear();
-    s_selected_elem = -1;
-    s_active_elem = nullptr;
-    if (s_model) {
-        s_model.DirtyVariable("elem_list");
-        s_model.DirtyVariable("elem_count");
-    }
-}
+static int s_real_elem_count = 0;
+static bool s_needs_rebuild = false;
 
-static void do_populate_elem_list() {
-    // Array should already be empty from phase 1
-    if (s_selected_doc < 0 || s_selected_doc >= (int)s_doc_ptrs.size())
+static void do_rebuild_elem_list() {
+    if (s_selected_doc < 0 || s_selected_doc >= (int)s_doc_ptrs.size()) {
+        // No valid doc — zero out valid range but keep array size
+        for (int i = 0; i < s_real_elem_count; i++) {
+            s_elements[i] = {"", 0, i, nullptr};
+        }
+        s_real_elem_count = 0;
+        s_selected_elem = -1;
+        s_active_elem = nullptr;
+        if (s_model) {
+            s_model.DirtyVariable("elem_list");
+            s_model.DirtyVariable("elem_count");
+        }
         return;
+    }
 
     Rml::ElementDocument* doc = s_doc_ptrs[s_selected_doc];
     if (!doc)
@@ -296,6 +298,8 @@ static void do_populate_elem_list() {
 
     int base_depth = get_depth(doc);
 
+    // Build new list in a temp vector
+    std::vector<ElemEntry> new_elems;
     for (size_t i = 0; i < all_elements.size(); i++) {
         Rml::Element* el = all_elements[i];
         const Rml::String& tag = el->GetTagName();
@@ -306,10 +310,29 @@ static void do_populate_elem_list() {
         ElemEntry entry;
         entry.label = make_label(el);
         entry.depth = get_depth(el) - base_depth;
-        entry.index = (int)s_elements.size();
+        entry.index = (int)new_elems.size();
         entry.ptr = el;
-        s_elements.push_back(entry);
+        new_elems.push_back(entry);
     }
+
+    // Grow backing array if needed (never shrink)
+    size_t needed = new_elems.size();
+    if (needed > s_elements.size()) {
+        s_elements.resize(needed);
+    }
+
+    // Overwrite with new data
+    for (size_t i = 0; i < needed; i++) {
+        s_elements[i] = new_elems[i];
+    }
+    // Mark excess entries as padding (valid structs, hidden by data-if)
+    for (size_t i = needed; i < s_elements.size(); i++) {
+        s_elements[i] = {"", 0, (int)i, nullptr};
+    }
+
+    s_real_elem_count = (int)needed;
+    s_selected_elem = -1;
+    s_active_elem = nullptr;
 
     if (s_model) {
         s_model.DirtyVariable("elem_list");
@@ -317,7 +340,7 @@ static void do_populate_elem_list() {
     }
 
     SDL_Log("[DevOverlay] Enumerated %d elements for document '%s'",
-            (int)s_elements.size(),
+            s_real_elem_count,
             s_selected_doc < (int)s_docs.size() ? s_docs[s_selected_doc].name.c_str() : "?");
 }
 
@@ -370,11 +393,11 @@ static void dirty_all_props() {
 }
 
 // Called from event callbacks (runs DURING Context::Update).
-// Do NOT modify s_elements here — only schedule the state machine.
+// Do NOT modify s_elements here — schedule rebuild for next update.
 static void do_select_doc(int idx) {
     SDL_Log("[DevOverlay] Scheduling document %d", idx);
     s_selected_doc = idx;
-    s_populate_phase = 1; // Start two-phase populate
+    s_needs_rebuild = true;
     if (s_model) {
         s_model.DirtyVariable("selected_doc");
     }
@@ -454,7 +477,7 @@ extern "C" void rmlui_dev_overlay_init() {
             }
         });
 
-    c.BindFunc("elem_count", [](Rml::Variant& v) { v = (int)s_elements.size(); });
+    c.BindFunc("elem_count", [](Rml::Variant& v) { v = s_real_elem_count; });
     c.BindFunc("has_selection", [](Rml::Variant& v) { v = (s_active_elem != nullptr); });
 
     // ── Selected element properties ──
@@ -796,16 +819,11 @@ extern "C" void rmlui_dev_overlay_update() {
     // processed the dirty flags from the reset, and setters were suppressed.
     s_suppress_apply = false;
 
-    // Two-phase populate state machine:
-    //   Phase 1 (this frame): clear array to empty, dirty → next Update removes DOM children
-    //   Phase 2 (next frame): populate from empty, dirty → next Update creates fresh children
-    if (s_populate_phase == 1) {
-        do_clear_elem_list();
-        s_populate_phase = 2;
-    } else if (s_populate_phase == 2) {
-        do_populate_elem_list();
+    // Deferred element-list rebuild (scheduled by select_doc event callback)
+    if (s_needs_rebuild) {
+        do_rebuild_elem_list();
         dirty_all_props();
-        s_populate_phase = 0;
+        s_needs_rebuild = false;
     }
 
     // On first open, refresh and auto-select first visible document.
@@ -815,12 +833,12 @@ extern "C" void rmlui_dev_overlay_update() {
         s_model.DirtyVariable("doc_list");
         s_model.DirtyVariable("doc_count");
 
-        // Auto-select first visible doc → start two-phase populate
+        // Auto-select first visible doc → rebuild immediately
         for (int i = 0; i < (int)s_docs.size(); i++) {
             if (s_docs[i].visible) {
                 s_selected_doc = i;
                 s_model.DirtyVariable("selected_doc");
-                s_populate_phase = 1; // Will run on next iteration
+                do_rebuild_elem_list();
                 break;
             }
         }

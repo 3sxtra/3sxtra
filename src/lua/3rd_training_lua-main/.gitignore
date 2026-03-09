@@ -1,0 +1,4 @@
+/src/challenge/hadou_matsuri.lua
+rsync.sh
+.rsyncignore
+.vscode/

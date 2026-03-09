@@ -25,6 +25,8 @@ DummySettings g_dummy_settings = {
     .wakeup_mash = DUMMY_MASH_NONE,
     .wakeup_reversal = false,
     .guard_low_default = true,
+    .tech_throw_type = DUMMY_TECH_THROW_NONE,
+    .fast_wakeup = DUMMY_FAST_WAKEUP_NONE,
 };
 
 /* ------------------------------------------------------------------ */
@@ -240,7 +242,8 @@ static void execute_block_or_parry(PLW* wk, s16 dummy_id) {
         return;
 
     /* ----- Reset first_hit_taken when dummy returns to neutral ----- */
-    if (g_dummy_settings.block_type == DUMMY_BLOCK_FIRST_HIT) {
+    if (g_dummy_settings.block_type == DUMMY_BLOCK_FIRST_HIT ||
+        g_dummy_settings.block_type == DUMMY_BLOCK_AFTER_FIRST_HIT) {
         if (dummy->is_idle && !opponent->is_attacking && !opponent->has_just_attacked) {
             g_dummy_settings.first_hit_taken = false;
         }
@@ -271,6 +274,13 @@ static void execute_block_or_parry(PLW* wk, s16 dummy_id) {
 
     case DUMMY_BLOCK_FIRST_HIT:
         if (g_dummy_settings.first_hit_taken && is_threat) {
+            should_block = true;
+        }
+        break;
+
+    case DUMMY_BLOCK_AFTER_FIRST_HIT:
+        /* Block everything UNTIL the first hit connects, then stop */
+        if (!g_dummy_settings.first_hit_taken && is_threat) {
             should_block = true;
         }
         break;

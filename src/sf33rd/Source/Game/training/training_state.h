@@ -99,6 +99,9 @@ typedef struct {
 
 extern TrainingGameState g_training_state;
 
+/** @brief When true, CPU_Sub() skips Lever_Buff clear and C dummy override so Lua controls input. */
+extern bool g_lua_dummy_active;
+
 void update_training_state(void);
 TrainingPlayerState* get_training_player(s16 id);
 

@@ -52,16 +52,15 @@ sf3_3rd_trial_lua_20220613.zip
 
 # === Secrets ===
 tools/lobby-server/.env
+
 /stages
 *.csv
 /tools/fightcade_replays/output
 /fightcade-fbneo
 *.log
 tools/gifx.sh
-/src/lua
 /assets/bgm_mod
 /assets/ui/assets/charactersportraits/temp
 /assets/ui/assets/charactersportraits
 /3sx-test-ext
-
 /assets/ui/assets/

@@ -39,6 +39,7 @@
             <h2>ELEMENT TREE</h2>
             <div class="elem-list" data-if="elem_count > 0">
                 <div data-for="el : elem_list"
+                     data-if="el.index < elem_count"
                      class="elem-item"
                      data-class-elem-selected="selected_elem == el.index"
                      data-event-click="select_elem(el.index)"

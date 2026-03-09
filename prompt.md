@@ -10,13 +10,23 @@ Work on exactly one task per iteration.
 - Prefer small, testable changes
 
 ## Project-specific conventions
-- All changes must be behavior-preserving — no new features, no game logic changes
+- Training system source is in `src/sf33rd/Source/Game/training/` (C game logic)
+- Menu integration is in `src/sf33rd/Source/Game/menu/menu_input.c`
+- Lua bridge is in `src/port/sdl/rmlui/lua_engine_bridge.cpp`
+- Lua reference code is in `src/lua/3rd_training_lua-main/src/control/` (read-only reference — do not modify)
+- Compat layer is in `src/lua/compat/` (read-only reference — do not modify)
 - Run `.\lint.bat` and `.\recompile.bat` after every task — both must pass
-- Do NOT touch `CMakeLists.txt` unless absolutely required by the refactor
+- Run `cd build_tests && ctest --output-on-failure` after verify tasks
 - Preserve all public API signatures and header contracts
 - New helper functions must have `/** @brief */` doc comments
-- Source files are in `src/port/` (C/C++ port layer)
 - The build uses **MSYS2 MinGW64** with **Clang** and **Ninja**
+- `CMakeLists.txt` uses `file(GLOB_RECURSE GAME_SRC src/*.c)`, so new `.c` files are auto-detected but require a cmake reconfigure
+
+## Naming conventions
+- Enums: `DummyXxxType` (e.g., `DummyBlockType`, `DummyTechThrowType`)
+- Settings: fields in `DummySettings` struct in `training_dummy.h`
+- Menu sync: `sync_dummy_settings_from_menu()` in `menu_input.c`
+- Lever input: `Lever_Buff[dummy_id]` bitfield (0x01=up, 0x02=down, 0x04=left, 0x08=right, 0x10=LP, 0x20=MP, 0x40=HP, 0x100=LK, 0x200=MK, 0x400=HK)
 
 ## Build and verify
 - Build: `.\recompile.bat` (incremental MSYS2 build)

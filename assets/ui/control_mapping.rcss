@@ -96,15 +96,17 @@ h2 {
 
 .device-icon {
     display: block;
-    width: 50dp;
-    height: 50dp;
+    width: 100%;
+    height: auto;
+    max-width: 80dp;
     margin: 2dp auto;
 }
 
 .device-icon-small {
     display: block;
-    width: 30dp;
-    height: 30dp;
+    width: 100%;
+    height: auto;
+    max-width: 60dp;
     margin: 2dp auto;
 }
 
@@ -120,7 +122,6 @@ h2 {
 
 button {
     display: block;
-    width: 100%;
     padding: 3dp 6dp;
     background-color: #2a2a30;
     border-width: 1dp;

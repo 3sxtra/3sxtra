@@ -188,7 +188,9 @@ static u16 CPU_Sub(PLW* wk) {
         return 0;
     }
 
-    Lever_Buff[wk->wu.id] = 0;
+    if (!g_lua_dummy_active) {
+        Lever_Buff[wk->wu.id] = 0;
+    }
 
     if (em->pat_status == 0x26) {
         Lie_Flag[wk->wu.id] = 1;
@@ -201,7 +203,7 @@ static u16 CPU_Sub(PLW* wk) {
     Lever_Buff[wk->wu.id] = check_illegal_lever_data(Lever_Buff[wk->wu.id]);
 
     // TRAINING MODE OVERRIDE
-    if (g_training_state.is_in_match) {
+    if (g_training_state.is_in_match && !g_lua_dummy_active) {
         training_dummy_update_input(wk, wk->wu.id);
         // Dummy writes Lever_Buff[id] directly — no sync needed
     }

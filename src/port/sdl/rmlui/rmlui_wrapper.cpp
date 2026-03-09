@@ -509,6 +509,18 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
         }
         // Game context stays at GAME_W×GAME_H — no resize needed
     }
+
+    // Override dp_ratio after display-scale changes.  RmlSDL::InputEventHandler
+    // handles SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED by calling
+    // SetDensityIndependentPixelRatio(display_scale), which sets dp to the raw
+    // OS display scale (e.g. 1.25).  We need dp = display_scale × size_scale
+    // (e.g. 2.50), so re-apply our custom computation after the handler runs.
+    if (event->type == SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED) {
+        s_hidpi_ratio = SDL_GetWindowDisplayScale(s_window);
+        if (s_hidpi_ratio <= 0.0f)
+            s_hidpi_ratio = 1.0f;
+        s_window_context->SetDensityIndependentPixelRatio(compute_window_dp_ratio(s_window_w));
+    }
 }
 
 // -------------------------------------------------------------------
@@ -544,6 +556,13 @@ extern "C" void rmlui_wrapper_render(void) {
     // Saves ~60 GL state save/restore calls per frame when no overlays are open.
     if (!has_visible_docs(s_window_documents))
         return;
+
+    // Ensure layout is up-to-date before rendering. Documents lazily shown
+    // during render_overlays() (e.g. control_mapping on first F1 press) will
+    // have missed the earlier Update() call in rmlui_wrapper_new_frame() since
+    // no docs were visible at that point.
+    s_window_context->Update();
+
 
     if (s_render_gl3) {
         // GL3: simple begin/end frame

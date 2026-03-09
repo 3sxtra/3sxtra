@@ -25,6 +25,13 @@ extern "C" {
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+// Forward-declare instead of #include <windows.h> to avoid typedef clashes
+// with MSYS2/MinGW BSD type headers that SDL already pulls in.
+extern "C" __declspec(dllimport) unsigned long __stdcall GetModuleFileNameA(
+    void* hModule, char* lpFilename, unsigned long nSize);
+#endif
+
 // Character IDs mapping Lua index (1-19) -> engine My_char value
 // Must match lua_trial_parser.py CHARA_IDS
 static const s16 CHARA_IDS[] = {
@@ -357,6 +364,21 @@ static void flatten_to_c_structs() {
     s_flat_def_ptrs.clear();
     s_char_defs.clear();
 
+    // Pre-count totals so we can reserve() and avoid reallocation.
+    // Without this, push_back can invalidate the raw pointers stored
+    // in s_flat_def_ptrs (into s_flat_defs) and s_char_defs (into s_flat_def_ptrs).
+    size_t total_trials = 0;
+    size_t total_chars = 0;
+    for (auto& pair : s_dyn_trials) {
+        if (!pair.second.empty()) {
+            total_trials += pair.second.size();
+            total_chars++;
+        }
+    }
+    s_flat_defs.reserve(total_trials);
+    s_flat_def_ptrs.reserve(total_trials);
+    s_char_defs.reserve(total_chars);
+
     for (auto& pair : s_dyn_trials) {
         int chara_lua_idx = pair.first;
         auto& trials = pair.second;
@@ -402,6 +424,34 @@ static void flatten_to_c_structs() {
 
 // ---- Public API ----
 
+// Helper: get the exe directory path with trailing separator.
+// Tries SDL_GetBasePath() first, falls back to platform API if empty.
+static std::string get_exe_dir() {
+    const char* base = SDL_GetBasePath();
+    if (base && base[0])
+        return std::string(base);
+
+#ifdef _WIN32
+    // SDL_GetBasePath() returns empty on some MSYS2/MinGW builds.
+    // Fall back to Win32 GetModuleFileNameA.
+    char buf[512];
+    unsigned long len = GetModuleFileNameA(NULL, buf, sizeof(buf));
+    if (len > 0 && len < sizeof(buf)) {
+        // Truncate to directory (find last separator)
+        for (unsigned long i = len; i > 0; i--) {
+            if (buf[i - 1] == '\\' || buf[i - 1] == '/') {
+                buf[i] = '\0';
+                return std::string(buf);
+            }
+        }
+    }
+#endif
+
+    return std::string(); // empty = fall back to relative path (CWD)
+}
+
+static bool s_load_failed = false; // true after first failed attempt — don't retry
+
 bool lua_trials_load(const char* lua_path) {
     lua_State* L = Rml::Lua::Interpreter::GetLuaState();
     if (!L) {
@@ -424,8 +474,9 @@ bool lua_trials_load(const char* lua_path) {
                                     "end\n");
 
     // Resolve path relative to exe directory (user may run from any CWD)
-    const char* base = SDL_GetBasePath();
-    std::string abs_path = base ? (std::string(base) + lua_path) : lua_path;
+    std::string exe_dir = get_exe_dir();
+    std::string abs_path = exe_dir.empty() ? lua_path : (exe_dir + lua_path);
+    SDL_Log("[Lua Trials] Resolved path: %s", abs_path.c_str());
 
     if (luaL_dofile(L, abs_path.c_str()) != LUA_OK) {
         SDL_Log("[Lua Trials] ERROR loading: %s", lua_tostring(L, -1));
@@ -467,13 +518,15 @@ void lua_trials_free(void) {
     s_char_defs.clear();
     s_dyn_trials.clear();
     s_loaded = false;
+    s_load_failed = false;
 }
 
 const TrialCharacterDef* lua_trials_get_characters(int* out_count) {
     // Lazy-load trial definitions on first access (deferred from boot)
-    if (!s_loaded) {
+    if (!s_loaded && !s_load_failed) {
         if (!lua_trials_load("lua/sf3_3rd_trial_clean.lua")) {
             SDL_Log("[Lua Trials] Lazy load failed, no trial data available");
+            s_load_failed = true; // Don't retry every frame
             if (out_count)
                 *out_count = 0;
             return NULL;
@@ -481,5 +534,6 @@ const TrialCharacterDef* lua_trials_get_characters(int* out_count) {
     }
     if (out_count)
         *out_count = (int)s_char_defs.size();
-    return s_char_defs.data();
+    return s_char_defs.empty() ? NULL : s_char_defs.data();
 }
+

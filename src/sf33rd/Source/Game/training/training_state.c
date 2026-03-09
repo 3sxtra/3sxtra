@@ -13,6 +13,7 @@
 #include <SDL3/SDL.h>
 
 TrainingGameState g_training_state = { 0 };
+bool g_lua_dummy_active = false;
 
 static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* opponent_wk) {
     if (!wk)

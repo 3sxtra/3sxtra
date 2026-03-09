@@ -1,0 +1,1582 @@
+{
+  "menu_title_dummy": {
+    "en": "Dummy",
+    "jp": "ダミー"
+  },
+  "menu_title_recording": {
+    "en": "Recording",
+    "jp": "記録"
+  },
+  "menu_title_display": {
+    "en": "Display",
+    "jp": "画面表示"
+  },
+  "menu_title_rules": {
+    "en": "Rules",
+    "jp": "ルール"
+  },
+  "menu_title_training": {
+    "en": "Training",
+    "jp": "トレイニング"
+  },
+  "menu_title_modules": {
+    "en": "Modules",
+    "jp": "拡張"
+  },
+  "menu_title_debug": {
+    "en": "Debug",
+    "jp": "デバグ"
+  },
+  "menu_parry_every_prefix": {
+    "en": "Parry every",
+    "jp": "ブロ"
+  },
+  "menu_parry_every_suffix": {
+    "en": "",
+    "jp": "ヒットごとに"
+  },
+  "menu_file_name": {
+    "en": "File Name",
+    "jp": "ファイル名"
+  },
+  "menu_file_save": {
+    "en": "Save",
+    "jp": "セーブ"
+  },
+  "menu_file_load": {
+    "en": "Load",
+    "jp": "ロード"
+  },
+  "menu_file_cancel": {
+    "en": "Cancel",
+    "jp": "キャンセル"
+  },
+  "menu_p1_life_reset_value": {
+    "en": "P1 Life",
+    "jp": "P1体力値"
+  },
+  "menu_p2_life_reset_value": {
+    "en": "P2 Life",
+    "jp": "P2体力値"
+  },
+  "menu_p1_stun_reset_value": {
+    "en": "P1 Stun",
+    "jp": "P1スタン値"
+  },
+  "menu_p2_stun_reset_value": {
+    "en": "P2 Stun",
+    "jp": "P2スタン値"
+  },
+  "menu_reset_delay": {
+    "en": "Reset delay",
+    "jp": "リセット遅延"
+  },
+  "menu_p1_meter_reset_value": {
+    "en": "P1 Meter",
+    "jp": "P1ゲージ"
+  },
+  "menu_p2_meter_reset_value": {
+    "en": "P2 Meter",
+    "jp": "P2ゲージ"
+  },
+  "menu_slot_weight": {
+    "en": "Slot weight",
+    "jp": "スロット比重"
+  },
+  "menu_replay_delay": {
+    "en": "Replay delay",
+    "jp": "再生遅延"
+  },
+  "menu_replay_max_random_deviation": {
+    "en": "Replay max random deviation",
+    "jp": "再生最大限ランダム偏差値"
+  },
+  "menu_display_overcharge": {
+    "en": "Display Overcharge",
+    "jp": "超過ため表示"
+  },
+  "hud_hyakuretsu_LK": {
+    "en": "LK",
+    "jp_8": "小K"
+  },
+  "hud_hyakuretsu_MK": {
+    "en": "MK",
+    "jp_8": "中K"
+  },
+  "hud_hyakuretsu_HK": {
+    "en": "HK",
+    "jp_8": "大K"
+  },
+  "menu_hit": {
+    "en": "Hit",
+    "jp": "ヒット"
+  },
+  "menu_hits": {
+    "en": "Hits",
+    "jp": "ヒット"
+  },
+  "menu_hits_before_rp_prefix": {
+    "en": "",
+    "jp": "赤ブロ"
+  },
+  "menu_hits_before_rp_suffix": {
+    "en": "Before Red Parry",
+    "jp": "ヒット後"
+  },
+  "menu_prefer_down_parry": {
+    "en": "Prefer Down Parry",
+    "jp": "下ブロ優先"
+  },
+  "menu_hits_before_ca_prefix": {
+    "en": "",
+    "jp": "反撃"
+  },
+  "menu_hits_before_ca_suffix": {
+    "en": "Before Counterattack",
+    "jp": "ヒット後"
+  },
+  "menu_character_select": {
+    "en": "Character Select",
+    "jp": "キャラクターセレクト"
+  },
+  "menu_swap_controls": {
+    "en": "Swap Controls",
+    "jp": "コントロール交換"
+  },
+  "menu_force_stage": {
+    "en": "Force Stage",
+    "jp": "ステージ強制"
+  },
+  "menu_gill": {
+    "en": "Gill",
+    "jp": "ギール"
+  },
+  "menu_alex": {
+    "en": "Alex",
+    "jp": "アレックス"
+  },
+  "menu_ryu": {
+    "en": "Ryu",
+    "jp": "リュウ"
+  },
+  "menu_yun": {
+    "en": "Yun",
+    "jp": "ユン"
+  },
+  "menu_dudley": {
+    "en": "Dudley",
+    "jp": "ダッドリー"
+  },
+  "menu_necro": {
+    "en": "Necro",
+    "jp": "ネクロ"
+  },
+  "menu_hugo": {
+    "en": "Hugo",
+    "jp": "ヒューゴー"
+  },
+  "menu_ibuki": {
+    "en": "Ibuki",
+    "jp": "いぶき"
+  },
+  "menu_elena": {
+    "en": "Elena",
+    "jp": "エレナ"
+  },
+  "menu_oro": {
+    "en": "Oro",
+    "jp": "オロ"
+  },
+  "menu_yang": {
+    "en": "Yang",
+    "jp": "ヤン"
+  },
+  "menu_ken": {
+    "en": "Ken",
+    "jp": "ケン"
+  },
+  "menu_sean": {
+    "en": "Sean",
+    "jp": "ショーン"
+  },
+  "menu_urien": {
+    "en": "Urien",
+    "jp": "ユリアン"
+  },
+  "menu_gouki": {
+    "en": "Gouki",
+    "jp": "豪鬼"
+  },
+  "menu_shingouki": {
+    "en": "Shin Gouki",
+    "jp": "真豪鬼"
+  },
+  "menu_chunli": {
+    "en": "Chun-Li",
+    "jp": "春麗"
+  },
+  "menu_makoto": {
+    "en": "Makoto",
+    "jp": "まこと"
+  },
+  "menu_twelve": {
+    "en": "Twelve",
+    "jp": "トゥエルヴ"
+  },
+  "menu_remy": {
+    "en": "Remy",
+    "jp": "レミー"
+  },
+  "menu_q": {
+    "en": "Q",
+    "jp": "Q"
+  },
+  "menu_p1_distance_reference_point": {
+    "en": "P1 Reference Point",
+    "jp": "P1基点"
+  },
+  "menu_p2_distance_reference_point": {
+    "en": "P2 Reference Point",
+    "jp": "P2基点"
+  },
+  "menu_distance_origin": {
+    "en": "origin",
+    "jp": "原点"
+  },
+  "menu_distance_hurtbox": {
+    "en": "hurtbox",
+    "jp": "食らい判定"
+  },
+  "menu_display_charge": {
+    "en": "Display Charge",
+    "jp": "ため表示"
+  },
+  "menu_display_parry": {
+    "en": "Display Parry",
+    "jp": "ブロ表示"
+  },
+  "menu_display_parry_compact": {
+    "en": "Compact Display",
+    "jp": "コンパクト表示"
+  },
+  "menu_display_red_parry_miss": {
+    "en": "Display Red Parry Miss",
+    "jp": "赤ブロミス表示"
+  },
+  "menu_display_blocking_direction": {
+    "en": "Display Blocking Direction",
+    "jp": "ガード方向表示"
+  },
+  "menu_display_stun_timer": {
+    "en": "Display Stun Timer",
+    "jp": "スタンタイマー表示"
+  },
+  "menu_display_air_time": {
+    "en": "Display Air Time",
+    "jp": "空中時間表示"
+  },
+  "menu_display_air_time_player_coloring": {
+    "en": "Player Coloring",
+    "jp": "プレイヤー色付け"
+  },
+  "menu_mid_distance_height": {
+    "en": "Mid Distance Height",
+    "jp": "高さ"
+  },
+  "bonus_damage": {
+    "en": "damage",
+    "jp_8": "ダメージ"
+  },
+  "bonus_defense": {
+    "en": "defense",
+    "jp_8": "防御力"
+  },
+  "bonus_stun": {
+    "en": "stun",
+    "jp_8": "スタン"
+  },
+  "menu_mode": {
+    "en": "Mode",
+    "jp": "モード"
+  },
+  "menu_module": {
+    "en": "Module",
+    "jp": "拡張"
+  },
+  "menu_work_in_progress": {
+    "en": "Work in progress",
+    "jp": "作成中"
+  },
+  "menu_challenge": {
+    "en": "Challenge",
+    "jp": "挑戦"
+  },
+  "menu_version": {
+    "en": "Version",
+    "jp": "バージョン"
+  },
+  "menu_start": {
+    "en": "Start",
+    "jp": "スタート"
+  },
+  "menu_stop": {
+    "en": "Stop",
+    "jp": "ストップ"
+  },
+  "menu_reset": {
+    "en": "Reset",
+    "jp": "リセット"
+  },
+  "menu_type": {
+    "en": "Type",
+    "jp": "タイプ"
+  },
+  "menu_opponent": {
+    "en": "Opponent",
+    "jp": "相手"
+  },
+  "menu_setup": {
+    "en": "Setup",
+    "jp": "仕掛け"
+  },
+  "menu_followup": {
+    "en": "Follow-Up",
+    "jp": "連続"
+  },
+  "menu_dummy_learning": {
+    "en": "Dummy Learning",
+    "jp": "ダミー学習"
+  },
+  "menu_score": {
+    "en": "Score",
+    "jp": "スコア"
+  },
+  "menu_pose": {
+    "en": "Pose",
+    "jp": "ポーズ"
+  },
+  "menu_blocking_style": {
+    "en": "Blocking Style",
+    "jp": "ガード方"
+  },
+  "menu_blocking": {
+    "en": "Blocking",
+    "jp": "ガード"
+  },
+  "menu_blocking_direction": {
+    "en": "Direction",
+    "jp": "方向"
+  },
+  "menu_always": {
+    "en": "always",
+    "jp": "常に"
+  },
+  "menu_always_low": {
+    "en": "always low",
+    "jp": "常に下段"
+  },
+  "menu_always_high": {
+    "en": "always high",
+    "jp": "常に上段"
+  },
+  "menu_random": {
+    "en": "random",
+    "jp": "ランダム"
+  },
+  "menu_never": {
+    "en": "never",
+    "jp": "なし"
+  },
+  "menu_first_hit": {
+    "en": "first hit",
+    "jp": "最初ヒット"
+  },
+  "menu_after_first_hit": {
+    "en": "after first hit",
+    "jp": "最初ヒット後"
+  },
+  "menu_on": {
+    "en": "on",
+    "jp": "on"
+  },
+  "menu_off": {
+    "en": "off",
+    "jp": "off"
+  },
+  "menu_P1": {
+    "en": "P1",
+    "jp": "P1"
+  },
+  "menu_P2": {
+    "en": "P2",
+    "jp": "P2"
+  },
+  "menu_P1+P2": {
+    "en": "P1+P2",
+    "jp": "P1+P2"
+  },
+  "menu_number": {
+    "en": "number",
+    "jp": "数字"
+  },
+  "menu_table": {
+    "en": "table",
+    "jp": "一覧"
+  },
+  "menu_both": {
+    "en": "both",
+    "jp": "両方"
+  },
+  "menu_moving": {
+    "en": "moving",
+    "jp": "移動"
+  },
+  "menu_block": {
+    "en": "block",
+    "jp": "ガード"
+  },
+  "menu_parry": {
+    "en": "parry",
+    "jp": "ブロ"
+  },
+  "menu_red_parry": {
+    "en": "red parry",
+    "jp": "赤ブロ"
+  },
+  "menu_standing": {
+    "en": "standing",
+    "jp": "立ち"
+  },
+  "menu_crouching": {
+    "en": "crouching",
+    "jp": "しゃがみ"
+  },
+  "menu_counter_attack_type": {
+    "en": "Counterattack",
+    "jp": "反撃"
+  },
+  "menu_counter_attack_delay": {
+    "en": "Counterattack delay",
+    "jp": "反撃遅延"
+  },
+  "menu_counter_attack_button": {
+    "en": "Button",
+    "jp": "ボタン"
+  },
+  "menu_counter_attack_motion": {
+    "en": "Motion",
+    "jp": "方向"
+  },
+  "menu_counter_attack_action": {
+    "en": "Counterattack Action",
+    "jp": "反撃行動"
+  },
+  "menu_counter_attack_special": {
+    "en": "Move",
+    "jp": "技名"
+  },
+  "menu_counter_attack_option_select_names": {
+    "en": "Option Select",
+    "jp": "仕込み"
+  },
+  "menu_normal_attack": {
+    "en": "normal",
+    "jp": "通常技"
+  },
+  "menu_special_sa": {
+    "en": "special · sa",
+    "jp": "必殺技 ・SA"
+  },
+  "menu_option_select": {
+    "en": "option select",
+    "jp": "仕込み"
+  },
+  "menu_recording": {
+    "en": "recording",
+    "jp": "記録"
+  },
+  "menu_mash_inputs": {
+    "en": "Mash Inputs",
+    "jp": "連打"
+  },
+  "menu_mash_normal": {
+    "en": "normal",
+    "jp": "普通"
+  },
+  "menu_mash_serious": {
+    "en": "serious",
+    "jp": "真面目"
+  },
+  "menu_mash_fastest": {
+    "en": "fastest",
+    "jp": "最速"
+  },
+  "menu_tech_throws": {
+    "en": "Tech Throws",
+    "jp": "グラップ"
+  },
+  "menu_quick_stand": {
+    "en": "Quick Stand",
+    "jp": "クイック"
+  },
+  "legend_lp_enable": {
+    "en": "LP: Enable",
+    "jp_8": "小P: 有効化する"
+  },
+  "legend_lp_disable": {
+    "en": "LP: Disable",
+    "jp_8": "小P: 無効化する"
+  },
+  "legend_mp_reset": {
+    "en": "MP: Reset",
+    "jp_8": "中P: リセット"
+  },
+  "legend_lp_select": {
+    "en": "LP: Select",
+    "jp_8": "小P: 選択"
+  },
+  "legend_lp_select_coin_restart": {
+    "en": "LP: Select   Coin: Restart",
+    "jp_8": "小P: 選択  コイン: 再スタート"
+  },
+  "legend_lp_mp_select_reset": {
+    "en": "LP: Select   MP: Reset",
+    "jp_8": "小P: 選択  中P: リセット"
+  },
+  "legend_hp_scroll": {
+    "en": "HP: ↑  HK: ↓",
+    "jp_8": "大P:↑  大K:↓"
+  },
+  "legend_textfield_edit": {
+    "en": "LP/Right: Next   MP/Left: Previous   LK: Exit",
+    "jp_8": "小P/→: 次  中P/←: 前  小K: 戻る"
+  },
+  "legend_textfield_edit2": {
+    "en": "LP: Edit   MP: Reset",
+    "jp_8": "小P: エディト  中: リセット"
+  },
+  "menu_auto_crop_first_frames": {
+    "en": "Crop First Frames",
+    "jp": "先フレーム刈"
+  },
+  "menu_auto_crop_last_frames": {
+    "en": "Crop Last Frames",
+    "jp": "末フレーム刈"
+  },
+  "menu_frames": {
+    "en": "frames",
+    "jp": "フレ"
+  },
+  "hud_f": {
+    "en": "f",
+    "jp_8": "フレ"
+  },
+  "hud_after": {
+    "en": "after",
+    "jp": "後"
+  },
+  "menu_replay_mode": {
+    "en": "Replay Mode",
+    "jp": "再生モード"
+  },
+  "menu_replay_normal": {
+    "en": "normal",
+    "jp": "普通"
+  },
+  "menu_replay_random": {
+    "en": "random",
+    "jp": "ランダム"
+  },
+  "menu_replay_ordered": {
+    "en": "ordered",
+    "jp": "順序"
+  },
+  "menu_replay_repeat": {
+    "en": "repeat",
+    "jp": "繰り返し"
+  },
+  "menu_replay_repeat_random": {
+    "en": "repeat random",
+    "jp": "ランダム繰り返し"
+  },
+  "menu_replay_repeat_ordered": {
+    "en": "repeat ordered",
+    "jp": "順序繰り返し"
+  },
+  "menu_slot": {
+    "en": "Slot",
+    "jp": "スロット"
+  },
+  "menu_clear_slot": {
+    "en": "Clear slot",
+    "jp": "スロット消す"
+  },
+  "menu_clear_all_slots": {
+    "en": "Clear all slots",
+    "jp": "全スロット消す"
+  },
+  "menu_save_slot_to_file": {
+    "en": "Save slot to file",
+    "jp": "ファイルにセーブ"
+  },
+  "menu_load_slot_from_file": {
+    "en": "Load slot from file",
+    "jp": "ファイルでロード"
+  },
+  "menu_display_controllers": {
+    "en": "Display Controllers",
+    "jp": "アケコン表示"
+  },
+  "menu_controller_style": {
+    "en": "Controller Style",
+    "jp": "アケコン様式"
+  },
+  "menu_display_gauge_numbers": {
+    "en": "Display Gauge Numbers",
+    "jp": "ゲージ数字"
+  },
+  "menu_display_bonuses": {
+    "en": "Display Bonuses",
+    "jp": "ボーナス表示"
+  },
+  "menu_display_input_history": {
+    "en": "Display Input History",
+    "jp": "入力履歴表示"
+  },
+  "menu_display_attack_bars": {
+    "en": "Display Attack Bars",
+    "jp": "攻撃棒表示"
+  },
+  "menu_1_line": {
+    "en": "1 line",
+    "jp": "1行"
+  },
+  "menu_2_lines": {
+    "en": "2 lines",
+    "jp": "2行"
+  },
+  "menu_show_decimal": {
+    "en": "Show Decimal",
+    "jp": "小数表示"
+  },
+  "menu_display_frame_advantage": {
+    "en": "Display Frame Advantage",
+    "jp": "有利フレーム表示"
+  },
+  "menu_display_hitboxes": {
+    "en": "Display Hitboxes",
+    "jp": "判定表示"
+  },
+  "menu_display_hitboxes_opacity": {
+    "en": "Opacity",
+    "jp": "不透明度"
+  },
+  "menu_display_hitboxes_ab": {
+    "en": "AB Hitboxes",
+    "jp": "AB攻撃判定"
+  },
+  "menu_display_distances": {
+    "en": "Display Distances",
+    "jp": "距離表示"
+  },
+  "menu_display_attack_range": {
+    "en": "Display Attack Range",
+    "jp": "攻撃範囲表示"
+  },
+  "menu_attack_range_display_max_attacks": {
+    "en": "Maximum Attacks",
+    "jp": "最大限攻撃数"
+  },
+  "menu_attack_range_display_show_numbers": {
+    "en": "Show Numbers",
+    "jp": "数字表示"
+  },
+  "menu_theme": {
+    "en": "Theme",
+    "jp": "テーマ"
+  },
+  "theme_hyper_reflector": {
+    "en": "hyper reflector",
+    "jp": "ハイパーリフレクター"
+  },
+  "theme_arabian_sea": {
+    "en": "arabian sea",
+    "jp": "アラビア海"
+  },
+  "theme_dusk": {
+    "en": "dusk",
+    "jp": "夕暮れ"
+  },
+  "theme_aurora": {
+    "en": "aurora",
+    "jp": "オーロラ"
+  },
+  "theme_magma": {
+    "en": "magma",
+    "jp": "マグマ"
+  },
+  "theme_moth": {
+    "en": "moth",
+    "jp": "モス"
+  },
+  "theme_abyss": {
+    "en": "abyss",
+    "jp": "アビス"
+  },
+  "theme_glass": {
+    "en": "glass",
+    "jp": "グラス"
+  },
+  "theme_classic_red": {
+    "en": "classic red",
+    "jp": "クラシック赤"
+  },
+  "theme_classic_blue": {
+    "en": "classic blue",
+    "jp": "クラシック青"
+  },
+  "theme_classic_green": {
+    "en": "classic green",
+    "jp": "クラシック緑"
+  },
+  "style_hyper_reflector": {
+    "en": "hyper reflector",
+    "jp": "ハイパーリフレクター"
+  },
+  "style_rose": {
+    "en": "rose",
+    "jp": "ローズ"
+  },
+  "style_cherry": {
+    "en": "cherry",
+    "jp": "桜ん坊"
+  },
+  "style_blueberry": {
+    "en": "blueberry",
+    "jp": "ブルーベリー"
+  },
+  "style_sky": {
+    "en": "sky",
+    "jp": "青空"
+  },
+  "style_blood_orange": {
+    "en": "blood orange",
+    "jp": "ブラッドオレンジ"
+  },
+  "style_salmon": {
+    "en": "salmon",
+    "jp": "鮭"
+  },
+  "style_grape": {
+    "en": "grape",
+    "jp": "葡萄"
+  },
+  "style_lavender": {
+    "en": "lavender",
+    "jp": "ラベンダー"
+  },
+  "style_lemon": {
+    "en": "lemon",
+    "jp": "レモン"
+  },
+  "style_champagne": {
+    "en": "champagne",
+    "jp": "シャンペン"
+  },
+  "style_matcha": {
+    "en": "matcha",
+    "jp": "抹茶"
+  },
+  "style_lime": {
+    "en": "lime",
+    "jp": "ライム"
+  },
+  "style_retro_scifi": {
+    "en": "retro scifi",
+    "jp": "レトロサイファイ"
+  },
+  "style_watermelon": {
+    "en": "watermelon",
+    "jp": "西瓜"
+  },
+  "style_macaron": {
+    "en": "macaron",
+    "jp": "マカロン"
+  },
+  "style_famicom": {
+    "en": "famicom",
+    "jp": "ファミコン"
+  },
+  "style_van_gogh": {
+    "en": "van gogh",
+    "jp": "バンゴッホ"
+  },
+  "style_munch": {
+    "en": "munch",
+    "jp": "ムンク"
+  },
+  "style_hokusai": {
+    "en": "hokusai",
+    "jp": "北斎"
+  },
+  "style_monet": {
+    "en": "monet",
+    "jp": "モネ"
+  },
+  "style_dali": {
+    "en": "dali",
+    "jp": "ダリ"
+  },
+  "style_classic": {
+    "en": "classic",
+    "jp": "クラシック"
+  },
+  "style_2077": {
+    "en": "2077",
+    "jp": "2077"
+  },
+  "style_aurora": {
+    "en": "aurora",
+    "jp": "オーロラ"
+  },
+  "style_ursa_major": {
+    "en": "ursa major",
+    "jp": "大熊座"
+  },
+  "style_pillars_of_creation": {
+    "en": "pillars of creation",
+    "jp": "創造の柱"
+  },
+  "style_sunset": {
+    "en": "sunset",
+    "jp": "夕焼け"
+  },
+  "style_fly_by_night": {
+    "en": "fly by night",
+    "jp": "夜逃げ"
+  },
+  "style_lake": {
+    "en": "lake",
+    "jp": "湖"
+  },
+  "style_traffic_lights": {
+    "en": "traffic lights",
+    "jp": "信号"
+  },
+  "style_warm_rainbow": {
+    "en": "warm rainbow",
+    "jp": "暖かい虹"
+  },
+  "style_soft_rainbow": {
+    "en": "soft rainbow",
+    "jp": "柔らかい虹"
+  },
+  "style_pearl": {
+    "en": "pearl",
+    "jp": "パール"
+  },
+  "style_beach": {
+    "en": "beach",
+    "jp": "砂浜"
+  },
+  "style_nether": {
+    "en": "nether",
+    "jp": "ネザー"
+  },
+  "style_blue_planet": {
+    "en": "blue planet",
+    "jp": "青い惑星"
+  },
+  "style_poison": {
+    "en": "poison",
+    "jp": "ポイズン"
+  },
+  "style_moon": {
+    "en": "moon",
+    "jp": "ムーン"
+  },
+  "style_blood_moon": {
+    "en": "blood moon",
+    "jp": "ブラッドムーン"
+  },
+  "style_volcano": {
+    "en": "volcano",
+    "jp": "火山"
+  },
+  "style_desert_sun": {
+    "en": "desert sun",
+    "jp": "砂漠太陽"
+  },
+  "style_canyon": {
+    "en": "canyon",
+    "jp": "谷"
+  },
+  "style_acid": {
+    "en": "acid",
+    "jp": "アシッド"
+  },
+  "style_dawn": {
+    "en": "dawn",
+    "jp": "夜明け"
+  },
+  "style_picnic": {
+    "en": "picnic",
+    "jp": "ピクニック"
+  },
+  "style_gelato": {
+    "en": "gelato",
+    "jp": "ジェラート"
+  },
+  "style_patrick": {
+    "en": "patrick",
+    "jp": "パトリック"
+  },
+  "style_01": {
+    "en": "01",
+    "jp": "01"
+  },
+  "hud_idle": {
+    "en": "Idle",
+    "jp_8": "停止"
+  },
+  "hud_slot": {
+    "en": "Slot",
+    "jp_8": "スロット"
+  },
+  "hud_wait_for_recording": {
+    "en": "Waiting for recording",
+    "jp_8": "記録待ち中"
+  },
+  "hud_recording": {
+    "en": "Recording",
+    "jp_8": "記録中"
+  },
+  "hud_positioning": {
+    "en": "Positioning",
+    "jp_8": "位置取り中"
+  },
+  "hud_playing": {
+    "en": "Playing",
+    "jp_8": "再生中"
+  },
+  "hud_cpu": {
+    "en": "CPU",
+    "jp_8": "CPU"
+  },
+  "hud_dummy": {
+    "en": "Dummy",
+    "jp_8": "ダミー"
+  },
+  "hud_dummy_control": {
+    "en": "Dummy",
+    "jp_8": "ダミー"
+  },
+  "hud_player": {
+    "en": "Player",
+    "jp_8": "プレイヤー"
+  },
+  "hud_p1": {
+    "en": "P1",
+    "jp_8": "P1"
+  },
+  "hud_p2": {
+    "en": "P2",
+    "jp_8": "P2"
+  },
+  "hud_startup": {
+    "en": "startup",
+    "jp_8": "発生"
+  },
+  "hud_hit_frame": {
+    "en": "hit frame",
+    "jp_8": "当たり"
+  },
+  "hud_advantage": {
+    "en": "advantage",
+    "jp_8": "有料"
+  },
+  "hud_active": {
+    "en": "active",
+    "jp_8": "持続"
+  },
+  "hud_duration": {
+    "en": "duration",
+    "jp_8": "期間"
+  },
+  "hud_defense": {
+    "en": "Defense",
+    "jp_8": "防御"
+  },
+  "hud_footsies": {
+    "en": "Footsies",
+    "jp_8": "差し合い"
+  },
+  "hud_jumpins": {
+    "en": "Jumpins",
+    "jp_8": "飛び込み"
+  },
+  "hud_geneijin": {
+    "en": "Geneijin Defense",
+    "jp_8": "幻影陣防御"
+  },
+  "hud_unblockables": {
+    "en": "Unblockables",
+    "jp_8": "ガード不能"
+  },
+  "hud_top_unblockables": {
+    "en": "Unblockables",
+    "jp": "ガード不能"
+  },
+  "hud_top_defense": {
+    "en": "Defense",
+    "jp": "防御"
+  },
+  "hud_top_footsies": {
+    "en": "Footsies",
+    "jp": "差し合い"
+  },
+  "hud_top_jumpins": {
+    "en": "Jumpins",
+    "jp": "飛び込み"
+  },
+  "hud_top_geneijin": {
+    "en": "Geneijin Defense",
+    "jp": "幻影陣防御"
+  },
+  "menu_language": {
+    "en": "Language",
+    "jp": "言語"
+  },
+  "menu_english": {
+    "en": "english",
+    "jp": "英語"
+  },
+  "menu_japanese": {
+    "en": "japanese",
+    "jp": "日本語"
+  },
+  "training_defense": {
+    "en": "defense",
+    "jp": "防御"
+  },
+  "training_footsies": {
+    "en": "footsies",
+    "jp": "差し合い"
+  },
+  "training_jumpins": {
+    "en": "jumpins",
+    "jp": "飛び込み"
+  },
+  "training_geneijin": {
+    "en": "geneijin defense",
+    "jp": "幻影陣防御"
+  },
+  "training_unblockables": {
+    "en": "unblockables",
+    "jp": "ガード不能"
+  },
+  "training_denjin": {
+    "en": "denjin defense",
+    "jp": "電刃防御"
+  },
+  "menu_neutral": {
+    "en": "neutral",
+    "jp": "N"
+  },
+  "menu_forward": {
+    "en": "forward",
+    "jp": "前"
+  },
+  "menu_down_forward": {
+    "en": "down forward",
+    "jp": "屈前"
+  },
+  "menu_down": {
+    "en": "down",
+    "jp": "屈"
+  },
+  "menu_down_back": {
+    "en": "down back",
+    "jp": "屈後"
+  },
+  "menu_back": {
+    "en": "back",
+    "jp": "後"
+  },
+  "menu_back_dash": {
+    "en": "back dash",
+    "jp": "バクステ"
+  },
+  "menu_forward_dash": {
+    "en": "forward dash",
+    "jp": "前ステ"
+  },
+  "menu_jump_LP": {
+    "en": "jump LP",
+    "jp": "ジャンプ小P"
+  },
+  "menu_jump_MP": {
+    "en": "jump MP",
+    "jp": "ジャンプ中P"
+  },
+  "menu_jump_HP": {
+    "en": "jump HP",
+    "jp": "ジャンプ大P"
+  },
+  "menu_jump_LK": {
+    "en": "jump LK",
+    "jp": "ジャンプ小K"
+  },
+  "menu_jump_MK": {
+    "en": "jump MK",
+    "jp": "ジャンプ中K"
+  },
+  "menu_jump_HK": {
+    "en": "jump HK",
+    "jp": "ジャンプ大K"
+  },
+  "hud_please_wait": {
+    "en": "Please Wait",
+    "jp": "お待ち下さい"
+  },
+  "hud_hold_start_stop": {
+    "en": "Hold Start: Stop",
+    "jp_8": "スタート長押し：ストップ"
+  },
+  "hud_coin_restart_hold_start_stop": {
+    "en": "Coin: Restart  Hold Start: Stop",
+    "jp_8": "コイン：再スタート  スタート長押し：ストップ"
+  },
+  "menu_jump": {
+    "en": "Jump",
+    "jp": "ジャンプ"
+  },
+  "menu_second_jump": {
+    "en": "Second Jump",
+    "jp": "第二ジャンプ"
+  },
+  "menu_jump_forward": {
+    "en": "jump forward",
+    "jp": "前ジャンプ"
+  },
+  "menu_jump_neutral": {
+    "en": "jump neutral",
+    "jp": "垂直ジャンプ"
+  },
+  "menu_jump_back": {
+    "en": "jump back",
+    "jp": "後ジャンプ"
+  },
+  "menu_sjump_forward": {
+    "en": "super jump forward",
+    "jp": "前ハイジャンプ"
+  },
+  "menu_sjump_neutral": {
+    "en": "super jump neutral",
+    "jp": "垂直ハイジャンプ"
+  },
+  "menu_sjump_back": {
+    "en": "super jump back",
+    "jp": "後ハイジャンプ"
+  },
+  "menu_air_dash_forward": {
+    "en": "air dash forward",
+    "jp": "前滑空"
+  },
+  "menu_air_dash_back": {
+    "en": "air dash back",
+    "jp": "後滑空"
+  },
+  "menu_player_position": {
+    "en": "Player Position",
+    "jp": "プレイヤー位置"
+  },
+  "menu_dummy_offset": {
+    "en": "Dummy Offset",
+    "jp": "ダミー変位"
+  },
+  "menu_attack": {
+    "en": "Attack",
+    "jp": "攻撃"
+  },
+  "menu_attack_delay": {
+    "en": "Attack Delay",
+    "jp": "攻撃遅延"
+  },
+  "menu_second_jump_delay": {
+    "en": "Second Jump Delay",
+    "jp": "第二ジャンプ遅延"
+  },
+  "menu_followup_delay": {
+    "en": "Follow-Up Delay",
+    "jp": "連続遅延"
+  },
+  "menu_settings": {
+    "en": "Settings",
+    "jp": "設定"
+  },
+  "menu_player_positioning": {
+    "en": "Player Positioning",
+    "jp": "プレイヤー位置取り"
+  },
+  "menu_dummy_positioning": {
+    "en": "Dummy Positioning",
+    "jp": "ダミー位置取り"
+  },
+  "menu_next_attack_delay": {
+    "en": "Next Attack Delay",
+    "jp": "次攻撃遅延"
+  },
+  "menu_none": {
+    "en": "none",
+    "jp": "なし"
+  },
+  "menu_LP": {
+    "en": "LP",
+    "jp": "小P"
+  },
+  "menu_MP": {
+    "en": "MP",
+    "jp": "中P"
+  },
+  "menu_HP": {
+    "en": "HP",
+    "jp": "大P"
+  },
+  "menu_EXP": {
+    "en": "EXP",
+    "jp": "EXP"
+  },
+  "menu_LK": {
+    "en": "LK",
+    "jp": "小K"
+  },
+  "menu_MK": {
+    "en": "MK",
+    "jp": "中K"
+  },
+  "menu_HK": {
+    "en": "HK",
+    "jp": "大K"
+  },
+  "menu_EXK": {
+    "en": "EXK",
+    "jp": "EXK"
+  },
+  "menu_LP+LK": {
+    "en": "LP+LK",
+    "jp": "小P＋小K"
+  },
+  "menu_MP+MK": {
+    "en": "MP+MK",
+    "jp": "中P＋中K"
+  },
+  "menu_HP+HK": {
+    "en": "HP+HK",
+    "jp": "大P＋大K"
+  },
+  "menu_d_LP": {
+    "en": "↓LP",
+    "jp": "↓小P"
+  },
+  "menu_d_MP": {
+    "en": "↓MP",
+    "jp": "↓中P"
+  },
+  "menu_d_HP": {
+    "en": "↓HP",
+    "jp": "↓大P"
+  },
+  "menu_d_LK": {
+    "en": "↓LK",
+    "jp": "↓小K"
+  },
+  "menu_d_MK": {
+    "en": "↓MK",
+    "jp": "↓中K"
+  },
+  "menu_d_HK": {
+    "en": "↓HK",
+    "jp": "↓大K"
+  },
+  "menu_b_LP": {
+    "en": "←LP",
+    "jp": "←小P"
+  },
+  "menu_b_MP": {
+    "en": "←MP",
+    "jp": "←中P"
+  },
+  "menu_b_HP": {
+    "en": "←HP",
+    "jp": "←大P"
+  },
+  "menu_b_LK": {
+    "en": "←LK",
+    "jp": "←小K"
+  },
+  "menu_b_MK": {
+    "en": "←MK",
+    "jp": "←中K"
+  },
+  "menu_b_HK": {
+    "en": "←HK",
+    "jp": "←大K"
+  },
+  "menu_f_LP": {
+    "en": "→LP",
+    "jp": "→小P"
+  },
+  "menu_f_MP": {
+    "en": "→MP",
+    "jp": "→中P"
+  },
+  "menu_f_HP": {
+    "en": "→HP",
+    "jp": "→大P"
+  },
+  "menu_f_LK": {
+    "en": "→LK",
+    "jp": "→小K"
+  },
+  "menu_f_MK": {
+    "en": "→MK",
+    "jp": "→中K"
+  },
+  "menu_f_HK": {
+    "en": "→HK",
+    "jp": "→大K"
+  },
+  "menu_db_HP": {
+    "en": "↓HP",
+    "jp": "↓大P"
+  },
+  "menu_throw": {
+    "en": "throw",
+    "jp": "投げ"
+  },
+  "menu_uoh": {
+    "en": "uoh",
+    "jp": "リープ"
+  },
+  "menu_moves": {
+    "en": "Moves",
+    "jp": "技名"
+  },
+  "legend_jump": {
+    "en": "Jump",
+    "jp_8": "ジャンプ"
+  },
+  "legend_hp_hk": {
+    "en": "HP/HK",
+    "jp_8": "大P/大K"
+  },
+  "legend_lp_mode": {
+    "en": "LP: Mode",
+    "jp_8": "小P: モード"
+  },
+  "legend_mp_point": {
+    "en": "MP: Point",
+    "jp_8": "中P: 基点"
+  },
+  "menu_infinite_time": {
+    "en": "Infinite Time",
+    "jp": "無限タイマー"
+  },
+  "menu_life_refill_mode": {
+    "en": "Life Refill Mode",
+    "jp": "体力回復モード"
+  },
+  "menu_stun_refill_mode": {
+    "en": "Stun Refill Mode",
+    "jp": "スタン回復モード"
+  },
+  "menu_meter_refill_mode": {
+    "en": "Meter Refill Mode",
+    "jp": "ゲージ回復モード"
+  },
+  "menu_gauge_reset_value": {
+    "en": "reset value",
+    "jp": "リセット値"
+  },
+  "menu_gauge_reset_zero": {
+    "en": "reset zero",
+    "jp": "リセットゼロ"
+  },
+  "menu_gauge_reset_max": {
+    "en": "reset max",
+    "jp": "リセットMAX"
+  },
+  "menu_gauge_infinite": {
+    "en": "infinite",
+    "jp": "無限"
+  },
+  "menu_gauge_always_zero": {
+    "en": "always zero",
+    "jp": "必ずゼロ"
+  },
+  "menu_gauge_always_max": {
+    "en": "always max",
+    "jp": "必ずMAX"
+  },
+  "menu_infinite_super_art_time": {
+    "en": "Infinite Super Art Time",
+    "jp": "無限SA時間"
+  },
+  "menu_music_volume": {
+    "en": "BGM Volume",
+    "jp": "BGM音量"
+  },
+  "menu_speed_up_game_intro": {
+    "en": "Speed Up Game Intro",
+    "jp": "導入加速"
+  },
+  "menu_auto_parrying": {
+    "en": "Auto Parrying",
+    "jp": " オートブロ"
+  },
+  "menu_universal_cancel": {
+    "en": "Universal Cancel",
+    "jp": "普遍キャンセル"
+  },
+  "menu_infinite_projectiles": {
+    "en": "Infinite Projectiles",
+    "jp": "無限飛び道具"
+  },
+  "menu_infinite_juggle": {
+    "en": "Infinite Juggle",
+    "jp": "無限空中コンボ"
+  },
+  "menu_follow_player": {
+    "en": "Follow Player",
+    "jp": "プレイヤー付ける"
+  },
+  "menu_hadou_festival": {
+    "en": "Hadou Festival",
+    "jp": "波動祭り"
+  },
+  "menu_dump_state_display": {
+    "en": "Dump State Display",
+    "jp": "ダンプステート表示"
+  },
+  "menu_debug_variables_display": {
+    "en": "Debug Variables Display",
+    "jp": "デバグ変数表示"
+  },
+  "menu_debug_frames_display": {
+    "en": "Debug Frames Display",
+    "jp": "デバグフレ表示"
+  },
+  "menu_memory_view_display": {
+    "en": "Memory View Display",
+    "jp": "メモリービュー表示"
+  },
+  "menu_show_predicted_hitboxes": {
+    "en": "Show Predicted Hitboxes",
+    "jp": "予測判定表示"
+  },
+  "menu_record_frame_data": {
+    "en": "Record Frame Data",
+    "jp": "フレームデータ記録"
+  },
+  "menu_save_frame_data": {
+    "en": "Save Frame Data",
+    "jp": "フレームデータセーブ"
+  },
+  "hud_character_select_line_1": {
+    "en": "[Alt+1] Character Select",
+    "jp_8": "「Alt+1」キャラクターセレクト"
+  },
+  "hud_character_select_line_2": {
+    "en": "[Alt+2] Gill   [Alt+3] Shin Gouki",
+    "jp_8": "「Alt+2」ギル 「Alt+3」真豪鬼"
+  },
+  "hud_character_select_line_3": {
+    "en": "[Hold Start] Random",
+    "jp_8": "「Start押しっぱなし」ランダム"
+  },
+  "charge_slash_elbow": {
+    "en": "Slash Elbow",
+    "jp_8": "スラッシュエルボー"
+  },
+  "charge_air_stampede": {
+    "en": "Air Stampede",
+    "jp_8": "エアスタンピード"
+  },
+  "charge_hyper_bomb": {
+    "en": "Hyper Bomb",
+    "jp_8": "ハイパーボム"
+  },
+  "charge_moonsault_press": {
+    "en": "Moonsault Press",
+    "jp_8": "ムーンサルトプレス"
+  },
+  "charge_meat_squasher": {
+    "en": "Meat Squasher",
+    "jp_8": "ミートスカッシャー"
+  },
+  "charge_gigas_breaker": {
+    "en": "Gigas Breaker",
+    "jp_8": "ギガスブリーカー"
+  },
+  "charge_nichirin": {
+    "en": "Nichirin",
+    "jp_8": "日輪掌"
+  },
+  "charge_oniyanma": {
+    "en": "Oniyanma",
+    "jp_8": "鬼ヤンマ"
+  },
+  "charge_chariot_tackle": {
+    "en": "Chariot Tackle",
+    "jp_8": "チャリオットタックル"
+  },
+  "charge_violence_kneedrop": {
+    "en": "Violence Kneedrop",
+    "jp_8": "バイオレンスニードロップ"
+  },
+  "charge_dangerous_headbutt": {
+    "en": "Dangerous Headbutt",
+    "jp_8": "デンジャラスヘッドバット"
+  },
+  "charge_lov_high": {
+    "en": "Light of Virtue (H)",
+    "jp_8": "ヴェルテュの残光(高)"
+  },
+  "charge_lov_low": {
+    "en": "Light of Virtue (L)",
+    "jp_8": "ヴェルテュの残光(低)"
+  },
+  "charge_rising_rage_flash": {
+    "en": "Rising Rage Flash",
+    "jp_8": "マ・シェリの悲哀"
+  },
+  "charge_dashing_head_attack": {
+    "en": "Dashing Head Attack",
+    "jp_8": "突進頭部打撃"
+  },
+  "charge_dashing_leg_attack": {
+    "en": "Dashing Leg Attack",
+    "jp_8": "突進下肢打撃"
+  },
+  "charge_spinning_bird_kick": {
+    "en": "Spinning Bird Kick",
+    "jp_8": "スピニングバードキック"
+  },
+  "parry_parry_forward": {
+    "en": "Forward",
+    "jp_8": "前"
+  },
+  "parry_parry_down": {
+    "en": "Down",
+    "jp_8": "下"
+  },
+  "parry_parry_air": {
+    "en": "Air",
+    "jp_8": "空"
+  },
+  "parry_parry_anti_air": {
+    "en": "Anti-air",
+    "jp_8": "対空"
+  }
+}

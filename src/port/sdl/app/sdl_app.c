@@ -529,18 +529,20 @@ int SDLApp_Init() {
     rmlui_replay_picker_init();
     rmlui_dev_overlay_init();
 
+    // Fx-key overlay menus always use RmlUi (toggle_overlay is unconditional),
+    // so their data models must be registered regardless of use_rmlui.
+    rmlui_mods_menu_init();
+    rmlui_shader_menu_init();
+    rmlui_stage_config_init();
+    rmlui_input_display_init();
+    rmlui_frame_display_init();
+    rmlui_netplay_ui_init();
+    rmlui_training_menu_init();
+    rmlui_control_mapping_init();
+
     if (use_rmlui) {
         SDL_Log("UI mode: RmlUi (overlay menus via HTML/CSS)");
 
-        // Phase 2 — Overlay menus
-        rmlui_mods_menu_init();
-        rmlui_shader_menu_init();
-        rmlui_stage_config_init();
-        rmlui_input_display_init();
-        rmlui_frame_display_init();
-        rmlui_netplay_ui_init();
-        rmlui_training_menu_init();
-        rmlui_control_mapping_init();
         /* Phase 3 — Fight HUD & Mode Menu */
         rmlui_game_hud_init();
         rmlui_mode_menu_init();

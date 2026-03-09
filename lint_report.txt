@@ -1,6 +1,6 @@
 ============================================================ 
                    3SX Lint Report                              
-                   Generated: 09/03/2026 15:17:07.58                     
+                   Generated: 09/03/2026 21:06:07.58                     
 ============================================================ 
  
 ------------------------------------------------------------ 
@@ -8,260 +8,194 @@
 ------------------------------------------------------------ 
 [CLANG-FORMAT] C/C++ Code Formatting Check
 [CLANG-TIDY] Static Analysis
-[1/92] Processing file D:/3sxtra/src/port/broadcast.c.
-271 warnings generated.
-[2/92] Processing file D:/3sxtra/src/port/char_data.c.
-600 warnings generated.
-[3/92] Processing file D:/3sxtra/src/port/char_data.c.
-929 warnings generated.
-[4/92] Processing file D:/3sxtra/src/port/config/cli_parser.c.
-4153 warnings generated.
-[5/92] Processing file D:/3sxtra/src/port/config/cli_parser.c.
-7377 warnings generated.
-[6/92] Processing file D:/3sxtra/src/port/config/config.c.
-10692 warnings generated.
-[7/92] Processing file D:/3sxtra/src/port/config/config.c.
-13998 warnings generated.
-[8/92] Processing file D:/3sxtra/src/port/config/paths.c.
-17152 warnings generated.
-[9/92] Processing file D:/3sxtra/src/port/config/paths.c.
-20306 warnings generated.
-[10/92] Processing file D:/3sxtra/src/port/config/paths.c.
-23460 warnings generated.
-[11/92] Processing file D:/3sxtra/src/port/config/paths.c.
-26614 warnings generated.
-[12/92] Processing file D:/3sxtra/src/port/input_definition.cpp.
-44374 warnings generated.
-[13/92] Processing file D:/3sxtra/src/port/io/afs.c.
-47578 warnings generated.
-[14/92] Processing file D:/3sxtra/src/port/menu_bridge.c.
-75284 warnings generated.
-[15/92] Processing file D:/3sxtra/src/port/menu_bridge.c.
-102990 warnings generated.
-[16/92] Processing file D:/3sxtra/src/port/mods/modded_stage.c.
-106380 warnings generated.
-[17/92] Processing file D:/3sxtra/src/port/mods/stage_config.c.
-109217 warnings generated.
-[18/92] Processing file D:/3sxtra/src/port/mods/stage_config.c.
-112054 warnings generated.
-[19/92] Processing file D:/3sxtra/src/port/rendering/legacy_matrix.c.
-112867 warnings generated.
-[20/92] Processing file D:/3sxtra/src/port/rendering/legacy_matrix.c.
-113680 warnings generated.
-[21/92] Processing file D:/3sxtra/src/port/rendering/resources.c.
-116836 warnings generated.
-[22/92] Processing file D:/3sxtra/src/port/rendering/sdl_bezel.c.
-120040 warnings generated.
-[23/92] Processing file D:/3sxtra/src/port/rendering/sdl_bezel.c.
-123244 warnings generated.
-[24/92] Processing file D:/3sxtra/src/port/rendering/sdl_bezel.c.
-126448 warnings generated.
-[25/92] Processing file D:/3sxtra/src/port/save/native_save.c.
-129859 warnings generated.
-[26/92] Processing file D:/3sxtra/src/port/save/native_save.c.
-133261 warnings generated.
-[27/92] Processing file D:/3sxtra/src/port/sdk/sdk_libpad2.c.
-136461 warnings generated.
-[28/92] Processing file D:/3sxtra/src/port/sdl/app/sdl_app.c.
-139772 warnings generated.
-[29/92] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_bezel.c.
-143037 warnings generated.
-[30/92] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_debug_hud.c.
-146217 warnings generated.
-[31/92] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_input.c.
-149458 warnings generated.
-[32/92] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_scale.c.
-152615 warnings generated.
-[33/92] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_screenshot.c.
-155790 warnings generated.
-[34/92] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_shader_config.c.
-158955 warnings generated.
-[35/92] Processing file D:/3sxtra/src/port/sdl/input/control_mapping.cpp.
-191133 warnings generated.
-[36/92] Processing file D:/3sxtra/src/port/sdl/input/sdl_pad.c.
-194339 warnings generated.
-[37/92] Processing file D:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp.
-225742 warnings generated.
-[38/92] Processing file D:/3sxtra/src/port/sdl/renderer/renderer.c.
-228974 warnings generated.
-[39/92] Processing file D:/3sxtra/src/port/sdl/renderer/renderer.c.
-232207 warnings generated.
-[40/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer.c.
-235427 warnings generated.
-[41/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_classic.c.
-238652 warnings generated.
-[42/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_context.c.
-265679 warnings generated.
-[43/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_draw.c.
-292727 warnings generated.
-[44/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_resources.c.
-319977 warnings generated.
-[45/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu.c.
-347203 warnings generated.
-[46/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu_lz77.c.
-350433 warnings generated.
-[47/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_sdl.c.
-353693 warnings generated.
-[48/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c.
-356999 warnings generated.
-[49/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_texture_util.cpp.
-374360 warnings generated.
-[50/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer.c.
-377572 warnings generated.
-[51/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_gl.c.
-380791 warnings generated.
-[52/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_gpu.c.
-384033 warnings generated.
-[53/92] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_sdl.c.
-387189 warnings generated.
-[54/92] Processing file D:/3sxtra/src/port/sdl/rmlui/lua_engine_bridge.cpp.
-422066 warnings generated.
-[55/92] Processing file D:/3sxtra/src/port/sdl/rmlui/lua_trials_loader.cpp.
-456816 warnings generated.
-[56/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_attract_overlay.cpp.
-494966 warnings generated.
-[57/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_button_config.cpp.
-533505 warnings generated.
-[58/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_char_select.cpp.
-572477 warnings generated.
-[59/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_continue.cpp.
-611029 warnings generated.
-[60/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_control_mapping.cpp.
-649556 warnings generated.
-[61/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_copyright.cpp.
-688105 warnings generated.
-[62/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_dev_overlay.cpp.
-730264 warnings generated.
-[63/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_exit_confirm.cpp.
-768337 warnings generated.
-[64/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_extra_option.cpp.
-806932 warnings generated.
-[65/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_frame_display.cpp.
-845689 warnings generated.
-[66/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_gameover.cpp.
-884264 warnings generated.
-[67/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_game_hud.cpp.
-923637 warnings generated.
-[68/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_game_option.cpp.
-962222 warnings generated.
-[69/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_input_display.cpp.
-1000699 warnings generated.
-[70/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_memory_card.cpp.
-1039237 warnings generated.
-[71/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_mode_menu.cpp.
-1077459 warnings generated.
-[72/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_mods_menu.cpp.
-1116029 warnings generated.
-[73/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_name_entry.cpp.
-1154627 warnings generated.
-[74/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_netplay_ui.cpp.
-1193107 warnings generated.
-[75/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_network_lobby.cpp.
-1231837 warnings generated.
-[76/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_option_menu.cpp.
-1270408 warnings generated.
-[77/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_pause_overlay.cpp.
-1308978 warnings generated.
-[78/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_replay_picker.cpp.
-1347872 warnings generated.
-[79/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_shader_menu.cpp.
-1386344 warnings generated.
-[80/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_sound_menu.cpp.
-1424948 warnings generated.
-[81/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_stage_config.cpp.
-1463685 warnings generated.
-[82/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_sysdir.cpp.
-1502335 warnings generated.
-[83/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_title_screen.cpp.
-1540862 warnings generated.
-[84/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_training_menu.cpp.
-1579177 warnings generated.
-[85/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_training_menus.cpp.
-1617734 warnings generated.
-[86/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_trials_hud.cpp.
-1656475 warnings generated.
-[87/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_vs_result.cpp.
-1695058 warnings generated.
-[88/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_vs_screen.cpp.
-1733599 warnings generated.
-[89/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_win_screen.cpp.
-1772189 warnings generated.
-[90/92] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_wrapper.cpp.
-1813805 warnings generated.
-[91/92] Processing file D:/3sxtra/src/port/sound/adx.c.
-1817196 warnings generated.
-[92/92] Processing file D:/3sxtra/src/port/sound/adx_decoder.c.
-1818128 warnings generated.
-[93/92] Processing file D:/3sxtra/src/port/sound/adx_decoder.c.
-1819060 warnings generated.
-[94/92] Processing file D:/3sxtra/src/port/sound/emlShim.c.
-1822293 warnings generated.
-[95/92] Processing file D:/3sxtra/src/port/sound/modded_bgm.c.
-1825607 warnings generated.
-[96/92] Processing file D:/3sxtra/src/port/sound/spu.c.
-1828812 warnings generated.
-[97/92] Processing file D:/3sxtra/src/port/tracy_gpu.cpp.
-1828812 warnings generated.
-[98/92] Processing file D:/3sxtra/src/port/ui/replay_picker.cpp.
-1831132 warnings generated.
-[99/92] Processing file D:/3sxtra/src/port/utils.c.
-1858469 warnings generated.
-[100/92] Processing file D:/3sxtra/src/port/win32/broadcast_spout.cpp.
-1928156 warnings generated.
-[101/92] Processing file D:/3sxtra/src/port/win32/broadcast_spout.cpp.
-1997812 warnings generated.
-[102/92] Processing file D:/3sxtra/src/netplay/discovery.c.
-2027334 warnings generated.
-[103/92] Processing file D:/3sxtra/src/netplay/game_state.c.
-2030577 warnings generated.
-[104/92] Processing file D:/3sxtra/src/netplay/game_state.c.
-2033819 warnings generated.
-[105/92] Processing file D:/3sxtra/src/netplay/game_state.c.
-2037061 warnings generated.
-[106/92] Processing file D:/3sxtra/src/netplay/game_state.c.
-2040303 warnings generated.
-[107/92] Processing file D:/3sxtra/src/netplay/lobby_server.c.
-2069972 warnings generated.
-[108/92] Processing file D:/3sxtra/src/netplay/netplay.c.
-2073430 warnings generated.
-[109/92] Processing file D:/3sxtra/src/netplay/netplay.c.
-2076889 warnings generated.
-[110/92] Processing file D:/3sxtra/src/netplay/netplay.c.
-2080348 warnings generated.
-[111/92] Processing file D:/3sxtra/src/netplay/netplay.c.
-2083807 warnings generated.
-[112/92] Processing file D:/3sxtra/src/netplay/netplay.c.
-2087266 warnings generated.
-[113/92] Processing file D:/3sxtra/src/netplay/netplay.c.
-2090725 warnings generated.
-[114/92] Processing file D:/3sxtra/src/netplay/netplay.c.
-2094184 warnings generated.
-[115/92] Processing file D:/3sxtra/src/netplay/netplay.c.
-2097643 warnings generated.
-[116/92] Processing file D:/3sxtra/src/netplay/netplay.c.
-2101102 warnings generated.
-[117/92] Processing file D:/3sxtra/src/netplay/stun.c.
-2130624 warnings generated.
-[118/92] Processing file D:/3sxtra/src/netplay/stun.c.
-2160146 warnings generated.
-[119/92] Processing file D:/3sxtra/src/netplay/stun.c.
-2189668 warnings generated.
-[120/92] Processing file D:/3sxtra/src/netplay/stun.c.
-2219190 warnings generated.
-[121/92] Processing file D:/3sxtra/src/netplay/stun.c.
-2248712 warnings generated.
-[122/92] Processing file D:/3sxtra/src/netplay/stun.c.
-2278234 warnings generated.
-[123/92] Processing file D:/3sxtra/src/netplay/stun.c.
-2307756 warnings generated.
-[124/92] Processing file D:/3sxtra/src/netplay/stun.c.
-2337278 warnings generated.
-[125/92] Processing file D:/3sxtra/src/netplay/stun.c.
-2366800 warnings generated.
-[126/92] Processing file D:/3sxtra/src/netplay/stun.c.
-2396322 warnings generated.
-[127/92] Processing file D:/3sxtra/src/netplay/upnp.c.
-2399491 warnings generated.
+[1/94] Processing file D:/3sxtra/src/port/broadcast.c.
+270 warnings generated.
+[2/94] Processing file D:/3sxtra/src/port/char_data.c.
+598 warnings generated.
+[3/94] Processing file D:/3sxtra/src/port/config/cli_parser.c.
+3865 warnings generated.
+[4/94] Processing file D:/3sxtra/src/port/config/config.c.
+7218 warnings generated.
+[5/94] Processing file D:/3sxtra/src/port/config/paths.c.
+10415 warnings generated.
+[6/94] Processing file D:/3sxtra/src/port/input_definition.cpp.
+28207 warnings generated.
+[7/94] Processing file D:/3sxtra/src/port/io/afs.c.
+31454 warnings generated.
+[8/94] Processing file D:/3sxtra/src/port/menu_bridge.c.
+59215 warnings generated.
+[9/94] Processing file D:/3sxtra/src/port/mods/modded_stage.c.
+62679 warnings generated.
+[10/94] Processing file D:/3sxtra/src/port/mods/stage_config.c.
+65529 warnings generated.
+[11/94] Processing file D:/3sxtra/src/port/rendering/legacy_matrix.c.
+66348 warnings generated.
+[12/94] Processing file D:/3sxtra/src/port/rendering/resources.c.
+69547 warnings generated.
+[13/94] Processing file D:/3sxtra/src/port/rendering/sdl_bezel.c.
+72794 warnings generated.
+[14/94] Processing file D:/3sxtra/src/port/save/native_save.c.
+76248 warnings generated.
+[15/94] Processing file D:/3sxtra/src/port/sdk/sdk_libpad2.c.
+79491 warnings generated.
+[16/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app.c.
+82968 warnings generated.
+[17/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_bezel.c.
+86276 warnings generated.
+[18/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_debug_hud.c.
+89499 warnings generated.
+[19/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_input.c.
+92783 warnings generated.
+[20/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_scale.c.
+95983 warnings generated.
+[21/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_screenshot.c.
+99201 warnings generated.
+[22/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_shader_config.c.
+102409 warnings generated.
+[23/94] Processing file D:/3sxtra/src/port/sdl/input/control_mapping.cpp.
+134624 warnings generated.
+[24/94] Processing file D:/3sxtra/src/port/sdl/input/sdl_pad.c.
+137873 warnings generated.
+[25/94] Processing file D:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp.
+169329 warnings generated.
+[26/94] Processing file D:/3sxtra/src/port/sdl/renderer/renderer.c.
+172604 warnings generated.
+[27/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer.c.
+175867 warnings generated.
+[28/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_classic.c.
+179256 warnings generated.
+[29/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_context.c.
+206357 warnings generated.
+[30/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_draw.c.
+233595 warnings generated.
+[31/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_resources.c.
+260920 warnings generated.
+[32/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu.c.
+288285 warnings generated.
+[33/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu_lz77.c.
+291558 warnings generated.
+[34/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu_setup.c.
+318838 warnings generated.
+[35/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu_texture.c.
+346232 warnings generated.
+[36/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_sdl.c.
+349652 warnings generated.
+[37/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c.
+353116 warnings generated.
+[38/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_texture_util.cpp.
+370518 warnings generated.
+[39/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer.c.
+373773 warnings generated.
+[40/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_gl.c.
+377035 warnings generated.
+[41/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_gpu.c.
+380320 warnings generated.
+[42/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_sdl.c.
+383519 warnings generated.
+[43/94] Processing file D:/3sxtra/src/port/sdl/rmlui/lua_engine_bridge.cpp.
+418445 warnings generated.
+[44/94] Processing file D:/3sxtra/src/port/sdl/rmlui/lua_trials_loader.cpp.
+453227 warnings generated.
+[45/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_attract_overlay.cpp.
+491408 warnings generated.
+[46/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_button_config.cpp.
+529978 warnings generated.
+[47/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_char_select.cpp.
+568981 warnings generated.
+[48/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_continue.cpp.
+607564 warnings generated.
+[49/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_control_mapping.cpp.
+646122 warnings generated.
+[50/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_copyright.cpp.
+684702 warnings generated.
+[51/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_dev_overlay.cpp.
+726897 warnings generated.
+[52/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_exit_confirm.cpp.
+765001 warnings generated.
+[53/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_extra_option.cpp.
+803627 warnings generated.
+[54/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_frame_display.cpp.
+842415 warnings generated.
+[55/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_gameover.cpp.
+881021 warnings generated.
+[56/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_game_hud.cpp.
+920425 warnings generated.
+[57/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_game_option.cpp.
+959041 warnings generated.
+[58/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_input_display.cpp.
+997549 warnings generated.
+[59/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_memory_card.cpp.
+1036118 warnings generated.
+[60/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_mode_menu.cpp.
+1074371 warnings generated.
+[61/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_mods_menu.cpp.
+1112972 warnings generated.
+[62/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_name_entry.cpp.
+1151601 warnings generated.
+[63/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_netplay_ui.cpp.
+1190112 warnings generated.
+[64/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_network_lobby.cpp.
+1228873 warnings generated.
+[65/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_option_menu.cpp.
+1267475 warnings generated.
+[66/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_pause_overlay.cpp.
+1306076 warnings generated.
+[67/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_replay_picker.cpp.
+1345001 warnings generated.
+[68/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_shader_menu.cpp.
+1383504 warnings generated.
+[69/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_sound_menu.cpp.
+1422139 warnings generated.
+[70/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_stage_config.cpp.
+1460907 warnings generated.
+[71/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_sysdir.cpp.
+1499588 warnings generated.
+[72/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_title_screen.cpp.
+1538146 warnings generated.
+[73/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_training_menu.cpp.
+1576492 warnings generated.
+[74/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_training_menus.cpp.
+1615080 warnings generated.
+[75/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_trials_hud.cpp.
+1653852 warnings generated.
+[76/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_vs_result.cpp.
+1692466 warnings generated.
+[77/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_vs_screen.cpp.
+1731038 warnings generated.
+[78/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_win_screen.cpp.
+1769659 warnings generated.
+[79/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_wrapper.cpp.
+1811306 warnings generated.
+[80/94] Processing file D:/3sxtra/src/port/sound/adx.c.
+1814771 warnings generated.
+[81/94] Processing file D:/3sxtra/src/port/sound/adx_decoder.c.
+1815740 warnings generated.
+[82/94] Processing file D:/3sxtra/src/port/sound/emlShim.c.
+1819130 warnings generated.
+[83/94] Processing file D:/3sxtra/src/port/sound/modded_bgm.c.
+1822518 warnings generated.
+[84/94] Processing file D:/3sxtra/src/port/sound/spu.c.
+1825875 warnings generated.
+[85/94] Processing file D:/3sxtra/src/port/tracy_gpu.cpp.
+1870679 warnings generated.
+[86/94] Processing file D:/3sxtra/src/port/ui/replay_picker.cpp.
+1873005 warnings generated.
+[87/94] Processing file D:/3sxtra/src/port/utils.c.
+1900367 warnings generated.
+[88/94] Processing file D:/3sxtra/src/port/win32/broadcast_spout.cpp.
+1970140 warnings generated.
+[89/94] Processing file D:/3sxtra/src/netplay/discovery.c.
+1999717 warnings generated.
+[90/94] Processing file D:/3sxtra/src/netplay/game_state.c.
+2003003 warnings generated.
+[91/94] Processing file D:/3sxtra/src/netplay/lobby_server.c.
+2032727 warnings generated.
+[92/94] Processing file D:/3sxtra/src/netplay/netplay.c.
+2036233 warnings generated.
+[93/94] Processing file D:/3sxtra/src/netplay/stun.c.
+2065810 warnings generated.
+[94/94] Processing file D:/3sxtra/src/netplay/upnp.c.
+2069022 warnings generated.
 D:/3sxtra/src/include/port/broadcast.h:7:1: warning: use 'using' instead of 'typedef' [modernize-use-using]
     7 | typedef enum {
       | ^~~~~~~~~~~~~~
@@ -1285,12 +1219,6 @@ D:\3sxtra\src\netplay\netplay.c:653:2: warning: preprocessor condition can be wr
   653 | #if defined(DEBUG)
       |  ^~ ~~~~~~~~~~~~~~
       |  ifdef DEBUG
-D:\3sxtra\src\netplay\netplay.c:698:26: warning: passing 'const GekkoGameEvent *' (aka 'const struct GekkoGameEvent *') to parameter of type 'GekkoGameEvent *' (aka 'struct GekkoGameEvent *') discards qualifiers [clang-diagnostic-incompatible-pointer-types-discards-qualifiers]
-  698 |             advance_game(event, drawing_allowed && !rolling_back);
-      |                          ^~~~~
-D:\3sxtra\src\netplay\netplay.c:591:42: note: passing argument to parameter 'event' here
-  591 | static void advance_game(GekkoGameEvent* event, bool render) {
-      |                                          ^
 D:\3sxtra\src\netplay\netplay.c:844:2: warning: preprocessor condition can be written more concisely using '#ifdef' [readability-use-concise-preprocessor-directives]
   844 | #if defined(DEBUG)
       |  ^~ ~~~~~~~~~~~~~~
@@ -2358,6 +2286,16 @@ D:\3sxtra\src\port\sdl\app\sdl_app.c:633:37: warning: statement should be inside
       |                                      {
   634 |                 glDeleteTextures(1, &s_broadcast_texture);
       |                                                           
+D:\3sxtra\src\port\sdl\app\sdl_app.c:687:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+  687 |     TRACE_SUB_BEGIN("SDLEventPump");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\app\sdl_app.c:743:19: warning: statement should be inside braces [readability-braces-around-statements]
   743 |     if (show_menu)
       |                   ^
@@ -2394,12 +2332,62 @@ D:\3sxtra\src\port\sdl\app\sdl_app.c:753:28: warning: statement should be inside
       |                             {
   754 |         rmlui_training_menu_update();
       |                                      
+D:\3sxtra\src\port\sdl\app\sdl_app.c:771:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  771 |     TRACE_ZONE_N("EndFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\app\sdl_app.c:785:9: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+  785 |         TRACE_SUB_BEGIN("RmlUiUpdates");
+      |         ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\app\sdl_app.c:850:9: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+  850 |         TRACE_SUB_BEGIN("RenderPresent");
+      |         ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\app\sdl_app.c:861:9: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+  861 |         TRACE_SUB_BEGIN("FramePacing");
+      |         ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\app\sdl_app.c:873:44: warning: statement should be inside braces [readability-braces-around-statements]
   873 |                     if (has_pending_quit())
       |                                            ^
       |                                             {
   874 |                         break;
       |                               
+D:\3sxtra\src\port\sdl\app\sdl_app.c:916:13: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+  916 |             TRACE_SUB_BEGIN("GPU:PostProcess");
+      |             ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\app\sdl_app.c:926:38: warning: statement should be inside braces [readability-braces-around-statements]
   926 |                 if (skip_librashader)
       |                                      ^
@@ -2416,72 +2404,102 @@ D:\3sxtra\src\port\sdl\app\sdl_app.c:1009:2: warning: preprocessor condition can
  1009 | #if defined(DEBUG)
       |  ^~ ~~~~~~~~~~~~~~
       |  ifdef DEBUG
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1089:43: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
- 1089 |                                           (void*)(intptr_t)cps3_canvas_texture,
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1062:9: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+ 1062 |         TRACE_SUB_BEGIN("SceneBlit");
+      |         ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1088:43: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
+ 1088 |                                           (void*)(intptr_t)cps3_canvas_texture,
       |                                           ^
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1109:47: warning: statement should be inside braces [readability-braces-around-statements]
- 1109 |                     if (s_composition_texture)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1108:47: warning: statement should be inside braces [readability-braces-around-statements]
+ 1108 |                     if (s_composition_texture)
       |                                               ^
       |                                                {
- 1110 |                         glDeleteTextures(1, &s_composition_texture);
+ 1109 |                         glDeleteTextures(1, &s_composition_texture);
       |                                                                     
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1111:43: warning: statement should be inside braces [readability-braces-around-statements]
- 1111 |                     if (s_composition_fbo)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1110:43: warning: statement should be inside braces [readability-braces-around-statements]
+ 1110 |                     if (s_composition_fbo)
       |                                           ^
       |                                            {
- 1112 |                         glDeleteFramebuffers(1, &s_composition_fbo);
+ 1111 |                         glDeleteFramebuffers(1, &s_composition_fbo);
       |                                                                     
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1187:43: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
- 1187 |                                           (void*)(intptr_t)s_composition_texture,
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1186:43: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
+ 1186 |                                           (void*)(intptr_t)s_composition_texture,
       |                                           ^
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1304:41: warning: statement should be inside braces [readability-braces-around-statements]
- 1304 |                 if (s_broadcast_texture)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1303:41: warning: statement should be inside braces [readability-braces-around-statements]
+ 1303 |                 if (s_broadcast_texture)
       |                                         ^
       |                                          {
- 1305 |                     glDeleteTextures(1, &s_broadcast_texture);
+ 1304 |                     glDeleteTextures(1, &s_broadcast_texture);
       |                                                               
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1306:37: warning: statement should be inside braces [readability-braces-around-statements]
- 1306 |                 if (s_broadcast_fbo)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1305:37: warning: statement should be inside braces [readability-braces-around-statements]
+ 1305 |                 if (s_broadcast_fbo)
       |                                     ^
       |                                      {
- 1307 |                     glDeleteFramebuffers(1, &s_broadcast_fbo);
+ 1306 |                     glDeleteFramebuffers(1, &s_broadcast_fbo);
       |                                                               
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1380:40: warning: statement should be inside braces [readability-braces-around-statements]
- 1380 |                 if (has_pending_quit())
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1336:9: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+ 1336 |         TRACE_SUB_BEGIN("SwapWindow");
+      |         ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1360:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+ 1360 |     TRACE_SUB_BEGIN("FramePacing");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1379:40: warning: statement should be inside braces [readability-braces-around-statements]
+ 1379 |                 if (has_pending_quit())
       |                                        ^
       |                                         {
- 1381 |                     break;
+ 1380 |                     break;
       |                           
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1496:21: warning: statement should be inside braces [readability-braces-around-statements]
- 1496 |     if (pauses_game)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1495:21: warning: statement should be inside braces [readability-braces-around-statements]
+ 1495 |     if (pauses_game)
       |                     ^
       |                      {
- 1497 |         game_paused = *flag || show_menu;
+ 1496 |         game_paused = *flag || show_menu;
       |                                          
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1498:15: warning: statement should be inside braces [readability-braces-around-statements]
- 1498 |     if (*flag)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1497:15: warning: statement should be inside braces [readability-braces-around-statements]
+ 1497 |     if (*flag)
       |               ^
       |                {
- 1499 |         SDL_ShowCursor();
+ 1498 |         SDL_ShowCursor();
       |                          
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1501:15: warning: statement should be inside braces [readability-braces-around-statements]
- 1501 |     if (*flag)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1500:15: warning: statement should be inside braces [readability-braces-around-statements]
+ 1500 |     if (*flag)
       |               ^
       |                {
- 1502 |         rmlui_wrapper_show_document(doc_name);
- 1503 |     else
+ 1501 |         rmlui_wrapper_show_document(doc_name);
+ 1502 |     else
       |     } 
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1503:9: warning: statement should be inside braces [readability-braces-around-statements]
- 1503 |     else
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1502:9: warning: statement should be inside braces [readability-braces-around-statements]
+ 1502 |     else
       |         ^
       |          {
- 1504 |         rmlui_wrapper_hide_document(doc_name);
+ 1503 |         rmlui_wrapper_hide_document(doc_name);
       |                                               
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1530:19: warning: statement should be inside braces [readability-braces-around-statements]
- 1530 |     if (!any_open)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1529:19: warning: statement should be inside braces [readability-braces-around-statements]
+ 1529 |     if (!any_open)
       |                   ^
       |                    {
- 1531 |         return;
+ 1530 |         return;
       |                
 D:\3sxtra\src\port\sdl\app\sdl_app_bezel.c:64:24: warning: performing an implicit widening conversion to type 'unsigned long long' of a multiplication performed in type 'int' [bugprone-implicit-widening-of-multiplication-result]
    64 |         memset(out, 0, 6 * 4 * sizeof(float));
@@ -3740,12 +3758,6 @@ D:\3sxtra\src\port\sdl\renderer\renderer.c:175:20: warning: statement should be 
       |                     {
   176 |         return;
       |                
-D:\3sxtra\src\port\sdl\renderer\renderer.c:194:18: warning: passing 'char[40]' to parameter of type 's8 *' (aka 'signed char *') converts between pointers to integer types where one is of the unique plain 'char' type and the other is not [clang-diagnostic-pointer-sign]
-  194 |         flLogOut("Renderer: 2D primitive buffer overflow\n");
-      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-D:/3sxtra/src/include/sf33rd/AcrSDK/ps2/foundaps2.h:38:18: note: passing argument to parameter 'format' here
-   38 | s32 flLogOut(s8* format, ...);
-      |                  ^
 D:\3sxtra\src\port\sdl\renderer\renderer.c:215:46: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
   215 |         s_Render2DQueue.prim[ix].attr.work = (WORK*)data;
       |                                              ^
@@ -3781,6 +3793,46 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:141:49: warning: sta
       |                                                  {
   142 |         return;
       |                
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:228:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  228 |     TRACE_ZONE_N("Classic:BeginFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:248:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  248 |     TRACE_ZONE_N("Classic:RenderFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:259:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+  259 |     TRACE_SUB_BEGIN("Classic:Sort");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:264:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+  264 |     TRACE_SUB_BEGIN("Classic:BatchRender");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:276:26: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
   276 |                         &cl_batch_vertices[j * 4], cl_render_tasks[batch_start + j].vertices, 4 * sizeof(SDL_Vertex));
       |                          ^
@@ -3792,6 +3844,26 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:276:44: note: perfor
   276 |                         &cl_batch_vertices[j * 4], cl_render_tasks[batch_start + j].vertices, 4 * sizeof(SDL_Vertex));
       |                                            ^
       |                                            (ptrdiff_t)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:298:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  298 |     TRACE_ZONE_N("Classic:EndFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:316:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  316 |     TRACE_ZONE_N("Classic:CreateTexture");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:404:62: warning: statement should be inside braces [readability-braces-around-statements]
   404 |     if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX)
       |                                                              ^
@@ -3804,6 +3876,16 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:422:62: warning: sta
       |                                                               {
   423 |         return;
       |                
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:479:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  479 |     TRACE_ZONE_N("Classic:CreatePalette");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:538:40: warning: statement should be inside braces [readability-braces-around-statements]
   538 |     if (pi < 0 || pi >= FL_PALETTE_MAX)
       |                                        ^
@@ -3816,6 +3898,25 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:557:40: warning: sta
       |                                         {
   558 |         return;
       |                
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:586:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  586 |     TRACE_ZONE_N("Classic:SetTexture");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:751:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  751 |     TRACE_ZONE_N("Classic:FlushBatch");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:63:16: warning: statement should be inside braces [readability-braces-around-statements]
    63 |     if (n <= 1)
       |                ^
@@ -3844,6 +3945,26 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:91:30: warning: stat
       |                               {
    92 |                 dst[k++] = src[j++];
       |                                     
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:110:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  110 |     TRACE_ZONE_N("BeginFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:145:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  145 |     TRACE_ZONE_N("RenderFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:206:45: warning: performing an implicit widening conversion to type 'unsigned long long' of a multiplication performed in type 'int' [bugprone-implicit-widening-of-multiplication-result]
   206 |         glBufferSubData(GL_ARRAY_BUFFER, 0, gl_state.render_task_count * 4 * sizeof(SDL_Vertex), sorted_vertices);
       |                                             ^
@@ -3877,6 +3998,16 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:212:45: note: perfor
   212 |         glBufferSubData(GL_ARRAY_BUFFER, 0, gl_state.render_task_count * 4 * sizeof(float), sorted_pals);
       |                                             ^~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                             (long long)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:233:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+  233 |     TRACE_SUB_BEGIN("GL:BatchDraw");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:245:55: warning: statement should be inside braces [readability-braces-around-statements]
   245 |                 if (gl_state.arr_loc_projection == -1)
       |                                                       ^
@@ -4493,464 +4624,152 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_resources.c:1098:13: warnin
       |              {
  1099 |             SDL_Log("[PaletteStats]   tex[%4d]: %d palettes (no surface)", best_ti, best_n);
       |                                                                                             
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:217:15: warning: statement should be inside braces [readability-braces-around-statements]
-  217 |     if (!code)
-      |               ^
-      |                {
-  218 |         return NULL;
-      |                     
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:380:22: warning: performing an implicit widening conversion to type 'unsigned long long' of a multiplication performed in type 'int' [bugprone-implicit-widening-of-multiplication-result]
-  380 |     size_t ib_size = max_quads * 6 * sizeof(Uint16);
-      |                      ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:380:22: note: make conversion explicit to silence this warning
-   21 |     size_t ib_size = max_quads * 6 * sizeof(Uint16);
-      |                      ^~~~~~~~~~~~~
-      |                      (unsigned long long)( )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:380:22: note: perform multiplication in a wider type
-  380 |     size_t ib_size = max_quads * 6 * sizeof(Uint16);
-      |                      ^~~~~~~~~
-      |                      (long long)
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:389:34: warning: statement should be inside braces [readability-braces-around-statements]
-  389 |         if (!transfer_buffers[i])
-      |                                  ^
-      |                                   {
-  390 |             any_transfer_missing = true;
-      |                                         
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:408:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  408 |             indices[i * 6 + 0] = i * 4 + 0;
-      |                     ^~~~~
-      |                     (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:408:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  408 |             indices[i * 6 + 0] = i * 4 + 0;
-      |                                  ^~~~~
-      |                                  (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:409:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  409 |             indices[i * 6 + 1] = i * 4 + 1;
-      |                     ^~~~~
-      |                     (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:409:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  409 |             indices[i * 6 + 1] = i * 4 + 1;
-      |                                  ^~~~~
-      |                                  (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:410:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  410 |             indices[i * 6 + 2] = i * 4 + 2;
-      |                     ^~~~~
-      |                     (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:410:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  410 |             indices[i * 6 + 2] = i * 4 + 2;
-      |                                  ^~~~~
-      |                                  (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:411:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  411 |             indices[i * 6 + 3] = i * 4 + 2;
-      |                     ^~~~~
-      |                     (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:411:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  411 |             indices[i * 6 + 3] = i * 4 + 2;
-      |                                  ^~~~~
-      |                                  (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:412:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  412 |             indices[i * 6 + 4] = i * 4 + 1;
-      |                     ^~~~~
-      |                     (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:412:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  412 |             indices[i * 6 + 4] = i * 4 + 1;
-      |                                  ^~~~~
-      |                                  (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:413:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  413 |             indices[i * 6 + 5] = i * 4 + 3;
-      |                     ^~~~~
-      |                     (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:413:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  413 |             indices[i * 6 + 5] = i * 4 + 3;
-      |                                  ^~~~~
-      |                                  (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:564:18: warning: statement should be inside braces [readability-braces-around-statements]
-  564 |     if (pipeline)
-      |                  ^
-      |                   {
-  565 |         SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
-      |                                                          
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:566:23: warning: statement should be inside braces [readability-braces-around-statements]
-  566 |     if (vertex_buffer)
-      |                       ^
-      |                        {
-  567 |         SDL_ReleaseGPUBuffer(device, vertex_buffer);
-      |                                                     
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:568:22: warning: statement should be inside braces [readability-braces-around-statements]
-  568 |     if (index_buffer)
-      |                      ^
-      |                       {
-  569 |         SDL_ReleaseGPUBuffer(device, index_buffer);
-      |                                                    
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:571:33: warning: statement should be inside braces [readability-braces-around-statements]
-  571 |         if (transfer_buffers[i])
-      |                                 ^
-      |                                  {
-  572 |             SDL_ReleaseGPUTransferBuffer(device, transfer_buffers[i]);
-      |                                                                       
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:574:34: warning: statement should be inside braces [readability-braces-around-statements]
-  574 |     if (s_compute_staging_buffer)
-      |                                  ^
-      |                                   {
-  575 |         SDL_ReleaseGPUTransferBuffer(device, s_compute_staging_buffer);
-      |                                                                        
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:576:27: warning: statement should be inside braces [readability-braces-around-statements]
-  576 |     if (s_palette_texture)
-      |                           ^
-      |                            {
-  577 |         SDL_ReleaseGPUTexture(device, s_palette_texture);
-      |                                                          
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:578:28: warning: statement should be inside braces [readability-braces-around-statements]
-  578 |     if (s_palette_transfer)
-      |                            ^
-      |                             {
-  579 |         SDL_ReleaseGPUTransferBuffer(device, s_palette_transfer);
-      |                                                                  
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:580:25: warning: statement should be inside braces [readability-braces-around-statements]
-  580 |     if (palette_sampler)
-      |                         ^
-      |                          {
-  581 |         SDL_ReleaseGPUSampler(device, palette_sampler);
-      |                                                        
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:582:23: warning: statement should be inside braces [readability-braces-around-statements]
-  582 |     if (texture_array)
-      |                       ^
-      |                        {
-  583 |         SDL_ReleaseGPUTexture(device, texture_array);
-      |                                                      
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:584:26: warning: statement should be inside braces [readability-braces-around-statements]
-  584 |     if (s_canvas_texture)
-      |                          ^
-      |                           {
-  585 |         SDL_ReleaseGPUTexture(device, s_canvas_texture);
-      |                                                         
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:586:17: warning: statement should be inside braces [readability-braces-around-statements]
-  586 |     if (sampler)
-      |                 ^
-      |                  {
-  587 |         SDL_ReleaseGPUSampler(device, sampler);
-      |                                                
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:588:20: warning: statement should be inside braces [readability-braces-around-statements]
-  588 |     if (s_lz77_ctx)
-      |                    ^
-      |                     {
-  589 |         LZ77_Destroy(s_lz77_ctx, device);
-      |                                          
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:692:16: warning: statement should be inside braces [readability-braces-around-statements]
-  692 |     if (n <= 1)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:95:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+   95 |     TRACE_ZONE_N("GPU:BeginFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:192:16: warning: statement should be inside braces [readability-braces-around-statements]
+  192 |     if (n <= 1)
       |                ^
       |                 {
-  693 |         return;
+  193 |         return;
       |                
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:702:39: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  702 |             unsigned int right = (i + 2 * width < n) ? i + 2 * width : n;
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:202:39: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  202 |             unsigned int right = (i + 2 * width < n) ? i + 2 * width : n;
       |                                       ^~~~~~~~~
       |                                       (        )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:702:60: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  702 |             unsigned int right = (i + 2 * width < n) ? i + 2 * width : n;
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:202:60: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  202 |             unsigned int right = (i + 2 * width < n) ? i + 2 * width : n;
       |                                                            ^~~~~~~~~
       |                                                            (        )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:706:42: warning: statement should be inside braces [readability-braces-around-statements]
-  706 |                 if (src[l].z <= src[r].z)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:206:42: warning: statement should be inside braces [readability-braces-around-statements]
+  206 |                 if (src[l].z <= src[r].z)
       |                                          ^
       |                                           {
-  707 |                     tmp[k++] = src[l++];
-  708 |                 else
+  207 |                     tmp[k++] = src[l++];
+  208 |                 else
       |                 } 
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:708:21: warning: statement should be inside braces [readability-braces-around-statements]
-  708 |                 else
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:208:21: warning: statement should be inside braces [readability-braces-around-statements]
+  208 |                 else
       |                     ^
       |                      {
-  709 |                     tmp[k++] = src[r++];
+  209 |                     tmp[k++] = src[r++];
       |                                         
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:711:28: warning: statement should be inside braces [readability-braces-around-statements]
-  711 |             while (l < mid)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:211:28: warning: statement should be inside braces [readability-braces-around-statements]
+  211 |             while (l < mid)
       |                            ^
       |                             {
-  712 |                 tmp[k++] = src[l++];
+  212 |                 tmp[k++] = src[l++];
       |                                     
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:713:30: warning: statement should be inside braces [readability-braces-around-statements]
-  713 |             while (r < right)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:213:30: warning: statement should be inside braces [readability-braces-around-statements]
+  213 |             while (r < right)
       |                              ^
       |                               {
-  714 |                 tmp[k++] = src[r++];
+  214 |                 tmp[k++] = src[r++];
       |                                     
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:773:55: warning: statement should be inside braces [readability-braces-around-statements]
-  773 |             if (s_palette_uploaded[i] || !palettes[i])
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:229:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  229 |     TRACE_ZONE_N("GPU:RenderFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:273:55: warning: statement should be inside braces [readability-braces-around-statements]
+  273 |             if (s_palette_uploaded[i] || !palettes[i])
       |                                                       ^
       |                                                        {
-  774 |                 continue;
+  274 |                 continue;
       |                          
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:776:97: warning: performing an implicit widening conversion to type 'size_t' (aka 'unsigned long long') of a multiplication performed in type 'int' [bugprone-implicit-widening-of-multiplication-result]
-  776 |             if (s_pal_upload_count >= MAX_COMPUTE_JOBS || s_compute_staging_offset + pal_size > COMPUTE_STORAGE_SIZE)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:276:97: warning: performing an implicit widening conversion to type 'size_t' (aka 'unsigned long long') of a multiplication performed in type 'int' [bugprone-implicit-widening-of-multiplication-result]
+  276 |             if (s_pal_upload_count >= MAX_COMPUTE_JOBS || s_compute_staging_offset + pal_size > COMPUTE_STORAGE_SIZE)
       |                                                                                                 ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:56:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
-   56 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024)                // 32MB — RGBA8 texture uploads (4 bytes/pixel)
+D:\3sxtra\src\port\sdl\renderer/sdl_game_renderer_gpu_internal.h:30:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
+   30 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024) /* 32 MB — RGBA8 texture uploads */
       |                               ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:776:97: note: make conversion explicit to silence this warning
-  776 |             if (s_pal_upload_count >= MAX_COMPUTE_JOBS || s_compute_staging_offset + pal_size > COMPUTE_STORAGE_SIZE)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:276:97: note: make conversion explicit to silence this warning
+  276 |             if (s_pal_upload_count >= MAX_COMPUTE_JOBS || s_compute_staging_offset + pal_size > COMPUTE_STORAGE_SIZE)
       |                                                                                                 ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:56:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
-   56 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024)                // 32MB — RGBA8 texture uploads (4 bytes/pixel)
+D:\3sxtra\src\port\sdl\renderer/sdl_game_renderer_gpu_internal.h:30:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
+   30 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024) /* 32 MB — RGBA8 texture uploads */
       |                               ^~~~~~~~~~~~~~~~
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:776:97: note: perform multiplication in a wider type
-  776 |             if (s_pal_upload_count >= MAX_COMPUTE_JOBS || s_compute_staging_offset + pal_size > COMPUTE_STORAGE_SIZE)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:276:97: note: perform multiplication in a wider type
+  276 |             if (s_pal_upload_count >= MAX_COMPUTE_JOBS || s_compute_staging_offset + pal_size > COMPUTE_STORAGE_SIZE)
       |                                                                                                 ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:56:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
-   56 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024)                // 32MB — RGBA8 texture uploads (4 bytes/pixel)
+D:\3sxtra\src\port\sdl\renderer/sdl_game_renderer_gpu_internal.h:30:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
+   30 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024) /* 32 MB — RGBA8 texture uploads */
       |                               ^~~~~~~~~
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:776:118: warning: statement should be inside braces [readability-braces-around-statements]
-  776 |             if (s_pal_upload_count >= MAX_COMPUTE_JOBS || s_compute_staging_offset + pal_size > COMPUTE_STORAGE_SIZE)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:276:118: warning: statement should be inside braces [readability-braces-around-statements]
+  276 |             if (s_pal_upload_count >= MAX_COMPUTE_JOBS || s_compute_staging_offset + pal_size > COMPUTE_STORAGE_SIZE)
       |                                                                                                                      ^
       |                                                                                                                       {
-  777 |                 break;
+  277 |                 break;
       |                       
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:967:62: warning: statement should be inside braces [readability-braces-around-statements]
-  967 |     if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX)
-      |                                                              ^
-      |                                                               {
-  968 |         return;
-      |                
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1024:62: warning: statement should be inside braces [readability-braces-around-statements]
- 1024 |     if (palette_index < 0 || palette_index >= FL_PALETTE_MAX)
-      |                                                              ^
-      |                                                               {
- 1025 |         return;
-      |                
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1043:41: warning: statement should be inside braces [readability-braces-around-statements]
- 1043 |             for (int i = 0; i < 16; i++)
-      |                                         ^
-      |                                          {
- 1044 |                 read_rgba16_color(rgba16[i], &colors[i]);
-      |                                                          
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1057:42: warning: statement should be inside braces [readability-braces-around-statements]
- 1057 |             for (int i = 0; i < 256; i++)
-      |                                          ^
-      |                                           {
- 1058 |                 read_rgba16_color(rgba16[ps2_clut_shuffle[i]], &colors[i]);
-      |                                                                            
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1064:33: warning: statement should be inside braces [readability-braces-around-statements]
- 1064 |     if (palettes[palette_index])
-      |                                 ^
-      |                                  {
- 1065 |         SDL_DestroyPalette(palettes[palette_index]);
-      |                                                     
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1109:63: warning: statement should be inside braces [readability-braces-around-statements]
- 1109 |         if (!surf || !SDL_ISPIXELFORMAT_INDEXED(surf->format))
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:443:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  443 |     TRACE_ZONE_N("GPU:EndFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:465:63: warning: statement should be inside braces [readability-braces-around-statements]
+  465 |     if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES)
       |                                                               ^
       |                                                                {
- 1110 |             continue;
-      |                      
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1111:37: warning: statement should be inside braces [readability-braces-around-statements]
- 1111 |         if (tex_array_layer[ti] < 0)
-      |                                     ^
-      |                                      {
- 1112 |             continue;
-      |                      
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1116:22: warning: statement should be inside braces [readability-braces-around-statements]
- 1116 |             if (!pal)
-      |                      ^
-      |                       {
- 1117 |                 continue;
-      |                          
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1122:20: warning: statement should be inside braces [readability-braces-around-statements]
- 1122 |             if (!f)
-      |                    ^
-      |                     {
- 1123 |                 continue;
-      |                          
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1233:28: warning: statement should be inside braces [readability-braces-around-statements]
- 1233 |     if ((th & 0xFFFF) == 0)
-      |                            ^
-      |                             {
- 1234 |         th = (th & 0xFFFF0000) | 1000;
-      |                                       
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1287:98: warning: performing an implicit widening conversion to type 'size_t' (aka 'unsigned long long') of a multiplication performed in type 'int' [bugprone-implicit-widening-of-multiplication-result]
- 1287 |             if (s_tex_upload_count < MAX_COMPUTE_JOBS && s_compute_staging_offset + rgba_size <= COMPUTE_STORAGE_SIZE) {
-      |                                                                                                  ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:56:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
-   56 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024)                // 32MB — RGBA8 texture uploads (4 bytes/pixel)
-      |                               ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1287:98: note: make conversion explicit to silence this warning
- 1287 |             if (s_tex_upload_count < MAX_COMPUTE_JOBS && s_compute_staging_offset + rgba_size <= COMPUTE_STORAGE_SIZE) {
-      |                                                                                                  ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:56:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
-   56 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024)                // 32MB — RGBA8 texture uploads (4 bytes/pixel)
-      |                               ^~~~~~~~~~~~~~~~
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1287:98: note: perform multiplication in a wider type
- 1287 |             if (s_tex_upload_count < MAX_COMPUTE_JOBS && s_compute_staging_offset + rgba_size <= COMPUTE_STORAGE_SIZE) {
-      |                                                                                                  ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:56:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
-   56 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024)                // 32MB — RGBA8 texture uploads (4 bytes/pixel)
-      |                               ^~~~~~~~~
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1301:41: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
- 1301 |                         const u8* row = src + y * pitch;
-      |                                         ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1301:47: note: make conversion explicit to silence this warning
- 1301 |                         const u8* row = src + y * pitch;
-      |                                               ^~~~~~~~~
-      |                                               (ptrdiff_t)( )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1301:47: note: perform multiplication in a wider type
- 1301 |                         const u8* row = src + y * pitch;
-      |                                               ^
-      |                                               (ptrdiff_t)
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1301:47: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
- 1301 |                         const u8* row = src + y * pitch;
-      |                                               ^~~~~~~~~~
-      |                                               (        )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1302:40: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
- 1302 |                         u32* out_row = dst + y * w;
-      |                                        ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1302:46: note: make conversion explicit to silence this warning
- 1302 |                         u32* out_row = dst + y * w;
-      |                                              ^~~~~
-      |                                              (ptrdiff_t)( )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1302:46: note: perform multiplication in a wider type
- 1302 |                         u32* out_row = dst + y * w;
-      |                                              ^
-      |                                              (ptrdiff_t)
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1302:46: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
- 1302 |                         u32* out_row = dst + y * w;
-      |                                              ^~~~~~
-      |                                              (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1306:99: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
- 1306 |                             simde__m128i bytes = simde_mm_loadu_si128((const simde__m128i*)(row + x / 2));
-      |                                                                                                   ^~~~~~
-      |                                                                                                   (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1346:43: warning: statement should be inside braces [readability-braces-around-statements]
- 1346 |                             if (x + 1 < w)
-      |                                           ^
-      |                                            {
- 1347 |                                 out_row[x + 1] = 0xFF000000u | (u32)((byte >> 4) & 0x0F);
-      |                                                                                          
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1360:55: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
- 1360 |                         const u16* row = (const u16*)(src + y * pitch);
-      |                                                       ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1360:61: note: make conversion explicit to silence this warning
- 1360 |                         const u16* row = (const u16*)(src + y * pitch);
-      |                                                             ^~~~~~~~~
-      |                                                             (ptrdiff_t)( )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1360:61: note: perform multiplication in a wider type
- 1360 |                         const u16* row = (const u16*)(src + y * pitch);
-      |                                                             ^
-      |                                                             (ptrdiff_t)
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1360:61: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
- 1360 |                         const u16* row = (const u16*)(src + y * pitch);
-      |                                                             ^~~~~~~~~~
-      |                                                             (        )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1361:40: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
- 1361 |                         u32* out_row = dst + y * w;
-      |                                        ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1361:46: note: make conversion explicit to silence this warning
- 1361 |                         u32* out_row = dst + y * w;
-      |                                              ^~~~~
-      |                                              (ptrdiff_t)( )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1361:46: note: perform multiplication in a wider type
- 1361 |                         u32* out_row = dst + y * w;
-      |                                              ^
-      |                                              (ptrdiff_t)
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1361:46: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
- 1361 |                         u32* out_row = dst + y * w;
-      |                                              ^~~~~~
-      |                                              (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1385:71: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
- 1385 |                                 simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
-      |                                                                       ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1385:85: note: make conversion explicit to silence this warning
- 1385 |                                 simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
-      |                                                                                     ^~~~~~~~
-      |                                                                                     (ptrdiff_t)( )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1385:85: note: perform multiplication in a wider type
- 1385 |                                 simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
-      |                                                                                     ^~~~
-      |                                                                                     (ptrdiff_t)
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1385:85: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
- 1385 |                                 simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
-      |                                                                                     ^~~~~~~~~
-      |                                                                                     (       )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1403:41: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
- 1403 |                         const u8* row = src + y * pitch;
-      |                                         ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1403:47: note: make conversion explicit to silence this warning
- 1403 |                         const u8* row = src + y * pitch;
-      |                                               ^~~~~~~~~
-      |                                               (ptrdiff_t)( )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1403:47: note: perform multiplication in a wider type
- 1403 |                         const u8* row = src + y * pitch;
-      |                                               ^
-      |                                               (ptrdiff_t)
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1403:47: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
- 1403 |                         const u8* row = src + y * pitch;
-      |                                               ^~~~~~~~~~
-      |                                               (        )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1404:40: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
- 1404 |                         u32* out_row = dst + y * w;
-      |                                        ^
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1404:46: note: make conversion explicit to silence this warning
- 1404 |                         u32* out_row = dst + y * w;
-      |                                              ^~~~~
-      |                                              (ptrdiff_t)( )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1404:46: note: perform multiplication in a wider type
- 1404 |                         u32* out_row = dst + y * w;
-      |                                              ^
-      |                                              (ptrdiff_t)
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1404:46: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
- 1404 |                         u32* out_row = dst + y * w;
-      |                                              ^~~~~~
-      |                                              (    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1455:19: warning: statement should be inside braces [readability-braces-around-statements]
- 1455 |     if (layer < 0)
-      |                   ^
-      |                    {
- 1456 |         layer = 0;
-      |                   
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1481:63: warning: statement should be inside braces [readability-braces-around-statements]
- 1481 |     if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES)
-      |                                                               ^
-      |                                                                {
- 1482 |         return;
+  466 |         return;
       |                
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1619:42: warning: statement should be inside braces [readability-braces-around-statements]
- 1619 |     if (!mapped_vertex_ptr || count <= 0)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:603:42: warning: statement should be inside braces [readability-braces-around-statements]
+  603 |     if (!mapped_vertex_ptr || count <= 0)
       |                                          ^
       |                                           {
- 1620 |         return;
+  604 |         return;
       |                
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1625:41: warning: statement should be inside braces [readability-braces-around-statements]
- 1625 |         if (!active_layers[chips[i].id])
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:609:41: warning: statement should be inside braces [readability-braces-around-statements]
+  609 |         if (!active_layers[chips[i].id])
       |                                         ^
       |                                          {
- 1626 |             continue;
+  610 |             continue;
       |                      
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1628:45: warning: statement should be inside braces [readability-braces-around-statements]
- 1628 |         if (vertex_count + 4 > MAX_VERTICES)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:612:45: warning: statement should be inside braces [readability-braces-around-statements]
+  612 |         if (vertex_count + 4 > MAX_VERTICES)
       |                                             ^
       |                                              {
- 1629 |             break;
+  613 |             break;
       |                   
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1746:39: warning: statement should be inside braces [readability-braces-around-statements]
- 1746 |     if (!LZ77_IsAvailable(s_lz77_ctx))
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:730:39: warning: statement should be inside braces [readability-braces-around-statements]
+  730 |     if (!LZ77_IsAvailable(s_lz77_ctx))
       |                                       ^
       |                                        {
- 1747 |         return 0;
+  731 |         return 0;
       |                  
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1750:40: warning: statement should be inside braces [readability-braces-around-statements]
- 1750 |     if (ti < 0 || ti >= FL_TEXTURE_MAX)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:734:40: warning: statement should be inside braces [readability-braces-around-statements]
+  734 |     if (ti < 0 || ti >= FL_TEXTURE_MAX)
       |                                        ^
       |                                         {
- 1751 |         return 0;
+  735 |         return 0;
       |                  
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1752:63: warning: statement should be inside braces [readability-braces-around-statements]
- 1752 |     if (palette_handle < 0 || palette_handle > FL_PALETTE_MAX)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:736:63: warning: statement should be inside braces [readability-braces-around-statements]
+  736 |     if (palette_handle < 0 || palette_handle > FL_PALETTE_MAX)
       |                                                               ^
       |                                                                {
- 1753 |         return 0;
+  737 |         return 0;
       |                  
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:1757:39: warning: statement should be inside braces [readability-braces-around-statements]
- 1757 |         if (tex_array_free_count <= 0)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:741:39: warning: statement should be inside braces [readability-braces-around-statements]
+  741 |         if (tex_array_free_count <= 0)
       |                                       ^
       |                                        {
- 1758 |             return 0;
+  742 |             return 0;
       |                      
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_lz77.c:14:1: warning: replace macro with enum [modernize-macro-to-enum]
    14 | #define LZ77_MAX_JOBS 64
@@ -5074,6 +4893,358 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_lz77.c:214:56: warning: st
       |                                                         {
   215 |         return;
       |                
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:28:15: warning: statement should be inside braces [readability-braces-around-statements]
+   28 |     if (!code)
+      |               ^
+      |                {
+   29 |         return NULL;
+      |                     
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:191:22: warning: performing an implicit widening conversion to type 'unsigned long long' of a multiplication performed in type 'int' [bugprone-implicit-widening-of-multiplication-result]
+  191 |     size_t ib_size = max_quads * 6 * sizeof(Uint16);
+      |                      ^
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:191:22: note: make conversion explicit to silence this warning
+   13 |     size_t ib_size = max_quads * 6 * sizeof(Uint16);
+      |                      ^~~~~~~~~~~~~
+      |                      (unsigned long long)( )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:191:22: note: perform multiplication in a wider type
+  191 |     size_t ib_size = max_quads * 6 * sizeof(Uint16);
+      |                      ^~~~~~~~~
+      |                      (long long)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:200:34: warning: statement should be inside braces [readability-braces-around-statements]
+  200 |         if (!transfer_buffers[i])
+      |                                  ^
+      |                                   {
+  201 |             any_transfer_missing = true;
+      |                                         
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:219:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  219 |             indices[i * 6 + 0] = i * 4 + 0;
+      |                     ^~~~~
+      |                     (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:219:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  219 |             indices[i * 6 + 0] = i * 4 + 0;
+      |                                  ^~~~~
+      |                                  (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:220:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  220 |             indices[i * 6 + 1] = i * 4 + 1;
+      |                     ^~~~~
+      |                     (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:220:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  220 |             indices[i * 6 + 1] = i * 4 + 1;
+      |                                  ^~~~~
+      |                                  (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:221:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  221 |             indices[i * 6 + 2] = i * 4 + 2;
+      |                     ^~~~~
+      |                     (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:221:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  221 |             indices[i * 6 + 2] = i * 4 + 2;
+      |                                  ^~~~~
+      |                                  (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:222:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  222 |             indices[i * 6 + 3] = i * 4 + 2;
+      |                     ^~~~~
+      |                     (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:222:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  222 |             indices[i * 6 + 3] = i * 4 + 2;
+      |                                  ^~~~~
+      |                                  (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:223:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  223 |             indices[i * 6 + 4] = i * 4 + 1;
+      |                     ^~~~~
+      |                     (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:223:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  223 |             indices[i * 6 + 4] = i * 4 + 1;
+      |                                  ^~~~~
+      |                                  (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:224:21: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  224 |             indices[i * 6 + 5] = i * 4 + 3;
+      |                     ^~~~~
+      |                     (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:224:34: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  224 |             indices[i * 6 + 5] = i * 4 + 3;
+      |                                  ^~~~~
+      |                                  (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:375:18: warning: statement should be inside braces [readability-braces-around-statements]
+  375 |     if (pipeline)
+      |                  ^
+      |                   {
+  376 |         SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
+      |                                                          
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:377:23: warning: statement should be inside braces [readability-braces-around-statements]
+  377 |     if (vertex_buffer)
+      |                       ^
+      |                        {
+  378 |         SDL_ReleaseGPUBuffer(device, vertex_buffer);
+      |                                                     
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:379:22: warning: statement should be inside braces [readability-braces-around-statements]
+  379 |     if (index_buffer)
+      |                      ^
+      |                       {
+  380 |         SDL_ReleaseGPUBuffer(device, index_buffer);
+      |                                                    
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:382:33: warning: statement should be inside braces [readability-braces-around-statements]
+  382 |         if (transfer_buffers[i])
+      |                                 ^
+      |                                  {
+  383 |             SDL_ReleaseGPUTransferBuffer(device, transfer_buffers[i]);
+      |                                                                       
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:385:34: warning: statement should be inside braces [readability-braces-around-statements]
+  385 |     if (s_compute_staging_buffer)
+      |                                  ^
+      |                                   {
+  386 |         SDL_ReleaseGPUTransferBuffer(device, s_compute_staging_buffer);
+      |                                                                        
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:387:27: warning: statement should be inside braces [readability-braces-around-statements]
+  387 |     if (s_palette_texture)
+      |                           ^
+      |                            {
+  388 |         SDL_ReleaseGPUTexture(device, s_palette_texture);
+      |                                                          
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:389:28: warning: statement should be inside braces [readability-braces-around-statements]
+  389 |     if (s_palette_transfer)
+      |                            ^
+      |                             {
+  390 |         SDL_ReleaseGPUTransferBuffer(device, s_palette_transfer);
+      |                                                                  
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:391:25: warning: statement should be inside braces [readability-braces-around-statements]
+  391 |     if (palette_sampler)
+      |                         ^
+      |                          {
+  392 |         SDL_ReleaseGPUSampler(device, palette_sampler);
+      |                                                        
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:393:23: warning: statement should be inside braces [readability-braces-around-statements]
+  393 |     if (texture_array)
+      |                       ^
+      |                        {
+  394 |         SDL_ReleaseGPUTexture(device, texture_array);
+      |                                                      
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:395:26: warning: statement should be inside braces [readability-braces-around-statements]
+  395 |     if (s_canvas_texture)
+      |                          ^
+      |                           {
+  396 |         SDL_ReleaseGPUTexture(device, s_canvas_texture);
+      |                                                         
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:397:17: warning: statement should be inside braces [readability-braces-around-statements]
+  397 |     if (sampler)
+      |                 ^
+      |                  {
+  398 |         SDL_ReleaseGPUSampler(device, sampler);
+      |                                                
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_setup.c:399:20: warning: statement should be inside braces [readability-braces-around-statements]
+  399 |     if (s_lz77_ctx)
+      |                    ^
+      |                     {
+  400 |         LZ77_Destroy(s_lz77_ctx, device);
+      |                                          
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:23:62: warning: statement should be inside braces [readability-braces-around-statements]
+   23 |     if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX)
+      |                                                              ^
+      |                                                               {
+   24 |         return;
+      |                
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:80:62: warning: statement should be inside braces [readability-braces-around-statements]
+   80 |     if (palette_index < 0 || palette_index >= FL_PALETTE_MAX)
+      |                                                              ^
+      |                                                               {
+   81 |         return;
+      |                
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:99:41: warning: statement should be inside braces [readability-braces-around-statements]
+   99 |             for (int i = 0; i < 16; i++)
+      |                                         ^
+      |                                          {
+  100 |                 read_rgba16_color(rgba16[i], &colors[i]);
+      |                                                          
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:113:42: warning: statement should be inside braces [readability-braces-around-statements]
+  113 |             for (int i = 0; i < 256; i++)
+      |                                          ^
+      |                                           {
+  114 |                 read_rgba16_color(rgba16[ps2_clut_shuffle[i]], &colors[i]);
+      |                                                                            
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:120:33: warning: statement should be inside braces [readability-braces-around-statements]
+  120 |     if (palettes[palette_index])
+      |                                 ^
+      |                                  {
+  121 |         SDL_DestroyPalette(palettes[palette_index]);
+      |                                                     
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:165:63: warning: statement should be inside braces [readability-braces-around-statements]
+  165 |         if (!surf || !SDL_ISPIXELFORMAT_INDEXED(surf->format))
+      |                                                               ^
+      |                                                                {
+  166 |             continue;
+      |                      
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:167:37: warning: statement should be inside braces [readability-braces-around-statements]
+  167 |         if (tex_array_layer[ti] < 0)
+      |                                     ^
+      |                                      {
+  168 |             continue;
+      |                      
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:172:22: warning: statement should be inside braces [readability-braces-around-statements]
+  172 |             if (!pal)
+      |                      ^
+      |                       {
+  173 |                 continue;
+      |                          
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:178:20: warning: statement should be inside braces [readability-braces-around-statements]
+  178 |             if (!f)
+      |                    ^
+      |                     {
+  179 |                 continue;
+      |                          
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:289:28: warning: statement should be inside braces [readability-braces-around-statements]
+  289 |     if ((th & 0xFFFF) == 0)
+      |                            ^
+      |                             {
+  290 |         th = (th & 0xFFFF0000) | 1000;
+      |                                       
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:307:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  307 |     TRACE_ZONE_N("GPU:SetTexture");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:343:98: warning: performing an implicit widening conversion to type 'size_t' (aka 'unsigned long long') of a multiplication performed in type 'int' [bugprone-implicit-widening-of-multiplication-result]
+  343 |             if (s_tex_upload_count < MAX_COMPUTE_JOBS && s_compute_staging_offset + rgba_size <= COMPUTE_STORAGE_SIZE) {
+      |                                                                                                  ^
+D:\3sxtra\src\port\sdl\renderer/sdl_game_renderer_gpu_internal.h:30:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
+   30 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024) /* 32 MB — RGBA8 texture uploads */
+      |                               ^
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:343:98: note: make conversion explicit to silence this warning
+  343 |             if (s_tex_upload_count < MAX_COMPUTE_JOBS && s_compute_staging_offset + rgba_size <= COMPUTE_STORAGE_SIZE) {
+      |                                                                                                  ^
+D:\3sxtra\src\port\sdl\renderer/sdl_game_renderer_gpu_internal.h:30:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
+   30 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024) /* 32 MB — RGBA8 texture uploads */
+      |                               ^~~~~~~~~~~~~~~~
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:343:98: note: perform multiplication in a wider type
+  343 |             if (s_tex_upload_count < MAX_COMPUTE_JOBS && s_compute_staging_offset + rgba_size <= COMPUTE_STORAGE_SIZE) {
+      |                                                                                                  ^
+D:\3sxtra\src\port\sdl\renderer/sdl_game_renderer_gpu_internal.h:30:31: note: expanded from macro 'COMPUTE_STORAGE_SIZE'
+   30 | #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024) /* 32 MB — RGBA8 texture uploads */
+      |                               ^~~~~~~~~
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:357:41: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
+  357 |                         const u8* row = src + y * pitch;
+      |                                         ^
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:357:47: note: make conversion explicit to silence this warning
+   17 |                         const u8* row = src + y * pitch;
+      |                                               ^~~~~~~~~
+      |                                               (ptrdiff_t)( )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:357:47: note: perform multiplication in a wider type
+  357 |                         const u8* row = src + y * pitch;
+      |                                               ^
+      |                                               (ptrdiff_t)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:357:47: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  357 |                         const u8* row = src + y * pitch;
+      |                                               ^~~~~~~~~~
+      |                                               (        )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:358:40: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
+  358 |                         u32* out_row = dst + y * w;
+      |                                        ^
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:358:46: note: make conversion explicit to silence this warning
+  358 |                         u32* out_row = dst + y * w;
+      |                                              ^~~~~
+      |                                              (ptrdiff_t)( )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:358:46: note: perform multiplication in a wider type
+  358 |                         u32* out_row = dst + y * w;
+      |                                              ^
+      |                                              (ptrdiff_t)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:358:46: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  358 |                         u32* out_row = dst + y * w;
+      |                                              ^~~~~~
+      |                                              (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:362:99: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  362 |                             simde__m128i bytes = simde_mm_loadu_si128((const simde__m128i*)(row + x / 2));
+      |                                                                                                   ^~~~~~
+      |                                                                                                   (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:402:43: warning: statement should be inside braces [readability-braces-around-statements]
+  402 |                             if (x + 1 < w)
+      |                                           ^
+      |                                            {
+  403 |                                 out_row[x + 1] = 0xFF000000u | (u32)((byte >> 4) & 0x0F);
+      |                                                                                          
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:416:55: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
+  416 |                         const u16* row = (const u16*)(src + y * pitch);
+      |                                                       ^
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:416:61: note: make conversion explicit to silence this warning
+  416 |                         const u16* row = (const u16*)(src + y * pitch);
+      |                                                             ^~~~~~~~~
+      |                                                             (ptrdiff_t)( )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:416:61: note: perform multiplication in a wider type
+  416 |                         const u16* row = (const u16*)(src + y * pitch);
+      |                                                             ^
+      |                                                             (ptrdiff_t)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:416:61: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  416 |                         const u16* row = (const u16*)(src + y * pitch);
+      |                                                             ^~~~~~~~~~
+      |                                                             (        )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:417:40: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
+  417 |                         u32* out_row = dst + y * w;
+      |                                        ^
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:417:46: note: make conversion explicit to silence this warning
+  417 |                         u32* out_row = dst + y * w;
+      |                                              ^~~~~
+      |                                              (ptrdiff_t)( )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:417:46: note: perform multiplication in a wider type
+  417 |                         u32* out_row = dst + y * w;
+      |                                              ^
+      |                                              (ptrdiff_t)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:417:46: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  417 |                         u32* out_row = dst + y * w;
+      |                                              ^~~~~~
+      |                                              (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:441:71: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
+  441 |                                 simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
+      |                                                                       ^
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:441:85: note: make conversion explicit to silence this warning
+  441 |                                 simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
+      |                                                                                     ^~~~~~~~
+      |                                                                                     (ptrdiff_t)( )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:441:85: note: perform multiplication in a wider type
+  441 |                                 simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
+      |                                                                                     ^~~~
+      |                                                                                     (ptrdiff_t)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:441:85: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  441 |                                 simde_mm_storeu_si128((simde__m128i*)(out_row + x + half * 4), result);
+      |                                                                                     ^~~~~~~~~
+      |                                                                                     (       )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:459:41: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
+  459 |                         const u8* row = src + y * pitch;
+      |                                         ^
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:459:47: note: make conversion explicit to silence this warning
+  459 |                         const u8* row = src + y * pitch;
+      |                                               ^~~~~~~~~
+      |                                               (ptrdiff_t)( )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:459:47: note: perform multiplication in a wider type
+  459 |                         const u8* row = src + y * pitch;
+      |                                               ^
+      |                                               (ptrdiff_t)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:459:47: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  459 |                         const u8* row = src + y * pitch;
+      |                                               ^~~~~~~~~~
+      |                                               (        )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:460:40: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
+  460 |                         u32* out_row = dst + y * w;
+      |                                        ^
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:460:46: note: make conversion explicit to silence this warning
+  460 |                         u32* out_row = dst + y * w;
+      |                                              ^~~~~
+      |                                              (ptrdiff_t)( )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:460:46: note: perform multiplication in a wider type
+  460 |                         u32* out_row = dst + y * w;
+      |                                              ^
+      |                                              (ptrdiff_t)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:460:46: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  460 |                         u32* out_row = dst + y * w;
+      |                                              ^~~~~~
+      |                                              (    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:511:19: warning: statement should be inside braces [readability-braces-around-statements]
+  511 |     if (layer < 0)
+      |                   ^
+      |                    {
+  512 |         layer = 0;
+      |                   
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:29:1: warning: replace macro with enum [modernize-macro-to-enum]
    29 | #define RENDER_TASK_MAX 8192
       | ^~~~~~~                     
@@ -5166,6 +5337,26 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:601:63: warning: stateme
       |                                                                {
   602 |             run_end++;
       |                       
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:716:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+  716 |     TRACE_SUB_BEGIN("SDL2D:BeginFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:737:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  737 |     TRACE_ZONE_N("SDL2D:RenderFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:795:39: warning: statement should be inside braces [readability-braces-around-statements]
   795 |         if (task_texture[idx] != NULL)
       |                                       ^
@@ -5212,6 +5403,16 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:965:52: note: perform mu
   965 |                             memcpy(&batch_vertices[k * 4], task_verts[gi], 4 * sizeof(SDL_Vertex));
       |                                                    ^
       |                                                    (ptrdiff_t)
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:1018:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+ 1018 |     TRACE_SUB_BEGIN("SDL2D:EndFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:1375:29: warning: statement should be inside braces [readability-braces-around-statements]
  1375 |         if (texture == NULL)
       |                             ^
@@ -5339,6 +5540,16 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:1527:74: warning: '*' ha
  1527 |             ((uint32_t)(v[0].color.b * 255.0f + 0.5f) << 8) | (uint32_t)(v[0].color.a * 255.0f + 0.5f);
       |                                                                          ^~~~~~~~~~~~~~~~~~~~~
       |                                                                          (                    )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:1641:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
+ 1641 |     TRACE_SUB_BEGIN("SDL2D:FlushBatch");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
+   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
+      |                     ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:1661:50: warning: statement should be inside braces [readability-braces-around-statements]
  1661 |         if (render_task_count >= RENDER_TASK_MAX)
       |                                                  ^
@@ -5801,6 +6012,16 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl_sw.c:558:82: warning: '*' 
   558 |                            ((uint32_t)(fc->b * 255.0f + 0.5f) << 8) | (uint32_t)(fc->a * 255.0f + 0.5f);
       |                                                                                  ^~~~~~~~~~~~~~
       |                                                                                  (             )
+D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl_sw.c:600:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  600 |     TRACE_ZONE_N("SDL2D:SwFrame");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl_sw.c:632:48: warning: statement should be inside braces [readability-braces-around-statements]
   632 |                     if (v[k].position.x < minx)
       |                                                ^
@@ -6250,59 +6471,59 @@ D:\3sxtra\src\port\sdl\renderer\sdl_texture_util.cpp:195:24: warning: statement 
       |                         {
   196 |                 SDL_ReleaseGPUTexture(device, pair.second.texture);
       |                                                                    
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:75:51: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-   75 |     PUSH_NUM(L, t, "pos_x", wu->xyz[0].disp.pos + (u8)wu->xyz[0].disp.low / 256.0);
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:82:51: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+   82 |     PUSH_NUM(L, t, "pos_x", wu->xyz[0].disp.pos + (u8)wu->xyz[0].disp.low / 256.0);
       |                                                   ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:45:36: note: expanded from macro 'PUSH_NUM'
-   45 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:52:36: note: expanded from macro 'PUSH_NUM'
+   52 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
       |                                    ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:76:51: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-   76 |     PUSH_NUM(L, t, "pos_y", wu->xyz[1].disp.pos + (u8)wu->xyz[1].disp.low / 256.0);
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:83:51: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+   83 |     PUSH_NUM(L, t, "pos_y", wu->xyz[1].disp.pos + (u8)wu->xyz[1].disp.low / 256.0);
       |                                                   ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:45:36: note: expanded from macro 'PUSH_NUM'
-   45 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:52:36: note: expanded from macro 'PUSH_NUM'
+   52 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
       |                                    ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:83:57: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-   83 |     PUSH_NUM(L, t, "velocity_x", wu->mvxy.a[0].real.h + (u8)wu->mvxy.a[0].real.l / 256.0);
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:90:57: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+   90 |     PUSH_NUM(L, t, "velocity_x", wu->mvxy.a[0].real.h + (u8)wu->mvxy.a[0].real.l / 256.0);
       |                                                         ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:45:36: note: expanded from macro 'PUSH_NUM'
-   45 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:52:36: note: expanded from macro 'PUSH_NUM'
+   52 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
       |                                    ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:84:57: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-   84 |     PUSH_NUM(L, t, "velocity_y", wu->mvxy.a[1].real.h + (u8)wu->mvxy.a[1].real.l / 256.0);
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:91:57: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+   91 |     PUSH_NUM(L, t, "velocity_y", wu->mvxy.a[1].real.h + (u8)wu->mvxy.a[1].real.l / 256.0);
       |                                                         ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:45:36: note: expanded from macro 'PUSH_NUM'
-   45 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:52:36: note: expanded from macro 'PUSH_NUM'
+   52 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
       |                                    ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:373:26: warning: statement should be inside braces [readability-braces-around-statements]
-  373 |     if (id < 1 || id > 2)
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:398:26: warning: statement should be inside braces [readability-braces-around-statements]
+  398 |     if (id < 1 || id > 2)
       |                          ^
       |                           {
-  374 |         return 0;
+  399 |         return 0;
       |                  
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:426:5: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-  426 |     char abs_path[1024];
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:451:5: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+  451 |     char abs_path[1024];
       |     ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:475:14: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-  475 | static const luaL_Reg engine_funcs[] = {
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:525:14: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+  525 | static const luaL_Reg engine_funcs[] = {
       |              ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:489:7: warning: use nullptr [modernize-use-nullptr]
-  489 |     { NULL, NULL }
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:541:7: warning: use nullptr [modernize-use-nullptr]
+  541 |     { NULL, NULL }
       |       ^~~~
       |       nullptr
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:489:13: warning: use nullptr [modernize-use-nullptr]
-  489 |     { NULL, NULL }
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:541:13: warning: use nullptr [modernize-use-nullptr]
+  541 |     { NULL, NULL }
       |             ^~~~
       |             nullptr
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:503:19: warning: '/' has higher precedence than '-'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  503 |             (int)(sizeof(engine_funcs) / sizeof(engine_funcs[0]) - 1));
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:555:19: warning: '/' has higher precedence than '-'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  555 |             (int)(sizeof(engine_funcs) / sizeof(engine_funcs[0]) - 1));
       |                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                   (                                             )
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:512:12: warning: statement should be inside braces [readability-braces-around-statements]
-  512 |     if (!L)
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:564:12: warning: statement should be inside braces [readability-braces-around-statements]
+  564 |     if (!L)
       |            ^
       |             {
-  513 |         return;
+  565 |         return;
       |                
 D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:30:14: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
    30 | static const s16 CHARA_IDS[] = {
@@ -9877,6 +10098,61 @@ D:\3sxtra\src\port\sound\spu.c:196:20: warning: statement should be inside brace
       |                     {
   197 |         filter = 0;
       |                    
+D:\3sxtra\src\port\sound\spu.c:349:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
+  349 |     TRACE_ZONE_N("SPU_AudioCB");
+      |     ^
+D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
+   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
+      |                                        ^
+D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
+  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
+      |                                                                                                                                                                                                                   ^
+note: this fix will not be applied because it overlaps with another fix
+D:\3sxtra\src\port\tracy_gpu.cpp:15:10: warning: inclusion of deprecated C++ header 'stdio.h'; consider using 'cstdio' instead [modernize-deprecated-headers]
+   15 | #include <stdio.h>
+      |          ^~~~~~~~~
+      |          <cstdio>
+D:\3sxtra\src\port\tracy_gpu.cpp:16:10: warning: inclusion of deprecated C++ header 'string.h'; consider using 'cstring' instead [modernize-deprecated-headers]
+   16 | #include <string.h>
+      |          ^~~~~~~~~~
+      |          <cstring>
+D:\3sxtra\src\port\tracy_gpu.cpp:26:8: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+   26 | static GLuint s_queries[QUERY_COUNT];
+      |        ^
+D:\3sxtra\src\port\tracy_gpu.cpp:48:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+   48 |     uint16_t slot = (uint16_t)s_head;
+      |     ^~~~~~~~
+      |     auto
+D:\3sxtra\src\port\tracy_gpu.cpp:62:40: warning: statement should be inside braces [readability-braces-around-statements]
+   62 |     while (glGetError() != GL_NO_ERROR)
+      |                                        ^
+      |                                         {
+   63 |         ;
+      |          
+D:\3sxtra\src\port\tracy_gpu.cpp:113:18: warning: statement should be inside braces [readability-braces-around-statements]
+  113 |     if (!s_ready)
+      |                  ^
+      |                   {
+  114 |         return;
+      |                
+D:\3sxtra\src\port\tracy_gpu.cpp:140:34: warning: statement should be inside braces [readability-braces-around-statements]
+  140 |     if (!s_ready || s_depth <= 0)
+      |                                  ^
+      |                                   {
+  141 |         return;
+      |                
+D:\3sxtra\src\port\tracy_gpu.cpp:161:18: warning: statement should be inside braces [readability-braces-around-statements]
+  161 |     if (!s_ready)
+      |                  ^
+      |                   {
+  162 |         return;
+      |                
+D:\3sxtra\src\port\tracy_gpu.cpp:172:24: warning: statement should be inside braces [readability-braces-around-statements]
+  172 |         if (!available)
+      |                        ^
+      |                         {
+  173 |             break;
+      |                   
 D:\3sxtra\src\port\ui\replay_picker.cpp:18:10: warning: inclusion of deprecated C++ header 'stdio.h'; consider using 'cstdio' instead [modernize-deprecated-headers]
    18 | #include <stdio.h>
       |          ^~~~~~~~~
