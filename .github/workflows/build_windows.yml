@@ -37,7 +37,6 @@ jobs:
           - name: Install MSYS2 packages
             run: tr -d '\r' < tools/requirements-windows.txt | xargs pacman -S --needed --noconfirm
 
-
           - name: Cache dependencies
             uses: actions/cache@v4
             with:

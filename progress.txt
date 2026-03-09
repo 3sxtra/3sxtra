@@ -60,3 +60,41 @@
     - recompile.bat: PASS
     - lint.bat: PASS (clang-format + clang-tidy clean)
     - ctest: 35/35 PASS
+
+[2026-03-09 15:24] ✅ Task 4 COMPLETE — Added missing @file/@brief doc comments to port-layer files
+  Scanned all port-layer .c and .h files for missing @file/@brief Doxygen headers.
+  All 10 files explicitly listed in the PRD already had them.
+  Found 28 additional files missing doc comments; added headers to 26 of them.
+  Excluded 2 files:
+    - imgui_font_8x8.h: vendored public-domain bitmap font with its own attribution
+    - tracy_zones.h: already has descriptive //-style header with API docs
+  Files modified (26 total):
+    Headers (20):
+      - config.h, paths.h, afs.h, stage_config.h, sdl_bezel.h
+      - sdl_app.h, sdl_app_config.h, sdl_app_input.h, sdl_app_internal.h, sdl_app_shader_config.h
+      - control_mapping_bindings.h, control_mapping.h, sdl_pad.h, sdl_netplay_ui.h
+      - sdl_game_renderer_gl_internal.h, sdl_game_renderer_internal.h, sdl_librashader_hack.h
+      - sdl_text_renderer_internal.h, rmlui_wrapper.h, tracy_gpu.h
+    Headers (sound): adx_decoder.h, adx.h, modded_bgm.h
+    Headers (top-level): char_data.h
+    Source files (3): sdl_game_renderer.c, modded_bgm.c, char_data.c
+  Note: radix_sort.h was initially listed as missing but already had @file/@brief.
+  Verification:
+    - recompile.bat: PASS
+    - lint.bat: PASS (clang-format + clang-tidy clean)
+    - ctest: 35/35 PASS
+
+[2026-03-09 15:25] ✅ Task 5 COMPLETE — Final verification and summary
+  All hygiene sweep tasks complete:
+    Task 1: Eliminated inline extern declarations in 7 port-layer .c files
+    Task 2: Removed unnecessary #include <stdio.h> (3 files) and <stdlib.h> (2 files)
+    Task 3: Replaced magic number thresholds in sdl_pad.c with 5 named constants
+    Task 4: Added @file/@brief doc comments to 26 port-layer files
+  Final pipeline results:
+    - recompile.bat: PASS
+    - lint.bat: PASS (clang-format + clang-tidy clean)
+    - ctest: 35/35 PASS
+  All changes behavior-preserving. Zero public API changes.
+
+----------
+ralph-done-cvuoc

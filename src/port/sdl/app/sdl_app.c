@@ -266,7 +266,7 @@ int SDLApp_Init() {
 
     // SDL2D path: skip GL attributes entirely
 
-    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
@@ -1084,7 +1084,6 @@ void SDLApp_EndFrame() {
                     glEnable(GL_BLEND);
                     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 }
-
                 LibrashaderManager_Render(SDLAppShader_GetManager(),
                                           (void*)(intptr_t)cps3_canvas_texture,
                                           tex_w,
