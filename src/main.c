@@ -180,10 +180,11 @@ int main(int argc, char* argv[]) {
     ParseCLI(argc, argv);
 
     init_windows_console();
-    SDLApp_Init();
 
-    /* ── Synchronous resource check + game init ──────────────────
-     * Verify required assets exist BEFORE entering the main loop.
+    /* ── Synchronous resource check ─────────────────────────────
+     * Verify required assets exist BEFORE creating the game window.
+     * This prevents a fullscreen window from obscuring setup dialogs
+     * on devices that focus one window at a time.
      * On desktop: triggers the folder-dialog copy flow if missing.
      * On RPi4/headless: logs an error (no dialog backend). */
     if (!Resources_CheckIfPresent()) {
@@ -193,12 +194,15 @@ int main(int argc, char* argv[]) {
 #else
         /* Desktop: run the dialog-based copy flow synchronously */
         while (!Resources_CheckIfPresent()) {
+            SDL_PumpEvents();
             if (!Resources_RunResourceCopyingFlow()) {
                 SDL_Delay(16); /* yield while waiting for dialog */
             }
         }
 #endif
     }
+
+    SDLApp_Init();
 
 #if !defined(_WIN32)
     signal(SIGINT, signal_handler);
@@ -248,26 +252,24 @@ int main(int argc, char* argv[]) {
             game_accumulator = 0;
         }
 
-        // Poll events BEFORE EndFrame so quit is consumed before any
-        // potentially-blocking buffer swap (fixes Alt+F4 hang on KMS/DRM).
         if (should_tick_game) {
             SDLApp_BeginFrame();
             step_0();
+            SDLApp_EndFrame();
             is_running = SDLApp_PollEvents();
 #if !defined(_WIN32)
             if (g_signal_quit)
                 is_running = false;
 #endif
-            SDLApp_EndFrame();
             step_1();
         } else {
             /* Re-present the existing canvas (no game logic, no FBO clear) */
+            SDLApp_PresentOnly();
             is_running = SDLApp_PollEvents();
 #if !defined(_WIN32)
             if (g_signal_quit)
                 is_running = false;
 #endif
-            SDLApp_PresentOnly();
         }
         TRACE_FRAME_MARK();
     }

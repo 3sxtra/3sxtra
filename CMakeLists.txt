@@ -307,6 +307,7 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/sdl/rmlui/rmlui_frame_display.cpp
     src/port/sdl/rmlui/rmlui_control_mapping.cpp
     src/port/sdl/rmlui/rmlui_training_menu.cpp
+    src/port/sdl/rmlui/rmlui_training_hud.cpp
     src/port/sdl/rmlui/rmlui_netplay_ui.cpp
     src/port/sdl/rmlui/rmlui_game_hud.cpp
     src/port/sdl/rmlui/rmlui_mode_menu.cpp

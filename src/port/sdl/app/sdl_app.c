@@ -21,6 +21,7 @@
 #include "port/sdl/rmlui/rmlui_mods_menu.h"
 #include "port/sdl/rmlui/rmlui_shader_menu.h"
 #include "port/sdl/rmlui/rmlui_stage_config.h"
+#include "port/sdl/rmlui/rmlui_training_hud.h"
 #include "port/sdl/rmlui/rmlui_training_menu.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 /* Phase 3 — Fight HUD & Mode Menu */
@@ -226,7 +227,7 @@ bool mods_menu_shader_bypass_enabled = false;
 bool mods_menu_fast_pre_game = false;
 bool game_paused = false;
 static bool frame_rate_uncapped = false;
-static bool vsync_enabled = true;      // user preference, independent of frame_rate_uncapped
+static bool vsync_enabled = false;     // VSync disabled — native frame pacing handles timing
 static bool present_only_mode = false; // when true, EndFrame re-blits canvas without re-rendering game
 
 // UI mode flag — when true, RmlUi handles overlay menus
@@ -315,14 +316,10 @@ int SDLApp_Init() {
         SDL_SetRenderDrawBlendMode(sdl_renderer, SDL_BLENDMODE_BLEND);
         SDL_Log("Renderer: SDL2D (SDL_Renderer)");
 
-        // Apply vsync from config (default on)
-        // ⚡ When native frame pacing is active (!frame_rate_uncapped), disable VSync
-        // so SDL_RenderPresent returns immediately — our FramePacing loop handles timing.
-        // This prevents double-waiting (VSync + FramePacing) which added ~1.7ms latency on Pi4.
-        vsync_enabled = !Config_HasKey(CFG_KEY_VSYNC) || Config_GetBool(CFG_KEY_VSYNC);
-        bool sdl2d_vsync = vsync_enabled && frame_rate_uncapped;
-        SDL_SetRenderVSync(sdl_renderer, sdl2d_vsync ? 1 : 0);
-        SDL_Log("VSync: %s (SDL2D, native pacing: %s)", sdl2d_vsync ? "ON" : "OFF", frame_rate_uncapped ? "off" : "on");
+        // VSync OFF — native frame pacing handles timing for all backends.
+        vsync_enabled = false;
+        SDL_SetRenderVSync(sdl_renderer, 0);
+        SDL_Log("VSync: OFF (SDL2D, native pacing)");
     } else {
         window = SDL_CreateWindow(app_name, width, height, window_flags);
         if (!window) {
@@ -419,13 +416,13 @@ int SDLApp_Init() {
         }
         SDL_Log("SDL_GPU Initialized Successfully.");
 
-        // Apply vsync from config (default on)
-        vsync_enabled = !Config_HasKey(CFG_KEY_VSYNC) || Config_GetBool(CFG_KEY_VSYNC);
+        // VSync OFF — native frame pacing handles timing.
+        vsync_enabled = false;
         SDL_SetGPUSwapchainParameters(gpu_device,
                                       window,
                                       SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-                                      vsync_enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_IMMEDIATE);
-        SDL_Log("VSync: %s (SDL_GPU)", vsync_enabled ? "ON" : "OFF");
+                                      SDL_GPU_PRESENTMODE_IMMEDIATE);
+        SDL_Log("VSync: OFF (SDL_GPU, native pacing)");
     } else if (g_renderer_backend == RENDERER_OPENGL) {
     opengl_init:
         // OpenGL Backend Initialization
@@ -455,10 +452,10 @@ int SDLApp_Init() {
         TRACE_GPU_INIT();
         SDL_Log("Tracy GPU Profiler initialized.");
 
-        // Apply vsync from config (default on)
-        vsync_enabled = !Config_HasKey(CFG_KEY_VSYNC) || Config_GetBool(CFG_KEY_VSYNC);
-        SDL_GL_SetSwapInterval(vsync_enabled ? 1 : 0);
-        SDL_Log("VSync: %s (OpenGL)", vsync_enabled ? "ON" : "OFF");
+        // VSync OFF — native frame pacing handles timing.
+        vsync_enabled = false;
+        SDL_GL_SetSwapInterval(0);
+        SDL_Log("VSync: OFF (OpenGL, native pacing)");
     }
     // else: SDL2D — window and renderer already created above
 
@@ -538,6 +535,7 @@ int SDLApp_Init() {
     rmlui_frame_display_init();
     rmlui_netplay_ui_init();
     rmlui_training_menu_init();
+    rmlui_training_hud_init();
     rmlui_control_mapping_init();
 
     if (use_rmlui) {
@@ -754,6 +752,7 @@ static void render_overlays(int win_w, int win_h) {
         rmlui_dev_overlay_update();
     if (show_training_menu)
         rmlui_training_menu_update();
+    rmlui_training_hud_update();
 
     /* Netplay overlay — SDLNetplayUI_Render is not initialized on SDL2D */
     int hud_fps_count = 0;
@@ -1522,7 +1521,7 @@ void SDLApp_ToggleDevOverlay() {
 }
 
 void SDLApp_ToggleTrainingMenu() {
-    toggle_overlay(&show_training_menu, "training", false);
+    toggle_overlay(&show_training_menu, "training", true);
 }
 
 void SDLApp_CloseAllMenus() {
@@ -1633,27 +1632,11 @@ bool SDLApp_IsMenuVisible() {
     return show_menu;
 }
 
-/** @brief Set vsync on the active backend. Independent of the software frame pacer. */
+/** @brief VSync toggle (currently disabled — native pacing handles all timing). */
 void SDLApp_SetVSync(bool enabled) {
-    vsync_enabled = enabled;
-
-    // Always apply to the GPU — vsync is independent of frame rate uncap
-    if (g_renderer_backend == RENDERER_OPENGL) {
-        SDL_GL_SetSwapInterval(enabled ? 1 : 0);
-    } else if (g_renderer_backend == RENDERER_SDLGPU && gpu_device && window) {
-        SDL_SetGPUSwapchainParameters(gpu_device,
-                                      window,
-                                      SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-                                      enabled ? SDL_GPU_PRESENTMODE_VSYNC : SDL_GPU_PRESENTMODE_IMMEDIATE);
-    } else if (is_sdl2d_backend(g_renderer_backend) && sdl_renderer) {
-        // ⚡ Only enable VSync on SDL2D renderer when native frame pacing is off.
-        // When native pacing is active, we want RenderPresent to return immediately.
-        bool sdl2d_vsync = enabled && frame_rate_uncapped;
-        SDL_SetRenderVSync(sdl_renderer, sdl2d_vsync ? 1 : 0);
-    }
-
-    Config_SetBool(CFG_KEY_VSYNC, enabled);
-    SDL_Log("VSync: %s", enabled ? "ON" : "OFF");
+    (void)enabled;
+    // VSync is permanently disabled — native frame pacing handles timing.
+    // All backends stay at swap-interval 0 / IMMEDIATE mode.
 }
 
 bool SDLApp_IsVSyncEnabled() {
@@ -1662,13 +1645,7 @@ bool SDLApp_IsVSyncEnabled() {
 
 void SDLApp_ToggleFrameRateUncap() {
     frame_rate_uncapped = !frame_rate_uncapped;
-
-    // ⚡ Re-apply SDL2D VSync state: native pacing requires VSync off on the
-    // renderer to prevent double-waiting (RenderPresent + FramePacing).
-    if (is_sdl2d_backend(g_renderer_backend) && sdl_renderer) {
-        bool sdl2d_vsync = vsync_enabled && frame_rate_uncapped;
-        SDL_SetRenderVSync(sdl_renderer, sdl2d_vsync ? 1 : 0);
-    }
+    // VSync is permanently off — no need to re-apply.
 
     // Reset frame deadline so the pacer doesn't spiral on re-enable
     frame_deadline = 0;

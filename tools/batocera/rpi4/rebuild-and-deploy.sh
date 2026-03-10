@@ -6,6 +6,7 @@
 #
 # Options:
 #   --clean     Wipe build_rpi4 and reconfigure from scratch
+#   --sync      Use rsync to transfer only changed files (fast)
 #   --tracy     Enable Tracy profiler instrumentation
 #   --lto       Enable Link-Time Optimization (even for Debug builds)
 #   --release   Build in Release mode (default)
@@ -14,6 +15,7 @@
 #
 # Examples:
 #   bash tools/batocera/rpi4/rebuild-and-deploy.sh                    # incremental build + deploy
+#   bash tools/batocera/rpi4/rebuild-and-deploy.sh --sync             # build + rsync only changed files
 #   bash tools/batocera/rpi4/rebuild-and-deploy.sh --clean            # full clean rebuild
 #   bash tools/batocera/rpi4/rebuild-and-deploy.sh --tracy --clean    # clean rebuild with Tracy
 #   bash tools/batocera/rpi4/rebuild-and-deploy.sh 192.168.1.100      # deploy to different IP
@@ -26,6 +28,7 @@ PI_PASS="linux"
 PI_DEST="/userdata/roms/ports/3sx"
 
 DO_CLEAN=false
+DO_SYNC=false
 ENABLE_TRACY=false
 ENABLE_LTO=false
 BUILD_TYPE="RelWithDebInfo"
@@ -37,6 +40,7 @@ BUILD_DIR="$ROOT_DIR/build_rpi4"
 for arg in "$@"; do
     case "$arg" in
         --clean)   DO_CLEAN=true ;;
+        --sync)    DO_SYNC=true ;;
         --tracy)   ENABLE_TRACY=true ;;
         --lto)     ENABLE_LTO=true ;;
         --release) BUILD_TYPE="Release" ;;
@@ -76,6 +80,7 @@ echo -e "${CYAN}│${NC}  Build type:  ${YELLOW}$BUILD_TYPE${NC}"
 echo -e "${CYAN}│${NC}  Tracy:       ${YELLOW}$([ "$ENABLE_TRACY" = true ] && echo "ENABLED" || echo "disabled")${NC}"
 echo -e "${CYAN}│${NC}  LTO:         ${YELLOW}$([ "$ENABLE_LTO" = true ] && echo "ENABLED" || echo "disabled")${NC}"
 echo -e "${CYAN}│${NC}  Clean:       ${YELLOW}$([ "$DO_CLEAN" = true ] && echo "YES" || echo "no (incremental)")${NC}"
+echo -e "${CYAN}│${NC}  Deploy:      ${YELLOW}$([ "$DO_SYNC" = true ] && echo "rsync (incremental)" || echo "tarball (full)")${NC}"
 echo -e "${CYAN}│${NC}  Target:      ${YELLOW}$PI_USER@$PI_IP${NC}"
 echo -e "${CYAN}└─────────────────────────────────────────┘${NC}"
 
@@ -133,38 +138,42 @@ cd "$BUILD_DIR"
 cmake --build . -j"$(nproc)" || die "Build failed!"
 echo -e "${GREEN}✔ Build succeeded${NC}"
 
-# ── Step 4: Package ───────────────────────────────────────────
-step "Packaging deployment tarball..."
-cd "$ROOT_DIR"
-bash tools/batocera/rpi4/deploy.sh || die "Deploy packaging failed!"
-[ -f "$ROOT_DIR/game_deployment.tar.gz" ] || die "Tarball not created!"
-SIZE=$(du -h "$ROOT_DIR/game_deployment.tar.gz" | cut -f1)
-echo -e "${GREEN}✔ Package created ($SIZE)${NC}"
+# ── Step 4+: Deploy ───────────────────────────────────────────
+if [ "$DO_SYNC" = true ]; then
+    # ── Incremental rsync deploy ──────────────────────────────
+    step "Incremental sync deploy..."
+    cd "$ROOT_DIR"
+    bash tools/batocera/rpi4/sync-deploy.sh "$PI_IP" || die "Sync deploy failed!"
+else
+    # ── Traditional tarball deploy ────────────────────────────
+    step "Packaging deployment tarball..."
+    cd "$ROOT_DIR"
+    bash tools/batocera/rpi4/deploy.sh || die "Deploy packaging failed!"
+    [ -f "$ROOT_DIR/game_deployment.tar.gz" ] || die "Tarball not created!"
+    SIZE=$(du -h "$ROOT_DIR/game_deployment.tar.gz" | cut -f1)
+    echo -e "${GREEN}✔ Package created ($SIZE)${NC}"
 
-# ── Step 5: Check Pi is reachable ─────────────────────────────
-step "Checking Pi4 at $PI_IP..."
-ping -c 1 -W 2 "$PI_IP" >/dev/null 2>&1 || die "Pi4 not reachable at $PI_IP. Check network or pass IP as argument: $0 <IP>"
-echo -e "${GREEN}✔ Pi4 is reachable${NC}"
+    step "Checking Pi4 at $PI_IP..."
+    ping -c 1 -W 2 "$PI_IP" >/dev/null 2>&1 || die "Pi4 not reachable at $PI_IP. Check network or pass IP as argument: $0 <IP>"
+    echo -e "${GREEN}✔ Pi4 is reachable${NC}"
 
-# ── Step 6: Upload ────────────────────────────────────────────
-step "Uploading to $PI_USER@$PI_IP:$PI_DEST/..."
-sshpass -p "$PI_PASS" scp -o StrictHostKeyChecking=no \
-    "$ROOT_DIR/game_deployment.tar.gz" \
-    "$PI_USER@$PI_IP:$PI_DEST/" || die "SCP upload failed!"
-echo -e "${GREEN}✔ Upload complete${NC}"
+    step "Stopping 3sx on Pi4 (if running)..."
+    sshpass -p "$PI_PASS" ssh -o StrictHostKeyChecking=no "$PI_USER@$PI_IP" \
+        "killall -9 3sx 2>/dev/null; sleep 0.5; true"
+    echo -e "${GREEN}✔ Process stopped (or wasn't running)${NC}"
 
-# ── Step 7: Stop running 3sx (avoid "Text file busy") ─────────
-step "Stopping 3sx on Pi4 (if running)..."
-sshpass -p "$PI_PASS" ssh -o StrictHostKeyChecking=no "$PI_USER@$PI_IP" \
-    "killall -9 3sx 2>/dev/null; sleep 0.5; true"
-echo -e "${GREEN}✔ Process stopped (or wasn't running)${NC}"
+    step "Uploading to $PI_USER@$PI_IP:$PI_DEST/..."
+    sshpass -p "$PI_PASS" scp -o StrictHostKeyChecking=no \
+        "$ROOT_DIR/game_deployment.tar.gz" \
+        "$PI_USER@$PI_IP:$PI_DEST/" || die "SCP upload failed!"
+    echo -e "${GREEN}✔ Upload complete${NC}"
 
-# ── Step 8: Extract on Pi ─────────────────────────────────────
-step "Extracting on Pi4..."
-sshpass -p "$PI_PASS" ssh -o StrictHostKeyChecking=no "$PI_USER@$PI_IP" \
-    "cd $PI_DEST && tar xzf game_deployment.tar.gz --overwrite && chmod +x 3sx 3sx.sh 3sx-gl.sh 3sx-gpu.sh 3sx-sdl2d.sh && rm game_deployment.tar.gz" \
-    || die "Remote extraction failed!"
-echo -e "${GREEN}✔ Deployed successfully!${NC}"
+    step "Extracting on Pi4..."
+    sshpass -p "$PI_PASS" ssh -o StrictHostKeyChecking=no "$PI_USER@$PI_IP" \
+        "cd $PI_DEST && tar xzf game_deployment.tar.gz --overwrite && chmod +x 3sx 3sx.sh 3sx-gl.sh 3sx-gpu.sh 3sx-sdl2d.sh && rm game_deployment.tar.gz" \
+        || die "Remote extraction failed!"
+    echo -e "${GREEN}✔ Deployed successfully!${NC}"
+fi
 
 # ── Done ──────────────────────────────────────────────────────
 echo ""

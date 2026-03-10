@@ -95,14 +95,26 @@ label {
 
 select {
     display: block;
-    padding: 2dp 6dp;
+    width: 100%;
+    height: 18dp;
     background-color: #2a2a30;
     border-width: 1dp;
     border-color: #555;
     border-radius: 3dp;
     color: #ddd;
     font-size: 10dp;
-    white-space: nowrap;
+}
+
+select selectvalue {
+    width: auto;
+    height: 18dp;
+    padding: 4dp 6dp 0 6dp;
+    color: #ddd;
+}
+
+select selectarrow {
+    width: 0;
+    height: 0;
 }
 
 select:hover {
@@ -110,13 +122,15 @@ select:hover {
 }
 
 select selectbox {
+    width: 100%;
     background-color: #1a1a20;
     border-width: 1dp;
     border-color: #555;
 }
 
 select selectbox option {
-    padding: 2dp 6dp;
+    padding: 3dp 6dp;
+    color: #ddd;
 }
 
 select selectbox option:hover {

@@ -1,6 +1,6 @@
 ============================================================ 
                    3SX Lint Report                              
-                   Generated: 09/03/2026 21:06:07.58                     
+                   Generated: 10/03/2026 17:25:09.49                     
 ============================================================ 
  
 ------------------------------------------------------------ 
@@ -8,194 +8,266 @@
 ------------------------------------------------------------ 
 [CLANG-FORMAT] C/C++ Code Formatting Check
 [CLANG-TIDY] Static Analysis
-[1/94] Processing file D:/3sxtra/src/port/broadcast.c.
-270 warnings generated.
-[2/94] Processing file D:/3sxtra/src/port/char_data.c.
-598 warnings generated.
-[3/94] Processing file D:/3sxtra/src/port/config/cli_parser.c.
-3865 warnings generated.
-[4/94] Processing file D:/3sxtra/src/port/config/config.c.
-7218 warnings generated.
-[5/94] Processing file D:/3sxtra/src/port/config/paths.c.
-10415 warnings generated.
-[6/94] Processing file D:/3sxtra/src/port/input_definition.cpp.
-28207 warnings generated.
-[7/94] Processing file D:/3sxtra/src/port/io/afs.c.
-31454 warnings generated.
-[8/94] Processing file D:/3sxtra/src/port/menu_bridge.c.
-59215 warnings generated.
-[9/94] Processing file D:/3sxtra/src/port/mods/modded_stage.c.
-62679 warnings generated.
-[10/94] Processing file D:/3sxtra/src/port/mods/stage_config.c.
-65529 warnings generated.
-[11/94] Processing file D:/3sxtra/src/port/rendering/legacy_matrix.c.
-66348 warnings generated.
-[12/94] Processing file D:/3sxtra/src/port/rendering/resources.c.
-69547 warnings generated.
-[13/94] Processing file D:/3sxtra/src/port/rendering/sdl_bezel.c.
-72794 warnings generated.
-[14/94] Processing file D:/3sxtra/src/port/save/native_save.c.
-76248 warnings generated.
-[15/94] Processing file D:/3sxtra/src/port/sdk/sdk_libpad2.c.
-79491 warnings generated.
-[16/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app.c.
-82968 warnings generated.
-[17/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_bezel.c.
-86276 warnings generated.
-[18/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_debug_hud.c.
-89499 warnings generated.
-[19/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_input.c.
-92783 warnings generated.
-[20/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_scale.c.
-95983 warnings generated.
-[21/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_screenshot.c.
-99201 warnings generated.
-[22/94] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_shader_config.c.
-102409 warnings generated.
-[23/94] Processing file D:/3sxtra/src/port/sdl/input/control_mapping.cpp.
-134624 warnings generated.
-[24/94] Processing file D:/3sxtra/src/port/sdl/input/sdl_pad.c.
-137873 warnings generated.
-[25/94] Processing file D:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp.
-169329 warnings generated.
-[26/94] Processing file D:/3sxtra/src/port/sdl/renderer/renderer.c.
-172604 warnings generated.
-[27/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer.c.
-175867 warnings generated.
-[28/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_classic.c.
-179256 warnings generated.
-[29/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_context.c.
-206357 warnings generated.
-[30/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_draw.c.
-233595 warnings generated.
-[31/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_resources.c.
-260920 warnings generated.
-[32/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu.c.
-288285 warnings generated.
-[33/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu_lz77.c.
-291558 warnings generated.
-[34/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu_setup.c.
-318838 warnings generated.
-[35/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu_texture.c.
-346232 warnings generated.
-[36/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_sdl.c.
-349652 warnings generated.
-[37/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c.
-353116 warnings generated.
-[38/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_texture_util.cpp.
-370518 warnings generated.
-[39/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer.c.
-373773 warnings generated.
-[40/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_gl.c.
-377035 warnings generated.
-[41/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_gpu.c.
-380320 warnings generated.
-[42/94] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_sdl.c.
-383519 warnings generated.
-[43/94] Processing file D:/3sxtra/src/port/sdl/rmlui/lua_engine_bridge.cpp.
-418445 warnings generated.
-[44/94] Processing file D:/3sxtra/src/port/sdl/rmlui/lua_trials_loader.cpp.
-453227 warnings generated.
-[45/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_attract_overlay.cpp.
-491408 warnings generated.
-[46/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_button_config.cpp.
-529978 warnings generated.
-[47/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_char_select.cpp.
-568981 warnings generated.
-[48/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_continue.cpp.
-607564 warnings generated.
-[49/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_control_mapping.cpp.
-646122 warnings generated.
-[50/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_copyright.cpp.
-684702 warnings generated.
-[51/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_dev_overlay.cpp.
-726897 warnings generated.
-[52/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_exit_confirm.cpp.
-765001 warnings generated.
-[53/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_extra_option.cpp.
-803627 warnings generated.
-[54/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_frame_display.cpp.
-842415 warnings generated.
-[55/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_gameover.cpp.
-881021 warnings generated.
-[56/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_game_hud.cpp.
-920425 warnings generated.
-[57/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_game_option.cpp.
-959041 warnings generated.
-[58/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_input_display.cpp.
-997549 warnings generated.
-[59/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_memory_card.cpp.
-1036118 warnings generated.
-[60/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_mode_menu.cpp.
-1074371 warnings generated.
-[61/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_mods_menu.cpp.
-1112972 warnings generated.
-[62/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_name_entry.cpp.
-1151601 warnings generated.
-[63/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_netplay_ui.cpp.
-1190112 warnings generated.
-[64/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_network_lobby.cpp.
-1228873 warnings generated.
-[65/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_option_menu.cpp.
-1267475 warnings generated.
-[66/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_pause_overlay.cpp.
-1306076 warnings generated.
-[67/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_replay_picker.cpp.
-1345001 warnings generated.
-[68/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_shader_menu.cpp.
-1383504 warnings generated.
-[69/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_sound_menu.cpp.
-1422139 warnings generated.
-[70/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_stage_config.cpp.
-1460907 warnings generated.
-[71/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_sysdir.cpp.
-1499588 warnings generated.
-[72/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_title_screen.cpp.
-1538146 warnings generated.
-[73/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_training_menu.cpp.
-1576492 warnings generated.
-[74/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_training_menus.cpp.
-1615080 warnings generated.
-[75/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_trials_hud.cpp.
-1653852 warnings generated.
-[76/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_vs_result.cpp.
-1692466 warnings generated.
-[77/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_vs_screen.cpp.
-1731038 warnings generated.
-[78/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_win_screen.cpp.
-1769659 warnings generated.
-[79/94] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_wrapper.cpp.
-1811306 warnings generated.
-[80/94] Processing file D:/3sxtra/src/port/sound/adx.c.
-1814771 warnings generated.
-[81/94] Processing file D:/3sxtra/src/port/sound/adx_decoder.c.
-1815740 warnings generated.
-[82/94] Processing file D:/3sxtra/src/port/sound/emlShim.c.
-1819130 warnings generated.
-[83/94] Processing file D:/3sxtra/src/port/sound/modded_bgm.c.
-1822518 warnings generated.
-[84/94] Processing file D:/3sxtra/src/port/sound/spu.c.
-1825875 warnings generated.
-[85/94] Processing file D:/3sxtra/src/port/tracy_gpu.cpp.
-1870679 warnings generated.
-[86/94] Processing file D:/3sxtra/src/port/ui/replay_picker.cpp.
-1873005 warnings generated.
-[87/94] Processing file D:/3sxtra/src/port/utils.c.
-1900367 warnings generated.
-[88/94] Processing file D:/3sxtra/src/port/win32/broadcast_spout.cpp.
-1970140 warnings generated.
-[89/94] Processing file D:/3sxtra/src/netplay/discovery.c.
-1999717 warnings generated.
-[90/94] Processing file D:/3sxtra/src/netplay/game_state.c.
-2003003 warnings generated.
-[91/94] Processing file D:/3sxtra/src/netplay/lobby_server.c.
-2032727 warnings generated.
-[92/94] Processing file D:/3sxtra/src/netplay/netplay.c.
-2036233 warnings generated.
-[93/94] Processing file D:/3sxtra/src/netplay/stun.c.
-2065810 warnings generated.
-[94/94] Processing file D:/3sxtra/src/netplay/upnp.c.
-2069022 warnings generated.
+[1/95] Processing file D:/3sxtra/src/port/broadcast.c.
+271 warnings generated.
+[2/95] Processing file D:/3sxtra/src/port/char_data.c.
+600 warnings generated.
+[3/95] Processing file D:/3sxtra/src/port/char_data.c.
+929 warnings generated.
+[4/95] Processing file D:/3sxtra/src/port/config/cli_parser.c.
+4153 warnings generated.
+[5/95] Processing file D:/3sxtra/src/port/config/cli_parser.c.
+7377 warnings generated.
+[6/95] Processing file D:/3sxtra/src/port/config/config.c.
+10692 warnings generated.
+[7/95] Processing file D:/3sxtra/src/port/config/config.c.
+13998 warnings generated.
+[8/95] Processing file D:/3sxtra/src/port/config/paths.c.
+17152 warnings generated.
+[9/95] Processing file D:/3sxtra/src/port/config/paths.c.
+20306 warnings generated.
+[10/95] Processing file D:/3sxtra/src/port/config/paths.c.
+23460 warnings generated.
+[11/95] Processing file D:/3sxtra/src/port/config/paths.c.
+26614 warnings generated.
+[12/95] Processing file D:/3sxtra/src/port/input_definition.cpp.
+44374 warnings generated.
+[13/95] Processing file D:/3sxtra/src/port/io/afs.c.
+47578 warnings generated.
+[14/95] Processing file D:/3sxtra/src/port/menu_bridge.c.
+75284 warnings generated.
+[15/95] Processing file D:/3sxtra/src/port/menu_bridge.c.
+102990 warnings generated.
+[16/95] Processing file D:/3sxtra/src/port/mods/modded_stage.c.
+106380 warnings generated.
+[17/95] Processing file D:/3sxtra/src/port/mods/stage_config.c.
+109217 warnings generated.
+[18/95] Processing file D:/3sxtra/src/port/mods/stage_config.c.
+112054 warnings generated.
+[19/95] Processing file D:/3sxtra/src/port/rendering/legacy_matrix.c.
+112867 warnings generated.
+[20/95] Processing file D:/3sxtra/src/port/rendering/legacy_matrix.c.
+113680 warnings generated.
+[21/95] Processing file D:/3sxtra/src/port/rendering/resources.c.
+116836 warnings generated.
+[22/95] Processing file D:/3sxtra/src/port/rendering/sdl_bezel.c.
+120040 warnings generated.
+[23/95] Processing file D:/3sxtra/src/port/rendering/sdl_bezel.c.
+123244 warnings generated.
+[24/95] Processing file D:/3sxtra/src/port/rendering/sdl_bezel.c.
+126448 warnings generated.
+[25/95] Processing file D:/3sxtra/src/port/save/native_save.c.
+129859 warnings generated.
+[26/95] Processing file D:/3sxtra/src/port/save/native_save.c.
+133261 warnings generated.
+[27/95] Processing file D:/3sxtra/src/port/sdk/sdk_libpad2.c.
+136461 warnings generated.
+[28/95] Processing file D:/3sxtra/src/port/sdl/app/sdl_app.c.
+139772 warnings generated.
+[29/95] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_bezel.c.
+143037 warnings generated.
+[30/95] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_debug_hud.c.
+146217 warnings generated.
+[31/95] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_input.c.
+149458 warnings generated.
+[32/95] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_scale.c.
+152615 warnings generated.
+[33/95] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_screenshot.c.
+155790 warnings generated.
+[34/95] Processing file D:/3sxtra/src/port/sdl/app/sdl_app_shader_config.c.
+158955 warnings generated.
+[35/95] Processing file D:/3sxtra/src/port/sdl/input/control_mapping.cpp.
+191133 warnings generated.
+[36/95] Processing file D:/3sxtra/src/port/sdl/input/sdl_pad.c.
+194339 warnings generated.
+[37/95] Processing file D:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp.
+225742 warnings generated.
+[38/95] Processing file D:/3sxtra/src/port/sdl/renderer/renderer.c.
+228974 warnings generated.
+[39/95] Processing file D:/3sxtra/src/port/sdl/renderer/renderer.c.
+232207 warnings generated.
+[40/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer.c.
+235427 warnings generated.
+[41/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_classic.c.
+238652 warnings generated.
+[42/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_context.c.
+265679 warnings generated.
+[43/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_draw.c.
+292727 warnings generated.
+[44/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gl_resources.c.
+319977 warnings generated.
+[45/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu.c.
+347151 warnings generated.
+[46/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu_lz77.c.
+350381 warnings generated.
+[47/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu_setup.c.
+377587 warnings generated.
+[48/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_gpu_texture.c.
+404792 warnings generated.
+[49/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_sdl.c.
+408052 warnings generated.
+[50/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c.
+411358 warnings generated.
+[51/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_texture_util.cpp.
+428719 warnings generated.
+[52/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer.c.
+431931 warnings generated.
+[53/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_gl.c.
+435150 warnings generated.
+[54/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_gpu.c.
+438392 warnings generated.
+[55/95] Processing file D:/3sxtra/src/port/sdl/renderer/sdl_text_renderer_sdl.c.
+441548 warnings generated.
+[56/95] Processing file D:/3sxtra/src/port/sdl/rmlui/lua_engine_bridge.cpp.
+476449 warnings generated.
+[57/95] Processing file D:/3sxtra/src/port/sdl/rmlui/lua_trials_loader.cpp.
+511205 warnings generated.
+[58/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_attract_overlay.cpp.
+549355 warnings generated.
+[59/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_button_config.cpp.
+587894 warnings generated.
+[60/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_char_select.cpp.
+626866 warnings generated.
+[61/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_continue.cpp.
+665418 warnings generated.
+[62/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_control_mapping.cpp.
+703945 warnings generated.
+[63/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_copyright.cpp.
+742494 warnings generated.
+[64/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_dev_overlay.cpp.
+784656 warnings generated.
+[65/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_exit_confirm.cpp.
+822729 warnings generated.
+[66/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_extra_option.cpp.
+861324 warnings generated.
+[67/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_frame_display.cpp.
+900083 warnings generated.
+[68/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_gameover.cpp.
+938658 warnings generated.
+[69/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_game_hud.cpp.
+978031 warnings generated.
+[70/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_game_option.cpp.
+1016616 warnings generated.
+[71/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_input_display.cpp.
+1055093 warnings generated.
+[72/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_memory_card.cpp.
+1093631 warnings generated.
+[73/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_mode_menu.cpp.
+1131853 warnings generated.
+[74/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_mods_menu.cpp.
+1170423 warnings generated.
+[75/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_name_entry.cpp.
+1209021 warnings generated.
+[76/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_netplay_ui.cpp.
+1247501 warnings generated.
+[77/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_network_lobby.cpp.
+1286231 warnings generated.
+[78/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_option_menu.cpp.
+1324802 warnings generated.
+[79/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_pause_overlay.cpp.
+1363372 warnings generated.
+[80/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_replay_picker.cpp.
+1402266 warnings generated.
+[81/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_shader_menu.cpp.
+1440738 warnings generated.
+[82/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_sound_menu.cpp.
+1479342 warnings generated.
+[83/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_stage_config.cpp.
+1518079 warnings generated.
+[84/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_sysdir.cpp.
+1556729 warnings generated.
+[85/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_title_screen.cpp.
+1595256 warnings generated.
+[86/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_training_hud.cpp.
+1633750 warnings generated.
+[87/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_training_menu.cpp.
+1672484 warnings generated.
+[88/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_training_menus.cpp.
+1711041 warnings generated.
+[89/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_trials_hud.cpp.
+1749782 warnings generated.
+[90/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_vs_result.cpp.
+1788365 warnings generated.
+[91/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_vs_screen.cpp.
+1826906 warnings generated.
+[92/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_win_screen.cpp.
+1865496 warnings generated.
+[93/95] Processing file D:/3sxtra/src/port/sdl/rmlui/rmlui_wrapper.cpp.
+1907113 warnings generated.
+[94/95] Processing file D:/3sxtra/src/port/sound/adx.c.
+1910504 warnings generated.
+[95/95] Processing file D:/3sxtra/src/port/sound/adx_decoder.c.
+1911436 warnings generated.
+[96/95] Processing file D:/3sxtra/src/port/sound/adx_decoder.c.
+1912368 warnings generated.
+[97/95] Processing file D:/3sxtra/src/port/sound/emlShim.c.
+1915601 warnings generated.
+[98/95] Processing file D:/3sxtra/src/port/sound/modded_bgm.c.
+1918915 warnings generated.
+[99/95] Processing file D:/3sxtra/src/port/sound/spu.c.
+1922120 warnings generated.
+[100/95] Processing file D:/3sxtra/src/port/tracy_gpu.cpp.
+1922120 warnings generated.
+[101/95] Processing file D:/3sxtra/src/port/ui/replay_picker.cpp.
+1924440 warnings generated.
+[102/95] Processing file D:/3sxtra/src/port/utils.c.
+1951777 warnings generated.
+[103/95] Processing file D:/3sxtra/src/port/win32/broadcast_spout.cpp.
+2021464 warnings generated.
+[104/95] Processing file D:/3sxtra/src/port/win32/broadcast_spout.cpp.
+2091120 warnings generated.
+[105/95] Processing file D:/3sxtra/src/netplay/discovery.c.
+2120642 warnings generated.
+[106/95] Processing file D:/3sxtra/src/netplay/game_state.c.
+2123885 warnings generated.
+[107/95] Processing file D:/3sxtra/src/netplay/game_state.c.
+2127127 warnings generated.
+[108/95] Processing file D:/3sxtra/src/netplay/game_state.c.
+2130369 warnings generated.
+[109/95] Processing file D:/3sxtra/src/netplay/game_state.c.
+2133611 warnings generated.
+[110/95] Processing file D:/3sxtra/src/netplay/lobby_server.c.
+2163280 warnings generated.
+[111/95] Processing file D:/3sxtra/src/netplay/netplay.c.
+2166738 warnings generated.
+[112/95] Processing file D:/3sxtra/src/netplay/netplay.c.
+2170197 warnings generated.
+[113/95] Processing file D:/3sxtra/src/netplay/netplay.c.
+2173656 warnings generated.
+[114/95] Processing file D:/3sxtra/src/netplay/netplay.c.
+2177115 warnings generated.
+[115/95] Processing file D:/3sxtra/src/netplay/netplay.c.
+2180574 warnings generated.
+[116/95] Processing file D:/3sxtra/src/netplay/netplay.c.
+2184033 warnings generated.
+[117/95] Processing file D:/3sxtra/src/netplay/netplay.c.
+2187492 warnings generated.
+[118/95] Processing file D:/3sxtra/src/netplay/netplay.c.
+2190951 warnings generated.
+[119/95] Processing file D:/3sxtra/src/netplay/netplay.c.
+2194410 warnings generated.
+[120/95] Processing file D:/3sxtra/src/netplay/stun.c.
+2223932 warnings generated.
+[121/95] Processing file D:/3sxtra/src/netplay/stun.c.
+2253454 warnings generated.
+[122/95] Processing file D:/3sxtra/src/netplay/stun.c.
+2282976 warnings generated.
+[123/95] Processing file D:/3sxtra/src/netplay/stun.c.
+2312498 warnings generated.
+[124/95] Processing file D:/3sxtra/src/netplay/stun.c.
+2342020 warnings generated.
+[125/95] Processing file D:/3sxtra/src/netplay/stun.c.
+2371542 warnings generated.
+[126/95] Processing file D:/3sxtra/src/netplay/stun.c.
+2401064 warnings generated.
+[127/95] Processing file D:/3sxtra/src/netplay/stun.c.
+2430586 warnings generated.
+[128/95] Processing file D:/3sxtra/src/netplay/stun.c.
+2460108 warnings generated.
+[129/95] Processing file D:/3sxtra/src/netplay/stun.c.
+2489630 warnings generated.
+[130/95] Processing file D:/3sxtra/src/netplay/upnp.c.
+2492799 warnings generated.
 D:/3sxtra/src/include/port/broadcast.h:7:1: warning: use 'using' instead of 'typedef' [modernize-use-using]
     7 | typedef enum {
       | ^~~~~~~~~~~~~~
@@ -1219,6 +1291,12 @@ D:\3sxtra\src\netplay\netplay.c:653:2: warning: preprocessor condition can be wr
   653 | #if defined(DEBUG)
       |  ^~ ~~~~~~~~~~~~~~
       |  ifdef DEBUG
+D:\3sxtra\src\netplay\netplay.c:698:26: warning: passing 'const GekkoGameEvent *' (aka 'const struct GekkoGameEvent *') to parameter of type 'GekkoGameEvent *' (aka 'struct GekkoGameEvent *') discards qualifiers [clang-diagnostic-incompatible-pointer-types-discards-qualifiers]
+  698 |             advance_game(event, drawing_allowed && !rolling_back);
+      |                          ^~~~~
+D:\3sxtra\src\netplay\netplay.c:591:42: note: passing argument to parameter 'event' here
+  591 | static void advance_game(GekkoGameEvent* event, bool render) {
+      |                                          ^
 D:\3sxtra\src\netplay\netplay.c:844:2: warning: preprocessor condition can be written more concisely using '#ifdef' [readability-use-concise-preprocessor-directives]
   844 | #if defined(DEBUG)
       |  ^~ ~~~~~~~~~~~~~~
@@ -2229,277 +2307,187 @@ D:\3sxtra\src\port\sdk\sdk_libpad2.c:91:114: warning: pointer parameter 'data' c
    91 | int sceVibSetActParam(int socket_number, int profile_size, unsigned char* profile, int data_size, unsigned char* data) {
       |                                                                                                                  ^
       |                                                                                                   const 
-D:\3sxtra\src\port\sdl\app\sdl_app.c:295:20: warning: statement should be inside braces [readability-braces-around-statements]
-  295 |     if (width <= 0)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:296:20: warning: statement should be inside braces [readability-braces-around-statements]
+  296 |     if (width <= 0)
       |                    ^
       |                     {
-  296 |         width = 640;
+  297 |         width = 640;
       |                     
-D:\3sxtra\src\port\sdl\app\sdl_app.c:297:21: warning: statement should be inside braces [readability-braces-around-statements]
-  297 |     if (height <= 0)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:298:21: warning: statement should be inside braces [readability-braces-around-statements]
+  298 |     if (height <= 0)
       |                     ^
       |                      {
-  298 |         height = 480;
+  299 |         height = 480;
       |                      
-D:\3sxtra\src\port\sdl\app\sdl_app.c:301:34: warning: conditional operator is used as sub-expression of parent conditional operator, refrain from using nested conditional operators [readability-avoid-nested-conditional-operator]
-  301 |                                : (g_renderer_backend == RENDERER_SDL2D)         ? "SDL2D"
-      |                                  ^
-D:\3sxtra\src\port\sdl\app\sdl_app.c:300:32: note: parent conditional operator here
-  300 |     const char* backend_name = (g_renderer_backend == RENDERER_SDLGPU)          ? "SDL_GPU"
-      |                                ^
 D:\3sxtra\src\port\sdl\app\sdl_app.c:302:34: warning: conditional operator is used as sub-expression of parent conditional operator, refrain from using nested conditional operators [readability-avoid-nested-conditional-operator]
-  302 |                                : (g_renderer_backend == RENDERER_SDL2D_CLASSIC) ? "SDL2D-Classic"
+  302 |                                : (g_renderer_backend == RENDERER_SDL2D)         ? "SDL2D"
       |                                  ^
-D:\3sxtra\src\port\sdl\app\sdl_app.c:301:34: note: parent conditional operator here
-  301 |                                : (g_renderer_backend == RENDERER_SDL2D)         ? "SDL2D"
+D:\3sxtra\src\port\sdl\app\sdl_app.c:301:32: note: parent conditional operator here
+  301 |     const char* backend_name = (g_renderer_backend == RENDERER_SDLGPU)          ? "SDL_GPU"
+      |                                ^
+D:\3sxtra\src\port\sdl\app\sdl_app.c:303:34: warning: conditional operator is used as sub-expression of parent conditional operator, refrain from using nested conditional operators [readability-avoid-nested-conditional-operator]
+  303 |                                : (g_renderer_backend == RENDERER_SDL2D_CLASSIC) ? "SDL2D-Classic"
       |                                  ^
-D:\3sxtra\src\port\sdl\app\sdl_app.c:365:23: warning: statement should be inside braces [readability-braces-around-statements]
-  365 |         if (gpu_debug)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:302:34: note: parent conditional operator here
+  302 |                                : (g_renderer_backend == RENDERER_SDL2D)         ? "SDL2D"
+      |                                  ^
+D:\3sxtra\src\port\sdl\app\sdl_app.c:366:23: warning: statement should be inside braces [readability-braces-around-statements]
+  366 |         if (gpu_debug)
       |                       ^
       |                        {
-  366 |             SDL_Log("GPU debug mode ENABLED (Vulkan validation layers active).");
+  367 |             SDL_Log("GPU debug mode ENABLED (Vulkan validation layers active).");
       |                                                                                  
-D:\3sxtra\src\port\sdl\app\sdl_app.c:515:76: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
-  515 |         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+D:\3sxtra\src\port\sdl\app\sdl_app.c:516:76: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
+  516 |         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
       |                                                                            ^
-D:\3sxtra\src\port\sdl\app\sdl_app.c:627:35: warning: statement should be inside braces [readability-braces-around-statements]
-  627 |             if (s_composition_fbo)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:631:35: warning: statement should be inside braces [readability-braces-around-statements]
+  631 |             if (s_composition_fbo)
       |                                   ^
       |                                    {
-  628 |                 glDeleteFramebuffers(1, &s_composition_fbo);
+  632 |                 glDeleteFramebuffers(1, &s_composition_fbo);
       |                                                             
-D:\3sxtra\src\port\sdl\app\sdl_app.c:629:39: warning: statement should be inside braces [readability-braces-around-statements]
-  629 |             if (s_composition_texture)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:633:39: warning: statement should be inside braces [readability-braces-around-statements]
+  633 |             if (s_composition_texture)
       |                                       ^
       |                                        {
-  630 |                 glDeleteTextures(1, &s_composition_texture);
+  634 |                 glDeleteTextures(1, &s_composition_texture);
       |                                                             
-D:\3sxtra\src\port\sdl\app\sdl_app.c:631:33: warning: statement should be inside braces [readability-braces-around-statements]
-  631 |             if (s_broadcast_fbo)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:635:33: warning: statement should be inside braces [readability-braces-around-statements]
+  635 |             if (s_broadcast_fbo)
       |                                 ^
       |                                  {
-  632 |                 glDeleteFramebuffers(1, &s_broadcast_fbo);
+  636 |                 glDeleteFramebuffers(1, &s_broadcast_fbo);
       |                                                           
-D:\3sxtra\src\port\sdl\app\sdl_app.c:633:37: warning: statement should be inside braces [readability-braces-around-statements]
-  633 |             if (s_broadcast_texture)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:637:37: warning: statement should be inside braces [readability-braces-around-statements]
+  637 |             if (s_broadcast_texture)
       |                                     ^
       |                                      {
-  634 |                 glDeleteTextures(1, &s_broadcast_texture);
+  638 |                 glDeleteTextures(1, &s_broadcast_texture);
       |                                                           
-D:\3sxtra\src\port\sdl\app\sdl_app.c:687:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
-  687 |     TRACE_SUB_BEGIN("SDLEventPump");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\app\sdl_app.c:743:19: warning: statement should be inside braces [readability-braces-around-statements]
-  743 |     if (show_menu)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:747:19: warning: statement should be inside braces [readability-braces-around-statements]
+  747 |     if (show_menu)
       |                   ^
       |                    {
-  744 |         rmlui_control_mapping_update();
+  748 |         rmlui_control_mapping_update();
       |                                        
-D:\3sxtra\src\port\sdl\app\sdl_app.c:745:24: warning: statement should be inside braces [readability-braces-around-statements]
-  745 |     if (show_mods_menu)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:749:24: warning: statement should be inside braces [readability-braces-around-statements]
+  749 |     if (show_mods_menu)
       |                        ^
       |                         {
-  746 |         rmlui_mods_menu_update();
+  750 |         rmlui_mods_menu_update();
       |                                  
-D:\3sxtra\src\port\sdl\app\sdl_app.c:747:26: warning: statement should be inside braces [readability-braces-around-statements]
-  747 |     if (show_shader_menu)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:751:26: warning: statement should be inside braces [readability-braces-around-statements]
+  751 |     if (show_shader_menu)
       |                          ^
       |                           {
-  748 |         rmlui_shader_menu_update();
+  752 |         rmlui_shader_menu_update();
       |                                    
-D:\3sxtra\src\port\sdl\app\sdl_app.c:749:32: warning: statement should be inside braces [readability-braces-around-statements]
-  749 |     if (show_stage_config_menu)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:753:32: warning: statement should be inside braces [readability-braces-around-statements]
+  753 |     if (show_stage_config_menu)
       |                                ^
       |                                 {
-  750 |         rmlui_stage_config_update();
+  754 |         rmlui_stage_config_update();
       |                                     
-D:\3sxtra\src\port\sdl\app\sdl_app.c:751:26: warning: statement should be inside braces [readability-braces-around-statements]
-  751 |     if (show_dev_overlay)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:755:26: warning: statement should be inside braces [readability-braces-around-statements]
+  755 |     if (show_dev_overlay)
       |                          ^
       |                           {
-  752 |         rmlui_dev_overlay_update();
+  756 |         rmlui_dev_overlay_update();
       |                                    
-D:\3sxtra\src\port\sdl\app\sdl_app.c:753:28: warning: statement should be inside braces [readability-braces-around-statements]
-  753 |     if (show_training_menu)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:757:28: warning: statement should be inside braces [readability-braces-around-statements]
+  757 |     if (show_training_menu)
       |                            ^
       |                             {
-  754 |         rmlui_training_menu_update();
+  758 |         rmlui_training_menu_update();
       |                                      
-D:\3sxtra\src\port\sdl\app\sdl_app.c:771:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  771 |     TRACE_ZONE_N("EndFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\app\sdl_app.c:785:9: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
-  785 |         TRACE_SUB_BEGIN("RmlUiUpdates");
-      |         ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\app\sdl_app.c:850:9: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
-  850 |         TRACE_SUB_BEGIN("RenderPresent");
-      |         ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\app\sdl_app.c:861:9: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
-  861 |         TRACE_SUB_BEGIN("FramePacing");
-      |         ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\app\sdl_app.c:873:44: warning: statement should be inside braces [readability-braces-around-statements]
-  873 |                     if (has_pending_quit())
+D:\3sxtra\src\port\sdl\app\sdl_app.c:878:44: warning: statement should be inside braces [readability-braces-around-statements]
+  878 |                     if (has_pending_quit())
       |                                            ^
       |                                             {
-  874 |                         break;
+  879 |                         break;
       |                               
-D:\3sxtra\src\port\sdl\app\sdl_app.c:916:13: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
-  916 |             TRACE_SUB_BEGIN("GPU:PostProcess");
-      |             ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\app\sdl_app.c:926:38: warning: statement should be inside braces [readability-braces-around-statements]
-  926 |                 if (skip_librashader)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:931:38: warning: statement should be inside braces [readability-braces-around-statements]
+  931 |                 if (skip_librashader)
       |                                      ^
       |                                       {
-  927 |                     SDL_Log("SKIP_LIBRASHADER: Using SDL_BlitGPUTexture fallback.");
+  932 |                     SDL_Log("SKIP_LIBRASHADER: Using SDL_BlitGPUTexture fallback.");
       |                                                                                     
-D:\3sxtra\src\port\sdl\app\sdl_app.c:945:36: warning: statement should be inside braces [readability-braces-around-statements]
-  945 |                     if (clear_pass)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:950:36: warning: statement should be inside braces [readability-braces-around-statements]
+  950 |                     if (clear_pass)
       |                                    ^
       |                                     {
-  946 |                         SDL_EndGPURenderPass(clear_pass);
+  951 |                         SDL_EndGPURenderPass(clear_pass);
       |                                                          
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1009:2: warning: preprocessor condition can be written more concisely using '#ifdef' [readability-use-concise-preprocessor-directives]
- 1009 | #if defined(DEBUG)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1014:2: warning: preprocessor condition can be written more concisely using '#ifdef' [readability-use-concise-preprocessor-directives]
+ 1014 | #if defined(DEBUG)
       |  ^~ ~~~~~~~~~~~~~~
       |  ifdef DEBUG
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1062:9: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
- 1062 |         TRACE_SUB_BEGIN("SceneBlit");
-      |         ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1088:43: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
- 1088 |                                           (void*)(intptr_t)cps3_canvas_texture,
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1093:43: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
+ 1093 |                                           (void*)(intptr_t)cps3_canvas_texture,
       |                                           ^
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1108:47: warning: statement should be inside braces [readability-braces-around-statements]
- 1108 |                     if (s_composition_texture)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1113:47: warning: statement should be inside braces [readability-braces-around-statements]
+ 1113 |                     if (s_composition_texture)
       |                                               ^
       |                                                {
- 1109 |                         glDeleteTextures(1, &s_composition_texture);
+ 1114 |                         glDeleteTextures(1, &s_composition_texture);
       |                                                                     
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1110:43: warning: statement should be inside braces [readability-braces-around-statements]
- 1110 |                     if (s_composition_fbo)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1115:43: warning: statement should be inside braces [readability-braces-around-statements]
+ 1115 |                     if (s_composition_fbo)
       |                                           ^
       |                                            {
- 1111 |                         glDeleteFramebuffers(1, &s_composition_fbo);
+ 1116 |                         glDeleteFramebuffers(1, &s_composition_fbo);
       |                                                                     
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1186:43: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
- 1186 |                                           (void*)(intptr_t)s_composition_texture,
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1191:43: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
+ 1191 |                                           (void*)(intptr_t)s_composition_texture,
       |                                           ^
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1303:41: warning: statement should be inside braces [readability-braces-around-statements]
- 1303 |                 if (s_broadcast_texture)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1308:41: warning: statement should be inside braces [readability-braces-around-statements]
+ 1308 |                 if (s_broadcast_texture)
       |                                         ^
       |                                          {
- 1304 |                     glDeleteTextures(1, &s_broadcast_texture);
+ 1309 |                     glDeleteTextures(1, &s_broadcast_texture);
       |                                                               
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1305:37: warning: statement should be inside braces [readability-braces-around-statements]
- 1305 |                 if (s_broadcast_fbo)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1310:37: warning: statement should be inside braces [readability-braces-around-statements]
+ 1310 |                 if (s_broadcast_fbo)
       |                                     ^
       |                                      {
- 1306 |                     glDeleteFramebuffers(1, &s_broadcast_fbo);
+ 1311 |                     glDeleteFramebuffers(1, &s_broadcast_fbo);
       |                                                               
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1336:9: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
- 1336 |         TRACE_SUB_BEGIN("SwapWindow");
-      |         ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1360:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
- 1360 |     TRACE_SUB_BEGIN("FramePacing");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1379:40: warning: statement should be inside braces [readability-braces-around-statements]
- 1379 |                 if (has_pending_quit())
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1384:40: warning: statement should be inside braces [readability-braces-around-statements]
+ 1384 |                 if (has_pending_quit())
       |                                        ^
       |                                         {
- 1380 |                     break;
+ 1385 |                     break;
       |                           
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1495:21: warning: statement should be inside braces [readability-braces-around-statements]
- 1495 |     if (pauses_game)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1500:21: warning: statement should be inside braces [readability-braces-around-statements]
+ 1500 |     if (pauses_game)
       |                     ^
       |                      {
- 1496 |         game_paused = *flag || show_menu;
+ 1501 |         game_paused = *flag || show_menu;
       |                                          
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1497:15: warning: statement should be inside braces [readability-braces-around-statements]
- 1497 |     if (*flag)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1502:15: warning: statement should be inside braces [readability-braces-around-statements]
+ 1502 |     if (*flag)
       |               ^
       |                {
- 1498 |         SDL_ShowCursor();
+ 1503 |         SDL_ShowCursor();
       |                          
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1500:15: warning: statement should be inside braces [readability-braces-around-statements]
- 1500 |     if (*flag)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1505:15: warning: statement should be inside braces [readability-braces-around-statements]
+ 1505 |     if (*flag)
       |               ^
       |                {
- 1501 |         rmlui_wrapper_show_document(doc_name);
- 1502 |     else
+ 1506 |         rmlui_wrapper_show_document(doc_name);
+ 1507 |     else
       |     } 
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1502:9: warning: statement should be inside braces [readability-braces-around-statements]
- 1502 |     else
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1507:9: warning: statement should be inside braces [readability-braces-around-statements]
+ 1507 |     else
       |         ^
       |          {
- 1503 |         rmlui_wrapper_hide_document(doc_name);
+ 1508 |         rmlui_wrapper_hide_document(doc_name);
       |                                               
-D:\3sxtra\src\port\sdl\app\sdl_app.c:1529:19: warning: statement should be inside braces [readability-braces-around-statements]
- 1529 |     if (!any_open)
+D:\3sxtra\src\port\sdl\app\sdl_app.c:1534:19: warning: statement should be inside braces [readability-braces-around-statements]
+ 1534 |     if (!any_open)
       |                   ^
       |                    {
- 1530 |         return;
+ 1535 |         return;
       |                
 D:\3sxtra\src\port\sdl\app\sdl_app_bezel.c:64:24: warning: performing an implicit widening conversion to type 'unsigned long long' of a multiplication performed in type 'int' [bugprone-implicit-widening-of-multiplication-result]
    64 |         memset(out, 0, 6 * 4 * sizeof(float));
@@ -3758,6 +3746,12 @@ D:\3sxtra\src\port\sdl\renderer\renderer.c:175:20: warning: statement should be 
       |                     {
   176 |         return;
       |                
+D:\3sxtra\src\port\sdl\renderer\renderer.c:194:18: warning: passing 'char[40]' to parameter of type 's8 *' (aka 'signed char *') converts between pointers to integer types where one is of the unique plain 'char' type and the other is not [clang-diagnostic-pointer-sign]
+  194 |         flLogOut("Renderer: 2D primitive buffer overflow\n");
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+D:/3sxtra/src/include/sf33rd/AcrSDK/ps2/foundaps2.h:38:18: note: passing argument to parameter 'format' here
+   38 | s32 flLogOut(s8* format, ...);
+      |                  ^
 D:\3sxtra\src\port\sdl\renderer\renderer.c:215:46: warning: integer to pointer cast pessimizes optimization opportunities [performance-no-int-to-ptr]
   215 |         s_Render2DQueue.prim[ix].attr.work = (WORK*)data;
       |                                              ^
@@ -3793,46 +3787,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:141:49: warning: sta
       |                                                  {
   142 |         return;
       |                
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:228:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  228 |     TRACE_ZONE_N("Classic:BeginFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:248:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  248 |     TRACE_ZONE_N("Classic:RenderFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:259:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
-  259 |     TRACE_SUB_BEGIN("Classic:Sort");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:264:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
-  264 |     TRACE_SUB_BEGIN("Classic:BatchRender");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:276:26: warning: result of multiplication in type 'int' is used as a pointer offset after an implicit widening conversion to type 'ptrdiff_t' [bugprone-implicit-widening-of-multiplication-result]
   276 |                         &cl_batch_vertices[j * 4], cl_render_tasks[batch_start + j].vertices, 4 * sizeof(SDL_Vertex));
       |                          ^
@@ -3844,26 +3798,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:276:44: note: perfor
   276 |                         &cl_batch_vertices[j * 4], cl_render_tasks[batch_start + j].vertices, 4 * sizeof(SDL_Vertex));
       |                                            ^
       |                                            (ptrdiff_t)
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:298:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  298 |     TRACE_ZONE_N("Classic:EndFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:316:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  316 |     TRACE_ZONE_N("Classic:CreateTexture");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:404:62: warning: statement should be inside braces [readability-braces-around-statements]
   404 |     if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX)
       |                                                              ^
@@ -3876,16 +3810,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:422:62: warning: sta
       |                                                               {
   423 |         return;
       |                
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:479:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  479 |     TRACE_ZONE_N("Classic:CreatePalette");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:538:40: warning: statement should be inside braces [readability-braces-around-statements]
   538 |     if (pi < 0 || pi >= FL_PALETTE_MAX)
       |                                        ^
@@ -3898,25 +3822,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:557:40: warning: sta
       |                                         {
   558 |         return;
       |                
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:586:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  586 |     TRACE_ZONE_N("Classic:SetTexture");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_classic.c:751:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  751 |     TRACE_ZONE_N("Classic:FlushBatch");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:63:16: warning: statement should be inside braces [readability-braces-around-statements]
    63 |     if (n <= 1)
       |                ^
@@ -3945,26 +3850,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:91:30: warning: stat
       |                               {
    92 |                 dst[k++] = src[j++];
       |                                     
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:110:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  110 |     TRACE_ZONE_N("BeginFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:145:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  145 |     TRACE_ZONE_N("RenderFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:206:45: warning: performing an implicit widening conversion to type 'unsigned long long' of a multiplication performed in type 'int' [bugprone-implicit-widening-of-multiplication-result]
   206 |         glBufferSubData(GL_ARRAY_BUFFER, 0, gl_state.render_task_count * 4 * sizeof(SDL_Vertex), sorted_vertices);
       |                                             ^
@@ -3998,16 +3883,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:212:45: note: perfor
   212 |         glBufferSubData(GL_ARRAY_BUFFER, 0, gl_state.render_task_count * 4 * sizeof(float), sorted_pals);
       |                                             ^~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                             (long long)
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:233:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
-  233 |     TRACE_SUB_BEGIN("GL:BatchDraw");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_draw.c:245:55: warning: statement should be inside braces [readability-braces-around-statements]
   245 |                 if (gl_state.arr_loc_projection == -1)
       |                                                       ^
@@ -4624,16 +4499,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gl_resources.c:1098:13: warnin
       |              {
  1099 |             SDL_Log("[PaletteStats]   tex[%4d]: %d palettes (no surface)", best_ti, best_n);
       |                                                                                             
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:95:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-   95 |     TRACE_ZONE_N("GPU:BeginFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:192:16: warning: statement should be inside braces [readability-braces-around-statements]
   192 |     if (n <= 1)
       |                ^
@@ -4673,16 +4538,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:213:30: warning: stateme
       |                               {
   214 |                 tmp[k++] = src[r++];
       |                                     
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:229:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  229 |     TRACE_ZONE_N("GPU:RenderFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:273:55: warning: statement should be inside braces [readability-braces-around-statements]
   273 |             if (s_palette_uploaded[i] || !palettes[i])
       |                                                       ^
@@ -4713,16 +4568,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:276:118: warning: statem
       |                                                                                                                       {
   277 |                 break;
       |                       
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:443:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  443 |     TRACE_ZONE_N("GPU:EndFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu.c:465:63: warning: statement should be inside braces [readability-braces-around-statements]
   465 |     if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES)
       |                                                               ^
@@ -5096,16 +4941,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:289:28: warning:
       |                             {
   290 |         th = (th & 0xFFFF0000) | 1000;
       |                                       
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:307:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  307 |     TRACE_ZONE_N("GPU:SetTexture");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_gpu_texture.c:343:98: warning: performing an implicit widening conversion to type 'size_t' (aka 'unsigned long long') of a multiplication performed in type 'int' [bugprone-implicit-widening-of-multiplication-result]
   343 |             if (s_tex_upload_count < MAX_COMPUTE_JOBS && s_compute_staging_offset + rgba_size <= COMPUTE_STORAGE_SIZE) {
       |                                                                                                  ^
@@ -5337,26 +5172,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:601:63: warning: stateme
       |                                                                {
   602 |             run_end++;
       |                       
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:716:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
-  716 |     TRACE_SUB_BEGIN("SDL2D:BeginFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:737:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  737 |     TRACE_ZONE_N("SDL2D:RenderFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:795:39: warning: statement should be inside braces [readability-braces-around-statements]
   795 |         if (task_texture[idx] != NULL)
       |                                       ^
@@ -5403,16 +5218,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:965:52: note: perform mu
   965 |                             memcpy(&batch_vertices[k * 4], task_verts[gi], 4 * sizeof(SDL_Vertex));
       |                                                    ^
       |                                                    (ptrdiff_t)
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:1018:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
- 1018 |     TRACE_SUB_BEGIN("SDL2D:EndFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:1375:29: warning: statement should be inside braces [readability-braces-around-statements]
  1375 |         if (texture == NULL)
       |                             ^
@@ -5540,16 +5345,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:1527:74: warning: '*' ha
  1527 |             ((uint32_t)(v[0].color.b * 255.0f + 0.5f) << 8) | (uint32_t)(v[0].color.a * 255.0f + 0.5f);
       |                                                                          ^~~~~~~~~~~~~~~~~~~~~
       |                                                                          (                    )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:1641:5: warning: declaration uses identifier '___tracy_sub_ctx', which is a reserved identifier [bugprone-reserved-identifier]
- 1641 |     TRACE_SUB_BEGIN("SDL2D:FlushBatch");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:45:21: note: expanded from macro 'TRACE_SUB_BEGIN'
-   45 |         TracyCZoneN(___tracy_sub_ctx, name, true)
-      |                     ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl.c:1661:50: warning: statement should be inside braces [readability-braces-around-statements]
  1661 |         if (render_task_count >= RENDER_TASK_MAX)
       |                                                  ^
@@ -6012,16 +5807,6 @@ D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl_sw.c:558:82: warning: '*' 
   558 |                            ((uint32_t)(fc->b * 255.0f + 0.5f) << 8) | (uint32_t)(fc->a * 255.0f + 0.5f);
       |                                                                                  ^~~~~~~~~~~~~~
       |                                                                                  (             )
-D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl_sw.c:600:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  600 |     TRACE_ZONE_N("SDL2D:SwFrame");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
 D:\3sxtra\src\port\sdl\renderer\sdl_game_renderer_sdl_sw.c:632:48: warning: statement should be inside braces [readability-braces-around-statements]
   632 |                     if (v[k].position.x < minx)
       |                                                ^
@@ -6471,205 +6256,236 @@ D:\3sxtra\src\port\sdl\renderer\sdl_texture_util.cpp:195:24: warning: statement 
       |                         {
   196 |                 SDL_ReleaseGPUTexture(device, pair.second.texture);
       |                                                                    
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:82:51: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-   82 |     PUSH_NUM(L, t, "pos_x", wu->xyz[0].disp.pos + (u8)wu->xyz[0].disp.low / 256.0);
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:84:51: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+   84 |     PUSH_NUM(L, t, "pos_x", wu->xyz[0].disp.pos + (u8)wu->xyz[0].disp.low / 256.0);
       |                                                   ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:52:36: note: expanded from macro 'PUSH_NUM'
-   52 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:54:36: note: expanded from macro 'PUSH_NUM'
+   54 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
       |                                    ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:83:51: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-   83 |     PUSH_NUM(L, t, "pos_y", wu->xyz[1].disp.pos + (u8)wu->xyz[1].disp.low / 256.0);
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:85:51: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+   85 |     PUSH_NUM(L, t, "pos_y", wu->xyz[1].disp.pos + (u8)wu->xyz[1].disp.low / 256.0);
       |                                                   ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:52:36: note: expanded from macro 'PUSH_NUM'
-   52 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:54:36: note: expanded from macro 'PUSH_NUM'
+   54 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
       |                                    ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:90:57: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-   90 |     PUSH_NUM(L, t, "velocity_x", wu->mvxy.a[0].real.h + (u8)wu->mvxy.a[0].real.l / 256.0);
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:92:57: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+   92 |     PUSH_NUM(L, t, "velocity_x", wu->mvxy.a[0].real.h + (u8)wu->mvxy.a[0].real.l / 256.0);
       |                                                         ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:52:36: note: expanded from macro 'PUSH_NUM'
-   52 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:54:36: note: expanded from macro 'PUSH_NUM'
+   54 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
       |                                    ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:91:57: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-   91 |     PUSH_NUM(L, t, "velocity_y", wu->mvxy.a[1].real.h + (u8)wu->mvxy.a[1].real.l / 256.0);
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:93:57: warning: '/' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+   93 |     PUSH_NUM(L, t, "velocity_y", wu->mvxy.a[1].real.h + (u8)wu->mvxy.a[1].real.l / 256.0);
       |                                                         ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:52:36: note: expanded from macro 'PUSH_NUM'
-   52 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:54:36: note: expanded from macro 'PUSH_NUM'
+   54 |     lua_pushnumber(L, (lua_Number)(val));                                                                              \
       |                                    ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:398:26: warning: statement should be inside braces [readability-braces-around-statements]
-  398 |     if (id < 1 || id > 2)
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:400:26: warning: statement should be inside braces [readability-braces-around-statements]
+  400 |     if (id < 1 || id > 2)
       |                          ^
       |                           {
-  399 |         return 0;
+  401 |         return 0;
       |                  
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:451:5: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-  451 |     char abs_path[1024];
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:453:5: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+  453 |     char abs_path[1024];
       |     ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:525:14: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-  525 | static const luaL_Reg engine_funcs[] = {
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:536:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+  536 |     float fill = (float)luaL_checknumber(L, 2);
+      |     ^~~~~
+      |     auto
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:543:14: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+  543 | static const luaL_Reg engine_funcs[] = {
       |              ^
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:541:7: warning: use nullptr [modernize-use-nullptr]
-  541 |     { NULL, NULL }
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:561:7: warning: use nullptr [modernize-use-nullptr]
+  561 |     { NULL, NULL }
       |       ^~~~
       |       nullptr
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:541:13: warning: use nullptr [modernize-use-nullptr]
-  541 |     { NULL, NULL }
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:561:13: warning: use nullptr [modernize-use-nullptr]
+  561 |     { NULL, NULL }
       |             ^~~~
       |             nullptr
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:555:19: warning: '/' has higher precedence than '-'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  555 |             (int)(sizeof(engine_funcs) / sizeof(engine_funcs[0]) - 1));
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:575:19: warning: '/' has higher precedence than '-'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  575 |             (int)(sizeof(engine_funcs) / sizeof(engine_funcs[0]) - 1));
       |                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                   (                                             )
-D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:564:12: warning: statement should be inside braces [readability-braces-around-statements]
-  564 |     if (!L)
+D:\3sxtra\src\port\sdl\rmlui\lua_engine_bridge.cpp:584:12: warning: statement should be inside braces [readability-braces-around-statements]
+  584 |     if (!L)
       |            ^
       |             {
-  565 |         return;
+  585 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:30:14: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-   30 | static const s16 CHARA_IDS[] = {
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:37:14: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+   37 | static const s16 CHARA_IDS[] = {
       |              ^
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:53:14: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-   53 | static const char* CHARA_NAMES[] = { NULL,      "Alex",  "Ryu",    "Ken",   "Gouki",  "Sean", "Ibuki",
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:60:14: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+   60 | static const char* CHARA_NAMES[] = { NULL,      "Alex",  "Ryu",    "Ken",   "Gouki",  "Sean", "Ibuki",
       |              ^
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:53:38: warning: use nullptr [modernize-use-nullptr]
-   53 | static const char* CHARA_NAMES[] = { NULL,      "Alex",  "Ryu",    "Ken",   "Gouki",  "Sean", "Ibuki",
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:60:38: warning: use nullptr [modernize-use-nullptr]
+   60 | static const char* CHARA_NAMES[] = { NULL,      "Alex",  "Ryu",    "Ken",   "Gouki",  "Sean", "Ibuki",
       |                                      ^~~~
       |                                      nullptr
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:60:5: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-   60 |     s16 waza_ids[MAX_WAZA_ALTERNATIVES];
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:67:5: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+   67 |     s16 waza_ids[MAX_WAZA_ALTERNATIVES];
       |     ^
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:83:29: warning: statement should be inside braces [readability-braces-around-statements]
-   83 |     if (!s || strlen(s) < 2)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:90:29: warning: statement should be inside braces [readability-braces-around-statements]
+   90 |     if (!s || strlen(s) < 2)
       |                             ^
       |                              {
-   84 |         return;
+   91 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:91:9: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-   91 |         char buf[5] = { 0 };
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:98:9: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+   98 |         char buf[5] = { 0 };
       |         ^
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:93:35: warning: use nullptr [modernize-use-nullptr]
-   93 |         s16 v1 = (s16)strtol(buf, NULL, 16);
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:100:35: warning: use nullptr [modernize-use-nullptr]
+  100 |         s16 v1 = (s16)strtol(buf, NULL, 16);
       |                                   ^~~~
       |                                   nullptr
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:95:35: warning: use nullptr [modernize-use-nullptr]
-   95 |         s16 v2 = (s16)strtol(buf, NULL, 16);
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:102:35: warning: use nullptr [modernize-use-nullptr]
+  102 |         s16 v2 = (s16)strtol(buf, NULL, 16);
       |                                   ^~~~
       |                                   nullptr
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:97:42: warning: statement should be inside braces [readability-braces-around-statements]
-   97 |         if (v2 != v1 && *count < max_out)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:104:42: warning: statement should be inside braces [readability-braces-around-statements]
+  104 |         if (v2 != v1 && *count < max_out)
       |                                          ^
       |                                           {
-   98 |             out[(*count)++] = v2;
+  105 |             out[(*count)++] = v2;
       |                                  
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:100:9: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-  100 |         char buf[5] = { 0 };
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:107:9: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+  107 |         char buf[5] = { 0 };
       |         ^
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:102:44: warning: use nullptr [modernize-use-nullptr]
-  102 |         out[(*count)++] = (s16)strtol(buf, NULL, 16);
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:109:44: warning: use nullptr [modernize-use-nullptr]
+  109 |         out[(*count)++] = (s16)strtol(buf, NULL, 16);
       |                                            ^~~~
       |                                            nullptr
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:154:17: warning: use range-based for loop instead [modernize-loop-convert]
-  154 |                 for (int w = 0; w < MAX_WAZA_ALTERNATIVES; w++)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:161:17: warning: use range-based for loop instead [modernize-loop-convert]
+  161 |                 for (int w = 0; w < MAX_WAZA_ALTERNATIVES; w++)
       |                 ^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |                     (short & waza_id : step.waza_ids)
-  155 |                     step.waza_ids[w] = (s16)0xFFFF;
+  162 |                     step.waza_ids[w] = (s16)0xFFFF;
       |                     ~~~~~~~~~~~~~~~~
       |                     waza_id
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:154:64: warning: statement should be inside braces [readability-braces-around-statements]
-  154 |                 for (int w = 0; w < MAX_WAZA_ALTERNATIVES; w++)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:161:64: warning: statement should be inside braces [readability-braces-around-statements]
+  161 |                 for (int w = 0; w < MAX_WAZA_ALTERNATIVES; w++)
       |                                                                ^
       |                                                                 {
-  155 |                     step.waza_ids[w] = (s16)0xFFFF;
+  162 |                     step.waza_ids[w] = (s16)0xFFFF;
       |                                                    
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:159:41: warning: statement should be inside braces [readability-braces-around-statements]
-  159 |                 if (lua_isstring(L, -1))
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:166:41: warning: statement should be inside braces [readability-braces-around-statements]
+  166 |                 if (lua_isstring(L, -1))
       |                                         ^
       |                                          {
-  160 |                     step.display_name = lua_tostring(L, -1);
+  167 |                     step.display_name = lua_tostring(L, -1);
       |                                                             
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:167:46: warning: statement should be inside braces [readability-braces-around-statements]
-  167 |                     if (strcmp(ts, "T") == 0)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:174:46: warning: statement should be inside braces [readability-braces-around-statements]
+  174 |                     if (strcmp(ts, "T") == 0)
       |                                              ^
       |                                               {
-  168 |                         step.type = TRIAL_REQ_THROW_HIT;
-  169 |                     else if (strcmp(ts, "F") == 0)
+  175 |                         step.type = TRIAL_REQ_THROW_HIT;
+  176 |                     else if (strcmp(ts, "F") == 0)
       |                     } 
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:169:51: warning: statement should be inside braces [readability-braces-around-statements]
-  169 |                     else if (strcmp(ts, "F") == 0)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:176:51: warning: statement should be inside braces [readability-braces-around-statements]
+  176 |                     else if (strcmp(ts, "F") == 0)
       |                                                   ^
       |                                                    {
-  170 |                         step.type = TRIAL_REQ_FIREBALL_HIT;
-  171 |                     else if (strcmp(ts, "D") == 0 || strcmp(ts, "J") == 0 || strcmp(ts, "K") == 0 ||
+  177 |                         step.type = TRIAL_REQ_FIREBALL_HIT;
+  178 |                     else if (strcmp(ts, "D") == 0 || strcmp(ts, "J") == 0 || strcmp(ts, "K") == 0 ||
       |                     } 
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:172:54: warning: statement should be inside braces [readability-braces-around-statements]
-  172 |                              strcmp(ts, "K12K") == 0)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:179:54: warning: statement should be inside braces [readability-braces-around-statements]
+  179 |                              strcmp(ts, "K12K") == 0)
       |                                                      ^
       |                                                       {
-  173 |                         step.type = TRIAL_REQ_ACTIVE_MOVE;
-  174 |                     else if (strcmp(ts, "U") == 0)
+  180 |                         step.type = TRIAL_REQ_ACTIVE_MOVE;
+  181 |                     else if (strcmp(ts, "U") == 0)
       |                     } 
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:174:51: warning: statement should be inside braces [readability-braces-around-statements]
-  174 |                     else if (strcmp(ts, "U") == 0)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:181:51: warning: statement should be inside braces [readability-braces-around-statements]
+  181 |                     else if (strcmp(ts, "U") == 0)
       |                                                   ^
       |                                                    {
-  175 |                         step.type = TRIAL_REQ_SPECIAL_COND;
-  176 |                     else if (strcmp(ts, "ANIM2P") == 0)
+  182 |                         step.type = TRIAL_REQ_SPECIAL_COND;
+  183 |                     else if (strcmp(ts, "ANIM2P") == 0)
       |                     } 
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:176:56: warning: statement should be inside braces [readability-braces-around-statements]
-  176 |                     else if (strcmp(ts, "ANIM2P") == 0)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:183:56: warning: statement should be inside braces [readability-braces-around-statements]
+  183 |                     else if (strcmp(ts, "ANIM2P") == 0)
       |                                                        ^
       |                                                         {
-  177 |                         step.type = TRIAL_REQ_ANIMATION;
+  184 |                         step.type = TRIAL_REQ_ANIMATION;
       |                                                         
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:191:29: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-  191 |                             s16 vals[MAX_WAZA_ALTERNATIVES];
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:198:29: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+  198 |                             s16 vals[MAX_WAZA_ALTERNATIVES];
       |                             ^
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:203:42: warning: statement should be inside braces [readability-braces-around-statements]
-  203 |                                 if (!dup)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:210:42: warning: statement should be inside braces [readability-braces-around-statements]
+  210 |                                 if (!dup)
       |                                          ^
       |                                           {
-  204 |                                     step.waza_ids[waza_count++] = vals[vi];
+  211 |                                     step.waza_ids[waza_count++] = vals[vi];
       |                                                                            
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:282:52: warning: statement should be inside braces [readability-braces-around-statements]
-  282 |                             if (!kadai_str.empty())
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:289:52: warning: statement should be inside braces [readability-braces-around-statements]
+  289 |                             if (!kadai_str.empty())
       |                                                    ^
       |                                                     {
-  283 |                                 kadai_str += " ";
+  290 |                                 kadai_str += " ";
       |                                                  
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:363:28: warning: statement should be inside braces [readability-braces-around-statements]
-  363 |         if (trials.empty())
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:385:28: warning: statement should be inside braces [readability-braces-around-statements]
+  385 |         if (trials.empty())
       |                            ^
       |                             {
-  364 |             continue;
+  386 |             continue;
       |                      
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:374:48: warning: statement should be inside braces [readability-braces-around-statements]
-  374 |             if (td.num_steps > MAX_TRIAL_STEPS)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:396:48: warning: statement should be inside braces [readability-braces-around-statements]
+  396 |             if (td.num_steps > MAX_TRIAL_STEPS)
       |                                                ^
       |                                                 {
-  375 |                 td.num_steps = MAX_TRIAL_STEPS;
+  397 |                 td.num_steps = MAX_TRIAL_STEPS;
       |                                                
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:454:19: warning: statement should be inside braces [readability-braces-around-statements]
-  454 |     if (!s_loaded)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:431:25: warning: statement should be inside braces [readability-braces-around-statements]
+  431 |     if (base && base[0])
+      |                         ^
+      |                          {
+  432 |         return std::string(base);
+      |                                  
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:432:16: warning: avoid repeating the return type from the declaration; use a braced initializer list instead [modernize-return-braced-init-list]
+  432 |         return std::string(base);
+      |                ^
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:437:5: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+  437 |     char buf[512];
+      |     ^
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:438:44: warning: use nullptr [modernize-use-nullptr]
+  438 |     unsigned long len = GetModuleFileNameA(NULL, buf, sizeof(buf));
+      |                                            ^~~~
+      |                                            nullptr
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:444:24: warning: avoid repeating the return type from the declaration; use a braced initializer list instead [modernize-return-braced-init-list]
+  444 |                 return std::string(buf);
+      |                        ^
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:450:12: warning: avoid repeating the return type from the declaration; use a braced initializer list instead [modernize-return-braced-init-list]
+  450 |     return std::string(); // empty = fall back to relative path (CWD)
+      |            ^~~~~~~~~~~~~
+      |            {}
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:505:19: warning: statement should be inside braces [readability-braces-around-statements]
+  505 |     if (!s_loaded)
       |                   ^
       |                    {
-  455 |         return;
+  506 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:477:27: warning: statement should be inside braces [readability-braces-around-statements]
-  477 |             if (out_count)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:530:27: warning: statement should be inside braces [readability-braces-around-statements]
+  530 |             if (out_count)
       |                           ^
       |                            {
-  478 |                 *out_count = 0;
+  531 |                 *out_count = 0;
       |                                
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:479:20: warning: use nullptr [modernize-use-nullptr]
-  479 |             return NULL;
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:532:20: warning: use nullptr [modernize-use-nullptr]
+  532 |             return NULL;
       |                    ^~~~
       |                    nullptr
-D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:482:19: warning: statement should be inside braces [readability-braces-around-statements]
-  482 |     if (out_count)
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:535:19: warning: statement should be inside braces [readability-braces-around-statements]
+  535 |     if (out_count)
       |                   ^
       |                    {
-  483 |         *out_count = (int)s_char_defs.size();
+  536 |         *out_count = (int)s_char_defs.size();
       |                                              
+D:\3sxtra\src\port\sdl\rmlui\lua_trials_loader.cpp:537:34: warning: use nullptr [modernize-use-nullptr]
+  537 |     return s_char_defs.empty() ? NULL : s_char_defs.data();
+      |                                  ^~~~
+      |                                  nullptr
 D:\3sxtra\src\port\sdl\rmlui\rmlui_attract_overlay.cpp:27:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
    27 |     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
       |     ^~~~~~~~~~~~
@@ -7344,118 +7160,112 @@ D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:248:32: warning: statement sh
       |                                 {
   249 |                 e.name = "(untitled)";
       |                                       
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:287:72: warning: statement should be inside braces [readability-braces-around-statements]
-  287 |     if (s_selected_doc < 0 || s_selected_doc >= (int)s_doc_ptrs.size())
-      |                                                                        ^
-      |                                                                         {
-  288 |         return;
-      |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:291:14: warning: statement should be inside braces [readability-braces-around-statements]
-  291 |     if (!doc)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:293:14: warning: statement should be inside braces [readability-braces-around-statements]
+  293 |     if (!doc)
       |              ^
       |               {
-  292 |         return;
+  294 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:299:5: warning: use range-based for loop instead [modernize-loop-convert]
-  299 |     for (size_t i = 0; i < all_elements.size(); i++) {
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:303:5: warning: use range-based for loop instead [modernize-loop-convert]
+  303 |     for (size_t i = 0; i < all_elements.size(); i++) {
       |     ^   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       |         (auto el : all_elements)
-  300 |         Rml::Element* el = all_elements[i];
+  304 |         Rml::Element* el = all_elements[i];
       |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  301 |         const Rml::String& tag = el->GetTagName();
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:303:110: warning: statement should be inside braces [readability-braces-around-statements]
-  303 |             tag == "sliderarrowdec" || tag == "sliderarrowinc" || tag == "sliderbar" || tag == "slidertrack")
+  305 |         const Rml::String& tag = el->GetTagName();
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:307:110: warning: statement should be inside braces [readability-braces-around-statements]
+  307 |             tag == "sliderarrowdec" || tag == "sliderarrowinc" || tag == "sliderbar" || tag == "slidertrack")
       |                                                                                                              ^
       |                                                                                                               {
-  304 |             continue;
+  308 |             continue;
       |                      
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:325:18: warning: statement should be inside braces [readability-braces-around-statements]
-  325 |     if (!s_model)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:348:18: warning: statement should be inside braces [readability-braces-around-statements]
+  348 |     if (!s_model)
       |                  ^
       |                   {
-  326 |         return;
+  349 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:408:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
-  408 |     Rml::Context* ctx = static_cast<Rml::Context*>(raw_ctx);
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:431:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+  431 |     Rml::Context* ctx = static_cast<Rml::Context*>(raw_ctx);
       |     ^~~~~~~~~~~~
       |     auto
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:468:13: warning: macro argument should be enclosed in parentheses [bugprone-macro-parentheses]
-  468 |             cpp_var = v.Get<float>();                                                                                  \
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:491:13: warning: macro argument should be enclosed in parentheses [bugprone-macro-parentheses]
+  491 |             cpp_var = v.Get<float>();                                                                                  \
       |             ^
       |             (      )
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:515:76: warning: statement should be inside braces [readability-braces-around-statements]
-  515 |             if (s_active_elem && !s_suppress_apply && !s_width_str.empty())
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:538:76: warning: statement should be inside braces [readability-braces-around-statements]
+  538 |             if (s_active_elem && !s_suppress_apply && !s_width_str.empty())
       |                                                                            ^
       |                                                                             {
-  516 |                 s_active_elem->SetProperty("width", s_width_str);
+  539 |                 s_active_elem->SetProperty("width", s_width_str);
       |                                                                  
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:523:77: warning: statement should be inside braces [readability-braces-around-statements]
-  523 |             if (s_active_elem && !s_suppress_apply && !s_height_str.empty())
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:546:77: warning: statement should be inside braces [readability-braces-around-statements]
+  546 |             if (s_active_elem && !s_suppress_apply && !s_height_str.empty())
       |                                                                             ^
       |                                                                              {
-  524 |                 s_active_elem->SetProperty("height", s_height_str);
+  547 |                 s_active_elem->SetProperty("height", s_height_str);
       |                                                                    
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:531:76: warning: statement should be inside braces [readability-braces-around-statements]
-  531 |             if (s_active_elem && !s_suppress_apply && !s_color_hex.empty())
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:554:76: warning: statement should be inside braces [readability-braces-around-statements]
+  554 |             if (s_active_elem && !s_suppress_apply && !s_color_hex.empty())
       |                                                                            ^
       |                                                                             {
-  532 |                 s_active_elem->SetProperty("color", s_color_hex);
+  555 |                 s_active_elem->SetProperty("color", s_color_hex);
       |                                                                  
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:539:52: warning: statement should be inside braces [readability-braces-around-statements]
-  539 |             if (s_active_elem && !s_suppress_apply)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:562:52: warning: statement should be inside braces [readability-braces-around-statements]
+  562 |             if (s_active_elem && !s_suppress_apply)
       |                                                    ^
       |                                                     {
-  540 |                 s_active_elem->SetProperty("visibility", s_elem_visible ? "visible" : "hidden");
+  563 |                 s_active_elem->SetProperty("visibility", s_elem_visible ? "visible" : "hidden");
       |                                                                                                 
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:551:13: warning: macro argument should be enclosed in parentheses [bugprone-macro-parentheses]
-  551 |             cpp_var = v.Get<Rml::String>();                                                                            \
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:574:13: warning: macro argument should be enclosed in parentheses [bugprone-macro-parentheses]
+  574 |             cpp_var = v.Get<Rml::String>();                                                                            \
       |             ^
       |             (      )
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:552:56: warning: macro argument should be enclosed in parentheses [bugprone-macro-parentheses]
-  552 |             if (s_active_elem && !s_suppress_apply && !cpp_var.empty())                                                \
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:575:56: warning: macro argument should be enclosed in parentheses [bugprone-macro-parentheses]
+  575 |             if (s_active_elem && !s_suppress_apply && !cpp_var.empty())                                                \
       |                                                        ^      
       |                                                        (      )
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:600:13: warning: macro argument should be enclosed in parentheses [bugprone-macro-parentheses]
-  600 |             cpp_var = v.Get<Rml::String>();                                                                            \
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:623:13: warning: macro argument should be enclosed in parentheses [bugprone-macro-parentheses]
+  623 |             cpp_var = v.Get<Rml::String>();                                                                            \
       |             ^
       |             (      )
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:601:56: warning: macro argument should be enclosed in parentheses [bugprone-macro-parentheses]
-  601 |             if (s_active_elem && !s_suppress_apply && !cpp_var.empty())                                                \
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:624:56: warning: macro argument should be enclosed in parentheses [bugprone-macro-parentheses]
+  624 |             if (s_active_elem && !s_suppress_apply && !cpp_var.empty())                                                \
       |                                                        ^      
       |                                                        (      )
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:692:28: warning: statement should be inside braces [readability-braces-around-statements]
-  692 |         if (!s_active_elem)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:715:28: warning: statement should be inside braces [readability-braces-around-statements]
+  715 |         if (!s_active_elem)
       |                            ^
       |                             {
-  693 |             return;
+  716 |             return;
       |                    
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:726:14: warning: 'auto p' can be declared as 'const auto *p' [readability-qualified-auto]
-  726 |         for (auto p : props)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:749:14: warning: 'auto p' can be declared as 'const auto *p' [readability-qualified-auto]
+  749 |         for (auto p : props)
       |              ^~~~
       |              const auto *
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:726:29: warning: statement should be inside braces [readability-braces-around-statements]
-  726 |         for (auto p : props)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:749:29: warning: statement should be inside braces [readability-braces-around-statements]
+  749 |         for (auto p : props)
       |                             ^
       |                              {
-  727 |             s_active_elem->RemoveProperty(p);
+  750 |             s_active_elem->RemoveProperty(p);
       |                                              
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:735:28: warning: statement should be inside braces [readability-braces-around-statements]
-  735 |         if (!s_active_elem)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:758:28: warning: statement should be inside braces [readability-braces-around-statements]
+  758 |         if (!s_active_elem)
       |                            ^
       |                             {
-  736 |             return;
+  759 |             return;
       |                    
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:742:19: warning: statement should be inside braces [readability-braces-around-statements]
-  742 |             if (p)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:765:19: warning: statement should be inside braces [readability-braces-around-statements]
+  765 |             if (p)
       |                   ^
       |                    {
-  743 |                 ss << "    " << prop << ": " << p->ToString().c_str() << ";\n";
+  766 |                 ss << "    " << prop << ": " << p->ToString().c_str() << ";\n";
       |                                                                                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:792:18: warning: statement should be inside braces [readability-braces-around-statements]
-  792 |     if (!s_model)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_dev_overlay.cpp:815:18: warning: statement should be inside braces [readability-braces-around-statements]
+  815 |     if (!s_model)
       |                  ^
       |                   {
-  793 |         return;
+  816 |         return;
       |                
 D:\3sxtra\src\port\sdl\rmlui\rmlui_exit_confirm.cpp:23:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
    23 |     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
@@ -7581,149 +7391,149 @@ D:\3sxtra\src\port\sdl\rmlui\rmlui_extra_option.cpp:189:17: warning: statement s
       |                  {
   190 |             ctx->RemoveDataModel("extra_option");
       |                                                  
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:89:29: warning: statement should be inside braces [readability-braces-around-statements]
-   89 |     if (ps.last_startup > 0)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:90:29: warning: statement should be inside braces [readability-braces-around-statements]
+   90 |     if (ps.last_startup > 0)
       |                             ^
       |                              {
-   90 |         snprintf(buf, sz, "Startup %dF", (int)ps.last_startup);
-   91 |     else
+   91 |         snprintf(buf, sz, "Startup %dF", (int)ps.last_startup);
+   92 |     else
       |     } 
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:91:9: warning: statement should be inside braces [readability-braces-around-statements]
-   91 |     else
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:92:9: warning: statement should be inside braces [readability-braces-around-statements]
+   92 |     else
       |         ^
       |          {
-   92 |         snprintf(buf, sz, "Startup --");
+   93 |         snprintf(buf, sz, "Startup --");
       |                                         
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:94:5: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-   94 |     char tmp[64];
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:95:5: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
+   95 |     char tmp[64];
       |     ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:96:19: warning: statement should be inside braces [readability-braces-around-statements]
-   96 |     if (total > 0)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:97:19: warning: statement should be inside braces [readability-braces-around-statements]
+   97 |     if (total > 0)
       |                   ^
       |                    {
-   97 |         snprintf(tmp, sizeof(tmp), " / Total %dF", total);
-   98 |     else
+   98 |         snprintf(tmp, sizeof(tmp), " / Total %dF", total);
+   99 |     else
       |     } 
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:98:9: warning: statement should be inside braces [readability-braces-around-statements]
-   98 |     else
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:99:9: warning: statement should be inside braces [readability-braces-around-statements]
+   99 |     else
       |         ^
       |          {
-   99 |         snprintf(tmp, sizeof(tmp), " / Total --");
+  100 |         snprintf(tmp, sizeof(tmp), " / Total --");
       |                                                   
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:105:36: warning: statement should be inside braces [readability-braces-around-statements]
-  105 |         if (ps.advantage_value > 0)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:106:36: warning: statement should be inside braces [readability-braces-around-statements]
+  106 |         if (ps.advantage_value > 0)
       |                                    ^
       |                                     {
-  106 |             snprintf(tmp, sizeof(tmp), " / Advantage +%d", (int)ps.advantage_value);
-  107 |         else if (ps.advantage_value < 0)
+  107 |             snprintf(tmp, sizeof(tmp), " / Advantage +%d", (int)ps.advantage_value);
+  108 |         else if (ps.advantage_value < 0)
       |         } 
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:107:41: warning: statement should be inside braces [readability-braces-around-statements]
-  107 |         else if (ps.advantage_value < 0)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:108:41: warning: statement should be inside braces [readability-braces-around-statements]
+  108 |         else if (ps.advantage_value < 0)
       |                                         ^
       |                                          {
-  108 |             snprintf(tmp, sizeof(tmp), " / Advantage %d", (int)ps.advantage_value);
-  109 |         else
+  109 |             snprintf(tmp, sizeof(tmp), " / Advantage %d", (int)ps.advantage_value);
+  110 |         else
       |         } 
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:109:13: warning: statement should be inside braces [readability-braces-around-statements]
-  109 |         else
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:110:13: warning: statement should be inside braces [readability-braces-around-statements]
+  110 |         else
       |             ^
       |              {
-  110 |             snprintf(tmp, sizeof(tmp), " / Advantage 0");
+  111 |             snprintf(tmp, sizeof(tmp), " / Advantage 0");
       |                                                          
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:119:29: warning: statement should be inside braces [readability-braces-around-statements]
-  119 |     if (active || !has_move)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:120:29: warning: statement should be inside braces [readability-braces-around-statements]
+  120 |     if (active || !has_move)
       |                             ^
       |                              {
-  120 |         return "neutral";
+  121 |         return "neutral";
       |                          
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:121:19: warning: statement should be inside braces [readability-braces-around-statements]
-  121 |     if (value > 0)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:122:19: warning: statement should be inside braces [readability-braces-around-statements]
+  122 |     if (value > 0)
       |                   ^
       |                    {
-  122 |         return "positive";
+  123 |         return "positive";
       |                           
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:123:19: warning: statement should be inside braces [readability-braces-around-statements]
-  123 |     if (value < 0)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:124:19: warning: statement should be inside braces [readability-braces-around-statements]
+  124 |     if (value < 0)
       |                   ^
       |                    {
-  124 |         return "negative";
+  125 |         return "negative";
       |                           
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:130:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
-  130 |     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:131:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+  131 |     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
       |     ^~~~~~~~~~~~
       |     auto
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:171:48: warning: statement should be inside braces [readability-braces-around-statements]
-  171 |     if (!s_model_registered || !s_model_handle)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:172:48: warning: statement should be inside braces [readability-braces-around-statements]
+  172 |     if (!s_model_registered || !s_model_handle)
       |                                                ^
       |                                                 {
-  172 |         return;
+  173 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:190:20: warning: statement should be inside braces [readability-braces-around-statements]
-  190 |     if (!s_visible)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:191:20: warning: statement should be inside braces [readability-braces-around-statements]
+  191 |     if (!s_visible)
       |                    ^
       |                     {
-  191 |         return;
+  192 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:220:56: warning: statement should be inside braces [readability-braces-around-statements]
-  220 |         if (s_frame_history.size() > MAX_FRAME_HISTORY)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:226:56: warning: statement should be inside braces [readability-braces-around-statements]
+  226 |         if (s_frame_history.size() > MAX_FRAME_HISTORY)
       |                                                        ^
       |                                                         {
-  221 |             s_frame_history.pop_front();
+  227 |             s_frame_history.pop_front();
       |                                         
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:226:29: warning: statement should be inside braces [readability-braces-around-statements]
-  226 |     if (!s_started_tracking)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:232:29: warning: statement should be inside braces [readability-braces-around-statements]
+  232 |     if (!s_started_tracking)
       |                             ^
       |                              {
-  227 |         return;
+  233 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:232:9: warning: the 'empty' method should be used to check for emptiness instead of 'size' [readability-container-size-empty]
-  232 |     if (s_frame_history.size() > 0 && s_frame_history.size() != s_prev_cell_count)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:238:9: warning: the 'empty' method should be used to check for emptiness instead of 'size' [readability-container-size-empty]
+  238 |     if (s_frame_history.size() > 0 && s_frame_history.size() != s_prev_cell_count)
       |         ^~~~~~~~~~~~~~~~~~~~~~~~~~
       |         !s_frame_history.empty()
 C:\msys64\mingw64/include/c++/15.2.0/bits/stl_deque.h:1414:7: note: method 'deque'::empty() defined here
  1414 |       empty() const _GLIBCXX_NOEXCEPT
       |       ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:232:83: warning: statement should be inside braces [readability-braces-around-statements]
-  232 |     if (s_frame_history.size() > 0 && s_frame_history.size() != s_prev_cell_count)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:238:83: warning: statement should be inside braces [readability-braces-around-statements]
+  238 |     if (s_frame_history.size() > 0 && s_frame_history.size() != s_prev_cell_count)
       |                                                                                   ^
       |                                                                                    {
-  233 |         cells_dirty = true;
+  239 |         cells_dirty = true;
       |                            
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:235:51: warning: the 'empty' method should be used to check for emptiness instead of 'size' [readability-container-size-empty]
-  235 |     if (current_frame == s_last_recorded_frame && s_frame_history.size() > 0)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:241:51: warning: the 'empty' method should be used to check for emptiness instead of 'size' [readability-container-size-empty]
+  241 |     if (current_frame == s_last_recorded_frame && s_frame_history.size() > 0)
       |                                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~
       |                                                   !s_frame_history.empty()
 C:\msys64\mingw64/include/c++/15.2.0/bits/stl_deque.h:1414:7: note: method 'deque'::empty() defined here
  1414 |       empty() const _GLIBCXX_NOEXCEPT
       |       ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:235:78: warning: statement should be inside braces [readability-braces-around-statements]
-  235 |     if (current_frame == s_last_recorded_frame && s_frame_history.size() > 0)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:241:78: warning: statement should be inside braces [readability-braces-around-statements]
+  241 |     if (current_frame == s_last_recorded_frame && s_frame_history.size() > 0)
       |                                                                              ^
       |                                                                               {
-  236 |         cells_dirty = true;
+  242 |         cells_dirty = true;
       |                            
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:265:28: warning: statement should be inside braces [readability-braces-around-statements]
-  265 |             if (p2_adv > 0)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:281:28: warning: statement should be inside braces [readability-braces-around-statements]
+  281 |             if (p2_adv > 0)
       |                            ^
       |                             {
-  266 |                 snprintf(p2_buf, sizeof(p2_buf), "Startup -- / Total -- / Advantage +%d", (int)p2_adv);
-  267 |             else
+  282 |                 snprintf(p2_buf, sizeof(p2_buf), "Startup -- / Total -- / Advantage +%d", (int)p2_adv);
+  283 |             else
       |             } 
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:267:17: warning: statement should be inside braces [readability-braces-around-statements]
-  267 |             else
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:283:17: warning: statement should be inside braces [readability-braces-around-statements]
+  283 |             else
       |                 ^
       |                  {
-  268 |                 snprintf(p2_buf, sizeof(p2_buf), "Startup -- / Total -- / Advantage %d", (int)p2_adv);
+  284 |                 snprintf(p2_buf, sizeof(p2_buf), "Startup -- / Total -- / Advantage %d", (int)p2_adv);
       |                                                                                                       
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:311:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
-  311 |         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:327:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+  327 |         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
       |         ^~~~~~~~~~~~
       |         auto
-D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:312:17: warning: statement should be inside braces [readability-braces-around-statements]
-  312 |         if (ctx)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_frame_display.cpp:328:17: warning: statement should be inside braces [readability-braces-around-statements]
+  328 |         if (ctx)
       |                 ^
       |                  {
-  313 |             ctx->RemoveDataModel("frame_display");
+  329 |             ctx->RemoveDataModel("frame_display");
       |                                                   
 D:\3sxtra\src\port\sdl\rmlui\rmlui_game_hud.cpp:45:8: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
    45 | extern u8 flash_win_type[2][4];
@@ -9004,25 +8814,195 @@ D:\3sxtra\src\port\sdl\rmlui\rmlui_title_screen.cpp:80:17: warning: statement sh
       |                  {
    81 |             ctx->RemoveDataModel("title_screen");
       |                                                  
-D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:41:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
-   41 |     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:47:26: warning: statement should be inside braces [readability-braces-around-statements]
+   47 |     if (!field || !value)
+      |                          ^
+      |                           {
+   48 |         return;
+      |                
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:51:39: warning: statement should be inside braces [readability-braces-around-statements]
+   51 |     if (strcmp(field, "p1_stun") == 0)
+      |                                       ^
+      |                                        {
+   52 |         s_fields.p1_stun = value;
+   53 |     else if (strcmp(field, "p2_stun") == 0)
+      |     } 
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:53:44: warning: statement should be inside braces [readability-braces-around-statements]
+   53 |     else if (strcmp(field, "p2_stun") == 0)
+      |                                            ^
+      |                                             {
+   54 |         s_fields.p2_stun = value;
+   55 |     else if (strcmp(field, "p1_life") == 0)
+      |     } 
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:55:44: warning: statement should be inside braces [readability-braces-around-statements]
+   55 |     else if (strcmp(field, "p1_life") == 0)
+      |                                            ^
+      |                                             {
+   56 |         s_fields.p1_life = value;
+   57 |     else if (strcmp(field, "p2_life") == 0)
+      |     } 
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:57:44: warning: statement should be inside braces [readability-braces-around-statements]
+   57 |     else if (strcmp(field, "p2_life") == 0)
+      |                                            ^
+      |                                             {
+   58 |         s_fields.p2_life = value;
+   59 |     else if (strcmp(field, "p1_meter") == 0)
+      |     } 
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:59:45: warning: statement should be inside braces [readability-braces-around-statements]
+   59 |     else if (strcmp(field, "p1_meter") == 0)
+      |                                             ^
+      |                                              {
+   60 |         s_fields.p1_meter = value;
+   61 |     else if (strcmp(field, "p2_meter") == 0)
+      |     } 
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:61:45: warning: statement should be inside braces [readability-braces-around-statements]
+   61 |     else if (strcmp(field, "p2_meter") == 0)
+      |                                             ^
+      |                                              {
+   62 |         s_fields.p2_meter = value;
+   63 |     else if (strcmp(field, "p1_advantage") == 0)
+      |     } 
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:63:49: warning: statement should be inside braces [readability-braces-around-statements]
+   63 |     else if (strcmp(field, "p1_advantage") == 0)
+      |                                                 ^
+      |                                                  {
+   64 |         s_fields.p1_advantage = value;
+   65 |     else if (strcmp(field, "p2_advantage") == 0)
+      |     } 
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:65:49: warning: statement should be inside braces [readability-braces-around-statements]
+   65 |     else if (strcmp(field, "p2_advantage") == 0)
+      |                                                 ^
+      |                                                  {
+   66 |         s_fields.p2_advantage = value;
+   67 |     else if (strcmp(field, "advantage_class") == 0)
+      |     } 
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:67:52: warning: statement should be inside braces [readability-braces-around-statements]
+   67 |     else if (strcmp(field, "advantage_class") == 0)
+      |                                                    ^
+      |                                                     {
+   68 |         s_fields.advantage_class = value;
+      |                                          
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:81:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+   81 |     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
       |     ^~~~~~~~~~~~
       |     auto
-D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:141:48: warning: statement should be inside braces [readability-braces-around-statements]
-  141 |     if (!s_model_registered || !s_model_handle)
-      |                                                ^
-      |                                                 {
-  142 |         return;
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:82:14: warning: statement should be inside braces [readability-braces-around-statements]
+   82 |     if (!ctx)
+      |              ^
+      |               {
+   83 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:171:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
-  171 |         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:119:35: warning: statement should be inside braces [readability-braces-around-statements]
+  119 |     if (!s_registered || !s_model)
+      |                                   ^
+      |                                    {
+  120 |         return;
+      |                
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:145:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+  145 |         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
       |         ^~~~~~~~~~~~
       |         auto
-D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:172:17: warning: statement should be inside braces [readability-braces-around-statements]
-  172 |         if (ctx)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_hud.cpp:146:17: warning: statement should be inside braces [readability-braces-around-statements]
+  146 |         if (ctx)
       |                 ^
       |                  {
-  173 |             ctx->RemoveDataModel("training");
+  147 |             ctx->RemoveDataModel("training_hud");
+      |                                                  
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:65:10: warning: enum 'Field' uses a larger base type ('unsigned int', size: 4 bytes) than necessary for its value set, consider using 'std::uint8_t' (1 byte) as the base type to reduce its size [performance-enum-size]
+   65 |     enum Field { BLOCK, PARRY, STUN_MASH, WAKEUP_MASH, TECH_THROW, FAST_WAKEUP };
+      |          ^
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:120:36: warning: redundant void argument list in function definition [modernize-redundant-void-arg]
+  120 | static void attach_cycle_listeners(void) {
+      |                                    ^~~~
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:121:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+  121 |     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+      |     ^~~~~~~~~~~~
+      |     auto
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:122:14: warning: statement should be inside braces [readability-braces-around-statements]
+  122 |     if (!ctx)
+      |              ^
+      |               {
+  123 |         return;
+      |                
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:128:59: warning: statement should be inside braces [readability-braces-around-statements]
+  128 |         if (!doc || doc->GetTitle() != "Training Options")
+      |                                                           ^
+      |                                                            {
+  129 |             continue;
+      |                      
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:133:20: warning: statement should be inside braces [readability-braces-around-statements]
+  133 |             if (el)
+      |                    ^
+      |                     {
+  134 |                 el->AddEventListener(Rml::EventId::Click, listener);
+      |                                                                     
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:151:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+  151 |     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+      |     ^~~~~~~~~~~~
+      |     auto
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:158:44: warning: statement should be inside braces [readability-braces-around-statements]
+  158 |     if (Config_HasKey(CFG_KEY_DUMMY_BLOCK))
+      |                                            ^
+      |                                             {
+  159 |         g_dummy_settings.block_type = (DummyBlockType)Config_GetInt(CFG_KEY_DUMMY_BLOCK);
+      |                                                                                          
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:160:44: warning: statement should be inside braces [readability-braces-around-statements]
+  160 |     if (Config_HasKey(CFG_KEY_DUMMY_PARRY))
+      |                                            ^
+      |                                             {
+  161 |         g_dummy_settings.parry_type = (DummyParryType)Config_GetInt(CFG_KEY_DUMMY_PARRY);
+      |                                                                                          
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:162:48: warning: statement should be inside braces [readability-braces-around-statements]
+  162 |     if (Config_HasKey(CFG_KEY_DUMMY_STUN_MASH))
+      |                                                ^
+      |                                                 {
+  163 |         g_dummy_settings.stun_mash = (DummyMashType)Config_GetInt(CFG_KEY_DUMMY_STUN_MASH);
+      |                                                                                            
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:164:50: warning: statement should be inside braces [readability-braces-around-statements]
+  164 |     if (Config_HasKey(CFG_KEY_DUMMY_WAKEUP_MASH))
+      |                                                  ^
+      |                                                   {
+  165 |         g_dummy_settings.wakeup_mash = (DummyMashType)Config_GetInt(CFG_KEY_DUMMY_WAKEUP_MASH);
+      |                                                                                                
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:166:54: warning: statement should be inside braces [readability-braces-around-statements]
+  166 |     if (Config_HasKey(CFG_KEY_DUMMY_WAKEUP_REVERSAL))
+      |                                                      ^
+      |                                                       {
+  167 |         g_dummy_settings.wakeup_reversal = Config_GetBool(CFG_KEY_DUMMY_WAKEUP_REVERSAL);
+      |                                                                                          
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:168:48: warning: statement should be inside braces [readability-braces-around-statements]
+  168 |     if (Config_HasKey(CFG_KEY_DUMMY_GUARD_LOW))
+      |                                                ^
+      |                                                 {
+  169 |         g_dummy_settings.guard_low_default = Config_GetBool(CFG_KEY_DUMMY_GUARD_LOW);
+      |                                                                                      
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:170:49: warning: statement should be inside braces [readability-braces-around-statements]
+  170 |     if (Config_HasKey(CFG_KEY_DUMMY_TECH_THROW))
+      |                                                 ^
+      |                                                  {
+  171 |         g_dummy_settings.tech_throw_type = (DummyTechThrowType)Config_GetInt(CFG_KEY_DUMMY_TECH_THROW);
+      |                                                                                                        
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:172:50: warning: statement should be inside braces [readability-braces-around-statements]
+  172 |     if (Config_HasKey(CFG_KEY_DUMMY_FAST_WAKEUP))
+      |                                                  ^
+      |                                                   {
+  173 |         g_dummy_settings.fast_wakeup = (DummyFastWakeupType)Config_GetInt(CFG_KEY_DUMMY_FAST_WAKEUP);
+      |                                                                                                      
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:262:48: warning: statement should be inside braces [readability-braces-around-statements]
+  262 |     if (!s_model_registered || !s_model_handle)
+      |                                                ^
+      |                                                 {
+  263 |         return;
+      |                
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:326:9: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
+  326 |         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+      |         ^~~~~~~~~~~~
+      |         auto
+D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menu.cpp:327:17: warning: statement should be inside braces [readability-braces-around-statements]
+  327 |         if (ctx)
+      |                 ^
+      |                  {
+  328 |             ctx->RemoveDataModel("training");
       |                                              
 D:\3sxtra\src\port\sdl\rmlui\rmlui_training_menus.cpp:40:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
    40 |     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
@@ -9534,279 +9514,285 @@ D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:475:17: warning: statement should
       |                  {
   476 |                 dbg_hook->Hide();
       |                                  
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:518:27: warning: statement should be inside braces [readability-braces-around-statements]
-  518 |     if (!s_window_context)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:520:35: warning: statement should be inside braces [readability-braces-around-statements]
+  520 |         if (s_hidpi_ratio <= 0.0f)
+      |                                   ^
+      |                                    {
+  521 |             s_hidpi_ratio = 1.0f;
+      |                                  
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:530:27: warning: statement should be inside braces [readability-braces-around-statements]
+  530 |     if (!s_window_context)
       |                           ^
       |                            {
-  519 |         return;
+  531 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:526:32: warning: redundant call to 'c_str' [readability-redundant-string-cstr]
-  526 |         if (!Rml::LoadFontFace(font_noto.c_str(), true)) {
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:538:32: warning: redundant call to 'c_str' [readability-redundant-string-cstr]
+  538 |         if (!Rml::LoadFontFace(font_noto.c_str(), true)) {
       |                                ^~~~~~~~~~~~~~~~~
       |                                font_noto
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:532:47: warning: statement should be inside braces [readability-braces-around-statements]
-  532 |     if (!has_visible_docs(s_window_documents))
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:544:47: warning: statement should be inside braces [readability-braces-around-statements]
+  544 |     if (!has_visible_docs(s_window_documents))
       |                                               ^
       |                                                {
-  533 |         return;
+  545 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:541:50: warning: statement should be inside braces [readability-braces-around-statements]
-  541 |     if (!s_window_context || !s_render_interface)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:553:50: warning: statement should be inside braces [readability-braces-around-statements]
+  553 |     if (!s_window_context || !s_render_interface)
       |                                                  ^
       |                                                   {
-  542 |         return;
+  554 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:545:47: warning: statement should be inside braces [readability-braces-around-statements]
-  545 |     if (!has_visible_docs(s_window_documents))
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:557:47: warning: statement should be inside braces [readability-braces-around-statements]
+  557 |     if (!has_visible_docs(s_window_documents))
       |                                               ^
       |                                                {
-  546 |         return;
+  558 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:570:39: warning: use nullptr [modernize-use-nullptr]
-  570 |         SDL_SetRenderTarget(renderer, NULL);
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:588:39: warning: use nullptr [modernize-use-nullptr]
+  588 |         SDL_SetRenderTarget(renderer, NULL);
       |                                       ^~~~
       |                                       nullptr
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:580:27: warning: statement should be inside braces [readability-braces-around-statements]
-  580 |     if (!s_window_context)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:598:27: warning: statement should be inside braces [readability-braces-around-statements]
+  598 |     if (!s_window_context)
       |                           ^
       |                            {
-  581 |         return false;
+  599 |         return false;
       |                      
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:583:63: warning: statement should be inside braces [readability-braces-around-statements]
-  583 |     if (!hover || hover == s_window_context->GetRootElement())
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:601:63: warning: statement should be inside braces [readability-braces-around-statements]
+  601 |     if (!hover || hover == s_window_context->GetRootElement())
       |                                                               ^
       |                                                                {
-  584 |         return false;
+  602 |         return false;
       |                      
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:591:27: warning: statement should be inside braces [readability-braces-around-statements]
-  591 |     if (!s_window_context)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:609:27: warning: statement should be inside braces [readability-braces-around-statements]
+  609 |     if (!s_window_context)
       |                           ^
       |                            {
-  592 |         return false;
+  610 |         return false;
       |                      
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:595:63: warning: statement should be inside braces [readability-braces-around-statements]
-  595 |     if (!focus || focus == s_window_context->GetRootElement())
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:613:63: warning: statement should be inside braces [readability-braces-around-statements]
+  613 |     if (!focus || focus == s_window_context->GetRootElement())
       |                                                               ^
       |                                                                {
-  596 |         return false;
+  614 |         return false;
       |                      
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:616:36: warning: statement should be inside braces [readability-braces-around-statements]
-  616 |     if (!s_window_context || !name)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:634:36: warning: statement should be inside braces [readability-braces-around-statements]
+  634 |     if (!s_window_context || !name)
       |                                    ^
       |                                     {
-  617 |         return;
+  635 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:626:64: warning: redundant call to 'c_str' [readability-redundant-string-cstr]
-  626 |     Rml::ElementDocument* doc = s_window_context->LoadDocument(path.c_str());
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:644:64: warning: redundant call to 'c_str' [readability-redundant-string-cstr]
+  644 |     Rml::ElementDocument* doc = s_window_context->LoadDocument(path.c_str());
       |                                                                ^~~~~~~~~~~~
       |                                                                path
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:637:15: warning: statement should be inside braces [readability-braces-around-statements]
-  637 |     if (!name)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:655:15: warning: statement should be inside braces [readability-braces-around-statements]
+  655 |     if (!name)
       |               ^
       |                {
-  638 |         return;
+  656 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:654:15: warning: statement should be inside braces [readability-braces-around-statements]
-  654 |     if (!name)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:672:15: warning: statement should be inside braces [readability-braces-around-statements]
+  672 |     if (!name)
       |               ^
       |                {
-  655 |         return false;
+  673 |         return false;
       |                      
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:664:15: warning: statement should be inside braces [readability-braces-around-statements]
-  664 |     if (!name)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:682:15: warning: statement should be inside braces [readability-braces-around-statements]
+  682 |     if (!name)
       |               ^
       |                {
-  665 |         return;
+  683 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:678:34: warning: statement should be inside braces [readability-braces-around-statements]
-  678 |     if (!s_game_context || !name)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:696:34: warning: statement should be inside braces [readability-braces-around-statements]
+  696 |     if (!s_game_context || !name)
       |                                  ^
       |                                   {
-  679 |         return;
+  697 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:688:62: warning: redundant call to 'c_str' [readability-redundant-string-cstr]
-  688 |     Rml::ElementDocument* doc = s_game_context->LoadDocument(path.c_str());
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:706:62: warning: redundant call to 'c_str' [readability-redundant-string-cstr]
+  706 |     Rml::ElementDocument* doc = s_game_context->LoadDocument(path.c_str());
       |                                                              ^~~~~~~~~~~~
       |                                                              path
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:699:15: warning: statement should be inside braces [readability-braces-around-statements]
-  699 |     if (!name)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:717:15: warning: statement should be inside braces [readability-braces-around-statements]
+  717 |     if (!name)
       |               ^
       |                {
-  700 |         return;
+  718 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:711:62: warning: statement should be inside braces [readability-braces-around-statements]
-  711 |         if (name == "attract_overlay" || name == "copyright")
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:729:62: warning: statement should be inside braces [readability-braces-around-statements]
+  729 |         if (name == "attract_overlay" || name == "copyright")
       |                                                              ^
       |                                                               {
-  712 |             continue;
+  730 |             continue;
       |                      
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:720:15: warning: statement should be inside braces [readability-braces-around-statements]
-  720 |     if (!name)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:738:15: warning: statement should be inside braces [readability-braces-around-statements]
+  738 |     if (!name)
       |               ^
       |                {
-  721 |         return false;
+  739 |         return false;
       |                      
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:730:15: warning: statement should be inside braces [readability-braces-around-statements]
-  730 |     if (!name)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:748:15: warning: statement should be inside braces [readability-braces-around-statements]
+  748 |     if (!name)
       |               ^
       |                {
-  731 |         return;
+  749 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:744:25: warning: statement should be inside braces [readability-braces-around-statements]
-  744 |     if (!s_game_context)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:762:25: warning: statement should be inside braces [readability-braces-around-statements]
+  762 |     if (!s_game_context)
       |                         ^
       |                          {
-  745 |         return;
+  763 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:747:45: warning: statement should be inside braces [readability-braces-around-statements]
-  747 |     if (!has_visible_docs(s_game_documents))
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:765:45: warning: statement should be inside braces [readability-braces-around-statements]
+  765 |     if (!has_visible_docs(s_game_documents))
       |                                             ^
       |                                              {
-  748 |         return;
+  766 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:754:48: warning: statement should be inside braces [readability-braces-around-statements]
-  754 |     if (!s_game_context || !s_render_interface)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:772:48: warning: statement should be inside braces [readability-braces-around-statements]
+  772 |     if (!s_game_context || !s_render_interface)
       |                                                ^
       |                                                 {
-  755 |         return;
+  773 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:757:45: warning: statement should be inside braces [readability-braces-around-statements]
-  757 |     if (!has_visible_docs(s_game_documents))
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:775:45: warning: statement should be inside braces [readability-braces-around-statements]
+  775 |     if (!has_visible_docs(s_game_documents))
       |                                             ^
       |                                              {
-  758 |         return;
+  776 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:771:23: warning: statement should be inside braces [readability-braces-around-statements]
-  771 |     if (view_h > 0.0f)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:789:23: warning: statement should be inside braces [readability-braces-around-statements]
+  789 |     if (view_h > 0.0f)
       |                       ^
       |                        {
-  772 |         s_par_correct_y = (view_w * (float)GAME_H) / (view_h * (float)GAME_W);
-  773 |     else
+  790 |         s_par_correct_y = (view_w * (float)GAME_H) / (view_h * (float)GAME_W);
+  791 |     else
       |     } 
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:773:9: warning: statement should be inside braces [readability-braces-around-statements]
-  773 |     else
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:791:9: warning: statement should be inside braces [readability-braces-around-statements]
+  791 |     else
       |         ^
       |          {
-  774 |         s_par_correct_y = 1.0f;
+  792 |         s_par_correct_y = 1.0f;
       |                                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:776:28: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
-  776 |     const int ctx_w = (int)(GAME_W * dp_ratio + 0.5f); // = view_w
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:794:28: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
+  794 |     const int ctx_w = (int)(GAME_W * dp_ratio + 0.5f); // = view_w
       |                            ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:776:29: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  776 |     const int ctx_w = (int)(GAME_W * dp_ratio + 0.5f); // = view_w
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:794:29: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  794 |     const int ctx_w = (int)(GAME_W * dp_ratio + 0.5f); // = view_w
       |                             ^~~~~~~~~~~~~~~~~
       |                             (                )
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:777:28: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
-  777 |     const int ctx_h = (int)(GAME_H * dp_ratio + 0.5f); // = 224 * view_w / 384
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:795:28: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
+  795 |     const int ctx_h = (int)(GAME_H * dp_ratio + 0.5f); // = 224 * view_w / 384
       |                            ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:777:29: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
-  777 |     const int ctx_h = (int)(GAME_H * dp_ratio + 0.5f); // = 224 * view_w / 384
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:795:29: warning: '*' has higher precedence than '+'; add parentheses to explicitly specify the order of operations [readability-math-missing-parentheses]
+  795 |     const int ctx_h = (int)(GAME_H * dp_ratio + 0.5f); // = 224 * view_w / 384
       |                             ^~~~~~~~~~~~~~~~~
       |                             (                )
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:780:29: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
-  780 |     const int phys_w = (int)(view_w + 0.5f);
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:798:29: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
+  798 |     const int phys_w = (int)(view_w + 0.5f);
       |                             ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:781:29: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
-  781 |     const int phys_h = (int)(view_h + 0.5f);
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:799:29: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
+  799 |     const int phys_h = (int)(view_h + 0.5f);
       |                             ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:782:28: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
-  782 |     const int off_x = (int)(view_x + 0.5f);
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:800:28: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
+  800 |     const int off_x = (int)(view_x + 0.5f);
       |                            ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:784:36: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
-  784 |     const int off_y = win_h - (int)(view_y + 0.5f) - phys_h;
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:802:36: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
+  802 |     const int off_y = win_h - (int)(view_y + 0.5f) - phys_h;
       |                                    ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:810:36: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
-  810 |             const int top_y = (int)(view_y + 0.5f);
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:828:36: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
+  828 |             const int top_y = (int)(view_y + 0.5f);
       |                                    ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:820:39: warning: use nullptr [modernize-use-nullptr]
-  820 |         SDL_SetRenderTarget(renderer, NULL);
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:838:39: warning: use nullptr [modernize-use-nullptr]
+  838 |         SDL_SetRenderTarget(renderer, NULL);
       |                                       ^~~~
       |                                       nullptr
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:824:26: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
-  824 |         vp_rect.x = (int)(view_x + 0.5f);
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:842:26: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
+  842 |         vp_rect.x = (int)(view_x + 0.5f);
       |                          ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:825:26: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
-  825 |         vp_rect.y = (int)(view_y + 0.5f);
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:843:26: warning: casting (double + 0.5) to integer leads to incorrect rounding; consider using lround (#include <cmath>) instead [bugprone-incorrect-roundings]
+  843 |         vp_rect.y = (int)(view_y + 0.5f);
       |                          ^
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:838:41: warning: use nullptr [modernize-use-nullptr]
-  838 |         SDL_SetRenderViewport(renderer, NULL);
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:856:41: warning: use nullptr [modernize-use-nullptr]
+  856 |         SDL_SetRenderViewport(renderer, NULL);
       |                                         ^~~~
       |                                         nullptr
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:874:26: warning: statement should be inside braces [readability-braces-around-statements]
-  874 |     if (it == docs.end())
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:892:26: warning: statement should be inside braces [readability-braces-around-statements]
+  892 |     if (it == docs.end())
       |                          ^
       |                           {
-  875 |         return;
+  893 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:885:55: warning: redundant call to 'c_str' [readability-redundant-string-cstr]
-  885 |     Rml::ElementDocument* new_doc = ctx->LoadDocument(path.c_str());
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:903:55: warning: redundant call to 'c_str' [readability-redundant-string-cstr]
+  903 |     Rml::ElementDocument* new_doc = ctx->LoadDocument(path.c_str());
       |                                                       ^~~~~~~~~~~~
       |                                                       path
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:887:25: warning: statement should be inside braces [readability-braces-around-statements]
-  887 |         if (was_visible)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:905:25: warning: statement should be inside braces [readability-braces-around-statements]
+  905 |         if (was_visible)
       |                         ^
       |                          {
-  888 |             new_doc->Show();
+  906 |             new_doc->Show();
       |                             
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:898:15: warning: statement should be inside braces [readability-braces-around-statements]
-  898 |     if (!name)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:916:15: warning: statement should be inside braces [readability-braces-around-statements]
+  916 |     if (!name)
       |               ^
       |                {
-  899 |         return;
+  917 |         return;
       |                
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:901:60: warning: statement should be inside braces [readability-braces-around-statements]
-  901 |     if (s_window_context && s_window_documents.count(name))
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:919:60: warning: statement should be inside braces [readability-braces-around-statements]
+  919 |     if (s_window_context && s_window_documents.count(name))
       |                                                            ^
       |                                                             {
-  902 |         reload_doc_in(s_window_context, s_window_documents, name);
-  903 |     else if (s_game_context && s_game_documents.count(name))
+  920 |         reload_doc_in(s_window_context, s_window_documents, name);
+  921 |     else if (s_game_context && s_game_documents.count(name))
       |     } 
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:903:61: warning: statement should be inside braces [readability-braces-around-statements]
-  903 |     else if (s_game_context && s_game_documents.count(name))
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:921:61: warning: statement should be inside braces [readability-braces-around-statements]
+  921 |     else if (s_game_context && s_game_documents.count(name))
       |                                                             ^
       |                                                              {
-  904 |         reload_doc_in(s_game_context, s_game_documents, name);
+  922 |         reload_doc_in(s_game_context, s_game_documents, name);
       |                                                               
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:915:38: warning: statement should be inside braces [readability-braces-around-statements]
-  915 |     for (auto& [name, doc] : doc_map)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:933:38: warning: statement should be inside braces [readability-braces-around-statements]
+  933 |     for (auto& [name, doc] : doc_map)
       |                                      ^
       |                                       {
-  916 |         docs.push_back({ name, doc && doc->IsVisible() });
+  934 |         docs.push_back({ name, doc && doc->IsVisible() });
       |                                                           
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:917:38: warning: statement should be inside braces [readability-braces-around-statements]
-  917 |     for (auto& [name, doc] : doc_map)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:935:38: warning: statement should be inside braces [readability-braces-around-statements]
+  935 |     for (auto& [name, doc] : doc_map)
       |                                      ^
       |                                       {
-  918 |         if (doc)
-  919 |             doc->Close();
+  936 |         if (doc)
+  937 |             doc->Close();
       |                          
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:918:17: warning: statement should be inside braces [readability-braces-around-statements]
-  918 |         if (doc)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:936:17: warning: statement should be inside braces [readability-braces-around-statements]
+  936 |         if (doc)
       |                 ^
       |                  {
-  919 |             doc->Close();
+  937 |             doc->Close();
       |                          
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:925:59: warning: redundant call to 'c_str' [readability-redundant-string-cstr]
-  925 |         Rml::ElementDocument* new_doc = ctx->LoadDocument(path.c_str());
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:943:59: warning: redundant call to 'c_str' [readability-redundant-string-cstr]
+  943 |         Rml::ElementDocument* new_doc = ctx->LoadDocument(path.c_str());
       |                                                           ^~~~~~~~~~~~
       |                                                           path
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:927:30: warning: statement should be inside braces [readability-braces-around-statements]
-  927 |             if (info.visible)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:945:30: warning: statement should be inside braces [readability-braces-around-statements]
+  945 |             if (info.visible)
       |                              ^
       |                               {
-  928 |                 new_doc->Show();
+  946 |                 new_doc->Show();
       |                                 
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:944:26: warning: statement should be inside braces [readability-braces-around-statements]
-  944 |     if (s_window_context)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:962:26: warning: statement should be inside braces [readability-braces-around-statements]
+  962 |     if (s_window_context)
       |                          ^
       |                           {
-  945 |         total += reload_all_in(s_window_context, s_window_documents);
+  963 |         total += reload_all_in(s_window_context, s_window_documents);
       |                                                                      
-D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:946:24: warning: statement should be inside braces [readability-braces-around-statements]
-  946 |     if (s_game_context)
+D:\3sxtra\src\port\sdl\rmlui\rmlui_wrapper.cpp:964:24: warning: statement should be inside braces [readability-braces-around-statements]
+  964 |     if (s_game_context)
       |                        ^
       |                         {
-  947 |         total += reload_all_in(s_game_context, s_game_documents);
+  965 |         total += reload_all_in(s_game_context, s_game_documents);
       |                                                                  
 D:\3sxtra\src\port\sound\adx.c:27:1: warning: replace macro with enum [modernize-macro-to-enum]
    27 | #define ADX_POOL_BUF_SIZE (512 * 1024)
@@ -10098,61 +10084,6 @@ D:\3sxtra\src\port\sound\spu.c:196:20: warning: statement should be inside brace
       |                     {
   197 |         filter = 0;
       |                    
-D:\3sxtra\src\port\sound\spu.c:349:5: warning: declaration uses identifier '___tracy_ctx_fn', which is a reserved identifier [bugprone-reserved-identifier]
-  349 |     TRACE_ZONE_N("SPU_AudioCB");
-      |     ^
-D:/3sxtra/src/port/tracy_zones.h:37:40: note: expanded from macro 'TRACE_ZONE_N'
-   37 | #define TRACE_ZONE_N(name) TracyCZoneN(___tracy_ctx_fn, name, true)
-      |                                        ^
-D:/3sxtra/build/_deps/tracy-src/public/tracy/TracyC.h:259:211: note: expanded from macro 'TracyCZoneN'
-  259 | #define TracyCZoneN( ctx, name, active ) static const struct ___tracy_source_location_data TracyConcat(__tracy_source_location,TracyLine) = { name, __func__,  TracyFile, (uint32_t)TracyLine, 0 }; TracyCZoneCtx ctx = ___tracy_emit_zone_begin_callstack( &TracyConcat(__tracy_source_location,TracyLine), TRACY_CALLSTACK, active );
-      |                                                                                                                                                                                                                   ^
-note: this fix will not be applied because it overlaps with another fix
-D:\3sxtra\src\port\tracy_gpu.cpp:15:10: warning: inclusion of deprecated C++ header 'stdio.h'; consider using 'cstdio' instead [modernize-deprecated-headers]
-   15 | #include <stdio.h>
-      |          ^~~~~~~~~
-      |          <cstdio>
-D:\3sxtra\src\port\tracy_gpu.cpp:16:10: warning: inclusion of deprecated C++ header 'string.h'; consider using 'cstring' instead [modernize-deprecated-headers]
-   16 | #include <string.h>
-      |          ^~~~~~~~~~
-      |          <cstring>
-D:\3sxtra\src\port\tracy_gpu.cpp:26:8: warning: do not declare C-style arrays, use 'std::array' instead [modernize-avoid-c-arrays]
-   26 | static GLuint s_queries[QUERY_COUNT];
-      |        ^
-D:\3sxtra\src\port\tracy_gpu.cpp:48:5: warning: use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
-   48 |     uint16_t slot = (uint16_t)s_head;
-      |     ^~~~~~~~
-      |     auto
-D:\3sxtra\src\port\tracy_gpu.cpp:62:40: warning: statement should be inside braces [readability-braces-around-statements]
-   62 |     while (glGetError() != GL_NO_ERROR)
-      |                                        ^
-      |                                         {
-   63 |         ;
-      |          
-D:\3sxtra\src\port\tracy_gpu.cpp:113:18: warning: statement should be inside braces [readability-braces-around-statements]
-  113 |     if (!s_ready)
-      |                  ^
-      |                   {
-  114 |         return;
-      |                
-D:\3sxtra\src\port\tracy_gpu.cpp:140:34: warning: statement should be inside braces [readability-braces-around-statements]
-  140 |     if (!s_ready || s_depth <= 0)
-      |                                  ^
-      |                                   {
-  141 |         return;
-      |                
-D:\3sxtra\src\port\tracy_gpu.cpp:161:18: warning: statement should be inside braces [readability-braces-around-statements]
-  161 |     if (!s_ready)
-      |                  ^
-      |                   {
-  162 |         return;
-      |                
-D:\3sxtra\src\port\tracy_gpu.cpp:172:24: warning: statement should be inside braces [readability-braces-around-statements]
-  172 |         if (!available)
-      |                        ^
-      |                         {
-  173 |             break;
-      |                   
 D:\3sxtra\src\port\ui\replay_picker.cpp:18:10: warning: inclusion of deprecated C++ header 'stdio.h'; consider using 'cstdio' instead [modernize-deprecated-headers]
    18 | #include <stdio.h>
       |          ^~~~~~~~~
@@ -10238,6 +10169,40 @@ D:\3sxtra\src\port\win32\broadcast_spout.cpp:39:25: warning: statement should be
 ------------------------------------------------------------ 
 [RUFF] Code Style & Import Checks                           
 ------------------------------------------------------------ 
+F401 [*] `re` imported but unused
+ --> src\lua\3rd_training_lua-main\images\convert.py:4:8
+  |
+2 | import subprocess
+3 | import os
+4 | import re
+  |        ^^
+5 | import time
+6 | from pathlib import Path
+  |
+help: Remove unused import: `re`
+
+E711 Comparison to `None` should be `cond is None`
+  --> src\lua\3rd_training_lua-main\images\convert.py:90:30
+   |
+88 | def all_processes_ended(processes):
+89 |     for process in processes:
+90 |         if process.poll() == None:
+   |                              ^^^^
+91 |             return False
+92 |     return True
+   |
+help: Replace with `cond is None`
+
+F401 [*] `json` imported but unused
+ --> src\lua\3rd_training_lua-main\images\make_buttons.py:1:8
+  |
+1 | import json
+  |        ^^^^
+2 | import subprocess
+3 | import os
+  |
+help: Remove unused import: `json`
+
 F841 Local variable `cps3_hp_valid` is assigned to but never used
    --> tools\fightcade_replays\parity_replay.py:981:13
     |
@@ -10250,10 +10215,22 @@ F841 Local variable `cps3_hp_valid` is assigned to but never used
     |
 help: Remove assignment to unused variable `cps3_hp_valid`
 
-Found 1 error.
-No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+Found 4 errors.
+[*] 2 fixable with the `--fix` option (2 hidden fixes can be enabled with the `--unsafe-fixes` option).
  
 [RUFF] Auto-fix applied: 
+E711 Comparison to `None` should be `cond is None`
+  --> src\lua\3rd_training_lua-main\images\convert.py:89:30
+   |
+87 | def all_processes_ended(processes):
+88 |     for process in processes:
+89 |         if process.poll() == None:
+   |                              ^^^^
+90 |             return False
+91 |     return True
+   |
+help: Replace with `cond is None`
+
 F841 Local variable `cps3_hp_valid` is assigned to but never used
    --> tools\fightcade_replays\parity_replay.py:981:13
     |
@@ -10266,11 +10243,11 @@ F841 Local variable `cps3_hp_valid` is assigned to but never used
     |
 help: Remove assignment to unused variable `cps3_hp_valid`
 
-Found 1 error.
-No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+Found 4 errors (2 fixed, 2 remaining).
+No fixes available (2 hidden fixes can be enabled with the `--unsafe-fixes` option).
  
 [RUFF] Formatting: 
-18 files left unchanged
+4 files reformatted, 18 files left unchanged
  
 ------------------------------------------------------------ 
 [VULTURE] Dead Code Analysis                                 

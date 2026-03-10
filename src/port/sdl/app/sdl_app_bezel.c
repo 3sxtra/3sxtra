@@ -22,6 +22,7 @@
 #include <SDL3_shadercross/SDL_shadercross.h>
 // clang-format on
 
+#include <stdio.h>
 #include <string.h>
 
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"

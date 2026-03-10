@@ -1,0 +1,30 @@
+<rml>
+<head>
+    <title>Effie HUD</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="effie_hud.rcss"/>
+</head>
+<body data-model="training_hud">
+    <!-- P1 side (left) -->
+    <div id="p1-hud" class="hud-side left">
+        <span class="hud-text life" data-if="p1_life != ''">{{ p1_life }}</span>
+        <span class="hud-text meter" data-if="p1_meter != ''">{{ p1_meter }}</span>
+        <span class="hud-text stun" data-if="p1_stun != ''">{{ p1_stun }}</span>
+        <span class="hud-text advantage" data-if="p1_advantage != ''"
+              data-class-positive="advantage_class == 'positive'"
+              data-class-negative="advantage_class == 'negative'"
+              >{{ p1_advantage }}</span>
+    </div>
+
+    <!-- P2 side (right) -->
+    <div id="p2-hud" class="hud-side right">
+        <span class="hud-text life" data-if="p2_life != ''">{{ p2_life }}</span>
+        <span class="hud-text meter" data-if="p2_meter != ''">{{ p2_meter }}</span>
+        <span class="hud-text stun" data-if="p2_stun != ''">{{ p2_stun }}</span>
+        <span class="hud-text advantage" data-if="p2_advantage != ''"
+              data-class-positive="advantage_class == 'positive'"
+              data-class-negative="advantage_class == 'negative'"
+              >{{ p2_advantage }}</span>
+    </div>
+</body>
+</rml>

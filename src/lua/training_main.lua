@@ -86,6 +86,24 @@ end)
 -- Intercept require("src.gamestate") so effie gets our engine adapter.
 package.preload["src.gamestate"] = function() return gamestate end
 
+-- Stub src.ui.menu (frame_advantage.lua checks is_open)
+package.preload["src.ui.menu"] = function()
+   return { is_open = false, allow_update_while_open = false }
+end
+
+-- Stub src.ui.hud (frame_advantage.lua calls display_frame_advantage_numbers)
+-- We intercept this call and push the value to RmlUI instead.
+local _fa_results = {}  -- [player_id] = signed_advantage_number
+package.preload["src.ui.hud"] = function()
+   return {
+      display_frame_advantage_numbers = function(player, num)
+         if player and player.id then
+            _fa_results[player.id] = num
+         end
+      end
+   }
+end
+
 -- Preload src.modules stub (defers heavy init to init() which we don't call)
 package.preload["src.modules"] = function()
    return {
@@ -527,6 +545,73 @@ emu.registerbefore(function()
 end)
 
 print("[training_main] Bootstrap complete")
+
+-- ============================================================
+-- 7. Load Frame-Advantage Tracker
+-- ============================================================
+-- frame_advantage.lua is self-contained (127 LOC) and requires only
+-- gamestate + tools (both available).  It calls our src.ui.hud stub
+-- when advantage is computed, which stores the value in _fa_results.
+
+local frame_advantage = require("src.data.frame_advantage")
+
+-- ============================================================
+-- 8. Per-Frame HUD Text Push → RmlUI
+-- ============================================================
+-- Push numeric HUD data each frame from gamestate to the always-on
+-- effie_hud.rml overlay via engine.set_hud_text().
+-- This bypasses effie's draw.lua (which depends on FBNeo's GD pixel
+-- system) and feeds real game data directly to RmlUI text elements.
+
+emu.registerafter(function()
+   if not engine.is_in_match() then return end
+   if not gamestate or not gamestate.P1 then return end
+
+   local p1 = gamestate.P1
+   local p2 = gamestate.P2
+
+   -- Life: "HP/160"
+   engine.set_hud_text("p1_life", string.format("%d/160", p1.life or 0))
+   engine.set_hud_text("p2_life", string.format("%d/160", p2.life or 0))
+
+   -- Meter: "gauge/max"
+   local p1_gauge = p1.meter_gauge or 0
+   local p2_gauge = p2.meter_gauge or 0
+   if p1.meter_count == p1.max_meter_count then p1_gauge = p1.max_meter_gauge or 0 end
+   if p2.meter_count == p2.max_meter_count then p2_gauge = p2.max_meter_gauge or 0 end
+   engine.set_hud_text("p1_meter", string.format("%d/%d", p1_gauge, p1.max_meter_gauge or 0))
+   engine.set_hud_text("p2_meter", string.format("%d/%d", p2_gauge, p2.max_meter_gauge or 0))
+
+   -- Stun: "stun/max"
+   engine.set_hud_text("p1_stun", string.format("%d/%d",
+      math.floor(p1.stun_bar or 0), p1.stun_bar_max or 64))
+   engine.set_hud_text("p2_stun", string.format("%d/%d",
+      math.floor(p2.stun_bar or 0), p2.stun_bar_max or 64))
+
+   -- Frame advantage: run tracker + push results
+   local fa_ok, fa_err = pcall(frame_advantage.update)
+   if not fa_ok and not _G._fa_error_printed then
+      print("[training_main] Frame advantage error: " .. tostring(fa_err))
+      _G._fa_error_printed = true
+   end
+
+   for _, pid in ipairs({1, 2}) do
+      local prefix = (pid == 1) and "p1" or "p2"
+      local adv = frame_advantage.advantage and frame_advantage.advantage[pid]
+      if adv and adv.advantage then
+         local num = adv.advantage
+         local sign = num > 0 and "+" or ""
+         engine.set_hud_text(prefix .. "_advantage", string.format("%s%d", sign, num))
+         if num > 0 then
+            engine.set_hud_text("advantage_class", "positive")
+         elseif num < 0 then
+            engine.set_hud_text("advantage_class", "negative")
+         else
+            engine.set_hud_text("advantage_class", "neutral")
+         end
+      end
+   end
+end)
 
 return gamestate
 

@@ -41,6 +41,47 @@ typedef enum { DUMMY_TECH_THROW_NONE = 0, DUMMY_TECH_THROW_ALWAYS, DUMMY_TECH_TH
 
 typedef enum { DUMMY_FAST_WAKEUP_NONE = 0, DUMMY_FAST_WAKEUP_ALWAYS, DUMMY_FAST_WAKEUP_RANDOM } DummyFastWakeupType;
 
+// --- String labels (single source of truth for UI) ---
+static inline const char* DummyBlockType_str(int v) {
+    static const char* s[] = { "NONE", "ALWAYS", "FIRST HIT", "AFTER 1ST", "RANDOM" };
+    return (v >= 0 && v < 5) ? s[v] : "???";
+}
+static inline int DummyBlockType_count(void) {
+    return 5;
+}
+
+static inline const char* DummyParryType_str(int v) {
+    static const char* s[] = { "NONE", "HIGH", "LOW", "ALL", "RED" };
+    return (v >= 0 && v < 5) ? s[v] : "???";
+}
+static inline int DummyParryType_count(void) {
+    return 5;
+}
+
+static inline const char* DummyMashType_str(int v) {
+    static const char* s[] = { "NONE", "FAST", "NORMAL", "RANDOM", "LP", "MP", "HP" };
+    return (v >= 0 && v < 7) ? s[v] : "???";
+}
+static inline int DummyMashType_count(void) {
+    return 7;
+}
+
+static inline const char* DummyTechThrowType_str(int v) {
+    static const char* s[] = { "NONE", "ALWAYS", "RANDOM" };
+    return (v >= 0 && v < 3) ? s[v] : "???";
+}
+static inline int DummyTechThrowType_count(void) {
+    return 3;
+}
+
+static inline const char* DummyFastWakeupType_str(int v) {
+    static const char* s[] = { "NONE", "ALWAYS", "RANDOM" };
+    return (v >= 0 && v < 3) ? s[v] : "???";
+}
+static inline int DummyFastWakeupType_count(void) {
+    return 3;
+}
+
 typedef struct {
     DummyBlockType block_type;
     DummyParryType parry_type;

@@ -28,8 +28,8 @@ extern "C" {
 #ifdef _WIN32
 // Forward-declare instead of #include <windows.h> to avoid typedef clashes
 // with MSYS2/MinGW BSD type headers that SDL already pulls in.
-extern "C" __declspec(dllimport) unsigned long __stdcall GetModuleFileNameA(
-    void* hModule, char* lpFilename, unsigned long nSize);
+extern "C" __declspec(dllimport) unsigned long __stdcall GetModuleFileNameA(void* hModule, char* lpFilename,
+                                                                            unsigned long nSize);
 #endif
 
 // Character IDs mapping Lua index (1-19) -> engine My_char value
@@ -536,4 +536,3 @@ const TrialCharacterDef* lua_trials_get_characters(int* out_count) {
         *out_count = (int)s_char_defs.size();
     return s_char_defs.empty() ? NULL : s_char_defs.data();
 }
-

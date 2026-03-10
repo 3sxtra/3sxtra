@@ -277,7 +277,7 @@ static void do_rebuild_elem_list() {
     if (s_selected_doc < 0 || s_selected_doc >= (int)s_doc_ptrs.size()) {
         // No valid doc — zero out valid range but keep array size
         for (int i = 0; i < s_real_elem_count; i++) {
-            s_elements[i] = {"", 0, i, nullptr};
+            s_elements[i] = { "", 0, i, nullptr };
         }
         s_real_elem_count = 0;
         s_selected_elem = -1;
@@ -327,7 +327,7 @@ static void do_rebuild_elem_list() {
     }
     // Mark excess entries as padding (valid structs, hidden by data-if)
     for (size_t i = needed; i < s_elements.size(); i++) {
-        s_elements[i] = {"", 0, (int)i, nullptr};
+        s_elements[i] = { "", 0, (int)i, nullptr };
     }
 
     s_real_elem_count = (int)needed;

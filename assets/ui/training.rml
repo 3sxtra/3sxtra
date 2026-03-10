@@ -6,63 +6,104 @@
 </head>
 <body data-model="training">
     <div id="training-panel" class="panel">
-        <h1>TRAINING OPTIONS</h1>
+        <!-- Tab Bar -->
+        <div class="tab-bar">
+            <button class="tab" data-class-active="active_tab == 0"
+                    data-event-click="active_tab = 0">DUMMY</button>
+            <button class="tab" data-class-active="active_tab == 1"
+                    data-event-click="active_tab = 1">DISPLAY</button>
+        </div>
         <div class="divider"></div>
 
-        <!-- Master Hitboxes Toggle -->
-        <div class="section">
-            <div class="control-row">
-                <input type="checkbox" data-checked="hitboxes"/>
-                <label>Master Hitboxes Toggle</label>
+        <!-- ═════════════════════════════════════════ -->
+        <!-- DUMMY TAB — click row to cycle value     -->
+        <!-- ═════════════════════════════════════════ -->
+        <div class="tab-content" data-if="active_tab == 0">
+            <div id="cycle-block" class="control-row list-row clickable">
+                <label>Block</label>
+                <span class="value">{{ dummy_block_label }}</span>
             </div>
-            <p class="hint">Master switch for all collision overlays</p>
+            <div id="cycle-parry" class="control-row list-row clickable">
+                <label>Parry</label>
+                <span class="value">{{ dummy_parry_label }}</span>
+            </div>
+            <div id="cycle-stun-mash" class="control-row list-row clickable">
+                <label>Stun Mash</label>
+                <span class="value">{{ dummy_stun_mash_label }}</span>
+            </div>
+            <div id="cycle-wakeup-mash" class="control-row list-row clickable">
+                <label>Wakeup Mash</label>
+                <span class="value">{{ dummy_wakeup_mash_label }}</span>
+            </div>
+            <div class="control-row">
+                <input type="checkbox" data-checked="dummy_wakeup_reversal"/>
+                <label>Wakeup Reversal</label>
+            </div>
+            <div class="control-row">
+                <input type="checkbox" data-checked="dummy_guard_low"/>
+                <label>Default Guard Low</label>
+            </div>
+            <div id="cycle-tech-throw" class="control-row list-row clickable">
+                <label>Tech Throw</label>
+                <span class="value">{{ dummy_tech_throw_label }}</span>
+            </div>
+            <div id="cycle-fast-wakeup" class="control-row list-row clickable">
+                <label>Fast Wakeup</label>
+                <span class="value">{{ dummy_fast_wakeup_label }}</span>
+            </div>
+        </div>
 
-            <!-- Sub-toggles (visually indented, disabled when hitboxes off) -->
-            <div class="sub-group" data-if="hitboxes">
+        <!-- ═════════════════════════════════════════ -->
+        <!-- DISPLAY TAB                               -->
+        <!-- ═════════════════════════════════════════ -->
+        <div class="tab-content" data-if="active_tab == 1">
+            <div class="section">
                 <div class="control-row">
-                    <input type="checkbox" data-checked="pushboxes"/>
-                    <label>Pushboxes (Green)</label>
+                    <input type="checkbox" data-checked="hitboxes"/>
+                    <label>Master Hitboxes Toggle</label>
+                </div>
+                <div class="sub-group" data-if="hitboxes">
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="pushboxes"/>
+                        <label>Pushboxes (Green)</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="hurtboxes"/>
+                        <label>Hurtboxes (Blue)</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="attackboxes"/>
+                        <label>Hitboxes (Red)</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="throwboxes"/>
+                        <label>Throwboxes (Yellow)</label>
+                    </div>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="section">
+                <div class="control-row">
+                    <input type="checkbox" data-checked="advantage"/>
+                    <label>Frame Advantage</label>
                 </div>
                 <div class="control-row">
-                    <input type="checkbox" data-checked="hurtboxes"/>
-                    <label>Hurtboxes (Blue)</label>
+                    <input type="checkbox" data-checked="stun"/>
+                    <label>Stun Timer</label>
                 </div>
                 <div class="control-row">
-                    <input type="checkbox" data-checked="attackboxes"/>
-                    <label>Hitboxes (Red)</label>
+                    <input type="checkbox" data-checked="inputs"/>
+                    <label>Input History</label>
                 </div>
                 <div class="control-row">
-                    <input type="checkbox" data-checked="throwboxes"/>
-                    <label>Throwboxes (Yellow/Pink)</label>
+                    <input type="checkbox" data-checked="frame_meter"/>
+                    <label>Frame Meter</label>
                 </div>
             </div>
         </div>
 
         <div class="divider"></div>
-
-        <!-- Data Overlays -->
-        <div class="section">
-            <h2>Data Overlays</h2>
-            <div class="control-row">
-                <input type="checkbox" data-checked="advantage"/>
-                <label>Show Frame Advantage</label>
-            </div>
-            <div class="control-row">
-                <input type="checkbox" data-checked="stun"/>
-                <label>Show Stun Timer</label>
-            </div>
-            <div class="control-row">
-                <input type="checkbox" data-checked="inputs"/>
-                <label>Show Input History</label>
-            </div>
-            <div class="control-row">
-                <input type="checkbox" data-checked="frame_meter"/>
-                <label>Show Frame Meter</label>
-            </div>
-        </div>
-
-        <div class="divider"></div>
-        <p class="hint">Press F7 to close this menu</p>
+        <p class="hint">Click row to cycle · F7 to close</p>
     </div>
 </body>
 </rml>

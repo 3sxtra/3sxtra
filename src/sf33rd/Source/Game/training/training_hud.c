@@ -13,34 +13,17 @@
 #include <SDL3/SDL.h>
 #include <stdio.h>
 
-/* RmlUi Phase 3 bypass */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"
-
 void training_hud_init() {
     // Basic setup if required
 }
 
+/* Stun counter is now rendered by the RmlUI HUD overlay (effie_hud.rml).
+   Data flows: gamestate → Lua training_main.lua → engine.set_hud_text()
+   → rmlui_training_hud.cpp data model → effie_hud.rml.
+   This C function is retained as a no-op for ABI compatibility. */
 void training_hud_draw_stun(PLW* player, TrainingPlayerState* state) {
-    if (!player || !state)
-        return;
-
-    // Check if the player is currently stunned using the external piyori_type array
-    s16 p_index = player->wu.id; // Get the player index (0 or 1)
-
-    // Check if the player is in damage state (e.g. 0x5D is damage) or stun value is high
-    if (player->wu.char_state.body.fields.cg_type >= 0x40 || piyori_type[p_index].now.timer > 0) {
-        // Use the native combo stun tracker we added to state, which doesn't decay
-        if (state->combo_stun > 0 || piyori_type[p_index].now.timer > 0) {
-            // Draw numerical text showing accumulated stun for this combo
-            char stun_str[32];
-            snprintf(stun_str, sizeof(stun_str), "STUN: %d", state->combo_stun);
-
-            s16 hud_x = (p_index == 0) ? 10 : 250;
-            s16 hud_y = 60;
-            if (!use_rmlui || !rmlui_hud_training_stun)
-                SSPutStr_Bigger(hud_x, hud_y, 5, stun_str, 1.0f, 0, 1.0f);
-        }
-    }
+    (void)player;
+    (void)state;
 }
 
 static void draw_box(s16 left, s16 right, s16 top, s16 bottom, u32 color) {
@@ -56,8 +39,6 @@ static void draw_box(s16 left, s16 right, s16 top, s16 bottom, u32 color) {
     f32 sx_r = (f32)(right - cam_x) * scr_sc;
     f32 sy_t = 224.0f - (f32)(top - cam_y) * scr_sc - ground_offset;
     f32 sy_b = 224.0f - (f32)(bottom - cam_y) * scr_sc - ground_offset;
-
-    // (Debug logs removed, coordinates confirmed correct)
 
     for (int i = 0; i < 4; i++) {
         v[i].z = -1.0f;
@@ -157,13 +138,9 @@ void training_hud_draw_hitboxes(PLW* player) {
 }
 
 void training_hud_draw() {
-    // Called each frame from menu_draw.c or equivalent to render our custom Training HUD
+    // Called each frame — hitboxes are still rendered via C (GPU quads).
+    // Stun/life/meter text is now handled by the RmlUI HUD overlay.
     if ((Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_TRIALS) && !show_training_menu) {
-        if (g_training_menu_settings.show_stun) {
-            training_hud_draw_stun(&plw[0], &g_training_state.p1);
-            training_hud_draw_stun(&plw[1], &g_training_state.p2);
-        }
-
         if (g_training_menu_settings.show_hitboxes || g_training_menu_settings.show_pushboxes ||
             g_training_menu_settings.show_hurtboxes || g_training_menu_settings.show_attackboxes ||
             g_training_menu_settings.show_throwboxes) {

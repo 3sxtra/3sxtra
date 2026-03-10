@@ -3384,27 +3384,25 @@ static void Dummy_Setting(struct _TASK* task_ptr) {
         Menu_Suicide[0] = 1;
         Training_Index = 2;
 
-        for (ix = 0, s6 = y = 80; ix < 8; ix++, s5 = y += 16) {
+        for (ix = 0, s6 = y = 80; ix < 7; ix++, s5 = y += 16) {
             effect_A3_init(0, 1, ix, ix, 1, 48, y, 0);
         }
 
-        for (ix = 0, y = 80, s4 = group = 2; ix < 7; ix++, group++, s3 = y += 16) {
+        for (ix = 0, y = 80, s4 = group = 2; ix < 5; ix++, group++, s3 = y += 16) {
             effect_A3_init(0, group, ix, ix, 1, 0xE6, y, 0);
         }
 
         break;
 
     case 1:
-        Dummy_Move_Sub(task_ptr, Champion, 0, 0, 7);
+        Dummy_Move_Sub(task_ptr, Champion, 0, 0, 6);
 
-        if (Menu_Cursor_Y[0] == 6 && IO_Result & 0x100) {
+        if (Menu_Cursor_Y[0] == 5 && IO_Result & 0x100) {
             Training[2].contents[0][0][0] = 0;
             Training[2].contents[0][0][1] = 0;
             Training[2].contents[0][0][2] = 0;
             Training[2].contents[0][0][3] = 0;
             Training[2].contents[0][0][4] = 0;
-            Training[2].contents[0][0][5] = 0;
-            Training[2].contents[0][0][6] = 0;
             SE_selected();
         }
 
@@ -4146,8 +4144,8 @@ static void End_Replay_Menu(struct _TASK* task_ptr) {
         Pause_ID = Decide_ID;
         Pause_Down = 1;
         Game_pause = 0x81;
-        effect_A3_init(1, 0x19, 0x63, 0, 3, 0x82, 0x48, 1);
-        effect_A3_init(1, 0x19, 0x63, 1, 3, 0x88, 0x58, 1);
+        effect_A3_init(1, 0x17, 0x63, 0, 3, 0x82, 0x48, 1);
+        effect_A3_init(1, 0x17, 0x63, 1, 3, 0x88, 0x58, 1);
         Order[0x8A] = 3;
         Order_Timer[0x8A] = 1;
         effect_66_init(0x8A, 0xA, 2, 7, -1, -1, -0x3FF6);

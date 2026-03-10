@@ -41,6 +41,8 @@ extern "C" {
 #include "structs.h"
 }
 
+#include "rmlui_training_hud.h"
+
 // ---- Helpers ----
 
 // Push a light int field: lua_pushinteger + lua_setfield
@@ -520,6 +522,22 @@ static int l_get_dummy_settings(lua_State* L) {
     return 1;
 }
 
+/** @brief Push a text field to the always-on training HUD overlay. */
+static int l_set_hud_text(lua_State* L) {
+    const char* field = luaL_checkstring(L, 1);
+    const char* value = luaL_checkstring(L, 2);
+    rmlui_training_hud_set_text(field, value);
+    return 0;
+}
+
+/** @brief Push a gauge fill value to the training HUD overlay. */
+static int l_set_hud_gauge(lua_State* L) {
+    const char* field = luaL_checkstring(L, 1);
+    float fill = (float)luaL_checknumber(L, 2);
+    rmlui_training_hud_set_gauge(field, fill);
+    return 0;
+}
+
 // ---- Registration ----
 
 static const luaL_Reg engine_funcs[] = {
@@ -538,6 +556,8 @@ static const luaL_Reg engine_funcs[] = {
     { "read_file_text", l_read_file_text },
     { "set_lua_dummy_active", l_set_lua_dummy_active },
     { "get_dummy_settings", l_get_dummy_settings },
+    { "set_hud_text", l_set_hud_text },
+    { "set_hud_gauge", l_set_hud_gauge },
     { NULL, NULL }
 };
 

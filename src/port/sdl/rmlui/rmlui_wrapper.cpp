@@ -105,6 +105,16 @@ class GameViewportGL3 : public RenderInterface_GL3 {
         // SDL_image to load PNG/JPG files. RmlUi also expects pre-multiplied alpha,
         // so we must do the conversion here before forwarding to GenerateTexture.
         SDL_Surface* surface = IMG_Load(source.c_str());
+#ifndef _WIN32
+        // RmlUi's SystemInterface::JoinPath strips the leading '/' from
+        // absolute paths (e.g. "/userdata/..." → "userdata/...").  Retry
+        // with the root prefix restored so IMG_Load can find the file.
+        if (!surface && !source.empty() && source[0] != '/')
+        {
+            std::string abs_source = "/" + source;
+            surface = IMG_Load(abs_source.c_str());
+        }
+#endif
         if (!surface)
             return 0;
 
@@ -562,7 +572,6 @@ extern "C" void rmlui_wrapper_render(void) {
     // have missed the earlier Update() call in rmlui_wrapper_new_frame() since
     // no docs were visible at that point.
     s_window_context->Update();
-
 
     if (s_render_gl3) {
         // GL3: simple begin/end frame

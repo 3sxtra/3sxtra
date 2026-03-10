@@ -2337,8 +2337,8 @@ void Dummy_Move_Sub(struct _TASK* task_ptr, s16 PL_id, s16 id, s16 type, s16 max
     }
 }
 
-const u8 Menu_Max_Data_Tr[2][2][8] = { { { 4, 4, 4, 6, 6, 1, 1, 2 }, { 3, 2, 3, 7, 0, 0, 0, 0 } },
-                                       { { 2, 3, 1, 3, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0, 0, 0 } } };
+const u8 Menu_Max_Data_Tr[2][2][6] = { { { 4, 3, 4, 6, 6, 0 }, { 3, 2, 3, 7, 0, 0 } },
+                                       { { 2, 3, 1, 3, 0, 0 }, { 0, 0, 0, 0, 0, 0 } } };
 
 static bool is_data_plus_hitboxes_option_selected() {
     return Training[0].contents[0][1][1] == 2;
@@ -2353,35 +2353,20 @@ static void apply_training_hitbox_display(bool force_off) {
 }
 
 void sync_dummy_settings_from_menu() {
-    // Mapping from Menu UI array (Training[2].contents[x][y][z]) to our DummySettings struct
-    // Menu Index 1 (Action): 0=None, 1=Jump, 2=Crouch, etc. (Handle natively)
+    /* When the Lua dummy is active, settings come from the RmlUI bridge
+       instead of the fragile Training[] array.  Skip the cast chain. */
+    if (g_lua_dummy_active)
+        return;
 
-    // Menu Index 1 (Block): 0=None, 1=Always, 2=First Hit, 3=After First Hit, 4=Random
+    /* Original CPS3 Dummy Setting menu items (indices 1-4 of page 0):
+       0 = Action (handled natively), 1 = Block, 2 = Parry,
+       3 = Stun Escape, 4 = Wakeup.
+       Extended settings (tech throw, fast wakeup, guard direction,
+       wakeup reversal) live exclusively in the RmlUI layer. */
     g_dummy_settings.block_type = (DummyBlockType)Training[2].contents[0][0][1];
-
-    // Menu Index 2 (Parry): 0=None, 1=High, 2=Low, 3=All, 4=Red
     g_dummy_settings.parry_type = (DummyParryType)Training[2].contents[0][0][2];
-
-    // Menu Index 3 (Stun Mash): 0=None, 1=Fast, 2=Normal, 3=Random, 4=LP, 5=MP, 6=HP
     g_dummy_settings.stun_mash = (DummyMashType)Training[2].contents[0][0][3];
-
-    // Menu Index 4 (Wakeup Mash): 0=None, 1=Fast, 2=Normal, 3=Random, 4=LP, 5=MP, 6=HP
     g_dummy_settings.wakeup_mash = (DummyMashType)Training[2].contents[0][0][4];
-
-    // Wakeup reversal (DP on wakeup): dedicated menu toggle
-    // Menu Index 5: 0=OFF, 1=ON
-    g_dummy_settings.wakeup_reversal = (Training[2].contents[0][0][5] != 0);
-
-    // Default guard direction
-    // Menu Index 6: 0=CROUCH (guard_low_default=true), 1=STAND (guard_low_default=false)
-    g_dummy_settings.guard_low_default = (Training[2].contents[0][0][6] == 0);
-
-    // Menu Index 7 (Tech Throws): 0=None, 1=Always, 2=Random
-    g_dummy_settings.tech_throw_type = (DummyTechThrowType)Training[2].contents[0][0][7];
-
-    // Page 1, Menu Index 0 (Fast Wakeup): 0=None, 1=Always, 2=Random
-    // Note: uses page 1 since page 0 is full
-    g_dummy_settings.fast_wakeup = (DummyFastWakeupType)Training[2].contents[0][1][0];
 }
 
 /** @brief Dummy cursor move left/right value toggle handler. */

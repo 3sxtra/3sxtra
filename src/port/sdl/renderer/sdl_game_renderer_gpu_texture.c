@@ -215,30 +215,6 @@ void SDLGameRendererGPU_DumpTextures(void) {
 void SDLGameRendererGPU_UnlockTexture(unsigned int th) {
     const int idx = th - 1;
     if (idx >= 0 && idx < FL_TEXTURE_MAX) {
-        const FLTexture* fl_tex = &flTexture[idx];
-        const void* pixels = flPS2GetSystemBuffAdrs(fl_tex->mem_handle);
-        size_t data_size = 0;
-        switch (fl_tex->format) {
-        case SCE_GS_PSMT8:
-            data_size = (size_t)fl_tex->width * fl_tex->height;
-            break;
-        case SCE_GS_PSMT4:
-            data_size = (size_t)((fl_tex->width + 1) / 2) * fl_tex->height;
-            break;
-        case SCE_GS_PSMCT16:
-            data_size = (size_t)fl_tex->width * fl_tex->height * 2;
-            break;
-        default:
-            data_size = (size_t)fl_tex->width * fl_tex->height * 4;
-            break;
-        }
-        if (pixels && data_size > 0) {
-            uint32_t new_hash = hash_memory(pixels, data_size);
-            if (new_hash == texture_hash[idx]) {
-                return;
-            }
-            texture_hash[idx] = new_hash;
-        }
         // 1D: free the single layer for this texture
         if (tex_array_layer[idx] >= 0) {
             tex_array_free[tex_array_free_count++] = tex_array_layer[idx];
@@ -247,21 +223,10 @@ void SDLGameRendererGPU_UnlockTexture(unsigned int th) {
     }
 }
 
+
 void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
     const int idx = ph - 1;
     if (idx >= 0 && idx < FL_PALETTE_MAX) {
-        const FLTexture* fl_pal = &flPalette[idx];
-        const void* pixels = flPS2GetSystemBuffAdrs(fl_pal->mem_handle);
-        size_t color_count = (size_t)fl_pal->width * fl_pal->height;
-        size_t color_size = (fl_pal->format == SCE_GS_PSMCT32) ? 4 : 2;
-        size_t data_size = color_count * color_size;
-        if (pixels && data_size > 0) {
-            uint32_t new_hash = hash_memory(pixels, data_size);
-            if (new_hash == palette_hash[idx]) {
-                return;
-            }
-            palette_hash[idx] = new_hash;
-        }
         // Palette changes don't invalidate indexed texture array layers —
         // the palette row is looked up separately by the fragment shader.
         if (palettes[idx]) {
@@ -283,6 +248,7 @@ void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
         }
     }
 }
+
 
 /** @brief Prepare a texture for rendering, uploading to the GPU array if needed. */
 void SDLGameRendererGPU_SetTexture(unsigned int th) {

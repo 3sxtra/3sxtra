@@ -73,17 +73,27 @@ static struct {
 
 // ── Helpers ────────────────────────────────────────────────────
 
-/** @brief Build an absolute path from a relative icon path.
+/** @brief Build a path from a relative icon path that RmlUi can resolve.
  *  ControlMapping returns relative paths like "assets/keyboard.png" but
- *  RmlUi resolves \<img src\> relative to the document base (assets/ui/),
- *  so we prepend the application base path to make them absolute. */
+ *  RmlUi resolves \<img src\> relative to the document base (assets/ui/).
+ *  Strategy: prepend the app base path to make it absolute. If SDL_GetBasePath
+ *  returns a non-absolute path (observed on some embedded Linux), force a
+ *  leading '/'. As a final fallback, use document-relative navigation (../). */
 static Rml::String make_absolute_icon_path(const char* relative_path) {
     if (!relative_path || !relative_path[0])
         return "";
     const char* base = Paths_GetBasePath();
-    if (base)
-        return Rml::String(base) + relative_path;
-    return relative_path;
+    if (base && base[0] != '\0') {
+        Rml::String abs_path = Rml::String(base) + relative_path;
+        // Ensure the path is truly absolute on Unix-like systems
+#ifndef _WIN32
+        if (abs_path[0] != '/')
+            abs_path = "/" + abs_path;
+#endif
+        return abs_path;
+    }
+    // Fallback: document lives in assets/ui/, so ../ reaches assets/
+    return Rml::String("../") + relative_path;
 }
 
 static void rebuild_available_devices() {

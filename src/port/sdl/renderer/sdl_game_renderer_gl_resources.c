@@ -44,24 +44,6 @@ static void read_rgba16_color(Uint16 pixel, float* out_rgba) {
     out_rgba[3] = ((pixel & 0x8000) ? 1.0f : 0.0f);
 }
 
-// ⚡ Bolt: CRC32 hash — 4 bytes/cycle via SSE4.2 intrinsics (SIMDe portable)
-static inline uint32_t hash_palette(const void* data, size_t size) {
-    uint32_t h = 0xFFFFFFFFu;
-    const uint8_t* p = (const uint8_t*)data;
-    size_t i = 0;
-    // Process 4 bytes at a time
-    for (; i + 3 < size; i += 4) {
-        uint32_t word;
-        memcpy(&word, p + i, 4);
-        h = simde_mm_crc32_u32(h, word);
-    }
-    // Scalar tail
-    for (; i < size; i++) {
-        h = simde_mm_crc32_u8(h, p[i]);
-    }
-    return h ^ 0xFFFFFFFFu;
-}
-
 // --- CLUT Shuffle for PS2 ---
 // The PS2 GS stores 256-color CLUTs in a non-linear memory order.
 // This LUT maps linear index (0-255) to the shuffled GS index.
@@ -418,7 +400,7 @@ void SDLGameRendererGL_DestroyTexture(unsigned int texture_handle) {
         SDL_DestroySurface(gl_state.surfaces[texture_index]);
         gl_state.surfaces[texture_index] = NULL;
     }
-    gl_state.texture_hash[texture_index] = 0; // ⚡ Reset hash on destroy
+
 }
 
 void SDLGameRendererGL_CreatePalette(unsigned int ph) {
@@ -559,24 +541,13 @@ void SDLGameRendererGL_DestroyPalette(unsigned int palette_handle) {
 void SDLGameRendererGL_UnlockPalette(unsigned int ph) {
     const int palette_handle = ph;
     if (palette_handle > 0 && palette_handle <= FL_PALETTE_MAX) {
-        const FLTexture* fl_pal = &flPalette[palette_handle - 1];
-        const void* pixels = flPS2GetSystemBuffAdrs(fl_pal->mem_handle);
-        size_t size = fl_pal->width * fl_pal->height * ((fl_pal->format == SCE_GS_PSMCT32) ? 4 : 2);
-
-        if (pixels) {
-            uint32_t new_hash = hash_palette(pixels, size);
-            if (new_hash == gl_state.palette_hash[palette_handle - 1]) {
-                return;
-            }
-            gl_state.palette_hash[palette_handle - 1] = new_hash;
-        }
-
         if (!gl_state.palette_dirty_flags[palette_handle - 1]) {
             gl_state.palette_dirty_flags[palette_handle - 1] = true;
             gl_state.dirty_palette_indices[gl_state.dirty_palette_count++] = palette_handle - 1;
         }
     }
 }
+
 
 /**
  * ⚡ Bolt: O(1) deferred unlock — pushes tex_idx to pending batch instead of
@@ -587,34 +558,6 @@ void SDLGameRendererGL_UnlockTexture(unsigned int th) {
     const int texture_handle = th;
     if (texture_handle > 0 && texture_handle <= FL_TEXTURE_MAX) {
         const int tex_idx = texture_handle - 1;
-
-        // ⚡ Hash-guard: skip full invalidation if texture data hasn't changed.
-        const FLTexture* fl_tex = &flTexture[tex_idx];
-        const void* pixels = flPS2GetSystemBuffAdrs(fl_tex->mem_handle);
-        if (pixels) {
-            size_t data_size = 0;
-            switch (fl_tex->format) {
-            case SCE_GS_PSMT8:
-                data_size = (size_t)fl_tex->width * fl_tex->height;
-                break;
-            case SCE_GS_PSMT4:
-                data_size = (size_t)((fl_tex->width + 1) / 2) * fl_tex->height;
-                break;
-            case SCE_GS_PSMCT16:
-                data_size = (size_t)fl_tex->width * fl_tex->height * 2;
-                break;
-            default:
-                data_size = (size_t)fl_tex->width * fl_tex->height * 4;
-                break;
-            }
-            if (data_size > 0) {
-                uint32_t new_hash = hash_palette(pixels, data_size);
-                if (new_hash == gl_state.texture_hash[tex_idx]) {
-                    return; // No-op: texture data unchanged
-                }
-                gl_state.texture_hash[tex_idx] = new_hash;
-            }
-        }
 
         // ⚡ Bolt: Defer tcache_live scan — just push to pending batch
         if (!gl_state.pending_unlock_flags[tex_idx]) {
@@ -628,6 +571,7 @@ void SDLGameRendererGL_UnlockTexture(unsigned int th) {
         }
     }
 }
+
 
 /**
  * ⚡ Bolt: Batch stale-promotion pass — single O(pending + live) scan replaces

@@ -61,6 +61,7 @@ static bool s_visible = false;
 static Rml::String s_prev_p1_stats;
 static Rml::String s_prev_p2_stats;
 static size_t s_prev_cell_count = 0;
+static size_t s_active_count = 0; // grow-only: vectors never shrink
 static bool s_prev_visible = false;
 
 // ── TrainingFrameState → CSS class ─────────────────────────────
@@ -200,8 +201,13 @@ extern "C" void rmlui_frame_display_update(void) {
             s_consecutive_idle++;
             if (s_consecutive_idle >= 90 && !s_frame_history.empty()) {
                 s_frame_history.clear();
-                s_p1_cells.clear();
-                s_p2_cells.clear();
+                /* Grow-only: zero-fill instead of clear() to avoid
+                   stale data-for children hitting out-of-bounds. */
+                for (size_t i = 0; i < s_p1_cells.size(); i++) {
+                    s_p1_cells[i].css_class = "idle";
+                    s_p2_cells[i].css_class = "idle";
+                }
+                s_active_count = 0;
                 s_prev_cell_count = 0;
                 s_model_handle.DirtyVariable("p1_cells");
                 s_model_handle.DirtyVariable("p2_cells");
@@ -237,12 +243,22 @@ extern "C" void rmlui_frame_display_update(void) {
 
     if (cells_dirty) {
         size_t n = s_frame_history.size();
-        s_p1_cells.resize(n);
-        s_p2_cells.resize(n);
+        /* Grow-only: never shrink vectors to avoid RmlUi data-for
+           children accessing out-of-bounds indices. */
+        if (n > s_p1_cells.size()) {
+            s_p1_cells.resize(n, { "idle" });
+            s_p2_cells.resize(n, { "idle" });
+        }
         for (size_t i = 0; i < n; i++) {
             s_p1_cells[i].css_class = state_to_class(s_frame_history[i].p1_state);
             s_p2_cells[i].css_class = state_to_class(s_frame_history[i].p2_state);
         }
+        /* Zero-fill any padding beyond active cells */
+        for (size_t i = n; i < s_p1_cells.size(); i++) {
+            s_p1_cells[i].css_class = "idle";
+            s_p2_cells[i].css_class = "idle";
+        }
+        s_active_count = n;
         s_prev_cell_count = n;
         s_model_handle.DirtyVariable("p1_cells");
         s_model_handle.DirtyVariable("p2_cells");

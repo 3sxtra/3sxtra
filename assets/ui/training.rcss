@@ -1,5 +1,5 @@
-/* Training Options — F7 settings overlay
- * Compact layout for low-res windows */
+/* Training Options — F7 modded training overlay
+ * CPS3-inspired two-tab layout: DUMMY | DISPLAY */
 
 body {
     width: 100%;
@@ -12,9 +12,50 @@ body {
     position: absolute;
     top: 2%;
     right: 2%;
-    width: 45%;
-    max-height: 90%;
+    width: 48%;
+    max-height: 92%;
     overflow-y: auto;
+}
+
+/* ── Tab Bar ── */
+.tab-bar {
+    display: block;
+    margin-bottom: 2dp;
+}
+
+.tab {
+    display: inline-block;
+    padding: 2dp 8dp;
+    margin-right: 2dp;
+    background-color: #333;
+    color: #999;
+    border-width: 1dp;
+    border-color: #555;
+    font-size: 9dp;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.tab.active {
+    background-color: #CC0000;
+    color: #FFF;
+    border-color: #FF3333;
+    border-width: 1dp;
+}
+
+.tab:hover {
+    background-color: #555;
+    color: #FFF;
+}
+
+.tab.active:hover {
+    background-color: #DD2222;
+}
+
+/* ── Tab Content ── */
+.tab-content {
+    display: block;
+    padding: 2dp 0dp;
 }
 
 /* ── Sections ── */
@@ -32,6 +73,34 @@ body {
 .control-row label {
     vertical-align: middle;
     color: #dddddd;
+    white-space: nowrap;
+}
+
+/* List-type rows (label + value) */
+.list-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-row .value {
+    color: #FFCC00;
+    font-size: 9dp;
+    white-space: nowrap;
+}
+
+/* Clickable list rows — visual feedback */
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:hover {
+    background-color: #333;
+}
+
+.clickable:hover .value {
+    color: #FFFFFF;
 }
 
 /* ── Sub-group indentation ── */
