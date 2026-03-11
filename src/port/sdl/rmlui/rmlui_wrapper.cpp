@@ -283,10 +283,17 @@ static bool recompute_visible(const std::unordered_map<std::string, Rml::Element
 static bool s_gl3_loader_initialized = false;
 
 // ⚡ On-demand GL3 renderer lifecycle.
-// Creates the GL3 renderer (9 shader programs, FBOs, VAO) only when RmlUi
-// actually needs to render.  Destroys it when idle to free V3D resources.
+// The GameViewportGL3 object is kept alive for the entire RmlUi lifetime
+// (RmlUi's RenderManager holds a reference to the RenderInterface and asserts
+// on destruction).  Instead we toggle s_render_interface to enable/disable
+// rendering, and track whether the GL3 object is "active" (viewport set,
+// ready to render).
+static bool s_gl3_active = false;
+
 static void ensure_gl3_ready() {
-    if (s_active_backend != RENDERER_OPENGL || s_render_gl3)
+    if (s_active_backend != RENDERER_OPENGL)
+        return;
+    if (s_gl3_active)
         return;
     if (!s_gl3_loader_initialized) {
         Rml::String msg;
@@ -296,24 +303,28 @@ static void ensure_gl3_ready() {
         }
         s_gl3_loader_initialized = true;
     }
-    s_render_gl3 = new GameViewportGL3();
+    if (!s_render_gl3) {
+        s_render_gl3 = new GameViewportGL3();
+    }
     s_render_interface = s_render_gl3;
     Rml::SetRenderInterface(s_render_interface);
     s_render_gl3->SetViewport(s_window_w, s_window_h);
-    SDL_Log("[RmlUi] GL3 renderer created (on-demand)");
+    s_gl3_active = true;
+    SDL_Log("[RmlUi] GL3 renderer activated (on-demand)");
 }
 
 static void release_gl3_if_idle() {
-    if (!s_render_gl3)
+    if (!s_gl3_active)
         return;
-    // Keep alive while any documents are visible
+    // Keep active while any documents are visible
     if (s_any_window_visible || s_any_game_visible)
         return;
-    delete s_render_gl3;
-    s_render_gl3 = nullptr;
+    // Don't delete — RmlUi's RenderManager still references the interface.
+    // Just deactivate by clearing the pointer so render calls are skipped.
     s_render_interface = nullptr;
     Rml::SetRenderInterface(nullptr);
-    SDL_Log("[RmlUi] GL3 renderer destroyed (idle)");
+    s_gl3_active = false;
+    SDL_Log("[RmlUi] GL3 renderer deactivated (idle)");
 }
 
 // -------------------------------------------------------------------
@@ -464,15 +475,14 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
             GAME_H,
             dp_ratio);
 
-    // ⚡ Pi4: destroy GL3 renderer now that init is done.
-    // The 9 shader programs + FBOs are freed from V3D GPU memory.
-    // ensure_gl3_ready() will recreate on first actual render need.
+    // ⚡ Pi4: deactivate GL3 renderer now that init is done.
+    // ensure_gl3_ready() will re-activate on first actual render need.
+    // The object stays alive because RmlUi's RenderManager references it.
     if (s_render_gl3) {
-        delete s_render_gl3;
-        s_render_gl3 = nullptr;
         s_render_interface = nullptr;
         Rml::SetRenderInterface(nullptr);
-        SDL_Log("[RmlUi] GL3 renderer released after init (on-demand lifecycle)");
+        s_gl3_active = false;
+        SDL_Log("[RmlUi] GL3 renderer deactivated after init (on-demand lifecycle)");
     }
 }
 

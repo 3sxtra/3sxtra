@@ -191,12 +191,13 @@ static void ensure_shader_initialized(void) {
     available_presets = (char**)SDL_malloc(capacity * sizeof(char*));
     available_preset_count = 0;
 
+    SDL_Log("Scanning shader presets in: %s", shaders_path);
     scan_presets_recursive(shaders_path, "", &available_presets, &available_preset_count, &capacity);
 
     if (available_preset_count > 0) {
         qsort(available_presets, available_preset_count, sizeof(char*), compare_strings);
-        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Found %d shader presets.", available_preset_count);
     }
+    SDL_Log("Found %d shader presets.", available_preset_count);
 
     const char* saved_shader = Config_GetString(CFG_KEY_SHADER_PATH);
     if (saved_shader && *saved_shader && available_preset_count > 0) {
