@@ -12,6 +12,7 @@
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/app/sdl_app_internal.h"
 #include "shaders/glslp_parser.h"
+#include "librashader.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +31,10 @@ static bool s_shader_initialized = false;
 static GLSLP_Preset s_chain_preset;  // The composed chain
 static bool s_chain_active = false;  // True when chain is in use (vs single preset)
 static bool s_chain_needs_apply = false;
+
+// ── Standalone parameter cache (reads from preset file, no GL state needed) ──
+static struct libra_preset_param_list_t s_param_cache = {0};
+static bool s_param_cache_valid = false;
 
 // Recursive scanner helper
 static void scan_presets_recursive(const char* base_path, const char* relative_path, char*** list, int* count,
@@ -176,6 +181,12 @@ void SDLAppShader_Shutdown() {
         }
         SDL_free(available_presets);
         available_presets = NULL;
+    }
+    if (s_param_cache_valid) {
+        libra_preset_free_runtime_params(s_param_cache);
+        s_param_cache_valid = false;
+        s_param_cache.parameters = NULL;
+        s_param_cache.length = 0;
     }
     if (g_base_path) {
         SDL_free(g_base_path);
@@ -329,6 +340,45 @@ static void chain_load_and_merge(int preset_index, bool prepend) {
     GLSLP_Free(src);
     s_chain_active = true;
     s_chain_needs_apply = true;
+
+    // Refresh param cache immediately from the preset file
+    // (ChainApply is deferred while menu is visible, but params must show now)
+    {
+        char temp_path[1024];
+        if (g_base_path)
+            snprintf(temp_path, sizeof(temp_path), "%s%s", g_base_path, "shaders/libretro/_3sx_chain.slangp");
+        else
+            snprintf(temp_path, sizeof(temp_path), "%s", "shaders/libretro/_3sx_chain.slangp");
+
+        // Write the current chain composition so we can read its params
+        if (GLSLP_Write(&s_chain_preset, temp_path)) {
+            // Free old cache
+            if (s_param_cache_valid) {
+                libra_preset_free_runtime_params(s_param_cache);
+                s_param_cache_valid = false;
+            }
+
+            // Create temp preset just to read params (no filter chain = no GL state)
+            libra_shader_preset_t preset = {0};
+            libra_error_t err = libra_preset_create_with_options(temp_path, NULL, NULL, &preset);
+            if (err == 0) {
+                err = libra_preset_get_runtime_params(&preset, &s_param_cache);
+                if (err == 0) {
+                    s_param_cache_valid = true;
+                    SDL_Log("ParamCache: Refreshed %llu params from chain preset",
+                            (unsigned long long)s_param_cache.length);
+                } else {
+                    libra_error_print(err);
+                    s_param_cache.parameters = NULL;
+                    s_param_cache.length = 0;
+                }
+                // preset is consumed/invalidated by get_runtime_params or we free it
+                libra_preset_free(&preset);
+            } else {
+                libra_error_print(err);
+            }
+        }
+    }
 }
 
 void SDLAppShader_ChainAppend(int preset_index) {
@@ -360,6 +410,14 @@ void SDLAppShader_ChainClear(void) {
     memset(&s_chain_preset, 0, sizeof(GLSLP_Preset));
     s_chain_active = false;
     s_chain_needs_apply = true;
+
+    // Clear param cache
+    if (s_param_cache_valid) {
+        libra_preset_free_runtime_params(s_param_cache);
+        s_param_cache_valid = false;
+        s_param_cache.parameters = NULL;
+        s_param_cache.length = 0;
+    }
 }
 
 void SDLAppShader_ChainApply(void) {
@@ -437,3 +495,79 @@ bool SDLAppShader_ChainSaveAsPreset(const char* path) {
         return false;
     return GLSLP_Write(&s_chain_preset, path);
 }
+
+// ── Runtime Parameter API (reads from standalone cache) ──────────
+
+int SDLAppShader_GetParamCount(void) {
+    if (!s_param_cache_valid)
+        return 0;
+    return (int)s_param_cache.length;
+}
+
+const char* SDLAppShader_GetParamName(int index) {
+    if (!s_param_cache_valid || index < 0 || index >= (int)s_param_cache.length)
+        return "";
+    return s_param_cache.parameters[index].name;
+}
+
+const char* SDLAppShader_GetParamDesc(int index) {
+    if (!s_param_cache_valid || index < 0 || index >= (int)s_param_cache.length)
+        return "";
+    const char* desc = s_param_cache.parameters[index].description;
+    return desc ? desc : "";
+}
+
+float SDLAppShader_GetParamValue(int index) {
+    if (!s_param_cache_valid || index < 0 || index >= (int)s_param_cache.length)
+        return 0.0f;
+    // Try to get live value from the active manager first
+    if (libretro_manager) {
+        float val = 0;
+        if (LibrashaderManager_GetParam(libretro_manager, s_param_cache.parameters[index].name, &val))
+            return val;
+    }
+    // Fall back to initial value from the cached preset metadata
+    return s_param_cache.parameters[index].initial;
+}
+
+float SDLAppShader_GetParamInitial(int index) {
+    if (!s_param_cache_valid || index < 0 || index >= (int)s_param_cache.length)
+        return 0.0f;
+    return s_param_cache.parameters[index].initial;
+}
+
+float SDLAppShader_GetParamMin(int index) {
+    if (!s_param_cache_valid || index < 0 || index >= (int)s_param_cache.length)
+        return 0.0f;
+    return s_param_cache.parameters[index].minimum;
+}
+
+float SDLAppShader_GetParamMax(int index) {
+    if (!s_param_cache_valid || index < 0 || index >= (int)s_param_cache.length)
+        return 1.0f;
+    return s_param_cache.parameters[index].maximum;
+}
+
+float SDLAppShader_GetParamStep(int index) {
+    if (!s_param_cache_valid || index < 0 || index >= (int)s_param_cache.length)
+        return 0.1f;
+    return s_param_cache.parameters[index].step;
+}
+
+void SDLAppShader_SetParamValue(int index, float value) {
+    if (!s_param_cache_valid || index < 0 || index >= (int)s_param_cache.length)
+        return;
+    const char* name = s_param_cache.parameters[index].name;
+    if (!name)
+        return;
+    // Apply to live filter chain if available
+    if (libretro_manager)
+        LibrashaderManager_SetParam(libretro_manager, name, value);
+}
+
+void SDLAppShader_ResetParam(int index) {
+    if (!s_param_cache_valid || index < 0 || index >= (int)s_param_cache.length)
+        return;
+    SDLAppShader_SetParamValue(index, s_param_cache.parameters[index].initial);
+}
+

@@ -32,6 +32,10 @@ struct LibrashaderManagerGL {
     GLuint vbo;
     GLint loc_source;
     GLint loc_original;
+
+    // Cached parameter metadata (obtained before chain creation invalidates preset)
+    struct libra_preset_param_list_t param_list;
+    bool param_list_valid;
 };
 
 // Helper to compile internal blit shader
@@ -123,7 +127,20 @@ LibrashaderManagerGL* LibrashaderManager_Init_GL(const char* preset_path) {
         return NULL;
     }
 
-    // 2. Create Filter Chain
+    // 2. Cache runtime parameter metadata BEFORE chain creation (preset is invalidated after)
+    manager->param_list_valid = false;
+    err = libra_preset_get_runtime_params(&manager->preset, &manager->param_list);
+    if (err != 0) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Failed to get runtime params (non-fatal)");
+        libra_error_print(err);
+        manager->param_list.parameters = NULL;
+        manager->param_list.length = 0;
+    } else {
+        manager->param_list_valid = true;
+        SDL_Log("LibrashaderManagerGL: Cached %llu runtime parameters", (unsigned long long)manager->param_list.length);
+    }
+
+    // 3. Create Filter Chain
     struct filter_chain_gl_opt_t opt;
     opt.version = LIBRASHADER_CURRENT_VERSION;
 #ifdef PLATFORM_RPI4
@@ -139,10 +156,8 @@ LibrashaderManagerGL* LibrashaderManager_Init_GL(const char* preset_path) {
     if (err != 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create filter chain");
         libra_error_print(err);
-        libra_preset_free(&manager->preset); // Should check if this is needed, doc says preset invalidated?
-        // Docs: "The shader preset is immediately invalidated and must be recreated after the filter chain is created."
-        // So we don't need to free it if chain creation succeeded, but if it failed?
-        // Usually ownership is consumed.
+        if (manager->param_list_valid)
+            libra_preset_free_runtime_params(manager->param_list);
         free(manager);
         return NULL;
     }
@@ -259,6 +274,11 @@ void LibrashaderManager_Free_GL(LibrashaderManagerGL* manager) {
         libra_gl_filter_chain_free(&manager->filter_chain);
     }
 
+    if (manager->param_list_valid) {
+        libra_preset_free_runtime_params(manager->param_list);
+        manager->param_list_valid = false;
+    }
+
     if (manager->output_texture)
         glDeleteTextures(1, &manager->output_texture);
     if (manager->blit_program)
@@ -269,4 +289,59 @@ void LibrashaderManager_Free_GL(LibrashaderManagerGL* manager) {
         glDeleteBuffers(1, &manager->vbo);
 
     free(manager);
+}
+
+// ── Parameter API (GL backend) ────────────────────────────────
+
+int LibrashaderManager_GetParamCount_GL(LibrashaderManagerGL* manager) {
+    if (!manager || !manager->param_list_valid)
+        return 0;
+    return (int)manager->param_list.length;
+}
+
+bool LibrashaderManager_GetParamInfo_GL(LibrashaderManagerGL* manager, int index,
+                                        const char** out_name, const char** out_desc,
+                                        float* out_value, float* out_initial,
+                                        float* out_min, float* out_max, float* out_step) {
+    if (!manager || !manager->param_list_valid || index < 0 || index >= (int)manager->param_list.length)
+        return false;
+
+    const struct libra_preset_param_t* p = &manager->param_list.parameters[index];
+    if (out_name) *out_name = p->name;
+    if (out_desc) *out_desc = p->description;
+    if (out_initial) *out_initial = p->initial;
+    if (out_min) *out_min = p->minimum;
+    if (out_max) *out_max = p->maximum;
+    if (out_step) *out_step = p->step;
+
+    // Get the live value from the filter chain
+    if (out_value && manager->filter_chain) {
+        float v = p->initial;
+        libra_gl_filter_chain_get_param(&manager->filter_chain, p->name, &v);
+        *out_value = v;
+    }
+
+    return true;
+}
+
+bool LibrashaderManager_SetParam_GL(LibrashaderManagerGL* manager, const char* name, float value) {
+    if (!manager || !manager->filter_chain || !name)
+        return false;
+    libra_error_t err = libra_gl_filter_chain_set_param(&manager->filter_chain, name, value);
+    if (err != 0) {
+        libra_error_print(err);
+        return false;
+    }
+    return true;
+}
+
+bool LibrashaderManager_GetParam_GL(LibrashaderManagerGL* manager, const char* name, float* out_value) {
+    if (!manager || !manager->filter_chain || !name || !out_value)
+        return false;
+    libra_error_t err = libra_gl_filter_chain_get_param(&manager->filter_chain, name, out_value);
+    if (err != 0) {
+        libra_error_print(err);
+        return false;
+    }
+    return true;
 }

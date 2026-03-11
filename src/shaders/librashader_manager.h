@@ -26,4 +26,21 @@ void LibrashaderManager_Render_GPU_Wrapper(LibrashaderManager* manager, void* co
 // Free resources.
 void LibrashaderManager_Free(LibrashaderManager* manager);
 
+// ── Parameter API ─────────────────────────────────────────────
+// Query the number of runtime parameters available.
+int LibrashaderManager_GetParamCount(LibrashaderManager* manager);
+
+// Get metadata for a parameter by index.
+// Returns false if index is out of range.  out_ pointers may be NULL.
+bool LibrashaderManager_GetParamInfo(LibrashaderManager* manager, int index,
+                                     const char** out_name, const char** out_desc,
+                                     float* out_value, float* out_initial,
+                                     float* out_min, float* out_max, float* out_step);
+
+// Set a parameter value by name (applied live to the filter chain).
+bool LibrashaderManager_SetParam(LibrashaderManager* manager, const char* name, float value);
+
+// Get the current runtime value of a parameter by name.
+bool LibrashaderManager_GetParam(LibrashaderManager* manager, const char* name, float* out_value);
+
 #endif

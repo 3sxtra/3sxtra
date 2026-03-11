@@ -39,6 +39,10 @@ typedef struct LibrashaderManagerGPU {
     PFN_vkGetDeviceQueue vkGetDeviceQueue;
     PFN_vkCmdPipelineBarrier vkCmdPipelineBarrier;
     PFN_vkCmdBlitImage vkCmdBlitImage;
+
+    // Cached parameter metadata (obtained before chain creation invalidates preset)
+    struct libra_preset_param_list_t param_list;
+    bool param_list_valid;
 } LibrashaderManagerGPU;
 
 // =============================================================================
@@ -133,6 +137,19 @@ static LibrashaderManagerGPU* LibrashaderManager_Init_Vulkan(const char* preset_
         return NULL;
     }
 
+    // Cache runtime parameter metadata BEFORE chain creation (preset is invalidated after)
+    manager->param_list_valid = false;
+    err = libra_preset_get_runtime_params(&manager->preset, &manager->param_list);
+    if (err != 0) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Librashader GPU: Failed to get runtime params (non-fatal)");
+        libra_error_print(err);
+        manager->param_list.parameters = NULL;
+        manager->param_list.length = 0;
+    } else {
+        manager->param_list_valid = true;
+        SDL_Log("LibrashaderManagerGPU: Cached %llu runtime parameters", (unsigned long long)manager->param_list.length);
+    }
+
     // Create Filter Chain
     struct filter_chain_vk_opt_t opt;
     opt.version = LIBRASHADER_CURRENT_VERSION;
@@ -151,7 +168,8 @@ static LibrashaderManagerGPU* LibrashaderManager_Init_Vulkan(const char* preset_
     if (err != 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Librashader: Failed to create Vulkan filter chain");
         libra_error_print(err);
-        libra_preset_free(&manager->preset);
+        if (manager->param_list_valid)
+            libra_preset_free_runtime_params(manager->param_list);
         free(manager);
         return NULL;
     }
@@ -419,6 +437,66 @@ void LibrashaderManager_Free_GPU(LibrashaderManagerGPU* manager) {
         libra_vk_filter_chain_free(&manager->vk_filter_chain);
     }
 
+    if (manager->param_list_valid) {
+        libra_preset_free_runtime_params(manager->param_list);
+        manager->param_list_valid = false;
+    }
+
     // Preset is invalidated by filter chain creation, nothing to free.
     free(manager);
+}
+
+// ── Parameter API (GPU/Vulkan backend) ─────────────────────────
+
+int LibrashaderManager_GetParamCount_GPU(LibrashaderManagerGPU* manager) {
+    if (!manager || !manager->param_list_valid)
+        return 0;
+    return (int)manager->param_list.length;
+}
+
+bool LibrashaderManager_GetParamInfo_GPU(LibrashaderManagerGPU* manager, int index,
+                                         const char** out_name, const char** out_desc,
+                                         float* out_value, float* out_initial,
+                                         float* out_min, float* out_max, float* out_step) {
+    if (!manager || !manager->param_list_valid || index < 0 || index >= (int)manager->param_list.length)
+        return false;
+
+    const struct libra_preset_param_t* p = &manager->param_list.parameters[index];
+    if (out_name) *out_name = p->name;
+    if (out_desc) *out_desc = p->description;
+    if (out_initial) *out_initial = p->initial;
+    if (out_min) *out_min = p->minimum;
+    if (out_max) *out_max = p->maximum;
+    if (out_step) *out_step = p->step;
+
+    // Get the live value from the filter chain
+    if (out_value && manager->vk_filter_chain) {
+        float v = p->initial;
+        libra_vk_filter_chain_get_param(&manager->vk_filter_chain, p->name, &v);
+        *out_value = v;
+    }
+
+    return true;
+}
+
+bool LibrashaderManager_SetParam_GPU(LibrashaderManagerGPU* manager, const char* name, float value) {
+    if (!manager || !manager->vk_filter_chain || !name)
+        return false;
+    libra_error_t err = libra_vk_filter_chain_set_param(&manager->vk_filter_chain, name, value);
+    if (err != 0) {
+        libra_error_print(err);
+        return false;
+    }
+    return true;
+}
+
+bool LibrashaderManager_GetParam_GPU(LibrashaderManagerGPU* manager, const char* name, float* out_value) {
+    if (!manager || !manager->vk_filter_chain || !name || !out_value)
+        return false;
+    libra_error_t err = libra_vk_filter_chain_get_param(&manager->vk_filter_chain, name, out_value);
+    if (err != 0) {
+        libra_error_print(err);
+        return false;
+    }
+    return true;
 }

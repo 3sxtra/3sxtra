@@ -56,6 +56,19 @@ const char* SDLAppShader_ChainGetPassSourcePreset(int pass_index);
 // Save the current chain as a new .slangp preset file.
 bool SDLAppShader_ChainSaveAsPreset(const char* path);
 
+// ── Runtime Parameter API ──────────────────────────────────────
+// Query and modify shader parameters on the active filter chain.
+int SDLAppShader_GetParamCount(void);
+const char* SDLAppShader_GetParamName(int index);
+const char* SDLAppShader_GetParamDesc(int index);
+float SDLAppShader_GetParamValue(int index);
+float SDLAppShader_GetParamInitial(int index);
+float SDLAppShader_GetParamMin(int index);
+float SDLAppShader_GetParamMax(int index);
+float SDLAppShader_GetParamStep(int index);
+void SDLAppShader_SetParamValue(int index, float value);
+void SDLAppShader_ResetParam(int index);
+
 #ifdef __cplusplus
 }
 #endif

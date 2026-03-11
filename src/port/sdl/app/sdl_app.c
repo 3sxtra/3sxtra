@@ -1528,6 +1528,11 @@ void SDLApp_ToggleModsMenu() {
 
 void SDLApp_ToggleShaderMenu() {
     toggle_overlay(&show_shader_menu, "shaders", true);
+    /* Force reload: close the cached document so next F2 re-reads RML/RCSS
+     * from disk.  This ensures layout changes take effect without restarting. */
+    if (!show_shader_menu) {
+        rmlui_wrapper_close_document("shaders");
+    }
 }
 
 void SDLApp_ToggleStageConfigMenu() {

@@ -9,125 +9,159 @@
         <h1>MODS</h1>
         <div class="divider"></div>
 
-        <!-- Audio Mods -->
-        <div class="section">
-            <h2>Audio Mods</h2>
-            <div class="control-row">
-                <input type="checkbox" data-checked="modded_bgm_enabled"/>
-                <label>Enable Modded BGM</label>
-            </div>
-        </div>
+        <!-- ═══ Two-Column Layout ═══ -->
+        <div class="columns">
+            <!-- ── Left Column: General Settings ── -->
+            <div class="column col-left">
+                <!-- Audio Mods -->
+                <div class="section">
+                    <h2>Audio Mods</h2>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="modded_bgm_enabled"/>
+                        <label>Enable Modded BGM</label>
+                    </div>
+                </div>
 
-        <div class="divider"></div>
+                <div class="divider"></div>
 
-        <!-- HD Stage Backgrounds -->
-        <div class="section">
-            <h2>HD Stage Backgrounds</h2>
-            <div class="control-row">
-                <input type="checkbox" data-checked="hd_enabled"/>
-                <label>Enable HD Backgrounds</label>
-                <span data-if="hd_active" class="status-ok"> (Active)</span>
-            </div>
-            <div class="control-row">
-                <input type="checkbox" data-checked="shader_bypass"/>
-                <label>Bypass Shaders on HD Stages</label>
-                <span data-if="shader_bypass" class="status-warn"> (No CRT/filters)</span>
-            </div>
-        </div>
+                <!-- HD Stage Backgrounds -->
+                <div class="section">
+                    <h2>HD Stage Backgrounds</h2>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="hd_enabled"/>
+                        <label>Enable HD Backgrounds</label>
+                        <span data-if="hd_active" class="status-ok"> (Active)</span>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="shader_bypass"/>
+                        <label>Bypass Shaders on HD Stages</label>
+                        <span data-if="shader_bypass" class="status-warn"> (No CRT/filters)</span>
+                    </div>
+                </div>
 
-        <div class="divider"></div>
+                <div class="divider"></div>
 
-        <!-- Pre-Game -->
-        <div class="section">
-            <h2>Pre-Game</h2>
-            <div class="control-row">
-                <input type="checkbox" data-checked="fast_pre_game"/>
-                <label>Fast Pre-Game Sequences</label>
-            </div>
-        </div>
+                <!-- Pre-Game -->
+                <div class="section">
+                    <h2>Pre-Game</h2>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="fast_pre_game"/>
+                        <label>Fast Pre-Game Sequences</label>
+                    </div>
+                </div>
 
-        <div class="divider"></div>
+                <div class="divider"></div>
 
-        <!-- Bezels -->
-        <div class="section">
-            <h2>Bezels</h2>
-            <div class="control-row">
-                <input type="checkbox" data-checked="bezel_enabled"/>
-                <label>Enable Arcade Bezels</label>
-            </div>
-        </div>
+                <!-- Bezels -->
+                <div class="section">
+                    <h2>Bezels</h2>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="bezel_enabled"/>
+                        <label>Enable Arcade Bezels</label>
+                    </div>
+                </div>
 
-        <div class="divider"></div>
+                <div class="divider"></div>
 
-        <!-- Debug HUD -->
-        <div class="section">
-            <h2>Debug HUD</h2>
-            <div class="control-row">
-                <input type="checkbox" data-checked="debug_hud"/>
-                <label>Show Debug HUD (FPS)</label>
-            </div>
-        </div>
+                <!-- Display -->
+                <div class="section">
+                    <h2>Display</h2>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="debug_hud"/>
+                        <label>Show Debug HUD (FPS)</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="vsync"/>
+                        <label>VSync</label>
+                    </div>
+                </div>
 
-        <div class="divider"></div>
+                <div class="divider"></div>
 
-        <!-- Stage Rendering -->
-        <div class="section">
-            <h2>Stage Rendering</h2>
-            <div class="control-row">
-                <input type="checkbox" data-checked="render_disabled"/>
-                <label>Disable All Stage Rendering</label>
+                <!-- Video Broadcast -->
+                <div class="section">
+                    <h2>Video Broadcast</h2>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="broadcast_enabled"/>
+                        <label>Enable Broadcast</label>
+                    </div>
+                    <div data-if="broadcast_enabled" class="indent">
+                        <div class="control-row">
+                            <label>Source:</label>
+                            <select data-value="broadcast_source">
+                                <option value="0">Native (384x224)</option>
+                                <option value="1">Final Output (Scaled)</option>
+                            </select>
+                        </div>
+                        <p data-if="broadcast_source == 1" class="status-warn">
+                            Warning: Final Output may impact performance.
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div class="control-row">
-                <input type="checkbox" data-checked="anims_disabled"/>
-                <label>Disable Stage Animations</label>
-            </div>
-            <div class="control-row">
-                <input type="checkbox" data-checked="bg_draw_off"/>
-                <label>BG Draw Off</label>
-            </div>
-            <div class="control-row">
-                <input type="checkbox" data-checked="blue_back"/>
-                <label>Blue Background</label>
-            </div>
-            <div class="control-row" data-class-disabled="!in_game">
-                <input type="checkbox" data-checked="shin_gouki_pal" data-attrif-disabled="!in_game"/>
-                <label>Shin Gouki Stage Palette</label>
-            </div>
-        </div>
 
-        <div class="divider"></div>
+            <!-- ── Right Column: Rendering & Debug ── -->
+            <div class="column col-right">
+                <!-- Stage Rendering -->
+                <div class="section">
+                    <h2>Stage Rendering</h2>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="render_disabled"/>
+                        <label>Disable All Stage Rendering</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="anims_disabled"/>
+                        <label>Disable Stage Animations</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="bg_draw_off"/>
+                        <label>BG Draw Off</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="blue_back"/>
+                        <label>Blue Background</label>
+                    </div>
+                    <div class="control-row" data-class-disabled="!in_game">
+                        <input type="checkbox" data-checked="shin_gouki_pal" data-attrif-disabled="!in_game"/>
+                        <label>Shin Gouki Stage Palette</label>
+                    </div>
+                </div>
 
-        <!-- Debug Options (gameplay only) -->
-        <div class="section">
-            <p data-if="!in_game" class="status-warn">Debug options: in-game only</p>
-            <h2>Debug Options</h2>
-            <div class="control-row" data-class-disabled="!in_game">
-                <input type="checkbox" data-checked="hide_shadows" data-attrif-disabled="!in_game"/>
-                <label>Hide Shadows</label>
-            </div>
-            <div class="control-row" data-class-disabled="!in_game">
-                <input type="checkbox" data-checked="hide_pal_sprites" data-attrif-disabled="!in_game"/>
-                <label>Hide Palette Sprites</label>
-            </div>
-            <div class="control-row" data-class-disabled="!in_game">
-                <input type="checkbox" data-checked="hide_cps3_sprites" data-attrif-disabled="!in_game"/>
-                <label>Hide CPS3 Sprites</label>
-            </div>
-            <div class="control-row" data-class-disabled="!in_game">
-                <input type="checkbox" data-checked="hide_rgb_sprites" data-attrif-disabled="!in_game"/>
-                <label>Hide RGB Sprites</label>
-            </div>
-            <div class="control-row" data-class-disabled="!in_game">
-                <label>Sprite Type SB</label>
-                <input type="range" min="0" max="3" step="1" data-value="sprite_type_sb" data-attrif-disabled="!in_game"/>
-            </div>
-            <div class="control-row" data-class-disabled="!in_game">
-                <input type="checkbox" data-checked="freeze_effects" data-attrif-disabled="!in_game"/>
-                <label>Freeze Effects</label>
-            </div>
-            <div class="control-row" data-class-disabled="!in_game">
-                <input type="checkbox" data-checked="mute_bgm" data-attrif-disabled="!in_game"/>
-                <label>Mute BGM</label>
+                <div class="divider"></div>
+
+                <!-- Debug Options (gameplay only) -->
+                <div class="section">
+                    <p data-if="!in_game" class="status-warn">Debug options: in-game only</p>
+                    <h2>Debug Options</h2>
+                    <div class="control-row" data-class-disabled="!in_game">
+                        <input type="checkbox" data-checked="hide_shadows" data-attrif-disabled="!in_game"/>
+                        <label>Hide Shadows</label>
+                    </div>
+                    <div class="control-row" data-class-disabled="!in_game">
+                        <input type="checkbox" data-checked="hide_pal_sprites" data-attrif-disabled="!in_game"/>
+                        <label>Hide Palette Sprites</label>
+                    </div>
+                    <div class="control-row" data-class-disabled="!in_game">
+                        <input type="checkbox" data-checked="hide_cps3_sprites" data-attrif-disabled="!in_game"/>
+                        <label>Hide CPS3 Sprites</label>
+                    </div>
+                    <div class="control-row" data-class-disabled="!in_game">
+                        <input type="checkbox" data-checked="hide_rgb_sprites" data-attrif-disabled="!in_game"/>
+                        <label>Hide RGB Sprites</label>
+                    </div>
+                    <div class="control-row" data-class-disabled="!in_game">
+                        <label>Sprite Type SB</label>
+                        <input type="range" min="0" max="3" step="1" data-value="sprite_type_sb" data-attrif-disabled="!in_game"/>
+                    </div>
+                    <div class="control-row" data-class-disabled="!in_game">
+                        <input type="checkbox" data-checked="freeze_effects" data-attrif-disabled="!in_game"/>
+                        <label>Freeze Effects</label>
+                    </div>
+                    <div class="control-row" data-class-disabled="!in_game">
+                        <input type="checkbox" data-checked="mute_bgm" data-attrif-disabled="!in_game"/>
+                        <label>Mute BGM</label>
+                    </div>
+                </div>
             </div>
         </div>
 

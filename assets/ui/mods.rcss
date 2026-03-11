@@ -1,5 +1,8 @@
 /* Mods menu stylesheet — 3SXtra RmlUi overlay
- * Compact full-width layout for low-res windows */
+ * Two-column layout uses the same pattern as shaders.rcss:
+ *   .columns  { display: block; white-space: nowrap; }
+ *   .column   { display: inline-block; vertical-align: top; white-space: normal; }
+ */
 
 body {
     width: 100%;
@@ -19,6 +22,31 @@ body {
     border-radius: 6dp;
     padding: 6dp 8dp;
     overflow-y: auto;
+}
+
+/* ── Two-Column Layout (same pattern as shaders.rcss) ─────── */
+
+.columns {
+    display: block;
+    white-space: nowrap;
+}
+
+.column {
+    display: inline-block;
+    vertical-align: top;
+    padding: 2dp;
+    white-space: normal;
+}
+
+.col-left {
+    width: 48%;
+}
+
+.col-right {
+    width: 48%;
+    border-left-width: 1dp;
+    border-left-color: #333;
+    padding-left: 6dp;
 }
 
 /* Title */
@@ -86,9 +114,66 @@ label {
     white-space: nowrap;
 }
 
+/* Indent for sub-options */
+.indent {
+    display: block;
+    margin-left: 12dp;
+}
+
 /* Disabled state */
 .disabled {
     opacity: 0.35;
+}
+
+/* ─── Select/Dropdown ─── */
+
+select {
+    display: block;
+    width: 100%;
+    height: 18dp;
+    background-color: #2a2a30;
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 3dp;
+    color: #ddd;
+    font-size: 10dp;
+}
+
+select selectvalue {
+    width: auto;
+    height: 18dp;
+    padding: 4dp 6dp 0 6dp;
+    color: #ddd;
+}
+
+select selectarrow {
+    width: 0;
+    height: 0;
+}
+
+select:hover {
+    border-color: #ff9933;
+}
+
+select selectbox {
+    width: 100%;
+    background-color: #1a1a20;
+    border-width: 1dp;
+    border-color: #555;
+}
+
+select selectbox option {
+    padding: 3dp 6dp;
+    color: #ddd;
+}
+
+select selectbox option:hover {
+    background-color: #ff993344;
+}
+
+select selectbox option:checked {
+    background-color: #ff993366;
+    color: #fff;
 }
 
 /* Status indicator text */
@@ -112,4 +197,22 @@ label {
     margin-top: 4dp;
     text-align: center;
     white-space: nowrap;
+}
+
+/* Scrollbar styling */
+scrollbarvertical {
+    width: 6dp;
+}
+
+scrollbarvertical sliderbar {
+    background-color: #555;
+    border-radius: 3dp;
+}
+
+scrollbarvertical sliderbar:hover {
+    background-color: #777;
+}
+
+scrollbarvertical slidertrack {
+    background-color: #222;
 }

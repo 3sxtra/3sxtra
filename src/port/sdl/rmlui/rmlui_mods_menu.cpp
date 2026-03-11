@@ -20,6 +20,12 @@
 
 extern "C" {
 
+#include "include/port/broadcast.h"
+extern BroadcastConfig broadcast_config;
+
+void SDLApp_SetVSync(bool enabled);
+bool SDLApp_IsVSyncEnabled();
+
 /* Modded stage system */
 void ModdedStage_SetEnabled(bool enabled);
 bool ModdedStage_IsEnabled(void);
@@ -77,6 +83,9 @@ struct ModsSnapshot {
     bool freeze_effects;
     bool mute_bgm;
     bool in_game;
+    bool vsync;
+    bool broadcast_enabled;
+    int broadcast_source;
 };
 static ModsSnapshot s_cache = {};
 
@@ -219,6 +228,23 @@ extern "C" void rmlui_mods_menu_init(void) {
         [](Rml::Variant& v) { v = (Debug_w[DEBUG_PUB_BGM_OFF] != 0); },
         [](const Rml::Variant& v) { Debug_w[DEBUG_PUB_BGM_OFF] = v.Get<bool>() ? 1 : 0; });
 
+    // --- VSync ---
+    constructor.BindFunc(
+        "vsync",
+        [](Rml::Variant& v) { v = SDLApp_IsVSyncEnabled(); },
+        [](const Rml::Variant& v) { SDLApp_SetVSync(v.Get<bool>()); });
+
+    // --- Video Broadcast ---
+    constructor.BindFunc(
+        "broadcast_enabled",
+        [](Rml::Variant& v) { v = broadcast_config.enabled; },
+        [](const Rml::Variant& v) { broadcast_config.enabled = v.Get<bool>(); });
+
+    constructor.BindFunc(
+        "broadcast_source",
+        [](Rml::Variant& v) { v = (int)broadcast_config.source; },
+        [](const Rml::Variant& v) { broadcast_config.source = (BroadcastSource)v.Get<int>(); });
+
     // --- Read-only state ---
     constructor.BindFunc("in_game", [](Rml::Variant& v) { v = (Play_Game != 0); });
 
@@ -280,6 +306,9 @@ extern "C" void rmlui_mods_menu_update(void) {
     DIRTY_BOOL(freeze_effects, Debug_w[DEBUG_EFF_NOT_MOVE] != 0);
     DIRTY_BOOL(mute_bgm, Debug_w[DEBUG_PUB_BGM_OFF] != 0);
     DIRTY_BOOL(in_game, Play_Game != 0);
+    DIRTY_BOOL(vsync, SDLApp_IsVSyncEnabled());
+    DIRTY_BOOL(broadcast_enabled, broadcast_config.enabled);
+    DIRTY_INT(broadcast_source, (int)broadcast_config.source);
 
 #undef DIRTY_BOOL
 #undef DIRTY_INT

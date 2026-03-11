@@ -1,5 +1,8 @@
 /* Shader menu stylesheet — 3SXtra RmlUi overlay
- * Compact full-width layout for low-res windows */
+ * Two-column layout uses the same pattern as control_mapping.rcss:
+ *   .columns  { display: block; white-space: nowrap; }
+ *   .column   { display: inline-block; vertical-align: top; white-space: normal; }
+ */
 
 body {
     width: 100%;
@@ -21,24 +24,29 @@ body {
     overflow-y: auto;
 }
 
-/* ── Two-Column Layout ─────────────────────────────────────────── */
+/* ── Two-Column Layout (same as control_mapping.rcss) ─────── */
 
-#shader-columns {
-    display: flex;
-    flex-direction: row;
+.columns {
+    display: block;
+    white-space: nowrap;
 }
 
-#shader-col-left {
-    flex: 3;
-    margin-right: 6dp;
-    min-width: 0;
-    min-height: 0;
+.column {
+    display: inline-block;
+    vertical-align: top;
+    padding: 2dp;
+    white-space: normal;
 }
 
-#shader-col-right {
-    flex: 2;
-    min-width: 0;
-    min-height: 0;
+.col-left {
+    width: 58%;
+}
+
+.col-right {
+    width: 38%;
+    border-left-width: 1dp;
+    border-left-color: #333;
+    padding-left: 6dp;
 }
 
 /* Title */
@@ -255,36 +263,38 @@ input.text:focus {
 }
 
 /* Scrollbar styling */
-#preset-list scrollbarvertical {
+scrollbarvertical {
     width: 6dp;
 }
 
-#preset-list scrollbarvertical sliderbar {
+scrollbarvertical sliderbar {
     background-color: #555;
     border-radius: 3dp;
 }
 
-#preset-list scrollbarvertical sliderbar:hover {
+scrollbarvertical sliderbar:hover {
     background-color: #777;
 }
 
-#preset-list scrollbarvertical slidertrack {
+scrollbarvertical slidertrack {
     background-color: #222;
 }
 
 /* ── Chain Pass List ───────────────────────────────────────────── */
 
 #chain-pass-list {
+    max-height: 20vh;
+    overflow-y: auto;
     margin-bottom: 6dp;
 }
 
 #chain-pass-table {
-    display: table;
-    width: 100%;
+    display: block;
 }
 
 .chain-pass-row {
-    display: table-row;
+    display: block;
+    padding: 2dp 0;
 }
 
 .chain-pass-row:hover {
@@ -292,18 +302,21 @@ input.text:focus {
 }
 
 .chain-pass-name-cell {
-    display: table-cell;
+    display: inline-block;
+    width: 55%;
     padding: 2dp 4dp;
     font-size: 9dp;
     color: #e0e0e0;
-    overflow: hidden;
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
 .chain-pass-btn-cell {
-    display: table-cell;
+    display: inline-block;
+    width: 40%;
     padding: 2dp 4dp;
     white-space: nowrap;
-    width: 80dp;
+    vertical-align: middle;
 }
 
 .chain-btn {
@@ -334,19 +347,19 @@ input.text:focus {
 }
 
 #chain-actions-bar {
-    display: table;
+    display: block;
     margin-top: 4dp;
 }
 
 .chain-action-cell {
-    display: table-cell;
+    display: inline-block;
     padding-right: 4dp;
 }
 
 .chain-clear-btn {
     display: inline-block;
-    padding: 4dp 12dp;
-    font-size: 12dp;
+    padding: 2dp 8dp;
+    font-size: 9dp;
     background-color: #333;
     color: #f66;
     border-width: 1dp;
@@ -361,8 +374,8 @@ input.text:focus {
 
 .status-info {
     color: #888;
-    font-size: 12dp;
-    padding: 8dp;
+    font-size: 9dp;
+    padding: 4dp;
 }
 
 /* ── Preset Item Chain Buttons ─────────────────────────────────── */
@@ -407,17 +420,110 @@ input.text:focus {
 
 .chain-save-btn {
     display: inline-block;
-    padding: 4dp 12dp;
-    font-size: 12dp;
+    padding: 2dp 8dp;
+    font-size: 9dp;
     background-color: #1a2a3a;
     color: #6af;
     border-width: 1dp;
     border-color: #3a5a7a;
     border-radius: 3dp;
-    margin-top: 4dp;
 }
 
 .chain-save-btn:hover {
     background-color: #2a4a6a;
     color: #adf;
+}
+
+/* ── Shader Parameters Panel ──────────────────────────────────── */
+
+#shader-params-panel {
+    display: block;
+    margin-top: 4dp;
+    padding: 4dp 6dp;
+    background-color: rgba(20, 20, 30, 200);
+    border-width: 1dp;
+    border-color: #444;
+    border-radius: 4dp;
+}
+
+#shader-params-list {
+    display: block;
+    max-height: 25vh;
+    overflow-y: auto;
+    background-color: rgba(0, 0, 0, 50);
+    border-width: 1dp;
+    border-color: #333;
+    border-radius: 3dp;
+    padding: 2dp;
+}
+
+#shader-params-table {
+    display: block;
+}
+
+.param-row {
+    display: block;
+    padding: 2dp 0;
+}
+
+.param-row:hover {
+    background-color: rgba(255, 153, 51, 20);
+}
+
+.param-name-cell {
+    display: inline-block;
+    width: 55%;
+    padding: 2dp 4dp;
+    font-size: 9dp;
+    color: #ccc;
+    vertical-align: middle;
+}
+
+.param-controls-cell {
+    display: inline-block;
+    width: 40%;
+    padding: 2dp 4dp;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.param-btn {
+    display: inline-block;
+    width: 16dp;
+    height: 14dp;
+    font-size: 10dp;
+    font-weight: bold;
+    text-align: center;
+    background-color: #333;
+    color: #ccc;
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 2dp;
+    cursor: pointer;
+    margin-left: 1dp;
+}
+
+.param-btn:hover {
+    background-color: #555;
+    color: #fff;
+}
+
+.param-btn-reset {
+    color: #ff9933;
+    background-color: #2a2a1a;
+    border-color: #553a1a;
+}
+
+.param-btn-reset:hover {
+    background-color: #4a3a1a;
+    color: #ffcc66;
+}
+
+.param-value {
+    display: inline-block;
+    width: 40dp;
+    font-size: 9dp;
+    color: #6f6;
+    text-align: center;
+    padding-top: 1dp;
 }

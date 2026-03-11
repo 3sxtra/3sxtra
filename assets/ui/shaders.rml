@@ -48,10 +48,9 @@
         </div>
 
         <!-- ═══ Two-Panel Layout (Libretro only) ═══ -->
-        <div data-if="is_libretro" id="shader-columns">
-
-            <!-- LEFT: Preset Browser -->
-            <div id="shader-col-left">
+        <!-- Pattern from control_mapping: inline-block + white-space:nowrap -->
+        <div data-if="is_libretro" class="columns">
+            <div class="column col-left">
                 <h2>Shader Presets ({{preset_count}})</h2>
                 <div class="search-row">
                     <label>Search:</label>
@@ -69,9 +68,7 @@
                     </div>
                 </div>
             </div>
-
-            <!-- RIGHT: Active Chain + Settings -->
-            <div id="shader-col-right">
+            <div class="column col-right">
                 <h2>Active Chain ({{chain_pass_count}} passes)</h2>
                 <div data-if="chain_pass_count > 0" id="chain-pass-list">
                     <div id="chain-pass-table">
@@ -94,72 +91,34 @@
                 <div data-if="chain_pass_count == 0" class="status-info">
                     No passes in chain. Use +A / +P to add.
                 </div>
-
-                <div class="divider"></div>
-
-                <!-- Display -->
-                <div class="section">
-                    <h2>Display</h2>
-                    <div class="control-row">
-                        <input type="checkbox" data-checked="vsync"/>
-                        <label>VSync</label>
-                    </div>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- Broadcast -->
-                <div class="section">
-                    <h2>Video Broadcast</h2>
-                    <div class="control-row">
-                        <input type="checkbox" data-checked="broadcast_enabled"/>
-                        <label>Enable Broadcast</label>
-                    </div>
-                    <div data-if="broadcast_enabled" class="indent">
-                        <div class="control-row">
-                            <label>Source:</label>
-                            <select data-value="broadcast_source">
-                                <option value="0">Native (384x224)</option>
-                                <option value="1">Final Output (Scaled)</option>
-                            </select>
-                        </div>
-                        <p data-if="broadcast_source == 1" class="status-warn">
-                            Warning: Final Output broadcast may impact performance.
-                        </p>
-                    </div>
-                </div>
             </div>
         </div>
 
-        <!-- Display + Broadcast when NOT libretro (no columns needed) -->
-        <div data-if="!is_libretro">
-            <div class="divider"></div>
-            <div class="section">
-                <h2>Display</h2>
-                <div class="control-row">
-                    <input type="checkbox" data-checked="vsync"/>
-                    <label>VSync</label>
+
+
+
+        <!-- ═══ Shader Parameters Panel (Libretro, full width below) ═══ -->
+        <div data-if="is_libretro" id="shader-params-panel">
+            <div data-if="shader_param_count > 0">
+                <h2>Shader Parameters ({{shader_param_count}})</h2>
+                <div id="shader-params-list">
+                    <div id="shader-params-table">
+                        <div data-for="param : shader_params"
+                             data-if="param.index >= 0"
+                             class="param-row">
+                            <div class="param-name-cell">{{param.desc}}</div>
+                            <div class="param-controls-cell">
+                                <span class="param-btn" data-event-click="param_dec(param.index)">-</span>
+                                <span class="param-value">{{param.value_str}}</span>
+                                <span class="param-btn" data-event-click="param_inc(param.index)">+</span>
+                                <span class="param-btn param-btn-reset" data-event-click="param_reset(param.index)">R</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="divider"></div>
-            <div class="section">
-                <h2>Video Broadcast</h2>
-                <div class="control-row">
-                    <input type="checkbox" data-checked="broadcast_enabled"/>
-                    <label>Enable Broadcast</label>
-                </div>
-                <div data-if="broadcast_enabled" class="indent">
-                    <div class="control-row">
-                        <label>Source:</label>
-                        <select data-value="broadcast_source">
-                            <option value="0">Native (384x224)</option>
-                            <option value="1">Final Output (Scaled)</option>
-                        </select>
-                    </div>
-                    <p data-if="broadcast_source == 1" class="status-warn">
-                        Warning: Final Output broadcast may impact performance.
-                    </p>
-                </div>
+            <div data-if="shader_param_count == 0" class="status-info">
+                No shader parameters available.
             </div>
         </div>
 
