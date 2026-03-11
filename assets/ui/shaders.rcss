@@ -21,6 +21,26 @@ body {
     overflow-y: auto;
 }
 
+/* ── Two-Column Layout ─────────────────────────────────────────── */
+
+#shader-columns {
+    display: flex;
+    flex-direction: row;
+}
+
+#shader-col-left {
+    flex: 3;
+    margin-right: 6dp;
+    min-width: 0;
+    min-height: 0;
+}
+
+#shader-col-right {
+    flex: 2;
+    min-width: 0;
+    min-height: 0;
+}
+
 /* Title */
 #shader-panel h1 {
     font-size: 14dp;
@@ -255,62 +275,48 @@ input.text:focus {
 /* ── Chain Pass List ───────────────────────────────────────────── */
 
 #chain-pass-list {
-    max-height: 200dp;
-    overflow-y: auto;
     margin-bottom: 6dp;
 }
 
-.chain-pass-item {
-    display: block;
-    padding: 3dp 6dp;
-    margin-bottom: 2dp;
-    background-color: #1a1a2e;
-    border-width: 1dp;
-    border-color: #333;
-    border-radius: 3dp;
-    font-size: 13dp;
+#chain-pass-table {
+    display: table;
+    width: 100%;
 }
 
-.chain-pass-item:hover {
+.chain-pass-row {
+    display: table-row;
+}
+
+.chain-pass-row:hover {
     background-color: #252540;
-    border-color: #555;
 }
 
-.chain-pass-index {
-    display: inline-block;
-    width: 24dp;
-    color: #888;
-    font-weight: bold;
-}
-
-.chain-pass-name {
-    display: inline-block;
+.chain-pass-name-cell {
+    display: table-cell;
+    padding: 2dp 4dp;
+    font-size: 9dp;
     color: #e0e0e0;
+    overflow: hidden;
 }
 
-.chain-pass-source {
-    display: inline-block;
-    color: #666;
-    font-size: 11dp;
-    margin-left: 6dp;
-}
-
-.chain-pass-actions {
-    float: right;
+.chain-pass-btn-cell {
+    display: table-cell;
+    padding: 2dp 4dp;
+    white-space: nowrap;
+    width: 80dp;
 }
 
 .chain-btn {
     display: inline-block;
-    width: 22dp;
-    height: 22dp;
-    padding: 0;
-    font-size: 11dp;
+    padding: 1dp 4dp;
+    font-size: 8dp;
     background-color: #333;
     color: #ccc;
     border-width: 1dp;
     border-color: #555;
     border-radius: 2dp;
-    margin-left: 2dp;
+    margin-right: 2dp;
+    cursor: pointer;
 }
 
 .chain-btn:hover {
@@ -327,12 +333,18 @@ input.text:focus {
     color: #fff;
 }
 
-.chain-actions {
+#chain-actions-bar {
+    display: table;
     margin-top: 4dp;
-    text-align: right;
+}
+
+.chain-action-cell {
+    display: table-cell;
+    padding-right: 4dp;
 }
 
 .chain-clear-btn {
+    display: inline-block;
     padding: 4dp 12dp;
     font-size: 12dp;
     background-color: #333;
@@ -353,16 +365,7 @@ input.text:focus {
     padding: 8dp;
 }
 
-/* ── Preset Item with Chain Buttons ────────────────────────────── */
-
-.preset-name {
-    display: inline;
-    cursor: pointer;
-}
-
-.preset-chain-btns {
-    float: right;
-}
+/* ── Preset Item Chain Buttons ─────────────────────────────────── */
 
 .chain-append-btn, .chain-prepend-btn {
     display: inline-block;
@@ -384,7 +387,26 @@ input.text:focus {
     color: #afa;
 }
 
+.chain-select-btn {
+    display: inline-block;
+    padding: 0 4dp;
+    height: 20dp;
+    font-size: 10dp;
+    background-color: #2a2a3a;
+    color: #aac;
+    border-width: 1dp;
+    border-color: #444;
+    border-radius: 2dp;
+    margin-left: 4dp;
+}
+
+.chain-select-btn:hover {
+    background-color: #3a3a5a;
+    color: #fff;
+}
+
 .chain-save-btn {
+    display: inline-block;
     padding: 4dp 12dp;
     font-size: 12dp;
     background-color: #1a2a3a;

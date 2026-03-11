@@ -47,90 +47,119 @@
             </div>
         </div>
 
-        <!-- Active Chain (Libretro only, shown when chain has passes) -->
-        <div data-if="is_libretro" class="section" id="chain-section">
-            <h2>Active Chain ({{chain_pass_count}} passes)</h2>
-            <div data-if="chain_pass_count > 0" id="chain-pass-list">
-                <div data-for="pass : chain_passes"
-                     data-if="pass.index >= 0"
-                     class="chain-pass-item">
-                    <div class="chain-pass-actions">
-                        <button class="chain-btn" data-event-click="chain_move_up(pass.index)">^</button>
-                        <button class="chain-btn" data-event-click="chain_move_down(pass.index)">v</button>
-                        <button class="chain-btn chain-btn-remove" data-event-click="chain_remove_pass(pass.index)">x</button>
+        <!-- ═══ Two-Panel Layout (Libretro only) ═══ -->
+        <div data-if="is_libretro" id="shader-columns">
+
+            <!-- LEFT: Preset Browser -->
+            <div id="shader-col-left">
+                <h2>Shader Presets ({{preset_count}})</h2>
+                <div class="search-row">
+                    <label>Search:</label>
+                    <input type="text" id="preset-search" size="40" data-value="search_filter"/>
+                </div>
+                <div id="preset-list">
+                    <div data-if="filtered_presets.size == 0" class="status-warn">
+                        No matching presets found.
                     </div>
-                    <div class="chain-pass-index">{{pass.index + 1}}</div>
-                    <div class="chain-pass-name">{{pass.name}}</div>
-                    <div class="chain-pass-source">{{pass.source}}</div>
-                </div>
-                <div class="chain-actions">
-                    <button class="chain-save-btn" data-event-click="chain_save()">Save Chain</button>
-                    <button class="chain-clear-btn" data-event-click="chain_clear()">Clear All</button>
-                </div>
-            </div>
-            <div data-if="chain_pass_count == 0" class="status-info">
-                No passes in chain. Use Append/Prepend below to add shader presets.
-            </div>
-        </div>
-
-        <div data-if="is_libretro" class="divider"></div>
-
-        <!-- Preset Browser (Libretro only) -->
-        <div data-if="is_libretro" class="section">
-            <h2>Shader Presets ({{preset_count}})</h2>
-            <div class="search-row">
-                <label>Search:</label>
-                <input type="text" id="preset-search" size="60" data-value="search_filter"/>
-            </div>
-            <div id="preset-list">
-                <div data-if="filtered_presets.size == 0" class="status-warn">
-                    No matching presets found.
-                </div>
-                <div data-for="preset : filtered_presets"
-                     data-if="preset.index >= 0"
-                     class="preset-item"
-                     data-class-selected="preset.index == current_preset">
-                    <div class="preset-chain-btns">
-                        <button class="chain-append-btn" data-event-click="chain_append(preset.index)">+A</button>
-                        <button class="chain-prepend-btn" data-event-click="chain_prepend(preset.index)">+P</button>
+                    <div data-for="preset : filtered_presets"
+                         data-if="preset.index >= 0"
+                         class="preset-item"
+                         data-class-selected="preset.index == current_preset">
+                    {{preset.name}} <span class="chain-select-btn" data-event-click="select_preset(preset.index)">Sel</span> <span class="chain-append-btn" data-event-click="chain_append(preset.index)">+A</span> <span class="chain-prepend-btn" data-event-click="chain_prepend(preset.index)">+P</span>
                     </div>
-                    <div class="preset-name"
-                          data-event-click="select_preset(preset.index)">{{preset.name}}</div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Active Chain + Settings -->
+            <div id="shader-col-right">
+                <h2>Active Chain ({{chain_pass_count}} passes)</h2>
+                <div data-if="chain_pass_count > 0" id="chain-pass-list">
+                    <div id="chain-pass-table">
+                        <div data-for="pass : chain_passes"
+                             data-if="pass.index >= 0"
+                             class="chain-pass-row">
+                            <div class="chain-pass-name-cell">{{pass.index + 1}}. {{pass.name}}</div>
+                            <div class="chain-pass-btn-cell">
+                                <span class="chain-btn" data-event-click="chain_move_up(pass.index)">Up</span>
+                                <span class="chain-btn" data-event-click="chain_move_down(pass.index)">Dn</span>
+                                <span class="chain-btn chain-btn-remove" data-event-click="chain_remove_pass(pass.index)">Del</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div data-if="chain_pass_count > 0" id="chain-actions-bar">
+                    <div class="chain-action-cell"><span class="chain-save-btn" data-event-click="chain_save()">Save Chain</span></div>
+                    <div class="chain-action-cell"><span class="chain-clear-btn" data-event-click="chain_clear()">Clear All</span></div>
+                </div>
+                <div data-if="chain_pass_count == 0" class="status-info">
+                    No passes in chain. Use +A / +P to add.
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Display -->
+                <div class="section">
+                    <h2>Display</h2>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="vsync"/>
+                        <label>VSync</label>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Broadcast -->
+                <div class="section">
+                    <h2>Video Broadcast</h2>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="broadcast_enabled"/>
+                        <label>Enable Broadcast</label>
+                    </div>
+                    <div data-if="broadcast_enabled" class="indent">
+                        <div class="control-row">
+                            <label>Source:</label>
+                            <select data-value="broadcast_source">
+                                <option value="0">Native (384x224)</option>
+                                <option value="1">Final Output (Scaled)</option>
+                            </select>
+                        </div>
+                        <p data-if="broadcast_source == 1" class="status-warn">
+                            Warning: Final Output broadcast may impact performance.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="divider"></div>
-
-        <!-- Display -->
-        <div class="section">
-            <h2>Display</h2>
-            <div class="control-row">
-                <input type="checkbox" data-checked="vsync"/>
-                <label>VSync</label>
-            </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <!-- Broadcast -->
-        <div class="section">
-            <h2>Video Broadcast</h2>
-            <div class="control-row">
-                <input type="checkbox" data-checked="broadcast_enabled"/>
-                <label>Enable Broadcast</label>
-            </div>
-            <div data-if="broadcast_enabled" class="indent">
+        <!-- Display + Broadcast when NOT libretro (no columns needed) -->
+        <div data-if="!is_libretro">
+            <div class="divider"></div>
+            <div class="section">
+                <h2>Display</h2>
                 <div class="control-row">
-                    <label>Source:</label>
-                    <select data-value="broadcast_source">
-                        <option value="0">Native (384x224)</option>
-                        <option value="1">Final Output (Scaled)</option>
-                    </select>
+                    <input type="checkbox" data-checked="vsync"/>
+                    <label>VSync</label>
                 </div>
-                <p data-if="broadcast_source == 1" class="status-warn">
-                    Warning: Final Output broadcast may impact performance.
-                </p>
+            </div>
+            <div class="divider"></div>
+            <div class="section">
+                <h2>Video Broadcast</h2>
+                <div class="control-row">
+                    <input type="checkbox" data-checked="broadcast_enabled"/>
+                    <label>Enable Broadcast</label>
+                </div>
+                <div data-if="broadcast_enabled" class="indent">
+                    <div class="control-row">
+                        <label>Source:</label>
+                        <select data-value="broadcast_source">
+                            <option value="0">Native (384x224)</option>
+                            <option value="1">Final Output (Scaled)</option>
+                        </select>
+                    </div>
+                    <p data-if="broadcast_source == 1" class="status-warn">
+                        Warning: Final Output broadcast may impact performance.
+                    </p>
+                </div>
             </div>
         </div>
 

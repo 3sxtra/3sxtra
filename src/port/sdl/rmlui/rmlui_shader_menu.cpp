@@ -57,6 +57,7 @@ static bool s_filter_dirty = true;
 static constexpr int CHAIN_PASSES_MAX = 32;
 static std::vector<ChainPass> s_chain_passes;
 static int s_chain_pass_count = 0;
+static bool s_chain_dirty = false;  // Set by event callbacks, consumed by per-frame update
 
 // Snapshot for dirty-checking
 static struct {
@@ -255,7 +256,10 @@ extern "C" void rmlui_shader_menu_init() {
                                           return;
                                       int idx = args[0].Get<int>();
                                       SDLAppShader_SetCurrentIndex(idx);
-                                      SDLAppShader_LoadPreset(idx);
+                                      // Initialize chain with this preset — chain apply handles shader loading
+                                      SDLAppShader_ChainClear();
+                                      SDLAppShader_ChainAppend(idx);
+                                      s_chain_dirty = true;
                                       handle.DirtyVariable("current_preset");
                                   });
 
@@ -265,18 +269,21 @@ extern "C" void rmlui_shader_menu_init() {
                                   [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
                                       if (args.empty()) return;
                                       SDLAppShader_ChainAppend(args[0].Get<int>());
+                                      s_chain_dirty = true;
                                   });
 
     constructor.BindEventCallback("chain_prepend",
                                   [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
                                       if (args.empty()) return;
                                       SDLAppShader_ChainPrepend(args[0].Get<int>());
+                                      s_chain_dirty = true;
                                   });
 
     constructor.BindEventCallback("chain_remove_pass",
                                   [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
                                       if (args.empty()) return;
                                       SDLAppShader_ChainRemovePass(args[0].Get<int>());
+                                      s_chain_dirty = true;
                                   });
 
     constructor.BindEventCallback("chain_move_up",
@@ -284,6 +291,7 @@ extern "C" void rmlui_shader_menu_init() {
                                       if (args.empty()) return;
                                       int idx = args[0].Get<int>();
                                       if (idx > 0) SDLAppShader_ChainMovePass(idx, idx - 1);
+                                      s_chain_dirty = true;
                                   });
 
     constructor.BindEventCallback("chain_move_down",
@@ -291,11 +299,13 @@ extern "C" void rmlui_shader_menu_init() {
                                       if (args.empty()) return;
                                       int idx = args[0].Get<int>();
                                       if (idx < SDLAppShader_ChainGetPassCount() - 1) SDLAppShader_ChainMovePass(idx, idx + 1);
+                                      s_chain_dirty = true;
                                   });
 
     constructor.BindEventCallback("chain_clear",
                                   [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& /*args*/) {
                                       SDLAppShader_ChainClear();
+                                      s_chain_dirty = true;
                                   });
 
     constructor.BindEventCallback("chain_save",
@@ -391,10 +401,11 @@ extern "C" void rmlui_shader_menu_update() {
         dirty = true;
     }
 
-    // Chain pass count dirty-check
+    // Chain dirty-check: count change OR explicit dirty flag from event callbacks
     int chain_pass_count = SDLAppShader_ChainGetPassCount();
-    if (chain_pass_count != s_prev.chain_pass_count) {
+    if (chain_pass_count != s_prev.chain_pass_count || s_chain_dirty) {
         s_prev.chain_pass_count = chain_pass_count;
+        s_chain_dirty = false;
         rebuild_chain_passes();
         s_model_handle.DirtyVariable("chain_passes");
         s_model_handle.DirtyVariable("chain_pass_count");

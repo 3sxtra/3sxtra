@@ -227,7 +227,14 @@ void SDLAppShader_ProcessPendingLoad() {
         s_pending_preset_index = -1;
     }
     if (s_chain_needs_apply) {
-        SDLAppShader_ChainApply();
+        // Defer chain apply while the shader menu is visible — LibrashaderManager_Init
+        // corrupts GL state that RmlUI's GL3 renderer depends on.  The chain data model
+        // (pass list) updates immediately via the per-frame dirty check; the actual
+        // librashader reload happens once the menu closes.
+        extern bool rmlui_wrapper_is_document_visible(const char* name);
+        if (!rmlui_wrapper_is_document_visible("shaders")) {
+            SDLAppShader_ChainApply();
+        }
     }
 }
 
