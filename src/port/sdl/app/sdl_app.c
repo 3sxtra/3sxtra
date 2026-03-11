@@ -705,8 +705,13 @@ void SDLApp_BeginFrame() {
         SDLAppShader_ProcessPendingLoad();
     }
 
-    // RmlUi frame update runs on ALL backends — Fx overlay menus always use RmlUi
-    rmlui_wrapper_new_frame();
+    // RmlUi per-frame calls are skipped entirely when no UI is active.
+    // This avoids ~13ms of implicit glFinish() overhead in eglSwapBuffers on Pi4.
+    bool rmlui_active = use_rmlui || show_menu || show_shader_menu || show_mods_menu ||
+                        show_stage_config_menu || show_training_menu || show_dev_overlay;
+    if (rmlui_active) {
+        rmlui_wrapper_new_frame();
+    }
 
     int win_w, win_h;
     SDL_GetWindowSize(window, &win_w, &win_h);
@@ -763,8 +768,12 @@ static void render_overlays(int win_w, int win_h) {
     }
     rmlui_netplay_ui_update();
 
-    /* Flush UI framework */
-    rmlui_wrapper_render();
+    /* Flush UI framework — only when RmlUi is active */
+    bool rmlui_active = use_rmlui || show_menu || show_shader_menu || show_mods_menu ||
+                        show_stage_config_menu || show_training_menu || show_dev_overlay;
+    if (rmlui_active) {
+        rmlui_wrapper_render();
+    }
 }
 
 /** @brief End the frame: render game to FBO, apply shaders, draw bezels/UI, swap buffers. */
@@ -1035,8 +1044,10 @@ void SDLApp_EndFrame() {
     } else {
         // --- OpenGL Backend ---
 
-        // Update RmlUi game context (render happens after canvas blit below)
-        rmlui_wrapper_update_game();
+        // Update RmlUi game context — only when use_rmlui is active
+        if (use_rmlui) {
+            rmlui_wrapper_update_game();
+        }
 
         if (broadcast_config.enabled && broadcast_config.source == BROADCAST_SOURCE_NATIVE) {
             Broadcast_Send(cps3_canvas_texture, 384, 224, true);
@@ -1265,14 +1276,8 @@ void SDLApp_EndFrame() {
         // Bezel Rendering (OpenGL)
         SDLAppBezel_RenderGL(win_w, win_h, &viewport, passthru_shader_program, (const float*)identity);
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
-        {
-            // Reset GL state to clean baseline before RmlUi rendering
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, 0);
-            glUseProgram(0);
-            glBindVertexArray(0);
-            glViewport(0, 0, win_w, win_h);
-
+        // GL state reset is handled inside rmlui_wrapper_render_game (only when docs visible)
+        if (use_rmlui) {
             rmlui_wrapper_render_game(win_w, win_h, viewport.x, viewport.y, viewport.w, viewport.h);
         }
 

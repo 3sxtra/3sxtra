@@ -263,14 +263,57 @@ static float s_par_correct_y = 1.0f;
 static std::string s_ui_base_path;
 static bool s_deferred_init_done = false;
 
-// ⚡ Helper: check if any document in a context map is currently visible.
-// Used to skip expensive Update/Render cycles when no UI is showing.
-static bool has_visible_docs(const std::unordered_map<std::string, Rml::ElementDocument*>& docs) {
+// ⚡ Cached visibility flags — updated on show/hide/close, checked per-frame.
+// Replaces per-frame unordered_map iteration with a single bool read.
+static bool s_any_window_visible = false;
+static bool s_any_game_visible = false;
+
+// Recompute cached visibility flag by scanning the document map.
+// Called only on show/hide/close — NOT on the per-frame hot path.
+static bool recompute_visible(const std::unordered_map<std::string, Rml::ElementDocument*>& docs) {
     for (const auto& [name, doc] : docs) {
         if (doc && doc->IsVisible())
             return true;
     }
     return false;
+}
+
+// ⚡ Track whether RmlGL3::Initialize() has been called (loads GL function
+// pointers — cheap, one-time).
+static bool s_gl3_loader_initialized = false;
+
+// ⚡ On-demand GL3 renderer lifecycle.
+// Creates the GL3 renderer (9 shader programs, FBOs, VAO) only when RmlUi
+// actually needs to render.  Destroys it when idle to free V3D resources.
+static void ensure_gl3_ready() {
+    if (s_active_backend != RENDERER_OPENGL || s_render_gl3)
+        return;
+    if (!s_gl3_loader_initialized) {
+        Rml::String msg;
+        if (!RmlGL3::Initialize(&msg)) {
+            SDL_Log("[RmlUi] GL3 init failed: %s", msg.c_str());
+            return;
+        }
+        s_gl3_loader_initialized = true;
+    }
+    s_render_gl3 = new GameViewportGL3();
+    s_render_interface = s_render_gl3;
+    Rml::SetRenderInterface(s_render_interface);
+    s_render_gl3->SetViewport(s_window_w, s_window_h);
+    SDL_Log("[RmlUi] GL3 renderer created (on-demand)");
+}
+
+static void release_gl3_if_idle() {
+    if (!s_render_gl3)
+        return;
+    // Keep alive while any documents are visible
+    if (s_any_window_visible || s_any_game_visible)
+        return;
+    delete s_render_gl3;
+    s_render_gl3 = nullptr;
+    s_render_interface = nullptr;
+    Rml::SetRenderInterface(nullptr);
+    SDL_Log("[RmlUi] GL3 renderer destroyed (idle)");
 }
 
 // -------------------------------------------------------------------
@@ -300,11 +343,15 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     // Create render interface based on active renderer
     switch (s_active_backend) {
     case RENDERER_OPENGL: {
+        // RmlGL3::Initialize loads GL function pointers — cheap, one-time.
         Rml::String gl_message;
         if (!RmlGL3::Initialize(&gl_message)) {
             SDL_Log("[RmlUi] Failed to initialize GL3 backend: %s", gl_message.c_str());
             return;
         }
+        s_gl3_loader_initialized = true;
+        // Create GL3 renderer for init (Rml::Initialise + font loading need it).
+        // Destroyed after init completes to free V3D resources.
         s_render_gl3 = new GameViewportGL3();
         s_render_interface = s_render_gl3;
         break;
@@ -416,6 +463,17 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
             GAME_W,
             GAME_H,
             dp_ratio);
+
+    // ⚡ Pi4: destroy GL3 renderer now that init is done.
+    // The 9 shader programs + FBOs are freed from V3D GPU memory.
+    // ensure_gl3_ready() will recreate on first actual render need.
+    if (s_render_gl3) {
+        delete s_render_gl3;
+        s_render_gl3 = nullptr;
+        s_render_interface = nullptr;
+        Rml::SetRenderInterface(nullptr);
+        SDL_Log("[RmlUi] GL3 renderer released after init (on-demand lifecycle)");
+    }
 }
 
 // -------------------------------------------------------------------
@@ -540,19 +598,10 @@ extern "C" void rmlui_wrapper_new_frame(void) {
     if (!s_window_context)
         return;
 
-    // Lazy-load NotoSansJP (~4MB) on first frame, after boot but before any UI renders.
-    if (!s_deferred_init_done) {
-        s_deferred_init_done = true;
-
-        std::string font_noto = s_ui_base_path + "../NotoSansJP-Regular.ttf";
-        if (!Rml::LoadFontFace(font_noto.c_str(), true)) {
-            SDL_Log("[RmlUi] Failed to load font: %s", font_noto.c_str());
-        }
-    }
-
-    // ⚡ Skip context update when no window documents are visible
-    if (!has_visible_docs(s_window_documents))
+    // ⚡ Cached bool — zero-cost check, no map iteration
+    if (!s_any_window_visible)
         return;
+    ensure_gl3_ready();  // ⚡ Context::Update may trigger texture loads
     s_window_context->Update();
 }
 
@@ -560,11 +609,14 @@ extern "C" void rmlui_wrapper_new_frame(void) {
 // Render
 // -------------------------------------------------------------------
 extern "C" void rmlui_wrapper_render(void) {
-    if (!s_window_context || !s_render_interface)
+    if (!s_window_context)
         return;
-    // ⚡ Skip entire BeginFrame/Render/EndFrame when no window documents are visible.
-    // Saves ~60 GL state save/restore calls per frame when no overlays are open.
-    if (!has_visible_docs(s_window_documents))
+    // ⚡ On-demand GL3: create renderer if needed
+    ensure_gl3_ready();
+    if (!s_render_interface)
+        return;
+    // ⚡ Cached bool — zero-cost check, no map iteration
+    if (!s_any_window_visible)
         return;
 
     // Ensure layout is up-to-date before rendering. Documents lazily shown
@@ -574,11 +626,19 @@ extern "C" void rmlui_wrapper_render(void) {
     s_window_context->Update();
 
     if (s_render_gl3) {
-        // GL3: simple begin/end frame
+#ifdef PLATFORM_RPI4
+        // ⚡ Pi4 fast path — skip glGet* state backup + FBO blit
+        s_render_gl3->BeginFrameDirect();
+        s_window_context->Render();
+        s_render_gl3->EndFrameDirect();
+        // Restore minimal GL state for game renderer
+        glDisable(GL_BLEND);
+        glDisable(GL_STENCIL_TEST);
+#else
         s_render_gl3->BeginFrame();
-
         s_window_context->Render();
         s_render_gl3->EndFrame();
+#endif
     } else if (s_render_gpu) {
         // SDL_GPU: needs command buffer + swapchain texture each frame
         SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
@@ -640,13 +700,31 @@ extern "C" void* rmlui_wrapper_get_game_context(void) {
 // -------------------------------------------------------------------
 // Document management — Window context (Phase 2)
 // -------------------------------------------------------------------
+
+/** @brief Lazy-load NotoSansJP (~4MB) on first document show.
+ *  Deferred from init/new_frame to avoid V3D CMA pressure on Pi4
+ *  when no RmlUi documents are actually displayed. */
+static void ensure_fonts_loaded(void) {
+    if (s_deferred_init_done)
+        return;
+    s_deferred_init_done = true;
+
+    std::string font_noto = s_ui_base_path + "../NotoSansJP-Regular.ttf";
+    if (!Rml::LoadFontFace(font_noto.c_str(), true)) {
+        SDL_Log("[RmlUi] Failed to load font: %s", font_noto.c_str());
+    }
+}
+
 extern "C" void rmlui_wrapper_show_document(const char* name) {
     if (!s_window_context || !name)
         return;
+    ensure_gl3_ready();  // ⚡ LoadDocument needs render interface for textures
+    ensure_fonts_loaded();
 
     auto it = s_window_documents.find(name);
     if (it != s_window_documents.end()) {
         it->second->Show();
+        s_any_window_visible = true;
         return;
     }
 
@@ -655,6 +733,7 @@ extern "C" void rmlui_wrapper_show_document(const char* name) {
     if (doc) {
         doc->Show();
         s_window_documents[name] = doc;
+        s_any_window_visible = true;
         SDL_Log("[RmlUi] Loaded window document: %s", path.c_str());
     } else {
         SDL_Log("[RmlUi] Failed to load window document: %s", path.c_str());
@@ -667,6 +746,8 @@ extern "C" void rmlui_wrapper_hide_document(const char* name) {
     auto it = s_window_documents.find(name);
     if (it != s_window_documents.end()) {
         it->second->Hide();
+        s_any_window_visible = recompute_visible(s_window_documents);
+        release_gl3_if_idle();  // ⚡ Free GPU resources when idle
     }
 }
 
@@ -676,6 +757,8 @@ extern "C" void rmlui_wrapper_hide_all_documents(void) {
             doc->Hide();
         }
     }
+    s_any_window_visible = false;
+    release_gl3_if_idle();  // ⚡ Free GPU resources when idle
 }
 
 extern "C" bool rmlui_wrapper_is_document_visible(const char* name) {
@@ -695,6 +778,7 @@ extern "C" void rmlui_wrapper_close_document(const char* name) {
     if (it != s_window_documents.end()) {
         it->second->Close();
         s_window_documents.erase(it);
+        s_any_window_visible = recompute_visible(s_window_documents);
         SDL_Log("[RmlUi] Closed window document: %s", name);
     }
 }
@@ -705,10 +789,13 @@ extern "C" void rmlui_wrapper_close_document(const char* name) {
 extern "C" void rmlui_wrapper_show_game_document(const char* name) {
     if (!s_game_context || !name)
         return;
+    ensure_gl3_ready();  // ⚡ LoadDocument needs render interface for textures
+    ensure_fonts_loaded();
 
     auto it = s_game_documents.find(name);
     if (it != s_game_documents.end()) {
         it->second->Show();
+        s_any_game_visible = true;
         return;
     }
 
@@ -717,6 +804,7 @@ extern "C" void rmlui_wrapper_show_game_document(const char* name) {
     if (doc) {
         doc->Show();
         s_game_documents[name] = doc;
+        s_any_game_visible = true;
         SDL_Log("[RmlUi] Loaded game document: %s", path.c_str());
     } else {
         SDL_Log("[RmlUi] Failed to load game document: %s", path.c_str());
@@ -729,6 +817,8 @@ extern "C" void rmlui_wrapper_hide_game_document(const char* name) {
     auto it = s_game_documents.find(name);
     if (it != s_game_documents.end()) {
         it->second->Hide();
+        s_any_game_visible = recompute_visible(s_game_documents);
+        release_gl3_if_idle();  // ⚡ Free GPU resources when idle
     }
 }
 
@@ -742,6 +832,8 @@ extern "C" void rmlui_wrapper_hide_all_game_documents(void) {
             doc->Hide();
         }
     }
+    s_any_game_visible = recompute_visible(s_game_documents);
+    release_gl3_if_idle();  // ⚡ Free GPU resources when idle
 }
 
 extern "C" bool rmlui_wrapper_is_game_document_visible(const char* name) {
@@ -771,19 +863,33 @@ extern "C" void rmlui_wrapper_close_game_document(const char* name) {
 extern "C" void rmlui_wrapper_update_game(void) {
     if (!s_game_context)
         return;
-    // ⚡ Skip context update when no game documents are visible
-    if (!has_visible_docs(s_game_documents))
+    // ⚡ Cached bool — zero-cost check, no map iteration
+    if (!s_any_game_visible)
         return;
+    ensure_gl3_ready();  // ⚡ Context::Update may trigger texture loads
     s_game_context->Update();
 }
 
 extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, float view_y, float view_w,
                                           float view_h) {
-    if (!s_game_context || !s_render_interface)
+    if (!s_game_context)
         return;
-    // ⚡ Skip entire render pass when no game documents are visible
-    if (!has_visible_docs(s_game_documents))
+    // ⚡ Cached bool — zero-cost check, no map iteration
+    if (!s_any_game_visible)
         return;
+
+    // ⚡ On-demand GL3: create renderer if needed
+    ensure_gl3_ready();
+
+    // Reset GL state to clean baseline before RmlUi rendering (GL3 only).
+    // Moved here from sdl_app.c so it only runs when docs are actually visible.
+    if (s_render_gl3) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glUseProgram(0);
+        glBindVertexArray(0);
+        glViewport(0, 0, win_w, win_h);
+    }
 
     // Width-based dp_ratio: fonts rasterize at high resolution.
     // Context dims are scaled by dp_ratio so dp-based RCSS fills the context.
@@ -819,11 +925,26 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
         s_render_gl3->SetViewport(phys_w, phys_h, off_x, off_y);
         s_render_gl3->ActivateGameViewport(ctx_w, ctx_h, phys_w, phys_h);
 
+        // ⚡ Pi4 fast path — skip glGet* state backup + FBO blit
+#ifdef PLATFORM_RPI4
+        s_render_gl3->BeginFrameDirect();
+        s_game_context->Render();
+        s_render_gl3->EndFrameDirect();
+#else
         s_render_gl3->BeginFrame();
         s_game_context->Render();
         s_render_gl3->EndFrame();
+#endif
 
         s_render_gl3->DeactivateGameViewport();
+
+#ifdef PLATFORM_RPI4
+        // Restore minimal GL state for game renderer
+        glDisable(GL_BLEND);
+        glDisable(GL_STENCIL_TEST);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
+
         // Restore window viewport for subsequent rendering (bezels, overlays)
         s_render_gl3->SetViewport(s_window_w, s_window_h);
     } else if (s_render_gpu) {
