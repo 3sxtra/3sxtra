@@ -574,7 +574,13 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
     // Do NOT feed events to s_game_context — it would cause RmlUi's spatial
     // navigation to fight with the CPS3 state machine on screens with <button>
     // elements, and mouse clicks would hit at wrong coordinates (window vs 384×224).
-    RmlSDL::InputEventHandler(s_window_context, s_window, *event);
+    //
+    // ⚡ Pi4: skip input routing when no window documents are visible.
+    // On Pi4 with gamepads, SDL generates many axis/button events per frame;
+    // InputEventHandler does context hover/focus tracking for each one.
+    // Window resize + display-scale events are handled below independently.
+    if (s_any_window_visible)
+        RmlSDL::InputEventHandler(s_window_context, s_window, *event);
 
     // Handle window resize
     if (event->type == SDL_EVENT_WINDOW_RESIZED) {
@@ -854,6 +860,14 @@ extern "C" bool rmlui_wrapper_is_game_document_visible(const char* name) {
         return it->second->IsVisible();
     }
     return false;
+}
+
+extern "C" bool rmlui_wrapper_any_game_visible(void) {
+    return s_any_game_visible;
+}
+
+extern "C" bool rmlui_wrapper_any_window_visible(void) {
+    return s_any_window_visible;
 }
 
 extern "C" void rmlui_wrapper_close_game_document(const char* name) {

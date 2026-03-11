@@ -175,7 +175,16 @@ extern "C" void rmlui_netplay_ui_update(void) {
 
     // --- HUD ---
     bool session_running = (Netplay_GetSessionState() == NETPLAY_SESSION_RUNNING);
+
+    // ⚡ Skip all processing when nothing netplay-related is active.
+    // Avoids per-frame Netplay_GetSessionState + visibility checks at idle.
+    if (!session_running && !s_hud_visible && !s_diag_visible && s_toasts.empty() &&
+        !rmlui_wrapper_is_document_visible("netplay")) {
+        return;
+    }
+
     bool new_hud_visible = SDLNetplayUI_IsHUDVisible() && session_running;
+
 
     if (new_hud_visible != s_prev_hud_visible) {
         s_hud_visible = new_hud_visible;

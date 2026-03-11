@@ -80,6 +80,12 @@ void rmlui_wrapper_hide_all_game_documents(void);
 /// Check if a named game document is currently visible
 bool rmlui_wrapper_is_game_document_visible(const char* name);
 
+/// ⚡ Fast check: are ANY game-context documents visible? (cached bool, no map lookup)
+bool rmlui_wrapper_any_game_visible(void);
+
+/// ⚡ Fast check: are ANY window-context documents visible? (cached bool, no map lookup)
+bool rmlui_wrapper_any_window_visible(void);
+
 /// Close and destroy a named document in the game context
 void rmlui_wrapper_close_game_document(const char* name);
 

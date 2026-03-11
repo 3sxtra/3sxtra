@@ -11,6 +11,7 @@
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/app/sdl_app_internal.h"
+#include "shaders/glslp_parser.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +25,11 @@ static int s_pending_preset_index = -1;
 static bool shader_mode_libretro = false;
 static char* g_base_path = NULL;
 static bool s_shader_initialized = false;
+
+// ── Chain state ────────────────────────────────────────────────
+static GLSLP_Preset s_chain_preset;  // The composed chain
+static bool s_chain_active = false;  // True when chain is in use (vs single preset)
+static bool s_chain_needs_apply = false;
 
 // Recursive scanner helper
 static void scan_presets_recursive(const char* base_path, const char* relative_path, char*** list, int* count,
@@ -220,6 +226,9 @@ void SDLAppShader_ProcessPendingLoad() {
         load_preset_internal(s_pending_preset_index);
         s_pending_preset_index = -1;
     }
+    if (s_chain_needs_apply) {
+        SDLAppShader_ChainApply();
+    }
 }
 
 LibrashaderManager* SDLAppShader_GetManager() {
@@ -279,4 +288,145 @@ void SDLAppShader_SetMode(bool libretro) {
     if (shader_mode_libretro != libretro) {
         SDLAppShader_ToggleMode(); // Reusing toggle logic which handles config save
     }
+}
+
+// ── Chain Management ──────────────────────────────────────────────
+
+static void chain_load_and_merge(int preset_index, bool prepend) {
+    ensure_shader_initialized();
+    if (preset_index < 0 || preset_index >= available_preset_count)
+        return;
+
+    char full_path[1024];
+    snprintf(full_path, sizeof(full_path), "%s%s/%s", g_base_path, "shaders/libretro", available_presets[preset_index]);
+    for (int i = 0; full_path[i]; i++) {
+        if (full_path[i] == '\\')
+            full_path[i] = '/';
+    }
+
+    GLSLP_Preset* src = GLSLP_Load(full_path);
+    if (!src) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ChainAppend: Failed to load preset '%s'", full_path);
+        return;
+    }
+
+    if (prepend) {
+        // Prepend: src goes first, current chain goes after
+        GLSLP_Append(src, &s_chain_preset);
+        s_chain_preset = *src;
+    } else {
+        // Append: current chain stays, src goes after
+        GLSLP_Append(&s_chain_preset, src);
+    }
+
+    GLSLP_Free(src);
+    s_chain_active = true;
+    s_chain_needs_apply = true;
+}
+
+void SDLAppShader_ChainAppend(int preset_index) {
+    chain_load_and_merge(preset_index, false);
+}
+
+void SDLAppShader_ChainPrepend(int preset_index) {
+    chain_load_and_merge(preset_index, true);
+}
+
+void SDLAppShader_ChainRemovePass(int pass_index) {
+    if (!s_chain_active)
+        return;
+    GLSLP_RemovePass(&s_chain_preset, pass_index);
+    if (s_chain_preset.pass_count == 0) {
+        s_chain_active = false;
+    }
+    s_chain_needs_apply = true;
+}
+
+void SDLAppShader_ChainMovePass(int from, int to) {
+    if (!s_chain_active)
+        return;
+    GLSLP_MovePass(&s_chain_preset, from, to);
+    s_chain_needs_apply = true;
+}
+
+void SDLAppShader_ChainClear(void) {
+    memset(&s_chain_preset, 0, sizeof(GLSLP_Preset));
+    s_chain_active = false;
+    s_chain_needs_apply = true;
+}
+
+void SDLAppShader_ChainApply(void) {
+    if (!s_chain_active || s_chain_preset.pass_count == 0) {
+        // Clear chain — unload any active manager
+        if (libretro_manager) {
+            if (SDLApp_GetRenderer() == RENDERER_SDLGPU) {
+                SDL_GPUDevice* device = SDLApp_GetGPUDevice();
+                if (device)
+                    SDL_WaitForGPUIdle(device);
+                SDLApp_ClearLibrashaderIntermediate();
+            }
+            LibrashaderManager_Free(libretro_manager);
+            libretro_manager = NULL;
+        }
+        s_chain_needs_apply = false;
+        return;
+    }
+
+    // Write the merged chain to a temp file
+    char temp_path[1024];
+    if (g_base_path) {
+        snprintf(temp_path, sizeof(temp_path), "%s%s", g_base_path, "shaders/libretro/_3sx_chain.slangp");
+    } else {
+        snprintf(temp_path, sizeof(temp_path), "%s", "shaders/libretro/_3sx_chain.slangp");
+    }
+
+    if (!GLSLP_Write(&s_chain_preset, temp_path)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ChainApply: Failed to write merged preset");
+        s_chain_needs_apply = false;
+        return;
+    }
+
+    // Reload via librashader
+    if (libretro_manager) {
+        if (SDLApp_GetRenderer() == RENDERER_SDLGPU) {
+            SDL_GPUDevice* device = SDLApp_GetGPUDevice();
+            if (device)
+                SDL_WaitForGPUIdle(device);
+            SDLApp_ClearLibrashaderIntermediate();
+        }
+        LibrashaderManager_Free(libretro_manager);
+        libretro_manager = NULL;
+    }
+
+    libretro_manager = LibrashaderManager_Init(temp_path);
+    if (!libretro_manager) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ChainApply: Failed to init manager from merged preset");
+    } else {
+        SDL_Log("ChainApply: Loaded merged chain (%d passes)", s_chain_preset.pass_count);
+    }
+
+    s_chain_needs_apply = false;
+}
+
+int SDLAppShader_ChainGetPassCount(void) {
+    return s_chain_active ? s_chain_preset.pass_count : 0;
+}
+
+const char* SDLAppShader_ChainGetPassShaderPath(int pass_index) {
+    if (!s_chain_active || pass_index < 0 || pass_index >= s_chain_preset.pass_count)
+        return NULL;
+    return s_chain_preset.passes[pass_index].path;
+}
+
+const char* SDLAppShader_ChainGetPassSourcePreset(int pass_index) {
+    if (!s_chain_active || pass_index < 0 || pass_index >= s_chain_preset.pass_count)
+        return NULL;
+    const char* src = s_chain_preset.passes[pass_index].source_preset;
+    return (src[0] != '\0') ? src : NULL;
+}
+
+bool SDLAppShader_ChainSaveAsPreset(const char* path) {
+    if (!s_chain_active || s_chain_preset.pass_count == 0)
+        return false;
+    return GLSLP_Write(&s_chain_preset, path);
 }

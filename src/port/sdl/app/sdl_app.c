@@ -707,7 +707,9 @@ void SDLApp_BeginFrame() {
 
     // RmlUi per-frame calls are skipped entirely when no UI is active.
     // This avoids ~13ms of implicit glFinish() overhead in eglSwapBuffers on Pi4.
-    bool rmlui_active = use_rmlui || show_menu || show_shader_menu || show_mods_menu ||
+    // ⚡ Pi4: removed use_rmlui from this guard — the wrapper already has
+    // s_any_window_visible early-outs. Only overlay menus need per-frame processing.
+    bool rmlui_active = show_menu || show_shader_menu || show_mods_menu ||
                         show_stage_config_menu || show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_new_frame();
@@ -769,7 +771,8 @@ static void render_overlays(int win_w, int win_h) {
     rmlui_netplay_ui_update();
 
     /* Flush UI framework — only when RmlUi is active */
-    bool rmlui_active = use_rmlui || show_menu || show_shader_menu || show_mods_menu ||
+    // ⚡ Pi4: removed use_rmlui — matches BeginFrame guard above.
+    bool rmlui_active = show_menu || show_shader_menu || show_mods_menu ||
                         show_stage_config_menu || show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_render();
@@ -791,7 +794,10 @@ void SDLApp_EndFrame() {
 
     // Update Phase 3 data models immediately after game frame processing,
     // before the renderer backends run rmlui_wrapper_update_game() which processes them.
-    if (use_rmlui) {
+    // ⚡ Pi4: skip all 25 Phase 3 data model updates when no game documents are
+    // visible. Each update individually checks visibility via hash-map lookup;
+    // this single cached-bool check avoids all of them (~50µs saved on V3D).
+    if (use_rmlui && rmlui_wrapper_any_game_visible()) {
         TRACE_SUB_BEGIN("RmlUiUpdates");
         rmlui_game_hud_update();
         rmlui_mode_menu_update();
@@ -845,8 +851,11 @@ void SDLApp_EndFrame() {
         SDLAppBezel_RenderSDL2D(sdl_renderer, win_w, win_h, &dst_rect);
 
         // Render RmlUi game context at window resolution (Phase 3 game screens)
-        rmlui_wrapper_update_game();
-        rmlui_wrapper_render_game(win_w, win_h, dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h);
+        // ⚡ Pi4: gate behind use_rmlui — matches OpenGL path behavior.
+        if (use_rmlui) {
+            rmlui_wrapper_update_game();
+            rmlui_wrapper_render_game(win_w, win_h, dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h);
+        }
 
         // Debug text
         SDLTextRenderer_DrawDebugBuffer((float)win_w, (float)win_h);
@@ -905,7 +914,10 @@ void SDLApp_EndFrame() {
         // --- GPU Backend ---
 
         // Update RmlUi game context (render happens after canvas blit below)
-        rmlui_wrapper_update_game();
+        // ⚡ Pi4: gate behind use_rmlui — matches OpenGL path behavior.
+        if (use_rmlui) {
+            rmlui_wrapper_update_game();
+        }
 
         // 1. Post-Process (Canvas -> Swapchain)
         SDL_GPUCommandBuffer* cb = SDLGameRendererGPU_GetCommandBuffer();
@@ -1024,7 +1036,8 @@ void SDLApp_EndFrame() {
         // Bezel Rendering (GPU)
         SDLAppBezel_RenderGPU(win_w, win_h);
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
-        {
+        // ⚡ Pi4: gate behind use_rmlui — matches OpenGL path behavior.
+        if (use_rmlui) {
             const SDL_FRect gp_vp = get_letterbox_rect(win_w, win_h);
             rmlui_wrapper_render_game(win_w, win_h, gp_vp.x, gp_vp.y, gp_vp.w, gp_vp.h);
         }

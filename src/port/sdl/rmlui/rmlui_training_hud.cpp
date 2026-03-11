@@ -39,6 +39,7 @@ static HudTextFields s_fields;
 static HudTextFields s_cache; // for dirty detection
 static Rml::DataModelHandle s_model;
 static bool s_registered = false;
+static bool s_hud_visible = false; // ⚡ on-demand: tracks effie_hud document visibility
 
 // -------------------------------------------------------------------
 // Lua bridge: set_hud_text(field, value)
@@ -46,6 +47,13 @@ static bool s_registered = false;
 extern "C" void rmlui_training_hud_set_text(const char* field, const char* value) {
     if (!field || !value)
         return;
+
+    // ⚡ Lazy show: first Lua write activates the HUD document.
+    // Avoids showing at boot when training mode is not active.
+    if (!s_hud_visible && s_registered) {
+        rmlui_wrapper_show_document("effie_hud");
+        s_hud_visible = true;
+    }
 
     // Map field name to struct member
     if (strcmp(field, "p1_stun") == 0)
@@ -105,11 +113,12 @@ extern "C" void rmlui_training_hud_init(void) {
     s_model = ctor.GetModelHandle();
     s_registered = true;
 
-    /* Load and show the HUD overlay document — it's always visible during
-       training mode (unlike training.rml which is F7-toggled). */
-    rmlui_wrapper_show_document("effie_hud");
+    /* ⚡ Document is NOT shown at init — it will be lazily shown on the
+       first rmlui_training_hud_set_text() call from Lua.  This avoids
+       setting s_any_window_visible=true at boot, which would force the
+       GL3 render pipeline to run every frame on Pi4. */
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Training HUD] Data model registered, effie_hud.rml loaded");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Training HUD] Data model registered (effie_hud deferred)");
 }
 
 // -------------------------------------------------------------------
@@ -117,6 +126,10 @@ extern "C" void rmlui_training_hud_init(void) {
 // -------------------------------------------------------------------
 extern "C" void rmlui_training_hud_update(void) {
     if (!s_registered || !s_model)
+        return;
+
+    // ⚡ Skip all 9 string comparisons when HUD is not shown
+    if (!s_hud_visible)
         return;
 
 #define DIRTY_TEXT(name)                                                                                               \
@@ -141,6 +154,10 @@ extern "C" void rmlui_training_hud_update(void) {
 // Shutdown
 // -------------------------------------------------------------------
 extern "C" void rmlui_training_hud_shutdown(void) {
+    if (s_hud_visible) {
+        rmlui_wrapper_hide_document("effie_hud");
+        s_hud_visible = false;
+    }
     if (s_registered) {
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
         if (ctx)

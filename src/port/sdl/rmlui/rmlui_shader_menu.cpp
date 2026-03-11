@@ -39,12 +39,24 @@ struct FilteredPreset {
     int index;
 };
 
+// ── Chain Pass struct ──────────────────────────────────────────
+
+struct ChainPass {
+    Rml::String name;   // Shader filename (basename of path)
+    Rml::String source; // Source preset basename
+    int index;          // Pass index in the chain (-1 = sentinel/hidden)
+};
+
 // ── Module state ───────────────────────────────────────────────
 
 static Rml::DataModelHandle s_model_handle;
 static std::vector<FilteredPreset> s_filtered_presets;
 static Rml::String s_search_filter;
 static bool s_filter_dirty = true;
+
+static constexpr int CHAIN_PASSES_MAX = 32;
+static std::vector<ChainPass> s_chain_passes;
+static int s_chain_pass_count = 0;
 
 // Snapshot for dirty-checking
 static struct {
@@ -55,6 +67,7 @@ static struct {
     bool vsync;
     bool broadcast_enabled;
     int broadcast_source;
+    int chain_pass_count;
 } s_prev;
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -103,6 +116,39 @@ static void rebuild_filtered_presets() {
     s_filter_dirty = false;
 }
 
+static Rml::String extract_basename(const char* path) {
+    if (!path || !path[0]) return Rml::String();
+    const char* slash = strrchr(path, '/');
+    const char* bslash = strrchr(path, '\\');
+    const char* last = nullptr;
+    if (slash && bslash) last = (slash > bslash) ? slash : bslash;
+    else if (slash) last = slash;
+    else last = bslash;
+    return Rml::String(last ? last + 1 : path);
+}
+
+static void rebuild_chain_passes() {
+    int count = SDLAppShader_ChainGetPassCount();
+    s_chain_passes.resize(CHAIN_PASSES_MAX);
+
+    for (int i = 0; i < count && i < CHAIN_PASSES_MAX; i++) {
+        const char* shader_path = SDLAppShader_ChainGetPassShaderPath(i);
+        const char* source_preset = SDLAppShader_ChainGetPassSourcePreset(i);
+        s_chain_passes[i] = {
+            extract_basename(shader_path),
+            extract_basename(source_preset),
+            i
+        };
+    }
+
+    // Fill remaining with sentinels
+    for (int i = count; i < CHAIN_PASSES_MAX; i++) {
+        s_chain_passes[i] = { Rml::String(), Rml::String(), -1 };
+    }
+
+    s_chain_pass_count = count;
+}
+
 // ── Init ───────────────────────────────────────────────────────
 
 extern "C" void rmlui_shader_menu_init() {
@@ -126,8 +172,19 @@ extern "C" void rmlui_shader_menu_init() {
     }
     constructor.RegisterArray<std::vector<FilteredPreset>>();
 
-    // ── Bind the filtered preset vector ──
+    // ── Register ChainPass struct + array ──
+    if (auto handle = constructor.RegisterStruct<ChainPass>()) {
+        handle.RegisterMember("name", &ChainPass::name);
+        handle.RegisterMember("source", &ChainPass::source);
+        handle.RegisterMember("index", &ChainPass::index);
+    }
+    constructor.RegisterArray<std::vector<ChainPass>>();
+
+    // ── Bind the filtered preset vector + chain passes ──
     constructor.Bind("filtered_presets", &s_filtered_presets);
+    constructor.Bind("chain_passes", &s_chain_passes);
+
+    constructor.BindFunc("chain_pass_count", [](Rml::Variant& v) { v = SDLAppShader_ChainGetPassCount(); });
 
     // ── Scalar BindFunc bindings ──
 
@@ -202,10 +259,69 @@ extern "C" void rmlui_shader_menu_init() {
                                       handle.DirtyVariable("current_preset");
                                   });
 
+    // ── Chain event callbacks ──
+
+    constructor.BindEventCallback("chain_append",
+                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+                                      if (args.empty()) return;
+                                      SDLAppShader_ChainAppend(args[0].Get<int>());
+                                  });
+
+    constructor.BindEventCallback("chain_prepend",
+                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+                                      if (args.empty()) return;
+                                      SDLAppShader_ChainPrepend(args[0].Get<int>());
+                                  });
+
+    constructor.BindEventCallback("chain_remove_pass",
+                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+                                      if (args.empty()) return;
+                                      SDLAppShader_ChainRemovePass(args[0].Get<int>());
+                                  });
+
+    constructor.BindEventCallback("chain_move_up",
+                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+                                      if (args.empty()) return;
+                                      int idx = args[0].Get<int>();
+                                      if (idx > 0) SDLAppShader_ChainMovePass(idx, idx - 1);
+                                  });
+
+    constructor.BindEventCallback("chain_move_down",
+                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+                                      if (args.empty()) return;
+                                      int idx = args[0].Get<int>();
+                                      if (idx < SDLAppShader_ChainGetPassCount() - 1) SDLAppShader_ChainMovePass(idx, idx + 1);
+                                  });
+
+    constructor.BindEventCallback("chain_clear",
+                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& /*args*/) {
+                                      SDLAppShader_ChainClear();
+                                  });
+
+    constructor.BindEventCallback("chain_save",
+                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& /*args*/) {
+                                      // Generate a timestamped filename
+                                      char filename[256];
+                                      Uint64 ticks = SDL_GetTicks();
+                                      snprintf(filename, sizeof(filename), "chain_%llu.slangp", (unsigned long long)ticks);
+
+                                      // Build full path in the libretro shaders directory
+                                      char path[1024];
+                                      const char* base = SDL_GetBasePath();
+                                      snprintf(path, sizeof(path), "%sshaders/libretro/%s", base ? base : "", filename);
+
+                                      if (SDLAppShader_ChainSaveAsPreset(path)) {
+                                          SDL_Log("[Shader Chain] Saved as '%s'", path);
+                                      } else {
+                                          SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[Shader Chain] Failed to save '%s'", path);
+                                      }
+                                  });
+
     s_model_handle = constructor.GetModelHandle();
 
-    // Initial preset list build
+    // Initial builds
     rebuild_filtered_presets();
+    rebuild_chain_passes();
 
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Shaders] Data model registered");
 }
@@ -275,6 +391,16 @@ extern "C" void rmlui_shader_menu_update() {
         dirty = true;
     }
 
+    // Chain pass count dirty-check
+    int chain_pass_count = SDLAppShader_ChainGetPassCount();
+    if (chain_pass_count != s_prev.chain_pass_count) {
+        s_prev.chain_pass_count = chain_pass_count;
+        rebuild_chain_passes();
+        s_model_handle.DirtyVariable("chain_passes");
+        s_model_handle.DirtyVariable("chain_pass_count");
+        dirty = true;
+    }
+
     (void)dirty;
 }
 
@@ -283,5 +409,6 @@ extern "C" void rmlui_shader_menu_update() {
 extern "C" void rmlui_shader_menu_shutdown() {
     s_model_handle = Rml::DataModelHandle();
     s_filtered_presets.clear();
+    s_chain_passes.clear();
     s_search_filter.clear();
 }

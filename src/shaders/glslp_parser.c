@@ -281,9 +281,203 @@ GLSLP_Preset* GLSLP_Load(const char* path) {
     }
 
     fclose(f);
+
+    // Tag all passes with their source preset path
+    for (int i = 0; i < preset->pass_count; i++) {
+        strncpy(preset->passes[i].source_preset, path, MAX_PATH - 1);
+        preset->passes[i].source_preset[MAX_PATH - 1] = '\0';
+    }
+
     return preset;
 }
 
 void GLSLP_Free(GLSLP_Preset* preset) {
     free(preset);
+}
+
+// ── Writer ────────────────────────────────────────────────────────
+
+static const char* scale_type_to_string(GLSLP_ScaleType type) {
+    switch (type) {
+        case GLSLP_SCALE_VIEWPORT:
+            return "viewport";
+        case GLSLP_SCALE_ABSOLUTE:
+            return "absolute";
+        case GLSLP_SCALE_SOURCE:
+        default:
+            return "source";
+    }
+}
+
+bool GLSLP_Write(const GLSLP_Preset* preset, const char* path) {
+    FILE* f = fopen(path, "w");
+    if (!f) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GLSLP_Write: Failed to open '%s' for writing: %s", path,
+                     strerror(errno));
+        return false;
+    }
+
+    fprintf(f, "shaders = %d\n", preset->pass_count);
+
+    for (int i = 0; i < preset->pass_count; i++) {
+        const GLSLP_ShaderPass* pass = &preset->passes[i];
+
+        fprintf(f, "\nshader%d = \"%s\"\n", i, pass->path);
+        fprintf(f, "filter_linear%d = %s\n", i, pass->filter_linear ? "true" : "false");
+
+        if (pass->scale_type_x == pass->scale_type_y) {
+            fprintf(f, "scale_type%d = %s\n", i, scale_type_to_string(pass->scale_type_x));
+        } else {
+            fprintf(f, "scale_type_x%d = %s\n", i, scale_type_to_string(pass->scale_type_x));
+            fprintf(f, "scale_type_y%d = %s\n", i, scale_type_to_string(pass->scale_type_y));
+        }
+
+        if (pass->scale_x == pass->scale_y && pass->scale_x != 0.0f) {
+            fprintf(f, "scale%d = %g\n", i, pass->scale_x);
+        } else {
+            if (pass->scale_x != 0.0f)
+                fprintf(f, "scale_x%d = %g\n", i, pass->scale_x);
+            if (pass->scale_y != 0.0f)
+                fprintf(f, "scale_y%d = %g\n", i, pass->scale_y);
+        }
+
+        if (pass->srgb_framebuffer)
+            fprintf(f, "srgb_framebuffer%d = true\n", i);
+        if (pass->float_framebuffer)
+            fprintf(f, "float_framebuffer%d = true\n", i);
+        if (pass->alias[0] != '\0')
+            fprintf(f, "alias%d = \"%s\"\n", i, pass->alias);
+        if (pass->mipmap_input)
+            fprintf(f, "mipmap_input%d = true\n", i);
+        if (pass->wrap_mode[0] != '\0')
+            fprintf(f, "wrap_mode%d = %s\n", i, pass->wrap_mode);
+        if (pass->frame_count_mod > 0)
+            fprintf(f, "frame_count_mod%d = %d\n", i, pass->frame_count_mod);
+    }
+
+    // Write textures
+    if (preset->texture_count > 0) {
+        fprintf(f, "\ntextures = \"");
+        for (int i = 0; i < preset->texture_count; i++) {
+            if (i > 0)
+                fprintf(f, ";");
+            fprintf(f, "%s", preset->textures[i].name);
+        }
+        fprintf(f, "\"\n");
+
+        for (int i = 0; i < preset->texture_count; i++) {
+            const GLSLP_Texture* tex = &preset->textures[i];
+            fprintf(f, "%s = \"%s\"\n", tex->name, tex->path);
+            fprintf(f, "%s_linear = %s\n", tex->name, tex->linear ? "true" : "false");
+            if (tex->mipmap)
+                fprintf(f, "%s_mipmap = true\n", tex->name);
+            if (tex->wrap_mode[0] != '\0')
+                fprintf(f, "%s_wrap_mode = %s\n", tex->name, tex->wrap_mode);
+        }
+    }
+
+    // Write parameters
+    for (int i = 0; i < preset->parameter_count; i++) {
+        fprintf(f, "%s = \"%g\"\n", preset->parameters[i].name, preset->parameters[i].value);
+    }
+
+    fclose(f);
+    SDL_Log("GLSLP_Write: Wrote preset to '%s' (%d passes, %d textures, %d params)", path, preset->pass_count,
+            preset->texture_count, preset->parameter_count);
+    return true;
+}
+
+// ── Merge (Append) ────────────────────────────────────────────────
+
+static int find_texture_by_name(const GLSLP_Preset* preset, const char* name) {
+    for (int i = 0; i < preset->texture_count; i++) {
+        if (strcmp(preset->textures[i].name, name) == 0)
+            return i;
+    }
+    return -1;
+}
+
+bool GLSLP_Append(GLSLP_Preset* dst, const GLSLP_Preset* src) {
+    // Check pass capacity
+    if (dst->pass_count + src->pass_count > MAX_SHADERS) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GLSLP_Append: Combined pass count %d exceeds MAX_SHADERS (%d)",
+                     dst->pass_count + src->pass_count, MAX_SHADERS);
+        return false;
+    }
+
+    // Append passes
+    for (int i = 0; i < src->pass_count; i++) {
+        dst->passes[dst->pass_count + i] = src->passes[i];
+    }
+    dst->pass_count += src->pass_count;
+
+    // Merge textures (skip duplicates by name)
+    for (int i = 0; i < src->texture_count; i++) {
+        if (find_texture_by_name(dst, src->textures[i].name) == -1) {
+            if (dst->texture_count < MAX_TEXTURES) {
+                dst->textures[dst->texture_count] = src->textures[i];
+                dst->texture_count++;
+            } else {
+                SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "GLSLP_Append: Texture limit exceeded, skipping '%s'",
+                            src->textures[i].name);
+            }
+        }
+    }
+
+    // Merge parameters (update existing, add new)
+    for (int i = 0; i < src->parameter_count; i++) {
+        int idx = find_parameter_index(dst, src->parameters[i].name);
+        if (idx == -1) {
+            if (dst->parameter_count < MAX_PARAMETERS) {
+                dst->parameters[dst->parameter_count] = src->parameters[i];
+                dst->parameter_count++;
+            }
+        } else {
+            // Source value takes precedence for duplicates
+            dst->parameters[idx].value = src->parameters[i].value;
+        }
+    }
+
+    SDL_Log("GLSLP_Append: Merged preset (%d total passes, %d textures, %d params)", dst->pass_count,
+            dst->texture_count, dst->parameter_count);
+    return true;
+}
+
+// ── Remove Pass ───────────────────────────────────────────────────
+
+void GLSLP_RemovePass(GLSLP_Preset* preset, int index) {
+    if (index < 0 || index >= preset->pass_count)
+        return;
+
+    // Shift passes down
+    for (int i = index; i < preset->pass_count - 1; i++) {
+        preset->passes[i] = preset->passes[i + 1];
+    }
+    preset->pass_count--;
+
+    // Clear the vacated slot
+    memset(&preset->passes[preset->pass_count], 0, sizeof(GLSLP_ShaderPass));
+}
+
+// ── Move Pass ─────────────────────────────────────────────────────
+
+void GLSLP_MovePass(GLSLP_Preset* preset, int from, int to) {
+    if (from < 0 || from >= preset->pass_count || to < 0 || to >= preset->pass_count || from == to)
+        return;
+
+    GLSLP_ShaderPass temp = preset->passes[from];
+
+    if (from < to) {
+        // Shift down
+        for (int i = from; i < to; i++) {
+            preset->passes[i] = preset->passes[i + 1];
+        }
+    } else {
+        // Shift up
+        for (int i = from; i > to; i--) {
+            preset->passes[i] = preset->passes[i - 1];
+        }
+    }
+
+    preset->passes[to] = temp;
 }

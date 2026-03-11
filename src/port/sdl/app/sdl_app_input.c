@@ -82,7 +82,9 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
 
     // SDL2D mode: no NetplayUI — skip UI processing
     if (!is_sdl2d_backend(SDLApp_GetRenderer())) {
-        // Process UI events — always send to RmlUi
+        // Process UI events — route to RmlUi for window resize, display-scale,
+        // and debug keybinds. The expensive InputEventHandler call is gated
+        // internally by s_any_window_visible.
         rmlui_wrapper_process_event(event);
         SDLNetplayUI_ProcessEvent(event);
 
@@ -119,9 +121,13 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             }
         }
 
-        // Input Capture for UI — RmlUi always active for Fx menus
-        bool ui_wants_mouse = rmlui_wrapper_want_capture_mouse();
-        bool ui_wants_keyboard = rmlui_wrapper_want_capture_keyboard();
+        // Input Capture for UI — only query when docs are visible
+        bool ui_wants_mouse = false;
+        bool ui_wants_keyboard = false;
+        if (rmlui_wrapper_any_window_visible()) {
+            ui_wants_mouse = rmlui_wrapper_want_capture_mouse();
+            ui_wants_keyboard = rmlui_wrapper_want_capture_keyboard();
+        }
         // When control mapping (F1) is open, disable UI capture so all
         // input reaches SDLPad handlers.
         if (SDLApp_IsMenuVisible()) {
@@ -144,7 +150,8 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
         }
         // Gamepad, joystick, window events etc. always fall through
     } else {
-        // SDL2D mode: no NetplayUI — RmlUi always available for Fx menus
+        // SDL2D mode: no NetplayUI — route to RmlUi (InputEventHandler
+        // gated internally by s_any_window_visible).
         rmlui_wrapper_process_event(event);
 
         if (event->type == SDL_EVENT_KEY_DOWN) {
@@ -185,10 +192,14 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             }
         }
 
-        // Input capture for RmlUi in SDL2D mode — always active for Fx menus
+        // Input capture for RmlUi in SDL2D mode — only when docs visible
         {
-            bool ui_wants_mouse = rmlui_wrapper_want_capture_mouse();
-            bool ui_wants_keyboard = rmlui_wrapper_want_capture_keyboard();
+            bool ui_wants_mouse = false;
+            bool ui_wants_keyboard = false;
+            if (rmlui_wrapper_any_window_visible()) {
+                ui_wants_mouse = rmlui_wrapper_want_capture_mouse();
+                ui_wants_keyboard = rmlui_wrapper_want_capture_keyboard();
+            }
             if (SDLApp_IsMenuVisible()) {
                 ui_wants_mouse = false;
                 ui_wants_keyboard = false;

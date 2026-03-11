@@ -251,3 +251,151 @@ input.text:focus {
 #preset-list scrollbarvertical slidertrack {
     background-color: #222;
 }
+
+/* ── Chain Pass List ───────────────────────────────────────────── */
+
+#chain-pass-list {
+    max-height: 200dp;
+    overflow-y: auto;
+    margin-bottom: 6dp;
+}
+
+.chain-pass-item {
+    display: block;
+    padding: 3dp 6dp;
+    margin-bottom: 2dp;
+    background-color: #1a1a2e;
+    border-width: 1dp;
+    border-color: #333;
+    border-radius: 3dp;
+    font-size: 13dp;
+}
+
+.chain-pass-item:hover {
+    background-color: #252540;
+    border-color: #555;
+}
+
+.chain-pass-index {
+    display: inline-block;
+    width: 24dp;
+    color: #888;
+    font-weight: bold;
+}
+
+.chain-pass-name {
+    display: inline-block;
+    color: #e0e0e0;
+}
+
+.chain-pass-source {
+    display: inline-block;
+    color: #666;
+    font-size: 11dp;
+    margin-left: 6dp;
+}
+
+.chain-pass-actions {
+    float: right;
+}
+
+.chain-btn {
+    display: inline-block;
+    width: 22dp;
+    height: 22dp;
+    padding: 0;
+    font-size: 11dp;
+    background-color: #333;
+    color: #ccc;
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 2dp;
+    margin-left: 2dp;
+}
+
+.chain-btn:hover {
+    background-color: #555;
+    color: #fff;
+}
+
+.chain-btn-remove {
+    color: #f66;
+}
+
+.chain-btn-remove:hover {
+    background-color: #a33;
+    color: #fff;
+}
+
+.chain-actions {
+    margin-top: 4dp;
+    text-align: right;
+}
+
+.chain-clear-btn {
+    padding: 4dp 12dp;
+    font-size: 12dp;
+    background-color: #333;
+    color: #f66;
+    border-width: 1dp;
+    border-color: #633;
+    border-radius: 3dp;
+}
+
+.chain-clear-btn:hover {
+    background-color: #633;
+    color: #fff;
+}
+
+.status-info {
+    color: #888;
+    font-size: 12dp;
+    padding: 8dp;
+}
+
+/* ── Preset Item with Chain Buttons ────────────────────────────── */
+
+.preset-name {
+    display: inline;
+    cursor: pointer;
+}
+
+.preset-chain-btns {
+    float: right;
+}
+
+.chain-append-btn, .chain-prepend-btn {
+    display: inline-block;
+    width: 26dp;
+    height: 20dp;
+    padding: 0;
+    font-size: 10dp;
+    font-weight: bold;
+    background-color: #1a3a1a;
+    color: #6c6;
+    border-width: 1dp;
+    border-color: #3a5a3a;
+    border-radius: 2dp;
+    margin-left: 2dp;
+}
+
+.chain-append-btn:hover, .chain-prepend-btn:hover {
+    background-color: #2a5a2a;
+    color: #afa;
+}
+
+.chain-save-btn {
+    padding: 4dp 12dp;
+    font-size: 12dp;
+    background-color: #1a2a3a;
+    color: #6af;
+    border-width: 1dp;
+    border-color: #3a5a7a;
+    border-radius: 3dp;
+    margin-top: 4dp;
+}
+
+.chain-save-btn:hover {
+    background-color: #2a4a6a;
+    color: #adf;
+}

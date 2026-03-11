@@ -23,6 +23,7 @@ typedef struct {
     bool mipmap_input;
     char wrap_mode[32];
     int frame_count_mod;
+    char source_preset[MAX_PATH]; // Tracks which preset this pass originated from
 } GLSLP_ShaderPass;
 
 typedef struct {
@@ -55,5 +56,19 @@ GLSLP_Preset* GLSLP_Load(const char* path);
 
 // Frees a preset allocated by GLSLP_Load.
 void GLSLP_Free(GLSLP_Preset* preset);
+
+// Writes a preset to disk in .slangp/.glslp format.
+// Returns true on success, false on failure.
+bool GLSLP_Write(const GLSLP_Preset* preset, const char* path);
+
+// Appends all passes, textures, and parameters from src into dst.
+// Returns true on success, false if limits exceeded.
+bool GLSLP_Append(GLSLP_Preset* dst, const GLSLP_Preset* src);
+
+// Removes a pass at the given index (0-based). Shifts subsequent passes down.
+void GLSLP_RemovePass(GLSLP_Preset* preset, int index);
+
+// Moves a pass from one index to another. Shifts other passes accordingly.
+void GLSLP_MovePass(GLSLP_Preset* preset, int from, int to);
 
 #endif
