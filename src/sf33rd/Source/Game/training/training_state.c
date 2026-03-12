@@ -14,6 +14,7 @@
 
 TrainingGameState g_training_state = { 0 };
 bool g_lua_dummy_active = false;
+s16 g_lua_dummy_player_id = -1;
 
 static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* opponent_wk) {
     if (!wk)
@@ -255,6 +256,19 @@ void update_training_state(void) {
     resolve_advantage(&g_training_state.p2, &g_training_state.p1, g_training_state.frame_number, "P2");
 
     trials_update();
+
+    // Lazy-load training Lua bootstrap on first training frame.
+    // Must run before lua_engine_bridge_tick() so emu.registerbefore() callbacks
+    // are registered before the first tick fires them.
+    // Previously this was gated behind use_rmlui (rmlui_training_mode_show),
+    // so it never loaded when UI mode was Native.
+    {
+        static bool s_training_lua_loaded = false;
+        if (!s_training_lua_loaded) {
+            s_training_lua_loaded = true;
+            lua_engine_bridge_load_training();
+        }
+    }
 
     // Fire Lua per-frame callbacks (emu._fire_before)
     lua_engine_bridge_tick();

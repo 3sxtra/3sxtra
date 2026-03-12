@@ -358,20 +358,24 @@ local dummy_initialized = false
 local dummy_player = nil
 local dummy_id = 2
 
---- Detect which side the human is playing from Operator_Status.
---- Operator_Status[p] == 1 means a human operator is on that side.
---- Returns 1 or 2 for the human's side, defaults to 1 if ambiguous.
+--- Detect which side the human is playing.
+--- Uses Training_ID (set by the menu system to whichever side pressed confirm)
+--- as the authoritative source; falls back to Operator_Status if needed.
+--- Returns 1 or 2 for the human's side (1-indexed).
 local function detect_local_player()
    local globals = engine.read_globals()
+
+   -- Training_ID is the definitive answer: 0=P1 selected training, 1=P2
+   local tid = globals.training_id
+   if tid ~= nil then
+      return tid + 1   -- convert 0-indexed to 1-indexed
+   end
+
+   -- Fallback: operator status
    local op1 = globals.operator_p1 or 0
    local op2 = globals.operator_p2 or 0
-
-   -- If only one side has a human operator, that's the player
    if op1 == 1 and op2 ~= 1 then return 1 end
    if op2 == 1 and op1 ~= 1 then return 2 end
-
-   -- Both operators active (vs mode) or neither:
-   -- Default to P1 as the human side
    return 1
 end
 
@@ -505,6 +509,9 @@ end
 -- Register the dummy control update in the per-frame callback
 emu.registerbefore(function()
    if not engine.is_in_match() then
+      if dummy_initialized then
+         engine.set_lua_dummy_active(false)
+      end
       dummy_initialized = false
       dummy_player = nil
       return
@@ -528,6 +535,7 @@ emu.registerbefore(function()
 
       init_dummy_state(dummy_player)
       dummy_initialized = true
+      engine.set_lua_dummy_active(true, dummy_id - 1)
       print(string.format("[training_main] Operator_Status: P1=%d P2=%d → local=P%d, dummy=P%d",
          engine.read_globals().operator_p1 or -1,
          engine.read_globals().operator_p2 or -1,
@@ -539,6 +547,9 @@ emu.registerbefore(function()
 
    -- Build FBNeo input table (start with all false)
    local input = make_fbneo_input()
+
+   -- Expose the input table to the inputs module so dummy_control can read it
+   inputs_mod.input = input
 
    -- Run dummy control subsystems with live menu settings
    local ok, err = pcall(function()
@@ -581,6 +592,19 @@ emu.registerbefore(function()
    local prefix = "P" .. dummy_id
    local dummy_input = fbneo_to_joypad(input, prefix)
    joypad.set(dummy_input, dummy_id)
+
+   -- DEBUG: log what we're sending (first 60 frames only)
+   if g_training_state_frame_dbg == nil then g_training_state_frame_dbg = 0 end
+   g_training_state_frame_dbg = g_training_state_frame_dbg + 1
+   if g_training_state_frame_dbg <= 60 and g_training_state_frame_dbg % 10 == 1 then
+      local val = 0
+      for name, mask in pairs({up=0x0001,down=0x0002,left=0x0004,right=0x0008,LP=0x0010,MP=0x0020,HP=0x0040,LK=0x0100,MK=0x0200,HK=0x0400}) do
+         if dummy_input[name] then val = val | mask end
+      end
+      print(string.format("[training_main] DBG frame=%d dummy_id=%d lever=0x%04X block_mode=%d block_style=%d",
+         g_training_state_frame_dbg, dummy_id, val,
+         blocking_options.mode, blocking_options.style))
+   end
 end)
 
 print("[training_main] Bootstrap complete")

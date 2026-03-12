@@ -102,6 +102,9 @@ extern TrainingGameState g_training_state;
 /** @brief When true, CPU_Sub() skips Lever_Buff clear and C dummy override so Lua controls input. */
 extern bool g_lua_dummy_active;
 
+/** @brief 0-indexed player ID that the Lua dummy system controls (0=P1, 1=P2). */
+extern s16 g_lua_dummy_player_id;
+
 void update_training_state(void);
 TrainingPlayerState* get_training_player(s16 id);
 

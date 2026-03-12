@@ -27,6 +27,7 @@
 #include "sf33rd/Source/Game/rendering/meta_col.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
+#include "sf33rd/Source/Game/training/training_state.h"
 
 static void plmv_1010(PLW* wk);
 static void plmv_1020(PLW* wk, s16 step);
@@ -41,7 +42,10 @@ static s16 select_hit_stop(s16 ms, s16 sb);
 void Player_move(PLW* wk, u16 lv_data) {
     s16 i;
 
-    if (wk->wu.pl_operator) {
+    if (g_lua_dummy_active && wk->wu.id == g_lua_dummy_player_id) {
+        // Lua dummy: use Lever_Buff written by joypad.set() in emu.registerbefore()
+        wk->cp->sw_lvbt = processed_lvbt(Lever_Buff[wk->wu.id]);
+    } else if (wk->wu.pl_operator) {
         wk->cp->sw_lvbt = lv_data;
     } else {
         wk->cp->sw_lvbt = processed_lvbt(cpu_algorithm(wk));

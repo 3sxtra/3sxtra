@@ -188,9 +188,24 @@ static u16 CPU_Sub(PLW* wk) {
         return 0;
     }
 
-    if (!g_lua_dummy_active) {
-        Lever_Buff[wk->wu.id] = 0;
+    // When Lua drives the dummy, skip the COM AI entirely.
+    // Lua has already written Lever_Buff[id] via joypad.set()
+    // in emu.registerbefore() (fired from update_training_state).
+    if (g_lua_dummy_active) {
+        Lever_Buff[wk->wu.id] = check_illegal_lever_data(Lever_Buff[wk->wu.id]);
+        static int dbg_count = 0;
+        if (dbg_count < 30 && (dbg_count % 10 == 0)) {
+            SDL_Log("[CPU_Sub] DBG g_lua_dummy_active=1 id=%d lever=0x%04X", wk->wu.id, Lever_Buff[wk->wu.id]);
+        }
+        dbg_count++;
+        Check_Store_Lv(wk);
+        Shift_Resume_Lv(wk);
+        Disp_Lever(&Lever_Buff[wk->wu.id], wk->wu.id, 1);
+        Disp_Mode(wk);
+        return Lever_Buff[wk->wu.id];
     }
+
+    Lever_Buff[wk->wu.id] = 0;
 
     if (em->pat_status == 0x26) {
         Lie_Flag[wk->wu.id] = 1;
@@ -202,10 +217,9 @@ static u16 CPU_Sub(PLW* wk) {
     Main_Program(wk);
     Lever_Buff[wk->wu.id] = check_illegal_lever_data(Lever_Buff[wk->wu.id]);
 
-    // TRAINING MODE OVERRIDE
-    if (g_training_state.is_in_match && !g_lua_dummy_active) {
+    // TRAINING MODE OVERRIDE (C dummy — only when Lua is not active)
+    if (g_training_state.is_in_match) {
         training_dummy_update_input(wk, wk->wu.id);
-        // Dummy writes Lever_Buff[id] directly — no sync needed
     }
 
     Check_Store_Lv(wk);

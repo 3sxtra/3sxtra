@@ -317,6 +317,10 @@ static int l_read_globals(lua_State* L) {
     PUSH_INT(L, t, "operator_p1", Operator_Status[0]);
     PUSH_INT(L, t, "operator_p2", Operator_Status[1]);
 
+    // Training_ID: which side selected training (0=P1, 1=P2)
+    extern u8 Training_ID;
+    PUSH_INT(L, t, "training_id", Training_ID);
+
     return 1;
 }
 
@@ -501,7 +505,10 @@ static int l_get_local_player(lua_State* L) {
 static int l_set_lua_dummy_active(lua_State* L) {
     int active = lua_toboolean(L, 1);
     g_lua_dummy_active = (bool)active;
-    SDL_Log("[Lua Bridge] set_lua_dummy_active(%s)", active ? "true" : "false");
+    if (lua_isnumber(L, 2)) {
+        g_lua_dummy_player_id = (s16)lua_tointeger(L, 2);
+    }
+    SDL_Log("[Lua Bridge] set_lua_dummy_active(%s, id=%d)", active ? "true" : "false", g_lua_dummy_player_id);
     return 0;
 }
 
@@ -587,4 +594,9 @@ void lua_engine_bridge_tick(void) {
     if (!L)
         return;
     l_tick(L);
+}
+
+void lua_engine_bridge_load_training(void) {
+    Rml::Lua::Interpreter::DoString("require('training_main')");
+    SDL_Log("[Lua Bridge] Training modules loaded (on training match entry)");
 }

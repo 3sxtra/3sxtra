@@ -28,6 +28,10 @@ local frexp = require"math".frexp
 local ldexp = require"math".ldexp
 local huge = require"math".huge
 local tconcat = require"table".concat
+local io = io
+local rawget = rawget
+local math = math
+local string = string
 
 --[[ debug only
 local format = require'string'.format

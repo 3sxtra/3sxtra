@@ -124,6 +124,19 @@ end
 local jump_postures = {[20]=true, [22]=true, [24]=true, [26]=true, [28]=true, [30]=true}
 local movement_postures = {[6]=true, [8]=true, [10]=true, [12]=true}
 
+-- State helpers (must be declared before update_player which uses them)
+local function is_standing_state(player, state)
+   return state == 0x01
+end
+
+local function is_crouching_state(player, state)
+   return state == 0x02
+end
+
+local function is_ground_state(player, state)
+   return is_standing_state(player, state) or is_crouching_state(player, state)
+end
+
 local function update_player(player, raw, other)
    if not raw then return end
 
@@ -358,17 +371,7 @@ P2.other = P1
 local player_objects = {P1, P2}
 
 -- Helper functions matching gamestate.lua API
-local function is_standing_state(player, state)
-   return state == 0x01
-end
-
-local function is_crouching_state(player, state)
-   return state == 0x02
-end
-
-local function is_ground_state(player, state)
-   return is_standing_state(player, state) or is_crouching_state(player, state)
-end
+-- (is_standing_state, is_crouching_state, is_ground_state defined above update_player)
 
 local function get_side(player_x, other_x, prev_x, prev_other_x)
    local diff = math.floor(player_x) - math.floor(other_x)

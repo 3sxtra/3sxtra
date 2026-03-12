@@ -283,9 +283,6 @@ extern "C" void rmlui_training_menu_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    // Attach click-to-cycle listeners after document is loaded
-    attach_cycle_listeners();
-
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Training] Data model registered (9 display + 8 dummy bindings)");
 }
 
@@ -295,6 +292,15 @@ extern "C" void rmlui_training_menu_init(void) {
 extern "C" void rmlui_training_menu_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
+
+    // Attach click-to-cycle listeners on first update.
+    // The training.rml document is lazy-loaded by rmlui_wrapper_show_document()
+    // on the first F7 press, so listeners can't be attached at init time.
+    static bool s_listeners_attached = false;
+    if (!s_listeners_attached) {
+        attach_cycle_listeners();
+        s_listeners_attached = true;
+    }
 
         // Display booleans
 #define DIRTY_BOOL(name, field)                                                                                        \
