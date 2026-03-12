@@ -52,7 +52,7 @@
 #include "port/save/native_save.h"
 #include "structs.h"
 
-#if defined(DEBUG)
+#if DEBUG
 #include "sf33rd/Source/Game/debug/debug_config.h"
 #endif
 
@@ -62,7 +62,7 @@
 
 #include <SDL3/SDL.h>
 
-#if !defined(_WIN32)
+#ifndef _WIN32
 #include <signal.h>
 static volatile sig_atomic_t g_signal_quit = 0;
 static void signal_handler(int sig) {
@@ -81,7 +81,7 @@ static void signal_handler(int sig) {
 
 extern bool game_paused;
 
-#if defined(_WIN32)
+#if _WIN32
 #include <windef.h> // including windows.h causes conflicts with the Polygon struct, so I just included the header where AllocConsole is and the Windows-specific typedefs that it requires.
 
 #include <ConsoleApi.h>
@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
 
     SDLApp_Init();
 
-#if !defined(_WIN32)
+#ifndef _WIN32
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
 #endif
@@ -257,7 +257,7 @@ int main(int argc, char* argv[]) {
             step_0();
             SDLApp_EndFrame();
             is_running = SDLApp_PollEvents();
-#if !defined(_WIN32)
+#ifndef _WIN32
             if (g_signal_quit)
                 is_running = false;
 #endif
@@ -266,7 +266,7 @@ int main(int argc, char* argv[]) {
             /* Re-present the existing canvas (no game logic, no FBO clear) */
             SDLApp_PresentOnly();
             is_running = SDLApp_PollEvents();
-#if !defined(_WIN32)
+#ifndef _WIN32
             if (g_signal_quit)
                 is_running = false;
 #endif
@@ -281,7 +281,7 @@ int main(int argc, char* argv[]) {
 
 /** @brief Attach to or create a Windows console for stdout/stderr output. */
 static void init_windows_console() {
-#if defined(_WIN32)
+#if _WIN32
     // attaches to an existing console for printouts. Works with windows CMD but not MSYS2
     if (AttachConsole(ATTACH_PARENT_PROCESS) == 0) {
         // if fails, then allocate a new console
@@ -300,9 +300,13 @@ static void init_windows_console() {
  * priority system, memory card, and the menu bridge.
  */
 static void game_init() {
-#if defined(DEBUG)
+#if DEBUG
     DebugConfig_Init();
 #endif
+
+    SDL_Log("OFFSET OF CG_IX = 0x%X", (unsigned int)offsetof(WORK, cg_ix));
+    SDL_Log("OFFSET OF NOW_KOC = 0x%X", (unsigned int)offsetof(WORK, now_koc));
+    SDL_Log("OFFSET OF CHAR_INDEX = 0x%X", (unsigned int)offsetof(WORK, char_index));
 
     flInitialize();
     TRACE_THREAD_NAME("Main/Game");
@@ -341,7 +345,7 @@ static void game_step_0() {
         TestRunner_Prologue();
     }
 
-#if defined(DEBUG)
+#if DEBUG
     if (!test_flag) {
         if (mpp_w.sysStop) {
             sysSLOW = 1;
@@ -661,7 +665,7 @@ static const struct {
 void cpLoopTask() {
     disp_ramcnt_free_area();
 
-#if defined(DEBUG)
+#if DEBUG
     if (sysSLOW) {
         if (--Slow_Timer == 0) {
             sysSLOW = 0;

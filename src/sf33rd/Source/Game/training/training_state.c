@@ -272,21 +272,6 @@ void update_training_state(void) {
 
     // Fire Lua per-frame callbacks (emu._fire_before)
     lua_engine_bridge_tick();
-
-    static bool printed_offsets = false;
-    if (!printed_offsets) {
-        printed_offsets = true;
-        SDL_Log("WORK cmoa: %zu", offsetof(WORK, cmoa));
-        SDL_Log("WORK now_koc: %zu", offsetof(WORK, now_koc));
-        SDL_Log("WORK char_state: %zu", offsetof(WORK, char_state));
-        SDL_Log("WORK cg_type: %zu", offsetof(WORK, char_state.body.fields.cg_type));
-        SDL_Log("WORK cg_number: %zu", offsetof(WORK, char_state.body.fields.cg_number));
-        SDL_Log("WORK char_state cgd_type: %zu", offsetof(WORK, char_state.cgd_type));
-        SDL_Log("WORK char_state kind_of_waza: %zu", offsetof(WORK, char_state.kind_of_waza));
-        SDL_Log("WORK hit_work_id: %zu", offsetof(WORK, hit_work_id));
-        SDL_Log("PLW current_attack: %zu", offsetof(PLW, current_attack));
-        SDL_Log("PLW waza_flag: %zu", offsetof(WORK_CP, waza_flag));
-    }
 }
 
 TrainingPlayerState* get_training_player(s16 id) {

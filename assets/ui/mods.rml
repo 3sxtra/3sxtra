@@ -19,6 +19,11 @@
                     <div class="control-row">
                         <input type="checkbox" data-checked="modded_bgm_enabled"/>
                         <label>Enable Modded BGM</label>
+                        <span data-if="modded_bgm_count > 0" class="status-ok"> ({{ modded_bgm_count }} tracks)</span>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="modded_voice_enabled"/>
+                        <label>Enable Modded Voice Lines</label>
                     </div>
                 </div>
 

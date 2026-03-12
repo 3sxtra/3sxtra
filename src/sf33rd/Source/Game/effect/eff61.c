@@ -1,6 +1,6 @@
 /**
  * @file eff61.c
- * Effect: Quake Effect
+ * Menu options
  */
 
 #include "sf33rd/Source/Game/effect/eff61.h"
@@ -18,7 +18,7 @@ static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
 static void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */);
 static void EFF61_SUDDENLY(WORK_Other_CONN* ewk);
 
-const s8* Menu_Letter_Data[74] = { "ARCADE",
+const s8* Menu_Letter_Data[77] = { "ARCADE",
                                    "VERSUS",
                                    "TRAINING",
                                    "NETWORK",
@@ -91,6 +91,9 @@ const s8* Menu_Letter_Data[74] = { "ARCADE",
                                    "AUTO-CONN",
                                    "AUTO-SEARCH",
                                    "CONNECT",
+                                   "EXIT",
+                                   "NATIVE",
+                                   "RMLUI",
                                    "EXIT" };
 
 /** @brief No-op — NETWORK is now always visible in the Mode Menu. */

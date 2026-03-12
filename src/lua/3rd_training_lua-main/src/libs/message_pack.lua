@@ -24,8 +24,12 @@ local tostring = tostring
 local type = type
 local char = require"string".char
 local floor = require"math".floor
-local frexp = require"math".frexp
-local ldexp = require"math".ldexp
+local frexp = require"math".frexp or function(x)
+    if x == 0 then return 0, 0 end
+    local e = math.floor(math.log(math.abs(x)) / math.log(2)) + 1
+    return x / 2^e, e
+end
+local ldexp = require"math".ldexp or function(m, e) return m * 2.0^e end
 local huge = require"math".huge
 local tconcat = require"table".concat
 local io = io

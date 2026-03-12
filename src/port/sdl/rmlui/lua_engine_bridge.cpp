@@ -34,6 +34,7 @@ extern "C" {
 
 extern "C" {
 #include "netplay/netplay.h"
+#include "sf33rd/Source/Game/engine/cmd_data.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/training/training_dummy.h"
@@ -57,6 +58,10 @@ extern "C" {
 #define PUSH_BOOL(L, tbl, name, val)                                                                                   \
     lua_pushboolean(L, (int)(val));                                                                                    \
     lua_setfield(L, tbl, name)
+
+// Cached SDL_GetBasePath() — must be captured before shader scanning
+// corrupts SDL3's internal pointer (observed: 2258 .slangp files).
+static char s_exe_base_path[1024] = {0};
 
 // ---- engine.read_player(id) ----
 // Returns the raw PLW/WORK fields matching gamestate.lua's field names.
@@ -137,6 +142,37 @@ static int l_read_player(lua_State* L) {
     PUSH_INT(L, t, "animation_frame_id", wu->cg_ix);
     PUSH_INT(L, t, "char_index", wu->char_index);
     PUSH_INT(L, t, "cg_number", wu->cg_number);
+
+    // Animation ID: compute from char_table byte offset
+    // In CPS3, action_address = char_table_base + char_table[koc][index]
+    // The low 16 bits of action_address = framedata key.
+    // On host, byte_offset = (u8*)set_char_ad - (u8*)char_table[now_koc]
+    // which equals char_table[now_koc][char_index] bytes.
+    // We also need the CPS3 base to get the absolute address.
+    // For now, output the byte offset and the raw table value for diagnosis.
+    {
+        static bool printed = false;
+        u32 byte_offset = 0;
+        u32 raw_table_val = 0;
+        if (wu->set_char_ad && wu->char_table[wu->now_koc]) {
+            byte_offset = (u32)((u8*)wu->set_char_ad - (u8*)wu->char_table[wu->now_koc]);
+            raw_table_val = wu->char_table[wu->now_koc][wu->char_index];
+
+            if (!printed) {
+                printed = true;
+                printf("[ANIM_DIAG] char_table[%d] base=%p, set_char_ad=%p\n",
+                       wu->now_koc, (void*)wu->char_table[wu->now_koc], (void*)wu->set_char_ad);
+                printf("[ANIM_DIAG] byte_offset=0x%X, raw_table_val=0x%X, cg_number=%d\n",
+                       byte_offset, raw_table_val, wu->cg_number);
+                printf("[ANIM_DIAG] offset_low16=0x%04X, raw_low16=0x%04X\n",
+                       byte_offset & 0xFFFF, raw_table_val & 0xFFFF);
+            }
+        }
+        PUSH_INT(L, t, "animation_byte_offset", byte_offset);
+        PUSH_INT(L, t, "animation_raw_table_val", raw_table_val);
+        PUSH_INT(L, t, "cg_number_value", wu->cg_number);
+        PUSH_INT(L, t, "now_koc", wu->now_koc);
+    }
 
     // --- Attack state ---
     PUSH_INT(L, t, "kind_of_waza", wu->kind_of_waza);
@@ -286,10 +322,123 @@ static int l_read_player(lua_State* L) {
         // can_fast_wakeup: base + 0x402 (byte)
         PUSH_INT(L, t, "can_fast_wakeup", base[0x402]);
 
+        // fast_wakeup_flag: base + 0x403 (byte)
+        PUSH_INT(L, t, "fast_wakeup_flag", base[0x403]);
+
         // received_connection_marker: base + 0x32E (word, little-endian)
         u16 rcm;
         memcpy(&rcm, &base[0x32E], sizeof(u16));
         PUSH_INT(L, t, "received_connection_marker", rcm);
+
+        // received_connection_type: base + 0x339 (byte) — 2 or 4 = projectile
+        PUSH_INT(L, t, "received_connection_type", base[0x339]);
+
+        // received_connection_id: base + 0x14 (dword) — base address of attacker
+        {
+            u32 rcid;
+            memcpy(&rcid, &base[0x14], sizeof(u32));
+            PUSH_INT(L, t, "received_connection_id", rcid);
+        }
+
+        // blocking_id: base + 0x3D3 (byte) — 1-4 block types, 5-8 parry types
+        PUSH_INT(L, t, "blocking_id", base[0x3D3]);
+
+        // busy_flag: base + 0x3D1 (word)
+        {
+            u16 bf;
+            memcpy(&bf, &base[0x3D1], sizeof(u16));
+            PUSH_INT(L, t, "busy_flag", bf);
+        }
+
+        // total_received_hit_count: base + 0x33E (word)
+        {
+            u16 trhc;
+            memcpy(&trhc, &base[0x33E], sizeof(u16));
+            PUSH_INT(L, t, "total_received_hit_count", trhc);
+        }
+
+        // recovery_flag: base + 0x3B (byte)
+        PUSH_INT(L, t, "recovery_flag", base[0x3B]);
+
+        // recovery_type: base + 0x207 (byte) — 1=hit ground, 4=normal, 5=special, 6=hit air, 7=body hit
+        PUSH_INT(L, t, "recovery_type", base[0x207]);
+
+        // input_capacity: base + 0x46C (word)
+        {
+            u16 ic;
+            memcpy(&ic, &base[0x46C], sizeof(u16));
+            PUSH_INT(L, t, "input_capacity", ic);
+        }
+
+        // hit_count: base + 0x189 (byte)
+        PUSH_INT(L, t, "hit_count", base[0x189]);
+
+        // connected_action_count: base + 0x17B (byte)
+        PUSH_INT(L, t, "connected_action_count", base[0x17B]);
+
+        // action_count: base + 0x459 (byte)
+        PUSH_INT(L, t, "action_count", base[0x459]);
+
+        // is_attacking_byte: base + 0x428 (byte)
+        PUSH_INT(L, t, "is_attacking_byte", base[0x428]);
+
+        // is_attacking_ext_byte: base + 0x429 (byte)
+        PUSH_INT(L, t, "is_attacking_ext_byte", base[0x429]);
+
+        // throw_countdown: base + 0x434 (byte)
+        PUSH_INT(L, t, "throw_countdown", base[0x434]);
+
+        // total_received_projectiles_count: base + 0x430 (word)
+        {
+            u16 trpc;
+            memcpy(&trpc, &base[0x430], sizeof(u16));
+            PUSH_INT(L, t, "total_received_projectiles_count", trpc);
+        }
+
+        // is_flying_down_flag: base + 0x8D (byte)
+        PUSH_INT(L, t, "is_flying_down_flag", base[0x8D]);
+
+        // air_recovery_1: base + 0x12F (byte)
+        PUSH_INT(L, t, "air_recovery_1", base[0x12F]);
+
+        // air_recovery_2: base + 0x3C7 (byte)
+        PUSH_INT(L, t, "air_recovery_2", base[0x3C7]);
+
+        // action_ext: base + 0x12C (word)
+        {
+            u16 ae;
+            memcpy(&ae, &base[0x12C], sizeof(u16));
+            PUSH_INT(L, t, "action_ext", ae);
+        }
+
+        // character_state_byte: base + 0x27 (byte) — same as routine_no[1]
+        PUSH_INT(L, t, "character_state_byte", base[0x27]);
+
+        // wakeup_time: base + 0x187 = recovery_time (already pushed as dm_stop)
+        // combo: base + 0xA59 (P1) / 0x519 (P2) — but combo_total already pushed via PLW
+    }
+
+    // --- Superfreeze (derived from PLW sa_stop_flag + hit_stop) ---
+    // sa_stop_flag: 0=none, 1=frozen during super, 2=initiating super
+    // Effie checks superfreeze_decount > 0 for Aegis blocking + cheat parry timing.
+    PUSH_INT(L, t, "superfreeze_decount", (wk->sa_stop_flag != 0) ? wu->hit_stop : 0);
+    PUSH_INT(L, t, "sa_stop_flag", wk->sa_stop_flag);
+
+    // --- Parry validity/cooldown (from command processing system) ---
+    // waza_flag[N] = parry validity timer (counts down from reset[N])
+    //   N=3: forward parry, N=4: down parry, N=5: air parry, N=6: antiair parry
+    // waza_work[id][N].free3 = cooldown timer (counts down from reset[N]+10)
+    // See check_10() and check_12() in cmd_main.c for the parry input detection.
+    {
+        int pid = id - 1; // 0-indexed player id for wcp[] and waza_work[]
+        PUSH_INT(L, t, "parry_forward_validity_time", wcp[pid].waza_flag[3]);
+        PUSH_INT(L, t, "parry_forward_cooldown_time", waza_work[pid][3].free3);
+        PUSH_INT(L, t, "parry_down_validity_time",    wcp[pid].waza_flag[4]);
+        PUSH_INT(L, t, "parry_down_cooldown_time",    waza_work[pid][4].free3);
+        PUSH_INT(L, t, "parry_air_validity_time",     wcp[pid].waza_flag[5]);
+        PUSH_INT(L, t, "parry_air_cooldown_time",     waza_work[pid][5].free3);
+        PUSH_INT(L, t, "parry_antiair_validity_time", wcp[pid].waza_flag[6]);
+        PUSH_INT(L, t, "parry_antiair_cooldown_time", waza_work[pid][6].free3);
     }
 
     return 1;
@@ -464,9 +613,8 @@ static int l_read_file_text(lua_State* L) {
 
     const char* open_path = path;
     if (!is_absolute) {
-        const char* base = SDL_GetBasePath();
-        if (base) {
-            SDL_snprintf(abs_path, sizeof(abs_path), "%s%s", base, path);
+        if (s_exe_base_path[0] != '\0') {
+            SDL_snprintf(abs_path, sizeof(abs_path), "%s%s", s_exe_base_path, path);
             open_path = abs_path;
         }
     }
@@ -489,7 +637,7 @@ static int l_read_file_text(lua_State* L) {
     SDL_CloseIO(rw);
 
     buf[read] = '\0';
-    lua_pushstring(L, buf);
+    lua_pushlstring(L, buf, (size_t)read);  // binary-safe: preserves embedded \0
     SDL_free(buf);
 
     return 1;
@@ -572,6 +720,12 @@ static const luaL_Reg engine_funcs[] = {
 };
 
 void lua_engine_bridge_init(void) {
+    // Cache SDL_GetBasePath() now — before shader scanning corrupts the pointer.
+    const char* base = SDL_GetBasePath();
+    if (base) {
+        SDL_strlcpy(s_exe_base_path, base, sizeof(s_exe_base_path));
+    }
+
     lua_State* L = Rml::Lua::Interpreter::GetLuaState();
     if (!L) {
         SDL_Log("[Lua Bridge] ERROR: No Lua state available");
@@ -581,8 +735,8 @@ void lua_engine_bridge_init(void) {
     luaL_newlib(L, engine_funcs);
     lua_setglobal(L, "engine");
 
-    SDL_Log("[Lua Bridge] Registered engine API (%d functions)",
-            (int)(sizeof(engine_funcs) / sizeof(engine_funcs[0]) - 1));
+    SDL_Log("[Lua Bridge] Registered engine API (%d functions), base='%s'",
+            (int)(sizeof(engine_funcs) / sizeof(engine_funcs[0]) - 1), s_exe_base_path);
 }
 
 void lua_engine_bridge_shutdown(void) {

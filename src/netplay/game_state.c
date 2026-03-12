@@ -41,8 +41,8 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
 #include <SDL3/SDL.h>
-#if defined(DEBUG)
 static int battle_start_frame = -1;
+#if DEBUG
 #define STATE_BUFFER_MAX 20
 static State state_buffer[STATE_BUFFER_MAX];
 #endif
@@ -53,7 +53,7 @@ static State state_buffer[STATE_BUFFER_MAX];
 #undef Game
 #include "sf33rd/utils/djb2_hash.h"
 
-#include "port/config/cli_parser.h"
+#include "main.h"
 
 #define GS_SAVE(member) SDL_memcpy(&dst->member, &member, sizeof(member))
 
@@ -1397,7 +1397,7 @@ void GameState_Load(const GameState* src) {
     GS_LOAD(Y_Adjust_Buff);
 }
 
-#if defined(DEBUG)
+#if DEBUG
 // Per-subsystem checksums for faster desync triage — when a desync fires,
 // we can immediately tell which section (player, bg, effects...) diverged.
 typedef struct {
@@ -1412,10 +1412,6 @@ typedef struct {
 
 static SectionedChecksum saved_section_checksums[STATE_BUFFER_MAX];
 static PLW saved_plw_scratch[STATE_BUFFER_MAX][2];
-
-// Forward declarations for sanitization helpers (defined below).
-static void sanitize_work_pointers(WORK* w);
-static void sanitize_plw_pointers(PLW* p);
 
 #endif
 
@@ -1445,7 +1441,6 @@ static void gather_state(State* dst) {
     es->frwctr_min = frwctr_min;
 }
 
-#if defined(DEBUG)
 /// Zero pointer fields so they don't pollute checksums (ASLR makes them differ).
 /// Only ever called on a scratch copy — never on a state Gekko will restore.
 static void sanitize_work_pointers(WORK* w) {
@@ -1505,6 +1500,7 @@ static void sanitize_plw_pointers(PLW* p) {
     p->py = NULL;
 }
 
+#if DEBUG
 /// Save state in state buffer.
 /// @return Mutable pointer to state as it has been saved.
 static State* note_state(const State* state, int frame) {
@@ -1522,9 +1518,10 @@ static State* note_state(const State* state, int frame) {
  * @brief Save game state for rollback — GekkoNet callback.
  *
  * @netplay_sync
- * Called by GekkoNet on every frame to save the current state. In DEBUG builds,
- * also computes per-subsystem checksums for desync detection and saves sanitized
- * PLW copies for binary comparison when a desync is detected.
+ * Called by GekkoNet on every frame to save the current state. Computes a
+ * focused gameplay checksum for desync detection in both Debug and Release.
+ * In DEBUG builds, additionally saves per-subsystem checksums and PLW copies
+ * for binary comparison when a desync is detected.
  *
  * The checksum only covers a whitelist of gameplay-critical fields (PLW after
  * pointer/rendering sanitization, RNG indices, round state, combat flags,
@@ -1537,19 +1534,20 @@ void save_state(const GekkoGameEvent* event) {
 
     gather_state(dst);
 
-#if defined(DEBUG)
     const int frame = event->data.save.frame;
 
     // Activate checksumming from the very first synced frame (not just battle).
     // This catches desyncs during character select, not only during gameplay.
     if (battle_start_frame < 0) {
         battle_start_frame = frame;
-        SDL_Log("[P%d] checksumming active from frame %d (G_No[1]=%d)", g_netplay_port, frame, G_No[1]);
+        SDL_Log("[P%d] checksumming active from frame %d (G_No[1]=%d)", configuration.netplay.port, frame, G_No[1]);
     }
 
     const bool checksumming_active = battle_start_frame >= 0;
 
+#if DEBUG
     note_state(dst, frame);
+#endif
 
     // Sanitize non-functional data in dst (safe for rollback restore):
     // inactive effect slots, padding arrays, WORK_Other_CONN unused tails.
@@ -1571,7 +1569,9 @@ void save_state(const GekkoGameEvent* event) {
                 SDL_zeroa(wo->et_free);
             }
         }
+#if DEBUG
         note_state(dst, frame);
+#endif
     }
 
     if (checksumming_active) {
@@ -1666,7 +1666,8 @@ void save_state(const GekkoGameEvent* event) {
 
         *event->data.save.checksum = h;
 
-        // Per-section checksums for desync triage
+#if DEBUG
+        // Per-section checksums for desync triage (debug-only diagnostic)
         SectionedChecksum sc;
         uint32_t sh;
         sh = djb2_init();
@@ -1683,8 +1684,8 @@ void save_state(const GekkoGameEvent* event) {
         saved_section_checksums[frame % STATE_BUFFER_MAX] = sc;
         SDL_memcpy(&saved_plw_scratch[frame % STATE_BUFFER_MAX][0], &plw_scratch[0], sizeof(PLW));
         SDL_memcpy(&saved_plw_scratch[frame % STATE_BUFFER_MAX][1], &plw_scratch[1], sizeof(PLW));
-    }
 #endif
+    }
 }
 
 /**

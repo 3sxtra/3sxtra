@@ -8,7 +8,7 @@
  */
 #include "common.h"
 
-#if defined(_WIN32)
+#if _WIN32
 #define WIN32_LEAN_AND_MEAN
 // clang-format off
 #include <windows.h>
@@ -39,7 +39,7 @@ void fatal_error(const s8* fmt, ...) {
     fflush(stderr);
 
     void* buffer[BACKTRACE_MAX];
-#if !defined(_WIN32)
+#ifndef _WIN32
     int nptrs = backtrace(buffer, BACKTRACE_MAX);
     fprintf(stderr, "Stack trace:\n");
     backtrace_symbols_fd(buffer, nptrs, fileno(stderr));
@@ -75,7 +75,7 @@ void not_implemented(const s8* func) {
 
 /** @brief Print a debug message to stdout (DEBUG builds only). */
 void debug_print(const char* fmt, ...) {
-#if defined(DEBUG)
+#if DEBUG
     va_list args;
     va_start(args, fmt);
     vfprintf(stdout, fmt, args);

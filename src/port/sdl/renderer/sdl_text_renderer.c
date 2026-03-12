@@ -103,7 +103,7 @@ void SDLTextRenderer_SetBackgroundPadding(float px) {
 }
 
 void SDLTextRenderer_DrawDebugBuffer(float target_width, float target_height) {
-#if defined(DEBUG)
+#if DEBUG
 
     if (flDebugStrCtr == 0) {
         return;

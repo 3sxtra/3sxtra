@@ -155,7 +155,7 @@ const u8 Random_Stage_Data[2][32] = {
     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 2, 3, 4, 5, 6, 7, 8, 11, 12, 15, 16, 19, 0 }
 };
 
-const s16 Slide_Pos_Data_61[74][2] = {
+const s16 Slide_Pos_Data_61[77][2] = {
     { -120, 156 },
     { -104, 135 },
     { -88, 114 },
@@ -230,7 +230,11 @@ const s16 Slide_Pos_Data_61[74][2] = {
     { -150, 119 }, /* [70] AUTO-CONN (NET)       screen y≈115 */
     { -150, 105 }, /* [71] AUTO-SEARCH (NET)     screen y≈129 */
     { -150, 91 },  /* [72] CONNECT (NET)         screen y≈143 */
-    { -150, 69 }   /* [73] EXIT                  screen y≈155 */
+    { -150, 69 },  /* [73] EXIT                  screen y≈155 */
+    /* Network Gateway strings [74-76] */
+    { -88, 142 },  /* [74] NATIVE */
+    { -72, 112 },  /* [75] RMLUI  */
+    { -56, 82 }    /* [76] EXIT   */
 };
 
 const s16 Slide_Pos_Data_63[5][2] = { { 40, 164 }, { 60, 142 }, { 80, 120 }, { 100, 98 }, { 120, 76 } };

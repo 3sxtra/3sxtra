@@ -5,7 +5,6 @@
 #include "gekkonet.h"
 #include "main.h"
 #include "port/char_data.h"
-#include "port/config/cli_parser.h"
 #include "port/config/config.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"
@@ -380,9 +379,7 @@ static void configure_gekko() {
     config.max_spectators = 0;
     config.input_prediction_window = 12;
 
-#if defined(DEBUG)
     config.desync_detection = true;
-#endif
 
     if (gekko_create(&session, GekkoGameSession)) {
         gekko_start(session, &config);
@@ -650,13 +647,11 @@ static void process_session() {
                    event->data.desynced.local_checksum,
                    event->data.desynced.remote_checksum);
 
-#if defined(DEBUG)
             // Debug state dumping is now handled internally in game_state.c
             // via save_state() / load_state_from_event() which have access
             // to the static buffers and checksum structures.
             // When a desync occurs, the game_state.c buffers retain the history.
-            printf("  (Debug logging and state dumping for desyncs is available in game_state.c)\n");
-#endif
+            printf("  (State dumping for desyncs is available in game_state.c)\n");
 
             SDL_ShowSimpleMessageBox(
                 SDL_MESSAGEBOX_WARNING, "Netplay", "Desync detected — the session will be terminated.", NULL);
@@ -841,7 +836,7 @@ void Netplay_Begin() {
     ping_sample_count = 0;
     ping_sample_timer = 0;
 
-#if defined(DEBUG)
+#if DEBUG
     // Removed because battle_start_frame is now effectively private in game_state.c
     // and correctly managed by save_state() etc.
 #ifdef _WIN32
@@ -927,7 +922,7 @@ void Netplay_Run() {
                     Netplay_SetPlayerNumber(we_initiated ? 0 : 1);
                     Netplay_SetRemoteIP(target_peer->ip);
                     Netplay_SetRemotePort(target_peer->port);
-                    Netplay_SetLocalPort(g_netplay_port);
+                    Netplay_SetLocalPort(configuration.netplay.port);
                     SDLNetplayUI_SetNativeLobbyActive(false);
                     Netplay_Begin();
                 }
@@ -1053,11 +1048,5 @@ int Netplay_GetPlayerHandle(void) {
     return player_handle;
 }
 int Netplay_GetBattleStartFrame(void) {
-#if defined(DEBUG)
-    // Battle start frame is now managed within game_state.c,
-    // returning -1 here because this function shouldn't be called directly for checksumming bounds.
     return -1;
-#else
-    return -1;
-#endif
 }

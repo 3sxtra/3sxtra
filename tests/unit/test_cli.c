@@ -11,10 +11,12 @@
 #include "port/sdl/app/sdl_app.h"
 
 // Globals needed by ParseCLI
+#include "configuration.h"
+Configuration configuration = { 0 };
 BroadcastConfig broadcast_config;
 int g_resolution_scale = 1;
 const char* g_shm_suffix = NULL;
-int g_master_volume = 100;
+float g_master_volume = 1.0f;
 
 // Mock state
 static RendererBackend last_renderer_backend = RENDERER_OPENGL;

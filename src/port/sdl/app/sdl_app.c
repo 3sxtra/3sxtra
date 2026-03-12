@@ -535,6 +535,7 @@ int SDLApp_Init() {
     rmlui_training_menu_init();
     rmlui_training_hud_init();
     rmlui_control_mapping_init();
+    rmlui_network_lobby_init(); // Always initialized for the Native -> RmlUI gateway
 
     if (use_rmlui) {
         SDL_Log("UI mode: RmlUi (overlay menus via HTML/CSS)");
@@ -552,7 +553,6 @@ int SDLApp_Init() {
         rmlui_memory_card_init();
         rmlui_sound_menu_init();
         rmlui_sysdir_init();
-        rmlui_network_lobby_init();
         rmlui_extra_option_init();
         rmlui_training_menus_init();
         rmlui_button_config_init();
@@ -707,7 +707,9 @@ void SDLApp_BeginFrame() {
     // This avoids ~13ms of implicit glFinish() overhead in eglSwapBuffers on Pi4.
     // ⚡ Pi4: removed use_rmlui from this guard — the wrapper already has
     // s_any_window_visible early-outs. Only overlay menus need per-frame processing.
-    bool rmlui_active = show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
+    // Update: also process explicitly visible game documents in Native mode.
+    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() ||
+                        show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
                         show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_new_frame();
@@ -770,7 +772,9 @@ static void render_overlays(int win_w, int win_h) {
 
     /* Flush UI framework — only when RmlUi is active */
     // ⚡ Pi4: removed use_rmlui — matches BeginFrame guard above.
-    bool rmlui_active = show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
+    // Update: also process explicitly visible game documents in Native mode.
+    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() ||
+                        show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
                         show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_render();
@@ -809,7 +813,6 @@ void SDLApp_EndFrame() {
         rmlui_memory_card_update();
         rmlui_sound_menu_update();
         rmlui_sysdir_update();
-        rmlui_network_lobby_update();
         rmlui_extra_option_update();
         rmlui_training_menus_update();
         rmlui_button_config_update();
@@ -823,8 +826,9 @@ void SDLApp_EndFrame() {
         TRACE_SUB_END();
     }
 
-    /* Replay picker always uses RmlUI — update outside use_rmlui gate */
+    /* Replay picker and network lobby always use RmlUI — update outside use_rmlui gate */
     rmlui_replay_picker_update();
+    rmlui_network_lobby_update();
 
     if (is_sdl2d_backend(g_renderer_backend)) {
         // --- SDL2D Backend ---
@@ -849,8 +853,8 @@ void SDLApp_EndFrame() {
         SDLAppBezel_RenderSDL2D(sdl_renderer, win_w, win_h, &dst_rect);
 
         // Render RmlUi game context at window resolution (Phase 3 game screens)
-        // ⚡ Pi4: gate behind use_rmlui — matches OpenGL path behavior.
-        if (use_rmlui) {
+        // ⚡ Pi4: allow explicitly visible documents to render even in Native mode
+        if (use_rmlui || rmlui_wrapper_any_game_visible()) {
             rmlui_wrapper_update_game();
             rmlui_wrapper_render_game(win_w, win_h, dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h);
         }
@@ -912,8 +916,8 @@ void SDLApp_EndFrame() {
         // --- GPU Backend ---
 
         // Update RmlUi game context (render happens after canvas blit below)
-        // ⚡ Pi4: gate behind use_rmlui — matches OpenGL path behavior.
-        if (use_rmlui) {
+        // ⚡ Pi4: allow explicitly visible documents to update even in Native mode
+        if (use_rmlui || rmlui_wrapper_any_game_visible()) {
             rmlui_wrapper_update_game();
         }
 
@@ -1026,7 +1030,7 @@ void SDLApp_EndFrame() {
             TRACE_SUB_END();
         }
 
-#if defined(DEBUG)
+#if DEBUG
         // Debug Buffer (PS2)
         SDLTextRenderer_DrawDebugBuffer((float)win_w, (float)win_h);
 #endif
@@ -1034,8 +1038,8 @@ void SDLApp_EndFrame() {
         // Bezel Rendering (GPU)
         SDLAppBezel_RenderGPU(win_w, win_h);
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
-        // ⚡ Pi4: gate behind use_rmlui — matches OpenGL path behavior.
-        if (use_rmlui) {
+        // ⚡ Pi4: allow explicitly visible documents to render even in Native mode
+        if (use_rmlui || rmlui_wrapper_any_game_visible()) {
             const SDL_FRect gp_vp = get_letterbox_rect(win_w, win_h);
             rmlui_wrapper_render_game(win_w, win_h, gp_vp.x, gp_vp.y, gp_vp.w, gp_vp.h);
         }
@@ -1055,8 +1059,8 @@ void SDLApp_EndFrame() {
     } else {
         // --- OpenGL Backend ---
 
-        // Update RmlUi game context — only when use_rmlui is active
-        if (use_rmlui) {
+        // Update RmlUi game context — allow explicitly visible documents even in Native mode
+        if (use_rmlui || rmlui_wrapper_any_game_visible()) {
             rmlui_wrapper_update_game();
         }
 
@@ -1288,7 +1292,7 @@ void SDLApp_EndFrame() {
         SDLAppBezel_RenderGL(win_w, win_h, &viewport, passthru_shader_program, (const float*)identity);
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
         // GL state reset is handled inside rmlui_wrapper_render_game (only when docs visible)
-        if (use_rmlui) {
+        if (use_rmlui || rmlui_wrapper_any_game_visible()) {
             rmlui_wrapper_render_game(win_w, win_h, viewport.x, viewport.y, viewport.w, viewport.h);
         }
 

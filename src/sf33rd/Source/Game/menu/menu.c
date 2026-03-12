@@ -252,7 +252,7 @@ void Menu_Init(struct _TASK* task_ptr) {
 
         Order[0x4E] = 5;
         Order_Timer[0x4E] = 1;
-        effect_57_init(0x4E, 0, 0, 0x45, fade_on);
+        effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, fade_on);
         load_any_texture_patnum(0x7F30, 0xC, 0);
     }
 
@@ -308,7 +308,7 @@ static void Mode_Select(struct _TASK* task_ptr) {
         }
 
         if (!use_rmlui || !rmlui_menu_mode) {
-            effect_57_init(0x64, 0, 0, 0x3F, 2);
+            effect_57_init(0x64, MENU_HEADER_MODE_MENU, 0, 0x3F, 2);
             Order[0x64] = 1;
             Order_Dir[0x64] = 8;
             Order_Timer[0x64] = 1;
@@ -634,19 +634,84 @@ static void Network_Lobby(struct _TASK* task_ptr) {
     static int s_slide_offset = 384; /* slide-in offset for SSPutStr elements */
 
     switch (task_ptr->r_no[2]) {
+    /* ================================================================
+     * GATEWAY PHASE (cases 0–3): NATIVE / RMLUI / EXIT
+     * ================================================================ */
     case 0:
-        /* Phase 1: Start fade, set suicide, request blue BG mode */
+        /* Phase 0: Fade out, kill Mode_Select items, init gateway submenu */
+        Menu_in_Sub(task_ptr);
+        effect_57_init(0x70, MENU_HEADER_NETWORK, 0, 0x3F, 2);
+        Order[0x70] = 1;
+        Order_Dir[0x70] = 8;
+        Order_Timer[0x70] = 1;
+        effect_04_init(1, 7, 0, 0x48); /* cursor type 7 = 3-item gateway */
+        {
+            s16 char_index = 74; /* 74=NATIVE, 75=RMLUI, 76=EXIT */
+            for (ix = 0; ix < 3; ix++) {
+                effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x7047);
+                Order[ix + 0x50] = 1;
+                Order_Dir[ix + 0x50] = 4;
+                Order_Timer[ix + 0x50] = ix + 0x14;
+                char_index++;
+            }
+        }
+        Menu_Cursor_Move = 3;
+        break;
+
+    case 1:
+        Menu_Sub_case1(task_ptr);
+        break;
+
+    case 2:
+        if (FadeIn(1, 0x19, 8) != 0) {
+            task_ptr->r_no[2] += 1;
+        }
+        break;
+
+    case 3:
+        /* Gateway input: pick NATIVE / RMLUI / EXIT */
+        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 2, 0xFF) == 0) {
+            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 2, 0xFF);
+        }
+
+        if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
+            SE_selected();
+
+            if (Menu_Cursor_Y[0] == 2 || IO_Result == SWK_EAST) {
+                /* EXIT — back to Mode_Select */
+                Menu_Suicide[0] = 0;
+                Menu_Suicide[1] = 1;
+                task_ptr->r_no[1] = 1; /* Mode_Select */
+                task_ptr->r_no[2] = 0;
+                task_ptr->r_no[3] = 0;
+                task_ptr->free[0] = 0;
+                Order[0x70] = 4;
+                Order_Timer[0x70] = 4;
+                break;
+            }
+
+            /* NATIVE (0) or RMLUI (1) — store choice, go to lobby setup */
+            task_ptr->free[2] = Menu_Cursor_Y[0]; /* 0=native, 1=rmlui */
+            task_ptr->r_no[2] = 10; /* jump to lobby phase */
+        }
+        break;
+
+    /* ================================================================
+     * LOBBY PHASE (cases 10–13): full lobby with peer lists & popups
+     * ================================================================ */
+    case 10:
+        /* Phase 10: Start fade, set suicide, request blue BG mode */
         FadeOut(1, 0xFF, 8);
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
-        Menu_Suicide[0] = 1;        /* kill Mode_Select items (master_player=0) */
-        Menu_Suicide[1] = 0;        /* enable our items (master_player=1) */
+        Menu_Suicide[0] = 1;        /* kill gateway items (master_player=0) */
+        Menu_Suicide[1] = 0;        /* enable lobby items (master_player=1) */
         Message_Data->kind_req = 4; /* blue-BG background mode */
         break;
 
-    case 1:
-        /* Phase 2: Destroy old effects, rebuild from scratch */
+    case 11:
+        /* Phase 11: Destroy old effects, rebuild lobby from scratch */
         FadeOut(1, 0xFF, 8);
         task_ptr->r_no[2] += 1;
 
@@ -661,22 +726,20 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         /* Red slide-in header bar */
         Order_Dir[0x4E] = 1;
 
-        if (use_rmlui && rmlui_menu_lobby) {
+        if (task_ptr->free[2] == 1) {
+            /* RMLUI lobby */
             rmlui_network_lobby_show();
         } else {
+            /* NATIVE lobby */
             /* Right-side grey overlay boxes (LAN and Internet peer areas) */
-            effect_66_init(0x8A, 42, 1, 0, -1, -1, -0x7FF0); /* cg_type=16: LAN peer box (top, small) */
+            effect_66_init(0x8A, 42, 1, 0, -1, -1, -0x7FF0);
             Order[0x8A] = 3;
             Order_Timer[0x8A] = 1;
-            effect_66_init(0x8B, 42, 1, 0, -1, -1, -0x7FF1); /* cg_type=15: Internet peer box (bottom, big) */
+            effect_66_init(0x8B, 42, 1, 0, -1, -1, -0x7FF1);
             Order[0x8B] = 3;
             Order_Timer[0x8B] = 1;
 
-            /* No effect_04_init — effect_61 brightness handles cursor indication */
-
-            /* Menu items: 6 items, 0x70A7 = compact 8px font, master_player=1
-             * 68=LAN AUTO-CONN, 69=NET AUTO-CONN, 70=AUTO-SEARCH,
-             * 71=CONNECT PEER, 72=SEARCH MATCH, 73=EXIT */
+            /* Menu items: 6 items, 0x70A7 = compact 8px font, master_player=1 */
             {
                 static const s16 lobby_strings[] = { 68, 69, 70, 71, 72, 73 };
                 for (ix = 0; ix < 6; ix++) {
@@ -705,18 +768,15 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             Menu_Cursor_Move = 6;
         }
 
-        /* Blue background banner — always init (palette 0x45).
-         * effect_work_init() above destroyed the inherited effect_57,
-         * so recreate it unconditionally for both native and RmlUI. */
-        effect_57_init(0x4E, 0, 0, 0x45, 0);
+        /* Blue background banner — always init (palette 0x45). */
+        effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, 0);
 
-        /* Enter lobby state — set native flag BEFORE changing session state
-         * to prevent ImGui lobby from rendering a frame before the flag is set */
+        /* Enter lobby state */
         SDLNetplayUI_SetNativeLobbyActive(true);
         Netplay_EnterLobby();
-        /* fallthrough to case 2 */
+        /* fallthrough to case 12 */
 
-    case 2:
+    case 12:
         /* Wait for fade-out timer */
         FadeOut(1, 0xFF, 8);
 
@@ -727,15 +787,15 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         }
         break;
 
-    case 3:
+    case 13:
         /* Fade in */
         if (FadeIn(1, 25, 8)) {
             task_ptr->r_no[2] += 1;
         }
         break;
 
-    case 4: {
-        /* --- Input loop --- */
+    case 14: {
+        /* --- Lobby input loop --- */
 
         /* Decelerate slide-in offset */
         if (s_slide_offset > 0) {
@@ -746,7 +806,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         const s16 sl = (s16)s_slide_offset;
 
         /* Custom red banner (brighter than default Akaobi 0xA0D00000) */
-        if (!use_rmlui || !rmlui_menu_lobby) {
+        if (task_ptr->free[2] == 0) {
             PAL_CURSOR_P ap[4];
             PAL_CURSOR_COL acol[4];
             u8 ci;
@@ -793,21 +853,16 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         bool popup_active =
             SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge() || lan_incoming || lan_outgoing;
 
-        /* Handle cursor movement (6 items: 0..5)
-         * MC_Move_Sub MUST always run because it sets IO_Result from button presses.
-         * When the popup is active, we save/restore the cursor to suppress movement
-         * while still capturing confirm/cancel button events for the popup handler. */
+        /* Handle cursor movement (6 items: 0..5) */
         {
             s16 prev_cursor = Menu_Cursor_Y[0];
             if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 5, 0xFF) == 0) {
                 MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 5, 0xFF);
             }
             if (popup_active) {
-                /* Restore cursor — suppress movement while popup is showing */
                 Menu_Cursor_Y[0] = prev_cursor;
             } else if (prev_cursor != Menu_Cursor_Y[0]) {
-                /* Update description message on cursor change */
-                if (!use_rmlui || !rmlui_menu_lobby) {
+                if (task_ptr->free[2] == 0) {
                     Message_Data->order = 1;
                     Message_Data->request = 35 + Menu_Cursor_Y[0];
                     Message_Data->timer = 2;
@@ -820,7 +875,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         if (!popup_active) {
             u16 click = (~plsw_01[0] & plsw_00[0]) | (~plsw_01[1] & plsw_00[1]);
 
-            if (click & 12) { // SWK_LEFT is 4, SWK_RIGHT is 8
+            if (click & 12) {
                 switch (Menu_Cursor_Y[0]) {
                 case 0: { /* LAN AUTO-CONN */
                     bool v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
@@ -829,15 +884,15 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     SE_dir_cursor_move();
                     break;
                 }
-                case 1: { /* LAN CONNECT (peee toggling) */
+                case 1: { /* LAN CONNECT (peer toggling) */
                     NetplayDiscoveredPeer tg_peers[16];
                     int tg_count = Discovery_GetPeers(tg_peers, 16);
                     if (tg_count > 0) {
-                        if (click & 4) { // Left
+                        if (click & 4) {
                             g_lobby_peer_idx--;
                             if (g_lobby_peer_idx < 0)
                                 g_lobby_peer_idx = tg_count - 1;
-                        } else { // Right
+                        } else {
                             g_lobby_peer_idx++;
                             if (g_lobby_peer_idx >= tg_count)
                                 g_lobby_peer_idx = 0;
@@ -846,8 +901,6 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                         if (Discovery_GetChallengeTarget() != 0) {
                             Discovery_SetChallengeTarget(0);
                         }
-                    } else {
-                        // ignore empty
                     }
                     break;
                 }
@@ -869,11 +922,11 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     if (SDLNetplayUI_IsSearching()) {
                         int p_count = SDLNetplayUI_GetOnlinePlayerCount();
                         if (p_count > 0) {
-                            if (click & 4) { // Left
+                            if (click & 4) {
                                 g_net_peer_idx--;
                                 if (g_net_peer_idx < 0)
                                     g_net_peer_idx = p_count - 1;
-                            } else { // Right
+                            } else {
                                 g_net_peer_idx++;
                                 if (g_net_peer_idx >= p_count)
                                     g_net_peer_idx = 0;
@@ -890,14 +943,12 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         }
 
         /* === Background text — hide when popup covers the screen === */
-        if ((!use_rmlui || !rmlui_menu_lobby) && !popup_active) {
+        if (task_ptr->free[2] == 0 && !popup_active) {
             /* === Display toggle values (right of labels) === */
             {
-                /* LAN toggle values (left column) */
                 bool lan_ac = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
                 SSPutStr_Bigger(136 + sl, 63, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
 
-                /* NET toggle values (left column, below LAN) */
                 bool net_ac = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
                 SSPutStr_Bigger(136 + sl, 115, 5, net_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, net_ac ? 9 : 1, 1.0f);
 
@@ -905,7 +956,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 SSPutStr_Bigger(136 + sl, 129, 5, auto_s ? (s8*)"ON" : (s8*)"OFF", 1.0f, auto_s ? 9 : 1, 1.0f);
             }
 
-            /* === LAN / NET Headers (centered on screen, 384px wide) === */
+            /* === LAN / NET Headers === */
             {
                 const char* lan_hdr = "----- LAN -----";
                 int lan_hdr_px = (int)SDL_strlen(lan_hdr) * 8;
@@ -919,13 +970,12 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 SSPutStr_Bigger(net_hdr_x + sl, 102, 5, (s8*)net_hdr, 1.0f, 0, 1.0f);
             }
 
-            /* === Peer / Online Info (Right Side, inside grey boxes) === */
+            /* === Peer / Online Info (Right Side) === */
             {
                 s16 peer_x = 200;
                 s16 lan_peer_y = 63;
                 s16 net_peer_y = 115;
 
-                /* LAN Selected Peer (right side, top) — styled like Internet */
                 NetplayDiscoveredPeer d_peers[16];
                 int d_count = Discovery_GetPeers(d_peers, 16);
                 if (d_count > 0) {
@@ -936,8 +986,6 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     char buf[64];
                     SDL_snprintf(buf, sizeof(buf), "%d FOUND", d_count);
                     SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)buf, 1.0f, 9, 1.0f);
-
-                    // Show selected peer name
                     SDL_snprintf(buf, sizeof(buf), "> %s", d_peers[g_lobby_peer_idx].name);
                     SSPutStr_Bigger(peer_x + sl, (u16)(lan_peer_y + 15), 5, (s8*)buf, 1.0f, 0, 1.0f);
                 } else {
@@ -945,7 +993,6 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)"NONE", 1.0f, 1, 1.0f);
                 }
 
-                /* Internet Online Players (right side, below LAN peer) */
                 if (SDLNetplayUI_IsSearching()) {
                     int online_count = SDLNetplayUI_GetOnlinePlayerCount();
                     char s_buf[64];
@@ -954,11 +1001,8 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                             g_net_peer_idx = online_count - 1;
                         if (g_net_peer_idx < 0)
                             g_net_peer_idx = 0;
-
                         SDL_snprintf(s_buf, sizeof(s_buf), "%d ONLINE", online_count);
                         SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)s_buf, 1.0f, 9, 1.0f);
-
-                        // Show selected peer
                         SDL_snprintf(s_buf, sizeof(s_buf), "> %s", SDLNetplayUI_GetOnlinePlayerName(g_net_peer_idx));
                         SSPutStr_Bigger(peer_x + sl, (u16)(net_peer_y + 15), 5, (s8*)s_buf, 1.0f, 0, 1.0f);
                     } else {
@@ -970,7 +1014,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 }
             }
 
-            /* === Grey description banner (between EXIT and status) === */
+            /* === Grey description banner === */
             {
                 PAL_CURSOR_P dp[4];
                 PAL_CURSOR_COL dcol[4];
@@ -984,11 +1028,9 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 dp[3].y = 213;
                 dcol[0].color = dcol[1].color = dcol[2].color = dcol[3].color = 0x80202020;
                 Renderer_Queue2DPrimitive((f32*)dp, PrioBase[70], (uintptr_t)dcol[0].color, 0);
-
-                /* Description text rendered by effect_45 message system */
             }
 
-            /* === Status line (bottom area) === */
+            /* === Status line === */
             {
                 const char* status = SDLNetplayUI_GetStatusMsg();
                 if (status[0]) {
@@ -1026,22 +1068,21 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     }
                 }
             }
-        } /* end !popup_active background text */
+        } /* end native background text */
 
         /* === Incoming Challenge Popup (Internet) === */
         if (SDLNetplayUI_HasPendingInvite()) {
-            if (!use_rmlui || !rmlui_menu_lobby)
+            if (task_ptr->free[2] == 0)
                 NetLobby_DrawIncomingPopup(SDLNetplayUI_GetPendingInviteName(),
                                            SDLNetplayUI_GetPendingInviteRegion(),
                                            SDLNetplayUI_GetPendingInvitePing());
 
-            /* Override input: accept on Confirm, decline on Cancel */
             switch (IO_Result) {
-            case 0x100: /* Confirm = Accept */
+            case 0x100:
                 SDLNetplayUI_AcceptPendingInvite();
                 SE_selected();
                 break;
-            case 0x200: /* Cancel = Decline */
+            case 0x200:
                 SDLNetplayUI_DeclinePendingInvite();
                 SE_selected();
                 break;
@@ -1049,19 +1090,16 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 break;
             }
         } else if (SDLNetplayUI_HasOutgoingChallenge()) {
-            /* === Outgoing Challenge Popup (Internet) === */
-            if (!use_rmlui || !rmlui_menu_lobby)
+            if (task_ptr->free[2] == 0)
                 NetLobby_DrawOutgoingPopup(SDLNetplayUI_GetOutgoingChallengeName(),
                                            SDLNetplayUI_GetOutgoingChallengePing());
 
-            /* Cancel on either Confirm or Cancel button press */
             if (IO_Result == 0x100 || IO_Result == 0x200) {
                 SDLNetplayUI_CancelOutgoingChallenge();
                 Discovery_SetChallengeTarget(0);
                 SE_selected();
             }
         } else if (Discovery_GetChallengeTarget() != 0) {
-            /* === Outgoing Challenge Popup (LAN) === */
             {
                 NetplayDiscoveredPeer op[16];
                 int op_n = Discovery_GetPeers(op, 16);
@@ -1073,17 +1111,15 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                         break;
                     }
                 }
-                if (!use_rmlui || !rmlui_menu_lobby)
+                if (task_ptr->free[2] == 0)
                     NetLobby_DrawOutgoingPopup(tgt_name, -1);
             }
 
-            /* Cancel on either Confirm or Cancel button press */
             if (IO_Result == 0x100 || IO_Result == 0x200) {
                 Discovery_SetChallengeTarget(0);
                 SE_selected();
             }
         } else {
-            /* === Incoming Challenge Popup (LAN) === */
             NetplayDiscoveredPeer ip_peers[16];
             int ip_n = Discovery_GetPeers(ip_peers, 16);
             int lan_challenger = -1;
@@ -1095,15 +1131,15 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             }
 
             if (lan_challenger >= 0) {
-                if (!use_rmlui || !rmlui_menu_lobby)
+                if (task_ptr->free[2] == 0)
                     NetLobby_DrawIncomingPopup(ip_peers[lan_challenger].name, "", -1);
 
                 switch (IO_Result) {
-                case 0x100: /* Confirm = Accept (challenge them back) */
+                case 0x100:
                     Discovery_SetChallengeTarget(ip_peers[lan_challenger].instance_id);
                     SE_selected();
                     break;
-                case 0x200: /* Cancel = Decline (no-op, just dismiss) */
+                case 0x200:
                     SE_selected();
                     break;
                 default:
@@ -1130,7 +1166,6 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                             Discovery_SetChallengeTarget(p->instance_id);
                             SE_selected();
                         } else {
-                            // No peer found
                             SE_selected();
                         }
                         break;
@@ -1180,7 +1215,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 lobby_exit:
                     SE_selected();
                     SDLNetplayUI_SetNativeLobbyActive(false);
-                    if (use_rmlui && rmlui_menu_lobby)
+                    if (task_ptr->free[2] == 1)
                         rmlui_network_lobby_hide();
                     Netplay_HandleMenuExit();
                     Menu_Suicide[0] = 0;
@@ -1319,7 +1354,7 @@ static void Training_Mode(struct _TASK* task_ptr) {
         Menu_in_Sub(task_ptr);
         mpp_w.initTrainingData = true;
         if (!use_rmlui || !rmlui_menu_training) {
-            effect_57_init(0x6F, 0xB, 0, 0x3F, 2);
+            effect_57_init(0x6F, MENU_HEADER_TRAINING, 0, 0x3F, 2);
             Order[0x6F] = 1;
             Order_Dir[0x6F] = 8;
             Order_Timer[0x6F] = 1;
@@ -1430,7 +1465,7 @@ static void Option_Select(struct _TASK* task_ptr) {
         Order_Dir[0x4E] = 0;
         Order_Timer[0x4E] = 1;
         if (!use_rmlui || !rmlui_menu_option) {
-            effect_57_init(0x4F, 1, 0, 0x3F, 2);
+            effect_57_init(0x4F, MENU_HEADER_OPTION_MENU, 0, 0x3F, 2);
             Order[0x4F] = 1;
             Order_Dir[0x4F] = 8;
             Order_Timer[0x4F] = 1;
@@ -1597,7 +1632,7 @@ static void System_Direction(struct _TASK* task_ptr) {
 
         /* Orange/red header — gated when RmlUI active */
         if (!use_rmlui || !rmlui_menu_sysdir) {
-            effect_57_init(0x6D, 0xA, 0, 0x3F, 2);
+            effect_57_init(0x6D, MENU_HEADER_SYSTEM_DIRECTION, 0, 0x3F, 2);
             Order[0x6D] = 1;
             Order_Dir[0x6D] = 8;
             Order_Timer[0x6D] = 1;
@@ -1880,7 +1915,7 @@ static void Load_Replay(struct _TASK* task_ptr) {
         Menu_Cursor_X[0] = 0;
         Setup_BG(1, 0x200, 0);
         if (!(use_rmlui && rmlui_menu_replay))
-            Setup_Replay_Sub(1, 0x6E, 9, 1);
+            Setup_Replay_Sub(0x6E, MENU_HEADER_REPLAY, 1);
         Clear_Flash_Init(4);
         Message_Data->kind_req = 5;
         break;
@@ -1956,7 +1991,7 @@ static void Game_Option(struct _TASK* task_ptr) {
         Order_Dir[0x4E] = 2;
         Order_Timer[0x4E] = 1;
         if (!use_rmlui || !rmlui_menu_game_option) {
-            effect_57_init(0x6A, 7, 0, 0x3F, 2);
+            effect_57_init(0x6A, MENU_HEADER_GAME_OPTION, 0, 0x3F, 2);
             Order[0x6A] = 1;
             Order_Dir[0x6A] = 8;
             Order_Timer[0x6A] = 1;
@@ -2032,7 +2067,7 @@ static void Button_Config(struct _TASK* task_ptr) {
         Order_Dir[0x4E] = 2;
         Order_Timer[0x4E] = 1;
         if (!use_rmlui || !rmlui_menu_button_config) {
-            effect_57_init(0x6B, 2, 0, 0x3F, 2);
+            effect_57_init(0x6B, MENU_HEADER_BUTTON_CONFIG, 0, 0x3F, 2);
             Order[0x6B] = 1;
             Order_Dir[0x6B] = 8;
             Order_Timer[0x6B] = 1;
@@ -2146,7 +2181,7 @@ static void Sound_Test(struct _TASK* task_ptr) {
         if (use_rmlui && rmlui_menu_sound) {
             rmlui_sound_menu_show();
         } else {
-            effect_57_init(0x72, 4, 0, 0x3F, 2);
+            effect_57_init(0x72, MENU_HEADER_SOUND, 0, 0x3F, 2);
             Order[0x72] = 1;
             Order_Dir[0x72] = 8;
             Order_Timer[0x72] = 1;
@@ -2294,7 +2329,7 @@ static void Memory_Card(struct _TASK* task_ptr) {
         if (use_rmlui && rmlui_menu_memory_card) {
             rmlui_memory_card_show();
         } else {
-            effect_57_init(0x69, 5, 0, 0x3F, 2);
+            effect_57_init(0x69, MENU_HEADER_SAVE_LOAD, 0, 0x3F, 2);
             Order[0x69] = 1;
             Order_Dir[0x69] = 8;
             Order_Timer[0x69] = 1;
@@ -2948,7 +2983,7 @@ void Setup_Save_Replay_2nd(struct _TASK* task_ptr, s16 arg1) {
 }
 
 /** @brief Set up replay parameters (type, character, master player). */
-void Setup_Replay_Sub(s16 /* unused */, s16 type, s16 char_type, s16 master_player) {
+void Setup_Replay_Sub(s16 type, MenuHeader char_type, s16 master_player) {
     effect_57_init(type, char_type, 0, 63, 2);
     Order[type] = 1;
     Order_Dir[type] = 8;
@@ -3876,7 +3911,7 @@ static void After_Replay(struct _TASK* task_ptr) {
             Menu_Cursor_X[0] = 0;
             Setup_BG(1, 512, 0);
             if (!(use_rmlui && rmlui_menu_replay)) {
-                effect_57_init(110, 9, 0, 63, 999);
+                effect_57_init(110, MENU_HEADER_REPLAY, 0, 63, 999);
                 Order[110] = 3;
                 Order_Dir[110] = 8;
                 Order_Timer[110] = 1;

@@ -1,3 +1,5 @@
+// Use standalone configuration.h to avoid structs.h/Winsock typedef conflicts.
+#include "configuration.h"
 #include "discovery.h"
 #include "port/config/config.h"
 #include <SDL3/SDL.h>
@@ -17,8 +19,6 @@ typedef int socklen_t;
 #include <unistd.h>
 #define closesocket close
 #endif
-
-#include "port/config/cli_parser.h"
 
 #define DISCOVERY_PORT 7999
 #define BROADCAST_INTERVAL_MS 500
@@ -126,7 +126,7 @@ void Discovery_Update() {
                  auto_now ? 1 : 0,
                  local_ready ? 1 : 0,
                  local_challenge_target,
-                 g_netplay_port);
+                 configuration.netplay.port);
 
         sendto(broadcast_sock,
                beacon_data,

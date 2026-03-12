@@ -45,7 +45,7 @@
 #include "sf33rd/Source/Game/training/training_state.h"
 #include "sf33rd/Source/Game/ui/count.h"
 
-#if defined(DEBUG)
+#if DEBUG
 #include "sf33rd/Source/Game/debug/debug_config.h"
 #endif
 
@@ -580,7 +580,7 @@ static void plcnt_move() {
         return;
     }
 
-#if defined(DEBUG)
+#if DEBUG
     if (DebugConfig_Get(DEBUG_PLAYER_1_INVINCIBLE)) {
         plw[0].wu.dm_vital = 0;
     }

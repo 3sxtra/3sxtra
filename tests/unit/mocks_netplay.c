@@ -30,7 +30,8 @@ struct _SAVE_W save_w[6];
 int player_1 = 0;
 int player_2 = 1;
 
-unsigned short g_netplay_port = 20002;
+#include "configuration.h"
+Configuration configuration = { .netplay = { .port = 20002 } };
 
 void njUserMain(void) {}
 

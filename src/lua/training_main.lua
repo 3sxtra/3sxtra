@@ -48,9 +48,42 @@ io.open = function(filename, mode)
    -- Route through our C++ engine file reader (uses SDL_GetBasePath)
    local text = engine.read_file_text(filename)
    if text then
+      -- Cursor-based file handle that supports progressive read(n)
+      local cursor = 1
+      local len = #text
       return {
-         read = function(self, format) return text end,
+         read = function(self, format)
+            if cursor > len then return nil end
+            if format == "*a" or format == "*all" then
+               local result = text:sub(cursor)
+               cursor = len + 1
+               return result
+            elseif type(format) == "number" then
+               local n = format
+               if cursor + n - 1 > len then
+                  local result = text:sub(cursor)
+                  cursor = len + 1
+                  return (#result > 0) and result or nil
+               end
+               local result = text:sub(cursor, cursor + n - 1)
+               cursor = cursor + n
+               return result
+            else
+               -- Default: return entire remaining content
+               local result = text:sub(cursor)
+               cursor = len + 1
+               return result
+            end
+         end,
          close = function(self) end,
+         seek = function(self, whence, offset)
+            offset = offset or 0
+            if whence == "set" then cursor = offset + 1
+            elseif whence == "cur" then cursor = cursor + offset
+            elseif whence == "end" then cursor = len + offset + 1
+            end
+            return cursor - 1
+         end,
       }
    end
    return nil, "file not found: " .. tostring(filename)
@@ -222,10 +255,32 @@ local function ensure_framedata_loaded()
    local ok, err = pcall(function()
       local fd = require("src.data.framedata")
       local settings = require("src.settings")
+      local mp = require("src.libs.message_pack")
 
       -- Load from msgpack binary (much faster than 22 individual JSON files)
+      -- Framedata format: first entry = count, then entries with {char, id, data}
       local bin_path = settings.framedata_path .. settings.framedata_bin_file
-      loading.load_binary(fd.frame_data, bin_path)
+      local reader = mp.Msg_Pack_Reader.new(bin_path)
+      local entry_count = reader:read()  -- first entry = total count
+      local loaded = 0
+      repeat
+         local size = reader:get_length()
+         if not size then break end
+         local obj = reader:read()
+         if obj then
+            if obj.char and obj.data then
+               -- Framedata format: {char=<name>, id=<action_id>, data=<table>}
+               if not fd.frame_data[obj.char] then fd.frame_data[obj.char] = {} end
+               fd.frame_data[obj.char][obj.id] = obj.data
+               loaded = loaded + 1
+            elseif obj.key and obj.data then
+               -- Generic key→data format (text, images, etc.)
+               fd.frame_data[obj.key] = obj.data
+               loaded = loaded + 1
+            end
+         end
+      until obj == nil
+      reader:close()
 
       -- Apply character-specific fixups
       fd.patch_frame_data()
@@ -233,7 +288,7 @@ local function ensure_framedata_loaded()
 
       local count = 0
       for _ in pairs(fd.frame_data) do count = count + 1 end
-      print(string.format("[training_main] Framedata loaded from msgpack (%d characters)", count))
+      print(string.format("[training_main] Framedata loaded from msgpack (%d characters, %d entries)", count, loaded))
    end)
    if not ok then
       print("[training_main] ERROR loading framedata: " .. tostring(err))
@@ -271,6 +326,18 @@ if inputs_ok then
 else
    print("[training_main] Inputs module not loaded: " .. tostring(inputs_mod))
    inputs_mod = nil
+end
+
+-- Initialize recording module (sets 'settings' upvalue, creates recording slots)
+-- Must be called AFTER src.settings and src.control.inputs are loaded.
+local rec_ok, rec_err = pcall(function()
+   local recording = require("src.control.recording")
+   recording.init()
+end)
+if rec_ok then
+   print("[training_main] Recording module initialized")
+else
+   print("[training_main] Recording init failed: " .. tostring(rec_err))
 end
 
 -- ============================================================
@@ -356,7 +423,9 @@ end
 
 local dummy_initialized = false
 local dummy_player = nil
+local local_player = nil
 local dummy_id = 2
+local previous_input = nil  -- track last frame's input for prediction
 
 --- Detect which side the human is playing.
 --- Uses Training_ID (set by the menu system to whichever side pressed confirm)
@@ -533,9 +602,16 @@ emu.registerbefore(function()
          dummy_player = gamestate.P1
       end
 
+      local_player = (dummy_id == 2) and gamestate.P1 or gamestate.P2
       init_dummy_state(dummy_player)
       dummy_initialized = true
       engine.set_lua_dummy_active(true, dummy_id - 1)
+
+      -- Set training module player/dummy references (used by recording.lua)
+      local training = require("src.training")
+      training.player = local_player
+      training.dummy = dummy_player
+
       print(string.format("[training_main] Operator_Status: P1=%d P2=%d → local=P%d, dummy=P%d",
          engine.read_globals().operator_p1 or -1,
          engine.read_globals().operator_p2 or -1,
@@ -550,6 +626,12 @@ emu.registerbefore(function()
 
    -- Expose the input table to the inputs module so dummy_control can read it
    inputs_mod.input = input
+
+   -- Update prediction state (tracks animation changes, builds attack predictions)
+   local pred_before_ok, pred_before_err
+   if prediction_ok and _G.prediction then
+      pred_before_ok, pred_before_err = pcall(_G.prediction.update_before, previous_input or input, dummy_player)
+   end
 
    -- Run dummy control subsystems with live menu settings
    local ok, err = pcall(function()
@@ -579,13 +661,23 @@ emu.registerbefore(function()
       inputs_mod.process_pending_input_sequence(dummy_player, input)
    end)
 
+
+
+   -- Update prediction for next frame (predict next animations based on current input)
+   local pred_after_ok, pred_after_err
+   if prediction_ok and _G.prediction then
+      pred_after_ok, pred_after_err = pcall(_G.prediction.update_after, input, dummy_player)
+   end
+
+   -- Store current input for next frame's prediction
+   previous_input = input
+
    if not ok then
-      -- Print error once, don't spam
-      if not _G._dummy_error_printed then
-         print("[training_main] Dummy control error: " .. tostring(err))
-         _G._dummy_error_printed = true
+      -- Rate-limit error printing (every 60 frames, not permanent suppress)
+      _G._dummy_error_count = (_G._dummy_error_count or 0) + 1
+      if _G._dummy_error_count <= 3 or (_G._dummy_error_count % 60 == 0) then
+         print("[training_main] Dummy control error (#" .. _G._dummy_error_count .. "): " .. tostring(err))
       end
-      return
    end
 
    -- Convert FBNeo input table to joypad format and apply to dummy
@@ -593,18 +685,6 @@ emu.registerbefore(function()
    local dummy_input = fbneo_to_joypad(input, prefix)
    joypad.set(dummy_input, dummy_id)
 
-   -- DEBUG: log what we're sending (first 60 frames only)
-   if g_training_state_frame_dbg == nil then g_training_state_frame_dbg = 0 end
-   g_training_state_frame_dbg = g_training_state_frame_dbg + 1
-   if g_training_state_frame_dbg <= 60 and g_training_state_frame_dbg % 10 == 1 then
-      local val = 0
-      for name, mask in pairs({up=0x0001,down=0x0002,left=0x0004,right=0x0008,LP=0x0010,MP=0x0020,HP=0x0040,LK=0x0100,MK=0x0200,HK=0x0400}) do
-         if dummy_input[name] then val = val | mask end
-      end
-      print(string.format("[training_main] DBG frame=%d dummy_id=%d lever=0x%04X block_mode=%d block_style=%d",
-         g_training_state_frame_dbg, dummy_id, val,
-         blocking_options.mode, blocking_options.style))
-   end
 end)
 
 print("[training_main] Bootstrap complete")

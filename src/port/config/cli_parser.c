@@ -28,8 +28,7 @@ bool g_font_test_mode = false;
 // UI mode flag — session-only, not persisted to config
 bool g_ui_mode_rmlui = false;
 
-// Netplay game port (default 50000). Set via --port to allow multiple local instances.
-unsigned short g_netplay_port = 50000;
+
 
 // These might need to be mocked in tests
 // void SDLApp_SetWindowPosition(int x, int y);
@@ -37,12 +36,29 @@ unsigned short g_netplay_port = 50000;
 int SDL_atoi(const char* str);
 
 /**
+ * @brief Validate parsed configuration for conflicting or invalid options.
+ *
+ * Called at the end of ParseCLI(). Currently validates port range.
+ * Future-proof: add more checks as the CLI grows.
+ */
+static void verify_configuration(void) {
+    if (configuration.netplay.port == 0) {
+        fprintf(stderr, "[CLI] Invalid netplay port 0. Using default 50000.\n");
+        configuration.netplay.port = 50000;
+    }
+}
+
+/**
  * @brief Parse command-line arguments and configure application state.
  *
  * Supports: --scale, --volume, --renderer, --enable-broadcast,
  * --window-pos, --window-size, --shm-suffix, --port.
  */
+
 void ParseCLI(int argc, char* argv[]) {
+    // Initialize defaults before parsing
+    configuration.netplay.port = 50000;
+
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--help") == 0) {
             printf("Usage: %s [OPTIONS]\n\n", argv[0]);
@@ -57,7 +73,7 @@ void ParseCLI(int argc, char* argv[]) {
             printf("  --shm-suffix <suffix>     Shared-memory name suffix for broadcast\n");
             printf("  --font-test               Boot into font debug visualization screen\n");
             printf("  --ui <rmlui>              UI toolkit for overlay menus (default: rmlui)\n");
-#if defined(DEBUG)
+#if DEBUG
             printf("  --test-enable             Enable test runner (DEBUG only)\n");
             printf("  --test-states <path>      Path to states directory (DEBUG only)\n");
             printf("  --test-inputs <path>      Path to inputs file (DEBUG only)\n");
@@ -77,7 +93,7 @@ void ParseCLI(int argc, char* argv[]) {
         } else if (strcmp(argv[i], "--port") == 0 && i + 1 < argc) {
             int p = SDL_atoi(argv[++i]);
             if (p > 0 && p <= 65535) {
-                g_netplay_port = (unsigned short)p;
+                configuration.netplay.port = (unsigned short)p;
                 printf("[CLI] Netplay port: %d\n", p);
             }
         } else if (strcmp(argv[i], "--enable-broadcast") == 0) {
@@ -111,7 +127,7 @@ void ParseCLI(int argc, char* argv[]) {
             const char* mode = argv[++i];
             g_ui_mode_rmlui = (strcmp(mode, "rmlui") == 0);
             printf("[CLI] UI mode: %s\n", mode);
-#if defined(DEBUG)
+#if DEBUG
         } else if (strcmp(argv[i], "--test-enable") == 0) {
             configuration.test.enabled = true;
             printf("[CLI] Test runner: enabled\n");
@@ -124,4 +140,6 @@ void ParseCLI(int argc, char* argv[]) {
 #endif
         }
     }
+
+    verify_configuration();
 }

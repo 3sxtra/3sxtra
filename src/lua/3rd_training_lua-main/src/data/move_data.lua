@@ -1,6 +1,6 @@
 local tools = require("src.tools")
 
-local move_list = tools.read_object_from_json_file("data/move_list.json") or {}
+local move_list = tools.read_object_from_json_file("lua/data/move_list.json") or {}
 local kara_command_throws = {
    "kara_power_bomb", "kara_karakusa_lk", "kara_karakusa_hk", "kara_capture_and_deadly_blow", "kara_zenpou_yang",
    "kara_zenpou_yun"

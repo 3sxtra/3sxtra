@@ -14,6 +14,7 @@
 #include "port/config/config.h"
 #include "port/rendering/sdl_bezel.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
+#include "port/sound/modded_bgm.h"
 
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>
@@ -64,6 +65,8 @@ static bool s_model_registered = false;
 // Cached snapshot for dirty detection
 struct ModsSnapshot {
     bool modded_bgm_enabled;
+    bool modded_voice_enabled;
+    int modded_bgm_count;
     bool hd_enabled;
     bool hd_active;
     bool shader_bypass;
@@ -129,6 +132,19 @@ extern "C" void rmlui_mods_menu_init(void) {
             Config_SetBool(CFG_KEY_MODDED_BGM_ENABLED, on);
             Config_Save();
         });
+
+    // --- Modded Voice Lines ---
+    constructor.BindFunc(
+        "modded_voice_enabled",
+        [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_MODDED_VOICE_ENABLED); },
+        [](const Rml::Variant& v) {
+            bool on = v.Get<bool>();
+            Config_SetBool(CFG_KEY_MODDED_VOICE_ENABLED, on);
+            Config_Save();
+        });
+
+    // --- Modded BGM track count (read-only) ---
+    constructor.BindFunc("modded_bgm_count", [](Rml::Variant& v) { v = ModdedBGM_CountModdedTracks(); });
 
     // --- HD Stage Backgrounds ---
     constructor.BindFunc(
@@ -287,6 +303,8 @@ extern "C" void rmlui_mods_menu_update(void) {
     } while (0)
 
     DIRTY_BOOL(modded_bgm_enabled, Config_GetBool(CFG_KEY_MODDED_BGM_ENABLED));
+    DIRTY_BOOL(modded_voice_enabled, Config_GetBool(CFG_KEY_MODDED_VOICE_ENABLED));
+    DIRTY_INT(modded_bgm_count, ModdedBGM_CountModdedTracks());
     DIRTY_BOOL(hd_enabled, ModdedStage_IsEnabled());
     DIRTY_BOOL(hd_active, ModdedStage_IsActiveForCurrentStage());
     DIRTY_BOOL(shader_bypass, mods_menu_shader_bypass_enabled);

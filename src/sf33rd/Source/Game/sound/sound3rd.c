@@ -16,6 +16,7 @@
 #include "main.h"
 #include "port/sound/adx.h"
 #include "port/sound/emlShim.h"
+#include "port/sound/modded_bgm.h"
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/cse.h"
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlMemMap.h"
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlTSB.h"
@@ -431,11 +432,13 @@ void BGM_Server() {
             if (adx_NowOnMemoryType == sys_w.bgm_type) {
                 switch (bgm_exe.code) {
                 case BGM_CODE_VS:
-                    ADX_StartMem(adx_VS, sizeof(adx_VS));
+                    if (!ModdedBGM_PlayVoice("vs"))
+                        ADX_StartMem(adx_VS, sizeof(adx_VS));
                     break;
 
                 case BGM_CODE_EMSEL:
-                    ADX_StartMem(adx_EmSel, sizeof(adx_EmSel));
+                    if (!ModdedBGM_PlayVoice("emsel"))
+                        ADX_StartMem(adx_EmSel, sizeof(adx_EmSel));
                     break;
 
                 default:
@@ -483,11 +486,13 @@ void BGM_Server() {
             if (adx_NowOnMemoryType == sys_w.bgm_type) {
                 switch (bgm_exe.code) {
                 case BGM_CODE_VS:
-                    ADX_StartMem(adx_VS, sizeof(adx_VS));
+                    if (!ModdedBGM_PlayVoice("vs"))
+                        ADX_StartMem(adx_VS, sizeof(adx_VS));
                     break;
 
                 case BGM_CODE_EMSEL:
-                    ADX_StartMem(adx_EmSel, sizeof(adx_EmSel));
+                    if (!ModdedBGM_PlayVoice("emsel"))
+                        ADX_StartMem(adx_EmSel, sizeof(adx_EmSel));
                     break;
 
                 default:
@@ -575,11 +580,13 @@ void BGM_Server() {
                 if (adx_NowOnMemoryType == sys_w.bgm_type) {
                     switch (bgm_exe.code) {
                     case BGM_CODE_VS:
-                        ADX_StartMem(adx_VS, sizeof(adx_VS));
+                        if (!ModdedBGM_PlayVoice("vs"))
+                            ADX_StartMem(adx_VS, sizeof(adx_VS));
                         break;
 
                     case BGM_CODE_EMSEL:
-                        ADX_StartMem(adx_EmSel, sizeof(adx_EmSel));
+                        if (!ModdedBGM_PlayVoice("emsel"))
+                            ADX_StartMem(adx_EmSel, sizeof(adx_EmSel));
                         break;
 
                     default:
