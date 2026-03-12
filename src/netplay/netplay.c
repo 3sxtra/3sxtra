@@ -20,6 +20,7 @@
 #include "port/rendering/renderer.h"
 extern void njUserMain();
 #include "port/sdl/netplay/sdl_netplay_ui.h"
+#include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
@@ -647,11 +648,11 @@ static void process_session() {
                    event->data.desynced.local_checksum,
                    event->data.desynced.remote_checksum);
 
-            // Debug state dumping is now handled internally in game_state.c
-            // via save_state() / load_state_from_event() which have access
-            // to the static buffers and checksum structures.
-            // When a desync occurs, the game_state.c buffers retain the history.
-            printf("  (State dumping for desyncs is available in game_state.c)\n");
+#if DEBUG
+            dump_desync_state(frame,
+                              event->data.desynced.local_checksum,
+                              event->data.desynced.remote_checksum);
+#endif
 
             SDL_ShowSimpleMessageBox(
                 SDL_MESSAGEBOX_WARNING, "Netplay", "Desync detected — the session will be terminated.", NULL);
@@ -820,6 +821,9 @@ void Netplay_SetStunSocket(int fd) {
 }
 
 void Netplay_Begin() {
+    /* Hide the RmlUI lobby overlay on connection (safe no-op if not shown) */
+    rmlui_network_lobby_hide();
+
     setup_vs_mode();
     Discovery_Shutdown();
 
@@ -862,7 +866,7 @@ void Netplay_Run() {
         {
             static uint32_t handshake_ready_since = 0;
             bool local_auto = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-            int local_challenge = Discovery_GetChallengeTarget();
+            uint32_t local_challenge = Discovery_GetChallengeTarget();
             bool should_be_ready = false;
             NetplayDiscoveredPeer* target_peer = NULL;
 
@@ -872,7 +876,7 @@ void Netplay_Run() {
             bool we_initiated = false;
             for (int i = 0; i < count; i++) {
                 // If we explicitly challenge them AND they explicitly challenge us OR have auto-connect on
-                if (local_challenge == (int)peers[i].instance_id) {
+                if (local_challenge == peers[i].instance_id) {
                     if (peers[i].is_challenging_me || peers[i].wants_auto_connect) {
                         target_peer = &peers[i];
                         should_be_ready = true;
@@ -880,7 +884,12 @@ void Netplay_Run() {
                         // Use instance_id tiebreaker so both peers agree on who initiated.
                         if (peers[i].is_challenging_me) {
                             uint32_t local_id = Discovery_GetLocalInstanceID();
-                            we_initiated = (local_id < peers[i].instance_id);
+                            if (local_id != peers[i].instance_id) {
+                                we_initiated = (local_id < peers[i].instance_id);
+                            } else {
+                                // ID collision (same-machine same-binary): tiebreak by port
+                                we_initiated = (configuration.netplay.port < target_peer->port);
+                            }
                         } else {
                             we_initiated = true; // Only we challenged, they have auto-connect
                         }
@@ -902,7 +911,12 @@ void Netplay_Run() {
                     should_be_ready = true;
                     // Tiebreaker: lower instance ID = P1 (initiator)
                     uint32_t local_id = Discovery_GetLocalInstanceID();
-                    we_initiated = (local_id < peers[i].instance_id);
+                    if (local_id != peers[i].instance_id) {
+                        we_initiated = (local_id < peers[i].instance_id);
+                    } else {
+                        // ID collision (same-machine same-binary): tiebreak by port
+                        we_initiated = (configuration.netplay.port < target_peer->port);
+                    }
                     break;
                 }
             }

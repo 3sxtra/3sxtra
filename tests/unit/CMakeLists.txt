@@ -200,12 +200,20 @@ target_link_sdl3(test_config)
 
 add_unit_test(test_lobby_server
     test_lobby_server.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/sha256.c
 )
-target_include_directories(test_lobby_server PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${SDL3_ROOT}/include)
+target_include_directories(test_lobby_server PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${PROJECT_SOURCE_DIR}/src ${SDL3_ROOT}/include)
 target_link_sdl3(test_lobby_server)
 if(WIN32)
     target_link_libraries(test_lobby_server PRIVATE ws2_32 bcrypt)
 endif()
+
+add_unit_test(test_identity
+    test_identity.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/sha256.c
+)
+target_include_directories(test_identity PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${PROJECT_SOURCE_DIR}/src ${SDL3_ROOT}/include)
+target_link_sdl3(test_identity)
 
 add_unit_test(test_char_data
     test_char_data.c

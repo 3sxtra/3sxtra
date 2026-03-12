@@ -22,7 +22,7 @@ typedef struct {
 void Discovery_Init(bool auto_connect);
 void Discovery_SetReady(bool ready);
 void Discovery_SetChallengeTarget(uint32_t instance_id);
-int Discovery_GetChallengeTarget(void);
+uint32_t Discovery_GetChallengeTarget(void);
 void Discovery_Update();
 void Discovery_Shutdown();
 uint32_t Discovery_GetLocalInstanceID(void);

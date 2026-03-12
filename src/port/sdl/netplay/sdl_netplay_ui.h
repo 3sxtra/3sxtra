@@ -56,6 +56,10 @@ bool SDLNetplayUI_IsSearching(void);
 int SDLNetplayUI_GetOnlinePlayerCount(void);
 const char* SDLNetplayUI_GetOnlinePlayerName(int index);
 const char* SDLNetplayUI_GetOnlinePlayerRoomCode(int index);
+const char* SDLNetplayUI_GetOnlinePlayerRegion(int index);
+const char* SDLNetplayUI_GetOnlinePlayerCountry(int index);
+const char* SDLNetplayUI_GetOnlinePlayerConnType(int index);
+int SDLNetplayUI_GetOnlinePlayerPing(int index);
 void SDLNetplayUI_ConnectToPlayer(int index);
 
 // Pending internet invite (someone set connect_to = our room code)

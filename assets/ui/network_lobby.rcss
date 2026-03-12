@@ -1,5 +1,5 @@
 /* ─── Network Lobby ─────────────────────────────────────────────── */
-/* Transparent background — native blue BG shows through             */
+/* 384×224 game canvas — every dp matters. No scrolling allowed.    */
 
 #lobby-panel {
     display: block;
@@ -9,152 +9,292 @@
     right: 0;
     bottom: 0;
     padding: 0;
-    background-color: transparent;
+    overflow: hidden;
+    background-color: rgba(6, 8, 18, 210);
+    border-width: 1dp;
+    border-color: rgba(80, 110, 200, 80);
 }
 
-/* ─── Content layout ────────────────────────────────────────────── */
+/* ─── Title bar (compact) ──────────────────────────────────────── */
 
-.lobby-content {
+#lobby-title-bar {
     display: block;
-    padding: 16dp 8dp 0 8dp;
+    height: 16dp;
+    background-color: rgba(200, 15, 15, 220);
+    padding: 2dp 8dp 0dp 8dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(255, 255, 255, 30);
 }
 
-.lobby-menu {
+#lobby-title-text {
+    display: inline;
+    font-size: 11dp;
+    color: rgba(15, 8, 8, 230);
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 60));
+}
+
+#room-code-chip {
+    display: inline;
+    margin-left: 8dp;
+    background-color: rgba(0, 0, 0, 100);
+    border-width: 1dp;
+    border-color: rgba(255, 255, 255, 60);
+    padding: 0dp 4dp;
+}
+
+#room-code-label {
+    display: inline;
+    font-size: 6dp;
+    color: rgba(200, 200, 200, 160);
+    margin-right: 3dp;
+}
+
+#room-code-value {
+    display: inline;
+    font-size: 8dp;
+    color: rgba(255, 230, 120, 240);
+}
+
+/* ─── Two-column body (absolute positioned, no overflow) ─────── */
+
+#lobby-body {
     display: block;
-    width: 220dp;
 }
 
-.peer-panels {
+#lobby-menu-col {
     display: block;
     position: absolute;
-    right: 8dp;
-    top: 16dp;
-    width: 140dp;
+    left: 4dp;
+    top: 19dp;
+    width: 165dp;
+    bottom: 0;
 }
 
-/* ─── Section headers ───────────────────────────────────────────── */
+#lobby-peers-col {
+    display: block;
+    position: absolute;
+    left: 172dp;
+    top: 19dp;
+    right: 4dp;
+    bottom: 16dp;
+}
+
+/* ─── Section headers (tight) ────────────────────────────────── */
 
 .section-header {
     display: block;
-    font-size: 9dp;
-    color: rgba(200, 220, 255, 178);
-    padding: 1dp 4dp;
+    font-size: 7dp;
+    color: rgba(170, 200, 255, 170);
+    padding: 0dp 0dp;
     margin-top: 2dp;
     margin-bottom: 1dp;
     border-bottom-width: 1dp;
-    border-bottom-color: rgba(120, 150, 220, 64);
+    border-bottom-color: rgba(100, 130, 220, 60);
 }
 
 .net-header {
-    margin-top: 5dp;
+    margin-top: 3dp;
 }
 
-/* ─── Menu items ────────────────────────────────────────────────── */
+/* ─── Menu rows (label + value inline, very compact) ──────────── */
 
-.lobby-item {
+.lobby-row {
     display: block;
-    padding: 3dp 6dp;
-    margin-bottom: 1dp;
-    color: rgba(220, 230, 255, 220);
-    font-size: 11dp;
-    border-left-width: 3dp;
+    padding: 1dp 3dp;
+    margin-bottom: 0dp;
+    color: rgba(210, 220, 255, 210);
+    font-size: 9dp;
+    border-left-width: 2dp;
     border-left-color: transparent;
     transition: background-color border-left-color 0.08s linear-in-out;
 }
 
-.lobby-item.focused {
-    background-color: rgba(255, 220, 0, 36);
-    border-left-color: rgba(255, 210, 40, 242);
+.lobby-row.focused {
+    background-color: rgba(255, 220, 0, 30);
+    border-left-color: rgba(255, 210, 40, 240);
     color: #fff;
 }
 
-.item-label {
+.lobby-cell-label {
     display: inline;
-    width: 130dp;
-    font-size: 10dp;
+    width: 95dp;
+    font-size: 9dp;
 }
 
-.item-value {
+.lobby-cell-value {
     display: inline;
-    width: 80dp;
-    font-size: 10dp;
-    color: rgba(180, 190, 210, 204);
-    margin-left: 6dp;
+    font-size: 9dp;
+    color: rgba(170, 180, 210, 200);
+    margin-left: 3dp;
 }
 
-.item-value.on {
-    color: rgba(100, 240, 160, 255);
+.lobby-cell-value.on {
+    color: rgba(90, 240, 150, 255);
 }
 
 .peer-val {
-    color: rgba(160, 220, 255, 240);
-    font-size: 9dp;
+    color: rgba(140, 210, 255, 235);
+    font-size: 8dp;
 }
 
-.exit-item {
-    margin-top: 5dp;
+.exit-row {
+    margin-top: 2dp;
     border-top-width: 1dp;
-    border-top-color: rgba(120, 150, 220, 51);
-    padding-top: 4dp;
+    border-top-color: rgba(100, 130, 220, 50);
+    padding-top: 2dp;
 }
 
-/* ─── Peer panels ───────────────────────────────────────────────── */
+/* ─── Peer panel cards (compact) ─────────────────────────────── */
 
 .peer-panel {
     display: block;
-    padding: 4dp 6dp;
-    margin-bottom: 4dp;
-    background-color: rgba(0, 10, 40, 120);
+    margin-bottom: 3dp;
+    background-color: rgba(0, 6, 28, 180);
     border-width: 1dp;
-    border-color: rgba(100, 140, 220, 64);
+    border-color: rgba(80, 120, 220, 70);
+    padding: 2dp 4dp 3dp 4dp;
+}
+
+.peer-panel-header {
+    display: block;
+    margin-bottom: 1dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(80, 120, 220, 50);
+    padding-bottom: 1dp;
 }
 
 .peer-panel-title {
-    display: block;
+    display: inline;
     font-size: 8dp;
-    color: rgba(160, 190, 240, 166);
-    margin-bottom: 2dp;
+    color: rgba(150, 185, 245, 200);
 }
 
-.peer-count {
+.peer-panel-count {
+    display: inline;
+    font-size: 7dp;
+    color: rgba(90, 240, 150, 230);
+    margin-left: 4dp;
+}
+
+.peer-panel-count.empty {
+    color: rgba(160, 170, 195, 100);
+}
+
+.peer-panel-count.searching {
+    color: rgba(255, 210, 70, 210);
+}
+
+.peer-panel-count.idle {
+    color: rgba(160, 170, 195, 100);
+}
+
+/* ─── Peer list rows (compact) ───────────────────────────────── */
+
+.peer-list {
     display: block;
-    font-size: 10dp;
-    color: rgba(100, 240, 160, 240);
 }
 
-.peer-count.empty {
-    color: rgba(180, 190, 210, 128);
+.peer-list-item {
+    display: block;
+    padding: 0dp 2dp;
+    color: rgba(190, 200, 225, 180);
+    font-size: 8dp;
+    border-left-width: 2dp;
+    border-left-color: transparent;
 }
 
-.peer-count.searching {
-    color: rgba(255, 210, 80, 210);
+.peer-list-item.selected {
+    color: rgba(255, 235, 100, 255);
+    border-left-color: rgba(255, 210, 40, 230);
+    background-color: rgba(255, 220, 0, 18);
 }
 
-.peer-count.idle {
-    color: rgba(180, 190, 210, 128);
+.peer-list-bullet {
+    display: inline;
+    width: 7dp;
+    font-size: 6dp;
+    color: rgba(255, 210, 40, 230);
 }
 
-/* ─── Status bar ────────────────────────────────────────────────── */
+.peer-list-name {
+    display: inline;
+    font-size: 8dp;
+    overflow: hidden;
+}
 
-.status-bar {
+.peer-list-ping {
+    display: inline;
+    font-size: 7dp;
+    margin-left: 3dp;
+    color: rgba(160, 170, 195, 150);
+}
+
+.peer-list-ping.ping-good {
+    color: rgba(80, 235, 130, 240);
+}
+
+.peer-list-ping.ping-ok {
+    color: rgba(255, 200, 60, 230);
+}
+
+.peer-list-ping.ping-bad {
+    color: rgba(255, 80, 80, 220);
+}
+
+.peer-list-country {
+    display: inline;
+    font-size: 6dp;
+    color: rgba(170, 190, 230, 200);
+    margin-right: 2dp;
+    padding: 0dp 1dp;
+    background-color: rgba(60, 80, 140, 80);
+    border-width: 1dp;
+    border-color: rgba(100, 130, 200, 60);
+}
+
+.peer-list-conn {
+    display: inline;
+    font-size: 6dp;
+    color: rgba(140, 160, 190, 130);
+    margin-left: 2dp;
+}
+
+.peer-list-conn.wifi {
+    color: rgba(255, 170, 60, 210);
+}
+
+.peer-list-empty {
+    display: block;
+    font-size: 7dp;
+    color: rgba(140, 150, 180, 100);
+    padding: 1dp 3dp;
+}
+
+.peer-list-empty.searching {
+    color: rgba(255, 210, 70, 160);
+}
+
+/* ─── Status bar (pinned bottom) ─────────────────────────────── */
+
+#status-bar {
     display: block;
     position: absolute;
-    bottom: 2dp;
-    left: 6dp;
-    right: 6dp;
-    padding: 3dp 6dp;
-    background-color: rgba(0, 10, 40, 140);
+    bottom: 1dp;
+    left: 4dp;
+    right: 4dp;
+    padding: 1dp 6dp;
+    background-color: rgba(0, 8, 30, 160);
     border-width: 1dp;
-    border-color: rgba(100, 140, 220, 51);
+    border-color: rgba(80, 120, 220, 50);
 }
 
-.status-text {
+#status-text {
     display: block;
-    font-size: 9dp;
-    color: rgba(255, 210, 80, 240);
+    font-size: 8dp;
+    color: rgba(255, 210, 70, 240);
 }
 
-/* ─── Popup overlay ─────────────────────────────────────────────── */
+/* ─── Popup overlay ──────────────────────────────────────────── */
 
 #popup-scrim {
     display: block;
@@ -163,77 +303,81 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 166);
+    background-color: rgba(0, 0, 0, 175);
 }
 
 #popup-box {
     display: block;
     position: absolute;
     top: 40dp;
-    left: 40dp;
-    right: 40dp;
-    padding: 8dp 10dp;
-    background-color: rgba(10, 15, 30, 242);
+    left: 30dp;
+    right: 30dp;
+    padding: 6dp 10dp;
+    background-color: rgba(8, 12, 26, 245);
     border-width: 2dp;
-    border-color: rgba(200, 0, 0, 217);
+    border-color: rgba(210, 15, 15, 220);
+    border-radius: 3dp;
 }
 
 .popup-title {
     display: block;
     text-align: center;
-    font-size: 12dp;
-    color: rgba(255, 210, 80, 255);
-    margin-bottom: 4dp;
+    font-size: 10dp;
+    color: rgba(255, 210, 70, 255);
+    margin-bottom: 3dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(150, 30, 30, 120);
+    padding-bottom: 2dp;
 }
 
 .popup-name {
     display: block;
     text-align: center;
-    font-size: 11dp;
+    font-size: 10dp;
     color: #fff;
-    margin-bottom: 3dp;
+    margin-bottom: 2dp;
 }
 
 .popup-ping {
     display: block;
     text-align: center;
-    font-size: 9dp;
-    color: rgba(160, 220, 255, 230);
-    margin-bottom: 3dp;
+    font-size: 8dp;
+    color: rgba(140, 210, 255, 230);
+    margin-bottom: 2dp;
 }
 
 .popup-region {
     display: block;
     text-align: center;
-    font-size: 9dp;
-    color: rgba(180, 190, 210, 178);
-    margin-bottom: 4dp;
+    font-size: 8dp;
+    color: rgba(170, 180, 210, 175);
+    margin-bottom: 3dp;
 }
 
 .popup-actions {
     display: block;
     text-align: center;
-    margin-top: 4dp;
+    margin-top: 3dp;
     padding-top: 3dp;
     border-top-width: 1dp;
-    border-top-color: rgba(100, 120, 160, 76);
+    border-top-color: rgba(90, 110, 155, 76);
 }
 
 .popup-accept {
     display: inline;
-    font-size: 10dp;
-    color: rgba(80, 230, 120, 255);
+    font-size: 9dp;
+    color: rgba(70, 230, 110, 255);
     margin-right: 16dp;
 }
 
 .popup-decline {
     display: inline;
-    font-size: 10dp;
-    color: rgba(255, 80, 80, 255);
+    font-size: 9dp;
+    color: rgba(255, 70, 70, 255);
 }
 
 .popup-cancel {
     display: inline;
-    font-size: 10dp;
-    color: rgba(255, 80, 80, 255);
+    font-size: 9dp;
+    color: rgba(255, 70, 70, 255);
 }

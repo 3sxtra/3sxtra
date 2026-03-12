@@ -302,7 +302,7 @@ extern "C" void rmlui_training_menu_update(void) {
         s_listeners_attached = true;
     }
 
-        // Display booleans
+    // Display booleans
 #define DIRTY_BOOL(name, field)                                                                                        \
     do {                                                                                                               \
         bool _cur = g_training_menu_settings.field;                                                                    \

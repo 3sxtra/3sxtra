@@ -7,61 +7,124 @@
 <body data-model="network_lobby">
 <div id="lobby-panel">
 
-    <!-- ── Main content: left menu + right peer panels ── -->
-    <div class="lobby-content">
-
-        <!-- Left: menu items -->
-        <div class="lobby-menu">
-            <div class="section-header">LAN</div>
-            <div class="lobby-item" data-class-focused="cursor == 0">
-                <span class="item-label">AUTO-CONNECT</span>
-                <span class="item-value" data-class-on="lan_auto">{{lan_auto ? 'ON' : 'OFF'}}</span>
-            </div>
-            <div class="lobby-item" data-class-focused="cursor == 1">
-                <span class="item-label">CONNECT PEER</span>
-                <span class="item-value peer-val">{{lan_peer_name}}</span>
-            </div>
-
-            <div class="section-header net-header">INTERNET</div>
-            <div class="lobby-item" data-class-focused="cursor == 2">
-                <span class="item-label">AUTO-CONNECT</span>
-                <span class="item-value" data-class-on="net_auto">{{net_auto ? 'ON' : 'OFF'}}</span>
-            </div>
-            <div class="lobby-item" data-class-focused="cursor == 3">
-                <span class="item-label">AUTO-SEARCH</span>
-                <span class="item-value" data-class-on="net_search_toggle">{{net_search_toggle ? 'ON' : 'OFF'}}</span>
-            </div>
-            <div class="lobby-item" data-class-focused="cursor == 4">
-                <span class="item-label">CONNECT</span>
-                <span class="item-value peer-val">{{net_peer_name}}</span>
-            </div>
-
-            <div class="lobby-item exit-item" data-class-focused="cursor == 5">
-                <span class="item-label">EXIT</span>
-            </div>
-        </div>
-
-        <!-- Right: peer panels -->
-        <div class="peer-panels">
-            <div class="peer-panel">
-                <div class="peer-panel-title">LAN PEERS</div>
-                <div class="peer-count" data-if="lan_peer_count > 0">{{lan_peer_count}} found</div>
-                <div class="peer-count empty" data-if="lan_peer_count == 0">none</div>
-            </div>
-            <div class="peer-panel">
-                <div class="peer-panel-title">ONLINE</div>
-                <div data-if="net_searching">
-                    <div class="peer-count" data-if="net_peer_count > 0">{{net_peer_count}} online</div>
-                    <div class="peer-count searching" data-if="net_peer_count == 0">searching...</div>
-                </div>
-                <div class="peer-count idle" data-if="!net_searching">idle</div>
-            </div>
+    <!-- ── Title bar ── -->
+    <div id="lobby-title-bar">
+        <div id="lobby-title-text">NETWORK LOBBY</div>
+        <div id="room-code-chip" data-if="room_code != ''">
+            <span id="room-code-label">ROOM</span>
+            <span id="room-code-value">{{room_code}}</span>
         </div>
     </div>
 
+    <!-- ── Main content: left menu + right peer panels ── -->
+    <div id="lobby-body">
+
+        <!-- Left: menu column -->
+        <div id="lobby-menu-col">
+            <div class="section-header">LAN</div>
+
+            <div class="lobby-row" data-class-focused="cursor == 0">
+                <span class="lobby-cell-label">AUTO-CONNECT</span>
+                <span class="lobby-cell-value" data-class-on="lan_auto">{{lan_auto ? 'ON' : 'OFF'}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 1">
+                <span class="lobby-cell-label">CONNECT PEER</span>
+                <span class="lobby-cell-value peer-val">{{lan_peer_name}}</span>
+            </div>
+
+            <div class="section-header net-header">INTERNET</div>
+
+            <div class="lobby-row" data-class-focused="cursor == 2">
+                <span class="lobby-cell-label">AUTO-CONNECT</span>
+                <span class="lobby-cell-value" data-class-on="net_auto">{{net_auto ? 'ON' : 'OFF'}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 3">
+                <span class="lobby-cell-label">AUTO-SEARCH</span>
+                <span class="lobby-cell-value" data-class-on="net_search_toggle">{{net_search_toggle ? 'ON' : 'OFF'}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 4">
+                <span class="lobby-cell-label">REGION LOCK</span>
+                <span class="lobby-cell-value" data-class-on="region_lock">{{region_lock ? 'ON' : 'OFF'}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 5">
+                <span class="lobby-cell-label">MAX PING</span>
+                <span class="lobby-cell-value">{{max_ping == 0 ? 'OFF' : max_ping + 'ms'}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 6">
+                <span class="lobby-cell-label">BLOCK WIFI</span>
+                <span class="lobby-cell-value" data-class-on="block_wifi">{{block_wifi ? 'ON' : 'OFF'}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 7">
+                <span class="lobby-cell-label">CONNECT</span>
+                <span class="lobby-cell-value peer-val">{{net_peer_name}}</span>
+            </div>
+
+            <div class="lobby-row exit-row" data-class-focused="cursor == 8">
+                <span class="lobby-cell-label">EXIT</span>
+            </div>
+        </div>
+
+        <!-- Right: peer panels column -->
+        <div id="lobby-peers-col">
+
+            <!-- LAN Peers -->
+            <div class="peer-panel">
+                <div class="peer-panel-header">
+                    <span class="peer-panel-title">LAN PEERS</span>
+                    <span class="peer-panel-count" data-if="lan_peer_count > 0">{{lan_peer_count}} found</span>
+                    <span class="peer-panel-count empty" data-if="lan_peer_count == 0">none</span>
+                </div>
+                <div class="peer-list">
+                    <div data-for="p : lan_peers"
+                         class="peer-list-item"
+                         data-class-selected="p.selected">
+                        <span class="peer-list-bullet" data-if="p.selected">▶</span>
+                        <span class="peer-list-bullet" data-if="!p.selected"> </span>
+                        <span class="peer-list-name">{{p.name}}</span>
+                    </div>
+                    <div class="peer-list-empty" data-if="lan_peer_count == 0">
+                        scanning LAN...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Online Peers -->
+            <div class="peer-panel">
+                <div class="peer-panel-header">
+                    <span class="peer-panel-title">ONLINE</span>
+                    <span class="peer-panel-count" data-if="net_searching &amp;&amp; net_peer_count > 0">{{net_peer_count}} online</span>
+                    <span class="peer-panel-count searching" data-if="net_searching &amp;&amp; net_peer_count == 0">searching...</span>
+                    <span class="peer-panel-count idle" data-if="!net_searching">idle</span>
+                </div>
+                <div class="peer-list">
+                    <div data-for="p : net_peers"
+                         class="peer-list-item"
+                         data-class-selected="p.selected">
+                        <span class="peer-list-bullet" data-if="p.selected">▶</span>
+                        <span class="peer-list-bullet" data-if="!p.selected"> </span>
+                        <span class="peer-list-country" data-if="p.country != ''">{{p.country}}</span>
+                        <span class="peer-list-name">{{p.name}}</span>
+                        <span class="peer-list-conn" data-class-wifi="p.conn_type == 'wifi'">{{p.conn_type == 'wifi' ? 'WiFi' : ''}}</span>
+                        <span class="peer-list-ping" data-class-ping-good="p.ping_class == 'ping-good'"
+                              data-class-ping-ok="p.ping_class == 'ping-ok'"
+                              data-class-ping-bad="p.ping_class == 'ping-bad'">{{p.ping_label}}</span>
+                    </div>
+                    <div class="peer-list-empty" data-if="!net_searching">
+                        <span data-if="net_is_configured">enable search to find players</span>
+                        <span data-if="!net_is_configured">lobby server not configured</span>
+                    </div>
+                    <div class="peer-list-empty searching" data-if="net_searching &amp;&amp; net_peer_count == 0">
+                        looking for players...
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- lobby-peers-col -->
+    </div><!-- lobby-body -->
+
     <!-- ── Status bar ── -->
-    <div class="status-bar" data-if="status_text != ''">
-        <span class="status-text">{{status_text}}</span>
+    <div id="status-bar" data-if="status_text != ''">
+        <span id="status-text">{{status_text}}</span>
     </div>
 
     <!-- ── Popup overlay ── -->

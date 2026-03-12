@@ -304,10 +304,6 @@ static void game_init() {
     DebugConfig_Init();
 #endif
 
-    SDL_Log("OFFSET OF CG_IX = 0x%X", (unsigned int)offsetof(WORK, cg_ix));
-    SDL_Log("OFFSET OF NOW_KOC = 0x%X", (unsigned int)offsetof(WORK, now_koc));
-    SDL_Log("OFFSET OF CHAR_INDEX = 0x%X", (unsigned int)offsetof(WORK, char_index));
-
     flInitialize();
     TRACE_THREAD_NAME("Main/Game");
     flSetRenderState(FLRENDER_BACKCOLOR, 0);

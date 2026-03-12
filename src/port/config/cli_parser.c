@@ -28,8 +28,6 @@ bool g_font_test_mode = false;
 // UI mode flag — session-only, not persisted to config
 bool g_ui_mode_rmlui = false;
 
-
-
 // These might need to be mocked in tests
 // void SDLApp_SetWindowPosition(int x, int y);
 // void SDLApp_SetWindowSize(int w, int h);

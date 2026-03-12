@@ -10,6 +10,7 @@
 #include "port/sdl/app/sdl_app.h"
 #include "common.h"
 #include "game_state.h"
+#include "netplay/identity.h"
 #include "netplay/lobby_server.h"
 #include "port/broadcast.h"
 #include "port/config/config.h"
@@ -236,6 +237,7 @@ bool use_rmlui = false;
 /** @brief Initialize SDL3, create window + GL context, compile shaders, load config. */
 int SDLApp_Init() {
     Config_Init();
+    Identity_Init();
     LobbyServer_Init();
 
     const char* cfg_scale = Config_GetString(CFG_KEY_SCALEMODE);
@@ -708,9 +710,8 @@ void SDLApp_BeginFrame() {
     // ⚡ Pi4: removed use_rmlui from this guard — the wrapper already has
     // s_any_window_visible early-outs. Only overlay menus need per-frame processing.
     // Update: also process explicitly visible game documents in Native mode.
-    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() ||
-                        show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
-                        show_training_menu || show_dev_overlay;
+    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() || show_menu || show_shader_menu ||
+                        show_mods_menu || show_stage_config_menu || show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_new_frame();
     }
@@ -773,9 +774,8 @@ static void render_overlays(int win_w, int win_h) {
     /* Flush UI framework — only when RmlUi is active */
     // ⚡ Pi4: removed use_rmlui — matches BeginFrame guard above.
     // Update: also process explicitly visible game documents in Native mode.
-    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() ||
-                        show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
-                        show_training_menu || show_dev_overlay;
+    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() || show_menu || show_shader_menu ||
+                        show_mods_menu || show_stage_config_menu || show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_render();
     }

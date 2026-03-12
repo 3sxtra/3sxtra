@@ -18,7 +18,7 @@ static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
 static void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */);
 static void EFF61_SUDDENLY(WORK_Other_CONN* ewk);
 
-const s8* Menu_Letter_Data[77] = { "ARCADE",
+const s8* Menu_Letter_Data[81] = { "ARCADE",
                                    "VERSUS",
                                    "TRAINING",
                                    "NETWORK",
@@ -94,6 +94,11 @@ const s8* Menu_Letter_Data[77] = { "ARCADE",
                                    "EXIT",
                                    "NATIVE",
                                    "RMLUI",
+                                   "LAN ONLY",
+                                   "EXIT",
+                                   /* LAN-only lobby strings [78-80] */
+                                   "AUTO-CONN",
+                                   "CONNECT",
                                    "EXIT" };
 
 /** @brief No-op — NETWORK is now always visible in the Mode Menu. */
@@ -146,8 +151,9 @@ void effect_61_move(WORK_Other_CONN* ewk) {
         ewk->wu.my_clear_level = 128;
     }
 
-    /* Lobby labels (char_index 68..73): hide behind challenge popup */
-    if (ewk->wu.char_index >= 68 && ewk->wu.char_index <= 73 &&
+    /* Lobby labels (char_index 68..73, 78..80): hide behind challenge popup */
+    if (((ewk->wu.char_index >= 68 && ewk->wu.char_index <= 73) ||
+         (ewk->wu.char_index >= 78 && ewk->wu.char_index <= 80)) &&
         (SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge())) {
         ewk->wu.my_clear_level = 255;
     }

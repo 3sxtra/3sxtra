@@ -14,17 +14,32 @@
 #include <string.h>
 #ifdef _WIN32
 #include <winsock2.h>
+// Windows headers define macros that collide with game engine struct field names
+#ifdef s_addr
+#undef s_addr
+#endif
+#ifdef cmb2
+#undef cmb2
+#endif
+#ifdef cmb3
+#undef cmb3
+#endif
 #else
 #include <arpa/inet.h>
 #endif
 #include "netplay/discovery.h"
+#include "netplay/identity.h"
 #include "netplay/lobby_server.h"
+#include "netplay/net_detect.h"
 #include "netplay/stun.h"
 #include "netplay/upnp.h"
 #include "port/config/config.h"
 
 // Master RmlUi toggle + per-component toggles
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
+
+// Game engine globals for match result reporting
+#include "sf33rd/Source/Game/engine/workuser.h"
 
 static bool hud_visible = true;
 static bool diagnostics_visible = false;
@@ -44,7 +59,111 @@ static SDL_AtomicInt lobby_server_player_count = { 0 };
 static uint32_t lobby_server_last_poll = 0;
 static uint32_t lobby_pending_invite_time = 0; // Timestamp when invite was detected (for expiry)
 static char lobby_my_player_id[64] = { 0 };
+static int lobby_my_rtt_ms = -1; // Our measured RTT to the lobby server
+static const char* my_connection_type = "unknown"; // Detected once at lobby entry
 #define LOBBY_POLL_INTERVAL_MS 2000
+
+// Match reporting state
+static NetplaySessionState last_session_state = NETPLAY_SESSION_IDLE;
+static bool match_result_reported = false;
+static SDL_AtomicInt async_match_report_active = { 0 };
+
+static int async_match_report_fn(void* userdata) {
+    MatchResult* result = (MatchResult*)userdata;
+    LobbyServer_ReportMatch(result);
+    free(result);
+    SDL_SetAtomicInt(&async_match_report_active, 0);
+    return 0;
+}
+
+static void AsyncReportMatch(const char* my_id, const char* opponent_id,
+                              const char* winner_id, int my_char, int opp_char, int rounds) {
+    if (!LobbyServer_IsConfigured() || !my_id || !my_id[0])
+        return;
+    if (SDL_GetAtomicInt(&async_match_report_active) != 0)
+        return;
+    SDL_SetAtomicInt(&async_match_report_active, 1);
+
+    MatchResult* r = (MatchResult*)malloc(sizeof(MatchResult));
+    memset(r, 0, sizeof(*r));
+    snprintf(r->player_id, sizeof(r->player_id), "%s", my_id);
+    snprintf(r->opponent_id, sizeof(r->opponent_id), "%s", opponent_id);
+    snprintf(r->winner_id, sizeof(r->winner_id), "%s", winner_id);
+    r->player_char = my_char;
+    r->opponent_char = opp_char;
+    r->rounds = rounds;
+
+    SDL_Thread* t = SDL_CreateThread(async_match_report_fn, "AsyncMatchReport", r);
+    if (t) {
+        SDL_DetachThread(t);
+    } else {
+        free(r);
+        SDL_SetAtomicInt(&async_match_report_active, 0);
+    }
+}
+
+// Anti-spam: local cooldown for declined players
+#define MAX_DECLINED_PLAYERS 16
+#define DEFAULT_INVITE_COOLDOWN_MS 30000
+static struct {
+    char player_id[64];
+    uint32_t cooldown_until; // SDL_GetTicks() value
+} declined_players[MAX_DECLINED_PLAYERS] = {};
+static int declined_player_count = 0;
+
+static void add_declined_player(const char* pid) {
+    int cooldown_ms = Config_GetInt(CFG_KEY_NETPLAY_INVITE_COOLDOWN);
+    if (cooldown_ms <= 0) cooldown_ms = DEFAULT_INVITE_COOLDOWN_MS;
+    else cooldown_ms *= 1000; // config is in seconds
+
+    // Check if already in list and update
+    for (int i = 0; i < declined_player_count; i++) {
+        if (strcmp(declined_players[i].player_id, pid) == 0) {
+            declined_players[i].cooldown_until = SDL_GetTicks() + cooldown_ms;
+            return;
+        }
+    }
+    // Add new entry (wrap around if full)
+    int idx = declined_player_count < MAX_DECLINED_PLAYERS ? declined_player_count++ : 0;
+    snprintf(declined_players[idx].player_id, sizeof(declined_players[idx].player_id), "%s", pid);
+    declined_players[idx].cooldown_until = SDL_GetTicks() + cooldown_ms;
+}
+
+static bool is_player_declined(const char* pid) {
+    uint32_t now = SDL_GetTicks();
+    for (int i = 0; i < declined_player_count; i++) {
+        if (strcmp(declined_players[i].player_id, pid) == 0) {
+            if (now < declined_players[i].cooldown_until) return true;
+            // Expired — remove by swapping with last
+            declined_players[i] = declined_players[--declined_player_count];
+            return false;
+        }
+    }
+    return false;
+}
+
+// Helper: check if player passes local filter criteria
+static bool player_passes_filters(const LobbyPlayer* p) {
+    // Region lock
+    if (Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK)) {
+        const char* my_region = Config_GetString(CFG_KEY_LOBBY_REGION);
+        if (my_region && my_region[0] && p->region[0]) {
+            if (strcmp(my_region, p->region) != 0) return false;
+        }
+    }
+    // Max ping
+    int max_ping = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
+    if (max_ping > 0 && p->rtt_ms > 0) {
+        // Estimate P2P ping as our RTT + their RTT
+        int estimated_p2p = lobby_my_rtt_ms + p->rtt_ms;
+        if (estimated_p2p > max_ping) return false;
+    }
+    // Block WiFi
+    if (Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI)) {
+        if (strcmp(p->connection_type, "wifi") == 0) return false;
+    }
+    return true;
+}
 
 // Async state machine
 enum LobbyAsyncState {
@@ -90,6 +209,7 @@ typedef struct {
     char region[8];
     char room_code[32];
     char connect_to[32];
+    char connection_type[8];
     int rtt_ms;
 } AsyncPresenceData;
 
@@ -97,13 +217,13 @@ static SDL_AtomicInt async_presence_active = { 0 };
 
 static int SDLCALL async_presence_fn(void* data) {
     AsyncPresenceData* d = (AsyncPresenceData*)data;
-    LobbyServer_UpdatePresence(d->player_id, d->display_name, d->region, d->room_code, d->connect_to, d->rtt_ms);
+    LobbyServer_UpdatePresence(d->player_id, d->display_name, d->region, d->room_code, d->connect_to, d->rtt_ms,
+                               d->connection_type);
     free(d);
     SDL_SetAtomicInt(&async_presence_active, 0);
     return 0;
 }
 
-static int lobby_my_rtt_ms = -1; // Our measured RTT to the lobby server
 
 static void AsyncUpdatePresence(const char* pid, const char* disp, const char* rc, const char* ct) {
     if (!LobbyServer_IsConfigured() || !pid || !pid[0])
@@ -123,6 +243,7 @@ static void AsyncUpdatePresence(const char* pid, const char* disp, const char* r
         snprintf(d->room_code, sizeof(d->room_code), "%s", rc);
     if (ct)
         snprintf(d->connect_to, sizeof(d->connect_to), "%s", ct);
+    snprintf(d->connection_type, sizeof(d->connection_type), "%s", my_connection_type);
     d->rtt_ms = lobby_my_rtt_ms;
     SDL_Thread* t = SDL_CreateThread(async_presence_fn, "AsyncPresence", d);
     if (t) {
@@ -242,10 +363,46 @@ static void lobby_poll_server(void) {
             continue;
         if (lobby_server_players[i].connect_to[0] && strcmp(lobby_server_players[i].connect_to, my_room_code) == 0) {
 
+            // Anti-spam: check if this player is on our local declined list
+            if (is_player_declined(lobby_server_players[i].player_id)) {
+                SDL_Log("[lobby] Ignoring invite from %s (declined cooldown active)", lobby_server_players[i].display_name);
+                continue;
+            }
+
             uint32_t peer_ip = 0;
             uint16_t peer_port = 0;
             if (!Stun_DecodeEndpoint(lobby_server_players[i].room_code, &peer_ip, &peer_port))
                 break;
+
+            // Auto-decline if player fails filter criteria (region lock, max ping, WiFi block)
+            if (!player_passes_filters(&lobby_server_players[i])) {
+                // Build a reason string for the status message
+                const char* reason = "filter";
+                if (Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK)) {
+                    const char* my_region = Config_GetString(CFG_KEY_LOBBY_REGION);
+                    if (my_region && my_region[0] && lobby_server_players[i].region[0] &&
+                        strcmp(my_region, lobby_server_players[i].region) != 0) {
+                        reason = "region mismatch";
+                    }
+                }
+                if (Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI) &&
+                    strcmp(lobby_server_players[i].connection_type, "wifi") == 0) {
+                    reason = "WiFi blocked";
+                }
+                int max_ping = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
+                if (max_ping > 0 && lobby_server_players[i].rtt_ms > 0) {
+                    int est = lobby_my_rtt_ms + lobby_server_players[i].rtt_ms;
+                    if (est > max_ping)
+                        reason = "high ping";
+                }
+                SDL_Log("[lobby] Auto-declined %s (%s)", lobby_server_players[i].display_name, reason);
+                snprintf(lobby_status_msg, sizeof(lobby_status_msg),
+                         "Declined %s (%s)", lobby_server_players[i].display_name, reason);
+                // Report decline to server for rate limiting
+                LobbyServer_DeclineInvite(lobby_my_player_id, lobby_server_players[i].player_id);
+                add_declined_player(lobby_server_players[i].player_id);
+                continue;
+            }
 
             // Always update pending invite state for native lobby indication
             found_invite = true;
@@ -404,6 +561,8 @@ static void lobby_reset(void) {
     SDL_SetAtomicInt(&lobby_punch_cancel, 1); // Cancel any in-flight punch
     lobby_punch_peer_name[0] = '\0';
     lobby_connect_to_intent[0] = '\0';
+    // Clear anti-spam declined player list
+    declined_player_count = 0;
 
     // Reset async thread guards so lobby can restart cleanly
     SDL_SetAtomicInt(&async_presence_active, 0);
@@ -578,6 +737,51 @@ extern "C" {
 void SDLNetplayUI_Render(int window_width, int window_height) {
     ProcessEvents();
 
+    // Detect RUNNING -> EXITING transition for match reporting
+    NetplaySessionState current_state = Netplay_GetSessionState();
+    if (last_session_state == NETPLAY_SESSION_RUNNING &&
+        current_state == NETPLAY_SESSION_EXITING &&
+        !match_result_reported && lobby_my_player_id[0]) {
+        // A netplay match just ended — report the result
+        // Winner_id: 0 = P1 won, 1 = P2 won (from game engine)
+        // My_char[0/1]: character indices
+        // PL_Wins[0/1]: round wins per player
+        int my_player = Netplay_IsEnabled() ? 0 : 0; // We are always local player
+        int total_rounds = PL_Wins[0] + PL_Wins[1];
+
+        if (Winner_id >= 0 && total_rounds > 0) {
+            // Determine winner's player_id
+            // If we are P1 (player 0) and Winner_id==0, we won
+            const char* winner_pid = (Winner_id == my_player) ?
+                lobby_my_player_id : "opponent"; // opponent ID comes from lobby
+
+            // Find opponent's ID from the lobby player list
+            const char* opponent_pid = "";
+            int player_count = SDL_GetAtomicInt(&lobby_server_player_count);
+            for (int i = 0; i < player_count; i++) {
+                if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) != 0 &&
+                    lobby_server_players[i].player_id[0]) {
+                    opponent_pid = lobby_server_players[i].player_id;
+                    break;
+                }
+            }
+
+            if (opponent_pid[0]) {
+                winner_pid = (Winner_id == my_player) ? lobby_my_player_id : opponent_pid;
+                AsyncReportMatch(lobby_my_player_id, opponent_pid, winner_pid,
+                                 My_char[my_player], My_char[1 - my_player], total_rounds);
+                SDL_Log("[NetplayUI] Match result queued: winner=%s rounds=%d", winner_pid, total_rounds);
+            }
+        }
+        match_result_reported = true;
+    }
+
+    // Reset flag when starting a new session
+    if (current_state == NETPLAY_SESSION_RUNNING && last_session_state != NETPLAY_SESSION_RUNNING) {
+        match_result_reported = false;
+    }
+    last_session_state = current_state;
+
     NetworkStats stats;
     Netplay_GetNetworkStats(&stats);
     PushHistory((float)stats.ping, (float)stats.rollback);
@@ -589,6 +793,9 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
 
         // Auto-start STUN discovery on lobby entry
         if (state == LOBBY_ASYNC_IDLE) {
+            // Detect WiFi/wired once at lobby entry
+            my_connection_type = NetDetect_GetConnectionType();
+            SDL_Log("[lobby] Connection type detected: %s", my_connection_type);
             lobby_start_discover();
             state = SDL_GetAtomicInt(&lobby_async_state);
         }
@@ -601,15 +808,9 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
 
             // Register with lobby server if configured
             if (LobbyServer_IsConfigured() && !lobby_server_registered) {
-                // Use persistent client ID as the hidden auth token to prevent spoofing.
-                const char* client_id = Config_GetString(CFG_KEY_LOBBY_CLIENT_ID);
-                if (!client_id || !client_id[0])
-                    client_id = my_room_code; // Fallback
-
-                // Use custom display name if set, otherwise fall back to room code
-                const char* display = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
-                if (!display || !display[0])
-                    display = my_room_code;
+                // Use stable identity from identity.c (auto-generated on first launch)
+                const char* client_id = Identity_GetPlayerId();
+                const char* display = Identity_GetDisplayName();
 
                 snprintf(lobby_my_player_id, sizeof(lobby_my_player_id), "%s", client_id);
                 if (!lobby_server_registered) {
@@ -762,13 +963,15 @@ bool SDLNetplayUI_IsSearching() {
 }
 
 int SDLNetplayUI_GetOnlinePlayerCount() {
-    // Count only searching players, excluding ourselves
+    // Count only searching players, excluding ourselves and filtered players
     int count = 0;
     int pc = SDL_GetAtomicInt(&lobby_server_player_count);
     for (int i = 0; i < pc; i++) {
         if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
             continue;
         if (strcmp(lobby_server_players[i].status, "searching") != 0)
+            continue;
+        if (!player_passes_filters(&lobby_server_players[i]))
             continue;
         count++;
     }
@@ -782,6 +985,8 @@ const char* SDLNetplayUI_GetOnlinePlayerName(int index) {
         if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
             continue;
         if (strcmp(lobby_server_players[i].status, "searching") != 0)
+            continue;
+        if (!player_passes_filters(&lobby_server_players[i]))
             continue;
         if (count == index)
             return lobby_server_players[i].display_name;
@@ -798,11 +1003,86 @@ const char* SDLNetplayUI_GetOnlinePlayerRoomCode(int index) {
             continue;
         if (strcmp(lobby_server_players[i].status, "searching") != 0)
             continue;
+        if (!player_passes_filters(&lobby_server_players[i]))
+            continue;
         if (count == index)
             return lobby_server_players[i].room_code;
         count++;
     }
     return "";
+}
+
+const char* SDLNetplayUI_GetOnlinePlayerRegion(int index) {
+    int count = 0;
+    int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+    for (int i = 0; i < pc; i++) {
+        if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
+            continue;
+        if (strcmp(lobby_server_players[i].status, "searching") != 0)
+            continue;
+        if (!player_passes_filters(&lobby_server_players[i]))
+            continue;
+        if (count == index)
+            return lobby_server_players[i].region;
+        count++;
+    }
+    return "";
+}
+
+const char* SDLNetplayUI_GetOnlinePlayerCountry(int index) {
+    int count = 0;
+    int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+    for (int i = 0; i < pc; i++) {
+        if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
+            continue;
+        if (strcmp(lobby_server_players[i].status, "searching") != 0)
+            continue;
+        if (!player_passes_filters(&lobby_server_players[i]))
+            continue;
+        if (count == index)
+            return lobby_server_players[i].country;
+        count++;
+    }
+    return "";
+}
+
+const char* SDLNetplayUI_GetOnlinePlayerConnType(int index) {
+    int count = 0;
+    int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+    for (int i = 0; i < pc; i++) {
+        if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
+            continue;
+        if (strcmp(lobby_server_players[i].status, "searching") != 0)
+            continue;
+        if (!player_passes_filters(&lobby_server_players[i]))
+            continue;
+        if (count == index)
+            return lobby_server_players[i].connection_type;
+        count++;
+    }
+    return "unknown";
+}
+
+int SDLNetplayUI_GetOnlinePlayerPing(int index) {
+    int count = 0;
+    int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+    for (int i = 0; i < pc; i++) {
+        if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
+            continue;
+        if (strcmp(lobby_server_players[i].status, "searching") != 0)
+            continue;
+        if (!player_passes_filters(&lobby_server_players[i]))
+            continue;
+        if (count == index) {
+            // Estimate P2P ping as sum of both RTTs
+            int their_rtt = lobby_server_players[i].rtt_ms;
+            if (lobby_my_rtt_ms > 0 && their_rtt > 0)
+                return lobby_my_rtt_ms + their_rtt;
+            return -1;
+        }
+        count++;
+    }
+    return -1;
 }
 
 void SDLNetplayUI_ConnectToPlayer(int index) {
@@ -812,6 +1092,8 @@ void SDLNetplayUI_ConnectToPlayer(int index) {
         if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
             continue;
         if (strcmp(lobby_server_players[i].status, "searching") != 0)
+            continue;
+        if (!player_passes_filters(&lobby_server_players[i]))
             continue;
         if (count == index) {
             uint32_t peer_ip = 0;
@@ -866,6 +1148,17 @@ void SDLNetplayUI_AcceptPendingInvite() {
 void SDLNetplayUI_DeclinePendingInvite() {
     if (!lobby_has_pending_invite)
         return;
+    // Report decline to server for rate limiting
+    // Find the player_id of the inviting player
+    int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+    for (int i = 0; i < pc; i++) {
+        if (strcmp(lobby_server_players[i].display_name, lobby_pending_invite_name) == 0 &&
+            strcmp(lobby_server_players[i].player_id, lobby_my_player_id) != 0) {
+            LobbyServer_DeclineInvite(lobby_my_player_id, lobby_server_players[i].player_id);
+            add_declined_player(lobby_server_players[i].player_id);
+            break;
+        }
+    }
     lobby_has_pending_invite = false;
     lobby_pending_invite_name[0] = '\0';
     lobby_pending_invite_region[0] = '\0';

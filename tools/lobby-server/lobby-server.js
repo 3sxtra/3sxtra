@@ -12,6 +12,11 @@
  *   - Signature = HMAC-SHA256(secret, timestamp + method + path + body)
  *   - Requests with stale timestamps (>60s) or bad signatures are rejected.
  *
+ * Features:
+ *   - GeoIP region + country detection via geoip-lite
+ *   - Connection type tracking (wifi/wired/unknown)
+ *   - Anti-spam invite rate limiting with exponential backoff
+ *
  * Environment variables:
  *   LOBBY_SECRET  — shared HMAC key (required)
  *   LOBBY_PORT    — HTTP port (default: 3000)
@@ -22,6 +27,17 @@
 
 const http = require('node:http');
 const crypto = require('node:crypto');
+const path = require('node:path');
+
+// Try to load geoip-lite for country/region detection
+let geoip = null;
+try {
+    geoip = require('geoip-lite');
+    console.log('GeoIP: loaded (geoip-lite)');
+} catch {
+    console.warn('GeoIP: geoip-lite not installed — region/country detection disabled');
+    console.warn('  Install with: npm install geoip-lite');
+}
 
 const PORT = parseInt(process.env.LOBBY_PORT || '3000', 10);
 const SECRET = process.env.LOBBY_SECRET || '';
@@ -32,18 +48,119 @@ if (!SECRET) {
     process.exit(1);
 }
 
+// ---- Region Mapping ----
+
+// Map geoip-lite country codes to game regions
+const COUNTRY_TO_REGION = {};
+// North America East
+['US', 'CA'].forEach(c => COUNTRY_TO_REGION[c] = 'NA-E'); // Default NA-E; US west coast overridden by timezone if available
+// Europe West
+['GB', 'IE', 'FR', 'ES', 'PT', 'NL', 'BE', 'DE', 'AT', 'CH', 'IT', 'DK', 'NO', 'SE', 'FI', 'IS', 'LU'].forEach(c => COUNTRY_TO_REGION[c] = 'EU-W');
+// Europe East
+['PL', 'CZ', 'SK', 'HU', 'RO', 'BG', 'HR', 'RS', 'UA', 'LT', 'LV', 'EE', 'GR', 'TR', 'RU'].forEach(c => COUNTRY_TO_REGION[c] = 'EU-E');
+// Asia
+['JP', 'KR', 'CN', 'TW', 'HK', 'SG', 'MY', 'TH', 'PH', 'ID', 'VN', 'IN', 'PK'].forEach(c => COUNTRY_TO_REGION[c] = 'ASIA');
+// South America
+['BR', 'AR', 'CL', 'CO', 'PE', 'VE', 'EC', 'UY', 'PY', 'BO'].forEach(c => COUNTRY_TO_REGION[c] = 'SA');
+// Oceania
+['AU', 'NZ'].forEach(c => COUNTRY_TO_REGION[c] = 'OCE');
+// Africa
+['ZA', 'NG', 'EG', 'KE', 'MA', 'TN', 'GH'].forEach(c => COUNTRY_TO_REGION[c] = 'AF');
+
+function detectRegionAndCountry(ip) {
+    if (!geoip) return { country: '', region: '' };
+    // Strip IPv6 prefix from IPv4-mapped addresses
+    const cleanIp = ip.replace(/^::ffff:/, '');
+    const geo = geoip.lookup(cleanIp);
+    if (!geo) return { country: '', region: '' };
+    const country = geo.country || '';
+    const region = COUNTRY_TO_REGION[country] || '';
+    return { country, region };
+}
+
 // ---- Data Store ----
 
-/** @type {Map<string, {display_name: string, region: string, room_code: string, connect_to: string, status: string, rtt_ms: number, last_seen: number}>} */
+/** @type {Map<string, {display_name: string, region: string, country: string, room_code: string, connect_to: string, status: string, connection_type: string, rtt_ms: number, last_seen: number}>} */
 const players = new Map();
 
-// Cleanup stale players every 5 seconds
+/** @type {Map<string, {count: number, until: number}>}  Key = "from_id->to_id" */
+const declineCooldowns = new Map();
+
+// ---- SQLite Database ----
+
+let db = null;
+try {
+    const Database = require('better-sqlite3');
+    const dbPath = path.join(__dirname, 'lobby.db');
+    db = new Database(dbPath);
+    db.pragma('journal_mode = WAL');  // Better concurrent read performance
+    db.pragma('busy_timeout = 5000');
+
+    // Create tables
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS players_db (
+            player_id TEXT PRIMARY KEY,
+            display_name TEXT,
+            wins INTEGER DEFAULT 0,
+            losses INTEGER DEFAULT 0,
+            disconnects INTEGER DEFAULT 0,
+            rating REAL DEFAULT 1500.0,
+            rd REAL DEFAULT 350.0,
+            volatility REAL DEFAULT 0.06,
+            last_match TEXT,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS matches (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            p1_id TEXT NOT NULL,
+            p2_id TEXT NOT NULL,
+            winner_id TEXT NOT NULL,
+            p1_char INTEGER,
+            p2_char INTEGER,
+            rounds INTEGER,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_matches_p1 ON matches(p1_id);
+        CREATE INDEX IF NOT EXISTS idx_matches_p2 ON matches(p2_id);
+
+        CREATE TABLE IF NOT EXISTS pending_results (
+            match_key TEXT PRIMARY KEY,
+            reporter_id TEXT NOT NULL,
+            winner_id TEXT NOT NULL,
+            p1_id TEXT NOT NULL,
+            p2_id TEXT NOT NULL,
+            p1_char INTEGER,
+            p2_char INTEGER,
+            rounds INTEGER,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+    `);
+    console.log(`SQLite: initialized at ${dbPath}`);
+} catch (err) {
+    console.warn(`SQLite: not available (${err.message}) — match reporting disabled`);
+    console.warn('  Install with: npm install better-sqlite3');
+}
+
+// Cleanup stale players and expired decline cooldowns every 5 seconds
 const cleanupTimer = setInterval(() => {
     const now = Date.now();
     for (const [id, p] of players) {
         if (now - p.last_seen > 10_000) {
             players.delete(id);
         }
+    }
+    // Clean expired decline records
+    for (const [key, cd] of declineCooldowns) {
+        if (now > cd.until) {
+            declineCooldowns.delete(key);
+        }
+    }
+    // Clean stale pending match results (>60s)
+    if (db) {
+        try {
+            db.prepare(`DELETE FROM pending_results WHERE datetime(created_at) < datetime('now', '-60 seconds')`).run();
+        } catch { /* ignore */ }
     }
 }, 5_000);
 
@@ -126,15 +243,36 @@ function parseJsonBody(res, bodyStr) {
 }
 
 /**
+ * Check if a decline cooldown is active from one player to another.
+ * Returns the remaining cooldown in seconds, or 0 if none.
+ */
+function getDeclineCooldown(fromId, toId) {
+    const key = `${fromId}->${toId}`;
+    const cd = declineCooldowns.get(key);
+    if (!cd) return 0;
+    const remaining = Math.max(0, Math.ceil((cd.until - Date.now()) / 1000));
+    return remaining;
+}
+
+/**
  * Server-side connect matching: if player A wants to connect to player B,
  * automatically set B's connect_to = A's room_code so both sides see the
  * mutual intent on their next poll.
+ *
+ * Anti-spam: checks decline cooldowns before allowing the match.
  */
 function resolveConnectMatch(player_id, display_name, room_code, connect_to) {
     if (!connect_to || !room_code) return;
     for (const [otherId, other] of players) {
         if (otherId === player_id) continue;
         if (other.room_code === connect_to) {
+            // Anti-spam: check if target has declined this player recently
+            const cooldown = getDeclineCooldown(otherId, player_id);
+            if (cooldown > 0) {
+                console.log(`[spam] blocked: ${display_name} -> ${other.display_name} (cooldown ${cooldown}s remaining)`);
+                break;
+            }
+
             // Safety: if this player already has a connect_to set to a *different* room,
             // don't overwrite it — could be a CGNAT/duplicate room_code collision.
             if (other.connect_to && other.connect_to !== room_code && other.connect_to !== '') {
@@ -184,18 +322,24 @@ async function handleRequest(req, res) {
         const data = parseJsonBody(res, body);
         if (!data) return;
 
-        const { player_id, display_name, region, room_code, connect_to, rtt_ms } = data;
+        const { player_id, display_name, region, room_code, connect_to, rtt_ms, connection_type } = data;
         if (!player_id || !display_name) {
             return json(res, 400, { error: 'Missing player_id or display_name' });
         }
 
+        // GeoIP: detect country and region from source IP
+        const clientIp = req.socket.remoteAddress || '';
+        const geo = detectRegionAndCountry(clientIp);
+
         const existing = players.get(player_id);
         players.set(player_id, {
             display_name: String(display_name).slice(0, 31),
-            region: String(region || '').slice(0, 7),
+            region: String(region || geo.region || '').slice(0, 7),
+            country: geo.country || (existing ? existing.country : ''),
             room_code: String(room_code || '').slice(0, 15),
             connect_to: String(connect_to || '').slice(0, 15),
             status: existing ? existing.status : 'idle',
+            connection_type: String(connection_type || 'unknown').slice(0, 7),
             rtt_ms: typeof rtt_ms === 'number' ? Math.max(0, Math.min(9999, rtt_ms)) : (existing ? existing.rtt_ms : -1),
             last_seen: Date.now(),
         });
@@ -212,7 +356,7 @@ async function handleRequest(req, res) {
         let p = players.get(data.player_id);
         if (!p) {
             // Create minimal entry if presence hasn't arrived yet (race condition fix)
-            p = { display_name: data.player_id, region: '', room_code: '', connect_to: '', status: 'idle', rtt_ms: -1, last_seen: Date.now() };
+            p = { display_name: data.player_id, region: '', country: '', room_code: '', connect_to: '', status: 'idle', connection_type: 'unknown', rtt_ms: -1, last_seen: Date.now() };
             players.set(data.player_id, p);
         }
 
@@ -249,14 +393,141 @@ async function handleRequest(req, res) {
                 player_id: id,
                 display_name: p.display_name,
                 region: p.region,
+                country: p.country || '',
                 room_code: p.room_code,
                 connect_to: p.connect_to || '',
                 rtt_ms: p.rtt_ms || -1,
                 status: p.status || 'idle',
+                connection_type: p.connection_type || 'unknown',
             });
         }
 
         return json(res, 200, { players: result });
+    }
+
+    // --- POST /decline ---
+    // Report a declined invite for rate limiting.
+    // Implements exponential backoff: 30s -> 60s -> 120s -> 300s max.
+    if (method === 'POST' && path === '/decline') {
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+
+        const { player_id, declined_player_id } = data;
+        if (!player_id || !declined_player_id) {
+            return json(res, 400, { error: 'Missing player_id or declined_player_id' });
+        }
+
+        const key = `${player_id}->${declined_player_id}`;
+        const existing = declineCooldowns.get(key);
+        const count = existing ? existing.count + 1 : 1;
+
+        // Exponential backoff: 30s, 60s, 120s, 300s max
+        const baseCooldown = 30_000;
+        const cooldownMs = Math.min(baseCooldown * Math.pow(2, count - 1), 300_000);
+
+        declineCooldowns.set(key, {
+            count,
+            until: Date.now() + cooldownMs,
+        });
+
+        const cooldownSeconds = Math.ceil(cooldownMs / 1000);
+        console.log(`[decline] ${player_id} declined ${declined_player_id} (count=${count}, cooldown=${cooldownSeconds}s)`);
+
+        return json(res, 200, { ok: true, cooldown_seconds: cooldownSeconds });
+    }
+
+    // --- POST /match_result ---
+    if (method === 'POST' && path === '/match_result') {
+        if (!db) return json(res, 503, { error: 'Match reporting unavailable (no SQLite)' });
+
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+
+        const { player_id, opponent_id, winner_id, player_char, opponent_char, rounds } = data;
+        if (!player_id || !opponent_id || !winner_id) {
+            return json(res, 400, { error: 'Missing player_id, opponent_id, or winner_id' });
+        }
+
+        // Canonical match key: sorted IDs joined by ":"
+        const ids = [player_id, opponent_id].sort();
+        const matchKey = ids.join(':');
+
+        const pending = db.prepare('SELECT * FROM pending_results WHERE match_key = ?').get(matchKey);
+
+        if (!pending) {
+            // First report — store as pending
+            db.prepare(`INSERT OR REPLACE INTO pending_results (match_key, reporter_id, winner_id, p1_id, p2_id, p1_char, p2_char, rounds)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+              .run(matchKey, player_id, winner_id, ids[0], ids[1],
+                   ids[0] === player_id ? (player_char || 0) : (opponent_char || 0),
+                   ids[1] === player_id ? (player_char || 0) : (opponent_char || 0),
+                   rounds || 0);
+            console.log(`[match] pending: ${player_id} reports winner=${winner_id}`);
+            return json(res, 200, { ok: true, status: 'pending' });
+        }
+
+        // Second report — cross-validate
+        if (pending.reporter_id === player_id) {
+            // Same player reporting again — update
+            return json(res, 200, { ok: true, status: 'already_pending' });
+        }
+
+        // Delete pending regardless of outcome
+        db.prepare('DELETE FROM pending_results WHERE match_key = ?').run(matchKey);
+
+        if (pending.winner_id !== winner_id) {
+            // Dispute — discard both reports
+            console.log(`[match] dispute: ${pending.reporter_id} says ${pending.winner_id}, ${player_id} says ${winner_id}`);
+            return json(res, 200, { ok: true, status: 'dispute' });
+        }
+
+        // Agreement — record the match
+        db.prepare(`INSERT INTO matches (p1_id, p2_id, winner_id, p1_char, p2_char, rounds)
+                    VALUES (?, ?, ?, ?, ?, ?)`)
+          .run(pending.p1_id, pending.p2_id, winner_id, pending.p1_char, pending.p2_char, pending.rounds || rounds || 0);
+
+        // Upsert player stats
+        const upsertPlayer = db.prepare(`
+            INSERT INTO players_db (player_id, display_name, wins, losses)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(player_id) DO UPDATE SET
+                wins = wins + excluded.wins,
+                losses = losses + excluded.losses,
+                last_match = datetime('now')
+        `);
+
+        const winnerId = winner_id;
+        const loserId = winnerId === player_id ? opponent_id : player_id;
+        const winnerName = players.get(winnerId)?.display_name || winnerId;
+        const loserName = players.get(loserId)?.display_name || loserId;
+
+        upsertPlayer.run(winnerId, winnerName, 1, 0);
+        upsertPlayer.run(loserId, loserName, 0, 1);
+
+        console.log(`[match] recorded: ${winnerName} beat ${loserName}`);
+        return json(res, 200, { ok: true, status: 'recorded' });
+    }
+
+    // --- GET /player/:id/stats ---
+    const statsMatch = path.match(/^\/player\/([^/]+)\/stats$/);
+    if (method === 'GET' && statsMatch) {
+        if (!db) return json(res, 503, { error: 'Stats unavailable (no SQLite)' });
+
+        const playerId = decodeURIComponent(statsMatch[1]);
+        const row = db.prepare('SELECT wins, losses, disconnects, rating, rd FROM players_db WHERE player_id = ?').get(playerId);
+
+        if (!row) {
+            return json(res, 200, { player_id: playerId, wins: 0, losses: 0, disconnects: 0, rating: 1500.0, rd: 350.0 });
+        }
+
+        return json(res, 200, {
+            player_id: playerId,
+            wins: row.wins,
+            losses: row.losses,
+            disconnects: row.disconnects,
+            rating: row.rating,
+            rd: row.rd,
+        });
     }
 
     // --- POST /leave ---
@@ -285,6 +556,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`3SX Lobby Server listening on port ${PORT}`);
     console.log(`HMAC auth: enabled (key length: ${SECRET.length})`);
+    console.log(`GeoIP: ${geoip ? 'enabled' : 'disabled (install geoip-lite for country detection)'}`);
 });
 
 // ---- Graceful Shutdown ----
@@ -292,6 +564,9 @@ server.listen(PORT, '0.0.0.0', () => {
 function shutdown(signal) {
     console.log(`\n${signal} received. Shutting down...`);
     clearInterval(cleanupTimer);
+    if (db) {
+        try { db.close(); console.log('SQLite: closed.'); } catch { /* ignore */ }
+    }
     server.close(() => {
         console.log('Server closed.');
         process.exit(0);

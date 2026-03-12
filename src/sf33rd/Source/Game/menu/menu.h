@@ -8,9 +8,9 @@
 #ifndef MENU_H
 #define MENU_H
 
+#include "sf33rd/Source/Game/effect/eff57.h"
 #include "structs.h"
 #include "types.h"
-#include "sf33rd/Source/Game/effect/eff57.h"
 
 void Menu_Task(struct _TASK* task_ptr);
 void Menu_Init(struct _TASK* task_ptr);
