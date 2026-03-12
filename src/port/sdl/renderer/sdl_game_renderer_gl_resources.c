@@ -400,7 +400,6 @@ void SDLGameRendererGL_DestroyTexture(unsigned int texture_handle) {
         SDL_DestroySurface(gl_state.surfaces[texture_index]);
         gl_state.surfaces[texture_index] = NULL;
     }
-
 }
 
 void SDLGameRendererGL_CreatePalette(unsigned int ph) {
@@ -548,7 +547,6 @@ void SDLGameRendererGL_UnlockPalette(unsigned int ph) {
     }
 }
 
-
 /**
  * ⚡ Bolt: O(1) deferred unlock — pushes tex_idx to pending batch instead of
  * scanning tcache_live per call. The actual stale promotion happens in
@@ -571,7 +569,6 @@ void SDLGameRendererGL_UnlockTexture(unsigned int th) {
         }
     }
 }
-
 
 /**
  * ⚡ Bolt: Batch stale-promotion pass — single O(pending + live) scan replaces

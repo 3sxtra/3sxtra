@@ -223,7 +223,6 @@ void SDLGameRendererGPU_UnlockTexture(unsigned int th) {
     }
 }
 
-
 void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
     const int idx = ph - 1;
     if (idx >= 0 && idx < FL_PALETTE_MAX) {
@@ -248,7 +247,6 @@ void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
         }
     }
 }
-
 
 /** @brief Prepare a texture for rendering, uploading to the GPU array if needed. */
 void SDLGameRendererGPU_SetTexture(unsigned int th) {

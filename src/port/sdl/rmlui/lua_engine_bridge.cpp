@@ -507,17 +507,20 @@ static int l_set_lua_dummy_active(lua_State* L) {
 
 /** @brief Return the current dummy settings from the C training menu as a Lua table. */
 static int l_get_dummy_settings(lua_State* L) {
-    lua_createtable(L, 0, 8);
+    lua_createtable(L, 0, 11);
     int t = lua_gettop(L);
 
     PUSH_INT(L, t, "block_type", (int)g_dummy_settings.block_type);
     PUSH_INT(L, t, "parry_type", (int)g_dummy_settings.parry_type);
+    PUSH_INT(L, t, "block_direction", (int)g_dummy_settings.block_direction);
     PUSH_INT(L, t, "stun_mash", (int)g_dummy_settings.stun_mash);
     PUSH_INT(L, t, "wakeup_mash", (int)g_dummy_settings.wakeup_mash);
     PUSH_BOOL(L, t, "wakeup_reversal", g_dummy_settings.wakeup_reversal);
     PUSH_BOOL(L, t, "guard_low_default", g_dummy_settings.guard_low_default);
     PUSH_INT(L, t, "tech_throw_type", (int)g_dummy_settings.tech_throw_type);
     PUSH_INT(L, t, "fast_wakeup", (int)g_dummy_settings.fast_wakeup);
+    PUSH_INT(L, t, "playback_mode", (int)g_dummy_settings.playback_mode);
+    PUSH_BOOL(L, t, "auto_reversal", g_dummy_settings.auto_reversal);
 
     return 1;
 }

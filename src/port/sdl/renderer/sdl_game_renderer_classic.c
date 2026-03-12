@@ -347,7 +347,6 @@ void SDLGameRendererClassic_CreateTexture(unsigned int th) {
     }
     cl_surfaces[texture_index] = surface;
 
-
     // For non-indexed formats, eagerly create SDL_Texture
     if (!SDL_ISPIXELFORMAT_INDEXED(pixel_format)) {
         SDL_Texture* sdl_texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -378,14 +377,12 @@ void SDLGameRendererClassic_DestroyTexture(unsigned int texture_handle) {
             cl_tex_cache[texture_index][j] = NULL;
         }
     }
-
 }
 
 void SDLGameRendererClassic_UnlockTexture(unsigned int th) {
     const int texture_index = LO_16_BITS(th) - 1;
     if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX)
         return;
-
 
     // Invalidate all cached textures for this surface
     for (int j = 0; j <= FL_PALETTE_MAX; j++) {
@@ -458,7 +455,6 @@ void SDLGameRendererClassic_CreatePalette(unsigned int ph) {
     SDL_SetPaletteColors(sdl_pal, colors, 0, color_count);
     cl_palettes[palette_index] = sdl_pal;
 
-
     TRACE_ZONE_END();
 }
 
@@ -478,14 +474,12 @@ void SDLGameRendererClassic_DestroyPalette(unsigned int palette_handle) {
             cl_tex_cache[i][pi + 1] = NULL;
         }
     }
-
 }
 
 void SDLGameRendererClassic_UnlockPalette(unsigned int ph) {
     const int pi = ph - 1;
     if (pi < 0 || pi >= FL_PALETTE_MAX)
         return;
-
 
     // Re-create palette from updated data (shift to HI_16_BITS format for CreatePalette)
     SDLGameRendererClassic_CreatePalette(ph << 16);

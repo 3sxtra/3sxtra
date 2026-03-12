@@ -41,6 +41,15 @@ typedef enum { DUMMY_TECH_THROW_NONE = 0, DUMMY_TECH_THROW_ALWAYS, DUMMY_TECH_TH
 
 typedef enum { DUMMY_FAST_WAKEUP_NONE = 0, DUMMY_FAST_WAKEUP_ALWAYS, DUMMY_FAST_WAKEUP_RANDOM } DummyFastWakeupType;
 
+typedef enum { DUMMY_BLOCK_DIR_NONE = 0, DUMMY_BLOCK_DIR_RIGHT, DUMMY_BLOCK_DIR_LEFT } DummyBlockDirectionType;
+
+typedef enum {
+    DUMMY_PLAYBACK_MODE_NONE = 0,
+    DUMMY_PLAYBACK_MODE_NORMAL,
+    DUMMY_PLAYBACK_MODE_RANDOM,
+    DUMMY_PLAYBACK_MODE_SEQUENCE
+} DummyPlaybackModeType;
+
 // --- String labels (single source of truth for UI) ---
 static inline const char* DummyBlockType_str(int v) {
     static const char* s[] = { "NONE", "ALWAYS", "FIRST HIT", "AFTER 1ST", "RANDOM" };
@@ -82,15 +91,34 @@ static inline int DummyFastWakeupType_count(void) {
     return 3;
 }
 
+static inline const char* DummyBlockDirectionType_str(int v) {
+    static const char* s[] = { "NONE", "RIGHT", "LEFT" };
+    return (v >= 0 && v < 3) ? s[v] : "???";
+}
+static inline int DummyBlockDirectionType_count(void) {
+    return 3;
+}
+
+static inline const char* DummyPlaybackModeType_str(int v) {
+    static const char* s[] = { "NONE", "NORMAL", "RANDOM", "SEQUENCE" };
+    return (v >= 0 && v < 4) ? s[v] : "???";
+}
+static inline int DummyPlaybackModeType_count(void) {
+    return 4;
+}
+
 typedef struct {
     DummyBlockType block_type;
     DummyParryType parry_type;
+    DummyBlockDirectionType block_direction; // Force blocking direction
     DummyMashType stun_mash;
     DummyMashType wakeup_mash;
-    bool wakeup_reversal;               // Independent SRK/DP on wakeup (not tied to mash)
-    bool guard_low_default;             // If true, default guard direction is down-back (blocks lows)
-    DummyTechThrowType tech_throw_type; // Throw tech behavior
-    DummyFastWakeupType fast_wakeup;    // Fast wakeup (quick rise) behavior
+    bool wakeup_reversal;                // Independent SRK/DP on wakeup (not tied to mash)
+    bool guard_low_default;              // If true, default guard direction is down-back (blocks lows)
+    DummyTechThrowType tech_throw_type;  // Throw tech behavior
+    DummyFastWakeupType fast_wakeup;     // Fast wakeup (quick rise) behavior
+    DummyPlaybackModeType playback_mode; // Recording playback behavior
+    bool auto_reversal;                  // Perform counter attacks / reversals
 
     // Internal state tracking
     bool is_currently_blocking;  // Latched random-block decision per attack string

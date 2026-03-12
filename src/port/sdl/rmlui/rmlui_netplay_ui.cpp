@@ -185,7 +185,6 @@ extern "C" void rmlui_netplay_ui_update(void) {
 
     bool new_hud_visible = SDLNetplayUI_IsHUDVisible() && session_running;
 
-
     if (new_hud_visible != s_prev_hud_visible) {
         s_hud_visible = new_hud_visible;
         s_prev_hud_visible = new_hud_visible;

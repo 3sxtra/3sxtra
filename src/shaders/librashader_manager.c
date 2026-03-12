@@ -14,10 +14,9 @@ void LibrashaderManager_Render_GL(LibrashaderManager* manager,
                                   int viewport_h);
 void LibrashaderManager_Free_GL(LibrashaderManager* manager);
 int LibrashaderManager_GetParamCount_GL(LibrashaderManager* manager);
-bool LibrashaderManager_GetParamInfo_GL(LibrashaderManager* manager, int index,
-                                         const char** out_name, const char** out_desc,
-                                         float* out_value, float* out_initial,
-                                         float* out_min, float* out_max, float* out_step);
+bool LibrashaderManager_GetParamInfo_GL(LibrashaderManager* manager, int index, const char** out_name,
+                                        const char** out_desc, float* out_value, float* out_initial, float* out_min,
+                                        float* out_max, float* out_step);
 bool LibrashaderManager_SetParam_GL(LibrashaderManager* manager, const char* name, float value);
 bool LibrashaderManager_GetParam_GL(LibrashaderManager* manager, const char* name, float* out_value);
 
@@ -28,10 +27,9 @@ void LibrashaderManager_Render_GPU(LibrashaderManager* manager, void* command_bu
                                    int display_y);
 void LibrashaderManager_Free_GPU(LibrashaderManager* manager);
 int LibrashaderManager_GetParamCount_GPU(LibrashaderManager* manager);
-bool LibrashaderManager_GetParamInfo_GPU(LibrashaderManager* manager, int index,
-                                          const char** out_name, const char** out_desc,
-                                          float* out_value, float* out_initial,
-                                          float* out_min, float* out_max, float* out_step);
+bool LibrashaderManager_GetParamInfo_GPU(LibrashaderManager* manager, int index, const char** out_name,
+                                         const char** out_desc, float* out_value, float* out_initial, float* out_min,
+                                         float* out_max, float* out_step);
 bool LibrashaderManager_SetParam_GPU(LibrashaderManager* manager, const char* name, float value);
 bool LibrashaderManager_GetParam_GPU(LibrashaderManager* manager, const char* name, float* out_value);
 
@@ -149,18 +147,31 @@ int LibrashaderManager_GetParamCount(LibrashaderManager* manager) {
     return 0;
 }
 
-bool LibrashaderManager_GetParamInfo(LibrashaderManager* manager, int index,
-                                     const char** out_name, const char** out_desc,
-                                     float* out_value, float* out_initial,
-                                     float* out_min, float* out_max, float* out_step) {
+bool LibrashaderManager_GetParamInfo(LibrashaderManager* manager, int index, const char** out_name,
+                                     const char** out_desc, float* out_value, float* out_initial, float* out_min,
+                                     float* out_max, float* out_step) {
     if (!manager || !manager->backend_impl)
         return false;
     if (manager->backend_type == RENDERER_OPENGL)
-        return LibrashaderManager_GetParamInfo_GL((LibrashaderManager*)manager->backend_impl, index,
-                                                   out_name, out_desc, out_value, out_initial, out_min, out_max, out_step);
+        return LibrashaderManager_GetParamInfo_GL((LibrashaderManager*)manager->backend_impl,
+                                                  index,
+                                                  out_name,
+                                                  out_desc,
+                                                  out_value,
+                                                  out_initial,
+                                                  out_min,
+                                                  out_max,
+                                                  out_step);
     if (manager->backend_type == RENDERER_SDLGPU)
-        return LibrashaderManager_GetParamInfo_GPU((LibrashaderManager*)manager->backend_impl, index,
-                                                    out_name, out_desc, out_value, out_initial, out_min, out_max, out_step);
+        return LibrashaderManager_GetParamInfo_GPU((LibrashaderManager*)manager->backend_impl,
+                                                   index,
+                                                   out_name,
+                                                   out_desc,
+                                                   out_value,
+                                                   out_initial,
+                                                   out_min,
+                                                   out_max,
+                                                   out_step);
     return false;
 }
 

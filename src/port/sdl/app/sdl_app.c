@@ -418,10 +418,8 @@ int SDLApp_Init() {
 
         // VSync OFF — native frame pacing handles timing.
         vsync_enabled = false;
-        SDL_SetGPUSwapchainParameters(gpu_device,
-                                      window,
-                                      SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-                                      SDL_GPU_PRESENTMODE_IMMEDIATE);
+        SDL_SetGPUSwapchainParameters(
+            gpu_device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_IMMEDIATE);
         SDL_Log("VSync: OFF (SDL_GPU, native pacing)");
     } else if (g_renderer_backend == RENDERER_OPENGL) {
     opengl_init:
@@ -709,8 +707,8 @@ void SDLApp_BeginFrame() {
     // This avoids ~13ms of implicit glFinish() overhead in eglSwapBuffers on Pi4.
     // ⚡ Pi4: removed use_rmlui from this guard — the wrapper already has
     // s_any_window_visible early-outs. Only overlay menus need per-frame processing.
-    bool rmlui_active = show_menu || show_shader_menu || show_mods_menu ||
-                        show_stage_config_menu || show_training_menu || show_dev_overlay;
+    bool rmlui_active = show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
+                        show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_new_frame();
     }
@@ -772,8 +770,8 @@ static void render_overlays(int win_w, int win_h) {
 
     /* Flush UI framework — only when RmlUi is active */
     // ⚡ Pi4: removed use_rmlui — matches BeginFrame guard above.
-    bool rmlui_active = show_menu || show_shader_menu || show_mods_menu ||
-                        show_stage_config_menu || show_training_menu || show_dev_overlay;
+    bool rmlui_active = show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
+                        show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_render();
     }

@@ -432,12 +432,26 @@ local function map_dummy_settings()
       blocking_mode = 2  -- ON
    end
 
+   -- ---- Blocking Direction ----
+   -- C: NONE=0, RIGHT=1, LEFT=2
+   -- Lua doesn't natively map "Right/Left" blocking direction, but it has Force_Blocking_Direction: OFF=1, ALWAYS_LOW=2, ALWAYS_HIGH=3.
+   -- Effie uses `block_direction` as 1 (OFF) inside blocking_options. The C implementation of dummy_block_direction means something else, but actually Effie doesn't have a "left/right" block direction setting natively in `Force_Blocking_Direction`.
+   local force_blocking_direction = 1
+   if s.block_direction == 1 then
+       -- In C we use "right/left" but in Lua it's ALWAYS_LOW/ALWAYS_HIGH
+       -- Let's just map it to the equivalent "force block" options in Effie
+       -- Actually, Effie uses 1=OFF, 2=ALWAYS_LOW, 3=ALWAYS_HIGH for force_blocking_direction
+       force_blocking_direction = 1
+   end
+   if s.block_direction == 1 then force_blocking_direction = 3 end -- RIGHT mapped to HIGH (hack for UI reuse)
+   if s.block_direction == 2 then force_blocking_direction = 2 end -- LEFT mapped to LOW
+
    local blocking_options = {
       mode = blocking_mode,
       style = blocking_style,
       prefer_block_low = prefer_block_low,
       prefer_parry_low = prefer_parry_low,
-      force_blocking_direction = 1,  -- OFF (no menu item yet)
+      force_blocking_direction = force_blocking_direction,
       red_parry_hit_count = 1,
       parry_every_n_count = 1,
    }
@@ -476,7 +490,16 @@ local function map_dummy_settings()
    }
    local tech_throw_mode = TECH_THROW_MAP[s.tech_throw_type] or 1
 
-   return blocking_options, mash_mode, fast_wakeup_mode, tech_throw_mode
+   -- ---- Playback Mode ----
+   local PLAYBACK_MODE_MAP = {
+      [0] = 1, -- NONE
+      [1] = 2, -- NORMAL (random)
+      [2] = 2, -- RANDOM
+      [3] = 3, -- SEQUENCE
+   }
+   local playback_mode = PLAYBACK_MODE_MAP[s.playback_mode] or 1
+
+   return blocking_options, mash_mode, fast_wakeup_mode, tech_throw_mode, playback_mode, s.auto_reversal
 end
 
 -- Register the dummy control update in the per-frame callback
@@ -512,7 +535,7 @@ emu.registerbefore(function()
    end
 
    -- Read C menu settings and map to Lua enum values
-   local blocking_options, mash_mode, fast_wakeup_mode, tech_throw_mode = map_dummy_settings()
+   local blocking_options, mash_mode, fast_wakeup_mode, tech_throw_mode, playback_mode, auto_reversal = map_dummy_settings()
 
    -- Build FBNeo input table (start with all false)
    local input = make_fbneo_input()
@@ -524,6 +547,22 @@ emu.registerbefore(function()
       dummy_control.update_mash_inputs(input, dummy_player, mash_mode)
       dummy_control.update_fast_wake_up(input, dummy_player, fast_wakeup_mode)
       dummy_control.update_tech_throws(input, dummy_player, tech_throw_mode)
+
+      if auto_reversal then
+         -- Set the playback mode based on the user's F7 menu config
+         local settings = require("src.settings")
+         settings.training.replay_mode = playback_mode
+
+         -- Create a dummy counter attack data structure if auto reversal is true
+         -- By default just make it try to reversal with normal inputs
+         local counter_data = {
+             type = 5, -- 5 is playback mode in effie
+             char_str = dummy_player.char_str
+         }
+         -- This is a very basic wrapper around the counter attack feature
+         -- using the playback modes and slots you configured in the Lua
+         dummy_control.update_counter_attack(input, dummy_player, counter_data, 1)
+      end
 
       -- Process any queued input sequences
       inputs_mod.process_pending_input_sequence(dummy_player, input)

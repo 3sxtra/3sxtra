@@ -47,13 +47,13 @@ struct ChainPass {
 struct ShaderParam {
     Rml::String name;
     Rml::String desc;
-    Rml::String value_str;  // Formatted value for display
+    Rml::String value_str; // Formatted value for display
     float value;
     float initial;
     float min_val;
     float max_val;
     float step;
-    int index;  // Index into the param array (-1 = sentinel/hidden)
+    int index; // Index into the param array (-1 = sentinel/hidden)
 };
 
 // ── Module state ───────────────────────────────────────────────
@@ -66,12 +66,12 @@ static bool s_filter_dirty = true;
 static constexpr int CHAIN_PASSES_MAX = 32;
 static std::vector<ChainPass> s_chain_passes;
 static int s_chain_pass_count = 0;
-static bool s_chain_dirty = false;  // Set by event callbacks, consumed by per-frame update
+static bool s_chain_dirty = false; // Set by event callbacks, consumed by per-frame update
 
 static constexpr int SHADER_PARAMS_MAX = 64;
 static std::vector<ShaderParam> s_shader_params;
 static int s_shader_param_count = 0;
-static bool s_params_dirty = false;  // Set when chain/preset changes
+static bool s_params_dirty = false; // Set when chain/preset changes
 
 // Snapshot for dirty-checking
 static struct {
@@ -130,13 +130,17 @@ static void rebuild_filtered_presets() {
 }
 
 static Rml::String extract_basename(const char* path) {
-    if (!path || !path[0]) return Rml::String();
+    if (!path || !path[0])
+        return Rml::String();
     const char* slash = strrchr(path, '/');
     const char* bslash = strrchr(path, '\\');
     const char* last = nullptr;
-    if (slash && bslash) last = (slash > bslash) ? slash : bslash;
-    else if (slash) last = slash;
-    else last = bslash;
+    if (slash && bslash)
+        last = (slash > bslash) ? slash : bslash;
+    else if (slash)
+        last = slash;
+    else
+        last = bslash;
     return Rml::String(last ? last + 1 : path);
 }
 
@@ -147,11 +151,7 @@ static void rebuild_chain_passes() {
     for (int i = 0; i < count && i < CHAIN_PASSES_MAX; i++) {
         const char* shader_path = SDLAppShader_ChainGetPassShaderPath(i);
         const char* source_preset = SDLAppShader_ChainGetPassSourcePreset(i);
-        s_chain_passes[i] = {
-            extract_basename(shader_path),
-            extract_basename(source_preset),
-            i
-        };
+        s_chain_passes[i] = { extract_basename(shader_path), extract_basename(source_preset), i };
     }
 
     // Fill remaining with sentinels
@@ -173,17 +173,15 @@ static void rebuild_shader_params() {
         float val = SDLAppShader_GetParamValue(i);
         char val_buf[32];
         snprintf(val_buf, sizeof(val_buf), "%.2f", val);
-        s_shader_params[i] = {
-            Rml::String(name ? name : ""),
-            Rml::String(desc ? desc : ""),
-            Rml::String(val_buf),
-            val,
-            SDLAppShader_GetParamInitial(i),
-            SDLAppShader_GetParamMin(i),
-            SDLAppShader_GetParamMax(i),
-            SDLAppShader_GetParamStep(i),
-            i
-        };
+        s_shader_params[i] = { Rml::String(name ? name : ""),
+                               Rml::String(desc ? desc : ""),
+                               Rml::String(val_buf),
+                               val,
+                               SDLAppShader_GetParamInitial(i),
+                               SDLAppShader_GetParamMin(i),
+                               SDLAppShader_GetParamMax(i),
+                               SDLAppShader_GetParamStep(i),
+                               i };
     }
 
     // Fill remaining with sentinels
@@ -293,8 +291,6 @@ extern "C" void rmlui_shader_menu_init() {
             }
         });
 
-
-
     // ── Event callbacks ──
 
     constructor.BindEventCallback("select_preset",
@@ -312,103 +308,115 @@ extern "C" void rmlui_shader_menu_init() {
 
     // ── Chain event callbacks ──
 
-    constructor.BindEventCallback("chain_append",
-                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
-                                      if (args.empty()) return;
-                                      SDLAppShader_ChainAppend(args[0].Get<int>());
-                                      s_chain_dirty = true;
-                                  });
+    constructor.BindEventCallback(
+        "chain_append", [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+            if (args.empty())
+                return;
+            SDLAppShader_ChainAppend(args[0].Get<int>());
+            s_chain_dirty = true;
+        });
 
-    constructor.BindEventCallback("chain_prepend",
-                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
-                                      if (args.empty()) return;
-                                      SDLAppShader_ChainPrepend(args[0].Get<int>());
-                                      s_chain_dirty = true;
-                                  });
+    constructor.BindEventCallback(
+        "chain_prepend", [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+            if (args.empty())
+                return;
+            SDLAppShader_ChainPrepend(args[0].Get<int>());
+            s_chain_dirty = true;
+        });
 
-    constructor.BindEventCallback("chain_remove_pass",
-                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
-                                      if (args.empty()) return;
-                                      SDLAppShader_ChainRemovePass(args[0].Get<int>());
-                                      s_chain_dirty = true;
-                                  });
+    constructor.BindEventCallback(
+        "chain_remove_pass", [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+            if (args.empty())
+                return;
+            SDLAppShader_ChainRemovePass(args[0].Get<int>());
+            s_chain_dirty = true;
+        });
 
-    constructor.BindEventCallback("chain_move_up",
-                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
-                                      if (args.empty()) return;
-                                      int idx = args[0].Get<int>();
-                                      if (idx > 0) SDLAppShader_ChainMovePass(idx, idx - 1);
-                                      s_chain_dirty = true;
-                                  });
+    constructor.BindEventCallback(
+        "chain_move_up", [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+            if (args.empty())
+                return;
+            int idx = args[0].Get<int>();
+            if (idx > 0)
+                SDLAppShader_ChainMovePass(idx, idx - 1);
+            s_chain_dirty = true;
+        });
 
-    constructor.BindEventCallback("chain_move_down",
-                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
-                                      if (args.empty()) return;
-                                      int idx = args[0].Get<int>();
-                                      if (idx < SDLAppShader_ChainGetPassCount() - 1) SDLAppShader_ChainMovePass(idx, idx + 1);
-                                      s_chain_dirty = true;
-                                  });
+    constructor.BindEventCallback(
+        "chain_move_down", [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+            if (args.empty())
+                return;
+            int idx = args[0].Get<int>();
+            if (idx < SDLAppShader_ChainGetPassCount() - 1)
+                SDLAppShader_ChainMovePass(idx, idx + 1);
+            s_chain_dirty = true;
+        });
 
-    constructor.BindEventCallback("chain_clear",
-                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& /*args*/) {
-                                      SDLAppShader_ChainClear();
-                                      s_chain_dirty = true;
-                                  });
+    constructor.BindEventCallback(
+        "chain_clear", [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& /*args*/) {
+            SDLAppShader_ChainClear();
+            s_chain_dirty = true;
+        });
 
-    constructor.BindEventCallback("chain_save",
-                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& /*args*/) {
-                                      // Generate a timestamped filename
-                                      char filename[256];
-                                      Uint64 ticks = SDL_GetTicks();
-                                      snprintf(filename, sizeof(filename), "chain_%llu.slangp", (unsigned long long)ticks);
+    constructor.BindEventCallback(
+        "chain_save", [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& /*args*/) {
+            // Generate a timestamped filename
+            char filename[256];
+            Uint64 ticks = SDL_GetTicks();
+            snprintf(filename, sizeof(filename), "chain_%llu.slangp", (unsigned long long)ticks);
 
-                                      // Build full path in the libretro shaders directory
-                                      char path[1024];
-                                      const char* base = SDL_GetBasePath();
-                                      snprintf(path, sizeof(path), "%sshaders/libretro/%s", base ? base : "", filename);
+            // Build full path in the libretro shaders directory
+            char path[1024];
+            const char* base = SDL_GetBasePath();
+            snprintf(path, sizeof(path), "%sshaders/libretro/%s", base ? base : "", filename);
 
-                                      if (SDLAppShader_ChainSaveAsPreset(path)) {
-                                          SDL_Log("[Shader Chain] Saved as '%s'", path);
-                                      } else {
-                                          SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[Shader Chain] Failed to save '%s'", path);
-                                      }
-                                  });
+            if (SDLAppShader_ChainSaveAsPreset(path)) {
+                SDL_Log("[Shader Chain] Saved as '%s'", path);
+            } else {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[Shader Chain] Failed to save '%s'", path);
+            }
+        });
 
     // ── Shader parameter event callbacks ──
 
-    constructor.BindEventCallback("param_dec",
-                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
-                                      if (args.empty()) return;
-                                      int idx = args[0].Get<int>();
-                                      float val = SDLAppShader_GetParamValue(idx);
-                                      float step = SDLAppShader_GetParamStep(idx);
-                                      float min_v = SDLAppShader_GetParamMin(idx);
-                                      float new_val = val - step;
-                                      if (new_val < min_v) new_val = min_v;
-                                      SDLAppShader_SetParamValue(idx, new_val);
-                                      s_params_dirty = true;
-                                  });
+    constructor.BindEventCallback(
+        "param_dec", [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+            if (args.empty())
+                return;
+            int idx = args[0].Get<int>();
+            float val = SDLAppShader_GetParamValue(idx);
+            float step = SDLAppShader_GetParamStep(idx);
+            float min_v = SDLAppShader_GetParamMin(idx);
+            float new_val = val - step;
+            if (new_val < min_v)
+                new_val = min_v;
+            SDLAppShader_SetParamValue(idx, new_val);
+            s_params_dirty = true;
+        });
 
-    constructor.BindEventCallback("param_inc",
-                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
-                                      if (args.empty()) return;
-                                      int idx = args[0].Get<int>();
-                                      float val = SDLAppShader_GetParamValue(idx);
-                                      float step = SDLAppShader_GetParamStep(idx);
-                                      float max_v = SDLAppShader_GetParamMax(idx);
-                                      float new_val = val + step;
-                                      if (new_val > max_v) new_val = max_v;
-                                      SDLAppShader_SetParamValue(idx, new_val);
-                                      s_params_dirty = true;
-                                  });
+    constructor.BindEventCallback(
+        "param_inc", [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+            if (args.empty())
+                return;
+            int idx = args[0].Get<int>();
+            float val = SDLAppShader_GetParamValue(idx);
+            float step = SDLAppShader_GetParamStep(idx);
+            float max_v = SDLAppShader_GetParamMax(idx);
+            float new_val = val + step;
+            if (new_val > max_v)
+                new_val = max_v;
+            SDLAppShader_SetParamValue(idx, new_val);
+            s_params_dirty = true;
+        });
 
-    constructor.BindEventCallback("param_reset",
-                                  [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
-                                      if (args.empty()) return;
-                                      int idx = args[0].Get<int>();
-                                      SDLAppShader_ResetParam(idx);
-                                      s_params_dirty = true;
-                                  });
+    constructor.BindEventCallback(
+        "param_reset", [](Rml::DataModelHandle /*handle*/, Rml::Event& /*event*/, const Rml::VariantList& args) {
+            if (args.empty())
+                return;
+            int idx = args[0].Get<int>();
+            SDLAppShader_ResetParam(idx);
+            s_params_dirty = true;
+        });
 
     s_model_handle = constructor.GetModelHandle();
 
@@ -457,8 +465,6 @@ extern "C" void rmlui_shader_menu_update() {
         dirty = true;
     }
 
-
-
     // Rebuild filtered presets when filter or source data changes
     if (s_filter_dirty) {
         rebuild_filtered_presets();
@@ -474,7 +480,7 @@ extern "C" void rmlui_shader_menu_update() {
         rebuild_chain_passes();
         s_model_handle.DirtyVariable("chain_passes");
         s_model_handle.DirtyVariable("chain_pass_count");
-        s_params_dirty = true;  // Chain changed — params may have changed too
+        s_params_dirty = true; // Chain changed — params may have changed too
         dirty = true;
     }
 

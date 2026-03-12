@@ -21,12 +21,15 @@
 DummySettings g_dummy_settings = {
     .block_type = DUMMY_BLOCK_NONE,
     .parry_type = DUMMY_PARRY_NONE,
+    .block_direction = DUMMY_BLOCK_DIR_NONE,
     .stun_mash = DUMMY_MASH_NONE,
     .wakeup_mash = DUMMY_MASH_NONE,
     .wakeup_reversal = false,
     .guard_low_default = true,
     .tech_throw_type = DUMMY_TECH_THROW_NONE,
     .fast_wakeup = DUMMY_FAST_WAKEUP_NONE,
+    .playback_mode = DUMMY_PLAYBACK_MODE_NONE,
+    .auto_reversal = false,
 };
 
 /* ------------------------------------------------------------------ */

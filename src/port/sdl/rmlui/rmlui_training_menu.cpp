@@ -41,9 +41,9 @@ struct TrainingSnapshot {
     bool hitboxes, pushboxes, hurtboxes, attackboxes, throwboxes;
     bool advantage, stun, inputs, frame_meter;
     // Dummy tab
-    int block_type, parry_type, stun_mash, wakeup_mash;
-    bool wakeup_reversal, guard_low;
-    int tech_throw, fast_wakeup;
+    int block_type, parry_type, block_direction, stun_mash, wakeup_mash;
+    bool wakeup_reversal, guard_low, auto_reversal;
+    int tech_throw, fast_wakeup, playback_mode;
     // Tab
     int active_tab;
 };
@@ -62,7 +62,7 @@ static inline int cycle_enum(int current, int count) {
 class DummyCycleListener : public Rml::EventListener {
   public:
     // field_id selects which dummy setting to cycle
-    enum Field { BLOCK, PARRY, STUN_MASH, WAKEUP_MASH, TECH_THROW, FAST_WAKEUP };
+    enum Field { BLOCK, PARRY, BLOCK_DIR, STUN_MASH, WAKEUP_MASH, TECH_THROW, FAST_WAKEUP, PLAYBACK_MODE };
 
     DummyCycleListener(Field f) : field(f) {}
 
@@ -77,6 +77,11 @@ class DummyCycleListener : public Rml::EventListener {
             g_dummy_settings.parry_type =
                 (DummyParryType)cycle_enum((int)g_dummy_settings.parry_type, DummyParryType_count());
             Config_SetInt(CFG_KEY_DUMMY_PARRY, (int)g_dummy_settings.parry_type);
+            break;
+        case BLOCK_DIR:
+            g_dummy_settings.block_direction = (DummyBlockDirectionType)cycle_enum(
+                (int)g_dummy_settings.block_direction, DummyBlockDirectionType_count());
+            Config_SetInt(CFG_KEY_DUMMY_BLOCK_DIR, (int)g_dummy_settings.block_direction);
             break;
         case STUN_MASH:
             g_dummy_settings.stun_mash =
@@ -98,6 +103,11 @@ class DummyCycleListener : public Rml::EventListener {
                 (DummyFastWakeupType)cycle_enum((int)g_dummy_settings.fast_wakeup, DummyFastWakeupType_count());
             Config_SetInt(CFG_KEY_DUMMY_FAST_WAKEUP, (int)g_dummy_settings.fast_wakeup);
             break;
+        case PLAYBACK_MODE:
+            g_dummy_settings.playback_mode =
+                (DummyPlaybackModeType)cycle_enum((int)g_dummy_settings.playback_mode, DummyPlaybackModeType_count());
+            Config_SetInt(CFG_KEY_DUMMY_PLAYBACK_MODE, (int)g_dummy_settings.playback_mode);
+            break;
         }
         Config_Save();
     }
@@ -109,10 +119,12 @@ class DummyCycleListener : public Rml::EventListener {
 // Static listeners (lifetime matches the program)
 static DummyCycleListener s_cycle_block(DummyCycleListener::BLOCK);
 static DummyCycleListener s_cycle_parry(DummyCycleListener::PARRY);
+static DummyCycleListener s_cycle_block_dir(DummyCycleListener::BLOCK_DIR);
 static DummyCycleListener s_cycle_stun_mash(DummyCycleListener::STUN_MASH);
 static DummyCycleListener s_cycle_wakeup_mash(DummyCycleListener::WAKEUP_MASH);
 static DummyCycleListener s_cycle_tech_throw(DummyCycleListener::TECH_THROW);
 static DummyCycleListener s_cycle_fast_wakeup(DummyCycleListener::FAST_WAKEUP);
+static DummyCycleListener s_cycle_playback_mode(DummyCycleListener::PLAYBACK_MODE);
 
 // -------------------------------------------------------------------
 // Document loaded callback — attach event listeners to list rows
@@ -136,10 +148,12 @@ static void attach_cycle_listeners(void) {
 
         bind("cycle-block", &s_cycle_block);
         bind("cycle-parry", &s_cycle_parry);
+        bind("cycle-block-dir", &s_cycle_block_dir);
         bind("cycle-stun-mash", &s_cycle_stun_mash);
         bind("cycle-wakeup-mash", &s_cycle_wakeup_mash);
         bind("cycle-tech-throw", &s_cycle_tech_throw);
         bind("cycle-fast-wakeup", &s_cycle_fast_wakeup);
+        bind("cycle-playback-mode", &s_cycle_playback_mode);
         break;
     }
 }
@@ -171,6 +185,12 @@ extern "C" void rmlui_training_menu_init(void) {
         g_dummy_settings.tech_throw_type = (DummyTechThrowType)Config_GetInt(CFG_KEY_DUMMY_TECH_THROW);
     if (Config_HasKey(CFG_KEY_DUMMY_FAST_WAKEUP))
         g_dummy_settings.fast_wakeup = (DummyFastWakeupType)Config_GetInt(CFG_KEY_DUMMY_FAST_WAKEUP);
+    if (Config_HasKey(CFG_KEY_DUMMY_BLOCK_DIR))
+        g_dummy_settings.block_direction = (DummyBlockDirectionType)Config_GetInt(CFG_KEY_DUMMY_BLOCK_DIR);
+    if (Config_HasKey(CFG_KEY_DUMMY_PLAYBACK_MODE))
+        g_dummy_settings.playback_mode = (DummyPlaybackModeType)Config_GetInt(CFG_KEY_DUMMY_PLAYBACK_MODE);
+    if (Config_HasKey(CFG_KEY_DUMMY_AUTO_REVERSAL))
+        g_dummy_settings.auto_reversal = Config_GetBool(CFG_KEY_DUMMY_AUTO_REVERSAL);
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("training");
     if (!ctor) {
@@ -201,8 +221,14 @@ extern "C" void rmlui_training_menu_init(void) {
     ctor.BindFunc("dummy_tech_throw_label", [](Rml::Variant& v) {
         v = Rml::String(DummyTechThrowType_str((int)g_dummy_settings.tech_throw_type));
     });
+    ctor.BindFunc("dummy_block_dir_label", [](Rml::Variant& v) {
+        v = Rml::String(DummyBlockDirectionType_str((int)g_dummy_settings.block_direction));
+    });
     ctor.BindFunc("dummy_fast_wakeup_label",
                   [](Rml::Variant& v) { v = Rml::String(DummyFastWakeupType_str((int)g_dummy_settings.fast_wakeup)); });
+    ctor.BindFunc("dummy_playback_mode_label", [](Rml::Variant& v) {
+        v = Rml::String(DummyPlaybackModeType_str((int)g_dummy_settings.playback_mode));
+    });
 
     // Bool dummy settings (interactive via checkbox)
     ctor.BindFunc(
@@ -219,6 +245,14 @@ extern "C" void rmlui_training_menu_init(void) {
         [](const Rml::Variant& v) {
             g_dummy_settings.guard_low_default = v.Get<bool>();
             Config_SetBool(CFG_KEY_DUMMY_GUARD_LOW, g_dummy_settings.guard_low_default);
+            Config_Save();
+        });
+    ctor.BindFunc(
+        "dummy_auto_reversal",
+        [](Rml::Variant& v) { v = g_dummy_settings.auto_reversal; },
+        [](const Rml::Variant& v) {
+            g_dummy_settings.auto_reversal = v.Get<bool>();
+            Config_SetBool(CFG_KEY_DUMMY_AUTO_REVERSAL, g_dummy_settings.auto_reversal);
             Config_Save();
         });
 
@@ -262,7 +296,7 @@ extern "C" void rmlui_training_menu_update(void) {
     if (!s_model_registered || !s_model_handle)
         return;
 
-    // Display booleans
+        // Display booleans
 #define DIRTY_BOOL(name, field)                                                                                        \
     do {                                                                                                               \
         bool _cur = g_training_menu_settings.field;                                                                    \
@@ -295,10 +329,12 @@ extern "C" void rmlui_training_menu_update(void) {
 
     DIRTY_ENUM(block_type, g_dummy_settings.block_type, "dummy_block_label");
     DIRTY_ENUM(parry_type, g_dummy_settings.parry_type, "dummy_parry_label");
+    DIRTY_ENUM(block_direction, g_dummy_settings.block_direction, "dummy_block_dir_label");
     DIRTY_ENUM(stun_mash, g_dummy_settings.stun_mash, "dummy_stun_mash_label");
     DIRTY_ENUM(wakeup_mash, g_dummy_settings.wakeup_mash, "dummy_wakeup_mash_label");
     DIRTY_ENUM(tech_throw, g_dummy_settings.tech_throw_type, "dummy_tech_throw_label");
     DIRTY_ENUM(fast_wakeup, g_dummy_settings.fast_wakeup, "dummy_fast_wakeup_label");
+    DIRTY_ENUM(playback_mode, g_dummy_settings.playback_mode, "dummy_playback_mode_label");
 #undef DIRTY_ENUM
 
     // Dummy bools
@@ -309,6 +345,10 @@ extern "C" void rmlui_training_menu_update(void) {
     if (g_dummy_settings.guard_low_default != s_cache.guard_low) {
         s_cache.guard_low = g_dummy_settings.guard_low_default;
         s_model_handle.DirtyVariable("dummy_guard_low");
+    }
+    if (g_dummy_settings.auto_reversal != s_cache.auto_reversal) {
+        s_cache.auto_reversal = g_dummy_settings.auto_reversal;
+        s_model_handle.DirtyVariable("dummy_auto_reversal");
     }
 
     // Tab

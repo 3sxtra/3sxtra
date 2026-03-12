@@ -1046,8 +1046,6 @@ void SDLGameRendererSDL_UnlockTexture(unsigned int th) {
         return;
     }
 
-
-
     /* Invalidate texture binding cache */
 
     last_set_texture_th = 0;
@@ -1196,7 +1194,6 @@ void SDLGameRendererSDL_DestroyTexture(unsigned int texture_handle) {
         SDL_DestroySurface(surfaces[texture_index]);
         surfaces[texture_index] = NULL;
     }
-
 }
 
 void SDLGameRendererSDL_CreatePalette(unsigned int ph) {

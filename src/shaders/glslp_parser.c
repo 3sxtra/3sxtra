@@ -299,21 +299,21 @@ void GLSLP_Free(GLSLP_Preset* preset) {
 
 static const char* scale_type_to_string(GLSLP_ScaleType type) {
     switch (type) {
-        case GLSLP_SCALE_VIEWPORT:
-            return "viewport";
-        case GLSLP_SCALE_ABSOLUTE:
-            return "absolute";
-        case GLSLP_SCALE_SOURCE:
-        default:
-            return "source";
+    case GLSLP_SCALE_VIEWPORT:
+        return "viewport";
+    case GLSLP_SCALE_ABSOLUTE:
+        return "absolute";
+    case GLSLP_SCALE_SOURCE:
+    default:
+        return "source";
     }
 }
 
 bool GLSLP_Write(const GLSLP_Preset* preset, const char* path) {
     FILE* f = fopen(path, "w");
     if (!f) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GLSLP_Write: Failed to open '%s' for writing: %s", path,
-                     strerror(errno));
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION, "GLSLP_Write: Failed to open '%s' for writing: %s", path, strerror(errno));
         return false;
     }
 
@@ -382,8 +382,11 @@ bool GLSLP_Write(const GLSLP_Preset* preset, const char* path) {
     }
 
     fclose(f);
-    SDL_Log("GLSLP_Write: Wrote preset to '%s' (%d passes, %d textures, %d params)", path, preset->pass_count,
-            preset->texture_count, preset->parameter_count);
+    SDL_Log("GLSLP_Write: Wrote preset to '%s' (%d passes, %d textures, %d params)",
+            path,
+            preset->pass_count,
+            preset->texture_count,
+            preset->parameter_count);
     return true;
 }
 
@@ -400,8 +403,10 @@ static int find_texture_by_name(const GLSLP_Preset* preset, const char* name) {
 bool GLSLP_Append(GLSLP_Preset* dst, const GLSLP_Preset* src) {
     // Check pass capacity
     if (dst->pass_count + src->pass_count > MAX_SHADERS) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GLSLP_Append: Combined pass count %d exceeds MAX_SHADERS (%d)",
-                     dst->pass_count + src->pass_count, MAX_SHADERS);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "GLSLP_Append: Combined pass count %d exceeds MAX_SHADERS (%d)",
+                     dst->pass_count + src->pass_count,
+                     MAX_SHADERS);
         return false;
     }
 
@@ -418,7 +423,8 @@ bool GLSLP_Append(GLSLP_Preset* dst, const GLSLP_Preset* src) {
                 dst->textures[dst->texture_count] = src->textures[i];
                 dst->texture_count++;
             } else {
-                SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "GLSLP_Append: Texture limit exceeded, skipping '%s'",
+                SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                            "GLSLP_Append: Texture limit exceeded, skipping '%s'",
                             src->textures[i].name);
             }
         }
@@ -438,8 +444,10 @@ bool GLSLP_Append(GLSLP_Preset* dst, const GLSLP_Preset* src) {
         }
     }
 
-    SDL_Log("GLSLP_Append: Merged preset (%d total passes, %d textures, %d params)", dst->pass_count,
-            dst->texture_count, dst->parameter_count);
+    SDL_Log("GLSLP_Append: Merged preset (%d total passes, %d textures, %d params)",
+            dst->pass_count,
+            dst->texture_count,
+            dst->parameter_count);
     return true;
 }
 
