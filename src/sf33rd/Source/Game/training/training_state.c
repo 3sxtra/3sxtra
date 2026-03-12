@@ -14,6 +14,7 @@
 
 TrainingGameState g_training_state = { 0 };
 bool g_lua_dummy_active = false;
+s16 g_lua_dummy_player_id = -1;
 
 static void update_player_state(TrainingPlayerState* state, PLW* wk, PLW* opponent_wk) {
     if (!wk)
@@ -256,23 +257,21 @@ void update_training_state(void) {
 
     trials_update();
 
+    // Lazy-load training Lua bootstrap on first training frame.
+    // Must run before lua_engine_bridge_tick() so emu.registerbefore() callbacks
+    // are registered before the first tick fires them.
+    // Previously this was gated behind use_rmlui (rmlui_training_mode_show),
+    // so it never loaded when UI mode was Native.
+    {
+        static bool s_training_lua_loaded = false;
+        if (!s_training_lua_loaded) {
+            s_training_lua_loaded = true;
+            lua_engine_bridge_load_training();
+        }
+    }
+
     // Fire Lua per-frame callbacks (emu._fire_before)
     lua_engine_bridge_tick();
-
-    static bool printed_offsets = false;
-    if (!printed_offsets) {
-        printed_offsets = true;
-        SDL_Log("WORK cmoa: %zu", offsetof(WORK, cmoa));
-        SDL_Log("WORK now_koc: %zu", offsetof(WORK, now_koc));
-        SDL_Log("WORK char_state: %zu", offsetof(WORK, char_state));
-        SDL_Log("WORK cg_type: %zu", offsetof(WORK, char_state.body.fields.cg_type));
-        SDL_Log("WORK cg_number: %zu", offsetof(WORK, char_state.body.fields.cg_number));
-        SDL_Log("WORK char_state cgd_type: %zu", offsetof(WORK, char_state.cgd_type));
-        SDL_Log("WORK char_state kind_of_waza: %zu", offsetof(WORK, char_state.kind_of_waza));
-        SDL_Log("WORK hit_work_id: %zu", offsetof(WORK, hit_work_id));
-        SDL_Log("PLW current_attack: %zu", offsetof(PLW, current_attack));
-        SDL_Log("PLW waza_flag: %zu", offsetof(WORK_CP, waza_flag));
-    }
 }
 
 TrainingPlayerState* get_training_player(s16 id) {

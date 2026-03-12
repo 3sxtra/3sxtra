@@ -7,12 +7,12 @@
  * recursive directory scanning. Split from sdl_app.c for modularity.
  */
 #include "port/sdl/app/sdl_app_shader_config.h"
+#include "librashader.h"
 #include "port/config/config.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/app/sdl_app_internal.h"
 #include "shaders/glslp_parser.h"
-#include "librashader.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,12 +28,12 @@ static char* g_base_path = NULL;
 static bool s_shader_initialized = false;
 
 // ── Chain state ────────────────────────────────────────────────
-static GLSLP_Preset s_chain_preset;  // The composed chain
-static bool s_chain_active = false;  // True when chain is in use (vs single preset)
+static GLSLP_Preset s_chain_preset; // The composed chain
+static bool s_chain_active = false; // True when chain is in use (vs single preset)
 static bool s_chain_needs_apply = false;
 
 // ── Standalone parameter cache (reads from preset file, no GL state needed) ──
-static struct libra_preset_param_list_t s_param_cache = {0};
+static struct libra_preset_param_list_t s_param_cache = { 0 };
 static bool s_param_cache_valid = false;
 
 // Recursive scanner helper
@@ -359,7 +359,7 @@ static void chain_load_and_merge(int preset_index, bool prepend) {
             }
 
             // Create temp preset just to read params (no filter chain = no GL state)
-            libra_shader_preset_t preset = {0};
+            libra_shader_preset_t preset = { 0 };
             libra_error_t err = libra_preset_create_with_options(temp_path, NULL, NULL, &preset);
             if (err == 0) {
                 err = libra_preset_get_runtime_params(&preset, &s_param_cache);
@@ -570,4 +570,3 @@ void SDLAppShader_ResetParam(int index) {
         return;
     SDLAppShader_SetParamValue(index, s_param_cache.parameters[index].initial);
 }
-

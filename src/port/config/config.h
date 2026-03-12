@@ -43,6 +43,9 @@ extern "C" {
 #define CFG_KEY_DUMMY_GUARD_LOW "dummy-guard-low"
 #define CFG_KEY_DUMMY_TECH_THROW "dummy-tech-throw"
 #define CFG_KEY_DUMMY_FAST_WAKEUP "dummy-fast-wakeup"
+#define CFG_KEY_DUMMY_BLOCK_DIR "dummy-block-direction"
+#define CFG_KEY_DUMMY_PLAYBACK_MODE "dummy-playback-mode"
+#define CFG_KEY_DUMMY_AUTO_REVERSAL "dummy-auto-reversal"
 #define CFG_KEY_NETPLAY_AUTO_CONNECT "netplay-auto-connect"
 #define CFG_KEY_LOBBY_SERVER_URL "lobby-server-url"
 #define CFG_KEY_LOBBY_SERVER_KEY "lobby-server-key"
@@ -57,6 +60,7 @@ extern "C" {
 #define CFG_KEY_UI_MODE "ui-mode"
 #define CFG_KEY_HD_STAGES "hd-stages"
 #define CFG_KEY_MODDED_BGM_ENABLED "modded-bgm-enabled"
+#define CFG_KEY_MODDED_VOICE_ENABLED "modded-voice-enabled"
 
 /// Initialize config system
 void Config_Init(void);

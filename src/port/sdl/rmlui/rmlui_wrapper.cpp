@@ -109,8 +109,7 @@ class GameViewportGL3 : public RenderInterface_GL3 {
         // RmlUi's SystemInterface::JoinPath strips the leading '/' from
         // absolute paths (e.g. "/userdata/..." → "userdata/...").  Retry
         // with the root prefix restored so IMG_Load can find the file.
-        if (!surface && !source.empty() && source[0] != '/')
-        {
+        if (!surface && !source.empty() && source[0] != '/') {
             std::string abs_source = "/" + source;
             surface = IMG_Load(abs_source.c_str());
         }
@@ -534,7 +533,7 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
     if (!s_window_context || !event)
         return;
 
-    // F12 debugger toggle (debug builds only)
+        // F12 debugger toggle (debug builds only)
 #ifdef DEBUG
     if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F12) {
         bool new_vis = !Rml::Debugger::IsVisible();
@@ -617,7 +616,7 @@ extern "C" void rmlui_wrapper_new_frame(void) {
     // ⚡ Cached bool — zero-cost check, no map iteration
     if (!s_any_window_visible)
         return;
-    ensure_gl3_ready();  // ⚡ Context::Update may trigger texture loads
+    ensure_gl3_ready(); // ⚡ Context::Update may trigger texture loads
     s_window_context->Update();
 }
 
@@ -734,7 +733,7 @@ static void ensure_fonts_loaded(void) {
 extern "C" void rmlui_wrapper_show_document(const char* name) {
     if (!s_window_context || !name)
         return;
-    ensure_gl3_ready();  // ⚡ LoadDocument needs render interface for textures
+    ensure_gl3_ready(); // ⚡ LoadDocument needs render interface for textures
     ensure_fonts_loaded();
 
     auto it = s_window_documents.find(name);
@@ -763,7 +762,7 @@ extern "C" void rmlui_wrapper_hide_document(const char* name) {
     if (it != s_window_documents.end()) {
         it->second->Hide();
         s_any_window_visible = recompute_visible(s_window_documents);
-        release_gl3_if_idle();  // ⚡ Free GPU resources when idle
+        release_gl3_if_idle(); // ⚡ Free GPU resources when idle
     }
 }
 
@@ -774,7 +773,7 @@ extern "C" void rmlui_wrapper_hide_all_documents(void) {
         }
     }
     s_any_window_visible = false;
-    release_gl3_if_idle();  // ⚡ Free GPU resources when idle
+    release_gl3_if_idle(); // ⚡ Free GPU resources when idle
 }
 
 extern "C" bool rmlui_wrapper_is_document_visible(const char* name) {
@@ -805,7 +804,7 @@ extern "C" void rmlui_wrapper_close_document(const char* name) {
 extern "C" void rmlui_wrapper_show_game_document(const char* name) {
     if (!s_game_context || !name)
         return;
-    ensure_gl3_ready();  // ⚡ LoadDocument needs render interface for textures
+    ensure_gl3_ready(); // ⚡ LoadDocument needs render interface for textures
     ensure_fonts_loaded();
 
     auto it = s_game_documents.find(name);
@@ -834,7 +833,7 @@ extern "C" void rmlui_wrapper_hide_game_document(const char* name) {
     if (it != s_game_documents.end()) {
         it->second->Hide();
         s_any_game_visible = recompute_visible(s_game_documents);
-        release_gl3_if_idle();  // ⚡ Free GPU resources when idle
+        release_gl3_if_idle(); // ⚡ Free GPU resources when idle
     }
 }
 
@@ -849,7 +848,7 @@ extern "C" void rmlui_wrapper_hide_all_game_documents(void) {
         }
     }
     s_any_game_visible = recompute_visible(s_game_documents);
-    release_gl3_if_idle();  // ⚡ Free GPU resources when idle
+    release_gl3_if_idle(); // ⚡ Free GPU resources when idle
 }
 
 extern "C" bool rmlui_wrapper_is_game_document_visible(const char* name) {
@@ -890,7 +889,7 @@ extern "C" void rmlui_wrapper_update_game(void) {
     // ⚡ Cached bool — zero-cost check, no map iteration
     if (!s_any_game_visible)
         return;
-    ensure_gl3_ready();  // ⚡ Context::Update may trigger texture loads
+    ensure_gl3_ready(); // ⚡ Context::Update may trigger texture loads
     s_game_context->Update();
 }
 

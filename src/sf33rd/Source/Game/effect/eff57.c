@@ -1,6 +1,6 @@
 /**
  * @file eff57.c
- * Effect: Quake Effect
+ * Header for menus
  */
 
 #include "sf33rd/Source/Game/effect/eff57.h"
@@ -157,7 +157,7 @@ void EFF57_KILL(WORK_Other* ewk) {
     }
 }
 
-s32 effect_57_init(s16 dir_old, s16 arg_ID, s16 Target_BG, s16 char_ix, s16 option) {
+s32 effect_57_init(s16 dir_old, MenuHeader ID, s16 Target_BG, s16 char_ix, s16 option) {
     WORK_Other* ewk;
     s16 ix;
 
@@ -172,8 +172,8 @@ s32 effect_57_init(s16 dir_old, s16 arg_ID, s16 Target_BG, s16 char_ix, s16 opti
     ewk->wu.my_col_code = 0x1AC;
     ewk->wu.my_family = Target_BG + 1;
     *ewk->wu.char_table = _sel_pl_char_table;
-    ewk->wu.dir_step = arg_ID;
-    ewk->wu.type = arg_ID;
+    ewk->wu.dir_step = ID;
+    ewk->wu.type = ID;
     ewk->wu.dir_old = dir_old;
     ewk->wu.my_mts = 13;
     ewk->wu.my_trans_mode = get_my_trans_mode(ewk->wu.my_mts);

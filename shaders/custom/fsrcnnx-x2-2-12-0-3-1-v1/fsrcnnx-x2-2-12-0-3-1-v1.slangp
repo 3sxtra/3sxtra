@@ -1,0 +1,120 @@
+shaders = 17
+
+shader0 = shaders/fsrcnnx-pass00-feature-map-1.slang
+filter_linear0 = false
+scale_type0 = source
+scale0 = 1.0
+wrap_mode0 = "clamp_to_edge"
+alias0 = "FEATURE1"
+
+shader1 = shaders/fsrcnnx-pass01-feature-map-2.slang
+filter_linear1 = false
+scale_type1 = source
+scale1 = 1.0
+wrap_mode1 = "clamp_to_edge"
+alias1 = "FEATURE2"
+
+shader2 = shaders/fsrcnnx-pass02-feature-map-3.slang
+filter_linear2 = false
+scale_type2 = source
+scale2 = 1.0
+wrap_mode2 = "clamp_to_edge"
+alias2 = "FEATURE3"
+
+shader3 = shaders/fsrcnnx-pass03-mapping-1-1.slang
+filter_linear3 = false
+scale_type3 = source
+scale3 = 1.0
+wrap_mode3 = "clamp_to_edge"
+alias3 = "MODEL21"
+
+shader4 = shaders/fsrcnnx-pass04-mapping-1-2.slang
+filter_linear4 = false
+scale_type4 = source
+scale4 = 1.0
+wrap_mode4 = "clamp_to_edge"
+alias4 = "MODEL22"
+
+shader5 = shaders/fsrcnnx-pass05-mapping-1-3.slang
+filter_linear5 = false
+scale_type5 = source
+scale5 = 1.0
+wrap_mode5 = "clamp_to_edge"
+alias5 = "MODEL23"
+
+shader6 = shaders/fsrcnnx-pass06-mapping-2-1.slang
+filter_linear6 = false
+scale_type6 = source
+scale6 = 1.0
+wrap_mode6 = "clamp_to_edge"
+alias6 = "MODEL1"
+
+shader7 = shaders/fsrcnnx-pass07-mapping-2-2.slang
+filter_linear7 = false
+scale_type7 = source
+scale7 = 1.0
+wrap_mode7 = "clamp_to_edge"
+alias7 = "MODEL2"
+
+shader8 = shaders/fsrcnnx-pass08-mapping-2-3.slang
+filter_linear8 = false
+scale_type8 = source
+scale8 = 1.0
+wrap_mode8 = "clamp_to_edge"
+alias8 = "MODEL3"
+
+shader9 = shaders/fsrcnnx-pass09-mapping-3-1.slang
+filter_linear9 = false
+scale_type9 = source
+scale9 = 1.0
+wrap_mode9 = "clamp_to_edge"
+alias9 = "MODEL21_1"
+
+shader10 = shaders/fsrcnnx-pass10-mapping-3-2.slang
+filter_linear10 = false
+scale_type10 = source
+scale10 = 1.0
+wrap_mode10 = "clamp_to_edge"
+alias10 = "MODEL22_1"
+
+shader11 = shaders/fsrcnnx-pass11-mapping-3-3.slang
+filter_linear11 = false
+scale_type11 = source
+scale11 = 1.0
+wrap_mode11 = "clamp_to_edge"
+alias11 = "MODEL23_1"
+
+shader12 = shaders/fsrcnnx-pass12-sub-band-residuals-1.slang
+filter_linear12 = false
+scale_type12 = source
+scale12 = 1.0
+wrap_mode12 = "clamp_to_edge"
+alias12 = "RES1"
+
+shader13 = shaders/fsrcnnx-pass13-sub-band-residuals-2.slang
+filter_linear13 = false
+scale_type13 = source
+scale13 = 1.0
+wrap_mode13 = "clamp_to_edge"
+alias13 = "RES2"
+
+shader14 = shaders/fsrcnnx-pass14-sub-band-residuals-3.slang
+filter_linear14 = false
+scale_type14 = source
+scale14 = 1.0
+wrap_mode14 = "clamp_to_edge"
+alias14 = "RES3"
+
+shader15 = shaders/fsrcnnx-pass15-sub-pixel-convolution-1.slang
+filter_linear15 = false
+scale_type15 = source
+scale15 = 1.0
+wrap_mode15 = "clamp_to_edge"
+alias15 = "SUBCONV1"
+
+shader16 = shaders/fsrcnnx-pass16-aggregation.slang
+filter_linear16 = false
+scale_type16 = source
+scale_x16 = 2.0
+scale_y16 = 2.0
+wrap_mode16 = "clamp_to_edge"

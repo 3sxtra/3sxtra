@@ -299,20 +299,25 @@ int LibrashaderManager_GetParamCount_GL(LibrashaderManagerGL* manager) {
     return (int)manager->param_list.length;
 }
 
-bool LibrashaderManager_GetParamInfo_GL(LibrashaderManagerGL* manager, int index,
-                                        const char** out_name, const char** out_desc,
-                                        float* out_value, float* out_initial,
-                                        float* out_min, float* out_max, float* out_step) {
+bool LibrashaderManager_GetParamInfo_GL(LibrashaderManagerGL* manager, int index, const char** out_name,
+                                        const char** out_desc, float* out_value, float* out_initial, float* out_min,
+                                        float* out_max, float* out_step) {
     if (!manager || !manager->param_list_valid || index < 0 || index >= (int)manager->param_list.length)
         return false;
 
     const struct libra_preset_param_t* p = &manager->param_list.parameters[index];
-    if (out_name) *out_name = p->name;
-    if (out_desc) *out_desc = p->description;
-    if (out_initial) *out_initial = p->initial;
-    if (out_min) *out_min = p->minimum;
-    if (out_max) *out_max = p->maximum;
-    if (out_step) *out_step = p->step;
+    if (out_name)
+        *out_name = p->name;
+    if (out_desc)
+        *out_desc = p->description;
+    if (out_initial)
+        *out_initial = p->initial;
+    if (out_min)
+        *out_min = p->minimum;
+    if (out_max)
+        *out_max = p->maximum;
+    if (out_step)
+        *out_step = p->step;
 
     // Get the live value from the filter chain
     if (out_value && manager->filter_chain) {

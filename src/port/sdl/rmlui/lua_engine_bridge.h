@@ -21,6 +21,9 @@ void lua_engine_bridge_shutdown(void);
 /** Per-frame tick — fires emu._fire_before() callbacks in Lua. */
 void lua_engine_bridge_tick(void);
 
+/** Load the training_main.lua bootstrap (lazy, call once on first training frame). */
+void lua_engine_bridge_load_training(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1938,6 +1938,51 @@ local function predict_hits(gs, animation_options, frames_prediction)
    local results = {}
    gs = gs or new_gamestate(gamestate)
    if frames_prediction == 0 then return results end
+
+   -- DEBUG: trace the cloned gamestate
+   if not _G._ph_debug_count then _G._ph_debug_count = 0 end
+   _G._ph_debug_count = _G._ph_debug_count + 1
+   local should_log = (_G._ph_debug_count <= 5 or (_G._ph_debug_count % 300 == 0))
+
+   if should_log and gs.P1 and gs.P2 then
+      local p1 = gs.P1
+      local p2 = gs.P2
+      local p1_fdata = p1.animation_frame_data
+      local p2_fdata = p2.animation_frame_data
+      local p1_char = fd.frame_data[p1.char_str]
+      local p2_char = fd.frame_data[p2.char_str]
+      local p1_anim_in_fd = p1_char and p1_char[p1.animation] and true or false
+      local p2_anim_in_fd = p2_char and p2_char[p2.animation] and true or false
+      local p1_has_hitframes = p1_fdata and p1_fdata.hit_frames and #p1_fdata.hit_frames > 0
+      local p2_has_hitframes = p2_fdata and p2_fdata.hit_frames and #p2_fdata.hit_frames > 0
+      local p1_boxes_n = p1.boxes and #p1.boxes or 0
+      local p2_boxes_n = p2.boxes and #p2.boxes or 0
+      print(string.format("[PREDICT_DEBUG] P1: char=%s anim=%s cg_num=%s frame=%d fdata=%s in_fd=%s hitframes=%s boxes=%d",
+         tostring(p1.char_str), tostring(p1.animation), tostring(p1.cg_number), p1.animation_frame or -1,
+         tostring(p1_fdata ~= nil), tostring(p1_anim_in_fd), tostring(p1_has_hitframes), p1_boxes_n))
+      print(string.format("[PREDICT_DEBUG] P2: char=%s anim=%s cg_num=%s frame=%d fdata=%s in_fd=%s hitframes=%s boxes=%d",
+         tostring(p2.char_str), tostring(p2.animation), tostring(p2.cg_number), p2.animation_frame or -1,
+         tostring(p2_fdata ~= nil), tostring(p2_anim_in_fd), tostring(p2_has_hitframes), p2_boxes_n))
+
+      -- One-time dump: show first 10 framedata keys for this character
+      if not _G._fd_keys_dumped then
+         _G._fd_keys_dumped = true
+         if p1_char then
+            local keys = {}
+            local count = 0
+            for k, _ in pairs(p1_char) do
+               count = count + 1
+               keys[count] = k
+               if count >= 10 then break end
+            end
+            print(string.format("[FD_KEYS] char=%s total_keys=%d type_of_first=%s first_10: %s",
+               p1.char_str, count, type(keys[1]), table.concat(keys, ", ")))
+         else
+            print(string.format("[FD_KEYS] NO framedata for char=%s", tostring(p1.char_str)))
+         end
+      end
+   end
+
    if next_animation[1] ~= animations.NONE then
       if not animation_options or not (animation_options[1] and animation_options[1].set) then
          if not animation_options then animation_options = {} end
@@ -1953,6 +1998,19 @@ local function predict_hits(gs, animation_options, frames_prediction)
       end
    end
    local predicted_states = simulate_gamestates(gs, animation_options, frames_prediction)
+
+   if should_log then
+      local total_states = 0
+      local total_collisions = 0
+      for i, state_list in ipairs(predicted_states) do
+         for j, state in ipairs(state_list) do
+            total_states = total_states + 1
+            total_collisions = total_collisions + #state.collisions
+         end
+      end
+      print(string.format("[PREDICT_DEBUG] simulated %d states, %d total collisions", total_states, total_collisions))
+   end
+
    for i, state_list in ipairs(predicted_states) do
       for j, state in ipairs(state_list) do
          for _, hit in ipairs(state.collisions) do

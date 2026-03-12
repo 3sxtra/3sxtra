@@ -27,6 +27,10 @@
                 <label>Parry</label>
                 <span class="value">{{ dummy_parry_label }}</span>
             </div>
+            <div id="cycle-block-dir" class="control-row list-row clickable">
+                <label>Block Direction</label>
+                <span class="value">{{ dummy_block_dir_label }}</span>
+            </div>
             <div id="cycle-stun-mash" class="control-row list-row clickable">
                 <label>Stun Mash</label>
                 <span class="value">{{ dummy_stun_mash_label }}</span>
@@ -50,6 +54,14 @@
             <div id="cycle-fast-wakeup" class="control-row list-row clickable">
                 <label>Fast Wakeup</label>
                 <span class="value">{{ dummy_fast_wakeup_label }}</span>
+            </div>
+            <div class="control-row">
+                <input type="checkbox" data-checked="dummy_auto_reversal"/>
+                <label>Auto Reversal</label>
+            </div>
+            <div id="cycle-playback-mode" class="control-row list-row clickable">
+                <label>Playback Mode</label>
+                <span class="value">{{ dummy_playback_mode_label }}</span>
             </div>
         </div>
 

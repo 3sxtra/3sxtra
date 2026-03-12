@@ -300,12 +300,12 @@ void Setup_Next_Page(struct _TASK* task_ptr, u8 /* unused */) {
         Menu_Max = Ex_Page_Data[Menu_Page];
         save_w[1].extra_option.contents[Menu_Page][Menu_Max] = 1;
         Order_Dir[0x4E] = 1;
-        effect_57_init(0x4E, 1, 0, 0x45, 0);
+        effect_57_init(0x4E, MENU_HEADER_OPTION_MENU, 0, 0x45, 0);
         Order[0x73] = 3;
         Order_Dir[0x73] = 8;
         Order_Timer[0x73] = 1;
         if (!use_rmlui || !rmlui_menu_extra_option)
-            effect_57_init(0x73, 6, 0, 0x3F, 2);
+            effect_57_init(0x73, MENU_HEADER_EXTRA_OPTION, 0, 0x3F, 2);
         effect_66_init(0x5C, 0x27, 2, 0, 0x47, 0xB, 0);
         Order[0x5C] = 3;
         Order_Timer[0x5C] = 1;
@@ -326,7 +326,7 @@ void Setup_Next_Page(struct _TASK* task_ptr, u8 /* unused */) {
         system_dir[1].contents[Menu_Page][Menu_Max] = 1;
         Order[0x4E] = 5;
         Order_Dir[0x4E] = 3;
-        effect_57_init(0x4E, 0, 0, 0x45, 0); /* blue BG — unconditional */
+        effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, 0); /* blue BG — unconditional */
 
         if (!use_rmlui || !rmlui_menu_sysdir) {
             effect_66_init(0x5B, 0x14, 2, 0, 0x47, 0xA, 0);
@@ -397,7 +397,7 @@ void Save_Direction(struct _TASK* task_ptr) {
         Menu_Cursor_X[0] = 0;
         Setup_BG(1, 0x200, 0);
         if (!(use_rmlui && rmlui_menu_sysdir))
-            Setup_Replay_Sub(1, 0x70, 0xA, 2);
+            Setup_Replay_Sub(0x70, MENU_HEADER_SYSTEM_DIRECTION, 2);
         Setup_File_Property(2, 0);
         Clear_Flash_Init(4);
         Message_Data->kind_req = 5;
@@ -437,7 +437,7 @@ void Load_Direction(struct _TASK* task_ptr) {
         Menu_Cursor_X[0] = 0;
         Setup_BG(1, 0x200, 0);
         if (!(use_rmlui && rmlui_menu_sysdir))
-            Setup_Replay_Sub(1, 0x70, 0xA, 2);
+            Setup_Replay_Sub(0x70, MENU_HEADER_SYSTEM_DIRECTION, 2);
         Setup_File_Property(2, 0);
         Clear_Flash_Init(4);
         Message_Data->kind_req = 5;

@@ -48,9 +48,42 @@ io.open = function(filename, mode)
    -- Route through our C++ engine file reader (uses SDL_GetBasePath)
    local text = engine.read_file_text(filename)
    if text then
+      -- Cursor-based file handle that supports progressive read(n)
+      local cursor = 1
+      local len = #text
       return {
-         read = function(self, format) return text end,
+         read = function(self, format)
+            if cursor > len then return nil end
+            if format == "*a" or format == "*all" then
+               local result = text:sub(cursor)
+               cursor = len + 1
+               return result
+            elseif type(format) == "number" then
+               local n = format
+               if cursor + n - 1 > len then
+                  local result = text:sub(cursor)
+                  cursor = len + 1
+                  return (#result > 0) and result or nil
+               end
+               local result = text:sub(cursor, cursor + n - 1)
+               cursor = cursor + n
+               return result
+            else
+               -- Default: return entire remaining content
+               local result = text:sub(cursor)
+               cursor = len + 1
+               return result
+            end
+         end,
          close = function(self) end,
+         seek = function(self, whence, offset)
+            offset = offset or 0
+            if whence == "set" then cursor = offset + 1
+            elseif whence == "cur" then cursor = cursor + offset
+            elseif whence == "end" then cursor = len + offset + 1
+            end
+            return cursor - 1
+         end,
       }
    end
    return nil, "file not found: " .. tostring(filename)
@@ -222,10 +255,32 @@ local function ensure_framedata_loaded()
    local ok, err = pcall(function()
       local fd = require("src.data.framedata")
       local settings = require("src.settings")
+      local mp = require("src.libs.message_pack")
 
       -- Load from msgpack binary (much faster than 22 individual JSON files)
+      -- Framedata format: first entry = count, then entries with {char, id, data}
       local bin_path = settings.framedata_path .. settings.framedata_bin_file
-      loading.load_binary(fd.frame_data, bin_path)
+      local reader = mp.Msg_Pack_Reader.new(bin_path)
+      local entry_count = reader:read()  -- first entry = total count
+      local loaded = 0
+      repeat
+         local size = reader:get_length()
+         if not size then break end
+         local obj = reader:read()
+         if obj then
+            if obj.char and obj.data then
+               -- Framedata format: {char=<name>, id=<action_id>, data=<table>}
+               if not fd.frame_data[obj.char] then fd.frame_data[obj.char] = {} end
+               fd.frame_data[obj.char][obj.id] = obj.data
+               loaded = loaded + 1
+            elseif obj.key and obj.data then
+               -- Generic key→data format (text, images, etc.)
+               fd.frame_data[obj.key] = obj.data
+               loaded = loaded + 1
+            end
+         end
+      until obj == nil
+      reader:close()
 
       -- Apply character-specific fixups
       fd.patch_frame_data()
@@ -233,7 +288,7 @@ local function ensure_framedata_loaded()
 
       local count = 0
       for _ in pairs(fd.frame_data) do count = count + 1 end
-      print(string.format("[training_main] Framedata loaded from msgpack (%d characters)", count))
+      print(string.format("[training_main] Framedata loaded from msgpack (%d characters, %d entries)", count, loaded))
    end)
    if not ok then
       print("[training_main] ERROR loading framedata: " .. tostring(err))
@@ -271,6 +326,18 @@ if inputs_ok then
 else
    print("[training_main] Inputs module not loaded: " .. tostring(inputs_mod))
    inputs_mod = nil
+end
+
+-- Initialize recording module (sets 'settings' upvalue, creates recording slots)
+-- Must be called AFTER src.settings and src.control.inputs are loaded.
+local rec_ok, rec_err = pcall(function()
+   local recording = require("src.control.recording")
+   recording.init()
+end)
+if rec_ok then
+   print("[training_main] Recording module initialized")
+else
+   print("[training_main] Recording init failed: " .. tostring(rec_err))
 end
 
 -- ============================================================
@@ -356,22 +423,28 @@ end
 
 local dummy_initialized = false
 local dummy_player = nil
+local local_player = nil
 local dummy_id = 2
+local previous_input = nil  -- track last frame's input for prediction
 
---- Detect which side the human is playing from Operator_Status.
---- Operator_Status[p] == 1 means a human operator is on that side.
---- Returns 1 or 2 for the human's side, defaults to 1 if ambiguous.
+--- Detect which side the human is playing.
+--- Uses Training_ID (set by the menu system to whichever side pressed confirm)
+--- as the authoritative source; falls back to Operator_Status if needed.
+--- Returns 1 or 2 for the human's side (1-indexed).
 local function detect_local_player()
    local globals = engine.read_globals()
+
+   -- Training_ID is the definitive answer: 0=P1 selected training, 1=P2
+   local tid = globals.training_id
+   if tid ~= nil then
+      return tid + 1   -- convert 0-indexed to 1-indexed
+   end
+
+   -- Fallback: operator status
    local op1 = globals.operator_p1 or 0
    local op2 = globals.operator_p2 or 0
-
-   -- If only one side has a human operator, that's the player
    if op1 == 1 and op2 ~= 1 then return 1 end
    if op2 == 1 and op1 ~= 1 then return 2 end
-
-   -- Both operators active (vs mode) or neither:
-   -- Default to P1 as the human side
    return 1
 end
 
@@ -432,12 +505,26 @@ local function map_dummy_settings()
       blocking_mode = 2  -- ON
    end
 
+   -- ---- Blocking Direction ----
+   -- C: NONE=0, RIGHT=1, LEFT=2
+   -- Lua doesn't natively map "Right/Left" blocking direction, but it has Force_Blocking_Direction: OFF=1, ALWAYS_LOW=2, ALWAYS_HIGH=3.
+   -- Effie uses `block_direction` as 1 (OFF) inside blocking_options. The C implementation of dummy_block_direction means something else, but actually Effie doesn't have a "left/right" block direction setting natively in `Force_Blocking_Direction`.
+   local force_blocking_direction = 1
+   if s.block_direction == 1 then
+       -- In C we use "right/left" but in Lua it's ALWAYS_LOW/ALWAYS_HIGH
+       -- Let's just map it to the equivalent "force block" options in Effie
+       -- Actually, Effie uses 1=OFF, 2=ALWAYS_LOW, 3=ALWAYS_HIGH for force_blocking_direction
+       force_blocking_direction = 1
+   end
+   if s.block_direction == 1 then force_blocking_direction = 3 end -- RIGHT mapped to HIGH (hack for UI reuse)
+   if s.block_direction == 2 then force_blocking_direction = 2 end -- LEFT mapped to LOW
+
    local blocking_options = {
       mode = blocking_mode,
       style = blocking_style,
       prefer_block_low = prefer_block_low,
       prefer_parry_low = prefer_parry_low,
-      force_blocking_direction = 1,  -- OFF (no menu item yet)
+      force_blocking_direction = force_blocking_direction,
       red_parry_hit_count = 1,
       parry_every_n_count = 1,
    }
@@ -476,12 +563,24 @@ local function map_dummy_settings()
    }
    local tech_throw_mode = TECH_THROW_MAP[s.tech_throw_type] or 1
 
-   return blocking_options, mash_mode, fast_wakeup_mode, tech_throw_mode
+   -- ---- Playback Mode ----
+   local PLAYBACK_MODE_MAP = {
+      [0] = 1, -- NONE
+      [1] = 2, -- NORMAL (random)
+      [2] = 2, -- RANDOM
+      [3] = 3, -- SEQUENCE
+   }
+   local playback_mode = PLAYBACK_MODE_MAP[s.playback_mode] or 1
+
+   return blocking_options, mash_mode, fast_wakeup_mode, tech_throw_mode, playback_mode, s.auto_reversal
 end
 
 -- Register the dummy control update in the per-frame callback
 emu.registerbefore(function()
    if not engine.is_in_match() then
+      if dummy_initialized then
+         engine.set_lua_dummy_active(false)
+      end
       dummy_initialized = false
       dummy_player = nil
       return
@@ -503,8 +602,16 @@ emu.registerbefore(function()
          dummy_player = gamestate.P1
       end
 
+      local_player = (dummy_id == 2) and gamestate.P1 or gamestate.P2
       init_dummy_state(dummy_player)
       dummy_initialized = true
+      engine.set_lua_dummy_active(true, dummy_id - 1)
+
+      -- Set training module player/dummy references (used by recording.lua)
+      local training = require("src.training")
+      training.player = local_player
+      training.dummy = dummy_player
+
       print(string.format("[training_main] Operator_Status: P1=%d P2=%d → local=P%d, dummy=P%d",
          engine.read_globals().operator_p1 or -1,
          engine.read_globals().operator_p2 or -1,
@@ -512,10 +619,19 @@ emu.registerbefore(function()
    end
 
    -- Read C menu settings and map to Lua enum values
-   local blocking_options, mash_mode, fast_wakeup_mode, tech_throw_mode = map_dummy_settings()
+   local blocking_options, mash_mode, fast_wakeup_mode, tech_throw_mode, playback_mode, auto_reversal = map_dummy_settings()
 
    -- Build FBNeo input table (start with all false)
    local input = make_fbneo_input()
+
+   -- Expose the input table to the inputs module so dummy_control can read it
+   inputs_mod.input = input
+
+   -- Update prediction state (tracks animation changes, builds attack predictions)
+   local pred_before_ok, pred_before_err
+   if prediction_ok and _G.prediction then
+      pred_before_ok, pred_before_err = pcall(_G.prediction.update_before, previous_input or input, dummy_player)
+   end
 
    -- Run dummy control subsystems with live menu settings
    local ok, err = pcall(function()
@@ -525,23 +641,50 @@ emu.registerbefore(function()
       dummy_control.update_fast_wake_up(input, dummy_player, fast_wakeup_mode)
       dummy_control.update_tech_throws(input, dummy_player, tech_throw_mode)
 
+      if auto_reversal then
+         -- Set the playback mode based on the user's F7 menu config
+         local settings = require("src.settings")
+         settings.training.replay_mode = playback_mode
+
+         -- Create a dummy counter attack data structure if auto reversal is true
+         -- By default just make it try to reversal with normal inputs
+         local counter_data = {
+             type = 5, -- 5 is playback mode in effie
+             char_str = dummy_player.char_str
+         }
+         -- This is a very basic wrapper around the counter attack feature
+         -- using the playback modes and slots you configured in the Lua
+         dummy_control.update_counter_attack(input, dummy_player, counter_data, 1)
+      end
+
       -- Process any queued input sequences
       inputs_mod.process_pending_input_sequence(dummy_player, input)
    end)
 
+
+
+   -- Update prediction for next frame (predict next animations based on current input)
+   local pred_after_ok, pred_after_err
+   if prediction_ok and _G.prediction then
+      pred_after_ok, pred_after_err = pcall(_G.prediction.update_after, input, dummy_player)
+   end
+
+   -- Store current input for next frame's prediction
+   previous_input = input
+
    if not ok then
-      -- Print error once, don't spam
-      if not _G._dummy_error_printed then
-         print("[training_main] Dummy control error: " .. tostring(err))
-         _G._dummy_error_printed = true
+      -- Rate-limit error printing (every 60 frames, not permanent suppress)
+      _G._dummy_error_count = (_G._dummy_error_count or 0) + 1
+      if _G._dummy_error_count <= 3 or (_G._dummy_error_count % 60 == 0) then
+         print("[training_main] Dummy control error (#" .. _G._dummy_error_count .. "): " .. tostring(err))
       end
-      return
    end
 
    -- Convert FBNeo input table to joypad format and apply to dummy
    local prefix = "P" .. dummy_id
    local dummy_input = fbneo_to_joypad(input, prefix)
    joypad.set(dummy_input, dummy_id)
+
 end)
 
 print("[training_main] Bootstrap complete")
