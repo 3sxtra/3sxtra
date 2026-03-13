@@ -261,17 +261,21 @@ void SDLGameRendererGPU_RenderFrame(void) {
     mapped_vertex_ptr = NULL;
 
     // Stage dirty palette data into the main staging buffer BEFORE unmapping.
-    // This avoids the per-row transfer buffer cycling issue where copy commands
-    // would all resolve to the last-written buffer.
     // ⚡ Opt10b: Lazily map the staging buffer only when dirty palettes exist.
-    if (s_compute_staging_ptr || true) {
+    if (s_compute_staging_ptr || s_pal_upload_dirty_count > 0) {
         if (!s_compute_staging_ptr) {
             s_compute_staging_ptr = (u8*)SDL_MapGPUTransferBuffer(device, s_compute_staging_buffer, true);
             s_compute_staging_offset = 0;
         }
-        for (int i = 0; i < FL_PALETTE_MAX && i < PALETTE_TEX_HEIGHT; i++) {
-            if (s_palette_uploaded[i] || !palettes[i])
+
+        int processed_count = 0;
+        while (processed_count < s_pal_upload_dirty_count) {
+            const int i = s_pal_upload_dirty_indices[processed_count];
+            if (i < 0 || i >= FL_PALETTE_MAX || s_palette_uploaded[i] || !palettes[i]) {
+                processed_count++;
                 continue;
+            }
+
             size_t pal_size = (size_t)PALETTE_TEX_WIDTH * 4; // 256 colors × 4 bytes = 1024
             if (s_pal_upload_count >= MAX_COMPUTE_JOBS || s_compute_staging_offset + pal_size > COMPUTE_STORAGE_SIZE)
                 break;
@@ -296,8 +300,17 @@ void SDLGameRendererGPU_RenderFrame(void) {
             // ⚡ Vulkan/SDL_GPU requires copy offsets to be highly aligned (typically 256/512 bytes)
             s_compute_staging_offset = (s_compute_staging_offset + 511) & ~511;
             s_palette_uploaded[i] = true;
+            processed_count++;
         }
-        s_pal_upload_dirty_count = 0;
+
+        // Shift remaining items to the front if we broke early
+        if (processed_count < s_pal_upload_dirty_count) {
+            int remaining = s_pal_upload_dirty_count - processed_count;
+            memmove(s_pal_upload_dirty_indices, &s_pal_upload_dirty_indices[processed_count], remaining * sizeof(int));
+            s_pal_upload_dirty_count = remaining;
+        } else {
+            s_pal_upload_dirty_count = 0;
+        }
     }
 
     // Unmap staging buffer (only if it was mapped this frame)

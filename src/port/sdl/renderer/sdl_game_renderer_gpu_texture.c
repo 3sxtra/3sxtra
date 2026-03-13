@@ -228,23 +228,7 @@ void SDLGameRendererGPU_UnlockPalette(unsigned int ph) {
     if (idx >= 0 && idx < FL_PALETTE_MAX) {
         // Palette changes don't invalidate indexed texture array layers —
         // the palette row is looked up separately by the fragment shader.
-        if (palettes[idx]) {
-            SDL_DestroyPalette(palettes[idx]);
-            palettes[idx] = NULL;
-        }
         SDLGameRendererGPU_CreatePalette((idx + 1) << 16);
-        s_palette_uploaded[idx] = false; // ⚡ Mark for re-upload to palette atlas
-
-        bool already_queued = false;
-        for (int d = 0; d < s_pal_upload_dirty_count; d++) {
-            if (s_pal_upload_dirty_indices[d] == idx) {
-                already_queued = true;
-                break;
-            }
-        }
-        if (!already_queued && s_pal_upload_dirty_count < FL_PALETTE_MAX) {
-            s_pal_upload_dirty_indices[s_pal_upload_dirty_count++] = idx; // ⚡ Opt9b
-        }
     }
 }
 
