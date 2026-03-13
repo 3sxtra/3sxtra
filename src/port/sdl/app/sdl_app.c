@@ -54,6 +54,7 @@
 #include "port/sdl/rmlui/rmlui_name_entry.h"
 #include "port/sdl/rmlui/rmlui_netplay_ui.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_option_menu.h"
 #include "port/sdl/rmlui/rmlui_pause_overlay.h"

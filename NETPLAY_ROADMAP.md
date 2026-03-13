@@ -148,12 +148,37 @@ Design choices are constrained to fit within these limits.
 
 **Goal**: Provide early adopters with a place to congregate and visually prove the game isn't dead when population is low.
 
-**Status**: ⏳ Planned
+**Status**: 🟡 In Progress (server + C client API done, UI remaining)
+
+### What was built
+- Server routes: `POST /room/create`, `/room/join`, `/room/leave`, `/room/chat`, `/room/queue/join`, `/room/queue/leave`
+- SSE event stream: `GET /room/events?room_code=` — real-time push via `broadcastRoomEvent()`
+- Room code generation (4-char unambiguous charset), 8-player max, host migration on leave
+- Chat capped at 50 messages per room
+- C client API: `LobbyServer_CreateRoom/JoinRoom/LeaveRoom/JoinQueue/LeaveQueue/SendChat`
+- `RoomState`, `RoomPlayer`, `ChatMessage` structs + `parse_room_json()` parser
+- Test scripts: `__test_room.js`, `__test_sse.js`
+
+### Remaining work
+- RmlUI room screen (`rmlui_room.cpp/h`, `room.rml/rcss`)
+- SSE client in C (currently only HTTP req/res — no streaming listener)
+- "Winner Stays On" cabinet rotation logic
+- `GekkoSpectateSession` integration for live spectating
+- Lifecycle integration in `sdl_app.c`
 
 ### Key design points
 - **Casual Lobbies (8-Player Rooms)**: Players can create/join public or private named rooms (e.g., "EU Casuals", "Beginners").
 - **Virtual Cabinet & Universal Spectator**: Up to 8 players join, text chat, and queue up for a "Winner Stays On" rotation. *Anyone* not currently playing can spectate the match live via `GekkoSpectateSession`.
-- **Server Mechanics**: Server maintains room state and broadcasts changes via HTTP long-polling or Server-Sent Events (SSE).
+- **Server Mechanics**: Server maintains room state and broadcasts changes via Server-Sent Events (SSE).
+
+### Files
+| File | Action |
+|------|--------|
+| `tools/lobby-server/lobby-server.js` | MODIFY — room routes, SSE, `broadcastRoomEvent()` |
+| `src/netplay/lobby_server.h` | ADD — `RoomState`, `RoomPlayer`, `ChatMessage` structs |
+| `src/netplay/lobby_server.c` | ADD — `CreateRoom`, `JoinRoom`, `LeaveRoom`, `JoinQueue`, `LeaveQueue`, `SendChat` |
+| `tools/lobby-server/__test_room.js` | NEW — room smoke test |
+| `tools/lobby-server/__test_sse.js` | NEW — SSE streaming test |
 
 ---
 
@@ -196,49 +221,7 @@ Design choices are constrained to fit within these limits.
 - Server-side matching score: `100 - (rating_diff*0.5) - (ping_penalty*2) + (wait_bonus*0.3)`
 - Rating window starts narrow (±100), expands every 10s of waiting.
 
----
 
-## Phase 6: Match Accept/Decline & Connection Filters
-
-**Goal**: Give players control over who they connect to based on connection quality.
-
-**Status**: ⏳ Planned
-
-### Key design points
-- When Phase 5 SBMM finds a match, show a 10-second "Match Found!" RmlUI popup.
-- Display opponent's ping and **Wired vs. Wi-Fi status** (already tracked via Presence API).
-- Both players must accept to establish the P2P connection; otherwise, return to searching.
-- Zero extra server impact (client-side UI and P2P pinging).
-
----
-
-## Phase 7: Detailed Player Profiles & Character Usage
-
-**Goal**: Expand statistics to track character-specific performance and streaks.
-
-**Status**: ⏳ Planned
-
-### Key design points
-- Expand `players_db` and matches to track character usage.
-- Clicking a name on the Leaderboard opens a profile popup:
-  - Main Character (e.g., "Ryu - 65% usage")
-  - Longest Win Streak
-  - Win rate per stage/character
-- Server impact: Minor schema additions and updated `/match_result` parsing.
-
----
-
-## Phase 8: Casual Lobbies (8-Player Rooms)
-
-**Goal**: Social rooms for continuous play ("Winner Stays On" cabinet format).
-
-**Status**: ⏳ Planned
-
-### Key design points
-- Support named rooms: "Beginners Only", "EU East Casual", etc.
-- Up to 8 players join, text chat, and queue up for the virtual cabinet.
-- Server maintains room state and broadcasts changes.
-- Requires simple HTTP long-polling or Server-Sent Events (SSE).
 
 ---
 
@@ -276,7 +259,7 @@ Phase 1 (Identity) ✅
         │     └── Phase 8 (SBMM)
         ├── Phase 3 (Leaderboards) ✅
         │     └── Phase 7 (Detailed Profiles)
-        └── Phase 5 (Casual Lobbies) ← NEXT
+        └── Phase 5 (Casual Lobbies) 🟡 IN PROGRESS
               └── Phase 6 (Accept/Decline Filters)
         └── Phase 9 (Automated Desync Reporting)
         └── Phase 10 (Rival System)

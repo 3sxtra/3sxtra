@@ -44,7 +44,7 @@ jobs:
 
           - name: Install dependencies
             run: |
-                brew install miniupnpc
+                brew install miniupnpc zlib
                 python3 -m pip install --break-system-packages jinja2
                 sh build-deps.sh
 
@@ -54,7 +54,8 @@ jobs:
                 BUILD_TYPE=${{ inputs.release && 'Release' || 'Debug' }}
                 cmake -B build \
                   -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-                  -DENABLE_TESTS=OFF
+                  -DENABLE_TESTS=OFF \
+                  -DZLIB_ROOT=$(brew --prefix zlib)
                 cmake --build build --parallel 2>&1 | tee build.log
             shell: bash
 
