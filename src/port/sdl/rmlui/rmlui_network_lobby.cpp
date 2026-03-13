@@ -20,9 +20,11 @@
  */
 
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
+#include <RmlUi/Core/Input.h>
 #include <SDL3/SDL.h>
 #include <cstdio>
 #include <cstring>
@@ -30,6 +32,7 @@
 
 extern "C" {
 #include "netplay/discovery.h"
+#include "netplay/identity.h"
 #include "netplay/lobby_server.h"
 #include "port/config/config.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
@@ -78,6 +81,108 @@ static bool s_model_registered = false;
 static std::vector<LanPeerItem> s_lan_peers;
 static std::vector<NetPeerItem> s_net_peers;
 
+// ─── Room create/join state ──────────────────────────────────────
+static Rml::String s_room_status;       // "" | "Creating..." | "Joining..." | "ABCD" (room code)
+static Rml::String s_join_room_code;    // entered room code for display
+static SDL_AtomicInt s_room_async_active = {0};  // 1 = background op in progress
+
+// Result from background thread
+static SDL_AtomicInt s_room_async_done  = {0};   // 1 = result ready
+static SDL_AtomicInt s_room_async_ok    = {0};   // 1 = success, 0 = fail
+static char s_room_async_code[16] = {0};         // resulting room code on success
+
+struct AsyncRoomData {
+    int action;         // 1 = create, 2 = join
+    char name[64];      // room name (create)
+    char code[16];      // room code (join)
+};
+
+static int SDLCALL async_room_fn(void* data) {
+    AsyncRoomData* d = (AsyncRoomData*)data;
+    RoomState room;
+    memset(&room, 0, sizeof(room));
+    bool ok = false;
+
+    if (d->action == 1) {
+        ok = LobbyServer_CreateRoom(d->name, &room);
+    } else if (d->action == 2) {
+        ok = LobbyServer_JoinRoom(d->code, &room);
+    }
+
+    if (ok) {
+        snprintf(s_room_async_code, sizeof(s_room_async_code), "%s", room.id);
+        SDL_SetAtomicInt(&s_room_async_ok, 1);
+    } else {
+        s_room_async_code[0] = '\0';
+        SDL_SetAtomicInt(&s_room_async_ok, 0);
+    }
+
+    free(d);
+    SDL_SetAtomicInt(&s_room_async_done, 1);
+    SDL_SetAtomicInt(&s_room_async_active, 0);
+    return 0;
+}
+
+static void AsyncCreateRoom(const char* name) {
+    if (SDL_GetAtomicInt(&s_room_async_active) != 0) return;
+    SDL_SetAtomicInt(&s_room_async_active, 1);
+    SDL_SetAtomicInt(&s_room_async_done, 0);
+    AsyncRoomData* d = (AsyncRoomData*)calloc(1, sizeof(AsyncRoomData));
+    d->action = 1;
+    snprintf(d->name, sizeof(d->name), "%s", name ? name : "Casual Room");
+    SDL_Thread* t = SDL_CreateThread(async_room_fn, "AsyncCreateRoom", d);
+    if (t) { SDL_DetachThread(t); } else { free(d); SDL_SetAtomicInt(&s_room_async_active, 0); }
+}
+
+static void AsyncJoinRoom(const char* code) {
+    if (SDL_GetAtomicInt(&s_room_async_active) != 0) return;
+    SDL_SetAtomicInt(&s_room_async_active, 1);
+    SDL_SetAtomicInt(&s_room_async_done, 0);
+    AsyncRoomData* d = (AsyncRoomData*)calloc(1, sizeof(AsyncRoomData));
+    d->action = 2;
+    snprintf(d->code, sizeof(d->code), "%s", code);
+    SDL_Thread* t = SDL_CreateThread(async_room_fn, "AsyncJoinRoom", d);
+    if (t) { SDL_DetachThread(t); } else { free(d); SDL_SetAtomicInt(&s_room_async_active, 0); }
+}
+
+// ─── Room code input popup ───────────────────────────────────────
+static Rml::ElementDocument* s_join_doc = nullptr;
+static bool s_join_popup_open = false;
+
+class RoomCodeSubmitListener : public Rml::EventListener {
+public:
+    void ProcessEvent(Rml::Event& event) override {
+        if (event.GetId() == Rml::EventId::Keydown) {
+            auto key = (Rml::Input::KeyIdentifier)event.GetParameter<int>("key_identifier", 0);
+            if (key == Rml::Input::KI_RETURN || key == Rml::Input::KI_NUMPADENTER) {
+                Rml::Element* input = event.GetTargetElement();
+                Rml::String text = input->GetAttribute<Rml::String>("value", "");
+                if (!text.empty()) {
+                    // Convert to uppercase
+                    for (auto& c : text) c = (char)toupper((unsigned char)c);
+                    s_join_room_code = text;
+                    s_room_status = "Joining...";
+                    if (s_model_handle) {
+                        s_model_handle.DirtyVariable("join_room_code");
+                        s_model_handle.DirtyVariable("room_status");
+                    }
+                    AsyncJoinRoom(text.c_str());
+                }
+                if (s_join_doc) {
+                    s_join_doc->Hide();
+                }
+                s_join_popup_open = false;
+            } else if (key == Rml::Input::KI_ESCAPE) {
+                if (s_join_doc) {
+                    s_join_doc->Hide();
+                }
+                s_join_popup_open = false;
+            }
+        }
+    }
+};
+static RoomCodeSubmitListener s_room_code_listener;
+
 struct LobbyCache {
     int cursor;
     bool lan_auto;
@@ -94,6 +199,8 @@ struct LobbyCache {
     int net_peer_idx;
     int popup_type; // 0=none, 1=incoming, 2=outgoing
     Rml::String room_code;
+    Rml::String room_status;
+    Rml::String join_room_code;
 };
 static LobbyCache s_cache = {};
 
@@ -175,6 +282,10 @@ extern "C" void rmlui_network_lobby_init(void) {
         const char* rc = SDLNetplayUI_GetRoomCode();
         v = Rml::String(rc ? rc : "");
     });
+
+    // Room create/join status
+    ctor.Bind("room_status", &s_room_status);
+    ctor.Bind("join_room_code", &s_join_room_code);
 
     // LAN peer count / currently selected name (kept for legacy status bar)
     ctor.BindFunc("lan_peer_count", [](Rml::Variant& v) {
@@ -388,6 +499,28 @@ extern "C" void rmlui_network_lobby_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("network_lobby"))
         return;
 
+    // ── Check async room create/join completion ───────────────────
+    if (SDL_GetAtomicInt(&s_room_async_done)) {
+        SDL_SetAtomicInt(&s_room_async_done, 0);
+        if (SDL_GetAtomicInt(&s_room_async_ok)) {
+            // Success — transition to casual lobby
+            s_room_status = Rml::String(s_room_async_code);
+            s_model_handle.DirtyVariable("room_status");
+
+            rmlui_casual_lobby_set_room(s_room_async_code);
+            rmlui_network_lobby_hide();
+            rmlui_casual_lobby_show();
+
+            SDL_Log("[NetworkLobby] Room entered: %s", s_room_async_code);
+        } else {
+            s_room_status = "FAILED";
+            s_join_room_code = "";
+            s_model_handle.DirtyVariable("room_status");
+            s_model_handle.DirtyVariable("join_room_code");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[NetworkLobby] Room create/join failed");
+        }
+    }
+
     DIRTY_INT(cursor, (int)Menu_Cursor_Y[0]);
     DIRTY_BOOL(lan_auto, Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT));
     DIRTY_BOOL(net_auto, Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT));
@@ -397,6 +530,8 @@ extern "C" void rmlui_network_lobby_update(void) {
     DIRTY_BOOL(region_lock, Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK));
     DIRTY_INT(max_ping, Config_GetInt(CFG_KEY_NETPLAY_MAX_PING));
     DIRTY_BOOL(block_wifi, Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI));
+    DIRTY_STR(room_status, s_room_status);
+    DIRTY_STR(join_room_code, s_join_room_code);
 
     {
         const char* rc = SDLNetplayUI_GetRoomCode();
@@ -505,11 +640,52 @@ extern "C" void rmlui_network_lobby_update(void) {
 
 // ─── Show / Hide ─────────────────────────────────────────────────
 extern "C" void rmlui_network_lobby_show(void) {
+    s_room_status = "";
+    s_join_room_code = "";
     rmlui_wrapper_show_game_document("network_lobby");
 }
 
 extern "C" void rmlui_network_lobby_hide(void) {
     rmlui_wrapper_hide_game_document("network_lobby");
+    if (s_join_doc && s_join_popup_open) {
+        s_join_doc->Hide();
+        s_join_popup_open = false;
+    }
+}
+
+// ─── Room action handlers (called from menu.c confirm logic) ─────
+extern "C" void rmlui_network_lobby_create_room(void) {
+    if (SDL_GetAtomicInt(&s_room_async_active) != 0) return;
+    s_room_status = "Creating...";
+    if (s_model_handle) s_model_handle.DirtyVariable("room_status");
+    const char* dn = Identity_GetDisplayName();
+    char name[64];
+    snprintf(name, sizeof(name), "%s's Room", dn ? dn : "Player");
+    AsyncCreateRoom(name);
+}
+
+extern "C" void rmlui_network_lobby_join_room(void) {
+    // Open room code input popup
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
+    if (!ctx) return;
+    if (!s_join_doc) {
+        s_join_doc = ctx->LoadDocument("assets/ui/room_code_input.rml");
+        if (s_join_doc) {
+            Rml::Element* input = s_join_doc->GetElementById("room-code-field");
+            if (input) {
+                input->AddEventListener(Rml::EventId::Keydown, &s_room_code_listener);
+            }
+        }
+    }
+    if (s_join_doc) {
+        s_join_popup_open = true;
+        s_join_doc->Show(Rml::ModalFlag::None, Rml::FocusFlag::Document);
+        Rml::Element* input = s_join_doc->GetElementById("room-code-field");
+        if (input) {
+            input->SetAttribute("value", "");
+            input->Focus();
+        }
+    }
 }
 
 // ─── Shutdown ────────────────────────────────────────────────────
@@ -523,6 +699,11 @@ extern "C" void rmlui_network_lobby_shutdown(void) {
     }
     s_lan_peers.clear();
     s_net_peers.clear();
+    if (s_join_doc) {
+        s_join_doc->Close();
+        s_join_doc = nullptr;
+    }
+    s_join_popup_open = false;
 }
 
 #undef DIRTY_INT

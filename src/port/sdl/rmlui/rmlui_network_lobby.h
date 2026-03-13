@@ -15,6 +15,8 @@ void rmlui_network_lobby_update(void);
 void rmlui_network_lobby_show(void);
 void rmlui_network_lobby_hide(void);
 void rmlui_network_lobby_shutdown(void);
+void rmlui_network_lobby_create_room(void);
+void rmlui_network_lobby_join_room(void);
 
 #ifdef __cplusplus
 }

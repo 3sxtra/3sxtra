@@ -859,11 +859,11 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         bool popup_active =
             SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge() || lan_incoming || lan_outgoing;
 
-        /* Handle cursor movement (9 items: 0..8) */
+        /* Handle cursor movement (11 items: 0..10) */
         {
             s16 prev_cursor = Menu_Cursor_Y[0];
-            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 8, 0xFF) == 0) {
-                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 8, 0xFF);
+            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 10, 0xFF) == 0) {
+                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 10, 0xFF);
             }
             if (popup_active) {
                 Menu_Cursor_Y[0] = prev_cursor;
@@ -1261,7 +1261,19 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                         }
                         break;
 
-                    case 8:
+                    case 8: /* CREATE ROOM (RmlUI only) */
+                        if (task_ptr->free[2] == 1) {
+                            rmlui_network_lobby_create_room();
+                        }
+                        SE_selected();
+                        break;
+                    case 9: /* JOIN ROOM (RmlUI only) */
+                        if (task_ptr->free[2] == 1) {
+                            rmlui_network_lobby_join_room();
+                        }
+                        SE_selected();
+                        break;
+                    case 10:
                         /* EXIT */
                         goto lobby_exit;
                     }

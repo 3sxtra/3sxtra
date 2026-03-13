@@ -96,6 +96,10 @@
     margin-top: 3dp;
 }
 
+.rooms-header {
+    margin-top: 3dp;
+}
+
 /* ─── Menu rows (label + value inline, very compact) ──────────── */
 
 .lobby-row {

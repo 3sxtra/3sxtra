@@ -1,0 +1,53 @@
+<rml>
+<head>
+    <link type="text/rcss" href="common.rcss"/>
+    <style>
+        body {
+            font-family: NotoSansJP;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 180);
+        }
+        #join-popup {
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+            background: #111;
+            border: 2px solid #c90;
+            padding: 20px;
+        }
+        h2 {
+            font-size: 24px;
+            color: #fc0;
+            margin-bottom: 20px;
+        }
+        input {
+            font-size: 28px;
+            padding: 10px;
+            color: #fff;
+            background: #222;
+            border: 1px solid #777;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            text-align: center;
+        }
+        .help {
+            font-size: 16px;
+            color: #888;
+            margin-top: 10px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div id="join-popup">
+        <h2>JOIN ROOM</h2>
+        <input type="text" id="room-code-field" maxlength="4" />
+        <div class="help">Enter 4-char room code, press ENTER to join</div>
+    </div>
+</body>
+</rml>

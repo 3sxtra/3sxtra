@@ -7,6 +7,7 @@
  */
 
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
+#include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 #include <RmlUi/Core.h>
@@ -410,6 +411,9 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 s_status_text = "YOUR MATCH — GET READY!";
                 SDL_Log("Casual Lobby: You're up! Match starting.");
 
+                // Hide the lobby overlay so gameplay is visible
+                rmlui_wrapper_hide_game_document("casual_lobby");
+
                 // P2P connection trigger: use stored opponent room code from proposal phase
                 if (s_proposal_opponent_room_code[0]) {
                     SDLNetplayUI_StartCasualMatchPunch(
@@ -436,13 +440,18 @@ extern "C" void rmlui_casual_lobby_update(void) {
             s_status_text = winner_name + " WINS! Winner stays on.";
             s_model_handle.DirtyVariable("status_text");
             
-            // If we were spectating, stop
+            // If we were spectating, stop and re-show lobby
             if (s_is_spectating) {
                 Netplay_StopSpectate();
                 s_is_spectating = false;
                 s_model_handle.DirtyVariable("is_spectating");
+                rmlui_wrapper_show_game_document("casual_lobby");
             }
             
+            // If we were playing, re-show lobby
+            if (s_is_playing) {
+                rmlui_wrapper_show_game_document("casual_lobby");
+            }
             s_is_playing = false;
             s_model_handle.DirtyVariable("is_playing");
             
@@ -603,14 +612,13 @@ extern "C" void rmlui_casual_lobby_update(void) {
             }
         } else {
             if (s_cursor_y == 0 && !s_is_playing && s_match_active) {
-                // Spectate
+                // Spectate — hide lobby overlay so game view is visible
                 SDL_Log("Casual Lobby: Spectate clicked");
-                // For now, spectating requires LAN connectivity to P1's GekkoNet port.
-                // In a future version, the server will relay P1's endpoint via SSE.
                 s_is_spectating = true;
                 s_status_text = "Spectating...";
                 s_model_handle.DirtyVariable("is_spectating");
                 s_model_handle.DirtyVariable("status_text");
+                rmlui_wrapper_hide_game_document("casual_lobby");
             } else if (s_cursor_y == 9) {
                 // Join/Leave Queue
                 if (s_in_queue) {
@@ -620,9 +628,10 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 }
                 refresh_room_state_from_server();
             } else if (s_cursor_y == 10) {
-                // Leave Room
+                // Leave Room — go back to network lobby
                 LobbyServer_LeaveRoom(s_room_code.c_str());
                 rmlui_casual_lobby_hide();
+                rmlui_network_lobby_show();
             }
         }
     }
