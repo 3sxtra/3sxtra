@@ -450,7 +450,12 @@ static void Game_Manage_2_3() {
     }
 
     C_No[1]++;
-    effect_B2_init();
+
+    if (Is_Training_Mode(Mode_Type)) {
+        Next_Step = 1;
+    } else {
+        effect_B2_init();
+    }
 }
 
 /** @brief Phase 2.4: Cockpit fade-in, then transition to fighting phase. */
@@ -469,7 +474,7 @@ static void Game_Manage_2_4() {
         FadeOut(0, 0xFF, 8);
         Disp_Cockpit = 1;
 
-        if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
+        if (Is_Training_Mode(Mode_Type)) {
             Score[0][2] = 0;
             Score[1][2] = 0;
             Game_pause = 0;
@@ -519,7 +524,7 @@ static void Game_Manage_2_4() {
             Check_Stage_BGM();
         }
 
-        if (Demo_Flag == 0) {
+        if (Demo_Flag == 0 && !Is_Training_Mode(Mode_Type)) {
             effect_58_init(10, 60, 0);
         }
 
@@ -1802,17 +1807,13 @@ static void Disp_Winner() {
     if (Play_Type == 1) {
         effect_56_init(My_char[Winner_id] + 7, 1);
         SsRequest(141);
-        return;
-    }
-
-    if (Round_Operator[Winner_id]) {
+    } else if (Round_Operator[Winner_id]) {
         effect_56_init(5, 1);
         SsRequest(141);
-        return;
+    } else {
+        effect_56_init(6, 1);
+        SsRequest(142);
     }
-
-    effect_56_init(6, 1);
-    SsRequest(142);
 }
 
 /** @brief Accumulates perfect, vitality, and time bonus scores for the winner. */
@@ -1829,10 +1830,9 @@ static void Pool_Score(s16 PL_id) {
 
     if (save_w[Present_Mode].Time_Limit == -1) {
         Time_Bonus[Winner_id] = 0;
-        return;
+    } else {
+        Time_Bonus[Winner_id] += round_timer * 300;
     }
-
-    Time_Bonus[Winner_id] += round_timer * 300;
 }
 
 /** @brief Checks if conditions are met for a hidden boss (Shin Gouki) break-in. */

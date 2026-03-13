@@ -89,8 +89,10 @@ void SDLTextRendererGL_Init(const char* base_path, const char* font_path) {
     glGenBuffers(1, &s_text_vbo);
     glBindVertexArray(s_text_vao);
     glBindBuffer(GL_ARRAY_BUFFER, s_text_vbo);
-    // ⚡ Bolt: Pre-allocate VBO for batched rendering (up to 1024 characters per call)
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 1024 * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    // ⚡ Pi4: Keep VBO small (1 char = 96 bytes) to avoid V3D buffer orphaning
+    // overhead in per-character glBufferSubData calls. Batch rendering in
+    // SDLTextRendererGL_DrawDebugChars uses glBufferData(GL_STREAM_DRAW) instead.
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
     // Position attribute
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
@@ -179,7 +181,7 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
             glUniform4f(s_rect_loc_rectColor, s_bg_color[0], s_bg_color[1], s_bg_color[2], s_bg_color[3]);
 
             glBindBuffer(GL_ARRAY_BUFFER, s_text_vbo);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(rect_verts), rect_verts);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(rect_verts), rect_verts, GL_STREAM_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
             glBindVertexArray(s_text_vao);
@@ -263,7 +265,7 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
         // Flush batch if full
         if (batch_count >= MAX_BATCH_CHARS) {
             glBindBuffer(GL_ARRAY_BUFFER, s_text_vbo);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, batch_count * 24 * sizeof(float), batch_vertices);
+            glBufferData(GL_ARRAY_BUFFER, batch_count * 24 * sizeof(float), batch_vertices, GL_STREAM_DRAW);
             glDrawArrays(GL_TRIANGLES, 0, batch_count * 6);
             batch_count = 0;
         }
@@ -271,7 +273,7 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
 
     if (batch_count > 0) {
         glBindBuffer(GL_ARRAY_BUFFER, s_text_vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, batch_count * 24 * sizeof(float), batch_vertices);
+        glBufferData(GL_ARRAY_BUFFER, batch_count * 24 * sizeof(float), batch_vertices, GL_STREAM_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, batch_count * 6);
     }
 
@@ -286,6 +288,158 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
 
 void SDLTextRendererGL_Flush(void) {
     // Batched within DrawText; no external flush needed
+}
+
+// ⚡ Pi4 PERF FIX: Batched debug text rendering.
+// Renders the entire PS2 debug text buffer with just 2 draw calls (shadow + foreground)
+// instead of 2×N individual DrawText calls (each with ~20 GL state changes).
+// On Pi4 V3D with 200 characters, this cuts GL calls from ~8,000 to ~30.
+void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale,
+                                      float target_width, float target_height) {
+    if (count <= 0 || !buffer) return;
+
+    // Match the PS2 flPrint buffer layout
+    typedef struct { uint16_t x, y; uint32_t code, col; } DebugChar;
+    const DebugChar* chars = (const DebugChar*)buffer;
+
+    // --- ONE-TIME GL STATE SETUP ---
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glUseProgram(s_text_shader);
+
+    const float projection[4][4] = {
+        { 2.0f / target_width, 0.0f, 0.0f, 0.0f },
+        { 0.0f, -2.0f / target_height, 0.0f, 0.0f },
+        { 0.0f, 0.0f, -1.0f, 0.0f },
+        { -1.0f, 1.0f, 0.0f, 1.0f }
+    };
+    glUniformMatrix4fv(s_text_loc_projection, 1, GL_FALSE, &projection[0][0]);
+    glBindTexture(GL_TEXTURE_2D, s_font_atlas.texture_id);
+    glBindVertexArray(s_text_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, s_text_vbo);
+
+    float glyph_w = 8.0f, glyph_h = 10.0f;
+    float y_offset = s_text_y_offset;
+
+    // --- SHADOW PASS (all black, offset +1,+1) ---
+    {
+        glUniform3f(s_text_loc_textColor, 0.0f, 0.0f, 0.0f);
+        static float verts[1024 * 6 * 4]; // 1024 chars max per batch
+
+        int n = 0;
+        for (int i = 0; i < count; i++) {
+            unsigned char ch = (unsigned char)chars[i].code;
+            if (ch < 0x20 || ch > 0x7F) continue;
+            if (ch >= 128) ch = 127;
+
+            float u0 = (ch % 16) * 8.0f / s_font_atlas.width;
+            float v0 = (ch / 16) * 8.0f / s_font_atlas.height;
+            float u1 = u0 + (8.0f / s_font_atlas.width);
+            float v1 = v0 + (8.0f / s_font_atlas.height);
+
+            float x0 = (float)chars[i].x * scale + 1.0f;
+            float y0 = (float)chars[i].y * scale + y_offset + 1.0f;
+            float x1 = x0 + glyph_w * scale;
+            float y1 = y0 + glyph_h * scale;
+
+            int o = n * 24;
+            verts[o+ 0]=x0; verts[o+ 1]=y1; verts[o+ 2]=u0; verts[o+ 3]=v1;
+            verts[o+ 4]=x1; verts[o+ 5]=y1; verts[o+ 6]=u1; verts[o+ 7]=v1;
+            verts[o+ 8]=x1; verts[o+ 9]=y0; verts[o+10]=u1; verts[o+11]=v0;
+            verts[o+12]=x1; verts[o+13]=y0; verts[o+14]=u1; verts[o+15]=v0;
+            verts[o+16]=x0; verts[o+17]=y0; verts[o+18]=u0; verts[o+19]=v0;
+            verts[o+20]=x0; verts[o+21]=y1; verts[o+22]=u0; verts[o+23]=v1;
+            n++;
+
+            if (n >= 1024) {
+                glBufferData(GL_ARRAY_BUFFER, n * 24 * sizeof(float), verts, GL_STREAM_DRAW);
+                glDrawArrays(GL_TRIANGLES, 0, n * 6);
+                n = 0;
+            }
+        }
+        if (n > 0) {
+            glBufferData(GL_ARRAY_BUFFER, n * 24 * sizeof(float), verts, GL_STREAM_DRAW);
+            glDrawArrays(GL_TRIANGLES, 0, n * 6);
+        }
+    }
+
+    // --- FOREGROUND PASS (per-character color) ---
+    // Most debug text uses the same color, so we batch runs of identical colors.
+    {
+        static float verts[1024 * 6 * 4];
+        int n = 0;
+        uint32_t current_col = 0xFFFFFFFF; // impossible sentinel
+        int started = 0;
+
+        for (int i = 0; i <= count; i++) {
+            uint32_t col = 0;
+            int printable_char = 0;
+
+            if (i < count) {
+                unsigned char ch = (unsigned char)chars[i].code;
+                if (ch >= 0x20 && ch <= 0x7F) {
+                    col = chars[i].col;
+                    printable_char = 1;
+                }
+            }
+
+            // Flush batch on color change or end-of-buffer
+            if (started && (i == count || (printable_char && col != current_col))) {
+                glBufferData(GL_ARRAY_BUFFER, n * 24 * sizeof(float), verts, GL_STREAM_DRAW);
+                glDrawArrays(GL_TRIANGLES, 0, n * 6);
+                n = 0;
+            }
+
+            if (i == count || !printable_char) continue;
+
+            // Set color uniform on change
+            if (col != current_col) {
+                current_col = col;
+                uint8_t r = (col >> 16) & 0xFF;
+                uint8_t g = (col >> 8) & 0xFF;
+                uint8_t b = col & 0xFF;
+                r = (r < 128) ? r * 2 : 255;
+                g = (g < 128) ? g * 2 : 255;
+                b = (b < 128) ? b * 2 : 255;
+                glUniform3f(s_text_loc_textColor, r / 255.0f, g / 255.0f, b / 255.0f);
+                started = 1;
+            }
+
+            unsigned char ch = (unsigned char)chars[i].code;
+            if (ch >= 128) ch = 127;
+            if (n >= 1024) {
+                glBufferData(GL_ARRAY_BUFFER, n * 24 * sizeof(float), verts, GL_STREAM_DRAW);
+                glDrawArrays(GL_TRIANGLES, 0, n * 6);
+                n = 0;
+            }
+
+            float u0 = (ch % 16) * 8.0f / s_font_atlas.width;
+            float v0 = (ch / 16) * 8.0f / s_font_atlas.height;
+            float u1 = u0 + (8.0f / s_font_atlas.width);
+            float v1 = v0 + (8.0f / s_font_atlas.height);
+
+            float x0 = (float)chars[i].x * scale;
+            float y0 = (float)chars[i].y * scale + y_offset;
+            float x1 = x0 + glyph_w * scale;
+            float y1 = y0 + glyph_h * scale;
+
+            int o = n * 24;
+            verts[o+ 0]=x0; verts[o+ 1]=y1; verts[o+ 2]=u0; verts[o+ 3]=v1;
+            verts[o+ 4]=x1; verts[o+ 5]=y1; verts[o+ 6]=u1; verts[o+ 7]=v1;
+            verts[o+ 8]=x1; verts[o+ 9]=y0; verts[o+10]=u1; verts[o+11]=v0;
+            verts[o+12]=x1; verts[o+13]=y0; verts[o+14]=u1; verts[o+15]=v0;
+            verts[o+16]=x0; verts[o+17]=y0; verts[o+18]=u0; verts[o+19]=v0;
+            verts[o+20]=x0; verts[o+21]=y1; verts[o+22]=u0; verts[o+23]=v1;
+            n++;
+        }
+    }
+
+    // --- ONE-TIME GL STATE TEARDOWN ---
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glUseProgram(0);
+    glDisable(GL_BLEND);
 }
 
 void SDLTextRendererGL_SetYOffset(float y_offset) {

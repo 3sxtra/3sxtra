@@ -15,6 +15,10 @@ void SDLTextRendererGL_SetYOffset(float y_offset);
 void SDLTextRendererGL_SetBackgroundEnabled(int enabled);
 void SDLTextRendererGL_SetBackgroundColor(float r, float g, float b, float a);
 void SDLTextRendererGL_SetBackgroundPadding(float px);
+// ⚡ Batched debug text: renders all chars with 2 draw calls (shadow + foreground)
+// Each entry: { u16 x, u16 y, u32 code, u32 col } — matches PS2 flPrint format.
+void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale,
+                                      float target_width, float target_height);
 
 // GPU Backend
 void SDLTextRendererGPU_Init(const char* base_path, const char* font_path);

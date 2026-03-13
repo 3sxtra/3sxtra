@@ -6,6 +6,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/types.h>
@@ -43,5 +44,10 @@ typedef enum ModeType {
     MODE_REPLAY,
     MODE_TRIALS,
 } ModeType;
+
+/** @brief Returns true for any training-like mode (normal, parry, or trials). */
+static inline bool Is_Training_Mode(ModeType mode) {
+    return mode == MODE_NORMAL_TRAINING || mode == MODE_PARRY_TRAINING || mode == MODE_TRIALS;
+}
 
 #endif

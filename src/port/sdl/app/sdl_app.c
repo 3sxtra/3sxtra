@@ -715,10 +715,11 @@ void SDLApp_BeginFrame() {
 
     // RmlUi per-frame calls are skipped entirely when no UI is active.
     // This avoids ~13ms of implicit glFinish() overhead in eglSwapBuffers on Pi4.
-    // ⚡ Pi4: removed use_rmlui from this guard — the wrapper already has
-    // s_any_window_visible early-outs. Only overlay menus need per-frame processing.
-    // Update: also process explicitly visible game documents in Native mode.
-    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() || show_menu || show_shader_menu ||
+    // ⚡ Pi4: only activate when window-context overlays are visible.
+    // Game documents have their own update/render path (rmlui_wrapper_update_game
+    // / rmlui_wrapper_render_game) — do NOT include rmlui_wrapper_any_game_visible()
+    // here, as it would trigger the GL3 renderer for zero window documents.
+    bool rmlui_active = use_rmlui || show_menu || show_shader_menu ||
                         show_mods_menu || show_stage_config_menu || show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_new_frame();
@@ -779,10 +780,11 @@ static void render_overlays(int win_w, int win_h) {
     }
     rmlui_netplay_ui_update();
 
-    /* Flush UI framework — only when RmlUi is active */
-    // ⚡ Pi4: removed use_rmlui — matches BeginFrame guard above.
-    // Update: also process explicitly visible game documents in Native mode.
-    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() || show_menu || show_shader_menu ||
+    /* Flush UI framework — only when window-context overlays are active.
+     * ⚡ Pi4: do NOT include rmlui_wrapper_any_game_visible() here — game
+     * documents use their own separate render path. Including it would
+     * activate the GL3 renderer every frame for zero visible windows. */
+    bool rmlui_active = use_rmlui || show_menu || show_shader_menu ||
                         show_mods_menu || show_stage_config_menu || show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_render();
@@ -835,10 +837,12 @@ void SDLApp_EndFrame() {
     }
 
     /* Replay picker and network lobby always use RmlUI — update outside use_rmlui gate */
+    TRACE_SUB_BEGIN("LobbyUpdates");
     rmlui_replay_picker_update();
     rmlui_network_lobby_update();
     rmlui_casual_lobby_update();
     rmlui_leaderboard_update();
+    TRACE_SUB_END();
 
     if (is_sdl2d_backend(g_renderer_backend)) {
         // --- SDL2D Backend ---
@@ -1070,9 +1074,11 @@ void SDLApp_EndFrame() {
         // --- OpenGL Backend ---
 
         // Update RmlUi game context — allow explicitly visible documents even in Native mode
+        TRACE_SUB_BEGIN("GL:RmlUiUpdateGame");
         if (use_rmlui || rmlui_wrapper_any_game_visible()) {
             rmlui_wrapper_update_game();
         }
+        TRACE_SUB_END();
 
         if (broadcast_config.enabled && broadcast_config.source == BROADCAST_SOURCE_NATIVE) {
             Broadcast_Send(cps3_canvas_texture, 384, 224, true);
@@ -1299,15 +1305,23 @@ void SDLApp_EndFrame() {
         TRACE_SUB_END();
 
         // Bezel Rendering (OpenGL)
+        TRACE_SUB_BEGIN("GL:Bezels");
         SDLAppBezel_RenderGL(win_w, win_h, &viewport, passthru_shader_program, (const float*)identity);
+        TRACE_SUB_END();
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
         // GL state reset is handled inside rmlui_wrapper_render_game (only when docs visible)
+        TRACE_SUB_BEGIN("GL:RmlUiRenderGame");
         if (use_rmlui || rmlui_wrapper_any_game_visible()) {
             rmlui_wrapper_render_game(win_w, win_h, viewport.x, viewport.y, viewport.w, viewport.h);
         }
+        TRACE_SUB_END();
 
         // Debug text buffer (game debug menu, effect overlay, etc.)
         // Must render independently of the FPS HUD toggle.
+        // ⚡ Pi4: only reset GL state + render when there's actually text to draw.
+        // The 5 GL state calls below cost ~50-100µs on V3D even with zero text.
+        TRACE_SUB_BEGIN("GL:DebugText");
+#if DEBUG
         {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, 0);
@@ -1319,16 +1333,31 @@ void SDLApp_EndFrame() {
 
             SDLTextRenderer_DrawDebugBuffer((float)win_w, (float)win_h);
         }
+#endif
 
         if (SDLAppDebugHud_IsVisible()) {
+#if !DEBUG
+            // Only reset GL state if we didn't already do it in the DEBUG block above
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glActiveTexture(GL_TEXTURE0);
+            glUseProgram(0);
+            glViewport(0, 0, win_w, win_h);
+#endif
             SDLAppDebugHud_Render(win_w, win_h, &viewport);
         }
+        TRACE_SUB_END();
 
         // Render overlays (menus, netplay, UI flush)
+        TRACE_SUB_BEGIN("GL:Overlays");
         render_overlays(win_w, win_h);
+        TRACE_SUB_END();
 
         // Final Output broadcast: capture the fully-composited frame
         if (broadcast_config.enabled && broadcast_config.source == BROADCAST_SOURCE_FINAL) {
+            TRACE_SUB_BEGIN("GL:Broadcast");
             // Allocate/resize the broadcast FBO on demand
             if (win_w != s_broadcast_w || win_h != s_broadcast_h || s_broadcast_fbo == 0) {
                 if (s_broadcast_texture)
@@ -1361,6 +1390,7 @@ void SDLApp_EndFrame() {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
             Broadcast_Send(s_broadcast_texture, win_w, win_h, false);
+            TRACE_SUB_END();
         }
 
         // Swap the window to display the final rendered frame
@@ -1373,13 +1403,17 @@ void SDLApp_EndFrame() {
     TRACE_GPU_COLLECT();
 
     // Now that the frame is displayed, clean up resources for the next frame
+    TRACE_SUB_BEGIN("GL:EndFrameCleanup");
     SDLGameRenderer_EndFrame();
+    TRACE_SUB_END();
 
     // Run sound processing — after GPU submit so CPU audio decode
     // overlaps with GPU processing the submitted command buffer.
+    TRACE_SUB_BEGIN("ADX");
     if (!game_paused && !present_only_mode) {
         ADX_ProcessTracks();
     }
+    TRACE_SUB_END();
 
     SDLAppScreenshot_ProcessPending();
 

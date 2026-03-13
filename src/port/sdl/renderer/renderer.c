@@ -16,6 +16,8 @@
 #include <stddef.h>
 #include <string.h>
 
+#define RENDER_2D_PRIM_MAX 200
+
 // Static state to track current texture/blend mode if needed
 static int s_CurrentTextureId = 0;
 
@@ -33,7 +35,7 @@ typedef struct {
 typedef struct {
     s16 ix1st;
     s16 total;
-    Render2DPrim prim[100];
+    Render2DPrim prim[RENDER_2D_PRIM_MAX];
 } Render2DQueue;
 
 static Render2DQueue s_Render2DQueue;
@@ -190,7 +192,7 @@ void Renderer_Queue2DPrimitive(const f32* pos, f32 priority, uintptr_t data, int
     s32 ix = s_Render2DQueue.total;
     s32 prev;
 
-    if (ix >= 100) {
+    if (ix >= RENDER_2D_PRIM_MAX) {
         flLogOut("Renderer: 2D primitive buffer overflow\n");
         return;
     }

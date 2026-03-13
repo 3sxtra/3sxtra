@@ -9,11 +9,24 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <iphlpapi.h> // GetAdaptersAddresses — for per-interface broadcast
+#ifdef _MSC_VER
+#pragma comment(lib, "iphlpapi.lib")
+#endif
 typedef int socklen_t;
 #else
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <ifaddrs.h> // getifaddrs — for per-interface broadcast
+// IFF_UP / IFF_BROADCAST live in <net/if.h> on glibc but the header can
+// conflict with <linux/if.h> on some toolchains.  Define fallbacks.
+#ifndef IFF_UP
+#define IFF_UP 0x1
+#endif
+#ifndef IFF_BROADCAST
+#define IFF_BROADCAST 0x2
+#endif
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -111,14 +124,11 @@ void Discovery_Shutdown() {
 void Discovery_Update() {
     uint32_t now = SDL_GetTicks();
 
-    // Broadcast
+    // Broadcast — send directed subnet broadcasts to each local interface.
+    // 255.255.255.255 on Windows only hits the default-route interface, so
+    // machines on other adapters (e.g. Pi4 on Ethernet while desktop default
+    // is WiFi) never receive beacons. Directed broadcasts fix this.
     if (broadcast_sock >= 0 && (now - last_broadcast_ticks >= BROADCAST_INTERVAL_MS || last_broadcast_ticks == 0)) {
-        struct sockaddr_in broadcast_addr;
-        memset(&broadcast_addr, 0, sizeof(broadcast_addr));
-        broadcast_addr.sin_family = AF_INET;
-        broadcast_addr.sin_port = htons(DISCOVERY_PORT);
-        broadcast_addr.sin_addr.s_addr = inet_addr("255.255.255.255");
-
         char beacon_data[256];
         bool auto_now = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
         snprintf(beacon_data,
@@ -129,13 +139,78 @@ void Discovery_Update() {
                  local_ready ? 1 : 0,
                  local_challenge_target,
                  configuration.netplay.port);
+        int beacon_len = (int)strlen(beacon_data);
 
-        sendto(broadcast_sock,
-               beacon_data,
-               strlen(beacon_data),
-               0,
-               (struct sockaddr*)&broadcast_addr,
-               sizeof(broadcast_addr));
+        struct sockaddr_in broadcast_addr;
+        memset(&broadcast_addr, 0, sizeof(broadcast_addr));
+        broadcast_addr.sin_family = AF_INET;
+        broadcast_addr.sin_port = htons(DISCOVERY_PORT);
+
+        int sent_count = 0;
+
+#ifdef _WIN32
+        // Enumerate adapters and compute directed broadcast for each IPv4 unicast address
+        ULONG buf_size = 15000;
+        IP_ADAPTER_ADDRESSES* addrs = (IP_ADAPTER_ADDRESSES*)malloc(buf_size);
+        ULONG flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
+        ULONG ret = GetAdaptersAddresses(AF_INET, flags, NULL, addrs, &buf_size);
+        if (ret == ERROR_BUFFER_OVERFLOW) {
+            free(addrs);
+            addrs = (IP_ADAPTER_ADDRESSES*)malloc(buf_size);
+            ret = GetAdaptersAddresses(AF_INET, flags, NULL, addrs, &buf_size);
+        }
+        if (ret == NO_ERROR) {
+            for (IP_ADAPTER_ADDRESSES* a = addrs; a; a = a->Next) {
+                if (a->OperStatus != IfOperStatusUp)
+                    continue;
+                for (IP_ADAPTER_UNICAST_ADDRESS* u = a->FirstUnicastAddress; u; u = u->Next) {
+                    struct sockaddr_in* sa = (struct sockaddr_in*)u->Address.lpSockaddr;
+                    if (sa->sin_family != AF_INET)
+                        continue;
+                    // Skip loopback (127.x.x.x)
+                    if ((ntohl(sa->sin_addr.s_addr) >> 24) == 127)
+                        continue;
+                    // Compute directed broadcast: addr | ~mask
+                    ULONG prefix = u->OnLinkPrefixLength; // e.g. 24
+                    if (prefix == 0 || prefix > 31)
+                        continue;
+                    uint32_t mask = htonl(0xFFFFFFFF << (32 - prefix));
+                    uint32_t bcast = sa->sin_addr.s_addr | ~mask;
+                    broadcast_addr.sin_addr.s_addr = bcast;
+                    sendto(broadcast_sock, beacon_data, beacon_len, 0,
+                           (struct sockaddr*)&broadcast_addr, sizeof(broadcast_addr));
+                    sent_count++;
+                }
+            }
+        }
+        free(addrs);
+#else
+        // POSIX: use getifaddrs to get each interface's broadcast address
+        struct ifaddrs* ifap = NULL;
+        if (getifaddrs(&ifap) == 0) {
+            for (struct ifaddrs* ifa = ifap; ifa; ifa = ifa->ifa_next) {
+                if (!ifa->ifa_addr || ifa->ifa_addr->sa_family != AF_INET)
+                    continue;
+                if (!(ifa->ifa_flags & IFF_UP) || !(ifa->ifa_flags & IFF_BROADCAST))
+                    continue;
+                if (!ifa->ifa_broadaddr)
+                    continue;
+                struct sockaddr_in* brd = (struct sockaddr_in*)ifa->ifa_broadaddr;
+                broadcast_addr.sin_addr = brd->sin_addr;
+                sendto(broadcast_sock, beacon_data, beacon_len, 0,
+                       (struct sockaddr*)&broadcast_addr, sizeof(broadcast_addr));
+                sent_count++;
+            }
+            freeifaddrs(ifap);
+        }
+#endif
+
+        // Fallback: if no interfaces were enumerated, use global broadcast
+        if (sent_count == 0) {
+            broadcast_addr.sin_addr.s_addr = INADDR_BROADCAST;
+            sendto(broadcast_sock, beacon_data, beacon_len, 0,
+                   (struct sockaddr*)&broadcast_addr, sizeof(broadcast_addr));
+        }
 
         last_broadcast_ticks = now;
     }

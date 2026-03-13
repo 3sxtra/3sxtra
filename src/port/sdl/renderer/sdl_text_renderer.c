@@ -109,7 +109,23 @@ void SDLTextRenderer_DrawDebugBuffer(float target_width, float target_height) {
         return;
     }
 
-    // Get the buffer pointer
+    void* buff_ptr = flPS2GetSystemBuffAdrs(flDebugStrHan);
+    if (buff_ptr == NULL) {
+        return;
+    }
+
+    RendererBackend r = SDLApp_GetRenderer();
+
+    // ⚡ Pi4: GL backend uses batched draw (2 glDrawArrays calls total).
+    // Other backends still use the per-character approach.
+    if (!is_sdl2d_backend(r) && r != RENDERER_SDLGPU) {
+        float scale = target_height / 480.0f;
+        SDLTextRendererGL_DrawDebugChars(buff_ptr, (int)flDebugStrCtr, scale, target_width, target_height);
+        flDebugStrCtr = 0;
+        return;
+    }
+
+    // Fallback for GPU/SDL2D: per-character rendering
     typedef struct {
         u16 x;
         u16 y;
@@ -117,63 +133,30 @@ void SDLTextRenderer_DrawDebugBuffer(float target_width, float target_height) {
         u32 col;
     } RenderBuffer;
 
-    RenderBuffer* buff_ptr = (RenderBuffer*)flPS2GetSystemBuffAdrs(flDebugStrHan);
-    if (buff_ptr == NULL) {
-        return;
-    }
-
-    // Disable background for debug text (clean overlay)
+    RenderBuffer* rb = (RenderBuffer*)buff_ptr;
     SDLTextRenderer_SetBackgroundEnabled(0);
-
-    // Scale factor: Upstream uses target_height / 480.0f uniformly for beautiful pixel-perfect square aspect.
     float scale = target_height / 480.0f;
-    float char_scale = scale;
 
-    // Render each character
     for (u32 i = 0; i < flDebugStrCtr; i++) {
-        RenderBuffer* ch = &buff_ptr[i];
+        RenderBuffer* ch = &rb[i];
+        if (ch->code < 0x20 || ch->code > 0x7F) continue;
 
-        // Skip non-printable characters
-        if (ch->code < 0x20 || ch->code > 0x7F) {
-            continue;
-        }
+        u8 cr = (ch->col >> 16) & 0xFF;
+        u8 cg = (ch->col >> 8) & 0xFF;
+        u8 cb = ch->col & 0xFF;
+        cr = (cr < 128) ? cr * 2 : 255;
+        cg = (cg < 128) ? cg * 2 : 255;
+        cb = (cb < 128) ? cb * 2 : 255;
 
-        // Extract ARGB color (PS2 format: A<<24 | R<<16 | G<<8 | B)
-        u8 a = (ch->col >> 24) & 0xFF;
-        u8 r = (ch->col >> 16) & 0xFF;
-        u8 g = (ch->col >> 8) & 0xFF;
-        u8 b = ch->col & 0xFF;
-
-        // The PS2 flPrintColor function halved all color values before storing.
-        // Double them back to restore original brightness.
-        r = (r < 128) ? r * 2 : 255;
-        g = (g < 128) ? g * 2 : 255;
-        b = (b < 128) ? b * 2 : 255;
-        a = (a < 128) ? a * 2 : 255;
-
-        // Note: the original code didn't use alpha channel of the text color?
-        // We'll pass RGB converted to floats.
-        float rf = r / 255.0f;
-        float gf = g / 255.0f;
-        float bf = b / 255.0f;
-
-        // Create single character string
-        char text[2] = { (char)ch->code, '\0' };
-
-        // Calculate absolute position on the screen window.
-        // Renderers now treat x and y as exact pixel anchors, so we scale them here.
         float px = (float)ch->x * scale;
         float py = (float)ch->y * scale;
+        char text[2] = { (char)ch->code, '\0' };
 
-        // Single drop shadow for contrast (2 draws vs 9 for the old 8-direction outline)
-        SDLTextRenderer_DrawText(text, px + 1, py + 1, char_scale, 0.0f, 0.0f, 0.0f, target_width, target_height);
-        SDLTextRenderer_DrawText(text, px, py, char_scale, rf, gf, bf, target_width, target_height);
+        SDLTextRenderer_DrawText(text, px + 1, py + 1, scale, 0.0f, 0.0f, 0.0f, target_width, target_height);
+        SDLTextRenderer_DrawText(text, px, py, scale, cr / 255.0f, cg / 255.0f, cb / 255.0f, target_width, target_height);
     }
 
-    // Restore background setting (Default is enabled for UI text usually)
     SDLTextRenderer_SetBackgroundEnabled(1);
-
-    // Clear debug text buffer for next frame
     flDebugStrCtr = 0;
 #else
     (void)target_width;

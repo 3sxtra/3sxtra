@@ -3,6 +3,7 @@
 
 # === IDEs & Editors ===
 .vscode/
+.cache/
 
 # === Python ===
 .venv/

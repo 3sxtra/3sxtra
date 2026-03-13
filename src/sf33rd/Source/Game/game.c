@@ -143,6 +143,9 @@ static s16 Bonus_Sub();
 s16 Ck_Coin();
 void Loop_Demo_Sub();
 void Before_Select_Sub();
+static void Set_Appear_Type_For_Mode() {
+    appear_type = Is_Training_Mode(Mode_Type) ? APPEAR_TYPE_NON_ANIMATED : APPEAR_TYPE_ANIMATED;
+}
 
 /**
  * @brief Performs a single simulation tick.
@@ -465,7 +468,7 @@ void Game01() {
         if (Switch_Screen(0) != 0) {
             Game01_Sub();
             Cover_Timer = 5;
-            appear_type = APPEAR_TYPE_ANIMATED;
+            Set_Appear_Type_For_Mode();
             set_hitmark_color();
 
             if (Debug_w[DEBUG_MY_CHAR_PL1]) {
@@ -630,6 +633,11 @@ void Game2_1() {
 
     set_EXE_flag();
     ppgPurgeFromVRAM(5);
+
+    if (Disp_Cockpit) {
+        Time_Control();
+    }
+
     Player_control();
     TATE00();
     Game_Management();
@@ -639,7 +647,6 @@ void Game2_1() {
     Basic_Sub_Ex();
 
     if (Disp_Cockpit) {
-        Time_Control();
         vital_cont_main();
         if (!use_rmlui || !rmlui_hud_faces)
             player_face();
@@ -707,7 +714,7 @@ void Game2_2() {
     win_lose_work_clear();
     player_face_init();
     Game01_Sub();
-    appear_type = APPEAR_TYPE_ANIMATED;
+    Set_Appear_Type_For_Mode();
     TATE00();
 
     for (i = 0; i < 3; i++) {
@@ -1958,16 +1965,15 @@ void Time_Control() {
         return;
     }
 
-    if (Game_pause != 0x81) {
-        if (Control_Time >= Limit_Time) {
-            Control_Time = Limit_Time;
-            return;
-        }
+    if (Game_pause == 0x81) {
+        return;
+    }
 
-        if (--Time_in_Time == 0) {
-            Time_in_Time = 60;
-            Control_Time += 1;
-        }
+    if (Control_Time >= Limit_Time) {
+        Control_Time = Limit_Time;
+    } else if (--Time_in_Time == 0) {
+        Time_in_Time = 60;
+        Control_Time += 1;
     }
 }
 
