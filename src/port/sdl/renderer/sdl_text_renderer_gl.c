@@ -209,6 +209,9 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
             current_rx += x_advance;
             continue;
         }
+        // Skip non-printable control characters
+        if (ch < 32)
+            continue;
 
         // Map to 128-char atlas (ASCII only)
         if (ch >= 128)
@@ -272,6 +275,7 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
         glDrawArrays(GL_TRIANGLES, 0, batch_count * 6);
     }
 
+    #undef MAX_BATCH_CHARS
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindVertexArray(0);
@@ -281,7 +285,7 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
 }
 
 void SDLTextRendererGL_Flush(void) {
-    // Immediate mode; nothing to flush
+    // Batched within DrawText; no external flush needed
 }
 
 void SDLTextRendererGL_SetYOffset(float y_offset) {
