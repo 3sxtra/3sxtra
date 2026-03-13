@@ -576,7 +576,7 @@ bool LobbyServer_GetPlayerStats(const char* player_id, PlayerStats* out) {
     snprintf(path, sizeof(path), "/player/%s/stats", player_id);
 
     char response[HTTP_BUF_SIZE];
-    if (!http_request("GET", path, NULL, response, sizeof(response))) {
+    if (!http_request("GET", path, "", response, sizeof(response))) {
         return false;
     }
 
@@ -604,5 +604,77 @@ bool LobbyServer_GetPlayerStats(const char* player_id, PlayerStats* out) {
         out->rd = 350.0f;
     }
 
+    json_get_string(body, "tier", out->tier, sizeof(out->tier));
+
     return true;
+}
+
+/* === Phase 3: Leaderboards === */
+
+/// Fetch a page of the leaderboard. Returns entry count (up to max_entries).
+/// page is 0-indexed. *out_total receives the total player count (for pagination).
+/// Returns -1 on error.
+int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page, int* out_total) {
+    if (!configured || !out || max_entries <= 0) return -1;
+
+    char path[256];
+    snprintf(path, sizeof(path), "/leaderboard?page=%d&limit=%d", page, max_entries);
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("GET", path, "", response, sizeof(response))) {
+        return -1;
+    }
+
+    /* Extract body */
+    const char* body = strstr(response, "\r\n\r\n");
+    if (!body) return -1;
+    body += 4;
+
+    /* Parse total player count */
+    if (out_total) {
+        *out_total = json_get_int(body, "total", 0);
+    }
+
+    /* Find "players":[ array */
+    const char* cursor = strstr(body, "\"players\":[");
+    if (!cursor) return 0;
+    cursor += 11; /* skip past "players":[ */
+
+    int count = 0;
+    while (count < max_entries) {
+        const char* obj_start = strchr(cursor, '{');
+        if (!obj_start) break;
+        const char* obj_end = strchr(obj_start, '}');
+        if (!obj_end) break;
+
+        size_t obj_len = (size_t)(obj_end - obj_start + 1);
+        char obj[512];
+        if (obj_len >= sizeof(obj)) obj_len = sizeof(obj) - 1;
+        memcpy(obj, obj_start, obj_len);
+        obj[obj_len] = '\0';
+
+        LeaderboardEntry* e = &out[count];
+        memset(e, 0, sizeof(*e));
+        e->rank = json_get_int(obj, "rank", count + 1);
+        json_get_string(obj, "player_id", e->player_id, sizeof(e->player_id));
+        json_get_string(obj, "display_name", e->display_name, sizeof(e->display_name));
+        e->wins = json_get_int(obj, "wins", 0);
+        e->losses = json_get_int(obj, "losses", 0);
+
+        const char* rating_str = strstr(obj, "\"rating\":");
+        if (rating_str) {
+            e->rating = (float)strtod(rating_str + 9, NULL);
+        } else {
+            e->rating = 1500.0f;
+        }
+
+        json_get_string(obj, "tier", e->tier, sizeof(e->tier));
+
+        if (strlen(e->player_id) > 0)
+            count++;
+
+        cursor = obj_end + 1;
+    }
+
+    return count;
 }

@@ -322,6 +322,7 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/sdl/rmlui/rmlui_sound_menu.cpp
     src/port/sdl/rmlui/rmlui_sysdir.cpp
     src/port/sdl/rmlui/rmlui_network_lobby.cpp
+    src/port/sdl/rmlui/rmlui_leaderboard.cpp
     src/port/sdl/rmlui/rmlui_extra_option.cpp
     src/port/sdl/rmlui/rmlui_training_menus.cpp
     src/port/sdl/rmlui/rmlui_button_config.cpp

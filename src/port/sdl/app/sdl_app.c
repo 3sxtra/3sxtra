@@ -54,6 +54,7 @@
 #include "port/sdl/rmlui/rmlui_name_entry.h"
 #include "port/sdl/rmlui/rmlui_netplay_ui.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
+#include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_option_menu.h"
 #include "port/sdl/rmlui/rmlui_pause_overlay.h"
 #include "port/sdl/rmlui/rmlui_replay_picker.h"
@@ -538,6 +539,7 @@ int SDLApp_Init() {
     rmlui_training_hud_init();
     rmlui_control_mapping_init();
     rmlui_network_lobby_init(); // Always initialized for the Native -> RmlUI gateway
+    rmlui_leaderboard_init();
 
     if (use_rmlui) {
         SDL_Log("UI mode: RmlUi (overlay menus via HTML/CSS)");
@@ -829,6 +831,7 @@ void SDLApp_EndFrame() {
     /* Replay picker and network lobby always use RmlUI — update outside use_rmlui gate */
     rmlui_replay_picker_update();
     rmlui_network_lobby_update();
+    rmlui_leaderboard_update();
 
     if (is_sdl2d_backend(g_renderer_backend)) {
         // --- SDL2D Backend ---

@@ -142,6 +142,126 @@ try {
     console.warn('  Install with: npm install better-sqlite3');
 }
 
+// ---- Glicko-2 Rating System ----
+// Reference: http://www.glicko.net/glicko/glicko2.pdf
+
+const GLICKO2_SCALE = 173.7178;  // 400 / ln(10)
+const TAU = 0.5;                  // system volatility constraint (lower = more conservative)
+const EPSILON = 0.000001;         // convergence threshold
+const DEFAULT_RATING = 1500.0;
+const DEFAULT_RD = 350.0;
+const DEFAULT_VOL = 0.06;
+
+function g(phi) {
+    return 1.0 / Math.sqrt(1.0 + 3.0 * phi * phi / (Math.PI * Math.PI));
+}
+
+function E(mu, mu_j, phi_j) {
+    return 1.0 / (1.0 + Math.exp(-g(phi_j) * (mu - mu_j)));
+}
+
+/**
+ * Compute Glicko-2 update for a single match.
+ * @param {object} winner - {rating, rd, volatility}
+ * @param {object} loser  - {rating, rd, volatility}
+ * @returns {{winner: {rating, rd, vol}, loser: {rating, rd, vol}}}
+ */
+function glicko2Update(winner, loser) {
+    // Step 1: Convert to Glicko-2 scale
+    const mu_w = (winner.rating - 1500) / GLICKO2_SCALE;
+    const phi_w = winner.rd / GLICKO2_SCALE;
+    const sigma_w = winner.volatility;
+
+    const mu_l = (loser.rating - 1500) / GLICKO2_SCALE;
+    const phi_l = loser.rd / GLICKO2_SCALE;
+    const sigma_l = loser.volatility;
+
+    // Update winner (s = 1)
+    const newW = updateSingle(mu_w, phi_w, sigma_w, mu_l, phi_l, 1.0);
+    // Update loser (s = 0)
+    const newL = updateSingle(mu_l, phi_l, sigma_l, mu_w, phi_w, 0.0);
+
+    return {
+        winner: {
+            rating: Math.max(100, newW.mu * GLICKO2_SCALE + 1500),
+            rd: Math.min(350, Math.max(30, newW.phi * GLICKO2_SCALE)),
+            vol: newW.sigma,
+        },
+        loser: {
+            rating: Math.max(100, newL.mu * GLICKO2_SCALE + 1500),
+            rd: Math.min(350, Math.max(30, newL.phi * GLICKO2_SCALE)),
+            vol: newL.sigma,
+        },
+    };
+}
+
+function updateSingle(mu, phi, sigma, mu_opp, phi_opp, score) {
+    // Step 2: Variance
+    const g_opp = g(phi_opp);
+    const e_val = E(mu, mu_opp, phi_opp);
+    const v = 1.0 / (g_opp * g_opp * e_val * (1.0 - e_val));
+
+    // Step 3: Delta
+    const delta = v * g_opp * (score - e_val);
+
+    // Step 4: New volatility (Illinois algorithm)
+    const a = Math.log(sigma * sigma);
+    const phi2 = phi * phi;
+    const delta2 = delta * delta;
+    const tau2 = TAU * TAU;
+
+    function f(x) {
+        const ex = Math.exp(x);
+        const num1 = ex * (delta2 - phi2 - v - ex);
+        const den1 = 2.0 * (phi2 + v + ex) * (phi2 + v + ex);
+        return num1 / den1 - (x - a) / tau2;
+    }
+
+    let A = a;
+    let B;
+    if (delta2 > phi2 + v) {
+        B = Math.log(delta2 - phi2 - v);
+    } else {
+        let k = 1;
+        while (f(a - k * TAU) < 0) k++;
+        B = a - k * TAU;
+    }
+
+    let fA = f(A);
+    let fB = f(B);
+    while (Math.abs(B - A) > EPSILON) {
+        const C = A + (A - B) * fA / (fB - fA);
+        const fC = f(C);
+        if (fC * fB <= 0) {
+            A = B;
+            fA = fB;
+        } else {
+            fA /= 2.0;
+        }
+        B = C;
+        fB = fC;
+    }
+    const newSigma = Math.exp(A / 2.0);
+
+    // Step 5: Update RD
+    const phiStar = Math.sqrt(phi2 + newSigma * newSigma);
+    const newPhi = 1.0 / Math.sqrt(1.0 / (phiStar * phiStar) + 1.0 / v);
+
+    // Step 6: Update rating
+    const newMu = mu + newPhi * newPhi * g_opp * (score - e_val);
+
+    return { mu: newMu, phi: newPhi, sigma: newSigma };
+}
+
+function getTier(rating) {
+    if (rating >= 2100) return 'diamond';
+    if (rating >= 1800) return 'platinum';
+    if (rating >= 1500) return 'gold';
+    if (rating >= 1200) return 'silver';
+    return 'bronze';
+}
+
+
 // Cleanup stale players and expired decline cooldowns every 5 seconds
 const cleanupTimer = setInterval(() => {
     const now = Date.now();
@@ -486,23 +606,35 @@ async function handleRequest(req, res) {
                     VALUES (?, ?, ?, ?, ?, ?)`)
           .run(pending.p1_id, pending.p2_id, winner_id, pending.p1_char, pending.p2_char, pending.rounds || rounds || 0);
 
-        // Upsert player stats
-        const upsertPlayer = db.prepare(`
-            INSERT INTO players_db (player_id, display_name, wins, losses)
-            VALUES (?, ?, ?, ?)
-            ON CONFLICT(player_id) DO UPDATE SET
-                wins = wins + excluded.wins,
-                losses = losses + excluded.losses,
-                last_match = datetime('now')
-        `);
-
         const winnerId = winner_id;
         const loserId = winnerId === player_id ? opponent_id : player_id;
         const winnerName = players.get(winnerId)?.display_name || winnerId;
         const loserName = players.get(loserId)?.display_name || loserId;
 
-        upsertPlayer.run(winnerId, winnerName, 1, 0);
-        upsertPlayer.run(loserId, loserName, 0, 1);
+        // Fetch current stats to feed into Glicko-2
+        const getStats = db.prepare('SELECT rating, rd, volatility FROM players_db WHERE player_id = ?');
+        let wStats = getStats.get(winnerId) || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
+        let lStats = getStats.get(loserId)  || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
+
+        // Calculate new ratings
+        const newStats = glicko2Update(wStats, lStats);
+
+        // Upsert player stats with new ratings
+        const upsertPlayer = db.prepare(`
+            INSERT INTO players_db (player_id, display_name, wins, losses, rating, rd, volatility)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(player_id) DO UPDATE SET
+                display_name = excluded.display_name,
+                wins = wins + excluded.wins,
+                losses = losses + excluded.losses,
+                rating = excluded.rating,
+                rd = excluded.rd,
+                volatility = excluded.volatility,
+                last_match = datetime('now')
+        `);
+
+        upsertPlayer.run(winnerId, winnerName, 1, 0, newStats.winner.rating, newStats.winner.rd, newStats.winner.vol);
+        upsertPlayer.run(loserId, loserName, 0, 1, newStats.loser.rating, newStats.loser.rd, newStats.loser.vol);
 
         console.log(`[match] recorded: ${winnerName} beat ${loserName}`);
         return json(res, 200, { ok: true, status: 'recorded' });
@@ -517,7 +649,7 @@ async function handleRequest(req, res) {
         const row = db.prepare('SELECT wins, losses, disconnects, rating, rd FROM players_db WHERE player_id = ?').get(playerId);
 
         if (!row) {
-            return json(res, 200, { player_id: playerId, wins: 0, losses: 0, disconnects: 0, rating: 1500.0, rd: 350.0 });
+            return json(res, 200, { player_id: playerId, wins: 0, losses: 0, disconnects: 0, rating: 1500.0, rd: 350.0, tier: 'bronze' });
         }
 
         return json(res, 200, {
@@ -527,6 +659,35 @@ async function handleRequest(req, res) {
             disconnects: row.disconnects,
             rating: row.rating,
             rd: row.rd,
+            tier: getTier(row.rating)
+        });
+    }
+
+    // --- GET /leaderboard ---
+    if (method === 'GET' && path === '/leaderboard') {
+        if (!db) return json(res, 503, { error: 'Leaderboard unavailable (no SQLite)' });
+
+        const page = Math.max(0, parseInt(url.searchParams.get('page') || '0', 10));
+        const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
+        const offset = page * limit;
+
+        const total = db.prepare('SELECT COUNT(*) as cnt FROM players_db').get().cnt;
+        const rows = db.prepare(
+            'SELECT player_id, display_name, wins, losses, rating FROM players_db ORDER BY rating DESC, wins DESC LIMIT ? OFFSET ?'
+        ).all(limit, offset);
+
+        return json(res, 200, {
+            players: rows.map((r, i) => ({
+                rank: offset + i + 1,
+                player_id: r.player_id,
+                display_name: r.display_name || r.player_id,
+                wins: r.wins,
+                losses: r.losses,
+                rating: r.rating,
+                tier: getTier(r.rating)
+            })),
+            total,
+            page,
         });
     }
 

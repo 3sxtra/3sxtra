@@ -34,111 +34,82 @@ Design choices are constrained to fit within these limits.
 
 ---
 
-## Phase 2: Match Reporting ✦ **CURRENT**
+## Phase 2: Match Reporting ✅ **DONE**
 
 **Goal**: Foundation for stats tracking — both clients submit match results to the server.
 
-**Status**: 🔧 In Progress
+**Status**: ✅ Deployed (2026-03-12)
 
-### Oracle constraints
-- **DB**: SQLite via `better-sqlite3` (embedded, zero RAM overhead, ~200 bytes/match)
-- **Bandwidth**: One POST per match per player (~500 bytes) — negligible
-- **Storage**: 10K matches/day = 2 MB/day. Won't matter for years.
+### What was built
+- SQLite via `better-sqlite3` (WAL mode, graceful shutdown)
+- `POST /match_result` — cross-validation (both players must agree on winner)
+- `GET /player/:id/stats` — win/loss/rating query
+- Pending results auto-expire after 60 seconds
+- `LobbyServer_ReportMatch()` C client with HMAC auth
+- `LobbyServer_GetPlayerStats()` C client
+- Game-end hook: detects `RUNNING→EXITING` transition, reads `Winner_id`/`My_char`/`PL_Wins`
+- Async match report via SDL thread (non-blocking)
 
-### Key design points
-- Both players submit `POST /match_result` with player IDs, winner, characters, round count
-- Server cross-validates: only records if both players agree on the winner
-- Pending results expire after 60 seconds (handles disconnects)
-- Match data stored in SQLite `matches` table
-- Client API: `LobbyServer_ReportMatch()` — called when netplay session exits
-- No game engine hooks yet — match reporting is trigger-ready, will wire to game state later
+### Oracle impact
+- SQLite adds ~10 MB RAM, ~200 bytes/match storage, negligible bandwidth (one POST per match per player)
 
-### Server endpoints
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `POST /match_result` | POST | Submit match result for cross-validation |
-| `GET /player/:id/stats` | GET | Get win/loss/match count for a player |
-
-### Database schema
-```sql
--- Players table (created on first match result)
-CREATE TABLE IF NOT EXISTS players (
-    player_id TEXT PRIMARY KEY,
-    display_name TEXT,
-    wins INTEGER DEFAULT 0,
-    losses INTEGER DEFAULT 0,
-    disconnects INTEGER DEFAULT 0,
-    rating REAL DEFAULT 1500.0,    -- Glicko-2 (Phase 4)
-    rd REAL DEFAULT 350.0,         -- Rating Deviation
-    volatility REAL DEFAULT 0.06,  -- Glicko-2 volatility
-    last_match TEXT,               -- ISO 8601 timestamp
-    created_at TEXT DEFAULT (datetime('now'))
-);
-
--- Match history
-CREATE TABLE IF NOT EXISTS matches (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    p1_id TEXT NOT NULL,
-    p2_id TEXT NOT NULL,
-    winner_id TEXT NOT NULL,
-    p1_char INTEGER,
-    p2_char INTEGER,
-    rounds INTEGER,
-    duration_seconds INTEGER,
-    created_at TEXT DEFAULT (datetime('now'))
-);
-CREATE INDEX idx_matches_p1 ON matches(p1_id);
-CREATE INDEX idx_matches_p2 ON matches(p2_id);
-
--- Pending results (for cross-validation, ephemeral)
-CREATE TABLE IF NOT EXISTS pending_results (
-    match_key TEXT PRIMARY KEY,     -- sorted player IDs: "id1:id2"
-    reporter_id TEXT NOT NULL,
-    winner_id TEXT NOT NULL,
-    p1_char INTEGER,
-    p2_char INTEGER,
-    rounds INTEGER,
-    created_at TEXT DEFAULT (datetime('now'))
-);
-```
-
-### Files involved
+### Files
 | File | Action |
 |------|--------|
-| `tools/lobby-server/lobby-server.js` | MODIFY — add SQLite, `/match_result`, `/player/:id/stats` |
-| `tools/lobby-server/package.json` | NEW — add `better-sqlite3` dependency |
-| `src/netplay/lobby_server.c` | ADD — `LobbyServer_ReportMatch()` |
-| `src/netplay/lobby_server.h` | ADD — `MatchResult` struct + report function |
+| `tools/lobby-server/lobby-server.js` | MODIFY — SQLite, `/match_result`, `/player/:id/stats` |
+| `tools/lobby-server/package.json` | MODIFY — added `better-sqlite3` |
+| `tools/lobby-server/deploy.sh` | MODIFY — `build-essential` check for native bindings |
+| `src/netplay/lobby_server.h` | ADD — `MatchResult`, `PlayerStats` structs |
+| `src/netplay/lobby_server.c` | ADD — `ReportMatch()`, `GetPlayerStats()` |
+| `src/port/sdl/netplay/sdl_netplay_ui.cpp` | ADD — game-end hook + `AsyncReportMatch()` |
+
+### Audit fixes (2026-03-12)
+- **Crash bug**: `LobbyServer_GetPlayerStats()` passed `NULL` body to `http_request()` → `strlen(NULL)` segfault. Fixed: `""` instead of `NULL`.
+- **Cosmetic**: `int my_player = Netplay_IsEnabled() ? 0 : 0` → `int my_player = 0`
 
 ---
 
-## Phase 3: Leaderboards
+## Phase 3: Leaderboards ✅ **DONE**
 
 **Goal**: Persistent player stats visible in-game.
 
-**Status**: ⏳ Planned
+**Status**: ✅ Deployed (2026-03-12)
 
-### Oracle constraints
-- Paginated queries only (`LIMIT 20 OFFSET ?`) — never return full table
-- Client fetches on-demand (leaderboard screen open), not on a timer
-- **Index**: `CREATE INDEX idx_rating ON players(rating DESC)` for fast sorted queries
+### What was built
+- `GET /leaderboard?page=0&limit=20` — paginated, sorted by wins (server)
+- `LobbyServer_GetLeaderboard()` — C client with JSON array parser
+- `rmlui_leaderboard.cpp/h` — RmlUI data model (async SDL thread fetch, `LBItem` data-for)
+- `leaderboard.rml` + `leaderboard.rcss` — table layout with pagination, dark/gold aesthetic
+- Auto-fetches page 0 on show, supports prev/next navigation
 
-### Key design points
-- Top 100 leaderboard + individual player lookup
-- Filter by region, character, time period
-- In-game RmlUI screen (accessible from lobby or main menu)
+### Files
+| File | Action |
+|------|--------|
+| `tools/lobby-server/lobby-server.js` | MODIFY — `GET /leaderboard` |
+| `src/netplay/lobby_server.h` | ADD — `LeaderboardEntry` struct |
+| `src/netplay/lobby_server.c` | ADD — `LobbyServer_GetLeaderboard()` |
+| `src/port/sdl/rmlui/rmlui_leaderboard.cpp` | NEW — data model + async fetch |
+| `src/port/sdl/rmlui/rmlui_leaderboard.h` | NEW — lifecycle API |
+| `assets/ui/leaderboard.rml` | NEW — UI template |
+| `assets/ui/leaderboard.rcss` | NEW — stylesheet |
+| `src/port/sdl/app/sdl_app.c` | MODIFY — `rmlui_leaderboard_init/update` lifecycle |
+| `CMakeLists.txt` | MODIFY — added `rmlui_leaderboard.cpp` to sources |
 
-### Server endpoints
-- `GET /leaderboard?page=1&limit=20` — paginated by rating
-- `GET /player/:id/stats` — individual stats (already added in Phase 2)
+### Audit fixes (2026-03-12)
+- **Pagination broken**: `s_total` was never set. Fixed: added `int* out_total` param to `LobbyServer_GetLeaderboard()`, parsed `"total"` from JSON response.
+- **Player ID match truncated**: `strncmp(16)` on 64-char SHA-256 hex IDs → false positives. Fixed: `strcmp()`.
+
+### Oracle impact
+- `GET /leaderboard` adds one `SELECT COUNT(*)` + one `SELECT ... LIMIT/OFFSET` per page view — negligible
+- Client-side async fetch, no polling — zero idle bandwidth
 
 ---
 
-## Phase 4: Glicko-2 Rankings
+## Phase 4: Glicko-2 Rankings ✅ **DONE**
 
 **Goal**: Skill-based rating system that handles uncertainty and inactivity.
 
-**Status**: ⏳ Planned
+**Status**: ✅ Deployed (2026-03-12)
 
 ### Oracle constraints
 - Glicko-2 calculation is pure math (~1ms per match) — negligible CPU
@@ -155,9 +126,25 @@ CREATE TABLE IF NOT EXISTS pending_results (
 - Tiers: Bronze (<1200), Silver (1200-1500), Gold (1500-1800), Platinum (1800-2100), Diamond (2100+)
 - Seasonal soft resets (compress toward 1500, inflate RD)
 
+### What was built
+- Server-side Glicko-2 math engine (Illinois algorithm)
+- Rating calculations applied automatically after match validations
+- Rank tiers mapped to server endpoints and client JSON parsers
+- RmlUI leaderboard rows colorized via tier data attributes (`.bronze`, `.silver`, etc.)
+
+### Files
+| File | Action |
+|------|--------|
+| `tools/lobby-server/lobby-server.js` | MODIFY — `glicko2Update()`, tier calculation, `GET /leaderboard` ordering |
+| `src/netplay/lobby_server.h` | MODIFY — added `tier` to `PlayerStats` and `LeaderboardEntry` |
+| `src/netplay/lobby_server.c` | MODIFY — parse `tier` in `GetPlayerStats` and `GetLeaderboard` |
+| `src/port/sdl/rmlui/rmlui_leaderboard.cpp` | MODIFY — added `tier` binding to `LBItem` |
+| `assets/ui/leaderboard.rml` | MODIFY — `data-class-bronze/silver...` bindings |
+| `assets/ui/leaderboard.rcss` | MODIFY — tier-specific coloring |
+
 ---
 
-## Phase 5: Skill-Based Matchmaking (SBMM)
+## Phase 5: Skill-Based Matchmaking (SBMM) ✦ **NEXT**
 
 **Goal**: Automatically pair players of similar skill level with good connections.
 
@@ -186,10 +173,10 @@ CREATE TABLE IF NOT EXISTS pending_results (
 
 ```
 Phase 1 (Identity) ✅
-  └── Phase 2 (Match Reporting) ← CURRENT
-        ├── Phase 4 (Glicko-2 Rankings)
-        │     └── Phase 5 (SBMM)
-        └── Phase 3 (Leaderboards)
+  └── Phase 2 (Match Reporting) ✅
+        ├── Phase 4 (Glicko-2 Rankings) ✅
+        │     └── Phase 5 (SBMM) ← NEXT
+        └── Phase 3 (Leaderboards) ✅
 ```
 
 ## Server Infrastructure
@@ -202,9 +189,9 @@ Phase 1 (Identity) ✅
 | **Bandwidth** | ETag/304 for polling (future) | Reduces 2KB → 50 bytes when lobby unchanged |
 
 ### Resource budget (Oracle Always Free)
-| Metric | Budget | Phase 2 impact |
-|--------|--------|----------------|
-| RAM | 1 GB | +10 MB (SQLite) |
-| Storage | 200 GB | +2 MB/day at 10K matches |
-| Bandwidth | 10 TB/month | +negligible (one POST per match) |
-| CPU | 1/8 OCPU | +negligible (INSERT + SELECT) |
+| Metric | Budget | Phase 2 impact | Phase 3 impact |
+|--------|--------|----------------|----------------|
+| RAM | 1 GB | +10 MB (SQLite) | +0 (same SQLite) |
+| Storage | 200 GB | +2 MB/day at 10K matches | +0 (reads only) |
+| Bandwidth | 10 TB/month | +negligible (one POST per match) | +negligible (on-demand GET) |
+| CPU | 1/8 OCPU | +negligible (INSERT + SELECT) | +negligible (SELECT + COUNT) |

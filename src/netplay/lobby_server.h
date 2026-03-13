@@ -73,10 +73,28 @@ typedef struct {
     int disconnects;
     float rating;
     float rd;             // Rating Deviation (Glicko-2)
+    char tier[16];        // e.g. "bronze", "silver", "gold"
 } PlayerStats;
 
 /// Get stats for a player from the server. Returns true on success.
 bool LobbyServer_GetPlayerStats(const char* player_id, PlayerStats* out);
+
+// === Phase 3: Leaderboards ===
+
+typedef struct {
+    int rank;
+    char player_id[64];
+    char display_name[32];
+    int wins;
+    int losses;
+    float rating;
+    char tier[16];
+} LeaderboardEntry;
+
+/// Fetch a page of the leaderboard. Returns entry count (up to max_entries).
+/// page is 0-indexed. *out_total receives total player count (may be NULL).
+/// Returns -1 on error.
+int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page, int* out_total);
 
 #ifdef __cplusplus
 }

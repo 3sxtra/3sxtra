@@ -746,7 +746,7 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
         // Winner_id: 0 = P1 won, 1 = P2 won (from game engine)
         // My_char[0/1]: character indices
         // PL_Wins[0/1]: round wins per player
-        int my_player = Netplay_IsEnabled() ? 0 : 0; // We are always local player
+        int my_player = 0; // Local player is always P1 in netplay
         int total_rounds = PL_Wins[0] + PL_Wins[1];
 
         if (Winner_id >= 0 && total_rounds > 0) {

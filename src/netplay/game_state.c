@@ -54,6 +54,7 @@ static State state_buffer[STATE_BUFFER_MAX];
 #include "sf33rd/utils/djb2_hash.h"
 
 #include "main.h"
+#include <stdio.h>
 
 #define GS_SAVE(member) SDL_memcpy(&dst->member, &member, sizeof(member))
 
