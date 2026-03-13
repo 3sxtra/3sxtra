@@ -89,7 +89,8 @@ void SDLTextRendererGL_Init(const char* base_path, const char* font_path) {
     glGenBuffers(1, &s_text_vbo);
     glBindVertexArray(s_text_vao);
     glBindBuffer(GL_ARRAY_BUFFER, s_text_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    // ⚡ Bolt: Pre-allocate VBO for batched rendering (up to 1024 characters per call)
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 1024 * 6 * 4, NULL, GL_DYNAMIC_DRAW);
     // Position attribute
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
@@ -197,6 +198,11 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
     float current_rx = 0;
     float current_ry = 0;
 
+    // ⚡ Bolt: Batched character rendering — eliminates O(N) glDrawArrays and glBufferSubData calls
+    #define MAX_BATCH_CHARS 1024
+    static float batch_vertices[MAX_BATCH_CHARS * 6 * 4];
+    int batch_count = 0;
+
     for (p = text; *p; p++) {
         unsigned char ch = *p;
         if (ch == ' ') {
@@ -218,20 +224,55 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
         float x1 = x + ((current_rx + glyph_w) * scale);
         float y1 = y + ((current_ry + glyph_h) * scale);
 
-        float vertices[] = {
-            x0, y1, u0, v1, x1, y1, u1, v1, x1, y0, u1, v0,
+        int offset = batch_count * 24; // 6 vertices * 4 floats
 
-            x1, y0, u1, v0, x0, y0, u0, v0, x0, y1, u0, v1,
-        };
+        // Triangle 1
+        batch_vertices[offset + 0] = x0;
+        batch_vertices[offset + 1] = y1;
+        batch_vertices[offset + 2] = u0;
+        batch_vertices[offset + 3] = v1;
+        batch_vertices[offset + 4] = x1;
+        batch_vertices[offset + 5] = y1;
+        batch_vertices[offset + 6] = u1;
+        batch_vertices[offset + 7] = v1;
+        batch_vertices[offset + 8] = x1;
+        batch_vertices[offset + 9] = y0;
+        batch_vertices[offset + 10] = u1;
+        batch_vertices[offset + 11] = v0;
 
-        glBindBuffer(GL_ARRAY_BUFFER, s_text_vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // Triangle 2
+        batch_vertices[offset + 12] = x1;
+        batch_vertices[offset + 13] = y0;
+        batch_vertices[offset + 14] = u1;
+        batch_vertices[offset + 15] = v0;
+        batch_vertices[offset + 16] = x0;
+        batch_vertices[offset + 17] = y0;
+        batch_vertices[offset + 18] = u0;
+        batch_vertices[offset + 19] = v0;
+        batch_vertices[offset + 20] = x0;
+        batch_vertices[offset + 21] = y1;
+        batch_vertices[offset + 22] = u0;
+        batch_vertices[offset + 23] = v1;
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
+        batch_count++;
         current_rx += x_advance;
+
+        // Flush batch if full
+        if (batch_count >= MAX_BATCH_CHARS) {
+            glBindBuffer(GL_ARRAY_BUFFER, s_text_vbo);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, batch_count * 24 * sizeof(float), batch_vertices);
+            glDrawArrays(GL_TRIANGLES, 0, batch_count * 6);
+            batch_count = 0;
+        }
     }
+
+    if (batch_count > 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, s_text_vbo);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, batch_count * 24 * sizeof(float), batch_vertices);
+        glDrawArrays(GL_TRIANGLES, 0, batch_count * 6);
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
