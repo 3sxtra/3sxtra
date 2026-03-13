@@ -20,6 +20,7 @@ typedef enum NetplaySessionState {
     NETPLAY_SESSION_CONNECTING,
     NETPLAY_SESSION_RUNNING,
     NETPLAY_SESSION_EXITING,
+    NETPLAY_SESSION_SPECTATING,
 } NetplaySessionState;
 
 void Netplay_SetPlayerNumber(int player_num);
@@ -53,6 +54,13 @@ bool Netplay_PollEvent(NetplayEvent* out);
 /// This avoids creating a new socket (which would lose the NAT pinhole).
 /// Set to -1 to fall back to the default ASIO adapter.
 void Netplay_SetStunSocket(int fd);
+
+/// Begin a spectate-only session: connect to the active match host
+/// and render the game without injecting local input.
+void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port);
+
+/// Stop spectating and return to idle.
+void Netplay_StopSpectate(void);
 
 #ifdef __cplusplus
 }

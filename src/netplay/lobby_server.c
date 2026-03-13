@@ -920,6 +920,63 @@ bool LobbyServer_GetRoomState(const char* room_code, RoomState* out) {
     return true;
 }
 
+bool LobbyServer_ReportMatchEnd(const char* room_code, const char* winner_id) {
+    if (!configured || !room_code || !winner_id) return false;
+
+    char esc_code[16], esc_wid[128];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+    json_escape_string(winner_id, esc_wid, sizeof(esc_wid));
+
+    char body[256];
+    snprintf(body, sizeof(body), "{\"room_code\":\"%s\",\"winner_id\":\"%s\"}",
+             esc_code, esc_wid);
+
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", "/room/match/end", body, response, sizeof(response));
+    if (ok) {
+        SDL_Log("[LobbyServer] Match end reported: room=%s winner=%s", room_code, winner_id);
+    }
+    return ok;
+}
+
+// === Phase 6: Match Accept/Decline ===
+
+bool LobbyServer_AcceptMatch(const char* room_code) {
+    if (!configured || !room_code || !Identity_IsInitialized()) return false;
+
+    char esc_code[16];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+
+    char body[256];
+    snprintf(body, sizeof(body), "{\"room_code\":\"%s\",\"player_id\":\"%s\"}",
+             esc_code, Identity_GetPlayerId());
+
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", "/room/match/accept", body, response, sizeof(response));
+    if (ok) {
+        SDL_Log("[LobbyServer] Match accepted: room=%s", room_code);
+    }
+    return ok;
+}
+
+bool LobbyServer_DeclineMatch(const char* room_code) {
+    if (!configured || !room_code || !Identity_IsInitialized()) return false;
+
+    char esc_code[16];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+
+    char body[256];
+    snprintf(body, sizeof(body), "{\"room_code\":\"%s\",\"player_id\":\"%s\"}",
+             esc_code, Identity_GetPlayerId());
+
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", "/room/match/decline", body, response, sizeof(response));
+    if (ok) {
+        SDL_Log("[LobbyServer] Match declined: room=%s", room_code);
+    }
+    return ok;
+}
+
 // === SSE Streaming Client ===
 
 // SSE thread state — all access guarded by SDL atomics
@@ -987,6 +1044,67 @@ static void sse_parse_event(const char* json, SSEEvent* out) {
         out->type = SSE_EVENT_QUEUE_UPDATE;
     } else if (strcmp(type_str, "host_migrated") == 0) {
         out->type = SSE_EVENT_HOST_MIGRATED;
+    } else if (strcmp(type_str, "match_start") == 0) {
+        out->type = SSE_EVENT_MATCH_START;
+        /* match_start contains full room state via sync after broadcastRoomEvent.
+           The RmlUI layer will re-fetch room state for structural changes. */
+    } else if (strcmp(type_str, "match_propose") == 0) {
+        out->type = SSE_EVENT_MATCH_PROPOSE;
+        const char* data_start = strstr(json, "\"data\":{");
+        if (data_start) {
+            data_start += 7;
+            /* Parse p1 object */
+            const char* p1_start = strstr(data_start, "\"p1\":{");
+            if (p1_start) {
+                p1_start += 5;
+                json_get_string(p1_start, "id", out->propose_p1_id, sizeof(out->propose_p1_id));
+                json_get_string(p1_start, "name", out->propose_p1_name, sizeof(out->propose_p1_name));
+                json_get_string(p1_start, "connection_type", out->propose_p1_conn_type, sizeof(out->propose_p1_conn_type));
+                out->propose_p1_rtt_ms = json_get_int(p1_start, "rtt_ms", -1);
+                json_get_string(p1_start, "room_code", out->propose_p1_room_code, sizeof(out->propose_p1_room_code));
+                json_get_string(p1_start, "region", out->propose_p1_region, sizeof(out->propose_p1_region));
+            }
+            /* Parse p2 object */
+            const char* p2_start = strstr(data_start, "\"p2\":{");
+            if (p2_start) {
+                p2_start += 5;
+                json_get_string(p2_start, "id", out->propose_p2_id, sizeof(out->propose_p2_id));
+                json_get_string(p2_start, "name", out->propose_p2_name, sizeof(out->propose_p2_name));
+                json_get_string(p2_start, "connection_type", out->propose_p2_conn_type, sizeof(out->propose_p2_conn_type));
+                out->propose_p2_rtt_ms = json_get_int(p2_start, "rtt_ms", -1);
+                json_get_string(p2_start, "room_code", out->propose_p2_room_code, sizeof(out->propose_p2_room_code));
+                json_get_string(p2_start, "region", out->propose_p2_region, sizeof(out->propose_p2_region));
+            }
+        }
+    } else if (strcmp(type_str, "match_decline") == 0) {
+        out->type = SSE_EVENT_MATCH_DECLINE;
+        const char* data_start = strstr(json, "\"data\":{");
+        if (data_start) {
+            data_start += 7;
+            json_get_string(data_start, "decliner_id", out->propose_decliner_id, sizeof(out->propose_decliner_id));
+            json_get_string(data_start, "reason", out->propose_reason, sizeof(out->propose_reason));
+            /* Parse p1/p2 info */
+            const char* p1_start = strstr(data_start, "\"p1\":{");
+            if (p1_start) {
+                p1_start += 5;
+                json_get_string(p1_start, "id", out->propose_p1_id, sizeof(out->propose_p1_id));
+                json_get_string(p1_start, "name", out->propose_p1_name, sizeof(out->propose_p1_name));
+            }
+            const char* p2_start = strstr(data_start, "\"p2\":{");
+            if (p2_start) {
+                p2_start += 5;
+                json_get_string(p2_start, "id", out->propose_p2_id, sizeof(out->propose_p2_id));
+                json_get_string(p2_start, "name", out->propose_p2_name, sizeof(out->propose_p2_name));
+            }
+        }
+    } else if (strcmp(type_str, "match_end") == 0) {
+        out->type = SSE_EVENT_MATCH_END;
+        const char* data_start = strstr(json, "\"data\":{");
+        if (data_start) {
+            data_start += 7;
+            json_get_string(data_start, "winner_id", out->match_winner_id, sizeof(out->match_winner_id));
+            json_get_string(data_start, "loser_id", out->match_loser_id, sizeof(out->match_loser_id));
+        }
     }
 }
 

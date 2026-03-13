@@ -377,7 +377,7 @@ static void configure_gekko() {
     config.num_players = PLAYER_COUNT;
     config.input_size = sizeof(u16);
     config.state_size = sizeof(State);
-    config.max_spectators = 0;
+    config.max_spectators = 4;
     config.input_prediction_window = 12;
 
     config.desync_detection = true;
@@ -996,6 +996,58 @@ void Netplay_Run() {
 
     case NETPLAY_SESSION_IDLE:
         break;
+
+    case NETPLAY_SESSION_SPECTATING:
+        if (session) {
+            gekko_network_poll(session);
+
+            // Process session events (connected/disconnected/paused/unpaused)
+            int sess_count = 0;
+            GekkoSessionEvent** sess_events = gekko_session_events(session, &sess_count);
+            for (int i = 0; i < sess_count; i++) {
+                const GekkoSessionEvent* event = sess_events[i];
+                switch (event->type) {
+                case GekkoPlayerConnected:
+                    SDL_Log("[spectate] connected to host");
+                    push_event(NETPLAY_EVENT_CONNECTED);
+                    break;
+                case GekkoPlayerDisconnected:
+                    SDL_Log("[spectate] host disconnected");
+                    push_event(NETPLAY_EVENT_DISCONNECTED);
+                    Netplay_StopSpectate();
+                    return;
+                case GekkoSpectatorPaused:
+                    SDL_Log("[spectate] paused (buffering)");
+                    break;
+                case GekkoSpectatorUnpaused:
+                    SDL_Log("[spectate] unpaused");
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            // Process game events — spectators only receive advance + load, no saves
+            int game_count = 0;
+            GekkoGameEvent** game_events = gekko_update_session(session, &game_count);
+            for (int i = 0; i < game_count; i++) {
+                const GekkoGameEvent* event = game_events[i];
+                switch (event->type) {
+                case GekkoLoadEvent:
+                    load_state_from_event(event);
+                    break;
+                case GekkoAdvanceEvent:
+                    advance_game(event, true); // Always render for spectators
+                    break;
+                case GekkoSaveEvent:
+                    save_state(event);
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+        break;
     }
 }
 
@@ -1018,6 +1070,7 @@ void Netplay_HandleMenuExit() {
     case NETPLAY_SESSION_TRANSITIONING:
     case NETPLAY_SESSION_CONNECTING:
     case NETPLAY_SESSION_RUNNING:
+    case NETPLAY_SESSION_SPECTATING:
         session_state = NETPLAY_SESSION_EXITING;
         break;
     }
@@ -1030,7 +1083,7 @@ static NetplayEvent event_queue[EVENT_QUEUE_MAX];
 static int event_queue_count = 0;
 
 bool Netplay_IsEnabled() {
-    return session_state != NETPLAY_SESSION_IDLE;
+    return session_state != NETPLAY_SESSION_IDLE && session_state != NETPLAY_SESSION_SPECTATING;
 }
 
 void Netplay_GetNetworkStats(NetworkStats* stats) {
@@ -1063,4 +1116,53 @@ int Netplay_GetPlayerHandle(void) {
 }
 int Netplay_GetBattleStartFrame(void) {
     return -1;
+}
+
+void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
+    if (session_state != NETPLAY_SESSION_IDLE) {
+        SDL_Log("[spectate] cannot start: session state is %d", session_state);
+        return;
+    }
+
+    GekkoConfig config;
+    SDL_zero(config);
+    config.num_players = PLAYER_COUNT;
+    config.input_size = sizeof(u16);
+    config.state_size = sizeof(State);
+    config.max_spectators = 1;
+    config.spectator_delay = 15;  // 15 frames (~250ms at 60fps)
+    config.input_prediction_window = 12;
+    config.desync_detection = false; // Spectators don't need desync detection
+
+    if (!gekko_create(&session, GekkoSpectateSession)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[spectate] failed to create session");
+        return;
+    }
+
+    gekko_start(session, &config);
+    gekko_net_adapter_set(session, gekko_default_adapter(0)); // OS-assigned port
+
+    // Connect to the match host as a spectator
+    char addr_str[100];
+    SDL_snprintf(addr_str, sizeof(addr_str), "%s:%hu", host_ip, host_port);
+    GekkoNetAddress addr = { .data = addr_str, .size = (unsigned int)strlen(addr_str) };
+    gekko_add_actor(session, GekkoSpectator, &addr);
+
+    setup_vs_mode();
+    session_state = NETPLAY_SESSION_SPECTATING;
+    SDL_Log("[spectate] connecting to %s", addr_str);
+}
+
+void Netplay_StopSpectate(void) {
+    if (session_state != NETPLAY_SESSION_SPECTATING) return;
+
+    if (session) {
+        gekko_destroy(&session);
+        gekko_default_adapter_destroy();
+    }
+
+    clean_input_buffers();
+    Soft_Reset_Sub();
+    session_state = NETPLAY_SESSION_IDLE;
+    SDL_Log("[spectate] stopped");
 }

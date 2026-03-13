@@ -80,6 +80,18 @@ void SDLNetplayUI_CancelOutgoingChallenge(void);
 const float* SDLNetplayUI_GetFPSHistory(int* out_count);
 float SDLNetplayUI_GetCurrentFPS(void);
 
+// === Phase 6: Casual lobby bridge ===
+
+/// Check if an opponent passes local connection filters (region lock, max ping, WiFi block).
+/// conn_type: "wired", "wifi", or "unknown". rtt_ms: server RTT (-1 if unknown).
+bool SDLNetplayUI_PlayerPassesFilters(const char* conn_type, int rtt_ms, const char* region);
+
+/// Initiate P2P hole punch for a casual lobby match.
+/// opponent_room_code is the STUN-encoded endpoint of the opponent.
+/// opponent_name is for display in status messages.
+/// we_are_p1: determines player number assignment.
+void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const char* opponent_name, bool we_are_p1);
+
 #ifdef __cplusplus
 }
 #endif

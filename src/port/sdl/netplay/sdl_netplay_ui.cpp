@@ -37,6 +37,7 @@
 
 // Master RmlUi toggle + per-component toggles
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 
 // Game engine globals for match result reporting
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -779,6 +780,13 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                 AsyncReportMatch(lobby_my_player_id, opponent_pid, winner_pid,
                                  My_char[my_player], My_char[1 - my_player], total_rounds);
                 SDL_Log("[NetplayUI] Match result queued: winner=%s rounds=%d", winner_pid, total_rounds);
+
+                // If inside a casual lobby room, report match end for Winner Stays On rotation
+                const char* room_code = rmlui_casual_lobby_get_room_code();
+                if (room_code && room_code[0]) {
+                    LobbyServer_ReportMatchEnd(room_code, winner_pid);
+                    SDL_Log("[NetplayUI] Casual lobby match end reported: room=%s winner=%s", room_code, winner_pid);
+                }
             }
         }
         match_result_reported = true;
@@ -1207,6 +1215,38 @@ void SDLNetplayUI_CancelOutgoingChallenge() {
     // Wait for thread to finish, then reset state to READY
     lobby_cleanup_thread();
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_READY);
+}
+
+// === Phase 6: Casual lobby bridge functions ===
+
+bool SDLNetplayUI_PlayerPassesFilters(const char* conn_type, int rtt_ms, const char* region) {
+    // Build a temporary LobbyPlayer with the provided values and check filters
+    LobbyPlayer temp;
+    memset(&temp, 0, sizeof(temp));
+    if (conn_type) snprintf(temp.connection_type, sizeof(temp.connection_type), "%s", conn_type);
+    temp.rtt_ms = rtt_ms;
+    if (region) snprintf(temp.region, sizeof(temp.region), "%s", region);
+    return player_passes_filters(&temp);
+}
+
+void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const char* opponent_name, bool we_are_p1) {
+    if (!opponent_room_code || !opponent_room_code[0]) return;
+
+    uint32_t peer_ip = 0;
+    uint16_t peer_port = 0;
+    if (!Stun_DecodeEndpoint(opponent_room_code, &peer_ip, &peer_port)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[casual] Failed to decode opponent room code: %s", opponent_room_code);
+        return;
+    }
+
+    // Set up lobby state for the punch
+    if (opponent_name)
+        snprintf(lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", opponent_name);
+    lobby_we_are_initiator = we_are_p1;
+
+    snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Connecting to %s...", opponent_name ? opponent_name : "opponent");
+
+    lobby_start_punch(peer_ip, peer_port);
 }
 
 } // extern "C"

@@ -158,6 +158,11 @@ function generateRoomCode() {
     return code;
 }
 
+function getPlayerName(id) {
+    const p = players.get(id);
+    return p ? p.display_name : id;
+}
+
 function getRoomState(room) {
     return {
         id: room.id,
@@ -171,6 +176,101 @@ function getRoomState(room) {
         match: room.match,
         chat: room.chat
     };
+}
+
+/**
+ * Try to start a match if conditions are met: no active/proposed match and ≥2 in queue.
+ * Phase 6: Two-phase flow — first proposes (both must accept), then starts.
+ * Returns true if a match was proposed.
+ */
+function tryStartMatch(room) {
+    if (room.match && (room.match.state === 'playing' || room.match.state === 'proposed')) return false;
+    if (room.queue.length < 2) return false;
+
+    const p1 = room.queue.shift();
+    const p2 = room.queue.shift();
+
+    const p1_data = players.get(p1);
+    const p2_data = players.get(p2);
+
+    room.match = {
+        p1, p2,
+        state: 'proposed',
+        accepts: { [p1]: false, [p2]: false },
+        proposed_at: Date.now()
+    };
+
+    broadcastRoomEvent(room, 'match_propose', {
+        p1: {
+            id: p1, name: getPlayerName(p1),
+            connection_type: p1_data ? p1_data.connection_type : 'unknown',
+            rtt_ms: p1_data ? p1_data.rtt_ms : -1,
+            region: p1_data ? p1_data.region : '',
+            room_code: p1_data ? p1_data.room_code : ''
+        },
+        p2: {
+            id: p2, name: getPlayerName(p2),
+            connection_type: p2_data ? p2_data.connection_type : 'unknown',
+            rtt_ms: p2_data ? p2_data.rtt_ms : -1,
+            region: p2_data ? p2_data.region : '',
+            room_code: p2_data ? p2_data.room_code : ''
+        }
+    });
+    broadcastRoomEvent(room, 'queue_update', { queue: room.queue });
+    console.log(`[room] match proposed in ${room.id}: ${getPlayerName(p1)} vs ${getPlayerName(p2)}`);
+    return true;
+}
+
+/**
+ * Confirm a proposed match after both players accepted.
+ * Transitions state from 'proposed' to 'playing' and broadcasts match_start.
+ */
+function confirmMatch(room) {
+    if (!room.match || room.match.state !== 'proposed') return;
+    room.match.state = 'playing';
+    delete room.match.accepts;
+    delete room.match.proposed_at;
+
+    broadcastRoomEvent(room, 'match_start', {
+        p1: { id: room.match.p1, name: getPlayerName(room.match.p1) },
+        p2: { id: room.match.p2, name: getPlayerName(room.match.p2) }
+    });
+    console.log(`[room] match confirmed in ${room.id}: ${getPlayerName(room.match.p1)} vs ${getPlayerName(room.match.p2)}`);
+}
+
+/**
+ * Cancel a proposed match (decline or timeout). Moves players back to queue.
+ * @param {string} declinerId - Player who declined, or null for timeout.
+ */
+function cancelProposal(room, declinerId) {
+    if (!room.match || room.match.state !== 'proposed') return;
+    const { p1, p2 } = room.match;
+    const reason = declinerId ? 'declined' : 'timeout';
+
+    room.match = null;
+
+    if (declinerId) {
+        // Decliner to back of queue; other player stays at front
+        const other = declinerId === p1 ? p2 : p1;
+        room.queue.unshift(other);
+        room.queue.push(declinerId);
+    } else {
+        // Timeout: both to back of queue
+        room.queue.push(p1);
+        room.queue.push(p2);
+    }
+
+    broadcastRoomEvent(room, 'match_decline', {
+        p1: { id: p1, name: getPlayerName(p1) },
+        p2: { id: p2, name: getPlayerName(p2) },
+        decliner_id: declinerId || '',
+        reason
+    });
+    broadcastRoomEvent(room, 'queue_update', { queue: room.queue });
+    console.log(`[room] match proposal ${reason} in ${room.id}`);
+
+    // Try to propose next pair
+    tryStartMatch(room);
 }
 
 function broadcastRoomEvent(room, type, data) {
@@ -319,6 +419,14 @@ const cleanupTimer = setInterval(() => {
         try {
             db.prepare(`DELETE FROM pending_results WHERE datetime(created_at) < datetime('now', '-60 seconds')`).run();
         } catch { /* ignore */ }
+    }
+    // Phase 6: Timeout proposed matches (>10s without both accepts)
+    for (const [, room] of rooms) {
+        if (room.match && room.match.state === 'proposed' &&
+            now - room.match.proposed_at > 10_000) {
+            console.log(`[room] match proposal timed out in ${room.id}`);
+            cancelProposal(room, null);
+        }
     }
 }, 5_000);
 
@@ -533,7 +641,6 @@ async function handleRequest(req, res) {
 
         if (!room.players.includes(data.player_id)) {
             room.players.push(data.player_id);
-            room.queue.push(data.player_id);
             broadcastRoomEvent(room, 'join', { player_id: data.player_id, display_name: data.display_name });
             console.log(`[room] ${data.player_id} joined room ${room.id}`);
         }
@@ -545,6 +652,32 @@ async function handleRequest(req, res) {
         if (!data) return;
         const room = rooms.get(data.room_code);
         if (!room) return json(res, 404, { error: 'Room not found' });
+
+        // If leaving player is in an active or proposed match, handle it
+        if (room.match && (room.match.state === 'playing' || room.match.state === 'proposed') &&
+            (room.match.p1 === data.player_id || room.match.p2 === data.player_id)) {
+            const other = room.match.p1 === data.player_id ? room.match.p2 : room.match.p1;
+            if (room.match.state === 'proposed') {
+                // Cancel proposal — other player stays at front of queue
+                room.match = null;
+                room.queue.unshift(other);
+                broadcastRoomEvent(room, 'match_decline', {
+                    p1: { id: data.player_id, name: getPlayerName(data.player_id) },
+                    p2: { id: other, name: getPlayerName(other) },
+                    decliner_id: data.player_id, reason: 'disconnect'
+                });
+                console.log(`[room] proposal cancelled in ${room.id}: ${data.player_id} left`);
+            } else {
+                broadcastRoomEvent(room, 'match_end', {
+                    winner_id: other, winner_name: getPlayerName(other),
+                    loser_id: data.player_id, reason: 'disconnect'
+                });
+                // Winner goes to front of queue
+                room.queue.unshift(other);
+                room.match = null;
+                console.log(`[room] match forfeited in ${room.id}: ${data.player_id} left`);
+            }
+        }
 
         room.players = room.players.filter(p => p !== data.player_id);
         room.queue = room.queue.filter(p => p !== data.player_id);
@@ -559,6 +692,8 @@ async function handleRequest(req, res) {
             }
             broadcastRoomEvent(room, 'leave', { player_id: data.player_id });
             console.log(`[room] ${data.player_id} left room ${room.id}`);
+            // Try to start next match if previous was forfeited
+            tryStartMatch(room);
         }
         return json(res, 200, { ok: true });
     }
@@ -588,10 +723,19 @@ async function handleRequest(req, res) {
         const room = rooms.get(data.room_code);
         if (!room) return json(res, 404, { error: 'Room not found' });
 
+        // Don't allow joining queue if already in active or proposed match
+        if (room.match && (room.match.state === 'playing' || room.match.state === 'proposed') &&
+            (room.match.p1 === data.player_id || room.match.p2 === data.player_id)) {
+            return json(res, 400, { error: 'Cannot join queue while in active match' });
+        }
+
         if (!room.queue.includes(data.player_id)) {
             room.queue.push(data.player_id);
             broadcastRoomEvent(room, 'queue_update', { queue: room.queue });
             console.log(`[room] ${data.player_id} joined queue in room ${room.id}`);
+
+            // Auto-start match if conditions are met
+            tryStartMatch(room);
         }
         return json(res, 200, { ok: true });
     }
@@ -607,6 +751,91 @@ async function handleRequest(req, res) {
             broadcastRoomEvent(room, 'queue_update', { queue: room.queue });
             console.log(`[room] ${data.player_id} left queue in room ${room.id}`);
         }
+        return json(res, 200, { ok: true });
+    }
+
+    // --- POST /room/match/accept --- Phase 6: Accept a proposed match
+    if (method === 'POST' && path === '/room/match/accept') {
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(data.room_code);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        if (!room.match || room.match.state !== 'proposed') {
+            return json(res, 400, { error: 'No proposed match' });
+        }
+
+        const { player_id } = data;
+        if (player_id !== room.match.p1 && player_id !== room.match.p2) {
+            return json(res, 400, { error: 'Not a match participant' });
+        }
+
+        room.match.accepts[player_id] = true;
+        console.log(`[room] ${getPlayerName(player_id)} accepted match in ${room.id}`);
+
+        // Check if both accepted
+        let match_started = false;
+        if (room.match.accepts[room.match.p1] && room.match.accepts[room.match.p2]) {
+            confirmMatch(room);
+            match_started = true;
+        }
+        return json(res, 200, { ok: true, match_started });
+    }
+
+    // --- POST /room/match/decline --- Phase 6: Decline a proposed match
+    if (method === 'POST' && path === '/room/match/decline') {
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(data.room_code);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        if (!room.match || room.match.state !== 'proposed') {
+            return json(res, 400, { error: 'No proposed match' });
+        }
+
+        const { player_id } = data;
+        if (player_id !== room.match.p1 && player_id !== room.match.p2) {
+            return json(res, 400, { error: 'Not a match participant' });
+        }
+
+        cancelProposal(room, player_id);
+        return json(res, 200, { ok: true });
+    }
+
+    // --- POST /room/match/end --- "Winner Stays On" rotation
+    if (method === 'POST' && path === '/room/match/end') {
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(data.room_code);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        if (!room.match || room.match.state !== 'playing') {
+            return json(res, 400, { error: 'No active match' });
+        }
+
+        const { winner_id } = data;
+        const { p1, p2 } = room.match;
+
+        // Validate winner is one of the match players
+        if (winner_id !== p1 && winner_id !== p2) {
+            return json(res, 400, { error: 'winner_id must be p1 or p2' });
+        }
+
+        const loser_id = winner_id === p1 ? p2 : p1;
+
+        // Clear match
+        room.match = null;
+
+        // Rotation: winner to front of queue, loser to back
+        room.queue.unshift(winner_id);
+        room.queue.push(loser_id);
+
+        broadcastRoomEvent(room, 'match_end', {
+            winner_id, winner_name: getPlayerName(winner_id),
+            loser_id, loser_name: getPlayerName(loser_id)
+        });
+        console.log(`[room] match ended in ${room.id}: ${getPlayerName(winner_id)} wins (stays on)`);
+
+        // Auto-start next match
+        tryStartMatch(room);
+
         return json(res, 200, { ok: true });
     }
 

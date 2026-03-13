@@ -154,7 +154,11 @@ typedef enum {
     SSE_EVENT_LEAVE,          // Player left
     SSE_EVENT_CHAT,           // New chat message
     SSE_EVENT_QUEUE_UPDATE,   // Queue changed
-    SSE_EVENT_HOST_MIGRATED   // Host changed
+    SSE_EVENT_HOST_MIGRATED,  // Host changed
+    SSE_EVENT_MATCH_PROPOSE,  // Phase 6: Match proposed (await accept/decline)
+    SSE_EVENT_MATCH_START,    // Match started (both accepted)
+    SSE_EVENT_MATCH_DECLINE,  // Phase 6: Match proposal declined or timed out
+    SSE_EVENT_MATCH_END       // Match ended (winner stays on, loser to back)
 } SSEEventType;
 
 typedef struct {
@@ -163,6 +167,23 @@ typedef struct {
     ChatMessage chat_msg;     // Populated on CHAT events
     char player_id[64];       // Populated on JOIN/LEAVE events
     char display_name[32];
+    char match_winner_id[64]; // Populated on MATCH_END events
+    char match_loser_id[64];  // Populated on MATCH_END events
+    // Phase 6: Match proposal data (populated on MATCH_PROPOSE/DECLINE)
+    char propose_p1_id[64];
+    char propose_p1_name[32];
+    char propose_p1_conn_type[16];
+    int  propose_p1_rtt_ms;
+    char propose_p1_room_code[32];
+    char propose_p1_region[8];
+    char propose_p2_id[64];
+    char propose_p2_name[32];
+    char propose_p2_conn_type[16];
+    int  propose_p2_rtt_ms;
+    char propose_p2_room_code[32];
+    char propose_p2_region[8];
+    char propose_decliner_id[64]; // Populated on MATCH_DECLINE
+    char propose_reason[16];     // "declined" or "timeout" (MATCH_DECLINE)
 } SSEEvent;
 
 /// Start SSE connection to a room (spawns background thread).
@@ -178,6 +199,18 @@ SSEEventType LobbyServer_SSEPoll(SSEEvent* out_event);
 
 /// Returns true if the SSE connection is currently active.
 bool LobbyServer_SSEIsConnected(void);
+
+/// Report match end to the server for "Winner Stays On" rotation.
+/// Called when the game engine detects a match conclusion.
+bool LobbyServer_ReportMatchEnd(const char* room_code, const char* winner_id);
+
+// === Phase 6: Match Accept/Decline ===
+
+/// Accept a proposed match. Returns true if the server acknowledged.
+bool LobbyServer_AcceptMatch(const char* room_code);
+
+/// Decline a proposed match. Returns true if the server acknowledged.
+bool LobbyServer_DeclineMatch(const char* room_code);
 
 #ifdef __cplusplus
 }

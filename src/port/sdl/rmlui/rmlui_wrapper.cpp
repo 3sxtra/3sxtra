@@ -15,7 +15,9 @@
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 
 // GL header for RmlUi GL3 backend (glEnable, glBlendFunc, etc.)
-#if !defined(__APPLE__)
+#if defined(__APPLE__)
+#include <OpenGL/gl3.h>
+#else
 #include <glad/gl.h>
 #endif
 

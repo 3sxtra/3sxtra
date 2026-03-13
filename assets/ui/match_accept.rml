@@ -1,0 +1,47 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="match_accept.rcss"/>
+    <title>Match Found</title>
+</head>
+<body data-model="casual_lobby">
+<div id="match-accept-panel" data-if="proposal_active">
+
+    <!-- Title -->
+    <div id="ma-title">⚔ MATCH FOUND! ⚔</div>
+
+    <!-- Opponent Info -->
+    <div id="ma-opponent-section">
+        <div id="ma-opponent-label">OPPONENT</div>
+        <div id="ma-opponent-name">{{proposal_opponent_name}}</div>
+        <div id="ma-opponent-details">
+            <span class="ma-detail-item" data-if="proposal_opponent_ping >= 0">
+                ~{{proposal_opponent_ping}}ms
+            </span>
+            <span class="ma-detail-item">
+                {{proposal_opponent_conn_type == 'wired' ? '🔌 Wired' : (proposal_opponent_conn_type == 'wifi' ? '📶 WiFi' : '❓ Unknown')}}
+            </span>
+        </div>
+    </div>
+
+    <!-- Countdown -->
+    <div id="ma-countdown-section">
+        <div id="ma-countdown-bar-bg">
+            <div id="ma-countdown-bar-fill" data-style-width="{{proposal_countdown_pct}}%"/>
+        </div>
+        <div id="ma-countdown-text">{{proposal_countdown}}s</div>
+    </div>
+
+    <!-- Buttons -->
+    <div id="ma-buttons">
+        <div id="ma-btn-accept" data-class-focused="proposal_cursor == 0">
+            ACCEPT
+        </div>
+        <div id="ma-btn-decline" data-class-focused="proposal_cursor == 1">
+            DECLINE
+        </div>
+    </div>
+
+</div>
+</body>
+</rml>

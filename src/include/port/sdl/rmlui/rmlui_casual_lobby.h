@@ -17,6 +17,9 @@ bool rmlui_casual_lobby_is_visible(void);
 // Force the UI to refresh its state using the given room code
 void rmlui_casual_lobby_set_room(const char* room_code);
 
+// Returns the current room code (empty string if not in a room)
+const char* rmlui_casual_lobby_get_room_code(void);
+
 #ifdef __cplusplus
 }
 #endif
