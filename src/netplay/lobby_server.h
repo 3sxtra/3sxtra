@@ -142,6 +142,43 @@ bool LobbyServer_JoinQueue(const char* room_code);
 bool LobbyServer_LeaveQueue(const char* room_code);
 bool LobbyServer_SendChat(const char* room_code, const char* text);
 
+/// Fetch room state without side effects (read-only GET).
+bool LobbyServer_GetRoomState(const char* room_code, RoomState* out);
+
+// === SSE Streaming Client ===
+
+typedef enum {
+    SSE_EVENT_NONE = 0,
+    SSE_EVENT_SYNC,           // Full room state sync (on connect)
+    SSE_EVENT_JOIN,           // Player joined
+    SSE_EVENT_LEAVE,          // Player left
+    SSE_EVENT_CHAT,           // New chat message
+    SSE_EVENT_QUEUE_UPDATE,   // Queue changed
+    SSE_EVENT_HOST_MIGRATED   // Host changed
+} SSEEventType;
+
+typedef struct {
+    SSEEventType type;
+    RoomState room;           // Populated on SYNC events
+    ChatMessage chat_msg;     // Populated on CHAT events
+    char player_id[64];       // Populated on JOIN/LEAVE events
+    char display_name[32];
+} SSEEvent;
+
+/// Start SSE connection to a room (spawns background thread).
+/// Only one SSE connection at a time — call SSEDisconnect first if switching rooms.
+bool LobbyServer_SSEConnect(const char* room_code);
+
+/// Stop the SSE connection and join the background thread.
+void LobbyServer_SSEDisconnect(void);
+
+/// Poll for the next SSE event. Returns the event type, or SSE_EVENT_NONE if idle.
+/// Copies event data into out_event if non-NULL.
+SSEEventType LobbyServer_SSEPoll(SSEEvent* out_event);
+
+/// Returns true if the SSE connection is currently active.
+bool LobbyServer_SSEIsConnected(void);
+
 #ifdef __cplusplus
 }
 #endif

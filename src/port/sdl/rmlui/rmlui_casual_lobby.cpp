@@ -221,10 +221,8 @@ static void apply_room_state_to_model(void) {
 static void refresh_room_state_from_server(void) {
     if (s_room_code.empty()) return;
     
-    // In Phase 5 we implement the SSE stream in C later. For now, we poll occasionally
-    // if the SSE thread isn't ready. Since we just need it up to test UI, we use LobbyServer_JoinRoom
-    // which returns the current room state.
-    if (LobbyServer_JoinRoom(s_room_code.c_str(), &s_room_state)) {
+    // Use the read-only GET /room/state endpoint (no re-join side effect)
+    if (LobbyServer_GetRoomState(s_room_code.c_str(), &s_room_state)) {
         apply_room_state_to_model();
     }
 }
@@ -233,11 +231,38 @@ static void refresh_room_state_from_server(void) {
 extern "C" void rmlui_casual_lobby_update(void) {
     if (!s_model_registered || !s_is_visible) return;
 
+    // Drain all queued SSE events from the ring buffer (up to 16 per frame)
+    SSEEvent sse_evt;
+    for (int sse_i = 0; sse_i < 16; sse_i++) {
+        SSEEventType sse_type = LobbyServer_SSEPoll(&sse_evt);
+        if (sse_type == SSE_EVENT_NONE) break;
+
+        if (sse_type == SSE_EVENT_SYNC) {
+            // Full room state sync — replace everything
+            memcpy(&s_room_state, &sse_evt.room, sizeof(RoomState));
+            apply_room_state_to_model();
+        } else if (sse_type == SSE_EVENT_CHAT) {
+            // Append chat message to the UI model directly
+            RmlChatMessage msg;
+            msg.sender = sse_evt.chat_msg.sender_name;
+            msg.text = sse_evt.chat_msg.text;
+            s_chat.push_back(msg);
+            if (s_chat.size() > MAX_CHAT_MESSAGES) s_chat.erase(s_chat.begin());
+            s_model_handle.DirtyVariable("chat_messages");
+        } else if (sse_type == SSE_EVENT_JOIN || sse_type == SSE_EVENT_LEAVE ||
+                   sse_type == SSE_EVENT_QUEUE_UPDATE || sse_type == SSE_EVENT_HOST_MIGRATED) {
+            // For structural changes, re-fetch full state as fallback
+            refresh_room_state_from_server();
+        }
+    }
+
+    // Fallback poll every 3 seconds in case SSE drops or isn't connected
     Uint64 now = SDL_GetTicks();
     if (now - s_last_poll_time > 3000) {
         s_last_poll_time = now;
-        // Temporary poll until SSE is fully linked
-        // refresh_room_state_from_server();
+        if (!LobbyServer_SSEIsConnected()) {
+            refresh_room_state_from_server();
+        }
     }
 
     if (s_chat_open) {
@@ -329,12 +354,17 @@ extern "C" void rmlui_casual_lobby_set_room(const char* room_code) {
 extern "C" void rmlui_casual_lobby_show(void) {
     s_is_visible = true;
     rmlui_wrapper_show_game_document("casual_lobby");
+    // Start SSE connection for real-time updates
+    if (!s_room_code.empty()) {
+        LobbyServer_SSEConnect(s_room_code.c_str());
+    }
     refresh_room_state_from_server();
 }
 
 extern "C" void rmlui_casual_lobby_hide(void) {
     s_is_visible = false;
     rmlui_wrapper_hide_game_document("casual_lobby");
+    LobbyServer_SSEDisconnect();
     if (s_chat_doc && s_chat_open) {
         s_chat_doc->Hide();
         s_chat_open = false;
@@ -342,6 +372,7 @@ extern "C" void rmlui_casual_lobby_hide(void) {
 }
 
 extern "C" void rmlui_casual_lobby_shutdown(void) {
+    LobbyServer_SSEDisconnect();
     if (s_model_registered) {
         rmlui_wrapper_hide_game_document("casual_lobby");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());

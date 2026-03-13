@@ -694,7 +694,7 @@ static void parse_room_json(const char* json, RoomState* out) {
     // In a real prod client we'd link cJSON or Jansson, but we stick to strstr here
     // for consistency with the rest of this zero-dependency file.
     
-    // Parse players array
+    // Parse players array: [{"player_id":"...","display_name":"...","region":"..."},...]
     const char* p_start = strstr(json, "\"players\":[");
     if (p_start) {
         const char* p_end = strchr(p_start, ']');
@@ -720,6 +720,79 @@ static void parse_room_json(const char* json, RoomState* out) {
                 
                 cur = obj_end;
             }
+        }
+    }
+
+    // Parse queue array: ["player_id_1", "player_id_2", ...]
+    const char* q_start = strstr(json, "\"queue\":[");
+    if (q_start) {
+        q_start += 9; // skip '"queue":['
+        const char* q_end = strchr(q_start, ']');
+        if (q_end) {
+            const char* cur = q_start;
+            while (cur < q_end && out->queue_count < MAX_ROOM_PLAYERS) {
+                const char* quote1 = strchr(cur, '"');
+                if (!quote1 || quote1 >= q_end) break;
+                const char* quote2 = strchr(quote1 + 1, '"');
+                if (!quote2 || quote2 >= q_end) break;
+                
+                size_t id_len = quote2 - quote1 - 1;
+                if (id_len >= 64) id_len = 63;
+                memcpy(out->queue[out->queue_count], quote1 + 1, id_len);
+                out->queue[out->queue_count][id_len] = '\0';
+                out->queue_count++;
+                
+                cur = quote2 + 1;
+            }
+        }
+    }
+
+    // Parse match object: {"p1":"id","p2":"id","state":"playing"} or null
+    const char* m_start = strstr(json, "\"match\":{");
+    if (m_start) {
+        m_start += 8; // skip '"match":'
+        json_get_string(m_start, "p1", out->match_p1, sizeof(out->match_p1));
+        json_get_string(m_start, "p2", out->match_p2, sizeof(out->match_p2));
+        if (out->match_p1[0] && out->match_p2[0]) {
+            out->match_active = 1;
+        }
+    }
+
+    // Parse chat array: [{"id":123,"sender_id":"...","sender_name":"...","text":"..."},...]
+    const char* c_start = strstr(json, "\"chat\":[");
+    if (c_start) {
+        c_start += 8; // skip '"chat":['
+        const char* c_end = NULL;
+        // Find the closing ']' — must handle nested braces within chat objects
+        int depth = 1;
+        const char* scan = c_start;
+        while (*scan && depth > 0) {
+            if (*scan == '[') depth++;
+            else if (*scan == ']') depth--;
+            if (depth > 0) scan++;
+        }
+        c_end = scan;
+
+        const char* cur = c_start;
+        while (cur < c_end && out->chat_count < MAX_CHAT_MESSAGES) {
+            const char* obj_start = strchr(cur, '{');
+            if (!obj_start || obj_start >= c_end) break;
+            const char* obj_end = strchr(obj_start, '}');
+            if (!obj_end || obj_end >= c_end) break;
+
+            char c_obj[512];
+            size_t len = obj_end - obj_start + 1;
+            if (len >= sizeof(c_obj)) len = sizeof(c_obj) - 1;
+            memcpy(c_obj, obj_start, len);
+            c_obj[len] = '\0';
+
+            ChatMessage* cm = &out->chat[out->chat_count++];
+            cm->id = (uint64_t)json_get_int(c_obj, "id", 0);
+            json_get_string(c_obj, "sender_id", cm->sender_id, sizeof(cm->sender_id));
+            json_get_string(c_obj, "sender_name", cm->sender_name, sizeof(cm->sender_name));
+            json_get_string(c_obj, "text", cm->text, sizeof(cm->text));
+
+            cur = obj_end + 1;
         }
     }
 }
@@ -828,4 +901,295 @@ bool LobbyServer_SendChat(const char* room_code, const char* text) {
 
     char response[HTTP_BUF_SIZE];
     return http_request("POST", "/room/chat", body, response, sizeof(response));
+}
+
+// === GET /room/state (read-only, no side effects) ===
+
+bool LobbyServer_GetRoomState(const char* room_code, RoomState* out) {
+    if (!configured || !room_code || !out) return false;
+
+    char path[128];
+    snprintf(path, sizeof(path), "/room/state?room_code=%s", room_code);
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("GET", path, "", response, sizeof(response))) {
+        return false;
+    }
+
+    parse_room_json(response, out);
+    return true;
+}
+
+// === SSE Streaming Client ===
+
+// SSE thread state — all access guarded by SDL atomics
+static SDL_AtomicInt s_sse_running = { 0 };     // 1 = thread active
+static SDL_AtomicInt s_sse_stop    = { 0 };     // 1 = request stop
+static SDL_Thread*   s_sse_thread  = NULL;
+static int           s_sse_sock    = -1;         // raw socket (for external close)
+static char          s_sse_room_code[16] = { 0 };
+
+// Lock-free ring buffer for SSE events. The background thread writes at
+// s_sse_write_idx (mod SSE_RING_SIZE), and the main thread reads at
+// s_sse_read_idx. Both are atomic — no mutex needed.
+#define SSE_RING_SIZE 16
+static SSEEvent s_sse_ring[SSE_RING_SIZE];
+static SDL_AtomicInt s_sse_write_idx = { 0 };
+static SDL_AtomicInt s_sse_read_idx  = { 0 };
+
+/**
+ * Parse an SSE JSON event line like:
+ *   data: {"type":"chat","data":{"id":123,"sender_id":"abc","sender_name":"Host","text":"hi"}}
+ * Populates out_event based on the "type" field.
+ */
+static void sse_parse_event(const char* json, SSEEvent* out) {
+    memset(out, 0, sizeof(*out));
+
+    char type_str[32];
+    if (!json_get_string(json, "type", type_str, sizeof(type_str))) {
+        return;
+    }
+
+    if (strcmp(type_str, "sync") == 0) {
+        out->type = SSE_EVENT_SYNC;
+        // The "data" field contains the full room state
+        const char* data_start = strstr(json, "\"data\":{");
+        if (data_start) {
+            data_start += 7; // skip '"data":', pointing at the '{' of the nested object
+            parse_room_json(data_start, &out->room);
+        }
+    } else if (strcmp(type_str, "chat") == 0) {
+        out->type = SSE_EVENT_CHAT;
+        const char* data_start = strstr(json, "\"data\":{");
+        if (data_start) {
+            data_start += 7; // skip '"data":', pointing at '{'
+            json_get_string(data_start, "sender_id", out->chat_msg.sender_id, sizeof(out->chat_msg.sender_id));
+            json_get_string(data_start, "sender_name", out->chat_msg.sender_name, sizeof(out->chat_msg.sender_name));
+            json_get_string(data_start, "text", out->chat_msg.text, sizeof(out->chat_msg.text));
+            out->chat_msg.id = (uint64_t)json_get_int(data_start, "id", 0);
+        }
+    } else if (strcmp(type_str, "join") == 0) {
+        out->type = SSE_EVENT_JOIN;
+        const char* data_start = strstr(json, "\"data\":{");
+        if (data_start) {
+            data_start += 7; // skip '"data":', pointing at '{'
+            json_get_string(data_start, "player_id", out->player_id, sizeof(out->player_id));
+            json_get_string(data_start, "display_name", out->display_name, sizeof(out->display_name));
+        }
+    } else if (strcmp(type_str, "leave") == 0) {
+        out->type = SSE_EVENT_LEAVE;
+        const char* data_start = strstr(json, "\"data\":{");
+        if (data_start) {
+            data_start += 7; // skip '"data":', pointing at '{'
+            json_get_string(data_start, "player_id", out->player_id, sizeof(out->player_id));
+        }
+    } else if (strcmp(type_str, "queue_update") == 0) {
+        out->type = SSE_EVENT_QUEUE_UPDATE;
+    } else if (strcmp(type_str, "host_migrated") == 0) {
+        out->type = SSE_EVENT_HOST_MIGRATED;
+    }
+}
+
+#define SSE_BUF_SIZE 8192
+
+static int sse_thread_fn(void* userdata) {
+    (void)userdata;
+
+    int sock = http_connect();
+    if (sock < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SSE: connect failed");
+        SDL_SetAtomicInt(&s_sse_running, 0);
+        return 1;
+    }
+    s_sse_sock = sock;
+
+    // Build HTTP GET request for SSE (no auth — room code is the secret)
+    char request[512];
+    int req_len = snprintf(request, sizeof(request),
+        "GET /room/events?room_code=%s HTTP/1.1\r\n"
+        "Host: %s:%d\r\n"
+        "Accept: text/event-stream\r\n"
+        "Cache-Control: no-cache\r\n"
+        "Connection: keep-alive\r\n"
+        "\r\n",
+        s_sse_room_code, server_host, server_port);
+
+    if (send(sock, request, req_len, 0) < req_len) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SSE: send failed");
+        closesocket(sock);
+        s_sse_sock = -1;
+        SDL_SetAtomicInt(&s_sse_running, 0);
+        return 1;
+    }
+
+    SDL_Log("SSE: connected to room %s", s_sse_room_code);
+
+    // Read the HTTP response headers first, then process SSE data lines
+    char buf[SSE_BUF_SIZE];
+    int buf_len = 0;
+    bool headers_done = false;
+
+    // Set a shorter recv timeout so we can check the stop flag periodically
+#ifdef _WIN32
+    DWORD sse_timeout = 1000; // 1 second
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&sse_timeout, sizeof(sse_timeout));
+#else
+    struct timeval tv;
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+#endif
+
+    while (!SDL_GetAtomicInt(&s_sse_stop)) {
+        int n = recv(sock, buf + buf_len, (int)(sizeof(buf) - 1 - buf_len), 0);
+        if (n < 0) {
+            // Timeout — just check stop flag and retry
+#ifdef _WIN32
+            if (WSAGetLastError() == WSAETIMEDOUT) continue;
+#else
+            if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
+#endif
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SSE: recv error");
+            break;
+        }
+        if (n == 0) {
+            SDL_Log("SSE: server closed connection");
+            break;
+        }
+
+        buf_len += n;
+        buf[buf_len] = '\0';
+
+        // Skip HTTP headers on first receive
+        if (!headers_done) {
+            char* hdr_end = strstr(buf, "\r\n\r\n");
+            if (!hdr_end) continue; // Need more data
+            hdr_end += 4;
+            int remaining = buf_len - (int)(hdr_end - buf);
+            if (remaining > 0) {
+                memmove(buf, hdr_end, remaining);
+            }
+            buf_len = remaining;
+            buf[buf_len] = '\0';
+            headers_done = true;
+        }
+
+        // Process complete "data: {...}\n\n" lines
+        char* line_start = buf;
+        while (1) {
+            // SSE format: "data: {json}\n\n"
+            char* data_prefix = strstr(line_start, "data: ");
+            if (!data_prefix) break;
+
+            char* line_end = strstr(data_prefix, "\n\n");
+            if (!line_end) break; // Incomplete — wait for more data
+
+            // Extract the JSON payload after "data: "
+            char* json_start = data_prefix + 6;
+            *line_end = '\0';
+
+            // Parse and store the event
+            SSEEvent evt;
+            sse_parse_event(json_start, &evt);
+
+            if (evt.type != SSE_EVENT_NONE) {
+                // Write to ring buffer slot at write_idx, then advance
+                int wi = SDL_GetAtomicInt(&s_sse_write_idx);
+                memcpy(&s_sse_ring[wi % SSE_RING_SIZE], &evt, sizeof(SSEEvent));
+                SDL_SetAtomicInt(&s_sse_write_idx, wi + 1);
+            }
+
+            line_start = line_end + 2; // Skip past \n\n
+        }
+
+        // Move unprocessed data to front of buffer
+        int remaining = buf_len - (int)(line_start - buf);
+        if (remaining > 0 && line_start != buf) {
+            memmove(buf, line_start, remaining);
+        }
+        buf_len = remaining;
+    }
+
+    closesocket(sock);
+    s_sse_sock = -1;
+    SDL_SetAtomicInt(&s_sse_running, 0);
+    SDL_Log("SSE: disconnected from room %s", s_sse_room_code);
+    return 0;
+}
+
+bool LobbyServer_SSEConnect(const char* room_code) {
+    if (!configured || !room_code || strlen(room_code) == 0) return false;
+
+    // Disconnect any existing connection first
+    if (SDL_GetAtomicInt(&s_sse_running)) {
+        LobbyServer_SSEDisconnect();
+    }
+
+    snprintf(s_sse_room_code, sizeof(s_sse_room_code), "%s", room_code);
+
+    SDL_SetAtomicInt(&s_sse_stop, 0);
+    SDL_SetAtomicInt(&s_sse_running, 1);
+    SDL_SetAtomicInt(&s_sse_write_idx, 0);
+    SDL_SetAtomicInt(&s_sse_read_idx, 0);
+    memset(s_sse_ring, 0, sizeof(s_sse_ring));
+
+    s_sse_thread = SDL_CreateThread(sse_thread_fn, "SSERoomStream", NULL);
+    if (!s_sse_thread) {
+        SDL_SetAtomicInt(&s_sse_running, 0);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SSE: failed to create thread");
+        return false;
+    }
+    SDL_DetachThread(s_sse_thread);
+    return true;
+}
+
+void LobbyServer_SSEDisconnect(void) {
+    if (!SDL_GetAtomicInt(&s_sse_running)) return;
+
+    SDL_SetAtomicInt(&s_sse_stop, 1);
+
+    // Force-close the socket to unblock recv() immediately
+    if (s_sse_sock >= 0) {
+        closesocket(s_sse_sock);
+        s_sse_sock = -1;
+    }
+
+    // Wait for thread to finish (up to 2 seconds)
+    int wait_ms = 0;
+    while (SDL_GetAtomicInt(&s_sse_running) && wait_ms < 2000) {
+        SDL_Delay(10);
+        wait_ms += 10;
+    }
+
+    s_sse_thread = NULL;
+    SDL_SetAtomicInt(&s_sse_write_idx, 0);
+    SDL_SetAtomicInt(&s_sse_read_idx, 0);
+}
+
+SSEEventType LobbyServer_SSEPoll(SSEEvent* out_event) {
+    int ri = SDL_GetAtomicInt(&s_sse_read_idx);
+    int wi = SDL_GetAtomicInt(&s_sse_write_idx);
+    if (ri >= wi) {
+        return SSE_EVENT_NONE; // Ring empty
+    }
+
+    // If writer has lapped us (more than SSE_RING_SIZE events behind),
+    // skip to the oldest available slot to avoid reading stale data.
+    if (wi - ri > SSE_RING_SIZE) {
+        ri = wi - SSE_RING_SIZE;
+    }
+
+    SSEEvent* slot = &s_sse_ring[ri % SSE_RING_SIZE];
+    SSEEventType type = slot->type;
+
+    if (out_event) {
+        memcpy(out_event, slot, sizeof(SSEEvent));
+    }
+
+    SDL_SetAtomicInt(&s_sse_read_idx, ri + 1);
+    return type;
+}
+
+bool LobbyServer_SSEIsConnected(void) {
+    return SDL_GetAtomicInt(&s_sse_running) != 0;
 }

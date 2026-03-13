@@ -86,9 +86,17 @@ static void AsyncReportMatch(const char* my_id, const char* opponent_id,
 
     MatchResult* r = (MatchResult*)malloc(sizeof(MatchResult));
     memset(r, 0, sizeof(*r));
+    // Truncation is intentional — MatchResult fields are fixed-size buffers.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
     snprintf(r->player_id, sizeof(r->player_id), "%s", my_id);
     snprintf(r->opponent_id, sizeof(r->opponent_id), "%s", opponent_id);
     snprintf(r->winner_id, sizeof(r->winner_id), "%s", winner_id);
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
     r->player_char = my_char;
     r->opponent_char = opp_char;
     r->rounds = rounds;

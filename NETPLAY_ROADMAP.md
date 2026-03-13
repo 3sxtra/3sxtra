@@ -148,23 +148,25 @@ Design choices are constrained to fit within these limits.
 
 **Goal**: Provide early adopters with a place to congregate and visually prove the game isn't dead when population is low.
 
-**Status**: 🟡 In Progress (server + C client API done, UI remaining)
+**Status**: 🟡 In Progress (server + C client + SSE + RmlUI done, gameplay logic remaining)
 
 ### What was built
 - Server routes: `POST /room/create`, `/room/join`, `/room/leave`, `/room/chat`, `/room/queue/join`, `/room/queue/leave`
+- Server read-only state: `GET /room/state?room_code=` — returns room JSON without side effects
 - SSE event stream: `GET /room/events?room_code=` — real-time push via `broadcastRoomEvent()`
 - Room code generation (4-char unambiguous charset), 8-player max, host migration on leave
 - Chat capped at 50 messages per room
-- C client API: `LobbyServer_CreateRoom/JoinRoom/LeaveRoom/JoinQueue/LeaveQueue/SendChat`
-- `RoomState`, `RoomPlayer`, `ChatMessage` structs + `parse_room_json()` parser
+- C client API: `LobbyServer_CreateRoom/JoinRoom/LeaveRoom/JoinQueue/LeaveQueue/SendChat/GetRoomState`
+- SSE streaming client: `LobbyServer_SSEConnect/SSEDisconnect/SSEPoll/SSEIsConnected` (background thread)
+- `RoomState`, `RoomPlayer`, `ChatMessage`, `SSEEvent` structs + `parse_room_json()` parser
+- RmlUI room screen: `rmlui_casual_lobby.cpp/h` — data model with player list, queue, chat, gamepad navigation
+- RmlUI templates: `casual_lobby.rml`, `casual_lobby.rcss`, `casual_lobby_chat.rml`
+- Lifecycle: init/update in `sdl_app.c`, shutdown calls for data model cleanup
 - Test scripts: `__test_room.js`, `__test_sse.js`
 
 ### Remaining work
-- RmlUI room screen (`rmlui_room.cpp/h`, `room.rml/rcss`)
-- SSE client in C (currently only HTTP req/res — no streaming listener)
 - "Winner Stays On" cabinet rotation logic
 - `GekkoSpectateSession` integration for live spectating
-- Lifecycle integration in `sdl_app.c`
 
 ### Key design points
 - **Casual Lobbies (8-Player Rooms)**: Players can create/join public or private named rooms (e.g., "EU Casuals", "Beginners").
@@ -174,9 +176,15 @@ Design choices are constrained to fit within these limits.
 ### Files
 | File | Action |
 |------|--------|
-| `tools/lobby-server/lobby-server.js` | MODIFY — room routes, SSE, `broadcastRoomEvent()` |
-| `src/netplay/lobby_server.h` | ADD — `RoomState`, `RoomPlayer`, `ChatMessage` structs |
-| `src/netplay/lobby_server.c` | ADD — `CreateRoom`, `JoinRoom`, `LeaveRoom`, `JoinQueue`, `LeaveQueue`, `SendChat` |
+| `tools/lobby-server/lobby-server.js` | MODIFY — room routes, SSE, `GET /room/state`, `broadcastRoomEvent()` |
+| `src/netplay/lobby_server.h` | ADD — `RoomState`, `RoomPlayer`, `ChatMessage`, `SSEEvent` structs, SSE API |
+| `src/netplay/lobby_server.c` | ADD — room API, `GetRoomState`, SSE client (background thread) |
+| `src/port/sdl/rmlui/rmlui_casual_lobby.cpp` | NEW — RmlUI data model + SSE-driven updates |
+| `src/include/port/sdl/rmlui/rmlui_casual_lobby.h` | NEW — lifecycle API |
+| `assets/ui/casual_lobby.rml` | NEW — room UI template |
+| `assets/ui/casual_lobby.rcss` | NEW — room stylesheet |
+| `assets/ui/casual_lobby_chat.rml` | NEW — chat popup |
+| `src/port/sdl/app/sdl_app.c` | MODIFY — init/update/shutdown lifecycle |
 | `tools/lobby-server/__test_room.js` | NEW — room smoke test |
 | `tools/lobby-server/__test_sse.js` | NEW — SSE streaming test |
 

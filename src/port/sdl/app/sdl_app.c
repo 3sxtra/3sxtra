@@ -601,6 +601,10 @@ void SDLApp_Quit() {
     SDLGameRenderer_Shutdown();
     SDLTextRenderer_Shutdown();
 
+    // Shut down Phase 5 / Phase 3 RmlUi data models before rmlui_wrapper_shutdown()
+    rmlui_casual_lobby_shutdown();
+    rmlui_leaderboard_shutdown();
+
     if (is_sdl2d_backend(g_renderer_backend)) {
         // SDL2D cleanup
         BezelSystem_Shutdown();

@@ -487,6 +487,14 @@ async function handleRequest(req, res) {
         return; // Keep connection open
     }
 
+    // --- Room State (read-only, no auth — secured by unguessable room code) ---
+    if (method === 'GET' && path === '/room/state') {
+        const roomCode = url.searchParams.get('room_code');
+        const room = rooms.get(roomCode);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        return json(res, 200, getRoomState(room));
+    }
+
     // Auth check (all other endpoints)
     const auth = verifyRequest(method, fullPath, body, req.headers);
     if (!auth.ok) {

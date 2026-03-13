@@ -73,9 +73,12 @@ const char* NetDetect_GetConnectionType(void) {
     return result;
 }
 
-#else
+#else /* !_WIN32 */
 
-/* ======== Linux: ioctl(SIOCGIWNAME) ======== */
+/* ======== POSIX: interface type detection ======== */
+
+#ifdef __linux__
+/* Linux: ioctl(SIOCGIWNAME) probes each interface for wireless extensions. */
 #include <ifaddrs.h>
 #include <linux/if.h>
 #include <sys/ioctl.h>
@@ -128,5 +131,12 @@ const char* NetDetect_GetConnectionType(void) {
     freeifaddrs(ifa_list);
     return result;
 }
+
+#else
+/* macOS / other POSIX: no wireless ioctl available, report unknown. */
+const char* NetDetect_GetConnectionType(void) {
+    return NET_CONN_UNKNOWN;
+}
+#endif
 
 #endif /* _WIN32 */
