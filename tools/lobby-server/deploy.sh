@@ -11,7 +11,7 @@ set -e
 
 VPS_USER="ubuntu"
 VPS_HOST="152.67.75.184"
-VPS_KEY="/d/oraclekey"
+VPS_KEY="D:\\oraclekey"
 REMOTE_DIR="/home/ubuntu/lobby-server"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 

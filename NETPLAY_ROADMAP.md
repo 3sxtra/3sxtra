@@ -144,28 +144,126 @@ Design choices are constrained to fit within these limits.
 
 ---
 
-## Phase 5: Skill-Based Matchmaking (SBMM) ✦ **NEXT**
+## Phase 5: Casual Lobbies (8-Player Rooms) ✦ **NEXT**
 
-**Goal**: Automatically pair players of similar skill level with good connections.
+**Goal**: Provide early adopters with a place to congregate and visually prove the game isn't dead when population is low.
 
 **Status**: ⏳ Planned
 
-### Oracle constraints
-- Only iterate searching players (not all registered players)
-- Run matching reactively (on `/searching` POST), not on a timer
-- With <100 concurrent searchers, O(n²) matching is fine
+### Key design points
+- **Casual Lobbies (8-Player Rooms)**: Players can create/join public or private named rooms (e.g., "EU Casuals", "Beginners").
+- **Virtual Cabinet & Universal Spectator**: Up to 8 players join, text chat, and queue up for a "Winner Stays On" rotation. *Anyone* not currently playing can spectate the match live via `GekkoSpectateSession`.
+- **Server Mechanics**: Server maintains room state and broadcasts changes via HTTP long-polling or Server-Sent Events (SSE).
+
+---
+
+## Phase 6: Match Accept/Decline & Connection Filters
+
+**Goal**: Give players control over who they connect to based on connection quality.
+
+**Status**: ⏳ Planned
 
 ### Key design points
-- Server-side matching score:
-  ```
-  score = 100
-    - rating_diff * 0.5      (prefer similar skill)
-    - ping_penalty * 2       (prefer low ping)
-    + wait_bonus * 0.3       (relax criteria over time)
-  ```
-- Rating window starts narrow (±100), expands every 10s of waiting
-- Region preference: same region first, cross-region after 30s
-- Hooks into existing `resolveConnectMatch()` in `lobby-server.js`
+- Show a 10-second "Match Found!" RmlUI popup before establishing P2P.
+- Display opponent's ping and **Wired vs. Wi-Fi status** (already tracked via Presence API).
+- Both players must accept; prevents being trapped in high-latency cross-continent rollback.
+- Zero extra server impact (client-side UI and P2P pinging).
+
+---
+
+## Phase 7: Detailed Player Profiles & Character Usage
+
+**Goal**: Expand statistics to track character-specific performance and streaks.
+
+**Status**: ⏳ Planned
+
+### Key design points
+- Expand `players_db` and matches to track character usage.
+- Clicking a name on the Leaderboard opens a profile popup:
+  - Main Character (e.g., "Ryu - 65% usage")
+  - Longest Win Streak
+  - Win rate per stage/character
+
+---
+
+## Phase 8: Skill-Based Matchmaking (SBMM)
+
+**Goal**: Automatically pair players of similar skill level. Delayed until concurring playerbase can support queue segregation.
+
+**Status**: ⏳ Planned
+
+### Key design points
+- Server-side matching score: `100 - (rating_diff*0.5) - (ping_penalty*2) + (wait_bonus*0.3)`
+- Rating window starts narrow (±100), expands every 10s of waiting.
+
+---
+
+## Phase 6: Match Accept/Decline & Connection Filters
+
+**Goal**: Give players control over who they connect to based on connection quality.
+
+**Status**: ⏳ Planned
+
+### Key design points
+- When Phase 5 SBMM finds a match, show a 10-second "Match Found!" RmlUI popup.
+- Display opponent's ping and **Wired vs. Wi-Fi status** (already tracked via Presence API).
+- Both players must accept to establish the P2P connection; otherwise, return to searching.
+- Zero extra server impact (client-side UI and P2P pinging).
+
+---
+
+## Phase 7: Detailed Player Profiles & Character Usage
+
+**Goal**: Expand statistics to track character-specific performance and streaks.
+
+**Status**: ⏳ Planned
+
+### Key design points
+- Expand `players_db` and matches to track character usage.
+- Clicking a name on the Leaderboard opens a profile popup:
+  - Main Character (e.g., "Ryu - 65% usage")
+  - Longest Win Streak
+  - Win rate per stage/character
+- Server impact: Minor schema additions and updated `/match_result` parsing.
+
+---
+
+## Phase 8: Casual Lobbies (8-Player Rooms)
+
+**Goal**: Social rooms for continuous play ("Winner Stays On" cabinet format).
+
+**Status**: ⏳ Planned
+
+### Key design points
+- Support named rooms: "Beginners Only", "EU East Casual", etc.
+- Up to 8 players join, text chat, and queue up for the virtual cabinet.
+- Server maintains room state and broadcasts changes.
+- Requires simple HTTP long-polling or Server-Sent Events (SSE).
+
+---
+
+## Phase 9: Automated Desync & Telemetry Reporting
+
+**Goal**: Robust telemetry for netcode debugging without manual user intervention.
+
+**Status**: ⏳ Planned
+
+### Key design points
+- When GekkoNet detects a rollback desync (`dump_desync_state()`), automatically compress and `POST` the desync log to the server.
+- Provides a global dashboard to identify the exact frame and variables causing state divergence.
+- Low server storage impact since desyncs are infrequent.
+
+---
+
+## Phase 10: "Rival" System (Head-to-head tracking)
+
+**Goal**: Personalize matchmaking by tracking history against specific opponents.
+
+**Status**: ⏳ Planned
+
+### Key design points
+- Server tracks W/L history between specific player pairs.
+- UI displays Head-to-Head record before match starts (e.g., "You are 3-1 against MasterGouki").
 
 ---
 
@@ -175,8 +273,13 @@ Design choices are constrained to fit within these limits.
 Phase 1 (Identity) ✅
   └── Phase 2 (Match Reporting) ✅
         ├── Phase 4 (Glicko-2 Rankings) ✅
-        │     └── Phase 5 (SBMM) ← NEXT
-        └── Phase 3 (Leaderboards) ✅
+        │     └── Phase 8 (SBMM)
+        ├── Phase 3 (Leaderboards) ✅
+        │     └── Phase 7 (Detailed Profiles)
+        └── Phase 5 (Casual Lobbies) ← NEXT
+              └── Phase 6 (Accept/Decline Filters)
+        └── Phase 9 (Automated Desync Reporting)
+        └── Phase 10 (Rival System)
 ```
 
 ## Server Infrastructure

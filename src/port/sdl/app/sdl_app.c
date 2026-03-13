@@ -539,6 +539,7 @@ int SDLApp_Init() {
     rmlui_training_hud_init();
     rmlui_control_mapping_init();
     rmlui_network_lobby_init(); // Always initialized for the Native -> RmlUI gateway
+    rmlui_casual_lobby_init();
     rmlui_leaderboard_init();
 
     if (use_rmlui) {
@@ -831,6 +832,7 @@ void SDLApp_EndFrame() {
     /* Replay picker and network lobby always use RmlUI — update outside use_rmlui gate */
     rmlui_replay_picker_update();
     rmlui_network_lobby_update();
+    rmlui_casual_lobby_update();
     rmlui_leaderboard_update();
 
     if (is_sdl2d_backend(g_renderer_backend)) {

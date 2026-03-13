@@ -14,6 +14,7 @@
 #endif
 #include "lobby_server.h"
 #include "port/config/config.h"
+#include "identity.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -677,4 +678,154 @@ int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page,
     }
 
     return count;
+}
+
+
+// === Phase 5: Casual Lobbies (8-Player Rooms) ===
+
+static void parse_room_json(const char* json, RoomState* out) {
+    memset(out, 0, sizeof(*out));
+
+    json_get_string(json, "id", out->id, sizeof(out->id));
+    json_get_string(json, "name", out->name, sizeof(out->name));
+    json_get_string(json, "host", out->host, sizeof(out->host));
+
+    // Simple arrays are parsed loosely to avoid full JSON AST parsing overhead.
+    // In a real prod client we'd link cJSON or Jansson, but we stick to strstr here
+    // for consistency with the rest of this zero-dependency file.
+    
+    // Parse players array
+    const char* p_start = strstr(json, "\"players\":[");
+    if (p_start) {
+        const char* p_end = strchr(p_start, ']');
+        if (p_end) {
+            const char* cur = p_start;
+            while (cur < p_end && out->player_count < MAX_ROOM_PLAYERS) {
+                cur = strstr(cur, "{\"player_id\"");
+                if (!cur || cur > p_end) break;
+                
+                char p_obj[256];
+                const char* obj_end = strchr(cur, '}');
+                if (!obj_end) break;
+                
+                size_t len = obj_end - cur + 1;
+                if (len >= sizeof(p_obj)) len = sizeof(p_obj) - 1;
+                memcpy(p_obj, cur, len);
+                p_obj[len] = '\0';
+                
+                RoomPlayer* rp = &out->players[out->player_count++];
+                json_get_string(p_obj, "player_id", rp->player_id, sizeof(rp->player_id));
+                json_get_string(p_obj, "display_name", rp->display_name, sizeof(rp->display_name));
+                json_get_string(p_obj, "region", rp->region, sizeof(rp->region));
+                
+                cur = obj_end;
+            }
+        }
+    }
+}
+
+bool LobbyServer_CreateRoom(const char* name, RoomState* out_room) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_name[64];
+    json_escape_string(name ? name : "", esc_name, sizeof(esc_name));
+
+    char body[256];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"name\":\"%s\"}", 
+             Identity_GetPlayerId(), esc_name);
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("POST", "/room/create", body, response, sizeof(response))) {
+        return false;
+    }
+
+    if (out_room) {
+        // Response contains "room_code", so we do a partial parse just to get the code,
+        // then the client usually joins or fetches full state.
+        json_get_string(response, "room_code", out_room->id, sizeof(out_room->id));
+        strncpy(out_room->name, name ? name : "", sizeof(out_room->name) - 1);
+        strncpy(out_room->host, Identity_GetPlayerId(), sizeof(out_room->host) - 1);
+        out_room->player_count = 1;
+        strncpy(out_room->players[0].player_id, Identity_GetPlayerId(), sizeof(out_room->players[0].player_id) - 1);
+        strncpy(out_room->players[0].display_name, Identity_GetDisplayName(), sizeof(out_room->players[0].display_name) - 1);
+    }
+    return true;
+}
+
+bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_code[16];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+
+    char body[256];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"room_code\":\"%s\"}", 
+             Identity_GetPlayerId(), Identity_GetDisplayName(), esc_code);
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("POST", "/room/join", body, response, sizeof(response))) {
+        return false;
+    }
+
+    if (out_room) {
+        parse_room_json(response, out_room);
+    }
+    return true;
+}
+
+bool LobbyServer_LeaveRoom(const char* room_code) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_code[16];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+
+    char body[128];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", 
+             Identity_GetPlayerId(), esc_code);
+
+    char response[HTTP_BUF_SIZE];
+    return http_request("POST", "/room/leave", body, response, sizeof(response));
+}
+
+bool LobbyServer_JoinQueue(const char* room_code) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_code[16];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+
+    char body[128];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", 
+             Identity_GetPlayerId(), esc_code);
+
+    char response[HTTP_BUF_SIZE];
+    return http_request("POST", "/room/queue/join", body, response, sizeof(response));
+}
+
+bool LobbyServer_LeaveQueue(const char* room_code) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_code[16];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+
+    char body[128];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", 
+             Identity_GetPlayerId(), esc_code);
+
+    char response[HTTP_BUF_SIZE];
+    return http_request("POST", "/room/queue/leave", body, response, sizeof(response));
+}
+
+bool LobbyServer_SendChat(const char* room_code, const char* text) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_code[16], esc_text[256];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+    json_escape_string(text, esc_text, sizeof(esc_text));
+
+    char body[512];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"room_code\":\"%s\",\"text\":\"%s\"}", 
+             Identity_GetPlayerId(), Identity_GetDisplayName(), esc_code, esc_text);
+
+    char response[HTTP_BUF_SIZE];
+    return http_request("POST", "/room/chat", body, response, sizeof(response));
 }

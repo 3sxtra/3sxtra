@@ -1,0 +1,355 @@
+/* ─── Casual Lobby (8-Player Room) ────────────────────────────── */
+/* Built on top of base.rcss — 384×224 restricted resolution      */
+
+#lobby-panel {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: rgba(6, 8, 18, 210);
+    border-width: 1dp;
+    border-color: rgba(140, 80, 200, 80); /* Purple tint for casual mode */
+}
+
+/* ─── Title bar (compact) ──────────────────────────────────────── */
+
+#lobby-title-bar {
+    display: block;
+    height: 16dp;
+    background-color: rgba(130, 30, 180, 220);
+    padding: 2dp 8dp 0dp 8dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(255, 255, 255, 30);
+}
+
+#lobby-title-text {
+    display: inline;
+    font-size: 11dp;
+    color: rgba(15, 8, 8, 230);
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 60));
+}
+
+#room-code-chip {
+    display: inline;
+    margin-left: 8dp;
+    background-color: rgba(0, 0, 0, 100);
+    border-width: 1dp;
+    border-color: rgba(255, 255, 255, 60);
+    padding: 0dp 4dp;
+}
+
+#room-code-label {
+    display: inline;
+    font-size: 6dp;
+    color: rgba(200, 200, 200, 160);
+    margin-right: 3dp;
+}
+
+#room-code-value {
+    display: inline;
+    font-size: 8dp;
+    color: rgba(255, 230, 120, 240);
+}
+
+/* ─── Layout: Left (Match/Queue) + Right (Chat) ──────────────── */
+
+#lobby-body {
+    display: block;
+}
+
+#lobby-match-col {
+    display: block;
+    position: absolute;
+    left: 4dp;
+    top: 19dp;
+    width: 200dp;
+    bottom: 16dp;
+}
+
+#lobby-chat-col {
+    display: block;
+    position: absolute;
+    left: 210dp;
+    top: 19dp;
+    right: 4dp;
+    bottom: 16dp;
+    background-color: rgba(0, 6, 28, 180);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 70);
+    padding: 2dp 2dp 2dp 4dp;
+}
+
+/* ─── Section headers ────────────────────────────────────────── */
+
+.section-header {
+    display: block;
+    font-size: 7dp;
+    color: rgba(170, 200, 255, 170);
+    padding: 0dp 0dp;
+    margin-top: 2dp;
+    margin-bottom: 2dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(100, 130, 220, 60);
+}
+
+/* ─── Active Match Panel ─────────────────────────────────────── */
+
+#active-match-panel {
+    display: block;
+    margin-bottom: 4dp;
+    background-color: rgba(10, 10, 15, 200);
+    border-width: 1dp;
+    border-color: rgba(100, 100, 100, 80);
+    padding: 2dp 4dp;
+}
+
+#active-match-panel.active {
+    background-color: rgba(40, 10, 10, 220);
+    border-color: rgba(220, 50, 50, 180);
+}
+
+#match-players {
+    display: block;
+    text-align: center;
+    margin: 4dp 0;
+}
+
+.match-player {
+    display: inline-block;
+    width: 80dp;
+}
+
+#match-vs {
+    display: inline-block;
+    font-size: 12dp;
+    color: rgba(255, 50, 50, 255);
+    width: 20dp;
+    text-align: center;
+}
+
+.player-tag {
+    display: block;
+    font-size: 6dp;
+    color: rgba(200, 200, 200, 150);
+}
+
+.player-name {
+    display: block;
+    font-size: 9dp;
+    color: #fff;
+}
+
+.match-player.winner .player-name {
+    color: rgba(255, 210, 40, 255);
+}
+
+#btn-spectate {
+    display: block;
+    text-align: center;
+    font-size: 8dp;
+    background-color: rgba(30, 30, 80, 200);
+    color: #fff;
+    padding: 2dp 0;
+    margin-top: 2dp;
+    border-width: 1dp;
+    border-color: transparent;
+}
+
+#btn-spectate.focused {
+    background-color: rgba(255, 220, 0, 50);
+    border-color: rgba(255, 210, 40, 240);
+    color: rgba(255, 255, 255, 255);
+}
+
+.btn-icon {
+    display: inline;
+    color: rgba(255, 210, 40, 255);
+    font-size: 6dp;
+    margin-right: 2dp;
+}
+
+#match-idle {
+    display: block;
+    text-align: center;
+    font-size: 9dp;
+    color: rgba(100, 255, 100, 200);
+    margin: 6dp 0;
+}
+
+/* ─── Queue Panel ────────────────────────────────────────────── */
+
+#queue-panel {
+    display: block;
+    background-color: rgba(0, 6, 28, 180);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 70);
+    padding: 2dp 4dp;
+    height: 70dp;
+}
+
+.queue-list {
+    display: block;
+    height: 48dp;
+    overflow-y: auto;
+}
+
+.queue-item {
+    display: block;
+    padding: 1dp 2dp;
+    font-size: 8dp;
+    color: rgba(190, 200, 225, 180);
+}
+
+.queue-item.focused {
+    background-color: rgba(255, 220, 0, 30);
+    color: #fff;
+}
+
+.queue-num {
+    display: inline-block;
+    width: 12dp;
+    color: rgba(150, 160, 180, 200);
+}
+
+.queue-name {
+    display: inline;
+}
+
+.queue-name.self {
+    color: rgba(90, 240, 150, 255);
+}
+
+#btn-join-queue, #btn-leave-queue {
+    display: block;
+    text-align: center;
+    font-size: 8dp;
+    background-color: rgba(30, 80, 30, 200);
+    color: #fff;
+    padding: 2dp 0;
+    margin-top: 2dp;
+    border-width: 1dp;
+    border-color: transparent;
+}
+
+#btn-leave-queue {
+    background-color: rgba(80, 30, 30, 200);
+}
+
+#btn-join-queue.focused, #btn-leave-queue.focused {
+    background-color: rgba(255, 220, 0, 50);
+    border-color: rgba(255, 210, 40, 240);
+}
+
+#btn-leave-room {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 70dp;
+    text-align: center;
+    font-size: 8dp;
+    background-color: rgba(80, 20, 20, 200);
+    color: rgba(255, 180, 180, 200);
+    padding: 2dp 0;
+    border-width: 1dp;
+    border-color: transparent;
+}
+
+#btn-leave-room.focused {
+    background-color: rgba(150, 30, 30, 255);
+    border-color: rgba(255, 100, 100, 255);
+    color: #fff;
+}
+
+/* ─── Chat Panel ─────────────────────────────────────────────── */
+
+#chat-messages {
+    display: block;
+    height: 148dp;
+    overflow-y: auto;
+    margin-bottom: 2dp;
+}
+
+.chat-msg {
+    display: block;
+    font-size: 7dp;
+    color: rgba(220, 230, 255, 200);
+    margin-bottom: 1dp;
+    line-height: 1.1;
+}
+
+.chat-sender {
+    display: inline;
+    color: rgba(255, 210, 70, 220);
+    margin-right: 2dp;
+}
+
+.chat-text {
+    display: inline;
+}
+
+#chat-input-box {
+    display: block;
+    position: absolute;
+    bottom: 2dp;
+    left: 4dp;
+    right: 4dp;
+    height: 12dp;
+    background-color: rgba(0, 0, 0, 150);
+    border-width: 1dp;
+    border-color: rgba(100, 100, 150, 100);
+    padding: 1dp 2dp;
+}
+
+#chat-input-box.focused {
+    border-color: rgba(255, 210, 40, 240);
+    background-color: rgba(20, 20, 40, 200);
+}
+
+#chat-prompt {
+    display: inline;
+    font-size: 8dp;
+    color: rgba(100, 255, 100, 200);
+    margin-right: 2dp;
+}
+
+#chat-typing-text {
+    display: inline;
+    font-size: 8dp;
+    color: rgba(150, 150, 150, 200);
+}
+
+#chat-typing-text.active {
+    color: #fff;
+}
+
+#chat-hint {
+    display: inline;
+    font-size: 6dp;
+    color: rgba(120, 130, 150, 150);
+    margin-left: 2dp;
+}
+
+/* ─── Status bar ─────────────────────────────────────────────── */
+
+#status-bar {
+    display: block;
+    position: absolute;
+    bottom: 1dp;
+    left: 4dp;
+    right: 4dp;
+    padding: 1dp 6dp;
+    background-color: rgba(0, 8, 30, 160);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 50);
+}
+
+#status-text {
+    display: block;
+    font-size: 8dp;
+    color: rgba(255, 210, 70, 240);
+}

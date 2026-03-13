@@ -12,6 +12,7 @@
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 
 // GL header for RmlUi GL3 backend (glEnable, glBlendFunc, etc.)
 #if !defined(__APPLE__)

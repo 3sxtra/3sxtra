@@ -142,6 +142,44 @@ try {
     console.warn('  Install with: npm install better-sqlite3');
 }
 
+// ---- Room Tracking (Casual Lobbies) ----
+// Structure: Room { id: string, name: string, host: string, players: string[], state: 'waiting'|'playing' }
+const rooms = new Map();
+
+function generateRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude I,O,1,0
+    let code;
+    do {
+        code = '';
+        for (let i = 0; i < 4; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+    } while (rooms.has(code));
+    return code;
+}
+
+function getRoomState(room) {
+    return {
+        id: room.id,
+        name: room.name,
+        host: room.host,
+        players: room.players.map(id => {
+            const p = players.get(id);
+            return { player_id: id, display_name: p ? p.display_name : id, region: p ? p.region : '' };
+        }),
+        queue: room.queue,
+        match: room.match,
+        chat: room.chat
+    };
+}
+
+function broadcastRoomEvent(room, type, data) {
+    const payload = JSON.stringify({ type, data });
+    for (const client of room.sseClients) {
+        client.write(`data: ${payload}\n\n`);
+    }
+}
+
 // ---- Glicko-2 Rating System ----
 // Reference: http://www.glicko.net/glicko/glicko2.pdf
 
@@ -431,11 +469,140 @@ async function handleRequest(req, res) {
         });
     }
 
+    // --- SSE Event Stream (no auth required, secured by unguessable room code) ---
+    if (method === 'GET' && path === '/room/events') {
+        const roomCode = url.searchParams.get('room_code');
+        const room = rooms.get(roomCode);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive'
+        });
+        res.write(`data: ${JSON.stringify({ type: 'sync', data: getRoomState(room) })}\n\n`);
+
+        room.sseClients.add(res);
+        req.on('close', () => room.sseClients.delete(res));
+        return; // Keep connection open
+    }
+
     // Auth check (all other endpoints)
     const auth = verifyRequest(method, fullPath, body, req.headers);
     if (!auth.ok) {
         return json(res, 403, { error: auth.reason });
     }
+
+    // --- Casual Rooms (8-Player) ---
+
+    if (method === 'POST' && path === '/room/create') {
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const code = generateRoomCode();
+        const roomName = String(data.name || `${data.display_name}'s Room`).slice(0, 31);
+        const hostId = data.player_id;
+
+        rooms.set(code, {
+            id: code,
+            name: roomName,
+            host: hostId,
+            players: [hostId],
+            queue: [], // Next in line for cabinet
+            match: null, // { p1: 'id', p2: 'id', state: 'playing' }
+            chat: [],
+            sseClients: new Set()
+        });
+        console.log(`[room] ${hostId} created room ${code}: ${roomName}`);
+        return json(res, 200, { ok: true, room_code: code });
+    }
+
+    if (method === 'POST' && path === '/room/join') {
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(data.room_code);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        if (room.players.length >= 8) return json(res, 400, { error: 'Room is full' });
+
+        if (!room.players.includes(data.player_id)) {
+            room.players.push(data.player_id);
+            room.queue.push(data.player_id);
+            broadcastRoomEvent(room, 'join', { player_id: data.player_id, display_name: data.display_name });
+            console.log(`[room] ${data.player_id} joined room ${room.id}`);
+        }
+        return json(res, 200, { ok: true, room });
+    }
+
+    if (method === 'POST' && path === '/room/leave') {
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(data.room_code);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+
+        room.players = room.players.filter(p => p !== data.player_id);
+        room.queue = room.queue.filter(p => p !== data.player_id);
+
+        if (room.players.length === 0) {
+            console.log(`[room] ${room.id} closed (empty)`);
+            rooms.delete(room.id);
+        } else {
+            if (room.host === data.player_id) {
+                room.host = room.players[0]; // Migrate host
+                broadcastRoomEvent(room, 'host_migrated', { host: room.host });
+            }
+            broadcastRoomEvent(room, 'leave', { player_id: data.player_id });
+            console.log(`[room] ${data.player_id} left room ${room.id}`);
+        }
+        return json(res, 200, { ok: true });
+    }
+
+    if (method === 'POST' && path === '/room/chat') {
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(data.room_code);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+
+        const msg = {
+            id: Date.now(),
+            sender_id: data.player_id,
+            sender_name: data.display_name,
+            text: String(data.text).slice(0, 120)
+        };
+        room.chat.push(msg);
+        if (room.chat.length > 50) room.chat.shift();
+
+        broadcastRoomEvent(room, 'chat', msg);
+        return json(res, 200, { ok: true });
+    }
+
+    if (method === 'POST' && path === '/room/queue/join') {
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(data.room_code);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+
+        if (!room.queue.includes(data.player_id)) {
+            room.queue.push(data.player_id);
+            broadcastRoomEvent(room, 'queue_update', { queue: room.queue });
+            console.log(`[room] ${data.player_id} joined queue in room ${room.id}`);
+        }
+        return json(res, 200, { ok: true });
+    }
+
+    if (method === 'POST' && path === '/room/queue/leave') {
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(data.room_code);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+
+        if (room.queue.includes(data.player_id)) {
+            room.queue = room.queue.filter(p => p !== data.player_id);
+            broadcastRoomEvent(room, 'queue_update', { queue: room.queue });
+            console.log(`[room] ${data.player_id} left queue in room ${room.id}`);
+        }
+        return json(res, 200, { ok: true });
+    }
+
+    // --- / Casual Rooms ---
 
     // --- POST /presence ---
     if (method === 'POST' && path === '/presence') {

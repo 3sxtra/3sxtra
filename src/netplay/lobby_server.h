@@ -2,6 +2,7 @@
 #define NETPLAY_LOBBY_SERVER_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -95,6 +96,51 @@ typedef struct {
 /// page is 0-indexed. *out_total receives total player count (may be NULL).
 /// Returns -1 on error.
 int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page, int* out_total);
+
+// === Phase 5: Casual Lobbies (8-Player Rooms) ===
+
+#define MAX_ROOM_PLAYERS 8
+#define MAX_CHAT_MESSAGES 50
+
+typedef struct {
+    uint64_t id;
+    char sender_id[64];
+    char sender_name[32];
+    char text[128];
+} ChatMessage;
+
+typedef struct {
+    char player_id[64];
+    char display_name[32];
+    char region[16];
+} RoomPlayer;
+
+typedef struct {
+    char id[8];
+    char name[32];
+    char host[64];
+    
+    RoomPlayer players[MAX_ROOM_PLAYERS];
+    int player_count;
+    
+    char queue[MAX_ROOM_PLAYERS][64]; // Array of player_ids
+    int queue_count;
+    
+    char match_p1[64];
+    char match_p2[64];
+    int match_active;
+    
+    ChatMessage chat[MAX_CHAT_MESSAGES];
+    int chat_count;
+} RoomState;
+
+// Sync room logic
+bool LobbyServer_CreateRoom(const char* name, RoomState* out_room);
+bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room);
+bool LobbyServer_LeaveRoom(const char* room_code);
+bool LobbyServer_JoinQueue(const char* room_code);
+bool LobbyServer_LeaveQueue(const char* room_code);
+bool LobbyServer_SendChat(const char* room_code, const char* text);
 
 #ifdef __cplusplus
 }
