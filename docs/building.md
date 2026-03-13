@@ -1,102 +1,122 @@
 # Build Guide
 
-This fork introduces numerous features, performance optimizations, and platform targets, which require a specific toolchain and set of dependencies.
-
 ---
 
-## 1. Prerequisites & Setup
+## 1. Prerequisites
 
-### Windows
+All platforms need:
+- **CMake** 3.24+
+- **Clang** (C11 + C++17) — GCC works on Linux but Clang is recommended
+- **Ninja** (recommended) or Make
+- **Rust/Cargo** — required for librashader (shader support)
+- **Python 3 + jinja2** — required for GLAD code generation
+- **curl** — required to download stb headers
 
-The easiest way to build on Windows is using MSYS2 and the MinGW64 toolchain. This fork provides a 1-click script to automate the entire process.
+### Windows (MSYS2)
 
-**Automated Setup:**
-Simply double-click `tools\1click_windows_v2.bat`.
-This script will:
-1. Download a portable MSYS2 environment.
-2. Install all required packages (CMake, Ninja, Clang, Compiler Headers).
-3. Build the third-party dependencies.
-4. Compile the `3sx` executable.
+**Automated (recommended):**
+Double-click `tools\1click_windows_v2.bat`. It downloads a portable MSYS2, installs everything, builds deps, and compiles the executable.
 
-**Manual Setup:**
-If you prefer to use an existing MSYS2 installation:
+**Manual:**
 1. Launch the **MinGW64** shell.
-2. Install the required packages:
+2. Install packages:
    ```bash
    pacman -S --needed $(cat tools/requirements-windows.txt)
    ```
 
-### Linux (Ubuntu / Debian)
+The Windows requirements file includes: cmake, ninja, clang, zlib, rust, python-jinja, miniupnpc, and compiler headers.
 
-You will need the standard build tools, Clang, plus the dependencies required to build SDL3 and the new camera/audio backends like PipeWire.
+### Linux (Ubuntu / Debian)
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y $(cat tools/requirements-ubuntu.txt)
 ```
 
+You also need Rust if not already installed:
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
 ### macOS
 
-You should be able to build the project using the Xcode Command Line Tools.
-
-1. Check if Command Line Tools are installed:
-   ```bash
-   xcode-select -p
-   ```
-2. Install them if needed:
+1. Install Xcode Command Line Tools:
    ```bash
    xcode-select --install
+   ```
+2. Install required Homebrew packages:
+   ```bash
+   brew install miniupnpc zlib
+   python3 -m pip install --break-system-packages jinja2
+   ```
+3. Install Rust:
+   ```bash
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
    ```
 
 ---
 
 ## 2. Building Dependencies
 
-Before building the game, you must compile the third-party libraries (SDL3, SDL3_image, librashader, Spout2, etc.).
+`build-deps.sh` clones and builds all third-party libraries:
+SDL3, SDL3_mixer, SDL3_image, FreeType, Lua 5.4, RmlUi, GekkoNet, librashader, GLAD, SIMDe, stb, Spout2, SDL_shadercross, and slang-shaders.
 
-Run the dependency build script from the repository root:
 ```bash
 ./build-deps.sh
 ```
-*(On Windows, this is handled automatically if you use `1click_windows_v2.bat`)*
+
+On Windows this is handled automatically by `1click_windows_v2.bat` and `compile.bat`.
 
 ---
 
 ## 3. Compiling the Game
 
-Once dependencies are built, you can compile the game using CMake.
-
-### Standard Build (Release)
-We highly recommend building in `Release` mode. This enables Link-Time Optimization (LTO) and Profile-Guided Optimization (PGO) which are critical for the performance optimizations in this fork.
+### Linux / macOS
 
 ```bash
-# Configure the build directory
-CC=clang CXX=clang++ cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-
-# Compile the project
-cmake --build build --parallel --config Release
-
-# Install to the output directory (build/application)
+CC=clang CXX=clang++ cmake -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_TESTS=OFF
+cmake --build build --parallel
 cmake --install build --prefix build/application
 ```
 
-### Build Scripts
-For convenience, this repository includes helper scripts:
-- **Windows**: Run `compile.bat` from a MinGW64 shell to configure, build, and deploy the application automatically.
-- **Unit Tests**: Run `compile_tests.bat` to build and execute the CMocka test suite.
+> [!NOTE]
+> On macOS you may need to add `-DZLIB_ROOT=$(brew --prefix zlib)` to the cmake configure line.
+
+### Windows
+
+From a MinGW64 shell, run:
+```
+.\compile.bat
+```
+
+This configures with `RelWithDebInfo` by default (includes Tracy profiling). Pass `--debug` for a Debug build.
+
+Or manually:
+```bash
+CC=clang CXX=clang++ cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=OFF
+cmake --build build --parallel
+cmake --install build --prefix build/application
+```
+
+### Unit Tests
+
+```bash
+cmake -B build_tests -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON
+cmake --build build_tests --parallel
+cd build_tests && ctest --output-on-failure
+```
 
 ---
 
-## 4. Advanced: Cross-Compilation & Packaging
-
-This fork adds support for specific Linux environments and packaging formats. The logic for these is contained within GitHub Actions workflows (e.g., `.github/workflows/`), but they can be run locally.
+## 4. Cross-Compilation & Packaging
 
 ### Raspberry Pi 4 (Batocera)
-We support cross-compiling for the Raspberry Pi 4 using the Batocera Linux buildroot toolchain.
-- The setup scripts are located in `tools/batocera/rpi4/`.
-- See the `build_rpi4.yml` workflow for the exact steps to configure the Docker container, run `build-deps_rpi4.sh`, and compile the ARM64 binaries.
+Cross-compile for RPi4 using the Batocera Linux buildroot toolchain.
+- Setup scripts: `tools/batocera/rpi4/`
+- See `build_rpi4.yml` workflow for Docker container setup, `build-deps_rpi4.sh`, and ARM64 compilation steps.
 
 ### Flatpak
-Linux desktop packaging is available via Flatpak.
-- The manifest and metadata files are located in `flatpak/`.
-- You can build the Flatpak bundle locally using `flatpak-builder`. See the `build_flatpak.yml` workflow for reference.
+- Manifest and metadata: `flatpak/`
+- Build locally with `flatpak-builder`. See `build_flatpak.yml` workflow for reference.
