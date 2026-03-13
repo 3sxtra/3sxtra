@@ -1,0 +1,64 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="leaderboard.rcss"/>
+    <title>Leaderboard</title>
+</head>
+<body data-model="leaderboard">
+<div id="lb-panel">
+
+    <!-- Title -->
+    <div id="lb-title-bar">
+        <span id="lb-title">LEADERBOARD</span>
+        <span id="lb-total" data-if="has_data">{{total_players}} players</span>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="lb-loading" data-if="loading">
+        <span>LOADING...</span>
+    </div>
+
+    <!-- Table header -->
+    <div id="lb-table" data-if="has_data">
+        <div class="lb-header-row">
+            <span class="lb-col-rank">#</span>
+            <span class="lb-col-name">PLAYER</span>
+            <span class="lb-col-wins">W</span>
+            <span class="lb-col-losses">L</span>
+            <span class="lb-col-pct">WIN%</span>
+            <span class="lb-col-rating">RATING</span>
+        </div>
+
+        <!-- Entries -->
+        <div data-for="e : entries"
+             class="lb-row"
+             data-class-highlight="e.is_me"
+             data-class-bronze="e.tier == 'bronze'"
+             data-class-silver="e.tier == 'silver'"
+             data-class-gold="e.tier == 'gold'"
+             data-class-plat="e.tier == 'platinum'"
+             data-class-diamond="e.tier == 'diamond'">
+            <span class="lb-col-rank">{{e.rank}}</span>
+            <span class="lb-col-name">{{e.name}}</span>
+            <span class="lb-col-wins">{{e.wins}}</span>
+            <span class="lb-col-losses">{{e.losses}}</span>
+            <span class="lb-col-pct">{{e.win_pct}}%</span>
+            <span class="lb-col-rating">{{e.rating_str}}</span>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="lb-empty" data-if="has_data == false &amp;&amp; loading == false">
+        <span>No match results yet.</span>
+    </div>
+
+    <!-- Pagination -->
+    <div id="lb-footer" data-if="has_data">
+        <span class="lb-nav" data-if="has_prev">◀ PREV</span>
+        <span class="lb-page-info">PAGE {{page}} / {{total_pages}}</span>
+        <span class="lb-nav" data-if="has_next">NEXT ▶</span>
+    </div>
+
+</div>
+</body>
+</rml>

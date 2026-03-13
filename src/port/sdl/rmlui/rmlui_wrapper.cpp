@@ -12,6 +12,7 @@
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 
 // GL header for RmlUi GL3 backend (glEnable, glBlendFunc, etc.)
 #if !defined(__APPLE__)
@@ -533,7 +534,7 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
     if (!s_window_context || !event)
         return;
 
-        // F12 debugger toggle (debug builds only)
+    // F12 debugger toggle (debug builds only)
 #ifdef DEBUG
     if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F12) {
         bool new_vis = !Rml::Debugger::IsVisible();

@@ -138,7 +138,7 @@ static void test_update_presence_not_connected(void **state) {
        but that would consume mock expectations.  Instead, force configured=false
        directly via the static variable accessible through the #include "*.c" pattern. */
     configured = false;
-    bool result = LobbyServer_UpdatePresence("pid", "Player", "US", "CODE", NULL, -1);
+    bool result = LobbyServer_UpdatePresence("pid", "Player", "US", "CODE", NULL, -1, "wired");
     assert_false(result);
 }
 

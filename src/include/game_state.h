@@ -793,4 +793,8 @@ int Netplay_GetBattleStartFrame(void);
 void save_state(const struct GekkoGameEvent* event);
 void load_state_from_event(const struct GekkoGameEvent* event);
 
+#if DEBUG
+void dump_desync_state(int frame, uint32_t local_checksum, uint32_t remote_checksum);
+#endif
+
 #endif

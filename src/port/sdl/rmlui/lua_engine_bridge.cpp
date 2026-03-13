@@ -61,7 +61,7 @@ extern "C" {
 
 // Cached SDL_GetBasePath() — must be captured before shader scanning
 // corrupts SDL3's internal pointer (observed: 2258 .slangp files).
-static char s_exe_base_path[1024] = {0};
+static char s_exe_base_path[1024] = { 0 };
 
 // ---- engine.read_player(id) ----
 // Returns the raw PLW/WORK fields matching gamestate.lua's field names.
@@ -161,11 +161,16 @@ static int l_read_player(lua_State* L) {
             if (!printed) {
                 printed = true;
                 printf("[ANIM_DIAG] char_table[%d] base=%p, set_char_ad=%p\n",
-                       wu->now_koc, (void*)wu->char_table[wu->now_koc], (void*)wu->set_char_ad);
+                       wu->now_koc,
+                       (void*)wu->char_table[wu->now_koc],
+                       (void*)wu->set_char_ad);
                 printf("[ANIM_DIAG] byte_offset=0x%X, raw_table_val=0x%X, cg_number=%d\n",
-                       byte_offset, raw_table_val, wu->cg_number);
+                       byte_offset,
+                       raw_table_val,
+                       wu->cg_number);
                 printf("[ANIM_DIAG] offset_low16=0x%04X, raw_low16=0x%04X\n",
-                       byte_offset & 0xFFFF, raw_table_val & 0xFFFF);
+                       byte_offset & 0xFFFF,
+                       raw_table_val & 0xFFFF);
             }
         }
         PUSH_INT(L, t, "animation_byte_offset", byte_offset);
@@ -433,10 +438,10 @@ static int l_read_player(lua_State* L) {
         int pid = id - 1; // 0-indexed player id for wcp[] and waza_work[]
         PUSH_INT(L, t, "parry_forward_validity_time", wcp[pid].waza_flag[3]);
         PUSH_INT(L, t, "parry_forward_cooldown_time", waza_work[pid][3].free3);
-        PUSH_INT(L, t, "parry_down_validity_time",    wcp[pid].waza_flag[4]);
-        PUSH_INT(L, t, "parry_down_cooldown_time",    waza_work[pid][4].free3);
-        PUSH_INT(L, t, "parry_air_validity_time",     wcp[pid].waza_flag[5]);
-        PUSH_INT(L, t, "parry_air_cooldown_time",     waza_work[pid][5].free3);
+        PUSH_INT(L, t, "parry_down_validity_time", wcp[pid].waza_flag[4]);
+        PUSH_INT(L, t, "parry_down_cooldown_time", waza_work[pid][4].free3);
+        PUSH_INT(L, t, "parry_air_validity_time", wcp[pid].waza_flag[5]);
+        PUSH_INT(L, t, "parry_air_cooldown_time", waza_work[pid][5].free3);
         PUSH_INT(L, t, "parry_antiair_validity_time", wcp[pid].waza_flag[6]);
         PUSH_INT(L, t, "parry_antiair_cooldown_time", waza_work[pid][6].free3);
     }
@@ -637,7 +642,7 @@ static int l_read_file_text(lua_State* L) {
     SDL_CloseIO(rw);
 
     buf[read] = '\0';
-    lua_pushlstring(L, buf, (size_t)read);  // binary-safe: preserves embedded \0
+    lua_pushlstring(L, buf, (size_t)read); // binary-safe: preserves embedded \0
     SDL_free(buf);
 
     return 1;
@@ -736,7 +741,8 @@ void lua_engine_bridge_init(void) {
     lua_setglobal(L, "engine");
 
     SDL_Log("[Lua Bridge] Registered engine API (%d functions), base='%s'",
-            (int)(sizeof(engine_funcs) / sizeof(engine_funcs[0]) - 1), s_exe_base_path);
+            (int)(sizeof(engine_funcs) / sizeof(engine_funcs[0]) - 1),
+            s_exe_base_path);
 }
 
 void lua_engine_bridge_shutdown(void) {

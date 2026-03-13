@@ -1,6 +1,6 @@
 // Use standalone configuration.h to avoid structs.h/Winsock typedef conflicts.
-#include "configuration.h"
 #include "discovery.h"
+#include "configuration.h"
 #include "port/config/config.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
@@ -51,12 +51,14 @@ void Discovery_Init(bool auto_connect) {
     WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
 
-    // Generate a random unique instance ID for self-identification
-    local_instance_id = SDL_GetTicks() ^ (uint32_t)(uintptr_t)&local_instance_id;
-    // Mix in some randomness
-    local_instance_id = local_instance_id * 2654435761u + SDL_GetPerformanceCounter();
+    // Generate a cryptographically strong unique instance ID.
+    // SDL_rand_bits() returns a full 32-bit random value via SDL's CSPRNG,
+    // which is seeded independently per process — no address-XOR collision
+    // risk even when two instances of the same binary run simultaneously on
+    // the same machine (same image base, same static addresses).
+    local_instance_id = SDL_rand_bits();
     if (local_instance_id == 0)
-        local_instance_id = 1; // Avoid 0 (used as "no target")
+        local_instance_id = 1; // Avoid 0 (reserved as "no target")
 
     local_auto_connect = auto_connect;
     local_ready = false;
@@ -227,8 +229,8 @@ void Discovery_SetChallengeTarget(uint32_t instance_id) {
     local_challenge_target = instance_id;
 }
 
-int Discovery_GetChallengeTarget(void) {
-    return (int)local_challenge_target;
+uint32_t Discovery_GetChallengeTarget(void) {
+    return local_challenge_target;
 }
 
 uint32_t Discovery_GetLocalInstanceID(void) {

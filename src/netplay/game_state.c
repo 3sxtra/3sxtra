@@ -54,6 +54,7 @@ static State state_buffer[STATE_BUFFER_MAX];
 #include "sf33rd/utils/djb2_hash.h"
 
 #include "main.h"
+#include <stdio.h>
 
 #define GS_SAVE(member) SDL_memcpy(&dst->member, &member, sizeof(member))
 
@@ -1687,6 +1688,79 @@ void save_state(const GekkoGameEvent* event) {
 #endif
     }
 }
+
+#if DEBUG
+/**
+ * @brief Dump desync diagnostic data to the states/ directory.
+ *
+ * Called from the GekkoDesyncDetected handler in netplay.c. Writes:
+ *  1. states/desync_F<frame>.txt — per-section checksums for the desync frame
+ *     and a window of surrounding frames from the ring buffer.
+ *  2. states/desync_F<frame>_plw0.bin / _plw1.bin — raw sanitized PLW snapshots
+ *     for binary comparison with xxd (or a hex diff tool).
+ *  3. states/desync_F<frame>_state.bin — full State snapshot for the frame.
+ *
+ * All data comes from the static ring buffers populated by save_state() in
+ * DEBUG builds (saved_section_checksums, saved_plw_scratch, state_buffer).
+ */
+void dump_desync_state(int frame, uint32_t local_checksum, uint32_t remote_checksum) {
+    const int slot = frame % STATE_BUFFER_MAX;
+
+    // --- 1. Text summary with section checksums ---
+    char path[256];
+    SDL_snprintf(path, sizeof(path), "states/desync_F%d.txt", frame);
+    FILE* f = fopen(path, "w");
+    if (f) {
+        fprintf(f, "=== DESYNC DETECTED ===\n");
+        fprintf(f, "Frame:           %d\n", frame);
+        fprintf(f, "Local checksum:  0x%08x\n", local_checksum);
+        fprintf(f, "Remote checksum: 0x%08x\n", remote_checksum);
+        fprintf(f, "STATE_BUFFER_MAX: %d\n", STATE_BUFFER_MAX);
+        fprintf(f, "sizeof(PLW): %zu  sizeof(State): %zu\n\n", sizeof(PLW), sizeof(State));
+
+        fprintf(f, "--- Per-section checksums (ring buffer) ---\n");
+        fprintf(f, "%8s  %10s  %10s  %10s  %10s  %10s  %10s  %10s\n",
+                "frame", "combined", "plw0", "plw1", "globals", "bg", "tasks", "effects");
+
+        // Print a window of frames around the desync
+        const int window = STATE_BUFFER_MAX;
+        for (int i = 0; i < window; i++) {
+            int f_idx = (frame - window + 1 + i);
+            if (f_idx < 0) continue;
+            int s = f_idx % STATE_BUFFER_MAX;
+            const SectionedChecksum* sc = &saved_section_checksums[s];
+            const char* marker = (f_idx == frame) ? " <== DESYNC" : "";
+            fprintf(f, "%8d  0x%08x  0x%08x  0x%08x  0x%08x  0x%08x  0x%08x  0x%08x%s\n",
+                    f_idx, sc->combined, sc->plw0, sc->plw1, sc->globals,
+                    sc->bg, sc->tasks, sc->effects, marker);
+        }
+        fclose(f);
+        SDL_Log("[desync] Wrote section checksums to %s", path);
+    } else {
+        SDL_Log("[desync] ERROR: Could not open %s for writing", path);
+    }
+
+    // --- 2. Binary PLW dumps for xxd diffing ---
+    for (int p = 0; p < 2; p++) {
+        SDL_snprintf(path, sizeof(path), "states/desync_F%d_plw%d.bin", frame, p);
+        f = fopen(path, "wb");
+        if (f) {
+            fwrite(&saved_plw_scratch[slot][p], sizeof(PLW), 1, f);
+            fclose(f);
+            SDL_Log("[desync] Wrote PLW[%d] snapshot (%zu bytes) to %s", p, sizeof(PLW), path);
+        }
+    }
+
+    // --- 3. Full State binary dump ---
+    SDL_snprintf(path, sizeof(path), "states/desync_F%d_state.bin", frame);
+    f = fopen(path, "wb");
+    if (f) {
+        fwrite(&state_buffer[slot], sizeof(State), 1, f);
+        fclose(f);
+        SDL_Log("[desync] Wrote full State (%zu bytes) to %s", sizeof(State), path);
+    }
+}
+#endif
 
 /**
  * @brief Restore game state from a rollback — GekkoNet callback.

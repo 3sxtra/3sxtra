@@ -1,11 +1,15 @@
 {
     "name": "3sx-lobby-server",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "Minimal lobby/matchmaking server for 3SX P2P netplay",
     "main": "lobby-server.js",
     "scripts": {
         "start": "node lobby-server.js",
         "test": "bash test-server.sh"
+    },
+    "dependencies": {
+        "better-sqlite3": "^11.0.0",
+        "geoip-lite": "^1.4.10"
     },
     "engines": {
         "node": ">=18.0.0"

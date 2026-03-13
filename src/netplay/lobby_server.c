@@ -14,6 +14,7 @@
 #endif
 #include "lobby_server.h"
 #include "port/config/config.h"
+#include "identity.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,171 +107,11 @@ bool LobbyServer_IsConfigured(void) {
     return configured;
 }
 
-/* ======== Embedded SHA-256 (non-Windows) ======== */
+/* ======== SHA-256 (shared portable implementation) ======== */
 
-#ifndef _WIN32
-
-/* Minimal SHA-256 implementation — public domain.
- * Based on the reference by Brad Conte (B-Con). */
-
-typedef struct {
-    uint8_t data[64];
-    uint32_t datalen;
-    uint64_t bitlen;
-    uint32_t state[8];
-} SHA256_CTX;
-
-static const uint32_t sha256_k[64] = {
-    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-};
-
-#define SHA_ROTR(x, n) (((x) >> (n)) | ((x) << (32 - (n))))
-#define SHA_CH(x, y, z) (((x) & (y)) ^ (~(x) & (z)))
-#define SHA_MAJ(x, y, z) (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)))
-#define SHA_EP0(x) (SHA_ROTR(x, 2) ^ SHA_ROTR(x, 13) ^ SHA_ROTR(x, 22))
-#define SHA_EP1(x) (SHA_ROTR(x, 6) ^ SHA_ROTR(x, 11) ^ SHA_ROTR(x, 25))
-#define SHA_SIG0(x) (SHA_ROTR(x, 7) ^ SHA_ROTR(x, 18) ^ ((x) >> 3))
-#define SHA_SIG1(x) (SHA_ROTR(x, 17) ^ SHA_ROTR(x, 19) ^ ((x) >> 10))
-
-static void sha256_transform(SHA256_CTX* ctx, const uint8_t data[64]) {
-    uint32_t a, b, c, d, e, f, g, h, t1, t2, m[64];
-    int i;
-    for (i = 0; i < 16; ++i)
-        m[i] = ((uint32_t)data[i * 4] << 24) | ((uint32_t)data[i * 4 + 1] << 16) | ((uint32_t)data[i * 4 + 2] << 8) |
-               ((uint32_t)data[i * 4 + 3]);
-    for (; i < 64; ++i)
-        m[i] = SHA_SIG1(m[i - 2]) + m[i - 7] + SHA_SIG0(m[i - 15]) + m[i - 16];
-    a = ctx->state[0];
-    b = ctx->state[1];
-    c = ctx->state[2];
-    d = ctx->state[3];
-    e = ctx->state[4];
-    f = ctx->state[5];
-    g = ctx->state[6];
-    h = ctx->state[7];
-    for (i = 0; i < 64; ++i) {
-        t1 = h + SHA_EP1(e) + SHA_CH(e, f, g) + sha256_k[i] + m[i];
-        t2 = SHA_EP0(a) + SHA_MAJ(a, b, c);
-        h = g;
-        g = f;
-        f = e;
-        e = d + t1;
-        d = c;
-        c = b;
-        b = a;
-        a = t1 + t2;
-    }
-    ctx->state[0] += a;
-    ctx->state[1] += b;
-    ctx->state[2] += c;
-    ctx->state[3] += d;
-    ctx->state[4] += e;
-    ctx->state[5] += f;
-    ctx->state[6] += g;
-    ctx->state[7] += h;
-}
-
-static void sha256_init(SHA256_CTX* ctx) {
-    ctx->datalen = 0;
-    ctx->bitlen = 0;
-    ctx->state[0] = 0x6a09e667;
-    ctx->state[1] = 0xbb67ae85;
-    ctx->state[2] = 0x3c6ef372;
-    ctx->state[3] = 0xa54ff53a;
-    ctx->state[4] = 0x510e527f;
-    ctx->state[5] = 0x9b05688c;
-    ctx->state[6] = 0x1f83d9ab;
-    ctx->state[7] = 0x5be0cd19;
-}
-
-static void sha256_update(SHA256_CTX* ctx, const uint8_t* data, size_t len) {
-    for (size_t i = 0; i < len; ++i) {
-        ctx->data[ctx->datalen] = data[i];
-        ctx->datalen++;
-        if (ctx->datalen == 64) {
-            sha256_transform(ctx, ctx->data);
-            ctx->bitlen += 512;
-            ctx->datalen = 0;
-        }
-    }
-}
-
-static void sha256_final(SHA256_CTX* ctx, uint8_t hash[32]) {
-    uint32_t i = ctx->datalen;
-    if (ctx->datalen < 56) {
-        ctx->data[i++] = 0x80;
-        while (i < 56)
-            ctx->data[i++] = 0x00;
-    } else {
-        ctx->data[i++] = 0x80;
-        while (i < 64)
-            ctx->data[i++] = 0x00;
-        sha256_transform(ctx, ctx->data);
-        memset(ctx->data, 0, 56);
-    }
-    ctx->bitlen += ctx->datalen * 8;
-    ctx->data[63] = (uint8_t)(ctx->bitlen);
-    ctx->data[62] = (uint8_t)(ctx->bitlen >> 8);
-    ctx->data[61] = (uint8_t)(ctx->bitlen >> 16);
-    ctx->data[60] = (uint8_t)(ctx->bitlen >> 24);
-    ctx->data[59] = (uint8_t)(ctx->bitlen >> 32);
-    ctx->data[58] = (uint8_t)(ctx->bitlen >> 40);
-    ctx->data[57] = (uint8_t)(ctx->bitlen >> 48);
-    ctx->data[56] = (uint8_t)(ctx->bitlen >> 56);
-    sha256_transform(ctx, ctx->data);
-    for (i = 0; i < 8; ++i) {
-        hash[i * 4] = (uint8_t)(ctx->state[i] >> 24);
-        hash[i * 4 + 1] = (uint8_t)(ctx->state[i] >> 16);
-        hash[i * 4 + 2] = (uint8_t)(ctx->state[i] >> 8);
-        hash[i * 4 + 3] = (uint8_t)(ctx->state[i]);
-    }
-}
-
-/* HMAC-SHA256 */
-static void hmac_sha256(const uint8_t* key, size_t key_len, const uint8_t* msg, size_t msg_len, uint8_t out[32]) {
-    uint8_t k_pad[64];
-    SHA256_CTX ctx;
-    uint8_t temp_hash[32];
-
-    /* If key > 64 bytes, hash it first */
-    uint8_t key_hash[32];
-    if (key_len > 64) {
-        sha256_init(&ctx);
-        sha256_update(&ctx, key, key_len);
-        sha256_final(&ctx, key_hash);
-        key = key_hash;
-        key_len = 32;
-    }
-
-    /* Inner pad */
-    memset(k_pad, 0x36, 64);
-    for (size_t i = 0; i < key_len; i++)
-        k_pad[i] ^= key[i];
-
-    sha256_init(&ctx);
-    sha256_update(&ctx, k_pad, 64);
-    sha256_update(&ctx, msg, msg_len);
-    sha256_final(&ctx, temp_hash);
-
-    /* Outer pad */
-    memset(k_pad, 0x5c, 64);
-    for (size_t i = 0; i < key_len; i++)
-        k_pad[i] ^= key[i];
-
-    sha256_init(&ctx);
-    sha256_update(&ctx, k_pad, 64);
-    sha256_update(&ctx, temp_hash, 32);
-    sha256_final(&ctx, out);
-}
-
-#endif /* !_WIN32 */
+/* On non-Windows, use the shared portable SHA-256 for both hashing and HMAC.
+ * On Windows, BCrypt handles HMAC but we still include the header for types. */
+#include "sha256.h"
 
 /* ======== HMAC computation (cross-platform) ======== */
 
@@ -573,25 +414,28 @@ static int json_get_int(const char* json, const char* key, int default_val) {
 /* ======== Public API ======== */
 
 bool LobbyServer_UpdatePresence(const char* player_id, const char* display_name, const char* region,
-                                const char* room_code, const char* connect_to, int rtt_ms) {
-    char esc_pid[128], esc_name[64], esc_region[16], esc_code[32], esc_ct[32];
+                                const char* room_code, const char* connect_to, int rtt_ms,
+                                const char* connection_type) {
+    char esc_pid[128], esc_name[64], esc_region[16], esc_code[32], esc_ct[32], esc_conn[16];
     json_escape_string(player_id, esc_pid, sizeof(esc_pid));
     json_escape_string(display_name, esc_name, sizeof(esc_name));
     json_escape_string(region ? region : "", esc_region, sizeof(esc_region));
     json_escape_string(room_code ? room_code : "", esc_code, sizeof(esc_code));
     json_escape_string(connect_to ? connect_to : "", esc_ct, sizeof(esc_ct));
+    json_escape_string(connection_type ? connection_type : "unknown", esc_conn, sizeof(esc_conn));
 
     char body[512];
     snprintf(body,
              sizeof(body),
-             "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"region\":\"%s\",\"room_code\":\"%s\",\"connect_to\":\"%"
-             "s\",\"rtt_ms\":%d}",
+             "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"region\":\"%s\",\"room_code\":\"%s\",\"connect_to\":\""
+             "%s\",\"rtt_ms\":%d,\"connection_type\":\"%s\"}",
              esc_pid,
              esc_name,
              esc_region,
              esc_code,
              esc_ct,
-             rtt_ms);
+             rtt_ms,
+             esc_conn);
 
     char response[HTTP_BUF_SIZE];
     return http_request("POST", "/presence", body, response, sizeof(response));
@@ -663,6 +507,8 @@ int LobbyServer_GetSearching(LobbyPlayer* out_players, int max_players, const ch
         json_get_string(obj, "room_code", p->room_code, sizeof(p->room_code));
         json_get_string(obj, "connect_to", p->connect_to, sizeof(p->connect_to));
         json_get_string(obj, "status", p->status, sizeof(p->status));
+        json_get_string(obj, "country", p->country, sizeof(p->country));
+        json_get_string(obj, "connection_type", p->connection_type, sizeof(p->connection_type));
         p->rtt_ms = json_get_int(obj, "rtt_ms", -1);
 
         if (strlen(p->player_id) > 0)
@@ -683,4 +529,303 @@ bool LobbyServer_Leave(const char* player_id) {
 
     char response[HTTP_BUF_SIZE];
     return http_request("POST", "/leave", body, response, sizeof(response));
+}
+
+bool LobbyServer_DeclineInvite(const char* player_id, const char* declined_player_id) {
+    char esc_pid[128], esc_dpid[128];
+    json_escape_string(player_id, esc_pid, sizeof(esc_pid));
+    json_escape_string(declined_player_id, esc_dpid, sizeof(esc_dpid));
+
+    char body[256];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"declined_player_id\":\"%s\"}", esc_pid, esc_dpid);
+
+    char response[HTTP_BUF_SIZE];
+    return http_request("POST", "/decline", body, response, sizeof(response));
+}
+
+/* === Phase 2: Match Reporting === */
+
+bool LobbyServer_ReportMatch(const MatchResult* result) {
+    if (!configured || !result) return false;
+
+    char esc_pid[128], esc_oid[128], esc_wid[128];
+    json_escape_string(result->player_id, esc_pid, sizeof(esc_pid));
+    json_escape_string(result->opponent_id, esc_oid, sizeof(esc_oid));
+    json_escape_string(result->winner_id, esc_wid, sizeof(esc_wid));
+
+    char body[512];
+    snprintf(body, sizeof(body),
+             "{\"player_id\":\"%s\",\"opponent_id\":\"%s\",\"winner_id\":\"%s\","
+             "\"player_char\":%d,\"opponent_char\":%d,\"rounds\":%d}",
+             esc_pid, esc_oid, esc_wid,
+             result->player_char, result->opponent_char, result->rounds);
+
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", "/match_result", body, response, sizeof(response));
+    if (ok) {
+        SDL_Log("[LobbyServer] Match result reported: winner=%s", result->winner_id);
+    }
+    return ok;
+}
+
+bool LobbyServer_GetPlayerStats(const char* player_id, PlayerStats* out) {
+    if (!configured || !player_id || !out) return false;
+
+    memset(out, 0, sizeof(*out));
+
+    char path[256];
+    snprintf(path, sizeof(path), "/player/%s/stats", player_id);
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("GET", path, "", response, sizeof(response))) {
+        return false;
+    }
+
+    /* Extract the HTTP body (after blank line) */
+    const char* body = strstr(response, "\r\n\r\n");
+    if (!body) return false;
+    body += 4;
+
+    out->wins = json_get_int(body, "wins", 0);
+    out->losses = json_get_int(body, "losses", 0);
+    out->disconnects = json_get_int(body, "disconnects", 0);
+
+    /* Parse rating/rd as floats from JSON */
+    const char* rating_str = strstr(body, "\"rating\":");
+    if (rating_str) {
+        out->rating = (float)strtod(rating_str + 9, NULL);
+    } else {
+        out->rating = 1500.0f;
+    }
+
+    const char* rd_str = strstr(body, "\"rd\":");
+    if (rd_str) {
+        out->rd = (float)strtod(rd_str + 5, NULL);
+    } else {
+        out->rd = 350.0f;
+    }
+
+    json_get_string(body, "tier", out->tier, sizeof(out->tier));
+
+    return true;
+}
+
+/* === Phase 3: Leaderboards === */
+
+/// Fetch a page of the leaderboard. Returns entry count (up to max_entries).
+/// page is 0-indexed. *out_total receives the total player count (for pagination).
+/// Returns -1 on error.
+int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page, int* out_total) {
+    if (!configured || !out || max_entries <= 0) return -1;
+
+    char path[256];
+    snprintf(path, sizeof(path), "/leaderboard?page=%d&limit=%d", page, max_entries);
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("GET", path, "", response, sizeof(response))) {
+        return -1;
+    }
+
+    /* Extract body */
+    const char* body = strstr(response, "\r\n\r\n");
+    if (!body) return -1;
+    body += 4;
+
+    /* Parse total player count */
+    if (out_total) {
+        *out_total = json_get_int(body, "total", 0);
+    }
+
+    /* Find "players":[ array */
+    const char* cursor = strstr(body, "\"players\":[");
+    if (!cursor) return 0;
+    cursor += 11; /* skip past "players":[ */
+
+    int count = 0;
+    while (count < max_entries) {
+        const char* obj_start = strchr(cursor, '{');
+        if (!obj_start) break;
+        const char* obj_end = strchr(obj_start, '}');
+        if (!obj_end) break;
+
+        size_t obj_len = (size_t)(obj_end - obj_start + 1);
+        char obj[512];
+        if (obj_len >= sizeof(obj)) obj_len = sizeof(obj) - 1;
+        memcpy(obj, obj_start, obj_len);
+        obj[obj_len] = '\0';
+
+        LeaderboardEntry* e = &out[count];
+        memset(e, 0, sizeof(*e));
+        e->rank = json_get_int(obj, "rank", count + 1);
+        json_get_string(obj, "player_id", e->player_id, sizeof(e->player_id));
+        json_get_string(obj, "display_name", e->display_name, sizeof(e->display_name));
+        e->wins = json_get_int(obj, "wins", 0);
+        e->losses = json_get_int(obj, "losses", 0);
+
+        const char* rating_str = strstr(obj, "\"rating\":");
+        if (rating_str) {
+            e->rating = (float)strtod(rating_str + 9, NULL);
+        } else {
+            e->rating = 1500.0f;
+        }
+
+        json_get_string(obj, "tier", e->tier, sizeof(e->tier));
+
+        if (strlen(e->player_id) > 0)
+            count++;
+
+        cursor = obj_end + 1;
+    }
+
+    return count;
+}
+
+
+// === Phase 5: Casual Lobbies (8-Player Rooms) ===
+
+static void parse_room_json(const char* json, RoomState* out) {
+    memset(out, 0, sizeof(*out));
+
+    json_get_string(json, "id", out->id, sizeof(out->id));
+    json_get_string(json, "name", out->name, sizeof(out->name));
+    json_get_string(json, "host", out->host, sizeof(out->host));
+
+    // Simple arrays are parsed loosely to avoid full JSON AST parsing overhead.
+    // In a real prod client we'd link cJSON or Jansson, but we stick to strstr here
+    // for consistency with the rest of this zero-dependency file.
+    
+    // Parse players array
+    const char* p_start = strstr(json, "\"players\":[");
+    if (p_start) {
+        const char* p_end = strchr(p_start, ']');
+        if (p_end) {
+            const char* cur = p_start;
+            while (cur < p_end && out->player_count < MAX_ROOM_PLAYERS) {
+                cur = strstr(cur, "{\"player_id\"");
+                if (!cur || cur > p_end) break;
+                
+                char p_obj[256];
+                const char* obj_end = strchr(cur, '}');
+                if (!obj_end) break;
+                
+                size_t len = obj_end - cur + 1;
+                if (len >= sizeof(p_obj)) len = sizeof(p_obj) - 1;
+                memcpy(p_obj, cur, len);
+                p_obj[len] = '\0';
+                
+                RoomPlayer* rp = &out->players[out->player_count++];
+                json_get_string(p_obj, "player_id", rp->player_id, sizeof(rp->player_id));
+                json_get_string(p_obj, "display_name", rp->display_name, sizeof(rp->display_name));
+                json_get_string(p_obj, "region", rp->region, sizeof(rp->region));
+                
+                cur = obj_end;
+            }
+        }
+    }
+}
+
+bool LobbyServer_CreateRoom(const char* name, RoomState* out_room) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_name[64];
+    json_escape_string(name ? name : "", esc_name, sizeof(esc_name));
+
+    char body[256];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"name\":\"%s\"}", 
+             Identity_GetPlayerId(), esc_name);
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("POST", "/room/create", body, response, sizeof(response))) {
+        return false;
+    }
+
+    if (out_room) {
+        // Response contains "room_code", so we do a partial parse just to get the code,
+        // then the client usually joins or fetches full state.
+        json_get_string(response, "room_code", out_room->id, sizeof(out_room->id));
+        strncpy(out_room->name, name ? name : "", sizeof(out_room->name) - 1);
+        strncpy(out_room->host, Identity_GetPlayerId(), sizeof(out_room->host) - 1);
+        out_room->player_count = 1;
+        strncpy(out_room->players[0].player_id, Identity_GetPlayerId(), sizeof(out_room->players[0].player_id) - 1);
+        strncpy(out_room->players[0].display_name, Identity_GetDisplayName(), sizeof(out_room->players[0].display_name) - 1);
+    }
+    return true;
+}
+
+bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_code[16];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+
+    char body[256];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"room_code\":\"%s\"}", 
+             Identity_GetPlayerId(), Identity_GetDisplayName(), esc_code);
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("POST", "/room/join", body, response, sizeof(response))) {
+        return false;
+    }
+
+    if (out_room) {
+        parse_room_json(response, out_room);
+    }
+    return true;
+}
+
+bool LobbyServer_LeaveRoom(const char* room_code) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_code[16];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+
+    char body[128];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", 
+             Identity_GetPlayerId(), esc_code);
+
+    char response[HTTP_BUF_SIZE];
+    return http_request("POST", "/room/leave", body, response, sizeof(response));
+}
+
+bool LobbyServer_JoinQueue(const char* room_code) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_code[16];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+
+    char body[128];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", 
+             Identity_GetPlayerId(), esc_code);
+
+    char response[HTTP_BUF_SIZE];
+    return http_request("POST", "/room/queue/join", body, response, sizeof(response));
+}
+
+bool LobbyServer_LeaveQueue(const char* room_code) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_code[16];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+
+    char body[128];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", 
+             Identity_GetPlayerId(), esc_code);
+
+    char response[HTTP_BUF_SIZE];
+    return http_request("POST", "/room/queue/leave", body, response, sizeof(response));
+}
+
+bool LobbyServer_SendChat(const char* room_code, const char* text) {
+    if (!Identity_IsInitialized()) return false;
+    
+    char esc_code[16], esc_text[256];
+    json_escape_string(room_code, esc_code, sizeof(esc_code));
+    json_escape_string(text, esc_text, sizeof(esc_text));
+
+    char body[512];
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"room_code\":\"%s\",\"text\":\"%s\"}", 
+             Identity_GetPlayerId(), Identity_GetDisplayName(), esc_code, esc_text);
+
+    char response[HTTP_BUF_SIZE];
+    return http_request("POST", "/room/chat", body, response, sizeof(response));
 }

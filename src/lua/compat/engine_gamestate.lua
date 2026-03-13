@@ -360,7 +360,7 @@ local function update_player(player, raw, other)
 
    local previous_animation = player.animation or "0000"
    -- Compute CPS3-style animation ID from byte offset + CPS3 base
-   local anim_byte_offset = raw.animation_byte_offset or 0
+   local anim_byte_offset = raw.animation_raw_table_val or 0
    local now_koc = raw.now_koc or 0
    local cps3_base = nil
 
@@ -446,10 +446,11 @@ local function update_player(player, raw, other)
       end
    end
 
-   if cps3_base then
-      player.animation = string.format("%04x", (anim_byte_offset + cps3_base) % 65536)
-   else
-      player.animation = string.format("%04x", anim_byte_offset % 65536)
+   local current_byte_offset = raw.animation_raw_table_val
+   if cps3_base and current_byte_offset then
+      player.animation = string.format("%04x", (current_byte_offset + cps3_base) % 65536)
+   elseif current_byte_offset then
+      player.animation = string.format("%04x", current_byte_offset % 65536)
    end
    player.has_animation_just_changed = (previous_animation ~= player.animation)
 

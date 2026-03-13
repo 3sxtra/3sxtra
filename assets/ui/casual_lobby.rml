@@ -1,0 +1,96 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="casual_lobby.rcss"/>
+    <title>Casual Lobby</title>
+</head>
+<body data-model="casual_lobby">
+<div id="lobby-panel">
+
+    <!-- ── Title bar ── -->
+    <div id="lobby-title-bar">
+        <div id="lobby-title-text">{{room_name}}</div>
+        <div id="room-code-chip">
+            <span id="room-code-label">CODE</span>
+            <span id="room-code-value">{{room_code}}</span>
+        </div>
+    </div>
+
+    <!-- ── Main content: Left match/queue panel + Right chat panel ── -->
+    <div id="lobby-body">
+
+        <!-- Left: Match and Queue column -->
+        <div id="lobby-match-col">
+            
+            <!-- Active Match -->
+            <div id="active-match-panel" data-class-active="match_active">
+                <div class="section-header">CURRENT MATCH</div>
+                <div id="match-players">
+                    <div class="match-player p1" data-class-winner="match_winner == 1">
+                        <span class="player-tag">1P</span>
+                        <span class="player-name">{{match_p1_name}}</span>
+                    </div>
+                    <div id="match-vs">VS</div>
+                    <div class="match-player p2" data-class-winner="match_winner == 2">
+                        <span class="player-tag">2P</span>
+                        <span class="player-name">{{match_p2_name}}</span>
+                    </div>
+                </div>
+                <!-- Spectate Button (only visible if you aren't playing) -->
+                <div id="btn-spectate" data-if="!is_playing && match_active" data-class-focused="cursor_x == 0 && cursor_y == 0">
+                    <span class="btn-icon">▶</span> SPECTATE MATCH
+                </div>
+                <div id="match-idle" data-if="!match_active">CABINET OPEN</div>
+            </div>
+
+            <!-- The Queue -->
+            <div id="queue-panel">
+                <div class="section-header">NEXT UP (QUEUE)</div>
+                <div class="queue-list">
+                    <div data-for="q : queue_players" class="queue-item" data-class-focused="cursor_x == 0 && cursor_y == q.index + 1">
+                        <span class="queue-num">{{q.index + 1}}.</span>
+                        <span class="queue-name" data-class-self="q.is_self">{{q.name}}</span>
+                    </div>
+                </div>
+                <div id="btn-leave-queue" data-if="in_queue" data-class-focused="cursor_x == 0 && cursor_y == 9">
+                    STEP DOWN
+                </div>
+                <div id="btn-join-queue" data-if="!in_queue" data-class-focused="cursor_x == 0 && cursor_y == 9">
+                    INSERT COIN (JOIN QUEUE)
+                </div>
+            </div>
+
+            <div id="btn-leave-room" data-class-focused="cursor_x == 0 && cursor_y == 10">
+                LEAVE ROOM
+            </div>
+            
+        </div>
+
+        <!-- Right: Chat and Player List column -->
+        <div id="lobby-chat-col">
+            <div class="section-header">ROOM CHAT ({{player_count}}/8)</div>
+            
+            <div id="chat-messages">
+                <div data-for="msg : chat_messages" class="chat-msg">
+                    <span class="chat-sender">{{msg.sender}}:</span>
+                    <span class="chat-text">{{msg.text}}</span>
+                </div>
+            </div>
+
+            <div id="chat-input-box" data-class-focused="cursor_x == 1">
+                <span id="chat-prompt">&gt;</span>
+                <span id="chat-typing-text" data-class-active="is_typing">{{chat_input}}{{is_typing ? '_' : ''}}</span>
+                <span id="chat-hint" data-if="!is_typing">PRESS [START] TO CHAT</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Status bar ── -->
+    <div id="status-bar" data-if="status_text != ''">
+        <span id="status-text">{{status_text}}</span>
+    </div>
+
+</div>
+</body>
+</rml>

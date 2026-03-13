@@ -10,6 +10,7 @@
 #include "port/sdl/app/sdl_app.h"
 #include "common.h"
 #include "game_state.h"
+#include "netplay/identity.h"
 #include "netplay/lobby_server.h"
 #include "port/broadcast.h"
 #include "port/config/config.h"
@@ -53,6 +54,7 @@
 #include "port/sdl/rmlui/rmlui_name_entry.h"
 #include "port/sdl/rmlui/rmlui_netplay_ui.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
+#include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_option_menu.h"
 #include "port/sdl/rmlui/rmlui_pause_overlay.h"
 #include "port/sdl/rmlui/rmlui_replay_picker.h"
@@ -236,6 +238,7 @@ bool use_rmlui = false;
 /** @brief Initialize SDL3, create window + GL context, compile shaders, load config. */
 int SDLApp_Init() {
     Config_Init();
+    Identity_Init();
     LobbyServer_Init();
 
     const char* cfg_scale = Config_GetString(CFG_KEY_SCALEMODE);
@@ -536,6 +539,8 @@ int SDLApp_Init() {
     rmlui_training_hud_init();
     rmlui_control_mapping_init();
     rmlui_network_lobby_init(); // Always initialized for the Native -> RmlUI gateway
+    rmlui_casual_lobby_init();
+    rmlui_leaderboard_init();
 
     if (use_rmlui) {
         SDL_Log("UI mode: RmlUi (overlay menus via HTML/CSS)");
@@ -708,9 +713,8 @@ void SDLApp_BeginFrame() {
     // ⚡ Pi4: removed use_rmlui from this guard — the wrapper already has
     // s_any_window_visible early-outs. Only overlay menus need per-frame processing.
     // Update: also process explicitly visible game documents in Native mode.
-    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() ||
-                        show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
-                        show_training_menu || show_dev_overlay;
+    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() || show_menu || show_shader_menu ||
+                        show_mods_menu || show_stage_config_menu || show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_new_frame();
     }
@@ -773,9 +777,8 @@ static void render_overlays(int win_w, int win_h) {
     /* Flush UI framework — only when RmlUi is active */
     // ⚡ Pi4: removed use_rmlui — matches BeginFrame guard above.
     // Update: also process explicitly visible game documents in Native mode.
-    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() ||
-                        show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
-                        show_training_menu || show_dev_overlay;
+    bool rmlui_active = use_rmlui || rmlui_wrapper_any_game_visible() || show_menu || show_shader_menu ||
+                        show_mods_menu || show_stage_config_menu || show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_render();
     }
@@ -829,6 +832,8 @@ void SDLApp_EndFrame() {
     /* Replay picker and network lobby always use RmlUI — update outside use_rmlui gate */
     rmlui_replay_picker_update();
     rmlui_network_lobby_update();
+    rmlui_casual_lobby_update();
+    rmlui_leaderboard_update();
 
     if (is_sdl2d_backend(g_renderer_backend)) {
         // --- SDL2D Backend ---

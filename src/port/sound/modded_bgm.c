@@ -31,7 +31,7 @@ static MIX_Audio* current_voice_audio = NULL;
 static bool fade_active = false;
 
 /* Cached track count to avoid per-frame filesystem scans */
-static int cached_bgm_count = -1;  /* -1 = needs refresh */
+static int cached_bgm_count = -1; /* -1 = needs refresh */
 
 void ModdedBGM_Init(void) {
     if (is_initialized)
@@ -196,8 +196,11 @@ static bool try_load_and_play(const char* ext, int file_id) {
     /* Check for sidecar .loop file (for non-OGG formats without embedded tags) */
     {
         char loop_path[1024];
-        snprintf(loop_path, sizeof(loop_path), "%sassets/bgm_mod/%d.loop",
-                 Paths_GetBasePath() ? Paths_GetBasePath() : "", file_id);
+        snprintf(loop_path,
+                 sizeof(loop_path),
+                 "%sassets/bgm_mod/%d.loop",
+                 Paths_GetBasePath() ? Paths_GetBasePath() : "",
+                 file_id);
         Sint64 loop_start, loop_length;
         if (parse_loop_file(loop_path, &loop_start, &loop_length)) {
             /* SDL3_mixer play API only supports loop_start_frame.
@@ -219,7 +222,7 @@ static bool try_load_and_play(const char* ext, int file_id) {
     }
 
     fade_active = false;
-    cached_bgm_count = -1;  /* New track added/removed — invalidate cache */
+    cached_bgm_count = -1; /* New track added/removed — invalidate cache */
     SDL_Log("ModdedBGM: Playing %s", path);
     return true;
 }
@@ -261,7 +264,7 @@ void ModdedBGM_Stop(void) {
         MIX_DestroyAudio(current_audio);
         current_audio = NULL;
     }
-    cached_bgm_count = -1;  /* Track state changed — invalidate */
+    cached_bgm_count = -1; /* Track state changed — invalidate */
 }
 
 void ModdedBGM_Pause(bool pause) {
@@ -304,7 +307,7 @@ void ModdedBGM_FadeOut(int fade_ms) {
      * Convert ms to frames using the track's current format. */
     Sint64 fade_frames = MIX_TrackMSToFrames(music_track, (Sint64)fade_ms);
     if (fade_frames <= 0)
-        fade_frames = 1;  /* Fallback: at least 1 frame */
+        fade_frames = 1; /* Fallback: at least 1 frame */
 
     fade_active = true;
     MIX_StopTrack(music_track, fade_frames);

@@ -1,0 +1,149 @@
+/* Leaderboard screen styles — matches lobby aesthetic */
+
+#lb-panel {
+    position: absolute;
+    top: 8%;
+    left: 10%;
+    width: 80%;
+    height: 82%;
+    background-color: rgba(0, 0, 0, 0.85);
+    border: 2dp solid rgba(255, 200, 60, 0.6);
+    padding: 12dp;
+    box-sizing: border-box;
+}
+
+/* ── Title bar ── */
+#lb-title-bar {
+    display: block;
+    margin-bottom: 8dp;
+    padding-bottom: 6dp;
+    border-bottom: 1dp solid rgba(255, 200, 60, 0.3);
+}
+#lb-title {
+    font-size: 18dp;
+    font-weight: bold;
+    color: #ffc83c;
+    font-effect: shadow(1dp 1dp rgba(0,0,0,0.8));
+}
+#lb-total {
+    float: right;
+    font-size: 12dp;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 4dp;
+}
+
+/* ── Loading ── */
+#lb-loading {
+    text-align: center;
+    padding: 40dp 0;
+    font-size: 14dp;
+    color: rgba(255, 200, 60, 0.7);
+}
+
+/* ── Table ── */
+#lb-table {
+    display: block;
+    overflow: auto;
+    height: 72%;
+}
+
+.lb-header-row {
+    display: table-row;
+    font-size: 11dp;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 4dp;
+    padding-bottom: 4dp;
+    border-bottom: 1dp solid rgba(255, 255, 255, 0.1);
+}
+
+.lb-row {
+    display: table-row;
+    font-size: 13dp;
+    color: #e0e0e0;
+    padding: 3dp 0;
+}
+.lb-row.highlight {
+    color: #ffc83c;
+    font-weight: bold;
+    background-color: rgba(255, 200, 60, 0.08);
+}
+
+/* Column widths (table-cell) */
+.lb-col-rank {
+    display: table-cell;
+    width: 8%;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.35);
+}
+.lb-row .lb-col-rank {
+    color: rgba(255, 255, 255, 0.5);
+}
+.lb-row.highlight .lb-col-rank {
+    color: #ffc83c;
+}
+
+.lb-col-name {
+    display: table-cell;
+    width: 36%;
+    padding-left: 4dp;
+}
+
+.lb-col-wins {
+    display: table-cell;
+    width: 10%;
+    text-align: center;
+    color: #6ddc6d;
+}
+
+.lb-col-losses {
+    display: table-cell;
+    width: 10%;
+    text-align: center;
+    color: #e06060;
+}
+
+.lb-col-pct {
+    display: table-cell;
+    width: 14%;
+    text-align: center;
+}
+
+.lb-col-rating {
+    display: table-cell;
+    width: 14%;
+    text-align: center;
+    color: #a0c0ff;
+}
+
+/* Tier-specific rating colors */
+.lb-row.bronze .lb-col-rating   { color: #cd7f32; }
+.lb-row.silver .lb-col-rating   { color: #c0c0c0; }
+.lb-row.gold .lb-col-rating     { color: #ffd700; text-shadow: 1px 1px 2px rgba(255, 215, 0, 0.4); }
+.lb-row.plat .lb-col-rating     { color: #e5e4e2; font-weight: bold; text-shadow: 0px 0px 4px rgba(229, 228, 226, 0.5); }
+.lb-row.diamond .lb-col-rating  { color: #b9f2ff; font-weight: bold; text-shadow: 0px 0px 6px rgba(185, 242, 255, 0.6); }
+
+/* ── Empty state ── */
+#lb-empty {
+    text-align: center;
+    padding: 60dp 0;
+    font-size: 14dp;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Pagination footer ── */
+#lb-footer {
+    display: block;
+    text-align: center;
+    margin-top: 8dp;
+    padding-top: 6dp;
+    border-top: 1dp solid rgba(255, 200, 60, 0.3);
+    font-size: 12dp;
+    color: rgba(255, 255, 255, 0.5);
+}
+.lb-nav {
+    color: #ffc83c;
+    margin: 0 16dp;
+}
+.lb-page-info {
+    color: rgba(255, 255, 255, 0.6);
+}
