@@ -85,25 +85,13 @@ static ProbePeer* find_peer(const char* player_id) {
     return NULL;
 }
 
-static ProbePeer* find_peer_by_addr(uint32_t ip, uint16_t port) {
-    for (int i = 0; i < s_peer_count; i++) {
-        if (s_peers[i].active && s_peers[i].ip == ip && s_peers[i].port == port)
-            return &s_peers[i];
-    }
-    /* Fallback: match by IP only (port may differ due to NAT remapping) */
-    for (int i = 0; i < s_peer_count; i++) {
-        if (s_peers[i].active && s_peers[i].ip == ip)
-            return &s_peers[i];
-    }
-    return NULL;
-}
 
-static void build_probe(uint8_t* buf, const char* magic, uint16_t seq, uint32_t ts) {
+
+static void build_probe(uint8_t* buf, const char* magic, uint16_t seq, uint32_t ts, uint16_t token) {
     memcpy(buf, magic, MAGIC_LEN);
     memcpy(buf + 8, &seq, 2);
     memcpy(buf + 10, &ts, 4);
-    buf[14] = 0;
-    buf[15] = 0;
+    memcpy(buf + 14, &token, 2);
 }
 
 static void send_probe(ProbePeer* peer) {
@@ -118,23 +106,14 @@ static void send_probe(ProbePeer* peer) {
 
     uint32_t now = SDL_GetTicks();
     uint8_t pkt[PROBE_PKT_SIZE];
-    build_probe(pkt, PING_MAGIC, peer->next_seq, now);
+    uint16_t token = (uint16_t)(peer - s_peers);
+    build_probe(pkt, PING_MAGIC, peer->next_seq, now, token);
 
     sendto(s_socket_fd, (const char*)pkt, PROBE_PKT_SIZE, 0, (struct sockaddr*)&addr, sizeof(addr));
 
     peer->next_seq++;
     peer->last_send_ticks = now;
     peer->consecutive_miss++;
-}
-
-static void send_pong(const struct sockaddr_in* to, uint16_t seq, uint32_t ts) {
-    if (s_socket_fd < 0)
-        return;
-
-    uint8_t pkt[PROBE_PKT_SIZE];
-    build_probe(pkt, PONG_MAGIC, seq, ts);
-
-    sendto(s_socket_fd, (const char*)pkt, PROBE_PKT_SIZE, 0, (const struct sockaddr*)to, sizeof(*to));
 }
 
 static void receive_probes(void) {
@@ -158,16 +137,37 @@ static void receive_probes(void) {
             continue;
 
         if (memcmp(buf, PING_MAGIC, MAGIC_LEN) == 0) {
-            /* Incoming ping from a peer — echo it back as pong */
-            uint16_t seq;
-            uint32_t ts;
-            memcpy(&seq, buf + 8, 2);
-            memcpy(&ts, buf + 10, 4);
-            send_pong(&from, seq, ts);
+            /* Incoming ping from a peer — echo it exactly as pong */
+            memcpy(buf, PONG_MAGIC, MAGIC_LEN);
+            sendto(s_socket_fd, (const char*)buf, PROBE_PKT_SIZE, 0, (struct sockaddr*)&from, from_len);
         } else if (memcmp(buf, PONG_MAGIC, MAGIC_LEN) == 0) {
             /* Incoming pong — compute RTT */
+            uint16_t seq;
             uint32_t ts;
+            uint16_t token;
+            memcpy(&seq, buf + 8, 2);
             memcpy(&ts, buf + 10, 4);
+            memcpy(&token, buf + 14, 2);
+
+            if (token >= MAX_PROBE_PEERS || !s_peers[token].active)
+                continue;
+
+            ProbePeer* peer = &s_peers[token];
+
+            // Ignore cross-talk or spoofed tokens by strictly matching IP
+            if (peer->ip != from.sin_addr.s_addr)
+                continue;
+
+            // Verify sequence number to ignore very old out-of-order packets
+            uint16_t expected_seq = peer->next_seq - 1;
+            uint16_t seq_diff = expected_seq - seq;
+            if (seq_diff > 4)
+                continue;
+
+            // Opportunistically learn NAT port shifts for this peer
+            if (peer->port != from.sin_port) {
+                peer->port = from.sin_port;
+            }
 
             int rtt = (int)(now - ts);
             if (rtt < 0)
@@ -175,7 +175,6 @@ static void receive_probes(void) {
             if (rtt > 9999)
                 rtt = 9999;
 
-            ProbePeer* peer = find_peer_by_addr(from.sin_addr.s_addr, from.sin_port);
             if (peer) {
                 peer->consecutive_miss = 0;
                 peer->ever_reached = true;

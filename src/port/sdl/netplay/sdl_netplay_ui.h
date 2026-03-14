@@ -22,6 +22,7 @@ void SDLNetplayUI_ProcessEvent(const SDL_Event* event);
 // Helper for testing
 void SDLNetplayUI_GetHUDText(char* buffer, size_t size);
 int SDLNetplayUI_GetActiveToastCount();
+void SDLNetplayUI_DrawNativeHUD(void);
 
 void SDLNetplayUI_SetHUDVisible(bool visible);
 bool SDLNetplayUI_IsHUDVisible();

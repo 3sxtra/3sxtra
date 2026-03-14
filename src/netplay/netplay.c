@@ -718,7 +718,7 @@ static void update_network_stats() {
         if (ping_sample_timer <= 0) {
             GekkoNetworkStats ns;
             gekko_network_stats(session, player_handle ^ 1, &ns);
-            if (ns.avg_ping > 0) {
+            if (ns.avg_ping >= 0) {
                 ping_sum += ns.avg_ping;
                 jitter_sum += ns.jitter;
                 ping_sample_count++;

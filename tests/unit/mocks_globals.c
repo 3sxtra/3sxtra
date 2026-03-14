@@ -160,6 +160,9 @@ s32 bs2_floor;
 bool use_rmlui = false;
 void* rmlui_screen_trials = NULL;
 
+void rmlui_network_lobby_hide(void) {}
+void dump_desync_state(int mismatch_frame, const void* local_state, const void* remote_state) {}
+
 // Effect globals needed by game_state.c (gather_state / load_state).
 // Only defined when mocks_netplay.c is NOT linked (it provides its own copies).
 #ifndef MOCK_HAS_NETPLAY

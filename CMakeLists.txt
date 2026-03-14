@@ -296,6 +296,7 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/tracy_gpu.cpp
     # --- sdl/netplay/ ---
     src/port/sdl/netplay/sdl_netplay_ui.cpp
+    src/port/sdl/netstats_renderer.c
     # --- sdl/app/ ---
     src/port/sdl/app/sdl_app_input.c
     src/port/sdl/app/sdl_app_scale.c

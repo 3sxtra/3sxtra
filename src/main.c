@@ -17,6 +17,8 @@
 #include "port/rendering/renderer.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"
+#include "port/sdl/netstats_renderer.h"
+
 #include "sf33rd/AcrSDK/common/mlPAD.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
@@ -419,6 +421,9 @@ static void game_step_0() {
     if (current_net_state != NETPLAY_SESSION_IDLE) {
         TRACE_SUB_BEGIN("Netplay");
         Netplay_Run();
+
+        // Draw HUD overlay in native memory for netplay metrics
+        NetstatsRenderer_Render();
 
         // Match upstream behavior from PR 146: Flush the 2D polygon buffer each
         // frame when the game's normal render loop isn't running, preventing

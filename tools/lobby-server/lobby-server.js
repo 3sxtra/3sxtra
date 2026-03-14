@@ -39,6 +39,18 @@ try {
     console.warn('  Install with: npm install geoip-lite');
 }
 
+// Try to load bad-words for chat filtering
+let Filter = null;
+let badWordsFilter = null;
+try {
+    Filter = require('bad-words');
+    badWordsFilter = new Filter();
+    console.log('Profanity Filter: loaded (bad-words)');
+} catch {
+    console.warn('Profanity Filter: bad-words not installed — chat filtering disabled');
+    console.warn('  Install with: npm install bad-words');
+}
+
 const PORT = parseInt(process.env.LOBBY_PORT || '3000', 10);
 const SECRET = process.env.LOBBY_SECRET || '';
 const MAX_BODY_SIZE = 65536; // 64 KB
@@ -80,7 +92,7 @@ function detectRegionAndCountry(ip) {
 
 // ---- Data Store ----
 
-/** @type {Map<string, {display_name: string, region: string, country: string, room_code: string, connect_to: string, status: string, connection_type: string, rtt_ms: number, last_seen: number}>} */
+/** @type {Map<string, {display_name: string, region: string, country: string, room_code: string, connect_to: string, status: string, connection_type: string, rtt_ms: number, last_seen: number, last_chat_time: number}>} */
 const players = new Map();
 
 /** @type {Map<string, {count: number, until: number}>}  Key = "from_id->to_id" */
@@ -222,7 +234,7 @@ function getRoomState(room) {
         }),
         queue: room.queue,
         match: room.match,
-        chat: room.chat
+        chat: [] // Chat is ephemeral; do not send history
     };
 }
 
@@ -907,15 +919,36 @@ async function handleRequest(req, res) {
         const room = rooms.get(data.room_code);
         if (!room) return json(res, 404, { error: 'Room not found' });
 
+        const player = players.get(data.player_id);
+        if (!player) return json(res, 404, { error: 'Player not found' });
+
+        const now = Date.now();
+        // 3-second rate limit
+        if (player.last_chat_time && (now - player.last_chat_time < 3000)) {
+            return json(res, 429, { error: 'Rate limit exceeded (1 message every 3 seconds)' });
+        }
+        player.last_chat_time = now;
+
+        let chatText = String(data.text).slice(0, 120);
+        
+        // Apply profanity filter if loaded
+        if (badWordsFilter) {
+            try {
+                chatText = badWordsFilter.clean(chatText);
+            } catch (err) {
+                // Ignore parsing errors and allow original string if clean fails
+                console.error('[chat] Profanity filter failed:', err);
+            }
+        }
+
         const msg = {
-            id: Date.now(),
+            id: now,
             sender_id: data.player_id,
             sender_name: data.display_name,
-            text: String(data.text).slice(0, 120)
+            text: chatText
         };
-        room.chat.push(msg);
-        if (room.chat.length > 50) room.chat.shift();
-
+        
+        // Instead of storing in room.chat, it is fully ephemeral.
         broadcastRoomEvent(room, 'chat', msg);
         return json(res, 200, { ok: true });
     }
@@ -1069,6 +1102,7 @@ async function handleRequest(req, res) {
             connection_type: String(connection_type || 'unknown').slice(0, 7),
             rtt_ms: typeof rtt_ms === 'number' ? Math.max(0, Math.min(9999, rtt_ms)) : (existing ? existing.rtt_ms : -1),
             last_seen: Date.now(),
+            last_chat_time: existing ? existing.last_chat_time : 0,
         });
 
         resolveConnectMatch(player_id, display_name, room_code, connect_to);
@@ -1083,7 +1117,7 @@ async function handleRequest(req, res) {
         let p = players.get(data.player_id);
         if (!p) {
             // Create minimal entry if presence hasn't arrived yet (race condition fix)
-            p = { display_name: data.player_id, region: '', country: '', room_code: '', connect_to: '', status: 'idle', connection_type: 'unknown', rtt_ms: -1, last_seen: Date.now() };
+            p = { display_name: data.player_id, region: '', country: '', room_code: '', connect_to: '', status: 'idle', connection_type: 'unknown', rtt_ms: -1, last_seen: Date.now(), last_chat_time: 0 };
             players.set(data.player_id, p);
         }
 

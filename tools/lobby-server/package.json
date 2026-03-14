@@ -8,6 +8,7 @@
         "test": "bash test-server.sh"
     },
     "dependencies": {
+        "bad-words": "^4.0.0",
         "better-sqlite3": "^11.0.0",
         "geoip-lite": "^1.4.10"
     },

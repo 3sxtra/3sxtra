@@ -608,6 +608,10 @@ extern "C" void rmlui_casual_lobby_update(void) {
     }
 
     // --- Input Navigation ---
+    if (s_is_playing || s_is_spectating) {
+        return; // Suspend lobby navigation while match is active
+    }
+
     u16 trigger = 0;
     for (int i = 0; i < 2; i++) {
         trigger |= (~PLsw[i][1] & PLsw[i][0]);
