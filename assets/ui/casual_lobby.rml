@@ -10,10 +10,6 @@
     <!-- ── Title bar ── -->
     <div id="lobby-title-bar">
         <div id="lobby-title-text">{{room_name}}</div>
-        <div id="room-code-chip">
-            <span id="room-code-label">CODE</span>
-            <span id="room-code-value">{{room_code}}</span>
-        </div>
     </div>
 
     <!-- ── Main content: Left match/queue panel + Right chat panel ── -->
@@ -134,6 +130,13 @@
                 DECLINE
             </div>
         </div>
+    </div>
+
+    <!-- ── Chat Popup (inline — data-if driven, Pi4 compatible) ── -->
+    <div id="chat-popup" data-if="is_typing">
+        <div id="chat-popup-title">ROOM CHAT</div>
+        <div id="chat-popup-text">{{chat_input}}<span class="cursor-blink">|</span></div>
+        <div class="chat-help">Type message, ENTER to send, ESC to cancel</div>
     </div>
 
     <!-- ── Status bar ── -->

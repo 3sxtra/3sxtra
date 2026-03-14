@@ -15,44 +15,27 @@
     border-color: rgba(140, 80, 200, 80); /* Purple tint for casual mode */
 }
 
-/* ─── Title bar (compact) ──────────────────────────────────────── */
+/* ─── Title bar (transparent, matches network lobby) ──────────── */
 
 #lobby-title-bar {
     display: block;
     height: 16dp;
-    background-color: rgba(130, 30, 180, 220);
-    padding: 2dp 8dp 0dp 8dp;
+    padding: 3dp 8dp 1dp 8dp;
+    text-align: center;
+    border-top-width: 1dp;
+    border-top-color: rgba(255, 255, 255, 200);
     border-bottom-width: 1dp;
-    border-bottom-color: rgba(255, 255, 255, 30);
+    border-bottom-color: rgba(255, 255, 255, 200);
 }
 
 #lobby-title-text {
-    display: inline;
+    display: block;
     font-size: 11dp;
-    color: rgba(15, 8, 8, 230);
-    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 60));
-}
-
-#room-code-chip {
-    display: inline;
-    margin-left: 8dp;
-    background-color: rgba(0, 0, 0, 100);
-    border-width: 1dp;
-    border-color: rgba(255, 255, 255, 60);
-    padding: 0dp 4dp;
-}
-
-#room-code-label {
-    display: inline;
-    font-size: 6dp;
-    color: rgba(200, 200, 200, 160);
-    margin-right: 3dp;
-}
-
-#room-code-value {
-    display: inline;
-    font-size: 8dp;
-    color: rgba(255, 230, 120, 240);
+    color: #fff;
+    font-weight: bold;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
+    text-align: center;
+    background-color: transparent;
 }
 
 /* ─── Layout: Left (Match/Queue) + Right (Chat) ──────────────── */
@@ -540,4 +523,48 @@
     background-color: rgba(180, 40, 40, 255);
     border-color: rgba(255, 100, 100, 255);
     color: rgba(255, 255, 255, 255);
+}
+
+/* ─── Chat Popup (inline overlay, Pi4 compatible) ────────────── */
+
+#chat-popup {
+    display: block;
+    position: absolute;
+    top: 60dp;
+    left: 60dp;
+    width: 264dp;
+    background-color: rgba(8, 6, 18, 240);
+    border-width: 2dp;
+    border-color: rgba(80, 140, 220, 200);
+    padding: 8dp 10dp 6dp 10dp;
+}
+
+#chat-popup-title {
+    display: block;
+    font-size: 10dp;
+    color: rgba(200, 220, 255, 255);
+    margin-bottom: 6dp;
+}
+
+#chat-popup-text {
+    display: block;
+    font-size: 9dp;
+    padding: 3dp 4dp;
+    color: #fff;
+    background-color: rgba(20, 20, 40, 200);
+    border-width: 1dp;
+    border-color: rgba(100, 140, 220, 150);
+    min-height: 12dp;
+}
+
+.cursor-blink {
+    display: inline;
+    color: rgba(100, 180, 255, 200);
+}
+
+.chat-help {
+    display: block;
+    font-size: 6dp;
+    color: rgba(160, 170, 200, 160);
+    margin-top: 4dp;
 }

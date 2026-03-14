@@ -27,7 +27,6 @@ extern "C" {
 
 #include <RmlUi/Core/Input.h>
 
-static Rml::ElementDocument* s_chat_doc = nullptr;
 static bool s_chat_open = false;
 
 // Chat popup is now a game context document using data bindings (chat_input, is_typing).
@@ -621,20 +620,13 @@ extern "C" void rmlui_casual_lobby_update(void) {
     // Confirm Buttons (LP=0x0100, Start=0x0800)
     if (trigger & (0x0100 | 0x0800)) {
         if (s_cursor_x == 1) { // Chat
-            // Load chat popup in game context (uses casual_lobby data model)
-            Rml::Context* game_ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
-            if (game_ctx && !s_chat_doc) {
-                s_chat_doc = game_ctx->LoadDocument("assets/ui/casual_lobby_chat.rml");
-            }
-            if (s_chat_doc) {
-                s_chat_open = true;
-                s_is_typing = true;
-                s_chat_input = "";
-                s_model_handle.DirtyVariable("is_typing");
-                s_model_handle.DirtyVariable("chat_input");
-                s_chat_doc->Show(Rml::ModalFlag::None, Rml::FocusFlag::None);
-                SDL_StartTextInput(SDL_GetKeyboardFocus());
-            }
+            // Chat popup is inline in casual_lobby.rml via data-if="is_typing"
+            s_chat_open = true;
+            s_is_typing = true;
+            s_chat_input = "";
+            s_model_handle.DirtyVariable("is_typing");
+            s_model_handle.DirtyVariable("chat_input");
+            SDL_StartTextInput(SDL_GetKeyboardFocus());
         } else {
             if (s_cursor_y == 0 && !s_is_playing && s_match_active) {
                 // Spectate — hide lobby overlay so game view is visible
@@ -703,10 +695,7 @@ extern "C" void rmlui_casual_lobby_shutdown(void) {
         if (ctx) ctx->RemoveDataModel("casual_lobby");
         s_model_registered = false;
     }
-    if (s_chat_doc) {
-        s_chat_doc->Close();
-        s_chat_doc = nullptr;
-    }
+    // Chat popup is inline — no separate document to close
     s_proposal_active = 0;
 }
 
