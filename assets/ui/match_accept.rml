@@ -27,7 +27,7 @@
     <!-- Countdown -->
     <div id="ma-countdown-section">
         <div id="ma-countdown-bar-bg">
-            <div id="ma-countdown-bar-fill" data-style-width="{{proposal_countdown_pct}}%"/>
+            <div id="ma-countdown-bar-fill" data-style-width="proposal_countdown_pct + '%'"/>
         </div>
         <div id="ma-countdown-text">{{proposal_countdown}}s</div>
     </div>

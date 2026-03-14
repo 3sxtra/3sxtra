@@ -1,53 +1,49 @@
 <rml>
 <head>
-    <link type="text/rcss" href="common.rcss"/>
+    <link type="text/rcss" href="base.rcss"/>
     <style>
-        body {
-            font-family: NotoSansJP;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 180);
-        }
         #join-popup {
-            display: flex;
-            flex-direction: column;
-            width: 50%;
-            background: #111;
-            border: 2px solid #c90;
-            padding: 20px;
+            display: block;
+            position: absolute;
+            top: 70dp;
+            left: 80dp;
+            width: 224dp;
+            background-color: rgba(8, 6, 18, 240);
+            border-width: 2dp;
+            border-color: rgba(204, 153, 0, 200);
+            padding: 8dp 10dp 6dp 10dp;
         }
         h2 {
-            font-size: 24px;
-            color: #fc0;
-            margin-bottom: 20px;
+            display: block;
+            font-size: 10dp;
+            color: rgba(255, 210, 40, 255);
+            margin-bottom: 6dp;
         }
         input {
-            font-size: 28px;
-            padding: 10px;
+            display: block;
+            font-size: 12dp;
+            padding: 3dp 4dp;
             color: #fff;
-            background: #222;
-            border: 1px solid #777;
+            background-color: rgba(20, 20, 40, 200);
+            border-width: 1dp;
+            border-color: rgba(204, 153, 0, 150);
             width: 100%;
             text-transform: uppercase;
-            letter-spacing: 8px;
-            text-align: center;
+            letter-spacing: 4dp;
         }
         .help {
-            font-size: 16px;
-            color: #888;
-            margin-top: 10px;
-            text-align: right;
+            display: block;
+            font-size: 6dp;
+            color: rgba(160, 170, 200, 160);
+            margin-top: 4dp;
         }
     </style>
 </head>
 <body>
-    <div id="join-popup">
-        <h2>JOIN ROOM</h2>
-        <input type="text" id="room-code-field" maxlength="4" />
-        <div class="help">Enter 4-char room code, press ENTER to join</div>
-    </div>
+<div id="join-popup">
+    <h2>ENTER ROOM CODE</h2>
+    <input type="text" id="room-code-field" maxlength="4" />
+    <div class="help">Type 4-letter code, press ENTER to join, ESC or BACK to cancel</div>
+</div>
 </body>
 </rml>

@@ -146,6 +146,15 @@ try {
 // Structure: Room { id: string, name: string, host: string, players: string[], state: 'waiting'|'playing' }
 const rooms = new Map();
 
+// Per-pair decline cooldown to prevent infinite re-proposal loops
+// Key: "roomCode:idA-idB" (sorted), Value: expiry timestamp
+const matchDeclineCooldowns = new Map();
+
+function makeMatchPairKey(roomCode, id1, id2) {
+    const sorted = [id1, id2].sort();
+    return `${roomCode}:${sorted[0]}-${sorted[1]}`;
+}
+
 function generateRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude I,O,1,0
     let code;
@@ -170,7 +179,7 @@ function getRoomState(room) {
         host: room.host,
         players: room.players.map(id => {
             const p = players.get(id);
-            return { player_id: id, display_name: p ? p.display_name : id, region: p ? p.region : '' };
+            return { player_id: id, display_name: p ? p.display_name : id, region: p ? p.region : '', country: p ? p.country : '' };
         }),
         queue: room.queue,
         match: room.match,
@@ -187,38 +196,56 @@ function tryStartMatch(room) {
     if (room.match && (room.match.state === 'playing' || room.match.state === 'proposed')) return false;
     if (room.queue.length < 2) return false;
 
-    const p1 = room.queue.shift();
-    const p2 = room.queue.shift();
+    const now = Date.now();
 
-    const p1_data = players.get(p1);
-    const p2_data = players.get(p2);
+    // Find first viable pair (skip pairs on decline cooldown)
+    for (let i = 0; i < room.queue.length - 1; i++) {
+        for (let j = i + 1; j < room.queue.length; j++) {
+            const id1 = room.queue[i];
+            const id2 = room.queue[j];
+            const pairKey = makeMatchPairKey(room.id, id1, id2);
+            const cd = matchDeclineCooldowns.get(pairKey);
+            if (cd && now < cd) continue; // still on cooldown
 
-    room.match = {
-        p1, p2,
-        state: 'proposed',
-        accepts: { [p1]: false, [p2]: false },
-        proposed_at: Date.now()
-    };
+            // Found a viable pair — remove them from queue
+            room.queue.splice(j, 1); // remove j first (higher index)
+            room.queue.splice(i, 1);
 
-    broadcastRoomEvent(room, 'match_propose', {
-        p1: {
-            id: p1, name: getPlayerName(p1),
-            connection_type: p1_data ? p1_data.connection_type : 'unknown',
-            rtt_ms: p1_data ? p1_data.rtt_ms : -1,
-            region: p1_data ? p1_data.region : '',
-            room_code: p1_data ? p1_data.room_code : ''
-        },
-        p2: {
-            id: p2, name: getPlayerName(p2),
-            connection_type: p2_data ? p2_data.connection_type : 'unknown',
-            rtt_ms: p2_data ? p2_data.rtt_ms : -1,
-            region: p2_data ? p2_data.region : '',
-            room_code: p2_data ? p2_data.room_code : ''
+            const p1 = id1;
+            const p2 = id2;
+            const p1_data = players.get(p1);
+            const p2_data = players.get(p2);
+
+            room.match = {
+                p1, p2,
+                state: 'proposed',
+                accepts: { [p1]: false, [p2]: false },
+                proposed_at: now
+            };
+
+            broadcastRoomEvent(room, 'match_propose', {
+                p1: {
+                    id: p1, name: getPlayerName(p1),
+                    connection_type: p1_data ? p1_data.connection_type : 'unknown',
+                    rtt_ms: p1_data ? p1_data.rtt_ms : -1,
+                    region: p1_data ? p1_data.region : '',
+                    room_code: p1_data ? p1_data.room_code : ''
+                },
+                p2: {
+                    id: p2, name: getPlayerName(p2),
+                    connection_type: p2_data ? p2_data.connection_type : 'unknown',
+                    rtt_ms: p2_data ? p2_data.rtt_ms : -1,
+                    region: p2_data ? p2_data.region : '',
+                    room_code: p2_data ? p2_data.room_code : ''
+                }
+            });
+            broadcastRoomEvent(room, 'queue_update', { queue: room.queue });
+            console.log(`[room] match proposed in ${room.id}: ${getPlayerName(p1)} vs ${getPlayerName(p2)}`);
+            return true;
         }
-    });
-    broadcastRoomEvent(room, 'queue_update', { queue: room.queue });
-    console.log(`[room] match proposed in ${room.id}: ${getPlayerName(p1)} vs ${getPlayerName(p2)}`);
-    return true;
+    }
+
+    return false; // no viable pairs
 }
 
 /**
@@ -248,6 +275,12 @@ function cancelProposal(room, declinerId) {
     const reason = declinerId ? 'declined' : 'timeout';
 
     room.match = null;
+
+    // Record cooldown to prevent instant re-proposal of same pair
+    // Decline: 30s, Timeout: 15s (shorter, they may want to retry)
+    const pairKey = makeMatchPairKey(room.id, p1, p2);
+    const cooldownMs = declinerId ? 30_000 : 15_000;
+    matchDeclineCooldowns.set(pairKey, Date.now() + cooldownMs);
 
     if (declinerId) {
         // Decliner to back of queue; other player stays at front
@@ -403,15 +436,23 @@ function getTier(rating) {
 // Cleanup stale players and expired decline cooldowns every 5 seconds
 const cleanupTimer = setInterval(() => {
     const now = Date.now();
+    const evictedIds = [];
     for (const [id, p] of players) {
         if (now - p.last_seen > 10_000) {
             players.delete(id);
+            evictedIds.push(id);
         }
     }
     // Clean expired decline records
     for (const [key, cd] of declineCooldowns) {
         if (now > cd.until) {
             declineCooldowns.delete(key);
+        }
+    }
+    // Clean expired match-pair decline cooldowns
+    for (const [key, expiry] of matchDeclineCooldowns) {
+        if (now > expiry) {
+            matchDeclineCooldowns.delete(key);
         }
     }
     // Clean stale pending match results (>60s)
@@ -426,6 +467,47 @@ const cleanupTimer = setInterval(() => {
             now - room.match.proposed_at > 10_000) {
             console.log(`[room] match proposal timed out in ${room.id}`);
             cancelProposal(room, null);
+        }
+    }
+    // Evict stale players from rooms and clean up empty rooms
+    if (evictedIds.length > 0) {
+        for (const [code, room] of rooms) {
+            const before = room.players.length;
+            for (const staleId of evictedIds) {
+                if (!room.players.includes(staleId)) continue;
+
+                // Handle active/proposed match forfeit
+                if (room.match && (room.match.p1 === staleId || room.match.p2 === staleId)) {
+                    const other = room.match.p1 === staleId ? room.match.p2 : room.match.p1;
+                    if (room.match.state === 'proposed') {
+                        room.match = null;
+                        room.queue.unshift(other);
+                    } else if (room.match.state === 'playing') {
+                        broadcastRoomEvent(room, 'match_end', {
+                            winner_id: other, winner_name: getPlayerName(other),
+                            loser_id: staleId, reason: 'disconnect'
+                        });
+                        room.queue.unshift(other);
+                        room.match = null;
+                    }
+                }
+
+                room.players = room.players.filter(p => p !== staleId);
+                room.queue = room.queue.filter(p => p !== staleId);
+                broadcastRoomEvent(room, 'leave', { player_id: staleId });
+            }
+
+            if (room.players.length === 0) {
+                console.log(`[room] ${code} auto-closed (all players stale)`);
+                rooms.delete(code);
+            } else if (room.players.length < before) {
+                // Host migration if host was evicted
+                if (!room.players.includes(room.host)) {
+                    room.host = room.players[0];
+                    broadcastRoomEvent(room, 'host_migrated', { host: room.host });
+                }
+                tryStartMatch(room);
+            }
         }
     }
 }, 5_000);
@@ -601,6 +683,19 @@ async function handleRequest(req, res) {
         const room = rooms.get(roomCode);
         if (!room) return json(res, 404, { error: 'Room not found' });
         return json(res, 200, getRoomState(room));
+    }
+
+    // --- Room List (read-only, no auth — returns public room summaries) ---
+    if (method === 'GET' && path === '/rooms/list') {
+        const list = [];
+        for (const [code, room] of rooms) {
+            list.push({
+                code: room.id,
+                name: room.name,
+                player_count: room.players.length
+            });
+        }
+        return json(res, 200, { rooms: list });
     }
 
     // Auth check (all other endpoints)

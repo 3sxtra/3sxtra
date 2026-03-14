@@ -10,10 +10,6 @@
     <!-- ── Title bar ── -->
     <div id="lobby-title-bar">
         <div id="lobby-title-text">NETWORK LOBBY</div>
-        <div id="room-code-chip" data-if="room_code != ''">
-            <span id="room-code-label">ROOM</span>
-            <span id="room-code-value">{{room_code}}</span>
-        </div>
     </div>
 
     <!-- ── Main content: left menu + right peer panels ── -->
@@ -35,7 +31,7 @@
             <div class="section-header net-header">INTERNET</div>
 
             <div class="lobby-row" data-class-focused="cursor == 2">
-                <span class="lobby-cell-label">AUTO-CONNECT</span>
+                <span class="lobby-cell-label">AUTO-ACCEPT</span>
                 <span class="lobby-cell-value" data-class-on="net_auto">{{net_auto ? 'ON' : 'OFF'}}</span>
             </div>
             <div class="lobby-row" data-class-focused="cursor == 3">
@@ -86,11 +82,9 @@
                     <span class="peer-panel-count empty" data-if="lan_peer_count == 0">none</span>
                 </div>
                 <div class="peer-list">
-                    <div data-for="p : lan_peers"
+                    <div data-if="lan_peer_count > 0" data-for="p : lan_peers"
                          class="peer-list-item"
                          data-class-selected="p.selected">
-                        <span class="peer-list-bullet" data-if="p.selected">▶</span>
-                        <span class="peer-list-bullet" data-if="!p.selected"> </span>
                         <span class="peer-list-name">{{p.name}}</span>
                     </div>
                     <div class="peer-list-empty" data-if="lan_peer_count == 0">
@@ -108,12 +102,10 @@
                     <span class="peer-panel-count idle" data-if="!net_searching">idle</span>
                 </div>
                 <div class="peer-list">
-                    <div data-for="p : net_peers"
+                    <div data-if="net_peer_count > 0" data-for="p : net_peers"
                          class="peer-list-item"
                          data-class-selected="p.selected">
-                        <span class="peer-list-bullet" data-if="p.selected">▶</span>
-                        <span class="peer-list-bullet" data-if="!p.selected"> </span>
-                        <span class="peer-list-country" data-if="p.country != ''">{{p.country}}</span>
+                        <img class="peer-list-flag" data-attr-src="p.flag_icon" data-if="p.flag_icon != ''"/>
                         <span class="peer-list-name">{{p.name}}</span>
                         <span class="peer-list-conn" data-class-wifi="p.conn_type == 'wifi'">{{p.conn_type == 'wifi' ? 'WiFi' : ''}}</span>
                         <span class="peer-list-ping" data-class-ping-good="p.ping_class == 'ping-good'"
@@ -126,6 +118,26 @@
                     </div>
                     <div class="peer-list-empty searching" data-if="net_searching &amp;&amp; net_peer_count == 0">
                         looking for players...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Rooms -->
+            <div class="peer-panel">
+                <div class="peer-panel-header">
+                    <span class="peer-panel-title">ROOMS</span>
+                    <span class="peer-panel-count" data-if="room_count > 0">{{room_count}} active</span>
+                    <span class="peer-panel-count empty" data-if="room_count == 0">none</span>
+                </div>
+                <div class="peer-list">
+                    <div data-if="room_count > 0" data-for="r : room_list"
+                         class="peer-list-item"
+                         data-class-selected="r.selected">
+                        <span class="peer-list-name">{{r.name}}</span>
+                        <span class="room-list-count">{{r.player_count}}/8</span>
+                    </div>
+                    <div class="peer-list-empty" data-if="room_count == 0">
+                        no active rooms
                     </div>
                 </div>
             </div>

@@ -872,6 +872,20 @@ extern "C" bool rmlui_wrapper_any_window_visible(void) {
     return s_any_window_visible;
 }
 
+static int s_window_popup_count = 0;
+
+extern "C" void rmlui_wrapper_set_window_popup_visible(bool visible) {
+    if (visible) {
+        s_window_popup_count++;
+        s_any_window_visible = true;
+    } else {
+        if (s_window_popup_count > 0) s_window_popup_count--;
+        if (s_window_popup_count == 0) {
+            s_any_window_visible = recompute_visible(s_window_documents);
+        }
+    }
+}
+
 extern "C" void rmlui_wrapper_close_game_document(const char* name) {
     if (!name)
         return;

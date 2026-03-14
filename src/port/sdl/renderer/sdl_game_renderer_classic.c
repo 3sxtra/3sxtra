@@ -495,7 +495,9 @@ void SDLGameRendererClassic_UnlockPalette(unsigned int ph) {
 // --- SetTexture: use SDL's built-in palette+surface → texture conversion ---
 
 void SDLGameRendererClassic_SetTexture(unsigned int th) {
-    TRACE_ZONE_N("Classic:SetTexture");
+    // Fast path: skip all work (including Tracy) when texture handle unchanged
+    if (th == cl_current_th && cl_current_texture != NULL) return;
+
     const int texture_handle = LO_16_BITS(th);
     const int palette_handle = HI_16_BITS(th);
     const int texture_index = texture_handle - 1;
@@ -503,7 +505,6 @@ void SDLGameRendererClassic_SetTexture(unsigned int th) {
     if (texture_handle < 1 || texture_handle > FL_TEXTURE_MAX) {
         cl_current_texture = NULL;
         cl_current_th = th;
-        TRACE_ZONE_END();
         return;
     }
 
@@ -511,21 +512,20 @@ void SDLGameRendererClassic_SetTexture(unsigned int th) {
     if (!surface) {
         cl_current_texture = NULL;
         cl_current_th = th;
-        TRACE_ZONE_END();
         return;
     }
     cl_current_th = th;
 
     if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
-        // Check flat cache first
+        // Check flat cache first (no Tracy overhead for cache hits)
         if (palette_handle > 0 && palette_handle <= FL_PALETTE_MAX &&
             cl_tex_cache[texture_index][palette_handle] != NULL) {
             cl_current_texture = cl_tex_cache[texture_index][palette_handle];
-            TRACE_ZONE_END();
             return;
         }
 
-        // Cache miss: use SDL_SetSurfacePalette + SDL_CreateTextureFromSurface
+        // Cache miss: instrument only this slow path
+        TRACE_ZONE_N("Classic:SetTexture");
         if (palette_handle > 0 && palette_handle <= FL_PALETTE_MAX) {
             if (cl_palettes[palette_handle - 1] != NULL) {
                 SDL_SetSurfacePalette(surface, cl_palettes[palette_handle - 1]);
@@ -549,11 +549,11 @@ void SDLGameRendererClassic_SetTexture(unsigned int th) {
             SDL_Log(
                 "Classic SetTexture: Invalid palette_handle %d for indexed texture %d", palette_handle, texture_handle);
         }
+        TRACE_ZONE_END();
     } else {
         // Non-indexed: use eagerly created texture at slot 0
         cl_current_texture = cl_tex_cache[texture_index][0];
     }
-    TRACE_ZONE_END();
 }
 
 // --- Drawing ---

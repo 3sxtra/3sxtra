@@ -86,6 +86,10 @@ bool rmlui_wrapper_any_game_visible(void);
 /// ⚡ Fast check: are ANY window-context documents visible? (cached bool, no map lookup)
 bool rmlui_wrapper_any_window_visible(void);
 
+/// Notify the wrapper that a popup loaded directly (bypassing show_document) is visible.
+/// Pass true when showing, false when hiding. Ensures keyboard events reach the popup.
+void rmlui_wrapper_set_window_popup_visible(bool visible);
+
 /// Close and destroy a named document in the game context
 void rmlui_wrapper_close_game_document(const char* name);
 

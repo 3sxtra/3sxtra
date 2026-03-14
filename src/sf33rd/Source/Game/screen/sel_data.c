@@ -231,11 +231,11 @@ const s16 Slide_Pos_Data_61[81][2] = {
     { -150, 105 }, /* [71] AUTO-SEARCH (NET)     screen y≈129 */
     { -150, 91 },  /* [72] CONNECT (NET)         screen y≈143 */
     { -150, 69 },  /* [73] EXIT                  screen y≈155 */
-    /* Network Gateway strings [74-77] */
-    { -88, 152 },  /* [74] NATIVE   */
-    { -72, 122 },  /* [75] RMLUI    */
-    { -56, 92 },   /* [76] LAN ONLY */
-    { -40, 62 },   /* [77] EXIT     */
+    /* Network Gateway strings [74-76] (3-item menu) */
+    { -88, 142 },  /* [74] LOBBY MODE     */
+    { -72, 112 },  /* [75] LOCAL NETWORK  */
+    { -56, 82 },   /* [76] EXIT           */
+    { -40, 62 },   /* [77] (unused)       */
     /* LAN-only lobby strings [78-80] */
     { -150, 157 }, /* [78] AUTO-CONN */
     { -150, 133 }, /* [79] CONNECT   */

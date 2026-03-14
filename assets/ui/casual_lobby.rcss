@@ -205,7 +205,7 @@
 
 .queue-list {
     display: block;
-    height: 48dp;
+    height: 40dp;
     overflow-y: auto;
 }
 
@@ -277,11 +277,62 @@
     color: #fff;
 }
 
+/* ─── Player List Panel ──────────────────────────────────────── */
+
+#player-list {
+    display: block;
+    height: 45dp;
+    overflow-y: auto;
+    margin-bottom: 2dp;
+}
+
+.player-row {
+    display: block;
+    padding: 1dp 2dp;
+    font-size: 7dp;
+    color: rgba(190, 200, 225, 200);
+}
+
+.player-row.self .player-list-name {
+    color: rgba(90, 240, 150, 255);
+}
+
+.player-row.playing {
+    background-color: rgba(120, 30, 30, 80);
+}
+
+.player-row.playing .player-list-name {
+    color: rgba(255, 210, 70, 240);
+}
+
+.player-row.queued {
+    background-color: rgba(20, 40, 80, 80);
+}
+
+.player-flag {
+    display: inline;
+    width: 10dp;
+    height: 7dp;
+    margin-right: 2dp;
+    vertical-align: middle;
+}
+
+.player-list-name {
+    display: inline;
+}
+
+.player-status {
+    display: inline;
+    font-size: 6dp;
+    color: rgba(255, 210, 70, 220);
+    margin-left: 2dp;
+}
+
 /* ─── Chat Panel ─────────────────────────────────────────────── */
 
 #chat-messages {
     display: block;
-    height: 148dp;
+    height: 95dp;
     overflow-y: auto;
     margin-bottom: 2dp;
 }
@@ -364,4 +415,129 @@
     display: block;
     font-size: 8dp;
     color: rgba(255, 210, 70, 240);
+}
+
+/* ─── Match Accept Popup (inline overlay) ────────────────────── */
+
+#match-accept-panel {
+    display: block;
+    position: absolute;
+    top: 60dp;
+    left: 100dp;
+    width: 184dp;
+    background-color: rgba(8, 6, 18, 240);
+    border-width: 2dp;
+    border-color: rgba(255, 210, 40, 200);
+    padding: 8dp 10dp 6dp 10dp;
+}
+
+#ma-title {
+    display: block;
+    text-align: center;
+    font-size: 12dp;
+    color: rgba(255, 210, 40, 255);
+    letter-spacing: 2dp;
+    margin-bottom: 6dp;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 180));
+}
+
+#ma-opponent-section {
+    display: block;
+    background-color: rgba(20, 15, 35, 200);
+    border-width: 1dp;
+    border-color: rgba(130, 80, 200, 120);
+    padding: 4dp 6dp;
+    margin-bottom: 6dp;
+}
+
+#ma-opponent-label {
+    display: block;
+    font-size: 6dp;
+    color: rgba(170, 170, 200, 150);
+    margin-bottom: 1dp;
+}
+
+#ma-opponent-name {
+    display: block;
+    font-size: 11dp;
+    color: rgba(255, 255, 255, 255);
+    margin-bottom: 2dp;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
+}
+
+#ma-opponent-details {
+    display: block;
+    font-size: 7dp;
+}
+
+.ma-detail-item {
+    display: inline;
+    color: rgba(200, 220, 255, 200);
+    margin-right: 8dp;
+}
+
+#ma-countdown-section {
+    display: block;
+    margin-bottom: 6dp;
+}
+
+#ma-countdown-bar-bg {
+    display: block;
+    height: 4dp;
+    background-color: rgba(40, 40, 60, 200);
+    border-width: 1dp;
+    border-color: rgba(100, 100, 140, 100);
+}
+
+#ma-countdown-bar-fill {
+    display: block;
+    height: 100%;
+    background-color: rgba(100, 255, 100, 200);
+}
+
+#ma-countdown-text {
+    display: block;
+    text-align: center;
+    font-size: 8dp;
+    color: rgba(200, 200, 200, 180);
+    margin-top: 1dp;
+}
+
+#ma-buttons {
+    display: block;
+    text-align: center;
+}
+
+#ma-btn-accept, #ma-btn-decline {
+    display: inline-block;
+    width: 76dp;
+    height: 16dp;
+    line-height: 16dp;
+    text-align: center;
+    font-size: 9dp;
+    margin: 0 4dp;
+    border-width: 1dp;
+    border-color: transparent;
+}
+
+#ma-btn-accept {
+    background-color: rgba(20, 80, 30, 220);
+    color: rgba(120, 255, 120, 240);
+}
+
+#ma-btn-accept.focused {
+    background-color: rgba(40, 180, 60, 255);
+    border-color: rgba(100, 255, 100, 255);
+    color: rgba(255, 255, 255, 255);
+}
+
+#ma-btn-decline {
+    background-color: rgba(80, 20, 20, 220);
+    color: rgba(255, 120, 120, 240);
+}
+
+#ma-btn-decline.focused {
+    background-color: rgba(180, 40, 40, 255);
+    border-color: rgba(255, 100, 100, 255);
+    color: rgba(255, 255, 255, 255);
 }

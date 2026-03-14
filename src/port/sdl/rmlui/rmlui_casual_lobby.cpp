@@ -30,35 +30,8 @@ extern "C" {
 static Rml::ElementDocument* s_chat_doc = nullptr;
 static bool s_chat_open = false;
 
-class ChatSubmitListener : public Rml::EventListener {
-public:
-    void ProcessEvent(Rml::Event& event) override {
-        if (event.GetId() == Rml::EventId::Keydown) {
-            auto key = (Rml::Input::KeyIdentifier)event.GetParameter<int>("key_identifier", 0);
-            if (key == Rml::Input::KI_RETURN || key == Rml::Input::KI_NUMPADENTER) {
-                Rml::Element* input = event.GetTargetElement();
-                Rml::String text = input->GetAttribute<Rml::String>("value", "");
-                if (!text.empty()) {
-                    extern Rml::String s_room_code;
-                    LobbyServer_SendChat(s_room_code.c_str(), text.c_str());
-                    input->SetAttribute("value", "");
-                }
-                if (s_chat_doc) {
-                    s_chat_doc->Hide();
-                    s_chat_doc->GetOwnerDocument()->GetContext()->GetRootElement()->Focus(); // Remove focus
-                }
-                s_chat_open = false;
-            } else if (key == Rml::Input::KI_ESCAPE) {
-                if (s_chat_doc) {
-                    s_chat_doc->Hide();
-                    s_chat_doc->GetOwnerDocument()->GetContext()->GetRootElement()->Focus();
-                }
-                s_chat_open = false;
-            }
-        }
-    }
-};
-static ChatSubmitListener s_chat_listener;
+// Chat popup is now a game context document using data bindings (chat_input, is_typing).
+// Keyboard input is handled via SDL events in the input handler below.
 
 // ─── Data Structs for RmlUi ──────────────────────────────────────
 
@@ -66,6 +39,14 @@ struct RmlQueuePlayer {
     int index;
     Rml::String name;
     bool is_self;
+};
+
+struct RmlRoomPlayer {
+    Rml::String name;
+    Rml::String country;
+    bool is_self;
+    bool is_playing;
+    bool is_queued;
 };
 
 struct RmlChatMessage {
@@ -94,6 +75,7 @@ static bool s_is_spectating = false;
 static bool s_in_queue = false;
 
 static std::vector<RmlQueuePlayer> s_queue;
+static std::vector<RmlRoomPlayer> s_players;
 static std::vector<RmlChatMessage> s_chat;
 
 static Rml::String s_chat_input;
@@ -114,7 +96,6 @@ static int s_proposal_countdown = 10;
 static int s_proposal_countdown_pct = 100; // 0-100 for countdown bar width
 static int s_proposal_cursor = 0; // 0 = accept, 1 = decline
 static Uint64 s_proposal_start_time = 0;
-static Rml::ElementDocument* s_match_accept_doc = nullptr;
 static char s_proposal_opponent_room_code[32] = {0};
 static char s_proposal_opponent_region[8] = {0};
 static bool s_proposal_we_are_p1 = false;
@@ -174,6 +155,16 @@ extern "C" void rmlui_casual_lobby_init(void) {
     ctor.RegisterArray<std::vector<RmlQueuePlayer>>();
     ctor.Bind("queue_players", &s_queue);
 
+    if (auto h = ctor.RegisterStruct<RmlRoomPlayer>()) {
+        h.RegisterMember("name", &RmlRoomPlayer::name);
+        h.RegisterMember("country", &RmlRoomPlayer::country);
+        h.RegisterMember("is_self", &RmlRoomPlayer::is_self);
+        h.RegisterMember("is_playing", &RmlRoomPlayer::is_playing);
+        h.RegisterMember("is_queued", &RmlRoomPlayer::is_queued);
+    }
+    ctor.RegisterArray<std::vector<RmlRoomPlayer>>();
+    ctor.Bind("room_players", &s_players);
+
     if (auto h = ctor.RegisterStruct<RmlChatMessage>()) {
         h.RegisterMember("sender", &RmlChatMessage::sender);
         h.RegisterMember("text", &RmlChatMessage::text);
@@ -193,6 +184,7 @@ extern "C" void rmlui_casual_lobby_init(void) {
     ctor.Bind("is_playing", &s_is_playing);
     ctor.Bind("is_spectating", &s_is_spectating);
     ctor.Bind("in_queue", &s_in_queue);
+    ctor.BindFunc("queue_count", [](Rml::Variant& v) { v = (int)s_queue.size(); });
 
     ctor.Bind("chat_input", &s_chat_input);
     ctor.Bind("is_typing", &s_is_typing);
@@ -259,6 +251,28 @@ static void apply_room_state_to_model(void) {
         s_queue.push_back(qp);
     }
 
+    // Player list (all connected users with status)
+    s_players.clear();
+    for (int i = 0; i < s_room_state.player_count; i++) {
+        RmlRoomPlayer rp;
+        rp.name = s_room_state.players[i].display_name;
+        rp.country = s_room_state.players[i].country;
+        // Flag PNGs are lowercase (e.g. "pt.png"), server sends uppercase ("PT")
+        for (auto& ch : rp.country) ch = (char)tolower((unsigned char)ch);
+        rp.is_self = (s_my_id == s_room_state.players[i].player_id);
+        rp.is_playing = (strcmp(s_room_state.players[i].player_id, s_room_state.match_p1) == 0 ||
+                         strcmp(s_room_state.players[i].player_id, s_room_state.match_p2) == 0) &&
+                        s_room_state.match_active;
+        rp.is_queued = false;
+        for (int q = 0; q < s_room_state.queue_count; q++) {
+            if (strcmp(s_room_state.players[i].player_id, s_room_state.queue[q]) == 0) {
+                rp.is_queued = true;
+                break;
+            }
+        }
+        s_players.push_back(rp);
+    }
+
     // Chat
     s_chat.clear();
     for (int i = 0; i < s_room_state.chat_count; i++) {
@@ -277,6 +291,8 @@ static void apply_room_state_to_model(void) {
     s_model_handle.DirtyVariable("is_playing");
     s_model_handle.DirtyVariable("in_queue");
     s_model_handle.DirtyVariable("queue_players");
+    s_model_handle.DirtyVariable("queue_count");
+    s_model_handle.DirtyVariable("room_players");
     s_model_handle.DirtyVariable("chat_messages");
 }
 
@@ -286,6 +302,15 @@ static void refresh_room_state_from_server(void) {
     // Use the read-only GET /room/state endpoint (no re-join side effect)
     if (LobbyServer_GetRoomState(s_room_code.c_str(), &s_room_state)) {
         apply_room_state_to_model();
+    } else {
+        // Room may have been destroyed (404) — navigate back gracefully
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                    "[CasualLobby] Room %s no longer exists on server, returning to lobby",
+                    s_room_code.c_str());
+        s_status_text = "Room closed.";
+        if (s_model_handle) s_model_handle.DirtyVariable("status_text");
+        rmlui_casual_lobby_hide();
+        rmlui_network_lobby_show();
     }
 }
 
@@ -350,14 +375,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 snprintf(s_proposal_opponent_room_code, sizeof(s_proposal_opponent_room_code), "%s", opp_room);
                 snprintf(s_proposal_opponent_region, sizeof(s_proposal_opponent_region), "%s", opp_region);
 
-                // Show popup document
-                Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-                if (ctx && !s_match_accept_doc) {
-                    s_match_accept_doc = ctx->LoadDocument("assets/ui/match_accept.rml");
-                }
-                if (s_match_accept_doc) {
-                    s_match_accept_doc->Show(Rml::ModalFlag::None, Rml::FocusFlag::None);
-                }
+                // Popup is inline in casual_lobby.rml — data-if="proposal_active" shows it
 
                 s_status_text = Rml::String("Match proposed: ") + sse_evt.propose_p1_name + " vs " + sse_evt.propose_p2_name;
                 SDL_Log("Casual Lobby: Match proposed! %s vs %s", sse_evt.propose_p1_name, sse_evt.propose_p2_name);
@@ -377,7 +395,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
             // Phase 6: Proposal declined or timed out
             if (s_proposal_active) {
                 s_proposal_active = 0;
-                if (s_match_accept_doc) s_match_accept_doc->Hide();
+
                 s_model_handle.DirtyVariable("proposal_active");
 
                 bool we_declined = (strcmp(sse_evt.propose_decliner_id, s_my_id.c_str()) == 0);
@@ -398,7 +416,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
             // Hide proposal popup if still showing
             if (s_proposal_active) {
                 s_proposal_active = 0;
-                if (s_match_accept_doc) s_match_accept_doc->Hide();
+
                 s_model_handle.DirtyVariable("proposal_active");
             }
 
@@ -469,6 +487,19 @@ extern "C" void rmlui_casual_lobby_update(void) {
     }
 
     if (s_chat_open) {
+        // Allow gamepad cancel/back button to close chat popup
+        u16 chat_trigger = 0;
+        for (int i = 0; i < 2; i++) {
+            chat_trigger |= (~PLsw[i][1] & PLsw[i][0]);
+        }
+        if (chat_trigger & 0x0200) { // Cancel/Back
+            s_chat_open = false;
+            s_is_typing = false;
+            s_chat_input = "";
+            s_model_handle.DirtyVariable("is_typing");
+            s_model_handle.DirtyVariable("chat_input");
+            SDL_StopTextInput(SDL_GetKeyboardFocus());
+        }
         return; // Suspend lobby navigation while chat is open
     }
 
@@ -493,7 +524,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
             if (remaining <= 0) {
                 // Auto-decline on timeout
                 s_proposal_active = 0;
-                if (s_match_accept_doc) s_match_accept_doc->Hide();
+
                 s_model_handle.DirtyVariable("proposal_active");
                 AsyncMatchAction(s_room_code.c_str(), 2);
                 s_status_text = "Timed out — auto-declined.";
@@ -527,7 +558,6 @@ extern "C" void rmlui_casual_lobby_update(void) {
             if (s_proposal_cursor == 0) {
                 // Accept
                 s_proposal_active = 0;
-                if (s_match_accept_doc) s_match_accept_doc->Hide();
                 s_model_handle.DirtyVariable("proposal_active");
                 AsyncMatchAction(s_room_code.c_str(), 1);
                 s_status_text = "Accepted! Waiting for opponent...";
@@ -536,7 +566,6 @@ extern "C" void rmlui_casual_lobby_update(void) {
             } else {
                 // Decline
                 s_proposal_active = 0;
-                if (s_match_accept_doc) s_match_accept_doc->Hide();
                 s_model_handle.DirtyVariable("proposal_active");
                 AsyncMatchAction(s_room_code.c_str(), 2);
                 s_status_text = "Declined match.";
@@ -548,7 +577,6 @@ extern "C" void rmlui_casual_lobby_update(void) {
         // Cancel button (back/select = 0x0200) always declines
         if (trigger & 0x0200) {
             s_proposal_active = 0;
-            if (s_match_accept_doc) s_match_accept_doc->Hide();
             s_model_handle.DirtyVariable("proposal_active");
             AsyncMatchAction(s_room_code.c_str(), 2);
             s_status_text = "Declined match.";
@@ -591,24 +619,19 @@ extern "C" void rmlui_casual_lobby_update(void) {
     // Confirm Buttons (LP=0x0100, Start=0x0800)
     if (trigger & (0x0100 | 0x0800)) {
         if (s_cursor_x == 1) { // Chat
-            Rml::Context* win_ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-            if (win_ctx) {
-                if (!s_chat_doc) {
-                    s_chat_doc = win_ctx->LoadDocument("assets/ui/casual_lobby_chat.rml");
-                    if (s_chat_doc) {
-                        if (Rml::Element* input = s_chat_doc->GetElementById("chat-input-field")) {
-                            input->AddEventListener(Rml::EventId::Keydown, &s_chat_listener);
-                        }
-                    }
-                }
-                if (s_chat_doc) {
-                    s_chat_open = true;
-                    s_chat_doc->Show(Rml::ModalFlag::None, Rml::FocusFlag::Document);
-                    if (Rml::Element* input = s_chat_doc->GetElementById("chat-input-field")) {
-                        input->SetAttribute("value", ""); // clear input on open
-                        input->Focus();
-                    }
-                }
+            // Load chat popup in game context (uses casual_lobby data model)
+            Rml::Context* game_ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
+            if (game_ctx && !s_chat_doc) {
+                s_chat_doc = game_ctx->LoadDocument("assets/ui/casual_lobby_chat.rml");
+            }
+            if (s_chat_doc) {
+                s_chat_open = true;
+                s_is_typing = true;
+                s_chat_input = "";
+                s_model_handle.DirtyVariable("is_typing");
+                s_model_handle.DirtyVariable("chat_input");
+                s_chat_doc->Show(Rml::ModalFlag::None, Rml::FocusFlag::None);
+                SDL_StartTextInput(SDL_GetKeyboardFocus());
             }
         } else {
             if (s_cursor_y == 0 && !s_is_playing && s_match_active) {
@@ -661,14 +684,13 @@ extern "C" void rmlui_casual_lobby_hide(void) {
     s_is_visible = false;
     rmlui_wrapper_hide_game_document("casual_lobby");
     LobbyServer_SSEDisconnect();
-    if (s_chat_doc && s_chat_open) {
-        s_chat_doc->Hide();
+    if (s_chat_open) {
         s_chat_open = false;
+        s_is_typing = false;
+        s_chat_input = "";
+        SDL_StopTextInput(SDL_GetKeyboardFocus());
     }
-    if (s_match_accept_doc && s_proposal_active) {
-        s_match_accept_doc->Hide();
-        s_proposal_active = 0;
-    }
+    s_proposal_active = 0;
 }
 
 extern "C" void rmlui_casual_lobby_shutdown(void) {
@@ -683,10 +705,6 @@ extern "C" void rmlui_casual_lobby_shutdown(void) {
         s_chat_doc->Close();
         s_chat_doc = nullptr;
     }
-    if (s_match_accept_doc) {
-        s_match_accept_doc->Close();
-        s_match_accept_doc = nullptr;
-    }
     s_proposal_active = 0;
 }
 
@@ -696,4 +714,56 @@ extern "C" bool rmlui_casual_lobby_is_visible(void) {
 
 extern "C" const char* rmlui_casual_lobby_get_room_code(void) {
     return s_room_code.c_str();
+}
+
+extern "C" bool rmlui_casual_lobby_handle_key_event(const SDL_Event* event) {
+    if (!s_chat_open || !s_is_typing) return false;
+
+    if (event->type == SDL_EVENT_TEXT_INPUT) {
+        s_chat_input += event->text.text;
+        if (s_chat_input.size() > 120) s_chat_input.resize(120);
+        s_model_handle.DirtyVariable("chat_input");
+        return true;
+    }
+
+    if (event->type == SDL_EVENT_KEY_DOWN) {
+        SDL_Keycode key = event->key.key;
+
+        if (key == SDLK_RETURN || key == SDLK_KP_ENTER) {
+            // Send chat message
+            if (!s_chat_input.empty()) {
+                LobbyServer_SendChat(s_room_code.c_str(), s_chat_input.c_str());
+            }
+            s_chat_open = false;
+            s_is_typing = false;
+            s_chat_input = "";
+            s_model_handle.DirtyVariable("is_typing");
+            s_model_handle.DirtyVariable("chat_input");
+            SDL_StopTextInput(SDL_GetKeyboardFocus());
+            return true;
+        }
+
+        if (key == SDLK_ESCAPE) {
+            s_chat_open = false;
+            s_is_typing = false;
+            s_chat_input = "";
+            s_model_handle.DirtyVariable("is_typing");
+            s_model_handle.DirtyVariable("chat_input");
+            SDL_StopTextInput(SDL_GetKeyboardFocus());
+            return true;
+        }
+
+        if (key == SDLK_BACKSPACE && !s_chat_input.empty()) {
+            // Remove last UTF-8 character
+            size_t len = s_chat_input.size();
+            size_t i = len;
+            while (i > 0 && (s_chat_input[i - 1] & 0xC0) == 0x80) i--;
+            if (i > 0) i--;
+            s_chat_input.resize(i);
+            s_model_handle.DirtyVariable("chat_input");
+            return true;
+        }
+    }
+
+    return false;
 }

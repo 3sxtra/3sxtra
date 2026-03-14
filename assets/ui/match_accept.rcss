@@ -135,6 +135,6 @@
 
 /* ── Slide-in animation ──────────────────────────────────────── */
 @keyframes ma-slide-in {
-    from { margin-top: -20dp; opacity: 0; }
-    to   { margin-top: 0dp;   opacity: 1; }
+    from { margin-top: -20dp; }
+    to   { margin-top: 0dp; }
 }

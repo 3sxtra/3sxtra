@@ -10,6 +10,7 @@ extern "C" {
 
 typedef struct {
     char name[32];
+    char display_name[32]; // Human-readable display name from Identity module
     char ip[64];
     unsigned short port;
     uint32_t instance_id; // Unique ID for this peer instance

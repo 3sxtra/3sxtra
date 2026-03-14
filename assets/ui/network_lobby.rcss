@@ -20,40 +20,25 @@
 #lobby-title-bar {
     display: block;
     height: 16dp;
-    background-color: rgba(200, 15, 15, 220);
-    padding: 2dp 8dp 0dp 8dp;
+    padding: 3dp 8dp 1dp 8dp;
+    text-align: center;
+    border-top-width: 1dp;
+    border-top-color: rgba(255, 255, 255, 200);
     border-bottom-width: 1dp;
-    border-bottom-color: rgba(255, 255, 255, 30);
+    border-bottom-color: rgba(255, 255, 255, 200);
 }
 
 #lobby-title-text {
-    display: inline;
+    display: block;
     font-size: 11dp;
-    color: rgba(15, 8, 8, 230);
-    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 60));
+    color: #fff;
+    font-weight: bold;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
+    text-align: center;
+    background-color: transparent;
 }
 
-#room-code-chip {
-    display: inline;
-    margin-left: 8dp;
-    background-color: rgba(0, 0, 0, 100);
-    border-width: 1dp;
-    border-color: rgba(255, 255, 255, 60);
-    padding: 0dp 4dp;
-}
 
-#room-code-label {
-    display: inline;
-    font-size: 6dp;
-    color: rgba(200, 200, 200, 160);
-    margin-right: 3dp;
-}
-
-#room-code-value {
-    display: inline;
-    font-size: 8dp;
-    color: rgba(255, 230, 120, 240);
-}
 
 /* ─── Two-column body (absolute positioned, no overflow) ─────── */
 
@@ -65,7 +50,7 @@
     display: block;
     position: absolute;
     left: 4dp;
-    top: 19dp;
+    top: 21dp;
     width: 165dp;
     bottom: 0;
 }
@@ -74,7 +59,7 @@
     display: block;
     position: absolute;
     left: 172dp;
-    top: 19dp;
+    top: 21dp;
     right: 4dp;
     bottom: 16dp;
 }
@@ -205,6 +190,8 @@
     font-size: 8dp;
     border-left-width: 2dp;
     border-left-color: transparent;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .peer-list-item.selected {
@@ -213,17 +200,9 @@
     background-color: rgba(255, 220, 0, 18);
 }
 
-.peer-list-bullet {
-    display: inline;
-    width: 7dp;
-    font-size: 6dp;
-    color: rgba(255, 210, 40, 230);
-}
-
 .peer-list-name {
     display: inline;
     font-size: 8dp;
-    overflow: hidden;
 }
 
 .peer-list-ping {
@@ -245,15 +224,12 @@
     color: rgba(255, 80, 80, 220);
 }
 
-.peer-list-country {
+.peer-list-flag {
     display: inline;
-    font-size: 6dp;
-    color: rgba(170, 190, 230, 200);
+    width: 12dp;
+    height: 8dp;
     margin-right: 2dp;
-    padding: 0dp 1dp;
-    background-color: rgba(60, 80, 140, 80);
-    border-width: 1dp;
-    border-color: rgba(100, 130, 200, 60);
+    vertical-align: baseline;
 }
 
 .peer-list-conn {
@@ -384,4 +360,13 @@
     display: inline;
     font-size: 9dp;
     color: rgba(255, 70, 70, 255);
+}
+
+/* ─── Room list count badge ─────────────────────────────────────── */
+
+.room-list-count {
+    display: inline;
+    font-size: 6dp;
+    color: rgba(150, 180, 220, 180);
+    margin-left: 4dp;
 }

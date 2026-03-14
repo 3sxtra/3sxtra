@@ -97,6 +97,18 @@ typedef struct {
 /// Returns -1 on error.
 int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page, int* out_total);
 
+// === Room Discovery ===
+
+typedef struct {
+    char code[8];       // 4-char room code + null
+    char name[32];      // Room display name
+    int player_count;   // Current player count (1-8)
+} RoomListItem;
+
+/// Fetch list of active rooms from the lobby server.
+/// Returns number of rooms written to out_rooms (up to max_rooms).
+int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms);
+
 // === Phase 5: Casual Lobbies (8-Player Rooms) ===
 
 #define MAX_ROOM_PLAYERS 8
@@ -113,6 +125,7 @@ typedef struct {
     char player_id[64];
     char display_name[32];
     char region[16];
+    char country[4];          // ISO 3166-1 alpha-2 (e.g. "US", "JP"), server-derived
 } RoomPlayer;
 
 typedef struct {

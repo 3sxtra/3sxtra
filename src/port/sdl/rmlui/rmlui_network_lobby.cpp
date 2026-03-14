@@ -9,7 +9,7 @@
  * Key APIs:
  *   Menu_Cursor_Y[0] — cursor position (9 items: 0-8)
  *   Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT) — LAN auto-connect
- *   Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT) — NET auto-connect
+ *   Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT) — NET auto-accept
  *   Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH) — NET auto-search
  *   Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK) — region lock
  *   Config_GetInt(CFG_KEY_NETPLAY_MAX_PING) — max ping filter
@@ -59,18 +59,32 @@ struct LanPeerItem {
 struct NetPeerItem {
     Rml::String name;
     Rml::String country;     // ISO 3166-1 alpha-2 (e.g. "US", "JP")
+    Rml::String flag_icon;   // path to flag PNG (e.g. "assets/flags_icons/us.png")
     Rml::String ping_label;  // e.g. "~42ms" or "..."
     Rml::String ping_class;  // "ping-good" | "ping-ok" | "ping-bad"
     Rml::String conn_type;   // "wifi" | "wired" | "unknown"
     bool selected;           // true when g_net_peer_idx == this row
 
     bool operator==(const NetPeerItem& o) const {
-        return name == o.name && country == o.country && ping_label == o.ping_label &&
-               ping_class == o.ping_class && conn_type == o.conn_type && selected == o.selected;
+        return name == o.name && country == o.country && flag_icon == o.flag_icon &&
+               ping_label == o.ping_label && ping_class == o.ping_class &&
+               conn_type == o.conn_type && selected == o.selected;
     }
     bool operator!=(const NetPeerItem& o) const {
         return !(*this == o);
     }
+};
+
+struct RoomItem {
+    Rml::String code;
+    Rml::String name;
+    int player_count;
+    bool selected;
+
+    bool operator==(const RoomItem& o) const {
+        return code == o.code && name == o.name && player_count == o.player_count && selected == o.selected;
+    }
+    bool operator!=(const RoomItem& o) const { return !(*this == o); }
 };
 
 // ─── Data model ──────────────────────────────────────────────────
@@ -80,6 +94,35 @@ static bool s_model_registered = false;
 // Live peer lists — rebuilt each update frame
 static std::vector<LanPeerItem> s_lan_peers;
 static std::vector<NetPeerItem> s_net_peers;
+static std::vector<RoomItem> s_room_list;
+static int s_room_list_idx = 0;
+static Uint64 s_room_list_poll_time = 0;
+
+// Async room list fetch
+static SDL_AtomicInt s_room_fetch_active = {0}; // 1 = fetch thread running
+static SDL_AtomicInt s_room_fetch_done   = {0}; // 1 = result ready
+static RoomListItem  s_room_fetch_buf[16];       // shared result buffer
+static int           s_room_fetch_count = 0;     // shared result count
+
+static int SDLCALL async_room_list_fn(void* data) {
+    (void)data;
+    RoomListItem items[16];
+    int rc = LobbyServer_ListRooms(items, 16);
+    memcpy(s_room_fetch_buf, items, sizeof(items));
+    s_room_fetch_count = rc;
+    SDL_SetAtomicInt(&s_room_fetch_done, 1);
+    SDL_SetAtomicInt(&s_room_fetch_active, 0);
+    return 0;
+}
+
+static void AsyncFetchRoomList(void) {
+    if (SDL_GetAtomicInt(&s_room_fetch_active) != 0) return;
+    SDL_SetAtomicInt(&s_room_fetch_active, 1);
+    SDL_SetAtomicInt(&s_room_fetch_done, 0);
+    SDL_Thread* t = SDL_CreateThread(async_room_list_fn, "AsyncRoomList", nullptr);
+    if (t) { SDL_DetachThread(t); }
+    else { SDL_SetAtomicInt(&s_room_fetch_active, 0); }
+}
 
 // ─── Room create/join state ──────────────────────────────────────
 static Rml::String s_room_status;       // "" | "Creating..." | "Joining..." | "ABCD" (room code)
@@ -145,43 +188,7 @@ static void AsyncJoinRoom(const char* code) {
     if (t) { SDL_DetachThread(t); } else { free(d); SDL_SetAtomicInt(&s_room_async_active, 0); }
 }
 
-// ─── Room code input popup ───────────────────────────────────────
-static Rml::ElementDocument* s_join_doc = nullptr;
-static bool s_join_popup_open = false;
-
-class RoomCodeSubmitListener : public Rml::EventListener {
-public:
-    void ProcessEvent(Rml::Event& event) override {
-        if (event.GetId() == Rml::EventId::Keydown) {
-            auto key = (Rml::Input::KeyIdentifier)event.GetParameter<int>("key_identifier", 0);
-            if (key == Rml::Input::KI_RETURN || key == Rml::Input::KI_NUMPADENTER) {
-                Rml::Element* input = event.GetTargetElement();
-                Rml::String text = input->GetAttribute<Rml::String>("value", "");
-                if (!text.empty()) {
-                    // Convert to uppercase
-                    for (auto& c : text) c = (char)toupper((unsigned char)c);
-                    s_join_room_code = text;
-                    s_room_status = "Joining...";
-                    if (s_model_handle) {
-                        s_model_handle.DirtyVariable("join_room_code");
-                        s_model_handle.DirtyVariable("room_status");
-                    }
-                    AsyncJoinRoom(text.c_str());
-                }
-                if (s_join_doc) {
-                    s_join_doc->Hide();
-                }
-                s_join_popup_open = false;
-            } else if (key == Rml::Input::KI_ESCAPE) {
-                if (s_join_doc) {
-                    s_join_doc->Hide();
-                }
-                s_join_popup_open = false;
-            }
-        }
-    }
-};
-static RoomCodeSubmitListener s_room_code_listener;
+// (Popup code removed — room joining is now list-based)
 
 struct LobbyCache {
     int cursor;
@@ -201,6 +208,8 @@ struct LobbyCache {
     Rml::String room_code;
     Rml::String room_status;
     Rml::String join_room_code;
+    int room_count;
+    int room_list_idx;
 };
 static LobbyCache s_cache = {};
 
@@ -252,6 +261,7 @@ extern "C" void rmlui_network_lobby_init(void) {
     if (auto h = ctor.RegisterStruct<NetPeerItem>()) {
         h.RegisterMember("name", &NetPeerItem::name);
         h.RegisterMember("country", &NetPeerItem::country);
+        h.RegisterMember("flag_icon", &NetPeerItem::flag_icon);
         h.RegisterMember("ping_label", &NetPeerItem::ping_label);
         h.RegisterMember("ping_class", &NetPeerItem::ping_class);
         h.RegisterMember("conn_type", &NetPeerItem::conn_type);
@@ -259,9 +269,19 @@ extern "C" void rmlui_network_lobby_init(void) {
     }
     ctor.RegisterArray<std::vector<NetPeerItem>>();
 
-    // ── Bind peer lists ──────────────────────────────────────────
+    // ── Register RoomItem struct ─────────────────────────────────
+    if (auto h = ctor.RegisterStruct<RoomItem>()) {
+        h.RegisterMember("code", &RoomItem::code);
+        h.RegisterMember("name", &RoomItem::name);
+        h.RegisterMember("player_count", &RoomItem::player_count);
+        h.RegisterMember("selected", &RoomItem::selected);
+    }
+    ctor.RegisterArray<std::vector<RoomItem>>();
+
+    // ── Bind peer + room lists ───────────────────────────────────
     ctor.Bind("lan_peers", &s_lan_peers);
     ctor.Bind("net_peers", &s_net_peers);
+    ctor.Bind("room_list", &s_room_list);
 
     // ── Scalar bindings ──────────────────────────────────────────
     ctor.BindFunc("cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
@@ -286,6 +306,10 @@ extern "C" void rmlui_network_lobby_init(void) {
     // Room create/join status
     ctor.Bind("room_status", &s_room_status);
     ctor.Bind("join_room_code", &s_join_room_code);
+
+    // Room list scalars
+    ctor.BindFunc("room_count", [](Rml::Variant& v) { v = (int)s_room_list.size(); });
+    ctor.BindFunc("room_list_idx", [](Rml::Variant& v) { v = s_room_list_idx; });
 
     // LAN peer count / currently selected name (kept for legacy status bar)
     ctor.BindFunc("lan_peer_count", [](Rml::Variant& v) {
@@ -571,9 +595,15 @@ extern "C" void rmlui_network_lobby_update(void) {
             NetPeerItem item;
             item.name = Rml::String(SDLNetplayUI_GetOnlinePlayerName(i));
 
-            // Country code
+            // Country code + flag icon path
             const char* cc = SDLNetplayUI_GetOnlinePlayerCountry(i);
             item.country = Rml::String(cc ? cc : "");
+            if (cc && cc[0] && cc[1]) {
+                char lower[3] = { (char)tolower((unsigned char)cc[0]), (char)tolower((unsigned char)cc[1]), 0 };
+                char path[64];
+                SDL_snprintf(path, sizeof(path), "../flags_icons/%s.png", lower);
+                item.flag_icon = Rml::String(path);
+            }
 
             // Connection type
             const char* ct = SDLNetplayUI_GetOnlinePlayerConnType(i);
@@ -602,6 +632,42 @@ extern "C" void rmlui_network_lobby_update(void) {
         if (next != s_net_peers) {
             s_net_peers = std::move(next);
             s_model_handle.DirtyVariable("net_peers");
+        }
+    }
+
+    // ── Rebuild ROOM list (poll every 3 seconds, async) ──────────────
+    {
+        Uint64 now = SDL_GetTicks();
+
+        // Kick off async fetch every 3 seconds
+        if (now - s_room_list_poll_time > 3000) {
+            s_room_list_poll_time = now;
+            AsyncFetchRoomList();
+        }
+
+        // Consume result when ready
+        if (SDL_GetAtomicInt(&s_room_fetch_done)) {
+            SDL_SetAtomicInt(&s_room_fetch_done, 0);
+            int rc = s_room_fetch_count;
+            DIRTY_INT(room_count, rc);
+
+            if (s_room_list_idx >= rc) s_room_list_idx = rc > 0 ? rc - 1 : 0;
+            DIRTY_INT(room_list_idx, s_room_list_idx);
+
+            std::vector<RoomItem> next;
+            next.reserve((size_t)rc);
+            for (int i = 0; i < rc; i++) {
+                RoomItem item;
+                item.code = Rml::String(s_room_fetch_buf[i].code);
+                item.name = Rml::String(s_room_fetch_buf[i].name);
+                item.player_count = s_room_fetch_buf[i].player_count;
+                item.selected = (i == s_room_list_idx);
+                next.push_back(item);
+            }
+            if (next != s_room_list) {
+                s_room_list = std::move(next);
+                s_model_handle.DirtyVariable("room_list");
+            }
         }
     }
 
@@ -647,10 +713,6 @@ extern "C" void rmlui_network_lobby_show(void) {
 
 extern "C" void rmlui_network_lobby_hide(void) {
     rmlui_wrapper_hide_game_document("network_lobby");
-    if (s_join_doc && s_join_popup_open) {
-        s_join_doc->Hide();
-        s_join_popup_open = false;
-    }
 }
 
 // ─── Room action handlers (called from menu.c confirm logic) ─────
@@ -665,26 +727,32 @@ extern "C" void rmlui_network_lobby_create_room(void) {
 }
 
 extern "C" void rmlui_network_lobby_join_room(void) {
-    // Open room code input popup
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
-    if (!ctx) return;
-    if (!s_join_doc) {
-        s_join_doc = ctx->LoadDocument("assets/ui/room_code_input.rml");
-        if (s_join_doc) {
-            Rml::Element* input = s_join_doc->GetElementById("room-code-field");
-            if (input) {
-                input->AddEventListener(Rml::EventId::Keydown, &s_room_code_listener);
-            }
-        }
+    // Join the selected room from the list
+    if (s_room_list.empty()) return;
+    if (s_room_list_idx < 0 || s_room_list_idx >= (int)s_room_list.size()) return;
+    if (SDL_GetAtomicInt(&s_room_async_active) != 0) return;
+
+    const Rml::String& code = s_room_list[s_room_list_idx].code;
+    s_join_room_code = code;
+    s_room_status = "Joining...";
+    if (s_model_handle) {
+        s_model_handle.DirtyVariable("join_room_code");
+        s_model_handle.DirtyVariable("room_status");
     }
-    if (s_join_doc) {
-        s_join_popup_open = true;
-        s_join_doc->Show(Rml::ModalFlag::None, Rml::FocusFlag::Document);
-        Rml::Element* input = s_join_doc->GetElementById("room-code-field");
-        if (input) {
-            input->SetAttribute("value", "");
-            input->Focus();
-        }
+    AsyncJoinRoom(code.c_str());
+}
+
+/// Scroll room list selection (called from menu.c on Left/Right when cursor == 9)
+extern "C" void rmlui_network_lobby_room_scroll(int delta) {
+    int count = (int)s_room_list.size();
+    if (count == 0) return;
+    s_room_list_idx = (s_room_list_idx + delta + count) % count;
+    // Update selection flags
+    for (int i = 0; i < count; i++)
+        s_room_list[i].selected = (i == s_room_list_idx);
+    if (s_model_handle) {
+        s_model_handle.DirtyVariable("room_list");
+        s_model_handle.DirtyVariable("room_list_idx");
     }
 }
 
@@ -699,11 +767,7 @@ extern "C" void rmlui_network_lobby_shutdown(void) {
     }
     s_lan_peers.clear();
     s_net_peers.clear();
-    if (s_join_doc) {
-        s_join_doc->Close();
-        s_join_doc = nullptr;
-    }
-    s_join_popup_open = false;
+    s_room_list.clear();
 }
 
 #undef DIRTY_INT

@@ -91,6 +91,7 @@
 #include "port/sdl/rmlui/rmlui_game_option.h"
 #include "port/sdl/rmlui/rmlui_memory_card.h"
 #include "port/sdl/rmlui/rmlui_mode_menu.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/rmlui/rmlui_option_menu.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
@@ -635,7 +636,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
     switch (task_ptr->r_no[2]) {
     /* ================================================================
-     * GATEWAY PHASE (cases 0–3): NATIVE / RMLUI / LAN ONLY / EXIT
+     * GATEWAY PHASE (cases 0–3): LOBBY MODE / LOCAL NETWORK / EXIT
      * ================================================================ */
     case 0:
         /* Phase 0: Fade out, kill Mode_Select items, init gateway submenu */
@@ -644,10 +645,10 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         Order[0x70] = 1;
         Order_Dir[0x70] = 8;
         Order_Timer[0x70] = 1;
-        effect_04_init(1, 7, 0, 0x48); /* cursor type 7 = 4-item gateway */
+        effect_04_init(1, 7, 0, 0x48); /* cursor type 7 = 3-item gateway */
         {
-            s16 char_index = 74; /* 74=NATIVE, 75=RMLUI, 76=LAN ONLY, 77=EXIT */
-            for (ix = 0; ix < 4; ix++) {
+            s16 char_index = 74; /* 74=LOBBY MODE, 75=LOCAL NETWORK, 76=EXIT */
+            for (ix = 0; ix < 3; ix++) {
                 effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x7047);
                 Order[ix + 0x50] = 1;
                 Order_Dir[ix + 0x50] = 4;
@@ -655,7 +656,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 char_index++;
             }
         }
-        Menu_Cursor_Move = 4;
+        Menu_Cursor_Move = 3;
         break;
 
     case 1:
@@ -669,15 +670,15 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         break;
 
     case 3:
-        /* Gateway input: pick NATIVE / RMLUI / LAN ONLY / EXIT */
-        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 3, 0xFF) == 0) {
-            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 3, 0xFF);
+        /* Gateway input: pick LOBBY MODE / LOCAL NETWORK / EXIT */
+        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 2, 0xFF) == 0) {
+            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 2, 0xFF);
         }
 
         if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
             SE_selected();
 
-            if (Menu_Cursor_Y[0] == 3 || IO_Result == SWK_EAST) {
+            if (Menu_Cursor_Y[0] == 2 || IO_Result == SWK_EAST) {
                 /* EXIT — back to Mode_Select */
                 Menu_Suicide[0] = 0;
                 Menu_Suicide[1] = 1;
@@ -690,13 +691,13 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 break;
             }
 
-            if (Menu_Cursor_Y[0] == 2) {
-                /* LAN ONLY — jump to LAN-only lobby phase */
+            if (Menu_Cursor_Y[0] == 1) {
+                /* LOCAL NETWORK — jump to LAN-only lobby phase */
                 task_ptr->free[2] = 2; /* 2=lan-only */
                 task_ptr->r_no[2] = 20; /* jump to LAN-only lobby phase */
             } else {
-                /* NATIVE (0) or RMLUI (1) — store choice, go to full lobby setup */
-                task_ptr->free[2] = Menu_Cursor_Y[0]; /* 0=native, 1=rmlui */
+                /* LOBBY MODE (0) — always use RmlUI lobby */
+                task_ptr->free[2] = 1; /* 1=rmlui */
                 task_ptr->r_no[2] = 10;               /* jump to lobby phase */
             }
         }
@@ -802,6 +803,12 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
     case 14: {
         /* --- Lobby input loop --- */
+
+        /* When the casual lobby room screen is visible, it handles its own
+         * input via rmlui_casual_lobby_update().  Skip all menu.c input
+         * processing so button presses aren't double-handled. */
+        if (rmlui_casual_lobby_is_visible())
+            break;
 
         /* Decelerate slide-in offset */
         if (s_slide_offset > 0) {
@@ -910,7 +917,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     }
                     break;
                 }
-                case 2: { /* NET AUTO-CONN */
+                case 2: { /* NET AUTO-ACPT */
                     bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
                     Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !v);
                     Config_Save();
@@ -970,6 +977,13 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                             }
                             SE_dir_cursor_move();
                         }
+                    }
+                    break;
+                }
+                case 9: { /* JOIN ROOM (room list scroll) */
+                    if (task_ptr->free[2] == 1) {
+                        rmlui_network_lobby_room_scroll((click & 4) ? -1 : 1);
+                        SE_dir_cursor_move();
                     }
                     break;
                 }
@@ -1207,7 +1221,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                         }
                         break;
                     }
-                    case 2: { /* NET AUTO-CONN toggle */
+                    case 2: { /* NET AUTO-ACPT toggle */
                         bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
                         Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !v);
                         Config_Save();

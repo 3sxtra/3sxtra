@@ -1,50 +1,51 @@
 <rml>
 <head>
-    <link type="text/rcss" href="common.rcss"/>
+    <link type="text/rcss" href="base.rcss"/>
     <style>
-        body {
-            font-family: NotoSansJP;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 180);
-        }
         #chat-popup {
-            display: flex;
-            flex-direction: column;
-            width: 60%;
-            background: #111;
-            border: 2px solid #555;
-            padding: 20px;
+            display: block;
+            position: absolute;
+            top: 60dp;
+            left: 60dp;
+            width: 264dp;
+            background-color: rgba(8, 6, 18, 240);
+            border-width: 2dp;
+            border-color: rgba(80, 140, 220, 200);
+            padding: 8dp 10dp 6dp 10dp;
         }
         h2 {
-            font-size: 24px;
-            color: #fff;
-            margin-bottom: 20px;
+            display: block;
+            font-size: 10dp;
+            color: rgba(200, 220, 255, 255);
+            margin-bottom: 6dp;
         }
-        input {
-            font-size: 20px;
-            padding: 10px;
+        #chat-text {
+            display: block;
+            font-size: 9dp;
+            padding: 3dp 4dp;
             color: #fff;
-            background: #222;
-            border: 1px solid #777;
-            width: 100%;
+            background-color: rgba(20, 20, 40, 200);
+            border-width: 1dp;
+            border-color: rgba(100, 140, 220, 150);
+            min-height: 12dp;
         }
         .help {
-            font-size: 16px;
-            color: #888;
-            margin-top: 10px;
-            text-align: right;
+            display: block;
+            font-size: 6dp;
+            color: rgba(160, 170, 200, 160);
+            margin-top: 4dp;
+        }
+        .cursor-blink {
+            display: inline;
+            color: rgba(100, 180, 255, 200);
         }
     </style>
 </head>
-<body>
-    <div id="chat-popup">
-        <h2>Send Message</h2>
-        <input type="text" id="chat-input-field" maxlength="120" />
-        <div class="help">Press ENTER to send, ESC to cancel</div>
-    </div>
+<body data-model="casual_lobby">
+<div id="chat-popup" data-if="is_typing">
+    <h2>ROOM CHAT</h2>
+    <div id="chat-text">{{chat_input}}<span class="cursor-blink">|</span></div>
+    <div class="help">Type message, press ENTER to send, ESC or BACK to cancel</div>
+</div>
 </body>
 </rml>

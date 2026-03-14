@@ -421,10 +421,30 @@ int SDLApp_Init() {
         SDL_Log("SDL_GPU Initialized Successfully.");
 
         // VSync OFF — native frame pacing handles timing.
+        // Try IMMEDIATE (no vsync) first; fall back to MAILBOX then FIFO.
+        // Pi4's v3dv Vulkan driver does not support IMMEDIATE, so without
+        // this fallback the swapchain silently stays at FIFO (60fps cap).
         vsync_enabled = false;
-        SDL_SetGPUSwapchainParameters(
-            gpu_device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_IMMEDIATE);
-        SDL_Log("VSync: OFF (SDL_GPU, native pacing)");
+        {
+            SDL_GPUPresentMode mode = SDL_GPU_PRESENTMODE_VSYNC;  // worst-case default
+            if (SDL_WindowSupportsGPUPresentMode(gpu_device, window, SDL_GPU_PRESENTMODE_IMMEDIATE)) {
+                mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
+            } else if (SDL_WindowSupportsGPUPresentMode(gpu_device, window, SDL_GPU_PRESENTMODE_MAILBOX)) {
+                mode = SDL_GPU_PRESENTMODE_MAILBOX;
+            }
+
+            const char* mode_name = (mode == SDL_GPU_PRESENTMODE_IMMEDIATE)  ? "IMMEDIATE"
+                                    : (mode == SDL_GPU_PRESENTMODE_MAILBOX)  ? "MAILBOX"
+                                                                             : "VSYNC (FIFO)";
+            if (SDL_SetGPUSwapchainParameters(
+                    gpu_device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, mode)) {
+                SDL_Log("VSync: OFF — present mode %s (SDL_GPU, native pacing)", mode_name);
+            } else {
+                SDL_LogWarn(SDL_LOG_CATEGORY_RENDER,
+                            "Failed to set present mode %s: %s — falling back to default",
+                            mode_name, SDL_GetError());
+            }
+        }
     } else if (g_renderer_backend == RENDERER_OPENGL) {
     opengl_init:
         // OpenGL Backend Initialization

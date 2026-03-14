@@ -31,6 +31,7 @@
 #include "netplay/identity.h"
 #include "netplay/lobby_server.h"
 #include "netplay/net_detect.h"
+#include "netplay/ping_probe.h"
 #include "netplay/stun.h"
 #include "netplay/upnp.h"
 #include "port/config/config.h"
@@ -60,7 +61,8 @@ static SDL_AtomicInt lobby_server_player_count = { 0 };
 static uint32_t lobby_server_last_poll = 0;
 static uint32_t lobby_pending_invite_time = 0; // Timestamp when invite was detected (for expiry)
 static char lobby_my_player_id[64] = { 0 };
-static int lobby_my_rtt_ms = -1; // Our measured RTT to the lobby server
+static int lobby_my_rtt_ms = -1; // Our measured RTT to the lobby server (still sent to server for presence)
+static bool ping_probe_initialized = false; // True once PingProbe_Init has been called
 static const char* my_connection_type = "unknown"; // Detected once at lobby entry
 #define LOBBY_POLL_INTERVAL_MS 2000
 
@@ -160,12 +162,15 @@ static bool player_passes_filters(const LobbyPlayer* p) {
             if (strcmp(my_region, p->region) != 0) return false;
         }
     }
-    // Max ping
+    // Max ping — use true P2P RTT from ping probe if available
     int max_ping = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
-    if (max_ping > 0 && p->rtt_ms > 0) {
-        // Estimate P2P ping as our RTT + their RTT
-        int estimated_p2p = lobby_my_rtt_ms + p->rtt_ms;
-        if (estimated_p2p > max_ping) return false;
+    if (max_ping > 0) {
+        int p2p_rtt = PingProbe_GetRTT(p->player_id);
+        if (p2p_rtt < 0 && p->rtt_ms > 0) {
+            // Fallback: triangulated estimate if no direct measurement yet
+            p2p_rtt = lobby_my_rtt_ms + p->rtt_ms;
+        }
+        if (p2p_rtt > 0 && p2p_rtt > max_ping) return false;
     }
     // Block WiFi
     if (Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI)) {
@@ -307,7 +312,7 @@ static int SDLCALL lobby_poll_thread_fn(void* data) {
     (void)data;
     LobbyPlayer temp_players[16]; // Stack-local — static here was a data race risk
 
-    // Measure HTTP RTT to the lobby server
+    // Measure HTTP RTT to the lobby server (still used for server-side presence)
     uint32_t t0 = SDL_GetTicks();
     int count = LobbyServer_GetSearching(temp_players, 16, NULL);
     uint32_t t1 = SDL_GetTicks();
@@ -317,6 +322,28 @@ static int SDLCALL lobby_poll_thread_fn(void* data) {
     memcpy(lobby_server_players, temp_players, sizeof(temp_players));
     SDL_MemoryBarrierRelease();
     SDL_SetAtomicInt(&lobby_server_player_count, count);
+
+    // Sync peers into PingProbe and send/receive probes
+    if (ping_probe_initialized) {
+        // Add/update peers from the player list
+        for (int i = 0; i < count; i++) {
+            // Skip ourselves
+            if (strcmp(temp_players[i].player_id, lobby_my_player_id) == 0)
+                continue;
+            // Decode their STUN endpoint from room_code
+            uint32_t peer_ip = 0;
+            uint16_t peer_port = 0;
+            if (temp_players[i].room_code[0] &&
+                Stun_DecodeEndpoint(temp_players[i].room_code, &peer_ip, &peer_port)) {
+                // Skip probing peers on the same LAN (same public IP) — unreachable via
+                // public endpoint due to no hairpin NAT, causes false "unreachable" warnings.
+                if (stun_result.public_ip != 0 && peer_ip == stun_result.public_ip)
+                    continue;
+                PingProbe_AddPeer(peer_ip, peer_port, temp_players[i].player_id);
+            }
+        }
+        PingProbe_Update();
+    }
 
     SDL_SetAtomicInt(&lobby_poll_active, 0);
     return 0;
@@ -399,9 +426,11 @@ static void lobby_poll_server(void) {
                     reason = "WiFi blocked";
                 }
                 int max_ping = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
-                if (max_ping > 0 && lobby_server_players[i].rtt_ms > 0) {
-                    int est = lobby_my_rtt_ms + lobby_server_players[i].rtt_ms;
-                    if (est > max_ping)
+                if (max_ping > 0) {
+                    int est = PingProbe_GetRTT(lobby_server_players[i].player_id);
+                    if (est < 0 && lobby_server_players[i].rtt_ms > 0)
+                        est = lobby_my_rtt_ms + lobby_server_players[i].rtt_ms;
+                    if (est > 0 && est > max_ping)
                         reason = "high ping";
                 }
                 SDL_Log("[lobby] Auto-declined %s (%s)", lobby_server_players[i].display_name, reason);
@@ -428,17 +457,23 @@ static void lobby_poll_server(void) {
             snprintf(
                 lobby_pending_invite_region, sizeof(lobby_pending_invite_region), "%s", lobby_server_players[i].region);
 
-            // Estimate P2P ping from server RTTs: our_rtt + their_rtt
-            int their_rtt = lobby_server_players[i].rtt_ms;
-            if (lobby_my_rtt_ms > 0 && their_rtt > 0)
-                lobby_pending_invite_ping = lobby_my_rtt_ms + their_rtt;
-            else
-                lobby_pending_invite_ping = -1;
+            // Use true P2P RTT from ping probe if available
+            int p2p_rtt = PingProbe_GetRTT(lobby_server_players[i].player_id);
+            if (p2p_rtt >= 0) {
+                lobby_pending_invite_ping = p2p_rtt;
+            } else {
+                // Fallback: triangulated estimate
+                int their_rtt = lobby_server_players[i].rtt_ms;
+                if (lobby_my_rtt_ms > 0 && their_rtt > 0)
+                    lobby_pending_invite_ping = lobby_my_rtt_ms + their_rtt;
+                else
+                    lobby_pending_invite_ping = -1;
+            }
 
             if (lobby_auto) {
                 snprintf(lobby_status_msg,
                          sizeof(lobby_status_msg),
-                         "Auto-connecting to %s...",
+                         "Auto-accepting %s...",
                          lobby_server_players[i].display_name);
                 snprintf(
                     lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", lobby_server_players[i].display_name);
@@ -547,6 +582,11 @@ static void lobby_cleanup_thread(void) {
 
 static void lobby_reset(void) {
     lobby_cleanup_thread();
+    // Shut down ping probe before closing the STUN socket it uses
+    if (ping_probe_initialized) {
+        PingProbe_Shutdown();
+        ping_probe_initialized = false;
+    }
     Stun_CloseSocket(&stun_result);
     Upnp_RemoveMapping(&lobby_upnp_mapping);
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_IDLE);
@@ -822,6 +862,12 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
             Stun_EncodeEndpoint(stun_result.public_ip, stun_result.public_port, my_room_code);
             snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Ready.");
 
+            // Initialize P2P ping probe on the STUN socket
+            if (!ping_probe_initialized && stun_result.socket_fd >= 0) {
+                PingProbe_Init(stun_result.socket_fd);
+                ping_probe_initialized = true;
+            }
+
             // Register with lobby server if configured
             if (LobbyServer_IsConfigured() && !lobby_server_registered) {
                 // Use stable identity from identity.c (auto-generated on first launch)
@@ -1090,7 +1136,11 @@ int SDLNetplayUI_GetOnlinePlayerPing(int index) {
         if (!player_passes_filters(&lobby_server_players[i]))
             continue;
         if (count == index) {
-            // Estimate P2P ping as sum of both RTTs
+            // Use true P2P RTT from ping probe if available
+            int p2p_rtt = PingProbe_GetRTT(lobby_server_players[i].player_id);
+            if (p2p_rtt >= 0)
+                return p2p_rtt;
+            // Fallback: triangulated estimate
             int their_rtt = lobby_server_players[i].rtt_ms;
             if (lobby_my_rtt_ms > 0 && their_rtt > 0)
                 return lobby_my_rtt_ms + their_rtt;
@@ -1232,9 +1282,51 @@ bool SDLNetplayUI_PlayerPassesFilters(const char* conn_type, int rtt_ms, const c
 void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const char* opponent_name, bool we_are_p1) {
     if (!opponent_room_code || !opponent_room_code[0]) return;
 
+    // Decode the opponent's STUN endpoint for later use (hole punch or LAN detection)
     uint32_t peer_ip = 0;
     uint16_t peer_port = 0;
-    if (!Stun_DecodeEndpoint(opponent_room_code, &peer_ip, &peer_port)) {
+    bool decoded = Stun_DecodeEndpoint(opponent_room_code, &peer_ip, &peer_port);
+
+    // Check if opponent is on LAN — use direct connection if so (skip STUN hole punch)
+    if (decoded) {
+        NetplayDiscoveredPeer lan_peers[16];
+        int lan_count = Discovery_GetPeers(lan_peers, 16);
+        for (int i = 0; i < lan_count; i++) {
+            // Match by display name (primary) — the beacon now includes identity names
+            bool name_match = (opponent_name && opponent_name[0] &&
+                               lan_peers[i].display_name[0] &&
+                               strcmp(lan_peers[i].display_name, opponent_name) == 0);
+            // Fallback: if the peer shares our STUN public IP, they're on the same LAN
+            bool ip_match = (stun_result.public_ip != 0 &&
+                             peer_ip == stun_result.public_ip);
+
+            if ((name_match || ip_match) && lan_peers[i].ip[0]) {
+                // Use the peer's STUN port (from their room code), NOT the discovery
+                // beacon port (configuration.netplay.port). The casual lobby path uses
+                // the STUN socket for Gekko, so both sides listen on their STUN port.
+                uint16_t remote_port = ntohs(peer_port);
+                SDL_Log("[casual] LAN peer detected: %s at %s:%u — using direct connection",
+                        opponent_name ? opponent_name : lan_peers[i].display_name,
+                        lan_peers[i].ip, remote_port);
+                snprintf(lobby_status_msg, sizeof(lobby_status_msg), "LAN: connecting to %s...",
+                         opponent_name ? opponent_name : "peer");
+                Netplay_SetRemoteIP(lan_peers[i].ip);
+                Netplay_SetRemotePort(remote_port);
+                Netplay_SetLocalPort(stun_result.local_port);
+                // Transfer the STUN socket to Gekko for the LAN connection
+                if (stun_result.socket_fd >= 0) {
+                    Stun_SetNonBlocking(&stun_result);
+                    Netplay_SetStunSocket(stun_result.socket_fd);
+                    stun_result.socket_fd = -1; // Ownership transferred
+                }
+                Netplay_SetPlayerNumber(we_are_p1 ? 0 : 1);
+                Netplay_Begin();
+                return;
+            }
+        }
+    }
+
+    if (!decoded) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[casual] Failed to decode opponent room code: %s", opponent_room_code);
         return;
     }

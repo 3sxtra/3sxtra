@@ -50,7 +50,7 @@
             <div id="queue-panel">
                 <div class="section-header">NEXT UP (QUEUE)</div>
                 <div class="queue-list">
-                    <div data-for="q : queue_players" class="queue-item" data-class-focused="cursor_x == 0 && cursor_y == q.index + 1">
+                    <div data-if="queue_count > 0" data-for="q : queue_players" class="queue-item" data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == q.index + 1">
                         <span class="queue-num">{{q.index + 1}}.</span>
                         <span class="queue-name" data-class-self="q.is_self">{{q.name}}</span>
                     </div>
@@ -69,10 +69,26 @@
             
         </div>
 
-        <!-- Right: Chat and Player List column -->
+        <!-- Right: Player List + Chat column -->
         <div id="lobby-chat-col">
-            <div class="section-header">ROOM CHAT ({{player_count}}/8)</div>
-            
+            <!-- Player List -->
+            <div class="section-header">PLAYERS ({{player_count}}/8)</div>
+            <div id="player-list">
+                <div data-for="pl : room_players" class="player-row"
+                     data-class-self="pl.is_self"
+                     data-class-playing="pl.is_playing"
+                     data-class-queued="pl.is_queued">
+                    <img data-if="pl.country != ''"
+                         data-attr-src="'../flags_icons/' + pl.country + '.png'"
+                         class="player-flag"/>
+                    <span class="player-list-name">{{pl.name}}</span>
+                    <span class="player-status" data-if="pl.is_playing">&#x2694;</span>
+                    <span class="player-status" data-if="pl.is_queued &amp;&amp; !pl.is_playing">&#x23F3;</span>
+                </div>
+            </div>
+
+            <!-- Chat -->
+            <div class="section-header">CHAT</div>
             <div id="chat-messages">
                 <div data-for="msg : chat_messages" class="chat-msg">
                     <span class="chat-sender">{{msg.sender}}:</span>
@@ -87,6 +103,37 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- ── Match Accept Popup (inline — data-if driven) ── -->
+    <div id="match-accept-panel" data-if="proposal_active">
+        <div id="ma-title">MATCH FOUND!</div>
+        <div id="ma-opponent-section">
+            <div id="ma-opponent-label">OPPONENT</div>
+            <div id="ma-opponent-name">{{proposal_opponent_name}}</div>
+            <div id="ma-opponent-details">
+                <span class="ma-detail-item" data-if="proposal_opponent_ping >= 0">
+                    ~{{proposal_opponent_ping}}ms
+                </span>
+                <span class="ma-detail-item">
+                    {{proposal_opponent_conn_type == 'wired' ? 'Wired' : (proposal_opponent_conn_type == 'wifi' ? 'WiFi' : '?')}}
+                </span>
+            </div>
+        </div>
+        <div id="ma-countdown-section">
+            <div id="ma-countdown-bar-bg">
+                <div id="ma-countdown-bar-fill" data-style-width="proposal_countdown_pct + '%'"/>
+            </div>
+            <div id="ma-countdown-text">{{proposal_countdown}}s</div>
+        </div>
+        <div id="ma-buttons">
+            <div id="ma-btn-accept" data-class-focused="proposal_cursor == 0">
+                ACCEPT
+            </div>
+            <div id="ma-btn-decline" data-class-focused="proposal_cursor == 1">
+                DECLINE
+            </div>
+        </div>
     </div>
 
     <!-- ── Status bar ── -->

@@ -543,6 +543,51 @@ bool LobbyServer_DeclineInvite(const char* player_id, const char* declined_playe
     return http_request("POST", "/decline", body, response, sizeof(response));
 }
 
+/* === Room Discovery === */
+
+int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms) {
+    if (!configured || !out_rooms || max_rooms <= 0) return 0;
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("GET", "/rooms/list", "", response, sizeof(response)))
+        return 0;
+
+    /* Parse JSON: {"rooms":[{"code":"ABCD","name":"...","player_count":3},...]} */
+    int count = 0;
+    const char* cursor = strstr(response, "\"rooms\":[");
+    if (!cursor) return 0;
+    cursor = strchr(cursor, '[');
+    if (!cursor) return 0;
+    cursor++; /* skip '[' */
+
+    while (count < max_rooms) {
+        const char* obj_start = strchr(cursor, '{');
+        if (!obj_start) break;
+        const char* obj_end = strchr(obj_start, '}');
+        if (!obj_end) break;
+
+        /* Extract the object substring */
+        char obj[512];
+        int obj_len = (int)(obj_end - obj_start + 1);
+        if (obj_len >= (int)sizeof(obj)) obj_len = (int)sizeof(obj) - 1;
+        memcpy(obj, obj_start, obj_len);
+        obj[obj_len] = '\0';
+
+        RoomListItem* r = &out_rooms[count];
+        memset(r, 0, sizeof(*r));
+        json_get_string(obj, "code", r->code, sizeof(r->code));
+        json_get_string(obj, "name", r->name, sizeof(r->name));
+        r->player_count = json_get_int(obj, "player_count", 0);
+
+        if (strlen(r->code) > 0)
+            count++;
+
+        cursor = obj_end + 1;
+    }
+
+    return count;
+}
+
 /* === Phase 2: Match Reporting === */
 
 bool LobbyServer_ReportMatch(const MatchResult* result) {
@@ -717,6 +762,7 @@ static void parse_room_json(const char* json, RoomState* out) {
                 json_get_string(p_obj, "player_id", rp->player_id, sizeof(rp->player_id));
                 json_get_string(p_obj, "display_name", rp->display_name, sizeof(rp->display_name));
                 json_get_string(p_obj, "region", rp->region, sizeof(rp->region));
+                json_get_string(p_obj, "country", rp->country, sizeof(rp->country));
                 
                 cur = obj_end;
             }
