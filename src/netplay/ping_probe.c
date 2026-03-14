@@ -33,16 +33,16 @@ typedef int socklen_t;
 /* Constants                                                           */
 /* ------------------------------------------------------------------ */
 
-#define PING_MAGIC      "3SX_PING"
-#define PONG_MAGIC      "3SX_PONG"
-#define MAGIC_LEN       8
-#define PROBE_PKT_SIZE  16
+#define PING_MAGIC "3SX_PING"
+#define PONG_MAGIC "3SX_PONG"
+#define MAGIC_LEN 8
+#define PROBE_PKT_SIZE 16
 
 #define MAX_PROBE_PEERS 16
-#define PROBE_INTERVAL_MS 2000   /* Send one probe per peer every 2s */
-#define MISS_TIMEOUT_COUNT 5     /* Mark unreachable after 5 misses (10s) */
+#define PROBE_INTERVAL_MS 2000 /* Send one probe per peer every 2s */
+#define MISS_TIMEOUT_COUNT 5   /* Mark unreachable after 5 misses (10s) */
 
-#define SMOOTHING_ALPHA_NUM 1    /* α = 1/4 = 0.25 (integer math) */
+#define SMOOTHING_ALPHA_NUM 1 /* α = 1/4 = 0.25 (integer math) */
 #define SMOOTHING_ALPHA_DEN 4
 
 /* ------------------------------------------------------------------ */
@@ -50,28 +50,28 @@ typedef int socklen_t;
 /* ------------------------------------------------------------------ */
 
 typedef struct {
-    char     player_id[64];
-    uint32_t ip;               /* Network byte order */
-    uint16_t port;             /* Network byte order */
-    bool     active;
+    char player_id[64];
+    uint32_t ip;   /* Network byte order */
+    uint16_t port; /* Network byte order */
+    bool active;
 
     uint16_t next_seq;
-    uint32_t last_send_ticks;  /* SDL_GetTicks() when last probe was sent */
+    uint32_t last_send_ticks; /* SDL_GetTicks() when last probe was sent */
 
     /* Measurement */
-    int      smoothed_rtt;     /* Exponential average in ms, -1 = no data */
-    int      consecutive_miss; /* Incremented each send, reset on pong */
-    bool     ever_reached;     /* True once we get at least one pong */
+    int smoothed_rtt;     /* Exponential average in ms, -1 = no data */
+    int consecutive_miss; /* Incremented each send, reset on pong */
+    bool ever_reached;    /* True once we get at least one pong */
 } ProbePeer;
 
 /* ------------------------------------------------------------------ */
 /* Module state                                                        */
 /* ------------------------------------------------------------------ */
 
-static int          s_socket_fd = -1;
-static ProbePeer    s_peers[MAX_PROBE_PEERS];
-static int          s_peer_count = 0;
-static int          s_next_send_idx = 0; /* Round-robin index for staggered sends */
+static int s_socket_fd = -1;
+static ProbePeer s_peers[MAX_PROBE_PEERS];
+static int s_peer_count = 0;
+static int s_next_send_idx = 0; /* Round-robin index for staggered sends */
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
@@ -120,8 +120,7 @@ static void send_probe(ProbePeer* peer) {
     uint8_t pkt[PROBE_PKT_SIZE];
     build_probe(pkt, PING_MAGIC, peer->next_seq, now);
 
-    sendto(s_socket_fd, (const char*)pkt, PROBE_PKT_SIZE, 0,
-           (struct sockaddr*)&addr, sizeof(addr));
+    sendto(s_socket_fd, (const char*)pkt, PROBE_PKT_SIZE, 0, (struct sockaddr*)&addr, sizeof(addr));
 
     peer->next_seq++;
     peer->last_send_ticks = now;
@@ -135,8 +134,7 @@ static void send_pong(const struct sockaddr_in* to, uint16_t seq, uint32_t ts) {
     uint8_t pkt[PROBE_PKT_SIZE];
     build_probe(pkt, PONG_MAGIC, seq, ts);
 
-    sendto(s_socket_fd, (const char*)pkt, PROBE_PKT_SIZE, 0,
-           (const struct sockaddr*)to, sizeof(*to));
+    sendto(s_socket_fd, (const char*)pkt, PROBE_PKT_SIZE, 0, (const struct sockaddr*)to, sizeof(*to));
 }
 
 static void receive_probes(void) {
@@ -151,8 +149,7 @@ static void receive_probes(void) {
         struct sockaddr_in from;
         socklen_t from_len = sizeof(from);
 
-        int bytes = recvfrom(s_socket_fd, (char*)buf, sizeof(buf), 0,
-                             (struct sockaddr*)&from, &from_len);
+        int bytes = recvfrom(s_socket_fd, (char*)buf, sizeof(buf), 0, (struct sockaddr*)&from, &from_len);
         if (bytes <= 0)
             break;
 
@@ -173,8 +170,10 @@ static void receive_probes(void) {
             memcpy(&ts, buf + 10, 4);
 
             int rtt = (int)(now - ts);
-            if (rtt < 0) rtt = 0;
-            if (rtt > 9999) rtt = 9999;
+            if (rtt < 0)
+                rtt = 0;
+            if (rtt > 9999)
+                rtt = 9999;
 
             ProbePeer* peer = find_peer_by_addr(from.sin_addr.s_addr, from.sin_port);
             if (peer) {
@@ -186,13 +185,12 @@ static void receive_probes(void) {
                     peer->smoothed_rtt = rtt;
                 } else {
                     /* Exponential smoothing: avg = α*sample + (1-α)*avg */
-                    peer->smoothed_rtt = (SMOOTHING_ALPHA_NUM * rtt +
-                                          (SMOOTHING_ALPHA_DEN - SMOOTHING_ALPHA_NUM) * peer->smoothed_rtt)
-                                         / SMOOTHING_ALPHA_DEN;
+                    peer->smoothed_rtt =
+                        (SMOOTHING_ALPHA_NUM * rtt + (SMOOTHING_ALPHA_DEN - SMOOTHING_ALPHA_NUM) * peer->smoothed_rtt) /
+                        SMOOTHING_ALPHA_DEN;
                 }
 
-                SDL_Log("[PingProbe] %s RTT=%dms (smoothed=%dms)",
-                        peer->player_id, rtt, peer->smoothed_rtt);
+                SDL_Log("[PingProbe] %s RTT=%dms (smoothed=%dms)", peer->player_id, rtt, peer->smoothed_rtt);
             }
         }
         /* Silently ignore unrecognized packets (e.g. 3SX_PUNCH from hole punch) */
@@ -315,8 +313,7 @@ void PingProbe_Update(void) {
 
             /* Log unreachable detection */
             if (p->consecutive_miss >= MISS_TIMEOUT_COUNT && p->consecutive_miss == MISS_TIMEOUT_COUNT) {
-                SDL_Log("[PingProbe] %s unreachable (%d consecutive misses)",
-                        p->player_id, p->consecutive_miss);
+                SDL_Log("[PingProbe] %s unreachable (%d consecutive misses)", p->player_id, p->consecutive_miss);
             }
             break; /* Only send one probe per update */
         }

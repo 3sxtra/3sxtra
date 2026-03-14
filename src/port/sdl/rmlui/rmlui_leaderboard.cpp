@@ -33,11 +33,12 @@ struct LBItem {
     bool is_me;
 
     bool operator==(const LBItem& o) const {
-        return rank == o.rank && name == o.name && wins == o.wins &&
-               losses == o.losses && win_pct == o.win_pct &&
+        return rank == o.rank && name == o.name && wins == o.wins && losses == o.losses && win_pct == o.win_pct &&
                rating_str == o.rating_str && tier == o.tier && is_me == o.is_me;
     }
-    bool operator!=(const LBItem& o) const { return !(*this == o); }
+    bool operator!=(const LBItem& o) const {
+        return !(*this == o);
+    }
 };
 
 // ─── Data model ──────────────────────────────────────────────────
@@ -88,10 +89,12 @@ static int async_fetch_fn(void* userdata) {
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_leaderboard_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("leaderboard");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
     // Register LBItem struct
     if (auto h = ctor.RegisterStruct<LBItem>()) {
@@ -109,16 +112,13 @@ extern "C" void rmlui_leaderboard_init(void) {
 
     // Scalars
     ctor.BindFunc("page", [](Rml::Variant& v) { v = s_page + 1; }); // 1-indexed for display
-    ctor.BindFunc("total_pages", [](Rml::Variant& v) {
-        v = s_total > 0 ? ((s_total + LB_PAGE_SIZE - 1) / LB_PAGE_SIZE) : 1;
-    });
+    ctor.BindFunc("total_pages",
+                  [](Rml::Variant& v) { v = s_total > 0 ? ((s_total + LB_PAGE_SIZE - 1) / LB_PAGE_SIZE) : 1; });
     ctor.BindFunc("total_players", [](Rml::Variant& v) { v = s_total; });
     ctor.BindFunc("loading", [](Rml::Variant& v) { v = s_loading; });
     ctor.BindFunc("has_data", [](Rml::Variant& v) { v = s_has_data; });
     ctor.BindFunc("has_prev", [](Rml::Variant& v) { v = s_page > 0; });
-    ctor.BindFunc("has_next", [](Rml::Variant& v) {
-        v = (s_page + 1) * LB_PAGE_SIZE < s_total;
-    });
+    ctor.BindFunc("has_next", [](Rml::Variant& v) { v = (s_page + 1) * LB_PAGE_SIZE < s_total; });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -126,8 +126,10 @@ extern "C" void rmlui_leaderboard_init(void) {
 
 // ─── Per-frame update ────────────────────────────────────────────
 extern "C" void rmlui_leaderboard_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
-    if (!rmlui_wrapper_is_game_document_visible("leaderboard")) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
+    if (!rmlui_wrapper_is_game_document_visible("leaderboard"))
+        return;
 
     // Check if async fetch completed
     if (SDL_GetAtomicInt(&s_fetch_done)) {
@@ -179,11 +181,14 @@ extern "C" void rmlui_leaderboard_update(void) {
 
 // ─── Fetch ───────────────────────────────────────────────────────
 extern "C" void rmlui_leaderboard_fetch_page(int page) {
-    if (SDL_GetAtomicInt(&s_fetch_active)) return;
-    if (!LobbyServer_IsConfigured()) return;
+    if (SDL_GetAtomicInt(&s_fetch_active))
+        return;
+    if (!LobbyServer_IsConfigured())
+        return;
 
     s_loading = true;
-    if (s_model_handle) s_model_handle.DirtyVariable("loading");
+    if (s_model_handle)
+        s_model_handle.DirtyVariable("loading");
 
     SDL_SetAtomicInt(&s_fetch_active, 1);
     SDL_SetAtomicInt(&s_fetch_done, 0);
@@ -216,7 +221,8 @@ extern "C" void rmlui_leaderboard_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_game_document("leaderboard");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
-        if (ctx) ctx->RemoveDataModel("leaderboard");
+        if (ctx)
+            ctx->RemoveDataModel("leaderboard");
         s_model_registered = false;
     }
     s_entries.clear();

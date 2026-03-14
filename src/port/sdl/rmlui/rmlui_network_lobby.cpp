@@ -58,17 +58,16 @@ struct LanPeerItem {
 
 struct NetPeerItem {
     Rml::String name;
-    Rml::String country;     // ISO 3166-1 alpha-2 (e.g. "US", "JP")
-    Rml::String flag_icon;   // path to flag PNG (e.g. "assets/flags_icons/us.png")
-    Rml::String ping_label;  // e.g. "~42ms" or "..."
-    Rml::String ping_class;  // "ping-good" | "ping-ok" | "ping-bad"
-    Rml::String conn_type;   // "wifi" | "wired" | "unknown"
-    bool selected;           // true when g_net_peer_idx == this row
+    Rml::String country;    // ISO 3166-1 alpha-2 (e.g. "US", "JP")
+    Rml::String flag_icon;  // path to flag PNG (e.g. "assets/flags_icons/us.png")
+    Rml::String ping_label; // e.g. "~42ms" or "..."
+    Rml::String ping_class; // "ping-good" | "ping-ok" | "ping-bad"
+    Rml::String conn_type;  // "wifi" | "wired" | "unknown"
+    bool selected;          // true when g_net_peer_idx == this row
 
     bool operator==(const NetPeerItem& o) const {
-        return name == o.name && country == o.country && flag_icon == o.flag_icon &&
-               ping_label == o.ping_label && ping_class == o.ping_class &&
-               conn_type == o.conn_type && selected == o.selected;
+        return name == o.name && country == o.country && flag_icon == o.flag_icon && ping_label == o.ping_label &&
+               ping_class == o.ping_class && conn_type == o.conn_type && selected == o.selected;
     }
     bool operator!=(const NetPeerItem& o) const {
         return !(*this == o);
@@ -84,7 +83,9 @@ struct RoomItem {
     bool operator==(const RoomItem& o) const {
         return code == o.code && name == o.name && player_count == o.player_count && selected == o.selected;
     }
-    bool operator!=(const RoomItem& o) const { return !(*this == o); }
+    bool operator!=(const RoomItem& o) const {
+        return !(*this == o);
+    }
 };
 
 // ─── Data model ──────────────────────────────────────────────────
@@ -99,10 +100,10 @@ static int s_room_list_idx = 0;
 static Uint64 s_room_list_poll_time = 0;
 
 // Async room list fetch
-static SDL_AtomicInt s_room_fetch_active = {0}; // 1 = fetch thread running
-static SDL_AtomicInt s_room_fetch_done   = {0}; // 1 = result ready
-static RoomListItem  s_room_fetch_buf[16];       // shared result buffer
-static int           s_room_fetch_count = 0;     // shared result count
+static SDL_AtomicInt s_room_fetch_active = { 0 }; // 1 = fetch thread running
+static SDL_AtomicInt s_room_fetch_done = { 0 };   // 1 = result ready
+static RoomListItem s_room_fetch_buf[16];         // shared result buffer
+static int s_room_fetch_count = 0;                // shared result count
 
 static int SDLCALL async_room_list_fn(void* data) {
     (void)data;
@@ -116,28 +117,32 @@ static int SDLCALL async_room_list_fn(void* data) {
 }
 
 static void AsyncFetchRoomList(void) {
-    if (SDL_GetAtomicInt(&s_room_fetch_active) != 0) return;
+    if (SDL_GetAtomicInt(&s_room_fetch_active) != 0)
+        return;
     SDL_SetAtomicInt(&s_room_fetch_active, 1);
     SDL_SetAtomicInt(&s_room_fetch_done, 0);
     SDL_Thread* t = SDL_CreateThread(async_room_list_fn, "AsyncRoomList", nullptr);
-    if (t) { SDL_DetachThread(t); }
-    else { SDL_SetAtomicInt(&s_room_fetch_active, 0); }
+    if (t) {
+        SDL_DetachThread(t);
+    } else {
+        SDL_SetAtomicInt(&s_room_fetch_active, 0);
+    }
 }
 
 // ─── Room create/join state ──────────────────────────────────────
-static Rml::String s_room_status;       // "" | "Creating..." | "Joining..." | "ABCD" (room code)
-static Rml::String s_join_room_code;    // entered room code for display
-static SDL_AtomicInt s_room_async_active = {0};  // 1 = background op in progress
+static Rml::String s_room_status;                 // "" | "Creating..." | "Joining..." | "ABCD" (room code)
+static Rml::String s_join_room_code;              // entered room code for display
+static SDL_AtomicInt s_room_async_active = { 0 }; // 1 = background op in progress
 
 // Result from background thread
-static SDL_AtomicInt s_room_async_done  = {0};   // 1 = result ready
-static SDL_AtomicInt s_room_async_ok    = {0};   // 1 = success, 0 = fail
-static char s_room_async_code[16] = {0};         // resulting room code on success
+static SDL_AtomicInt s_room_async_done = { 0 }; // 1 = result ready
+static SDL_AtomicInt s_room_async_ok = { 0 };   // 1 = success, 0 = fail
+static char s_room_async_code[16] = { 0 };      // resulting room code on success
 
 struct AsyncRoomData {
-    int action;         // 1 = create, 2 = join
-    char name[64];      // room name (create)
-    char code[16];      // room code (join)
+    int action;    // 1 = create, 2 = join
+    char name[64]; // room name (create)
+    char code[16]; // room code (join)
 };
 
 static int SDLCALL async_room_fn(void* data) {
@@ -167,25 +172,37 @@ static int SDLCALL async_room_fn(void* data) {
 }
 
 static void AsyncCreateRoom(const char* name) {
-    if (SDL_GetAtomicInt(&s_room_async_active) != 0) return;
+    if (SDL_GetAtomicInt(&s_room_async_active) != 0)
+        return;
     SDL_SetAtomicInt(&s_room_async_active, 1);
     SDL_SetAtomicInt(&s_room_async_done, 0);
     AsyncRoomData* d = (AsyncRoomData*)calloc(1, sizeof(AsyncRoomData));
     d->action = 1;
     snprintf(d->name, sizeof(d->name), "%s", name ? name : "Casual Room");
     SDL_Thread* t = SDL_CreateThread(async_room_fn, "AsyncCreateRoom", d);
-    if (t) { SDL_DetachThread(t); } else { free(d); SDL_SetAtomicInt(&s_room_async_active, 0); }
+    if (t) {
+        SDL_DetachThread(t);
+    } else {
+        free(d);
+        SDL_SetAtomicInt(&s_room_async_active, 0);
+    }
 }
 
 static void AsyncJoinRoom(const char* code) {
-    if (SDL_GetAtomicInt(&s_room_async_active) != 0) return;
+    if (SDL_GetAtomicInt(&s_room_async_active) != 0)
+        return;
     SDL_SetAtomicInt(&s_room_async_active, 1);
     SDL_SetAtomicInt(&s_room_async_done, 0);
     AsyncRoomData* d = (AsyncRoomData*)calloc(1, sizeof(AsyncRoomData));
     d->action = 2;
     snprintf(d->code, sizeof(d->code), "%s", code);
     SDL_Thread* t = SDL_CreateThread(async_room_fn, "AsyncJoinRoom", d);
-    if (t) { SDL_DetachThread(t); } else { free(d); SDL_SetAtomicInt(&s_room_async_active, 0); }
+    if (t) {
+        SDL_DetachThread(t);
+    } else {
+        free(d);
+        SDL_SetAtomicInt(&s_room_async_active, 0);
+    }
 }
 
 // (Popup code removed — room joining is now list-based)
@@ -239,7 +256,6 @@ static LobbyCache s_cache = {};
             s_model_handle.DirtyVariable(#nm);                                                                         \
         }                                                                                                              \
     } while (0)
-
 
 extern "C" void rmlui_network_lobby_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
@@ -651,7 +667,8 @@ extern "C" void rmlui_network_lobby_update(void) {
             int rc = s_room_fetch_count;
             DIRTY_INT(room_count, rc);
 
-            if (s_room_list_idx >= rc) s_room_list_idx = rc > 0 ? rc - 1 : 0;
+            if (s_room_list_idx >= rc)
+                s_room_list_idx = rc > 0 ? rc - 1 : 0;
             DIRTY_INT(room_list_idx, s_room_list_idx);
 
             std::vector<RoomItem> next;
@@ -717,9 +734,11 @@ extern "C" void rmlui_network_lobby_hide(void) {
 
 // ─── Room action handlers (called from menu.c confirm logic) ─────
 extern "C" void rmlui_network_lobby_create_room(void) {
-    if (SDL_GetAtomicInt(&s_room_async_active) != 0) return;
+    if (SDL_GetAtomicInt(&s_room_async_active) != 0)
+        return;
     s_room_status = "Creating...";
-    if (s_model_handle) s_model_handle.DirtyVariable("room_status");
+    if (s_model_handle)
+        s_model_handle.DirtyVariable("room_status");
     const char* dn = Identity_GetDisplayName();
     char name[64];
     snprintf(name, sizeof(name), "%s's Room", dn ? dn : "Player");
@@ -728,9 +747,12 @@ extern "C" void rmlui_network_lobby_create_room(void) {
 
 extern "C" void rmlui_network_lobby_join_room(void) {
     // Join the selected room from the list
-    if (s_room_list.empty()) return;
-    if (s_room_list_idx < 0 || s_room_list_idx >= (int)s_room_list.size()) return;
-    if (SDL_GetAtomicInt(&s_room_async_active) != 0) return;
+    if (s_room_list.empty())
+        return;
+    if (s_room_list_idx < 0 || s_room_list_idx >= (int)s_room_list.size())
+        return;
+    if (SDL_GetAtomicInt(&s_room_async_active) != 0)
+        return;
 
     const Rml::String& code = s_room_list[s_room_list_idx].code;
     s_join_room_code = code;
@@ -745,7 +767,8 @@ extern "C" void rmlui_network_lobby_join_room(void) {
 /// Scroll room list selection (called from menu.c on Left/Right when cursor == 9)
 extern "C" void rmlui_network_lobby_room_scroll(int delta) {
     int count = (int)s_room_list.size();
-    if (count == 0) return;
+    if (count == 0)
+        return;
     s_room_list_idx = (s_room_list_idx + delta + count) % count;
     // Update selection flags
     for (int i = 0; i < count; i++)

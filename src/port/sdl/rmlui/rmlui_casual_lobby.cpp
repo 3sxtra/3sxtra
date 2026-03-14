@@ -17,12 +17,12 @@
 #include <vector>
 
 extern "C" {
-#include "structs.h"
-#include "sf33rd/Source/Game/engine/workuser.h"
 #include "netplay/identity.h"
 #include "netplay/lobby_server.h"
 #include "netplay/netplay.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
+#include "sf33rd/Source/Game/engine/workuser.h"
+#include "structs.h"
 } // extern "C"
 
 #include <RmlUi/Core/Input.h>
@@ -93,14 +93,14 @@ static int s_proposal_opponent_ping = -1;
 static Rml::String s_proposal_opponent_conn_type;
 static int s_proposal_countdown = 10;
 static int s_proposal_countdown_pct = 100; // 0-100 for countdown bar width
-static int s_proposal_cursor = 0; // 0 = accept, 1 = decline
+static int s_proposal_cursor = 0;          // 0 = accept, 1 = decline
 static Uint64 s_proposal_start_time = 0;
-static char s_proposal_opponent_room_code[32] = {0};
-static char s_proposal_opponent_region[8] = {0};
+static char s_proposal_opponent_room_code[32] = { 0 };
+static char s_proposal_opponent_region[8] = { 0 };
 static bool s_proposal_we_are_p1 = false;
 
 // Async accept/decline thread functions (avoid blocking UI thread with HTTP calls)
-static SDL_AtomicInt s_async_match_active = {0};
+static SDL_AtomicInt s_async_match_active = { 0 };
 
 struct AsyncMatchData {
     char room_code[16];
@@ -119,7 +119,8 @@ static int SDLCALL async_match_action_fn(void* data) {
 }
 
 static void AsyncMatchAction(const char* room_code, int action) {
-    if (SDL_GetAtomicInt(&s_async_match_active) != 0) return;
+    if (SDL_GetAtomicInt(&s_async_match_active) != 0)
+        return;
     SDL_SetAtomicInt(&s_async_match_active, 1);
     AsyncMatchData* d = (AsyncMatchData*)malloc(sizeof(AsyncMatchData));
     snprintf(d->room_code, sizeof(d->room_code), "%s", room_code);
@@ -140,10 +141,12 @@ static void apply_room_state_to_model(void);
 // ─── Init ────────────────────────────────────────────────────────
 extern "C" void rmlui_casual_lobby_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("casual_lobby");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
     // Register Structs
     if (auto h = ctor.RegisterStruct<RmlQueuePlayer>()) {
@@ -175,7 +178,7 @@ extern "C" void rmlui_casual_lobby_init(void) {
     ctor.Bind("room_code", &s_room_code);
     ctor.Bind("room_name", &s_room_name);
     ctor.Bind("player_count", &s_player_count);
-    
+
     ctor.Bind("match_active", &s_match_active);
     ctor.Bind("match_winner", &s_match_winner);
     ctor.Bind("match_p1_name", &s_match_p1_name);
@@ -208,7 +211,8 @@ extern "C" void rmlui_casual_lobby_init(void) {
 }
 
 static void apply_room_state_to_model(void) {
-    if (!s_model_handle) return;
+    if (!s_model_handle)
+        return;
 
     s_room_code = s_room_state.id;
     s_room_name = s_room_state.name;
@@ -219,15 +223,17 @@ static void apply_room_state_to_model(void) {
     s_is_playing = false;
     s_match_p1_name = "Player 1";
     s_match_p2_name = "Player 2";
-    
+
     for (int i = 0; i < s_room_state.player_count; i++) {
         if (strcmp(s_room_state.players[i].player_id, s_room_state.match_p1) == 0) {
             s_match_p1_name = s_room_state.players[i].display_name;
-            if (s_room_state.players[i].player_id == s_my_id) s_is_playing = true;
+            if (s_room_state.players[i].player_id == s_my_id)
+                s_is_playing = true;
         }
         if (strcmp(s_room_state.players[i].player_id, s_room_state.match_p2) == 0) {
             s_match_p2_name = s_room_state.players[i].display_name;
-            if (s_room_state.players[i].player_id == s_my_id) s_is_playing = true;
+            if (s_room_state.players[i].player_id == s_my_id)
+                s_is_playing = true;
         }
     }
 
@@ -238,7 +244,8 @@ static void apply_room_state_to_model(void) {
         RmlQueuePlayer qp;
         qp.index = i;
         qp.is_self = (s_my_id == s_room_state.queue[i]);
-        if (qp.is_self) s_in_queue = true;
+        if (qp.is_self)
+            s_in_queue = true;
 
         qp.name = s_room_state.queue[i]; // Fallback
         for (int p = 0; p < s_room_state.player_count; p++) {
@@ -257,7 +264,8 @@ static void apply_room_state_to_model(void) {
         rp.name = s_room_state.players[i].display_name;
         rp.country = s_room_state.players[i].country;
         // Flag PNGs are lowercase (e.g. "pt.png"), server sends uppercase ("PT")
-        for (auto& ch : rp.country) ch = (char)tolower((unsigned char)ch);
+        for (auto& ch : rp.country)
+            ch = (char)tolower((unsigned char)ch);
         rp.is_self = (s_my_id == s_room_state.players[i].player_id);
         rp.is_playing = (strcmp(s_room_state.players[i].player_id, s_room_state.match_p1) == 0 ||
                          strcmp(s_room_state.players[i].player_id, s_room_state.match_p2) == 0) &&
@@ -296,8 +304,9 @@ static void apply_room_state_to_model(void) {
 }
 
 static void refresh_room_state_from_server(void) {
-    if (s_room_code.empty()) return;
-    
+    if (s_room_code.empty())
+        return;
+
     // Use the read-only GET /room/state endpoint (no re-join side effect)
     if (LobbyServer_GetRoomState(s_room_code.c_str(), &s_room_state)) {
         apply_room_state_to_model();
@@ -307,7 +316,8 @@ static void refresh_room_state_from_server(void) {
                     "[CasualLobby] Room %s no longer exists on server, returning to lobby",
                     s_room_code.c_str());
         s_status_text = "Room closed.";
-        if (s_model_handle) s_model_handle.DirtyVariable("status_text");
+        if (s_model_handle)
+            s_model_handle.DirtyVariable("status_text");
         rmlui_casual_lobby_hide();
         rmlui_network_lobby_show();
     }
@@ -315,13 +325,15 @@ static void refresh_room_state_from_server(void) {
 
 // ─── Update loop ─────────────────────────────────────────────────
 extern "C" void rmlui_casual_lobby_update(void) {
-    if (!s_model_registered || !s_is_visible) return;
+    if (!s_model_registered || !s_is_visible)
+        return;
 
     // Drain all queued SSE events from the ring buffer (up to 16 per frame)
     SSEEvent sse_evt;
     for (int sse_i = 0; sse_i < 16; sse_i++) {
         SSEEventType sse_type = LobbyServer_SSEPoll(&sse_evt);
-        if (sse_type == SSE_EVENT_NONE) break;
+        if (sse_type == SSE_EVENT_NONE)
+            break;
 
         if (sse_type == SSE_EVENT_SYNC) {
             // Full room state sync — replace everything
@@ -333,10 +345,11 @@ extern "C" void rmlui_casual_lobby_update(void) {
             msg.sender = sse_evt.chat_msg.sender_name;
             msg.text = sse_evt.chat_msg.text;
             s_chat.push_back(msg);
-            if (s_chat.size() > MAX_CHAT_MESSAGES) s_chat.erase(s_chat.begin());
+            if (s_chat.size() > MAX_CHAT_MESSAGES)
+                s_chat.erase(s_chat.begin());
             s_model_handle.DirtyVariable("chat_messages");
-        } else if (sse_type == SSE_EVENT_JOIN || sse_type == SSE_EVENT_LEAVE ||
-                   sse_type == SSE_EVENT_QUEUE_UPDATE || sse_type == SSE_EVENT_HOST_MIGRATED) {
+        } else if (sse_type == SSE_EVENT_JOIN || sse_type == SSE_EVENT_LEAVE || sse_type == SSE_EVENT_QUEUE_UPDATE ||
+                   sse_type == SSE_EVENT_HOST_MIGRATED) {
             // For structural changes, re-fetch full state as fallback
             refresh_room_state_from_server();
         } else if (sse_type == SSE_EVENT_MATCH_PROPOSE) {
@@ -376,7 +389,8 @@ extern "C" void rmlui_casual_lobby_update(void) {
 
                 // Popup is inline in casual_lobby.rml — data-if="proposal_active" shows it
 
-                s_status_text = Rml::String("Match proposed: ") + sse_evt.propose_p1_name + " vs " + sse_evt.propose_p2_name;
+                s_status_text =
+                    Rml::String("Match proposed: ") + sse_evt.propose_p1_name + " vs " + sse_evt.propose_p2_name;
                 SDL_Log("Casual Lobby: Match proposed! %s vs %s", sse_evt.propose_p1_name, sse_evt.propose_p2_name);
 
                 s_model_handle.DirtyVariable("proposal_active");
@@ -386,7 +400,8 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 s_model_handle.DirtyVariable("proposal_countdown");
                 s_model_handle.DirtyVariable("proposal_cursor");
             } else {
-                s_status_text = Rml::String("Match proposed: ") + sse_evt.propose_p1_name + " vs " + sse_evt.propose_p2_name;
+                s_status_text =
+                    Rml::String("Match proposed: ") + sse_evt.propose_p1_name + " vs " + sse_evt.propose_p2_name;
             }
             s_model_handle.DirtyVariable("status_text");
             refresh_room_state_from_server();
@@ -420,7 +435,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
             }
 
             refresh_room_state_from_server();
-            
+
             // Check if we are one of the players
             if (strcmp(s_room_state.match_p1, s_my_id.c_str()) == 0 ||
                 strcmp(s_room_state.match_p2, s_my_id.c_str()) == 0) {
@@ -434,9 +449,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 // P2P connection trigger: use stored opponent room code from proposal phase
                 if (s_proposal_opponent_room_code[0]) {
                     SDLNetplayUI_StartCasualMatchPunch(
-                        s_proposal_opponent_room_code,
-                        s_proposal_opponent_name.c_str(),
-                        s_proposal_we_are_p1);
+                        s_proposal_opponent_room_code, s_proposal_opponent_name.c_str(), s_proposal_we_are_p1);
                     s_proposal_opponent_room_code[0] = '\0'; // consumed
                 }
             } else {
@@ -453,10 +466,11 @@ extern "C" void rmlui_casual_lobby_update(void) {
                     break;
                 }
             }
-            if (winner_name.empty()) winner_name = sse_evt.match_winner_id;
+            if (winner_name.empty())
+                winner_name = sse_evt.match_winner_id;
             s_status_text = winner_name + " WINS! Winner stays on.";
             s_model_handle.DirtyVariable("status_text");
-            
+
             // If we were spectating, stop and re-show lobby
             if (s_is_spectating) {
                 Netplay_StopSpectate();
@@ -464,14 +478,14 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 s_model_handle.DirtyVariable("is_spectating");
                 rmlui_wrapper_show_game_document("casual_lobby");
             }
-            
+
             // If we were playing, re-show lobby
             if (s_is_playing) {
                 rmlui_wrapper_show_game_document("casual_lobby");
             }
             s_is_playing = false;
             s_model_handle.DirtyVariable("is_playing");
-            
+
             refresh_room_state_from_server();
         }
     }
@@ -508,12 +522,14 @@ extern "C" void rmlui_casual_lobby_update(void) {
     if (s_proposal_active) {
         Uint64 elapsed = SDL_GetTicks() - s_proposal_start_time;
         int remaining = 10 - (int)(elapsed / 1000);
-        if (remaining < 0) remaining = 0;
+        if (remaining < 0)
+            remaining = 0;
 
         // Smooth percentage (0-100) for countdown bar width
         int elapsed_ms = (int)(elapsed);
         int pct = 100 - (elapsed_ms * 100 / 10000);
-        if (pct < 0) pct = 0;
+        if (pct < 0)
+            pct = 0;
         if (pct != s_proposal_countdown_pct) {
             s_proposal_countdown_pct = pct;
             s_model_handle.DirtyVariable("proposal_countdown_pct");
@@ -599,15 +615,20 @@ extern "C" void rmlui_casual_lobby_update(void) {
 
     if (trigger & 0x01) { // Up
         if (s_cursor_x == 0) {
-            if (s_cursor_y == 10) s_cursor_y = 9;
-            else if (s_cursor_y == 9 && s_match_active && !s_is_playing) s_cursor_y = 0;
-            else if (s_cursor_y == 9) s_cursor_y = 0; // jump to top anyway
+            if (s_cursor_y == 10)
+                s_cursor_y = 9;
+            else if (s_cursor_y == 9 && s_match_active && !s_is_playing)
+                s_cursor_y = 0;
+            else if (s_cursor_y == 9)
+                s_cursor_y = 0; // jump to top anyway
         }
     }
     if (trigger & 0x02) { // Down
         if (s_cursor_x == 0) {
-            if (s_cursor_y == 0) s_cursor_y = 9;
-            else if (s_cursor_y == 9) s_cursor_y = 10;
+            if (s_cursor_y == 0)
+                s_cursor_y = 9;
+            else if (s_cursor_y == 9)
+                s_cursor_y = 10;
         }
     }
     if (trigger & 0x04) { // Left
@@ -692,7 +713,8 @@ extern "C" void rmlui_casual_lobby_shutdown(void) {
     if (s_model_registered) {
         rmlui_wrapper_hide_game_document("casual_lobby");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
-        if (ctx) ctx->RemoveDataModel("casual_lobby");
+        if (ctx)
+            ctx->RemoveDataModel("casual_lobby");
         s_model_registered = false;
     }
     // Chat popup is inline — no separate document to close
@@ -708,11 +730,13 @@ extern "C" const char* rmlui_casual_lobby_get_room_code(void) {
 }
 
 extern "C" bool rmlui_casual_lobby_handle_key_event(const SDL_Event* event) {
-    if (!s_chat_open || !s_is_typing) return false;
+    if (!s_chat_open || !s_is_typing)
+        return false;
 
     if (event->type == SDL_EVENT_TEXT_INPUT) {
         s_chat_input += event->text.text;
-        if (s_chat_input.size() > 120) s_chat_input.resize(120);
+        if (s_chat_input.size() > 120)
+            s_chat_input.resize(120);
         s_model_handle.DirtyVariable("chat_input");
         return true;
     }
@@ -748,8 +772,10 @@ extern "C" bool rmlui_casual_lobby_handle_key_event(const SDL_Event* event) {
             // Remove last UTF-8 character
             size_t len = s_chat_input.size();
             size_t i = len;
-            while (i > 0 && (s_chat_input[i - 1] & 0xC0) == 0x80) i--;
-            if (i > 0) i--;
+            while (i > 0 && (s_chat_input[i - 1] & 0xC0) == 0x80)
+                i--;
+            if (i > 0)
+                i--;
             s_chat_input.resize(i);
             s_model_handle.DirtyVariable("chat_input");
             return true;

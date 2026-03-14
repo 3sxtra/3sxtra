@@ -8,9 +8,9 @@
 #include <string.h>
 
 #ifdef _WIN32
+#include <iphlpapi.h> // GetAdaptersAddresses — for per-interface broadcast
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include <iphlpapi.h> // GetAdaptersAddresses — for per-interface broadcast
 #ifdef _MSC_VER
 #pragma comment(lib, "iphlpapi.lib")
 #endif
@@ -139,7 +139,8 @@ void Discovery_Update() {
         char safe_name[32];
         snprintf(safe_name, sizeof(safe_name), "%s", raw_name ? raw_name : "");
         for (int i = 0; safe_name[i]; i++) {
-            if (safe_name[i] == '|') safe_name[i] = '_';
+            if (safe_name[i] == '|')
+                safe_name[i] = '_';
         }
 
         snprintf(beacon_data,
@@ -189,8 +190,12 @@ void Discovery_Update() {
                     uint32_t mask = htonl(0xFFFFFFFF << (32 - prefix));
                     uint32_t bcast = sa->sin_addr.s_addr | ~mask;
                     broadcast_addr.sin_addr.s_addr = bcast;
-                    sendto(broadcast_sock, beacon_data, beacon_len, 0,
-                           (struct sockaddr*)&broadcast_addr, sizeof(broadcast_addr));
+                    sendto(broadcast_sock,
+                           beacon_data,
+                           beacon_len,
+                           0,
+                           (struct sockaddr*)&broadcast_addr,
+                           sizeof(broadcast_addr));
                     sent_count++;
                 }
             }
@@ -209,8 +214,12 @@ void Discovery_Update() {
                     continue;
                 struct sockaddr_in* brd = (struct sockaddr_in*)ifa->ifa_broadaddr;
                 broadcast_addr.sin_addr = brd->sin_addr;
-                sendto(broadcast_sock, beacon_data, beacon_len, 0,
-                       (struct sockaddr*)&broadcast_addr, sizeof(broadcast_addr));
+                sendto(broadcast_sock,
+                       beacon_data,
+                       beacon_len,
+                       0,
+                       (struct sockaddr*)&broadcast_addr,
+                       sizeof(broadcast_addr));
                 sent_count++;
             }
             freeifaddrs(ifap);
@@ -220,8 +229,8 @@ void Discovery_Update() {
         // Fallback: if no interfaces were enumerated, use global broadcast
         if (sent_count == 0) {
             broadcast_addr.sin_addr.s_addr = INADDR_BROADCAST;
-            sendto(broadcast_sock, beacon_data, beacon_len, 0,
-                   (struct sockaddr*)&broadcast_addr, sizeof(broadcast_addr));
+            sendto(
+                broadcast_sock, beacon_data, beacon_len, 0, (struct sockaddr*)&broadcast_addr, sizeof(broadcast_addr));
         }
 
         last_broadcast_ticks = now;
@@ -247,14 +256,14 @@ void Discovery_Update() {
             int peer_rdy = 0;
             unsigned int peer_challenge = 0;
             unsigned short peer_port = 50000; // fallback for old beacons
-            char peer_display_name[32] = {0};
+            char peer_display_name[32] = { 0 };
             int fields = sscanf(buffer,
-                       "3SX_LOBBY|%u|%d|%d|%u|%hu",
-                       &peer_instance_id,
-                       &peer_auto,
-                       &peer_rdy,
-                       &peer_challenge,
-                       &peer_port);
+                                "3SX_LOBBY|%u|%d|%d|%u|%hu",
+                                &peer_instance_id,
+                                &peer_auto,
+                                &peer_rdy,
+                                &peer_challenge,
+                                &peer_port);
             // Parse the 7th field (display_name) manually — sscanf %s
             // stops at whitespace which is fine, but manual extraction
             // is more robust for names with spaces in the future.
@@ -262,12 +271,16 @@ void Discovery_Update() {
                 // Find the 6th pipe to get the display name
                 const char* p = buffer;
                 int pipes = 0;
-                while (*p && pipes < 6) { if (*p == '|') pipes++; p++; }
+                while (*p && pipes < 6) {
+                    if (*p == '|')
+                        pipes++;
+                    p++;
+                }
                 if (pipes == 6 && *p) {
                     snprintf(peer_display_name, sizeof(peer_display_name), "%s", p);
                     // Trim trailing whitespace/newlines
                     size_t dlen = strlen(peer_display_name);
-                    while (dlen > 0 && (peer_display_name[dlen-1] == '\n' || peer_display_name[dlen-1] == '\r'))
+                    while (dlen > 0 && (peer_display_name[dlen - 1] == '\n' || peer_display_name[dlen - 1] == '\r'))
                         peer_display_name[--dlen] = '\0';
                 }
             }

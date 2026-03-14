@@ -119,10 +119,14 @@ try {
             p1_char INTEGER,
             p2_char INTEGER,
             rounds INTEGER,
-            created_at TEXT DEFAULT (datetime('now'))
+            created_at TEXT DEFAULT (datetime('now')),
+            has_replay INTEGER DEFAULT 0
         );
         CREATE INDEX IF NOT EXISTS idx_matches_p1 ON matches(p1_id);
         CREATE INDEX IF NOT EXISTS idx_matches_p2 ON matches(p2_id);
+
+        -- Attempt to add has_replay column if the table already existed before this update
+        ALTER TABLE matches ADD COLUMN has_replay INTEGER DEFAULT 0;
 
         CREATE TABLE IF NOT EXISTS pending_results (
             match_key TEXT PRIMARY KEY,
@@ -634,12 +638,34 @@ async function handleRequest(req, res) {
     const fullPath = req.url; // includes query string — used for HMAC
     const method = req.method;
 
-    // Read body for POST
+    // Read body for POST (except for replay uploads which we handle raw)
     let body;
-    try {
-        body = method === 'POST' ? await readBody(req) : '';
-    } catch (err) {
-        return json(res, 413, { error: 'Request body too large' });
+    if (method === 'POST' && path === '/match_result/replay') {
+        try {
+            // Read body as a raw Buffer for binary file upload
+            body = await new Promise((resolve, reject) => {
+                let chunks = [];
+                let size = 0;
+                req.on('data', chunk => {
+                    size += chunk.length;
+                    if (size > 1024 * 1024) { // 1MB max for replays
+                        req.destroy();
+                        reject(new Error('Replay file too large'));
+                    }
+                    chunks.push(chunk);
+                });
+                req.on('end', () => resolve(Buffer.concat(chunks)));
+                req.on('error', reject);
+            });
+        } catch (err) {
+            return json(res, 413, { error: 'Replay file too large' });
+        }
+    } else {
+        try {
+            body = method === 'POST' ? await readBody(req) : '';
+        } catch (err) {
+            return json(res, 413, { error: 'Request body too large' });
+        }
     }
 
     // --- Health endpoint (no auth required) ---
@@ -1127,8 +1153,164 @@ async function handleRequest(req, res) {
         upsertPlayer.run(winnerId, winnerName, 1, 0, newStats.winner.rating, newStats.winner.rd, newStats.winner.vol);
         upsertPlayer.run(loserId, loserName, 0, 1, newStats.loser.rating, newStats.loser.rd, newStats.loser.vol);
 
-        console.log(`[match] recorded: ${winnerName} beat ${loserName}`);
-        return json(res, 200, { ok: true, status: 'recorded' });
+        // Get the ID of the newly inserted match so clients can upload replays
+        const matchId = db.prepare('SELECT last_insert_rowid() as id').get().id;
+
+        console.log(`[match] recorded: ${winnerName} beat ${loserName} (Match ID: ${matchId})`);
+        return json(res, 200, { ok: true, status: 'recorded', match_id: matchId });
+    }
+
+    // --- POST /match_result/replay ---
+    if (method === 'POST' && path === '/match_result/replay') {
+        if (!db) return json(res, 503, { error: 'Replay upload unavailable (no SQLite)' });
+
+        // The room_code query param here is repurposed to pass the match_id
+        const matchIdStr = url.searchParams.get('match_id');
+        const matchId = parseInt(matchIdStr, 10);
+
+        if (isNaN(matchId)) {
+            return json(res, 400, { error: 'Missing or invalid match_id query parameter' });
+        }
+
+        // Validate magic header "3SXR" (0x33535852)
+        if (!Buffer.isBuffer(body) || body.length < 16) {
+            return json(res, 400, { error: 'Invalid replay file: too small' });
+        }
+
+        // 3SXR in little-endian is 0x33535852 => 'R' 'X' 'S' '3' or [0x52, 0x58, 0x53, 0x33]
+        // But the struct uses u32 magic = 0x33535852. Let's just check the string "3SXR".
+        // On x86 little endian, it will be 0x52, 0x58, 0x53, 0x33
+        const magic = body.readUInt32LE(0);
+        if (magic !== 0x33535852) {
+            return json(res, 400, { error: 'Invalid replay file: bad magic header' });
+        }
+
+        // Verify the match actually exists and was created recently (e.g., within the last 15 minutes)
+        const match = db.prepare(`
+            SELECT p1_id, p2_id, has_replay,
+                   (julianday('now') - julianday(created_at)) * 24 * 60 AS minutes_ago
+            FROM matches WHERE id = ?
+        `).get(matchId);
+
+        if (!match) {
+            return json(res, 404, { error: 'Match not found' });
+        }
+
+        if (match.minutes_ago > 15) {
+            return json(res, 403, { error: 'Match is too old to accept a replay upload' });
+        }
+
+        if (match.has_replay) {
+            return json(res, 200, { ok: true, status: 'already_has_replay' });
+        }
+
+        // Ensure the uploading player is one of the match participants
+        const uploaderId = req.headers['x-player-id'];
+        if (uploaderId && uploaderId !== match.p1_id && uploaderId !== match.p2_id) {
+            return json(res, 403, { error: 'Only participants can upload the replay' });
+        }
+
+        // Save the file
+        const fs = require('node:fs');
+        const replaysDir = path.join(__dirname, 'replays');
+        if (!fs.existsSync(replaysDir)) {
+            fs.mkdirSync(replaysDir);
+        }
+
+        const filePath = path.join(replaysDir, `replay_${matchId}.bin`);
+        try {
+            fs.writeFileSync(filePath, body);
+
+            // Mark the match as having a replay
+            db.prepare('UPDATE matches SET has_replay = 1 WHERE id = ?').run(matchId);
+            console.log(`[replay] uploaded for match ${matchId} (${body.length} bytes)`);
+
+            return json(res, 200, { ok: true, status: 'uploaded' });
+        } catch (err) {
+            console.error('[replay] Failed to save replay:', err);
+            return json(res, 500, { error: 'Failed to save replay file' });
+        }
+    }
+
+    // --- GET /replays ---
+    if (method === 'GET' && path === '/replays') {
+        if (!db) return json(res, 503, { error: 'Replays unavailable (no SQLite)' });
+
+        const page = Math.max(0, parseInt(url.searchParams.get('page') || '0', 10));
+        const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
+        const offset = page * limit;
+
+        // Optional filter by player
+        const playerId = url.searchParams.get('player_id');
+
+        let query = `
+            SELECT m.id, m.p1_id, m.p2_id, m.winner_id, m.p1_char, m.p2_char, m.rounds, m.created_at,
+                   p1.display_name AS p1_name, p2.display_name AS p2_name
+            FROM matches m
+            LEFT JOIN players_db p1 ON m.p1_id = p1.player_id
+            LEFT JOIN players_db p2 ON m.p2_id = p2.player_id
+            WHERE m.has_replay = 1
+        `;
+        let params = [];
+
+        if (playerId) {
+            query += ` AND (m.p1_id = ? OR m.p2_id = ?)`;
+            params.push(playerId, playerId);
+        }
+
+        query += ` ORDER BY m.created_at DESC LIMIT ? OFFSET ?`;
+        params.push(limit, offset);
+
+        const rows = db.prepare(query).all(...params);
+
+        // Count total
+        let countQuery = `SELECT COUNT(*) as cnt FROM matches WHERE has_replay = 1`;
+        let countParams = [];
+        if (playerId) {
+            countQuery += ` AND (p1_id = ? OR p2_id = ?)`;
+            countParams.push(playerId, playerId);
+        }
+        const total = db.prepare(countQuery).get(...countParams).cnt;
+
+        return json(res, 200, {
+            replays: rows.map(r => ({
+                match_id: r.id,
+                p1_id: r.p1_id,
+                p1_name: r.p1_name || r.p1_id,
+                p2_id: r.p2_id,
+                p2_name: r.p2_name || r.p2_id,
+                winner_id: r.winner_id,
+                p1_char: r.p1_char,
+                p2_char: r.p2_char,
+                rounds: r.rounds,
+                created_at: r.created_at
+            })),
+            total,
+            page
+        });
+    }
+
+    // --- GET /replays/:id --- (Download raw replay binary)
+    const replayDownloadMatch = path.match(/^\/replays\/(\d+)$/);
+    if (method === 'GET' && replayDownloadMatch) {
+        const matchId = replayDownloadMatch[1];
+        const fs = require('node:fs');
+        const filePath = path.join(__dirname, 'replays', `replay_${matchId}.bin`);
+
+        if (!fs.existsSync(filePath)) {
+            return json(res, 404, { error: 'Replay file not found' });
+        }
+
+        const stat = fs.statSync(filePath);
+        res.writeHead(200, {
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': stat.size,
+            'Content-Disposition': `attachment; filename="replay_${matchId}.bin"`
+        });
+
+        const readStream = fs.createReadStream(filePath);
+        readStream.pipe(res);
+        return; // Stream handles res.end()
     }
 
     // --- GET /player/:id/stats ---

@@ -13,8 +13,8 @@
 #define _GNU_SOURCE // Must be before any includes for getaddrinfo/timeval
 #endif
 #include "lobby_server.h"
-#include "port/config/config.h"
 #include "identity.h"
+#include "port/config/config.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -546,7 +546,8 @@ bool LobbyServer_DeclineInvite(const char* player_id, const char* declined_playe
 /* === Room Discovery === */
 
 int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms) {
-    if (!configured || !out_rooms || max_rooms <= 0) return 0;
+    if (!configured || !out_rooms || max_rooms <= 0)
+        return 0;
 
     char response[HTTP_BUF_SIZE];
     if (!http_request("GET", "/rooms/list", "", response, sizeof(response)))
@@ -555,21 +556,26 @@ int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms) {
     /* Parse JSON: {"rooms":[{"code":"ABCD","name":"...","player_count":3},...]} */
     int count = 0;
     const char* cursor = strstr(response, "\"rooms\":[");
-    if (!cursor) return 0;
+    if (!cursor)
+        return 0;
     cursor = strchr(cursor, '[');
-    if (!cursor) return 0;
+    if (!cursor)
+        return 0;
     cursor++; /* skip '[' */
 
     while (count < max_rooms) {
         const char* obj_start = strchr(cursor, '{');
-        if (!obj_start) break;
+        if (!obj_start)
+            break;
         const char* obj_end = strchr(obj_start, '}');
-        if (!obj_end) break;
+        if (!obj_end)
+            break;
 
         /* Extract the object substring */
         char obj[512];
         int obj_len = (int)(obj_end - obj_start + 1);
-        if (obj_len >= (int)sizeof(obj)) obj_len = (int)sizeof(obj) - 1;
+        if (obj_len >= (int)sizeof(obj))
+            obj_len = (int)sizeof(obj) - 1;
         memcpy(obj, obj_start, obj_len);
         obj[obj_len] = '\0';
 
@@ -590,8 +596,9 @@ int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms) {
 
 /* === Phase 2: Match Reporting === */
 
-bool LobbyServer_ReportMatch(const MatchResult* result) {
-    if (!configured || !result) return false;
+bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id) {
+    if (!configured || !result)
+        return false;
 
     char esc_pid[128], esc_oid[128], esc_wid[128];
     json_escape_string(result->player_id, esc_pid, sizeof(esc_pid));
@@ -599,22 +606,133 @@ bool LobbyServer_ReportMatch(const MatchResult* result) {
     json_escape_string(result->winner_id, esc_wid, sizeof(esc_wid));
 
     char body[512];
-    snprintf(body, sizeof(body),
+    snprintf(body,
+             sizeof(body),
              "{\"player_id\":\"%s\",\"opponent_id\":\"%s\",\"winner_id\":\"%s\","
              "\"player_char\":%d,\"opponent_char\":%d,\"rounds\":%d}",
-             esc_pid, esc_oid, esc_wid,
-             result->player_char, result->opponent_char, result->rounds);
+             esc_pid,
+             esc_oid,
+             esc_wid,
+             result->player_char,
+             result->opponent_char,
+             result->rounds);
 
     char response[HTTP_BUF_SIZE];
     bool ok = http_request("POST", "/match_result", body, response, sizeof(response));
     if (ok) {
         SDL_Log("[LobbyServer] Match result reported: winner=%s", result->winner_id);
+
+        if (out_match_id) {
+            *out_match_id = json_get_int(response, "match_id", -1);
+        }
     }
     return ok;
 }
 
+bool LobbyServer_UploadReplay(int match_id, const void* replay_data, size_t replay_size) {
+    if (!configured || match_id < 0 || !replay_data || replay_size == 0)
+        return false;
+
+    char path[128];
+    snprintf(path, sizeof(path), "/match_result/replay?match_id=%d", match_id);
+
+    // We can't use http_request directly because the body is binary and http_request
+    // uses strlen() which will stop at the first null byte.
+    // We need a custom raw HTTP POST for binary data with HMAC signing.
+
+    int sock = http_connect();
+    if (sock < 0)
+        return false;
+
+    char timestamp[32];
+    snprintf(timestamp, sizeof(timestamp), "%lld", (long long)time(NULL));
+
+    // payload for HMAC = timestamp + method + path + body
+    // For binary data, we compute the HMAC incrementally or construct a large buffer.
+    size_t header_len = strlen(timestamp) + 4 /* "POST" */ + strlen(path);
+    size_t payload_len = header_len + replay_size;
+
+    char* payload = (char*)malloc(payload_len);
+    if (!payload) {
+        closesocket(sock);
+        return false;
+    }
+
+    snprintf(payload, header_len + 1, "%sPOST%s", timestamp, path);
+    memcpy(payload + header_len, replay_data, replay_size);
+
+    char signature[66];
+    compute_hmac(payload, signature, sizeof(signature));
+    free(payload);
+
+    char request_headers[HTTP_BUF_SIZE];
+    int req_len = snprintf(request_headers,
+                           sizeof(request_headers),
+                           "POST %s HTTP/1.1\r\n"
+                           "Host: %s:%d\r\n"
+                           "Content-Type: application/octet-stream\r\n"
+                           "Content-Length: %zu\r\n"
+                           "X-Timestamp: %s\r\n"
+                           "X-Signature: %s\r\n"
+                           "X-Player-ID: %s\r\n"
+                           "Connection: close\r\n"
+                           "\r\n",
+                           path,
+                           server_host,
+                           server_port,
+                           replay_size,
+                           timestamp,
+                           signature,
+                           Identity_GetPlayerId());
+
+    // Send headers
+    if (send(sock, request_headers, req_len, 0) < req_len) {
+        closesocket(sock);
+        return false;
+    }
+
+    // Send binary body (loop to handle large buffers)
+    const char* p = (const char*)replay_data;
+    size_t remaining = replay_size;
+    while (remaining > 0) {
+        int sent = send(sock, p, remaining > 8192 ? 8192 : (int)remaining, 0);
+        if (sent <= 0) {
+            closesocket(sock);
+            return false;
+        }
+        p += sent;
+        remaining -= sent;
+    }
+
+    // Receive response
+    char response[HTTP_BUF_SIZE];
+    int total = 0;
+    while (total < (int)sizeof(response) - 1) {
+        int n = recv(sock, response + total, (int)sizeof(response) - 1 - total, 0);
+        if (n <= 0)
+            break;
+        total += n;
+    }
+    response[total] = '\0';
+    closesocket(sock);
+
+    int status = 0;
+    if (strncmp(response, "HTTP/1.1 ", 9) == 0 || strncmp(response, "HTTP/1.0 ", 9) == 0) {
+        status = atoi(response + 9);
+    }
+
+    if (status >= 200 && status < 300) {
+        SDL_Log("[LobbyServer] Replay uploaded successfully for match %d", match_id);
+        return true;
+    } else {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[LobbyServer] Replay upload failed: HTTP %d", status);
+        return false;
+    }
+}
+
 bool LobbyServer_GetPlayerStats(const char* player_id, PlayerStats* out) {
-    if (!configured || !player_id || !out) return false;
+    if (!configured || !player_id || !out)
+        return false;
 
     memset(out, 0, sizeof(*out));
 
@@ -628,7 +746,8 @@ bool LobbyServer_GetPlayerStats(const char* player_id, PlayerStats* out) {
 
     /* Extract the HTTP body (after blank line) */
     const char* body = strstr(response, "\r\n\r\n");
-    if (!body) return false;
+    if (!body)
+        return false;
     body += 4;
 
     out->wins = json_get_int(body, "wins", 0);
@@ -661,7 +780,8 @@ bool LobbyServer_GetPlayerStats(const char* player_id, PlayerStats* out) {
 /// page is 0-indexed. *out_total receives the total player count (for pagination).
 /// Returns -1 on error.
 int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page, int* out_total) {
-    if (!configured || !out || max_entries <= 0) return -1;
+    if (!configured || !out || max_entries <= 0)
+        return -1;
 
     char path[256];
     snprintf(path, sizeof(path), "/leaderboard?page=%d&limit=%d", page, max_entries);
@@ -673,7 +793,8 @@ int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page,
 
     /* Extract body */
     const char* body = strstr(response, "\r\n\r\n");
-    if (!body) return -1;
+    if (!body)
+        return -1;
     body += 4;
 
     /* Parse total player count */
@@ -683,19 +804,23 @@ int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page,
 
     /* Find "players":[ array */
     const char* cursor = strstr(body, "\"players\":[");
-    if (!cursor) return 0;
+    if (!cursor)
+        return 0;
     cursor += 11; /* skip past "players":[ */
 
     int count = 0;
     while (count < max_entries) {
         const char* obj_start = strchr(cursor, '{');
-        if (!obj_start) break;
+        if (!obj_start)
+            break;
         const char* obj_end = strchr(obj_start, '}');
-        if (!obj_end) break;
+        if (!obj_end)
+            break;
 
         size_t obj_len = (size_t)(obj_end - obj_start + 1);
         char obj[512];
-        if (obj_len >= sizeof(obj)) obj_len = sizeof(obj) - 1;
+        if (obj_len >= sizeof(obj))
+            obj_len = sizeof(obj) - 1;
         memcpy(obj, obj_start, obj_len);
         obj[obj_len] = '\0';
 
@@ -725,7 +850,6 @@ int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page,
     return count;
 }
 
-
 // === Phase 5: Casual Lobbies (8-Player Rooms) ===
 
 static void parse_room_json(const char* json, RoomState* out) {
@@ -738,7 +862,7 @@ static void parse_room_json(const char* json, RoomState* out) {
     // Simple arrays are parsed loosely to avoid full JSON AST parsing overhead.
     // In a real prod client we'd link cJSON or Jansson, but we stick to strstr here
     // for consistency with the rest of this zero-dependency file.
-    
+
     // Parse players array: [{"player_id":"...","display_name":"...","region":"..."},...]
     const char* p_start = strstr(json, "\"players\":[");
     if (p_start) {
@@ -747,23 +871,26 @@ static void parse_room_json(const char* json, RoomState* out) {
             const char* cur = p_start;
             while (cur < p_end && out->player_count < MAX_ROOM_PLAYERS) {
                 cur = strstr(cur, "{\"player_id\"");
-                if (!cur || cur > p_end) break;
-                
+                if (!cur || cur > p_end)
+                    break;
+
                 char p_obj[256];
                 const char* obj_end = strchr(cur, '}');
-                if (!obj_end) break;
-                
+                if (!obj_end)
+                    break;
+
                 size_t len = obj_end - cur + 1;
-                if (len >= sizeof(p_obj)) len = sizeof(p_obj) - 1;
+                if (len >= sizeof(p_obj))
+                    len = sizeof(p_obj) - 1;
                 memcpy(p_obj, cur, len);
                 p_obj[len] = '\0';
-                
+
                 RoomPlayer* rp = &out->players[out->player_count++];
                 json_get_string(p_obj, "player_id", rp->player_id, sizeof(rp->player_id));
                 json_get_string(p_obj, "display_name", rp->display_name, sizeof(rp->display_name));
                 json_get_string(p_obj, "region", rp->region, sizeof(rp->region));
                 json_get_string(p_obj, "country", rp->country, sizeof(rp->country));
-                
+
                 cur = obj_end;
             }
         }
@@ -778,16 +905,19 @@ static void parse_room_json(const char* json, RoomState* out) {
             const char* cur = q_start;
             while (cur < q_end && out->queue_count < MAX_ROOM_PLAYERS) {
                 const char* quote1 = strchr(cur, '"');
-                if (!quote1 || quote1 >= q_end) break;
+                if (!quote1 || quote1 >= q_end)
+                    break;
                 const char* quote2 = strchr(quote1 + 1, '"');
-                if (!quote2 || quote2 >= q_end) break;
-                
+                if (!quote2 || quote2 >= q_end)
+                    break;
+
                 size_t id_len = quote2 - quote1 - 1;
-                if (id_len >= 64) id_len = 63;
+                if (id_len >= 64)
+                    id_len = 63;
                 memcpy(out->queue[out->queue_count], quote1 + 1, id_len);
                 out->queue[out->queue_count][id_len] = '\0';
                 out->queue_count++;
-                
+
                 cur = quote2 + 1;
             }
         }
@@ -813,22 +943,28 @@ static void parse_room_json(const char* json, RoomState* out) {
         int depth = 1;
         const char* scan = c_start;
         while (*scan && depth > 0) {
-            if (*scan == '[') depth++;
-            else if (*scan == ']') depth--;
-            if (depth > 0) scan++;
+            if (*scan == '[')
+                depth++;
+            else if (*scan == ']')
+                depth--;
+            if (depth > 0)
+                scan++;
         }
         c_end = scan;
 
         const char* cur = c_start;
         while (cur < c_end && out->chat_count < MAX_CHAT_MESSAGES) {
             const char* obj_start = strchr(cur, '{');
-            if (!obj_start || obj_start >= c_end) break;
+            if (!obj_start || obj_start >= c_end)
+                break;
             const char* obj_end = strchr(obj_start, '}');
-            if (!obj_end || obj_end >= c_end) break;
+            if (!obj_end || obj_end >= c_end)
+                break;
 
             char c_obj[512];
             size_t len = obj_end - obj_start + 1;
-            if (len >= sizeof(c_obj)) len = sizeof(c_obj) - 1;
+            if (len >= sizeof(c_obj))
+                len = sizeof(c_obj) - 1;
             memcpy(c_obj, obj_start, len);
             c_obj[len] = '\0';
 
@@ -844,14 +980,14 @@ static void parse_room_json(const char* json, RoomState* out) {
 }
 
 bool LobbyServer_CreateRoom(const char* name, RoomState* out_room) {
-    if (!Identity_IsInitialized()) return false;
-    
+    if (!Identity_IsInitialized())
+        return false;
+
     char esc_name[64];
     json_escape_string(name ? name : "", esc_name, sizeof(esc_name));
 
     char body[256];
-    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"name\":\"%s\"}", 
-             Identity_GetPlayerId(), esc_name);
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"name\":\"%s\"}", Identity_GetPlayerId(), esc_name);
 
     char response[HTTP_BUF_SIZE];
     if (!http_request("POST", "/room/create", body, response, sizeof(response))) {
@@ -866,20 +1002,27 @@ bool LobbyServer_CreateRoom(const char* name, RoomState* out_room) {
         strncpy(out_room->host, Identity_GetPlayerId(), sizeof(out_room->host) - 1);
         out_room->player_count = 1;
         strncpy(out_room->players[0].player_id, Identity_GetPlayerId(), sizeof(out_room->players[0].player_id) - 1);
-        strncpy(out_room->players[0].display_name, Identity_GetDisplayName(), sizeof(out_room->players[0].display_name) - 1);
+        strncpy(out_room->players[0].display_name,
+                Identity_GetDisplayName(),
+                sizeof(out_room->players[0].display_name) - 1);
     }
     return true;
 }
 
 bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room) {
-    if (!Identity_IsInitialized()) return false;
-    
+    if (!Identity_IsInitialized())
+        return false;
+
     char esc_code[16];
     json_escape_string(room_code, esc_code, sizeof(esc_code));
 
     char body[256];
-    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"room_code\":\"%s\"}", 
-             Identity_GetPlayerId(), Identity_GetDisplayName(), esc_code);
+    snprintf(body,
+             sizeof(body),
+             "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"room_code\":\"%s\"}",
+             Identity_GetPlayerId(),
+             Identity_GetDisplayName(),
+             esc_code);
 
     char response[HTTP_BUF_SIZE];
     if (!http_request("POST", "/room/join", body, response, sizeof(response))) {
@@ -893,57 +1036,63 @@ bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room) {
 }
 
 bool LobbyServer_LeaveRoom(const char* room_code) {
-    if (!Identity_IsInitialized()) return false;
-    
+    if (!Identity_IsInitialized())
+        return false;
+
     char esc_code[16];
     json_escape_string(room_code, esc_code, sizeof(esc_code));
 
     char body[128];
-    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", 
-             Identity_GetPlayerId(), esc_code);
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", Identity_GetPlayerId(), esc_code);
 
     char response[HTTP_BUF_SIZE];
     return http_request("POST", "/room/leave", body, response, sizeof(response));
 }
 
 bool LobbyServer_JoinQueue(const char* room_code) {
-    if (!Identity_IsInitialized()) return false;
-    
+    if (!Identity_IsInitialized())
+        return false;
+
     char esc_code[16];
     json_escape_string(room_code, esc_code, sizeof(esc_code));
 
     char body[128];
-    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", 
-             Identity_GetPlayerId(), esc_code);
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", Identity_GetPlayerId(), esc_code);
 
     char response[HTTP_BUF_SIZE];
     return http_request("POST", "/room/queue/join", body, response, sizeof(response));
 }
 
 bool LobbyServer_LeaveQueue(const char* room_code) {
-    if (!Identity_IsInitialized()) return false;
-    
+    if (!Identity_IsInitialized())
+        return false;
+
     char esc_code[16];
     json_escape_string(room_code, esc_code, sizeof(esc_code));
 
     char body[128];
-    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", 
-             Identity_GetPlayerId(), esc_code);
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"room_code\":\"%s\"}", Identity_GetPlayerId(), esc_code);
 
     char response[HTTP_BUF_SIZE];
     return http_request("POST", "/room/queue/leave", body, response, sizeof(response));
 }
 
 bool LobbyServer_SendChat(const char* room_code, const char* text) {
-    if (!Identity_IsInitialized()) return false;
-    
+    if (!Identity_IsInitialized())
+        return false;
+
     char esc_code[16], esc_text[256];
     json_escape_string(room_code, esc_code, sizeof(esc_code));
     json_escape_string(text, esc_text, sizeof(esc_text));
 
     char body[512];
-    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"room_code\":\"%s\",\"text\":\"%s\"}", 
-             Identity_GetPlayerId(), Identity_GetDisplayName(), esc_code, esc_text);
+    snprintf(body,
+             sizeof(body),
+             "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"room_code\":\"%s\",\"text\":\"%s\"}",
+             Identity_GetPlayerId(),
+             Identity_GetDisplayName(),
+             esc_code,
+             esc_text);
 
     char response[HTTP_BUF_SIZE];
     return http_request("POST", "/room/chat", body, response, sizeof(response));
@@ -952,7 +1101,8 @@ bool LobbyServer_SendChat(const char* room_code, const char* text) {
 // === GET /room/state (read-only, no side effects) ===
 
 bool LobbyServer_GetRoomState(const char* room_code, RoomState* out) {
-    if (!configured || !room_code || !out) return false;
+    if (!configured || !room_code || !out)
+        return false;
 
     char path[128];
     snprintf(path, sizeof(path), "/room/state?room_code=%s", room_code);
@@ -967,15 +1117,15 @@ bool LobbyServer_GetRoomState(const char* room_code, RoomState* out) {
 }
 
 bool LobbyServer_ReportMatchEnd(const char* room_code, const char* winner_id) {
-    if (!configured || !room_code || !winner_id) return false;
+    if (!configured || !room_code || !winner_id)
+        return false;
 
     char esc_code[16], esc_wid[128];
     json_escape_string(room_code, esc_code, sizeof(esc_code));
     json_escape_string(winner_id, esc_wid, sizeof(esc_wid));
 
     char body[256];
-    snprintf(body, sizeof(body), "{\"room_code\":\"%s\",\"winner_id\":\"%s\"}",
-             esc_code, esc_wid);
+    snprintf(body, sizeof(body), "{\"room_code\":\"%s\",\"winner_id\":\"%s\"}", esc_code, esc_wid);
 
     char response[HTTP_BUF_SIZE];
     bool ok = http_request("POST", "/room/match/end", body, response, sizeof(response));
@@ -988,14 +1138,14 @@ bool LobbyServer_ReportMatchEnd(const char* room_code, const char* winner_id) {
 // === Phase 6: Match Accept/Decline ===
 
 bool LobbyServer_AcceptMatch(const char* room_code) {
-    if (!configured || !room_code || !Identity_IsInitialized()) return false;
+    if (!configured || !room_code || !Identity_IsInitialized())
+        return false;
 
     char esc_code[16];
     json_escape_string(room_code, esc_code, sizeof(esc_code));
 
     char body[256];
-    snprintf(body, sizeof(body), "{\"room_code\":\"%s\",\"player_id\":\"%s\"}",
-             esc_code, Identity_GetPlayerId());
+    snprintf(body, sizeof(body), "{\"room_code\":\"%s\",\"player_id\":\"%s\"}", esc_code, Identity_GetPlayerId());
 
     char response[HTTP_BUF_SIZE];
     bool ok = http_request("POST", "/room/match/accept", body, response, sizeof(response));
@@ -1006,14 +1156,14 @@ bool LobbyServer_AcceptMatch(const char* room_code) {
 }
 
 bool LobbyServer_DeclineMatch(const char* room_code) {
-    if (!configured || !room_code || !Identity_IsInitialized()) return false;
+    if (!configured || !room_code || !Identity_IsInitialized())
+        return false;
 
     char esc_code[16];
     json_escape_string(room_code, esc_code, sizeof(esc_code));
 
     char body[256];
-    snprintf(body, sizeof(body), "{\"room_code\":\"%s\",\"player_id\":\"%s\"}",
-             esc_code, Identity_GetPlayerId());
+    snprintf(body, sizeof(body), "{\"room_code\":\"%s\",\"player_id\":\"%s\"}", esc_code, Identity_GetPlayerId());
 
     char response[HTTP_BUF_SIZE];
     bool ok = http_request("POST", "/room/match/decline", body, response, sizeof(response));
@@ -1026,11 +1176,11 @@ bool LobbyServer_DeclineMatch(const char* room_code) {
 // === SSE Streaming Client ===
 
 // SSE thread state — all access guarded by SDL atomics
-static SDL_AtomicInt s_sse_running = { 0 };     // 1 = thread active
-static SDL_AtomicInt s_sse_stop    = { 0 };     // 1 = request stop
-static SDL_Thread*   s_sse_thread  = NULL;
-static int           s_sse_sock    = -1;         // raw socket (for external close)
-static char          s_sse_room_code[16] = { 0 };
+static SDL_AtomicInt s_sse_running = { 0 }; // 1 = thread active
+static SDL_AtomicInt s_sse_stop = { 0 };    // 1 = request stop
+static SDL_Thread* s_sse_thread = NULL;
+static int s_sse_sock = -1; // raw socket (for external close)
+static char s_sse_room_code[16] = { 0 };
 
 // Lock-free ring buffer for SSE events. The background thread writes at
 // s_sse_write_idx (mod SSE_RING_SIZE), and the main thread reads at
@@ -1038,7 +1188,7 @@ static char          s_sse_room_code[16] = { 0 };
 #define SSE_RING_SIZE 16
 static SSEEvent s_sse_ring[SSE_RING_SIZE];
 static SDL_AtomicInt s_sse_write_idx = { 0 };
-static SDL_AtomicInt s_sse_read_idx  = { 0 };
+static SDL_AtomicInt s_sse_read_idx = { 0 };
 
 /**
  * Parse an SSE JSON event line like:
@@ -1105,7 +1255,8 @@ static void sse_parse_event(const char* json, SSEEvent* out) {
                 p1_start += 5;
                 json_get_string(p1_start, "id", out->propose_p1_id, sizeof(out->propose_p1_id));
                 json_get_string(p1_start, "name", out->propose_p1_name, sizeof(out->propose_p1_name));
-                json_get_string(p1_start, "connection_type", out->propose_p1_conn_type, sizeof(out->propose_p1_conn_type));
+                json_get_string(
+                    p1_start, "connection_type", out->propose_p1_conn_type, sizeof(out->propose_p1_conn_type));
                 out->propose_p1_rtt_ms = json_get_int(p1_start, "rtt_ms", -1);
                 json_get_string(p1_start, "room_code", out->propose_p1_room_code, sizeof(out->propose_p1_room_code));
                 json_get_string(p1_start, "region", out->propose_p1_region, sizeof(out->propose_p1_region));
@@ -1116,7 +1267,8 @@ static void sse_parse_event(const char* json, SSEEvent* out) {
                 p2_start += 5;
                 json_get_string(p2_start, "id", out->propose_p2_id, sizeof(out->propose_p2_id));
                 json_get_string(p2_start, "name", out->propose_p2_name, sizeof(out->propose_p2_name));
-                json_get_string(p2_start, "connection_type", out->propose_p2_conn_type, sizeof(out->propose_p2_conn_type));
+                json_get_string(
+                    p2_start, "connection_type", out->propose_p2_conn_type, sizeof(out->propose_p2_conn_type));
                 out->propose_p2_rtt_ms = json_get_int(p2_start, "rtt_ms", -1);
                 json_get_string(p2_start, "room_code", out->propose_p2_room_code, sizeof(out->propose_p2_room_code));
                 json_get_string(p2_start, "region", out->propose_p2_region, sizeof(out->propose_p2_region));
@@ -1169,14 +1321,17 @@ static int sse_thread_fn(void* userdata) {
 
     // Build HTTP GET request for SSE (no auth — room code is the secret)
     char request[512];
-    int req_len = snprintf(request, sizeof(request),
-        "GET /room/events?room_code=%s HTTP/1.1\r\n"
-        "Host: %s:%d\r\n"
-        "Accept: text/event-stream\r\n"
-        "Cache-Control: no-cache\r\n"
-        "Connection: keep-alive\r\n"
-        "\r\n",
-        s_sse_room_code, server_host, server_port);
+    int req_len = snprintf(request,
+                           sizeof(request),
+                           "GET /room/events?room_code=%s HTTP/1.1\r\n"
+                           "Host: %s:%d\r\n"
+                           "Accept: text/event-stream\r\n"
+                           "Cache-Control: no-cache\r\n"
+                           "Connection: keep-alive\r\n"
+                           "\r\n",
+                           s_sse_room_code,
+                           server_host,
+                           server_port);
 
     if (send(sock, request, req_len, 0) < req_len) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SSE: send failed");
@@ -1209,9 +1364,11 @@ static int sse_thread_fn(void* userdata) {
         if (n < 0) {
             // Timeout — just check stop flag and retry
 #ifdef _WIN32
-            if (WSAGetLastError() == WSAETIMEDOUT) continue;
+            if (WSAGetLastError() == WSAETIMEDOUT)
+                continue;
 #else
-            if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+                continue;
 #endif
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SSE: recv error");
             break;
@@ -1227,7 +1384,8 @@ static int sse_thread_fn(void* userdata) {
         // Skip HTTP headers on first receive
         if (!headers_done) {
             char* hdr_end = strstr(buf, "\r\n\r\n");
-            if (!hdr_end) continue; // Need more data
+            if (!hdr_end)
+                continue; // Need more data
             hdr_end += 4;
             int remaining = buf_len - (int)(hdr_end - buf);
             if (remaining > 0) {
@@ -1243,10 +1401,12 @@ static int sse_thread_fn(void* userdata) {
         while (1) {
             // SSE format: "data: {json}\n\n"
             char* data_prefix = strstr(line_start, "data: ");
-            if (!data_prefix) break;
+            if (!data_prefix)
+                break;
 
             char* line_end = strstr(data_prefix, "\n\n");
-            if (!line_end) break; // Incomplete — wait for more data
+            if (!line_end)
+                break; // Incomplete — wait for more data
 
             // Extract the JSON payload after "data: "
             char* json_start = data_prefix + 6;
@@ -1282,7 +1442,8 @@ static int sse_thread_fn(void* userdata) {
 }
 
 bool LobbyServer_SSEConnect(const char* room_code) {
-    if (!configured || !room_code || strlen(room_code) == 0) return false;
+    if (!configured || !room_code || strlen(room_code) == 0)
+        return false;
 
     // Disconnect any existing connection first
     if (SDL_GetAtomicInt(&s_sse_running)) {
@@ -1308,7 +1469,8 @@ bool LobbyServer_SSEConnect(const char* room_code) {
 }
 
 void LobbyServer_SSEDisconnect(void) {
-    if (!SDL_GetAtomicInt(&s_sse_running)) return;
+    if (!SDL_GetAtomicInt(&s_sse_running))
+        return;
 
     SDL_SetAtomicInt(&s_sse_stop, 1);
 

@@ -232,10 +232,10 @@ const s16 Slide_Pos_Data_61[81][2] = {
     { -150, 91 },  /* [72] CONNECT (NET)         screen y≈143 */
     { -150, 69 },  /* [73] EXIT                  screen y≈155 */
     /* Network Gateway strings [74-76] (3-item menu) */
-    { -88, 142 },  /* [74] LOBBY MODE     */
-    { -72, 112 },  /* [75] LOCAL NETWORK  */
-    { -56, 82 },   /* [76] EXIT           */
-    { -40, 62 },   /* [77] (unused)       */
+    { -88, 142 }, /* [74] LOBBY MODE     */
+    { -72, 112 }, /* [75] LOCAL NETWORK  */
+    { -56, 82 },  /* [76] EXIT           */
+    { -40, 62 },  /* [77] (unused)       */
     /* LAN-only lobby strings [78-80] */
     { -150, 157 }, /* [78] AUTO-CONN */
     { -150, 133 }, /* [79] CONNECT   */

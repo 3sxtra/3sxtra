@@ -45,9 +45,7 @@ const char* ControllerImage_Module_GetDeviceType(int slot);
 /// @param button  SDL gamepad button enum.
 /// @param size    Desired image size in pixels (width and height).
 /// @return SDL_Surface* or NULL on failure.
-SDL_Surface* ControllerImage_Module_CreateButtonSurface(int slot,
-                                                         SDL_GamepadButton button,
-                                                         int size);
+SDL_Surface* ControllerImage_Module_CreateButtonSurface(int slot, SDL_GamepadButton button, int size);
 
 /// Create an SDL_Surface with the image for a specific axis.
 /// The caller owns the returned surface and must call SDL_DestroySurface().
@@ -55,9 +53,7 @@ SDL_Surface* ControllerImage_Module_CreateButtonSurface(int slot,
 /// @param axis  SDL gamepad axis enum.
 /// @param size  Desired image size in pixels (width and height).
 /// @return SDL_Surface* or NULL on failure.
-SDL_Surface* ControllerImage_Module_CreateAxisSurface(int slot,
-                                                       SDL_GamepadAxis axis,
-                                                       int size);
+SDL_Surface* ControllerImage_Module_CreateAxisSurface(int slot, SDL_GamepadAxis axis, int size);
 
 #ifdef __cplusplus
 }

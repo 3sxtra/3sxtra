@@ -14,9 +14,9 @@
 #ifdef _WIN32
 
 /* ======== Windows: GetAdaptersAddresses ======== */
-#include <winsock2.h>
 #include <iphlpapi.h>
 #include <ipifcons.h>
+#include <winsock2.h>
 #ifdef _MSC_VER
 #pragma comment(lib, "iphlpapi.lib")
 #endif
@@ -38,9 +38,11 @@ const char* NetDetect_GetConnectionType(void) {
             return NET_CONN_UNKNOWN;
 
         ret = GetAdaptersAddresses(AF_UNSPEC,
-                                   GAA_FLAG_INCLUDE_GATEWAYS | GAA_FLAG_SKIP_ANYCAST |
-                                       GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER,
-                                   NULL, addrs, &buf_size);
+                                   GAA_FLAG_INCLUDE_GATEWAYS | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST |
+                                       GAA_FLAG_SKIP_DNS_SERVER,
+                                   NULL,
+                                   addrs,
+                                   &buf_size);
         if (ret == ERROR_BUFFER_OVERFLOW) {
             free(addrs);
             addrs = NULL;

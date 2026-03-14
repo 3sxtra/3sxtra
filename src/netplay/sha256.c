@@ -20,11 +20,11 @@ static const uint32_t sha256_k[64] = {
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
-#define SHA_ROTR(x, n)  (((x) >> (n)) | ((x) << (32 - (n))))
+#define SHA_ROTR(x, n) (((x) >> (n)) | ((x) << (32 - (n))))
 #define SHA_CH(x, y, z) (((x) & (y)) ^ (~(x) & (z)))
 #define SHA_MAJ(x, y, z) (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)))
-#define SHA_EP0(x)  (SHA_ROTR(x, 2) ^ SHA_ROTR(x, 13) ^ SHA_ROTR(x, 22))
-#define SHA_EP1(x)  (SHA_ROTR(x, 6) ^ SHA_ROTR(x, 11) ^ SHA_ROTR(x, 25))
+#define SHA_EP0(x) (SHA_ROTR(x, 2) ^ SHA_ROTR(x, 13) ^ SHA_ROTR(x, 22))
+#define SHA_EP1(x) (SHA_ROTR(x, 6) ^ SHA_ROTR(x, 11) ^ SHA_ROTR(x, 25))
 #define SHA_SIG0(x) (SHA_ROTR(x, 7) ^ SHA_ROTR(x, 18) ^ ((x) >> 3))
 #define SHA_SIG1(x) (SHA_ROTR(x, 17) ^ SHA_ROTR(x, 19) ^ ((x) >> 10))
 
@@ -32,8 +32,8 @@ static void sha256_transform(SHA256_CTX* ctx, const uint8_t data[64]) {
     uint32_t a, b, c, d, e, f, g, h, t1, t2, m[64];
     int i;
     for (i = 0; i < 16; ++i)
-        m[i] = ((uint32_t)data[i * 4] << 24) | ((uint32_t)data[i * 4 + 1] << 16) |
-               ((uint32_t)data[i * 4 + 2] << 8) | ((uint32_t)data[i * 4 + 3]);
+        m[i] = ((uint32_t)data[i * 4] << 24) | ((uint32_t)data[i * 4 + 1] << 16) | ((uint32_t)data[i * 4 + 2] << 8) |
+               ((uint32_t)data[i * 4 + 3]);
     for (; i < 64; ++i)
         m[i] = SHA_SIG1(m[i - 2]) + m[i - 7] + SHA_SIG0(m[i - 15]) + m[i - 16];
     a = ctx->state[0];
@@ -115,7 +115,7 @@ void sha256_final(SHA256_CTX* ctx, uint8_t hash[32]) {
     ctx->data[56] = (uint8_t)(ctx->bitlen >> 56);
     sha256_transform(ctx, ctx->data);
     for (i = 0; i < 8; ++i) {
-        hash[i * 4]     = (uint8_t)(ctx->state[i] >> 24);
+        hash[i * 4] = (uint8_t)(ctx->state[i] >> 24);
         hash[i * 4 + 1] = (uint8_t)(ctx->state[i] >> 16);
         hash[i * 4 + 2] = (uint8_t)(ctx->state[i] >> 8);
         hash[i * 4 + 3] = (uint8_t)(ctx->state[i]);

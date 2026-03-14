@@ -20,8 +20,8 @@
 #include "port/rendering/renderer.h"
 extern void njUserMain();
 #include "port/sdl/netplay/sdl_netplay_ui.h"
-#include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
+#include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -649,9 +649,7 @@ static void process_session() {
                    event->data.desynced.remote_checksum);
 
 #if DEBUG
-            dump_desync_state(frame,
-                              event->data.desynced.local_checksum,
-                              event->data.desynced.remote_checksum);
+            dump_desync_state(frame, event->data.desynced.local_checksum, event->data.desynced.remote_checksum);
 #endif
 
             SDL_ShowSimpleMessageBox(
@@ -1130,7 +1128,7 @@ void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
     config.input_size = sizeof(u16);
     config.state_size = sizeof(State);
     config.max_spectators = 1;
-    config.spectator_delay = 15;  // 15 frames (~250ms at 60fps)
+    config.spectator_delay = 15; // 15 frames (~250ms at 60fps)
     config.input_prediction_window = 12;
     config.desync_detection = false; // Spectators don't need desync detection
 
@@ -1154,7 +1152,8 @@ void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
 }
 
 void Netplay_StopSpectate(void) {
-    if (session_state != NETPLAY_SESSION_SPECTATING) return;
+    if (session_state != NETPLAY_SESSION_SPECTATING)
+        return;
 
     if (session) {
         gekko_destroy(&session);

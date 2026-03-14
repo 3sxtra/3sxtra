@@ -19,10 +19,10 @@
 #include "port/sdl/input/sdl_pad.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_dev_overlay.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
-#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 
 // Key handlers
 static void handle_menu_toggle(SDL_KeyboardEvent* event) {
