@@ -973,7 +973,7 @@ void SDLApp_EndFrame() {
         }
 
         if (cb && canvas && swapchain) {
-            TRACE_SUB_BEGIN("GPU:PostProcess");
+
             const SDL_FRect viewport = get_letterbox_rect(win_w, win_h);
 
             // SDL_SKIP_LIBRASHADER=1 bypasses the librashader Vulkan render path
@@ -1063,7 +1063,7 @@ void SDLApp_EndFrame() {
 
                 SDL_BlitGPUTexture(cb, &blit_info);
             }
-            TRACE_SUB_END();
+
         }
 
 #if DEBUG

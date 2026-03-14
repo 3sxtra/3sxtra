@@ -74,7 +74,7 @@ static struct {
 // ── Helpers ────────────────────────────────────────────────────
 
 /** @brief Build a path from a relative icon path that RmlUi can resolve.
- *  ControlMapping returns relative paths like "assets/keyboard.png" but
+ *  ControlMapping returns relative paths like "assets/controllers/keyboard.png" but
  *  RmlUi resolves \<img src\> relative to the document base (assets/ui/).
  *  Strategy: prepend the app base path to make it absolute. If SDL_GetBasePath
  *  returns a non-absolute path (observed on some embedded Linux), force a

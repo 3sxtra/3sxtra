@@ -252,19 +252,19 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
         return;
     }
     s_last_set_texture_handle = th;
-    TRACE_ZONE_N("GPU:SetTexture");
+
 
     const int texture_handle = LO_16_BITS(th);
     const int palette_handle = HI_16_BITS(th);
 
     if (texture_handle < 1 || texture_handle > FL_TEXTURE_MAX) {
-        TRACE_ZONE_END();
+
         return;
     }
 
     if (!surfaces[texture_handle - 1]) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Texture %d has no surface!", texture_handle);
-        TRACE_ZONE_END();
+
         return;
     }
 
@@ -478,5 +478,5 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
     texture_uv_sy[texture_count] = (float)fl_tex_info->height * (1.0f / TEX_ARRAY_SIZE);
     texture_palette_idx[texture_count] = palIdx;
     texture_count++;
-    TRACE_ZONE_END();
+
 }

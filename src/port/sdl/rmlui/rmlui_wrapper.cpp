@@ -418,7 +418,7 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     // rmlui_wrapper_new_frame() call (~130ms saved from boot).
 
     // NotoSansJP (~4MB) deferred to first frame — see rmlui_wrapper_new_frame()
-    std::string font_bold = s_ui_base_path + "../BoldPixels.ttf";
+    std::string font_bold = s_ui_base_path + "../fonts/BoldPixels.ttf";
     if (!Rml::LoadFontFace(font_bold.c_str())) {
         SDL_Log("[RmlUi] Failed to load font: %s", font_bold.c_str());
     }
@@ -733,14 +733,14 @@ static void ensure_fonts_loaded(void) {
     // "Noto Sans JP Thin" matches it directly.  This prevents BoldPixels
     // from claiming Unicode codepoints it cannot render (geometric shapes,
     // arrows, etc.) and blocking the fallback chain.
-    std::string font_noto = s_ui_base_path + "../NotoSansJP-Regular.ttf";
+    std::string font_noto = s_ui_base_path + "../fonts/NotoSansJP-Regular.ttf";
     if (!Rml::LoadFontFace(font_noto.c_str(), false)) {
         SDL_Log("[RmlUi] Failed to load font: %s", font_noto.c_str());
     }
 
     // NotoEmoji loaded as FALLBACK for emoji codepoints (⏳🔧📋📶🔌❓ etc.)
     // that NotoSansJP doesn't cover.
-    std::string font_emoji = s_ui_base_path + "../NotoEmoji-Regular.ttf";
+    std::string font_emoji = s_ui_base_path + "../fonts/NotoEmoji-Regular.ttf";
     if (!Rml::LoadFontFace(font_emoji.c_str(), true)) {
         SDL_Log("[RmlUi] Failed to load emoji font: %s", font_emoji.c_str());
     }

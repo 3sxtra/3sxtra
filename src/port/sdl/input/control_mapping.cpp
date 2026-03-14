@@ -325,10 +325,10 @@ static std::string get_device_icon_path(const std::string& device_type) {
     } else if (device_type == "steam_deck") {
         return "assets/controllers/steam_deck.png";
     } else if (device_type == "keyboard") {
-        return "assets/keyboard.png";
+        return "assets/controllers/keyboard.png";
     } else {
         // Generic/unknown controller
-        return "assets/controller.png";
+        return "assets/controllers/controller.png";
     }
 }
 
