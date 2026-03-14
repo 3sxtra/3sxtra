@@ -85,7 +85,7 @@ static void sb_append(StringBuilder* sb, const char* str) {
             sb->cap *= 2;
         sb->data = (char*)realloc(sb->data, sb->cap);
     }
-    strcpy(sb->data + sb->len, str);
+    memcpy(sb->data + sb->len, str, l + 1);
     sb->len += l;
 }
 
