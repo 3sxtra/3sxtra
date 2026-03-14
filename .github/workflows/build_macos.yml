@@ -48,6 +48,11 @@ jobs:
                 python3 -m pip install --break-system-packages jinja2
                 sh build-deps.sh
 
+          - name: Setup ccache
+            uses: hendrikmuhs/ccache-action@v1.2.14
+            with:
+                key: macos-arm64-ccache
+
           - name: Build for macOS
             run: |
                 set -o pipefail
@@ -55,6 +60,8 @@ jobs:
                 cmake -B build \
                   -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
                   -DENABLE_TESTS=OFF \
+                  -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+                  -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                   -DZLIB_ROOT=$(brew --prefix zlib)
                 cmake --build build --parallel 2>&1 | tee build.log
             shell: bash

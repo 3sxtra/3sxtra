@@ -33,7 +33,9 @@ jobs:
                 manifest-path: flatpak/io.github.threestylextra.app.yml
                 bundle: 3sx.flatpak
                 cache: true
-                cache-key: flatpak-builder-${{ hashFiles('flatpak/io.github.threestylextra.app.yml') }}
+                cache-key: flatpak-builder-${{ github.sha }}
+                restore-keys: |
+                  flatpak-builder-
 
           - name: Upload release artifact
             if: ${{ inputs.release }}

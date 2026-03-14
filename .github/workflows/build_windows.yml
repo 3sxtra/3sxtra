@@ -56,6 +56,11 @@ jobs:
           - name: Build dependencies
             run: sh build-deps.sh
 
+          - name: Setup ccache
+            uses: hendrikmuhs/ccache-action@v1.2.14
+            with:
+                key: windows-x64-ccache
+
           - name: Build for Windows
             run: |
                 set -o pipefail
@@ -67,6 +72,8 @@ jobs:
                     -G Ninja \
                     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
                     -DENABLE_TESTS=OFF \
+                    -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+                    -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                     -DMSYS2_LOCATION=${{ steps.msys2.outputs.msys2-location }} \
                     -DPython3_EXECUTABLE=$MSYS2_PYTHON \
                     -DPython_EXECUTABLE=$MSYS2_PYTHON
