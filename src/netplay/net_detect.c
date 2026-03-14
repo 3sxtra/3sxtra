@@ -14,9 +14,9 @@
 #ifdef _WIN32
 
 /* ======== Windows: GetAdaptersAddresses ======== */
+#include <winsock2.h>
 #include <iphlpapi.h>
 #include <ipifcons.h>
-#include <winsock2.h>
 #ifdef _MSC_VER
 #pragma comment(lib, "iphlpapi.lib")
 #endif

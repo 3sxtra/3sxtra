@@ -27,6 +27,7 @@
             <span class="lb-col-losses">L</span>
             <span class="lb-col-pct">WIN%</span>
             <span class="lb-col-rating">RATING</span>
+            <span class="lb-col-dc">DC%</span>
         </div>
 
         <!-- Entries -->
@@ -44,6 +45,7 @@
             <span class="lb-col-losses">{{e.losses}}</span>
             <span class="lb-col-pct">{{e.win_pct}}%</span>
             <span class="lb-col-rating">{{e.rating_str}}</span>
+            <span class="lb-col-dc" data-class-dc-warn="e.dc_pct > 10">{{e.dc_pct}}%</span>
         </div>
     </div>
 

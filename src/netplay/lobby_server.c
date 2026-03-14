@@ -115,7 +115,7 @@ bool LobbyServer_IsConfigured(void) {
 
 /* ======== HMAC computation (cross-platform) ======== */
 
-static void compute_hmac(const char* payload, char* out_hex, size_t hex_size) {
+static void compute_hmac(const char* payload, size_t payload_len, char* out_hex, size_t hex_size) {
     uint8_t hash[32];
 
 #ifdef _WIN32
@@ -155,7 +155,7 @@ static void compute_hmac(const char* payload, char* out_hex, size_t hex_size) {
         goto hmac_done;
     }
 
-    status = BCryptHashData(hHash, (PUCHAR)payload, (ULONG)strlen(payload), 0);
+    status = BCryptHashData(hHash, (PUCHAR)payload, (ULONG)payload_len, 0);
     if (status < 0) {
         memset(hash, 0, 32);
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "BCryptHashData failed: 0x%lx", status);
@@ -176,7 +176,7 @@ hmac_done:
     if (hAlg)
         BCryptCloseAlgorithmProvider(hAlg, 0);
 #else
-    hmac_sha256((const uint8_t*)server_key, strlen(server_key), (const uint8_t*)payload, strlen(payload), hash);
+    hmac_sha256((const uint8_t*)server_key, strlen(server_key), (const uint8_t*)payload, payload_len, hash);
 #endif
 
     /* Convert to hex */
@@ -265,7 +265,7 @@ static bool http_request(const char* method, const char* path, const char* body,
     snprintf(payload, payload_len + 1, "%s%s%s%s", timestamp, method, path, body);
 
     char signature[66];
-    compute_hmac(payload, signature, sizeof(signature));
+    compute_hmac(payload, payload_len, signature, sizeof(signature));
     free(payload);
 
     /* Build HTTP request */
@@ -662,7 +662,7 @@ bool LobbyServer_UploadReplay(int match_id, const void* replay_data, size_t repl
     memcpy(payload + header_len, replay_data, replay_size);
 
     char signature[66];
-    compute_hmac(payload, signature, sizeof(signature));
+    compute_hmac(payload, payload_len, signature, sizeof(signature));
     free(payload);
 
     char request_headers[HTTP_BUF_SIZE];
@@ -728,6 +728,27 @@ bool LobbyServer_UploadReplay(int match_id, const void* replay_data, size_t repl
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[LobbyServer] Replay upload failed: HTTP %d", status);
         return false;
     }
+}
+
+bool LobbyServer_ReportDisconnect(const char* player_id, const char* opponent_id) {
+    if (!configured || !player_id || !opponent_id)
+        return false;
+
+    char esc_pid[128], esc_oid[128];
+    json_escape_string(player_id, esc_pid, sizeof(esc_pid));
+    json_escape_string(opponent_id, esc_oid, sizeof(esc_oid));
+
+    char body[256];
+    snprintf(body, sizeof(body),
+             "{\"player_id\":\"%s\",\"opponent_id\":\"%s\"}",
+             esc_pid, esc_oid);
+
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", "/match_disconnect", body, response, sizeof(response));
+    if (ok) {
+        SDL_Log("[LobbyServer] Disconnect reported: reporter=%s disconnecter=%s", player_id, opponent_id);
+    }
+    return ok;
 }
 
 bool LobbyServer_GetPlayerStats(const char* player_id, PlayerStats* out) {
@@ -831,6 +852,7 @@ int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page,
         json_get_string(obj, "display_name", e->display_name, sizeof(e->display_name));
         e->wins = json_get_int(obj, "wins", 0);
         e->losses = json_get_int(obj, "losses", 0);
+        e->disconnects = json_get_int(obj, "disconnects", 0);
 
         const char* rating_str = strstr(obj, "\"rating\":");
         if (rating_str) {

@@ -28,13 +28,14 @@ struct LBItem {
     int wins;
     int losses;
     int win_pct;
+    int dc_pct;
     Rml::String rating_str;
     Rml::String tier;
     bool is_me;
 
     bool operator==(const LBItem& o) const {
         return rank == o.rank && name == o.name && wins == o.wins && losses == o.losses && win_pct == o.win_pct &&
-               rating_str == o.rating_str && tier == o.tier && is_me == o.is_me;
+               dc_pct == o.dc_pct && rating_str == o.rating_str && tier == o.tier && is_me == o.is_me;
     }
     bool operator!=(const LBItem& o) const {
         return !(*this == o);
@@ -103,6 +104,7 @@ extern "C" void rmlui_leaderboard_init(void) {
         h.RegisterMember("wins", &LBItem::wins);
         h.RegisterMember("losses", &LBItem::losses);
         h.RegisterMember("win_pct", &LBItem::win_pct);
+        h.RegisterMember("dc_pct", &LBItem::dc_pct);
         h.RegisterMember("rating_str", &LBItem::rating_str);
         h.RegisterMember("tier", &LBItem::tier);
         h.RegisterMember("is_me", &LBItem::is_me);
@@ -151,8 +153,9 @@ extern "C" void rmlui_leaderboard_update(void) {
                 item.name = Rml::String(e->display_name[0] ? e->display_name : e->player_id);
                 item.wins = e->wins;
                 item.losses = e->losses;
-                int total = e->wins + e->losses;
+                int total = e->wins + e->losses + e->disconnects;
                 item.win_pct = total > 0 ? (e->wins * 100 / total) : 0;
+                item.dc_pct = total > 0 ? (e->disconnects * 100 / total) : 0;
 
                 char buf[16];
                 SDL_snprintf(buf, sizeof(buf), "%.0f", (double)e->rating);

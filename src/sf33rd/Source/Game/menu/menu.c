@@ -709,15 +709,73 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         break;
 
     /* ================================================================
-     * LEADERBOARD PHASE (cases 4–5): show/hide RmlUI leaderboard
+     * LEADERBOARD PHASE (cases 4–8): full-screen RmlUI leaderboard
      * ================================================================ */
     case 4:
-        /* Leaderboard is visible — wait for B / East to exit */
-        if (IO_Result == SWK_EAST) {
-            SE_selected();
-            rmlui_leaderboard_hide();
-            /* Return to gateway phase */
-            task_ptr->r_no[2] = 0;
+        /* Phase 4: Fade out, kill gateway items, request blue BG */
+        FadeOut(1, 0xFF, 8);
+        task_ptr->r_no[2] += 1;
+        task_ptr->r_no[3] = 0;
+        task_ptr->timer = 5;
+        Menu_Suicide[0] = 1;        /* kill gateway items (master_player=0) */
+        Menu_Suicide[1] = 0;
+        Message_Data->kind_req = 4; /* blue-BG background mode */
+        break;
+
+    case 5:
+        /* Phase 5: Destroy old effects, show blue BG + RmlUI leaderboard */
+        FadeOut(1, 0xFF, 8);
+        task_ptr->r_no[2] += 1;
+
+        effect_work_init();
+        Menu_Common_Init();
+        Menu_Cursor_Y[0] = 0;
+        Menu_Cursor_Y[1] = 0;
+        Order[0x4E] = 5;
+        Order_Timer[0x4E] = 1;
+        Order_Dir[0x4E] = 1;
+
+        /* Blue background banner */
+        effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, 0);
+
+        /* Show RmlUI leaderboard (auto-fetches page 0) */
+        rmlui_leaderboard_show();
+        /* fallthrough to case 6 */
+
+    case 6:
+        /* Wait for fade-out timer */
+        FadeOut(1, 0xFF, 8);
+
+        if (--task_ptr->timer == 0) {
+            task_ptr->r_no[2] += 1;
+            task_ptr->r_no[3] = 1;
+            FadeInit();
+        }
+        break;
+
+    case 7:
+        /* Fade in */
+        if (FadeIn(1, 25, 8)) {
+            task_ptr->r_no[2] += 1;
+        }
+        break;
+
+    case 8:
+        /* Leaderboard input loop — B / Cancel exits back to gateway */
+        {
+            u16 trigger = 0;
+            for (int i = 0; i < 2; i++) {
+                trigger |= (~plsw_01[i] & plsw_00[i]);
+            }
+            if (trigger & 0x0200) { /* Cancel / B */
+                SE_selected();
+                rmlui_leaderboard_hide();
+                Menu_Suicide[0] = 0;
+                Menu_Suicide[1] = 1; /* kill blue BG items */
+                task_ptr->r_no[2] = 0;
+                task_ptr->r_no[3] = 0;
+                task_ptr->free[0] = 0;
+            }
         }
         break;
 
@@ -1570,7 +1628,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             /* Peer Info (Right Side) */
             {
                 s16 peer_x = 200;
-                s16 lan_peer_y = 63;
+                s16 lan_peer_y = 77;
 
                 NetplayDiscoveredPeer d_peers[16];
                 int d_count = Discovery_GetPeers(d_peers, 16);
@@ -3377,7 +3435,13 @@ static void VS_Result(struct _TASK* task_ptr) {
         FadeOut(1, 0xFF, 8);
 
         if (--task_ptr->timer == 0) {
-            task_ptr->r_no[2]++;
+            if (Netplay_GetSessionState() == NETPLAY_SESSION_RUNNING) {
+                task_ptr->r_no[2] = 6;
+                task_ptr->r_no[3] = 0;
+                task_ptr->timer = 2;
+            } else {
+                task_ptr->r_no[2]++;
+            }
             FadeInit();
         }
 

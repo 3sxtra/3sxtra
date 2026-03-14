@@ -1,121 +1,154 @@
-/* Leaderboard screen styles — matches lobby aesthetic */
+/* ─── Leaderboard ─────────────────────────────────────────────── */
+/* 384×224 game canvas — strict dp metrics        */
 
 #lb-panel {
+    display: block;
     position: absolute;
-    top: 8%;
-    left: 10%;
-    width: 80%;
-    height: 82%;
-    background-color: rgba(0, 0, 0, 0.85);
-    border-width: 2dp;
-    border-color: rgba(255, 200, 60, 0.6);
-    padding: 12dp;
-    box-sizing: border-box;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: rgba(6, 8, 18, 210);
+    border-width: 1dp;
+    border-color: rgba(80, 110, 200, 80);
 }
 
-/* ── Title bar ── */
+/* ── Title bar (compact) ── */
 #lb-title-bar {
     display: block;
-    margin-bottom: 8dp;
-    padding-bottom: 6dp;
+    height: 16dp;
+    padding: 3dp 8dp 1dp 8dp;
+    border-top-width: 1dp;
+    border-top-color: rgba(255, 255, 255, 200);
     border-bottom-width: 1dp;
-    border-bottom-color: rgba(255, 200, 60, 0.3);
+    border-bottom-color: rgba(255, 255, 255, 200);
+    text-align: center;
 }
 #lb-title {
-    font-size: 18dp;
+    display: block;
+    font-size: 11dp;
+    color: #fff;
     font-weight: bold;
-    color: #ffc83c;
-    font-effect: shadow(1dp 1dp rgba(0,0,0,0.8));
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
+    background-color: transparent;
 }
 #lb-total {
-    float: right;
-    font-size: 12dp;
-    color: rgba(255, 255, 255, 0.5);
-    margin-top: 4dp;
+    display: block;
+    position: absolute;
+    right: 8dp;
+    top: 6dp;
+    font-size: 7dp;
+    color: rgba(170, 200, 255, 170);
 }
 
 /* ── Loading ── */
 #lb-loading {
+    display: block;
     text-align: center;
-    padding: 40dp 0;
-    font-size: 14dp;
+    padding: 80dp 0;
+    font-size: 10dp;
     color: rgba(255, 200, 60, 0.7);
 }
 
 /* ── Table ── */
 #lb-table {
     display: block;
-    overflow: auto;
-    height: 72%;
+    position: absolute;
+    top: 25dp;
+    left: 4dp;
+    right: 4dp;
+    bottom: 18dp;
+    padding: 2dp 4dp;
+    background-color: rgba(0, 6, 28, 180);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 70);
+    overflow: hidden;
 }
 
 .lb-header-row {
-    display: table-row;
-    font-size: 11dp;
-    color: rgba(255, 255, 255, 0.4);
-    margin-bottom: 4dp;
-    padding-bottom: 4dp;
+    display: block;
+    font-size: 7dp;
+    color: rgba(170, 200, 255, 170);
+    padding: 2dp 0dp;
+    margin-bottom: 2dp;
     border-bottom-width: 1dp;
-    border-bottom-color: rgba(255, 255, 255, 0.1);
+    border-bottom-color: rgba(100, 130, 220, 60);
+    white-space: nowrap;
 }
 
 .lb-row {
-    display: table-row;
-    font-size: 13dp;
-    color: #e0e0e0;
-    padding: 3dp 0;
+    display: block;
+    color: rgba(190, 200, 225, 180);
+    font-size: 8dp;
+    padding: 1dp 0dp;
+    margin-bottom: 1dp;
+    border-left-width: 2dp;
+    border-left-color: transparent;
+    white-space: nowrap;
 }
 .lb-row.highlight {
-    color: #ffc83c;
-    font-weight: bold;
-    background-color: rgba(255, 200, 60, 0.08);
+    color: rgba(255, 235, 100, 255);
+    background-color: rgba(255, 220, 0, 18);
+    border-left-color: rgba(255, 210, 40, 230);
 }
 
-/* Column widths (table-cell) */
+/* Column widths (inline-block) */
 .lb-col-rank {
-    display: table-cell;
-    width: 8%;
+    display: inline-block;
+    width: 24dp;
     text-align: center;
-    color: rgba(255, 255, 255, 0.35);
-}
-.lb-row .lb-col-rank {
-    color: rgba(255, 255, 255, 0.5);
-}
-.lb-row.highlight .lb-col-rank {
-    color: #ffc83c;
+    color: rgba(150, 160, 180, 200);
 }
 
 .lb-col-name {
-    display: table-cell;
-    width: 36%;
+    display: inline-block;
+    width: 140dp;
     padding-left: 4dp;
 }
 
+.lb-row.highlight .lb-col-name {
+    color: #fff;
+}
+
 .lb-col-wins {
-    display: table-cell;
-    width: 10%;
+    display: inline-block;
+    width: 32dp;
     text-align: center;
-    color: #6ddc6d;
+    color: rgba(90, 240, 150, 255);
 }
 
 .lb-col-losses {
-    display: table-cell;
-    width: 10%;
+    display: inline-block;
+    width: 32dp;
     text-align: center;
-    color: #e06060;
+    color: rgba(255, 70, 70, 255);
 }
 
 .lb-col-pct {
-    display: table-cell;
-    width: 14%;
+    display: inline-block;
+    width: 40dp;
     text-align: center;
+    color: rgba(170, 180, 210, 200);
 }
 
 .lb-col-rating {
-    display: table-cell;
-    width: 14%;
+    display: inline-block;
+    width: 60dp;
     text-align: center;
-    color: #a0c0ff;
+    color: rgba(140, 210, 255, 235);
+}
+
+.lb-col-dc {
+    display: inline-block;
+    width: 30dp;
+    text-align: center;
+    color: rgba(150, 160, 180, 200);
+}
+.lb-col-dc.dc-warn {
+    color: rgba(255, 80, 80, 255);
+    font-weight: bold;
 }
 
 /* Tier-specific rating colors */
@@ -127,27 +160,38 @@
 
 /* ── Empty state ── */
 #lb-empty {
+    display: block;
+    position: absolute;
+    top: 25dp;
+    left: 4dp;
+    right: 4dp;
+    bottom: 20dp;
     text-align: center;
     padding: 60dp 0;
-    font-size: 14dp;
-    color: rgba(255, 255, 255, 0.35);
+    font-size: 8dp;
+    color: rgba(140, 150, 180, 100);
 }
 
 /* ── Pagination footer ── */
 #lb-footer {
     display: block;
+    position: absolute;
+    bottom: 1dp;
+    left: 4dp;
+    right: 4dp;
+    padding: 1dp 6dp;
+    background-color: rgba(0, 8, 30, 160);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 50);
     text-align: center;
-    margin-top: 8dp;
-    padding-top: 6dp;
-    border-top-width: 1dp;
-    border-top-color: rgba(255, 200, 60, 0.3);
-    font-size: 12dp;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 8dp;
 }
 .lb-nav {
-    color: #ffc83c;
+    display: inline;
+    color: rgba(255, 210, 70, 240);
     margin: 0 16dp;
 }
 .lb-page-info {
-    color: rgba(255, 255, 255, 0.6);
+    display: inline;
+    color: rgba(170, 200, 255, 170);
 }

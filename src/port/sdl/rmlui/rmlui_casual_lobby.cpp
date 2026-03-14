@@ -97,6 +97,7 @@ static int s_proposal_cursor = 0;          // 0 = accept, 1 = decline
 static Uint64 s_proposal_start_time = 0;
 static char s_proposal_opponent_room_code[32] = { 0 };
 static char s_proposal_opponent_region[8] = { 0 };
+static char s_proposal_opponent_player_id[64] = { 0 };
 static bool s_proposal_we_are_p1 = false;
 
 // Async accept/decline thread functions (avoid blocking UI thread with HTTP calls)
@@ -364,6 +365,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 int opp_rtt = we_are_p1 ? sse_evt.propose_p2_rtt_ms : sse_evt.propose_p1_rtt_ms;
                 const char* opp_room = we_are_p1 ? sse_evt.propose_p2_room_code : sse_evt.propose_p1_room_code;
                 const char* opp_region = we_are_p1 ? sse_evt.propose_p2_region : sse_evt.propose_p1_region;
+                const char* opp_id = we_are_p1 ? sse_evt.propose_p2_id : sse_evt.propose_p1_id;
 
                 // Connection filter auto-decline: skip popup if opponent fails filters
                 if (!SDLNetplayUI_PlayerPassesFilters(opp_conn, opp_rtt, opp_region)) {
@@ -386,6 +388,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 s_proposal_we_are_p1 = we_are_p1;
                 snprintf(s_proposal_opponent_room_code, sizeof(s_proposal_opponent_room_code), "%s", opp_room);
                 snprintf(s_proposal_opponent_region, sizeof(s_proposal_opponent_region), "%s", opp_region);
+                snprintf(s_proposal_opponent_player_id, sizeof(s_proposal_opponent_player_id), "%s", opp_id);
 
                 // Popup is inline in casual_lobby.rml — data-if="proposal_active" shows it
 
@@ -449,7 +452,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 // P2P connection trigger: use stored opponent room code from proposal phase
                 if (s_proposal_opponent_room_code[0]) {
                     SDLNetplayUI_StartCasualMatchPunch(
-                        s_proposal_opponent_room_code, s_proposal_opponent_name.c_str(), s_proposal_we_are_p1);
+                        s_proposal_opponent_room_code, s_proposal_opponent_name.c_str(), s_proposal_opponent_player_id, s_proposal_we_are_p1);
                     s_proposal_opponent_room_code[0] = '\0'; // consumed
                 }
             } else {

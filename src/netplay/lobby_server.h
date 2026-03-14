@@ -73,6 +73,13 @@ bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id);
 /// The match_id must be the one returned by LobbyServer_ReportMatch.
 bool LobbyServer_UploadReplay(int match_id, const void* replay_data, size_t replay_size);
 
+/// Report a mid-match disconnect (ragequit). The remaining player calls this
+/// when GekkoPlayerDisconnected fires before a natural match conclusion.
+/// Server-side: if only one player submits a match result within 30s, the
+/// server may auto-record the result and increment the absent player's
+/// disconnect counter.
+bool LobbyServer_ReportDisconnect(const char* player_id, const char* opponent_id);
+
 typedef struct {
     int wins;
     int losses;
@@ -93,6 +100,7 @@ typedef struct {
     char display_name[32];
     int wins;
     int losses;
+    int disconnects;
     float rating;
     char tier[16];
 } LeaderboardEntry;

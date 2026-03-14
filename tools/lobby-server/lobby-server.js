@@ -127,7 +127,14 @@ try {
 
         -- Attempt to add has_replay column if the table already existed before this update
         ALTER TABLE matches ADD COLUMN has_replay INTEGER DEFAULT 0;
+    `);
+    
+    // Add disconnects column to players_db if it doesn't exist
+    try {
+        db.exec('ALTER TABLE players_db ADD COLUMN disconnects INTEGER DEFAULT 0;');
+    } catch { /* ignore if already exists */ }
 
+    db.exec(`
         CREATE TABLE IF NOT EXISTS pending_results (
             match_key TEXT PRIMARY KEY,
             reporter_id TEXT NOT NULL,
@@ -487,10 +494,54 @@ const cleanupTimer = setInterval(() => {
             matchDeclineCooldowns.delete(key);
         }
     }
-    // Clean stale pending match results (>60s)
+    // Auto-record stale pending match results (>30s) as disconnects.
+    // If only one player reported within 30s, trust that report and
+    // increment the absent player's disconnect counter.
     if (db) {
         try {
-            db.prepare(`DELETE FROM pending_results WHERE datetime(created_at) < datetime('now', '-60 seconds')`).run();
+            const stalePending = db.prepare(
+                `SELECT * FROM pending_results WHERE datetime(created_at) < datetime('now', '-30 seconds')`
+            ).all();
+            for (const p of stalePending) {
+                const winnerId = p.winner_id;
+                const loserId = winnerId === p.p1_id ? p.p2_id : p.p1_id;
+                const winnerName = players.get(winnerId)?.display_name || winnerId;
+                const loserName = players.get(loserId)?.display_name || loserId;
+
+                // Record the match
+                db.prepare(`INSERT INTO matches (p1_id, p2_id, winner_id, p1_char, p2_char, rounds)
+                            VALUES (?, ?, ?, ?, ?, ?)`)
+                  .run(p.p1_id, p.p2_id, winnerId, p.p1_char, p.p2_char, p.rounds || 0);
+
+                // Fetch current stats for Glicko-2
+                const getStats = db.prepare('SELECT rating, rd, volatility FROM players_db WHERE player_id = ?');
+                let wStats = getStats.get(winnerId) || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
+                let lStats = getStats.get(loserId)  || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
+                const newStats = glicko2Update(wStats, lStats);
+
+                // Upsert winner (win)
+                db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses, rating, rd, volatility)
+                    VALUES (?, ?, 1, 0, ?, ?, ?)
+                    ON CONFLICT(player_id) DO UPDATE SET
+                        display_name = excluded.display_name, wins = wins + 1,
+                        rating = excluded.rating, rd = excluded.rd, volatility = excluded.volatility,
+                        last_match = datetime('now')
+                `).run(winnerId, winnerName, newStats.winner.rating, newStats.winner.rd, newStats.winner.vol);
+
+                // Upsert loser (loss + disconnect)
+                db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses, disconnects, rating, rd, volatility)
+                    VALUES (?, ?, 0, 1, 1, ?, ?, ?)
+                    ON CONFLICT(player_id) DO UPDATE SET
+                        display_name = excluded.display_name, losses = losses + 1, disconnects = disconnects + 1,
+                        rating = excluded.rating, rd = excluded.rd, volatility = excluded.volatility,
+                        last_match = datetime('now')
+                `).run(loserId, loserName, newStats.loser.rating, newStats.loser.rd, newStats.loser.vol);
+
+                console.log(`[match] auto-recorded stale pending: ${winnerName} beat ${loserName} (disconnect)`);
+            }
+            if (stalePending.length > 0) {
+                db.prepare(`DELETE FROM pending_results WHERE datetime(created_at) < datetime('now', '-30 seconds')`).run();
+            }
         } catch { /* ignore */ }
     }
     // Phase 6: Timeout proposed matches (>10s without both accepts)
@@ -557,12 +608,15 @@ function verifyRequest(method, path, body, headers) {
         return { ok: false, reason: 'Stale timestamp' };
     }
 
-    // Verify HMAC
-    const payload = timestamp + method + path + body;
-    const expected = crypto
-        .createHmac('sha256', SECRET)
-        .update(payload)
-        .digest('hex');
+    // Verify HMAC — use .update() chaining to handle both string and Buffer bodies
+    const hmac = crypto.createHmac('sha256', SECRET);
+    hmac.update(timestamp + method + path);
+    if (Buffer.isBuffer(body)) {
+        hmac.update(body); // Binary body: feed directly as Buffer (no UTF-8 mangling)
+    } else {
+        hmac.update(body); // String body: works correctly as-is
+    }
+    const expected = hmac.digest('hex');
 
     // Validate signature is valid hex of correct length before timingSafeEqual
     if (!/^[0-9a-f]{64}$/i.test(signature)) {
@@ -666,13 +720,13 @@ function resolveConnectMatch(player_id, display_name, room_code, connect_to) {
 
 async function handleRequest(req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
-    const path = url.pathname;
+    const urlPath = url.pathname;
     const fullPath = req.url; // includes query string — used for HMAC
     const method = req.method;
 
     // Read body for POST (except for replay uploads which we handle raw)
     let body;
-    if (method === 'POST' && path === '/match_result/replay') {
+    if (method === 'POST' && urlPath === '/match_result/replay') {
         try {
             // Read body as a raw Buffer for binary file upload
             body = await new Promise((resolve, reject) => {
@@ -701,7 +755,7 @@ async function handleRequest(req, res) {
     }
 
     // --- Health endpoint (no auth required) ---
-    if (method === 'GET' && path === '/') {
+    if (method === 'GET' && urlPath === '/') {
         return json(res, 200, {
             service: '3sx-lobby',
             players_online: players.size,
@@ -710,7 +764,7 @@ async function handleRequest(req, res) {
     }
 
     // --- SSE Event Stream (no auth required, secured by unguessable room code) ---
-    if (method === 'GET' && path === '/room/events') {
+    if (method === 'GET' && urlPath === '/room/events') {
         const roomCode = url.searchParams.get('room_code');
         const room = rooms.get(roomCode);
         if (!room) return json(res, 404, { error: 'Room not found' });
@@ -728,7 +782,7 @@ async function handleRequest(req, res) {
     }
 
     // --- Room State (read-only, no auth — secured by unguessable room code) ---
-    if (method === 'GET' && path === '/room/state') {
+    if (method === 'GET' && urlPath === '/room/state') {
         const roomCode = url.searchParams.get('room_code');
         const room = rooms.get(roomCode);
         if (!room) return json(res, 404, { error: 'Room not found' });
@@ -736,7 +790,7 @@ async function handleRequest(req, res) {
     }
 
     // --- Room List (read-only, no auth — returns public room summaries) ---
-    if (method === 'GET' && path === '/rooms/list') {
+    if (method === 'GET' && urlPath === '/rooms/list') {
         const list = [];
         for (const [code, room] of rooms) {
             list.push({
@@ -756,7 +810,7 @@ async function handleRequest(req, res) {
 
     // --- Casual Rooms (8-Player) ---
 
-    if (method === 'POST' && path === '/room/create') {
+    if (method === 'POST' && urlPath === '/room/create') {
         const data = parseJsonBody(res, body);
         if (!data) return;
         const code = generateRoomCode();
@@ -777,7 +831,7 @@ async function handleRequest(req, res) {
         return json(res, 200, { ok: true, room_code: code });
     }
 
-    if (method === 'POST' && path === '/room/join') {
+    if (method === 'POST' && urlPath === '/room/join') {
         const data = parseJsonBody(res, body);
         if (!data) return;
         const room = rooms.get(data.room_code);
@@ -792,7 +846,7 @@ async function handleRequest(req, res) {
         return json(res, 200, { ok: true, room });
     }
 
-    if (method === 'POST' && path === '/room/leave') {
+    if (method === 'POST' && urlPath === '/room/leave') {
         const data = parseJsonBody(res, body);
         if (!data) return;
         const room = rooms.get(data.room_code);
@@ -847,7 +901,7 @@ async function handleRequest(req, res) {
         return json(res, 200, { ok: true });
     }
 
-    if (method === 'POST' && path === '/room/chat') {
+    if (method === 'POST' && urlPath === '/room/chat') {
         const data = parseJsonBody(res, body);
         if (!data) return;
         const room = rooms.get(data.room_code);
@@ -866,7 +920,7 @@ async function handleRequest(req, res) {
         return json(res, 200, { ok: true });
     }
 
-    if (method === 'POST' && path === '/room/queue/join') {
+    if (method === 'POST' && urlPath === '/room/queue/join') {
         const data = parseJsonBody(res, body);
         if (!data) return;
         const room = rooms.get(data.room_code);
@@ -889,7 +943,7 @@ async function handleRequest(req, res) {
         return json(res, 200, { ok: true });
     }
 
-    if (method === 'POST' && path === '/room/queue/leave') {
+    if (method === 'POST' && urlPath === '/room/queue/leave') {
         const data = parseJsonBody(res, body);
         if (!data) return;
         const room = rooms.get(data.room_code);
@@ -904,7 +958,7 @@ async function handleRequest(req, res) {
     }
 
     // --- POST /room/match/accept --- Phase 6: Accept a proposed match
-    if (method === 'POST' && path === '/room/match/accept') {
+    if (method === 'POST' && urlPath === '/room/match/accept') {
         const data = parseJsonBody(res, body);
         if (!data) return;
         const room = rooms.get(data.room_code);
@@ -931,7 +985,7 @@ async function handleRequest(req, res) {
     }
 
     // --- POST /room/match/decline --- Phase 6: Decline a proposed match
-    if (method === 'POST' && path === '/room/match/decline') {
+    if (method === 'POST' && urlPath === '/room/match/decline') {
         const data = parseJsonBody(res, body);
         if (!data) return;
         const room = rooms.get(data.room_code);
@@ -950,7 +1004,7 @@ async function handleRequest(req, res) {
     }
 
     // --- POST /room/match/end --- "Winner Stays On" rotation
-    if (method === 'POST' && path === '/room/match/end') {
+    if (method === 'POST' && urlPath === '/room/match/end') {
         const data = parseJsonBody(res, body);
         if (!data) return;
         const room = rooms.get(data.room_code);
@@ -991,7 +1045,7 @@ async function handleRequest(req, res) {
     // --- / Casual Rooms ---
 
     // --- POST /presence ---
-    if (method === 'POST' && path === '/presence') {
+    if (method === 'POST' && urlPath === '/presence') {
         const data = parseJsonBody(res, body);
         if (!data) return;
 
@@ -1022,7 +1076,7 @@ async function handleRequest(req, res) {
     }
 
     // --- POST /searching/start ---
-    if (method === 'POST' && path === '/searching/start') {
+    if (method === 'POST' && urlPath === '/searching/start') {
         const data = parseJsonBody(res, body);
         if (!data) return;
 
@@ -1039,7 +1093,7 @@ async function handleRequest(req, res) {
     }
 
     // --- POST /searching/stop ---
-    if (method === 'POST' && path === '/searching/stop') {
+    if (method === 'POST' && urlPath === '/searching/stop') {
         const data = parseJsonBody(res, body);
         if (!data) return;
 
@@ -1054,7 +1108,7 @@ async function handleRequest(req, res) {
     // --- GET /searching ---
     // Returns players that are either searching or have an active connect_to.
     // The connect_to filter is needed so clients can detect incoming invites.
-    if (method === 'GET' && path === '/searching') {
+    if (method === 'GET' && urlPath === '/searching') {
         const regionFilter = url.searchParams.get('region');
         const result = [];
 
@@ -1081,7 +1135,7 @@ async function handleRequest(req, res) {
     // --- POST /decline ---
     // Report a declined invite for rate limiting.
     // Implements exponential backoff: 30s -> 60s -> 120s -> 300s max.
-    if (method === 'POST' && path === '/decline') {
+    if (method === 'POST' && urlPath === '/decline') {
         const data = parseJsonBody(res, body);
         if (!data) return;
 
@@ -1110,7 +1164,7 @@ async function handleRequest(req, res) {
     }
 
     // --- POST /match_result ---
-    if (method === 'POST' && path === '/match_result') {
+    if (method === 'POST' && urlPath === '/match_result') {
         if (!db) return json(res, 503, { error: 'Match reporting unavailable (no SQLite)' });
 
         const data = parseJsonBody(res, body);
@@ -1197,7 +1251,7 @@ async function handleRequest(req, res) {
     }
 
     // --- POST /match_result/replay ---
-    if (method === 'POST' && path === '/match_result/replay') {
+    if (method === 'POST' && urlPath === '/match_result/replay') {
         if (!db) return json(res, 503, { error: 'Replay upload unavailable (no SQLite)' });
 
         // The room_code query param here is repurposed to pass the match_id
@@ -1268,8 +1322,38 @@ async function handleRequest(req, res) {
         }
     }
 
+    // --- POST /match_disconnect ---
+    // Report a mid-match disconnect (ragequit). The remaining player calls this
+    // when GekkoPlayerDisconnected fires before a natural match conclusion.
+    // Increments the opponent's disconnect counter.
+    if (method === 'POST' && urlPath === '/match_disconnect') {
+        if (!db) return json(res, 503, { error: 'Match reporting unavailable (no SQLite)' });
+
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+
+        const { player_id, opponent_id } = data;
+        if (!player_id || !opponent_id) {
+            return json(res, 400, { error: 'Missing player_id or opponent_id' });
+        }
+
+        // Increment the opponent's disconnect counter (the reporter is the one who stayed)
+        const upsertDC = db.prepare(`
+            INSERT INTO players_db (player_id, display_name, disconnects)
+            VALUES (?, ?, 1)
+            ON CONFLICT(player_id) DO UPDATE SET
+                disconnects = disconnects + 1,
+                last_match = datetime('now')
+        `);
+        const opponentName = players.get(opponent_id)?.display_name || opponent_id;
+        upsertDC.run(opponent_id, opponentName);
+
+        console.log(`[match] disconnect reported: ${player_id} reports ${opponentName} disconnected`);
+        return json(res, 200, { ok: true, status: 'disconnect_recorded' });
+    }
+
     // --- GET /replays ---
-    if (method === 'GET' && path === '/replays') {
+    if (method === 'GET' && urlPath === '/replays') {
         if (!db) return json(res, 503, { error: 'Replays unavailable (no SQLite)' });
 
         const page = Math.max(0, parseInt(url.searchParams.get('page') || '0', 10));
@@ -1373,7 +1457,7 @@ async function handleRequest(req, res) {
     }
 
     // --- GET /leaderboard ---
-    if (method === 'GET' && path === '/leaderboard') {
+    if (method === 'GET' && urlPath === '/leaderboard') {
         if (!db) return json(res, 503, { error: 'Leaderboard unavailable (no SQLite)' });
 
         const page = Math.max(0, parseInt(url.searchParams.get('page') || '0', 10));
@@ -1382,7 +1466,7 @@ async function handleRequest(req, res) {
 
         const total = db.prepare('SELECT COUNT(*) as cnt FROM players_db').get().cnt;
         const rows = db.prepare(
-            'SELECT player_id, display_name, wins, losses, rating FROM players_db ORDER BY rating DESC, wins DESC LIMIT ? OFFSET ?'
+            'SELECT player_id, display_name, wins, losses, disconnects, rating FROM players_db ORDER BY rating DESC, wins DESC LIMIT ? OFFSET ?'
         ).all(limit, offset);
 
         return json(res, 200, {
@@ -1392,6 +1476,7 @@ async function handleRequest(req, res) {
                 display_name: r.display_name || r.player_id,
                 wins: r.wins,
                 losses: r.losses,
+                disconnects: r.disconnects || 0,
                 rating: r.rating,
                 tier: getTier(r.rating)
             })),
@@ -1401,7 +1486,7 @@ async function handleRequest(req, res) {
     }
 
     // --- POST /leave ---
-    if (method === 'POST' && path === '/leave') {
+    if (method === 'POST' && urlPath === '/leave') {
         const data = parseJsonBody(res, body);
         if (!data) return;
 

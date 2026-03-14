@@ -8,9 +8,9 @@
 #include <string.h>
 
 #ifdef _WIN32
-#include <iphlpapi.h> // GetAdaptersAddresses — for per-interface broadcast
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <iphlpapi.h> // GetAdaptersAddresses — for per-interface broadcast
 #ifdef _MSC_VER
 #pragma comment(lib, "iphlpapi.lib")
 #endif

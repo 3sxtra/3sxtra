@@ -669,6 +669,42 @@ int NativeSave_SaveReplay(int slot) {
     return 0;
 }
 
+/** @brief Auto-save replay to the oldest or first empty slot (ring-buffer). */
+int NativeSave_AutoSaveReplay(void) {
+    int empty_slot = -1;
+    int oldest_slot = -1;
+    uint64_t oldest_score = UINT64_MAX;
+
+    /* Reserve slots 0-9 for manual/starred saves; auto-save uses 10-19 */
+    for (int i = 10; i < NATIVE_SAVE_REPLAY_SLOTS; i++) {
+        if (!NativeSave_ReplayExists(i)) {
+            if (empty_slot < 0)
+                empty_slot = i;
+            continue;
+        }
+
+        _sub_info info;
+        if (NativeSave_GetReplayInfo(i, &info) == 0) {
+            uint64_t score = ((uint64_t)info.date.year << 40) | ((uint64_t)info.date.month << 32) |
+                             ((uint64_t)info.date.day << 24) | ((uint64_t)info.date.hour << 16) |
+                             ((uint64_t)info.date.min << 8) | info.date.sec;
+            if (score < oldest_score) {
+                oldest_score = score;
+                oldest_slot = i;
+            }
+        }
+    }
+
+    int target = (empty_slot >= 0) ? empty_slot : oldest_slot;
+    if (target < 0)
+        target = 10; /* fallback: overwrite slot 10 */
+
+    SDL_Log("[NativeSave] Auto-saving replay to slot %d (%s)", target,
+            empty_slot >= 0 ? "empty" : "oldest");
+
+    return NativeSave_SaveReplay(target);
+}
+
 /** @brief Delete a replay slot (removes both .bin and .meta files). */
 int NativeSave_DeleteReplay(int slot) {
     if (slot < 0 || slot >= NATIVE_SAVE_REPLAY_SLOTS)

@@ -78,6 +78,9 @@ int NativeSave_SaveReplay(int slot);
 /** Delete a replay slot. Returns 0 on success. */
 int NativeSave_DeleteReplay(int slot);
 
+/** Auto-save replay to the oldest or first empty slot. Returns slot used or -1 on failure. */
+int NativeSave_AutoSaveReplay(void);
+
 /* ── Utility ───────────────────────────────────────────────────────── */
 
 /** Get the save directory path (for debug display). */

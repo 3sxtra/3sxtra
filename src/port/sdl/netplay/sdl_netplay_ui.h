@@ -89,8 +89,9 @@ bool SDLNetplayUI_PlayerPassesFilters(const char* conn_type, int rtt_ms, const c
 /// Initiate P2P hole punch for a casual lobby match.
 /// opponent_room_code is the STUN-encoded endpoint of the opponent.
 /// opponent_name is for display in status messages.
+/// opponent_player_id is the unique lobby server ID of the opponent.
 /// we_are_p1: determines player number assignment.
-void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const char* opponent_name, bool we_are_p1);
+void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const char* opponent_name, const char* opponent_player_id, bool we_are_p1);
 
 #ifdef __cplusplus
 }

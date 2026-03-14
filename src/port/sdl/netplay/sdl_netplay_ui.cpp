@@ -59,8 +59,8 @@ static bool lobby_server_searching = false;
 static LobbyPlayer lobby_server_players[16];
 static SDL_AtomicInt lobby_server_player_count = { 0 };
 static uint32_t lobby_server_last_poll = 0;
-static uint32_t lobby_pending_invite_time = 0; // Timestamp when invite was detected (for expiry)
 static char lobby_my_player_id[64] = { 0 };
+static char current_opponent_id[64] = { 0 }; // tracked explicitly to fix room rotation reporting
 static int lobby_my_rtt_ms = -1;            // Our measured RTT to the lobby server (still sent to server for presence)
 static bool ping_probe_initialized = false; // True once PingProbe_Init has been called
 static const char* my_connection_type = "unknown"; // Detected once at lobby entry
@@ -72,76 +72,38 @@ static bool match_result_reported = false;
 static SDL_AtomicInt async_match_report_active = { 0 };
 
 #include "port/save/native_save.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
+
+// NativeReplayHeader must match the struct in native_save.c exactly
+typedef struct {
+    uint32_t magic;     // 0x33535852 = "3SXR"
+    uint32_t version;   // 1
+    uint32_t data_size; // sizeof(_REPLAY_W)
+    uint32_t reserved;
+} AsyncNativeReplayHeader;
+
+#define ASYNC_NATIVE_REPLAY_MAGIC 0x33535852
+#define ASYNC_NATIVE_REPLAY_VERSION 1
+
+// Async data: carries both the match result and a snapshot of the replay
+typedef struct {
+    MatchResult result;
+    void* replay_snapshot;  // malloc'd NativeReplayHeader + _REPLAY_W data
+    size_t replay_size;     // total size of the snapshot (header + data)
+} AsyncMatchReportData;
 
 static int async_match_report_fn(void* userdata) {
-    MatchResult* result = (MatchResult*)userdata;
+    AsyncMatchReportData* data = (AsyncMatchReportData*)userdata;
     int match_id = -1;
-    bool ok = LobbyServer_ReportMatch(result, &match_id);
+    bool ok = LobbyServer_ReportMatch(&data->result, &match_id);
 
-    // If the match was successfully recorded by the server and we got an ID,
-    // upload the most recent replay file. The game auto-saves replays to slot 0
-    // or the last used slot. For now, we will try to load the replay data directly
-    // from the `Replay_w` global struct which still holds the last match's data,
-    // or we can read the binary file.
-    // The easiest and safest way is to read the last saved replay file from disk.
-    if (ok && match_id >= 0) {
-        // Find the most recent replay slot by checking dates
-        int newest_slot = -1;
-        _sub_info newest_info = { 0 };
-
-        for (int i = 0; i < NATIVE_SAVE_REPLAY_SLOTS; i++) {
-            _sub_info info;
-            if (NativeSave_GetReplayInfo(i, &info) == 0) {
-                if (newest_slot == -1) {
-                    newest_slot = i;
-                    newest_info = info;
-                } else {
-                    // Compare dates (simple heuristic: highest year/month/day/hour/min/sec)
-                    uint64_t score_current = ((uint64_t)info.date.year << 40) | ((uint64_t)info.date.month << 32) |
-                                             ((uint64_t)info.date.day << 24) | ((uint64_t)info.date.hour << 16) |
-                                             ((uint64_t)info.date.min << 8) | info.date.sec;
-
-                    uint64_t score_newest =
-                        ((uint64_t)newest_info.date.year << 40) | ((uint64_t)newest_info.date.month << 32) |
-                        ((uint64_t)newest_info.date.day << 24) | ((uint64_t)newest_info.date.hour << 16) |
-                        ((uint64_t)newest_info.date.min << 8) | newest_info.date.sec;
-
-                    if (score_current > score_newest) {
-                        newest_slot = i;
-                        newest_info = info;
-                    }
-                }
-            }
-        }
-
-        // If we found a replay, read the binary file and upload it
-        if (newest_slot >= 0) {
-            char path[512];
-            // Use the same logic as native_save.c to build the path
-            const char* save_dir = NativeSave_GetSavePath();
-            snprintf(path, sizeof(path), "%sreplays/replay_%02d.bin", save_dir, newest_slot);
-
-            FILE* f = fopen(path, "rb");
-            if (f) {
-                fseek(f, 0, SEEK_END);
-                long file_size = ftell(f);
-                rewind(f);
-
-                if (file_size > 0 && file_size <= 1024 * 1024) { // Max 1MB
-                    void* buf = malloc(file_size);
-                    if (buf) {
-                        if (fread(buf, 1, file_size, f) == (size_t)file_size) {
-                            LobbyServer_UploadReplay(match_id, buf, file_size);
-                        }
-                        free(buf);
-                    }
-                }
-                fclose(f);
-            }
-        }
+    // Upload the in-memory replay snapshot if the match was recorded
+    if (ok && match_id >= 0 && data->replay_snapshot && data->replay_size > 0) {
+        LobbyServer_UploadReplay(match_id, data->replay_snapshot, data->replay_size);
     }
 
-    free(result);
+    free(data->replay_snapshot);
+    free(data);
     SDL_SetAtomicInt(&async_match_report_active, 0);
     return 0;
 }
@@ -154,8 +116,15 @@ static void AsyncReportMatch(const char* my_id, const char* opponent_id, const c
         return;
     SDL_SetAtomicInt(&async_match_report_active, 1);
 
-    MatchResult* r = (MatchResult*)malloc(sizeof(MatchResult));
-    memset(r, 0, sizeof(*r));
+    AsyncMatchReportData* data = (AsyncMatchReportData*)malloc(sizeof(AsyncMatchReportData));
+    if (!data) {
+        SDL_SetAtomicInt(&async_match_report_active, 0);
+        return;
+    }
+    memset(data, 0, sizeof(*data));
+
+    // Fill match result
+    MatchResult* r = &data->result;
     // Truncation is intentional — MatchResult fields are fixed-size buffers.
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -171,12 +140,63 @@ static void AsyncReportMatch(const char* my_id, const char* opponent_id, const c
     r->opponent_char = opp_char;
     r->rounds = rounds;
 
-    SDL_Thread* t = SDL_CreateThread(async_match_report_fn, "AsyncMatchReport", r);
+    // Snapshot Replay_w from memory now (before the user can overwrite it).
+    // This avoids the race condition of reading from disk before the replay is saved.
+    size_t snapshot_size = sizeof(AsyncNativeReplayHeader) + sizeof(_REPLAY_W);
+    void* snapshot = malloc(snapshot_size);
+    if (snapshot) {
+        AsyncNativeReplayHeader hdr = {
+            ASYNC_NATIVE_REPLAY_MAGIC, ASYNC_NATIVE_REPLAY_VERSION, (uint32_t)sizeof(_REPLAY_W), 0
+        };
+        memcpy(snapshot, &hdr, sizeof(hdr));
+        memcpy((uint8_t*)snapshot + sizeof(hdr), &Replay_w, sizeof(_REPLAY_W));
+        data->replay_snapshot = snapshot;
+        data->replay_size = snapshot_size;
+    }
+
+    SDL_Thread* t = SDL_CreateThread(async_match_report_fn, "AsyncMatchReport", data);
     if (t) {
         SDL_DetachThread(t);
     } else {
-        free(r);
+        free(data->replay_snapshot);
+        free(data);
         SDL_SetAtomicInt(&async_match_report_active, 0);
+    }
+}
+
+// --- Async disconnect reporting ---
+static SDL_AtomicInt async_disconnect_active = { 0 };
+
+struct DisconnectData {
+    char player_id[64];
+    char opponent_id[64];
+};
+
+static int SDLCALL async_disconnect_fn(void* userdata) {
+    DisconnectData* d = (DisconnectData*)userdata;
+    LobbyServer_ReportDisconnect(d->player_id, d->opponent_id);
+    free(d);
+    SDL_SetAtomicInt(&async_disconnect_active, 0);
+    return 0;
+}
+
+static void AsyncReportDisconnect(const char* my_id, const char* opponent_id) {
+    if (!LobbyServer_IsConfigured() || !my_id || !my_id[0])
+        return;
+    if (SDL_GetAtomicInt(&async_disconnect_active) != 0)
+        return;
+    SDL_SetAtomicInt(&async_disconnect_active, 1);
+
+    DisconnectData* d = (DisconnectData*)malloc(sizeof(DisconnectData));
+    snprintf(d->player_id, sizeof(d->player_id), "%s", my_id);
+    snprintf(d->opponent_id, sizeof(d->opponent_id), "%s", opponent_id);
+
+    SDL_Thread* t = SDL_CreateThread(async_disconnect_fn, "AsyncDisconnect", d);
+    if (t) {
+        SDL_DetachThread(t);
+    } else {
+        free(d);
+        SDL_SetAtomicInt(&async_disconnect_active, 0);
     }
 }
 
@@ -281,6 +301,7 @@ static uint32_t lobby_pending_invite_ip = 0;
 static uint16_t lobby_pending_invite_port = 0;
 static char lobby_pending_invite_room[16] = { 0 };
 static char lobby_pending_invite_region[8] = { 0 };
+static uint32_t lobby_pending_invite_time = 0; // Timestamp when invite was detected (for expiry)
 static int lobby_pending_invite_ping = -1;       // ms, -1 = unknown
 static SDL_AtomicInt lobby_punch_cancel = { 0 }; // Set to 1 to cancel in-progress hole punch
 static bool lobby_we_are_initiator = false;      // true = we clicked Connect, false = they invited us
@@ -525,6 +546,7 @@ static void lobby_poll_server(void) {
                      sizeof(lobby_pending_invite_name),
                      "%s",
                      lobby_server_players[i].display_name);
+            snprintf(current_opponent_id, sizeof(current_opponent_id), "%s", lobby_server_players[i].player_id);
             lobby_pending_invite_ip = peer_ip;
             lobby_pending_invite_port = peer_port;
             snprintf(
@@ -569,6 +591,7 @@ static void lobby_poll_server(void) {
         if (SDL_GetTicks() - lobby_pending_invite_time > 10000) {
             lobby_has_pending_invite = false;
             lobby_pending_invite_name[0] = '\0';
+            current_opponent_id[0] = '\0';
             lobby_pending_invite_region[0] = '\0';
             lobby_pending_invite_ping = -1;
         }
@@ -680,6 +703,7 @@ static void lobby_reset(void) {
     // Clear pending invite state
     lobby_has_pending_invite = false;
     lobby_pending_invite_name[0] = '\0';
+    current_opponent_id[0] = '\0';
     lobby_pending_invite_region[0] = '\0';
     lobby_pending_invite_ping = -1;
     SDL_SetAtomicInt(&lobby_punch_cancel, 1); // Cancel any in-flight punch
@@ -861,38 +885,29 @@ extern "C" {
 void SDLNetplayUI_Render(int window_width, int window_height) {
     ProcessEvents();
 
-    // Detect RUNNING -> EXITING transition for match reporting
+    // Detect RUNNING -> EXITING transition for match reporting and auto-saving
     NetplaySessionState current_state = Netplay_GetSessionState();
     if (last_session_state == NETPLAY_SESSION_RUNNING && current_state == NETPLAY_SESSION_EXITING &&
-        !match_result_reported && lobby_my_player_id[0]) {
-        // A netplay match just ended — report the result
+        !match_result_reported) {
+        
+        // Unconditionally auto-save replay for all netplay matches (including direct P2P)
+        NativeSave_AutoSaveReplay();
+
+        // A netplay match just ended — report the result if we are in a lobby context
         // Winner_id: 0 = P1 won, 1 = P2 won (from game engine)
         // My_char[0/1]: character indices
         // PL_Wins[0/1]: round wins per player
         int my_player = 0; // Local player is always P1 in netplay
         int total_rounds = PL_Wins[0] + PL_Wins[1];
 
-        if (Winner_id >= 0 && total_rounds > 0) {
-            // Determine winner's player_id
-            // If we are P1 (player 0) and Winner_id==0, we won
-            const char* winner_pid =
-                (Winner_id == my_player) ? lobby_my_player_id : "opponent"; // opponent ID comes from lobby
+        // Only report to server if both players have verified lobby identities
+        if (lobby_my_player_id[0] && current_opponent_id[0]) {
+            if (Winner_id >= 0 && total_rounds > 0) {
+                // Determine winner's player_id
+                const char* winner_pid = (Winner_id == my_player) ? lobby_my_player_id : current_opponent_id;
 
-            // Find opponent's ID from the lobby player list
-            const char* opponent_pid = "";
-            int player_count = SDL_GetAtomicInt(&lobby_server_player_count);
-            for (int i = 0; i < player_count; i++) {
-                if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) != 0 &&
-                    lobby_server_players[i].player_id[0]) {
-                    opponent_pid = lobby_server_players[i].player_id;
-                    break;
-                }
-            }
-
-            if (opponent_pid[0]) {
-                winner_pid = (Winner_id == my_player) ? lobby_my_player_id : opponent_pid;
                 AsyncReportMatch(lobby_my_player_id,
-                                 opponent_pid,
+                                 current_opponent_id,
                                  winner_pid,
                                  My_char[my_player],
                                  My_char[1 - my_player],
@@ -905,6 +920,11 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                     LobbyServer_ReportMatchEnd(room_code, winner_pid);
                     SDL_Log("[NetplayUI] Casual lobby match end reported: room=%s winner=%s", room_code, winner_pid);
                 }
+            } else {
+                // No natural conclusion — opponent likely ragequit/disconnected mid-match.
+                // Report the disconnect so the server can track it.
+                AsyncReportDisconnect(lobby_my_player_id, current_opponent_id);
+                SDL_Log("[NetplayUI] Mid-match disconnect reported: opponent=%s", current_opponent_id);
             }
         }
         match_result_reported = true;
@@ -1268,6 +1288,7 @@ void SDLNetplayUI_ConnectToPlayer(int index) {
                     lobby_connect_to_intent, sizeof(lobby_connect_to_intent), "%s", lobby_server_players[i].room_code);
                 snprintf(
                     lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", lobby_server_players[i].display_name);
+                snprintf(current_opponent_id, sizeof(current_opponent_id), "%s", lobby_server_players[i].player_id);
                 lobby_we_are_initiator = true; // We clicked Connect
                 lobby_start_punch(peer_ip, peer_port);
             }
@@ -1375,9 +1396,17 @@ bool SDLNetplayUI_PlayerPassesFilters(const char* conn_type, int rtt_ms, const c
     return player_passes_filters(&temp);
 }
 
-void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const char* opponent_name, bool we_are_p1) {
+void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const char* opponent_name,
+                                        const char* opponent_player_id, bool we_are_p1) {
     if (!opponent_room_code || !opponent_room_code[0])
         return;
+
+    // Track opponent explicit ID so we can report match results to the lobby server correctly
+    if (opponent_player_id && opponent_player_id[0]) {
+        snprintf(current_opponent_id, sizeof(current_opponent_id), "%s", opponent_player_id);
+    } else {
+        current_opponent_id[0] = '\0';
+    }
 
     // Decode the opponent's STUN endpoint for later use (hole punch or LAN detection)
     uint32_t peer_ip = 0;
