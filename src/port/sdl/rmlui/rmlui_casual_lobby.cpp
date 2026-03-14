@@ -597,11 +597,17 @@ extern "C" void rmlui_casual_lobby_update(void) {
     int prev_x = s_cursor_x;
     int prev_y = s_cursor_y;
 
+    bool can_spectate = !s_is_playing && s_match_active && !s_is_spectating;
+
+    // Fallback if cursor is on hidden spectate button
+    if (s_cursor_x == 0 && s_cursor_y == 0 && !can_spectate) {
+        s_cursor_y = 9;
+    }
+
     if (trigger & 0x01) { // Up
         if (s_cursor_x == 0) {
             if (s_cursor_y == 10) s_cursor_y = 9;
-            else if (s_cursor_y == 9 && s_match_active && !s_is_playing) s_cursor_y = 0;
-            else if (s_cursor_y == 9) s_cursor_y = 0; // jump to top anyway
+            else if (s_cursor_y == 9 && can_spectate) s_cursor_y = 0;
         }
     }
     if (trigger & 0x02) { // Down
