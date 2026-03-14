@@ -1845,6 +1845,22 @@ static void Network_Lobby(struct _TASK* task_ptr) {
     }
 }
 
+/**
+ * @brief Re-activate TASK_MENU at the Network_Lobby input loop (RmlUI mode).
+ *
+ * After a casual room match ends, Soft_Reset_Sub() kills TASK_MENU. When
+ * the user then leaves the room and returns to the network lobby, the menu
+ * task must be restored so input processing works (case 14 = RmlUI lobby loop).
+ */
+void Menu_ReenterNetworkLobby(void) {
+    cpReadyTask(TASK_MENU, Menu_Task);
+    task[TASK_MENU].r_no[0] = 0;  /* After_Title */
+    task[TASK_MENU].r_no[1] = 21; /* Network_Lobby */
+    task[TASK_MENU].r_no[2] = 14; /* Lobby input loop (RmlUI path) */
+    task[TASK_MENU].r_no[3] = 1;
+    task[TASK_MENU].free[2] = 1;  /* 1 = RmlUI mode */
+}
+
 /** @brief â€œSelect Gameâ€ (3S vs 2I) screen with exit-to-desktop option. */
 static void toSelectGame(struct _TASK* task_ptr) {
     u16 sw;

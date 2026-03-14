@@ -23,4 +23,9 @@ void Setup_Save_Replay_2nd(struct _TASK* task_ptr, s16 /* unused */);
 s32 Setup_Final_Cursor_Pos(s8 cursor_x, s16 dir);
 void Default_Training_Data(s32 flag);
 
+/// Re-activate TASK_MENU at the Network_Lobby input loop (RmlUI mode).
+/// Called when returning from a casual room match to the network lobby,
+/// where Soft_Reset_Sub() has killed the menu task.
+void Menu_ReenterNetworkLobby(void);
+
 #endif

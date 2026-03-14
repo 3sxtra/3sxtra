@@ -22,6 +22,7 @@ extern "C" {
 #include "netplay/netplay.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/menu/menu.h"
 #include "structs.h"
 } // extern "C"
 
@@ -718,6 +719,10 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 // Leave Room — go back to network lobby
                 LobbyServer_LeaveRoom(s_room_code.c_str());
                 rmlui_casual_lobby_hide();
+                // Restore the menu task to the network lobby input loop.
+                // Soft_Reset_Sub() killed TASK_MENU during the match exit;
+                // without this, the lobby has no input processing.
+                Menu_ReenterNetworkLobby();
                 rmlui_network_lobby_show();
             }
         }
