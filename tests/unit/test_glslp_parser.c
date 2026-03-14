@@ -177,6 +177,62 @@ static void test_sb_append_empty_string(void** state) {
     free(sb.data);
 }
 
+/* 7. GLSLP_RemovePass — valid middle removal */
+static void test_remove_pass_valid(void **state) {
+    (void) state;
+    GLSLP_Preset preset;
+    memset(&preset, 0, sizeof(preset));
+
+    preset.pass_count = 3;
+    strcpy(preset.passes[0].path, "pass0.glsl");
+    strcpy(preset.passes[1].path, "pass1.glsl");
+    strcpy(preset.passes[2].path, "pass2.glsl");
+
+    GLSLP_RemovePass(&preset, 1);
+
+    assert_int_equal(preset.pass_count, 2);
+    assert_string_equal(preset.passes[0].path, "pass0.glsl");
+    assert_string_equal(preset.passes[1].path, "pass2.glsl");
+    /* The last slot should be cleared */
+    assert_string_equal(preset.passes[2].path, "");
+}
+
+/* 8. GLSLP_RemovePass — out-of-bounds low index */
+static void test_remove_pass_out_of_bounds_low(void **state) {
+    (void) state;
+    GLSLP_Preset preset;
+    memset(&preset, 0, sizeof(preset));
+
+    preset.pass_count = 3;
+    strcpy(preset.passes[0].path, "pass0.glsl");
+
+    GLSLP_RemovePass(&preset, -1);
+
+    assert_int_equal(preset.pass_count, 3);
+    assert_string_equal(preset.passes[0].path, "pass0.glsl");
+}
+
+/* 9. GLSLP_RemovePass — out-of-bounds high index */
+static void test_remove_pass_out_of_bounds_high(void **state) {
+    (void) state;
+    GLSLP_Preset preset;
+    memset(&preset, 0, sizeof(preset));
+
+    preset.pass_count = 3;
+    strcpy(preset.passes[0].path, "pass0.glsl");
+
+    GLSLP_RemovePass(&preset, 3);
+
+    assert_int_equal(preset.pass_count, 3);
+    assert_string_equal(preset.passes[0].path, "pass0.glsl");
+}
+
+/* 10. GLSLP_RemovePass — null preset */
+static void test_remove_pass_null_preset(void **state) {
+    (void) state;
+    GLSLP_RemovePass(NULL, 0);
+}
+
 /* ── Runner ─────────────────────────────────────────────────────────── */
 
 int main(void) {
@@ -188,6 +244,10 @@ int main(void) {
         cmocka_unit_test(test_parse_bool_invalid_values),
         cmocka_unit_test(test_parse_scale_type_unexpected),
         cmocka_unit_test(test_sb_append_empty_string),
+        cmocka_unit_test(test_remove_pass_valid),
+        cmocka_unit_test(test_remove_pass_out_of_bounds_low),
+        cmocka_unit_test(test_remove_pass_out_of_bounds_high),
+        cmocka_unit_test(test_remove_pass_null_preset),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

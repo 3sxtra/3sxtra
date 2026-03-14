@@ -454,7 +454,7 @@ bool GLSLP_Append(GLSLP_Preset* dst, const GLSLP_Preset* src) {
 // ── Remove Pass ───────────────────────────────────────────────────
 
 void GLSLP_RemovePass(GLSLP_Preset* preset, int index) {
-    if (index < 0 || index >= preset->pass_count)
+    if (!preset || index < 0 || index >= preset->pass_count)
         return;
 
     // Shift passes down
