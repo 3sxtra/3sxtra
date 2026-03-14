@@ -36,7 +36,7 @@
 
 /* Macro: skip SSPutStr if entry text RmlUi is active, or if the RmlUi network/casual lobby is open */
 #define ENTRY_TEXT_GATED                                                                                               \
-    ((use_rmlui && rmlui_screen_entry_text) || rmlui_wrapper_is_game_document_visible("network_lobby") ||               \
+    ((use_rmlui && rmlui_screen_entry_text) || rmlui_wrapper_is_game_document_visible("network_lobby") ||              \
      rmlui_casual_lobby_is_visible())
 
 u8 letter_stack[40];

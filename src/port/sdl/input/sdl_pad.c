@@ -8,8 +8,8 @@
  * rumble passthrough.
  */
 #include "port/sdl/input/sdl_pad.h"
-#include "port/sdl/input/controller_image.h"
 #include "port/input_definition.h"
+#include "port/sdl/input/controller_image.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>

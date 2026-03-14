@@ -13,20 +13,20 @@
  * 4 random hex characters.
  */
 #include "identity.h"
-#include "sha256.h"
 #include "port/config/config.h"
+#include "sha256.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <string.h>
 
-#define IDENTITY_KEY_BYTES  32
-#define IDENTITY_HEX_LEN   (IDENTITY_KEY_BYTES * 2)  /* 64 hex chars */
-#define PLAYER_ID_LEN       16                         /* first 16 hex chars */
+#define IDENTITY_KEY_BYTES 32
+#define IDENTITY_HEX_LEN (IDENTITY_KEY_BYTES * 2) /* 64 hex chars */
+#define PLAYER_ID_LEN 16                          /* first 16 hex chars */
 
 static bool initialized = false;
-static char public_key_hex[IDENTITY_HEX_LEN + 1];  /* 64 chars + null */
+static char public_key_hex[IDENTITY_HEX_LEN + 1]; /* 64 chars + null */
 static char secret_key_hex[IDENTITY_HEX_LEN + 1];
-static char player_id[PLAYER_ID_LEN + 1];           /* 16 chars + null */
+static char player_id[PLAYER_ID_LEN + 1]; /* 16 chars + null */
 static char display_name[32];
 
 /* Convert a byte array to a hex string */
@@ -58,7 +58,8 @@ static void generate_random_bytes(uint8_t* buf, size_t len) {
     for (size_t i = 0; i < len; i += 4) {
         uint32_t r = SDL_rand_bits();
         size_t remaining = len - i;
-        if (remaining > 4) remaining = 4;
+        if (remaining > 4)
+            remaining = 4;
         memcpy(buf + i, &r, remaining);
     }
 }
@@ -97,8 +98,10 @@ static bool load_identity(void) {
 
     /* Validate that both are valid hex */
     uint8_t tmp[32];
-    if (hex_to_bytes(pub, tmp, 32) != 32) return false;
-    if (hex_to_bytes(sec, tmp, 32) != 32) return false;
+    if (hex_to_bytes(pub, tmp, 32) != 32)
+        return false;
+    if (hex_to_bytes(sec, tmp, 32) != 32)
+        return false;
 
     SDL_strlcpy(public_key_hex, pub, sizeof(public_key_hex));
     SDL_strlcpy(secret_key_hex, sec, sizeof(secret_key_hex));
@@ -150,7 +153,8 @@ const char* Identity_GetDisplayName(void) {
 }
 
 void Identity_SetDisplayName(const char* name) {
-    if (!name || !name[0]) return;
+    if (!name || !name[0])
+        return;
     SDL_strlcpy(display_name, name, sizeof(display_name));
     Config_SetString(CFG_KEY_LOBBY_DISPLAY_NAME, display_name);
     Config_Save();

@@ -40,6 +40,7 @@
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/rmlui/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui/rmlui_button_config.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "port/sdl/rmlui/rmlui_continue.h"
 #include "port/sdl/rmlui/rmlui_control_mapping.h"
@@ -49,13 +50,12 @@
 #include "port/sdl/rmlui/rmlui_game_hud.h"
 #include "port/sdl/rmlui/rmlui_game_option.h"
 #include "port/sdl/rmlui/rmlui_gameover.h"
+#include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_memory_card.h"
 #include "port/sdl/rmlui/rmlui_mode_menu.h"
 #include "port/sdl/rmlui/rmlui_name_entry.h"
 #include "port/sdl/rmlui/rmlui_netplay_ui.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
-#include "port/sdl/rmlui/rmlui_casual_lobby.h"
-#include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_option_menu.h"
 #include "port/sdl/rmlui/rmlui_pause_overlay.h"
 #include "port/sdl/rmlui/rmlui_replay_picker.h"
@@ -72,8 +72,8 @@
 #include "port/training_menu.h"
 
 int g_resolution_scale = 1;
-#include "port/sdl/input/sdl_pad.h"
 #include "port/sdl/input/controller_image.h"
+#include "port/sdl/input/sdl_pad.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/sdl/renderer/sdl_text_renderer.h"
@@ -427,23 +427,23 @@ int SDLApp_Init() {
         // this fallback the swapchain silently stays at FIFO (60fps cap).
         vsync_enabled = false;
         {
-            SDL_GPUPresentMode mode = SDL_GPU_PRESENTMODE_VSYNC;  // worst-case default
+            SDL_GPUPresentMode mode = SDL_GPU_PRESENTMODE_VSYNC; // worst-case default
             if (SDL_WindowSupportsGPUPresentMode(gpu_device, window, SDL_GPU_PRESENTMODE_IMMEDIATE)) {
                 mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
             } else if (SDL_WindowSupportsGPUPresentMode(gpu_device, window, SDL_GPU_PRESENTMODE_MAILBOX)) {
                 mode = SDL_GPU_PRESENTMODE_MAILBOX;
             }
 
-            const char* mode_name = (mode == SDL_GPU_PRESENTMODE_IMMEDIATE)  ? "IMMEDIATE"
-                                    : (mode == SDL_GPU_PRESENTMODE_MAILBOX)  ? "MAILBOX"
-                                                                             : "VSYNC (FIFO)";
-            if (SDL_SetGPUSwapchainParameters(
-                    gpu_device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, mode)) {
+            const char* mode_name = (mode == SDL_GPU_PRESENTMODE_IMMEDIATE) ? "IMMEDIATE"
+                                    : (mode == SDL_GPU_PRESENTMODE_MAILBOX) ? "MAILBOX"
+                                                                            : "VSYNC (FIFO)";
+            if (SDL_SetGPUSwapchainParameters(gpu_device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, mode)) {
                 SDL_Log("VSync: OFF — present mode %s (SDL_GPU, native pacing)", mode_name);
             } else {
                 SDL_LogWarn(SDL_LOG_CATEGORY_RENDER,
                             "Failed to set present mode %s: %s — falling back to default",
-                            mode_name, SDL_GetError());
+                            mode_name,
+                            SDL_GetError());
             }
         }
     } else if (g_renderer_backend == RENDERER_OPENGL) {
@@ -744,8 +744,8 @@ void SDLApp_BeginFrame() {
     // Game documents have their own update/render path (rmlui_wrapper_update_game
     // / rmlui_wrapper_render_game) — do NOT include rmlui_wrapper_any_game_visible()
     // here, as it would trigger the GL3 renderer for zero window documents.
-    bool rmlui_active = use_rmlui || show_menu || show_shader_menu ||
-                        show_mods_menu || show_stage_config_menu || show_training_menu || show_dev_overlay;
+    bool rmlui_active = use_rmlui || show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
+                        show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_new_frame();
     }
@@ -809,8 +809,8 @@ static void render_overlays(int win_w, int win_h) {
      * ⚡ Pi4: do NOT include rmlui_wrapper_any_game_visible() here — game
      * documents use their own separate render path. Including it would
      * activate the GL3 renderer every frame for zero visible windows. */
-    bool rmlui_active = use_rmlui || show_menu || show_shader_menu ||
-                        show_mods_menu || show_stage_config_menu || show_training_menu || show_dev_overlay;
+    bool rmlui_active = use_rmlui || show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
+                        show_training_menu || show_dev_overlay;
     if (rmlui_active) {
         rmlui_wrapper_render();
     }

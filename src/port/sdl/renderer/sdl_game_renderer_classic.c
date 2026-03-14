@@ -496,7 +496,8 @@ void SDLGameRendererClassic_UnlockPalette(unsigned int ph) {
 
 void SDLGameRendererClassic_SetTexture(unsigned int th) {
     // Fast path: skip all work (including Tracy) when texture handle unchanged
-    if (th == cl_current_th && cl_current_texture != NULL) return;
+    if (th == cl_current_th && cl_current_texture != NULL)
+        return;
 
     const int texture_handle = LO_16_BITS(th);
     const int palette_handle = HI_16_BITS(th);

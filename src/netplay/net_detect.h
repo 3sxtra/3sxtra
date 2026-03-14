@@ -14,8 +14,8 @@ extern "C" {
 #endif
 
 /// Connection type string constants
-#define NET_CONN_WIFI    "wifi"
-#define NET_CONN_WIRED   "wired"
+#define NET_CONN_WIFI "wifi"
+#define NET_CONN_WIRED "wired"
 #define NET_CONN_UNKNOWN "unknown"
 
 /// Detect the connection type of the active default-route network interface.

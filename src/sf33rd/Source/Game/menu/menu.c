@@ -85,13 +85,13 @@
 
 /* RmlUi Phase 3 bypass — per-component toggles + menu replacements */
 #include "port/sdl/rmlui/rmlui_button_config.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "port/sdl/rmlui/rmlui_exit_confirm.h"
 #include "port/sdl/rmlui/rmlui_extra_option.h"
 #include "port/sdl/rmlui/rmlui_game_option.h"
 #include "port/sdl/rmlui/rmlui_memory_card.h"
 #include "port/sdl/rmlui/rmlui_mode_menu.h"
-#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/rmlui/rmlui_option_menu.h"
@@ -698,12 +698,12 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 task_ptr->r_no[2] = 4; /* jump to leaderboard phase */
             } else if (Menu_Cursor_Y[0] == 1) {
                 /* LOCAL NETWORK — jump to LAN-only lobby phase */
-                task_ptr->free[2] = 2; /* 2=lan-only */
+                task_ptr->free[2] = 2;  /* 2=lan-only */
                 task_ptr->r_no[2] = 20; /* jump to LAN-only lobby phase */
             } else {
                 /* LOBBY MODE (0) — always use RmlUI lobby */
-                task_ptr->free[2] = 1; /* 1=rmlui */
-                task_ptr->r_no[2] = 10;               /* jump to lobby phase */
+                task_ptr->free[2] = 1;  /* 1=rmlui */
+                task_ptr->r_no[2] = 10; /* jump to lobby phase */
             }
         }
         break;
@@ -960,13 +960,19 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
                     /* Cycle through: 0(off) → 50 → 100 → 150 → 200 → 0 */
                     if (click & 4) { /* left */
-                        if (cur <= 0) cur = 200;
-                        else if (cur <= 50) cur = 0;
-                        else cur -= 50;
+                        if (cur <= 0)
+                            cur = 200;
+                        else if (cur <= 50)
+                            cur = 0;
+                        else
+                            cur -= 50;
                     } else { /* right */
-                        if (cur >= 200) cur = 0;
-                        else if (cur <= 0) cur = 50;
-                        else cur += 50;
+                        if (cur >= 200)
+                            cur = 0;
+                        else if (cur <= 0)
+                            cur = 50;
+                        else
+                            cur += 50;
                     }
                     Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
                     Config_Save();
@@ -1262,9 +1268,12 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     }
                     case 5: { /* MAX PING cycle */
                         int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
-                        if (cur >= 200) cur = 0;
-                        else if (cur <= 0) cur = 50;
-                        else cur += 50;
+                        if (cur >= 200)
+                            cur = 0;
+                        else if (cur <= 0)
+                            cur = 50;
+                        else
+                            cur += 50;
                         Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
                         Config_Save();
                         SE_selected();
@@ -1453,16 +1462,22 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[69], (uintptr_t)acol[0].color, 0);
 
             /* White top border */
-            ap[0].x = -2;  ap[0].y = 14;
-            ap[1].x = 386; ap[1].y = 14;
-            ap[2].x = -2;  ap[2].y = 15;
-            ap[3].x = 386; ap[3].y = 15;
+            ap[0].x = -2;
+            ap[0].y = 14;
+            ap[1].x = 386;
+            ap[1].y = 14;
+            ap[2].x = -2;
+            ap[2].y = 15;
+            ap[3].x = 386;
+            ap[3].y = 15;
             acol[0].color = acol[1].color = acol[2].color = acol[3].color = 0xFFFFFFFF;
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
 
             /* White bottom border */
-            ap[0].y = 41; ap[1].y = 41;
-            ap[2].y = 42; ap[3].y = 42;
+            ap[0].y = 41;
+            ap[1].y = 41;
+            ap[2].y = 42;
+            ap[3].y = 42;
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
         }
 
@@ -1579,10 +1594,14 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             {
                 PAL_CURSOR_P dp[4];
                 PAL_CURSOR_COL dcol[4];
-                dp[0].x = -2;  dp[0].y = 175;
-                dp[1].x = 386; dp[1].y = 175;
-                dp[2].x = -2;  dp[2].y = 213;
-                dp[3].x = 386; dp[3].y = 213;
+                dp[0].x = -2;
+                dp[0].y = 175;
+                dp[1].x = 386;
+                dp[1].y = 175;
+                dp[2].x = -2;
+                dp[2].y = 213;
+                dp[3].x = 386;
+                dp[3].y = 213;
                 dcol[0].color = dcol[1].color = dcol[2].color = dcol[3].color = 0x80202020;
                 Renderer_Queue2DPrimitive((f32*)dp, PrioBase[70], (uintptr_t)dcol[0].color, 0);
             }

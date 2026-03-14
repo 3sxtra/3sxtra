@@ -121,9 +121,7 @@ const char* ControllerImage_Module_GetDeviceType(int slot) {
     return ControllerImage_GetDeviceType(s_devices[slot]);
 }
 
-SDL_Surface* ControllerImage_Module_CreateButtonSurface(int slot,
-                                                         SDL_GamepadButton button,
-                                                         int size) {
+SDL_Surface* ControllerImage_Module_CreateButtonSurface(int slot, SDL_GamepadButton button, int size) {
     if (!s_initialized || slot < 0 || slot >= CONTROLLER_IMAGE_MAX_SLOTS) {
         return NULL;
     }
@@ -133,9 +131,7 @@ SDL_Surface* ControllerImage_Module_CreateButtonSurface(int slot,
     return ControllerImage_CreateSurfaceForButton(s_devices[slot], button, size);
 }
 
-SDL_Surface* ControllerImage_Module_CreateAxisSurface(int slot,
-                                                       SDL_GamepadAxis axis,
-                                                       int size) {
+SDL_Surface* ControllerImage_Module_CreateAxisSurface(int slot, SDL_GamepadAxis axis, int size) {
     if (!s_initialized || slot < 0 || slot >= CONTROLLER_IMAGE_MAX_SLOTS) {
         return NULL;
     }

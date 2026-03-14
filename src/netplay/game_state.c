@@ -1717,20 +1717,37 @@ void dump_desync_state(int frame, uint32_t local_checksum, uint32_t remote_check
         fprintf(f, "sizeof(PLW): %zu  sizeof(State): %zu\n\n", sizeof(PLW), sizeof(State));
 
         fprintf(f, "--- Per-section checksums (ring buffer) ---\n");
-        fprintf(f, "%8s  %10s  %10s  %10s  %10s  %10s  %10s  %10s\n",
-                "frame", "combined", "plw0", "plw1", "globals", "bg", "tasks", "effects");
+        fprintf(f,
+                "%8s  %10s  %10s  %10s  %10s  %10s  %10s  %10s\n",
+                "frame",
+                "combined",
+                "plw0",
+                "plw1",
+                "globals",
+                "bg",
+                "tasks",
+                "effects");
 
         // Print a window of frames around the desync
         const int window = STATE_BUFFER_MAX;
         for (int i = 0; i < window; i++) {
             int f_idx = (frame - window + 1 + i);
-            if (f_idx < 0) continue;
+            if (f_idx < 0)
+                continue;
             int s = f_idx % STATE_BUFFER_MAX;
             const SectionedChecksum* sc = &saved_section_checksums[s];
             const char* marker = (f_idx == frame) ? " <== DESYNC" : "";
-            fprintf(f, "%8d  0x%08x  0x%08x  0x%08x  0x%08x  0x%08x  0x%08x  0x%08x%s\n",
-                    f_idx, sc->combined, sc->plw0, sc->plw1, sc->globals,
-                    sc->bg, sc->tasks, sc->effects, marker);
+            fprintf(f,
+                    "%8d  0x%08x  0x%08x  0x%08x  0x%08x  0x%08x  0x%08x  0x%08x%s\n",
+                    f_idx,
+                    sc->combined,
+                    sc->plw0,
+                    sc->plw1,
+                    sc->globals,
+                    sc->bg,
+                    sc->tasks,
+                    sc->effects,
+                    marker);
         }
         fclose(f);
         SDL_Log("[desync] Wrote section checksums to %s", path);

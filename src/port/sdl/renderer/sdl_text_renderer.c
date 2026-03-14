@@ -139,7 +139,8 @@ void SDLTextRenderer_DrawDebugBuffer(float target_width, float target_height) {
 
     for (u32 i = 0; i < flDebugStrCtr; i++) {
         RenderBuffer* ch = &rb[i];
-        if (ch->code < 0x20 || ch->code > 0x7F) continue;
+        if (ch->code < 0x20 || ch->code > 0x7F)
+            continue;
 
         u8 cr = (ch->col >> 16) & 0xFF;
         u8 cg = (ch->col >> 8) & 0xFF;
@@ -153,7 +154,8 @@ void SDLTextRenderer_DrawDebugBuffer(float target_width, float target_height) {
         char text[2] = { (char)ch->code, '\0' };
 
         SDLTextRenderer_DrawText(text, px + 1, py + 1, scale, 0.0f, 0.0f, 0.0f, target_width, target_height);
-        SDLTextRenderer_DrawText(text, px, py, scale, cr / 255.0f, cg / 255.0f, cb / 255.0f, target_width, target_height);
+        SDLTextRenderer_DrawText(
+            text, px, py, scale, cr / 255.0f, cg / 255.0f, cb / 255.0f, target_width, target_height);
     }
 
     SDLTextRenderer_SetBackgroundEnabled(1);

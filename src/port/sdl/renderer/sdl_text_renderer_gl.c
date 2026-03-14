@@ -200,8 +200,8 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
     float current_rx = 0;
     float current_ry = 0;
 
-    // ⚡ Bolt: Batched character rendering — eliminates O(N) glDrawArrays and glBufferSubData calls
-    #define MAX_BATCH_CHARS 1024
+// ⚡ Bolt: Batched character rendering — eliminates O(N) glDrawArrays and glBufferSubData calls
+#define MAX_BATCH_CHARS 1024
     static float batch_vertices[MAX_BATCH_CHARS * 6 * 4];
     int batch_count = 0;
 
@@ -277,7 +277,7 @@ void SDLTextRendererGL_DrawText(const char* text, float x, float y, float scale,
         glDrawArrays(GL_TRIANGLES, 0, batch_count * 6);
     }
 
-    #undef MAX_BATCH_CHARS
+#undef MAX_BATCH_CHARS
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindVertexArray(0);
@@ -294,12 +294,16 @@ void SDLTextRendererGL_Flush(void) {
 // Renders the entire PS2 debug text buffer with just 2 draw calls (shadow + foreground)
 // instead of 2×N individual DrawText calls (each with ~20 GL state changes).
 // On Pi4 V3D with 200 characters, this cuts GL calls from ~8,000 to ~30.
-void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale,
-                                      float target_width, float target_height) {
-    if (count <= 0 || !buffer) return;
+void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale, float target_width,
+                                      float target_height) {
+    if (count <= 0 || !buffer)
+        return;
 
     // Match the PS2 flPrint buffer layout
-    typedef struct { uint16_t x, y; uint32_t code, col; } DebugChar;
+    typedef struct {
+        uint16_t x, y;
+        uint32_t code, col;
+    } DebugChar;
     const DebugChar* chars = (const DebugChar*)buffer;
 
     // --- ONE-TIME GL STATE SETUP ---
@@ -307,12 +311,10 @@ void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glUseProgram(s_text_shader);
 
-    const float projection[4][4] = {
-        { 2.0f / target_width, 0.0f, 0.0f, 0.0f },
-        { 0.0f, -2.0f / target_height, 0.0f, 0.0f },
-        { 0.0f, 0.0f, -1.0f, 0.0f },
-        { -1.0f, 1.0f, 0.0f, 1.0f }
-    };
+    const float projection[4][4] = { { 2.0f / target_width, 0.0f, 0.0f, 0.0f },
+                                     { 0.0f, -2.0f / target_height, 0.0f, 0.0f },
+                                     { 0.0f, 0.0f, -1.0f, 0.0f },
+                                     { -1.0f, 1.0f, 0.0f, 1.0f } };
     glUniformMatrix4fv(s_text_loc_projection, 1, GL_FALSE, &projection[0][0]);
     glBindTexture(GL_TEXTURE_2D, s_font_atlas.texture_id);
     glBindVertexArray(s_text_vao);
@@ -329,8 +331,10 @@ void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale
         int n = 0;
         for (int i = 0; i < count; i++) {
             unsigned char ch = (unsigned char)chars[i].code;
-            if (ch < 0x20 || ch > 0x7F) continue;
-            if (ch >= 128) ch = 127;
+            if (ch < 0x20 || ch > 0x7F)
+                continue;
+            if (ch >= 128)
+                ch = 127;
 
             float u0 = (ch % 16) * 8.0f / s_font_atlas.width;
             float v0 = (ch / 16) * 8.0f / s_font_atlas.height;
@@ -343,12 +347,30 @@ void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale
             float y1 = y0 + glyph_h * scale;
 
             int o = n * 24;
-            verts[o+ 0]=x0; verts[o+ 1]=y1; verts[o+ 2]=u0; verts[o+ 3]=v1;
-            verts[o+ 4]=x1; verts[o+ 5]=y1; verts[o+ 6]=u1; verts[o+ 7]=v1;
-            verts[o+ 8]=x1; verts[o+ 9]=y0; verts[o+10]=u1; verts[o+11]=v0;
-            verts[o+12]=x1; verts[o+13]=y0; verts[o+14]=u1; verts[o+15]=v0;
-            verts[o+16]=x0; verts[o+17]=y0; verts[o+18]=u0; verts[o+19]=v0;
-            verts[o+20]=x0; verts[o+21]=y1; verts[o+22]=u0; verts[o+23]=v1;
+            verts[o + 0] = x0;
+            verts[o + 1] = y1;
+            verts[o + 2] = u0;
+            verts[o + 3] = v1;
+            verts[o + 4] = x1;
+            verts[o + 5] = y1;
+            verts[o + 6] = u1;
+            verts[o + 7] = v1;
+            verts[o + 8] = x1;
+            verts[o + 9] = y0;
+            verts[o + 10] = u1;
+            verts[o + 11] = v0;
+            verts[o + 12] = x1;
+            verts[o + 13] = y0;
+            verts[o + 14] = u1;
+            verts[o + 15] = v0;
+            verts[o + 16] = x0;
+            verts[o + 17] = y0;
+            verts[o + 18] = u0;
+            verts[o + 19] = v0;
+            verts[o + 20] = x0;
+            verts[o + 21] = y1;
+            verts[o + 22] = u0;
+            verts[o + 23] = v1;
             n++;
 
             if (n >= 1024) {
@@ -390,7 +412,8 @@ void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale
                 n = 0;
             }
 
-            if (i == count || !printable_char) continue;
+            if (i == count || !printable_char)
+                continue;
 
             // Set color uniform on change
             if (col != current_col) {
@@ -406,7 +429,8 @@ void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale
             }
 
             unsigned char ch = (unsigned char)chars[i].code;
-            if (ch >= 128) ch = 127;
+            if (ch >= 128)
+                ch = 127;
             if (n >= 1024) {
                 glBufferData(GL_ARRAY_BUFFER, n * 24 * sizeof(float), verts, GL_STREAM_DRAW);
                 glDrawArrays(GL_TRIANGLES, 0, n * 6);
@@ -424,12 +448,30 @@ void SDLTextRendererGL_DrawDebugChars(const void* buffer, int count, float scale
             float y1 = y0 + glyph_h * scale;
 
             int o = n * 24;
-            verts[o+ 0]=x0; verts[o+ 1]=y1; verts[o+ 2]=u0; verts[o+ 3]=v1;
-            verts[o+ 4]=x1; verts[o+ 5]=y1; verts[o+ 6]=u1; verts[o+ 7]=v1;
-            verts[o+ 8]=x1; verts[o+ 9]=y0; verts[o+10]=u1; verts[o+11]=v0;
-            verts[o+12]=x1; verts[o+13]=y0; verts[o+14]=u1; verts[o+15]=v0;
-            verts[o+16]=x0; verts[o+17]=y0; verts[o+18]=u0; verts[o+19]=v0;
-            verts[o+20]=x0; verts[o+21]=y1; verts[o+22]=u0; verts[o+23]=v1;
+            verts[o + 0] = x0;
+            verts[o + 1] = y1;
+            verts[o + 2] = u0;
+            verts[o + 3] = v1;
+            verts[o + 4] = x1;
+            verts[o + 5] = y1;
+            verts[o + 6] = u1;
+            verts[o + 7] = v1;
+            verts[o + 8] = x1;
+            verts[o + 9] = y0;
+            verts[o + 10] = u1;
+            verts[o + 11] = v0;
+            verts[o + 12] = x1;
+            verts[o + 13] = y0;
+            verts[o + 14] = u1;
+            verts[o + 15] = v0;
+            verts[o + 16] = x0;
+            verts[o + 17] = y0;
+            verts[o + 18] = u0;
+            verts[o + 19] = v0;
+            verts[o + 20] = x0;
+            verts[o + 21] = y1;
+            verts[o + 22] = u0;
+            verts[o + 23] = v1;
             n++;
         }
     }
