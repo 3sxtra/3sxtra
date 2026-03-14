@@ -137,11 +137,12 @@
 
 .peer-panel {
     display: block;
+    margin-top: 2dp;
     margin-bottom: 3dp;
     background-color: rgba(0, 6, 28, 180);
     border-width: 1dp;
     border-color: rgba(80, 120, 220, 70);
-    padding: 2dp 4dp 3dp 4dp;
+    padding: 0dp 4dp 3dp 4dp;
 }
 
 .peer-panel-header {

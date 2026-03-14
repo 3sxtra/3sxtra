@@ -733,6 +733,11 @@ static void ensure_fonts_loaded(void) {
     if (!Rml::LoadFontFace(font_noto.c_str(), true)) {
         SDL_Log("[RmlUi] Failed to load font: %s", font_noto.c_str());
     }
+
+    std::string font_emoji = s_ui_base_path + "../NotoEmoji-Regular.ttf";
+    if (!Rml::LoadFontFace(font_emoji.c_str(), true)) {
+        SDL_Log("[RmlUi] Failed to load emoji font: %s", font_emoji.c_str());
+    }
 }
 
 extern "C" void rmlui_wrapper_show_document(const char* name) {

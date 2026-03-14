@@ -57,13 +57,13 @@
     display: block;
     position: absolute;
     left: 210dp;
-    top: 19dp;
+    top: 21dp;
     right: 4dp;
     bottom: 16dp;
     background-color: rgba(0, 6, 28, 180);
     border-width: 1dp;
     border-color: rgba(80, 120, 220, 70);
-    padding: 2dp 2dp 2dp 4dp;
+    padding: 0dp 2dp 2dp 4dp;
 }
 
 /* ─── Section headers ────────────────────────────────────────── */
@@ -83,11 +83,12 @@
 
 #active-match-panel {
     display: block;
+    margin-top: 2dp;
     margin-bottom: 4dp;
     background-color: rgba(10, 10, 15, 200);
     border-width: 1dp;
     border-color: rgba(100, 100, 100, 80);
-    padding: 2dp 4dp;
+    padding: 0dp 4dp 2dp 4dp;
 }
 
 #active-match-panel.active {
