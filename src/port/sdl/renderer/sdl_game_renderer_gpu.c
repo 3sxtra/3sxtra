@@ -635,7 +635,7 @@ void SDLGameRendererGPU_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         }
 
         // --- Inlined draw_quad with pre-computed color ---
-        float layer = 0.0f;
+        float layer = -1.0f; // Sentinel: shader uses FgColor when no texture bound
         float uv_sx = 1.0f, uv_sy = 1.0f;
 
         if (texture_count > 0) {
