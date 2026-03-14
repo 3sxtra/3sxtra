@@ -158,11 +158,19 @@ static void setup_vs_mode() {
     // if new fields are added to GameState in the future.
     // ====================================================================
     {
+        // Preserve task scheduler state — func_adrs, condition, r_no, and
+        // callback_adrs are needed for the game engine to keep running.
+        // The task-specific zeroing (timer/free) is done separately below.
+        struct _TASK task_backup[11];
+        SDL_memcpy(task_backup, task, sizeof(task));
+
         GameState* zeroed = (GameState*)SDL_calloc(1, sizeof(GameState));
         if (zeroed) {
             GameState_Load(zeroed);
             SDL_free(zeroed);
         }
+
+        SDL_memcpy(task, task_backup, sizeof(task));
     }
 
     // Task timers and scratch data evolve independently per peer during menus.

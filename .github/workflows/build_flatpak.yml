@@ -34,7 +34,7 @@ jobs:
                 bundle: 3sx.flatpak
                 cache: true
                 cache-key: flatpak-builder-${{ github.sha }}
-                restore-cache: flatpak-builder-
+                restore-cache: true
 
           - name: Upload release artifact
             if: ${{ inputs.release }}
