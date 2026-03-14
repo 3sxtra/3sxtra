@@ -144,34 +144,21 @@ static void clean_input_buffers() {
  */
 static void setup_vs_mode() {
     // ====================================================================
-    // PHASE 0: Zero ALL snapshotted game state via GameState_Load.
+    // PHASE 0: Zero per-player and combat subsystem state.
     //
     // When connecting from the network lobby, the game engine may have been
     // running under the RmlUI overlay (attract mode, demo, etc.), leaving
-    // stale data scattered across PLW[], zanzou, super gauge, command
-    // processor, combo tracking, grade/stun/vital, and slow-motion state.
+    // stale data in PLW[] and related player subsystems.
     // The native LAN lobby doesn't hit this because the menu system goes
     // through a proper fade-destroy-reinit cycle.
     //
-    // GameState_Load() writes every rollback-tracked global from a struct.
-    // Loading a zeroed struct zeros them all in one shot — self-maintaining
-    // if new fields are added to GameState in the future.
+    // We only zero player/combat state — NOT engine globals (G_No, Country,
+    // task routing, etc.) because step_game() runs during TRANSITIONING
+    // to advance the game state machine (G_No[1]: 12→1).
     // ====================================================================
-    {
-        // Preserve task scheduler state — func_adrs, condition, r_no, and
-        // callback_adrs are needed for the game engine to keep running.
-        // The task-specific zeroing (timer/free) is done separately below.
-        struct _TASK task_backup[11];
-        SDL_memcpy(task_backup, task, sizeof(task));
-
-        GameState* zeroed = (GameState*)SDL_calloc(1, sizeof(GameState));
-        if (zeroed) {
-            GameState_Load(zeroed);
-            SDL_free(zeroed);
-        }
-
-        SDL_memcpy(task, task_backup, sizeof(task));
-    }
+    SDL_zeroa(plw);
+    SDL_zeroa(zanzou_table);
+    SDL_zeroa(super_arts);
 
     // Task timers and scratch data evolve independently per peer during menus.
     // Zero them for deterministic start. DO NOT zero r_no or condition —
