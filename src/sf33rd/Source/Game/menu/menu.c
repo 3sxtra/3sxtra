@@ -1295,6 +1295,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     SE_selected();
                     break;
                 case 0x200:
+                    Discovery_DismissChallenger(ip_peers[lan_challenger].instance_id);
                     SE_selected();
                     break;
                 default:
@@ -1782,6 +1783,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     SE_selected();
                     break;
                 case 0x200:
+                    Discovery_DismissChallenger(ip_peers[lan_challenger].instance_id);
                     SE_selected();
                     break;
                 default:

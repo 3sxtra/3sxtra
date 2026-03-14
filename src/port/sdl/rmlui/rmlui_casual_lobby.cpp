@@ -232,15 +232,22 @@ static void apply_room_state_to_model(void) {
     s_match_p1_name = "Player 1";
     s_match_p2_name = "Player 2";
 
+    // Only consider ourselves "playing" if the server reports us in a match
+    // AND the local netplay session is actually running. Without this check,
+    // stale server match data (e.g. from a previous session) would block input.
+    NetplaySessionState ns = Netplay_GetSessionState();
+    bool locally_in_match = (ns == NETPLAY_SESSION_RUNNING || ns == NETPLAY_SESSION_CONNECTING ||
+                             ns == NETPLAY_SESSION_TRANSITIONING);
+
     for (int i = 0; i < s_room_state.player_count; i++) {
         if (strcmp(s_room_state.players[i].player_id, s_room_state.match_p1) == 0) {
             s_match_p1_name = s_room_state.players[i].display_name;
-            if (s_room_state.players[i].player_id == s_my_id)
+            if (locally_in_match && s_room_state.players[i].player_id == s_my_id)
                 s_is_playing = true;
         }
         if (strcmp(s_room_state.players[i].player_id, s_room_state.match_p2) == 0) {
             s_match_p2_name = s_room_state.players[i].display_name;
-            if (s_room_state.players[i].player_id == s_my_id)
+            if (locally_in_match && s_room_state.players[i].player_id == s_my_id)
                 s_is_playing = true;
         }
     }
@@ -647,12 +654,29 @@ extern "C" void rmlui_casual_lobby_update(void) {
 
     // --- Input Navigation ---
     if (s_is_playing || s_is_spectating || s_match_ended_pending_reshow) {
+        static Uint64 last_diag = 0;
+        Uint64 now_d = SDL_GetTicks();
+        if (now_d - last_diag > 1000) {
+            last_diag = now_d;
+            SDL_Log("[CasualLobby] Input BLOCKED: playing=%d spectating=%d pending_reshow=%d",
+                    s_is_playing, s_is_spectating, s_match_ended_pending_reshow);
+        }
         return; // Suspend lobby navigation while match is active or cleanup pending
     }
 
     u16 trigger = 0;
     for (int i = 0; i < 2; i++) {
         trigger |= (~PLsw[i][1] & PLsw[i][0]);
+    }
+
+    {
+        static Uint64 last_diag2 = 0;
+        Uint64 now_d2 = SDL_GetTicks();
+        if (now_d2 - last_diag2 > 2000) {
+            last_diag2 = now_d2;
+            SDL_Log("[CasualLobby] PLsw[0]={0x%04x,0x%04x} PLsw[1]={0x%04x,0x%04x} trigger=0x%04x",
+                    PLsw[0][0], PLsw[0][1], PLsw[1][0], PLsw[1][1], trigger);
+        }
     }
 
     int prev_x = s_cursor_x;

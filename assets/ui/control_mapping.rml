@@ -19,7 +19,7 @@
                 <div data-if="p1_mappings.size > 0">
                     <div data-for="m : p1_mappings" class="mapping-row">
                         <span class="map-action">{{m.action}}</span>
-                        <span class="map-arrow">→</span>
+                        <span class="map-arrow">=></span>
                         <span class="map-input">{{m.input}}</span>
                     </div>
                 </div>
@@ -83,7 +83,7 @@
                 <div data-if="p2_mappings.size > 0">
                     <div data-for="m : p2_mappings" class="mapping-row">
                         <span class="map-action">{{m.action}}</span>
-                        <span class="map-arrow">→</span>
+                        <span class="map-arrow">=></span>
                         <span class="map-input">{{m.input}}</span>
                     </div>
                 </div>

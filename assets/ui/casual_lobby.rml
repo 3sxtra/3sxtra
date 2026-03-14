@@ -34,10 +34,10 @@
                 </div>
                 <!-- Spectate Button (only visible if you aren't playing and not already spectating) -->
                 <div id="btn-spectate" data-if="!is_playing && match_active && !is_spectating" data-class-focused="cursor_x == 0 && cursor_y == 0">
-                    <span class="btn-icon">▶</span> SPECTATE MATCH
+                    SPECTATE MATCH
                 </div>
                 <div id="spectating-indicator" data-if="is_spectating" class="spectating-badge">
-                    <span class="btn-icon">👁</span> SPECTATING...
+                    [LIVE] SPECTATING...
                 </div>
                 <div id="match-idle" data-if="!match_active">CABINET OPEN — JOIN QUEUE TO PLAY</div>
             </div>
@@ -78,7 +78,7 @@
                          data-attr-src="'../flags_icons/' + pl.country + '.png'"
                          class="player-flag"/>
                     <span class="player-list-name">{{pl.name}}</span>
-                    <span class="player-status" data-if="pl.is_playing">&#x2694;</span>
+                    <span class="player-status" data-if="pl.is_playing">[VS]</span>
                     <span class="player-status" data-if="pl.is_queued &amp;&amp; !pl.is_playing">&#x23F3;</span>
                 </div>
             </div>

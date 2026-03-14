@@ -31,6 +31,10 @@ uint32_t Discovery_GetLocalInstanceID(void);
 
 int Discovery_GetPeers(NetplayDiscoveredPeer* out_peers, int max_peers);
 
+/// Dismiss a LAN challenger so the incoming challenge popup is suppressed.
+/// The dismissal auto-clears if the peer stops challenging and re-challenges later.
+void Discovery_DismissChallenger(uint32_t instance_id);
+
 #ifdef __cplusplus
 }
 #endif

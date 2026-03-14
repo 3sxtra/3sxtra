@@ -15,7 +15,7 @@
         <div class="section">
             <div class="section-header">
                 <h2>DOCUMENTS</h2>
-                <button class="btn-sm" data-event-click="refresh_docs">↻ Refresh</button>
+                <button class="btn-sm" data-event-click="refresh_docs">Refresh</button>
             </div>
             <div class="doc-list" data-if="doc_count > 0">
                 <div data-for="doc : doc_list"
@@ -25,8 +25,8 @@
                      data-event-click="select_doc(doc.index)">
                     <span class="doc-ctx">{{doc.context_label}}</span>
                     <span class="doc-name">{{doc.name}}</span>
-                    <span class="doc-vis" data-if="doc.visible">●</span>
-                    <span class="doc-vis-off" data-if="!doc.visible">○</span>
+                    <span class="doc-vis" data-if="doc.visible">[ON]</span>
+                    <span class="doc-vis-off" data-if="!doc.visible">[--]</span>
                 </div>
             </div>
             <p class="status-hint" data-if="doc_count == 0">No documents loaded. Click Refresh.</p>

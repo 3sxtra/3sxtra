@@ -27,7 +27,7 @@
             <div id="timer-block">
                 <div class="timer-digits" data-class-timer-flash="timer_flash">
                     <span data-if="!timer_infinite">{{round_timer}}</span>
-                    <span data-if="timer_infinite">∞</span>
+                    <span data-if="timer_infinite">--</span>
                 </div>
             </div>
 

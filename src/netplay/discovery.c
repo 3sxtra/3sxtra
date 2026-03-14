@@ -51,6 +51,27 @@ static uint32_t local_challenge_target = 0; // 0 = no target
 static NetplayDiscoveredPeer peers[MAX_PEERS];
 static int num_peers = 0;
 
+// Dismissed challengers — their is_challenging_me is suppressed until they
+// stop challenging and re-challenge later.
+#define MAX_DISMISSED 8
+static uint32_t dismissed_ids[MAX_DISMISSED];
+static int num_dismissed = 0;
+
+static bool is_dismissed(uint32_t id) {
+    for (int i = 0; i < num_dismissed; i++)
+        if (dismissed_ids[i] == id) return true;
+    return false;
+}
+
+static void remove_dismissed(uint32_t id) {
+    for (int i = 0; i < num_dismissed; i++) {
+        if (dismissed_ids[i] == id) {
+            dismissed_ids[i] = dismissed_ids[--num_dismissed];
+            return;
+        }
+    }
+}
+
 static void set_nonblocking(int sock) {
 #ifdef _WIN32
     u_long mode = 1;
@@ -333,7 +354,12 @@ void Discovery_Update() {
                             peers[i].last_seen_ticks = now;
                             peers[i].wants_auto_connect = (peer_auto == 1);
                             peers[i].peer_ready = (peer_rdy == 1);
-                            peers[i].is_challenging_me = (peer_challenge == local_instance_id);
+                            {
+                                bool challenging = (peer_challenge == local_instance_id);
+                                if (!challenging)
+                                    remove_dismissed(peer_instance_id); // auto-clear so re-challenge shows popup
+                                peers[i].is_challenging_me = challenging && !is_dismissed(peer_instance_id);
+                            }
                             peers[i].ft_value = peer_ft;
                             if (peer_display_name[0])
                                 SDL_strlcpy(peers[i].display_name, peer_display_name, sizeof(peers[i].display_name));
@@ -347,7 +373,12 @@ void Discovery_Update() {
                         p->instance_id = peer_instance_id;
                         p->wants_auto_connect = (peer_auto == 1);
                         p->peer_ready = (peer_rdy == 1);
-                        p->is_challenging_me = (peer_challenge == local_instance_id);
+                        {
+                            bool challenging = (peer_challenge == local_instance_id);
+                            if (!challenging)
+                                remove_dismissed(peer_instance_id);
+                            p->is_challenging_me = challenging && !is_dismissed(peer_instance_id);
+                        }
                         p->ft_value = peer_ft;
                         snprintf(p->name, sizeof(p->name), "%s:%hu", ip_str, peer_port);
                         snprintf(p->display_name, sizeof(p->display_name), "%s", peer_display_name);
@@ -392,4 +423,22 @@ uint32_t Discovery_GetChallengeTarget(void) {
 
 uint32_t Discovery_GetLocalInstanceID(void) {
     return local_instance_id;
+}
+
+void Discovery_DismissChallenger(uint32_t instance_id) {
+    if (instance_id == 0 || is_dismissed(instance_id))
+        return;
+    if (num_dismissed < MAX_DISMISSED) {
+        dismissed_ids[num_dismissed++] = instance_id;
+    } else {
+        // Overwrite oldest entry
+        dismissed_ids[0] = instance_id;
+    }
+    // Immediately suppress on the cached peer entry
+    for (int i = 0; i < num_peers; i++) {
+        if (peers[i].instance_id == instance_id) {
+            peers[i].is_challenging_me = false;
+            break;
+        }
+    }
 }

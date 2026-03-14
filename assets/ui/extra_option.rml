@@ -10,9 +10,9 @@
             <span>EXTRA OPTION</span>
         </div>
         <div class="page-indicator">
-            <span class="page-arrow">◄</span>
+            <span class="page-arrow"><<</span>
             <span class="page-num">PAGE {{ extra_page + 1 }} / 4</span>
-            <span class="page-arrow">►</span>
+            <span class="page-arrow">>></span>
         </div>
 
         <div class="option-list">
@@ -47,7 +47,7 @@
         </div>
 
         <div class="footer-hint">
-            <span>◄ ► CHANGE PAGE   ◀ ▶ CHANGE VALUE</span>
+            <span><< >> CHANGE PAGE   << >> CHANGE VALUE</span>
         </div>
     </div>
 </body>

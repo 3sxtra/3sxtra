@@ -163,11 +163,11 @@
             <div class="popup-region" data-if="popup_region != ''">{{popup_region}}</div>
             <div class="popup-ft" data-if="popup_ft != ''">{{popup_ft}}</div>
             <div class="popup-actions" data-if="popup_is_incoming">
-                <span class="popup-accept">● ACCEPT</span>
-                <span class="popup-decline">● DECLINE</span>
+                <span class="popup-accept">[LP] ACCEPT</span>
+                <span class="popup-decline">[MK] DECLINE</span>
             </div>
             <div class="popup-actions" data-if="!popup_is_incoming">
-                <span class="popup-cancel">● CANCEL</span>
+                <span class="popup-cancel">[MK] CANCEL</span>
             </div>
         </div>
     </div>

@@ -8,7 +8,7 @@
 <div id="match-accept-panel" data-if="proposal_active">
 
     <!-- Title -->
-    <div id="ma-title">⚔ MATCH FOUND! ⚔</div>
+    <div id="ma-title">>> MATCH FOUND! <<</div>
 
     <!-- Opponent Info -->
     <div id="ma-opponent-section">

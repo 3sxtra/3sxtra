@@ -729,11 +729,17 @@ static void ensure_fonts_loaded(void) {
         return;
     s_deferred_init_done = true;
 
+    // NotoSansJP loaded as PRIMARY (non-fallback) so CSS font-family
+    // "Noto Sans JP Thin" matches it directly.  This prevents BoldPixels
+    // from claiming Unicode codepoints it cannot render (geometric shapes,
+    // arrows, etc.) and blocking the fallback chain.
     std::string font_noto = s_ui_base_path + "../NotoSansJP-Regular.ttf";
-    if (!Rml::LoadFontFace(font_noto.c_str(), true)) {
+    if (!Rml::LoadFontFace(font_noto.c_str(), false)) {
         SDL_Log("[RmlUi] Failed to load font: %s", font_noto.c_str());
     }
 
+    // NotoEmoji loaded as FALLBACK for emoji codepoints (⏳🔧📋📶🔌❓ etc.)
+    // that NotoSansJP doesn't cover.
     std::string font_emoji = s_ui_base_path + "../NotoEmoji-Regular.ttf";
     if (!Rml::LoadFontFace(font_emoji.c_str(), true)) {
         SDL_Log("[RmlUi] Failed to load emoji font: %s", font_emoji.c_str());

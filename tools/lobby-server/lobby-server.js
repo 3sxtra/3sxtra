@@ -618,8 +618,27 @@ const cleanupTimer = setInterval(() => {
                 broadcastRoomEvent(room, 'leave', { player_id: staleId });
             }
 
+            // Detect zombie matches: match players evicted or gone
+            if (room.match && (room.match.state === 'playing' || room.match.state === 'proposed')) {
+                const p1Gone = !room.players.includes(room.match.p1);
+                const p2Gone = !room.players.includes(room.match.p2);
+                if (p1Gone || p2Gone) {
+                    console.log(`[room] clearing zombie match in ${code}: ` +
+                        `p1=${room.match.p1} (${p1Gone ? 'gone' : 'here'}), ` +
+                        `p2=${room.match.p2} (${p2Gone ? 'gone' : 'here'})`);
+                    if (!p1Gone) room.queue.unshift(room.match.p1);
+                    if (!p2Gone) room.queue.unshift(room.match.p2);
+                    room.match = null;
+                    broadcastRoomEvent(room, 'match_end', {
+                        winner_id: '', reason: 'abandoned'
+                    });
+                }
+            }
+
             if (room.players.length === 0) {
                 if (room.permanent) {
+                    room.match = null;
+                    room.queue = [];
                     console.log(`[room] ${code} empty but kept (permanent)`);
                 } else {
                     console.log(`[room] ${code} auto-closed (all players stale)`);
