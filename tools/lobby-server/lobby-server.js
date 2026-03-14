@@ -476,20 +476,12 @@ const cleanupTimer = setInterval(() => {
             for (const staleId of evictedIds) {
                 if (!room.players.includes(staleId)) continue;
 
-                // Handle active/proposed match forfeit
-                if (room.match && (room.match.p1 === staleId || room.match.p2 === staleId)) {
-                    const other = room.match.p1 === staleId ? room.match.p2 : room.match.p1;
-                    if (room.match.state === 'proposed') {
-                        room.match = null;
-                        room.queue.unshift(other);
-                    } else if (room.match.state === 'playing') {
-                        broadcastRoomEvent(room, 'match_end', {
-                            winner_id: other, winner_name: getPlayerName(other),
-                            loser_id: staleId, reason: 'disconnect'
-                        });
-                        room.queue.unshift(other);
-                        room.match = null;
-                    }
+                // Don't evict players who are in an active or proposed match —
+                // their presence heartbeat stops during gameplay but they're
+                // still connected via SSE and will rejoin presence afterward.
+                if (room.match && (room.match.state === 'playing' || room.match.state === 'proposed') &&
+                    (room.match.p1 === staleId || room.match.p2 === staleId)) {
+                    continue;
                 }
 
                 room.players = room.players.filter(p => p !== staleId);

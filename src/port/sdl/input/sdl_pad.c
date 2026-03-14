@@ -8,6 +8,7 @@
  * rumble passthrough.
  */
 #include "port/sdl/input/sdl_pad.h"
+#include "port/sdl/input/controller_image.h"
 #include "port/input_definition.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
@@ -147,6 +148,7 @@ static void handle_gamepad_added_event(SDL_GamepadDeviceEvent* event) {
         input_source->type = SDLPAD_INPUT_GAMEPAD;
         input_source->gamepad.gamepad = gamepad;
         SDL_Log("Opened gamepad at input_source index %d", i);
+        ControllerImage_Module_OnGamepadAdded(gamepad, i);
         break;
     }
 
@@ -164,6 +166,7 @@ static void handle_gamepad_removed_event(SDL_GamepadDeviceEvent* event) {
     }
 
     SDLPad_InputSource* input_source = &input_sources[index];
+    ControllerImage_Module_OnGamepadRemoved(index);
     SDL_CloseGamepad(input_source->gamepad.gamepad);
     input_source->type = SDLPAD_INPUT_NONE;
     memset(&button_state[index], 0, sizeof(SDLPad_ButtonState));

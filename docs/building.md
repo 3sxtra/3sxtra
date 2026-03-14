@@ -59,7 +59,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ## 2. Building Dependencies
 
 `build-deps.sh` clones and builds all third-party libraries:
-SDL3, SDL3_mixer, SDL3_image, FreeType, Lua 5.4, RmlUi, GekkoNet, librashader, GLAD, SIMDe, stb, Spout2, SDL_shadercross, and slang-shaders.
+SDL3, SDL3_mixer, SDL3_image, FreeType, Lua 5.4, RmlUi, GekkoNet, ControllerImage, librashader, GLAD, SIMDe, stb, Spout2, SDL_shadercross, and slang-shaders.
 
 ```bash
 ./build-deps.sh

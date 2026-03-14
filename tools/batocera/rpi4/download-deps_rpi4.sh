@@ -223,4 +223,16 @@ else
     git clone --depth 1 https://github.com/HeatXD/GekkoNet.git "$GEKKONET_DIR"
 fi
 
+# -----------------------------
+# ControllerImage (controller button glyphs)
+# -----------------------------
+
+CTRLIMG_DIR="$THIRD_PARTY/controllerimage"
+
+if [ -d "$CTRLIMG_DIR" ]; then
+    echo "ControllerImage already exists."
+else
+    git clone --depth 1 https://github.com/icculus/ControllerImage.git "$CTRLIMG_DIR"
+fi
+
 echo "All sources downloaded to $THIRD_PARTY"

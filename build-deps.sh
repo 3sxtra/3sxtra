@@ -136,6 +136,20 @@ else
 fi
 
 # -----------------------------
+# ControllerImage (controller button glyphs)
+# -----------------------------
+
+CTRLIMG_DIR="$THIRD_PARTY/controllerimage"
+
+if [ -d "$CTRLIMG_DIR" ]; then
+    echo "ControllerImage already exists at $CTRLIMG_DIR"
+else
+    echo "Cloning ControllerImage..."
+    git clone --depth 1 https://github.com/icculus/ControllerImage.git "$CTRLIMG_DIR"
+    echo "ControllerImage cloned to $CTRLIMG_DIR"
+fi
+
+# -----------------------------
 # Spout2 (Windows video broadcast)
 # -----------------------------
 

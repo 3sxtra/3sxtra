@@ -477,9 +477,11 @@ extern "C" void rmlui_casual_lobby_update(void) {
         }
     }
 
-    // Fallback poll every 3 seconds in case SSE drops or isn't connected
+    // Fallback poll every 3 seconds in case SSE drops or isn't connected.
+    // Skip during active match — we don't want a transient 404 to tear down
+    // the room UI while gameplay is running.
     Uint64 now = SDL_GetTicks();
-    if (now - s_last_poll_time > 3000) {
+    if (now - s_last_poll_time > 3000 && !s_is_playing) {
         s_last_poll_time = now;
         if (!LobbyServer_SSEIsConnected()) {
             refresh_room_state_from_server();

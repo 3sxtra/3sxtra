@@ -931,24 +931,25 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
         glViewport(0, 0, win_w, win_h);
     }
 
-    // Width-based dp_ratio: fonts rasterize at high resolution.
-    // Context dims are scaled by dp_ratio so dp-based RCSS fills the context.
-    // The GameViewportGL3 adapter maps this logical space to the physical 4:3 viewport,
-    // applying the CPS3 9/7 vertical PAR stretch automatically.
-    const float dp_ratio = view_w / (float)GAME_W;
+    // Use independent X/Y dp ratios so UI elements map 1:1 to physical pixels
+    // without the CPS3 9/7 PAR stretch that the game canvas gets.
+    // The smaller ratio ensures the UI fits within the viewport.
+    const float dp_x = view_w / (float)GAME_W;
+    const float dp_y = view_h / (float)GAME_H;
+    const float dp_ratio = (dp_x < dp_y) ? dp_x : dp_y;
     s_game_context->SetDensityIndependentPixelRatio(dp_ratio);
 
-    // Compute PAR correction factor: the viewport adapter applies m_sy/m_sx vertical
-    // stretch (9/7 ≈ 1.286 at 4:3). Portrait images need the inverse to stay square.
-    // par_correct_y = m_sx / m_sy = (view_w / ctx_w) / (view_h / ctx_h)
-    //               = (view_w * GAME_H) / (view_h * GAME_W)
+    // PAR correction factor for portrait images (e.g. char select).
+    // In 4:3 modes this is 7/9 ≈ 0.778; in square-pixel mode it is 1.0.
     if (view_h > 0.0f)
         s_par_correct_y = (view_w * (float)GAME_H) / (view_h * (float)GAME_W);
     else
         s_par_correct_y = 1.0f;
 
-    const int ctx_w = (int)(GAME_W * dp_ratio + 0.5f); // = view_w
-    const int ctx_h = (int)(GAME_H * dp_ratio + 0.5f); // = 224 * view_w / 384
+    // Context dimensions match the physical viewport so the viewport
+    // adapter scales 1:1 (no PAR distortion on UI elements).
+    const int ctx_w = (int)(view_w + 0.5f);
+    const int ctx_h = (int)(view_h + 0.5f);
     s_game_context->SetDimensions(Rml::Vector2i(ctx_w, ctx_h));
 
     const int phys_w = (int)(view_w + 0.5f);

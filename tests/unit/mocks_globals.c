@@ -7,8 +7,11 @@
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "structs.h"
 #include "types.h"
+#include "configuration.h"
 
 // Mocks for globals defined in other .c files, needed for unit tests linking game_state.c
+
+Configuration configuration = { .netplay = { .port = 20002 } };
 
 s16 SLOW_timer;
 s16 SLOW_flag;

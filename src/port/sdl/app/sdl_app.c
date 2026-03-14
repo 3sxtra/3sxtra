@@ -73,6 +73,7 @@
 
 int g_resolution_scale = 1;
 #include "port/sdl/input/sdl_pad.h"
+#include "port/sdl/input/controller_image.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/sdl/renderer/sdl_text_renderer.h"
@@ -494,6 +495,9 @@ int SDLApp_Init() {
     // Initialize pads
     SDLPad_Init();
 
+    // Initialize ControllerImage for controller button glyphs
+    ControllerImage_Module_Init();
+
     Broadcast_Initialize();
 
     char* base_path = SDL_GetBasePath();
@@ -683,6 +687,7 @@ void SDLApp_Quit() {
 
     Config_Save();
     Config_Destroy();
+    ControllerImage_Module_Quit();
     SDL_DestroyWindow(window);
     SDL_Quit();
 }

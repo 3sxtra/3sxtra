@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <setjmp.h>
 #include <stdint.h>
+#include <stdio.h>   /* Must come before cmocka/identity.c to avoid MinGW snprintf ASM label conflict */
 #include <cmocka.h>
 #include <string.h>
 

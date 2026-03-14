@@ -30,8 +30,6 @@ struct _SAVE_W save_w[6];
 int player_1 = 0;
 int player_2 = 1;
 
-#include "configuration.h"
-Configuration configuration = { .netplay = { .port = 20002 } };
 
 void njUserMain(void) {}
 
@@ -59,7 +57,7 @@ void GameState_Load(const GameState* src) {}
 void Discovery_Init(bool auto_connect) {}
 void Discovery_SetReady(bool ready) {}
 void Discovery_SetChallengeTarget(uint32_t instance_id) {}
-int Discovery_GetChallengeTarget(void) { return 0; }
+uint32_t Discovery_GetChallengeTarget(void) { return 0; }
 void Discovery_Update() {}
 void Discovery_Shutdown() {}
 uint32_t Discovery_GetLocalInstanceID(void) { return 1234; }

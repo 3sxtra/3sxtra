@@ -964,9 +964,24 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
         lobby_poll_server();
 
     } else {
-        // Reset lobby state when not in lobby
-        if (SDL_GetAtomicInt(&lobby_async_state) != LOBBY_ASYNC_IDLE) {
-            lobby_reset();
+        // Don't tear down lobby when we're mid-match inside a casual room —
+        // we still need presence heartbeat to keep server membership alive.
+        const char* active_room = rmlui_casual_lobby_get_room_code();
+        if (active_room && active_room[0]) {
+            // Keep heartbeat alive for room membership during casual match
+            uint32_t now = SDL_GetTicks();
+            if (lobby_server_registered && lobby_my_player_id[0] &&
+                now - lobby_server_last_poll >= LOBBY_POLL_INTERVAL_MS) {
+                const char* display = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
+                if (!display || !display[0]) display = my_room_code;
+                AsyncUpdatePresence(lobby_my_player_id, display, my_room_code, "");
+                lobby_server_last_poll = now;
+            }
+        } else {
+            // No active casual room — safe to tear down
+            if (SDL_GetAtomicInt(&lobby_async_state) != LOBBY_ASYNC_IDLE) {
+                lobby_reset();
+            }
         }
     }
 

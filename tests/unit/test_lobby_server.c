@@ -11,6 +11,17 @@ const char* Config_GetString(const char* key) {
     return (const char*)mock();
 }
 
+/* Stubs for Identity module — lobby_server.c calls these for room management */
+static bool mock_identity_initialized = false;
+static char mock_identity_player_id[32] = "test_player_1234";
+static char mock_identity_display[32] = "TestPlayer";
+static char mock_identity_pubkey[65] = "0000000000000000000000000000000000000000000000000000000000000000";
+
+bool Identity_IsInitialized(void) { return mock_identity_initialized; }
+const char* Identity_GetPlayerId(void) { return mock_identity_player_id; }
+const char* Identity_GetDisplayName(void) { return mock_identity_display; }
+const char* Identity_GetPublicKeyHex(void) { return mock_identity_pubkey; }
+
 /* Include the source file to access static variables directly */
 #include "../../src/netplay/lobby_server.c"
 

@@ -159,6 +159,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/include/sdk
     ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include
     ${THIRD_PARTY_DIR}/stb
+    ${THIRD_PARTY_DIR}/controllerimage/src
 
     ${THIRD_PARTY_DIR}/librashader/include
     ${THIRD_PARTY_DIR}/simde
@@ -222,6 +223,15 @@ set_source_files_properties(src/port/win32/broadcast_spout.cpp
         CXX_CLANG_TIDY ""
 )
 
+# ControllerImage library: suppress warnings for vendored source
+set_source_files_properties(
+    ${THIRD_PARTY_DIR}/controllerimage/src/controllerimage.c
+    PROPERTIES
+        COMPILE_OPTIONS "-Wno-error"
+        SKIP_LINTING ON
+        C_CLANG_TIDY ""
+)
+
 # RmlUi backend sources: suppress warnings and set SDL3 version
 set_source_files_properties(
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
@@ -275,6 +285,9 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/sdl/renderer/sdl_texture_util.cpp
     # --- sdl/input/ ---
     src/port/sdl/input/control_mapping.cpp
+    src/port/sdl/input/controller_image.c
+    # --- ControllerImage library (vendored) ---
+    ${THIRD_PARTY_DIR}/controllerimage/src/controllerimage.c
     # --- port/ (unchanged locations) ---
     src/port/input_definition.cpp
     src/port/ui/replay_picker.cpp
