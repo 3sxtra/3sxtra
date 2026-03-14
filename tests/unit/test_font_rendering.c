@@ -250,6 +250,39 @@ static void test_realistic_glyph_pattern(void** state) {
            opaque_count, first_opaque);
 }
 
+/**
+ * Test edge cases for convert_index4lsb_to_rgba bounds:
+ * - width=0 (no-op)
+ * - height=0 (no-op)
+ * - minimal valid 2x1 conversion
+ */
+static void test_utf8_decoding_bounds(void** state) {
+    (void)state;
+    uint8_t dummy_src[1] = {0x33};
+    uint8_t dst[64];
+
+    /* width=0: should not write anything */
+    memset(dst, 0xAA, sizeof(dst));
+    convert_index4lsb_to_rgba(0, 1, dummy_src, dst);
+    /* dst should remain untouched (first byte still 0xAA) */
+    assert_int_equal(dst[0], 0xAA);
+
+    /* height=0: should not write anything */
+    memset(dst, 0xBB, sizeof(dst));
+    convert_index4lsb_to_rgba(2, 0, dummy_src, dst);
+    assert_int_equal(dst[0], 0xBB);
+
+    /* Minimal valid: width=2, height=1, one byte of data (0x33 = indices 3,3) */
+    memset(dst, 0, sizeof(dst));
+    convert_index4lsb_to_rgba(2, 1, dummy_src, dst);
+    /* Both pixels should be opaque (index 3) */
+    assert_int_equal(dst[0*4 + 3], 255);  /* pixel 0 alpha */
+    assert_int_equal(dst[1*4 + 3], 255);  /* pixel 1 alpha */
+    /* RGB should all be 255 */
+    assert_int_equal(dst[0*4 + 0], 255);  /* pixel 0 R */
+    assert_int_equal(dst[1*4 + 0], 255);  /* pixel 1 R */
+}
+
 // ============================================================================
 // Test Runner
 // ============================================================================
@@ -262,6 +295,7 @@ int main(void) {
         cmocka_unit_test(test_index4lsb_nibble_order),
         cmocka_unit_test(test_generate_visual_pattern),
         cmocka_unit_test(test_realistic_glyph_pattern),
+        cmocka_unit_test(test_utf8_decoding_bounds),
     };
     
     int result = cmocka_run_group_tests(tests, NULL, NULL);

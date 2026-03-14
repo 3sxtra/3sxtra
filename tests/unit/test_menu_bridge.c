@@ -121,12 +121,37 @@ static void test_step_gate_no_active_gate(void **state) {
     assert_true(1);
 }
 
+/* Test MenuBridge_Init with a custom shm_suffix.
+   The resulting SHM name should be "3SX_MENU_BRIDGE_SHM_test_suffix". */
+static void test_bridge_init_with_suffix(void **state) {
+    (void) state;
+
+    #ifdef _WIN32
+    MenuBridge_Init("test_suffix");
+
+    HANDLE hMapFile = OpenFileMappingA(
+        FILE_MAP_READ,
+        FALSE,
+        MENU_BRIDGE_SHM_NAME "_test_suffix"
+    );
+
+    assert_non_null(hMapFile);
+
+    if (hMapFile) {
+        CloseHandle(hMapFile);
+    }
+    #else
+    skip();
+    #endif
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_struct_packing),
         cmocka_unit_test(test_bridge_init_creates_shm),
         /* Task 5 addition */
         cmocka_unit_test(test_step_gate_no_active_gate),
+        cmocka_unit_test(test_bridge_init_with_suffix),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

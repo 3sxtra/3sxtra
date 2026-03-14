@@ -647,6 +647,8 @@ extern "C" void rmlui_wrapper_render(void) {
 #ifdef PLATFORM_RPI4
         // ⚡ Pi4 fast path — skip glGet* state backup + FBO blit
         s_render_gl3->BeginFrameDirect();
+        // Ensure the backbuffer covers the full window for UI overlays
+        glViewport(0, 0, s_window_w, s_window_h);
         s_window_context->Render();
         s_render_gl3->EndFrameDirect();
         // Restore minimal GL state for game renderer
@@ -969,6 +971,9 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
         // ⚡ Pi4 fast path — skip glGet* state backup + FBO blit
 #ifdef PLATFORM_RPI4
         s_render_gl3->BeginFrameDirect();
+        // Constrain direct backbuffer rendering to the letterbox viewport
+        // (BeginFrameDirect skips FBOs so it relies on the active GL viewport)
+        glViewport(off_x, off_y, phys_w, phys_h);
         s_game_context->Render();
         s_render_gl3->EndFrameDirect();
 #else

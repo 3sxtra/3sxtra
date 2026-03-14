@@ -324,3 +324,7 @@ target_include_directories(test_stage_config PRIVATE
 
 add_unit_test(test_afs_validation test_afs_validation.c)
 target_include_directories(test_afs_validation PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
+add_unit_test(test_glslp_parser test_glslp_parser.c)
+target_include_directories(test_glslp_parser PRIVATE ${PROJECT_SOURCE_DIR}/src ${SDL3_ROOT}/include)
+target_link_sdl3(test_glslp_parser)

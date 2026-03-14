@@ -34,6 +34,18 @@ static void test_is_portable_valid_range(void **state) {
     assert_true(result == 0 || result == 1);
 }
 
+/* Calling GetPrefPath twice returns the same stable, non-NULL pointer
+   even when no config/ folder exists beside the test binary. */
+static void test_pref_path_fallback_stable(void **state) {
+    (void) state;
+    const char* path1 = Paths_GetPrefPath();
+    assert_non_null(path1);
+    const char* path2 = Paths_GetPrefPath();
+    assert_non_null(path2);
+    /* Cached — should return the same pointer */
+    assert_ptr_equal(path1, path2);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_paths_get_pref_path),
@@ -41,6 +53,7 @@ int main(void) {
         /* Task 5 additions */
         cmocka_unit_test(test_is_portable_without_marker),
         cmocka_unit_test(test_is_portable_valid_range),
+        cmocka_unit_test(test_pref_path_fallback_stable),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

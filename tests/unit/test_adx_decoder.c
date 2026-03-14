@@ -70,6 +70,28 @@ static void test_adx_init_invalid_magic(void** state) {
     assert_int_equal(result, -1);
 }
 
+static void test_adx_init_magic_number_extended(void** state) {
+    (void)state;
+    ADXContext ctx;
+    u8 header[16] = {0};
+
+    /* 0x81 — close to valid but wrong */
+    header[0] = 0x81;
+    header[1] = 0x03;
+    header[3] = 0x0C;
+    header[5] = 18;
+    header[7] = 1;
+    assert_int_equal(ADX_InitContext(&ctx, header, 16), -1);
+
+    /* 0xFF */
+    header[0] = 0xFF;
+    assert_int_equal(ADX_InitContext(&ctx, header, 16), -1);
+
+    /* 0x7F */
+    header[0] = 0x7F;
+    assert_int_equal(ADX_InitContext(&ctx, header, 16), -1);
+}
+
 static void test_adx_init_too_small(void** state) {
     (void)state;
     ADXContext ctx;
@@ -157,6 +179,7 @@ int main(void) {
         cmocka_unit_test(test_adx_init_valid_mono),
         cmocka_unit_test(test_adx_init_valid_stereo),
         cmocka_unit_test(test_adx_init_invalid_magic),
+        cmocka_unit_test(test_adx_init_magic_number_extended),
         cmocka_unit_test(test_adx_init_too_small),
         cmocka_unit_test(test_adx_init_bad_channels),
         cmocka_unit_test(test_adx_decode_invalid_args),

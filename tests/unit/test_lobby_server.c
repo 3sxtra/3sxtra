@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <setjmp.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <cmocka.h>
 #include <string.h>
 
@@ -153,6 +154,26 @@ static void test_update_presence_not_connected(void **state) {
     assert_false(result);
 }
 
+/* Various lobby APIs should return failure/0 when not configured,
+   without hanging or crashing (timeout handling). */
+static void test_lobby_apis_not_configured(void **state) {
+    (void) state;
+    configured = false;
+
+    /* GetSearching returns 0 players */
+    LobbyPlayer players[4];
+    int count = LobbyServer_GetSearching(players, 4, NULL);
+    assert_int_equal(count, 0);
+
+    /* Leave returns false */
+    bool left = LobbyServer_Leave("test_player");
+    assert_false(left);
+
+    /* StartSearching returns false */
+    bool searching = LobbyServer_StartSearching("test_player");
+    assert_false(searching);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_with_defaults),
@@ -163,6 +184,7 @@ int main(void) {
         cmocka_unit_test(test_init_missing_key_from_config_uses_default),
         /* Task 5 addition */
         cmocka_unit_test(test_update_presence_not_connected),
+        cmocka_unit_test(test_lobby_apis_not_configured),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
