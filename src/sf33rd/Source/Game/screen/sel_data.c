@@ -155,7 +155,7 @@ const u8 Random_Stage_Data[2][32] = {
     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 2, 3, 4, 5, 6, 7, 8, 11, 12, 15, 16, 19, 0 }
 };
 
-const s16 Slide_Pos_Data_61[81][2] = {
+const s16 Slide_Pos_Data_61[82][2] = {
     { -120, 156 },
     { -104, 135 },
     { -88, 114 },
@@ -231,15 +231,16 @@ const s16 Slide_Pos_Data_61[81][2] = {
     { -150, 105 }, /* [71] AUTO-SEARCH (NET)     screen y≈129 */
     { -150, 91 },  /* [72] CONNECT (NET)         screen y≈143 */
     { -150, 69 },  /* [73] EXIT                  screen y≈155 */
-    /* Network Gateway strings [74-76] (3-item menu) */
-    { -88, 142 },  /* [74] LOBBY MODE     */
-    { -72, 112 },  /* [75] LOCAL NETWORK  */
-    { -56, 82 },   /* [76] EXIT           */
-    { -40, 62 },   /* [77] (unused)       */
-    /* LAN-only lobby strings [78-80] */
-    { -150, 157 }, /* [78] AUTO-CONN */
-    { -150, 133 }, /* [79] CONNECT   */
-    { -150, 109 }  /* [80] EXIT      */
+    /* Network Gateway strings [74-77] (4-item menu) */
+    { -96, 152 },  /* [74] LOBBY MODE     */
+    { -80, 128 },  /* [75] LOCAL NETWORK  */
+    { -64, 104 },  /* [76] LEADERBOARD    */
+    { -48, 80 },   /* [77] EXIT           */
+    { -32, 60 },   /* [78] (unused)       */
+    /* LAN-only lobby strings [79-81] */
+    { -150, 157 }, /* [79] AUTO-CONN */
+    { -150, 133 }, /* [80] CONNECT   */
+    { -150, 109 }  /* [81] EXIT      */
 };
 
 const s16 Slide_Pos_Data_63[5][2] = { { 40, 164 }, { 60, 142 }, { 80, 120 }, { 100, 98 }, { 120, 76 } };

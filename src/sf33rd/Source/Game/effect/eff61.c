@@ -6,6 +6,7 @@
 #include "sf33rd/Source/Game/effect/eff61.h"
 #include "common.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
+#include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
@@ -18,7 +19,7 @@ static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
 static void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */);
 static void EFF61_SUDDENLY(WORK_Other_CONN* ewk);
 
-const s8* Menu_Letter_Data[81] = { "ARCADE",
+const s8* Menu_Letter_Data[82] = { "ARCADE",
                                    "VERSUS",
                                    "TRAINING",
                                    "NETWORK",
@@ -94,9 +95,10 @@ const s8* Menu_Letter_Data[81] = { "ARCADE",
                                    "EXIT",
                                    "LOBBY MODE",
                                    "LOCAL NETWORK",
+                                   "LEADERBOARD",
                                    "EXIT",
                                    "EXIT",
-                                   /* LAN-only lobby strings [78-80] */
+                                   /* LAN-only lobby strings [79-81] */
                                    "AUTO-CONN",
                                    "CONNECT",
                                    "EXIT" };
@@ -151,9 +153,9 @@ void effect_61_move(WORK_Other_CONN* ewk) {
         ewk->wu.my_clear_level = 128;
     }
 
-    /* Lobby labels (char_index 68..73, 78..80): hide behind challenge popup */
+    /* Lobby labels (char_index 68..73, 79..81): hide behind challenge popup */
     if (((ewk->wu.char_index >= 68 && ewk->wu.char_index <= 73) ||
-         (ewk->wu.char_index >= 78 && ewk->wu.char_index <= 80)) &&
+         (ewk->wu.char_index >= 79 && ewk->wu.char_index <= 81)) &&
         (SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge())) {
         ewk->wu.my_clear_level = 255;
     }

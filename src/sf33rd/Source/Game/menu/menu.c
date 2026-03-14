@@ -92,6 +92,7 @@
 #include "port/sdl/rmlui/rmlui_memory_card.h"
 #include "port/sdl/rmlui/rmlui_mode_menu.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
+#include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/rmlui/rmlui_option_menu.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
@@ -645,10 +646,10 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         Order[0x70] = 1;
         Order_Dir[0x70] = 8;
         Order_Timer[0x70] = 1;
-        effect_04_init(1, 7, 0, 0x48); /* cursor type 7 = 3-item gateway */
+        effect_04_init(1, 7, 0, 0x48); /* cursor type 7 = 4-item gateway */
         {
-            s16 char_index = 74; /* 74=LOBBY MODE, 75=LOCAL NETWORK, 76=EXIT */
-            for (ix = 0; ix < 3; ix++) {
+            s16 char_index = 74; /* 74=LOBBY MODE, 75=LOCAL NETWORK, 76=LEADERBOARD, 77=EXIT */
+            for (ix = 0; ix < 4; ix++) {
                 effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x7047);
                 Order[ix + 0x50] = 1;
                 Order_Dir[ix + 0x50] = 4;
@@ -656,7 +657,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 char_index++;
             }
         }
-        Menu_Cursor_Move = 3;
+        Menu_Cursor_Move = 4;
         break;
 
     case 1:
@@ -670,15 +671,15 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         break;
 
     case 3:
-        /* Gateway input: pick LOBBY MODE / LOCAL NETWORK / EXIT */
-        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 2, 0xFF) == 0) {
-            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 2, 0xFF);
+        /* Gateway input: pick LOBBY MODE / LOCAL NETWORK / LEADERBOARD / EXIT */
+        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 3, 0xFF) == 0) {
+            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 3, 0xFF);
         }
 
         if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
             SE_selected();
 
-            if (Menu_Cursor_Y[0] == 2 || IO_Result == SWK_EAST) {
+            if (Menu_Cursor_Y[0] == 3 || IO_Result == SWK_EAST) {
                 /* EXIT — back to Mode_Select */
                 Menu_Suicide[0] = 0;
                 Menu_Suicide[1] = 1;
@@ -691,7 +692,11 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 break;
             }
 
-            if (Menu_Cursor_Y[0] == 1) {
+            if (Menu_Cursor_Y[0] == 2) {
+                /* LEADERBOARD — show RmlUI leaderboard overlay */
+                rmlui_leaderboard_show();
+                task_ptr->r_no[2] = 4; /* jump to leaderboard phase */
+            } else if (Menu_Cursor_Y[0] == 1) {
                 /* LOCAL NETWORK — jump to LAN-only lobby phase */
                 task_ptr->free[2] = 2; /* 2=lan-only */
                 task_ptr->r_no[2] = 20; /* jump to LAN-only lobby phase */
@@ -700,6 +705,19 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 task_ptr->free[2] = 1; /* 1=rmlui */
                 task_ptr->r_no[2] = 10;               /* jump to lobby phase */
             }
+        }
+        break;
+
+    /* ================================================================
+     * LEADERBOARD PHASE (cases 4–5): show/hide RmlUI leaderboard
+     * ================================================================ */
+    case 4:
+        /* Leaderboard is visible — wait for B / East to exit */
+        if (IO_Result == SWK_EAST) {
+            SE_selected();
+            rmlui_leaderboard_hide();
+            /* Return to gateway phase */
+            task_ptr->r_no[2] = 0;
         }
         break;
 
@@ -1359,7 +1377,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
         /* Menu items: 3 items (AUTO-CONN, CONNECT, EXIT), 0x70A7 = compact 8px font, master_player=1 */
         {
-            static const s16 lan_lobby_strings[] = { 78, 79, 80 };
+            static const s16 lan_lobby_strings[] = { 79, 80, 81 };
             for (ix = 0; ix < 3; ix++) {
                 effect_61_init(0, ix + 0x50, 0, 1, lan_lobby_strings[ix], ix, 0x70A7);
                 Order[ix + 0x50] = 1;

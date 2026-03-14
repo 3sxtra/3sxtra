@@ -7,7 +7,8 @@
     width: 80%;
     height: 82%;
     background-color: rgba(0, 0, 0, 0.85);
-    border: 2dp solid rgba(255, 200, 60, 0.6);
+    border-width: 2dp;
+    border-color: rgba(255, 200, 60, 0.6);
     padding: 12dp;
     box-sizing: border-box;
 }
@@ -17,7 +18,8 @@
     display: block;
     margin-bottom: 8dp;
     padding-bottom: 6dp;
-    border-bottom: 1dp solid rgba(255, 200, 60, 0.3);
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(255, 200, 60, 0.3);
 }
 #lb-title {
     font-size: 18dp;
@@ -53,7 +55,8 @@
     color: rgba(255, 255, 255, 0.4);
     margin-bottom: 4dp;
     padding-bottom: 4dp;
-    border-bottom: 1dp solid rgba(255, 255, 255, 0.1);
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
 .lb-row {
@@ -118,9 +121,9 @@
 /* Tier-specific rating colors */
 .lb-row.bronze .lb-col-rating   { color: #cd7f32; }
 .lb-row.silver .lb-col-rating   { color: #c0c0c0; }
-.lb-row.gold .lb-col-rating     { color: #ffd700; text-shadow: 1px 1px 2px rgba(255, 215, 0, 0.4); }
-.lb-row.plat .lb-col-rating     { color: #e5e4e2; font-weight: bold; text-shadow: 0px 0px 4px rgba(229, 228, 226, 0.5); }
-.lb-row.diamond .lb-col-rating  { color: #b9f2ff; font-weight: bold; text-shadow: 0px 0px 6px rgba(185, 242, 255, 0.6); }
+.lb-row.gold .lb-col-rating     { color: #ffd700; font-effect: shadow(1dp 1dp rgba(255, 215, 0, 0.4)); }
+.lb-row.plat .lb-col-rating     { color: #e5e4e2; font-weight: bold; font-effect: shadow(1dp 1dp rgba(229, 228, 226, 0.5)); }
+.lb-row.diamond .lb-col-rating  { color: #b9f2ff; font-weight: bold; font-effect: shadow(1dp 1dp rgba(185, 242, 255, 0.6)); }
 
 /* ── Empty state ── */
 #lb-empty {
@@ -136,7 +139,8 @@
     text-align: center;
     margin-top: 8dp;
     padding-top: 6dp;
-    border-top: 1dp solid rgba(255, 200, 60, 0.3);
+    border-top-width: 1dp;
+    border-top-color: rgba(255, 200, 60, 0.3);
     font-size: 12dp;
     color: rgba(255, 255, 255, 0.5);
 }
