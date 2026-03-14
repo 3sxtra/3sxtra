@@ -268,7 +268,7 @@ void all_cgps_put_back(WORK* wk) {
 
 /** @brief Transform and render a character using the current trans mode. */
 void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
-    TRACE_ZONE_NC("MtransDispatch", TRACE_COLOR_RENDER);
+
     if (mts_ok[wk->my_mts].be == 0) {
         // A display request was received before MTS initialization. MTS number: %d\n
         // Original text: "ＭＴＳの初期化前に表示要求が入りました。ＭＴＳ番号：%d\n"
@@ -278,12 +278,12 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
                  "\x81\x82\xaa\x93\xfc\x82\xe8\x82\xdc\x82\xb5\x82\xbd\x81\x42\x82\x6c\x82\x73\x82\x72\x94\xd4\x8d\x86"
                  "\x81\x46\x25\x64\x0a",
                  wk->my_mts);
-        TRACE_ZONE_END();
+
         return;
     }
 
     if (No_Trans) {
-        TRACE_ZONE_END();
+
         return;
     }
 
@@ -345,7 +345,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
 
         break;
     }
-    TRACE_ZONE_END();
+
 }
 
 /** @brief Look up and return the current color code for a character. */

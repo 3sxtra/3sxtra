@@ -310,7 +310,7 @@ static u16 x32_mapping_set(PatternMap* map, s32 code);
  */
 static void lz77_gpu_or_cpu(u8* src, u32 comp_bound, u32 size, MultiTexture* mt, s32 gix_base, s32 code, s32 pal_bits,
                             int is32) {
-    TRACE_ZONE_NC("LZ77:GpuOrCpu", TRACE_COLOR_RENDER);
+
     s_lz77_decode_count++;
 
     s32 code_offset = is32 ? (code >> 6) : (code >> 8);
@@ -328,14 +328,14 @@ static void lz77_gpu_or_cpu(u8* src, u32 comp_bound, u32 size, MultiTexture* mt,
         // will contain correct tile data (not stale/empty buffer content).
         lz_ext_p6_fx(src, mt->mltbuf, size);
         Renderer_UpdateTexture(gix_base + code_offset, mt->mltbuf, code_local, size, 0, 0);
-        TRACE_ZONE_END();
+
         return;
     }
 
     // CPU fallback
     lz_ext_p6_fx(src, mt->mltbuf, size);
     Renderer_UpdateTexture(gix_base + code_offset, mt->mltbuf, code_local, size, 0, 0);
-    TRACE_ZONE_END();
+
 }
 
 /** @brief Replace tile map entries matching a source code/attribute with new values. */
@@ -1213,7 +1213,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
  * `+"`u{26A1}`+" Opt4: Uses pre-built CG tile descriptors to skip the per-frame tile map walk.
  */
 void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
-    TRACE_ZONE_NC("mlt_obj_trans_cp3", TRACE_COLOR_RENDER);
+
     s32 rnum;
     s32 flip;
     s32 palo;
@@ -1226,7 +1226,7 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     if (mt->ext) {
         mlt_obj_trans_cp3_ext(mt, wk, base_y);
-        TRACE_ZONE_END();
+
         return;
     }
 
@@ -1312,7 +1312,7 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     seqs_w.up[mt->id] = 1;
     appRenewTempPriority(wk->position_z);
-    TRACE_ZONE_END();
+
 }
 
 /** @brief Transform and render in RGB mode (extended variant). */
@@ -1788,7 +1788,7 @@ void seqsAfterProcess() {
 
     if ((Debug_w[DEBUG_NO_DISP_TYPE_SB] != 3) && (seqs_w.sprTotal != 0)) {
         // Phase 1: Upload dirty texture data
-        TRACE_SUB_BEGIN("TexUpload");
+
         s32 dirty_count = 0;
         for (i = 0; i < SPRITE_LAYERS_MAX; i++) {
             if (seqs_w.up[i]) {
@@ -1804,7 +1804,7 @@ void seqsAfterProcess() {
             }
         }
         TRACE_PLOT_INT("DirtyTextures", dirty_count);
-        TRACE_SUB_END();
+
 
         if (seqs_w.sprMax < seqs_w.sprTotal) {
             seqs_w.sprMax = seqs_w.sprTotal;

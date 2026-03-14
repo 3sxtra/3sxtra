@@ -324,7 +324,9 @@ static char lobby_connect_to_intent[16] = { 0 }; // Current connect_to value pre
 
 // Wait-for-peer state: initiator waits for receiver to accept before Netplay_Begin
 #define LOBBY_WAIT_PEER_TIMEOUT_MS 30000
+#define LOBBY_WAIT_PEER_GRACE_MS 5000  // Minimum wait before checking (avoids stale connect_to)
 static uint32_t lobby_wait_peer_start = 0;
+static bool lobby_skip_wait_peer = false;  // Set by casual lobby path (both sides already accepted via server)
 
 // Forward declarations for functions used by lobby_poll_server
 static void lobby_start_punch(uint32_t peer_ip, uint16_t peer_port);
@@ -514,8 +516,14 @@ static void lobby_poll_server(void) {
 
             // Anti-spam: check if this player is on our local declined list
             if (is_player_declined(lobby_server_players[i].player_id)) {
-                SDL_Log("[lobby] Ignoring invite from %s (declined cooldown active)",
-                        lobby_server_players[i].display_name);
+                // Throttle log: only print once every 10 seconds per-player
+                static uint32_t last_declined_log = 0;
+                uint32_t now_dl = SDL_GetTicks();
+                if (now_dl - last_declined_log >= 10000) {
+                    SDL_Log("[lobby] Ignoring invite from %s (declined cooldown active)",
+                            lobby_server_players[i].display_name);
+                    last_declined_log = now_dl;
+                }
                 continue;
             }
 
@@ -1041,14 +1049,15 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                 stun_result.socket_fd = -1; // Ownership transferred; prevent double-close
                 Netplay_SetPlayerNumber(lobby_we_are_initiator ? 0 : 1);
 
-                if (lobby_we_are_initiator) {
+                if (lobby_we_are_initiator && !lobby_skip_wait_peer) {
                     // Wait for receiver to accept before starting Gekko
                     snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Waiting for opponent to accept...");
                     lobby_wait_peer_start = SDL_GetTicks();
                     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_WAIT_PEER);
                 } else {
-                    // Receiver: we already accepted — proceed immediately
+                    // Receiver or casual room: already accepted — proceed immediately
                     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_IDLE);
+                    lobby_skip_wait_peer = false;
                     Netplay_Begin();
                 }
             } else {
@@ -1069,12 +1078,13 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                     stun_result.socket_fd = -1;
                     Netplay_SetPlayerNumber(lobby_we_are_initiator ? 0 : 1);
 
-                    if (lobby_we_are_initiator) {
+                    if (lobby_we_are_initiator && !lobby_skip_wait_peer) {
                         snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Waiting for opponent to accept...");
                         lobby_wait_peer_start = SDL_GetTicks();
                         SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_WAIT_PEER);
                     } else {
                         SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_IDLE);
+                        lobby_skip_wait_peer = false;
                         Netplay_Begin();
                     }
                 }
@@ -1100,12 +1110,13 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
             stun_result.socket_fd = -1;
             Netplay_SetPlayerNumber(lobby_we_are_initiator ? 0 : 1);
 
-            if (lobby_we_are_initiator) {
+            if (lobby_we_are_initiator && !lobby_skip_wait_peer) {
                 snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Waiting for opponent to accept...");
                 lobby_wait_peer_start = SDL_GetTicks();
                 SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_WAIT_PEER);
             } else {
                 SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_IDLE);
+                lobby_skip_wait_peer = false;
                 Netplay_Begin();
             }
         }
@@ -1115,15 +1126,19 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
             uint32_t elapsed = SDL_GetTicks() - lobby_wait_peer_start;
             bool peer_accepted = false;
 
-            // Check if the receiver has set connect_to pointing at us
-            int pc = SDL_GetAtomicInt(&lobby_server_player_count);
-            for (int i = 0; i < pc; i++) {
-                if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
-                    continue;
-                if (lobby_server_players[i].connect_to[0] &&
-                    strcmp(lobby_server_players[i].connect_to, my_room_code) == 0) {
-                    peer_accepted = true;
-                    break;
+            // Grace period: don't check for the first 5 seconds to avoid
+            // false positives from stale connect_to (e.g. declined invites)
+            if (elapsed >= LOBBY_WAIT_PEER_GRACE_MS) {
+                // Check if the receiver has set connect_to pointing at us
+                int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+                for (int i = 0; i < pc; i++) {
+                    if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
+                        continue;
+                    if (lobby_server_players[i].connect_to[0] &&
+                        strcmp(lobby_server_players[i].connect_to, my_room_code) == 0) {
+                        peer_accepted = true;
+                        break;
+                    }
                 }
             }
 
@@ -1578,6 +1593,7 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
     if (opponent_name)
         snprintf(lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", opponent_name);
     lobby_we_are_initiator = we_are_p1;
+    lobby_skip_wait_peer = true; // Both sides already accepted via server — skip WAIT_PEER
 
     snprintf(
         lobby_status_msg, sizeof(lobby_status_msg), "Connecting to %s...", opponent_name ? opponent_name : "opponent");

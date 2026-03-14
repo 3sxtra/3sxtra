@@ -686,8 +686,12 @@ static void process_session() {
             dump_desync_state(frame, event->data.desynced.local_checksum, event->data.desynced.remote_checksum);
 #endif
 
-            SDL_ShowSimpleMessageBox(
-                SDL_MESSAGEBOX_WARNING, "Netplay", "Desync detected — the session will be terminated.", NULL);
+            // Treat desync like a disconnect: clean up and exit immediately
+            // (no blocking message box — that freezes the game loop)
+            SDL_Log("[netplay] Desync at frame %d — terminating session", frame);
+            push_event(NETPLAY_EVENT_DISCONNECTED);
+            clean_input_buffers();
+            Soft_Reset_Sub();
             session_state = NETPLAY_SESSION_EXITING;
             break;
         }

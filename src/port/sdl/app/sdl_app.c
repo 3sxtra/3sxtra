@@ -818,7 +818,7 @@ static void render_overlays(int win_w, int win_h) {
 
 /** @brief End the frame: render game to FBO, apply shaders, draw bezels/UI, swap buffers. */
 void SDLApp_EndFrame() {
-    TRACE_ZONE_N("EndFrame");
+
     Broadcast_Update();
 
     // Render all queued tasks to the FBO (skip in present-only mode — canvas already has last frame)
@@ -862,12 +862,10 @@ void SDLApp_EndFrame() {
     }
 
     /* Replay picker and network lobby always use RmlUI — update outside use_rmlui gate */
-    TRACE_SUB_BEGIN("LobbyUpdates");
     rmlui_replay_picker_update();
     rmlui_network_lobby_update();
     rmlui_casual_lobby_update();
     rmlui_leaderboard_update();
-    TRACE_SUB_END();
 
     if (is_sdl2d_backend(g_renderer_backend)) {
         // --- SDL2D Backend ---
@@ -947,7 +945,6 @@ void SDLApp_EndFrame() {
         SDLAppDebugHud_NoteFrameEnd();
         SDLAppDebugHud_UpdateFPS();
         SDLPad_UpdatePreviousState();
-        TRACE_ZONE_END();
         return;
     }
 
@@ -1099,11 +1096,9 @@ void SDLApp_EndFrame() {
         // --- OpenGL Backend ---
 
         // Update RmlUi game context — allow explicitly visible documents even in Native mode
-        TRACE_SUB_BEGIN("GL:RmlUiUpdateGame");
         if (use_rmlui || rmlui_wrapper_any_game_visible()) {
             rmlui_wrapper_update_game();
         }
-        TRACE_SUB_END();
 
         if (broadcast_config.enabled && broadcast_config.source == BROADCAST_SOURCE_NATIVE) {
             Broadcast_Send(cps3_canvas_texture, 384, 224, true);
@@ -1330,16 +1325,12 @@ void SDLApp_EndFrame() {
         TRACE_SUB_END();
 
         // Bezel Rendering (OpenGL)
-        TRACE_SUB_BEGIN("GL:Bezels");
         SDLAppBezel_RenderGL(win_w, win_h, &viewport, passthru_shader_program, (const float*)identity);
-        TRACE_SUB_END();
         // Phase 3 game UI at window resolution (after canvas blit + bezels)
         // GL state reset is handled inside rmlui_wrapper_render_game (only when docs visible)
-        TRACE_SUB_BEGIN("GL:RmlUiRenderGame");
         if (use_rmlui || rmlui_wrapper_any_game_visible()) {
             rmlui_wrapper_render_game(win_w, win_h, viewport.x, viewport.y, viewport.w, viewport.h);
         }
-        TRACE_SUB_END();
 
         // Debug text buffer (game debug menu, effect overlay, etc.)
         // Must render independently of the FPS HUD toggle.
@@ -1376,9 +1367,7 @@ void SDLApp_EndFrame() {
         TRACE_SUB_END();
 
         // Render overlays (menus, netplay, UI flush)
-        TRACE_SUB_BEGIN("GL:Overlays");
         render_overlays(win_w, win_h);
-        TRACE_SUB_END();
 
         // Final Output broadcast: capture the fully-composited frame
         if (broadcast_config.enabled && broadcast_config.source == BROADCAST_SOURCE_FINAL) {
@@ -1418,6 +1407,12 @@ void SDLApp_EndFrame() {
             TRACE_SUB_END();
         }
 
+        // Force GPU to finish all queued work — isolates GPU execution time
+        // from the swap itself so Tracy shows where the cost actually is.
+        TRACE_SUB_BEGIN("GL:Finish");
+        glFinish();
+        TRACE_SUB_END();
+
         // Swap the window to display the final rendered frame
         TRACE_SUB_BEGIN("SwapWindow");
         if (!has_pending_quit()) {
@@ -1428,17 +1423,13 @@ void SDLApp_EndFrame() {
     TRACE_GPU_COLLECT();
 
     // Now that the frame is displayed, clean up resources for the next frame
-    TRACE_SUB_BEGIN("GL:EndFrameCleanup");
     SDLGameRenderer_EndFrame();
-    TRACE_SUB_END();
 
     // Run sound processing — after GPU submit so CPU audio decode
     // overlaps with GPU processing the submitted command buffer.
-    TRACE_SUB_BEGIN("ADX");
     if (!game_paused && !present_only_mode) {
         ADX_ProcessTracks();
     }
-    TRACE_SUB_END();
 
     SDLAppScreenshot_ProcessPending();
 
@@ -1487,7 +1478,7 @@ void SDLApp_EndFrame() {
     SDLAppDebugHud_NoteFrameEnd();
     SDLAppDebugHud_UpdateFPS();
     SDLPad_UpdatePreviousState();
-    TRACE_ZONE_END();
+
 }
 
 /** @brief Request application exit. */
