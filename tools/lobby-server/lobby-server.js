@@ -143,8 +143,36 @@ try {
 }
 
 // ---- Room Tracking (Casual Lobbies) ----
-// Structure: Room { id: string, name: string, host: string, players: string[], state: 'waiting'|'playing' }
+// Structure: Room { id: string, name: string, host: string, players: string[], state: 'waiting'|'playing', permanent: boolean }
 const rooms = new Map();
+
+function createPermanentRooms() {
+    const permanentRooms = [
+        { id: 'NAEA', name: 'NA-East Public' },
+        { id: 'NAWE', name: 'NA-West Public' },
+        { id: 'EURO', name: 'Europe Public' },
+        { id: 'ASIA', name: 'Asia Public' },
+        { id: 'MIDE', name: 'Middle East Public' },
+        { id: 'OCEA', name: 'Oceania Public' },
+        { id: 'BRAZ', name: 'Brazil Public' }
+    ];
+
+    for (const roomData of permanentRooms) {
+        rooms.set(roomData.id, {
+            id: roomData.id,
+            name: roomData.name,
+            host: 'server',
+            players: [],
+            queue: [],
+            match: null,
+            chat: [],
+            sseClients: new Set(),
+            permanent: true
+        });
+        console.log(`[room] initialized permanent room ${roomData.id}: ${roomData.name}`);
+    }
+}
+createPermanentRooms();
 
 // Per-pair decline cooldown to prevent infinite re-proposal loops
 // Key: "roomCode:idA-idB" (sorted), Value: expiry timestamp
@@ -490,8 +518,12 @@ const cleanupTimer = setInterval(() => {
             }
 
             if (room.players.length === 0) {
-                console.log(`[room] ${code} auto-closed (all players stale)`);
-                rooms.delete(code);
+                if (room.permanent) {
+                    console.log(`[room] ${code} empty but kept (permanent)`);
+                } else {
+                    console.log(`[room] ${code} auto-closed (all players stale)`);
+                    rooms.delete(code);
+                }
             } else if (room.players.length < before) {
                 // Host migration if host was evicted
                 if (!room.players.includes(room.host)) {
@@ -770,8 +802,12 @@ async function handleRequest(req, res) {
         room.queue = room.queue.filter(p => p !== data.player_id);
 
         if (room.players.length === 0) {
-            console.log(`[room] ${room.id} closed (empty)`);
-            rooms.delete(room.id);
+            if (room.permanent) {
+                console.log(`[room] ${room.id} empty but kept (permanent)`);
+            } else {
+                console.log(`[room] ${room.id} closed (empty)`);
+                rooms.delete(room.id);
+            }
         } else {
             if (room.host === data.player_id) {
                 room.host = room.players[0]; // Migrate host
