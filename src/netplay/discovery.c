@@ -6,6 +6,7 @@
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #ifdef _WIN32
@@ -151,13 +152,14 @@ void Discovery_Update() {
 
         snprintf(beacon_data,
                  sizeof(beacon_data),
-                 "3SX_LOBBY|%u|%d|%d|%u|%hu|%s",
+                 "3SX_LOBBY|%u|%d|%d|%u|%hu|%s|%d",
                  local_instance_id,
                  auto_now ? 1 : 0,
                  local_ready ? 1 : 0,
                  local_challenge_target,
                  configuration.netplay.port,
-                 safe_name);
+                 safe_name,
+                 Config_GetInt(CFG_KEY_NETPLAY_FT));
         int beacon_len = (int)strlen(beacon_data);
 
         struct sockaddr_in broadcast_addr;
@@ -273,6 +275,8 @@ void Discovery_Update() {
             // Parse the 7th field (display_name) manually — sscanf %s
             // stops at whitespace which is fine, but manual extraction
             // is more robust for names with spaces in the future.
+            // Parse 8th field: ft_value (after 7th pipe)
+            int peer_ft = 2; // default for old clients
             if (fields >= 5) {
                 // Find the 6th pipe to get the display name
                 const char* p = buffer;
@@ -283,11 +287,35 @@ void Discovery_Update() {
                     p++;
                 }
                 if (pipes == 6 && *p) {
-                    snprintf(peer_display_name, sizeof(peer_display_name), "%s", p);
+                    // Display name runs until next pipe or end of string
+                    const char* name_end = strchr(p, '|');
+                    size_t name_len;
+                    if (name_end)
+                        name_len = (size_t)(name_end - p);
+                    else
+                        name_len = strlen(p);
+                    if (name_len >= sizeof(peer_display_name))
+                        name_len = sizeof(peer_display_name) - 1;
+                    memcpy(peer_display_name, p, name_len);
+                    peer_display_name[name_len] = '\0';
                     // Trim trailing whitespace/newlines
-                    size_t dlen = strlen(peer_display_name);
-                    while (dlen > 0 && (peer_display_name[dlen - 1] == '\n' || peer_display_name[dlen - 1] == '\r'))
-                        peer_display_name[--dlen] = '\0';
+                    while (name_len > 0 && (peer_display_name[name_len - 1] == '\n' || peer_display_name[name_len - 1] == '\r'))
+                        peer_display_name[--name_len] = '\0';
+                }
+                // Parse ft from 8th field
+                {
+                    const char* fp = buffer;
+                    int fpipes = 0;
+                    while (*fp && fpipes < 7) {
+                        if (*fp == '|')
+                            fpipes++;
+                        fp++;
+                    }
+                    if (fpipes == 7 && *fp) {
+                        peer_ft = atoi(fp);
+                        if (peer_ft < 1) peer_ft = 2;
+                        if (peer_ft > 10) peer_ft = 10;
+                    }
                 }
             }
             if (fields >= 1) {
@@ -306,6 +334,7 @@ void Discovery_Update() {
                             peers[i].wants_auto_connect = (peer_auto == 1);
                             peers[i].peer_ready = (peer_rdy == 1);
                             peers[i].is_challenging_me = (peer_challenge == local_instance_id);
+                            peers[i].ft_value = peer_ft;
                             if (peer_display_name[0])
                                 SDL_strlcpy(peers[i].display_name, peer_display_name, sizeof(peers[i].display_name));
                             found = true;
@@ -319,6 +348,7 @@ void Discovery_Update() {
                         p->wants_auto_connect = (peer_auto == 1);
                         p->peer_ready = (peer_rdy == 1);
                         p->is_challenging_me = (peer_challenge == local_instance_id);
+                        p->ft_value = peer_ft;
                         snprintf(p->name, sizeof(p->name), "%s:%hu", ip_str, peer_port);
                         snprintf(p->display_name, sizeof(p->display_name), "%s", peer_display_name);
                         p->port = peer_port;

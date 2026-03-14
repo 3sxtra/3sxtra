@@ -63,6 +63,7 @@ static const ConfigEntry default_entries[] = {
     { .key = CFG_KEY_LOBBY_AUTO_CONNECT, .type = CFG_BOOL, .value.b = true },
     { .key = CFG_KEY_LOBBY_AUTO_SEARCH, .type = CFG_BOOL, .value.b = true },
     { .key = CFG_KEY_SKIP_INTRO, .type = CFG_BOOL, .value.b = false },
+    { .key = CFG_KEY_NETPLAY_FT, .type = CFG_INT, .value.i = 2 },
     { .key = CFG_KEY_MODDED_BGM_ENABLED, .type = CFG_BOOL, .value.b = false },
     { .key = CFG_KEY_MODDED_VOICE_ENABLED, .type = CFG_BOOL, .value.b = false },
 };

@@ -56,6 +56,18 @@ static State state_buffer[STATE_BUFFER_MAX];
 #include "main.h"
 #include <stdio.h>
 
+// ============================================================================
+// Compile-time guard: sizeof(GameState) tripwire.
+// If this assert fires, a field was added or removed from GameState.
+// Steps: 1) Add the corresponding GS_SAVE/GS_LOAD line in this file.
+//        2) Update the constant below to the new sizeof(GameState).
+// ============================================================================
+#define EXPECTED_GAME_STATE_SIZE 19376
+_Static_assert(sizeof(GameState) == EXPECTED_GAME_STATE_SIZE,
+    "sizeof(GameState) changed! Did you add/remove a field in game_state.h? "
+    "Update GS_SAVE/GS_LOAD in this file, then set EXPECTED_GAME_STATE_SIZE "
+    "to the new sizeof(GameState).");
+
 #define GS_SAVE(member) SDL_memcpy(&dst->member, &member, sizeof(member))
 
 void GameState_Save(GameState* dst) {

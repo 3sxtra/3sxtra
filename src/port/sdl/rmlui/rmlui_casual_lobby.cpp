@@ -86,18 +86,24 @@ static int s_cursor_y = 0;
 
 static Uint64 s_last_poll_time = 0;
 
+// Deferred overlay re-show: set when SSE_EVENT_MATCH_END fires but the netplay
+// session hasn't returned to IDLE/LOBBY yet (game engine still cleaning up).
+static bool s_match_ended_pending_reshow = false;
+
 // Phase 6: Match proposal state
 static int s_proposal_active = 0;
 static Rml::String s_proposal_opponent_name;
 static int s_proposal_opponent_ping = -1;
 static Rml::String s_proposal_opponent_conn_type;
-static int s_proposal_countdown = 10;
+#define PROPOSAL_TIMEOUT_SEC 30
+static int s_proposal_countdown = PROPOSAL_TIMEOUT_SEC;
 static int s_proposal_countdown_pct = 100; // 0-100 for countdown bar width
 static int s_proposal_cursor = 0;          // 0 = accept, 1 = decline
 static Uint64 s_proposal_start_time = 0;
 static char s_proposal_opponent_room_code[32] = { 0 };
 static char s_proposal_opponent_region[8] = { 0 };
 static char s_proposal_opponent_player_id[64] = { 0 };
+static int s_proposal_ft = 1; // FT from the room (received in match_propose)
 static bool s_proposal_we_are_p1 = false;
 
 // Async accept/decline thread functions (avoid blocking UI thread with HTTP calls)
@@ -329,6 +335,22 @@ extern "C" void rmlui_casual_lobby_update(void) {
     if (!s_model_registered || !s_is_visible)
         return;
 
+    // Deferred overlay re-show: wait for game engine to finish cleanup
+    if (s_match_ended_pending_reshow) {
+        NetplaySessionState ns = Netplay_GetSessionState();
+        if (ns == NETPLAY_SESSION_IDLE || ns == NETPLAY_SESSION_LOBBY) {
+            s_match_ended_pending_reshow = false;
+            s_is_playing = false;
+            s_model_handle.DirtyVariable("is_playing");
+            rmlui_wrapper_show_game_document("casual_lobby");
+            SDL_Log("[CasualLobby] Deferred re-show complete (session now %s)",
+                    ns == NETPLAY_SESSION_IDLE ? "IDLE" : "LOBBY");
+        } else {
+            // Session still cleaning up — skip all input/update processing
+            return;
+        }
+    }
+
     // Drain all queued SSE events from the ring buffer (up to 16 per frame)
     SSEEvent sse_evt;
     for (int sse_i = 0; sse_i < 16; sse_i++) {
@@ -381,7 +403,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 s_proposal_opponent_name = opp_name;
                 s_proposal_opponent_conn_type = opp_conn;
                 s_proposal_opponent_ping = opp_rtt;
-                s_proposal_countdown = 10;
+                s_proposal_countdown = PROPOSAL_TIMEOUT_SEC;
                 s_proposal_countdown_pct = 100;
                 s_proposal_cursor = 0; // Default to Accept
                 s_proposal_start_time = SDL_GetTicks();
@@ -389,6 +411,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 snprintf(s_proposal_opponent_room_code, sizeof(s_proposal_opponent_room_code), "%s", opp_room);
                 snprintf(s_proposal_opponent_region, sizeof(s_proposal_opponent_region), "%s", opp_region);
                 snprintf(s_proposal_opponent_player_id, sizeof(s_proposal_opponent_player_id), "%s", opp_id);
+                s_proposal_ft = sse_evt.propose_ft > 0 ? sse_evt.propose_ft : 1;
 
                 // Popup is inline in casual_lobby.rml — data-if="proposal_active" shows it
 
@@ -482,12 +505,25 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 rmlui_wrapper_show_game_document("casual_lobby");
             }
 
-            // If we were playing, re-show lobby
+            // If we were playing, defer re-show until the netplay session
+            // has fully cleaned up (IDLE/LOBBY). This prevents the room
+            // overlay from appearing while the game engine is still running
+            // exit animations or soft-resetting after a disconnect.
             if (s_is_playing) {
-                rmlui_wrapper_show_game_document("casual_lobby");
+                NetplaySessionState ns = Netplay_GetSessionState();
+                if (ns == NETPLAY_SESSION_IDLE || ns == NETPLAY_SESSION_LOBBY) {
+                    // Session already clean — show immediately
+                    rmlui_wrapper_show_game_document("casual_lobby");
+                    s_is_playing = false;
+                    s_model_handle.DirtyVariable("is_playing");
+                } else {
+                    // Session still exiting — defer the re-show
+                    s_match_ended_pending_reshow = true;
+                    SDL_Log("[CasualLobby] MATCH_END received but session state=%d, deferring overlay re-show", (int)ns);
+                }
+            } else {
+                // We weren't playing (e.g. watching) — no re-show needed
             }
-            s_is_playing = false;
-            s_model_handle.DirtyVariable("is_playing");
 
             refresh_room_state_from_server();
         }
@@ -524,13 +560,13 @@ extern "C" void rmlui_casual_lobby_update(void) {
     // Phase 6: Match proposal countdown timer
     if (s_proposal_active) {
         Uint64 elapsed = SDL_GetTicks() - s_proposal_start_time;
-        int remaining = 10 - (int)(elapsed / 1000);
+        int remaining = PROPOSAL_TIMEOUT_SEC - (int)(elapsed / 1000);
         if (remaining < 0)
             remaining = 0;
 
         // Smooth percentage (0-100) for countdown bar width
         int elapsed_ms = (int)(elapsed);
-        int pct = 100 - (elapsed_ms * 100 / 10000);
+        int pct = 100 - (elapsed_ms * 100 / (PROPOSAL_TIMEOUT_SEC * 1000));
         if (pct < 0)
             pct = 0;
         if (pct != s_proposal_countdown_pct) {
@@ -579,6 +615,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 // Accept
                 s_proposal_active = 0;
                 s_model_handle.DirtyVariable("proposal_active");
+                Netplay_SetNegotiatedFT(s_proposal_ft);
                 AsyncMatchAction(s_room_code.c_str(), 1);
                 s_status_text = "Accepted! Waiting for opponent...";
                 s_model_handle.DirtyVariable("status_text");
@@ -608,8 +645,8 @@ extern "C" void rmlui_casual_lobby_update(void) {
     }
 
     // --- Input Navigation ---
-    if (s_is_playing || s_is_spectating) {
-        return; // Suspend lobby navigation while match is active
+    if (s_is_playing || s_is_spectating || s_match_ended_pending_reshow) {
+        return; // Suspend lobby navigation while match is active or cleanup pending
     }
 
     u16 trigger = 0;
@@ -710,6 +747,8 @@ extern "C" void rmlui_casual_lobby_show(void) {
 
 extern "C" void rmlui_casual_lobby_hide(void) {
     s_is_visible = false;
+    s_is_playing = false;
+    s_is_spectating = false;
     rmlui_wrapper_hide_game_document("casual_lobby");
     LobbyServer_SSEDisconnect();
     if (s_chat_open) {
@@ -719,6 +758,7 @@ extern "C" void rmlui_casual_lobby_hide(void) {
         SDL_StopTextInput(SDL_GetKeyboardFocus());
     }
     s_proposal_active = 0;
+    s_match_ended_pending_reshow = false;
 }
 
 extern "C" void rmlui_casual_lobby_shutdown(void) {

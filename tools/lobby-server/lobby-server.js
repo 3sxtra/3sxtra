@@ -92,7 +92,7 @@ function detectRegionAndCountry(ip) {
 
 // ---- Data Store ----
 
-/** @type {Map<string, {display_name: string, region: string, country: string, room_code: string, connect_to: string, status: string, connection_type: string, rtt_ms: number, last_seen: number, last_chat_time: number}>} */
+/** @type {Map<string, {display_name: string, region: string, country: string, room_code: string, connect_to: string, status: string, connection_type: string, rtt_ms: number, ft: number, last_seen: number, last_chat_time: number}>} */
 const players = new Map();
 
 /** @type {Map<string, {count: number, until: number}>}  Key = "from_id->to_id" */
@@ -156,9 +156,18 @@ try {
             p1_char INTEGER,
             p2_char INTEGER,
             rounds INTEGER,
+            source TEXT DEFAULT 'ranked',
+            ft INTEGER DEFAULT 1,
+            p1_session_wins INTEGER DEFAULT 0,
+            p2_session_wins INTEGER DEFAULT 0,
             created_at TEXT DEFAULT (datetime('now'))
         );
     `);
+    // Migration: add new columns if table already existed
+    try { db.exec('ALTER TABLE pending_results ADD COLUMN source TEXT DEFAULT \'ranked\';'); } catch { /* exists */ }
+    try { db.exec('ALTER TABLE pending_results ADD COLUMN ft INTEGER DEFAULT 1;'); } catch { /* exists */ }
+    try { db.exec('ALTER TABLE pending_results ADD COLUMN p1_session_wins INTEGER DEFAULT 0;'); } catch { /* exists */ }
+    try { db.exec('ALTER TABLE pending_results ADD COLUMN p2_session_wins INTEGER DEFAULT 0;'); } catch { /* exists */ }
     console.log(`SQLite: initialized at ${dbPath}`);
 } catch (err) {
     console.warn(`SQLite: not available (${err.message}) — match reporting disabled`);
@@ -190,7 +199,8 @@ function createPermanentRooms() {
             match: null,
             chat: [],
             sseClients: new Set(),
-            permanent: true
+            permanent: true,
+            ft: 1  // Public region rooms default to FT1 (unranked)
         });
         console.log(`[room] initialized permanent room ${roomData.id}: ${roomData.name}`);
     }
@@ -228,6 +238,7 @@ function getRoomState(room) {
         id: room.id,
         name: room.name,
         host: room.host,
+        ft: room.ft || 1,
         players: room.players.map(id => {
             const p = players.get(id);
             return { player_id: id, display_name: p ? p.display_name : id, region: p ? p.region : '', country: p ? p.country : '' };
@@ -275,6 +286,7 @@ function tryStartMatch(room) {
             };
 
             broadcastRoomEvent(room, 'match_propose', {
+                ft: room.ft || 1,
                 p1: {
                     id: p1, name: getPlayerName(p1),
                     connection_type: p1_data ? p1_data.connection_type : 'unknown',
@@ -514,52 +526,74 @@ const cleanupTimer = setInterval(() => {
             const stalePending = db.prepare(
                 `SELECT * FROM pending_results WHERE datetime(created_at) < datetime('now', '-30 seconds')`
             ).all();
-            for (const p of stalePending) {
-                const winnerId = p.winner_id;
-                const loserId = winnerId === p.p1_id ? p.p2_id : p.p1_id;
-                const winnerName = players.get(winnerId)?.display_name || winnerId;
-                const loserName = players.get(loserId)?.display_name || loserId;
-
-                // Record the match
-                db.prepare(`INSERT INTO matches (p1_id, p2_id, winner_id, p1_char, p2_char, rounds)
-                            VALUES (?, ?, ?, ?, ?, ?)`)
-                  .run(p.p1_id, p.p2_id, winnerId, p.p1_char, p.p2_char, p.rounds || 0);
-
-                // Fetch current stats for Glicko-2
-                const getStats = db.prepare('SELECT rating, rd, volatility FROM players_db WHERE player_id = ?');
-                let wStats = getStats.get(winnerId) || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
-                let lStats = getStats.get(loserId)  || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
-                const newStats = glicko2Update(wStats, lStats);
-
-                // Upsert winner (win)
-                db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses, rating, rd, volatility)
-                    VALUES (?, ?, 1, 0, ?, ?, ?)
-                    ON CONFLICT(player_id) DO UPDATE SET
-                        display_name = excluded.display_name, wins = wins + 1,
-                        rating = excluded.rating, rd = excluded.rd, volatility = excluded.volatility,
-                        last_match = datetime('now')
-                `).run(winnerId, winnerName, newStats.winner.rating, newStats.winner.rd, newStats.winner.vol);
-
-                // Upsert loser (loss + disconnect)
-                db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses, disconnects, rating, rd, volatility)
-                    VALUES (?, ?, 0, 1, 1, ?, ?, ?)
-                    ON CONFLICT(player_id) DO UPDATE SET
-                        display_name = excluded.display_name, losses = losses + 1, disconnects = disconnects + 1,
-                        rating = excluded.rating, rd = excluded.rd, volatility = excluded.volatility,
-                        last_match = datetime('now')
-                `).run(loserId, loserName, newStats.loser.rating, newStats.loser.rd, newStats.loser.vol);
-
-                console.log(`[match] auto-recorded stale pending: ${winnerName} beat ${loserName} (disconnect)`);
-            }
             if (stalePending.length > 0) {
-                db.prepare(`DELETE FROM pending_results WHERE datetime(created_at) < datetime('now', '-30 seconds')`).run();
+                // Wrap all writes in a transaction for atomicity — either all
+                // match records + rating updates succeed, or none do.
+                const recordStaleResults = db.transaction(() => {
+                    for (const p of stalePending) {
+                        const winnerId = p.winner_id;
+                        const loserId = winnerId === p.p1_id ? p.p2_id : p.p1_id;
+                        const winnerName = players.get(winnerId)?.display_name || winnerId;
+                        const loserName = players.get(loserId)?.display_name || loserId;
+                        const source = p.source || 'ranked';
+
+                        // Record the match
+                        db.prepare(`INSERT INTO matches (p1_id, p2_id, winner_id, p1_char, p2_char, rounds)
+                                    VALUES (?, ?, ?, ?, ?, ?)`)
+                          .run(p.p1_id, p.p2_id, winnerId, p.p1_char, p.p2_char, p.rounds || 0);
+
+                        if (source === 'ranked') {
+                            // Fetch current stats for Glicko-2
+                            const getStats = db.prepare('SELECT rating, rd, volatility FROM players_db WHERE player_id = ?');
+                            let wStats = getStats.get(winnerId) || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
+                            let lStats = getStats.get(loserId)  || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
+                            const newStats = glicko2Update(wStats, lStats);
+
+                            // Upsert winner (win + rating)
+                            db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses, disconnects, rating, rd, volatility)
+                                VALUES (?, ?, 1, 0, 0, ?, ?, ?)
+                                ON CONFLICT(player_id) DO UPDATE SET
+                                    display_name = excluded.display_name, wins = wins + 1,
+                                    rating = excluded.rating, rd = excluded.rd, volatility = excluded.volatility,
+                                    last_match = datetime('now')
+                            `).run(winnerId, winnerName, newStats.winner.rating, newStats.winner.rd, newStats.winner.vol);
+
+                            // Upsert loser (loss + disconnect + rating)
+                            db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses, disconnects, rating, rd, volatility)
+                                VALUES (?, ?, 0, 1, 1, ?, ?, ?)
+                                ON CONFLICT(player_id) DO UPDATE SET
+                                    display_name = excluded.display_name, losses = losses + 1, disconnects = disconnects + 1,
+                                    rating = excluded.rating, rd = excluded.rd, volatility = excluded.volatility,
+                                    last_match = datetime('now')
+                            `).run(loserId, loserName, newStats.loser.rating, newStats.loser.rd, newStats.loser.vol);
+                        } else {
+                            // Casual: record win/loss + disconnect but skip Glicko-2
+                            db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses, disconnects)
+                                VALUES (?, ?, 1, 0, 0)
+                                ON CONFLICT(player_id) DO UPDATE SET
+                                    display_name = excluded.display_name, wins = wins + 1,
+                                    last_match = datetime('now')
+                            `).run(winnerId, winnerName);
+                            db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses, disconnects)
+                                VALUES (?, ?, 0, 1, 1)
+                                ON CONFLICT(player_id) DO UPDATE SET
+                                    display_name = excluded.display_name, losses = losses + 1, disconnects = disconnects + 1,
+                                    last_match = datetime('now')
+                            `).run(loserId, loserName);
+                        }
+
+                        console.log(`[match] auto-recorded stale pending (${source}): ${winnerName} beat ${loserName} (disconnect)`);
+                    }
+                    db.prepare(`DELETE FROM pending_results WHERE datetime(created_at) < datetime('now', '-30 seconds')`).run();
+                });
+                recordStaleResults();
             }
         } catch { /* ignore */ }
     }
     // Phase 6: Timeout proposed matches (>10s without both accepts)
     for (const [, room] of rooms) {
         if (room.match && room.match.state === 'proposed' &&
-            now - room.match.proposed_at > 10_000) {
+            now - room.match.proposed_at > 30_000) {
             console.log(`[room] match proposal timed out in ${room.id}`);
             cancelProposal(room, null);
         }
@@ -808,7 +842,8 @@ async function handleRequest(req, res) {
             list.push({
                 code: room.id,
                 name: room.name,
-                player_count: room.players.length
+                player_count: room.players.length,
+                ft: room.ft || 1
             });
         }
         return json(res, 200, { rooms: list });
@@ -829,6 +864,7 @@ async function handleRequest(req, res) {
         const roomName = String(data.name || `${data.display_name}'s Room`).slice(0, 31);
         const hostId = data.player_id;
 
+        const roomFt = typeof data.ft === 'number' ? Math.max(1, Math.min(10, data.ft)) : 2;
         rooms.set(code, {
             id: code,
             name: roomName,
@@ -837,9 +873,10 @@ async function handleRequest(req, res) {
             queue: [], // Next in line for cabinet
             match: null, // { p1: 'id', p2: 'id', state: 'playing' }
             chat: [],
-            sseClients: new Set()
+            sseClients: new Set(),
+            ft: roomFt
         });
-        console.log(`[room] ${hostId} created room ${code}: ${roomName}`);
+        console.log(`[room] ${hostId} created room ${code}: ${roomName} (FT${roomFt})`);
         return json(res, 200, { ok: true, room_code: code });
     }
 
@@ -1082,7 +1119,7 @@ async function handleRequest(req, res) {
         const data = parseJsonBody(res, body);
         if (!data) return;
 
-        const { player_id, display_name, region, room_code, connect_to, rtt_ms, connection_type } = data;
+        const { player_id, display_name, region, room_code, connect_to, rtt_ms, connection_type, ft } = data;
         if (!player_id || !display_name) {
             return json(res, 400, { error: 'Missing player_id or display_name' });
         }
@@ -1101,6 +1138,7 @@ async function handleRequest(req, res) {
             status: existing ? existing.status : 'idle',
             connection_type: String(connection_type || 'unknown').slice(0, 7),
             rtt_ms: typeof rtt_ms === 'number' ? Math.max(0, Math.min(9999, rtt_ms)) : (existing ? existing.rtt_ms : -1),
+            ft: typeof ft === 'number' ? Math.max(1, Math.min(10, ft)) : (existing ? existing.ft : 2),
             last_seen: Date.now(),
             last_chat_time: existing ? existing.last_chat_time : 0,
         });
@@ -1117,7 +1155,7 @@ async function handleRequest(req, res) {
         let p = players.get(data.player_id);
         if (!p) {
             // Create minimal entry if presence hasn't arrived yet (race condition fix)
-            p = { display_name: data.player_id, region: '', country: '', room_code: '', connect_to: '', status: 'idle', connection_type: 'unknown', rtt_ms: -1, last_seen: Date.now(), last_chat_time: 0 };
+            p = { display_name: data.player_id, region: '', country: '', room_code: '', connect_to: '', status: 'idle', connection_type: 'unknown', rtt_ms: -1, ft: 2, last_seen: Date.now(), last_chat_time: 0 };
             players.set(data.player_id, p);
         }
 
@@ -1160,6 +1198,7 @@ async function handleRequest(req, res) {
                 rtt_ms: p.rtt_ms || -1,
                 status: p.status || 'idle',
                 connection_type: p.connection_type || 'unknown',
+                ft: p.ft || 2,
             });
         }
 
@@ -1205,6 +1244,8 @@ async function handleRequest(req, res) {
         if (!data) return;
 
         const { player_id, opponent_id, winner_id, player_char, opponent_char, rounds } = data;
+        const source = data.source || 'ranked';
+        const ft = Math.max(1, Math.min(data.ft || 1, 10));
         if (!player_id || !opponent_id || !winner_id) {
             return json(res, 400, { error: 'Missing player_id, opponent_id, or winner_id' });
         }
@@ -1216,72 +1257,103 @@ async function handleRequest(req, res) {
         const pending = db.prepare('SELECT * FROM pending_results WHERE match_key = ?').get(matchKey);
 
         if (!pending) {
-            // First report — store as pending
-            db.prepare(`INSERT OR REPLACE INTO pending_results (match_key, reporter_id, winner_id, p1_id, p2_id, p1_char, p2_char, rounds)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+            // First report for this game — store claim, session wins start at 0
+            // (wins only count after cross-validation by opponent)
+            db.prepare(`INSERT OR REPLACE INTO pending_results
+                        (match_key, reporter_id, winner_id, p1_id, p2_id, p1_char, p2_char, rounds, source, ft, p1_session_wins, p2_session_wins)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
               .run(matchKey, player_id, winner_id, ids[0], ids[1],
                    ids[0] === player_id ? (player_char || 0) : (opponent_char || 0),
                    ids[1] === player_id ? (player_char || 0) : (opponent_char || 0),
-                   rounds || 0);
-            console.log(`[match] pending: ${player_id} reports winner=${winner_id}`);
+                   rounds || 0, source, ft, 0, 0);
+            console.log(`[match] pending (${source} FT${ft}): ${player_id} reports winner=${winner_id}`);
             return json(res, 200, { ok: true, status: 'pending' });
         }
 
-        // Second report — cross-validate
+        // Second report for this game — cross-validate
         if (pending.reporter_id === player_id) {
-            // Same player reporting again — update
             return json(res, 200, { ok: true, status: 'already_pending' });
         }
 
-        // Delete pending regardless of outcome
-        db.prepare('DELETE FROM pending_results WHERE match_key = ?').run(matchKey);
-
         if (pending.winner_id !== winner_id) {
-            // Dispute — discard both reports
+            // Dispute — discard this game's report, keep session alive
+            db.prepare("UPDATE pending_results SET reporter_id = '', winner_id = '', created_at = datetime('now') WHERE match_key = ?")
+              .run(matchKey);
             console.log(`[match] dispute: ${pending.reporter_id} says ${pending.winner_id}, ${player_id} says ${winner_id}`);
             return json(res, 200, { ok: true, status: 'dispute' });
         }
 
-        // Agreement — record the match
+        // Agreement — increment session wins for the winner
+        let p1Wins = pending.p1_session_wins || 0;
+        let p2Wins = pending.p2_session_wins || 0;
+        if (winner_id === pending.p1_id) p1Wins++;
+        else p2Wins++;
+        const sessionFt = pending.ft || ft;
+        const sessionSource = pending.source || source;
+
+        // Check if session is complete
+        if (p1Wins < sessionFt && p2Wins < sessionFt) {
+            // Session in progress — update wins and reset reporter for next game
+            db.prepare("UPDATE pending_results SET p1_session_wins = ?, p2_session_wins = ?, reporter_id = '', winner_id = '', created_at = datetime('now') WHERE match_key = ?")
+              .run(p1Wins, p2Wins, matchKey);
+            console.log(`[match] session in progress (${sessionSource} FT${sessionFt}): ${pending.p1_id} ${p1Wins}-${p2Wins} ${pending.p2_id}`);
+            return json(res, 200, { ok: true, status: 'session_in_progress', p1_wins: p1Wins, p2_wins: p2Wins, ft: sessionFt });
+        }
+
+        // Session complete — one player reached FT wins
+        const sessionWinnerId = p1Wins >= sessionFt ? pending.p1_id : pending.p2_id;
+        const sessionLoserId = sessionWinnerId === pending.p1_id ? pending.p2_id : pending.p1_id;
+        const winnerName = players.get(sessionWinnerId)?.display_name || sessionWinnerId;
+        const loserName = players.get(sessionLoserId)?.display_name || sessionLoserId;
+
+        // Delete pending session
+        db.prepare('DELETE FROM pending_results WHERE match_key = ?').run(matchKey);
+
+        // Record the session result in matches table
         db.prepare(`INSERT INTO matches (p1_id, p2_id, winner_id, p1_char, p2_char, rounds)
                     VALUES (?, ?, ?, ?, ?, ?)`)
-          .run(pending.p1_id, pending.p2_id, winner_id, pending.p1_char, pending.p2_char, pending.rounds || rounds || 0);
+          .run(pending.p1_id, pending.p2_id, sessionWinnerId, pending.p1_char, pending.p2_char, p1Wins + p2Wins);
 
-        const winnerId = winner_id;
-        const loserId = winnerId === player_id ? opponent_id : player_id;
-        const winnerName = players.get(winnerId)?.display_name || winnerId;
-        const loserName = players.get(loserId)?.display_name || loserId;
+        if (sessionSource === 'ranked') {
+            // Ranked: update Glicko-2 ratings + wins/losses
+            const getStats = db.prepare('SELECT rating, rd, volatility FROM players_db WHERE player_id = ?');
+            let wStats = getStats.get(sessionWinnerId) || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
+            let lStats = getStats.get(sessionLoserId)  || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
+            const newStats = glicko2Update(wStats, lStats);
 
-        // Fetch current stats to feed into Glicko-2
-        const getStats = db.prepare('SELECT rating, rd, volatility FROM players_db WHERE player_id = ?');
-        let wStats = getStats.get(winnerId) || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
-        let lStats = getStats.get(loserId)  || { rating: DEFAULT_RATING, rd: DEFAULT_RD, volatility: DEFAULT_VOL };
+            const upsertPlayer = db.prepare(`
+                INSERT INTO players_db (player_id, display_name, wins, losses, rating, rd, volatility)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(player_id) DO UPDATE SET
+                    display_name = excluded.display_name,
+                    wins = wins + excluded.wins,
+                    losses = losses + excluded.losses,
+                    rating = excluded.rating,
+                    rd = excluded.rd,
+                    volatility = excluded.volatility,
+                    last_match = datetime('now')
+            `);
+            upsertPlayer.run(sessionWinnerId, winnerName, 1, 0, newStats.winner.rating, newStats.winner.rd, newStats.winner.vol);
+            upsertPlayer.run(sessionLoserId, loserName, 0, 1, newStats.loser.rating, newStats.loser.rd, newStats.loser.vol);
+        } else {
+            // Casual: record win/loss but skip Glicko-2 rating changes
+            db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses)
+                VALUES (?, ?, 1, 0)
+                ON CONFLICT(player_id) DO UPDATE SET
+                    display_name = excluded.display_name, wins = wins + 1,
+                    last_match = datetime('now')
+            `).run(sessionWinnerId, winnerName);
+            db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses)
+                VALUES (?, ?, 0, 1)
+                ON CONFLICT(player_id) DO UPDATE SET
+                    display_name = excluded.display_name, losses = losses + 1,
+                    last_match = datetime('now')
+            `).run(sessionLoserId, loserName);
+        }
 
-        // Calculate new ratings
-        const newStats = glicko2Update(wStats, lStats);
-
-        // Upsert player stats with new ratings
-        const upsertPlayer = db.prepare(`
-            INSERT INTO players_db (player_id, display_name, wins, losses, rating, rd, volatility)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(player_id) DO UPDATE SET
-                display_name = excluded.display_name,
-                wins = wins + excluded.wins,
-                losses = losses + excluded.losses,
-                rating = excluded.rating,
-                rd = excluded.rd,
-                volatility = excluded.volatility,
-                last_match = datetime('now')
-        `);
-
-        upsertPlayer.run(winnerId, winnerName, 1, 0, newStats.winner.rating, newStats.winner.rd, newStats.winner.vol);
-        upsertPlayer.run(loserId, loserName, 0, 1, newStats.loser.rating, newStats.loser.rd, newStats.loser.vol);
-
-        // Get the ID of the newly inserted match so clients can upload replays
         const matchId = db.prepare('SELECT last_insert_rowid() as id').get().id;
-
-        console.log(`[match] recorded: ${winnerName} beat ${loserName} (Match ID: ${matchId})`);
-        return json(res, 200, { ok: true, status: 'recorded', match_id: matchId });
+        console.log(`[match] session complete (${sessionSource} FT${sessionFt}): ${winnerName} beat ${loserName} ${p1Wins}-${p2Wins} (Match ID: ${matchId})`);
+        return json(res, 200, { ok: true, status: 'recorded', match_id: matchId, p1_wins: p1Wins, p2_wins: p2Wins });
     }
 
     // --- POST /match_result/replay ---

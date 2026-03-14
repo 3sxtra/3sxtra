@@ -51,22 +51,26 @@
                 <span class="lobby-cell-value" data-class-on="block_wifi">{{block_wifi ? 'ON' : 'OFF'}}</span>
             </div>
             <div class="lobby-row" data-class-focused="cursor == 7">
+                <span class="lobby-cell-label">MATCH FT</span>
+                <span class="lobby-cell-value">{{ft_value == 1 ? 'UNRANKED' : 'FT' + ft_value}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 8">
                 <span class="lobby-cell-label">CONNECT</span>
                 <span class="lobby-cell-value peer-val">{{net_peer_name}}</span>
             </div>
 
             <div class="section-header rooms-header">ROOMS</div>
 
-            <div class="lobby-row" data-class-focused="cursor == 8">
+            <div class="lobby-row" data-class-focused="cursor == 9">
                 <span class="lobby-cell-label">CREATE ROOM</span>
                 <span class="lobby-cell-value" data-if="room_status != ''">{{room_status}}</span>
             </div>
-            <div class="lobby-row" data-class-focused="cursor == 9">
+            <div class="lobby-row" data-class-focused="cursor == 10">
                 <span class="lobby-cell-label">JOIN ROOM</span>
                 <span class="lobby-cell-value" data-if="join_room_code != ''">{{join_room_code}}</span>
             </div>
 
-            <div class="lobby-row exit-row" data-class-focused="cursor == 10">
+            <div class="lobby-row exit-row" data-class-focused="cursor == 11">
                 <span class="lobby-cell-label">EXIT</span>
             </div>
         </div>
@@ -157,6 +161,7 @@
             <div class="popup-name">{{popup_name}}</div>
             <div class="popup-ping" data-if="popup_ping != ''">PING: {{popup_ping}}</div>
             <div class="popup-region" data-if="popup_region != ''">{{popup_region}}</div>
+            <div class="popup-ft" data-if="popup_ft != ''">{{popup_ft}}</div>
             <div class="popup-actions" data-if="popup_is_incoming">
                 <span class="popup-accept">● ACCEPT</span>
                 <span class="popup-decline">● DECLINE</span>

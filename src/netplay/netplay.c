@@ -21,6 +21,7 @@
 extern void njUserMain();
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
@@ -69,6 +70,7 @@ static const char* remote_ip = NULL;
 static int player_number = 0;
 static int player_handle = 0;
 static int stun_socket_fd = -1; // Pre-punched STUN socket for internet play
+static int s_negotiated_ft = 0;  // FT value agreed upon for the upcoming match (0 = use config default)
 static NetplaySessionState session_state = NETPLAY_SESSION_IDLE;
 static u16 input_history[2][INPUT_HISTORY_MAX] = { 0 };
 static float frames_behind = 0;
@@ -249,6 +251,20 @@ static void setup_vs_mode() {
                 save_w[MODE_NETWORK].Pad_Infor[p].Shot[s] = identity[s];
             save_w[MODE_NETWORK].Pad_Infor[p].Vibration = 0;
         }
+    }
+
+    // Apply first-to-X wins: FT controls how many GAME wins are needed for a session
+    // (tracked server-side). Each individual game is always best-of-3 rounds
+    // (Battle_Number = 1, meaning need 2 round wins per game).
+    {
+        int ft = s_negotiated_ft > 0 ? s_negotiated_ft : Config_GetInt(CFG_KEY_NETPLAY_FT);
+        if (ft < 1) ft = 2;
+        if (ft > 10) ft = 10;
+        // Store FT for match reporting (server-side session tracking)
+        s_negotiated_ft = ft; // Keep for match reporting, will be consumed there
+        // Rounds per game: always best-of-3 (need 2 round wins)
+        save_w[MODE_NETWORK].Battle_Number[0] = 1; // 1 + 1 = 2 round wins needed
+        save_w[MODE_NETWORK].Battle_Number[1] = 1; // 1 + 1 = 2 round wins needed
     }
 
     // Check_Buff and Convert_Buff hold per-player button remapping tables.
@@ -818,6 +834,14 @@ void Netplay_SetStunSocket(int fd) {
     stun_socket_fd = fd;
 }
 
+void Netplay_SetNegotiatedFT(int ft) {
+    s_negotiated_ft = ft;
+}
+
+int Netplay_GetNegotiatedFT(void) {
+    return s_negotiated_ft;
+}
+
 void Netplay_Begin() {
     /* Hide the RmlUI lobby overlay on connection (safe no-op if not shown) */
     rmlui_network_lobby_hide();
@@ -988,8 +1012,26 @@ void Netplay_Run() {
 #endif
         }
 
-        Discovery_Shutdown();
-        session_state = NETPLAY_SESSION_IDLE;
+        // If we're in a casual room, re-enter LOBBY instead of IDLE so the
+        // game stays in menu/lobby mode and doesn't restart its init flow.
+        // Soft_Reset_Sub (called during disconnect) hides all RmlUI documents,
+        // so we need to re-show the casual lobby overlay.
+        {
+            const char* room = rmlui_casual_lobby_get_room_code();
+            if (room && room[0]) {
+                session_state = NETPLAY_SESSION_LOBBY;
+                rmlui_casual_lobby_show();
+                // Park the game engine in an idle state so no game logic runs
+                // behind the room overlay while waiting for the next match.
+                task[TASK_INIT].r_no[0] = 0;
+                task[TASK_INIT].r_no[1] = 0;
+                task[TASK_INIT].condition = 0;
+                SDL_Log("[netplay] Re-entering LOBBY for casual room %s", room);
+            } else {
+                Discovery_Shutdown();
+                session_state = NETPLAY_SESSION_IDLE;
+            }
+        }
         break;
 
     case NETPLAY_SESSION_IDLE:

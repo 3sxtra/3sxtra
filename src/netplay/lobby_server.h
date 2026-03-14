@@ -19,6 +19,7 @@ typedef struct {
     char status[16];         // "searching" or "idle"
     char connection_type[8]; // "wifi", "wired", or "unknown"
     int rtt_ms;              // Server RTT in ms (-1 = unknown)
+    int ft;                  // First-To match mode (1=unranked, 2=FT2, etc.)
 } LobbyPlayer;
 
 /// Initialize lobby server client — reads URL and key from config.ini.
@@ -33,7 +34,8 @@ bool LobbyServer_IsConfigured(void);
 /// rtt_ms: our measured RTT to the lobby server in ms (-1 if unknown).
 /// connection_type: "wifi", "wired", or "unknown" (NULL defaults to "unknown").
 bool LobbyServer_UpdatePresence(const char* player_id, const char* display_name, const char* region,
-                                const char* room_code, const char* connect_to, int rtt_ms, const char* connection_type);
+                                const char* room_code, const char* connect_to, int rtt_ms, const char* connection_type,
+                                int ft);
 
 /// Mark player as searching for a match.
 bool LobbyServer_StartSearching(const char* player_id);
@@ -62,6 +64,8 @@ typedef struct {
     int player_char; // Character index (0-19)
     int opponent_char;
     int rounds; // Total rounds played (e.g. 3 for a 2-1 win)
+    char source[16]; // "casual" or "ranked"
+    int ft;          // First-to value for this session (e.g. 2 for FT2)
 } MatchResult;
 
 /// Submit a match result to the lobby server for cross-validation.
@@ -116,6 +120,7 @@ typedef struct {
     char code[8];     // 4-char room code + null
     char name[32];    // Room display name
     int player_count; // Current player count (1-8)
+    int ft;           // First-To match mode (1=unranked, default for region rooms)
 } RoomListItem;
 
 /// Fetch list of active rooms from the lobby server.
@@ -158,10 +163,11 @@ typedef struct {
 
     ChatMessage chat[MAX_CHAT_MESSAGES];
     int chat_count;
+    int ft; // First-To match mode for this room
 } RoomState;
 
 // Sync room logic
-bool LobbyServer_CreateRoom(const char* name, RoomState* out_room);
+bool LobbyServer_CreateRoom(const char* name, int ft, RoomState* out_room);
 bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room);
 bool LobbyServer_LeaveRoom(const char* room_code);
 bool LobbyServer_JoinQueue(const char* room_code);
@@ -210,6 +216,7 @@ typedef struct {
     char propose_p2_region[8];
     char propose_decliner_id[64]; // Populated on MATCH_DECLINE
     char propose_reason[16];      // "declined" or "timeout" (MATCH_DECLINE)
+    int propose_ft;               // FT value for proposed match (from room)
 } SSEEvent;
 
 /// Start SSE connection to a room (spawns background thread).

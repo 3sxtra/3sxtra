@@ -944,11 +944,11 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         bool popup_active =
             SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge() || lan_incoming || lan_outgoing;
 
-        /* Handle cursor movement (11 items: 0..10) */
+        /* Handle cursor movement (12 items: 0..11) */
         {
             s16 prev_cursor = Menu_Cursor_Y[0];
-            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 10, 0xFF) == 0) {
-                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 10, 0xFF);
+            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 11, 0xFF) == 0) {
+                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 11, 0xFF);
             }
             if (popup_active) {
                 Menu_Cursor_Y[0] = prev_cursor;
@@ -1046,7 +1046,25 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     SE_dir_cursor_move();
                     break;
                 }
-                case 7: { /* NET CONNECT */
+                case 7: { /* MATCH FT cycle */
+                    static const int ft_values[] = { 1, 2, 3, 5, 10 };
+                    static const int ft_count = 5;
+                    int cur_ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
+                    int idx = 1; /* default to FT2 index */
+                    for (int fi = 0; fi < ft_count; fi++) {
+                        if (ft_values[fi] == cur_ft) { idx = fi; break; }
+                    }
+                    if (click & 4) { /* left */
+                        idx = (idx - 1 + ft_count) % ft_count;
+                    } else { /* right */
+                        idx = (idx + 1) % ft_count;
+                    }
+                    Config_SetInt(CFG_KEY_NETPLAY_FT, ft_values[idx]);
+                    Config_Save();
+                    SE_dir_cursor_move();
+                    break;
+                }
+                case 8: { /* NET CONNECT */
                     if (SDLNetplayUI_IsSearching()) {
                         int p_count = SDLNetplayUI_GetOnlinePlayerCount();
                         if (p_count > 0) {
@@ -1064,7 +1082,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     }
                     break;
                 }
-                case 9: { /* JOIN ROOM (room list scroll) */
+                case 10: { /* JOIN ROOM (room list scroll) */
                     if (task_ptr->free[2] == 1) {
                         rmlui_network_lobby_room_scroll((click & 4) ? -1 : 1);
                         SE_dir_cursor_move();
@@ -1214,6 +1232,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
             switch (IO_Result) {
             case 0x100:
+                Netplay_SetNegotiatedFT(SDLNetplayUI_GetPendingInviteFT());
                 SDLNetplayUI_AcceptPendingInvite();
                 SE_selected();
                 break;
@@ -1271,6 +1290,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
                 switch (IO_Result) {
                 case 0x100:
+                    Netplay_SetNegotiatedFT(ip_peers[lan_challenger].ft_value);
                     Discovery_SetChallengeTarget(ip_peers[lan_challenger].instance_id);
                     SE_selected();
                     break;
@@ -1346,10 +1366,25 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                         SE_selected();
                         break;
                     }
-                    case 7: /* NET CONNECT */
+                    case 7: { /* MATCH FT cycle (confirm = advance) */
+                        static const int ft_values[] = { 1, 2, 3, 5, 10 };
+                        static const int ft_count = 5;
+                        int cur_ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
+                        int idx = 1;
+                        for (int fi = 0; fi < ft_count; fi++) {
+                            if (ft_values[fi] == cur_ft) { idx = fi; break; }
+                        }
+                        idx = (idx + 1) % ft_count;
+                        Config_SetInt(CFG_KEY_NETPLAY_FT, ft_values[idx]);
+                        Config_Save();
+                        SE_selected();
+                        break;
+                    }
+                    case 8: /* NET CONNECT */
                         if (SDLNetplayUI_IsSearching()) {
                             int p_count = SDLNetplayUI_GetOnlinePlayerCount();
                             if (p_count > 0 && g_net_peer_idx >= 0 && g_net_peer_idx < p_count) {
+                                Netplay_SetNegotiatedFT(Config_GetInt(CFG_KEY_NETPLAY_FT));
                                 SDLNetplayUI_ConnectToPlayer(g_net_peer_idx);
                                 SE_selected();
                             } else {
@@ -1362,19 +1397,19 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                         }
                         break;
 
-                    case 8: /* CREATE ROOM (RmlUI only) */
+                    case 9: /* CREATE ROOM (RmlUI only) */
                         if (task_ptr->free[2] == 1) {
                             rmlui_network_lobby_create_room();
                         }
                         SE_selected();
                         break;
-                    case 9: /* JOIN ROOM (RmlUI only) */
+                    case 10: /* JOIN ROOM (RmlUI only) */
                         if (task_ptr->free[2] == 1) {
                             rmlui_network_lobby_join_room();
                         }
                         SE_selected();
                         break;
-                    case 10:
+                    case 11:
                         /* EXIT */
                         goto lobby_exit;
                     }
@@ -1742,6 +1777,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
                 switch (IO_Result) {
                 case 0x100:
+                    Netplay_SetNegotiatedFT(ip_peers[lan_challenger].ft_value);
                     Discovery_SetChallengeTarget(ip_peers[lan_challenger].instance_id);
                     SE_selected();
                     break;
@@ -3443,6 +3479,8 @@ static void VS_Result(struct _TASK* task_ptr) {
 
         if (--task_ptr->timer == 0) {
             if (Netplay_GetSessionState() == NETPLAY_SESSION_RUNNING) {
+                // Report match result and upload replay while game state is intact
+                SDLNetplayUI_ReportNaturalMatchEnd();
                 task_ptr->r_no[2] = 6;
                 task_ptr->r_no[3] = 0;
                 task_ptr->timer = 2;

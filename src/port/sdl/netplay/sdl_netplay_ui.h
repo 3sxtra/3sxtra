@@ -61,6 +61,7 @@ const char* SDLNetplayUI_GetOnlinePlayerRegion(int index);
 const char* SDLNetplayUI_GetOnlinePlayerCountry(int index);
 const char* SDLNetplayUI_GetOnlinePlayerConnType(int index);
 int SDLNetplayUI_GetOnlinePlayerPing(int index);
+int SDLNetplayUI_GetOnlinePlayerFT(int index);
 void SDLNetplayUI_ConnectToPlayer(int index);
 
 // Pending internet invite (someone set connect_to = our room code)
@@ -68,6 +69,7 @@ bool SDLNetplayUI_HasPendingInvite(void);
 const char* SDLNetplayUI_GetPendingInviteName(void);
 const char* SDLNetplayUI_GetPendingInviteRegion(void);
 int SDLNetplayUI_GetPendingInvitePing(void);
+int SDLNetplayUI_GetPendingInviteFT(void);
 void SDLNetplayUI_AcceptPendingInvite(void);
 void SDLNetplayUI_DeclinePendingInvite(void);
 
@@ -93,6 +95,10 @@ bool SDLNetplayUI_PlayerPassesFilters(const char* conn_type, int rtt_ms, const c
 /// opponent_player_id is the unique lobby server ID of the opponent.
 /// we_are_p1: determines player number assignment.
 void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const char* opponent_name, const char* opponent_player_id, bool we_are_p1);
+
+/// Report match result and upload replay at natural match completion (not disconnect).
+/// Called from VS_Result auto-skip while game state (Winner_id, PL_Wins) is still valid.
+void SDLNetplayUI_ReportNaturalMatchEnd(void);
 
 #ifdef __cplusplus
 }

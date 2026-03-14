@@ -15,6 +15,7 @@
 #include "common.h"
 #include "netplay/netplay.h"
 #include "port/rendering/renderer.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/netstats_renderer.h"
@@ -438,7 +439,10 @@ static void game_step_0() {
 
     // Only run game loop directly if we are in IDLE or LOBBY mode.
     // In TRANSITIONING, CONNECTING, and RUNNING modes, Netplay_Run() calls step_game() automatically.
-    if (current_net_state == NETPLAY_SESSION_IDLE || current_net_state == NETPLAY_SESSION_LOBBY) {
+    // Skip game loop when the casual lobby overlay is active — the game engine
+    // should be completely frozen behind the room UI between matches.
+    bool casual_lobby_covers_game = (current_net_state == NETPLAY_SESSION_LOBBY) && rmlui_casual_lobby_is_visible();
+    if ((current_net_state == NETPLAY_SESSION_IDLE || current_net_state == NETPLAY_SESSION_LOBBY) && !casual_lobby_covers_game) {
         njUserMain();
 
         // ⚡ Bolt: Input Lag Test Detection

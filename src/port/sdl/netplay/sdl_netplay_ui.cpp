@@ -97,9 +97,20 @@ static int async_match_report_fn(void* userdata) {
     int match_id = -1;
     bool ok = LobbyServer_ReportMatch(&data->result, &match_id);
 
+    if (ok) {
+        SDL_Log("[NetplayUI] Match reported successfully (match_id=%d)", match_id);
+    } else {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[NetplayUI] Match report FAILED");
+    }
+
     // Upload the in-memory replay snapshot if the match was recorded
     if (ok && match_id >= 0 && data->replay_snapshot && data->replay_size > 0) {
-        LobbyServer_UploadReplay(match_id, data->replay_snapshot, data->replay_size);
+        bool upload_ok = LobbyServer_UploadReplay(match_id, data->replay_snapshot, data->replay_size);
+        if (upload_ok) {
+            SDL_Log("[NetplayUI] Replay uploaded for match %d (%zu bytes)", match_id, data->replay_size);
+        } else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[NetplayUI] Replay upload FAILED for match %d", match_id);
+        }
     }
 
     free(data->replay_snapshot);
@@ -109,7 +120,7 @@ static int async_match_report_fn(void* userdata) {
 }
 
 static void AsyncReportMatch(const char* my_id, const char* opponent_id, const char* winner_id, int my_char,
-                             int opp_char, int rounds) {
+                             int opp_char, int rounds, const char* source, int ft) {
     if (!LobbyServer_IsConfigured() || !my_id || !my_id[0])
         return;
     if (SDL_GetAtomicInt(&async_match_report_active) != 0)
@@ -139,6 +150,8 @@ static void AsyncReportMatch(const char* my_id, const char* opponent_id, const c
     r->player_char = my_char;
     r->opponent_char = opp_char;
     r->rounds = rounds;
+    snprintf(r->source, sizeof(r->source), "%s", source ? source : "ranked");
+    r->ft = ft > 0 ? ft : 1;
 
     // Snapshot Replay_w from memory now (before the user can overwrite it).
     // This avoids the race condition of reading from disk before the replay is saved.
@@ -303,6 +316,7 @@ static char lobby_pending_invite_room[16] = { 0 };
 static char lobby_pending_invite_region[8] = { 0 };
 static uint32_t lobby_pending_invite_time = 0; // Timestamp when invite was detected (for expiry)
 static int lobby_pending_invite_ping = -1;       // ms, -1 = unknown
+static int lobby_pending_invite_ft = 2;           // Challenger's FT mode
 static SDL_AtomicInt lobby_punch_cancel = { 0 }; // Set to 1 to cancel in-progress hole punch
 static bool lobby_we_are_initiator = false;      // true = we clicked Connect, false = they invited us
 static char lobby_connect_to_intent[16] = { 0 }; // Current connect_to value preserved across heartbeats
@@ -319,6 +333,7 @@ typedef struct {
     char connect_to[32];
     char connection_type[8];
     int rtt_ms;
+    int ft;
 } AsyncPresenceData;
 
 static SDL_AtomicInt async_presence_active = { 0 };
@@ -326,7 +341,7 @@ static SDL_AtomicInt async_presence_active = { 0 };
 static int SDLCALL async_presence_fn(void* data) {
     AsyncPresenceData* d = (AsyncPresenceData*)data;
     LobbyServer_UpdatePresence(
-        d->player_id, d->display_name, d->region, d->room_code, d->connect_to, d->rtt_ms, d->connection_type);
+        d->player_id, d->display_name, d->region, d->room_code, d->connect_to, d->rtt_ms, d->connection_type, d->ft);
     free(d);
     SDL_SetAtomicInt(&async_presence_active, 0);
     return 0;
@@ -352,6 +367,7 @@ static void AsyncUpdatePresence(const char* pid, const char* disp, const char* r
         snprintf(d->connect_to, sizeof(d->connect_to), "%s", ct);
     snprintf(d->connection_type, sizeof(d->connection_type), "%s", my_connection_type);
     d->rtt_ms = lobby_my_rtt_ms;
+    d->ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
     SDL_Thread* t = SDL_CreateThread(async_presence_fn, "AsyncPresence", d);
     if (t) {
         SDL_DetachThread(t);
@@ -553,6 +569,7 @@ static void lobby_poll_server(void) {
                 lobby_pending_invite_room, sizeof(lobby_pending_invite_room), "%s", lobby_server_players[i].room_code);
             snprintf(
                 lobby_pending_invite_region, sizeof(lobby_pending_invite_region), "%s", lobby_server_players[i].region);
+            lobby_pending_invite_ft = lobby_server_players[i].ft > 0 ? lobby_server_players[i].ft : 2;
 
             // Use true P2P RTT from ping probe if available
             int p2p_rtt = PingProbe_GetRTT(lobby_server_players[i].player_id);
@@ -594,6 +611,7 @@ static void lobby_poll_server(void) {
             current_opponent_id[0] = '\0';
             lobby_pending_invite_region[0] = '\0';
             lobby_pending_invite_ping = -1;
+            lobby_pending_invite_ft = 2;
         }
     }
 }
@@ -706,6 +724,7 @@ static void lobby_reset(void) {
     current_opponent_id[0] = '\0';
     lobby_pending_invite_region[0] = '\0';
     lobby_pending_invite_ping = -1;
+    lobby_pending_invite_ft = 2;
     SDL_SetAtomicInt(&lobby_punch_cancel, 1); // Cancel any in-flight punch
     lobby_punch_peer_name[0] = '\0';
     lobby_connect_to_intent[0] = '\0';
@@ -906,16 +925,21 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                 // Determine winner's player_id
                 const char* winner_pid = (Winner_id == my_player) ? lobby_my_player_id : current_opponent_id;
 
+                const char* room_code = rmlui_casual_lobby_get_room_code();
+                const char* match_source = (room_code && room_code[0]) ? "casual" : "ranked";
+                int match_ft = Netplay_GetNegotiatedFT();
+
                 AsyncReportMatch(lobby_my_player_id,
                                  current_opponent_id,
                                  winner_pid,
                                  My_char[my_player],
                                  My_char[1 - my_player],
-                                 total_rounds);
+                                 total_rounds,
+                                 match_source,
+                                 match_ft);
                 SDL_Log("[NetplayUI] Match result queued: winner=%s rounds=%d", winner_pid, total_rounds);
 
                 // If inside a casual lobby room, report match end for Winner Stays On rotation
-                const char* room_code = rmlui_casual_lobby_get_room_code();
                 if (room_code && room_code[0]) {
                     LobbyServer_ReportMatchEnd(room_code, winner_pid);
                     SDL_Log("[NetplayUI] Casual lobby match end reported: room=%s winner=%s", room_code, winner_pid);
@@ -929,6 +953,11 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
         }
         match_result_reported = true;
     }
+
+    // Natural match completion: called from VS_Result auto-skip while game state is still valid.
+    // This is separate from the RUNNING→EXITING detection above because natural match ends
+    // don't transition to EXITING — they stay RUNNING and cycle back to character select.
+    // See SDLNetplayUI_ReportNaturalMatchEnd() below for the entry point.
 
     // Reset flag when starting a new session
     if (current_state == NETPLAY_SESSION_RUNNING && last_session_state != NETPLAY_SESSION_RUNNING) {
@@ -1310,6 +1339,26 @@ const char* SDLNetplayUI_GetPendingInviteRegion() {
 int SDLNetplayUI_GetPendingInvitePing() {
     return lobby_pending_invite_ping;
 }
+int SDLNetplayUI_GetPendingInviteFT() {
+    return lobby_pending_invite_ft;
+}
+
+int SDLNetplayUI_GetOnlinePlayerFT(int index) {
+    int count = 0;
+    int pc = SDL_GetAtomicInt(&lobby_server_player_count);
+    for (int i = 0; i < pc; i++) {
+        if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
+            continue;
+        if (strcmp(lobby_server_players[i].status, "searching") != 0)
+            continue;
+        if (!player_passes_filters(&lobby_server_players[i]))
+            continue;
+        if (count == index)
+            return lobby_server_players[i].ft > 0 ? lobby_server_players[i].ft : 2;
+        count++;
+    }
+    return 2;
+}
 
 void SDLNetplayUI_AcceptPendingInvite() {
     if (!lobby_has_pending_invite)
@@ -1344,6 +1393,7 @@ void SDLNetplayUI_DeclinePendingInvite() {
     lobby_pending_invite_name[0] = '\0';
     lobby_pending_invite_region[0] = '\0';
     lobby_pending_invite_ping = -1;
+    lobby_pending_invite_ft = 2;
     snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Declined invite.");
 }
 
@@ -1468,6 +1518,50 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
         lobby_status_msg, sizeof(lobby_status_msg), "Connecting to %s...", opponent_name ? opponent_name : "opponent");
 
     lobby_start_punch(peer_ip, peer_port);
+}
+
+void SDLNetplayUI_ReportNaturalMatchEnd(void) {
+    // Called from VS_Result auto-skip while game state (Winner_id, PL_Wins, My_char)
+    // is still valid. For natural match completion, the session stays RUNNING and
+    // cycles back to character select — so the RUNNING→EXITING detection in
+    // SDLNetplayUI_Render never fires.
+
+    if (match_result_reported)
+        return;
+
+    // Auto-save replay locally
+    NativeSave_AutoSaveReplay();
+
+    int my_player = 0; // Local player is always P1 in netplay
+    int total_rounds = PL_Wins[0] + PL_Wins[1];
+
+    if (lobby_my_player_id[0] && current_opponent_id[0]) {
+        if (Winner_id >= 0 && total_rounds > 0) {
+            const char* winner_pid = (Winner_id == my_player) ? lobby_my_player_id : current_opponent_id;
+
+            const char* room_code = rmlui_casual_lobby_get_room_code();
+            const char* match_source = (room_code && room_code[0]) ? "casual" : "ranked";
+            int match_ft = Netplay_GetNegotiatedFT();
+
+            AsyncReportMatch(lobby_my_player_id,
+                             current_opponent_id,
+                             winner_pid,
+                             My_char[my_player],
+                             My_char[1 - my_player],
+                             total_rounds,
+                             match_source,
+                             match_ft);
+            SDL_Log("[NetplayUI] Natural match end: winner=%s rounds=%d", winner_pid, total_rounds);
+
+            // If inside a casual lobby room, report match end for Winner Stays On rotation
+            if (room_code && room_code[0]) {
+                LobbyServer_ReportMatchEnd(room_code, winner_pid);
+                SDL_Log("[NetplayUI] Casual lobby match end reported: room=%s winner=%s", room_code, winner_pid);
+            }
+        }
+    }
+
+    match_result_reported = true;
 }
 
 } // extern "C"

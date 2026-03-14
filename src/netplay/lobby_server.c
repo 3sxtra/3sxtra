@@ -191,7 +191,7 @@ hmac_done:
 
 /* ======== HTTP client ======== */
 
-#define HTTP_BUF_SIZE 4096
+#define HTTP_BUF_SIZE 16384
 
 /* Open a TCP connection to server_host:server_port */
 static int http_connect(void) {
@@ -370,22 +370,26 @@ static void json_escape_string(const char* src, char* out, size_t out_size) {
     out[j] = '\0';
 }
 
-/* Extract a string value for a key like "key":"value" — writes into out (max out_size-1 chars) */
-static bool json_get_string(const char* json, const char* key, char* out, size_t out_size) {
+/**
+ * Extract a string value for a key like "key":"value" within [json, json_end).
+ * If json_end is NULL, searches to end of string (original behavior).
+ * Writes into out (max out_size-1 chars).
+ */
+static bool json_get_string_in(const char* json, const char* json_end, const char* key, char* out, size_t out_size) {
     char pattern[128];
     snprintf(pattern, sizeof(pattern), "\"%s\":\"", key);
     const char* p = strstr(json, pattern);
-    if (!p)
+    if (!p || (json_end && p >= json_end))
         return false;
     p += strlen(pattern);
     /* Find the closing quote, skipping escaped quotes */
     const char* end = p;
-    while (*end) {
+    while (*end && (!json_end || end < json_end)) {
         if (*end == '"' && (end == p || *(end - 1) != '\\'))
             break;
         end++;
     }
-    if (!*end)
+    if (!*end || *end != '"')
         return false;
     size_t len = (size_t)(end - p);
     if (len >= out_size)
@@ -395,12 +399,19 @@ static bool json_get_string(const char* json, const char* key, char* out, size_t
     return true;
 }
 
-/* Extract an integer value for a key like "key":123 */
-static int json_get_int(const char* json, const char* key, int default_val) {
+static bool json_get_string(const char* json, const char* key, char* out, size_t out_size) {
+    return json_get_string_in(json, NULL, key, out, out_size);
+}
+
+/**
+ * Extract an integer value for a key like "key":123 within [json, json_end).
+ * If json_end is NULL, searches to end of string (original behavior).
+ */
+static int json_get_int_in(const char* json, const char* json_end, const char* key, int default_val) {
     char pattern[128];
     snprintf(pattern, sizeof(pattern), "\"%s\":", key);
     const char* p = strstr(json, pattern);
-    if (!p)
+    if (!p || (json_end && p >= json_end))
         return default_val;
     p += strlen(pattern);
     /* Skip whitespace */
@@ -411,11 +422,15 @@ static int json_get_int(const char* json, const char* key, int default_val) {
     return default_val;
 }
 
+static int json_get_int(const char* json, const char* key, int default_val) {
+    return json_get_int_in(json, NULL, key, default_val);
+}
+
 /* ======== Public API ======== */
 
 bool LobbyServer_UpdatePresence(const char* player_id, const char* display_name, const char* region,
                                 const char* room_code, const char* connect_to, int rtt_ms,
-                                const char* connection_type) {
+                                const char* connection_type, int ft) {
     char esc_pid[128], esc_name[64], esc_region[16], esc_code[32], esc_ct[32], esc_conn[16];
     json_escape_string(player_id, esc_pid, sizeof(esc_pid));
     json_escape_string(display_name, esc_name, sizeof(esc_name));
@@ -424,18 +439,22 @@ bool LobbyServer_UpdatePresence(const char* player_id, const char* display_name,
     json_escape_string(connect_to ? connect_to : "", esc_ct, sizeof(esc_ct));
     json_escape_string(connection_type ? connection_type : "unknown", esc_conn, sizeof(esc_conn));
 
+    if (ft < 1) ft = 2;
+    if (ft > 10) ft = 10;
+
     char body[512];
     snprintf(body,
              sizeof(body),
              "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"region\":\"%s\",\"room_code\":\"%s\",\"connect_to\":\""
-             "%s\",\"rtt_ms\":%d,\"connection_type\":\"%s\"}",
+             "%s\",\"rtt_ms\":%d,\"connection_type\":\"%s\",\"ft\":%d}",
              esc_pid,
              esc_name,
              esc_region,
              esc_code,
              esc_ct,
              rtt_ms,
-             esc_conn);
+             esc_conn,
+             ft);
 
     char response[HTTP_BUF_SIZE];
     return http_request("POST", "/presence", body, response, sizeof(response));
@@ -510,6 +529,7 @@ int LobbyServer_GetSearching(LobbyPlayer* out_players, int max_players, const ch
         json_get_string(obj, "country", p->country, sizeof(p->country));
         json_get_string(obj, "connection_type", p->connection_type, sizeof(p->connection_type));
         p->rtt_ms = json_get_int(obj, "rtt_ms", -1);
+        p->ft = json_get_int(obj, "ft", 2);
 
         if (strlen(p->player_id) > 0)
             count++;
@@ -584,6 +604,7 @@ int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms) {
         json_get_string(obj, "code", r->code, sizeof(r->code));
         json_get_string(obj, "name", r->name, sizeof(r->name));
         r->player_count = json_get_int(obj, "player_count", 0);
+        r->ft = json_get_int(obj, "ft", 1);
 
         if (strlen(r->code) > 0)
             count++;
@@ -605,17 +626,23 @@ bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id) {
     json_escape_string(result->opponent_id, esc_oid, sizeof(esc_oid));
     json_escape_string(result->winner_id, esc_wid, sizeof(esc_wid));
 
+    char esc_source[32];
+    json_escape_string(result->source[0] ? result->source : "ranked", esc_source, sizeof(esc_source));
+
     char body[512];
     snprintf(body,
              sizeof(body),
              "{\"player_id\":\"%s\",\"opponent_id\":\"%s\",\"winner_id\":\"%s\","
-             "\"player_char\":%d,\"opponent_char\":%d,\"rounds\":%d}",
+             "\"player_char\":%d,\"opponent_char\":%d,\"rounds\":%d,"
+             "\"source\":\"%s\",\"ft\":%d}",
              esc_pid,
              esc_oid,
              esc_wid,
              result->player_char,
              result->opponent_char,
-             result->rounds);
+             result->rounds,
+             esc_source,
+             result->ft > 0 ? result->ft : 1);
 
     char response[HTTP_BUF_SIZE];
     bool ok = http_request("POST", "/match_result", body, response, sizeof(response));
@@ -880,6 +907,7 @@ static void parse_room_json(const char* json, RoomState* out) {
     json_get_string(json, "id", out->id, sizeof(out->id));
     json_get_string(json, "name", out->name, sizeof(out->name));
     json_get_string(json, "host", out->host, sizeof(out->host));
+    out->ft = json_get_int(json, "ft", 1);
 
     // Simple arrays are parsed loosely to avoid full JSON AST parsing overhead.
     // In a real prod client we'd link cJSON or Jansson, but we stick to strstr here
@@ -1001,15 +1029,17 @@ static void parse_room_json(const char* json, RoomState* out) {
     }
 }
 
-bool LobbyServer_CreateRoom(const char* name, RoomState* out_room) {
+bool LobbyServer_CreateRoom(const char* name, int ft, RoomState* out_room) {
     if (!Identity_IsInitialized())
         return false;
 
     char esc_name[64];
     json_escape_string(name ? name : "", esc_name, sizeof(esc_name));
+    if (ft < 1) ft = 2;
+    if (ft > 10) ft = 10;
 
     char body[256];
-    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"name\":\"%s\"}", Identity_GetPlayerId(), esc_name);
+    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"name\":\"%s\",\"ft\":%d}", Identity_GetPlayerId(), esc_name, ft);
 
     char response[HTTP_BUF_SIZE];
     if (!http_request("POST", "/room/create", body, response, sizeof(response))) {
@@ -1023,6 +1053,7 @@ bool LobbyServer_CreateRoom(const char* name, RoomState* out_room) {
         strncpy(out_room->name, name ? name : "", sizeof(out_room->name) - 1);
         strncpy(out_room->host, Identity_GetPlayerId(), sizeof(out_room->host) - 1);
         out_room->player_count = 1;
+        out_room->ft = ft;
         strncpy(out_room->players[0].player_id, Identity_GetPlayerId(), sizeof(out_room->players[0].player_id) - 1);
         strncpy(out_room->players[0].display_name,
                 Identity_GetDisplayName(),
@@ -1204,6 +1235,11 @@ static SDL_Thread* s_sse_thread = NULL;
 static int s_sse_sock = -1; // raw socket (for external close)
 static char s_sse_room_code[16] = { 0 };
 
+// SSE auto-reconnection state
+static SDL_AtomicInt s_sse_reconnect_count = { 0 };  // consecutive failures
+static uint32_t s_sse_last_disconnect_ms = 0;        // SDL_GetTicks() at last disconnect
+#define SSE_MAX_RECONNECTS 5
+
 // Lock-free ring buffer for SSE events. The background thread writes at
 // s_sse_write_idx (mod SSE_RING_SIZE), and the main thread reads at
 // s_sse_read_idx. Both are atomic — no mutex needed.
@@ -1271,29 +1307,32 @@ static void sse_parse_event(const char* json, SSEEvent* out) {
         const char* data_start = strstr(json, "\"data\":{");
         if (data_start) {
             data_start += 7;
-            /* Parse p1 object */
+            out->propose_ft = json_get_int(data_start, "ft", 1);
+            /* Parse p1 object — scope search to its closing brace */
             const char* p1_start = strstr(data_start, "\"p1\":{");
             if (p1_start) {
                 p1_start += 5;
-                json_get_string(p1_start, "id", out->propose_p1_id, sizeof(out->propose_p1_id));
-                json_get_string(p1_start, "name", out->propose_p1_name, sizeof(out->propose_p1_name));
-                json_get_string(
-                    p1_start, "connection_type", out->propose_p1_conn_type, sizeof(out->propose_p1_conn_type));
-                out->propose_p1_rtt_ms = json_get_int(p1_start, "rtt_ms", -1);
-                json_get_string(p1_start, "room_code", out->propose_p1_room_code, sizeof(out->propose_p1_room_code));
-                json_get_string(p1_start, "region", out->propose_p1_region, sizeof(out->propose_p1_region));
+                const char* p1_end = strchr(p1_start, '}');
+                json_get_string_in(p1_start, p1_end, "id", out->propose_p1_id, sizeof(out->propose_p1_id));
+                json_get_string_in(p1_start, p1_end, "name", out->propose_p1_name, sizeof(out->propose_p1_name));
+                json_get_string_in(
+                    p1_start, p1_end, "connection_type", out->propose_p1_conn_type, sizeof(out->propose_p1_conn_type));
+                out->propose_p1_rtt_ms = json_get_int_in(p1_start, p1_end, "rtt_ms", -1);
+                json_get_string_in(p1_start, p1_end, "room_code", out->propose_p1_room_code, sizeof(out->propose_p1_room_code));
+                json_get_string_in(p1_start, p1_end, "region", out->propose_p1_region, sizeof(out->propose_p1_region));
             }
-            /* Parse p2 object */
+            /* Parse p2 object — scope search to its closing brace */
             const char* p2_start = strstr(data_start, "\"p2\":{");
             if (p2_start) {
                 p2_start += 5;
-                json_get_string(p2_start, "id", out->propose_p2_id, sizeof(out->propose_p2_id));
-                json_get_string(p2_start, "name", out->propose_p2_name, sizeof(out->propose_p2_name));
-                json_get_string(
-                    p2_start, "connection_type", out->propose_p2_conn_type, sizeof(out->propose_p2_conn_type));
-                out->propose_p2_rtt_ms = json_get_int(p2_start, "rtt_ms", -1);
-                json_get_string(p2_start, "room_code", out->propose_p2_room_code, sizeof(out->propose_p2_room_code));
-                json_get_string(p2_start, "region", out->propose_p2_region, sizeof(out->propose_p2_region));
+                const char* p2_end = strchr(p2_start, '}');
+                json_get_string_in(p2_start, p2_end, "id", out->propose_p2_id, sizeof(out->propose_p2_id));
+                json_get_string_in(p2_start, p2_end, "name", out->propose_p2_name, sizeof(out->propose_p2_name));
+                json_get_string_in(
+                    p2_start, p2_end, "connection_type", out->propose_p2_conn_type, sizeof(out->propose_p2_conn_type));
+                out->propose_p2_rtt_ms = json_get_int_in(p2_start, p2_end, "rtt_ms", -1);
+                json_get_string_in(p2_start, p2_end, "room_code", out->propose_p2_room_code, sizeof(out->propose_p2_room_code));
+                json_get_string_in(p2_start, p2_end, "region", out->propose_p2_region, sizeof(out->propose_p2_region));
             }
         }
     } else if (strcmp(type_str, "match_decline") == 0) {
@@ -1303,18 +1342,20 @@ static void sse_parse_event(const char* json, SSEEvent* out) {
             data_start += 7;
             json_get_string(data_start, "decliner_id", out->propose_decliner_id, sizeof(out->propose_decliner_id));
             json_get_string(data_start, "reason", out->propose_reason, sizeof(out->propose_reason));
-            /* Parse p1/p2 info */
+            /* Parse p1/p2 info — scoped to sub-object */
             const char* p1_start = strstr(data_start, "\"p1\":{");
             if (p1_start) {
                 p1_start += 5;
-                json_get_string(p1_start, "id", out->propose_p1_id, sizeof(out->propose_p1_id));
-                json_get_string(p1_start, "name", out->propose_p1_name, sizeof(out->propose_p1_name));
+                const char* p1_end = strchr(p1_start, '}');
+                json_get_string_in(p1_start, p1_end, "id", out->propose_p1_id, sizeof(out->propose_p1_id));
+                json_get_string_in(p1_start, p1_end, "name", out->propose_p1_name, sizeof(out->propose_p1_name));
             }
             const char* p2_start = strstr(data_start, "\"p2\":{");
             if (p2_start) {
                 p2_start += 5;
-                json_get_string(p2_start, "id", out->propose_p2_id, sizeof(out->propose_p2_id));
-                json_get_string(p2_start, "name", out->propose_p2_name, sizeof(out->propose_p2_name));
+                const char* p2_end = strchr(p2_start, '}');
+                json_get_string_in(p2_start, p2_end, "id", out->propose_p2_id, sizeof(out->propose_p2_id));
+                json_get_string_in(p2_start, p2_end, "name", out->propose_p2_name, sizeof(out->propose_p2_name));
             }
         }
     } else if (strcmp(type_str, "match_end") == 0) {
@@ -1459,7 +1500,15 @@ static int sse_thread_fn(void* userdata) {
     closesocket(sock);
     s_sse_sock = -1;
     SDL_SetAtomicInt(&s_sse_running, 0);
-    SDL_Log("SSE: disconnected from room %s", s_sse_room_code);
+    // Record disconnect time for reconnection backoff (only if not intentional)
+    if (!SDL_GetAtomicInt(&s_sse_stop)) {
+        s_sse_last_disconnect_ms = SDL_GetTicks();
+        SDL_SetAtomicInt(&s_sse_reconnect_count, SDL_GetAtomicInt(&s_sse_reconnect_count) + 1);
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "SSE: unexpected disconnect from room %s (retry %d/%d)",
+                    s_sse_room_code, SDL_GetAtomicInt(&s_sse_reconnect_count), SSE_MAX_RECONNECTS);
+    } else {
+        SDL_Log("SSE: disconnected from room %s", s_sse_room_code);
+    }
     return 0;
 }
 
@@ -1478,6 +1527,8 @@ bool LobbyServer_SSEConnect(const char* room_code) {
     SDL_SetAtomicInt(&s_sse_running, 1);
     SDL_SetAtomicInt(&s_sse_write_idx, 0);
     SDL_SetAtomicInt(&s_sse_read_idx, 0);
+    SDL_SetAtomicInt(&s_sse_reconnect_count, 0); // Reset reconnect counter
+    s_sse_last_disconnect_ms = 0;
     memset(s_sse_ring, 0, sizeof(s_sse_ring));
 
     s_sse_thread = SDL_CreateThread(sse_thread_fn, "SSERoomStream", NULL);
@@ -1491,10 +1542,12 @@ bool LobbyServer_SSEConnect(const char* room_code) {
 }
 
 void LobbyServer_SSEDisconnect(void) {
+    // Mark as intentional disconnect — prevents auto-reconnection
+    SDL_SetAtomicInt(&s_sse_stop, 1);
+    s_sse_room_code[0] = '\0';  // Clear room code to signal "don't reconnect"
+
     if (!SDL_GetAtomicInt(&s_sse_running))
         return;
-
-    SDL_SetAtomicInt(&s_sse_stop, 1);
 
     // Force-close the socket to unblock recv() immediately
     if (s_sse_sock >= 0) {
@@ -1512,9 +1565,35 @@ void LobbyServer_SSEDisconnect(void) {
     s_sse_thread = NULL;
     SDL_SetAtomicInt(&s_sse_write_idx, 0);
     SDL_SetAtomicInt(&s_sse_read_idx, 0);
+    SDL_SetAtomicInt(&s_sse_reconnect_count, 0);
 }
 
 SSEEventType LobbyServer_SSEPoll(SSEEvent* out_event) {
+    // Auto-reconnect: if thread died but room code is still set (not intentional disconnect)
+    if (!SDL_GetAtomicInt(&s_sse_running) && s_sse_room_code[0] != '\0' &&
+        !SDL_GetAtomicInt(&s_sse_stop)) {
+        int retries = SDL_GetAtomicInt(&s_sse_reconnect_count);
+        if (retries < SSE_MAX_RECONNECTS) {
+            // Exponential backoff: 2s, 4s, 8s, 16s, 30s
+            uint32_t backoff_ms = (uint32_t)(2000 << retries);
+            if (backoff_ms > 30000) backoff_ms = 30000;
+            uint32_t elapsed = SDL_GetTicks() - s_sse_last_disconnect_ms;
+            if (elapsed >= backoff_ms) {
+                SDL_Log("SSE: auto-reconnecting to room %s (attempt %d/%d)",
+                        s_sse_room_code, retries + 1, SSE_MAX_RECONNECTS);
+                SDL_SetAtomicInt(&s_sse_stop, 0);
+                SDL_SetAtomicInt(&s_sse_running, 1);
+                s_sse_thread = SDL_CreateThread(sse_thread_fn, "SSERoomStream", NULL);
+                if (s_sse_thread) {
+                    SDL_DetachThread(s_sse_thread);
+                } else {
+                    SDL_SetAtomicInt(&s_sse_running, 0);
+                }
+            }
+        }
+        return SSE_EVENT_NONE;
+    }
+
     int ri = SDL_GetAtomicInt(&s_sse_read_idx);
     int wi = SDL_GetAtomicInt(&s_sse_write_idx);
     if (ri >= wi) {
@@ -1532,6 +1611,11 @@ SSEEventType LobbyServer_SSEPoll(SSEEvent* out_event) {
 
     if (out_event) {
         memcpy(out_event, slot, sizeof(SSEEvent));
+    }
+
+    // Successful event read — reset reconnect count (connection is healthy)
+    if (SDL_GetAtomicInt(&s_sse_reconnect_count) > 0) {
+        SDL_SetAtomicInt(&s_sse_reconnect_count, 0);
     }
 
     SDL_SetAtomicInt(&s_sse_read_idx, ri + 1);

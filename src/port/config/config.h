@@ -59,6 +59,7 @@ extern "C" {
 #define CFG_KEY_NETPLAY_REGION_LOCK "netplay-region-lock"
 #define CFG_KEY_NETPLAY_MAX_PING "netplay-max-ping"
 #define CFG_KEY_NETPLAY_BLOCK_WIFI "netplay-block-wifi"
+#define CFG_KEY_NETPLAY_FT "netplay-ft"
 #define CFG_KEY_NETPLAY_INVITE_COOLDOWN "netplay-invite-cooldown"
 #define CFG_KEY_VSYNC "vsync"
 #define CFG_KEY_DEBUG_HUD "debug-hud"

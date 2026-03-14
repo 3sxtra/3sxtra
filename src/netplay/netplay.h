@@ -55,6 +55,12 @@ bool Netplay_PollEvent(NetplayEvent* out);
 /// Set to -1 to fall back to the default ASIO adapter.
 void Netplay_SetStunSocket(int fd);
 
+/// Set/get the negotiated First-To value for the upcoming match.
+/// The challenger sets this before Netplay_Begin(); the receiver uses the
+/// value from the invite/beacon/room data. 0 = use local config default.
+void Netplay_SetNegotiatedFT(int ft);
+int  Netplay_GetNegotiatedFT(void);
+
 /// Begin a spectate-only session: connect to the active match host
 /// and render the game without injecting local input.
 void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port);

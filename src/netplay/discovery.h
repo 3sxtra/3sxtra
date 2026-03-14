@@ -17,6 +17,7 @@ typedef struct {
     bool wants_auto_connect;
     bool peer_ready; // Peer has seen us and is ready to connect
     bool is_challenging_me;
+    int ft_value;  // Peer's FT match mode (1=unranked, 2=FT2, etc.)
     uint32_t last_seen_ticks;
 } NetplayDiscoveredPeer;
 

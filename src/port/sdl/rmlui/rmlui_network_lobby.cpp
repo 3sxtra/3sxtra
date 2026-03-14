@@ -143,6 +143,7 @@ struct AsyncRoomData {
     int action;    // 1 = create, 2 = join
     char name[64]; // room name (create)
     char code[16]; // room code (join)
+    int ft;        // FT mode for the room (create only)
 };
 
 static int SDLCALL async_room_fn(void* data) {
@@ -152,7 +153,7 @@ static int SDLCALL async_room_fn(void* data) {
     bool ok = false;
 
     if (d->action == 1) {
-        ok = LobbyServer_CreateRoom(d->name, &room);
+        ok = LobbyServer_CreateRoom(d->name, d->ft, &room);
     } else if (d->action == 2) {
         ok = LobbyServer_JoinRoom(d->code, &room);
     }
@@ -178,6 +179,7 @@ static void AsyncCreateRoom(const char* name) {
     SDL_SetAtomicInt(&s_room_async_done, 0);
     AsyncRoomData* d = (AsyncRoomData*)calloc(1, sizeof(AsyncRoomData));
     d->action = 1;
+    d->ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
     snprintf(d->name, sizeof(d->name), "%s", name ? name : "Casual Room");
     SDL_Thread* t = SDL_CreateThread(async_room_fn, "AsyncCreateRoom", d);
     if (t) {
@@ -217,6 +219,7 @@ struct LobbyCache {
     bool region_lock;
     int max_ping;
     bool block_wifi;
+    int ft_value;
     int lan_peer_count;
     int net_peer_count;
     int lan_peer_idx;
@@ -312,6 +315,7 @@ extern "C" void rmlui_network_lobby_init(void) {
     ctor.BindFunc("region_lock", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK); });
     ctor.BindFunc("max_ping", [](Rml::Variant& v) { v = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING); });
     ctor.BindFunc("block_wifi", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI); });
+    ctor.BindFunc("ft_value", [](Rml::Variant& v) { v = Config_GetInt(CFG_KEY_NETPLAY_FT); });
 
     // Room code (shown under title bar)
     ctor.BindFunc("room_code", [](Rml::Variant& v) {
@@ -525,6 +529,36 @@ extern "C" void rmlui_network_lobby_init(void) {
         }
         v = false;
     });
+    ctor.BindFunc("popup_ft", [](Rml::Variant& v) {
+        if (SDLNetplayUI_HasPendingInvite()) {
+            int ft = SDLNetplayUI_GetPendingInviteFT();
+            if (ft == 1)
+                v = Rml::String("UNRANKED");
+            else {
+                char buf[16];
+                snprintf(buf, sizeof(buf), "FT%d", ft);
+                v = Rml::String(buf);
+            }
+            return;
+        }
+        NetplayDiscoveredPeer peers[16];
+        int count = Discovery_GetPeers(peers, 16);
+        for (int i = 0; i < count; i++) {
+            if (peers[i].is_challenging_me) {
+                int ft = peers[i].ft_value;
+                if (ft <= 0) ft = 2;
+                if (ft == 1)
+                    v = Rml::String("UNRANKED");
+                else {
+                    char buf[16];
+                    snprintf(buf, sizeof(buf), "FT%d", ft);
+                    v = Rml::String(buf);
+                }
+                return;
+            }
+        }
+        v = Rml::String("");
+    });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -570,6 +604,7 @@ extern "C" void rmlui_network_lobby_update(void) {
     DIRTY_BOOL(region_lock, Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK));
     DIRTY_INT(max_ping, Config_GetInt(CFG_KEY_NETPLAY_MAX_PING));
     DIRTY_BOOL(block_wifi, Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI));
+    DIRTY_INT(ft_value, Config_GetInt(CFG_KEY_NETPLAY_FT));
     DIRTY_STR(room_status, s_room_status);
     DIRTY_STR(join_room_code, s_join_room_code);
 
@@ -719,6 +754,7 @@ extern "C" void rmlui_network_lobby_update(void) {
     s_model_handle.DirtyVariable("popup_ping");
     s_model_handle.DirtyVariable("popup_region");
     s_model_handle.DirtyVariable("popup_is_incoming");
+    s_model_handle.DirtyVariable("popup_ft");
 }
 
 // ─── Show / Hide ─────────────────────────────────────────────────
