@@ -1,2 +1,5 @@
 .env
 node_modules/
+lobby.db
+lobby.db-shm
+lobby.db-wal
