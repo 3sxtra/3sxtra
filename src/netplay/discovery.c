@@ -3,6 +3,7 @@
 #include "configuration.h"
 #include "identity.h"
 #include "port/config/config.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <string.h>
@@ -132,6 +133,11 @@ void Discovery_Update() {
     if (broadcast_sock >= 0 && (now - last_broadcast_ticks >= BROADCAST_INTERVAL_MS || last_broadcast_ticks == 0)) {
         char beacon_data[256];
         bool auto_now = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
+        
+        const char *room_code = rmlui_casual_lobby_get_room_code();
+        if (room_code && room_code[0] != '\0') {
+            auto_now = false;
+        }
 
         // Include display name in beacon for casual lobby LAN detection.
         // Sanitize pipe characters to avoid breaking the beacon parser.

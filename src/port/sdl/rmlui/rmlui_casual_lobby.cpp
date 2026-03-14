@@ -699,6 +699,7 @@ extern "C" void rmlui_casual_lobby_show(void) {
     // Start SSE connection for real-time updates
     if (!s_room_code.empty()) {
         LobbyServer_SSEConnect(s_room_code.c_str());
+        SDLNetplayUI_StopSearch();
     }
     refresh_room_state_from_server();
 }

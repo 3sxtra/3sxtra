@@ -726,6 +726,10 @@ extern "C" void rmlui_network_lobby_show(void) {
     s_room_status = "";
     s_join_room_code = "";
     rmlui_wrapper_show_game_document("network_lobby");
+    
+    if (Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH)) {
+        SDLNetplayUI_StartSearch();
+    }
 }
 
 extern "C" void rmlui_network_lobby_hide(void) {
