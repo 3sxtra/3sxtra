@@ -1026,6 +1026,7 @@ void Netplay_Run() {
                 task[TASK_INIT].r_no[0] = 0;
                 task[TASK_INIT].r_no[1] = 0;
                 task[TASK_INIT].condition = 0;
+                task[TASK_GAME].condition = 0;
                 SDL_Log("[netplay] Re-entering LOBBY for casual room %s", room);
             } else {
                 Discovery_Shutdown();

@@ -136,10 +136,10 @@ try {
         );
         CREATE INDEX IF NOT EXISTS idx_matches_p1 ON matches(p1_id);
         CREATE INDEX IF NOT EXISTS idx_matches_p2 ON matches(p2_id);
-
-        -- Attempt to add has_replay column if the table already existed before this update
-        ALTER TABLE matches ADD COLUMN has_replay INTEGER DEFAULT 0;
     `);
+
+    // Migration: add has_replay column if the table existed before this column was added
+    try { db.exec('ALTER TABLE matches ADD COLUMN has_replay INTEGER DEFAULT 0;'); } catch { /* exists */ }
     
     // Add disconnects column to players_db if it doesn't exist
     try {
