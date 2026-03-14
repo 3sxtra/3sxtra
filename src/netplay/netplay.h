@@ -24,6 +24,7 @@ typedef enum NetplaySessionState {
 } NetplaySessionState;
 
 void Netplay_SetPlayerNumber(int player_num);
+int  Netplay_GetPlayerNumber(void);
 void Netplay_SetRemoteIP(const char* ip);
 void Netplay_SetLocalPort(unsigned short port);
 void Netplay_SetRemotePort(unsigned short port);

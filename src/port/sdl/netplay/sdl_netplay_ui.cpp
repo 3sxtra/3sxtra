@@ -916,7 +916,7 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
         // Winner_id: 0 = P1 won, 1 = P2 won (from game engine)
         // My_char[0/1]: character indices
         // PL_Wins[0/1]: round wins per player
-        int my_player = 0; // Local player is always P1 in netplay
+        int my_player = Netplay_GetPlayerNumber();
         int total_rounds = PL_Wins[0] + PL_Wins[1];
 
         // Only report to server if both players have verified lobby identities
@@ -1532,7 +1532,7 @@ void SDLNetplayUI_ReportNaturalMatchEnd(void) {
     // Auto-save replay locally
     NativeSave_AutoSaveReplay();
 
-    int my_player = 0; // Local player is always P1 in netplay
+    int my_player = Netplay_GetPlayerNumber();
     int total_rounds = PL_Wins[0] + PL_Wins[1];
 
     if (lobby_my_player_id[0] && current_opponent_id[0]) {

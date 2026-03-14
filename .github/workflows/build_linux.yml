@@ -21,17 +21,17 @@ jobs:
 
         steps:
           - name: Checkout repository
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
 
           - name: Cache dependencies
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: third_party_linux
                 key: linux-x64-deps-${{ hashFiles('build-deps.sh') }}
                 restore-keys: linux-x64-deps-
 
           - name: Cache Rust/Cargo
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: |
                     ~/.cargo/registry
@@ -49,7 +49,7 @@ jobs:
             shell: bash
 
           - name: Setup ccache
-            uses: hendrikmuhs/ccache-action@v1.2.14
+            uses: hendrikmuhs/ccache-action@v1.2
             with:
                 key: linux-x86_64-ccache
 
@@ -81,7 +81,7 @@ jobs:
 
           - name: Upload release artifact
             if: ${{ inputs.release }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: release-assets-linux-x86_64
                 path: 3SX-*-linux-x86_64.tar.gz
@@ -95,7 +95,7 @@ jobs:
 
           - name: Upload build log (GitHub)
             if: ${{ always() && !env.ACT && !inputs.release }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: build-log
                 path: build.log

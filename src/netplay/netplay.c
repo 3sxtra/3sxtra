@@ -143,6 +143,28 @@ static void clean_input_buffers() {
  *  - Input buffers (clean_input_buffers)
  */
 static void setup_vs_mode() {
+    // ====================================================================
+    // PHASE 0: Zero ALL snapshotted game state via GameState_Load.
+    //
+    // When connecting from the network lobby, the game engine may have been
+    // running under the RmlUI overlay (attract mode, demo, etc.), leaving
+    // stale data scattered across PLW[], zanzou, super gauge, command
+    // processor, combo tracking, grade/stun/vital, and slow-motion state.
+    // The native LAN lobby doesn't hit this because the menu system goes
+    // through a proper fade-destroy-reinit cycle.
+    //
+    // GameState_Load() writes every rollback-tracked global from a struct.
+    // Loading a zeroed struct zeros them all in one shot — self-maintaining
+    // if new fields are added to GameState in the future.
+    // ====================================================================
+    {
+        GameState* zeroed = (GameState*)SDL_calloc(1, sizeof(GameState));
+        if (zeroed) {
+            GameState_Load(zeroed);
+            SDL_free(zeroed);
+        }
+    }
+
     // Task timers and scratch data evolve independently per peer during menus.
     // Zero them for deterministic start. DO NOT zero r_no or condition —
     // those are game state machine routing fields set by the engine.
@@ -161,6 +183,7 @@ static void setup_vs_mode() {
     Pause = 0;
     Game_pause = 0;
 
+    // Re-set after zeroing plw — both players must be active for 2P mode
     plw[0].wu.pl_operator = 1;
     plw[1].wu.pl_operator = 1;
     Operator_Status[0] = 1;
@@ -809,6 +832,10 @@ void Netplay_SetPlayerNumber(int player_num) {
     player_number = player_num;
 }
 
+int Netplay_GetPlayerNumber(void) {
+    return player_number;
+}
+
 void Netplay_SetRemoteIP(const char* ip) {
     if (ip) {
         SDL_strlcpy(remote_ip_string, ip, sizeof(remote_ip_string));
@@ -873,6 +900,10 @@ void Netplay_Begin() {
 #endif
 
     session_state = NETPLAY_SESSION_TRANSITIONING;
+
+    SDL_Log("[netplay] *** BEGIN: local player = P%d (slot %d), remote = %s:%hu, local port = %hu ***",
+            player_number + 1, player_number,
+            remote_ip ? remote_ip : "(null)", remote_port, local_port);
 }
 
 void Netplay_EnterLobby() {
@@ -948,6 +979,11 @@ void Netplay_Run() {
             if (should_be_ready && target_peer && target_peer->peer_ready) {
                 if (handshake_ready_since == 0) {
                     handshake_ready_since = SDL_GetTicks();
+                    uint32_t local_id = Discovery_GetLocalInstanceID();
+                    SDL_Log("[netplay] LAN handshake: local_id=0x%08X peer_id=0x%08X "
+                            "we_initiated=%d → will be P%d",
+                            local_id, target_peer->instance_id,
+                            we_initiated, we_initiated ? 1 : 2);
                 }
                 // Hold for 1 second to let peer also process our ready beacon
                 if (SDL_GetTicks() - handshake_ready_since >= 1000) {

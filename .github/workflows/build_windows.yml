@@ -32,20 +32,20 @@ jobs:
                 msystem: MINGW64
 
           - name: Checkout repository
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
 
           - name: Install MSYS2 packages
             run: tr -d '\r' < tools/requirements-windows.txt | xargs pacman -S --needed --noconfirm
 
           - name: Cache dependencies
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: third_party
                 key: windows-x64-deps-${{ hashFiles('build-deps.sh') }}
                 restore-keys: windows-x64-deps-
 
           - name: Cache Rust/Cargo
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: |
                     ~/.cargo/registry
@@ -57,7 +57,7 @@ jobs:
             run: sh build-deps.sh
 
           - name: Setup ccache
-            uses: hendrikmuhs/ccache-action@v1.2.14
+            uses: hendrikmuhs/ccache-action@v1.2
             with:
                 key: windows-x64-ccache
 
@@ -89,7 +89,7 @@ jobs:
 
           - name: Upload release artifact
             if: ${{ inputs.release }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: release-assets-windows
                 path: 3SX-*-windows.zip
@@ -103,7 +103,7 @@ jobs:
 
           - name: Upload build log (GitHub)
             if: ${{ always() && !env.ACT && !inputs.release }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: build-log
                 path: build.log

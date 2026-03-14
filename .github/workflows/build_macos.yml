@@ -21,17 +21,17 @@ jobs:
 
         steps:
           - name: Checkout repository
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
 
           - name: Cache dependencies
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: third_party
                 key: macos-universal-deps-${{ hashFiles('build-deps.sh') }}
                 restore-keys: macos-universal-deps-
 
           - name: Cache Rust/Cargo
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: |
                     ~/.cargo/registry
@@ -49,7 +49,7 @@ jobs:
                 sh build-deps.sh
 
           - name: Setup ccache
-            uses: hendrikmuhs/ccache-action@v1.2.14
+            uses: hendrikmuhs/ccache-action@v1.2
             with:
                 key: macos-arm64-ccache
 
@@ -84,7 +84,7 @@ jobs:
 
           - name: Upload release artifact
             if: ${{ inputs.release }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: release-assets-macos
                 path: 3SX-*-macos.dmg
@@ -98,7 +98,7 @@ jobs:
 
           - name: Upload build log (GitHub)
             if: ${{ always() && !env.ACT && !inputs.release }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: build-log
                 path: build.log
