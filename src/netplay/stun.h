@@ -14,13 +14,13 @@ typedef struct {
     uint32_t public_ip;   // Network byte order
     uint16_t public_port; // Network byte order
     uint16_t local_port;  // Host byte order — actual OS-bound port (may differ from public_port)
-    int socket_fd;        // The socket used for STUN (reuse for hole punching)
+    struct NET_DatagramSocket* socket; // The socket used for STUN (reuse for hole punching)
 } StunResult;
 
 /// Perform a STUN Binding Request (RFC 5389).
 /// Uses stun.l.google.com:19302.
 /// Returns true on success and fills `result`.
-/// The socket in result->socket_fd is left open for hole punching.
+/// The socket in result->socket is left open for hole punching.
 bool Stun_Discover(StunResult* result, uint16_t local_port);
 
 /// Close the STUN socket when done
@@ -41,21 +41,6 @@ void Stun_FormatIP(uint32_t ip_net, char* buf, int buf_size);
 // Updates `peer_ip` and `peer_port` with the true translated endpoint if successful.
 bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, int punch_duration_ms,
                     SDL_AtomicInt* cancel_flag);
-
-/// Set the STUN socket to non-blocking mode (for use after hole punch succeeds)
-void Stun_SetNonBlocking(StunResult* result);
-
-/// --- Socket helpers for GekkoNet adapter (avoids winsock2.h in netplay.c) ---
-
-/// Send data via a raw socket to "ip:port". Returns bytes sent or -1.
-int Stun_SocketSendTo(int fd, const char* dest_endpoint, const char* data, int length);
-
-/// Receive data from a raw socket. Writes sender as "ip:port" into from_endpoint.
-/// Returns bytes received, 0 if nothing available, or -1 on error.
-int Stun_SocketRecvFrom(int fd, char* buf, int buf_size, char* from_endpoint, int endpoint_size);
-
-/// Close a raw socket fd.
-void Stun_SocketClose(int fd);
 
 #ifdef __cplusplus
 }

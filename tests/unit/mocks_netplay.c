@@ -65,7 +65,11 @@ int Discovery_GetPeers(NetplayDiscoveredPeer* out_peers, int max_peers) { return
 
 // Mocks for Config
 bool Config_GetBool(const char* key) { return false; }
+int Config_GetInt(const char* key) { return 0; }
 void Input_SetGamepadEventCallback(void (*cb)(int gamepad_id, int event_type, int button_or_axis, int value)) {}
+
+const char* rmlui_casual_lobby_get_room_code(void) { return ""; }
+void rmlui_casual_lobby_show(void) {}
 #ifndef MOCK_SUPPRESS_UI
 void SDLNetplayUI_SetNativeLobbyActive(bool active) {}
 #endif

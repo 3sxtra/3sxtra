@@ -25,15 +25,17 @@ function(target_link_gekkonet_sdl3 TARGET_NAME)
     target_include_directories(${TARGET_NAME} PRIVATE 
         ${PROJECT_SOURCE_DIR}/include 
         ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include
+        ${SDL3_NET_DIR}/include
     )
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PRIVATE 
             GekkoNet 
             ${SDL3_ROOT}/lib/libSDL3.dll.a
+            ${SDL3_NET_DIR}/lib/libSDL3_net.dll.a
             ws2_32 userenv ntdll advapi32 bcrypt dbghelp
         )
     else()
-        target_link_libraries(${TARGET_NAME} PRIVATE GekkoNet ${SDL3_ROOT}/lib/libSDL3.so)
+        target_link_libraries(${TARGET_NAME} PRIVATE GekkoNet ${SDL3_ROOT}/lib/libSDL3.so ${SDL3_NET_DIR}/lib/libSDL3_net.so)
     endif()
 endfunction()
 
@@ -65,7 +67,7 @@ add_unit_test(test_game_state
     ${PROJECT_SOURCE_DIR}/src/netplay/game_state.c
     mocks_globals.c
 )
-target_include_directories(test_game_state PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include)
+target_include_directories(test_game_state PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include ${SDL3_NET_DIR}/include)
 target_compile_definitions(test_game_state PRIVATE MOCK_SUPPRESS_CONFLICTS)
 target_link_sdl3(test_game_state)
 
@@ -79,6 +81,7 @@ add_unit_test(test_netplay_metrics
     ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
 )
 target_compile_definitions(test_netplay_metrics PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_metrics)
@@ -90,6 +93,7 @@ add_unit_test(test_netplay_events
     ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
 )
 target_compile_definitions(test_netplay_events PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_events)
@@ -103,6 +107,7 @@ add_unit_test(test_netplay_refactor
     ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
 )
 target_compile_definitions(test_netplay_refactor PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_refactor)
@@ -114,6 +119,7 @@ add_unit_test(test_state_differ
     ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
 )
 target_compile_definitions(test_state_differ PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_state_differ)
@@ -125,7 +131,7 @@ add_unit_test(test_effect_state_persistence
     ${PROJECT_SOURCE_DIR}/src/netplay/game_state.c
 )
 target_compile_definitions(test_effect_state_persistence PRIVATE MOCK_SUPPRESS_CONFLICTS)
-target_include_directories(test_effect_state_persistence PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include)
+target_include_directories(test_effect_state_persistence PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include ${SDL3_NET_DIR}/include)
 target_link_sdl3(test_effect_state_persistence)
 
 add_unit_test(test_netplay_oob
@@ -135,6 +141,7 @@ add_unit_test(test_netplay_oob
     ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
 )
 target_compile_definitions(test_netplay_oob PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_oob)
@@ -146,6 +153,7 @@ add_unit_test(test_netplay_init
     ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
 )
 target_compile_definitions(test_netplay_init PRIVATE DEBUG)
 target_compile_definitions(test_netplay_init PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
@@ -158,6 +166,7 @@ add_unit_test(test_netplay_catchup
     ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
 )
 target_compile_definitions(test_netplay_catchup PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_catchup)
@@ -175,6 +184,7 @@ add_unit_test(test_netplay_run
     ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
+    ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
 )
 target_compile_definitions(test_netplay_run PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_run)
@@ -266,7 +276,7 @@ add_unit_test(test_game_state_roundtrip
     ${PROJECT_SOURCE_DIR}/src/netplay/game_state.c
     mocks_globals.c
 )
-target_include_directories(test_game_state_roundtrip PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include)
+target_include_directories(test_game_state_roundtrip PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include ${SDL3_NET_DIR}/include)
 target_compile_definitions(test_game_state_roundtrip PRIVATE MOCK_SUPPRESS_CONFLICTS)
 target_link_sdl3(test_game_state_roundtrip)
 
@@ -311,6 +321,7 @@ add_unit_test(test_adx_decoder
     ${PROJECT_SOURCE_DIR}/src/port/sound/adx_decoder.c
 )
 target_include_directories(test_adx_decoder PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_link_libraries(test_adx_decoder PRIVATE m)
 
 add_unit_test(test_stage_config
     test_stage_config.c

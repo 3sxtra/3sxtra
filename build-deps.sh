@@ -230,6 +230,68 @@ fi
 
 # -----------------------------
 # -----------------------------
+# SDL3_net
+# -----------------------------
+
+SDL_NET_DIR="$THIRD_PARTY/sdl3_net"
+SDL_NET_BUILD="$SDL_NET_DIR/build"
+
+if [ "${SKIP_SDL3_BUILD:-}" = "1" ]; then
+    echo "SKIP_SDL3_BUILD=1 — skipping SDL3_net (pre-installed)"
+elif [ -d "$SDL_NET_BUILD" ]; then
+    echo "SDL3_net already built at $SDL_NET_BUILD"
+else
+    echo "Building SDL3_net..."
+    mkdir -p "$SDL_NET_DIR"
+    cd "$SDL_NET_DIR"
+
+    SDL_NET_SRC="$SDL_NET_DIR/SDL_net"
+
+    if [ ! -d "$SDL_NET_SRC" ]; then
+        echo "Cloning SDL3_net from git..."
+        git clone --depth 1 https://github.com/libsdl-org/SDL_net.git "$SDL_NET_SRC"
+    fi
+
+    cd "$SDL_NET_SRC"
+    mkdir -p build
+    cd build
+
+    case "$OS" in
+        Darwin|Linux)
+            CMAKE_EXTRA_ARGS=""
+            if [ "$OS" = "Darwin" ] && [ "$TARGET_ARCH" = "universal" ]; then
+                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+            fi
+            cmake .. \
+                ${CC:+-DCMAKE_C_COMPILER=$CC} \
+                ${CXX:+-DCMAKE_CXX_COMPILER=$CXX} \
+                -DCMAKE_INSTALL_PREFIX="$SDL_NET_BUILD" \
+                -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
+                -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
+                -DBUILD_SHARED_LIBS=ON \
+                -DSDLNET_EXAMPLES=OFF \
+                $CMAKE_EXTRA_ARGS
+            ;;
+        MINGW*|MSYS*|CYGWIN*)
+            cmake .. \
+                -G "MSYS Makefiles" \
+                -DCMAKE_C_COMPILER=gcc \
+                -DCMAKE_INSTALL_PREFIX="$SDL_NET_BUILD" \
+                -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
+                -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
+                -DBUILD_SHARED_LIBS=ON \
+                -DSDLNET_EXAMPLES=OFF
+            ;;
+    esac
+
+    cmake --build . -j$(nproc)
+    cmake --install .
+    echo "SDL3_net installed to $SDL_NET_BUILD"
+
+    cd "$ROOT_DIR"
+fi
+
+# -----------------------------
 # SDL3_mixer
 # -----------------------------
 

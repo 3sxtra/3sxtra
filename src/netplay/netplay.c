@@ -3,6 +3,7 @@
 
 #include "game_state.h"
 #include "gekkonet.h"
+#include "sdl_net_adapter.h"
 #include "main.h"
 #include "port/char_data.h"
 #include "port/config/config.h"
@@ -69,7 +70,7 @@ static char remote_ip_string[64] = { 0 };
 static const char* remote_ip = NULL;
 static int player_number = 0;
 static int player_handle = 0;
-static int stun_socket_fd = -1; // Pre-punched STUN socket for internet play
+static NET_DatagramSocket* stun_socket = NULL; // Pre-punched STUN socket for internet play
 static int s_negotiated_ft = 0;  // FT value agreed upon for the upcoming match (0 = use config default)
 static NetplaySessionState session_state = NETPLAY_SESSION_IDLE;
 static u16 input_history[2][INPUT_HISTORY_MAX] = { 0 };
@@ -326,71 +327,6 @@ static void configure_lossy_adapter() {
 }
 #endif
 
-// --- Custom adapter for STUN hole-punched connections ---
-// Wraps the pre-punched STUN socket fd via Stun_Socket* helpers (in stun.c)
-// so GekkoNet reuses the exact socket that completed hole punching,
-// preserving the NAT pinhole. The default ASIO adapter creates a new
-// socket which may get a different public port on Symmetric NAT.
-
-#define STUN_ADAPTER_RECV_BUF 4096
-#define STUN_ADAPTER_MAX_RESULTS 64
-
-static GekkoNetResult* stun_recv_pool[STUN_ADAPTER_MAX_RESULTS];
-static int stun_recv_count = 0;
-
-static void stun_adapter_send(GekkoNetAddress* addr, const char* data, int length) {
-    if (stun_socket_fd < 0)
-        return;
-
-    // Extract null-terminated endpoint string from GekkoNetAddress
-    char addr_str[128];
-    int copy_len = addr->size < (int)sizeof(addr_str) - 1 ? (int)addr->size : (int)sizeof(addr_str) - 1;
-    SDL_memcpy(addr_str, addr->data, copy_len);
-    addr_str[copy_len] = '\0';
-
-    Stun_SocketSendTo(stun_socket_fd, addr_str, data, length);
-}
-
-static GekkoNetResult** stun_adapter_receive(int* length) {
-    // GekkoNet's backend frees each result via free_data() after processing,
-    // so we just reset our pointer array here (matching ASIO's _results.clear()).
-    stun_recv_count = 0;
-
-    if (stun_socket_fd < 0) {
-        *length = 0;
-        return (GekkoNetResult**)stun_recv_pool;
-    }
-
-    char buf[STUN_ADAPTER_RECV_BUF];
-    while (stun_recv_count < STUN_ADAPTER_MAX_RESULTS) {
-        char endpoint[48];
-        int n = Stun_SocketRecvFrom(stun_socket_fd, buf, sizeof(buf), endpoint, sizeof(endpoint));
-        if (n <= 0)
-            break;
-
-        int ep_len = (int)SDL_strlen(endpoint);
-
-        GekkoNetResult* res = (GekkoNetResult*)SDL_malloc(sizeof(GekkoNetResult));
-        res->addr.data = SDL_malloc(ep_len);
-        res->addr.size = ep_len;
-        SDL_memcpy(res->addr.data, endpoint, ep_len);
-        res->data_len = n;
-        res->data = SDL_malloc(n);
-        SDL_memcpy(res->data, buf, n);
-
-        stun_recv_pool[stun_recv_count++] = res;
-    }
-
-    *length = stun_recv_count;
-    return (GekkoNetResult**)stun_recv_pool;
-}
-
-static void stun_adapter_free(void* data_ptr) {
-    SDL_free(data_ptr);
-}
-
-static GekkoNetAdapter stun_adapter = { stun_adapter_send, stun_adapter_receive, stun_adapter_free };
-
 static int compute_delay_from_ping(float avg_ping, float jitter) {
     float effective_rtt = avg_ping + jitter;
     if (effective_rtt < 30.0f)
@@ -422,10 +358,10 @@ static void configure_gekko() {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[netplay] Session is already running! probably incorrect.");
     }
 
-    if (stun_socket_fd >= 0) {
+    if (stun_socket != NULL) {
         // Internet play: reuse the hole-punched STUN socket
-        gekko_net_adapter_set(session, &stun_adapter);
-        SDL_Log("Using STUN socket fd %d for GekkoNet adapter", stun_socket_fd);
+        gekko_net_adapter_set(session, SDLNetAdapter_Create(stun_socket));
+        SDL_Log("Using STUN socket for GekkoNet adapter");
     } else {
 #if defined(LOSSY_ADAPTER)
         configure_lossy_adapter();
@@ -546,7 +482,7 @@ static void step_game(bool render) {
  * Input history is recorded via note_input() for future previous-frame lookups.
  * Then step_game() runs the actual simulation tick.
  */
-static void advance_game(GekkoGameEvent* event, bool render) {
+static void advance_game(const GekkoGameEvent* event, bool render) {
     const u16* inputs = (u16*)event->data.adv.inputs;
     const int frame = event->data.adv.frame;
 
@@ -773,12 +709,12 @@ void Netplay_SetRemotePort(unsigned short port) {
     remote_port = port;
 }
 
-void Netplay_SetStunSocket(int fd) {
+void Netplay_SetStunSocket(NET_DatagramSocket* socket) {
     // If we already hold a STUN socket, close it first
-    if (stun_socket_fd >= 0 && stun_socket_fd != fd) {
-        Stun_SocketClose(stun_socket_fd);
+    if (stun_socket != NULL && stun_socket != socket) {
+        NET_DestroyDatagramSocket(stun_socket);
     }
-    stun_socket_fd = fd;
+    stun_socket = socket;
 }
 
 void Netplay_SetNegotiatedFT(int ft) {
@@ -957,9 +893,9 @@ void Netplay_Run() {
             gekko_destroy(&session);
 
             // Close STUN socket if we used it for this session
-            if (stun_socket_fd >= 0) {
-                Stun_SocketClose(stun_socket_fd);
-                stun_socket_fd = -1;
+            if (stun_socket != NULL) {
+                NET_DestroyDatagramSocket(stun_socket);
+                stun_socket = NULL;
             }
 
 #ifndef LOSSY_ADAPTER

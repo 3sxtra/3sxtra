@@ -95,32 +95,6 @@ static void test_decode_endpoint_malformed(void **state) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Task 5 edge case additions — Stun_SocketRecvFrom                    */
-/* ------------------------------------------------------------------ */
-
-/* fd = -1 → returns -1 immediately (before any syscall) */
-static void test_socket_recv_from_bad_fd(void **state) {
-    (void) state;
-    char buf[64];
-    char from_ep[64];
-    int result = Stun_SocketRecvFrom(-1, buf, sizeof(buf), from_ep, sizeof(from_ep));
-    assert_int_equal(result, -1);
-}
-
-/* buf_size = 0 → recvfrom(fd, buf, 0, ...) — result is platform-dependent
-   (0 bytes received or error), but must not crash */
-static void test_socket_recv_from_zero_buf(void **state) {
-    (void) state;
-    /* Use fd=-1 so the call returns -1 before touching the network;
-       the important thing is we don't crash on zero buf_size argument. */
-    char buf[1];
-    char from_ep[64];
-    int result = Stun_SocketRecvFrom(-1, buf, 0, from_ep, sizeof(from_ep));
-    /* fd=-1 is caught before buf_size is examined — expect -1 */
-    assert_int_equal(result, -1);
-}
-
-/* ------------------------------------------------------------------ */
 /* Task 5 edge case additions — parse_binding_response (via public API)*/
 /* ------------------------------------------------------------------ */
 
@@ -165,8 +139,6 @@ int main(void) {
         /* Task 5 additions */
         cmocka_unit_test(test_decode_endpoint_empty_string),
         cmocka_unit_test(test_decode_endpoint_malformed),
-        cmocka_unit_test(test_socket_recv_from_bad_fd),
-        cmocka_unit_test(test_socket_recv_from_zero_buf),
         cmocka_unit_test(test_parse_binding_response_truncated),
         cmocka_unit_test(test_parse_binding_response_wrong_type),
     };

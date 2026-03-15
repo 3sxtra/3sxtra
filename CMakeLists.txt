@@ -597,6 +597,12 @@ endif()
 # THIRD_PARTY_DIR is already set above based on PLATFORM_RPI4
 # SDL3_ROOT is already set above
 
+# SDL3_net
+set(SDL3_NET_DIR "${THIRD_PARTY_DIR}/sdl3_net/build")
+find_package(SDL3 REQUIRED HINTS "${SDL3_ROOT}")
+find_package(SDL3_net REQUIRED HINTS "${SDL3_NET_DIR}")
+target_link_libraries(3sx PRIVATE SDL3_net::SDL3_net)
+
 # If SDL3_ROOT was set externally (e.g. -DSDL3_ROOT=/app for flatpak),
 # SDL3_image and SDL3_mixer are also installed there. Otherwise use third_party path.
 if(NOT SDL3_IMAGE_ROOT)
@@ -626,12 +632,14 @@ if(APPLE)
         ${SDL3_ROOT}/lib/libSDL3.0.dylib
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.dylib
         ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.dylib
+        ${SDL3_NET_DIR}/lib/libSDL3_net.dylib
     )
 elseif(WIN32)
     target_link_libraries(3sx PRIVATE
         ${SDL3_ROOT}/lib/libSDL3.dll.a
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.dll.a
         ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.dll.a
+        ${SDL3_NET_DIR}/lib/libSDL3_net.dll.a
 		dbghelp
         Spout_static
     )
@@ -644,6 +652,7 @@ elseif(UNIX)
         ${SDL3_ROOT}/lib/libSDL3.so
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.so
         ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.so
+        ${SDL3_NET_DIR}/lib/libSDL3_net.so
     )
 endif()
 
@@ -776,6 +785,7 @@ if(APPLE)
         ${SDL3_ROOT}/lib/libSDL3.0.dylib
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.dylib
         ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.dylib
+        ${SDL3_NET_DIR}/lib/libSDL3_net.dylib
         DESTINATION 3SX.app/Contents/Frameworks
     )
 elseif(WIN32)
@@ -791,7 +801,7 @@ elseif(WIN32)
 	
 	# automatically copies all the dependent DLLS, and ignores the system ones because they aren't necessary
 	install(RUNTIME_DEPENDENCY_SET deps
-		DIRECTORIES ${binPath} "${SDL3_ROOT}/bin" "${SDL3_IMAGE_ROOT}/bin" "${SDL3_MIXER_ROOT}/bin"
+		DIRECTORIES ${binPath} "${SDL3_ROOT}/bin" "${SDL3_IMAGE_ROOT}/bin" "${SDL3_MIXER_ROOT}/bin" "${SDL3_NET_DIR}/bin"
 		PRE_EXCLUDE_REGEXES "^api"
 		POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"
 		DESTINATION bin
@@ -803,6 +813,7 @@ elseif(WIN32)
         "${SDL3_ROOT}/bin/SDL3.dll"
         "${SDL3_IMAGE_ROOT}/bin/SDL3_image.dll"
         "${SDL3_MIXER_ROOT}/bin/SDL3_mixer.dll"
+        "${SDL3_NET_DIR}/bin/SDL3_net.dll"
         DESTINATION bin
     )
 elseif(UNIX)
@@ -812,7 +823,7 @@ elseif(UNIX)
     )
 
     install(RUNTIME_DEPENDENCY_SET deps
-        DIRECTORIES "${SDL3_ROOT}/lib" "${SDL3_IMAGE_ROOT}/lib" "${SDL3_MIXER_ROOT}/lib" "${THIRD_PARTY_DIR}/SDL_shadercross/build"
+        DIRECTORIES "${SDL3_ROOT}/lib" "${SDL3_IMAGE_ROOT}/lib" "${SDL3_MIXER_ROOT}/lib" "${SDL3_NET_DIR}/lib" "${THIRD_PARTY_DIR}/SDL_shadercross/build"
         POST_EXCLUDE_REGEXES "^/lib" "^/usr" "^/opt"
         DESTINATION lib
     )
@@ -855,10 +866,14 @@ if(ENABLE_TESTS)
     set(WITH_CMOCKERY_SUPPORT OFF CACHE BOOL "CMocka: Install cmockery header" FORCE)
     set(WITH_EXAMPLES OFF CACHE BOOL "CMocka: Build examples" FORCE)
     set(UNIT_TESTING OFF CACHE BOOL "CMocka: Build with unit testing" FORCE)
+
+
+
     
     FetchContent_MakeAvailable(cmocka)
     message(STATUS "CMocka configured.")
 
+    target_compile_definitions(cmocka PRIVATE HAVE_SIGNAL=0 HAVE_SIGNAL_H=0)
     add_subdirectory(tests)
 endif()
 

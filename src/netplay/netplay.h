@@ -51,10 +51,12 @@ typedef struct {
 bool Netplay_IsEnabled(void);
 bool Netplay_PollEvent(NetplayEvent* out);
 
+#include <SDL3_net/SDL_net.h>
+
 /// Pass a pre-punched STUN socket fd for GekkoNet to reuse.
 /// This avoids creating a new socket (which would lose the NAT pinhole).
-/// Set to -1 to fall back to the default ASIO adapter.
-void Netplay_SetStunSocket(int fd);
+/// Set to NULL to fall back to the default ASIO adapter.
+void Netplay_SetStunSocket(NET_DatagramSocket* socket);
 
 /// Set/get the negotiated First-To value for the upcoming match.
 /// The challenger sets this before Netplay_Begin(); the receiver uses the

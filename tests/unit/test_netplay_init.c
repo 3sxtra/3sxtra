@@ -9,7 +9,7 @@
 
 #include "netplay/netplay.h"
 #include "game_state.h"
-#include "sf33rd/Source/Game/Game.h"
+#include "sf33rd/Source/Game/game.h"
 #include "sf33rd/Source/Game/debug/debug_config.h"
 #include <SDL3/SDL.h>
 

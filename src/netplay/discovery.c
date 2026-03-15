@@ -5,6 +5,7 @@
 #include "port/config/config.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include <SDL3/SDL.h>
+#include <SDL3_net/SDL_net.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,7 +45,7 @@ static uint32_t local_instance_id = 0;
 static bool local_auto_connect = false;
 static bool local_ready = false;
 static int broadcast_sock = -1;
-static int listen_sock = -1;
+static NET_DatagramSocket* listen_sock = NULL;
 static uint32_t last_broadcast_ticks = 0;
 static uint32_t local_challenge_target = 0; // 0 = no target
 
@@ -72,22 +73,7 @@ static void remove_dismissed(uint32_t id) {
     }
 }
 
-static void set_nonblocking(int sock) {
-#ifdef _WIN32
-    u_long mode = 1;
-    ioctlsocket(sock, FIONBIO, &mode);
-#else
-    int flags = fcntl(sock, F_GETFL, 0);
-    fcntl(sock, F_SETFL, flags | O_NONBLOCK);
-#endif
-}
-
 void Discovery_Init(bool auto_connect) {
-#ifdef _WIN32
-    WSADATA wsaData;
-    WSAStartup(MAKEWORD(2, 2), &wsaData);
-#endif
-
     // Generate a cryptographically strong unique instance ID.
     // SDL_rand_bits() returns a full 32-bit random value via SDL's CSPRNG,
     // which is seeded independently per process — no address-XOR collision
@@ -110,23 +96,7 @@ void Discovery_Init(bool auto_connect) {
     }
 
     // Setup listen socket
-    listen_sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (listen_sock >= 0) {
-        int reuse = 1;
-        setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse));
-#ifdef SO_REUSEPORT
-        setsockopt(listen_sock, SOL_SOCKET, SO_REUSEPORT, (const char*)&reuse, sizeof(reuse));
-#endif
-
-        struct sockaddr_in listen_addr;
-        memset(&listen_addr, 0, sizeof(listen_addr));
-        listen_addr.sin_family = AF_INET;
-        listen_addr.sin_port = htons(DISCOVERY_PORT);
-        listen_addr.sin_addr.s_addr = INADDR_ANY;
-        bind(listen_sock, (struct sockaddr*)&listen_addr, sizeof(listen_addr));
-
-        set_nonblocking(listen_sock);
-    }
+    listen_sock = NET_CreateDatagramSocket(NULL, DISCOVERY_PORT);
 
     last_broadcast_ticks = 0;
 }
@@ -136,13 +106,10 @@ void Discovery_Shutdown() {
         closesocket(broadcast_sock);
         broadcast_sock = -1;
     }
-    if (listen_sock >= 0) {
-        closesocket(listen_sock);
-        listen_sock = -1;
+    if (listen_sock != NULL) {
+        NET_DestroyDatagramSocket(listen_sock);
+        listen_sock = NULL;
     }
-#ifdef _WIN32
-    WSACleanup();
-#endif
 }
 
 void Discovery_Update() {
@@ -268,18 +235,17 @@ void Discovery_Update() {
 
     // Listen — drain all queued packets (important for same-machine testing
     // where self-broadcasts can starve the peer's beacon)
-    if (listen_sock >= 0) {
+    if (listen_sock != NULL) {
         for (int pkt = 0; pkt < 32; pkt++) {
-            char buffer[256];
-            struct sockaddr_in sender_addr;
-            socklen_t sender_len = sizeof(sender_addr);
-
-            int bytes =
-                recvfrom(listen_sock, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&sender_addr, &sender_len);
-
-            if (bytes <= 0)
+            NET_Datagram* dgram = NULL;
+            if (!NET_ReceiveDatagram(listen_sock, &dgram) || !dgram)
                 break; // No more packets
 
+            int bytes = dgram->buflen;
+            if (bytes >= 256) bytes = 255;
+
+            char buffer[256];
+            memcpy(buffer, dgram->buf, bytes);
             buffer[bytes] = '\0';
             unsigned int peer_instance_id = 0;
             int peer_auto = 0;
@@ -371,7 +337,7 @@ void Discovery_Update() {
                 // Ignore our own broadcast
                 if (peer_instance_id != local_instance_id) {
                     char ip_str[64];
-                    SDL_strlcpy(ip_str, inet_ntoa(sender_addr.sin_addr), sizeof(ip_str));
+                    SDL_strlcpy(ip_str, NET_GetAddressString(dgram->addr), sizeof(ip_str));
 
                     bool found = false;
                     for (int i = 0; i < num_peers; i++) {
@@ -418,6 +384,7 @@ void Discovery_Update() {
                     }
                 }
             }
+            NET_DestroyDatagram(dgram);
         }
     }
 

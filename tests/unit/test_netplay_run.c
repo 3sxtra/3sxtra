@@ -7,7 +7,7 @@
 
 #include "netplay/netplay.h"
 #include "game_state.h"
-#include "sf33rd/Source/Game/Game.h"
+#include "sf33rd/Source/Game/game.h"
 #include "netplay/discovery.h"
 
 // Globals used by netplay.c
