@@ -152,6 +152,22 @@ static void load_preset_internal(int index) {
         }
     }
 
+    // Populate chain state so UI reflects the loaded chain on boot
+    if (SDL_strcmp(available_presets[index], "_3sx_chain.slangp") == 0) {
+        GLSLP_Preset* src = GLSLP_Load(full_path);
+        if (src) {
+            s_chain_preset = *src;
+            s_chain_active = true;
+            GLSLP_Free(src);
+        } else {
+            memset(&s_chain_preset, 0, sizeof(GLSLP_Preset));
+            s_chain_active = false;
+        }
+    } else {
+        memset(&s_chain_preset, 0, sizeof(GLSLP_Preset));
+        s_chain_active = false;
+    }
+
     libretro_manager = LibrashaderManager_Init(full_path);
 
     if (!libretro_manager) {
@@ -434,6 +450,7 @@ void SDLAppShader_ChainApply(void) {
             libretro_manager = NULL;
         }
         s_chain_needs_apply = false;
+        Config_SetString(CFG_KEY_SHADER_PATH, "");
         return;
     }
 
@@ -468,6 +485,7 @@ void SDLAppShader_ChainApply(void) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "ChainApply: Failed to init manager from merged preset");
     } else {
         SDL_Log("ChainApply: Loaded merged chain (%d passes)", s_chain_preset.pass_count);
+        Config_SetString(CFG_KEY_SHADER_PATH, "_3sx_chain.slangp");
     }
 
     s_chain_needs_apply = false;

@@ -91,8 +91,10 @@ static Rml::String to_lower(const Rml::String& s) {
     return out;
 }
 
-static constexpr int FILTERED_PRESETS_MAX = 50;
+static constexpr int FILTERED_PRESETS_MAX = 500;
 static int s_filtered_count = 0;
+
+static Rml::String extract_basename(const char* path);
 
 static void rebuild_filtered_presets() {
     /* Build into a temp list first. */
@@ -116,7 +118,7 @@ static void rebuild_filtered_presets() {
             if (name_lower.find(filter_lower) == Rml::String::npos)
                 continue;
         }
-        s_filtered_presets[match_count] = { name, i };
+        s_filtered_presets[match_count] = { extract_basename(name), i };
         match_count++;
     }
 

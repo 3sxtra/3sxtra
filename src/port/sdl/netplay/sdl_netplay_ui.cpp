@@ -426,26 +426,8 @@ static int SDLCALL lobby_poll_thread_fn(void* data) {
     SDL_MemoryBarrierRelease();
     SDL_SetAtomicInt(&lobby_server_player_count, count);
 
-    // Sync peers into PingProbe and send/receive probes
-    if (ping_probe_initialized) {
-        // Add/update peers from the player list
-        for (int i = 0; i < count; i++) {
-            // Skip ourselves
-            if (strcmp(temp_players[i].player_id, lobby_my_player_id) == 0)
-                continue;
-            // Decode their STUN endpoint from room_code
-            uint32_t peer_ip = 0;
-            uint16_t peer_port = 0;
-            if (temp_players[i].room_code[0] && Stun_DecodeEndpoint(temp_players[i].room_code, &peer_ip, &peer_port)) {
-                // Skip probing peers on the same LAN (same public IP) — unreachable via
-                // public endpoint due to no hairpin NAT, causes false "unreachable" warnings.
-                if (stun_result.public_ip != 0 && peer_ip == stun_result.public_ip)
-                    continue;
-                PingProbe_AddPeer(peer_ip, peer_port, temp_players[i].player_id);
-            }
-        }
-        PingProbe_Update();
-    }
+    // Note: PingProbe peer sync is now handled in the main thread to avoid
+    // thread-safety issues and to allow frequent (per-frame) processing.
 
     SDL_SetAtomicInt(&lobby_poll_active, 0);
     return 0;
@@ -618,6 +600,28 @@ static void lobby_poll_server(void) {
             lobby_pending_invite_ping = -1;
             lobby_pending_invite_ft = 2;
         }
+    }
+
+    // Process PingProbes frequently (every frame)
+    if (ping_probe_initialized) {
+        // Add/update peers from the player list (atomic access is safe enough for reading)
+        int current_count = SDL_GetAtomicInt(&lobby_server_player_count);
+        for (int i = 0; i < current_count; i++) {
+            // Skip ourselves
+            if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
+                continue;
+            // Decode their STUN endpoint from room_code
+            uint32_t peer_ip = 0;
+            uint16_t peer_port = 0;
+            if (lobby_server_players[i].room_code[0] &&
+                Stun_DecodeEndpoint(lobby_server_players[i].room_code, &peer_ip, &peer_port)) {
+                // Skip probing peers on the same LAN (same public IP) via public endpoint
+                if (stun_result.public_ip != 0 && peer_ip == stun_result.public_ip)
+                    continue;
+                PingProbe_AddPeer(peer_ip, peer_port, lobby_server_players[i].player_id);
+            }
+        }
+        PingProbe_Update();
     }
 }
 

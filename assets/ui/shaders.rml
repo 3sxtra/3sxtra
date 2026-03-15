@@ -64,7 +64,11 @@
                          data-if="preset.index >= 0"
                          class="preset-item"
                          data-class-selected="preset.index == current_preset">
-                    {{preset.name}} <span class="chain-select-btn" data-event-click="select_preset(preset.index)">Sel</span> <span class="chain-append-btn" data-event-click="chain_append(preset.index)">+A</span> <span class="chain-prepend-btn" data-event-click="chain_prepend(preset.index)">+P</span>
+                        <span class="preset-name-text" data-event-click="select_preset(preset.index)">{{preset.name}}</span>
+                        <div class="preset-actions">
+                            <span class="chain-append-btn" data-event-click="chain_append(preset.index)">+A</span>
+                            <span class="chain-prepend-btn" data-event-click="chain_prepend(preset.index)">+P</span>
+                        </div>
                     </div>
                 </div>
             </div>

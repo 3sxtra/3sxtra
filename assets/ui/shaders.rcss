@@ -230,12 +230,16 @@ input.text:focus {
 }
 
 .preset-item {
-    display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
     padding: 3dp 10dp;
     font-size: 13dp;
     color: #bbb;
     cursor: pointer;
     border-radius: 4dp;
+    box-sizing: border-box;
 }
 
 .preset-item:hover {
@@ -381,12 +385,23 @@ scrollbarvertical slidertrack {
 
 /* ── Preset Item Chain Buttons ─────────────────────────────────── */
 
+.preset-name-text {
+    display: inline-block;
+    width: 70%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.preset-name-text:hover {
+    color: #ff9933;
+}
+
 .chain-append-btn, .chain-prepend-btn {
     display: inline-block;
-    width: 36dp;
-    height: 26dp;
-    padding: 0;
-    font-size: 14dp;
+    padding: 2dp 6dp;
+    font-size: 11dp;
     font-weight: bold;
     background-color: #1a3a1a;
     color: #6c6;
@@ -394,29 +409,12 @@ scrollbarvertical slidertrack {
     border-color: #3a5a3a;
     border-radius: 4dp;
     margin-left: 4dp;
+    vertical-align: middle;
 }
 
 .chain-append-btn:hover, .chain-prepend-btn:hover {
     background-color: #2a5a2a;
     color: #afa;
-}
-
-.chain-select-btn {
-    display: inline-block;
-    padding: 0 8dp;
-    height: 26dp;
-    font-size: 14dp;
-    background-color: #2a2a3a;
-    color: #aac;
-    border-width: 1dp;
-    border-color: #444;
-    border-radius: 4dp;
-    margin-left: 6dp;
-}
-
-.chain-select-btn:hover {
-    background-color: #3a3a5a;
-    color: #fff;
 }
 
 .chain-save-btn {
