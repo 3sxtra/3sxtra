@@ -16,6 +16,32 @@
 
 #include <SDL3_net/SDL_net.h>
 
+// Platform headers for getaddrinfo with AF_INET hint (force IPv4 resolution).
+// SDL3_Net's NET_ResolveHostname returns IPv6 first on dual-stack systems,
+// but the netplay stack uses uint32_t IPs (IPv4 only).
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#endif
+
+// Resolve a hostname to an IPv4 address string (e.g. "142.250.189.127").
+// Returns true on success, writes result to ipv4_buf.
+static bool resolve_hostname_ipv4(const char* hostname, char* ipv4_buf, int buf_size) {
+    struct addrinfo hints = {0}, *res = NULL;
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+    if (getaddrinfo(hostname, NULL, &hints, &res) != 0 || !res)
+        return false;
+    struct sockaddr_in* sin = (struct sockaddr_in*)res->ai_addr;
+    inet_ntop(AF_INET, &sin->sin_addr, ipv4_buf, buf_size);
+    freeaddrinfo(res);
+    return true;
+}
+
 // STUN message types (RFC 5389)
 #define STUN_BINDING_REQUEST 0x0001
 #define STUN_BINDING_RESPONSE 0x0101
@@ -124,6 +150,8 @@ static void build_binding_request(uint8_t* buf, uint8_t* transaction_id) {
 }
 
 // Parse STUN Binding Response for XOR-MAPPED-ADDRESS or MAPPED-ADDRESS
+// TODO: Add IPv6 support (family=0x02) — requires changing IP representation
+//       across the entire netplay stack from uint32_t to a dual-stack type.
 static bool parse_binding_response(const uint8_t* buf, int len, const uint8_t* transaction_id, uint32_t* out_ip,
                                    uint16_t* out_port) {
     if (len < 20)
@@ -199,28 +227,51 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
     memset(result, 0, sizeof(*result));
     result->socket = NULL;
 
-    NET_DatagramSocket* sock = NET_CreateDatagramSocket(NULL, local_port);
+    // Bind to 0.0.0.0 explicitly to force IPv4.
+    // NULL creates a dual-stack socket on Windows, which causes STUN servers
+    // to return IPv6 XOR-MAPPED-ADDRESS that our parser doesn't handle.
+    NET_Address* bind_addr = NET_ResolveHostname("0.0.0.0");
+    if (bind_addr) {
+        // Wait for resolve (instant for numeric addresses, but API is async)
+        int wait = 0;
+        while (NET_GetAddressStatus(bind_addr) == NET_WAITING && wait < 100) {
+            SDL_Delay(1);
+            wait++;
+        }
+    }
+    NET_DatagramSocket* sock = NET_CreateDatagramSocket(bind_addr, local_port);
+    if (bind_addr) NET_UnrefAddress(bind_addr);
     if (!sock) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to create UDP socket: %s", SDL_GetError());
         return false;
     }
 
-    NET_Address* stun_addr = NET_ResolveHostname("stun.l.google.com");
-    if (!stun_addr) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve stun.l.google.com: %s", SDL_GetError());
+    // Force IPv4 resolution for the STUN server.
+    // SDL3_Net's NET_ResolveHostname returns IPv6 on dual-stack systems,
+    // but our STUN parser and netplay stack only handle IPv4.
+    char stun_ipv4[64];
+    if (!resolve_hostname_ipv4("stun.l.google.com", stun_ipv4, sizeof(stun_ipv4))) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve stun.l.google.com to IPv4");
         NET_DestroyDatagramSocket(sock);
         return false;
     }
 
-    // Spin-wait for resolve (we're on a background thread):
+    NET_Address* stun_addr = NET_ResolveHostname(stun_ipv4);
+    if (!stun_addr) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s via SDL3_Net: %s", stun_ipv4, SDL_GetError());
+        NET_DestroyDatagramSocket(sock);
+        return false;
+    }
+
+    // Spin-wait for resolve (instant for numeric IPs, but API is async):
     int wait_attempts = 0;
-    while (NET_GetAddressStatus(stun_addr) == NET_WAITING && wait_attempts < 300) {
-        SDL_Delay(10);
+    while (NET_GetAddressStatus(stun_addr) == NET_WAITING && wait_attempts < 100) {
+        SDL_Delay(1);
         wait_attempts++;
     }
 
     if (NET_GetAddressStatus(stun_addr) != NET_SUCCESS) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve stun.l.google.com");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s", stun_ipv4);
         NET_UnrefAddress(stun_addr);
         NET_DestroyDatagramSocket(sock);
         return false;
