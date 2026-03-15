@@ -96,6 +96,12 @@ extern bool game_paused;
 #include <stdbool.h>
 #include <string.h>
 
+/* ── GPU preference: request discrete GPU on hybrid-graphics systems ── */
+#ifdef _WIN32
+__declspec(dllexport) unsigned long NvOptimusEnablement                  = 1; /* NVIDIA Optimus */
+__declspec(dllexport) unsigned long AmdPowerXpressRequestHighPerformance = 1; /* AMD switchable */
+#endif
+
 // sbss
 s32 system_init_level;
 MPP mpp_w;

@@ -230,13 +230,13 @@ void SDLGameRendererClassic_BeginFrame(void) {
 }
 
 void SDLGameRendererClassic_RenderFrame(void) {
-    TRACE_ZONE_N("Classic:RenderFrame");
+
     TRACE_PLOT_INT("ClassicRenderTasks", cl_render_task_count);
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
     SDL_SetRenderTarget(renderer, cps3_canvas_classic);
 
     if (cl_render_task_count == 0) {
-        TRACE_ZONE_END();
+
         return;
     }
 
@@ -276,7 +276,7 @@ void SDLGameRendererClassic_RenderFrame(void) {
     }
     TRACE_SUB_END();
 
-    TRACE_ZONE_END();
+
 }
 
 void SDLGameRendererClassic_EndFrame(void) {
@@ -407,10 +407,10 @@ void SDLGameRendererClassic_UnlockTexture(unsigned int th) {
 // --- Palette Management ---
 
 void SDLGameRendererClassic_CreatePalette(unsigned int ph) {
-    TRACE_ZONE_N("Classic:CreatePalette");
+
     const int palette_index = HI_16_BITS(ph) - 1;
     if (palette_index < 0 || palette_index >= FL_PALETTE_MAX) {
-        TRACE_ZONE_END();
+
         return;
     }
 
@@ -432,13 +432,13 @@ void SDLGameRendererClassic_CreatePalette(unsigned int ph) {
         color_size = 2;
         break;
     default:
-        TRACE_ZONE_END();
+
         return;
     }
 
     SDL_Palette* sdl_pal = SDL_CreatePalette(color_count);
     if (!sdl_pal) {
-        TRACE_ZONE_END();
+
         return;
     }
 
@@ -455,7 +455,7 @@ void SDLGameRendererClassic_CreatePalette(unsigned int ph) {
     SDL_SetPaletteColors(sdl_pal, colors, 0, color_count);
     cl_palettes[palette_index] = sdl_pal;
 
-    TRACE_ZONE_END();
+
 }
 
 void SDLGameRendererClassic_DestroyPalette(unsigned int palette_handle) {

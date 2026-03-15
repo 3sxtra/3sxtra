@@ -916,7 +916,7 @@ void SDLApp_EndFrame() {
 
         // Frame pacing
         Uint64 now = SDL_GetTicksNS();
-        TRACE_SUB_BEGIN("FramePacing");
+
         if (!frame_rate_uncapped) {
             if (frame_deadline == 0) {
                 frame_deadline = now + target_frame_time_ns;
@@ -939,7 +939,7 @@ void SDLApp_EndFrame() {
                 frame_deadline = now + target_frame_time_ns;
             }
         }
-        TRACE_SUB_END();
+
 
         frame_counter += 1;
         SDLAppDebugHud_NoteFrameEnd();
@@ -1336,7 +1336,7 @@ void SDLApp_EndFrame() {
         // Must render independently of the FPS HUD toggle.
         // ⚡ Pi4: only reset GL state + render when there's actually text to draw.
         // The 5 GL state calls below cost ~50-100µs on V3D even with zero text.
-        TRACE_SUB_BEGIN("GL:DebugText");
+
 #if DEBUG
         {
             glActiveTexture(GL_TEXTURE0);
@@ -1364,7 +1364,7 @@ void SDLApp_EndFrame() {
 #endif
             SDLAppDebugHud_Render(win_w, win_h, &viewport);
         }
-        TRACE_SUB_END();
+
 
         // Render overlays (menus, netplay, UI flush)
         render_overlays(win_w, win_h);
@@ -1407,12 +1407,6 @@ void SDLApp_EndFrame() {
             TRACE_SUB_END();
         }
 
-        // Force GPU to finish all queued work — isolates GPU execution time
-        // from the swap itself so Tracy shows where the cost actually is.
-        TRACE_SUB_BEGIN("GL:Finish");
-        glFinish();
-        TRACE_SUB_END();
-
         // Swap the window to display the final rendered frame
         TRACE_SUB_BEGIN("SwapWindow");
         if (!has_pending_quit()) {
@@ -1438,7 +1432,7 @@ void SDLApp_EndFrame() {
 
     // Do frame pacing (skipped when uncapped for benchmarking)
     Uint64 now = SDL_GetTicksNS();
-    TRACE_SUB_BEGIN("FramePacing");
+
 
     if (!frame_rate_uncapped) {
         if (frame_deadline == 0) {
@@ -1471,7 +1465,7 @@ void SDLApp_EndFrame() {
             frame_deadline = now + target_frame_time_ns;
         }
     }
-    TRACE_SUB_END();
+
 
     // Measure
     frame_counter += 1;
