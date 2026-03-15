@@ -42,6 +42,7 @@ typedef struct {
     uint32_t ip;   /* Network byte order */
     uint16_t port; /* Network byte order */
     bool active;
+    uint8_t generation; /* Incremented on slot reuse — prevents stale pong cross-attribution */
 
     uint16_t next_seq;
     uint32_t last_send_ticks; /* SDL_GetTicks() when last probe was sent */
@@ -104,7 +105,8 @@ static void send_probe(ProbePeer* peer) {
 
     uint32_t now = SDL_GetTicks();
     uint8_t pkt[PROBE_PKT_SIZE];
-    uint16_t token = (uint16_t)(peer - s_peers);
+    /* Token encodes slot index (low 8 bits) + generation (high 8 bits) */
+    uint16_t token = (uint16_t)((peer->generation << 8) | (uint8_t)(peer - s_peers));
     build_probe(pkt, PING_MAGIC, peer->next_seq, now, token);
 
     uint16_t host_port = SDL_Swap16BE(peer->port);
@@ -153,12 +155,17 @@ static void receive_probes(void) {
             memcpy(&ts, buf + 10, 4);
             memcpy(&token, buf + 14, 2);
 
-            if (token >= MAX_PROBE_PEERS || !s_peers[token].active) {
+            /* Decode slot index and generation from token */
+            uint8_t slot = (uint8_t)(token & 0xFF);
+            uint8_t gen = (uint8_t)(token >> 8);
+
+            if (slot >= MAX_PROBE_PEERS || !s_peers[slot].active ||
+                s_peers[slot].generation != gen) {
                 NET_DestroyDatagram(dgram);
                 continue;
             }
 
-            ProbePeer* peer = &s_peers[token];
+            ProbePeer* peer = &s_peers[slot];
 
             // Verify by comparing sender IP string with peer's expected IP
             const char* sender_ip = NET_GetAddressString(dgram->addr);
@@ -287,7 +294,9 @@ void PingProbe_AddPeer(uint32_t ip, uint16_t port, const char* player_id) {
     }
 
     ProbePeer* p = &s_peers[slot];
+    uint8_t new_gen = (uint8_t)(p->generation + 1); // Preserve across memset
     memset(p, 0, sizeof(*p));
+    p->generation = new_gen;
     snprintf(p->player_id, sizeof(p->player_id), "%s", player_id);
     p->ip = ip;
     p->port = port;

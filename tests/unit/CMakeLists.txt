@@ -211,11 +211,12 @@ target_link_sdl3(test_config)
 add_unit_test(test_lobby_server
     test_lobby_server.c
     ${PROJECT_SOURCE_DIR}/src/netplay/sha256.c
+    ${PROJECT_SOURCE_DIR}/third_party/cJSON/cJSON.c
 )
-target_include_directories(test_lobby_server PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${PROJECT_SOURCE_DIR}/src ${SDL3_ROOT}/include)
+target_include_directories(test_lobby_server PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${PROJECT_SOURCE_DIR}/src ${SDL3_ROOT}/include ${PROJECT_SOURCE_DIR}/third_party/cJSON)
 target_link_sdl3(test_lobby_server)
 if(WIN32)
-    target_link_libraries(test_lobby_server PRIVATE ws2_32 bcrypt)
+    target_link_libraries(test_lobby_server PRIVATE ws2_32 bcrypt curl)
 endif()
 
 add_unit_test(test_identity

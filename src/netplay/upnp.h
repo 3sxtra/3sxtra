@@ -29,6 +29,9 @@ void Upnp_RemoveMapping(UpnpMapping* mapping);
 /// Returns true on success.
 bool Upnp_GetExternalIP(char* out_ip, int ip_buf_size);
 
+/// Invalidate the cached IGD URLs (forces re-discovery on next call).
+void Upnp_InvalidateCache(void);
+
 #ifdef __cplusplus
 }
 #endif

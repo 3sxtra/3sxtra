@@ -99,6 +99,7 @@ jobs:
                   libwayland-dev:arm64 libwayland-egl1:arm64 libdecor-0-dev:arm64 \
                   libminiupnpc-dev:arm64 \
                   libfreetype-dev:arm64 \
+                  libcurl4-openssl-dev:arm64 \
                   zlib1g-dev:arm64 \
                   wayland-protocols
 

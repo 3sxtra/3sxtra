@@ -12,6 +12,7 @@
 #include "game_state.h"
 #include "netplay/identity.h"
 #include "netplay/lobby_server.h"
+#include <SDL3_net/SDL_net.h>
 #include "port/broadcast.h"
 #include "port/config/config.h"
 #include "port/mods/modded_stage.h"
@@ -241,6 +242,7 @@ bool use_rmlui = false;
 int SDLApp_Init() {
     Config_Init();
     Identity_Init();
+    NET_Init();
     LobbyServer_Init();
 
     const char* cfg_scale = Config_GetString(CFG_KEY_SCALEMODE);
@@ -688,6 +690,7 @@ void SDLApp_Quit() {
     Config_Save();
     Config_Destroy();
     ControllerImage_Module_Quit();
+    NET_Quit();
     SDL_DestroyWindow(window);
     SDL_Quit();
 }

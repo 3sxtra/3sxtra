@@ -11,8 +11,8 @@ extern "C" {
 
 /// Result of a STUN binding request
 typedef struct {
-    uint32_t public_ip;   // Network byte order
-    uint16_t public_port; // Network byte order
+    uint32_t public_ip;   // Network byte order (big-endian)
+    uint16_t public_port; // Host byte order
     uint16_t local_port;  // Host byte order — actual OS-bound port (may differ from public_port)
     struct NET_DatagramSocket* socket; // The socket used for STUN (reuse for hole punching)
 } StunResult;

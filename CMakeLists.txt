@@ -90,6 +90,11 @@ if(ENABLE_TRACY)
     FetchContent_MakeAvailable(tracy)
 endif()
 
+# cJSON — vendored single-file JSON library for lobby_server HTTP client
+# Compiled directly as a source file to avoid CMake reconfigure issues
+include_directories("${THIRD_PARTY_DIR}/cJSON")
+set_source_files_properties("${THIRD_PARTY_DIR}/cJSON/cJSON.c" PROPERTIES COMPILE_OPTIONS "-Wno-error")
+
 # Lua 5.4 — vendored static library for RmlUi Lua bindings
 # Must be added BEFORE RmlUi so the Lua::Lua target exists when
 # RmlUi's Dependencies.cmake runs.
@@ -297,6 +302,8 @@ add_executable(3sx MACOSX_BUNDLE
     # --- sdl/netplay/ ---
     src/port/sdl/netplay/sdl_netplay_ui.cpp
     src/port/sdl/netstats_renderer.c
+    # --- cJSON (vendored) ---
+    ${THIRD_PARTY_DIR}/cJSON/cJSON.c
     # --- sdl/app/ ---
     src/port/sdl/app/sdl_app_input.c
     src/port/sdl/app/sdl_app_scale.c
@@ -477,7 +484,7 @@ if(ENABLE_TRACY)
 endif()
 
 if(UNIX)
-    target_link_libraries(3sx PRIVATE dl pthread)
+    target_link_libraries(3sx PRIVATE dl pthread curl)
 
 
 
@@ -516,6 +523,7 @@ if(WIN32)
         bcrypt
         miniupnpc
         iphlpapi
+        curl
     )
     target_compile_definitions(3sx PRIVATE HAVE_UPNP)
 endif()
@@ -597,8 +605,17 @@ endif()
 # THIRD_PARTY_DIR is already set above based on PLATFORM_RPI4
 # SDL3_ROOT is already set above
 
-# SDL3_net
-set(SDL3_NET_DIR "${THIRD_PARTY_DIR}/sdl3_net/build")
+# SDL3_net — follow the same SDL3_ROOT fallback pattern as SDL3_image/SDL3_mixer
+if(NOT SDL3_NET_DIR)
+    if(SDL3_ROOT STREQUAL "${THIRD_PARTY_DIR}/sdl3/build")
+        set(SDL3_NET_DIR "${THIRD_PARTY_DIR}/sdl3_net/build")
+    else()
+        set(SDL3_NET_DIR "${SDL3_ROOT}")
+    endif()
+endif()
+if(SDL3_NET_DIR STREQUAL "${THIRD_PARTY_DIR}/sdl3_net/build")
+    set(SDL3_net_DIR "${SDL3_NET_DIR}/lib/cmake/SDL3_net" CACHE PATH "" FORCE)
+endif()
 find_package(SDL3 REQUIRED HINTS "${SDL3_ROOT}")
 find_package(SDL3_net REQUIRED HINTS "${SDL3_NET_DIR}")
 target_link_libraries(3sx PRIVATE SDL3_net::SDL3_net)
@@ -625,6 +642,7 @@ include_directories(
     ${SDL3_ROOT}/include
     ${SDL3_IMAGE_ROOT}/include
     ${SDL3_MIXER_ROOT}/include
+    ${SDL3_NET_DIR}/include
 )
 
 if(APPLE)
@@ -632,14 +650,12 @@ if(APPLE)
         ${SDL3_ROOT}/lib/libSDL3.0.dylib
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.dylib
         ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.dylib
-        ${SDL3_NET_DIR}/lib/libSDL3_net.dylib
     )
 elseif(WIN32)
     target_link_libraries(3sx PRIVATE
         ${SDL3_ROOT}/lib/libSDL3.dll.a
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.dll.a
         ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.dll.a
-        ${SDL3_NET_DIR}/lib/libSDL3_net.dll.a
 		dbghelp
         Spout_static
     )
@@ -652,7 +668,6 @@ elseif(UNIX)
         ${SDL3_ROOT}/lib/libSDL3.so
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.so
         ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.so
-        ${SDL3_NET_DIR}/lib/libSDL3_net.so
     )
 endif()
 

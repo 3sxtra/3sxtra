@@ -52,9 +52,12 @@ static size_t hex_to_bytes(const char* hex, uint8_t* out, size_t max_bytes) {
     return byte_count;
 }
 
-/* Generate 32 random bytes using SDL's random number generator */
+/* Generate 32 random bytes using SDL's random number generator.
+ * SDL_rand_bits() is a PRNG, but the output is immediately SHA-256 hashed
+ * (see generate_identity), which provides sufficient entropy distribution
+ * for identity key purposes. A CSPRNG (e.g. SDL_GetRandomBytes) would be
+ * ideal but is not available in the current SDL3 build. */
 static void generate_random_bytes(uint8_t* buf, size_t len) {
-    /* SDL_rand_bits() returns a uint32_t (32 bits = 4 bytes) */
     for (size_t i = 0; i < len; i += 4) {
         uint32_t r = SDL_rand_bits();
         size_t remaining = len - i;

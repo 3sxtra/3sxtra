@@ -3,7 +3,11 @@
  * @brief HTTP client for the 3SX lobby/matchmaking server.
  *
  * Communicates with the Node.js lobby server via HTTP/1.1 + HMAC-SHA256
- * request signing. Uses raw sockets — no libcurl dependency.
+ * request signing. Uses libcurl for HTTP requests and cJSON for JSON
+ * serialization/deserialization.
+ *
+ * The SSE (Server-Sent Events) streaming client remains on raw sockets
+ * for long-lived connections — curl would add complexity without benefit.
  *
  * HMAC implementation:
  *   - Windows: bcrypt.h (BCryptCreateHash / BCryptHashData / BCryptFinishHash)
@@ -16,11 +20,14 @@
 #include "identity.h"
 #include "port/config/config.h"
 #include <SDL3/SDL.h>
+#include <curl/curl.h>
+#include <cJSON.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
+/* --- Platform includes (HMAC + SSE raw sockets only) --- */
 // clang-format off
 #ifdef _WIN32
 #include <winsock2.h>  // Must precede bcrypt.h — provides LONG/ULONG via windows.h
@@ -189,61 +196,37 @@ hmac_done:
         out_hex[hex_size - 1] = '\0';
 }
 
-/* ======== HTTP client ======== */
+/* ======== HTTP client (libcurl) ======== */
 
 #define HTTP_BUF_SIZE 16384
 
-/* Open a TCP connection to server_host:server_port */
-static int http_connect(void) {
-    struct addrinfo hints, *res = NULL;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
+/* Dynamic buffer for curl write callback */
+typedef struct {
+    char* data;
+    size_t size;
+    size_t capacity;
+} CurlBuffer;
 
-    char port_str[16];
-    snprintf(port_str, sizeof(port_str), "%d", server_port);
-
-    // NOTE: getaddrinfo() is a blocking syscall with no portable timeout control.
-    // If the DNS server is unresponsive, this can block for 30+ seconds.
-    // This function is only called from background threads, so the main thread
-    // is not affected, but stalled threads may accumulate until DNS resolves.
-    if (getaddrinfo(server_host, port_str, &hints, &res) != 0 || !res) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: DNS resolve failed");
-        return -1;
+static size_t curl_write_cb(void* contents, size_t size, size_t nmemb, void* userp) {
+    size_t total = size * nmemb;
+    CurlBuffer* buf = (CurlBuffer*)userp;
+    if (buf->size + total + 1 > buf->capacity) {
+        size_t new_cap = buf->capacity * 2;
+        if (new_cap < buf->size + total + 1)
+            new_cap = buf->size + total + 1;
+        char* tmp = (char*)realloc(buf->data, new_cap);
+        if (!tmp) return 0;
+        buf->data = tmp;
+        buf->capacity = new_cap;
     }
-
-    int sock = (int)socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
-        freeaddrinfo(res);
-        return -1;
-    }
-
-    /* Set socket timeout (5 seconds) */
-#ifdef _WIN32
-    DWORD timeout = 5000;
-    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
-    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
-#else
-    struct timeval tv;
-    tv.tv_sec = 5;
-    tv.tv_usec = 0;
-    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
-#endif
-
-    if (connect(sock, res->ai_addr, (socklen_t)res->ai_addrlen) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: connect() failed");
-        closesocket(sock);
-        freeaddrinfo(res);
-        return -1;
-    }
-
-    freeaddrinfo(res);
-    return sock;
+    memcpy(buf->data + buf->size, contents, total);
+    buf->size += total;
+    buf->data[buf->size] = '\0';
+    return total;
 }
 
 /**
- * Perform an HTTP request with HMAC signing.
+ * Perform an HTTP request with HMAC signing via libcurl.
  * Returns the HTTP response body in out_buf (null-terminated).
  * Returns true on HTTP 2xx response.
  */
@@ -251,179 +234,136 @@ static bool http_request(const char* method, const char* path, const char* body,
     if (!configured)
         return false;
 
-    int sock = http_connect();
-    if (sock < 0)
+    CURL* curl = curl_easy_init();
+    if (!curl)
         return false;
+
+    /* Build full URL */
+    char url[512];
+    snprintf(url, sizeof(url), "http://%s:%d%s", server_host, server_port, path);
 
     /* Generate timestamp and signature */
     char timestamp[32];
     snprintf(timestamp, sizeof(timestamp), "%lld", (long long)time(NULL));
 
-    /* payload for HMAC = timestamp + method + path + body */
-    size_t payload_len = strlen(timestamp) + strlen(method) + strlen(path) + strlen(body);
+    size_t body_len = body ? strlen(body) : 0;
+    size_t payload_len = strlen(timestamp) + strlen(method) + strlen(path) + body_len;
     char* payload = (char*)malloc(payload_len + 1);
-    snprintf(payload, payload_len + 1, "%s%s%s%s", timestamp, method, path, body);
+    snprintf(payload, payload_len + 1, "%s%s%s%s", timestamp, method, path, body ? body : "");
 
     char signature[66];
     compute_hmac(payload, payload_len, signature, sizeof(signature));
     free(payload);
 
-    /* Build HTTP request */
-    char request[HTTP_BUF_SIZE];
-    int body_len = (int)strlen(body);
+    /* Set curl options */
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5L);
 
-    int req_len = snprintf(request,
-                           sizeof(request),
-                           "%s %s HTTP/1.1\r\n"
-                           "Host: %s:%d\r\n"
-                           "Content-Type: application/json\r\n"
-                           "Content-Length: %d\r\n"
-                           "X-Timestamp: %s\r\n"
-                           "X-Signature: %s\r\n"
-                           "Connection: close\r\n"
-                           "\r\n"
-                           "%s",
-                           method,
-                           path,
-                           server_host,
-                           server_port,
-                           body_len,
-                           timestamp,
-                           signature,
-                           body);
+    /* Headers */
+    struct curl_slist* headers = NULL;
+    char hdr_ts[64], hdr_sig[128];
+    snprintf(hdr_ts, sizeof(hdr_ts), "X-Timestamp: %s", timestamp);
+    snprintf(hdr_sig, sizeof(hdr_sig), "X-Signature: %s", signature);
+    headers = curl_slist_append(headers, hdr_ts);
+    headers = curl_slist_append(headers, hdr_sig);
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-    /* Send */
-    int sent = send(sock, request, req_len, 0);
-    if (sent < req_len) {
-        closesocket(sock);
+    /* Method + body */
+    if (strcmp(method, "POST") == 0) {
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body ? body : "");
+    } else if (strcmp(method, "GET") == 0) {
+        curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+    } else {
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
+    }
+
+    /* Response buffer */
+    CurlBuffer resp = { .data = (char*)malloc(4096), .size = 0, .capacity = 4096 };
+    if (resp.data) resp.data[0] = '\0';
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_cb);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resp);
+
+    CURLcode res = curl_easy_perform(curl);
+
+    long status = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &status);
+
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+
+    if (res != CURLE_OK) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: curl error for %s %s: %s",
+                    method, path, curl_easy_strerror(res));
+        free(resp.data);
         return false;
     }
 
-    /* Receive response */
-    char response[HTTP_BUF_SIZE];
-    int total = 0;
-    while (total < (int)sizeof(response) - 1) {
-        int n = recv(sock, response + total, (int)sizeof(response) - 1 - total, 0);
-        if (n <= 0)
-            break;
-        total += n;
-    }
-    response[total] = '\0';
-    closesocket(sock);
-
-    /* Parse HTTP status code */
-    int status = 0;
-    if (strncmp(response, "HTTP/1.1 ", 9) == 0 || strncmp(response, "HTTP/1.0 ", 9) == 0) {
-        status = atoi(response + 9);
-    }
-
     if (status < 200 || status >= 300) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: HTTP %d for %s %s", status, method, path);
-        // Surface 403 reason (e.g. stale timestamp / clock drift) for debugging
-        if (status == 403) {
-            const char* reason = strstr(response, "\r\n\r\n");
-            if (reason) {
-                reason += 4;
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: 403 detail: %s", reason);
-            }
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: HTTP %ld for %s %s", status, method, path);
+        if (status == 403 && resp.data) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LobbyServer: 403 detail: %s", resp.data);
         }
     }
 
-    /* Extract body (after \r\n\r\n) */
-    const char* body_start = strstr(response, "\r\n\r\n");
-    if (body_start) {
-        body_start += 4;
-        snprintf(out_buf, out_buf_size, "%s", body_start);
-    } else {
+    /* Copy response body */
+    if (resp.data && out_buf_size > 0) {
+        SDL_strlcpy(out_buf, resp.data, out_buf_size);
+    } else if (out_buf_size > 0) {
         out_buf[0] = '\0';
     }
+    free(resp.data);
 
     return (status >= 200 && status < 300);
 }
 
-/* ======== JSON helpers ======== */
+/* ======== JSON helpers (cJSON wrappers) ======== */
 
-/**
- * Escape a string for safe embedding in a JSON value.
- * Handles \", \\, and control characters (< 0x20) as \uXXXX.
- * Writes at most out_size-1 characters + null terminator.
- */
-static void json_escape_string(const char* src, char* out, size_t out_size) {
-    if (!src || out_size == 0)
-        return;
-    size_t j = 0;
-    for (size_t i = 0; src[i] && j + 1 < out_size; i++) {
-        char c = src[i];
-        if (c == '"' || c == '\\') {
-            if (j + 2 >= out_size)
-                break;
-            out[j++] = '\\';
-            out[j++] = c;
-        } else if ((unsigned char)c < 0x20) {
-            if (j + 6 >= out_size)
-                break;
-            j += snprintf(out + j, out_size - j, "\\u%04x", (unsigned char)c);
-        } else {
-            out[j++] = c;
-        }
+/** Copy a string field from a cJSON object. Returns false if key missing. */
+static bool cjson_get_string(const cJSON* obj, const char* key, char* out, size_t out_size) {
+    const cJSON* item = cJSON_GetObjectItemCaseSensitive(obj, key);
+    if (cJSON_IsString(item) && item->valuestring) {
+        SDL_strlcpy(out, item->valuestring, out_size);
+        return true;
     }
-    out[j] = '\0';
+    if (out_size > 0) out[0] = '\0';
+    return false;
 }
 
-/**
- * Extract a string value for a key like "key":"value" within [json, json_end).
- * If json_end is NULL, searches to end of string (original behavior).
- * Writes into out (max out_size-1 chars).
- */
-static bool json_get_string_in(const char* json, const char* json_end, const char* key, char* out, size_t out_size) {
-    char pattern[128];
-    snprintf(pattern, sizeof(pattern), "\"%s\":\"", key);
-    const char* p = strstr(json, pattern);
-    if (!p || (json_end && p >= json_end))
-        return false;
-    p += strlen(pattern);
-    /* Find the closing quote, skipping escaped quotes */
-    const char* end = p;
-    while (*end && (!json_end || end < json_end)) {
-        if (*end == '"' && (end == p || *(end - 1) != '\\'))
-            break;
-        end++;
-    }
-    if (!*end || *end != '"')
-        return false;
-    size_t len = (size_t)(end - p);
-    if (len >= out_size)
-        len = out_size - 1;
-    memcpy(out, p, len);
-    out[len] = '\0';
-    return true;
-}
-
-static bool json_get_string(const char* json, const char* key, char* out, size_t out_size) {
-    return json_get_string_in(json, NULL, key, out, out_size);
-}
-
-/**
- * Extract an integer value for a key like "key":123 within [json, json_end).
- * If json_end is NULL, searches to end of string (original behavior).
- */
-static int json_get_int_in(const char* json, const char* json_end, const char* key, int default_val) {
-    char pattern[128];
-    snprintf(pattern, sizeof(pattern), "\"%s\":", key);
-    const char* p = strstr(json, pattern);
-    if (!p || (json_end && p >= json_end))
-        return default_val;
-    p += strlen(pattern);
-    /* Skip whitespace */
-    while (*p == ' ' || *p == '\t')
-        p++;
-    if (*p == '-' || (*p >= '0' && *p <= '9'))
-        return atoi(p);
+/** Get an integer field with default. */
+static int cjson_get_int(const cJSON* obj, const char* key, int default_val) {
+    const cJSON* item = cJSON_GetObjectItemCaseSensitive(obj, key);
+    if (cJSON_IsNumber(item))
+        return item->valueint;
     return default_val;
 }
 
-static int json_get_int(const char* json, const char* key, int default_val) {
-    return json_get_int_in(json, NULL, key, default_val);
+/** Get a double field with default. */
+static double cjson_get_double(const cJSON* obj, const char* key, double default_val) {
+    const cJSON* item = cJSON_GetObjectItemCaseSensitive(obj, key);
+    if (cJSON_IsNumber(item))
+        return item->valuedouble;
+    return default_val;
+}
+
+/** Build a JSON body with player_id only: {"player_id":"..."} */
+static char* json_body_pid(const char* player_id) {
+    cJSON* root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "player_id", player_id);
+    char* s = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+    return s;
+}
+
+/** Build a JSON body with player_id + room_code: {"player_id":"...","room_code":"..."} */
+static char* json_body_pid_room(const char* player_id, const char* room_code) {
+    cJSON* root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "player_id", player_id);
+    cJSON_AddStringToObject(root, "room_code", room_code);
+    char* s = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+    return s;
 }
 
 /* ======== Public API ======== */
@@ -431,55 +371,41 @@ static int json_get_int(const char* json, const char* key, int default_val) {
 bool LobbyServer_UpdatePresence(const char* player_id, const char* display_name, const char* region,
                                 const char* room_code, const char* connect_to, int rtt_ms,
                                 const char* connection_type, int ft) {
-    char esc_pid[128], esc_name[64], esc_region[16], esc_code[32], esc_ct[32], esc_conn[16];
-    json_escape_string(player_id, esc_pid, sizeof(esc_pid));
-    json_escape_string(display_name, esc_name, sizeof(esc_name));
-    json_escape_string(region ? region : "", esc_region, sizeof(esc_region));
-    json_escape_string(room_code ? room_code : "", esc_code, sizeof(esc_code));
-    json_escape_string(connect_to ? connect_to : "", esc_ct, sizeof(esc_ct));
-    json_escape_string(connection_type ? connection_type : "unknown", esc_conn, sizeof(esc_conn));
-
     if (ft < 1) ft = 2;
     if (ft > 10) ft = 10;
 
-    char body[512];
-    snprintf(body,
-             sizeof(body),
-             "{\"player_id\":\"%s\",\"display_name\":\"%s\",\"region\":\"%s\",\"room_code\":\"%s\",\"connect_to\":\""
-             "%s\",\"rtt_ms\":%d,\"connection_type\":\"%s\",\"ft\":%d}",
-             esc_pid,
-             esc_name,
-             esc_region,
-             esc_code,
-             esc_ct,
-             rtt_ms,
-             esc_conn,
-             ft);
+    cJSON* root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "player_id", player_id);
+    cJSON_AddStringToObject(root, "display_name", display_name);
+    cJSON_AddStringToObject(root, "region", region ? region : "");
+    cJSON_AddStringToObject(root, "room_code", room_code ? room_code : "");
+    cJSON_AddStringToObject(root, "connect_to", connect_to ? connect_to : "");
+    cJSON_AddNumberToObject(root, "rtt_ms", rtt_ms);
+    cJSON_AddStringToObject(root, "connection_type", connection_type ? connection_type : "unknown");
+    cJSON_AddNumberToObject(root, "ft", ft);
+    char* body = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    return http_request("POST", "/presence", body, response, sizeof(response));
+    bool ok = http_request("POST", "/presence", body, response, sizeof(response));
+    free(body);
+    return ok;
 }
 
 bool LobbyServer_StartSearching(const char* player_id) {
-    char esc_pid[128];
-    json_escape_string(player_id, esc_pid, sizeof(esc_pid));
-
-    char body[128];
-    snprintf(body, sizeof(body), "{\"player_id\":\"%s\"}", esc_pid);
-
+    char* body = json_body_pid(player_id);
     char response[HTTP_BUF_SIZE];
-    return http_request("POST", "/searching/start", body, response, sizeof(response));
+    bool ok = http_request("POST", "/searching/start", body, response, sizeof(response));
+    free(body);
+    return ok;
 }
 
 bool LobbyServer_StopSearching(const char* player_id) {
-    char esc_pid[128];
-    json_escape_string(player_id, esc_pid, sizeof(esc_pid));
-
-    char body[128];
-    snprintf(body, sizeof(body), "{\"player_id\":\"%s\"}", esc_pid);
-
+    char* body = json_body_pid(player_id);
     char response[HTTP_BUF_SIZE];
-    return http_request("POST", "/searching/stop", body, response, sizeof(response));
+    bool ok = http_request("POST", "/searching/stop", body, response, sizeof(response));
+    free(body);
+    return ok;
 }
 
 int LobbyServer_GetSearching(LobbyPlayer* out_players, int max_players, const char* region_filter) {
@@ -494,73 +420,53 @@ int LobbyServer_GetSearching(LobbyPlayer* out_players, int max_players, const ch
     if (!http_request("GET", path, "", response, sizeof(response)))
         return 0;
 
-    /* Parse JSON array of players from {"players":[...]} */
+    cJSON* root = cJSON_Parse(response);
+    if (!root) return 0;
+
     int count = 0;
-    const char* cursor = strstr(response, "\"players\":[");
-    if (!cursor)
-        return 0;
-    cursor += 11; /* skip past "players":[ */
-
-    while (count < max_players) {
-        /* Find next object */
-        const char* obj_start = strchr(cursor, '{');
-        if (!obj_start)
-            break;
-        const char* obj_end = strchr(obj_start, '}');
-        if (!obj_end)
-            break;
-
-        /* Extract fields from this object */
-        size_t obj_len = (size_t)(obj_end - obj_start + 1);
-        char obj[512];
-        if (obj_len >= sizeof(obj))
-            obj_len = sizeof(obj) - 1;
-        memcpy(obj, obj_start, obj_len);
-        obj[obj_len] = '\0';
-
+    const cJSON* players = cJSON_GetObjectItemCaseSensitive(root, "players");
+    const cJSON* item = NULL;
+    cJSON_ArrayForEach(item, players) {
+        if (count >= max_players) break;
         LobbyPlayer* p = &out_players[count];
         memset(p, 0, sizeof(*p));
-        json_get_string(obj, "player_id", p->player_id, sizeof(p->player_id));
-        json_get_string(obj, "display_name", p->display_name, sizeof(p->display_name));
-        json_get_string(obj, "region", p->region, sizeof(p->region));
-        json_get_string(obj, "room_code", p->room_code, sizeof(p->room_code));
-        json_get_string(obj, "connect_to", p->connect_to, sizeof(p->connect_to));
-        json_get_string(obj, "status", p->status, sizeof(p->status));
-        json_get_string(obj, "country", p->country, sizeof(p->country));
-        json_get_string(obj, "connection_type", p->connection_type, sizeof(p->connection_type));
-        p->rtt_ms = json_get_int(obj, "rtt_ms", -1);
-        p->ft = json_get_int(obj, "ft", 2);
-
+        cjson_get_string(item, "player_id", p->player_id, sizeof(p->player_id));
+        cjson_get_string(item, "display_name", p->display_name, sizeof(p->display_name));
+        cjson_get_string(item, "region", p->region, sizeof(p->region));
+        cjson_get_string(item, "room_code", p->room_code, sizeof(p->room_code));
+        cjson_get_string(item, "connect_to", p->connect_to, sizeof(p->connect_to));
+        cjson_get_string(item, "status", p->status, sizeof(p->status));
+        cjson_get_string(item, "country", p->country, sizeof(p->country));
+        cjson_get_string(item, "connection_type", p->connection_type, sizeof(p->connection_type));
+        p->rtt_ms = cjson_get_int(item, "rtt_ms", -1);
+        p->ft = cjson_get_int(item, "ft", 2);
         if (strlen(p->player_id) > 0)
             count++;
-
-        cursor = obj_end + 1;
     }
 
+    cJSON_Delete(root);
     return count;
 }
 
 bool LobbyServer_Leave(const char* player_id) {
-    char esc_pid[128];
-    json_escape_string(player_id, esc_pid, sizeof(esc_pid));
-
-    char body[128];
-    snprintf(body, sizeof(body), "{\"player_id\":\"%s\"}", esc_pid);
-
+    char* body = json_body_pid(player_id);
     char response[HTTP_BUF_SIZE];
-    return http_request("POST", "/leave", body, response, sizeof(response));
+    bool ok = http_request("POST", "/leave", body, response, sizeof(response));
+    free(body);
+    return ok;
 }
 
 bool LobbyServer_DeclineInvite(const char* player_id, const char* declined_player_id) {
-    char esc_pid[128], esc_dpid[128];
-    json_escape_string(player_id, esc_pid, sizeof(esc_pid));
-    json_escape_string(declined_player_id, esc_dpid, sizeof(esc_dpid));
-
-    char body[256];
-    snprintf(body, sizeof(body), "{\"player_id\":\"%s\",\"declined_player_id\":\"%s\"}", esc_pid, esc_dpid);
+    cJSON* root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "player_id", player_id);
+    cJSON_AddStringToObject(root, "declined_player_id", declined_player_id);
+    char* body = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
-    return http_request("POST", "/decline", body, response, sizeof(response));
+    bool ok = http_request("POST", "/decline", body, response, sizeof(response));
+    free(body);
+    return ok;
 }
 
 /* === Room Discovery === */
@@ -573,45 +479,25 @@ int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms) {
     if (!http_request("GET", "/rooms/list", "", response, sizeof(response)))
         return 0;
 
-    /* Parse JSON: {"rooms":[{"code":"ABCD","name":"...","player_count":3},...]} */
+    cJSON* root = cJSON_Parse(response);
+    if (!root) return 0;
+
     int count = 0;
-    const char* cursor = strstr(response, "\"rooms\":[");
-    if (!cursor)
-        return 0;
-    cursor = strchr(cursor, '[');
-    if (!cursor)
-        return 0;
-    cursor++; /* skip '[' */
-
-    while (count < max_rooms) {
-        const char* obj_start = strchr(cursor, '{');
-        if (!obj_start)
-            break;
-        const char* obj_end = strchr(obj_start, '}');
-        if (!obj_end)
-            break;
-
-        /* Extract the object substring */
-        char obj[512];
-        int obj_len = (int)(obj_end - obj_start + 1);
-        if (obj_len >= (int)sizeof(obj))
-            obj_len = (int)sizeof(obj) - 1;
-        memcpy(obj, obj_start, obj_len);
-        obj[obj_len] = '\0';
-
+    const cJSON* rooms = cJSON_GetObjectItemCaseSensitive(root, "rooms");
+    const cJSON* item = NULL;
+    cJSON_ArrayForEach(item, rooms) {
+        if (count >= max_rooms) break;
         RoomListItem* r = &out_rooms[count];
         memset(r, 0, sizeof(*r));
-        json_get_string(obj, "code", r->code, sizeof(r->code));
-        json_get_string(obj, "name", r->name, sizeof(r->name));
-        r->player_count = json_get_int(obj, "player_count", 0);
-        r->ft = json_get_int(obj, "ft", 1);
-
+        cjson_get_string(item, "code", r->code, sizeof(r->code));
+        cjson_get_string(item, "name", r->name, sizeof(r->name));
+        r->player_count = cjson_get_int(item, "player_count", 0);
+        r->ft = cjson_get_int(item, "ft", 1);
         if (strlen(r->code) > 0)
             count++;
-
-        cursor = obj_end + 1;
     }
 
+    cJSON_Delete(root);
     return count;
 }
 
@@ -621,36 +507,28 @@ bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id) {
     if (!configured || !result)
         return false;
 
-    char esc_pid[128], esc_oid[128], esc_wid[128];
-    json_escape_string(result->player_id, esc_pid, sizeof(esc_pid));
-    json_escape_string(result->opponent_id, esc_oid, sizeof(esc_oid));
-    json_escape_string(result->winner_id, esc_wid, sizeof(esc_wid));
-
-    char esc_source[32];
-    json_escape_string(result->source[0] ? result->source : "ranked", esc_source, sizeof(esc_source));
-
-    char body[512];
-    snprintf(body,
-             sizeof(body),
-             "{\"player_id\":\"%s\",\"opponent_id\":\"%s\",\"winner_id\":\"%s\","
-             "\"player_char\":%d,\"opponent_char\":%d,\"rounds\":%d,"
-             "\"source\":\"%s\",\"ft\":%d}",
-             esc_pid,
-             esc_oid,
-             esc_wid,
-             result->player_char,
-             result->opponent_char,
-             result->rounds,
-             esc_source,
-             result->ft > 0 ? result->ft : 1);
+    cJSON* root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "player_id", result->player_id);
+    cJSON_AddStringToObject(root, "opponent_id", result->opponent_id);
+    cJSON_AddStringToObject(root, "winner_id", result->winner_id);
+    cJSON_AddNumberToObject(root, "player_char", result->player_char);
+    cJSON_AddNumberToObject(root, "opponent_char", result->opponent_char);
+    cJSON_AddNumberToObject(root, "rounds", result->rounds);
+    cJSON_AddStringToObject(root, "source", result->source[0] ? result->source : "ranked");
+    cJSON_AddNumberToObject(root, "ft", result->ft > 0 ? result->ft : 1);
+    char* body = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
 
     char response[HTTP_BUF_SIZE];
     bool ok = http_request("POST", "/match_result", body, response, sizeof(response));
+    free(body);
+
     if (ok) {
         SDL_Log("[LobbyServer] Match result reported: winner=%s", result->winner_id);
-
         if (out_match_id) {
-            *out_match_id = json_get_int(response, "match_id", -1);
+            cJSON* resp_json = cJSON_Parse(response);
+            *out_match_id = resp_json ? cjson_get_int(resp_json, "match_id", -1) : -1;
+            cJSON_Delete(resp_json);
         }
     }
     return ok;
@@ -663,28 +541,24 @@ bool LobbyServer_UploadReplay(int match_id, const void* replay_data, size_t repl
     char path[128];
     snprintf(path, sizeof(path), "/match_result/replay?match_id=%d", match_id);
 
-    // We can't use http_request directly because the body is binary and http_request
-    // uses strlen() which will stop at the first null byte.
-    // We need a custom raw HTTP POST for binary data with HMAC signing.
-
-    int sock = http_connect();
-    if (sock < 0)
+    CURL* curl = curl_easy_init();
+    if (!curl)
         return false;
+
+    char url[512];
+    snprintf(url, sizeof(url), "http://%s:%d%s", server_host, server_port, path);
 
     char timestamp[32];
     snprintf(timestamp, sizeof(timestamp), "%lld", (long long)time(NULL));
 
-    // payload for HMAC = timestamp + method + path + body
-    // For binary data, we compute the HMAC incrementally or construct a large buffer.
-    size_t header_len = strlen(timestamp) + 4 /* "POST" */ + strlen(path);
+    /* HMAC payload = timestamp + "POST" + path + binary body */
+    size_t header_len = strlen(timestamp) + 4 + strlen(path);
     size_t payload_len = header_len + replay_size;
-
     char* payload = (char*)malloc(payload_len);
     if (!payload) {
-        closesocket(sock);
+        curl_easy_cleanup(curl);
         return false;
     }
-
     snprintf(payload, header_len + 1, "%sPOST%s", timestamp, path);
     memcpy(payload + header_len, replay_data, replay_size);
 
@@ -692,67 +566,40 @@ bool LobbyServer_UploadReplay(int match_id, const void* replay_data, size_t repl
     compute_hmac(payload, payload_len, signature, sizeof(signature));
     free(payload);
 
-    char request_headers[HTTP_BUF_SIZE];
-    int req_len = snprintf(request_headers,
-                           sizeof(request_headers),
-                           "POST %s HTTP/1.1\r\n"
-                           "Host: %s:%d\r\n"
-                           "Content-Type: application/octet-stream\r\n"
-                           "Content-Length: %zu\r\n"
-                           "X-Timestamp: %s\r\n"
-                           "X-Signature: %s\r\n"
-                           "X-Player-ID: %s\r\n"
-                           "Connection: close\r\n"
-                           "\r\n",
-                           path,
-                           server_host,
-                           server_port,
-                           replay_size,
-                           timestamp,
-                           signature,
-                           Identity_GetPlayerId());
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5L);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, replay_data);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)replay_size);
 
-    // Send headers
-    if (send(sock, request_headers, req_len, 0) < req_len) {
-        closesocket(sock);
+    struct curl_slist* headers = NULL;
+    char hdr_ts[64], hdr_sig[128], hdr_pid[128];
+    snprintf(hdr_ts, sizeof(hdr_ts), "X-Timestamp: %s", timestamp);
+    snprintf(hdr_sig, sizeof(hdr_sig), "X-Signature: %s", signature);
+    snprintf(hdr_pid, sizeof(hdr_pid), "X-Player-ID: %s", Identity_GetPlayerId());
+    headers = curl_slist_append(headers, hdr_ts);
+    headers = curl_slist_append(headers, hdr_sig);
+    headers = curl_slist_append(headers, hdr_pid);
+    headers = curl_slist_append(headers, "Content-Type: application/octet-stream");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+    CURLcode res = curl_easy_perform(curl);
+    long status = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &status);
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+
+    if (res != CURLE_OK) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[LobbyServer] Replay upload curl error: %s",
+                    curl_easy_strerror(res));
         return false;
-    }
-
-    // Send binary body (loop to handle large buffers)
-    const char* p = (const char*)replay_data;
-    size_t remaining = replay_size;
-    while (remaining > 0) {
-        int sent = send(sock, p, remaining > 8192 ? 8192 : (int)remaining, 0);
-        if (sent <= 0) {
-            closesocket(sock);
-            return false;
-        }
-        p += sent;
-        remaining -= sent;
-    }
-
-    // Receive response
-    char response[HTTP_BUF_SIZE];
-    int total = 0;
-    while (total < (int)sizeof(response) - 1) {
-        int n = recv(sock, response + total, (int)sizeof(response) - 1 - total, 0);
-        if (n <= 0)
-            break;
-        total += n;
-    }
-    response[total] = '\0';
-    closesocket(sock);
-
-    int status = 0;
-    if (strncmp(response, "HTTP/1.1 ", 9) == 0 || strncmp(response, "HTTP/1.0 ", 9) == 0) {
-        status = atoi(response + 9);
     }
 
     if (status >= 200 && status < 300) {
         SDL_Log("[LobbyServer] Replay uploaded successfully for match %d", match_id);
         return true;
     } else {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[LobbyServer] Replay upload failed: HTTP %d", status);
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[LobbyServer] Replay upload failed: HTTP %ld", status);
         return false;
     }
 }
@@ -792,11 +639,9 @@ bool LobbyServer_GetPlayerStats(const char* player_id, PlayerStats* out) {
         return false;
     }
 
-    /* Extract the HTTP body (after blank line) */
-    const char* body = strstr(response, "\r\n\r\n");
-    if (!body)
-        return false;
-    body += 4;
+    /* http_request() already extracts the body (after the HTTP header blank line),
+     * so `response` contains just the JSON payload at this point. */
+    const char* body = response;
 
     out->wins = json_get_int(body, "wins", 0);
     out->losses = json_get_int(body, "losses", 0);
@@ -1050,14 +895,14 @@ bool LobbyServer_CreateRoom(const char* name, int ft, RoomState* out_room) {
         // Response contains "room_code", so we do a partial parse just to get the code,
         // then the client usually joins or fetches full state.
         json_get_string(response, "room_code", out_room->id, sizeof(out_room->id));
-        strncpy(out_room->name, name ? name : "", sizeof(out_room->name) - 1);
-        strncpy(out_room->host, Identity_GetPlayerId(), sizeof(out_room->host) - 1);
+        SDL_strlcpy(out_room->name, name ? name : "", sizeof(out_room->name));
+        SDL_strlcpy(out_room->host, Identity_GetPlayerId(), sizeof(out_room->host));
         out_room->player_count = 1;
         out_room->ft = ft;
-        strncpy(out_room->players[0].player_id, Identity_GetPlayerId(), sizeof(out_room->players[0].player_id) - 1);
-        strncpy(out_room->players[0].display_name,
+        SDL_strlcpy(out_room->players[0].player_id, Identity_GetPlayerId(), sizeof(out_room->players[0].player_id));
+        SDL_strlcpy(out_room->players[0].display_name,
                 Identity_GetDisplayName(),
-                sizeof(out_room->players[0].display_name) - 1);
+                sizeof(out_room->players[0].display_name));
     }
     return true;
 }
@@ -1226,13 +1071,59 @@ bool LobbyServer_DeclineMatch(const char* room_code) {
     return ok;
 }
 
+/* ======== SSE raw socket connect ========
+ * The SSE streaming client needs a long-lived TCP socket for recv() polling.
+ * This is separate from the curl-based HTTP client used by all other APIs. */
+static int sse_raw_connect(void) {
+    struct addrinfo hints, *res = NULL;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+
+    char port_str[16];
+    snprintf(port_str, sizeof(port_str), "%d", server_port);
+
+    if (getaddrinfo(server_host, port_str, &hints, &res) != 0 || !res) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SSE: DNS resolve failed");
+        return -1;
+    }
+
+    int sock = (int)socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        freeaddrinfo(res);
+        return -1;
+    }
+
+#ifdef _WIN32
+    DWORD timeout = 5000;
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
+#else
+    struct timeval tv;
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+#endif
+
+    if (connect(sock, res->ai_addr, (socklen_t)res->ai_addrlen) < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SSE: connect() failed");
+        closesocket(sock);
+        freeaddrinfo(res);
+        return -1;
+    }
+
+    freeaddrinfo(res);
+    return sock;
+}
+
 // === SSE Streaming Client ===
 
 // SSE thread state — all access guarded by SDL atomics
 static SDL_AtomicInt s_sse_running = { 0 }; // 1 = thread active
 static SDL_AtomicInt s_sse_stop = { 0 };    // 1 = request stop
 static SDL_Thread* s_sse_thread = NULL;
-static int s_sse_sock = -1; // raw socket (for external close)
+static SDL_AtomicInt s_sse_sock = { -1 }; // raw socket (for external close), atomic for thread safety
 static char s_sse_room_code[16] = { 0 };
 
 // SSE auto-reconnection state
@@ -1374,13 +1265,13 @@ static void sse_parse_event(const char* json, SSEEvent* out) {
 static int sse_thread_fn(void* userdata) {
     (void)userdata;
 
-    int sock = http_connect();
+    int sock = sse_raw_connect();
     if (sock < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SSE: connect failed");
         SDL_SetAtomicInt(&s_sse_running, 0);
         return 1;
     }
-    s_sse_sock = sock;
+    SDL_SetAtomicInt(&s_sse_sock, sock);
 
     // Build HTTP GET request for SSE (no auth — room code is the secret)
     char request[512];
@@ -1399,7 +1290,7 @@ static int sse_thread_fn(void* userdata) {
     if (send(sock, request, req_len, 0) < req_len) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SSE: send failed");
         closesocket(sock);
-        s_sse_sock = -1;
+        SDL_SetAtomicInt(&s_sse_sock, -1);
         SDL_SetAtomicInt(&s_sse_running, 0);
         return 1;
     }
@@ -1480,8 +1371,15 @@ static int sse_thread_fn(void* userdata) {
             sse_parse_event(json_start, &evt);
 
             if (evt.type != SSE_EVENT_NONE) {
-                // Write to ring buffer slot at write_idx, then advance
+                // Write to ring buffer slot at write_idx, then advance.
+                // Overflow check: if reader hasn't consumed fast enough, drop oldest.
                 int wi = SDL_GetAtomicInt(&s_sse_write_idx);
+                int ri = SDL_GetAtomicInt(&s_sse_read_idx);
+                if (wi - ri >= SSE_RING_SIZE) {
+                    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                                "SSE: ring buffer overflow — dropping oldest event");
+                    SDL_SetAtomicInt(&s_sse_read_idx, ri + 1);
+                }
                 memcpy(&s_sse_ring[wi % SSE_RING_SIZE], &evt, sizeof(SSEEvent));
                 SDL_SetAtomicInt(&s_sse_write_idx, wi + 1);
             }
@@ -1498,7 +1396,7 @@ static int sse_thread_fn(void* userdata) {
     }
 
     closesocket(sock);
-    s_sse_sock = -1;
+    SDL_SetAtomicInt(&s_sse_sock, -1);
     SDL_SetAtomicInt(&s_sse_running, 0);
     // Record disconnect time for reconnection backoff (only if not intentional)
     if (!SDL_GetAtomicInt(&s_sse_stop)) {
@@ -1550,9 +1448,12 @@ void LobbyServer_SSEDisconnect(void) {
         return;
 
     // Force-close the socket to unblock recv() immediately
-    if (s_sse_sock >= 0) {
-        closesocket(s_sse_sock);
-        s_sse_sock = -1;
+    {
+        int sock = SDL_GetAtomicInt(&s_sse_sock);
+        if (sock >= 0) {
+            SDL_SetAtomicInt(&s_sse_sock, -1);
+            closesocket(sock);
+        }
     }
 
     // Wait for thread to finish (up to 2 seconds)

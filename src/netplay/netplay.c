@@ -2,7 +2,9 @@
 #include "discovery.h"
 
 #include "game_state.h"
+#define Game GekkoGame // workaround: upstream GekkoSessionType::Game collides with void Game()
 #include "gekkonet.h"
+#undef Game
 #include "sdl_net_adapter.h"
 #include "main.h"
 #include "port/char_data.h"
@@ -35,9 +37,6 @@ extern void njUserMain();
 #include <stdbool.h>
 #include <string.h>
 
-#define Game GekkoGame // workaround: upstream GekkoSessionType::Game collides with void Game()
-#include "gekkonet.h"
-#undef Game
 #include <SDL3/SDL.h>
 
 #include <stdio.h>
@@ -72,6 +71,7 @@ static int player_number = 0;
 static int player_handle = 0;
 static NET_DatagramSocket* stun_socket = NULL; // Pre-punched STUN socket for internet play
 static int s_negotiated_ft = 0;  // FT value agreed upon for the upcoming match (0 = use config default)
+static uint32_t handshake_ready_since = 0; // Ticks when both peers signaled ready (LAN handshake hold)
 static NetplaySessionState session_state = NETPLAY_SESSION_IDLE;
 static u16 input_history[2][INPUT_HISTORY_MAX] = { 0 };
 static float frames_behind = 0;
@@ -764,6 +764,7 @@ void Netplay_Begin() {
 
 void Netplay_EnterLobby() {
     session_state = NETPLAY_SESSION_LOBBY;
+    handshake_ready_since = 0;
     Discovery_Init(Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT));
 }
 
@@ -773,7 +774,6 @@ void Netplay_Run() {
         Discovery_Update();
 
         {
-            static uint32_t handshake_ready_since = 0;
             bool local_auto = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
             uint32_t local_challenge = Discovery_GetChallengeTarget();
             bool should_be_ready = false;

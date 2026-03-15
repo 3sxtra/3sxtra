@@ -72,8 +72,10 @@
 **Key design principles:**
 - **Zero gameplay traffic through the server** — P2P only
 - **Deterministic simulation** — both peers run identical game logic; rollback corrects mispredictions
-- **Cross-platform** — Windows (Winsock2/BCrypt), Linux (POSIX sockets/embedded SHA-256), Raspberry Pi
+- **Cross-platform** — Windows, Linux, Raspberry Pi via SDL3 + SDL3_Net (migrated from raw sockets March 2026)
 - **Minimal dependencies** — lobby server uses only Node.js built-ins + optional npm packages
+
+> **Note (March 2026):** The STUN, GekkoNet adapter, discovery listener, and ping probe subsystems have been migrated from raw BSD/Winsock sockets to **SDL3_Net** (`NET_DatagramSocket*`). Discovery per-NIC broadcast, net_detect, and lobby_server HTTP remain on raw sockets. See `SDL3_NET_MIGRATION.md` for details.
 
 ---
 
@@ -114,7 +116,9 @@ Uses Google's public STUN server (`stun.l.google.com:19302`) implementing RFC 53
 **`StunResult` contains:**
 - `public_ip` / `public_port` — the peer's NAT-mapped external endpoint
 - `local_port` — the OS-bound local port
-- `socket_fd` — kept open for hole punching (preserves the NAT pinhole)
+- `socket` (`NET_DatagramSocket*`) — kept open for hole punching (preserves the NAT pinhole)
+
+**IPv4 forced resolution:** On dual-stack systems, `NET_ResolveHostname` may return IPv6. The STUN client uses `getaddrinfo(AF_INET)` to force IPv4 resolution, and binds the socket to `0.0.0.0`. IPv6 STUN support is a future TODO.
 
 **Room code encoding:** The 4-byte IP + 2-byte port are encoded into an 8-character alphanumeric room code via `Stun_EncodeEndpoint()` for easy sharing.
 
@@ -122,21 +126,22 @@ Uses Google's public STUN server (`stun.l.google.com:19302`) implementing RFC 53
 
 ### UPnP Port Forwarding
 
-Optional automatic port forwarding via UPnP-IGD for routers that support it.
+Optional automatic port forwarding via UPnP-IGD for routers that support it. IGD discovery results are cached after the first `AddMapping()` call to avoid the 2-second `upnpDiscover()` round-trip on subsequent calls.
 
 | Function | Purpose |
 |----------|---------|
-| `Upnp_AddMapping()` | Create UDP port mapping |
-| `Upnp_RemoveMapping()` | Remove mapping on shutdown |
-| `Upnp_GetExternalIP()` | Get public IP without STUN |
+| `Upnp_AddMapping()` | Create UDP port mapping (populates IGD cache) |
+| `Upnp_RemoveMapping()` | Remove mapping on shutdown (invalidates cache) |
+| `Upnp_GetExternalIP()` | Get public IP without STUN (uses cached IGD) |
+| `Upnp_InvalidateCache()` | Force re-discovery on next call |
 
 **Source:** `src/netplay/upnp.c`, `src/netplay/upnp.h`
 
 ### UDP Hole Punching
 
-`Stun_HolePunch()` sends bidirectional UDP packets through both peers' NATs to open symmetric pinholes. Blocks for a configurable `punch_duration_ms` with a cancel flag. After punching succeeds, the socket is set to non-blocking mode and handed to GekkoNet via the custom STUN adapter.
+`Stun_HolePunch()` sends bidirectional UDP packets through both peers' NATs to open symmetric pinholes via `NET_SendDatagram`/`NET_ReceiveDatagram`. Blocks for a configurable `punch_duration_ms` with a cancel flag. SDL3_Net sockets are non-blocking by default.
 
-**Custom STUN adapter:** When `stun_socket_fd >= 0`, GekkoNet uses a custom network adapter (`stun_adapter`) that calls `Stun_SocketSendTo()` / `Stun_SocketRecvFrom()` on the pre-punched socket, bypassing the default ASIO adapter (which would create a new socket and lose the NAT pinhole).
+**SDL3_Net GekkoNet adapter:** When `stun_socket != NULL`, GekkoNet uses `SDLNetAdapter_Create(stun_socket)` — a reusable adapter module (`sdl_net_adapter.c/h`) that wraps `NET_DatagramSocket*` for GekkoNet's send/receive/free callbacks. It caches `NET_Address*` per peer for zero per-packet DNS overhead.
 
 ---
 
@@ -282,7 +287,7 @@ IDLE ──► SPECTATING ──► IDLE
 
 ### Lobby Server Client
 
-Zero-dependency HTTP/1.1 client using raw sockets (no libcurl). All requests are HMAC-SHA256 signed.
+HTTP/1.1 client using **libcurl** for request/response communication. All requests are HMAC-SHA256 signed. cJSON (vendored) is available for JSON handling.
 
 **Initialization:** Reads URL + key from `config.ini` → falls back to baked-in defaults.
 
@@ -326,13 +331,13 @@ Returns one of: `"wifi"`, `"wired"`, `"unknown"`
 
 ### Ping Probes
 
-Direct peer-to-peer ping measurement using the STUN socket.
+Direct peer-to-peer ping measurement using the STUN socket (SDL3_Net `NET_DatagramSocket*`).
 
 | Function | Purpose |
 |----------|---------|
-| `PingProbe_Init(socket_fd)` | Start probing on an existing UDP socket |
-| `PingProbe_AddPeer(ip, port, id)` | Add a peer to probe |
-| `PingProbe_Update()` | Send/receive pings (call from background thread) |
+| `PingProbe_Init(socket)` | Start probing on an existing `NET_DatagramSocket*` |
+| `PingProbe_AddPeer(ip, port, id)` | Add a peer to probe (caches `NET_Address*` per peer) |
+| `PingProbe_Update()` | Send/receive pings via `NET_SendDatagram`/`NET_ReceiveDatagram` |
 | `PingProbe_GetRTT(id)` | Get smoothed RTT in ms (-1 if unknown) |
 | `PingProbe_IsReachable(id)` | True if pongs received (timeout after 5 missed) |
 
@@ -682,23 +687,25 @@ Relevant `config.ini` keys:
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `netplay.c` | 1202 | Core session loop, GekkoNet integration, rollback, input handling |
-| `netplay.h` | 76 | Public API: session states, events, FT, spectate |
-| `game_state.c` | 1820 | Save/load ~700+ game globals for rollback (compile-time size guard) |
-| `lobby_server.c` | 1628 | HTTP client (16KB buffer), HMAC signing, SSE streaming (auto-reconnect), room management |
-| `lobby_server.h` | 253 | Lobby API types (MatchResult with source/ft) and function declarations |
-| `discovery.c` | 394 | LAN UDP broadcast beacons and peer tracking |
-| `discovery.h` | 39 | Discovery API and peer struct |
-| `stun.c` | ~500 | STUN binding, hole punching, room codes, socket helpers |
-| `stun.h` | 65 | STUN API |
-| `identity.c` | ~170 | Persistent identity generation (SHA-256) |
-| `identity.h` | 46 | Identity API |
-| `ping_probe.c` | ~320 | Direct peer-to-peer RTT measurement |
-| `ping_probe.h` | 46 | Ping probe API |
-| `upnp.c` | ~180 | UPnP-IGD port mapping |
-| `upnp.h` | 37 | UPnP API |
-| `net_detect.c` | ~120 | WiFi vs wired detection |
-| `net_detect.h` | 31 | Net detect API |
+| `netplay.c` | ~1105 | Core session loop, GekkoNet integration, rollback, input handling |
+| `netplay.h` | ~80 | Public API: session states, events, FT, spectate |
+| `sdl_net_adapter.c` | ~130 | GekkoNet ↔ SDL3_Net adapter — per-peer address cache (8 slots), FIFO eviction |
+| `sdl_net_adapter.h` | ~15 | Adapter API: `SDLNetAdapter_Create()`, `SDLNetAdapter_Destroy()` |
+| `game_state.c` | ~1820 | Save/load ~700+ game globals for rollback (compile-time size guard) |
+| `lobby_server.c` | ~1660 | HTTP client (raw sockets, 16KB buffer), HMAC signing, SSE streaming, room management |
+| `lobby_server.h` | ~255 | Lobby API types and function declarations |
+| `discovery.c` | ~440 | LAN UDP broadcast beacons (listen socket: SDL3_Net, per-NIC broadcast: raw) |
+| `discovery.h` | ~40 | Discovery API and peer struct |
+| `stun.c` | ~460 | STUN binding (SDL3_Net), hole punching (SDL3_Net), room codes, IPv4-forced DNS |
+| `stun.h` | ~50 | STUN API (`StunResult` with `NET_DatagramSocket* socket`) |
+| `identity.c` | ~175 | Persistent identity generation (SDL_rand_bits → SHA-256) |
+| `identity.h` | ~46 | Identity API |
+| `ping_probe.c` | ~395 | P2P RTT measurement (SDL3_Net, per-peer `NET_Address*` caching, generation-tagged tokens) |
+| `ping_probe.h` | ~15 | Ping probe API (`NET_DatagramSocket*` parameter) |
+| `upnp.c` | ~190 | UPnP-IGD port mapping |
+| `upnp.h` | ~37 | UPnP API |
+| `net_detect.c` | ~145 | WiFi vs wired detection (raw OS APIs — not migratable) |
+| `net_detect.h` | ~31 | Net detect API |
 | `sha256.c` | ~165 | Portable SHA-256 (non-Windows HMAC) |
 | `sha256.h` | ~30 | SHA-256 API |
 

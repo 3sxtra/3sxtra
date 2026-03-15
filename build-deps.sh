@@ -150,6 +150,20 @@ else
 fi
 
 # -----------------------------
+# cJSON (vendored JSON library for lobby_server)
+# -----------------------------
+
+CJSON_DIR="$THIRD_PARTY/cJSON"
+
+if [ -d "$CJSON_DIR" ]; then
+    echo "cJSON already exists at $CJSON_DIR"
+else
+    echo "Cloning cJSON..."
+    git clone --depth 1 https://github.com/DaveGamble/cJSON.git "$CJSON_DIR"
+    echo "cJSON cloned to $CJSON_DIR"
+fi
+
+# -----------------------------
 # Spout2 (Windows video broadcast)
 # -----------------------------
 

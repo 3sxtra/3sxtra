@@ -37,4 +37,5 @@ libminiupnpc-dev
 libfreetype-dev
 clang
 curl
+libcurl4-openssl-dev
 python3-jinja2

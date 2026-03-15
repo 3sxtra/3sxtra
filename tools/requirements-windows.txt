@@ -10,3 +10,4 @@ mingw-w64-x86_64-rust
 mingw-w64-x86_64-python-jinja
 mingw-w64-x86_64-miniupnpc
 mingw-w64-x86_64-ccache
+mingw-w64-x86_64-curl

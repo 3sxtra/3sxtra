@@ -389,7 +389,9 @@ bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, i
 
         // Send punch packet periodically
         if (now - last_send >= (uint32_t)punch_interval_ms || last_send == 0) {
-            NET_SendDatagram(sock, peer, local_peer_port, punch_msg, strlen(punch_msg));
+            if (!NET_SendDatagram(sock, peer, local_peer_port, punch_msg, strlen(punch_msg))) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "STUN: Hole punch send failed: %s", SDL_GetError());
+            }
             last_send = now;
         }
 
@@ -398,8 +400,12 @@ bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, i
         NET_ReceiveDatagram(sock, &dgram);
 
         if (dgram) {
-            // Check if it's a punch from our expected peer
-            if (strcmp(NET_GetAddressString(dgram->addr), NET_GetAddressString(peer)) == 0 &&
+            // Check if it's a punch from our expected peer.
+            // NOTE: NET_GetAddressString returns a pointer to an internal
+            // static buffer — must copy one result before the second call.
+            char recv_addr[64];
+            SDL_strlcpy(recv_addr, NET_GetAddressString(dgram->addr), sizeof(recv_addr));
+            if (strcmp(recv_addr, NET_GetAddressString(peer)) == 0 &&
                 dgram->buflen == strlen(punch_msg) &&
                 strncmp((char*)dgram->buf, punch_msg, dgram->buflen) == 0) {
                 SDL_Log("STUN: Hole punch SUCCESS — received response from peer");

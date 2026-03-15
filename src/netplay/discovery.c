@@ -88,15 +88,17 @@ void Discovery_Init(bool auto_connect) {
     local_challenge_target = 0;
     num_peers = 0;
 
-    // Setup broadcast socket
+    // Setup listen socket FIRST — NET_CreateDatagramSocket implicitly calls
+    // WSAStartup on Windows (via SDL3_Net init). The raw broadcast socket
+    // below needs Winsock ready before calling socket().
+    listen_sock = NET_CreateDatagramSocket(NULL, DISCOVERY_PORT);
+
+    // Setup broadcast socket (raw — for per-NIC directed broadcast via OS APIs)
     broadcast_sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (broadcast_sock >= 0) {
         int broadcast_enable = 1;
         setsockopt(broadcast_sock, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast_enable, sizeof(broadcast_enable));
     }
-
-    // Setup listen socket
-    listen_sock = NET_CreateDatagramSocket(NULL, DISCOVERY_PORT);
 
     last_broadcast_ticks = 0;
 }
