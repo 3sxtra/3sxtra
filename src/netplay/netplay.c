@@ -419,7 +419,7 @@ static void configure_gekko() {
     if (gekko_create(&session, GekkoGameSession)) {
         gekko_start(session, &config);
     } else {
-        printf("Session is already running! probably incorrect.\n");
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[netplay] Session is already running! probably incorrect.");
     }
 
     if (stun_socket_fd >= 0) {
@@ -435,83 +435,9 @@ static void configure_gekko() {
 #endif
     }
 
-    printf("starting a session for player %d at port %hu\n", player_number, local_port);
+    SDL_Log("[netplay] starting a session for player %d at port %hu", player_number, local_port);
 
-    // Temporary: dump key field offsets to map desync diffs
-    printf("[offsetof] sizeof(State)=%zu sizeof(GameState)=%zu sizeof(PLW)=%zu\n",
-           sizeof(State),
-           sizeof(GameState),
-           sizeof(PLW));
-    // Fields near first diffs (0x1D4-0x2F1 range)
-    printf("[offsetof] gs.Score=0x%zx gs.Winner_id=0x%zx gs.Loser_id=0x%zx gs.My_char=0x%zx\n",
-           offsetof(GameState, Score),
-           offsetof(GameState, Winner_id),
-           offsetof(GameState, Loser_id),
-           offsetof(GameState, My_char));
-    printf("[offsetof] gs.Super_Arts=0x%zx gs.Counter_hi=0x%zx gs.Cursor_X=0x%zx gs.Player_Color=0x%zx\n",
-           offsetof(GameState, Super_Arts),
-           offsetof(GameState, Counter_hi),
-           offsetof(GameState, Cursor_X),
-           offsetof(GameState, Player_Color));
-    printf("[offsetof] gs.Player_id=0x%zx gs.Player_Number=0x%zx gs.Flip_Flag=0x%zx gs.Lie_Flag=0x%zx\n",
-           offsetof(GameState, Player_id),
-           offsetof(GameState, Player_Number),
-           offsetof(GameState, Flip_Flag),
-           offsetof(GameState, Lie_Flag));
-    printf("[offsetof] gs.Counter_Attack=0x%zx gs.Attack_Flag=0x%zx gs.Guard_Flag=0x%zx gs.Before_Jump=0x%zx\n",
-           offsetof(GameState, Counter_Attack),
-           offsetof(GameState, Attack_Flag),
-           offsetof(GameState, Guard_Flag),
-           offsetof(GameState, Before_Jump));
-    printf("[offsetof] gs.Operator_Status=0x%zx gs.Last_Super_Arts=0x%zx gs.Type_of_Attack=0x%zx\n",
-           offsetof(GameState, Operator_Status),
-           offsetof(GameState, Last_Super_Arts),
-           offsetof(GameState, Type_of_Attack));
-    printf("[offsetof] gs.Standing_Timer=0x%zx gs.Turn_Over=0x%zx gs.Used_char=0x%zx gs.Break_Com=0x%zx\n",
-           offsetof(GameState, Standing_Timer),
-           offsetof(GameState, Turn_Over),
-           offsetof(GameState, Used_char),
-           offsetof(GameState, Break_Com));
-    // Fields near 0x300-0x500 range
-    printf("[offsetof] gs.Convert_Buff=0x%zx gs.Check_Buff=0x%zx gs.Mode_Type=0x%zx gs.VS_Stage=0x%zx\n",
-           offsetof(GameState, Convert_Buff),
-           offsetof(GameState, Check_Buff),
-           offsetof(GameState, Mode_Type),
-           offsetof(GameState, VS_Stage));
-    printf("[offsetof] gs.G_No=0x%zx gs.SP_No=0x%zx gs.Select_Arts=0x%zx gs.CP_No=0x%zx gs.CP_Index=0x%zx\n",
-           offsetof(GameState, G_No),
-           offsetof(GameState, SP_No),
-           offsetof(GameState, Select_Arts),
-           offsetof(GameState, CP_No),
-           offsetof(GameState, CP_Index));
-    printf("[offsetof] gs.PL_Wins=0x%zx gs.win_type=0x%zx gs.Conclusion_Type=0x%zx gs.Present_Mode=0x%zx\n",
-           offsetof(GameState, PL_Wins),
-           offsetof(GameState, win_type),
-           offsetof(GameState, Conclusion_Type),
-           offsetof(GameState, Present_Mode));
-    // Fields near 0x500-0x700 range
-    printf("[offsetof] gs.Game_timer=0x%zx gs.Control_Time=0x%zx gs.Round_Level=0x%zx gs.Fade_Number=0x%zx\n",
-           offsetof(GameState, Game_timer),
-           offsetof(GameState, Control_Time),
-           offsetof(GameState, Round_Level),
-           offsetof(GameState, Fade_Number));
-    printf("[offsetof] gs.PLsw=0x%zx gs.Random_ix16=0x%zx gs.Random_ix32=0x%zx\n",
-           offsetof(GameState, PLsw),
-           offsetof(GameState, Random_ix16),
-           offsetof(GameState, Random_ix32));
-    printf("[offsetof] gs.Pattern_Index=0x%zx gs.Attack_Counter=0x%zx gs.Resume_Lever=0x%zx\n",
-           offsetof(GameState, Pattern_Index),
-           offsetof(GameState, Attack_Counter),
-           offsetof(GameState, Resume_Lever));
-    printf("[offsetof] gs.Limit_Time=0x%zx gs.Random_ix16_ex=0x%zx gs.Random_ix32_ex=0x%zx\n",
-           offsetof(GameState, Limit_Time),
-           offsetof(GameState, Random_ix16_ex),
-           offsetof(GameState, Random_ix32_ex));
-    printf("[offsetof] gs.task=0x%zx gs.plw=0x%zx\n", offsetof(GameState, task), offsetof(GameState, plw));
-    printf("[offsetof] gs.bg_w=0x%zx sizeof(BG)=0x%zx bg_end=0x%zx\n",
-           offsetof(GameState, bg_w),
-           sizeof(BG),
-           offsetof(GameState, bg_w) + sizeof(BG));
+
 
     char remote_address_str[100];
     if (remote_ip) {
@@ -651,17 +577,17 @@ static void process_session() {
 
         switch (event->type) {
         case GekkoPlayerSyncing:
-            printf("🔴 player syncing\n");
+            SDL_Log("[netplay] player syncing");
             push_event(NETPLAY_EVENT_SYNCHRONIZING);
             break;
 
         case GekkoPlayerConnected:
-            printf("🔴 player connected\n");
+            SDL_Log("[netplay] player connected");
             push_event(NETPLAY_EVENT_CONNECTED);
             break;
 
         case GekkoPlayerDisconnected:
-            printf("🔴 player disconnected\n");
+            SDL_Log("[netplay] player disconnected");
             push_event(NETPLAY_EVENT_DISCONNECTED);
             if (session_state != NETPLAY_SESSION_EXITING && session_state != NETPLAY_SESSION_IDLE) {
                 clean_input_buffers();
@@ -671,7 +597,7 @@ static void process_session() {
             break;
 
         case GekkoSessionStarted:
-            printf("🔴 session started\n");
+            SDL_Log("[netplay] session started");
             session_state = NETPLAY_SESSION_RUNNING;
             break;
 
@@ -710,12 +636,7 @@ static void process_events(bool drawing_allowed) {
     GekkoGameEvent** game_events = gekko_update_session(session, &game_event_count);
     int frames_rolled_back = 0;
 
-    static int log_throttle = 0;
-    if (game_event_count == 0 && (log_throttle++ % 120 == 0)) {
-        printf("[netplay] no game events from gekko (state=%d)\n", session_state);
-    } else if (game_event_count > 0) {
-        log_throttle = 0;
-    }
+
 
     for (int i = 0; i < game_event_count; i++) {
         const GekkoGameEvent* event = game_events[i];
@@ -1055,6 +976,7 @@ void Netplay_Run() {
             const char* room = rmlui_casual_lobby_get_room_code();
             if (room && room[0]) {
                 session_state = NETPLAY_SESSION_LOBBY;
+                Discovery_Init(false);  // Restart LAN beacons for casual room LAN shortcut
                 rmlui_casual_lobby_show();
                 // Park the game engine in an idle state so no game logic runs
                 // behind the room overlay while waiting for the next match.

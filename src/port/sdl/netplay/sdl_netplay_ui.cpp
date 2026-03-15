@@ -311,6 +311,7 @@ static bool native_lobby_active = false;
 // Pending internet invite state (for native lobby indication)
 static bool lobby_has_pending_invite = false;
 static char lobby_pending_invite_name[32] = { 0 };
+static char lobby_pending_invite_player_id[64] = { 0 }; // Inviting player's ID (for reliable decline)
 static uint32_t lobby_pending_invite_ip = 0;
 static uint16_t lobby_pending_invite_port = 0;
 static char lobby_pending_invite_room[16] = { 0 };
@@ -576,6 +577,7 @@ static void lobby_poll_server(void) {
                      "%s",
                      lobby_server_players[i].display_name);
             snprintf(current_opponent_id, sizeof(current_opponent_id), "%s", lobby_server_players[i].player_id);
+            snprintf(lobby_pending_invite_player_id, sizeof(lobby_pending_invite_player_id), "%s", lobby_server_players[i].player_id);
             lobby_pending_invite_ip = peer_ip;
             lobby_pending_invite_port = peer_port;
             snprintf(
@@ -621,6 +623,7 @@ static void lobby_poll_server(void) {
         if (SDL_GetTicks() - lobby_pending_invite_time > 10000) {
             lobby_has_pending_invite = false;
             lobby_pending_invite_name[0] = '\0';
+            lobby_pending_invite_player_id[0] = '\0';
             current_opponent_id[0] = '\0';
             lobby_pending_invite_region[0] = '\0';
             lobby_pending_invite_ping = -1;
@@ -734,6 +737,7 @@ static void lobby_reset(void) {
     // Clear pending invite state
     lobby_has_pending_invite = false;
     lobby_pending_invite_name[0] = '\0';
+    lobby_pending_invite_player_id[0] = '\0';
     current_opponent_id[0] = '\0';
     lobby_pending_invite_region[0] = '\0';
     lobby_pending_invite_ping = -1;
@@ -1147,11 +1151,17 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                 SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_IDLE);
                 Netplay_Begin();
             } else if (elapsed >= LOBBY_WAIT_PEER_TIMEOUT_MS) {
-                // Timeout — proceed anyway as best-effort fallback
-                SDL_Log("[lobby] Wait-for-peer timed out after %ums, proceeding anyway", elapsed);
-                snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Peer timeout. Connecting...");
-                SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_IDLE);
-                Netplay_Begin();
+                // Timeout — opponent never responded. Abort instead of connecting to nobody.
+                SDL_Log("[lobby] Wait-for-peer timed out after %ums, aborting", elapsed);
+                snprintf(lobby_status_msg, sizeof(lobby_status_msg), "No response. Challenge timed out.");
+                SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_READY);
+                // Clear connection intent
+                lobby_connect_to_intent[0] = '\0';
+                lobby_we_are_initiator = false;
+                // Clear connect_to on server
+                const char* d = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
+                if (!d || !d[0]) d = my_room_code;
+                AsyncUpdatePresence(lobby_my_player_id, d, my_room_code, "");
             }
             // else: keep waiting, status msg already set
         }
@@ -1450,19 +1460,14 @@ void SDLNetplayUI_AcceptPendingInvite() {
 void SDLNetplayUI_DeclinePendingInvite() {
     if (!lobby_has_pending_invite)
         return;
-    // Report decline to server for rate limiting
-    // Find the player_id of the inviting player
-    int pc = SDL_GetAtomicInt(&lobby_server_player_count);
-    for (int i = 0; i < pc; i++) {
-        if (strcmp(lobby_server_players[i].display_name, lobby_pending_invite_name) == 0 &&
-            strcmp(lobby_server_players[i].player_id, lobby_my_player_id) != 0) {
-            LobbyServer_DeclineInvite(lobby_my_player_id, lobby_server_players[i].player_id);
-            add_declined_player(lobby_server_players[i].player_id);
-            break;
-        }
+    // Report decline using stored player_id (no display-name matching needed)
+    if (lobby_pending_invite_player_id[0]) {
+        LobbyServer_DeclineInvite(lobby_my_player_id, lobby_pending_invite_player_id);
+        add_declined_player(lobby_pending_invite_player_id);
     }
     lobby_has_pending_invite = false;
     lobby_pending_invite_name[0] = '\0';
+    lobby_pending_invite_player_id[0] = '\0';
     lobby_pending_invite_region[0] = '\0';
     lobby_pending_invite_ping = -1;
     lobby_pending_invite_ft = 2;
@@ -1507,9 +1512,16 @@ void SDLNetplayUI_CancelOutgoingChallenge() {
 
     snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Challenge cancelled.");
 
-    // Wait for thread to finish, then reset state to READY
+    // Wait for thread to finish, then reset state.
     lobby_cleanup_thread();
-    SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_READY);
+    // If we cancelled from WAIT_PEER, the STUN socket was consumed/closed.
+    // Reset to IDLE to trigger fresh STUN discovery on next lobby frame.
+    if (cancel_state == LOBBY_ASYNC_WAIT_PEER) {
+        my_room_code[0] = '\0';  // Force re-discovery of room code
+        SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_IDLE);
+    } else {
+        SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_READY);
+    }
 }
 
 // === Phase 6: Casual lobby bridge functions ===
@@ -1548,13 +1560,14 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
         NetplayDiscoveredPeer lan_peers[16];
         int lan_count = Discovery_GetPeers(lan_peers, 16);
         for (int i = 0; i < lan_count; i++) {
-            // Match by display name (primary) — the beacon now includes identity names
-            bool name_match = (opponent_name && opponent_name[0] && lan_peers[i].display_name[0] &&
-                               strcmp(lan_peers[i].display_name, opponent_name) == 0);
+            // Match by player_id (primary — reliable 1:1 identity from beacon)
+            bool id_match = (opponent_player_id && opponent_player_id[0] &&
+                             lan_peers[i].player_id[0] &&
+                             strcmp(lan_peers[i].player_id, opponent_player_id) == 0);
             // Fallback: if the peer shares our STUN public IP, they're on the same LAN
             bool ip_match = (stun_result.public_ip != 0 && peer_ip == stun_result.public_ip);
 
-            if ((name_match || ip_match) && lan_peers[i].ip[0]) {
+            if ((id_match || ip_match) && lan_peers[i].ip[0]) {
                 // Use the peer's STUN port (from their room code), NOT the discovery
                 // beacon port (configuration.netplay.port). The casual lobby path uses
                 // the STUN socket for Gekko, so both sides listen on their STUN port.

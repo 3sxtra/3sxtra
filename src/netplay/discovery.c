@@ -173,14 +173,15 @@ void Discovery_Update() {
 
         snprintf(beacon_data,
                  sizeof(beacon_data),
-                 "3SX_LOBBY|%u|%d|%d|%u|%hu|%s|%d",
+                 "3SX_LOBBY|%u|%d|%d|%u|%hu|%s|%d|%s",
                  local_instance_id,
                  auto_now ? 1 : 0,
                  local_ready ? 1 : 0,
                  local_challenge_target,
                  configuration.netplay.port,
                  safe_name,
-                 Config_GetInt(CFG_KEY_NETPLAY_FT));
+                 Config_GetInt(CFG_KEY_NETPLAY_FT),
+                 Identity_GetPlayerId());
         int beacon_len = (int)strlen(beacon_data);
 
         struct sockaddr_in broadcast_addr;
@@ -297,7 +298,9 @@ void Discovery_Update() {
             // stops at whitespace which is fine, but manual extraction
             // is more robust for names with spaces in the future.
             // Parse 8th field: ft_value (after 7th pipe)
+            // Parse 9th field: player_id (after 8th pipe)
             int peer_ft = 2; // default for old clients
+            char peer_player_id[64] = { 0 };
             if (fields >= 5) {
                 // Find the 6th pipe to get the display name
                 const char* p = buffer;
@@ -338,6 +341,31 @@ void Discovery_Update() {
                         if (peer_ft > 10) peer_ft = 10;
                     }
                 }
+                // Parse player_id from 9th field
+                {
+                    const char* pp = buffer;
+                    int ppipes = 0;
+                    while (*pp && ppipes < 8) {
+                        if (*pp == '|')
+                            ppipes++;
+                        pp++;
+                    }
+                    if (ppipes == 8 && *pp) {
+                        const char* id_end = strchr(pp, '|');
+                        size_t id_len;
+                        if (id_end)
+                            id_len = (size_t)(id_end - pp);
+                        else
+                            id_len = strlen(pp);
+                        if (id_len >= sizeof(peer_player_id))
+                            id_len = sizeof(peer_player_id) - 1;
+                        memcpy(peer_player_id, pp, id_len);
+                        peer_player_id[id_len] = '\0';
+                        // Trim trailing whitespace/newlines
+                        while (id_len > 0 && (peer_player_id[id_len - 1] == '\n' || peer_player_id[id_len - 1] == '\r'))
+                            peer_player_id[--id_len] = '\0';
+                    }
+                }
             }
             if (fields >= 1) {
                 // Ignore our own broadcast
@@ -363,6 +391,8 @@ void Discovery_Update() {
                             peers[i].ft_value = peer_ft;
                             if (peer_display_name[0])
                                 SDL_strlcpy(peers[i].display_name, peer_display_name, sizeof(peers[i].display_name));
+                            if (peer_player_id[0])
+                                SDL_strlcpy(peers[i].player_id, peer_player_id, sizeof(peers[i].player_id));
                             found = true;
                             break;
                         }
@@ -382,6 +412,7 @@ void Discovery_Update() {
                         p->ft_value = peer_ft;
                         snprintf(p->name, sizeof(p->name), "%s:%hu", ip_str, peer_port);
                         snprintf(p->display_name, sizeof(p->display_name), "%s", peer_display_name);
+                        snprintf(p->player_id, sizeof(p->player_id), "%s", peer_player_id);
                         p->port = peer_port;
                         p->last_seen_ticks = now;
                     }
