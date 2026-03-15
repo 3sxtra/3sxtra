@@ -63,17 +63,17 @@ jobs:
                 rustup target add aarch64-unknown-linux-gnu
 
           - name: Checkout repository
-            uses: actions/checkout@v4
+            uses: actions/checkout@v6
 
           - name: Cache dependencies
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: third_party_arm64
                 key: linux-arm64-cross-deps-v2-${{ hashFiles('build-deps.sh') }}
                 restore-keys: linux-arm64-cross-deps-
 
           - name: Cache Rust/Cargo
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: |
                     /opt/cargo/registry
@@ -164,7 +164,7 @@ jobs:
 
           - name: Upload release artifact
             if: ${{ inputs.release }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v7
             with:
                 name: release-assets-linux-arm64
                 path: 3SX-*-linux-arm64.tar.gz
@@ -178,8 +178,9 @@ jobs:
 
           - name: Upload build log (GitHub)
             if: ${{ always() && !env.ACT && !inputs.release }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v7
             with:
                 name: build-log-arm64-cross
                 path: build.log
+
 

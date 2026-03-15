@@ -14,8 +14,8 @@ typedef struct {
     char display_name[32];
     char region[8];
     char country[4]; // ISO 3166-1 alpha-2 (e.g. "US", "JP"), server-derived
-    char room_code[16];
-    char connect_to[16];
+    char room_code[64];
+    char connect_to[64];
     char status[16];         // "searching" or "idle"
     char connection_type[8]; // "wifi", "wired", or "unknown"
     int rtt_ms;              // Server RTT in ms (-1 = unknown)
@@ -206,13 +206,13 @@ typedef struct {
     char propose_p1_name[32];
     char propose_p1_conn_type[16];
     int propose_p1_rtt_ms;
-    char propose_p1_room_code[32];
+    char propose_p1_room_code[64];
     char propose_p1_region[8];
     char propose_p2_id[64];
     char propose_p2_name[32];
     char propose_p2_conn_type[16];
     int propose_p2_rtt_ms;
-    char propose_p2_room_code[32];
+    char propose_p2_room_code[64];
     char propose_p2_region[8];
     char propose_decliner_id[64]; // Populated on MATCH_DECLINE
     char propose_reason[16];      // "declined" or "timeout" (MATCH_DECLINE)

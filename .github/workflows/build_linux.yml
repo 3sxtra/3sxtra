@@ -18,22 +18,19 @@ concurrency:
 jobs:
     build:
         runs-on: ubuntu-latest
-        env:
-            FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
         steps:
           - name: Checkout repository
-            uses: actions/checkout@v4
+            uses: actions/checkout@v6
 
           - name: Cache dependencies
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: third_party_linux
                 key: linux-x64-deps-v2-${{ hashFiles('build-deps.sh') }}
                 restore-keys: linux-x64-deps-
 
           - name: Cache Rust/Cargo
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: |
                     ~/.cargo/registry
@@ -83,7 +80,7 @@ jobs:
 
           - name: Upload release artifact
             if: ${{ inputs.release }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v7
             with:
                 name: release-assets-linux-x86_64
                 path: 3SX-*-linux-x86_64.tar.gz
@@ -97,8 +94,9 @@ jobs:
 
           - name: Upload build log (GitHub)
             if: ${{ always() && !env.ACT && !inputs.release }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v7
             with:
                 name: build-log
                 path: build.log
+
 

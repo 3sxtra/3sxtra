@@ -9,7 +9,6 @@ concurrency:
     cancel-in-progress: true
 
 env:
-    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
     build:
@@ -59,17 +58,17 @@ jobs:
                 rustup target add aarch64-unknown-linux-gnu
 
           - name: Checkout repository
-            uses: actions/checkout@v4
+            uses: actions/checkout@v6
 
           - name: Cache dependencies
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: third_party_rpi4
                 key: linux-rpi4-deps-${{ hashFiles('build-deps.sh') }}
                 restore-keys: linux-rpi4-deps-
 
           - name: Cache Rust/Cargo
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: |
                     /opt/cargo/registry
@@ -144,7 +143,8 @@ jobs:
 
           - name: Upload artifact (GitHub)
             if: ${{ !env.ACT }}
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v7
             with:
                 name: 3sx-batocera-rpi4
                 path: 3sx-rpi4-batocera.tar.gz
+

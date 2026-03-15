@@ -16,9 +16,7 @@
 
 #include <SDL3_net/SDL_net.h>
 
-// Platform headers for getaddrinfo with AF_INET hint (force IPv4 resolution).
-// SDL3_Net's NET_ResolveHostname returns IPv6 first on dual-stack systems,
-// but the netplay stack uses uint32_t IPs (IPv4 only).
+// Platform headers for inet_ntop
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -28,19 +26,6 @@
 #include <arpa/inet.h>
 #endif
 
-// Resolve a hostname to an IPv4 address string (e.g. "142.250.189.127").
-// Returns true on success, writes result to ipv4_buf.
-static bool resolve_hostname_ipv4(const char* hostname, char* ipv4_buf, int buf_size) {
-    struct addrinfo hints = { 0 }, *res = NULL;
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-    if (getaddrinfo(hostname, NULL, &hints, &res) != 0 || !res)
-        return false;
-    struct sockaddr_in* sin = (struct sockaddr_in*)res->ai_addr;
-    inet_ntop(AF_INET, &sin->sin_addr, ipv4_buf, buf_size);
-    freeaddrinfo(res);
-    return true;
-}
 
 // STUN message types (RFC 5389)
 #define STUN_BINDING_REQUEST 0x0001
@@ -51,82 +36,27 @@ static bool resolve_hostname_ipv4(const char* hostname, char* ipv4_buf, int buf_
 #define STUN_ATTR_MAPPED_ADDRESS 0x0001
 #define STUN_ATTR_XOR_MAPPED_ADDRESS 0x0020
 
-// XOR obfuscation key for room codes (lightweight, not crypto)
-#define CODE_XOR_KEY 0xA7
-
-// Base64url-safe alphabet (no +/= confusion)
-static const char CODE_ALPHABET[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-
-static uint8_t decode_char(char c) {
-    if (c >= 'A' && c <= 'Z')
-        return (uint8_t)(c - 'A');
-    if (c >= 'a' && c <= 'z')
-        return (uint8_t)(c - 'a' + 26);
-    if (c >= '0' && c <= '9')
-        return (uint8_t)(c - '0' + 52);
-    if (c == '-')
-        return 62;
-    if (c == '_')
-        return 63;
-    return 0xFF; // Invalid
+void Stun_EncodeEndpoint(const char* ip, uint16_t port, char* out_code) {
+    if (!ip || !out_code)
+        return;
+    snprintf(out_code, 64, "%s|%u", ip, port);
 }
 
-void Stun_EncodeEndpoint(uint32_t ip, uint16_t port, char* out_code) {
-    // Pack into 6 bytes: 4 bytes IP + 2 bytes port (all network byte order)
-    uint8_t raw[6];
-    memcpy(&raw[0], &ip, 4);
-    memcpy(&raw[4], &port, 2);
-
-    // XOR obfuscate
-    for (int i = 0; i < 6; i++) {
-        raw[i] ^= CODE_XOR_KEY;
-    }
-
-    // Encode 6 bytes (48 bits) into 8 base64 characters (6 bits each)
-    out_code[0] = CODE_ALPHABET[(raw[0] >> 2) & 0x3F];
-    out_code[1] = CODE_ALPHABET[((raw[0] & 0x03) << 4) | ((raw[1] >> 4) & 0x0F)];
-    out_code[2] = CODE_ALPHABET[((raw[1] & 0x0F) << 2) | ((raw[2] >> 6) & 0x03)];
-    out_code[3] = CODE_ALPHABET[raw[2] & 0x3F];
-    out_code[4] = CODE_ALPHABET[(raw[3] >> 2) & 0x3F];
-    out_code[5] = CODE_ALPHABET[((raw[3] & 0x03) << 4) | ((raw[4] >> 4) & 0x0F)];
-    out_code[6] = CODE_ALPHABET[((raw[4] & 0x0F) << 2) | ((raw[5] >> 6) & 0x03)];
-    out_code[7] = CODE_ALPHABET[raw[5] & 0x3F];
-    out_code[8] = '\0';
-}
-
-bool Stun_DecodeEndpoint(const char* code, uint32_t* out_ip, uint16_t* out_port) {
-    if (strlen(code) != 8)
+bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port) {
+    if (!code || !out_ip || !out_port)
         return false;
-
-    uint8_t vals[8];
-    for (int i = 0; i < 8; i++) {
-        vals[i] = decode_char(code[i]);
-        if (vals[i] == 0xFF)
-            return false;
-    }
-
-    // Decode 8 base64 chars (48 bits) back to 6 bytes
-    uint8_t raw[6];
-    raw[0] = (uint8_t)((vals[0] << 2) | (vals[1] >> 4));
-    raw[1] = (uint8_t)((vals[1] << 4) | (vals[2] >> 2));
-    raw[2] = (uint8_t)((vals[2] << 6) | vals[3]);
-    raw[3] = (uint8_t)((vals[4] << 2) | (vals[5] >> 4));
-    raw[4] = (uint8_t)((vals[5] << 4) | (vals[6] >> 2));
-    raw[5] = (uint8_t)((vals[6] << 6) | vals[7]);
-
-    // XOR de-obfuscate
-    for (int i = 0; i < 6; i++) {
-        raw[i] ^= CODE_XOR_KEY;
-    }
-
-    memcpy(out_ip, &raw[0], 4);
-    memcpy(out_port, &raw[4], 2);
+    
+    char temp[64];
+    SDL_strlcpy(temp, code, sizeof(temp));
+    
+    char* sep = strchr(temp, '|');
+    if (!sep)
+        return false;
+        
+    *sep = '\0';
+    SDL_strlcpy(out_ip, temp, 64);
+    *out_port = (uint16_t)atoi(sep + 1);
     return true;
-}
-
-void Stun_FormatIP(uint32_t ip_net, char* buf, int buf_size) {
-    uint8_t* b = (uint8_t*)&ip_net;
-    snprintf(buf, buf_size, "%u.%u.%u.%u", b[0], b[1], b[2], b[3]);
 }
 
 // Build a 20-byte STUN Binding Request (RFC 5389 §6)
@@ -150,10 +80,8 @@ static void build_binding_request(uint8_t* buf, uint8_t* transaction_id) {
 }
 
 // Parse STUN Binding Response for XOR-MAPPED-ADDRESS or MAPPED-ADDRESS
-// TODO: Add IPv6 support (family=0x02) — requires changing IP representation
-//       across the entire netplay stack from uint32_t to a dual-stack type.
-static bool parse_binding_response(const uint8_t* buf, int len, const uint8_t* transaction_id, uint32_t* out_ip,
-                                   uint16_t* out_port) {
+static bool parse_binding_response(const uint8_t* buf, int len, const uint8_t* transaction_id, char* out_ip,
+                                   int ip_buf_size, uint16_t* out_port) {
     if (len < 20)
         return false;
 
@@ -188,30 +116,57 @@ static bool parse_binding_response(const uint8_t* buf, int len, const uint8_t* t
         if (attr_type == STUN_ATTR_XOR_MAPPED_ADDRESS && attr_len >= 8) {
             // Family at offset+1 (skip reserved byte)
             uint8_t family = buf[offset + 1];
-            if (family != 0x01) {              // IPv4 only
-                offset += (attr_len + 3) & ~3; // pad to 4-byte boundary
-                continue;
-            }
             uint16_t xport = ((uint16_t)buf[offset + 2] << 8) | buf[offset + 3];
-            uint32_t xaddr = ((uint32_t)buf[offset + 4] << 24) | ((uint32_t)buf[offset + 5] << 16) |
-                             ((uint32_t)buf[offset + 6] << 8) | buf[offset + 7];
-
-            // XOR with magic cookie
             *out_port = SDL_Swap16BE(xport ^ (uint16_t)(STUN_MAGIC_COOKIE >> 16));
-            *out_ip = SDL_Swap32BE(xaddr ^ STUN_MAGIC_COOKIE);
-            return true;
+
+            if (family == 0x01) {              // IPv4
+                uint32_t xaddr = ((uint32_t)buf[offset + 4] << 24) | ((uint32_t)buf[offset + 5] << 16) |
+                                 ((uint32_t)buf[offset + 6] << 8) | buf[offset + 7];
+                uint32_t decoded_ip = SDL_Swap32BE(xaddr ^ STUN_MAGIC_COOKIE);
+                uint8_t* b = (uint8_t*)&decoded_ip;
+                snprintf(out_ip, ip_buf_size, "%u.%u.%u.%u", b[0], b[1], b[2], b[3]);
+                return true;
+            } else if (family == 0x02 && attr_len >= 20) { // IPv6
+                uint8_t decoded_ipv6[16];
+                // XOR first 4 bytes with magic cookie
+                decoded_ipv6[0] = buf[offset + 4] ^ (uint8_t)(STUN_MAGIC_COOKIE >> 24);
+                decoded_ipv6[1] = buf[offset + 5] ^ (uint8_t)(STUN_MAGIC_COOKIE >> 16);
+                decoded_ipv6[2] = buf[offset + 6] ^ (uint8_t)(STUN_MAGIC_COOKIE >> 8);
+                decoded_ipv6[3] = buf[offset + 7] ^ (uint8_t)(STUN_MAGIC_COOKIE);
+                // XOR remaining 12 bytes with transaction ID
+                for (int i = 0; i < 12; i++) {
+                    decoded_ipv6[4 + i] = buf[offset + 8 + i] ^ transaction_id[i];
+                }
+                
+                // Format directly via inet_ntop
+#ifdef _WIN32
+                // We use Windows-compatible inet_ntop mapping (requires ws2tcpip.h which is included)
+                inet_ntop(AF_INET6, decoded_ipv6, out_ip, ip_buf_size);
+#else
+                inet_ntop(AF_INET6, decoded_ipv6, out_ip, ip_buf_size);
+#endif
+                return true;
+            }
         }
 
         if (attr_type == STUN_ATTR_MAPPED_ADDRESS && attr_len >= 8) {
             uint8_t family = buf[offset + 1];
-            if (family != 0x01) {
-                offset += (attr_len + 3) & ~3;
-                continue;
-            }
             *out_port = SDL_Swap16BE(((uint16_t)buf[offset + 2] << 8) | buf[offset + 3]);
-            *out_ip = SDL_Swap32BE(((uint32_t)buf[offset + 4] << 24) | ((uint32_t)buf[offset + 5] << 16) |
-                                   ((uint32_t)buf[offset + 6] << 8) | buf[offset + 7]);
-            return true;
+            
+            if (family == 0x01) {
+                uint32_t decoded_ip = SDL_Swap32BE(((uint32_t)buf[offset + 4] << 24) | ((uint32_t)buf[offset + 5] << 16) |
+                                       ((uint32_t)buf[offset + 6] << 8) | buf[offset + 7]);
+                uint8_t* b = (uint8_t*)&decoded_ip;
+                snprintf(out_ip, ip_buf_size, "%u.%u.%u.%u", b[0], b[1], b[2], b[3]);
+                return true;
+            } else if (family == 0x02 && attr_len >= 20) {
+                #ifdef _WIN32
+                inet_ntop(AF_INET6, &buf[offset + 4], out_ip, ip_buf_size);
+                #else
+                inet_ntop(AF_INET6, &buf[offset + 4], out_ip, ip_buf_size);
+                #endif
+                return true;
+            }
         }
 
         // Advance to next attribute (padded to 4-byte boundary)
@@ -227,40 +182,20 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
     memset(result, 0, sizeof(*result));
     result->socket = NULL;
 
-    // Bind to 0.0.0.0 explicitly to force IPv4.
-    // NULL creates a dual-stack socket on Windows, which causes STUN servers
-    // to return IPv6 XOR-MAPPED-ADDRESS that our parser doesn't handle.
-    NET_Address* bind_addr = NET_ResolveHostname("0.0.0.0");
-    if (bind_addr) {
-        // Wait for resolve (instant for numeric addresses, but API is async)
-        int wait = 0;
-        while (NET_GetAddressStatus(bind_addr) == NET_WAITING && wait < 100) {
-            SDL_Delay(1);
-            wait++;
-        }
-    }
+    // Bind to NULL explicitly to allow dual-stack dual-stack sockets.
+    NET_Address* bind_addr = NULL;
     NET_DatagramSocket* sock = NET_CreateDatagramSocket(bind_addr, local_port);
-    if (bind_addr)
-        NET_UnrefAddress(bind_addr);
     if (!sock) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to create UDP socket: %s", SDL_GetError());
         return false;
     }
 
-    // Force IPv4 resolution for the STUN server.
-    // SDL3_Net's NET_ResolveHostname returns IPv6 on dual-stack systems,
-    // but our STUN parser and netplay stack only handle IPv4.
-    char stun_ipv4[64];
-    if (!resolve_hostname_ipv4("stun.l.google.com", stun_ipv4, sizeof(stun_ipv4))) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve stun.l.google.com to IPv4");
-        NET_DestroyDatagramSocket(sock);
-        return false;
-    }
-
-    NET_Address* stun_addr = NET_ResolveHostname(stun_ipv4);
+    // Resolve via SDL3_Net natively.
+    char stun_host[] = "stun.l.google.com";
+    NET_Address* stun_addr = NET_ResolveHostname(stun_host);
     if (!stun_addr) {
         SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s via SDL3_Net: %s", stun_ipv4, SDL_GetError());
+            SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s via SDL3_Net: %s", stun_host, SDL_GetError());
         NET_DestroyDatagramSocket(sock);
         return false;
     }
@@ -273,7 +208,7 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
     }
 
     if (NET_GetAddressStatus(stun_addr) != NET_SUCCESS) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s", stun_ipv4);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s", stun_host);
         NET_UnrefAddress(stun_addr);
         NET_DestroyDatagramSocket(sock);
         return false;
@@ -316,9 +251,9 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
     }
 
     // Parse response
-    uint32_t ip = 0;
+    char ip[64] = {0};
     uint16_t port = 0;
-    if (!parse_binding_response((const uint8_t*)dgram->buf, dgram->buflen, transaction_id, &ip, &port)) {
+    if (!parse_binding_response((const uint8_t*)dgram->buf, dgram->buflen, transaction_id, ip, sizeof(ip), &port)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to parse binding response");
         NET_DestroyDatagram(dgram);
         NET_DestroyDatagramSocket(sock);
@@ -328,7 +263,7 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
     // the mapped port is the actual port we use
     result->local_port = SDL_Swap16BE(port);
 
-    result->public_ip = ip;
+    SDL_strlcpy(result->public_ip, ip, sizeof(result->public_ip));
     result->public_port = port;
     result->socket = sock; // Keep open for hole punching!
 
@@ -339,7 +274,7 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
     return true;
 }
 
-bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, int punch_duration_ms,
+bool Stun_HolePunch(StunResult* local, char* peer_ip, uint16_t* peer_port, int punch_duration_ms,
                     SDL_AtomicInt* cancel_flag) {
     if (!local || !local->socket || !peer_ip || !peer_port)
         return false;
@@ -350,11 +285,7 @@ bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, i
     const char punch_msg[] = "3SX_PUNCH";
     const int punch_interval_ms = 200; // Send every 200ms
 
-    // Convert peer_ip/peer_port back to string to resolve with SDL3_net
-    char peer_ip_str[32];
-    Stun_FormatIP(*peer_ip, peer_ip_str, sizeof(peer_ip_str));
-
-    NET_Address* peer = NET_ResolveHostname(peer_ip_str);
+    NET_Address* peer = NET_ResolveHostname(peer_ip);
     if (!peer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve peer IP");
         return false;
@@ -417,13 +348,7 @@ bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, i
 
                 // Update peer_ip from received address (Symmetric NAT may change it)
                 const char* received_ip = NET_GetAddressString(dgram->addr);
-                uint8_t octets[4];
-                if (SDL_sscanf(received_ip, "%hhu.%hhu.%hhu.%hhu", &octets[0], &octets[1], &octets[2], &octets[3]) ==
-                    4) {
-                    uint32_t new_ip;
-                    memcpy(&new_ip, octets, 4);
-                    *peer_ip = new_ip;
-                }
+                SDL_strlcpy(peer_ip, received_ip, 64);
 
                 // Send a few more punches to ensure the peer also receives ours
                 for (int i = 0; i < 3; i++) {

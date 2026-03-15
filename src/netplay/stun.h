@@ -11,7 +11,7 @@ extern "C" {
 
 /// Result of a STUN binding request
 typedef struct {
-    uint32_t public_ip;                // Network byte order (big-endian)
+    char public_ip[64];                // String representation (IPv4 or IPv6)
     uint16_t public_port;              // Host byte order
     uint16_t local_port;               // Host byte order — actual OS-bound port (may differ from public_port)
     struct NET_DatagramSocket* socket; // The socket used for STUN (reuse for hole punching)
@@ -26,20 +26,18 @@ bool Stun_Discover(StunResult* result, uint16_t local_port);
 /// Close the STUN socket when done
 void Stun_CloseSocket(StunResult* result);
 
-/// Encode a 4-byte IP + 2-byte port into an 8-character room code.
-/// out_code must be at least 9 bytes (8 chars + null terminator).
-void Stun_EncodeEndpoint(uint32_t ip, uint16_t port, char* out_code);
+/// Encode an IP string + port into an endpoint string.
+/// out_code must be at least 64 bytes.
+void Stun_EncodeEndpoint(const char* ip, uint16_t port, char* out_code);
 
-/// Decode an 8-character room code back into IP + port.
+/// Decode an endpoint string back into IP string + port.
+/// out_ip must be at least 64 bytes.
 /// Returns true on success.
-bool Stun_DecodeEndpoint(const char* code, uint32_t* out_ip, uint16_t* out_port);
-
-/// Format an IP (network byte order) into dotted string.
-void Stun_FormatIP(uint32_t ip_net, char* buf, int buf_size);
+bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port);
 
 /// Hole punches NAT to connect to peer. Blocks for up to `punch_duration_ms`.
 // Updates `peer_ip` and `peer_port` with the true translated endpoint if successful.
-bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, int punch_duration_ms,
+bool Stun_HolePunch(StunResult* local, char* peer_ip, uint16_t* peer_port, int punch_duration_ms,
                     SDL_AtomicInt* cancel_flag);
 
 #ifdef __cplusplus

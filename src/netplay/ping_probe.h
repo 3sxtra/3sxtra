@@ -17,9 +17,9 @@ void PingProbe_Init(struct NET_DatagramSocket* socket);
 /// Shut down the ping probe system and clear all peer state.
 void PingProbe_Shutdown(void);
 
-/// Add or update a peer to probe. ip/port are in network byte order.
+/// Add or update a peer to probe.
 /// player_id is a unique identifier string (max 63 chars).
-void PingProbe_AddPeer(uint32_t ip, uint16_t port, const char* player_id);
+void PingProbe_AddPeer(const char* ip, uint16_t port, const char* player_id);
 
 /// Remove a peer by player_id.
 void PingProbe_RemovePeer(const char* player_id);

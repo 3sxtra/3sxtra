@@ -39,7 +39,7 @@
 
 typedef struct {
     char player_id[64];
-    uint32_t ip;   /* Network byte order */
+    char ip[64];
     uint16_t port; /* Network byte order */
     bool active;
     uint8_t generation; /* Incremented on slot reuse — prevents stale pong cross-attribution */
@@ -81,10 +81,7 @@ static void resolve_peer_address(ProbePeer* peer) {
     if (peer->resolved_addr)
         return; /* Already resolved */
 
-    char ip_str[32];
-    uint8_t* b = (uint8_t*)&peer->ip;
-    snprintf(ip_str, sizeof(ip_str), "%u.%u.%u.%u", b[0], b[1], b[2], b[3]);
-    peer->resolved_addr = NET_ResolveHostname(ip_str);
+    peer->resolved_addr = NET_ResolveHostname(peer->ip);
 }
 
 static void build_probe(uint8_t* buf, const char* magic, uint16_t seq, uint32_t ts, uint16_t token) {
@@ -168,10 +165,7 @@ static void receive_probes(void) {
 
             // Verify by comparing sender IP string with peer's expected IP
             const char* sender_ip = NET_GetAddressString(dgram->addr);
-            char expected_ip[32];
-            uint8_t* b = (uint8_t*)&peer->ip;
-            snprintf(expected_ip, sizeof(expected_ip), "%u.%u.%u.%u", b[0], b[1], b[2], b[3]);
-            if (strcmp(sender_ip, expected_ip) != 0) {
+            if (strcmp(sender_ip, peer->ip) != 0) {
                 NET_DestroyDatagram(dgram);
                 continue;
             }
@@ -250,15 +244,15 @@ void PingProbe_Shutdown(void) {
     SDL_Log("[PingProbe] Shutdown");
 }
 
-void PingProbe_AddPeer(uint32_t ip, uint16_t port, const char* player_id) {
-    if (!player_id || !player_id[0])
+void PingProbe_AddPeer(const char* ip, uint16_t port, const char* player_id) {
+    if (!player_id || !player_id[0] || !ip)
         return;
 
     /* Update existing peer if IP/port changed */
     ProbePeer* existing = find_peer(player_id);
     if (existing) {
-        if (existing->ip != ip || existing->port != port) {
-            existing->ip = ip;
+        if (strcmp(existing->ip, ip) != 0 || existing->port != port) {
+            SDL_strlcpy(existing->ip, ip, sizeof(existing->ip));
             existing->port = port;
             /* Invalidate cached address */
             if (existing->resolved_addr) {
@@ -297,7 +291,7 @@ void PingProbe_AddPeer(uint32_t ip, uint16_t port, const char* player_id) {
     memset(p, 0, sizeof(*p));
     p->generation = new_gen;
     snprintf(p->player_id, sizeof(p->player_id), "%s", player_id);
-    p->ip = ip;
+    SDL_strlcpy(p->ip, ip, sizeof(p->ip));
     p->port = port;
     p->active = true;
     p->smoothed_rtt = -1;
@@ -310,10 +304,7 @@ void PingProbe_AddPeer(uint32_t ip, uint16_t port, const char* player_id) {
     if (slot >= s_peer_count)
         s_peer_count = slot + 1;
 
-    char ip_str[32];
-    uint8_t* b = (uint8_t*)&ip;
-    snprintf(ip_str, sizeof(ip_str), "%u.%u.%u.%u", b[0], b[1], b[2], b[3]);
-    SDL_Log("[PingProbe] Added peer %s at %s:%u", player_id, ip_str, SDL_Swap16BE(port));
+    SDL_Log("[PingProbe] Added peer %s at %s:%u", player_id, ip, SDL_Swap16BE(port));
 }
 
 void PingProbe_RemovePeer(const char* player_id) {
