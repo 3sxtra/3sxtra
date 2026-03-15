@@ -536,23 +536,23 @@ static s32 pp_conv_kow(u8 num) {
 }
 
 /** @brief Rebuild vibration parameters at init. */
-void pp_pulpara_remake_at_init() {
-    // do nothing
+void pp_pulpara_remake_at_init(WORK* wk) {
+    (void)wk;
 }
 
 /** @brief Rebuild vibration parameters at init (variant 2). */
-void pp_pulpara_remake_at_init2() {
-    // do nothing
+void pp_pulpara_remake_at_init2(WORK* wk) {
+    (void)wk;
 }
 
 /** @brief Rebuild vibration parameters on hit. */
-void pp_pulpara_remake_at_hit() {
-    // do nothing
+void pp_pulpara_remake_at_hit(WORK* wk) {
+    (void)wk;
 }
 
 /** @brief Rebuild all vibration parameters. */
-void pp_pulpara_remake_at() {
-    // do nothing
+void pp_pulpara_remake_at(WORK* wk) {
+    (void)wk;
 }
 
 /** @brief Rebuild vibration parameters for all damage types. */

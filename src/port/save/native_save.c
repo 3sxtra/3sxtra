@@ -325,7 +325,7 @@ int NativeSave_LoadOptions(void) {
 
     setupSoundMode();
     SsBgmHalfVolume(0);
-    setSeVolume();
+    setSeVolume(se_level);
 
     Copy_Save_w();
     Copy_Check_w();

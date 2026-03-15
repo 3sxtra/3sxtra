@@ -829,7 +829,7 @@ function resolveConnectMatch(player_id, display_name, room_code, connect_to) {
                 console.warn(`[match] skipped: ${other.display_name} already connecting to ${other.connect_to}`);
                 break;
             }
-            other.connect_to = String(room_code).slice(0, 15);
+            other.connect_to = String(room_code).slice(0, 63);
             console.log(`[match] ${display_name} -> ${other.display_name} (mutual connect_to set)`);
             break;
         }
@@ -1237,8 +1237,8 @@ async function handleRequest(req, res) {
             display_name: String(display_name).slice(0, 31),
             region: String(region || geo.region || '').slice(0, 7),
             country: geo.country || (existing ? existing.country : ''),
-            room_code: String(room_code || '').slice(0, 15),
-            connect_to: String(connect_to || '').slice(0, 15),
+            room_code: String(room_code || '').slice(0, 63),
+            connect_to: String(connect_to || '').slice(0, 63),
             status: existing ? existing.status : 'idle',
             connection_type: String(connection_type || 'unknown').slice(0, 7),
             rtt_ms: typeof rtt_ms === 'number' ? Math.max(0, Math.min(9999, rtt_ms)) : (existing ? existing.rtt_ms : -1),

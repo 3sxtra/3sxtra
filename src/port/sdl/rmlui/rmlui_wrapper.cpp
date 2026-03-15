@@ -403,12 +403,18 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     SDL_Log("[RmlUi Lua] Engine bridge registered");
 
     // Set up Lua package.path so compat modules can be found
-    // and pre-load FBNeo compatibility globals (joypad, emu, gui, memory)
-    Rml::Lua::Interpreter::DoString("package.path = 'lua/?.lua;lua/?/init.lua;' .. package.path\n"
-                                    "joypad = require('compat.joypad')\n"
-                                    "emu    = require('compat.emu')\n"
-                                    "gui    = require('compat.gui')\n"
-                                    "memory = require('compat.memory')\n");
+    // and pre-load FBNeo compatibility globals (joypad, emu, gui, memory).
+    // Use the absolute base path so require() works regardless of CWD
+    // (on Pi4 the working directory differs from the executable directory).
+    {
+        std::string lua_base = (base_path ? std::string(base_path) : std::string()) + "lua/";
+        std::string lua_setup = "package.path = '" + lua_base + "?.lua;" + lua_base + "?/init.lua;' .. package.path\n"
+                                "joypad = require('compat.joypad')\n"
+                                "emu    = require('compat.emu')\n"
+                                "gui    = require('compat.gui')\n"
+                                "memory = require('compat.memory')\n";
+        Rml::Lua::Interpreter::DoString(lua_setup.c_str());
+    }
     SDL_Log("[RmlUi Lua] FBNeo compat modules loaded");
 
     // Trial definitions are loaded lazily on first access via

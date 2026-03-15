@@ -20,6 +20,7 @@ extern "C" {
 #include "netplay/identity.h"
 #include "netplay/lobby_server.h"
 #include "netplay/netplay.h"
+#include "netplay/ping_probe.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/menu/menu.h"
@@ -42,6 +43,7 @@ struct RmlQueuePlayer {
 };
 
 struct RmlRoomPlayer {
+    int index;
     Rml::String name;
     Rml::String country;
     bool is_self;
@@ -50,6 +52,7 @@ struct RmlRoomPlayer {
 };
 
 struct RmlChatMessage {
+    int index;
     Rml::String sender;
     Rml::String text;
 };
@@ -75,8 +78,10 @@ static bool s_is_spectating = false;
 static bool s_in_queue = false;
 
 static std::vector<RmlQueuePlayer> s_queue;
+static int s_queue_display_count = 0;
 static std::vector<RmlRoomPlayer> s_players;
 static std::vector<RmlChatMessage> s_chat;
+static int s_chat_display_count = 0;
 
 static Rml::String s_chat_input;
 static bool s_is_typing = false;
@@ -131,6 +136,10 @@ static void AsyncMatchAction(const char* room_code, int action) {
         return;
     SDL_SetAtomicInt(&s_async_match_active, 1);
     AsyncMatchData* d = (AsyncMatchData*)malloc(sizeof(AsyncMatchData));
+    if (!d) {
+        SDL_SetAtomicInt(&s_async_match_active, 0);
+        return;
+    }
     snprintf(d->room_code, sizeof(d->room_code), "%s", room_code);
     d->action = action;
     SDL_Thread* t = SDL_CreateThread(async_match_action_fn, "AsyncMatch", d);
@@ -166,6 +175,7 @@ extern "C" void rmlui_casual_lobby_init(void) {
     ctor.Bind("queue_players", &s_queue);
 
     if (auto h = ctor.RegisterStruct<RmlRoomPlayer>()) {
+        h.RegisterMember("index", &RmlRoomPlayer::index);
         h.RegisterMember("name", &RmlRoomPlayer::name);
         h.RegisterMember("country", &RmlRoomPlayer::country);
         h.RegisterMember("is_self", &RmlRoomPlayer::is_self);
@@ -176,11 +186,13 @@ extern "C" void rmlui_casual_lobby_init(void) {
     ctor.Bind("room_players", &s_players);
 
     if (auto h = ctor.RegisterStruct<RmlChatMessage>()) {
+        h.RegisterMember("index", &RmlChatMessage::index);
         h.RegisterMember("sender", &RmlChatMessage::sender);
         h.RegisterMember("text", &RmlChatMessage::text);
     }
     ctor.RegisterArray<std::vector<RmlChatMessage>>();
     ctor.Bind("chat_messages", &s_chat);
+    ctor.BindFunc("chat_count", [](Rml::Variant& v) { v = s_chat_display_count; });
 
     // Bind Scalars
     ctor.Bind("room_code", &s_room_code);
@@ -194,7 +206,7 @@ extern "C" void rmlui_casual_lobby_init(void) {
     ctor.Bind("is_playing", &s_is_playing);
     ctor.Bind("is_spectating", &s_is_spectating);
     ctor.Bind("in_queue", &s_in_queue);
-    ctor.BindFunc("queue_count", [](Rml::Variant& v) { v = (int)s_queue.size(); });
+    ctor.BindFunc("queue_count", [](Rml::Variant& v) { v = s_queue_display_count; });
 
     ctor.Bind("chat_input", &s_chat_input);
     ctor.Bind("is_typing", &s_is_typing);
@@ -252,57 +264,81 @@ static void apply_room_state_to_model(void) {
         }
     }
 
-    // Queue
-    s_queue.clear();
+    // Queue — grow-only array (prevents RmlUi "Data array index out of bounds" warnings)
     s_in_queue = false;
-    for (int i = 0; i < s_room_state.queue_count; i++) {
-        RmlQueuePlayer qp;
-        qp.index = i;
-        qp.is_self = (s_my_id == s_room_state.queue[i]);
-        if (qp.is_self)
+    int new_queue_count = s_room_state.queue_count;
+    if ((size_t)new_queue_count > s_queue.size())
+        s_queue.resize(new_queue_count);
+    for (int i = 0; i < new_queue_count; i++) {
+        s_queue[i].index = i;
+        s_queue[i].is_self = (s_my_id == s_room_state.queue[i]);
+        if (s_queue[i].is_self)
             s_in_queue = true;
 
-        qp.name = s_room_state.queue[i]; // Fallback
+        s_queue[i].name = s_room_state.queue[i]; // Fallback
         for (int p = 0; p < s_room_state.player_count; p++) {
             if (strcmp(s_room_state.players[p].player_id, s_room_state.queue[i]) == 0) {
-                qp.name = s_room_state.players[p].display_name;
+                s_queue[i].name = s_room_state.players[p].display_name;
                 break;
             }
         }
-        s_queue.push_back(qp);
     }
+    // Pad excess entries (valid structs, hidden by data-if in RML)
+    for (size_t i = new_queue_count; i < s_queue.size(); i++) {
+        s_queue[i].index = (int)i;
+        s_queue[i].name = "";
+        s_queue[i].is_self = false;
+    }
+    s_queue_display_count = new_queue_count;
 
-    // Player list (all connected users with status)
-    s_players.clear();
-    for (int i = 0; i < s_room_state.player_count; i++) {
-        RmlRoomPlayer rp;
-        rp.name = s_room_state.players[i].display_name;
-        rp.country = s_room_state.players[i].country;
+    // Player list — grow-only array (prevents RmlUi OOB warnings during dirty reconciliation)
+    int new_player_count = s_room_state.player_count;
+    if ((size_t)new_player_count > s_players.size())
+        s_players.resize(new_player_count);
+    for (int i = 0; i < new_player_count; i++) {
+        s_players[i].index = i;
+        s_players[i].name = s_room_state.players[i].display_name;
+        s_players[i].country = s_room_state.players[i].country;
         // Flag PNGs are lowercase (e.g. "pt.png"), server sends uppercase ("PT")
-        for (auto& ch : rp.country)
+        for (auto& ch : s_players[i].country)
             ch = (char)tolower((unsigned char)ch);
-        rp.is_self = (s_my_id == s_room_state.players[i].player_id);
-        rp.is_playing = (strcmp(s_room_state.players[i].player_id, s_room_state.match_p1) == 0 ||
+        s_players[i].is_self = (s_my_id == s_room_state.players[i].player_id);
+        s_players[i].is_playing = (strcmp(s_room_state.players[i].player_id, s_room_state.match_p1) == 0 ||
                          strcmp(s_room_state.players[i].player_id, s_room_state.match_p2) == 0) &&
                         s_room_state.match_active;
-        rp.is_queued = false;
+        s_players[i].is_queued = false;
         for (int q = 0; q < s_room_state.queue_count; q++) {
             if (strcmp(s_room_state.players[i].player_id, s_room_state.queue[q]) == 0) {
-                rp.is_queued = true;
+                s_players[i].is_queued = true;
                 break;
             }
         }
-        s_players.push_back(rp);
+    }
+    // Pad excess entries (valid structs, hidden by data-if in RML)
+    for (size_t i = new_player_count; i < s_players.size(); i++) {
+        s_players[i].index = (int)i;
+        s_players[i].name = "";
+        s_players[i].country = "";
+        s_players[i].is_self = false;
+        s_players[i].is_playing = false;
+        s_players[i].is_queued = false;
     }
 
-    // Chat
-    s_chat.clear();
-    for (int i = 0; i < s_room_state.chat_count; i++) {
-        RmlChatMessage msg;
-        msg.sender = s_room_state.chat[i].sender_name;
-        msg.text = s_room_state.chat[i].text;
-        s_chat.push_back(msg);
+    // Chat — grow-only array (prevents RmlUi OOB warnings during dirty reconciliation)
+    int new_chat_count = s_room_state.chat_count;
+    if ((size_t)new_chat_count > s_chat.size())
+        s_chat.resize(new_chat_count);
+    for (int i = 0; i < new_chat_count; i++) {
+        s_chat[i].index = i;
+        s_chat[i].sender = s_room_state.chat[i].sender_name;
+        s_chat[i].text = s_room_state.chat[i].text;
     }
+    for (size_t i = new_chat_count; i < s_chat.size(); i++) {
+        s_chat[i].index = (int)i;
+        s_chat[i].sender = "";
+        s_chat[i].text = "";
+    }
+    s_chat_display_count = new_chat_count;
 
     s_model_handle.DirtyVariable("room_code");
     s_model_handle.DirtyVariable("room_name");
@@ -316,8 +352,12 @@ static void apply_room_state_to_model(void) {
     s_model_handle.DirtyVariable("queue_count");
     s_model_handle.DirtyVariable("room_players");
     s_model_handle.DirtyVariable("chat_messages");
+    s_model_handle.DirtyVariable("chat_count");
 }
 
+// TODO(perf): This is a synchronous HTTP call on the main thread. It can cause
+// 50–200ms frame hitches depending on server latency. Consider making it async
+// with a background thread, or using SSE event data for incremental updates.
 static void refresh_room_state_from_server(void) {
     if (s_room_code.empty())
         return;
@@ -371,14 +411,28 @@ extern "C" void rmlui_casual_lobby_update(void) {
             memcpy(&s_room_state, &sse_evt.room, sizeof(RoomState));
             apply_room_state_to_model();
         } else if (sse_type == SSE_EVENT_CHAT) {
-            // Append chat message to the UI model directly
-            RmlChatMessage msg;
-            msg.sender = sse_evt.chat_msg.sender_name;
-            msg.text = sse_evt.chat_msg.text;
-            s_chat.push_back(msg);
-            if (s_chat.size() > MAX_CHAT_MESSAGES)
-                s_chat.erase(s_chat.begin());
+            // Append chat message — grow-only pattern (no erase)
+            int new_idx = s_chat_display_count;
+            if (new_idx >= (int)s_chat.size()) {
+                s_chat.push_back({new_idx, sse_evt.chat_msg.sender_name, sse_evt.chat_msg.text});
+            } else {
+                s_chat[new_idx].index = new_idx;
+                s_chat[new_idx].sender = sse_evt.chat_msg.sender_name;
+                s_chat[new_idx].text = sse_evt.chat_msg.text;
+            }
+            s_chat_display_count++;
+            // Slide display window when exceeding max (shift entries left by 1)
+            if (s_chat_display_count > MAX_CHAT_MESSAGES) {
+                for (int i = 1; i < s_chat_display_count; i++) {
+                    s_chat[i - 1].sender = s_chat[i].sender;
+                    s_chat[i - 1].text = s_chat[i].text;
+                }
+                s_chat_display_count--;
+                s_chat[s_chat_display_count].sender = "";
+                s_chat[s_chat_display_count].text = "";
+            }
             s_model_handle.DirtyVariable("chat_messages");
+            s_model_handle.DirtyVariable("chat_count");
         } else if (sse_type == SSE_EVENT_JOIN || sse_type == SSE_EVENT_LEAVE || sse_type == SSE_EVENT_QUEUE_UPDATE ||
                    sse_type == SSE_EVENT_HOST_MIGRATED) {
             // For structural changes, re-fetch full state as fallback
@@ -410,7 +464,9 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 s_proposal_active = 1;
                 s_proposal_opponent_name = opp_name;
                 s_proposal_opponent_conn_type = opp_conn;
-                s_proposal_opponent_ping = opp_rtt;
+                // Prefer direct P2P measurement from PingProbe over server HTTP RTT
+                int p2p_rtt = PingProbe_GetRTT(opp_id);
+                s_proposal_opponent_ping = (p2p_rtt >= 0) ? p2p_rtt : opp_rtt;
                 s_proposal_countdown = PROPOSAL_TIMEOUT_SEC;
                 s_proposal_countdown_pct = 100;
                 s_proposal_cursor = 0; // Default to Accept
@@ -432,6 +488,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 s_model_handle.DirtyVariable("proposal_opponent_ping");
                 s_model_handle.DirtyVariable("proposal_opponent_conn_type");
                 s_model_handle.DirtyVariable("proposal_countdown");
+                s_model_handle.DirtyVariable("proposal_countdown_pct");
                 s_model_handle.DirtyVariable("proposal_cursor");
             } else {
                 s_status_text =
@@ -481,12 +538,20 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 rmlui_wrapper_hide_game_document("casual_lobby");
 
                 // P2P connection trigger: use stored opponent room code from proposal phase
-                if (s_proposal_opponent_room_code[0]) {
+                SDL_Log("[CasualLobby] MATCH_START: proposal_opponent_room_code='%s' opponent_name='%s' opponent_id='%s' we_are_p1=%d",
+                        s_proposal_opponent_room_code,
+                        s_proposal_opponent_name.c_str(),
+                        s_proposal_opponent_player_id,
+                        s_proposal_we_are_p1 ? 1 : 0);
+                if (s_proposal_opponent_room_code[0] || s_proposal_opponent_player_id[0]) {
                     SDLNetplayUI_StartCasualMatchPunch(s_proposal_opponent_room_code,
                                                        s_proposal_opponent_name.c_str(),
                                                        s_proposal_opponent_player_id,
                                                        s_proposal_we_are_p1);
                     s_proposal_opponent_room_code[0] = '\0'; // consumed
+                } else {
+                    SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                                "[CasualLobby] MATCH_START: No opponent room code or player_id — P2P connection will NOT initiate!");
                 }
             } else {
                 s_status_text = Rml::String("Match: ") + s_match_p1_name.c_str() + " vs " + s_match_p2_name.c_str();
@@ -774,6 +839,9 @@ extern "C" void rmlui_casual_lobby_hide(void) {
     }
     s_proposal_active = 0;
     s_match_ended_pending_reshow = false;
+    // Reset grow-only display counts so stale data doesn't show on re-entry
+    s_queue_display_count = 0;
+    s_chat_display_count = 0;
 }
 
 extern "C" void rmlui_casual_lobby_shutdown(void) {

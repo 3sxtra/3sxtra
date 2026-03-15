@@ -29,7 +29,7 @@ void checkAdxFileLoaded();
 void Exit_sound_system();
 void Init_bgm_work();
 void sound_all_off();
-void setSeVolume();
+void setSeVolume(s16 level);
 void setupSoundMode();
 void BGM_Server();
 void setupAlwaysSeamlessFlag(s16 flag);

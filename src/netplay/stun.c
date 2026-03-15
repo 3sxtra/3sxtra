@@ -193,7 +193,7 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
 
     // Increase receive buffer to 256KB to absorb bursts when the game loop
     // is busy re-simulating during rollback (inspired by Weyvelength SDK).
-    NetTuning_SetRecvBuf(result->socket, 256 * 1024);
+    NetTuning_SetRecvBuf(sock, 256 * 1024);
 
     // Resolve via SDL3_Net natively.
     char stun_host[] = "stun.l.google.com";

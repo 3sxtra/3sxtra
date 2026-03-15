@@ -109,7 +109,8 @@ void effect_A2_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_A2_init() {
+s32 effect_A2_init(s32 arg) {
+    (void)arg;
     WORK_Other* ewk;
     s16 ix;
 

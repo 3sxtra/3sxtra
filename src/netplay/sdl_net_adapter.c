@@ -1,5 +1,6 @@
 #include "sdl_net_adapter.h"
 #include <SDL3/SDL.h>
+#include <string.h>
 
 #define MAX_NETWORK_RESULTS 128
 #define MAX_CACHED_PEERS 8 // Max unique peers (1v1 + spectators)
@@ -20,6 +21,60 @@ typedef struct {
 static CachedPeer cached_peers[MAX_CACHED_PEERS];
 static int cached_peer_count = 0;
 
+/**
+ * @brief Strip "::ffff:" prefix from IPv4-mapped IPv6 addresses.
+ *
+ * On dual-stack sockets, incoming IPv4 packets arrive with source addresses
+ * in IPv4-mapped IPv6 form (e.g. "::ffff:192.168.86.26"). GekkoNet compares
+ * addresses as strings, so "::ffff:192.168.86.26:35413" != "192.168.86.26:35413".
+ * Stripping the prefix normalizes to plain IPv4 for consistent matching.
+ */
+static const char* strip_ipv4_mapped_prefix(const char* ip) {
+    if (SDL_strncmp(ip, "::ffff:", 7) == 0)
+        return ip + 7;
+    return ip;
+}
+
+/**
+ * @brief Parse "ip:port" address string, handling both IPv4 and IPv6.
+ *
+ * Uses the last ':' as the port separator. This correctly parses:
+ *   "192.168.86.26:35413"          → ip=192.168.86.26, port=35413
+ *   "::ffff:192.168.86.26:35413"   → ip=::ffff:192.168.86.26, port=35413
+ *   "[::1]:5678"                   → ip=::1, port=5678  (bracketed form)
+ */
+static void parse_addr_str(const char* addr_str, char* out_ip, int ip_size, int* out_port) {
+    *out_port = 0;
+    out_ip[0] = '\0';
+
+    // Handle bracketed IPv6: [ip]:port
+    if (addr_str[0] == '[') {
+        const char* bracket_end = strchr(addr_str, ']');
+        if (bracket_end) {
+            int ip_len = (int)(bracket_end - addr_str - 1);
+            if (ip_len >= ip_size) ip_len = ip_size - 1;
+            SDL_memcpy(out_ip, addr_str + 1, ip_len);
+            out_ip[ip_len] = '\0';
+            if (bracket_end[1] == ':')
+                *out_port = SDL_atoi(bracket_end + 2);
+            return;
+        }
+    }
+
+    // Use last ':' as port separator (works for both IPv4 and unbracketed IPv6)
+    const char* last_colon = strrchr(addr_str, ':');
+    if (!last_colon) {
+        SDL_strlcpy(out_ip, addr_str, ip_size);
+        return;
+    }
+
+    int ip_len = (int)(last_colon - addr_str);
+    if (ip_len >= ip_size) ip_len = ip_size - 1;
+    SDL_memcpy(out_ip, addr_str, ip_len);
+    out_ip[ip_len] = '\0';
+    *out_port = SDL_atoi(last_colon + 1);
+}
+
 static CachedPeer* find_or_create_peer(const char* addr_str) {
     // Look up existing
     for (int i = 0; i < cached_peer_count; i++) {
@@ -27,10 +82,13 @@ static CachedPeer* find_or_create_peer(const char* addr_str) {
             return &cached_peers[i];
     }
 
-    // Parse ip:port
+    // Parse ip:port (IPv4 and IPv6 safe)
     char ip[64];
     int port = 0;
-    SDL_sscanf(addr_str, "%63[^:]:%d", ip, &port);
+    parse_addr_str(addr_str, ip, sizeof(ip), &port);
+
+    // Normalize IPv4-mapped IPv6 for DNS resolution
+    const char* resolve_ip = strip_ipv4_mapped_prefix(ip);
 
     // Evict oldest if full
     if (cached_peer_count >= MAX_CACHED_PEERS) {
@@ -42,7 +100,7 @@ static CachedPeer* find_or_create_peer(const char* addr_str) {
 
     CachedPeer* p = &cached_peers[cached_peer_count++];
     SDL_strlcpy(p->addr_key, addr_str, sizeof(p->addr_key));
-    p->resolved = NET_ResolveHostname(ip);
+    p->resolved = NET_ResolveHostname(resolve_ip);
     p->port = (Uint16)port;
     return p;
 }
@@ -77,7 +135,10 @@ static GekkoNetResult** receive_data(int* length) {
 
     NET_Datagram* dgram = NULL;
     while (result_count < MAX_NETWORK_RESULTS && NET_ReceiveDatagram(adapter_sock, &dgram) && dgram) {
-        const char* ip_str = NET_GetAddressString(dgram->addr);
+        const char* raw_ip = NET_GetAddressString(dgram->addr);
+        // Normalize IPv4-mapped IPv6 addresses (::ffff:x.x.x.x → x.x.x.x)
+        // so GekkoNet can match incoming packets to the configured remote peer.
+        const char* ip_str = strip_ipv4_mapped_prefix(raw_ip);
         char addr_str[64];
         SDL_snprintf(addr_str, sizeof(addr_str), "%s:%d", ip_str, (int)dgram->port);
 
