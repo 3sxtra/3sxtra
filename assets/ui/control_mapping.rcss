@@ -12,13 +12,13 @@ body {
 
 #mapping-panel {
     display: block;
-    width: 88vw;
-    max-height: 88vh;
+    width: 96vw;
+    max-height: 96vh;
     background-color: rgba(15, 15, 20, 242);
     border-width: 1dp;
     border-color: #444;
     border-radius: 12dp;
-    padding: 10dp 16dp;
+    padding: 10dp 6dp;
     overflow-y: auto;
 }
 
@@ -64,24 +64,24 @@ h2 {
 }
 
 .col-prompt {
-    width: 25%;
+    width: 26%;
 }
 
 .col-device {
-    width: 14%;
+    width: 15%;
     border-left-width: 1dp;
     border-left-color: #333;
-    padding-left: 4dp;
+    padding-left: 1dp;
 }
 
 .col-center {
-    width: 14%;
+    width: 18%;
     border-left-width: 1dp;
     border-left-color: #333;
     border-right-width: 1dp;
     border-right-color: #333;
-    padding-left: 4dp;
-    padding-right: 4dp;
+    padding-left: 1dp;
+    padding-right: 1dp;
 }
 
 /* ─── Device info ─── */
@@ -100,15 +100,15 @@ h2 {
     width: 100%;
     height: auto;
     max-width: 120dp;
-    margin: 4dp auto;
+    margin: 2dp auto;
 }
 
 .device-icon-small {
     display: block;
     width: 100%;
     height: auto;
-    max-width: 90dp;
-    margin: 4dp auto;
+    max-width: 120dp;
+    margin: 2dp auto;
 }
 
 .no-device {

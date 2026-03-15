@@ -1043,6 +1043,9 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                 Netplay_SetLocalPort(stun_result.local_port);
                 Netplay_SetStunSocket(stun_result.socket);
                 stun_result.socket = NULL; // Ownership transferred; prevent double-close
+                if (ping_probe_initialized) {
+                    PingProbe_Init(NULL); // Stop probe from stealing Gekko packets
+                }
                 Netplay_SetPlayerNumber(lobby_we_are_initiator ? 0 : 1);
 
                 if (lobby_we_are_initiator && !lobby_skip_wait_peer) {
@@ -1100,6 +1103,9 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
             Netplay_SetLocalPort(stun_result.local_port);
             Netplay_SetStunSocket(stun_result.socket);
             stun_result.socket = NULL;
+            if (ping_probe_initialized) {
+                PingProbe_Init(NULL); // Stop probe from stealing Gekko packets
+            }
             Netplay_SetPlayerNumber(lobby_we_are_initiator ? 0 : 1);
 
             if (lobby_we_are_initiator && !lobby_skip_wait_peer) {
@@ -1575,6 +1581,9 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
                 if (stun_result.socket != NULL) {
                     Netplay_SetStunSocket(stun_result.socket);
                     stun_result.socket = NULL; // Ownership transferred
+                    if (ping_probe_initialized) {
+                        PingProbe_Init(NULL); // Stop probe from stealing Gekko packets
+                    }
                 }
                 Netplay_SetPlayerNumber(we_are_p1 ? 0 : 1);
                 Netplay_Begin();
