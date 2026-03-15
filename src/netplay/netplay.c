@@ -894,6 +894,7 @@ void Netplay_Run() {
 
             // Close STUN socket if we used it for this session
             if (stun_socket != NULL) {
+                SDLNetAdapter_Destroy();  // Release cached DNS before destroying socket
                 NET_DestroyDatagramSocket(stun_socket);
                 stun_socket = NULL;
             }

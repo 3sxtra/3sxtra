@@ -57,6 +57,16 @@ modules:
         url: https://github.com/libsdl-org/SDL_mixer.git
         branch: main
 
+  - name: sdl3-net
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_SHARED_LIBS=ON
+      - -DSDLNET_EXAMPLES=OFF
+    sources:
+      - type: git
+        url: https://github.com/libsdl-org/SDL_net.git
+        branch: main
+
   - name: python3-jinja2
     buildsystem: simple
     build-options:

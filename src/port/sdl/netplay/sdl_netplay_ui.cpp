@@ -12,21 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef _WIN32
-#include <winsock2.h>
-// Windows headers define macros that collide with game engine struct field names
-#ifdef s_addr
-#undef s_addr
-#endif
-#ifdef cmb2
-#undef cmb2
-#endif
-#ifdef cmb3
-#undef cmb3
-#endif
-#else
-#include <arpa/inet.h>
-#endif
+#include <SDL3_net/SDL_net.h>
 #include "netplay/discovery.h"
 #include "netplay/identity.h"
 #include "netplay/lobby_server.h"
@@ -664,7 +650,7 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
 static int SDLCALL upnp_fallback_thread_fn(void* data) {
     (void)data;
     bool ok =
-        Upnp_AddMapping(&lobby_upnp_mapping, ntohs(stun_result.public_port), ntohs(stun_result.public_port), "UDP");
+        Upnp_AddMapping(&lobby_upnp_mapping, SDL_Swap16BE(stun_result.public_port), SDL_Swap16BE(stun_result.public_port), "UDP");
     SDL_SetAtomicInt(&lobby_thread_result, ok ? 1 : 0);
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_UPNP_DONE);
     return 0;
@@ -694,7 +680,7 @@ static void lobby_start_punch(uint32_t peer_ip, uint16_t peer_port) {
                  sizeof(lobby_status_msg),
                  "Hole punching to %s:%u...",
                  lobby_punch_peer_ip_str,
-                 ntohs(peer_port));
+                 SDL_Swap16BE(peer_port));
     }
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_PUNCHING);
     SDL_SetAtomicInt(&lobby_thread_result, 0);
@@ -1007,8 +993,8 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
             snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Ready.");
 
             // Initialize P2P ping probe on the STUN socket
-            if (!ping_probe_initialized && stun_result.socket_fd >= 0) {
-                PingProbe_Init(stun_result.socket_fd);
+            if (!ping_probe_initialized && stun_result.socket != NULL) {
+                PingProbe_Init(stun_result.socket);
                 ping_probe_initialized = true;
             }
 
@@ -1046,11 +1032,10 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                 // Punch succeeded — prepare connection parameters
                 snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Hole punch success!");
                 Netplay_SetRemoteIP(lobby_punch_peer_ip_str);
-                Netplay_SetRemotePort(ntohs(lobby_punch_peer_port));
+                Netplay_SetRemotePort(SDL_Swap16BE(lobby_punch_peer_port));
                 Netplay_SetLocalPort(stun_result.local_port);
-                Stun_SetNonBlocking(&stun_result);
-                Netplay_SetStunSocket(stun_result.socket_fd);
-                stun_result.socket_fd = -1; // Ownership transferred; prevent double-close
+                Netplay_SetStunSocket(stun_result.socket);
+                stun_result.socket = NULL; // Ownership transferred; prevent double-close
                 Netplay_SetPlayerNumber(lobby_we_are_initiator ? 0 : 1);
 
                 if (lobby_we_are_initiator && !lobby_skip_wait_peer) {
@@ -1075,11 +1060,10 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                              sizeof(lobby_status_msg),
                              "UPnP thread failed. Attempting connection anyway...");
                     Netplay_SetRemoteIP(lobby_punch_peer_ip_str);
-                    Netplay_SetRemotePort(ntohs(lobby_punch_peer_port));
+                    Netplay_SetRemotePort(SDL_Swap16BE(lobby_punch_peer_port));
                     Netplay_SetLocalPort(stun_result.local_port);
-                    Stun_SetNonBlocking(&stun_result);
-                    Netplay_SetStunSocket(stun_result.socket_fd);
-                    stun_result.socket_fd = -1;
+                    Netplay_SetStunSocket(stun_result.socket);
+                    stun_result.socket = NULL;
                     Netplay_SetPlayerNumber(lobby_we_are_initiator ? 0 : 1);
 
                     if (lobby_we_are_initiator && !lobby_skip_wait_peer) {
@@ -1107,11 +1091,10 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                 snprintf(lobby_status_msg, sizeof(lobby_status_msg), "UPnP failed. Attempting direct connection...");
             }
             Netplay_SetRemoteIP(lobby_punch_peer_ip_str);
-            Netplay_SetRemotePort(ntohs(lobby_punch_peer_port));
+            Netplay_SetRemotePort(SDL_Swap16BE(lobby_punch_peer_port));
             Netplay_SetLocalPort(stun_result.local_port);
-            Stun_SetNonBlocking(&stun_result);
-            Netplay_SetStunSocket(stun_result.socket_fd);
-            stun_result.socket_fd = -1;
+            Netplay_SetStunSocket(stun_result.socket);
+            stun_result.socket = NULL;
             Netplay_SetPlayerNumber(lobby_we_are_initiator ? 0 : 1);
 
             if (lobby_we_are_initiator && !lobby_skip_wait_peer) {
@@ -1501,7 +1484,7 @@ void SDLNetplayUI_CancelOutgoingChallenge() {
     // to Netplay during the punch phase (Netplay_Begin was never called).
     int cancel_state = SDL_GetAtomicInt(&lobby_async_state);
     if (cancel_state == LOBBY_ASYNC_WAIT_PEER) {
-        Netplay_SetStunSocket(-1); // Release ownership back
+        Netplay_SetStunSocket(NULL); // Release ownership back
     }
 
     // Update server presence to clear connect_to
@@ -1571,7 +1554,7 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
                 // Use the peer's STUN port (from their room code), NOT the discovery
                 // beacon port (configuration.netplay.port). The casual lobby path uses
                 // the STUN socket for Gekko, so both sides listen on their STUN port.
-                uint16_t remote_port = ntohs(peer_port);
+                uint16_t remote_port = SDL_Swap16BE(peer_port);
                 SDL_Log("[casual] LAN peer detected: %s at %s:%u — using direct connection",
                         opponent_name ? opponent_name : lan_peers[i].display_name,
                         lan_peers[i].ip,
@@ -1584,10 +1567,9 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
                 Netplay_SetRemotePort(remote_port);
                 Netplay_SetLocalPort(stun_result.local_port);
                 // Transfer the STUN socket to Gekko for the LAN connection
-                if (stun_result.socket_fd >= 0) {
-                    Stun_SetNonBlocking(&stun_result);
-                    Netplay_SetStunSocket(stun_result.socket_fd);
-                    stun_result.socket_fd = -1; // Ownership transferred
+                if (stun_result.socket != NULL) {
+                    Netplay_SetStunSocket(stun_result.socket);
+                    stun_result.socket = NULL; // Ownership transferred
                 }
                 Netplay_SetPlayerNumber(we_are_p1 ? 0 : 1);
                 Netplay_Begin();

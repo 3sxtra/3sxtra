@@ -178,6 +178,47 @@ else
 fi
 
 # -----------------------------
+# SDL3_net
+# -----------------------------
+
+SDL_NET_DIR="$THIRD_PARTY/sdl3_net"
+SDL_NET_BUILD="$SDL_NET_DIR/build"
+
+if [ -d "$SDL_NET_BUILD" ]; then
+    echo "SDL3_net already built at $SDL_NET_BUILD"
+else
+    echo "Cross-compiling SDL3_net for aarch64..."
+
+    SDL_NET_SRC="$SDL_NET_DIR/SDL_net"
+
+    if [ ! -d "$SDL_NET_SRC" ]; then
+        echo "ERROR: SDL_net source not found. Run download-deps_rpi4.sh first."
+        exit 1
+    fi
+
+    cd "$SDL_NET_SRC"
+    mkdir -p build && cd build
+
+    cmake .. \
+        -DCMAKE_C_COMPILER="$CC" \
+        -DCMAKE_CXX_COMPILER="$CXX" \
+        "${SYSROOT_FLAGS[@]}" \
+        -DCMAKE_INSTALL_PREFIX="$SDL_NET_BUILD" \
+        -DCMAKE_SYSTEM_NAME=Linux \
+        -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+        -DSDL3_DIR="$SDL_BUILD/lib/cmake/SDL3" \
+        -DCMAKE_PREFIX_PATH="$SDL_BUILD" \
+        -DBUILD_SHARED_LIBS=ON \
+        -DSDLNET_EXAMPLES=OFF
+
+    cmake --build . -j$(nproc)
+    cmake --install .
+    echo "SDL3_net cross-compiled to $SDL_NET_BUILD"
+
+    cd ../..
+fi
+
+# -----------------------------
 # librashader (Rust cross-compile)
 # -----------------------------
 

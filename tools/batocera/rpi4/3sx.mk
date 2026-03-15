@@ -14,6 +14,7 @@
 define 3SX_RSYNC_SOURCE
 	rsync -a --exclude=.git --exclude=third_party/sdl3/build \
 		--exclude=third_party/sdl3_image/build \
+		--exclude=third_party/sdl3_net/build \
 		--exclude=build \
 		$(3SX_SITE)/ $(@D)/
 endef

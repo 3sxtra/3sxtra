@@ -354,12 +354,18 @@ bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, i
                 SDL_Log("STUN: Hole punch SUCCESS — received response from peer");
                 received_response = true;
 
-                // Update with actual received endpoint (fixes Symmetric NAT port translation)
-                // Note: SDL3_net provides IP as string.  If it changed (Symmetric NAT),
-                // we should theoretically parse it, but let's assume it didn't change entirely,
-                // just the port.  If we strictly need to update *peer_ip, we'd have to parse string.
-                // For now, updating port is usually sufficient for Symmetric NAT (port changes).
+                // Update with actual received endpoint (fixes Symmetric NAT port/IP translation)
                 *peer_port = SDL_Swap16BE(dgram->port);
+
+                // Update peer_ip from received address (Symmetric NAT may change it)
+                const char* received_ip = NET_GetAddressString(dgram->addr);
+                uint8_t octets[4];
+                if (SDL_sscanf(received_ip, "%hhu.%hhu.%hhu.%hhu",
+                               &octets[0], &octets[1], &octets[2], &octets[3]) == 4) {
+                    uint32_t new_ip;
+                    memcpy(&new_ip, octets, 4);
+                    *peer_ip = new_ip;
+                }
 
                 // Send a few more punches to ensure the peer also receives ours
                 for (int i = 0; i < 3; i++) {

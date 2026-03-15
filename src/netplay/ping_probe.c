@@ -11,23 +11,11 @@
  *   [10..13] ts      uint32 LE — sender's SDL_GetTicks() at send time
  *   [14..15] pad     zeroes
  */
-#ifndef _WIN32
-#define _GNU_SOURCE
-#endif
 #include "ping_probe.h"
 #include <SDL3/SDL.h>
+#include <SDL3_net/SDL_net.h>
 #include <stdio.h>
 #include <string.h>
-
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-typedef int socklen_t;
-#else
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#endif
 
 /* ------------------------------------------------------------------ */
 /* Constants                                                           */
@@ -62,13 +50,16 @@ typedef struct {
     int smoothed_rtt;     /* Exponential average in ms, -1 = no data */
     int consecutive_miss; /* Incremented each send, reset on pong */
     bool ever_reached;    /* True once we get at least one pong */
+
+    /* Cached resolved address for SDL3_Net sends */
+    NET_Address* resolved_addr;
 } ProbePeer;
 
 /* ------------------------------------------------------------------ */
 /* Module state                                                        */
 /* ------------------------------------------------------------------ */
 
-static int s_socket_fd = -1;
+static NET_DatagramSocket* s_socket = NULL;
 static ProbePeer s_peers[MAX_PROBE_PEERS];
 static int s_peer_count = 0;
 static int s_next_send_idx = 0; /* Round-robin index for staggered sends */
@@ -85,7 +76,15 @@ static ProbePeer* find_peer(const char* player_id) {
     return NULL;
 }
 
+static void resolve_peer_address(ProbePeer* peer) {
+    if (peer->resolved_addr)
+        return; /* Already resolved */
 
+    char ip_str[32];
+    uint8_t* b = (uint8_t*)&peer->ip;
+    snprintf(ip_str, sizeof(ip_str), "%u.%u.%u.%u", b[0], b[1], b[2], b[3]);
+    peer->resolved_addr = NET_ResolveHostname(ip_str);
+}
 
 static void build_probe(uint8_t* buf, const char* magic, uint16_t seq, uint32_t ts, uint16_t token) {
     memcpy(buf, magic, MAGIC_LEN);
@@ -95,21 +94,21 @@ static void build_probe(uint8_t* buf, const char* magic, uint16_t seq, uint32_t 
 }
 
 static void send_probe(ProbePeer* peer) {
-    if (s_socket_fd < 0)
+    if (!s_socket)
         return;
 
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = peer->ip;
-    addr.sin_port = peer->port;
+    /* Ensure we have a resolved address */
+    resolve_peer_address(peer);
+    if (!peer->resolved_addr || NET_GetAddressStatus(peer->resolved_addr) != NET_SUCCESS)
+        return;
 
     uint32_t now = SDL_GetTicks();
     uint8_t pkt[PROBE_PKT_SIZE];
     uint16_t token = (uint16_t)(peer - s_peers);
     build_probe(pkt, PING_MAGIC, peer->next_seq, now, token);
 
-    sendto(s_socket_fd, (const char*)pkt, PROBE_PKT_SIZE, 0, (struct sockaddr*)&addr, sizeof(addr));
+    uint16_t host_port = SDL_Swap16BE(peer->port);
+    NET_SendDatagram(s_socket, peer->resolved_addr, host_port, pkt, PROBE_PKT_SIZE);
 
     peer->next_seq++;
     peer->last_send_ticks = now;
@@ -117,29 +116,34 @@ static void send_probe(ProbePeer* peer) {
 }
 
 static void receive_probes(void) {
-    if (s_socket_fd < 0)
+    if (!s_socket)
         return;
 
     uint32_t now = SDL_GetTicks();
 
     /* Drain up to 64 packets per update to avoid starvation */
     for (int pkt_i = 0; pkt_i < 64; pkt_i++) {
-        uint8_t buf[64];
-        struct sockaddr_in from;
-        socklen_t from_len = sizeof(from);
-
-        int bytes = recvfrom(s_socket_fd, (char*)buf, sizeof(buf), 0, (struct sockaddr*)&from, &from_len);
-        if (bytes <= 0)
+        NET_Datagram* dgram = NULL;
+        if (!NET_ReceiveDatagram(s_socket, &dgram) || !dgram)
             break;
 
+        int bytes = dgram->buflen;
+
         /* Only process our probe packets (16 bytes with known magic) */
-        if (bytes < PROBE_PKT_SIZE)
+        if (bytes < PROBE_PKT_SIZE) {
+            NET_DestroyDatagram(dgram);
             continue;
+        }
+
+        const uint8_t* buf = (const uint8_t*)dgram->buf;
 
         if (memcmp(buf, PING_MAGIC, MAGIC_LEN) == 0) {
             /* Incoming ping from a peer — echo it exactly as pong */
-            memcpy(buf, PONG_MAGIC, MAGIC_LEN);
-            sendto(s_socket_fd, (const char*)buf, PROBE_PKT_SIZE, 0, (struct sockaddr*)&from, from_len);
+            uint8_t response[PROBE_PKT_SIZE];
+            memcpy(response, buf, PROBE_PKT_SIZE);
+            memcpy(response, PONG_MAGIC, MAGIC_LEN);
+            uint16_t sender_port = dgram->port;
+            NET_SendDatagram(s_socket, dgram->addr, sender_port, response, PROBE_PKT_SIZE);
         } else if (memcmp(buf, PONG_MAGIC, MAGIC_LEN) == 0) {
             /* Incoming pong — compute RTT */
             uint16_t seq;
@@ -149,24 +153,40 @@ static void receive_probes(void) {
             memcpy(&ts, buf + 10, 4);
             memcpy(&token, buf + 14, 2);
 
-            if (token >= MAX_PROBE_PEERS || !s_peers[token].active)
+            if (token >= MAX_PROBE_PEERS || !s_peers[token].active) {
+                NET_DestroyDatagram(dgram);
                 continue;
+            }
 
             ProbePeer* peer = &s_peers[token];
 
-            // Ignore cross-talk or spoofed tokens by strictly matching IP
-            if (peer->ip != from.sin_addr.s_addr)
+            // Verify by comparing sender IP string with peer's expected IP
+            const char* sender_ip = NET_GetAddressString(dgram->addr);
+            char expected_ip[32];
+            uint8_t* b = (uint8_t*)&peer->ip;
+            snprintf(expected_ip, sizeof(expected_ip), "%u.%u.%u.%u", b[0], b[1], b[2], b[3]);
+            if (strcmp(sender_ip, expected_ip) != 0) {
+                NET_DestroyDatagram(dgram);
                 continue;
+            }
 
             // Verify sequence number to ignore very old out-of-order packets
             uint16_t expected_seq = peer->next_seq - 1;
             uint16_t seq_diff = expected_seq - seq;
-            if (seq_diff > 4)
+            if (seq_diff > 4) {
+                NET_DestroyDatagram(dgram);
                 continue;
+            }
 
             // Opportunistically learn NAT port shifts for this peer
-            if (peer->port != from.sin_port) {
-                peer->port = from.sin_port;
+            uint16_t received_port = SDL_Swap16BE(dgram->port);
+            if (peer->port != received_port) {
+                peer->port = received_port;
+                // Invalidate cached address since port changed
+                if (peer->resolved_addr) {
+                    NET_UnrefAddress(peer->resolved_addr);
+                    peer->resolved_addr = NULL;
+                }
             }
 
             int rtt = (int)(now - ts);
@@ -193,6 +213,7 @@ static void receive_probes(void) {
             }
         }
         /* Silently ignore unrecognized packets (e.g. 3SX_PUNCH from hole punch) */
+        NET_DestroyDatagram(dgram);
     }
 }
 
@@ -200,16 +221,23 @@ static void receive_probes(void) {
 /* Public API                                                          */
 /* ------------------------------------------------------------------ */
 
-void PingProbe_Init(int socket_fd) {
-    s_socket_fd = socket_fd;
+void PingProbe_Init(NET_DatagramSocket* socket) {
+    s_socket = socket;
     s_peer_count = 0;
     s_next_send_idx = 0;
     memset(s_peers, 0, sizeof(s_peers));
-    SDL_Log("[PingProbe] Initialized with socket fd=%d", socket_fd);
+    SDL_Log("[PingProbe] Initialized with SDL3_Net socket");
 }
 
 void PingProbe_Shutdown(void) {
-    s_socket_fd = -1;
+    // Release any cached addresses
+    for (int i = 0; i < MAX_PROBE_PEERS; i++) {
+        if (s_peers[i].resolved_addr) {
+            NET_UnrefAddress(s_peers[i].resolved_addr);
+            s_peers[i].resolved_addr = NULL;
+        }
+    }
+    s_socket = NULL;
     s_peer_count = 0;
     s_next_send_idx = 0;
     memset(s_peers, 0, sizeof(s_peers));
@@ -223,8 +251,15 @@ void PingProbe_AddPeer(uint32_t ip, uint16_t port, const char* player_id) {
     /* Update existing peer if IP/port changed */
     ProbePeer* existing = find_peer(player_id);
     if (existing) {
-        existing->ip = ip;
-        existing->port = port;
+        if (existing->ip != ip || existing->port != port) {
+            existing->ip = ip;
+            existing->port = port;
+            /* Invalidate cached address */
+            if (existing->resolved_addr) {
+                NET_UnrefAddress(existing->resolved_addr);
+                existing->resolved_addr = NULL;
+            }
+        }
         return;
     }
 
@@ -244,6 +279,10 @@ void PingProbe_AddPeer(uint32_t ip, uint16_t port, const char* player_id) {
             if (s_peers[i].consecutive_miss > s_peers[worst].consecutive_miss)
                 worst = i;
         }
+        /* Release evicted peer's cached address */
+        if (s_peers[worst].resolved_addr) {
+            NET_UnrefAddress(s_peers[worst].resolved_addr);
+        }
         slot = worst;
     }
 
@@ -258,6 +297,7 @@ void PingProbe_AddPeer(uint32_t ip, uint16_t port, const char* player_id) {
     p->ever_reached = false;
     p->next_seq = 0;
     p->last_send_ticks = 0;
+    p->resolved_addr = NULL;
 
     if (slot >= s_peer_count)
         s_peer_count = slot + 1;
@@ -265,26 +305,35 @@ void PingProbe_AddPeer(uint32_t ip, uint16_t port, const char* player_id) {
     char ip_str[32];
     uint8_t* b = (uint8_t*)&ip;
     snprintf(ip_str, sizeof(ip_str), "%u.%u.%u.%u", b[0], b[1], b[2], b[3]);
-    SDL_Log("[PingProbe] Added peer %s at %s:%u", player_id, ip_str, ntohs(port));
+    SDL_Log("[PingProbe] Added peer %s at %s:%u", player_id, ip_str, SDL_Swap16BE(port));
 }
 
 void PingProbe_RemovePeer(const char* player_id) {
     ProbePeer* p = find_peer(player_id);
     if (p) {
+        if (p->resolved_addr) {
+            NET_UnrefAddress(p->resolved_addr);
+            p->resolved_addr = NULL;
+        }
         p->active = false;
         SDL_Log("[PingProbe] Removed peer %s", player_id);
     }
 }
 
 void PingProbe_ClearPeers(void) {
-    for (int i = 0; i < MAX_PROBE_PEERS; i++)
+    for (int i = 0; i < MAX_PROBE_PEERS; i++) {
+        if (s_peers[i].resolved_addr) {
+            NET_UnrefAddress(s_peers[i].resolved_addr);
+            s_peers[i].resolved_addr = NULL;
+        }
         s_peers[i].active = false;
+    }
     s_peer_count = 0;
     s_next_send_idx = 0;
 }
 
 void PingProbe_Update(void) {
-    if (s_socket_fd < 0)
+    if (!s_socket)
         return;
 
     /* 1. Receive all incoming probes/pongs */

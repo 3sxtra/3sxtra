@@ -4,14 +4,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+struct NET_DatagramSocket; // Forward declaration — avoids including SDL3_net header
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /// Initialize the ping probe system.
-/// socket_fd: an existing UDP socket (typically the STUN socket) to send/receive probes on.
-/// The socket must already be bound and should be in non-blocking mode (or have a short timeout).
-void PingProbe_Init(int socket_fd);
+/// socket: an existing SDL3_Net datagram socket (typically the STUN socket) to send/receive probes on.
+void PingProbe_Init(struct NET_DatagramSocket* socket);
 
 /// Shut down the ping probe system and clear all peer state.
 void PingProbe_Shutdown(void);

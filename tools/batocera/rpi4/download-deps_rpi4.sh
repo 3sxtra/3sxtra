@@ -79,6 +79,21 @@ clone_ext wavpack   https://github.com/libsdl-org/wavpack.git        5.9.0-SDL
 clone_ext tremor    https://github.com/libsdl-org/tremor.git         v1.2.1-SDL
 
 # -----------------------------
+# SDL3_net
+# -----------------------------
+
+SDL_NET_DIR="$THIRD_PARTY/sdl3_net"
+mkdir -p "$SDL_NET_DIR"
+
+if [ -d "$SDL_NET_DIR/SDL_net" ]; then
+    echo "SDL3_net source already exists."
+else
+    echo "Cloning SDL3_net..."
+    git clone --depth 1 https://github.com/libsdl-org/SDL_net.git "$SDL_NET_DIR/SDL_net"
+    echo "SDL3_net cloned."
+fi
+
+# -----------------------------
 # stb (header-only)
 # -----------------------------
 
