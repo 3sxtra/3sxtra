@@ -178,6 +178,12 @@ try {
 // Structure: Room { id: string, name: string, host: string, players: string[], state: 'waiting'|'playing', permanent: boolean }
 const rooms = new Map();
 
+// Grace timers for implicit-disconnect-as-leave.
+// Key: "roomCode:playerId", Value: setTimeout handle.
+// When an SSE connection closes, a 5s timer starts. If the player
+// reconnects SSE before it fires, the timer is cancelled.
+const sseGraceTimers = new Map();
+
 function createPermanentRooms() {
     const permanentRooms = [
         { id: 'NAEA', name: 'NA-East Public' },
@@ -247,6 +253,55 @@ function getRoomState(room) {
         match: room.match,
         chat: [] // Chat is ephemeral; do not send history
     };
+}
+
+/**
+ * Remove a player from a room (shared by /room/leave and implicit SSE disconnect).
+ * Handles match forfeiture, host migration, room cleanup, and queue rotation.
+ */
+function removePlayerFromRoom(room, playerId) {
+    if (!room.players.includes(playerId)) return; // Already gone
+
+    // If leaving player is in an active or proposed match, handle it
+    if (room.match && (room.match.state === 'playing' || room.match.state === 'proposed') &&
+        (room.match.p1 === playerId || room.match.p2 === playerId)) {
+        const other = room.match.p1 === playerId ? room.match.p2 : room.match.p1;
+        if (room.match.state === 'proposed') {
+            room.match = null;
+            room.queue.unshift(other);
+            broadcastRoomEvent(room, 'match_decline', {
+                p1: { id: playerId, name: getPlayerName(playerId) },
+                p2: { id: other, name: getPlayerName(other) },
+                decliner_id: playerId, reason: 'disconnect'
+            });
+        } else {
+            broadcastRoomEvent(room, 'match_end', {
+                winner_id: other, winner_name: getPlayerName(other),
+                loser_id: playerId, reason: 'disconnect'
+            });
+            room.queue.unshift(other);
+            room.match = null;
+        }
+    }
+
+    room.players = room.players.filter(p => p !== playerId);
+    room.queue = room.queue.filter(p => p !== playerId);
+
+    if (room.players.length === 0) {
+        if (room.permanent) {
+            room.match = null;
+            room.queue = [];
+        } else {
+            rooms.delete(room.id);
+        }
+    } else {
+        if (room.host === playerId) {
+            room.host = room.players[0];
+            broadcastRoomEvent(room, 'host_migrated', { host: room.host });
+        }
+        broadcastRoomEvent(room, 'leave', { player_id: playerId });
+        tryStartMatch(room);
+    }
 }
 
 /**
@@ -831,8 +886,20 @@ async function handleRequest(req, res) {
     // --- SSE Event Stream (no auth required, secured by unguessable room code) ---
     if (method === 'GET' && urlPath === '/room/events') {
         const roomCode = url.searchParams.get('room_code');
+        const playerId = url.searchParams.get('player_id') || '';
         const room = rooms.get(roomCode);
         if (!room) return json(res, 404, { error: 'Room not found' });
+
+        // Cancel any pending grace timer for this player (SSE reconnected in time)
+        if (playerId) {
+            const timerKey = `${roomCode}:${playerId}`;
+            const existing = sseGraceTimers.get(timerKey);
+            if (existing) {
+                clearTimeout(existing);
+                sseGraceTimers.delete(timerKey);
+                console.log(`[room] SSE reconnected: ${playerId} in ${roomCode} (grace timer cancelled)`);
+            }
+        }
 
         res.writeHead(200, {
             'Content-Type': 'text/event-stream',
@@ -842,7 +909,25 @@ async function handleRequest(req, res) {
         res.write(`data: ${JSON.stringify({ type: 'sync', data: getRoomState(room) })}\n\n`);
 
         room.sseClients.add(res);
-        req.on('close', () => room.sseClients.delete(res));
+        req.on('close', () => {
+            room.sseClients.delete(res);
+
+            // Implicit-disconnect-as-leave: start a 5s grace timer.
+            // If the player doesn't reconnect SSE within this window,
+            // treat it as an implicit leave from the room.
+            if (playerId && room.players.includes(playerId)) {
+                const timerKey = `${roomCode}:${playerId}`;
+                const timer = setTimeout(() => {
+                    sseGraceTimers.delete(timerKey);
+                    const currentRoom = rooms.get(roomCode);
+                    if (!currentRoom) return;
+                    if (!currentRoom.players.includes(playerId)) return; // Already left
+                    console.log(`[room] implicit leave: ${playerId} from ${roomCode} (SSE closed)`);
+                    removePlayerFromRoom(currentRoom, playerId);
+                }, 5000);
+                sseGraceTimers.set(timerKey, timer);
+            }
+        });
         return; // Keep connection open
     }
 

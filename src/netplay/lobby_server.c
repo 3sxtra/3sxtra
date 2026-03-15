@@ -1019,6 +1019,13 @@ static int sse_raw_connect(void) {
         return -1;
     }
 
+    // Increase receive buffer to 256KB to absorb bursts of SSE events
+    // when the main thread is busy (e.g. during netplay rollback).
+    {
+        int rcvbuf = 256 * 1024;
+        setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (const char*)&rcvbuf, sizeof(rcvbuf));
+    }
+
     freeaddrinfo(res);
     return sock;
 }
@@ -1159,17 +1166,20 @@ static int sse_thread_fn(void* userdata) {
     }
     SDL_SetAtomicInt(&s_sse_sock, sock);
 
-    // Build HTTP GET request for SSE (no auth — room code is the secret)
+    // Build HTTP GET request for SSE (no auth — room code is the secret).
+    // Include player_id so the server can do implicit-leave-on-disconnect.
+    const char* sse_player_id = Identity_IsInitialized() ? Identity_GetPlayerId() : "";
     char request[512];
     int req_len = snprintf(request,
                            sizeof(request),
-                           "GET /room/events?room_code=%s HTTP/1.1\r\n"
+                           "GET /room/events?room_code=%s&player_id=%s HTTP/1.1\r\n"
                            "Host: %s:%d\r\n"
                            "Accept: text/event-stream\r\n"
                            "Cache-Control: no-cache\r\n"
                            "Connection: keep-alive\r\n"
                            "\r\n",
                            s_sse_room_code,
+                           sse_player_id,
                            server_host,
                            server_port);
 

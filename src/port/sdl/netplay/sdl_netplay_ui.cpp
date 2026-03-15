@@ -348,6 +348,11 @@ static void AsyncUpdatePresence(const char* pid, const char* disp, const char* r
     SDL_SetAtomicInt(&async_presence_active, 1);
     AsyncPresenceData* d = (AsyncPresenceData*)malloc(sizeof(AsyncPresenceData));
     memset(d, 0, sizeof(*d));
+    // Truncation is intentional — AsyncPresenceData fields are fixed-size buffers.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
     snprintf(d->player_id, sizeof(d->player_id), "%s", pid);
     if (disp)
         snprintf(d->display_name, sizeof(d->display_name), "%s", disp);
@@ -359,6 +364,9 @@ static void AsyncUpdatePresence(const char* pid, const char* disp, const char* r
     if (ct)
         snprintf(d->connect_to, sizeof(d->connect_to), "%s", ct);
     snprintf(d->connection_type, sizeof(d->connection_type), "%s", my_connection_type);
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
     d->rtt_ms = lobby_my_rtt_ms;
     d->ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
     SDL_Thread* t = SDL_CreateThread(async_presence_fn, "AsyncPresence", d);

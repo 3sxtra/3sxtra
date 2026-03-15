@@ -1,5 +1,6 @@
 // Use standalone configuration.h to avoid structs.h/Winsock typedef conflicts.
 #include "discovery.h"
+#include "net_tuning.h"
 #include "configuration.h"
 #include "identity.h"
 #include "port/config/config.h"
@@ -93,12 +94,20 @@ void Discovery_Init(bool auto_connect) {
     // WSAStartup on Windows (via SDL3_Net init). The raw broadcast socket
     // below needs Winsock ready before calling socket().
     listen_sock = NET_CreateDatagramSocket(NULL, DISCOVERY_PORT);
+    if (listen_sock) {
+        NetTuning_SetRecvBuf(listen_sock, 256 * 1024);
+    }
 
     // Setup broadcast socket (raw — for per-NIC directed broadcast via OS APIs)
     broadcast_sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (broadcast_sock >= 0) {
         int broadcast_enable = 1;
         setsockopt(broadcast_sock, SOL_SOCKET, SO_BROADCAST, (const char*)&broadcast_enable, sizeof(broadcast_enable));
+
+        // Increase receive buffer to 256KB to absorb bursts when the game loop
+        // is busy re-simulating during rollback (inspired by Weyvelength SDK).
+        int rcvbuf = 256 * 1024;
+        setsockopt(broadcast_sock, SOL_SOCKET, SO_RCVBUF, (const char*)&rcvbuf, sizeof(rcvbuf));
     }
 
     last_broadcast_ticks = 0;

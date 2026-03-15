@@ -9,6 +9,7 @@
 #define _GNU_SOURCE // Must be before any includes for getaddrinfo/timeval
 #endif
 #include "stun.h"
+#include "net_tuning.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -189,6 +190,10 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to create UDP socket: %s", SDL_GetError());
         return false;
     }
+
+    // Increase receive buffer to 256KB to absorb bursts when the game loop
+    // is busy re-simulating during rollback (inspired by Weyvelength SDK).
+    NetTuning_SetRecvBuf(result->socket, 256 * 1024);
 
     // Resolve via SDL3_Net natively.
     char stun_host[] = "stun.l.google.com";
