@@ -101,7 +101,7 @@ static int s_proposal_countdown = PROPOSAL_TIMEOUT_SEC;
 static int s_proposal_countdown_pct = 100; // 0-100 for countdown bar width
 static int s_proposal_cursor = 0;          // 0 = accept, 1 = decline
 static Uint64 s_proposal_start_time = 0;
-static char s_proposal_opponent_room_code[32] = { 0 };
+static char s_proposal_opponent_room_code[64] = { 0 };
 static char s_proposal_opponent_region[8] = { 0 };
 static char s_proposal_opponent_player_id[64] = { 0 };
 static int s_proposal_ft = 1; // FT from the room (received in match_propose)

@@ -6,141 +6,143 @@
 #include <string.h>
 #include <cmocka.h>
 
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#endif
-
 #include "netplay/stun.h"
 
 /* ------------------------------------------------------------------ */
-/* Original tests                                                       */
+/* Encode / Decode — new string-based "ip|port" format (March 2026)    */
 /* ------------------------------------------------------------------ */
 
-static void test_stun_encode_decode_roundtrip(void **state) {
+/* IPv4 round-trip: encode → decode → same values */
+static void test_stun_encode_decode_ipv4(void **state) {
     (void) state;
 
-    uint32_t ip = htonl(0x7F000001);
-    uint16_t port = htons(12345);
-    char code[9];
+    char code[64];
+    Stun_EncodeEndpoint("192.168.1.100", 7000, code);
 
-    Stun_EncodeEndpoint(ip, port, code);
-    assert_int_equal(strlen(code), 8);
+    /* Format: "192.168.1.100|7000" */
+    assert_string_equal(code, "192.168.1.100|7000");
 
-    uint32_t decoded_ip;
-    uint16_t decoded_port;
-    bool success = Stun_DecodeEndpoint(code, &decoded_ip, &decoded_port);
+    char ip[64];
+    uint16_t port = 0;
+    bool ok = Stun_DecodeEndpoint(code, ip, &port);
 
-    assert_true(success);
-    assert_int_equal(decoded_ip, ip);
-    assert_int_equal(decoded_port, port);
+    assert_true(ok);
+    assert_string_equal(ip, "192.168.1.100");
+    assert_int_equal(port, 7000);
 }
 
+/* IPv6 round-trip */
+static void test_stun_encode_decode_ipv6(void **state) {
+    (void) state;
+
+    char code[64];
+    Stun_EncodeEndpoint("2001:8a0:587b:a01::1", 55688, code);
+
+    assert_string_equal(code, "2001:8a0:587b:a01::1|55688");
+
+    char ip[64];
+    uint16_t port = 0;
+    bool ok = Stun_DecodeEndpoint(code, ip, &port);
+
+    assert_true(ok);
+    assert_string_equal(ip, "2001:8a0:587b:a01::1");
+    assert_int_equal(port, 55688);
+}
+
+/* IPv6 full form (worst-case length) */
+static void test_stun_encode_decode_ipv6_full(void **state) {
+    (void) state;
+
+    /* Full 39-char IPv6 + |port = ~45 chars total — fits in char[64] */
+    const char* full_ipv6 = "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
+    char code[64];
+    Stun_EncodeEndpoint(full_ipv6, 65535, code);
+
+    char ip[64];
+    uint16_t port = 0;
+    bool ok = Stun_DecodeEndpoint(code, ip, &port);
+
+    assert_true(ok);
+    assert_string_equal(ip, full_ipv6);
+    assert_int_equal(port, 65535);
+}
+
+/* Deterministic: encoding the same input twice gives the same output */
 static void test_stun_encode_deterministic(void **state) {
     (void) state;
 
-    uint32_t ip = htonl(0xC0A80164);
-    uint16_t port = htons(7000);
-    char code1[9];
-    char code2[9];
+    char code1[64];
+    char code2[64];
 
-    Stun_EncodeEndpoint(ip, port, code1);
-    Stun_EncodeEndpoint(ip, port, code2);
+    Stun_EncodeEndpoint("10.0.0.1", 12345, code1);
+    Stun_EncodeEndpoint("10.0.0.1", 12345, code2);
 
     assert_string_equal(code1, code2);
-
-    const char *alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-    for (int i = 0; i < 8; ++i) {
-        assert_non_null(strchr(alphabet, code1[i]));
-    }
 }
 
-static void test_stun_decode_invalid(void **state) {
+/* Decode rejects missing '|' separator */
+static void test_stun_decode_no_separator(void **state) {
     (void) state;
 
-    uint32_t ip;
-    uint16_t port;
-
-    assert_false(Stun_DecodeEndpoint("Short", &ip, &port));
-    assert_false(Stun_DecodeEndpoint("TooLongCode", &ip, &port));
-    assert_false(Stun_DecodeEndpoint("Bad!Char", &ip, &port));
-}
-
-/* ------------------------------------------------------------------ */
-/* Task 5 edge case additions — Stun_DecodeEndpoint                    */
-/* ------------------------------------------------------------------ */
-
-/* Empty string has length 0, not 8 → must return false */
-static void test_decode_endpoint_empty_string(void **state) {
-    (void) state;
-    uint32_t ip = 0;
+    char ip[64];
     uint16_t port = 0;
-    assert_false(Stun_DecodeEndpoint("", &ip, &port));
+
+    /* Just an IP, no |port */
+    assert_false(Stun_DecodeEndpoint("192.168.1.1", ip, &port));
+    /* IPv6 with colons but no pipe */
+    assert_false(Stun_DecodeEndpoint("2001:8a0:587b:a", ip, &port));
 }
 
-/* 8 characters but all invalid alphabet chars → decode_char returns 0xFF → false */
-static void test_decode_endpoint_malformed(void **state) {
+/* Decode rejects empty string */
+static void test_stun_decode_empty(void **state) {
     (void) state;
-    uint32_t ip = 0;
+
+    char ip[64];
     uint16_t port = 0;
-    /* Wrong length (7 chars — truncated) */
-    assert_false(Stun_DecodeEndpoint("AAAAAAA", &ip, &port));
-    /* 8 chars with invalid character '+' in first position */
-    assert_false(Stun_DecodeEndpoint("+AAAAAAA", &ip, &port));
-    /* All spaces (wrong length and invalid chars) */
-    assert_false(Stun_DecodeEndpoint("        ", &ip, &port));
+    assert_false(Stun_DecodeEndpoint("", ip, &port));
 }
 
-/* ------------------------------------------------------------------ */
-/* Task 5 edge case additions — parse_binding_response (via public API)*/
-/* ------------------------------------------------------------------ */
-
-/* Constructing a valid STUN response buffer and feeding it through the
-   internal parse path would require either:
-     (a) including stun.c directly (risky — duplicate link symbols), or
-     (b) calling Stun_Discover() with a loopback server (network required).
-   Instead we verify the *public* observable behaviour: Stun_Discover
-   returns false when passed a NULL result pointer (guards against
-   accidental access), and Stun_EncodeEndpoint produces valid codes for
-   extreme IP/port values (full coverage of the encode/decode path). */
-
-static void test_parse_binding_response_truncated(void **state) {
+/* Decode rejects NULL inputs */
+static void test_stun_decode_null(void **state) {
     (void) state;
-    /* Stun_Discover with NULL result → returns false, no crash */
+
+    char ip[64];
+    uint16_t port = 0;
+    assert_false(Stun_DecodeEndpoint(NULL, ip, &port));
+    assert_false(Stun_DecodeEndpoint("1.2.3.4|5", NULL, &port));
+    assert_false(Stun_DecodeEndpoint("1.2.3.4|5", ip, NULL));
+}
+
+/* Port 0 edge case */
+static void test_stun_decode_port_zero(void **state) {
+    (void) state;
+
+    char ip[64];
+    uint16_t port = 99;
+    bool ok = Stun_DecodeEndpoint("127.0.0.1|0", ip, &port);
+    assert_true(ok);
+    assert_string_equal(ip, "127.0.0.1");
+    assert_int_equal(port, 0);
+}
+
+/* Stun_Discover with NULL result returns false without crashing */
+static void test_stun_discover_null(void **state) {
+    (void) state;
     bool ok = Stun_Discover(NULL, 0);
     assert_false(ok);
 }
 
-static void test_parse_binding_response_wrong_type(void **state) {
-    (void) state;
-    /* Test encode/decode for a boundary IP (0.0.0.0) and port 0 */
-    uint32_t ip = 0;
-    uint16_t port = 0;
-    char code[9];
-    Stun_EncodeEndpoint(ip, port, code);
-    assert_int_equal(strlen(code), 8);
-
-    uint32_t dip = 1;
-    uint16_t dport = 1;
-    bool ok = Stun_DecodeEndpoint(code, &dip, &dport);
-    assert_true(ok);
-    assert_int_equal(dip, 0U);
-    assert_int_equal(dport, 0U);
-}
-
 int main(void) {
     const struct CMUnitTest tests[] = {
-        cmocka_unit_test(test_stun_encode_decode_roundtrip),
+        cmocka_unit_test(test_stun_encode_decode_ipv4),
+        cmocka_unit_test(test_stun_encode_decode_ipv6),
+        cmocka_unit_test(test_stun_encode_decode_ipv6_full),
         cmocka_unit_test(test_stun_encode_deterministic),
-        cmocka_unit_test(test_stun_decode_invalid),
-        /* Task 5 additions */
-        cmocka_unit_test(test_decode_endpoint_empty_string),
-        cmocka_unit_test(test_decode_endpoint_malformed),
-        cmocka_unit_test(test_parse_binding_response_truncated),
-        cmocka_unit_test(test_parse_binding_response_wrong_type),
+        cmocka_unit_test(test_stun_decode_no_separator),
+        cmocka_unit_test(test_stun_decode_empty),
+        cmocka_unit_test(test_stun_decode_null),
+        cmocka_unit_test(test_stun_decode_port_zero),
+        cmocka_unit_test(test_stun_discover_null),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

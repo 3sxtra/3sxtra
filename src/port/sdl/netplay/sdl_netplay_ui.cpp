@@ -322,8 +322,8 @@ typedef struct {
     char player_id[128];
     char display_name[64];
     char region[8];
-    char room_code[32];
-    char connect_to[32];
+    char room_code[64];
+    char connect_to[64];
     char connection_type[8];
     int rtt_ms;
     int ft;
