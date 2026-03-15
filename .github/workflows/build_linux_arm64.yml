@@ -15,9 +15,6 @@ concurrency:
     group: build-linux-arm64-${{ github.ref }}
     cancel-in-progress: true
 
-env:
-    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
     build:
         name: Build (Linux ARM64 via cross-compile)
@@ -72,7 +69,7 @@ jobs:
             uses: actions/cache@v4
             with:
                 path: third_party_arm64
-                key: linux-arm64-cross-deps-${{ hashFiles('build-deps.sh') }}
+                key: linux-arm64-cross-deps-v2-${{ hashFiles('build-deps.sh') }}
                 restore-keys: linux-arm64-cross-deps-
 
           - name: Cache Rust/Cargo
@@ -81,7 +78,7 @@ jobs:
                 path: |
                     /opt/cargo/registry
                     /opt/cargo/git
-                key: linux-arm64-cargo-${{ hashFiles('build-deps.sh') }}
+                key: linux-arm64-cargo-v2-${{ hashFiles('build-deps.sh') }}
                 restore-keys: linux-arm64-cargo-
 
           - name: Install ARM64 build dependencies
@@ -185,3 +182,4 @@ jobs:
             with:
                 name: build-log-arm64-cross
                 path: build.log
+

@@ -15,13 +15,12 @@ concurrency:
     group: build-macos-arm64-${{ github.ref }}
     cancel-in-progress: true
 
-env:
-    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
     build:
         runs-on: macos-latest
         env:
+            FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+            ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
             MACOSX_DEPLOYMENT_TARGET: "13.0"
 
         steps:
@@ -32,7 +31,7 @@ jobs:
             uses: actions/cache@v4
             with:
                 path: third_party
-                key: macos-universal-deps-${{ hashFiles('build-deps.sh') }}
+                key: macos-universal-deps-v2-${{ hashFiles('build-deps.sh') }}
                 restore-keys: macos-universal-deps-
 
           - name: Cache Rust/Cargo
@@ -41,7 +40,7 @@ jobs:
                 path: |
                     ~/.cargo/registry
                     ~/.cargo/git
-                key: macos-cargo-${{ hashFiles('build-deps.sh') }}
+                key: macos-cargo-v2-${{ hashFiles('build-deps.sh') }}
                 restore-keys: macos-cargo-
 
           - name: Install Rust toolchain
@@ -107,3 +106,4 @@ jobs:
             with:
                 name: build-log
                 path: build.log
+

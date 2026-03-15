@@ -16,9 +16,9 @@ void NetstatsRenderer_Render() {
     SDL_snprintf(buffer, sizeof(buffer), "R:%d P:%d", stats.rollback, stats.ping);
 
     // Screen is 384 pixels wide. SSPutStrPro expects pixel coordinates.
-    // Assuming max 8 pixels per character for right padding.
+    // Assuming 6 pixels per character for the proportional font, plus 4px padding.
     int len = SDL_strlen(buffer);
-    int x = 384 - (len * 8) - 8; // 8px padding from the right edge
+    int x = 384 - (len * 6) - 4;
 
     // SSPutStrPro(flag, x, y, atr, vtxcol, str)
     // using atr=6 (palette 6) per user instructions

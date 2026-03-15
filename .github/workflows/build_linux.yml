@@ -15,12 +15,12 @@ concurrency:
     group: build-linux-x86_64-${{ github.ref }}
     cancel-in-progress: true
 
-env:
-    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
     build:
         runs-on: ubuntu-latest
+        env:
+            FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+            ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
         steps:
           - name: Checkout repository
@@ -30,7 +30,7 @@ jobs:
             uses: actions/cache@v4
             with:
                 path: third_party_linux
-                key: linux-x64-deps-${{ hashFiles('build-deps.sh') }}
+                key: linux-x64-deps-v2-${{ hashFiles('build-deps.sh') }}
                 restore-keys: linux-x64-deps-
 
           - name: Cache Rust/Cargo
@@ -39,7 +39,7 @@ jobs:
                 path: |
                     ~/.cargo/registry
                     ~/.cargo/git
-                key: linux-x64-cargo-${{ hashFiles('build-deps.sh') }}
+                key: linux-x64-cargo-v2-${{ hashFiles('build-deps.sh') }}
                 restore-keys: linux-x64-cargo-
 
           - name: Install Rust toolchain
@@ -102,3 +102,4 @@ jobs:
             with:
                 name: build-log
                 path: build.log
+

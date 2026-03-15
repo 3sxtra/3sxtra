@@ -15,9 +15,6 @@ concurrency:
     group: build-flatpak-${{ github.ref }}
     cancel-in-progress: true
 
-env:
-    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
     build:
         name: Build Flatpak
@@ -59,3 +56,4 @@ jobs:
             with:
                 name: 3sx-flatpak
                 path: 3sx.flatpak
+
