@@ -64,8 +64,23 @@ A full netplay stack audit was performed and 14 fixes applied:
 ### ⏳ Remaining
 
 - **Manual testing**: LAN discovery, hole punching, gameplay, spectator, casual rooms
-- **IPv6 support**: STUN parser only handles family=1 (IPv4). Full IPv6 requires changing IP representation from `uint32_t` across entire stack. TODO in `stun.c`.
 - **`discovery.c` per-NIC broadcast**: Still uses raw `sendto()` with `GetAdaptersAddresses`/`getifaddrs`. Cannot migrate without OS API abstraction.
+
+### ✅ IPv6 STUN Support (March 15, 2026)
+
+Full dual-stack IPv4/IPv6 support implemented across the netplay stack:
+
+| # | Change | File(s) |
+|---|--------|---------|
+| 1 | `StunResult.public_ip` changed from `uint32_t` to `char[64]` | `stun.h` |
+| 2 | `parse_binding_response` handles both family=0x01 (IPv4) and family=0x02 (IPv6) with XOR decoding and `inet_ntop` formatting | `stun.c` |
+| 3 | `Stun_EncodeEndpoint` / `Stun_DecodeEndpoint` rewritten: 8-char XOR obfuscation replaced with `"ip|port"` string format | `stun.c`, `stun.h` |
+| 4 | `Stun_FormatIP` removed — IPs are now strings throughout | `stun.c`, `stun.h` |
+| 5 | `Stun_Discover` uses `NULL` bind + `NET_ResolveHostname` for dual-stack socket creation | `stun.c` |
+| 6 | `Stun_HolePunch` accepts `char* peer_ip` instead of `uint32_t*` | `stun.c`, `stun.h` |
+| 7 | `PingProbe_AddPeer` accepts `const char* ip` instead of `uint32_t` | `ping_probe.c`, `ping_probe.h` |
+| 8 | `LobbyPlayer.room_code` and `.connect_to` expanded from `char[16]` to `char[64]` | `lobby_server.h` |
+| 9 | All `uint32_t peer_ip` variables in lobby UI replaced with `char[64]` | `sdl_netplay_ui.cpp` |
 
 ## Table of Contents
 
