@@ -25,7 +25,7 @@ extern "C" {
 
 /* ─── Constants / Macros ──────────────────────────────────────────────── */
 
-#define VERTEX_TRANSFER_BUFFER_COUNT 3
+#define VERTEX_TRANSFER_BUFFER_COUNT 4
 #define GPU_FENCE_RING_SIZE VERTEX_TRANSFER_BUFFER_COUNT
 #define COMPUTE_STORAGE_SIZE (32 * 1024 * 1024) /* 32 MB — RGBA8 texture uploads */
 #define TEX_ARRAY_SIZE 512

@@ -101,6 +101,7 @@ void SDLGameRendererGPU_BeginFrame(void) {
     // ⚡ Opt9: Wait on the oldest in-flight fence before reusing its resources.
     // With ring size == 3: we wait on frame N-3's fence, which is ≥2 frames old.
     // In practice this never actually blocks because the GPU finishes in <16ms.
+
     {
         int wait_idx = s_fence_write_idx; // oldest slot (write_idx has wrapped past it)
         if (s_frame_fences[wait_idx]) {
@@ -110,10 +111,12 @@ void SDLGameRendererGPU_BeginFrame(void) {
         }
     }
 
+
     current_cmd_buf = SDL_AcquireGPUCommandBuffer(device);
     s_swapchain_texture = NULL; // Acquired lazily via GetSwapchainTexture()
 
     // Drain dirty-index lists
+
     for (int d = 0; d < dirty_texture_count; d++) {
         const int i = dirty_texture_indices[d];
         // 1D: free the single layer for this texture
@@ -155,6 +158,7 @@ void SDLGameRendererGPU_BeginFrame(void) {
         palette_dirty_flags[i] = false;
     }
     dirty_palette_count = 0;
+
 
     current_transfer_idx = (current_transfer_idx + 1) % VERTEX_TRANSFER_BUFFER_COUNT;
     // ⚡ Opt10a: cycle=false — buffer is already triple-buffered behind the fence ring,
