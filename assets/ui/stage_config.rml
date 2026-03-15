@@ -6,7 +6,9 @@
 </head>
 <body data-model="stage_config">
     <div id="config-panel">
-        <h1>HD STAGE CONFIG (F6)</h1>
+        <handle move_target="config-panel">
+            <h1>HD STAGE CONFIG (F6)</h1>
+        </handle>
         <div class="divider"></div>
 
         <!-- No stage loaded -->

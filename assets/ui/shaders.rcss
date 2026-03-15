@@ -8,19 +8,20 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 217);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #shader-panel {
     display: block;
-    width: 96%;
-    max-height: 90%;
-    margin: auto;
-    margin-top: 1%;
+    width: 90vw;
+    max-height: 88vh;
     background-color: rgba(15, 15, 20, 242);
     border-width: 1dp;
     border-color: #444;
-    border-radius: 6dp;
-    padding: 6dp 8dp;
+    border-radius: 10dp;
+    padding: 12dp 16dp;
     overflow-y: auto;
 }
 
@@ -51,19 +52,19 @@ body {
 
 /* Title */
 #shader-panel h1 {
-    font-size: 14dp;
+    font-size: 18dp;
     color: #ff9933;
-    margin-bottom: 3dp;
+    margin-bottom: 6dp;
     text-align: center;
     white-space: nowrap;
 }
 
 /* Section headers */
 #shader-panel h2 {
-    font-size: 9dp;
+    font-size: 13dp;
     color: #888;
-    margin-top: 3dp;
-    margin-bottom: 2dp;
+    margin-top: 6dp;
+    margin-bottom: 5dp;
     text-transform: uppercase;
     letter-spacing: 1dp;
     white-space: nowrap;
@@ -87,7 +88,7 @@ body {
 /* Control rows */
 .control-row {
     display: block;
-    padding: 1dp 0;
+    padding: 2dp 0;
 }
 
 .control-row input {
@@ -108,7 +109,7 @@ body {
 
 /* Labels */
 label {
-    font-size: 10dp;
+    font-size: 14dp;
     color: #dddddd;
     cursor: pointer;
 }
@@ -124,19 +125,19 @@ label {
 select {
     display: block;
     width: 100%;
-    height: 18dp;
+    height: 26dp;
     background-color: #2a2a30;
     border-width: 1dp;
     border-color: #555;
-    border-radius: 3dp;
+    border-radius: 4dp;
     color: #ddd;
-    font-size: 10dp;
+    font-size: 13dp;
 }
 
 select selectvalue {
     width: auto;
-    height: 18dp;
-    padding: 4dp 6dp 0 6dp;
+    height: 26dp;
+    padding: 6dp 10dp 0 10dp;
     color: #ddd;
 }
 
@@ -157,7 +158,7 @@ select selectbox {
 }
 
 select selectbox option {
-    padding: 3dp 6dp;
+    padding: 6dp 8dp;
     color: #ddd;
 }
 
@@ -173,13 +174,13 @@ select selectbox option:checked {
 /* ─── Radio buttons ─── */
 
 input.radio {
-    width: 10dp;
-    height: 10dp;
+    width: 16dp;
+    height: 16dp;
     border-width: 1dp;
     border-color: #666;
     background-color: #333;
-    border-radius: 5dp;
-    margin-right: 4dp;
+    border-radius: 8dp;
+    margin-right: 8dp;
     vertical-align: middle;
 }
 
@@ -201,14 +202,14 @@ input.radio:checked {
 
 input.text {
     display: inline-block;
-    padding: 2dp 6dp;
+    padding: 6dp 10dp;
     background-color: #1a1a20;
     border-width: 1dp;
     border-color: #555;
-    border-radius: 3dp;
+    border-radius: 4dp;
     color: #fff;
-    font-size: 10dp;
-    margin-top: 2dp;
+    font-size: 14dp;
+    margin-top: 4dp;
 }
 
 input.text:focus {
@@ -230,11 +231,11 @@ input.text:focus {
 
 .preset-item {
     display: block;
-    padding: 1dp 6dp;
-    font-size: 9dp;
+    padding: 3dp 10dp;
+    font-size: 13dp;
     color: #bbb;
     cursor: pointer;
-    border-radius: 2dp;
+    border-radius: 4dp;
 }
 
 .preset-item:hover {
@@ -250,15 +251,15 @@ input.text:focus {
 /* Status / footer */
 .status-warn {
     color: #ffcc33;
-    font-size: 9dp;
+    font-size: 13dp;
     display: block;
-    padding: 2dp 6dp;
+    padding: 4dp 8dp;
 }
 
 .hint {
-    font-size: 8dp;
+    font-size: 13dp;
     color: #555;
-    margin-top: 4dp;
+    margin-top: 8dp;
     text-align: center;
 }
 
@@ -303,9 +304,9 @@ scrollbarvertical slidertrack {
 
 .chain-pass-name-cell {
     display: inline-block;
-    width: 55%;
-    padding: 2dp 4dp;
-    font-size: 9dp;
+    width: 48%;
+    padding: 3dp 6dp;
+    font-size: 13dp;
     color: #e0e0e0;
     vertical-align: middle;
     white-space: nowrap;
@@ -321,14 +322,14 @@ scrollbarvertical slidertrack {
 
 .chain-btn {
     display: inline-block;
-    padding: 1dp 4dp;
-    font-size: 8dp;
+    padding: 3dp 8dp;
+    font-size: 11dp;
     background-color: #333;
     color: #ccc;
     border-width: 1dp;
     border-color: #555;
-    border-radius: 2dp;
-    margin-right: 2dp;
+    border-radius: 4dp;
+    margin-right: 4dp;
     cursor: pointer;
 }
 
@@ -358,13 +359,13 @@ scrollbarvertical slidertrack {
 
 .chain-clear-btn {
     display: inline-block;
-    padding: 2dp 8dp;
-    font-size: 9dp;
+    padding: 6dp 12dp;
+    font-size: 13dp;
     background-color: #333;
     color: #f66;
     border-width: 1dp;
     border-color: #633;
-    border-radius: 3dp;
+    border-radius: 4dp;
 }
 
 .chain-clear-btn:hover {
@@ -374,25 +375,25 @@ scrollbarvertical slidertrack {
 
 .status-info {
     color: #888;
-    font-size: 9dp;
-    padding: 4dp;
+    font-size: 13dp;
+    padding: 8dp;
 }
 
 /* ── Preset Item Chain Buttons ─────────────────────────────────── */
 
 .chain-append-btn, .chain-prepend-btn {
     display: inline-block;
-    width: 26dp;
-    height: 20dp;
+    width: 36dp;
+    height: 26dp;
     padding: 0;
-    font-size: 10dp;
+    font-size: 14dp;
     font-weight: bold;
     background-color: #1a3a1a;
     color: #6c6;
     border-width: 1dp;
     border-color: #3a5a3a;
-    border-radius: 2dp;
-    margin-left: 2dp;
+    border-radius: 4dp;
+    margin-left: 4dp;
 }
 
 .chain-append-btn:hover, .chain-prepend-btn:hover {
@@ -402,15 +403,15 @@ scrollbarvertical slidertrack {
 
 .chain-select-btn {
     display: inline-block;
-    padding: 0 4dp;
-    height: 20dp;
-    font-size: 10dp;
+    padding: 0 8dp;
+    height: 26dp;
+    font-size: 14dp;
     background-color: #2a2a3a;
     color: #aac;
     border-width: 1dp;
     border-color: #444;
-    border-radius: 2dp;
-    margin-left: 4dp;
+    border-radius: 4dp;
+    margin-left: 6dp;
 }
 
 .chain-select-btn:hover {
@@ -420,13 +421,13 @@ scrollbarvertical slidertrack {
 
 .chain-save-btn {
     display: inline-block;
-    padding: 2dp 8dp;
-    font-size: 9dp;
+    padding: 6dp 12dp;
+    font-size: 13dp;
     background-color: #1a2a3a;
     color: #6af;
     border-width: 1dp;
     border-color: #3a5a7a;
-    border-radius: 3dp;
+    border-radius: 4dp;
 }
 
 .chain-save-btn:hover {
@@ -472,9 +473,9 @@ scrollbarvertical slidertrack {
 
 .param-name-cell {
     display: inline-block;
-    width: 55%;
-    padding: 2dp 4dp;
-    font-size: 9dp;
+    width: 48%;
+    padding: 3dp 6dp;
+    font-size: 13dp;
     color: #ccc;
     vertical-align: middle;
 }
@@ -489,18 +490,18 @@ scrollbarvertical slidertrack {
 
 .param-btn {
     display: inline-block;
-    width: 16dp;
-    height: 14dp;
-    font-size: 10dp;
+    width: 24dp;
+    height: 22dp;
+    font-size: 14dp;
     font-weight: bold;
     text-align: center;
     background-color: #333;
     color: #ccc;
     border-width: 1dp;
     border-color: #555;
-    border-radius: 2dp;
+    border-radius: 4dp;
     cursor: pointer;
-    margin-left: 1dp;
+    margin-left: 3dp;
 }
 
 .param-btn:hover {
@@ -521,9 +522,9 @@ scrollbarvertical slidertrack {
 
 .param-value {
     display: inline-block;
-    width: 40dp;
-    font-size: 9dp;
+    width: 54dp;
+    font-size: 13dp;
     color: #6f6;
     text-align: center;
-    padding-top: 1dp;
+    padding-top: 3dp;
 }

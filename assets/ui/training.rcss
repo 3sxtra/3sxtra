@@ -17,6 +17,27 @@ body {
     overflow-y: auto;
 }
 
+/* ── Drag Handle ── */
+#training-panel handle {
+    display: block;
+    cursor: move;
+    padding: 2dp 0;
+    margin-bottom: 4dp;
+}
+
+#training-panel handle:hover {
+    background-color: rgba(255, 255, 255, 10);
+    border-radius: 4dp 4dp 0 0;
+}
+
+#training-panel h1 {
+    font-size: 11dp;
+    color: #CC0000;
+    margin-bottom: 0;
+    text-align: center;
+    white-space: nowrap;
+}
+
 /* ── Tab Bar ── */
 .tab-bar {
     display: block;

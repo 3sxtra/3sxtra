@@ -27,6 +27,12 @@
 #include <string.h>
 #include <time.h>
 
+#if defined(__GNUC__) || defined(__clang__)
+#define NETPLAY_UNUSED __attribute__((unused))
+#else
+#define NETPLAY_UNUSED
+#endif
+
 /* --- Platform includes (HMAC + SSE raw sockets only) --- */
 // clang-format off
 #ifdef _WIN32
@@ -346,7 +352,7 @@ static int cjson_get_int(const cJSON* obj, const char* key, int default_val) {
 }
 
 /** Get a double field with default. */
-static double cjson_get_double(const cJSON* obj, const char* key, double default_val) {
+static NETPLAY_UNUSED double cjson_get_double(const cJSON* obj, const char* key, double default_val) {
     const cJSON* item = cJSON_GetObjectItemCaseSensitive(obj, key);
     if (cJSON_IsNumber(item))
         return item->valuedouble;
@@ -363,7 +369,7 @@ static char* json_body_pid(const char* player_id) {
 }
 
 /** Build a JSON body with player_id + room_code: {"player_id":"...","room_code":"..."} */
-static char* json_body_pid_room(const char* player_id, const char* room_code) {
+static NETPLAY_UNUSED char* json_body_pid_room(const char* player_id, const char* room_code) {
     cJSON* root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "player_id", player_id);
     cJSON_AddStringToObject(root, "room_code", room_code);
@@ -832,7 +838,20 @@ bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room) {
     free(body);
 
     if (ok && out_room) {
-        parse_room_json(response, out_room);
+        cJSON* root = cJSON_Parse(response);
+        if (root) {
+            const cJSON* room_obj = cJSON_GetObjectItemCaseSensitive(root, "room");
+            if (room_obj) {
+                char* room_str = cJSON_PrintUnformatted(room_obj);
+                if (room_str) {
+                    parse_room_json(room_str, out_room);
+                    free(room_str);
+                }
+            } else {
+                parse_room_json(response, out_room);
+            }
+            cJSON_Delete(root);
+        }
     }
     return ok;
 }

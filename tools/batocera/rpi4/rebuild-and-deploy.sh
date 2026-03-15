@@ -70,6 +70,7 @@ die()  { echo -e "${RED}✖ $1${NC}" >&2; exit 1; }
 command -v aarch64-linux-gnu-gcc >/dev/null || die "Cross-compiler not found. Run: sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu"
 command -v cmake                >/dev/null || die "cmake not found. Run: sudo apt install cmake"
 command -v sshpass              >/dev/null || die "sshpass not found. Run: sudo apt install sshpass"
+[ -d "/usr/aarch64-linux-gnu/include/curl" ] || [ -f "/usr/include/aarch64-linux-gnu/curl/curl.h" ] || warn "libcurl headers for arm64 might be missing. If build fails with missing curl.h, run: sudo dpkg --add-architecture arm64 && sudo apt update && sudo apt install libcurl4-openssl-dev:arm64"
 
 # ── Print configuration ───────────────────────────────────────
 echo ""

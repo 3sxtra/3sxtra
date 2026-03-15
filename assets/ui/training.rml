@@ -6,6 +6,9 @@
 </head>
 <body data-model="training">
     <div id="training-panel" class="panel">
+        <handle move_target="training-panel">
+            <h1>TRAINING OPTIONS (F7)</h1>
+        </handle>
         <!-- Tab Bar -->
         <div class="tab-bar">
             <button class="tab" data-class-active="active_tab == 0"

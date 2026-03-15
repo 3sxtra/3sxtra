@@ -5,35 +5,36 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 235);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #mapping-panel {
     display: block;
-    width: 96%;
-    max-height: 96%;
-    margin: auto;
-    margin-top: 1%;
+    width: 88vw;
+    max-height: 88vh;
     background-color: rgba(15, 15, 20, 242);
     border-width: 1dp;
     border-color: #444;
-    border-radius: 10dp;
-    padding: 6dp 8dp;
+    border-radius: 12dp;
+    padding: 10dp 16dp;
     overflow-y: auto;
 }
 
 h1 {
-    font-size: 12dp;
+    font-size: 18dp;
     color: #ff9933;
-    margin-bottom: 4dp;
+    margin-bottom: 8dp;
     text-align: center;
     white-space: nowrap;
 }
 
 h2 {
-    font-size: 11dp;
+    font-size: 14dp;
     color: #888;
-    margin-top: 2dp;
-    margin-bottom: 2dp;
+    margin-top: 6dp;
+    margin-bottom: 6dp;
     text-transform: uppercase;
     letter-spacing: 1dp;
     text-align: center;
@@ -88,8 +89,8 @@ h2 {
 .device-name {
     display: block;
     color: #66ccff;
-    font-size: 12dp;
-    margin-bottom: 3dp;
+    font-size: 15dp;
+    margin-bottom: 4dp;
     text-align: center;
     word-break: break-word;
 }
@@ -98,39 +99,39 @@ h2 {
     display: block;
     width: 100%;
     height: auto;
-    max-width: 80dp;
-    margin: 2dp auto;
+    max-width: 120dp;
+    margin: 4dp auto;
 }
 
 .device-icon-small {
     display: block;
     width: 100%;
     height: auto;
-    max-width: 60dp;
-    margin: 2dp auto;
+    max-width: 90dp;
+    margin: 4dp auto;
 }
 
 .no-device {
     display: block;
     color: #555;
-    font-size: 9dp;
+    font-size: 13dp;
     text-align: center;
-    padding: 4dp 0;
+    padding: 8dp 0;
 }
 
 /* ─── Buttons ─── */
 
 button {
     display: block;
-    padding: 3dp 6dp;
+    padding: 6dp 10dp;
     background-color: #2a2a30;
     border-width: 1dp;
     border-color: #555;
-    border-radius: 3dp;
+    border-radius: 4dp;
     color: #ddd;
-    font-size: 11dp;
+    font-size: 13dp;
     cursor: pointer;
-    margin-bottom: 2dp;
+    margin-bottom: 4dp;
     text-align: center;
 }
 
@@ -158,8 +159,8 @@ button:active {
 .prompt {
     display: block;
     color: #ffcc33;
-    font-size: 13dp;
-    padding: 4dp 0;
+    font-size: 16dp;
+    padding: 8dp 0;
     text-align: center;
 }
 
@@ -178,9 +179,9 @@ button:active {
 .device-card-name {
     display: block;
     color: #ccc;
-    font-size: 11dp;
+    font-size: 13dp;
     text-align: center;
-    margin-bottom: 3dp;
+    margin-bottom: 4dp;
     word-break: break-word;
 }
 
@@ -193,7 +194,7 @@ button:active {
     display: inline-block;
     width: 40%;
     margin-right: 4dp;
-    font-size: 11dp;
+    font-size: 13dp;
     font-weight: bold;
     white-space: nowrap;
 }
@@ -214,14 +215,14 @@ button:active {
     display: inline-block;
     width: 40%;
     color: #aaa;
-    font-size: 11dp;
+    font-size: 14dp;
 }
 
 .map-arrow {
     display: inline-block;
     width: 8%;
     color: #555;
-    font-size: 11dp;
+    font-size: 14dp;
     text-align: center;
 }
 
@@ -229,23 +230,23 @@ button:active {
     display: inline-block;
     width: 48%;
     color: #66ff66;
-    font-size: 11dp;
+    font-size: 14dp;
     text-align: right;
 }
 
 /* Status text */
 .status-hint {
     color: #555;
-    font-size: 11dp;
+    font-size: 14dp;
     display: block;
     text-align: center;
-    padding: 4dp;
+    padding: 8dp;
 }
 
 .hint {
-    font-size: 11dp;
+    font-size: 14dp;
     color: #555;
-    margin-top: 4dp;
+    margin-top: 8dp;
     text-align: center;
 }
 
