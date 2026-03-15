@@ -1592,31 +1592,31 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
             bool ip_match = decoded && (stun_result.public_ip[0] != '\0' && strcmp(peer_ip, stun_result.public_ip) == 0);
 
             if ((id_match || ip_match) && lan_peers[i].ip[0]) {
-                // Prefer STUN port from room code; fall back to discovery beacon port
-                // (beacon port may differ from STUN port, but Gekko will learn the
-                // correct reply address from the opponent's incoming packets).
-                uint16_t remote_port = decoded ? SDL_Swap16BE(peer_port) : lan_peers[i].port;
-                SDL_Log("[casual] LAN peer detected: %s at %s:%u — using direct connection%s",
+                // LAN match: both peers use the beacon-advertised port.
+                // STUN hole-punching is unnecessary on a local network, and the
+                // STUN socket's dual-stack handles bind to different OS ports
+                // (IPv4 vs IPv6), causing port mismatches that break GekkoNet's
+                // address-based sync handshake.
+                uint16_t remote_port = lan_peers[i].port; // peer's beacon port
+                uint16_t local_port  = Discovery_GetLocalPort(); // our beacon port
+                SDL_Log("[casual] LAN peer detected: %s at %s:%u — using direct connection (beacon ports: local=%u remote=%u)",
                         opponent_name ? opponent_name : lan_peers[i].display_name,
-                        lan_peers[i].ip,
-                        remote_port,
-                        decoded ? "" : " (no room code, using beacon port)");
+                        lan_peers[i].ip, remote_port, local_port, remote_port);
                 snprintf(lobby_status_msg,
                          sizeof(lobby_status_msg),
                          "LAN: connecting to %s...",
                          opponent_name ? opponent_name : "peer");
                 Netplay_SetRemoteIP(lan_peers[i].ip);
                 Netplay_SetRemotePort(remote_port);
-                Netplay_SetLocalPort(stun_result.local_port);
-                // Transfer the STUN socket to Gekko for the LAN connection.
-                // NOTE: ownership is permanently transferred — if Netplay_Begin()
-                // fails or the session ends, the socket is closed by Gekko, not us.
+                Netplay_SetLocalPort(local_port);
+                // Don't transfer the STUN socket — let configure_gekko create a
+                // fresh SDL3_Net socket on the beacon port. Clean up STUN resources.
                 if (stun_result.socket != NULL) {
-                    Netplay_SetStunSocket(stun_result.socket);
-                    stun_result.socket = NULL; // Ownership transferred
                     if (ping_probe_initialized) {
-                        PingProbe_Init(NULL); // Stop probe from stealing Gekko packets
+                        PingProbe_Init(NULL); // Detach probe before destroying socket
                     }
+                    NET_DestroyDatagramSocket(stun_result.socket);
+                    stun_result.socket = NULL;
                 }
                 Netplay_SetPlayerNumber(we_are_p1 ? 0 : 1);
                 Netplay_Begin();

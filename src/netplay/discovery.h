@@ -36,6 +36,9 @@ int Discovery_GetPeers(NetplayDiscoveredPeer* out_peers, int max_peers);
 /// The dismissal auto-clears if the peer stops challenging and re-challenges later.
 void Discovery_DismissChallenger(uint32_t instance_id);
 
+/// Returns the local configured netplay port (configuration.netplay.port).
+uint16_t Discovery_GetLocalPort(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -15,6 +15,7 @@
 #include "main.h"
 #include "netplay/discovery.h"
 #include "netplay/netplay.h"
+#include "netplay/ping_probe.h"
 #include "port/config/config.h"
 #include "port/rendering/renderer.h"
 #include "port/save/native_save.h"
@@ -1262,14 +1263,16 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 int op_n = Discovery_GetPeers(op, 16);
                 uint32_t tgt = Discovery_GetChallengeTarget();
                 const char* tgt_name = "...";
+                int tgt_ping = -1;
                 for (int i = 0; i < op_n; i++) {
                     if (op[i].instance_id == tgt) {
-                        tgt_name = op[i].name;
+                        tgt_name = op[i].display_name[0] ? op[i].display_name : op[i].name;
+                        tgt_ping = op[i].player_id[0] ? PingProbe_GetRTT(op[i].player_id) : -1;
                         break;
                     }
                 }
                 if (task_ptr->free[2] == 0)
-                    NetLobby_DrawOutgoingPopup(tgt_name, -1);
+                    NetLobby_DrawOutgoingPopup(tgt_name, tgt_ping);
             }
 
             if (IO_Result == 0x100 || IO_Result == 0x200) {
@@ -1289,7 +1292,10 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
             if (lan_challenger >= 0) {
                 if (task_ptr->free[2] == 0)
-                    NetLobby_DrawIncomingPopup(ip_peers[lan_challenger].name, "", -1);
+                    NetLobby_DrawIncomingPopup(
+                        ip_peers[lan_challenger].display_name[0] ? ip_peers[lan_challenger].display_name : ip_peers[lan_challenger].name,
+                        "",
+                        ip_peers[lan_challenger].player_id[0] ? PingProbe_GetRTT(ip_peers[lan_challenger].player_id) : -1);
 
                 switch (IO_Result) {
                 case 0x100:
@@ -1755,13 +1761,15 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                 int op_n = Discovery_GetPeers(op, 16);
                 uint32_t tgt = Discovery_GetChallengeTarget();
                 const char* tgt_name = "...";
+                int tgt_ping = -1;
                 for (int i = 0; i < op_n; i++) {
                     if (op[i].instance_id == tgt) {
-                        tgt_name = op[i].name;
+                        tgt_name = op[i].display_name[0] ? op[i].display_name : op[i].name;
+                        tgt_ping = op[i].player_id[0] ? PingProbe_GetRTT(op[i].player_id) : -1;
                         break;
                     }
                 }
-                NetLobby_DrawOutgoingPopup(tgt_name, -1);
+                NetLobby_DrawOutgoingPopup(tgt_name, tgt_ping);
             }
 
             if (IO_Result == 0x100 || IO_Result == 0x200) {
@@ -1780,7 +1788,10 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             }
 
             if (lan_challenger >= 0) {
-                NetLobby_DrawIncomingPopup(ip_peers[lan_challenger].name, "", -1);
+                NetLobby_DrawIncomingPopup(
+                    ip_peers[lan_challenger].display_name[0] ? ip_peers[lan_challenger].display_name : ip_peers[lan_challenger].name,
+                    "",
+                    ip_peers[lan_challenger].player_id[0] ? PingProbe_GetRTT(ip_peers[lan_challenger].player_id) : -1);
 
                 switch (IO_Result) {
                 case 0x100:

@@ -456,3 +456,7 @@ void Discovery_DismissChallenger(uint32_t instance_id) {
         }
     }
 }
+
+uint16_t Discovery_GetLocalPort(void) {
+    return configuration.netplay.port;
+}

@@ -408,6 +408,11 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     // (on Pi4 the working directory differs from the executable directory).
     {
         std::string lua_base = (base_path ? std::string(base_path) : std::string()) + "lua/";
+        // Normalize backslashes to forward slashes — Lua interprets '\' as
+        // escape sequences inside string literals (e.g. '\3' → ETX char).
+        for (auto& ch : lua_base) {
+            if (ch == '\\') ch = '/';
+        }
         std::string lua_setup = "package.path = '" + lua_base + "?.lua;" + lua_base + "?/init.lua;' .. package.path\n"
                                 "joypad = require('compat.joypad')\n"
                                 "emu    = require('compat.emu')\n"

@@ -32,6 +32,7 @@
 
 extern "C" {
 #include "netplay/discovery.h"
+#include "netplay/ping_probe.h"
 #include "netplay/identity.h"
 #include "netplay/lobby_server.h"
 #include "port/config/config.h"
@@ -465,7 +466,7 @@ extern "C" void rmlui_network_lobby_init(void) {
             int count = Discovery_GetPeers(peers, 16);
             for (int i = 0; i < count; i++) {
                 if (peers[i].instance_id == target) {
-                    v = Rml::String(peers[i].name);
+                    v = Rml::String(peers[i].display_name[0] ? peers[i].display_name : peers[i].name);
                     return;
                 }
             }
@@ -476,32 +477,51 @@ extern "C" void rmlui_network_lobby_init(void) {
         int count = Discovery_GetPeers(peers, 16);
         for (int i = 0; i < count; i++) {
             if (peers[i].is_challenging_me) {
-                v = Rml::String(peers[i].name);
+                v = Rml::String(peers[i].display_name[0] ? peers[i].display_name : peers[i].name);
                 return;
             }
         }
         v = Rml::String("");
     });
     ctor.BindFunc("popup_ping", [](Rml::Variant& v) {
-        if (SDLNetplayUI_HasPendingInvite()) {
-            int ping = SDLNetplayUI_GetPendingInvitePing();
+        auto format_ping = [](int ping) -> Rml::String {
             char buf[32];
             if (ping < 0)
                 SDL_snprintf(buf, sizeof(buf), "...");
             else
                 SDL_snprintf(buf, sizeof(buf), "~%dms", ping);
-            v = Rml::String(buf);
+            return Rml::String(buf);
+        };
+        if (SDLNetplayUI_HasPendingInvite()) {
+            v = format_ping(SDLNetplayUI_GetPendingInvitePing());
             return;
         }
         if (SDLNetplayUI_HasOutgoingChallenge()) {
-            int ping = SDLNetplayUI_GetOutgoingChallengePing();
-            char buf[32];
-            if (ping < 0)
-                SDL_snprintf(buf, sizeof(buf), "...");
-            else
-                SDL_snprintf(buf, sizeof(buf), "~%dms", ping);
-            v = Rml::String(buf);
+            v = format_ping(SDLNetplayUI_GetOutgoingChallengePing());
             return;
+        }
+        // LAN outgoing challenge
+        uint32_t target = Discovery_GetChallengeTarget();
+        if (target != 0) {
+            NetplayDiscoveredPeer peers[16];
+            int count = Discovery_GetPeers(peers, 16);
+            for (int i = 0; i < count; i++) {
+                if (peers[i].instance_id == target && peers[i].player_id[0]) {
+                    v = format_ping(PingProbe_GetRTT(peers[i].player_id));
+                    return;
+                }
+            }
+        }
+        // LAN incoming challenge
+        {
+            NetplayDiscoveredPeer peers[16];
+            int count = Discovery_GetPeers(peers, 16);
+            for (int i = 0; i < count; i++) {
+                if (peers[i].is_challenging_me && peers[i].player_id[0]) {
+                    v = format_ping(PingProbe_GetRTT(peers[i].player_id));
+                    return;
+                }
+            }
         }
         v = Rml::String("...");
     });

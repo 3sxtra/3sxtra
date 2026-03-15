@@ -109,7 +109,13 @@ static void send_data(GekkoNetAddress* addr, const char* data, int length) {
     if (!adapter_sock)
         return;
 
-    CachedPeer* peer = find_or_create_peer((const char*)addr->data);
+    // GekkoNet address data may not be null-terminated — copy with explicit size
+    char addr_buf[64];
+    unsigned int copy_len = addr->size < sizeof(addr_buf) - 1 ? addr->size : sizeof(addr_buf) - 1;
+    SDL_memcpy(addr_buf, addr->data, copy_len);
+    addr_buf[copy_len] = '\0';
+
+    CachedPeer* peer = find_or_create_peer(addr_buf);
     if (!peer->resolved)
         return;
 

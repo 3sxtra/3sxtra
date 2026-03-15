@@ -69,7 +69,8 @@ static char remote_ip_string[64] = { 0 };
 static const char* remote_ip = NULL;
 static int player_number = 0;
 static int player_handle = 0;
-static NET_DatagramSocket* stun_socket = NULL; // Pre-punched STUN socket for internet play
+static NET_DatagramSocket* stun_socket = NULL;    // Pre-punched STUN socket for internet play
+static NET_DatagramSocket* fallback_socket = NULL; // Created when STUN fails; same API as stun_socket
 static int s_negotiated_ft = 0;                // FT value agreed upon for the upcoming match (0 = use config default)
 static uint32_t handshake_ready_since = 0;     // Ticks when both peers signaled ready (LAN handshake hold)
 static NetplaySessionState session_state = NETPLAY_SESSION_IDLE;
@@ -369,7 +370,20 @@ static void configure_gekko() {
         configure_lossy_adapter();
         gekko_net_adapter_set(session, &lossy_adapter);
 #else
-        gekko_net_adapter_set(session, gekko_default_adapter(local_port));
+        // No STUN socket — create a new SDL3_Net dual-stack socket on the
+        // configured netplay port. Using SDLNetAdapter (not ASIO default)
+        // ensures consistent address formatting with the peer, which is
+        // critical for GekkoNet's address-based sync handshake matching.
+        fallback_socket = NET_CreateDatagramSocket(NULL, local_port);
+        if (fallback_socket) {
+            gekko_net_adapter_set(session, SDLNetAdapter_Create(fallback_socket));
+            SDL_Log("Using SDL3_Net fallback socket for GekkoNet adapter (port %hu)", local_port);
+        } else {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                         "[netplay] Failed to create fallback socket on port %hu: %s",
+                         local_port, SDL_GetError());
+            gekko_net_adapter_set(session, gekko_default_adapter(local_port));
+        }
 #endif
     }
 
@@ -895,15 +909,21 @@ void Netplay_Run() {
             // cleanup session and then return to idle
             gekko_destroy(&session);
 
-            // Close STUN socket if we used it for this session
+            // Release cached DNS entries before destroying any socket
+            SDLNetAdapter_Destroy();
+
+            // Close whichever socket was used for this session
             if (stun_socket != NULL) {
-                SDLNetAdapter_Destroy(); // Release cached DNS before destroying socket
                 NET_DestroyDatagramSocket(stun_socket);
                 stun_socket = NULL;
             }
+            if (fallback_socket != NULL) {
+                NET_DestroyDatagramSocket(fallback_socket);
+                fallback_socket = NULL;
+            }
 
 #ifndef LOSSY_ADAPTER
-            // also cleanup default socket.
+            // also cleanup default socket (only used as last-resort fallback).
             gekko_default_adapter_destroy();
 #endif
         }
