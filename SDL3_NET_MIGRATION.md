@@ -64,8 +64,8 @@ A full netplay stack audit was performed and 14 fixes applied:
 - **Manual testing**: LAN discovery, hole punching, gameplay, spectator, casual rooms
 - **IPv6 support**: STUN parser only handles family=1 (IPv4). Full IPv6 requires changing IP representation from `uint32_t` across entire stack. TODO in `stun.c`.
 - **`discovery.c` per-NIC broadcast**: Still uses raw `sendto()` with `GetAdaptersAddresses`/`getifaddrs`. Cannot migrate without OS API abstraction.
-- **lobby_server.c JSON → cJSON**: Hand-rolled JSON helpers (`json_escape_string`, `json_get_string`, `parse_room_json`) still in use. Working correctly after Feb audit fixes. Migration to cJSON is optional for improved maintainability.
-- **Identity CSPRNG**: `SDL_rand_bits()` + SHA-256 works but SDL3 has no CSPRNG API. Use platform-native APIs (`CryptGenRandom`/`getrandom`) if crypto-grade randomness is needed.
+- **lobby_server.c JSON → cJSON**: Hand-rolled JSON helpers (`json_escape_string`, `json_get_string`, `parse_room_json`) replaced with robust cJSON wrappers. All body-builders and response-parsers migrated.
+- **Identity CSPRNG**: `SDL_rand_bits()` replaced with platform-native APIs `BCryptGenRandom` (Windows) and `getrandom()` (Linux) for cryptographic grade randomness in player identity generation.
 
 ## Table of Contents
 

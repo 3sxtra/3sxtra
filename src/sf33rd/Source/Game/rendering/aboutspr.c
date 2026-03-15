@@ -345,7 +345,6 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
 
         break;
     }
-
 }
 
 /** @brief Look up and return the current color code for a character. */

@@ -253,7 +253,6 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
     }
     s_last_set_texture_handle = th;
 
-
     const int texture_handle = LO_16_BITS(th);
     const int palette_handle = HI_16_BITS(th);
 
@@ -478,5 +477,4 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
     texture_uv_sy[texture_count] = (float)fl_tex_info->height * (1.0f / TEX_ARRAY_SIZE);
     texture_palette_idx[texture_count] = palIdx;
     texture_count++;
-
 }

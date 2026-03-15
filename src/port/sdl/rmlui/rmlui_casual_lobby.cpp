@@ -236,8 +236,8 @@ static void apply_room_state_to_model(void) {
     // AND the local netplay session is actually running. Without this check,
     // stale server match data (e.g. from a previous session) would block input.
     NetplaySessionState ns = Netplay_GetSessionState();
-    bool locally_in_match = (ns == NETPLAY_SESSION_RUNNING || ns == NETPLAY_SESSION_CONNECTING ||
-                             ns == NETPLAY_SESSION_TRANSITIONING);
+    bool locally_in_match =
+        (ns == NETPLAY_SESSION_RUNNING || ns == NETPLAY_SESSION_CONNECTING || ns == NETPLAY_SESSION_TRANSITIONING);
 
     for (int i = 0; i < s_room_state.player_count; i++) {
         if (strcmp(s_room_state.players[i].player_id, s_room_state.match_p1) == 0) {
@@ -482,8 +482,10 @@ extern "C" void rmlui_casual_lobby_update(void) {
 
                 // P2P connection trigger: use stored opponent room code from proposal phase
                 if (s_proposal_opponent_room_code[0]) {
-                    SDLNetplayUI_StartCasualMatchPunch(
-                        s_proposal_opponent_room_code, s_proposal_opponent_name.c_str(), s_proposal_opponent_player_id, s_proposal_we_are_p1);
+                    SDLNetplayUI_StartCasualMatchPunch(s_proposal_opponent_room_code,
+                                                       s_proposal_opponent_name.c_str(),
+                                                       s_proposal_opponent_player_id,
+                                                       s_proposal_we_are_p1);
                     s_proposal_opponent_room_code[0] = '\0'; // consumed
                 }
             } else {
@@ -527,7 +529,8 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 } else {
                     // Session still exiting — defer the re-show
                     s_match_ended_pending_reshow = true;
-                    SDL_Log("[CasualLobby] MATCH_END received but session state=%d, deferring overlay re-show", (int)ns);
+                    SDL_Log("[CasualLobby] MATCH_END received but session state=%d, deferring overlay re-show",
+                            (int)ns);
                 }
             } else {
                 // We weren't playing (e.g. watching) — no re-show needed
@@ -661,8 +664,6 @@ extern "C" void rmlui_casual_lobby_update(void) {
     for (int i = 0; i < 2; i++) {
         trigger |= (~PLsw[i][1] & PLsw[i][0]);
     }
-
-
 
     int prev_x = s_cursor_x;
     int prev_y = s_cursor_y;

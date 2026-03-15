@@ -943,7 +943,6 @@ void SDLApp_EndFrame() {
             }
         }
 
-
         frame_counter += 1;
         SDLAppDebugHud_NoteFrameEnd();
         SDLAppDebugHud_UpdateFPS();
@@ -1066,7 +1065,6 @@ void SDLApp_EndFrame() {
 
                 SDL_BlitGPUTexture(cb, &blit_info);
             }
-
         }
 
 #if DEBUG
@@ -1368,7 +1366,6 @@ void SDLApp_EndFrame() {
             SDLAppDebugHud_Render(win_w, win_h, &viewport);
         }
 
-
         // Render overlays (menus, netplay, UI flush)
         render_overlays(win_w, win_h);
 
@@ -1436,7 +1433,6 @@ void SDLApp_EndFrame() {
     // Do frame pacing (skipped when uncapped for benchmarking)
     Uint64 now = SDL_GetTicksNS();
 
-
     if (!frame_rate_uncapped) {
         if (frame_deadline == 0) {
             frame_deadline = now + target_frame_time_ns;
@@ -1469,13 +1465,11 @@ void SDLApp_EndFrame() {
         }
     }
 
-
     // Measure
     frame_counter += 1;
     SDLAppDebugHud_NoteFrameEnd();
     SDLAppDebugHud_UpdateFPS();
     SDLPad_UpdatePreviousState();
-
 }
 
 /** @brief Request application exit. */

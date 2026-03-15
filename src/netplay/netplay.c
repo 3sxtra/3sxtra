@@ -70,8 +70,8 @@ static const char* remote_ip = NULL;
 static int player_number = 0;
 static int player_handle = 0;
 static NET_DatagramSocket* stun_socket = NULL; // Pre-punched STUN socket for internet play
-static int s_negotiated_ft = 0;  // FT value agreed upon for the upcoming match (0 = use config default)
-static uint32_t handshake_ready_since = 0; // Ticks when both peers signaled ready (LAN handshake hold)
+static int s_negotiated_ft = 0;                // FT value agreed upon for the upcoming match (0 = use config default)
+static uint32_t handshake_ready_since = 0;     // Ticks when both peers signaled ready (LAN handshake hold)
 static NetplaySessionState session_state = NETPLAY_SESSION_IDLE;
 static u16 input_history[2][INPUT_HISTORY_MAX] = { 0 };
 static float frames_behind = 0;
@@ -277,8 +277,10 @@ static void setup_vs_mode() {
     // (Battle_Number = 1, meaning need 2 round wins per game).
     {
         int ft = s_negotiated_ft > 0 ? s_negotiated_ft : Config_GetInt(CFG_KEY_NETPLAY_FT);
-        if (ft < 1) ft = 2;
-        if (ft > 10) ft = 10;
+        if (ft < 1)
+            ft = 2;
+        if (ft > 10)
+            ft = 10;
         // Store FT for match reporting (server-side session tracking)
         s_negotiated_ft = ft; // Keep for match reporting, will be consumed there
         // Rounds per game: always best-of-3 (need 2 round wins)
@@ -372,8 +374,6 @@ static void configure_gekko() {
     }
 
     SDL_Log("[netplay] starting a session for player %d at port %hu", player_number, local_port);
-
-
 
     char remote_address_str[100];
     if (remote_ip) {
@@ -572,8 +572,6 @@ static void process_events(bool drawing_allowed) {
     GekkoGameEvent** game_events = gekko_update_session(session, &game_event_count);
     int frames_rolled_back = 0;
 
-
-
     for (int i = 0; i < game_event_count; i++) {
         const GekkoGameEvent* event = game_events[i];
 
@@ -758,8 +756,11 @@ void Netplay_Begin() {
     session_state = NETPLAY_SESSION_TRANSITIONING;
 
     SDL_Log("[netplay] *** BEGIN: local player = P%d (slot %d), remote = %s:%hu, local port = %hu ***",
-            player_number + 1, player_number,
-            remote_ip ? remote_ip : "(null)", remote_port, local_port);
+            player_number + 1,
+            player_number,
+            remote_ip ? remote_ip : "(null)",
+            remote_port,
+            local_port);
 }
 
 void Netplay_EnterLobby() {
@@ -838,8 +839,10 @@ void Netplay_Run() {
                     uint32_t local_id = Discovery_GetLocalInstanceID();
                     SDL_Log("[netplay] LAN handshake: local_id=0x%08X peer_id=0x%08X "
                             "we_initiated=%d → will be P%d",
-                            local_id, target_peer->instance_id,
-                            we_initiated, we_initiated ? 1 : 2);
+                            local_id,
+                            target_peer->instance_id,
+                            we_initiated,
+                            we_initiated ? 1 : 2);
                 }
                 // Hold for 1 second to let peer also process our ready beacon
                 if (SDL_GetTicks() - handshake_ready_since >= 1000) {
@@ -894,7 +897,7 @@ void Netplay_Run() {
 
             // Close STUN socket if we used it for this session
             if (stun_socket != NULL) {
-                SDLNetAdapter_Destroy();  // Release cached DNS before destroying socket
+                SDLNetAdapter_Destroy(); // Release cached DNS before destroying socket
                 NET_DestroyDatagramSocket(stun_socket);
                 stun_socket = NULL;
             }
@@ -913,7 +916,7 @@ void Netplay_Run() {
             const char* room = rmlui_casual_lobby_get_room_code();
             if (room && room[0]) {
                 session_state = NETPLAY_SESSION_LOBBY;
-                Discovery_Init(false);  // Restart LAN beacons for casual room LAN shortcut
+                Discovery_Init(false); // Restart LAN beacons for casual room LAN shortcut
                 rmlui_casual_lobby_show();
                 // Park the game engine in an idle state so no game logic runs
                 // behind the room overlay while waiting for the next match.

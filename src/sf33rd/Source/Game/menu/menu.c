@@ -717,7 +717,7 @@ static void Network_Lobby(struct _TASK* task_ptr) {
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
-        Menu_Suicide[0] = 1;        /* kill gateway items (master_player=0) */
+        Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
         Menu_Suicide[1] = 0;
         Message_Data->kind_req = 4; /* blue-BG background mode */
         break;
@@ -1052,7 +1052,10 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                     int cur_ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
                     int idx = 1; /* default to FT2 index */
                     for (int fi = 0; fi < ft_count; fi++) {
-                        if (ft_values[fi] == cur_ft) { idx = fi; break; }
+                        if (ft_values[fi] == cur_ft) {
+                            idx = fi;
+                            break;
+                        }
                     }
                     if (click & 4) { /* left */
                         idx = (idx - 1 + ft_count) % ft_count;
@@ -1373,7 +1376,10 @@ static void Network_Lobby(struct _TASK* task_ptr) {
                         int cur_ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
                         int idx = 1;
                         for (int fi = 0; fi < ft_count; fi++) {
-                            if (ft_values[fi] == cur_ft) { idx = fi; break; }
+                            if (ft_values[fi] == cur_ft) {
+                                idx = fi;
+                                break;
+                            }
                         }
                         idx = (idx + 1) % ft_count;
                         Config_SetInt(CFG_KEY_NETPLAY_FT, ft_values[idx]);
@@ -1860,7 +1866,7 @@ void Menu_ReenterNetworkLobby(void) {
     task[TASK_MENU].r_no[1] = 21; /* Network_Lobby */
     task[TASK_MENU].r_no[2] = 14; /* Lobby input loop (RmlUI path) */
     task[TASK_MENU].r_no[3] = 1;
-    task[TASK_MENU].free[2] = 1;  /* 1 = RmlUI mode */
+    task[TASK_MENU].free[2] = 1; /* 1 = RmlUI mode */
 }
 
 /** @brief â€œSelect Gameâ€ (3S vs 2I) screen with exit-to-desktop option. */

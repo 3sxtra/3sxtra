@@ -111,7 +111,6 @@ void SDLGameRendererGPU_BeginFrame(void) {
         }
     }
 
-
     current_cmd_buf = SDL_AcquireGPUCommandBuffer(device);
     s_swapchain_texture = NULL; // Acquired lazily via GetSwapchainTexture()
 
@@ -158,7 +157,6 @@ void SDLGameRendererGPU_BeginFrame(void) {
         palette_dirty_flags[i] = false;
     }
     dirty_palette_count = 0;
-
 
     current_transfer_idx = (current_transfer_idx + 1) % VERTEX_TRANSFER_BUFFER_COUNT;
     // ⚡ Opt10a: cycle=false — buffer is already triple-buffered behind the fence ring,

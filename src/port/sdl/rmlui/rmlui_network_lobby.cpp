@@ -546,7 +546,8 @@ extern "C" void rmlui_network_lobby_init(void) {
         for (int i = 0; i < count; i++) {
             if (peers[i].is_challenging_me) {
                 int ft = peers[i].ft_value;
-                if (ft <= 0) ft = 2;
+                if (ft <= 0)
+                    ft = 2;
                 if (ft == 1)
                     v = Rml::String("UNRANKED");
                 else {
@@ -762,7 +763,7 @@ extern "C" void rmlui_network_lobby_show(void) {
     s_room_status = "";
     s_join_room_code = "";
     rmlui_wrapper_show_game_document("network_lobby");
-    
+
     if (Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH)) {
         SDLNetplayUI_StartSearch();
     }

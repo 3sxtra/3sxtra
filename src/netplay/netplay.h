@@ -24,7 +24,7 @@ typedef enum NetplaySessionState {
 } NetplaySessionState;
 
 void Netplay_SetPlayerNumber(int player_num);
-int  Netplay_GetPlayerNumber(void);
+int Netplay_GetPlayerNumber(void);
 void Netplay_SetRemoteIP(const char* ip);
 void Netplay_SetLocalPort(unsigned short port);
 void Netplay_SetRemotePort(unsigned short port);
@@ -62,7 +62,7 @@ void Netplay_SetStunSocket(NET_DatagramSocket* socket);
 /// The challenger sets this before Netplay_Begin(); the receiver uses the
 /// value from the invite/beacon/room data. 0 = use local config default.
 void Netplay_SetNegotiatedFT(int ft);
-int  Netplay_GetNegotiatedFT(void);
+int Netplay_GetNegotiatedFT(void);
 
 /// Begin a spectate-only session: connect to the active match host
 /// and render the game without injecting local input.

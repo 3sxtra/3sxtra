@@ -60,7 +60,8 @@ static int num_dismissed = 0;
 
 static bool is_dismissed(uint32_t id) {
     for (int i = 0; i < num_dismissed; i++)
-        if (dismissed_ids[i] == id) return true;
+        if (dismissed_ids[i] == id)
+            return true;
     return false;
 }
 
@@ -124,8 +125,8 @@ void Discovery_Update() {
     if (broadcast_sock >= 0 && (now - last_broadcast_ticks >= BROADCAST_INTERVAL_MS || last_broadcast_ticks == 0)) {
         char beacon_data[256];
         bool auto_now = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-        
-        const char *room_code = rmlui_casual_lobby_get_room_code();
+
+        const char* room_code = rmlui_casual_lobby_get_room_code();
         if (room_code && room_code[0] != '\0') {
             auto_now = false;
         }
@@ -244,7 +245,8 @@ void Discovery_Update() {
                 break; // No more packets
 
             int bytes = dgram->buflen;
-            if (bytes >= 256) bytes = 255;
+            if (bytes >= 256)
+                bytes = 255;
 
             char buffer[256];
             memcpy(buffer, dgram->buf, bytes);
@@ -291,7 +293,8 @@ void Discovery_Update() {
                     memcpy(peer_display_name, p, name_len);
                     peer_display_name[name_len] = '\0';
                     // Trim trailing whitespace/newlines
-                    while (name_len > 0 && (peer_display_name[name_len - 1] == '\n' || peer_display_name[name_len - 1] == '\r'))
+                    while (name_len > 0 &&
+                           (peer_display_name[name_len - 1] == '\n' || peer_display_name[name_len - 1] == '\r'))
                         peer_display_name[--name_len] = '\0';
                 }
                 // Parse ft from 8th field
@@ -305,8 +308,10 @@ void Discovery_Update() {
                     }
                     if (fpipes == 7 && *fp) {
                         peer_ft = atoi(fp);
-                        if (peer_ft < 1) peer_ft = 2;
-                        if (peer_ft > 10) peer_ft = 10;
+                        if (peer_ft < 1)
+                            peer_ft = 2;
+                        if (peer_ft > 10)
+                            peer_ft = 10;
                     }
                 }
                 // Parse player_id from 9th field

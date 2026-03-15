@@ -159,8 +159,7 @@ static void receive_probes(void) {
             uint8_t slot = (uint8_t)(token & 0xFF);
             uint8_t gen = (uint8_t)(token >> 8);
 
-            if (slot >= MAX_PROBE_PEERS || !s_peers[slot].active ||
-                s_peers[slot].generation != gen) {
+            if (slot >= MAX_PROBE_PEERS || !s_peers[slot].active || s_peers[slot].generation != gen) {
                 NET_DestroyDatagram(dgram);
                 continue;
             }

@@ -19,7 +19,7 @@ void NetstatsRenderer_Render() {
     // Assuming max 8 pixels per character for right padding.
     int len = SDL_strlen(buffer);
     int x = 384 - (len * 8) - 8; // 8px padding from the right edge
-    
+
     // SSPutStrPro(flag, x, y, atr, vtxcol, str)
     // using atr=6 (palette 6) per user instructions
     SSPutStrPro(0, x, 2, 6, 0xFFFFFFFF, (s8*)buffer);

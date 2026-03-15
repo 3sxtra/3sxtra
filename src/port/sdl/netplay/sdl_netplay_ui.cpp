@@ -47,8 +47,8 @@ static SDL_AtomicInt lobby_server_player_count = { 0 };
 static uint32_t lobby_server_last_poll = 0;
 static char lobby_my_player_id[64] = { 0 };
 static char current_opponent_id[64] = { 0 }; // tracked explicitly to fix room rotation reporting
-static int lobby_my_rtt_ms = -1;            // Our measured RTT to the lobby server (still sent to server for presence)
-static bool ping_probe_initialized = false; // True once PingProbe_Init has been called
+static int lobby_my_rtt_ms = -1;             // Our measured RTT to the lobby server (still sent to server for presence)
+static bool ping_probe_initialized = false;  // True once PingProbe_Init has been called
 static const char* my_connection_type = "unknown"; // Detected once at lobby entry
 #define LOBBY_POLL_INTERVAL_MS 2000
 
@@ -74,8 +74,8 @@ typedef struct {
 // Async data: carries both the match result and a snapshot of the replay
 typedef struct {
     MatchResult result;
-    void* replay_snapshot;  // malloc'd NativeReplayHeader + _REPLAY_W data
-    size_t replay_size;     // total size of the snapshot (header + data)
+    void* replay_snapshot; // malloc'd NativeReplayHeader + _REPLAY_W data
+    size_t replay_size;    // total size of the snapshot (header + data)
 } AsyncMatchReportData;
 
 static int async_match_report_fn(void* userdata) {
@@ -302,18 +302,18 @@ static uint32_t lobby_pending_invite_ip = 0;
 static uint16_t lobby_pending_invite_port = 0;
 static char lobby_pending_invite_room[16] = { 0 };
 static char lobby_pending_invite_region[8] = { 0 };
-static uint32_t lobby_pending_invite_time = 0; // Timestamp when invite was detected (for expiry)
+static uint32_t lobby_pending_invite_time = 0;   // Timestamp when invite was detected (for expiry)
 static int lobby_pending_invite_ping = -1;       // ms, -1 = unknown
-static int lobby_pending_invite_ft = 2;           // Challenger's FT mode
+static int lobby_pending_invite_ft = 2;          // Challenger's FT mode
 static SDL_AtomicInt lobby_punch_cancel = { 0 }; // Set to 1 to cancel in-progress hole punch
 static bool lobby_we_are_initiator = false;      // true = we clicked Connect, false = they invited us
 static char lobby_connect_to_intent[16] = { 0 }; // Current connect_to value preserved across heartbeats
 
 // Wait-for-peer state: initiator waits for receiver to accept before Netplay_Begin
 #define LOBBY_WAIT_PEER_TIMEOUT_MS 30000
-#define LOBBY_WAIT_PEER_GRACE_MS 5000  // Minimum wait before checking (avoids stale connect_to)
+#define LOBBY_WAIT_PEER_GRACE_MS 5000 // Minimum wait before checking (avoids stale connect_to)
 static uint32_t lobby_wait_peer_start = 0;
-static bool lobby_skip_wait_peer = false;  // Set by casual lobby path (both sides already accepted via server)
+static bool lobby_skip_wait_peer = false; // Set by casual lobby path (both sides already accepted via server)
 
 // Forward declarations for functions used by lobby_poll_server
 static void lobby_start_punch(uint32_t peer_ip, uint16_t peer_port);
@@ -563,7 +563,10 @@ static void lobby_poll_server(void) {
                      "%s",
                      lobby_server_players[i].display_name);
             snprintf(current_opponent_id, sizeof(current_opponent_id), "%s", lobby_server_players[i].player_id);
-            snprintf(lobby_pending_invite_player_id, sizeof(lobby_pending_invite_player_id), "%s", lobby_server_players[i].player_id);
+            snprintf(lobby_pending_invite_player_id,
+                     sizeof(lobby_pending_invite_player_id),
+                     "%s",
+                     lobby_server_players[i].player_id);
             lobby_pending_invite_ip = peer_ip;
             lobby_pending_invite_port = peer_port;
             snprintf(
@@ -649,8 +652,8 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
 // UPnP fallback thread function
 static int SDLCALL upnp_fallback_thread_fn(void* data) {
     (void)data;
-    bool ok =
-        Upnp_AddMapping(&lobby_upnp_mapping, SDL_Swap16BE(stun_result.public_port), SDL_Swap16BE(stun_result.public_port), "UDP");
+    bool ok = Upnp_AddMapping(
+        &lobby_upnp_mapping, SDL_Swap16BE(stun_result.public_port), SDL_Swap16BE(stun_result.public_port), "UDP");
     SDL_SetAtomicInt(&lobby_thread_result, ok ? 1 : 0);
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_UPNP_DONE);
     return 0;
@@ -911,7 +914,7 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
     NetplaySessionState current_state = Netplay_GetSessionState();
     if (last_session_state == NETPLAY_SESSION_RUNNING && current_state == NETPLAY_SESSION_EXITING &&
         !match_result_reported) {
-        
+
         // Unconditionally auto-save replay for all netplay matches (including direct P2P)
         NativeSave_AutoSaveReplay();
 
@@ -1084,9 +1087,7 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
             lobby_cleanup_thread();
             bool upnp_ok = (SDL_GetAtomicInt(&lobby_thread_result) == 1);
             if (upnp_ok) {
-                snprintf(lobby_status_msg,
-                         sizeof(lobby_status_msg),
-                         "UPnP port forward success!");
+                snprintf(lobby_status_msg, sizeof(lobby_status_msg), "UPnP port forward success!");
             } else {
                 snprintf(lobby_status_msg, sizeof(lobby_status_msg), "UPnP failed. Attempting direct connection...");
             }
@@ -1143,7 +1144,8 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                 lobby_we_are_initiator = false;
                 // Clear connect_to on server
                 const char* d = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
-                if (!d || !d[0]) d = my_room_code;
+                if (!d || !d[0])
+                    d = my_room_code;
                 AsyncUpdatePresence(lobby_my_player_id, d, my_room_code, "");
             }
             // else: keep waiting, status msg already set
@@ -1459,8 +1461,8 @@ void SDLNetplayUI_DeclinePendingInvite() {
 
 bool SDLNetplayUI_HasOutgoingChallenge() {
     int state = SDL_GetAtomicInt(&lobby_async_state);
-    return lobby_we_are_initiator && (state == LOBBY_ASYNC_PUNCHING || state == LOBBY_ASYNC_UPNP_TRYING ||
-                                      state == LOBBY_ASYNC_WAIT_PEER);
+    return lobby_we_are_initiator &&
+           (state == LOBBY_ASYNC_PUNCHING || state == LOBBY_ASYNC_UPNP_TRYING || state == LOBBY_ASYNC_WAIT_PEER);
 }
 
 const char* SDLNetplayUI_GetOutgoingChallengeName() {
@@ -1500,7 +1502,7 @@ void SDLNetplayUI_CancelOutgoingChallenge() {
     // If we cancelled from WAIT_PEER, the STUN socket was consumed/closed.
     // Reset to IDLE to trigger fresh STUN discovery on next lobby frame.
     if (cancel_state == LOBBY_ASYNC_WAIT_PEER) {
-        my_room_code[0] = '\0';  // Force re-discovery of room code
+        my_room_code[0] = '\0'; // Force re-discovery of room code
         SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_IDLE);
     } else {
         SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_READY);
@@ -1544,8 +1546,7 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
         int lan_count = Discovery_GetPeers(lan_peers, 16);
         for (int i = 0; i < lan_count; i++) {
             // Match by player_id (primary — reliable 1:1 identity from beacon)
-            bool id_match = (opponent_player_id && opponent_player_id[0] &&
-                             lan_peers[i].player_id[0] &&
+            bool id_match = (opponent_player_id && opponent_player_id[0] && lan_peers[i].player_id[0] &&
                              strcmp(lan_peers[i].player_id, opponent_player_id) == 0);
             // Fallback: if the peer shares our STUN public IP, they're on the same LAN
             bool ip_match = (stun_result.public_ip != 0 && peer_ip == stun_result.public_ip);

@@ -275,8 +275,6 @@ void SDLGameRendererClassic_RenderFrame(void) {
         }
     }
     TRACE_SUB_END();
-
-
 }
 
 void SDLGameRendererClassic_EndFrame(void) {
@@ -454,8 +452,6 @@ void SDLGameRendererClassic_CreatePalette(unsigned int ph) {
     }
     SDL_SetPaletteColors(sdl_pal, colors, 0, color_count);
     cl_palettes[palette_index] = sdl_pal;
-
-
 }
 
 void SDLGameRendererClassic_DestroyPalette(unsigned int palette_handle) {

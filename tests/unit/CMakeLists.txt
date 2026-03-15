@@ -225,6 +225,9 @@ add_unit_test(test_identity
 )
 target_include_directories(test_identity PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${PROJECT_SOURCE_DIR}/src ${SDL3_ROOT}/include)
 target_link_sdl3(test_identity)
+if(WIN32)
+    target_link_libraries(test_identity PRIVATE bcrypt)
+endif()
 
 add_unit_test(test_char_data
     test_char_data.c

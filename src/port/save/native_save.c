@@ -699,8 +699,7 @@ int NativeSave_AutoSaveReplay(void) {
     if (target < 0)
         target = 10; /* fallback: overwrite slot 10 */
 
-    SDL_Log("[NativeSave] Auto-saving replay to slot %d (%s)", target,
-            empty_slot >= 0 ? "empty" : "oldest");
+    SDL_Log("[NativeSave] Auto-saving replay to slot %d (%s)", target, empty_slot >= 0 ? "empty" : "oldest");
 
     return NativeSave_SaveReplay(target);
 }

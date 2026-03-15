@@ -63,7 +63,7 @@ typedef struct {
     char winner_id[64];
     int player_char; // Character index (0-19)
     int opponent_char;
-    int rounds; // Total rounds played (e.g. 3 for a 2-1 win)
+    int rounds;      // Total rounds played (e.g. 3 for a 2-1 win)
     char source[16]; // "casual" or "ranked"
     int ft;          // First-to value for this session (e.g. 2 for FT2)
 } MatchResult;

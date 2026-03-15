@@ -98,7 +98,7 @@ extern bool game_paused;
 
 /* ── GPU preference: request discrete GPU on hybrid-graphics systems ── */
 #ifdef _WIN32
-__declspec(dllexport) unsigned long NvOptimusEnablement                  = 1; /* NVIDIA Optimus */
+__declspec(dllexport) unsigned long NvOptimusEnablement = 1;                  /* NVIDIA Optimus */
 __declspec(dllexport) unsigned long AmdPowerXpressRequestHighPerformance = 1; /* AMD switchable */
 #endif
 
@@ -452,7 +452,8 @@ static void game_step_0() {
     // (TASK_INIT, TASK_GAME) are already deactivated by the EXITING handler,
     // so njUserMain() runs but doesn't render native menu UI behind the overlay.
     bool casual_lobby_covers_game = (current_net_state == NETPLAY_SESSION_LOBBY) && rmlui_casual_lobby_is_visible();
-    if ((current_net_state == NETPLAY_SESSION_IDLE || current_net_state == NETPLAY_SESSION_LOBBY) && !casual_lobby_covers_game) {
+    if ((current_net_state == NETPLAY_SESSION_IDLE || current_net_state == NETPLAY_SESSION_LOBBY) &&
+        !casual_lobby_covers_game) {
         njUserMain();
 
         // ⚡ Bolt: Input Lag Test Detection

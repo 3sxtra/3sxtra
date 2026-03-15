@@ -2,7 +2,7 @@
 #include <SDL3/SDL.h>
 
 #define MAX_NETWORK_RESULTS 128
-#define MAX_CACHED_PEERS 8  // Max unique peers (1v1 + spectators)
+#define MAX_CACHED_PEERS 8 // Max unique peers (1v1 + spectators)
 
 static NET_DatagramSocket* adapter_sock = NULL;
 static GekkoNetAdapter adapter;
@@ -12,8 +12,8 @@ static int result_count = 0;
 // Per-peer address cache — avoids re-resolving DNS on every send.
 // Supports multiple simultaneous peers (player + spectators).
 typedef struct {
-    char addr_key[64];        // "ip:port" string used as lookup key
-    NET_Address* resolved;    // Cached NET_Address*
+    char addr_key[64];     // "ip:port" string used as lookup key
+    NET_Address* resolved; // Cached NET_Address*
     Uint16 port;
 } CachedPeer;
 
@@ -48,10 +48,12 @@ static CachedPeer* find_or_create_peer(const char* addr_str) {
 }
 
 static void send_data(GekkoNetAddress* addr, const char* data, int length) {
-    if (!adapter_sock) return;
+    if (!adapter_sock)
+        return;
 
     CachedPeer* peer = find_or_create_peer((const char*)addr->data);
-    if (!peer->resolved) return;
+    if (!peer->resolved)
+        return;
 
     switch (NET_GetAddressStatus(peer->resolved)) {
     case NET_SUCCESS:
@@ -74,9 +76,7 @@ static GekkoNetResult** receive_data(int* length) {
     }
 
     NET_Datagram* dgram = NULL;
-    while (result_count < MAX_NETWORK_RESULTS
-           && NET_ReceiveDatagram(adapter_sock, &dgram)
-           && dgram) {
+    while (result_count < MAX_NETWORK_RESULTS && NET_ReceiveDatagram(adapter_sock, &dgram) && dgram) {
         const char* ip_str = NET_GetAddressString(dgram->addr);
         char addr_str[64];
         SDL_snprintf(addr_str, sizeof(addr_str), "%s:%d", ip_str, (int)dgram->port);

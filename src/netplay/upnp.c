@@ -33,8 +33,8 @@
  */
 static struct UPNPUrls s_cached_urls;
 static struct IGDdatas s_cached_data;
-static char            s_cached_lan_addr[64];
-static bool            s_cache_valid = false;
+static char s_cached_lan_addr[64];
+static bool s_cache_valid = false;
 
 /* Discover the IGD and populate the cache. Returns true on success. */
 static bool upnp_ensure_cached(void) {
@@ -54,12 +54,16 @@ static bool upnp_ensure_cached(void) {
 
 #if MINIUPNPC_API_VERSION >= 18
     char wan_addr[64] = { 0 };
-    int status = UPNP_GetValidIGD(devlist, &s_cached_urls, &s_cached_data,
-                                  s_cached_lan_addr, sizeof(s_cached_lan_addr),
-                                  wan_addr, sizeof(wan_addr));
+    int status = UPNP_GetValidIGD(devlist,
+                                  &s_cached_urls,
+                                  &s_cached_data,
+                                  s_cached_lan_addr,
+                                  sizeof(s_cached_lan_addr),
+                                  wan_addr,
+                                  sizeof(wan_addr));
 #else
-    int status = UPNP_GetValidIGD(devlist, &s_cached_urls, &s_cached_data,
-                                  s_cached_lan_addr, sizeof(s_cached_lan_addr));
+    int status =
+        UPNP_GetValidIGD(devlist, &s_cached_urls, &s_cached_data, s_cached_lan_addr, sizeof(s_cached_lan_addr));
 #endif
 
     freeUPNPDevlist(devlist);
@@ -85,8 +89,7 @@ bool Upnp_AddMapping(UpnpMapping* out, uint16_t internal_port, uint16_t external
 
     // Get external IP
     char ext_ip[64] = { 0 };
-    int r = UPNP_GetExternalIPAddress(s_cached_urls.controlURL,
-                                     s_cached_data.first.servicetype, ext_ip);
+    int r = UPNP_GetExternalIPAddress(s_cached_urls.controlURL, s_cached_data.first.servicetype, ext_ip);
     if (r != 0) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "UPnP: Failed to get external IP (error %d)", r);
         return false;
@@ -113,7 +116,11 @@ bool Upnp_AddMapping(UpnpMapping* out, uint16_t internal_port, uint16_t external
     }
 
     SDL_Log("UPnP: Port mapping created %s:%s -> %s:%s (%s)",
-            ext_ip, ext_port_str, s_cached_lan_addr, int_port_str, protocol);
+            ext_ip,
+            ext_port_str,
+            s_cached_lan_addr,
+            int_port_str,
+            protocol);
 
     SDL_strlcpy(out->external_ip, ext_ip, sizeof(out->external_ip));
     out->external_port = external_port;
@@ -134,9 +141,8 @@ void Upnp_RemoveMapping(UpnpMapping* mapping) {
     char ext_port_str[8];
     snprintf(ext_port_str, sizeof(ext_port_str), "%u", mapping->external_port);
 
-    int r = UPNP_DeletePortMapping(s_cached_urls.controlURL,
-                                   s_cached_data.first.servicetype,
-                                   ext_port_str, "UDP", NULL);
+    int r =
+        UPNP_DeletePortMapping(s_cached_urls.controlURL, s_cached_data.first.servicetype, ext_port_str, "UDP", NULL);
     if (r == 0) {
         SDL_Log("UPnP: Port mapping removed for port %u", mapping->external_port);
     } else {
@@ -152,8 +158,7 @@ bool Upnp_GetExternalIP(char* out_ip, int ip_buf_size) {
         return false;
 
     char ext_ip[64] = { 0 };
-    if (UPNP_GetExternalIPAddress(s_cached_urls.controlURL,
-                                 s_cached_data.first.servicetype, ext_ip) == 0) {
+    if (UPNP_GetExternalIPAddress(s_cached_urls.controlURL, s_cached_data.first.servicetype, ext_ip) == 0) {
         SDL_strlcpy(out_ip, ext_ip, ip_buf_size);
         return true;
     }

@@ -31,7 +31,7 @@
 // Resolve a hostname to an IPv4 address string (e.g. "142.250.189.127").
 // Returns true on success, writes result to ipv4_buf.
 static bool resolve_hostname_ipv4(const char* hostname, char* ipv4_buf, int buf_size) {
-    struct addrinfo hints = {0}, *res = NULL;
+    struct addrinfo hints = { 0 }, *res = NULL;
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
     if (getaddrinfo(hostname, NULL, &hints, &res) != 0 || !res)
@@ -210,7 +210,7 @@ static bool parse_binding_response(const uint8_t* buf, int len, const uint8_t* t
             }
             *out_port = SDL_Swap16BE(((uint16_t)buf[offset + 2] << 8) | buf[offset + 3]);
             *out_ip = SDL_Swap32BE(((uint32_t)buf[offset + 4] << 24) | ((uint32_t)buf[offset + 5] << 16) |
-                            ((uint32_t)buf[offset + 6] << 8) | buf[offset + 7]);
+                                   ((uint32_t)buf[offset + 6] << 8) | buf[offset + 7]);
             return true;
         }
 
@@ -240,7 +240,8 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
         }
     }
     NET_DatagramSocket* sock = NET_CreateDatagramSocket(bind_addr, local_port);
-    if (bind_addr) NET_UnrefAddress(bind_addr);
+    if (bind_addr)
+        NET_UnrefAddress(bind_addr);
     if (!sock) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to create UDP socket: %s", SDL_GetError());
         return false;
@@ -258,7 +259,8 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
 
     NET_Address* stun_addr = NET_ResolveHostname(stun_ipv4);
     if (!stun_addr) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s via SDL3_Net: %s", stun_ipv4, SDL_GetError());
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s via SDL3_Net: %s", stun_ipv4, SDL_GetError());
         NET_DestroyDatagramSocket(sock);
         return false;
     }
@@ -295,7 +297,8 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
         // Poll with timeout for response:
         for (int poll = 0; poll < 30 && !dgram; poll++) {
             NET_ReceiveDatagram(sock, &dgram);
-            if (!dgram) SDL_Delay(100);
+            if (!dgram)
+                SDL_Delay(100);
         }
 
         if (!dgram) {
@@ -335,7 +338,6 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
 
     return true;
 }
-
 
 bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, int punch_duration_ms,
                     SDL_AtomicInt* cancel_flag) {
@@ -405,8 +407,7 @@ bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, i
             // static buffer — must copy one result before the second call.
             char recv_addr[64];
             SDL_strlcpy(recv_addr, NET_GetAddressString(dgram->addr), sizeof(recv_addr));
-            if (strcmp(recv_addr, NET_GetAddressString(peer)) == 0 &&
-                dgram->buflen == strlen(punch_msg) &&
+            if (strcmp(recv_addr, NET_GetAddressString(peer)) == 0 && dgram->buflen == strlen(punch_msg) &&
                 strncmp((char*)dgram->buf, punch_msg, dgram->buflen) == 0) {
                 SDL_Log("STUN: Hole punch SUCCESS — received response from peer");
                 received_response = true;
@@ -417,8 +418,8 @@ bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, i
                 // Update peer_ip from received address (Symmetric NAT may change it)
                 const char* received_ip = NET_GetAddressString(dgram->addr);
                 uint8_t octets[4];
-                if (SDL_sscanf(received_ip, "%hhu.%hhu.%hhu.%hhu",
-                               &octets[0], &octets[1], &octets[2], &octets[3]) == 4) {
+                if (SDL_sscanf(received_ip, "%hhu.%hhu.%hhu.%hhu", &octets[0], &octets[1], &octets[2], &octets[3]) ==
+                    4) {
                     uint32_t new_ip;
                     memcpy(&new_ip, octets, 4);
                     *peer_ip = new_ip;
@@ -434,7 +435,7 @@ bool Stun_HolePunch(StunResult* local, uint32_t* peer_ip, uint16_t* peer_port, i
             }
             NET_DestroyDatagram(dgram);
         } else {
-             SDL_Delay(10); // Don't spin too hot if no data
+            SDL_Delay(10); // Don't spin too hot if no data
         }
     }
 

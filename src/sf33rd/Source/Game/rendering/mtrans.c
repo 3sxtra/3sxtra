@@ -335,7 +335,6 @@ static void lz77_gpu_or_cpu(u8* src, u32 comp_bound, u32 size, MultiTexture* mt,
     // CPU fallback
     lz_ext_p6_fx(src, mt->mltbuf, size);
     Renderer_UpdateTexture(gix_base + code_offset, mt->mltbuf, code_local, size, 0, 0);
-
 }
 
 /** @brief Replace tile map entries matching a source code/attribute with new values. */
@@ -1312,7 +1311,6 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     seqs_w.up[mt->id] = 1;
     appRenewTempPriority(wk->position_z);
-
 }
 
 /** @brief Transform and render in RGB mode (extended variant). */
@@ -1804,7 +1802,6 @@ void seqsAfterProcess() {
             }
         }
         TRACE_PLOT_INT("DirtyTextures", dirty_count);
-
 
         if (seqs_w.sprMax < seqs_w.sprTotal) {
             seqs_w.sprMax = seqs_w.sprTotal;
