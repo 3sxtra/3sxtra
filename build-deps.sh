@@ -12,6 +12,7 @@ echo "Detected OS: $OS"
 
 # Optional: set to "universal" for macOS fat binaries (arm64+x86_64)
 TARGET_ARCH="${TARGET_ARCH:-}"
+MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-13.0}"
 
 echo "Using cmake from: $(which cmake)"
 cmake --version
@@ -54,8 +55,11 @@ else
     case "$OS" in
         Darwin|Linux)
             CMAKE_EXTRA_ARGS=""
-            if [ "$OS" = "Darwin" ] && [ "$TARGET_ARCH" = "universal" ]; then
-                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+            if [ "$OS" = "Darwin" ]; then
+                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+                if [ "$TARGET_ARCH" = "universal" ]; then
+                    CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+                fi
             fi
             cmake .. \
                 ${CC:+-DCMAKE_C_COMPILER=$CC} \
@@ -273,8 +277,11 @@ else
     case "$OS" in
         Darwin|Linux)
             CMAKE_EXTRA_ARGS=""
-            if [ "$OS" = "Darwin" ] && [ "$TARGET_ARCH" = "universal" ]; then
-                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+            if [ "$OS" = "Darwin" ]; then
+                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+                if [ "$TARGET_ARCH" = "universal" ]; then
+                    CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+                fi
             fi
             cmake .. \
                 ${CC:+-DCMAKE_C_COMPILER=$CC} \
@@ -350,8 +357,11 @@ else
     case "$OS" in
         Darwin|Linux)
             CMAKE_EXTRA_ARGS=""
-            if [ "$OS" = "Darwin" ] && [ "$TARGET_ARCH" = "universal" ]; then
-                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+            if [ "$OS" = "Darwin" ]; then
+                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+                if [ "$TARGET_ARCH" = "universal" ]; then
+                    CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+                fi
             fi
             cmake .. \
                 ${CC:+-DCMAKE_C_COMPILER=$CC} \
@@ -415,8 +425,11 @@ else
     case "$OS" in
         Darwin|Linux)
             CMAKE_EXTRA_ARGS=""
-            if [ "$OS" = "Darwin" ] && [ "$TARGET_ARCH" = "universal" ]; then
-                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+            if [ "$OS" = "Darwin" ]; then
+                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
+                if [ "$TARGET_ARCH" = "universal" ]; then
+                    CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+                fi
             fi
             cmake .. \
                 ${CC:+-DCMAKE_C_COMPILER=$CC} \
@@ -467,8 +480,9 @@ else
     CMAKE_EXTRA_ARGS=""
     case "$OS" in
         Darwin)
+            CMAKE_EXTRA_ARGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=$MACOSX_DEPLOYMENT_TARGET"
             if [ "$TARGET_ARCH" = "universal" ]; then
-                CMAKE_EXTRA_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+                CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
             fi
             ;;
         MINGW*|MSYS*|CYGWIN*)

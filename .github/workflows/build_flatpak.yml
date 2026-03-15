@@ -28,7 +28,7 @@ jobs:
 
         steps:
           - name: Checkout repository
-            uses: actions/checkout@v5
+            uses: actions/checkout@v4
 
           - name: Build Flatpak bundle
             uses: flatpak/flatpak-github-actions/flatpak-builder@v6
@@ -41,7 +41,7 @@ jobs:
 
           - name: Upload release artifact
             if: ${{ inputs.release }}
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v4
             with:
                 name: release-assets-flatpak
                 path: 3sx.flatpak
@@ -55,7 +55,7 @@ jobs:
 
           - name: Upload artifact (GitHub)
             if: ${{ !env.ACT && !inputs.release }}
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v4
             with:
                 name: 3sx-flatpak
                 path: 3sx.flatpak
