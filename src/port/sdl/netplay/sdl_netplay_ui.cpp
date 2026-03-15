@@ -306,6 +306,10 @@ static char lobby_punch_peer_name[32] = { 0 }; // Display name of peer being pun
 static UpnpMapping lobby_upnp_mapping = {};
 static bool native_lobby_active = false;
 
+// STUN retry: after failure, retry every 10 seconds instead of giving up
+#define STUN_RETRY_INTERVAL_MS 10000
+static uint32_t stun_fail_time = 0;
+
 // Pending internet invite state (for native lobby indication)
 static bool lobby_has_pending_invite = false;
 static char lobby_pending_invite_name[32] = { 0 };
@@ -774,6 +778,7 @@ static void lobby_reset(void) {
     // Reset async thread guards so lobby can restart cleanly
     SDL_SetAtomicInt(&async_presence_active, 0);
     SDL_SetAtomicInt(&async_action_active, 0);
+    stun_fail_time = 0;
 }
 
 // FPS history data (owned by sdl_app.c, just pointers here)
@@ -1055,10 +1060,20 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
             }
         }
 
-        // Handle STUN failure
+        // Handle STUN failure — retry after cooldown
         if (state == LOBBY_ASYNC_STUN_FAILED) {
             lobby_cleanup_thread();
-            snprintf(lobby_status_msg, sizeof(lobby_status_msg), "STUN failed. LAN discovery still active.");
+            if (stun_fail_time == 0) {
+                stun_fail_time = SDL_GetTicks();
+                snprintf(lobby_status_msg, sizeof(lobby_status_msg), "STUN failed. Retrying...");
+            }
+            uint32_t since_fail = SDL_GetTicks() - stun_fail_time;
+            if (since_fail >= STUN_RETRY_INTERVAL_MS) {
+                SDL_Log("[lobby] Retrying STUN discovery after failure");
+                stun_fail_time = 0;
+                lobby_start_discover();
+                state = SDL_GetAtomicInt(&lobby_async_state);
+            }
         }
 
         // Handle hole punch completion
@@ -1632,6 +1647,8 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
                      (!opponent_room_code || !opponent_room_code[0])
                          ? "opponent has no room code (their STUN may have failed)"
                          : "failed to decode opponent room code");
+        snprintf(lobby_status_msg, sizeof(lobby_status_msg),
+                 "Connection failed: opponent unreachable.");
         return;
     }
 

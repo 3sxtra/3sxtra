@@ -552,6 +552,11 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 } else {
                     SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
                                 "[CasualLobby] MATCH_START: No opponent room code or player_id — P2P connection will NOT initiate!");
+                    s_status_text = "Connection failed: opponent unreachable.";
+                    s_is_playing = false;
+                    s_model_handle.DirtyVariable("status_text");
+                    s_model_handle.DirtyVariable("is_playing");
+                    rmlui_wrapper_show_game_document("casual_lobby");
                 }
             } else {
                 s_status_text = Rml::String("Match: ") + s_match_p1_name.c_str() + " vs " + s_match_p2_name.c_str();

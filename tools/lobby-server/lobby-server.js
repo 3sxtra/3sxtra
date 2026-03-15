@@ -315,11 +315,18 @@ function tryStartMatch(room) {
 
     const now = Date.now();
 
-    // Find first viable pair (skip pairs on decline cooldown)
+    // Find first viable pair (skip pairs on decline cooldown or missing STUN)
     for (let i = 0; i < room.queue.length - 1; i++) {
         for (let j = i + 1; j < room.queue.length; j++) {
             const id1 = room.queue[i];
             const id2 = room.queue[j];
+
+            // Skip pairs where either player has no STUN endpoint —
+            // P2P connection is impossible without a room_code.
+            const p1_data = players.get(id1);
+            const p2_data = players.get(id2);
+            if (!p1_data?.room_code || !p2_data?.room_code) continue;
+
             const pairKey = makeMatchPairKey(room.id, id1, id2);
             const cd = matchDeclineCooldowns.get(pairKey);
             if (cd && now < cd) continue; // still on cooldown
@@ -330,8 +337,6 @@ function tryStartMatch(room) {
 
             const p1 = id1;
             const p2 = id2;
-            const p1_data = players.get(p1);
-            const p2_data = players.get(p2);
 
             room.match = {
                 p1, p2,
