@@ -58,14 +58,14 @@ A full netplay stack audit was performed and 14 fixes applied:
 |---|------|-------|
 | 1 | `lobby_server.c` HTTP → libcurl | `http_connect()` + `http_request()` + `UploadReplay()` rewritten with libcurl. SSE thread stays on raw sockets (`sse_raw_connect()`). HMAC signing unchanged. cJSON vendored in `third_party/cJSON/`. |
 | 2 | UPnP IGD caching | `upnp_ensure_cached()` caches IGD URLs after first discovery. `RemoveMapping`/`GetExternalIP` skip 2s `upnpDiscover()` round-trip. `Upnp_InvalidateCache()` added. |
+| 3 | `lobby_server.c` JSON → cJSON | Hand-rolled JSON helpers replaced with robust cJSON wrappers. All body-builders and response-parsers migrated. |
+| 4 | Identity CSPRNG | `SDL_rand_bits()` replaced with platform-native APIs `BCryptGenRandom` (Windows) and `getrandom()` (Linux) for cryptographic grade randomness in player identity generation. |
 
 ### ⏳ Remaining
 
 - **Manual testing**: LAN discovery, hole punching, gameplay, spectator, casual rooms
 - **IPv6 support**: STUN parser only handles family=1 (IPv4). Full IPv6 requires changing IP representation from `uint32_t` across entire stack. TODO in `stun.c`.
 - **`discovery.c` per-NIC broadcast**: Still uses raw `sendto()` with `GetAdaptersAddresses`/`getifaddrs`. Cannot migrate without OS API abstraction.
-- **lobby_server.c JSON → cJSON**: Hand-rolled JSON helpers (`json_escape_string`, `json_get_string`, `parse_room_json`) replaced with robust cJSON wrappers. All body-builders and response-parsers migrated.
-- **Identity CSPRNG**: `SDL_rand_bits()` replaced with platform-native APIs `BCryptGenRandom` (Windows) and `getrandom()` (Linux) for cryptographic grade randomness in player identity generation.
 
 ## Table of Contents
 

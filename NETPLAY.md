@@ -692,13 +692,13 @@ Relevant `config.ini` keys:
 | `sdl_net_adapter.c` | ~130 | GekkoNet ↔ SDL3_Net adapter — per-peer address cache (8 slots), FIFO eviction |
 | `sdl_net_adapter.h` | ~15 | Adapter API: `SDLNetAdapter_Create()`, `SDLNetAdapter_Destroy()` |
 | `game_state.c` | ~1820 | Save/load ~700+ game globals for rollback (compile-time size guard) |
-| `lobby_server.c` | ~1660 | HTTP client (raw sockets, 16KB buffer), HMAC signing, SSE streaming, room management |
+| `lobby_server.c` | ~1660 | HTTP client (libcurl, 16KB buffer), HMAC signing, SSE streaming, room management |
 | `lobby_server.h` | ~255 | Lobby API types and function declarations |
 | `discovery.c` | ~440 | LAN UDP broadcast beacons (listen socket: SDL3_Net, per-NIC broadcast: raw) |
 | `discovery.h` | ~40 | Discovery API and peer struct |
 | `stun.c` | ~460 | STUN binding (SDL3_Net), hole punching (SDL3_Net), room codes, IPv4-forced DNS |
 | `stun.h` | ~50 | STUN API (`StunResult` with `NET_DatagramSocket* socket`) |
-| `identity.c` | ~175 | Persistent identity generation (SDL_rand_bits → SHA-256) |
+| `identity.c` | ~175 | Persistent identity generation (CSPRNG → SHA-256) |
 | `identity.h` | ~46 | Identity API |
 | `ping_probe.c` | ~395 | P2P RTT measurement (SDL3_Net, per-peer `NET_Address*` caching, generation-tagged tokens) |
 | `ping_probe.h` | ~15 | Ping probe API (`NET_DatagramSocket*` parameter) |

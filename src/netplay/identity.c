@@ -55,6 +55,8 @@ static size_t hex_to_bytes(const char* hex, uint8_t* out, size_t max_bytes) {
 #ifdef _WIN32
 #include <windows.h>
 #include <bcrypt.h>
+#elif defined(__APPLE__)
+#include <stdlib.h>
 #else
 #include <sys/random.h>
 #endif
@@ -69,6 +71,9 @@ static void generate_random_bytes(uint8_t* buf, size_t len) {
     if (BCryptGenRandom(NULL, buf, (ULONG)len, BCRYPT_USE_SYSTEM_PREFERRED_RNG) == 0) {
         success = true;
     }
+#elif defined(__APPLE__)
+    arc4random_buf(buf, len);
+    success = true;
 #else
     if (getrandom(buf, len, 0) == (ssize_t)len) {
         success = true;
