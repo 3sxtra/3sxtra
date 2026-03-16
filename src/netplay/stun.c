@@ -177,13 +177,25 @@ static bool parse_binding_response(const uint8_t* buf, int len, const uint8_t* t
     return false;
 }
 
+// Fallback STUN server list — tried in order until one succeeds.
+static const struct {
+    const char* host;
+    uint16_t port;
+} stun_servers[] = {
+    { "stun.l.google.com",      19302 },
+    { "stun1.l.google.com",     19302 },
+    { "stun.cloudflare.com",    3478  },
+    { "stun.nextcloud.com",     443   },
+};
+#define STUN_SERVER_COUNT (int)(sizeof(stun_servers) / sizeof(stun_servers[0]))
+
 bool Stun_Discover(StunResult* result, uint16_t local_port) {
     if (!result)
         return false;
     memset(result, 0, sizeof(*result));
     result->socket = NULL;
 
-    // Bind to NULL explicitly to allow dual-stack dual-stack sockets.
+    // Create socket once — local port stays consistent across server attempts.
     NET_Address* bind_addr = NULL;
     NET_DatagramSocket* sock = NET_CreateDatagramSocket(bind_addr, local_port);
     if (!sock) {
@@ -195,88 +207,87 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
     // is busy re-simulating during rollback (inspired by Weyvelength SDK).
     NetTuning_SetRecvBuf(sock, 256 * 1024);
 
-    // Resolve via SDL3_Net natively.
-    char stun_host[] = "stun.l.google.com";
-    NET_Address* stun_addr = NET_ResolveHostname(stun_host);
-    if (!stun_addr) {
-        SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s via SDL3_Net: %s", stun_host, SDL_GetError());
-        NET_DestroyDatagramSocket(sock);
-        return false;
-    }
+    // Try each STUN server in order until one succeeds.
+    for (int srv = 0; srv < STUN_SERVER_COUNT; srv++) {
+        const char* host = stun_servers[srv].host;
+        uint16_t srv_port = stun_servers[srv].port;
 
-    // Spin-wait for resolve (instant for numeric IPs, but API is async):
-    int wait_attempts = 0;
-    while (NET_GetAddressStatus(stun_addr) == NET_WAITING && wait_attempts < 100) {
-        SDL_Delay(1);
-        wait_attempts++;
-    }
+        // Resolve hostname
+        NET_Address* stun_addr = NET_ResolveHostname(host);
+        if (!stun_addr) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s", host);
+            continue;
+        }
 
-    if (NET_GetAddressStatus(stun_addr) != NET_SUCCESS) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s", stun_host);
-        NET_UnrefAddress(stun_addr);
-        NET_DestroyDatagramSocket(sock);
-        return false;
-    }
+        int wait_attempts = 0;
+        while (NET_GetAddressStatus(stun_addr) == NET_WAITING && wait_attempts < 100) {
+            SDL_Delay(1);
+            wait_attempts++;
+        }
 
-    // Build and send STUN request
-    uint8_t request[20];
-    uint8_t transaction_id[12];
-    build_binding_request(request, transaction_id);
+        if (NET_GetAddressStatus(stun_addr) != NET_SUCCESS) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s", host);
+            NET_UnrefAddress(stun_addr);
+            continue;
+        }
 
-    if (!NET_SendDatagram(sock, stun_addr, 19302, request, 20)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to send binding request: %s", SDL_GetError());
-        NET_UnrefAddress(stun_addr);
-        NET_DestroyDatagramSocket(sock);
-        return false;
-    }
+        // Build and send STUN request (fresh transaction ID per server)
+        uint8_t request[20];
+        uint8_t transaction_id[12];
+        build_binding_request(request, transaction_id);
 
-    // Receive response (retry up to 3 times)
-    NET_Datagram* dgram = NULL;
-    for (int attempt = 0; attempt < 3 && !dgram; attempt++) {
-        // Poll with timeout for response:
-        for (int poll = 0; poll < 30 && !dgram; poll++) {
+        if (!NET_SendDatagram(sock, stun_addr, srv_port, request, 20)) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to send to %s:%u: %s", host, srv_port, SDL_GetError());
+            NET_UnrefAddress(stun_addr);
+            continue;
+        }
+
+        // Receive response — single attempt with ~2s timeout.
+        // No per-server retries; we rely on having multiple servers for resilience.
+        NET_Datagram* dgram = NULL;
+        for (int poll = 0; poll < 20 && !dgram; poll++) {
             NET_ReceiveDatagram(sock, &dgram);
             if (!dgram)
                 SDL_Delay(100);
         }
 
+        NET_UnrefAddress(stun_addr);
+
         if (!dgram) {
-            // Resend on timeout
-            NET_SendDatagram(sock, stun_addr, 19302, request, 20);
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "STUN: No response from %s:%u, trying next server", host, srv_port);
+            continue;
         }
-    }
 
-    NET_UnrefAddress(stun_addr);
+        // Parse response
+        char ip[64] = {0};
+        uint16_t port = 0;
+        if (!parse_binding_response((const uint8_t*)dgram->buf, dgram->buflen, transaction_id, ip, sizeof(ip), &port)) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to parse response from %s:%u, trying next server", host, srv_port);
+            NET_DestroyDatagram(dgram);
+            continue;
+        }
 
-    if (!dgram) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: No response received");
-        NET_DestroyDatagramSocket(sock);
-        return false;
-    }
+        // Success!
+        result->local_port = SDL_Swap16BE(port);
+        SDL_strlcpy(result->public_ip, ip, sizeof(result->public_ip));
+        result->public_port = port;
+        result->socket = sock; // Keep open for hole punching!
 
-    // Parse response
-    char ip[64] = {0};
-    uint16_t port = 0;
-    if (!parse_binding_response((const uint8_t*)dgram->buf, dgram->buflen, transaction_id, ip, sizeof(ip), &port)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to parse binding response");
         NET_DestroyDatagram(dgram);
-        NET_DestroyDatagramSocket(sock);
-        return false;
+
+        if (srv > 0) {
+            SDL_Log("STUN: Discovered public endpoint via %s (local port %u)", host, result->local_port);
+        } else {
+            SDL_Log("STUN: Discovered public endpoint (local port %u)", result->local_port);
+        }
+
+        return true;
     }
 
-    // the mapped port is the actual port we use
-    result->local_port = SDL_Swap16BE(port);
-
-    SDL_strlcpy(result->public_ip, ip, sizeof(result->public_ip));
-    result->public_port = port;
-    result->socket = sock; // Keep open for hole punching!
-
-    NET_DestroyDatagram(dgram);
-
-    SDL_Log("STUN: Discovered public endpoint (local port %u)", result->local_port);
-
-    return true;
+    // All servers exhausted
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: All %d servers failed", STUN_SERVER_COUNT);
+    NET_DestroyDatagramSocket(sock);
+    return false;
 }
 
 bool Stun_HolePunch(StunResult* local, char* peer_ip, uint16_t* peer_port, int punch_duration_ms,
@@ -328,7 +339,7 @@ bool Stun_HolePunch(StunResult* local, char* peer_ip, uint16_t* peer_port, int p
         // Send punch packet periodically
         if (now - last_send >= (uint32_t)punch_interval_ms || last_send == 0) {
             if (!NET_SendDatagram(sock, peer, local_peer_port, punch_msg, strlen(punch_msg))) {
-                SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "STUN: Hole punch send failed: %s", SDL_GetError());
+                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "STUN: Hole punch send failed: %s", SDL_GetError());
             }
             last_send = now;
         }

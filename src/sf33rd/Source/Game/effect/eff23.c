@@ -5,6 +5,8 @@
 
 #include "sf33rd/Source/Game/effect/eff23.h"
 #include "common.h"
+#include "port/rendering/legacy_matrix.h"
+#include "port/sdl/input/controller_image_overlay.h"
 #include "sf33rd/Source/Game/effect/eff61.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -90,7 +92,25 @@ void effect_23_move(WORK_Other_CONN* ewk) {
     }
 
     if (ewk->wu.type < 8 && ewk->wu.disp_flag) {
-        dispButtonImage(-44, 12, ewk->wu.position_z, 23, 19, ewk->wu.my_clear_level, ewk->wu.type);
+        /* Compute screen coords using njCalcPoint, matching dispButtonImage's
+         * coordinate transform. Use min/max to handle Y-flip in the NJ matrix. */
+        Vec3 v0 = { -44.0f, 12.0f, 0.0f };
+        Vec3 v1 = { -44.0f + 23.0f, 12.0f - 19.0f, 0.0f };
+        njCalcPoint(NULL, &v0, &v0);
+        njCalcPoint(NULL, &v1, &v1);
+
+        /* Bounding box — correct regardless of matrix flip/rotation */
+        float min_x = v0.x < v1.x ? v0.x : v1.x;
+        float min_y = v0.y < v1.y ? v0.y : v1.y;
+        float max_x = v0.x > v1.x ? v0.x : v1.x;
+        float max_y = v0.y > v1.y ? v0.y : v1.y;
+
+        if (!ControllerImageOverlay_DrawButton(ewk->master_id, ewk->wu.type,
+                                               (s32)min_x, (s32)min_y,
+                                               (s32)(max_x - min_x), (s32)(max_y - min_y),
+                                               ewk->wu.position_z)) {
+            dispButtonImage(-44, 12, ewk->wu.position_z, 23, 19, ewk->wu.my_clear_level, ewk->wu.type);
+        }
     }
 }
 

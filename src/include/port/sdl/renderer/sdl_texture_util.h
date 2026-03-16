@@ -2,6 +2,8 @@
 
 #include <stdbool.h>
 
+struct SDL_Surface;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -12,6 +14,13 @@ extern "C" {
  * @return Opaque texture handle, or NULL on failure.
  */
 void* TextureUtil_Load(const char* filename);
+
+/**
+ * @brief Create a GPU/GL texture from an SDL_Surface.
+ * @param surface The surface to upload (caller retains ownership).
+ * @return Opaque texture handle, or NULL on failure.
+ */
+void* TextureUtil_LoadFromSurface(struct SDL_Surface* surface);
 
 /**
  * @brief Free a previously loaded texture.
@@ -31,6 +40,20 @@ void TextureUtil_GetSize(void* texture_id, int* w, int* h);
  * @brief Release all tracked GPU textures. Call during shutdown.
  */
 void TextureUtil_Shutdown(void);
+
+/**
+ * @brief Draw a TextureUtil texture at CPS3 canvas coordinates.
+ *
+ * Renders the texture as a full-UV quad at the given position and size.
+ * Works with the active rendering backend (GL, GPU, SDL2D).
+ * Must be called during the game frame (within BeginFrame/EndFrame).
+ *
+ * @param texture_id Handle returned by TextureUtil_Load/LoadFromSurface.
+ * @param x, y       Top-left position in CPS3 pixels (384×224 canvas).
+ * @param w, h       Width and height in CPS3 pixels.
+ * @param z          Z-depth value (from PrioBase[]).
+ */
+void TextureUtil_DrawQuad(void* texture_id, float x, float y, float w, float h, float z);
 
 #ifdef __cplusplus
 }

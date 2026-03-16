@@ -18,7 +18,8 @@ typedef struct {
 } StunResult;
 
 /// Perform a STUN Binding Request (RFC 5389).
-/// Uses stun.l.google.com:19302.
+/// Tries multiple STUN servers in order (Google, Cloudflare, Nextcloud)
+/// for resilience against rate limiting or service outages.
 /// Returns true on success and fills `result`.
 /// The socket in result->socket is left open for hole punching.
 bool Stun_Discover(StunResult* result, uint16_t local_port);

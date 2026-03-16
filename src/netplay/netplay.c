@@ -397,6 +397,11 @@ static void configure_gekko() {
     }
     GekkoNetAddress remote_address = { .data = remote_address_str, .size = strlen(remote_address_str) };
 
+    // Enable cross-IP normalization: if packets arrive from a different address
+    // family (e.g. IPv6 instead of IPv4), the adapter rewrites the source to
+    // match this expected address so GekkoNet's string matching still works.
+    SDLNetAdapter_SetExpectedRemote(remote_address_str);
+
     for (int i = 0; i < PLAYER_COUNT; i++) {
         const bool is_local_player = (i == player_number);
 

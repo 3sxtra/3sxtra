@@ -627,3 +627,53 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
         gl_state.render_task_count++;
     }
 }
+
+/**
+ * @brief Push a raw GL RGBA texture into the batch renderer as a legacy sprite.
+ *
+ * Called by TextureUtil_DrawQuad to draw ControllerImage glyph textures.
+ * The texture participates in the normal z-sorted batch render (array_layer=-1
+ * legacy path) so it integrates correctly with CPS3 sprites.
+ *
+ * @param gl_texture_id  Raw GL texture ID (from glGenTextures / TextureUtil).
+ * @param x, y           Top-left position in CPS3 canvas pixels (384×224).
+ * @param w, h           Width and height in CPS3 canvas pixels.
+ * @param z              Z-depth from flPS2ConvScreenFZ() or equivalent.
+ */
+void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id,
+                                         float x, float y, float w, float h, float z) {
+    const Uint32 white = 0xFFFFFFFF;
+    SDL_Vertex sdl_vertices[4];
+
+    /* Top-left */
+    sdl_vertices[0].position.x = x;
+    sdl_vertices[0].position.y = y;
+    sdl_vertices[0].tex_coord.x = 0.0f;
+    sdl_vertices[0].tex_coord.y = 0.0f;
+    memcpy(&sdl_vertices[0].color, &white, sizeof(Uint32));
+
+    /* Top-right */
+    sdl_vertices[1].position.x = x + w;
+    sdl_vertices[1].position.y = y;
+    sdl_vertices[1].tex_coord.x = 1.0f;
+    sdl_vertices[1].tex_coord.y = 0.0f;
+    memcpy(&sdl_vertices[1].color, &white, sizeof(Uint32));
+
+    /* Bottom-left */
+    sdl_vertices[2].position.x = x;
+    sdl_vertices[2].position.y = y + h;
+    sdl_vertices[2].tex_coord.x = 0.0f;
+    sdl_vertices[2].tex_coord.y = 1.0f;
+    memcpy(&sdl_vertices[2].color, &white, sizeof(Uint32));
+
+    /* Bottom-right */
+    sdl_vertices[3].position.x = x + w;
+    sdl_vertices[3].position.y = y + h;
+    sdl_vertices[3].tex_coord.x = 1.0f;
+    sdl_vertices[3].tex_coord.y = 1.0f;
+    memcpy(&sdl_vertices[3].color, &white, sizeof(Uint32));
+
+    /* Push as a legacy texture (array_layer = -1, pal_slot = 0) */
+    push_render_task((GLuint)gl_texture_id, sdl_vertices, z, -1, 0);
+}
+

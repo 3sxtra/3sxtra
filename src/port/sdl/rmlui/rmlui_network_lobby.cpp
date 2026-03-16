@@ -638,8 +638,6 @@ extern "C" void rmlui_network_lobby_update(void) {
     {
         NetplayDiscoveredPeer raw[16];
         int c = Discovery_GetPeers(raw, 16);
-        DIRTY_INT(lan_peer_count, c);
-        DIRTY_INT(lan_peer_idx, g_lobby_peer_idx);
 
         std::vector<LanPeerItem> next;
         next.reserve((size_t)c);
@@ -653,13 +651,14 @@ extern "C" void rmlui_network_lobby_update(void) {
             s_lan_peers = std::move(next);
             s_model_handle.DirtyVariable("lan_peers");
         }
+        // Dirty count AFTER array so RmlUi never sees count>0 with empty array
+        DIRTY_INT(lan_peer_count, c);
+        DIRTY_INT(lan_peer_idx, g_lobby_peer_idx);
     }
 
     // ── Rebuild NET peer list ─────────────────────────────────────
     {
         int nc = SDLNetplayUI_GetOnlinePlayerCount();
-        DIRTY_INT(net_peer_count, nc);
-        DIRTY_INT(net_peer_idx, g_net_peer_idx);
 
         std::vector<NetPeerItem> next;
         next.reserve((size_t)nc);
@@ -705,6 +704,9 @@ extern "C" void rmlui_network_lobby_update(void) {
             s_net_peers = std::move(next);
             s_model_handle.DirtyVariable("net_peers");
         }
+        // Dirty count AFTER array so RmlUi never sees count>0 with empty array
+        DIRTY_INT(net_peer_count, nc);
+        DIRTY_INT(net_peer_idx, g_net_peer_idx);
     }
 
     // ── Rebuild ROOM list (poll every 3 seconds, async) ──────────────

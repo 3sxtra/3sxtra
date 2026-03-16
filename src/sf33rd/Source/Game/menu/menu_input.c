@@ -11,6 +11,7 @@
 #include "netplay/netplay.h"
 #include "port/save/native_save.h"
 #include "port/sdl/app/sdl_app.h"
+#include "port/sdl/input/controller_image_overlay.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -838,6 +839,7 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
     case 10:
         if ((Menu_Cursor_Y[PL_id] == 10) || (IO_Result == 0x200)) {
             SE_selected();
+            ControllerImageOverlay_Shutdown();
             if (use_rmlui && rmlui_menu_button_config)
                 rmlui_button_config_hide();
             Return_Option_Mode_Sub(task_ptr);
@@ -1581,6 +1583,7 @@ void Button_Config_in_Game(struct _TASK* task_ptr) {
         Menu_Cursor_Y[1] = 0;
         Copy_Key_Disp_Work();
         Setup_Button_Sub(6, 5, 3);
+        ControllerImageOverlay_Init();
         Order[0x8A] = 3;
         Order_Timer[0x8A] = 1;
         effect_66_init(0x8B, 0xA, 3, 7, -1, -1, -0x3FFB);
@@ -1614,6 +1617,7 @@ void Button_Exit_Check_in_Game(struct _TASK* task_ptr, s16 PL_id) {
     if (Menu_Cursor_Y[PL_id] == 10) {
     ten:
         SE_selected();
+        ControllerImageOverlay_Shutdown();
         Return_Pause_Sub(task_ptr);
         return;
     }
@@ -2272,6 +2276,7 @@ void Button_Config_Tr(struct _TASK* task_ptr) {
         Training_Index = 5;
         Copy_Key_Disp_Work();
         Setup_Button_Sub(6, 5, 1);
+        ControllerImageOverlay_Init();
         pp_operator_check_flag(0);
         break;
 
@@ -2298,6 +2303,7 @@ void Button_Exit_Check_in_Tr(struct _TASK* task_ptr, s16 PL_id) {
     if (Menu_Cursor_Y[PL_id] == 10) {
     ten:
         SE_selected();
+        ControllerImageOverlay_Shutdown();
         Menu_Suicide[0] = 0;
         Menu_Suicide[1] = 1;
         task_ptr->r_no[2] = 0;

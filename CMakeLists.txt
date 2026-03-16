@@ -291,6 +291,7 @@ add_executable(3sx MACOSX_BUNDLE
     # --- sdl/input/ ---
     src/port/sdl/input/control_mapping.cpp
     src/port/sdl/input/controller_image.c
+    src/port/sdl/input/controller_image_overlay.c
     # --- ControllerImage library (vendored) ---
     ${THIRD_PARTY_DIR}/controllerimage/src/controllerimage.c
     # --- port/ (unchanged locations) ---

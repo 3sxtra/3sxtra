@@ -20,6 +20,7 @@
 #include "port/rendering/renderer.h"
 #include "port/save/native_save.h"
 #include "port/sdl/app/sdl_app.h"
+#include "port/sdl/input/controller_image_overlay.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/ui/replay_picker.h"
 #include "sf33rd/AcrSDK/common/pad.h"
@@ -1888,6 +1889,7 @@ static void toSelectGame(struct _TASK* task_ptr) {
     case 0:
         Forbid_Reset = 1;
         Menu_in_Sub(task_ptr);
+        ControllerImageOverlay_Init();
         Setup_BG(1, 0x200, 0);
         if (!use_rmlui || !rmlui_screen_exit_confirm)
             effect_66_init(0x8A, 8, 1, 0, -1, -1, -0x7FF2);
@@ -1963,6 +1965,7 @@ static void toSelectGame(struct _TASK* task_ptr) {
         break;
 
     case 9:
+        ControllerImageOverlay_Shutdown();
         Menu_Suicide[0] = 0;
         Menu_Suicide[1] = 1;
         task_ptr->r_no[1] = 1;
@@ -2700,6 +2703,7 @@ static void Button_Config(struct _TASK* task_ptr) {
         task_ptr->timer = 5;
         Menu_Common_Init();
         pp_operator_check_flag(0);
+        ControllerImageOverlay_Init();
         Menu_Cursor_Y[0] = 0;
         Menu_Cursor_Y[1] = 0;
         Menu_Suicide[1] = 1;

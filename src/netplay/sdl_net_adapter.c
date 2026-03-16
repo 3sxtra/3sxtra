@@ -10,6 +10,13 @@ static GekkoNetAdapter adapter;
 static GekkoNetResult* results[MAX_NETWORK_RESULTS];
 static int result_count = 0;
 
+// Expected remote address — used for cross-IP (IPv4↔IPv6) normalization.
+// When a packet arrives on the expected port but from a different IP,
+// we rewrite the source to match what GekkoNet was configured with.
+static char expected_remote_addr[64] = {0}; // Full "ip:port" string
+static Uint16 expected_remote_port = 0;
+static bool cross_ip_logged = false; // Log only once per session
+
 // Per-peer address cache — avoids re-resolving DNS on every send.
 // Supports multiple simultaneous peers (player + spectators).
 typedef struct {
@@ -148,10 +155,26 @@ static GekkoNetResult** receive_data(int* length) {
         char addr_str[64];
         SDL_snprintf(addr_str, sizeof(addr_str), "%s:%d", ip_str, (int)dgram->port);
 
+        // Cross-IP normalization: if this packet arrived on the expected remote
+        // port but from a different IP (IPv4↔IPv6 mismatch), rewrite the source
+        // address to match what GekkoNet was configured with. This makes
+        // GekkoNet's string-based address matching work across address families.
+        const char* final_addr = addr_str;
+        if (expected_remote_port != 0 &&
+            dgram->port == expected_remote_port &&
+            SDL_strcmp(addr_str, expected_remote_addr) != 0 &&
+            expected_remote_addr[0] != '\0') {
+            if (!cross_ip_logged) {
+                SDL_Log("[NetAdapter] Cross-IP: rewriting %s → %s", addr_str, expected_remote_addr);
+                cross_ip_logged = true;
+            }
+            final_addr = expected_remote_addr;
+        }
+
         GekkoNetResult* res = SDL_malloc(sizeof(GekkoNetResult));
-        size_t addr_len = SDL_strlen(addr_str);
+        size_t addr_len = SDL_strlen(final_addr);
         res->addr.data = SDL_malloc(addr_len + 1);
-        SDL_strlcpy((char*)res->addr.data, addr_str, addr_len + 1);
+        SDL_strlcpy((char*)res->addr.data, final_addr, addr_len + 1);
         res->addr.size = (unsigned int)addr_len;
 
         res->data = SDL_malloc(dgram->buflen);
@@ -186,6 +209,21 @@ GekkoNetAdapter* SDLNetAdapter_Create(NET_DatagramSocket* sock) {
     return &adapter;
 }
 
+void SDLNetAdapter_SetExpectedRemote(const char* addr_str) {
+    if (addr_str && addr_str[0]) {
+        SDL_strlcpy(expected_remote_addr, addr_str, sizeof(expected_remote_addr));
+        char ip[64];
+        int port = 0;
+        parse_addr_str(addr_str, ip, sizeof(ip), &port);
+        expected_remote_port = (Uint16)port;
+        cross_ip_logged = false;
+        SDL_Log("[NetAdapter] Expected remote: %s (port %u)", expected_remote_addr, expected_remote_port);
+    } else {
+        expected_remote_addr[0] = '\0';
+        expected_remote_port = 0;
+    }
+}
+
 void SDLNetAdapter_Destroy(void) {
     adapter_sock = NULL;
     for (int i = 0; i < cached_peer_count; i++) {
@@ -196,4 +234,7 @@ void SDLNetAdapter_Destroy(void) {
     }
     cached_peer_count = 0;
     SDL_memset(cached_peers, 0, sizeof(cached_peers));
+    expected_remote_addr[0] = '\0';
+    expected_remote_port = 0;
+    cross_ip_logged = false;
 }

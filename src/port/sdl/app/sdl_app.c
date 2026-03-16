@@ -74,6 +74,7 @@
 
 int g_resolution_scale = 1;
 #include "port/sdl/input/controller_image.h"
+#include "port/sdl/input/controller_image_overlay.h"
 #include "port/sdl/input/sdl_pad.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
@@ -899,6 +900,9 @@ void SDLApp_EndFrame() {
             rmlui_wrapper_render_game(win_w, win_h, dst_rect.x, dst_rect.y, dst_rect.w, dst_rect.h);
         }
 
+        /* ControllerImage overlay: clear deferred queue (SDL2D has no post-composition path yet) */
+        ControllerImageOverlay_ClearQueue();
+
         // Debug text
         SDLTextRenderer_DrawDebugBuffer((float)win_w, (float)win_h);
         if (SDLAppDebugHud_IsVisible()) {
@@ -1080,6 +1084,9 @@ void SDLApp_EndFrame() {
             const SDL_FRect gp_vp = get_letterbox_rect(win_w, win_h);
             rmlui_wrapper_render_game(win_w, win_h, gp_vp.x, gp_vp.y, gp_vp.w, gp_vp.h);
         }
+
+        /* ControllerImage overlay: clear deferred queue (GPU flush not yet implemented) */
+        ControllerImageOverlay_ClearQueue();
 
         // Render overlays (menus, netplay, UI flush)
         render_overlays(win_w, win_h);
@@ -1332,6 +1339,9 @@ void SDLApp_EndFrame() {
         if (use_rmlui || rmlui_wrapper_any_game_visible()) {
             rmlui_wrapper_render_game(win_w, win_h, viewport.x, viewport.y, viewport.w, viewport.h);
         }
+
+        /* ControllerImage overlay: draw deferred button glyphs at full window resolution */
+        ControllerImageOverlay_FlushGL(viewport.x, viewport.y, viewport.w, viewport.h, win_w, win_h);
 
         // Debug text buffer (game debug menu, effect overlay, etc.)
         // Must render independently of the FPS HUD toggle.

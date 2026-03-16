@@ -7,6 +7,7 @@
  */
 
 #include "common.h"
+#include "port/sdl/input/controller_image_overlay.h"
 #include "sf33rd/Source/Game/effect/eff10.h"
 #include "sf33rd/Source/Game/effect/eff66.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
@@ -22,10 +23,14 @@
 
 /* ---------- imgSelectGameButton ---------- */
 
-/** @brief Draw two select-game button images. */
+/** @brief Draw two select-game button images (✕:YES ○:NO on exit confirm). */
 void imgSelectGameButton() {
-    dispButtonImage2(0x74, 0x6B, 0x18, 0x20, 0x1A, 0, 4);
-    dispButtonImage2(0xB2, 0x6B, 0x18, 0x20, 0x1A, 0, 5);
+    /* Try controller-specific glyph for P1 (slot 0).
+     * Row 4 = south button (✕/A), Row 5 = east button (○/B). */
+    if (!ControllerImageOverlay_DrawButton(0, 4, 0x74, 0x6B, 0x20, 0x1A, 0x18))
+        dispButtonImage2(0x74, 0x6B, 0x18, 0x20, 0x1A, 0, 4);
+    if (!ControllerImageOverlay_DrawButton(0, 5, 0xB2, 0x6B, 0x20, 0x1A, 0x18))
+        dispButtonImage2(0xB2, 0x6B, 0x18, 0x20, 0x1A, 0, 5);
 }
 
 /* ---------- Setup_Win_Lose_OBJ ---------- */

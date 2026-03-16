@@ -125,6 +125,102 @@ extern "C" void* TextureUtil_Load(const char* filename) {
     }
 }
 
+static void* upload_surface_to_texture(SDL_Surface* surface) {
+    if (!surface)
+        return NULL;
+
+    if (SDLApp_GetRenderer() == RENDERER_SDLGPU) {
+        SDL_GPUDevice* device = SDLApp_GetGPUDevice();
+        if (!device)
+            return NULL;
+
+        SDL_Surface* converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+        if (!converted)
+            return NULL;
+
+        SDL_GPUTextureCreateInfo tex_info;
+        SDL_zero(tex_info);
+        tex_info.type = SDL_GPU_TEXTURETYPE_2D;
+        tex_info.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+        tex_info.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+        tex_info.width = converted->w;
+        tex_info.height = converted->h;
+        tex_info.layer_count_or_depth = 1;
+        tex_info.num_levels = 1;
+
+        SDL_GPUTexture* texture = SDL_CreateGPUTexture(device, &tex_info);
+        if (!texture) {
+            SDL_DestroySurface(converted);
+            return NULL;
+        }
+
+        SDL_GPUTransferBufferCreateInfo tb_info;
+        SDL_zero(tb_info);
+        tb_info.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+        tb_info.size = converted->w * converted->h * 4;
+
+        SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(device, &tb_info);
+        void* map = SDL_MapGPUTransferBuffer(device, tb, false);
+        if (map) {
+            memcpy(map, converted->pixels, converted->w * converted->h * 4);
+            SDL_UnmapGPUTransferBuffer(device, tb);
+
+            SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(device);
+            SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
+
+            SDL_GPUTextureTransferInfo src;
+            SDL_zero(src);
+            src.transfer_buffer = tb;
+
+            SDL_GPUTextureRegion dst;
+            SDL_zero(dst);
+            dst.texture = texture;
+            dst.w = converted->w;
+            dst.h = converted->h;
+            dst.d = 1;
+
+            SDL_UploadToGPUTexture(cp, &src, &dst, false);
+            SDL_EndGPUCopyPass(cp);
+            SDL_SubmitGPUCommandBuffer(cb);
+        }
+
+        SDL_ReleaseGPUTransferBuffer(device, tb);
+
+        GPUTextureMetadata meta = { texture, converted->w, converted->h };
+        s_gpu_textures[(void*)texture] = meta;
+
+        SDL_DestroySurface(converted);
+        return (void*)texture;
+
+    } else if (is_sdl2d_backend(SDLApp_GetRenderer())) {
+        SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+        if (!renderer)
+            return NULL;
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        return (void*)texture;
+    } else {
+        GLuint texture_id;
+        glGenTextures(1, &texture_id);
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+
+        SDL_Surface* converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+        if (converted) {
+            glTexImage2D(
+                GL_TEXTURE_2D, 0, GL_RGBA, converted->w, converted->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, converted->pixels);
+            SDL_DestroySurface(converted);
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        return (void*)(intptr_t)texture_id;
+    }
+}
+
+extern "C" void* TextureUtil_LoadFromSurface(SDL_Surface* surface) {
+    return upload_surface_to_texture(surface);
+}
+
 extern "C" void TextureUtil_Free(void* texture_id) {
     if (!texture_id)
         return;
@@ -198,3 +294,29 @@ extern "C" void TextureUtil_Shutdown(void) {
     }
     s_gpu_textures.clear();
 }
+
+extern "C" void TextureUtil_DrawQuad(void* texture_id, float x, float y, float w, float h, float z) {
+    if (!texture_id)
+        return;
+
+    if (SDLApp_GetRenderer() == RENDERER_OPENGL) {
+        /* GL path: push a render task into the batch renderer.
+         * The overlay sprite uses the legacy texture path (array_layer = -1)
+         * so it participates in the normal z-sorted batch draw.
+         * z is already a converted depth value (from flPS2ConvScreenFZ or PrioBase). */
+        extern void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id,
+                                                        float x, float y, float w, float h, float z);
+        SDLGameRendererGL_DrawOverlaySprite((unsigned int)(intptr_t)texture_id, x, y, w, h, z);
+
+    } else if (is_sdl2d_backend(SDLApp_GetRenderer())) {
+        /* SDL2D path: render with SDL_RenderTexture */
+        SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+        if (!renderer)
+            return;
+        SDL_Texture* tex = (SDL_Texture*)texture_id;
+        SDL_FRect dst = { x, y, w, h };
+        SDL_RenderTexture(renderer, tex, NULL, &dst);
+    }
+    /* GPU path: not yet implemented */
+}
+

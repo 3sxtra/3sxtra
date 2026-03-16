@@ -5,6 +5,7 @@
 
 #include "sf33rd/Source/Game/effect/eff10.h"
 #include "common.h"
+#include "port/sdl/input/controller_image_overlay.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
@@ -84,8 +85,17 @@ void effect_10_move(WORK_Other* ewk) {
     }
 
     if (ewk->wu.type == 5) {
-        dispButtonImage2(
-            (ewk->wu.xyz[0].disp.pos * 8) - 6, (ewk->wu.xyz[1].disp.pos * 8) - 5, 1, 22, 17, 0, ix + correct_index);
+        s32 px = (ewk->wu.xyz[0].disp.pos * 8) - 6;
+        s32 py = (ewk->wu.xyz[1].disp.pos * 8) - 5;
+
+        /* Try controller-specific glyph from ControllerImage library.
+         * ewk->wu.cg_type is the original button row (0–7),
+         * ewk->master_id is the player slot (0 = P1, 1 = P2). */
+        if (!ControllerImageOverlay_DrawButton(ewk->master_id, ewk->wu.cg_type,
+                                               px, py, 22, 17, 1)) {
+            /* No ControllerImage glyph — fall back to CPS3 sprite sheet icon */
+            dispButtonImage2(px, py, 1, 22, 17, 0, ix + correct_index);
+        }
         return;
     }
 
