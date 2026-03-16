@@ -62,7 +62,6 @@
 #include "sf33rd/Source/Game/menu/ex_data.h"
 #include "sf33rd/Source/Game/menu/menu_internal.h"
 #include "sf33rd/Source/Game/message/en/msgtable_en.h"
-#include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/rendering/mmtmcnt.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
@@ -1906,31 +1905,35 @@ void Menu_ReenterNetworkLobby(void) {
     Mode_Type = MODE_NETWORK;
     Insert_Y = 23;
 
-    // Re-create resources purged by Soft_Reset_Sub() → Purge_mmtm_area(6).
-    // Restore sprite pattern data, colour palettes, and select-object memory
-    // keys so menu effects can find their source assets.
-    Init_load_on_memory_data();
-    // mto_list[6] is all-zeros so MTS slots are never recreated automatically.
+    // Re-create MTS slots purged by Soft_Reset_Sub() → Purge_mmtm_area(6).
+    // mto_list[6] is all-zeros so nothing is recreated automatically.
     // Menu effects need:  slot 12 (MS) for effect_45 (message display),
     //                     slot 13 (SL) for effect_57/61/66/04 (banners/text).
+    // NOTE: Do NOT call Init_load_on_memory_data() here — it allocates ramcnt
+    // key 0xD via reservMemKeySelObj(), but pmo_list[6] does not purge that
+    // key type, so a second call double-allocates and corrupts the pool.
     make_texcash_work(12);
     make_texcash_work(13);
 
-    // Replicate Menu_Init background setup.  Menu_Init (r_no[1]=0) normally
-    // runs once before Mode_Select to configure background layers.  Since we
-    // jump straight to Network_Lobby (r_no[1]=21), Menu_Init is never called.
-    // Without this, all CPS3 effects position relative to stale fight-time
-    // background scroll coordinates.
+    // Replicate Menu_Init setup.  Menu_Init (r_no[1]=0) normally runs once
+    // before Mode_Select to configure background layers, cursor state, and
+    // the saver task.  Since we jump straight to Network_Lobby (r_no[1]=21),
+    // Menu_Init is never called.
     for (ix = 0; ix < 4; ix++) {
         Menu_Suicide[ix] = 0;
         Unsubstantial_BG[ix] = 0;
+        Cursor_Y_Pos[0][ix] = 0;
     }
+    Menu_Cursor_Y[0] = 0;
+    Menu_Cursor_Y[1] = 0;
     All_Clear_Suicide();
+    pulpul_stop();
     bg_etc_write_ex(2);
     Setup_Virtual_BG(0, 0x200, 0);
     Setup_BG(1, 0x200, 0);
     Setup_BG(2, 0x200, 0);
     base_y_pos = 0;
+    cpReadyTask(TASK_SAVER, Saver_Task);
 
     // TASK_INIT must be DEACTIVATED here.  Its r_no[0] is zeroed above,
     // and Init_Task dispatches r_no[0]==0 → Init_Task_1st() which performs
