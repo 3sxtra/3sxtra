@@ -34,12 +34,12 @@ bool ControllerImage_Module_Init(void) {
     }
 
     char data_path[1024];
-    SDL_snprintf(data_path, sizeof(data_path), "%sassets/controllerimage-standard.bin", base_path);
+    SDL_snprintf(data_path, sizeof(data_path), "%sassets/controllers/controllerimage-standard.bin", base_path);
 
     if (!ControllerImage_AddDataFromFile(data_path)) {
         SDL_Log("[ControllerImage] Failed to load data from '%s': %s", data_path, SDL_GetError());
         /* Try without the base_path prefix (running from the assets/ parent dir) */
-        if (!ControllerImage_AddDataFromFile("assets/controllerimage-standard.bin")) {
+        if (!ControllerImage_AddDataFromFile("assets/controllers/controllerimage-standard.bin")) {
             SDL_Log("[ControllerImage] Failed to load data (fallback): %s", SDL_GetError());
             ControllerImage_Quit();
             return false;
