@@ -44,14 +44,14 @@ typedef struct {
  */
 typedef struct {
     NetTuningSockType socktype;
-    NET_Address*      addr;
-    uint16_t          port;
-    int               percent_loss;
-    uint8_t           recv_buffer[64 * 1024];
-    NET_Address*      latest_recv_addrs[64];
-    int               latest_recv_addrs_idx;
-    int               num_handles;
-    NetTuningHandle*  handles;
+    NET_Address* addr;
+    uint16_t port;
+    int percent_loss;
+    uint8_t recv_buffer[64 * 1024];
+    NET_Address* latest_recv_addrs[64];
+    int latest_recv_addrs_idx;
+    int num_handles;
+    NetTuningHandle* handles;
     /* ... remaining fields omitted ... */
 } NetTuningDgramMirror;
 
@@ -61,12 +61,13 @@ typedef struct {
  * Returns the number of handles successfully tuned.
  */
 static inline int NetTuning_SetRecvBuf(NET_DatagramSocket* sock, int buf_size) {
-    if (!sock || buf_size <= 0) return 0;
+    if (!sock || buf_size <= 0)
+        return 0;
     const NetTuningDgramMirror* m = (const NetTuningDgramMirror*)sock;
     int tuned = 0;
     for (int i = 0; i < m->num_handles; i++) {
-        if (setsockopt((int)m->handles[i].handle, SOL_SOCKET, SO_RCVBUF,
-                       (const char*)&buf_size, sizeof(buf_size)) == 0) {
+        if (setsockopt((int)m->handles[i].handle, SOL_SOCKET, SO_RCVBUF, (const char*)&buf_size, sizeof(buf_size)) ==
+            0) {
             tuned++;
         }
     }

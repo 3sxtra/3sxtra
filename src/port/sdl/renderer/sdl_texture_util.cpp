@@ -304,8 +304,8 @@ extern "C" void TextureUtil_DrawQuad(void* texture_id, float x, float y, float w
          * The overlay sprite uses the legacy texture path (array_layer = -1)
          * so it participates in the normal z-sorted batch draw.
          * z is already a converted depth value (from flPS2ConvScreenFZ or PrioBase). */
-        extern void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id,
-                                                        float x, float y, float w, float h, float z);
+        extern void SDLGameRendererGL_DrawOverlaySprite(
+            unsigned int gl_texture_id, float x, float y, float w, float h, float z);
         SDLGameRendererGL_DrawOverlaySprite((unsigned int)(intptr_t)texture_id, x, y, w, h, z);
 
     } else if (is_sdl2d_backend(SDLApp_GetRenderer())) {
@@ -319,4 +319,3 @@ extern "C" void TextureUtil_DrawQuad(void* texture_id, float x, float y, float w
     }
     /* GPU path: not yet implemented */
 }
-

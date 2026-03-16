@@ -217,6 +217,8 @@ target_include_directories(test_lobby_server PRIVATE ${PROJECT_SOURCE_DIR}/src/i
 target_link_sdl3(test_lobby_server)
 if(WIN32)
     target_link_libraries(test_lobby_server PRIVATE ws2_32 bcrypt curl)
+else()
+    target_link_libraries(test_lobby_server PRIVATE curl)
 endif()
 
 add_unit_test(test_identity

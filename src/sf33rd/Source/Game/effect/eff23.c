@@ -105,9 +105,12 @@ void effect_23_move(WORK_Other_CONN* ewk) {
         float max_x = v0.x > v1.x ? v0.x : v1.x;
         float max_y = v0.y > v1.y ? v0.y : v1.y;
 
-        if (!ControllerImageOverlay_DrawButton(ewk->master_id, ewk->wu.type,
-                                               (s32)min_x, (s32)min_y,
-                                               (s32)(max_x - min_x), (s32)(max_y - min_y),
+        if (!ControllerImageOverlay_DrawButton(ewk->master_id,
+                                               ewk->wu.type,
+                                               (s32)min_x,
+                                               (s32)min_y,
+                                               (s32)(max_x - min_x),
+                                               (s32)(max_y - min_y),
                                                ewk->wu.position_z)) {
             dispButtonImage(-44, 12, ewk->wu.position_z, 23, 19, ewk->wu.my_clear_level, ewk->wu.type);
         }

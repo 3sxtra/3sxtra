@@ -304,8 +304,8 @@ static void apply_room_state_to_model(void) {
             ch = (char)tolower((unsigned char)ch);
         s_players[i].is_self = (s_my_id == s_room_state.players[i].player_id);
         s_players[i].is_playing = (strcmp(s_room_state.players[i].player_id, s_room_state.match_p1) == 0 ||
-                         strcmp(s_room_state.players[i].player_id, s_room_state.match_p2) == 0) &&
-                        s_room_state.match_active;
+                                   strcmp(s_room_state.players[i].player_id, s_room_state.match_p2) == 0) &&
+                                  s_room_state.match_active;
         s_players[i].is_queued = false;
         for (int q = 0; q < s_room_state.queue_count; q++) {
             if (strcmp(s_room_state.players[i].player_id, s_room_state.queue[q]) == 0) {
@@ -414,7 +414,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
             // Append chat message — grow-only pattern (no erase)
             int new_idx = s_chat_display_count;
             if (new_idx >= (int)s_chat.size()) {
-                s_chat.push_back({new_idx, sse_evt.chat_msg.sender_name, sse_evt.chat_msg.text});
+                s_chat.push_back({ new_idx, sse_evt.chat_msg.sender_name, sse_evt.chat_msg.text });
             } else {
                 s_chat[new_idx].index = new_idx;
                 s_chat[new_idx].sender = sse_evt.chat_msg.sender_name;
@@ -538,7 +538,8 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 rmlui_wrapper_hide_game_document("casual_lobby");
 
                 // P2P connection trigger: use stored opponent room code from proposal phase
-                SDL_Log("[CasualLobby] MATCH_START: proposal_opponent_room_code='%s' opponent_name='%s' opponent_id='%s' we_are_p1=%d",
+                SDL_Log("[CasualLobby] MATCH_START: proposal_opponent_room_code='%s' opponent_name='%s' "
+                        "opponent_id='%s' we_are_p1=%d",
                         s_proposal_opponent_room_code,
                         s_proposal_opponent_name.c_str(),
                         s_proposal_opponent_player_id,
@@ -551,7 +552,8 @@ extern "C" void rmlui_casual_lobby_update(void) {
                     s_proposal_opponent_room_code[0] = '\0'; // consumed
                 } else {
                     SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-                                "[CasualLobby] MATCH_START: No opponent room code or player_id — P2P connection will NOT initiate!");
+                                "[CasualLobby] MATCH_START: No opponent room code or player_id — P2P connection will "
+                                "NOT initiate!");
                     s_status_text = "Connection failed: opponent unreachable.";
                     s_is_playing = false;
                     s_model_handle.DirtyVariable("status_text");

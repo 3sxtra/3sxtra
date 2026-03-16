@@ -640,8 +640,7 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
  * @param w, h           Width and height in CPS3 canvas pixels.
  * @param z              Z-depth from flPS2ConvScreenFZ() or equivalent.
  */
-void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id,
-                                         float x, float y, float w, float h, float z) {
+void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id, float x, float y, float w, float h, float z) {
     const Uint32 white = 0xFFFFFFFF;
     SDL_Vertex sdl_vertices[4];
 
@@ -676,4 +675,3 @@ void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id,
     /* Push as a legacy texture (array_layer = -1, pal_slot = 0) */
     push_render_task((GLuint)gl_texture_id, sdl_vertices, z, -1, 0);
 }
-

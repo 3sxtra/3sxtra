@@ -520,7 +520,7 @@ static void lobby_poll_server(void) {
                 continue;
             }
 
-            char peer_ip[64] = {0};
+            char peer_ip[64] = { 0 };
             uint16_t peer_port = 0;
             if (!Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port))
                 break;
@@ -635,7 +635,7 @@ static void lobby_poll_server(void) {
             if (strcmp(lobby_server_players[i].player_id, lobby_my_player_id) == 0)
                 continue;
             // Decode their STUN endpoint from room_code
-            char peer_ip[64] = {0};
+            char peer_ip[64] = { 0 };
             uint16_t peer_port = 0;
             if (lobby_server_players[i].room_code[0] &&
                 Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port)) {
@@ -644,8 +644,8 @@ static void lobby_poll_server(void) {
                     NetplayDiscoveredPeer lan_peers[16];
                     int lan_count = Discovery_GetPeers(lan_peers, 16);
                     for (int j = 0; j < lan_count; j++) {
-                        if (strcmp(lan_peers[j].player_id, lobby_server_players[i].player_id) == 0
-                            && lan_peers[j].ip[0]) {
+                        if (strcmp(lan_peers[j].player_id, lobby_server_players[i].player_id) == 0 &&
+                            lan_peers[j].ip[0]) {
                             PingProbe_AddPeer(lan_peers[j].ip, peer_port, lobby_server_players[i].player_id);
                             break;
                         }
@@ -1427,7 +1427,7 @@ void SDLNetplayUI_ConnectToPlayer(int index) {
         if (!player_passes_filters(&lobby_server_players[i]))
             continue;
         if (count == index) {
-            char peer_ip[64] = {0};
+            char peer_ip[64] = { 0 };
             uint16_t peer_port = 0;
             if (Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port)) {
                 // Signal intent via lobby server
@@ -1588,7 +1588,7 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
     }
 
     // Decode the opponent's STUN endpoint (may be empty if their STUN discovery failed)
-    char peer_ip[64] = {0};
+    char peer_ip[64] = { 0 };
     uint16_t peer_port = 0;
     bool decoded = (opponent_room_code && opponent_room_code[0])
                        ? Stun_DecodeEndpoint(opponent_room_code, peer_ip, &peer_port)
@@ -1604,7 +1604,8 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
             bool id_match = (opponent_player_id && opponent_player_id[0] && lan_peers[i].player_id[0] &&
                              strcmp(lan_peers[i].player_id, opponent_player_id) == 0);
             // Fallback: if the peer shares our STUN public IP, they're on the same LAN
-            bool ip_match = decoded && (stun_result.public_ip[0] != '\0' && strcmp(peer_ip, stun_result.public_ip) == 0);
+            bool ip_match =
+                decoded && (stun_result.public_ip[0] != '\0' && strcmp(peer_ip, stun_result.public_ip) == 0);
 
             if ((id_match || ip_match) && lan_peers[i].ip[0]) {
                 // LAN match: both peers use the beacon-advertised port.
@@ -1612,11 +1613,15 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
                 // STUN socket's dual-stack handles bind to different OS ports
                 // (IPv4 vs IPv6), causing port mismatches that break GekkoNet's
                 // address-based sync handshake.
-                uint16_t remote_port = lan_peers[i].port; // peer's beacon port
-                uint16_t local_port  = Discovery_GetLocalPort(); // our beacon port
-                SDL_Log("[casual] LAN peer detected: %s at %s:%u — using direct connection (beacon ports: local=%u remote=%u)",
+                uint16_t remote_port = lan_peers[i].port;       // peer's beacon port
+                uint16_t local_port = Discovery_GetLocalPort(); // our beacon port
+                SDL_Log("[casual] LAN peer detected: %s at %s:%u — using direct connection (beacon ports: local=%u "
+                        "remote=%u)",
                         opponent_name ? opponent_name : lan_peers[i].display_name,
-                        lan_peers[i].ip, remote_port, local_port, remote_port);
+                        lan_peers[i].ip,
+                        remote_port,
+                        local_port,
+                        remote_port);
                 snprintf(lobby_status_msg,
                          sizeof(lobby_status_msg),
                          "LAN: connecting to %s...",
@@ -1647,8 +1652,7 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
                      (!opponent_room_code || !opponent_room_code[0])
                          ? "opponent has no room code (their STUN may have failed)"
                          : "failed to decode opponent room code");
-        snprintf(lobby_status_msg, sizeof(lobby_status_msg),
-                 "Connection failed: opponent unreachable.");
+        snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Connection failed: opponent unreachable.");
         return;
     }
 

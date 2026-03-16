@@ -201,8 +201,8 @@ void effect_A8_move(WORK_Other_CONN* ewk) {
                 float py0 = pv0.y < pv1.y ? pv0.y : pv1.y;
                 float px1 = pv0.x > pv1.x ? pv0.x : pv1.x;
                 float py1 = pv0.y > pv1.y ? pv0.y : pv1.y;
-                if (!ControllerImageOverlay_DrawButton(0, 4,
-                        (s32)px0, (s32)py0, (s32)(px1 - px0), (s32)(py1 - py0), 68))
+                if (!ControllerImageOverlay_DrawButton(
+                        0, 4, (s32)px0, (s32)py0, (s32)(px1 - px0), (s32)(py1 - py0), 68))
                     dispButtonImage(-87, 25, 68, 22, 17, 0, 4);
             } else {
                 /* STOP button: east (row 5), model coords (-23, 0) size 22×17 */
@@ -214,8 +214,8 @@ void effect_A8_move(WORK_Other_CONN* ewk) {
                 float sy0 = sv0.y < sv1.y ? sv0.y : sv1.y;
                 float sx1 = sv0.x > sv1.x ? sv0.x : sv1.x;
                 float sy1 = sv0.y > sv1.y ? sv0.y : sv1.y;
-                if (!ControllerImageOverlay_DrawButton(0, 5,
-                        (s32)sx0, (s32)sy0, (s32)(sx1 - sx0), (s32)(sy1 - sy0), 68))
+                if (!ControllerImageOverlay_DrawButton(
+                        0, 5, (s32)sx0, (s32)sy0, (s32)(sx1 - sx0), (s32)(sy1 - sy0), 68))
                     dispButtonImage(-23, 0, 68, 22, 17, 0, 5);
             }
         }

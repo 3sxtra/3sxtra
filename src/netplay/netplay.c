@@ -26,6 +26,7 @@ extern void njUserMain();
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
+#include "sf33rd/Source/Game/menu/menu.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -69,10 +70,10 @@ static char remote_ip_string[64] = { 0 };
 static const char* remote_ip = NULL;
 static int player_number = 0;
 static int player_handle = 0;
-static NET_DatagramSocket* stun_socket = NULL;    // Pre-punched STUN socket for internet play
+static NET_DatagramSocket* stun_socket = NULL;     // Pre-punched STUN socket for internet play
 static NET_DatagramSocket* fallback_socket = NULL; // Created when STUN fails; same API as stun_socket
-static int s_negotiated_ft = 0;                // FT value agreed upon for the upcoming match (0 = use config default)
-static uint32_t handshake_ready_since = 0;     // Ticks when both peers signaled ready (LAN handshake hold)
+static int s_negotiated_ft = 0;            // FT value agreed upon for the upcoming match (0 = use config default)
+static uint32_t handshake_ready_since = 0; // Ticks when both peers signaled ready (LAN handshake hold)
 static NetplaySessionState session_state = NETPLAY_SESSION_IDLE;
 static u16 input_history[2][INPUT_HISTORY_MAX] = { 0 };
 static float frames_behind = 0;
@@ -381,7 +382,8 @@ static void configure_gekko() {
         } else {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                          "[netplay] Failed to create fallback socket on port %hu: %s",
-                         local_port, SDL_GetError());
+                         local_port,
+                         SDL_GetError());
             gekko_net_adapter_set(session, gekko_default_adapter(local_port));
         }
 #endif
@@ -933,26 +935,25 @@ void Netplay_Run() {
 #endif
         }
 
-        // If we're in a casual room, re-enter LOBBY instead of IDLE so the
-        // game stays in menu/lobby mode and doesn't restart its init flow.
-        // Soft_Reset_Sub (called during disconnect) hides all RmlUI documents,
-        // so we need to re-show the casual lobby overlay.
+        // Re-enter LOBBY instead of IDLE so the game stays in menu/lobby mode
+        // and doesn't restart its init flow (which causes flow/state issues).
+        // Soft_Reset_Sub (called during disconnect) hides all RmlUI documents
+        // and forces the engine to the Title Screen. Menu_ReenterNetworkLobby
+        // stops the title screen and forces the engine back to the lobby state.
         {
             const char* room = rmlui_casual_lobby_get_room_code();
+            session_state = NETPLAY_SESSION_LOBBY;
+            Discovery_Init(false); // Restart LAN beacons
+
+            // Force engine back to menu/lobby idle state instead of parking it
+            Menu_ReenterNetworkLobby();
+
             if (room && room[0]) {
-                session_state = NETPLAY_SESSION_LOBBY;
-                Discovery_Init(false); // Restart LAN beacons for casual room LAN shortcut
                 rmlui_casual_lobby_show();
-                // Park the game engine in an idle state so no game logic runs
-                // behind the room overlay while waiting for the next match.
-                task[TASK_INIT].r_no[0] = 0;
-                task[TASK_INIT].r_no[1] = 0;
-                task[TASK_INIT].condition = 0;
-                task[TASK_GAME].condition = 0;
                 SDL_Log("[netplay] Re-entering LOBBY for casual room %s", room);
             } else {
-                Discovery_Shutdown();
-                session_state = NETPLAY_SESSION_IDLE;
+                rmlui_network_lobby_show();
+                SDL_Log("[netplay] Re-entering LOBBY for normal netplay exit");
             }
         }
         break;

@@ -83,9 +83,9 @@ static void test_netplay_run_exiting(void **state) {
     Netplay_HandleMenuExit();
     assert_int_equal(Netplay_GetSessionState(), NETPLAY_SESSION_EXITING);
 
-    // Run will clean up and go to IDLE
+    // Run will clean up and go to LOBBY
     Netplay_Run();
-    assert_int_equal(Netplay_GetSessionState(), NETPLAY_SESSION_IDLE);
+    assert_int_equal(Netplay_GetSessionState(), NETPLAY_SESSION_LOBBY);
 }
 
 /* Task 5: HandleMenuExit when netplay is not active (IDLE state).

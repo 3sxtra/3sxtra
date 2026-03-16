@@ -1294,9 +1294,11 @@ static void Network_Lobby(struct _TASK* task_ptr) {
             if (lan_challenger >= 0) {
                 if (task_ptr->free[2] == 0)
                     NetLobby_DrawIncomingPopup(
-                        ip_peers[lan_challenger].display_name[0] ? ip_peers[lan_challenger].display_name : ip_peers[lan_challenger].name,
+                        ip_peers[lan_challenger].display_name[0] ? ip_peers[lan_challenger].display_name
+                                                                 : ip_peers[lan_challenger].name,
                         "",
-                        ip_peers[lan_challenger].player_id[0] ? PingProbe_GetRTT(ip_peers[lan_challenger].player_id) : -1);
+                        ip_peers[lan_challenger].player_id[0] ? PingProbe_GetRTT(ip_peers[lan_challenger].player_id)
+                                                              : -1);
 
                 switch (IO_Result) {
                 case 0x100:
@@ -1790,7 +1792,8 @@ static void Network_Lobby(struct _TASK* task_ptr) {
 
             if (lan_challenger >= 0) {
                 NetLobby_DrawIncomingPopup(
-                    ip_peers[lan_challenger].display_name[0] ? ip_peers[lan_challenger].display_name : ip_peers[lan_challenger].name,
+                    ip_peers[lan_challenger].display_name[0] ? ip_peers[lan_challenger].display_name
+                                                             : ip_peers[lan_challenger].name,
                     "",
                     ip_peers[lan_challenger].player_id[0] ? PingProbe_GetRTT(ip_peers[lan_challenger].player_id) : -1);
 
@@ -1873,11 +1876,43 @@ static void Network_Lobby(struct _TASK* task_ptr) {
  * task must be restored so input processing works (case 14 = RmlUI lobby loop).
  */
 void Menu_ReenterNetworkLobby(void) {
+    s16 ix;
+    for (ix = 0; ix < 4; ix++) {
+        task[TASK_INIT].r_no[ix] = 0;
+        G_No[ix] = 0;
+        E_No[ix] = 0;
+        D_No[ix] = 0;
+    }
+
+    G_No[0] = 2;
+    G_No[1] = 12; // Menu Idle State
+    E_No[0] = 1;
+    E_No[1] = 2;
+    E_No[2] = 2;
+    Break_Into = 0;
+
+    Demo_Flag = 1;
+    Game_pause = 0;
+    judge_flag = 0;
+    Pause_Down = 0;
+    Disp_Attack_Data = 0;
+    seraph_flag = 0;
+    End_Training = 0;
+    Forbid_Reset = 0;
+    Exec_Wipe = 0;
+    Present_Mode = MODE_NETWORK;
+    Mode_Type = MODE_NETWORK;
+    Insert_Y = 23;
+
+    task[TASK_INIT].condition = 1;
+    task[TASK_GAME].condition = 1;
+    task[TASK_MENU].condition = 1;
+
     cpReadyTask(TASK_MENU, Menu_Task);
     task[TASK_MENU].r_no[0] = 0;  /* After_Title */
     task[TASK_MENU].r_no[1] = 21; /* Network_Lobby */
-    task[TASK_MENU].r_no[2] = 14; /* Lobby input loop (RmlUI path) */
-    task[TASK_MENU].r_no[3] = 1;
+    task[TASK_MENU].r_no[2] = 10; /* Restart lobby phase to draw blue background */
+    task[TASK_MENU].r_no[3] = 0;
     task[TASK_MENU].free[2] = 1; /* 1 = RmlUI mode */
 }
 

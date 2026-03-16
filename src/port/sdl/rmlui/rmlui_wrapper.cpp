@@ -411,9 +411,11 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
         // Normalize backslashes to forward slashes — Lua interprets '\' as
         // escape sequences inside string literals (e.g. '\3' → ETX char).
         for (auto& ch : lua_base) {
-            if (ch == '\\') ch = '/';
+            if (ch == '\\')
+                ch = '/';
         }
-        std::string lua_setup = "package.path = '" + lua_base + "?.lua;" + lua_base + "?/init.lua;' .. package.path\n"
+        std::string lua_setup = "package.path = '" + lua_base + "?.lua;" + lua_base +
+                                "?/init.lua;' .. package.path\n"
                                 "joypad = require('compat.joypad')\n"
                                 "emu    = require('compat.emu')\n"
                                 "gui    = require('compat.gui')\n"
@@ -547,7 +549,7 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
     if (!s_window_context || !event)
         return;
 
-    // F12 debugger toggle (debug builds only)
+        // F12 debugger toggle (debug builds only)
 #ifdef DEBUG
     if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F12) {
         bool new_vis = !Rml::Debugger::IsVisible();

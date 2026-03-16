@@ -27,7 +27,6 @@
 #include <arpa/inet.h>
 #endif
 
-
 // STUN message types (RFC 5389)
 #define STUN_BINDING_REQUEST 0x0001
 #define STUN_BINDING_RESPONSE 0x0101
@@ -46,14 +45,14 @@ void Stun_EncodeEndpoint(const char* ip, uint16_t port, char* out_code) {
 bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port) {
     if (!code || !out_ip || !out_port)
         return false;
-    
+
     char temp[64];
     SDL_strlcpy(temp, code, sizeof(temp));
-    
+
     char* sep = strchr(temp, '|');
     if (!sep)
         return false;
-        
+
     *sep = '\0';
     SDL_strlcpy(out_ip, temp, 64);
     *out_port = (uint16_t)atoi(sep + 1);
@@ -120,7 +119,7 @@ static bool parse_binding_response(const uint8_t* buf, int len, const uint8_t* t
             uint16_t xport = ((uint16_t)buf[offset + 2] << 8) | buf[offset + 3];
             *out_port = SDL_Swap16BE(xport ^ (uint16_t)(STUN_MAGIC_COOKIE >> 16));
 
-            if (family == 0x01) {              // IPv4
+            if (family == 0x01) { // IPv4
                 uint32_t xaddr = ((uint32_t)buf[offset + 4] << 24) | ((uint32_t)buf[offset + 5] << 16) |
                                  ((uint32_t)buf[offset + 6] << 8) | buf[offset + 7];
                 uint32_t decoded_ip = SDL_Swap32BE(xaddr ^ STUN_MAGIC_COOKIE);
@@ -138,7 +137,7 @@ static bool parse_binding_response(const uint8_t* buf, int len, const uint8_t* t
                 for (int i = 0; i < 12; i++) {
                     decoded_ipv6[4 + i] = buf[offset + 8 + i] ^ transaction_id[i];
                 }
-                
+
                 // Format directly via inet_ntop
 #ifdef _WIN32
                 // We use Windows-compatible inet_ntop mapping (requires ws2tcpip.h which is included)
@@ -153,19 +152,20 @@ static bool parse_binding_response(const uint8_t* buf, int len, const uint8_t* t
         if (attr_type == STUN_ATTR_MAPPED_ADDRESS && attr_len >= 8) {
             uint8_t family = buf[offset + 1];
             *out_port = SDL_Swap16BE(((uint16_t)buf[offset + 2] << 8) | buf[offset + 3]);
-            
+
             if (family == 0x01) {
-                uint32_t decoded_ip = SDL_Swap32BE(((uint32_t)buf[offset + 4] << 24) | ((uint32_t)buf[offset + 5] << 16) |
-                                       ((uint32_t)buf[offset + 6] << 8) | buf[offset + 7]);
+                uint32_t decoded_ip =
+                    SDL_Swap32BE(((uint32_t)buf[offset + 4] << 24) | ((uint32_t)buf[offset + 5] << 16) |
+                                 ((uint32_t)buf[offset + 6] << 8) | buf[offset + 7]);
                 uint8_t* b = (uint8_t*)&decoded_ip;
                 snprintf(out_ip, ip_buf_size, "%u.%u.%u.%u", b[0], b[1], b[2], b[3]);
                 return true;
             } else if (family == 0x02 && attr_len >= 20) {
-                #ifdef _WIN32
+#ifdef _WIN32
                 inet_ntop(AF_INET6, &buf[offset + 4], out_ip, ip_buf_size);
-                #else
+#else
                 inet_ntop(AF_INET6, &buf[offset + 4], out_ip, ip_buf_size);
-                #endif
+#endif
                 return true;
             }
         }
@@ -182,10 +182,10 @@ static const struct {
     const char* host;
     uint16_t port;
 } stun_servers[] = {
-    { "stun.l.google.com",      19302 },
-    { "stun1.l.google.com",     19302 },
-    { "stun.cloudflare.com",    3478  },
-    { "stun.nextcloud.com",     443   },
+    { "stun.l.google.com", 19302 },
+    { "stun1.l.google.com", 19302 },
+    { "stun.cloudflare.com", 3478 },
+    { "stun.nextcloud.com", 443 },
 };
 #define STUN_SERVER_COUNT (int)(sizeof(stun_servers) / sizeof(stun_servers[0]))
 
@@ -218,11 +218,11 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
         // Falls back to plain resolve on IPv6-only networks.
         NET_Address* stun_addr = NULL;
         {
-            struct addrinfo hints = {0};
+            struct addrinfo hints = { 0 };
             hints.ai_family = AF_INET; // Prefer IPv4
             hints.ai_socktype = SOCK_DGRAM;
             struct addrinfo* ai = NULL;
-            char ipv4_str[64] = {0};
+            char ipv4_str[64] = { 0 };
 
             if (getaddrinfo(host, NULL, &hints, &ai) == 0 && ai) {
                 struct sockaddr_in* sin = (struct sockaddr_in*)ai->ai_addr;
@@ -231,7 +231,8 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
                 stun_addr = NET_ResolveHostname(ipv4_str);
             } else {
                 // IPv4 unavailable — fall back to default (may return IPv6)
-                if (ai) freeaddrinfo(ai);
+                if (ai)
+                    freeaddrinfo(ai);
                 stun_addr = NET_ResolveHostname(host);
             }
         }
@@ -258,7 +259,8 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
         build_binding_request(request, transaction_id);
 
         if (!NET_SendDatagram(sock, stun_addr, srv_port, request, 20)) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to send to %s:%u: %s", host, srv_port, SDL_GetError());
+            SDL_LogDebug(
+                SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to send to %s:%u: %s", host, srv_port, SDL_GetError());
             NET_UnrefAddress(stun_addr);
             continue;
         }
@@ -275,15 +277,19 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
         NET_UnrefAddress(stun_addr);
 
         if (!dgram) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "STUN: No response from %s:%u, trying next server", host, srv_port);
+            SDL_LogWarn(
+                SDL_LOG_CATEGORY_APPLICATION, "STUN: No response from %s:%u, trying next server", host, srv_port);
             continue;
         }
 
         // Parse response
-        char ip[64] = {0};
+        char ip[64] = { 0 };
         uint16_t port = 0;
         if (!parse_binding_response((const uint8_t*)dgram->buf, dgram->buflen, transaction_id, ip, sizeof(ip), &port)) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to parse response from %s:%u, trying next server", host, srv_port);
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                        "STUN: Failed to parse response from %s:%u, trying next server",
+                        host,
+                        srv_port);
             NET_DestroyDatagram(dgram);
             continue;
         }

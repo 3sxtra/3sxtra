@@ -44,16 +44,14 @@ bool ControllerImageOverlay_HasSlot(int slot);
 /// @param px, py     Top-left pixel position in CPS3 coords.
 /// @param sx, sy     Width and height in pixels.
 /// @param pz         Priority/depth (unused in deferred mode).
-bool ControllerImageOverlay_DrawButton(int slot, int button_row,
-                                       int px, int py, int sx, int sy, int pz);
+bool ControllerImageOverlay_DrawButton(int slot, int button_row, int px, int py, int sx, int sy, int pz);
 
 /// Flush all deferred draw commands at full window resolution (GL backend).
 /// Call after the CPS3 canvas has been upscaled to the window.
 /// @param vp_x, vp_y   Letterbox viewport offset in window pixels.
 /// @param vp_w, vp_h   Viewport size in window pixels.
 /// @param win_w, win_h Window size in pixels.
-void ControllerImageOverlay_FlushGL(float vp_x, float vp_y, float vp_w, float vp_h,
-                                     int win_w, int win_h);
+void ControllerImageOverlay_FlushGL(float vp_x, float vp_y, float vp_w, float vp_h, int win_w, int win_h);
 
 /// Clear the deferred draw queue without drawing (e.g. when overlay is not used this frame).
 void ControllerImageOverlay_ClearQueue(void);

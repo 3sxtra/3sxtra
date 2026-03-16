@@ -91,8 +91,7 @@ void effect_10_move(WORK_Other* ewk) {
         /* Try controller-specific glyph from ControllerImage library.
          * ewk->wu.cg_type is the original button row (0–7),
          * ewk->master_id is the player slot (0 = P1, 1 = P2). */
-        if (!ControllerImageOverlay_DrawButton(ewk->master_id, ewk->wu.cg_type,
-                                               px, py, 22, 17, 1)) {
+        if (!ControllerImageOverlay_DrawButton(ewk->master_id, ewk->wu.cg_type, px, py, 22, 17, 1)) {
             /* No ControllerImage glyph — fall back to CPS3 sprite sheet icon */
             dispButtonImage2(px, py, 1, 22, 17, 0, ix + correct_index);
         }

@@ -13,7 +13,7 @@ static int result_count = 0;
 // Expected remote address — used for cross-IP (IPv4↔IPv6) normalization.
 // When a packet arrives on the expected port but from a different IP,
 // we rewrite the source to match what GekkoNet was configured with.
-static char expected_remote_addr[64] = {0}; // Full "ip:port" string
+static char expected_remote_addr[64] = { 0 }; // Full "ip:port" string
 static Uint16 expected_remote_port = 0;
 static bool cross_ip_logged = false; // Log only once per session
 
@@ -59,7 +59,8 @@ static void parse_addr_str(const char* addr_str, char* out_ip, int ip_size, int*
         const char* bracket_end = strchr(addr_str, ']');
         if (bracket_end) {
             int ip_len = (int)(bracket_end - addr_str - 1);
-            if (ip_len >= ip_size) ip_len = ip_size - 1;
+            if (ip_len >= ip_size)
+                ip_len = ip_size - 1;
             SDL_memcpy(out_ip, addr_str + 1, ip_len);
             out_ip[ip_len] = '\0';
             if (bracket_end[1] == ':')
@@ -76,7 +77,8 @@ static void parse_addr_str(const char* addr_str, char* out_ip, int ip_size, int*
     }
 
     int ip_len = (int)(last_colon - addr_str);
-    if (ip_len >= ip_size) ip_len = ip_size - 1;
+    if (ip_len >= ip_size)
+        ip_len = ip_size - 1;
     SDL_memcpy(out_ip, addr_str, ip_len);
     out_ip[ip_len] = '\0';
     *out_port = SDL_atoi(last_colon + 1);
@@ -160,10 +162,8 @@ static GekkoNetResult** receive_data(int* length) {
         // address to match what GekkoNet was configured with. This makes
         // GekkoNet's string-based address matching work across address families.
         const char* final_addr = addr_str;
-        if (expected_remote_port != 0 &&
-            dgram->port == expected_remote_port &&
-            SDL_strcmp(addr_str, expected_remote_addr) != 0 &&
-            expected_remote_addr[0] != '\0') {
+        if (expected_remote_port != 0 && dgram->port == expected_remote_port &&
+            SDL_strcmp(addr_str, expected_remote_addr) != 0 && expected_remote_addr[0] != '\0') {
             if (!cross_ip_logged) {
                 SDL_Log("[NetAdapter] Cross-IP: rewriting %s → %s", addr_str, expected_remote_addr);
                 cross_ip_logged = true;

@@ -32,9 +32,7 @@
  *   6: R2 / RT / ZR  → axis (SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)
  *   7: L2 / LT / ZL  → axis (SDL_GAMEPAD_AXIS_LEFT_TRIGGER)
  */
-static const int s_row_is_axis[CONTROLLER_OVERLAY_BUTTON_COUNT] = {
-    0, 0, 0, 0, 0, 0, 1, 1
-};
+static const int s_row_is_axis[CONTROLLER_OVERLAY_BUTTON_COUNT] = { 0, 0, 0, 0, 0, 0, 1, 1 };
 
 static const int s_row_to_button[CONTROLLER_OVERLAY_BUTTON_COUNT] = {
     SDL_GAMEPAD_BUTTON_WEST,           /* row 0: □ */
@@ -49,7 +47,7 @@ static const int s_row_to_button[CONTROLLER_OVERLAY_BUTTON_COUNT] = {
 
 typedef struct {
     void* textures[CONTROLLER_OVERLAY_BUTTON_COUNT];
-    bool  valid;
+    bool valid;
 } SlotCache;
 
 static SlotCache s_slots[OVERLAY_MAX_SLOTS];
@@ -99,8 +97,8 @@ static void generate_slot(int slot) {
         }
 
         if (!cache->textures[row]) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-                "[ControllerImageOverlay] No glyph for slot %d row %d", slot, row);
+            SDL_LogDebug(
+                SDL_LOG_CATEGORY_APPLICATION, "[ControllerImageOverlay] No glyph for slot %d row %d", slot, row);
         }
     }
 
@@ -139,8 +137,14 @@ void ControllerImageOverlay_Shutdown(void) {
         cache->valid = false;
     }
 
-    if (s_overlay_vao) { glDeleteVertexArrays(1, &s_overlay_vao); s_overlay_vao = 0; }
-    if (s_overlay_vbo) { glDeleteBuffers(1, &s_overlay_vbo); s_overlay_vbo = 0; }
+    if (s_overlay_vao) {
+        glDeleteVertexArrays(1, &s_overlay_vao);
+        s_overlay_vao = 0;
+    }
+    if (s_overlay_vbo) {
+        glDeleteBuffers(1, &s_overlay_vbo);
+        s_overlay_vbo = 0;
+    }
     /* Don't delete shader — it's SDLApp's passthru or scene shader */
 
     s_draw_queue_count = 0;
@@ -149,20 +153,24 @@ void ControllerImageOverlay_Shutdown(void) {
 }
 
 void* ControllerImageOverlay_GetTexture(int slot, int button_row) {
-    if (!s_initialized) return NULL;
-    if (slot < 0 || slot >= OVERLAY_MAX_SLOTS) return NULL;
-    if (button_row < 0 || button_row >= CONTROLLER_OVERLAY_BUTTON_COUNT) return NULL;
-    if (!s_slots[slot].valid) return NULL;
+    if (!s_initialized)
+        return NULL;
+    if (slot < 0 || slot >= OVERLAY_MAX_SLOTS)
+        return NULL;
+    if (button_row < 0 || button_row >= CONTROLLER_OVERLAY_BUTTON_COUNT)
+        return NULL;
+    if (!s_slots[slot].valid)
+        return NULL;
     return s_slots[slot].textures[button_row];
 }
 
 bool ControllerImageOverlay_HasSlot(int slot) {
-    if (!s_initialized || slot < 0 || slot >= OVERLAY_MAX_SLOTS) return false;
+    if (!s_initialized || slot < 0 || slot >= OVERLAY_MAX_SLOTS)
+        return false;
     return s_slots[slot].valid;
 }
 
-bool ControllerImageOverlay_DrawButton(int slot, int button_row,
-                                       int px, int py, int sx, int sy, int pz) {
+bool ControllerImageOverlay_DrawButton(int slot, int button_row, int px, int py, int sx, int sy, int pz) {
     (void)pz; /* z-depth not needed for deferred screen-space rendering */
 
     void* tex = ControllerImageOverlay_GetTexture(slot, button_row);
@@ -184,9 +192,9 @@ bool ControllerImageOverlay_DrawButton(int slot, int button_row,
     return true;
 }
 
-void ControllerImageOverlay_FlushGL(float vp_x, float vp_y, float vp_w, float vp_h,
-                                     int win_w, int win_h) {
-    if (!s_initialized || s_draw_queue_count == 0) return;
+void ControllerImageOverlay_FlushGL(float vp_x, float vp_y, float vp_w, float vp_h, int win_w, int win_h) {
+    if (!s_initialized || s_draw_queue_count == 0)
+        return;
 
     /* Scale factors: CPS3 canvas (384×224) → viewport pixels */
     const float scale_x = vp_w / 384.0f;
@@ -210,12 +218,22 @@ void ControllerImageOverlay_FlushGL(float vp_x, float vp_y, float vp_w, float vp
     glUseProgram(shader);
 
     /* Orthographic projection: 0,0 = top-left, win_w,win_h = bottom-right */
-    float proj[16] = {
-        2.0f / (float)win_w,  0.0f,                  0.0f,  0.0f,
-        0.0f,                -2.0f / (float)win_h,   0.0f,  0.0f,
-        0.0f,                 0.0f,                 -1.0f,  0.0f,
-       -1.0f,                 1.0f,                  0.0f,  1.0f
-    };
+    float proj[16] = { 2.0f / (float)win_w,
+                       0.0f,
+                       0.0f,
+                       0.0f,
+                       0.0f,
+                       -2.0f / (float)win_h,
+                       0.0f,
+                       0.0f,
+                       0.0f,
+                       0.0f,
+                       -1.0f,
+                       0.0f,
+                       -1.0f,
+                       1.0f,
+                       0.0f,
+                       1.0f };
     GLint loc_proj = glGetUniformLocation(shader, "projection");
     glUniformMatrix4fv(loc_proj, 1, GL_FALSE, proj);
     GLint loc_source = glGetUniformLocation(shader, "Source");
@@ -237,7 +255,8 @@ void ControllerImageOverlay_FlushGL(float vp_x, float vp_y, float vp_w, float vp
     for (int i = 0; i < s_draw_queue_count; i++) {
         OverlayDrawCmd* cmd = &s_draw_queue[i];
         void* tex = ControllerImageOverlay_GetTexture(cmd->slot, cmd->button_row);
-        if (!tex) continue;
+        if (!tex)
+            continue;
 
         GLuint gl_tex = (GLuint)(intptr_t)tex;
 
@@ -251,33 +270,38 @@ void ControllerImageOverlay_FlushGL(float vp_x, float vp_y, float vp_w, float vp
         SDL_Vertex verts[4];
         uint32_t white = 0xFFFFFFFF;
 
-        verts[0].position.x = sx;      verts[0].position.y = sy;
-        verts[0].tex_coord.x = 0.0f;   verts[0].tex_coord.y = 0.0f;
+        verts[0].position.x = sx;
+        verts[0].position.y = sy;
+        verts[0].tex_coord.x = 0.0f;
+        verts[0].tex_coord.y = 0.0f;
         memcpy(&verts[0].color, &white, sizeof(uint32_t));
 
-        verts[1].position.x = sx + sw; verts[1].position.y = sy;
-        verts[1].tex_coord.x = 1.0f;   verts[1].tex_coord.y = 0.0f;
+        verts[1].position.x = sx + sw;
+        verts[1].position.y = sy;
+        verts[1].tex_coord.x = 1.0f;
+        verts[1].tex_coord.y = 0.0f;
         memcpy(&verts[1].color, &white, sizeof(uint32_t));
 
-        verts[2].position.x = sx;      verts[2].position.y = sy + sh;
-        verts[2].tex_coord.x = 0.0f;   verts[2].tex_coord.y = 1.0f;
+        verts[2].position.x = sx;
+        verts[2].position.y = sy + sh;
+        verts[2].tex_coord.x = 0.0f;
+        verts[2].tex_coord.y = 1.0f;
         memcpy(&verts[2].color, &white, sizeof(uint32_t));
 
-        verts[3].position.x = sx + sw; verts[3].position.y = sy + sh;
-        verts[3].tex_coord.x = 1.0f;   verts[3].tex_coord.y = 1.0f;
+        verts[3].position.x = sx + sw;
+        verts[3].position.y = sy + sh;
+        verts[3].tex_coord.x = 1.0f;
+        verts[3].tex_coord.y = 1.0f;
         memcpy(&verts[3].color, &white, sizeof(uint32_t));
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STREAM_DRAW);
 
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(SDL_Vertex),
-                              (void*)offsetof(SDL_Vertex, position));
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(SDL_Vertex), (void*)offsetof(SDL_Vertex, position));
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(SDL_Vertex),
-                              (void*)offsetof(SDL_Vertex, color));
+        glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(SDL_Vertex), (void*)offsetof(SDL_Vertex, color));
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(SDL_Vertex),
-                              (void*)offsetof(SDL_Vertex, tex_coord));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(SDL_Vertex), (void*)offsetof(SDL_Vertex, tex_coord));
 
         glBindTexture(GL_TEXTURE_2D, gl_tex);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
