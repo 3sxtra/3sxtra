@@ -15,6 +15,7 @@
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/game.h"
+#include "sf33rd/Source/Game/engine/slowf.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
@@ -318,6 +319,58 @@ static void setup_vs_mode() {
     // diverge before battle. Zero them so both peers start identical.
     SDL_zeroa(C_No);
     SDL_zeroa(SC_No);
+
+    // ====================================================================
+    // PHASE 3: Zero checksummed globals not covered above.
+    //
+    // save_state() checksums a whitelist of gameplay-critical fields.
+    // On LAN, the native menu system's fade-destroy-reinit cycle leaves
+    // these at zero already. On INTERNET (casual lobby), the game engine
+    // runs under the RmlUI overlay (attract/demo mode), leaving stale
+    // values that differ per peer and cause frame-0 desyncs.
+    // ====================================================================
+
+    // Extended RNG indices (attract mode advances these independently)
+    Random_ix16_ex = 0;
+    Random_ix32_ex = 0;
+    Random_ix16_com = 0;
+    Random_ix32_com = 0;
+    Random_ix16_ex_com = 0;
+    Random_ix32_ex_com = 0;
+
+    // Round/match state
+    Round_Level = 0;
+    Round_Result = 0;
+    SDL_zeroa(PL_Wins);
+    Conclusion_Type = 0;
+    SDL_zeroa(win_type);
+
+    // Player identity (set later by character select, but must start clean)
+    SDL_zeroa(My_char);
+    SDL_zeroa(Super_Arts);
+
+    // Combat flags (stale from previous match or attract mode demo fights)
+    SDL_zeroa(Attack_Flag);
+    SDL_zeroa(Counter_Attack);
+    SDL_zeroa(Guard_Flag);
+    SDL_zeroa(Flip_Flag);
+    SDL_zeroa(Lie_Flag);
+    SDL_zeroa(Attack_Counter);
+    SDL_zeroa(Bullet_No);
+    SDL_zeroa(Bullet_Counter);
+    SDL_zeroa(paring_counter);
+
+    // Game flow
+    VS_Stage = 0;
+
+    // Slow motion
+    SLOW_timer = 0;
+    SLOW_flag = 0;
+    EXE_flag = 0;
+
+    // Stun gauge / vitality
+    SDL_zeroa(piyori_type);
+    Max_vitality = 0;
 
     clean_input_buffers();
 }
