@@ -370,7 +370,7 @@ static void setup_vs_mode() {
 
     // Stun gauge / vitality
     SDL_zeroa(piyori_type);
-    Max_vitality = 0;
+    Max_vitality = 160; // MAX_VITALITY_DEFAULT — must not be 0 (setup_vitality divides by it)
 
     clean_input_buffers();
 }
