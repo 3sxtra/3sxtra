@@ -798,14 +798,22 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 }
                 refresh_room_state_from_server();
             } else if (s_cursor_y == 10) {
-                // Leave Room — go back to network lobby
+                // Leave Room — go back to network lobby.
+                // The menu task is already alive at case 14 (lobby input loop)
+                // because the EXITING handler's Menu_ReenterNetworkLobby() rebuilt
+                // it after the match disconnect. Hiding the casual lobby document
+                // makes case 14's rmlui_casual_lobby_is_visible() check false,
+                // so it naturally resumes processing network lobby input.
+                SDL_Log("[CasualLobby] Leave Room: calling LobbyServer_LeaveRoom");
                 LobbyServer_LeaveRoom(s_room_code.c_str());
+                SDL_Log("[CasualLobby] Leave Room: calling rmlui_casual_lobby_hide");
                 rmlui_casual_lobby_hide();
-                // Restore the menu task to the network lobby input loop.
-                // Soft_Reset_Sub() killed TASK_MENU during the match exit;
-                // without this, the lobby has no input processing.
-                Menu_ReenterNetworkLobby();
+                // Clear room code so stale references don't confuse other
+                // systems (Discovery beacon, heartbeat, EXITING handler).
+                s_room_code.clear();
+                SDL_Log("[CasualLobby] Leave Room: calling rmlui_network_lobby_show");
                 rmlui_network_lobby_show();
+                SDL_Log("[CasualLobby] Leave Room: done");
             }
         }
     }

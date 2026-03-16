@@ -1904,7 +1904,12 @@ void Menu_ReenterNetworkLobby(void) {
     Mode_Type = MODE_NETWORK;
     Insert_Y = 23;
 
-    task[TASK_INIT].condition = 1;
+    // TASK_INIT must be DEACTIVATED here.  Its r_no[0] is zeroed above,
+    // and Init_Task dispatches r_no[0]==0 → Init_Task_1st() which performs
+    // a full cold-boot init (clears G_No[], resets textures, creates
+    // TASK_RESET).  Leaving condition=1 causes the entire game state to be
+    // clobbered on the next frame, freezing the lobby.
+    task[TASK_INIT].condition = 0;
     task[TASK_GAME].condition = 1;
     task[TASK_MENU].condition = 1;
 
