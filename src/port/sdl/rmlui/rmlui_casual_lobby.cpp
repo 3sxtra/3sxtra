@@ -538,9 +538,8 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 rmlui_wrapper_hide_game_document("casual_lobby");
 
                 // P2P connection trigger: use stored opponent room code from proposal phase
-                SDL_Log("[CasualLobby] MATCH_START: proposal_opponent_room_code='%s' opponent_name='%s' "
+                SDL_Log("[CasualLobby] MATCH_START: opponent_name='%s' "
                         "opponent_id='%s' we_are_p1=%d",
-                        s_proposal_opponent_room_code,
                         s_proposal_opponent_name.c_str(),
                         s_proposal_opponent_player_id,
                         s_proposal_we_are_p1 ? 1 : 0);

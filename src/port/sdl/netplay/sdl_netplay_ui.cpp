@@ -1615,11 +1615,9 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
                 // address-based sync handshake.
                 uint16_t remote_port = lan_peers[i].port;       // peer's beacon port
                 uint16_t local_port = Discovery_GetLocalPort(); // our beacon port
-                SDL_Log("[casual] LAN peer detected: %s at %s:%u — using direct connection (beacon ports: local=%u "
+                SDL_Log("[casual] LAN peer detected: %s — using direct connection (beacon ports: local=%u "
                         "remote=%u)",
                         opponent_name ? opponent_name : lan_peers[i].display_name,
-                        lan_peers[i].ip,
-                        remote_port,
                         local_port,
                         remote_port);
                 snprintf(lobby_status_msg,
