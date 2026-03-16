@@ -48,6 +48,15 @@ game_deployment.tar.gz
 3rd_training_lua-main.zip
 sf3_3rd_trial_lua_20220613.zip
 
+# === Working Docs (not for repo) ===
+NETPLAY.md
+PRD.md
+SDL3_NET_MIGRATION.md
+WASM_NETPLAY_PLAN.md
+lint_report.txt
+progress.txt
+prompt.md
+
 /WIP
 *.bat*
 

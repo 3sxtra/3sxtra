@@ -62,9 +62,11 @@
 #include "sf33rd/Source/Game/menu/ex_data.h"
 #include "sf33rd/Source/Game/menu/menu_internal.h"
 #include "sf33rd/Source/Game/message/en/msgtable_en.h"
+#include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/rendering/mmtmcnt.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
+#include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/rendering/texgroup.h"
 #include "sf33rd/Source/Game/screen/entry.h"
 #include "sf33rd/Source/Game/sound/se.h"
@@ -1903,6 +1905,32 @@ void Menu_ReenterNetworkLobby(void) {
     Present_Mode = MODE_NETWORK;
     Mode_Type = MODE_NETWORK;
     Insert_Y = 23;
+
+    // Re-create resources purged by Soft_Reset_Sub() → Purge_mmtm_area(6).
+    // Restore sprite pattern data, colour palettes, and select-object memory
+    // keys so menu effects can find their source assets.
+    Init_load_on_memory_data();
+    // mto_list[6] is all-zeros so MTS slots are never recreated automatically.
+    // Menu effects need:  slot 12 (MS) for effect_45 (message display),
+    //                     slot 13 (SL) for effect_57/61/66/04 (banners/text).
+    make_texcash_work(12);
+    make_texcash_work(13);
+
+    // Replicate Menu_Init background setup.  Menu_Init (r_no[1]=0) normally
+    // runs once before Mode_Select to configure background layers.  Since we
+    // jump straight to Network_Lobby (r_no[1]=21), Menu_Init is never called.
+    // Without this, all CPS3 effects position relative to stale fight-time
+    // background scroll coordinates.
+    for (ix = 0; ix < 4; ix++) {
+        Menu_Suicide[ix] = 0;
+        Unsubstantial_BG[ix] = 0;
+    }
+    All_Clear_Suicide();
+    bg_etc_write_ex(2);
+    Setup_Virtual_BG(0, 0x200, 0);
+    Setup_BG(1, 0x200, 0);
+    Setup_BG(2, 0x200, 0);
+    base_y_pos = 0;
 
     // TASK_INIT must be DEACTIVATED here.  Its r_no[0] is zeroed above,
     // and Init_Task dispatches r_no[0]==0 → Init_Task_1st() which performs
