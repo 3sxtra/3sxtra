@@ -2802,6 +2802,7 @@ static void Sound_Test(struct _TASK* task_ptr) {
         setupAlwaysSeamlessFlag(((plsw_00[0] | plsw_00[1]) & 0x4000) != 0);
         Clear_Flash_Init(4);
         Menu_Common_Init();
+        ControllerImageOverlay_Init();
         Menu_Cursor_Y[0] = 0;
         Menu_Suicide[1] = 1;
         Menu_Suicide[2] = 0;
@@ -2940,6 +2941,7 @@ static void Sound_Test(struct _TASK* task_ptr) {
             SE_selected();
             if (use_rmlui && rmlui_menu_sound)
                 rmlui_sound_menu_hide();
+            ControllerImageOverlay_Shutdown();
             Return_Option_Mode_Sub(task_ptr);
             setupAlwaysSeamlessFlag(0);
             Order[0x72] = 4;

@@ -5,6 +5,8 @@
 
 #include "sf33rd/Source/Game/effect/effa8.h"
 #include "common.h"
+#include "port/rendering/legacy_matrix.h"
+#include "port/sdl/input/controller_image_overlay.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
@@ -190,9 +192,31 @@ void effect_A8_move(WORK_Other_CONN* ewk) {
 
         if (ewk->wu.disp_flag) {
             if (Order_Dir[ewk->wu.dir_old]) {
-                dispButtonImage(-87, 25, 68, 22, 17, 0, 4);
+                /* PLAY button: south (row 4), model coords (-87, 25) size 22×17 */
+                Vec3 pv0 = { -87.0f, 25.0f, 0.0f };
+                Vec3 pv1 = { -87.0f + 22.0f, 25.0f - 17.0f, 0.0f };
+                njCalcPoint(NULL, &pv0, &pv0);
+                njCalcPoint(NULL, &pv1, &pv1);
+                float px0 = pv0.x < pv1.x ? pv0.x : pv1.x;
+                float py0 = pv0.y < pv1.y ? pv0.y : pv1.y;
+                float px1 = pv0.x > pv1.x ? pv0.x : pv1.x;
+                float py1 = pv0.y > pv1.y ? pv0.y : pv1.y;
+                if (!ControllerImageOverlay_DrawButton(0, 4,
+                        (s32)px0, (s32)py0, (s32)(px1 - px0), (s32)(py1 - py0), 68))
+                    dispButtonImage(-87, 25, 68, 22, 17, 0, 4);
             } else {
-                dispButtonImage(-23, 0, 68, 22, 17, 0, 5);
+                /* STOP button: east (row 5), model coords (-23, 0) size 22×17 */
+                Vec3 sv0 = { -23.0f, 0.0f, 0.0f };
+                Vec3 sv1 = { -23.0f + 22.0f, 0.0f - 17.0f, 0.0f };
+                njCalcPoint(NULL, &sv0, &sv0);
+                njCalcPoint(NULL, &sv1, &sv1);
+                float sx0 = sv0.x < sv1.x ? sv0.x : sv1.x;
+                float sy0 = sv0.y < sv1.y ? sv0.y : sv1.y;
+                float sx1 = sv0.x > sv1.x ? sv0.x : sv1.x;
+                float sy1 = sv0.y > sv1.y ? sv0.y : sv1.y;
+                if (!ControllerImageOverlay_DrawButton(0, 5,
+                        (s32)sx0, (s32)sy0, (s32)(sx1 - sx0), (s32)(sy1 - sy0), 68))
+                    dispButtonImage(-23, 0, 68, 22, 17, 0, 5);
             }
         }
 

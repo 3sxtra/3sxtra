@@ -212,8 +212,29 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
         const char* host = stun_servers[srv].host;
         uint16_t srv_port = stun_servers[srv].port;
 
-        // Resolve hostname
-        NET_Address* stun_addr = NET_ResolveHostname(host);
+        // Resolve hostname — prefer IPv4 since NAT traversal (UPnP + hole punch)
+        // is IPv4-only. Use getaddrinfo(AF_INET) to get a dotted-quad, then pass
+        // that numeric string to NET_ResolveHostname for instant resolution.
+        // Falls back to plain resolve on IPv6-only networks.
+        NET_Address* stun_addr = NULL;
+        {
+            struct addrinfo hints = {0};
+            hints.ai_family = AF_INET; // Prefer IPv4
+            hints.ai_socktype = SOCK_DGRAM;
+            struct addrinfo* ai = NULL;
+            char ipv4_str[64] = {0};
+
+            if (getaddrinfo(host, NULL, &hints, &ai) == 0 && ai) {
+                struct sockaddr_in* sin = (struct sockaddr_in*)ai->ai_addr;
+                inet_ntop(AF_INET, &sin->sin_addr, ipv4_str, sizeof(ipv4_str));
+                freeaddrinfo(ai);
+                stun_addr = NET_ResolveHostname(ipv4_str);
+            } else {
+                // IPv4 unavailable — fall back to default (may return IPv6)
+                if (ai) freeaddrinfo(ai);
+                stun_addr = NET_ResolveHostname(host);
+            }
+        }
         if (!stun_addr) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "STUN: Failed to resolve %s", host);
             continue;
