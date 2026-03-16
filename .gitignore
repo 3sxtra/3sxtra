@@ -70,6 +70,7 @@ tools/lobby-server/.env
 *.log
 tools/gifx.sh
 /assets/bgm_mod
+!/assets/bgm_mod/bgm_ids.txt
 /assets/ui/assets/charactersportraits/temp
 /assets/ui/assets/charactersportraits
 /3sx-test-ext

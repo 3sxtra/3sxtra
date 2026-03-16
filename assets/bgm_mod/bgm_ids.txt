@@ -1,0 +1,416 @@
+================================================================================
+  3SXtra — Modded BGM Reference
+================================================================================
+
+To replace a BGM track, place an audio file named {fnum}.ogg (or .flac, .opus,
+.mp3, .wav) in this folder (assets/bgm_mod/).
+
+Example: To replace Alex Stage A (arranged), create "572.ogg".
+
+Enable modded BGM in the F3 Mods menu.
+
+LOOP POINTS
+-----------
+For OGG files, embed LOOPSTART / LOOPLENGTH vorbis comment tags.
+SDL3_mixer reads these automatically. Tools like vorbiscomment can set them:
+
+  vorbiscomment -a -t "LOOPSTART=234567" -t "LOOPLENGTH=9876543" track.ogg
+
+For non-OGG files, create a sidecar .loop file (e.g. 572.loop):
+  LOOPSTART=234567
+
+Without loop metadata, tracks loop from the beginning.
+
+
+================================================================================
+  AFS ARCHIVE OVERVIEW (file numbers 0 – 1534)
+================================================================================
+
+The game's AFS archive contains 1535 files. Audio files are ADX format.
+Below is a summary of the archive layout:
+
+  0000 – 0090    Graphics, palettes, fonts, data, memory card icons, ADX packs
+  0091 – 0571    Arcade (Original) soundtrack BGM
+  0572 – 1362    Arranged (Dreamcast) soundtrack BGM
+  1363 – 1534    Character sprites, stage backgrounds, effects, SPU banks
+
+
+================================================================================
+  STAGE & CHARACTER REFERENCE
+================================================================================
+
+SF3: 3rd Strike has 20 unique stages, each tied to a character.
+BGM varies per round via the "selector" system:
+  - Arranged: 3 variants per stage (A / B / C), cycling { A, B, C, B, C, B, C, B }
+  - Arcade:   2 variants per stage (A / B), alternating { A, B, A, B, A, B, A, B }
+
+Stage | Location     | Character(s)   | Stage Name
+------|--------------|----------------|-------------------------------------------
+    0 | Greece       | Gill           | Aegean Coast
+    1 | New York     | Alex           | Tom's Diner / NYC Subway
+    2 | Shinjuku     | Ibuki          | Ninja Village (Night)
+    3 | Hong Kong    | Yun & Yang     | Kowloon Rooftop
+    4 | London       | Dudley         | Dudley's Mansion
+    5 | Russia       | Necro/Twelve   | Russian Lab / Factory
+    6 | Germany      | Hugo           | German Beer Hall
+    7 | Kyoto        | Makoto         | Tosa Dojo
+    8 | Africa       | Elena          | Kenya Savannah
+    9 | Brazil       | Sean           | São Paulo Harbor
+   10 | Hong Kong    | Yang           | (Same as stage 3)
+   11 | New York     | Alex           | (Same as stage 1)
+   12 | Brazil       | Sean           | (Same as stage 9)
+   13 | Mexico       | Urien          | Aztec Ruins
+   14 | Yamato       | Oro            | Mountain Cave
+   15 | China        | Chun-Li        | Great Wall
+   16 | Dojo         | Ryu            | Suzaku Castle Ruins
+   17 | Unknown      | Q              | Underground Lair
+   18 | Russia       | Twelve         | (Same as stage 5)
+   19 | France       | Remy           | Metro City Subway
+   20 | —            | —              | Bonus Stage 1
+   21 | —            | —              | Bonus Stage 2
+
+
+================================================================================
+  ARRANGED SOUNDTRACK BGM TABLE (bgm_type = 0)
+================================================================================
+
+Arranged tracks use seamless multi-track playback. The engine plays an
+"intro" ADX file, then chains through a series of looping segment files.
+The "fnum" column below is the intro file; segment files follow
+consecutively in the AFS archive.
+
+To mod: replace just the intro fnum with your audio file (with loop
+points set). The engine will play your modded file instead of chaining.
+Or replace all segment files to replace the entire seamless arrangement.
+
+CODE | FNUM | VOL | STAGE    | AFS FILENAME         | DESCRIPTION
+-----|------|-----|----------|----------------------|------------------------------
+   0 |    — |   — |          |                      | (empty)
+   1 |  572 |  58 | NYC A    | 01_A_NYC.adx         | Alex — New York, variant A
+   2 |  588 |  64 | NYC B    | 02_B_NYC.adx         | Alex — New York, variant B
+   3 |  598 |  64 | NYC C    | 03_C_NYC.adx         | Alex — New York, variant C
+   4 |  616 |  60 | Russia A | 04_A_Ros.adx         | Necro — Russia, variant A
+   5 |  642 |  60 | Russia B | 05_B_Ros.adx         | Necro — Russia, variant B
+   6 |  653 |  60 | Russia C | 06_C_Ros.adx         | Necro — Russia, variant C
+   7 |  681 |  72 | German A | 07_A_Gem.adx         | Hugo — Germany, variant A
+   8 |  695 |  72 | German B | 08_B_Gem.adx         | Hugo — Germany, variant B
+   9 |  716 |  72 | German C | 09_C_Gem.adx         | Hugo — Germany, variant C
+  10 |  728 |  74 | China A  | 10_A_Chi.adx         | Chun-Li — China, variant A
+  11 |  742 |  76 | China B  | 11_B_Chi.adx         | Chun-Li — China, variant B
+  12 |  758 |  74 | China C  | 12_C_Chi.adx         | Chun-Li — China, variant C
+  13 |  776 |  80 | Shinju A | 13_A_Shi.adx         | Ibuki — Shinjuku, variant A
+  14 |  790 |  72 | Shinju B | 14_B_Shi.adx         | Ibuki — Shinjuku, variant B
+  15 |  808 |  76 | Shinju C | 15_C_Shi.adx         | Ibuki — Shinjuku, variant C
+  16 |  822 |  72 | Kyoto A  | 16_A_Kyo.adx         | Makoto — Kyoto Dojo, variant A
+  17 |  833 |  72 | Kyoto B  | 17_B_Kyo.adx         | Makoto — Kyoto Dojo, variant B
+  18 |  844 |  72 | Kyoto C  | 18_C_Kyo.adx         | Makoto — Kyoto Dojo, variant C
+  19 |  857 |  72 | Dojo A   | 19_A_Doj.adx         | Ryu — Suzaku Castle, variant A
+  20 |  871 |  72 | Dojo B   | 20_B_Doj.adx         | Ryu — Suzaku Castle, variant B
+  21 |  885 |  72 | Dojo C   | 21_C_Doj.adx         | Ryu — Suzaku Castle, variant C
+  22 |  904 |  64 | Yamato A | 22_A_Yam.adx         | Oro — Mountain Cave, variant A
+  23 |  918 |  64 | Yamato B | 23_B_Yam.adx         | Oro — Mountain Cave, variant B
+  24 |  932 |  64 | Yamato C | 24_C_Yam.adx         | Oro — Mountain Cave, variant C
+  25 |  946 |  64 | Africa A | 25_A_Afr.adx         | Elena — Africa, variant A
+  26 |  963 |  64 | Africa B | 26_B_Afr.adx         | Elena — Africa, variant B
+  27 |  977 |  64 | Africa C | 27_C_Afr.adx         | Elena — Africa, variant C
+  28 |  994 |  78 | Brazil A | 28_A_Bra.adx         | Sean — Brazil, variant A
+  29 | 1012 |  74 | Brazil B | 29_B_Bra.adx         | Sean — Brazil, variant B
+  30 | 1026 |  74 | Brazil C | 30_C_Bra.adx         | Sean — Brazil, variant C
+  31 | 1044 |  78 | London A | 31_A_Lon.adx         | Dudley — London, variant A
+  32 | 1064 |  76 | London B | 32_B_Lon.adx         | Dudley — London, variant B
+  33 | 1075 |  76 | London C | 33_C_Lon.adx         | Dudley — London, variant C
+  34 | 1093 |  78 | HK A     | 34_A_Hon.adx         | Yun/Yang — Hong Kong, variant A
+  35 | 1110 |  78 | HK B     | 35_B_Hon.adx         | Yun/Yang — Hong Kong, variant B
+  36 | 1124 |  78 | HK C     | 36_C_Hon.adx         | Yun/Yang — Hong Kong, variant C
+  37 | 1140 |  68 | France A | 37_A_Fra.adx         | Remy — France, variant A
+  38 | 1154 |  68 | France B | 38_B_Fra.adx         | Remy — France, variant B
+  39 | 1168 |  68 | France C | 39_C_Fra.adx         | Remy — France, variant C
+  40 | 1186 |  72 | Q Lair A | 40_A_Q.adx           | Q — Underground Lair, variant A
+  41 | 1204 |  72 | Q Lair B | 41_B_Q.adx           | Q — Underground Lair, variant B
+  42 | 1223 |  72 | Q Lair C | 42_C_Q.adx           | Q — Underground Lair, variant C
+  43 | 1241 |  56 | Mexico A | 43_A_Mex.adx         | Urien — Aztec Ruins, variant A
+  44 | 1255 |  56 | Mexico B | 44_B_Mex.adx         | Urien — Aztec Ruins, variant B
+  45 | 1269 |  56 | Mexico C | 45_C_Mex.adx         | Urien — Aztec Ruins, variant C
+  46 | 1288 |  64 | Greece A | 46_A_Gre.adx         | Gill — Greece, variant A
+  47 | 1306 |  64 | Greece B | 47_B_Gre.adx         | Gill — Greece, variant B
+  48 | 1325 |  64 | Greece C | 48_C_Gre.adx         | Gill — Greece, variant C
+
+  SEAMLESS SEGMENT DETAILS (arranged):
+
+  Code  1: intro 572, segments 573–587, loop from 574  (15 segments)
+  Code  2: intro 588, segments 589–597, loop from 590  (9 segments)
+  Code  3: intro 598, segments 599–615, loop from 600  (17 segments)
+  Code  4: intro 616, segments 617–641, loop from 618  (25 segments)
+  Code  5: intro 642, segments 643–652, loop from 645  (10 segments)
+  Code  6: intro 653, segments 654–680, loop from 657  (27 segments)
+  Code  7: intro 681, segments 682–694, loop from 687  (13 segments)
+  Code  8: intro 695, segments 696–715, loop from 700  (20 segments)
+  Code  9: intro 716, segments 717–727, loop from 720  (11 segments)
+  Code 10: intro 728, segments 729–741, loop from 730  (13 segments)
+  Code 11: intro 742, segments 743–757, loop from 746  (15 segments)
+  Code 12: intro 758, segments 759–775, loop from 764  (17 segments)
+  Code 13: intro 776, segments 777–789, loop from 778  (13 segments)
+  Code 14: intro 790, segments 791–807, loop from 792  (17 segments)
+  Code 15: intro 808, segments 809–821, loop from 810  (13 segments)
+  Code 16: intro 822, segments 823–832, loop from 824  (10 segments)
+  Code 17: intro 833, segments 834–843, loop from 835  (10 segments)
+  Code 18: intro 844, segments 845–856, loop from 846  (12 segments)
+  Code 19: intro 857, segments 858–870, loop from 859  (13 segments)
+  Code 20: intro 871, segments 872–884, loop from 873  (13 segments)
+  Code 21: intro 885, segments 886–903, loop from 888  (18 segments)
+  Code 22: intro 904, segments 905–917, loop from 906  (13 segments)
+  Code 23: intro 918, segments 919–931, loop from 920  (13 segments)
+  Code 24: intro 932, segments 933–945, loop from 934  (13 segments)
+  Code 25: intro 946, segments 947–962, loop from 951  (16 segments)
+  Code 26: intro 963, segments 964–976, loop from 965  (13 segments)
+  Code 27: intro 977, segments 978–993, loop from 982  (16 segments)
+  Code 28: intro 994, segments 995–1011, loop from 1000  (17 segments)
+  Code 29: intro 1012, segments 1013–1025, loop from 1014  (13 segments)
+  Code 30: intro 1026, segments 1027–1043, loop from 1028  (17 segments)
+  Code 31: intro 1044, segments 1045–1063, loop from 1048  (19 segments)
+  Code 32: intro 1064, segments 1065–1074, loop from 1067  (10 segments)
+  Code 33: intro 1075, segments 1076–1092, loop from 1077  (17 segments)
+  Code 34: intro 1093, segments 1094–1109, loop from 1096  (16 segments)
+  Code 35: intro 1110, segments 1111–1123, loop from 1112  (13 segments)
+  Code 36: intro 1124, segments 1125–1139, loop from 1126  (15 segments)
+  Code 37: intro 1140, segments 1141–1153, loop from 1142  (13 segments)
+  Code 38: intro 1154, segments 1155–1167, loop from 1156  (13 segments)
+  Code 39: intro 1168, segments 1169–1185, loop from 1170  (17 segments)
+  Code 40: intro 1186, segments 1187–1203, loop from 1188  (17 segments)
+  Code 41: intro 1204, segments 1205–1222, loop from 1207  (18 segments)
+  Code 42: intro 1223, segments 1224–1240, loop from 1225  (17 segments)
+  Code 43: intro 1241, segments 1242–1254, loop from 1243  (13 segments)
+  Code 44: intro 1255, segments 1256–1268, loop from 1257  (13 segments)
+  Code 45: intro 1269, segments 1270–1287, loop from 1272  (18 segments)
+  Code 46: intro 1288, segments 1289–1305, loop from 1290  (17 segments)
+  Code 47: intro 1306, segments 1307–1324, loop from 1309  (18 segments)
+  Code 48: intro 1325, segments 1326–1343, loop from 1328  (18 segments)
+
+  ARRANGED SYSTEM / MENU TRACKS (non-seamless):
+
+CODE | FNUM | VOL | AFS FILENAME         | DESCRIPTION
+-----|------|-----|----------------------|------------------------------
+  49 | 1344 |  72 | 49_End.adx           | Ending theme 1
+  50 | 1345 |  72 | 50_End.adx           | Ending theme 2
+  51 | 1346 |  72 | 51_VS.adx            | VS screen jingle (short)
+  52 | 1347 |  84 | 52_Open.adx          | Opening / Intro cinematic
+  53 | 1348 |  86 | 53_P_Sel.adx         | Player Select (Character Select)
+  54 | 1349 |  56 | 54_Name.adx          | Name Entry
+  55 | 1350 |  76 | 55_Win.adx           | Win screen / Victory
+  56 | 1351 |  72 | 56_Judge.adx         | Judgment / Score screen
+  57 | 1352 |  72 | 57_S_Sel.adx         | Super Art Select
+  58 | 1353 |  64 | 58_Conti.adx         | Continue screen
+  59 | 1354 |  72 | 59_over.adx          | Game Over
+  60 | 1355 |  56 | 60_Gill.adx          | Gill's Resurrection theme
+  61 | 1356 |  60 | 61_Bo1.adx           | Bonus Stage 1
+  62 | 1357 |  60 | 62_Bo2.adx           | Bonus Stage 2
+  63 | 1358 |  72 | 63_Staff.adx         | Staff Roll / Credits
+  64 | 1359 |  72 | 64_Remix.adx         | Remix track (shared w/ arcade)
+  65 | 1360 |  48 | 65_menu.adx          | Main Menu theme (shared w/ arcade)
+  66 | 1361 |  64 | 66_p_se2.adx         | Player Select alternate
+  67 | 1362 | 112 | 67_logo.adx          | Logo / boot jingle
+
+
+================================================================================
+  ARCADE (ORIGINAL) SOUNDTRACK BGM TABLE (bgm_type = 1)
+================================================================================
+
+Arcade tracks use 2 variants per stage (A/B), alternating between rounds.
+Every third code is a skip marker (no track for that slot).
+
+CODE | FNUM | VOL | STAGE    | AFS FILENAME         | DESCRIPTION
+-----|------|-----|----------|----------------------|------------------------------
+   0 |    — |   — |          |                      | (empty)
+   1 |   91 | 104 | NYC A    | o01_A_NYC.adx        | Alex — New York, variant A
+   2 |  107 | 104 | NYC B    | o02_B_NYC.adx        | Alex — New York, variant B
+   3 |    — |   — |          |                      | (skip)
+   4 |  119 | 104 | Russia A | o04_A_Ros.adx        | Necro — Russia, variant A
+   5 |  133 | 104 | Russia B | o05_B_Ros.adx        | Necro — Russia, variant B
+   6 |    — |   — |          |                      | (skip)
+   7 |  144 | 104 | German A | o07_A_Gem.adx        | Hugo — Germany, variant A
+   8 |  159 | 104 | German B | o08_B_Gem.adx        | Hugo — Germany, variant B
+   9 |    — |   — |          |                      | (skip)
+  10 |  182 | 104 | China A  | o10_A_Chi.adx        | Chun-Li — China, variant A
+  11 |  196 | 104 | China B  | o11_B_Chi.adx        | Chun-Li — China, variant B
+  12 |    — |   — |          |                      | (skip)
+  13 |  212 | 104 | Shinju A | o13_A_Shi.adx        | Ibuki — Shinjuku, variant A
+  14 |  227 | 104 | Shinju B | o14_B_Shi.adx        | Ibuki — Shinjuku, variant B
+  15 |    — |   — |          |                      | (skip)
+  16 |  246 | 104 | Kyoto A  | o16_A_Kyo.adx        | Makoto — Kyoto Dojo, variant A
+  17 |  257 | 104 | Kyoto B  | o17_B_Kyo.adx        | Makoto — Kyoto Dojo, variant B
+  18 |    — |   — |          |                      | (skip)
+  19 |  268 | 104 | Dojo A   | o19_A_Doj.adx        | Ryu — Suzaku Castle, variant A
+  20 |  282 | 104 | Dojo B   | o20_B_Doj.adx        | Ryu — Suzaku Castle, variant B
+  21 |    — |   — |          |                      | (skip)
+  22 |  296 | 104 | Yamato A | o22_A_Yam.adx        | Oro — Mountain Cave, variant A
+  23 |  310 | 104 | Yamato B | o23_B_Yam.adx        | Oro — Mountain Cave, variant B
+  24 |    — |   — |          |                      | (skip)
+  25 |  325 | 104 | Africa A | o25_A_Afr.adx        | Elena — Africa, variant A
+  26 |  342 | 104 | Africa B | o26_B_Afr.adx        | Elena — Africa, variant B
+  27 |    — |   — |          |                      | (skip)
+  28 |  356 | 104 | Brazil A | o28_A_Bra.adx        | Sean — Brazil, variant A
+  29 |  374 | 104 | Brazil B | o29_B_Bra.adx        | Sean — Brazil, variant B
+  30 |    — |   — |          |                      | (skip)
+  31 |  389 | 104 | London A | o31_A_Lon.adx        | Dudley — London, variant A
+  32 |  409 | 104 | London B | o32_B_Lon.adx        | Dudley — London, variant B
+  33 |    — |   — |          |                      | (skip)
+  34 |  419 | 104 | HK A     | o34_A_Hon.adx        | Yun/Yang — Hong Kong, variant A
+  35 |  436 | 104 | HK B     | o35_B_Hon.adx        | Yun/Yang — Hong Kong, variant B
+  36 |    — |   — |          |                      | (skip)
+  37 |  451 | 104 | France A | o37_A_Fra.adx        | Remy — France, variant A
+  38 |  465 | 104 | France B | o38_B_Fra.adx        | Remy — France, variant B
+  39 |    — |   — |          |                      | (skip)
+  40 |  481 | 104 | Q Lair A | o40_A_Q.adx          | Q — Underground Lair, variant A
+  41 |  499 | 104 | Q Lair B | o41_B_Q.adx          | Q — Underground Lair, variant B
+  42 |    — |   — |          |                      | (skip)
+  43 |  517 | 104 | Mexico A | o43_A_Mex.adx        | Urien — Aztec Ruins, variant A
+  44 |  525 | 104 | Mexico B | o44_B_Mex.adx        | Urien — Aztec Ruins, variant B
+  45 |    — |   — |          |                      | (skip)
+  46 |  534 | 104 | Greece A | o46_A_Gre.adx        | Gill — Greece, variant A
+  47 |  544 | 104 | Greece B | o47_B_Gre.adx        | Gill — Greece, variant B
+  48 |    — |   — |          |                      | (skip)
+
+  SEAMLESS SEGMENT DETAILS (arcade):
+
+  Code  1: intro  91, segments  92–106, loop from  93   (15 segments)
+  Code  2: intro 107, segments 108–118, loop from 111  (11 segments)
+  Code  4: intro 119, segments 120–132, loop from 121  (13 segments)
+  Code  5: intro 133, segments 134–143, loop from 136  (10 segments)
+  Code  7: intro 144, segments 145–158, loop from 151  (14 segments)
+  Code  8: intro 159, segments 160–181, loop from 166  (22 segments)
+  Code 10: intro 182, segments 183–195, loop from 184  (13 segments)
+  Code 11: intro 196, segments 197–211, loop from 200  (15 segments)
+  Code 13: intro 212, segments 213–226, loop from 215  (14 segments)
+  Code 14: intro 227, segments 228–245, loop from 230  (18 segments)
+  Code 16: intro 246, segments 247–256, loop from 249  (10 segments)
+  Code 17: intro 257, segments 258–267, loop from 260  (10 segments)
+  Code 19: intro 268, segments 269–281, loop from 270  (13 segments)
+  Code 20: intro 282, segments 283–295, loop from 284  (13 segments)
+  Code 22: intro 296, segments 297–309, loop from 298  (13 segments)
+  Code 23: intro 310, segments 311–324, loop from 313  (14 segments)
+  Code 25: intro 325, segments 326–341, loop from 330  (16 segments)
+  Code 26: intro 342, segments 343–355, loop from 344  (13 segments)
+  Code 28: intro 356, segments 357–373, loop from 362  (17 segments)
+  Code 29: intro 374, segments 375–388, loop from 377  (14 segments)
+  Code 31: intro 389, segments 390–408, loop from 393  (19 segments)
+  Code 32: intro 409, segments 410–418, loop from 411  ( 9 segments)
+  Code 34: intro 419, segments 420–435, loop from 422  (16 segments)
+  Code 35: intro 436, segments 437–450, loop from 439  (14 segments)
+  Code 37: intro 451, segments 452–464, loop from 453  (13 segments)
+  Code 38: intro 465, segments 466–480, loop from 469  (15 segments)
+  Code 40: intro 481, segments 482–498, loop from 483  (17 segments)
+  Code 41: intro 499, segments 500–516, loop from 501  (17 segments)
+  Code 43: intro 517, segments 518–524, loop from 519  ( 7 segments)
+  Code 44: intro 525, segments 526–533, loop from 528  ( 8 segments)
+  Code 46: intro 534, segments 535–543, loop from 536  ( 9 segments)
+  Code 47: intro 544, segments 545–554, loop from 547  (10 segments)
+
+  ARCADE SYSTEM / MENU TRACKS (non-seamless):
+
+CODE | FNUM | VOL | AFS FILENAME         | DESCRIPTION
+-----|------|-----|----------------------|------------------------------
+  49 |  555 | 104 | o49_End.adx          | Ending theme 1
+  50 |  556 | 104 | o50_End.adx          | Ending theme 2
+  51 |  557 | 104 | o51_VS.adx           | VS screen jingle (short)
+  52 |  558 | 104 | o52_Open.adx         | Opening / Intro cinematic
+  53 |  559 | 104 | o53_P_Sel.adx        | Player Select (Character Select)
+  54 |  560 | 104 | o54_Name.adx         | Name Entry
+  55 |  561 | 104 | o55_Win.adx          | Win screen / Victory
+  56 |  562 | 104 | o56_Judge.adx        | Judgment / Score screen
+  57 |  563 | 104 | o57_S_Sel.adx        | Super Art Select
+  58 |  564 | 104 | o58_Conti.adx        | Continue screen
+  59 |  565 | 104 | o59_over.adx         | Game Over
+  60 |  566 | 104 | o60_Gill.adx         | Gill's Resurrection theme
+  61 |  567 | 104 | o61_Bo1.adx          | Bonus Stage 1
+  62 |  568 | 104 | o62_Bo2.adx          | Bonus Stage 2
+  63 |  569 | 104 | o63_Staff.adx        | Staff Roll / Credits
+  64 | 1359 |  72 | 64_Remix.adx         | Remix track (shared w/ arranged)
+  65 | 1360 |  48 | 65_menu.adx          | Main Menu theme (shared w/ arranged)
+  66 |  570 | 104 | o66_P_Se2.adx        | Player Select alternate
+  67 |  571 | 104 | o67_logo.adx         | Logo / boot jingle
+
+
+================================================================================
+  STAGE → BGM CODE MAPPING (quick reference)
+================================================================================
+
+Source: BGM_Stage_Data[22] in se.c
+
+BGM code = BGM_Stage_Data[stage_id] + round_variant_offset
+
+Arranged variant offsets: { +0, +1, +2, +1, +2, +1, +2, +1 } (3 variants: A/B/C)
+Arcade variant offsets:   { +0, +1, +0, +1, +0, +1, +0, +1 } (2 variants: A/B)
+
+Stage | Location     | Character    | Base | Arranged codes | Arcade codes
+------|--------------|--------------|------|----------------|------------------
+    0 | Greece       | Gill         |   46 | 46, 47, 48     | 46, 47
+    1 | New York     | Alex         |    1 |  1,  2,  3     |  1,  2
+    2 | Shinjuku     | Ibuki        |   13 | 13, 14, 15     | 13, 14
+    3 | Hong Kong    | Yun/Yang     |   34 | 34, 35, 36     | 34, 35
+    4 | London       | Dudley       |   31 | 31, 32, 33     | 31, 32
+    5 | Russia       | Necro/Twelve |    4 |  4,  5,  6     |  4,  5
+    6 | Germany      | Hugo         |    7 |  7,  8,  9     |  7,  8
+    7 | Kyoto        | Makoto       |   16 | 16, 17, 18     | 16, 17
+    8 | Africa       | Elena        |   25 | 25, 26, 27     | 25, 26
+    9 | Brazil       | Sean         |   28 | 28, 29, 30     | 28, 29
+   10 | Hong Kong    | Yang         |   34 | 34, 35, 36     | 34, 35
+   11 | New York     | Alex (alt)   |    1 |  1,  2,  3     |  1,  2
+   12 | Brazil       | Sean (alt)   |   28 | 28, 29, 30     | 28, 29
+   13 | Mexico       | Urien        |   43 | 43, 44, 45     | 43, 44
+   14 | Yamato       | Oro          |   22 | 22, 23, 24     | 22, 23
+   15 | China        | Chun-Li      |   10 | 10, 11, 12     | 10, 11
+   16 | Dojo         | Ryu          |   19 | 19, 20, 21     | 19, 20
+   17 | Unknown      | Q            |   40 | 40, 41, 42     | 40, 41
+   18 | Russia       | Twelve       |    4 |  4,  5,  6     |  4,  5
+   19 | France       | Remy         |   37 | 37, 38, 39     | 37, 38
+   20 | Bonus 1      | —            |   61 | 61, 62         | 61, 62
+   21 | Bonus 2      | —            |   62 | 62, 63         | 62, 63
+
+Special: In arcade mode vs character 17 (Q), Q's music always plays
+regardless of stage (BGM_Stage_Data[17] is forced).
+
+
+================================================================================
+  MEMORY-LOADED TRACKS (VS & Character Select)
+================================================================================
+
+Two tracks are pre-loaded into RAM from a PPX archive (index 89 for
+arranged, 90 for arcade). They are NOT streamed from AFS directly.
+
+Track    | BGM Code | Arranged (fnum/file) | Arcade (fnum/file)
+---------|----------|----------------------|---------------------
+VS       |  0x33 (51) | 1346 / 51_VS.adx  | 557 / o51_VS.adx
+EmSel    |  0x39 (57) | 1348 / 53_P_Sel.adx (via PPX) | 559 / o53_P_Sel.adx (via PPX)
+
+These can be replaced via voice_mod (vs.ogg, emsel.ogg) or via
+bgm_mod ({fnum}.ogg).
+
+
+================================================================================
+  HOW TO MOD A STAGE BGM (QUICK START)
+================================================================================
+
+1. Find your target stage in the STAGE → BGM CODE MAPPING above
+2. Note the BGM code(s) used
+3. Look up the fnum(s) in the appropriate BGM table (arranged or arcade)
+4. Create {fnum}.ogg (or .flac/.opus/.mp3/.wav) in this folder
+5. Enable "Enable Modded BGM" in the F3 Mods menu
+
+For seamless tracks, the engine loads the fnum from the BGM table as the
+"intro" track, then chains through subsequent AFS files from the segment
+range. To replace the full track, you may need to replace all files in
+the segment range, or provide a single file for the intro fnum with loop
+points set — the engine will play your modded file instead of chaining.
+
+  EXAMPLE: Replace Ryu's Arranged Stage BGM (all 3 variants)
+
+  Ryu = Stage 16 (Dojo) → BGM codes 19, 20, 21
+    Code 19 → fnum 857  →  create 857.ogg   (variant A)
+    Code 20 → fnum 871  →  create 871.ogg   (variant B)
+    Code 21 → fnum 885  →  create 885.ogg   (variant C)
+
+  EXAMPLE: Replace the Character Select music (arranged)
+
+  Character Select = BGM code 53 → fnum 1348
+    create 1348.ogg
+    (or use voice_mod/emsel.ogg for voice-channel replacement)
