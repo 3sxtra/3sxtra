@@ -954,8 +954,12 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
     if (last_session_state == NETPLAY_SESSION_RUNNING && current_state == NETPLAY_SESSION_EXITING &&
         !match_result_reported) {
 
-        // Unconditionally auto-save replay for all netplay matches (including direct P2P)
-        NativeSave_AutoSaveReplay();
+        // Auto-save replay for netplay matches (including direct P2P),
+        // but only if at least one round was played (avoid corrupted replays
+        // from early disconnects before the first match begins)
+        if (PL_Wins[0] + PL_Wins[1] > 0) {
+            NativeSave_AutoSaveReplay();
+        }
 
         // A netplay match just ended — report the result if we are in a lobby context
         // Winner_id: 0 = P1 won, 1 = P2 won (from game engine)
@@ -989,9 +993,10 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                     LobbyServer_ReportMatchEnd(room_code, winner_pid);
                     SDL_Log("[NetplayUI] Casual lobby match end reported: room=%s winner=%s", room_code, winner_pid);
                 }
-            } else {
+            } else if (total_rounds > 0) {
                 // No natural conclusion — opponent likely ragequit/disconnected mid-match.
-                // Report the disconnect so the server can track it.
+                // Only report if at least one round was played (avoid false reports
+                // for pre-match disconnects during character select / waiting screen).
                 AsyncReportDisconnect(lobby_my_player_id, current_opponent_id);
                 SDL_Log("[NetplayUI] Mid-match disconnect reported: opponent=%s", current_opponent_id);
             }
@@ -1675,14 +1680,13 @@ void SDLNetplayUI_ReportNaturalMatchEnd(void) {
     if (match_result_reported)
         return;
 
-    // Auto-save replay locally
-    NativeSave_AutoSaveReplay();
-
     int my_player = Netplay_GetPlayerNumber();
     int total_rounds = PL_Wins[0] + PL_Wins[1];
 
     if (lobby_my_player_id[0] && current_opponent_id[0]) {
         if (Winner_id >= 0 && total_rounds > 0) {
+            // Auto-save replay locally (only when a match was actually played)
+            NativeSave_AutoSaveReplay();
             const char* winner_pid = (Winner_id == my_player) ? lobby_my_player_id : current_opponent_id;
 
             const char* room_code = rmlui_casual_lobby_get_room_code();

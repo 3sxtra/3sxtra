@@ -592,6 +592,15 @@ const cleanupTimer = setInterval(() => {
                 const recordStaleResults = db.transaction(() => {
                     for (const p of stalePending) {
                         const winnerId = p.winner_id;
+
+                        // Skip disputed/incomplete results — disputes clear winner_id to ''.
+                        // Single-reporter results (loser never reported) still have a valid
+                        // winner_id and should be trusted.
+                        if (!winnerId || !p.p1_id || !p.p2_id) {
+                            console.log(`[match] discarded stale disputed/empty pending: ${p.p1_id} vs ${p.p2_id}`);
+                            continue;
+                        }
+
                         const loserId = winnerId === p.p1_id ? p.p2_id : p.p1_id;
                         const winnerName = players.get(winnerId)?.display_name || winnerId;
                         const loserName = players.get(loserId)?.display_name || loserId;
@@ -1626,7 +1635,7 @@ async function handleRequest(req, res) {
     }
 
     // --- GET /replays/:id --- (Download raw replay binary)
-    const replayDownloadMatch = path.match(/^\/replays\/(\d+)$/);
+    const replayDownloadMatch = urlPath.match(/^\/replays\/(\d+)$/);
     if (method === 'GET' && replayDownloadMatch) {
         const matchId = replayDownloadMatch[1];
         const fs = require('node:fs');
@@ -1649,7 +1658,7 @@ async function handleRequest(req, res) {
     }
 
     // --- GET /player/:id/stats ---
-    const statsMatch = path.match(/^\/player\/([^/]+)\/stats$/);
+    const statsMatch = urlPath.match(/^\/player\/([^/]+)\/stats$/);
     if (method === 'GET' && statsMatch) {
         if (!db) return json(res, 503, { error: 'Stats unavailable (no SQLite)' });
 
