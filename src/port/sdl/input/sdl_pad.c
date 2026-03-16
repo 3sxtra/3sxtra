@@ -10,6 +10,7 @@
 #include "port/sdl/input/sdl_pad.h"
 #include "port/input_definition.h"
 #include "port/sdl/input/controller_image.h"
+#include "netplay/netplay.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,6 +63,10 @@ static int keyboard_index = -1;
 static SDLPad_ButtonState button_state[INPUT_SOURCES_MAX] = { 0 };
 static SDLPad_ButtonState prev_button_state[INPUT_SOURCES_MAX] = { 0 };
 static int last_scancode[INPUT_SOURCES_MAX] = { 0 };
+
+// Sticky guard: once the player enters netplay mode, debug/pause keys
+// (9 and 0) are disabled for the remainder of the session.
+static bool s_netplay_key_guard = false;
 static int last_joy_input[INPUT_SOURCES_MAX] = { 0 };
 
 static int input_source_index_from_joystick_id(SDL_JoystickID id) {
@@ -386,6 +391,12 @@ void SDLPad_HandleKeyboardEvent(SDL_KeyboardEvent* event) {
         return;
     }
 
+    // Latch the netplay key guard once the player enters netplay mode.
+    // Sticky: stays active until the application is restarted.
+    if (!s_netplay_key_guard && Netplay_GetSessionState() != NETPLAY_SESSION_IDLE) {
+        s_netplay_key_guard = true;
+    }
+
     // Skip all F-keys that are reserved for overlay toggles:
     // F1=Controller Setup, F2=Shader Menu, F3=Mods Menu, F4=Shader Mode,
     // F5=Frame Rate Uncap, F6=Stage Config, F7=Training Menu,
@@ -467,11 +478,13 @@ void SDLPad_HandleKeyboardEvent(SDL_KeyboardEvent* event) {
         break;
 
     case SDLK_9:
-        state->left_stick = event->down;
+        if (!s_netplay_key_guard)
+            state->left_stick = event->down;
         break;
 
     case SDLK_0:
-        state->right_stick = event->down;
+        if (!s_netplay_key_guard)
+            state->right_stick = event->down;
         break;
 
     case SDLK_BACKSPACE:
