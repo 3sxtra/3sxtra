@@ -101,6 +101,15 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
 /// Called from VS_Result auto-skip while game state (Winner_id, PL_Wins) is still valid.
 void SDLNetplayUI_ReportNaturalMatchEnd(void);
 
+/// Check if the async match report thread has signaled FT session complete.
+/// Returns true if the server responded with status "recorded" (FT target reached).
+bool SDLNetplayUI_IsSessionComplete(void);
+
+/// Consume the session-complete signal: copies the winner ID, clears the flag,
+/// and fires LobbyServer_ReportMatchEnd (room rotation) for casual rooms.
+/// Returns false if no session-complete signal was pending.
+bool SDLNetplayUI_ConsumeSessionComplete(char* out_winner, size_t winner_size);
+
 #ifdef __cplusplus
 }
 #endif

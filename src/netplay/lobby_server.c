@@ -521,9 +521,12 @@ int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms) {
 
 /* === Phase 2: Match Reporting === */
 
-bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id) {
+bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id, MatchSessionStatus* out_status) {
     if (!configured || !result)
         return false;
+
+    if (out_status)
+        *out_status = MATCH_SESSION_ERROR;
 
     cJSON* root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "player_id", result->player_id);
@@ -543,10 +546,30 @@ bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id) {
 
     if (ok) {
         SDL_Log("[LobbyServer] Match result reported: winner=%s", result->winner_id);
-        if (out_match_id) {
-            cJSON* resp_json = cJSON_Parse(response);
-            *out_match_id = resp_json ? cjson_get_int(resp_json, "match_id", -1) : -1;
+        cJSON* resp_json = cJSON_Parse(response);
+        if (resp_json) {
+            if (out_match_id)
+                *out_match_id = cjson_get_int(resp_json, "match_id", -1);
+
+            /* Parse session status from server response */
+            if (out_status) {
+                char status_str[32] = { 0 };
+                cjson_get_string(resp_json, "status", status_str, sizeof(status_str));
+                if (strcmp(status_str, "recorded") == 0)
+                    *out_status = MATCH_SESSION_COMPLETE;
+                else if (strcmp(status_str, "session_in_progress") == 0)
+                    *out_status = MATCH_SESSION_IN_PROGRESS;
+                else if (strcmp(status_str, "pending") == 0 || strcmp(status_str, "already_pending") == 0)
+                    *out_status = MATCH_SESSION_PENDING;
+                else if (strcmp(status_str, "dispute") == 0)
+                    *out_status = MATCH_SESSION_DISPUTE;
+                else
+                    *out_status = MATCH_SESSION_PENDING; /* Unknown status, treat as pending */
+            }
             cJSON_Delete(resp_json);
+        } else {
+            if (out_match_id)
+                *out_match_id = -1;
         }
     }
     return ok;

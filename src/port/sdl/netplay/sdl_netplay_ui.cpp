@@ -57,6 +57,12 @@ static NetplaySessionState last_session_state = NETPLAY_SESSION_IDLE;
 static bool match_result_reported = false;
 static SDL_AtomicInt async_match_report_active = { 0 };
 
+// FT-x session tracking: signaled by the async match report thread
+// when the server says the FT session is complete (status="recorded").
+static SDL_AtomicInt async_match_session_complete = { 0 };
+static char async_match_session_winner[64] = { 0 };
+static SDL_SpinLock async_match_session_lock = 0; // protects async_match_session_winner
+
 #include "port/save/native_save.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
@@ -81,12 +87,22 @@ typedef struct {
 static int async_match_report_fn(void* userdata) {
     AsyncMatchReportData* data = (AsyncMatchReportData*)userdata;
     int match_id = -1;
-    bool ok = LobbyServer_ReportMatch(&data->result, &match_id);
+    MatchSessionStatus session_status = MATCH_SESSION_ERROR;
+    bool ok = LobbyServer_ReportMatch(&data->result, &match_id, &session_status);
 
     if (ok) {
-        SDL_Log("[NetplayUI] Match reported successfully (match_id=%d)", match_id);
+        SDL_Log("[NetplayUI] Match reported successfully (match_id=%d, session_status=%d)", match_id, (int)session_status);
     } else {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[NetplayUI] Match report FAILED");
+    }
+
+    // Signal session complete if FT was reached
+    if (ok && session_status == MATCH_SESSION_COMPLETE) {
+        SDL_LockSpinlock(&async_match_session_lock);
+        snprintf(async_match_session_winner, sizeof(async_match_session_winner), "%s", data->result.winner_id);
+        SDL_UnlockSpinlock(&async_match_session_lock);
+        SDL_SetAtomicInt(&async_match_session_complete, 1);
+        SDL_Log("[NetplayUI] FT session COMPLETE — winner=%s", data->result.winner_id);
     }
 
     // Upload the in-memory replay snapshot if the match was recorded
@@ -978,6 +994,8 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                 const char* match_source = (room_code && room_code[0]) ? "casual" : "ranked";
                 int match_ft = Netplay_GetNegotiatedFT();
 
+                // Reset session-complete flag before reporting (new FT game)
+                SDL_SetAtomicInt(&async_match_session_complete, 0);
                 AsyncReportMatch(lobby_my_player_id,
                                  current_opponent_id,
                                  winner_pid,
@@ -988,11 +1006,9 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
                                  match_ft);
                 SDL_Log("[NetplayUI] Match result queued: winner=%s rounds=%d", winner_pid, total_rounds);
 
-                // If inside a casual lobby room, report match end for Winner Stays On rotation
-                if (room_code && room_code[0]) {
-                    LobbyServer_ReportMatchEnd(room_code, winner_pid);
-                    SDL_Log("[NetplayUI] Casual lobby match end reported: room=%s winner=%s", room_code, winner_pid);
-                }
+                // NOTE: Room rotation (ReportMatchEnd) is NOT called here.
+                // It is deferred until the async thread signals session complete
+                // (MATCH_SESSION_COMPLETE). See SDLNetplayUI_ConsumeSessionComplete().
             } else if (total_rounds > 0) {
                 // No natural conclusion — opponent likely ragequit/disconnected mid-match.
                 // Only report if at least one round was played (avoid false reports
@@ -1693,6 +1709,8 @@ void SDLNetplayUI_ReportNaturalMatchEnd(void) {
             const char* match_source = (room_code && room_code[0]) ? "casual" : "ranked";
             int match_ft = Netplay_GetNegotiatedFT();
 
+            // Reset session-complete flag before reporting (new FT game)
+            SDL_SetAtomicInt(&async_match_session_complete, 0);
             AsyncReportMatch(lobby_my_player_id,
                              current_opponent_id,
                              winner_pid,
@@ -1703,15 +1721,39 @@ void SDLNetplayUI_ReportNaturalMatchEnd(void) {
                              match_ft);
             SDL_Log("[NetplayUI] Natural match end: winner=%s rounds=%d", winner_pid, total_rounds);
 
-            // If inside a casual lobby room, report match end for Winner Stays On rotation
-            if (room_code && room_code[0]) {
-                LobbyServer_ReportMatchEnd(room_code, winner_pid);
-                SDL_Log("[NetplayUI] Casual lobby match end reported: room=%s winner=%s", room_code, winner_pid);
-            }
+            // NOTE: Room rotation (ReportMatchEnd) is NOT called here.
+            // It is deferred until the async thread signals session complete
+            // (MATCH_SESSION_COMPLETE). The VS_Result wait state polls for this.
         }
     }
 
     match_result_reported = true;
+}
+
+bool SDLNetplayUI_IsSessionComplete(void) {
+    return SDL_GetAtomicInt(&async_match_session_complete) != 0;
+}
+
+bool SDLNetplayUI_ConsumeSessionComplete(char* out_winner, size_t winner_size) {
+    if (SDL_GetAtomicInt(&async_match_session_complete) == 0)
+        return false;
+
+    // Copy winner and clear the flag
+    SDL_LockSpinlock(&async_match_session_lock);
+    if (out_winner && winner_size > 0)
+        SDL_strlcpy(out_winner, async_match_session_winner, winner_size);
+    async_match_session_winner[0] = '\0';
+    SDL_UnlockSpinlock(&async_match_session_lock);
+    SDL_SetAtomicInt(&async_match_session_complete, 0);
+
+    // Fire room rotation NOW — the FT session is over
+    const char* room_code = rmlui_casual_lobby_get_room_code();
+    if (room_code && room_code[0] && out_winner && out_winner[0]) {
+        LobbyServer_ReportMatchEnd(room_code, out_winner);
+        SDL_Log("[NetplayUI] FT session complete — room rotation fired: room=%s winner=%s", room_code, out_winner);
+    }
+
+    return true;
 }
 
 } // extern "C"

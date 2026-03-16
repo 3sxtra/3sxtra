@@ -57,6 +57,15 @@ bool LobbyServer_DeclineInvite(const char* player_id, const char* declined_playe
 
 // === Phase 2: Match Reporting ===
 
+/// Session status returned by the lobby server after match reporting.
+typedef enum {
+    MATCH_SESSION_ERROR = -1,        // HTTP or parse error
+    MATCH_SESSION_PENDING = 0,       // First reporter, awaiting cross-validation
+    MATCH_SESSION_IN_PROGRESS = 1,   // Both agreed, but FT not reached yet
+    MATCH_SESSION_COMPLETE = 2,      // FT reached — session over, rotation should fire
+    MATCH_SESSION_DISPUTE = 3,       // Players disagree on winner
+} MatchSessionStatus;
+
 typedef struct {
     char player_id[64];
     char opponent_id[64];
@@ -71,7 +80,8 @@ typedef struct {
 /// Submit a match result to the lobby server for cross-validation.
 /// Both players must submit; server only records if they agree on the winner.
 /// If out_match_id is provided, it receives the server-assigned match ID (on successful recording).
-bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id);
+/// If out_status is provided, it receives the session status (pending/in_progress/complete/dispute).
+bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id, MatchSessionStatus* out_status);
 
 /// Upload a replay file for a successfully recorded match.
 /// The match_id must be the one returned by LobbyServer_ReportMatch.

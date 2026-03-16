@@ -3592,7 +3592,7 @@ static void VS_Result(struct _TASK* task_ptr) {
                 SDLNetplayUI_ReportNaturalMatchEnd();
                 task_ptr->r_no[2] = 6;
                 task_ptr->r_no[3] = 0;
-                task_ptr->timer = 2;
+                task_ptr->timer = 300; // 5 seconds at 60fps — robust wait for async response
             } else {
                 task_ptr->r_no[2]++;
             }
@@ -3628,17 +3628,24 @@ static void VS_Result(struct _TASK* task_ptr) {
         Exit_Sub(task_ptr, 0, 17);
         break;
 
-    case 6:
-        switch (task_ptr->r_no[3]) {
-        case 0:
-            task_ptr->r_no[3]++;
-            /* fallthrough */
+    case 6: {
+        // Wait-poll for FT session status from async match report.
+        // The async thread sets async_match_session_complete when the server
+        // responds with status="recorded" (FT target reached).
+        char ft_winner[64] = { 0 };
+        if (SDLNetplayUI_ConsumeSessionComplete(ft_winner, sizeof(ft_winner))) {
+            // FT set is done — disconnect P2P and return to room lobby.
+            // ConsumeSessionComplete already fired ReportMatchEnd (rotation).
+            task_ptr->r_no[2] = 7; // → case 7: Netplay_HandleMenuExit
+            task_ptr->r_no[3] = 0;
+            break;
+        }
 
-        case 1:
-            if (--task_ptr->timer) {
-                break;
-            }
-
+        if (--task_ptr->timer <= 0) {
+            // Timeout — server didn't respond in time. Pessimistic: keep playing.
+            // If this was an FT>1 session, the next game's report will still be
+            // cross-validated. If the session was actually complete, the rotation
+            // will fire next time we get a response.
             Setup_VS_Mode(task_ptr);
             G_No[1] = 12;
             G_No[2] = 1;
@@ -3646,7 +3653,9 @@ static void VS_Result(struct _TASK* task_ptr) {
             break;
         }
 
+        // Still waiting — do nothing this frame.
         break;
+    }
 
     case 7:
     default:
