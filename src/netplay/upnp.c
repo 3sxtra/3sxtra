@@ -75,7 +75,7 @@ static bool upnp_ensure_cached(void) {
     }
 
     s_cache_valid = true;
-    SDL_Log("UPnP: Found IGD, LAN address: %s (cached)", s_cached_lan_addr);
+    SDL_Log("UPnP: Found IGD (cached)");
     return true;
 }
 
@@ -115,12 +115,7 @@ bool Upnp_AddMapping(UpnpMapping* out, uint16_t internal_port, uint16_t external
         return false;
     }
 
-    SDL_Log("UPnP: Port mapping created %s:%s -> %s:%s (%s)",
-            ext_ip,
-            ext_port_str,
-            s_cached_lan_addr,
-            int_port_str,
-            protocol);
+    SDL_Log("UPnP: Port mapping created (%s)", protocol);
 
     SDL_strlcpy(out->external_ip, ext_ip, sizeof(out->external_ip));
     out->external_port = external_port;

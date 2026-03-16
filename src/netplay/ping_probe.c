@@ -304,7 +304,7 @@ void PingProbe_AddPeer(const char* ip, uint16_t port, const char* player_id) {
     if (slot >= s_peer_count)
         s_peer_count = slot + 1;
 
-    SDL_Log("[PingProbe] Added peer %s at %s:%u", player_id, ip, SDL_Swap16BE(port));
+    SDL_Log("[PingProbe] Added peer %s", player_id);
 }
 
 void PingProbe_RemovePeer(const char* player_id) {

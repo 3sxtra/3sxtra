@@ -62,6 +62,7 @@
 #include "sf33rd/Source/Game/menu/ex_data.h"
 #include "sf33rd/Source/Game/menu/menu_internal.h"
 #include "sf33rd/Source/Game/message/en/msgtable_en.h"
+#include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "sf33rd/Source/Game/rendering/mmtmcnt.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
@@ -1905,13 +1906,23 @@ void Menu_ReenterNetworkLobby(void) {
     Mode_Type = MODE_NETWORK;
     Insert_Y = 23;
 
-    // Re-create MTS slots purged by Soft_Reset_Sub() → Purge_mmtm_area(6).
-    // mto_list[6] is all-zeros so nothing is recreated automatically.
-    // Menu effects need:  slot 12 (MS) for effect_45 (message display),
-    //                     slot 13 (SL) for effect_57/61/66/04 (banners/text).
-    // NOTE: Do NOT call Init_load_on_memory_data() here — it allocates ramcnt
-    // key 0xD via reservMemKeySelObj(), but pmo_list[6] does not purge that
-    // key type, so a second call double-allocates and corrupts the pool.
+    // Replicate Init_Task_1st resource setup that Soft_Reset_Sub() expects
+    // but Menu_ReenterNetworkLobby() bypasses:
+    //
+    // 1) Init_texgrplds_work() — Purge_mmtm_area(6) frees memory keys but
+    //    does NOT clear texgrplds[].ok flags.  Without this reset, the game
+    //    thinks texture groups are still loaded (ok=1) when their underlying
+    //    memory has been freed → use-after-free crash at match start.
+    //
+    // 2) Init_load_on_memory_data() — reloads base sprite patterns, colour
+    //    palettes, and select-object memory.  Safe to call AFTER step 1
+    //    clears texgrplds (the previous reservMemKeySelObj key leaks but
+    //    won't double-allocate since texgrplds[grp].ok is now 0).
+    //
+    // 3) make_texcash_work(12/13) — mto_list[6] is all-zeros so MTS slots
+    //    are never recreated automatically by Make_texcash_of_list(6).
+    Init_texgrplds_work();
+    Init_load_on_memory_data();
     make_texcash_work(12);
     make_texcash_work(13);
 

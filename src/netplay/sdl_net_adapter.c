@@ -165,7 +165,7 @@ static GekkoNetResult** receive_data(int* length) {
         if (expected_remote_port != 0 && dgram->port == expected_remote_port &&
             SDL_strcmp(addr_str, expected_remote_addr) != 0 && expected_remote_addr[0] != '\0') {
             if (!cross_ip_logged) {
-                SDL_Log("[NetAdapter] Cross-IP: rewriting %s → %s", addr_str, expected_remote_addr);
+                SDL_Log("[NetAdapter] Cross-IP: rewriting source to match expected remote");
                 cross_ip_logged = true;
             }
             final_addr = expected_remote_addr;
@@ -217,7 +217,7 @@ void SDLNetAdapter_SetExpectedRemote(const char* addr_str) {
         parse_addr_str(addr_str, ip, sizeof(ip), &port);
         expected_remote_port = (Uint16)port;
         cross_ip_logged = false;
-        SDL_Log("[NetAdapter] Expected remote: %s (port %u)", expected_remote_addr, expected_remote_port);
+        SDL_Log("[NetAdapter] Expected remote configured (port %u)", expected_remote_port);
     } else {
         expected_remote_addr[0] = '\0';
         expected_remote_port = 0;

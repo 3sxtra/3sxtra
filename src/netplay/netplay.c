@@ -829,11 +829,9 @@ void Netplay_Begin() {
 
     session_state = NETPLAY_SESSION_TRANSITIONING;
 
-    SDL_Log("[netplay] *** BEGIN: local player = P%d (slot %d), remote = %s:%hu, local port = %hu ***",
+    SDL_Log("[netplay] *** BEGIN: local player = P%d (slot %d), local port = %hu ***",
             player_number + 1,
             player_number,
-            remote_ip ? remote_ip : "(null)",
-            remote_port,
             local_port);
 }
 
@@ -1167,7 +1165,7 @@ void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
 
     setup_vs_mode();
     session_state = NETPLAY_SESSION_SPECTATING;
-    SDL_Log("[spectate] connecting to %s", addr_str);
+    SDL_Log("[spectate] connecting to host");
 }
 
 void Netplay_StopSpectate(void) {
