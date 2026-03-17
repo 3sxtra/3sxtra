@@ -9,6 +9,7 @@
 #include "sdl_game_renderer_gpu_internal.h"
 
 #include "port/sdl/app/sdl_app.h"
+#include "port/sdl/app/sdl_app_config.h"
 #include <SDL3_shadercross/SDL_shadercross.h>
 #include <stdio.h>
 
@@ -259,7 +260,7 @@ void SDLGameRendererGPU_Init(void) {
     SDL_zero(tex_info);
     tex_info.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;
     tex_info.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    tex_info.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE;
+    tex_info.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     tex_info.width = TEX_ARRAY_SIZE;
     tex_info.height = TEX_ARRAY_SIZE;
     tex_info.layer_count_or_depth = TEX_ARRAY_MAX_LAYERS;
@@ -331,14 +332,50 @@ void SDLGameRendererGPU_Init(void) {
         }
     }
 
+    // Create 1×1 white fallback texture for overlay sampler (when no overlay is bound)
+    {
+        extern SDL_GPUTexture* s_1x1_white_texture;
+        SDL_GPUTextureCreateInfo white_info;
+        SDL_zero(white_info);
+        white_info.type = SDL_GPU_TEXTURETYPE_2D;
+        white_info.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+        white_info.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+        white_info.width = 1;
+        white_info.height = 1;
+        white_info.layer_count_or_depth = 1;
+        white_info.num_levels = 1;
+        s_1x1_white_texture = SDL_CreateGPUTexture(device, &white_info);
+
+        if (s_1x1_white_texture) {
+            SDL_GPUTransferBufferCreateInfo tb_info;
+            SDL_zero(tb_info);
+            tb_info.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+            tb_info.size = 4;
+            SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(device, &tb_info);
+            uint32_t* px = (uint32_t*)SDL_MapGPUTransferBuffer(device, tb, false);
+            if (px) {
+                *px = 0xFFFFFFFF; // opaque white
+                SDL_UnmapGPUTransferBuffer(device, tb);
+                SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(device);
+                SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
+                SDL_GPUTextureTransferInfo src = { .transfer_buffer = tb, .offset = 0 };
+                SDL_GPUTextureRegion dst = { .texture = s_1x1_white_texture, .w = 1, .h = 1, .d = 1 };
+                SDL_UploadToGPUTexture(cp, &src, &dst, false);
+                SDL_EndGPUCopyPass(cp);
+                SDL_SubmitGPUCommandBuffer(cb);
+            }
+            SDL_ReleaseGPUTransferBuffer(device, tb);
+        }
+    }
+
     // Create Canvas Texture (384x224)
     SDL_GPUTextureCreateInfo canvas_info;
     SDL_zero(canvas_info);
     canvas_info.type = SDL_GPU_TEXTURETYPE_2D;
     canvas_info.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
     canvas_info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
-    canvas_info.width = 384;
-    canvas_info.height = 224;
+    canvas_info.width = 384 * g_resolution_scale;
+    canvas_info.height = 224 * g_resolution_scale;
     canvas_info.layer_count_or_depth = 1;
     canvas_info.num_levels = 1;
     s_canvas_texture = SDL_CreateGPUTexture(device, &canvas_info);
@@ -374,6 +411,13 @@ void SDLGameRendererGPU_Shutdown(void) {
     }
     if (pipeline)
         SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
+    {
+        extern SDL_GPUTexture* s_1x1_white_texture;
+        if (s_1x1_white_texture) {
+            SDL_ReleaseGPUTexture(device, s_1x1_white_texture);
+            s_1x1_white_texture = NULL;
+        }
+    }
     if (vertex_buffer)
         SDL_ReleaseGPUBuffer(device, vertex_buffer);
     if (index_buffer)

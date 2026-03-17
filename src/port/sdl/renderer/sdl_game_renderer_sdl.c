@@ -9,6 +9,7 @@
  */
 #include "common.h"
 #include "port/sdl/app/sdl_app.h"
+#include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/sdl/renderer/sdl_game_renderer_sdl_sw.h"
@@ -629,7 +630,7 @@ SDL_Texture* SDLGameRendererSDL_GetCanvas(void) {
 void SDLGameRendererSDL_Init(void) {
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
     cps3_canvas =
-        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, cps3_width, cps3_height);
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, cps3_width * g_resolution_scale, cps3_height * g_resolution_scale);
     if (!cps3_canvas) {
         fatal_error("Failed to create cps3_canvas texture: %s", SDL_GetError());
     }
@@ -1427,9 +1428,10 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
         sort_inversions++;
     last_submitted_z = task_z[task_idx];
 
+    const float scale = (float)g_resolution_scale;
     for (int i = 0; i < 4; i++) {
-        task_verts[task_idx][i].position.x = vertices[i].coord.x;
-        task_verts[task_idx][i].position.y = vertices[i].coord.y;
+        task_verts[task_idx][i].position.x = vertices[i].coord.x * scale;
+        task_verts[task_idx][i].position.y = vertices[i].coord.y * scale;
 
         if (textured) {
             task_verts[task_idx][i].tex_coord.x = vertices[i].tex_coord.s;
@@ -1643,8 +1645,9 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
                                 .a = rgba8_to_float[(color >> 24) & 0xFF] };
 
         /* Expand Sprite2 → 4 vertices */
-        const float x0 = spr->v[0].x, y0 = spr->v[0].y;
-        const float x1 = spr->v[1].x, y1 = spr->v[1].y;
+        const float scale = (float)g_resolution_scale;
+        const float x0 = spr->v[0].x * scale, y0 = spr->v[0].y * scale;
+        const float x1 = spr->v[1].x * scale, y1 = spr->v[1].y * scale;
         const float s0 = spr->t[0].s, t0 = spr->t[0].t;
         const float s1 = spr->t[1].s, t1 = spr->t[1].t;
 
@@ -1704,4 +1707,82 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
     }
     TRACE_PLOT_INT("SetTextureCalls", set_texture_calls);
     TRACE_SUB_END();
+}
+
+/* ─── Overlay Sprite Enqueue (SDL2D) ─────────────────────────────────── */
+
+/**
+ * @brief Enqueue a standalone texture (overlay/HD sprite) into the SDL2D batch.
+ *
+ * Pushes directly into the SoA render task arrays so the overlay participates
+ * in normal z-sorted rendering.  Uses sentinel task_th = 0xFFFFFFFF to prevent
+ * the deferred texture resolution in RenderFrame from overwriting the pointer.
+ */
+void SDLGameRendererSDL_DrawOverlaySpriteEx(SDL_Texture* texture,
+                                            float x, float y, float w, float h,
+                                            float z, int flip_x, int flip_y) {
+    if (render_task_count >= RENDER_TASK_MAX || texture == NULL)
+        return;
+
+    const int idx = render_task_count;
+
+    task_texture[idx] = texture;
+    task_th[idx] = 0xFFFFFFFF; /* sentinel — prevents deferred resolution override */
+    task_z[idx] = z;
+
+    /* Track sortedness */
+    if (z < last_submitted_z)
+        sort_inversions++;
+    last_submitted_z = z;
+
+    const float s = (float)g_resolution_scale;
+    float sx = x * s, sy = y * s, sw = w * s, sh = h * s;
+
+    float u0 = flip_x ? 1.0f : 0.0f;
+    float u1 = flip_x ? 0.0f : 1.0f;
+    float v0 = flip_y ? 1.0f : 0.0f;
+    float v1 = flip_y ? 0.0f : 1.0f;
+
+    const SDL_FColor white = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    /* TL */
+    task_verts[idx][0].position.x = sx;
+    task_verts[idx][0].position.y = sy;
+    task_verts[idx][0].tex_coord.x = u0;
+    task_verts[idx][0].tex_coord.y = v0;
+    task_verts[idx][0].color = white;
+    /* TR */
+    task_verts[idx][1].position.x = sx + sw;
+    task_verts[idx][1].position.y = sy;
+    task_verts[idx][1].tex_coord.x = u1;
+    task_verts[idx][1].tex_coord.y = v0;
+    task_verts[idx][1].color = white;
+    /* BL */
+    task_verts[idx][2].position.x = sx;
+    task_verts[idx][2].position.y = sy + sh;
+    task_verts[idx][2].tex_coord.x = u0;
+    task_verts[idx][2].tex_coord.y = v1;
+    task_verts[idx][2].color = white;
+    /* BR */
+    task_verts[idx][3].position.x = sx + sw;
+    task_verts[idx][3].position.y = sy + sh;
+    task_verts[idx][3].tex_coord.x = u1;
+    task_verts[idx][3].tex_coord.y = v1;
+    task_verts[idx][3].color = white;
+
+    task_is_rect[idx] = true;
+
+    /* Software-frame data */
+    task_src_rect[idx] = (SDL_FRect) { u0, v0, u1 - u0, v1 - v0 };
+    task_dst_rect[idx] = (SDL_FRect) { sx, sy, sw, sh };
+    task_flip[idx] = SDL_FLIP_NONE; /* flips already baked into UVs */
+    task_color32[idx] = 0xFFFFFFFF; /* white, full alpha */
+
+    render_task_count++;
+}
+
+void SDLGameRendererSDL_DrawOverlaySprite(SDL_Texture* texture,
+                                          float x, float y, float w, float h,
+                                          float z) {
+    SDLGameRendererSDL_DrawOverlaySpriteEx(texture, x, y, w, h, z, 0, 0);
 }

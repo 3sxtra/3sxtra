@@ -8,6 +8,11 @@
 #include "port/rendering/legacy_matrix.h"
 #include "port/rendering/renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
+#include "port/sdl/renderer/sprite_override.h"
+#include "port/sdl/renderer/sdl_texture_util.h"
+
+// For screen space Z conversion
+#include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "port/tracy_zones.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -24,8 +29,61 @@
 
 #include <SDL3/SDL.h>
 
+
 // ⚡ Opt5: SIMDe for portable SIMD intrinsics (SSE+FMA on x86, NEON on ARM)
 #include <simde/x86/fma.h>
+
+/* Forward declaration — defined later in this file */
+static void appRenewTempPriority(s32 z);
+
+/* ── HD Sprite Override ─────────────────────────────────────────────── */
+
+/** Pre-transform bounding box of a character's tile assembly. */
+typedef struct {
+    f32 min_x, min_y, max_x, max_y;
+} SpriteBox;
+
+/**
+ * @brief Draw an HD sprite override that fills a given tile bounding box.
+ *
+ * Transforms the bounding box corners through the current matrix, then
+ * draws the HD texture scaled to fit.  The position and size come entirely
+ * from the game's own tile data — no hardcoded anchors.
+ *
+ * @return true if the HD override was drawn; false if no override exists.
+ */
+static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index,
+                                   const SpriteBox* box) {
+    void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
+    if (hd_tex == NULL) {
+        return false;
+    }
+
+    /* Transform bounding box corners through the current matrix */
+    Vec3 tl_in  = {box->min_x, box->min_y, 0};
+    Vec3 br_in  = {box->max_x, box->max_y, 0};
+    Vec3 tl_out, br_out;
+    njCalcPoint(NULL, &tl_in, &tl_out);
+    njCalcPoint(NULL, &br_in, &br_out);
+
+    /* Handle flipped transforms: take min/max of transformed corners */
+    float draw_x = fminf(tl_out.x, br_out.x);
+    float draw_y = fminf(tl_out.y, br_out.y);
+    float draw_w = fabsf(br_out.x - tl_out.x);
+    float draw_h = fabsf(br_out.y - tl_out.y);
+
+    /* Z from the matrix, converted to screen-space via flPS2ConvScreenFZ
+     * — same conversion draw_quad applies to game sprites. */
+    float screen_z = flPS2ConvScreenFZ(tl_out.z);
+
+    TextureUtil_DrawQuadEx(hd_tex, draw_x, draw_y, draw_w, draw_h, screen_z,
+                           (flip_flags & 0x8000) ? 1 : 0,
+                           (flip_flags & 0x4000) ? 1 : 0);
+
+    appRenewTempPriority(wk->position_z);
+    return true;
+}
+
 #include <simde/x86/sse.h>
 
 #define PRIO_BASE_SIZE 128
@@ -192,6 +250,58 @@ static void cg_cache_invalidate(void) {
     }
 }
 
+/**
+ * @brief Compute the tile bounding box from pre-built CGTileDesc cache.
+ *        Used by the non-ext render paths (mlt_obj_trans, _cp3, _rgb).
+ */
+static void compute_tile_bbox(const CGTileCacheEntry* cge, s32 flip, SpriteBox* out) {
+    out->min_x = 1e9f;  out->min_y = 1e9f;
+    out->max_x = -1e9f; out->max_y = -1e9f;
+
+    for (s32 t = 0; t < cge->count; t++) {
+        const CGTileDesc* d = &cge->tiles[t];
+
+        f32 x = (flip & 0x8000) ? d->cum_x : -d->cum_x;
+        f32 y = (flip & 0x4000) ? -d->cum_y : d->cum_y;
+
+        f32 left = x - (d->dw * BOOL(flip & 0x8000));
+        f32 top  = y + (d->dh * BOOL(flip & 0x4000));
+
+        if (left          < out->min_x) out->min_x = left;
+        if (top           < out->min_y) out->min_y = top;
+        if (left + d->dw  > out->max_x) out->max_x = left + d->dw;
+        if (top  + d->dh  > out->max_y) out->max_y = top  + d->dh;
+    }
+}
+
+/**
+ * @brief Compute the tile bounding box from raw TileMapEntry data.
+ *        Used by the ext render paths (mlt_obj_trans_ext, _cp3_ext, _rgb_ext).
+ */
+static void compute_tile_bbox_ext(const TileMapEntry* trsptr, s32 count,
+                                  const u32* textbl, s32 flip, SpriteBox* out) {
+    out->min_x = 1e9f;  out->min_y = 1e9f;
+    out->max_x = -1e9f; out->max_y = -1e9f;
+
+    f32 x = 0, y = 0;
+    for (s32 i = 0; i < count; i++) {
+        if (flip & 0x8000) { x += trsptr[i].x; } else { x -= trsptr[i].x; }
+        if (flip & 0x4000) { y -= trsptr[i].y; } else { y += trsptr[i].y; }
+
+        const TEX* texptr = (const TEX*)((uintptr_t)textbl + textbl[trsptr[i].code]);
+        s32 dw = (texptr->wh & 0xE0) >> 2;
+        s32 dh = (texptr->wh & 0x1C) * 2;
+
+        f32 left = x - (dw * BOOL(flip & 0x8000));
+        f32 top  = y + (dh * BOOL(flip & 0x4000));
+
+        if (left      < out->min_x) out->min_x = left;
+        if (top       < out->min_y) out->min_y = top;
+        if (left + dw > out->max_x) out->max_x = left + dw;
+        if (top  + dh > out->max_y) out->max_y = top  + dh;
+    }
+}
+
 // sbss
 s32 curr_bright;
 SpriteChipSet seqs_w;
@@ -279,7 +389,6 @@ static f32 s_mtx_z_step;                 // Per-chip Z increment (cmtx.a[2][2] *
 // forward decls
 static void DebugLine(f32 x, f32 y, f32 w, f32 h);
 static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr, s32 alpha, s32 id);
-static void appRenewTempPriority(s32 z);
 static s16 check_patcash_ex_trans(PatternCollection* padr, u32 cg);
 static s32 get_free_patcash_index(PatternCollection* padr);
 static s32 get_mltbuf16(MultiTexture* mt, u32 code, u32 palt, s32* ret);
@@ -659,6 +768,15 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     mlt_obj_matrix(wk, base_y);
+
+    if (count > 0) {
+        SpriteBox box;
+        compute_tile_bbox_ext(trsptr, count, textbl, attr, &box);
+        if (try_hd_sprite_override(wk, attr, i, &box)) {
+            return;
+        }
+    }
+
     cc.parts.group = 0;
     cc.parts.offset = wk->cg_number;
     ix = check_patcash_ex_trans(mt->cpat, cc.code);
@@ -889,6 +1007,15 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     mlt_obj_matrix(wk, base_y);
+
+    {
+        SpriteBox box;
+        compute_tile_bbox(cge, attr, &box);
+        if (try_hd_sprite_override(wk, attr, cge->group, &box)) {
+            return;
+        }
+    }
+
     cc.parts.group = cge->group;
 
     // ⚡ Opt4: Iterate pre-built tile descriptors instead of walking TileMapEntry[]
@@ -1002,6 +1129,15 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     mlt_obj_matrix(wk, base_y);
+
+    if (count > 0) {
+        SpriteBox box;
+        compute_tile_bbox_ext(trsptr, count, textbl, flip, &box);
+        if (try_hd_sprite_override(wk, flip, i, &box)) {
+            return;
+        }
+    }
+    
     cc.parts.group = 0;
     cc.parts.offset = wk->cg_number;
     ix = check_patcash_ex_trans(mt->cpat, cc.code);
@@ -1246,6 +1382,15 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     mlt_obj_matrix(wk, base_y);
+
+    {
+        SpriteBox box;
+        compute_tile_bbox(cge, flip, &box);
+        if (try_hd_sprite_override(wk, flip, cge->group, &box)) {
+            return;
+        }
+    }
+
     cc.parts.group = cge->group;
 
     // `+"`u{26A1}`+" Opt4: Iterate pre-built tile descriptors instead of walking TileMapEntry[]
@@ -1364,6 +1509,15 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     mlt_obj_matrix(wk, base_y);
+
+    if (count > 0) {
+        SpriteBox box;
+        compute_tile_bbox_ext(trsptr, count, textbl, flip, &box);
+        if (try_hd_sprite_override(wk, flip, i, &box)) {
+            return;
+        }
+    }
+
     cc.parts.group = wk->colcd;
     cc.parts.offset = wk->cg_number;
     ix = check_patcash_ex_trans(mt->cpat, cc.code);
@@ -1590,6 +1744,16 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     mlt_obj_matrix(wk, base_y);
+
+    {
+        SpriteBox box;
+        compute_tile_bbox(cge, flip, &box);
+        if (try_hd_sprite_override(wk, flip, cge->group, &box)) {
+            TRACE_ZONE_END();
+            return;
+        }
+    }
+
     cc.parts.group = cge->group;
 
     // `+"`u{26A1}`+" Opt4: Iterate pre-built tile descriptors instead of walking TileMapEntry[]

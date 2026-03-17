@@ -17,6 +17,7 @@
 struct GPUTextureMetadata {
     SDL_GPUTexture* texture;
     int w, h;
+    uint32_t* pixels;  /* cached RGBA8888 pixels for staging upload */
 };
 
 static std::map<void*, GPUTextureMetadata> s_gpu_textures;
@@ -88,7 +89,16 @@ extern "C" void* TextureUtil_Load(const char* filename) {
 
         SDL_ReleaseGPUTransferBuffer(device, tb);
 
-        GPUTextureMetadata meta = { texture, converted->w, converted->h };
+        GPUTextureMetadata meta = { texture, converted->w, converted->h, nullptr };
+        /* Cache pixel data for staging upload overlay path.
+         * NOTE: TextureUtil_Load is only called for overlay/UI textures (portraits,
+         * sprite overrides), not the thousands of CPS3 game textures — so this
+         * per-texture CPU copy has bounded memory overhead. */
+        size_t px_size = (size_t)converted->w * converted->h * 4;
+        meta.pixels = (uint32_t*)SDL_malloc(px_size);
+        if (meta.pixels) {
+            memcpy(meta.pixels, converted->pixels, px_size);
+        }
         s_gpu_textures[(void*)texture] = meta;
 
         SDL_DestroySurface(converted);
@@ -186,7 +196,12 @@ static void* upload_surface_to_texture(SDL_Surface* surface) {
 
         SDL_ReleaseGPUTransferBuffer(device, tb);
 
-        GPUTextureMetadata meta = { texture, converted->w, converted->h };
+        GPUTextureMetadata meta = { texture, converted->w, converted->h, nullptr };
+        size_t px_size = (size_t)converted->w * converted->h * 4;
+        meta.pixels = (uint32_t*)SDL_malloc(px_size);
+        if (meta.pixels) {
+            memcpy(meta.pixels, converted->pixels, px_size);
+        }
         s_gpu_textures[(void*)texture] = meta;
 
         SDL_DestroySurface(converted);
@@ -231,6 +246,8 @@ extern "C" void TextureUtil_Free(void* texture_id) {
             SDL_GPUDevice* device = SDLApp_GetGPUDevice();
             if (device)
                 SDL_ReleaseGPUTexture(device, it->second.texture);
+            if (it->second.pixels)
+                SDL_free(it->second.pixels);
             s_gpu_textures.erase(it);
         }
     } else if (is_sdl2d_backend(SDLApp_GetRenderer())) {
@@ -304,18 +321,61 @@ extern "C" void TextureUtil_DrawQuad(void* texture_id, float x, float y, float w
          * The overlay sprite uses the legacy texture path (array_layer = -1)
          * so it participates in the normal z-sorted batch draw.
          * z is already a converted depth value (from flPS2ConvScreenFZ or PrioBase). */
-        extern void SDLGameRendererGL_DrawOverlaySprite(
-            unsigned int gl_texture_id, float x, float y, float w, float h, float z);
         SDLGameRendererGL_DrawOverlaySprite((unsigned int)(intptr_t)texture_id, x, y, w, h, z);
 
-    } else if (is_sdl2d_backend(SDLApp_GetRenderer())) {
-        /* SDL2D path: render with SDL_RenderTexture */
-        SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
-        if (!renderer)
+    } else if (SDLApp_GetRenderer() == RENDERER_SDLGPU) {
+        /* GPU path: use array layer for small textures, direct blit for oversized */
+        auto it = s_gpu_textures.find(texture_id);
+        if (it == s_gpu_textures.end() || !it->second.pixels)
             return;
-        SDL_Texture* tex = (SDL_Texture*)texture_id;
-        SDL_FRect dst = { x, y, w, h };
-        SDL_RenderTexture(renderer, tex, NULL, &dst);
+        if (it->second.w > 512 || it->second.h > 512) {
+            /* Oversized: queue a direct blit onto canvas */
+            SDLGameRendererGPU_QueueDeferredBlit(
+                it->second.texture, it->second.w, it->second.h, x, y, w, h, z);
+        } else {
+            SDLGameRendererGPU_DrawOverlaySprite(
+                it->second.pixels, it->second.w, it->second.h, x, y, w, h, z);
+        }
+
+    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
+        /* SDL2D path: enqueue into z-sorted batch */
+        SDLGameRendererSDL_DrawOverlaySprite((SDL_Texture*)texture_id, x, y, w, h, z);
+
+    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D_CLASSIC) {
+        /* Classic path: enqueue into AoS batch */
+        SDLGameRendererClassic_DrawOverlaySprite((SDL_Texture*)texture_id, x, y, w, h, z);
     }
-    /* GPU path: not yet implemented */
 }
+
+extern "C" void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float w, float h, float z, int flip_x, int flip_y) {
+    if (!texture_id)
+        return;
+
+    if (SDLApp_GetRenderer() == RENDERER_OPENGL) {
+        /* GL path */
+        SDLGameRendererGL_DrawOverlaySpriteEx((unsigned int)(intptr_t)texture_id, x, y, w, h, z, flip_x, flip_y);
+
+    } else if (SDLApp_GetRenderer() == RENDERER_SDLGPU) {
+        /* GPU path: use array layer for small textures, direct blit for oversized */
+        auto it = s_gpu_textures.find(texture_id);
+        if (it == s_gpu_textures.end() || !it->second.pixels)
+            return;
+        if (it->second.w > 512 || it->second.h > 512) {
+            /* Oversized: queue a direct blit onto canvas (flip not supported for blits) */
+            SDLGameRendererGPU_QueueDeferredBlit(
+                it->second.texture, it->second.w, it->second.h, x, y, w, h, z);
+        } else {
+            SDLGameRendererGPU_DrawOverlaySpriteEx(
+                it->second.pixels, it->second.w, it->second.h, x, y, w, h, z, flip_x, flip_y);
+        }
+
+    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
+        /* SDL2D path: enqueue into z-sorted batch with flip */
+        SDLGameRendererSDL_DrawOverlaySpriteEx((SDL_Texture*)texture_id, x, y, w, h, z, flip_x, flip_y);
+
+    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D_CLASSIC) {
+        /* Classic path: enqueue into AoS batch with flip */
+        SDLGameRendererClassic_DrawOverlaySpriteEx((SDL_Texture*)texture_id, x, y, w, h, z, flip_x, flip_y);
+    }
+}
+

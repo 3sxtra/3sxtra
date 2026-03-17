@@ -5,6 +5,7 @@
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
+#include "port/sdl/renderer/sprite_override.h"
 
 void SDLGameRenderer_Init() {
     RendererBackend r = SDLApp_GetRenderer();
@@ -20,6 +21,7 @@ void SDLGameRenderer_Init() {
 }
 
 void SDLGameRenderer_Shutdown() {
+    SpriteOverride_Shutdown();
     RendererBackend r = SDLApp_GetRenderer();
     if (r == RENDERER_SDLGPU) {
         SDLGameRendererGPU_Shutdown();
@@ -279,3 +281,4 @@ int Renderer_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 decomp_size, i
     }
     return 0;
 }
+

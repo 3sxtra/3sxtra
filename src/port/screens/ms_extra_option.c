@@ -28,7 +28,7 @@
 #include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h"     /* Dir_Move_Sub, Setup_Next_Page, etc. */
 #include "sf33rd/Source/Game/message/en/msgtable_en.h" /* msgExtraTbl */
-#include "sf33rd/Source/Game/sound/se.h"               /* SE_selected, SE_dir_selected, SE_cursor_move */
+#include "sf33rd/Source/Game/sound/sound3rd.h"          /* SE_selected, SE_dir_selected, SE_cursor_move */
 #include "sf33rd/Source/Game/system/pause.h"           /* Pause_ID */
 #include "sf33rd/Source/Game/system/work_sys.h"        /* save_w, Present_Mode */
 #include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */

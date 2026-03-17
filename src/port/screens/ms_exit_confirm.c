@@ -27,9 +27,8 @@
 #include "sf33rd/Source/Game/engine/workuser.h"    /* plsw_00, plsw_01, Forbid_Reset, Menu_Suicide, Order/Timer */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_in_Sub, Menu_Sub_case1 */
-#include "sf33rd/Source/Game/rendering/texgroup.h" /* Setup_BG */
-#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
-#include "sf33rd/Source/Game/sound/sound3rd.h"     /* Exit_sound_system, sound_all_off */
+#include "sf33rd/Source/Game/system/sys_sub.h"     /* Setup_BG */
+#include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected, Exit_sound_system, sound_all_off */
 #include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                               /* struct _TASK */
 

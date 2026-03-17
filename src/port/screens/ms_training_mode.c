@@ -30,7 +30,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, Mode_Type, etc. */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Exit_Sub */
-#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
+#include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
 #include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
 #include "sf33rd/Source/Game/system/sysdir.h"      /* Setup_Training_Difficulty */
 #include "sf33rd/Source/Game/system/work_sys.h"    /* cpExitTask, system_dir */

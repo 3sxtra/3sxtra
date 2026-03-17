@@ -13,7 +13,7 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/animation/appear.h"   /* Clear_Personal_Data */
+#include "sf33rd/Source/Game/system/sys_sub.h"     /* Clear_Personal_Data */
 #include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
 #include "sf33rd/Source/Game/effect/eff45.h"       /* Message_Data */
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
@@ -23,11 +23,10 @@
 #include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Decide_PL, Exit_Sub */
-#include "sf33rd/Source/Game/rendering/texcash.h"  /* checkAdxFileLoaded, checkSelObjFileLoaded */
-#include "sf33rd/Source/Game/rendering/texgroup.h" /* load_any_texture_patnum */
+#include "sf33rd/Source/Game/rendering/texcash.h"  /* checkAdxFileLoaded */
+#include "sf33rd/Source/Game/rendering/texgroup.h" /* checkSelObjFileLoaded, load_any_texture_patnum */
 #include "sf33rd/Source/Game/screen/entry.h"       /* Entry_Task, TASK_ENTRY */
-#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
-#include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected, etc. */
+#include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
 #include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
 #include "sf33rd/Source/Game/system/saver.h"       /* Saver_Task, TASK_SAVER */
 #include "sf33rd/Source/Game/system/sysdir.h"      /* Setup_Training_Difficulty */

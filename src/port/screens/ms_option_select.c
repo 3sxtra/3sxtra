@@ -29,8 +29,8 @@
 #include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Exit_Sub */
-#include "sf33rd/Source/Game/rendering/texcash.h"  /* checkSelObjFileLoaded */
-#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
+#include "sf33rd/Source/Game/rendering/texgroup.h" /* checkSelObjFileLoaded */
+#include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
 #include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
 #include "sf33rd/Source/Game/system/sys_sub.h"     /* Check_Change_Contents, Copy_Check_w */
 #include "sf33rd/Source/Game/system/work_sys.h"    /* X_Adjust_Buff, Y_Adjust_Buff, save_w */

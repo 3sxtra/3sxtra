@@ -14,6 +14,7 @@
  */
 #include "common.h"
 #include "port/sdl/app/sdl_app.h"
+#include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/tracy_zones.h"
@@ -147,7 +148,7 @@ static void cl_push_texture_to_destroy(SDL_Texture* texture) {
 void SDLGameRendererClassic_Init(void) {
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
     cps3_canvas_classic =
-        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, cps3_width, cps3_height);
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, cps3_width * g_resolution_scale, cps3_height * g_resolution_scale);
     SDL_SetTextureScaleMode(cps3_canvas_classic, SDL_SCALEMODE_NEAREST);
     SDL_SetTextureBlendMode(cps3_canvas_classic, SDL_BLENDMODE_BLEND);
 
@@ -560,9 +561,10 @@ void SDLGameRendererClassic_DrawTexturedQuad(const Sprite* sprite, unsigned int 
     SDL_FColor fcolor;
     cl_read_rgba32_fcolor(color, &fcolor);
 
+    const float scale = (float)g_resolution_scale;
     for (int i = 0; i < 4; i++) {
-        vertices[i].position.x = sprite->v[i].x;
-        vertices[i].position.y = sprite->v[i].y;
+        vertices[i].position.x = sprite->v[i].x * scale;
+        vertices[i].position.y = sprite->v[i].y * scale;
         vertices[i].color = fcolor;
         vertices[i].tex_coord.x = sprite->t[i].s;
         vertices[i].tex_coord.y = sprite->t[i].t;
@@ -576,9 +578,10 @@ void SDLGameRendererClassic_DrawSolidQuad(const Quad* quad, unsigned int color) 
     SDL_FColor fcolor;
     cl_read_rgba32_fcolor(color, &fcolor);
 
+    const float scale = (float)g_resolution_scale;
     for (int i = 0; i < 4; i++) {
-        vertices[i].position.x = quad->v[i].x;
-        vertices[i].position.y = quad->v[i].y;
+        vertices[i].position.x = quad->v[i].x * scale;
+        vertices[i].position.y = quad->v[i].y * scale;
         vertices[i].color = fcolor;
         vertices[i].tex_coord.x = 0.0f;
         vertices[i].tex_coord.y = 0.0f;
@@ -599,15 +602,17 @@ void SDLGameRendererClassic_DrawSprite(const Sprite* sprite, unsigned int color)
         vertices[i].color = fcolor;
     }
 
+    const float scale = (float)g_resolution_scale;
+
     // TL = v[0]
-    vertices[0].position.x = sprite->v[0].x;
-    vertices[0].position.y = sprite->v[0].y;
+    vertices[0].position.x = sprite->v[0].x * scale;
+    vertices[0].position.y = sprite->v[0].y * scale;
     vertices[0].tex_coord.x = sprite->t[0].s;
     vertices[0].tex_coord.y = sprite->t[0].t;
 
     // BR = v[3]
-    vertices[3].position.x = sprite->v[3].x;
-    vertices[3].position.y = sprite->v[3].y;
+    vertices[3].position.x = sprite->v[3].x * scale;
+    vertices[3].position.y = sprite->v[3].y * scale;
     vertices[3].tex_coord.x = sprite->t[3].s;
     vertices[3].tex_coord.y = sprite->t[3].t;
 
@@ -688,4 +693,39 @@ unsigned int SDLGameRendererClassic_GetCachedGLTexture(unsigned int texture_hand
 
 void SDLGameRendererClassic_DumpTextures(void) {
     SDL_Log("[Classic] Texture dump not implemented");
+}
+
+/* ─── Overlay Sprite Enqueue (Classic) ──────────────────────────────── */
+
+void SDLGameRendererClassic_DrawOverlaySpriteEx(SDL_Texture* texture,
+                                                float x, float y, float w, float h,
+                                                float z, int flip_x, int flip_y) {
+    if (cl_render_task_count >= RENDER_TASK_MAX || texture == NULL)
+        return;
+
+    const float s = (float)g_resolution_scale;
+    float sx = x * s, sy = y * s, sw = w * s, sh = h * s;
+
+    float u0 = flip_x ? 1.0f : 0.0f;
+    float u1 = flip_x ? 0.0f : 1.0f;
+    float v0 = flip_y ? 1.0f : 0.0f;
+    float v1 = flip_y ? 0.0f : 1.0f;
+    const SDL_FColor white = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    SDL_Vertex verts[4];
+    verts[0] = (SDL_Vertex){ { sx, sy },             white, { u0, v0 } };
+    verts[1] = (SDL_Vertex){ { sx + sw, sy },         white, { u1, v0 } };
+    verts[2] = (SDL_Vertex){ { sx, sy + sh },         white, { u0, v1 } };
+    verts[3] = (SDL_Vertex){ { sx + sw, sy + sh },   white, { u1, v1 } };
+
+    cl_draw_quad(verts, texture, z);
+    /* Adjust z: cl_draw_quad calls flPS2ConvScreenFZ internally, but we
+     * already have a converted z from TextureUtil_DrawQuad. Override. */
+    cl_render_tasks[cl_render_task_count - 1].z = z;
+}
+
+void SDLGameRendererClassic_DrawOverlaySprite(SDL_Texture* texture,
+                                              float x, float y, float w, float h,
+                                              float z) {
+    SDLGameRendererClassic_DrawOverlaySpriteEx(texture, x, y, w, h, z, 0, 0);
 }

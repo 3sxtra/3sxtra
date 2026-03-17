@@ -36,7 +36,7 @@
 #include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h"     /* System_Dir_Move_Sub, Dir_Move_Sub, etc. */
 #include "sf33rd/Source/Game/message/en/msgtable_en.h" /* msgSysDirTbl */
-#include "sf33rd/Source/Game/sound/se.h"               /* SE_selected, SE_dir_selected */
+#include "sf33rd/Source/Game/sound/sound3rd.h"          /* SE_selected, SE_dir_selected, SE_cursor_move */
 #include "sf33rd/Source/Game/system/reset.h"           /* Suicide */
 #include "sf33rd/Source/Game/system/sys_sub.h"         /* Check_SysDir_Page */
 #include "sf33rd/Source/Game/system/sysdir.h"          /* system_dir, Direction_Working */

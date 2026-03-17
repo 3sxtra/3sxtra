@@ -88,6 +88,9 @@ void ParseCLI(int argc, char* argv[]) {
             printf("[CLI] Master volume: %d%%\n", vol);
         } else if (strcmp(argv[i], "--scale") == 0 && i + 1 < argc) {
             g_resolution_scale = SDL_atoi(argv[++i]);
+            if (g_resolution_scale < 1) g_resolution_scale = 1;
+            if (g_resolution_scale > 16) g_resolution_scale = 16;
+            printf("[CLI] Resolution scale: %dx\n", g_resolution_scale);
         } else if (strcmp(argv[i], "--port") == 0 && i + 1 < argc) {
             int p = SDL_atoi(argv[++i]);
             if (p > 0 && p <= 65535) {

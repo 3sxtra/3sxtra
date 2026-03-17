@@ -134,7 +134,7 @@ void SDLGameRendererGL_BeginFrame(void) {
     float a = ModdedStage_IsActiveForCurrentStage() ? 0.0f : 1.0f;
 
     glBindFramebuffer(GL_FRAMEBUFFER, gl_state.cps3_canvas_fbo);
-    glViewport(0, 0, 384, 224);
+    glViewport(0, 0, 384 * g_resolution_scale, 224 * g_resolution_scale);
     glClearColor(r, g, b, a);
 
     glClear(GL_COLOR_BUFFER_BIT);
@@ -150,8 +150,10 @@ void SDLGameRendererGL_RenderFrame(void) {
 
     stable_sort_render_tasks();
 
-    static const float projection[4][4] = { { 2.0f / 384.0f, 0.0f, 0.0f, 0.0f },
-                                            { 0.0f, -2.0f / 224.0f, 0.0f, 0.0f },
+    const float sw = 384.0f * g_resolution_scale;
+    const float sh = 224.0f * g_resolution_scale;
+    const float projection[4][4] = { { 2.0f / sw, 0.0f, 0.0f, 0.0f },
+                                            { 0.0f, -2.0f / sh, 0.0f, 0.0f },
                                             { 0.0f, 0.0f, -1.0f, 0.0f },
                                             { -1.0f, 1.0f, 0.0f, 1.0f } };
 
@@ -375,18 +377,20 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     const Uint32 src = vertices[0].color;
     const Uint32 swizzled = ((src & 0xFF) << 16) | (src & 0xFF00FF00) | ((src >> 16) & 0xFF);
 
+    const float scale = (float)g_resolution_scale;
+
     if (textured) {
         for (int i = 0; i < 4; i++) {
-            sdl_vertices[i].position.x = vertices[i].coord.x;
-            sdl_vertices[i].position.y = vertices[i].coord.y;
+            sdl_vertices[i].position.x = vertices[i].coord.x * scale;
+            sdl_vertices[i].position.y = vertices[i].coord.y * scale;
             memcpy(&sdl_vertices[i].color, &swizzled, sizeof(Uint32));
             sdl_vertices[i].tex_coord.x = vertices[i].tex_coord.s;
             sdl_vertices[i].tex_coord.y = vertices[i].tex_coord.t;
         }
     } else {
         for (int i = 0; i < 4; i++) {
-            sdl_vertices[i].position.x = vertices[i].coord.x;
-            sdl_vertices[i].position.y = vertices[i].coord.y;
+            sdl_vertices[i].position.x = vertices[i].coord.x * scale;
+            sdl_vertices[i].position.y = vertices[i].coord.y * scale;
             memcpy(&sdl_vertices[i].color, &swizzled, sizeof(Uint32));
             sdl_vertices[i].tex_coord.x = 0.0f;
             sdl_vertices[i].tex_coord.y = 0.0f;
@@ -561,10 +565,11 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
         const Uint32 color = ((src_color & 0xFF) << 16) | (src_color & 0xFF00FF00u) | ((src_color >> 16) & 0xFF);
 
         // Positions: v[0] = top-left, v[1] = bottom-right; expand to 4 corners
-        const float x0 = spr->v[0].x;
-        const float y0 = spr->v[0].y;
-        const float x1 = spr->v[1].x;
-        const float y1 = spr->v[1].y;
+        const float scale = (float)g_resolution_scale;
+        const float x0 = spr->v[0].x * scale;
+        const float y0 = spr->v[0].y * scale;
+        const float x1 = spr->v[1].x * scale;
+        const float y1 = spr->v[1].y * scale;
 
         // UVs: t[0] = top-left, t[1] = bottom-right; expand to 4 corners
         float s0 = spr->t[0].s;
@@ -643,31 +648,33 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
 void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id, float x, float y, float w, float h, float z) {
     const Uint32 white = 0xFFFFFFFF;
     SDL_Vertex sdl_vertices[4];
+    const float s = (float)g_resolution_scale;
+    float sx = x * s, sy = y * s, sw = w * s, sh = h * s;
 
     /* Top-left */
-    sdl_vertices[0].position.x = x;
-    sdl_vertices[0].position.y = y;
+    sdl_vertices[0].position.x = sx;
+    sdl_vertices[0].position.y = sy;
     sdl_vertices[0].tex_coord.x = 0.0f;
     sdl_vertices[0].tex_coord.y = 0.0f;
     memcpy(&sdl_vertices[0].color, &white, sizeof(Uint32));
 
     /* Top-right */
-    sdl_vertices[1].position.x = x + w;
-    sdl_vertices[1].position.y = y;
+    sdl_vertices[1].position.x = sx + sw;
+    sdl_vertices[1].position.y = sy;
     sdl_vertices[1].tex_coord.x = 1.0f;
     sdl_vertices[1].tex_coord.y = 0.0f;
     memcpy(&sdl_vertices[1].color, &white, sizeof(Uint32));
 
     /* Bottom-left */
-    sdl_vertices[2].position.x = x;
-    sdl_vertices[2].position.y = y + h;
+    sdl_vertices[2].position.x = sx;
+    sdl_vertices[2].position.y = sy + sh;
     sdl_vertices[2].tex_coord.x = 0.0f;
     sdl_vertices[2].tex_coord.y = 1.0f;
     memcpy(&sdl_vertices[2].color, &white, sizeof(Uint32));
 
     /* Bottom-right */
-    sdl_vertices[3].position.x = x + w;
-    sdl_vertices[3].position.y = y + h;
+    sdl_vertices[3].position.x = sx + sw;
+    sdl_vertices[3].position.y = sy + sh;
     sdl_vertices[3].tex_coord.x = 1.0f;
     sdl_vertices[3].tex_coord.y = 1.0f;
     memcpy(&sdl_vertices[3].color, &white, sizeof(Uint32));
@@ -675,3 +682,47 @@ void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id, float x, fl
     /* Push as a legacy texture (array_layer = -1, pal_slot = 0) */
     push_render_task((GLuint)gl_texture_id, sdl_vertices, z, -1, 0);
 }
+
+void SDLGameRendererGL_DrawOverlaySpriteEx(unsigned int gl_texture_id, float x, float y, float w, float h, float z, int flip_x, int flip_y) {
+    const Uint32 white = 0xFFFFFFFF;
+    SDL_Vertex sdl_vertices[4];
+    const float s = (float)g_resolution_scale;
+    float sx = x * s, sy = y * s, sw = w * s, sh = h * s;
+
+    float min_u = flip_x ? 1.0f : 0.0f;
+    float max_u = flip_x ? 0.0f : 1.0f;
+    float min_v = flip_y ? 1.0f : 0.0f;
+    float max_v = flip_y ? 0.0f : 1.0f;
+
+    /* Top-left */
+    sdl_vertices[0].position.x = sx;
+    sdl_vertices[0].position.y = sy;
+    sdl_vertices[0].tex_coord.x = min_u;
+    sdl_vertices[0].tex_coord.y = min_v;
+    memcpy(&sdl_vertices[0].color, &white, sizeof(Uint32));
+
+    /* Top-right */
+    sdl_vertices[1].position.x = sx + sw;
+    sdl_vertices[1].position.y = sy;
+    sdl_vertices[1].tex_coord.x = max_u;
+    sdl_vertices[1].tex_coord.y = min_v;
+    memcpy(&sdl_vertices[1].color, &white, sizeof(Uint32));
+
+    /* Bottom-left */
+    sdl_vertices[2].position.x = sx;
+    sdl_vertices[2].position.y = sy + sh;
+    sdl_vertices[2].tex_coord.x = min_u;
+    sdl_vertices[2].tex_coord.y = max_v;
+    memcpy(&sdl_vertices[2].color, &white, sizeof(Uint32));
+
+    /* Bottom-right */
+    sdl_vertices[3].position.x = sx + sw;
+    sdl_vertices[3].position.y = sy + sh;
+    sdl_vertices[3].tex_coord.x = max_u;
+    sdl_vertices[3].tex_coord.y = max_v;
+    memcpy(&sdl_vertices[3].color, &white, sizeof(Uint32));
+
+    /* Push as a legacy texture (array_layer = -1, pal_slot = 0) */
+    push_render_task((GLuint)gl_texture_id, sdl_vertices, z, -1, 0);
+}
+

@@ -55,6 +55,14 @@ void TextureUtil_Shutdown(void);
  */
 void TextureUtil_DrawQuad(void* texture_id, float x, float y, float w, float h, float z);
 
+/**
+ * @brief Draw a TextureUtil texture with optional horizontal/vertical flip.
+ *
+ * Same as TextureUtil_DrawQuad but flips UV coordinates when flip_x/flip_y
+ * are non-zero.  Used by the HD sprite override system.
+ */
+void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float w, float h, float z, int flip_x, int flip_y);
+
 #ifdef __cplusplus
 }
 #endif

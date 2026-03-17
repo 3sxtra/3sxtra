@@ -31,7 +31,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"      /* Menu_Cursor_Y, save_w, etc. */
 #include "sf33rd/Source/Game/menu/menu.h"            /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h"   /* Sound_Cursor_Sub, Return_Option_Mode_Sub, etc. */
-#include "sf33rd/Source/Game/sound/se.h"             /* SE_selected, BGM_Request_Code_Check, BGM_Stop */
+#include "sf33rd/Source/Game/sound/se.h"             /* BGM_Request_Code_Check, BGM_Stop */
 #include "sf33rd/Source/Game/sound/sound3rd.h"       /* bgm_level, se_level, SsBgmHalfVolume, SsRequest, etc. */
 #include "sf33rd/Source/Game/system/reset.h"         /* Suicide */
 #include "sf33rd/Source/Game/system/sys_sub.h"       /* Save_Game_Data, Clear_Flash_Sub, Clear_Flash_Init */

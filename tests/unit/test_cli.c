@@ -122,6 +122,28 @@ static void test_cli_renderer_sdl2d(void **state) {
     assert_int_equal(last_renderer_backend, RENDERER_SDL2D);
 }
 
+static void test_cli_scale_bounds(void **state) {
+    (void) state;
+
+    /* --scale 0 should clamp to 1 */
+    g_resolution_scale = 1;
+    char* argv1[] = {"3sx", "--scale", "0"};
+    ParseCLI(3, argv1);
+    assert_int_equal(g_resolution_scale, 1);
+
+    /* --scale 32 should clamp to 16 */
+    g_resolution_scale = 1;
+    char* argv2[] = {"3sx", "--scale", "32"};
+    ParseCLI(3, argv2);
+    assert_int_equal(g_resolution_scale, 16);
+
+    /* --scale 2 should set to 2 */
+    g_resolution_scale = 1;
+    char* argv3[] = {"3sx", "--scale", "2"};
+    ParseCLI(3, argv3);
+    assert_int_equal(g_resolution_scale, 2);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_cli_enable_broadcast),
@@ -129,6 +151,7 @@ int main(void) {
         cmocka_unit_test(test_cli_renderer_gl),
         cmocka_unit_test(test_cli_renderer_sdl),
         cmocka_unit_test(test_cli_renderer_sdl2d),
+        cmocka_unit_test(test_cli_scale_bounds),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

@@ -30,7 +30,7 @@
 #include "sf33rd/Source/Game/io/vm_sub.h"          /* Setup_File_Property */
 #include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Memory_Card_Sub, Button_Exit_Check, etc. */
-#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
+#include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
 #include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
 #include "sf33rd/Source/Game/system/sys_sub.h"     /* Save_Game_Data */
 #include "sf33rd/Source/Game/system/work_sys.h"    /* save_w */

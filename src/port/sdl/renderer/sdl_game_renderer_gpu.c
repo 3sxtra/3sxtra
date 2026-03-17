@@ -9,7 +9,7 @@
 #include "sdl_game_renderer_gpu_internal.h"
 
 #include "port/mods/modded_stage.h"
-
+#include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/tracy_zones.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
@@ -89,6 +89,10 @@ int s_pal_upload_count = 0;
 QuadSortKey quad_sort_keys[MAX_QUADS];
 unsigned int quad_count = 0;
 QuadSortKey quad_sort_temp[MAX_QUADS];
+
+/* ─── Per-quad standalone overlay texture (for oversized overlays) ─── */
+static SDL_GPUTexture* quad_overlay_tex[MAX_QUADS];
+SDL_GPUTexture* s_1x1_white_texture = NULL;  /* fallback for overlay sampler */
 
 /** @brief Begin a new frame: acquire command buffer and swapchain texture. */
 void SDLGameRendererGPU_BeginFrame(void) {
@@ -175,6 +179,9 @@ void SDLGameRendererGPU_BeginFrame(void) {
     s_tex_upload_count = 0;
     s_pal_upload_count = 0;
     s_last_set_texture_handle = 0; // ⚡ Reset back-to-back cache each frame
+
+    extern void SDLGameRendererGPU_FreeOverlayLayers(void);
+    SDLGameRendererGPU_FreeOverlayLayers(); // Free temp overlay array layers from last frame
 
     LZ77_BeginFrame(s_lz77_ctx);
 
@@ -404,22 +411,24 @@ void SDLGameRendererGPU_RenderFrame(void) {
         SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(current_cmd_buf, &color_target, 1, NULL);
         if (pass) {
             if (pipeline && vertex_count > 0) {
-                // Fixed viewport for Canvas
+                // Fixed viewport for Canvas (scaled)
+                const int sw = 384 * g_resolution_scale;
+                const int sh = 224 * g_resolution_scale;
                 SDL_GPUViewport viewport;
                 SDL_zero(viewport);
                 viewport.x = 0;
                 viewport.y = 0;
-                viewport.w = 384;
-                viewport.h = 224;
+                viewport.w = sw;
+                viewport.h = sh;
                 viewport.min_depth = 0.0f;
                 viewport.max_depth = 1.0f;
                 SDL_SetGPUViewport(pass, &viewport);
 
-                SDL_Rect scissor = { 0, 0, 384, 224 };
+                SDL_Rect scissor = { 0, 0, sw, sh };
                 SDL_SetGPUScissor(pass, &scissor);
 
-                float matrix[4][4] = { { 2.0f / 384.0f, 0.0f, 0.0f, 0.0f },
-                                       { 0.0f, -2.0f / 224.0f, 0.0f, 0.0f },
+                float matrix[4][4] = { { 2.0f / (float)sw, 0.0f, 0.0f, 0.0f },
+                                       { 0.0f, -2.0f / (float)sh, 0.0f, 0.0f },
                                        { 0.0f, 0.0f, -1.0f, 0.0f },
                                        { -1.0f, 1.0f, 0.0f, 1.0f } };
                 SDL_BindGPUGraphicsPipeline(pass, pipeline);
@@ -436,15 +445,45 @@ void SDLGameRendererGPU_RenderFrame(void) {
                 ib_binding.offset = 0;
                 SDL_BindGPUIndexBuffer(pass, &ib_binding, SDL_GPU_INDEXELEMENTSIZE_16BIT);
 
-                // Bind 2 fragment samplers: indexed texture array + palette atlas
-                SDL_GPUTextureSamplerBinding tex_bindings[2];
+                // Bind 3 fragment samplers: texture array + palette atlas + overlay
+                SDL_GPUTextureSamplerBinding tex_bindings[3];
                 tex_bindings[0].texture = texture_array;
                 tex_bindings[0].sampler = sampler;
                 tex_bindings[1].texture = s_palette_texture;
                 tex_bindings[1].sampler = palette_sampler;
-                SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 2);
+                tex_bindings[2].texture = s_1x1_white_texture ? s_1x1_white_texture : texture_array;
+                tex_bindings[2].sampler = sampler;
+                SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 3);
 
-                SDL_DrawGPUIndexedPrimitives(pass, index_count, 1, 0, 0, 0);
+                // Split-draw: batch consecutive quads with the same overlay texture.
+                // Most quads have NULL overlay (use array), so they batch efficiently.
+                unsigned int draw_start = 0;
+                SDL_GPUTexture* current_overlay = NULL; // NULL = default (1x1 white)
+                for (unsigned int qi = 0; qi <= quad_count; qi++) {
+                    SDL_GPUTexture* this_overlay = NULL;
+                    if (qi < quad_count) {
+                        int orig_idx = quad_sort_keys[qi].original_index;
+                        this_overlay = quad_overlay_tex[orig_idx];
+                    }
+                    if (qi == quad_count || this_overlay != current_overlay) {
+                        // Flush previous segment
+                        unsigned int segment_quads = qi - draw_start;
+                        if (segment_quads > 0) {
+                            SDL_DrawGPUIndexedPrimitives(pass, segment_quads * 6, 1,
+                                                         draw_start * 6, 0, 0);
+                        }
+                        if (qi < quad_count && this_overlay != current_overlay) {
+                            // Rebind overlay sampler
+                            current_overlay = this_overlay;
+                            tex_bindings[2].texture = current_overlay
+                                ? current_overlay
+                                : (s_1x1_white_texture ? s_1x1_white_texture : texture_array);
+                            tex_bindings[2].sampler = sampler;
+                            SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 3);
+                        }
+                        draw_start = qi;
+                    }
+                }
             }
             SDL_EndGPURenderPass(pass);
         }
@@ -498,10 +537,11 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     float g = ((c >> 8) & 0xFF) / 255.0f;
     float r = ((c >> 16) & 0xFF) / 255.0f;
     float a = ((c >> 24) & 0xFF) / 255.0f;
+    const float scale = (float)g_resolution_scale;
 
     for (int i = 0; i < 4; i++) {
-        v[i].x = vertices[i].coord.x;
-        v[i].y = vertices[i].coord.y;
+        v[i].x = vertices[i].coord.x * scale;
+        v[i].y = vertices[i].coord.y * scale;
         v[i].r = r;
         v[i].g = g;
         v[i].b = b;
@@ -515,6 +555,7 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     if (quad_count < MAX_QUADS) {
         quad_sort_keys[quad_count].z = flPS2ConvScreenFZ(vertices[0].coord.z);
         quad_sort_keys[quad_count].original_index = quad_count;
+        quad_overlay_tex[quad_count] = NULL;
         quad_count++;
     }
 
@@ -657,10 +698,11 @@ void SDLGameRendererGPU_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         const float cb = color_f[0], cg = color_f[1], cr = color_f[2], ca = color_f[3];
 
         // Expand Sprite2 (2 corners) to 4-vertex quad
-        const float x0 = spr->v[0].x;
-        const float y0 = spr->v[0].y;
-        const float x1 = spr->v[1].x;
-        const float y1 = spr->v[1].y;
+        const float scale = (float)g_resolution_scale;
+        const float x0 = spr->v[0].x * scale;
+        const float y0 = spr->v[0].y * scale;
+        const float x1 = spr->v[1].x * scale;
+        const float y1 = spr->v[1].y * scale;
         const float s0 = spr->t[0].s * uv_sx;
         const float t0 = spr->t[0].t * uv_sy;
         const float s1 = spr->t[1].s * uv_sx;
@@ -711,6 +753,7 @@ void SDLGameRendererGPU_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         if (quad_count < MAX_QUADS) {
             quad_sort_keys[quad_count].z = flPS2ConvScreenFZ(spr->v[0].z);
             quad_sort_keys[quad_count].original_index = quad_count;
+            quad_overlay_tex[quad_count] = NULL;
             quad_count++;
         }
 
@@ -761,3 +804,157 @@ int SDLGameRendererGPU_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 deco
 
     return LZ77_Enqueue(s_lz77_ctx, device, compressed, comp_size, decomp_size, ti, layer, code, tile_dim);
 }
+
+/* ─── Overlay Sprite Drawing ─────────────────────────────────────────── */
+
+/**
+ * @brief Track temporary texture array layers used for overlay sprites.
+ *
+ * Overlay textures (HD sprite overrides, portraits, etc.) need to participate
+ * in the z-sorted batch.  We upload their cached CPU-side pixels into
+ * temporary texture array layers via the compute staging buffer (same proven
+ * path as SetTexture), then push quads with paletteIdx = -1 for direct RGBA.
+ */
+#define MAX_OVERLAY_LAYERS 16
+static int s_overlay_layers[MAX_OVERLAY_LAYERS];
+static int s_overlay_layer_count = 0;
+
+/** @brief Free all temporary overlay layers (called from BeginFrame). */
+void SDLGameRendererGPU_FreeOverlayLayers(void) {
+    for (int i = 0; i < s_overlay_layer_count; i++) {
+        if (s_overlay_layers[i] >= 0 && tex_array_free_count < TEX_ARRAY_MAX_LAYERS) {
+            tex_array_free[tex_array_free_count++] = s_overlay_layers[i];
+        }
+    }
+    s_overlay_layer_count = 0;
+}
+
+/**
+ * @brief Upload cached RGBA pixels into a temporary texture array layer.
+ *
+ * Uses the compute staging buffer (same path as SetTexture) to copy
+ * CPU-side pixel data into a free texture array layer.  Returns the
+ * layer index, or -1 on failure.
+ */
+static int upload_overlay_to_array_layer(const uint32_t* pixels, int tex_w, int tex_h) {
+    if (!device || !current_cmd_buf || !texture_array || !pixels)
+        return -1;
+    if (tex_array_free_count <= 0)
+        return -1;
+    if (s_overlay_layer_count >= MAX_OVERLAY_LAYERS)
+        return -1;
+    if (tex_w > TEX_ARRAY_SIZE || tex_h > TEX_ARRAY_SIZE)
+        return -1;
+
+    /* Lazily map the staging buffer on first overlay this frame */
+    if (!s_compute_staging_ptr) {
+        s_compute_staging_ptr = (u8*)SDL_MapGPUTransferBuffer(device, s_compute_staging_buffer, true);
+        s_compute_staging_offset = 0;
+    }
+    if (!s_compute_staging_ptr)
+        return -1;
+
+    size_t rgba_size = (size_t)tex_w * tex_h * 4;
+    if (s_tex_upload_count >= MAX_COMPUTE_JOBS ||
+        s_compute_staging_offset + rgba_size > COMPUTE_STORAGE_SIZE)
+        return -1;
+
+    int layer = tex_array_free[--tex_array_free_count];
+
+    /* Copy pixel data into staging buffer */
+    Uint32 out_offset = (Uint32)s_compute_staging_offset;
+    memcpy(s_compute_staging_ptr + s_compute_staging_offset, pixels, rgba_size);
+    s_compute_staging_offset += rgba_size;
+    /* Vulkan alignment requirement */
+    s_compute_staging_offset = (s_compute_staging_offset + 511) & ~511;
+
+    /* Enqueue upload job (processed in RenderFrame copy pass) */
+    TextureUploadJob* job = &s_tex_upload_jobs[s_tex_upload_count++];
+    job->width = tex_w;
+    job->height = tex_h;
+    job->layer = layer;
+    job->offset = out_offset;
+
+    s_overlay_layers[s_overlay_layer_count++] = layer;
+    return layer;
+}
+
+/**
+ * @brief Push an overlay quad into the GPU batch.
+ *
+ * For array-layer overlays: standalone_tex = NULL, layer >= 0
+ * For standalone overlays:  standalone_tex != NULL, layer = -2 (sentinel)
+ */
+static void push_overlay_quad(int layer, float x, float y, float w, float h,
+                               float z, int tex_w, int tex_h,
+                               int flip_x, int flip_y,
+                               SDL_GPUTexture* standalone_tex) {
+    if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES || quad_count >= MAX_QUADS)
+        return;
+
+    float u0, u1, v0, v1;
+    if (standalone_tex) {
+        /* Standalone texture: UVs span [0,1] */
+        u0 = flip_x ? 1.0f : 0.0f;
+        u1 = flip_x ? 0.0f : 1.0f;
+        v0 = flip_y ? 1.0f : 0.0f;
+        v1 = flip_y ? 0.0f : 1.0f;
+    } else {
+        /* Array layer: UVs are scaled to sub-rect within the 512×512 layer */
+        float u_scale = (float)tex_w / (float)TEX_ARRAY_SIZE;
+        float v_scale = (float)tex_h / (float)TEX_ARRAY_SIZE;
+        u0 = flip_x ? u_scale : 0.0f;
+        u1 = flip_x ? 0.0f : u_scale;
+        v0 = flip_y ? v_scale : 0.0f;
+        v1 = flip_y ? 0.0f : v_scale;
+    }
+
+    GPUVertex* v = (GPUVertex*)mapped_vertex_ptr + vertex_count;
+    float fl = (float)layer;
+    const float s = (float)g_resolution_scale;
+    float sx = x * s, sy = y * s, sw = w * s, sh = h * s;
+
+    /* Top-left */
+    v[0] = (GPUVertex){ sx, sy,             1, 1, 1, 1, u0, v0, fl, -1.0f };
+    /* Top-right */
+    v[1] = (GPUVertex){ sx + sw, sy,         1, 1, 1, 1, u1, v0, fl, -1.0f };
+    /* Bottom-left */
+    v[2] = (GPUVertex){ sx, sy + sh,         1, 1, 1, 1, u0, v1, fl, -1.0f };
+    /* Bottom-right */
+    v[3] = (GPUVertex){ sx + sw, sy + sh,   1, 1, 1, 1, u1, v1, fl, -1.0f };
+
+    quad_sort_keys[quad_count].z = z;
+    quad_sort_keys[quad_count].original_index = quad_count;
+    quad_overlay_tex[quad_count] = standalone_tex;
+    quad_count++;
+    vertex_count += 4;
+}
+
+/** @brief Draw an overlay sprite using cached CPU-side pixel data. */
+void SDLGameRendererGPU_DrawOverlaySprite(const uint32_t* pixels, int tex_w, int tex_h,
+                                          float x, float y, float w, float h, float z) {
+    int layer = upload_overlay_to_array_layer(pixels, tex_w, tex_h);
+    if (layer < 0)
+        return;
+    push_overlay_quad(layer, x, y, w, h, z, tex_w, tex_h, 0, 0, NULL);
+}
+
+/** @brief Draw an overlay sprite with optional flipping. */
+void SDLGameRendererGPU_DrawOverlaySpriteEx(const uint32_t* pixels, int tex_w, int tex_h,
+                                            float x, float y, float w, float h, float z,
+                                            int flip_x, int flip_y) {
+    int layer = upload_overlay_to_array_layer(pixels, tex_w, tex_h);
+    if (layer < 0)
+        return;
+    push_overlay_quad(layer, x, y, w, h, z, tex_w, tex_h, flip_x, flip_y, NULL);
+}
+
+/** @brief Queue a standalone GPU texture into the z-sorted batch (oversized overlays). */
+void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture* texture, int tex_w, int tex_h,
+                                           float x, float y, float w, float h, float z) {
+    if (!texture)
+        return;
+    /* Push a quad with layer=-2 (standalone overlay sentinel) */
+    push_overlay_quad(-2, x, y, w, h, z, tex_w, tex_h, 0, 0, texture);
+}
+

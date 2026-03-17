@@ -111,7 +111,7 @@ void SDLGameRendererGL_Init() {
 
     glGenTextures(1, &cps3_canvas_texture);
     glBindTexture(GL_TEXTURE_2D, cps3_canvas_texture);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 384, 224);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 384 * g_resolution_scale, 224 * g_resolution_scale);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cps3_canvas_texture, 0);

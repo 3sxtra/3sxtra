@@ -1040,8 +1040,8 @@ void SDLApp_EndFrame() {
                                                       canvas,
                                                       s_librashader_intermediate,
                                                       swapchain,
-                                                      384,
-                                                      224,
+                                                      384 * g_resolution_scale,
+                                                      224 * g_resolution_scale,
                                                       vp_w,
                                                       vp_h,
                                                       win_w,
@@ -1053,8 +1053,8 @@ void SDLApp_EndFrame() {
                 SDL_GPUBlitInfo blit_info;
                 SDL_zero(blit_info);
                 blit_info.source.texture = canvas;
-                blit_info.source.w = 384;
-                blit_info.source.h = 224;
+                blit_info.source.w = 384 * g_resolution_scale;
+                blit_info.source.h = 224 * g_resolution_scale;
                 blit_info.destination.texture = swapchain;
                 blit_info.destination.x = viewport.x;
                 blit_info.destination.y = viewport.y;
@@ -1109,7 +1109,7 @@ void SDLApp_EndFrame() {
         }
 
         if (broadcast_config.enabled && broadcast_config.source == BROADCAST_SOURCE_NATIVE) {
-            Broadcast_Send(cps3_canvas_texture, 384, 224, true);
+            Broadcast_Send(cps3_canvas_texture, 384 * g_resolution_scale, 224 * g_resolution_scale, true);
         }
 
         // Get window dimensions and set viewport for final blit
@@ -1124,11 +1124,9 @@ void SDLApp_EndFrame() {
                                               { 0.0f, 0.0f, 1.0f, 0.0f },
                                               { 0.0f, 0.0f, 0.0f, 1.0f } };
 
-        // ⚡ Bolt: Canvas dimensions are always 384×224 (set in SDLGameRenderer_Init),
-        // so use constants instead of querying the GPU every frame. Eliminates 2
-        // glGetTexLevelParameteriv round-trips per frame (~20-100µs on RPi4 V3D).
-        const int tex_w = 384;
-        const int tex_h = 224;
+        // Canvas dimensions scale with g_resolution_scale.
+        const int tex_w = 384 * g_resolution_scale;
+        const int tex_h = 224 * g_resolution_scale;
 
         TRACE_SUB_BEGIN("SceneBlit");
         if (SDLAppShader_IsLibretroMode() && SDLAppShader_GetManager()) {

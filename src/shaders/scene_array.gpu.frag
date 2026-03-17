@@ -12,9 +12,15 @@ layout(set = 2, binding = 0) uniform sampler2DArray TexArray;
 // Palette atlas: 256 wide × 1088 tall, each row is a 256-color palette
 layout(set = 2, binding = 1) uniform sampler2D PaletteTex;
 
+// Standalone overlay texture (HD portraits that exceed array layer size)
+layout(set = 2, binding = 2) uniform sampler2D OverlayTex;
+
 void main()
 {
-    if (TexLayer < 0.0) {
+    if (TexLayer < -1.5) {
+        // Standalone overlay texture (layer sentinel = -2.0)
+        FragColor = texture(OverlayTex, TexCoord) * FgColor;
+    } else if (TexLayer < 0.0) {
         // Untextured solid color quad
         FragColor = FgColor;
     } else if (PaletteIdx >= 0.0) {
