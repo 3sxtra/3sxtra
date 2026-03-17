@@ -80,7 +80,7 @@ static void extra_option_enter(struct _TASK* task_ptr) {
     FadeOut(1, 0xFF, 8);
     task_ptr->r_no[2] = 1; /* advance for Setup_Next_Page in first tick */
     task_ptr->r_no[3] = 0;
-    task_ptr->timer = 5;
+    task_ptr->timer = 0; /* 0 to bypass registry WAIT/FADE_IN */
     Menu_Suicide[1] = 1;
     Menu_Suicide[2] = 0;
     Menu_Page = 0;
@@ -116,6 +116,7 @@ static void extra_option_tick(struct _TASK* task_ptr) {
         /* Case 1: Setup_Next_Page */
         FadeOut(1, 0xFF, 8);
         task_ptr->r_no[2] = 2; /* set for timer phase compat */
+        task_ptr->timer = 5;
         Setup_Next_Page(task_ptr, task_ptr->r_no[3]);
 
         s_eo_phase = EO_PHASE_TIMER;

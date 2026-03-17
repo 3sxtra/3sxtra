@@ -220,28 +220,28 @@ static void After_Title(struct _TASK* task_ptr) {
      * 19 (Save_Direction), and 20 (Load_Direction) are still actively
      * dispatched through this table. */
     void (*AT_Jmp_Tbl[AT_JMP_COUNT])() = {
-        Menu_Init,       /* [ 0] Menu_Init — bootstrap (un-migrated) */
-        Menu_Init,       /* [ 1] DEAD: migrated to MENU_SCREEN_MODE_SELECT */
-        Menu_Init,       /* [ 2] DEAD: migrated to MENU_SCREEN_OPTION_SELECT */
-        Menu_Init,       /* [ 3] DEAD: OPTION_SELECT alias */
-        Menu_Init,       /* [ 4] DEAD: migrated to MENU_SCREEN_TRAINING_MODE */
-        Menu_Init,       /* [ 5] DEAD: migrated to MENU_SCREEN_SYSTEM_DIRECTION */
-        Menu_Init,       /* [ 6] DEAD: migrated to MENU_SCREEN_LOAD_REPLAY */
-        Menu_Init,       /* [ 7] DEAD: OPTION_SELECT alias */
-        Menu_Init,       /* [ 8] DEAD: migrated to MENU_SCREEN_EXIT_CONFIRM */
-        Menu_Init,       /* [ 9] DEAD: migrated to MENU_SCREEN_GAME_OPTION */
-        Menu_Init,       /* [10] DEAD: migrated to MENU_SCREEN_BUTTON_CONFIG */
-        Menu_Init,       /* [11] DEAD: SYSTEM_DIRECTION alias */
-        Menu_Init,       /* [12] DEAD: migrated to MENU_SCREEN_SOUND_TEST */
-        Menu_Init,       /* [13] DEAD: migrated to MENU_SCREEN_MEMORY_CARD */
-        Menu_Init,       /* [14] DEAD: migrated to MENU_SCREEN_EXTRA_OPTION */
-        Menu_Init,       /* [15] DEAD: OPTION_SELECT alias */
-        Menu_Init,       /* [16] DEAD: migrated to MENU_SCREEN_VS_RESULT */
-        Menu_Init,       /* [17] DEAD: migrated to MENU_SCREEN_SAVE_REPLAY */
-        Menu_Init,       /* [18] DEAD: migrated to MENU_SCREEN_DIRECTION_MENU */
-        Save_Direction,  /* [19] Save_Direction (un-migrated) */
-        Load_Direction,  /* [20] Load_Direction (un-migrated) */
-        Menu_Init,       /* [21] DEAD: migrated to MENU_SCREEN_NETWORK_LOBBY */
+        Menu_Init,      /* [ 0] Menu_Init — bootstrap (un-migrated) */
+        Menu_Init,      /* [ 1] DEAD: migrated to MENU_SCREEN_MODE_SELECT */
+        Menu_Init,      /* [ 2] DEAD: migrated to MENU_SCREEN_OPTION_SELECT */
+        Menu_Init,      /* [ 3] DEAD: OPTION_SELECT alias */
+        Menu_Init,      /* [ 4] DEAD: migrated to MENU_SCREEN_TRAINING_MODE */
+        Menu_Init,      /* [ 5] DEAD: migrated to MENU_SCREEN_SYSTEM_DIRECTION */
+        Menu_Init,      /* [ 6] DEAD: migrated to MENU_SCREEN_LOAD_REPLAY */
+        Menu_Init,      /* [ 7] DEAD: OPTION_SELECT alias */
+        Menu_Init,      /* [ 8] DEAD: migrated to MENU_SCREEN_EXIT_CONFIRM */
+        Menu_Init,      /* [ 9] DEAD: migrated to MENU_SCREEN_GAME_OPTION */
+        Menu_Init,      /* [10] DEAD: migrated to MENU_SCREEN_BUTTON_CONFIG */
+        Menu_Init,      /* [11] DEAD: SYSTEM_DIRECTION alias */
+        Menu_Init,      /* [12] DEAD: migrated to MENU_SCREEN_SOUND_TEST */
+        Menu_Init,      /* [13] DEAD: migrated to MENU_SCREEN_MEMORY_CARD */
+        Menu_Init,      /* [14] DEAD: migrated to MENU_SCREEN_EXTRA_OPTION */
+        Menu_Init,      /* [15] DEAD: OPTION_SELECT alias */
+        Menu_Init,      /* [16] DEAD: migrated to MENU_SCREEN_VS_RESULT */
+        Menu_Init,      /* [17] DEAD: migrated to MENU_SCREEN_SAVE_REPLAY */
+        Menu_Init,      /* [18] DEAD: migrated to MENU_SCREEN_DIRECTION_MENU */
+        Save_Direction, /* [19] Save_Direction (un-migrated) */
+        Load_Direction, /* [20] Load_Direction (un-migrated) */
+        Menu_Init,      /* [21] DEAD: migrated to MENU_SCREEN_NETWORK_LOBBY */
     };
 
     if (task_ptr->r_no[1] >= AT_JMP_COUNT) {
@@ -2543,14 +2543,14 @@ static void Training_Menu(struct _TASK* task_ptr) {
              * All indices 1–7 are intercepted by MenuScreen_FromTrainingIndex()
              * above.  Only index 0 (Training_Init) is still dispatched here. */
             void (*Training_Jmp_Tbl[TRAINING_JMP_COUNT])() = {
-                Training_Init,    /* [0] Training_Init — bootstrap (un-migrated) */
-                Training_Init,    /* [1] DEAD: migrated to MENU_SCREEN_NORMAL_TRAINING */
-                Training_Init,    /* [2] DEAD: migrated to MENU_SCREEN_BLOCKING_TRAINING */
-                Training_Init,    /* [3] DEAD: migrated to MENU_SCREEN_DUMMY_SETTING */
-                Training_Init,    /* [4] DEAD: migrated to MENU_SCREEN_TRAINING_OPTION */
-                Training_Init,    /* [5] DEAD: migrated to MENU_SCREEN_BUTTON_CONFIG_TR */
-                Training_Init,    /* [6] DEAD: migrated to MENU_SCREEN_CHAR_CHANGE_TR */
-                Training_Init,    /* [7] DEAD: migrated to MENU_SCREEN_BLOCKING_TR_OPTION */
+                Training_Init, /* [0] Training_Init — bootstrap (un-migrated) */
+                Training_Init, /* [1] DEAD: migrated to MENU_SCREEN_NORMAL_TRAINING */
+                Training_Init, /* [2] DEAD: migrated to MENU_SCREEN_BLOCKING_TRAINING */
+                Training_Init, /* [3] DEAD: migrated to MENU_SCREEN_DUMMY_SETTING */
+                Training_Init, /* [4] DEAD: migrated to MENU_SCREEN_TRAINING_OPTION */
+                Training_Init, /* [5] DEAD: migrated to MENU_SCREEN_BUTTON_CONFIG_TR */
+                Training_Init, /* [6] DEAD: migrated to MENU_SCREEN_CHAR_CHANGE_TR */
+                Training_Init, /* [7] DEAD: migrated to MENU_SCREEN_BLOCKING_TR_OPTION */
             };
             Training_Jmp_Tbl[task_ptr->r_no[1]](task_ptr);
         }

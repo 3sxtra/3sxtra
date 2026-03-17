@@ -307,8 +307,8 @@ static void dirm_enter(struct _TASK* task_ptr) {
     Menu_Cursor_Y[1] = Menu_Cursor_Y[0];
 
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1; /* advance for Menu_Sub_case1 in WAIT phase */
-    task_ptr->timer = 5;
+    task_ptr->r_no[2] = 1; /* advance for internal page phase */
+    task_ptr->timer = 0; /* 0 to bypass registry WAIT/FADE_IN */
     Menu_Suicide[1] = 1;
     Menu_Suicide[2] = 0;
     Menu_Page = 0;
@@ -352,6 +352,7 @@ static void dirm_tick(struct _TASK* task_ptr) {
 
         /* Case 1 logic: setup page data */
         FadeOut(1, 0xFF, 8);
+        task_ptr->timer = 5;
         if (!use_rmlui || !rmlui_menu_sysdir) {
             Setup_Next_Page(task_ptr, 0);
         } else {
