@@ -135,11 +135,15 @@ static void memory_card_tick(struct _TASK* task_ptr) {
     /* ── One-time post-wait-phase setup ── */
     if (!s_wait_done) {
         s_wait_done = true;
-        Suicide[3] = 0;
+        Menu_Suicide[3] = 0;
     }
 
     /* ── Determine which phase we're in ── */
     switch (task_ptr->r_no[2]) {
+    case 2:
+        task_ptr->r_no[2] = 3;
+        /* fallthrough */
+
     case 3:
         /* Main cursor input */
         task_ptr->r_no[1] = 13; /* Preserve for Button_Exit_Check routing */

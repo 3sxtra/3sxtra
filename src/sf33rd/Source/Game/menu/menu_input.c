@@ -9,6 +9,7 @@
 #include "common.h"
 #include "main.h"
 #include "netplay/netplay.h"
+#include "port/menu_screen.h"
 #include "port/save/native_save.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/input/controller_image_overlay.h"
@@ -2475,6 +2476,7 @@ void Back_to_Mode_Select(struct _TASK* task_ptr) {
     E_No[2] = 2;
     E_No[3] = 0;
     System_all_clear_Level_B();
+    MenuScreen_ExitToLegacy(task_ptr);
     Menu_Init(task_ptr);
 
     for (ix = 0; ix < 4; ix++) {
@@ -2482,6 +2484,11 @@ void Back_to_Mode_Select(struct _TASK* task_ptr) {
     }
 
     BGM_Request_Code_Check(0x41);
+
+    Mode_Type = MODE_ARCADE;
+    Play_Mode = 0;
+    Replay_Status[0] = 0;
+    Replay_Status[1] = 0;
 }
 
 /** @brief Extra Option left/right value toggle handler. */

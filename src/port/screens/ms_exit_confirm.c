@@ -53,6 +53,7 @@
 
 typedef enum ExitConfirmPhase {
     EC_PHASE_INIT,       /* case 0: setup effects/BG/overlay/RmlUi */
+    EC_PHASE_INIT_WAIT,  /* set timer then fallthrough */
     EC_PHASE_WAIT,       /* case 1: Menu_Sub_case1 timer + message */
     EC_PHASE_FADE_IN,    /* case 2: FadeIn + draw buttons */
     EC_PHASE_ACTIVE,     /* case 3: input handling */
@@ -99,7 +100,7 @@ static void exit_confirm_enter(struct _TASK* task_ptr) {
      * restore cursor, kill parent items, activate sub items */
     FadeOut(1, 0xFF, 8);
     task_ptr->r_no[2] = 1;  /* so Menu_Sub_case1 works in wait phase */
-    task_ptr->timer = 0x10; /* toSelectGame uses 0x10, not the usual 5 */
+    task_ptr->timer = 0;    /* bypass dispatcher wait */
     Menu_Common_Init();
     Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
     Menu_Suicide[0] = 1;
@@ -120,8 +121,8 @@ static void exit_confirm_enter(struct _TASK* task_ptr) {
     if (use_rmlui && rmlui_screen_exit_confirm)
         rmlui_exit_confirm_show();
 
-    /* Advance internal phase to WAIT — next on_tick will process it */
-    s_phase = EC_PHASE_WAIT;
+    /* Advance internal phase to INIT_WAIT — next on_tick will process it */
+    s_phase = EC_PHASE_INIT_WAIT;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -139,6 +140,11 @@ static void exit_confirm_tick(struct _TASK* task_ptr) {
     switch (s_phase) {
 
     /* ── WAIT: timer countdown + message setup ── */
+    case EC_PHASE_INIT_WAIT:
+        task_ptr->timer = 0x10;
+        s_phase = EC_PHASE_WAIT;
+        // fallthrough
+
     case EC_PHASE_WAIT:
         if (Menu_Sub_case1(task_ptr) != 0) {
             if (!use_rmlui || !rmlui_screen_exit_confirm) {

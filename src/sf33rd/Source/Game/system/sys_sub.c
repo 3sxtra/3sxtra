@@ -15,6 +15,7 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "common.h"
 #include "main.h"
+#include "port/menu_screen.h"
 #include "port/mods/modded_stage.h"
 #include "sf33rd/AcrSDK/common/mlPAD.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
@@ -1083,6 +1084,8 @@ void Soft_Reset_Sub() {
         rmlui_wrapper_hide_all_documents();
     }
 
+    MenuScreen_ExitToLegacy(&task[TASK_MENU]);
+
     if (task[TASK_GAME].condition == 0) {
         cpReadyTask(TASK_GAME, Game_Task);
     }
@@ -1100,6 +1103,7 @@ void Soft_Reset_Sub() {
     pp_operator_check_flag(1);
     Init_Load_Request_Queue_1st();
     cpExitTask(TASK_MENU);
+    MenuScreen_ExitToLegacy(&task[TASK_MENU]);
     cpExitTask(TASK_SAVER);
     cpExitTask(TASK_PAUSE);
     Reset_Sub0();

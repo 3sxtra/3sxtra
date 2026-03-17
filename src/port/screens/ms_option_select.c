@@ -125,9 +125,9 @@ static void option_select_enter(struct _TASK* task_ptr) {
                 ix++;
                 char_index++;
             }
+            Menu_Cursor_Move = 6;
         }
 
-        Menu_Cursor_Move = 6;
         /* Update the screen's cursor_max to reflect 6 items (0–5) */
         g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 5;
     } else {

@@ -3397,18 +3397,42 @@ static void End_Replay_Menu(struct _TASK* task_ptr) {
         break;
 
     case 3:
-        ans = Yes_No_Cursor_Move_Sub(task_ptr);
-
+        ans = ~(plsw_01[Pause_ID]) & plsw_00[Pause_ID];
+        
         switch (ans) {
-        case 1:
-            task_ptr->r_no[1] = 1;
+        case SWK_UP:
+            Menu_Cursor_Y[0]--;
+            if (Menu_Cursor_Y[0] < 0) {
+                Menu_Cursor_Y[0] = 0;
+            } else {
+                SE_dir_cursor_move();
+            }
             break;
-
-        case -1:
-            Menu_Suicide[3] = 1;
+            
+        case SWK_DOWN:
+            Menu_Cursor_Y[0]++;
+            if (Menu_Cursor_Y[0] > 1) {
+                Menu_Cursor_Y[0] = 1;
+            } else {
+                SE_dir_cursor_move();
+            }
+            break;
+            
+        case 0x100: /* Confirm */
+        case 0x200: /* Cancel */
+            if (Menu_Cursor_Y[0] || ans == 0x200) {
+                /* User selected NO (cursor 1) or cancelled */
+                task_ptr->r_no[1] = 1;
+                Menu_Suicide[3] = 1;
+            } else {
+                /* User selected YES (cursor 0) - gracefully exit to menu */
+                ToneDown(192, 32);
+                Replay_Status[0] = 0;
+                Replay_Status[1] = 0;
+                Back_to_Mode_Select(task_ptr);
+            }
             break;
         }
-
         break;
     }
 }
