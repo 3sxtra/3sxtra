@@ -310,6 +310,14 @@ add_unit_test(test_menu_bridge
 )
 target_include_directories(test_menu_bridge PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${SDL3_ROOT}/include)
 target_link_sdl3(test_menu_bridge)
+
+add_unit_test(test_menu_screen
+    test_menu_screen.c
+    ${PROJECT_SOURCE_DIR}/src/port/menu_screen_registry.c
+)
+target_include_directories(test_menu_screen PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${SDL3_ROOT}/include)
+target_link_sdl3(test_menu_screen)
+
 add_unit_test(test_trials test_trials.c ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/training/trials.c mocks_globals.c)
 target_include_directories(test_trials PRIVATE ${PROJECT_SOURCE_DIR}/include)
 

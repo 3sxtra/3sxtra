@@ -43,6 +43,8 @@ extern const u8 Menu_Max_Data_Tr[2][2][6];
 /* === Functions in menu.c called from other menu_*.c files === */
 s32 Exit_Sub(struct _TASK* task_ptr, s16 cursor_ix, s16 next_routine);
 s32 Menu_Sub_case1(struct _TASK* task_ptr);
+void Setup_VS_Mode(struct _TASK* task_ptr);
+void Network_Lobby(struct _TASK* task_ptr);
 
 /* === Functions in menu_draw.c === */
 void imgSelectGameButton(void);

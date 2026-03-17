@@ -1,0 +1,146 @@
+[92m============================================[0m
+[92m   3sx - Incremental Recompile              [0m
+[92m============================================[0m
+
+[92m[V] Using MSYS2 at: "C:\msys64"[0m
+
+[93m[*] Incremental build in: D:\3sxtra\[0m
+
+[92m[*] Starting MSYS2 MinGW64 incremental build...[0m
+
+[1/6] Building C object CMakeFiles/3sx.dir/src/port/screens/ms_option_select.c.obj
+FAILED: [code=1] CMakeFiles/3sx.dir/src/port/screens/ms_option_select.c.obj 
+C:\msys64\mingw64\bin\clang.exe -DDEBUG -DGEKKONET_STATIC -DHAVE_UPNP -DNETPLAY_ENABLED -DRMLUI_SDL_VERSION_MAJOR=3 -DRMLUI_STATIC_LIB -DTARGET_SDL3 -DTRACY_ENABLE -D_POSIX_C_SOURCE=200809L -ID:/3sxtra/third_party/cJSON -ID:/3sxtra/src -ID:/3sxtra/src/include -ID:/3sxtra/src/include/sdk -ID:/3sxtra/third_party/GekkoNet/GekkoLib/include -ID:/3sxtra/third_party/stb -ID:/3sxtra/third_party/controllerimage/src -ID:/3sxtra/third_party/librashader/include -ID:/3sxtra/third_party/simde -ID:/3sxtra/third_party/glad/cmake/include -ID:/3sxtra/build/gladsources/glad/include -ID:/3sxtra/third_party/sdl3/SDL/src/video/khronos -ID:/3sxtra/src/port/sdl/app -ID:/3sxtra/src/port/sdl/renderer -ID:/3sxtra/src/port/sdl/input -ID:/3sxtra/src/port/sdl/netplay -ID:/3sxtra/src/port/sdl/rmlui -ID:/3sxtra/src/port/config -ID:/3sxtra/src/port/save -ID:/3sxtra/src/port/mods -ID:/3sxtra/src/port/rendering -ID:/3sxtra/src/include/port/sdl/app -ID:/3sxtra/src/include/port/sdl/renderer -ID:/3sxtra/src/include/port/sdl/input -ID:/3sxtra/src/include/port/config -ID:/3sxtra/src/include/port/save -ID:/3sxtra/src/include/port/rendering -ID:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL -ID:/3sxtra/third_party/rmlui/Backends -ID:/3sxtra/third_party/sdl3/build/include -ID:/3sxtra/third_party/sdl3_image/build/include -ID:/3sxtra/third_party/sdl3_mixer/build/include -ID:/3sxtra/build/gladsources/glad_gl_core/include -ID:/3sxtra/third_party/SDL_shadercross/include -ID:/3sxtra/third_party/rmlui/Include -isystem D:/3sxtra/third_party/sdl3_net/build/include -isystem D:/3sxtra/third_party/lua/src -isystem D:/3sxtra/build/_deps/tracy-src/public -O2 -g -DNDEBUG -std=gnu11 -Wall -Werror -fno-strict-aliasing -Wpointer-to-int-cast -Wno-deprecated-non-prototype -Wno-tautological-overlap-compare -Wno-c2x-extensions -Wno-incompatible-pointer-types -Wno-pointer-sign -Wno-absolute-value -Wno-implicit-function-declaration -mavx2 -mfma -MD -MT CMakeFiles/3sx.dir/src/port/screens/ms_option_select.c.obj -MF CMakeFiles\3sx.dir\src\port\screens\ms_option_select.c.obj.d -o CMakeFiles/3sx.dir/src/port/screens/ms_option_select.c.obj -c D:/3sxtra/src/port/screens/ms_option_select.c
+D:/3sxtra/src/port/screens/ms_option_select.c:130:9: error: use of undeclared identifier 'g_screens'
+  130 |         g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 5;
+      |         ^~~~~~~~~
+D:/3sxtra/src/port/screens/ms_option_select.c:153:9: error: use of undeclared identifier 'g_screens'
+  153 |         g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 6;
+      |         ^~~~~~~~~
+2 errors generated.
+[2/6] Building C object CMakeFiles/3sx.dir/src/port/screens/ms_replay.c.obj
+FAILED: [code=1] CMakeFiles/3sx.dir/src/port/screens/ms_replay.c.obj 
+C:\msys64\mingw64\bin\clang.exe -DDEBUG -DGEKKONET_STATIC -DHAVE_UPNP -DNETPLAY_ENABLED -DRMLUI_SDL_VERSION_MAJOR=3 -DRMLUI_STATIC_LIB -DTARGET_SDL3 -DTRACY_ENABLE -D_POSIX_C_SOURCE=200809L -ID:/3sxtra/third_party/cJSON -ID:/3sxtra/src -ID:/3sxtra/src/include -ID:/3sxtra/src/include/sdk -ID:/3sxtra/third_party/GekkoNet/GekkoLib/include -ID:/3sxtra/third_party/stb -ID:/3sxtra/third_party/controllerimage/src -ID:/3sxtra/third_party/librashader/include -ID:/3sxtra/third_party/simde -ID:/3sxtra/third_party/glad/cmake/include -ID:/3sxtra/build/gladsources/glad/include -ID:/3sxtra/third_party/sdl3/SDL/src/video/khronos -ID:/3sxtra/src/port/sdl/app -ID:/3sxtra/src/port/sdl/renderer -ID:/3sxtra/src/port/sdl/input -ID:/3sxtra/src/port/sdl/netplay -ID:/3sxtra/src/port/sdl/rmlui -ID:/3sxtra/src/port/config -ID:/3sxtra/src/port/save -ID:/3sxtra/src/port/mods -ID:/3sxtra/src/port/rendering -ID:/3sxtra/src/include/port/sdl/app -ID:/3sxtra/src/include/port/sdl/renderer -ID:/3sxtra/src/include/port/sdl/input -ID:/3sxtra/src/include/port/config -ID:/3sxtra/src/include/port/save -ID:/3sxtra/src/include/port/rendering -ID:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL -ID:/3sxtra/third_party/rmlui/Backends -ID:/3sxtra/third_party/sdl3/build/include -ID:/3sxtra/third_party/sdl3_image/build/include -ID:/3sxtra/third_party/sdl3_mixer/build/include -ID:/3sxtra/build/gladsources/glad_gl_core/include -ID:/3sxtra/third_party/SDL_shadercross/include -ID:/3sxtra/third_party/rmlui/Include -isystem D:/3sxtra/third_party/sdl3_net/build/include -isystem D:/3sxtra/third_party/lua/src -isystem D:/3sxtra/build/_deps/tracy-src/public -O2 -g -DNDEBUG -std=gnu11 -Wall -Werror -fno-strict-aliasing -Wpointer-to-int-cast -Wno-deprecated-non-prototype -Wno-tautological-overlap-compare -Wno-c2x-extensions -Wno-incompatible-pointer-types -Wno-pointer-sign -Wno-absolute-value -Wno-implicit-function-declaration -mavx2 -mfma -MD -MT CMakeFiles/3sx.dir/src/port/screens/ms_replay.c.obj -MF CMakeFiles\3sx.dir\src\port\screens\ms_replay.c.obj.d -o CMakeFiles/3sx.dir/src/port/screens/ms_replay.c.obj -c D:/3sxtra/src/port/screens/ms_replay.c
+D:/3sxtra/src/port/screens/ms_replay.c:92:5: error: use of undeclared identifier 'Message_Data'
+   92 |     Message_Data->kind_req = 5;
+      |     ^~~~~~~~~~~~
+1 error generated.
+[3/6] Building C object CMakeFiles/3sx.dir/src/port/screens/ms_mode_select.c.obj
+FAILED: [code=1] CMakeFiles/3sx.dir/src/port/screens/ms_mode_select.c.obj 
+C:\msys64\mingw64\bin\clang.exe -DDEBUG -DGEKKONET_STATIC -DHAVE_UPNP -DNETPLAY_ENABLED -DRMLUI_SDL_VERSION_MAJOR=3 -DRMLUI_STATIC_LIB -DTARGET_SDL3 -DTRACY_ENABLE -D_POSIX_C_SOURCE=200809L -ID:/3sxtra/third_party/cJSON -ID:/3sxtra/src -ID:/3sxtra/src/include -ID:/3sxtra/src/include/sdk -ID:/3sxtra/third_party/GekkoNet/GekkoLib/include -ID:/3sxtra/third_party/stb -ID:/3sxtra/third_party/controllerimage/src -ID:/3sxtra/third_party/librashader/include -ID:/3sxtra/third_party/simde -ID:/3sxtra/third_party/glad/cmake/include -ID:/3sxtra/build/gladsources/glad/include -ID:/3sxtra/third_party/sdl3/SDL/src/video/khronos -ID:/3sxtra/src/port/sdl/app -ID:/3sxtra/src/port/sdl/renderer -ID:/3sxtra/src/port/sdl/input -ID:/3sxtra/src/port/sdl/netplay -ID:/3sxtra/src/port/sdl/rmlui -ID:/3sxtra/src/port/config -ID:/3sxtra/src/port/save -ID:/3sxtra/src/port/mods -ID:/3sxtra/src/port/rendering -ID:/3sxtra/src/include/port/sdl/app -ID:/3sxtra/src/include/port/sdl/renderer -ID:/3sxtra/src/include/port/sdl/input -ID:/3sxtra/src/include/port/config -ID:/3sxtra/src/include/port/save -ID:/3sxtra/src/include/port/rendering -ID:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL -ID:/3sxtra/third_party/rmlui/Backends -ID:/3sxtra/third_party/sdl3/build/include -ID:/3sxtra/third_party/sdl3_image/build/include -ID:/3sxtra/third_party/sdl3_mixer/build/include -ID:/3sxtra/build/gladsources/glad_gl_core/include -ID:/3sxtra/third_party/SDL_shadercross/include -ID:/3sxtra/third_party/rmlui/Include -isystem D:/3sxtra/third_party/sdl3_net/build/include -isystem D:/3sxtra/third_party/lua/src -isystem D:/3sxtra/build/_deps/tracy-src/public -O2 -g -DNDEBUG -std=gnu11 -Wall -Werror -fno-strict-aliasing -Wpointer-to-int-cast -Wno-deprecated-non-prototype -Wno-tautological-overlap-compare -Wno-c2x-extensions -Wno-incompatible-pointer-types -Wno-pointer-sign -Wno-absolute-value -Wno-implicit-function-declaration -mavx2 -mfma -MD -MT CMakeFiles/3sx.dir/src/port/screens/ms_mode_select.c.obj -MF CMakeFiles\3sx.dir\src\port\screens\ms_mode_select.c.obj.d -o CMakeFiles/3sx.dir/src/port/screens/ms_mode_select.c.obj -c D:/3sxtra/src/port/screens/ms_mode_select.c
+D:/3sxtra/src/port/screens/ms_mode_select.c:111:9: error: unknown type name 'Message_Data'; did you mean 'MessageData'?
+  111 |         Message_Data[ix].order = 3;
+      |         ^~~~~~~~~~~~
+      |         MessageData
+D:/3sxtra/src/include/structs.h:969:3: note: 'MessageData' declared here
+  969 | } MessageData;
+      |   ^
+D:/3sxtra/src/port/screens/ms_mode_select.c:111:25: error: expected identifier or '('
+  111 |         Message_Data[ix].order = 3;
+      |                         ^
+2 errors generated.
+[4/6] Building C object CMakeFiles/3sx.dir/src/port/screens/ms_extra_option.c.obj
+[5/6] Building C object CMakeFiles/3sx.dir/src/port/screens/ms_sysdir.c.obj
+FAILED: [code=1] CMakeFiles/3sx.dir/src/port/screens/ms_sysdir.c.obj 
+C:\msys64\mingw64\bin\clang.exe -DDEBUG -DGEKKONET_STATIC -DHAVE_UPNP -DNETPLAY_ENABLED -DRMLUI_SDL_VERSION_MAJOR=3 -DRMLUI_STATIC_LIB -DTARGET_SDL3 -DTRACY_ENABLE -D_POSIX_C_SOURCE=200809L -ID:/3sxtra/third_party/cJSON -ID:/3sxtra/src -ID:/3sxtra/src/include -ID:/3sxtra/src/include/sdk -ID:/3sxtra/third_party/GekkoNet/GekkoLib/include -ID:/3sxtra/third_party/stb -ID:/3sxtra/third_party/controllerimage/src -ID:/3sxtra/third_party/librashader/include -ID:/3sxtra/third_party/simde -ID:/3sxtra/third_party/glad/cmake/include -ID:/3sxtra/build/gladsources/glad/include -ID:/3sxtra/third_party/sdl3/SDL/src/video/khronos -ID:/3sxtra/src/port/sdl/app -ID:/3sxtra/src/port/sdl/renderer -ID:/3sxtra/src/port/sdl/input -ID:/3sxtra/src/port/sdl/netplay -ID:/3sxtra/src/port/sdl/rmlui -ID:/3sxtra/src/port/config -ID:/3sxtra/src/port/save -ID:/3sxtra/src/port/mods -ID:/3sxtra/src/port/rendering -ID:/3sxtra/src/include/port/sdl/app -ID:/3sxtra/src/include/port/sdl/renderer -ID:/3sxtra/src/include/port/sdl/input -ID:/3sxtra/src/include/port/config -ID:/3sxtra/src/include/port/save -ID:/3sxtra/src/include/port/rendering -ID:/3sxtra/third_party/Spout2/SPOUTSDK/SpoutGL -ID:/3sxtra/third_party/rmlui/Backends -ID:/3sxtra/third_party/sdl3/build/include -ID:/3sxtra/third_party/sdl3_image/build/include -ID:/3sxtra/third_party/sdl3_mixer/build/include -ID:/3sxtra/build/gladsources/glad_gl_core/include -ID:/3sxtra/third_party/SDL_shadercross/include -ID:/3sxtra/third_party/rmlui/Include -isystem D:/3sxtra/third_party/sdl3_net/build/include -isystem D:/3sxtra/third_party/lua/src -isystem D:/3sxtra/build/_deps/tracy-src/public -O2 -g -DNDEBUG -std=gnu11 -Wall -Werror -fno-strict-aliasing -Wpointer-to-int-cast -Wno-deprecated-non-prototype -Wno-tautological-overlap-compare -Wno-c2x-extensions -Wno-incompatible-pointer-types -Wno-pointer-sign -Wno-absolute-value -Wno-implicit-function-declaration -mavx2 -mfma -MD -MT CMakeFiles/3sx.dir/src/port/screens/ms_sysdir.c.obj -MF CMakeFiles\3sx.dir\src\port\screens\ms_sysdir.c.obj.d -o CMakeFiles/3sx.dir/src/port/screens/ms_sysdir.c.obj -c D:/3sxtra/src/port/screens/ms_sysdir.c
+D:/3sxtra/src/port/screens/ms_sysdir.c:54:11: error: redeclaration of 'Page_Max' with a different type: 's8' (aka 'signed char') vs 'u8' (aka 'unsigned char')
+   54 | extern s8 Page_Max;
+      |           ^
+D:/3sxtra/src/sf33rd/Source/Game/engine/workuser.h:354:11: note: previous declaration is here
+  354 | extern u8 Page_Max;
+      |           ^
+D:/3sxtra/src/port/screens/ms_sysdir.c:315:5: error: use of undeclared identifier 'Message_Data'; did you mean 'Page_Data'?
+  315 |     Message_Data->kind_req = 3;
+      |     ^~~~~~~~~~~~
+      |     Page_Data
+D:/3sxtra/src/sf33rd/Source/Game/menu/dir_data.h:15:17: note: 'Page_Data' declared here
+   15 | extern const u8 Page_Data[10];
+      |                 ^
+D:/3sxtra/src/port/screens/ms_sysdir.c:315:17: error: member reference base type 'const u8' (aka 'const unsigned char') is not a structure or union
+  315 |     Message_Data->kind_req = 3;
+      |     ~~~~~~~~~~~~^ ~~~~~~~~
+D:/3sxtra/src/port/screens/ms_sysdir.c:420:17: error: use of undeclared identifier 'Message_Data'; did you mean 'Page_Data'?
+  420 |                 Message_Data->order = 1;
+      |                 ^~~~~~~~~~~~
+      |                 Page_Data
+D:/3sxtra/src/sf33rd/Source/Game/menu/dir_data.h:15:17: note: 'Page_Data' declared here
+   15 | extern const u8 Page_Data[10];
+      |                 ^
+D:/3sxtra/src/port/screens/ms_sysdir.c:420:29: error: member reference base type 'const u8' (aka 'const unsigned char') is not a structure or union
+  420 |                 Message_Data->order = 1;
+      |                 ~~~~~~~~~~~~^ ~~~~~
+D:/3sxtra/src/port/screens/ms_sysdir.c:421:17: error: use of undeclared identifier 'Message_Data'; did you mean 'Page_Data'?
+  421 |                 Message_Data->request = Menu_Page * 0xC + Menu_Cursor_Y[0] * 2 + 1;
+      |                 ^~~~~~~~~~~~
+      |                 Page_Data
+D:/3sxtra/src/sf33rd/Source/Game/menu/dir_data.h:15:17: note: 'Page_Data' declared here
+   15 | extern const u8 Page_Data[10];
+      |                 ^
+D:/3sxtra/src/port/screens/ms_sysdir.c:421:29: error: member reference base type 'const u8' (aka 'const unsigned char') is not a structure or union
+  421 |                 Message_Data->request = Menu_Page * 0xC + Menu_Cursor_Y[0] * 2 + 1;
+      |                 ~~~~~~~~~~~~^ ~~~~~~~
+D:/3sxtra/src/port/screens/ms_sysdir.c:422:17: error: use of undeclared identifier 'Message_Data'; did you mean 'Page_Data'?
+  422 |                 Message_Data->timer = 2;
+      |                 ^~~~~~~~~~~~
+      |                 Page_Data
+D:/3sxtra/src/sf33rd/Source/Game/menu/dir_data.h:15:17: note: 'Page_Data' declared here
+   15 | extern const u8 Page_Data[10];
+      |                 ^
+D:/3sxtra/src/port/screens/ms_sysdir.c:422:29: error: member reference base type 'const u8' (aka 'const unsigned char') is not a structure or union
+  422 |                 Message_Data->timer = 2;
+      |                 ~~~~~~~~~~~~^ ~~~~~
+D:/3sxtra/src/port/screens/ms_sysdir.c:425:21: error: use of undeclared identifier 'Message_Data'; did you mean 'Page_Data'?
+  425 |                     Message_Data->pos_y = 0x36;
+      |                     ^~~~~~~~~~~~
+      |                     Page_Data
+D:/3sxtra/src/sf33rd/Source/Game/menu/dir_data.h:15:17: note: 'Page_Data' declared here
+   15 | extern const u8 Page_Data[10];
+      |                 ^
+D:/3sxtra/src/port/screens/ms_sysdir.c:425:33: error: member reference base type 'const u8' (aka 'const unsigned char') is not a structure or union
+  425 |                     Message_Data->pos_y = 0x36;
+      |                     ~~~~~~~~~~~~^ ~~~~~
+D:/3sxtra/src/port/screens/ms_sysdir.c:427:21: error: use of undeclared identifier 'Message_Data'; did you mean 'Page_Data'?
+  427 |                     Message_Data->pos_y = 0x3E;
+      |                     ^~~~~~~~~~~~
+      |                     Page_Data
+D:/3sxtra/src/sf33rd/Source/Game/menu/dir_data.h:15:17: note: 'Page_Data' declared here
+   15 | extern const u8 Page_Data[10];
+      |                 ^
+D:/3sxtra/src/port/screens/ms_sysdir.c:427:33: error: member reference base type 'const u8' (aka 'const unsigned char') is not a structure or union
+  427 |                     Message_Data->pos_y = 0x3E;
+      |                     ~~~~~~~~~~~~^ ~~~~~
+D:/3sxtra/src/port/screens/ms_sysdir.c:430:17: error: use of undeclared identifier 'Message_Data'; did you mean 'Page_Data'?
+  430 |                 Message_Data->order = 1;
+      |                 ^~~~~~~~~~~~
+      |                 Page_Data
+D:/3sxtra/src/sf33rd/Source/Game/menu/dir_data.h:15:17: note: 'Page_Data' declared here
+   15 | extern const u8 Page_Data[10];
+      |                 ^
+D:/3sxtra/src/port/screens/ms_sysdir.c:430:29: error: member reference base type 'const u8' (aka 'const unsigned char') is not a structure or union
+  430 |                 Message_Data->order = 1;
+      |                 ~~~~~~~~~~~~^ ~~~~~
+D:/3sxtra/src/port/screens/ms_sysdir.c:431:17: error: use of undeclared identifier 'Message_Data'; did you mean 'Page_Data'?
+  431 |                 Message_Data->request = system_dir[1].contents[Menu_Page][Menu_Max] + 0x74;
+      |                 ^~~~~~~~~~~~
+      |                 Page_Data
+D:/3sxtra/src/sf33rd/Source/Game/menu/dir_data.h:15:17: note: 'Page_Data' declared here
+   15 | extern const u8 Page_Data[10];
+      |                 ^
+D:/3sxtra/src/port/screens/ms_sysdir.c:431:29: error: member reference base type 'const u8' (aka 'const unsigned char') is not a structure or union
+  431 |                 Message_Data->request = system_dir[1].contents[Menu_Page][Menu_Max] + 0x74;
+      |                 ~~~~~~~~~~~~^ ~~~~~~~
+D:/3sxtra/src/port/screens/ms_sysdir.c:432:17: error: use of undeclared identifier 'Message_Data'; did you mean 'Page_Data'?
+  432 |                 Message_Data->timer = 2;
+      |                 ^~~~~~~~~~~~
+      |                 Page_Data
+D:/3sxtra/src/sf33rd/Source/Game/menu/dir_data.h:15:17: note: 'Page_Data' declared here
+   15 | extern const u8 Page_Data[10];
+      |                 ^
+D:/3sxtra/src/port/screens/ms_sysdir.c:432:29: error: member reference base type 'const u8' (aka 'const unsigned char') is not a structure or union
+  432 |                 Message_Data->timer = 2;
+      |                 ~~~~~~~~~~~~^ ~~~~~
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+20 errors generated.
+ninja: build stopped: subcommand failed.
+
+[91m[X] Build failed with exit code: 1[0m

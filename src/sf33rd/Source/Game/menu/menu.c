@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/menu/menu.h"
+#include "port/menu_screen.h"
 #include "common.h"
 #include "main.h"
 #include "netplay/discovery.h"
@@ -136,8 +137,8 @@ static void Extra_Option(struct _TASK* task_ptr);
 static void VS_Result(struct _TASK* task_ptr);
 static void Save_Replay(struct _TASK* task_ptr);
 static void Direction_Menu(struct _TASK* task_ptr);
-static void Setup_VS_Mode(struct _TASK* task_ptr);
-static void Network_Lobby(struct _TASK* task_ptr);
+void Setup_VS_Mode(struct _TASK* task_ptr);
+void Network_Lobby(struct _TASK* task_ptr);
 
 static void bg_etc_write_ex(s16 type);
 void jmpRebootProgram();
@@ -202,6 +203,26 @@ void Setup_Pad_or_Stick() {
 
 /** @brief After-title state â€” dispatch to sub-menu by r_no[1]. */
 static void After_Title(struct _TASK* task_ptr) {
+    /* ── MenuScreen registry integration hook (Task 4) ──
+     * If the registry is already driving a screen, tick it and return.
+     * Otherwise, try to map the legacy r_no[1] index to a MenuScreenId;
+     * if a migrated (and enabled) screen is found, hand off to the
+     * registry.  Un-migrated indices fall through to the legacy table. */
+    if (MenuScreen_IsActive()) {
+        MenuScreen_Tick(task_ptr);
+        return;
+    }
+
+    {
+        MenuScreenId mapped = MenuScreen_FromLegacyIndex(task_ptr->r_no[1]);
+        if (mapped != MENU_SCREEN_NONE) {
+            MenuScreen_Goto(mapped);
+            MenuScreen_Tick(task_ptr);
+            return;
+        }
+    }
+
+    /* ── Legacy dispatch (un-migrated screens) ── */
     void (*AT_Jmp_Tbl[AT_JMP_COUNT])() = { Menu_Init,      Mode_Select,      Option_Select,  Option_Select,
                                            Training_Mode,  System_Direction, Load_Replay,    Option_Select,
                                            toSelectGame,   Game_Option,      Button_Config,  System_Direction,
@@ -423,7 +444,7 @@ static void Mode_Select(struct _TASK* task_ptr) {
 }
 
 /** @brief Prepare VS mode â€” enable both operators and init grades. */
-static void Setup_VS_Mode(struct _TASK* task_ptr) {
+void Setup_VS_Mode(struct _TASK* task_ptr) {
     task_ptr->r_no[0] = 5;
     cpExitTask(TASK_SAVER);
     plw[0].wu.pl_operator = 1;
@@ -634,7 +655,7 @@ void NetLobby_DrawOutgoingPopup(const char* name, int ping) {
 int g_lobby_peer_idx = 0;
 int g_net_peer_idx = 0;
 
-static void Network_Lobby(struct _TASK* task_ptr) {
+void Network_Lobby(struct _TASK* task_ptr) {
     s16 ix;
     static int s_slide_offset = 384; /* slide-in offset for SSPutStr elements */
 
@@ -1943,10 +1964,12 @@ void Menu_ReenterNetworkLobby(void) {
 
     cpReadyTask(TASK_MENU, Menu_Task);
     task[TASK_MENU].r_no[0] = 0;  /* After_Title */
-    task[TASK_MENU].r_no[1] = 21; /* Network_Lobby */
-    task[TASK_MENU].r_no[2] = 10; /* Restart lobby phase to draw blue background */
-    task[TASK_MENU].r_no[3] = 0;
-    task[TASK_MENU].free[2] = 1; /* 1 = RmlUI mode */
+
+    /* Signal the migrated network_lobby on_enter to skip gateway and
+     * jump straight to lobby phase 10 (RmlUI mode). */
+    extern bool g_lobby_reenter_from_match;
+    g_lobby_reenter_from_match = true;
+    MenuScreen_Goto(MENU_SCREEN_NETWORK_LOBBY);
 }
 
 /** @brief â€œSelect Gameâ€ (3S vs 2I) screen with exit-to-desktop option. */
@@ -3957,15 +3980,35 @@ static void Reset_Replay(struct _TASK* task_ptr) {
 
 /** @brief Training Menu dispatch â€” jump to selected training sub-screen. */
 static void Training_Menu(struct _TASK* task_ptr) {
-    void (*Training_Jmp_Tbl[TRAINING_JMP_COUNT])() = { Training_Init,    Normal_Training,   Blocking_Training,
-                                                       Dummy_Setting,    Training_Option,   Button_Config_Tr,
-                                                       Character_Change, Blocking_Tr_Option };
-
     if (task_ptr->r_no[1] >= TRAINING_JMP_COUNT) {
         return;
     }
 
-    Training_Jmp_Tbl[task_ptr->r_no[1]](task_ptr);
+    /* ── MenuScreen registry integration hook (Task 18) ──
+     * If the registry is already driving a training sub-screen, tick it.
+     * Otherwise, try to map the legacy r_no[1] index to a MenuScreenId;
+     * if a migrated (and enabled) screen is found, hand off to the
+     * registry.  Un-migrated indices fall through to the legacy table.
+     * CRITICAL: Akaobi/ToneDown/SSPutStr_Bigger MUST run after BOTH paths. */
+    if (MenuScreen_IsTrainingActive()) {
+        MenuScreen_TrainingTick(task_ptr);
+    } else {
+        MenuScreenId mapped = MenuScreen_FromTrainingIndex(task_ptr->r_no[1]);
+        if (mapped != MENU_SCREEN_NONE) {
+            MenuScreen_Goto(mapped);
+            MenuScreen_TrainingTick(task_ptr);
+        } else {
+            /* Legacy dispatch (un-migrated training screens) */
+            void (*Training_Jmp_Tbl[TRAINING_JMP_COUNT])() = {
+                Training_Init,    Normal_Training,   Blocking_Training,
+                Dummy_Setting,    Training_Option,   Button_Config_Tr,
+                Character_Change, Blocking_Tr_Option
+            };
+            Training_Jmp_Tbl[task_ptr->r_no[1]](task_ptr);
+        }
+    }
+
+    /* Post-dispatch rendering — runs after BOTH registry and legacy paths */
     Akaobi();
     ToneDown(0xAA, 2);
 
