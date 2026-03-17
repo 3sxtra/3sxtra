@@ -24,23 +24,23 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/effect/eff04.h"           /* effect_04_init */
-#include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/eff61.h"           /* effect_61_init */
-#include "sf33rd/Source/Game/effect/eff64.h"           /* effect_64_init */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* Menu_Cursor_Y, save_w, etc. */
-#include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"     /* Game_Option_Sub, Exit_Sub, etc. */
-#include "sf33rd/Source/Game/sound/se.h"               /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"           /* Suicide */
-#include "sf33rd/Source/Game/system/sys_sub.h"         /* Save_Game_Data, Copy_Save_w, Game_Default_Data */
-#include "sf33rd/Source/Game/system/work_sys.h"        /* save_w */
-#include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                                   /* struct _TASK */
+#include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
+#include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
+#include "sf33rd/Source/Game/effect/eff64.h"       /* effect_64_init */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* Game_Option_Sub, Exit_Sub, etc. */
+#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
+#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/sys_sub.h"     /* Save_Game_Data, Copy_Save_w, Game_Default_Data */
+#include "sf33rd/Source/Game/system/work_sys.h"    /* save_w */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                               /* struct _TASK */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_game_option.h"         /* rmlui_game_option_show/hide */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"      /* use_rmlui, rmlui_menu_game_option */
+#include "port/sdl/rmlui/rmlui_game_option.h"    /* rmlui_game_option_show/hide */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_game_option */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Extern data — Setup_Index_64 defined in menu.c
@@ -74,7 +74,7 @@ static void game_option_enter(struct _TASK* task_ptr) {
 
     /* ── Replicate Game_Option case 0 init pattern ── */
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;  /* advance so Menu_Sub_case1 works in WAIT phase */
+    task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
     Menu_Common_Init();
     Menu_Cursor_Y[0] = 0;
@@ -208,23 +208,22 @@ static void ms_game_option_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_game_option_reg_ptr)(void) = ms_game_option_register;
 static void ms_game_option_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_game_option_register(void) {
+__attribute__((constructor)) static void ms_game_option_register(void) {
 #else
 /* Fallback: must be called manually from init code */
 void ms_game_option_register(void) {
 #endif
-    g_screens[MENU_SCREEN_GAME_OPTION] = (MenuScreen){
-        .name        = "game_option",
-        .id          = MENU_SCREEN_GAME_OPTION,
-        .parent      = MENU_SCREEN_OPTION_SELECT,
-        .on_enter    = game_option_enter,
-        .on_tick     = game_option_tick,
-        .on_exit     = game_option_exit,
-        .cursor_max  = 11,  /* 12 items (0–11) */
-        .cancel_item = 11,  /* last item = "Exit" */
-        .rmlui_show  = game_option_rmlui_show,
-        .rmlui_hide  = game_option_rmlui_hide,
+    g_screens[MENU_SCREEN_GAME_OPTION] = (MenuScreen) {
+        .name = "game_option",
+        .id = MENU_SCREEN_GAME_OPTION,
+        .parent = MENU_SCREEN_OPTION_SELECT,
+        .on_enter = game_option_enter,
+        .on_tick = game_option_tick,
+        .on_exit = game_option_exit,
+        .cursor_max = 11,  /* 12 items (0–11) */
+        .cancel_item = 11, /* last item = "Exit" */
+        .rmlui_show = game_option_rmlui_show,
+        .rmlui_hide = game_option_rmlui_hide,
         .header_type = MENU_HEADER_GAME_OPTION,
         .effect_slot = 0x6A,
     };

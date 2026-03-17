@@ -28,18 +28,18 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/effect/eff45.h"           /* effect_45_init, Message_Data */
-#include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/effect.h"          /* effect_work_init */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* Menu_Cursor_Y, Menu_Suicide, Order, Order_Dir, Order_Timer, plsw_00, plsw_01 */
-#include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"     /* AT_JMP_COUNT */
-#include "sf33rd/Source/Game/sound/sound3rd.h"         /* SE_selected */
-#include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                                   /* struct _TASK */
+#include "sf33rd/Source/Game/effect/eff45.h"  /* effect_45_init, Message_Data */
+#include "sf33rd/Source/Game/effect/eff57.h"  /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/effect.h" /* effect_work_init */
+#include "sf33rd/Source/Game/engine/workuser.h" /* Menu_Cursor_Y, Menu_Suicide, Order, Order_Dir, Order_Timer, plsw_00, plsw_01 */
+#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* AT_JMP_COUNT */
+#include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                               /* struct _TASK */
 
 /* RmlUi leaderboard */
-#include "port/sdl/rmlui/rmlui_leaderboard.h"         /* rmlui_leaderboard_show/hide */
+#include "port/sdl/rmlui/rmlui_leaderboard.h" /* rmlui_leaderboard_show/hide */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state
@@ -51,11 +51,11 @@
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef enum {
-    LB_PHASE_INIT,        /* case 4: Fade out, kill gateway items, blue BG */
-    LB_PHASE_REBUILD,     /* case 5: effect_work_init, Menu_Common_Init, banner */
-    LB_PHASE_TIMER,       /* case 6: wait for timer */
-    LB_PHASE_FADE_IN,     /* case 7: FadeIn */
-    LB_PHASE_ACTIVE,      /* case 8: input loop — B/Cancel exits */
+    LB_PHASE_INIT,    /* case 4: Fade out, kill gateway items, blue BG */
+    LB_PHASE_REBUILD, /* case 5: effect_work_init, Menu_Common_Init, banner */
+    LB_PHASE_TIMER,   /* case 6: wait for timer */
+    LB_PHASE_FADE_IN, /* case 7: FadeIn */
+    LB_PHASE_ACTIVE,  /* case 8: input loop — B/Cancel exits */
 } LeaderboardPhase;
 
 static LeaderboardPhase s_phase = LB_PHASE_INIT;
@@ -76,12 +76,12 @@ static void leaderboard_enter(struct _TASK* task_ptr) {
 
     /* ── Case 4: Fade out, kill gateway items, request blue BG ── */
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 5;  /* advance past init */
+    task_ptr->r_no[2] = 5; /* advance past init */
     task_ptr->r_no[3] = 0;
     task_ptr->timer = 5;
-    Menu_Suicide[0] = 1;    /* kill gateway items (master_player=0) */
+    Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
     Menu_Suicide[1] = 0;
-    Message_Data->kind_req = 4;  /* blue-BG background mode */
+    Message_Data->kind_req = 4; /* blue-BG background mode */
 
     /* ── Case 5: Destroy old effects, rebuild with blue BG ── */
     FadeOut(1, 0xFF, 8);
@@ -121,13 +121,13 @@ static void leaderboard_tick(struct _TASK* task_ptr) {
         trigger |= (~plsw_01[i] & plsw_00[i]);
     }
 
-    if (trigger & 0x0200) {  /* Cancel / B */
+    if (trigger & 0x0200) { /* Cancel / B */
         SE_selected();
         rmlui_leaderboard_hide();
 
         /* Kill blue BG items and prepare for gateway re-entry */
         Menu_Suicide[0] = 0;
-        Menu_Suicide[1] = 1;  /* kill blue BG items */
+        Menu_Suicide[1] = 1; /* kill blue BG items */
 
         /* Return to gateway: r_no[2]=0 causes Network_Lobby to re-init */
         task_ptr->r_no[2] = 0;
@@ -184,24 +184,23 @@ static void ms_leaderboard_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_leaderboard_reg_ptr)(void) = ms_leaderboard_register;
 static void ms_leaderboard_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_leaderboard_register(void) {
+__attribute__((constructor)) static void ms_leaderboard_register(void) {
 #else
 /* Fallback: must be called manually from init code */
 void ms_leaderboard_register(void) {
 #endif
-    g_screens[MENU_SCREEN_LEADERBOARD] = (MenuScreen){
-        .name        = "leaderboard",
-        .id          = MENU_SCREEN_LEADERBOARD,
-        .parent      = MENU_SCREEN_NETWORK_LOBBY,
-        .on_enter    = leaderboard_enter,
-        .on_tick     = leaderboard_tick,
-        .on_exit     = leaderboard_exit,
-        .cursor_max  = 1,    /* no cursor items — managed by RmlUI; min 1 for validation */
-        .cancel_item = -1,   /* cancel handled by raw pad read */
-        .rmlui_show  = leaderboard_rmlui_show,
-        .rmlui_hide  = leaderboard_rmlui_hide,
-        .header_type = MENU_HEADER_MODE_MENU,  /* blue BG banner */
+    g_screens[MENU_SCREEN_LEADERBOARD] = (MenuScreen) {
+        .name = "leaderboard",
+        .id = MENU_SCREEN_LEADERBOARD,
+        .parent = MENU_SCREEN_NETWORK_LOBBY,
+        .on_enter = leaderboard_enter,
+        .on_tick = leaderboard_tick,
+        .on_exit = leaderboard_exit,
+        .cursor_max = 1,   /* no cursor items — managed by RmlUI; min 1 for validation */
+        .cancel_item = -1, /* cancel handled by raw pad read */
+        .rmlui_show = leaderboard_rmlui_show,
+        .rmlui_hide = leaderboard_rmlui_hide,
+        .header_type = MENU_HEADER_MODE_MENU, /* blue BG banner */
         .effect_slot = 0x4E,
     };
 }

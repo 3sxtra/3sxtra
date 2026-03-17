@@ -14,12 +14,12 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/engine/workuser.h"       /* Menu_Cursor_Y, Menu_Cursor_Move, etc. */
-#include "sf33rd/Source/Game/io/pulpul.h"             /* pulpul_stop()  */
-#include "sf33rd/Source/Game/menu/menu.h"             /* Menu_Common_Init(), Check_Menu_Lever() */
-#include "sf33rd/Source/Game/menu/menu_internal.h"    /* MC_Move_Sub(), Exit_Sub(), Back_to_Mode_Select() */
-#include "sf33rd/Source/Game/ui/sc_sub.h"             /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                                  /* struct _TASK */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, Menu_Cursor_Move, etc. */
+#include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop()  */
+#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init(), Check_Menu_Lever() */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub(), Exit_Sub(), Back_to_Mode_Select() */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                               /* struct _TASK */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  MenuScreen_FadeOut — simplified FadeOut wrapper.
@@ -160,7 +160,7 @@ u16 MenuScreen_HandleGridCursor(int max_x, int max_y) {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 void MenuScreen_EnterSub(struct _TASK* task_ptr, MenuHeader hdr, u8 slot) {
-    (void)hdr;  /* Will be used when effect_57_init is wired up per-screen */
+    (void)hdr; /* Will be used when effect_57_init is wired up per-screen */
 
     FadeOut(1, 0xFF, 8);
     task_ptr->r_no[2] += 1;
@@ -171,8 +171,8 @@ void MenuScreen_EnterSub(struct _TASK* task_ptr, MenuHeader hdr, u8 slot) {
     Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
 
     /* Effect layer management */
-    Menu_Suicide[0] = 1;  /* kill parent effects */
-    Menu_Suicide[1] = 0;  /* enable our effects */
+    Menu_Suicide[0] = 1; /* kill parent effects */
+    Menu_Suicide[1] = 0; /* enable our effects */
     Order[slot] = 4;
     Order_Timer[slot] = 1;
 }

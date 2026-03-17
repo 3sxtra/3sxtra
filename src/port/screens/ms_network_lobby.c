@@ -23,10 +23,10 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/engine/workuser.h"         /* Menu_Cursor_Y, Order, etc. */
-#include "sf33rd/Source/Game/menu/menu.h"               /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"      /* Network_Lobby, Menu_Sub_case1 */
-#include "sf33rd/Source/Game/ui/sc_sub.h"               /* FadeOut, FadeIn, FadeInit */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, Order, etc. */
+#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* Network_Lobby, Menu_Sub_case1 */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"
 
 /* RmlUi Phase 3 */
@@ -57,7 +57,7 @@ bool g_lobby_reenter_from_match = false;
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static void network_lobby_enter(struct _TASK* task_ptr) {
-    task_ptr->r_no[1] = 21;  /* for legacy compat */
+    task_ptr->r_no[1] = 21; /* for legacy compat */
 
     if (g_lobby_reenter_from_match) {
         /* Re-entry from match — jump to lobby phase 10 (RmlUI mode).
@@ -138,22 +138,21 @@ static void ms_network_lobby_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_network_lobby_reg_ptr)(void) = ms_network_lobby_register;
 static void ms_network_lobby_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_network_lobby_register(void) {
+__attribute__((constructor)) static void ms_network_lobby_register(void) {
 #else
 void ms_network_lobby_register(void) {
 #endif
-    g_screens[MENU_SCREEN_NETWORK_LOBBY] = (MenuScreen){
-        .name        = "network_lobby",
-        .id          = MENU_SCREEN_NETWORK_LOBBY,
-        .parent      = MENU_SCREEN_MODE_SELECT,
-        .on_enter    = network_lobby_enter,
-        .on_tick     = network_lobby_tick,
-        .on_exit     = network_lobby_exit,
-        .cursor_max  = 11,     /* 12 items in full lobby (0..11) */
-        .cancel_item = 11,     /* EXIT item */
-        .rmlui_show  = network_lobby_rmlui_show,
-        .rmlui_hide  = network_lobby_rmlui_hide,
+    g_screens[MENU_SCREEN_NETWORK_LOBBY] = (MenuScreen) {
+        .name = "network_lobby",
+        .id = MENU_SCREEN_NETWORK_LOBBY,
+        .parent = MENU_SCREEN_MODE_SELECT,
+        .on_enter = network_lobby_enter,
+        .on_tick = network_lobby_tick,
+        .on_exit = network_lobby_exit,
+        .cursor_max = 11,  /* 12 items in full lobby (0..11) */
+        .cancel_item = 11, /* EXIT item */
+        .rmlui_show = network_lobby_rmlui_show,
+        .rmlui_hide = network_lobby_rmlui_hide,
         .header_type = MENU_HEADER_NETWORK,
         .effect_slot = 0x70,
     };

@@ -39,19 +39,19 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* Menu_Cursor_Y, save_w, etc. */
-#include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"     /* Screen_Adjust_Sub, Screen_Exit_Check, etc. */
-#include "sf33rd/Source/Game/sound/se.h"               /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"           /* Suicide */
-#include "sf33rd/Source/Game/system/sys_sub.h"         /* Save_Game_Data */
-#include "sf33rd/Source/Game/system/work_sys.h"        /* save_w, sys_w */
-#include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                                   /* struct _TASK */
+#include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* Screen_Adjust_Sub, Screen_Exit_Check, etc. */
+#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
+#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/sys_sub.h"     /* Save_Game_Data */
+#include "sf33rd/Source/Game/system/work_sys.h"    /* save_w, sys_w */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                               /* struct _TASK */
 
 /* RmlUi Phase 3 — Screen Adjust shares the sound menu's RmlUi toggle */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"      /* use_rmlui */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state
@@ -167,23 +167,22 @@ static void ms_screen_adjust_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_screen_adjust_reg_ptr)(void) = ms_screen_adjust_register;
 static void ms_screen_adjust_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_screen_adjust_register(void) {
+__attribute__((constructor)) static void ms_screen_adjust_register(void) {
 #else
 /* Fallback: must be called manually from init code */
 void ms_screen_adjust_register(void) {
 #endif
-    g_screens[MENU_SCREEN_SCREEN_ADJUST] = (MenuScreen){
-        .name        = "screen_adjust",
-        .id          = MENU_SCREEN_SCREEN_ADJUST,
-        .parent      = MENU_SCREEN_OPTION_SELECT,
-        .on_enter    = screen_adjust_enter,
-        .on_tick     = screen_adjust_tick,
-        .on_exit     = screen_adjust_exit,
-        .cursor_max  = 6,   /* 7 items (0–6) */
-        .cancel_item = 6,   /* last item = "Exit" */
-        .rmlui_show  = screen_adjust_rmlui_show,
-        .rmlui_hide  = screen_adjust_rmlui_hide,
+    g_screens[MENU_SCREEN_SCREEN_ADJUST] = (MenuScreen) {
+        .name = "screen_adjust",
+        .id = MENU_SCREEN_SCREEN_ADJUST,
+        .parent = MENU_SCREEN_OPTION_SELECT,
+        .on_enter = screen_adjust_enter,
+        .on_tick = screen_adjust_tick,
+        .on_exit = screen_adjust_exit,
+        .cursor_max = 6,  /* 7 items (0–6) */
+        .cancel_item = 6, /* last item = "Exit" */
+        .rmlui_show = screen_adjust_rmlui_show,
+        .rmlui_hide = screen_adjust_rmlui_hide,
         .header_type = MENU_HEADER_SCREEN_ADJUST,
         .effect_slot = 0x65,
     };

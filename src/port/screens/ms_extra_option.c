@@ -35,8 +35,8 @@
 #include "structs.h"                                   /* struct _TASK */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_extra_option.h"        /* rmlui_extra_option_show/hide */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"      /* use_rmlui, rmlui_menu_extra_option */
+#include "port/sdl/rmlui/rmlui_extra_option.h"   /* rmlui_extra_option_show/hide */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_extra_option */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Extern data
@@ -56,7 +56,7 @@
 
 typedef enum ExOptPhase {
     EO_PHASE_INIT,
-    EO_PHASE_PAGE,     /* page transition after L/R cycle */
+    EO_PHASE_PAGE, /* page transition after L/R cycle */
     EO_PHASE_TIMER,
     EO_PHASE_FADE_IN,
     EO_PHASE_ACTIVE
@@ -78,7 +78,7 @@ static void extra_option_enter(struct _TASK* task_ptr) {
     Menu_Cursor_Y[1] = Menu_Cursor_Y[0];
 
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;  /* advance for Setup_Next_Page in first tick */
+    task_ptr->r_no[2] = 1; /* advance for Setup_Next_Page in first tick */
     task_ptr->r_no[3] = 0;
     task_ptr->timer = 5;
     Menu_Suicide[1] = 1;
@@ -115,7 +115,7 @@ static void extra_option_tick(struct _TASK* task_ptr) {
 
         /* Case 1: Setup_Next_Page */
         FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2] = 2;  /* set for timer phase compat */
+        task_ptr->r_no[2] = 2; /* set for timer phase compat */
         Setup_Next_Page(task_ptr, task_ptr->r_no[3]);
 
         s_eo_phase = EO_PHASE_TIMER;
@@ -318,22 +318,21 @@ static void ms_extra_option_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_extra_option_reg_ptr)(void) = ms_extra_option_register;
 static void ms_extra_option_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_extra_option_register(void) {
+__attribute__((constructor)) static void ms_extra_option_register(void) {
 #else
 void ms_extra_option_register(void) {
 #endif
-    g_screens[MENU_SCREEN_EXTRA_OPTION] = (MenuScreen){
-        .name        = "extra_option",
-        .id          = MENU_SCREEN_EXTRA_OPTION,
-        .parent      = MENU_SCREEN_OPTION_SELECT,
-        .on_enter    = extra_option_enter,
-        .on_tick     = extra_option_tick,
-        .on_exit     = extra_option_exit,
-        .cursor_max  = 7,  /* varies per page via Menu_Max; 7 = safe default (page 0/1 max) */
+    g_screens[MENU_SCREEN_EXTRA_OPTION] = (MenuScreen) {
+        .name = "extra_option",
+        .id = MENU_SCREEN_EXTRA_OPTION,
+        .parent = MENU_SCREEN_OPTION_SELECT,
+        .on_enter = extra_option_enter,
+        .on_tick = extra_option_tick,
+        .on_exit = extra_option_exit,
+        .cursor_max = 7,   /* varies per page via Menu_Max; 7 = safe default (page 0/1 max) */
         .cancel_item = -1, /* cancel handled via IO_Result 0x200 */
-        .rmlui_show  = extra_option_rmlui_show,
-        .rmlui_hide  = extra_option_rmlui_hide,
+        .rmlui_show = extra_option_rmlui_show,
+        .rmlui_hide = extra_option_rmlui_hide,
         .header_type = MENU_HEADER_EXTRA_OPTION,
         .effect_slot = 0x73,
     };

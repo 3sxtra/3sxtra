@@ -123,27 +123,18 @@ static void Wait_Pause_in_Tr(struct _TASK* task_ptr);
 static void Reset_Training(struct _TASK* task_ptr);
 static void Reset_Replay(struct _TASK* task_ptr);
 static void End_Replay_Menu(struct _TASK* task_ptr);
-static void Mode_Select(struct _TASK* task_ptr);
-static void Option_Select(struct _TASK* task_ptr);
-static void Training_Mode(struct _TASK* task_ptr);
-static void System_Direction(struct _TASK* task_ptr);
-static void Load_Replay(struct _TASK* task_ptr);
-static void toSelectGame(struct _TASK* task_ptr);
-static void Game_Option(struct _TASK* task_ptr);
-static void Button_Config(struct _TASK* task_ptr);
-static void Sound_Test(struct _TASK* task_ptr);
-static void Memory_Card(struct _TASK* task_ptr);
-static void Extra_Option(struct _TASK* task_ptr);
-static void VS_Result(struct _TASK* task_ptr);
-static void Save_Replay(struct _TASK* task_ptr);
-static void Direction_Menu(struct _TASK* task_ptr);
+/* Legacy screen functions removed — migrated to MenuScreen registry (ms_*.c):
+ *   Mode_Select, Option_Select, Training_Mode, System_Direction,
+ *   Load_Replay, toSelectGame, Game_Option, Button_Config,
+ *   Sound_Test, Memory_Card, Extra_Option, VS_Result,
+ *   Save_Replay, Direction_Menu */
 void Setup_VS_Mode(struct _TASK* task_ptr);
 void Network_Lobby(struct _TASK* task_ptr);
 
 static void bg_etc_write_ex(s16 type);
 void jmpRebootProgram();
 
-static void Menu_in_Sub(struct _TASK* task_ptr);
+void Menu_in_Sub(struct _TASK* task_ptr);
 s32 Exit_Sub(struct _TASK* task_ptr, s16 cursor_ix, s16 next_routine);
 s32 Menu_Sub_case1(struct _TASK* task_ptr);
 static void DAS_1st(struct _TASK* task_ptr);
@@ -152,12 +143,12 @@ static void DAS_3rd(struct _TASK* task_ptr);
 static void DAS_4th(struct _TASK* task_ptr);
 static void DAS2_4th(struct _TASK* task_ptr);
 static void Training_Init(struct _TASK* task_ptr);
-static void Character_Change(struct _TASK* task_ptr);
-static void Normal_Training(struct _TASK* task_ptr);
-static void Blocking_Training(struct _TASK* task_ptr);
-static void Dummy_Setting(struct _TASK* task_ptr);
-static void Training_Option(struct _TASK* task_ptr);
-static void Blocking_Tr_Option(struct _TASK* task_ptr);
+void Character_Change(struct _TASK* task_ptr);
+void Normal_Training(struct _TASK* task_ptr);
+void Blocking_Training(struct _TASK* task_ptr);
+void Dummy_Setting(struct _TASK* task_ptr);
+void Training_Option(struct _TASK* task_ptr);
+void Blocking_Tr_Option(struct _TASK* task_ptr);
 
 const MenuFunc Menu_Jmp_Tbl[MENU_JMP_COUNT] = {
     After_Title,   In_Game,      Wait_Load_Save,  Wait_Replay_Check, Disp_Auto_Save, Suspend_Menu, Wait_Replay_Load,
@@ -222,13 +213,36 @@ static void After_Title(struct _TASK* task_ptr) {
         }
     }
 
-    /* ── Legacy dispatch (un-migrated screens) ── */
-    void (*AT_Jmp_Tbl[AT_JMP_COUNT])() = { Menu_Init,      Mode_Select,      Option_Select,  Option_Select,
-                                           Training_Mode,  System_Direction, Load_Replay,    Option_Select,
-                                           toSelectGame,   Game_Option,      Button_Config,  System_Direction,
-                                           Sound_Test,     Memory_Card,      Extra_Option,   Option_Select,
-                                           VS_Result,      Save_Replay,      Direction_Menu, Save_Direction,
-                                           Load_Direction, Network_Lobby };
+    /* ── Legacy dispatch (un-migrated screens only) ──
+     * All migrated screens are intercepted by MenuScreen_FromLegacyIndex()
+     * above and will never reach this table.  Migrated entries use Menu_Init
+     * as a safe fallback in case of regression.  Only indices 0 (Menu_Init),
+     * 19 (Save_Direction), and 20 (Load_Direction) are still actively
+     * dispatched through this table. */
+    void (*AT_Jmp_Tbl[AT_JMP_COUNT])() = {
+        Menu_Init,       /* [ 0] Menu_Init — bootstrap (un-migrated) */
+        Menu_Init,       /* [ 1] DEAD: migrated to MENU_SCREEN_MODE_SELECT */
+        Menu_Init,       /* [ 2] DEAD: migrated to MENU_SCREEN_OPTION_SELECT */
+        Menu_Init,       /* [ 3] DEAD: OPTION_SELECT alias */
+        Menu_Init,       /* [ 4] DEAD: migrated to MENU_SCREEN_TRAINING_MODE */
+        Menu_Init,       /* [ 5] DEAD: migrated to MENU_SCREEN_SYSTEM_DIRECTION */
+        Menu_Init,       /* [ 6] DEAD: migrated to MENU_SCREEN_LOAD_REPLAY */
+        Menu_Init,       /* [ 7] DEAD: OPTION_SELECT alias */
+        Menu_Init,       /* [ 8] DEAD: migrated to MENU_SCREEN_EXIT_CONFIRM */
+        Menu_Init,       /* [ 9] DEAD: migrated to MENU_SCREEN_GAME_OPTION */
+        Menu_Init,       /* [10] DEAD: migrated to MENU_SCREEN_BUTTON_CONFIG */
+        Menu_Init,       /* [11] DEAD: SYSTEM_DIRECTION alias */
+        Menu_Init,       /* [12] DEAD: migrated to MENU_SCREEN_SOUND_TEST */
+        Menu_Init,       /* [13] DEAD: migrated to MENU_SCREEN_MEMORY_CARD */
+        Menu_Init,       /* [14] DEAD: migrated to MENU_SCREEN_EXTRA_OPTION */
+        Menu_Init,       /* [15] DEAD: OPTION_SELECT alias */
+        Menu_Init,       /* [16] DEAD: migrated to MENU_SCREEN_VS_RESULT */
+        Menu_Init,       /* [17] DEAD: migrated to MENU_SCREEN_SAVE_REPLAY */
+        Menu_Init,       /* [18] DEAD: migrated to MENU_SCREEN_DIRECTION_MENU */
+        Save_Direction,  /* [19] Save_Direction (un-migrated) */
+        Load_Direction,  /* [20] Load_Direction (un-migrated) */
+        Menu_Init,       /* [21] DEAD: migrated to MENU_SCREEN_NETWORK_LOBBY */
+    };
 
     if (task_ptr->r_no[1] >= AT_JMP_COUNT) {
         return;
@@ -285,163 +299,7 @@ void Menu_Init(struct _TASK* task_ptr) {
     cpReadyTask(TASK_SAVER, Saver_Task);
 }
 
-/** @brief Mode-select screen (Arcade / VS / Training / Options / Exit). */
-static void Mode_Select(struct _TASK* task_ptr) {
-    s16 ix;
-    s16 PL_id;
-    s16 loop_counter = 7;
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2] += 1;
-        task_ptr->timer = 5;
-        Mode_Type = MODE_ARCADE;
-        Present_Mode = 1;
-
-        if (task[TASK_ENTRY].condition != 1) {
-            E_No[0] = 1;
-            E_No[1] = 2;
-            E_No[2] = 2;
-            E_No[3] = 0;
-            cpReadyTask(TASK_ENTRY, Entry_Task);
-        }
-
-        Menu_Common_Init();
-
-        for (ix = 0; ix < 4; ix++) {
-            Menu_Suicide[ix] = 0;
-        }
-
-        Clear_Personal_Data(0);
-        Clear_Personal_Data(1);
-        Menu_Cursor_Y[0] = Cursor_Y_Pos[0][0];
-        Cursor_Y_Pos[0][1] = 0;
-        Cursor_Y_Pos[0][2] = 0;
-        Cursor_Y_Pos[0][3] = 0;
-
-        for (ix = 0; ix < 4; ix++) {
-            Vital_Handicap[ix][0] = 7;
-            Vital_Handicap[ix][1] = 7;
-        }
-
-        VS_Stage = 0x14;
-        Order[0x8A] = 4;
-        Order_Timer[0x8A] = 1;
-
-        for (ix = 0; ix < 4; ix++) {
-            Message_Data[ix].order = 3;
-        }
-
-        if (!use_rmlui || !rmlui_menu_mode) {
-            effect_57_init(0x64, MENU_HEADER_MODE_MENU, 0, 0x3F, 2);
-            Order[0x64] = 1;
-            Order_Dir[0x64] = 8;
-            Order_Timer[0x64] = 1;
-        }
-        Menu_Suicide[0] = 0;
-
-        if (use_rmlui && rmlui_menu_mode) {
-            rmlui_mode_menu_show();
-        } else {
-            effect_04_init(0, 0, 0, 0x48);
-
-            for (ix = 0; ix < loop_counter; ix++) {
-                effect_61_init(0, ix + 0x50, 0, 0, (u32)ix, ix, 0x7047);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
-            }
-            Menu_Cursor_Move = loop_counter;
-        }
-        break;
-
-    case 1:
-        if (Menu_Sub_case1(task_ptr) != 0) {
-            Order[0x4E] = 2;
-            Order_Dir[0x4E] = 0;
-            Order_Timer[0x4E] = 1;
-            checkAdxFileLoaded();
-            checkSelObjFileLoaded();
-        }
-
-        break;
-
-    case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
-            task_ptr->r_no[2] += 1;
-            Suicide[3] = 0;
-        }
-
-        break;
-
-    case 3:
-        if (Connect_Status == 0 && Menu_Cursor_Y[0] == 1) {
-            Menu_Cursor_Y[0] = 2;
-        } else {
-            PL_id = 0;
-
-            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, loop_counter - 1, 1) == 0) {
-                PL_id = 1;
-                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, loop_counter - 1, 1);
-            }
-        }
-
-        switch (IO_Result) {
-        case 0x100:
-            switch (Menu_Cursor_Y[0]) {
-            case 0:
-                G_No[2] += 1;
-                Mode_Type = MODE_ARCADE;
-                if (use_rmlui && rmlui_menu_mode)
-                    rmlui_mode_menu_hide();
-                task_ptr->r_no[0] = 5;
-                cpExitTask(TASK_SAVER);
-                Decide_PL(PL_id);
-                break;
-
-            case 1:
-                Setup_VS_Mode(task_ptr);
-                G_No[1] = 12;
-                G_No[2] = 1;
-                Mode_Type = MODE_VERSUS;
-                if (use_rmlui && rmlui_menu_mode)
-                    rmlui_mode_menu_hide();
-                cpExitTask(TASK_MENU);
-                break;
-
-            case 3:
-                task_ptr->r_no[2] += 1;
-                task_ptr->free[0] = 0;
-                task_ptr->free[1] = 21; /* AT index for Network_Lobby */
-                break;
-
-            case 2:
-            case 4:
-            case 5:
-            case 6:
-                task_ptr->r_no[2] += 1;
-                task_ptr->free[0] = 0;
-                task_ptr->free[1] = Menu_Cursor_Y[0] + 2;
-                break;
-
-            default:
-                break;
-            }
-
-            SE_selected();
-            break;
-        }
-
-        break;
-
-    default:
-        if (use_rmlui && rmlui_menu_mode)
-            rmlui_mode_menu_hide();
-        Exit_Sub(task_ptr, 0, task_ptr->free[1]);
-        break;
-    }
-}
+/* Mode_Select() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
 /** @brief Prepare VS mode â€” enable both operators and init grades. */
 void Setup_VS_Mode(struct _TASK* task_ptr) {
@@ -459,7 +317,7 @@ void Setup_VS_Mode(struct _TASK* task_ptr) {
 }
 
 /** @brief Common sub-menu entry â€” fade out, reset cursors, show header. */
-static void Menu_in_Sub(struct _TASK* task_ptr) {
+void Menu_in_Sub(struct _TASK* task_ptr) {
     FadeOut(1, 0xFF, 8);
     task_ptr->r_no[2] += 1;
     task_ptr->timer = 5;
@@ -1963,7 +1821,7 @@ void Menu_ReenterNetworkLobby(void) {
     task[TASK_MENU].condition = 1;
 
     cpReadyTask(TASK_MENU, Menu_Task);
-    task[TASK_MENU].r_no[0] = 0;  /* After_Title */
+    task[TASK_MENU].r_no[0] = 0; /* After_Title */
 
     /* Signal the migrated network_lobby on_enter to skip gateway and
      * jump straight to lobby phase 10 (RmlUI mode). */
@@ -1972,1159 +1830,29 @@ void Menu_ReenterNetworkLobby(void) {
     MenuScreen_Goto(MENU_SCREEN_NETWORK_LOBBY);
 }
 
-/** @brief â€œSelect Gameâ€ (3S vs 2I) screen with exit-to-desktop option. */
-static void toSelectGame(struct _TASK* task_ptr) {
-    u16 sw;
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        Forbid_Reset = 1;
-        Menu_in_Sub(task_ptr);
-        ControllerImageOverlay_Init();
-        Setup_BG(1, 0x200, 0);
-        if (!use_rmlui || !rmlui_screen_exit_confirm)
-            effect_66_init(0x8A, 8, 1, 0, -1, -1, -0x7FF2);
-        Order[0x8A] = 3;
-        Order_Timer[0x8A] = 1;
-        task_ptr->free[0] = 0;
-        task_ptr->timer = 0x10;
-        if (use_rmlui && rmlui_screen_exit_confirm)
-            rmlui_exit_confirm_show();
-        break;
-
-    case 1:
-        if (Menu_Sub_case1(task_ptr) != 0) {
-            if (!use_rmlui || !rmlui_screen_exit_confirm) {
-                Message_Data->kind_req = 5;
-                Message_Data->request = 0;
-                Message_Data->order = 1;
-                Message_Data->timer = 2;
-                Message_Data->pos_x = 0;
-                Message_Data->pos_y = 0xA0;
-                Message_Data->pos_z = 0x18;
-                effect_45_init(0, 0, 2);
-            }
-        }
-
-        break;
-
-    case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
-            task_ptr->r_no[2] += 1;
-        }
-
-        if (!use_rmlui || !rmlui_screen_exit_confirm)
-            imgSelectGameButton();
-        break;
-
-    case 3:
-        if (!use_rmlui || !rmlui_screen_exit_confirm)
-            imgSelectGameButton();
-        sw = (~plsw_01[0] & plsw_00[0]) | (~plsw_01[1] & plsw_00[1]); // potential macro
-        sw &= (SWK_SOUTH | SWK_EAST);
-
-        if (sw != 0) {
-            if (sw != (SWK_SOUTH | SWK_EAST)) {
-                if (sw & SWK_SOUTH) {
-                    task_ptr->free[0] = 1;
-                }
-
-                SE_selected();
-                FadeInit();
-                task_ptr->r_no[2] = 8;
-                break;
-            }
-        }
-
-        break;
-
-    case 8:
-        if (!use_rmlui || !rmlui_screen_exit_confirm)
-            imgSelectGameButton();
-
-        if (FadeOut(1, 0x19, 8) != 0) {
-            if (task_ptr->free[0]) {
-                task_ptr->r_no[2] = 0xA;
-                sound_all_off();
-                break;
-            }
-
-            task_ptr->r_no[2] = 9;
-            break;
-        }
-
-        break;
-
-    case 9:
-        ControllerImageOverlay_Shutdown();
-        Menu_Suicide[0] = 0;
-        Menu_Suicide[1] = 1;
-        task_ptr->r_no[1] = 1;
-        task_ptr->r_no[2] = 0;
-        task_ptr->r_no[3] = 0;
-        task_ptr->free[0] = 0;
-        if (use_rmlui && rmlui_screen_exit_confirm)
-            rmlui_exit_confirm_hide();
-        FadeOut(1, 0xFF, 8);
-        Forbid_Reset = 0;
-        break;
-
-    case 10:
-        Exit_sound_system();
-        task_ptr->r_no[2] += 1;
-        break;
-
-    default:
-        SDLApp_Exit();
-        break;
-    }
-}
+/* toSelectGame() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
 /** @brief Draw the two game-select button images. */
 
-/** @brief Training-mode sub-menu (Normal / Parrying / Exit). */
-static void Training_Mode(struct _TASK* task_ptr) {
-    s16 ix;
-    s16 PL_id;
+/* Training_Mode() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        Menu_in_Sub(task_ptr);
-        mpp_w.initTrainingData = true;
-        if (!use_rmlui || !rmlui_menu_training) {
-            effect_57_init(0x6F, MENU_HEADER_TRAINING, 0, 0x3F, 2);
-            Order[0x6F] = 1;
-            Order_Dir[0x6F] = 8;
-            Order_Timer[0x6F] = 1;
-        }
-        if (use_rmlui && rmlui_menu_training) {
-            rmlui_training_mode_show();
-        } else {
-            effect_04_init(1, 5, 0, 0x48);
+/* Option_Select() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
-            static const s16 menu_strings[] = { 0x35, 0x36, 66, 0x37 };
-            for (ix = 0; ix < 4; ix++) {
-                effect_61_init(0, ix + 0x50, 0, 1, menu_strings[ix], ix, 0x7047);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
-            }
-            Menu_Cursor_Move = 4;
-        }
-        system_dir[4] = system_dir[1];
-        system_dir[5] = system_dir[1];
-        break;
+/* System_Direction() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
-    case 1:
-        Menu_Sub_case1(task_ptr);
-        break;
+/* Direction_Menu() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
-    case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
-            task_ptr->r_no[2] += 1;
-            Suicide[3] = 0;
-        }
-
-        break;
-
-    case 3:
-        PL_id = 0;
-
-        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 3, 0xFF) == 0) {
-            PL_id = 1;
-            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 3, 0xFF);
-        }
-
-        switch (IO_Result) {
-        case 0x100:
-        case 0x200:
-            break;
-
-        default:
-            return;
-        }
-
-        SE_selected();
-
-        if (Menu_Cursor_Y[0] == 3 || IO_Result == 0x200) {
-            Menu_Suicide[0] = 0;
-            Menu_Suicide[1] = 1;
-            task_ptr->r_no[1] = 1;
-            task_ptr->r_no[2] = 0;
-            task_ptr->r_no[3] = 0;
-            task_ptr->free[0] = 0;
-            Order[0x6F] = 4;
-            Order_Timer[0x6F] = 4;
-            if (use_rmlui && rmlui_menu_training)
-                rmlui_training_mode_hide();
-            break;
-        }
-
-        Decide_ID = PL_id;
-
-        /* Hide the training-mode overlay before going to char select */
-        if (use_rmlui && rmlui_menu_training)
-            rmlui_training_mode_hide();
-
-        if (Menu_Cursor_Y[0] == 0) {
-            Mode_Type = MODE_NORMAL_TRAINING;
-            Present_Mode = 4;
-        } else if (Menu_Cursor_Y[0] == 1) {
-            Mode_Type = MODE_PARRY_TRAINING;
-            Present_Mode = 5;
-        } else {
-            Mode_Type = MODE_TRIALS;
-            Present_Mode = 4; // Reuse normal training data
-        }
-
-        Setup_VS_Mode(task_ptr);
-        G_No[2] += 1;
-        task_ptr->r_no[0] = 5;
-        cpExitTask(TASK_SAVER);
-        Champion = PL_id;
-        Pause_ID = PL_id;
-        Training_ID = PL_id;
-        New_Challenger = PL_id ^ 1;
-        cpExitTask(TASK_ENTRY);
-
-        break;
-    }
-}
-
-/** @brief Options sub-menu (Game Options â€¦ Extra Option â€¦ Exit). */
-static void Option_Select(struct _TASK* task_ptr) {
-    s16 ix;
-    s16 char_index;
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        Menu_in_Sub(task_ptr);
-        Order[0x4E] = 2;
-        Order_Dir[0x4E] = 0;
-        Order_Timer[0x4E] = 1;
-        if (!use_rmlui || !rmlui_menu_option) {
-            effect_57_init(0x4F, MENU_HEADER_OPTION_MENU, 0, 0x3F, 2);
-            Order[0x4F] = 1;
-            Order_Dir[0x4F] = 8;
-            Order_Timer[0x4F] = 1;
-        }
-
-        if (save_w[Present_Mode].Extra_Option == 0 && save_w[Present_Mode].Unlock_All == 0) {
-            if (use_rmlui && rmlui_menu_option) {
-                rmlui_option_menu_show();
-            } else {
-                effect_04_init(1, 4, 0, 0x48);
-
-                ix = 0;
-                char_index = 0x2F;
-
-                while (ix < 6) {
-                    effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x70A7);
-                    Order[ix + 0x50] = 1;
-                    Order_Dir[ix + 0x50] = 4;
-                    Order_Timer[ix + 0x50] = ix + 0x14;
-                    ix++;
-                    char_index++;
-                }
-            }
-
-            Menu_Cursor_Move = 6;
-            /* Mode Menu pattern: set cursor-move inside CPS3 branch only */
-            break;
-        }
-
-        if (use_rmlui && rmlui_menu_option) {
-            rmlui_option_menu_show();
-        } else {
-            effect_04_init(1, 1, 0, 0x48);
-
-            ix = 0;
-            char_index = 7;
-
-            while (ix < 7) {
-                effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x70A7);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
-                ix++;
-                char_index++;
-            }
-            Menu_Cursor_Move = 7;
-        }
-        break;
-
-    case 1:
-        if (Menu_Sub_case1(task_ptr) != 0) {
-            checkSelObjFileLoaded();
-        }
-
-        break;
-
-    case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
-            task_ptr->r_no[2] += 1;
-            Suicide[3] = 0;
-        }
-
-        break;
-
-    case 3:
-        if (save_w[Present_Mode].Extra_Option || save_w[Present_Mode].Unlock_All) {
-            ix = 1;
-        } else {
-            ix = 0;
-        }
-
-        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, ix + 5, 0xFF) == 0) {
-            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, ix + 5, 0xFF);
-        }
-
-        switch (IO_Result) {
-        case 0x100:
-        case 0x200:
-            break;
-
-        default:
-            return;
-        }
-
-        SE_selected();
-
-        if (Menu_Cursor_Y[0] == ix + 5 || IO_Result == 0x200) {
-            Menu_Suicide[0] = 0;
-            Menu_Suicide[1] = 1;
-            task_ptr->r_no[1] = 1;
-            task_ptr->r_no[2] = 0;
-            task_ptr->r_no[3] = 0;
-            task_ptr->free[0] = 0;
-            Order[0x4F] = 4;
-            Order_Timer[0x4F] = 4;
-
-            if (use_rmlui && rmlui_menu_option)
-                rmlui_option_menu_hide();
-
-            if (Check_Change_Contents()) {
-                if (save_w[Present_Mode].Auto_Save) {
-                    task_ptr->r_no[0] = 4;
-                    task_ptr->r_no[1] = 0;
-                    Forbid_Reset = 1;
-                    Copy_Check_w();
-                    break;
-                }
-            }
-
-            break;
-        }
-
-        task_ptr->r_no[2] += 1;
-        task_ptr->free[0] = 0;
-        X_Adjust_Buff[0] = X_Adjust;
-        X_Adjust_Buff[1] = X_Adjust;
-        X_Adjust_Buff[2] = X_Adjust;
-        Y_Adjust_Buff[0] = Y_Adjust;
-        Y_Adjust_Buff[1] = Y_Adjust;
-        Y_Adjust_Buff[2] = Y_Adjust;
-        break;
-
-    default:
-        if (use_rmlui && rmlui_menu_option)
-            rmlui_option_menu_hide();
-        Exit_Sub(task_ptr, 1, Menu_Cursor_Y[0] + 9);
-        break;
-    }
-}
-
-/** @brief System Direction (dipswitch) page-based settings menu.
- *  Context-aware: when entered from Option_Select (r_no[1]==11), uses
- *  master_player 2 and returns via Return_Option_Mode_Sub; when entered
- *  from Mode_Select (r_no[1]==5), uses the original master_player 1 path. */
-static void System_Direction(struct _TASK* task_ptr) {
-    s16 ix;
-    s16 char_index;
-    const int from_option = (task_ptr->r_no[1] == 11); /* AT index 11 = from Option_Select */
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        if (from_option) {
-            /* Option_Select context: kill option items, enable sub-menu items */
-            FadeOut(1, 0xFF, 8);
-            task_ptr->r_no[2] += 1;
-            task_ptr->timer = 5;
-            Menu_Common_Init();
-            Menu_Cursor_Y[0] = 0;
-            Menu_Suicide[1] = 1; /* kill Option items (master_player=1) */
-            Menu_Suicide[2] = 0; /* enable our items (master_player=2) */
-            Order[0x4F] = 4;
-            Order_Timer[0x4F] = 1;
-            Order[0x4E] = 2;
-            Order_Dir[0x4E] = 2;
-            Order_Timer[0x4E] = 1;
-        } else {
-            /* Mode_Select context: inherit BG from Mode_Select */
-            Menu_in_Sub(task_ptr);
-            Order[0x4E] = 2;
-            Order_Dir[0x4E] = 3;
-            Order_Timer[0x4E] = 1;
-        }
-        Convert_Buff[3][0][0] = Direction_Working[1];
-
-        /* Orange/red header — gated when RmlUI active */
-        if (!use_rmlui || !rmlui_menu_sysdir) {
-            effect_57_init(0x6D, MENU_HEADER_SYSTEM_DIRECTION, 0, 0x3F, 2);
-            Order[0x6D] = 1;
-            Order_Dir[0x6D] = 8;
-            Order_Timer[0x6D] = 1;
-        }
-
-        if (use_rmlui && rmlui_menu_sysdir) {
-            rmlui_sysdir_show();
-        } else {
-            effect_04_init(1, 3, 0, 0x48);
-            effect_64_init(0x61U, 0, from_option ? 2 : 1, 0xA, 0, 0x7047, 0xB, 3, 0);
-            Order[0x61] = 1;
-            Order_Dir[0x61] = 4;
-            Order_Timer[0x61] = 0x14;
-
-            ix = 0;
-            char_index = 0x2B;
-
-            while (ix < 4) {
-                effect_61_init(0, ix + 0x50, 0, from_option ? 2 : 1, char_index, ix + 1, 0x7047);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x15;
-                ix++;
-                char_index++;
-            }
-            Menu_Cursor_Move = 4;
-        }
-        Page_Max = Check_SysDir_Page();
-        break;
-
-    case 1:
-        Menu_Sub_case1(task_ptr);
-        break;
-
-    case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
-            task_ptr->r_no[2] += 1;
-            Suicide[3] = 0;
-        }
-
-        break;
-
-    case 3:
-        System_Dir_Move_Sub(0);
-
-        if (IO_Result == 0) {
-            System_Dir_Move_Sub(1);
-        }
-
-        switch (IO_Result) {
-        case 0x100:
-            if (Menu_Cursor_Y[0] == 0) {
-                break;
-            }
-
-            // fallthrough
-
-        case 0x200:
-            SE_selected();
-            Order[0x6D] = 4;
-            Order_Timer[0x6D] = 4;
-
-            if (Menu_Cursor_Y[0] == 4 || IO_Result == 0x200) {
-                if (from_option) {
-                    /* Return to Option_Select */
-                    if (use_rmlui && rmlui_menu_sysdir)
-                        rmlui_sysdir_hide();
-                    Return_Option_Mode_Sub(task_ptr);
-                } else {
-                    /* Return to Mode_Select */
-                    if (use_rmlui && rmlui_menu_sysdir)
-                        rmlui_sysdir_hide();
-                    Menu_Suicide[0] = 0;
-                    Menu_Suicide[1] = 1;
-                    task_ptr->r_no[1] = 1;
-                    task_ptr->r_no[2] = 0;
-                    task_ptr->r_no[3] = 0;
-                    task_ptr->free[0] = 0;
-                }
-                break;
-            }
-
-            task_ptr->r_no[2] += 1;
-            task_ptr->free[0] = 0;
-
-            break;
-        }
-
-        break;
-
-    default:
-        Exit_Sub(task_ptr, 1, Menu_Cursor_Y[0] + 0x11);
-        break;
-    }
-}
-
-/** @brief Direction Menu page â€” per-character dipswitch sub-pages. */
-static void Direction_Menu(struct _TASK* task_ptr) {
-    Menu_Cursor_Y[1] = Menu_Cursor_Y[0];
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2] += 1;
-        task_ptr->timer = 5;
-        Menu_Suicide[1] = 1;
-        Menu_Suicide[2] = 0;
-        Menu_Page = 0;
-        Menu_Page_Buff = Menu_Page;
-        Message_Data->kind_req = 3;
-        if (use_rmlui && rmlui_menu_sysdir) {
-            rmlui_sysdir_enter_subpage();
-            /* Replace the Mode_Select/SysDir backgrounds with the green subpage BG.
-               In native, Setup_Next_Page calls effect_work_init() which destroys
-               everything, then recreates 0x4E with palette 0x45. Since we skip
-               effect_work_init() in RmlUI mode, do the swap explicitly. */
-            Order[0x6D] = 4; /* kill the orange SysDir overlay */
-            Order_Timer[0x6D] = 1;
-            Order[0x4E] = 5;
-            Order_Timer[0x4E] = 1;
-            Order_Dir[0x4E] = 3;
-            effect_57_init(0x4E, 0, 0, 0x45, 0); /* green subpage BG */
-        }
-        break;
-
-    case 1:
-        FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2] += 1;
-        if (!use_rmlui || !rmlui_menu_sysdir)
-            Setup_Next_Page(task_ptr, 0);
-        else {
-            /* RmlUi mode: data setup only — no native effects to destroy,
-               so skip effect_work_init() to keep the BG alive (no flicker). */
-            Menu_Page_Buff = Menu_Page;
-            Menu_Common_Init();
-            Menu_Cursor_Y[0] = 0;
-            Menu_Max = Page_Data[Menu_Page];
-            system_dir[1].contents[Menu_Page][Menu_Max] = 1;
-        }
-        /* fallthrough */
-
-    case 2:
-        FadeOut(1, 0xFF, 8);
-
-        if (--task_ptr->timer == 0) {
-            task_ptr->r_no[2] += 1;
-            FadeInit();
-        }
-
-        break;
-
-    case 3:
-        if (FadeIn(1, 0x19, 8) != 0) {
-            task_ptr->r_no[2] += 1;
-        }
-
-        break;
-
-    case 4:
-        Pause_ID = 0;
-
-        Dir_Move_Sub(task_ptr, 0);
-
-        if (IO_Result == 0) {
-            Pause_ID = 1;
-            Dir_Move_Sub(task_ptr, 1);
-        }
-
-        if (Menu_Cursor_Y[1] != Menu_Cursor_Y[0]) {
-            SE_cursor_move();
-            system_dir[1].contents[Menu_Page][Menu_Max] = 1;
-
-            if (Menu_Cursor_Y[0] < Menu_Max) {
-                Message_Data->order = 1;
-                Message_Data->request = Menu_Page * 0xC + Menu_Cursor_Y[0] * 2 + 1;
-                Message_Data->timer = 2;
-
-                if (msgSysDirTbl[0]->msgNum[Menu_Page * 0xC + Menu_Cursor_Y[0] * 2 + 1] == 1) {
-                    Message_Data->pos_y = 0x36;
-                } else {
-                    Message_Data->pos_y = 0x3E;
-                }
-            } else {
-                Message_Data->order = 1;
-                Message_Data->request = system_dir[1].contents[Menu_Page][Menu_Max] + 0x74;
-                Message_Data->timer = 2;
-                Message_Data->pos_y = 0x36;
-            }
-        }
-
-        switch (IO_Result) {
-        case 0x200:
-            task_ptr->r_no[2] += 1;
-            Menu_Suicide[0] = 0;
-            Menu_Suicide[1] = 0;
-            Menu_Suicide[2] = 1;
-            SE_dir_selected();
-            if (use_rmlui && rmlui_menu_sysdir)
-                rmlui_sysdir_exit_subpage();
-            break;
-
-        case 0x80:
-        case 0x800:
-            task_ptr->r_no[2] = 1;
-            task_ptr->timer = 5;
-
-            if (--Menu_Page < 0) {
-                Menu_Page = (s8)Page_Max;
-            }
-
-            SE_dir_selected();
-            break;
-
-        case 0x40:
-        case 0x400:
-            task_ptr->r_no[2] = 1;
-            task_ptr->timer = 5;
-
-            if (++Menu_Page > Page_Max) {
-                Menu_Page = 0;
-            }
-
-            SE_dir_selected();
-            break;
-
-        case 0x100:
-            if (Menu_Cursor_Y[0] == Menu_Max) {
-                switch (system_dir[1].contents[Menu_Page][Menu_Max]) {
-                case 0:
-                    task_ptr->r_no[2] = 1;
-                    task_ptr->timer = 5;
-
-                    if (--Menu_Page < 0) {
-                        Menu_Page = (s8)Page_Max;
-                    }
-
-                    break;
-
-                case 2:
-                    task_ptr->r_no[2] = 1;
-                    task_ptr->timer = 5;
-
-                    if (++Menu_Page > Page_Max) {
-                        Menu_Page = 0;
-                    }
-
-                    break;
-
-                default:
-                    task_ptr->r_no[2] += 1;
-                    Menu_Suicide[0] = 0;
-                    Menu_Suicide[1] = 0;
-                    Menu_Suicide[2] = 1;
-                    break;
-                }
-
-                SE_selected();
-                break;
-            }
-
-            break;
-        }
-
-        break;
-
-    default:
-        Exit_Sub(task_ptr, 2, 5);
-        break;
-    }
-}
-
-/** @brief Load Replay data screen â€” file select and playback setup. */
-static void Load_Replay(struct _TASK* task_ptr) {
-    Menu_Cursor_X[1] = Menu_Cursor_X[0];
-    Clear_Flash_Sub();
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        Menu_in_Sub(task_ptr);
-        Menu_Cursor_X[0] = 0;
-        Setup_BG(1, 0x200, 0);
-        if (!(use_rmlui && rmlui_menu_replay))
-            Setup_Replay_Sub(0x6E, MENU_HEADER_REPLAY, 1);
-        Clear_Flash_Init(4);
-        Message_Data->kind_req = 5;
-        break;
-
-    case 1:
-        if (Menu_Sub_case1(task_ptr) != 0) {
-            rmlui_replay_picker_open(0); /* always use RmlUI — ImGui removed */
-        }
-
-        break;
-
-    case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
-            task_ptr->r_no[2] += 1;
-            task_ptr->free[3] = 0;
-            Menu_Cursor_X[0] = Setup_Final_Cursor_Pos(0, 8);
-        }
-
-        break;
-
-    case 3: {
-        int pick_result = rmlui_replay_picker_poll();
-        if (pick_result == 0) {
-            int slot = rmlui_replay_picker_get_slot();
-            if (NativeSave_LoadReplay(slot) == 0) {
-                Decide_ID = 0;
-                if (Interface_Type[0] == 0) {
-                    Decide_ID = 1;
-                }
-                task_ptr->r_no[2] += 1;
-                task_ptr->r_no[3] = 0;
-            } else {
-                IO_Result = 0x200;
-                Load_Replay_MC_Sub(task_ptr, 0);
-            }
-        } else if (pick_result == -1) {
-            IO_Result = 0x200;
-            Load_Replay_MC_Sub(task_ptr, 0);
-        }
-        break;
-    }
-
-    case 4:
-        Load_Replay_Sub(task_ptr);
-        break;
-    }
-}
+/* Load_Replay() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
 const u8 Setup_Index_64[10] = { 1, 2, 3, 3, 4, 5, 6, 7, 8, 8 };
 
-/** @brief Game Options screen (difficulty, time, rounds, etc). */
-static void Game_Option(struct _TASK* task_ptr) {
-    s16 char_index;
-    s16 ix;
+/* Game_Option() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
-    s16 unused_s3;
-    s16 unused_s2;
+/* Button_Config() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2] += 1;
-        task_ptr->timer = 5;
-        Menu_Common_Init();
-        Menu_Cursor_Y[0] = 0;
-        Menu_Suicide[1] = 1;
-        Menu_Suicide[2] = 0;
-        Menu_Cursor_Y[0] = 0;
-        Menu_Cursor_Y[1] = 0;
-        Order[0x4F] = 4;
-        Order_Timer[0x4F] = 1;
-        Order[0x4E] = 2;
-        Order_Dir[0x4E] = 2;
-        Order_Timer[0x4E] = 1;
-        if (!use_rmlui || !rmlui_menu_game_option) {
-            effect_57_init(0x6A, MENU_HEADER_GAME_OPTION, 0, 0x3F, 2);
-            Order[0x6A] = 1;
-            Order_Dir[0x6A] = 8;
-            Order_Timer[0x6A] = 1;
-        }
+/* Sound_Test() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
-        if (use_rmlui && rmlui_menu_game_option) {
-            rmlui_game_option_show();
-        } else {
-            for (ix = 0, unused_s3 = char_index = 0x19; ix < 0xC; ix++, unused_s2 = char_index++) {
-                effect_61_init(0, ix + 0x50, 0, 2, char_index, ix, 0x70A7);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
-            }
-
-            for (ix = 0; ix < 0xA; ix++) {
-                effect_64_init(ix + 0x5D, 0, 2, Setup_Index_64[ix], ix, 0x70A7, ix + 1, 0, 0);
-                Order[ix + 0x5D] = 1;
-                Order_Dir[ix + 0x5D] = 4;
-                Order_Timer[ix + 0x5D] = ix + 0x14;
-            }
-            Menu_Cursor_Move = 0xA;
-        }
-
-        break;
-
-    case 1:
-        Menu_Sub_case1(task_ptr);
-        break;
-
-    case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
-            task_ptr->r_no[2] += 1;
-            Suicide[3] = 0;
-        }
-
-        break;
-
-    case 3:
-        Game_Option_Sub(0);
-        Button_Exit_Check(task_ptr, 0);
-        Game_Option_Sub(1);
-        Button_Exit_Check(task_ptr, 1);
-        Save_Game_Data();
-        break;
-
-    default:
-        Exit_Sub(task_ptr, 2, 5);
-        break;
-    }
-}
-
-/** @brief Button Config screen â€” remap controller buttons. */
-static void Button_Config(struct _TASK* task_ptr) {
-    s16 ix;
-    s16 disp_index;
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2] += 1;
-        task_ptr->timer = 5;
-        Menu_Common_Init();
-        pp_operator_check_flag(0);
-        ControllerImageOverlay_Init();
-        Menu_Cursor_Y[0] = 0;
-        Menu_Cursor_Y[1] = 0;
-        Menu_Suicide[1] = 1;
-        Menu_Suicide[2] = 0;
-        Copy_Key_Disp_Work();
-        Order[0x4F] = 4;
-        Order_Timer[0x4F] = 1;
-        Order[0x4E] = 2;
-        Order_Dir[0x4E] = 2;
-        Order_Timer[0x4E] = 1;
-        if (!use_rmlui || !rmlui_menu_button_config) {
-            effect_57_init(0x6B, MENU_HEADER_BUTTON_CONFIG, 0, 0x3F, 2);
-            Order[0x6B] = 1;
-            Order_Dir[0x6B] = 8;
-            Order_Timer[0x6B] = 1;
-        }
-
-        if (use_rmlui && rmlui_menu_button_config) {
-            rmlui_button_config_show();
-        } else {
-            for (ix = 0; ix < 12; ix++) {
-                effect_23_init(0, ix + 0x50, 0, 2, 2, ix, 0x70A7, ix + 9, 1);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
-                effect_23_init(1, ix + 0x5C, 0, 2, 3, ix, 0x70A7, ix + 9, 1);
-                Order[ix + 0x5C] = 1;
-                Order_Dir[ix + 0x5C] = 4;
-                Order_Timer[ix + 0x5C] = ix + 0x14;
-            }
-
-            for (ix = 0; ix < 9; ix++) {
-                if (ix == 8) {
-                    disp_index = 1;
-                } else {
-                    disp_index = 0;
-                }
-
-                effect_23_init(0, ix + 0x78, 0, 2, disp_index, ix, 0x70A7, ix, 0);
-                Order[ix + 0x78] = 1;
-                Order_Dir[ix + 0x78] = 4;
-                Order_Timer[ix + 0x78] = ix + 0x14;
-                effect_23_init(1, ix + 0x81, 0, 2, disp_index, ix, 0x70A7, ix, 0);
-                Order[ix + 0x81] = 1;
-                Order_Dir[ix + 0x81] = 4;
-                Order_Timer[ix + 0x81] = ix + 0x14;
-            }
-
-            Menu_Cursor_Move = 0x22;
-            effect_66_init(0x8A, 7, 2, 0, -1, -1, -0x7FFF);
-            Order[0x8A] = 1;
-            Order_Dir[0x8A] = 4;
-            Order_Timer[0x8A] = 0x14;
-            effect_66_init(0x8B, 8, 2, 0, -1, -1, -0x7FFF);
-            Order[0x8B] = 1;
-            Order_Dir[0x8B] = 4;
-            Order_Timer[0x8B] = 0x14;
-        }
-        break;
-
-    case 1:
-        Menu_Sub_case1(task_ptr);
-        break;
-
-    case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
-            task_ptr->r_no[2] += 1;
-            Suicide[3] = 0;
-        }
-
-        break;
-
-    case 3:
-        Button_Config_Sub(0);
-        Button_Exit_Check(task_ptr, 0);
-        Button_Config_Sub(1);
-        Button_Exit_Check(task_ptr, 1);
-        Save_Game_Data();
-        break;
-    }
-}
-
-/** @brief Sound Test menu â€” BGM / SE / voice playback. */
-static void Sound_Test(struct _TASK* task_ptr) {
-    s16 char_index;
-    s16 ix;
-    u8 last_mode;
-
-    Clear_Flash_Sub();
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2] += 1;
-        task_ptr->timer = 5;
-        setupAlwaysSeamlessFlag(((plsw_00[0] | plsw_00[1]) & 0x4000) != 0);
-        Clear_Flash_Init(4);
-        Menu_Common_Init();
-        ControllerImageOverlay_Init();
-        Menu_Cursor_Y[0] = 0;
-        Menu_Suicide[1] = 1;
-        Menu_Suicide[2] = 0;
-        Convert_Buff[3][1][5] = 0;
-
-        if (sys_w.sound_mode == 0) {
-            Convert_Buff[3][1][0] = 0;
-        } else {
-            Convert_Buff[3][1][0] = 1;
-        }
-
-        if (sys_w.bgm_type == BGM_ARRANGED) {
-            Convert_Buff[3][1][3] = 0;
-        } else {
-            Convert_Buff[3][1][3] = 1;
-        }
-
-        Convert_Buff[3][1][7] = 1;
-        Order[0x4F] = 4;
-        Order_Timer[0x4F] = 1;
-        Order[0x4E] = 2;
-        Order_Dir[0x4E] = 2;
-        Order_Timer[0x4E] = 1;
-
-        if (use_rmlui && rmlui_menu_sound) {
-            rmlui_sound_menu_show();
-        } else {
-            effect_57_init(0x72, MENU_HEADER_SOUND, 0, 0x3F, 2);
-            Order[0x72] = 1;
-            Order_Dir[0x72] = 8;
-            Order_Timer[0x72] = 1;
-            effect_04_init(2, 6, 2, 0x48);
-
-            {
-                s32 ixSoundMenuItem[4] = { 10, 11, 11, 12 };
-
-                for (ix = 0; ix < 4; ix++) {
-                    Order[ix + 0x57] = 1;
-                    Order_Dir[ix + 0x57] = 4;
-                    Order_Timer[ix + 0x57] = ix + 0x14;
-                    effect_64_init(ix + 0x57, 0, 2, ixSoundMenuItem[ix] + 1, ix, 0x7047, ix + 0xC, 3, 1);
-                }
-            }
-
-            Order_Dir[0x78] = 0;
-            effect_A8_init(0, 0x78, 0, 2, 5, 0x70A7, 0);
-            Order_Dir[0x79] = 1;
-            effect_A8_init(0, 0x79, 0, 2, 5, 0x70A7, 1);
-            effect_A8_init(3, 0x7A, 0, 2, 5, 0x70A7, 3);
-            Convert_Buff[3][1][5] = 0;
-            Order_Dir[0x7B] = 0;
-            effect_A8_init(2, 0x7B, 0, 2, 5, 0x70A7, 2);
-
-            {
-                s16 unused_s2;
-                s16 unused_s3;
-
-                for (ix = 0, unused_s3 = char_index = 0x3B; ix < 7; ix++, unused_s2 = char_index++) {
-                    effect_61_init(0, ix + 0x50, 0, 2, char_index, ix, 0x7047);
-                    Order[ix + 0x50] = 1;
-                    Order_Dir[ix + 0x50] = 4;
-                    Order_Timer[ix + 0x50] = ix + 0x14;
-                }
-            }
-
-            Menu_Cursor_Move = 5;
-        }
-        break;
-
-    case 1:
-        Menu_Sub_case1(task_ptr);
-        break;
-
-    case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
-            task_ptr->r_no[2] += 1;
-            Suicide[3] = 0;
-        }
-
-        break;
-
-    case 3:
-        last_mode = Convert_Buff[3][1][0];
-        Sound_Cursor_Sub(0);
-
-        if (IO_Result == 0) {
-            Sound_Cursor_Sub(1);
-        }
-
-        if ((Menu_Cursor_Y[0] == 4) && (IO_Result == 0x100)) {
-            SE_selected();
-            Convert_Buff[3][1][0] = 0;
-            Convert_Buff[3][1][1] = 0xF;
-            Convert_Buff[3][1][2] = 0xF;
-            Convert_Buff[3][1][3] = 0;
-        }
-
-        if (bgm_level != (s16)Convert_Buff[3][1][1]) {
-            bgm_level = Convert_Buff[3][1][1];
-            save_w[Present_Mode].BGM_Level = Convert_Buff[3][1][1];
-            SsBgmHalfVolume(0);
-        }
-
-        if (se_level != (s16)Convert_Buff[3][1][2]) {
-            se_level = Convert_Buff[3][1][2];
-            setSeVolume(save_w[Present_Mode].SE_Level = Convert_Buff[3][1][2]);
-        }
-
-        save_w[Present_Mode].BgmType = Convert_Buff[3][1][3];
-
-        if (sys_w.bgm_type != Convert_Buff[3][1][3]) {
-            sys_w.bgm_type = Convert_Buff[3][1][3];
-            Convert_Buff[3][1][5] = 0;
-            BGM_Request_Code_Check(0x41);
-        }
-
-        Order_Dir[0x7B] = Convert_Buff[3][1][5];
-        Setup_Sound_Mode(last_mode);
-        Save_Game_Data();
-
-        if (Menu_Cursor_Y[0] == 5) {
-            if (IO_Result == 0x100) {
-                SsRequest((u16)Order_Dir[0x7B] + 1);
-                Convert_Buff[3][1][7] = 1;
-                return;
-            }
-
-            if ((IO_Result == 0x200) && Convert_Buff[3][1][7]) {
-                Convert_Buff[3][1][7] = 0;
-                BGM_Stop();
-                return;
-            }
-        }
-
-        if (IO_Result == 0x200 || ((Menu_Cursor_Y[0] == 6) && (IO_Result == 0x100 || IO_Result == 0x4000))) {
-            SE_selected();
-            if (use_rmlui && rmlui_menu_sound)
-                rmlui_sound_menu_hide();
-            ControllerImageOverlay_Shutdown();
-            Return_Option_Mode_Sub(task_ptr);
-            setupAlwaysSeamlessFlag(0);
-            Order[0x72] = 4;
-            Order_Timer[0x72] = 4;
-            BGM_Request_Code_Check(0x41);
-        }
-
-        break;
-    }
-}
-
-/** @brief Memory Card management menu. */
-static void Memory_Card(struct _TASK* task_ptr) {
-    s16 ix;
-    s16 char_index;
-
-    s16 unused_s3;
-    s16 unused_s2;
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2] += 1;
-        task_ptr->timer = 5;
-        Menu_Common_Init();
-        Menu_Cursor_Y[0] = 0;
-        Menu_Suicide[1] = 1;
-        Menu_Suicide[2] = 0;
-        Order[0x4F] = 4;
-        Order_Timer[0x4F] = 1;
-        Order[0x4E] = 2;
-        Order_Dir[0x4E] = 4;
-        Order_Timer[0x4E] = 1;
-
-        if (use_rmlui && rmlui_menu_memory_card) {
-            rmlui_memory_card_show();
-        } else {
-            effect_57_init(0x69, MENU_HEADER_SAVE_LOAD, 0, 0x3F, 2);
-            Order[0x69] = 1;
-            Order_Dir[0x69] = 8;
-            Order_Timer[0x69] = 1;
-
-            for (ix = 0, unused_s3 = char_index = 0x15; ix < 4; ix++, unused_s2 = char_index++) {
-                effect_61_init(0, ix + 0x50, 1, 2, char_index, ix, 0x7047);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
-            }
-
-            Menu_Cursor_Move = 4;
-            effect_64_init(0x61, 1, 2, 0, 2, 0x7047, 0, 3, 0);
-            Order[0x61] = 1;
-            Order_Dir[0x61] = 4;
-            Order_Timer[0x61] = 0x18;
-            effect_66_init(0x8A, 8, 2, 1, -1, -1, -0x7FF5);
-            Order[0x8A] = 3;
-            Order_Timer[0x8A] = 1;
-            effect_04_init(2, 2, 2, 0x48);
-        }
-        Setup_File_Property(0, 0xFF);
-        break;
-
-    case 1:
-        Menu_Sub_case1(task_ptr);
-        break;
-
-    case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
-            task_ptr->r_no[2] += 1;
-            Suicide[3] = 0;
-        }
-
-        break;
-
-    case 3:
-        Memory_Card_Sub(0);
-        Button_Exit_Check(task_ptr, 0);
-
-        if (IO_Result == 0) {
-            Memory_Card_Sub(1);
-            Button_Exit_Check(task_ptr, 0);
-        }
-
-        break;
-
-    case 4:
-    case 5:
-    case 6:
-        Save_Load_Menu(task_ptr);
-        break;
-    }
-}
+/* Memory_Card() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
 /** @brief Compute final cursor position for multi-column menus. */
 s32 Setup_Final_Cursor_Pos(s8 cursor_x, s16 dir) {
@@ -3286,8 +2014,29 @@ static void Suspend_Menu(struct _TASK* /* unused */) {
 
 /** @brief In-game state â€” delegate to game task. */
 static void In_Game(struct _TASK* task_ptr) {
+    /* Phase 5b: Screens migrated to the registry dispatch here */
+    if (MenuScreen_IsInGameActive()) {
+        MenuScreen_InGameTick(task_ptr);
+        return;
+    }
+
+    /* Intercept r_no[1] values that map to migrated screens */
+    MenuScreenId ig_mapped = MenuScreen_FromInGameIndex(task_ptr->r_no[1]);
+    if (ig_mapped != MENU_SCREEN_NONE) {
+        MenuScreen_Goto(ig_mapped);
+        MenuScreen_InGameTick(task_ptr);
+        return;
+    }
+
+    /* Legacy dispatch (un-migrated In-Game screens only).
+     * Indices 1–3 are intercepted by MenuScreen_FromInGameIndex() above.
+     * Only index 0 (Menu_Init) and 4 (Pad_Come_Out) are still dispatched here. */
     void (*In_Game_Jmp_Tbl[IN_GAME_JMP_COUNT])() = {
-        Menu_Init, Menu_Select, Button_Config_in_Game, Character_Change, Pad_Come_Out
+        Menu_Init,   /* [0] Menu_Init — bootstrap (un-migrated) */
+        Menu_Init,   /* [1] DEAD: migrated to MENU_SCREEN_PAUSE_MENU */
+        Menu_Init,   /* [2] DEAD: migrated to MENU_SCREEN_BUTTON_CONFIG_IG */
+        Menu_Init,   /* [3] DEAD: migrated to MENU_SCREEN_CHAR_CHANGE_IG */
+        Pad_Come_Out /* [4] Pad_Come_Out — no-op stub (un-migrated) */
     };
 
     if (task_ptr->r_no[1] >= IN_GAME_JMP_COUNT) {
@@ -3519,217 +2268,9 @@ static void Wait_Replay_Check(struct _TASK* task_ptr) {
     }
 }
 
-/** @brief VS Result screen â€” show match outcome and next-action choices. */
-static void VS_Result(struct _TASK* task_ptr) {
-    s16 ix;
-    s16 char_ix2;
-    s16 total_battle;
-    u16 ave[2];
+/* VS_Result() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
-    s16 s4;
-    s16 s3;
-
-    Clear_Flash_Sub();
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        System_all_clear_Level_B();
-        Menu_Init(task_ptr);
-        task_ptr->r_no[1] = 16;
-        task_ptr->r_no[2] = 1;
-        task_ptr->r_no[3] = 0;
-        Sel_PL_Complete[0] = 0;
-        Sel_Arts_Complete[0] = 0;
-        Sel_PL_Complete[1] = 0;
-        Sel_Arts_Complete[1] = 0;
-        Clear_Flash_Init(4);
-        break;
-
-    case 1:
-        FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2]++;
-        task_ptr->timer = 5;
-        Menu_Common_Init();
-        Menu_Cursor_Y[0] = Cursor_Y_Pos[0][0];
-        Menu_Cursor_Y[1] = Cursor_Y_Pos[1][0];
-        Menu_Suicide[0] = 0;
-        Menu_Suicide[1] = 1;
-        Menu_Cursor_X[0] = 0;
-        Menu_Cursor_X[1] = 0;
-        Order[78] = 2;
-        Order_Dir[78] = 0;
-        Order_Timer[78] = 1;
-
-        /* Compute percentages — always needed */
-        total_battle = VS_Win_Record[0] + VS_Win_Record[1];
-        if (total_battle == 0) {
-            total_battle = 1;
-        }
-        if (VS_Win_Record[0] >= VS_Win_Record[1]) {
-            ave[1] = (VS_Win_Record[1] * 100) / total_battle;
-            if (ave[1] == 0 && VS_Win_Record[1] > 0) {
-                ave[1] = 1;
-            }
-            ave[0] = 100 - ave[1];
-        } else {
-            ave[0] = (VS_Win_Record[0] * 100) / total_battle;
-            if (ave[0] == 0 && VS_Win_Record[0] > 0) {
-                ave[0] = 1;
-            }
-            ave[1] = 100 - ave[0];
-        }
-
-        if (use_rmlui && rmlui_screen_vs_result) {
-            rmlui_vs_result_show(VS_Win_Record[0], VS_Win_Record[1], ave[0], ave[1]);
-        } else {
-            effect_66_init(91, 12, 0, 0, 71, 9, 0);
-            Order[91] = 3;
-            Order_Timer[91] = 1;
-            effect_66_init(138, 24, 0, 0, -1, -1, -0x7FF9);
-            Order[138] = 3;
-            Order_Timer[138] = 1;
-            effect_66_init(139, 25, 0, 0, -1, -1, -0x7FF9);
-            Order[139] = 3;
-            Order_Timer[139] = 1;
-            effect_A0_init(0, VS_Win_Record[0], 0, 3, 0, 0, 0);
-            effect_A0_init(0, VS_Win_Record[1], 1, 3, 0, 0, 0);
-            effect_A0_init(0, ave[0], 2, 3, 0, 0, 0);
-            effect_A0_init(0, ave[1], 3, 3, 0, 0, 0);
-
-            for (ix = 0, s4 = char_ix2 = 22; ix < 3; ix++, s3 = char_ix2++) {
-                effect_91_init(0, ix, 0, 71, char_ix2, 0);
-                effect_91_init(1, ix, 0, 71, char_ix2, 0);
-            }
-
-            Setup_Win_Lose_OBJ();
-        }
-        Menu_Cursor_Move = 0;
-        break;
-
-    case 2:
-        FadeOut(1, 0xFF, 8);
-
-        if (--task_ptr->timer == 0) {
-            if (Netplay_GetSessionState() == NETPLAY_SESSION_RUNNING) {
-                // Report match result and upload replay while game state is intact
-                SDLNetplayUI_ReportNaturalMatchEnd();
-                task_ptr->r_no[2] = 6;
-                task_ptr->r_no[3] = 0;
-                task_ptr->timer = 300; // 5 seconds at 60fps — robust wait for async response
-            } else {
-                task_ptr->r_no[2]++;
-            }
-            FadeInit();
-        }
-
-        break;
-
-    case 3:
-        if (FadeIn(1, 25, 8)) {
-            task_ptr->r_no[2]++;
-            Suicide[3] = 0;
-        }
-
-        break;
-
-    case 4:
-        if (VS_Result_Select_Sub(task_ptr, 0) == 0) {
-            VS_Result_Select_Sub(task_ptr, 1);
-        }
-
-        break;
-
-    case 5:
-        if (task_ptr->r_no[3] == 0) {
-            if (--task_ptr->timer == 0) {
-                task_ptr->r_no[3]++;
-            }
-
-            break;
-        }
-
-        Exit_Sub(task_ptr, 0, 17);
-        break;
-
-    case 6: {
-        // Wait-poll for FT session status from async match report.
-        // The async thread sets async_match_session_complete when the server
-        // responds with status="recorded" (FT target reached).
-        char ft_winner[64] = { 0 };
-        if (SDLNetplayUI_ConsumeSessionComplete(ft_winner, sizeof(ft_winner))) {
-            // FT set is done — disconnect P2P and return to room lobby.
-            // ConsumeSessionComplete already fired ReportMatchEnd (rotation).
-            task_ptr->r_no[2] = 7; // → case 7: Netplay_HandleMenuExit
-            task_ptr->r_no[3] = 0;
-            break;
-        }
-
-        if (--task_ptr->timer <= 0) {
-            // Timeout — server didn't respond in time. Pessimistic: keep playing.
-            // If this was an FT>1 session, the next game's report will still be
-            // cross-validated. If the session was actually complete, the rotation
-            // will fire next time we get a response.
-            Setup_VS_Mode(task_ptr);
-            G_No[1] = 12;
-            G_No[2] = 1;
-            Mode_Type = MODE_VERSUS;
-            break;
-        }
-
-        // Still waiting — do nothing this frame.
-        break;
-    }
-
-    case 7:
-    default:
-        Netplay_HandleMenuExit();
-
-        if (Exit_Sub(task_ptr, 0, 0)) {
-            System_all_clear_Level_B();
-            BGM_Request_Code_Check(65);
-        }
-
-        break;
-    }
-}
-
-/** @brief Save Replay screen â€” write match replay to card. */
-static void Save_Replay(struct _TASK* task_ptr) {
-    Menu_Cursor_X[1] = Menu_Cursor_X[0];
-    Clear_Flash_Sub();
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        Setup_Save_Replay_1st(task_ptr);
-        break;
-
-    case 1:
-        if (Menu_Sub_case1(task_ptr) != 0) {
-            rmlui_replay_picker_open(1); /* always use RmlUI — ImGui removed */
-        }
-        Order[0x4E] = 2;
-        Order_Dir[0x4E] = 0;
-        Order_Timer[0x4E] = 1;
-        break;
-
-    case 2:
-        Setup_Save_Replay_2nd(task_ptr, 1);
-        break;
-
-    case 3: {
-        int pick_result = rmlui_replay_picker_poll();
-        if (pick_result == 0) {
-            int slot = rmlui_replay_picker_get_slot();
-            NativeSave_SaveReplay(slot);
-        }
-        if (pick_result != 1) { /* done or cancelled */
-            IO_Result = 0x200;
-            Save_Replay_MC_Sub(task_ptr, 0);
-        }
-        break;
-    }
-    }
-}
+/* Save_Replay() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
 /** @brief Save Replay step 2 â€” execute memory-card write. */
 void Setup_Save_Replay_2nd(struct _TASK* task_ptr, s16 arg1) {
@@ -3998,11 +2539,18 @@ static void Training_Menu(struct _TASK* task_ptr) {
             MenuScreen_Goto(mapped);
             MenuScreen_TrainingTick(task_ptr);
         } else {
-            /* Legacy dispatch (un-migrated training screens) */
+            /* Legacy dispatch (un-migrated training screens only).
+             * All indices 1–7 are intercepted by MenuScreen_FromTrainingIndex()
+             * above.  Only index 0 (Training_Init) is still dispatched here. */
             void (*Training_Jmp_Tbl[TRAINING_JMP_COUNT])() = {
-                Training_Init,    Normal_Training,   Blocking_Training,
-                Dummy_Setting,    Training_Option,   Button_Config_Tr,
-                Character_Change, Blocking_Tr_Option
+                Training_Init,    /* [0] Training_Init — bootstrap (un-migrated) */
+                Training_Init,    /* [1] DEAD: migrated to MENU_SCREEN_NORMAL_TRAINING */
+                Training_Init,    /* [2] DEAD: migrated to MENU_SCREEN_BLOCKING_TRAINING */
+                Training_Init,    /* [3] DEAD: migrated to MENU_SCREEN_DUMMY_SETTING */
+                Training_Init,    /* [4] DEAD: migrated to MENU_SCREEN_TRAINING_OPTION */
+                Training_Init,    /* [5] DEAD: migrated to MENU_SCREEN_BUTTON_CONFIG_TR */
+                Training_Init,    /* [6] DEAD: migrated to MENU_SCREEN_CHAR_CHANGE_TR */
+                Training_Init,    /* [7] DEAD: migrated to MENU_SCREEN_BLOCKING_TR_OPTION */
             };
             Training_Jmp_Tbl[task_ptr->r_no[1]](task_ptr);
         }
@@ -4045,7 +2593,7 @@ static void Training_Init(struct _TASK* task_ptr) {
 }
 
 /** @brief Normal Training sub-menu â€” recording, playback, and settings. */
-static void Normal_Training(struct _TASK* task_ptr) {
+void Normal_Training(struct _TASK* task_ptr) {
     s16 ix;
     s16 x;
     s16 y;
@@ -4178,7 +2726,7 @@ static void Normal_Training(struct _TASK* task_ptr) {
 }
 
 /** @brief Dummy Setting sub-menu â€” configure training dummy. */
-static void Dummy_Setting(struct _TASK* task_ptr) {
+void Dummy_Setting(struct _TASK* task_ptr) {
     s16 ix;
     s16 group;
     s16 y;
@@ -4233,7 +2781,7 @@ static void Dummy_Setting(struct _TASK* task_ptr) {
 }
 
 /** @brief Training Option sub-menu â€” configure training parameters. */
-static void Training_Option(struct _TASK* task_ptr) {
+void Training_Option(struct _TASK* task_ptr) {
     s16 ix;
     s16 group;
     s16 y;
@@ -4288,7 +2836,7 @@ static void Training_Option(struct _TASK* task_ptr) {
 }
 
 /** @brief Blocking (parrying) Training sub-menu. */
-static void Blocking_Training(struct _TASK* task_ptr) {
+void Blocking_Training(struct _TASK* task_ptr) {
     s16 ix;
     s16 x;
     s16 y;
@@ -4431,7 +2979,7 @@ const LetterData training_letter_data[6] = { { 0x82, "NORMAL TRAINING" },   { 0x
                                              { 0x7D, "RECORDING SETTING" }, { 0x8F, "BUTTON CONFIG." } };
 
 /** @brief Blocking Training option screen. */
-static void Blocking_Tr_Option(struct _TASK* task_ptr) {
+void Blocking_Tr_Option(struct _TASK* task_ptr) {
     s16 ix;
     s16 group;
     s16 y;
@@ -4516,7 +3064,7 @@ static void Blocking_Tr_Option(struct _TASK* task_ptr) {
 }
 
 /** @brief Character Change screen in training mode. */
-static void Character_Change(struct _TASK* task_ptr) {
+void Character_Change(struct _TASK* task_ptr) {
     s16 ix;
 
     if (Check_Pad_in_Pause(task_ptr) == 0) {
@@ -4778,169 +3326,7 @@ s32 Menu_Sub_case1(struct _TASK* task_ptr) {
     return 0;
 }
 
-/** @brief Extra Option screen â€” advanced training parameters. */
-static void Extra_Option(struct _TASK* task_ptr) {
-    Menu_Cursor_Y[1] = Menu_Cursor_Y[0];
-
-    switch (task_ptr->r_no[2]) {
-    case 0:
-        FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2]++;
-        task_ptr->r_no[3] = 0;
-        task_ptr->timer = 5;
-        Menu_Suicide[1] = 1;
-        Menu_Suicide[2] = 0;
-        Menu_Page = 0;
-        Page_Max = 3;
-        Menu_Page_Buff = Menu_Page;
-        Message_Data->kind_req = 4;
-        if (use_rmlui && rmlui_menu_extra_option)
-            rmlui_extra_option_show();
-        break;
-
-    case 1:
-        FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2]++;
-        Setup_Next_Page(task_ptr, task_ptr->r_no[3]);
-        /* fallthrough */
-
-    case 2:
-        FadeOut(1, 0xFF, 8);
-
-        if (--task_ptr->timer == 0) {
-            task_ptr->r_no[2]++;
-            task_ptr->r_no[3] = 1;
-            FadeInit();
-        }
-
-        break;
-
-    case 3:
-        if (FadeIn(1, 25, 8)) {
-            task_ptr->r_no[2]++;
-            break;
-        }
-
-        break;
-
-    case 4:
-        Pause_ID = 0;
-        Dir_Move_Sub(task_ptr, 0);
-
-        if (IO_Result == 0) {
-            Pause_ID = 1;
-            Dir_Move_Sub(task_ptr, 1);
-        }
-
-        if (Menu_Cursor_Y[1] != Menu_Cursor_Y[0]) {
-            SE_cursor_move();
-            save_w[Present_Mode].extra_option.contents[Menu_Page][Menu_Max] = 1;
-
-            if (Menu_Cursor_Y[0] < Menu_Max) {
-                Message_Data->order = 1;
-                Message_Data->request = Ex_Account_Data[Menu_Page] + Menu_Cursor_Y[0];
-                Message_Data->timer = 2;
-
-                if (msgExtraTbl[0]->msgNum[Menu_Cursor_Y[0] + (Menu_Page * 8)] == 1) {
-                    Message_Data->pos_y = 54;
-                } else {
-                    Message_Data->pos_y = 62;
-                }
-            } else {
-                Message_Data->order = 1;
-                Message_Data->request = save_w[Present_Mode].extra_option.contents[Menu_Page][Menu_Max] + 32;
-                Message_Data->timer = 2;
-                Message_Data->pos_y = 54;
-            }
-        }
-
-        switch (IO_Result) {
-        case 0x200:
-            if (use_rmlui && rmlui_menu_extra_option)
-                rmlui_extra_option_hide();
-            Return_Option_Mode_Sub(task_ptr);
-            Order[115] = 4;
-            Order_Timer[115] = 4;
-            save_w[4].extra_option = save_w[1].extra_option;
-            save_w[5].extra_option = save_w[1].extra_option;
-            SE_dir_selected();
-            break;
-
-        case 0x80:
-        case 0x800:
-            task_ptr->r_no[2] = 1;
-            task_ptr->timer = 5;
-
-            if (--Menu_Page < 0) {
-                Menu_Page = Page_Max;
-            }
-
-            SE_dir_selected();
-            break;
-
-        case 0x40:
-        case 0x400:
-            task_ptr->r_no[2] = 1;
-            task_ptr->timer = 5;
-
-            if (++Menu_Page > Page_Max) {
-                Menu_Page = 0;
-            }
-
-            SE_dir_selected();
-            break;
-
-        case 0x100:
-            if (Menu_Page == 0 && Menu_Cursor_Y[0] == 6) {
-                save_w[Present_Mode].extra_option = save_w[0].extra_option;
-                SE_selected();
-                break;
-            }
-
-            if (Menu_Cursor_Y[0] != Menu_Max) {
-                break;
-            }
-
-            switch (save_w[Present_Mode].extra_option.contents[Menu_Page][Menu_Max]) {
-            case 0:
-                task_ptr->r_no[2] = 1;
-                task_ptr->timer = 5;
-
-                if (--Menu_Page < 0) {
-                    Menu_Page = Page_Max;
-                }
-
-                break;
-
-            case 2:
-                task_ptr->r_no[2] = 1;
-                task_ptr->timer = 5;
-
-                if (++Menu_Page > Page_Max) {
-                    Menu_Page = 0;
-                }
-
-                break;
-
-            default:
-                if (use_rmlui && rmlui_menu_extra_option)
-                    rmlui_extra_option_hide();
-                Return_Option_Mode_Sub(task_ptr);
-                save_w[4].extra_option = save_w[1].extra_option;
-                save_w[5].extra_option = save_w[1].extra_option;
-                Order[115] = 4;
-                Order_Timer[115] = 4;
-                break;
-            }
-
-            SE_selected();
-
-            break;
-        }
-
-        break;
-    }
-}
+/* Extra_Option() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
 /** @brief End Replay Menu â€” post-replay choices (retry / exit). */
 static void End_Replay_Menu(struct _TASK* task_ptr) {

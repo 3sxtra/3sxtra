@@ -21,25 +21,25 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/effect/eff04.h"           /* effect_04_init */
-#include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/eff61.h"           /* effect_61_init */
-#include "sf33rd/Source/Game/effect/eff64.h"           /* effect_64_init */
-#include "sf33rd/Source/Game/effect/eff66.h"           /* effect_66_init */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* Menu_Cursor_Y, save_w, etc. */
-#include "sf33rd/Source/Game/io/vm_sub.h"              /* Setup_File_Property */
-#include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"     /* Memory_Card_Sub, Button_Exit_Check, etc. */
-#include "sf33rd/Source/Game/sound/se.h"               /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"           /* Suicide */
-#include "sf33rd/Source/Game/system/sys_sub.h"         /* Save_Game_Data */
-#include "sf33rd/Source/Game/system/work_sys.h"        /* save_w */
-#include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                                   /* struct _TASK */
+#include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
+#include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
+#include "sf33rd/Source/Game/effect/eff64.h"       /* effect_64_init */
+#include "sf33rd/Source/Game/effect/eff66.h"       /* effect_66_init */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/io/vm_sub.h"          /* Setup_File_Property */
+#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* Memory_Card_Sub, Button_Exit_Check, etc. */
+#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
+#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/sys_sub.h"     /* Save_Game_Data */
+#include "sf33rd/Source/Game/system/work_sys.h"    /* save_w */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                               /* struct _TASK */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_memory_card.h"         /* rmlui_memory_card_show/hide */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"      /* use_rmlui, rmlui_menu_memory_card */
+#include "port/sdl/rmlui/rmlui_memory_card.h"    /* rmlui_memory_card_show/hide */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_memory_card */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state
@@ -65,7 +65,7 @@ static void memory_card_enter(struct _TASK* task_ptr) {
 
     /* ── Replicate Memory_Card case 0 init pattern ── */
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;  /* advance so Menu_Sub_case1 works in WAIT phase */
+    task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
     Menu_Common_Init();
     Menu_Cursor_Y[0] = 0;
@@ -142,7 +142,7 @@ static void memory_card_tick(struct _TASK* task_ptr) {
     switch (task_ptr->r_no[2]) {
     case 3:
         /* Main cursor input */
-        task_ptr->r_no[1] = 13;  /* Preserve for Button_Exit_Check routing */
+        task_ptr->r_no[1] = 13; /* Preserve for Button_Exit_Check routing */
 
         Memory_Card_Sub(0);
         Button_Exit_Check(task_ptr, 0);
@@ -221,23 +221,22 @@ static void ms_memory_card_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_memory_card_reg_ptr)(void) = ms_memory_card_register;
 static void ms_memory_card_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_memory_card_register(void) {
+__attribute__((constructor)) static void ms_memory_card_register(void) {
 #else
 /* Fallback: must be called manually from init code */
 void ms_memory_card_register(void) {
 #endif
-    g_screens[MENU_SCREEN_MEMORY_CARD] = (MenuScreen){
-        .name        = "memory_card",
-        .id          = MENU_SCREEN_MEMORY_CARD,
-        .parent      = MENU_SCREEN_OPTION_SELECT,
-        .on_enter    = memory_card_enter,
-        .on_tick     = memory_card_tick,
-        .on_exit     = memory_card_exit,
-        .cursor_max  = 3,   /* 4 items (0–3) */
-        .cancel_item = 3,   /* last item = "Exit" */
-        .rmlui_show  = memory_card_rmlui_show,
-        .rmlui_hide  = memory_card_rmlui_hide,
+    g_screens[MENU_SCREEN_MEMORY_CARD] = (MenuScreen) {
+        .name = "memory_card",
+        .id = MENU_SCREEN_MEMORY_CARD,
+        .parent = MENU_SCREEN_OPTION_SELECT,
+        .on_enter = memory_card_enter,
+        .on_tick = memory_card_tick,
+        .on_exit = memory_card_exit,
+        .cursor_max = 3,  /* 4 items (0–3) */
+        .cancel_item = 3, /* last item = "Exit" */
+        .rmlui_show = memory_card_rmlui_show,
+        .rmlui_hide = memory_card_rmlui_hide,
         .header_type = MENU_HEADER_SAVE_LOAD,
         .effect_slot = 0x69,
     };

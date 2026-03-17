@@ -12,7 +12,12 @@ CLANG_TIDY_ISSUES=0
 
 echo "[CLANG-FORMAT] C/C++ Code Formatting Check"
 # Run clang-format to enforce style
-find src tools -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' \) -exec clang-format -i {} + || CLANG_FORMAT_ISSUES=1
+find src tools -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' \) \
+    -not -path '*/node_modules/*' \
+    -not -path '*/third_party/*' \
+    -not -path '*/build/*' \
+    -not -path '*/.venv/*' \
+    -exec clang-format -i {} + || CLANG_FORMAT_ISSUES=1
 
 if [ $CLANG_FORMAT_ISSUES -ne 0 ]; then
     echo "clang-format encountered errors."

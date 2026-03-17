@@ -23,20 +23,21 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/engine/workuser.h"     /* Menu_Cursor_X, Decide_ID, Interface_Type, etc. */
-#include "sf33rd/Source/Game/menu/menu.h"           /* Menu_Common_Init, Setup_Replay_Sub, Setup_Final_Cursor_Pos, Load_Replay_MC_Sub */
-#include "sf33rd/Source/Game/menu/menu_internal.h"  /* Menu_Sub_case1, Exit_Sub */
-#include "sf33rd/Source/Game/system/sys_sub.h"      /* Setup_BG, Clear_Flash_Sub, Clear_Flash_Init */
-#include "sf33rd/Source/Game/ui/sc_sub.h"           /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                                /* struct _TASK */
+#include "sf33rd/Source/Game/effect/eff45.h"    /* Message_Data */
+#include "sf33rd/Source/Game/engine/workuser.h" /* Menu_Cursor_X, Decide_ID, Interface_Type, etc. */
+#include "sf33rd/Source/Game/menu/menu.h" /* Menu_Common_Init, Setup_Replay_Sub, Setup_Final_Cursor_Pos, Load_Replay_MC_Sub */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_Sub_case1, Exit_Sub */
+#include "sf33rd/Source/Game/system/sys_sub.h"     /* Setup_BG, Clear_Flash_Sub, Clear_Flash_Init */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                               /* struct _TASK */
 
 /* Native save */
-#include "port/save/native_save.h"                  /* NativeSave_LoadReplay */
+#include "port/save/native_save.h" /* NativeSave_LoadReplay */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"   /* use_rmlui, rmlui_menu_replay */
-#include "port/sdl/rmlui/rmlui_replay_picker.h"    /* rmlui_replay_picker_* */
-#include "port/sdl/rmlui/rmlui_wrapper.h"           /* rmlui_wrapper_hide_all_game_documents */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_replay */
+#include "port/sdl/rmlui/rmlui_replay_picker.h"  /* rmlui_replay_picker_* */
+#include "port/sdl/rmlui/rmlui_wrapper.h"        /* rmlui_wrapper_hide_all_game_documents */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state — tracks the sub-phase within the screen's lifecycle.
@@ -47,10 +48,10 @@
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef enum {
-    REPLAY_PHASE_PICKER_OPEN,    /* first tick: open the replay picker */
-    REPLAY_PHASE_FADE_IN,        /* fade in, setup cursor */
-    REPLAY_PHASE_PICKER_POLL,    /* poll replay picker result */
-    REPLAY_PHASE_GAME_LOAD,      /* Load_Replay_Sub multi-phase game transition */
+    REPLAY_PHASE_PICKER_OPEN, /* first tick: open the replay picker */
+    REPLAY_PHASE_FADE_IN,     /* fade in, setup cursor */
+    REPLAY_PHASE_PICKER_POLL, /* poll replay picker result */
+    REPLAY_PHASE_GAME_LOAD,   /* Load_Replay_Sub multi-phase game transition */
 } ReplayInternalPhase;
 
 static ReplayInternalPhase s_phase = REPLAY_PHASE_PICKER_OPEN;
@@ -69,7 +70,7 @@ static void load_replay_enter(struct _TASK* task_ptr) {
 
     /* ── Replicate Menu_in_Sub pattern ── */
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;  /* advance so Menu_Sub_case1 works in WAIT phase */
+    task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
     Menu_Common_Init();
 
@@ -151,7 +152,7 @@ static void load_replay_tick(struct _TASK* task_ptr) {
                 if (Interface_Type[0] == 0) {
                     Decide_ID = 1;
                 }
-                task_ptr->r_no[2] = 4;  /* for Load_Replay_Sub compatibility */
+                task_ptr->r_no[2] = 4; /* for Load_Replay_Sub compatibility */
                 task_ptr->r_no[3] = 0;
                 s_phase = REPLAY_PHASE_GAME_LOAD;
             } else {
@@ -223,23 +224,22 @@ static void ms_load_replay_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_load_replay_reg_ptr)(void) = ms_load_replay_register;
 static void ms_load_replay_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_load_replay_register(void) {
+__attribute__((constructor)) static void ms_load_replay_register(void) {
 #else
 /* Fallback: must be called manually from init code */
 void ms_load_replay_register(void) {
 #endif
-    g_screens[MENU_SCREEN_LOAD_REPLAY] = (MenuScreen){
-        .name        = "load_replay",
-        .id          = MENU_SCREEN_LOAD_REPLAY,
-        .parent      = MENU_SCREEN_MODE_SELECT,
-        .on_enter    = load_replay_enter,
-        .on_tick     = load_replay_tick,
-        .on_exit     = load_replay_exit,
-        .cursor_max  = 1,   /* file list — managed by RmlUi picker, min 1 for validation */
-        .cancel_item = -1,  /* cancel handled by picker UI, not cursor position */
-        .rmlui_show  = load_replay_rmlui_show,
-        .rmlui_hide  = load_replay_rmlui_hide,
+    g_screens[MENU_SCREEN_LOAD_REPLAY] = (MenuScreen) {
+        .name = "load_replay",
+        .id = MENU_SCREEN_LOAD_REPLAY,
+        .parent = MENU_SCREEN_MODE_SELECT,
+        .on_enter = load_replay_enter,
+        .on_tick = load_replay_tick,
+        .on_exit = load_replay_exit,
+        .cursor_max = 1,   /* file list — managed by RmlUi picker, min 1 for validation */
+        .cancel_item = -1, /* cancel handled by picker UI, not cursor position */
+        .rmlui_show = load_replay_rmlui_show,
+        .rmlui_hide = load_replay_rmlui_hide,
         .header_type = MENU_HEADER_REPLAY,
         .effect_slot = 0x6E,
     };

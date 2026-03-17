@@ -43,6 +43,7 @@ extern const u8 Menu_Max_Data_Tr[2][2][6];
 /* === Functions in menu.c called from other menu_*.c files === */
 s32 Exit_Sub(struct _TASK* task_ptr, s16 cursor_ix, s16 next_routine);
 s32 Menu_Sub_case1(struct _TASK* task_ptr);
+void Menu_in_Sub(struct _TASK* task_ptr);
 void Setup_VS_Mode(struct _TASK* task_ptr);
 void Network_Lobby(struct _TASK* task_ptr);
 
@@ -119,5 +120,11 @@ void Training_Init_Sub(struct _TASK* task_ptr);
 void Training_Exit_Sub(struct _TASK* task_ptr);
 void Default_Training_Option(void);
 void Back_to_Mode_Select(struct _TASK* task_ptr);
+void Normal_Training(struct _TASK* task_ptr);
+void Blocking_Training(struct _TASK* task_ptr);
+void Dummy_Setting(struct _TASK* task_ptr);
+void Training_Option(struct _TASK* task_ptr);
+void Blocking_Tr_Option(struct _TASK* task_ptr);
+void Character_Change(struct _TASK* task_ptr);
 
 #endif /* MENU_INTERNAL_H */

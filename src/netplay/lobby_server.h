@@ -59,11 +59,11 @@ bool LobbyServer_DeclineInvite(const char* player_id, const char* declined_playe
 
 /// Session status returned by the lobby server after match reporting.
 typedef enum {
-    MATCH_SESSION_ERROR = -1,        // HTTP or parse error
-    MATCH_SESSION_PENDING = 0,       // First reporter, awaiting cross-validation
-    MATCH_SESSION_IN_PROGRESS = 1,   // Both agreed, but FT not reached yet
-    MATCH_SESSION_COMPLETE = 2,      // FT reached — session over, rotation should fire
-    MATCH_SESSION_DISPUTE = 3,       // Players disagree on winner
+    MATCH_SESSION_ERROR = -1,      // HTTP or parse error
+    MATCH_SESSION_PENDING = 0,     // First reporter, awaiting cross-validation
+    MATCH_SESSION_IN_PROGRESS = 1, // Both agreed, but FT not reached yet
+    MATCH_SESSION_COMPLETE = 2,    // FT reached — session over, rotation should fire
+    MATCH_SESSION_DISPUTE = 3,     // Players disagree on winner
 } MatchSessionStatus;
 
 typedef struct {

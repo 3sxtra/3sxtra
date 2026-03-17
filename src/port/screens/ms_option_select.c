@@ -22,25 +22,25 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/effect/eff04.h"           /* effect_04_init */
-#include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/eff61.h"           /* effect_61_init */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* Menu_Cursor_Y, save_w, etc. */
-#include "sf33rd/Source/Game/io/pulpul.h"              /* pulpul_stop */
-#include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"     /* MC_Move_Sub, Check_Menu_Lever, Exit_Sub */
-#include "sf33rd/Source/Game/rendering/texcash.h"      /* checkSelObjFileLoaded */
-#include "sf33rd/Source/Game/sound/se.h"               /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"           /* Suicide */
-#include "sf33rd/Source/Game/system/sys_sub.h"         /* Check_Change_Contents, Copy_Check_w */
-#include "sf33rd/Source/Game/system/work_sys.h"        /* X_Adjust_Buff, Y_Adjust_Buff, save_w */
-#include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                                   /* struct _TASK */
+#include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
+#include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop */
+#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Exit_Sub */
+#include "sf33rd/Source/Game/rendering/texcash.h"  /* checkSelObjFileLoaded */
+#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
+#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/sys_sub.h"     /* Check_Change_Contents, Copy_Check_w */
+#include "sf33rd/Source/Game/system/work_sys.h"    /* X_Adjust_Buff, Y_Adjust_Buff, save_w */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                               /* struct _TASK */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_option_menu.h"         /* rmlui_option_menu_show/hide */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"      /* use_rmlui, rmlui_menu_option */
-#include "port/sdl/rmlui/rmlui_wrapper.h"              /* rmlui_wrapper_hide_all_game_documents */
+#include "port/sdl/rmlui/rmlui_option_menu.h"    /* rmlui_option_menu_show/hide */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_option */
+#include "port/sdl/rmlui/rmlui_wrapper.h"        /* rmlui_wrapper_hide_all_game_documents */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state
@@ -52,10 +52,12 @@
  *  s_wait_done: one-time post-wait-phase setup flag.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-static bool s_exiting      = false;
-static s16  s_exit_target  = 0;
-static bool s_cancel_exit  = false;
-static bool s_wait_done    = false;
+static bool s_exiting = false;
+static s16 s_exit_target = 0;
+static bool s_cancel_exit = false;
+static bool s_wait_done = false;
+
+extern MenuScreen g_screens[MENU_SCREEN_COUNT];
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  on_enter — extracted from Option_Select case 0
@@ -71,14 +73,14 @@ static void option_select_enter(struct _TASK* task_ptr) {
     s16 ix;
     s16 char_index;
 
-    s_exiting     = false;
+    s_exiting = false;
     s_exit_target = 0;
     s_cancel_exit = false;
-    s_wait_done   = false;
+    s_wait_done = false;
 
     /* ── Replicate Menu_in_Sub pattern ── */
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;  /* advance so Menu_Sub_case1 works in WAIT phase */
+    task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
     Menu_Common_Init();
 
@@ -225,7 +227,7 @@ static void option_select_tick(struct _TASK* task_ptr) {
     if (Menu_Cursor_Y[0] == ix + 5 || IO_Result == 0x200) {
         Menu_Suicide[0] = 0;
         Menu_Suicide[1] = 1;
-        task_ptr->r_no[1] = 1;  /* Mode_Select AT index */
+        task_ptr->r_no[1] = 1; /* Mode_Select AT index */
         task_ptr->r_no[2] = 0;
         task_ptr->r_no[3] = 0;
         task_ptr->free[0] = 0;
@@ -238,7 +240,7 @@ static void option_select_tick(struct _TASK* task_ptr) {
         /* Auto-save check (replicated from legacy) */
         if (Check_Change_Contents()) {
             if (save_w[Present_Mode].Auto_Save) {
-                task_ptr->r_no[0] = 4;  /* Disp_Auto_Save */
+                task_ptr->r_no[0] = 4; /* Disp_Auto_Save */
                 task_ptr->r_no[1] = 0;
                 Forbid_Reset = 1;
                 Copy_Check_w();
@@ -281,10 +283,10 @@ static void option_select_tick(struct _TASK* task_ptr) {
 
 static void option_select_exit(struct _TASK* task_ptr) {
     (void)task_ptr;
-    s_exiting     = false;
+    s_exiting = false;
     s_exit_target = 0;
     s_cancel_exit = false;
-    s_wait_done   = false;
+    s_wait_done = false;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -307,7 +309,7 @@ static void option_select_rmlui_hide(void) {
  *  Uses GCC/MSVC constructor attribute to register at startup.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-extern MenuScreen g_screens[MENU_SCREEN_COUNT];
+/* g_screens declared above — used by both on_enter and registration */
 
 #if defined(_MSC_VER)
 /* MSVC: use CRT initializer section */
@@ -316,23 +318,22 @@ static void ms_option_select_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_option_select_reg_ptr)(void) = ms_option_select_register;
 static void ms_option_select_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_option_select_register(void) {
+__attribute__((constructor)) static void ms_option_select_register(void) {
 #else
 /* Fallback: must be called manually from init code */
 void ms_option_select_register(void) {
 #endif
-    g_screens[MENU_SCREEN_OPTION_SELECT] = (MenuScreen){
-        .name        = "option_select",
-        .id          = MENU_SCREEN_OPTION_SELECT,
-        .parent      = MENU_SCREEN_MODE_SELECT,
-        .on_enter    = option_select_enter,
-        .on_tick     = option_select_tick,
-        .on_exit     = option_select_exit,
-        .cursor_max  = 6,  /* default: 7 items (0–6) — on_enter may override to 5 */
+    g_screens[MENU_SCREEN_OPTION_SELECT] = (MenuScreen) {
+        .name = "option_select",
+        .id = MENU_SCREEN_OPTION_SELECT,
+        .parent = MENU_SCREEN_MODE_SELECT,
+        .on_enter = option_select_enter,
+        .on_tick = option_select_tick,
+        .on_exit = option_select_exit,
+        .cursor_max = 6,   /* default: 7 items (0–6) — on_enter may override to 5 */
         .cancel_item = -1, /* dynamic — handled in on_tick */
-        .rmlui_show  = option_select_rmlui_show,
-        .rmlui_hide  = option_select_rmlui_hide,
+        .rmlui_show = option_select_rmlui_show,
+        .rmlui_hide = option_select_rmlui_hide,
         .header_type = MENU_HEADER_OPTION_MENU,
         .effect_slot = 0x4F,
     };

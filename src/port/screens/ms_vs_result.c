@@ -25,24 +25,24 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/effect/eff66.h"            /* effect_66_init */
-#include "sf33rd/Source/Game/effect/eff91.h"            /* effect_91_init */
-#include "sf33rd/Source/Game/effect/effa0.h"            /* effect_A0_init */
-#include "sf33rd/Source/Game/engine/workuser.h"         /* plsw, Menu_Cursor_*, Order/Timer, VS_Win_Record, Sel_PL_Complete, Sel_Arts_Complete, Suicide, Cursor_Y_Pos, Mode_Type etc. */
-#include "sf33rd/Source/Game/menu/menu.h"               /* Menu_Common_Init, Menu_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"      /* Menu_Sub_case1, Exit_Sub, VS_Result_Select_Sub, Setup_VS_Mode, Setup_Win_Lose_OBJ */
-#include "sf33rd/Source/Game/sound/se.h"                /* BGM_Request_Code_Check, BGM_Stop */
-#include "sf33rd/Source/Game/system/sys_sub.h"          /* System_all_clear_Level_B, Clear_Flash_Init, Clear_Flash_Sub */
-#include "sf33rd/Source/Game/ui/sc_sub.h"               /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                                    /* struct _TASK */
+#include "sf33rd/Source/Game/effect/eff66.h"    /* effect_66_init */
+#include "sf33rd/Source/Game/effect/eff91.h"    /* effect_91_init */
+#include "sf33rd/Source/Game/effect/effa0.h"    /* effect_A0_init */
+#include "sf33rd/Source/Game/engine/workuser.h" /* plsw, Menu_Cursor_*, Order/Timer, VS_Win_Record, Sel_PL_Complete, Sel_Arts_Complete, Suicide, Cursor_Y_Pos, Mode_Type etc. */
+#include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init, Menu_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_Sub_case1, Exit_Sub, VS_Result_Select_Sub, Setup_VS_Mode, Setup_Win_Lose_OBJ */
+#include "sf33rd/Source/Game/sound/se.h"       /* BGM_Request_Code_Check, BGM_Stop */
+#include "sf33rd/Source/Game/system/sys_sub.h" /* System_all_clear_Level_B, Clear_Flash_Init, Clear_Flash_Sub */
+#include "sf33rd/Source/Game/ui/sc_sub.h"      /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                           /* struct _TASK */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_vs_result.h"            /* rmlui_vs_result_show/hide */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"       /* use_rmlui, rmlui_screen_vs_result */
+#include "port/sdl/rmlui/rmlui_vs_result.h"      /* rmlui_vs_result_show/hide */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_screen_vs_result */
 
 /* Netplay */
-#include "netplay/netplay.h"                            /* Netplay_GetSessionState, Netplay_HandleMenuExit, NETPLAY_SESSION_RUNNING */
-#include "port/sdl/netplay/sdl_netplay_ui.h"            /* SDLNetplayUI_ReportNaturalMatchEnd, SDLNetplayUI_ConsumeSessionComplete */
+#include "netplay/netplay.h" /* Netplay_GetSessionState, Netplay_HandleMenuExit, NETPLAY_SESSION_RUNNING */
+#include "port/sdl/netplay/sdl_netplay_ui.h" /* SDLNetplayUI_ReportNaturalMatchEnd, SDLNetplayUI_ConsumeSessionComplete */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal phase state machine
@@ -52,14 +52,14 @@
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef enum VsResultPhase {
-    VR_PHASE_BOOTSTRAP,       /* case 0: System_all_clear + Menu_Init */
-    VR_PHASE_SETUP,           /* case 1: FadeOut + timer + effects */
-    VR_PHASE_WAIT_TIMER,      /* case 2: FadeOut + timer → FadeInit (+ netplay branch) */
-    VR_PHASE_FADE_IN,         /* case 3: FadeIn */
-    VR_PHASE_ACTIVE,          /* case 4: VS_Result_Select_Sub input */
-    VR_PHASE_SAVE_DELAY,      /* case 5: timer countdown → Exit_Sub to Save_Replay */
-    VR_PHASE_NETPLAY_POLL,    /* case 6: wait-poll for FT session complete */
-    VR_PHASE_NETPLAY_EXIT,    /* case 7: Netplay_HandleMenuExit + Exit_Sub */
+    VR_PHASE_BOOTSTRAP,    /* case 0: System_all_clear + Menu_Init */
+    VR_PHASE_SETUP,        /* case 1: FadeOut + timer + effects */
+    VR_PHASE_WAIT_TIMER,   /* case 2: FadeOut + timer → FadeInit (+ netplay branch) */
+    VR_PHASE_FADE_IN,      /* case 3: FadeIn */
+    VR_PHASE_ACTIVE,       /* case 4: VS_Result_Select_Sub input */
+    VR_PHASE_SAVE_DELAY,   /* case 5: timer countdown → Exit_Sub to Save_Replay */
+    VR_PHASE_NETPLAY_POLL, /* case 6: wait-poll for FT session complete */
+    VR_PHASE_NETPLAY_EXIT, /* case 7: Netplay_HandleMenuExit + Exit_Sub */
 } VsResultPhase;
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -83,7 +83,7 @@ static void vs_result_enter(struct _TASK* task_ptr) {
     System_all_clear_Level_B();
     Menu_Init(task_ptr);
     task_ptr->r_no[1] = 16;
-    task_ptr->r_no[2] = 1;   /* for Menu_Sub_case1 compat */
+    task_ptr->r_no[2] = 1; /* for Menu_Sub_case1 compat */
     task_ptr->r_no[3] = 0;
     Sel_PL_Complete[0] = 0;
     Sel_Arts_Complete[0] = 0;
@@ -114,7 +114,7 @@ static void vs_result_tick(struct _TASK* task_ptr) {
     /* ── SETUP: FadeOut + timer + win/loss effects (case 1) ── */
     case VR_PHASE_SETUP:
         FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2] = 2;  /* for legacy compat (Menu_Sub_case1) */
+        task_ptr->r_no[2] = 2; /* for legacy compat (Menu_Sub_case1) */
         task_ptr->timer = 5;
         Menu_Common_Init();
         Menu_Cursor_Y[0] = Cursor_Y_Pos[0][0];
@@ -184,7 +184,7 @@ static void vs_result_tick(struct _TASK* task_ptr) {
                 SDLNetplayUI_ReportNaturalMatchEnd();
                 s_phase = VR_PHASE_NETPLAY_POLL;
                 task_ptr->r_no[3] = 0;
-                task_ptr->timer = 300;  /* 5 seconds at 60fps */
+                task_ptr->timer = 300; /* 5 seconds at 60fps */
             } else {
                 s_phase = VR_PHASE_FADE_IN;
             }
@@ -331,23 +331,22 @@ static void ms_vs_result_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_vs_result_reg_ptr)(void) = ms_vs_result_register;
 static void ms_vs_result_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_vs_result_register(void) {
+__attribute__((constructor)) static void ms_vs_result_register(void) {
 #else
 void ms_vs_result_register(void) {
 #endif
-    g_screens[MENU_SCREEN_VS_RESULT] = (MenuScreen){
-        .name        = "vs_result",
-        .id          = MENU_SCREEN_VS_RESULT,
-        .parent      = MENU_SCREEN_MODE_SELECT,
-        .on_enter    = vs_result_enter,
-        .on_tick     = vs_result_tick,
-        .on_exit     = vs_result_exit,
-        .cursor_max  = 2,      /* 3 choices: Continue (0) / Save Replay (1) / Exit (2) */
-        .cancel_item = 2,      /* Exit choice */
-        .rmlui_show  = vs_result_rmlui_show,
-        .rmlui_hide  = vs_result_rmlui_hide,
-        .header_type = MENU_HEADER_MODE_MENU,   /* no dedicated header */
-        .effect_slot = 78,     /* BG Order slot used during setup */
+    g_screens[MENU_SCREEN_VS_RESULT] = (MenuScreen) {
+        .name = "vs_result",
+        .id = MENU_SCREEN_VS_RESULT,
+        .parent = MENU_SCREEN_MODE_SELECT,
+        .on_enter = vs_result_enter,
+        .on_tick = vs_result_tick,
+        .on_exit = vs_result_exit,
+        .cursor_max = 2,  /* 3 choices: Continue (0) / Save Replay (1) / Exit (2) */
+        .cancel_item = 2, /* Exit choice */
+        .rmlui_show = vs_result_rmlui_show,
+        .rmlui_hide = vs_result_rmlui_hide,
+        .header_type = MENU_HEADER_MODE_MENU, /* no dedicated header */
+        .effect_slot = 78,                    /* BG Order slot used during setup */
     };
 }

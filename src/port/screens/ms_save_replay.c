@@ -26,18 +26,18 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/engine/workuser.h"     /* Menu_Cursor_X, Order, Order_Dir, Order_Timer */
-#include "sf33rd/Source/Game/menu/menu.h"           /* Menu_Common_Init, Setup_Save_Replay_2nd */
-#include "sf33rd/Source/Game/menu/menu_internal.h"  /* Setup_Save_Replay_1st, Save_Replay_MC_Sub */
-#include "sf33rd/Source/Game/system/sys_sub.h"      /* Clear_Flash_Sub, Clear_Flash_Init */
-#include "sf33rd/Source/Game/ui/sc_sub.h"           /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                                /* struct _TASK */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_X, Order, Order_Dir, Order_Timer */
+#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init, Setup_Save_Replay_2nd */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* Setup_Save_Replay_1st, Save_Replay_MC_Sub */
+#include "sf33rd/Source/Game/system/sys_sub.h"     /* Clear_Flash_Sub, Clear_Flash_Init */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                               /* struct _TASK */
 
 /* Native save */
-#include "port/save/native_save.h"                  /* NativeSave_SaveReplay */
+#include "port/save/native_save.h" /* NativeSave_SaveReplay */
 
 /* RmlUi replay picker */
-#include "port/sdl/rmlui/rmlui_replay_picker.h"    /* rmlui_replay_picker_open/poll/get_slot/hide */
+#include "port/sdl/rmlui/rmlui_replay_picker.h" /* rmlui_replay_picker_open/poll/get_slot/hide */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state
@@ -48,9 +48,9 @@
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef enum {
-    SR_PHASE_WAIT,          /* case 1: Menu_Sub_case1 timer + open picker */
-    SR_PHASE_FADE_IN,       /* case 2: Setup_Save_Replay_2nd (FadeIn) */
-    SR_PHASE_PICKER_POLL,   /* case 3: poll replay picker result */
+    SR_PHASE_WAIT,        /* case 1: Menu_Sub_case1 timer + open picker */
+    SR_PHASE_FADE_IN,     /* case 2: Setup_Save_Replay_2nd (FadeIn) */
+    SR_PHASE_PICKER_POLL, /* case 3: poll replay picker result */
 } SaveReplayPhase;
 
 static SaveReplayPhase s_phase = SR_PHASE_WAIT;
@@ -102,7 +102,7 @@ static void save_replay_tick(struct _TASK* task_ptr) {
     case SR_PHASE_WAIT:
         /* Case 1: wait for timer, then open picker */
         if (Menu_Sub_case1(task_ptr) != 0) {
-            rmlui_replay_picker_open(1);  /* mode 1 = save */
+            rmlui_replay_picker_open(1); /* mode 1 = save */
         }
         /* Set BG order — same as legacy case 1 */
         Order[0x4E] = 2;
@@ -193,23 +193,22 @@ static void ms_save_replay_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_save_replay_reg_ptr)(void) = ms_save_replay_register;
 static void ms_save_replay_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_save_replay_register(void) {
+__attribute__((constructor)) static void ms_save_replay_register(void) {
 #else
 /* Fallback: must be called manually from init code */
 void ms_save_replay_register(void) {
 #endif
-    g_screens[MENU_SCREEN_SAVE_REPLAY] = (MenuScreen){
-        .name        = "save_replay",
-        .id          = MENU_SCREEN_SAVE_REPLAY,
-        .parent      = MENU_SCREEN_MODE_SELECT,
-        .on_enter    = save_replay_enter,
-        .on_tick     = save_replay_tick,
-        .on_exit     = save_replay_exit,
-        .cursor_max  = 1,   /* file list — managed by RmlUi picker, min 1 for validation */
-        .cancel_item = -1,  /* cancel handled by picker UI */
-        .rmlui_show  = save_replay_rmlui_show,
-        .rmlui_hide  = save_replay_rmlui_hide,
+    g_screens[MENU_SCREEN_SAVE_REPLAY] = (MenuScreen) {
+        .name = "save_replay",
+        .id = MENU_SCREEN_SAVE_REPLAY,
+        .parent = MENU_SCREEN_MODE_SELECT,
+        .on_enter = save_replay_enter,
+        .on_tick = save_replay_tick,
+        .on_exit = save_replay_exit,
+        .cursor_max = 1,   /* file list — managed by RmlUi picker, min 1 for validation */
+        .cancel_item = -1, /* cancel handled by picker UI */
+        .rmlui_show = save_replay_rmlui_show,
+        .rmlui_hide = save_replay_rmlui_hide,
         .header_type = MENU_HEADER_REPLAY,
         .effect_slot = 0x6E,
     };

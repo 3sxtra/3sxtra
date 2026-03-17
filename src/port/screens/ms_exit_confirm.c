@@ -22,27 +22,27 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/effect/eff45.h"           /* effect_45_init, Message_Data */
-#include "sf33rd/Source/Game/effect/eff66.h"           /* effect_66_init */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* plsw_00, plsw_01, Forbid_Reset, Menu_Suicide, Order/Timer */
-#include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"     /* Menu_in_Sub, Menu_Sub_case1 */
-#include "sf33rd/Source/Game/rendering/texgroup.h"     /* Setup_BG */
-#include "sf33rd/Source/Game/sound/se.h"               /* SE_selected */
-#include "sf33rd/Source/Game/sound/sound3rd.h"         /* Exit_sound_system, sound_all_off */
-#include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                                   /* struct _TASK */
+#include "sf33rd/Source/Game/effect/eff45.h"       /* effect_45_init, Message_Data */
+#include "sf33rd/Source/Game/effect/eff66.h"       /* effect_66_init */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* plsw_00, plsw_01, Forbid_Reset, Menu_Suicide, Order/Timer */
+#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_in_Sub, Menu_Sub_case1 */
+#include "sf33rd/Source/Game/rendering/texgroup.h" /* Setup_BG */
+#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
+#include "sf33rd/Source/Game/sound/sound3rd.h"     /* Exit_sound_system, sound_all_off */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                               /* struct _TASK */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_exit_confirm.h"        /* rmlui_exit_confirm_show/hide */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"      /* use_rmlui, rmlui_screen_exit_confirm */
+#include "port/sdl/rmlui/rmlui_exit_confirm.h"   /* rmlui_exit_confirm_show/hide */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_screen_exit_confirm */
 
 /* Platform */
-#include "port/sdl/app/sdl_app.h"                     /* SDLApp_Exit */
-#include "port/sdl/input/controller_image_overlay.h"   /* ControllerImageOverlay_Init/Shutdown */
+#include "port/sdl/app/sdl_app.h"                    /* SDLApp_Exit */
+#include "port/sdl/input/controller_image_overlay.h" /* ControllerImageOverlay_Init/Shutdown */
 
 /* Pad definitions */
-#include "sf33rd/AcrSDK/common/pad.h"                  /* SWK_SOUTH, SWK_EAST */
+#include "sf33rd/AcrSDK/common/pad.h" /* SWK_SOUTH, SWK_EAST */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal phase state machine
@@ -52,14 +52,14 @@
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef enum ExitConfirmPhase {
-    EC_PHASE_INIT,            /* case 0: setup effects/BG/overlay/RmlUi */
-    EC_PHASE_WAIT,            /* case 1: Menu_Sub_case1 timer + message */
-    EC_PHASE_FADE_IN,         /* case 2: FadeIn + draw buttons */
-    EC_PHASE_ACTIVE,          /* case 3: input handling */
-    EC_PHASE_FADE_OUT,        /* case 8: FadeOut after decision */
-    EC_PHASE_RETURN,          /* case 9: return to Mode Select */
-    EC_PHASE_EXIT_SOUND,      /* case 10: Exit_sound_system */
-    EC_PHASE_EXIT_APP,        /* default: SDLApp_Exit */
+    EC_PHASE_INIT,       /* case 0: setup effects/BG/overlay/RmlUi */
+    EC_PHASE_WAIT,       /* case 1: Menu_Sub_case1 timer + message */
+    EC_PHASE_FADE_IN,    /* case 2: FadeIn + draw buttons */
+    EC_PHASE_ACTIVE,     /* case 3: input handling */
+    EC_PHASE_FADE_OUT,   /* case 8: FadeOut after decision */
+    EC_PHASE_RETURN,     /* case 9: return to Mode Select */
+    EC_PHASE_EXIT_SOUND, /* case 10: Exit_sound_system */
+    EC_PHASE_EXIT_APP,   /* default: SDLApp_Exit */
 } ExitConfirmPhase;
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -67,7 +67,7 @@ typedef enum ExitConfirmPhase {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static ExitConfirmPhase s_phase;
-static bool s_exit_to_desktop;   /* free[0] equivalent: true = exit app */
+static bool s_exit_to_desktop; /* free[0] equivalent: true = exit app */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Forward declarations for legacy functions called from menu_draw.c
@@ -98,8 +98,8 @@ static void exit_confirm_enter(struct _TASK* task_ptr) {
     /* Menu_in_Sub: FadeOut, advance r_no[2], timer=5, Menu_Common_Init,
      * restore cursor, kill parent items, activate sub items */
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;   /* so Menu_Sub_case1 works in wait phase */
-    task_ptr->timer = 0x10;   /* toSelectGame uses 0x10, not the usual 5 */
+    task_ptr->r_no[2] = 1;  /* so Menu_Sub_case1 works in wait phase */
+    task_ptr->timer = 0x10; /* toSelectGame uses 0x10, not the usual 5 */
     Menu_Common_Init();
     Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
     Menu_Suicide[0] = 1;
@@ -177,7 +177,7 @@ static void exit_confirm_tick(struct _TASK* task_ptr) {
             /* Guard: if BOTH buttons pressed simultaneously, ignore */
             if (sw != (SWK_SOUTH | SWK_EAST)) {
                 if (sw & SWK_SOUTH) {
-                    s_exit_to_desktop = true;  /* exit to desktop */
+                    s_exit_to_desktop = true; /* exit to desktop */
                 }
                 /* SWK_EAST alone: s_exit_to_desktop stays false = return */
 
@@ -208,7 +208,7 @@ static void exit_confirm_tick(struct _TASK* task_ptr) {
         ControllerImageOverlay_Shutdown();
         Menu_Suicide[0] = 0;
         Menu_Suicide[1] = 1;
-        task_ptr->r_no[1] = 1;   /* Mode_Select */
+        task_ptr->r_no[1] = 1; /* Mode_Select */
         task_ptr->r_no[2] = 0;
         task_ptr->r_no[3] = 0;
         task_ptr->free[0] = 0;
@@ -272,23 +272,22 @@ static void ms_exit_confirm_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_exit_confirm_reg_ptr)(void) = ms_exit_confirm_register;
 static void ms_exit_confirm_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_exit_confirm_register(void) {
+__attribute__((constructor)) static void ms_exit_confirm_register(void) {
 #else
 void ms_exit_confirm_register(void) {
 #endif
-    g_screens[MENU_SCREEN_EXIT_CONFIRM] = (MenuScreen){
-        .name        = "exit_confirm",
-        .id          = MENU_SCREEN_EXIT_CONFIRM,
-        .parent      = MENU_SCREEN_MODE_SELECT,
-        .on_enter    = exit_confirm_enter,
-        .on_tick     = exit_confirm_tick,
-        .on_exit     = exit_confirm_exit,
-        .cursor_max  = 1,      /* two choices: Return (0) / Exit (1) */
-        .cancel_item = 0,      /* Return choice */
-        .rmlui_show  = exit_confirm_rmlui_show,
-        .rmlui_hide  = exit_confirm_rmlui_hide,
-        .header_type = MENU_HEADER_MODE_MENU,  /* no dedicated header */
+    g_screens[MENU_SCREEN_EXIT_CONFIRM] = (MenuScreen) {
+        .name = "exit_confirm",
+        .id = MENU_SCREEN_EXIT_CONFIRM,
+        .parent = MENU_SCREEN_MODE_SELECT,
+        .on_enter = exit_confirm_enter,
+        .on_tick = exit_confirm_tick,
+        .on_exit = exit_confirm_exit,
+        .cursor_max = 1,  /* two choices: Return (0) / Exit (1) */
+        .cancel_item = 0, /* Return choice */
+        .rmlui_show = exit_confirm_rmlui_show,
+        .rmlui_hide = exit_confirm_rmlui_hide,
+        .header_type = MENU_HEADER_MODE_MENU, /* no dedicated header */
         .effect_slot = 0x8A,
     };
 }

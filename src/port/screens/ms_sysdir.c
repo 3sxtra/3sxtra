@@ -26,6 +26,7 @@
 #include "port/menu_screen.h"
 
 #include "sf33rd/Source/Game/effect/eff04.h"           /* effect_04_init */
+#include "sf33rd/Source/Game/effect/eff45.h"           /* Message_Data */
 #include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff61.h"           /* effect_61_init */
 #include "sf33rd/Source/Game/effect/eff64.h"           /* effect_64_init */
@@ -43,15 +44,15 @@
 #include "structs.h"                                   /* struct _TASK */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_sysdir.h"              /* rmlui_sysdir_show/hide/enter_subpage/exit_subpage */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"      /* use_rmlui, rmlui_menu_sysdir */
+#include "port/sdl/rmlui/rmlui_sysdir.h"         /* rmlui_sysdir_show/hide/enter_subpage/exit_subpage */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_sysdir */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Extern data
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 extern s8 Menu_Page;
-extern s8 Page_Max;
+extern u8 Page_Max;
 extern s8 Menu_Page_Buff;
 extern s8 Menu_Max;
 
@@ -66,9 +67,9 @@ extern s8 Menu_Max;
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static bool s_sysdir_from_option = false;
-static bool s_sysdir_wait_done  = false;
-static bool s_sysdir_exiting    = false;
-static s16  s_sysdir_exit_target = 0;
+static bool s_sysdir_wait_done = false;
+static bool s_sysdir_exiting = false;
+static s16 s_sysdir_exit_target = 0;
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  System Direction — on_enter
@@ -83,7 +84,7 @@ static void sysdir_enter(struct _TASK* task_ptr) {
     s16 char_index;
 
     s_sysdir_wait_done = false;
-    s_sysdir_exiting   = false;
+    s_sysdir_exiting = false;
     s_sysdir_exit_target = 0;
 
     /* Determine entry context from r_no[1].
@@ -97,7 +98,7 @@ static void sysdir_enter(struct _TASK* task_ptr) {
     if (s_sysdir_from_option) {
         /* Option_Select context: kill option items, enable sub-menu items */
         FadeOut(1, 0xFF, 8);
-        task_ptr->r_no[2] = 1;  /* advance for Menu_Sub_case1 in WAIT phase */
+        task_ptr->r_no[2] = 1; /* advance for Menu_Sub_case1 in WAIT phase */
         task_ptr->timer = 5;
         Menu_Common_Init();
         Menu_Cursor_Y[0] = 0;
@@ -234,7 +235,7 @@ static void sysdir_tick(struct _TASK* task_ptr) {
         /* Navigate to Direction_Menu sub-page via Exit_Sub */
         s_sysdir_exiting = true;
         s_sysdir_exit_target = Menu_Cursor_Y[0] + 0x11;
-        task_ptr->r_no[2] = 4;  /* advance past case 3 for Exit_Sub */
+        task_ptr->r_no[2] = 4; /* advance past case 3 for Exit_Sub */
         task_ptr->free[0] = 0;
         break;
     }
@@ -246,8 +247,8 @@ static void sysdir_tick(struct _TASK* task_ptr) {
 
 static void sysdir_exit(struct _TASK* task_ptr) {
     (void)task_ptr;
-    s_sysdir_wait_done  = false;
-    s_sysdir_exiting    = false;
+    s_sysdir_wait_done = false;
+    s_sysdir_exiting = false;
     s_sysdir_from_option = false;
 }
 
@@ -306,7 +307,7 @@ static void dirm_enter(struct _TASK* task_ptr) {
     Menu_Cursor_Y[1] = Menu_Cursor_Y[0];
 
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;  /* advance for Menu_Sub_case1 in WAIT phase */
+    task_ptr->r_no[2] = 1; /* advance for Menu_Sub_case1 in WAIT phase */
     task_ptr->timer = 5;
     Menu_Suicide[1] = 1;
     Menu_Suicide[2] = 0;
@@ -562,40 +563,39 @@ static void ms_sysdir_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_sysdir_reg_ptr)(void) = ms_sysdir_register;
 static void ms_sysdir_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_sysdir_register(void) {
+__attribute__((constructor)) static void ms_sysdir_register(void) {
 #else
 void ms_sysdir_register(void) {
 #endif
     /* System Direction screen */
-    g_screens[MENU_SCREEN_SYSTEM_DIRECTION] = (MenuScreen){
-        .name        = "system_direction",
-        .id          = MENU_SCREEN_SYSTEM_DIRECTION,
-        .parent      = MENU_SCREEN_MODE_SELECT,  /* default; from_option uses Option_Select exit */
-        .on_enter    = sysdir_enter,
-        .on_tick     = sysdir_tick,
-        .on_exit     = sysdir_exit,
-        .cursor_max  = 4,  /* 5 items (0–4): dipswitch toggle + 3 sub-pages + Exit */
-        .cancel_item = 4,  /* last item = "Exit" or cancel */
-        .rmlui_show  = sysdir_rmlui_show,
-        .rmlui_hide  = sysdir_rmlui_hide,
+    g_screens[MENU_SCREEN_SYSTEM_DIRECTION] = (MenuScreen) {
+        .name = "system_direction",
+        .id = MENU_SCREEN_SYSTEM_DIRECTION,
+        .parent = MENU_SCREEN_MODE_SELECT, /* default; from_option uses Option_Select exit */
+        .on_enter = sysdir_enter,
+        .on_tick = sysdir_tick,
+        .on_exit = sysdir_exit,
+        .cursor_max = 4,  /* 5 items (0–4): dipswitch toggle + 3 sub-pages + Exit */
+        .cancel_item = 4, /* last item = "Exit" or cancel */
+        .rmlui_show = sysdir_rmlui_show,
+        .rmlui_hide = sysdir_rmlui_hide,
         .header_type = MENU_HEADER_SYSTEM_DIRECTION,
         .effect_slot = 0x6D,
     };
 
     /* Direction Menu (sub-page navigation) */
-    g_screens[MENU_SCREEN_DIRECTION_MENU] = (MenuScreen){
-        .name        = "direction_menu",
-        .id          = MENU_SCREEN_DIRECTION_MENU,
-        .parent      = MENU_SCREEN_SYSTEM_DIRECTION,
-        .on_enter    = dirm_enter,
-        .on_tick     = dirm_tick,
-        .on_exit     = dirm_exit,
-        .cursor_max  = 6,  /* varies per page via Menu_Max; 6 = safe default */
+    g_screens[MENU_SCREEN_DIRECTION_MENU] = (MenuScreen) {
+        .name = "direction_menu",
+        .id = MENU_SCREEN_DIRECTION_MENU,
+        .parent = MENU_SCREEN_SYSTEM_DIRECTION,
+        .on_enter = dirm_enter,
+        .on_tick = dirm_tick,
+        .on_exit = dirm_exit,
+        .cursor_max = 6,   /* varies per page via Menu_Max; 6 = safe default */
         .cancel_item = -1, /* cancel handled via IO_Result 0x200 */
-        .rmlui_show  = dirm_rmlui_show,
-        .rmlui_hide  = dirm_rmlui_hide,
-        .header_type = MENU_HEADER_MODE_MENU,  /* subpage uses green BG */
+        .rmlui_show = dirm_rmlui_show,
+        .rmlui_hide = dirm_rmlui_hide,
+        .header_type = MENU_HEADER_MODE_MENU, /* subpage uses green BG */
         .effect_slot = 0x4E,
     };
 }

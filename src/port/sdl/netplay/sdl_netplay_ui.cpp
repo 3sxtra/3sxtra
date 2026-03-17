@@ -91,7 +91,8 @@ static int async_match_report_fn(void* userdata) {
     bool ok = LobbyServer_ReportMatch(&data->result, &match_id, &session_status);
 
     if (ok) {
-        SDL_Log("[NetplayUI] Match reported successfully (match_id=%d, session_status=%d)", match_id, (int)session_status);
+        SDL_Log(
+            "[NetplayUI] Match reported successfully (match_id=%d, session_status=%d)", match_id, (int)session_status);
     } else {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[NetplayUI] Match report FAILED");
     }

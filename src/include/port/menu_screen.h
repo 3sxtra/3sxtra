@@ -53,6 +53,15 @@ typedef enum MenuScreenId {
     MENU_SCREEN_LEADERBOARD,
     MENU_SCREEN_SCREEN_ADJUST,
 
+    /* --- Training sub-screens (r_no[0]=7) — Phase 5a (Task 19) --- */
+    MENU_SCREEN_NORMAL_TRAINING,
+    MENU_SCREEN_BLOCKING_TRAINING,
+    MENU_SCREEN_DUMMY_SETTING,
+    MENU_SCREEN_TRAINING_OPTION,
+    MENU_SCREEN_BUTTON_CONFIG_TR,
+    MENU_SCREEN_CHAR_CHANGE_TR,
+    MENU_SCREEN_BLOCKING_TR_OPTION,
+
     /* --- In_Game screens (r_no[0]=1) — Phase 5b --- */
     MENU_SCREEN_PAUSE_MENU,
     MENU_SCREEN_BUTTON_CONFIG_IG,
@@ -69,12 +78,12 @@ typedef enum MenuScreenId {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef enum MenuScreenPhase {
-    MENU_PHASE_ENTER,     /* one-shot: setup effects, show RmlUi doc     */
-    MENU_PHASE_WAIT,      /* wait for timer / asset loads                */
-    MENU_PHASE_FADE_IN,   /* FadeIn transition                          */
-    MENU_PHASE_ACTIVE,    /* per-frame input handling                    */
-    MENU_PHASE_FADE_OUT,  /* FadeOut before transition                   */
-    MENU_PHASE_EXIT,      /* one-shot: cleanup, hide RmlUi doc           */
+    MENU_PHASE_ENTER,    /* one-shot: setup effects, show RmlUi doc     */
+    MENU_PHASE_WAIT,     /* wait for timer / asset loads                */
+    MENU_PHASE_FADE_IN,  /* FadeIn transition                          */
+    MENU_PHASE_ACTIVE,   /* per-frame input handling                    */
+    MENU_PHASE_FADE_OUT, /* FadeOut before transition                   */
+    MENU_PHASE_EXIT,     /* one-shot: cleanup, hide RmlUi doc           */
 } MenuScreenPhase;
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -87,28 +96,28 @@ typedef enum MenuScreenPhase {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct MenuScreen {
-    const char*       name;          /* "mode_select", etc.              */
-    MenuScreenId      id;
-    MenuScreenId      parent;        /* screen to return to on cancel    */
+    const char* name; /* "mode_select", etc.              */
+    MenuScreenId id;
+    MenuScreenId parent; /* screen to return to on cancel    */
 
     /* Lifecycle callbacks — all receive the TASK_MENU task pointer      */
-    void (*on_enter)(struct _TASK*);  /* called once on screen entry     */
-    void (*on_tick)(struct _TASK*);   /* called every frame while active */
-    void (*on_exit)(struct _TASK*);   /* called once on screen exit      */
+    void (*on_enter)(struct _TASK*); /* called once on screen entry     */
+    void (*on_tick)(struct _TASK*);  /* called every frame while active */
+    void (*on_exit)(struct _TASK*);  /* called once on screen exit      */
 
     /* Cursor config (cursor_max may be overridden at runtime in on_enter
        for screens whose item count is conditional, e.g. Option_Select
        shows 6 or 7 items depending on Extra_Option unlock state)       */
-    int               cursor_max;    /* max menu items (for MC_Move_Sub) */
-    int               cancel_item;   /* item index that means "exit"     */
+    int cursor_max;  /* max menu items (for MC_Move_Sub) */
+    int cancel_item; /* item index that means "exit"     */
 
     /* RmlUi integration — nullable function pointers                   */
-    void (*rmlui_show)(void);        /* show RmlUi document              */
-    void (*rmlui_hide)(void);        /* hide RmlUi document              */
+    void (*rmlui_show)(void); /* show RmlUi document              */
+    void (*rmlui_hide)(void); /* hide RmlUi document              */
 
     /* Effect config                                                    */
-    MenuHeader        header_type;   /* MENU_HEADER_MODE_MENU, etc.     */
-    u8                effect_slot;   /* Order[] slot for header bar     */
+    MenuHeader header_type; /* MENU_HEADER_MODE_MENU, etc.     */
+    u8 effect_slot;         /* Order[] slot for header bar     */
 } MenuScreen;
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -305,9 +314,44 @@ void MenuScreen_TrainingTick(struct _TASK* task_ptr);
  */
 MenuScreenId MenuScreen_FromTrainingIndex(int training_index);
 
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  In-Game dispatch hooks (Phase 5b — Task 20)
+ *
+ *  In_Game() dispatches via In_Game_Jmp_Tbl[r_no[1]] with 5 entries.
+ *  These functions let the registry intercept that dispatch for migrated
+ *  In-Game screens (Menu_Select, Button_Config_in_Game, Character_Change).
+ *  Pad_Come_Out is a no-op stub and is NOT migrated.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * @brief Returns true if an In-Game sub-menu is being driven by the registry.
+ *
+ * Checked by the integration hook in In_Game() before attempting
+ * to map r_no[1] to a migrated In-Game sub-screen.
+ */
+bool MenuScreen_IsInGameActive(void);
+
+/**
+ * @brief Per-frame dispatcher for In-Game sub-menus.
+ *
+ * Wraps MenuScreen_Tick() and manages the g_ingame_active flag.
+ * Called from In_Game() both when IsInGameActive and on fresh
+ * entry via FromInGameIndex.
+ */
+void MenuScreen_InGameTick(struct _TASK* task_ptr);
+
+/**
+ * @brief Map an In_Game_Jmp_Tbl index to a MenuScreenId.
+ *
+ * Returns MENU_SCREEN_NONE for un-migrated or disabled In-Game screens.
+ * Used by the integration hook in In_Game() to intercept r_no[1].
+ *
+ * @param ingame_index  Index into In_Game_Jmp_Tbl (0–4).
+ */
+MenuScreenId MenuScreen_FromInGameIndex(int ingame_index);
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* MENU_SCREEN_H */
-

@@ -90,7 +90,7 @@ static int g_enter_call_count;
 static int g_tick_call_count;
 static int g_exit_call_count;
 
-static void fake_on_enter(struct _TASK* t) { (void)t; g_enter_call_count++; }
+static void fake_on_enter(struct _TASK* t) { t->timer = 5; g_enter_call_count++; }
 static void fake_on_tick(struct _TASK* t)  { (void)t; g_tick_call_count++;  }
 static void fake_on_exit(struct _TASK* t)  { (void)t; g_exit_call_count++;  }
 
@@ -311,71 +311,58 @@ static void test_from_legacy_index_bounds(void **state) {
     /* Index 0 (Menu_Init bootstrap) should always return NONE */
     assert_int_equal(MenuScreen_FromLegacyIndex(0), MENU_SCREEN_NONE);
 
-    /* Index 1 (Mode_Select) should return MENU_SCREEN_MODE_SELECT
-     * now that MENU_USE_NEW_MODE_SELECT=1 */
+    /* Index 1 (Mode_Select) should return MENU_SCREEN_MODE_SELECT */
     assert_int_equal(MenuScreen_FromLegacyIndex(1), MENU_SCREEN_MODE_SELECT);
 
     /* Indices 2, 3, 7, 15 (Option_Select aliases) should all return
-     * MENU_SCREEN_OPTION_SELECT now that MENU_USE_NEW_OPTION_SELECT=1 */
+     * MENU_SCREEN_OPTION_SELECT */
     assert_int_equal(MenuScreen_FromLegacyIndex(2), MENU_SCREEN_OPTION_SELECT);
     assert_int_equal(MenuScreen_FromLegacyIndex(3), MENU_SCREEN_OPTION_SELECT);
     assert_int_equal(MenuScreen_FromLegacyIndex(7), MENU_SCREEN_OPTION_SELECT);
     assert_int_equal(MenuScreen_FromLegacyIndex(15), MENU_SCREEN_OPTION_SELECT);
 
-    /* Index 4 (Training_Mode) should return MENU_SCREEN_TRAINING_MODE
-     * now that MENU_USE_NEW_TRAINING_MODE=1 */
+    /* Index 4 (Training_Mode) should return MENU_SCREEN_TRAINING_MODE */
     assert_int_equal(MenuScreen_FromLegacyIndex(4), MENU_SCREEN_TRAINING_MODE);
 
-    /* Index 6 (Load_Replay) should return MENU_SCREEN_LOAD_REPLAY
-     * now that MENU_USE_NEW_LOAD_REPLAY=1 */
+    /* Index 6 (Load_Replay) should return MENU_SCREEN_LOAD_REPLAY */
     assert_int_equal(MenuScreen_FromLegacyIndex(6), MENU_SCREEN_LOAD_REPLAY);
 
-    /* Index 8 (Exit_Confirm) should return MENU_SCREEN_EXIT_CONFIRM
-     * now that MENU_USE_NEW_EXIT_CONFIRM=1 */
+    /* Index 8 (Exit_Confirm) should return MENU_SCREEN_EXIT_CONFIRM */
     assert_int_equal(MenuScreen_FromLegacyIndex(8), MENU_SCREEN_EXIT_CONFIRM);
 
-    /* Index 9 (Game_Option) should return MENU_SCREEN_GAME_OPTION
-     * now that MENU_USE_NEW_GAME_OPTION=1 */
+    /* Index 9 (Game_Option) should return MENU_SCREEN_GAME_OPTION */
     assert_int_equal(MenuScreen_FromLegacyIndex(9), MENU_SCREEN_GAME_OPTION);
 
-    /* Index 10 (Button_Config) should return MENU_SCREEN_BUTTON_CONFIG
-     * now that MENU_USE_NEW_BUTTON_CONFIG=1 */
+    /* Index 10 (Button_Config) should return MENU_SCREEN_BUTTON_CONFIG */
     assert_int_equal(MenuScreen_FromLegacyIndex(10), MENU_SCREEN_BUTTON_CONFIG);
 
-    /* Index 12 (Sound_Test) should return MENU_SCREEN_SOUND_TEST
-     * now that MENU_USE_NEW_SOUND_TEST=1 */
+    /* Index 12 (Sound_Test) should return MENU_SCREEN_SOUND_TEST */
     assert_int_equal(MenuScreen_FromLegacyIndex(12), MENU_SCREEN_SOUND_TEST);
 
-    /* Index 13 (Memory_Card) should return MENU_SCREEN_MEMORY_CARD
-     * now that MENU_USE_NEW_MEMORY_CARD=1 */
+    /* Index 13 (Memory_Card) should return MENU_SCREEN_MEMORY_CARD */
     assert_int_equal(MenuScreen_FromLegacyIndex(13), MENU_SCREEN_MEMORY_CARD);
 
-    /* Index 17 (Save_Replay) should return MENU_SCREEN_SAVE_REPLAY
-     * now that MENU_USE_NEW_SAVE_REPLAY=1 */
+    /* Index 17 (Save_Replay) should return MENU_SCREEN_SAVE_REPLAY */
     assert_int_equal(MenuScreen_FromLegacyIndex(17), MENU_SCREEN_SAVE_REPLAY);
 
-    /* Index 16 (VS_Result) should return MENU_SCREEN_VS_RESULT
-     * now that MENU_USE_NEW_VS_RESULT=1 */
+    /* Index 16 (VS_Result) should return MENU_SCREEN_VS_RESULT */
     assert_int_equal(MenuScreen_FromLegacyIndex(16), MENU_SCREEN_VS_RESULT);
 
     /* Index 5 (System_Direction from Mode_Select) should return
-     * MENU_SCREEN_SYSTEM_DIRECTION now that MENU_USE_NEW_SYSTEM_DIRECTION=1 */
+     * MENU_SCREEN_SYSTEM_DIRECTION */
     assert_int_equal(MenuScreen_FromLegacyIndex(5), MENU_SCREEN_SYSTEM_DIRECTION);
 
     /* Index 11 (System_Direction from Option_Select) should also return
      * MENU_SCREEN_SYSTEM_DIRECTION (dual entry point) */
     assert_int_equal(MenuScreen_FromLegacyIndex(11), MENU_SCREEN_SYSTEM_DIRECTION);
 
-    /* Index 14 (Extra_Option) should return MENU_SCREEN_EXTRA_OPTION
-     * now that MENU_USE_NEW_EXTRA_OPTION=1 */
+    /* Index 14 (Extra_Option) should return MENU_SCREEN_EXTRA_OPTION */
     assert_int_equal(MenuScreen_FromLegacyIndex(14), MENU_SCREEN_EXTRA_OPTION);
 
-    /* Index 18 (Direction_Menu) should return MENU_SCREEN_DIRECTION_MENU
-     * now that MENU_USE_NEW_DIRECTION_MENU=1 */
+    /* Index 18 (Direction_Menu) should return MENU_SCREEN_DIRECTION_MENU */
     assert_int_equal(MenuScreen_FromLegacyIndex(18), MENU_SCREEN_DIRECTION_MENU);
 
-    /* Index 21 (Network_Lobby) should return MENU_SCREEN_NETWORK_LOBBY
-     * now that MENU_USE_NEW_NETWORK_LOBBY=1 */
+    /* Index 21 (Network_Lobby) should return MENU_SCREEN_NETWORK_LOBBY */
     assert_int_equal(MenuScreen_FromLegacyIndex(21), MENU_SCREEN_NETWORK_LOBBY);
 
     /* Non-migrated indices should still return NONE */
@@ -501,14 +488,53 @@ static void test_rmlui_callbacks_invoked(void **state) {
     struct _TASK t;
     memset(&t, 0, sizeof(t));
 
-    /* Navigate to a screen — rmlui_show should be called in ENTER phase */
+    /* Navigate to a screen — rmlui_show is NOT called by the dispatcher
+     * (BUG-2 fix: screens call rmlui_show from on_enter themselves) */
     MenuScreen_Goto(MENU_SCREEN_MODE_SELECT);
     MenuScreen_Tick(&t);
-    assert_int_equal(g_rmlui_show_count, 1);
+    assert_int_equal(g_rmlui_show_count, 0);
 
     /* Exit — rmlui_hide should be called */
     MenuScreen_ExitToLegacy(&t);
     assert_int_equal(g_rmlui_hide_count, 1);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+ *  Test 11: timer=0 in on_enter skips WAIT phase (BUG-1 regression)
+ *
+ *  Screens that set timer=0 in on_enter intend to bypass the dispatcher's
+ *  WAIT and FADE_IN phases.  Before the fix, Menu_Sub_case1 would decrement
+ *  timer from 0 to -1 which never equaled 0, causing an infinite WAIT.
+ *  The fix adds a timer<=0 guard that skips directly to ACTIVE.
+ * ══════════════════════════════════════════════════════════════════════════ */
+
+static void fake_on_enter_timer_zero(struct _TASK* t) {
+    g_enter_call_count++;
+    t->timer = 0; /* bypass WAIT/FADE_IN */
+}
+
+static void test_timer_zero_skips_wait(void **state) {
+    (void)state;
+
+    struct _TASK t;
+    memset(&t, 0, sizeof(t));
+
+    /* Override MODE_SELECT's on_enter to set timer=0 */
+    g_screens[MENU_SCREEN_MODE_SELECT].on_enter = fake_on_enter_timer_zero;
+
+    MenuScreen_Goto(MENU_SCREEN_MODE_SELECT);
+
+    /* Tick 1: deferred transition → ENTER → on_enter sets timer=0 → WAIT */
+    MenuScreen_Tick(&t);
+    assert_int_equal(MenuScreen_GetPhase(), MENU_PHASE_WAIT);
+    assert_int_equal(t.timer, 0);
+
+    /* Tick 2: timer<=0 guard fires → skip directly to ACTIVE */
+    MenuScreen_Tick(&t);
+    assert_int_equal(MenuScreen_GetPhase(), MENU_PHASE_ACTIVE);
+
+    /* Verify on_enter was called exactly once */
+    assert_int_equal(g_enter_call_count, 1);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -527,6 +553,7 @@ int main(void) {
         cmocka_unit_test_setup(test_request_fade_out, test_setup),
         cmocka_unit_test_setup(test_phase_progression, test_setup),
         cmocka_unit_test_setup(test_rmlui_callbacks_invoked, test_setup),
+        cmocka_unit_test_setup(test_timer_zero_skips_wait, test_setup),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

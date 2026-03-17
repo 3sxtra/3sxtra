@@ -23,26 +23,26 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/effect/eff04.h"           /* effect_04_init */
-#include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/eff61.h"           /* effect_61_init */
-#include "sf33rd/Source/Game/effect/eff64.h"           /* effect_64_init */
-#include "sf33rd/Source/Game/effect/effa8.h"           /* effect_A8_init */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* Menu_Cursor_Y, save_w, etc. */
-#include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"     /* Sound_Cursor_Sub, Return_Option_Mode_Sub, etc. */
-#include "sf33rd/Source/Game/sound/se.h"               /* SE_selected, BGM_Request_Code_Check, BGM_Stop */
-#include "sf33rd/Source/Game/sound/sound3rd.h"         /* bgm_level, se_level, SsBgmHalfVolume, SsRequest, etc. */
-#include "sf33rd/Source/Game/system/reset.h"           /* Suicide */
-#include "sf33rd/Source/Game/system/sys_sub.h"         /* Save_Game_Data, Clear_Flash_Sub, Clear_Flash_Init */
-#include "sf33rd/Source/Game/system/work_sys.h"        /* save_w, sys_w */
-#include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
-#include "port/sdl/input/controller_image_overlay.h"   /* ControllerImageOverlay_Init/Shutdown */
-#include "structs.h"                                   /* struct _TASK */
+#include "sf33rd/Source/Game/effect/eff04.h"         /* effect_04_init */
+#include "sf33rd/Source/Game/effect/eff57.h"         /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/eff61.h"         /* effect_61_init */
+#include "sf33rd/Source/Game/effect/eff64.h"         /* effect_64_init */
+#include "sf33rd/Source/Game/effect/effa8.h"         /* effect_A8_init */
+#include "sf33rd/Source/Game/engine/workuser.h"      /* Menu_Cursor_Y, save_w, etc. */
+#include "sf33rd/Source/Game/menu/menu.h"            /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h"   /* Sound_Cursor_Sub, Return_Option_Mode_Sub, etc. */
+#include "sf33rd/Source/Game/sound/se.h"             /* SE_selected, BGM_Request_Code_Check, BGM_Stop */
+#include "sf33rd/Source/Game/sound/sound3rd.h"       /* bgm_level, se_level, SsBgmHalfVolume, SsRequest, etc. */
+#include "sf33rd/Source/Game/system/reset.h"         /* Suicide */
+#include "sf33rd/Source/Game/system/sys_sub.h"       /* Save_Game_Data, Clear_Flash_Sub, Clear_Flash_Init */
+#include "sf33rd/Source/Game/system/work_sys.h"      /* save_w, sys_w */
+#include "sf33rd/Source/Game/ui/sc_sub.h"            /* FadeOut, FadeIn, FadeInit */
+#include "port/sdl/input/controller_image_overlay.h" /* ControllerImageOverlay_Init/Shutdown */
+#include "structs.h"                                 /* struct _TASK */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_sound_menu.h"          /* rmlui_sound_menu_show/hide */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"      /* use_rmlui, rmlui_menu_sound */
+#include "port/sdl/rmlui/rmlui_sound_menu.h"     /* rmlui_sound_menu_show/hide */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_sound */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state
@@ -67,7 +67,7 @@ static void sound_test_enter(struct _TASK* task_ptr) {
 
     /* ── Replicate Sound_Test case 0 init pattern ── */
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;  /* advance so Menu_Sub_case1 works in WAIT phase */
+    task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
     setupAlwaysSeamlessFlag(((plsw_00[0] | plsw_00[1]) & 0x4000) != 0);
     Clear_Flash_Init(4);
@@ -279,23 +279,22 @@ static void ms_sound_test_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_sound_test_reg_ptr)(void) = ms_sound_test_register;
 static void ms_sound_test_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_sound_test_register(void) {
+__attribute__((constructor)) static void ms_sound_test_register(void) {
 #else
 /* Fallback: must be called manually from init code */
 void ms_sound_test_register(void) {
 #endif
-    g_screens[MENU_SCREEN_SOUND_TEST] = (MenuScreen){
-        .name        = "sound_test",
-        .id          = MENU_SCREEN_SOUND_TEST,
-        .parent      = MENU_SCREEN_OPTION_SELECT,
-        .on_enter    = sound_test_enter,
-        .on_tick     = sound_test_tick,
-        .on_exit     = sound_test_exit,
-        .cursor_max  = 6,   /* 7 items (0–6) */
-        .cancel_item = 6,   /* last item = "Exit" */
-        .rmlui_show  = sound_test_rmlui_show,
-        .rmlui_hide  = sound_test_rmlui_hide,
+    g_screens[MENU_SCREEN_SOUND_TEST] = (MenuScreen) {
+        .name = "sound_test",
+        .id = MENU_SCREEN_SOUND_TEST,
+        .parent = MENU_SCREEN_OPTION_SELECT,
+        .on_enter = sound_test_enter,
+        .on_tick = sound_test_tick,
+        .on_exit = sound_test_exit,
+        .cursor_max = 6,  /* 7 items (0–6) */
+        .cancel_item = 6, /* last item = "Exit" */
+        .rmlui_show = sound_test_rmlui_show,
+        .rmlui_hide = sound_test_rmlui_hide,
         .header_type = MENU_HEADER_SOUND,
         .effect_slot = 0x72,
     };

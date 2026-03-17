@@ -23,33 +23,31 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/effect/eff04.h"           /* effect_04_init */
-#include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/eff61.h"           /* effect_61_init */
-#include "sf33rd/Source/Game/engine/grade.h"           /* grade_check_work_1st_init */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* Menu_Cursor_Y, Mode_Type, etc. */
-#include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"     /* MC_Move_Sub, Check_Menu_Lever, Exit_Sub */
-#include "sf33rd/Source/Game/sound/se.h"               /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"           /* Suicide */
-#include "sf33rd/Source/Game/system/sysdir.h"          /* Setup_Training_Difficulty */
-#include "sf33rd/Source/Game/system/work_sys.h"        /* cpExitTask, system_dir */
-#include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
-#include "main.h"                                      /* mpp_w */
-#include "structs.h"                                   /* struct _TASK */
+#include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
+#include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
+#include "sf33rd/Source/Game/engine/grade.h"       /* grade_check_work_1st_init */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, Mode_Type, etc. */
+#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Exit_Sub */
+#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
+#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/sysdir.h"      /* Setup_Training_Difficulty */
+#include "sf33rd/Source/Game/system/work_sys.h"    /* cpExitTask, system_dir */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "main.h"                                  /* mpp_w */
+#include "structs.h"                               /* struct _TASK */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_training_menus.h"      /* rmlui_training_mode_show/hide */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"      /* use_rmlui, rmlui_menu_training */
-#include "port/sdl/rmlui/rmlui_wrapper.h"              /* rmlui_wrapper_hide_all_game_documents */
+#include "port/sdl/rmlui/rmlui_training_menus.h" /* rmlui_training_mode_show/hide */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_training */
+#include "port/sdl/rmlui/rmlui_wrapper.h"        /* rmlui_wrapper_hide_all_game_documents */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static bool s_wait_done = false;
-
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  on_enter — extracted from Training_Mode case 0
@@ -66,7 +64,7 @@ static void training_mode_enter(struct _TASK* task_ptr) {
 
     /* ── Replicate Menu_in_Sub pattern ── */
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;  /* advance so Menu_Sub_case1 works in WAIT phase */
+    task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
     Menu_Common_Init();
 
@@ -153,7 +151,7 @@ static void training_mode_tick(struct _TASK* task_ptr) {
     if (Menu_Cursor_Y[0] == 3 || IO_Result == 0x200) {
         Menu_Suicide[0] = 0;
         Menu_Suicide[1] = 1;
-        task_ptr->r_no[1] = 1;  /* Mode_Select AT index */
+        task_ptr->r_no[1] = 1; /* Mode_Select AT index */
         task_ptr->r_no[2] = 0;
         task_ptr->r_no[3] = 0;
         task_ptr->free[0] = 0;
@@ -236,23 +234,22 @@ static void ms_training_mode_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_training_mode_reg_ptr)(void) = ms_training_mode_register;
 static void ms_training_mode_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_training_mode_register(void) {
+__attribute__((constructor)) static void ms_training_mode_register(void) {
 #else
 /* Fallback: must be called manually from init code */
 void ms_training_mode_register(void) {
 #endif
-    g_screens[MENU_SCREEN_TRAINING_MODE] = (MenuScreen){
-        .name        = "training_mode",
-        .id          = MENU_SCREEN_TRAINING_MODE,
-        .parent      = MENU_SCREEN_MODE_SELECT,
-        .on_enter    = training_mode_enter,
-        .on_tick     = training_mode_tick,
-        .on_exit     = training_mode_exit,
-        .cursor_max  = 3,  /* 4 items: 0–3 */
-        .cancel_item = 3,  /* last item is "Exit" */
-        .rmlui_show  = training_mode_rmlui_show,
-        .rmlui_hide  = training_mode_rmlui_hide,
+    g_screens[MENU_SCREEN_TRAINING_MODE] = (MenuScreen) {
+        .name = "training_mode",
+        .id = MENU_SCREEN_TRAINING_MODE,
+        .parent = MENU_SCREEN_MODE_SELECT,
+        .on_enter = training_mode_enter,
+        .on_tick = training_mode_tick,
+        .on_exit = training_mode_exit,
+        .cursor_max = 3,  /* 4 items: 0–3 */
+        .cancel_item = 3, /* last item is "Exit" */
+        .rmlui_show = training_mode_rmlui_show,
+        .rmlui_hide = training_mode_rmlui_hide,
         .header_type = MENU_HEADER_TRAINING,
         .effect_slot = 0x6F,
     };

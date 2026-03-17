@@ -35,23 +35,23 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/effect/eff23.h"            /* effect_23_init */
-#include "sf33rd/Source/Game/effect/eff57.h"            /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/eff66.h"            /* effect_66_init */
-#include "sf33rd/Source/Game/engine/workuser.h"         /* Menu_Cursor_Y, Menu_Cursor_Move, etc. */
-#include "sf33rd/Source/Game/io/pulpul.h"               /* pp_operator_check_flag */
-#include "sf33rd/Source/Game/menu/menu.h"               /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"      /* Button_Config_Sub, Button_Exit_Check, etc. */
-#include "sf33rd/Source/Game/sound/se.h"                /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"            /* Suicide */
-#include "sf33rd/Source/Game/system/sys_sub.h"          /* Save_Game_Data, Copy_Key_Disp_Work */
-#include "sf33rd/Source/Game/ui/sc_sub.h"               /* FadeOut, FadeIn, FadeInit */
-#include "port/sdl/input/controller_image_overlay.h"    /* ControllerImageOverlay_Init/Shutdown */
-#include "structs.h"                                    /* struct _TASK */
+#include "sf33rd/Source/Game/effect/eff23.h"         /* effect_23_init */
+#include "sf33rd/Source/Game/effect/eff57.h"         /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/eff66.h"         /* effect_66_init */
+#include "sf33rd/Source/Game/engine/workuser.h"      /* Menu_Cursor_Y, Menu_Cursor_Move, etc. */
+#include "sf33rd/Source/Game/io/pulpul.h"            /* pp_operator_check_flag */
+#include "sf33rd/Source/Game/menu/menu.h"            /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h"   /* Button_Config_Sub, Button_Exit_Check, etc. */
+#include "sf33rd/Source/Game/sound/se.h"             /* SE_selected */
+#include "sf33rd/Source/Game/system/reset.h"         /* Suicide */
+#include "sf33rd/Source/Game/system/sys_sub.h"       /* Save_Game_Data, Copy_Key_Disp_Work */
+#include "sf33rd/Source/Game/ui/sc_sub.h"            /* FadeOut, FadeIn, FadeInit */
+#include "port/sdl/input/controller_image_overlay.h" /* ControllerImageOverlay_Init/Shutdown */
+#include "structs.h"                                 /* struct _TASK */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_button_config.h"        /* rmlui_button_config_show/hide */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"       /* use_rmlui, rmlui_menu_button_config */
+#include "port/sdl/rmlui/rmlui_button_config.h"  /* rmlui_button_config_show/hide */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_button_config */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state
@@ -78,7 +78,7 @@ static void button_config_enter(struct _TASK* task_ptr) {
 
     /* ── Replicate Button_Config case 0 init pattern ── */
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;  /* advance so Menu_Sub_case1 works in WAIT phase */
+    task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
     Menu_Common_Init();
     pp_operator_check_flag(0);
@@ -240,23 +240,22 @@ static void ms_button_config_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_button_config_reg_ptr)(void) = ms_button_config_register;
 static void ms_button_config_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_button_config_register(void) {
+__attribute__((constructor)) static void ms_button_config_register(void) {
 #else
 /* Fallback: must be called manually from init code */
 void ms_button_config_register(void) {
 #endif
-    g_screens[MENU_SCREEN_BUTTON_CONFIG] = (MenuScreen){
-        .name        = "button_config",
-        .id          = MENU_SCREEN_BUTTON_CONFIG,
-        .parent      = MENU_SCREEN_OPTION_SELECT,
-        .on_enter    = button_config_enter,
-        .on_tick     = button_config_tick,
-        .on_exit     = button_config_exit,
-        .cursor_max  = 10,  /* 11 items (0–10) */
-        .cancel_item = 10,  /* last item = "Exit" */
-        .rmlui_show  = button_config_rmlui_show,
-        .rmlui_hide  = button_config_rmlui_hide,
+    g_screens[MENU_SCREEN_BUTTON_CONFIG] = (MenuScreen) {
+        .name = "button_config",
+        .id = MENU_SCREEN_BUTTON_CONFIG,
+        .parent = MENU_SCREEN_OPTION_SELECT,
+        .on_enter = button_config_enter,
+        .on_tick = button_config_tick,
+        .on_exit = button_config_exit,
+        .cursor_max = 10,  /* 11 items (0–10) */
+        .cancel_item = 10, /* last item = "Exit" */
+        .rmlui_show = button_config_rmlui_show,
+        .rmlui_hide = button_config_rmlui_hide,
         .header_type = MENU_HEADER_BUTTON_CONFIG,
         .effect_slot = 0x6B,
     };

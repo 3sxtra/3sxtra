@@ -13,31 +13,32 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/animation/appear.h"      /* Clear_Personal_Data */
-#include "sf33rd/Source/Game/effect/eff04.h"           /* effect_04_init */
-#include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
-#include "sf33rd/Source/Game/effect/eff61.h"           /* effect_61_init */
-#include "sf33rd/Source/Game/engine/grade.h"           /* grade_check_work_1st_init */
-#include "sf33rd/Source/Game/engine/workuser.h"        /* Menu_Cursor_Y, Mode_Type, etc. */
-#include "sf33rd/Source/Game/io/pulpul.h"              /* pulpul_stop */
-#include "sf33rd/Source/Game/menu/menu.h"              /* Menu_Common_Init */
-#include "sf33rd/Source/Game/menu/menu_internal.h"     /* MC_Move_Sub, Check_Menu_Lever, Decide_PL, Exit_Sub */
-#include "sf33rd/Source/Game/rendering/texcash.h"      /* checkAdxFileLoaded, checkSelObjFileLoaded */
-#include "sf33rd/Source/Game/rendering/texgroup.h"     /* load_any_texture_patnum */
-#include "sf33rd/Source/Game/screen/entry.h"           /* Entry_Task, TASK_ENTRY */
-#include "sf33rd/Source/Game/sound/se.h"               /* SE_selected */
-#include "sf33rd/Source/Game/sound/sound3rd.h"         /* SE_selected, etc. */
-#include "sf33rd/Source/Game/system/reset.h"           /* Suicide */
-#include "sf33rd/Source/Game/system/saver.h"           /* Saver_Task, TASK_SAVER */
-#include "sf33rd/Source/Game/system/sysdir.h"          /* Setup_Training_Difficulty */
-#include "sf33rd/Source/Game/system/work_sys.h"        /* cpExitTask */
-#include "sf33rd/Source/Game/ui/sc_sub.h"              /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                                   /* struct _TASK */
-#include "main.h"                                      /* TASK_MENU, TASK_ENTRY, task[] */
+#include "sf33rd/Source/Game/animation/appear.h"   /* Clear_Personal_Data */
+#include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
+#include "sf33rd/Source/Game/effect/eff45.h"       /* Message_Data */
+#include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
+#include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
+#include "sf33rd/Source/Game/engine/grade.h"       /* grade_check_work_1st_init */
+#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y, Mode_Type, etc. */
+#include "sf33rd/Source/Game/io/pulpul.h"          /* pulpul_stop */
+#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
+#include "sf33rd/Source/Game/menu/menu_internal.h" /* MC_Move_Sub, Check_Menu_Lever, Decide_PL, Exit_Sub */
+#include "sf33rd/Source/Game/rendering/texcash.h"  /* checkAdxFileLoaded, checkSelObjFileLoaded */
+#include "sf33rd/Source/Game/rendering/texgroup.h" /* load_any_texture_patnum */
+#include "sf33rd/Source/Game/screen/entry.h"       /* Entry_Task, TASK_ENTRY */
+#include "sf33rd/Source/Game/sound/se.h"           /* SE_selected */
+#include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected, etc. */
+#include "sf33rd/Source/Game/system/reset.h"       /* Suicide */
+#include "sf33rd/Source/Game/system/saver.h"       /* Saver_Task, TASK_SAVER */
+#include "sf33rd/Source/Game/system/sysdir.h"      /* Setup_Training_Difficulty */
+#include "sf33rd/Source/Game/system/work_sys.h"    /* cpExitTask */
+#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                               /* struct _TASK */
+#include "main.h"                                  /* TASK_MENU, TASK_ENTRY, task[] */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_mode_menu.h"           /* rmlui_mode_menu_show/hide */
-#include "port/sdl/rmlui/rmlui_phase3_toggles.h"      /* use_rmlui, rmlui_menu_mode */
+#include "port/sdl/rmlui/rmlui_mode_menu.h"      /* rmlui_mode_menu_show/hide */
+#include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_mode */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Internal state
@@ -49,9 +50,7 @@
 
 /* Track whether we are in the "exiting" sub-state (free[0]/free[1] fade) */
 static bool s_exiting = false;
-static s16  s_exit_target = 0;  /* AT_Jmp_Tbl index to transition to */
-
-
+static s16 s_exit_target = 0; /* AT_Jmp_Tbl index to transition to */
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  on_enter — extracted from Mode_Select case 0 (~55 lines of init)
@@ -72,7 +71,7 @@ static void mode_select_enter(struct _TASK* task_ptr) {
 
     /* ── Replicate Mode_Select case 0 ── */
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;  /* advance so Menu_Sub_case1 works in WAIT phase */
+    task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
     task_ptr->timer = 5;
     Mode_Type = MODE_ARCADE;
     Present_Mode = 1;
@@ -232,10 +231,10 @@ static void mode_select_tick(struct _TASK* task_ptr) {
             task_ptr->free[0] = 0;
             break;
 
-        case 2:  /* Training (cursor 2 → AT index 4) */
-        case 4:  /* System Direction (cursor 4 → AT index 6) */
-        case 5:  /* Options (cursor 5 → AT index 7) */
-        case 6:  /* Exit (cursor 6 → AT index 8) */
+        case 2: /* Training (cursor 2 → AT index 4) */
+        case 4: /* System Direction (cursor 4 → AT index 6) */
+        case 5: /* Options (cursor 5 → AT index 7) */
+        case 6: /* Exit (cursor 6 → AT index 8) */
             s_exiting = true;
             s_exit_target = Menu_Cursor_Y[0] + 2;
             task_ptr->free[0] = 0;
@@ -293,23 +292,22 @@ static void ms_mode_select_register(void);
 __declspec(allocate(".CRT$XCU")) static void (*ms_mode_select_reg_ptr)(void) = ms_mode_select_register;
 static void ms_mode_select_register(void) {
 #elif defined(__GNUC__) || defined(__clang__)
-__attribute__((constructor))
-static void ms_mode_select_register(void) {
+__attribute__((constructor)) static void ms_mode_select_register(void) {
 #else
 /* Fallback: must be called manually from init code */
 void ms_mode_select_register(void) {
 #endif
-    g_screens[MENU_SCREEN_MODE_SELECT] = (MenuScreen){
-        .name        = "mode_select",
-        .id          = MENU_SCREEN_MODE_SELECT,
-        .parent      = MENU_SCREEN_NONE,
-        .on_enter    = mode_select_enter,
-        .on_tick     = mode_select_tick,
-        .on_exit     = mode_select_exit,
-        .cursor_max  = 6,  /* 7 items: 0–6 */
+    g_screens[MENU_SCREEN_MODE_SELECT] = (MenuScreen) {
+        .name = "mode_select",
+        .id = MENU_SCREEN_MODE_SELECT,
+        .parent = MENU_SCREEN_NONE,
+        .on_enter = mode_select_enter,
+        .on_tick = mode_select_tick,
+        .on_exit = mode_select_exit,
+        .cursor_max = 6,   /* 7 items: 0–6 */
         .cancel_item = -1, /* no cancel (top-level menu) */
-        .rmlui_show  = mode_select_rmlui_show,
-        .rmlui_hide  = mode_select_rmlui_hide,
+        .rmlui_show = mode_select_rmlui_show,
+        .rmlui_hide = mode_select_rmlui_hide,
         .header_type = MENU_HEADER_MODE_MENU,
         .effect_slot = 0x64,
     };
