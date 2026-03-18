@@ -38,6 +38,14 @@ static MenuScreenId g_current_screen = MENU_SCREEN_NONE;
 static MenuScreenId g_next_screen = MENU_SCREEN_NONE;
 static MenuScreenPhase g_phase = MENU_PHASE_ENTER;
 
+MenuScreenPhase MenuScreen_GetPhase(void) {
+    return g_phase;
+}
+
+MenuScreenId MenuScreen_GetCurrent(void) {
+    return g_current_screen;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
  *  Legacy → Migrated lookup table
  *
@@ -90,10 +98,6 @@ void MenuScreen_Back(void) {
 
 bool MenuScreen_IsActive(void) {
     return g_current_screen != MENU_SCREEN_NONE;
-}
-
-MenuScreenPhase MenuScreen_GetPhase(void) {
-    return g_phase;
 }
 
 void MenuScreen_RequestFadeOut(void) {

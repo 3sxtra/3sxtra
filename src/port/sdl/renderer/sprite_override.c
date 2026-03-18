@@ -16,11 +16,28 @@
 #define SPRITE_CACHE_SIZE 65536
 #define BG_TILE_CACHE_SIZE 4096
 
+/* Cache arrays are global statics. This relies on the assumption that
+ * all texture loading and rendering occurs strictly on the main thread
+ * (which is standard for SDL rendering). No mutexes are required. */
 static void* s_sprite_cache[SPRITE_CACHE_SIZE];
 static bool  s_sprite_miss[SPRITE_CACHE_SIZE];
 
 static void* s_bg_tile_cache[BG_TILE_CACHE_SIZE];
 static bool  s_bg_tile_miss[BG_TILE_CACHE_SIZE];
+
+void ClearBGTileCache(void) {
+    /* Reset checked flags and explicitly free textures.
+     * Since the stage has ended, it is safe to free previous stage textures.
+     * This prevents memory leaks.
+     */
+    for (int i = 0; i < BG_TILE_CACHE_SIZE; i++) {
+        if (s_bg_tile_cache[i] != NULL) {
+            TextureUtil_Free(s_bg_tile_cache[i]);
+            s_bg_tile_cache[i] = NULL;
+        }
+        s_bg_tile_miss[i] = false;
+    }
+}
 
 void* LoadFullSpriteOverride(int group_index, int cg_number) {
     if (cg_number < 0 || cg_number >= SPRITE_CACHE_SIZE) {
@@ -55,7 +72,7 @@ void* LoadFullSpriteOverride(int group_index, int cg_number) {
     return tex;
 }
 
-void* LoadBGTileOverride(int gbix) {
+void* LoadBGTileOverride(int type, int stage, int gbix) {
     if (gbix < 0 || gbix >= BG_TILE_CACHE_SIZE) {
         return NULL;
     }
@@ -68,7 +85,10 @@ void* LoadBGTileOverride(int gbix) {
     }
 
     char path[1024];
-    snprintf(path, sizeof(path), "assets/sprites/bg_%d.png", gbix);
+    /* Format using the separated parameters to construct the unique composite key for the filename */
+    int composite_key = type * 100000 + stage * 1000 + gbix;
+    snprintf(path, sizeof(path), "assets/sprites/bg_%d.png", composite_key);
+    
     void* tex = TextureUtil_Load(path);
 
     if (tex != NULL) {

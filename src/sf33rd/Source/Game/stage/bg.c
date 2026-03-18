@@ -75,8 +75,12 @@ static void bgAkebonoDraw();
 /** @brief Calculate scroll position for PPG background rendering. */
 static void ppgCalScrPosition(s32 x, s32 y, s32 xs, s32 ys);
 
+static int bg_texture_type = 0;  // tracks ramcnt type: 0x12=gameplay, 0x18=select, etc
+
 /** @brief Initialize background texture resources. */
 void Bg_TexInit() {
+    bg_texture_type = 0;
+    ClearBGTileCache();
     s32 i;
 
     for (i = 0; i < 3; i++) {
@@ -316,6 +320,7 @@ void Bg_Texture_Load_EX() {
 
     mmDebWriteTag("\nSTAGE\n\n");
     Bg_TexInit();
+    bg_texture_type = 0x12;  // gameplay stage (ramcnt type)
 
     for (i = 0; i < 8; i++) {
         bgPalCodeOffset[i] = 0x12C;
@@ -422,6 +427,7 @@ void Bg_Texture_Load2(u8 type) {
 
     mmDebWriteTag("\nBG ETC.\n\n");
     Bg_TexInit();
+    bg_texture_type = 0x18;  // select/etc screen (ramcnt type)
     (void)assign;
     ending_flag = 0;
     tokusyu_stage = 0;
@@ -486,6 +492,7 @@ void Bg_Texture_Load_Ending(s16 type) {
     mmDebWriteTag("\nENDING\n\n");
     rw_num = 0;
     Bg_TexInit();
+    bg_texture_type = 0x20;  // ending (distinct type)
     ending_flag = 1;
 
     for (i = 0; i < end_use_real_scr[type]; i++) {
@@ -1130,8 +1137,13 @@ void bgDrawOneChip(s32 x, s32 y, s32 xs, s32 ys, s32 gbix, u32 vtxCol, s32 ofsPa
             return;
         }
 
-        /* HD background tile override */
-        void* hd_tex = LoadBGTileOverride(gbix);
+        /* HD background tile override - only during active gameplay stage
+         * The sprite_override loader constructs the unique filename from these parameters:
+         * bg_{type}_{stage}_{gbix}.png — e.g., bg_18000157.png
+         */
+        void* hd_tex = (bg_texture_type != 0) ?
+            LoadBGTileOverride(bg_texture_type, bg_w.stage + 1, gbix) : NULL;
+
         if (hd_tex != NULL) {
             float dx = scrDrawPos[0].x;
             float dy = scrDrawPos[0].y;

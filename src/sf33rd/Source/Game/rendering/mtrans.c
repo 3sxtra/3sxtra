@@ -43,47 +43,6 @@ typedef struct {
     f32 min_x, min_y, max_x, max_y;
 } SpriteBox;
 
-/**
- * @brief Draw an HD sprite override that fills a given tile bounding box.
- *
- * Transforms the bounding box corners through the current matrix, then
- * draws the HD texture scaled to fit.  The position and size come entirely
- * from the game's own tile data — no hardcoded anchors.
- *
- * @return true if the HD override was drawn; false if no override exists.
- */
-static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index,
-                                   const SpriteBox* box) {
-    void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
-    if (hd_tex == NULL) {
-        return false;
-    }
-
-    /* Transform bounding box corners through the current matrix */
-    Vec3 tl_in  = {box->min_x, box->min_y, 0};
-    Vec3 br_in  = {box->max_x, box->max_y, 0};
-    Vec3 tl_out, br_out;
-    njCalcPoint(NULL, &tl_in, &tl_out);
-    njCalcPoint(NULL, &br_in, &br_out);
-
-    /* Handle flipped transforms: take min/max of transformed corners */
-    float draw_x = fminf(tl_out.x, br_out.x);
-    float draw_y = fminf(tl_out.y, br_out.y);
-    float draw_w = fabsf(br_out.x - tl_out.x);
-    float draw_h = fabsf(br_out.y - tl_out.y);
-
-    /* Z from the matrix, converted to screen-space via flPS2ConvScreenFZ
-     * — same conversion draw_quad applies to game sprites. */
-    float screen_z = flPS2ConvScreenFZ(tl_out.z);
-
-    TextureUtil_DrawQuadEx(hd_tex, draw_x, draw_y, draw_w, draw_h, screen_z,
-                           (flip_flags & 0x8000) ? 1 : 0,
-                           (flip_flags & 0x4000) ? 1 : 0);
-
-    appRenewTempPriority(wk->position_z);
-    return true;
-}
-
 #include <simde/x86/sse.h>
 
 #define PRIO_BASE_SIZE 128
@@ -302,6 +261,86 @@ static void compute_tile_bbox_ext(const TileMapEntry* trsptr, s32 count,
         if (top       > out->max_y) out->max_y = top;
         if (top  - dh < out->min_y) out->min_y = top - dh;
     }
+}
+
+/**
+ * @brief Handle transform and draw for HD sprite overrides (CG format).
+ *
+ * @return true if the HD override was drawn; false if no override exists.
+ */
+static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index,
+                                   const CGTileCacheEntry* cge) {
+    void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
+    if (hd_tex == NULL) {
+        return false;
+    }
+
+    SpriteBox box;
+    compute_tile_bbox(cge, flip_flags, &box);
+
+    /* Transform bounding box corners through the current matrix */
+    Vec3 tl_in  = {box.min_x, box.min_y, 0};
+    Vec3 br_in  = {box.max_x, box.max_y, 0};
+    Vec3 tl_out, br_out;
+    njCalcPoint(NULL, &tl_in, &tl_out);
+    njCalcPoint(NULL, &br_in, &br_out);
+
+    /* Handle flipped transforms: take min/max of transformed corners */
+    float draw_x = fminf(tl_out.x, br_out.x);
+    float draw_y = fminf(tl_out.y, br_out.y);
+    float draw_w = fabsf(br_out.x - tl_out.x);
+    float draw_h = fabsf(br_out.y - tl_out.y);
+
+    /* Z from the matrix, converted to screen-space via flPS2ConvScreenFZ
+     * — same conversion draw_quad applies to game sprites. */
+    float screen_z = flPS2ConvScreenFZ(tl_out.z);
+
+    TextureUtil_DrawQuadEx(hd_tex, draw_x, draw_y, draw_w, draw_h, screen_z,
+                           (flip_flags & 0x8000) ? 1 : 0,
+                           (flip_flags & 0x4000) ? 1 : 0);
+
+    appRenewTempPriority(wk->position_z);
+    return true;
+}
+
+/**
+ * @brief Handle transform and draw for HD sprite overrides (raw TileMapEntry format).
+ *
+ * @return true if the HD override was drawn; false if no override exists.
+ */
+static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index,
+                                       const TileMapEntry* trsptr, s32 count, const u32* textbl) {
+    void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
+    if (hd_tex == NULL) {
+        return false;
+    }
+
+    SpriteBox box;
+    compute_tile_bbox_ext(trsptr, count, textbl, flip_flags, &box);
+
+    /* Transform bounding box corners through the current matrix */
+    Vec3 tl_in  = {box.min_x, box.min_y, 0};
+    Vec3 br_in  = {box.max_x, box.max_y, 0};
+    Vec3 tl_out, br_out;
+    njCalcPoint(NULL, &tl_in, &tl_out);
+    njCalcPoint(NULL, &br_in, &br_out);
+
+    /* Handle flipped transforms: take min/max of transformed corners */
+    float draw_x = fminf(tl_out.x, br_out.x);
+    float draw_y = fminf(tl_out.y, br_out.y);
+    float draw_w = fabsf(br_out.x - tl_out.x);
+    float draw_h = fabsf(br_out.y - tl_out.y);
+
+    /* Z from the matrix, converted to screen-space via flPS2ConvScreenFZ
+     * — same conversion draw_quad applies to game sprites. */
+    float screen_z = flPS2ConvScreenFZ(tl_out.z);
+
+    TextureUtil_DrawQuadEx(hd_tex, draw_x, draw_y, draw_w, draw_h, screen_z,
+                           (flip_flags & 0x8000) ? 1 : 0,
+                           (flip_flags & 0x4000) ? 1 : 0);
+
+    appRenewTempPriority(wk->position_z);
+    return true;
 }
 
 // sbss
@@ -772,9 +811,7 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     mlt_obj_matrix(wk, base_y);
 
     if (count > 0) {
-        SpriteBox box;
-        compute_tile_bbox_ext(trsptr, count, textbl, attr, &box);
-        if (try_hd_sprite_override(wk, attr, i, &box)) {
+        if (try_hd_sprite_override_ext(wk, attr, i, trsptr, count, textbl)) {
             return;
         }
     }
@@ -1011,9 +1048,7 @@ void mlt_obj_trans(MultiTexture* mt, WORK* wk, s32 base_y) {
     mlt_obj_matrix(wk, base_y);
 
     {
-        SpriteBox box;
-        compute_tile_bbox(cge, attr, &box);
-        if (try_hd_sprite_override(wk, attr, cge->group, &box)) {
+        if (try_hd_sprite_override(wk, attr, cge->group, cge)) {
             return;
         }
     }
@@ -1133,9 +1168,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     mlt_obj_matrix(wk, base_y);
 
     if (count > 0) {
-        SpriteBox box;
-        compute_tile_bbox_ext(trsptr, count, textbl, flip, &box);
-        if (try_hd_sprite_override(wk, flip, i, &box)) {
+        if (try_hd_sprite_override_ext(wk, flip, i, trsptr, count, textbl)) {
             return;
         }
     }
@@ -1386,9 +1419,7 @@ void mlt_obj_trans_cp3(MultiTexture* mt, WORK* wk, s32 base_y) {
     mlt_obj_matrix(wk, base_y);
 
     {
-        SpriteBox box;
-        compute_tile_bbox(cge, flip, &box);
-        if (try_hd_sprite_override(wk, flip, cge->group, &box)) {
+        if (try_hd_sprite_override(wk, flip, cge->group, cge)) {
             return;
         }
     }
@@ -1748,9 +1779,7 @@ void mlt_obj_trans_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     mlt_obj_matrix(wk, base_y);
 
     {
-        SpriteBox box;
-        compute_tile_bbox(cge, flip, &box);
-        if (try_hd_sprite_override(wk, flip, cge->group, &box)) {
+        if (try_hd_sprite_override(wk, flip, cge->group, cge)) {
             TRACE_ZONE_END();
             return;
         }

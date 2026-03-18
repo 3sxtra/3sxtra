@@ -180,6 +180,13 @@ void Sel_PL_Control_Frame() {
 s16 Select_Player() {
     struct _TASK* tp = &task[TASK_MENU];
 
+    /* If another MenuScreen is driving (e.g. Attract Mode Demo simulating Character Select),
+     * bypass the registry wrapper and run the legacy frame directly to prevent infinite recursion. */
+    if (MenuScreen_IsActive() && MenuScreen_GetCurrent() != MENU_SCREEN_CHAR_SELECT) {
+        Sel_PL_Control_Frame();
+        return SEL_PL_X;
+    }
+
     if (!MenuScreen_IsActive()) {
         SEL_PL_X = 0;
         MenuScreen_Goto(MENU_SCREEN_CHAR_SELECT);

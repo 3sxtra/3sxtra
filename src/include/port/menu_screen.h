@@ -195,6 +195,14 @@ void MenuScreen_RequestFadeOut(void);
 MenuScreenPhase MenuScreen_GetPhase(void);
 
 /**
+ * @brief Query the currently active MenuScreen ID.
+ *
+ * Useful for nested legacy calls to determine if they should bypass their
+ * own MenuScreen wrapper because another screen (like DEMO) is driving.
+ */
+MenuScreenId MenuScreen_GetCurrent(void);
+
+/**
  * @brief Exit to legacy (non-registry) dispatch paths.
  *
  * Clears g_current_screen so MenuScreen_IsActive() returns false.
