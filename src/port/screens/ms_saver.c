@@ -96,18 +96,16 @@ static void ms_saver_exit(struct _TASK* tp) {
 __attribute__((constructor)) static void register_ms_saver() {
     extern MenuScreen g_screens[];
 
-    g_screens[MENU_SCREEN_SAVER] = (MenuScreen){
-        .name = "saver",
-        .id = MENU_SCREEN_SAVER,
-        .parent = MENU_SCREEN_NONE,
-        .on_enter = ms_saver_enter,
-        .on_tick = ms_saver_tick,
-        .on_exit = ms_saver_exit,
-        .cursor_max = 0,
-        .cancel_item = -1,
-        .rmlui_show = NULL,
-        .rmlui_hide = NULL,
-        .header_type = (MenuHeader)-1,
-        .effect_slot = 0
-    };
+    g_screens[MENU_SCREEN_SAVER] = (MenuScreen) { .name = "saver",
+                                                  .id = MENU_SCREEN_SAVER,
+                                                  .parent = MENU_SCREEN_NONE,
+                                                  .on_enter = ms_saver_enter,
+                                                  .on_tick = ms_saver_tick,
+                                                  .on_exit = ms_saver_exit,
+                                                  .cursor_max = 0,
+                                                  .cancel_item = -1,
+                                                  .rmlui_show = NULL,
+                                                  .rmlui_hide = NULL,
+                                                  .header_type = (MenuHeader)-1,
+                                                  .effect_slot = 0 };
 }

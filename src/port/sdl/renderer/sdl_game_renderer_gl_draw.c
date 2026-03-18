@@ -153,9 +153,9 @@ void SDLGameRendererGL_RenderFrame(void) {
     const float sw = 384.0f * g_resolution_scale;
     const float sh = 224.0f * g_resolution_scale;
     const float projection[4][4] = { { 2.0f / sw, 0.0f, 0.0f, 0.0f },
-                                            { 0.0f, -2.0f / sh, 0.0f, 0.0f },
-                                            { 0.0f, 0.0f, -1.0f, 0.0f },
-                                            { -1.0f, 1.0f, 0.0f, 1.0f } };
+                                     { 0.0f, -2.0f / sh, 0.0f, 0.0f },
+                                     { 0.0f, 0.0f, -1.0f, 0.0f },
+                                     { -1.0f, 1.0f, 0.0f, 1.0f } };
 
     int current_buffer_idx = 0;
 
@@ -683,7 +683,8 @@ void SDLGameRendererGL_DrawOverlaySprite(unsigned int gl_texture_id, float x, fl
     push_render_task((GLuint)gl_texture_id, sdl_vertices, z, -1, 0);
 }
 
-void SDLGameRendererGL_DrawOverlaySpriteEx(unsigned int gl_texture_id, float x, float y, float w, float h, float z, int flip_x, int flip_y) {
+void SDLGameRendererGL_DrawOverlaySpriteEx(unsigned int gl_texture_id, float x, float y, float w, float h, float z,
+                                           int flip_x, int flip_y) {
     const Uint32 white = 0xFFFFFFFF;
     SDL_Vertex sdl_vertices[4];
     const float s = (float)g_resolution_scale;
@@ -725,4 +726,3 @@ void SDLGameRendererGL_DrawOverlaySpriteEx(unsigned int gl_texture_id, float x, 
     /* Push as a legacy texture (array_layer = -1, pal_slot = 0) */
     push_render_task((GLuint)gl_texture_id, sdl_vertices, z, -1, 0);
 }
-

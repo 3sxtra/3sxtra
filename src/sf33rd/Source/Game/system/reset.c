@@ -28,9 +28,9 @@
 
 /** @brief Top-level reset task states (replaces Main_Jmp_Tbl indices). */
 typedef enum {
-    RESET_INIT  = 0, /**< Initialize — advance to move state      */
-    RESET_MOVE  = 1, /**< Monitor for reset button combination     */
-    RESET_WAIT  = 2, /**< Wait for pending loads, then soft-reset  */
+    RESET_INIT = 0,  /**< Initialize — advance to move state      */
+    RESET_MOVE = 1,  /**< Monitor for reset button combination     */
+    RESET_WAIT = 2,  /**< Wait for pending loads, then soft-reset  */
     RESET_SLEEP = 3, /**< Wait for buttons released before reinit  */
     RESET_STATE_COUNT
 } ResetState;
@@ -52,11 +52,20 @@ void Reset_Task(struct _TASK* task_ptr) {
     Check_Reset_IO(task_ptr, 0);
     Check_Reset_IO(task_ptr, 1);
     switch ((ResetState)task_ptr->r_no[0]) {
-    case RESET_INIT:  Reset_Init(task_ptr);  break;
-    case RESET_MOVE:  Reset_Move(task_ptr);  break;
-    case RESET_WAIT:  Reset_Wait(task_ptr);  break;
-    case RESET_SLEEP: Reset_Sleep(task_ptr); break;
-    default: break;
+    case RESET_INIT:
+        Reset_Init(task_ptr);
+        break;
+    case RESET_MOVE:
+        Reset_Move(task_ptr);
+        break;
+    case RESET_WAIT:
+        Reset_Wait(task_ptr);
+        break;
+    case RESET_SLEEP:
+        Reset_Sleep(task_ptr);
+        break;
+    default:
+        break;
     }
 }
 

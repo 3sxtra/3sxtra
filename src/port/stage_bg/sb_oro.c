@@ -6,10 +6,10 @@
 #include "port/stage_bg_registry.h"
 #include "sf33rd/Source/Game/stage/bg090.h"
 
-__attribute__((constructor))
-static void sb_oro_register(void) {
-    StageBg_Register(STAGE_BG_ORO, (StageBgCallbacks){
-        .on_enter = BG090,
-        .on_tick  = BG090,
-    });
+__attribute__((constructor)) static void sb_oro_register(void) {
+    StageBg_Register(STAGE_BG_ORO,
+                     (StageBgCallbacks) {
+                         .on_enter = BG090,
+                         .on_tick = BG090,
+                     });
 }

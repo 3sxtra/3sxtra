@@ -211,18 +211,16 @@ static void Setup_Result_OBJ(void) {
 __attribute__((constructor)) static void register_ms_gameover() {
     extern MenuScreen g_screens[];
 
-    g_screens[MENU_SCREEN_GAMEOVER] = (MenuScreen){
-        .name = "gameover",
-        .id = MENU_SCREEN_GAMEOVER,
-        .parent = MENU_SCREEN_NONE,
-        .on_enter = ms_gameover_enter,
-        .on_tick = ms_gameover_tick,
-        .on_exit = ms_gameover_exit,
-        .cursor_max = 0,
-        .cancel_item = -1,
-        .rmlui_show = NULL,
-        .rmlui_hide = NULL,
-        .header_type = (MenuHeader)-1,
-        .effect_slot = 0
-    };
+    g_screens[MENU_SCREEN_GAMEOVER] = (MenuScreen) { .name = "gameover",
+                                                     .id = MENU_SCREEN_GAMEOVER,
+                                                     .parent = MENU_SCREEN_NONE,
+                                                     .on_enter = ms_gameover_enter,
+                                                     .on_tick = ms_gameover_tick,
+                                                     .on_exit = ms_gameover_exit,
+                                                     .cursor_max = 0,
+                                                     .cancel_item = -1,
+                                                     .rmlui_show = NULL,
+                                                     .rmlui_hide = NULL,
+                                                     .header_type = (MenuHeader)-1,
+                                                     .effect_slot = 0 };
 }

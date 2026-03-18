@@ -54,18 +54,16 @@ static void ms_ranking_exit(struct _TASK* tp) {
 __attribute__((constructor)) static void register_ms_ranking(void) {
     extern MenuScreen g_screens[];
 
-    g_screens[MENU_SCREEN_RANKING] = (MenuScreen){
-        .name = "ranking",
-        .id = MENU_SCREEN_RANKING,
-        .parent = MENU_SCREEN_NONE,
-        .on_enter = ms_ranking_enter,
-        .on_tick = ms_ranking_tick,
-        .on_exit = ms_ranking_exit,
-        .cursor_max = 0,
-        .cancel_item = -1,
-        .rmlui_show = NULL,
-        .rmlui_hide = NULL,
-        .header_type = (MenuHeader)-1,
-        .effect_slot = 0
-    };
+    g_screens[MENU_SCREEN_RANKING] = (MenuScreen) { .name = "ranking",
+                                                    .id = MENU_SCREEN_RANKING,
+                                                    .parent = MENU_SCREEN_NONE,
+                                                    .on_enter = ms_ranking_enter,
+                                                    .on_tick = ms_ranking_tick,
+                                                    .on_exit = ms_ranking_exit,
+                                                    .cursor_max = 0,
+                                                    .cancel_item = -1,
+                                                    .rmlui_show = NULL,
+                                                    .rmlui_hide = NULL,
+                                                    .header_type = (MenuHeader)-1,
+                                                    .effect_slot = 0 };
 }

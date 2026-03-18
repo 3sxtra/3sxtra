@@ -7,11 +7,10 @@
 #include "port/stage_bg_registry.h"
 #include "sf33rd/Source/Game/stage/bg010.h"
 
-__attribute__((constructor))
-static void sb_alex_register(void) {
+__attribute__((constructor)) static void sb_alex_register(void) {
     StageBgCallbacks cb = {
         .on_enter = BG010,
-        .on_tick  = BG010,
+        .on_tick = BG010,
     };
     StageBg_Register(STAGE_BG_ALEX, cb);
     StageBg_Register(STAGE_BG_KEN, cb);

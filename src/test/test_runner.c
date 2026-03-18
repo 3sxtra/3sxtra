@@ -1,5 +1,6 @@
 #include "test/test_runner.h"
 #include "main.h"
+#include "sf33rd/Source/Game/menu/menu_task_phases.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
@@ -206,7 +207,8 @@ void TestRunner_Prologue() {
     case PHASE_TITLE: {
         const struct _TASK* menu_task = &task[TASK_MENU];
 
-        if (menu_task->r_no[0] == 0 && menu_task->r_no[1] == 1 && menu_task->r_no[2] == 3) {
+        if (menu_task->r_no[0] == MTP_AFTER_TITLE && menu_task->r_no[1] == MTSP_MODE_SELECT &&
+            menu_task->r_no[2] == 3) {
             phase = PHASE_MENU;
             break;
         }

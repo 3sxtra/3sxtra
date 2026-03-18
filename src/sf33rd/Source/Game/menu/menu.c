@@ -3398,7 +3398,7 @@ static void End_Replay_Menu(struct _TASK* task_ptr) {
 
     case 3:
         ans = ~(plsw_01[Pause_ID]) & plsw_00[Pause_ID];
-        
+
         switch (ans) {
         case SWK_UP:
             Menu_Cursor_Y[0]--;
@@ -3408,7 +3408,7 @@ static void End_Replay_Menu(struct _TASK* task_ptr) {
                 SE_dir_cursor_move();
             }
             break;
-            
+
         case SWK_DOWN:
             Menu_Cursor_Y[0]++;
             if (Menu_Cursor_Y[0] > 1) {
@@ -3417,7 +3417,7 @@ static void End_Replay_Menu(struct _TASK* task_ptr) {
                 SE_dir_cursor_move();
             }
             break;
-            
+
         case 0x100: /* Confirm */
         case 0x200: /* Cancel */
             if (Menu_Cursor_Y[0] || ans == 0x200) {

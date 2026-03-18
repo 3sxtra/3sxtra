@@ -281,4 +281,3 @@ int Renderer_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 decomp_size, i
     }
     return 0;
 }
-

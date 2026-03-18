@@ -30,7 +30,7 @@ void* LoadBGTileOverride(int type, int stage, int gbix);
 
 /**
  * @brief Clear the background tile override cache (call when stage textures change).
- * 
+ *
  * Resets cache flags so textures are re-looked up, but does not free textures
  * immediately, as they may remain in use for the current frame.
  */

@@ -58,18 +58,16 @@ static void ms_demo_exit(struct _TASK* tp) {
 __attribute__((constructor)) static void register_ms_demo(void) {
     extern MenuScreen g_screens[];
 
-    g_screens[MENU_SCREEN_DEMO] = (MenuScreen){
-        .name = "demo",
-        .id = MENU_SCREEN_DEMO,
-        .parent = MENU_SCREEN_NONE,
-        .on_enter = ms_demo_enter,
-        .on_tick = ms_demo_tick,
-        .on_exit = ms_demo_exit,
-        .cursor_max = 0,
-        .cancel_item = -1,
-        .rmlui_show = NULL,
-        .rmlui_hide = NULL,
-        .header_type = (MenuHeader)-1,
-        .effect_slot = 0
-    };
+    g_screens[MENU_SCREEN_DEMO] = (MenuScreen) { .name = "demo",
+                                                 .id = MENU_SCREEN_DEMO,
+                                                 .parent = MENU_SCREEN_NONE,
+                                                 .on_enter = ms_demo_enter,
+                                                 .on_tick = ms_demo_tick,
+                                                 .on_exit = ms_demo_exit,
+                                                 .cursor_max = 0,
+                                                 .cancel_item = -1,
+                                                 .rmlui_show = NULL,
+                                                 .rmlui_hide = NULL,
+                                                 .header_type = (MenuHeader)-1,
+                                                 .effect_slot = 0 };
 }

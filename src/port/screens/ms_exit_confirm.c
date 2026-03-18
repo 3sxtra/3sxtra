@@ -98,8 +98,8 @@ static void exit_confirm_enter(struct _TASK* task_ptr) {
     /* Menu_in_Sub: FadeOut, advance r_no[2], timer=5, Menu_Common_Init,
      * restore cursor, kill parent items, activate sub items */
     FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1;  /* so Menu_Sub_case1 works in wait phase */
-    task_ptr->timer = 0;    /* bypass dispatcher wait */
+    task_ptr->r_no[2] = 1; /* so Menu_Sub_case1 works in wait phase */
+    task_ptr->timer = 0;   /* bypass dispatcher wait */
     Menu_Common_Init();
     Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
     Menu_Suicide[0] = 1;

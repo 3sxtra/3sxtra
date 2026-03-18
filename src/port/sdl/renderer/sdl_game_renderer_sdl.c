@@ -629,8 +629,11 @@ SDL_Texture* SDLGameRendererSDL_GetCanvas(void) {
 
 void SDLGameRendererSDL_Init(void) {
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
-    cps3_canvas =
-        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, cps3_width * g_resolution_scale, cps3_height * g_resolution_scale);
+    cps3_canvas = SDL_CreateTexture(renderer,
+                                    SDL_PIXELFORMAT_RGBA8888,
+                                    SDL_TEXTUREACCESS_TARGET,
+                                    cps3_width * g_resolution_scale,
+                                    cps3_height * g_resolution_scale);
     if (!cps3_canvas) {
         fatal_error("Failed to create cps3_canvas texture: %s", SDL_GetError());
     }
@@ -1718,9 +1721,8 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
  * in normal z-sorted rendering.  Uses sentinel task_th = 0xFFFFFFFF to prevent
  * the deferred texture resolution in RenderFrame from overwriting the pointer.
  */
-void SDLGameRendererSDL_DrawOverlaySpriteEx(SDL_Texture* texture,
-                                            float x, float y, float w, float h,
-                                            float z, int flip_x, int flip_y) {
+void SDLGameRendererSDL_DrawOverlaySpriteEx(SDL_Texture* texture, float x, float y, float w, float h, float z,
+                                            int flip_x, int flip_y) {
     if (render_task_count >= RENDER_TASK_MAX || texture == NULL)
         return;
 
@@ -1781,8 +1783,6 @@ void SDLGameRendererSDL_DrawOverlaySpriteEx(SDL_Texture* texture,
     render_task_count++;
 }
 
-void SDLGameRendererSDL_DrawOverlaySprite(SDL_Texture* texture,
-                                          float x, float y, float w, float h,
-                                          float z) {
+void SDLGameRendererSDL_DrawOverlaySprite(SDL_Texture* texture, float x, float y, float w, float h, float z) {
     SDLGameRendererSDL_DrawOverlaySpriteEx(texture, x, y, w, h, z, 0, 0);
 }

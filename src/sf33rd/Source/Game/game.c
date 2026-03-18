@@ -15,6 +15,8 @@
  */
 
 #include "sf33rd/Source/Game/game.h"
+#include "sf33rd/Source/Game/menu/menu_task_phases.h"
+#include "sf33rd/Source/Game/init_task_phases.h"
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
@@ -870,7 +872,7 @@ void Game03() {
             case MODE_REPLAY:
                 G_No[2] = 5;
                 cpReadyTask(TASK_MENU, Menu_Task);
-                task[TASK_MENU].r_no[0] = 8;
+                task[TASK_MENU].r_no[0] = MTP_SCREEN_DISPATCH;
                 break;
 
             default:
@@ -912,7 +914,7 @@ void Game03() {
             E_No[3] = 0;
             Request_E_No = 0;
             cpReadyTask(TASK_MENU, Menu_Task);
-            task[TASK_MENU].r_no[1] = 16;
+            task[TASK_MENU].r_no[1] = MTSP_SA_CUT;
             Cursor_Y_Pos[0][0] = 0;
             Cursor_Y_Pos[1][0] = 0;
             G_Timer = 4;
@@ -975,7 +977,7 @@ void Game04() {
             if (Mode_Type == 5) {
                 G_No[2] = 5;
                 cpReadyTask(TASK_MENU, Menu_Task);
-                task[TASK_MENU].r_no[0] = 8;
+                task[TASK_MENU].r_no[0] = MTP_SCREEN_DISPATCH;
             } else {
                 G_No[1] = 7;
                 G_No[2] = 0;
@@ -1168,8 +1170,8 @@ void Game06() {
                     cpReadyTask(TASK_MENU, Menu_Task);
                     System_all_clear_Level_B();
                     Menu_Init(&task[TASK_MENU]);
-                    task[TASK_MENU].r_no[0] = 9;
-                    task[TASK_MENU].r_no[1] = 0;
+                    task[TASK_MENU].r_no[0] = MTP_GOTO_GAME;
+                    task[TASK_MENU].r_no[1] = MTSP_INIT;
                     Forbid_Reset = 1;
                     make_texcash_work(12);
                     Unsubstantial_BG[0] = 1;
@@ -1917,7 +1919,7 @@ void Next_Title_Sub() {
     E_No[2] = 3;        /* ... and skip to default → Exit_Title_Sub_Entry() immediately */
     Break_Into = 0;     /* What Entry_01 case 0 would have set */
     title_tex_flag = 0; /* Title texture was never loaded */
-    task[TASK_INIT].r_no[0] = 1;
+    task[TASK_INIT].r_no[0] = ITP_RUNNING;
     Demo_Flag = 1;
     Game_pause = 0;
     judge_flag = 0;

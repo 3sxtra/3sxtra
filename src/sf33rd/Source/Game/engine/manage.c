@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/manage.h"
+#include "sf33rd/Source/Game/menu/menu_task_phases.h"
 #include "common.h"
 #include "main.h"
 #include "sf33rd/Source/Game/animation/appear.h"
@@ -237,7 +238,7 @@ static void Game_Manage_1st() {
 
     if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
         cpReadyTask(TASK_MENU, Menu_Task);
-        task[TASK_MENU].r_no[0] = 7;
+        task[TASK_MENU].r_no[0] = MTP_IN_GAME;
         plw[New_Challenger].wu.pl_operator = 0;
         Operator_Status[New_Challenger] = 0;
         Lever_LR[0] = 0;
@@ -375,7 +376,7 @@ static void Game_Manage_2_1() {
         break;
 
     case 1:
-        if (task[TASK_MENU].r_no[0] == 10) {
+        if (task[TASK_MENU].r_no[0] == MTP_TRAINING) {
             C_No[1]++;
             C_No[2] = 0;
         }

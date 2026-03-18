@@ -260,7 +260,8 @@ void SDLGameRendererGPU_Init(void) {
     SDL_zero(tex_info);
     tex_info.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;
     tex_info.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    tex_info.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    tex_info.usage =
+        SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     tex_info.width = TEX_ARRAY_SIZE;
     tex_info.height = TEX_ARRAY_SIZE;
     tex_info.layer_count_or_depth = TEX_ARRAY_MAX_LAYERS;

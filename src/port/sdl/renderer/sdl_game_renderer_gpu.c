@@ -92,7 +92,7 @@ QuadSortKey quad_sort_temp[MAX_QUADS];
 
 /* ─── Per-quad standalone overlay texture (for oversized overlays) ─── */
 static SDL_GPUTexture* quad_overlay_tex[MAX_QUADS];
-SDL_GPUTexture* s_1x1_white_texture = NULL;  /* fallback for overlay sampler */
+SDL_GPUTexture* s_1x1_white_texture = NULL; /* fallback for overlay sampler */
 
 /** @brief Begin a new frame: acquire command buffer and swapchain texture. */
 void SDLGameRendererGPU_BeginFrame(void) {
@@ -469,15 +469,14 @@ void SDLGameRendererGPU_RenderFrame(void) {
                         // Flush previous segment
                         unsigned int segment_quads = qi - draw_start;
                         if (segment_quads > 0) {
-                            SDL_DrawGPUIndexedPrimitives(pass, segment_quads * 6, 1,
-                                                         draw_start * 6, 0, 0);
+                            SDL_DrawGPUIndexedPrimitives(pass, segment_quads * 6, 1, draw_start * 6, 0, 0);
                         }
                         if (qi < quad_count && this_overlay != current_overlay) {
                             // Rebind overlay sampler
                             current_overlay = this_overlay;
                             tex_bindings[2].texture = current_overlay
-                                ? current_overlay
-                                : (s_1x1_white_texture ? s_1x1_white_texture : texture_array);
+                                                          ? current_overlay
+                                                          : (s_1x1_white_texture ? s_1x1_white_texture : texture_array);
                             tex_bindings[2].sampler = sampler;
                             SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 3);
                         }
@@ -855,8 +854,7 @@ static int upload_overlay_to_array_layer(const uint32_t* pixels, int tex_w, int 
         return -1;
 
     size_t rgba_size = (size_t)tex_w * tex_h * 4;
-    if (s_tex_upload_count >= MAX_COMPUTE_JOBS ||
-        s_compute_staging_offset + rgba_size > COMPUTE_STORAGE_SIZE)
+    if (s_tex_upload_count >= MAX_COMPUTE_JOBS || s_compute_staging_offset + rgba_size > COMPUTE_STORAGE_SIZE)
         return -1;
 
     int layer = tex_array_free[--tex_array_free_count];
@@ -885,10 +883,8 @@ static int upload_overlay_to_array_layer(const uint32_t* pixels, int tex_w, int 
  * For array-layer overlays: standalone_tex = NULL, layer >= 0
  * For standalone overlays:  standalone_tex != NULL, layer = -2 (sentinel)
  */
-static void push_overlay_quad(int layer, float x, float y, float w, float h,
-                               float z, int tex_w, int tex_h,
-                               int flip_x, int flip_y,
-                               SDL_GPUTexture* standalone_tex) {
+static void push_overlay_quad(int layer, float x, float y, float w, float h, float z, int tex_w, int tex_h, int flip_x,
+                              int flip_y, SDL_GPUTexture* standalone_tex) {
     if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES || quad_count >= MAX_QUADS)
         return;
 
@@ -915,13 +911,13 @@ static void push_overlay_quad(int layer, float x, float y, float w, float h,
     float sx = x * s, sy = y * s, sw = w * s, sh = h * s;
 
     /* Top-left */
-    v[0] = (GPUVertex){ sx, sy,             1, 1, 1, 1, u0, v0, fl, -1.0f };
+    v[0] = (GPUVertex) { sx, sy, 1, 1, 1, 1, u0, v0, fl, -1.0f };
     /* Top-right */
-    v[1] = (GPUVertex){ sx + sw, sy,         1, 1, 1, 1, u1, v0, fl, -1.0f };
+    v[1] = (GPUVertex) { sx + sw, sy, 1, 1, 1, 1, u1, v0, fl, -1.0f };
     /* Bottom-left */
-    v[2] = (GPUVertex){ sx, sy + sh,         1, 1, 1, 1, u0, v1, fl, -1.0f };
+    v[2] = (GPUVertex) { sx, sy + sh, 1, 1, 1, 1, u0, v1, fl, -1.0f };
     /* Bottom-right */
-    v[3] = (GPUVertex){ sx + sw, sy + sh,   1, 1, 1, 1, u1, v1, fl, -1.0f };
+    v[3] = (GPUVertex) { sx + sw, sy + sh, 1, 1, 1, 1, u1, v1, fl, -1.0f };
 
     quad_sort_keys[quad_count].z = z;
     quad_sort_keys[quad_count].original_index = quad_count;
@@ -931,8 +927,8 @@ static void push_overlay_quad(int layer, float x, float y, float w, float h,
 }
 
 /** @brief Draw an overlay sprite using cached CPU-side pixel data. */
-void SDLGameRendererGPU_DrawOverlaySprite(const uint32_t* pixels, int tex_w, int tex_h,
-                                          float x, float y, float w, float h, float z) {
+void SDLGameRendererGPU_DrawOverlaySprite(const uint32_t* pixels, int tex_w, int tex_h, float x, float y, float w,
+                                          float h, float z) {
     int layer = upload_overlay_to_array_layer(pixels, tex_w, tex_h);
     if (layer < 0)
         return;
@@ -940,9 +936,8 @@ void SDLGameRendererGPU_DrawOverlaySprite(const uint32_t* pixels, int tex_w, int
 }
 
 /** @brief Draw an overlay sprite with optional flipping. */
-void SDLGameRendererGPU_DrawOverlaySpriteEx(const uint32_t* pixels, int tex_w, int tex_h,
-                                            float x, float y, float w, float h, float z,
-                                            int flip_x, int flip_y) {
+void SDLGameRendererGPU_DrawOverlaySpriteEx(const uint32_t* pixels, int tex_w, int tex_h, float x, float y, float w,
+                                            float h, float z, int flip_x, int flip_y) {
     int layer = upload_overlay_to_array_layer(pixels, tex_w, tex_h);
     if (layer < 0)
         return;
@@ -950,11 +945,10 @@ void SDLGameRendererGPU_DrawOverlaySpriteEx(const uint32_t* pixels, int tex_w, i
 }
 
 /** @brief Queue a standalone GPU texture into the z-sorted batch (oversized overlays). */
-void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture* texture, int tex_w, int tex_h,
-                                           float x, float y, float w, float h, float z) {
+void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture* texture, int tex_w, int tex_h, float x, float y, float w,
+                                          float h, float z) {
     if (!texture)
         return;
     /* Push a quad with layer=-2 (standalone overlay sentinel) */
     push_overlay_quad(-2, x, y, w, h, z, tex_w, tex_h, 0, 0, texture);
 }
-

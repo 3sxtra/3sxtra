@@ -17,7 +17,7 @@
 struct GPUTextureMetadata {
     SDL_GPUTexture* texture;
     int w, h;
-    uint32_t* pixels;  /* cached RGBA8888 pixels for staging upload */
+    uint32_t* pixels; /* cached RGBA8888 pixels for staging upload */
 };
 
 static std::map<void*, GPUTextureMetadata> s_gpu_textures;
@@ -330,11 +330,9 @@ extern "C" void TextureUtil_DrawQuad(void* texture_id, float x, float y, float w
             return;
         if (it->second.w > 512 || it->second.h > 512) {
             /* Oversized: queue a direct blit onto canvas */
-            SDLGameRendererGPU_QueueDeferredBlit(
-                it->second.texture, it->second.w, it->second.h, x, y, w, h, z);
+            SDLGameRendererGPU_QueueDeferredBlit(it->second.texture, it->second.w, it->second.h, x, y, w, h, z);
         } else {
-            SDLGameRendererGPU_DrawOverlaySprite(
-                it->second.pixels, it->second.w, it->second.h, x, y, w, h, z);
+            SDLGameRendererGPU_DrawOverlaySprite(it->second.pixels, it->second.w, it->second.h, x, y, w, h, z);
         }
 
     } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
@@ -347,7 +345,8 @@ extern "C" void TextureUtil_DrawQuad(void* texture_id, float x, float y, float w
     }
 }
 
-extern "C" void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float w, float h, float z, int flip_x, int flip_y) {
+extern "C" void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float w, float h, float z, int flip_x,
+                                       int flip_y) {
     if (!texture_id)
         return;
 
@@ -362,8 +361,7 @@ extern "C" void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float
             return;
         if (it->second.w > 512 || it->second.h > 512) {
             /* Oversized: queue a direct blit onto canvas (flip not supported for blits) */
-            SDLGameRendererGPU_QueueDeferredBlit(
-                it->second.texture, it->second.w, it->second.h, x, y, w, h, z);
+            SDLGameRendererGPU_QueueDeferredBlit(it->second.texture, it->second.w, it->second.h, x, y, w, h, z);
         } else {
             SDLGameRendererGPU_DrawOverlaySpriteEx(
                 it->second.pixels, it->second.w, it->second.h, x, y, w, h, z, flip_x, flip_y);
@@ -378,4 +376,3 @@ extern "C" void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float
         SDLGameRendererClassic_DrawOverlaySpriteEx((SDL_Texture*)texture_id, x, y, w, h, z, flip_x, flip_y);
     }
 }
-

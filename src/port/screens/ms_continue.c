@@ -146,18 +146,16 @@ static s16 Check_Exit_Continue(void) {
 
 __attribute__((constructor)) static void register_ms_continue() {
     extern MenuScreen g_screens[];
-    g_screens[MENU_SCREEN_CONTINUE] = (MenuScreen){
-        .name = "continue",
-        .id = MENU_SCREEN_CONTINUE,
-        .parent = MENU_SCREEN_NONE,
-        .on_enter = ms_continue_enter,
-        .on_tick = ms_continue_tick,
-        .on_exit = ms_continue_exit,
-        .cursor_max = 0,
-        .cancel_item = -1,
-        .rmlui_show = NULL, /* Managed internally via Setup_Continue_OBJ */
-        .rmlui_hide = NULL, /* Managed internally in exit */
-        .header_type = (MenuHeader)-1,
-        .effect_slot = 0
-    };
+    g_screens[MENU_SCREEN_CONTINUE] = (MenuScreen) { .name = "continue",
+                                                     .id = MENU_SCREEN_CONTINUE,
+                                                     .parent = MENU_SCREEN_NONE,
+                                                     .on_enter = ms_continue_enter,
+                                                     .on_tick = ms_continue_tick,
+                                                     .on_exit = ms_continue_exit,
+                                                     .cursor_max = 0,
+                                                     .cancel_item = -1,
+                                                     .rmlui_show = NULL, /* Managed internally via Setup_Continue_OBJ */
+                                                     .rmlui_hide = NULL, /* Managed internally in exit */
+                                                     .header_type = (MenuHeader)-1,
+                                                     .effect_slot = 0 };
 }

@@ -59,13 +59,23 @@ typedef struct {
     u8 useChar[20];
 } MPP;
 
+/**
+ * @brief Cooperative task slot for the 11-slot scheduler (cpLoopTask).
+ *
+ * @note This struct is saved/loaded wholesale during netplay rollback
+ *       (GS_SAVE(task)/GS_LOAD(task) in game_state.c).
+ *       DO NOT change the size or layout without updating GameState.
+ *
+ * @see menu_task_phases.h — named constants for task[TASK_MENU].r_no[]
+ * @see init_task_phases.h — named constants for task[TASK_INIT].r_no[]
+ */
 struct _TASK {
-    void (*func_adrs)();
-    void (*callback_adrs)();
-    u8 r_no[4];
-    u16 condition;
-    s16 timer;
-    u8 free[4];
+    void (*func_adrs)();     /**< Per-frame dispatch function (set by cpReadyTask) */
+    void (*callback_adrs)(); /**< Exit callback (invoked by cpExitTask, may be NULL) */
+    u8 r_no[4];              /**< Nested state machine indices (r_no[0] = top-level phase) */
+    u16 condition;           /**< 0=inactive, 1=active, 2=ready (promoted next frame) */
+    s16 timer;               /**< General-purpose timer (zeroed during netplay sync) */
+    u8 free[4];              /**< Untyped scratch space — TASK_PAUSE uses free[0] as flash timer */
 };
 
 typedef enum {

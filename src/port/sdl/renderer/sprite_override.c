@@ -20,10 +20,10 @@
  * all texture loading and rendering occurs strictly on the main thread
  * (which is standard for SDL rendering). No mutexes are required. */
 static void* s_sprite_cache[SPRITE_CACHE_SIZE];
-static bool  s_sprite_miss[SPRITE_CACHE_SIZE];
+static bool s_sprite_miss[SPRITE_CACHE_SIZE];
 
 static void* s_bg_tile_cache[BG_TILE_CACHE_SIZE];
-static bool  s_bg_tile_miss[BG_TILE_CACHE_SIZE];
+static bool s_bg_tile_miss[BG_TILE_CACHE_SIZE];
 
 void ClearBGTileCache(void) {
     /* Reset checked flags and explicitly free textures.
@@ -88,7 +88,7 @@ void* LoadBGTileOverride(int type, int stage, int gbix) {
     /* Format using the separated parameters to construct the unique composite key for the filename */
     int composite_key = type * 100000 + stage * 1000 + gbix;
     snprintf(path, sizeof(path), "assets/sprites/bg_%d.png", composite_key);
-    
+
     void* tex = TextureUtil_Load(path);
 
     if (tex != NULL) {

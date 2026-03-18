@@ -61,12 +61,17 @@ The game handles walk-ons, car arrivals, and boss intros using the `appear_playe
 *   **Current State:** It relies entirely on a 42-entry `appear_jmp_tbl` mapped to `Appear_00000` through `Appear_41000`. It depends on deeply nested state tracking via `wk->wu.routine_no[3]` and `routine_no[4]`.
 *   **Modernization:** Each of these 42 routines could be represented by a standard `CinematicSequence` or `AnimationFlow` registry (with `on_enter`/`on_tick`/`on_exit`), which would drastically simplify adding new intro sequences for custom characters.
 
-### 8. The `TASK` System (`src/include/structs.h` & `system/work_sys.h`)
+### 8. ✅ The `TASK` System — Phase 1: Named Constants (`src/include/structs.h` & `system/work_sys.h`)
 The `TASK` system is the fundamental scheduling unit for non-gameplay state machines. It operates as a cooperative multitasking array where different engine subsystems (like Save/Load, Pause, and Reset) claim a slot and assign a function pointer.
 
-*   **Risk Level:** **MEDIUM**. While largely outside core fighting mechanics, it handles global state transitions and intercepts systems like Reset and Pause logic.
-*   **Current State:** Defined as `extern struct _TASK task[11]`, tasks track their state using `r_no[4]` and an unstructured `free[4]` array that acts as arbitrary scratch space, requiring tribal knowledge to know what `free[1]` means in any given context. It has no formal `init` or `shutdown` phases.
-*   **Modernization:** The generic `TASK` container has outgrown its usefulness. Instead of passing `struct _TASK*` everywhere, specific core systems should be migrated to their own dedicated, type-safe managers featuring standard lifecycle callbacks (similar to what was done for the Menu Backend).
+*   **Risk Level:** **MEDIUM**. While largely outside core fighting mechanics, it handles global state transitions and intercepts systems like Reset and Pause logic. The entire `task[11]` array is saved/loaded wholesale during netplay rollback (`GS_SAVE(task)` / `GS_LOAD(task)` in `game_state.c`), making any structural changes rollback-sensitive.
+*   **Status:** **PHASE 1 COMPLETED** (March 2026). All cross-slot `r_no[]` magic-number assignments/comparisons replaced with named enum constants. Doc comments added to `struct _TASK`. Compile-time `_Static_assert` guard added to prevent accidental layout drift.
+    *   `MenuTaskPhase` enum (r_no[0]: `MTP_AFTER_TITLE`, `MTP_IDLE`, `MTP_NETPLAY_IDLE`, `MTP_IN_GAME`, `MTP_SCREEN_DISPATCH`, `MTP_GOTO_GAME`, `MTP_TRAINING`, `MTP_RESET`)
+    *   `MenuTaskSubPhase` enum (r_no[1]: `MTSP_INIT`, `MTSP_MODE_SELECT`, `MTSP_IN_GAME_ACTIVE`, `MTSP_SA_CUT`, `MTSP_NETWORK_LOBBY`)
+    *   `InitTaskPhase` enum (r_no[0]: `ITP_BOOT`, `ITP_RUNNING`)
+*   **Files modified:** `game.c`, `manage.c`, `sys_sub.c`, `ioconv.c`, `pause.c`, `netplay.c`, `test_runner.c`, `structs.h`, `game_state.c`
+*   **New files:** `menu/menu_task_phases.h`, `init_task_phases.h`
+*   **Phase 2 (future):** Accessor functions (`MenuTask_GetPhase()` / `MenuTask_SetPhase()`) to route all cross-slot reads/writes through validated helpers. Replace internal `menu.c` jump-table indices with named constants. Migrate individual tasks to dedicated type-safe managers with standard lifecycle callbacks.
 
 ### 9. The Top-Level Game State Machine (`game.c`)
 This is the highest-level supervisor for the game engine, controlling the flow between demos, intros, fighting, and ending sequences.

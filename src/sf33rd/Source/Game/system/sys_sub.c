@@ -13,6 +13,8 @@
  */
 
 #include "sf33rd/Source/Game/system/sys_sub.h"
+#include "sf33rd/Source/Game/menu/menu_task_phases.h"
+#include "sf33rd/Source/Game/init_task_phases.h"
 #include "common.h"
 #include "main.h"
 #include "port/menu_screen.h"
@@ -823,7 +825,7 @@ s32 Check_Menu_Task() {
     struct _TASK* task_ptr = &task[TASK_MENU];
 
     if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
-        if (task[TASK_MENU].r_no[0] == 7 && task[TASK_MENU].r_no[1] == 7) {
+        if (task[TASK_MENU].r_no[0] == MTP_IN_GAME && task[TASK_MENU].r_no[1] == MTSP_IN_GAME_ACTIVE) {
             return 1;
         }
 
@@ -1107,7 +1109,7 @@ void Soft_Reset_Sub() {
     cpExitTask(TASK_SAVER);
     cpExitTask(TASK_PAUSE);
     Reset_Sub0();
-    task[TASK_INIT].r_no[0] = 1;
+    task[TASK_INIT].r_no[0] = ITP_RUNNING;
     task[TASK_INIT].r_no[1] = 0;
     task[TASK_INIT].r_no[2] = 0;
     task[TASK_INIT].r_no[3] = 0;
@@ -1372,7 +1374,7 @@ static void Replay(s16 PL_id) {
         if (Mode_Type == MODE_REPLAY) {
             cpExitTask(TASK_PAUSE);
             cpReadyTask(TASK_MENU, Menu_Task);
-            task[TASK_MENU].r_no[0] = 13;
+            task[TASK_MENU].r_no[0] = MTP_RESET;
         }
 
         Demo_Time_Stop = 1;

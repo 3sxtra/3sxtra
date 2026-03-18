@@ -28,6 +28,7 @@ extern void njUserMain();
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "sf33rd/Source/Game/menu/menu.h"
+#include "sf33rd/Source/Game/menu/menu_task_phases.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -173,7 +174,7 @@ static void setup_vs_mode() {
     }
 
     // This is pretty much a copy of logic from menu.c
-    task[TASK_MENU].r_no[0] = 5; // go to idle routine (doing nothing)
+    task[TASK_MENU].r_no[0] = MTP_NETPLAY_IDLE; // go to idle routine (doing nothing)
     cpExitTask(TASK_SAVER);
     cpExitTask(TASK_PAUSE);
 

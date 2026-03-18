@@ -45,18 +45,16 @@ static void ms_char_select_exit(struct _TASK* tp) {
 __attribute__((constructor)) static void register_ms_char_select(void) {
     extern MenuScreen g_screens[];
 
-    g_screens[MENU_SCREEN_CHAR_SELECT] = (MenuScreen){
-        .name = "char_select",
-        .id = MENU_SCREEN_CHAR_SELECT,
-        .parent = MENU_SCREEN_NONE,
-        .on_enter = ms_char_select_enter,
-        .on_tick = ms_char_select_tick,
-        .on_exit = ms_char_select_exit,
-        .cursor_max = 0,
-        .cancel_item = -1,
-        .rmlui_show = NULL, /* Managed internally in sel_pl.c */
-        .rmlui_hide = NULL, /* Managed internally in sel_pl.c */
-        .header_type = (MenuHeader)-1,
-        .effect_slot = 0
-    };
+    g_screens[MENU_SCREEN_CHAR_SELECT] = (MenuScreen) { .name = "char_select",
+                                                        .id = MENU_SCREEN_CHAR_SELECT,
+                                                        .parent = MENU_SCREEN_NONE,
+                                                        .on_enter = ms_char_select_enter,
+                                                        .on_tick = ms_char_select_tick,
+                                                        .on_exit = ms_char_select_exit,
+                                                        .cursor_max = 0,
+                                                        .cancel_item = -1,
+                                                        .rmlui_show = NULL, /* Managed internally in sel_pl.c */
+                                                        .rmlui_hide = NULL, /* Managed internally in sel_pl.c */
+                                                        .header_type = (MenuHeader)-1,
+                                                        .effect_slot = 0 };
 }

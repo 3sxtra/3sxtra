@@ -29,7 +29,6 @@
 
 #include <SDL3/SDL.h>
 
-
 // ⚡ Opt5: SIMDe for portable SIMD intrinsics (SSE+FMA on x86, NEON on ARM)
 #include <simde/x86/fma.h>
 
@@ -214,8 +213,10 @@ static void cg_cache_invalidate(void) {
  *        Used by the non-ext render paths (mlt_obj_trans, _cp3, _rgb).
  */
 static void compute_tile_bbox(const CGTileCacheEntry* cge, s32 flip, SpriteBox* out) {
-    out->min_x = 1e9f;  out->min_y = 1e9f;
-    out->max_x = -1e9f; out->max_y = -1e9f;
+    out->min_x = 1e9f;
+    out->min_y = 1e9f;
+    out->max_x = -1e9f;
+    out->max_y = -1e9f;
 
     for (s32 t = 0; t < cge->count; t++) {
         const CGTileDesc* d = &cge->tiles[t];
@@ -224,13 +225,17 @@ static void compute_tile_bbox(const CGTileCacheEntry* cge, s32 flip, SpriteBox* 
         f32 y = (flip & 0x4000) ? -d->cum_y : d->cum_y;
 
         f32 left = x - (d->dw * BOOL(flip & 0x8000));
-        f32 top  = y + (d->dh * BOOL(flip & 0x4000));
+        f32 top = y + (d->dh * BOOL(flip & 0x4000));
 
-        if (left          < out->min_x) out->min_x = left;
-        if (left + d->dw  > out->max_x) out->max_x = left + d->dw;
+        if (left < out->min_x)
+            out->min_x = left;
+        if (left + d->dw > out->max_x)
+            out->max_x = left + d->dw;
         // Y: seqsStoreChip renders from (x,y) to (x+w, y-h) — tile grows downward
-        if (top           > out->max_y) out->max_y = top;
-        if (top  - d->dh  < out->min_y) out->min_y = top - d->dh;
+        if (top > out->max_y)
+            out->max_y = top;
+        if (top - d->dh < out->min_y)
+            out->min_y = top - d->dh;
     }
 }
 
@@ -238,28 +243,41 @@ static void compute_tile_bbox(const CGTileCacheEntry* cge, s32 flip, SpriteBox* 
  * @brief Compute the tile bounding box from raw TileMapEntry data.
  *        Used by the ext render paths (mlt_obj_trans_ext, _cp3_ext, _rgb_ext).
  */
-static void compute_tile_bbox_ext(const TileMapEntry* trsptr, s32 count,
-                                  const u32* textbl, s32 flip, SpriteBox* out) {
-    out->min_x = 1e9f;  out->min_y = 1e9f;
-    out->max_x = -1e9f; out->max_y = -1e9f;
+static void compute_tile_bbox_ext(const TileMapEntry* trsptr, s32 count, const u32* textbl, s32 flip, SpriteBox* out) {
+    out->min_x = 1e9f;
+    out->min_y = 1e9f;
+    out->max_x = -1e9f;
+    out->max_y = -1e9f;
 
     f32 x = 0, y = 0;
     for (s32 i = 0; i < count; i++) {
-        if (flip & 0x8000) { x += trsptr[i].x; } else { x -= trsptr[i].x; }
-        if (flip & 0x4000) { y -= trsptr[i].y; } else { y += trsptr[i].y; }
+        if (flip & 0x8000) {
+            x += trsptr[i].x;
+        } else {
+            x -= trsptr[i].x;
+        }
+        if (flip & 0x4000) {
+            y -= trsptr[i].y;
+        } else {
+            y += trsptr[i].y;
+        }
 
         const TEX* texptr = (const TEX*)((uintptr_t)textbl + textbl[trsptr[i].code]);
         s32 dw = (texptr->wh & 0xE0) >> 2;
         s32 dh = (texptr->wh & 0x1C) * 2;
 
         f32 left = x - (dw * BOOL(flip & 0x8000));
-        f32 top  = y + (dh * BOOL(flip & 0x4000));
+        f32 top = y + (dh * BOOL(flip & 0x4000));
 
-        if (left      < out->min_x) out->min_x = left;
-        if (left + dw > out->max_x) out->max_x = left + dw;
+        if (left < out->min_x)
+            out->min_x = left;
+        if (left + dw > out->max_x)
+            out->max_x = left + dw;
         // Y: seqsStoreChip renders from (x,y) to (x+w, y-h) — tile grows downward
-        if (top       > out->max_y) out->max_y = top;
-        if (top  - dh < out->min_y) out->min_y = top - dh;
+        if (top > out->max_y)
+            out->max_y = top;
+        if (top - dh < out->min_y)
+            out->min_y = top - dh;
     }
 }
 
@@ -268,8 +286,7 @@ static void compute_tile_bbox_ext(const TileMapEntry* trsptr, s32 count,
  *
  * @return true if the HD override was drawn; false if no override exists.
  */
-static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index,
-                                   const CGTileCacheEntry* cge) {
+static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index, const CGTileCacheEntry* cge) {
     void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
     if (hd_tex == NULL) {
         return false;
@@ -279,8 +296,8 @@ static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index,
     compute_tile_bbox(cge, flip_flags, &box);
 
     /* Transform bounding box corners through the current matrix */
-    Vec3 tl_in  = {box.min_x, box.min_y, 0};
-    Vec3 br_in  = {box.max_x, box.max_y, 0};
+    Vec3 tl_in = { box.min_x, box.min_y, 0 };
+    Vec3 br_in = { box.max_x, box.max_y, 0 };
     Vec3 tl_out, br_out;
     njCalcPoint(NULL, &tl_in, &tl_out);
     njCalcPoint(NULL, &br_in, &br_out);
@@ -295,9 +312,8 @@ static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index,
      * — same conversion draw_quad applies to game sprites. */
     float screen_z = flPS2ConvScreenFZ(tl_out.z);
 
-    TextureUtil_DrawQuadEx(hd_tex, draw_x, draw_y, draw_w, draw_h, screen_z,
-                           (flip_flags & 0x8000) ? 1 : 0,
-                           (flip_flags & 0x4000) ? 1 : 0);
+    TextureUtil_DrawQuadEx(
+        hd_tex, draw_x, draw_y, draw_w, draw_h, screen_z, (flip_flags & 0x8000) ? 1 : 0, (flip_flags & 0x4000) ? 1 : 0);
 
     appRenewTempPriority(wk->position_z);
     return true;
@@ -308,8 +324,8 @@ static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index,
  *
  * @return true if the HD override was drawn; false if no override exists.
  */
-static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index,
-                                       const TileMapEntry* trsptr, s32 count, const u32* textbl) {
+static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index, const TileMapEntry* trsptr, s32 count,
+                                       const u32* textbl) {
     void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
     if (hd_tex == NULL) {
         return false;
@@ -319,8 +335,8 @@ static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index
     compute_tile_bbox_ext(trsptr, count, textbl, flip_flags, &box);
 
     /* Transform bounding box corners through the current matrix */
-    Vec3 tl_in  = {box.min_x, box.min_y, 0};
-    Vec3 br_in  = {box.max_x, box.max_y, 0};
+    Vec3 tl_in = { box.min_x, box.min_y, 0 };
+    Vec3 br_in = { box.max_x, box.max_y, 0 };
     Vec3 tl_out, br_out;
     njCalcPoint(NULL, &tl_in, &tl_out);
     njCalcPoint(NULL, &br_in, &br_out);
@@ -335,9 +351,8 @@ static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index
      * — same conversion draw_quad applies to game sprites. */
     float screen_z = flPS2ConvScreenFZ(tl_out.z);
 
-    TextureUtil_DrawQuadEx(hd_tex, draw_x, draw_y, draw_w, draw_h, screen_z,
-                           (flip_flags & 0x8000) ? 1 : 0,
-                           (flip_flags & 0x4000) ? 1 : 0);
+    TextureUtil_DrawQuadEx(
+        hd_tex, draw_x, draw_y, draw_w, draw_h, screen_z, (flip_flags & 0x8000) ? 1 : 0, (flip_flags & 0x4000) ? 1 : 0);
 
     appRenewTempPriority(wk->position_z);
     return true;
@@ -1172,7 +1187,7 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
             return;
         }
     }
-    
+
     cc.parts.group = 0;
     cc.parts.offset = wk->cg_number;
     ix = check_patcash_ex_trans(mt->cpat, cc.code);

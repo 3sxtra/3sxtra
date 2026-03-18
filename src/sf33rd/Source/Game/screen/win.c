@@ -97,7 +97,6 @@ s32 Loser_Scene() {
     return WIN_X;
 }
 
-
 /** @brief Spawn win-streak display objects ("1st WIN", "2nd WIN", etc.) based on current mode. */
 void Setup_Wins_OBJ() {
     if (Mode_Type == MODE_VERSUS) {

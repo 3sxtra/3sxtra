@@ -19,7 +19,8 @@ static void ta0_move();
 /** @brief Dispatch the stage-specific background handler via the registry. */
 static inline void ta_dispatch(void) {
     const StageBgCallbacks* bg = StageBg_Get((StageBgId)bg_w.bg_index);
-    if (bg) bg->on_tick();
+    if (bg)
+        bg->on_tick();
 }
 
 /** @brief Main entry point for stage background animation. */
