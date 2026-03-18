@@ -202,23 +202,13 @@ endif()
 # Source collection
 # ======================================
 
-file(GLOB_RECURSE GAME_SRC src/*.c)
+file(GLOB_RECURSE GAME_SRC src/*.c src/*.cpp)
 
-# Exclude legacy PS2 save system — replaced by native_save.c
-list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/PS2/mc/savesub\\.c$")
-list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/PS2/mc/mcsub\\.c$")
-list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdk/sdk_libmc\\.c$")
-# Exclude vendored zlib sources (now using system zlib)
-list(FILTER GAME_SRC EXCLUDE REGEX "src/zlib/")
+# Exclude platform-specific broadcast backends (added conditionally below)
+list(FILTER GAME_SRC EXCLUDE REGEX "src/port/win32/")
+list(FILTER GAME_SRC EXCLUDE REGEX "src/port/linux/")
 
 find_package(ZLIB REQUIRED)
-
-
-
-# Explicitly include Source/Common files (workaround for GLOB_RECURSE linking issue)
-file(GLOB COMMON_SRC src/sf33rd/Source/Common/*.c)
-
-set(GAME_SRC ${GAME_SRC} ${COMMON_SRC})
 
 # Disable clang-tidy for all third-party sources
 set_source_files_properties(src/port/win32/broadcast_spout.cpp
@@ -281,90 +271,10 @@ endif()
 # On RPi4, broadcast_pipewire.cpp is excluded (below), so broadcast.c uses the null backend.
 
 add_executable(3sx MACOSX_BUNDLE
-    ${GAME_SRC} ${BIN2OBJ_SRC} ${PORT_SRC}
-    # Explicitly added Source/Common files (CMake GLOB doesn't include them for unknown reason)
-    ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/MemMan.c
-    ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/PPGFile.c
-    ${CMAKE_SOURCE_DIR}/src/sf33rd/Source/Common/PPGWork.c
-    # --- sdl/renderer/ ---
-    src/port/sdl/renderer/sdl_texture_util.cpp
-    # --- sdl/input/ ---
-    src/port/sdl/input/control_mapping.cpp
-    src/port/sdl/input/controller_image.c
-    src/port/sdl/input/controller_image_overlay.c
-    # --- ControllerImage library (vendored) ---
+    ${GAME_SRC}
+    # --- Third-party sources (outside src/) ---
     ${THIRD_PARTY_DIR}/controllerimage/src/controllerimage.c
-    # --- port/ (unchanged locations) ---
-    src/port/input_definition.cpp
-    src/port/ui/replay_picker.cpp
-    src/port/char_data.c
-    src/port/broadcast.c
-    src/port/tracy_gpu.cpp
-    # --- sdl/netplay/ ---
-    src/port/sdl/netplay/sdl_netplay_ui.cpp
-    src/port/sdl/netstats_renderer.c
-    # --- cJSON (vendored) ---
     ${THIRD_PARTY_DIR}/cJSON/cJSON.c
-    # --- sdl/app/ ---
-    src/port/sdl/app/sdl_app_input.c
-    src/port/sdl/app/sdl_app_scale.c
-    src/port/sdl/app/sdl_app_bezel.c
-    src/port/sdl/app/sdl_app_debug_hud.c
-    src/port/sdl/app/sdl_app_screenshot.c
-    src/port/sdl/app/sdl_app_shader_config.c
-    # --- sdl/renderer/ ---
-    src/port/sdl/renderer/sdl_game_renderer_gl_context.c
-    src/port/sdl/renderer/sdl_game_renderer_gl_resources.c
-    src/port/sdl/renderer/sdl_game_renderer_gl_draw.c
-    src/port/sdl/renderer/sdl_game_renderer_sdl.c
-    src/port/sdl/renderer/sdl_game_renderer_sdl_sw.c
-    src/port/sdl/renderer/sdl_game_renderer_gpu_lz77.c
-    src/port/sdl/renderer/sdl_text_renderer_sdl.c
-    # --- sdl/rmlui/ ---
-    src/port/sdl/rmlui/rmlui_wrapper.cpp
-    src/port/sdl/rmlui/rmlui_mods_menu.cpp
-    src/port/sdl/rmlui/rmlui_shader_menu.cpp
-    src/port/sdl/rmlui/rmlui_stage_config.cpp
-    src/port/sdl/rmlui/rmlui_input_display.cpp
-    src/port/sdl/rmlui/rmlui_frame_display.cpp
-    src/port/sdl/rmlui/rmlui_control_mapping.cpp
-    src/port/sdl/rmlui/rmlui_training_menu.cpp
-    src/port/sdl/rmlui/rmlui_training_hud.cpp
-    src/port/sdl/rmlui/rmlui_netplay_ui.cpp
-    src/port/sdl/rmlui/rmlui_game_hud.cpp
-    src/port/sdl/rmlui/rmlui_mode_menu.cpp
-    src/port/sdl/rmlui/rmlui_option_menu.cpp
-    src/port/sdl/rmlui/rmlui_game_option.cpp
-    src/port/sdl/rmlui/rmlui_title_screen.cpp
-    src/port/sdl/rmlui/rmlui_win_screen.cpp
-    src/port/sdl/rmlui/rmlui_continue.cpp
-    src/port/sdl/rmlui/rmlui_gameover.cpp
-    src/port/sdl/rmlui/rmlui_vs_result.cpp
-    src/port/screens/ms_continue.c
-    src/port/screens/ms_win.c
-    src/port/screens/ms_gameover.c
-    src/port/screens/ms_saver.c
-    src/port/sdl/rmlui/rmlui_memory_card.cpp
-    src/port/sdl/rmlui/rmlui_sound_menu.cpp
-    src/port/sdl/rmlui/rmlui_sysdir.cpp
-    src/port/sdl/rmlui/rmlui_network_lobby.cpp
-    src/port/sdl/rmlui/rmlui_casual_lobby.cpp
-    src/port/sdl/rmlui/rmlui_leaderboard.cpp
-    src/port/sdl/rmlui/rmlui_extra_option.cpp
-    src/port/sdl/rmlui/rmlui_training_menus.cpp
-    src/port/sdl/rmlui/rmlui_button_config.cpp
-    src/port/sdl/rmlui/rmlui_char_select.cpp
-    src/port/sdl/rmlui/rmlui_vs_screen.cpp
-    src/port/sdl/rmlui/rmlui_replay_picker.cpp
-    src/port/sdl/rmlui/rmlui_pause_overlay.cpp
-    src/port/sdl/rmlui/rmlui_trials_hud.cpp
-    src/port/sdl/rmlui/rmlui_copyright.cpp
-    src/port/sdl/rmlui/rmlui_name_entry.cpp
-    src/port/sdl/rmlui/rmlui_exit_confirm.cpp
-    src/port/sdl/rmlui/rmlui_attract_overlay.cpp
-    src/port/sdl/rmlui/rmlui_dev_overlay.cpp
-    src/port/sdl/rmlui/lua_engine_bridge.cpp
-    src/port/sdl/rmlui/lua_trials_loader.cpp
     # RmlUi backend sources (SDL3 platform + GL3/SDL/SDL_GPU renderers)
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
     ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
@@ -865,7 +775,7 @@ endif()
 
 include(CPack)
 
-target_sources(3sx PRIVATE src/port/sound/modded_bgm.c)
+
 
 # ======================================
 # Testing Framework (CMocka)

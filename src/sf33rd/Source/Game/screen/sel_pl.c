@@ -6,6 +6,8 @@
 #include "sf33rd/Source/Game/screen/sel_pl.h"
 #include "common.h"
 #include "constants.h"
+#include "main.h" /* TASK_MENU */
+#include "port/menu_screen.h"
 #include "port/rendering/renderer.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
@@ -152,12 +154,12 @@ const u8 Repeat_Time_Data[3] = { 26, 9, 7 };
 
 const u8 Repeat_Time_Data_Wife[3] = { 1, 1, 1 };
 
-/** @brief Main character-select dispatcher — run controls, per-player select, and return exit flag. */
-s16 Select_Player() {
+/** @brief Per-frame body of the character select — called by ms_char_select.c on_tick. */
+void Sel_PL_Control_Frame() {
     SEL_PL_X = 0;
 
     if (Break_Into) {
-        return 0;
+        return;
     }
 
     Scene_Cut = Cut_Cut_Cut();
@@ -168,6 +170,29 @@ s16 Select_Player() {
     ID = 1;
     Sel_PL();
     Time_Over = false;
+
+    if (Check_Exit_Check() == 0 && Debug_w[DEBUG_TIME_STOP] == -1) {
+        SEL_PL_X = 0;
+    }
+}
+
+/** @brief Main character-select dispatcher — thin wrapper around MenuScreen registry. */
+s16 Select_Player() {
+    struct _TASK* tp = &task[TASK_MENU];
+
+    if (!MenuScreen_IsActive()) {
+        SEL_PL_X = 0;
+        MenuScreen_Goto(MENU_SCREEN_CHAR_SELECT);
+    }
+
+    MenuScreen_Tick(tp);
+
+    /* Exit_7th() sets SEL_PL_X = 1 when the char select is complete.
+     * We detect that here and exit the registry (no MenuScreen_RequestFadeOut
+     * because the char select manages its own fade transition internally). */
+    if (SEL_PL_X == 1) {
+        MenuScreen_ExitToLegacy(tp);
+    }
 
     if (Check_Exit_Check() == 0 && Debug_w[DEBUG_TIME_STOP] == -1) {
         SEL_PL_X = 0;

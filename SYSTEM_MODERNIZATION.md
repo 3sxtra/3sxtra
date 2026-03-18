@@ -8,12 +8,13 @@ This document outlines the potential for migrating these legacy monolithic subsy
 
 ## Engine Components (Sorted by Risk: LOW to HIGH)
 
-### 1. Player/Character Select Hub (`screen/sel_pl.c`)
+### 1. ✅ Player/Character Select Hub (`screen/sel_pl.c`)
 This is the most obvious candidate. Just like the menu, the character select screen is a massive UI state machine involving cursors, timers, and sequence transitions.
 
 *   **Risk Level:** **LOW**. This is pure UI flow and has absolutely zero impact on in-match fighting mechanics or frame data.
-*   **Current State:** It is heavily layered with jump tables like `Sel_PL_Jmp_Tbl`, `PL_Sel_Jmp_Tbl`, `Face_Jmp_Tbl`, `OBJ_Jmp_Tbl`, and `Handicap_Jmp_Tbl` (spanning over 2,000 lines). State is tracked in arbitrary global arrays like `SP_No[]`, `Face_No[]`, and `SO_No[]`.
-*   **Modernization:** You could build a `CharSelectPhase` registry. The selection sequence (Select Character -> Select Super Art -> Select Handicap/Color) could be modeled as distinct states with `on_enter` (setup cursor), `on_tick` (handle directional input and selections), and `on_exit` (lock in choice, load assets). You could even reuse the new cursor and fade helpers created for the menu migration.
+*   **Current State:** ~~It is heavily layered with jump tables like `Sel_PL_Jmp_Tbl`, `PL_Sel_Jmp_Tbl`, `Face_Jmp_Tbl`, `OBJ_Jmp_Tbl`, and `Handicap_Jmp_Tbl` (spanning over 2,000 lines). State is tracked in arbitrary global arrays like `SP_No[]`, `Face_No[]`, and `SO_No[]`.~~ **REGISTERED.** `sel_pl.c` wrapped via `ms_char_select.c` delegation into the `MenuScreen` registry (`MENU_SCREEN_CHAR_SELECT`).
+*   **Status:** **COMPLETED.** Character select screen registered in the `MenuScreen` enum. The `ms_char_select.c` delegation wrapper follows the proven `ms_demo.c` pattern — `on_enter`/`on_tick`/`on_exit` callbacks delegate to `Select_Player()`. Internal jump tables and state arrays remain untouched in `sel_pl.c`.
+*   **Migration Pattern:** Delegation wrapper — `Select_Player()` continues to be called synchronously from `Game01()`, with registry presence for lifecycle documentation and enum completeness.
 
 ### 2. ✅ Transient Flow Screens (`screen/win.c`, `screen/continue.c`, `screen/gameover.c`, `system/saver.c`)
 These linear presentation screens have been **migrated to the `MenuScreen` registry** (March 2026).
@@ -24,12 +25,13 @@ These linear presentation screens have been **migrated to the `MenuScreen` regis
 *   **New Enum Values:** `MENU_SCREEN_CONTINUE`, `MENU_SCREEN_WIN`, `MENU_SCREEN_LOSER`, `MENU_SCREEN_GAMEOVER`, `MENU_SCREEN_SAVER`
 *   **Note:** The linker flags in `CMakeLists.txt` use `-Wl,--start-group`/`--end-group` which is GCC/ld-specific; will need adjustment if targeting MSVC.
 
-### 3. Pre-Game Flow Screens and Demos (`screen/entry.c`, `screen/ranking.c`, `demo/demo02.c`)
-Operating alongside the transient post-game screens, the coin-entry, leaderboard rankings, and attract mode demos use identical architecture.
+### 3. ✅ Pre-Game Flow Screens and Demos (`screen/ranking.c`, `demo/demo02.c`)
+Operating alongside the transient post-game screens, the leaderboard rankings and attract mode demos use identical architecture.
 
 *   **Risk Level:** **LOW**. Strictly out-of-match UI/flow systems.
-*   **Current State:** Driven by `Main_Jmp_Tbl` arrays mapped to state indices (e.g., `E_No[]`, `D_No[]`).
-*   **Modernization:** These screens represent the "idle loop" of the arcade cabinet. Converting them to data-driven flow screens would harmonize the entire out-of-match experience (Entry -> Demo -> Ranking -> Entry) into a single, cohesive `MenuScreen`-style loop.
+*   **Current State:** ~~Driven by `Main_Jmp_Tbl` arrays mapped to state indices (e.g., `D_No[]`).~~ **MIGRATED.** `ranking.c` and `demo02.c` converted to thin wrappers around `MenuScreen` registry callbacks (`ms_ranking.c`, `ms_demo.c`).
+*   **Status:** **COMPLETED.** Ranking and demo screens migrated. `entry.c` excluded — requires TASK system refactor (Item #8).
+*   **Migration Pattern:** Thin wrapper delegates to legacy dispatchers which manage their own `D_No[]` state, matching the proven `Continue_Scene()`/`Winner_Scene()` pattern.
 
 ### 4. Stage Background Animations (`stage/bg*.c`)
 The game contains over twenty distinct background animation files (e.g., `bg000.c`, `bg010.c`, `bns_bg.c`), all of which reinvent the wheel for layer scrolling and intro panning.

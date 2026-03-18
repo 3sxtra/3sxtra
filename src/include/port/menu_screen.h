@@ -75,6 +75,13 @@ typedef enum MenuScreenId {
     MENU_SCREEN_GAMEOVER,
     MENU_SCREEN_SAVER,
 
+    /* --- Pre-Game Flow Screens --- */
+    MENU_SCREEN_RANKING,
+    MENU_SCREEN_DEMO,
+
+    /* --- Character Select Screen --- */
+    MENU_SCREEN_CHAR_SELECT,
+
     MENU_SCREEN_COUNT
 } MenuScreenId;
 

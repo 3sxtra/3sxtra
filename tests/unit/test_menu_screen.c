@@ -288,6 +288,10 @@ static void test_cursor_max_positive(void **state) {
         /* Only check screens that are actually registered (have a name) */
         if (scr->name == NULL) continue;
 
+        /* Non-interactive screens (ranking, demo, saver, etc.) intentionally
+         * have cursor_max == 0 — they have no selectable items. */
+        if (scr->cursor_max == 0) continue;
+
         assert_true(scr->cursor_max > 0);
     }
 }

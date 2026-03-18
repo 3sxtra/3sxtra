@@ -5,6 +5,8 @@
 
 #include "sf33rd/Source/Game/screen/ranking.h"
 #include "common.h"
+#include "main.h"
+#include "port/menu_screen.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/demo/demo02.h"
 #include "sf33rd/Source/Game/effect/eff58.h"
@@ -33,12 +35,22 @@ RANK_DATA Ranking_Data[20];
 // forward declaration
 const RANK_DATA Score_Ranking_Table[20];
 
-/** @brief Main ranking dispatcher — run the current sub-table, draw BG, check for early exit. */
+/** @brief Main ranking dispatcher — thin wrapper around MenuScreen registry. */
 s32 Ranking() {
-    void (*main_jmp_tbl[2])() = { Ranking_01, Ranking_00 };
+    struct _TASK* tp = &task[TASK_MENU];
 
-    Ranking_X = 0;
-    main_jmp_tbl[D_No[0]]();
+    if (!MenuScreen_IsActive()) {
+        Ranking_X = 0;
+        MenuScreen_Goto(MENU_SCREEN_RANKING);
+    }
+
+    MenuScreen_Tick(tp);
+
+    if (MenuScreen_GetPhase() == MENU_PHASE_EXIT) {
+        MenuScreen_ExitToLegacy(tp);
+        Ranking_X = 1;
+    }
+
     BG_Draw_System();
     if ((Check_Exit_Check() == 0) && (Debug_w[DEBUG_TIME_STOP] == -1)) {
         Ranking_X = 0;

@@ -19,6 +19,7 @@
 
 /* Phase 3 RmlUi bypass */
 #include "main.h"
+#include "port/menu_screen.h"
 #include "port/sdl/rmlui/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "port/sdl/rmlui/rmlui_continue.h"
@@ -1946,6 +1947,9 @@ void Next_Title_Sub() {
         rmlui_copyright_hide();
     }
     Before_Select_Sub();
+    /* Clear any stale MenuScreen state (e.g. RANKING/DEMO still active
+     * during the attract loop when a coin is inserted). */
+    MenuScreen_ExitToLegacy(&task[TASK_MENU]);
     cpReadyTask(TASK_ENTRY, Entry_Task);
 }
 

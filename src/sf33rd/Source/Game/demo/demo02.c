@@ -10,6 +10,8 @@
  */
 
 #include "common.h"
+#include "main.h"
+#include "port/menu_screen.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
@@ -23,8 +25,6 @@
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 
-static void Demo00();
-static void Demo01();
 void Setup_Demo_Arts();
 static void Setup_Select_Demo_PL();
 
@@ -32,21 +32,27 @@ static void Setup_Select_Demo_PL();
 #define DEMO_STAGE_COUNT 4
 #define DEMO_ARTS_COUNT 8
 
-/** @brief Top-level demo dispatcher — routes to Demo00 or Demo01 via jump table. */
+/** @brief Top-level demo dispatcher — thin wrapper around MenuScreen registry. */
 s32 Play_Demo() {
-    void (*main_jmp_tbl[2])() = { Demo00, Demo01 };
+    struct _TASK* tp = &task[TASK_MENU];
 
-    Next_Demo = 0;
+    if (!MenuScreen_IsActive()) {
+        Next_Demo = 0;
+        MenuScreen_Goto(MENU_SCREEN_DEMO);
+    }
 
-    if (D_No[0] >= 0 && D_No[0] < 2) {
-        main_jmp_tbl[D_No[0]]();
+    MenuScreen_Tick(tp);
+
+    if (MenuScreen_GetPhase() == MENU_PHASE_EXIT) {
+        MenuScreen_ExitToLegacy(tp);
+        Next_Demo = 1;
     }
 
     return Next_Demo;
 }
 
 /** @brief Demo sub-sequence 0 — quick start: set up gameplay and run until timeout. */
-static void Demo00() {
+void Demo00() {
     Play_Game = 1;
 
     switch (D_No[1]) {
@@ -161,7 +167,7 @@ static void Demo00() {
 }
 
 /** @brief Demo sub-sequence 1 — full attract: character select then gameplay. */
-static void Demo01() {
+void Demo01() {
     if (D_No[1] >= 2) {
         Play_Game = 1;
     }
