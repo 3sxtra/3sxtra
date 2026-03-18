@@ -33,12 +33,13 @@ Operating alongside the transient post-game screens, the leaderboard rankings an
 *   **Status:** **COMPLETED.** Ranking and demo screens migrated. `entry.c` excluded — requires TASK system refactor (Item #8).
 *   **Migration Pattern:** Thin wrapper delegates to legacy dispatchers which manage their own `D_No[]` state, matching the proven `Continue_Scene()`/`Winner_Scene()` pattern.
 
-### 4. Stage Background Animations (`stage/bg*.c`)
+### 4. 🔧 Stage Background Animations (`stage/bg*.c`)
 The game contains over twenty distinct background animation files (e.g., `bg000.c`, `bg010.c`, `bns_bg.c`), all of which reinvent the wheel for layer scrolling and intro panning.
 
 *   **Risk Level:** **LOW**. Background visuals have zero impact on hitbox collision, hurtboxes, or character frame data. Safe visual-only refactoring.
-*   **Current State:** Each stage uses a bespoke `bg_jmp` array (e.g., `bg0002_jmp[3] = { bg0001_init00, bg0000_demo, bg_base_move_common }`). Similar to `TASK`, the state of the background is tracked via `bgw_ptr->r_no_0` and nested `switch/case` fallthroughs.
-*   **Modernization:** These dozens of bespoke implementations could be replaced by a single, generic `StageBackground` data structure that defines keyframes, scroll velocities, and parallax depths, entirely removing the need for 20+ duplicated state machines.
+*   **Current State:** **REGISTERED.** `StageBgId` enum and `StageBgCallbacks` registry created (`stage_bg_registry.h/.c`). All 22 stages have self-registering wrappers in `src/port/stage_bg/sb_*.c` using `__attribute__((constructor))`. Each wrapper delegates `on_enter`/`on_tick` to the original `BG0xx()` function. Internal jump tables and state arrays remain untouched in each `bg*.c`.
+*   **Next Step:** Wire `StageBg_Get()` into `tate00.c` to replace the hard-coded `ta_move_tbl[22]` dispatch table. The existing `bg*.c` files continue to own all internal state — the registry only standardizes the top-level dispatch.
+*   **New Files:** `src/port/stage_bg_registry.h`, `src/port/stage_bg_registry.c`, `src/port/stage_bg/sb_gill.c`, `sb_alex.c`, `sb_ryu.c`, `sb_yun.c`, `sb_dudley.c`, `sb_necro.c`, `sb_hugo.c`, `sb_ibuki.c`, `sb_elena.c`, `sb_oro.c`, `sb_yang.c`, `sb_sean.c`, `sb_urien.c`, `sb_akuma.c`, `sb_chunli.c`, `sb_makoto.c`, `sb_necro_alt.c`, `sb_remy.c`, `sb_bonus.c`, `sb_bonus2.c`
 
 ### 5. Sound Effect Dispatch (`sound/se_data.c`)
 While not a continuous state machine, the Sound system utilizes a massive 1024-entry global function pointer array (`sound_effect_request[]`) to map generic audio request IDs to specific internal routines (`Se_Myself`, `Se_Shock`, `Se_Let`).

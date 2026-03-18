@@ -6,39 +6,21 @@
 #include "sf33rd/Source/Game/stage/tate00.h"
 #include "common.h"
 #include "port/mods/modded_stage.h"
+#include "port/stage_bg_registry.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/stage/bg.h"
-#include "sf33rd/Source/Game/stage/bg000.h"
-#include "sf33rd/Source/Game/stage/bg010.h"
-#include "sf33rd/Source/Game/stage/bg020.h"
-#include "sf33rd/Source/Game/stage/bg030.h"
-#include "sf33rd/Source/Game/stage/bg040.h"
-#include "sf33rd/Source/Game/stage/bg050.h"
-#include "sf33rd/Source/Game/stage/bg060.h"
-#include "sf33rd/Source/Game/stage/bg070.h"
-#include "sf33rd/Source/Game/stage/bg080.h"
-#include "sf33rd/Source/Game/stage/bg090.h"
-#include "sf33rd/Source/Game/stage/bg100.h"
-#include "sf33rd/Source/Game/stage/bg120.h"
-#include "sf33rd/Source/Game/stage/bg130.h"
-#include "sf33rd/Source/Game/stage/bg140.h"
-#include "sf33rd/Source/Game/stage/bg150.h"
-#include "sf33rd/Source/Game/stage/bg160.h"
-#include "sf33rd/Source/Game/stage/bg180.h"
-#include "sf33rd/Source/Game/stage/bg190.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
-#include "sf33rd/Source/Game/stage/bns_bg2.h"
-#include "sf33rd/Source/Game/stage/bonus_bg.h"
-
-// ⚡ Bolt: const — place dispatch table in .rodata (read-only memory)
-static void (*const ta_move_tbl[22])() = { BG000, BG010, BG020, BG030, BG040,    BG050,    BG060, BG070,
-                                           BG080, BG090, BG100, BG010, BG120,    BG130,    BG140, BG150,
-                                           BG160, BG180, BG180, BG190, Bonus_bg, Bonus_bg2 };
 
 static void ta0_init00();
 static void ta0_init01();
 static void ta0_init02();
 static void ta0_move();
+
+/** @brief Dispatch the stage-specific background handler via the registry. */
+static inline void ta_dispatch(void) {
+    const StageBgCallbacks* bg = StageBg_Get((StageBgId)bg_w.bg_index);
+    if (bg) bg->on_tick();
+}
 
 /** @brief Main entry point for stage background animation. */
 void TATE00() {
@@ -66,14 +48,14 @@ static void ta0_init01() {
     bg_w.bg_routine++;
     akebono_initialize();
     if (!ModdedStage_IsRenderingDisabled()) {
-        ta_move_tbl[bg_w.bg_index]();
+        ta_dispatch();
     }
 }
 
 /** @brief Stage init phase 2 — run the stage-specific handler. */
 static void ta0_init02() {
     bg_w.bg_routine++;
-    ta_move_tbl[bg_w.bg_index]();
+    ta_dispatch();
 }
 
 /** @brief Main per-frame stage animation tick. */
@@ -81,7 +63,7 @@ static void ta0_move() {
     /* Skip stage-specific animation handlers when all stage rendering is disabled.
      * Scroll state is kept alive via Scrn_Renew/Irl_*. */
     if (!ModdedStage_IsRenderingDisabled()) {
-        ta_move_tbl[bg_w.bg_index]();
+        ta_dispatch();
     }
 
     if (bg_w.quake_x_index > 0) {
