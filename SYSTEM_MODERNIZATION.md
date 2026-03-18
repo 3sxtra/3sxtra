@@ -33,12 +33,12 @@ Operating alongside the transient post-game screens, the leaderboard rankings an
 *   **Status:** **COMPLETED.** Ranking and demo screens migrated. `entry.c` excluded — requires TASK system refactor (Item #8).
 *   **Migration Pattern:** Thin wrapper delegates to legacy dispatchers which manage their own `D_No[]` state, matching the proven `Continue_Scene()`/`Winner_Scene()` pattern.
 
-### 4. 🔧 Stage Background Animations (`stage/bg*.c`)
+### 4. ✅ Stage Background Animations (`stage/bg*.c`)
 The game contains over twenty distinct background animation files (e.g., `bg000.c`, `bg010.c`, `bns_bg.c`), all of which reinvent the wheel for layer scrolling and intro panning.
 
 *   **Risk Level:** **LOW**. Background visuals have zero impact on hitbox collision, hurtboxes, or character frame data. Safe visual-only refactoring.
-*   **Current State:** **REGISTERED.** `StageBgId` enum and `StageBgCallbacks` registry created (`stage_bg_registry.h/.c`). All 22 stages have self-registering wrappers in `src/port/stage_bg/sb_*.c` using `__attribute__((constructor))`. Each wrapper delegates `on_enter`/`on_tick` to the original `BG0xx()` function. Internal jump tables and state arrays remain untouched in each `bg*.c`.
-*   **Next Step:** Wire `StageBg_Get()` into `tate00.c` to replace the hard-coded `ta_move_tbl[22]` dispatch table. The existing `bg*.c` files continue to own all internal state — the registry only standardizes the top-level dispatch.
+*   **Status:** **COMPLETED.** `StageBgId` enum and `StageBgCallbacks` registry created (`stage_bg_registry.h/.c`). All 22 stages have self-registering wrappers in `src/port/stage_bg/sb_*.c` using `__attribute__((constructor))`. Each wrapper delegates `on_enter`/`on_tick` to the original `BG0xx()` function. Internal jump tables and state arrays remain untouched in each `bg*.c`. The hard-coded `ta_move_tbl[22]` dispatch table in `tate00.c` has been fully replaced by `ta_dispatch()` calling `StageBg_Get()`.
+*   **Migration Pattern:** Delegation wrapper — `BG0xx()` functions continue to manage their own internal state machines via `routine_no` arrays. The registry standardizes only the top-level dispatch. Shared stages handled by multi-registration (`sb_alex.c` → ALEX+KEN, `sb_necro_alt.c` → NECRO_ALT+TWELVE).
 *   **New Files:** `src/port/stage_bg_registry.h`, `src/port/stage_bg_registry.c`, `src/port/stage_bg/sb_gill.c`, `sb_alex.c`, `sb_ryu.c`, `sb_yun.c`, `sb_dudley.c`, `sb_necro.c`, `sb_hugo.c`, `sb_ibuki.c`, `sb_elena.c`, `sb_oro.c`, `sb_yang.c`, `sb_sean.c`, `sb_urien.c`, `sb_akuma.c`, `sb_chunli.c`, `sb_makoto.c`, `sb_necro_alt.c`, `sb_remy.c`, `sb_bonus.c`, `sb_bonus2.c`
 
 ### 5. Sound Effect Dispatch (`sound/se_data.c`)
@@ -48,10 +48,11 @@ While not a continuous state machine, the Sound system utilizes a massive 1024-e
 *   **Current State:** The relationship between a sound ID and its actual audio file / playback priority is completely obfuscated behind thousands of repetitive function point casts.
 *   **Modernization:** Converting this massive array into a defined structural registry (e.g., `SoundEvent { u16 adx_id; u8 priority; bool is_stereo; }`) would make adding new UI sounds or fixing audio bugs data-driven, rather than requiring code recompilation to change an opaque index.
 
-### 6. The Pause System (`system/pause.c` & `system/reset.c`)
+### 6. ✅ The Pause System (`system/pause.c` & `system/reset.c`)
 *   **Risk Level:** **MEDIUM**. While it pauses the game flow, it directly interacts with inputs and step-forward logic. Minor risk of introducing input-drop bugs across the pause/unpause boundary.
-*   **Current State:** Driven by `Main_Jmp_Tbl` and `Flash_Jmp_Tbl`, with state tracked via `r_no[]` arrays, handling the overlay visuals and frame-stepping logic.
-*   **Modernization:** The pause system interacts closely with the In-Game menus. Giving it a defined lifecycle (`on_enter` to snapshot the screen, `on_tick` to handle inputs/menus, `on_exit` to resume updates) would integrate nicely with the newly migrated pause menus (`MENU_SCREEN_PAUSE_MENU`). 
+*   **Status:** **COMPLETED.** Both `pause.c` and `reset.c` modernized (March 2026). Legacy stack-allocated `Main_Jmp_Tbl` and `Flash_Jmp_Tbl` function pointer arrays replaced with named state enums (`PauseState`, `FlashPauseState`, `ResetState`) and `switch` dispatch. All magic-number `r_no[]` assignments replaced with named constants (e.g., `PAUSE_MOVE`, `FLASH_2ND`, `RESET_WAIT`). Three accessor functions (`Pause_SetFlashPhase`, `Pause_SetFlashTimer`, `Pause_KillFlash`) added so `menu_input.c` no longer directly writes `task[TASK_PAUSE]` internals.
+*   **Migration Pattern:** In-place refactor — no delegation wrappers needed since these are TASK system entries, not menu screens. The existing `ms_pause_menu.c` (which handles the in-game pause *menu*) remains unchanged. Internal state machine logic (Pause_Check, Pause_Move, Flash_Pause_1st, etc.) is preserved identically.
+*   **Modified Files:** `src/sf33rd/Source/Game/system/pause.c`, `pause.h`, `src/sf33rd/Source/Game/system/reset.c`, `src/sf33rd/Source/Game/menu/menu_input.c`
 
 ### 7. Character Entrance Animations (`animation/appear.c`)
 The game handles walk-ons, car arrivals, and boss intros using the `appear_player()` dispatcher.

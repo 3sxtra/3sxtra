@@ -27,8 +27,25 @@
 /* RmlUi Phase 3 bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 
-#define PAUSE_JMP_COUNT 4
-#define FLASH_PAUSE_JMP_COUNT 5
+/** @brief Top-level pause task states (replaces Main_Jmp_Tbl indices). */
+typedef enum {
+    PAUSE_CHECK = 0, /**< Polling both players for pause/disconnect input */
+    PAUSE_MOVE  = 1, /**< Pause active — waiting for menu to signal exit  */
+    PAUSE_SLEEP = 2, /**< Sleeping (no-op)                                */
+    PAUSE_DIE   = 3, /**< Dead (no-op)                                    */
+    PAUSE_STATE_COUNT
+} PauseState;
+
+/** @brief Flash overlay sub-states (replaces Flash_Jmp_Tbl indices). */
+typedef enum {
+    FLASH_SLEEP = 0, /**< Idle — no flash overlay active           */
+    FLASH_1ST   = 1, /**< Initial delay before showing pause text  */
+    FLASH_2ND   = 2, /**< Displaying "1P PAUSE" / "2P PAUSE" text  */
+    FLASH_3RD   = 3, /**< No-op (killed / gap state)               */
+    FLASH_4TH   = 4, /**< Controller-disconnected state            */
+    FLASH_STATE_COUNT
+} FlashPauseState;
+
 #define PAUSE_HOLD_FRAMES 150 /**< Start must be held this many frames to pause (2.5s × 60fps) */
 
 u8 PAUSE_X;
@@ -57,12 +74,14 @@ static s32 Check_Play_Status(s16 PL_id);
 
 /** @brief Main pause task entry point — dispatches sub-states and flash effects. */
 void Pause_Task(struct _TASK* task_ptr) {
-    void (*Main_Jmp_Tbl[PAUSE_JMP_COUNT])(struct _TASK*) = { Pause_Check, Pause_Move, Pause_Sleep, Pause_Die };
-
     if (!nowSoftReset() && Mode_Type != MODE_NETWORK && Mode_Type != MODE_NORMAL_TRAINING &&
         Mode_Type != MODE_PARRY_TRAINING && Mode_Type != MODE_TRIALS) {
-        if (task_ptr->r_no[0] < PAUSE_JMP_COUNT) {
-            Main_Jmp_Tbl[task_ptr->r_no[0]](task_ptr);
+        switch ((PauseState)task_ptr->r_no[0]) {
+        case PAUSE_CHECK: Pause_Check(task_ptr); break;
+        case PAUSE_MOVE:  Pause_Move(task_ptr);  break;
+        case PAUSE_SLEEP: Pause_Sleep(task_ptr); break;
+        case PAUSE_DIE:   Pause_Die(task_ptr);   break;
+        default: break;
         }
         Flash_Pause(task_ptr);
     }
@@ -102,12 +121,14 @@ static void Pause_Die(struct _TASK* /* unused */) {};
 
 /** @brief Dispatch the flash-pause sub-state for displaying pause overlay messages. */
 static void Flash_Pause(struct _TASK* task_ptr) {
-    void (*Flash_Jmp_Tbl[FLASH_PAUSE_JMP_COUNT])(
-        struct _TASK*) = { Flash_Pause_Sleep, Flash_Pause_1st, Flash_Pause_2nd, Flash_Pause_3rd, Flash_Pause_4th };
-
     if (Pause_Down != 0) {
-        if (task_ptr->r_no[2] < FLASH_PAUSE_JMP_COUNT) {
-            Flash_Jmp_Tbl[task_ptr->r_no[2]](task_ptr);
+        switch ((FlashPauseState)task_ptr->r_no[2]) {
+        case FLASH_SLEEP: Flash_Pause_Sleep(task_ptr); break;
+        case FLASH_1ST:   Flash_Pause_1st(task_ptr);   break;
+        case FLASH_2ND:   Flash_Pause_2nd(task_ptr);   break;
+        case FLASH_3RD:   Flash_Pause_3rd(task_ptr);   break;
+        case FLASH_4TH:   Flash_Pause_4th(task_ptr);   break;
+        default: break;
         }
     }
 }
@@ -118,7 +139,7 @@ static void Flash_Pause_Sleep(struct _TASK* /* unused */) {}
 /** @brief Flash pause 1st phase — initial delay before showing the pause message. */
 static void Flash_Pause_1st(struct _TASK* task_ptr) {
     if (--task_ptr->free[0] == 0) {
-        task_ptr->r_no[2] = 2;
+        task_ptr->r_no[2] = FLASH_2ND;
         task_ptr->free[0] = 60;
     }
 }
@@ -136,7 +157,7 @@ static void Flash_Pause_2nd(struct _TASK* task_ptr) {
         return;
     }
 
-    task_ptr->r_no[2] = 1;
+    task_ptr->r_no[2] = FLASH_1ST;
     task_ptr->free[0] = 30;
 }
 
@@ -260,14 +281,14 @@ static void Exit_Pause(struct _TASK* task_ptr) {
  * @param task_ptr    The pause task.
  * @param flash_phase Flash sub-state: 1 = standard pause text, 4 = controller-disconnected.
  */
-static void setup_pause_common(struct _TASK* task_ptr, u8 flash_phase) {
+static void setup_pause_common(struct _TASK* task_ptr, FlashPauseState flash_phase) {
     s16 ix;
 
     SE_selected();
     Pause_Down = 1;
     Game_pause = 0x81;
-    task_ptr->r_no[0] = 1;
-    task_ptr->r_no[2] = flash_phase;
+    task_ptr->r_no[0] = PAUSE_MOVE;
+    task_ptr->r_no[2] = (u8)flash_phase;
     task_ptr->free[0] = 1;
     cpReadyTask(TASK_MENU, Menu_Task);
     task[TASK_MENU].r_no[0] = 1;
@@ -286,12 +307,31 @@ static void setup_pause_common(struct _TASK* task_ptr, u8 flash_phase) {
 
 /** @brief Enter the standard pause state: freeze game, launch pause menu, dim BGM. */
 static void Setup_Pause(struct _TASK* task_ptr) {
-    setup_pause_common(task_ptr, 1);
+    setup_pause_common(task_ptr, FLASH_1ST);
 }
 
 /** @brief Enter the controller-disconnected pause state (similar to Setup_Pause but with phase 4 flash). */
 static void Setup_Come_Out(struct _TASK* task_ptr) {
-    setup_pause_common(task_ptr, 4);
+    setup_pause_common(task_ptr, FLASH_4TH);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  Accessor functions — decouple menu_input.c from TASK_PAUSE internals
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/** @brief Set the flash overlay sub-state (used by menu_input.c). */
+void Pause_SetFlashPhase(u8 phase) {
+    task[TASK_PAUSE].r_no[2] = phase;
+}
+
+/** @brief Set the flash overlay timer (used by menu_input.c). */
+void Pause_SetFlashTimer(u8 timer) {
+    task[TASK_PAUSE].free[0] = timer;
+}
+
+/** @brief Kill the flash overlay by setting it to the no-op state (used by menu_input.c exit path). */
+void Pause_KillFlash(void) {
+    task[TASK_PAUSE].r_no[2] = FLASH_3RD;
 }
 
 /** @brief Check whether the player is active in the current round (always 1 in VS mode). */

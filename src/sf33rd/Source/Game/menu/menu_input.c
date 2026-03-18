@@ -1495,7 +1495,7 @@ void Menu_Select(struct _TASK* task_ptr) {
                     Menu_Suicide[3] = 0;
                     task_ptr->r_no[1]++;
                     task_ptr->r_no[2] = 0;
-                    task[TASK_PAUSE].r_no[2] = 3;
+                    Pause_KillFlash();
                     break;
                 }
 
@@ -1635,8 +1635,8 @@ void Return_Pause_Sub(struct _TASK* task_ptr) {
     Menu_Suicide[1] = 0;
     Menu_Suicide[2] = 0;
     Menu_Suicide[3] = 1;
-    task[TASK_PAUSE].r_no[2] = 2;
-    task[TASK_PAUSE].free[0] = 1;
+    Pause_SetFlashPhase(2);
+    Pause_SetFlashTimer(1);
     task_ptr->r_no[1] = 1;
     task_ptr->r_no[2] = 1;
     Cursor_Y_Pos[0][0] = 1;
@@ -1649,7 +1649,7 @@ void Return_Pause_Sub(struct _TASK* task_ptr) {
 s32 Check_Pad_in_Pause(struct _TASK* task_ptr) {
     if (Interface_Type[Pause_ID] == 0) {
         task_ptr->r_no[1] = 4;
-        task[TASK_PAUSE].r_no[2] = 4;
+        Pause_SetFlashPhase(4);
         Menu_Suicide[0] = 1;
         Menu_Suicide[1] = 1;
         Menu_Suicide[2] = 0;

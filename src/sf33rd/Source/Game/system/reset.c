@@ -23,9 +23,17 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 
-#define RESET_JMP_COUNT 4
 #define RESET_STATUS_PENDING 0x62
 #define RESET_STATUS_TRIGGERED 0x63
+
+/** @brief Top-level reset task states (replaces Main_Jmp_Tbl indices). */
+typedef enum {
+    RESET_INIT  = 0, /**< Initialize — advance to move state      */
+    RESET_MOVE  = 1, /**< Monitor for reset button combination     */
+    RESET_WAIT  = 2, /**< Wait for pending loads, then soft-reset  */
+    RESET_SLEEP = 3, /**< Wait for buttons released before reinit  */
+    RESET_STATE_COUNT
+} ResetState;
 
 u8 Reset_Status[2];
 u8 RESET_X;
@@ -41,17 +49,20 @@ static void Check_Reset_IO(struct _TASK* /* unused */, s16 PL_id);
 
 /** @brief Main reset task entry point — processes I/O for both players, then dispatches sub-state. */
 void Reset_Task(struct _TASK* task_ptr) {
-    void (*Main_Jmp_Tbl[RESET_JMP_COUNT])() = { Reset_Init, Reset_Move, Reset_Wait, Reset_Sleep };
     Check_Reset_IO(task_ptr, 0);
     Check_Reset_IO(task_ptr, 1);
-    if (task_ptr->r_no[0] < RESET_JMP_COUNT) {
-        Main_Jmp_Tbl[task_ptr->r_no[0]](task_ptr);
+    switch ((ResetState)task_ptr->r_no[0]) {
+    case RESET_INIT:  Reset_Init(task_ptr);  break;
+    case RESET_MOVE:  Reset_Move(task_ptr);  break;
+    case RESET_WAIT:  Reset_Wait(task_ptr);  break;
+    case RESET_SLEEP: Reset_Sleep(task_ptr); break;
+    default: break;
     }
 }
 
 /** @brief Reset init state — advance to move state and clear reset flag. */
 static void Reset_Init(struct _TASK* task_ptr) {
-    task_ptr->r_no[0] += 1;
+    task_ptr->r_no[0] = RESET_MOVE;
     RESET_X = 0;
 }
 
@@ -68,7 +79,7 @@ static void Reset_Move(struct _TASK* task_ptr) {
     if (RESET_X) {
         ToneDown(0xFF, 0);
         sound_all_off();
-        task_ptr->r_no[0] = 2;
+        task_ptr->r_no[0] = RESET_WAIT;
         task_ptr->free[0] = Setup_Next_Disposal();
         task_ptr->r_no[1] = 0;
         Request_LDREQ_Break();
@@ -92,7 +103,7 @@ static void Reset_Wait(struct _TASK* task_ptr) {
 
     case 1:
         Soft_Reset_Sub();
-        task_ptr->r_no[0] += 1;
+        task_ptr->r_no[0] = RESET_SLEEP;
         break;
     }
 }
@@ -103,13 +114,13 @@ static void Reset_Sleep(struct _TASK* task_ptr) {
 
     if (Pause_ID == 0) {
         if (!(p1sw_0 & 0x4000)) {
-            task_ptr->r_no[0] = 0;
+            task_ptr->r_no[0] = RESET_INIT;
         }
     } else if (!(p2sw_0 & 0x4000)) {
-        task_ptr->r_no[0] = 0;
+        task_ptr->r_no[0] = RESET_INIT;
     }
 
-    if (task_ptr->r_no[0] == 0) {
+    if (task_ptr->r_no[0] == RESET_INIT) {
         checkAdxFileLoaded();
         checkSelObjFileLoaded();
     }
