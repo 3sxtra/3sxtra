@@ -8,7 +8,7 @@
  */
 
 #include "sf33rd/Source/Game/io/ioconv.h"
-#include "sf33rd/Source/Game/menu/menu_task_phases.h"
+#include "port/menu_task.h"
 #include "common.h"
 #include "main.h"
 #include "port/input_definition.h"
@@ -156,7 +156,7 @@ void keyConvert() {
     if ((save_w[Present_Mode].extra_option.contents[0][4]) && mpp_w.inGame && (Game_pause == 0)) {
         repeat_on = 1;
 
-        if ((task[TASK_MENU].condition == 1) && (task[TASK_MENU].r_no[0] != MTP_TRAINING)) {
+        if (MenuTask_IsActive() && (MenuTask_GetPhase() != MTP_TRAINING)) {
             repeat_on = 0;
         }
     }

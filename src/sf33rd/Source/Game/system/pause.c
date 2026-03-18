@@ -11,7 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/system/pause.h"
-#include "sf33rd/Source/Game/menu/menu_task_phases.h"
+#include "port/menu_task.h"
 #include "common.h"
 #include "main.h"
 #include "sf33rd/AcrSDK/common/pad.h"
@@ -315,7 +315,7 @@ static void setup_pause_common(struct _TASK* task_ptr, FlashPauseState flash_pha
     /* MTP_IDLE (1) tells the menu task to re-enter at its "idle" handler.
      * Note: value 1 is also used internally by After_Title() as a jump-table
      * index, but when written from here it means "resume from pause exit." */
-    task[TASK_MENU].r_no[0] = MTP_IDLE;
+    MenuTask_SetPhase(MTP_IDLE);
     Exit_Menu = 0;
 
     for (ix = 0; ix < 4; ix++) {

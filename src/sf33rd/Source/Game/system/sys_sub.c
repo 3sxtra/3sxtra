@@ -13,7 +13,7 @@
  */
 
 #include "sf33rd/Source/Game/system/sys_sub.h"
-#include "sf33rd/Source/Game/menu/menu_task_phases.h"
+#include "port/menu_task.h"
 #include "sf33rd/Source/Game/init_task_phases.h"
 #include "common.h"
 #include "main.h"
@@ -822,17 +822,15 @@ void cpRevivalTask() {
 
 /** @brief Check whether the menu task is active or in the correct training sub-state. */
 s32 Check_Menu_Task() {
-    struct _TASK* task_ptr = &task[TASK_MENU];
-
     if (Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_PARRY_TRAINING || Mode_Type == MODE_TRIALS) {
-        if (task[TASK_MENU].r_no[0] == MTP_IN_GAME && task[TASK_MENU].r_no[1] == MTSP_IN_GAME_ACTIVE) {
+        if (MenuTask_GetPhase() == MTP_IN_GAME && MenuTask_GetSubPhase() == MTSP_IN_GAME_ACTIVE) {
             return 1;
         }
 
         return 0;
     }
 
-    if (task_ptr->condition == 1) {
+    if (MenuTask_IsActive()) {
         return 1;
     }
 
@@ -1374,7 +1372,7 @@ static void Replay(s16 PL_id) {
         if (Mode_Type == MODE_REPLAY) {
             cpExitTask(TASK_PAUSE);
             cpReadyTask(TASK_MENU, Menu_Task);
-            task[TASK_MENU].r_no[0] = MTP_RESET;
+            MenuTask_SetPhase(MTP_RESET);
         }
 
         Demo_Time_Stop = 1;

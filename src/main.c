@@ -12,6 +12,7 @@
  */
 
 #include "main.h"
+#include "port/menu_task.h"
 #include "common.h"
 #include "netplay/netplay.h"
 #include "port/rendering/renderer.h"
@@ -411,7 +412,7 @@ static void game_step_0() {
         p3sw_0 = p3sw_buff;
         p4sw_0 = p4sw_buff;
 
-        if ((task[TASK_MENU].condition == 1) && (Mode_Type == MODE_PARRY_TRAINING) && (Play_Mode == 1)) {
+        if (MenuTask_IsActive() && (Mode_Type == MODE_PARRY_TRAINING) && (Play_Mode == 1)) {
             const u16 sw_buff = p2sw_0;
             p2sw_0 = p1sw_0;
             p1sw_0 = sw_buff;
