@@ -1893,7 +1893,6 @@ void Next_Title_Sub() {
     if (Demo_Flag == 0) {
         SsRequest(106);
     }
-
     TexRelease(600);
     TexRelease_OP();
     System_all_clear_Level_B();

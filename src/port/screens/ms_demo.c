@@ -44,6 +44,10 @@ static void ms_demo_tick(struct _TASK* tp) {
     /* When the legacy code signals completion, request exit */
     if (Next_Demo == 1) {
         MenuScreen_RequestFadeOut();
+        /* Clear the flag so the Play_Demo wrapper doesn't return 1 instantly
+         * before the fadeout completes. The wrapper will reset it to 1
+         * in MENU_PHASE_EXIT. */
+        Next_Demo = 0;
     }
 }
 

@@ -39,11 +39,16 @@ static void ms_ranking_tick(struct _TASK* tp) {
     /* When the legacy code signals completion, request exit */
     if (Ranking_X == 1) {
         MenuScreen_RequestFadeOut();
+        /* Clear the flag so the Ranking wrapper doesn't return 1 instantly
+         * before the fadeout completes. The wrapper will reset it to 1
+         * in MENU_PHASE_EXIT. */
+        Ranking_X = 0;
     }
 }
 
 static void ms_ranking_exit(struct _TASK* tp) {
-    /* Ranking_X was already set by the legacy dispatchers */
+    /* Ranking_X acts as both the internal completion flag (checked in tick)
+     * and the external return value (set in the generic wrapper exit or here). */
 }
 
 __attribute__((constructor)) static void register_ms_ranking(void) {
