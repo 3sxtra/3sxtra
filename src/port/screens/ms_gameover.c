@@ -60,6 +60,7 @@ static void ms_gameover_enter(struct _TASK* tp) {
         }
         /* Break_Com skip means we go straight to exit after some time */
         tp->free[1] = 0xFF; /* Marker to skip to phase transition logic */
+        G_Timer = 420;      /* ~7 seconds at 60fps */
     } else {
         tp->free[1] = 1; /* Go to wait for Next_Step */
     }
@@ -72,7 +73,7 @@ static void ms_gameover_tick(struct _TASK* tp) {
         case 1:
             if (Next_Step) {
                 tp->free[1] = 2;
-                G_Timer = 420; // 7 minutes?
+                G_Timer = 420; /* ~7 seconds at 60fps */
             }
             break;
 

@@ -71,35 +71,9 @@ s32 Winner_Scene() {
 s32 Loser_Scene() {
     struct _TASK* tp = &task[TASK_MENU];
 
-    // Initialize MenuScreen
-    if (!MenuScreen_IsActive() || (MenuScreen_IsActive() && tp->r_no[1] != MENU_SCREEN_LOSER)) {
-        WIN_X = 0;
-        MenuScreen_Goto(MENU_SCREEN_LOSER);
-        tp->r_no[1] = MENU_SCREEN_LOSER;
-    }
-
-    Scene_Cut = Cut_Cut_Loser();
-    MenuScreen_Tick(tp);
-
-    if (MenuScreen_GetPhase() == MENU_PHASE_EXIT) {
-        MenuScreen_ExitToLegacy(tp);
-        WIN_X = 1;
-    }
-
-    if ((Check_Exit_Check() == 0) && (Debug_w[DEBUG_TIME_STOP] == -1)) {
-        WIN_X = 0;
-    }
-
     if (Break_Into) {
         return 0;
     }
-
-    return WIN_X;
-}
-
-/** @brief Main loser-screen dispatcher — shares phases with Winner_Scene but uses Lose_2nd/3rd. */
-s32 Loser_Scene() {
-    struct _TASK* tp = &task[TASK_MENU];
 
     // Initialize MenuScreen
     if (!MenuScreen_IsActive() || (MenuScreen_IsActive() && tp->r_no[1] != MENU_SCREEN_LOSER)) {
@@ -120,12 +94,9 @@ s32 Loser_Scene() {
         WIN_X = 0;
     }
 
-    if (Break_Into) {
-        return 0;
-    }
-
     return WIN_X;
 }
+
 
 /** @brief Spawn win-streak display objects ("1st WIN", "2nd WIN", etc.) based on current mode. */
 void Setup_Wins_OBJ() {

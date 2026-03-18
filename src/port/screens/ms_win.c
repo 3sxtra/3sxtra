@@ -135,6 +135,13 @@ static void ms_win_tick(struct _TASK* tp) {
 
                 effect_58_init(0xE, 0x14, 2);
 
+                if (Debug_w[DEBUG_MY_CHAR_PL1]) {
+                    My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
+                }
+                if (Debug_w[DEBUG_MY_CHAR_PL2]) {
+                    My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
+                }
+
                 if (Mode_Type == MODE_ARCADE) {
                     Push_LDREQ_Queue_Player(Winner_id, My_char[Winner_id]);
                 }
