@@ -340,6 +340,10 @@ add_executable(3sx MACOSX_BUNDLE
     src/port/sdl/rmlui/rmlui_continue.cpp
     src/port/sdl/rmlui/rmlui_gameover.cpp
     src/port/sdl/rmlui/rmlui_vs_result.cpp
+    src/port/screens/ms_continue.c
+    src/port/screens/ms_win.c
+    src/port/screens/ms_gameover.c
+    src/port/screens/ms_saver.c
     src/port/sdl/rmlui/rmlui_memory_card.cpp
     src/port/sdl/rmlui/rmlui_sound_menu.cpp
     src/port/sdl/rmlui/rmlui_sysdir.cpp
@@ -474,9 +478,7 @@ target_link_libraries(3sx PRIVATE
     ZLIB::ZLIB
     ${LIBRASHADER_LIB}
     SDL3_shadercross::SDL3_shadercross
-    rmlui
-    rmlui_lua
-    rmlui_debugger
+    -Wl,--start-group rmlui rmlui_core rmlui_lua rmlui_debugger -Wl,--end-group
     lua_static
 )
 

@@ -68,6 +68,13 @@ typedef enum MenuScreenId {
     MENU_SCREEN_CHAR_CHANGE_IG,
     /* Pad_Come_Out is a no-op stub — not migrated */
 
+    /* --- Transient Flow Screens --- */
+    MENU_SCREEN_CONTINUE,
+    MENU_SCREEN_WIN,
+    MENU_SCREEN_LOSER,
+    MENU_SCREEN_GAMEOVER,
+    MENU_SCREEN_SAVER,
+
     MENU_SCREEN_COUNT
 } MenuScreenId;
 

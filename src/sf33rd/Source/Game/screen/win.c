@@ -25,16 +25,13 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub2.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
+#include "sf33rd/Source/Game/debug/Debug.h"
 
-static void Win_1st();
-static void Win_2nd();
-static void Win_3rd();
-static void Win_4th();
-static void Win_5th();
-static void Win_6th();
-static void Lose_2nd();
-static void Lose_3rd();
-static void Setup_Wins_OBJ();
+#include "main.h" /* For TASK_MENU enum */
+#include "port/menu_screen.h"
+
+void Setup_Wins_OBJ();
 
 #define WIN_JMP_COUNT 6
 
@@ -42,18 +39,25 @@ u8 WIN_X;
 
 /** @brief Main winner-screen dispatcher — runs the current phase and returns exit flag. */
 s32 Winner_Scene() {
-    void (*Win_Jmp_Tbl[WIN_JMP_COUNT])() = {
-        Win_1st, Win_2nd, Win_3rd, Win_4th, Win_5th, Win_6th,
-    };
+    struct _TASK* tp = &task[TASK_MENU];
 
     if (Break_Into) {
         return 0;
     }
 
-    WIN_X = 0;
+    // Initialize MenuScreen
+    if (!MenuScreen_IsActive() || (MenuScreen_IsActive() && tp->r_no[1] != MENU_SCREEN_WIN)) {
+        WIN_X = 0;
+        MenuScreen_Goto(MENU_SCREEN_WIN);
+        tp->r_no[1] = MENU_SCREEN_WIN;
+    }
+
     Scene_Cut = Cut_Cut_Cut();
-    if (M_No[0] < WIN_JMP_COUNT) {
-        Win_Jmp_Tbl[M_No[0]]();
+    MenuScreen_Tick(tp);
+
+    if (MenuScreen_GetPhase() == MENU_PHASE_EXIT) {
+        MenuScreen_ExitToLegacy(tp);
+        WIN_X = 1;
     }
 
     if ((Check_Exit_Check() == 0) && (Debug_w[DEBUG_TIME_STOP] == -1)) {
@@ -61,175 +65,25 @@ s32 Winner_Scene() {
     }
 
     return WIN_X;
-}
-
-/** @brief Win phase 1 — stop replay, clear effects, reload BG/textures for the winner's stage. */
-static void Win_1st() {
-    s16 ix;
-
-    Switch_Screen(0);
-    Play_Mode = 1;
-    Replay_Status[0] = 0;
-    Replay_Status[1] = 0;
-    M_No[0] += 1;
-    M_No[1] = 0;
-    Game_pause = 0;
-    BGM_Request(55);
-    Cover_Timer = 23;
-    All_Clear_Suicide();
-    base_y_pos = 40;
-
-    for (ix = 0; ix < 4; ix++) {
-        Unsubstantial_BG[ix] = 0;
-    }
-
-    System_all_clear_Level_B();
-    Purge_mmtm_area(4);
-    Make_texcash_of_list(4);
-    load_any_texture_patnum(0x7F30, 0xC, 0);
-    Setup_BG(0, 0x200, 0);
-    bg_etc_write(PL_Color_Data[My_char[Winner_id]]);
-    Setup_BG(2, 0x300, 0);
-    Setup_BG(1, 0x200, 0);
-    Setup_BG(3, 0x2C0, 0);
-
-    if (Play_Type == 0) {
-        Last_Selected_EM[Winner_id] = 1;
-    }
-
-    pulpul_stop();
-}
-
-/** @brief Win phase 2 — spawn victory UI effects, score labels, and win-streak objects. */
-static void Win_2nd() {
-    Switch_Screen(0);
-    M_No[0] += 1;
-
-    /* Score/win globals — always compute, even in RmlUi mode */
-    WGJ_Score = Continue_Coin[Winner_id] + Score[Winner_id][Play_Type];
-    WGJ_Win = Win_Record[Winner_id];
-
-    if (use_rmlui && rmlui_screen_winner) {
-        rmlui_win_screen_show();
-    } else {
-        spawn_effect_76(0x37, 1, 1);
-        spawn_effect_76(0x35, 3, 1);
-        spawn_effect_76(0x34, 3, 1);
-        spawn_effect_76(0x2B, 3, 1);
-        spawn_effect_76(0x3A, 3, 1);
-        spawn_effect_76(0x2C, 3, 1);
-
-        Order_Dir[0x2D] = 4;
-        spawn_effect_76(0x2D, 1, 0x1E);
-
-        spawn_effect_76(0x38, 6, 1);
-    }
-
-    /* Sparkle + character victory anim — always run */
-    effect_L1_init(1);
-    effect_L1_init(2);
-    effect_L1_init(3);
-    effect_L1_init(4);
-    effect_L1_init(5);
-    effect_L1_init(6);
-
-    if (!use_rmlui || !rmlui_screen_winner) {
-        Setup_Wins_OBJ();
-    }
-    effect_B8_init(WINNER, 0x3C);
-}
-
-/** @brief Win phase 3 — execute screen wipe transition and queue next-character load. */
-static void Win_3rd() {
-    switch (M_No[1]) {
-    case 0:
-        Switch_Screen(0);
-        M_No[1] += 1;
-        Clear_Flash_No();
-        Switch_Screen_Init(1);
-
-        break;
-
-    case 1:
-        if (Switch_Screen_Revival(1) != 0) {
-            M_No[0] += 1;
-            M_Timer = 90;
-            Forbid_Break = -1;
-            Ignore_Entry[LOSER] = 0;
-            Target_BG_X[2] = bg_w.bgw[2].wxy[0].disp.pos - 384;
-            Offset_BG_X[2] = 0;
-            Next_Step = 0;
-            bg_mvxy.a[0].sp = -0x100000;
-            bg_mvxy.d[0].sp = 0x800;
-
-            effect_58_init(0xE, 0x14, 2);
-
-            if (Debug_w[DEBUG_MY_CHAR_PL1]) {
-                My_char[0] = Debug_w[DEBUG_MY_CHAR_PL1] - 1;
-            }
-
-            if (Debug_w[DEBUG_MY_CHAR_PL2]) {
-                My_char[1] = Debug_w[DEBUG_MY_CHAR_PL2] - 1;
-            }
-
-            if (Mode_Type == MODE_ARCADE) {
-                Push_LDREQ_Queue_Player(Winner_id, My_char[Winner_id]);
-            }
-        }
-
-        break;
-    }
-}
-
-/** @brief Win phase 4 — timed delay before the next phase. */
-static void Win_4th() {
-    if (--M_Timer == 0) {
-        M_No[0] += 1;
-        M_No[1] = 0;
-        M_Timer = 0xAA;
-        Forbid_Break = 0;
-    }
-}
-
-/** @brief Win phase 5 — wait for scene-cut or timer expiry, then fade BGM and signal exit. */
-static void Win_5th() {
-    switch (M_No[1]) {
-    case 0:
-        if (Scene_Cut) {
-            M_Timer = 9;
-        }
-
-        if (M_Timer < 10) {
-            M_Timer = 9;
-            M_No[1] += 1;
-
-            if (Mode_Type == MODE_ARCADE) {
-                SsBgmFadeOut(0x1000);
-            }
-        }
-
-        break;
-    }
-
-    if (--M_Timer == 0) {
-        M_No[0] += 1;
-        WIN_X = 1;
-    }
-}
-
-/** @brief Win phase 6 — immediate exit (fallback). */
-static void Win_6th() {
-    WIN_X = 1;
 }
 
 /** @brief Main loser-screen dispatcher — shares phases with Winner_Scene but uses Lose_2nd/3rd. */
 s32 Loser_Scene() {
-    void (*Lose_Jmp_Tbl[WIN_JMP_COUNT])() = { Win_1st, Lose_2nd, Lose_3rd, Win_4th, Win_5th, Win_6th };
+    struct _TASK* tp = &task[TASK_MENU];
 
-    WIN_X = 0;
+    // Initialize MenuScreen
+    if (!MenuScreen_IsActive() || (MenuScreen_IsActive() && tp->r_no[1] != MENU_SCREEN_LOSER)) {
+        WIN_X = 0;
+        MenuScreen_Goto(MENU_SCREEN_LOSER);
+        tp->r_no[1] = MENU_SCREEN_LOSER;
+    }
+
     Scene_Cut = Cut_Cut_Loser();
-    if (M_No[0] < WIN_JMP_COUNT) {
-        Lose_Jmp_Tbl[M_No[0]]();
+    MenuScreen_Tick(tp);
+
+    if (MenuScreen_GetPhase() == MENU_PHASE_EXIT) {
+        MenuScreen_ExitToLegacy(tp);
+        WIN_X = 1;
     }
 
     if ((Check_Exit_Check() == 0) && (Debug_w[DEBUG_TIME_STOP] == -1)) {
@@ -243,50 +97,38 @@ s32 Loser_Scene() {
     return WIN_X;
 }
 
-/** @brief Lose phase 2 — spawn defeat UI effects (fewer objects than Win_2nd). */
-static void Lose_2nd() {
-    Switch_Screen(0);
-    M_No[0] += 1;
+/** @brief Main loser-screen dispatcher — shares phases with Winner_Scene but uses Lose_2nd/3rd. */
+s32 Loser_Scene() {
+    struct _TASK* tp = &task[TASK_MENU];
 
-    if (use_rmlui && rmlui_screen_winner) {
-        rmlui_win_screen_show();
-    } else {
-        spawn_effect_76(0x37, 1, 1);
-        spawn_effect_76(0x40, 3, 1);
-        spawn_effect_76(0x36, 3, 1);
-        spawn_effect_76(0x39, 3, 1);
-
-        Order_Dir[0x2D] = 4;
-        spawn_effect_76(0x2D, 1, 30);
+    // Initialize MenuScreen
+    if (!MenuScreen_IsActive() || (MenuScreen_IsActive() && tp->r_no[1] != MENU_SCREEN_LOSER)) {
+        WIN_X = 0;
+        MenuScreen_Goto(MENU_SCREEN_LOSER);
+        tp->r_no[1] = MENU_SCREEN_LOSER;
     }
 
-    effect_B8_init(WINNER, 0x3C);
-}
+    Scene_Cut = Cut_Cut_Loser();
+    MenuScreen_Tick(tp);
 
-/** @brief Lose phase 3 — execute screen wipe and advance to the timed delay. */
-static void Lose_3rd() {
-    switch (M_No[1]) {
-    case 0:
-        Switch_Screen(0);
-        M_No[1] += 1;
-        Clear_Flash_No();
-        Switch_Screen_Init(1);
-        break;
-
-    case 1:
-        if (Switch_Screen_Revival(1) != 0) {
-            M_No[0] += 1;
-            M_Timer = 90;
-            Forbid_Break = -1;
-            Ignore_Entry[LOSER] = 0;
-        }
-
-        break;
+    if (MenuScreen_GetPhase() == MENU_PHASE_EXIT) {
+        MenuScreen_ExitToLegacy(tp);
+        WIN_X = 1;
     }
+
+    if ((Check_Exit_Check() == 0) && (Debug_w[DEBUG_TIME_STOP] == -1)) {
+        WIN_X = 0;
+    }
+
+    if (Break_Into) {
+        return 0;
+    }
+
+    return WIN_X;
 }
 
 /** @brief Spawn win-streak display objects ("1st WIN", "2nd WIN", etc.) based on current mode. */
-static void Setup_Wins_OBJ() {
+void Setup_Wins_OBJ() {
     if (Mode_Type == MODE_VERSUS) {
         WGJ_Win = VS_Win_Record[Winner_id];
     } else {
