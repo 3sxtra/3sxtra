@@ -14,7 +14,7 @@
 
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "port/menu_task.h"
-#include "sf33rd/Source/Game/init_task_phases.h"
+#include "port/init_task.h"
 #include "common.h"
 #include "main.h"
 #include "port/menu_screen.h"
@@ -276,6 +276,10 @@ bool Is_Training_Hitbox_Display_Enabled() {
 }
 
 bool Cut_Cut_Cut() {
+    if (Is_Training_Mode(Mode_Type)) {
+        return true;
+    }
+
     if (Demo_Flag == 0) {
         return false;
     }
@@ -1107,10 +1111,8 @@ void Soft_Reset_Sub() {
     cpExitTask(TASK_SAVER);
     cpExitTask(TASK_PAUSE);
     Reset_Sub0();
-    task[TASK_INIT].r_no[0] = ITP_RUNNING;
-    task[TASK_INIT].r_no[1] = 0;
-    task[TASK_INIT].r_no[2] = 0;
-    task[TASK_INIT].r_no[3] = 0;
+    InitTask_SetPhase(ITP_RUNNING);
+    InitTask_ResetSubPhases();
     vm_w.Request = 0;
     vm_w.Access = 0;
 }

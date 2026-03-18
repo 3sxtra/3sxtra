@@ -16,7 +16,7 @@
 
 #include "sf33rd/Source/Game/game.h"
 #include "port/menu_task.h"
-#include "sf33rd/Source/Game/init_task_phases.h"
+#include "port/init_task.h"
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */
@@ -1900,12 +1900,12 @@ void Next_Title_Sub() {
     Purge_mmtm_area(6);
     G_Timer = 0;
 
+    InitTask_ClearAllRNo();
     for (ix = 0; ix < 4; ix++) {
         vm_w.r_no[ix] = 0;
         G_No[ix] = 0;
         E_No[ix] = 0;
         D_No[ix] = 0;
-        task[TASK_INIT].r_no[ix] = 0;
     }
 
     G_No[0] = 2;
@@ -1918,7 +1918,7 @@ void Next_Title_Sub() {
     E_No[2] = 3;        /* ... and skip to default → Exit_Title_Sub_Entry() immediately */
     Break_Into = 0;     /* What Entry_01 case 0 would have set */
     title_tex_flag = 0; /* Title texture was never loaded */
-    task[TASK_INIT].r_no[0] = ITP_RUNNING;
+    InitTask_SetPhase(ITP_RUNNING);
     Demo_Flag = 1;
     Game_pause = 0;
     judge_flag = 0;

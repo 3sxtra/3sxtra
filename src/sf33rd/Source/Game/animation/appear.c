@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/animation/appear.h"
+#include "port/appear_registry.h"
 #include "common.h"
 #include "sf33rd/Source/Game/animation/app_data.h"
 #include "sf33rd/Source/Game/effect/eff09.h"
@@ -45,7 +46,7 @@ s16 appear_work[] = { 0, 0 };
 s16 Appear_end;
 
 /* === Named Constants === */
-#define APPEAR_TYPE_COUNT 42   /**< Entries in appear_jmp_tbl[] */
+/* APPEAR_TYPE_COUNT is provided by the AppearTypeId enum in appear_registry.h */
 #define SMOKE_CHECK_COUNT 22   /**< Entries in smoke_check[] */
 #define ANIMAL_DECIDE_COUNT 16 /**< Entries in animal_decide_tbl[] */
 
@@ -127,22 +128,17 @@ void appear_data_init_set(PLW* wk) {
     appear_data_set(wk, dtbl);
 }
 
-/** @brief Top-level appear dispatcher — select animation by type table. */
+/** @brief Top-level appear dispatcher — select animation by type registry. */
 void appear_player(PLW* wk) {
-    void (*appear_jmp_tbl[APPEAR_TYPE_COUNT])(
-        PLW* wk) = { Appear_00000, Appear_01000, Appear_01000, Appear_03000, Appear_04000, Appear_05000, Appear_06000,
-                     Appear_07000, Appear_08000, Appear_09000, Appear_10000, Appear_11000, Appear_12000, Appear_13000,
-                     Appear_14000, Appear_15000, Appear_16000, Appear_17000, Appear_18000, Appear_19000, Appear_20000,
-                     Appear_21000, Appear_22000, Appear_23000, Appear_24000, Appear_25000, Appear_26000, Appear_06000,
-                     Appear_28000, Appear_29000, Appear_30000, Appear_31000, Appear_32000, Appear_33000, Appear_34000,
-                     Appear_01000, Appear_36000, Appear_37000, Appear_38000, Appear_39000, Appear_06000, Appear_41000 };
-
     s16 idx = (s16)wk->wu.routine_no[4];
     if (idx < 0 || idx >= APPEAR_TYPE_COUNT) {
         return;
     }
 
-    appear_jmp_tbl[idx](wk);
+    const AppearTypeCallbacks* cb = AppearType_Get((AppearTypeId)idx);
+    if (cb && cb->on_tick) {
+        cb->on_tick(wk);
+    }
 }
 
 /** @brief Appear type 0 — standard walk-on entrance. */

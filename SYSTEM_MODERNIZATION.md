@@ -54,29 +54,33 @@ While not a continuous state machine, the Sound system utilizes a massive 1024-e
 *   **Migration Pattern:** In-place refactor — no delegation wrappers needed since these are TASK system entries, not menu screens. The existing `ms_pause_menu.c` (which handles the in-game pause *menu*) remains unchanged. Internal state machine logic (Pause_Check, Pause_Move, Flash_Pause_1st, etc.) is preserved identically.
 *   **Modified Files:** `src/sf33rd/Source/Game/system/pause.c`, `pause.h`, `src/sf33rd/Source/Game/system/reset.c`, `src/sf33rd/Source/Game/menu/menu_input.c`
 
-### 7. Character Entrance Animations (`animation/appear.c`)
+### 7. ✅ Character Entrance Animations (`animation/appear.c`)
 The game handles walk-ons, car arrivals, and boss intros using the `appear_player()` dispatcher.
 
 *   **Risk Level:** **MEDIUM**. These are pre-match animations. While conceptually simple, errors here can affect the starting frame/timing of Round 1 if the transition from "intro" to "fight state" is bungled.
-*   **Current State:** It relies entirely on a 42-entry `appear_jmp_tbl` mapped to `Appear_00000` through `Appear_41000`. It depends on deeply nested state tracking via `wk->wu.routine_no[3]` and `routine_no[4]`.
-*   **Modernization:** Each of these 42 routines could be represented by a standard `CinematicSequence` or `AnimationFlow` registry (with `on_enter`/`on_tick`/`on_exit`), which would drastically simplify adding new intro sequences for custom characters.
+*   **Status:** **COMPLETED.** `AppearTypeId` enum and `AppearTypeCallbacks` registry created (`appear_registry.h/.c`). All 42 types have a single self-registering wrapper in `src/port/appear/ap_all.c` using `__attribute__((constructor))`. Each wrapper delegates `on_tick` to the original `Appear_NNNNN` function. The hard-coded stack-allocated `appear_jmp_tbl[42]` in `appear_player()` has been replaced by `AppearType_Get()` → `cb->on_tick(wk)` dispatch.
+*   **Migration Pattern:** Delegation wrapper — `Appear_NNNNN()` functions continue to manage their own internal state machines via `routine_no[3]`/`routine_no[4]`. The registry standardizes only the top-level dispatch. Shared handlers registered under multiple IDs (e.g., `Appear_01000` → indices 1/2/35, `Appear_06000` → indices 6/27/40).
+*   **New Files:** `src/port/appear_registry.h`, `src/port/appear_registry.c`, `src/port/appear/ap_all.c`
 
-### 8. ✅ The `TASK` System — Phase 1 & 2: Named Constants + Accessor Functions (`src/include/structs.h` & `system/work_sys.h`)
+### 8. ✅ The `TASK` System — Phase 1, 2 & 3: Named Constants + Accessor Functions (`src/include/structs.h` & `system/work_sys.h`)
 The `TASK` system is the fundamental scheduling unit for non-gameplay state machines. It operates as a cooperative multitasking array where different engine subsystems (like Save/Load, Pause, and Reset) claim a slot and assign a function pointer.
 
 *   **Risk Level:** **MEDIUM**. While largely outside core fighting mechanics, it handles global state transitions and intercepts systems like Reset and Pause logic. The entire `task[11]` array is saved/loaded wholesale during netplay rollback (`GS_SAVE(task)` / `GS_LOAD(task)` in `game_state.c`), making any structural changes rollback-sensitive.
-*   **Status:** **PHASE 2 COMPLETED** (March 2026). All cross-slot `task[TASK_MENU]` field accesses are now routed through validated accessor functions.
+*   **Status:** **PHASE 3 COMPLETED** (March 2026). All cross-slot `task[TASK_MENU]` and `task[TASK_INIT]` field accesses are now routed through validated accessor functions.
     *   **Phase 1** (completed): Named enum constants for magic-number `r_no[]` assignments/comparisons. Doc comments and `_Static_assert` layout guard on `struct _TASK`.
         *   `MenuTaskPhase` enum (r_no[0]: `MTP_AFTER_TITLE`, `MTP_IDLE`, `MTP_NETPLAY_IDLE`, `MTP_IN_GAME`, `MTP_SCREEN_DISPATCH`, `MTP_GOTO_GAME`, `MTP_TRAINING`, `MTP_RESET`)
         *   `MenuTaskSubPhase` enum (r_no[1]: `MTSP_INIT`, `MTSP_MODE_SELECT`, `MTSP_IN_GAME_ACTIVE`, `MTSP_SA_CUT`, `MTSP_NETWORK_LOBBY`)
         *   `InitTaskPhase` enum (r_no[0]: `ITP_BOOT`, `ITP_RUNNING`)
-    *   **Phase 2** (completed): Accessor functions encapsulating all cross-slot reads/writes to `task[TASK_MENU]`. Debug-build asserts for bounds checking. 16 direct accesses replaced across 8 files.
+    *   **Phase 2** (completed): Accessor functions encapsulating all cross-slot reads/writes to `task[TASK_MENU]`. Debug-build asserts for bounds checking. 17 direct accesses replaced across 8 files (16 original + 1 stray caught during Phase 3 audit).
         *   **Getters:** `MenuTask_GetPhase()`, `MenuTask_GetSubPhase()`, `MenuTask_GetRNo(idx)`
         *   **Setters:** `MenuTask_SetPhase()`, `MenuTask_SetSubPhase()`, `MenuTask_GotoPhase()` (combined phase + sub-reset)
         *   **Condition:** `MenuTask_IsActive()`
         *   New files: `src/include/port/menu_task.h`, `src/port/menu_task.c`
         *   Modified files: `game.c`, `manage.c`, `sys_sub.c`, `ioconv.c`, `pause.c`, `netplay.c`, `main.c`, `test_runner.c`
-*   **Phase 3 (future):** Replace internal `menu.c` jump-table indices with named constants. Add similar accessors for `task[TASK_INIT]` if cross-slot access grows. Migrate individual tasks to dedicated type-safe managers with standard lifecycle callbacks.
+    *   **Phase 3** (completed): Accessor functions encapsulating all cross-slot reads/writes to `task[TASK_INIT]`. 6 direct accesses replaced across 3 files.
+        *   **Accessors:** `InitTask_GetPhase()`, `InitTask_SetPhase()`, `InitTask_ResetSubPhases()`, `InitTask_ClearAllRNo()`, `InitTask_Deactivate()`, `InitTask_IsActive()`
+        *   New files: `src/include/port/init_task.h`, `src/port/init_task.c`
+        *   Modified files: `sys_sub.c`, `menu.c`, `game.c`
 
 ### 9. The Top-Level Game State Machine (`game.c`)
 This is the highest-level supervisor for the game engine, controlling the flow between demos, intros, fighting, and ending sequences.
@@ -131,3 +135,33 @@ Based on the [DeckCook Protocol](../knowledge/deckcook_document_standards/artifa
 *   **User-Centricity (Developer Experience):** The primary user here is the engine maintainer. Right now, onboarding a new graphics programmer requires an apprenticeship in tribal knowledge.
 *   **Impact & Scalability:** By reducing the boilerplate and relying on shared helpers, this modernization exponentially speeds up iteration. 
 *   **Verdict:** **9/10**. Strong impact. It directly improves developer velocity, which ultimately equates to faster, higher-quality feature delivery for the end user.
+
+## Tool Quirks & Workarounds
+
+### grep_search Tool
+
+#### Known Issues
+1. **Single-file SearchPath fails silently** — Using a file path as `SearchPath` returns "No results found" even when the pattern is present. The tool only reliably works with **directory** paths.
+2. **`.antigravityignore` path concatenation bug** — The tool concatenates the SearchPath + absolute ignore-file path instead of treating it as absolute. Cosmetic noise, doesn't block results.
+3. **50-result cap** — Large searches get exhausted on duplicates (e.g., `effect/`) before reaching relevant files.
+4. **`Includes` with directory names as filenames** — If the target file shares a name with a directory (e.g., `config.py` when `config/` exists), the filter may match the directory. Use the actual filename or a wildcard glob.
+
+#### Workarounds
+- **Never** use `SearchPath` pointing to a single file — use `view_file` or `view_code_item` instead.
+- **Always** use `Includes` globs to filter (e.g., `["*.c", "*.h"]`) and narrow `SearchPath` to the relevant subdirectory.
+- To target a specific file, use the **parent directory** as `SearchPath` + `Includes: ["filename.c"]`.
+- For tricky or broad searches, use `run_command` with `rg` directly — it works perfectly.
+- Exclude noisy directories by searching `src/sf33rd/Source/Game/<subfolder>/` directly instead of the entire tree.
+
+#### Parameter Reference
+
+| Parameter | Works? | Notes |
+|-----------|--------|-------|
+| `Query` (string) | ✅ | Required. Literal search string. |
+| `SearchPath` (string) | ⚠️ | Must be a **directory**, not a file. |
+| `MatchPerLine` (bool) | ✅ | `true` = lines + content, `false` = filenames only. |
+| `Includes` (array) | ✅ | Glob patterns like `["*.c"]`. Bare filenames work if unambiguous. |
+| `CaseInsensitive` (bool) | ✅ | Works as expected. |
+| `IsRegex` (bool) | ✅ | Enables regex in Query. |
+
+---

@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/menu/menu.h"
+#include "port/init_task.h"
 #include "port/menu_screen.h"
 #include "common.h"
 #include "main.h"
@@ -1757,8 +1758,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
  */
 void Menu_ReenterNetworkLobby(void) {
     s16 ix;
+    InitTask_ClearAllRNo();
     for (ix = 0; ix < 4; ix++) {
-        task[TASK_INIT].r_no[ix] = 0;
         G_No[ix] = 0;
         E_No[ix] = 0;
         D_No[ix] = 0;
@@ -1816,12 +1817,12 @@ void Menu_ReenterNetworkLobby(void) {
     // a full cold-boot init (clears G_No[], resets textures, creates
     // TASK_RESET).  Leaving condition=1 causes the entire game state to be
     // clobbered on the next frame, freezing the lobby.
-    task[TASK_INIT].condition = 0;
+    InitTask_Deactivate();
     task[TASK_GAME].condition = 1;
     task[TASK_MENU].condition = 1;
 
     cpReadyTask(TASK_MENU, Menu_Task);
-    task[TASK_MENU].r_no[0] = 0; /* After_Title */
+    MenuTask_SetPhase(MTP_AFTER_TITLE);
 
     /* Signal the migrated network_lobby on_enter to skip gateway and
      * jump straight to lobby phase 10 (RmlUI mode). */
