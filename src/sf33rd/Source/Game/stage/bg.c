@@ -7,6 +7,9 @@
 #include "common.h"
 #include "port/config/paths.h"
 #include "port/mods/modded_stage.h"
+#include "port/sdl/renderer/sprite_override.h"
+#include "sf33rd/AcrSDK/ps2/flps2render.h"
+#include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/rendering/legacy_matrix.h"
 #include "port/rendering/renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -1124,6 +1127,17 @@ void bgDrawOneChip(s32 x, s32 y, s32 xs, s32 ys, s32 gbix, u32 vtxCol, s32 ofsPa
 
         if ((scrDrawPos->x >= 384.0f) || (scrDrawPos[3].x < 0.0f) || (scrDrawPos->y >= 224.0f) ||
             (scrDrawPos[3].y < 0.0f)) {
+            return;
+        }
+
+        /* HD background tile override */
+        void* hd_tex = LoadBGTileOverride(gbix);
+        if (hd_tex != NULL) {
+            float dx = scrDrawPos[0].x;
+            float dy = scrDrawPos[0].y;
+            float dw = scrDrawPos[3].x - scrDrawPos[0].x;
+            float dh = scrDrawPos[3].y - scrDrawPos[0].y;
+            TextureUtil_DrawQuad(hd_tex, dx, dy, dw, dh, flPS2ConvScreenFZ(scrDrawPos[0].z));
             return;
         }
 

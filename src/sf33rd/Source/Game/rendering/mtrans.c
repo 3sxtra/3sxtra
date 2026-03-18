@@ -268,9 +268,10 @@ static void compute_tile_bbox(const CGTileCacheEntry* cge, s32 flip, SpriteBox* 
         f32 top  = y + (d->dh * BOOL(flip & 0x4000));
 
         if (left          < out->min_x) out->min_x = left;
-        if (top           < out->min_y) out->min_y = top;
         if (left + d->dw  > out->max_x) out->max_x = left + d->dw;
-        if (top  + d->dh  > out->max_y) out->max_y = top  + d->dh;
+        // Y: seqsStoreChip renders from (x,y) to (x+w, y-h) — tile grows downward
+        if (top           > out->max_y) out->max_y = top;
+        if (top  - d->dh  < out->min_y) out->min_y = top - d->dh;
     }
 }
 
@@ -296,9 +297,10 @@ static void compute_tile_bbox_ext(const TileMapEntry* trsptr, s32 count,
         f32 top  = y + (dh * BOOL(flip & 0x4000));
 
         if (left      < out->min_x) out->min_x = left;
-        if (top       < out->min_y) out->min_y = top;
         if (left + dw > out->max_x) out->max_x = left + dw;
-        if (top  + dh > out->max_y) out->max_y = top  + dh;
+        // Y: seqsStoreChip renders from (x,y) to (x+w, y-h) — tile grows downward
+        if (top       > out->max_y) out->max_y = top;
+        if (top  - dh < out->min_y) out->min_y = top - dh;
     }
 }
 

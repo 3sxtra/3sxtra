@@ -15,12 +15,14 @@ This is the most obvious candidate. Just like the menu, the character select scr
 *   **Current State:** It is heavily layered with jump tables like `Sel_PL_Jmp_Tbl`, `PL_Sel_Jmp_Tbl`, `Face_Jmp_Tbl`, `OBJ_Jmp_Tbl`, and `Handicap_Jmp_Tbl` (spanning over 2,000 lines). State is tracked in arbitrary global arrays like `SP_No[]`, `Face_No[]`, and `SO_No[]`.
 *   **Modernization:** You could build a `CharSelectPhase` registry. The selection sequence (Select Character -> Select Super Art -> Select Handicap/Color) could be modeled as distinct states with `on_enter` (setup cursor), `on_tick` (handle directional input and selections), and `on_exit` (lock in choice, load assets). You could even reuse the new cursor and fade helpers created for the menu migration.
 
-### 2. Transient Flow Screens (`screen/win.c`, `screen/continue.c`, `screen/gameover.c`, `system/saver.c`)
-These are linear presentation screens that transition the player between matches or out of the game.
+### 2. ✅ Transient Flow Screens (`screen/win.c`, `screen/continue.c`, `screen/gameover.c`, `system/saver.c`)
+These linear presentation screens have been **migrated to the `MenuScreen` registry** (March 2026).
 
-*   **Risk Level:** **LOW**. These handle post-match/pre-match UI presentations, strictly safely outside the scope of actual fighting mechanics.
-*   **Current State:** They use `Win_Jmp_Tbl`, `Lose_Jmp_Tbl`, `Continue_Jmp_Tbl`, `GameOver_Jmp_Tbl`, and `Main_Jmp_Tbl` (for saver). They all manually reimplement the exact same "fade in -> wait timer -> handle input -> fade out" loop seen in the legacy menus.
-*   **Modernization:** These screens are so structurally similar to menus that they **could potentially be merged directly into the new `MenuScreen` registry** (or a parallel `FlowScreen` registry). By doing this, you could delete hundreds of lines of redundant fading and timer logic, relying entirely on `MenuScreen_FadeOut`, `MenuScreen_WaitTimer`, and `MenuScreen_EnterSub`.
+*   **Risk Level:** **LOW**. Post-match/pre-match UI presentations, strictly outside the scope of fighting mechanics.
+*   **Status:** **COMPLETED.** All four screens now use `MenuScreen` callbacks (`on_enter`/`on_tick`/`on_exit`) registered via `__attribute__((constructor))` self-registration. The legacy jump tables (`Win_Jmp_Tbl`, `Lose_Jmp_Tbl`, `Continue_Jmp_Tbl`, `GameOver_Jmp_Tbl`) have been removed, with the original `.c` files retained as thin wrappers calling `MenuScreen_Goto` → `MenuScreen_Tick` → `MenuScreen_ExitToLegacy`.
+*   **New Files:** `src/port/screens/ms_continue.c`, `ms_win.c`, `ms_gameover.c`, `ms_saver.c`
+*   **New Enum Values:** `MENU_SCREEN_CONTINUE`, `MENU_SCREEN_WIN`, `MENU_SCREEN_LOSER`, `MENU_SCREEN_GAMEOVER`, `MENU_SCREEN_SAVER`
+*   **Note:** The linker flags in `CMakeLists.txt` use `-Wl,--start-group`/`--end-group` which is GCC/ld-specific; will need adjustment if targeting MSVC.
 
 ### 3. Pre-Game Flow Screens and Demos (`screen/entry.c`, `screen/ranking.c`, `demo/demo02.c`)
 Operating alongside the transient post-game screens, the coin-entry, leaderboard rankings, and attract mode demos use identical architecture.
