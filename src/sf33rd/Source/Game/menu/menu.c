@@ -12,6 +12,7 @@
 
 #include "sf33rd/Source/Game/menu/menu.h"
 #include "port/init_task.h"
+#include "port/menu_task.h"
 #include "port/menu_screen.h"
 #include "common.h"
 #include "main.h"
