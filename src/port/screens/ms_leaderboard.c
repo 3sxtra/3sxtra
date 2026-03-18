@@ -121,6 +121,18 @@ static void leaderboard_tick(struct _TASK* task_ptr) {
         trigger |= (~plsw_01[i] & plsw_00[i]);
     }
 
+    /* Left D-pad: previous page */
+    if (trigger & 0x0004) {
+        SE_selected();
+        rmlui_leaderboard_prev_page();
+    }
+
+    /* Right D-pad: next page */
+    if (trigger & 0x0008) {
+        SE_selected();
+        rmlui_leaderboard_next_page();
+    }
+
     if (trigger & 0x0200) { /* Cancel / B */
         SE_selected();
         rmlui_leaderboard_hide();

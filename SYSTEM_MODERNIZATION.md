@@ -4,137 +4,104 @@
 
 Following the pattern established by the Menu Backend Migration, there are several components of the game engine that use identical architectural concepts (nested jump tables and integer state arrays) and could benefit from a similar modernization effort.
 
-This document outlines the potential for migrating these legacy monolithic subsystems to data-driven state registries featuring standard lifecycle callbacks (`on_enter`/`on_tick`/`on_exit`) and shared helpers. 
+---
 
-## Engine Components (Sorted by Risk: LOW to HIGH)
+## ✅ Completed Modernizations (March 2026)
 
-### 1. ✅ Player/Character Select Hub (`screen/sel_pl.c`)
-This is the most obvious candidate. Just like the menu, the character select screen is a massive UI state machine involving cursors, timers, and sequence transitions.
+All LOW and MEDIUM risk registry migrations are done. Each converted a legacy jump table / function pointer array into a data-driven registry or enum-dispatch system.
 
-*   **Risk Level:** **LOW**. This is pure UI flow and has absolutely zero impact on in-match fighting mechanics or frame data.
-*   **Current State:** ~~It is heavily layered with jump tables like `Sel_PL_Jmp_Tbl`, `PL_Sel_Jmp_Tbl`, `Face_Jmp_Tbl`, `OBJ_Jmp_Tbl`, and `Handicap_Jmp_Tbl` (spanning over 2,000 lines). State is tracked in arbitrary global arrays like `SP_No[]`, `Face_No[]`, and `SO_No[]`.~~ **REGISTERED.** `sel_pl.c` wrapped via `ms_char_select.c` delegation into the `MenuScreen` registry (`MENU_SCREEN_CHAR_SELECT`).
-*   **Status:** **COMPLETED.** Character select screen registered in the `MenuScreen` enum. The `ms_char_select.c` delegation wrapper follows the proven `ms_demo.c` pattern — `on_enter`/`on_tick`/`on_exit` callbacks delegate to `Select_Player()`. Internal jump tables and state arrays remain untouched in `sel_pl.c`.
-*   **Migration Pattern:** Delegation wrapper — `Select_Player()` continues to be called synchronously from `Game01()`, with registry presence for lifecycle documentation and enum completeness.
-
-### 2. ✅ Transient Flow Screens (`screen/win.c`, `screen/continue.c`, `screen/gameover.c`, `system/saver.c`)
-These linear presentation screens have been **migrated to the `MenuScreen` registry** (March 2026).
-
-*   **Risk Level:** **LOW**. Post-match/pre-match UI presentations, strictly outside the scope of fighting mechanics.
-*   **Status:** **COMPLETED.** All four screens now use `MenuScreen` callbacks (`on_enter`/`on_tick`/`on_exit`) registered via `__attribute__((constructor))` self-registration. The legacy jump tables (`Win_Jmp_Tbl`, `Lose_Jmp_Tbl`, `Continue_Jmp_Tbl`, `GameOver_Jmp_Tbl`) have been removed, with the original `.c` files retained as thin wrappers calling `MenuScreen_Goto` → `MenuScreen_Tick` → `MenuScreen_ExitToLegacy`.
-*   **New Files:** `src/port/screens/ms_continue.c`, `ms_win.c`, `ms_gameover.c`, `ms_saver.c`
-*   **New Enum Values:** `MENU_SCREEN_CONTINUE`, `MENU_SCREEN_WIN`, `MENU_SCREEN_LOSER`, `MENU_SCREEN_GAMEOVER`, `MENU_SCREEN_SAVER`
-*   **Note:** The linker flags in `CMakeLists.txt` use `-Wl,--start-group`/`--end-group` which is GCC/ld-specific; will need adjustment if targeting MSVC.
-
-### 3. ✅ Pre-Game Flow Screens and Demos (`screen/ranking.c`, `demo/demo02.c`)
-Operating alongside the transient post-game screens, the leaderboard rankings and attract mode demos use identical architecture.
-
-*   **Risk Level:** **LOW**. Strictly out-of-match UI/flow systems.
-*   **Current State:** ~~Driven by `Main_Jmp_Tbl` arrays mapped to state indices (e.g., `D_No[]`).~~ **MIGRATED.** `ranking.c` and `demo02.c` converted to thin wrappers around `MenuScreen` registry callbacks (`ms_ranking.c`, `ms_demo.c`).
-*   **Status:** **COMPLETED.** Ranking and demo screens migrated. `entry.c` excluded — requires TASK system refactor (Item #8).
-*   **Migration Pattern:** Thin wrapper delegates to legacy dispatchers which manage their own `D_No[]` state, matching the proven `Continue_Scene()`/`Winner_Scene()` pattern.
-
-### 4. ✅ Stage Background Animations (`stage/bg*.c`)
-The game contains over twenty distinct background animation files (e.g., `bg000.c`, `bg010.c`, `bns_bg.c`), all of which reinvent the wheel for layer scrolling and intro panning.
-
-*   **Risk Level:** **LOW**. Background visuals have zero impact on hitbox collision, hurtboxes, or character frame data. Safe visual-only refactoring.
-*   **Status:** **COMPLETED.** `StageBgId` enum and `StageBgCallbacks` registry created (`stage_bg_registry.h/.c`). All 22 stages have self-registering wrappers in `src/port/stage_bg/sb_*.c` using `__attribute__((constructor))`. Each wrapper delegates `on_enter`/`on_tick` to the original `BG0xx()` function. Internal jump tables and state arrays remain untouched in each `bg*.c`. The hard-coded `ta_move_tbl[22]` dispatch table in `tate00.c` has been fully replaced by `ta_dispatch()` calling `StageBg_Get()`.
-*   **Migration Pattern:** Delegation wrapper — `BG0xx()` functions continue to manage their own internal state machines via `routine_no` arrays. The registry standardizes only the top-level dispatch. Shared stages handled by multi-registration (`sb_alex.c` → ALEX+KEN, `sb_necro_alt.c` → NECRO_ALT+TWELVE).
-*   **New Files:** `src/port/stage_bg_registry.h`, `src/port/stage_bg_registry.c`, `src/port/stage_bg/sb_gill.c`, `sb_alex.c`, `sb_ryu.c`, `sb_yun.c`, `sb_dudley.c`, `sb_necro.c`, `sb_hugo.c`, `sb_ibuki.c`, `sb_elena.c`, `sb_oro.c`, `sb_yang.c`, `sb_sean.c`, `sb_urien.c`, `sb_akuma.c`, `sb_chunli.c`, `sb_makoto.c`, `sb_necro_alt.c`, `sb_remy.c`, `sb_bonus.c`, `sb_bonus2.c`
-
-### 5. Sound Effect Dispatch (`sound/se_data.c`)
-While not a continuous state machine, the Sound system utilizes a massive 1024-entry global function pointer array (`sound_effect_request[]`) to map generic audio request IDs to specific internal routines (`Se_Myself`, `Se_Shock`, `Se_Let`).
-
-*   **Risk Level:** **LOW**. Purely audio dispatch logic. Does not affect game behavior loops unless an effect explicitly ties into an animation delay.
-*   **Current State:** The relationship between a sound ID and its actual audio file / playback priority is completely obfuscated behind thousands of repetitive function point casts.
-*   **Modernization:** Converting this massive array into a defined structural registry (e.g., `SoundEvent { u16 adx_id; u8 priority; bool is_stereo; }`) would make adding new UI sounds or fixing audio bugs data-driven, rather than requiring code recompilation to change an opaque index.
-
-### 6. ✅ The Pause System (`system/pause.c` & `system/reset.c`)
-*   **Risk Level:** **MEDIUM**. While it pauses the game flow, it directly interacts with inputs and step-forward logic. Minor risk of introducing input-drop bugs across the pause/unpause boundary.
-*   **Status:** **COMPLETED.** Both `pause.c` and `reset.c` modernized (March 2026). Legacy stack-allocated `Main_Jmp_Tbl` and `Flash_Jmp_Tbl` function pointer arrays replaced with named state enums (`PauseState`, `FlashPauseState`, `ResetState`) and `switch` dispatch. All magic-number `r_no[]` assignments replaced with named constants (e.g., `PAUSE_MOVE`, `FLASH_2ND`, `RESET_WAIT`). Three accessor functions (`Pause_SetFlashPhase`, `Pause_SetFlashTimer`, `Pause_KillFlash`) added so `menu_input.c` no longer directly writes `task[TASK_PAUSE]` internals.
-*   **Migration Pattern:** In-place refactor — no delegation wrappers needed since these are TASK system entries, not menu screens. The existing `ms_pause_menu.c` (which handles the in-game pause *menu*) remains unchanged. Internal state machine logic (Pause_Check, Pause_Move, Flash_Pause_1st, etc.) is preserved identically.
-*   **Modified Files:** `src/sf33rd/Source/Game/system/pause.c`, `pause.h`, `src/sf33rd/Source/Game/system/reset.c`, `src/sf33rd/Source/Game/menu/menu_input.c`
-
-### 7. ✅ Character Entrance Animations (`animation/appear.c`)
-The game handles walk-ons, car arrivals, and boss intros using the `appear_player()` dispatcher.
-
-*   **Risk Level:** **MEDIUM**. These are pre-match animations. While conceptually simple, errors here can affect the starting frame/timing of Round 1 if the transition from "intro" to "fight state" is bungled.
-*   **Status:** **COMPLETED.** `AppearTypeId` enum and `AppearTypeCallbacks` registry created (`appear_registry.h/.c`). All 42 types have a single self-registering wrapper in `src/port/appear/ap_all.c` using `__attribute__((constructor))`. Each wrapper delegates `on_tick` to the original `Appear_NNNNN` function. The hard-coded stack-allocated `appear_jmp_tbl[42]` in `appear_player()` has been replaced by `AppearType_Get()` → `cb->on_tick(wk)` dispatch.
-*   **Migration Pattern:** Delegation wrapper — `Appear_NNNNN()` functions continue to manage their own internal state machines via `routine_no[3]`/`routine_no[4]`. The registry standardizes only the top-level dispatch. Shared handlers registered under multiple IDs (e.g., `Appear_01000` → indices 1/2/35, `Appear_06000` → indices 6/27/40).
-*   **New Files:** `src/port/appear_registry.h`, `src/port/appear_registry.c`, `src/port/appear/ap_all.c`
-
-### 8. ✅ The `TASK` System — Phase 1, 2 & 3: Named Constants + Accessor Functions (`src/include/structs.h` & `system/work_sys.h`)
-The `TASK` system is the fundamental scheduling unit for non-gameplay state machines. It operates as a cooperative multitasking array where different engine subsystems (like Save/Load, Pause, and Reset) claim a slot and assign a function pointer.
-
-*   **Risk Level:** **MEDIUM**. While largely outside core fighting mechanics, it handles global state transitions and intercepts systems like Reset and Pause logic. The entire `task[11]` array is saved/loaded wholesale during netplay rollback (`GS_SAVE(task)` / `GS_LOAD(task)` in `game_state.c`), making any structural changes rollback-sensitive.
-*   **Status:** **PHASE 3 COMPLETED** (March 2026). All cross-slot `task[TASK_MENU]` and `task[TASK_INIT]` field accesses are now routed through validated accessor functions.
-    *   **Phase 1** (completed): Named enum constants for magic-number `r_no[]` assignments/comparisons. Doc comments and `_Static_assert` layout guard on `struct _TASK`.
-        *   `MenuTaskPhase` enum (r_no[0]: `MTP_AFTER_TITLE`, `MTP_IDLE`, `MTP_NETPLAY_IDLE`, `MTP_IN_GAME`, `MTP_SCREEN_DISPATCH`, `MTP_GOTO_GAME`, `MTP_TRAINING`, `MTP_RESET`)
-        *   `MenuTaskSubPhase` enum (r_no[1]: `MTSP_INIT`, `MTSP_MODE_SELECT`, `MTSP_IN_GAME_ACTIVE`, `MTSP_SA_CUT`, `MTSP_NETWORK_LOBBY`)
-        *   `InitTaskPhase` enum (r_no[0]: `ITP_BOOT`, `ITP_RUNNING`)
-    *   **Phase 2** (completed): Accessor functions encapsulating all cross-slot reads/writes to `task[TASK_MENU]`. Debug-build asserts for bounds checking. 17 direct accesses replaced across 8 files (16 original + 1 stray caught during Phase 3 audit).
-        *   **Getters:** `MenuTask_GetPhase()`, `MenuTask_GetSubPhase()`, `MenuTask_GetRNo(idx)`
-        *   **Setters:** `MenuTask_SetPhase()`, `MenuTask_SetSubPhase()`, `MenuTask_GotoPhase()` (combined phase + sub-reset)
-        *   **Condition:** `MenuTask_IsActive()`
-        *   New files: `src/include/port/menu_task.h`, `src/port/menu_task.c`
-        *   Modified files: `game.c`, `manage.c`, `sys_sub.c`, `ioconv.c`, `pause.c`, `netplay.c`, `main.c`, `test_runner.c`
-    *   **Phase 3** (completed): Accessor functions encapsulating all cross-slot reads/writes to `task[TASK_INIT]`. 6 direct accesses replaced across 3 files.
-        *   **Accessors:** `InitTask_GetPhase()`, `InitTask_SetPhase()`, `InitTask_ResetSubPhases()`, `InitTask_ClearAllRNo()`, `InitTask_Deactivate()`, `InitTask_IsActive()`
-        *   New files: `src/include/port/init_task.h`, `src/port/init_task.c`
-        *   Modified files: `sys_sub.c`, `menu.c`, `game.c`
-
-### 9. The Top-Level Game State Machine (`game.c`)
-This is the highest-level supervisor for the game engine, controlling the flow between demos, intros, fighting, and ending sequences.
-
-*   **Risk Level:** **HIGH**. It controls the transition into and out of gameplay. Errors here can break netplay rollback synchronization, cause state desyncs, or corrupt memory upon entering a match.
-*   **Current State:** It relies entirely on the `G_No[]` array to navigate wildly nested dispatch tables: `Main_Jmp_Tbl`, `Game_Jmp_Tbl`, `Game00_Jmp_Tbl`, `Game12_Jmp_Tbl`, etc. 
-*   **Modernization:** You could replace the `G_No[]` array assignments with explicit, named transitions (`GameState_GotoPhase(PHASE_FIGHT_INTRO)`). Providing standard `on_enter_state` and `on_exit_state` callbacks would make resource loading and memory cleanup (like character sprite loads and background unloads) much safer and less prone to leaks. *(Note: as highlighted in the menu document, `G_No[]` is synchronized during netplay rollback, so this would require careful compatibility mapping)*.
-
-### 10. CPU AI and Player State Logic (`com/com_pl.c`)
-While modifying gameplay logic implies higher risk (due to networking and rollback sync), the CPU AI and player state assignment systems use the exact same legacy jump-table structure as the menus.
-
-*   **Risk Level:** **HIGH**. **DO NOT TOUCH IF PRESERVING MECHANICS.** Any change here has a 100% chance of altering character behavior, breaking combo timing, throwing off AI logic, and causing rollback desyncs during netplay.
-*   **Current State:** AI states and hit reactions use arrays like `Com_Jmp_Tbl`, `Damage_Jmp_Tbl`, `Float_Jmp_Tbl`, and `Flip_Jmp_Tbl`, with state indexes stored in cryptic `CP_No[]` magic-number arrays.
-*   **Modernization:** Modernizing the AI state logic into named, formal state handlers (`AI_STATE_FLOAT`, `AI_STATE_DAMAGE`) with bound context structs would make Mamba RL bot development, data extraction, and general AI modifications significantly safer and more legible.
-
-### 11. Visual Effects System (`effect/eff*.c`)
-The game spawns hundreds of transient visual effects (dust, sparks, hit-sparks, projectiles) using independent worker scripts.
-
-*   **Risk Level:** **HIGH**. **DO NOT TOUCH IF PRESERVING MECHANICS.** Important gameplay elements, especially active projectiles (fireballs) and hit-sparks which govern frame-freeze timings, are deeply intertwined with the effect dispatch system. Rebuilding this alters logic drastically.
-*   **Current State:** Each effect script (e.g., `effm8.c`, `eff06.c`) acts as an isolated mini-state machine driven entirely by `ewk->wu.routine_no[0]` and `routine_no[1]` mapped against gigantic `switch` statements.
-*   **Modernization:** Creating an `EffectLifecycle` registry would allow the engine to standardize memory allocation, sorting, and cleanup for all particles without every single effect needing a bespoke `switch` fallthrough to destroy itself.
-
-### Summary of Benefits
-If you apply the "Menu Migration" blueprint to these systems, you will get the exact same benefits:
-*   **Massive Code Reduction:** Stripping out redundant `case 0: FadeOut; case 2: FadeIn;` boilerplate across dozens of files.
-*   **Named States vs Numbers:** Replacing things like `SP_No[1] = 2;` with `goto_phase(CHAR_SELECT_SUPER_ART)`.
-*   **Safer Resource Management:** `on_exit` callbacks ensure that specific visual effects or allocated buffers don't accidentally leak into the next state, a very common issue with the legacy `switch/case` fallthroughs.
+| # | Component | Risk | Pattern | Key Files |
+|---|-----------|------|---------|-----------|
+| 1 | Player/Character Select Hub | LOW | Delegation wrapper → `MenuScreen` registry | `ms_char_select.c` |
+| 2 | Transient Flow Screens | LOW | `MenuScreen` callbacks | `ms_continue.c`, `ms_win.c`, `ms_gameover.c`, `ms_saver.c` |
+| 3 | Pre-Game Flow Screens & Demos | LOW | Thin wrapper → `MenuScreen` | `ms_ranking.c`, `ms_demo.c` |
+| 4 | Stage Background Animations | LOW | `StageBgCallbacks` registry | `stage_bg_registry.h/.c`, 22× `sb_*.c` |
+| 5 | Sound Effect Dispatch | LOW | `SeHandlerType` enum-tag table + `Se_Dispatch()` | `se_data.h`, `se_data.c`, 10 call-site files |
+| 6 | Pause System | MEDIUM | Named state enums + switch | `pause.c`, `pause.h`, `reset.c` |
+| 7 | Character Entrance Animations | MEDIUM | `AppearTypeCallbacks` registry | `appear_registry.h/.c`, `ap_all.c` |
+| 8 | TASK System (Phases 1–3) | MEDIUM | Named constants + accessor functions | `menu_task.h/.c`, `init_task.h/.c`, 8 modified files |
+| 9 | `Debug_w[]` Magic Number Constants | LOW | `DebugOption` enum in `debug_config.h` | 38 files already use `DEBUG_*` named constants |
 
 ---
 
-## Conclusion & Evaluation
+## Next Wave: Safe Improvement Candidates (Sorted by Priority)
 
-Based on the [DeckCook Protocol](../knowledge/deckcook_document_standards/artifacts/design_philosophy/three_judges_protocol.md), here is an evaluation of this infrastructure modernization roadmap from three distinct engineering perspectives.
+### 1. `Country` Region Code Constants
+**Risk: 🟢 VERY LOW** · **Effort: SMALL** · **17 files**
 
-### 🇷🇺 JUDGE DMITRI PETROV – Reliability & Rigor
-> "Good enough is the enemy of correct. Replacing opaque index arrays with formal lifecycles is mandatory for survival."
+`Country` is compared with raw integers (`Country != 8`, `Country == 1`) in 17 files. No enum or named constants exist.
 
-*   **Technical Soundness:** The current reliance on untyped scratch arrays (`free[4]`) is a disaster waiting to happen. Moving to typed context structs and standard `on_enter`/`on_exit` callbacks directly mitigates the risk of memory/resource leaks across state transitions.
-*   **Resilience:** Creating discrete flow objects that guarantee teardown makes error recovery far safer than the current fallthrough approach. 
-*   **Verdict:** **9/10**. Solid for demanding real-world use. This is a critical infrastructure refactoring that correctly prioritizes state safety. 
+**Opportunity:** Define `COUNTRY_JAPAN`, `COUNTRY_USA`, `COUNTRY_ASIA`, etc. and replace all bare comparisons.
 
-### 🇨🇳 COACH WANG JINPING – Philosophy & Elegance
-> "Precision is beauty. When the structures try to be everything, they become nothing."
+```
+Before: if (Country != 8)
+After:  if (Country != COUNTRY_KOREA)
+```
 
-*   **Clarity:** The legacy CPS3 jump-table structures are the antithesis of clarity. 
-*   **Discipline:** I commend the discipline of breaking down monolithic codebases into named, deterministic flow states. Magic numbers like `task[TASK_MENU].r_no[1] = 16` obscure the intent of the programmer.
-*   **Verdict:** **8/10**. Championship quality. Organizing flow control into distinct registries brings much-needed order to decades-old chaos.
+**Hotspots:** `next_cpu.c` (7), `sel_pl.c` (7), `eff35.c` (4), `init3rd.c` (3)
 
-### 🇺🇸 DR. ISABELLA ROSSI – User Impact & Real-World Value
-> "Solutions should be empowering. Maintainers cannot add value if they are terrified of the underlying architecture."
+---
 
-*   **User-Centricity (Developer Experience):** The primary user here is the engine maintainer. Right now, onboarding a new graphics programmer requires an apprenticeship in tribal knowledge.
-*   **Impact & Scalability:** By reducing the boilerplate and relying on shared helpers, this modernization exponentially speeds up iteration. 
-*   **Verdict:** **9/10**. Strong impact. It directly improves developer velocity, which ultimately equates to faster, higher-quality feature delivery for the end user.
+### 2. `save_w[Present_Mode]` Accessor
+**Risk: 🟢 LOW** · **Effort: SMALL** · **17 files, 91 uses**
+
+The pattern `save_w[Present_Mode].X` is used 91 times across 17 files. A tiny accessor would simplify all call sites.
+
+```
+Before: save_w[Present_Mode].Battle_Number[Play_Type]
+After:  CurrentSave()->Battle_Number[Play_Type]
+```
+
+**Hotspots:** `win_pl.c` (30), `manage.c` (16), `menu_input.c` (10)
+
+---
+
+### 3. SE Handler Visibility Reduction (`se.h`)
+**Risk: 🟡 LOW** · **Effort: SMALL** · **2 files**
+
+All 8 SE handler functions (`Call_Se`, `Se_Shock`, `Se_Myself`, etc.) are declared in `se.h` with public visibility, but after the `Se_Dispatch` modernization they are only called from `se_data.c`. They could be made `static` and removed from the public header.
+
+---
+
+### 4. `Bonus_Voice_Data` Integration
+**Risk: 🟡 LOW** · **Effort: SMALL** · **3 files**
+
+`Bonus_Voice_Data[768]` is a SE-code remap table for bonus stages, only used in 3 files. The bonus remap logic in `Check_Bonus_SE()` could be folded into `Se_Dispatch` as an optional pre-processing step, unifying all sound dispatch in one place.
+
+---
+
+### 5. `game_globals.c` Decomposition
+**Risk: 🟢 LOW** · **Effort: MEDIUM** · **1 → many files**
+
+`game_globals.c` is a 606-line dump of global variable definitions — a grab-bag of unrelated state (player data, stage config, timer state, mode flags). Splitting into domain-specific files is purely organizational.
+
+---
+
+### 6. Remaining `task[TASK_*]` Direct Accesses
+**Risk: 🟡 LOW** · **Effort: MEDIUM** · **12 files**
+
+The TASK system modernization created accessor functions for `TASK_MENU` and `TASK_INIT`, but 10 `.c` files still use `task[TASK_*]` directly for other slots.
+
+> [!IMPORTANT]
+> Some files (`game.c`, `sys_sub.c`) touch rollback-synced state. Only *read* accesses are safe; writes need careful review.
+
+---
+
+## 🔒 High Risk — Do Not Touch
+
+### 7. Top-Level Game State Machine (`game.c`)
+*   **Risk Level:** **HIGH**. Controls transitions into/out of gameplay. `G_No[]` is synchronized during netplay rollback — structural changes risk desyncs.
+*   **Current State:** Relies on `G_No[]` to navigate nested dispatch tables: `Main_Jmp_Tbl`, `Game_Jmp_Tbl`, `Game00_Jmp_Tbl`, etc.
+
+### 8. CPU AI and Player State Logic (`com/com_pl.c`)
+*   **Risk Level:** **HIGH**. **DO NOT TOUCH IF PRESERVING MECHANICS.** 100% chance of altering character behavior, breaking combo timing, and causing rollback desyncs.
+*   **Current State:** AI states use `Com_Jmp_Tbl`, `Damage_Jmp_Tbl`, `Float_Jmp_Tbl` with cryptic `CP_No[]` magic-number arrays.
+
+### 9. Visual Effects System (`effect/eff*.c`)
+*   **Risk Level:** **HIGH**. **DO NOT TOUCH IF PRESERVING MECHANICS.** Projectiles and hit-sparks govern frame-freeze timings and are deeply intertwined with the effect dispatch system.
+*   **Current State:** ~140 effect files, each using `routine_no[]` with massive `switch` statements.
+
+---
 
 ## Tool Quirks & Workarounds
 

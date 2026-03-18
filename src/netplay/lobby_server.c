@@ -734,6 +734,9 @@ int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page,
         e->disconnects = cjson_get_int(item, "disconnects", 0);
         e->rating = (float)cjson_get_double(item, "rating", 1500.0);
         cjson_get_string(item, "tier", e->tier, sizeof(e->tier));
+        cjson_get_string(item, "country", e->country, sizeof(e->country));
+        e->grade = cjson_get_int(item, "grade", -1);
+        e->most_played_char = cjson_get_int(item, "most_played_char", -1);
 
         if (strlen(e->player_id) > 0)
             count++;

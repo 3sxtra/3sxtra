@@ -141,7 +141,7 @@ static void effI8_main_process(WORK_Other* ewk) {
                     break;
 
                 default:
-                    sound_effect_request[0x157](ewk, 0x157);
+                    Se_Dispatch(0x157, 0x157, ewk);
                     break;
                 }
 
@@ -241,14 +241,14 @@ static void effI8_main_process(WORK_Other* ewk) {
                 set_char_move_init(&ewk->wu, 0, 0x8B);
             }
         } else if (ewk->wu.hf.hit.effect && ((WORK*)ewk->wu.hit_adrs)->id == 0x89) {
-            sound_effect_request[0x157](ewk, 0x157);
+            Se_Dispatch(0x157, 0x157, ewk);
             ewk->wu.routine_no[1] = 0;
             ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
             ewk->wu.mvxy.a[0].sp = (ewk->wu.mvxy.a[0].sp * 3) / 4;
             ewk->wu.hit_stop = 2;
         } else {
             if (ewk->wu.dmg_work_id != 1) {
-                sound_effect_request[0x10B](ewk, 0x10B);
+                Se_Dispatch(0x10B, 0x10B, ewk);
             }
 
             ewk->wu.routine_no[1] = 2;

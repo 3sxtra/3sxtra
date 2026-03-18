@@ -301,12 +301,12 @@ void effect_02_move(WORK_Other* ewk) {
 
 static void urian_guard_se_check(WORK_Other* ewk, PLW* twk, u16 oto) {
     if (twk->player_number == 13 && (oto == 266 || oto == 267)) {
-        sound_effect_request[280](ewk, 280);
+        Se_Dispatch(280, 280, ewk);
         Last_Called_SE = 280;
         return;
     }
 
-    sound_effect_request[oto](ewk, oto);
+    Se_Dispatch(oto, oto, ewk);
     Last_Called_SE = oto;
 }
 

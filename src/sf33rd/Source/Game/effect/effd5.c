@@ -153,7 +153,7 @@ static void effD5_main_process(WORK_Other* ewk) {
                 setup_hana_extra(&ewk->wu, 1, 0x18);
             }
         } else {
-            sound_effect_request[0x10B](ewk, 0x10B);
+            Se_Dispatch(0x10B, 0x10B, ewk);
             ewk->wu.routine_no[1] = 2;
             ewk->wu.rl_flag = (ewk->wu.rl_flag + 1) & 1;
             ewk->wu.disp_flag = 2;

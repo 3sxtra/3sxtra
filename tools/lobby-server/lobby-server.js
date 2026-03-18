@@ -64,20 +64,30 @@ if (!SECRET) {
 
 // Map geoip-lite country codes to game regions
 const COUNTRY_TO_REGION = {};
-// North America East
-['US', 'CA'].forEach(c => COUNTRY_TO_REGION[c] = 'NA-E'); // Default NA-E; US west coast overridden by timezone if available
+// North America (default NA-E; refined to NA-W by timezone in detectRegionAndCountry)
+['US', 'CA'].forEach(c => COUNTRY_TO_REGION[c] = 'NA-E');
 // Europe West
 ['GB', 'IE', 'FR', 'ES', 'PT', 'NL', 'BE', 'DE', 'AT', 'CH', 'IT', 'DK', 'NO', 'SE', 'FI', 'IS', 'LU'].forEach(c => COUNTRY_TO_REGION[c] = 'EU-W');
 // Europe East
 ['PL', 'CZ', 'SK', 'HU', 'RO', 'BG', 'HR', 'RS', 'UA', 'LT', 'LV', 'EE', 'GR', 'TR', 'RU'].forEach(c => COUNTRY_TO_REGION[c] = 'EU-E');
 // Asia
-['JP', 'KR', 'CN', 'TW', 'HK', 'SG', 'MY', 'TH', 'PH', 'ID', 'VN', 'IN', 'PK'].forEach(c => COUNTRY_TO_REGION[c] = 'ASIA');
+['JP', 'KR', 'CN', 'TW', 'HK', 'SG', 'MY', 'TH', 'PH', 'ID', 'VN'].forEach(c => COUNTRY_TO_REGION[c] = 'ASIA');
+// Middle East (+ South Asia)
+['AE', 'SA', 'QA', 'KW', 'BH', 'OM', 'IQ', 'IR', 'JO', 'LB', 'SY', 'YE', 'IL', 'PS', 'IN', 'PK'].forEach(c => COUNTRY_TO_REGION[c] = 'MIDE');
 // South America
 ['BR', 'AR', 'CL', 'CO', 'PE', 'VE', 'EC', 'UY', 'PY', 'BO'].forEach(c => COUNTRY_TO_REGION[c] = 'SA');
 // Oceania
 ['AU', 'NZ'].forEach(c => COUNTRY_TO_REGION[c] = 'OCE');
 // Africa
 ['ZA', 'NG', 'EG', 'KE', 'MA', 'TN', 'GH'].forEach(c => COUNTRY_TO_REGION[c] = 'AF');
+
+// US/CA timezones that map to NA-West (Pacific, Mountain, Alaska, Hawaii)
+const NA_WEST_TIMEZONES = new Set([
+    'America/Los_Angeles', 'America/Vancouver', 'America/Denver', 'America/Edmonton',
+    'America/Phoenix', 'America/Boise', 'America/Anchorage', 'America/Juneau',
+    'Pacific/Honolulu', 'America/Tijuana', 'America/Dawson', 'America/Whitehorse',
+    'America/Yellowknife', 'America/Regina', 'America/Swift_Current'
+]);
 
 function detectRegionAndCountry(ip) {
     if (!geoip) return { country: '', region: '' };
@@ -86,7 +96,11 @@ function detectRegionAndCountry(ip) {
     const geo = geoip.lookup(cleanIp);
     if (!geo) return { country: '', region: '' };
     const country = geo.country || '';
-    const region = COUNTRY_TO_REGION[country] || '';
+    let region = COUNTRY_TO_REGION[country] || '';
+    // Refine NA-E → NA-W for US/CA west coast using geoip timezone
+    if (region === 'NA-E' && geo.timezone && NA_WEST_TIMEZONES.has(geo.timezone)) {
+        region = 'NA-W';
+    }
     return { country, region };
 }
 
@@ -146,6 +160,11 @@ try {
         db.exec('ALTER TABLE players_db ADD COLUMN disconnects INTEGER DEFAULT 0;');
     } catch { /* ignore if already exists */ }
 
+    // Add country column to players_db for persistent flag display
+    try {
+        db.exec("ALTER TABLE players_db ADD COLUMN country TEXT DEFAULT '';");
+    } catch { /* ignore if already exists */ }
+
     db.exec(`
         CREATE TABLE IF NOT EXISTS pending_results (
             match_key TEXT PRIMARY KEY,
@@ -186,13 +205,14 @@ const sseGraceTimers = new Map();
 
 function createPermanentRooms() {
     const permanentRooms = [
-        { id: 'NAEA', name: 'NA-East Public' },
-        { id: 'NAWE', name: 'NA-West Public' },
-        { id: 'EURO', name: 'Europe Public' },
-        { id: 'ASIA', name: 'Asia Public' },
-        { id: 'MIDE', name: 'Middle East Public' },
-        { id: 'OCEA', name: 'Oceania Public' },
-        { id: 'BRAZ', name: 'Brazil Public' }
+        { id: 'OPEN', name: 'Open Arena',         regions: [], max_players: 16 },
+        { id: 'NAEA', name: 'NA-East Public',     regions: ['NA-E'] },
+        { id: 'NAWE', name: 'NA-West Public',     regions: ['NA-W'] },
+        { id: 'EURO', name: 'Europe Public',      regions: ['EU-W', 'EU-E'] },
+        { id: 'ASIA', name: 'Asia Public',        regions: ['ASIA'] },
+        { id: 'MIDE', name: 'Middle East Public', regions: ['MIDE'] },
+        { id: 'OCEA', name: 'Oceania Public',     regions: ['OCE'] },
+        { id: 'BRAZ', name: 'Brazil Public',      regions: ['SA'] }
     ];
 
     for (const roomData of permanentRooms) {
@@ -206,9 +226,12 @@ function createPermanentRooms() {
             chat: [],
             sseClients: new Set(),
             permanent: true,
+            regions: roomData.regions,  // Restrict joins to these GeoIP regions (empty = open)
+            max_players: roomData.max_players || 8,
             ft: 1  // Public region rooms default to FT1 (unranked)
         });
-        console.log(`[room] initialized permanent room ${roomData.id}: ${roomData.name}`);
+        const regionStr = roomData.regions.length > 0 ? ` (regions: ${roomData.regions.join(', ')})` : ' (open)';
+        console.log(`[room] initialized permanent room ${roomData.id}: ${roomData.name}${regionStr}`);
     }
 }
 createPermanentRooms();
@@ -553,6 +576,22 @@ function getTier(rating) {
     if (rating >= 1500) return 'gold';
     if (rating >= 1200) return 'silver';
     return 'bronze';
+}
+
+// Numeric grade (0-11) derived from rating — matches arcade grading scale
+function getGrade(rating) {
+    if (rating >= 2200) return 11; // S
+    if (rating >= 2100) return 10; // A+
+    if (rating >= 2000) return 9;  // A
+    if (rating >= 1900) return 8;  // B+
+    if (rating >= 1800) return 7;  // B
+    if (rating >= 1700) return 6;  // C+
+    if (rating >= 1600) return 5;  // C
+    if (rating >= 1500) return 4;  // D+
+    if (rating >= 1400) return 3;  // D
+    if (rating >= 1300) return 2;  // E+
+    if (rating >= 1200) return 1;  // E
+    return 0;                      // F
 }
 
 
@@ -961,6 +1000,8 @@ async function handleRequest(req, res) {
                 code: room.id,
                 name: room.name,
                 player_count: room.players.length,
+                max_players: room.max_players || 8,
+                region_locked: !!(room.regions && room.regions.length > 0),
                 ft: room.ft || 1
             });
         }
@@ -1003,7 +1044,21 @@ async function handleRequest(req, res) {
         if (!data) return;
         const room = rooms.get(data.room_code);
         if (!room) return json(res, 404, { error: 'Room not found' });
-        if (room.players.length >= 8) return json(res, 400, { error: 'Room is full' });
+        if (room.players.length >= (room.max_players || 8)) return json(res, 400, { error: 'Room is full' });
+
+        // Region gate: permanent rooms restrict to their declared regions
+        if (room.regions && room.regions.length > 0) {
+            const clientIp = req.socket.remoteAddress || '';
+            const { region: playerRegion } = detectRegionAndCountry(clientIp);
+            if (!playerRegion || !room.regions.includes(playerRegion)) {
+                console.log(`[room] region rejected: ${data.player_id} (${playerRegion || 'unknown'}) tried to join ${room.id} (${room.regions.join(',')})`);
+                return json(res, 403, {
+                    error: 'Region restricted',
+                    your_region: playerRegion || 'unknown',
+                    allowed_regions: room.regions
+                });
+            }
+        }
 
         if (!room.players.includes(data.player_id)) {
             room.players.push(data.player_id);
@@ -1440,8 +1495,8 @@ async function handleRequest(req, res) {
             const newStats = glicko2Update(wStats, lStats);
 
             const upsertPlayer = db.prepare(`
-                INSERT INTO players_db (player_id, display_name, wins, losses, rating, rd, volatility)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO players_db (player_id, display_name, wins, losses, rating, rd, volatility, country)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(player_id) DO UPDATE SET
                     display_name = excluded.display_name,
                     wins = wins + excluded.wins,
@@ -1449,24 +1504,31 @@ async function handleRequest(req, res) {
                     rating = excluded.rating,
                     rd = excluded.rd,
                     volatility = excluded.volatility,
+                    country = CASE WHEN excluded.country != '' THEN excluded.country ELSE players_db.country END,
                     last_match = datetime('now')
             `);
-            upsertPlayer.run(sessionWinnerId, winnerName, 1, 0, newStats.winner.rating, newStats.winner.rd, newStats.winner.vol);
-            upsertPlayer.run(sessionLoserId, loserName, 0, 1, newStats.loser.rating, newStats.loser.rd, newStats.loser.vol);
+            const winnerCountry = players.get(sessionWinnerId)?.country || '';
+            const loserCountry = players.get(sessionLoserId)?.country || '';
+            upsertPlayer.run(sessionWinnerId, winnerName, 1, 0, newStats.winner.rating, newStats.winner.rd, newStats.winner.vol, winnerCountry);
+            upsertPlayer.run(sessionLoserId, loserName, 0, 1, newStats.loser.rating, newStats.loser.rd, newStats.loser.vol, loserCountry);
         } else {
             // Casual: record win/loss but skip Glicko-2 rating changes
-            db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses)
-                VALUES (?, ?, 1, 0)
+            const winnerCountryCasual = players.get(sessionWinnerId)?.country || '';
+            const loserCountryCasual = players.get(sessionLoserId)?.country || '';
+            db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses, country)
+                VALUES (?, ?, 1, 0, ?)
                 ON CONFLICT(player_id) DO UPDATE SET
                     display_name = excluded.display_name, wins = wins + 1,
+                    country = CASE WHEN excluded.country != '' THEN excluded.country ELSE players_db.country END,
                     last_match = datetime('now')
-            `).run(sessionWinnerId, winnerName);
-            db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses)
-                VALUES (?, ?, 0, 1)
+            `).run(sessionWinnerId, winnerName, winnerCountryCasual);
+            db.prepare(`INSERT INTO players_db (player_id, display_name, wins, losses, country)
+                VALUES (?, ?, 0, 1, ?)
                 ON CONFLICT(player_id) DO UPDATE SET
                     display_name = excluded.display_name, losses = losses + 1,
+                    country = CASE WHEN excluded.country != '' THEN excluded.country ELSE players_db.country END,
                     last_match = datetime('now')
-            `).run(sessionLoserId, loserName);
+            `).run(sessionLoserId, loserName, loserCountryCasual);
         }
 
         const matchId = db.prepare('SELECT last_insert_rowid() as id').get().id;
@@ -1690,20 +1752,42 @@ async function handleRequest(req, res) {
 
         const total = db.prepare('SELECT COUNT(*) as cnt FROM players_db').get().cnt;
         const rows = db.prepare(
-            'SELECT player_id, display_name, wins, losses, disconnects, rating FROM players_db ORDER BY rating DESC, wins DESC LIMIT ? OFFSET ?'
+            'SELECT player_id, display_name, wins, losses, disconnects, rating, country FROM players_db ORDER BY rating DESC, wins DESC LIMIT ? OFFSET ?'
         ).all(limit, offset);
 
+        // Precompute most-played character for each player in the result set
+        const mostPlayedStmt = db.prepare(`
+            SELECT char_id, COUNT(*) as cnt FROM (
+                SELECT p1_char AS char_id FROM matches WHERE p1_id = ?
+                UNION ALL
+                SELECT p2_char AS char_id FROM matches WHERE p2_id = ?
+            ) GROUP BY char_id ORDER BY cnt DESC LIMIT 1
+        `);
+
         return json(res, 200, {
-            players: rows.map((r, i) => ({
-                rank: offset + i + 1,
-                player_id: r.player_id,
-                display_name: r.display_name || r.player_id,
-                wins: r.wins,
-                losses: r.losses,
-                disconnects: r.disconnects || 0,
-                rating: r.rating,
-                tier: getTier(r.rating)
-            })),
+            players: rows.map((r, i) => {
+                // Country: prefer in-memory presence, fall back to DB-stored
+                const presence = players.get(r.player_id);
+                const country = (presence && presence.country) ? presence.country : (r.country || '');
+
+                // Most-played character from match history
+                const charRow = mostPlayedStmt.get(r.player_id, r.player_id);
+                const most_played_char = charRow ? charRow.char_id : -1;
+
+                return {
+                    rank: offset + i + 1,
+                    player_id: r.player_id,
+                    display_name: r.display_name || r.player_id,
+                    wins: r.wins,
+                    losses: r.losses,
+                    disconnects: r.disconnects || 0,
+                    rating: r.rating,
+                    tier: getTier(r.rating),
+                    country,
+                    grade: getGrade(r.rating),
+                    most_played_char,
+                };
+            }),
             total,
             page,
         });

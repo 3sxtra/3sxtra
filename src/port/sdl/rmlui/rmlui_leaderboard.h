@@ -18,6 +18,10 @@ void rmlui_leaderboard_shutdown(void);
 /// Fetch a specific page (0-indexed). Triggers async fetch.
 void rmlui_leaderboard_fetch_page(int page);
 
+/// Navigate to next/previous page (called from ms_leaderboard.c D-pad handler).
+void rmlui_leaderboard_next_page(void);
+void rmlui_leaderboard_prev_page(void);
+
 #ifdef __cplusplus
 }
 #endif

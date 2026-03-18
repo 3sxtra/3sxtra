@@ -108,7 +108,7 @@ void effect_C9_move(WORK_Other* ewk) {
                             ewk->wu.mvxy.a[1].sp = 0;
                             ewk->wu.mvxy.kop[0] = 1;
                             effect_03_init(&ewk->wu, 110);
-                            sound_effect_request[309](ewk, 309);
+                            Se_Dispatch(309, 309, ewk);
                             char_move_z(&ewk->wu);
                         }
 

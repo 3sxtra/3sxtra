@@ -112,11 +112,14 @@ typedef struct {
     int rank;
     char player_id[64];
     char display_name[32];
+    char country[4]; // ISO 3166-1 alpha-2 (e.g. "US", "JP")
     int wins;
     int losses;
     int disconnects;
     float rating;
     char tier[16];
+    int grade;             // 0-11 numeric grade (arcade scale)
+    int most_played_char;  // Character index (0-19), -1 = none
 } LeaderboardEntry;
 
 /// Fetch a page of the leaderboard. Returns entry count (up to max_entries).

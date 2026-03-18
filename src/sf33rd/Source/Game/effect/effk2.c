@@ -599,7 +599,7 @@ static void effK2_parts_move_type_8(WORK_Other* ewk, DADD* hahen) {
                 ewk->wu.routine_no[2] = 1;
             }
 
-            sound_effect_request[0x3E4](ewk, 0x3E4);
+            Se_Dispatch(0x3E4, 0x3E4, ewk);
         }
 
         if (screen_x_range_check(&ewk->wu)) {

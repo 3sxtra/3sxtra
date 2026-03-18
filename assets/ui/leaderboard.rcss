@@ -1,5 +1,6 @@
 /* ─── Leaderboard ─────────────────────────────────────────────── */
-/* 384×224 game canvas — strict dp metrics        */
+/* 384×224 game canvas — strict dp metrics                         */
+/* Columns: # | Flag | Player | Char | W/M | WIN% | GRD | Rating | DC% */
 
 #lb-panel {
     display: block;
@@ -10,7 +11,7 @@
     bottom: 0;
     padding: 0;
     overflow: hidden;
-    background-color: rgba(6, 8, 18, 210);
+    background-color: rgba(6, 8, 18, 220);
     border-width: 1dp;
     border-color: rgba(80, 110, 200, 80);
 }
@@ -49,7 +50,7 @@
     text-align: center;
     padding: 80dp 0;
     font-size: 10dp;
-    color: rgba(255, 200, 60, 0.7);
+    color: rgba(255, 200, 60, 200);
 }
 
 /* ── Table ── */
@@ -60,82 +61,142 @@
     left: 4dp;
     right: 4dp;
     bottom: 18dp;
-    padding: 2dp 4dp;
+    padding: 2dp 2dp;
     background-color: rgba(0, 6, 28, 180);
     border-width: 1dp;
     border-color: rgba(80, 120, 220, 70);
     overflow: hidden;
 }
 
+/* ── Header row ── */
 .lb-header-row {
     display: block;
     font-size: 7dp;
-    color: rgba(170, 200, 255, 170);
+    color: rgba(140, 170, 230, 200);
     padding: 2dp 0dp;
-    margin-bottom: 2dp;
+    margin-bottom: 1dp;
     border-bottom-width: 1dp;
-    border-bottom-color: rgba(100, 130, 220, 60);
+    border-bottom-color: rgba(100, 130, 220, 80);
     white-space: nowrap;
 }
 
+/* ── Data rows ── */
 .lb-row {
     display: block;
     color: rgba(190, 200, 225, 180);
     font-size: 8dp;
     padding: 1dp 0dp;
-    margin-bottom: 1dp;
+    margin-bottom: 0dp;
     border-left-width: 2dp;
     border-left-color: transparent;
     white-space: nowrap;
 }
+
+/* Alternating row tint (odd rows via nth-child not supported in RmlUi,
+   so we rely on tier borders + highlight for visual rhythm) */
+
+/* Tier-colored left borders */
+.lb-row.bronze  { border-left-color: rgba(205, 127, 50, 120); }
+.lb-row.silver  { border-left-color: rgba(192, 192, 192, 120); }
+.lb-row.gold    { border-left-color: rgba(255, 215, 0, 150); }
+.lb-row.plat    { border-left-color: rgba(229, 228, 226, 180); }
+.lb-row.diamond { border-left-color: rgba(185, 242, 255, 200); }
+
+/* My row highlight */
 .lb-row.highlight {
     color: rgba(255, 235, 100, 255);
-    background-color: rgba(255, 220, 0, 18);
+    background-color: rgba(255, 220, 0, 22);
     border-left-color: rgba(255, 210, 40, 230);
 }
 
-/* Column widths (inline-block) */
+/* Top 3 — stronger golden glow + gold accent border */
+.lb-row.top3 {
+    background-color: rgba(255, 215, 0, 30);
+    border-top-width: 1dp;
+    border-top-color: rgba(255, 215, 0, 60);
+}
+
+/* ── Column widths (inline-block) ── */
+
 .lb-col-rank {
     display: inline-block;
-    width: 24dp;
+    width: 22dp;
     text-align: center;
     color: rgba(150, 160, 180, 200);
+    font-size: 8dp;
+}
+
+/* Medal colors for top 3 */
+.lb-row.top3 .lb-col-rank {
+    font-weight: bold;
+}
+
+.lb-col-flag {
+    display: inline-block;
+    width: 16dp;
+    vertical-align: baseline;
+}
+
+.lb-flag-img {
+    display: inline;
+    width: 12dp;
+    height: 8dp;
+    vertical-align: baseline;
 }
 
 .lb-col-name {
     display: inline-block;
-    width: 140dp;
-    padding-left: 4dp;
+    width: 120dp;
+    padding-left: 2dp;
+    overflow: hidden;
 }
 
 .lb-row.highlight .lb-col-name {
     color: #fff;
 }
 
-.lb-col-wins {
+.lb-col-char {
     display: inline-block;
-    width: 32dp;
+    width: 28dp;
     text-align: center;
-    color: rgba(90, 240, 150, 255);
+    font-size: 7dp;
+    color: rgba(160, 180, 210, 160);
 }
 
-.lb-col-losses {
+.lb-col-wm {
     display: inline-block;
-    width: 32dp;
+    width: 48dp;
     text-align: center;
-    color: rgba(255, 70, 70, 255);
+    color: rgba(90, 240, 150, 230);
+    font-size: 8dp;
 }
 
 .lb-col-pct {
     display: inline-block;
-    width: 40dp;
+    width: 36dp;
     text-align: center;
     color: rgba(170, 180, 210, 200);
 }
 
+.lb-col-grade {
+    display: inline-block;
+    width: 20dp;
+    text-align: center;
+    font-size: 8dp;
+    font-weight: bold;
+    color: rgba(200, 210, 230, 200);
+}
+
+/* Grade colors by tier */
+.lb-row.bronze .lb-col-grade   { color: #cd7f32; }
+.lb-row.silver .lb-col-grade   { color: #c0c0c0; }
+.lb-row.gold .lb-col-grade     { color: #ffd700; }
+.lb-row.plat .lb-col-grade     { color: #e5e4e2; }
+.lb-row.diamond .lb-col-grade  { color: #b9f2ff; }
+
 .lb-col-rating {
     display: inline-block;
-    width: 60dp;
+    width: 54dp;
     text-align: center;
     color: rgba(140, 210, 255, 235);
 }
@@ -145,6 +206,7 @@
     width: 30dp;
     text-align: center;
     color: rgba(150, 160, 180, 200);
+    font-size: 7dp;
 }
 .lb-col-dc.dc-warn {
     color: rgba(255, 80, 80, 255);
@@ -154,9 +216,9 @@
 /* Tier-specific rating colors */
 .lb-row.bronze .lb-col-rating   { color: #cd7f32; }
 .lb-row.silver .lb-col-rating   { color: #c0c0c0; }
-.lb-row.gold .lb-col-rating     { color: #ffd700; font-effect: shadow(1dp 1dp rgba(255, 215, 0, 0.4)); }
-.lb-row.plat .lb-col-rating     { color: #e5e4e2; font-weight: bold; font-effect: shadow(1dp 1dp rgba(229, 228, 226, 0.5)); }
-.lb-row.diamond .lb-col-rating  { color: #b9f2ff; font-weight: bold; font-effect: shadow(1dp 1dp rgba(185, 242, 255, 0.6)); }
+.lb-row.gold .lb-col-rating     { color: #ffd700; font-effect: shadow(1dp 1dp rgba(255, 215, 0, 0.3)); }
+.lb-row.plat .lb-col-rating     { color: #e5e4e2; font-weight: bold; font-effect: shadow(1dp 1dp rgba(229, 228, 226, 0.4)); }
+.lb-row.diamond .lb-col-rating  { color: #b9f2ff; font-weight: bold; font-effect: shadow(1dp 1dp rgba(185, 242, 255, 0.5)); }
 
 /* ── Empty state ── */
 #lb-empty {
@@ -169,7 +231,7 @@
     text-align: center;
     padding: 60dp 0;
     font-size: 8dp;
-    color: rgba(140, 150, 180, 100);
+    color: rgba(140, 150, 180, 120);
 }
 
 /* ── Pagination footer ── */
@@ -189,7 +251,7 @@
 .lb-nav {
     display: inline;
     color: rgba(255, 210, 70, 240);
-    margin: 0 16dp;
+    margin: 0 12dp;
 }
 .lb-page-info {
     display: inline;

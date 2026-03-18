@@ -2176,7 +2176,7 @@ static s32 comm_sse(WORK* wk, UNK11* ctc) {
     }
 
     if (wk->cg_se) {
-        sound_effect_request[wk->cg_se](wk, check_xcopy_filter_se_req(wk));
+        Se_Dispatch(wk->cg_se, check_xcopy_filter_se_req(wk), wk);
     }
 
     return 1;
@@ -2498,7 +2498,7 @@ void check_cgd_patdat(WORK* wk) {
     }
 
     if (wk->cg_se) {
-        sound_effect_request[wk->cg_se](wk, check_xcopy_filter_se_req(wk));
+        Se_Dispatch(wk->cg_se, check_xcopy_filter_se_req(wk), wk);
     }
 
     if (wk->work_id == 1) {
