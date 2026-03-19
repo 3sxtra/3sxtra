@@ -300,7 +300,7 @@ void Setup_Next_Page(struct _TASK* task_ptr, u8 /* unused */) {
     if (task_ptr->r_no[1] == 0xE) {
         mode_type = 1;
         Menu_Max = Ex_Page_Data[Menu_Page];
-        save_w[1].extra_option.contents[Menu_Page][Menu_Max] = 1;
+        save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page][Menu_Max] = 1;
         Order_Dir[0x4E] = 1;
         effect_57_init(0x4E, MENU_HEADER_OPTION_MENU, 0, 0x45, 0);
         Order[0x73] = 3;
@@ -502,17 +502,17 @@ void Load_Replay_Sub(struct _TASK* task_ptr) {
         Direction_Working[3] = Replay_w.game_infor.Direction_Working;
         bg_w.stage = Replay_w.game_infor.stage;
         bg_w.area = 0;
-        save_w[3].Time_Limit = Replay_w.mini_save_w.Time_Limit;
-        save_w[3].Battle_Number[0] = Replay_w.mini_save_w.Battle_Number[0];
-        save_w[3].Battle_Number[1] = Replay_w.mini_save_w.Battle_Number[1];
-        save_w[3].Damage_Level = Replay_w.mini_save_w.Damage_Level;
-        save_w[3].extra_option = Replay_w.mini_save_w.extra_option;
+        save_w[SAVEW_REPLAY].Time_Limit = Replay_w.mini_save_w.Time_Limit;
+        save_w[SAVEW_REPLAY].Battle_Number[0] = Replay_w.mini_save_w.Battle_Number[0];
+        save_w[SAVEW_REPLAY].Battle_Number[1] = Replay_w.mini_save_w.Battle_Number[1];
+        save_w[SAVEW_REPLAY].Damage_Level = Replay_w.mini_save_w.Damage_Level;
+        save_w[SAVEW_REPLAY].extra_option = Replay_w.mini_save_w.extra_option;
         system_dir[3] = Replay_w.system_dir;
-        save_w[3].extra_option = Replay_w.mini_save_w.extra_option;
-        save_w[3].Pad_Infor[0] = Replay_w.mini_save_w.Pad_Infor[0];
-        save_w[3].Pad_Infor[1] = Replay_w.mini_save_w.Pad_Infor[1];
-        save_w[3].Pad_Infor[0].Vibration = 0;
-        save_w[3].Pad_Infor[1].Vibration = 0;
+        save_w[SAVEW_REPLAY].extra_option = Replay_w.mini_save_w.extra_option;
+        save_w[SAVEW_REPLAY].Pad_Infor[0] = Replay_w.mini_save_w.Pad_Infor[0];
+        save_w[SAVEW_REPLAY].Pad_Infor[1] = Replay_w.mini_save_w.Pad_Infor[1];
+        save_w[SAVEW_REPLAY].Pad_Infor[0].Vibration = 0;
+        save_w[SAVEW_REPLAY].Pad_Infor[1].Vibration = 0;
         cpExitTask(TASK_SAVER);
         break;
 
@@ -821,16 +821,16 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
 
         if (Menu_Cursor_Y[0] == 10) {
             SE_selected();
-            save_w[1].Difficulty = Game_Default_Data.Difficulty;
-            save_w[1].Time_Limit = Game_Default_Data.Time_Limit;
-            save_w[1].Battle_Number[0] = Game_Default_Data.Battle_Number[0];
-            save_w[1].Battle_Number[1] = Game_Default_Data.Battle_Number[1];
-            save_w[1].Damage_Level = Game_Default_Data.Damage_Level;
-            save_w[1].GuardCheck = Game_Default_Data.GuardCheck;
-            save_w[1].AnalogStick = Game_Default_Data.AnalogStick;
-            save_w[1].Handicap = Game_Default_Data.Handicap;
-            save_w[1].Partner_Type[0] = Game_Default_Data.Partner_Type[0];
-            save_w[1].Partner_Type[1] = Game_Default_Data.Partner_Type[1];
+            save_w[SAVEW_ARCADE].Difficulty = Game_Default_Data.Difficulty;
+            save_w[SAVEW_ARCADE].Time_Limit = Game_Default_Data.Time_Limit;
+            save_w[SAVEW_ARCADE].Battle_Number[0] = Game_Default_Data.Battle_Number[0];
+            save_w[SAVEW_ARCADE].Battle_Number[1] = Game_Default_Data.Battle_Number[1];
+            save_w[SAVEW_ARCADE].Damage_Level = Game_Default_Data.Damage_Level;
+            save_w[SAVEW_ARCADE].GuardCheck = Game_Default_Data.GuardCheck;
+            save_w[SAVEW_ARCADE].AnalogStick = Game_Default_Data.AnalogStick;
+            save_w[SAVEW_ARCADE].Handicap = Game_Default_Data.Handicap;
+            save_w[SAVEW_ARCADE].Partner_Type[0] = Game_Default_Data.Partner_Type[0];
+            save_w[SAVEW_ARCADE].Partner_Type[1] = Game_Default_Data.Partner_Type[1];
             Copy_Save_w();
             return;
         }
@@ -925,9 +925,9 @@ void Screen_Adjust_Sub(s16 PL_id) {
     Convert_Buff[2][0][0] = X_Adjust_Buff[2] & 0xFF;
     Convert_Buff[2][0][1] = Y_Adjust_Buff[2] & 0xFF;
     Convert_Buff[2][0][2] = dspwhPack(Disp_Size_H, Disp_Size_V);
-    save_w[1].Screen_Size = dspwhPack(Disp_Size_H, Disp_Size_V);
+    save_w[SAVEW_ARCADE].Screen_Size = dspwhPack(Disp_Size_H, Disp_Size_V);
     Convert_Buff[2][0][3] = sys_w.screen_mode;
-    save_w[1].Screen_Mode = sys_w.screen_mode;
+    save_w[SAVEW_ARCADE].Screen_Mode = sys_w.screen_mode;
 }
 
 /** @brief Check for screen-adjust exit (confirm / cancel). */
@@ -2501,22 +2501,22 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
             SE_dir_cursor_move();
         }
 
-        save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]]--;
+        save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]]--;
 
         if (Menu_Cursor_Y[0] == Menu_Max) {
-            if (save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] < 0) {
-                save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 0;
+            if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] < 0) {
+                save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 0;
                 IO_Result = SWK_LEFT_SHOULDER;
                 break;
             }
 
-            if (save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] != last_pos) {
+            if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] != last_pos) {
                 Message_Data->order = 1;
-                Message_Data->request = save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Max] + 32;
+                Message_Data->request = save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Max] + 32;
                 Message_Data->timer = 2;
             }
-        } else if (save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] < 0) {
-            save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] =
+        } else if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] < 0) {
+            save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] =
                 Ex_Menu_Max_Data[Menu_Page][Menu_Cursor_Y[0]];
         }
 
@@ -2527,27 +2527,27 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
             SE_dir_cursor_move();
         }
 
-        save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]]++;
+        save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]]++;
 
         if (Menu_Cursor_Y[0] == Menu_Max) {
-            if (save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] > 2) {
-                save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 2;
+            if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] > 2) {
+                save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 2;
                 IO_Result = SWK_RIGHT_TRIGGER;
                 return;
             }
 
-            if (save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] > 2) {
-                save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 2;
+            if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] > 2) {
+                save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 2;
             }
 
-            if (save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] != last_pos) {
+            if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] != last_pos) {
                 Message_Data->order = 1;
-                Message_Data->request = save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Max] + 32;
+                Message_Data->request = save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Max] + 32;
                 Message_Data->timer = 2;
             }
-        } else if (save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] >
+        } else if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] >
                    Ex_Menu_Max_Data[Menu_Page][Menu_Cursor_Y[0]]) {
-            save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 0;
+            save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 0;
         }
 
         return;
@@ -2566,11 +2566,11 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
             break;
         }
 
-        save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]]++;
+        save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]]++;
 
-        if (save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] >
+        if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] >
             Ex_Menu_Max_Data[Menu_Page][Menu_Cursor_Y[0]]) {
-            save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 0;
+            save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 0;
         }
 
         return;

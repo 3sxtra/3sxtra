@@ -80,7 +80,24 @@ extern FM_POS fm_pos[8];
 extern BackgroundParameters bg_prm[8];
 extern f32 scr_sc;
 
-extern struct _SAVE_W save_w[6];
+/**
+ * save_w[] slot index constants.
+ *
+ * The save_w[] array holds 6 copies of the _SAVE_W settings structure,
+ * one per game mode. Raw integer indices (save_w[1], save_w[4] etc.)
+ * are replaced with these named constants for readability.
+ *
+ * Note: save_w[Present_Mode] is also accessed via the CurrentSave() accessor.
+ */
+#define SAVEW_BASE      0  /**< Base/defaults slot (extra-option editing buffer) */
+#define SAVEW_ARCADE    1  /**< Arcade game options (difficulty, time, pad, sound) */
+#define SAVEW_NETWORK   2  /**< Network mode settings */
+#define SAVEW_REPLAY    3  /**< Replay mode settings */
+#define SAVEW_TRAINING  4  /**< Training mode settings */
+#define SAVEW_EXTRA     5  /**< Extra/mirror settings */
+#define SAVEW_COUNT     6  /**< Total number of save_w[] slots */
+
+extern struct _SAVE_W save_w[SAVEW_COUNT];
 
 /**
  * @brief Gets the pointer to the currently active save slot options

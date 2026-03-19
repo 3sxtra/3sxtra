@@ -559,7 +559,7 @@ void Game2_0() {
 
     case MODE_VERSUS:
         for (ix = 0; ix < 2; ix++) {
-            if (save_w[1].Partner_Type[ix]) {
+            if (save_w[SAVEW_ARCADE].Partner_Type[ix]) {
                 plw[ix].wu.pl_operator = 0;
                 Operator_Status[ix] = 0;
             }

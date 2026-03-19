@@ -112,7 +112,7 @@ void init_omop() {
 
     if (Mode_Type == MODE_NETWORK) {
         get_system_direction_parameter(&system_dir[2]);
-        get_extra_option_parameter(&save_w[2].extra_option);
+        get_extra_option_parameter(&save_w[SAVEW_NETWORK].extra_option);
     } else if (Demo_Flag == 0) {
         get_system_direction_parameter(&system_dir[0]);
         get_extra_option_parameter(&save_w->extra_option);

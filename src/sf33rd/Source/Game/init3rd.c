@@ -37,7 +37,6 @@
 #include "structs.h"
 
 /* === Named Constants === */
-#define SAVE_SLOT_COUNT 6        /**< Number of save/settings slots (save_w[], system_dir[], etc.) */
 #define INIT_STEP_COUNT 4        /**< Number of init task sub-steps */
 #define MAX_VITALITY_DEFAULT 160 /**< Default maximum vitality value */
 
@@ -124,12 +123,12 @@ void Init_Task_1st(struct _TASK* task_ptr) {
     Init_Load_Request_Queue_1st();
     Game_Data_Init();
 
-    for (ix = 0; ix < SAVE_SLOT_COUNT; ix++) {
+    for (ix = 0; ix < SAVEW_COUNT; ix++) {
         system_dir[ix] = Dir_Default_Data;
         permission_player[ix] = Permission_PL_Data;
 
         memcpy(&save_w[ix].extra_option.contents,
-               &save_w[0].extra_option.contents,
+               &save_w[SAVEW_BASE].extra_option.contents,
                sizeof(save_w[ix].extra_option.contents));
 
         Direction_Working[ix] = 0;
@@ -143,8 +142,8 @@ void Init_Task_1st(struct _TASK* task_ptr) {
 
     Copy_Check_w();
     Direction_Working[2] = 1;
-    save_w[4].Time_Limit = -1;
-    save_w[5].Time_Limit = -1;
+    save_w[SAVEW_TRAINING].Time_Limit = -1;
+    save_w[SAVEW_EXTRA].Time_Limit = -1;
     Setup_Difficult_V();
     Setup_Limit_Time();
     Reset_Bootrom = 1;

@@ -173,7 +173,7 @@ static void Entry_00() {
 
 /** @brief Display the "PRESS START" and per-player start prompts on title screen. */
 static void Disp_00_0() {
-    if (save_w[1].extra_option.contents[3][5] == 0) {
+    if (save_w[SAVEW_ARCADE].extra_option.contents[3][5] == 0) {
         return;
     }
 
@@ -929,7 +929,7 @@ static void Loser_Scene_Sub(s16 PL_id, s16 Jump_Index) {
 static s32 Loser_Sub_1P() {
     if ((Ck_Break_Into(p1sw_0, p1sw_1, 0) == 0) && !Request_Break[0]) {
         if (LOSER == 0) {
-            if (save_w[1].extra_option.contents[3][5]) {
+            if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
                 if (!ENTRY_TEXT_GATED)
                     SSPutStr(DE_X[0], 0, 9, "     CONTINUE?");
             }
@@ -945,7 +945,7 @@ static s32 Loser_Sub_1P() {
 static s32 Loser_Sub_2P() {
     if ((Ck_Break_Into(p2sw_0, p2sw_1, 1) == 0) && !Request_Break[1]) {
         if (LOSER == 1) {
-            if (save_w[1].extra_option.contents[3][5]) {
+            if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
                 if (!ENTRY_TEXT_GATED)
                     SSPutStr(DE_X[1], 0, 9, "     CONTINUE?");
             }
@@ -997,7 +997,7 @@ static s32 Credit_Continue_2P() {
 
 /** @brief Continue-screen sub — countdown timer, check for cut, advance to ranking or game-over. */
 static void Entry_Continue_Sub(s16 PL_id) {
-    if ((Continue_Count_Down[PL_id] == 0) && save_w[1].extra_option.contents[3][5]) {
+    if ((Continue_Count_Down[PL_id] == 0) && save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
         if (!ENTRY_TEXT_GATED) {
             SSPutStr(DE_X[PL_id], 0, 9, "     CONTINUE?");
             Disp_Personal_Count(PL_id, Continue_Count[PL_id]);
@@ -1107,7 +1107,7 @@ static void In_Game_Sub(s16 PL_id) {
         break;
 
     case 2:
-        if (save_w[1].extra_option.contents[3][5]) {
+        if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
             if (!ENTRY_TEXT_GATED)
                 SSPutStr(DE_X[PL_id], 0, 9, "     GAME OVER");
         }
@@ -1143,7 +1143,7 @@ static void In_Over_Sub(s16 PL_id) {
         break;
     }
 
-    if (save_w[1].extra_option.contents[3][5]) {
+    if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
         if (!ENTRY_TEXT_GATED)
             SSPutStr(DE_X[PL_id], 0, 9, "     GAME OVER");
     }
@@ -1170,7 +1170,7 @@ static s32 Flash_Start(s16 PL_id) {
             F_No1[PL_id] += 1;
             F_Timer[PL_id] = 50;
 
-            if (save_w[1].extra_option.contents[3][5]) {
+            if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
                 if (PL_id) {
                     if (!ENTRY_TEXT_GATED)
                         SSPutStr(DE_X[1], 0, 9, "   PRESS 2P START");
@@ -1185,7 +1185,7 @@ static s32 Flash_Start(s16 PL_id) {
 
     case 2:
         if (--F_Timer[PL_id]) {
-            if (save_w[1].extra_option.contents[3][5]) {
+            if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
                 if (PL_id) {
                     if (!ENTRY_TEXT_GATED)
                         SSPutStr(DE_X[1], 0, 9, "   PRESS 2P START");
@@ -1206,7 +1206,7 @@ static s32 Flash_Start(s16 PL_id) {
         /* fallthrough */
 
     default:
-        if (save_w[1].extra_option.contents[3][5]) {
+        if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
             if (!ENTRY_TEXT_GATED)
                 SSPutStr(DE_X[1], 0, 9, "     CONTINUE?");
         }

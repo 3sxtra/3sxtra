@@ -47,10 +47,12 @@ FM_POS fm_pos[8];
 BackgroundParameters bg_prm[8];
 f32 scr_sc;
 
+#include "sf33rd/Source/Game/system/work_sys.h"
+
 MTX BgMATRIX[9];
 struct _TASK task[11];
 struct _REP_GAME_INFOR Rep_Game_Infor[11];
 _REPLAY_W Replay_w;
 SystemDir system_dir[6];
 Permission permission_player[6];
-struct _SAVE_W save_w[6];
+struct _SAVE_W save_w[SAVEW_COUNT];
