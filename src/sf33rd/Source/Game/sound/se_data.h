@@ -39,9 +39,6 @@ typedef enum SeHandlerType {
 /** @brief The handler-type lookup table (indexed by SE code). */
 extern const SeHandlerType se_handler_type[SE_DISPATCH_TABLE_SIZE];
 
-/** @brief Bonus-stage voice remap table. */
-extern const u16 Bonus_Voice_Data[768];
-
 /**
  * @brief Dispatch a sound effect request to the correct handler.
  *

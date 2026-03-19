@@ -9,6 +9,7 @@
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/ending/end_main.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
@@ -360,7 +361,7 @@ static void end_601_2000() {
         bgw_ptr->free = 0;
         bgw_ptr->old_pos_x = 16;
 
-        if (Country == 1 || Country == 8) {
+        if (Country == COUNTRY_JAPAN || Country == COUNTRY_KOREA) {
             effect_E6_init(0x2C);
             break;
         }

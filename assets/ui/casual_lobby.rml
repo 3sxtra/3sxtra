@@ -70,7 +70,7 @@
         <!-- Right: Player List + Chat column -->
         <div id="lobby-chat-col">
             <!-- Player List -->
-            <div class="section-header">PLAYERS ({{player_count}}/8)</div>
+            <div class="section-header">PLAYERS ({{player_count}}/{{max_players}})</div>
             <div id="player-list">
                 <div data-for="pl : room_players">
                     <div data-if="pl.index < player_count" class="player-row"

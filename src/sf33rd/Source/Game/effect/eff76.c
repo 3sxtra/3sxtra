@@ -13,6 +13,7 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/grade.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/ranking.h"
@@ -628,7 +629,7 @@ void Setup_Color_L1(WORK_Other* ewk) {
 }
 
 s32 chkNameAkuma(s32 plnum, s32 rnum) {
-    if ((plnum == 14) && ((Country == 4) || (Country == 2) || (Country == 3))) {
+    if ((plnum == 14) && ((Country == COUNTRY_EUROPE) || (Country == COUNTRY_USA) || (Country == COUNTRY_ASIA))) {
         return rnum;
     }
 

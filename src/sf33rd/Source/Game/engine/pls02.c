@@ -47,6 +47,7 @@
 #include "sf33rd/Source/Game/engine/plpdm.h"
 #include "sf33rd/Source/Game/engine/pls01.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/sound/se_data.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
@@ -1174,7 +1175,7 @@ static void dead_voice_request2(PLW* wk) {
     s16 secd2;
     s16 ks = 0;
 
-    if (wk->metamorphose != 0 && Country != 8) {
+    if (wk->metamorphose != 0 && Country != COUNTRY_KOREA) {
         ks = 0x600;
     }
 

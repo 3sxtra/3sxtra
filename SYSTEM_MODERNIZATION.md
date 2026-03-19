@@ -21,28 +21,15 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 7 | Character Entrance Animations | MEDIUM | `AppearTypeCallbacks` registry | `appear_registry.h/.c`, `ap_all.c` |
 | 8 | TASK System (Phases 1–3) | MEDIUM | Named constants + accessor functions | `menu_task.h/.c`, `init_task.h/.c`, 8 modified files |
 | 9 | `Debug_w[]` Magic Number Constants | LOW | `DebugOption` enum in `debug_config.h` | 38 files already use `DEBUG_*` named constants |
+| 10 | `Country` Region Code Constants | VERY LOW | `#define` constants in `country_region.h` | 12 files, `eff*.c`, `init3rd.c`, `game.c`, etc. |
+| 11 | SE Handler Visibility Reduction | LOW | Forward decls in `se_data.c`, removed from `se.h` | `se.h`, `se_data.c` |
+| 12 | `Bonus_Voice_Data` Integration | LOW | `Check_Bonus_SE` moved into `Se_Dispatch` pre-processing | `se.c`, `se_data.c`, `se_data.h` |
 
 ---
 
 ## Next Wave: Safe Improvement Candidates (Sorted by Priority)
 
-### 1. `Country` Region Code Constants
-**Risk: 🟢 VERY LOW** · **Effort: SMALL** · **17 files**
-
-`Country` is compared with raw integers (`Country != 8`, `Country == 1`) in 17 files. No enum or named constants exist.
-
-**Opportunity:** Define `COUNTRY_JAPAN`, `COUNTRY_USA`, `COUNTRY_ASIA`, etc. and replace all bare comparisons.
-
-```
-Before: if (Country != 8)
-After:  if (Country != COUNTRY_KOREA)
-```
-
-**Hotspots:** `next_cpu.c` (7), `sel_pl.c` (7), `eff35.c` (4), `init3rd.c` (3)
-
----
-
-### 2. `save_w[Present_Mode]` Accessor
+### 1. `save_w[Present_Mode]` Accessor
 **Risk: 🟢 LOW** · **Effort: SMALL** · **17 files, 91 uses**
 
 The pattern `save_w[Present_Mode].X` is used 91 times across 17 files. A tiny accessor would simplify all call sites.
@@ -56,28 +43,14 @@ After:  CurrentSave()->Battle_Number[Play_Type]
 
 ---
 
-### 3. SE Handler Visibility Reduction (`se.h`)
-**Risk: 🟡 LOW** · **Effort: SMALL** · **2 files**
-
-All 8 SE handler functions (`Call_Se`, `Se_Shock`, `Se_Myself`, etc.) are declared in `se.h` with public visibility, but after the `Se_Dispatch` modernization they are only called from `se_data.c`. They could be made `static` and removed from the public header.
-
----
-
-### 4. `Bonus_Voice_Data` Integration
-**Risk: 🟡 LOW** · **Effort: SMALL** · **3 files**
-
-`Bonus_Voice_Data[768]` is a SE-code remap table for bonus stages, only used in 3 files. The bonus remap logic in `Check_Bonus_SE()` could be folded into `Se_Dispatch` as an optional pre-processing step, unifying all sound dispatch in one place.
-
----
-
-### 5. `game_globals.c` Decomposition
+### 2. `game_globals.c` Decomposition
 **Risk: 🟢 LOW** · **Effort: MEDIUM** · **1 → many files**
 
 `game_globals.c` is a 606-line dump of global variable definitions — a grab-bag of unrelated state (player data, stage config, timer state, mode flags). Splitting into domain-specific files is purely organizational.
 
 ---
 
-### 6. Remaining `task[TASK_*]` Direct Accesses
+### 3. Remaining `task[TASK_*]` Direct Accesses
 **Risk: 🟡 LOW** · **Effort: MEDIUM** · **12 files**
 
 The TASK system modernization created accessor functions for `TASK_MENU` and `TASK_INIT`, but 10 `.c` files still use `task[TASK_*]` directly for other slots.

@@ -12,6 +12,7 @@
  */
 
 #include "sf33rd/Source/Game/sound/sound3rd.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "common.h"
 #include "main.h"
 #include "port/sound/adx.h"
@@ -703,7 +704,7 @@ static void bgm_volume_setup(s16 data) {
     bgm_vol_now = bhd + bgm_vol_mix;
 
     if (bgm_half_down) {
-        if (Country == 1) {
+        if (Country == COUNTRY_JAPAN) {
             bgm_vol_now /= 3;
         } else {
             bgm_vol_now = 0;

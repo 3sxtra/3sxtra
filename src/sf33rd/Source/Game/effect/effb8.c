@@ -10,6 +10,7 @@
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
@@ -129,7 +130,7 @@ s32 effect_B8_init(s8 WIN_PL_NO, s16 timer) {
 }
 
 static u16 effb8_normal_or_senyou() {
-    if (Country != 1) {
+    if (Country != COUNTRY_JAPAN) {
         return 0;
     }
 

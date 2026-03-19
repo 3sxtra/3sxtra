@@ -138,7 +138,7 @@
                          class="peer-list-item"
                          data-class-selected="r.selected">
                         <span class="peer-list-name">{{r.name}}</span>
-                        <span class="room-list-count">{{r.player_count}}/8</span>
+                        <span class="room-list-count">{{r.player_count}}/{{r.max_players}}</span>
                     </div>
                     <div class="peer-list-empty" data-if="room_count == 0">
                         no active rooms

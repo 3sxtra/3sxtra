@@ -13,6 +13,7 @@
  */
 
 #include "sf33rd/Source/Game/system/sys_sub.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "port/menu_task.h"
 #include "port/init_task.h"
 #include "common.h"
@@ -847,7 +848,7 @@ void Setup_Limit_Time() {
 
     limit = Level_18_Data[save_w[Present_Mode].Difficulty][16];
     limit += 20;
-    if (Country == 1) {
+    if (Country == COUNTRY_JAPAN) {
         Limit_Time = 1241;
     } else {
         Limit_Time = 1061;

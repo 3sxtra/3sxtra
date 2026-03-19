@@ -132,7 +132,8 @@ int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page,
 typedef struct {
     char code[8];     // 4-char room code + null
     char name[32];    // Room display name
-    int player_count; // Current player count (1-8)
+    int player_count; // Current player count
+    int max_players;  // Room capacity (8 default, 16 for Open Arena)
     int ft;           // First-To match mode (1=unranked, default for region rooms)
 } RoomListItem;
 
@@ -142,7 +143,7 @@ int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms);
 
 // === Phase 5: Casual Lobbies (8-Player Rooms) ===
 
-#define MAX_ROOM_PLAYERS 8
+#define MAX_ROOM_PLAYERS 16
 #define MAX_CHAT_MESSAGES 50
 
 typedef struct {
@@ -181,7 +182,7 @@ typedef struct {
 
 // Sync room logic
 bool LobbyServer_CreateRoom(const char* name, int ft, RoomState* out_room);
-bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room);
+bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room, char* out_error, size_t error_size);
 bool LobbyServer_LeaveRoom(const char* room_code);
 bool LobbyServer_JoinQueue(const char* room_code);
 bool LobbyServer_LeaveQueue(const char* room_code);

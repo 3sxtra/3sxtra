@@ -69,6 +69,7 @@ static Rml::String s_room_name;
 static Rml::String s_my_id;
 
 static int s_player_count = 0;
+static int s_max_players = 8;
 static int s_match_active = 0;
 static int s_match_winner = 0;
 static Rml::String s_match_p1_name;
@@ -198,6 +199,7 @@ extern "C" void rmlui_casual_lobby_init(void) {
     ctor.Bind("room_code", &s_room_code);
     ctor.Bind("room_name", &s_room_name);
     ctor.Bind("player_count", &s_player_count);
+    ctor.Bind("max_players", &s_max_players);
 
     ctor.Bind("match_active", &s_match_active);
     ctor.Bind("match_winner", &s_match_winner);
@@ -343,6 +345,7 @@ static void apply_room_state_to_model(void) {
     s_model_handle.DirtyVariable("room_code");
     s_model_handle.DirtyVariable("room_name");
     s_model_handle.DirtyVariable("player_count");
+    s_model_handle.DirtyVariable("max_players");
     s_model_handle.DirtyVariable("match_active");
     s_model_handle.DirtyVariable("match_p1_name");
     s_model_handle.DirtyVariable("match_p2_name");
@@ -825,6 +828,8 @@ extern "C" void rmlui_casual_lobby_update(void) {
 
 extern "C" void rmlui_casual_lobby_set_room(const char* room_code) {
     s_room_code = room_code;
+    // Derive max_players from room code — OPEN arena is 16, everything else 8
+    s_max_players = (strcmp(room_code, "OPEN") == 0) ? 16 : 8;
     refresh_room_state_from_server();
 }
 

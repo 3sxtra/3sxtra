@@ -8,6 +8,7 @@
 #include "sf33rd/Source/Game/effect/effb6.h"
 #include "sf33rd/Source/Game/effect/effect.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 
 const u16 plXXtxt0[2] = { 0, 0xFFFF };
@@ -201,7 +202,7 @@ void effect_F9_move(WORK_Other* ewk) {
             } else {
                 ewk->wu.old_rno[5]++;
 
-                if (Country != 1 && Country != 8 && (ewk->wu.old_rno[5]++, ewk->wu.old_rno[4] < ewk->wu.old_rno[5])) {
+                if (Country != COUNTRY_JAPAN && Country != COUNTRY_KOREA && (ewk->wu.old_rno[5]++, ewk->wu.old_rno[4] < ewk->wu.old_rno[5])) {
                     ewk->wu.old_rno[5] = ewk->wu.old_rno[4];
                 }
 

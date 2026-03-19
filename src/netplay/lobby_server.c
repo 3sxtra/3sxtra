@@ -510,6 +510,7 @@ int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms) {
         cjson_get_string(item, "code", r->code, sizeof(r->code));
         cjson_get_string(item, "name", r->name, sizeof(r->name));
         r->player_count = cjson_get_int(item, "player_count", 0);
+        r->max_players = cjson_get_int(item, "max_players", 8);
         r->ft = cjson_get_int(item, "ft", 1);
         if (strlen(r->code) > 0)
             count++;
@@ -854,16 +855,39 @@ bool LobbyServer_CreateRoom(const char* name, int ft, RoomState* out_room) {
     return true;
 }
 
-bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room) {
+bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room, char* out_error, size_t error_size) {
     if (!Identity_IsInitialized())
         return false;
+
+    if (out_error && error_size > 0)
+        out_error[0] = '\0';
 
     char* body = json_body_pid_room(Identity_GetPlayerId(), room_code);
     char response[HTTP_BUF_SIZE];
     bool ok = http_request("POST", "/room/join", body, response, sizeof(response));
     free(body);
 
-    if (ok && out_room) {
+    if (!ok) {
+        // Try to extract error message from server response
+        if (out_error && error_size > 0 && response[0]) {
+            cJSON* err_json = cJSON_Parse(response);
+            if (err_json) {
+                char err_msg[64] = {0};
+                cjson_get_string(err_json, "error", err_msg, sizeof(err_msg));
+                if (strcmp(err_msg, "Region restricted") == 0) {
+                    char your_region[16] = {0};
+                    cjson_get_string(err_json, "your_region", your_region, sizeof(your_region));
+                    snprintf(out_error, error_size, "Region locked — you are in %s", your_region);
+                } else if (err_msg[0]) {
+                    snprintf(out_error, error_size, "%s", err_msg);
+                }
+                cJSON_Delete(err_json);
+            }
+        }
+        return false;
+    }
+
+    if (out_room) {
         cJSON* root = cJSON_Parse(response);
         if (root) {
             const cJSON* room_obj = cJSON_GetObjectItemCaseSensitive(root, "room");

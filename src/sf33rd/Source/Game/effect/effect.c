@@ -10,6 +10,7 @@
 #include "sf33rd/Source/Game/effect/effxx.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 
@@ -540,7 +541,7 @@ s32 setup_command_number(PLW* wk, u8 data) {
 u8 old_my_char_check(u8 num, u8 flag) {
     switch (flag) {
     case 0:
-        if ((Country == 1) || (Country == 8)) {
+        if ((Country == COUNTRY_JAPAN) || (Country == COUNTRY_KOREA)) {
             if (num > 14) {
                 num += 1;
             }

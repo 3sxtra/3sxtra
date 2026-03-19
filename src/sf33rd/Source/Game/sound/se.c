@@ -25,8 +25,6 @@
 
 #define SDEB_SIZE 8
 #define BGM_STAGE_DATA_SIZE 22
-#define BONUS_VOICE_DATA_SIZE 768
-#define BONUS_SE_CODE_BASE 0x100
 #define SE_PLAYER_OFFSET 0x300 /* Per-player SE code stride (P1 base, P1 + 0x300 = P2) */
 
 u8 gSeqStatus[1];
@@ -110,7 +108,6 @@ void Se_Shock(WORK_Other* ewk, u16 Code) {
 
     s16 assign1;
 
-    Code = Check_Bonus_SE(Code);
 
     if (ewk->wu.work_id == 1) {
         em = (PLW*)ewk->wu.target_adrs;
@@ -171,7 +168,6 @@ void Se_Let(WORK_Other* ewk, u16 Code) {
     s16 xx;
     s16 uid;
 
-    Code = Check_Bonus_SE(Code);
 
     if (ewk->wu.work_id == 1) {
         uid = ewk->wu.id;
@@ -305,22 +301,7 @@ u16 Get_Position(PLW* wk) {
     return 0x70;
 }
 
-/** @brief Remap SE code through the bonus-stage voice table if applicable. */
-u16 Check_Bonus_SE(u16 Code) {
-    if ((Bonus_Game_Flag == 0) || (Bonus_Type != 20)) {
-        return Code;
-    }
 
-    if (Code < 0x100) {
-        return Code;
-    }
-
-    if (Code >= BONUS_SE_CODE_BASE + BONUS_VOICE_DATA_SIZE) {
-        return Code;
-    }
-
-    return Bonus_Voice_Data[Code - BONUS_SE_CODE_BASE];
-}
 
 /** @brief Push a sound code into the 8-deep debug ring buffer. */
 void Store_Sound_Code(u16 code, SoundRequestData* rmc) {

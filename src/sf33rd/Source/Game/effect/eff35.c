@@ -12,6 +12,7 @@
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/slowf.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/stage/bg.h"
@@ -442,7 +443,7 @@ s32 effect_35_init(s16 wait_timer, s16 c_type) {
 
     switch (c_type) {
     case 5:
-        if (Country == 1 || Country == 8) {
+        if (Country == COUNTRY_JAPAN || Country == COUNTRY_KOREA) {
             char_num = 5;
         } else {
             char_num = 9;
@@ -451,7 +452,7 @@ s32 effect_35_init(s16 wait_timer, s16 c_type) {
         break;
 
     case 7:
-        if (Country == 1 || Country == 8) {
+        if (Country == COUNTRY_JAPAN || Country == COUNTRY_KOREA) {
             char_num = 7;
         } else {
             char_num = 8;

@@ -79,10 +79,11 @@ struct RoomItem {
     Rml::String code;
     Rml::String name;
     int player_count;
+    int max_players;
     bool selected;
 
     bool operator==(const RoomItem& o) const {
-        return code == o.code && name == o.name && player_count == o.player_count && selected == o.selected;
+        return code == o.code && name == o.name && player_count == o.player_count && max_players == o.max_players && selected == o.selected;
     }
     bool operator!=(const RoomItem& o) const {
         return !(*this == o);
@@ -139,6 +140,7 @@ static SDL_AtomicInt s_room_async_active = { 0 }; // 1 = background op in progre
 static SDL_AtomicInt s_room_async_done = { 0 }; // 1 = result ready
 static SDL_AtomicInt s_room_async_ok = { 0 };   // 1 = success, 0 = fail
 static char s_room_async_code[16] = { 0 };      // resulting room code on success
+static char s_room_async_error[128] = { 0 };    // error message on failure
 
 struct AsyncRoomData {
     int action;    // 1 = create, 2 = join
@@ -156,7 +158,11 @@ static int SDLCALL async_room_fn(void* data) {
     if (d->action == 1) {
         ok = LobbyServer_CreateRoom(d->name, d->ft, &room);
     } else if (d->action == 2) {
-        ok = LobbyServer_JoinRoom(d->code, &room);
+        char err[128] = {0};
+        ok = LobbyServer_JoinRoom(d->code, &room, err, sizeof(err));
+        if (!ok && err[0]) {
+            snprintf(s_room_async_error, sizeof(s_room_async_error), "%s", err);
+        }
     }
 
     if (ok) {
@@ -294,6 +300,7 @@ extern "C" void rmlui_network_lobby_init(void) {
         h.RegisterMember("code", &RoomItem::code);
         h.RegisterMember("name", &RoomItem::name);
         h.RegisterMember("player_count", &RoomItem::player_count);
+        h.RegisterMember("max_players", &RoomItem::max_players);
         h.RegisterMember("selected", &RoomItem::selected);
     }
     ctor.RegisterArray<std::vector<RoomItem>>();
@@ -608,11 +615,17 @@ extern "C" void rmlui_network_lobby_update(void) {
 
             SDL_Log("[NetworkLobby] Room entered: %s", s_room_async_code);
         } else {
-            s_room_status = "FAILED";
+            // Failure — show error message from server if available
+            if (s_room_async_error[0]) {
+                s_room_status = Rml::String(s_room_async_error);
+                s_room_async_error[0] = '\0';
+            } else {
+                s_room_status = "FAILED";
+            }
             s_join_room_code = "";
             s_model_handle.DirtyVariable("room_status");
             s_model_handle.DirtyVariable("join_room_code");
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[NetworkLobby] Room create/join failed");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[NetworkLobby] Room create/join failed: %s", s_room_status.c_str());
         }
     }
 
@@ -736,6 +749,7 @@ extern "C" void rmlui_network_lobby_update(void) {
                 item.code = Rml::String(s_room_fetch_buf[i].code);
                 item.name = Rml::String(s_room_fetch_buf[i].name);
                 item.player_count = s_room_fetch_buf[i].player_count;
+                item.max_players = s_room_fetch_buf[i].max_players;
                 item.selected = (i == s_room_list_idx);
                 next.push_back(item);
             }

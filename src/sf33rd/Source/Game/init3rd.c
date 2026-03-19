@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/init3rd.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "main.h"
 #include "port/save/native_save.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -158,12 +159,12 @@ void Init_Task_1st(struct _TASK* task_ptr) {
 /**
  * @brief Set difficulty values based on the region (Country).
  *
- * Japan (Country==1) uses difficulty row 0, all other regions use row 1.
+ * Japan (Country==COUNTRY_JAPAN) uses difficulty row 0, all other regions use row 1.
  */
 static void Setup_Difficult_V() {
     u8 country;
 
-    if (Country == 1) {
+    if (Country == COUNTRY_JAPAN) {
         country = 0;
     } else {
         country = 1;

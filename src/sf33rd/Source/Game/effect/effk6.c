@@ -13,6 +13,7 @@
 #include "sf33rd/Source/Game/engine/charset.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "sf33rd/Source/Game/rendering/texcash.h"
 #include "sf33rd/Source/Game/screen/sel_data.h"
@@ -403,7 +404,7 @@ static s16 Setup_K6_Index(WORK_Other* ewk) {
 }
 
 s32 chkNameSuv(s32 plnum, s32 rnum) {
-    if (plnum == 20 && (Country == 4 || Country == 2 || Country == 3)) {
+    if (plnum == 20 && (Country == COUNTRY_EUROPE || Country == COUNTRY_USA || Country == COUNTRY_ASIA)) {
         return rnum;
     }
 

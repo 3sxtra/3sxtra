@@ -15,6 +15,7 @@
  */
 
 #include "sf33rd/Source/Game/game.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "port/menu_task.h"
 #include "port/init_task.h"
 #include "common.h"
@@ -863,7 +864,7 @@ void Game03() {
                 Rep_Game_Infor[10].winner = Winner_id;
                 Switch_Screen_Init(0);
 
-                if (Country == 3) {
+                if (Country == COUNTRY_ASIA) {
                     Rep_Game_Infor[10].play_type = 4;
                 }
 

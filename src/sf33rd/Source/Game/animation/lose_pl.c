@@ -15,6 +15,7 @@
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/pls02.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/system/country_region.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
@@ -143,7 +144,7 @@ void Lose_30000(PLW* wk) {
         case 0:
             wk->wu.routine_no[3]++;
             lose_rno[0] = lose_rno[1] = lose_rno[2] = 0;
-            if (Country != 1) {
+            if (Country != COUNTRY_JAPAN) {
                 set_char_move_init(&wk->wu, 9, 0x3A);
             } else {
                 set_char_move_init(&wk->wu, 9, 0x38);
@@ -164,7 +165,7 @@ void Lose_30000(PLW* wk) {
         case 0:
             wk->wu.routine_no[3]++;
             lose_rno[0] = lose_rno[1] = lose_rno[2] = 0;
-            if (Country != 1) {
+            if (Country != COUNTRY_JAPAN) {
                 set_char_move_init(&wk->wu, 9, 0x1C);
             } else {
                 set_char_move_init(&wk->wu, 9, 0x18);
