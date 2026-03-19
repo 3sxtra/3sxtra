@@ -21,9 +21,16 @@ typedef struct TestRunnerConfiguration {
     const char* inputs_path;
 } TestRunnerConfiguration;
 
+typedef struct RendererConfiguration {
+    const char* plugin_name;
+} RendererConfiguration;
+
 typedef struct Configuration {
     NetplayConfiguration netplay;
     TestRunnerConfiguration test;
+    RendererConfiguration renderer;
+    int argc;
+    const char** argv;
 } Configuration;
 
 extern Configuration configuration;

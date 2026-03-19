@@ -814,3 +814,7 @@ if(ENABLE_TESTS)
     add_subdirectory(tests)
 endif()
 
+
+# Renderer HD plugin
+add_subdirectory(plugins/renderer_hd)
+

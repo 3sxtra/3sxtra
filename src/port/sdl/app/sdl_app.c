@@ -36,8 +36,9 @@
 #include "port/sdl/app/sdl_app_scale.h"
 #include "port/sdl/app/sdl_app_screenshot.h"
 #include "port/sdl/app/sdl_app_shader_config.h"
-
 #include "port/config/cli_parser.h"
+#include "configuration.h"
+#include "port/renderer_plugin.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/rmlui/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui/rmlui_button_config.h"
@@ -617,6 +618,10 @@ int SDLApp_Init() {
     }
     BezelSystem_LoadTextures();
 
+    if (configuration.renderer.plugin_name != NULL) {
+        RendererPlugin_Load(configuration.renderer.plugin_name, configuration.argc, configuration.argv);
+    }
+
     SDL_free(base_path);
 
     return 0;
@@ -624,6 +629,7 @@ int SDLApp_Init() {
 
 /** @brief Shut down SDL, release shaders, destroy window. */
 void SDLApp_Quit() {
+    RendererPlugin_Unload();
     Broadcast_Shutdown();
     SDLGameRenderer_Shutdown();
     SDLTextRenderer_Shutdown();

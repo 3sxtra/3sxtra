@@ -10,6 +10,7 @@
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/renderer/sprite_override.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
+#include "port/renderer_plugin.h"
 
 // For screen space Z conversion
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
@@ -287,11 +288,6 @@ static void compute_tile_bbox_ext(const TileMapEntry* trsptr, s32 count, const u
  * @return true if the HD override was drawn; false if no override exists.
  */
 static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index, const CGTileCacheEntry* cge) {
-    void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
-    if (hd_tex == NULL) {
-        return false;
-    }
-
     SpriteBox box;
     compute_tile_bbox(cge, flip_flags, &box);
 
@@ -301,6 +297,18 @@ static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index, co
     Vec3 tl_out, br_out;
     njCalcPoint(NULL, &tl_in, &tl_out);
     njCalcPoint(NULL, &br_in, &br_out);
+
+    if (RENDERER_HAS_PLUGIN()) {
+        if (g_renderer_plugin->TryRenderSprite(group_index, wk->cg_number, tl_out.x, tl_out.y, tl_out.z, (flip_flags & 0x8000) ? 1 : 0, 0xFFFFFFFF)) {
+            appRenewTempPriority(wk->position_z);
+            return true;
+        }
+    }
+
+    void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
+    if (hd_tex == NULL) {
+        return false;
+    }
 
     /* Handle flipped transforms: take min/max of transformed corners */
     float draw_x = fminf(tl_out.x, br_out.x);
@@ -326,11 +334,6 @@ static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index, co
  */
 static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index, const TileMapEntry* trsptr, s32 count,
                                        const u32* textbl) {
-    void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
-    if (hd_tex == NULL) {
-        return false;
-    }
-
     SpriteBox box;
     compute_tile_bbox_ext(trsptr, count, textbl, flip_flags, &box);
 
@@ -340,6 +343,18 @@ static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index
     Vec3 tl_out, br_out;
     njCalcPoint(NULL, &tl_in, &tl_out);
     njCalcPoint(NULL, &br_in, &br_out);
+
+    if (RENDERER_HAS_PLUGIN()) {
+        if (g_renderer_plugin->TryRenderSprite(group_index, wk->cg_number, tl_out.x, tl_out.y, tl_out.z, (flip_flags & 0x8000) ? 1 : 0, 0xFFFFFFFF)) {
+            appRenewTempPriority(wk->position_z);
+            return true;
+        }
+    }
+
+    void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
+    if (hd_tex == NULL) {
+        return false;
+    }
 
     /* Handle flipped transforms: take min/max of transformed corners */
     float draw_x = fminf(tl_out.x, br_out.x);

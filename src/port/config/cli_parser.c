@@ -54,6 +54,10 @@ static void verify_configuration(void) {
  */
 
 void ParseCLI(int argc, char* argv[]) {
+    // Save original args for plugins
+    configuration.argc = argc;
+    configuration.argv = (const char**)argv;
+
     // Initialize defaults before parsing
     configuration.netplay.port = 50000;
 
@@ -124,6 +128,9 @@ void ParseCLI(int argc, char* argv[]) {
             } else {
                 SDLApp_SetRenderer(RENDERER_OPENGL);
             }
+        } else if (strcmp(argv[i], "--plugin") == 0 && i + 1 < argc) {
+            configuration.renderer.plugin_name = argv[++i];
+            printf("[CLI] Renderer plugin: %s\n", configuration.renderer.plugin_name);
         } else if (strcmp(argv[i], "--font-test") == 0) {
             g_font_test_mode = true;
         } else if (strcmp(argv[i], "--ui") == 0 && i + 1 < argc) {

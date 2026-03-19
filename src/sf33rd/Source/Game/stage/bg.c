@@ -8,6 +8,7 @@
 #include "port/config/paths.h"
 #include "port/mods/modded_stage.h"
 #include "port/sdl/renderer/sprite_override.h"
+#include "port/renderer_plugin.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/rendering/legacy_matrix.h"
@@ -81,6 +82,9 @@ static int bg_texture_type = 0; // tracks ramcnt type: 0x12=gameplay, 0x18=selec
 /** @brief Initialize background texture resources. */
 void Bg_TexInit() {
     bg_texture_type = 0;
+    if (RENDERER_HAS_PLUGIN()) {
+        g_renderer_plugin->ClearBGTileCache();
+    }
     ClearBGTileCache();
     s32 i;
 
@@ -1136,6 +1140,19 @@ void bgDrawOneChip(s32 x, s32 y, s32 xs, s32 ys, s32 gbix, u32 vtxCol, s32 ofsPa
         if ((scrDrawPos->x >= 384.0f) || (scrDrawPos[3].x < 0.0f) || (scrDrawPos->y >= 224.0f) ||
             (scrDrawPos[3].y < 0.0f)) {
             return;
+        }
+
+        if (RENDERER_HAS_PLUGIN()) {
+            void* hd_tex_plugin = g_renderer_plugin->LoadBGTileOverride(gbix);
+            if (hd_tex_plugin != NULL) {
+                float dx = scrDrawPos[0].x;
+                float dy = scrDrawPos[0].y;
+                float dw = scrDrawPos[3].x - scrDrawPos[0].x;
+                float dh = scrDrawPos[3].y - scrDrawPos[0].y;
+                float dz = flPS2ConvScreenFZ(scrDrawPos[0].z);
+                g_renderer_plugin->DrawBGTile(hd_tex_plugin, dx, dy, dw, dh, dz, vtxCol);
+                return;
+            }
         }
 
         /* HD background tile override - only during active gameplay stage
