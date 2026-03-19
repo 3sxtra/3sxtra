@@ -40,7 +40,7 @@ static void test_task_api(void **state) {
     assert_int_equal(task[TASK_PAUSE].free[0], 100);
 
     Saver2_Task_SetPhase(2);
-    assert_int_equal(task[7].r_no[0], 2);
+    assert_int_equal(task[TASK_SAVER2].r_no[0], 2);
 }
 
 int main(void) {

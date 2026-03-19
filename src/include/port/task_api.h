@@ -28,7 +28,7 @@ void PauseTask_SetPhase(int phase);
 /** @brief Set the timer (free[0]) for the pause task. */
 void PauseTask_SetTimer(int timer);
 
-/** @brief Set the phase for task 7. */
+/** @brief Set the phase for the saver2 task (TASK_SAVER2). */
 void Saver2_Task_SetPhase(int phase);
 
 #endif /* TASK_API_H */
