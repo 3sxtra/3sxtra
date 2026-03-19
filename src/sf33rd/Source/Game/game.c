@@ -18,6 +18,7 @@
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "port/menu_task.h"
 #include "port/init_task.h"
+#include "port/task_api.h"
 #include "common.h"
 
 /* Phase 3 RmlUi bypass */

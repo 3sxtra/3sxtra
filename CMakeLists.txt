@@ -388,7 +388,16 @@ target_link_libraries(3sx PRIVATE
     ZLIB::ZLIB
     ${LIBRASHADER_LIB}
     SDL3_shadercross::SDL3_shadercross
-    -Wl,--start-group rmlui rmlui_core rmlui_lua rmlui_debugger -Wl,--end-group
+    $<$<PLATFORM_ID:Darwin>:rmlui>
+    $<$<PLATFORM_ID:Darwin>:rmlui_core>
+    $<$<PLATFORM_ID:Darwin>:rmlui_lua>
+    $<$<PLATFORM_ID:Darwin>:rmlui_debugger>
+    $<$<NOT:$<PLATFORM_ID:Darwin>>:-Wl,--start-group>
+    $<$<NOT:$<PLATFORM_ID:Darwin>>:rmlui>
+    $<$<NOT:$<PLATFORM_ID:Darwin>>:rmlui_core>
+    $<$<NOT:$<PLATFORM_ID:Darwin>>:rmlui_lua>
+    $<$<NOT:$<PLATFORM_ID:Darwin>>:rmlui_debugger>
+    $<$<NOT:$<PLATFORM_ID:Darwin>>:-Wl,--end-group>
     lua_static
 )
 
