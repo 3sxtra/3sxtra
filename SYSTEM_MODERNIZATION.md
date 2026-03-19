@@ -27,26 +27,20 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 13 | Remaining `task[TASK_*]` Direct Accesses | LOW | Generic accessors + `TASK_SAVER2` enum | `task_api.h/.c`, `main.h`, 15 game-logic files migrated |
 | 14 | `save_w[Present_Mode]` Accessor | LOW | `CurrentSave()` inline accessor in `work_sys.h` | 17 files, 91 call-sites migrated |
 | 15 | `menu_input.c` Button Constants | LOW | Raw hex → `SWK_*` enum constants from `pad.h` | 62 replacements across 20+ functions |
+| 16 | `game_globals.c` Decomposition | LOW | 607-line grab-bag → 5 domain files under `globals/` | `player_globals.c`, `timer_hud_globals.c`, `score_globals.c`, `match_globals.c`, `combo_stage_globals.c` |
 
 ---
 
 ## Next Wave: Safe Improvement Candidates (Sorted by Priority)
 
-### 1. `game_globals.c` Decomposition
-**Risk: 🟢 LOW** · **Effort: MEDIUM** · **1 → many files**
-
-`game_globals.c` is a 606-line dump of global variable definitions — a grab-bag of unrelated state (player data, stage config, timer state, mode flags). Splitting into domain-specific files is purely organizational.
-
----
-
-### 2. `opening.c` Decomposition
+### 1. `opening.c` Decomposition
 **Risk: 🟢 LOW** · **Effort: LARGE** · **3,161 lines → split by scene**
 
 The opening cinematic is a single 3,161-line file with 19 scene handlers (`op_100_move`..`op_118_move`), 3 BG layer dispatchers, 241 hex constants, and 54 `switch` statements. Purely presentation code — zero risk to gameplay or netplay. Could split into `opening_scenes.c`, `opening_bg.c`, `opening_title.c`.
 
 ---
 
-### 3. `ending/` Data Table Extraction
+### 2. `ending/` Data Table Extraction
 **Risk: 🟢 LOW** · **Effort: MEDIUM** · **20+ files, ~7K lines total**
 
 The `ending/` directory has 20 per-character ending files (`end_00.c`..`end_20.c`) with heavy hex-literal magic numbers (300+ across the directory). The data tables in `end_data.c` (693 lines) could be separated more cleanly from the animation logic. Purely cinematic, no gameplay impact.

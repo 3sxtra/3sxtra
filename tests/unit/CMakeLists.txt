@@ -40,6 +40,17 @@ function(target_link_gekkonet_sdl3 TARGET_NAME)
 endfunction()
 
 # =============================================================================
+# Decomposed game globals (was game_globals.c, now split into domain files)
+# =============================================================================
+set(GAME_GLOBALS_SOURCES
+    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/globals/player_globals.c
+    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/globals/timer_hud_globals.c
+    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/globals/score_globals.c
+    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/globals/match_globals.c
+    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/globals/combo_stage_globals.c
+)
+
+# =============================================================================
 # Unit Tests
 # =============================================================================
 
@@ -63,7 +74,7 @@ add_unit_test(test_renderer_interface
 
 add_unit_test(test_game_state
     test_game_state.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
     ${PROJECT_SOURCE_DIR}/src/netplay/game_state.c
     mocks_globals.c
 )
@@ -78,7 +89,7 @@ add_unit_test(test_netplay_metrics
     test_netplay_metrics.c
     mocks_netplay.c
     mocks_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
     ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
@@ -90,7 +101,7 @@ add_unit_test(test_netplay_events
     test_netplay_events.c
     mocks_netplay.c
     mocks_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
     ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
@@ -104,7 +115,7 @@ add_unit_test(test_netplay_refactor
     test_netplay_refactor.c
     mocks_netplay.c
     mocks_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
     ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
@@ -116,7 +127,7 @@ add_unit_test(test_state_differ
     test_state_differ.c
     mocks_netplay.c
     mocks_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
     ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
@@ -127,7 +138,7 @@ target_link_gekkonet_sdl3(test_state_differ)
 add_unit_test(test_effect_state_persistence
     test_effect_state_persistence.c
     mocks_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
     ${PROJECT_SOURCE_DIR}/src/netplay/game_state.c
 )
 target_compile_definitions(test_effect_state_persistence PRIVATE MOCK_SUPPRESS_CONFLICTS)
@@ -138,7 +149,7 @@ add_unit_test(test_netplay_oob
     test_netplay_oob.c
     mocks_netplay.c
     mocks_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
     ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
@@ -150,7 +161,7 @@ add_unit_test(test_netplay_init
     test_netplay_init.c
     mocks_netplay.c
     mocks_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
     ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
@@ -163,7 +174,7 @@ add_unit_test(test_netplay_catchup
     test_netplay_catchup.c
     mocks_netplay.c
     mocks_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
     ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
@@ -181,7 +192,7 @@ add_unit_test(test_netplay_run
     test_netplay_run.c
     mocks_netplay.c
     mocks_globals.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
     ${PROJECT_SOURCE_DIR}/src/netplay/netplay.c
     ${PROJECT_SOURCE_DIR}/src/netplay/stun.c
     ${PROJECT_SOURCE_DIR}/src/netplay/sdl_net_adapter.c
@@ -272,13 +283,13 @@ target_link_sdl3_glad(test_bezel_layout)
 
 add_unit_test(test_globals_access
     test_globals_access.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
 )
 target_include_directories(test_globals_access PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 add_unit_test(test_game_state_roundtrip
     test_game_state_roundtrip.c
-    ${PROJECT_SOURCE_DIR}/src/sf33rd/Source/Game/game_globals.c
+    ${GAME_GLOBALS_SOURCES}
     ${PROJECT_SOURCE_DIR}/src/netplay/game_state.c
     mocks_globals.c
 )
