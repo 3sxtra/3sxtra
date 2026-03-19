@@ -47,32 +47,30 @@ static const char* s_char_names[20] = {
 };
 
 // ─── Grade label table (grade 0-11 → display string) ────────────
-static const char* s_grade_labels[12] = {
-    "F", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+", "S"
-};
+static const char* s_grade_labels[12] = { "F", "E", "E+", "D", "D+", "C", "C+", "B", "B+", "A", "A+", "S" };
 
 // ─── Leaderboard entry struct for data-for ──────────────────────
 
 struct LBItem {
     int rank;
-    Rml::String rank_str;      // "🥇"/"🥈"/"🥉" for top 3, number otherwise
+    Rml::String rank_str; // "🥇"/"🥈"/"🥉" for top 3, number otherwise
     Rml::String name;
-    Rml::String flag_icon;     // path to flag PNG
-    Rml::String char_name;     // 3-letter character abbreviation
-    Rml::String wins_matches;  // "W/M" format (e.g. "45/120")
+    Rml::String flag_icon;    // path to flag PNG
+    Rml::String char_name;    // 3-letter character abbreviation
+    Rml::String wins_matches; // "W/M" format (e.g. "45/120")
     int win_pct;
-    Rml::String grade_str;     // letter grade
+    Rml::String grade_str; // letter grade
     int dc_pct;
     Rml::String rating_str;
     Rml::String tier;
     bool is_me;
-    bool is_top3;              // rank 1-3 for medal styling
+    bool is_top3; // rank 1-3 for medal styling
 
     bool operator==(const LBItem& o) const {
         return rank == o.rank && rank_str == o.rank_str && name == o.name && flag_icon == o.flag_icon &&
                char_name == o.char_name && wins_matches == o.wins_matches && win_pct == o.win_pct &&
-               grade_str == o.grade_str && dc_pct == o.dc_pct && rating_str == o.rating_str &&
-               tier == o.tier && is_me == o.is_me && is_top3 == o.is_top3;
+               grade_str == o.grade_str && dc_pct == o.dc_pct && rating_str == o.rating_str && tier == o.tier &&
+               is_me == o.is_me && is_top3 == o.is_top3;
     }
     bool operator!=(const LBItem& o) const {
         return !(*this == o);
@@ -213,7 +211,8 @@ extern "C" void rmlui_leaderboard_update(void) {
                 // Country flag icon
                 if (e->country[0] && e->country[1]) {
                     char lower[3] = { (char)tolower((unsigned char)e->country[0]),
-                                      (char)tolower((unsigned char)e->country[1]), 0 };
+                                      (char)tolower((unsigned char)e->country[1]),
+                                      0 };
                     char path[64];
                     SDL_snprintf(path, sizeof(path), "../flags_icons/%s.png", lower);
                     item.flag_icon = Rml::String(path);

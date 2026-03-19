@@ -33,14 +33,14 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 19 | `save_w[]` Index Constants | LOW | `SAVEW_*` named constants in `work_sys.h` | `work_sys.h/.c`, `sys_sub.c`, `menu_input.c`, `entry.c`, `init3rd.c`, `game.c`, `sel_pl.c`, `sysdir.c` (~130 replacements across 9 files) |
 | 20 | `sys_sub.c` Decomposition | LOW | 2,015-line grab-bag → 4 domain files + trimmed core | `sys_replay.c` (replay record/playback), `sys_ranking.c` (ranking + opponent selection), `sys_options.c` (game option save/load), `sys_score.c` (HUD score/win/copyright). Core `sys_sub.c` trimmed to ~530 lines. `sys_sub.h` → umbrella header. |
 | 21 | `sc_sub.c` UI Decomposition | LOW | File split | Split ~2400 lines into `sc_cockpit.c` (gauges), `sc_timer.c` (score/round overlays), and `sc_names.c` (portraits/text). Core rendering logic remains in `sc_sub.c`. No gameplay state mutation. |
+| 22 | `workuser.h` Partitioning | LOW–MED | Header hygiene | 446-extern header → 4 domain headers (`workuser_score.h`, `_combat.h`, `_select.h`, `_system.h`) + umbrella include for backward compat. |
+| 23 | `entry.c` State Machine Cleanup | LOW–MED | Named states | 1,252 lines, 17 `G_No[]` accesses. Name `E_No[]`/`C_No[]` state constants, convert `_Jmp_Tbl` to switch-dispatch. Non-netplay flow. |
 ---
 
 ## Next Wave: Safe Improvement Candidates (March 2026 Audit)
 
 | # | Candidate | Risk | Category | Key Details |
 |---|-----------|------|----------|-------------|
-| 22 | `workuser.h` Partitioning | LOW–MED | Header hygiene | 446-extern header → 4 domain headers (`workuser_score.h`, `_combat.h`, `_select.h`, `_system.h`) + umbrella include for backward compat. |
-| 23 | `entry.c` State Machine Cleanup | LOW–MED | Named states | 1,252 lines, 17 `G_No[]` accesses. Name `E_No[]`/`C_No[]` state constants, convert `_Jmp_Tbl` to switch-dispatch. Non-netplay flow. |
 | 24 | `menu.c` State Machine Cleanup | MEDIUM | Named states | 2,997 lines, 12 `G_No[]` accesses, `M_No[]` state indices. Name states, convert jump table. Partially modernized via MenuScreen registry. |
 | 25 | `sel_pl.c` Character Select Cleanup | MEDIUM | Named states | 1,827 lines, `S_No[]` + `routine_no[]` + `_Jmp_Tbl`. Name states, extract data tables. **Caution:** netplay-sensitive — character selection must stay deterministic. |
 

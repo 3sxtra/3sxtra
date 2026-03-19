@@ -872,10 +872,10 @@ bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room, char* out_
         if (out_error && error_size > 0 && response[0]) {
             cJSON* err_json = cJSON_Parse(response);
             if (err_json) {
-                char err_msg[64] = {0};
+                char err_msg[64] = { 0 };
                 cjson_get_string(err_json, "error", err_msg, sizeof(err_msg));
                 if (strcmp(err_msg, "Region restricted") == 0) {
-                    char your_region[16] = {0};
+                    char your_region[16] = { 0 };
                     cjson_get_string(err_json, "your_region", your_region, sizeof(your_region));
                     snprintf(out_error, error_size, "Region locked — you are in %s", your_region);
                 } else if (err_msg[0]) {

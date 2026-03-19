@@ -108,7 +108,6 @@ void Se_Shock(WORK_Other* ewk, u16 Code) {
 
     s16 assign1;
 
-
     if (ewk->wu.work_id == 1) {
         em = (PLW*)ewk->wu.target_adrs;
         uid = ewk->wu.id;
@@ -167,7 +166,6 @@ void Se_Myself_Die(WORK_Other* ewk, u16 Code) {
 void Se_Let(WORK_Other* ewk, u16 Code) {
     s16 xx;
     s16 uid;
-
 
     if (ewk->wu.work_id == 1) {
         uid = ewk->wu.id;
@@ -300,8 +298,6 @@ u16 Get_Position(PLW* wk) {
 
     return 0x70;
 }
-
-
 
 /** @brief Push a sound code into the 8-deep debug ring buffer. */
 void Store_Sound_Code(u16 code, SoundRequestData* rmc) {

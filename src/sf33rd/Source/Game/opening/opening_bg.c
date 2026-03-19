@@ -1123,4 +1123,3 @@ void Bg_Family_Set_op() {
     pos_work_y = 768 - (pos_work_y & 0x3FF);
     Family_Set_W(6, pos_work_x, pos_work_y);
 }
-

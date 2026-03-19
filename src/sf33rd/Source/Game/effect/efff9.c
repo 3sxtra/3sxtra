@@ -202,7 +202,8 @@ void effect_F9_move(WORK_Other* ewk) {
             } else {
                 ewk->wu.old_rno[5]++;
 
-                if (Country != COUNTRY_JAPAN && Country != COUNTRY_KOREA && (ewk->wu.old_rno[5]++, ewk->wu.old_rno[4] < ewk->wu.old_rno[5])) {
+                if (Country != COUNTRY_JAPAN && Country != COUNTRY_KOREA &&
+                    (ewk->wu.old_rno[5]++, ewk->wu.old_rno[4] < ewk->wu.old_rno[5])) {
                     ewk->wu.old_rno[5] = ewk->wu.old_rno[4];
                 }
 

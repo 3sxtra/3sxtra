@@ -31,143 +31,143 @@ void Se_Term(WORK_Other* ewk, u16 Code);
 #define BONUS_SE_CODE_BASE 0x100
 
 /* Short aliases for readability in the table below */
-#define C  SE_HANDLER_CALL_SE
-#define K  SE_HANDLER_SHOCK
-#define M  SE_HANDLER_MYSELF
-#define D  SE_HANDLER_MYSELF_DIE
-#define L  SE_HANDLER_LET
-#define S  SE_HANDLER_LET_SP
-#define T  SE_HANDLER_TERM
-#define U  SE_HANDLER_DUMMY
+#define C SE_HANDLER_CALL_SE
+#define K SE_HANDLER_SHOCK
+#define M SE_HANDLER_MYSELF
+#define D SE_HANDLER_MYSELF_DIE
+#define L SE_HANDLER_LET
+#define S SE_HANDLER_LET_SP
+#define T SE_HANDLER_TERM
+#define U SE_HANDLER_DUMMY
 
 const SeHandlerType se_handler_type[SE_DISPATCH_TABLE_SIZE] = {
-    C, C, C, C, C, C, C, C,  /* 0x000–0x007 */
-    C, C, C, C, C, C, C, C,  /* 0x008–0x00F */
-    C, C, C, C, C, C, C, C,  /* 0x010–0x017 */
-    C, C, C, C, C, C, C, C,  /* 0x018–0x01F */
-    C, C, C, C, C, C, C, C,  /* 0x020–0x027 */
-    C, C, C, C, C, C, C, C,  /* 0x028–0x02F */
-    C, C, C, C, C, C, C, C,  /* 0x030–0x037 */
-    C, C, C, C, C, C, C, C,  /* 0x038–0x03F */
-    C, C, C, C, C, C, C, C,  /* 0x040–0x047 */
-    C, C, C, C, C, C, C, C,  /* 0x048–0x04F */
-    C, C, C, C, C, C, C, C,  /* 0x050–0x057 */
-    C, C, C, C, C, C, C, C,  /* 0x058–0x05F */
-    C, C, C, C, C, C, C, C,  /* 0x060–0x067 */
-    C, C, C, C, C, C, C, C,  /* 0x068–0x06F */
-    C, C, C, C, C, C, C, C,  /* 0x070–0x077 */
-    C, C, C, C, C, C, C, C,  /* 0x078–0x07F */
-    C, C, C, C, C, C, C, C,  /* 0x080–0x087 */
-    C, C, C, C, C, C, C, C,  /* 0x088–0x08F */
-    C, C, C, C, C, C, C, C,  /* 0x090–0x097 */
-    C, C, C, C, C, C, C, C,  /* 0x098–0x09F */
-    C, C, C, C, C, C, C, C,  /* 0x0A0–0x0A7 */
-    L, L, C, C, C, C, C, C,  /* 0x0A8–0x0AF */
-    C, C, C, C, C, C, C, C,  /* 0x0B0–0x0B7 */
-    C, C, C, C, C, C, C, C,  /* 0x0B8–0x0BF */
-    C, C, C, C, C, C, C, C,  /* 0x0C0–0x0C7 */
-    C, C, C, C, C, C, C, C,  /* 0x0C8–0x0CF */
-    C, C, C, C, C, C, C, C,  /* 0x0D0–0x0D7 */
-    C, C, C, C, C, C, C, C,  /* 0x0D8–0x0DF */
-    C, C, C, C, C, C, C, C,  /* 0x0E0–0x0E7 */
-    C, C, C, C, C, C, C, C,  /* 0x0E8–0x0EF */
-    C, C, C, C, C, C, C, C,  /* 0x0F0–0x0F7 */
-    C, C, C, C, C, C, C, C,  /* 0x0F8–0x0FF */
-    K, K, K, K, K, K, K, K,  /* 0x100–0x107 */
-    L, L, L, L, L, M, M, L,  /* 0x108–0x10F */
-    L, L, M, L, L, M, M, M,  /* 0x110–0x117 */
-    L, M, M, L, M, K, K, K,  /* 0x118–0x11F */
-    K, K, L, L, L, L, L, U,  /* 0x120–0x127 */
-    U, U, U, L, L, L, L, L,  /* 0x128–0x12F */
-    L, L, L, L, L, L, L, L,  /* 0x130–0x137 */
-    L, L, L, L, L, L, L, L,  /* 0x138–0x13F */
-    M, M, L, L, M, M, M, M,  /* 0x140–0x147 */
-    M, M, M, S, M, M, M, L,  /* 0x148–0x14F */
-    C, M, M, L, L, L, M, L,  /* 0x150–0x157 */
-    M, M, M, M, M, L, M, L,  /* 0x158–0x15F */
-    M, M, D, D, M, M, M, M,  /* 0x160–0x167 */
-    M, M, M, M, M, M, D, D,  /* 0x168–0x16F */
-    M, M, M, M, M, M, M, M,  /* 0x170–0x177 */
-    M, D, D, M, M, M, M, L,  /* 0x178–0x17F */
-    M, M, M, M, M, D, D, M,  /* 0x180–0x187 */
-    M, M, M, M, T, M, M, M,  /* 0x188–0x18F */
-    M, M, T, D, M, M, M, M,  /* 0x190–0x197 */
-    M, M, M, M, M, M, D, D,  /* 0x198–0x19F */
-    M, M, M, M, M, M, M, M,  /* 0x1A0–0x1A7 */
-    M, M, M, M, M, M, M, M,  /* 0x1A8–0x1AF */
-    M, M, M, M, M, M, D, D,  /* 0x1B0–0x1B7 */
-    M, M, M, M, M, M, M, M,  /* 0x1B8–0x1BF */
-    M, M, D, D, M, M, M, M,  /* 0x1C0–0x1C7 */
-    M, M, M, M, M, M, M, M,  /* 0x1C8–0x1CF */
-    D, D, M, M, M, M, M, M,  /* 0x1D0–0x1D7 */
-    M, M, M, M, M, M, M, M,  /* 0x1D8–0x1DF */
-    M, M, D, M, M, M, L, L,  /* 0x1E0–0x1E7 */
-    M, M, M, M, M, M, D, D,  /* 0x1E8–0x1EF */
-    M, M, M, M, M, M, M, M,  /* 0x1F0–0x1F7 */
-    M, M, M, M, M, M, M, M,  /* 0x1F8–0x1FF */
-    M, M, M, M, M, M, M, M,  /* 0x200–0x207 */
-    M, M, M, M, M, M, T, M,  /* 0x208–0x20F */
-    M, M, M, M, M, M, M, M,  /* 0x210–0x217 */
-    M, M, M, M, M, M, M, M,  /* 0x218–0x21F */
-    M, M, M, M, M, M, M, M,  /* 0x220–0x227 */
-    M, M, M, M, M, M, M, M,  /* 0x228–0x22F */
-    M, M, M, M, M, M, M, M,  /* 0x230–0x237 */
-    M, M, M, M, M, M, M, M,  /* 0x238–0x23F */
-    M, M, M, M, M, M, M, M,  /* 0x240–0x247 */
-    M, M, M, M, M, M, M, M,  /* 0x248–0x24F */
-    M, M, M, M, M, M, M, M,  /* 0x250–0x257 */
-    L, L, L, L, L, L, L, L,  /* 0x258–0x25F */
-    M, M, M, M, M, M, M, M,  /* 0x260–0x267 */
-    M, M, M, M, M, M, M, M,  /* 0x268–0x26F */
-    M, M, M, M, M, M, M, M,  /* 0x270–0x277 */
-    M, M, M, M, M, M, M, M,  /* 0x278–0x27F */
-    M, M, M, M, M, M, M, M,  /* 0x280–0x287 */
-    M, M, M, M, M, M, M, M,  /* 0x288–0x28F */
-    M, M, M, M, M, M, M, M,  /* 0x290–0x297 */
-    M, M, M, M, M, M, M, M,  /* 0x298–0x29F */
-    M, M, M, M, M, M, M, M,  /* 0x2A0–0x2A7 */
-    M, M, M, M, M, M, M, M,  /* 0x2A8–0x2AF */
-    M, M, M, M, M, M, M, M,  /* 0x2B0–0x2B7 */
-    M, M, M, M, M, M, M, M,  /* 0x2B8–0x2BF */
-    M, M, M, M, M, M, M, M,  /* 0x2C0–0x2C7 */
-    M, M, M, M, M, M, M, M,  /* 0x2C8–0x2CF */
-    M, M, M, M, M, M, M, M,  /* 0x2D0–0x2D7 */
-    M, M, M, M, M, M, M, M,  /* 0x2D8–0x2DF */
-    M, M, M, M, M, M, M, M,  /* 0x2E0–0x2E7 */
-    M, M, M, M, M, M, M, M,  /* 0x2E8–0x2EF */
-    M, M, M, M, M, M, M, M,  /* 0x2F0–0x2F7 */
-    M, L, M, M, M, M, M, M,  /* 0x2F8–0x2FF */
-    M, M, M, M, M, M, M, M,  /* 0x300–0x307 */
-    M, M, M, M, M, M, M, L,  /* 0x308–0x30F */
-    M, M, M, M, M, M, M, M,  /* 0x310–0x317 */
-    M, M, M, M, M, M, M, L,  /* 0x318–0x31F */
-    M, M, M, M, M, M, M, M,  /* 0x320–0x327 */
-    M, M, M, M, M, M, M, M,  /* 0x328–0x32F */
-    M, M, M, M, M, M, M, M,  /* 0x330–0x337 */
-    M, M, M, M, M, M, L, L,  /* 0x338–0x33F */
-    M, M, M, M, M, M, M, M,  /* 0x340–0x347 */
-    M, M, M, M, M, M, M, M,  /* 0x348–0x34F */
-    M, M, M, M, M, M, L, L,  /* 0x350–0x357 */
-    L, L, L, L, L, L, L, L,  /* 0x358–0x35F */
-    M, M, M, M, M, M, M, M,  /* 0x360–0x367 */
-    L, L, M, M, M, M, M, M,  /* 0x368–0x36F */
-    M, M, M, M, M, M, M, M,  /* 0x370–0x377 */
-    M, M, M, L, L, L, M, M,  /* 0x378–0x37F */
-    M, M, M, M, M, M, M, M,  /* 0x380–0x387 */
-    M, M, M, M, M, M, M, M,  /* 0x388–0x38F */
-    M, M, M, M, M, M, M, M,  /* 0x390–0x397 */
-    M, M, M, M, M, M, M, M,  /* 0x398–0x39F */
-    M, M, M, M, M, M, M, M,  /* 0x3A0–0x3A7 */
-    M, M, M, M, M, M, M, M,  /* 0x3A8–0x3AF */
-    M, M, M, M, M, M, M, M,  /* 0x3B0–0x3B7 */
-    M, M, M, M, M, M, M, M,  /* 0x3B8–0x3BF */
-    M, M, M, M, M, M, M, M,  /* 0x3C0–0x3C7 */
-    M, M, M, M, M, M, M, M,  /* 0x3C8–0x3CF */
-    M, M, M, M, M, M, M, M,  /* 0x3D0–0x3D7 */
-    M, M, M, M, M, M, M, M,  /* 0x3D8–0x3DF */
-    M, M, M, C, C, M, M, M,  /* 0x3E0–0x3E7 */
-    M, M, M, M, M, M, M, M,  /* 0x3E8–0x3EF */
-    M, M, M, M, M, M, M, M,  /* 0x3F0–0x3F7 */
+    C, C, C, C, C, C, C, C, /* 0x000–0x007 */
+    C, C, C, C, C, C, C, C, /* 0x008–0x00F */
+    C, C, C, C, C, C, C, C, /* 0x010–0x017 */
+    C, C, C, C, C, C, C, C, /* 0x018–0x01F */
+    C, C, C, C, C, C, C, C, /* 0x020–0x027 */
+    C, C, C, C, C, C, C, C, /* 0x028–0x02F */
+    C, C, C, C, C, C, C, C, /* 0x030–0x037 */
+    C, C, C, C, C, C, C, C, /* 0x038–0x03F */
+    C, C, C, C, C, C, C, C, /* 0x040–0x047 */
+    C, C, C, C, C, C, C, C, /* 0x048–0x04F */
+    C, C, C, C, C, C, C, C, /* 0x050–0x057 */
+    C, C, C, C, C, C, C, C, /* 0x058–0x05F */
+    C, C, C, C, C, C, C, C, /* 0x060–0x067 */
+    C, C, C, C, C, C, C, C, /* 0x068–0x06F */
+    C, C, C, C, C, C, C, C, /* 0x070–0x077 */
+    C, C, C, C, C, C, C, C, /* 0x078–0x07F */
+    C, C, C, C, C, C, C, C, /* 0x080–0x087 */
+    C, C, C, C, C, C, C, C, /* 0x088–0x08F */
+    C, C, C, C, C, C, C, C, /* 0x090–0x097 */
+    C, C, C, C, C, C, C, C, /* 0x098–0x09F */
+    C, C, C, C, C, C, C, C, /* 0x0A0–0x0A7 */
+    L, L, C, C, C, C, C, C, /* 0x0A8–0x0AF */
+    C, C, C, C, C, C, C, C, /* 0x0B0–0x0B7 */
+    C, C, C, C, C, C, C, C, /* 0x0B8–0x0BF */
+    C, C, C, C, C, C, C, C, /* 0x0C0–0x0C7 */
+    C, C, C, C, C, C, C, C, /* 0x0C8–0x0CF */
+    C, C, C, C, C, C, C, C, /* 0x0D0–0x0D7 */
+    C, C, C, C, C, C, C, C, /* 0x0D8–0x0DF */
+    C, C, C, C, C, C, C, C, /* 0x0E0–0x0E7 */
+    C, C, C, C, C, C, C, C, /* 0x0E8–0x0EF */
+    C, C, C, C, C, C, C, C, /* 0x0F0–0x0F7 */
+    C, C, C, C, C, C, C, C, /* 0x0F8–0x0FF */
+    K, K, K, K, K, K, K, K, /* 0x100–0x107 */
+    L, L, L, L, L, M, M, L, /* 0x108–0x10F */
+    L, L, M, L, L, M, M, M, /* 0x110–0x117 */
+    L, M, M, L, M, K, K, K, /* 0x118–0x11F */
+    K, K, L, L, L, L, L, U, /* 0x120–0x127 */
+    U, U, U, L, L, L, L, L, /* 0x128–0x12F */
+    L, L, L, L, L, L, L, L, /* 0x130–0x137 */
+    L, L, L, L, L, L, L, L, /* 0x138–0x13F */
+    M, M, L, L, M, M, M, M, /* 0x140–0x147 */
+    M, M, M, S, M, M, M, L, /* 0x148–0x14F */
+    C, M, M, L, L, L, M, L, /* 0x150–0x157 */
+    M, M, M, M, M, L, M, L, /* 0x158–0x15F */
+    M, M, D, D, M, M, M, M, /* 0x160–0x167 */
+    M, M, M, M, M, M, D, D, /* 0x168–0x16F */
+    M, M, M, M, M, M, M, M, /* 0x170–0x177 */
+    M, D, D, M, M, M, M, L, /* 0x178–0x17F */
+    M, M, M, M, M, D, D, M, /* 0x180–0x187 */
+    M, M, M, M, T, M, M, M, /* 0x188–0x18F */
+    M, M, T, D, M, M, M, M, /* 0x190–0x197 */
+    M, M, M, M, M, M, D, D, /* 0x198–0x19F */
+    M, M, M, M, M, M, M, M, /* 0x1A0–0x1A7 */
+    M, M, M, M, M, M, M, M, /* 0x1A8–0x1AF */
+    M, M, M, M, M, M, D, D, /* 0x1B0–0x1B7 */
+    M, M, M, M, M, M, M, M, /* 0x1B8–0x1BF */
+    M, M, D, D, M, M, M, M, /* 0x1C0–0x1C7 */
+    M, M, M, M, M, M, M, M, /* 0x1C8–0x1CF */
+    D, D, M, M, M, M, M, M, /* 0x1D0–0x1D7 */
+    M, M, M, M, M, M, M, M, /* 0x1D8–0x1DF */
+    M, M, D, M, M, M, L, L, /* 0x1E0–0x1E7 */
+    M, M, M, M, M, M, D, D, /* 0x1E8–0x1EF */
+    M, M, M, M, M, M, M, M, /* 0x1F0–0x1F7 */
+    M, M, M, M, M, M, M, M, /* 0x1F8–0x1FF */
+    M, M, M, M, M, M, M, M, /* 0x200–0x207 */
+    M, M, M, M, M, M, T, M, /* 0x208–0x20F */
+    M, M, M, M, M, M, M, M, /* 0x210–0x217 */
+    M, M, M, M, M, M, M, M, /* 0x218–0x21F */
+    M, M, M, M, M, M, M, M, /* 0x220–0x227 */
+    M, M, M, M, M, M, M, M, /* 0x228–0x22F */
+    M, M, M, M, M, M, M, M, /* 0x230–0x237 */
+    M, M, M, M, M, M, M, M, /* 0x238–0x23F */
+    M, M, M, M, M, M, M, M, /* 0x240–0x247 */
+    M, M, M, M, M, M, M, M, /* 0x248–0x24F */
+    M, M, M, M, M, M, M, M, /* 0x250–0x257 */
+    L, L, L, L, L, L, L, L, /* 0x258–0x25F */
+    M, M, M, M, M, M, M, M, /* 0x260–0x267 */
+    M, M, M, M, M, M, M, M, /* 0x268–0x26F */
+    M, M, M, M, M, M, M, M, /* 0x270–0x277 */
+    M, M, M, M, M, M, M, M, /* 0x278–0x27F */
+    M, M, M, M, M, M, M, M, /* 0x280–0x287 */
+    M, M, M, M, M, M, M, M, /* 0x288–0x28F */
+    M, M, M, M, M, M, M, M, /* 0x290–0x297 */
+    M, M, M, M, M, M, M, M, /* 0x298–0x29F */
+    M, M, M, M, M, M, M, M, /* 0x2A0–0x2A7 */
+    M, M, M, M, M, M, M, M, /* 0x2A8–0x2AF */
+    M, M, M, M, M, M, M, M, /* 0x2B0–0x2B7 */
+    M, M, M, M, M, M, M, M, /* 0x2B8–0x2BF */
+    M, M, M, M, M, M, M, M, /* 0x2C0–0x2C7 */
+    M, M, M, M, M, M, M, M, /* 0x2C8–0x2CF */
+    M, M, M, M, M, M, M, M, /* 0x2D0–0x2D7 */
+    M, M, M, M, M, M, M, M, /* 0x2D8–0x2DF */
+    M, M, M, M, M, M, M, M, /* 0x2E0–0x2E7 */
+    M, M, M, M, M, M, M, M, /* 0x2E8–0x2EF */
+    M, M, M, M, M, M, M, M, /* 0x2F0–0x2F7 */
+    M, L, M, M, M, M, M, M, /* 0x2F8–0x2FF */
+    M, M, M, M, M, M, M, M, /* 0x300–0x307 */
+    M, M, M, M, M, M, M, L, /* 0x308–0x30F */
+    M, M, M, M, M, M, M, M, /* 0x310–0x317 */
+    M, M, M, M, M, M, M, L, /* 0x318–0x31F */
+    M, M, M, M, M, M, M, M, /* 0x320–0x327 */
+    M, M, M, M, M, M, M, M, /* 0x328–0x32F */
+    M, M, M, M, M, M, M, M, /* 0x330–0x337 */
+    M, M, M, M, M, M, L, L, /* 0x338–0x33F */
+    M, M, M, M, M, M, M, M, /* 0x340–0x347 */
+    M, M, M, M, M, M, M, M, /* 0x348–0x34F */
+    M, M, M, M, M, M, L, L, /* 0x350–0x357 */
+    L, L, L, L, L, L, L, L, /* 0x358–0x35F */
+    M, M, M, M, M, M, M, M, /* 0x360–0x367 */
+    L, L, M, M, M, M, M, M, /* 0x368–0x36F */
+    M, M, M, M, M, M, M, M, /* 0x370–0x377 */
+    M, M, M, L, L, L, M, M, /* 0x378–0x37F */
+    M, M, M, M, M, M, M, M, /* 0x380–0x387 */
+    M, M, M, M, M, M, M, M, /* 0x388–0x38F */
+    M, M, M, M, M, M, M, M, /* 0x390–0x397 */
+    M, M, M, M, M, M, M, M, /* 0x398–0x39F */
+    M, M, M, M, M, M, M, M, /* 0x3A0–0x3A7 */
+    M, M, M, M, M, M, M, M, /* 0x3A8–0x3AF */
+    M, M, M, M, M, M, M, M, /* 0x3B0–0x3B7 */
+    M, M, M, M, M, M, M, M, /* 0x3B8–0x3BF */
+    M, M, M, M, M, M, M, M, /* 0x3C0–0x3C7 */
+    M, M, M, M, M, M, M, M, /* 0x3C8–0x3CF */
+    M, M, M, M, M, M, M, M, /* 0x3D0–0x3D7 */
+    M, M, M, M, M, M, M, M, /* 0x3D8–0x3DF */
+    M, M, M, C, C, M, M, M, /* 0x3E0–0x3E7 */
+    M, M, M, M, M, M, M, M, /* 0x3E8–0x3EF */
+    M, M, M, M, M, M, M, M, /* 0x3F0–0x3F7 */
     M, M, M, M, M, M, M, M  /* 0x3F8–0x3FF */
 };
 
@@ -208,14 +208,30 @@ void Se_Dispatch(u16 index, u16 code, WORK_Other* ewk) {
     code = Check_Bonus_SE(code);
 
     switch (se_handler_type[index]) {
-    case SE_HANDLER_CALL_SE:    Call_Se(ewk, code);        break;
-    case SE_HANDLER_SHOCK:      Se_Shock(ewk, code);      break;
-    case SE_HANDLER_MYSELF:     Se_Myself(ewk, code);     break;
-    case SE_HANDLER_MYSELF_DIE: Se_Myself_Die(ewk, code);  break;
-    case SE_HANDLER_LET:        Se_Let(ewk, code);        break;
-    case SE_HANDLER_LET_SP:     Se_Let_SP(ewk, code);     break;
-    case SE_HANDLER_TERM:       Se_Term(ewk, code);       break;
-    case SE_HANDLER_DUMMY:      Se_Dummy(ewk, code);      break;
+    case SE_HANDLER_CALL_SE:
+        Call_Se(ewk, code);
+        break;
+    case SE_HANDLER_SHOCK:
+        Se_Shock(ewk, code);
+        break;
+    case SE_HANDLER_MYSELF:
+        Se_Myself(ewk, code);
+        break;
+    case SE_HANDLER_MYSELF_DIE:
+        Se_Myself_Die(ewk, code);
+        break;
+    case SE_HANDLER_LET:
+        Se_Let(ewk, code);
+        break;
+    case SE_HANDLER_LET_SP:
+        Se_Let_SP(ewk, code);
+        break;
+    case SE_HANDLER_TERM:
+        Se_Term(ewk, code);
+        break;
+    case SE_HANDLER_DUMMY:
+        Se_Dummy(ewk, code);
+        break;
     }
 }
 

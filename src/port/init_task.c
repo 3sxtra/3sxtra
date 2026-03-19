@@ -10,9 +10,9 @@
 
 #include "port/init_task.h"
 
-#include "main.h"                              /* TaskID, TASK_INIT               */
+#include "main.h"                               /* TaskID, TASK_INIT               */
 #include "sf33rd/Source/Game/system/work_sys.h" /* extern struct _TASK task[11]     */
-#include "structs.h"                           /* struct _TASK                     */
+#include "structs.h"                            /* struct _TASK                     */
 
 #include <assert.h>
 

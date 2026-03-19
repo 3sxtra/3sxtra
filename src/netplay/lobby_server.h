@@ -118,8 +118,8 @@ typedef struct {
     int disconnects;
     float rating;
     char tier[16];
-    int grade;             // 0-11 numeric grade (arcade scale)
-    int most_played_char;  // Character index (0-19), -1 = none
+    int grade;            // 0-11 numeric grade (arcade scale)
+    int most_played_char; // Character index (0-19), -1 = none
 } LeaderboardEntry;
 
 /// Fetch a page of the leaderboard. Returns entry count (up to max_entries).

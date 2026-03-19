@@ -70,10 +70,9 @@ _Static_assert(sizeof(GameState) == EXPECTED_GAME_STATE_SIZE,
 
 // Guard the task struct layout specifically — task[11] is saved/loaded wholesale
 // via GS_SAVE(task)/GS_LOAD(task), so any size change causes silent corruption.
-_Static_assert(sizeof(struct _TASK) == 32,
-               "sizeof(struct _TASK) changed! This struct is saved/loaded wholesale "
-               "during netplay rollback. DO NOT change its layout without updating "
-               "GameState and verifying rollback compatibility.");
+_Static_assert(sizeof(struct _TASK) == 32, "sizeof(struct _TASK) changed! This struct is saved/loaded wholesale "
+                                           "during netplay rollback. DO NOT change its layout without updating "
+                                           "GameState and verifying rollback compatibility.");
 
 #define GS_SAVE(member) SDL_memcpy(&dst->member, &member, sizeof(member))
 

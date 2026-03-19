@@ -83,7 +83,8 @@ struct RoomItem {
     bool selected;
 
     bool operator==(const RoomItem& o) const {
-        return code == o.code && name == o.name && player_count == o.player_count && max_players == o.max_players && selected == o.selected;
+        return code == o.code && name == o.name && player_count == o.player_count && max_players == o.max_players &&
+               selected == o.selected;
     }
     bool operator!=(const RoomItem& o) const {
         return !(*this == o);
@@ -158,7 +159,7 @@ static int SDLCALL async_room_fn(void* data) {
     if (d->action == 1) {
         ok = LobbyServer_CreateRoom(d->name, d->ft, &room);
     } else if (d->action == 2) {
-        char err[128] = {0};
+        char err[128] = { 0 };
         ok = LobbyServer_JoinRoom(d->code, &room, err, sizeof(err));
         if (!ok && err[0]) {
             snprintf(s_room_async_error, sizeof(s_room_async_error), "%s", err);
@@ -625,7 +626,8 @@ extern "C" void rmlui_network_lobby_update(void) {
             s_join_room_code = "";
             s_model_handle.DirtyVariable("room_status");
             s_model_handle.DirtyVariable("join_room_code");
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[NetworkLobby] Room create/join failed: %s", s_room_status.c_str());
+            SDL_LogError(
+                SDL_LOG_CATEGORY_APPLICATION, "[NetworkLobby] Room create/join failed: %s", s_room_status.c_str());
         }
     }
 

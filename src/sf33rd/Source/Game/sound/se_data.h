@@ -24,14 +24,14 @@
  * The Se_Dispatch() function uses this tag to call the correct handler.
  */
 typedef enum SeHandlerType {
-    SE_HANDLER_CALL_SE     = 0, /**< Generic SE — plays at caller's screen position */
-    SE_HANDLER_SHOCK       = 1, /**< Hit/shock SE — switches to KO variant if dead  */
-    SE_HANDLER_MYSELF      = 2, /**< Play SE on caller's own player channel          */
-    SE_HANDLER_MYSELF_DIE  = 3, /**< Like MYSELF but only if character is alive      */
-    SE_HANDLER_LET         = 4, /**< Play SE on the target's channel (hit reaction)  */
-    SE_HANDLER_LET_SP      = 5, /**< Like LET with KO hit override codes             */
-    SE_HANDLER_TERM        = 6, /**< Termination SE — airborne + alive gate          */
-    SE_HANDLER_DUMMY       = 7  /**< Dummy — stores code for debug, plays nothing    */
+    SE_HANDLER_CALL_SE = 0,    /**< Generic SE — plays at caller's screen position */
+    SE_HANDLER_SHOCK = 1,      /**< Hit/shock SE — switches to KO variant if dead  */
+    SE_HANDLER_MYSELF = 2,     /**< Play SE on caller's own player channel          */
+    SE_HANDLER_MYSELF_DIE = 3, /**< Like MYSELF but only if character is alive      */
+    SE_HANDLER_LET = 4,        /**< Play SE on the target's channel (hit reaction)  */
+    SE_HANDLER_LET_SP = 5,     /**< Like LET with KO hit override codes             */
+    SE_HANDLER_TERM = 6,       /**< Termination SE — airborne + alive gate          */
+    SE_HANDLER_DUMMY = 7       /**< Dummy — stores code for debug, plays nothing    */
 } SeHandlerType;
 
 #define SE_DISPATCH_TABLE_SIZE 1024

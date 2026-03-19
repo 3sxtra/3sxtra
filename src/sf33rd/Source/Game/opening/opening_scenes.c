@@ -75,10 +75,11 @@ static void op_117_move();
 static void op_118_move();
 static void opening_title_01();
 
-static void (*opening_move_jp[OPENING_SCENE_COUNT])() = { op_100_move, op_101_move, op_102_move, op_103_move, op_104_move,
-                                                   op_105_move, op_106_move, op_107_move, op_108_move, op_109_move,
-                                                   op_110_move, op_111_move, op_112_move, op_113_move, op_114_move,
-                                                   op_115_move, op_116_move, op_117_move, op_118_move };
+static void (*opening_move_jp[OPENING_SCENE_COUNT])() = { op_100_move, op_101_move, op_102_move, op_103_move,
+                                                          op_104_move, op_105_move, op_106_move, op_107_move,
+                                                          op_108_move, op_109_move, op_110_move, op_111_move,
+                                                          op_112_move, op_113_move, op_114_move, op_115_move,
+                                                          op_116_move, op_117_move, op_118_move };
 
 /** @brief Main opening move loop — track sound cues and dispatch scene handlers. */
 void opening_move() {
@@ -1595,4 +1596,3 @@ static void opening_title_01() {
     bg_app = 0;
     bg_w.chase_flag = 0;
 }
-

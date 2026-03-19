@@ -113,9 +113,6 @@ void Entry_Task(struct _TASK* /* unused */) {
     s16 ix;
     s16 ff;
 
-    void (*Main_Jmp_Tbl[ENTRY_JMP_COUNT])() = { Entry_00, Entry_01, Entry_02, Entry_03, Entry_04, Entry_03,
-                                                Entry_06, Entry_07, Entry_08, Entry_03, Entry_10 };
-
     if (Pause || nowSoftReset()) {
         return;
     }
@@ -132,7 +129,41 @@ void Entry_Task(struct _TASK* /* unused */) {
         letter_counter = 0;
         letter_ptr = letter_stack;
         if (E_No[0] < ENTRY_JMP_COUNT) {
-            Main_Jmp_Tbl[E_No[0]]();
+            switch (E_No[0]) {
+            case ENTRY_TITLE_BLINK:
+                Entry_00();
+                break;
+            case ENTRY_WAIT_START:
+                Entry_01();
+                break;
+            case ENTRY_MID_GAME_ENTRY:
+                Entry_02();
+                break;
+            case ENTRY_PRE_FIGHT_BREAK:
+                Entry_03();
+                break;
+            case ENTRY_MID_ROUND_BREAK:
+                Entry_04();
+                break;
+            case ENTRY_UNUSED_5:
+                Entry_03();
+                break;
+            case ENTRY_POST_CONTINUE_BREAK:
+                Entry_06();
+                break;
+            case ENTRY_POST_FIGHT_BREAK:
+                Entry_07();
+                break;
+            case ENTRY_END_GAME_BREAK:
+                Entry_08();
+                break;
+            case ENTRY_UNUSED_9:
+                Entry_03();
+                break;
+            case ENTRY_FINAL_ENDING:
+                Entry_10();
+                break;
+            }
         }
     }
 }
@@ -140,16 +171,16 @@ void Entry_Task(struct _TASK* /* unused */) {
 /** @brief Entry phase 0 — idle/title attract screen; blink "PRESS START" messages. */
 static void Entry_00() {
     switch (E_No[1]) {
-    case 0:
+    case ENTRY_PL_INIT:
         break;
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         E_No[1] += 1;
         E_Timer = 50;
         Disp_00_0();
         break;
 
-    case 2:
+    case ENTRY_PL_NAMING:
         if (--E_Timer == 0) {
             E_No[1] += 1;
             E_Timer = 30;
@@ -159,7 +190,7 @@ static void Entry_00() {
         Disp_00_0();
         break;
 
-    case 3:
+    case ENTRY_PL_RANKING:
         if (!--E_Timer) {
             E_No[1] -= 1;
             E_Timer = 50;
@@ -173,7 +204,7 @@ static void Entry_00() {
 
 /** @brief Display the "PRESS START" and per-player start prompts on title screen. */
 static void Disp_00_0() {
-    if (save_w[SAVEW_ARCADE].extra_option.contents[3][5] == 0) {
+    if (save_w[1].extra_option.contents[3][5] == 0) {
         return;
     }
 
@@ -200,15 +231,15 @@ static void Disp_00_0() {
 /** @brief Entry phase 1 — wait for a start button press and route to the first player init. */
 static void Entry_01() {
     switch (E_No[2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         E_No[2] += 1;
-        E_No[1] = 1;
+        E_No[1] = ENTRY_SUB_ACTIVE;
         Break_Into = 0;
         if (use_rmlui && rmlui_screen_title)
             rmlui_title_screen_show();
         break;
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         Entry_00();
 
         if (~p1sw_1 & p1sw_0 & SWK_START) {
@@ -219,7 +250,7 @@ static void Entry_01() {
 
         break;
 
-    case 2:
+    case ENTRY_PL_NAMING:
         if (Request_E_No) {
             E_No[2] += 1;
         }
@@ -259,8 +290,8 @@ static void Exit_Title_Sub_Entry() {
     s16 i;
     s16 j;
 
-    E_No[0] = 2;
-    E_No[1] = 0;
+    E_No[0] = ENTRY_MID_GAME_ENTRY;
+    E_No[1] = ENTRY_SUB_INIT;
     E_No[2] = 0;
     E_No[3] = 0;
     F_No1[0] = F_No2[0] = F_No3[0] = 0;
@@ -276,7 +307,7 @@ static void Exit_Title_Sub_Entry() {
 /** @brief Entry phase 2 — standard mid-game entry; dispatch both players' entry sub-states. */
 static void Entry_02() {
     switch (E_No[1]) {
-    case 0:
+    case ENTRY_PL_INIT:
         E_No[1] += 1;
         break;
     }
@@ -288,7 +319,7 @@ static void Entry_02() {
 /** @brief Entry phase 3 — pre-fight break-in check or post-round screen switch. */
 static void Entry_03() {
     switch (E_No[1]) {
-    case 0:
+    case ENTRY_PL_INIT:
         Entry_03_1st();
         break;
 
@@ -306,7 +337,7 @@ static void Entry_03_1st() {
 /** @brief Entry_03 second sub-phase — screen-switch transition and set up new challenger. */
 static void Entry_03_2nd() {
     switch (E_No[2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         if (--E_Timer == 0) {
             if (Check_LDREQ_Break() == 0) {
                 E_No[2] += 1;
@@ -320,14 +351,14 @@ static void Entry_03_2nd() {
 
         break;
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         if (Switch_Screen(1) != 0) {
             Cover_Timer = 23;
             G_No[1] = 1;
             G_No[2] = 0;
             G_No[3] = 0;
-            E_No[0] = 2;
-            E_No[1] = 0;
+            E_No[0] = ENTRY_MID_GAME_ENTRY;
+            E_No[1] = ENTRY_SUB_INIT;
             E_No[2] = 0;
             E_No[3] = 0;
             plw[New_Challenger].wu.pl_operator = 1;
@@ -346,7 +377,7 @@ static void Entry_03_2nd() {
 /** @brief Entry phase 4 — mid-round break-in (pause-aware). */
 static void Entry_04() {
     switch (E_No[1]) {
-    case 0:
+    case ENTRY_PL_INIT:
         Entry_04_1st();
         break;
 
@@ -359,7 +390,7 @@ static void Entry_04() {
 /** @brief Entry_04 first sub-phase — both players' break-in check (skipped during Game_pause). */
 static void Entry_04_1st() {
     switch (E_No[2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         E_No[2] += 1;
         break;
     }
@@ -373,7 +404,7 @@ static void Entry_04_1st() {
 /** @brief Entry_04 second sub-phase — screen wipe, correct break-in data, set up challenger. */
 static void Entry_04_2nd() {
     switch (E_No[2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         if (--E_Timer == 0) {
             if (Check_LDREQ_Break() == 0) {
                 E_No[2] += 1;
@@ -387,7 +418,7 @@ static void Entry_04_2nd() {
 
         break;
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         if (Switch_Screen(0) != 0) {
             E_No[2] += 1;
             Cover_Timer = 23;
@@ -396,7 +427,7 @@ static void Entry_04_2nd() {
             G_No[3] = 0;
 
             if (E_No[3] == 0xFF) {
-                E_Number[LOSER][0] = 1;
+                E_Number[LOSER][0] = ENTRY_PL_CREDIT;
                 E_Number[LOSER][1] = 0;
                 E_Number[LOSER][2] = 0;
                 E_Number[LOSER][3] = 0;
@@ -404,8 +435,8 @@ static void Entry_04_2nd() {
                 Correct_BI_Data();
             }
 
-            E_No[0] = 2;
-            E_No[1] = 0;
+            E_No[0] = ENTRY_MID_GAME_ENTRY;
+            E_No[1] = ENTRY_SUB_INIT;
             E_No[2] = 0;
             E_No[3] = 0;
             Game_pause = 0;
@@ -424,7 +455,7 @@ static void Entry_04_2nd() {
 /** @brief Entry phase 6 — post-continue break-in with screen switch. */
 static void Entry_06() {
     switch (E_No[1]) {
-    case 0:
+    case ENTRY_PL_INIT:
         Entry_06_1st();
         break;
 
@@ -437,7 +468,7 @@ static void Entry_06() {
 /** @brief Common first sub-phase — increment E_No[2] and dispatch both players. */
 static void entry_phase_1st(s16 jump_index) {
     switch (E_No[2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         E_No[2] += 1;
         break;
     }
@@ -481,12 +512,12 @@ static void Entry_06_2nd() {
     }
 
     switch (E_No[2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         E_No[2] += 1;
         Switch_Screen_Init(1);
         break;
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         if (Switch_Screen(1) != 0) {
             E_No[2] += 1;
             Cover_Timer = 23;
@@ -500,16 +531,16 @@ static void Entry_06_2nd() {
         G_No[1] = 1;
         G_No[2] = 0;
         G_No[3] = 0;
-        E_No[0] = 2;
-        E_No[1] = 0;
+        E_No[0] = ENTRY_MID_GAME_ENTRY;
+        E_No[1] = ENTRY_SUB_INIT;
         E_No[2] = 0;
         E_No[3] = 0;
         Fade_Flag = 0;
 
         activate_new_operators();
 
-        if (E_Number[LOSER][0] == 5) {
-            E_Number[LOSER][0] = 1;
+        if (E_Number[LOSER][0] == ENTRY_PL_LOSER) {
+            E_Number[LOSER][0] = ENTRY_PL_CREDIT;
         }
 
         break;
@@ -519,7 +550,7 @@ static void Entry_06_2nd() {
 /** @brief Entry phase 7 — post-fight break-in with timed delay before transition. */
 static void Entry_07() {
     switch (E_No[1]) {
-    case 0:
+    case ENTRY_PL_INIT:
         Entry_07_1st();
         break;
 
@@ -545,7 +576,7 @@ static void Entry_07_2nd() {
     }
 
     switch (E_No[2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         if (!--E_Timer) {
             E_No[2] += 1;
             Switch_Screen_Init(1);
@@ -559,8 +590,8 @@ static void Entry_07_2nd() {
             G_No[1] = 1;
             G_No[2] = 0;
             G_No[3] = 0;
-            E_No[0] = 2;
-            E_No[1] = 0;
+            E_No[0] = ENTRY_MID_GAME_ENTRY;
+            E_No[1] = ENTRY_SUB_INIT;
             E_No[2] = 0;
             E_No[3] = 0;
 
@@ -574,7 +605,7 @@ static void Entry_07_2nd() {
 /** @brief Entry phase 8 — end-of-game break-in with ranking data cleanup. */
 static void Entry_08() {
     switch (E_No[1]) {
-    case 0:
+    case ENTRY_PL_INIT:
         Entry_08_1st();
         break;
 
@@ -587,11 +618,11 @@ static void Entry_08() {
 /** @brief Entry_08 first sub-phase — dispatch both players' entry sub-states (with fallthrough). */
 static void Entry_08_1st() {
     switch (E_No[2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         E_No[2] += 1;
         /* fallthrough */
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         Entry_Main_Sub(0, 9);
         Entry_Main_Sub(1, 9);
         break;
@@ -611,7 +642,7 @@ static void Entry_10() {
     }
 
     switch (E_No[1]) {
-    case 0:
+    case ENTRY_PL_INIT:
         Entry_10_1st();
         break;
 
@@ -624,16 +655,16 @@ static void Entry_10() {
 /** @brief Entry_10 first sub-phase — compute final grade, check ranking, dispatch players. */
 static void Entry_10_1st() {
     switch (E_No[2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         E_No[2] += 1;
         break;
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         E_No[2] += 1;
         Setup_Final_Grade();
 
         if (Check_Ranking(WINNER) != 0) {
-            E_Number[WINNER][0] = 2;
+            E_Number[WINNER][0] = ENTRY_PL_NAMING;
             E_Number[WINNER][1] = 0;
             E_Number[WINNER][2] = 0;
             E_Number[WINNER][3] = 0;
@@ -642,7 +673,7 @@ static void Entry_10_1st() {
             Request_Disp_Rank[WINNER][2] = Rank_In[WINNER][2];
             Request_Disp_Rank[WINNER][3] = Rank_In[WINNER][3];
         } else {
-            E_Number[WINNER][0] = 8;
+            E_Number[WINNER][0] = ENTRY_PL_GAME_OVER;
             E_Number[WINNER][1] = 0;
         }
 
@@ -666,10 +697,10 @@ static void entry_end_2nd(s16 jump_index) {
     }
 
     switch (E_No[2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         E_No[2] += 1;
 
-        if ((E_Number[LOSER][0] == 8) && (E_Number[LOSER][1] == 1)) {
+        if ((E_Number[LOSER][0] == ENTRY_PL_GAME_OVER) && (E_Number[LOSER][1] == 1)) {
             Clear_Personal_Data(LOSER);
         }
 
@@ -682,8 +713,8 @@ static void entry_end_2nd(s16 jump_index) {
             G_No[1] = 1;
             G_No[2] = 0;
             G_No[3] = 0;
-            E_No[0] = 2;
-            E_No[1] = 0;
+            E_No[0] = ENTRY_MID_GAME_ENTRY;
+            E_No[1] = ENTRY_SUB_INIT;
             E_No[2] = 0;
             E_No[3] = 0;
 
@@ -708,9 +739,9 @@ static void Entry_Main_Sub(s16 PL_id, s16 Jump_Index) {
     ENTRY_X = 0;
 
     switch (E_Number[PL_id][0]) {
-    case 0:
+    case ENTRY_PL_INIT:
         if (!Ignore_Entry[LOSER]) {
-            if ((E_No[0] == 10) || (E_No[0] == 8)) {
+            if ((E_No[0] == ENTRY_FINAL_ENDING) || (E_No[0] == ENTRY_END_GAME_BREAK)) {
                 E_Number[PL_id][0] = 99;
                 return;
             }
@@ -723,7 +754,7 @@ static void Entry_Main_Sub(s16 PL_id, s16 Jump_Index) {
 
         break;
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         if (PL_id) {
             if (Credit_Continue_2P() != 0) {
                 Break_Into_Sub(PL_id, Jump_Index);
@@ -733,28 +764,28 @@ static void Entry_Main_Sub(s16 PL_id, s16 Jump_Index) {
         }
 
         if (Request_Break[PL_id]) {
-            E_Number[PL_id][0] = 0;
+            E_Number[PL_id][0] = ENTRY_PL_INIT;
             E_Number[PL_id][1] = 0;
             E_Number[PL_id][2] = 0;
             E_Number[PL_id][3] = 0;
             return;
         }
 
-        if ((E_Number[PL_id][0] == 1) && (E_07_Flag[PL_id ^ 1] == 0)) {
+        if ((E_Number[PL_id][0] == ENTRY_PL_CREDIT) && (E_07_Flag[PL_id ^ 1] == 0)) {
             Entry_Continue_Sub(PL_id);
             return;
         }
 
         break;
 
-    case 2:
+    case ENTRY_PL_NAMING:
         switch (E_Number[PL_id][1]) {
-        case 0:
+        case ENTRY_PL_INIT:
             E_Number[PL_id][1] += 1;
             Personal_Timer[PL_id] = 30;
             break;
 
-        case 1:
+        case ENTRY_PL_CREDIT:
             if (!--Personal_Timer[PL_id]) {
                 E_Number[PL_id][1] += 1;
                 Naming_Init(PL_id);
@@ -763,7 +794,7 @@ static void Entry_Main_Sub(s16 PL_id, s16 Jump_Index) {
 
             break;
 
-        case 2:
+        case ENTRY_PL_NAMING:
             if (Forbid_Break != 1) {
                 if (PL_id == 0) {
                     Naming_Cut_Sub_1P();
@@ -782,13 +813,13 @@ static void Entry_Main_Sub(s16 PL_id, s16 Jump_Index) {
                     E_Number[PL_id][2] = 0;
                     E_Number[PL_id][3] = 0;
 
-                    if (E_No[0] == 8) {
-                        E_Number[PL_id][0] = 8;
+                    if (E_No[0] == ENTRY_END_GAME_BREAK) {
+                        E_Number[PL_id][0] = ENTRY_PL_GAME_OVER;
                         E_Number[PL_id][1] = 1;
                         return;
                     }
 
-                    E_Number[PL_id][0] = 8;
+                    E_Number[PL_id][0] = ENTRY_PL_GAME_OVER;
                     E_Number[PL_id][1] = 0;
                     return;
                 }
@@ -799,11 +830,11 @@ static void Entry_Main_Sub(s16 PL_id, s16 Jump_Index) {
 
         break;
 
-    case 3:
+    case ENTRY_PL_RANKING:
         switch (E_Number[PL_id][1]) {
-        case 0:
-            if ((E_No[0] == 8) || (E_No[0] == 2)) {
-                E_Number[PL_id][0] = 2;
+        case ENTRY_PL_INIT:
+            if ((E_No[0] == ENTRY_END_GAME_BREAK) || (E_No[0] == ENTRY_MID_GAME_ENTRY)) {
+                E_Number[PL_id][0] = ENTRY_PL_NAMING;
                 E_Number[PL_id][1] = 2;
                 E_Number[PL_id][2] = 0;
                 E_Number[PL_id][3] = 0;
@@ -813,14 +844,14 @@ static void Entry_Main_Sub(s16 PL_id, s16 Jump_Index) {
 
             break;
 
-        case 1:
-            if ((E_No[0] == 8) || (E_No[0] == 2)) {
-                E_Number[PL_id][0] = 8;
+        case ENTRY_PL_CREDIT:
+            if ((E_No[0] == ENTRY_END_GAME_BREAK) || (E_No[0] == ENTRY_MID_GAME_ENTRY)) {
+                E_Number[PL_id][0] = ENTRY_PL_GAME_OVER;
                 E_Number[PL_id][1] = 1;
                 E_Number[PL_id][2] = 0;
                 E_Number[PL_id][3] = 0;
 
-                if (E_No[0] == 2) {
+                if (E_No[0] == ENTRY_MID_GAME_ENTRY) {
                     E_Number[PL_id][1] = 0;
                     return;
                 }
@@ -831,20 +862,20 @@ static void Entry_Main_Sub(s16 PL_id, s16 Jump_Index) {
 
         break;
 
-    case 8:
+    case ENTRY_PL_GAME_OVER:
         switch (E_Number[PL_id][1]) {
-        case 0:
+        case ENTRY_PL_INIT:
             In_Game_Sub(PL_id);
             break;
 
-        case 1:
+        case ENTRY_PL_CREDIT:
             In_Over_Sub(PL_id);
             break;
         }
 
         break;
 
-    case 5:
+    case ENTRY_PL_LOSER:
         Loser_Scene_Sub(PL_id, Jump_Index);
         break;
     }
@@ -929,7 +960,7 @@ static void Loser_Scene_Sub(s16 PL_id, s16 Jump_Index) {
 static s32 Loser_Sub_1P() {
     if ((Ck_Break_Into(p1sw_0, p1sw_1, 0) == 0) && !Request_Break[0]) {
         if (LOSER == 0) {
-            if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
+            if (save_w[1].extra_option.contents[3][5]) {
                 if (!ENTRY_TEXT_GATED)
                     SSPutStr(DE_X[0], 0, 9, "     CONTINUE?");
             }
@@ -945,7 +976,7 @@ static s32 Loser_Sub_1P() {
 static s32 Loser_Sub_2P() {
     if ((Ck_Break_Into(p2sw_0, p2sw_1, 1) == 0) && !Request_Break[1]) {
         if (LOSER == 1) {
-            if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
+            if (save_w[1].extra_option.contents[3][5]) {
                 if (!ENTRY_TEXT_GATED)
                     SSPutStr(DE_X[1], 0, 9, "     CONTINUE?");
             }
@@ -997,7 +1028,7 @@ static s32 Credit_Continue_2P() {
 
 /** @brief Continue-screen sub — countdown timer, check for cut, advance to ranking or game-over. */
 static void Entry_Continue_Sub(s16 PL_id) {
-    if ((Continue_Count_Down[PL_id] == 0) && save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
+    if ((Continue_Count_Down[PL_id] == 0) && save_w[1].extra_option.contents[3][5]) {
         if (!ENTRY_TEXT_GATED) {
             SSPutStr(DE_X[PL_id], 0, 9, "     CONTINUE?");
             Disp_Personal_Count(PL_id, Continue_Count[PL_id]);
@@ -1005,7 +1036,7 @@ static void Entry_Continue_Sub(s16 PL_id) {
     }
 
     switch (E_Number[PL_id][1]) {
-    case 0:
+    case ENTRY_PL_INIT:
         if (Continue_Count_Down[PL_id] == 0) {
             E_Number[PL_id][1] += 1;
             Personal_Timer[PL_id] = 60;
@@ -1014,7 +1045,7 @@ static void Entry_Continue_Sub(s16 PL_id) {
 
         break;
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         if (Check_Count_Cut(PL_id, 8)) {
             Continue_Cut[PL_id] = 1;
         } else if (--Personal_Timer[PL_id]) {
@@ -1044,11 +1075,11 @@ static void Setup_Next_Step(s16 PL_id) {
         Break_Com[PL_id][xx] = 0;
     }
 
-    if (E_No[0] != 7) {
+    if (E_No[0] != ENTRY_POST_FIGHT_BREAK) {
         Setup_Final_Grade();
 
         if (Check_Ranking(PL_id) != 0) {
-            E_Number[PL_id][0] = 2;
+            E_Number[PL_id][0] = ENTRY_PL_NAMING;
             Request_Disp_Rank[PL_id][0] = Rank_In[PL_id][0];
             Request_Disp_Rank[PL_id][1] = Rank_In[PL_id][1];
             Request_Disp_Rank[PL_id][2] = Rank_In[PL_id][2];
@@ -1056,7 +1087,7 @@ static void Setup_Next_Step(s16 PL_id) {
             return;
         }
 
-        E_Number[PL_id][0] = 8;
+        E_Number[PL_id][0] = ENTRY_PL_GAME_OVER;
         E_Number[PL_id][1] = 0;
         return;
     }
@@ -1069,35 +1100,35 @@ static void Setup_Next_Step(s16 PL_id) {
         Request_Disp_Rank[PL_id][2] = Rank_In[PL_id][2];
         Request_Disp_Rank[PL_id][3] = Rank_In[PL_id][3];
 
-        if (E_Number[PL_id ^ 1][0] != 0) {
-            E_Number[PL_id][0] = 2;
+        if (E_Number[PL_id ^ 1][0] != ENTRY_PL_INIT) {
+            E_Number[PL_id][0] = ENTRY_PL_NAMING;
             return;
         }
 
-        E_Number[PL_id][0] = 3;
+        E_Number[PL_id][0] = ENTRY_PL_RANKING;
         E_Number[PL_id][1] = 0;
         return;
     }
 
-    if (E_Number[PL_id ^ 1][0] != 0) {
-        E_Number[PL_id][0] = 8;
+    if (E_Number[PL_id ^ 1][0] != ENTRY_PL_INIT) {
+        E_Number[PL_id][0] = ENTRY_PL_GAME_OVER;
         E_Number[PL_id][1] = 0;
         return;
     }
 
-    E_Number[PL_id][0] = 3;
+    E_Number[PL_id][0] = ENTRY_PL_RANKING;
     E_Number[PL_id][1] = 1;
 }
 
 /** @brief In-game sub — timed "GAME OVER" display, then clear personal data. */
 static void In_Game_Sub(s16 PL_id) {
     switch (E_Number[PL_id][2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         E_Number[PL_id][2] += 1;
         Personal_Timer[PL_id] = 30;
         break;
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         if (--Personal_Timer[PL_id] == 0) {
             E_Number[PL_id][2] += 1;
             Personal_Timer[PL_id] = 60;
@@ -1106,8 +1137,8 @@ static void In_Game_Sub(s16 PL_id) {
 
         break;
 
-    case 2:
-        if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
+    case ENTRY_PL_NAMING:
+        if (save_w[1].extra_option.contents[3][5]) {
             if (!ENTRY_TEXT_GATED)
                 SSPutStr(DE_X[PL_id], 0, 9, "     GAME OVER");
         }
@@ -1122,7 +1153,7 @@ static void In_Game_Sub(s16 PL_id) {
 
     default:
         if (--Personal_Timer[PL_id] == 0) {
-            if ((E_No[0] == 10) || (E_No[0] == 8)) {
+            if ((E_No[0] == ENTRY_FINAL_ENDING) || (E_No[0] == ENTRY_END_GAME_BREAK)) {
                 E_Number[PL_id][0] = 99;
                 return;
             }
@@ -1138,12 +1169,12 @@ static void In_Game_Sub(s16 PL_id) {
 /** @brief In-game over sub — display "GAME OVER" text persistently. */
 static void In_Over_Sub(s16 PL_id) {
     switch (E_Number[PL_id][2]) {
-    case 0:
+    case ENTRY_PL_INIT:
         E_Number[PL_id][2] += 1;
         break;
     }
 
-    if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
+    if (save_w[1].extra_option.contents[3][5]) {
         if (!ENTRY_TEXT_GATED)
             SSPutStr(DE_X[PL_id], 0, 9, "     GAME OVER");
     }
@@ -1152,25 +1183,25 @@ static void In_Over_Sub(s16 PL_id) {
 /** @brief Flash "PRESS START" prompt with timed blink cycle for the given player. */
 static s32 Flash_Start(s16 PL_id) {
     switch (F_No1[PL_id]) {
-    case 0:
+    case ENTRY_PL_INIT:
         F_No1[PL_id] += 1;
         F_No0[PL_id] = 0;
         F_No2[PL_id] = 0;
         F_No3[PL_id] = 0;
         F_Timer[PL_id] = 1;
 
-        if ((E_No[0] == 6) && (PL_id == LOSER)) {
+        if ((E_No[0] == ENTRY_POST_CONTINUE_BREAK) && (PL_id == LOSER)) {
             F_No1[PL_id] = 3;
         }
 
         break;
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         if (!--F_Timer[PL_id]) {
             F_No1[PL_id] += 1;
             F_Timer[PL_id] = 50;
 
-            if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
+            if (save_w[1].extra_option.contents[3][5]) {
                 if (PL_id) {
                     if (!ENTRY_TEXT_GATED)
                         SSPutStr(DE_X[1], 0, 9, "   PRESS 2P START");
@@ -1183,9 +1214,9 @@ static s32 Flash_Start(s16 PL_id) {
 
         break;
 
-    case 2:
+    case ENTRY_PL_NAMING:
         if (--F_Timer[PL_id]) {
-            if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
+            if (save_w[1].extra_option.contents[3][5]) {
                 if (PL_id) {
                     if (!ENTRY_TEXT_GATED)
                         SSPutStr(DE_X[1], 0, 9, "   PRESS 2P START");
@@ -1201,12 +1232,12 @@ static s32 Flash_Start(s16 PL_id) {
 
         break;
 
-    case 3:
+    case ENTRY_PL_RANKING:
         F_No1[PL_id] = 99;
         /* fallthrough */
 
     default:
-        if (save_w[SAVEW_ARCADE].extra_option.contents[3][5]) {
+        if (save_w[1].extra_option.contents[3][5]) {
             if (!ENTRY_TEXT_GATED)
                 SSPutStr(DE_X[1], 0, 9, "     CONTINUE?");
         }
@@ -1219,18 +1250,18 @@ static s32 Flash_Start(s16 PL_id) {
 
 /** @brief Flash "PLEASE WAIT" prompt when the other player has already broken in. */
 static s32 Flash_Please(s16 PL_id) {
-    if (E_No[0] == 6 || E_No[0] == 8) {
+    if (E_No[0] == ENTRY_POST_CONTINUE_BREAK || E_No[0] == ENTRY_END_GAME_BREAK) {
         return 0;
     }
 
     switch (F_No3[PL_id]) {
-    case 0:
+    case ENTRY_PL_INIT:
         F_No3[PL_id] += 1;
         F_No1[PL_id] = 0;
         F_Timer[PL_id] = 1;
         break;
 
-    case 1:
+    case ENTRY_PL_CREDIT:
         if (--F_Timer[PL_id] == 0) {
             F_No3[PL_id] += 1;
             F_Timer[PL_id] = 50;
@@ -1256,10 +1287,10 @@ static s32 Flash_Please(s16 PL_id) {
 /** @brief Route a break-in to the correct Break_Into_XX handler based on Jump_Index. */
 static void Break_Into_Sub(s16 PL_id, s16 Jump_Index) {
     switch (Jump_Index) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
+    case ENTRY_PL_INIT:
+    case ENTRY_PL_CREDIT:
+    case ENTRY_PL_NAMING:
+    case ENTRY_PL_RANKING:
         Break_Into_02(PL_id);
         break;
 
@@ -1268,7 +1299,7 @@ static void Break_Into_Sub(s16 PL_id, s16 Jump_Index) {
         Break_Into_04(PL_id);
         break;
 
-    case 5:
+    case ENTRY_PL_LOSER:
         Break_Into_05(PL_id);
         break;
 
@@ -1276,7 +1307,7 @@ static void Break_Into_Sub(s16 PL_id, s16 Jump_Index) {
         Break_Into_07(PL_id);
         break;
 
-    case 8:
+    case ENTRY_PL_GAME_OVER:
         Break_Into_08(PL_id);
         break;
 
@@ -1295,7 +1326,7 @@ static void Break_Into_Sub(s16 PL_id, s16 Jump_Index) {
 
 /** @brief Check for break-in input — if start pressed, set challenger/champion and signal entry. */
 s32 Ck_Break_Into(u16 Sw_0, u16 Sw_1, s16 PL_id) {
-    if ((E_No[0] != 10) && Request_Break[PL_id ^ 1]) {
+    if ((E_No[0] != ENTRY_FINAL_ENDING) && Request_Break[PL_id ^ 1]) {
         return 0;
     }
 
@@ -1344,7 +1375,7 @@ s32 Ck_Break_Into_SP(u16 Sw_0, u16 Sw_1, s16 PL_id) {
 static void Break_Into_02(s16 /* unused */) {
     plw[New_Challenger].wu.pl_operator = 1;
     Operator_Status[New_Challenger] = 1;
-    E_Number[New_Challenger][0] = 0;
+    E_Number[New_Challenger][0] = ENTRY_PL_INIT;
     E_Number[New_Challenger][1] = 0;
     E_Number[New_Challenger][2] = 0;
     E_Number[New_Challenger][3] = 0;
@@ -1363,7 +1394,7 @@ static void Break_Into_04(s16 /* unused */) {
     E_No[1] += 1;
     E_No[2] = 0;
     E_Timer = 150;
-    E_Number[New_Challenger][0] = 0;
+    E_Number[New_Challenger][0] = ENTRY_PL_INIT;
     E_Number[New_Challenger][1] = 0;
     E_Number[New_Challenger][2] = 0;
     E_Number[New_Challenger][3] = 0;
@@ -1379,7 +1410,7 @@ static void Break_Into_05(s16 PL_id) {
     Stop_Combo = 1;
     E_No[1] += 1;
     E_No[2] = 0;
-    E_Number[New_Challenger][0] = 0;
+    E_Number[New_Challenger][0] = ENTRY_PL_INIT;
     E_Number[New_Challenger][1] = 0;
     E_Number[New_Challenger][2] = 0;
     E_Number[New_Challenger][3] = 0;
@@ -1411,7 +1442,7 @@ static void Break_Into_05(s16 PL_id) {
 
 /** @brief Break-in type 07 — flag player and trigger screen switch when both flagged. */
 static void Break_Into_07(s16 PL_id) {
-    E_Number[New_Challenger][0] = 0;
+    E_Number[New_Challenger][0] = ENTRY_PL_INIT;
     E_Number[New_Challenger][1] = 0;
     E_Number[New_Challenger][2] = 0;
     E_Number[New_Challenger][3] = 0;
@@ -1428,7 +1459,7 @@ static void Break_Into_07(s16 PL_id) {
 
 /** @brief Break-in type 08 — flag player, trigger switch with timer based on continue count. */
 static void Break_Into_08(s16 PL_id) {
-    E_Number[New_Challenger][0] = 0;
+    E_Number[New_Challenger][0] = ENTRY_PL_INIT;
     E_Number[New_Challenger][1] = 0;
     E_Number[New_Challenger][2] = 0;
     E_Number[New_Challenger][3] = 0;
@@ -1452,7 +1483,7 @@ static void Break_Into_08(s16 PL_id) {
 
 /** @brief Break-in type 09 — flag player, screen switch, and set champion. */
 static void Break_Into_09(s16 PL_id) {
-    E_Number[New_Challenger][0] = 0;
+    E_Number[New_Challenger][0] = ENTRY_PL_INIT;
     E_Number[New_Challenger][1] = 0;
     E_Number[New_Challenger][2] = 0;
     E_Number[New_Challenger][3] = 0;
@@ -1470,7 +1501,7 @@ static void Break_Into_09(s16 PL_id) {
 
 /** @brief Break-in type 10 — flag player, screen switch, and set champion (final stage). */
 static void Break_Into_10(s16 PL_id) {
-    E_Number[New_Challenger][0] = 0;
+    E_Number[New_Challenger][0] = ENTRY_PL_INIT;
     E_Number[New_Challenger][1] = 0;
     E_Number[New_Challenger][2] = 0;
     E_Number[New_Challenger][3] = 0;
@@ -1488,7 +1519,7 @@ static void Break_Into_10(s16 PL_id) {
 
 /** @brief Increment the player's continue-coin counter (clamped at 99). */
 static void Continue_Score_Sub(s16 PL_id) {
-    if ((E_Number[PL_id][0] == 1) || (E_Number[PL_id][0] == 5)) {
+    if ((E_Number[PL_id][0] == ENTRY_PL_CREDIT) || (E_Number[PL_id][0] == ENTRY_PL_LOSER)) {
         Continue_Coin[PL_id] += 1;
 
         if (Continue_Coin[PL_id] >= 99) {
