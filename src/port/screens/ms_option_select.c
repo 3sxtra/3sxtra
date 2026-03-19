@@ -107,7 +107,7 @@ static void option_select_enter(struct _TASK* task_ptr) {
     }
 
     /* ── Dynamic item count based on Extra_Option unlock ── */
-    if (save_w[Present_Mode].Extra_Option == 0 && save_w[Present_Mode].Unlock_All == 0) {
+    if (CurrentSave()->Extra_Option == 0 && CurrentSave()->Unlock_All == 0) {
         /* 6 items — no Extra Option */
         if (use_rmlui && rmlui_menu_option) {
             rmlui_option_menu_show();
@@ -200,7 +200,7 @@ static void option_select_tick(struct _TASK* task_ptr) {
     }
 
     /* ── Determine dynamic cursor_max ── */
-    if (save_w[Present_Mode].Extra_Option || save_w[Present_Mode].Unlock_All) {
+    if (CurrentSave()->Extra_Option || CurrentSave()->Unlock_All) {
         ix = 1;
     } else {
         ix = 0;
@@ -239,7 +239,7 @@ static void option_select_tick(struct _TASK* task_ptr) {
 
         /* Auto-save check (replicated from legacy) */
         if (Check_Change_Contents()) {
-            if (save_w[Present_Mode].Auto_Save) {
+            if (CurrentSave()->Auto_Save) {
                 task_ptr->r_no[0] = 4; /* Disp_Auto_Save */
                 task_ptr->r_no[1] = 0;
                 Forbid_Reset = 1;

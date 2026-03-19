@@ -2834,8 +2834,8 @@ void Training_Option(struct _TASK* task_ptr) {
             break;
         }
 
-        save_w[Present_Mode].Damage_Level = Training[2].contents[0][1][2];
-        save_w[Present_Mode].Difficulty = Training[2].contents[0][1][3];
+        CurrentSave()->Damage_Level = Training[2].contents[0][1][2];
+        CurrentSave()->Difficulty = Training[2].contents[0][1][3];
         break;
 
     case 2:
@@ -2941,7 +2941,7 @@ void Blocking_Training(struct _TASK* task_ptr) {
                 Menu_Suicide[0] = 1;
                 Game_pause = 0;
                 Pause_Down = 0;
-                save_w[Present_Mode].Time_Limit = 60;
+                CurrentSave()->Time_Limit = 60;
                 count_cont_init(0);
                 Training[0].contents[1][1][3] = Menu_Cursor_Y[0];
                 init_omop();
@@ -3149,8 +3149,8 @@ void Default_Training_Data(s32 flag) {
 
     Training[0].contents[0][1][2] = save_w->Damage_Level;
     Training[0].contents[0][1][3] = save_w->Difficulty;
-    save_w[Present_Mode].Damage_Level = save_w->Damage_Level;
-    save_w[Present_Mode].Difficulty = save_w->Difficulty;
+    CurrentSave()->Damage_Level = save_w->Damage_Level;
+    CurrentSave()->Difficulty = save_w->Difficulty;
     Training[2] = Training[0];
     Disp_Attack_Data = 0;
 }

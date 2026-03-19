@@ -815,7 +815,7 @@ void Game01_Sub() {
     Stop_Update_Score = 0;
     vital_cont_init();
     // Initialize time limit from local settings once (synchronized for netplay)
-    Time_Limit = save_w[Present_Mode].Time_Limit;
+    Time_Limit = CurrentSave()->Time_Limit;
     count_cont_init(0);
     Score[0][1] = 0;
     Score[0][2] = 0;
@@ -1160,10 +1160,10 @@ void Game06() {
                 }
 
                 for (xx = 0; xx < 20; xx++) {
-                    save_w[Present_Mode].Ranking[xx] = Ranking_Data[xx];
+                    CurrentSave()->Ranking[xx] = Ranking_Data[xx];
                 }
 
-                if (save_w[Present_Mode].Auto_Save) {
+                if (CurrentSave()->Auto_Save) {
                     G_No[2] = 5;
                     G_No[3] = 0;
                     G_Timer = 4;

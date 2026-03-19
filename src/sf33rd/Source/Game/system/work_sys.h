@@ -81,6 +81,17 @@ extern BackgroundParameters bg_prm[8];
 extern f32 scr_sc;
 
 extern struct _SAVE_W save_w[6];
+
+/**
+ * @brief Gets the pointer to the currently active save slot options
+ *
+ * This accessor simplifies access to the global `save_w[Present_Mode]` and ensures
+ * safe reads without duplicating logic across call sites.
+ */
+static inline struct _SAVE_W* CurrentSave(void) {
+    extern u8 Present_Mode;
+    return &save_w[Present_Mode];
+}
 extern Permission permission_player[6];
 extern SystemDir system_dir[6];
 extern _REPLAY_W Replay_w;

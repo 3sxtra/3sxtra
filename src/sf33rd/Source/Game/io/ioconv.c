@@ -153,7 +153,7 @@ void keyConvert() {
         repeat_on = 1;
     }
 
-    if ((save_w[Present_Mode].extra_option.contents[0][4]) && mpp_w.inGame && (Game_pause == 0)) {
+    if ((CurrentSave()->extra_option.contents[0][4]) && mpp_w.inGame && (Game_pause == 0)) {
         repeat_on = 1;
 
         if (MenuTask_IsActive() && (MenuTask_GetPhase() != MTP_TRAINING)) {

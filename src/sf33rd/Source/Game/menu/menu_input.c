@@ -1284,7 +1284,7 @@ void Memory_Card_Sub(s16 PL_id) {
     Memory_Card_Move_Sub_LR(sw, 0);
 
     if (Convert_Buff[3][0][2] == 0) {
-        save_w[Present_Mode].Auto_Save = 0;
+        CurrentSave()->Auto_Save = 0;
     }
 }
 
@@ -2153,8 +2153,8 @@ void Setup_NTr_Data(s16 ix) {
         Play_Mode = 0;
         Replay_Status[0] = 0;
         Replay_Status[1] = 0;
-        save_w[Present_Mode].Time_Limit = -1;
-        save_w[Present_Mode].Damage_Level = Training[2].contents[0][1][2];
+        CurrentSave()->Time_Limit = -1;
+        CurrentSave()->Damage_Level = Training[2].contents[0][1][2];
         Training[0] = Training[2];
         break;
 
@@ -2163,8 +2163,8 @@ void Setup_NTr_Data(s16 ix) {
         Play_Mode = 1;
         Replay_Status[0] = 1;
         Replay_Status[1] = 1;
-        save_w[Present_Mode].Time_Limit = 60;
-        save_w[Present_Mode].Damage_Level = Training[2].contents[0][1][2];
+        CurrentSave()->Time_Limit = 60;
+        CurrentSave()->Damage_Level = Training[2].contents[0][1][2];
         Training[0] = Training[2];
         Training[1] = Training[2];
         break;
@@ -2173,8 +2173,8 @@ void Setup_NTr_Data(s16 ix) {
         Play_Mode = 3;
         Replay_Status[0] = 3;
         Replay_Status[1] = 3;
-        save_w[Present_Mode].Time_Limit = 60;
-        save_w[Present_Mode].Damage_Level = Training[1].contents[0][1][2];
+        CurrentSave()->Time_Limit = 60;
+        CurrentSave()->Damage_Level = Training[1].contents[0][1][2];
         Training[0] = Training[1];
         break;
     }
@@ -2456,8 +2456,8 @@ void Default_Training_Option() {
     Training->contents[0][1][1] = 0;
     Training->contents[0][1][2] = save_w->Damage_Level;
     Training->contents[0][1][3] = save_w->Difficulty;
-    save_w[Present_Mode].Damage_Level = save_w->Damage_Level;
-    save_w[Present_Mode].Difficulty = save_w->Difficulty;
+    CurrentSave()->Damage_Level = save_w->Damage_Level;
+    CurrentSave()->Difficulty = save_w->Difficulty;
     Training[2] = Training[0];
     Disp_Attack_Data = 0;
 }
@@ -2493,7 +2493,7 @@ void Back_to_Mode_Select(struct _TASK* task_ptr) {
 
 /** @brief Extra Option left/right value toggle handler. */
 void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
-    u8 last_pos = save_w[Present_Mode].extra_option.contents[Menu_Page][Menu_Cursor_Y[0]];
+    u8 last_pos = CurrentSave()->extra_option.contents[Menu_Page][Menu_Cursor_Y[0]];
 
     switch (sw) {
     case 4:

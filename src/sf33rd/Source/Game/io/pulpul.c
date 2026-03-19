@@ -433,7 +433,7 @@ s32 pulpul_pdVibMxStart(PPWORK* wk, s32 arg1, s32 arg2, PULPARA* param) {
     adrs = *param;
 
     if ((Check_Menu_Task() == 0) && (test_flag == 0)) {
-        if (save_w[Present_Mode].Pad_Infor[wk->id].Vibration == 0) {
+        if (CurrentSave()->Pad_Infor[wk->id].Vibration == 0) {
             return 1;
         }
 

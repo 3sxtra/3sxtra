@@ -4162,7 +4162,7 @@ s32 Select_Reflection_Time(PLW* wk) {
     s8 zz;
 
     xx = (u8)random_32_com();
-    Lv = Setup_Lv18(save_w[Present_Mode].Difficulty + 0);
+    Lv = Setup_Lv18(CurrentSave()->Difficulty + 0);
     Lv += CC_Value[0];
     if (Break_Into_CPU == 2) {
         Lv = 0x13;
@@ -5060,7 +5060,7 @@ void Next_Be_Guard(PLW* wk, WORK* em, s16 Type_Of_Guard) {
 s32 Check_Flip_Tech(WORK* em) {
     s32 rnum = 1;
 
-    switch (save_w[Present_Mode].Difficulty) {
+    switch (CurrentSave()->Difficulty) {
     case 0:
         rnum = 0;
         break;
@@ -5378,7 +5378,7 @@ void Guard_or_Jump_VS_Shell(PLW* wk, WORK_Other* tmw, s16 xx) {
             Pattern_Index[wk->wu.id] = 0;
         }
     } else {
-        switch (save_w[Present_Mode].Difficulty) {
+        switch (CurrentSave()->Difficulty) {
         case 7:
             if (wk->wu.vital_new < 4) {
                 if (!(random_32_com() & 0xF)) {
@@ -5925,7 +5925,7 @@ s32 ETC_Term_0009(PLW* wk, WORK* em) {
 s32 emLevelRemake(s32 now, s32 max, s32 exd) {
     s32 RemakeLevelForDifficulty[8] = { -30, -10, 0, 0, 0, 0, 20, 60 };
 
-    now += (max - exd) * RemakeLevelForDifficulty[save_w[Present_Mode].Difficulty] / 100;
+    now += (max - exd) * RemakeLevelForDifficulty[CurrentSave()->Difficulty] / 100;
 
     if (now < 0) {
         now = 0;
@@ -5941,5 +5941,5 @@ s32 emLevelRemake(s32 now, s32 max, s32 exd) {
 s32 emGetMaxBlocking() {
     s32 RapidBlockingTimes[8] = { 2, 2, 3, 3, 3, 4, 6, 10 };
 
-    return RapidBlockingTimes[save_w[Present_Mode].Difficulty];
+    return RapidBlockingTimes[CurrentSave()->Difficulty];
 }

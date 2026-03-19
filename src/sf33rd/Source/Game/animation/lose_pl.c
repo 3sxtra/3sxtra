@@ -112,8 +112,8 @@ void Lose_20000(PLW* wk) {
     case 0:
         wk->wu.routine_no[3]++;
 
-        if (!Extra_Break && ((Round_num >= (save_w[Present_Mode].Battle_Number[Play_Type]) * 2) ||
-                             (PL_Wins[Winner_id] >= (save_w[Present_Mode].Battle_Number[Play_Type]) + 1))) {
+        if (!Extra_Break && ((Round_num >= (CurrentSave()->Battle_Number[Play_Type]) * 2) ||
+                             (PL_Wins[Winner_id] >= (CurrentSave()->Battle_Number[Play_Type]) + 1))) {
             effect_C1_init(&wk->wu);
         }
 

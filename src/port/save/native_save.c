@@ -238,7 +238,7 @@ const char* NativeSave_GetSavePath(void) {
  *  OPTIONS  —  INI format
  * ═══════════════════════════════════════════════════════════════════ */
 
-/** @brief Load options from options.ini into save_w[Present_Mode]. */
+/** @brief Load options from options.ini into CurrentSave(). */
 int NativeSave_LoadOptions(void) {
     char path[512];
     make_path(path, sizeof(path), "options.ini");
@@ -249,7 +249,7 @@ int NativeSave_LoadOptions(void) {
         return -1;
     }
 
-    struct _SAVE_W* sw = &save_w[Present_Mode];
+    struct _SAVE_W* sw = CurrentSave();
 
     /* Controller */
     ini_read_bytes(f, "pad_1p_buttons", sw->Pad_Infor[0].Shot, 8);
@@ -345,7 +345,7 @@ int NativeSave_LoadOptions(void) {
     return 0;
 }
 
-/** @brief Save current options from save_w[Present_Mode] to options.ini. */
+/** @brief Save current options from CurrentSave() to options.ini. */
 void NativeSave_SaveOptions(void) {
     char path[512], tmp[520];
     make_path(path, sizeof(path), "options.ini");
@@ -358,7 +358,7 @@ void NativeSave_SaveOptions(void) {
         return;
     }
 
-    struct _SAVE_W* sw = &save_w[Present_Mode];
+    struct _SAVE_W* sw = CurrentSave();
 
     fprintf(f, "# 3SX Options — auto-generated, hand-editable\n");
     fprintf(f, "# DO NOT change key names. Values are integers.\n\n");
@@ -624,7 +624,7 @@ int NativeSave_SaveReplay(int slot) {
 
     /* Prepare replay data — copy from game state (mirrors save_data_store_replay) */
     _REPLAY_W* rw = &Replay_w;
-    struct _SAVE_W* sw = &save_w[Present_Mode];
+    struct _SAVE_W* sw = CurrentSave();
     struct _REP_GAME_INFOR* rp = &Rep_Game_Infor[10];
 
     memcpy(&rw->game_infor, rp, sizeof(*rp));

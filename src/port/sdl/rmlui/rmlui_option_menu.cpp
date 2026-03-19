@@ -51,7 +51,7 @@ static OptionMenuCache s_cache = {};
     } while (0)
 
 static inline bool extra_option_available(void) {
-    return save_w[Present_Mode].Extra_Option != 0 || save_w[Present_Mode].Unlock_All != 0;
+    return CurrentSave()->Extra_Option != 0 || CurrentSave()->Unlock_All != 0;
 }
 
 // ─── Init ─────────────────────────────────────────────────────────

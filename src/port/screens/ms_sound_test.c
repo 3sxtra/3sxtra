@@ -185,18 +185,18 @@ static void sound_test_tick(struct _TASK* task_ptr) {
     /* Live-apply BGM level */
     if (bgm_level != (s16)Convert_Buff[3][1][1]) {
         bgm_level = Convert_Buff[3][1][1];
-        save_w[Present_Mode].BGM_Level = Convert_Buff[3][1][1];
+        CurrentSave()->BGM_Level = Convert_Buff[3][1][1];
         SsBgmHalfVolume(0);
     }
 
     /* Live-apply SE level */
     if (se_level != (s16)Convert_Buff[3][1][2]) {
         se_level = Convert_Buff[3][1][2];
-        setSeVolume(save_w[Present_Mode].SE_Level = Convert_Buff[3][1][2]);
+        setSeVolume(CurrentSave()->SE_Level = Convert_Buff[3][1][2]);
     }
 
     /* Persist BGM type */
-    save_w[Present_Mode].BgmType = Convert_Buff[3][1][3];
+    CurrentSave()->BgmType = Convert_Buff[3][1][3];
 
     /* Handle BGM type change — switch tracks */
     if (sys_w.bgm_type != Convert_Buff[3][1][3]) {

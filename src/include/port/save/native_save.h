@@ -45,10 +45,10 @@ void NativeSave_Init(void);
 
 /* ── Options (settings) ────────────────────────────────────────────── */
 
-/** Load options from options.ini into save_w[Present_Mode]. Returns 0 on success. */
+/** Load options from options.ini into CurrentSave(). Returns 0 on success. */
 int NativeSave_LoadOptions(void);
 
-/** Save current options from save_w[Present_Mode] to options.ini. */
+/** Save current options from CurrentSave() to options.ini. */
 void NativeSave_SaveOptions(void);
 
 /* ── Direction (key config) ────────────────────────────────────────── */

@@ -552,9 +552,8 @@ static void Game_Manage_3rd() {
 
 /** @brief Determines finish type and updates break-in term data. */
 static void setFinishType() {
-    if (Play_Type == 0 && Mode_Type == MODE_ARCADE &&
-        PL_Wins[Winner_id] >= save_w[Present_Mode].Battle_Number[Play_Type] && VS_Index[Winner_id] > 8 &&
-        plw[Winner_id].wu.pl_operator != 0 && E_Number[Loser_id][0] != 2) {
+    if (Play_Type == 0 && Mode_Type == MODE_ARCADE && PL_Wins[Winner_id] >= CurrentSave()->Battle_Number[Play_Type] &&
+        VS_Index[Winner_id] > 8 && plw[Winner_id].wu.pl_operator != 0 && E_Number[Loser_id][0] != 2) {
         E_Number[Loser_id][0] = 99;
     }
 
@@ -592,7 +591,7 @@ static void Game_Manage_4th() {
         PL_Wins[0]++;
         PL_Wins[1]++;
 
-        if (PL_Wins[0] >= save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
+        if (PL_Wins[0] >= CurrentSave()->Battle_Number[Play_Type] + 1) {
             Winner_id = 0;
             Loser_id = 1;
             Update_VS_Data();
@@ -600,7 +599,7 @@ static void Game_Manage_4th() {
             break;
         }
 
-        if (PL_Wins[1] >= save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
+        if (PL_Wins[1] >= CurrentSave()->Battle_Number[Play_Type] + 1) {
             Winner_id = 1;
             Loser_id = 0;
             Update_VS_Data();
@@ -845,7 +844,7 @@ static s32 Check_Disp_Combo() {
         return 1;
     }
 
-    if (PL_Wins[Winner_id] < save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
+    if (PL_Wins[Winner_id] < CurrentSave()->Battle_Number[Play_Type] + 1) {
         return 0;
     }
 
@@ -948,7 +947,7 @@ static void Game_Manage_8_0() {
     if (Round_Operator[Winner_id] != 0 || Mode_Type == MODE_VERSUS || Mode_Type == 5) {
         Pool_Score(Winner_id);
 
-        if (PL_Wins[Winner_id] >= save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
+        if (PL_Wins[Winner_id] >= CurrentSave()->Battle_Number[Play_Type] + 1) {
             C_No[1]++;
             Additional_Bonus(WINNER);
             grade_makeup_stage_parameter(WINNER);
@@ -965,7 +964,7 @@ static void Game_Manage_8_0() {
     C_No[1] = 3;
     C_Timer = 30;
 
-    if (PL_Wins[Winner_id] >= save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
+    if (PL_Wins[Winner_id] >= CurrentSave()->Battle_Number[Play_Type] + 1) {
         grade_makeup_stage_parameter(WINNER);
         grade_makeup_stage_parameter(LOSER);
     }
@@ -1105,7 +1104,7 @@ static void Game_Manage_8_3() {
 static void Game_Manage_9th() {
     switch (C_No[1]) {
     case 0:
-        if (PL_Wins[Winner_id] >= save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
+        if (PL_Wins[Winner_id] >= CurrentSave()->Battle_Number[Play_Type] + 1) {
             C_No[0]++;
             C_No[1] = 0;
             C_Timer = 75;
@@ -1284,7 +1283,7 @@ static s32 Check_Ending() {
             }
 
             if (My_char[WINNER] == 0) {
-                save_w[Present_Mode].Extra_Option = 1;
+                CurrentSave()->Extra_Option = 1;
             }
         }
 
@@ -1409,7 +1408,7 @@ static void Check_Perfect(s16 PL_id) {
 
 /** @brief Updates match history, VS index, win records, and scoring data after a set ends. */
 static void Update_VS_Data() {
-    if (PL_Wins[Winner_id] >= save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
+    if (PL_Wins[Winner_id] >= CurrentSave()->Battle_Number[Play_Type] + 1) {
         WINNER = Winner_id;
         LOSER = Loser_id;
         Stock_My_char[LOSER] = My_char[LOSER];
@@ -1650,7 +1649,7 @@ static void Update_BI_Term() {
 
 /** @brief Updates the raw win record (arcade or versus mode). */
 static void Ck_Win_Record() {
-    if (PL_Wins[Winner_id] < save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
+    if (PL_Wins[Winner_id] < CurrentSave()->Battle_Number[Play_Type] + 1) {
         return;
     }
 
@@ -1712,7 +1711,7 @@ static s32 Judge_Next_Disposal() {
         return 0;
     }
 
-    if (PL_Wins[0] >= save_w[Present_Mode].Battle_Number[Play_Type]) {
+    if (PL_Wins[0] >= CurrentSave()->Battle_Number[Play_Type]) {
         return 1;
     }
 
@@ -1728,7 +1727,7 @@ static void Quick_Entry() {
         Extra_Break = 0;
     }
 
-    if (PL_Wins[Winner_id] < save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
+    if (PL_Wins[Winner_id] < CurrentSave()->Battle_Number[Play_Type] + 1) {
         return;
     }
 
@@ -1829,7 +1828,7 @@ static void Pool_Score(s16 PL_id) {
     Score_Buff *= 500;
     Vital_Bonus[Winner_id] += Score_Buff;
 
-    if (save_w[Present_Mode].Time_Limit == -1) {
+    if (CurrentSave()->Time_Limit == -1) {
         Time_Bonus[Winner_id] = 0;
     } else {
         Time_Bonus[Winner_id] += round_timer * 300;
@@ -1870,7 +1869,7 @@ static s32 Check_Break_Into_CPU(s16 PL_id) {
         return 0;
     }
 
-    if (Super_Arts_Finish[PL_id] < BIC_SA_Data[0][save_w[Present_Mode].Battle_Number[Play_Type]]) {
+    if (Super_Arts_Finish[PL_id] < BIC_SA_Data[0][CurrentSave()->Battle_Number[Play_Type]]) {
         return 0;
     }
 
@@ -1914,7 +1913,7 @@ static s32 Check_Disp_Winner() {
         return Disp_Win_Name = 0;
     }
 
-    if (PL_Wins[Winner_id] >= save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
+    if (PL_Wins[Winner_id] >= CurrentSave()->Battle_Number[Play_Type] + 1) {
         return Disp_Win_Name = 1;
     }
 
@@ -1931,7 +1930,7 @@ static void Check_Fade_Out_BGM(s16 Time) {
         return;
     }
 
-    if (PL_Wins[Winner_id] < save_w[Present_Mode].Battle_Number[Play_Type] + 1) {
+    if (PL_Wins[Winner_id] < CurrentSave()->Battle_Number[Play_Type] + 1) {
         return;
     }
 

@@ -167,7 +167,7 @@ u16 Convert_User_Setting(s16 PL_id) {
     }
 
     u16 sw = (PL_id == 0) ? p1sw_0 : p2sw_0;
-    return Remap_Buttons(sw, &save_w[Present_Mode].Pad_Infor[PL_id]);
+    return Remap_Buttons(sw, &CurrentSave()->Pad_Infor[PL_id]);
 }
 
 /** @brief Reset all per-player session data (score, wins, cursors, etc.) for the given player. */
@@ -846,7 +846,7 @@ s32 Check_Menu_Task() {
 void Setup_Limit_Time() {
     s16 limit;
 
-    limit = Level_18_Data[save_w[Present_Mode].Difficulty][16];
+    limit = Level_18_Data[CurrentSave()->Difficulty][16];
     limit += 20;
     if (Country == COUNTRY_JAPAN) {
         Limit_Time = 1241;
@@ -872,7 +872,7 @@ void Setup_Training_Difficulty() {
         min_time = 0;
     }
 
-    Control_Time = min_time + (unit_time * save_w[Present_Mode].Difficulty);
+    Control_Time = min_time + (unit_time * CurrentSave()->Difficulty);
 }
 
 /** @brief Initialize a background layer at the given position and mark it as active. */
@@ -1263,7 +1263,7 @@ static void Get_Replay_Header() {
     Champion = Replay_w.champion;
     New_Challenger = Champion ^ 1;
     Control_Time = Replay_w.Control_Time_Buff;
-    save_w[Present_Mode].Difficulty = Replay_w.Difficulty;
+    CurrentSave()->Difficulty = Replay_w.Difficulty;
 }
 
 /** @brief Dispatch replay action for a player based on their replay status (record, playback, idle, full). */
@@ -1417,7 +1417,7 @@ s16 Check_SysDir_Page() {
     s16 ix;
     s16 count;
 
-    if (save_w[Present_Mode].Unlock_All) {
+    if (CurrentSave()->Unlock_All) {
         return 9;
     }
 

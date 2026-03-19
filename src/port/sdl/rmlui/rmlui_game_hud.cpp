@@ -325,8 +325,7 @@ extern "C" void rmlui_game_hud_init(void) {
                   [](Rml::Variant& v) { v = (int)((Mode_Type == MODE_VERSUS) ? VS_Win_Record[1] : Win_Record[1]); });
 
     // ── Round results (per-round bubbles) ──
-    ctor.BindFunc("rounds_to_win",
-                  [](Rml::Variant& v) { v = (int)(save_w[Present_Mode].Battle_Number[Play_Type] + 1); });
+    ctor.BindFunc("rounds_to_win", [](Rml::Variant& v) { v = (int)(CurrentSave()->Battle_Number[Play_Type] + 1); });
     ctor.BindFunc("p1_round_wins", [](Rml::Variant& v) { v = (int)PL_Wins[0]; });
     ctor.BindFunc("p2_round_wins", [](Rml::Variant& v) { v = (int)PL_Wins[1]; });
     // Per-round result type (int 0-7)
@@ -511,7 +510,7 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_INT(p1_sa_index, sa0);
     DIRTY_INT(p2_sa_index, sa1);
     // ── Round results ──
-    DIRTY_INT(rounds_to_win, (int)(save_w[Present_Mode].Battle_Number[Play_Type] + 1));
+    DIRTY_INT(rounds_to_win, (int)(CurrentSave()->Battle_Number[Play_Type] + 1));
     DIRTY_INT(p1_round_wins, (int)PL_Wins[0]);
     DIRTY_INT(p2_round_wins, (int)PL_Wins[1]);
     DIRTY_INT(p1_r0, (int)flash_win_type[0][0]);

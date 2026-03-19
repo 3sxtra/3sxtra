@@ -123,7 +123,7 @@ void init_omop() {
             get_system_direction_parameter(&system_dir[0]);
         }
 
-        get_extra_option_parameter(&save_w[Present_Mode].extra_option);
+        get_extra_option_parameter(&(CurrentSave()->extra_option));
     }
 
     omop_spmv_ng_table[0] |= sysdir_base_move[My_char[0]];
@@ -238,7 +238,7 @@ void get_system_direction_parameter(SystemDir* sysdir_data) {
         omop_spmv_ng_table2[0] |= DIP2_CHIP_DAMAGE_KO_DISABLED;
     }
 
-    if (save_w[Present_Mode].GuardCheck) {
+    if (CurrentSave()->GuardCheck) {
         omop_spmv_ng_table[0] |= 0x04000000;
     }
 

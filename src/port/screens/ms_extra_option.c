@@ -10,7 +10,7 @@
  *   - Uses r_no[1]=14 (0xE) which triggers Ex_Move_Sub_LR in Dir_Move_Sub
  *     (instead of Dir_Move_Sub_LR for SysDir pages)
  *   - Page data comes from Ex_Page_Data[Menu_Page] instead of Page_Data[]
- *   - Settings stored in save_w[Present_Mode].extra_option.contents[][]
+ *   - Settings stored in CurrentSave()->extra_option.contents[][]
  *   - Exits via Return_Option_Mode_Sub (always returns to Option_Select)
  *   - Has a "Default" action on Page 0, Item 6 that resets all options
  *
@@ -167,7 +167,7 @@ static void extra_option_tick(struct _TASK* task_ptr) {
 
         if (Menu_Cursor_Y[1] != Menu_Cursor_Y[0]) {
             SE_cursor_move();
-            save_w[Present_Mode].extra_option.contents[Menu_Page][Menu_Max] = 1;
+            CurrentSave()->extra_option.contents[Menu_Page][Menu_Max] = 1;
 
             if (Menu_Cursor_Y[0] < Menu_Max) {
                 Message_Data->order = 1;
@@ -181,7 +181,7 @@ static void extra_option_tick(struct _TASK* task_ptr) {
                 }
             } else {
                 Message_Data->order = 1;
-                Message_Data->request = save_w[Present_Mode].extra_option.contents[Menu_Page][Menu_Max] + 32;
+                Message_Data->request = CurrentSave()->extra_option.contents[Menu_Page][Menu_Max] + 32;
                 Message_Data->timer = 2;
                 Message_Data->pos_y = 54;
             }
@@ -231,7 +231,7 @@ static void extra_option_tick(struct _TASK* task_ptr) {
             /* Confirm */
             /* Special case: Page 0, Item 6 = "Default" — reset all */
             if (Menu_Page == 0 && Menu_Cursor_Y[0] == 6) {
-                save_w[Present_Mode].extra_option = save_w[0].extra_option;
+                CurrentSave()->extra_option = save_w[0].extra_option;
                 SE_selected();
                 break;
             }
@@ -241,7 +241,7 @@ static void extra_option_tick(struct _TASK* task_ptr) {
             }
 
             /* On the page navigation item */
-            switch (save_w[Present_Mode].extra_option.contents[Menu_Page][Menu_Max]) {
+            switch (CurrentSave()->extra_option.contents[Menu_Page][Menu_Max]) {
             case 0:
                 /* Prev page */
                 task_ptr->timer = 5;

@@ -1271,7 +1271,7 @@ void Setup_PL_Color(s16 PL_id, u16 sw) {
             }
         }
 
-        if (save_w[Present_Mode].PL_Color[PL_id][My_char[PL_id]]) {
+        if (CurrentSave()->PL_Color[PL_id][My_char[PL_id]]) {
             if (PL_id == 0) {
                 sw_new = p1sw_0;
             } else {
@@ -1602,7 +1602,7 @@ static s8 Check_Bonus_Type() {
         return 0;
     }
 
-    if (save_w[Present_Mode].extra_option.contents[0][5] == 0) {
+    if (CurrentSave()->extra_option.contents[0][5] == 0) {
         return 0;
     }
 

@@ -345,7 +345,7 @@ static void Check_Use_Gill() {
     permission_player[4].ok[0] = 0;
     permission_player[5].ok[0] = 0;
 
-    if (save_w[Present_Mode].Unlock_All) {
+    if (CurrentSave()->Unlock_All) {
         permission_player[1].ok[0] = 1;
         permission_player[4].ok[0] = 1;
         permission_player[5].ok[0] = 1;
@@ -1679,7 +1679,7 @@ static void Exit_1st() {
     Order_Timer[8] = 1;
     Setup_Training_Difficulty();
 
-    if (Mode_Type == MODE_VERSUS && save_w[Present_Mode].Handicap != 0) {
+    if (Mode_Type == MODE_VERSUS && CurrentSave()->Handicap != 0) {
         Exit_No = 7;
     } else {
         Exit_No++;

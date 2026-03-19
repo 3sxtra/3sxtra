@@ -1595,7 +1595,7 @@ void Com_Caught(PLW* wk) {
 static s16 Decide_Exit_Catch(PLW* wk) {
     s16 Rnd;
     s16 xx;
-    s16 Lv = Setup_Lv18(save_w[Present_Mode].Difficulty + 0);
+    s16 Lv = Setup_Lv18(CurrentSave()->Difficulty + 0);
 
     Lv += CC_Value[0];
 

@@ -183,3 +183,7 @@ s16 tail_ix[8];
 int Netplay_GetPlayerHandle(void) { return 0; }
 int Netplay_GetBattleStartFrame(void) { return -1; }
 #endif
+#include "sf33rd/Source/Game/sound/se_data.h"
+void Se_Dispatch(u16 index, u16 code, WORK_Other* ewk) {}
+
+void MenuTask_SetPhase(int phase) {}

@@ -812,10 +812,10 @@ void setup_vitality(WORK* wk, s16 pno) {
     if (wk->pl_operator) {
         ix = 2;
     } else {
-        ix = CC_Value[1] + save_w[Present_Mode].Difficulty;
+        ix = CC_Value[1] + CurrentSave()->Difficulty;
     }
 
-    wk->original_vitality = Com_Vital_Unit_Data[pno][save_w[Present_Mode].Damage_Level][ix];
+    wk->original_vitality = Com_Vital_Unit_Data[pno][CurrentSave()->Damage_Level][ix];
     wk->original_vitality += (s16)base_vital_omake[omop_vital_init[wk->id]];
     wk->dmcal_m = 32;
     wk->dmcal_d = (wk->original_vitality << 5) / Max_vitality;
@@ -923,7 +923,7 @@ void add_sp_arts_gauge_hit_dm(PLW* wk) {
         add_super_arts_gauge(wk->sa, wk->wu.id, asag / 3, wk->metamorphose);
 
         if (emwk->wu.pl_operator == 0) {
-            asag += asagh_zuru[save_w[Present_Mode].Difficulty];
+            asag += asagh_zuru[CurrentSave()->Difficulty];
         }
 
         if (asag <= 0) {
@@ -983,7 +983,7 @@ void add_sp_arts_gauge_paring(PLW* wk) {
 
     if (asag != 0) {
         if (wk->wu.pl_operator == 0) {
-            asag += asagh_zuru[save_w[Present_Mode].Difficulty];
+            asag += asagh_zuru[CurrentSave()->Difficulty];
         }
 
         if (asag <= 0) {
@@ -1011,7 +1011,7 @@ static void add_sp_arts_gauge_self(PLW* wk, s16 asag) {
     }
 
     if (wk->wu.pl_operator == 0) {
-        asag += asagh_zuru[save_w[Present_Mode].Difficulty];
+        asag += asagh_zuru[CurrentSave()->Difficulty];
     }
 
     if (asag <= 0) {
@@ -1078,7 +1078,7 @@ void add_super_arts_gauge(SA_WORK* wk, s16 ix, s16 asag, u8 mf) {
             (wk->store != wk->store_max)) {
             asag = asag * 0x78 / 100;
 
-            if (save_w[Present_Mode].Battle_Number[Play_Type] == 0) {
+            if (CurrentSave()->Battle_Number[Play_Type] == 0) {
                 asag = asag * 0x96 / 100;
             }
 

@@ -239,7 +239,7 @@ static void setup_vs_mode() {
     Clear_Flash_Init(4);
 
     // Ensure both peers start with identical timer state regardless of local DIP switch settings.
-    // Without this, save_w[Present_Mode].Time_Limit can differ per player's config.
+    // Without this, CurrentSave()->Time_Limit can differ per player's config.
     Counter_hi = 99;
     Counter_low = 60;
 
