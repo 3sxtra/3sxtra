@@ -17,8 +17,6 @@ typedef struct gedrw_data {
 
 typedef gedrw_data cedrw_data;
 
-extern const u16* ending_map_tbl[][3];
-
 extern const u8 end_use_scr[];
 extern const u8 end_use_real_scr[];
 extern const u16 bgtex_ending_file[];

@@ -30,15 +30,13 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 16 | `game_globals.c` Decomposition | LOW | 607-line grab-bag → 5 domain files under `globals/` | `player_globals.c`, `timer_hud_globals.c`, `score_globals.c`, `match_globals.c`, `combo_stage_globals.c` |
 
 | 17 | `opening.c` Decomposition | LOW | 3,161-line file split into 3 files | `opening_scenes.c` (~1,450 lines), `opening_bg.c` (~1,100 lines), `opening.c` core (~600 lines). Fully encapsulated 45+ internal subroutines as `static`. |
+| 18 | `end_data.c` Tilemap Extraction | LOW | 694-line file split into 2 files | `end_maps.c` (459 lines, 23 static tilemap arrays + master lookup), `end_data.c` (244 lines, config/rewrite/state). Updated `end_14.c`, `bg.c` includes. |
 
 ---
 
-## Next Wave: Safe Improvement Candidates (Sorted by Priority)
+## Next Wave: Safe Improvement Candidates
 
-### 1. `ending/` Data Table Extraction
-**Risk: 🟢 LOW** · **Effort: MEDIUM** · **20+ files, ~7K lines total**
-
-The `ending/` directory has 20 per-character ending files (`end_00.c`..`end_20.c`) with heavy hex-literal magic numbers (300+ across the directory). The data tables in `end_data.c` (693 lines) could be separated more cleanly from the animation logic. Purely cinematic, no gameplay impact.
+All previously identified low-risk candidates have been completed. Further candidates would require fresh audit.
 
 ---
 
