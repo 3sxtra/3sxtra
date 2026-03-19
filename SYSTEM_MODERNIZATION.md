@@ -19,11 +19,12 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 5 | Sound Effect Dispatch | LOW | `SeHandlerType` enum-tag table + `Se_Dispatch()` | `se_data.h`, `se_data.c`, 10 call-site files |
 | 6 | Pause System | MEDIUM | Named state enums + switch | `pause.c`, `pause.h`, `reset.c` |
 | 7 | Character Entrance Animations | MEDIUM | `AppearTypeCallbacks` registry | `appear_registry.h/.c`, `ap_all.c` |
-| 8 | TASK System (Phases 1–3) | MEDIUM | Named constants + accessor functions | `menu_task.h/.c`, `init_task.h/.c`, 8 modified files |
+| 8 | TASK System (Phases 1–3) | MEDIUM | Named constants + accessor functions | `menu_task.h/.c`, `init_task.h/.c`, `task_api.h/.c`, 15 migrated files |
 | 9 | `Debug_w[]` Magic Number Constants | LOW | `DebugOption` enum in `debug_config.h` | 38 files already use `DEBUG_*` named constants |
 | 10 | `Country` Region Code Constants | VERY LOW | `#define` constants in `country_region.h` | 12 files, `eff*.c`, `init3rd.c`, `game.c`, etc. |
 | 11 | SE Handler Visibility Reduction | LOW | Forward decls in `se_data.c`, removed from `se.h` | `se.h`, `se_data.c` |
 | 12 | `Bonus_Voice_Data` Integration | LOW | `Check_Bonus_SE` moved into `Se_Dispatch` pre-processing | `se.c`, `se_data.c`, `se_data.h` |
+| 13 | Remaining `task[TASK_*]` Direct Accesses | LOW | Generic accessors + `TASK_SAVER2` enum | `task_api.h/.c`, `main.h`, 15 game-logic files migrated |
 
 ---
 
@@ -47,16 +48,6 @@ After:  CurrentSave()->Battle_Number[Play_Type]
 **Risk: 🟢 LOW** · **Effort: MEDIUM** · **1 → many files**
 
 `game_globals.c` is a 606-line dump of global variable definitions — a grab-bag of unrelated state (player data, stage config, timer state, mode flags). Splitting into domain-specific files is purely organizational.
-
----
-
-### 3. Remaining `task[TASK_*]` Direct Accesses
-**Risk: 🟡 LOW** · **Effort: MEDIUM** · **12 files**
-
-The TASK system modernization created accessor functions for `TASK_MENU` and `TASK_INIT`, but 10 `.c` files still use `task[TASK_*]` directly for other slots.
-
-> [!IMPORTANT]
-> Some files (`game.c`, `sys_sub.c`) touch rollback-synced state. Only *read* accesses are safe; writes need careful review.
 
 ---
 
