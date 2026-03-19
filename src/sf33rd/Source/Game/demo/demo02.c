@@ -24,6 +24,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/sys_sub.h"
 #include "sf33rd/Source/Game/system/sysdir.h"
+#include "port/menu_task.h"
 
 void Setup_Demo_Arts();
 static void Setup_Select_Demo_PL();
@@ -34,7 +35,7 @@ static void Setup_Select_Demo_PL();
 
 /** @brief Top-level demo dispatcher — thin wrapper around MenuScreen registry. */
 s32 Play_Demo() {
-    struct _TASK* tp = &task[TASK_MENU];
+    struct _TASK* tp = MenuTask_GetTaskPtr();
 
     if (!MenuScreen_IsActive()) {
         Next_Demo = 0;

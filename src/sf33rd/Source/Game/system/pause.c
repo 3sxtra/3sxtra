@@ -12,6 +12,7 @@
 
 #include "sf33rd/Source/Game/system/pause.h"
 #include "port/menu_task.h"
+#include "port/task_api.h"
 #include "common.h"
 #include "main.h"
 #include "sf33rd/AcrSDK/common/pad.h"
@@ -345,17 +346,17 @@ static void Setup_Come_Out(struct _TASK* task_ptr) {
 
 /** @brief Set the flash overlay sub-state (used by menu_input.c). */
 void Pause_SetFlashPhase(u8 phase) {
-    task[TASK_PAUSE].r_no[2] = phase;
+    PauseTask_SetPhase(phase);
 }
 
 /** @brief Set the flash overlay timer (used by menu_input.c). */
 void Pause_SetFlashTimer(u8 timer) {
-    task[TASK_PAUSE].free[0] = timer;
+    PauseTask_SetTimer(timer);
 }
 
 /** @brief Kill the flash overlay by setting it to the no-op state (used by menu_input.c exit path). */
 void Pause_KillFlash(void) {
-    task[TASK_PAUSE].r_no[2] = FLASH_3RD;
+    PauseTask_SetPhase(FLASH_3RD);
 }
 
 /** @brief Check whether the player is active in the current round (always 1 in VS mode). */

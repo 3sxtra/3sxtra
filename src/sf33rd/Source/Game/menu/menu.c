@@ -13,6 +13,7 @@
 #include "sf33rd/Source/Game/menu/menu.h"
 #include "port/init_task.h"
 #include "port/menu_task.h"
+#include "port/task_api.h"
 #include "port/menu_screen.h"
 #include "common.h"
 #include "main.h"
@@ -1832,8 +1833,8 @@ void Menu_ReenterNetworkLobby(void) {
     // TASK_RESET).  Leaving condition=1 causes the entire game state to be
     // clobbered on the next frame, freezing the lobby.
     InitTask_Deactivate();
-    task[TASK_GAME].condition = 1;
-    task[TASK_MENU].condition = 1;
+    Task_Activate(TASK_GAME);
+    MenuTask_Activate();
 
     cpReadyTask(TASK_MENU, Menu_Task);
     MenuTask_SetPhase(MTP_AFTER_TITLE);
@@ -2259,7 +2260,7 @@ static void DAS2_4th(struct _TASK* task_ptr) {
     /* NativeSave_SaveOptions() is synchronous, so always proceed */
     G_No[2] = 6;
     cpExitTask(TASK_MENU);
-    task[TASK_ENTRY].condition = 1;
+    Task_Activate(TASK_ENTRY);
 }
 
 /** @brief Wait for replay check result before proceeding. */

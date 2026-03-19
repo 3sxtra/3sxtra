@@ -35,9 +35,11 @@ RANK_DATA Ranking_Data[20];
 // forward declaration
 const RANK_DATA Score_Ranking_Table[20];
 
+#include "port/menu_task.h"
+
 /** @brief Main ranking dispatcher — thin wrapper around MenuScreen registry. */
 s32 Ranking() {
-    struct _TASK* tp = &task[TASK_MENU];
+    struct _TASK* tp = MenuTask_GetTaskPtr();
 
     if (!MenuScreen_IsActive()) {
         Ranking_X = 0;
