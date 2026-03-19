@@ -133,12 +133,7 @@ static void Correct_Control_Time(s16 PL_id);
 static s32 Check_Boss(s16 PL_id);
 static u8 Setup_Battle_Country();
 
-#define SEL_PL_CONT_JMP_COUNT 4
-#define FACE_JMP_COUNT 4
-#define OBJ_JMP_COUNT 3
-#define PL_SEL_JMP_COUNT 5
-#define SEL_PL_JMP_COUNT 6
-#define HANDICAP_JMP_COUNT 4
+
 
 u8 SEL_PL_X;
 s16 Play_Type_1st;
@@ -146,13 +141,6 @@ u16 Color7[2];
 u8 Decide_Stage;
 u8 hc3alpha;
 
-const s16 Cursor_Y_Data[6] = { 80, 104, 128, 80, 104, 128 };
-
-const u8 Arts_Y_Data[3][3] = { { 0, 1, 2 }, { 2, 0, 1 }, { 1, 2, 0 } };
-
-const u8 Repeat_Time_Data[3] = { 26, 9, 7 };
-
-const u8 Repeat_Time_Data_Wife[3] = { 1, 1, 1 };
 
 /** @brief Per-frame body of the character select — called by ms_char_select.c on_tick. */
 void Sel_PL_Control_Frame() {
@@ -257,12 +245,20 @@ static void Switch_Work() {
 
 /** @brief Top-level select-screen controller — run status, face, OBJ, player-select, and exit phases. */
 static void Sel_PL_Control() {
-    void (*Sel_PL_Cont_Tbl[SEL_PL_CONT_JMP_COUNT])() = {
-        Sel_PL_Cont_1st, Sel_PL_Cont_2nd, Sel_PL_Cont_3rd, Sel_PL_Cont_4th
-    };
     Setup_Select_Status();
-    if (S_No[0] < SEL_PL_CONT_JMP_COUNT) {
-        Sel_PL_Cont_Tbl[S_No[0]]();
+    switch (S_No[0]) {
+    case SEL_PL_CONT_1ST:
+        Sel_PL_Cont_1st();
+        break;
+    case SEL_PL_CONT_2ND:
+        Sel_PL_Cont_2nd();
+        break;
+    case SEL_PL_CONT_3RD:
+        Sel_PL_Cont_3rd();
+        break;
+    case SEL_PL_CONT_4TH:
+        Sel_PL_Cont_4th();
+        break;
     }
     Face_Control();
     OBJ_Control();
@@ -545,9 +541,19 @@ static s16 Setup_Face_Y() {
 
 /** @brief Face-panel state machine — dispatch face phase and move the BG. */
 static void Face_Control() {
-    void (*Face_Jmp_Tbl[FACE_JMP_COUNT])() = { Face_1st, Face_2nd, Face_3rd, Face_4th };
-    if (Face_No[0] < FACE_JMP_COUNT) {
-        Face_Jmp_Tbl[Face_No[0]]();
+    switch (Face_No[0]) {
+    case FACE_1ST:
+        Face_1st();
+        break;
+    case FACE_2ND:
+        Face_2nd();
+        break;
+    case FACE_3RD:
+        Face_3rd();
+        break;
+    case FACE_4TH:
+        Face_4th();
+        break;
     }
     Move_Face_BG();
 }
@@ -648,9 +654,16 @@ static void Move_Face_BG() {
 
 /** @brief OBJ state machine — dispatch portrait/plate object initialisation phases. */
 static void OBJ_Control() {
-    void (*OBJ_Jmp_Tbl[OBJ_JMP_COUNT])() = { OBJ_1st, OBJ_2nd, OBJ_3rd };
-    if (SO_No[0] < OBJ_JMP_COUNT) {
-        OBJ_Jmp_Tbl[SO_No[0]]();
+    switch (SO_No[0]) {
+    case OBJ_1ST:
+        OBJ_1st();
+        break;
+    case OBJ_2ND:
+        OBJ_2nd();
+        break;
+    case OBJ_3RD:
+        OBJ_3rd();
+        break;
     }
 }
 
@@ -849,11 +862,23 @@ static void Go_Away_Red_Lines() {
 
 /** @brief Per-player select control — dispatch PL_Sel phases if the player is an operator. */
 static void Player_Select_Control() {
-    void (*PL_Sel_Jmp_Tbl[PL_SEL_JMP_COUNT])() = { PL_Sel_1st, PL_Sel_2nd, PL_Sel_3rd, PL_Sel_4th, PL_Sel_5th };
-
     if (plw[ID2].wu.pl_operator != 0) {
-        if (SP_No[ID2][1] < PL_SEL_JMP_COUNT) {
-            PL_Sel_Jmp_Tbl[SP_No[ID2][1]]();
+        switch (SP_No[ID2][1]) {
+        case PL_SEL_1ST:
+            PL_Sel_1st();
+            break;
+        case PL_SEL_2ND:
+            PL_Sel_2nd();
+            break;
+        case PL_SEL_3RD:
+            PL_Sel_3rd();
+            break;
+        case PL_SEL_4TH:
+            PL_Sel_4th();
+            break;
+        case PL_SEL_5TH:
+            PL_Sel_5th();
+            break;
         }
     }
 }
@@ -979,12 +1004,26 @@ static void Setup_Plates(s8 PL_id, s16 Time) {
 
 /** @brief Per-player character-select state machine dispatcher. */
 static void Sel_PL() {
-    void (*Sel_PL_Jmp_Tbl[SEL_PL_JMP_COUNT])() = { Sel_PL_1st, Sel_PL_2nd, Sel_PL_3rd,
-                                                   Sel_PL_4th, Sel_PL_5th, Sel_PL_6th };
-
     if (plw[ID].wu.pl_operator != 0) {
-        if (SP_No[ID][0] < SEL_PL_JMP_COUNT) {
-            Sel_PL_Jmp_Tbl[SP_No[ID][0]]();
+        switch (SP_No[ID][0]) {
+        case SEL_PL_1ST:
+            Sel_PL_1st();
+            break;
+        case SEL_PL_2ND:
+            Sel_PL_2nd();
+            break;
+        case SEL_PL_3RD:
+            Sel_PL_3rd();
+            break;
+        case SEL_PL_4TH:
+            Sel_PL_4th();
+            break;
+        case SEL_PL_5TH:
+            Sel_PL_5th();
+            break;
+        case SEL_PL_6TH:
+            Sel_PL_6th();
+            break;
         }
     }
 }
@@ -1905,9 +1944,19 @@ static void Handicap_3rd() {
 
 /** @brief Per-player handicap sub-state machine dispatcher. */
 static void Handicap_Control() {
-    void (*Handicap_Jmp_Tbl[HANDICAP_JMP_COUNT])() = { Handicap_1, Handicap_2, Handicap_3, Handicap_4 };
-    if (SP_No[ID2][2] < HANDICAP_JMP_COUNT) {
-        Handicap_Jmp_Tbl[SP_No[ID2][2]]();
+    switch (SP_No[ID2][2]) {
+    case HANDICAP_1:
+        Handicap_1();
+        break;
+    case HANDICAP_2:
+        Handicap_2();
+        break;
+    case HANDICAP_3:
+        Handicap_3();
+        break;
+    case HANDICAP_4:
+        Handicap_4();
+        break;
     }
 }
 

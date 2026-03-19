@@ -267,3 +267,11 @@ const s16 Suddenly_Pos_Data_66[43][3] = {
 };
 
 const s16 Slide_Pos_Data_66[2][3] = { { -24, 12, 70 }, { 168, 12, 70 } };
+
+const s16 Cursor_Y_Data[6] = { 80, 104, 128, 80, 104, 128 };
+
+const u8 Arts_Y_Data[3][3] = { { 0, 1, 2 }, { 2, 0, 1 }, { 1, 2, 0 } };
+
+const u8 Repeat_Time_Data[3] = { 26, 9, 7 };
+
+const u8 Repeat_Time_Data_Wife[3] = { 1, 1, 1 };

@@ -35,4 +35,9 @@ extern const s16 Slide_Pos_Data_23[22][2];
 extern const s16 Suddenly_Pos_Data_66[][3];
 extern const s16 Slide_Pos_Data_66[2][3];
 
+extern const s16 Cursor_Y_Data[6];
+extern const u8 Arts_Y_Data[3][3];
+extern const u8 Repeat_Time_Data[3];
+extern const u8 Repeat_Time_Data_Wife[3];
+
 #endif
