@@ -101,7 +101,7 @@ void System_Dir_Move_Sub_LR(u16 sw, s16 cursor_id) {
     }
 
     switch (sw) {
-    case 4:
+    case SWK_LEFT:
         Convert_Buff[3][cursor_id][Menu_Cursor_Y[cursor_id]] -= 1;
 
         if (Convert_Buff[3][cursor_id][Menu_Cursor_Y[cursor_id]] < 0) {
@@ -111,7 +111,7 @@ void System_Dir_Move_Sub_LR(u16 sw, s16 cursor_id) {
         SE_dir_cursor_move();
         return;
 
-    case 8:
+    case SWK_RIGHT:
         Convert_Buff[3][cursor_id][Menu_Cursor_Y[cursor_id]] += 1;
 
         if (Convert_Buff[3][cursor_id][Menu_Cursor_Y[cursor_id]] > 1) {
@@ -156,7 +156,7 @@ u16 Dir_Move_Sub2(u16 sw) {
     }
 
     switch (sw) {
-    case 0x1:
+    case SWK_UP:
         Menu_Cursor_Y[0] -= 1;
 
         if (Menu_Cursor_Y[0] < 0) {
@@ -164,9 +164,9 @@ u16 Dir_Move_Sub2(u16 sw) {
         }
 
         SE_cursor_move();
-        return IO_Result = 1;
+        return IO_Result = SWK_UP;
 
-    case 0x2:
+    case SWK_DOWN:
         Menu_Cursor_Y[0] += 1;
 
         if (Menu_Cursor_Y[0] > Menu_Max) {
@@ -174,34 +174,34 @@ u16 Dir_Move_Sub2(u16 sw) {
         }
 
         SE_cursor_move();
-        return IO_Result = 2;
+        return IO_Result = SWK_DOWN;
 
-    case 0x10:
-        return IO_Result = 0x10;
+    case SWK_WEST:
+        return IO_Result = SWK_WEST;
 
-    case 0x20:
-        return IO_Result = 0x20;
+    case SWK_NORTH:
+        return IO_Result = SWK_NORTH;
 
-    case 0x40:
-        return IO_Result = 0x40;
+    case SWK_RIGHT_SHOULDER:
+        return IO_Result = SWK_RIGHT_SHOULDER;
 
-    case 0x80:
-        return IO_Result = 0x80;
+    case SWK_LEFT_SHOULDER:
+        return IO_Result = SWK_LEFT_SHOULDER;
 
-    case 0x100:
-        return IO_Result = 0x100;
+    case SWK_SOUTH:
+        return IO_Result = SWK_SOUTH;
 
-    case 0x200:
-        return IO_Result = 0x200;
+    case SWK_EAST:
+        return IO_Result = SWK_EAST;
 
-    case 0x400:
-        return IO_Result = 0x400;
+    case SWK_RIGHT_TRIGGER:
+        return IO_Result = SWK_RIGHT_TRIGGER;
 
-    case 0x800:
-        return IO_Result = 0x800;
+    case SWK_LEFT_TRIGGER:
+        return IO_Result = SWK_LEFT_TRIGGER;
 
-    case 0x4000:
-        return IO_Result = 0x4000;
+    case SWK_START:
+        return IO_Result = SWK_START;
 
     default:
         return IO_Result = 0;
@@ -213,14 +213,14 @@ void Dir_Move_Sub_LR(u16 sw, s16 /* unused */) {
     u8 last_pos = system_dir[1].contents[Menu_Page][Menu_Cursor_Y[0]];
 
     switch (sw) {
-    case 0x4:
+    case SWK_LEFT:
         SE_dir_cursor_move();
         system_dir[1].contents[Menu_Page][Menu_Cursor_Y[0]] -= 1;
 
         if (Menu_Cursor_Y[0] == Menu_Max) {
             if (system_dir[1].contents[Menu_Page][Menu_Cursor_Y[0]] < 0) {
                 system_dir[1].contents[Menu_Page][Menu_Cursor_Y[0]] = 0;
-                IO_Result = 0x80;
+                IO_Result = SWK_LEFT_SHOULDER;
                 return;
             }
 
@@ -237,14 +237,14 @@ void Dir_Move_Sub_LR(u16 sw, s16 /* unused */) {
 
         return;
 
-    case 0x8:
+    case SWK_RIGHT:
         SE_dir_cursor_move();
         system_dir[1].contents[Menu_Page][Menu_Cursor_Y[0]] += 1;
 
         if (Menu_Cursor_Y[0] == Menu_Max) {
             if (system_dir[1].contents[Menu_Page][Menu_Cursor_Y[0]] > 2) {
                 system_dir[1].contents[Menu_Page][Menu_Cursor_Y[0]] = 2;
-                IO_Result = 0x400;
+                IO_Result = SWK_RIGHT_TRIGGER;
                 return;
             }
 
@@ -265,7 +265,7 @@ void Dir_Move_Sub_LR(u16 sw, s16 /* unused */) {
 
         return;
 
-    case 0x100:
+    case SWK_SOUTH:
         SE_dir_cursor_move();
 
         if (Menu_Cursor_Y[0] == Menu_Max) {
@@ -418,7 +418,7 @@ void Save_Direction(struct _TASK* task_ptr) {
 
     case 3:
         /* Synchronous — always done */
-        IO_Result = 0x200;
+        IO_Result = SWK_EAST;
         Load_Replay_MC_Sub(task_ptr, 0);
         break;
     }
@@ -463,7 +463,7 @@ void Load_Direction(struct _TASK* task_ptr) {
 
     case 3:
         /* Synchronous — always done */
-        IO_Result = 0x200;
+        IO_Result = SWK_EAST;
         Load_Replay_MC_Sub(task_ptr, 0);
         break;
     }
@@ -629,7 +629,7 @@ s32 Load_Replay_MC_Sub(struct _TASK* task_ptr, s16 PL_id) {
     u16 sw = IO_Result;
 
     switch (sw) {
-    case 0x100:
+    case SWK_SOUTH:
         if ((Menu_Cursor_X[0] == -1) || (vm_w.Connect[Menu_Cursor_X[0]] == 0)) {
             break;
         }
@@ -647,7 +647,7 @@ s32 Load_Replay_MC_Sub(struct _TASK* task_ptr, s16 PL_id) {
         task_ptr->r_no[0] = 3;
         return 1;
 
-    case 0x200:
+    case SWK_EAST:
         if (task_ptr->r_no[1] == 6) {
             Menu_Suicide[0] = 0;
             Menu_Suicide[1] = 1;
@@ -697,7 +697,7 @@ u16 GO_Move_Sub_LR(u16 sw, s16 cursor_id) {
     }
 
     switch (sw) {
-    case 4:
+    case SWK_LEFT:
         Convert_Buff[0][cursor_id][Menu_Cursor_Y[cursor_id]] -= 1;
 
         if (Convert_Buff[0][cursor_id][Menu_Cursor_Y[cursor_id]] < 0) {
@@ -705,9 +705,9 @@ u16 GO_Move_Sub_LR(u16 sw, s16 cursor_id) {
         }
 
         SE_dir_cursor_move();
-        return 4;
+        return SWK_LEFT;
 
-    case 8:
+    case SWK_RIGHT:
         Convert_Buff[0][cursor_id][Menu_Cursor_Y[cursor_id]] += 1;
 
         if (Convert_Buff[0][cursor_id][Menu_Cursor_Y[cursor_id]] > Game_Option_Index_Data[Menu_Cursor_Y[cursor_id]]) {
@@ -715,7 +715,7 @@ u16 GO_Move_Sub_LR(u16 sw, s16 cursor_id) {
         }
 
         SE_dir_cursor_move();
-        return 8;
+        return SWK_RIGHT;
 
     default:
         return 0;
@@ -762,7 +762,7 @@ void Button_Move_Sub_LR(u16 sw, s16 cursor_id) {
     }
 
     switch (sw) {
-    case 4:
+    case SWK_LEFT:
         Convert_Buff[1][cursor_id][Menu_Cursor_Y[cursor_id]] -= 1;
 
         if (Convert_Buff[1][cursor_id][Menu_Cursor_Y[cursor_id]] < 0) {
@@ -780,7 +780,7 @@ void Button_Move_Sub_LR(u16 sw, s16 cursor_id) {
         SE_dir_cursor_move();
         break;
 
-    case 8:
+    case SWK_RIGHT:
         Convert_Buff[1][cursor_id][Menu_Cursor_Y[cursor_id]] += 1;
 
         if (Convert_Buff[1][cursor_id][Menu_Cursor_Y[cursor_id]] > max) {
@@ -799,8 +799,8 @@ void Button_Move_Sub_LR(u16 sw, s16 cursor_id) {
 /** @brief Check for button-config exit (confirm / cancel / default). */
 void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
     switch (IO_Result) {
-    case 0x200:
-    case 0x100:
+    case SWK_EAST:
+    case SWK_SOUTH:
         break;
 
     default:
@@ -809,7 +809,7 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
 
     switch (task_ptr->r_no[1]) {
     case 9:
-        if (Menu_Cursor_Y[0] == 11 || IO_Result == 0x200) {
+        if (Menu_Cursor_Y[0] == 11 || IO_Result == SWK_EAST) {
             SE_selected();
             if (use_rmlui && rmlui_menu_game_option)
                 rmlui_game_option_hide();
@@ -838,7 +838,7 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
         break;
 
     case 10:
-        if ((Menu_Cursor_Y[PL_id] == 10) || (IO_Result == 0x200)) {
+        if ((Menu_Cursor_Y[PL_id] == 10) || (IO_Result == SWK_EAST)) {
             SE_selected();
             ControllerImageOverlay_Shutdown();
             if (use_rmlui && rmlui_menu_button_config)
@@ -859,7 +859,7 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
         break;
 
     case 13:
-        if (IO_Result == 0x200) {
+        if (IO_Result == SWK_EAST) {
             SE_selected();
             if (use_rmlui && rmlui_menu_memory_card)
                 rmlui_memory_card_hide();
@@ -933,15 +933,15 @@ void Screen_Adjust_Sub(s16 PL_id) {
 /** @brief Check for screen-adjust exit (confirm / cancel). */
 void Screen_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
     switch (IO_Result) {
-    case 0x200:
-    case 0x100:
+    case SWK_EAST:
+    case SWK_SOUTH:
         break;
 
     default:
         return;
     }
 
-    if (Menu_Cursor_Y[0] == 6 || IO_Result == 0x200) {
+    if (Menu_Cursor_Y[0] == 6 || IO_Result == SWK_EAST) {
         SE_selected();
         Menu_Suicide[1] = 0;
         Menu_Suicide[2] = 1;
@@ -977,7 +977,7 @@ void Screen_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
 void Screen_Move_Sub_LR(u16 sw) {
     s16 flag = 0;
 
-    if (sw == 4) {
+    if (sw == SWK_LEFT) {
         switch (Menu_Cursor_Y[0]) {
         case 0:
             X_Adjust_Buff[2] -= 2;
@@ -1028,7 +1028,7 @@ void Screen_Move_Sub_LR(u16 sw) {
             flag = 1;
             break;
         }
-    } else if (sw == 8) {
+    } else if (sw == SWK_RIGHT) {
         switch (Menu_Cursor_Y[0]) {
         case 0:
             X_Adjust_Buff[2] += 2;
@@ -1130,7 +1130,7 @@ u16 SD_Move_Sub_LR(u16 sw) {
     last_cursor = Convert_Buff[3][1][Menu_Cursor_Y[0]];
 
     switch (sw) {
-    case 4:
+    case SWK_LEFT:
         max = Sound_Data_Max[0][Menu_Cursor_Y[0]];
 
         while (1) {
@@ -1151,7 +1151,7 @@ u16 SD_Move_Sub_LR(u16 sw) {
 
         break;
 
-    case 8:
+    case SWK_RIGHT:
         max = Sound_Data_Max[1][Menu_Cursor_Y[0]];
 
         while (1) {
@@ -1277,7 +1277,7 @@ void Memory_Card_Sub(s16 PL_id) {
     sw = Check_Menu_Lever(PL_id, 0);
     MC_Move_Sub(sw, 0, 3, 0xFF);
 
-    if ((Menu_Cursor_Y[0] == 2) && !(IO_Result & 0x200)) {
+    if ((Menu_Cursor_Y[0] == 2) && !(IO_Result & SWK_EAST)) {
         IO_Result = 0;
     }
 
@@ -1303,7 +1303,7 @@ u16 Memory_Card_Move_Sub_LR(u16 sw, s16 cursor_id) {
     val = Convert_Buff[3][cursor_id][idx];
 
     switch (sw) {
-    case 4:
+    case SWK_LEFT:
         val -= 1;
 
         if (val < 0) {
@@ -1311,10 +1311,10 @@ u16 Memory_Card_Move_Sub_LR(u16 sw, s16 cursor_id) {
         }
 
         SE_dir_cursor_move();
-        ret = 4;
+        ret = SWK_LEFT;
         break;
 
-    case 8:
+    case SWK_RIGHT:
         val += 1;
 
         if (val > 1) {
@@ -1322,7 +1322,7 @@ u16 Memory_Card_Move_Sub_LR(u16 sw, s16 cursor_id) {
         }
 
         SE_dir_cursor_move();
-        ret = 8;
+        ret = SWK_RIGHT;
         break;
 
     default:
@@ -1333,7 +1333,7 @@ u16 Memory_Card_Move_Sub_LR(u16 sw, s16 cursor_id) {
     Convert_Buff[3][cursor_id][idx] = val;
 
     if ((ret != 0) && (val == 1)) {
-        IO_Result = 0x100;
+        IO_Result = SWK_SOUTH;
         Forbid_Reset = 1;
     }
 
@@ -1450,13 +1450,13 @@ void Menu_Select(struct _TASK* task_ptr) {
         IO_Result = MC_Move_Sub(Check_Menu_Lever(Pause_ID, 0), 0, 2, 0xFF);
         switch (IO_Result) {
 
-        case 0x200:
+        case SWK_EAST:
             task_ptr->r_no[2] = 0;
             Menu_Suicide[0] = 1;
             SE_selected();
             break;
 
-        case 0x100:
+        case SWK_SOUTH:
             switch (Menu_Cursor_Y[0]) {
 
             case 0:
@@ -1528,7 +1528,7 @@ s32 Yes_No_Cursor_Move_Sub(struct _TASK* task_ptr) {
     u16 sw = ~(plsw_01[Pause_ID]) & plsw_00[Pause_ID];
 
     switch (sw) {
-    case 0x4:
+    case SWK_LEFT:
         Menu_Cursor_Y[0]--;
 
         if (Menu_Cursor_Y[0] < 0) {
@@ -1539,7 +1539,7 @@ s32 Yes_No_Cursor_Move_Sub(struct _TASK* task_ptr) {
 
         break;
 
-    case 0x8:
+    case SWK_RIGHT:
         Menu_Cursor_Y[0]++;
 
         if (Menu_Cursor_Y[0] > 1) {
@@ -1550,9 +1550,9 @@ s32 Yes_No_Cursor_Move_Sub(struct _TASK* task_ptr) {
 
         break;
 
-    case 0x200:
-    case 0x100:
-        if (Menu_Cursor_Y[0] || sw == 0x200) {
+    case SWK_EAST:
+    case SWK_SOUTH:
+        if (Menu_Cursor_Y[0] || sw == SWK_EAST) {
             task_ptr->r_no[2] = 1;
             Menu_Suicide[0] = 0;
             Menu_Suicide[1] = 1;
@@ -1607,11 +1607,11 @@ void Button_Config_in_Game(struct _TASK* task_ptr) {
 
 /** @brief Check for button-config exit during in-game pause. */
 void Button_Exit_Check_in_Game(struct _TASK* task_ptr, s16 PL_id) {
-    if (IO_Result & 0x200) {
+    if (IO_Result & SWK_EAST) {
         goto ten;
     }
 
-    if (!(IO_Result & 0x100)) {
+    if (!(IO_Result & SWK_SOUTH)) {
         return;
     }
 
@@ -1674,8 +1674,8 @@ s32 VS_Result_Select_Sub(struct _TASK* task_ptr, s16 PL_id) {
             Pause_ID = PL_id;
             return 1;
         }
-    } else if (sw == 0x200) {
-        IO_Result = 0x200;
+    } else if (sw == SWK_EAST) {
+        IO_Result = SWK_EAST;
         VS_Result_Move_Sub(task_ptr, PL_id);
     }
 
@@ -1696,7 +1696,7 @@ u16 After_VS_Move_Sub(u16 sw, s16 cursor_id, s16 menu_max) {
     }
 
     switch (sw) {
-    case 1:
+    case SWK_UP:
         Menu_Cursor_Y[cursor_id]--;
 
         if (Menu_Cursor_Y[cursor_id] < 0) {
@@ -1708,9 +1708,9 @@ u16 After_VS_Move_Sub(u16 sw, s16 cursor_id, s16 menu_max) {
         }
 
         SE_cursor_move();
-        return IO_Result = 1;
+        return IO_Result = SWK_UP;
 
-    case 2:
+    case SWK_DOWN:
         Menu_Cursor_Y[cursor_id]++;
 
         if (Menu_Cursor_Y[cursor_id] > menu_max) {
@@ -1722,44 +1722,44 @@ u16 After_VS_Move_Sub(u16 sw, s16 cursor_id, s16 menu_max) {
         }
 
         SE_cursor_move();
-        return IO_Result = 2;
+        return IO_Result = SWK_DOWN;
 
-    case 0x10:
-        return IO_Result = 0x10;
+    case SWK_WEST:
+        return IO_Result = SWK_WEST;
 
-    case 0x100:
-        return IO_Result = 0x100;
+    case SWK_SOUTH:
+        return IO_Result = SWK_SOUTH;
 
-    case 0x200:
-        return IO_Result = 0x200;
+    case SWK_EAST:
+        return IO_Result = SWK_EAST;
 
-    case 0x400:
-        return IO_Result = 0x400;
+    case SWK_RIGHT_TRIGGER:
+        return IO_Result = SWK_RIGHT_TRIGGER;
 
-    case 0x4000:
-        return IO_Result = 0x4000;
+    case SWK_START:
+        return IO_Result = SWK_START;
 
     default:
         return IO_Result = 0;
 
-    case 0x20:
-        return IO_Result = 0x20;
+    case SWK_NORTH:
+        return IO_Result = SWK_NORTH;
 
-    case 0x40:
-        return IO_Result = 0x40;
+    case SWK_RIGHT_SHOULDER:
+        return IO_Result = SWK_RIGHT_SHOULDER;
 
-    case 0x80:
-        return IO_Result = 0x80;
+    case SWK_LEFT_SHOULDER:
+        return IO_Result = SWK_LEFT_SHOULDER;
 
-    case 0x800:
-        return IO_Result = 0x800;
+    case SWK_LEFT_TRIGGER:
+        return IO_Result = SWK_LEFT_TRIGGER;
     }
 }
 
 /** @brief VS Result move sub-routine (navigate result list). */
 s32 VS_Result_Move_Sub(struct _TASK* task_ptr, s16 PL_id) {
     switch (IO_Result) {
-    case 0x100:
+    case SWK_SOUTH:
         switch (Menu_Cursor_Y[PL_id]) {
         case 0:
             SE_selected();
@@ -1791,7 +1791,7 @@ s32 VS_Result_Move_Sub(struct _TASK* task_ptr, s16 PL_id) {
 
         break;
 
-    case 0x200:
+    case SWK_EAST:
         SE_selected();
 
         if (Menu_Cursor_X[PL_id]) {
@@ -1843,7 +1843,7 @@ void Return_VS_Result_Sub(struct _TASK* task_ptr) {
 /** @brief Memory-card replay save sub-routine with error handling. */
 s32 Save_Replay_MC_Sub(struct _TASK* task_ptr, s16 /* unused */) {
     switch (IO_Result) {
-    case 0x100:
+    case SWK_SOUTH:
         SE_selected();
 
         if (Menu_Cursor_X[0] == -1) {
@@ -1865,7 +1865,7 @@ s32 Save_Replay_MC_Sub(struct _TASK* task_ptr, s16 /* unused */) {
         task_ptr->r_no[0] = 3;
         return 1;
 
-    case 0x200:
+    case SWK_EAST:
         if (Mode_Type == 5) {
             Back_to_Mode_Select(task_ptr);
         } else {
@@ -2226,7 +2226,7 @@ void Yes_No_Cursor_Exit_Training(struct _TASK* task_ptr, s16 cursor_id) {
     u16 sw = ~(plsw_01[Decide_ID]) & plsw_00[Decide_ID];
 
     switch (sw) {
-    case 0x4:
+    case SWK_LEFT:
         Menu_Cursor_Y[0]--;
 
         if (Menu_Cursor_Y[0] < 0) {
@@ -2237,7 +2237,7 @@ void Yes_No_Cursor_Exit_Training(struct _TASK* task_ptr, s16 cursor_id) {
         SE_dir_cursor_move();
         break;
 
-    case 0x8:
+    case SWK_RIGHT:
         Menu_Cursor_Y[0]++;
 
         if (Menu_Cursor_Y[0] > 1) {
@@ -2248,11 +2248,11 @@ void Yes_No_Cursor_Exit_Training(struct _TASK* task_ptr, s16 cursor_id) {
         SE_dir_cursor_move();
         break;
 
-    case 0x200:
-    case 0x100:
+    case SWK_EAST:
+    case SWK_SOUTH:
         SE_selected();
 
-        if (Menu_Cursor_Y[0] || sw == 0x200) {
+        if (Menu_Cursor_Y[0] || sw == SWK_EAST) {
             task_ptr->r_no[2] = 0;
             Menu_Suicide[0] = 0;
             Menu_Suicide[1] = 1;
@@ -2293,11 +2293,11 @@ void Button_Config_Tr(struct _TASK* task_ptr) {
 
 /** @brief Check for button-config exit during training mode. */
 void Button_Exit_Check_in_Tr(struct _TASK* task_ptr, s16 PL_id) {
-    if (IO_Result & 0x200) {
+    if (IO_Result & SWK_EAST) {
         goto ten;
     }
 
-    if (!(IO_Result & 0x100)) {
+    if (!(IO_Result & SWK_SOUTH)) {
         return;
     }
 
@@ -2334,12 +2334,12 @@ void Dummy_Move_Sub(struct _TASK* task_ptr, s16 PL_id, s16 id, s16 type, s16 max
     MC_Move_Sub(sw, 0, max, 0xFF);
     Dummy_Move_Sub_LR(sw, id, type, 0);
 
-    if (IO_Result & 0x200) {
+    if (IO_Result & SWK_EAST) {
         task_ptr->r_no[2]++;
         return;
     }
 
-    if (IO_Result & 0x100 && Menu_Cursor_Y[0] == max) {
+    if (IO_Result & SWK_SOUTH && Menu_Cursor_Y[0] == max) {
         task_ptr->r_no[2]++;
     }
 }
@@ -2385,7 +2385,7 @@ void Dummy_Move_Sub_LR(u16 sw, s16 id, s16 type, s16 cursor_id) {
     }
 
     switch (sw) {
-    case 4:
+    case SWK_LEFT:
         Training[2].contents[id][type][Menu_Cursor_Y[cursor_id]]--;
 
         if (Training[2].contents[id][type][Menu_Cursor_Y[cursor_id]] < 0) {
@@ -2400,7 +2400,7 @@ void Dummy_Move_Sub_LR(u16 sw, s16 id, s16 type, s16 cursor_id) {
         SE_dir_cursor_move();
         break;
 
-    case 8:
+    case SWK_RIGHT:
         Training[2].contents[id][type][Menu_Cursor_Y[cursor_id]]++;
 
         if (Training[2].contents[id][type][Menu_Cursor_Y[cursor_id]] > max) {
@@ -2496,7 +2496,7 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
     u8 last_pos = CurrentSave()->extra_option.contents[Menu_Page][Menu_Cursor_Y[0]];
 
     switch (sw) {
-    case 4:
+    case SWK_LEFT:
         if (Menu_Page_Buff != 0 || Menu_Cursor_Y[0] != 4) {
             SE_dir_cursor_move();
         }
@@ -2506,7 +2506,7 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
         if (Menu_Cursor_Y[0] == Menu_Max) {
             if (save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] < 0) {
                 save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 0;
-                IO_Result = 0x80;
+                IO_Result = SWK_LEFT_SHOULDER;
                 break;
             }
 
@@ -2522,7 +2522,7 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
 
         return;
 
-    case 8:
+    case SWK_RIGHT:
         if (Menu_Page_Buff != 0 || Menu_Cursor_Y[0] != 4) {
             SE_dir_cursor_move();
         }
@@ -2532,7 +2532,7 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
         if (Menu_Cursor_Y[0] == Menu_Max) {
             if (save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] > 2) {
                 save_w[1].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] = 2;
-                IO_Result = 0x400;
+                IO_Result = SWK_RIGHT_TRIGGER;
                 return;
             }
 
@@ -2552,12 +2552,12 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
 
         return;
 
-    case 0x400:
+    case SWK_RIGHT_TRIGGER:
         if (Interface_Type[PL_id] == 2) {
             break;
         }
 
-    case 0x100:
+    case SWK_SOUTH:
         if (Menu_Page_Buff != 0 || Menu_Cursor_Y[0] != 4) {
             SE_dir_cursor_move();
         }
