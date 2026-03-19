@@ -62,11 +62,17 @@ s32 Ranking() {
 
 /** @brief Ranking table 00 dispatcher — used when arriving from gameplay (post-credit entry). */
 void Ranking_00() {
-    void (*Ranking_00_tbl[6])() = { Ranking_00_1st, Ranking_00_2nd, Ranking_00_3rd,
-                                    Ranking_00_4th, Ranking_00_5th, Ranking_00_6th };
-
     Ranking_X = 0;
-    Ranking_00_tbl[D_No[1]]();
+
+    switch (D_No[1]) {
+    case 0: Ranking_00_1st(); break;
+    case 1: Ranking_00_2nd(); break;
+    case 2: Ranking_00_3rd(); break;
+    case 3: Ranking_00_4th(); break;
+    case 4: Ranking_00_5th(); break;
+    case 5: Ranking_00_6th(); break;
+    default: break;
+    }
 }
 
 /** @brief Ranking_00 phase 1 — build tex-cache, init demo type, and prepare BG/effects. */
@@ -232,9 +238,14 @@ void Ranking_00_6th() {
 
 /** @brief Ranking table 01 dispatcher — used from demo/attract-mode sequence. */
 void Ranking_01() {
-    void (*Ranking_01_tbl[5])() = { Ranking_01_1st, Ranking_01_2nd, Ranking_00_3rd, Ranking_01_4th, Ranking_01_5th };
-
-    Ranking_01_tbl[D_No[1]]();
+    switch (D_No[1]) {
+    case 0: Ranking_01_1st(); break;
+    case 1: Ranking_01_2nd(); break;
+    case 2: Ranking_00_3rd(); break;  /* shared phase 3 */
+    case 3: Ranking_01_4th(); break;
+    case 4: Ranking_01_5th(); break;
+    default: break;
+    }
 }
 
 /** @brief Ranking_01 phase 1 — switch screen, start BGM, purge resources, build texcache. */

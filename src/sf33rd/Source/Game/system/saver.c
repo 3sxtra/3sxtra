@@ -17,17 +17,29 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-#define SAVER_JMP_COUNT 4
+/** @brief Screensaver task states (replaces Main_Jmp_Tbl indices). */
+enum SaverState {
+    SAVER_STATE_INIT  = 0,
+    SAVER_STATE_CHECK = 1,
+    SAVER_STATE_MOVE  = 2,
+    SAVER_STATE_EXIT  = 3,
+    SAVER_STATE_COUNT
+};
+
 #define SAVER_IDLE_THRESHOLD 18000
 
 /** @brief Main screensaver task entry point — dispatches sub-state unless a soft reset is active. */
 void Saver_Task(struct _TASK* task_ptr) {
-    void (*const Main_Jmp_Tbl[SAVER_JMP_COUNT])(struct _TASK*) = { Saver_Init, Saver_Check, Saver_Move, Saver_Exit };
+    if (nowSoftReset()) {
+        return;
+    }
 
-    if (!nowSoftReset()) {
-        if (task_ptr->r_no[0] < SAVER_JMP_COUNT) {
-            Main_Jmp_Tbl[task_ptr->r_no[0]](task_ptr);
-        }
+    switch (task_ptr->r_no[0]) {
+    case SAVER_STATE_INIT:  Saver_Init(task_ptr);  break;
+    case SAVER_STATE_CHECK: Saver_Check(task_ptr); break;
+    case SAVER_STATE_MOVE:  Saver_Move(task_ptr);  break;
+    case SAVER_STATE_EXIT:  Saver_Exit(task_ptr);  break;
+    default: break;
     }
 }
 

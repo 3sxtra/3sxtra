@@ -88,17 +88,29 @@ s16 Start_X;
 
 /** @brief Main next-CPU dispatcher — step through opponent select phases and return exit flag. */
 s16 Next_CPU() {
-    void (*Next_CPU_Tbl[12])() = { Next_CPU_1st,   Next_CPU_2nd,   Next_CPU_3rd,       Next_CPU_4th,
-                                   Next_CPU_5th,   Next_CPU_6th,   Next_Bonus_1st,     Next_Bonus_2nd,
-                                   Next_Bonus_3rd, Next_Bonus_End, Wait_Load_Complete, Wait_Load_Complete2 };
-
     if (Break_Into) {
         return 0;
     }
 
     SEL_CPU_X = 0;
     Scene_Cut = Cut_Cut_Cut();
-    Next_CPU_Tbl[SC_No[0]]();
+
+    switch (SC_No[0]) {
+    case 0:  Next_CPU_1st();        break;
+    case 1:  Next_CPU_2nd();        break;
+    case 2:  Next_CPU_3rd();        break;
+    case 3:  Next_CPU_4th();        break;
+    case 4:  Next_CPU_5th();        break;
+    case 5:  Next_CPU_6th();        break;
+    case 6:  Next_Bonus_1st();      break;
+    case 7:  Next_Bonus_2nd();      break;
+    case 8:  Next_Bonus_3rd();      break;
+    case 9:  Next_Bonus_End();      break;
+    case 10: Wait_Load_Complete();   break;
+    case 11: Wait_Load_Complete2();  break;
+    default: break;
+    }
+
     Time_Over = false;
 
     if (Check_Exit_Check() == 0 && Debug_w[DEBUG_TIME_STOP] == -1) {
@@ -551,17 +563,28 @@ static void Wait_Load_Complete3() {
 
 /** @brief After-bonus dispatcher — rebuild BG, run next-CPU phases, return exit flag. */
 s32 After_Bonus() {
-    void (*After_Bonus_Tbl[11])() = { After_Bonus_1st, After_Bonus_2nd, Next_CPU_1st,        Next_CPU_2nd,
-                                      Next_CPU_3rd,    Next_CPU_4th,    Wait_Load_Complete2, Next_Bonus_End,
-                                      Next_Bonus_End,  Next_Bonus_End,  Wait_Load_Complete3 };
-
     if (Break_Into) {
         return 0;
     }
 
     SEL_CPU_X = 0;
     Scene_Cut = Cut_Cut_Cut();
-    After_Bonus_Tbl[SC_No[0]]();
+
+    switch (SC_No[0]) {
+    case 0:  After_Bonus_1st();      break;
+    case 1:  After_Bonus_2nd();      break;
+    case 2:  Next_CPU_1st();         break;
+    case 3:  Next_CPU_2nd();         break;
+    case 4:  Next_CPU_3rd();         break;
+    case 5:  Next_CPU_4th();         break;
+    case 6:  Wait_Load_Complete2();   break;
+    case 7:  /* fallthrough */
+    case 8:  /* fallthrough */
+    case 9:  Next_Bonus_End();        break;
+    case 10: Wait_Load_Complete3();   break;
+    default: break;
+    }
+
     Time_Over = false;
     return SEL_CPU_X;
 }
@@ -626,14 +649,20 @@ static void After_Bonus_2nd() {
 
 /** @brief First CPU-select dispatcher — used when game starts or after demo. */
 s16 Select_CPU_First() {
-    void (*Select_CPU_First_Tbl[4])() = { Select_CPU_1st, Select_CPU_2nd, Select_CPU_3rd, Select_CPU_4th };
-
     if (Break_Into) {
         return 0;
     }
 
     SEL_CPU_X = 0;
-    Select_CPU_First_Tbl[SC_No[0]]();
+
+    switch (SC_No[0]) {
+    case 0: Select_CPU_1st(); break;
+    case 1: Select_CPU_2nd(); break;
+    case 2: Select_CPU_3rd(); break;
+    case 3: Select_CPU_4th(); break;
+    default: break;
+    }
+
     Time_Over = false;
     return SEL_CPU_X;
 }
@@ -990,17 +1019,22 @@ static void Next_Bonus_End() {
 
 /** @brief Next-Q dispatcher — set up the Q-character fight sequence and return exit flag. */
 s16 Next_Q() {
-    void (*Next_Q_Tbl[6])() = {
-        Next_Q_1st, Next_Q_2nd, Next_Q_3rd, Wait_Load_Complete, Wait_Load_Complete, Next_CPU_6th
-    };
-
     if (Break_Into) {
         return 0;
     }
 
     SEL_CPU_X = 0;
     Scene_Cut = Cut_Cut_Cut();
-    Next_Q_Tbl[SC_No[0]]();
+
+    switch (SC_No[0]) {
+    case 0: Next_Q_1st();         break;
+    case 1: Next_Q_2nd();         break;
+    case 2: Next_Q_3rd();         break;
+    case 3: /* fallthrough */
+    case 4: Wait_Load_Complete();  break;
+    case 5: Next_CPU_6th();       break;
+    default: break;
+    }
 
     if (Check_Exit_Check() == 0 && Debug_w[DEBUG_TIME_STOP] == -1) {
         SEL_CPU_X = 0;

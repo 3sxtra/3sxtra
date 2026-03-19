@@ -37,12 +37,17 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 23 | `entry.c` State Machine Cleanup | LOW–MED | Named states | 1,252 lines, 17 `G_No[]` accesses. Name `E_No[]`/`C_No[]` state constants, convert `_Jmp_Tbl` to switch-dispatch. Non-netplay flow. |
 | 24 | `menu.c` State Machine Cleanup | MEDIUM | Named states | 2,997 lines, 12 `G_No[]` accesses, 14 `r_no[0]` state indices. Name states, convert jump table arrays to switch-dispatch. |
 | 25 | `sel_pl.c` Character Select Cleanup | MEDIUM | Named states | 2,174 lines. Named `S_No`, `Face_No`, `SO_No`, `SP_No` states, converted 6 `_Jmp_Tbl` arrays to switch-dispatch. Extracted 4 data tables to `sel_data.h/.c`. |
+| 26 | `saver.c` Jump Table → Switch | VERY LOW | Named states | 102 lines. `enum SaverState` + switch replaces `Main_Jmp_Tbl[4]`. |
+| 27 | `init3rd.c` Jump Table → Switch | VERY LOW | Named states | 224 lines. `enum InitStep` + switch replaces `Main_Jmp_Tbl[4]`. |
+| 28 | `ranking.c` State Cleanup | LOW | Named states | 784 lines. 2 jump tables (`Ranking_00_tbl[6]`, `Ranking_01_tbl[5]`) → switch-dispatch via `D_No[1]`. |
+| 30 | `menu.c` Residual Jump Tables | LOW | Dead code cleanup | 2 residual `_Jmp_Tbl` arrays (In_Game, Training) → switch-dispatch. Most entries were DEAD (migrated to MenuScreen registry). |
+| 29 | `next_cpu.c` State Cleanup | LOW–MED | Named states | 1,659 lines. 4 jump tables (`Next_CPU_Tbl[12]`, `After_Bonus_Tbl[11]`, `Select_CPU_First_Tbl[4]`, `Next_Q_Tbl[6]`) → switch-dispatch via `SC_No[0]`. Used fallthrough for duplicate entries. |
+| 31 | `manage.c` Match Management Cleanup | MEDIUM | Switch-dispatch | 2,620 lines. 7 jump tables (`Management_Jmp_Tbl[13]`, `SC2[5]`, `SC5[8]`, `SC7[10]`, `SC8[4]`, `SC81[4]`, `SC12[10]`) → switch-dispatch via `C_No[]`. Removed 7 `#define` count macros. |
 ---
 
 ## Next Wave: Safe Improvement Candidates (March 2026 Audit)
 
-| # | Candidate | Risk | Category | Key Details |
-|---|-----------|------|----------|-------------|
+_All items completed._
 
 ---
 

@@ -36,8 +36,15 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 #include "structs.h"
 
-/* === Named Constants === */
-#define INIT_STEP_COUNT 4        /**< Number of init task sub-steps */
+/** @brief Init task sub-steps (replaces Main_Jmp_Tbl indices). */
+enum InitStep {
+    INIT_STEP_1ST    = 0,
+    INIT_STEP_ALOAD  = 1,
+    INIT_STEP_2ND    = 2,
+    INIT_STEP_END    = 3,
+    INIT_STEP_COUNT
+};
+
 #define MAX_VITALITY_DEFAULT 160 /**< Default maximum vitality value */
 
 #include <string.h>
@@ -61,13 +68,17 @@ static void Setup_Difficult_V();
  * Sub-steps: Init_Task_1st → Init_Task_Aload (or Init_Task_Wait) → Init_Task_2nd → Init_Task_End.
  */
 void Init_Task(struct _TASK* task_ptr) {
-    void (*Main_Jmp_Tbl[])() = { Init_Task_1st, Init_Task_Aload, Init_Task_2nd, Init_Task_End };
-
     if (task_ptr->r_no[0] < 0 || task_ptr->r_no[0] >= INIT_STEP_COUNT) {
         return;
     }
 
-    Main_Jmp_Tbl[task_ptr->r_no[0]](task_ptr);
+    switch (task_ptr->r_no[0]) {
+    case INIT_STEP_1ST:   Init_Task_1st(task_ptr);   break;
+    case INIT_STEP_ALOAD: Init_Task_Aload(task_ptr); break;
+    case INIT_STEP_2ND:   Init_Task_2nd(task_ptr);   break;
+    case INIT_STEP_END:   Init_Task_End(task_ptr);   break;
+    default: break;
+    }
 }
 
 /**

@@ -138,13 +138,7 @@ static s16 Check_Time_Over();
 void complete_victory_pause();
 static void Game_Manage_13th();
 
-#define MANAGEMENT_JMP_COUNT 13
-#define SC2_JMP_COUNT 5
-#define SC5_JMP_COUNT 8
-#define SC7_JMP_COUNT 10
-#define SC8_JMP_COUNT 4
-#define SC81_JMP_COUNT 4
-#define SC12_JMP_COUNT 10
+
 
 u8 Disp_Bonus_Contents;
 s8 MANAGE_X;
@@ -157,21 +151,29 @@ const u32 Ball_Perfect_PTS[2][5] = { { 20000, 30000, 50000, 80000, 120000 }, { 1
 
 /** @brief Main match management dispatcher — routes to the current management phase via C_No[0]. */
 s32 Game_Management() {
-    // ⚡ Bolt: static const — avoid rebuilding this table on the stack every frame
-    static void (*const Management_Jmp_Tbl[13])() = { Game_Manage_1st,  Game_Manage_2nd,  Game_Manage_3rd,
-                                                      Game_Manage_4th,  Game_Manage_5th,  Game_Manage_6th,
-                                                      Game_Manage_7th,  Game_Manage_8th,  Game_Manage_9th,
-                                                      Game_Manage_10th, Game_Manage_11th, Game_Manage_12th,
-                                                      Game_Manage_13th };
-
     if (Break_Into) {
         return 0;
     }
 
     MANAGE_X = 0;
-    if (C_No[0] >= MANAGEMENT_JMP_COUNT)
-        return 0;
-    Management_Jmp_Tbl[C_No[0]]();
+
+    switch (C_No[0]) {
+    case 0:  Game_Manage_1st();  break;
+    case 1:  Game_Manage_2nd();  break;
+    case 2:  Game_Manage_3rd();  break;
+    case 3:  Game_Manage_4th();  break;
+    case 4:  Game_Manage_5th();  break;
+    case 5:  Game_Manage_6th();  break;
+    case 6:  Game_Manage_7th();  break;
+    case 7:  Game_Manage_8th();  break;
+    case 8:  Game_Manage_9th();  break;
+    case 9:  Game_Manage_10th(); break;
+    case 10: Game_Manage_11th(); break;
+    case 11: Game_Manage_12th(); break;
+    case 12: Game_Manage_13th(); break;
+    default: break;
+    }
+
     BGM_Fade_Sub();
     BGM_Control();
     return MANAGE_X;
@@ -272,14 +274,14 @@ static void Clear_1Stage_Work() {
 
 /** @brief Phase 2 dispatcher: pre-round setup (screen switch, round init, appear wait). */
 static void Game_Manage_2nd() {
-    // ⚡ Bolt: static const — avoid rebuilding this table on the stack every frame
-    static void (*const SC2_Jmp_Tbl[5])() = {
-        Game_Manage_2_0, Game_Manage_2_1, Game_Manage_2_2, Game_Manage_2_3, Game_Manage_2_4
-    };
-
-    if (C_No[1] >= SC2_JMP_COUNT)
-        return;
-    SC2_Jmp_Tbl[C_No[1]]();
+    switch (C_No[1]) {
+    case 0: Game_Manage_2_0(); break;
+    case 1: Game_Manage_2_1(); break;
+    case 2: Game_Manage_2_2(); break;
+    case 3: Game_Manage_2_3(); break;
+    case 4: Game_Manage_2_4(); break;
+    default: break;
+    }
 }
 
 /** @brief Phase 2.0: Wait for cover timer and seek time before round start. */
@@ -632,13 +634,17 @@ static void Game_Manage_4th() {
 
 /** @brief Phase 5 dispatcher: complete victory (judgement gals) sequence. */
 static void Game_Manage_5th() {
-    // ⚡ Bolt: static const — avoid rebuilding this table on the stack every frame
-    static void (*const SC5_Jmp_Tbl[8])() = { Game_Manage_5_0, Game_Manage_5_1, Game_Manage_5_2, Game_Manage_5_3,
-                                              Game_Manage_5_4, Game_Manage_5_5, Game_Manage_5_6, Game_Manage_5_7 };
-
-    if (C_No[1] >= SC5_JMP_COUNT)
-        return;
-    SC5_Jmp_Tbl[C_No[1]]();
+    switch (C_No[1]) {
+    case 0: Game_Manage_5_0(); break;
+    case 1: Game_Manage_5_1(); break;
+    case 2: Game_Manage_5_2(); break;
+    case 3: Game_Manage_5_3(); break;
+    case 4: Game_Manage_5_4(); break;
+    case 5: Game_Manage_5_5(); break;
+    case 6: Game_Manage_5_6(); break;
+    case 7: Game_Manage_5_7(); break;
+    default: break;
+    }
 }
 
 static void Game_Manage_5_0() {
@@ -782,14 +788,19 @@ static void Game_Manage_6th() {
 
 /** @brief Phase 7 dispatcher: win presentation, winner display, perfect announcement. */
 static void Game_Manage_7th() {
-    // ⚡ Bolt: static const — avoid rebuilding this table on the stack every frame
-    static void (*const SC7_Jmp_Tbl[10])() = { Game_Manage_7_0, Game_Manage_7_1, Game_Manage_7_2, Game_Manage_7_3,
-                                               Game_Manage_7_4, Game_Manage_7_5, Game_Manage_7_6, Game_Manage_7_7,
-                                               Game_Manage_7_8, Game_Manage_7_9 };
-
-    if (C_No[1] >= SC7_JMP_COUNT)
-        return;
-    SC7_Jmp_Tbl[C_No[1]]();
+    switch (C_No[1]) {
+    case 0: Game_Manage_7_0(); break;
+    case 1: Game_Manage_7_1(); break;
+    case 2: Game_Manage_7_2(); break;
+    case 3: Game_Manage_7_3(); break;
+    case 4: Game_Manage_7_4(); break;
+    case 5: Game_Manage_7_5(); break;
+    case 6: Game_Manage_7_6(); break;
+    case 7: Game_Manage_7_7(); break;
+    case 8: Game_Manage_7_8(); break;
+    case 9: Game_Manage_7_9(); break;
+    default: break;
+    }
 }
 
 static void Game_Manage_7_0() {
@@ -932,11 +943,13 @@ static void Game_Manage_7_9() {
 
 /** @brief Phase 8 dispatcher: post-match score tallying and bonus display. */
 static void Game_Manage_8th() {
-    void (*SC8_Jmp_Tbl[4])() = { Game_Manage_8_0, Game_Manage_8_1, Game_Manage_8_2, Game_Manage_8_3 };
-
-    if (C_No[1] >= SC8_JMP_COUNT)
-        return;
-    SC8_Jmp_Tbl[C_No[1]]();
+    switch (C_No[1]) {
+    case 0: Game_Manage_8_0(); break;
+    case 1: Game_Manage_8_1(); break;
+    case 2: Game_Manage_8_2(); break;
+    case 3: Game_Manage_8_3(); break;
+    default: break;
+    }
 }
 
 static void Game_Manage_8_0() {
@@ -971,11 +984,13 @@ static void Game_Manage_8_0() {
 }
 
 static void Game_Manage_8_1() {
-    void (*SC81_Jmp_Tbl[4])() = { Game_Manage_81_0, Game_Manage_81_1, Game_Manage_81_2, Game_Manage_81_3 };
-
-    if (C_No[2] >= SC81_JMP_COUNT)
-        return;
-    SC81_Jmp_Tbl[C_No[2]]();
+    switch (C_No[2]) {
+    case 0: Game_Manage_81_0(); break;
+    case 1: Game_Manage_81_1(); break;
+    case 2: Game_Manage_81_2(); break;
+    case 3: Game_Manage_81_3(); break;
+    default: break;
+    }
 }
 
 static void Game_Manage_81_0() {
@@ -2003,13 +2018,19 @@ static void Game_Manage_11th() {
 
 /** @brief Phase 12 dispatcher: bonus stage (car destruction / parry ball) management. */
 static void Game_Manage_12th() {
-    void (*SC12_Jmp_Tbl[10])() = { Game_Manage_12_0, Game_Manage_12_1, Game_Manage_12_2, Game_Manage_12_3,
-                                   Game_Manage_12_4, Game_Manage_12_5, Game_Manage_12_1, Game_Manage_12_7,
-                                   Game_Manage_12_8, Game_Manage_12_5 };
-
-    if (C_No[1] >= SC12_JMP_COUNT)
-        return;
-    SC12_Jmp_Tbl[C_No[1]]();
+    switch (C_No[1]) {
+    case 0: Game_Manage_12_0(); break;
+    case 1: Game_Manage_12_1(); break;
+    case 2: Game_Manage_12_2(); break;
+    case 3: Game_Manage_12_3(); break;
+    case 4: Game_Manage_12_4(); break;
+    case 5: Game_Manage_12_5(); break;
+    case 6: Game_Manage_12_1(); break; /* fallthrough from parry ball path */
+    case 7: Game_Manage_12_7(); break;
+    case 8: Game_Manage_12_8(); break;
+    case 9: Game_Manage_12_5(); break; /* fallthrough from parry ball path */
+    default: break;
+    }
 
     if (Bonus_Type == 20) {
         bcounter_write();

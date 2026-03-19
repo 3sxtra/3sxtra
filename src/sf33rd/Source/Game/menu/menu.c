@@ -2080,20 +2080,12 @@ static void In_Game(struct _TASK* task_ptr) {
 
     /* Legacy dispatch (un-migrated In-Game screens only).
      * Indices 1–3 are intercepted by MenuScreen_FromInGameIndex() above.
-     * Only index 0 (Menu_Init) and 4 (Pad_Come_Out) are still dispatched here. */
-    void (*In_Game_Jmp_Tbl[IN_GAME_JMP_COUNT])() = {
-        Menu_Init,   /* [0] Menu_Init — bootstrap (un-migrated) */
-        Menu_Init,   /* [1] DEAD: migrated to MENU_SCREEN_PAUSE_MENU */
-        Menu_Init,   /* [2] DEAD: migrated to MENU_SCREEN_BUTTON_CONFIG_IG */
-        Menu_Init,   /* [3] DEAD: migrated to MENU_SCREEN_CHAR_CHANGE_IG */
-        Pad_Come_Out /* [4] Pad_Come_Out — no-op stub (un-migrated) */
-    };
-
-    if (task_ptr->r_no[1] >= IN_GAME_JMP_COUNT) {
-        return;
+     * Only index 0 (Menu_Init) and 4 (Pad_Come_Out) remain. */
+    switch (task_ptr->r_no[1]) {
+    case 0:                   Menu_Init(task_ptr);    break;
+    case 4:                   Pad_Come_Out(task_ptr); break;
+    default:                  break;
     }
-
-    In_Game_Jmp_Tbl[task_ptr->r_no[1]](task_ptr);
 }
 
 /** @brief Write BG extras for menu backgrounds (type-based). */
@@ -2598,17 +2590,10 @@ static void Training_Menu(struct _TASK* task_ptr) {
             /* Legacy dispatch (un-migrated training screens only).
              * All indices 1–7 are intercepted by MenuScreen_FromTrainingIndex()
              * above.  Only index 0 (Training_Init) is still dispatched here. */
-            void (*Training_Jmp_Tbl[TRAINING_JMP_COUNT])() = {
-                Training_Init, /* [0] Training_Init — bootstrap (un-migrated) */
-                Training_Init, /* [1] DEAD: migrated to MENU_SCREEN_NORMAL_TRAINING */
-                Training_Init, /* [2] DEAD: migrated to MENU_SCREEN_BLOCKING_TRAINING */
-                Training_Init, /* [3] DEAD: migrated to MENU_SCREEN_DUMMY_SETTING */
-                Training_Init, /* [4] DEAD: migrated to MENU_SCREEN_TRAINING_OPTION */
-                Training_Init, /* [5] DEAD: migrated to MENU_SCREEN_BUTTON_CONFIG_TR */
-                Training_Init, /* [6] DEAD: migrated to MENU_SCREEN_CHAR_CHANGE_TR */
-                Training_Init, /* [7] DEAD: migrated to MENU_SCREEN_BLOCKING_TR_OPTION */
-            };
-            Training_Jmp_Tbl[task_ptr->r_no[1]](task_ptr);
+            switch (task_ptr->r_no[1]) {
+            case 0:  Training_Init(task_ptr); break;
+            default: break;
+            }
         }
     }
 
