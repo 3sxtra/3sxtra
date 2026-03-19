@@ -11,11 +11,34 @@
 #include "structs.h"
 #include "types.h"
 
+/* === Named Constants (shared across opening module files) === */
+#define OPENING_DEMO_PHASE_COUNT 3 /**< Phases in oh_opening_demo() dispatch */
+#define OPENING_SCENE_COUNT 19     /**< Scene handlers in opening_move_jp[] */
+#define OP_BG0_DISPATCH_COUNT 94   /**< Entries in op_bg0_move_jp[] */
+#define SOUND_TRG_TABLE_SIZE 257   /**< Entries in sound_time_tbl[] / sound_trg_tbl[] */
+#define OP_CHANGE_SOUND_COUNT 18   /**< Entries in op_change_sound_tbl[] */
+#define OP_QUAKE_Y_COUNT 16        /**< Entries in op_quake_y_tbl0[] */
+#define OPTSR_TABLE_SIZE 59        /**< Entries in optsr_tbl[] */
+#define TITLE_TYPE_COUNT 2         /**< Entries in title[] */
+#define OP_COLOR_FADE_STAGES 6     /**< Entries in ot_bg0_0004_tbl[] / ot_bg0_0015_tbl[] */
+#define OP_QUAKE_STEP_COUNT 16     /**< Entries in op_bg0_0005_tbl[] */
+
+/* === Shared state (defined in opening.c, used by scenes/bg files) === */
 extern s16 op_obj_disp;
 extern s8 op_scrn_end;
 extern s16 title_tex_flag;
 extern s16 op_timer0;
 extern OP_W op_w;
+extern s16 music_scene;
+extern s16 music_time;
+extern s16 op_plmove_timer;
+extern OPBW* opw_ptr;
+extern s16 op_end_flag;
+extern s16 op_demo_index;
+extern s16 op_sound_status;
+extern MVXY op_bg_mvxy[3];
+extern const s16 op_change_sound_tbl[OP_CHANGE_SOUND_COUNT];
+extern const s16 op_quake_y_tbl0[OP_QUAKE_Y_COUNT];
 
 void TITLE_Init();
 s16 TITLE_Move(u16 type);
@@ -32,25 +55,6 @@ void Bg_Family_Set_op();
 void opening_init2();
 void opening_move();
 void opening_title();
-void op_100_move();
-void op_101_move();
-void op_102_move();
-void op_103_move();
-void op_104_move();
-void op_105_move();
-void op_106_move();
-void op_107_move();
-void op_108_move();
-void op_109_move();
-void op_110_move();
-void op_111_move();
-void op_112_move();
-void op_113_move();
-void op_114_move();
-void op_115_move();
-void op_116_move();
-void op_117_move();
-void op_118_move();
 void opning_init_00000();
 void opning_init_01000();
 void opning_init_02000();
@@ -58,36 +62,10 @@ void op_bg_move(s16 r_index);
 void op_bg0_move(s16 r_index);
 void op_bg1_move(s16 r_index);
 void op_bg2_move(s16 r_index);
-void op_bg0_0000(s16 /* unused */);
-void op_bg0_0001(s16 /* unused */);
-void op_bg0_0002(s16 /* unused */);
-void op_bg0_0003(s16 /* unused */);
-void op_bg0_0004(s16 /* unused */);
-void op_bg0_0005(s16 /* unused */);
-void op_bg0_0006(s16 /* unused */);
-void op_bg0_0007(s16 /* unused */);
-void op_bg0_0008(s16 /* unused */);
-void op_bg0_0010(s16 /* unused */);
-void op_bg0_0011(s16 /* unused */);
-void op_bg0_0012(s16 /* unused */);
-void op_bg0_0013(s16 /* unused */);
-void op_bg0_0014(s16 /* unused */);
-void op_bg0_0015(s16 /* unused */);
-void op_bg0_0016(s16 /* unused */);
-void op_bg1_0003(s16 r_index);
 void op_scrn_pos_set2(s16 bg_no);
 void oh_bg_blk_w(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans);
 void oh_bg_blk_wh(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans);
 void oh_bg_blk_wv(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans);
 void oh_bg_blk_whv(OPBW* opbw, s32 blk_no, s16 mapx, s16 mapy, s32 trans);
-void op_bg1_0000(s16 /* unused */);
-void op_bg1_0001(s16 r_index);
-void op_bg1_0002(s16 r_index);
-void op_bg1_0003(s16 r_index);
-void op_bg2_0000();
-void op_bg2_0001();
-void op_bg2_0002();
-void op_bg2_0003();
-void opening_title_01();
 
 #endif // OPENING_H
