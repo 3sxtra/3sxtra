@@ -43,11 +43,20 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 30 | `menu.c` Residual Jump Tables | LOW | Dead code cleanup | 2 residual `_Jmp_Tbl` arrays (In_Game, Training) → switch-dispatch. Most entries were DEAD (migrated to MenuScreen registry). |
 | 29 | `next_cpu.c` State Cleanup | LOW–MED | Named states | 1,659 lines. 4 jump tables (`Next_CPU_Tbl[12]`, `After_Bonus_Tbl[11]`, `Select_CPU_First_Tbl[4]`, `Next_Q_Tbl[6]`) → switch-dispatch via `SC_No[0]`. Used fallthrough for duplicate entries. |
 | 31 | `manage.c` Match Management Cleanup | MEDIUM | Switch-dispatch | 2,620 lines. 7 jump tables (`Management_Jmp_Tbl[13]`, `SC2[5]`, `SC5[8]`, `SC7[10]`, `SC8[4]`, `SC81[4]`, `SC12[10]`) → switch-dispatch via `C_No[]`. Removed 7 `#define` count macros. |
+| 32 | `Debug.c` Jump Table → Switch | VERY LOW | Named states | 624 lines. `Main_Jmp_Tbl[3]` → `enum DebugTaskState` + switch via `r_no[0]`. 3 states (Init, 1st, 2nd). |
+| 33 | `win_pl.c` Win Dispatch → Switch | LOW | Named states | 1,674 lines. `win_jp_tbl[16]` → switch via `winner_type_tbl[]` lookup. Per-character victory pose dispatch. Animation-only. |
+| 34 | `gd3rd.c` Data Table Extraction | LOW | Data separation | 2,177→390 lines. 294-entry `ldreq_tbl[]` and 43-entry `ldreq_ix[]` extracted to `gd_data.c` / `gd_data.h`. Logic core only ~390 lines. |
+| 35 | `sound3rd.c` Magic Number Cleanup | LOW | Named constants | 3 raw `SsRequest()` calls → `SND_MENU_CURSOR`, `SND_MENU_SELECT`, `SND_DIR_CURSOR` from `sound_ids.h`. |
+| 36 | `bg_sub.c` Magic Number Cleanup | LOW–MED | Named constants | 1,287 lines. ~80 raw hex values → named constants in new `bg_constants.h`. Zoom bitmasks, chase flags, scroll zones, screen geometry, stage indices, scroll speed. Zero logic changes. |
 ---
 
-## Next Wave: Safe Improvement Candidates (March 2026 Audit)
+## Next Wave: Safe Improvement Candidates (March 2026 Audit — Wave 2)
 
-_All items completed._
+| # | Component | Risk | Pattern | Key Files |
+|---|-----------|------|---------|-----------|
+| 37 | `bg.c` Decomposition | LOW–MED | File split | 1,537 lines. Clear boundaries: stage texture loading (~300 lines), ending texture loading (~200 lines), tile rewrite logic (~400 lines), draw/render (~500 lines). Split into `bg_load.c`, `bg_rewrite.c`, core `bg.c`. |
+| 38 | `appear.c` State Cleanup | MEDIUM | Named `routine_no[]` states | 2,102 lines, 221 `routine_no[]` accesses. Per-character entrance animation dispatch via nested switches. Introduce named state enums for `routine_no[0..3]`. No netplay sync risk — animation-only, runs before round start. |
+| 39 | `chren3rd.c` Decomposition | LOW–MED | File split | 1,308 lines. Character rendering helpers — palette management, shadow rendering, and object group config are distinct blocks. Can split into `chren_palette.c`, `chren_shadow.c`, core `chren3rd.c`. |
 
 ---
 

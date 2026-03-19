@@ -28,13 +28,20 @@
 #define COLOR_YELLOW 0xFFFFFF00
 
 /* === Named Constants === */
-#define DEBUG_JMP_COUNT 3                                        /**< Number of debug task states (Init, 1st, 2nd) */
 #define DEBUG_COLUMN_SIZE 24                                     /**< Number of options per column in the debug menu */
 #define DEBUG_COLUMN_COUNT 3                                     /**< Number of columns in the debug menu */
 #define DEBUG_GRID_SIZE (DEBUG_COLUMN_SIZE * DEBUG_COLUMN_COUNT) /**< Total debug options (72) */
 #define CPU_DATA_COUNT 16                                        /**< Number of entries in cpu_data[] label table */
 #define DEBUG_DELEY_COUNT 6                                      /**< Number of entries in Debug_Deley_Time[] */
 #define DEBUG_DELEY2_COUNT 4                                     /**< Number of entries in Debug_Deley_Time2[] */
+
+/** @brief Debug task state machine phases. */
+enum DebugTaskState {
+    DEBUG_STATE_INIT = 0, /**< Initialize debug state */
+    DEBUG_STATE_1ST  = 1, /**< First-frame setup */
+    DEBUG_STATE_2ND  = 2, /**< Main loop */
+    DEBUG_STATE_COUNT      /**< Number of states (3) */
+};
 
 // sbss
 bool debug_menu_active;
@@ -62,13 +69,12 @@ extern s8* cpu_data[];
 
 /** @brief Debug task entry point — dispatches to Init/1st/2nd and runs diagnostics. */
 void Debug_Task(struct _TASK* task_ptr) {
-    void (*Main_Jmp_Tbl[DEBUG_JMP_COUNT])() = { Debug_Init, Debug_1st, Debug_2nd };
-
-    if (task_ptr->r_no[0] < 0 || task_ptr->r_no[0] >= DEBUG_JMP_COUNT) {
-        return;
+    switch (task_ptr->r_no[0]) {
+    case DEBUG_STATE_INIT: Debug_Init(task_ptr); break;
+    case DEBUG_STATE_1ST:  Debug_1st(task_ptr);  break;
+    case DEBUG_STATE_2ND:  Debug_2nd(task_ptr);  break;
+    default: return;
     }
-
-    Main_Jmp_Tbl[(task_ptr->r_no[0])](task_ptr);
 
     Disp_Free_work();
     Disp_Random();

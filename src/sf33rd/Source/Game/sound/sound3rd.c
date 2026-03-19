@@ -1030,22 +1030,22 @@ void SsBgmHalfVolume(s16 flag) {
 
 /** @brief Play the menu cursor-move sound effect. */
 void SE_cursor_move() {
-    SsRequest(96);
+    SsRequest(SND_MENU_CURSOR);
 }
 
 /** @brief Play the menu selection confirm sound effect. */
 void SE_selected() {
-    SsRequest(98);
+    SsRequest(SND_MENU_SELECT);
 }
 
 /** @brief Play the direction-select cursor-move sound effect. */
 void SE_dir_cursor_move() {
-    SsRequest(343);
+    SsRequest(SND_DIR_CURSOR);
 }
 
 /** @brief Play the direction-select confirm sound effect. */
 void SE_dir_selected() {
-    SsRequest(98);
+    SsRequest(SND_MENU_SELECT);
 }
 
 const s16 adx_volume[128] = { -999, -608, -576, -544, -512, -480, -448, -416, -400, -384, -368, -352, -336, -320, -304,

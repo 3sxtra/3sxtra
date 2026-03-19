@@ -65,17 +65,12 @@ s16 win_free[2];
 s16 poison_flag[2];
 
 /* === Named Constants === */
-#define WIN_TYPE_COUNT 16  /**< Entries in win_jp_tbl[] */
 #define CHARACTER_COUNT 20 /**< Number of playable characters */
 
 const s16 winner_type_tbl[CHARACTER_COUNT] = { 6, 0, 0, 6, 2, 7, 9, 3, 4, 1, 12, 0, 5, 14, 8, 13, 6, 10, 11, 15 };
 
 /** @brief Top-level winner dispatch — select type-specific win handler. */
 void win_player(PLW* wk) {
-    void (*win_jp_tbl[WIN_TYPE_COUNT])(PLW*) = { Win_00000, Win_01000, Win_02000, Win_03000, Win_04000, Win_05000,
-                                                 Win_06000, Win_07000, Win_08000, Win_09000, Win_10000, Win_11000,
-                                                 Win_12000, Win_13000, Win_14000, Win_15000 };
-
     if (My_char[wk->wu.id] != wk->player_number) {
         meta_win_pause(wk);
         return;
@@ -95,7 +90,25 @@ void win_player(PLW* wk) {
         return;
     }
 
-    win_jp_tbl[winner_type_tbl[wk->player_number]](wk);
+    switch (winner_type_tbl[wk->player_number]) {
+    case 0:  Win_00000(wk); break;
+    case 1:  Win_01000(wk); break;
+    case 2:  Win_02000(wk); break;
+    case 3:  Win_03000(wk); break;
+    case 4:  Win_04000(wk); break;
+    case 5:  Win_05000(wk); break;
+    case 6:  Win_06000(wk); break;
+    case 7:  Win_07000(wk); break;
+    case 8:  Win_08000(wk); break;
+    case 9:  Win_09000(wk); break;
+    case 10: Win_10000(wk); break;
+    case 11: Win_11000(wk); break;
+    case 12: Win_12000(wk); break;
+    case 13: Win_13000(wk); break;
+    case 14: Win_14000(wk); break;
+    case 15: Win_15000(wk); break;
+    default: break;
+    }
 }
 
 /** @brief Win type 0 — standard win pose (delegates to Normal_normal_Winner). */
