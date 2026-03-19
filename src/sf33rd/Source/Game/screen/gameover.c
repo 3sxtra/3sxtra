@@ -24,6 +24,7 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
 #include "main.h" /* For TASK_MENU enum */
+#include "port/menu_task.h"
 #include "port/menu_screen.h"
 
 #define GAMEOVER_JMP_COUNT 3
@@ -32,7 +33,7 @@ u8 GAME_OVER_X;
 
 /** @brief Main game-over dispatcher — runs the current sub-state and returns exit flag. */
 s16 Game_Over() {
-    struct _TASK* tp = &task[TASK_MENU]; // Menu task usually handles UI
+    struct _TASK* tp = MenuTask_GetTaskPtr(); // Menu task usually handles UI
 
     // Initialize MenuScreen
     if (!MenuScreen_IsActive() || (MenuScreen_IsActive() && tp->r_no[1] != MENU_SCREEN_GAMEOVER)) {

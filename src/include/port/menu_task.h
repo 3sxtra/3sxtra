@@ -45,4 +45,16 @@ void MenuTask_GotoPhase(MenuTaskPhase phase);
 /** @brief Returns true when task[TASK_MENU].condition == 1. */
 bool MenuTask_IsActive(void);
 
+/** @brief Activate the Menu task (condition = 1). */
+void MenuTask_Activate(void);
+
+/* ── Legacy Interop ────────────────────────────────────────────── */
+
+/**
+ * @brief Get the direct pointer to the Menu task struct.
+ * @note Use only for passing to legacy functions (e.g., Menu_Init)
+ *       that expect a struct _TASK* parameter.
+ */
+struct _TASK* MenuTask_GetTaskPtr(void);
+
 #endif /* MENU_TASK_H */

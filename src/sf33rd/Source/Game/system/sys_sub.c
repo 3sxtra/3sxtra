@@ -16,6 +16,7 @@
 #include "sf33rd/Source/Game/system/country_region.h"
 #include "port/menu_task.h"
 #include "port/init_task.h"
+#include "port/task_api.h"
 #include "common.h"
 #include "main.h"
 #include "port/menu_screen.h"
@@ -1089,13 +1090,13 @@ void Soft_Reset_Sub() {
         rmlui_wrapper_hide_all_documents();
     }
 
-    MenuScreen_ExitToLegacy(&task[TASK_MENU]);
+    MenuScreen_ExitToLegacy(MenuTask_GetTaskPtr());
 
-    if (task[TASK_GAME].condition == 0) {
+    if (!Task_IsActive(TASK_GAME)) {
         cpReadyTask(TASK_GAME, Game_Task);
     }
 
-    if (task[TASK_DEBUG].condition == 0) {
+    if (!Task_IsActive(TASK_DEBUG)) {
         cpReadyTask(TASK_DEBUG, Debug_Task);
     }
 
@@ -1108,7 +1109,7 @@ void Soft_Reset_Sub() {
     pp_operator_check_flag(1);
     Init_Load_Request_Queue_1st();
     cpExitTask(TASK_MENU);
-    MenuScreen_ExitToLegacy(&task[TASK_MENU]);
+    MenuScreen_ExitToLegacy(MenuTask_GetTaskPtr());
     cpExitTask(TASK_SAVER);
     cpExitTask(TASK_PAUSE);
     Reset_Sub0();

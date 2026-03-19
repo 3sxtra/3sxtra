@@ -938,7 +938,7 @@ void Game03() {
     case 3:
         if (Switch_Screen(1) != 0) {
             G_No[2] += 1;
-            task[7].r_no[0] = 1;
+            Saver2_Task_SetPhase(1);
             G_Timer = 4;
         }
 
@@ -1170,7 +1170,7 @@ void Game06() {
                     Pause_ID = Player_id;
                     cpReadyTask(TASK_MENU, Menu_Task);
                     System_all_clear_Level_B();
-                    Menu_Init(&task[TASK_MENU]);
+                    Menu_Init(MenuTask_GetTaskPtr());
                     MenuTask_GotoPhase(MTP_GOTO_GAME);
                     Forbid_Reset = 1;
                     make_texcash_work(12);
@@ -1950,7 +1950,7 @@ void Next_Title_Sub() {
     Before_Select_Sub();
     /* Clear any stale MenuScreen state (e.g. RANKING/DEMO still active
      * during the attract loop when a coin is inserted). */
-    MenuScreen_ExitToLegacy(&task[TASK_MENU]);
+    MenuScreen_ExitToLegacy(MenuTask_GetTaskPtr());
     cpReadyTask(TASK_ENTRY, Entry_Task);
 }
 

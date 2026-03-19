@@ -29,6 +29,7 @@
 #include "sf33rd/Source/Game/debug/Debug.h"
 
 #include "main.h" /* For TASK_MENU enum */
+#include "port/menu_task.h"
 #include "port/menu_screen.h"
 
 void Setup_Wins_OBJ();
@@ -39,7 +40,7 @@ u8 WIN_X;
 
 /** @brief Main winner-screen dispatcher — runs the current phase and returns exit flag. */
 s32 Winner_Scene() {
-    struct _TASK* tp = &task[TASK_MENU];
+    struct _TASK* tp = MenuTask_GetTaskPtr();
 
     if (Break_Into) {
         return 0;
@@ -69,7 +70,7 @@ s32 Winner_Scene() {
 
 /** @brief Main loser-screen dispatcher — shares phases with Winner_Scene but uses Lose_2nd/3rd. */
 s32 Loser_Scene() {
-    struct _TASK* tp = &task[TASK_MENU];
+    struct _TASK* tp = MenuTask_GetTaskPtr();
 
     if (Break_Into) {
         return 0;

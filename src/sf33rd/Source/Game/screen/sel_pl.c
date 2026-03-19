@@ -176,9 +176,11 @@ void Sel_PL_Control_Frame() {
     }
 }
 
+#include "port/menu_task.h"
+
 /** @brief Main character-select dispatcher — thin wrapper around MenuScreen registry. */
 s16 Select_Player() {
-    struct _TASK* tp = &task[TASK_MENU];
+    struct _TASK* tp = MenuTask_GetTaskPtr();
 
     /* If another MenuScreen is driving (e.g. Attract Mode Demo simulating Character Select),
      * bypass the registry wrapper and run the legacy frame directly to prevent infinite recursion. */

@@ -13,9 +13,9 @@
 
 #include "port/menu_task.h"
 
-#include "main.h"                              /* TaskID, TASK_MENU               */
+#include "main.h"                               /* TaskID, TASK_MENU               */
 #include "sf33rd/Source/Game/system/work_sys.h" /* extern struct _TASK task[11]     */
-#include "structs.h"                           /* struct _TASK                     */
+#include "structs.h"                            /* struct _TASK                     */
 
 #include <assert.h>
 
@@ -56,4 +56,14 @@ void MenuTask_GotoPhase(MenuTaskPhase phase) {
 
 bool MenuTask_IsActive(void) {
     return task[TASK_MENU].condition == 1;
+}
+
+void MenuTask_Activate(void) {
+    task[TASK_MENU].condition = 1;
+}
+
+/* ── Legacy Interop ────────────────────────────────────────────── */
+
+struct _TASK* MenuTask_GetTaskPtr(void) {
+    return &task[TASK_MENU];
 }

@@ -33,7 +33,8 @@
 #include "sf33rd/Source/Game/system/work_sys.h"    /* cpExitTask */
 #include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                               /* struct _TASK */
-#include "main.h"                                  /* TASK_MENU, TASK_ENTRY, task[] */
+#include "main.h"                                  /* TASK_MENU, TASK_ENTRY */
+#include "port/task_api.h"                         /* Task_IsActive */
 
 /* RmlUi Phase 3 */
 #include "port/sdl/rmlui/rmlui_mode_menu.h"      /* rmlui_mode_menu_show/hide */
@@ -75,7 +76,7 @@ static void mode_select_enter(struct _TASK* task_ptr) {
     Mode_Type = MODE_ARCADE;
     Present_Mode = 1;
 
-    if (task[TASK_ENTRY].condition != 1) {
+    if (!Task_IsActive(TASK_ENTRY)) {
         E_No[0] = 1;
         E_No[1] = 2;
         E_No[2] = 2;

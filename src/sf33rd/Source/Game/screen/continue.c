@@ -20,6 +20,7 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 #include "main.h" /* For TASK_MENU enum */
+#include "port/menu_task.h"
 #include "port/menu_screen.h"
 
 #define CONTINUE_JMP_COUNT 5
@@ -28,7 +29,7 @@ u8 CONTINUE_X;
 
 /** @brief Main continue-screen dispatcher — runs the current sub-state and returns exit flag. */
 s32 Continue_Scene() {
-    struct _TASK* tp = &task[TASK_MENU]; // Usually the menu task handles this, or just pass a dummy if none
+    struct _TASK* tp = MenuTask_GetTaskPtr(); // Usually the menu task handles this, or just pass a dummy if none
 
     // We only initialize it the first time it is called
     if (!MenuScreen_IsActive() || (MenuScreen_IsActive() && tp->r_no[1] != MENU_SCREEN_CONTINUE)) {
