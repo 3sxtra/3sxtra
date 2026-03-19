@@ -153,10 +153,44 @@ void Dummy_Setting(struct _TASK* task_ptr);
 void Training_Option(struct _TASK* task_ptr);
 void Blocking_Tr_Option(struct _TASK* task_ptr);
 
-const MenuFunc Menu_Jmp_Tbl[MENU_JMP_COUNT] = {
-    After_Title,   In_Game,      Wait_Load_Save,  Wait_Replay_Check, Disp_Auto_Save, Suspend_Menu, Wait_Replay_Load,
-    Training_Menu, After_Replay, Disp_Auto_Save2, Wait_Pause_in_Tr,  Reset_Training, Reset_Replay, End_Replay_Menu,
+enum MenuState {
+    MENU_STATE_AFTER_TITLE = 0,
+    MENU_STATE_IN_GAME = 1,
+    MENU_STATE_WAIT_LOAD_SAVE = 2,
+    MENU_STATE_WAIT_REPLAY_CHECK = 3,
+    MENU_STATE_DISP_AUTO_SAVE = 4,
+    MENU_STATE_SUSPEND_MENU = 5,
+    MENU_STATE_WAIT_REPLAY_LOAD = 6,
+    MENU_STATE_TRAINING_MENU = 7,
+    MENU_STATE_AFTER_REPLAY = 8,
+    MENU_STATE_DISP_AUTO_SAVE2 = 9,
+    MENU_STATE_WAIT_PAUSE_IN_TR = 10,
+    MENU_STATE_RESET_TRAINING = 11,
+    MENU_STATE_RESET_REPLAY = 12,
+    MENU_STATE_END_REPLAY_MENU = 13
 };
+
+enum MenuAtState {
+    MENU_AT_INIT = 0,
+    MENU_AT_SAVE_DIRECTION = 19,
+    MENU_AT_LOAD_DIRECTION = 20
+};
+
+enum AutoSaveState {
+    AUTO_SAVE_1ST = 0,
+    AUTO_SAVE_2ND = 1,
+    AUTO_SAVE_3RD = 2,
+    AUTO_SAVE_4TH = 3
+};
+
+/** @brief G_No magic numbers for menu operations */
+#define GAME_STATE_MENU                2
+#define GAME_MODE_MENU_IDLE           12
+#define GAME_MODE_IN_GAME              1
+#define GAME_SUBMODE_REPLAY            2
+#define GAME_SUBMODE_TRAINING          5
+#define GAME_SUBMODE_SAVE              6
+
 
 // sbss
 u8 r_no_plus;
@@ -184,7 +218,22 @@ void Menu_Task(struct _TASK* task_ptr) {
         return;
     }
 
-    Menu_Jmp_Tbl[task_ptr->r_no[0]](task_ptr);
+    switch (task_ptr->r_no[0]) {
+    case MENU_STATE_AFTER_TITLE:       After_Title(task_ptr); break;
+    case MENU_STATE_IN_GAME:           In_Game(task_ptr); break;
+    case MENU_STATE_WAIT_LOAD_SAVE:    Wait_Load_Save(task_ptr); break;
+    case MENU_STATE_WAIT_REPLAY_CHECK: Wait_Replay_Check(task_ptr); break;
+    case MENU_STATE_DISP_AUTO_SAVE:    Disp_Auto_Save(task_ptr); break;
+    case MENU_STATE_SUSPEND_MENU:      Suspend_Menu(); break;
+    case MENU_STATE_WAIT_REPLAY_LOAD:  Wait_Replay_Load(); break;
+    case MENU_STATE_TRAINING_MENU:     Training_Menu(task_ptr); break;
+    case MENU_STATE_AFTER_REPLAY:      After_Replay(task_ptr); break;
+    case MENU_STATE_DISP_AUTO_SAVE2:   Disp_Auto_Save2(task_ptr); break;
+    case MENU_STATE_WAIT_PAUSE_IN_TR:  Wait_Pause_in_Tr(task_ptr); break;
+    case MENU_STATE_RESET_TRAINING:    Reset_Training(task_ptr); break;
+    case MENU_STATE_RESET_REPLAY:      Reset_Replay(task_ptr); break;
+    case MENU_STATE_END_REPLAY_MENU:   End_Replay_Menu(task_ptr); break;
+    }
 }
 
 /** @brief Read controller type (pad vs. stick) for both players. */
@@ -222,36 +271,21 @@ static void After_Title(struct _TASK* task_ptr) {
      * as a safe fallback in case of regression.  Only indices 0 (Menu_Init),
      * 19 (Save_Direction), and 20 (Load_Direction) are still actively
      * dispatched through this table. */
-    void (*AT_Jmp_Tbl[AT_JMP_COUNT])() = {
-        Menu_Init,      /* [ 0] Menu_Init — bootstrap (un-migrated) */
-        Menu_Init,      /* [ 1] DEAD: migrated to MENU_SCREEN_MODE_SELECT */
-        Menu_Init,      /* [ 2] DEAD: migrated to MENU_SCREEN_OPTION_SELECT */
-        Menu_Init,      /* [ 3] DEAD: OPTION_SELECT alias */
-        Menu_Init,      /* [ 4] DEAD: migrated to MENU_SCREEN_TRAINING_MODE */
-        Menu_Init,      /* [ 5] DEAD: migrated to MENU_SCREEN_SYSTEM_DIRECTION */
-        Menu_Init,      /* [ 6] DEAD: migrated to MENU_SCREEN_LOAD_REPLAY */
-        Menu_Init,      /* [ 7] DEAD: OPTION_SELECT alias */
-        Menu_Init,      /* [ 8] DEAD: migrated to MENU_SCREEN_EXIT_CONFIRM */
-        Menu_Init,      /* [ 9] DEAD: migrated to MENU_SCREEN_GAME_OPTION */
-        Menu_Init,      /* [10] DEAD: migrated to MENU_SCREEN_BUTTON_CONFIG */
-        Menu_Init,      /* [11] DEAD: SYSTEM_DIRECTION alias */
-        Menu_Init,      /* [12] DEAD: migrated to MENU_SCREEN_SOUND_TEST */
-        Menu_Init,      /* [13] DEAD: migrated to MENU_SCREEN_MEMORY_CARD */
-        Menu_Init,      /* [14] DEAD: migrated to MENU_SCREEN_EXTRA_OPTION */
-        Menu_Init,      /* [15] DEAD: OPTION_SELECT alias */
-        Menu_Init,      /* [16] DEAD: migrated to MENU_SCREEN_VS_RESULT */
-        Menu_Init,      /* [17] DEAD: migrated to MENU_SCREEN_SAVE_REPLAY */
-        Menu_Init,      /* [18] DEAD: migrated to MENU_SCREEN_DIRECTION_MENU */
-        Save_Direction, /* [19] Save_Direction (un-migrated) */
-        Load_Direction, /* [20] Load_Direction (un-migrated) */
-        Menu_Init,      /* [21] DEAD: migrated to MENU_SCREEN_NETWORK_LOBBY */
-    };
-
     if (task_ptr->r_no[1] >= AT_JMP_COUNT) {
         return;
     }
 
-    AT_Jmp_Tbl[task_ptr->r_no[1]](task_ptr);
+    switch (task_ptr->r_no[1]) {
+    case MENU_AT_SAVE_DIRECTION:
+        Save_Direction(task_ptr);
+        break;
+    case MENU_AT_LOAD_DIRECTION:
+        Load_Direction(task_ptr);
+        break;
+    default:
+        Menu_Init(task_ptr);
+        break;
+    }
 }
 
 /** @brief One-time menu initialisation (fade, BG, saver task). */
@@ -1780,8 +1814,8 @@ void Menu_ReenterNetworkLobby(void) {
         D_No[ix] = 0;
     }
 
-    G_No[0] = 2;
-    G_No[1] = 12; // Menu Idle State
+    G_No[0] = GAME_STATE_MENU;
+    G_No[1] = GAME_MODE_MENU_IDLE; // Menu Idle State
     E_No[0] = 1;
     E_No[1] = 2;
     E_No[2] = 2;
@@ -2194,13 +2228,16 @@ static void Wait_Load_Save(struct _TASK* task_ptr) {
 
 /** @brief Display auto-save notification. */
 static void Disp_Auto_Save(struct _TASK* task_ptr) {
-    void (*Auto_Save_Jmp_Tbl[AUTO_SAVE_JMP_COUNT])() = { DAS_1st, DAS_2nd, DAS_3rd, DAS_4th };
-
     if (task_ptr->r_no[1] >= AUTO_SAVE_JMP_COUNT) {
         return;
     }
 
-    Auto_Save_Jmp_Tbl[task_ptr->r_no[1]](task_ptr);
+    switch (task_ptr->r_no[1]) {
+    case AUTO_SAVE_1ST: DAS_1st(task_ptr); break;
+    case AUTO_SAVE_2ND: DAS_2nd(task_ptr); break;
+    case AUTO_SAVE_3RD: DAS_3rd(task_ptr); break;
+    case AUTO_SAVE_4TH: DAS_4th(task_ptr); break;
+    }
 }
 
 /** @brief Auto-save step 1 â€” initiate save process. */
@@ -2246,19 +2283,22 @@ static void DAS_4th(struct _TASK* task_ptr) {
 
 /** @brief Display auto-save notification (variant 2). */
 static void Disp_Auto_Save2(struct _TASK* task_ptr) {
-    void (*Auto_Save2_Jmp_Tbl[AUTO_SAVE_JMP_COUNT])() = { DAS_1st, DAS_2nd, DAS_3rd, DAS2_4th };
-
     if (task_ptr->r_no[1] >= AUTO_SAVE_JMP_COUNT) {
         return;
     }
 
-    Auto_Save2_Jmp_Tbl[task_ptr->r_no[1]](task_ptr);
+    switch (task_ptr->r_no[1]) {
+    case AUTO_SAVE_1ST: DAS_1st(task_ptr); break;
+    case AUTO_SAVE_2ND: DAS_2nd(task_ptr); break;
+    case AUTO_SAVE_3RD: DAS_3rd(task_ptr); break;
+    case AUTO_SAVE_4TH: DAS2_4th(task_ptr); break;
+    }
 }
 
 /** @brief Auto-save variant 2 step 4 â€” fade and return. */
 static void DAS2_4th(struct _TASK* task_ptr) {
     /* NativeSave_SaveOptions() is synchronous, so always proceed */
-    G_No[2] = 6;
+    G_No[2] = GAME_SUBMODE_SAVE;
     cpExitTask(TASK_MENU);
     Task_Activate(TASK_ENTRY);
 }
@@ -2451,7 +2491,7 @@ static void Reset_Training(struct _TASK* task_ptr) {
         }
 
         C_No[0] = 1;
-        G_No[2] = 5;
+        G_No[2] = GAME_SUBMODE_TRAINING;
         G_No[3] = 0;
         seraph_flag = 0;
         BGM_No[0] = 1;
@@ -2511,7 +2551,7 @@ static void Reset_Replay(struct _TASK* task_ptr) {
 
         task_ptr->r_no[1]++;
         task_ptr->timer = 2;
-        G_No[2] = 2;
+        G_No[2] = GAME_SUBMODE_REPLAY;
         G_No[3] = 0;
         seraph_flag = 0;
         G_Timer = 10;
@@ -3108,7 +3148,7 @@ void Character_Change(struct _TASK* task_ptr) {
             if (Switch_Screen(0) != 0) {
                 task_ptr->r_no[2]++;
                 Cover_Timer = 0x17;
-                G_No[1] = 1;
+                G_No[1] = GAME_MODE_IN_GAME;
                 G_No[2] = 0;
                 G_No[3] = 0;
 
