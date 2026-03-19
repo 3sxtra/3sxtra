@@ -1155,21 +1155,6 @@ void bgDrawOneChip(s32 x, s32 y, s32 xs, s32 ys, s32 gbix, u32 vtxCol, s32 ofsPa
             }
         }
 
-        /* HD background tile override - only during active gameplay stage
-         * The sprite_override loader constructs the unique filename from these parameters:
-         * bg_{type}_{stage}_{gbix}.png — e.g., bg_18000157.png
-         */
-        void* hd_tex = (bg_texture_type != 0) ? LoadBGTileOverride(bg_texture_type, bg_w.stage + 1, gbix) : NULL;
-
-        if (hd_tex != NULL) {
-            float dx = scrDrawPos[0].x;
-            float dy = scrDrawPos[0].y;
-            float dw = scrDrawPos[3].x - scrDrawPos[0].x;
-            float dh = scrDrawPos[3].y - scrDrawPos[0].y;
-            TextureUtil_DrawQuad(hd_tex, dx, dy, dw, dh, flPS2ConvScreenFZ(scrDrawPos[0].z));
-            return;
-        }
-
         ppgWriteQuadUseTrans(scrDrawPos, vtxCol, 0, gbix, 0, 0, ofsPal);
     }
 }

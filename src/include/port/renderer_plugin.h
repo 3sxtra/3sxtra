@@ -38,10 +38,12 @@ typedef struct renderer_export_t {
      * @param z            Z depth for sorting.
      * @param flip_x       Non-zero to flip horizontally.
      * @param color        ARGB vertex color.
+     * @param screen_w     Expected CPS3-space quad width.
+     * @param screen_h     Expected CPS3-space quad height.
      * @return true if an override was rendered, false to fall through to standard rendering.
      */
     bool (*TryRenderSprite)(int group_index, int cg_number, float screen_x, float screen_y, float z, int flip_x,
-                            unsigned int color);
+                            unsigned int color, float screen_w, float screen_h);
 
     /* Background tile overrides */
     void* (*LoadBGTileOverride)(int gbix);

@@ -753,6 +753,7 @@ elseif(WIN32)
         "${SDL3_NET_DIR}/bin/SDL3_net.dll"
         DESTINATION bin
     )
+    install(FILES $<TARGET_FILE:renderer_hd> DESTINATION bin OPTIONAL)
 elseif(UNIX)
     install(TARGETS 3sx
         RUNTIME_DEPENDENCY_SET deps
@@ -764,6 +765,7 @@ elseif(UNIX)
         POST_EXCLUDE_REGEXES "^/lib" "^/usr" "^/opt"
         DESTINATION lib
     )
+    install(FILES $<TARGET_FILE:renderer_hd> DESTINATION bin OPTIONAL)
 endif()
 
 # ======================================

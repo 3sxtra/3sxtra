@@ -299,32 +299,17 @@ static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index, co
     njCalcPoint(NULL, &br_in, &br_out);
 
     if (RENDERER_HAS_PLUGIN()) {
-        if (g_renderer_plugin->TryRenderSprite(group_index, wk->cg_number, tl_out.x, tl_out.y, tl_out.z, (flip_flags & 0x8000) ? 1 : 0, 0xFFFFFFFF)) {
+        float draw_w = fabsf(br_out.x - tl_out.x);
+        float draw_h = fabsf(br_out.y - tl_out.y);
+        if (g_renderer_plugin->TryRenderSprite(group_index, wk->cg_number,
+                fminf(tl_out.x, br_out.x), fminf(tl_out.y, br_out.y),
+                tl_out.z, (flip_flags & 0x8000) ? 1 : 0, 0xFFFFFFFF, draw_w, draw_h)) {
             appRenewTempPriority(wk->position_z);
             return true;
         }
     }
 
-    void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
-    if (hd_tex == NULL) {
-        return false;
-    }
-
-    /* Handle flipped transforms: take min/max of transformed corners */
-    float draw_x = fminf(tl_out.x, br_out.x);
-    float draw_y = fminf(tl_out.y, br_out.y);
-    float draw_w = fabsf(br_out.x - tl_out.x);
-    float draw_h = fabsf(br_out.y - tl_out.y);
-
-    /* Z from the matrix, converted to screen-space via flPS2ConvScreenFZ
-     * — same conversion draw_quad applies to game sprites. */
-    float screen_z = flPS2ConvScreenFZ(tl_out.z);
-
-    TextureUtil_DrawQuadEx(
-        hd_tex, draw_x, draw_y, draw_w, draw_h, screen_z, (flip_flags & 0x8000) ? 1 : 0, (flip_flags & 0x4000) ? 1 : 0);
-
-    appRenewTempPriority(wk->position_z);
-    return true;
+    return false;
 }
 
 /**
@@ -345,32 +330,17 @@ static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index
     njCalcPoint(NULL, &br_in, &br_out);
 
     if (RENDERER_HAS_PLUGIN()) {
-        if (g_renderer_plugin->TryRenderSprite(group_index, wk->cg_number, tl_out.x, tl_out.y, tl_out.z, (flip_flags & 0x8000) ? 1 : 0, 0xFFFFFFFF)) {
+        float draw_w = fabsf(br_out.x - tl_out.x);
+        float draw_h = fabsf(br_out.y - tl_out.y);
+        if (g_renderer_plugin->TryRenderSprite(group_index, wk->cg_number,
+                fminf(tl_out.x, br_out.x), fminf(tl_out.y, br_out.y),
+                tl_out.z, (flip_flags & 0x8000) ? 1 : 0, 0xFFFFFFFF, draw_w, draw_h)) {
             appRenewTempPriority(wk->position_z);
             return true;
         }
     }
 
-    void* hd_tex = LoadFullSpriteOverride(group_index, wk->cg_number);
-    if (hd_tex == NULL) {
-        return false;
-    }
-
-    /* Handle flipped transforms: take min/max of transformed corners */
-    float draw_x = fminf(tl_out.x, br_out.x);
-    float draw_y = fminf(tl_out.y, br_out.y);
-    float draw_w = fabsf(br_out.x - tl_out.x);
-    float draw_h = fabsf(br_out.y - tl_out.y);
-
-    /* Z from the matrix, converted to screen-space via flPS2ConvScreenFZ
-     * — same conversion draw_quad applies to game sprites. */
-    float screen_z = flPS2ConvScreenFZ(tl_out.z);
-
-    TextureUtil_DrawQuadEx(
-        hd_tex, draw_x, draw_y, draw_w, draw_h, screen_z, (flip_flags & 0x8000) ? 1 : 0, (flip_flags & 0x4000) ? 1 : 0);
-
-    appRenewTempPriority(wk->position_z);
-    return true;
+    return false;
 }
 
 // sbss

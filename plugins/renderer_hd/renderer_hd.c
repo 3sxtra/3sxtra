@@ -121,21 +121,18 @@ static void* hd_LoadFullSpriteOverride(int group_index, int cg_number) {
  * ================================================================ */
 
 static bool hd_TryRenderSprite(int group_index, int cg_number, float screen_x, float screen_y, float z, int flip_x,
-                               unsigned int color) {
+                               unsigned int color, float screen_w, float screen_h) {
     (void)color; /* TODO: tint support */
     void* texture = hd_LoadFullSpriteOverride(group_index, cg_number);
     if (texture == NULL)
         return false;
 
-    int tex_w = 0, tex_h = 0;
-    g_import->TextureGetSize(texture, &tex_w, &tex_h);
-
-    /* Draw at the transformed screen-space position.
-     * The texture's native size serves as the quad dimensions —
-     * the backend will render it at pixel resolution. */
+    /* Use the caller-provided CPS3-space bounding box dimensions,
+     * not the HD texture's pixel dimensions. The backend handles
+     * the actual pixel rendering at whatever resolution it uses. */
     g_import->TextureDrawQuadEx(
         texture, screen_x, screen_y,
-        (float)tex_w, (float)tex_h,
+        screen_w, screen_h,
         g_import->ConvScreenFZ(z),
         flip_x, 0);
 
@@ -222,9 +219,10 @@ static bool hd_Init(int argc, const char** argv) {
         }
     }
 
+    /* Default to assets/sprites/ next to the executable */
     if (g_sprites_path[0] == '\0') {
-        g_import->Log("No --sprites-path specified");
-        return false;
+        snprintf(g_sprites_path, sizeof(g_sprites_path), "assets/sprites");
+        g_import->Log("Using default sprites path: %s", g_sprites_path);
     }
 
     g_import->Log("Renderer HD plugin initialized with path: %s", g_sprites_path);
@@ -245,7 +243,7 @@ static renderer_export_t g_exports = {
     .api_version = RENDERER_PLUGIN_API_VERSION,
     .Init = hd_Init,
     .Shutdown = hd_Shutdown,
-    .render_scale = 4,
+    .render_scale = 0, /* host engine handles scaling independently */
     .TryRenderSprite = hd_TryRenderSprite,
     .LoadBGTileOverride = hd_LoadBGTileOverride,
     .DrawBGTile = hd_DrawBGTile,

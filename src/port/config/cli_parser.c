@@ -129,7 +129,12 @@ void ParseCLI(int argc, char* argv[]) {
                 SDLApp_SetRenderer(RENDERER_OPENGL);
             }
         } else if (strcmp(argv[i], "--plugin") == 0 && i + 1 < argc) {
-            configuration.renderer.plugin_name = argv[++i];
+            const char* plugin = argv[++i];
+            /* Shorthand: --plugin hd → renderer_hd */
+            if (strcmp(plugin, "hd") == 0) {
+                plugin = "renderer_hd";
+            }
+            configuration.renderer.plugin_name = plugin;
             printf("[CLI] Renderer plugin: %s\n", configuration.renderer.plugin_name);
         } else if (strcmp(argv[i], "--font-test") == 0) {
             g_font_test_mode = true;
