@@ -14,6 +14,7 @@
  */
 #include "identity.h"
 #include "port/config/config.h"
+#include "port/random.h"
 #include "sha256.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
@@ -52,58 +53,18 @@ static size_t hex_to_bytes(const char* hex, uint8_t* out, size_t max_bytes) {
     return byte_count;
 }
 
-#ifdef _WIN32
-#include <windows.h>
-#include <bcrypt.h>
-#elif defined(__APPLE__)
-#include <stdlib.h>
-#else
-#include <sys/random.h>
-#endif
-
-/* Generate cryptographically secure random bytes.
- * Uses BCryptGenRandom on Windows and getrandom on Unix/Linux.
- * Falls back to SDL_rand_bits if native APIs fail (though they shouldn't). */
-static void generate_random_bytes(uint8_t* buf, size_t len) {
-    bool success = false;
-
-#ifdef _WIN32
-    if (BCryptGenRandom(NULL, buf, (ULONG)len, BCRYPT_USE_SYSTEM_PREFERRED_RNG) == 0) {
-        success = true;
-    }
-#elif defined(__APPLE__)
-    arc4random_buf(buf, len);
-    success = true;
-#else
-    if (getrandom(buf, len, 0) == (ssize_t)len) {
-        success = true;
-    }
-#endif
-
-    if (!success) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[Identity] CSPRNG failed, falling back to PRNG");
-        for (size_t i = 0; i < len; i += 4) {
-            uint32_t r = SDL_rand_bits();
-            size_t remaining = len - i;
-            if (remaining > 4)
-                remaining = 4;
-            memcpy(buf + i, &r, remaining);
-        }
-    }
-}
-
 /* Generate a new identity keypair */
 static void generate_identity(void) {
     uint8_t random_seed[IDENTITY_KEY_BYTES];
     uint8_t hash[32];
 
     /* Generate random seed and hash it for the "public key" */
-    generate_random_bytes(random_seed, IDENTITY_KEY_BYTES);
+    Sys_RandomBytes(random_seed, IDENTITY_KEY_BYTES);
     sha256_hash(random_seed, IDENTITY_KEY_BYTES, hash);
     bytes_to_hex(hash, 32, public_key_hex);
 
     /* Generate a separate random seed for the "secret key" */
-    generate_random_bytes(random_seed, IDENTITY_KEY_BYTES);
+    Sys_RandomBytes(random_seed, IDENTITY_KEY_BYTES);
     sha256_hash(random_seed, IDENTITY_KEY_BYTES, hash);
     bytes_to_hex(hash, 32, secret_key_hex);
 

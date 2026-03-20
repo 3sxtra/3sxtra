@@ -215,9 +215,13 @@ add_unit_test(test_config
     test_config.c
     mocks_paths.c
     ${PROJECT_SOURCE_DIR}/src/port/config/config.c
+    ${PROJECT_SOURCE_DIR}/src/port/random.c
 )
 target_include_directories(test_config PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include)
 target_link_sdl3(test_config)
+if(WIN32)
+    target_link_libraries(test_config PRIVATE bcrypt)
+endif()
 
 add_unit_test(test_lobby_server
     test_lobby_server.c
@@ -235,6 +239,7 @@ endif()
 add_unit_test(test_identity
     test_identity.c
     ${PROJECT_SOURCE_DIR}/src/netplay/sha256.c
+    ${PROJECT_SOURCE_DIR}/src/port/random.c
 )
 target_include_directories(test_identity PRIVATE ${PROJECT_SOURCE_DIR}/src/include ${PROJECT_SOURCE_DIR}/src ${SDL3_ROOT}/include)
 target_link_sdl3(test_identity)

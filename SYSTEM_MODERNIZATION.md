@@ -1,4 +1,4 @@
-# Legacy Architecture Modernization Targets
+﻿# Legacy Architecture Modernization Targets
 
 **Fact-Check Status:** Verified. All structural claims regarding the `struct _TASK` memory layout (in `src/include/structs.h`), its instantiations, and the presence of `_Jmp_Tbl` tables in `screen/` and `system/` files have been rigorously checked against the `src/sf33rd/` codebase and proven exactly accurate.
 
@@ -53,6 +53,7 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 39 | `chren3rd.c` Decomposition | LOW | Already Factored | `chren3rd.c` is exclusively the 37,664-byte `obj_group_table`. Palette management is already isolated in `color3rd.c` and shadow rendering in `aboutspr.c`. No further splits required. |
 | 47 | `vs_shell.c` VS Screen Data | LOW | Already Factored | 648 lines. File is exclusively one `const u8 VS_Shell_Active_Data[20][4][8][16]` array (67 KB tilemap data). Zero functions. Single consumer: `com_sub.c`. No decomposition needed. |
 | 49 | `mtrans.c` Matrix Rendering | LOW | Already Factored | 2,817 lines. 99% dense rendering logic (SIMD, GPU compute, matrix transforms). Only ~70 lines of `static const` data (`flptbl[4]`, `bright_type[4][16]`). Not worth splitting. |
+| 51 | `charset.c` Script Interpreter | MED | Already Factored | 2,927 lines. 99% dense interpreter logic (~100 `static` command handlers for character animation scripts). Only ~7 lines of extractable const data (`jphos_table[16]`, `kezuri_pow_table[5]`, `acatkoa_table[65]`). The two large tables (`decode_chcmd[125]`, `decode_if_lever[16]`) are function pointer arrays referencing `static` functions — cannot be extracted without breaking encapsulation. Not worth splitting. |
 | 40 | `menu.c` Decomposition | LOW | File split | 3,480 lines. Split into `menu_network.c`, `menu_training.c`, `menu_replay.c`, `menu_save.c`, and core `menu.c`. Functions are clearly delineated by domain. |
 | 41 | `demo00.c` / `demo01.c` / `demo02.c` Demo States | LOW | Per-function enums | 6 enums (`WarningState`, `CapLogoState`, `TitleState`, `TitleDashState`, `Demo00State`, `Demo01State`) in `demo_states.h`. Replaced generic `DEMO_STATE_*` with semantic names across 3 files. Fixed 5 implicit declaration warnings via missing `#include`s. |
 | 42 | `sysdir.c` Magic Numbers | VERY LOW | Named constants | 397 lines. 3 new `Dipswitch`/`Dipswitch2` enum entries (`DIP_GUARD_CHECK_ENABLED`, `DIP2_SA_GAUGE_AUTOFILL_DISABLED`, `DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED`). 12 raw hex → named constants across `sysdir.c` (9) and `pls02.c` (3). Zero logic changes. |
@@ -75,11 +76,6 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | # | Component | Risk | Pattern | Key Files |
 |---|-----------|------|---------|-----------|
 
-### Large Data Files (Documentation / Auto-Generation)
-
-| # | Component | Risk | Pattern | Key Files |
-|---|-----------|------|---------|-----------|
-| 51 | `charset.c` Character Set Tables | MED | Data isolation | 2,926 lines (76 KB). Character set mapping. Engine layer — uses `routine_no[]`. Touch with care. |
 
 
 

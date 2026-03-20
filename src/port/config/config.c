@@ -9,6 +9,7 @@
 #include "port/config/config.h"
 #include "port/broadcast.h"
 #include "port/config/paths.h"
+#include "port/random.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -313,13 +314,15 @@ void Config_Init() {
 
     // Generate a unique client ID if one doesn't exist
     if (!Config_HasKey(CFG_KEY_LOBBY_CLIENT_ID) || SDL_strlen(Config_GetString(CFG_KEY_LOBBY_CLIENT_ID)) == 0) {
-        srand((unsigned int)time(NULL) ^ (unsigned int)SDL_GetTicks());
-        unsigned int r1 = (unsigned int)rand() ^ (unsigned int)SDL_GetTicks();
-        unsigned int r2 = (unsigned int)rand() ^ (unsigned int)time(NULL);
-        unsigned int r3 = (unsigned int)rand() ^ (unsigned int)SDL_GetPerformanceCounter();
-        unsigned int r4 = (unsigned int)rand();
+        uint8_t random_bytes[16];
+        Sys_RandomBytes(random_bytes, sizeof(random_bytes));
+
         char new_id[33];
-        snprintf(new_id, sizeof(new_id), "%08x%08x%08x%08x", r1, r2, r3, r4);
+        for (int i = 0; i < 16; i++) {
+            snprintf(new_id + i * 2, 3, "%02x", random_bytes[i]);
+        }
+        new_id[32] = '\0';
+
         Config_SetString(CFG_KEY_LOBBY_CLIENT_ID, new_id);
         Config_Save();
     }
