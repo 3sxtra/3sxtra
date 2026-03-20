@@ -60,6 +60,7 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 46 | `ranking.c` Residual `D_No[]` States | LOW | Named states | 784 lines. 17 raw `D_No[]` accesses → 3 enums (`Ranking00State[6]`, `Ranking01State[5]`, `Ranking01FadeState[3]`). Named switch case labels + 2 direct assignments. Finishes task #28 cleanup. |
 | 48 | `cmd_main.c` Input Bitmask Constants | LOW | Named constants | 1,870 lines. 122 raw hex → named constants via new `cmd_constants.h` (30 defines). Lever masks, button groups, flip flags, multi-press detection, switch patterns. Zero logic changes. |
 | 44 | `menu_input.c` Residual Hex Constants | LOW | Named constants | 2,580 lines. ~130 raw hex → named constants via new `menu_input_constants.h` (~90 defines). Order slots, effect params, BG scroll offsets, fade values, message positions, pause Z-depths. Zero logic changes. |
+| 45 | `menu_network.c` Hex Constants | LOW | Named constants | 1,898 lines. 114 raw hex → named constants via new `menu_network_constants.h` (~46 defines). Network menu UI positioning, modes, and geometry. Zero logic changes. |
 ---
 
 ## Next Wave: Safe Improvement Candidates (March 2026 Audit — Wave 2)
@@ -67,8 +68,7 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 ### State Machine / Magic Number Cleanup
 
 | # | Component | Risk | Pattern | Key Files |
-|---|-----------|------|---------|-----------| 
-| 45 | `menu_network.c` Hex Constants | LOW | Named constants | 1,898 lines. **114 raw hex literals** (network menu UI positioning/state). Menu-side only, no netplay sync risk. |
+|---|-----------|------|---------|-----------|
 
 
 ### Large Data Files (Documentation / Auto-Generation)

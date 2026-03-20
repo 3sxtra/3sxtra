@@ -1,4 +1,6 @@
 #include "sf33rd/Source/Game/menu/menu_network.h"
+#include "sf33rd/Source/Game/menu/menu_network_constants.h"
+#include "sf33rd/Source/Game/menu/menu_input_constants.h"
 #include "sf33rd/Source/Game/menu/menu_save.h"
 #include "sf33rd/Source/Game/menu/menu_replay.h"
 #include "sf33rd/Source/Game/menu/menu_training.h"
@@ -106,50 +108,50 @@ void NetLobby_DrawIncomingPopup(const char* name, const char* region, int ping) 
     {
         PAL_CURSOR_P op[4];
         PAL_CURSOR_COL ocol[4];
-        op[0].x = -2;
-        op[0].y = -2;
-        op[1].x = 386;
-        op[1].y = -2;
-        op[2].x = -2;
-        op[2].y = 226;
-        op[3].x = 386;
-        op[3].y = 226;
-        ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = 0xA0000000;
+        op[0].x = NET_SCREEN_LEFT;
+        op[0].y = NET_SCREEN_TOP;
+        op[1].x = NET_SCREEN_RIGHT;
+        op[1].y = NET_SCREEN_TOP;
+        op[2].x = NET_SCREEN_LEFT;
+        op[2].y = NET_SCREEN_BOTTOM;
+        op[3].x = NET_SCREEN_RIGHT;
+        op[3].y = NET_SCREEN_BOTTOM;
+        ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = NET_COLOR_OVERLAY_DIM;
         Renderer_Queue2DPrimitive((f32*)op, PrioBase[3], (uintptr_t)ocol[0].color, 0);
     }
     /* Centered popup box */
     {
         PAL_CURSOR_P bp[4];
         PAL_CURSOR_COL bcol[4];
-        bp[0].x = 60;
-        bp[0].y = 56;
-        bp[1].x = 324;
-        bp[1].y = 56;
-        bp[2].x = 60;
-        bp[2].y = 168;
-        bp[3].x = 324;
-        bp[3].y = 168;
-        bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = 0xE0181818;
+        bp[0].x = NET_POPUP_LEFT;
+        bp[0].y = NET_POPUP_TOP;
+        bp[1].x = NET_POPUP_RIGHT;
+        bp[1].y = NET_POPUP_TOP;
+        bp[2].x = NET_POPUP_LEFT;
+        bp[2].y = NET_POPUP_BOTTOM;
+        bp[3].x = NET_POPUP_RIGHT;
+        bp[3].y = NET_POPUP_BOTTOM;
+        bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = NET_COLOR_BOX_BG;
         Renderer_Queue2DPrimitive((f32*)bp, PrioBase[3], (uintptr_t)bcol[0].color, 0);
 
         /* Red border - top */
         PAL_CURSOR_P bb[4];
         PAL_CURSOR_COL bbcol[4];
-        bb[0].x = 60;
-        bb[0].y = 55;
-        bb[1].x = 324;
-        bb[1].y = 55;
-        bb[2].x = 60;
-        bb[2].y = 57;
-        bb[3].x = 324;
-        bb[3].y = 57;
-        bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = 0xFFCC0000;
+        bb[0].x = NET_POPUP_LEFT;
+        bb[0].y = NET_BORDER_TOP_Y0;
+        bb[1].x = NET_POPUP_RIGHT;
+        bb[1].y = NET_BORDER_TOP_Y0;
+        bb[2].x = NET_POPUP_LEFT;
+        bb[2].y = NET_BORDER_TOP_Y1;
+        bb[3].x = NET_POPUP_RIGHT;
+        bb[3].y = NET_BORDER_TOP_Y1;
+        bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = NET_COLOR_BORDER_RED;
         Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
         /* Red border - bottom */
-        bb[0].y = 167;
-        bb[1].y = 167;
-        bb[2].y = 169;
-        bb[3].y = 169;
+        bb[0].y = NET_BORDER_BOT_Y0;
+        bb[1].y = NET_BORDER_BOT_Y0;
+        bb[2].y = NET_BORDER_BOT_Y1;
+        bb[3].y = NET_BORDER_BOT_Y1;
         Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
     }
 
@@ -183,10 +185,10 @@ void NetLobby_DrawIncomingPopup(const char* name, const char* region, int ping) 
     }
 
     /* Accept/Decline with game button images */
-    dispButtonImage2(0x6C, 0x8E, 0, 0x13, 0xF, 0, 4); /* A button */
-    SSPutStrPro(0, 128, 144, 4, 0xFF00FF00, (s8*)"ACCEPT");
-    dispButtonImage2(0xC0, 0x8E, 0, 0x13, 0xF, 0, 5); /* B button */
-    SSPutStrPro(0, 216, 144, 4, 0xFFFF0000, (s8*)"DECLINE");
+    dispButtonImage2(NET_BTN_A_X, NET_BTN_Y, 0, NET_BTN_SPRITE_W, NET_BTN_SPRITE_H, 0, 4); /* A button */
+    SSPutStrPro(0, NET_TEXT_ACCEPT_X, NET_TEXT_BTN_Y, 4, NET_COLOR_ACCEPT, (s8*)"ACCEPT");
+    dispButtonImage2(NET_BTN_B_X, NET_BTN_Y, 0, NET_BTN_SPRITE_W, NET_BTN_SPRITE_H, 0, 5); /* B button */
+    SSPutStrPro(0, NET_TEXT_DECLINE_X, NET_TEXT_BTN_Y, 4, NET_COLOR_DECLINE, (s8*)"DECLINE");
 }
 
 void NetLobby_DrawOutgoingPopup(const char* name, int ping) {
@@ -194,50 +196,50 @@ void NetLobby_DrawOutgoingPopup(const char* name, int ping) {
     {
         PAL_CURSOR_P op[4];
         PAL_CURSOR_COL ocol[4];
-        op[0].x = -2;
-        op[0].y = -2;
-        op[1].x = 386;
-        op[1].y = -2;
-        op[2].x = -2;
-        op[2].y = 226;
-        op[3].x = 386;
-        op[3].y = 226;
-        ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = 0xA0000000;
+        op[0].x = NET_SCREEN_LEFT;
+        op[0].y = NET_SCREEN_TOP;
+        op[1].x = NET_SCREEN_RIGHT;
+        op[1].y = NET_SCREEN_TOP;
+        op[2].x = NET_SCREEN_LEFT;
+        op[2].y = NET_SCREEN_BOTTOM;
+        op[3].x = NET_SCREEN_RIGHT;
+        op[3].y = NET_SCREEN_BOTTOM;
+        ocol[0].color = ocol[1].color = ocol[2].color = ocol[3].color = NET_COLOR_OVERLAY_DIM;
         Renderer_Queue2DPrimitive((f32*)op, PrioBase[3], (uintptr_t)ocol[0].color, 0);
     }
     /* Centered popup box */
     {
         PAL_CURSOR_P bp[4];
         PAL_CURSOR_COL bcol[4];
-        bp[0].x = 60;
-        bp[0].y = 56;
-        bp[1].x = 324;
-        bp[1].y = 56;
-        bp[2].x = 60;
-        bp[2].y = 168;
-        bp[3].x = 324;
-        bp[3].y = 168;
-        bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = 0xE0181818;
+        bp[0].x = NET_POPUP_LEFT;
+        bp[0].y = NET_POPUP_TOP;
+        bp[1].x = NET_POPUP_RIGHT;
+        bp[1].y = NET_POPUP_TOP;
+        bp[2].x = NET_POPUP_LEFT;
+        bp[2].y = NET_POPUP_BOTTOM;
+        bp[3].x = NET_POPUP_RIGHT;
+        bp[3].y = NET_POPUP_BOTTOM;
+        bcol[0].color = bcol[1].color = bcol[2].color = bcol[3].color = NET_COLOR_BOX_BG;
         Renderer_Queue2DPrimitive((f32*)bp, PrioBase[3], (uintptr_t)bcol[0].color, 0);
 
         /* Red border - top */
         PAL_CURSOR_P bb[4];
         PAL_CURSOR_COL bbcol[4];
-        bb[0].x = 60;
-        bb[0].y = 55;
-        bb[1].x = 324;
-        bb[1].y = 55;
-        bb[2].x = 60;
-        bb[2].y = 57;
-        bb[3].x = 324;
-        bb[3].y = 57;
-        bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = 0xFFCC0000;
+        bb[0].x = NET_POPUP_LEFT;
+        bb[0].y = NET_BORDER_TOP_Y0;
+        bb[1].x = NET_POPUP_RIGHT;
+        bb[1].y = NET_BORDER_TOP_Y0;
+        bb[2].x = NET_POPUP_LEFT;
+        bb[2].y = NET_BORDER_TOP_Y1;
+        bb[3].x = NET_POPUP_RIGHT;
+        bb[3].y = NET_BORDER_TOP_Y1;
+        bbcol[0].color = bbcol[1].color = bbcol[2].color = bbcol[3].color = NET_COLOR_BORDER_RED;
         Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
         /* Red border - bottom */
-        bb[0].y = 167;
-        bb[1].y = 167;
-        bb[2].y = 169;
-        bb[3].y = 169;
+        bb[0].y = NET_BORDER_BOT_Y0;
+        bb[1].y = NET_BORDER_BOT_Y0;
+        bb[2].y = NET_BORDER_BOT_Y1;
+        bb[3].y = NET_BORDER_BOT_Y1;
         Renderer_Queue2DPrimitive((f32*)bb, PrioBase[3], (uintptr_t)bbcol[0].color, 0);
     }
 
@@ -267,13 +269,13 @@ void NetLobby_DrawOutgoingPopup(const char* name, int ping) {
     }
 
     /* Cancel button */
-    dispButtonImage2(0x98, 0x8E, 0, 0x13, 0xF, 0, 5); /* B button */
-    SSPutStrPro(0, 176, 144, 4, 0xFFFF0000, (s8*)"CANCEL");
+    dispButtonImage2(NET_BTN_CANCEL_X, NET_BTN_Y, 0, NET_BTN_SPRITE_W, NET_BTN_SPRITE_H, 0, 5); /* B button */
+    SSPutStrPro(0, NET_TEXT_CANCEL_X, NET_TEXT_BTN_Y, 4, NET_COLOR_DECLINE, (s8*)"CANCEL");
 }
 
 void Network_Lobby(struct _TASK* task_ptr) {
     s16 ix;
-    static int s_slide_offset = 384; /* slide-in offset for SSPutStr elements */
+    static int s_slide_offset = NET_SLIDE_OFFSET_INIT; /* slide-in offset for SSPutStr elements */
 
     switch (task_ptr->r_no[2]) {
     /* ================================================================
@@ -282,18 +284,18 @@ void Network_Lobby(struct _TASK* task_ptr) {
     case 0:
         /* Phase 0: Fade out, kill Mode_Select items, init gateway submenu */
         Menu_in_Sub(task_ptr);
-        effect_57_init(0x70, MENU_HEADER_NETWORK, 0, 0x3F, 2);
-        Order[0x70] = 1;
-        Order_Dir[0x70] = 8;
-        Order_Timer[0x70] = 1;
-        effect_04_init(1, 7, 0, 0x48); /* cursor type 7 = 4-item gateway */
+        effect_57_init(EFF_SLOT_NET_HDR, MENU_HEADER_NETWORK, 0, EFF_Z_NETWORK_HDR, 2);
+        Order[EFF_SLOT_NET_HDR] = 1;
+        Order_Dir[EFF_SLOT_NET_HDR] = 8;
+        Order_Timer[EFF_SLOT_NET_HDR] = 1;
+        effect_04_init(1, NET_CURSOR_TYPE_GATEWAY, 0, NET_CURSOR_SLOT_GATEWAY); /* cursor type 7 = 4-item gateway */
         {
-            s16 char_index = 74; /* 74=LOBBY MODE, 75=LOCAL NETWORK, 76=LEADERBOARD, 77=EXIT */
+            s16 char_index = NET_STR_GATEWAY_BASE; /* 74=LOBBY MODE, 75=LOCAL NETWORK, 76=LEADERBOARD, 77=EXIT */
             for (ix = 0; ix < 4; ix++) {
-                effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x7047);
+                effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, EFF_FONT_CG_LARGE);
                 Order[ix + 0x50] = 1;
                 Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
+                Order_Timer[ix + 0x50] = ix + NET_ORDER_TIMER_BASE;
                 char_index++;
             }
         }
@@ -305,15 +307,15 @@ void Network_Lobby(struct _TASK* task_ptr) {
         break;
 
     case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
+        if (FadeIn(1, FADE_SPEED_SLOW, 8) != 0) {
             task_ptr->r_no[2] += 1;
         }
         break;
 
     case 3:
         /* Gateway input: pick LOBBY MODE / LOCAL NETWORK / LEADERBOARD / EXIT */
-        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 3, 0xFF) == 0) {
-            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 3, 0xFF);
+        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 3, FADE_OPAQUE) == 0) {
+            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 3, FADE_OPAQUE);
         }
 
         if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
@@ -327,8 +329,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 task_ptr->r_no[2] = 0;
                 task_ptr->r_no[3] = 0;
                 task_ptr->free[0] = 0;
-                Order[0x70] = 4;
-                Order_Timer[0x70] = 4;
+                Order[EFF_SLOT_NET_HDR] = 4;
+                Order_Timer[EFF_SLOT_NET_HDR] = 4;
                 break;
             }
 
@@ -338,11 +340,11 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 task_ptr->r_no[2] = 4; /* jump to leaderboard phase */
             } else if (Menu_Cursor_Y[0] == 1) {
                 /* LOCAL NETWORK — jump to LAN-only lobby phase */
-                task_ptr->free[2] = 2;  /* 2=lan-only */
+                task_ptr->free[2] = NET_MODE_LAN;  /* 2=lan-only */
                 task_ptr->r_no[2] = 20; /* jump to LAN-only lobby phase */
             } else {
                 /* LOBBY MODE (0) — always use RmlUI lobby */
-                task_ptr->free[2] = 1;  /* 1=rmlui */
+                task_ptr->free[2] = NET_MODE_RMLUI;  /* 1=rmlui */
                 task_ptr->r_no[2] = 10; /* jump to lobby phase */
             }
         }
@@ -353,30 +355,30 @@ void Network_Lobby(struct _TASK* task_ptr) {
      * ================================================================ */
     case 4:
         /* Phase 4: Fade out, kill gateway items, request blue BG */
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
         Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
         Menu_Suicide[1] = 0;
-        Message_Data->kind_req = 4; /* blue-BG background mode */
+        Message_Data->kind_req = NET_BG_MODE_BLUE; /* blue-BG background mode */
         break;
 
     case 5:
         /* Phase 5: Destroy old effects, show blue BG + RmlUI leaderboard */
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
         task_ptr->r_no[2] += 1;
 
         effect_work_init();
         Menu_Common_Init();
         Menu_Cursor_Y[0] = 0;
         Menu_Cursor_Y[1] = 0;
-        Order[0x4E] = 5;
-        Order_Timer[0x4E] = 1;
-        Order_Dir[0x4E] = 1;
+        Order[EFF_SLOT_HEADER] = 5;
+        Order_Timer[EFF_SLOT_HEADER] = 1;
+        Order_Dir[EFF_SLOT_HEADER] = 1;
 
         /* Blue background banner */
-        effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, 0);
+        effect_57_init(EFF_SLOT_HEADER, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
 
         /* Show RmlUI leaderboard (auto-fetches page 0) */
         rmlui_leaderboard_show();
@@ -384,7 +386,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
     case 6:
         /* Wait for fade-out timer */
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
 
         if (--task_ptr->timer == 0) {
             task_ptr->r_no[2] += 1;
@@ -395,7 +397,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
     case 7:
         /* Fade in */
-        if (FadeIn(1, 25, 8)) {
+        if (FadeIn(1, FADE_SPEED_SLOW, 8)) {
             task_ptr->r_no[2] += 1;
         }
         break;
@@ -409,18 +411,18 @@ void Network_Lobby(struct _TASK* task_ptr) {
             }
 
             /* Left D-pad: previous page */
-            if (trigger & 0x0004) {
+            if (trigger & SWK_LEFT) {
                 SE_selected();
                 rmlui_leaderboard_prev_page();
             }
 
             /* Right D-pad: next page */
-            if (trigger & 0x0008) {
+            if (trigger & SWK_RIGHT) {
                 SE_selected();
                 rmlui_leaderboard_next_page();
             }
 
-            if (trigger & 0x0200) { /* Cancel / B */
+            if (trigger & SWK_EAST) { /* Cancel / B */
                 SE_selected();
                 rmlui_leaderboard_hide();
                 Menu_Suicide[0] = 0;
@@ -437,18 +439,18 @@ void Network_Lobby(struct _TASK* task_ptr) {
      * ================================================================ */
     case 10:
         /* Phase 10: Start fade, set suicide, request blue BG mode */
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
         Menu_Suicide[0] = 1;        /* kill gateway items (master_player=0) */
         Menu_Suicide[1] = 0;        /* enable lobby items (master_player=1) */
-        Message_Data->kind_req = 4; /* blue-BG background mode */
+        Message_Data->kind_req = NET_BG_MODE_BLUE; /* blue-BG background mode */
         break;
 
     case 11:
         /* Phase 11: Destroy old effects, rebuild lobby from scratch */
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
         task_ptr->r_no[2] += 1;
 
         effect_work_init();
@@ -462,41 +464,41 @@ void Network_Lobby(struct _TASK* task_ptr) {
         /* Red slide-in header bar */
         Order_Dir[0x4E] = 1;
 
-        if (task_ptr->free[2] == 1) {
+        if (task_ptr->free[2] == NET_MODE_RMLUI) {
             /* RMLUI lobby */
             rmlui_network_lobby_show();
         } else {
             /* NATIVE lobby */
             /* Right-side grey overlay boxes (LAN and Internet peer areas) */
-            effect_66_init(0x8A, 42, 1, 0, -1, -1, -0x7FF0);
-            Order[0x8A] = 3;
-            Order_Timer[0x8A] = 1;
-            effect_66_init(0x8B, 42, 1, 0, -1, -1, -0x7FF1);
-            Order[0x8B] = 3;
-            Order_Timer[0x8B] = 1;
+            effect_66_init(EFF_SLOT_CURSOR_BG, EFF_SPRITE_LOBBY_BOX, 1, 0, -1, -1, EFF66_ZORDER_LOBBY_LAN);
+            Order[EFF_SLOT_CURSOR_BG] = 3;
+            Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
+            effect_66_init(EFF_SLOT_LOBBY_BOX2, EFF_SPRITE_LOBBY_BOX, 1, 0, -1, -1, EFF66_ZORDER_LOBBY_NET);
+            Order[EFF_SLOT_LOBBY_BOX2] = 3;
+            Order_Timer[EFF_SLOT_LOBBY_BOX2] = 1;
 
-            /* Menu items: 6 items, 0x70A7 = compact 8px font, master_player=1 */
+            /* Menu items: 6 items, EFF_FONT_COMPACT = compact 8px font, master_player=1 */
             {
                 static const s16 lobby_strings[] = { 68, 69, 70, 71, 72, 73 };
                 for (ix = 0; ix < 6; ix++) {
-                    effect_61_init(0, ix + 0x50, 0, 1, lobby_strings[ix], ix, 0x70A7);
+                    effect_61_init(0, ix + 0x50, 0, 1, lobby_strings[ix], ix, EFF_FONT_COMPACT);
                     Order[ix + 0x50] = 1;
                     Order_Dir[ix + 0x50] = 4;
-                    Order_Timer[ix + 0x50] = ix + 0x14;
+                    Order_Timer[ix + 0x50] = ix + NET_ORDER_TIMER_BASE;
                 }
             }
 
-            /* Title: "NETWORK LOBBY" in big CG font (0x7047), string index 67 */
-            effect_61_init(0, 0x5F, 0, 1, 67, -1, 0x7047);
-            Order[0x5F] = 1;
-            Order_Dir[0x5F] = 4;
-            Order_Timer[0x5F] = 0x12;
+            /* Title: "NETWORK LOBBY" in big CG font (EFF_FONT_CG_LARGE), string index NET_STR_LOBBY_TITLE */
+            effect_61_init(0, EFF_SLOT_NET_TITLE, 0, 1, NET_STR_LOBBY_TITLE, -1, EFF_FONT_CG_LARGE);
+            Order[EFF_SLOT_NET_TITLE] = 1;
+            Order_Dir[EFF_SLOT_NET_TITLE] = 4;
+            Order_Timer[EFF_SLOT_NET_TITLE] = NET_ORDER_TIMER_TITLE;
 
             /* Message system for description text */
             Message_Data->pos_x = 0;
-            Message_Data->pos_y = 0x3E;
-            Message_Data->pos_z = 0x44;
-            Message_Data->request = 35;
+            Message_Data->pos_y = NET_MSG_POS_Y;
+            Message_Data->pos_z = NET_MSG_POS_Z;
+            Message_Data->request = NET_MSG_REQ_BASE;
             Message_Data->order = 0;
             Message_Data->timer = 1;
             effect_45_init(0, 0, 1);
@@ -505,7 +507,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
         }
 
         /* Blue background banner — always init (palette 0x45). */
-        effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, 0);
+        effect_57_init(EFF_SLOT_HEADER, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
 
         /* Enter lobby state */
         SDLNetplayUI_SetNativeLobbyActive(true);
@@ -514,7 +516,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
     case 12:
         /* Wait for fade-out timer */
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
 
         if (--task_ptr->timer == 0) {
             task_ptr->r_no[2] += 1;
@@ -525,7 +527,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
     case 13:
         /* Fade in */
-        if (FadeIn(1, 25, 8)) {
+        if (FadeIn(1, FADE_SPEED_SLOW, 8)) {
             task_ptr->r_no[2] += 1;
         }
         break;
@@ -550,34 +552,34 @@ void Network_Lobby(struct _TASK* task_ptr) {
         const s16 sl = (s16)s_slide_offset;
 
         /* Custom red banner (brighter than default Akaobi 0xA0D00000) */
-        if (task_ptr->free[2] == 0) {
+        if (task_ptr->free[2] == NET_MODE_NATIVE) {
             PAL_CURSOR_P ap[4];
             PAL_CURSOR_COL acol[4];
             u8 ci;
             for (ci = 0; ci < 4; ci++) {
                 ap[ci].x = Akaobi_Pos_tbl[ci * 2];
                 ap[ci].y = Akaobi_Pos_tbl[(ci * 2) + 1];
-                acol[ci].color = 0xFFCC0000; /* fully opaque vibrant red */
+                acol[ci].color = NET_COLOR_BORDER_RED; /* fully opaque vibrant red */
             }
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[69], (uintptr_t)acol[0].color, 0);
 
             /* White top border (1px, 1px gap above red) */
-            ap[0].x = -2;
-            ap[0].y = 14;
-            ap[1].x = 386;
-            ap[1].y = 14;
-            ap[2].x = -2;
-            ap[2].y = 15;
-            ap[3].x = 386;
-            ap[3].y = 15;
-            acol[0].color = acol[1].color = acol[2].color = acol[3].color = 0xFFFFFFFF;
+            ap[0].x = NET_SCREEN_LEFT;
+            ap[0].y = NET_HDR_TOP_BORDER_Y0;
+            ap[1].x = NET_SCREEN_RIGHT;
+            ap[1].y = NET_HDR_TOP_BORDER_Y0;
+            ap[2].x = NET_SCREEN_LEFT;
+            ap[2].y = NET_HDR_TOP_BORDER_Y1;
+            ap[3].x = NET_SCREEN_RIGHT;
+            ap[3].y = NET_HDR_TOP_BORDER_Y1;
+            acol[0].color = acol[1].color = acol[2].color = acol[3].color = NET_COLOR_WHITE;
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
 
             /* White bottom border (1px, 1px gap below red) */
-            ap[0].y = 41;
-            ap[1].y = 41;
-            ap[2].y = 42;
-            ap[3].y = 42;
+            ap[0].y = NET_HDR_BOT_BORDER_Y0;
+            ap[1].y = NET_HDR_BOT_BORDER_Y0;
+            ap[2].y = NET_HDR_BOT_BORDER_Y1;
+            ap[3].y = NET_HDR_BOT_BORDER_Y1;
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
         }
 
@@ -600,17 +602,17 @@ void Network_Lobby(struct _TASK* task_ptr) {
         /* Handle cursor movement (12 items: 0..11) */
         {
             s16 prev_cursor = Menu_Cursor_Y[0];
-            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 11, 0xFF) == 0) {
-                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 11, 0xFF);
+            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 11, FADE_OPAQUE) == 0) {
+                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 11, FADE_OPAQUE);
             }
             if (popup_active) {
                 Menu_Cursor_Y[0] = prev_cursor;
             } else if (prev_cursor != Menu_Cursor_Y[0]) {
-                if (task_ptr->free[2] == 0) {
+                if (task_ptr->free[2] == NET_MODE_NATIVE) {
                     Message_Data->order = 1;
-                    Message_Data->request = 35 + Menu_Cursor_Y[0];
+                    Message_Data->request = NET_MSG_REQ_BASE + Menu_Cursor_Y[0];
                     Message_Data->timer = 2;
-                    Message_Data->pos_y = 0x3E;
+                    Message_Data->pos_y = NET_MSG_POS_Y;
                 }
             }
         }
@@ -739,7 +741,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     break;
                 }
                 case 10: { /* JOIN ROOM (room list scroll) */
-                    if (task_ptr->free[2] == 1) {
+                    if (task_ptr->free[2] == NET_MODE_RMLUI) {
                         rmlui_network_lobby_room_scroll((click & 4) ? -1 : 1);
                         SE_dir_cursor_move();
                     }
@@ -752,38 +754,38 @@ void Network_Lobby(struct _TASK* task_ptr) {
         }
 
         /* === Background text — hide when popup covers the screen === */
-        if (task_ptr->free[2] == 0 && !popup_active) {
+        if (task_ptr->free[2] == NET_MODE_NATIVE && !popup_active) {
             /* === Display toggle values (right of labels) === */
             {
                 bool lan_ac = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-                SSPutStr_Bigger(136 + sl, 63, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
+                SSPutStr_Bigger(NET_TOGGLE_X + sl, NET_LAN_TOGGLE_Y, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
 
                 bool net_ac = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
-                SSPutStr_Bigger(136 + sl, 115, 5, net_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, net_ac ? 9 : 1, 1.0f);
+                SSPutStr_Bigger(NET_TOGGLE_X + sl, NET_NET_AUTOCONN_Y, 5, net_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, net_ac ? 9 : 1, 1.0f);
 
                 bool auto_s = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
-                SSPutStr_Bigger(136 + sl, 129, 5, auto_s ? (s8*)"ON" : (s8*)"OFF", 1.0f, auto_s ? 9 : 1, 1.0f);
+                SSPutStr_Bigger(NET_TOGGLE_X + sl, NET_NET_AUTOSRCH_Y, 5, auto_s ? (s8*)"ON" : (s8*)"OFF", 1.0f, auto_s ? 9 : 1, 1.0f);
             }
 
             /* === LAN / NET Headers === */
             {
                 const char* lan_hdr = "----- LAN -----";
                 int lan_hdr_px = (int)SDL_strlen(lan_hdr) * 8;
-                s16 lan_hdr_x = (s16)((384 - lan_hdr_px) / 2);
-                SSPutStr_Bigger(lan_hdr_x + sl, 50, 5, (s8*)lan_hdr, 1.0f, 0, 1.0f);
+                s16 lan_hdr_x = (s16)((NET_SCREEN_WIDTH_PX - lan_hdr_px) / 2);
+                SSPutStr_Bigger(lan_hdr_x + sl, NET_LAN_HDR_Y, 5, (s8*)lan_hdr, 1.0f, 0, 1.0f);
             }
             {
                 const char* net_hdr = "-- INTERNET --";
                 int net_hdr_px = (int)SDL_strlen(net_hdr) * 8;
-                s16 net_hdr_x = (s16)((384 - net_hdr_px) / 2);
-                SSPutStr_Bigger(net_hdr_x + sl, 102, 5, (s8*)net_hdr, 1.0f, 0, 1.0f);
+                s16 net_hdr_x = (s16)((NET_SCREEN_WIDTH_PX - net_hdr_px) / 2);
+                SSPutStr_Bigger(net_hdr_x + sl, NET_NET_HDR_Y, 5, (s8*)net_hdr, 1.0f, 0, 1.0f);
             }
 
             /* === Peer / Online Info (Right Side) === */
             {
-                s16 peer_x = 200;
-                s16 lan_peer_y = 63;
-                s16 net_peer_y = 115;
+                s16 peer_x = NET_PEER_INFO_X;
+                s16 lan_peer_y = NET_LAN_PEER_Y_FULL;
+                s16 net_peer_y = NET_NET_PEER_Y;
 
                 NetplayDiscoveredPeer d_peers[16];
                 int d_count = Discovery_GetPeers(d_peers, 16);
@@ -796,7 +798,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     SDL_snprintf(buf, sizeof(buf), "%d FOUND", d_count);
                     SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)buf, 1.0f, 9, 1.0f);
                     SDL_snprintf(buf, sizeof(buf), "> %s", d_peers[g_lobby_peer_idx].name);
-                    SSPutStr_Bigger(peer_x + sl, (u16)(lan_peer_y + 15), 5, (s8*)buf, 1.0f, 0, 1.0f);
+                    SSPutStr_Bigger(peer_x + sl, (u16)(lan_peer_y + NET_PEER_SUBROW), 5, (s8*)buf, 1.0f, 0, 1.0f);
                 } else {
                     g_lobby_peer_idx = 0;
                     SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)"NONE", 1.0f, 1, 1.0f);
@@ -813,7 +815,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         SDL_snprintf(s_buf, sizeof(s_buf), "%d ONLINE", online_count);
                         SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)s_buf, 1.0f, 9, 1.0f);
                         SDL_snprintf(s_buf, sizeof(s_buf), "> %s", SDLNetplayUI_GetOnlinePlayerName(g_net_peer_idx));
-                        SSPutStr_Bigger(peer_x + sl, (u16)(net_peer_y + 15), 5, (s8*)s_buf, 1.0f, 0, 1.0f);
+                        SSPutStr_Bigger(peer_x + sl, (u16)(net_peer_y + NET_PEER_SUBROW), 5, (s8*)s_buf, 1.0f, 0, 1.0f);
                     } else {
                         g_net_peer_idx = 0;
                         SSPutStr_Bigger(peer_x + sl, net_peer_y, 5, (s8*)"SEARCHING", 1.0f, 9, 1.0f);
@@ -827,15 +829,15 @@ void Network_Lobby(struct _TASK* task_ptr) {
             {
                 PAL_CURSOR_P dp[4];
                 PAL_CURSOR_COL dcol[4];
-                dp[0].x = -2;
-                dp[0].y = 175;
-                dp[1].x = 386;
-                dp[1].y = 175;
-                dp[2].x = -2;
-                dp[2].y = 213;
-                dp[3].x = 386;
-                dp[3].y = 213;
-                dcol[0].color = dcol[1].color = dcol[2].color = dcol[3].color = 0x80202020;
+                dp[0].x = NET_SCREEN_LEFT;
+                dp[0].y = NET_DESC_TOP;
+                dp[1].x = NET_SCREEN_RIGHT;
+                dp[1].y = NET_DESC_TOP;
+                dp[2].x = NET_SCREEN_LEFT;
+                dp[2].y = NET_DESC_BOTTOM;
+                dp[3].x = NET_SCREEN_RIGHT;
+                dp[3].y = NET_DESC_BOTTOM;
+                dcol[0].color = dcol[1].color = dcol[2].color = dcol[3].color = NET_COLOR_DESC_BG;
                 Renderer_Queue2DPrimitive((f32*)dp, PrioBase[70], (uintptr_t)dcol[0].color, 0);
             }
 
@@ -843,7 +845,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
             {
                 const char* status = SDLNetplayUI_GetStatusMsg();
                 if (status[0]) {
-                    SSPutStr_Bigger(40 + sl, 215, 5, (s8*)status, 1.0f, 9, 1.0f);
+                    SSPutStr_Bigger(NET_STATUS_X + sl, NET_STATUS_Y, 5, (s8*)status, 1.0f, 9, 1.0f);
                 } else {
                     NetplayDiscoveredPeer c_peers[16];
                     int c_count = Discovery_GetPeers(c_peers, 16);
@@ -854,7 +856,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         if (c_peers[i].is_challenging_me) {
                             char c_buf[64];
                             SDL_snprintf(c_buf, sizeof(c_buf), "CHALLENGED BY %s!", c_peers[i].name);
-                            SSPutStr_Bigger(40 + sl, 215, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
+                            SSPutStr_Bigger(NET_STATUS_X + sl, NET_STATUS_Y, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
                             showing_status = true;
                             break;
                         }
@@ -865,7 +867,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                             if (c_peers[i].instance_id == current_target) {
                                 char c_buf[64];
                                 SDL_snprintf(c_buf, sizeof(c_buf), "CHALLENGING %s...", c_peers[i].name);
-                                SSPutStr_Bigger(40 + sl, 215, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
+                                SSPutStr_Bigger(NET_STATUS_X + sl, NET_STATUS_Y, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
                                 showing_status = true;
                                 break;
                             }
@@ -873,7 +875,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     }
 
                     if (!showing_status && SDLNetplayUI_IsDiscovering()) {
-                        SSPutStr_Bigger(40 + sl, 215, 5, (s8*)"DISCOVERING...", 1.0f, 9, 1.0f);
+                        SSPutStr_Bigger(NET_STATUS_X + sl, NET_STATUS_Y, 5, (s8*)"DISCOVERING...", 1.0f, 9, 1.0f);
                     }
                 }
             }
@@ -881,18 +883,18 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
         /* === Incoming Challenge Popup (Internet) === */
         if (SDLNetplayUI_HasPendingInvite()) {
-            if (task_ptr->free[2] == 0)
+            if (task_ptr->free[2] == NET_MODE_NATIVE)
                 NetLobby_DrawIncomingPopup(SDLNetplayUI_GetPendingInviteName(),
                                            SDLNetplayUI_GetPendingInviteRegion(),
                                            SDLNetplayUI_GetPendingInvitePing());
 
             switch (IO_Result) {
-            case 0x100:
+            case SWK_SOUTH:
                 Netplay_SetNegotiatedFT(SDLNetplayUI_GetPendingInviteFT());
                 SDLNetplayUI_AcceptPendingInvite();
                 SE_selected();
                 break;
-            case 0x200:
+            case SWK_EAST:
                 SDLNetplayUI_DeclinePendingInvite();
                 SE_selected();
                 break;
@@ -900,11 +902,11 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 break;
             }
         } else if (SDLNetplayUI_HasOutgoingChallenge()) {
-            if (task_ptr->free[2] == 0)
+            if (task_ptr->free[2] == NET_MODE_NATIVE)
                 NetLobby_DrawOutgoingPopup(SDLNetplayUI_GetOutgoingChallengeName(),
                                            SDLNetplayUI_GetOutgoingChallengePing());
 
-            if (IO_Result == 0x100 || IO_Result == 0x200) {
+            if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
                 SDLNetplayUI_CancelOutgoingChallenge();
                 Discovery_SetChallengeTarget(0);
                 SE_selected();
@@ -923,11 +925,11 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         break;
                     }
                 }
-                if (task_ptr->free[2] == 0)
+                if (task_ptr->free[2] == NET_MODE_NATIVE)
                     NetLobby_DrawOutgoingPopup(tgt_name, tgt_ping);
             }
 
-            if (IO_Result == 0x100 || IO_Result == 0x200) {
+            if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
                 Discovery_SetChallengeTarget(0);
                 SE_selected();
             }
@@ -943,7 +945,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
             }
 
             if (lan_challenger >= 0) {
-                if (task_ptr->free[2] == 0)
+                if (task_ptr->free[2] == NET_MODE_NATIVE)
                     NetLobby_DrawIncomingPopup(
                         ip_peers[lan_challenger].display_name[0] ? ip_peers[lan_challenger].display_name
                                                                  : ip_peers[lan_challenger].name,
@@ -952,12 +954,12 @@ void Network_Lobby(struct _TASK* task_ptr) {
                                                               : -1);
 
                 switch (IO_Result) {
-                case 0x100:
+                case SWK_SOUTH:
                     Netplay_SetNegotiatedFT(ip_peers[lan_challenger].ft_value);
                     Discovery_SetChallengeTarget(ip_peers[lan_challenger].instance_id);
                     SE_selected();
                     break;
-                case 0x200:
+                case SWK_EAST:
                     Discovery_DismissChallenger(ip_peers[lan_challenger].instance_id);
                     SE_selected();
                     break;
@@ -967,7 +969,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
             } else {
                 /* === Handle confirm/cancel (normal lobby input) === */
                 switch (IO_Result) {
-                case 0x100: /* Confirm */
+                case SWK_SOUTH: /* Confirm */
                     switch (Menu_Cursor_Y[0]) {
                     case 0: { /* LAN AUTO-CONN toggle */
                         bool v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
@@ -1065,13 +1067,13 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         break;
 
                     case 9: /* CREATE ROOM (RmlUI only) */
-                        if (task_ptr->free[2] == 1) {
+                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
                             rmlui_network_lobby_create_room();
                         }
                         SE_selected();
                         break;
                     case 10: /* JOIN ROOM (RmlUI only) */
-                        if (task_ptr->free[2] == 1) {
+                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
                             rmlui_network_lobby_join_room();
                         }
                         SE_selected();
@@ -1082,7 +1084,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     }
                     break;
 
-                case 0x200: /* Cancel */
+                case SWK_EAST: /* Cancel */
                     if (Discovery_GetChallengeTarget() != 0) {
                         Discovery_SetChallengeTarget(0);
                         SE_selected();
@@ -1091,7 +1093,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 lobby_exit:
                     SE_selected();
                     SDLNetplayUI_SetNativeLobbyActive(false);
-                    if (task_ptr->free[2] == 1)
+                    if (task_ptr->free[2] == NET_MODE_RMLUI)
                         rmlui_network_lobby_hide();
                     Netplay_HandleMenuExit();
                     Menu_Suicide[0] = 0;
@@ -1116,18 +1118,18 @@ void Network_Lobby(struct _TASK* task_ptr) {
      * ================================================================ */
     case 20:
         /* Phase 20: Start fade, set suicide, request blue BG mode */
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
         Menu_Suicide[0] = 1;        /* kill gateway items (master_player=0) */
         Menu_Suicide[1] = 0;        /* enable lobby items (master_player=1) */
-        Message_Data->kind_req = 4; /* blue-BG background mode */
+        Message_Data->kind_req = NET_BG_MODE_BLUE; /* blue-BG background mode */
         break;
 
     case 21:
         /* Phase 21: Destroy old effects, rebuild LAN-only lobby */
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
         task_ptr->r_no[2] += 1;
 
         effect_work_init();
@@ -1135,39 +1137,39 @@ void Network_Lobby(struct _TASK* task_ptr) {
         s_slide_offset = 384;
         Menu_Cursor_Y[0] = 0;
         Menu_Cursor_Y[1] = 0;
-        Order[0x4E] = 5;
-        Order_Timer[0x4E] = 1;
+        Order[EFF_SLOT_HEADER] = 5;
+        Order_Timer[EFF_SLOT_HEADER] = 1;
 
         /* Red slide-in header bar */
-        Order_Dir[0x4E] = 1;
+        Order_Dir[EFF_SLOT_HEADER] = 1;
 
         /* Right-side grey overlay box (LAN peer area) */
-        effect_66_init(0x8A, 42, 1, 0, -1, -1, -0x7FF0);
-        Order[0x8A] = 3;
-        Order_Timer[0x8A] = 1;
+        effect_66_init(EFF_SLOT_CURSOR_BG, EFF_SPRITE_LOBBY_BOX, 1, 0, -1, -1, EFF66_ZORDER_LOBBY_LAN);
+        Order[EFF_SLOT_CURSOR_BG] = 3;
+        Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
 
-        /* Menu items: 3 items (AUTO-CONN, CONNECT, EXIT), 0x70A7 = compact 8px font, master_player=1 */
+        /* Menu items: 3 items (AUTO-CONN, CONNECT, EXIT), EFF_FONT_COMPACT = compact 8px font, master_player=1 */
         {
             static const s16 lan_lobby_strings[] = { 79, 80, 81 };
             for (ix = 0; ix < 3; ix++) {
-                effect_61_init(0, ix + 0x50, 0, 1, lan_lobby_strings[ix], ix, 0x70A7);
+                effect_61_init(0, ix + 0x50, 0, 1, lan_lobby_strings[ix], ix, EFF_FONT_COMPACT);
                 Order[ix + 0x50] = 1;
                 Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
+                Order_Timer[ix + 0x50] = ix + NET_ORDER_TIMER_BASE;
             }
         }
 
-        /* Title: "NETWORK LOBBY" in big CG font (0x7047), string index 67 */
-        effect_61_init(0, 0x5F, 0, 1, 67, -1, 0x7047);
-        Order[0x5F] = 1;
-        Order_Dir[0x5F] = 4;
-        Order_Timer[0x5F] = 0x12;
+        /* Title: "NETWORK LOBBY" in big CG font (EFF_FONT_CG_LARGE), string index NET_STR_LOBBY_TITLE */
+        effect_61_init(0, EFF_SLOT_NET_TITLE, 0, 1, NET_STR_LOBBY_TITLE, -1, EFF_FONT_CG_LARGE);
+        Order[EFF_SLOT_NET_TITLE] = 1;
+        Order_Dir[EFF_SLOT_NET_TITLE] = 4;
+        Order_Timer[EFF_SLOT_NET_TITLE] = NET_ORDER_TIMER_TITLE;
 
         /* Message system for description text */
         Message_Data->pos_x = 0;
-        Message_Data->pos_y = 0x3E;
-        Message_Data->pos_z = 0x44;
-        Message_Data->request = 35;
+        Message_Data->pos_y = NET_MSG_POS_Y;
+        Message_Data->pos_z = NET_MSG_POS_Z;
+        Message_Data->request = NET_MSG_REQ_BASE;
         Message_Data->order = 0;
         Message_Data->timer = 1;
         effect_45_init(0, 0, 1);
@@ -1175,7 +1177,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
         Menu_Cursor_Move = 3;
 
         /* Blue background banner — always init (palette 0x45). */
-        effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, 0);
+        effect_57_init(EFF_SLOT_HEADER, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
 
         /* Enter lobby state (LAN-only — no server registration) */
         SDLNetplayUI_SetNativeLobbyActive(true);
@@ -1184,7 +1186,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
     case 22:
         /* Wait for fade-out timer */
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
 
         if (--task_ptr->timer == 0) {
             task_ptr->r_no[2] += 1;
@@ -1195,7 +1197,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
     case 23:
         /* Fade in */
-        if (FadeIn(1, 25, 8)) {
+        if (FadeIn(1, FADE_SPEED_SLOW, 8)) {
             task_ptr->r_no[2] += 1;
         }
         break;
@@ -1224,27 +1226,27 @@ void Network_Lobby(struct _TASK* task_ptr) {
             for (ci = 0; ci < 4; ci++) {
                 ap[ci].x = Akaobi_Pos_tbl[ci * 2];
                 ap[ci].y = Akaobi_Pos_tbl[(ci * 2) + 1];
-                acol[ci].color = 0xFFCC0000; /* fully opaque vibrant red */
+                acol[ci].color = NET_COLOR_BORDER_RED; /* fully opaque vibrant red */
             }
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[69], (uintptr_t)acol[0].color, 0);
 
             /* White top border */
-            ap[0].x = -2;
-            ap[0].y = 14;
-            ap[1].x = 386;
-            ap[1].y = 14;
-            ap[2].x = -2;
-            ap[2].y = 15;
-            ap[3].x = 386;
-            ap[3].y = 15;
-            acol[0].color = acol[1].color = acol[2].color = acol[3].color = 0xFFFFFFFF;
+            ap[0].x = NET_SCREEN_LEFT;
+            ap[0].y = NET_HDR_TOP_BORDER_Y0;
+            ap[1].x = NET_SCREEN_RIGHT;
+            ap[1].y = NET_HDR_TOP_BORDER_Y0;
+            ap[2].x = NET_SCREEN_LEFT;
+            ap[2].y = NET_HDR_TOP_BORDER_Y1;
+            ap[3].x = NET_SCREEN_RIGHT;
+            ap[3].y = NET_HDR_TOP_BORDER_Y1;
+            acol[0].color = acol[1].color = acol[2].color = acol[3].color = NET_COLOR_WHITE;
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
 
             /* White bottom border */
-            ap[0].y = 41;
-            ap[1].y = 41;
-            ap[2].y = 42;
-            ap[3].y = 42;
+            ap[0].y = NET_HDR_BOT_BORDER_Y0;
+            ap[1].y = NET_HDR_BOT_BORDER_Y0;
+            ap[2].y = NET_HDR_BOT_BORDER_Y1;
+            ap[3].y = NET_HDR_BOT_BORDER_Y1;
             Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
         }
 
@@ -1266,16 +1268,16 @@ void Network_Lobby(struct _TASK* task_ptr) {
         /* Handle cursor movement (3 items: 0..2) */
         {
             s16 prev_cursor = Menu_Cursor_Y[0];
-            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 2, 0xFF) == 0) {
-                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 2, 0xFF);
+            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 2, FADE_OPAQUE) == 0) {
+                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 2, FADE_OPAQUE);
             }
             if (popup_active) {
                 Menu_Cursor_Y[0] = prev_cursor;
             } else if (prev_cursor != Menu_Cursor_Y[0]) {
                 Message_Data->order = 1;
-                Message_Data->request = 35 + Menu_Cursor_Y[0];
+                Message_Data->request = NET_MSG_REQ_BASE + Menu_Cursor_Y[0];
                 Message_Data->timer = 2;
-                Message_Data->pos_y = 0x3E;
+                Message_Data->pos_y = NET_MSG_POS_Y;
             }
         }
 
@@ -1323,21 +1325,21 @@ void Network_Lobby(struct _TASK* task_ptr) {
             /* Display toggle values */
             {
                 bool lan_ac = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-                SSPutStr_Bigger(136 + sl, 63, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
+                SSPutStr_Bigger(NET_TOGGLE_X + sl, NET_LAN_TOGGLE_Y, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
             }
 
             /* LAN Header */
             {
                 const char* lan_hdr = "----- LAN -----";
                 int lan_hdr_px = (int)SDL_strlen(lan_hdr) * 8;
-                s16 lan_hdr_x = (s16)((384 - lan_hdr_px) / 2);
-                SSPutStr_Bigger(lan_hdr_x + sl, 50, 5, (s8*)lan_hdr, 1.0f, 0, 1.0f);
+                s16 lan_hdr_x = (s16)((NET_SCREEN_WIDTH_PX - lan_hdr_px) / 2);
+                SSPutStr_Bigger(lan_hdr_x + sl, NET_LAN_HDR_Y, 5, (s8*)lan_hdr, 1.0f, 0, 1.0f);
             }
 
             /* Peer Info (Right Side) */
             {
-                s16 peer_x = 200;
-                s16 lan_peer_y = 77;
+                s16 peer_x = NET_PEER_INFO_X;
+                s16 lan_peer_y = NET_LAN_PEER_Y_LANONLY;
 
                 NetplayDiscoveredPeer d_peers[16];
                 int d_count = Discovery_GetPeers(d_peers, 16);
@@ -1350,7 +1352,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     SDL_snprintf(buf, sizeof(buf), "%d FOUND", d_count);
                     SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)buf, 1.0f, 9, 1.0f);
                     SDL_snprintf(buf, sizeof(buf), "> %s", d_peers[g_lobby_peer_idx].name);
-                    SSPutStr_Bigger(peer_x + sl, (u16)(lan_peer_y + 15), 5, (s8*)buf, 1.0f, 0, 1.0f);
+                    SSPutStr_Bigger(peer_x + sl, (u16)(lan_peer_y + NET_PEER_SUBROW), 5, (s8*)buf, 1.0f, 0, 1.0f);
                 } else {
                     g_lobby_peer_idx = 0;
                     SSPutStr_Bigger(peer_x + sl, lan_peer_y, 5, (s8*)"NONE", 1.0f, 1, 1.0f);
@@ -1361,15 +1363,15 @@ void Network_Lobby(struct _TASK* task_ptr) {
             {
                 PAL_CURSOR_P dp[4];
                 PAL_CURSOR_COL dcol[4];
-                dp[0].x = -2;
-                dp[0].y = 175;
-                dp[1].x = 386;
-                dp[1].y = 175;
-                dp[2].x = -2;
-                dp[2].y = 213;
-                dp[3].x = 386;
-                dp[3].y = 213;
-                dcol[0].color = dcol[1].color = dcol[2].color = dcol[3].color = 0x80202020;
+                dp[0].x = NET_SCREEN_LEFT;
+                dp[0].y = NET_DESC_TOP;
+                dp[1].x = NET_SCREEN_RIGHT;
+                dp[1].y = NET_DESC_TOP;
+                dp[2].x = NET_SCREEN_LEFT;
+                dp[2].y = NET_DESC_BOTTOM;
+                dp[3].x = NET_SCREEN_RIGHT;
+                dp[3].y = NET_DESC_BOTTOM;
+                dcol[0].color = dcol[1].color = dcol[2].color = dcol[3].color = NET_COLOR_DESC_BG;
                 Renderer_Queue2DPrimitive((f32*)dp, PrioBase[70], (uintptr_t)dcol[0].color, 0);
             }
 
@@ -1384,7 +1386,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     if (c_peers[i].is_challenging_me) {
                         char c_buf[64];
                         SDL_snprintf(c_buf, sizeof(c_buf), "CHALLENGED BY %s!", c_peers[i].name);
-                        SSPutStr_Bigger(40 + sl, 215, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
+                        SSPutStr_Bigger(NET_STATUS_X + sl, NET_STATUS_Y, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
                         showing_status = true;
                         break;
                     }
@@ -1395,7 +1397,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         if (c_peers[i].instance_id == current_target) {
                             char c_buf[64];
                             SDL_snprintf(c_buf, sizeof(c_buf), "CHALLENGING %s...", c_peers[i].name);
-                            SSPutStr_Bigger(40 + sl, 215, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
+                            SSPutStr_Bigger(NET_STATUS_X + sl, NET_STATUS_Y, 5, (s8*)c_buf, 1.0f, 9, 1.0f);
                             showing_status = true;
                             break;
                         }
@@ -1403,7 +1405,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 }
 
                 if (!showing_status && SDLNetplayUI_IsDiscovering()) {
-                    SSPutStr_Bigger(40 + sl, 215, 5, (s8*)"DISCOVERING...", 1.0f, 9, 1.0f);
+                    SSPutStr_Bigger(NET_STATUS_X + sl, NET_STATUS_Y, 5, (s8*)"DISCOVERING...", 1.0f, 9, 1.0f);
                 }
             }
         } /* end LAN-only background text */
@@ -1426,7 +1428,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 NetLobby_DrawOutgoingPopup(tgt_name, tgt_ping);
             }
 
-            if (IO_Result == 0x100 || IO_Result == 0x200) {
+            if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
                 Discovery_SetChallengeTarget(0);
                 SE_selected();
             }
@@ -1449,12 +1451,12 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     ip_peers[lan_challenger].player_id[0] ? PingProbe_GetRTT(ip_peers[lan_challenger].player_id) : -1);
 
                 switch (IO_Result) {
-                case 0x100:
+                case SWK_SOUTH:
                     Netplay_SetNegotiatedFT(ip_peers[lan_challenger].ft_value);
                     Discovery_SetChallengeTarget(ip_peers[lan_challenger].instance_id);
                     SE_selected();
                     break;
-                case 0x200:
+                case SWK_EAST:
                     Discovery_DismissChallenger(ip_peers[lan_challenger].instance_id);
                     SE_selected();
                     break;
@@ -1464,7 +1466,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
             } else {
                 /* === Handle confirm/cancel (normal LAN-only lobby input) === */
                 switch (IO_Result) {
-                case 0x100: /* Confirm */
+                case SWK_SOUTH: /* Confirm */
                     switch (Menu_Cursor_Y[0]) {
                     case 0: { /* AUTO-CONN toggle */
                         bool v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
@@ -1491,7 +1493,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     }
                     break;
 
-                case 0x200: /* Cancel */
+                case SWK_EAST: /* Cancel */
                     if (Discovery_GetChallengeTarget() != 0) {
                         Discovery_SetChallengeTarget(0);
                         SE_selected();
