@@ -28,7 +28,7 @@ s16 Title() {
     // njSetBackColor(0, 0, 0);
 
     switch (D_No[1]) {
-    case DEMO_STATE_INIT:
+    case TITLE_WAIT_LOAD:
         if (Check_LDREQ_Clear() != 0) {
             Standby_BGM(0x34);
             D_No[1] += 1;
@@ -37,7 +37,7 @@ s16 Title() {
 
         break;
 
-    case DEMO_STATE_1:
+    case TITLE_PLAY_OPENING:
         if (D_Timer != 0) {
             D_Timer -= 1;
         } else if (opening_demo()) {
@@ -47,7 +47,7 @@ s16 Title() {
 
         break;
 
-    case DEMO_STATE_2:
+    case TITLE_PRE_TRANSITION:
         opening_demo();
 
         if (--D_Timer == 0) {
@@ -57,7 +57,7 @@ s16 Title() {
 
         break;
 
-    case DEMO_STATE_3:
+    case TITLE_TRANSITION:
         opening_demo();
 
         if (Switch_Screen(1) != 0) {
@@ -67,7 +67,7 @@ s16 Title() {
 
         break;
 
-    case DEMO_STATE_4:
+    case TITLE_DONE:
         Switch_Screen(1);
         D_No[1] += 1;
         D_Timer = 2;
@@ -95,7 +95,7 @@ s16 Title_At_a_Dash() {
     Disp_Copyright();
 
     switch (D_No[1]) {
-    case DEMO_STATE_INIT:
+    case TITLE_DASH_INIT:
         D_No[1] += 1;
         D_Timer = 30;
 
@@ -105,7 +105,7 @@ s16 Title_At_a_Dash() {
 
         break;
 
-    case DEMO_STATE_1:
+    case TITLE_DASH_SHOW:
         if (--D_Timer == 0) {
             D_No[1] += 1;
         }

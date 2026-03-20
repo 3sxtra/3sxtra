@@ -58,7 +58,7 @@ void Demo00() {
     Play_Game = 1;
 
     switch (D_No[1]) {
-    case DEMO_STATE_INIT:
+    case DEMO00_SETUP:
         Switch_Screen(1);
         Purge_texcash_of_list(3);
         Make_texcash_of_list(3);
@@ -72,7 +72,7 @@ void Demo00() {
         Weak_PL = random_16() & 1;
         break;
 
-    case DEMO_STATE_1:
+    case DEMO00_COVER:
         Switch_Screen(1);
         Game02();
 
@@ -84,7 +84,7 @@ void Demo00() {
 
         break;
 
-    case DEMO_STATE_2:
+    case DEMO00_REVEAL:
         Game02();
 
         if (Switch_Screen_Revival(0) != 0) {
@@ -96,7 +96,7 @@ void Demo00() {
 
         break;
 
-    case DEMO_STATE_3:
+    case DEMO00_PLAY:
         Game02();
 
         if (Debug_w[DEBUG_TIME_STOP] == 9) {
@@ -118,7 +118,7 @@ void Demo00() {
 
         break;
 
-    case DEMO_STATE_4:
+    case DEMO00_WIND_DOWN:
         Game02();
 
         if (--D_Timer == 0) {
@@ -131,7 +131,7 @@ void Demo00() {
 
         break;
 
-    case DEMO_STATE_5:
+    case DEMO00_PAUSE:
         Game02();
 
         if (--D_Timer == 0) {
@@ -143,7 +143,7 @@ void Demo00() {
 
         break;
 
-    case DEMO_STATE_6:
+    case DEMO00_FADE_OUT:
         Game02();
 
         if (Switch_Screen(0) != 0) {
@@ -175,7 +175,7 @@ void Demo01() {
     }
 
     switch (D_No[1]) {
-    case DEMO_STATE_INIT:
+    case DEMO01_SETUP:
         Switch_Screen(1);
         D_No[1] += 1;
         Game_pause = 0;
@@ -193,7 +193,7 @@ void Demo01() {
         Game01();
         break;
 
-    case DEMO_STATE_1:
+    case DEMO01_SELECT:
         Game01();
 
         if (Demo_Time_Stop) {
@@ -204,7 +204,7 @@ void Demo01() {
 
         break;
 
-    case DEMO_STATE_2:
+    case DEMO01_COVER:
         Switch_Screen(1);
         Game02();
 
@@ -216,7 +216,7 @@ void Demo01() {
 
         break;
 
-    case DEMO_STATE_3:
+    case DEMO01_REVEAL:
         Game02();
 
         if (Switch_Screen_Revival(0) != 0) {
@@ -228,7 +228,7 @@ void Demo01() {
 
         break;
 
-    case DEMO_STATE_4:
+    case DEMO01_PLAY:
         Game02();
 
         if (--D_Timer == 1) {
@@ -247,7 +247,7 @@ void Demo01() {
 
         break;
 
-    case DEMO_STATE_5:
+    case DEMO01_PAUSE:
         Game02();
 
         if (--D_Timer == 0) {
@@ -259,7 +259,7 @@ void Demo01() {
 
         break;
 
-    case DEMO_STATE_6:
+    case DEMO01_FADE_OUT:
         Game02();
 
         if (Switch_Screen(0) != 0) {

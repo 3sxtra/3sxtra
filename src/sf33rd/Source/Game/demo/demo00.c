@@ -52,15 +52,15 @@ s32 Warning() {
     Next_Demo = 0;
 
     switch (D_No[1]) {
-    case DEMO_STATE_INIT:
-        D_No[1] = DEMO_STATE_5;
-        D_No[1] = DEMO_STATE_9;
+    case WARN_INIT:
+        D_No[1] = WARN_FADE_IN;
+        D_No[1] = WARN_DONE;
         D_Timer = 120;
         FadeInit();
         Next_Demo = 0;
         break;
 
-    case DEMO_STATE_5:
+    case WARN_FADE_IN:
         Put_Warning(1);
         Next_Demo = 0;
 
@@ -71,10 +71,10 @@ s32 Warning() {
 
         break;
 
-    case DEMO_STATE_6:
+    case WARN_DISPLAY:
         if (((p1sw_0 & 0x4FF0) | (p2sw_0 & 0x4FF0)) != 0) {
             D_Timer = 2;
-            D_No[1] = DEMO_STATE_7;
+            D_No[1] = WARN_SKIP_WAIT;
             FadeInit();
         }
 
@@ -88,7 +88,7 @@ s32 Warning() {
 
         break;
 
-    case DEMO_STATE_7:
+    case WARN_SKIP_WAIT:
         if (((p1sw_0 & 0x4FF0) | (p2sw_0 & 0x4FF0)) != 0) {
             D_Timer = 1;
         }
@@ -102,7 +102,7 @@ s32 Warning() {
         Next_Demo = 0;
         break;
 
-    case DEMO_STATE_8:
+    case WARN_FADE_OUT:
         Put_Warning(1);
         Next_Demo = 0;
 
@@ -113,7 +113,7 @@ s32 Warning() {
         break;
 
     default:
-        D_No[1] = DEMO_STATE_INIT;
+        D_No[1] = WARN_INIT;
         TexRelease(590);
         Next_Demo = 1;
         break;
@@ -137,13 +137,13 @@ s32 CAPCOM_Logo() {
     Next_Demo = 0;
 
     switch (D_No[1]) {
-    case DEMO_STATE_INIT:
+    case CAPLOGO_INIT:
         D_No[1] += 1;
         checkAdxFileLoaded();
         checkSelObjFileLoaded();
         break;
 
-    case DEMO_STATE_1:
+    case CAPLOGO_LOAD_BGM:
         D_No[1] += 1;
         Standby_BGM(67);
         CAPLOGO_Init();
@@ -151,7 +151,7 @@ s32 CAPCOM_Logo() {
         FadeInit();
         break;
 
-    case DEMO_STATE_2:
+    case CAPLOGO_WAIT_LOAD:
         if (Check_LDREQ_Clear() != 0) {
             D_No[1] += 1;
             D_Timer = 10;
@@ -159,7 +159,7 @@ s32 CAPCOM_Logo() {
 
         break;
 
-    case DEMO_STATE_3:
+    case CAPLOGO_PRE_ANIM:
         if (--D_Timer == 0) {
             D_No[1] += 1;
             op_timer0 = 0;
@@ -168,7 +168,7 @@ s32 CAPCOM_Logo() {
 
         break;
 
-    case DEMO_STATE_4:
+    case CAPLOGO_ANIMATE:
         if (!CAPLOGO_Move(0)) {
             D_No[1] += 1;
             Push_LDREQ_Queue_Direct(0x17, 2);
@@ -177,7 +177,7 @@ s32 CAPCOM_Logo() {
 
         break;
 
-    case DEMO_STATE_5:
+    case CAPLOGO_FADE_IN:
         CAPLOGO_Move(1);
 
         if (FadeIn(1, 6, 8) != 0) {
@@ -188,7 +188,7 @@ s32 CAPCOM_Logo() {
 
         break;
 
-    case DEMO_STATE_6:
+    case CAPLOGO_HOLD:
         CAPLOGO_Move(1);
 
         if (--D_Timer == 0) {
@@ -198,7 +198,7 @@ s32 CAPCOM_Logo() {
 
         break;
 
-    case DEMO_STATE_7:
+    case CAPLOGO_FADE_OUT:
         CAPLOGO_Move(1);
 
         if (FadeOut(1, 6, 8) != 0) {

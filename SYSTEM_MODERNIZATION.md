@@ -52,6 +52,7 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 38 | `appear.c` State Cleanup | MEDIUM | Named `routine_no[]` states | 2,103 lines, 221 `routine_no[]` accesses. `APPEAR_RNO_COMPLETE`, `APPEAR_RNO_PHASE`, `APPEAR_RNO_TYPE`, `APPEAR_RNO_GOUKI` named indices. Animation-only, runs before round start. |
 | 39 | `chren3rd.c` Decomposition | LOW | Already Factored | `chren3rd.c` is exclusively the 37,664-byte `obj_group_table`. Palette management is already isolated in `color3rd.c` and shadow rendering in `aboutspr.c`. No further splits required. |
 | 40 | `menu.c` Decomposition | LOW | File split | 3,480 lines. Split into `menu_network.c`, `menu_training.c`, `menu_replay.c`, `menu_save.c`, and core `menu.c`. Functions are clearly delineated by domain. |
+| 41 | `demo00.c` / `demo01.c` / `demo02.c` Demo States | LOW | Per-function enums | 6 enums (`WarningState`, `CapLogoState`, `TitleState`, `TitleDashState`, `Demo00State`, `Demo01State`) in `demo_states.h`. Replaced generic `DEMO_STATE_*` with semantic names across 3 files. Fixed 5 implicit declaration warnings via missing `#include`s. |
 ---
 
 ## Next Wave: Safe Improvement Candidates (March 2026 Audit — Wave 2)
@@ -60,7 +61,6 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 
 | # | Component | Risk | Pattern | Key Files |
 |---|-----------|------|---------|-----------|
-| 41 | `demo00.c` / `demo02.c` Demo Playback States | LOW | Named `D_No[]` states | 447 / 339 lines. 18 raw `D_No[]` + `G_No[]` writes each. Pure demo playback, no netplay. |
 | 42 | `menu_input.c` Residual Hex Constants | LOW | Named constants | 2,121 lines. **141 raw hex literals** remain (UI positioning/formatting). Button constants already done (#15). |
 | 43 | `menu_network.c` Hex Constants | LOW | Named constants | 1,898 lines. **114 raw hex literals** (network menu UI positioning/state). Menu-side only, no netplay sync risk. |
 | 44 | `sysdir.c` Magic Numbers | VERY LOW | Named constants | 396 lines. 17 hex values + `save_w[]` accesses. System directory management. |
