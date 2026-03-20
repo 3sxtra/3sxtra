@@ -750,7 +750,7 @@ s8 get_guard_direction(WORK* as, WORK* ds) {
         } else {
             num = 3;
         }
-    } else if (((PLW*)ds)->spmv_ng_flag & 0x04000000) {
+    } else if (((PLW*)ds)->spmv_ng_flag & DIP_GUARD_CHECK_ENABLED) {
         if (as->rl_flag + ds->rl_flag & 1) {
             if (ds->work_id != 1) {
                 num = 2;
@@ -1051,13 +1051,13 @@ void add_sp_arts_gauge_maxbit(PLW* wk) {
         return;
     }
 
-    if (!(wk->spmv_ng_flag2 & 0x80000)) {
+    if (!(wk->spmv_ng_flag2 & DIP2_SA_GAUGE_AUTOFILL_DISABLED)) {
         sag_inc_timer[wk->wu.id] = 2;
         add_super_arts_gauge(wk->sa, wk->wu.id, wk->sa->gauge_len, wk->metamorphose);
         return;
     }
 
-    if (!(wk->spmv_ng_flag2 & 0x10000)) {
+    if (!(wk->spmv_ng_flag2 & DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED)) {
         if (sag_inc_timer[wk->wu.id]) {
             sag_inc_timer[wk->wu.id]--;
             return;

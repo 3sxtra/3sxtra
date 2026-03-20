@@ -53,6 +53,7 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 39 | `chren3rd.c` Decomposition | LOW | Already Factored | `chren3rd.c` is exclusively the 37,664-byte `obj_group_table`. Palette management is already isolated in `color3rd.c` and shadow rendering in `aboutspr.c`. No further splits required. |
 | 40 | `menu.c` Decomposition | LOW | File split | 3,480 lines. Split into `menu_network.c`, `menu_training.c`, `menu_replay.c`, `menu_save.c`, and core `menu.c`. Functions are clearly delineated by domain. |
 | 41 | `demo00.c` / `demo01.c` / `demo02.c` Demo States | LOW | Per-function enums | 6 enums (`WarningState`, `CapLogoState`, `TitleState`, `TitleDashState`, `Demo00State`, `Demo01State`) in `demo_states.h`. Replaced generic `DEMO_STATE_*` with semantic names across 3 files. Fixed 5 implicit declaration warnings via missing `#include`s. |
+| 42 | `sysdir.c` Magic Numbers | VERY LOW | Named constants | 397 lines. 3 new `Dipswitch`/`Dipswitch2` enum entries (`DIP_GUARD_CHECK_ENABLED`, `DIP2_SA_GAUGE_AUTOFILL_DISABLED`, `DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED`). 12 raw hex → named constants across `sysdir.c` (9) and `pls02.c` (3). Zero logic changes. |
 ---
 
 ## Next Wave: Safe Improvement Candidates (March 2026 Audit — Wave 2)
@@ -60,10 +61,9 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 ### State Machine / Magic Number Cleanup
 
 | # | Component | Risk | Pattern | Key Files |
-|---|-----------|------|---------|-----------|
-| 42 | `menu_input.c` Residual Hex Constants | LOW | Named constants | 2,121 lines. **141 raw hex literals** remain (UI positioning/formatting). Button constants already done (#15). |
-| 43 | `menu_network.c` Hex Constants | LOW | Named constants | 1,898 lines. **114 raw hex literals** (network menu UI positioning/state). Menu-side only, no netplay sync risk. |
-| 44 | `sysdir.c` Magic Numbers | VERY LOW | Named constants | 396 lines. 17 hex values + `save_w[]` accesses. System directory management. |
+|---|-----------|------|---------|-----------| 
+| 43 | `menu_input.c` Residual Hex Constants | LOW | Named constants | 2,121 lines. **141 raw hex literals** remain (UI positioning/formatting). Button constants already done (#15). |
+| 44 | `menu_network.c` Hex Constants | LOW | Named constants | 1,898 lines. **114 raw hex literals** (network menu UI positioning/state). Menu-side only, no netplay sync risk. |
 | 45 | `staff.c` Credits Constants | VERY LOW | Named constants | 504 lines. 17 hex values. Pure credits display, zero gameplay. |
 | 46 | `ranking.c` Residual `D_No[]` States | LOW | Named states | 784 lines. 17 raw `D_No[]` accesses remain after jump table conversion (#28). |
 

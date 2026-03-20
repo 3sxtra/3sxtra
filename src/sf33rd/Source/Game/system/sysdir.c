@@ -80,7 +80,7 @@ const s16 base_vital_omake[7] = { 0xfe3e, 0xfed4, 0xff6a, 0x0000, 0x0096, 0x012c
 
 /** @brief Check if both players have the SA-max-at-round-start flag set (immediate full gauge). */
 u32 sag_ikinari_max() {
-    return ((omop_spmv_ng_table2[0] & 0x40000) + (omop_spmv_ng_table2[1] & 0x40000)) == 0x80000;
+    return ((omop_spmv_ng_table2[0] & DIP2_SA_GAUGE_MAX_START_DISABLED) + (omop_spmv_ng_table2[1] & DIP2_SA_GAUGE_MAX_START_DISABLED)) == (DIP2_SA_GAUGE_MAX_START_DISABLED * 2);
 }
 
 /** @brief Return non-zero if "use all super arts" is enabled in the current system direction. */
@@ -149,29 +149,29 @@ void get_extra_option_parameter(_EXTRA_OPTION* omop_extra) {
 
     switch (omop_extra->contents[1][0]) {
     case 1:
-        omop_spmv_ng_table2[0] |= 0x80000;
+        omop_spmv_ng_table2[0] |= DIP2_SA_GAUGE_AUTOFILL_DISABLED;
         break;
 
     case 2:
-        omop_spmv_ng_table2[0] |= 0x10000;
+        omop_spmv_ng_table2[0] |= DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED;
         break;
 
     default:
-        omop_spmv_ng_table2[0] |= 0x90000;
+        omop_spmv_ng_table2[0] |= DIP2_SA_GAUGE_AUTOFILL_DISABLED | DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED;
         break;
     }
 
     switch (omop_extra->contents[1][1]) {
     case 1:
-        omop_spmv_ng_table2[1] |= 0x80000;
+        omop_spmv_ng_table2[1] |= DIP2_SA_GAUGE_AUTOFILL_DISABLED;
         break;
 
     case 2:
-        omop_spmv_ng_table2[1] |= 0x10000;
+        omop_spmv_ng_table2[1] |= DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED;
         break;
 
     default:
-        omop_spmv_ng_table2[1] |= 0x90000;
+        omop_spmv_ng_table2[1] |= DIP2_SA_GAUGE_AUTOFILL_DISABLED | DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED;
         break;
     }
 
@@ -239,7 +239,7 @@ void get_system_direction_parameter(SystemDir* sysdir_data) {
     }
 
     if (CurrentSave()->GuardCheck) {
-        omop_spmv_ng_table[0] |= 0x04000000;
+        omop_spmv_ng_table[0] |= DIP_GUARD_CHECK_ENABLED;
     }
 
     if (sysdir_data->contents[2][0] == 0) {
