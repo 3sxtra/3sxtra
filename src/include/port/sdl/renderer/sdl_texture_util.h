@@ -16,6 +16,14 @@ extern "C" {
 void* TextureUtil_Load(const char* filename);
 
 /**
+ * @brief Load an image file and optionally downscale before GPU upload.
+ * @param filename Path to the image file (PNG, etc.)
+ * @param scale    Scale factor (0.0–1.0 downscales, >= 1.0 no change).
+ * @return Opaque texture handle, or NULL on failure.
+ */
+void* TextureUtil_LoadScaled(const char* filename, float scale);
+
+/**
  * @brief Create a GPU/GL texture from an SDL_Surface.
  * @param surface The surface to upload (caller retains ownership).
  * @return Opaque texture handle, or NULL on failure.

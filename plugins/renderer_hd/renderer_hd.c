@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* ================================================================
@@ -27,6 +28,10 @@
 
 static const renderer_import_t* g_import = NULL;
 static char g_sprites_path[512] = { 0 };
+static int g_render_scale = 4;
+static int g_sprite_scale = 4;
+static float g_sprite_ratio = 1.0f; /* render_scale / sprite_scale */
+static renderer_export_t g_exports;
 
 /* ================================================================
  * Full-sprite override cache
@@ -77,11 +82,11 @@ static void* hd_LoadFullSpriteOverride(int group_index, int cg_number) {
 
     char path[512];
     snprintf(path, sizeof(path), "%s/sprite_%d_%d.png", g_sprites_path, group_index, cg_number);
-    void* tex = g_import->TextureLoad(path);
+    void* tex = g_import->TextureLoadScaled(path, g_sprite_ratio);
 
     if (tex == NULL) {
         snprintf(path, sizeof(path), "%s/sprite_%d.png", g_sprites_path, cg_number);
-        tex = g_import->TextureLoad(path);
+        tex = g_import->TextureLoadScaled(path, g_sprite_ratio);
     }
 
     /* Cache the result (even NULL = negative cache) */
@@ -179,7 +184,7 @@ static void* hd_LoadBGTileOverride(int gbix) {
 
     char path[512];
     snprintf(path, sizeof(path), "%s/bg_%d.png", g_sprites_path, gbix);
-    void* tex = g_import->TextureLoad(path);
+    void* tex = g_import->TextureLoadScaled(path, g_sprite_ratio);
 
     slot = (uint32_t)gbix & BG_TILE_CACHE_MASK;
 
@@ -212,10 +217,24 @@ static void hd_DrawBGTile(void* texture, float x, float y, float w, float h, flo
  * ================================================================ */
 
 static bool hd_Init(int argc, const char** argv) {
+    int render_scale = 4;
+    int sprite_scale = 0; /* 0 = auto (match render_scale) */
+
     for (int i = 1; i < argc - 1; i++) {
         if (strcmp(argv[i], "--sprites-path") == 0) {
             snprintf(g_sprites_path, sizeof(g_sprites_path), "%s", argv[i + 1]);
-            break;
+        } else if (strcmp(argv[i], "--render-scale") == 0) {
+            render_scale = atoi(argv[i + 1]);
+            if (render_scale < 1)
+                render_scale = 1;
+            if (render_scale > 8)
+                render_scale = 8;
+        } else if (strcmp(argv[i], "--sprite-scale") == 0) {
+            sprite_scale = atoi(argv[i + 1]);
+            if (sprite_scale < 1)
+                sprite_scale = 1;
+            if (sprite_scale > 8)
+                sprite_scale = 8;
         }
     }
 
@@ -225,7 +244,16 @@ static bool hd_Init(int argc, const char** argv) {
         g_import->Log("Using default sprites path: %s", g_sprites_path);
     }
 
-    g_import->Log("Renderer HD plugin initialized with path: %s", g_sprites_path);
+    if (sprite_scale == 0)
+        sprite_scale = render_scale;
+
+    g_render_scale = render_scale;
+    g_sprite_scale = sprite_scale;
+    g_sprite_ratio = (float)render_scale / (float)sprite_scale;
+    g_exports.render_scale = render_scale;
+
+    g_import->Log("Renderer HD plugin initialized (render_scale=%d, sprite_scale=%d, path=%s)",
+                  render_scale, sprite_scale, g_sprites_path);
     return true;
 }
 
@@ -236,26 +264,21 @@ static void hd_Shutdown(void) {
 }
 
 /* ================================================================
- * Export table
- * ================================================================ */
-
-static renderer_export_t g_exports = {
-    .api_version = RENDERER_PLUGIN_API_VERSION,
-    .Init = hd_Init,
-    .Shutdown = hd_Shutdown,
-    .render_scale = 0, /* host engine handles scaling independently */
-    .TryRenderSprite = hd_TryRenderSprite,
-    .LoadBGTileOverride = hd_LoadBGTileOverride,
-    .DrawBGTile = hd_DrawBGTile,
-    .ClearBGTileCache = hd_ClearBGTileCache,
-    .ClearSpriteCache = hd_ClearSpriteCache,
-};
-
-/* ================================================================
  * DLL entry point
  * ================================================================ */
 
 EXPORT renderer_export_t* GetRendererAPI(const renderer_import_t* import) {
     g_import = import;
+
+    g_exports.api_version = RENDERER_PLUGIN_API_VERSION;
+    g_exports.Init = hd_Init;
+    g_exports.Shutdown = hd_Shutdown;
+    g_exports.render_scale = 4; /* default; overridden in Init after parsing args */
+    g_exports.TryRenderSprite = hd_TryRenderSprite;
+    g_exports.LoadBGTileOverride = hd_LoadBGTileOverride;
+    g_exports.DrawBGTile = hd_DrawBGTile;
+    g_exports.ClearBGTileCache = hd_ClearBGTileCache;
+    g_exports.ClearSpriteCache = hd_ClearSpriteCache;
+
     return &g_exports;
 }

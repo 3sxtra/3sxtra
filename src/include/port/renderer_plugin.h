@@ -71,6 +71,7 @@ typedef struct renderer_import_t {
      * compatible with all rendering backends (OpenGL, SDLGPU, Classic, etc).
      */
     void* (*TextureLoad)(const char* path);
+    void* (*TextureLoadScaled)(const char* path, float scale);
     void (*TextureFree)(void* texture_id);
     void (*TextureGetSize)(void* texture_id, int* w, int* h);
     void (*TextureDrawQuadEx)(void* texture_id, float x, float y, float w, float h, float z, int flip_x, int flip_y);

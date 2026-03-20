@@ -236,6 +236,37 @@ extern "C" void* TextureUtil_LoadFromSurface(SDL_Surface* surface) {
     return upload_surface_to_texture(surface);
 }
 
+extern "C" void* TextureUtil_LoadScaled(const char* filename, float scale) {
+    SDL_Surface* surface = IMG_Load(filename);
+    if (surface == NULL)
+        return NULL;
+
+    /* Convert to RGBA32 so we can safely blit/scale */
+    SDL_Surface* converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+    SDL_DestroySurface(surface);
+    if (!converted)
+        return NULL;
+
+    /* Downscale at the surface level if scale < 1.0 */
+    if (scale < 1.0f && scale > 0.0f && converted->w > 1 && converted->h > 1) {
+        int new_w = (int)(converted->w * scale + 0.5f);
+        int new_h = (int)(converted->h * scale + 0.5f);
+        if (new_w < 1) new_w = 1;
+        if (new_h < 1) new_h = 1;
+
+        SDL_Surface* scaled = SDL_CreateSurface(new_w, new_h, SDL_PIXELFORMAT_RGBA32);
+        if (scaled != NULL) {
+            SDL_BlitSurfaceScaled(converted, NULL, scaled, NULL, SDL_SCALEMODE_LINEAR);
+            SDL_DestroySurface(converted);
+            converted = scaled;
+        }
+    }
+
+    void* tex = upload_surface_to_texture(converted);
+    SDL_DestroySurface(converted);
+    return tex;
+}
+
 extern "C" void TextureUtil_Free(void* texture_id) {
     if (!texture_id)
         return;

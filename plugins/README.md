@@ -26,7 +26,22 @@ This produces `renderer_hd.dll` (or `librenderer_hd.so` on Linux) in the build d
 ```
 
 - `--renderer <name>` — loads plugin DLL from the executable directory.
-- `--sprites-path <path>` — parsed by the plugin from the forwarded `argc`/`argv`.
+- `--sprites-path <path>` — specifies the directory containing HD sprite PNG overrides.
+- `--render-scale <n>` — sets the canvas resolution multiplier (1–8, default 4). Higher values produce sharper output.
+- `--sprite-scale <n>` — declares the scale of your sprite assets (1–8, default matches render-scale). If sprite-scale differs from render-scale, sprites are downscaled at load time to save GPU memory.
+
+### Examples
+
+```bash
+# Default: 4x canvas, 4x sprites
+3sx --renderer renderer_hd --sprites-path ./sprites
+
+# 2x canvas with 4x sprite assets (sprites downscaled to 2x at load, saves 75% GPU memory)
+3sx --renderer renderer_hd --sprites-path ./sprites --render-scale 2 --sprite-scale 4
+
+# 1x canvas, no upscaling (useful for testing override detection)
+3sx --renderer renderer_hd --sprites-path ./sprites --render-scale 1 --sprite-scale 1
+```
 
 ### File naming conventions
 
@@ -53,7 +68,7 @@ renderer_export_t* GetRendererAPI(const renderer_import_t* import);
 | `api_version` | Must match `RENDERER_PLUGIN_API_VERSION` (2) |
 | `Init(argc, argv)` | Called with the application's command-line arguments |
 | `Shutdown()` | Called on unload |
-| `render_scale` | Desired canvas scale (e.g. 4 for HD) |
+| `render_scale` | Canvas scale, set dynamically by the plugin after parsing `--render-scale` |
 | `TryRenderSprite(group, cg, x, y, z, flip_x, color)` | Load + draw a sprite override. Returns `true` if handled. |
 | `LoadBGTileOverride(gbix)` | Returns a `void*` texture handle, or `NULL` |
 | `DrawBGTile(tex, x, y, w, h, z, vtxCol)` | Draws a background tile at the given screen rect |
@@ -67,6 +82,7 @@ renderer_export_t* GetRendererAPI(const renderer_import_t* import);
 | `Log(fmt, ...)` | Printf-style logging |
 | `ConvScreenFZ(z)` | Converts Z depth for render sorting |
 | `TextureLoad(path)` | Loads a PNG into a backend-agnostic texture handle |
+| `TextureLoadScaled(path, scale)` | Like `TextureLoad`, but downscales the image at load time if `scale < 1.0` |
 | `TextureFree(handle)` | Frees a texture |
 | `TextureGetSize(handle, &w, &h)` | Queries texture dimensions |
 | `TextureDrawQuadEx(handle, x, y, w, h, z, flip_x, flip_y)` | Draws a textured quad; works on all backends |
@@ -79,6 +95,6 @@ renderer_export_t* GetRendererAPI(const renderer_import_t* import);
 2. Store the import table pointer
 3. Return a populated `renderer_export_t` with `api_version = RENDERER_PLUGIN_API_VERSION`
 4. Parse your configuration from `argc`/`argv` in `Init`
-5. Use `import->TextureLoad` / `import->TextureDrawQuadEx` for all rendering
+5. Use `import->TextureLoad` / `import->TextureLoadScaled` / `import->TextureDrawQuadEx` for all rendering
 
 Name the output `<name>.dll` (Windows) or `lib<name>.so` (Linux), then launch with `--renderer <name>`.

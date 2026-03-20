@@ -85,6 +85,7 @@ bool RendererPlugin_Load(const char* plugin_name, int argc, const char** argv) {
         .Log = import_log,
         .ConvScreenFZ = import_conv_screen_fz,
         .TextureLoad = TextureUtil_Load,
+        .TextureLoadScaled = TextureUtil_LoadScaled,
         .TextureFree = TextureUtil_Free,
         .TextureGetSize = TextureUtil_GetSize,
         .TextureDrawQuadEx = TextureUtil_DrawQuadEx,
