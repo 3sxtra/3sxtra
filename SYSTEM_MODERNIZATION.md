@@ -51,11 +51,14 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 37 | `bg.c` Decomposition | LOW–MED | File split | 1,538→~750 lines. Texture loading → `bg_load.c` (~380 lines), tile rewrite setup → `bg_rewrite.c` (~155 lines), core rendering/scroll/zoom remains in `bg.c`. `bg.h` → umbrella header. |
 | 38 | `appear.c` State Cleanup | MEDIUM | Named `routine_no[]` states | 2,103 lines, 221 `routine_no[]` accesses. `APPEAR_RNO_COMPLETE`, `APPEAR_RNO_PHASE`, `APPEAR_RNO_TYPE`, `APPEAR_RNO_GOUKI` named indices. Animation-only, runs before round start. |
 | 39 | `chren3rd.c` Decomposition | LOW | Already Factored | `chren3rd.c` is exclusively the 37,664-byte `obj_group_table`. Palette management is already isolated in `color3rd.c` and shadow rendering in `aboutspr.c`. No further splits required. |
+| 47 | `vs_shell.c` VS Screen Data | LOW | Already Factored | 648 lines. File is exclusively one `const u8 VS_Shell_Active_Data[20][4][8][16]` array (67 KB tilemap data). Zero functions. Single consumer: `com_sub.c`. No decomposition needed. |
+| 49 | `mtrans.c` Matrix Rendering | LOW | Already Factored | 2,817 lines. 99% dense rendering logic (SIMD, GPU compute, matrix transforms). Only ~70 lines of `static const` data (`flptbl[4]`, `bright_type[4][16]`). Not worth splitting. |
 | 40 | `menu.c` Decomposition | LOW | File split | 3,480 lines. Split into `menu_network.c`, `menu_training.c`, `menu_replay.c`, `menu_save.c`, and core `menu.c`. Functions are clearly delineated by domain. |
 | 41 | `demo00.c` / `demo01.c` / `demo02.c` Demo States | LOW | Per-function enums | 6 enums (`WarningState`, `CapLogoState`, `TitleState`, `TitleDashState`, `Demo00State`, `Demo01State`) in `demo_states.h`. Replaced generic `DEMO_STATE_*` with semantic names across 3 files. Fixed 5 implicit declaration warnings via missing `#include`s. |
 | 42 | `sysdir.c` Magic Numbers | VERY LOW | Named constants | 397 lines. 3 new `Dipswitch`/`Dipswitch2` enum entries (`DIP_GUARD_CHECK_ENABLED`, `DIP2_SA_GAUGE_AUTOFILL_DISABLED`, `DIP2_SA_GAUGE_INCREMENTAL_FILL_DISABLED`). 12 raw hex → named constants across `sysdir.c` (9) and `pls02.c` (3). Zero logic changes. |
 | 43 | `staff.c` Credits Constants | VERY LOW | Named constants | 504 lines. 17 raw hex → named constants via new `staff_constants.h` (14 defines). 2 BGM IDs added to `sound_ids.h`. Button mask → `SWK_ATTACKS`. Zero logic changes. |
 | 46 | `ranking.c` Residual `D_No[]` States | LOW | Named states | 784 lines. 17 raw `D_No[]` accesses → 3 enums (`Ranking00State[6]`, `Ranking01State[5]`, `Ranking01FadeState[3]`). Named switch case labels + 2 direct assignments. Finishes task #28 cleanup. |
+| 48 | `cmd_main.c` Input Bitmask Constants | LOW | Named constants | 1,870 lines. 122 raw hex → named constants via new `cmd_constants.h` (30 defines). Lever masks, button groups, flip flags, multi-press detection, switch patterns. Zero logic changes. |
 ---
 
 ## Next Wave: Safe Improvement Candidates (March 2026 Audit — Wave 2)
@@ -67,13 +70,6 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 44 | `menu_input.c` Residual Hex Constants | LOW | Named constants | 2,121 lines. **141 raw hex literals** remain (UI positioning/formatting). Button constants already done (#15). |
 | 45 | `menu_network.c` Hex Constants | LOW | Named constants | 1,898 lines. **114 raw hex literals** (network menu UI positioning/state). Menu-side only, no netplay sync risk. |
 
-### File Decomposition
-
-| # | Component | Risk | Pattern | Key Files |
-|---|-----------|------|---------|-----------|
-| 47 | `vs_shell.c` VS Screen Decomp | LOW–MED | Data extraction | 647 lines (67 KB). No jump tables or state machines — huge due to embedded string/sprite data tables. Extract data → `vs_data.c`. |
-| 48 | `cmd_main.c` Command Input Decomp | LOW–MED | Data extraction | 1,868 lines. 127 hex literals (input command definitions). Read-only data tables could expand into `cmd_data.c`. |
-| 49 | `mtrans.c` Matrix Data Extraction | LOW–MED | Data extraction | 2,816 lines (93 KB). Pre-computed matrix tables. Clear logic vs. data boundary — tables → separate file. |
 
 ### Large Data Files (Documentation / Auto-Generation)
 
