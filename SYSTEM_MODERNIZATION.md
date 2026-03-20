@@ -50,13 +50,40 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 36 | `bg_sub.c` Magic Number Cleanup | LOW–MED | Named constants | 1,287 lines. ~80 raw hex values → named constants in new `bg_constants.h`. Zoom bitmasks, chase flags, scroll zones, screen geometry, stage indices, scroll speed. Zero logic changes. |
 | 37 | `bg.c` Decomposition | LOW–MED | File split | 1,538→~750 lines. Texture loading → `bg_load.c` (~380 lines), tile rewrite setup → `bg_rewrite.c` (~155 lines), core rendering/scroll/zoom remains in `bg.c`. `bg.h` → umbrella header. |
 | 38 | `appear.c` State Cleanup | MEDIUM | Named `routine_no[]` states | 2,103 lines, 221 `routine_no[]` accesses. `APPEAR_RNO_COMPLETE`, `APPEAR_RNO_PHASE`, `APPEAR_RNO_TYPE`, `APPEAR_RNO_GOUKI` named indices. Animation-only, runs before round start. |
+| 39 | `chren3rd.c` Decomposition | LOW | Already Factored | `chren3rd.c` is exclusively the 37,664-byte `obj_group_table`. Palette management is already isolated in `color3rd.c` and shadow rendering in `aboutspr.c`. No further splits required. |
+| 40 | `menu.c` Decomposition | LOW | File split | 3,480 lines. Split into `menu_network.c`, `menu_training.c`, `menu_replay.c`, `menu_save.c`, and core `menu.c`. Functions are clearly delineated by domain. |
 ---
 
 ## Next Wave: Safe Improvement Candidates (March 2026 Audit — Wave 2)
 
+### State Machine / Magic Number Cleanup
+
 | # | Component | Risk | Pattern | Key Files |
 |---|-----------|------|---------|-----------|
-| 39 | `chren3rd.c` Decomposition | LOW–MED | File split | 1,308 lines. Character rendering helpers — palette management, shadow rendering, and object group config are distinct blocks. Can split into `chren_palette.c`, `chren_shadow.c`, core `chren3rd.c`. |
+| 41 | `demo00.c` / `demo02.c` Demo Playback States | LOW | Named `D_No[]` states | 447 / 339 lines. 18 raw `D_No[]` + `G_No[]` writes each. Pure demo playback, no netplay. |
+| 42 | `menu_input.c` Residual Hex Constants | LOW | Named constants | 2,121 lines. **141 raw hex literals** remain (UI positioning/formatting). Button constants already done (#15). |
+| 43 | `menu_network.c` Hex Constants | LOW | Named constants | 1,898 lines. **114 raw hex literals** (network menu UI positioning/state). Menu-side only, no netplay sync risk. |
+| 44 | `sysdir.c` Magic Numbers | VERY LOW | Named constants | 396 lines. 17 hex values + `save_w[]` accesses. System directory management. |
+| 45 | `staff.c` Credits Constants | VERY LOW | Named constants | 504 lines. 17 hex values. Pure credits display, zero gameplay. |
+| 46 | `ranking.c` Residual `D_No[]` States | LOW | Named states | 784 lines. 17 raw `D_No[]` accesses remain after jump table conversion (#28). |
+
+### File Decomposition
+
+| # | Component | Risk | Pattern | Key Files |
+|---|-----------|------|---------|-----------|
+| 47 | `vs_shell.c` VS Screen Decomp | LOW–MED | Data extraction | 647 lines (67 KB). No jump tables or state machines — huge due to embedded string/sprite data tables. Extract data → `vs_data.c`. |
+| 48 | `cmd_main.c` Command Input Decomp | LOW–MED | Data extraction | 1,868 lines. 127 hex literals (input command definitions). Read-only data tables could expand into `cmd_data.c`. |
+| 49 | `mtrans.c` Matrix Data Extraction | LOW–MED | Data extraction | 2,816 lines (93 KB). Pre-computed matrix tables. Clear logic vs. data boundary — tables → separate file. |
+
+### Large Data Files (Documentation / Auto-Generation)
+
+| # | Component | Risk | Pattern | Key Files |
+|---|-----------|------|---------|-----------|
+| 50 | `sound_lookup.c` Sound Table | MED | Auto-gen candidate | 3,016 lines (**280 KB**). Massive lookup table. Could be script-generated & documented rather than hand-maintained. |
+| 51 | `charset.c` Character Set Tables | MED | Data isolation | 2,926 lines (76 KB). Character set mapping. Engine layer — uses `routine_no[]`. Touch with care. |
+| 52 | `caldir.c` Directional Calc Tables | MED | Data isolation | 1,098 lines (88 KB). Directional calculation lookups. Pure data, engine-critical. |
+
+
 
 ---
 

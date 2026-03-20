@@ -28,4 +28,27 @@ void Default_Training_Data(s32 flag);
 /// where Soft_Reset_Sub() has killed the menu task.
 void Menu_ReenterNetworkLobby(void);
 
+enum MenuAtState {
+    MENU_AT_INIT = 0,
+    MENU_AT_SAVE_DIRECTION = 19,
+    MENU_AT_LOAD_DIRECTION = 20
+};
+
+enum AutoSaveState {
+    AUTO_SAVE_1ST = 0,
+    AUTO_SAVE_2ND = 1,
+    AUTO_SAVE_3RD = 2,
+    AUTO_SAVE_4TH = 3
+};
+
+/** @brief G_No magic numbers for menu operations */
+#define GAME_STATE_MENU                2
+#define GAME_MODE_MENU_IDLE           12
+#define GAME_MODE_IN_GAME              1
+#define GAME_SUBMODE_REPLAY            2
+#define GAME_SUBMODE_TRAINING          5
+#define GAME_SUBMODE_SAVE              6
+
+void bg_etc_write_ex(s16 type);
+
 #endif
