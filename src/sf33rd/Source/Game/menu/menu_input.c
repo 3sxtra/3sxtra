@@ -12,6 +12,7 @@
 #include "port/menu_screen.h"
 #include "port/save/native_save.h"
 #include "port/sdl/app/sdl_app.h"
+#include "sf33rd/Source/Game/menu/menu_input_constants.h"
 #include "port/sdl/input/controller_image_overlay.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/animation/appear.h"
@@ -87,7 +88,7 @@ static void apply_training_hitbox_display(bool force_off);
 void System_Dir_Move_Sub(s16 PL_id) {
     u16 sw = ~plsw_01[PL_id] & plsw_00[PL_id]; // potential macro
     sw = Check_Menu_Lever(PL_id, 0);
-    MC_Move_Sub(sw, 0, 4, 0xFF);
+    MC_Move_Sub(sw, 0, DIR_CURSOR_MAX, 0xFF);
     System_Dir_Move_Sub_LR(sw, 0);
     Direction_Working[1] = Convert_Buff[3][0][0];
     Direction_Working[4] = Convert_Buff[3][0][0];
@@ -134,14 +135,14 @@ void Dir_Move_Sub(struct _TASK* task_ptr, s16 PL_id) {
     plsw_01[1] = PLsw[1][1];
 
     for (ix = 0; ix < 2; ix++) {
-        plsw_00[ix] &= 0x4FFF;
-        plsw_01[ix] &= 0x4FFF;
+        plsw_00[ix] &= INPUT_MASK_NO_PAUSE;
+        plsw_01[ix] &= INPUT_MASK_NO_PAUSE;
     }
 
     sw = Check_Menu_Lever(PL_id, 0);
     Dir_Move_Sub2(sw);
 
-    if (task_ptr->r_no[1] == 0xE) {
+    if (task_ptr->r_no[1] == MENU_RNO1_EXTRA_OPTION) {
         Ex_Move_Sub_LR(sw, PL_id);
         return;
     }
@@ -226,7 +227,7 @@ void Dir_Move_Sub_LR(u16 sw, s16 /* unused */) {
 
             if (system_dir[1].contents[Menu_Page][Menu_Cursor_Y[0]] != last_pos) {
                 Message_Data->order = 1;
-                Message_Data->request = system_dir[1].contents[Menu_Page][Menu_Max] + 0x74;
+                Message_Data->request = system_dir[1].contents[Menu_Page][Menu_Max] + MSG_DIR_PAGE_OFFSET;
                 Message_Data->timer = 2;
             }
         } else {
@@ -254,7 +255,7 @@ void Dir_Move_Sub_LR(u16 sw, s16 /* unused */) {
 
             if (system_dir[1].contents[Menu_Page][Menu_Cursor_Y[0]] != last_pos) {
                 Message_Data->order = 1;
-                Message_Data->request = system_dir[1].contents[Menu_Page][Menu_Max] + 0x74;
+                Message_Data->request = system_dir[1].contents[Menu_Page][Menu_Max] + MSG_DIR_PAGE_OFFSET;
                 Message_Data->timer = 2;
             }
         } else {
@@ -294,31 +295,31 @@ void Setup_Next_Page(struct _TASK* task_ptr, u8 /* unused */) {
     effect_work_init();
     Menu_Common_Init();
     Menu_Cursor_Y[0] = 0;
-    Order[0x4E] = 5;
-    Order_Timer[0x4E] = 1;
+    Order[EFF_SLOT_HEADER] = 5;
+    Order_Timer[EFF_SLOT_HEADER] = 1;
 
-    if (task_ptr->r_no[1] == 0xE) {
+    if (task_ptr->r_no[1] == MENU_RNO1_EXTRA_OPTION) {
         mode_type = 1;
         Menu_Max = Ex_Page_Data[Menu_Page];
         save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page][Menu_Max] = 1;
-        Order_Dir[0x4E] = 1;
-        effect_57_init(0x4E, MENU_HEADER_OPTION_MENU, 0, 0x45, 0);
-        Order[0x73] = 3;
-        Order_Dir[0x73] = 8;
-        Order_Timer[0x73] = 1;
+        Order_Dir[EFF_SLOT_HEADER] = 1;
+        effect_57_init(EFF_SLOT_HEADER, MENU_HEADER_OPTION_MENU, 0, MENU_Z_HEADER, 0);
+        Order[EFF_SLOT_EX_HEADER] = 3;
+        Order_Dir[EFF_SLOT_EX_HEADER] = 8;
+        Order_Timer[EFF_SLOT_EX_HEADER] = 1;
         if (!use_rmlui || !rmlui_menu_extra_option)
-            effect_57_init(0x73, MENU_HEADER_EXTRA_OPTION, 0, 0x3F, 2);
-        effect_66_init(0x5C, 0x27, 2, 0, 0x47, 0xB, 0);
-        Order[0x5C] = 3;
-        Order_Timer[0x5C] = 1;
-        effect_66_init(0x5D, 0x28, 2, 0, 0x40, (s16)Menu_Page + 1, 0);
-        Order[0x5D] = 3;
-        Order_Timer[0x5D] = 1;
+            effect_57_init(EFF_SLOT_EX_HEADER, MENU_HEADER_EXTRA_OPTION, 0, MENU_Z_EX_HEADER, 2);
+        effect_66_init(EFF_SLOT_DIR_ROW1, EFF_SPRITE_EX_SOUND, 2, 0, MENU_Z_LABEL_LIST, ORDERDIR_SUB_LABEL, 0);
+        Order[EFF_SLOT_DIR_ROW1] = 3;
+        Order_Timer[EFF_SLOT_DIR_ROW1] = 1;
+        effect_66_init(EFF_SLOT_DIR_ROW2, EFF_SPRITE_EX_DISP, 2, 0, MENU_Z_PAGE_NUM, (s16)Menu_Page + 1, 0);
+        Order[EFF_SLOT_DIR_ROW2] = 3;
+        Order_Timer[EFF_SLOT_DIR_ROW2] = 1;
 
         if ((msgExtraTbl[0]->msgNum[Menu_Cursor_Y[0] + Menu_Page * 8]) == 1) {
-            Message_Data->pos_y = 0x36;
+            Message_Data->pos_y = MSG_POS_Y_SINGLE;
         } else {
-            Message_Data->pos_y = 0x3E;
+            Message_Data->pos_y = MSG_POS_Y_MULTI;
         }
 
         Message_Data->request = Ex_Account_Data[Menu_Page] + Menu_Cursor_Y[0];
@@ -326,42 +327,42 @@ void Setup_Next_Page(struct _TASK* task_ptr, u8 /* unused */) {
         mode_type = 0;
         Menu_Max = Page_Data[Menu_Page];
         system_dir[1].contents[Menu_Page][Menu_Max] = 1;
-        Order[0x4E] = 5;
-        Order_Dir[0x4E] = 3;
-        effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, 0); /* blue BG — unconditional */
+        Order[EFF_SLOT_HEADER] = 5;
+        Order_Dir[EFF_SLOT_HEADER] = 3;
+        effect_57_init(EFF_SLOT_HEADER, MENU_HEADER_MODE_MENU, 0, MENU_Z_HEADER, 0); /* blue BG — unconditional */
 
         if (!use_rmlui || !rmlui_menu_sysdir) {
-            effect_66_init(0x5B, 0x14, 2, 0, 0x47, 0xA, 0);
-            Order[0x5B] = 3;
-            Order_Timer[0x5B] = 1;
-            effect_66_init(0x5C, 0x15, 2, 0, 0x47, 0xB, 0);
-            Order[0x5C] = 3;
-            Order_Timer[0x5C] = 1;
-            effect_66_init(0x5D, 0x16, 2, 0, 0x40, (s16)Menu_Page + 1, 0);
-            Order[0x5D] = 3;
-            Order_Timer[0x5D] = 1;
+            effect_66_init(EFF_SLOT_DIR_GAME, EFF_SPRITE_DIR_GAME, 2, 0, MENU_Z_LABEL_LIST, ORDERDIR_TITLE_LABEL, 0);
+            Order[EFF_SLOT_DIR_GAME] = 3;
+            Order_Timer[EFF_SLOT_DIR_GAME] = 1;
+            effect_66_init(EFF_SLOT_DIR_ROW1, EFF_SPRITE_DIR_DIFF, 2, 0, MENU_Z_LABEL_LIST, ORDERDIR_SUB_LABEL, 0);
+            Order[EFF_SLOT_DIR_ROW1] = 3;
+            Order_Timer[EFF_SLOT_DIR_ROW1] = 1;
+            effect_66_init(EFF_SLOT_DIR_ROW2, EFF_SPRITE_DIR_ROUND, 2, 0, MENU_Z_PAGE_NUM, (s16)Menu_Page + 1, 0);
+            Order[EFF_SLOT_DIR_ROW2] = 3;
+            Order_Timer[EFF_SLOT_DIR_ROW2] = 1;
         }
 
-        if ((msgSysDirTbl[0]->msgNum[Menu_Page * 0xC + Menu_Cursor_Y[0] * 2 + 1]) == 1) {
-            Message_Data->pos_y = 0x36;
+        if ((msgSysDirTbl[0]->msgNum[Menu_Page * DIR_PAGE_STRIDE + Menu_Cursor_Y[0] * 2 + 1]) == 1) {
+            Message_Data->pos_y = MSG_POS_Y_SINGLE;
         } else {
-            Message_Data->pos_y = 0x3E;
+            Message_Data->pos_y = MSG_POS_Y_MULTI;
         }
 
-        disp_index = Menu_Page * 0xC;
+        disp_index = Menu_Page * DIR_PAGE_STRIDE;
         Message_Data->request = disp_index + 1;
     }
 
     Menu_Cursor_Y[0] = 0;
 
     if (!use_rmlui || !rmlui_menu_sysdir || mode_type == 1) {
-        effect_66_init(0x8A, 0x13, 2, 0, -1, -1, -0x8000);
-        Order[0x8A] = 3;
-        Order_Timer[0x8A] = 1;
+        effect_66_init(EFF_SLOT_CURSOR_BG, EFF_SPRITE_PAGE_IND, 2, 0, -1, -1, EFF66_ZORDER_PAUSE);
+        Order[EFF_SLOT_CURSOR_BG] = 3;
+        Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
         Message_Data->order = 0;
         Message_Data->timer = 1;
         Message_Data->pos_x = 0;
-        Message_Data->pos_z = 0x45;
+        Message_Data->pos_z = MENU_Z_HEADER;
         effect_45_init(0, 0, 2);
 
         for (ix = 0; ix < Menu_Max; ix++, unused_s3 = disp_index += 2) {
@@ -377,10 +378,10 @@ void Setup_Next_Page(struct _TASK* task_ptr, u8 /* unused */) {
             }
         }
 
-        effect_40_init(mode_type, 0, 0x48, 0, 2, 1);
-        effect_40_init(mode_type, 1, 0x49, 0, 2, 1);
-        effect_40_init(mode_type, 2, 0x4A, 0, 2, 0);
-        effect_40_init(mode_type, 3, 0x4B, 0, 2, 2);
+        effect_40_init(mode_type, 0, EFF40_SEL_0, 0, 2, 1);
+        effect_40_init(mode_type, 1, EFF40_SEL_1, 0, 2, 1);
+        effect_40_init(mode_type, 2, EFF40_SEL_2, 0, 2, 0);
+        effect_40_init(mode_type, 3, EFF40_SEL_3, 0, 2, 2);
     }
 }
 
@@ -391,15 +392,15 @@ void Save_Direction(struct _TASK* task_ptr) {
 
     switch (task_ptr->r_no[2]) {
     case 0:
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
         task_ptr->r_no[2] += 1;
         task_ptr->timer = 5;
         Menu_Suicide[1] = 1;
         Menu_Suicide[2] = 0;
         Menu_Cursor_X[0] = 0;
-        Setup_BG(1, 0x200, 0);
+        Setup_BG(1, BG_SLIDE_X_FULL, 0);
         if (!(use_rmlui && rmlui_menu_sysdir))
-            Setup_Replay_Sub(0x70, MENU_HEADER_SYSTEM_DIRECTION, 2);
+            Setup_Replay_Sub(EFF_SLOT_DIR_HDR, MENU_HEADER_SYSTEM_DIRECTION, 2);
         Setup_File_Property(2, 0);
         Clear_Flash_Init(4);
         Message_Data->kind_req = 5;
@@ -431,15 +432,15 @@ void Load_Direction(struct _TASK* task_ptr) {
 
     switch (task_ptr->r_no[2]) {
     case 0:
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
         task_ptr->r_no[2] += 1;
         task_ptr->timer = 5;
         Menu_Suicide[1] = 1;
         Menu_Suicide[2] = 0;
         Menu_Cursor_X[0] = 0;
-        Setup_BG(1, 0x200, 0);
+        Setup_BG(1, BG_SLIDE_X_FULL, 0);
         if (!(use_rmlui && rmlui_menu_sysdir))
-            Setup_Replay_Sub(0x70, MENU_HEADER_SYSTEM_DIRECTION, 2);
+            Setup_Replay_Sub(EFF_SLOT_DIR_HDR, MENU_HEADER_SYSTEM_DIRECTION, 2);
         Setup_File_Property(2, 0);
         Clear_Flash_Init(4);
         Message_Data->kind_req = 5;
@@ -453,7 +454,7 @@ void Load_Direction(struct _TASK* task_ptr) {
         break;
 
     case 2:
-        if (FadeIn(1, 0x19, 8) != 0) {
+        if (FadeIn(1, FADE_SPEED_SLOW, 8) != 0) {
             task_ptr->r_no[2] += 1;
             task_ptr->free[3] = 0;
             Menu_Cursor_X[0] = Setup_Final_Cursor_Pos(0, 8);
@@ -476,7 +477,7 @@ void Load_Replay_Sub(struct _TASK* task_ptr) {
     switch (task_ptr->r_no[3]) {
     case 0:
         task_ptr->r_no[3] += 1;
-        Rep_Game_Infor[0xA] = Replay_w.game_infor;
+        Rep_Game_Infor[REPLAY_INFO_SLOT] = Replay_w.game_infor;
         cpExitTask(TASK_ENTRY);
         Play_Mode = 3;
         break;
@@ -484,7 +485,7 @@ void Load_Replay_Sub(struct _TASK* task_ptr) {
     case 1:
         task_ptr->r_no[3] += 1;
         FadeInit();
-        FadeOut(0, 0xFF, 8);
+        FadeOut(0, FADE_OPAQUE, 8);
         Play_Type = 1;
         Mode_Type = MODE_REPLAY;
         Present_Mode = 3;
@@ -517,54 +518,54 @@ void Load_Replay_Sub(struct _TASK* task_ptr) {
         break;
 
     case 2:
-        FadeOut(0, 0xFF, 8);
+        FadeOut(0, FADE_OPAQUE, 8);
         task_ptr->r_no[3] += 1;
-        task_ptr->timer = 0xA;
+        task_ptr->timer = REPLAY_LOAD_TIMER;
         System_all_clear_Level_B();
         pulpul_stop();
         init_pulpul_work();
         bg_etc_write(2);
-        bg_w.bgw[0].wxy[0].disp.pos += 0x200;
+        bg_w.bgw[0].wxy[0].disp.pos += BG_SLIDE_X_FULL;
         Setup_BG(0, bg_w.bgw[0].wxy[0].disp.pos, bg_w.bgw[0].wxy[1].disp.pos);
-        effect_38_init(0, 0xB, My_char[0], 1, 0);
-        Order[0xB] = 3;
-        Order_Timer[0xB] = 1;
-        effect_38_init(1, 0xC, My_char[1], 1, 0);
-        Order[0xC] = 3;
-        Order_Timer[0xC] = 1;
-        effect_K6_init(0, 0x23, 0x23, 0);
-        Order[0x23] = 3;
-        Order_Timer[0x23] = 1;
-        effect_K6_init(1, 0x24, 0x23, 0);
-        Order[0x24] = 3;
-        Order_Timer[0x24] = 1;
-        effect_39_init(0, 0x11, My_char[0], 0, 0);
-        Order[0x11] = 3;
-        Order_Timer[0x11] = 1;
-        effect_39_init(1, 0x12, My_char[1], 0, 0);
-        Order[0x12] = 3;
-        Order_Timer[0x12] = 1;
-        effect_K6_init(0, 0x1D, 0x1D, 0);
-        Order[0x1D] = 3;
-        Order_Timer[0x1D] = 1;
-        effect_K6_init(1, 0x1E, 0x1D, 0);
-        Order[0x1E] = 3;
-        Order_Timer[0x1E] = 1;
+        effect_38_init(0, EFF_SLOT_P1_PORTRAIT, My_char[0], 1, 0);
+        Order[EFF_SLOT_P1_PORTRAIT] = 3;
+        Order_Timer[EFF_SLOT_P1_PORTRAIT] = 1;
+        effect_38_init(1, EFF_SLOT_P2_PORTRAIT, My_char[1], 1, 0);
+        Order[EFF_SLOT_P2_PORTRAIT] = 3;
+        Order_Timer[EFF_SLOT_P2_PORTRAIT] = 1;
+        effect_K6_init(0, EFF_SLOT_P1_SA, EFF_SLOT_P1_SA, 0);
+        Order[EFF_SLOT_P1_SA] = 3;
+        Order_Timer[EFF_SLOT_P1_SA] = 1;
+        effect_K6_init(1, EFF_SLOT_P2_SA, EFF_SLOT_P1_SA, 0);
+        Order[EFF_SLOT_P2_SA] = 3;
+        Order_Timer[EFF_SLOT_P2_SA] = 1;
+        effect_39_init(0, EFF_SLOT_P1_NAME, My_char[0], 0, 0);
+        Order[EFF_SLOT_P1_NAME] = 3;
+        Order_Timer[EFF_SLOT_P1_NAME] = 1;
+        effect_39_init(1, EFF_SLOT_P2_NAME, My_char[1], 0, 0);
+        Order[EFF_SLOT_P2_NAME] = 3;
+        Order_Timer[EFF_SLOT_P2_NAME] = 1;
+        effect_K6_init(0, EFF_SLOT_P1_WIN, EFF_SLOT_P1_WIN, 0);
+        Order[EFF_SLOT_P1_WIN] = 3;
+        Order_Timer[EFF_SLOT_P1_WIN] = 1;
+        effect_K6_init(1, EFF_SLOT_P2_WIN, EFF_SLOT_P1_WIN, 0);
+        Order[EFF_SLOT_P2_WIN] = 3;
+        Order_Timer[EFF_SLOT_P2_WIN] = 1;
         effect_43_init(2, 0);
-        effect_75_init(0x2A, 3, 0);
-        Order[0x2A] = 3;
-        Order_Timer[0x2A] = 1;
-        Order_Dir[0x2A] = 5;
+        effect_75_init(EFF_SLOT_STAGE_NAME, 3, 0);
+        Order[EFF_SLOT_STAGE_NAME] = 3;
+        Order_Timer[EFF_SLOT_STAGE_NAME] = 1;
+        Order_Dir[EFF_SLOT_STAGE_NAME] = 5;
         break;
 
     case 3:
-        FadeOut(0, 0xFF, 8);
+        FadeOut(0, FADE_OPAQUE, 8);
 
         if (--task_ptr->timer <= 0) {
             task_ptr->r_no[3] += 1;
-            bgPalCodeOffset[0] = 0x90;
+            bgPalCodeOffset[0] = PAL_OFFSET_REPLAY;
             BGM_Request(51);
-            Purge_memory_of_kind_of_key(0xC);
+            Purge_memory_of_kind_of_key(PURGE_KEY_REPLAY);
             Push_LDREQ_Queue_Player(0, My_char[0]);
             Push_LDREQ_Queue_Player(1, My_char[1]);
             Push_LDREQ_Queue_BG((u16)bg_w.stage);
@@ -655,8 +656,8 @@ s32 Load_Replay_MC_Sub(struct _TASK* task_ptr, s16 PL_id) {
             task_ptr->r_no[2] = 0;
             task_ptr->r_no[3] = 0;
             task_ptr->free[0] = 0;
-            Order[0x6E] = 4;
-            Order_Timer[0x6E] = 4;
+            Order[EFF_SLOT_REPLAY_HDR] = 4;
+            Order_Timer[EFF_SLOT_REPLAY_HDR] = 4;
         } else {
             Menu_Suicide[0] = 0;
             Menu_Suicide[1] = 0;
@@ -665,8 +666,8 @@ s32 Load_Replay_MC_Sub(struct _TASK* task_ptr, s16 PL_id) {
             task_ptr->r_no[2] = 0;
             task_ptr->r_no[3] = 0;
             task_ptr->free[0] = 0;
-            Order[0x70] = 4;
-            Order_Timer[0x70] = 4;
+            Order[EFF_SLOT_DIR_HDR] = 4;
+            Order_Timer[EFF_SLOT_DIR_HDR] = 4;
         }
 
         break;
@@ -682,9 +683,9 @@ u16 Game_Option_Sub(s16 PL_id) {
 
     sw = ~plsw_01[PL_id] & plsw_00[PL_id];
     sw = Check_Menu_Lever(PL_id, 0);
-    ret = MC_Move_Sub(sw, 0, 0xB, 0xFF);
+    ret = MC_Move_Sub(sw, 0, GAME_OPTION_MAX, 0xFF);
     ret |= GO_Move_Sub_LR(sw, 0);
-    ret &= 0x20F;
+    ret &= RESULT_MASK;
     return ret;
 }
 
@@ -726,7 +727,7 @@ u16 GO_Move_Sub_LR(u16 sw, s16 cursor_id) {
 void Button_Config_Sub(s16 PL_id) {
     u16 sw = ~plsw_01[PL_id] & plsw_00[PL_id];
     sw = Check_Menu_Lever(PL_id, 0);
-    MC_Move_Sub(sw, PL_id, 0xA, 0xFF);
+    MC_Move_Sub(sw, PL_id, BUTTON_CONFIG_MAX, 0xFF);
     Button_Move_Sub_LR(sw, PL_id);
 
     if (ppwork[0].ok_dev == 0) {
@@ -814,8 +815,8 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
             if (use_rmlui && rmlui_menu_game_option)
                 rmlui_game_option_hide();
             Return_Option_Mode_Sub(task_ptr);
-            Order[0x6A] = 4;
-            Order_Timer[0x6A] = 4;
+            Order[EFF_SLOT_GAME_OPT] = 4;
+            Order_Timer[EFF_SLOT_GAME_OPT] = 4;
             return;
         }
 
@@ -844,8 +845,8 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
             if (use_rmlui && rmlui_menu_button_config)
                 rmlui_button_config_hide();
             Return_Option_Mode_Sub(task_ptr);
-            Order[0x6B] = 4;
-            Order_Timer[0x6B] = 4;
+            Order[EFF_SLOT_BTN_CFG] = 4;
+            Order_Timer[EFF_SLOT_BTN_CFG] = 4;
             return;
         }
 
@@ -864,8 +865,8 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
             if (use_rmlui && rmlui_menu_memory_card)
                 rmlui_memory_card_hide();
             Return_Option_Mode_Sub(task_ptr);
-            Order[0x69] = 4;
-            Order_Timer[0x69] = 4;
+            Order[EFF_SLOT_MEM_CARD] = 4;
+            Order_Timer[EFF_SLOT_MEM_CARD] = 4;
             return;
         }
 
@@ -875,8 +876,8 @@ void Button_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
             if (use_rmlui && rmlui_menu_memory_card)
                 rmlui_memory_card_hide();
             Return_Option_Mode_Sub(task_ptr);
-            Order[0x69] = 4;
-            Order_Timer[0x69] = 4;
+            Order[EFF_SLOT_MEM_CARD] = 4;
+            Order_Timer[EFF_SLOT_MEM_CARD] = 4;
             break;
 
         case 0:
@@ -920,7 +921,7 @@ void Screen_Adjust_Sub(s16 PL_id) {
     u16 sw;
     sw = ~plsw_01[PL_id] & plsw_00[PL_id];
     sw = Check_Menu_Lever(PL_id, 0);
-    MC_Move_Sub(sw, 0, 6, 0xFF);
+    MC_Move_Sub(sw, 0, SCREEN_ADJUST_MAX, 0xFF);
     Screen_Move_Sub_LR(sw);
     Convert_Buff[2][0][0] = X_Adjust_Buff[2] & 0xFF;
     Convert_Buff[2][0][1] = Y_Adjust_Buff[2] & 0xFF;
@@ -953,8 +954,8 @@ void Screen_Exit_Check(struct _TASK* task_ptr, s16 PL_id) {
             task_ptr->r_no[1] = 1;
         } else {
             task_ptr->r_no[1] = 7;
-            Order[0x65] = 4;
-            Order_Timer[0x65] = 4;
+            Order[EFF_SLOT_SCREEN_ADJ] = 4;
+            Order_Timer[EFF_SLOT_SCREEN_ADJ] = 4;
         }
 
         task_ptr->r_no[2] = 0;
@@ -1107,9 +1108,9 @@ u16 Sound_Cursor_Sub(s16 PL_id) {
 
     sw = ~plsw_01[PL_id] & plsw_00[PL_id];
     sw = Check_Menu_Lever(PL_id, 0);
-    ret = MC_Move_Sub(sw, 0, 6, 0xFF);
+    ret = MC_Move_Sub(sw, 0, SOUND_TEST_MAX, 0xFF);
     ret |= SD_Move_Sub_LR(sw);
-    ret &= 0x20F;
+    ret &= RESULT_MASK;
     return ret;
 }
 
@@ -1199,15 +1200,15 @@ void Save_Load_Menu(struct _TASK* task_ptr) {
 
         Menu_Common_Init();
         Menu_Suicide[3] = 0;
-        Target_BG_X[1] = bg_w.bgw[1].wxy[0].disp.pos + 0x180;
+        Target_BG_X[1] = bg_w.bgw[1].wxy[0].disp.pos + BG_SLIDE_X_MEDIUM;
         Offset_BG_X[1] = 0;
-        Target_BG_X[2] = bg_w.bgw[2].wxy[0].disp.pos + 0x200;
+        Target_BG_X[2] = bg_w.bgw[2].wxy[0].disp.pos + BG_SLIDE_X_FULL;
         Offset_BG_X[2] = 0;
-        bg_w.bgw[2].speed_x = 0x333333;
+        bg_w.bgw[2].speed_x = BG_SPEED_FORWARD;
         Next_Step = 0;
-        bg_mvxy.a[0].sp = 0x266666;
+        bg_mvxy.a[0].sp = BG_MOVE_FORWARD;
         bg_mvxy.d[0].sp = 0;
-        effect_58_init(0xE, 1, 1);
+        effect_58_init(EFF58_SCROLL_TYPE, 1, 1);
         effect_58_init(0, 1, 2);
         Menu_Cursor_X[0] = Setup_Final_Cursor_Pos(0, 8);
         Message_Data->kind_req = 5;
@@ -1241,8 +1242,8 @@ void Save_Load_Menu(struct _TASK* task_ptr) {
                 Message_Data[ix].order = 3;
             }
 
-            Order[0x78] = 3;
-            Order_Timer[0x78] = 1;
+            Order[EFF_SLOT_SAVE_DONE] = 3;
+            Order_Timer[EFF_SLOT_SAVE_DONE] = 1;
         }
 
         break;
@@ -1257,15 +1258,15 @@ void Save_Load_Menu(struct _TASK* task_ptr) {
 void Go_Back_MC(struct _TASK* task_ptr) {
     task_ptr->r_no[3] = 4;
     Menu_Cursor_Y[0] = task_ptr->r_no[2] - 4;
-    Target_BG_X[1] = bg_w.bgw[1].wxy[0].disp.pos - 0x180;
+    Target_BG_X[1] = bg_w.bgw[1].wxy[0].disp.pos - BG_SLIDE_X_MEDIUM;
     Offset_BG_X[1] = 0;
-    Target_BG_X[2] = bg_w.bgw[2].wxy[0].disp.pos - 0x200;
+    Target_BG_X[2] = bg_w.bgw[2].wxy[0].disp.pos - BG_SLIDE_X_FULL;
     Offset_BG_X[2] = 0;
-    bg_w.bgw[2].speed_x = -0x333333;
+    bg_w.bgw[2].speed_x = BG_SPEED_BACKWARD;
     Next_Step = 0;
-    bg_mvxy.a[0].sp = 0xFFD9999A;
+    bg_mvxy.a[0].sp = BG_MOVE_BACKWARD;
     bg_mvxy.d[0].sp = 0;
-    effect_58_init(0xE, 1, 1);
+    effect_58_init(EFF58_SCROLL_TYPE, 1, 1);
     effect_58_init(0, 1, 2);
 }
 
@@ -1275,7 +1276,7 @@ void Memory_Card_Sub(s16 PL_id) {
 
     sw = ~plsw_01[PL_id] & plsw_00[PL_id];
     sw = Check_Menu_Lever(PL_id, 0);
-    MC_Move_Sub(sw, 0, 3, 0xFF);
+    MC_Move_Sub(sw, 0, MEMORY_CARD_MAX, 0xFF);
 
     if ((Menu_Cursor_Y[0] == 2) && !(IO_Result & SWK_EAST)) {
         IO_Result = 0;
@@ -1427,20 +1428,20 @@ void Menu_Select(struct _TASK* task_ptr) {
         Menu_Suicide[0] = 0;
         Menu_Suicide[1] = 0;
         Menu_Suicide[2] = 0;
-        effect_10_init(0, 0, 0, 0, 0, 0x14, 0xC);
-        effect_10_init(0, 0, 2, 2, 0, 0x16, 0x10);
+        effect_10_init(0, 0, 0, 0, 0, EFF10_PAUSE_CONTINUE, EFF10_LAYER_CONTINUE);
+        effect_10_init(0, 0, 2, 2, 0, EFF10_PAUSE_BTNCFG, EFF10_LAYER_BTNCFG);
 
         switch (Mode_Type) {
         case MODE_VERSUS:
-            effect_10_init(0, 0, 1, 5, 0, 0x10, 0xE);
+            effect_10_init(0, 0, 1, 5, 0, EFF10_PAUSE_EXIT_VS, EFF10_LAYER_EXIT);
             break;
 
         case MODE_REPLAY:
-            effect_10_init(0, 0, 1, 4, 0, 0x15, 0xE);
+            effect_10_init(0, 0, 1, 4, 0, EFF10_PAUSE_EXIT_RPL, EFF10_LAYER_EXIT);
             break;
 
         default:
-            effect_10_init(0, 0, 1, 1, 0, 0x11, 0xE);
+            effect_10_init(0, 0, 1, 1, 0, EFF10_PAUSE_EXIT_DEF, EFF10_LAYER_EXIT);
             break;
         }
 
@@ -1484,7 +1485,7 @@ void Menu_Select(struct _TASK* task_ptr) {
                     break;
 
                 case MODE_REPLAY:
-                    task_ptr->r_no[0] = 0xC;
+                    task_ptr->r_no[0] = MENU_RNO0_REPLAY_EXIT;
                     task_ptr->r_no[1] = 0;
                     break;
 
@@ -1505,9 +1506,9 @@ void Menu_Select(struct _TASK* task_ptr) {
                 task_ptr->r_no[2]++;
                 Menu_Suicide[0] = 1;
                 Menu_Cursor_Y[0] = 1;
-                effect_10_init(0, 0, 3, 3, 1, 0x13, 0xC);
-                effect_10_init(0, 1, 0, 0, 1, 0x14, 0xF);
-                effect_10_init(0, 1, 1, 1, 1, 0x1A, 0xF);
+                effect_10_init(0, 0, 3, 3, 1, EFF10_PAUSE_CONFIRM, EFF10_LAYER_CONFIRM);
+                effect_10_init(0, 1, 0, 0, 1, EFF10_PAUSE_YES, EFF10_LAYER_YESNO);
+                effect_10_init(0, 1, 1, 1, 1, EFF10_PAUSE_NO, EFF10_LAYER_YESNO);
                 SE_selected();
                 break;
             }
@@ -1570,9 +1571,9 @@ s32 Yes_No_Cursor_Move_Sub(struct _TASK* task_ptr) {
 /** @brief Button Config in-game (during pause). */
 void Button_Config_in_Game(struct _TASK* task_ptr) {
     if (Check_Pad_in_Pause(task_ptr) != 0) {
-        Order[0x8A] = 3;
-        Order_Timer[0x8A] = 1;
-        effect_66_init(0x8A, 9, 2, 7, -1, -1, -0x3FFC);
+        Order[EFF_SLOT_CURSOR_BG] = 3;
+        Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
+        effect_66_init(EFF_SLOT_CURSOR_BG, 9, 2, 7, -1, -1, EFF66_ZORDER_INGAME);
         return;
     }
 
@@ -1585,14 +1586,14 @@ void Button_Config_in_Game(struct _TASK* task_ptr) {
         Copy_Key_Disp_Work();
         Setup_Button_Sub(6, 5, 3);
         ControllerImageOverlay_Init();
-        Order[0x8A] = 3;
-        Order_Timer[0x8A] = 1;
-        effect_66_init(0x8B, 0xA, 3, 7, -1, -1, -0x3FFB);
-        Order[0x8B] = 3;
-        Order_Timer[0x8B] = 1;
-        effect_66_init(0x8C, 0xB, 3, 7, -1, -1, -0x3FFB);
-        Order[0x8C] = 3;
-        Order_Timer[0x8C] = 1;
+        Order[EFF_SLOT_CURSOR_BG] = 3;
+        Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
+        effect_66_init(EFF_SLOT_PAUSE_BTN1, 0xA, 3, 7, -1, -1, EFF66_ZORDER_INGAME_COL);
+        Order[EFF_SLOT_PAUSE_BTN1] = 3;
+        Order_Timer[EFF_SLOT_PAUSE_BTN1] = 1;
+        effect_66_init(EFF_SLOT_PAUSE_BTN2, 0xB, 3, 7, -1, -1, EFF66_ZORDER_INGAME_COL);
+        Order[EFF_SLOT_PAUSE_BTN2] = 3;
+        Order_Timer[EFF_SLOT_PAUSE_BTN2] = 1;
         break;
 
     case 1:
@@ -1642,7 +1643,7 @@ void Return_Pause_Sub(struct _TASK* task_ptr) {
     Cursor_Y_Pos[0][0] = 1;
     Order[138] = 3;
     Order_Timer[138] = 1;
-    effect_66_init(138, 9, 2, 7, -1, -1, -0x3FFC);
+    effect_66_init(138, 9, 2, 7, -1, -1, EFF66_ZORDER_INGAME);
 }
 
 /** @brief Check if any pad input occurred during pause. */
@@ -1813,7 +1814,7 @@ s32 VS_Result_Move_Sub(struct _TASK* task_ptr, s16 PL_id) {
 
 /** @brief Save Replay step 1 â€” prepare save operation. */
 void Setup_Save_Replay_1st(struct _TASK* task_ptr) {
-    FadeOut(1, 0xFF, 8);
+    FadeOut(1, FADE_OPAQUE, 8);
     task_ptr->r_no[2]++;
     task_ptr->timer = 5;
     Menu_Common_Init();
@@ -1824,7 +1825,7 @@ void Setup_Save_Replay_1st(struct _TASK* task_ptr) {
     Menu_Suicide[3] = 0;
     Setup_BG(1, 512, 0);
     /* Native replay setup skipped — RmlUI replay picker always used */
-    Setup_File_Property(1, 0xFF);
+    Setup_File_Property(1, FADE_OPAQUE);
     Clear_Flash_Init(4);
 }
 
@@ -2015,14 +2016,14 @@ void Setup_Tr_Pause(struct _TASK* task_ptr) {
     task_ptr->free[0] = 60;
     Cursor_Y_Pos[0][0] = 0;
     Disp_Attack_Data = 0;
-    Game_pause = 0x81;
+    Game_pause = GAME_PAUSE_ACTIVE;
     Pause_Down = 1;
     Menu_Suicide[0] = 1;
     Menu_Suicide[1] = 1;
     Menu_Suicide[2] = 0;
     Order[138] = 3;
     Order_Timer[138] = 1;
-    effect_66_init(138, 9, 2, 7, -1, -1, -0x3FFC);
+    effect_66_init(138, 9, 2, 7, -1, -1, EFF66_ZORDER_INGAME);
     SsBgmHalfVolume(1);
     spu_all_off();
 }
@@ -2119,7 +2120,7 @@ s32 Pause_1st_Sub(struct _TASK* task_ptr) {
 
     if (Pause_Down && (!use_rmlui || !rmlui_screen_pause)) {
         SSPutStr2(17, 12, 9, "PRESS   BUTTON");
-        dispButtonImage2(0xB2, 0x5B, 1, 0x13, 0xF, 0, 4);
+        dispButtonImage2(BTN_IMG_POS_X, BTN_IMG_POS_Y, 1, EFF10_PAUSE_CONFIRM, EFF10_LAYER_YESNO, 0, 4);
         SSPutStr2(18, 14, 9, "TO PAUSE MENU");
     }
 
@@ -2131,7 +2132,7 @@ s32 Pause_1st_Sub(struct _TASK* task_ptr) {
             return 0;
         }
 
-        task_ptr->r_no[2] = 0x63;
+        task_ptr->r_no[2] = MENU_RNO2_PAUSE_EXIT;
         Exit_Menu = 1;
         SE_selected();
         return 1;
@@ -2466,7 +2467,7 @@ void Default_Training_Option() {
 void Back_to_Mode_Select(struct _TASK* task_ptr) {
     s16 ix;
 
-    FadeOut(1, 0xFF, 8);
+    FadeOut(1, FADE_OPAQUE, 8);
     G_No[0] = 2;
     G_No[1] = 12;
     G_No[2] = 0;
@@ -2483,7 +2484,7 @@ void Back_to_Mode_Select(struct _TASK* task_ptr) {
         task_ptr->r_no[ix] = 0;
     }
 
-    BGM_Request_Code_Check(0x41);
+    BGM_Request_Code_Check(BGM_CODE_MODE_SELECT);
 
     Mode_Type = MODE_ARCADE;
     Play_Mode = 0;
@@ -2512,7 +2513,7 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
 
             if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] != last_pos) {
                 Message_Data->order = 1;
-                Message_Data->request = save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Max] + 32;
+                Message_Data->request = save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Max] + MSG_EX_PAGE_OFFSET;
                 Message_Data->timer = 2;
             }
         } else if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] < 0) {
@@ -2542,7 +2543,7 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
 
             if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] != last_pos) {
                 Message_Data->order = 1;
-                Message_Data->request = save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Max] + 32;
+                Message_Data->request = save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Max] + MSG_EX_PAGE_OFFSET;
                 Message_Data->timer = 2;
             }
         } else if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] >

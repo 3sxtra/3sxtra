@@ -14,6 +14,7 @@ typedef enum {
     SND_BGM_CREDITS_CONSUMER = 0x40,
     SND_BGM_VS_WAIT = 51,
     SND_BGM_CHARACTER_SELECT = 57,
+    SND_BGM_MODE_SELECT = 0x41,
 
 } SoundRequest;
 
