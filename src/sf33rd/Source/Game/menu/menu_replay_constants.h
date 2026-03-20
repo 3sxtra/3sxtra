@@ -28,6 +28,29 @@
 /** Y coordinate for the pause menu group 2. */
 #define REPLAY_PAUSE_Y2             0x58
 
+/** Header Z-order for replay setups. */
+#define REPLAY_Z_HEADER             0x3F
+
+/** First parameter for replay pause menu rendering (effect_A3). */
+#define REPLAY_PAUSE_PARAM1         0x17
+
+/** Second parameter for replay pause menu rendering (effect_A3). */
+#define REPLAY_PAUSE_PARAM2         0x63
+
+/* ── Effect Sprites ──────────────────────────────────────────────── */
+
+/** Sprite ID for setup background. */
+#define REPLAY_SPRITE_SETUP_BG      8
+
+/** Sprite ID for after-match background. */
+#define REPLAY_SPRITE_AFTER_BG      38
+
+/** Sprite ID for replay picker background. */
+#define REPLAY_SPRITE_PICKER_BG     41
+
+/** Sprite ID for pause menu background. */
+#define REPLAY_SPRITE_PAUSE_BG      0x0A
+
 /* ── Effect Z-Depths ─────────────────────────────────────────────── */
 
 /** Z-depth for replay setup cursor element. */

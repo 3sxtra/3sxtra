@@ -59,6 +59,8 @@
 #define EFF_SLOT_P2_WIN         0x1E
 /** Stage name banner (replay). */
 #define EFF_SLOT_STAGE_NAME     0x2A
+/** Replay marker base slot. */
+#define EFF_SLOT_REPLAY_MARKER  0x50
 
 
 /* ── Effect sprite / layer IDs (2nd arg to effect_66_init etc.) ── */

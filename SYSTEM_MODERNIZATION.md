@@ -63,6 +63,7 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 45 | `menu_network.c` Hex Constants | LOW | Named constants | 1,898 lines. 114 raw hex → named constants via new `menu_network_constants.h` (~46 defines). Network menu UI positioning, modes, and geometry. Zero logic changes. |
 | 53 | `menu_training.c` Hex Constants | LOW | Named constants | 878 lines. ~40 raw decimal/hex → named constants via `menu_training_constants.h`. UI positioning, loop counters, and wait timers. Zero logic changes. |
 | 55 | `menu_save.c` Hex Constants | LOW | Named constants | ~15 raw hex → named constants via `menu_save_constants.h` and `menu_input_constants.h`. |
+| 54 | `menu_replay.c` Hex Constants | LOW | Named constants | ~40 raw hex → named constants via `menu_replay_constants.h` and `menu_input_constants.h`. Zero logic changes. |
 ---
 
 ## Next Wave: Safe Improvement Candidates (March 2026 Audit — Wave 2)
@@ -71,7 +72,6 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 
 | # | Component | Risk | Pattern | Key Files |
 |---|-----------|------|---------|-----------|
-| 54 | `menu_replay.c` Hex Constants | LOW | Named constants | ~40 raw hex → named constants via `menu_replay_constants.h` and `menu_input_constants.h`. |
 
 ### Large Data Files (Documentation / Auto-Generation)
 

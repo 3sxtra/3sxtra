@@ -133,11 +133,11 @@ void Setup_Save_Replay_2nd(struct _TASK* task_ptr, s16 arg1) {
 }
 
 void Setup_Replay_Sub(s16 type, MenuHeader char_type, s16 master_player) {
-    effect_57_init(type, char_type, 0, 63, 2);
+    effect_57_init(type, char_type, 0, REPLAY_Z_HEADER, 2);
     Order[type] = 1;
     Order_Dir[type] = 8;
     Order_Timer[type] = 1;
-    effect_66_init(EFF_SLOT_CURSOR_BG, 8, master_player, 0, -1, -1, REPLAY_Z_DEPTH_SETUP);
+    effect_66_init(EFF_SLOT_CURSOR_BG, REPLAY_SPRITE_SETUP_BG, master_player, 0, -1, -1, REPLAY_Z_DEPTH_SETUP);
     Order[EFF_SLOT_CURSOR_BG] = 3;
     Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
 }
@@ -216,12 +216,12 @@ void After_Replay(struct _TASK* task_ptr) {
         Menu_Cursor_Y[0] = 0;
 
         for (ix = 0, s5 = char_ix = '8'; ix < 3; ix++, s4 = char_ix++) {
-            effect_61_init(0, ix + 80, 0, 0, char_ix, ix, REPLAY_Z_DEPTH_MARKER);
-            Order[ix + 80] = 3;
-            Order_Timer[ix + 80] = 1;
+            effect_61_init(0, ix + EFF_SLOT_REPLAY_MARKER, 0, 0, char_ix, ix, REPLAY_Z_DEPTH_MARKER);
+            Order[ix + EFF_SLOT_REPLAY_MARKER] = 3;
+            Order_Timer[ix + EFF_SLOT_REPLAY_MARKER] = 1;
         }
 
-        effect_66_init(EFF_SLOT_CURSOR_BG, 38, 0, 0, -1, -1, REPLAY_Z_DEPTH_AFTER);
+        effect_66_init(EFF_SLOT_CURSOR_BG, REPLAY_SPRITE_AFTER_BG, 0, 0, -1, -1, REPLAY_Z_DEPTH_AFTER);
         Order[EFF_SLOT_CURSOR_BG] = 3;
         Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
         break;
@@ -289,9 +289,9 @@ void After_Replay(struct _TASK* task_ptr) {
             Menu_Suicide[0] = 0;
             Menu_Common_Init();
             Menu_Cursor_X[0] = 0;
-            Setup_BG(1, 512, 0);
+            Setup_BG(1, BG_SLIDE_X_FULL, 0);
             if (!(use_rmlui && rmlui_menu_replay)) {
-                effect_57_init(EFF_SLOT_REPLAY_HDR, MENU_HEADER_REPLAY, 0, 63, 999);
+                effect_57_init(EFF_SLOT_REPLAY_HDR, MENU_HEADER_REPLAY, 0, REPLAY_Z_HEADER, 999);
                 Order[EFF_SLOT_REPLAY_HDR] = 3;
                 Order_Dir[EFF_SLOT_REPLAY_HDR] = 8;
                 Order_Timer[EFF_SLOT_REPLAY_HDR] = 1;
@@ -299,7 +299,7 @@ void After_Replay(struct _TASK* task_ptr) {
             Setup_File_Property(1, REPLAY_FILE_PROPERTY_ALL);
             rmlui_replay_picker_open(1); /* always use RmlUI — ImGui removed */
             if (!(use_rmlui && rmlui_menu_replay)) {
-                effect_66_init(EFF_SLOT_CURSOR_BG, 41, 0, 0, -1, -1, REPLAY_Z_DEPTH_PICKER);
+                effect_66_init(EFF_SLOT_CURSOR_BG, REPLAY_SPRITE_PICKER_BG, 0, 0, -1, -1, REPLAY_Z_DEPTH_PICKER);
                 Order[EFF_SLOT_CURSOR_BG] = 3;
                 Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
             }
@@ -346,12 +346,12 @@ void After_Replay(struct _TASK* task_ptr) {
         Menu_Suicide[0] = 0;
 
         for (ix = 0, s3 = char_ix = '8'; ix < 3; ix++, s2 = char_ix++) {
-            effect_61_init(0, ix + 80, 0, 0, char_ix, ix, REPLAY_Z_DEPTH_MARKER);
-            Order[ix + 80] = 3;
-            Order_Timer[ix + 80] = 1;
+            effect_61_init(0, ix + EFF_SLOT_REPLAY_MARKER, 0, 0, char_ix, ix, REPLAY_Z_DEPTH_MARKER);
+            Order[ix + EFF_SLOT_REPLAY_MARKER] = 3;
+            Order_Timer[ix + EFF_SLOT_REPLAY_MARKER] = 1;
         }
 
-        effect_66_init(EFF_SLOT_CURSOR_BG, 38, 0, 0, -1, -1, REPLAY_Z_DEPTH_AFTER);
+        effect_66_init(EFF_SLOT_CURSOR_BG, REPLAY_SPRITE_AFTER_BG, 0, 0, -1, -1, REPLAY_Z_DEPTH_AFTER);
         Order[EFF_SLOT_CURSOR_BG] = 3;
         Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
         task_ptr->r_no[1]++;
@@ -381,11 +381,11 @@ void End_Replay_Menu(struct _TASK* task_ptr) {
         Pause_ID = Decide_ID;
         Pause_Down = 1;
         Game_pause = GAME_PAUSE_ACTIVE;
-        effect_A3_init(1, 0x17, 0x63, 0, 3, REPLAY_PAUSE_X1, REPLAY_PAUSE_Y1, 1);
-        effect_A3_init(1, 0x17, 0x63, 1, 3, REPLAY_PAUSE_X2, REPLAY_PAUSE_Y2, 1);
+        effect_A3_init(1, REPLAY_PAUSE_PARAM1, REPLAY_PAUSE_PARAM2, 0, 3, REPLAY_PAUSE_X1, REPLAY_PAUSE_Y1, 1);
+        effect_A3_init(1, REPLAY_PAUSE_PARAM1, REPLAY_PAUSE_PARAM2, 1, 3, REPLAY_PAUSE_X2, REPLAY_PAUSE_Y2, 1);
         Order[EFF_SLOT_CURSOR_BG] = 3;
         Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
-        effect_66_init(EFF_SLOT_CURSOR_BG, 0xA, 2, 7, -1, -1, REPLAY_Z_DEPTH_PAUSE);
+        effect_66_init(EFF_SLOT_CURSOR_BG, REPLAY_SPRITE_PAUSE_BG, 2, 7, -1, -1, REPLAY_Z_DEPTH_PAUSE);
         /* fallthrough */
 
     case 1:
