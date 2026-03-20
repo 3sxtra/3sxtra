@@ -4,12 +4,15 @@
  */
 
 #include "sf33rd/Source/Game/screen/staff.h"
+#include "sf33rd/Source/Game/screen/staff_constants.h"
 #include "common.h"
+#include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/effect/effh6.h"
 #include "sf33rd/Source/Game/ending/end_data.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/sound/se.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
+#include "sf33rd/Source/Game/sound/sound_ids.h"
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include <string.h>
@@ -282,7 +285,7 @@ static s32 check_shortcut() {
             sw_w = p1sw_0;
         }
 
-        if (sw_w & 0xFF0) {
+        if (sw_w & SWK_ATTACKS) {
             return 1;
         }
     }
@@ -301,15 +304,15 @@ static void set_credit_string(s32 t, s32 x, s32 y, s32 a, s8* s) {
     xu = x;
     yu = y;
 
-    if (*su == 0x3F || *su == 0x60) {
+    if (*su == STAFF_MARKER_SECTION || *su == STAFF_MARKER_CONSUMER) {
         su++;
     }
 
     mojisuu = strlen(su);
-    xu = 192 - ((mojisuu * 9) / 2);
+    xu = STAFF_CENTER_X - ((mojisuu * 9) / 2);
 
-    xu += (bg_w.bgw[5].xy[0].disp.pos) - 192;
-    yu += bg_w.bgw[5].position_y;
+    xu += (bg_w.bgw[STAFF_BGW_LAYER].xy[0].disp.pos) - STAFF_CENTER_X;
+    yu += bg_w.bgw[STAFF_BGW_LAYER].position_y;
 
     effect_H6_init(t, su, xu, yu, a, -1);
 }
@@ -325,17 +328,17 @@ s32 staff_credits(u32 /* unused */) {
     case 0:
         staff_r_no++;
         staffroll_end = 0;
-        BGM_Request(0x3F);
-        bg_w.bgw[5].wxy[0].cal = bg_w.bgw[5].xy[0].cal = 0x01000000;
-        bg_w.bgw[5].xy[1].cal = 0;
-        bg_w.bgw[5].position_x = 0x100 - bg_w.pos_offset;
-        bg_w.bgw[5].position_y = 0;
-        x = bg_w.bgw[5].position_x;
-        y = bg_w.bgw[5].position_y;
-        Scrn_Move_Set(5, x, y);
-        x = -x & 0xFFFF;
-        y = 0x300 - (y & 0xFFFF) & 0xFFFF;
-        Family_Set_R(6, x, y);
+        BGM_Request(SND_BGM_CREDITS_ARCADE);
+        bg_w.bgw[STAFF_BGW_LAYER].wxy[0].cal = bg_w.bgw[STAFF_BGW_LAYER].xy[0].cal = STAFF_CAL_ENABLE;
+        bg_w.bgw[STAFF_BGW_LAYER].xy[1].cal = 0;
+        bg_w.bgw[STAFF_BGW_LAYER].position_x = STAFF_POS_X_BASE - bg_w.pos_offset;
+        bg_w.bgw[STAFF_BGW_LAYER].position_y = 0;
+        x = bg_w.bgw[STAFF_BGW_LAYER].position_x;
+        y = bg_w.bgw[STAFF_BGW_LAYER].position_y;
+        Scrn_Move_Set(STAFF_BGW_LAYER, x, y);
+        x = -x & STAFF_MASK_16;
+        y = STAFF_FAMILY_Y - (y & STAFF_MASK_16) & STAFF_MASK_16;
+        Family_Set_R(STAFF_FAMILY_LAYER, x, y);
         roll_rate2 = 1;
         roll_stop = 0;
         name_ptr = 0;
@@ -357,20 +360,20 @@ s32 staff_credits(u32 /* unused */) {
             if (sf3_staff[name_ptr].name == NULL) {
                 staff_r_no = 3;
                 end_w.timer = sf3_staff[name_ptr].next;
-                SsBgmFadeOut(0x88);
+                SsBgmFadeOut(STAFF_BGM_FADE_END);
                 break;
             }
 
-            if (*sf3_staff[name_ptr].name == 0x3F) {
-                SsBgmFadeOut(0x4E);
+            if (*sf3_staff[name_ptr].name == STAFF_MARKER_SECTION) {
+                SsBgmFadeOut(STAFF_BGM_FADE_SECTION);
             }
 
-            if (*sf3_staff[name_ptr].name == 0x60) {
-                BGM_Request(0x40);
+            if (*sf3_staff[name_ptr].name == STAFF_MARKER_CONSUMER) {
+                BGM_Request(SND_BGM_CREDITS_CONSUMER);
             }
 
-            name_timer = 0x7FFF;
-            t = 240;
+            name_timer = STAFF_TIMER_MAX;
+            t = STAFF_NAME_LIFETIME;
             x = sf3_staff[name_ptr].x;
             y = sf3_staff[name_ptr].y;
             a = sf3_staff[name_ptr].atr;
@@ -379,7 +382,7 @@ s32 staff_credits(u32 /* unused */) {
             name_ptr++;
 
             if (0 >= end_w.timer) {
-                t = 240;
+                t = STAFF_NAME_LIFETIME;
                 x = sf3_staff[name_ptr].x;
                 y = sf3_staff[name_ptr].y;
                 a = sf3_staff[name_ptr].atr;
@@ -388,12 +391,12 @@ s32 staff_credits(u32 /* unused */) {
                 name_ptr++;
 
                 if (0 >= end_w.timer) {
-                    t = 240;
+                    t = STAFF_NAME_LIFETIME;
                     x = sf3_staff[name_ptr].x;
                     y = sf3_staff[name_ptr].y;
                     a = sf3_staff[name_ptr].atr;
                     set_credit_string(t, x, y, a, sf3_staff[name_ptr].name);
-                    end_w.timer = 0xF0;
+                    end_w.timer = STAFF_TIMER_TRIPLE;
                     name_ptr++;
                 }
             }

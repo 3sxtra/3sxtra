@@ -10,6 +10,8 @@ typedef enum {
     SND_DIR_CURSOR = 343,
 
     // BGM IDs based on extraction/reference
+    SND_BGM_CREDITS_ARCADE = 0x3F,
+    SND_BGM_CREDITS_CONSUMER = 0x40,
     SND_BGM_VS_WAIT = 51,
     SND_BGM_CHARACTER_SELECT = 57,
 

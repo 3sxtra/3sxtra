@@ -37,6 +37,34 @@ const RANK_DATA Score_Ranking_Table[20];
 
 #include "port/menu_task.h"
 
+/** @brief Ranking_00 sub-states via D_No[1]. */
+enum Ranking00State {
+    R00_INIT_TEXCACHE  = 0,
+    R00_LAYOUT_ENTRIES = 1,
+    R00_WAIT_FLASH     = 2,
+    R00_TOGGLE_FLASH   = 3,
+    R00_DELAY_CLEAR    = 4,
+    R00_DISPLAY_EXIT   = 5,
+    R00_STATE_COUNT
+};
+
+/** @brief Ranking_01 sub-states via D_No[1]. */
+enum Ranking01State {
+    R01_INIT_SCREEN    = 0,
+    R01_LAYOUT_ENTRIES = 1,
+    R01_WAIT_FLASH     = 2,  /* shared — calls Ranking_00_3rd */
+    R01_COUNTDOWN      = 3,
+    R01_FADE_EXIT      = 4,
+    R01_STATE_COUNT
+};
+
+/** @brief Ranking_01_5th fade sub-states via D_No[2]. */
+enum Ranking01FadeState {
+    R01F_FADEOUT_INIT = 0,
+    R01F_SCREEN_WAIT  = 1,
+    R01F_DONE         = 2,
+};
+
 /** @brief Main ranking dispatcher — thin wrapper around MenuScreen registry. */
 s32 Ranking() {
     struct _TASK* tp = MenuTask_GetTaskPtr();
@@ -65,12 +93,12 @@ void Ranking_00() {
     Ranking_X = 0;
 
     switch (D_No[1]) {
-    case 0: Ranking_00_1st(); break;
-    case 1: Ranking_00_2nd(); break;
-    case 2: Ranking_00_3rd(); break;
-    case 3: Ranking_00_4th(); break;
-    case 4: Ranking_00_5th(); break;
-    case 5: Ranking_00_6th(); break;
+    case R00_INIT_TEXCACHE:  Ranking_00_1st(); break;
+    case R00_LAYOUT_ENTRIES: Ranking_00_2nd(); break;
+    case R00_WAIT_FLASH:     Ranking_00_3rd(); break;
+    case R00_TOGGLE_FLASH:   Ranking_00_4th(); break;
+    case R00_DELAY_CLEAR:    Ranking_00_5th(); break;
+    case R00_DISPLAY_EXIT:   Ranking_00_6th(); break;
     default: break;
     }
 }
@@ -175,7 +203,7 @@ void Ranking_00_2nd() {
         if ((Present_Rank[0] < 5) || (Present_Rank[1] < 5)) {
             D_No[1] += 1;
         } else {
-            D_No[1] = 4;
+            D_No[1] = R00_DELAY_CLEAR;
         }
     }
 
@@ -239,11 +267,11 @@ void Ranking_00_6th() {
 /** @brief Ranking table 01 dispatcher — used from demo/attract-mode sequence. */
 void Ranking_01() {
     switch (D_No[1]) {
-    case 0: Ranking_01_1st(); break;
-    case 1: Ranking_01_2nd(); break;
-    case 2: Ranking_00_3rd(); break;  /* shared phase 3 */
-    case 3: Ranking_01_4th(); break;
-    case 4: Ranking_01_5th(); break;
+    case R01_INIT_SCREEN:    Ranking_01_1st(); break;
+    case R01_LAYOUT_ENTRIES: Ranking_01_2nd(); break;
+    case R01_WAIT_FLASH:     Ranking_00_3rd(); break;  /* shared phase 3 */
+    case R01_COUNTDOWN:      Ranking_01_4th(); break;
+    case R01_FADE_EXIT:      Ranking_01_5th(); break;
     default: break;
     }
 }
@@ -359,7 +387,7 @@ void Ranking_01_2nd() {
     if ((Present_Rank[0] < 5) || (Present_Rank[1] < 5)) {
         D_No[1]++;
     } else {
-        D_No[1] = 4;
+        D_No[1] = R01_FADE_EXIT;
     }
 
     if (G_No[1] < 6) {
@@ -383,7 +411,7 @@ void Ranking_01_4th() {
 /** @brief Ranking_01 phase 5 — fade-out and transition to next demo/game. */
 void Ranking_01_5th() {
     switch (D_No[2]) {
-    case 0:
+    case R01F_FADEOUT_INIT:
         if (!(--D_Timer)) {
             D_No[2] += 1;
             if ((Demo_Flag == 0) && (Demo_Type == 0)) {
@@ -396,7 +424,7 @@ void Ranking_01_5th() {
         }
         break;
 
-    case 1:
+    case R01F_SCREEN_WAIT:
         if (Switch_Screen(0) != 0) {
             D_No[2] += 1;
             Game01_Sub();
