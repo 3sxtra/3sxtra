@@ -7,6 +7,7 @@
  */
 
 #include "sf33rd/Source/Game/ui/sc_names.h"
+#include "sf33rd/Source/Game/effect/eff76.h" /* chkNameAkuma */
 #include "common.h"
 
 #include "port/rendering/renderer.h"

@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/system/sys_ranking.h"
+#include "sf33rd/Source/Game/engine/pls02.h" /* random_16 */
 #include "common.h"
 #include "main.h"
 #include "sf33rd/Source/Game/com/com_data.h"

@@ -12,6 +12,7 @@
 #include "common.h"
 #include "main.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/demo/demo_states.h"
 #include "sf33rd/Source/Game/io/gd3rd.h"
 #include "sf33rd/Source/Game/opening/op_sub.h"
 #include "sf33rd/Source/Game/opening/opening.h"
@@ -27,7 +28,7 @@ s16 Title() {
     // njSetBackColor(0, 0, 0);
 
     switch (D_No[1]) {
-    case 0:
+    case DEMO_STATE_INIT:
         if (Check_LDREQ_Clear() != 0) {
             Standby_BGM(0x34);
             D_No[1] += 1;
@@ -36,7 +37,7 @@ s16 Title() {
 
         break;
 
-    case 1:
+    case DEMO_STATE_1:
         if (D_Timer != 0) {
             D_Timer -= 1;
         } else if (opening_demo()) {
@@ -46,7 +47,7 @@ s16 Title() {
 
         break;
 
-    case 2:
+    case DEMO_STATE_2:
         opening_demo();
 
         if (--D_Timer == 0) {
@@ -56,7 +57,7 @@ s16 Title() {
 
         break;
 
-    case 3:
+    case DEMO_STATE_3:
         opening_demo();
 
         if (Switch_Screen(1) != 0) {
@@ -66,7 +67,7 @@ s16 Title() {
 
         break;
 
-    case 4:
+    case DEMO_STATE_4:
         Switch_Screen(1);
         D_No[1] += 1;
         D_Timer = 2;
@@ -94,7 +95,7 @@ s16 Title_At_a_Dash() {
     Disp_Copyright();
 
     switch (D_No[1]) {
-    case 0:
+    case DEMO_STATE_INIT:
         D_No[1] += 1;
         D_Timer = 30;
 
@@ -104,7 +105,7 @@ s16 Title_At_a_Dash() {
 
         break;
 
-    case 1:
+    case DEMO_STATE_1:
         if (--D_Timer == 0) {
             D_No[1] += 1;
         }
