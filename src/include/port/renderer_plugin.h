@@ -46,7 +46,7 @@ typedef struct renderer_export_t {
                             unsigned int color, float screen_w, float screen_h);
 
     /* Background tile overrides */
-    void* (*LoadBGTileOverride)(int gbix);
+    void* (*LoadBGTileOverride)(int type, int stage, int gbix);
     void (*DrawBGTile)(void* texture, float x, float y, float w, float h, float z, unsigned int vtxCol);
     void (*ClearBGTileCache)(void);
 

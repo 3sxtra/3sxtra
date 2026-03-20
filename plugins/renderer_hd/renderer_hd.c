@@ -169,30 +169,31 @@ static void hd_ClearBGTileCache(void) {
     }
 }
 
-static void* hd_LoadBGTileOverride(int gbix) {
-    uint32_t slot = (uint32_t)gbix & BG_TILE_CACHE_MASK;
+static void* hd_LoadBGTileOverride(int type, int stage, int gbix) {
+    int composite_key = type * 100000 + stage * 1000 + gbix;
+    uint32_t slot = (uint32_t)composite_key & BG_TILE_CACHE_MASK;
 
     for (int i = 0; i < 16; i++) {
         BGTileCacheEntry* entry = &bg_tile_cache[slot];
 
         if (!entry->checked)
             break;
-        if (entry->gbix == gbix)
+        if (entry->gbix == composite_key)
             return entry->texture;
         slot = (slot + 1) & BG_TILE_CACHE_MASK;
     }
 
     char path[512];
-    snprintf(path, sizeof(path), "%s/bg_%d.png", g_sprites_path, gbix);
+    snprintf(path, sizeof(path), "%s/bg_%d.png", g_sprites_path, composite_key);
     void* tex = g_import->TextureLoadScaled(path, g_sprite_ratio);
 
-    slot = (uint32_t)gbix & BG_TILE_CACHE_MASK;
+    slot = (uint32_t)composite_key & BG_TILE_CACHE_MASK;
 
     for (int i = 0; i < 16; i++) {
         BGTileCacheEntry* entry = &bg_tile_cache[slot];
 
         if (!entry->checked) {
-            entry->gbix = gbix;
+            entry->gbix = composite_key;
             entry->texture = tex;
             entry->checked = true;
             break;

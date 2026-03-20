@@ -637,7 +637,7 @@ void bgDrawOneChip(s32 x, s32 y, s32 xs, s32 ys, s32 gbix, u32 vtxCol, s32 ofsPa
         }
 
         if (RENDERER_HAS_PLUGIN()) {
-            void* hd_tex_plugin = g_renderer_plugin->LoadBGTileOverride(gbix);
+            void* hd_tex_plugin = g_renderer_plugin->LoadBGTileOverride(tokusyu_stage, bg_w.stage, gbix);
             if (hd_tex_plugin != NULL) {
                 float dx = scrDrawPos[0].x;
                 float dy = scrDrawPos[0].y;
