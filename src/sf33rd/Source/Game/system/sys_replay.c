@@ -10,6 +10,7 @@
  */
 
 #include "sf33rd/Source/Game/system/sys_replay.h"
+#include <string.h>
 #include "common.h"
 #include "main.h"
 #include "port/menu_task.h"

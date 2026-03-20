@@ -14,6 +14,7 @@
  */
 
 #include "sf33rd/Source/Game/ui/sc_sub.h"
+#include "sf33rd/Source/Game/io/file_loader.h"
 #include "common.h"
 
 #include "port/rendering/renderer.h"
