@@ -5,6 +5,7 @@
 #include "types.h"
 
 extern const s32 rate_256_table[256][2];
+extern const u8 dir_sel_table[128][128];
 
 s16 caldir_pos_256(s16 x1, s16 x2, s16 y1, s16 y2);
 s16 caldir_pos_032(s16 x1, s16 x2, s16 y1, s16 y2);
