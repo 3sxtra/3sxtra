@@ -11,8 +11,8 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <glad/gl.h>
-#include <map>
 #include <string.h>
+#include <unordered_map>
 
 struct GPUTextureMetadata {
     SDL_GPUTexture* texture;
@@ -20,7 +20,22 @@ struct GPUTextureMetadata {
     uint32_t* pixels; /* cached RGBA8888 pixels for staging upload */
 };
 
-static std::map<void*, GPUTextureMetadata> s_gpu_textures;
+static std::unordered_map<void*, GPUTextureMetadata> s_gpu_textures;
+static void* s_last_gpu_tex_id = nullptr;
+static GPUTextureMetadata* s_last_gpu_meta = nullptr;
+
+static GPUTextureMetadata* get_gpu_metadata(void* texture_id) {
+    if (texture_id == s_last_gpu_tex_id) {
+        return s_last_gpu_meta;
+    }
+    auto it = s_gpu_textures.find(texture_id);
+    if (it != s_gpu_textures.end()) {
+        s_last_gpu_tex_id = texture_id;
+        s_last_gpu_meta = &it->second;
+        return s_last_gpu_meta;
+    }
+    return nullptr;
+}
 
 extern "C" void* TextureUtil_Load(const char* filename) {
     SDL_Surface* surface = IMG_Load(filename);
@@ -249,6 +264,10 @@ extern "C" void TextureUtil_Free(void* texture_id) {
             if (it->second.pixels)
                 SDL_free(it->second.pixels);
             s_gpu_textures.erase(it);
+            if (texture_id == s_last_gpu_tex_id) {
+                s_last_gpu_tex_id = nullptr;
+                s_last_gpu_meta = nullptr;
+            }
         }
     } else if (is_sdl2d_backend(SDLApp_GetRenderer())) {
         SDL_Texture* tex = (SDL_Texture*)texture_id;
@@ -269,12 +288,12 @@ extern "C" void TextureUtil_GetSize(void* texture_id, int* w, int* h) {
     }
 
     if (SDLApp_GetRenderer() == RENDERER_SDLGPU) {
-        auto it = s_gpu_textures.find(texture_id);
-        if (it != s_gpu_textures.end()) {
+        GPUTextureMetadata* meta = get_gpu_metadata(texture_id);
+        if (meta) {
             if (w)
-                *w = it->second.w;
+                *w = meta->w;
             if (h)
-                *h = it->second.h;
+                *h = meta->h;
         } else {
             if (w)
                 *w = 0;
@@ -310,6 +329,8 @@ extern "C" void TextureUtil_Shutdown(void) {
         }
     }
     s_gpu_textures.clear();
+    s_last_gpu_tex_id = nullptr;
+    s_last_gpu_meta = nullptr;
 }
 
 extern "C" void TextureUtil_DrawQuad(void* texture_id, float x, float y, float w, float h, float z) {
@@ -325,14 +346,14 @@ extern "C" void TextureUtil_DrawQuad(void* texture_id, float x, float y, float w
 
     } else if (SDLApp_GetRenderer() == RENDERER_SDLGPU) {
         /* GPU path: use array layer for small textures, direct blit for oversized */
-        auto it = s_gpu_textures.find(texture_id);
-        if (it == s_gpu_textures.end() || !it->second.pixels)
+        GPUTextureMetadata* meta = get_gpu_metadata(texture_id);
+        if (!meta || !meta->pixels)
             return;
-        if (it->second.w > 512 || it->second.h > 512) {
+        if (meta->w > 512 || meta->h > 512) {
             /* Oversized: queue a direct blit onto canvas */
-            SDLGameRendererGPU_QueueDeferredBlit(it->second.texture, it->second.w, it->second.h, x, y, w, h, z);
+            SDLGameRendererGPU_QueueDeferredBlit(meta->texture, meta->w, meta->h, x, y, w, h, z);
         } else {
-            SDLGameRendererGPU_DrawOverlaySprite(it->second.pixels, it->second.w, it->second.h, x, y, w, h, z);
+            SDLGameRendererGPU_DrawOverlaySprite(meta->pixels, meta->w, meta->h, x, y, w, h, z);
         }
 
     } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
@@ -356,15 +377,15 @@ extern "C" void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float
 
     } else if (SDLApp_GetRenderer() == RENDERER_SDLGPU) {
         /* GPU path: use array layer for small textures, direct blit for oversized */
-        auto it = s_gpu_textures.find(texture_id);
-        if (it == s_gpu_textures.end() || !it->second.pixels)
+        GPUTextureMetadata* meta = get_gpu_metadata(texture_id);
+        if (!meta || !meta->pixels)
             return;
-        if (it->second.w > 512 || it->second.h > 512) {
+        if (meta->w > 512 || meta->h > 512) {
             /* Oversized: queue a direct blit onto canvas (flip not supported for blits) */
-            SDLGameRendererGPU_QueueDeferredBlit(it->second.texture, it->second.w, it->second.h, x, y, w, h, z);
+            SDLGameRendererGPU_QueueDeferredBlit(meta->texture, meta->w, meta->h, x, y, w, h, z);
         } else {
             SDLGameRendererGPU_DrawOverlaySpriteEx(
-                it->second.pixels, it->second.w, it->second.h, x, y, w, h, z, flip_x, flip_y);
+                meta->pixels, meta->w, meta->h, x, y, w, h, z, flip_x, flip_y);
         }
 
     } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
