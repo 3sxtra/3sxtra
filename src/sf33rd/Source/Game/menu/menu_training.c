@@ -99,7 +99,10 @@
 #include "port/sdl/rmlui/rmlui_vs_result.h"
 #include "port/sdl/rmlui/rmlui_vs_screen.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
+#include "port/sdl/rmlui/rmlui_wrapper.h"
 
+#include "sf33rd/Source/Game/menu/menu_training_constants.h"
+#include "sf33rd/Source/Game/menu/menu_input_constants.h"
 
 void Wait_Pause_in_Tr(struct _TASK* task_ptr) {
     u16 ans;
@@ -194,7 +197,7 @@ void Wait_Pause_in_Tr(struct _TASK* task_ptr) {
 
     case 3:
         if (Interface_Type[Pause_ID] == 0) {
-            dispControllerWasRemovedMessage(132, 82, 16);
+            dispControllerWasRemovedMessage(TRAINING_CTRL_REMOVED_MSG_X, TRAINING_CTRL_REMOVED_MSG_Y, TRAINING_CTRL_REMOVED_MSG_COLOR);
             break;
         }
 
@@ -209,8 +212,8 @@ void Reset_Training(struct _TASK* task_ptr) {
     switch (task_ptr->r_no[1]) {
     case 0:
         task_ptr->r_no[1]++;
-        task_ptr->timer = 10;
-        Game_pause = 0x81;
+        task_ptr->timer = TRAINING_CHARACTER_CHANGE_TIMER;
+        Game_pause = GAME_PAUSE_ACTIVE;
         break;
 
     case 1:
@@ -233,7 +236,7 @@ void Reset_Training(struct _TASK* task_ptr) {
         }
 
         task_ptr->r_no[1]++;
-        task_ptr->timer = 2;
+        task_ptr->timer = TRAINING_RESET_WAIT_TIMER;
         effect_work_kill(6, -1);
         move_effect_work(6);
 
@@ -247,8 +250,8 @@ void Reset_Training(struct _TASK* task_ptr) {
         seraph_flag = 0;
         BGM_No[0] = 1;
         BGM_Timer[0] = 1;
-        G_Timer = 10;
-        Cover_Timer = 5;
+        G_Timer = TRAINING_RESET_G_TIMER;
+        Cover_Timer = TRAINING_RESET_COVER_TIMER;
         Suicide[0] = 1;
         Suicide[6] = 1;
         judge_flag = 0;
@@ -303,16 +306,16 @@ void Training_Menu(struct _TASK* task_ptr) {
 
     /* Post-dispatch rendering — runs after BOTH registry and legacy paths */
     Akaobi();
-    ToneDown(0xAA, 2);
+    ToneDown(TRAINING_TONE_NORMAL, 2);
 
     if ((!use_rmlui || !rmlui_menu_training) && Training_Index < TRAINING_LETTER_COUNT) {
         SSPutStr_Bigger(
-            training_letter_data[Training_Index].pos_x, 0x18, 9, training_letter_data[Training_Index].menu, 1, 2, 1);
+            training_letter_data[Training_Index].pos_x, TRAINING_HEADER_POS_Y, 9, training_letter_data[Training_Index].menu, 1, 2, 1);
     }
 }
 
 void Training_Init(struct _TASK* task_ptr) {
-    ToneDown(0x80, 2);
+    ToneDown(TRAINING_TONE_DARK, 2);
     Menu_Init(task_ptr);
     task_ptr->r_no[1] = Mode_Type - 2;
     Pause_Down = 1;
@@ -322,7 +325,7 @@ void Training_Init(struct _TASK* task_ptr) {
 
     if (Mode_Type == MODE_NORMAL_TRAINING) {
         control_player = Champion;
-        control_pl_rno = 0x63;
+        control_pl_rno = TRAINING_CONTROL_NONE;
     } else {
         control_player = Champion;
         control_pl_rno = 0;
@@ -349,11 +352,11 @@ void Normal_Training(struct _TASK* task_ptr) {
     case 0:
         Training_Init_Sub(task_ptr);
         Training_Index = 0;
-        x = 120;
-        y = 56;
+        x = TRAINING_NORMAL_START_X;
+        y = TRAINING_NORMAL_START_Y;
         Training[0] = Training[2];
 
-        for (ix = 0; ix < 8; ix++, s2 = y += 16) {
+        for (ix = 0; ix < 8; ix++, s2 = y += TRAINING_SPACING_Y) {
             (void)s2;
 
             effect_A3_init(0, 0, ix, ix, 0, x, y, 0);
@@ -370,12 +373,12 @@ void Normal_Training(struct _TASK* task_ptr) {
             break;
         }
 
-        MC_Move_Sub(Check_Menu_Lever(Decide_ID, 0), 0, 7, 0xFF);
+        MC_Move_Sub(Check_Menu_Lever(Decide_ID, 0), 0, 7, TRAINING_RESULT_MASK);
         Check_Skip_Recording();
         Check_Skip_Replay(2);
 
         switch (IO_Result) {
-        case 0x100:
+        case SWK_SOUTH:
             switch (Menu_Cursor_Y[0]) {
             case 0:
             case 1:
@@ -487,12 +490,12 @@ void Dummy_Setting(struct _TASK* task_ptr) {
         Menu_Suicide[0] = 1;
         Training_Index = 2;
 
-        for (ix = 0, s6 = y = 80; ix < 7; ix++, s5 = y += 16) {
-            effect_A3_init(0, 1, ix, ix, 1, 48, y, 0);
+        for (ix = 0, s6 = y = TRAINING_DUMMY_SETTING_START_Y; ix < 7; ix++, s5 = y += TRAINING_SPACING_Y) {
+            effect_A3_init(0, 1, ix, ix, 1, TRAINING_DUMMY_SETTING_LBL_X, y, 0);
         }
 
-        for (ix = 0, y = 80, s4 = group = 2; ix < 5; ix++, group++, s3 = y += 16) {
-            effect_A3_init(0, group, ix, ix, 1, 0xE6, y, 0);
+        for (ix = 0, y = TRAINING_DUMMY_SETTING_START_Y, s4 = group = 2; ix < 5; ix++, group++, s3 = y += TRAINING_SPACING_Y) {
+            effect_A3_init(0, group, ix, ix, 1, TRAINING_DUMMY_SETTING_X, y, 0);
         }
 
         break;
@@ -500,7 +503,7 @@ void Dummy_Setting(struct _TASK* task_ptr) {
     case 1:
         Dummy_Move_Sub(task_ptr, Champion, 0, 0, 6);
 
-        if (Menu_Cursor_Y[0] == 5 && IO_Result & 0x100) {
+        if (Menu_Cursor_Y[0] == 5 && (IO_Result & SWK_SOUTH)) {
             Training[2].contents[0][0][0] = 0;
             Training[2].contents[0][0][1] = 0;
             Training[2].contents[0][0][2] = 0;
@@ -541,12 +544,12 @@ void Training_Option(struct _TASK* task_ptr) {
         Menu_Suicide[0] = 1;
         Training_Index = 3;
 
-        for (ix = 0, s6 = y = 72; ix < 6; ix++, s5 = y += 16) {
-            effect_A3_init(0, 9, ix, ix, 1, 48, y, 1);
+        for (ix = 0, s6 = y = TRAINING_OPTION_START_Y; ix < 6; ix++, s5 = y += TRAINING_SPACING_Y) {
+            effect_A3_init(0, 9, ix, ix, 1, TRAINING_OPTION_LBL_X, y, 1);
         }
 
-        for (ix = 0, y = 72, s4 = group = 10; ix < 4; ix++, group++, s3 = y += 16) {
-            effect_A3_init(0, group, ix, ix, 1, 230, y, 1);
+        for (ix = 0, y = TRAINING_OPTION_START_Y, s4 = group = 10; ix < 4; ix++, group++, s3 = y += TRAINING_SPACING_Y) {
+            effect_A3_init(0, group, ix, ix, 1, TRAINING_OPTION_VAL_X, y, 1);
         }
 
         break;
@@ -554,7 +557,7 @@ void Training_Option(struct _TASK* task_ptr) {
     case 1:
         Dummy_Move_Sub(task_ptr, Champion, 0, 1, 5);
 
-        if (Menu_Cursor_Y[0] == 4 && IO_Result & 0x100) {
+        if (Menu_Cursor_Y[0] == 4 && (IO_Result & SWK_SOUTH)) {
             Default_Training_Option();
             SE_selected();
             break;
@@ -588,14 +591,14 @@ void Blocking_Training(struct _TASK* task_ptr) {
     case 0:
         Training_Init_Sub(task_ptr);
         Training_Index = 1;
-        x = 112;
-        y = 72;
+        x = TRAINING_BLOCKING_START_X;
+        y = TRAINING_BLOCKING_START_Y;
         plw[0].wu.pl_operator = 1;
         Operator_Status[0] = 1;
         plw[1].wu.pl_operator = 1;
         Operator_Status[1] = 1;
 
-        for (ix = 0; ix < 6; ix++, s2 = y += 16) {
+        for (ix = 0; ix < 6; ix++, s2 = y += TRAINING_SPACING_Y) {
             (void)s2;
 
             effect_A3_init(1, 14, ix, ix, 0, x, y, 0);
@@ -612,11 +615,11 @@ void Blocking_Training(struct _TASK* task_ptr) {
             break;
         }
 
-        MC_Move_Sub(Check_Menu_Lever(Decide_ID, 0), 0, 5, 0xFF);
+        MC_Move_Sub(Check_Menu_Lever(Decide_ID, 0), 0, 5, TRAINING_RESULT_MASK);
         Check_Skip_Replay(1);
 
         switch (IO_Result) {
-        case 0x100:
+        case SWK_SOUTH:
             switch (Menu_Cursor_Y[0]) {
             case 0:
                 Record_Data_Tr = 1;
@@ -732,10 +735,10 @@ void Blocking_Tr_Option(struct _TASK* task_ptr) {
         Menu_Cursor_Y[1] = 0;
         Menu_Suicide[0] = 1;
         Training_Index = 3;
-        effect_A3_init(1, 24, 99, 0, 1, 51, 56, 1);
-        effect_A3_init(1, 24, 99, 1, 1, 51, 106, 1);
+        effect_A3_init(1, 24, 99, 0, 1, TRAINING_BLOCKING_OPT_HDR_X, TRAINING_BLOCKING_OPT_HDR_1_Y, 1);
+        effect_A3_init(1, 24, 99, 1, 1, TRAINING_BLOCKING_OPT_HDR_X, TRAINING_BLOCKING_OPT_HDR_2_Y, 1);
 
-        for (ix = 0, s6 = y = 72; ix < 6; ix++, s5 = y += 16) {
+        for (ix = 0, s6 = y = TRAINING_OPTION_START_Y; ix < 6; ix++, s5 = y += TRAINING_SPACING_Y) {
             if (ix == 2) {
                 y += 20;
             }
@@ -744,15 +747,15 @@ void Blocking_Tr_Option(struct _TASK* task_ptr) {
                 y += 8;
             }
 
-            effect_A3_init(1, 19, ix, ix, 1, 64, y, 0);
+            effect_A3_init(1, 19, ix, ix, 1, TRAINING_BLOCKING_OPT_LBL_X, y, 0);
         }
 
-        for (ix = 0, y = 72, s4 = group = 18; ix < 4; ix++, group++, s3 = y += 16) {
+        for (ix = 0, y = TRAINING_OPTION_START_Y, s4 = group = 18; ix < 4; ix++, group++, s3 = y += TRAINING_SPACING_Y) {
             if (ix == 2) {
                 y += 20;
             }
 
-            effect_A3_init(1, group + 2, ix, ix, 1, 264, y, 0);
+            effect_A3_init(1, group + 2, ix, ix, 1, TRAINING_BLOCKING_OPT_VAL_X, y, 0);
         }
 
         break;
@@ -760,7 +763,7 @@ void Blocking_Tr_Option(struct _TASK* task_ptr) {
     case 1:
         Dummy_Move_Sub(task_ptr, Champion, 1, 0, 5);
 
-        if (Menu_Cursor_Y[0] == 4 && IO_Result & 0x100) {
+        if (Menu_Cursor_Y[0] == 4 && (IO_Result & SWK_SOUTH)) {
             Default_Training_Data(1);
             SE_selected();
         }
@@ -805,8 +808,8 @@ void Character_Change(struct _TASK* task_ptr) {
         switch (task_ptr->r_no[2]) {
         case 0:
             task_ptr->r_no[2]++;
-            task_ptr->timer = 0xA;
-            Game_pause = 0x81;
+            task_ptr->timer = TRAINING_CHARACTER_CHANGE_TIMER;
+            Game_pause = GAME_PAUSE_ACTIVE;
             break;
 
         case 1:
@@ -825,7 +828,7 @@ void Character_Change(struct _TASK* task_ptr) {
         case 2:
             if (Switch_Screen(0) != 0) {
                 task_ptr->r_no[2]++;
-                Cover_Timer = 0x17;
+                Cover_Timer = TRAINING_COVER_TIMER;
                 G_No[1] = GAME_MODE_IN_GAME;
                 G_No[2] = 0;
                 G_No[3] = 0;

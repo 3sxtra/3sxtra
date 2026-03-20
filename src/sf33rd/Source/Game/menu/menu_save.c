@@ -99,7 +99,10 @@
 #include "port/sdl/rmlui/rmlui_vs_result.h"
 #include "port/sdl/rmlui/rmlui_vs_screen.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
+#include "port/sdl/rmlui/rmlui_wrapper.h"
 
+#include "sf33rd/Source/Game/menu/menu_save_constants.h"
+#include "sf33rd/Source/Game/menu/menu_input_constants.h"
 
 void Wait_Load_Save(struct _TASK* task_ptr) {
     s16 ix;
@@ -113,8 +116,8 @@ void Wait_Load_Save(struct _TASK* task_ptr) {
         task_ptr->free[0] = 0;
         task_ptr->free[1]++;
 
-        if (task_ptr->r_no[1] == 5) {
-            task_ptr->free[2] = 18;
+        if (task_ptr->r_no[1] == MENU_RNO1_SYS_DIR) {
+            task_ptr->free[2] = MENU_RNO1_DIR_MENU;
         } else {
             task_ptr->free[2] = task_ptr->r_no[1];
         }
@@ -135,27 +138,27 @@ void Wait_Load_Save(struct _TASK* task_ptr) {
         }
 
         switch (task_ptr->r_no[1]) {
-        case 13:
-            ix = 105;
+        case MENU_RNO1_MEM_CARD:
+            ix = EFF_SLOT_MEM_CARD;
             break;
 
-        case 17:
-            task_ptr->r_no[2] = 99;
+        case MENU_RNO1_SAVE_REPLAY:
+            task_ptr->r_no[2] = MENU_RNO2_PAUSE_EXIT;
             /* fallthrough */
 
-        case 6:
-            ix = 110;
+        case MENU_RNO1_LOAD_REPLAY:
+            ix = EFF_SLOT_REPLAY_HDR;
             break;
 
-        case 19:
-        case 20:
-            ix = 112;
+        case MENU_AT_SAVE_DIRECTION:
+        case MENU_AT_LOAD_DIRECTION:
+            ix = EFF_SLOT_DIR_HDR;
             break;
 
-        case 23:
-            ix = 105;
+        case MENU_RNO1_SYS_SAVE:
+            ix = EFF_SLOT_MEM_CARD;
             task_ptr->r_no[0] = 0;
-            task_ptr->r_no[2] = 99;
+            task_ptr->r_no[2] = MENU_RNO2_PAUSE_EXIT;
             task_ptr->free[0] = 1;
             task_ptr->free[1] = 8;
             break;
@@ -166,7 +169,7 @@ void Wait_Load_Save(struct _TASK* task_ptr) {
         break;
 
     case 2:
-        FadeOut(1, 0xFF, 8);
+        FadeOut(1, FADE_OPAQUE, 8);
 
         if (--task_ptr->timer == 0) {
             task_ptr->r_no[0] = 0;
@@ -190,19 +193,19 @@ void Disp_Auto_Save(struct _TASK* task_ptr) {
 }
 
 void DAS_1st(struct _TASK* task_ptr) {
-    FadeOut(1, 0xFF, 8);
+    FadeOut(1, FADE_OPAQUE, 8);
     task_ptr->r_no[1]++;
     task_ptr->timer = 5;
-    Order[0x4E] = 2;
-    Order_Dir[0x4E] = 0;
-    Order_Timer[0x4E] = 1;
-    effect_66_init(0x8A, 8, 0, 0, -1, -1, -0x7FFD);
-    Order[0x8A] = 3;
-    Order_Timer[0x8A] = 1;
+    Order[EFF_SLOT_HEADER] = 2;
+    Order_Dir[EFF_SLOT_HEADER] = 0;
+    Order_Timer[EFF_SLOT_HEADER] = 1;
+    effect_66_init(EFF_SLOT_CURSOR_BG, 8, 0, 0, -1, -1, SAVE_Z_DEPTH_CURSOR);
+    Order[EFF_SLOT_CURSOR_BG] = 3;
+    Order_Timer[EFF_SLOT_CURSOR_BG] = 1;
 }
 
 void DAS_2nd(struct _TASK* task_ptr) {
-    FadeOut(1, 0xFF, 8);
+    FadeOut(1, FADE_OPAQUE, 8);
 
     if ((task_ptr->timer -= 1) == 0) {
         task_ptr->r_no[1]++;
@@ -212,7 +215,7 @@ void DAS_2nd(struct _TASK* task_ptr) {
 }
 
 void DAS_3rd(struct _TASK* task_ptr) {
-    if (FadeIn(1, 0x19, 8) != 0) {
+    if (FadeIn(1, FADE_SPEED_SLOW, 8) != 0) {
         task_ptr->r_no[1]++;
     }
 }

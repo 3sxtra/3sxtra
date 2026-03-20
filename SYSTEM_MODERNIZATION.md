@@ -61,6 +61,8 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 48 | `cmd_main.c` Input Bitmask Constants | LOW | Named constants | 1,870 lines. 122 raw hex → named constants via new `cmd_constants.h` (30 defines). Lever masks, button groups, flip flags, multi-press detection, switch patterns. Zero logic changes. |
 | 44 | `menu_input.c` Residual Hex Constants | LOW | Named constants | 2,580 lines. ~130 raw hex → named constants via new `menu_input_constants.h` (~90 defines). Order slots, effect params, BG scroll offsets, fade values, message positions, pause Z-depths. Zero logic changes. |
 | 45 | `menu_network.c` Hex Constants | LOW | Named constants | 1,898 lines. 114 raw hex → named constants via new `menu_network_constants.h` (~46 defines). Network menu UI positioning, modes, and geometry. Zero logic changes. |
+| 53 | `menu_training.c` Hex Constants | LOW | Named constants | 878 lines. ~40 raw decimal/hex → named constants via `menu_training_constants.h`. UI positioning, loop counters, and wait timers. Zero logic changes. |
+| 55 | `menu_save.c` Hex Constants | LOW | Named constants | ~15 raw hex → named constants via `menu_save_constants.h` and `menu_input_constants.h`. |
 ---
 
 ## Next Wave: Safe Improvement Candidates (March 2026 Audit — Wave 2)
@@ -69,7 +71,7 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 
 | # | Component | Risk | Pattern | Key Files |
 |---|-----------|------|---------|-----------|
-
+| 54 | `menu_replay.c` Hex Constants | LOW | Named constants | ~40 raw hex → named constants via `menu_replay_constants.h` and `menu_input_constants.h`. |
 
 ### Large Data Files (Documentation / Auto-Generation)
 
