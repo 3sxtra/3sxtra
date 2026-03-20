@@ -11,6 +11,7 @@
  */
 
 #include "sf33rd/Source/Game/animation/appear.h"
+#include "sf33rd/Source/Game/animation/appear_states.h"
 #include "port/appear_registry.h"
 #include "common.h"
 #include "sf33rd/Source/Game/animation/app_data.h"
@@ -91,7 +92,7 @@ void appear_data_set(PLW* wk, APPEAR_DATA* dtbl) {
         wk->wu.xyz[0].disp.pos = bg_w.bgw[1].pos_x_work - dtbl->hx;
         wk->wu.xyz[1].disp.pos = dtbl->hy;
         wk->wu.rl_flag = (s8)((dtbl->rl + 1) & 1);
-        wk->wu.routine_no[4] = dtbl->rno;
+        wk->wu.routine_no[APPEAR_RNO_TYPE] = dtbl->rno;
         Appear_flag[0] = dtbl->ixod;
         wk->wu.char_index = dtbl->char_index;
 
@@ -99,7 +100,7 @@ void appear_data_set(PLW* wk, APPEAR_DATA* dtbl) {
         wk->wu.xyz[0].disp.pos = bg_w.bgw[1].pos_x_work + dtbl->hx;
         wk->wu.xyz[1].disp.pos = dtbl->hy;
         wk->wu.rl_flag = dtbl->rl;
-        wk->wu.routine_no[4] = dtbl->rno;
+        wk->wu.routine_no[APPEAR_RNO_TYPE] = dtbl->rno;
         Appear_flag[1] = dtbl->ixod;
         wk->wu.char_index = dtbl->char_index;
     }
@@ -130,7 +131,7 @@ void appear_data_init_set(PLW* wk) {
 
 /** @brief Top-level appear dispatcher — select animation by type registry. */
 void appear_player(PLW* wk) {
-    s16 idx = (s16)wk->wu.routine_no[4];
+    s16 idx = (s16)wk->wu.routine_no[APPEAR_RNO_TYPE];
     if (idx < 0 || idx >= APPEAR_TYPE_COUNT) {
         return;
     }
@@ -144,22 +145,22 @@ void appear_player(PLW* wk) {
 /** @brief Appear type 0 — standard walk-on entrance. */
 void Appear_00000(PLW* wk) {
     Appear_end++;
-    wk->wu.routine_no[2] = 1;
-    wk->wu.routine_no[3] = 0;
+    wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+    wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
 }
 
 /** @brief Appear type 1 — walk-on with initial pose. */
 void Appear_01000(PLW* wk) {
     s16 work;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         bg_app_stop = 1;
         work = random_16();
 
-        switch (wk->wu.routine_no[4]) {
+        switch (wk->wu.routine_no[APPEAR_RNO_TYPE]) {
         case 1:
             work &= 3;
             set_char_move_init(&wk->wu, 9, work);
@@ -179,18 +180,18 @@ void Appear_01000(PLW* wk) {
 
     case 1:
         if (Appear_flag[wk->wu.id]) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             char_move(&wk->wu);
             return;
         }
-        wk->wu.routine_no[3] = 3;
+        wk->wu.routine_no[APPEAR_RNO_PHASE] = 3;
         set_char_move_init(&wk->wu, 9, wk->wu.char_index + 8);
         break;
 
     case 2:
         char_move(&wk->wu);
         if (wk->wu.cg_type == 9 && Appear_flag[wk->wu.id] == 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init(&wk->wu, 9, wk->wu.char_index + 8);
         }
         break;
@@ -198,8 +199,8 @@ void Appear_01000(PLW* wk) {
     case 3:
         char_move(&wk->wu);
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
         break;
@@ -208,9 +209,9 @@ void Appear_01000(PLW* wk) {
 
 /** @brief Appear type 3 — jump-in entrance. */
 void Appear_03000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, wk->wu.char_index);
         bg_app_stop = 1;
@@ -219,8 +220,8 @@ void Appear_03000(PLW* wk) {
     case 1:
         char_move(&wk->wu);
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
     }
@@ -228,9 +229,9 @@ void Appear_03000(PLW* wk) {
 
 /** @brief Appear type 4 — walk-on with character-specific flourish. */
 void Appear_04000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         bg_app_stop = 1;
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, 0x10);
@@ -240,7 +241,7 @@ void Appear_04000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 9) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             app_counter[wk->wu.id] = 0x1C;
 
             if (wk->wu.id) {
@@ -258,7 +259,7 @@ void Appear_04000(PLW* wk) {
         app_counter[wk->wu.id]--;
 
         if (app_counter[wk->wu.id] <= 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init(&wk->wu, 9, 0x11);
 
             if (wk->wu.id) {
@@ -280,8 +281,8 @@ void Appear_04000(PLW* wk) {
         char_move(&wk->wu);
 
         if ((wk->wu.cg_type) == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
 
@@ -291,9 +292,9 @@ void Appear_04000(PLW* wk) {
 
 /** @brief Appear type 5 — dash-in entrance. */
 void Appear_05000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, 0x17);
         bg_app_stop = 1;
@@ -304,7 +305,7 @@ void Appear_05000(PLW* wk) {
         appear_work[wk->wu.id]--;
 
         if (appear_work[wk->wu.id] < 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             appear_work[wk->wu.id] = 0x1B;
 
             if (wk->wu.id) {
@@ -321,7 +322,7 @@ void Appear_05000(PLW* wk) {
         appear_work[wk->wu.id]--;
 
         if (appear_work[wk->wu.id] <= 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init2(&wk->wu, 9, 0x17, 9, 0);
 
             if (wk->wu.id) {
@@ -339,7 +340,7 @@ void Appear_05000(PLW* wk) {
         char_move(&wk->wu);
 
         if ((wk->wu.cg_type) == 9) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.rl_flag ^= 1;
             return;
         }
@@ -350,8 +351,8 @@ void Appear_05000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
 
@@ -363,10 +364,10 @@ void Appear_05000(PLW* wk) {
 void Appear_06000(PLW* wk) {
     s16 work;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
-        switch (wk->wu.routine_no[4]) {
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
+        switch (wk->wu.routine_no[APPEAR_RNO_TYPE]) {
         case 6:
             effect_C5_init(wk, 0);
             break;
@@ -384,7 +385,7 @@ void Appear_06000(PLW* wk) {
 
     case 1:
         if (demo_car_flag[wk->wu.id]) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.disp_flag = 1;
             wk->wu.my_mr_flag = 0;
             set_char_move_init(&wk->wu, 9, 0x13);
@@ -392,7 +393,7 @@ void Appear_06000(PLW* wk) {
             wk->wu.mvxy.d[0].sp = 0;
             wk->wu.mvxy.d[1].sp = -0x8000;
 
-            if (wk->wu.routine_no[4] == 0x1B) {
+            if (wk->wu.routine_no[APPEAR_RNO_TYPE] == 0x1B) {
                 appear_work[wk->wu.id] = 0x34;
             } else {
                 appear_work[wk->wu.id] = 0x2A;
@@ -412,7 +413,7 @@ void Appear_06000(PLW* wk) {
         appear_work[wk->wu.id]--;
 
         if (*&appear_work[wk->wu.id] <= 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.xyz[1].cal = 0;
             set_char_move_init(&wk->wu, 9, 0x10);
             Appear_end++;
@@ -425,13 +426,13 @@ void Appear_06000(PLW* wk) {
     case 3:
         char_move(&wk->wu);
         if (wk->wu.cg_type) {
-            wk->wu.routine_no[3]++;
-            if (wk->wu.routine_no[4] == 0x1B) {
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
+            if (wk->wu.routine_no[APPEAR_RNO_TYPE] == 0x1B) {
                 wk->wu.rl_flag ^= 1;
                 set_char_move_init(&wk->wu, 0, 1);
             } else {
-                wk->wu.routine_no[2] = 1;
-                wk->wu.routine_no[3] = 0;
+                wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+                wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             }
         }
         break;
@@ -439,8 +440,8 @@ void Appear_06000(PLW* wk) {
     case 4:
         char_move(&wk->wu);
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
         }
         break;
     }
@@ -473,23 +474,23 @@ const APPEAR_DATA appear_data[] = {
 
 /** @brief Appear type 7 — vehicle/ride-in entrance. */
 void Appear_07000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
         wk->wu.disp_flag = 1;
         bg_app_stop = 1;
 
         if (plw[wk->wu.id ^ 1].player_number == 12 && bg_w.stage == 12 && bg_w.area == 0) {
-            wk->wu.routine_no[4] = 1;
+            wk->wu.routine_no[APPEAR_RNO_TYPE] = 1;
             set_char_move_init(&wk->wu, 9, 17);
-            wk->wu.routine_no[3] = 3;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 3;
         } else {
             set_char_move_init(&wk->wu, 9, 8);
             effect_C8_init(wk);
 
             if (Appear_flag[wk->wu.id]) {
-                wk->wu.routine_no[3]++;
+                wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             } else {
-                wk->wu.routine_no[3] = 2;
+                wk->wu.routine_no[APPEAR_RNO_PHASE] = 2;
             }
         }
 
@@ -499,13 +500,13 @@ void Appear_07000(PLW* wk) {
         if (Appear_flag[wk->wu.id] != 0) {
             break;
         }
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         /* fallthrough */
 
     case 2:
         char_move(&wk->wu);
         if (wk->wu.cg_type == 9) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.cg_type = 0;
         }
         break;
@@ -534,7 +535,7 @@ void Appear_07000(PLW* wk) {
         case 4:
             wk->wu.cg_type = 0;
             char_move_z(&wk->wu);
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             break;
 
         default:
@@ -548,8 +549,8 @@ void Appear_07000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
 
@@ -562,9 +563,9 @@ void Appear_07000(PLW* wk) {
 
 /** @brief Appear type 8 — charge-in entrance. */
 void Appear_08000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
 
         if (sean_appear_check(wk, wk->wu.id)) {
@@ -575,14 +576,14 @@ void Appear_08000(PLW* wk) {
         }
 
         appear_data_set(wk, (APPEAR_DATA*)appear_data);
-        wk->wu.routine_no[4] = 2;
+        wk->wu.routine_no[APPEAR_RNO_TYPE] = 2;
         break;
 
     case 1:
         char_move(&wk->wu);
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
     }
@@ -599,9 +600,9 @@ s32 sean_appear_check(PLW* wk, s16 id) {
 
 /** @brief Appear type 9 — Sean’s basketball entrance. */
 void Appear_09000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, 0x10);
         bg_app_stop = 1;
@@ -611,7 +612,7 @@ void Appear_09000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             Appear_free[wk->wu.id] = 1;
             app_counter[wk->wu.id] = 0x20;
             return;
@@ -623,7 +624,7 @@ void Appear_09000(PLW* wk) {
         app_counter[wk->wu.id]--;
 
         if (app_counter[wk->wu.id] < 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init(&wk->wu, 9, 0x11);
             wk->wu.mvxy.a[1].sp = -0xB0000;
             wk->wu.mvxy.d[1].sp = -0x6000;
@@ -637,7 +638,7 @@ void Appear_09000(PLW* wk) {
         add_y_sub(&wk->wu);
 
         if (wk->wu.xyz[1].disp.pos <= 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.xyz[1].cal = 0;
             set_char_move_init(&wk->wu, 9, 0x12);
             Appear_end++;
@@ -650,8 +651,8 @@ void Appear_09000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
         }
 
         break;
@@ -660,9 +661,9 @@ void Appear_09000(PLW* wk) {
 
 /** @brief Appear type 10 — dramatic pose entrance. */
 void Appear_10000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, 0x13);
         bg_app_stop = 1;
@@ -685,7 +686,7 @@ void Appear_10000(PLW* wk) {
         } else if (!(wk->wu.xyz[0].disp.pos >= bg_w.bgw[1].pos_x_work - 0x58)) {
             return;
         }
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         set_char_move_init(&wk->wu, 9, 0x14);
         Appear_end++;
         break;
@@ -693,8 +694,8 @@ void Appear_10000(PLW* wk) {
     case 2:
         char_move(&wk->wu);
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
         }
         break;
     }
@@ -702,9 +703,9 @@ void Appear_10000(PLW* wk) {
 
 /** @brief Appear type 11 — casual walk-on variant. */
 void Appear_11000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         bg_app_stop = 1;
         app_counter[wk->wu.id] = 0x50;
         set_char_move_init(&wk->wu, 0, 0);
@@ -715,8 +716,8 @@ void Appear_11000(PLW* wk) {
         app_counter[wk->wu.id]--;
 
         if (app_counter[wk->wu.id] < 0) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 1;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 1;
             Appear_end++;
 
             if (Demo_Flag != 0) {
@@ -730,9 +731,9 @@ void Appear_11000(PLW* wk) {
 void Appear_12000(PLW* wk) {
     s16 work;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         bg_app_stop = 1;
         set_char_move_init(&wk->wu, 9, 12);
@@ -754,7 +755,7 @@ void Appear_12000(PLW* wk) {
         app_counter[wk->wu.id]--;
 
         if (app_counter[wk->wu.id] <= 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.xyz[1].cal = 0;
             set_char_move_init2(&wk->wu, 9, 12, 19, 0);
             Appear_end++;
@@ -770,17 +771,17 @@ void Appear_12000(PLW* wk) {
 
         if (wk->wu.cg_type == 0xFF) {
             wk->wu.cg_type = 0;
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
         }
     }
 }
 
 /** @brief Appear type 13 — character taunt entrance. */
 void Appear_13000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         bg_app_stop = 1;
         set_char_move_init2(&wk->wu, 9, 0x3D, 4, 0);
@@ -797,7 +798,7 @@ void Appear_13000(PLW* wk) {
         add_y_sub(&wk->wu);
 
         if (wk->wu.xyz[1].disp.pos < 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init(&wk->wu, 9, 0x3E);
             wk->wu.xyz[1].cal = 0;
             Appear_end++;
@@ -810,8 +811,8 @@ void Appear_13000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
         }
 
         break;
@@ -823,9 +824,9 @@ void Appear_14000(PLW* wk) {
     s16 work;
     s16 id_w = wk->wu.id ^ 1;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3] += 1;
+        wk->wu.routine_no[APPEAR_RNO_PHASE] += 1;
         wk->wu.disp_flag = 1;
         wk->gill_ccch_go = 1;
 
@@ -834,8 +835,8 @@ void Appear_14000(PLW* wk) {
             return;
         }
 
-        wk->wu.routine_no[2] = 1;
-        wk->wu.routine_no[3] = 0;
+        wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+        wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
         Appear_end++;
         break;
 
@@ -848,16 +849,16 @@ void Appear_14000(PLW* wk) {
         case 1:
             work = wk->wu.cg_ix / wk->wu.cgd_type;
             set_char_move_init2(&wk->wu, 0, 0, work + 1, 0);
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 1;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 1;
             Appear_end += 1;
             break;
 
         case 2:
             char_move(&wk->wu);
             if (wk->wu.cg_type == 0xFF) {
-                wk->wu.routine_no[2] = 1;
-                wk->wu.routine_no[3] = 0;
+                wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+                wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
                 Appear_end += 1;
             }
         }
@@ -866,9 +867,9 @@ void Appear_14000(PLW* wk) {
 
 /** @brief Appear type 15 — off-screen approach entrance. */
 void Appear_15000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         bg_app_stop = 1;
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, 8);
@@ -890,8 +891,8 @@ void Appear_15000(PLW* wk) {
             break;
 
         case 0xFF:
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
             break;
         }
@@ -900,9 +901,9 @@ void Appear_15000(PLW* wk) {
 
 /** @brief Appear type 16 — backflip/acrobatic entrance. */
 void Appear_16000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         bg_app_stop = 1;
 
@@ -918,8 +919,8 @@ void Appear_16000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
     }
@@ -960,9 +961,9 @@ s16 gill_appear_check() {
 
 /** @brief Appear type 17 — Gill’s resurrection/boss intro. */
 void Appear_17000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
 
         if (Gill_Appear_Flag) {
@@ -980,7 +981,7 @@ void Appear_17000(PLW* wk) {
 
     case 1:
         if (!bg_app) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         }
         break;
 
@@ -988,7 +989,7 @@ void Appear_17000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 2) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->gill_ccch_go = 1;
             return;
         }
@@ -1004,8 +1005,8 @@ void Appear_17000(PLW* wk) {
         }
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
             Standby_BGM(0x2E);
         }
@@ -1018,9 +1019,9 @@ void Appear_17000(PLW* wk) {
 void Appear_18000(PLW* wk) {
     s16 work;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
 
         if (plw[0].player_number == 8 && plw[1].player_number == 8) {
@@ -1074,7 +1075,7 @@ void Appear_18000(PLW* wk) {
             }
 
             wk->wu.cg_type = 0;
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         }
         break;
 
@@ -1084,7 +1085,7 @@ void Appear_18000(PLW* wk) {
         appear_work[wk->wu.id]--;
 
         if (appear_work[wk->wu.id] <= 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.xyz[1].cal = 0;
             return;
         }
@@ -1097,8 +1098,8 @@ void Appear_18000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
 
@@ -1109,9 +1110,9 @@ void Appear_18000(PLW* wk) {
 
 /** @brief Appear type 19 — car/vehicle arrival entrance. */
 void Appear_19000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         bg_app_stop = 1;
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, 0);
@@ -1131,7 +1132,7 @@ void Appear_19000(PLW* wk) {
         wk->wu.next_z = 0x56;
 
         if (appear_work[wk->wu.id] < 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.my_mr_flag = 0;
             wk->wu.my_mr.size.x = 0x3F;
             wk->wu.my_mr.size.y = 0x3F;
@@ -1162,7 +1163,7 @@ void Appear_19000(PLW* wk) {
         appear_work[wk->wu.id]--;
 
         if (appear_work[wk->wu.id] <= 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init(&wk->wu, 9, 0x3E);
             wk->wu.xyz[1].cal = 0;
 
@@ -1183,8 +1184,8 @@ void Appear_19000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
 
@@ -1194,9 +1195,9 @@ void Appear_19000(PLW* wk) {
 
 /** @brief Appear type 20 — helicopter/airborne drop entrance. */
 void Appear_20000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, 0x15);
         bg_app_stop = 1;
@@ -1206,8 +1207,8 @@ void Appear_20000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
     }
@@ -1217,9 +1218,9 @@ void Appear_20000(PLW* wk) {
 void Appear_21000(PLW* wk) {
     s16 work;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3] += 1;
+        wk->wu.routine_no[APPEAR_RNO_PHASE] += 1;
         wk->wu.disp_flag = 1;
         work = random_16();
         work &= 7;
@@ -1235,8 +1236,8 @@ void Appear_21000(PLW* wk) {
     case 1:
         char_move(&wk->wu);
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end += 1;
         }
     }
@@ -1244,9 +1245,9 @@ void Appear_21000(PLW* wk) {
 
 /** @brief Appear type 22 — boat/water entrance. */
 void Appear_22000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         wk->wu.cmwk[1] = 0;
         set_char_move_init(&wk->wu, 9, 0);
@@ -1255,7 +1256,7 @@ void Appear_22000(PLW* wk) {
 
     case 1:
         char_move(&wk->wu);
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         set_char_move_init(&wk->wu, 9, 8);
         break;
 
@@ -1263,8 +1264,8 @@ void Appear_22000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
     }
@@ -1273,9 +1274,9 @@ void Appear_22000(PLW* wk) {
 /** @brief Appear type 23 — motorcycle entrance. */
 void Appear_23000(PLW* wk) {
     s16 work;
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3] += 1;
+        wk->wu.routine_no[APPEAR_RNO_PHASE] += 1;
         wk->wu.disp_flag = 1;
         work = random_16();
         work &= 3;
@@ -1287,7 +1288,7 @@ void Appear_23000(PLW* wk) {
     case 1:
         char_move(&wk->wu);
         if ((wk->wu.cmwk[1]) && wk->wu.cg_type == 9) {
-            wk->wu.routine_no[3] += 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] += 1;
             set_char_move_init(&wk->wu, 9, wk->wu.char_index + 8);
             return;
         } else {
@@ -1296,8 +1297,8 @@ void Appear_23000(PLW* wk) {
     case 2:
         char_move(&wk->wu);
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end += 1;
         }
         break;
@@ -1314,8 +1315,8 @@ void Appear_24000(PLW* wk) {
         }
     }
 
-    wk->wu.routine_no[2] = 1;
-    wk->wu.routine_no[3] = 0;
+    wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+    wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
 }
 
 /** @brief Appear type 25 — minimal entrance (direct set). */
@@ -1324,8 +1325,8 @@ void Appear_25000(PLW* wk) {
         wk->wu.xyz[0].disp.pos = bg_w.bgw[1].pos_x_work;
     }
 
-    wk->wu.routine_no[2] = 1;
-    wk->wu.routine_no[3] = 0;
+    wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+    wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
 }
 
 const s16 smoke_check[SMOKE_CHECK_COUNT] = { 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0 };
@@ -1334,10 +1335,10 @@ const s16 smoke_check[SMOKE_CHECK_COUNT] = { 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0,
 void Appear_26000(PLW* wk) {
     // s32 effect_86_init(s16 type86);
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
         bg_app_stop = 1;
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, 0x10);
         appear_work[wk->wu.id] = 0x14;
@@ -1348,7 +1349,7 @@ void Appear_26000(PLW* wk) {
         appear_work[wk->wu.id]--;
 
         if (appear_work[wk->wu.id] < 1) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             appear_work[wk->wu.id] = 0x14;
 
             if (wk->wu.id) {
@@ -1367,7 +1368,7 @@ void Appear_26000(PLW* wk) {
         add_y_sub(&wk->wu);
 
         if (wk->wu.xyz[1].disp.pos < 0x41) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.hit_quake = 0x18;
 
             if (wk->wu.id == 0) {
@@ -1382,7 +1383,7 @@ void Appear_26000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.hit_quake < 1) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             Appear_free[wk->wu.id] = 1;
         }
 
@@ -1393,7 +1394,7 @@ void Appear_26000(PLW* wk) {
         appear_work[wk->wu.id]--;
 
         if (appear_work[wk->wu.id] < 1) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init2(&wk->wu, 9, 0x10, 3, 0);
             wk->wu.xyz[1].cal = 0;
         } else {
@@ -1408,7 +1409,7 @@ void Appear_26000(PLW* wk) {
 
         if (wk->wu.cg_type == 9) {
             wk->wu.rl_flag ^= 1;
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         }
 
         break;
@@ -1417,8 +1418,8 @@ void Appear_26000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
 
@@ -1430,9 +1431,9 @@ void Appear_26000(PLW* wk) {
 void Appear_28000(PLW* wk) {
     s16 id_w = wk->wu.id ^ 1;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         Appear_car_stop[id_w] = 0;
         set_char_move_init(&wk->wu, 9, 17);
@@ -1441,7 +1442,7 @@ void Appear_28000(PLW* wk) {
 
     case 1:
         if (Appear_car_stop[id_w]) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init2(&wk->wu, 9, 17, 2, 0);
         }
 
@@ -1451,14 +1452,14 @@ void Appear_28000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 9) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         }
 
         break;
 
     case 3:
-        if (plw[id_w].wu.routine_no[3] >= 3) {
-            wk->wu.routine_no[3]++;
+        if (plw[id_w].wu.routine_no[APPEAR_RNO_PHASE] >= 3) {
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             appear_work[wk->wu.id] = 20;
         }
 
@@ -1468,7 +1469,7 @@ void Appear_28000(PLW* wk) {
         appear_work[wk->wu.id]--;
 
         if (appear_work[wk->wu.id] < 1) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init2(&wk->wu, 9, 17, 15, 0);
         }
 
@@ -1478,8 +1479,8 @@ void Appear_28000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
 
@@ -1491,9 +1492,9 @@ void Appear_28000(PLW* wk) {
 void Appear_29000(PLW* wk) {
     s16 work;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         bg_app_stop = 1;
         wk->wu.disp_flag = 1;
         wk->wu.cmwk[1] = 0;
@@ -1519,7 +1520,7 @@ void Appear_29000(PLW* wk) {
             switch (wk->wu.cmwk[2]) {
             case 0:
             case 1:
-                wk->wu.routine_no[3] = 2;
+                wk->wu.routine_no[APPEAR_RNO_PHASE] = 2;
 
                 if (wk->wu.id) {
                     wk->wu.mvxy.a[0].sp = 0xffff0000;
@@ -1531,7 +1532,7 @@ void Appear_29000(PLW* wk) {
                 break;
 
             case 2:
-                wk->wu.routine_no[3] = 3;
+                wk->wu.routine_no[APPEAR_RNO_PHASE] = 3;
 
                 if (wk->wu.id) {
                     wk->wu.xyz[0].disp.pos = bg_w.bgw[1].pos_x_work + 0xd8;
@@ -1543,7 +1544,7 @@ void Appear_29000(PLW* wk) {
                 break;
 
             case 3:
-                wk->wu.routine_no[3] = 4;
+                wk->wu.routine_no[APPEAR_RNO_PHASE] = 4;
                 set_char_move_init(&wk->wu, 9, 0xb);
                 wk->wu.mvxy.d[0].sp = 0;
                 wk->wu.mvxy.d[1].sp = 0xffff8000;
@@ -1572,8 +1573,8 @@ void Appear_29000(PLW* wk) {
             return;
         }
 
-        wk->wu.routine_no[2] = 1;
-        wk->wu.routine_no[3] = 0;
+        wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+        wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
         Appear_end++;
         break;
 
@@ -1581,8 +1582,8 @@ void Appear_29000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
         break;
@@ -1591,7 +1592,7 @@ void Appear_29000(PLW* wk) {
         app_counter[wk->wu.id]--;
 
         if (app_counter[wk->wu.id] < 1) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init2(&wk->wu, 9, 0xb, 5, 0);
             wk->wu.xyz[1].disp.pos = 0;
         } else {
@@ -1605,8 +1606,8 @@ void Appear_29000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
 
@@ -1650,9 +1651,9 @@ void don_appear_check(PLW* wk) {
 
 /** @brief Appear type 30 — standing idle entrance. */
 void Appear_30000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         bg_app_stop = 1;
         random_16(); // Although the result is unused, I'm keeping the call, because it changes RNG state
@@ -1663,8 +1664,8 @@ void Appear_30000(PLW* wk) {
     case 1:
         char_move(&wk->wu);
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end += 1;
         }
     }
@@ -1672,9 +1673,9 @@ void Appear_30000(PLW* wk) {
 
 /** @brief Appear type 31 — walk-on with taunt. */
 void Appear_31000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
 
         if (Appear_flag[wk->wu.id]) {
@@ -1691,8 +1692,8 @@ void Appear_31000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
 
@@ -1704,9 +1705,9 @@ void Appear_31000(PLW* wk) {
 void Appear_32000(PLW* wk) {
     s16 work;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3] += 1;
+        wk->wu.routine_no[APPEAR_RNO_PHASE] += 1;
         wk->wu.disp_flag = 1;
         work = random_16();
         work &= 7;
@@ -1717,8 +1718,8 @@ void Appear_32000(PLW* wk) {
     case 1:
         char_move(&wk->wu);
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end += 1;
         }
     }
@@ -1726,9 +1727,9 @@ void Appear_32000(PLW* wk) {
 
 /** @brief Appear type 33 — leaping entrance. */
 void Appear_33000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         set_char_move_init(&wk->wu, 9, 0xC);
         wk->wu.mvxy.d[0].sp = 0;
         wk->wu.mvxy.d[1].sp = -0x8000;
@@ -1749,7 +1750,7 @@ void Appear_33000(PLW* wk) {
         app_counter[wk->wu.id]--;
 
         if (app_counter[wk->wu.id] <= 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init2(&wk->wu, 9, 0xC, 2, 0);
             wk->wu.xyz[1].disp.pos = 0;
             return;
@@ -1763,8 +1764,8 @@ void Appear_33000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
     }
@@ -1774,9 +1775,9 @@ void Appear_33000(PLW* wk) {
 void Appear_34000(PLW* wk) {
     s16 work;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3] += 1;
+        wk->wu.routine_no[APPEAR_RNO_PHASE] += 1;
         wk->wu.disp_flag = 1;
 
         work = random_16();
@@ -1806,9 +1807,9 @@ void Appear_34000(PLW* wk) {
 void Appear_36000(PLW* wk) {
     s16 id_w = wk->wu.id ^ 1;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, 0x10);
         bg_app_stop = 1;
@@ -1818,7 +1819,7 @@ void Appear_36000(PLW* wk) {
         char_move(&wk->wu);
 
         if (plw[id_w].wu.cmwk[0] == 3) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init(&wk->wu, 9, 0x11);
             app_counter[wk->wu.id] = 0x10;
             wk->wu.next_z = plw[id_w].wu.my_priority;
@@ -1831,7 +1832,7 @@ void Appear_36000(PLW* wk) {
         app_counter[wk->wu.id]--;
 
         if (app_counter[wk->wu.id] <= 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             app_counter[wk->wu.id] = 0x16;
 
             if (wk->wu.id) {
@@ -1849,7 +1850,7 @@ void Appear_36000(PLW* wk) {
         app_counter[wk->wu.id]--;
 
         if (app_counter[wk->wu.id] <= 0) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init2(&wk->wu, 9, 0x11, 0x0A, 0);
             wk->wu.next_z = wk->wu.my_priority;
         } else {
@@ -1862,8 +1863,8 @@ void Appear_36000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
 
@@ -1877,9 +1878,9 @@ const u8 animal_decide_tbl[ANIMAL_DECIDE_COUNT] = { 0, 1, 2, 3, 4, 5, 0, 2, 0, 1
 void Appear_37000(PLW* wk) {
     s16 id_w = wk->wu.id ^ 1;
 
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         set_char_move_init(&wk->wu, 9, 0x11);
         bg_app_stop = 1;
@@ -1891,7 +1892,7 @@ void Appear_37000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.cmwk[0] = 1;
         }
         break;
@@ -1900,7 +1901,7 @@ void Appear_37000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cmwk[0] == 2) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init(&wk->wu, 9, 0x12);
         }
 
@@ -1910,7 +1911,7 @@ void Appear_37000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init(&wk->wu, 9, 0x13);
         }
 
@@ -1920,7 +1921,7 @@ void Appear_37000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 9) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             wk->wu.cmwk[0] = 3;
             wk->wu.next_z = plw[id_w].wu.my_priority;
         }
@@ -1931,7 +1932,7 @@ void Appear_37000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[3]++;
+            wk->wu.routine_no[APPEAR_RNO_PHASE]++;
             set_char_move_init(&wk->wu, 0, 3);
             app_counter[wk->wu.id] = 0x2a;
 
@@ -1953,8 +1954,8 @@ void Appear_37000(PLW* wk) {
         app_counter[wk->wu.id]--;
 
         if (app_counter[wk->wu.id] < 1) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         } else {
             add_x_sub(&wk->wu);
@@ -1966,9 +1967,9 @@ void Appear_37000(PLW* wk) {
 
 /** @brief Appear type 38 — meta-character walk-on entrance. */
 void Appear_38000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         bg_app_stop = 1;
         wk->wu.disp_flag = 1;
 
@@ -1984,8 +1985,8 @@ void Appear_38000(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
     }
@@ -1993,9 +1994,9 @@ void Appear_38000(PLW* wk) {
 
 /** @brief Appear type 39 — elevator/platform rise entrance. */
 void Appear_39000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
 
         if (Gill_Appear_Flag) {
@@ -2024,13 +2025,13 @@ void Appear_39000(PLW* wk) {
 
         if (wk->wu.id) {
             if (wk->wu.xyz[0].disp.pos < (bg_w.bgw[1].pos_x_work + 88)) {
-                wk->wu.routine_no[3]++;
+                wk->wu.routine_no[APPEAR_RNO_PHASE]++;
                 wk->wu.xyz[0].disp.pos = bg_w.bgw[1].pos_x_work + 88;
                 return;
             }
         } else {
             if (wk->wu.xyz[0].disp.pos > (bg_w.bgw[1].pos_x_work - 88)) {
-                wk->wu.routine_no[3] += 1;
+                wk->wu.routine_no[APPEAR_RNO_PHASE] += 1;
                 wk->wu.xyz[0].disp.pos = (bg_w.bgw[1].pos_x_work - 88);
                 return;
             }
@@ -2039,8 +2040,8 @@ void Appear_39000(PLW* wk) {
         break;
 
     case 2:
-        wk->wu.routine_no[2] = 1;
-        wk->wu.routine_no[3] = 0;
+        wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+        wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
         Appear_end += 1;
         break;
     }
@@ -2048,9 +2049,9 @@ void Appear_39000(PLW* wk) {
 
 /** @brief Appear type 41 — delayed entrance (Q-specific). */
 void Appear_41000(PLW* wk) {
-    switch (wk->wu.routine_no[3]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_PHASE]) {
     case 0:
-        wk->wu.routine_no[3]++;
+        wk->wu.routine_no[APPEAR_RNO_PHASE]++;
         wk->wu.disp_flag = 1;
         bg_app_stop = 1;
         set_char_move_init(&wk->wu, 0, 0);
@@ -2063,8 +2064,8 @@ void Appear_41000(PLW* wk) {
         app_counter[wk->wu.id]--;
 
         if (app_counter[wk->wu.id] < 0) {
-            wk->wu.routine_no[2] = 1;
-            wk->wu.routine_no[3] = 0;
+            wk->wu.routine_no[APPEAR_RNO_COMPLETE] = 1;
+            wk->wu.routine_no[APPEAR_RNO_PHASE] = 0;
             Appear_end++;
         }
 
@@ -2079,9 +2080,9 @@ void gouki_appear(PLW* wk) {
         return;
     }
 
-    switch (wk->wu.routine_no[6]) {
+    switch (wk->wu.routine_no[APPEAR_RNO_GOUKI]) {
     case 0:
-        wk->wu.routine_no[6]++;
+        wk->wu.routine_no[APPEAR_RNO_GOUKI]++;
         set_char_move_init(&wk->wu, 1, 0x3C);
         char_move_z(&wk->wu);
         wk->wu.xyz[1].disp.pos = -6;
@@ -2091,7 +2092,7 @@ void gouki_appear(PLW* wk) {
         char_move(&wk->wu);
 
         if (wk->wu.cg_type == 0xFF) {
-            wk->wu.routine_no[6]++;
+            wk->wu.routine_no[APPEAR_RNO_GOUKI]++;
         }
 
         break;

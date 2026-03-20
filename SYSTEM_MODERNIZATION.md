@@ -48,14 +48,14 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 34 | `gd3rd.c` Data Table Extraction | LOW | Data separation | 2,177→390 lines. 294-entry `ldreq_tbl[]` and 43-entry `ldreq_ix[]` extracted to `gd_data.c` / `gd_data.h`. Logic core only ~390 lines. |
 | 35 | `sound3rd.c` Magic Number Cleanup | LOW | Named constants | 3 raw `SsRequest()` calls → `SND_MENU_CURSOR`, `SND_MENU_SELECT`, `SND_DIR_CURSOR` from `sound_ids.h`. |
 | 36 | `bg_sub.c` Magic Number Cleanup | LOW–MED | Named constants | 1,287 lines. ~80 raw hex values → named constants in new `bg_constants.h`. Zoom bitmasks, chase flags, scroll zones, screen geometry, stage indices, scroll speed. Zero logic changes. |
+| 37 | `bg.c` Decomposition | LOW–MED | File split | 1,538→~750 lines. Texture loading → `bg_load.c` (~380 lines), tile rewrite setup → `bg_rewrite.c` (~155 lines), core rendering/scroll/zoom remains in `bg.c`. `bg.h` → umbrella header. |
+| 38 | `appear.c` State Cleanup | MEDIUM | Named `routine_no[]` states | 2,103 lines, 221 `routine_no[]` accesses. `APPEAR_RNO_COMPLETE`, `APPEAR_RNO_PHASE`, `APPEAR_RNO_TYPE`, `APPEAR_RNO_GOUKI` named indices. Animation-only, runs before round start. |
 ---
 
 ## Next Wave: Safe Improvement Candidates (March 2026 Audit — Wave 2)
 
 | # | Component | Risk | Pattern | Key Files |
 |---|-----------|------|---------|-----------|
-| 37 | `bg.c` Decomposition | LOW–MED | File split | 1,537 lines. Clear boundaries: stage texture loading (~300 lines), ending texture loading (~200 lines), tile rewrite logic (~400 lines), draw/render (~500 lines). Split into `bg_load.c`, `bg_rewrite.c`, core `bg.c`. |
-| 38 | `appear.c` State Cleanup | MEDIUM | Named `routine_no[]` states | 2,102 lines, 221 `routine_no[]` accesses. Per-character entrance animation dispatch via nested switches. Introduce named state enums for `routine_no[0..3]`. No netplay sync risk — animation-only, runs before round start. |
 | 39 | `chren3rd.c` Decomposition | LOW–MED | File split | 1,308 lines. Character rendering helpers — palette management, shadow rendering, and object group config are distinct blocks. Can split into `chren_palette.c`, `chren_shadow.c`, core `chren3rd.c`. |
 
 ---

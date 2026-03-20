@@ -1,6 +1,8 @@
 #ifndef BG_H
 #define BG_H
 
+#include "sf33rd/Source/Game/stage/bg_load.h"
+#include "sf33rd/Source/Game/stage/bg_rewrite.h"
 #include "structs.h"
 #include "types.h"
 
@@ -98,6 +100,7 @@ extern u16 Screen_Switch_Buffer;
 extern u16 Screen_Switch;
 
 extern u8 bg_disp_off;
+extern u8 bg_priority[4];
 
 extern u8 rw_num;
 extern u8 rw_bg_flag[4];
@@ -113,6 +116,7 @@ extern BackgroundParameters end_prm[8];
 extern u8 gouki_end_gbix[16];
 extern const u32* rw3col_ptr;
 extern RW_DATA rw_dat[20];
+extern u8 s_gouki_pal_xored;
 
 void Bg_TexInit();
 void Bg_Kakikae_Set();
