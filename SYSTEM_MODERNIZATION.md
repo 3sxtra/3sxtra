@@ -65,6 +65,7 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 | 55 | `menu_save.c` Hex Constants | LOW | Named constants | ~15 raw hex → named constants via `menu_save_constants.h` and `menu_input_constants.h`. |
 | 54 | `menu_replay.c` Hex Constants | LOW | Named constants | ~40 raw hex → named constants via `menu_replay_constants.h` and `menu_input_constants.h`. Zero logic changes. |
 | 52 | `caldir.c` Data Isolation | MED | Data separation | 1,099→393 lines. `rate_256_table[256][2]` + `dir_sel_table[128][128]` (706 lines) extracted to `caldir_data.c` / `caldir_data.h`. Logic core only ~393 lines. |
+| 50 | `sound_lookup.c` Data Isolation | MED | Data separation | 3,017→33 lines. `g_SoundLookupTable[]` (~2,981 entries, 280 KB) extracted to `sound_lookup_data.c` / `sound_lookup_data.h`. Logic core only ~33 lines with `Get_Sound_Lookup()`. |
 ---
 
 ## Next Wave: Safe Improvement Candidates (March 2026 Audit — Wave 2)
@@ -78,7 +79,6 @@ All LOW and MEDIUM risk registry migrations are done. Each converted a legacy ju
 
 | # | Component | Risk | Pattern | Key Files |
 |---|-----------|------|---------|-----------|
-| 50 | `sound_lookup.c` Sound Table | MED | Auto-gen candidate | 3,016 lines (**280 KB**). Massive lookup table. Could be script-generated & documented rather than hand-maintained. |
 | 51 | `charset.c` Character Set Tables | MED | Data isolation | 2,926 lines (76 KB). Character set mapping. Engine layer — uses `routine_no[]`. Touch with care. |
 
 
