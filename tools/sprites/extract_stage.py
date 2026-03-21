@@ -13,6 +13,7 @@ Usage:
   python extract_stage.py 5 --mode=indexed     # extract stage 5 with palette
 """
 
+import argparse
 import json
 import struct
 import zlib
@@ -20,109 +21,28 @@ import os
 import sys
 from PIL import Image
 
+from sprite_common import (
+    read_afs, read_afs_file, lz_ext_p6_fx, DTL, unswizzle,
+    decode_color_abgr1555, decode_palette_banks,
+    STAGE_NAMES, STAGE_PAL_AFS, STAGE_TILE_AFS,
+    COLORS_PER_BANK, PALETTE_BANK_BYTES,
+)
 
-# Stage names (internal index 0-21, verified against AFSPLORER)
-STAGE_NAMES = [
-    "gill_boss",  # 00 - Gill (Final Boss)
-    "alex_newyork",  # 01 - Alex (New York)
-    "ryu_japan",  # 02 - Ryu (Japan)
-    "yun_hongkong",  # 03 - Yun (Hong Kong)
-    "dudley_england",  # 04 - Dudley (England)
-    "necro_russia",  # 05 - Necro/Q (Russia)
-    "hugo_germany",  # 06 - Hugo (Germany)
-    "ibuki_japan",  # 07 - Ibuki (Japan)
-    "elena_kenya",  # 08 - Elena (Kenya)
-    "oro_brazil",  # 09 - Oro (Brazil)
-    "yang_hongkong",  # 10 - Yang (Hong Kong Alt)
-    "ken_newyork",  # 11 - Ken (New York Alt)
-    "sean_brazil",  # 12 - Sean (Brazil)
-    "urien_egypt",  # 13 - Urien (Egypt)
-    "akuma_japan",  # 14 - Akuma (Japan)
-    "chunli_china",  # 15 - Chun-Li (China)
-    "makoto_japan",  # 16 - Makoto (Japan)
-    "necro_alt",  # 17 - Q/Necro Alt (reuses bg)
-    "twelve",  # 18 - Twelve
-    "remy",  # 19 - Remy
-    "bonus_car",  # 20 - Bonus Stage (Car)
-    "bonus_parry",  # 21 - Bonus Stage (Parry)
-]
+# Optional NumPy for accelerated tile decoding
+try:
+    import numpy as np
+    _HAS_NUMPY = True
+except ImportError:
+    _HAS_NUMPY = False
+
+# STAGE_NAMES, STAGE_TILE_AFS, STAGE_PAL_AFS imported from sprite_common
 
 # --- Mode 1: Raw PPG entries (direct-color 16-bit tiles) ---
 STAGE_PPG_ENTRY = [
-    54,
-    55,
-    56,
-    57,
-    58,
-    59,
-    60,
-    61,
-    62,
-    63,
-    64,
-    65,
-    66,
-    67,
-    68,
-    69,
-    70,
-    71,
-    72,
-    73,
-    75,
-    76,
+    54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+    64, 65, 66, 67, 68, 69, 70, 71, 72, 73,
+    75, 76,
 ]
-
-# --- Mode 2: Indexed tiles + palette (from color_file[], kokey=0x12/0x2) ---
-STAGE_TILE_AFS = {
-    0: 1387,
-    1: 1390,
-    2: 1393,
-    3: 1396,
-    4: 1399,
-    5: 1402,
-    6: 1404,
-    7: 1408,
-    8: 1411,
-    9: 1414,
-    10: 1417,
-    11: 1420,
-    12: 1423,
-    13: 1426,
-    14: 1429,
-    15: 1432,
-    16: 1435,
-    17: 1420,
-    18: 1438,
-    19: 1441,
-    20: 1445,
-    21: 1450,
-}
-
-STAGE_PAL_AFS = {
-    0: 1383,
-    1: 1388,
-    2: 1391,
-    3: 1394,
-    4: 1397,
-    5: 1400,
-    6: 1403,
-    7: 1406,
-    8: 1409,
-    9: 1412,
-    10: 1415,
-    11: 1418,
-    12: 1421,
-    13: 1424,
-    14: 1427,
-    15: 1430,
-    16: 1433,
-    17: 1418,
-    18: 1436,
-    19: 1439,
-    20: 1442,
-    21: 1447,
-}
 
 # Layers per stage (from use_real_scr)
 STAGE_LAYERS = [2, 1, 3, 2, 1, 2, 1, 2, 2, 2, 2, 1, 2, 2, 3, 2, 2, 2, 2, 1, 2, 1]
@@ -184,43 +104,58 @@ def compute_gbix_base(stage_idx, layer):
     return (stg + layer) * 64 + 0x84
 
 
-# ─── AFS helpers ────────────────────────────────────────────────
+# ─── Default AFS path ──────────────────────────────────────────
 
 
-def read_afs(filepath):
-    with open(filepath, "rb") as f:
-        f.read(4)
-        ec = struct.unpack("<I", f.read(4))[0]
-        entries = []
-        for _ in range(ec):
-            o, s = struct.unpack("<II", f.read(8))
-            entries.append((o, s))
-    return entries
+def _default_afs_path():
+    return os.environ.get(
+        "SF33RD_AFS",
+        r"C:\Users\dov\AppData\Roaming\CrowdedStreet\3SX\resources\SF33RD.AFS"
+    )
 
 
-def read_afs_file(filepath, entry):
-    with open(filepath, "rb") as f:
-        f.seek(entry[0])
-        return f.read(entry[1])
-
-
-# ─── Palette loading (ABGR1555 LE) ─────────────────────────────
+# ─── Palette loading ────────────────────────────────────────────
 
 
 def load_palette(pal_data):
     """Load palette as flat RGBA tuple array from ABGR1555 little-endian data."""
+    banks = decode_palette_banks(pal_data)
     colors = []
-    for c in range(len(pal_data) // 2):
-        val = struct.unpack_from("<H", pal_data, c * 2)[0]
-        b = (val & 0x1F) << 3
-        g = ((val >> 5) & 0x1F) << 3
-        r = ((val >> 10) & 0x1F) << 3
-        a = 255 if (val & 0x8000) else 0
-        colors.append((r, g, b, a))
+    for bank in banks:
+        colors.extend(bank)
     return colors
 
 
 # ─── Mode 1: Raw PPG direct-color tile extraction ──────────────
+
+
+def _decode_ppg_tile_raw_numpy(raw, w, h):
+    """Decode a raw ABGR1555 BE tile using NumPy (fast path)."""
+    pixels = np.frombuffer(raw, dtype=np.dtype(">u2")).reshape(h, w)
+    b = ((pixels & 0x1F) << 3).astype(np.uint8)
+    g = (((pixels >> 5) & 0x1F) << 3).astype(np.uint8)
+    r = (((pixels >> 10) & 0x1F) << 3).astype(np.uint8)
+    a = np.where(pixels & 0x8000, 255, 0).astype(np.uint8)
+    rgba = np.stack([r, g, b, a], axis=-1)
+    return Image.fromarray(rgba, "RGBA")
+
+
+def _decode_ppg_tile_raw_python(raw, w, h):
+    """Decode a raw ABGR1555 BE tile using pure Python (fallback)."""
+    buf = bytearray(w * h * 4)
+    for py in range(h):
+        for px in range(w):
+            val = struct.unpack_from(">H", raw, (py * w + px) * 2)[0]
+            b = (val & 0x1F) << 3
+            g = ((val >> 5) & 0x1F) << 3
+            r = ((val >> 10) & 0x1F) << 3
+            a = 255 if (val & 0x8000) else 0
+            off = (py * w + px) * 4
+            buf[off] = r
+            buf[off + 1] = g
+            buf[off + 2] = b
+            buf[off + 3] = a
+    return Image.frombytes("RGBA", (w, h), bytes(buf))
 
 
 def extract_ppg_tiles_raw(afs_path, entries, entry_idx):
@@ -239,17 +174,12 @@ def extract_ppg_tiles_raw(afs_path, entries, entry_idx):
             try:
                 raw = zlib.decompress(comp)
                 w, h = 128, 128
-                img = Image.new("RGBA", (w, h))
-                for py in range(h):
-                    for px in range(w):
-                        val = struct.unpack_from(">H", raw, (py * w + px) * 2)[0]
-                        b = (val & 0x1F) << 3
-                        g = ((val >> 5) & 0x1F) << 3
-                        r = ((val >> 10) & 0x1F) << 3
-                        a = 255 if (val & 0x8000) else 0
-                        img.putpixel((px, py), (r, g, b, a))
-                tiles.append(img)
-            except Exception:
+                if _HAS_NUMPY:
+                    tiles.append(_decode_ppg_tile_raw_numpy(raw, w, h))
+                else:
+                    tiles.append(_decode_ppg_tile_raw_python(raw, w, h))
+            except Exception as e:
+                print(f"    WARNING: failed to decode PPG tile at offset {ofs}: {e}")
                 tiles.append(Image.new("RGBA", (128, 128), (255, 0, 255, 128)))
 
         ofs += (file_size + 3) & ~3
@@ -257,6 +187,32 @@ def extract_ppg_tiles_raw(afs_path, entries, entry_idx):
 
 
 # ─── Mode 2: Indexed tile extraction with palette ──────────────
+
+
+def _decode_ppg_tile_indexed_numpy(raw, w, h, pal_map, palette_colors, default_pal):
+    """Decode an indexed PPG tile using NumPy (fast path)."""
+    indices = np.frombuffer(raw[:w * h], dtype=np.uint8).reshape(h, w)
+
+    # Build per-pixel palette bank as numpy array
+    pal_map_arr = np.array(pal_map, dtype=np.int32)
+
+    # Compute flat color indices
+    color_idx = pal_map_arr * COLORS_PER_BANK + indices.astype(np.int32)
+
+    # Build full palette as RGBA array
+    max_idx = max(color_idx.max() + 1, len(palette_colors))
+    pal_arr = np.zeros((max_idx, 4), dtype=np.uint8)
+    for ci, c in enumerate(palette_colors):
+        if ci < max_idx:
+            pal_arr[ci] = c
+
+    # Apply: index 0 = transparent
+    rgba = np.where(
+        indices[..., np.newaxis] == 0,
+        np.array([0, 0, 0, 0], dtype=np.uint8),
+        pal_arr[np.clip(color_idx, 0, len(pal_arr) - 1)]
+    )
+    return Image.fromarray(rgba.astype(np.uint8), "RGBA")
 
 
 def extract_ppg_tiles_indexed(data, palette_colors):
@@ -304,21 +260,31 @@ def extract_ppg_tiles_indexed(data, palette_colors):
                     for px in range(px_x, min(px_x + px_w, w)):
                         pal_map[py][px] = pal_bank
 
-            img = Image.new("RGBA", (w, h))
-            for py in range(h):
-                for px in range(w):
-                    if py * w + px < len(raw):
-                        idx = raw[py * w + px]
-                        if idx == 0:
-                            img.putpixel((px, py), (0, 0, 0, 0))
-                        else:
-                            color_idx = pal_map[py][px] * 64 + idx
-                            if color_idx < len(palette_colors):
-                                img.putpixel((px, py), palette_colors[color_idx])
+            if _HAS_NUMPY:
+                tiles.append(_decode_ppg_tile_indexed_numpy(
+                    raw, w, h, pal_map, palette_colors, default_pal))
+            else:
+                buf = bytearray(w * h * 4)
+                for py in range(h):
+                    for px in range(w):
+                        if py * w + px < len(raw):
+                            idx = raw[py * w + px]
+                            if idx == 0:
+                                pass  # already zeroed
                             else:
-                                img.putpixel((px, py), (128, 128, 128, 255))
-            tiles.append(img)
-        except Exception:
+                                color_idx = pal_map[py][px] * COLORS_PER_BANK + idx
+                                off = (py * w + px) * 4
+                                if color_idx < len(palette_colors):
+                                    r, g, b, a = palette_colors[color_idx]
+                                    buf[off] = r
+                                    buf[off + 1] = g
+                                    buf[off + 2] = b
+                                    buf[off + 3] = a
+                                else:
+                                    buf[off:off + 4] = b'\x80\x80\x80\xff'
+                tiles.append(Image.frombytes("RGBA", (w, h), bytes(buf)))
+        except Exception as e:
+            print(f"    WARNING: failed to decode indexed tile at offset {ofs}: {e}")
             tiles.append(Image.new("RGBA", (128, 128), (255, 0, 255, 128)))
         ofs += (file_size + 3) & ~3
 
@@ -403,7 +369,7 @@ def extract_stage(afs_path, stage_idx, output_dir, mode="ppg"):
         pal_data = read_afs_file(afs_path, entries[pal_afs])
         palette_colors = load_palette(pal_data)
         print(
-            f"  Palette: {len(palette_colors)} colors ({len(palette_colors) // 64} banks)"
+            f"  Palette: {len(palette_colors)} colors ({len(palette_colors) // COLORS_PER_BANK} banks)"
         )
 
         # Load and extract tiles with palette
@@ -484,237 +450,8 @@ def extract_stage(afs_path, stage_idx, output_dir, mode="ppg"):
 
 
 # ─── Chip-based sprite animation extraction ────────────────────
-# Ported from sf3-art extract_character.py — same binary format
-# as character sprites (LZ compressed, swizzled, frame offset table)
-
-# dctex_linear unswizzle table
-_seed = [
-    0x0000,
-    0x0002,
-    0x0008,
-    0x000A,
-    0x0020,
-    0x0022,
-    0x0028,
-    0x002A,
-    0x0080,
-    0x0082,
-    0x0088,
-    0x008A,
-    0x00A0,
-    0x00A2,
-    0x00A8,
-    0x00AA,
-    0x0200,
-    0x0202,
-    0x0208,
-    0x020A,
-    0x0220,
-    0x0222,
-    0x0228,
-    0x022A,
-    0x0280,
-    0x0282,
-    0x0288,
-    0x028A,
-    0x02A0,
-    0x02A2,
-    0x02A8,
-    0x02AA,
-]
-_seedAdd = [
-    0x0000,
-    0x0004,
-    0x0010,
-    0x0014,
-    0x0040,
-    0x0044,
-    0x0050,
-    0x0054,
-    0x0100,
-    0x0104,
-    0x0110,
-    0x0114,
-    0x0140,
-    0x0144,
-    0x0150,
-    0x0154,
-]
-DTL = [0] * 1024
-for _i in range(16):
-    for _j in range(32):
-        DTL[_j + _i * 64] = _seed[_j] + _seedAdd[_i]
-    for _j in range(32):
-        DTL[_j + _i * 64 + 32] = DTL[_j + _i * 64] + 1
-
-
-def lz_ext_p6_fx(src, dst_size):
-    """CPS3 LZ decompressor for sprite chip data."""
-    dst = bytearray(dst_size)
-    si = di = 0
-    while di < dst_size and si < len(src):
-        t = src[si]
-        si += 1
-        c = t & 0xC0
-        if c == 0x00:
-            dst[di] = t
-            di += 1
-        elif c == 0x40:
-            t &= 0x3F
-            back = (t >> 2) + 1
-            length = (t & 3) + 2
-            p = di - back
-            for _ in range(length):
-                if di >= dst_size:
-                    break
-                dst[di] = dst[p] if 0 <= p < di else 0
-                di += 1
-                p += 1
-        elif c == 0x80:
-            if si >= len(src):
-                break
-            t = ((t & 0x3F) << 8) | src[si]
-            si += 1
-            back = (t >> 6) + 1
-            length = (t & 0x3F) + 2
-            p = di - back
-            for _ in range(length):
-                if di >= dst_size:
-                    break
-                dst[di] = dst[p] if 0 <= p < di else 0
-                di += 1
-                p += 1
-        else:
-            fg = t & 0x30
-            length = (t & 0x0F) + 2
-            for _ in range(length):
-                if di >= dst_size or si >= len(src):
-                    break
-                dst[di] = fg | (src[si] >> 4)
-                di += 1
-                if di >= dst_size:
-                    break
-                dst[di] = fg | (src[si] & 0x0F)
-                di += 1
-                si += 1
-    return bytes(dst)
-
-
-def unswizzle(pdata, td):
-    """Unswizzle CPS3 sprite tile data."""
-    result = bytearray(td * td)
-    if td <= 16:
-        for y in range(td):
-            for x in range(td):
-                si = DTL[x + (y << 5)]
-                if si < len(pdata):
-                    result[y * td + x] = pdata[si]
-    else:
-        for y in range(td):
-            for x in range(td):
-                si = DTL[y * 32 + x]
-                if si < len(pdata):
-                    result[y * td + x] = pdata[si]
-    return bytes(result)
-
-
-def extract_chip_frame(data, to_tex, frame_idx, pal):
-    """Extract a single chip animation frame. Returns PIL Image or None."""
-    num_frames = struct.unpack_from("<I", data, 0)[0] // 4
-    if frame_idx >= num_frames:
-        return None
-
-    foff = struct.unpack_from("<I", data, frame_idx * 4)[0]
-    if foff + 2 > len(data):
-        return None
-    cnt = struct.unpack_from("<H", data, foff)[0]
-    if cnt == 0:
-        return None
-
-    # Parse chip tiles
-    tiles = []
-    eoff = foff + 2
-    for _ in range(cnt):
-        if eoff + 8 > len(data):
-            break
-        dx, dy = struct.unpack_from("<hh", data, eoff)
-        attr, code = struct.unpack_from("<HH", data, eoff + 4)
-        eoff += 8
-
-        tpos = to_tex + code * 4
-        if tpos + 4 > len(data):
-            continue
-        toff = struct.unpack_from("<I", data, tpos)[0]
-        aoff = to_tex + toff
-        if aoff >= len(data):
-            continue
-
-        wh = data[aoff]
-        wm = (wh & 3) + 1
-        td = wm * 8
-        ts = (wm * wm) << 6
-        dw = (wh & 0xE0) >> 2
-        dh = (wh & 0x1C) * 2
-        if dw == 0 or dh == 0:
-            continue
-
-        raw = lz_ext_p6_fx(data[aoff + 1 :], ts)
-        px = unswizzle(raw, td)
-        tiles.append((dx, dy, attr, code, td, dw, dh, px))
-
-    if not tiles:
-        return None
-
-    # Compute positions
-    all_xflip = all((t[2] & 0x8000) != 0 for t in tiles)
-    cx = cy = 0.0
-    pts = []
-    for dx, dy, attr, code, td, dw, dh, px in tiles:
-        if all_xflip:
-            cx += dx
-        else:
-            cx -= dx
-        cy -= dy
-        if all_xflip:
-            draw_x = int(cx) - (dw if (attr & 0x8000) else 0)
-            draw_y = int(cy) + (dh if (attr & 0x4000) else 0)
-        else:
-            draw_x = int(cx)
-            draw_y = int(cy)
-        pts.append((draw_x, draw_y))
-
-    # Bounding box
-    mnx = min(p[0] for p in pts)
-    mny = min(p[1] for p in pts)
-    mxx = max(pts[i][0] + tiles[i][5] for i in range(len(tiles)))
-    mxy = max(pts[i][1] + tiles[i][6] for i in range(len(tiles)))
-    sw = mxx - mnx
-    sh = mxy - mny
-    if sw <= 0 or sh <= 0:
-        return None
-
-    # Composite
-    img = Image.new("RGBA", (sw, sh), (0, 0, 0, 0))
-    pxi = img.load()
-    for i, (dx, dy, attr, code, td, dw, dh, pdata) in enumerate(tiles):
-        tx = pts[i][0] - mnx
-        ty = pts[i][1] - mny
-        flip_x = (attr & 0x8000) != 0 and not all_xflip
-        flip_y = (attr & 0x4000) != 0 and not all_xflip
-        for yo in range(dh):
-            for xo in range(dw):
-                rx = (dw - 1 - xo) if flip_x else xo
-                ry = (dh - 1 - yo) if flip_y else yo
-                sx = rx if dw <= td else min(rx * td // dw, td - 1)
-                sy = ry if dh <= td else min(ry * td // dh, td - 1)
-                v = pdata[sy * td + sx]
-                if v == 0:
-                    continue
-                ddx = tx + xo
-                ddy = ty + yo
-                if 0 <= ddx < sw and 0 <= ddy < sh:
-                    pxi[ddx, ddy] = pal[v % 64] if v < 64 else (128, 128, 128, 255)
-    return img
+# Uses the shared tile parser and compositor from sprite_compositor.py
+# (lazy-imported to avoid circular/coupling issues).
 
 
 def extract_chip_anims(afs_path, entries, stage_idx, stage_dir):
@@ -722,6 +459,7 @@ def extract_chip_anims(afs_path, entries, stage_idx, stage_dir):
     Only extracts Type A files (self-contained with embedded LZ textures).
     Type B files (non-zero attr, no embedded textures) are skipped.
     """
+    from sprite_compositor import extract_stage_frame, build_stage_colorram
     pal_afs = STAGE_PAL_AFS[stage_idx]
     tile_afs = STAGE_TILE_AFS[stage_idx]
     lo = min(pal_afs, tile_afs)
@@ -731,24 +469,8 @@ def extract_chip_anims(afs_path, entries, stage_idx, stage_dir):
     if not gap_entries:
         return
 
-    # Load full palette data (all banks)
-    pal_data = read_afs_file(afs_path, entries[pal_afs])
-    n_banks = len(pal_data) // 128
-
-    def load_pal_bank(bank):
-        """Load 64-color palette from a specific bank."""
-        pal = [(0, 0, 0, 0)] * 64
-        for i in range(64):
-            off = bank * 128 + i * 2
-            if off + 2 > len(pal_data):
-                break
-            val = struct.unpack_from("<H", pal_data, off)[0]
-            b = (val & 0x1F) * 255 // 31
-            g = ((val >> 5) & 0x1F) * 255 // 31
-            r = ((val >> 10) & 0x1F) * 255 // 31
-            a = 255 if (val & 0x8000) else 0
-            pal[i] = (r, g, b, a)
-        return pal
+    # Build full 512-bank ColorRAM (common + stage palettes)
+    colorram = build_stage_colorram(afs_path, entries, pal_afs)
 
     # Filter gap entries to valid chip data
     chip_candidates = []
@@ -821,17 +543,13 @@ def extract_chip_anims(afs_path, entries, stage_idx, stage_dir):
         if aoff >= len(data):
             continue
 
-        # TODO: Determine correct palette bank from game source code.
-        # For now, use bank 0 as default.
-        pal_bank = 0
-        pal = load_pal_bank(pal_bank)
-
         chip_dir = os.path.join(stage_dir, f"chip_anims_{type_a_count}")
         os.makedirs(chip_dir, exist_ok=True)
 
         extracted = 0
         for fi in range(num_frames):
-            img = extract_chip_frame(data, to_tex, fi, pal)
+            img = extract_stage_frame(data, to_tex, fi, colorram,
+                                      colcd_base=300, rendering_mode=33)
             if img is not None:
                 img.save(os.path.join(chip_dir, f"frame_{fi:04d}.png"))
                 extracted += 1
@@ -839,7 +557,8 @@ def extract_chip_anims(afs_path, entries, stage_idx, stage_dir):
         if extracted > 0:
             total_frames += extracted
             print(
-                f"  Chip anims [{type_a_count}] (AFS {afs_idx}): {extracted}/{num_frames} frames (pal bank {pal_bank})"
+                f"  Chip anims [{type_a_count}] (AFS {afs_idx}): "
+                f"{extracted}/{num_frames} frames"
             )
             type_a_count += 1
 
@@ -848,25 +567,50 @@ def extract_chip_anims(afs_path, entries, stage_idx, stage_dir):
 
 
 def main():
-    afs_path = r"C:\Users\dov\AppData\Roaming\CrowdedStreet\3SX\resources\SF33RD.AFS"
-    output_dir = "output/stages"
+    parser = argparse.ArgumentParser(
+        description="Extract stage background layers from AFS archive."
+    )
+    parser.add_argument(
+        "stage", nargs="?", default=None,
+        help="Stage index (0-21) or 'all' to extract all stages"
+    )
+    parser.add_argument(
+        "--mode", choices=["ppg", "indexed"], default="ppg",
+        help="Extraction mode: ppg (raw direct-color) or indexed (palette-based)"
+    )
+    parser.add_argument(
+        "--output", default="output/stages",
+        help="Output directory (default: output/stages)"
+    )
+    parser.add_argument(
+        "--afs", default=_default_afs_path(),
+        help="Path to SF33RD.AFS (default: SF33RD_AFS env var or built-in path)"
+    )
+    args = parser.parse_args()
 
-    # Parse --mode flag
-    mode = "ppg"
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    for a in sys.argv[1:]:
-        if a.startswith("--mode="):
-            mode = a.split("=", 1)[1]
+    if args.stage is None:
+        parser.print_help()
+        sys.exit(1)
 
-    if args and args[0] == "all":
+    afs_path = args.afs
+    output_dir = args.output
+
+    if args.stage == "all":
         os.makedirs(output_dir, exist_ok=True)
         for i in range(len(STAGE_NAMES)):
-            extract_stage(afs_path, i, output_dir, mode)
+            extract_stage(afs_path, i, output_dir, args.mode)
             print()
     else:
-        stage_idx = int(args[0]) if args else 0
+        try:
+            stage_idx = int(args.stage)
+        except ValueError:
+            print(f"ERROR: '{args.stage}' is not a valid stage index or 'all'")
+            sys.exit(1)
+        if stage_idx < 0 or stage_idx >= len(STAGE_NAMES):
+            print(f"ERROR: stage index {stage_idx} out of range (0-{len(STAGE_NAMES)-1})")
+            sys.exit(1)
         os.makedirs(output_dir, exist_ok=True)
-        extract_stage(afs_path, stage_idx, output_dir, mode)
+        extract_stage(afs_path, stage_idx, output_dir, args.mode)
 
 
 if __name__ == "__main__":

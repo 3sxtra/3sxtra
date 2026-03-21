@@ -356,9 +356,9 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|ARM64")
     # Generic ARM64: NEON is baseline, no specific CPU tuning.
     message(STATUS "SIMD: ARM64 target — NEON is implicit, no extra flags needed")
 else()
-    # x86-64: AVX2 + FMA — 256-bit SIMD and fused multiply-add.
-    # Safe on any x86-64 CPU from ~2013+ (Haswell).
-    target_compile_options(3sx PRIVATE -mavx2 -mfma)
+        # x86-64: SSE4.2 � supported on Intel Nehalem (2008+) / AMD Bulldozer (2011+).
+    # SIMDE maps intrinsics portably; compiler auto-vectorizes with 128-bit SSE.
+    target_compile_options(3sx PRIVATE -msse4.2)
 endif()
 
 

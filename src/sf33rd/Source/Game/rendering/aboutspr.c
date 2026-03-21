@@ -292,26 +292,36 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
 
     wk->current_colcd &= 0x1FF;
 
-    /* DEBUG: Log (stage, cg_number, colcd) for offline palette extraction */
+    /* DEBUG: Log (stage, cg_number, colcd) for offline palette extraction.
+     * Uses 64-bit keys to avoid bit-overlap for large CG numbers (>32768).
+     * Appends to existing CSV to accumulate data across multiple runs. */
     {
-        /* Simple hash set: 4096 slots, open addressing */
-        static u32 seen[4096];
+        #define COLCD_HASH_SIZE 16384
+        #define COLCD_HASH_MASK (COLCD_HASH_SIZE - 1)
+        static u64 seen[COLCD_HASH_SIZE];
         static int seen_init = 0;
         static FILE* colcd_log = NULL;
         if (!seen_init) {
             memset(seen, 0, sizeof(seen));
-            colcd_log = fopen("colcd_map.csv", "w");
-            if (colcd_log) fprintf(colcd_log, "stage,cg_number,colcd\n");
+            colcd_log = fopen("colcd_map.csv", "a");
+            if (colcd_log) {
+                /* Write header only if file is empty */
+                fseek(colcd_log, 0, SEEK_END);
+                if (ftell(colcd_log) == 0)
+                    fprintf(colcd_log, "stage,cg_number,colcd\n");
+            }
             seen_init = 1;
         }
         if (colcd_log && wk->cg_number != 0) {
-            u32 key = ((u32)bg_w.stage << 24) | ((u32)wk->cg_number << 9)
-                      | (wk->current_colcd & 0x1FF);
-            u32 slot = (key * 2654435761u) >> 20;  /* Knuth multiplicative hash */
+            u64 key = ((u64)bg_w.stage << 32)
+                    | ((u64)wk->cg_number << 16)
+                    | (u64)(wk->current_colcd & 0x1FF)
+                    | 1ULL;  /* ensure key is never 0 */
+            u32 slot = (u32)((key * 0x9E3779B97F4A7C15ULL) >> 50);
             int i;
-            for (i = 0; i < 8; i++) {  /* linear probe, 8 attempts */
-                u32 idx = (slot + i) & 0xFFF;
-                if (seen[idx] == key) break;  /* already logged */
+            for (i = 0; i < 16; i++) {
+                u32 idx = (slot + i) & COLCD_HASH_MASK;
+                if (seen[idx] == key) break;
                 if (seen[idx] == 0) {
                     seen[idx] = key;
                     fprintf(colcd_log, "%d,%u,%d\n",

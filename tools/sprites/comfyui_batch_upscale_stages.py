@@ -12,7 +12,7 @@ separately, then recombines.
 Usage:
   1. Extract stages first:   python tools/extract_stage.py all --mode=indexed
   2. Start ComfyUI:          cd D:\\ComfyUI_windows_portable && run_nvidia_gpu.bat
-  3. Run this script:        python scripts/comfyui_batch_upscale_stages.py
+  3. Run this script:        python comfyui_batch_upscale_stages.py
   4. Tiles output to:        assets/sprites/
 
 Options:
@@ -28,175 +28,65 @@ import json
 import os
 import subprocess
 import sys
-import time
 import urllib.request
 import urllib.error
 import uuid
 
+from comfyui_api import build_upscale_workflow, queue_prompt, wait_for_completion
+
 # ── Configuration ──────────────────────────────────────────────────────────────
 
-STAGES_ROOT    = r"D:\3sxtra\output\stages"
-TILES_OUTPUT   = r"D:\3sxtra\assets\sprites"
+STAGES_ROOT    = os.environ.get("SF33RD_STAGES_ROOT", r"D:\3sxtra\output\stages")
+TILES_OUTPUT   = os.environ.get("SF33RD_TILES_OUTPUT", r"D:\3sxtra\assets\sprites")
 UPSCALE_MODEL  = "4x-UltraSharpV2.safetensors"
 DEFAULT_SERVER = "127.0.0.1:8188"
-RETILE_SCRIPT  = r"D:\3sxtra\tools\retile_stage.py"
+RETILE_SCRIPT  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "retile_stage.py")
 
-# ── ComfyUI API prompt ────────────────────────────────────────────────────────
+# ── Prompt builder ────────────────────────────────────────────────────────────
+
 
 def build_prompt(input_path: str, output_path: str, filename_prefix: str) -> dict:
-    """
-    Build a ComfyUI API-format prompt for a single layer image.
-
-    Workflow:
-      LoadImage -> SplitAlpha -> UpscaleRGB  \
-                                               -> JoinAlpha -> SaveImage
-                   SplitAlpha -> Mask2Img -> UpscaleMask -> Img2Mask /
-    """
+    """Build a ComfyUI prompt for a single stage layer upscale."""
     input_path = input_path.replace("\\", "/")
     output_path = output_path.replace("\\", "/")
 
-    return {
-        # Load upscale model
-        "21": {
-            "class_type": "UpscaleModelLoader",
-            "inputs": {
-                "model_name": UPSCALE_MODEL
-            }
-        },
-
-        # Load the single layer image
-        "26": {
-            "class_type": "Load Image Batch",
-            "inputs": {
-                "mode": "incremental_image",
-                "seed": 0,
-                "index": 0,
-                "label": "layer_",
-                "path": os.path.dirname(input_path),
-                "pattern": os.path.basename(input_path),
-                "allow_RGBA_output": "true",
-                "filename_text_extension": "false"
-            }
-        },
-
-        # Split RGB + Alpha
-        "30": {
-            "class_type": "SplitImageWithAlpha",
-            "inputs": {
-                "image": ["26", 0]
-            }
-        },
-
-        # Upscale RGB
-        "20": {
-            "class_type": "ImageUpscaleWithModel",
-            "inputs": {
-                "upscale_model": ["21", 0],
-                "image": ["30", 0]
-            }
-        },
-
-        # Alpha mask -> image for upscaling
-        "31": {
-            "class_type": "MaskToImage",
-            "inputs": {
-                "mask": ["30", 1]
-            }
-        },
-
-        # Upscale alpha
-        "32": {
-            "class_type": "ImageUpscaleWithModel",
-            "inputs": {
-                "upscale_model": ["21", 0],
-                "image": ["31", 0]
-            }
-        },
-
-        # Upscaled alpha image -> mask
-        "33": {
-            "class_type": "ImageToMask",
-            "inputs": {
-                "image": ["32", 0],
-                "channel": "red"
-            }
-        },
-
-        # Recombine RGB + Alpha
-        "34": {
-            "class_type": "JoinImageWithAlpha",
-            "inputs": {
-                "image": ["20", 0],
-                "alpha": ["33", 0]
-            }
-        },
-
-        # Save upscaled image
-        "27": {
-            "class_type": "Image Save",
-            "inputs": {
-                "images": ["34", 0],
-                "output_path": output_path,
-                "filename_prefix": filename_prefix,
-                "filename_delimiter": "_",
-                "filename_number_padding": 1,
-                "filename_number_start": "false",
-                "extension": "png",
-                "dpi": 300,
-                "quality": 100,
-                "optimize_image": "true",
-                "lossless_webp": "false",
-                "overwrite_mode": "prefix_as_filename",
-                "show_history": "false",
-                "show_history_by_prefix": "true",
-                "embed_workflow": "false",
-                "show_previews": "true"
-            }
+    loader_node = {
+        "class_type": "Load Image Batch",
+        "inputs": {
+            "mode": "incremental_image",
+            "seed": 0,
+            "index": 0,
+            "label": "layer_",
+            "path": os.path.dirname(input_path),
+            "pattern": os.path.basename(input_path),
+            "allow_RGBA_output": "true",
+            "filename_text_extension": "false"
         }
     }
 
+    save_node = {
+        "class_type": "Image Save",
+        "inputs": {
+            "images": ["34", 0],
+            "output_path": output_path,
+            "filename_prefix": filename_prefix,
+            "filename_delimiter": "_",
+            "filename_number_padding": 1,
+            "filename_number_start": "false",
+            "extension": "png",
+            "dpi": 300,
+            "quality": 100,
+            "optimize_image": "true",
+            "lossless_webp": "false",
+            "overwrite_mode": "prefix_as_filename",
+            "show_history": "false",
+            "show_history_by_prefix": "true",
+            "embed_workflow": "false",
+            "show_previews": "true"
+        }
+    }
 
-# ── ComfyUI API helpers ───────────────────────────────────────────────────────
-
-def queue_prompt(server: str, prompt: dict, client_id: str) -> str:
-    data = json.dumps({
-        "prompt": prompt,
-        "client_id": client_id
-    }).encode("utf-8")
-    req = urllib.request.Request(
-        f"http://{server}/prompt",
-        data=data,
-        headers={"Content-Type": "application/json"}
-    )
-    resp = urllib.request.urlopen(req)
-    return json.loads(resp.read())["prompt_id"]
-
-
-def get_history(server: str, prompt_id: str) -> dict:
-    url = f"http://{server}/history/{prompt_id}"
-    resp = urllib.request.urlopen(url)
-    return json.loads(resp.read())
-
-
-def wait_for_completion(server: str, prompt_id: str, label: str = ""):
-    spinner = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
-    i = 0
-    while True:
-        history = get_history(server, prompt_id)
-        if prompt_id in history:
-            status = history[prompt_id].get("status", {})
-            if status.get("completed", False) or status.get("status_str") == "success":
-                print(f"\r  ✅ {label}                              ")
-                return True
-            if status.get("status_str") == "error":
-                print(f"\r  ❌ {label} FAILED!")
-                msgs = status.get("messages", [])
-                for msg in msgs:
-                    print(f"     {msg}")
-                return False
-        print(f"\r  {spinner[i % len(spinner)]} {label} upscaling...", end="", flush=True)
-        i += 1
-        time.sleep(1.0)
+    return build_upscale_workflow(UPSCALE_MODEL, loader_node, save_node)
 
 
 # ── Stage discovery ───────────────────────────────────────────────────────────
