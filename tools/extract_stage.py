@@ -13,6 +13,7 @@ Usage:
   python extract_stage.py 5 --mode=indexed     # extract stage 5 with palette
 """
 
+import json
 import struct
 import zlib
 import os
@@ -130,6 +131,15 @@ STAGE_LAYERS = [2, 1, 3, 2, 1, 2, 1, 2, 2, 2, 2, 1, 2, 2, 3, 2, 2, 2, 2, 1, 2, 1
 # These tiles come AFTER the static tiles in the same PPG data
 REWRITE_SCR = [0, 0, 0, 25, 0, 0, 0, 12, 24, 0, 96, 0, 0, 0, 1, 0, 0, 0, 10, 18, 0, 0]
 
+# BGW number per stage per layer (from stage_bgw_number in bg_data.c)
+# First non-zero index determines stg offset for GBIX base calculation.
+STAGE_BGW_NUMBER = [
+    [1, 2, 0], [0, 2, 0], [1, 2, 3], [1, 2, 0], [0, 2, 0], [1, 2, 0],
+    [0, 2, 0], [1, 2, 0], [1, 2, 0], [1, 2, 0], [1, 2, 0], [0, 1, 0],
+    [1, 2, 0], [1, 2, 0], [1, 2, 3], [1, 2, 0], [1, 2, 0], [1, 2, 0],
+    [1, 2, 0], [0, 2, 0], [1, 2, 0], [0, 2, 0],
+]
+
 # Tile bitmasks per stage per layer (from bgtex_stage_gbix)
 STAGE_GBIX = [
     [0xF0F0F0F0, 0x7F7FFFFF, 0x0],
@@ -155,6 +165,23 @@ STAGE_GBIX = [
     [0x3C3C3C1C, 0x20343C3C, 0x0],
     [0x3E3E3E3E, 0x0, 0x0],
 ]
+
+# bg_texture_type during gameplay (ramcnt type 0x12 = 18)
+BG_TEXTURE_TYPE_GAMEPLAY = 0x12
+
+
+def compute_stg_start(stage_idx):
+    """Find first non-zero index in stage_bgw_number — mirrors Bg_Texture_Load_EX."""
+    for stg in range(3):
+        if STAGE_BGW_NUMBER[stage_idx][stg] != 0:
+            return stg
+    return 0
+
+
+def compute_gbix_base(stage_idx, layer):
+    """Compute the GBIX base for a given stage/layer: (stg + layer) * 64 + 0x84."""
+    stg = compute_stg_start(stage_idx)
+    return (stg + layer) * 64 + 0x84
 
 
 # ─── AFS helpers ────────────────────────────────────────────────
@@ -302,29 +329,53 @@ def extract_ppg_tiles_indexed(data, palette_colors):
 
 
 def composite_layers(tiles, stage_idx, num_layers, stage_dir):
-    """Composite tiles into layer images using GBIX bitmasks."""
+    """Composite tiles into full-grid layer images with GBIX metadata JSON."""
     tile_ptr = 0
     for layer in range(num_layers):
         mask = STAGE_GBIX[stage_idx][layer]
+        gbix_base = compute_gbix_base(stage_idx, layer)
         layer_img = Image.new("RGBA", (8 * 128, 4 * 128), (0, 0, 0, 0))
+        tile_entries = []
         count = 0
         for row in range(4):
             byte_val = (mask >> (24 - row * 8)) & 0xFF
             for col in range(8):
+                bit_index = row * 8 + col
+                gbix = gbix_base + bit_index
                 if byte_val & (0x80 >> col):
                     if tile_ptr < len(tiles):
                         layer_img.paste(tiles[tile_ptr], (col * 128, row * 128))
+                        composite_key = BG_TEXTURE_TYPE_GAMEPLAY * 100000 + stage_idx * 1000 + gbix
+                        tile_entries.append({
+                            "row": row,
+                            "col": col,
+                            "gbix": gbix,
+                            "composite_key": composite_key,
+                        })
                         tile_ptr += 1
                         count += 1
 
-        # Auto-crop empty space
-        bbox = layer_img.getbbox()
-        if bbox:
-            cropped = layer_img.crop(bbox)
-        else:
-            cropped = layer_img
-        cropped.save(os.path.join(stage_dir, f"layer_{layer}.png"))
-        print(f"  Layer {layer}: {count} tiles -> {cropped.size}")
+        # Save full-grid layer (no crop — preserves tile positions for retiling)
+        layer_img.save(os.path.join(stage_dir, f"layer_{layer}.png"))
+
+        # Save metadata JSON for retiling
+        metadata = {
+            "stage_idx": stage_idx,
+            "stage_name": STAGE_NAMES[stage_idx],
+            "layer": layer,
+            "bg_texture_type": BG_TEXTURE_TYPE_GAMEPLAY,
+            "gbix_base": gbix_base,
+            "grid_width": 8,
+            "grid_height": 4,
+            "tile_size": 128,
+            "tile_count": count,
+            "tiles": tile_entries,
+        }
+        json_path = os.path.join(stage_dir, f"layer_{layer}.json")
+        with open(json_path, "w") as f:
+            json.dump(metadata, f, indent=2)
+
+        print(f"  Layer {layer}: {count} tiles, {len(tile_entries)} gbix entries -> {layer_img.size}")
 
 
 # ─── Stage extraction (both modes) ─────────────────────────────

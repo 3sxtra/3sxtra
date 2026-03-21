@@ -15,4 +15,7 @@ void Bg_Texture_Load_EX(void);
 void Bg_Texture_Load2(u8 type);
 void Bg_Texture_Load_Ending(s16 type);
 
+/** Current ramcnt texture type: 0x12=gameplay, 0x18=select, 0x20=ending */
+extern int bg_texture_type;
+
 #endif

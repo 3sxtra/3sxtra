@@ -8,6 +8,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/stage/bg_rewrite.h"
+#include <stdio.h>  /* DEBUG: for ColorRAM dump */
 #include "common.h"
 #include "port/mods/modded_stage.h"
 #include "port/renderer_plugin.h"
@@ -25,7 +26,7 @@
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include "structs.h"
 
-static int bg_texture_type = 0; // tracks ramcnt type: 0x12=gameplay, 0x18=select, etc
+int bg_texture_type = 0; // tracks ramcnt type: 0x12=gameplay, 0x18=select, etc
 
 /** @brief Extract per-layer priority bytes from a packed u32 value. */
 static void bg_extract_priorities(u32 prio_packed, u8 count) {
@@ -209,6 +210,32 @@ void Bg_Texture_Load_EX() {
         }
 
         ppgSourceDataReleased(&ppgAkeList);
+
+        /* DEBUG: Dump akeAdrs chip animation PPG data for offline extraction */
+        {
+            char dump_path[512];
+            FILE* df;
+            snprintf(dump_path, sizeof(dump_path),
+                     "stage_%02d_ake_ppg.bin", bg_w.stage);
+            df = fopen(dump_path, "wb");
+            if (df) {
+                fwrite(akeAdrs, 1, (size_t)akeSize, df);
+                fclose(df);
+                flLogOut("DEBUG: Dumped akeAdrs %d bytes to %s\n",
+                         akeSize, dump_path);
+            }
+
+            /* Also dump the full ColorRAM for palette reference */
+            snprintf(dump_path, sizeof(dump_path),
+                     "stage_%02d_colorram.bin", bg_w.stage);
+            df = fopen(dump_path, "wb");
+            if (df) {
+                fwrite(ColorRAM, 1, sizeof(ColorRAM), df);
+                fclose(df);
+                flLogOut("DEBUG: Dumped ColorRAM %zu bytes to %s\n",
+                         sizeof(ColorRAM), dump_path);
+            }
+        }
     }
 
     /* Try to load HD modded stage assets for this stage */

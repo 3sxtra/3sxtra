@@ -49,7 +49,7 @@ static void verify_configuration(void) {
 /**
  * @brief Parse command-line arguments and configure application state.
  *
- * Supports: --scale, --volume, --renderer, --enable-broadcast,
+ * Supports: --scale, --volume, --renderer, --plugin, --enable-broadcast,
  * --window-pos, --window-size, --shm-suffix, --port.
  */
 
@@ -68,6 +68,7 @@ void ParseCLI(int argc, char* argv[]) {
             printf("  --scale <factor>          Internal resolution multiplier (default: 1)\n");
             printf("  --volume <0-100>          Master volume percentage (default: 100)\n");
             printf("  --renderer <gl|gpu|sdl|classic>  Renderer backend (default: gl)\n");
+            printf("  --plugin <name|hd>        Load a renderer plugin (e.g. 'hd' -> renderer_hd)\n");
             printf("  --port <number>           Netplay game port (default: 50000)\n");
             printf("  --window-pos <x>,<y>      Initial window position\n");
             printf("  --window-size <w>x<h>     Initial window size\n");
@@ -75,6 +76,10 @@ void ParseCLI(int argc, char* argv[]) {
             printf("  --shm-suffix <suffix>     Shared-memory name suffix for broadcast\n");
             printf("  --font-test               Boot into font debug visualization screen\n");
             printf("  --ui <rmlui>              UI toolkit for overlay menus (default: rmlui)\n");
+            printf("\nPlugin options (passed through to the loaded plugin):\n");
+            printf("  --sprites-path <path>     Directory containing HD sprite PNGs\n");
+            printf("  --render-scale <1-8>      Plugin canvas resolution multiplier (default: 4)\n");
+            printf("  --sprite-scale <1-8>      Native scale of sprite assets (default: render-scale)\n");
 #if DEBUG
             printf("  --test-enable             Enable test runner (DEBUG only)\n");
             printf("  --test-states <path>      Path to states directory (DEBUG only)\n");

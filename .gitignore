@@ -79,3 +79,4 @@ tools/gifx.sh
 /build-tests
 /assets/sprites
 /output
+*.bin

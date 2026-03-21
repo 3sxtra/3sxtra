@@ -5,6 +5,8 @@
 
 #include "sf33rd/Source/Game/rendering/aboutspr.h"
 #include "common.h"
+#include <stdio.h>
+#include <string.h>
 #include "port/rendering/legacy_matrix.h"
 #include "port/rendering/renderer.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
@@ -16,6 +18,7 @@
 #include "sf33rd/Source/Game/rendering/mtrans.h"
 #include "sf33rd/Source/Game/rendering/texgroup.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
+#include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 #include "port/tracy_zones.h"
@@ -288,6 +291,37 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
     }
 
     wk->current_colcd &= 0x1FF;
+
+    /* DEBUG: Log (stage, cg_number, colcd) for offline palette extraction */
+    {
+        /* Simple hash set: 4096 slots, open addressing */
+        static u32 seen[4096];
+        static int seen_init = 0;
+        static FILE* colcd_log = NULL;
+        if (!seen_init) {
+            memset(seen, 0, sizeof(seen));
+            colcd_log = fopen("colcd_map.csv", "w");
+            if (colcd_log) fprintf(colcd_log, "stage,cg_number,colcd\n");
+            seen_init = 1;
+        }
+        if (colcd_log && wk->cg_number != 0) {
+            u32 key = ((u32)bg_w.stage << 24) | ((u32)wk->cg_number << 9)
+                      | (wk->current_colcd & 0x1FF);
+            u32 slot = (key * 2654435761u) >> 20;  /* Knuth multiplicative hash */
+            int i;
+            for (i = 0; i < 8; i++) {  /* linear probe, 8 attempts */
+                u32 idx = (slot + i) & 0xFFF;
+                if (seen[idx] == key) break;  /* already logged */
+                if (seen[idx] == 0) {
+                    seen[idx] = key;
+                    fprintf(colcd_log, "%d,%u,%d\n",
+                            bg_w.stage, wk->cg_number, wk->current_colcd);
+                    fflush(colcd_log);
+                    break;
+                }
+            }
+        }
+    }
 
     if (wk->my_col_mode & 0x400) {
         wk->my_clear_level = 0x90;
