@@ -28,6 +28,7 @@ void LobbyServer_Init(void);
 
 /// Returns true if the lobby server is configured (URL and key both set).
 bool LobbyServer_IsConfigured(void);
+bool LobbyServer_WasInitialized(void);
 
 /// Register or update player presence on the lobby server.
 /// connect_to may be NULL or "" (no connection intent) or a target room code.

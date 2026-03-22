@@ -126,8 +126,8 @@ static Rml::String advantage_class(s32 value, bool active, bool has_move) {
     return "neutral";
 }
 
-// ── Init ───────────────────────────────────────────────────────
-extern "C" void rmlui_frame_display_init(void) {
+// ── Lazy init (deferred from boot to first update) ────────────
+static void do_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
     if (!ctx) {
         SDL_Log("[RmlUi FrameDisplay] No context available");
@@ -164,12 +164,15 @@ extern "C" void rmlui_frame_display_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi FrameDisplay] Data model registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi FrameDisplay] Data model registered (lazy)");
 }
+
+extern "C" void rmlui_frame_display_init(void) { /* deferred to first use */ }
 
 // ── Per-frame update ───────────────────────────────────────────
 extern "C" void rmlui_frame_display_update(void) {
-    if (!s_model_registered || !s_model_handle)
+    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_handle)
         return;
 
     // Only show frame meter during active fights — not on menus/title screen

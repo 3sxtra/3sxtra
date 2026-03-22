@@ -57,6 +57,7 @@ struct MappingEntry {
 // ── Module state ───────────────────────────────────────────────
 
 static Rml::DataModelHandle s_model_handle;
+static bool s_initialized = false;
 
 static std::vector<DeviceEntry> s_available_devices;
 static std::vector<MappingEntry> s_p1_mappings;
@@ -137,9 +138,9 @@ static Rml::String state_to_string(int state, int action_idx) {
     }
 }
 
-// ── Init ───────────────────────────────────────────────────────
+// ── Lazy init (deferred from boot to first update) ────────────
 
-extern "C" void rmlui_control_mapping_init() {
+static void do_init() {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
     if (!ctx) {
         SDL_Log("[RmlUi ControlMapping] No context available");
@@ -270,12 +271,16 @@ extern "C" void rmlui_control_mapping_init() {
     rebuild_mappings(1, s_p1_mappings);
     rebuild_mappings(2, s_p2_mappings);
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi ControlMapping] Data model registered");
+    s_initialized = true;
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi ControlMapping] Data model registered (lazy)");
 }
+
+extern "C" void rmlui_control_mapping_init() { /* deferred to first use */ }
 
 // ── Per-frame update ───────────────────────────────────────────
 
 extern "C" void rmlui_control_mapping_update() {
+    if (!s_initialized) { do_init(); if (!s_initialized) return; }
     if (!s_model_handle)
         return;
 

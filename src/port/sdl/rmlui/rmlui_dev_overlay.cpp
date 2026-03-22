@@ -420,9 +420,11 @@ static void do_select_elem(int idx) {
     dirty_all_props();
 }
 
-// ── Init ──────────────────────────────────────────────────────
+// ── Lazy init (deferred from boot to first update) ────────────
 
-extern "C" void rmlui_dev_overlay_init() {
+static bool s_initialized = false;
+
+static void do_init() {
     void* raw_ctx = rmlui_wrapper_get_context();
     if (!raw_ctx) {
         SDL_Log("[RmlUi DevOverlay] No context available");
@@ -804,14 +806,18 @@ extern "C" void rmlui_dev_overlay_init() {
 
     s_model = c.GetModelHandle();
     refresh_doc_list();
-    SDL_Log("[RmlUi DevOverlay] Init complete: %d docs", (int)s_docs.size());
+    s_initialized = true;
+    SDL_Log("[RmlUi DevOverlay] Init complete (lazy): %d docs", (int)s_docs.size());
 }
+
+extern "C" void rmlui_dev_overlay_init() { /* deferred to first use */ }
 
 // ── Per-frame update ──────────────────────────────────────────
 
 static bool s_first_open = true;
 
 extern "C" void rmlui_dev_overlay_update() {
+    if (!s_initialized) { do_init(); if (!s_initialized) return; }
     if (!s_model)
         return;
 

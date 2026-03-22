@@ -159,9 +159,9 @@ static void attach_cycle_listeners(void) {
 }
 
 // -------------------------------------------------------------------
-// Init — register data model + load persisted config
+// Lazy init — deferred from boot to first update
 // -------------------------------------------------------------------
-extern "C" void rmlui_training_menu_init(void) {
+static void do_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
     if (!ctx) {
         SDL_Log("[RmlUi Training] No context available");
@@ -283,14 +283,20 @@ extern "C" void rmlui_training_menu_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Training] Data model registered (9 display + 8 dummy bindings)");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Training] Data model registered (lazy, 9 display + 8 dummy bindings)");
 }
+
+// -------------------------------------------------------------------
+// Init — register data model + load persisted config
+// -------------------------------------------------------------------
+extern "C" void rmlui_training_menu_init(void) { /* deferred to first use */ }
 
 // -------------------------------------------------------------------
 // Per-frame update — dirty check
 // -------------------------------------------------------------------
 extern "C" void rmlui_training_menu_update(void) {
-    if (!s_model_registered || !s_model_handle)
+    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_handle)
         return;
 
     // Attach click-to-cycle listeners on first update.

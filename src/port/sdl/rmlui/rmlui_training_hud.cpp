@@ -83,9 +83,9 @@ extern "C" void rmlui_training_hud_set_gauge(const char* field, float fill) {
 }
 
 // -------------------------------------------------------------------
-// Init
+// Lazy init (deferred from boot to first use)
 // -------------------------------------------------------------------
-extern "C" void rmlui_training_hud_init(void) {
+static void do_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
     if (!ctx)
         return;
@@ -113,19 +113,17 @@ extern "C" void rmlui_training_hud_init(void) {
     s_model = ctor.GetModelHandle();
     s_registered = true;
 
-    /* ⚡ Document is NOT shown at init — it will be lazily shown on the
-       first rmlui_training_hud_set_text() call from Lua.  This avoids
-       setting s_any_window_visible=true at boot, which would force the
-       GL3 render pipeline to run every frame on Pi4. */
-
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Training HUD] Data model registered (effie_hud deferred)");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Training HUD] Data model registered (lazy, effie_hud deferred)");
 }
+
+extern "C" void rmlui_training_hud_init(void) { /* deferred to first use */ }
 
 // -------------------------------------------------------------------
 // Per-frame update — dirty check and push
 // -------------------------------------------------------------------
 extern "C" void rmlui_training_hud_update(void) {
-    if (!s_registered || !s_model)
+    if (!s_registered) { do_init(); if (!s_registered) return; }
+    if (!s_model)
         return;
 
     // ⚡ Skip all 9 string comparisons when HUD is not shown

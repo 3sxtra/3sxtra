@@ -361,44 +361,65 @@ void NativeSave_SaveOptions(void) {
     struct _SAVE_W* sw = CurrentSave();
 
     fprintf(f, "# 3SX Options — auto-generated, hand-editable\n");
-    fprintf(f, "# DO NOT change key names. Values are integers.\n\n");
+    fprintf(f, "# DO NOT change key names. Values are integers unless noted.\n");
+    fprintf(f, "# See docs/CONFIG_REFERENCE.md for full documentation.\n\n");
 
     fprintf(f, "[Controller]\n");
+    fprintf(f, "# Button mapping: 8 values = LP,MP,HP,unused,LK,MK,HK,unused  (0-11 = button index)\n");
     write_bytes(f, "pad_1p_buttons", sw->Pad_Infor[0].Shot, 8);
+    fprintf(f, "# Vibration: 0=off, 1=on\n");
     fprintf(f, "pad_1p_vibration=%d\n", sw->Pad_Infor[0].Vibration);
     write_bytes(f, "pad_2p_buttons", sw->Pad_Infor[1].Shot, 8);
     fprintf(f, "pad_2p_vibration=%d\n\n", sw->Pad_Infor[1].Vibration);
 
     fprintf(f, "[Game]\n");
+    fprintf(f, "# difficulty: 1-8 (1=easiest, 8=hardest)\n");
     fprintf(f, "difficulty=%d\n", sw->Difficulty);
+    fprintf(f, "# time_limit: -1=infinite, 0-99 seconds\n");
     fprintf(f, "time_limit=%d\n", sw->Time_Limit);
+    fprintf(f, "# battle_number: 1-9 rounds per match\n");
     fprintf(f, "battle_number_1=%d\n", sw->Battle_Number[0]);
     fprintf(f, "battle_number_2=%d\n", sw->Battle_Number[1]);
+    fprintf(f, "# damage_level: 0-3 (0=lowest, 3=highest)\n");
     fprintf(f, "damage_level=%d\n", sw->Damage_Level);
+    fprintf(f, "# handicap: 0=off, 1=on\n");
     fprintf(f, "handicap=%d\n", sw->Handicap);
+    fprintf(f, "# partner_type: 0=Normal, 1=CPU\n");
     fprintf(f, "partner_type_1p=%d\n", sw->Partner_Type[0]);
     fprintf(f, "partner_type_2p=%d\n\n", sw->Partner_Type[1]);
 
     fprintf(f, "[Display]\n");
+    fprintf(f, "# adjust_x/y: screen position offset in pixels\n");
     fprintf(f, "adjust_x=%d\n", sw->Adjust_X);
     fprintf(f, "adjust_y=%d\n", sw->Adjust_Y);
+    fprintf(f, "# screen_size: packed display size (internal)\n");
     fprintf(f, "screen_size=%d\n", sw->Screen_Size);
+    fprintf(f, "# screen_mode: 0=Normal, 1=Flipped\n");
     fprintf(f, "screen_mode=%d\n\n", sw->Screen_Mode);
 
     fprintf(f, "[Gameplay]\n");
+    fprintf(f, "# guard_check: 0=off, 1=on (guard indicator)\n");
     fprintf(f, "guard_check=%d\n", sw->GuardCheck);
+    fprintf(f, "# auto_save: 0=off, 1=on\n");
     fprintf(f, "auto_save=%d\n", sw->Auto_Save);
+    fprintf(f, "# analog_stick: 0=off, 1=on\n");
     fprintf(f, "analog_stick=%d\n", sw->AnalogStick);
+    fprintf(f, "# unlock_all: 0=locked, 1=all characters unlocked\n");
     fprintf(f, "unlock_all=%d\n\n", sw->Unlock_All);
 
     fprintf(f, "[Sound]\n");
+    fprintf(f, "# bgm_type: 0=Original, 1=Arranged\n");
     fprintf(f, "bgm_type=%d\n", sw->BgmType);
+    fprintf(f, "# sound_mode: 0=Stereo, 1=Mono\n");
     fprintf(f, "sound_mode=%d\n", sw->SoundMode);
+    fprintf(f, "# bgm_level/se_level: 0-15 volume level\n");
     fprintf(f, "bgm_level=%d\n", sw->BGM_Level);
     fprintf(f, "se_level=%d\n\n", sw->SE_Level);
 
     fprintf(f, "[Extra]\n");
+    fprintf(f, "# extra_option: 0=off, 1=on (enables extra option pages)\n");
     fprintf(f, "extra_option=%d\n", sw->Extra_Option);
+    fprintf(f, "# pl_color: per-character color index (20 characters, 0=default)\n");
     write_bytes(f, "pl_color_1p", sw->PL_Color[0], 20);
     write_bytes(f, "pl_color_2p", sw->PL_Color[1], 20);
     for (int page = 0; page < 4; page++) {
@@ -408,12 +429,16 @@ void NativeSave_SaveOptions(void) {
     }
     fprintf(f, "\n");
 
-    fprintf(f, "[Broadcast]\n");
+    fprintf(f, "\n[Broadcast]\n");
+    fprintf(f, "# broadcast_enabled: 0=off, 1=on\n");
     fprintf(f, "broadcast_enabled=%d\n", sw->broadcast_config.enabled);
+    fprintf(f, "# broadcast_source: 0=Game, 1=Window\n");
     fprintf(f, "broadcast_source=%d\n", sw->broadcast_config.source);
+    fprintf(f, "# broadcast_show_ui: 0=hide, 1=show overlay\n");
     fprintf(f, "broadcast_show_ui=%d\n\n", sw->broadcast_config.show_ui);
 
     fprintf(f, "[Rankings]\n");
+    fprintf(f, "# Binary ranking data — do not edit manually\n");
     for (int i = 0; i < 20; i++) {
         char key[64];
         snprintf(key, sizeof(key), "ranking_%02d", i);
@@ -480,7 +505,8 @@ void NativeSave_SaveDirection(void) {
     SystemDir* sd = &system_dir[Present_Mode];
 
     fprintf(f, "# 3SX Direction Config — auto-generated\n");
-    fprintf(f, "# Each page has 7 values (dipswitch settings per character page)\n\n");
+    fprintf(f, "# Each page has 7 values: per-character direction dipswitch settings\n");
+    fprintf(f, "# Values: 0=default, 1=right, 2=left\n\n");
 
     for (int p = 0; p < 10; p++) {
         char key[64];

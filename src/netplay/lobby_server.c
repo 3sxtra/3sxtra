@@ -66,6 +66,7 @@ static char server_host[256] = { 0 };
 static int server_port = 8080;
 static char server_key[256] = { 0 };
 static bool configured = false;
+static bool ls_initialized = false;
 
 // Baked-in defaults (used if config.ini values are missing or empty)
 #define DEFAULT_LOBBY_URL "http://152.67.75.184:3000"
@@ -113,11 +114,24 @@ void LobbyServer_Init(void) {
 
     snprintf(server_key, sizeof(server_key), "%s", key);
     configured = true;
+    ls_initialized = true;
     SDL_Log("LobbyServer: Configured (port %d)", server_port);
 }
 
+static void ensure_init(void) {
+    if (!ls_initialized) {
+        NET_Init();
+        LobbyServer_Init();
+    }
+}
+
 bool LobbyServer_IsConfigured(void) {
+    ensure_init();
     return configured;
+}
+
+bool LobbyServer_WasInitialized(void) {
+    return ls_initialized;  // Non-initializing — safe for shutdown guards
 }
 
 /* ======== SHA-256 (shared portable implementation) ======== */
@@ -238,6 +252,7 @@ static size_t curl_write_cb(void* contents, size_t size, size_t nmemb, void* use
  * Returns true on HTTP 2xx response.
  */
 static bool http_request(const char* method, const char* path, const char* body, char* out_buf, size_t out_buf_size) {
+    ensure_init();
     if (!configured)
         return false;
 

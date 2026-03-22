@@ -59,6 +59,7 @@ struct ShaderParam {
 // ── Module state ───────────────────────────────────────────────
 
 static Rml::DataModelHandle s_model_handle;
+static bool s_initialized = false;
 static std::vector<FilteredPreset> s_filtered_presets;
 static Rml::String s_search_filter;
 static bool s_filter_dirty = true;
@@ -194,9 +195,9 @@ static void rebuild_shader_params() {
     s_shader_param_count = visible;
 }
 
-// ── Init ───────────────────────────────────────────────────────
+// ── Lazy init (deferred from boot to first update) ────────────
 
-extern "C" void rmlui_shader_menu_init() {
+static void do_init() {
     void* raw_ctx = rmlui_wrapper_get_context();
     if (!raw_ctx) {
         SDL_Log("[RmlUi Shaders] No context available");
@@ -427,12 +428,16 @@ extern "C" void rmlui_shader_menu_init() {
     rebuild_chain_passes();
     rebuild_shader_params();
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Shaders] Data model registered");
+    s_initialized = true;
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Shaders] Data model registered (lazy)");
 }
+
+extern "C" void rmlui_shader_menu_init() { /* deferred to first use */ }
 
 // ── Per-frame update ───────────────────────────────────────────
 
 extern "C" void rmlui_shader_menu_update() {
+    if (!s_initialized) { do_init(); if (!s_initialized) return; }
     if (!s_model_handle)
         return;
 

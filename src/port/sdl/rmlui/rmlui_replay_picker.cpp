@@ -95,8 +95,8 @@ static void refresh_slot_data(void) {
     }
 }
 
-/* ── Init (called once at startup from sdl_app.c) ─────────────── */
-extern "C" void rmlui_replay_picker_init(void) {
+/* ── Lazy init (deferred from boot to first use) ─────────────── */
+static void do_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
@@ -122,12 +122,15 @@ extern "C" void rmlui_replay_picker_init(void) {
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi ReplayPicker] Data model registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi ReplayPicker] Data model registered (lazy)");
 }
+
+extern "C" void rmlui_replay_picker_init(void) { /* deferred to first use */ }
 
 /* ── Per-frame update (called from sdl_app.c render loop) ──────── */
 extern "C" void rmlui_replay_picker_update(void) {
-    if (!s_model_registered || !s_model_handle)
+    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_handle)
         return;
     // ⚡ Skip when document is hidden
     if (!rmlui_wrapper_is_game_document_visible("replay_picker"))

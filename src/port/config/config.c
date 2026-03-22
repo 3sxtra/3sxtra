@@ -44,7 +44,7 @@ static const ConfigEntry default_entries[] = {
     { .key = CFG_KEY_FULLSCREEN_HEIGHT, .type = CFG_INT, .value.i = 0 },
     { .key = CFG_KEY_WINDOW_WIDTH, .type = CFG_INT, .value.i = 640 },
     { .key = CFG_KEY_WINDOW_HEIGHT, .type = CFG_INT, .value.i = 480 },
-    { .key = CFG_KEY_SCALEMODE, .type = CFG_STRING, .value.s = "soft-linear" },
+    { .key = CFG_KEY_SCALEMODE, .type = CFG_STRING, .value.s = "nearest" },
     { .key = CFG_KEY_DRAW_RECT_BORDERS, .type = CFG_BOOL, .value.b = false },
     { .key = CFG_KEY_DUMP_TEXTURES, .type = CFG_BOOL, .value.b = false },
     { .key = CFG_KEY_SHADER_PATH, .type = CFG_STRING, .value.s = "" },
@@ -209,6 +209,67 @@ static void print_config_entry_to_io(SDL_IOStream* io, const ConfigEntry* entry)
     }
 }
 
+/* ── Section comment table for config file output ────────────────── */
+
+typedef struct ConfigComment {
+    const char* before_key; /* Insert comment before this key (NULL = end-of-file) */
+    const char* comment;    /* The comment text to write */
+} ConfigComment;
+
+static const ConfigComment section_comments[] = {
+    { CFG_KEY_FULLSCREEN,
+      "# 3SX Configuration — auto-generated, hand-editable\n"
+      "# Lines starting with '#' are comments. Delete this file to reset to defaults.\n"
+      "\n# ── Window ──────────────────────────────────────────────\n" },
+    { CFG_KEY_SCALEMODE,
+      "\n# ── Rendering ───────────────────────────────────────────\n"
+      "# scale-mode: nearest | soft-linear\n" },
+    { CFG_KEY_BROADCAST_ENABLED,
+      "\n# ── Broadcast ───────────────────────────────────────────\n"
+      "# broadcast-source: 0=Game, 1=Window\n" },
+    { CFG_KEY_TRAINING_HITBOXES,
+      "\n# ── Training Mode ───────────────────────────────────────\n" },
+    { CFG_KEY_DUMMY_BLOCK,
+      "\n# ── Training Dummy ──────────────────────────────────────\n"
+      "# dummy-block: 0=None, 1=After First, 2=All\n"
+      "# dummy-parry: 0=None, 1=After First, 2=All, 3=Random\n"
+      "# dummy-stun-mash: 0=None, 1=Buttons, 2=Directions\n"
+      "# dummy-wakeup-mash: 0=None, 1=Buttons, 2=Directions\n"
+      "# dummy-block-direction: 0=Standing, 1=Crouching, 2=Random\n"
+      "# dummy-playback-mode: 0=Off, 1=Loop\n" },
+    { CFG_KEY_NETPLAY_AUTO_CONNECT,
+      "\n# ── Netplay / Lobby ──────────────────────────────────────\n"
+      "# netplay-ft: first-to-N wins (1-10)\n"
+      "# netplay-max-ping: 0=any, otherwise max ms\n" },
+    { CFG_KEY_VSYNC,
+      "\n# ── Display / Performance ───────────────────────────────\n" },
+    { CFG_KEY_MODDED_BGM_ENABLED,
+      "\n# ── Mods ────────────────────────────────────────────────\n" },
+};
+
+static const size_t section_comments_count = SDL_arraysize(section_comments);
+
+/** @brief Write a section comment before a key if one is registered. */
+static void write_section_comment(SDL_IOStream* io, const char* key) {
+    for (size_t i = 0; i < section_comments_count; i++) {
+        if (section_comments[i].before_key && SDL_strcmp(key, section_comments[i].before_key) == 0) {
+            print_io(io, section_comments[i].comment);
+            return;
+        }
+    }
+}
+
+/** @brief Write the trailing comments (lobby server, display name). */
+static void write_trailing_comments(SDL_IOStream* io) {
+    print_io(io,
+             "\n# ── Custom Server ───────────────────────────────────────\n");
+    print_io(io, "# To use a custom matchmaking server, uncomment and edit:\n");
+    print_io(io, "# lobby-server-url = http://your-server-ip:3000\n");
+    print_io(io, "# lobby-server-key = your-secret-hmac-key\n");
+    print_io(io, "\n# Set your online display name (shown to other players):\n");
+    print_io(io, "# lobby-display-name = YourName\n");
+}
+
 /** @brief Dumps default config entries to a file. */
 static void dump_defaults(const char* dst_path) {
     SDL_IOStream* io = SDL_IOFromFile(dst_path, "w");
@@ -216,17 +277,12 @@ static void dump_defaults(const char* dst_path) {
         return;
 
     for (int i = 0; i < SDL_arraysize(default_entries); i++) {
+        write_section_comment(io, default_entries[i].key);
         print_config_entry_to_io(io, &default_entries[i]);
         print_io(io, "\n");
     }
 
-    print_io(io,
-             "\n# To use a custom matchmaking server instead of the default Oracle VPS, uncomment and edit these:\n");
-    print_io(io, "# lobby-server-url=http://your-server-ip:3000\n");
-    print_io(io, "# lobby-server-key=your-secret-hmac-key\n");
-    print_io(io, "\n# Set your online display name (shown to other players in the lobby):\n");
-    print_io(io, "# lobby-display-name=YourName\n");
-
+    write_trailing_comments(io);
     SDL_CloseIO(io);
 }
 
@@ -358,16 +414,12 @@ void Config_Save() {
     }
 
     for (int i = 0; i < entry_count; i++) {
+        write_section_comment(io, entries[i].key);
         print_config_entry_to_io(io, &entries[i]);
         print_io(io, "\n");
     }
 
-    print_io(io,
-             "\n# To use a custom matchmaking server instead of the default Oracle VPS, uncomment and edit these:\n");
-    print_io(io, "# lobby-server-url=http://your-server-ip:3000\n");
-    print_io(io, "# lobby-server-key=your-secret-hmac-key\n");
-    print_io(io, "\n# Set your online display name (shown to other players in the lobby):\n");
-    print_io(io, "# lobby-display-name=YourName\n");
+    write_trailing_comments(io);
 
     SDL_CloseIO(io);
     SDL_free(config_path);

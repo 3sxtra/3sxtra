@@ -71,8 +71,14 @@ void ControllerImage_Module_Quit(void) {
 }
 
 void ControllerImage_Module_OnGamepadAdded(SDL_Gamepad* gamepad, int slot) {
-    if (!s_initialized || !gamepad) {
+    if (!gamepad) {
         return;
+    }
+    // Lazy-init: load data on first gamepad connection instead of boot
+    if (!s_initialized) {
+        if (!ControllerImage_Module_Init()) {
+            return;
+        }
     }
     if (slot < 0 || slot >= CONTROLLER_IMAGE_MAX_SLOTS) {
         return;

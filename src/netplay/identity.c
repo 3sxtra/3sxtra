@@ -133,11 +133,17 @@ void Identity_Init(void) {
     SDL_Log("[Identity] Initialized — player_id=%s display_name=%s", player_id, display_name);
 }
 
+static void ensure_init(void) {
+    if (!initialized) Identity_Init();
+}
+
 const char* Identity_GetPlayerId(void) {
+    ensure_init();
     return initialized ? player_id : "";
 }
 
 const char* Identity_GetDisplayName(void) {
+    ensure_init();
     return initialized ? display_name : "";
 }
 
@@ -154,5 +160,6 @@ bool Identity_IsInitialized(void) {
 }
 
 const char* Identity_GetPublicKeyHex(void) {
+    ensure_init();
     return initialized ? public_key_hex : "";
 }

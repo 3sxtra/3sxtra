@@ -461,22 +461,9 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
         s_render_gl3->SetViewport(s_window_w, s_window_h);
     }
 
-    // Initialize debugger plugin (debug builds only)
+    // RmlUi Debugger plugin is lazily initialized on first F12 press (Phase 3)
 #ifdef DEBUG
-    Rml::Debugger::Initialise(s_window_context);
-    Rml::Debugger::SetContext(s_game_context);
-    // Hide debugger documents on init so they don't render when the debugger
-    // is not actively visible.  Debugger::SetVisible(false) only sets CSS
-    // visibility:hidden which still paints body backgrounds.
-    // - "rmlui-debug-menu"  in window context: toolbar with background:#888
-    // - "rmlui-debug-hook"  in game context:   context hook with styled body
-    if (Rml::ElementDocument* dbg_menu = s_window_context->GetDocument("rmlui-debug-menu")) {
-        dbg_menu->Hide();
-    }
-    if (Rml::ElementDocument* dbg_hook = s_game_context->GetDocument("rmlui-debug-hook")) {
-        dbg_hook->Hide();
-    }
-    SDL_Log("[RmlUi] Debugger plugin initialized (F12 to toggle, inspecting game context)");
+    SDL_Log("[RmlUi] Debugger deferred to first F12 press");
 #endif
 
     const char* backend_name = (s_active_backend == RENDERER_SDLGPU) ? "SDL_GPU"
@@ -549,9 +536,16 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
     if (!s_window_context || !event)
         return;
 
-        // F12 debugger toggle (debug builds only)
 #ifdef DEBUG
+    static bool s_debugger_initialized = false;
     if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_F12) {
+        // Lazy-init debugger on first F12 press
+        if (!s_debugger_initialized) {
+            Rml::Debugger::Initialise(s_window_context);
+            Rml::Debugger::SetContext(s_game_context);
+            s_debugger_initialized = true;
+            SDL_Log("[RmlUi] Debugger plugin initialized (lazy, F12)");
+        }
         bool new_vis = !Rml::Debugger::IsVisible();
         Rml::Debugger::SetVisible(new_vis);
         // Show/hide the debugger documents so their backgrounds don't

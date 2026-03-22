@@ -249,9 +249,8 @@ bool use_rmlui = false;
 /** @brief Initialize SDL3, create window + GL context, compile shaders, load config. */
 int SDLApp_Init() {
     Config_Init();
-    Identity_Init();
-    NET_Init();
-    LobbyServer_Init();
+    // Identity, NET, and LobbyServer are now lazily initialized on first
+    // netplay use (see identity.c ensure_init, lobby_server.c ensure_init).
 
     const char* cfg_scale = Config_GetString(CFG_KEY_SCALEMODE);
     if (cfg_scale) {
@@ -505,8 +504,8 @@ int SDLApp_Init() {
     // Initialize pads
     SDLPad_Init();
 
-    // Initialize ControllerImage for controller button glyphs
-    ControllerImage_Module_Init();
+    // ControllerImage is lazily initialized on first gamepad connection event
+    // (see controller_image.c — OnGamepadAdded auto-inits if needed)
 
     Broadcast_Initialize();
 
@@ -558,24 +557,9 @@ int SDLApp_Init() {
     // Check if user wants RmlUi mode (set via --ui rmlui CLI flag, session-only)
     use_rmlui = g_ui_mode_rmlui;
 
-    // Core RmlUi components — always initialized (replay picker always uses RmlUi)
-    rmlui_replay_picker_init();
-    rmlui_dev_overlay_init();
-
-    // Fx-key overlay menus always use RmlUi (toggle_overlay is unconditional),
-    // so their data models must be registered regardless of use_rmlui.
-    rmlui_mods_menu_init();
-    rmlui_shader_menu_init();
-    rmlui_stage_config_init();
-    rmlui_input_display_init();
-    rmlui_frame_display_init();
+    // RmlUi data-model modules: 13 modules are lazy-initialized on first _update().
+    // Only rmlui_netplay_ui needs eager init (no data model, just event wiring).
     rmlui_netplay_ui_init();
-    rmlui_training_menu_init();
-    rmlui_training_hud_init();
-    rmlui_control_mapping_init();
-    rmlui_network_lobby_init(); // Always initialized for the Native -> RmlUI gateway
-    rmlui_casual_lobby_init();
-    rmlui_leaderboard_init();
 
     if (use_rmlui) {
         SDL_Log("UI mode: RmlUi (overlay menus via HTML/CSS)");
@@ -703,7 +687,7 @@ void SDLApp_Quit() {
     Config_Save();
     Config_Destroy();
     ControllerImage_Module_Quit();
-    NET_Quit();
+    if (LobbyServer_WasInitialized()) NET_Quit(); // Only quit if NET was initialized
     SDL_DestroyWindow(window);
     SDL_Quit();
 }

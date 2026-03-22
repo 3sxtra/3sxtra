@@ -123,8 +123,8 @@ static int async_fetch_fn(void* userdata) {
     return 0;
 }
 
-// ─── Init ────────────────────────────────────────────────────────
-extern "C" void rmlui_leaderboard_init(void) {
+// ─── Lazy Init (deferred from boot to first use) ────────────────
+static void do_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
@@ -164,11 +164,15 @@ extern "C" void rmlui_leaderboard_init(void) {
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Leaderboard] Data model registered (lazy)");
 }
+
+extern "C" void rmlui_leaderboard_init(void) { /* deferred to first use */ }
 
 // ─── Per-frame update ────────────────────────────────────────────
 extern "C" void rmlui_leaderboard_update(void) {
-    if (!s_model_registered || !s_model_handle)
+    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_handle)
         return;
     if (!rmlui_wrapper_is_game_document_visible("leaderboard"))
         return;

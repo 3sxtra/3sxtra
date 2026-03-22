@@ -108,9 +108,9 @@ static void reset_debug_on_exit_game(void) {
 }
 
 // -------------------------------------------------------------------
-// Init — register data model
+// Lazy init — deferred from boot to first update
 // -------------------------------------------------------------------
-extern "C" void rmlui_mods_menu_init(void) {
+static void do_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_context());
     if (!ctx) {
         SDL_Log("[RmlUi Mods] No context available for data model registration");
@@ -267,14 +267,17 @@ extern "C" void rmlui_mods_menu_init(void) {
     s_model_handle = constructor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Mods] Data model registered (17 bindings)");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Mods] Data model registered (lazy, 17 bindings)");
 }
+
+extern "C" void rmlui_mods_menu_init(void) { /* deferred to first use */ }
 
 // -------------------------------------------------------------------
 // Per-frame update — dirty check and auto-reset
 // -------------------------------------------------------------------
 extern "C" void rmlui_mods_menu_update(void) {
-    if (!s_model_registered || !s_model_handle)
+    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_handle)
         return;
 
     // Auto-reset debug options when transitioning from gameplay to menus

@@ -25,6 +25,7 @@ extern "C" {
 // ── Module state ───────────────────────────────────────────────
 
 static Rml::DataModelHandle s_model_handle;
+static bool s_initialized = false;
 static int s_selected_layer = 0;
 
 // Snapshot for dirty-checking
@@ -80,9 +81,9 @@ static void snapshot_active_layer() {
     s_prev.z_index = L->z_index;
 }
 
-// ── Init ───────────────────────────────────────────────────────
+// ── Lazy init (deferred from boot to first update) ────────────
 
-extern "C" void rmlui_stage_config_init() {
+static void do_init() {
     void* raw_ctx = rmlui_wrapper_get_context();
     if (!raw_ctx) {
         SDL_Log("[RmlUi StageConfig] No context available");
@@ -211,12 +212,16 @@ extern "C" void rmlui_stage_config_init() {
     s_model_handle = c.GetModelHandle();
     snapshot_active_layer();
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi StageConfig] Data model registered");
+    s_initialized = true;
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi StageConfig] Data model registered (lazy)");
 }
+
+extern "C" void rmlui_stage_config_init() { /* deferred to first use */ }
 
 // ── Per-frame update ───────────────────────────────────────────
 
 extern "C" void rmlui_stage_config_update() {
+    if (!s_initialized) { do_init(); if (!s_initialized) return; }
     if (!s_model_handle)
         return;
 

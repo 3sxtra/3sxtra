@@ -10,6 +10,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* ── Window ─────────────────────────────── */
 #define CFG_KEY_FULLSCREEN "fullscreen"
 #define CFG_KEY_FULLSCREEN_WIDTH "fullscreen-width"
 #define CFG_KEY_FULLSCREEN_HEIGHT "fullscreen-height"
@@ -17,15 +19,21 @@ extern "C" {
 #define CFG_KEY_WINDOW_HEIGHT "window-height"
 #define CFG_KEY_WINDOW_X "window-x"
 #define CFG_KEY_WINDOW_Y "window-y"
+
+/* ── Rendering ──────────────────────────── */
 #define CFG_KEY_SCALEMODE "scale-mode"
 #define CFG_KEY_DRAW_RECT_BORDERS "draw-rect-borders"
 #define CFG_KEY_DUMP_TEXTURES "dump-textures"
 #define CFG_KEY_SHADER_MODE_LIBRETRO "shader-mode-libretro"
 #define CFG_KEY_BEZEL_ENABLED "bezel-enabled"
 #define CFG_KEY_SHADER_PATH "shader-path"
+
+/* ── Broadcast ──────────────────────────── */
 #define CFG_KEY_BROADCAST_ENABLED "broadcast-enabled"
 #define CFG_KEY_BROADCAST_SOURCE "broadcast-source"
 #define CFG_KEY_BROADCAST_SHOW_UI "broadcast-show-ui"
+
+/* ── Training Mode ──────────────────────── */
 #define CFG_KEY_TRAINING_HITBOXES "training-hitboxes"
 #define CFG_KEY_TRAINING_PUSHBOXES "training-pushboxes"
 #define CFG_KEY_TRAINING_HURTBOXES "training-hurtboxes"
@@ -35,6 +43,8 @@ extern "C" {
 #define CFG_KEY_TRAINING_STUN "training-stun"
 #define CFG_KEY_TRAINING_INPUTS "training-inputs"
 #define CFG_KEY_TRAINING_FRAME_METER "training-frame-meter"
+
+/* ── Training Dummy ─────────────────────── */
 #define CFG_KEY_DUMMY_BLOCK "dummy-block"
 #define CFG_KEY_DUMMY_PARRY "dummy-parry"
 #define CFG_KEY_DUMMY_STUN_MASH "dummy-stun-mash"
@@ -46,6 +56,8 @@ extern "C" {
 #define CFG_KEY_DUMMY_BLOCK_DIR "dummy-block-direction"
 #define CFG_KEY_DUMMY_PLAYBACK_MODE "dummy-playback-mode"
 #define CFG_KEY_DUMMY_AUTO_REVERSAL "dummy-auto-reversal"
+
+/* ── Netplay / Lobby ────────────────────── */
 #define CFG_KEY_NETPLAY_AUTO_CONNECT "netplay-auto-connect"
 #define CFG_KEY_LOBBY_SERVER_URL "lobby-server-url"
 #define CFG_KEY_LOBBY_SERVER_KEY "lobby-server-key"
@@ -61,11 +73,15 @@ extern "C" {
 #define CFG_KEY_NETPLAY_BLOCK_WIFI "netplay-block-wifi"
 #define CFG_KEY_NETPLAY_FT "netplay-ft"
 #define CFG_KEY_NETPLAY_INVITE_COOLDOWN "netplay-invite-cooldown"
+
+/* ── Display / Performance ──────────────── */
 #define CFG_KEY_VSYNC "vsync"
 #define CFG_KEY_DEBUG_HUD "debug-hud"
 #define CFG_KEY_SKIP_INTRO "skip-intro"
 #define CFG_KEY_UI_MODE "ui-mode"
 #define CFG_KEY_HD_STAGES "hd-stages"
+
+/* ── Mods ───────────────────────────────── */
 #define CFG_KEY_MODDED_BGM_ENABLED "modded-bgm-enabled"
 #define CFG_KEY_MODDED_VOICE_ENABLED "modded-voice-enabled"
 

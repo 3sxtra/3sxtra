@@ -156,8 +156,8 @@ static void AsyncMatchAction(const char* room_code, int action) {
 static void refresh_room_state_from_server(void);
 static void apply_room_state_to_model(void);
 
-// ─── Init ────────────────────────────────────────────────────────
-extern "C" void rmlui_casual_lobby_init(void) {
+// ─── Lazy Init (deferred from boot to first use) ────────────────
+static void do_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
     if (!ctx)
         return;
@@ -231,6 +231,8 @@ extern "C" void rmlui_casual_lobby_init(void) {
     memset(&s_room_state, 0, sizeof(s_room_state));
     s_my_id = Identity_GetPlayerId();
 }
+
+extern "C" void rmlui_casual_lobby_init(void) { /* deferred to first use */ }
 
 static void apply_room_state_to_model(void) {
     if (!s_model_handle)
@@ -383,7 +385,8 @@ static void refresh_room_state_from_server(void) {
 
 // ─── Update loop ─────────────────────────────────────────────────
 extern "C" void rmlui_casual_lobby_update(void) {
-    if (!s_model_registered || !s_is_visible)
+    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_is_visible)
         return;
 
     // Deferred overlay re-show: wait for game engine to finish cleanup
