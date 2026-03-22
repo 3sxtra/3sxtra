@@ -26,6 +26,13 @@ static MIX_Track* voice_track = NULL;
 static MIX_Audio* current_audio = NULL;
 static MIX_Audio* current_voice_audio = NULL;
 
+#define NUM_SFX_TRACKS 16
+static MIX_Track* sfx_tracks[NUM_SFX_TRACKS] = { NULL };
+static MIX_Audio* sfx_cache[65536] = { NULL };
+static bool sfx_attempted[65536] = { false };
+static int next_sfx_track = 0;
+
+
 /* Fade-out state — not needed, MIX_StopTrack has native fade.
  * We track whether a fade is in progress to avoid restarting. */
 static bool fade_active = false;
@@ -77,6 +84,16 @@ void ModdedBGM_Init(void) {
     is_initialized = true;
     current_audio = NULL;
     current_voice_audio = NULL;
+    
+    for (int i = 0; i < NUM_SFX_TRACKS; i++) {
+        sfx_tracks[i] = MIX_CreateTrack(mixer);
+        if (!sfx_tracks[i]) {
+            SDL_Log("ModdedBGM: MIX_CreateTrack (sfx) failed for track %d: %s", i, SDL_GetError());
+        }
+    }
+    memset(sfx_attempted, 0, sizeof(sfx_attempted));
+    memset(sfx_cache, 0, sizeof(sfx_cache));
+    next_sfx_track = 0;
     fade_active = false;
     cached_bgm_count = -1;
 }
@@ -92,6 +109,23 @@ void ModdedBGM_Exit(void) {
         MIX_SetTrackAudio(voice_track, NULL);
         MIX_DestroyAudio(current_voice_audio);
         current_voice_audio = NULL;
+    }
+
+    for (int i = 0; i < NUM_SFX_TRACKS; i++) {
+        if (sfx_tracks[i]) {
+            MIX_StopTrack(sfx_tracks[i], 0);
+            MIX_SetTrackAudio(sfx_tracks[i], NULL);
+            MIX_DestroyTrack(sfx_tracks[i]);
+            sfx_tracks[i] = NULL;
+        }
+    }
+
+    for (int i = 0; i < 65536; i++) {
+        if (sfx_cache[i]) {
+            MIX_DestroyAudio(sfx_cache[i]);
+            sfx_cache[i] = NULL;
+        }
+        sfx_attempted[i] = false;
     }
 
     if (voice_track) {
@@ -422,3 +456,90 @@ int ModdedBGM_CountModdedTracks(void) {
     cached_bgm_count = count;
     return count;
 }
+
+bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
+    if (!is_initialized || reqNum < 0 || reqNum >= 65536)
+        return false;
+
+    if (!Config_GetBool(CFG_KEY_MODDED_VOICE_ENABLED))
+        return false;
+
+    if (!sfx_attempted[reqNum]) {
+        sfx_attempted[reqNum] = true;
+        char path[1024];
+
+        static const char* extensions[] = { "ogg", "wav", "flac", "opus", "mp3" };
+        int num_exts = (int)(sizeof(extensions) / sizeof(extensions[0]));
+        bool found = false;
+
+        // Determine bank folder: ptix=0 is SE, ptix 1-20 maps to PL01-PL19/PL00
+        // ptix % 20 wraps ptix=20 (Gill/boss) back to PL00
+        char bank_dir_buf[8];
+        const char* bank_dir = NULL;
+        if (ptix == 0) {
+            bank_dir = "SE";
+        } else if (ptix >= 1 && ptix <= 20) {
+            snprintf(bank_dir_buf, sizeof(bank_dir_buf), "PL%02d", ptix % 20);
+            bank_dir = bank_dir_buf;
+        }
+        
+        SDL_Log("ModdedSFX_Play Check: req=%d, ptix=%d, bank=%s, idx=%d", reqNum, ptix, bank_dir ? bank_dir : "UNKNOWN", engine_code);
+
+        for (int i = 0; i < num_exts && !found; i++) {
+            // Attempt 1: assets/voice_mod/{bank_dir}/{engine_code}.{ext} (Decimal Only)
+            if (bank_dir) {
+                snprintf(path, sizeof(path), "%sassets/voice_mod/%s/%d.%s",
+                         Paths_GetBasePath() ? Paths_GetBasePath() : "",
+                         bank_dir, engine_code, extensions[i]);
+                SDL_IOStream* io = SDL_IOFromFile(path, "rb");
+                if (io) {
+                    SDL_CloseIO(io);
+                    found = true;
+                    break;
+                }
+            }
+
+            // Attempt 2: assets/voice_mod/{reqNum}.{ext} (Legacy fallback - Decimal)
+            snprintf(path, sizeof(path), "%sassets/voice_mod/%d.%s",
+                     Paths_GetBasePath() ? Paths_GetBasePath() : "",
+                     reqNum, extensions[i]);
+            SDL_IOStream* io = SDL_IOFromFile(path, "rb");
+            if (io) {
+                SDL_CloseIO(io);
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            MIX_Audio* audio = MIX_LoadAudio(mixer, path, false);
+            if (audio) {
+                sfx_cache[reqNum] = audio;
+                SDL_Log("ModdedSFX: Loaded %s for request %X (bank %s, idx %d)", path, reqNum, bank_dir ? bank_dir : "?", engine_code);
+            } else {
+                SDL_Log("ModdedSFX: Failed to load %s: %s", path, SDL_GetError());
+            }
+        }
+    }
+
+    if (sfx_cache[reqNum]) {
+        MIX_Track* trk = sfx_tracks[next_sfx_track];
+        if (trk) {
+            MIX_StopTrack(trk, 0);
+            MIX_SetTrackAudio(trk, sfx_cache[reqNum]);
+
+            SDL_PropertiesID props = SDL_CreateProperties();
+            SDL_SetNumberProperty(props, MIX_PROP_PLAY_LOOPS_NUMBER, 0);
+            MIX_PlayTrack(trk, props);
+            SDL_DestroyProperties(props);
+
+            // TODO: implement panning using MIX_SetTrackGain or MIX_SetTrackPanning if available in SDL3_mixer
+
+            next_sfx_track = (next_sfx_track + 1) % NUM_SFX_TRACKS;
+            return true;
+        }
+    }
+
+    return false;
+}
+

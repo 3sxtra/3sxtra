@@ -382,8 +382,8 @@ local function update_player(player, raw, other)
                local standing_hex = tonumber(standing_key, 16)
                if standing_hex then
                   koc_state.resolved = (standing_hex - 0xD8) % 65536
-                  print(string.format("[CPS3_BASE] Resolved %s koc=%d instantly to 0x%04X via standing_key=%s", 
-                     player.char_str, now_koc, koc_state.resolved, standing_key))
+                  -- print(string.format("[CPS3_BASE] Resolved %s koc=%d instantly to 0x%04X via standing_key=%s", 
+                  --   player.char_str, now_koc, koc_state.resolved, standing_key))
                end
             end
          end
@@ -434,12 +434,12 @@ local function update_player(player, raw, other)
          if remaining_count == 1 then
             koc_state.resolved = last_valid_base
             cps3_base = last_valid_base
-            print(string.format("[CPS3_BASE] Resolved %s koc=%d algorithmically to 0x%04X (mapped boff=0x%X to anim=%s)",
-               player.char_str, now_koc, last_valid_base, anim_byte_offset, last_valid_key))
+            -- print(string.format("[CPS3_BASE] Resolved %s koc=%d algorithmically to 0x%04X (mapped boff=0x%X to anim=%s)",
+            --    player.char_str, now_koc, last_valid_base, anim_byte_offset, last_valid_key))
          else
             -- Not resolved yet, output diagnostic but don't set base
-            print(string.format("[CPS3_BASE] Pending %s koc=%d: narrowed to %d candidates after boff=0x%X",
-               player.char_str, now_koc, remaining_count, anim_byte_offset))
+            -- print(string.format("[CPS3_BASE] Pending %s koc=%d: narrowed to %d candidates after boff=0x%X",
+            --   player.char_str, now_koc, remaining_count, anim_byte_offset))
             -- Temporarily pick the first candidate just to have something (might be wrong)
             if last_valid_base then cps3_base = last_valid_base end
          end
@@ -483,11 +483,11 @@ local function update_player(player, raw, other)
    player.boxes = {}
    if fd and fd.is_loaded and fd.frame_data[player.char_str] then
       -- One-time diagnostic
-      if not _G._fd_adapter_confirmed then
-         _G._fd_adapter_confirmed = true
-         print(string.format("[ADAPTER_FD] Framedata found for %s, animation=%s",
-            player.char_str, player.animation))
-      end
+      -- if not _G._fd_adapter_confirmed then
+      --    _G._fd_adapter_confirmed = true
+      --    print(string.format("[ADAPTER_FD] Framedata found for %s, animation=%s",
+      --       player.char_str, player.animation))
+      -- end
 
       local char_fd = fd.frame_data[player.char_str]
       local anim_data = char_fd[player.animation]
@@ -527,25 +527,25 @@ local function update_player(player, raw, other)
    player.character_state_byte = raw.character_state_byte or raw.routine_no_1 or 0
 
    -- Diagnostic: log all combat fields to identify correct is_attacking field
-   if not _G._attack_diag_idle_done and player.id == 2 then
-      _G._attack_diag_idle_done = true
-      print(string.format("[ATTACK_DIAG] IDLE P%d: rno1=%s kow=%s pat=%s cgd=%s at_attr=%s atk_num=%s dm_atk=%s anim=%s",
-         player.id, tostring(raw.routine_no_1), tostring(raw.kind_of_waza),
-         tostring(raw.pat_status), tostring(raw.movement_type),
-         tostring(raw.at_attribute), tostring(raw.attack_num),
-         tostring(raw.dm_attack_flag), tostring(player.animation)))
-   end
+   -- if not _G._attack_diag_idle_done and player.id == 2 then
+   --    _G._attack_diag_idle_done = true
+   --    print(string.format("[ATTACK_DIAG] IDLE P%d: rno1=%s kow=%s pat=%s cgd=%s at_attr=%s atk_num=%s dm_atk=%s anim=%s",
+   --       player.id, tostring(raw.routine_no_1), tostring(raw.kind_of_waza),
+   --       tostring(raw.pat_status), tostring(raw.movement_type),
+   --       tostring(raw.at_attribute), tostring(raw.attack_num),
+   --       tostring(raw.dm_attack_flag), tostring(player.animation)))
+   -- end
    -- Log when animation changes (potential attack state)
-   if player.has_animation_just_changed and player.id == 2 then
-      if not _G._attack_diag_count then _G._attack_diag_count = 0 end
-      _G._attack_diag_count = _G._attack_diag_count + 1
-      if _G._attack_diag_count <= 20 then
-      print(string.format("[ATTACK_DIAG] CHANGE P%d: rno1=%s kow=%s koc=%s cidx=%s boff=0x%X anim=%s",
-            player.id, tostring(raw.routine_no_1), tostring(raw.kind_of_waza),
-            tostring(raw.now_koc), tostring(raw.char_index),
-            raw.animation_byte_offset or 0, tostring(player.animation)))
-      end
-   end
+   -- if player.has_animation_just_changed and player.id == 2 then
+   --    if not _G._attack_diag_count then _G._attack_diag_count = 0 end
+   --    _G._attack_diag_count = _G._attack_diag_count + 1
+   --    if _G._attack_diag_count <= 20 then
+   --    print(string.format("[ATTACK_DIAG] CHANGE P%d: rno1=%s kow=%s koc=%s cidx=%s boff=0x%X anim=%s",
+   --          player.id, tostring(raw.routine_no_1), tostring(raw.kind_of_waza),
+   --          tostring(raw.now_koc), tostring(raw.char_index),
+   --          raw.animation_byte_offset or 0, tostring(player.animation)))
+   --    end
+   -- end
 
    -- Use routine_no_1 == 4 for now (character_state_byte in CPS3 at offset 0x27)
    player.is_attacking = (player.character_state_byte == 4)

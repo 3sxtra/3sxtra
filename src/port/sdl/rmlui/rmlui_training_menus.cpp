@@ -97,7 +97,7 @@ extern "C" void rmlui_training_mode_show(void) {
     if (!s_training_loaded) {
         s_training_loaded = true;
         Rml::Lua::Interpreter::DoString("require('training_main')");
-        SDL_Log("[RmlUi Lua] Training modules loaded (on training entry)");
+        // SDL_Log("[RmlUi Lua] Training modules loaded (on training entry)");
     }
 
     rmlui_wrapper_show_game_document("training_mode");

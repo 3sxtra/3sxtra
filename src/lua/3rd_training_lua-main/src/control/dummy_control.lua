@@ -261,10 +261,10 @@ local function update_blocking(input, dummy, blocking_options)
       if not _G._block_debug_count then _G._block_debug_count = 0 end
       _G._block_debug_count = _G._block_debug_count + 1
       if _G._block_debug_count <= 5 or (_G._block_debug_count % 120 == 0) then
-         print(string.format("[BLOCK_DEBUG] early return: in_match=%s mode=%s counter=%s rec=%s",
-            tostring(gamestate.is_in_match), tostring(blocking_options.mode),
-            tostring(dummy.counter.is_counterattacking),
-            tostring(recording.current_recording_state)))
+         -- print(string.format("[BLOCK_DEBUG] early return: in_match=%s mode=%s counter=%s rec=%s",
+         --    tostring(gamestate.is_in_match), tostring(blocking_options.mode),
+         --    tostring(dummy.counter.is_counterattacking),
+         --    tostring(recording.current_recording_state)))
       end
       return
    end
@@ -282,9 +282,9 @@ local function update_blocking(input, dummy, blocking_options)
       for k, v in pairs(expected_attacks) do
          attack_count = attack_count + #v
       end
-      print(string.format("[BLOCK_DEBUG] predict_hits returned %d attack groups, %d total attacks, player.is_attacking=%s anim=%s frame=%d",
-         #expected_attacks, attack_count,
-         tostring(player.is_attacking), tostring(player.animation), player.animation_frame or 0))
+      -- print(string.format("[BLOCK_DEBUG] predict_hits returned %d attack groups, %d total attacks, player.is_attacking=%s anim=%s frame=%d",
+      --    #expected_attacks, attack_count,
+      --    tostring(player.is_attacking), tostring(player.animation), player.animation_frame or 0))
    end
 
    -- EX Aegis must be blocked within 5f of screen darkening

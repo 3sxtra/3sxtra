@@ -160,17 +160,17 @@ static int l_read_player(lua_State* L) {
 
             if (!printed) {
                 printed = true;
-                printf("[ANIM_DIAG] char_table[%d] base=%p, set_char_ad=%p\n",
-                       wu->now_koc,
-                       (void*)wu->char_table[wu->now_koc],
-                       (void*)wu->set_char_ad);
-                printf("[ANIM_DIAG] byte_offset=0x%X, raw_table_val=0x%X, cg_number=%d\n",
-                       byte_offset,
-                       raw_table_val,
-                       wu->cg_number);
-                printf("[ANIM_DIAG] offset_low16=0x%04X, raw_low16=0x%04X\n",
-                       byte_offset & 0xFFFF,
-                       raw_table_val & 0xFFFF);
+                // printf("[ANIM_DIAG] char_table[%d] base=%p, set_char_ad=%p\n",
+                //        wu->now_koc,
+                //        (void*)wu->char_table[wu->now_koc],
+                //        (void*)wu->set_char_ad);
+                // printf("[ANIM_DIAG] byte_offset=0x%X, raw_table_val=0x%X, cg_number=%d\n",
+                //        byte_offset,
+                //        raw_table_val,
+                //        wu->cg_number);
+                // printf("[ANIM_DIAG] offset_low16=0x%04X, raw_low16=0x%04X\n",
+                //        byte_offset & 0xFFFF,
+                //        raw_table_val & 0xFFFF);
             }
         }
         PUSH_INT(L, t, "animation_byte_offset", byte_offset);
@@ -661,7 +661,7 @@ static int l_set_lua_dummy_active(lua_State* L) {
     if (lua_isnumber(L, 2)) {
         g_lua_dummy_player_id = (s16)lua_tointeger(L, 2);
     }
-    SDL_Log("[Lua Bridge] set_lua_dummy_active(%s, id=%d)", active ? "true" : "false", g_lua_dummy_player_id);
+    // SDL_Log("[Lua Bridge] set_lua_dummy_active(%s, id=%d)", active ? "true" : "false", g_lua_dummy_player_id);
     return 0;
 }
 
@@ -758,5 +758,5 @@ void lua_engine_bridge_tick(void) {
 
 void lua_engine_bridge_load_training(void) {
     Rml::Lua::Interpreter::DoString("require('training_main')");
-    SDL_Log("[Lua Bridge] Training modules loaded (on training match entry)");
+    // SDL_Log("[Lua Bridge] Training modules loaded (on training match entry)");
 }

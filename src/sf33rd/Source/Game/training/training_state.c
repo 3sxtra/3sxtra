@@ -229,12 +229,12 @@ static void resolve_advantage(TrainingPlayerState* self, TrainingPlayerState* op
     if (self->opponent_idle_frame != 0 && self->is_idle && opponent->is_idle) {
         if (self->opponent_was_affected) {
             self->advantage_value = self->opponent_idle_frame - self->player_idle_frame;
-            SDL_Log("%s ADVANTAGE RESOLVED: %+d (%s idle %d, opp idle %d)",
-                    label,
-                    self->advantage_value,
-                    label,
-                    self->player_idle_frame,
-                    self->opponent_idle_frame);
+            // SDL_Log("%s ADVANTAGE RESOLVED: %+d (%s idle %d, opp idle %d)",
+            //         label,
+            //         self->advantage_value,
+            //         label,
+            //         self->player_idle_frame,
+            //         self->opponent_idle_frame);
         } else {
             self->advantage_value = 0; // Pure whiff
         }

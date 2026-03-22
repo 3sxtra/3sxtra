@@ -809,6 +809,10 @@ void SsRequestPan(u16 reqNum, s16 start, s16 /* unused */, s32 /* unused */, s32
             rmcode.bank = lookup->bank;
             rmcode.port = lookup->port;
             rmcode.code = lookup->engine_code;
+
+            if (ModdedSFX_Play(reqNum, rmcode.ptix, rmcode.code, start)) {
+                return;
+            }
         } else {
             while (1) {
                 flPrintL(3, 5, "MISSING SOUND MAPPING (PAN): %X", reqNum);
@@ -847,6 +851,10 @@ void SsRequest(u16 ReqNumber) {
             rmcode.bank = lookup->bank;
             rmcode.port = lookup->port;
             rmcode.code = lookup->engine_code;
+
+            if (ModdedSFX_Play(ReqNumber, rmcode.ptix, rmcode.code, 0)) {
+                return;
+            }
         } else {
             // Hard Fail: ID not found in lookup table
             while (1) {
@@ -876,6 +884,10 @@ void SsRequest_CC(u16 num) {
             rmcode.bank = lookup->bank;
             rmcode.port = lookup->port;
             rmcode.code = lookup->engine_code;
+
+            if (ModdedSFX_Play(num, rmcode.ptix, rmcode.code, 0)) {
+                return;
+            }
         } else {
             // Hard Fail: ID not found in lookup table
             while (1) {

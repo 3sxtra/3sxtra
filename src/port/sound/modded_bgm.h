@@ -52,6 +52,20 @@ void ModdedBGM_FadeOut(int fade_ms);
 bool ModdedBGM_PlayVoice(const char* voice_name);
 
 /**
+ * @brief Play an arbitrary sound effect, supporting folder organization.
+ * 
+ * Looks for modded audio checking the bank folder first (e.g. PL00/0.ogg),
+ * falling back to the raw CPS3 code.
+ * 
+ * @param reqNum The logical CPS3 code for the sound request.
+ * @param ptix The Sound Event Bank index (0=SE, 1-20=PL00-PL19)
+ * @param engine_code The mapped index within the bank.
+ * @param pan Panning information (currently ignored for SDL playback)
+ * @return true if a modded sound effect was played.
+ */
+bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan);
+
+/**
  * @brief Check if a modded voice file exists for the given name.
  */
 bool ModdedBGM_IsVoiceModded(const char* voice_name);

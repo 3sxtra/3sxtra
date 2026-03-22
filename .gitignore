@@ -81,3 +81,4 @@ tools/gifx.sh
 /output
 *.bin
 /tools/sprites/output
+/assets/voice_mod

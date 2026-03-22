@@ -288,7 +288,7 @@ local function ensure_framedata_loaded()
 
       local count = 0
       for _ in pairs(fd.frame_data) do count = count + 1 end
-      print(string.format("[training_main] Framedata loaded from msgpack (%d characters, %d entries)", count, loaded))
+      -- print(string.format("[training_main] Framedata loaded from msgpack (%d characters, %d entries)", count, loaded))
    end)
    if not ok then
       print("[training_main] ERROR loading framedata: " .. tostring(err))
@@ -303,7 +303,7 @@ end
 local prediction_ok, prediction = pcall(require, "src.data.prediction")
 if prediction_ok then
    _G.prediction = prediction
-   print("[training_main] Prediction module loaded successfully")
+   -- print("[training_main] Prediction module loaded successfully")
 else
    print("[training_main] Prediction module not loaded: " .. tostring(prediction))
    _G.prediction = nil
@@ -313,7 +313,7 @@ end
 local dc_ok, dummy_control = pcall(require, "src.control.dummy_control")
 if dc_ok then
    _G.dummy_control = dummy_control
-   print("[training_main] Dummy control module loaded successfully")
+   -- print("[training_main] Dummy control module loaded successfully")
 else
    print("[training_main] Dummy control not loaded: " .. tostring(dummy_control))
    _G.dummy_control = nil
@@ -322,7 +322,7 @@ end
 -- Inputs module (for process_pending_input_sequence)
 local inputs_ok, inputs_mod = pcall(require, "src.control.inputs")
 if inputs_ok then
-   print("[training_main] Inputs module loaded successfully")
+   -- print("[training_main] Inputs module loaded successfully")
 else
    print("[training_main] Inputs module not loaded: " .. tostring(inputs_mod))
    inputs_mod = nil
@@ -335,7 +335,7 @@ local rec_ok, rec_err = pcall(function()
    recording.init()
 end)
 if rec_ok then
-   print("[training_main] Recording module initialized")
+   -- print("[training_main] Recording module initialized")
 else
    print("[training_main] Recording init failed: " .. tostring(rec_err))
 end
@@ -612,10 +612,10 @@ emu.registerbefore(function()
       training.player = local_player
       training.dummy = dummy_player
 
-      print(string.format("[training_main] Operator_Status: P1=%d P2=%d → local=P%d, dummy=P%d",
-         engine.read_globals().operator_p1 or -1,
-         engine.read_globals().operator_p2 or -1,
-         local_id, dummy_id))
+      -- print(string.format("[training_main] Operator_Status: P1=%d P2=%d → local=P%d, dummy=P%d",
+      --    engine.read_globals().operator_p1 or -1,
+      --    engine.read_globals().operator_p2 or -1,
+      --    local_id, dummy_id))
    end
 
    -- Read C menu settings and map to Lua enum values
@@ -687,7 +687,7 @@ emu.registerbefore(function()
 
 end)
 
-print("[training_main] Bootstrap complete")
+-- print("[training_main] Bootstrap complete")
 
 -- ============================================================
 -- 7. Load Frame-Advantage Tracker
