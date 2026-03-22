@@ -9,11 +9,23 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_RMLUI
+
 void rmlui_memory_card_init(void);
 void rmlui_memory_card_update(void);
 void rmlui_memory_card_show(void);
 void rmlui_memory_card_hide(void);
 void rmlui_memory_card_shutdown(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_memory_card_init(void) {}
+static inline void rmlui_memory_card_update(void) {}
+static inline void rmlui_memory_card_show(void) {}
+static inline void rmlui_memory_card_hide(void) {}
+static inline void rmlui_memory_card_shutdown(void) {}
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

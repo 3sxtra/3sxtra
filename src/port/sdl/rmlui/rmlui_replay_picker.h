@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_RMLUI
+
 void rmlui_replay_picker_init(void);
 void rmlui_replay_picker_update(void);
 void rmlui_replay_picker_show(void);
@@ -23,6 +25,19 @@ int rmlui_replay_picker_poll(void);
 
 /** After poll() returns 0, get the selected slot index (0..19). */
 int rmlui_replay_picker_get_slot(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_replay_picker_init(void) {}
+static inline void rmlui_replay_picker_update(void) {}
+static inline void rmlui_replay_picker_show(void) {}
+static inline void rmlui_replay_picker_hide(void) {}
+static inline void rmlui_replay_picker_shutdown(void) {}
+static inline void rmlui_replay_picker_open(int mode) { (void)mode; }
+static inline int rmlui_replay_picker_poll(void) { return 0; }
+static inline int rmlui_replay_picker_get_slot(void) { return 0; }
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

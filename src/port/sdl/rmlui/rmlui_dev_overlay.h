@@ -14,11 +14,22 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_RMLUI
+
 void rmlui_dev_overlay_init(void);
 void rmlui_dev_overlay_update(void);
 void rmlui_dev_overlay_shutdown(void);
 
 extern bool show_dev_overlay;
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_dev_overlay_init(void) {}
+static inline void rmlui_dev_overlay_update(void) {}
+static inline void rmlui_dev_overlay_shutdown(void) {}
+static const bool show_dev_overlay = false;
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

@@ -14,6 +14,8 @@ extern "C" {
 #endif
 
 /** Initialize the fight HUD data model and load the document. */
+#ifdef ENABLE_RMLUI
+
 void rmlui_game_hud_init(void);
 
 /** Per-frame dirty-check sync — call once per frame during gameplay. */
@@ -21,6 +23,14 @@ void rmlui_game_hud_update(void);
 
 /** Destroy the data model and unload the document. */
 void rmlui_game_hud_shutdown(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_game_hud_init(void) {}
+static inline void rmlui_game_hud_update(void) {}
+static inline void rmlui_game_hud_shutdown(void) {}
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

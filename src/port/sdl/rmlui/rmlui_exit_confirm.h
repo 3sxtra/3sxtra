@@ -10,6 +10,8 @@ extern "C" {
 #endif
 
 /** Initialize the exit confirm data model and document. */
+#ifdef ENABLE_RMLUI
+
 void rmlui_exit_confirm_init(void);
 
 /** Per-frame dirty-check sync. */
@@ -23,6 +25,16 @@ void rmlui_exit_confirm_hide(void);
 
 /** Destroy the data model. */
 void rmlui_exit_confirm_shutdown(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_exit_confirm_init(void) {}
+static inline void rmlui_exit_confirm_update(void) {}
+static inline void rmlui_exit_confirm_show(void) {}
+static inline void rmlui_exit_confirm_hide(void) {}
+static inline void rmlui_exit_confirm_shutdown(void) {}
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

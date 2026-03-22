@@ -198,8 +198,10 @@ static bool parse_loop_file(const char* loop_path, Sint64* loop_start, Sint64* l
  * @brief Build a path in assets/{subdir}/{name}.{ext}.
  */
 static void build_asset_path(char* out, size_t out_size, const char* subdir, const char* name, const char* ext) {
-    const char* base = Paths_GetBasePath();
-    snprintf(out, out_size, "%sassets/%s/%s.%s", base ? base : "", subdir, name, ext);
+    char relative[512];
+    snprintf(relative, sizeof(relative), "assets/%s/%s.%s", subdir, name, ext);
+    const char* resolved = Paths_ResolveAsset(relative);
+    snprintf(out, out_size, "%s", resolved);
 }
 
 static bool try_load_and_play(const char* ext, int file_id) {

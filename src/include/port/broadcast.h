@@ -38,9 +38,18 @@ typedef struct BroadcastPort {
 extern BroadcastConfig broadcast_config;
 
 // Public API
+#ifdef ENABLE_BROADCAST
 void Broadcast_Initialize(void);
 void Broadcast_Shutdown(void);
 bool Broadcast_Send(uint32_t texture_id, uint32_t width, uint32_t height, bool is_flipped);
 void Broadcast_Update(void); // Call this to sync config changes
+#else
+static inline void Broadcast_Initialize(void) {}
+static inline void Broadcast_Shutdown(void) {}
+static inline bool Broadcast_Send(uint32_t t, uint32_t w, uint32_t h, bool f) {
+    (void)t; (void)w; (void)h; (void)f; return false;
+}
+static inline void Broadcast_Update(void) {}
+#endif
 
 #endif

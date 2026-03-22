@@ -21,6 +21,7 @@ function(target_link_sdl3_glad TARGET_NAME)
 endfunction()
 
 # Link GekkoNet + SDL3 + Win32 system libs (for netplay tests)
+if(ENABLE_NETPLAY)
 function(target_link_gekkonet_sdl3 TARGET_NAME)
     target_include_directories(${TARGET_NAME} PRIVATE 
         ${PROJECT_SOURCE_DIR}/include 
@@ -38,6 +39,7 @@ function(target_link_gekkonet_sdl3 TARGET_NAME)
         target_link_libraries(${TARGET_NAME} PRIVATE GekkoNet ${SDL3_ROOT}/lib/libSDL3.so ${SDL3_NET_DIR}/lib/libSDL3_net.so)
     endif()
 endfunction()
+endif() # ENABLE_NETPLAY
 
 # =============================================================================
 # Decomposed game globals (was game_globals.c, now split into domain files)
@@ -72,6 +74,7 @@ add_unit_test(test_renderer_interface
     ${PROJECT_SOURCE_DIR}/src/port/sdl/renderer/renderer.c
 )
 
+if(ENABLE_NETPLAY)
 add_unit_test(test_game_state
     test_game_state.c
     ${GAME_GLOBALS_SOURCES}
@@ -199,6 +202,7 @@ add_unit_test(test_netplay_run
 )
 target_compile_definitions(test_netplay_run PRIVATE MOCK_SUPPRESS_CONFLICTS MOCK_HAS_NETPLAY)
 target_link_gekkonet_sdl3(test_netplay_run)
+endif() # ENABLE_NETPLAY
 
 # -----------------------------------------------------------------------------
 # SDL3-only tests (use target_link_sdl3)
@@ -223,6 +227,7 @@ if(WIN32)
     target_link_libraries(test_config PRIVATE bcrypt)
 endif()
 
+if(ENABLE_NETPLAY)
 add_unit_test(test_lobby_server
     test_lobby_server.c
     ${PROJECT_SOURCE_DIR}/src/netplay/sha256.c
@@ -246,6 +251,7 @@ target_link_sdl3(test_identity)
 if(WIN32)
     target_link_libraries(test_identity PRIVATE bcrypt)
 endif()
+endif() # ENABLE_NETPLAY
 
 add_unit_test(test_char_data
     test_char_data.c
@@ -264,6 +270,7 @@ target_link_sdl3(test_native_save)
 # Bezel tests (use target_link_sdl3_glad)
 # -----------------------------------------------------------------------------
 
+if(ENABLE_BEZEL)
 add_unit_test(test_bezel_assets
     test_bezel_assets.c
     ${PROJECT_SOURCE_DIR}/src/port/rendering/sdl_bezel.c
@@ -281,6 +288,7 @@ add_unit_test(test_bezel_layout
 )
 target_include_directories(test_bezel_layout PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include)
 target_link_sdl3_glad(test_bezel_layout)
+endif() # ENABLE_BEZEL
 
 # -----------------------------------------------------------------------------
 # Other tests (no platform-specific linking needed)
@@ -292,6 +300,7 @@ add_unit_test(test_globals_access
 )
 target_include_directories(test_globals_access PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
+if(ENABLE_NETPLAY)
 add_unit_test(test_game_state_roundtrip
     test_game_state_roundtrip.c
     ${GAME_GLOBALS_SOURCES}
@@ -301,7 +310,9 @@ add_unit_test(test_game_state_roundtrip
 target_include_directories(test_game_state_roundtrip PRIVATE ${PROJECT_SOURCE_DIR}/include ${SDL3_ROOT}/include ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include ${SDL3_NET_DIR}/include)
 target_compile_definitions(test_game_state_roundtrip PRIVATE MOCK_SUPPRESS_CONFLICTS)
 target_link_sdl3(test_game_state_roundtrip)
+endif() # ENABLE_NETPLAY
 
+if(ENABLE_BROADCAST)
 add_unit_test(test_broadcast_config test_broadcast_config.c)
 target_include_directories(test_broadcast_config PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
@@ -319,6 +330,7 @@ if(WIN32)
     set_target_properties(test_broadcast_win32 PROPERTIES LINKER_LANGUAGE CXX)
     set_source_files_properties(test_broadcast_win32.cpp ${PROJECT_SOURCE_DIR}/src/port/win32/broadcast_spout.cpp PROPERTIES COMPILE_FLAGS "-Wno-error")
 endif()
+endif() # ENABLE_BROADCAST
 
 add_unit_test(test_menu_bridge
     test_menu_bridge.c
@@ -353,6 +365,7 @@ add_unit_test(test_adx_decoder
 target_include_directories(test_adx_decoder PRIVATE ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(test_adx_decoder PRIVATE m)
 
+if(ENABLE_MODS)
 add_unit_test(test_stage_config
     test_stage_config.c
     mocks_stage_config.c
@@ -362,6 +375,7 @@ target_include_directories(test_stage_config PRIVATE
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src
 )
+endif() # ENABLE_MODS
 
 add_unit_test(test_afs_validation test_afs_validation.c)
 target_include_directories(test_afs_validation PRIVATE ${PROJECT_SOURCE_DIR}/src)

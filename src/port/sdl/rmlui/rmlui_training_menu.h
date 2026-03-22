@@ -15,6 +15,8 @@ extern "C" {
 
 /// Register the training data model and load the training.rml document.
 /// Call once after rmlui_wrapper_init().
+#ifdef ENABLE_RMLUI
+
 void rmlui_training_menu_init(void);
 
 /// Per-frame update: dirty-check settings and push changes to the data model.
@@ -23,6 +25,14 @@ void rmlui_training_menu_update(void);
 
 /// Clean up the training data model.
 void rmlui_training_menu_shutdown(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_training_menu_init(void) {}
+static inline void rmlui_training_menu_update(void) {}
+static inline void rmlui_training_menu_shutdown(void) {}
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

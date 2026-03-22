@@ -8,6 +8,19 @@ project(3sx LANGUAGES C CXX)
 option(PLATFORM_RPI4 "Build for Raspberry Pi 4 / Batocera (aarch64)" OFF)
 option(ENABLE_TRACY "Enable Tracy profiler instrumentation" OFF)
 
+# --- Compile-time feature toggles (all ON by default) ---
+option(ENABLE_NETPLAY          "Build with netplay/rollback support"              ON)
+option(ENABLE_RMLUI            "Build with RmlUi HTML/CSS menu system"            ON)
+option(ENABLE_TRAINING         "Build with Lua training mode & trials"            ON)
+option(ENABLE_BROADCAST        "Build with video broadcast (Spout/Syphon)"        ON)
+option(ENABLE_MODS             "Build with stage/BGM mod loading"                 ON)
+option(ENABLE_BEZEL            "Build with bezel overlay rendering"               ON)
+option(ENABLE_CONTROLLER_IMAGE "Build with controller image overlays"             ON)
+option(ENABLE_REPLAY           "Build with replay recording & picker"             ON)
+option(ENABLE_LIBRASHADER      "Build with librashader CRT/shader filters"        ON)
+option(ENABLE_DEBUG_HUD        "Build with debug HUD overlay"                     ON)
+option(ENABLE_LEADERBOARD      "Build with online leaderboard"                    ON)
+
 # Set third-party directory based on platform
 # RPi4 uses a separate directory to avoid conflicts with Windows-built files.
 # Any platform can override via -DTHIRD_PARTY_DIR=<path> (e.g. third_party_linux).
@@ -67,9 +80,11 @@ set(ENABLE_PGO "OFF" CACHE STRING "PGO mode: OFF, GENERATE, or USE")
 
 include(FetchContent)
 
-message(STATUS "DEBUG: Adding GekkoNet subdirectory...")
-add_subdirectory("${THIRD_PARTY_DIR}/GekkoNet" GekkoNet)
-message(STATUS "DEBUG: GekkoNet added.")
+if(ENABLE_NETPLAY)
+    message(STATUS "DEBUG: Adding GekkoNet subdirectory...")
+    add_subdirectory("${THIRD_PARTY_DIR}/GekkoNet" GekkoNet)
+    message(STATUS "DEBUG: GekkoNet added.")
+endif()
 
 # SDL_ShaderCross — pre-cloned by build-deps.sh into third_party/
 set(SDLSHADERCROSS_VENDORED ON CACHE BOOL "" FORCE)
@@ -92,9 +107,13 @@ endif()
 
 # cJSON — vendored single-file JSON library for lobby_server HTTP client
 # Compiled directly as a source file to avoid CMake reconfigure issues
-include_directories("${THIRD_PARTY_DIR}/cJSON")
-set_source_files_properties("${THIRD_PARTY_DIR}/cJSON/cJSON.c" PROPERTIES COMPILE_OPTIONS "-Wno-error")
+if(ENABLE_NETPLAY OR ENABLE_LEADERBOARD)
+    include_directories("${THIRD_PARTY_DIR}/cJSON")
+    set_source_files_properties("${THIRD_PARTY_DIR}/cJSON/cJSON.c" PROPERTIES COMPILE_OPTIONS "-Wno-error")
+endif()
 
+# Lua 5.4 (only needed for RmlUi Lua bindings)
+if(ENABLE_RMLUI)
 # Lua 5.4 — vendored static library for RmlUi Lua bindings
 # Must be added BEFORE RmlUi so the Lua::Lua target exists when
 # RmlUi's Dependencies.cmake runs.
@@ -112,6 +131,7 @@ set(RMLUI_LUA_BINDINGS ON CACHE BOOL "" FORCE)
 set(RMLUI_SVG_PLUGIN OFF CACHE BOOL "" FORCE)
 set(RMLUI_LOTTIE_PLUGIN OFF CACHE BOOL "" FORCE)
 set(RMLUI_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+
 
 # FreeType — built by build-deps.sh into third_party/freetype/build
 # We create the imported target directly so that RmlUi's find_package(Freetype)
@@ -136,6 +156,7 @@ endif()
 
 add_subdirectory("${THIRD_PARTY_DIR}/rmlui" rmlui)
 message(STATUS "RmlUi configured.")
+endif() # ENABLE_RMLUI (Lua + RmlUi)
 
 # ======================================
 # Static Analysis (clang-tidy)
@@ -162,11 +183,11 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/src/include
     ${PROJECT_SOURCE_DIR}/src/include/sdk
-    ${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include
+    $<$<BOOL:${ENABLE_NETPLAY}>:${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include>
     ${THIRD_PARTY_DIR}/stb
-    ${THIRD_PARTY_DIR}/controllerimage/src
+    $<$<BOOL:${ENABLE_CONTROLLER_IMAGE}>:${THIRD_PARTY_DIR}/controllerimage/src>
 
-    ${THIRD_PARTY_DIR}/librashader/include
+    $<$<BOOL:${ENABLE_LIBRASHADER}>:${THIRD_PARTY_DIR}/librashader/include>
     ${THIRD_PARTY_DIR}/simde
     ${glad_SOURCE_DIR}/include
     ${CMAKE_BINARY_DIR}/gladsources/glad/include
@@ -207,6 +228,69 @@ file(GLOB_RECURSE GAME_SRC src/*.c src/*.cpp)
 # Exclude platform-specific broadcast backends (added conditionally below)
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/win32/")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/linux/")
+
+# --- Feature-toggle conditional source exclusions ---
+if(NOT ENABLE_NETPLAY)
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/netplay/")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdl/netplay/")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdl/netstats_renderer")
+    list(FILTER GAME_SRC EXCLUDE REGEX "ms_network_lobby")
+endif()
+
+if(NOT ENABLE_RMLUI)
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdl/rmlui/")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/menu_bridge")
+endif()
+
+if(NOT ENABLE_TRAINING)
+    list(FILTER GAME_SRC EXCLUDE REGEX "lua_engine_bridge")
+    list(FILTER GAME_SRC EXCLUDE REGEX "lua_trials_loader")
+    list(FILTER GAME_SRC EXCLUDE REGEX "rmlui_training_")
+    list(FILTER GAME_SRC EXCLUDE REGEX "rmlui_trials_")
+    list(FILTER GAME_SRC EXCLUDE REGEX "ms_training")
+endif()
+
+if(NOT ENABLE_BROADCAST)
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/broadcast")
+endif()
+
+if(NOT ENABLE_MODS)
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/mods/")
+    list(FILTER GAME_SRC EXCLUDE REGEX "modded_bgm")
+    list(FILTER GAME_SRC EXCLUDE REGEX "modded_stage")
+    list(FILTER GAME_SRC EXCLUDE REGEX "rmlui_mods_menu")
+    list(FILTER GAME_SRC EXCLUDE REGEX "rmlui_stage_config")
+    list(FILTER GAME_SRC EXCLUDE REGEX "ms_sysdir")
+endif()
+
+if(NOT ENABLE_BEZEL)
+    list(FILTER GAME_SRC EXCLUDE REGEX "sdl_app_bezel")
+    list(FILTER GAME_SRC EXCLUDE REGEX "sdl_bezel")
+endif()
+
+if(NOT ENABLE_CONTROLLER_IMAGE)
+    list(FILTER GAME_SRC EXCLUDE REGEX "controller_image")
+endif()
+
+if(NOT ENABLE_REPLAY)
+    list(FILTER GAME_SRC EXCLUDE REGEX "replay_picker")
+    list(FILTER GAME_SRC EXCLUDE REGEX "ms_replay")
+    list(FILTER GAME_SRC EXCLUDE REGEX "ms_save_replay")
+endif()
+
+if(NOT ENABLE_LIBRASHADER)
+    list(FILTER GAME_SRC EXCLUDE REGEX "sdl_app_shader_config")
+    list(FILTER GAME_SRC EXCLUDE REGEX "rmlui_shader_menu")
+endif()
+
+if(NOT ENABLE_DEBUG_HUD)
+    list(FILTER GAME_SRC EXCLUDE REGEX "sdl_app_debug_hud")
+endif()
+
+if(NOT ENABLE_LEADERBOARD)
+    list(FILTER GAME_SRC EXCLUDE REGEX "ms_leaderboard")
+    list(FILTER GAME_SRC EXCLUDE REGEX "rmlui_leaderboard")
+endif()
 
 find_package(ZLIB REQUIRED)
 
@@ -272,15 +356,25 @@ endif()
 
 add_executable(3sx MACOSX_BUNDLE
     ${GAME_SRC}
-    # --- Third-party sources (outside src/) ---
-    ${THIRD_PARTY_DIR}/controllerimage/src/controllerimage.c
-    ${THIRD_PARTY_DIR}/cJSON/cJSON.c
-    # RmlUi backend sources (SDL3 platform + GL3/SDL/SDL_GPU renderers)
-    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
-    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
-    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL.cpp
-    ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL_GPU.cpp
 )
+
+# --- Conditional third-party sources ---
+if(ENABLE_CONTROLLER_IMAGE)
+    target_sources(3sx PRIVATE ${THIRD_PARTY_DIR}/controllerimage/src/controllerimage.c)
+endif()
+
+if(ENABLE_NETPLAY OR ENABLE_LEADERBOARD)
+    target_sources(3sx PRIVATE ${THIRD_PARTY_DIR}/cJSON/cJSON.c)
+endif()
+
+if(ENABLE_RMLUI)
+    target_sources(3sx PRIVATE
+        ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
+        ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
+        ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL.cpp
+        ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL_GPU.cpp
+    )
+endif()
 
 
 target_include_directories(3sx PRIVATE
@@ -297,17 +391,26 @@ target_link_libraries(3sx PRIVATE glad_gl_core)
 
 target_compile_definitions(3sx PRIVATE
     $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:DEBUG>
-    $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:NETPLAY_ENABLED>
     $<$<CONFIG:Release>:RELEASE>
     TARGET_SDL3
     $<$<NOT:$<PLATFORM_ID:Darwin>>:_POSIX_C_SOURCE=200809L>
     $<$<BOOL:${PLATFORM_RPI4}>:PLATFORM_RPI4>
     $<$<BOOL:${ENABLE_TRACY}>:TRACY_ENABLE>
-    RMLUI_SDL_VERSION_MAJOR=3
+    # Feature toggles
+    $<$<BOOL:${ENABLE_NETPLAY}>:ENABLE_NETPLAY>
+    $<$<BOOL:${ENABLE_RMLUI}>:ENABLE_RMLUI>
+    $<$<BOOL:${ENABLE_TRAINING}>:ENABLE_TRAINING>
+    $<$<BOOL:${ENABLE_BROADCAST}>:ENABLE_BROADCAST>
+    $<$<BOOL:${ENABLE_MODS}>:ENABLE_MODS>
+    $<$<BOOL:${ENABLE_BEZEL}>:ENABLE_BEZEL>
+    $<$<BOOL:${ENABLE_CONTROLLER_IMAGE}>:ENABLE_CONTROLLER_IMAGE>
+    $<$<BOOL:${ENABLE_REPLAY}>:ENABLE_REPLAY>
+    $<$<BOOL:${ENABLE_LIBRASHADER}>:ENABLE_LIBRASHADER>
+    $<$<BOOL:${ENABLE_DEBUG_HUD}>:ENABLE_DEBUG_HUD>
+    $<$<BOOL:${ENABLE_LEADERBOARD}>:ENABLE_LEADERBOARD>
+    $<$<BOOL:${ENABLE_RMLUI}>:RMLUI_SDL_VERSION_MAJOR=3>
 )
 
-# Feature toggles
-# (Native save system via native_save.c)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
     set(C_DISABLED_WARNINGS
@@ -356,7 +459,7 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|ARM64")
     # Generic ARM64: NEON is baseline, no specific CPU tuning.
     message(STATUS "SIMD: ARM64 target — NEON is implicit, no extra flags needed")
 else()
-        # x86-64: SSE4.2 � supported on Intel Nehalem (2008+) / AMD Bulldozer (2011+).
+        # x86-64: SSE4.2 � supported on Intel Nehalem (2008+) / AMD Bulldozer (2011+).
     # SIMDE maps intrinsics portably; compiler auto-vectorizes with 128-bit SSE.
     target_compile_options(3sx PRIVATE -msse4.2)
 endif()
@@ -374,31 +477,33 @@ elseif(ENABLE_PGO STREQUAL "USE")
 endif()
 
 # Determine librashader binary path based on target platform
-if(PLATFORM_RPI4)
-    set(LIBRASHADER_LIB ${THIRD_PARTY_DIR}/librashader/target/aarch64-unknown-linux-gnu/release/liblibrashader_capi.a)
-else()
-    set(LIBRASHADER_LIB ${THIRD_PARTY_DIR}/librashader/target/release/liblibrashader_capi.a)
+if(ENABLE_LIBRASHADER)
+    if(PLATFORM_RPI4)
+        set(LIBRASHADER_LIB ${THIRD_PARTY_DIR}/librashader/target/aarch64-unknown-linux-gnu/release/liblibrashader_capi.a)
+    else()
+        set(LIBRASHADER_LIB ${THIRD_PARTY_DIR}/librashader/target/release/liblibrashader_capi.a)
+    endif()
 endif()
 
 target_link_libraries(3sx PRIVATE
     m
-    GekkoNet
+    $<$<BOOL:${ENABLE_NETPLAY}>:GekkoNet>
     stdc++
     glad_gl_core
     ZLIB::ZLIB
-    ${LIBRASHADER_LIB}
+    $<$<BOOL:${ENABLE_LIBRASHADER}>:${LIBRASHADER_LIB}>
     SDL3_shadercross::SDL3_shadercross
-    $<$<PLATFORM_ID:Darwin>:rmlui>
-    $<$<PLATFORM_ID:Darwin>:rmlui_core>
-    $<$<PLATFORM_ID:Darwin>:rmlui_lua>
-    $<$<PLATFORM_ID:Darwin>:rmlui_debugger>
+    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui>
+    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui_core>
+    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui_lua>
+    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui_debugger>
     $<$<NOT:$<PLATFORM_ID:Darwin>>:-Wl,--start-group>
-    $<$<NOT:$<PLATFORM_ID:Darwin>>:rmlui>
-    $<$<NOT:$<PLATFORM_ID:Darwin>>:rmlui_core>
-    $<$<NOT:$<PLATFORM_ID:Darwin>>:rmlui_lua>
-    $<$<NOT:$<PLATFORM_ID:Darwin>>:rmlui_debugger>
+    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui>
+    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui_core>
+    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui_lua>
+    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui_debugger>
     $<$<NOT:$<PLATFORM_ID:Darwin>>:-Wl,--end-group>
-    lua_static
+    $<$<BOOL:${ENABLE_RMLUI}>:lua_static>
 )
 
 if(ENABLE_TRACY)
@@ -417,13 +522,15 @@ if(UNIX)
         link_directories(/opt/homebrew/lib)
     endif()
 
-    find_library(MINIUPNPC_LIB miniupnpc HINTS /opt/homebrew/lib /usr/local/lib)
-    if(MINIUPNPC_LIB)
-        target_link_libraries(3sx PRIVATE ${MINIUPNPC_LIB})
-        target_compile_definitions(3sx PRIVATE HAVE_UPNP)
-        message(STATUS "UPnP support: enabled (miniupnpc found)")
-    else()
-        message(STATUS "UPnP support: disabled (miniupnpc not found)")
+    if(ENABLE_NETPLAY)
+        find_library(MINIUPNPC_LIB miniupnpc HINTS /opt/homebrew/lib /usr/local/lib)
+        if(MINIUPNPC_LIB)
+            target_link_libraries(3sx PRIVATE ${MINIUPNPC_LIB})
+            target_compile_definitions(3sx PRIVATE HAVE_UPNP)
+            message(STATUS "UPnP support: enabled (miniupnpc found)")
+        else()
+            message(STATUS "UPnP support: disabled (miniupnpc not found)")
+        endif()
     endif()
 endif()
 
@@ -432,10 +539,10 @@ if(WIN32)
     set(ICON_FILE_PATH "${CMAKE_SOURCE_DIR}/assets/3sxlogo.ico")
     string(REPLACE "/" "\\\\" ICON_FILE_PATH_WIN "${ICON_FILE_PATH}")
     file(WRITE ${ICON_RC_FILE} "1 ICON \"${ICON_FILE_PATH_WIN}\"")
-    target_sources(3sx PRIVATE 
-        ${ICON_RC_FILE}
-        src/port/win32/broadcast_spout.cpp
-    )
+    target_sources(3sx PRIVATE ${ICON_RC_FILE})
+    if(ENABLE_BROADCAST)
+        target_sources(3sx PRIVATE src/port/win32/broadcast_spout.cpp)
+    endif()
 
     target_link_libraries(3sx PRIVATE
         userenv
@@ -443,11 +550,13 @@ if(WIN32)
         ws2_32
         advapi32
         bcrypt
-        miniupnpc
-        iphlpapi
+        $<$<BOOL:${ENABLE_NETPLAY}>:miniupnpc>
+        $<$<BOOL:${ENABLE_NETPLAY}>:iphlpapi>
         curl
     )
-    target_compile_definitions(3sx PRIVATE HAVE_UPNP)
+    if(ENABLE_NETPLAY)
+        target_compile_definitions(3sx PRIVATE HAVE_UPNP)
+    endif()
 endif()
 
 
@@ -462,6 +571,7 @@ if(APPLE)
     target_link_libraries(3sx PRIVATE "-framework OpenGL")
 
     # Syphon framework is optional (not available on CI runners)
+    if(ENABLE_BROADCAST)
     find_library(SYPHON_FRAMEWORK Syphon)
     if(SYPHON_FRAMEWORK)
         target_sources(3sx PRIVATE src/port/macos/broadcast_syphon.mm)
@@ -471,11 +581,12 @@ if(APPLE)
     else()
         message(STATUS "Syphon broadcast: disabled (framework not found)")
     endif()
+    endif() # ENABLE_BROADCAST
 elseif(UNIX AND NOT APPLE)
     set_target_properties(3sx PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
-    if(NOT PLATFORM_RPI4)
+    if(ENABLE_BROADCAST AND NOT PLATFORM_RPI4)
         find_package(PkgConfig REQUIRED)
         pkg_check_modules(PIPEWIRE REQUIRED libpipewire-0.3)
         target_include_directories(3sx PRIVATE ${PIPEWIRE_INCLUDE_DIRS})
@@ -511,7 +622,7 @@ else()
 endif()
 
 # Spout2 for Windows video broadcast
-if(WIN32)
+if(ENABLE_BROADCAST AND WIN32)
     set(SPOUT_BUILD_SPOUTDX OFF CACHE BOOL "" FORCE)
     set(SPOUT_BUILD_LIBRARY OFF CACHE BOOL "" FORCE)
     set(SPOUT_BUILD_CMT OFF CACHE BOOL "" FORCE)
@@ -527,6 +638,8 @@ endif()
 # THIRD_PARTY_DIR is already set above based on PLATFORM_RPI4
 # SDL3_ROOT is already set above
 
+# SDL3_net (only needed for netplay)
+if(ENABLE_NETPLAY)
 # SDL3_net — follow the same SDL3_ROOT fallback pattern as SDL3_image/SDL3_mixer
 if(NOT SDL3_NET_DIR)
     if(SDL3_ROOT STREQUAL "${THIRD_PARTY_DIR}/sdl3/build")
@@ -541,6 +654,7 @@ endif()
 find_package(SDL3 REQUIRED HINTS "${SDL3_ROOT}")
 find_package(SDL3_net REQUIRED HINTS "${SDL3_NET_DIR}")
 target_link_libraries(3sx PRIVATE SDL3_net::SDL3_net)
+endif() # ENABLE_NETPLAY
 
 # If SDL3_ROOT was set externally (e.g. -DSDL3_ROOT=/app for flatpak),
 # SDL3_image and SDL3_mixer are also installed there. Otherwise use third_party path.
@@ -564,7 +678,7 @@ include_directories(
     ${SDL3_ROOT}/include
     ${SDL3_IMAGE_ROOT}/include
     ${SDL3_MIXER_ROOT}/include
-    ${SDL3_NET_DIR}/include
+    $<$<BOOL:${ENABLE_NETPLAY}>:${SDL3_NET_DIR}/include>
 )
 
 if(APPLE)
@@ -579,7 +693,7 @@ elseif(WIN32)
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.dll.a
         ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.dll.a
 		dbghelp
-        Spout_static
+        $<$<BOOL:${ENABLE_BROADCAST}>:Spout_static>
     )
     target_link_options(3sx PRIVATE
         --for-linker
@@ -672,43 +786,111 @@ else()
         "GPU shaders will not be compiled. Install Vulkan SDK or ensure .spv files are pre-built.")
 endif()
 
-add_custom_command(TARGET 3sx POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:3sx>/assets
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/src/shaders $<TARGET_FILE_DIR:3sx>/shaders
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${THIRD_PARTY_DIR}/slang-shaders $<TARGET_FILE_DIR:3sx>/shaders/libretro
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/shaders/custom $<TARGET_FILE_DIR:3sx>/shaders/libretro/custom
-    # Lua scripts for trials/training
-    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:3sx>/lua
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_SOURCE_DIR}/src/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua $<TARGET_FILE_DIR:3sx>/lua/sf3_3rd_trial_clean.lua
-    # Lua compat modules (FBNeo API shim)
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/src/lua/compat $<TARGET_FILE_DIR:3sx>/lua/compat
-    # Training mode bootstrap
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_SOURCE_DIR}/src/lua/training_main.lua $<TARGET_FILE_DIR:3sx>/lua/training_main.lua
-    # Effie's training Lua modules (data, tools, prediction)
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/src/lua/3rd_training_lua-main/src $<TARGET_FILE_DIR:3sx>/lua/src
-    # Effie's framedata JSONs
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/src/lua/3rd_training_lua-main/data $<TARGET_FILE_DIR:3sx>/lua/data
-)
+# ---------------------------------------------------------------------------
+# Post-build: symlink heavy asset dirs, copy small shader files.
+# On Windows uses mklink /J (NTFS junctions — no admin/Developer Mode needed).
+# On Unix uses cmake -E create_symlink.
+# Saves copying 3+ GB of sprites and 100+ MB of libretro shaders each build.
+# ---------------------------------------------------------------------------
+if(WIN32)
+    # Convert paths to native backslashes for mklink /J
+    file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/assets" _ASSETS_SRC)
+    file(TO_NATIVE_PATH "${THIRD_PARTY_DIR}/slang-shaders" _SLANG_SRC)
+    # Write a helper batch script at configure time.
+    # It creates the shaders directory first (for the libretro junction),
+    # then creates junctions only if they do not already exist.
+    file(WRITE "${CMAKE_BINARY_DIR}/create_asset_links.bat"
+        "@echo off\n"
+        "if not exist \"%1\\assets\" (mklink /J \"%1\\assets\" \"${_ASSETS_SRC}\")\n"
+        "if not exist \"%1\\shaders\" (mkdir \"%1\\shaders\")\n"
+        "if not exist \"%1\\shaders\\libretro\" (mklink /J \"%1\\shaders\\libretro\" \"${_SLANG_SRC}\")\n"
+    )
+    add_custom_command(TARGET 3sx POST_BUILD
+        # Create asset + libretro shader junctions via .bat
+        COMMAND "${CMAKE_BINARY_DIR}/create_asset_links.bat" "$<TARGET_FILE_DIR:3sx>"
+        # shaders/ -> small copy (37 GLSL source files, overwrites into the dir)
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/src/shaders" "$<TARGET_FILE_DIR:3sx>/shaders"
+        COMMENT "Creating asset junctions + copying shaders"
+    )
+    if(ENABLE_LIBRASHADER)
+        add_custom_command(TARGET 3sx POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_SOURCE_DIR}/shaders/custom" "$<TARGET_FILE_DIR:3sx>/shaders/libretro/custom"
+            COMMENT "Copying custom shader presets"
+        )
+    endif()
+else()
+    add_custom_command(TARGET 3sx POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_SOURCE_DIR}/assets" "$<TARGET_FILE_DIR:3sx>/assets"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/src/shaders" "$<TARGET_FILE_DIR:3sx>/shaders"
+        COMMENT "Symlinking assets + copying shaders"
+    )
+    if(ENABLE_LIBRASHADER)
+        add_custom_command(TARGET 3sx POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E create_symlink "${THIRD_PARTY_DIR}/slang-shaders" "$<TARGET_FILE_DIR:3sx>/shaders/libretro"
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_SOURCE_DIR}/shaders/custom" "$<TARGET_FILE_DIR:3sx>/shaders/libretro/custom"
+            COMMENT "Symlinking libretro shaders + copying custom presets"
+        )
+    endif()
+endif()
 
+if(ENABLE_TRAINING)
+    add_custom_command(TARGET 3sx POST_BUILD
+        # Lua scripts for trials/training
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:3sx>/lua
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/src/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua $<TARGET_FILE_DIR:3sx>/lua/sf3_3rd_trial_clean.lua
+        # Lua compat modules (FBNeo API shim)
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/lua/compat $<TARGET_FILE_DIR:3sx>/lua/compat
+        # Training mode bootstrap
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/src/lua/training_main.lua $<TARGET_FILE_DIR:3sx>/lua/training_main.lua
+        # Effie's training Lua modules (data, tools, prediction)
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/lua/3rd_training_lua-main/src $<TARGET_FILE_DIR:3sx>/lua/src
+        # Effie's framedata JSONs
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/lua/3rd_training_lua-main/data $<TARGET_FILE_DIR:3sx>/lua/data
+    )
+endif()
+
+# Heavy asset/shader dirs: create junctions (Win) or symlinks (Unix)
+# instead of copying 3+ GB of sprites and 100+ MB of libretro shaders.
+if(WIN32)
+    file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/assets" _INST_ASSETS_SRC)
+    file(TO_NATIVE_PATH "${THIRD_PARTY_DIR}/slang-shaders" _INST_SLANG_SRC)
+    file(WRITE "${CMAKE_BINARY_DIR}/create_install_links.bat"
+        "@echo off\n"
+        "if not exist \"%1\\assets\" (mklink /J \"%1\\assets\" \"${_INST_ASSETS_SRC}\")\n"
+        "if not exist \"%1\\shaders\" (mkdir \"%1\\shaders\")\n"
+        "if not exist \"%1\\shaders\\libretro\" (mklink /J \"%1\\shaders\\libretro\" \"${_INST_SLANG_SRC}\")\n"
+    )
+    install(CODE "execute_process(COMMAND \"${CMAKE_BINARY_DIR}/create_install_links.bat\" \"\${CMAKE_INSTALL_PREFIX}/bin\")")
+else()
+    install(CODE "
+        execute_process(COMMAND \${CMAKE_COMMAND} -E create_symlink
+            \"${CMAKE_SOURCE_DIR}/assets\" \"\${CMAKE_INSTALL_PREFIX}/bin/assets\")
+        execute_process(COMMAND \${CMAKE_COMMAND} -E create_symlink
+            \"${THIRD_PARTY_DIR}/slang-shaders\" \"\${CMAKE_INSTALL_PREFIX}/bin/shaders/libretro\")
+    ")
+endif()
+# Shaders: small copy (37 files) + custom presets
 install(DIRECTORY src/shaders DESTINATION bin)
-install(DIRECTORY ${THIRD_PARTY_DIR}/slang-shaders/ DESTINATION bin/shaders/libretro)
-install(DIRECTORY shaders/custom/ DESTINATION bin/shaders/libretro/custom)
-install(DIRECTORY assets DESTINATION bin)
-# Lua runtime files
-install(DIRECTORY src/lua/compat DESTINATION bin/lua)
-install(FILES src/lua/training_main.lua DESTINATION bin/lua)
-install(FILES src/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua DESTINATION bin/lua)
-install(DIRECTORY src/lua/3rd_training_lua-main/src DESTINATION bin/lua)
-install(DIRECTORY src/lua/3rd_training_lua-main/data DESTINATION bin/lua)
+if(ENABLE_LIBRASHADER)
+    install(DIRECTORY shaders/custom/ DESTINATION bin/shaders/libretro/custom)
+endif()
+# Lua runtime files (only when training is enabled)
+if(ENABLE_TRAINING)
+    install(DIRECTORY src/lua/compat DESTINATION bin/lua)
+    install(FILES src/lua/training_main.lua DESTINATION bin/lua)
+    install(FILES src/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua DESTINATION bin/lua)
+    install(DIRECTORY src/lua/3rd_training_lua-main/src DESTINATION bin/lua)
+    install(DIRECTORY src/lua/3rd_training_lua-main/data DESTINATION bin/lua)
+endif()
 
 
 
@@ -722,9 +904,12 @@ if(APPLE)
         ${SDL3_ROOT}/lib/libSDL3.0.dylib
         ${SDL3_IMAGE_ROOT}/lib/libSDL3_image.dylib
         ${SDL3_MIXER_ROOT}/lib/libSDL3_mixer.dylib
-        ${SDL3_NET_DIR}/lib/libSDL3_net.dylib
         DESTINATION 3SX.app/Contents/Frameworks
     )
+    if(ENABLE_NETPLAY)
+        install(FILES ${SDL3_NET_DIR}/lib/libSDL3_net.dylib
+            DESTINATION 3SX.app/Contents/Frameworks)
+    endif()
 elseif(WIN32)
     install(TARGETS 3sx
 		RUNTIME_DEPENDENCY_SET deps
@@ -750,7 +935,7 @@ elseif(WIN32)
         "${SDL3_ROOT}/bin/SDL3.dll"
         "${SDL3_IMAGE_ROOT}/bin/SDL3_image.dll"
         "${SDL3_MIXER_ROOT}/bin/SDL3_mixer.dll"
-        "${SDL3_NET_DIR}/bin/SDL3_net.dll"
+        $<$<BOOL:${ENABLE_NETPLAY}>:${SDL3_NET_DIR}/bin/SDL3_net.dll>
         DESTINATION bin
     )
     install(FILES $<TARGET_FILE:renderer_hd> DESTINATION bin OPTIONAL)
@@ -788,6 +973,26 @@ include(CPack)
 
 
 
+
+# ======================================
+# Feature Toggle Summary
+# ======================================
+message(STATUS "")
+message(STATUS "=== 3SX Feature Toggles ===")
+message(STATUS "  ENABLE_NETPLAY          = ${ENABLE_NETPLAY}")
+message(STATUS "  ENABLE_RMLUI            = ${ENABLE_RMLUI}")
+message(STATUS "  ENABLE_TRAINING         = ${ENABLE_TRAINING}")
+message(STATUS "  ENABLE_BROADCAST        = ${ENABLE_BROADCAST}")
+message(STATUS "  ENABLE_MODS             = ${ENABLE_MODS}")
+message(STATUS "  ENABLE_BEZEL            = ${ENABLE_BEZEL}")
+message(STATUS "  ENABLE_CONTROLLER_IMAGE = ${ENABLE_CONTROLLER_IMAGE}")
+message(STATUS "  ENABLE_REPLAY           = ${ENABLE_REPLAY}")
+message(STATUS "  ENABLE_LIBRASHADER      = ${ENABLE_LIBRASHADER}")
+message(STATUS "  ENABLE_DEBUG_HUD        = ${ENABLE_DEBUG_HUD}")
+message(STATUS "  ENABLE_LEADERBOARD      = ${ENABLE_LEADERBOARD}")
+message(STATUS "===========================")
+message(STATUS "")
+
 # ======================================
 # Testing Framework (CMocka)
 # ======================================
@@ -818,5 +1023,7 @@ endif()
 
 
 # Renderer HD plugin
-add_subdirectory(plugins/renderer_hd)
+if(ENABLE_LIBRASHADER)
+    add_subdirectory(plugins/renderer_hd)
+endif()
 

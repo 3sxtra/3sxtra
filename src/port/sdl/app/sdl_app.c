@@ -10,9 +10,11 @@
 #include "port/sdl/app/sdl_app.h"
 #include "common.h"
 #include "game_state.h"
+#ifdef ENABLE_NETPLAY
 #include "netplay/identity.h"
 #include "netplay/lobby_server.h"
 #include <SDL3_net/SDL_net.h>
+#endif
 #include "port/broadcast.h"
 #include "port/config/config.h"
 #include "port/mods/modded_stage.h"
@@ -72,6 +74,10 @@
 #include "port/tracy_gpu.h"
 #include "port/tracy_zones.h"
 #include "port/training_menu.h"
+
+/* Feature toggle stubs — must come AFTER all subsystem headers so that stubs
+   override any declarations from headers that aren't yet self-guarding. */
+#include "port/feature_toggles.h"
 
 int g_resolution_scale = 1;
 #include "port/sdl/input/controller_image.h"

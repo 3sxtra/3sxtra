@@ -17,6 +17,8 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_RMLUI
+
 /* ── Master switch (defined in sdl_app.c) ──────────────────────── */
 extern bool use_rmlui; /** Master RmlUi enable/disable toggle */
 
@@ -56,12 +58,55 @@ extern bool rmlui_screen_gameover;        /** Game Over / Results */
 extern bool rmlui_screen_select;          /** Character Select text overlay */
 extern bool rmlui_screen_vs_result;       /** VS Result tally screen */
 extern bool rmlui_screen_pause;           /** Pause text overlay */
-extern bool rmlui_screen_entry_text;      /** Arcade-flow text (CONTINUE/GAME OVER/PRESS START) */
+extern bool rmlui_screen_entry_text;      /** Arcade-flow text */
 extern bool rmlui_screen_trials;          /** Trial mode HUD overlay */
 extern bool rmlui_screen_copyright;       /** Copyright text overlay */
 extern bool rmlui_screen_name_entry;      /** Name entry / ranking screen */
 extern bool rmlui_screen_exit_confirm;    /** Exit confirmation screen */
-extern bool rmlui_screen_attract_overlay; /** Attract demo overlay (small logo + PRESS START) */
+extern bool rmlui_screen_attract_overlay; /** Attract demo overlay */
+
+#else /* !ENABLE_RMLUI — all toggles are const false (RmlUi path never taken) */
+
+static const bool use_rmlui = false;
+static const bool rmlui_hud_health = false;
+static const bool rmlui_hud_timer = false;
+static const bool rmlui_hud_stun = false;
+static const bool rmlui_hud_super = false;
+static const bool rmlui_hud_combo = false;
+static const bool rmlui_hud_names = false;
+static const bool rmlui_hud_faces = false;
+static const bool rmlui_hud_wins = false;
+static const bool rmlui_hud_score = false;
+static const bool rmlui_hud_training_stun = false;
+static const bool rmlui_hud_training_data = false;
+static const bool rmlui_menu_mode = false;
+static const bool rmlui_menu_option = false;
+static const bool rmlui_menu_game_option = false;
+static const bool rmlui_menu_button_config = false;
+static const bool rmlui_menu_sound = false;
+static const bool rmlui_menu_extra_option = false;
+static const bool rmlui_menu_sysdir = false;
+static const bool rmlui_menu_training = false;
+static const bool rmlui_menu_lobby = false;
+static const bool rmlui_menu_memory_card = false;
+static const bool rmlui_menu_blocking_tr = false;
+static const bool rmlui_menu_blocking_tr_opt = false;
+static const bool rmlui_menu_replay = false;
+static const bool rmlui_screen_title = false;
+static const bool rmlui_screen_winner = false;
+static const bool rmlui_screen_continue = false;
+static const bool rmlui_screen_gameover = false;
+static const bool rmlui_screen_select = false;
+static const bool rmlui_screen_vs_result = false;
+static const bool rmlui_screen_pause = false;
+static const bool rmlui_screen_entry_text = false;
+static const bool rmlui_screen_trials = false;
+static const bool rmlui_screen_copyright = false;
+static const bool rmlui_screen_name_entry = false;
+static const bool rmlui_screen_exit_confirm = false;
+static const bool rmlui_screen_attract_overlay = false;
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

@@ -13,47 +13,39 @@
 extern "C" {
 #endif
 
-void SDLNetplayUI_Init();
+#ifdef ENABLE_NETPLAY
+
+void SDLNetplayUI_Init(void);
 void SDLNetplayUI_Render(int window_width, int window_height);
-void SDLNetplayUI_Shutdown();
+void SDLNetplayUI_Shutdown(void);
 
 void SDLNetplayUI_ProcessEvent(const SDL_Event* event);
 
-// Helper for testing
 void SDLNetplayUI_GetHUDText(char* buffer, size_t size);
-int SDLNetplayUI_GetActiveToastCount();
+int SDLNetplayUI_GetActiveToastCount(void);
 void SDLNetplayUI_DrawNativeHUD(void);
 
 void SDLNetplayUI_SetHUDVisible(bool visible);
-bool SDLNetplayUI_IsHUDVisible();
+bool SDLNetplayUI_IsHUDVisible(void);
 
 void SDLNetplayUI_SetDiagnosticsVisible(bool visible);
-bool SDLNetplayUI_IsDiagnosticsVisible();
+bool SDLNetplayUI_IsDiagnosticsVisible(void);
 
-// History access for testing
 void SDLNetplayUI_GetHistory(float* ping_hist, float* rb_hist, int* count);
-
-// FPS history data feed (called from sdl_app.c each frame)
 void SDLNetplayUI_SetFPSHistory(const float* data, int count, float current_fps);
 
-// === Native lobby bridge ===
-// When native lobby is active, the ImGui lobby window is hidden but the
-// underlying state machine (STUN, hole-punch, UPnP, server polling) keeps running.
 void SDLNetplayUI_SetNativeLobbyActive(bool active);
 bool SDLNetplayUI_IsNativeLobbyActive(void);
 
-// Query lobby state machine
 const char* SDLNetplayUI_GetStatusMsg(void);
 const char* SDLNetplayUI_GetRoomCode(void);
 bool SDLNetplayUI_IsDiscovering(void);
 bool SDLNetplayUI_IsReady(void);
 
-// Server search control
 void SDLNetplayUI_StartSearch(void);
 void SDLNetplayUI_StopSearch(void);
 bool SDLNetplayUI_IsSearching(void);
 
-// Online player list
 int SDLNetplayUI_GetOnlinePlayerCount(void);
 const char* SDLNetplayUI_GetOnlinePlayerName(int index);
 const char* SDLNetplayUI_GetOnlinePlayerRoomCode(int index);
@@ -64,7 +56,6 @@ int SDLNetplayUI_GetOnlinePlayerPing(int index);
 int SDLNetplayUI_GetOnlinePlayerFT(int index);
 void SDLNetplayUI_ConnectToPlayer(int index);
 
-// Pending internet invite (someone set connect_to = our room code)
 bool SDLNetplayUI_HasPendingInvite(void);
 const char* SDLNetplayUI_GetPendingInviteName(void);
 const char* SDLNetplayUI_GetPendingInviteRegion(void);
@@ -73,42 +64,77 @@ int SDLNetplayUI_GetPendingInviteFT(void);
 void SDLNetplayUI_AcceptPendingInvite(void);
 void SDLNetplayUI_DeclinePendingInvite(void);
 
-// Outgoing challenge (we initiated a connection)
 bool SDLNetplayUI_HasOutgoingChallenge(void);
 const char* SDLNetplayUI_GetOutgoingChallengeName(void);
 int SDLNetplayUI_GetOutgoingChallengePing(void);
 void SDLNetplayUI_CancelOutgoingChallenge(void);
 
-// FPS data access (for RmlUi netplay UI module)
 const float* SDLNetplayUI_GetFPSHistory(int* out_count);
 float SDLNetplayUI_GetCurrentFPS(void);
 
-// === Phase 6: Casual lobby bridge ===
-
-/// Check if an opponent passes local connection filters (region lock, max ping, WiFi block).
-/// conn_type: "wired", "wifi", or "unknown". rtt_ms: server RTT (-1 if unknown).
 bool SDLNetplayUI_PlayerPassesFilters(const char* conn_type, int rtt_ms, const char* region);
-
-/// Initiate P2P hole punch for a casual lobby match.
-/// opponent_room_code is the STUN-encoded endpoint of the opponent.
-/// opponent_name is for display in status messages.
-/// opponent_player_id is the unique lobby server ID of the opponent.
-/// we_are_p1: determines player number assignment.
 void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const char* opponent_name,
                                         const char* opponent_player_id, bool we_are_p1);
-
-/// Report match result and upload replay at natural match completion (not disconnect).
-/// Called from VS_Result auto-skip while game state (Winner_id, PL_Wins) is still valid.
 void SDLNetplayUI_ReportNaturalMatchEnd(void);
-
-/// Check if the async match report thread has signaled FT session complete.
-/// Returns true if the server responded with status "recorded" (FT target reached).
 bool SDLNetplayUI_IsSessionComplete(void);
-
-/// Consume the session-complete signal: copies the winner ID, clears the flag,
-/// and fires LobbyServer_ReportMatchEnd (room rotation) for casual rooms.
-/// Returns false if no session-complete signal was pending.
 bool SDLNetplayUI_ConsumeSessionComplete(char* out_winner, size_t winner_size);
+
+#else /* !ENABLE_NETPLAY — inline no-ops */
+
+static inline void SDLNetplayUI_Init(void) {}
+static inline void SDLNetplayUI_Render(int w, int h) { (void)w; (void)h; }
+static inline void SDLNetplayUI_Shutdown(void) {}
+static inline void SDLNetplayUI_ProcessEvent(const SDL_Event* e) { (void)e; }
+static inline void SDLNetplayUI_GetHUDText(char* b, size_t s) { (void)b; (void)s; }
+static inline int  SDLNetplayUI_GetActiveToastCount(void) { return 0; }
+static inline void SDLNetplayUI_DrawNativeHUD(void) {}
+static inline void SDLNetplayUI_SetHUDVisible(bool v) { (void)v; }
+static inline bool SDLNetplayUI_IsHUDVisible(void) { return false; }
+static inline void SDLNetplayUI_SetDiagnosticsVisible(bool v) { (void)v; }
+static inline bool SDLNetplayUI_IsDiagnosticsVisible(void) { return false; }
+static inline void SDLNetplayUI_GetHistory(float* p, float* r, int* c) { (void)p; (void)r; (void)c; }
+static inline void SDLNetplayUI_SetFPSHistory(const float* d, int c, float f) { (void)d; (void)c; (void)f; }
+static inline void SDLNetplayUI_SetNativeLobbyActive(bool a) { (void)a; }
+static inline bool SDLNetplayUI_IsNativeLobbyActive(void) { return false; }
+static inline const char* SDLNetplayUI_GetStatusMsg(void) { return ""; }
+static inline const char* SDLNetplayUI_GetRoomCode(void) { return ""; }
+static inline bool SDLNetplayUI_IsDiscovering(void) { return false; }
+static inline bool SDLNetplayUI_IsReady(void) { return false; }
+static inline void SDLNetplayUI_StartSearch(void) {}
+static inline void SDLNetplayUI_StopSearch(void) {}
+static inline bool SDLNetplayUI_IsSearching(void) { return false; }
+static inline int  SDLNetplayUI_GetOnlinePlayerCount(void) { return 0; }
+static inline const char* SDLNetplayUI_GetOnlinePlayerName(int i) { (void)i; return ""; }
+static inline const char* SDLNetplayUI_GetOnlinePlayerRoomCode(int i) { (void)i; return ""; }
+static inline const char* SDLNetplayUI_GetOnlinePlayerRegion(int i) { (void)i; return ""; }
+static inline const char* SDLNetplayUI_GetOnlinePlayerCountry(int i) { (void)i; return ""; }
+static inline const char* SDLNetplayUI_GetOnlinePlayerConnType(int i) { (void)i; return ""; }
+static inline int  SDLNetplayUI_GetOnlinePlayerPing(int i) { (void)i; return 0; }
+static inline int  SDLNetplayUI_GetOnlinePlayerFT(int i) { (void)i; return 0; }
+static inline void SDLNetplayUI_ConnectToPlayer(int i) { (void)i; }
+static inline bool SDLNetplayUI_HasPendingInvite(void) { return false; }
+static inline const char* SDLNetplayUI_GetPendingInviteName(void) { return ""; }
+static inline const char* SDLNetplayUI_GetPendingInviteRegion(void) { return ""; }
+static inline int  SDLNetplayUI_GetPendingInvitePing(void) { return 0; }
+static inline int  SDLNetplayUI_GetPendingInviteFT(void) { return 0; }
+static inline void SDLNetplayUI_AcceptPendingInvite(void) {}
+static inline void SDLNetplayUI_DeclinePendingInvite(void) {}
+static inline bool SDLNetplayUI_HasOutgoingChallenge(void) { return false; }
+static inline const char* SDLNetplayUI_GetOutgoingChallengeName(void) { return ""; }
+static inline int  SDLNetplayUI_GetOutgoingChallengePing(void) { return 0; }
+static inline void SDLNetplayUI_CancelOutgoingChallenge(void) {}
+static inline const float* SDLNetplayUI_GetFPSHistory(int* c) { if(c) *c=0; return (const float*)0; }
+static inline float SDLNetplayUI_GetCurrentFPS(void) { return 0.0f; }
+static inline bool SDLNetplayUI_PlayerPassesFilters(const char* c, int r, const char* rg) {
+    (void)c; (void)r; (void)rg; return false;
+}
+static inline void SDLNetplayUI_StartCasualMatchPunch(const char* rc, const char* n,
+    const char* id, bool p1) { (void)rc; (void)n; (void)id; (void)p1; }
+static inline void SDLNetplayUI_ReportNaturalMatchEnd(void) {}
+static inline bool SDLNetplayUI_IsSessionComplete(void) { return false; }
+static inline bool SDLNetplayUI_ConsumeSessionComplete(char* w, size_t s) { (void)w; (void)s; return false; }
+
+#endif /* ENABLE_NETPLAY */
 
 #ifdef __cplusplus
 }

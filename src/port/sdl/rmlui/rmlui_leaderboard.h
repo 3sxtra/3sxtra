@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_RMLUI
+
 void rmlui_leaderboard_init(void);
 void rmlui_leaderboard_update(void);
 void rmlui_leaderboard_show(void);
@@ -21,6 +23,19 @@ void rmlui_leaderboard_fetch_page(int page);
 /// Navigate to next/previous page (called from ms_leaderboard.c D-pad handler).
 void rmlui_leaderboard_next_page(void);
 void rmlui_leaderboard_prev_page(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_leaderboard_init(void) {}
+static inline void rmlui_leaderboard_update(void) {}
+static inline void rmlui_leaderboard_show(void) {}
+static inline void rmlui_leaderboard_hide(void) {}
+static inline void rmlui_leaderboard_shutdown(void) {}
+static inline void rmlui_leaderboard_fetch_page(int page) { (void)page; }
+static inline void rmlui_leaderboard_next_page(void) {}
+static inline void rmlui_leaderboard_prev_page(void) {}
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

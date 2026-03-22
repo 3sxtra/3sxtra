@@ -15,6 +15,8 @@ extern "C" {
 
 /// Register the input_display data model and load the document.
 /// Call once after rmlui_wrapper_init().
+#ifdef ENABLE_RMLUI
+
 void rmlui_input_display_init(void);
 
 /// Per-frame update: track inputs, rebuild history, dirty-check data model.
@@ -23,6 +25,14 @@ void rmlui_input_display_update(void);
 
 /// Clean up the data model.
 void rmlui_input_display_shutdown(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_input_display_init(void) {}
+static inline void rmlui_input_display_update(void) {}
+static inline void rmlui_input_display_shutdown(void) {}
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

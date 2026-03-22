@@ -6,6 +6,7 @@
  * Supports OpenGL, SDL_GPU, and SDL2D.
  */
 #include "port/sdl/renderer/sdl_texture_util.h"
+#include "port/config/paths.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include <SDL3/SDL.h>
@@ -38,7 +39,8 @@ static GPUTextureMetadata* get_gpu_metadata(void* texture_id) {
 }
 
 extern "C" void* TextureUtil_Load(const char* filename) {
-    SDL_Surface* surface = IMG_Load(filename);
+    const char* resolved = Paths_ResolveAsset(filename);
+    SDL_Surface* surface = IMG_Load(resolved);
     if (surface == NULL) {
         return NULL;
     }
@@ -252,7 +254,8 @@ extern "C" void* TextureUtil_LoadFromSurface(SDL_Surface* surface) {
 }
 
 extern "C" void* TextureUtil_LoadScaled(const char* filename, float scale) {
-    SDL_Surface* surface = IMG_Load(filename);
+    const char* resolved = Paths_ResolveAsset(filename);
+    SDL_Surface* surface = IMG_Load(resolved);
     if (surface == NULL)
         return NULL;
 

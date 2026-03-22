@@ -14,9 +14,19 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_RMLUI
+
 void rmlui_stage_config_init(void);
 void rmlui_stage_config_update(void);
 void rmlui_stage_config_shutdown(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_stage_config_init(void) {}
+static inline void rmlui_stage_config_update(void) {}
+static inline void rmlui_stage_config_shutdown(void) {}
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

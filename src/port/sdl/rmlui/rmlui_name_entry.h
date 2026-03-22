@@ -8,9 +8,19 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_RMLUI
+
 void rmlui_name_entry_init(void);
 void rmlui_name_entry_update(void);
 void rmlui_name_entry_shutdown(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_name_entry_init(void) {}
+static inline void rmlui_name_entry_update(void) {}
+static inline void rmlui_name_entry_shutdown(void) {}
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

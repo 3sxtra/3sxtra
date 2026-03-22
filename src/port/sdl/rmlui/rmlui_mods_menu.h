@@ -14,6 +14,8 @@ extern "C" {
 
 /// Register the mods data model and load the mods.rml document.
 /// Call once after rmlui_wrapper_init().
+#ifdef ENABLE_RMLUI
+
 void rmlui_mods_menu_init(void);
 
 /// Per-frame update: dirty-check game state and push changes to the data model.
@@ -22,6 +24,14 @@ void rmlui_mods_menu_update(void);
 
 /// Clean up the mods data model.
 void rmlui_mods_menu_shutdown(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_mods_menu_init(void) {}
+static inline void rmlui_mods_menu_update(void) {}
+static inline void rmlui_mods_menu_shutdown(void) {}
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

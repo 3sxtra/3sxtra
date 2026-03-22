@@ -11,6 +11,8 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_RMLUI
+
 void rmlui_training_menus_init(void);
 void rmlui_training_menus_update(void);
 
@@ -39,6 +41,26 @@ void rmlui_blocking_tr_option_show(void);
 void rmlui_blocking_tr_option_hide(void);
 
 void rmlui_training_menus_shutdown(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_training_menus_init(void) {}
+static inline void rmlui_training_menus_update(void) {}
+static inline void rmlui_training_mode_show(void) {}
+static inline void rmlui_training_mode_hide(void) {}
+static inline void rmlui_normal_training_show(void) {}
+static inline void rmlui_normal_training_hide(void) {}
+static inline void rmlui_dummy_setting_show(void) {}
+static inline void rmlui_dummy_setting_hide(void) {}
+static inline void rmlui_training_option_show(void) {}
+static inline void rmlui_training_option_hide(void) {}
+static inline void rmlui_blocking_training_show(void) {}
+static inline void rmlui_blocking_training_hide(void) {}
+static inline void rmlui_blocking_tr_option_show(void) {}
+static inline void rmlui_blocking_tr_option_hide(void) {}
+static inline void rmlui_training_menus_shutdown(void) {}
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

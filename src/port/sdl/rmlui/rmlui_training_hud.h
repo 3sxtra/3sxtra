@@ -14,6 +14,8 @@ extern "C" {
 #endif
 
 /// Register the training_hud data model and load the training_hud.rml document.
+#ifdef ENABLE_RMLUI
+
 void rmlui_training_hud_init(void);
 
 /// Per-frame update: push dirty data to RmlUI.
@@ -30,6 +32,16 @@ void rmlui_training_hud_set_text(const char* field, const char* value);
 /// field: e.g. "p1_parry_fwd_validity"
 /// fill: 0.0-1.0
 void rmlui_training_hud_set_gauge(const char* field, float fill);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_training_hud_init(void) {}
+static inline void rmlui_training_hud_update(void) {}
+static inline void rmlui_training_hud_shutdown(void) {}
+static inline void rmlui_training_hud_set_text(const char* field, const char* value) { (void)field; (void)value; }
+static inline void rmlui_training_hud_set_gauge(const char* field, float fill) { (void)field; (void)fill; }
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

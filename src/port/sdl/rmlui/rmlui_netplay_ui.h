@@ -17,6 +17,8 @@ extern "C" {
 
 /// Register the netplay data model and load the document.
 /// Call once after rmlui_wrapper_init().
+#ifdef ENABLE_RMLUI
+
 void rmlui_netplay_ui_init(void);
 
 /// Per-frame update: sync HUD/diagnostics/toast state, dirty-check data model.
@@ -25,6 +27,14 @@ void rmlui_netplay_ui_update(void);
 
 /// Clean up the data model.
 void rmlui_netplay_ui_shutdown(void);
+
+#else /* !ENABLE_RMLUI */
+
+static inline void rmlui_netplay_ui_init(void) {}
+static inline void rmlui_netplay_ui_update(void) {}
+static inline void rmlui_netplay_ui_shutdown(void) {}
+
+#endif /* ENABLE_RMLUI */
 
 #ifdef __cplusplus
 }

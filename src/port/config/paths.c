@@ -65,6 +65,43 @@ const char* Paths_GetBasePath() {
     return base_path;
 }
 
+
+/**
+ * @brief Resolve an asset path by searching multiple locations.
+ *
+ * Search order:
+ *   1. <exe_dir>/<relative_path>  (next to the executable / symlinked assets)
+ *   2. <appdata>/<relative_path>  (AppData/CrowdedStreet/3SX/ — HD pack location)
+ *
+ * Returns a pointer to a static buffer (not thread-safe, single-caller pattern).
+ * Returns the original relative_path unchanged if no match is found anywhere,
+ * allowing IMG_Load / SDL_IOFromFile to report its own "not found" error.
+ */
+const char* Paths_ResolveAsset(const char* relative_path) {
+    static char resolved[1024];
+    SDL_PathInfo info;
+
+    /* 1. Try next to the executable (base path) */
+    const char* base = Paths_GetBasePath();
+    if (base) {
+        snprintf(resolved, sizeof(resolved), "%s%s", base, relative_path);
+        if (SDL_GetPathInfo(resolved, &info)) {
+            return resolved;
+        }
+    }
+
+    /* 2. Try the user data directory (AppData / pref path) */
+    const char* pref = Paths_GetPrefPath();
+    if (pref) {
+        snprintf(resolved, sizeof(resolved), "%s%s", pref, relative_path);
+        if (SDL_GetPathInfo(resolved, &info)) {
+            return resolved;
+        }
+    }
+
+    /* Not found anywhere — return original so the caller gets a normal error */
+    return relative_path;
+}
 /** @brief Returns 1 if running in portable mode (config/ next to exe). */
 int Paths_IsPortable() {
     if (portable_mode == -1) {

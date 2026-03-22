@@ -1,0 +1,79 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "full",
+      "displayName": "Full Build (everything)",
+      "description": "All features enabled — default development build",
+      "binaryDir": "build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "minimal",
+      "displayName": "Minimal (core engine only)",
+      "description": "No netplay, no UI, no mods — fastest compile",
+      "binaryDir": "build-minimal",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_NETPLAY": "OFF",
+        "ENABLE_RMLUI": "OFF",
+        "ENABLE_TRAINING": "OFF",
+        "ENABLE_BROADCAST": "OFF",
+        "ENABLE_MODS": "OFF",
+        "ENABLE_BEZEL": "OFF",
+        "ENABLE_CONTROLLER_IMAGE": "OFF",
+        "ENABLE_REPLAY": "OFF",
+        "ENABLE_LIBRASHADER": "OFF",
+        "ENABLE_DEBUG_HUD": "OFF",
+        "ENABLE_LEADERBOARD": "OFF",
+        "ENABLE_TESTS": "OFF"
+      }
+    },
+    {
+      "name": "training",
+      "displayName": "Training / RL build",
+      "description": "Engine + RmlUi + Lua training, no netplay or broadcast",
+      "binaryDir": "build-training",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_NETPLAY": "OFF",
+        "ENABLE_BROADCAST": "OFF",
+        "ENABLE_MODS": "OFF",
+        "ENABLE_BEZEL": "OFF",
+        "ENABLE_CONTROLLER_IMAGE": "OFF",
+        "ENABLE_REPLAY": "OFF",
+        "ENABLE_LEADERBOARD": "OFF",
+        "ENABLE_DEBUG_HUD": "OFF"
+      }
+    },
+    {
+      "name": "netplay",
+      "displayName": "Netplay-only build",
+      "description": "Engine + netplay + RmlUi, no training or mods",
+      "binaryDir": "build-netplay",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_TRAINING": "OFF",
+        "ENABLE_BROADCAST": "OFF",
+        "ENABLE_MODS": "OFF",
+        "ENABLE_BEZEL": "OFF",
+        "ENABLE_CONTROLLER_IMAGE": "OFF",
+        "ENABLE_REPLAY": "OFF",
+        "ENABLE_DEBUG_HUD": "OFF",
+        "ENABLE_LEADERBOARD": "OFF"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Full Debug build",
+      "description": "Everything enabled with debug symbols",
+      "binaryDir": "build-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_TRACY": "ON"
+      }
+    }
+  ]
+}
