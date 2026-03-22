@@ -127,8 +127,12 @@ def load_colorram_dump(stage_idx, dump_dir=None):
             r = (r5 * 255 + 15) // 31
             g = (g5 * 255 + 15) // 31
             b = (b5 * 255 + 15) // 31
-            a = 0 if (i == 0 and val == 0) else 255
-            colors[i] = (r, g, b, a)
+            if r == 255 and b == 255 and (g == 0 or g == 49):
+                colors[i] = (0, 0, 0, 0)
+            elif i == 0 and val == 0:
+                colors[i] = (0, 0, 0, 0)
+            else:
+                colors[i] = (r, g, b, 255)
         banks.append(colors)
     return banks
 
@@ -143,14 +147,14 @@ def build_stage_colorram(afs_path, entries, stage_pal_afs):
 
     if COMMON_PAL_AFS < len(entries):
         common_data = read_afs_file(afs_path, entries[COMMON_PAL_AFS])
-        for i, bank in enumerate(decode_palette_banks(common_data)):
+        for i, bank in enumerate(decode_palette_banks(common_data, apply_clut=True)):
             slot = COMMON_PAL_SLOT + i
             if slot < TOTAL_BANKS:
                 colorram[slot] = bank
 
     if stage_pal_afs is not None and stage_pal_afs < len(entries):
         stage_data = read_afs_file(afs_path, entries[stage_pal_afs])
-        for i, bank in enumerate(decode_palette_banks(stage_data)):
+        for i, bank in enumerate(decode_palette_banks(stage_data, apply_clut=True)):
             slot = STAGE_PAL_SLOT + i
             if slot < TOTAL_BANKS:
                 colorram[slot] = bank
@@ -200,7 +204,7 @@ def build_char_colorram(afs_path, entries, pal_data, pal_idx):
     # Common palette into banks 32..511
     if len(entries) > COMMON_PAL_AFS:
         common_data = read_afs_file(afs_path, entries[COMMON_PAL_AFS])
-        for i, bank in enumerate(decode_palette_banks(common_data)):
+        for i, bank in enumerate(decode_palette_banks(common_data, apply_clut=True)):
             if COMMON_PAL_SLOT + i < TOTAL_BANKS:
                 colorram[COMMON_PAL_SLOT + i] = bank
 
@@ -496,7 +500,8 @@ def extract_stage_frame(data, to_tex, frame_idx, pal_banks, colcd_base=None,
     def palette_fn(attr, tile_idx):
         if rendering_mode == 33:
             # Engine mlt_obj_disp: palo = colcd & 0xF, then palo + (attr & 0xE00F)
-            idx = (base & 0xF) + (attr & 0xF)
+            # Offline tool: colcd_base is already shifted to 300+, don't mask with 0xF
+            idx = base + (attr & 0xF)
         else:
             idx = (attr & 0x1FF) + base
         idx = idx % TOTAL_BANKS

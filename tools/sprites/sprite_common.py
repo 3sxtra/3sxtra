@@ -191,8 +191,16 @@ def decode_color_abgr1555(val, idx=1):
     r = (r5 * 255 + 15) // 31
     g = (g5 * 255 + 15) // 31
     b = (b5 * 255 + 15) // 31
-    a = 0 if (idx == 0 and val == 0) else 255
-    return (r, g, b, a)
+    
+    # Index 0 is typically transparent, and CPS3 palettes often use pure magenta 
+    # as a colorkey for transparency in offline rips/data. Sometimes off-magenta is used.
+    if r == 255 and b == 255 and (g == 0 or g == 49):
+        return (0, 0, 0, 0)
+    
+    if idx == 0 and val == 0:
+        return (0, 0, 0, 0)
+        
+    return (r, g, b, 255)
 
 
 # CPS3 CLUT reorder table (from palConvRowTim2CI8Clut in color3rd.c).
@@ -216,7 +224,7 @@ def _clut_reorder_bank(bank):
     return reordered
 
 
-def decode_palette_banks(pal_data):
+def decode_palette_banks(pal_data, apply_clut=False):
     """Decode raw ABGR1555 LE palette data into a list of 64-color banks.
 
     Source format: bits 0-4=B, 5-9=G, 10-14=R, 15=blend (not alpha).
@@ -232,7 +240,18 @@ def decode_palette_banks(pal_data):
                 break
             val = struct.unpack_from("<H", pal_data, off)[0]
             colors[i] = decode_color_abgr1555(val, i)
-        banks.append(colors)
+        
+        if apply_clut:
+            # Apply CPS3 native CLUT swap (8-15 <-> 16-23)
+            reordered = list(colors)
+            for i in range(len(colors)):
+                dst_idx = (i & 0xE0) + _CPS3_CLUT[i & 0x1F]
+                if dst_idx < len(reordered):
+                    reordered[dst_idx] = colors[i]
+            banks.append(reordered)
+        else:
+            banks.append(colors)
+            
     return banks
 
 

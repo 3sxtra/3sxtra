@@ -136,6 +136,15 @@ def _decode_ppg_tile_raw_numpy(raw, w, h):
     g = (((pixels >> 5) & 0x1F) << 3).astype(np.uint8)
     r = (((pixels >> 10) & 0x1F) << 3).astype(np.uint8)
     a = np.where(pixels & 0x8000, 255, 0).astype(np.uint8)
+    # Magenta colorkey (r5=31, g5=0|6, b5=31 -> r>=248, g=0|48, b>=248 with << 3)
+    mg_mask = (r >= 248) & (b >= 248) & ((g == 0) | (g == 48))
+    a[mg_mask] = 0
+    # Zero out RGB where alpha is 0 to avoid ghosting
+    trans_mask = (a == 0)
+    r[trans_mask] = 0
+    g[trans_mask] = 0
+    b[trans_mask] = 0
+
     rgba = np.stack([r, g, b, a], axis=-1)
     return Image.fromarray(rgba, "RGBA")
 
@@ -150,6 +159,10 @@ def _decode_ppg_tile_raw_python(raw, w, h):
             g = ((val >> 5) & 0x1F) << 3
             r = ((val >> 10) & 0x1F) << 3
             a = 255 if (val & 0x8000) else 0
+            if r >= 248 and b >= 248 and (g == 0 or g == 48):
+                r = g = b = a = 0
+            elif a == 0:
+                r = g = b = 0
             off = (py * w + px) * 4
             buf[off] = r
             buf[off + 1] = g
