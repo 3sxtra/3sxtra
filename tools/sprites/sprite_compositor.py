@@ -14,7 +14,7 @@ from PIL import Image
 
 from sprite_common import (
     read_afs, read_afs_file, lz_ext_p6_fx, DTL, unswizzle,
-    decode_color_abgr1555, decode_palette_banks,
+    decode_color_abgr1555, decode_palette_banks, _clut_reorder_bank,
     STAGE_PAL_AFS, STAGE_TILE_AFS,
     TileChip, COLORS_PER_BANK, PALETTE_BANK_BYTES, TOTAL_BANKS, CHAR_PAL_ROWS,
 )
@@ -35,6 +35,10 @@ SPRITE_PAL_BASE = 300
 COMMON_PAL_AFS = 9
 COMMON_PAL_SLOT = 32
 STAGE_PAL_SLOT = 300
+
+# Note: CPS3 CLUT reorder is now handled by _clut_reorder_bank in sprite_common.
+# Applied at palette load time (decode_palette_banks, _load_pal_row).
+
 
 # Directory containing runtime ColorRAM dump files.
 COLORRAM_DUMP_DIR = os.path.join(
@@ -177,11 +181,18 @@ def build_char_colorram(afs_path, entries, pal_data, pal_idx):
       Rows 16-21: 6 fixed sub-palettes (effects, projectiles, etc.)
       Rows 22-25: extended palettes (super effects, etc.)
 
-    Engine mapping (init_trans_color_ram type=1):
-      Bank 0     = row pal_idx (body)
-      Banks 1-6  = rows 16-21 (sub-palettes)
-      Banks 502-505 = rows 22-25 (extended, P1 layout)
+    Engine mapping (init_trans_color_ram type=1, non-Gill path):
+      Bank base+0     = row pal_idx (body)
+      Bank base+1..6  = rows 16-21 (sub-palettes)
+      Bank base+8     = body (mirrored)
+      Bank base+9..14 = rows 16-21 (mirrored)
+      where base = id * 16 (P1=0, P2=16)
+
+      Banks 502-505 (P1) / 506-509 (P2) = rows 22-25 (extended)
       Banks 32-511 = Common palette (AFS 9)
+
+    We replicate at BOTH P1 and P2 offsets so runtime colcd from
+    either player resolves correctly.
     """
     colorram = [[(0, 0, 0, 0)] * COLORS_PER_BANK for _ in range(TOTAL_BANKS)]
     total_rows = len(pal_data) // PALETTE_BANK_BYTES
@@ -193,16 +204,28 @@ def build_char_colorram(afs_path, entries, pal_data, pal_idx):
             if COMMON_PAL_SLOT + i < TOTAL_BANKS:
                 colorram[COMMON_PAL_SLOT + i] = bank
 
-    colorram[0] = _load_pal_row(pal_data, pal_idx, total_rows)
-    for sub in range(6):
+    # Replicate character palettes at both P1 (base=0) and P2 (base=16)
+    body = _load_pal_row(pal_data, pal_idx, total_rows)
+    sub_pals = []
+    for sub in range(7):  # rows 16-22: 7 sub-palettes (effects, projectiles, etc.)
         row = 16 + sub
-        if row < total_rows:
-            colorram[1 + sub] = _load_pal_row(pal_data, row, total_rows)
-    # Extended palettes: rows 22-25 → banks 502-505 (engine init_trans_color_ram)
+        sub_pals.append(_load_pal_row(pal_data, row, total_rows) if row < total_rows
+                        else [(0, 0, 0, 0)] * COLORS_PER_BANK)
+
+    for base in (0, 16):  # P1 and P2 banks
+        colorram[base] = body
+        colorram[base + 8] = body  # mirrored
+        for sub in range(7):
+            colorram[base + 1 + sub] = sub_pals[sub]
+            colorram[base + 9 + sub] = sub_pals[sub]  # mirrored
+
+    # Extended palettes at both P1 (502-505) and P2 (506-509)
     for sub in range(4):
         row = 22 + sub
         if row < total_rows:
-            colorram[502 + sub] = _load_pal_row(pal_data, row, total_rows)
+            ext_pal = _load_pal_row(pal_data, row, total_rows)
+            colorram[502 + sub] = ext_pal
+            colorram[506 + sub] = ext_pal
 
     return colorram
 
@@ -235,7 +258,11 @@ def load_character_palette(afs_path, entries, char_id, pal_banks,
 
 
 def load_colcd_map(csv_path=None):
-    """Load runtime colcd mapping from CSV → {(stage, cg_number): colcd}."""
+    """Load runtime colcd mapping from CSV → {(stage, cg_number): (colcd, mode)}.
+
+    Returns (colcd, mode) tuples so the extractor can apply mode-specific
+    normalization (Mode 17 uses exchange_current_colcd → %8, others use raw).
+    """
     path = csv_path or COLCD_MAP_CSV
     if not os.path.exists(path):
         return {}
@@ -243,7 +270,8 @@ def load_colcd_map(csv_path=None):
     with open(path) as f:
         for row in csv_mod.DictReader(f):
             key = (int(row["stage"]), int(row["cg_number"]))
-            mapping[key] = int(row["colcd"])
+            mode = int(row["mode"]) if "mode" in row else 0
+            mapping[key] = (int(row["colcd"]), mode)
     return mapping
 
 
@@ -481,14 +509,14 @@ def extract_char_frame(data, to_tex, frame_idx, colorram, base_cg=0,
                        engine_pal_map=None, colcd_map=None):
     """Extract a single character animation frame.
 
-    Palette dispatch (Mode 17 — mlt_obj_trans / mlt_obj_trans_ext):
-      palo = wk->colcd (set by exchange_current_colcd).
-      ALL tiles use the same palette bank — attr only contributes flip (0xC000).
+    Palette dispatch depends on the rendering mode the engine used:
+      Mode 17 (mlt_obj_trans): ALL tiles use same palo bank
+      Mode 18 (mlt_obj_trans_cp3): palt = (attr & 0x1FF) + palo
 
-    Per-CG colcd resolution:
-      1. Runtime colcd_map.csv (stage-agnostic: any stage match)
-      2. Engine cg_palette_map.json
-      3. Default: 0 (body palette)
+    Per-CG colcd resolution (runtime CSV preferred — it carries mode info):
+      1. Runtime colcd_map.csv (stage-agnostic: any stage match, has mode)
+      2. Engine cg_palette_map.json (static, assumes Mode 17)
+      3. Default: 0 (body palette, Mode 17)
     """
     tiles = _parse_tiles(data, to_tex, frame_idx)
     if not tiles:
@@ -503,20 +531,57 @@ def extract_char_frame(data, to_tex, frame_idx, colorram, base_cg=0,
 
     cg = base_cg + frame_idx
 
-    # Resolve colcd: prefer engine map, then runtime CSV (any stage), else 0
-    colcd_base = engine_pal_map.get(cg)
+    # Resolve colcd: prefer runtime CSV (has mode), then engine map, else auto-detect
+    colcd_base = None
+    colcd_mode = 17  # default assumes Mode 17
+
+    # 1. Runtime CSV — authoritative for MODE detection.
+    #    For Mode 17, colcd is just player_id*8 (runtime artifact) — always use 0.
+    #    For Mode 18, colcd encodes which palette bank the effect uses.
+    for key, val in colcd_map.items():
+        if key[1] == cg:
+            csv_colcd, colcd_mode = val
+            colcd_base = csv_colcd if colcd_mode == 18 else 0
+            break
+
+    # 2. Static engine map (cg_palette_map.json) — no mode info, assume 17
     if colcd_base is None:
-        # colcd_map is keyed (stage, cg) — search any stage for this CG
-        for key, val in colcd_map.items():
-            if key[1] == cg:
-                colcd_base = val
-                break
+        json_val = engine_pal_map.get(cg)
+        if json_val is not None:
+            colcd_base = json_val
+            colcd_mode = 17
+
+    # 3. Auto-detect from tile data: if any tile has attr & 0x1FF > 0,
+    #    it's a Mode 18 CG (per-tile palette offsets).  Body CGs (Mode 17)
+    #    always have attr & 0x1FF == 0.
+    #    For Mode 18, infer colcd base from nearest CSV Mode 18 neighbor.
     if colcd_base is None:
-        colcd_base = 0
+        has_pal_attr = any((t.attr & 0x1FF) != 0 for t in tiles)
+        if has_pal_attr:
+            colcd_mode = 18
+            # Find nearest CG in CSV with mode=18, within same character range
+            best_dist = float('inf')
+            colcd_base = 0  # fallback
+            max_search_dist = 2000  # chars span ~1000-2000 CGs
+            for key, val in colcd_map.items():
+                csv_colcd, csv_mode = val
+                if csv_mode == 18:
+                    dist = abs(key[1] - cg)
+                    if dist < best_dist and dist <= max_search_dist:
+                        best_dist = dist
+                        colcd_base = csv_colcd
+        else:
+            colcd_base = 0
+            colcd_mode = 17
 
     def palette_fn(attr, tile_idx):
-        # Mode 17: palo = colcd, ALL tiles use same bank
-        idx = colcd_base
+        if colcd_mode == 18:
+            # Mode 18 (mlt_obj_trans_cp3): palt = (attr & 0x1FF) + palo
+            idx = (attr & 0x1FF) + colcd_base
+        else:
+            # Mode 17 (mlt_obj_trans): ALL tiles use same palo bank
+            idx = colcd_base
+        idx = idx % TOTAL_BANKS
         if idx >= len(colorram):
             idx = 0
         return colorram[idx]

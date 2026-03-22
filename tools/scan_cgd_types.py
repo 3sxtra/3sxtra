@@ -220,14 +220,43 @@ def scan_cgd_types(rom_data: bytes):
     return type_counts, type_1_locations
 
 
-def interleave_simms(zip_path: str) -> bytes:
+def _rotate_left_16(value, n):
+    """Rotate a 16-bit value left by n bits."""
+    value &= 0xFFFF
+    aux = value >> (16 - n)
+    return ((value << n) | aux) % 0x10000
+
+
+def _rotxor(val, xorval):
+    """CPS3 rotate-xor operation."""
+    val &= 0xFFFF
+    xorval &= 0xFFFF
+    res = (val + _rotate_left_16(val, 2)) & 0xFFFFFFFF
+    res = _rotate_left_16(res, 4) ^ (res & (val ^ xorval))
+    return res
+
+
+def _cps3_mask(address, key1, key2):
+    """Generate CPS3 XOR mask for a given address."""
+    address ^= key1
+    address &= 0xFFFFFFFF
+    val = (address & 0xFFFF) ^ 0xFFFF
+    val = _rotxor(val, key2 & 0xFFFF)
+    val ^= (address >> 16) ^ 0xFFFF
+    val = _rotxor(val, key2 >> 16)
+    val ^= (address & 0xFFFF) ^ (key2 & 0xFFFF)
+    return (val | (val << 16)) & 0xFFFFFFFF
+
+
+BASE_OFFSET_DECRYPT = 0x6000000
+KEY_1 = 0xA55432B4
+KEY_2 = 0x0C129981
+
+
+def decrypt_simms(zip_path: str) -> bytes:
     """
-    Interleave 4 SIMM files from the ROM zip to produce the decrypted ROM.
-    This mirrors the decrypt() function in rom_load.c.
-    
-    The CPS3 stores data across 4 SIMMs. Each byte position i in the output
-    is formed by reading byte i from each of the 4 SIMMs and packing them
-    as a 32-bit word: simm0[i] | simm1[i]<<8 | simm2[i]<<16 | simm3[i]<<24
+    Decrypt the CPS3 ROM from a zip containing 4 SIMM files.
+    This is a Python port of rom_load.c decrypt() + cps3_decrypt.c.
     """
     import zipfile
     
@@ -248,11 +277,22 @@ def interleave_simms(zip_path: str) -> bytes:
     simm_size = len(simms[0])
     assert all(len(s) == simm_size for s in simms), "SIMM sizes don't match!"
     
-    # Interleave: for each byte position, combine 4 SIMMs into a 32-bit LE word
+    print(f"  Decrypting {simm_size} words ({simm_size * 4} bytes)...")
+    
     result = bytearray(simm_size * 4)
+    
     for i in range(simm_size):
-        word = simms[0][i] | (simms[1][i] << 8) | (simms[2][i] << 16) | (simms[3][i] << 24)
-        struct.pack_into('<I', result, i * 4, word)
+        b0 = simms[0][i]
+        b1 = simms[1][i]
+        b2 = simms[2][i]
+        b3 = simms[3][i]
+        
+        cur_data = (b0 << 24) | (b1 << 16) | (b2 << 8) | b3
+        masked = _cps3_mask(BASE_OFFSET_DECRYPT + (i * 4), KEY_1, KEY_2)
+        decrypted = cur_data ^ masked
+        
+        # Store as big-endian (the C code uses SDL_ReadU32BE/SDL_ReadS16BE to read)
+        struct.pack_into('>I', result, i * 4, decrypted)
     
     return bytes(result)
 
@@ -263,7 +303,7 @@ def main():
         rom_path = sys.argv[1]
         if rom_path.endswith('.zip'):
             print(f"Loading ROM from zip: {rom_path}")
-            rom_data = interleave_simms(rom_path)
+            rom_data = decrypt_simms(rom_path)
         else:
             print(f"Loading pre-decrypted ROM: {rom_path}")
             with open(rom_path, 'rb') as f:
@@ -277,7 +317,7 @@ def main():
             print("Usage: python scan_cgd_types.py [path_to_sfiii3nr1.zip | path_to_decrypted.bin]")
             sys.exit(1)
         print(f"Auto-detected ROM: {rom_path}")
-        rom_data = interleave_simms(rom_path)
+        rom_data = decrypt_simms(rom_path)
     
     print(f"ROM size: {len(rom_data)} bytes (0x{len(rom_data):X})")
     print()

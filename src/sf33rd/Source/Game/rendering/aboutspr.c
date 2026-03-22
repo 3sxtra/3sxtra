@@ -292,46 +292,48 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
 
     wk->current_colcd &= 0x1FF;
 
-    /* DEBUG: Log (stage, cg_number, colcd) for offline palette extraction.
+    /* DEBUG: Log (stage, cg_number, colcd, mode) for offline palette extraction.
      * Uses 64-bit keys to avoid bit-overlap for large CG numbers (>32768).
-     * Appends to existing CSV to accumulate data across multiple runs. */
-    {
-        #define COLCD_HASH_SIZE 16384
-        #define COLCD_HASH_MASK (COLCD_HASH_SIZE - 1)
-        static u64 seen[COLCD_HASH_SIZE];
-        static int seen_init = 0;
-        static FILE* colcd_log = NULL;
-        if (!seen_init) {
-            memset(seen, 0, sizeof(seen));
-            colcd_log = fopen("colcd_map.csv", "a");
-            if (colcd_log) {
-                /* Write header only if file is empty */
-                fseek(colcd_log, 0, SEEK_END);
-                if (ftell(colcd_log) == 0)
-                    fprintf(colcd_log, "stage,cg_number,colcd\n");
-            }
-            seen_init = 1;
+     * Appends to existing CSV to accumulate data across multiple runs.
+     * IMPORTANT: Logging happens AFTER exchange_current_colcd / colcd assignment
+     * so we capture the actual palette bank used for rendering. */
+    #define COLCD_HASH_SIZE 16384
+    #define COLCD_HASH_MASK (COLCD_HASH_SIZE - 1)
+    static u64 seen[COLCD_HASH_SIZE];
+    static int seen_init = 0;
+    static FILE* colcd_log = NULL;
+    if (!seen_init) {
+        memset(seen, 0, sizeof(seen));
+        colcd_log = fopen("colcd_map.csv", "a");
+        if (colcd_log) {
+            /* Write header only if file is empty */
+            fseek(colcd_log, 0, SEEK_END);
+            if (ftell(colcd_log) == 0)
+                fprintf(colcd_log, "stage,cg_number,colcd,mode\n");
         }
-        if (colcd_log && wk->cg_number != 0) {
-            u64 key = ((u64)bg_w.stage << 32)
-                    | ((u64)wk->cg_number << 16)
-                    | (u64)(wk->current_colcd & 0x1FF)
-                    | 1ULL;  /* ensure key is never 0 */
-            u32 slot = (u32)((key * 0x9E3779B97F4A7C15ULL) >> 50);
-            int i;
-            for (i = 0; i < 16; i++) {
-                u32 idx = (slot + i) & COLCD_HASH_MASK;
-                if (seen[idx] == key) break;
-                if (seen[idx] == 0) {
-                    seen[idx] = key;
-                    fprintf(colcd_log, "%d,%u,%d\n",
-                            bg_w.stage, wk->cg_number, wk->current_colcd);
-                    fflush(colcd_log);
-                    break;
-                }
-            }
-        }
+        seen_init = 1;
     }
+    #define COLCD_LOG_ENTRY(colcd_val, mode_val) do { \
+        if (colcd_log && wk->cg_number != 0) { \
+            u64 key = ((u64)bg_w.stage << 32) \
+                    | ((u64)wk->cg_number << 16) \
+                    | (u64)((colcd_val) & 0x1FF) \
+                    | 1ULL; \
+            u32 slot = (u32)((key * 0x9E3779B97F4A7C15ULL) >> 50); \
+            int colcd_i; \
+            for (colcd_i = 0; colcd_i < 16; colcd_i++) { \
+                u32 idx = (slot + colcd_i) & COLCD_HASH_MASK; \
+                if (seen[idx] == key) break; \
+                if (seen[idx] == 0) { \
+                    seen[idx] = key; \
+                    fprintf(colcd_log, "%d,%u,%d,%d\n", \
+                            bg_w.stage, wk->cg_number, (colcd_val) & 0x1FF, (mode_val)); \
+                    fflush(colcd_log); \
+                    break; \
+                } \
+            } \
+        } \
+    } while(0)
 
     if (wk->my_col_mode & 0x400) {
         wk->my_clear_level = 0x90;
@@ -341,6 +343,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
     case 17:
         if ((Debug_w[DEBUG_NO_DISP_SPR_PAL] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 1)) {
             wk->colcd = exchange_current_colcd(wk);
+            COLCD_LOG_ENTRY(wk->colcd, 17);
             mlt_obj_trans(&mts[wk->my_mts], wk, bsy);
         }
 
@@ -349,6 +352,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
     case 18:
         if ((Debug_w[DEBUG_NO_DISP_SPR_CP3] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 1)) {
             wk->colcd = wk->current_colcd;
+            COLCD_LOG_ENTRY(wk->colcd, 18);
             mlt_obj_trans_cp3(&mts[wk->my_mts], wk, bsy);
         }
 
@@ -357,6 +361,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
     case 20:
         if ((Debug_w[DEBUG_NO_DISP_SPR_RGB] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 1)) {
             wk->colcd = wk->current_colcd;
+            COLCD_LOG_ENTRY(wk->colcd, 20);
             mlt_obj_trans_rgb(&mts[wk->my_mts], wk, bsy);
         }
 
@@ -365,6 +370,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
     case 33:
         if ((Debug_w[DEBUG_NO_DISP_SPR_PAL] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 2)) {
             wk->colcd = wk->current_colcd;
+            COLCD_LOG_ENTRY(wk->colcd, 33);
             mlt_obj_disp(&mts[wk->my_mts], wk, (s32)bsy);
         }
 
@@ -384,11 +390,13 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
     case 36:
         if ((Debug_w[DEBUG_NO_DISP_SPR_RGB] != 1) || (Debug_w[DEBUG_NO_DISP_TYPE_SB] != 2)) {
             wk->colcd = wk->current_colcd;
+            COLCD_LOG_ENTRY(wk->colcd, 36);
             mlt_obj_disp_rgb(&mts[wk->my_mts], wk, (s32)bsy);
         }
 
         break;
     }
+    #undef COLCD_LOG_ENTRY
 }
 
 /** @brief Look up and return the current color code for a character. */

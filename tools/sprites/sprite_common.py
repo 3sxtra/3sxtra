@@ -195,6 +195,27 @@ def decode_color_abgr1555(val, idx=1):
     return (r, g, b, a)
 
 
+# CPS3 CLUT reorder table (from palConvRowTim2CI8Clut in color3rd.c).
+# Swaps indices 8-15 ↔ 16-23 within each 32-entry block.
+_CPS3_CLUT = [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23,
+              8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31]
+
+
+def _clut_reorder_bank(bank):
+    """Reorder a palette bank using the CPS3 CLUT table.
+
+    The engine applies palConvRowTim2CI8Clut when uploading palettes to the GPU:
+    dst[(i & 0xE0) + clut[i & 0x1F]] = src[i].
+    Pixel indices from lz_ext_p6_fx expect this reordered layout.
+    """
+    reordered = list(bank)  # copy
+    for i in range(len(bank)):
+        dst_idx = (i & 0xE0) + _CPS3_CLUT[i & 0x1F]
+        if dst_idx < len(reordered):
+            reordered[dst_idx] = bank[i]
+    return reordered
+
+
 def decode_palette_banks(pal_data):
     """Decode raw ABGR1555 LE palette data into a list of 64-color banks.
 

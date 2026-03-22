@@ -168,18 +168,35 @@ def extract_group(afs_path, entries, grp_entry, pal_banks, output_dir,
     for fi in range(num_frames):
         cg_number = num_of_1st + fi
 
-        # 3-tier colcd resolution
-        colcd = engine_pal_map.get(cg_number)
-        if colcd is None and stage is not None:
-            colcd = colcd_map.get((stage, cg_number))
+        # 3-tier colcd resolution (CSV preferred — has mode info)
+        colcd = None
+        cg_mode = mode  # default: group-level mode
+
+        # 1. Runtime CSV — authoritative, per-CG colcd AND mode
+        if stage is not None:
+            entry = colcd_map.get((stage, cg_number))
+            if entry is not None:
+                colcd, cg_mode = entry
+        if colcd is None:
+            # Search any stage for this CG in CSV
+            for key, val in colcd_map.items():
+                if key[1] == cg_number:
+                    colcd, cg_mode = val
+                    break
+
+        # 2. Static engine map (no mode info, keep group default)
+        if colcd is None:
+            colcd = engine_pal_map.get(cg_number)
+
+        # 3. Group default
         if colcd is None:
             colcd = colcd_override if colcd_override is not None else group_default
 
         if verbose:
-            print(f"      CG {cg_number}: colcd={colcd} mode={mode}")
+            print(f"      CG {cg_number}: colcd={colcd} mode={cg_mode}")
 
         img = extract_stage_frame(data, to_tex, fi, pal_banks,
-                                  colcd_base=colcd, rendering_mode=mode)
+                                  colcd_base=colcd, rendering_mode=cg_mode)
         if img is not None:
             img.save(os.path.join(grp_dir, f"sprite_{group_idx}_{cg_number}.png"))
             extracted += 1
