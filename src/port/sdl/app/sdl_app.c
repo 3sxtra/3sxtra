@@ -557,9 +557,22 @@ int SDLApp_Init() {
     // Check if user wants RmlUi mode (set via --ui rmlui CLI flag, session-only)
     use_rmlui = g_ui_mode_rmlui;
 
-    // RmlUi data-model modules: 13 modules are lazy-initialized on first _update().
-    // Only rmlui_netplay_ui needs eager init (no data model, just event wiring).
+    // RmlUi data-model modules — must be registered BEFORE documents load,
+    // because RmlUi resolves data-model bindings at LoadDocument() time.
+    rmlui_replay_picker_init();
+    rmlui_dev_overlay_init();
+    rmlui_mods_menu_init();
+    rmlui_shader_menu_init();
+    rmlui_stage_config_init();
+    rmlui_input_display_init();
+    rmlui_frame_display_init();
     rmlui_netplay_ui_init();
+    rmlui_training_menu_init();
+    rmlui_training_hud_init();
+    rmlui_control_mapping_init();
+    rmlui_network_lobby_init();
+    rmlui_casual_lobby_init();
+    rmlui_leaderboard_init();
 
     if (use_rmlui) {
         SDL_Log("UI mode: RmlUi (overlay menus via HTML/CSS)");

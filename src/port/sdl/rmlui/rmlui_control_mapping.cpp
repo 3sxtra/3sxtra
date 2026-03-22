@@ -275,7 +275,7 @@ static void do_init() {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi ControlMapping] Data model registered (lazy)");
 }
 
-extern "C" void rmlui_control_mapping_init() { /* deferred to first use */ }
+extern "C" void rmlui_control_mapping_init() { do_init(); }
 
 // ── Per-frame update ───────────────────────────────────────────
 

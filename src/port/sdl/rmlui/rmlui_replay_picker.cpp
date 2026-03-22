@@ -125,7 +125,7 @@ static void do_init(void) {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi ReplayPicker] Data model registered (lazy)");
 }
 
-extern "C" void rmlui_replay_picker_init(void) { /* deferred to first use */ }
+extern "C" void rmlui_replay_picker_init(void) { do_init(); }
 
 /* ── Per-frame update (called from sdl_app.c render loop) ──────── */
 extern "C" void rmlui_replay_picker_update(void) {

@@ -432,7 +432,7 @@ static void do_init() {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Shaders] Data model registered (lazy)");
 }
 
-extern "C" void rmlui_shader_menu_init() { /* deferred to first use */ }
+extern "C" void rmlui_shader_menu_init() { do_init(); }
 
 // ── Per-frame update ───────────────────────────────────────────
 

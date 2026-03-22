@@ -289,7 +289,7 @@ static void do_init(void) {
 // -------------------------------------------------------------------
 // Init — register data model + load persisted config
 // -------------------------------------------------------------------
-extern "C" void rmlui_training_menu_init(void) { /* deferred to first use */ }
+extern "C" void rmlui_training_menu_init(void) { do_init(); }
 
 // -------------------------------------------------------------------
 // Per-frame update — dirty check

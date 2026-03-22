@@ -232,7 +232,7 @@ static void do_init(void) {
     s_my_id = Identity_GetPlayerId();
 }
 
-extern "C" void rmlui_casual_lobby_init(void) { /* deferred to first use */ }
+extern "C" void rmlui_casual_lobby_init(void) { do_init(); }
 
 static void apply_room_state_to_model(void) {
     if (!s_model_handle)

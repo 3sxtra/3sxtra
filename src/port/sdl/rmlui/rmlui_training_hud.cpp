@@ -116,7 +116,7 @@ static void do_init(void) {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Training HUD] Data model registered (lazy, effie_hud deferred)");
 }
 
-extern "C" void rmlui_training_hud_init(void) { /* deferred to first use */ }
+extern "C" void rmlui_training_hud_init(void) { do_init(); }
 
 // -------------------------------------------------------------------
 // Per-frame update — dirty check and push

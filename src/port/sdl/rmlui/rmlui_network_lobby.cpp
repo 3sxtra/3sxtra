@@ -595,7 +595,7 @@ static void do_init(void) {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi NetworkLobby] Data model registered (lazy)");
 }
 
-extern "C" void rmlui_network_lobby_init(void) { /* deferred to first use */ }
+extern "C" void rmlui_network_lobby_init(void) { do_init(); }
 
 // ─── Per-frame update ────────────────────────────────────────────
 extern "C" void rmlui_network_lobby_update(void) {

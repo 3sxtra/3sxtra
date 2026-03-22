@@ -810,7 +810,7 @@ static void do_init() {
     SDL_Log("[RmlUi DevOverlay] Init complete (lazy): %d docs", (int)s_docs.size());
 }
 
-extern "C" void rmlui_dev_overlay_init() { /* deferred to first use */ }
+extern "C" void rmlui_dev_overlay_init() { do_init(); }
 
 // ── Per-frame update ──────────────────────────────────────────
 

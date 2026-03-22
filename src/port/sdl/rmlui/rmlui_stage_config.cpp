@@ -216,7 +216,7 @@ static void do_init() {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi StageConfig] Data model registered (lazy)");
 }
 
-extern "C" void rmlui_stage_config_init() { /* deferred to first use */ }
+extern "C" void rmlui_stage_config_init() { do_init(); }
 
 // ── Per-frame update ───────────────────────────────────────────
 
