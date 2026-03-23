@@ -312,7 +312,6 @@ static void ensure_gl3_ready() {
     Rml::SetRenderInterface(s_render_interface);
     s_render_gl3->SetViewport(s_window_w, s_window_h);
     s_gl3_active = true;
-    SDL_Log("[RmlUi] GL3 renderer activated (on-demand)");
 }
 
 static void release_gl3_if_idle() {
@@ -326,7 +325,6 @@ static void release_gl3_if_idle() {
     s_render_interface = nullptr;
     Rml::SetRenderInterface(nullptr);
     s_gl3_active = false;
-    SDL_Log("[RmlUi] GL3 renderer deactivated (idle)");
 }
 
 // -------------------------------------------------------------------
@@ -484,7 +482,6 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
         s_render_interface = nullptr;
         Rml::SetRenderInterface(nullptr);
         s_gl3_active = false;
-        SDL_Log("[RmlUi] GL3 renderer deactivated after init (on-demand lifecycle)");
     }
 }
 
@@ -772,7 +769,6 @@ extern "C" void rmlui_wrapper_show_document(const char* name) {
         doc->Show();
         s_window_documents[name] = doc;
         s_any_window_visible = true;
-        SDL_Log("[RmlUi] Loaded window document: %s", path.c_str());
     } else {
         SDL_Log("[RmlUi] Failed to load window document: %s", path.c_str());
     }
@@ -843,7 +839,6 @@ extern "C" void rmlui_wrapper_show_game_document(const char* name) {
         doc->Show();
         s_game_documents[name] = doc;
         s_any_game_visible = true;
-        SDL_Log("[RmlUi] Loaded game document: %s", path.c_str());
     } else {
         SDL_Log("[RmlUi] Failed to load game document: %s", path.c_str());
     }

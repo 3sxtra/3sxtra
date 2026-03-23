@@ -284,6 +284,17 @@ void Network_Lobby(struct _TASK* task_ptr) {
     case 0:
         /* Phase 0: Fade out, kill Mode_Select items, init gateway submenu */
         Menu_in_Sub(task_ptr);
+        Message_Data->kind_req = NET_BG_MODE_BLUE; /* blue-BG background mode */
+
+        /* Blue background banner — same effect used by lobby (case 11)
+         * and leaderboard (case 5).  Without this, the gateway shows the
+         * fire/lava BG inherited from Mode_Select. */
+        Order[EFF_SLOT_HEADER] = 5;
+        Order_Timer[EFF_SLOT_HEADER] = 1;
+        Order_Dir[EFF_SLOT_HEADER] = 1;
+        effect_57_init(EFF_SLOT_HEADER, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
+
+        /* Red "NETWORK" header */
         effect_57_init(EFF_SLOT_NET_HDR, MENU_HEADER_NETWORK, 0, EFF_Z_NETWORK_HDR, 2);
         Order[EFF_SLOT_NET_HDR] = 1;
         Order_Dir[EFF_SLOT_NET_HDR] = 8;

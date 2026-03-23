@@ -21,6 +21,7 @@ extern "C" {
 #include "netplay/lobby_server.h"
 #include "netplay/netplay.h"
 #include "netplay/ping_probe.h"
+#include "port/menu_screen.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/menu/menu.h"
@@ -808,7 +809,6 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 // MenuScreen_Goto(MENU_SCREEN_NETWORK_LOBBY).
                 // The actual server leave + cleanup is done in
                 // rmlui_casual_lobby_consume_leave() called from on_tick.
-                SDL_Log("[CasualLobby] Leave Room: setting s_wants_leave");
                 s_wants_leave = true;
             }
         }
@@ -942,7 +942,6 @@ extern "C" bool rmlui_casual_lobby_wants_leave(void) {
 extern "C" void rmlui_casual_lobby_consume_leave(void) {
     if (s_wants_leave) {
         s_wants_leave = false;
-        SDL_Log("[CasualLobby] consume_leave: calling LobbyServer_LeaveRoom");
         LobbyServer_LeaveRoom(s_room_code.c_str());
         s_room_code.clear();
     }

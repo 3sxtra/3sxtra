@@ -165,7 +165,6 @@ void Menu_Task(struct _TASK* task_ptr) {
     if (nowSoftReset()) {
         return;
     }
-
     if (Interface_Type[0] == 0 || Interface_Type[1] == 0) {
         Connect_Status = 0;
     } else {

@@ -29,6 +29,10 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"
 
+/* Blue background */
+#include "sf33rd/Source/Game/effect/eff45.h"
+#include "sf33rd/Source/Game/menu/menu_network_constants.h"
+
 /* RmlUi Phase 3 */
 #include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
@@ -75,6 +79,12 @@ static void network_lobby_enter(struct _TASK* task_ptr) {
         task_ptr->r_no[2] = 0;
         task_ptr->r_no[3] = 0;
         task_ptr->free[0] = 0;
+
+        /* Request blue background immediately so it's active from the
+         * first frame of the gateway (cases 0-3).  Without this, the
+         * fire/lava BG inherited from Mode_Select persists until the
+         * user enters the lobby phase (case 10) or leaderboard (case 4). */
+        Message_Data->kind_req = NET_BG_MODE_BLUE;
     }
 
     /* Set timer=0 so the dispatcher's WAIT phase completes immediately.

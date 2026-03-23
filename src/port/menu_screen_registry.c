@@ -129,6 +129,7 @@ MenuScreenId MenuScreen_FromLegacyIndex(int legacy_index) {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 void MenuScreen_Tick(struct _TASK* task_ptr) {
+
     /* ── Deferred transition (set by Goto/Back on previous frame) ── */
     if (g_next_screen != MENU_SCREEN_NONE) {
         /* Exit the current screen (if any) */

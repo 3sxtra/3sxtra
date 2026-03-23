@@ -20,9 +20,12 @@
  */
 
 #include "port/menu_screen.h"
+#include "port/menu_task.h"
 
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "structs.h"
+
+#include <SDL3/SDL_log.h>
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  on_enter — show the casual lobby RmlUi document
@@ -51,8 +54,11 @@ static void casual_lobby_enter(struct _TASK* task_ptr) {
 static void casual_lobby_tick(struct _TASK* task_ptr) {
     (void)task_ptr;
 
-    if (rmlui_casual_lobby_wants_leave()) {
+    bool wl = rmlui_casual_lobby_wants_leave();
+    if (wl) {
         rmlui_casual_lobby_consume_leave();
+        extern bool g_lobby_reenter_from_match;
+        g_lobby_reenter_from_match = true;
         MenuScreen_Goto(MENU_SCREEN_NETWORK_LOBBY);
     }
 }
@@ -108,4 +114,6 @@ void ms_casual_lobby_register(void) {
         .header_type = MENU_HEADER_MODE_MENU,
         .effect_slot = 0,
     };
+    SDL_Log("[ms_casual_lobby] registered screen id=%d on_tick=%p",
+            MENU_SCREEN_CASUAL_LOBBY, (void*)(uintptr_t)casual_lobby_tick);
 }
