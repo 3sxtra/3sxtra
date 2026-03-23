@@ -4,7 +4,9 @@ Direct GPU upscale for sprite PNGs — no ComfyUI required.
 
 Loads 4x-UltraSharpV2.safetensors via spandrel and runs inference
 directly on the GPU. Alpha channel is preserved by upscaling RGB
-and alpha mask separately, then recombining.
+and alpha mask separately, then recombining. 
+
+*Updated with unmultiply logic to prevent dark edge halos/ghosting.*
 
 Performance features:
   - fp16 inference on RTX GPUs
@@ -107,15 +109,15 @@ def main():
     parser.add_argument("--input", default=DEFAULT_INPUT, help="Input directory of PNGs")
     parser.add_argument("--output", default=DEFAULT_OUTPUT, help="Output directory for upscaled PNGs")
     parser.add_argument("--tile-size", type=int, default=DEFAULT_TILE, help="Tile size (0 = whole image, use 512 for large sprites)")
-    parser.add_argument("--fp32", action="store_true", help="Use fp32 instead of fp16")
+    parser.add_argument("--fp16", action="store_true", help="Use fp16 instead of fp32 (faster but less precise)")
     parser.add_argument("--compile", action="store_true", help="Enable torch.compile() (only helps if all images are the same size)")
     parser.add_argument("--skip-existing", action="store_true", help="Skip files that already exist in output")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    dtype = torch.float32 if args.fp32 else torch.float16
+    dtype = torch.float16 if args.fp16 else torch.float32
     print(f"🖥️  Device: {device} ({torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'})")
-    print(f"⚡ Precision: {'fp32' if args.fp32 else 'fp16'}")
+    print(f"⚡ Precision: {'fp16' if args.fp16 else 'fp32'}")
 
     # ── Load model via spandrel ──
     import spandrel
@@ -134,12 +136,12 @@ def main():
         except Exception as e:
             print(f"   ⚠️  torch.compile() failed ({e}), continuing without it")
 
-    # ── Gather input files ──
+    # ── Gather input files (recursive) ──
     input_dir = Path(args.input)
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    files = sorted([f for f in input_dir.iterdir() if f.suffix.lower() == ".png"])
+    files = sorted(input_dir.rglob("*.png"))
     if args.skip_existing:
         before = len(files)
         files = [f for f in files if not (output_dir / f.name).exists()]
@@ -149,7 +151,7 @@ def main():
         print("✅ Nothing to process.")
         return
 
-    print(f"📂 Input:  {input_dir}  ({len(files)} PNGs)")
+    print(f"📂 Input:  {input_dir}  ({len(files)} PNGs, recursive)")
     print(f"📂 Output: {output_dir}")
     print(f"{'─' * 60}")
 
@@ -172,10 +174,24 @@ def main():
         h, w = img_np.shape[:2]
         has_alpha = img_np.shape[2] == 4
 
-        # Split RGB and alpha
-        rgb = torch.from_numpy(img_np[:, :, :3]).permute(2, 0, 1).unsqueeze(0)  # (1, 3, H, W)
+        # Extract RGB
+        rgb_np = img_np[:, :, :3]
+
         if has_alpha:
-            alpha = torch.from_numpy(img_np[:, :, 3:4]).permute(2, 0, 1).unsqueeze(0)  # (1, 1, H, W)
+            alpha_np = img_np[:, :, 3:4]
+            
+            # --- THE FIX: Unmultiply (Straighten) the RGB channels ---
+            # Divide the color channels by the mat to restore full brightness to edge pixels
+            alpha_safe = np.clip(alpha_np, 1e-6, 1.0)
+            
+            # Only unmultiply where there is actually some transparency/color
+            rgb_np = np.where(alpha_np > 0, rgb_np / alpha_safe, rgb_np)
+            
+            # Prepare alpha tensor
+            alpha = torch.from_numpy(alpha_np).permute(2, 0, 1).unsqueeze(0)
+
+        # Convert the newly straightened RGB to a tensor
+        rgb = torch.from_numpy(rgb_np).permute(2, 0, 1).unsqueeze(0)
 
         # Upscale RGB
         rgb_up = upscale_tensor(model, rgb, args.tile_size, scale, device, dtype)

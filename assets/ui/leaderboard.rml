@@ -61,9 +61,9 @@
 
     <!-- Pagination -->
     <div id="lb-footer" data-if="has_data">
-        <span class="lb-nav" data-if="has_prev">← PREV</span>
+        <span class="lb-nav" data-if="has_prev">◀ PREV</span>
         <span class="lb-page-info">PAGE {{page}} / {{total_pages}}</span>
-        <span class="lb-nav" data-if="has_next">NEXT →</span>
+        <span class="lb-nav" data-if="has_next">NEXT ▶</span>
     </div>
 
 </div>

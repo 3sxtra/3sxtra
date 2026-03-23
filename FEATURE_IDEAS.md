@@ -8,249 +8,320 @@
 ## Implementation Status & Gap Analysis
 
 > [!NOTE]
-> Audit performed March 23, 2026. For each feature area, this section describes **what exists in code today**, **what the vision calls for**, and **what remains to be built** — with specific file and function references.
+> Audit performed March 23, 2026. For each feature area: **what exists in code today**, **what the vision calls for**, and **what remains to be built** — with specific file and function references.
 
 ---
 
 ### §1. Mod Menu & FX Screens
 
-**What exists:**
-The mods menu is implemented as an RmlUi data-bound overlay in [rmlui_mods_menu.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_mods_menu.cpp) (14KB, ~341 lines), toggled via F3 in [sdl_app_input.c](file:///d:/3sxtra/src/port/sdl/app/sdl_app_input.c). It exposes toggles for shader bypass, fast pre-game, HD stages, bezel on/off, and **modded BGM/voice on/off** (with track count display). A separate shader menu exists in [rmlui_shader_menu.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_shader_menu.cpp) (19KB), and stage config in [rmlui_stage_config.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_stage_config.cpp) (10KB). Per-component phase 3 toggles are defined in [rmlui_phase3_toggles.h](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_phase3_toggles.h) and owned by `rmlui_game_hud.cpp`, allowing runtime fallback to CPS3 rendering per HUD element. Hotkeys F2–F9 are individually handled for different overlays.
+#### What Exists
 
-**Audio mods** are fully implemented: [modded_bgm.c](file:///d:/3sxtra/src/port/sound/modded_bgm.c) handles BGM replacement and voice line replacement from `assets/voice_mod/`, supporting ogg/flac/opus/mp3/wav formats. The mods menu provides a toggle (`CFG_KEY_MODDED_BGM_ENABLED`) and displays the count of modded tracks.
+| System | Details |
+|---|---|
+| **Mods menu** | [rmlui_mods_menu.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_mods_menu.cpp) (~341 lines), toggled via F3 in [sdl_app_input.c](file:///d:/3sxtra/src/port/sdl/app/sdl_app_input.c). Toggles: shader bypass, fast pre-game, HD stages, bezel, **modded BGM/voice** (with track count). |
+| **Shader menu** | [rmlui_shader_menu.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_shader_menu.cpp) (19KB) |
+| **Stage config** | [rmlui_stage_config.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_stage_config.cpp) (10KB) |
+| **Phase 3 toggles** | [rmlui_phase3_toggles.h](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_phase3_toggles.h) — per-component runtime fallback to CPS3 rendering |
+| **Audio mods** | [modded_bgm.c](file:///d:/3sxtra/src/port/sound/modded_bgm.c) — BGM + voice replacement from `assets/voice_mod/`, supports ogg/flac/opus/mp3/wav. Toggle via `CFG_KEY_MODDED_BGM_ENABLED`. |
+| **Sprite overrides** | [sprite_override.c](file:///d:/3sxtra/src/port/sdl/renderer/sprite_override.c) — HD sprite replacement with 17+ hooks in [mtrans.c](file:///d:/3sxtra/src/sf33rd/Source/Game/rendering/mtrans.c) |
+| **HD stage overrides** | [modded_stage.c](file:///d:/3sxtra/src/port/mods/modded_stage.c) — 22-stage system with layer-based replacement |
+| **Hot-reload** | [rmlui_wrapper.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_wrapper.cpp) — Ctrl+F5 (stylesheets), Ctrl+Shift+F5 (all documents) |
 
-**Sprite overrides** are operational: [sprite_override.c](file:///d:/3sxtra/src/port/sdl/renderer/sprite_override.c) provides HD sprite replacement with 17+ integration points in [mtrans.c](file:///d:/3sxtra/src/sf33rd/Source/Game/rendering/mtrans.c) via `try_hd_sprite_override()` and `try_hd_sprite_override_ext()`. **HD stage overrides** use a full 22-stage system in [modded_stage.c](file:///d:/3sxtra/src/port/mods/modded_stage.c) with layer-based replacement.
+#### Vision
 
-**Hot-reload** for RmlUi stylesheets and documents is implemented in [rmlui_wrapper.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_wrapper.cpp) via Ctrl+F5 (stylesheets) and Ctrl+Shift+F5 (all documents).
+- **Unified in-game menu tree** — one discoverable entry point from the main/pause menu, not scattered F-key overlays
+- Per-character FX overrides (hit-spark and super-flash styles per character)
+- Named mod profiles/presets with one-click swap ("Tournament Clean", "Maximum Drip")
+- Automatic mod discovery — scan `assets/` at startup
+- Live previews showing a thumbnail before committing
 
-**What the vision calls for:**
-A **unified in-game menu tree** accessible from the main or pause menu — not scattered F-key overlays. Per-character FX overrides (hit-spark styles per character), named mod profiles/presets with one-click swap, automatic discovery of mod packs in `assets/`, and live previews showing a thumbnail before committing.
+#### The Gap
 
-**The gap:**
-The individual overlay screens work well, but they are **islands** — there's no parent menu that ties them together. A user who doesn't know the F-key shortcuts can't discover these features. The menu system in [ms_mode_select.c](file:///d:/3sxtra/src/port/screens/ms_mode_select.c) and [ms_option_select.c](file:///d:/3sxtra/src/port/screens/ms_option_select.c) would need new entries to link into the mods/shaders/stages screens. Mod profiles need a persistence layer (likely extending [native_save.c](file:///d:/3sxtra/src/port/save/native_save.c)). Mod discovery requires scanning `assets/` subdirectories and building a registry of available packs — nothing exists for this. Per-character FX overrides would need new configuration in the render pipeline. Live previews are a significant UI investment.
+| Gap | Notes |
+|---|---|
+| **No unified parent menu** | The overlays work but are islands — discoverable only if you know the hotkeys. Needs new entries in [ms_mode_select.c](file:///d:/3sxtra/src/port/screens/ms_mode_select.c) / [ms_option_select.c](file:///d:/3sxtra/src/port/screens/ms_option_select.c). |
+| **No mod profiles** | Persistence layer needed — extend [native_save.c](file:///d:/3sxtra/src/port/save/native_save.c) |
+| **No mod discovery** | Nothing scans `assets/` or builds a registry of installed packs |
+| **No per-character FX** | New configuration needed in the render pipeline |
+| **No live previews** | Significant UI investment |
 
 ---
 
 ### §2. Replay Autosaving & In-Match Chat
 
-**What exists:**
-Replay recording and playback are mature — [sys_replay.c](file:///d:/3sxtra/src/sf33rd/Source/Game/system/sys_replay.c) handles the CPS3-native replay format, and [rmlui_replay_picker.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_replay_picker.cpp) provides a 20-slot RmlUi picker. The save/load flow goes through [ms_save_replay.c](file:///d:/3sxtra/src/port/screens/ms_save_replay.c) which has a full enter/tick/exit lifecycle with RmlUi integration. **Auto-saving already works for netplay matches**: `NativeSave_AutoSaveReplay()` is called in [sdl_netplay_ui.cpp](file:///d:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp#L974-L979) when a match ends naturally (guarded by `PL_Wins[0] + PL_Wins[1] > 0` to avoid corrupt data from early disconnects). Replay slots 0-9 are reserved for manual saves; slots 10-19 for auto-saves (see [native_save.c](file:///d:/3sxtra/src/port/save/native_save.c#L704)). Additionally, `AsyncReportMatch()` in `sdl_netplay_ui.cpp` snapshots `Replay_w` from memory and uploads it to the server via `LobbyServer_UploadReplay()` on a background thread — so replays are both saved locally and uploaded to the server automatically.
+#### What Exists
 
-Chat is implemented in the casual lobby via [rmlui_casual_lobby.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_casual_lobby.cpp) (39KB) with text input, message history (50-message buffer), and real-time delivery via SSE (`SSE_EVENT_CHAT`). Server-side chat is handled through `LobbyServer_SendChat()`.
+| System | Details |
+|---|---|
+| **Replay recording/playback** | [sys_replay.c](file:///d:/3sxtra/src/sf33rd/Source/Game/system/sys_replay.c) — CPS3-native format |
+| **Replay picker** | [rmlui_replay_picker.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_replay_picker.cpp) — 20-slot UI |
+| **Save/load flow** | [ms_save_replay.c](file:///d:/3sxtra/src/port/screens/ms_save_replay.c) — full enter/tick/exit lifecycle |
+| **Auto-save (netplay)** | `NativeSave_AutoSaveReplay()` called in [sdl_netplay_ui.cpp](file:///d:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp#L974-L979) when match ends (guarded by `PL_Wins[0] + PL_Wins[1] > 0`). Slots 0–9 = manual, 10–19 = auto-save. |
+| **Server upload** | `AsyncReportMatch()` snapshots `Replay_w` and uploads via `LobbyServer_UploadReplay()` on a background thread |
+| **Lobby chat** | [rmlui_casual_lobby.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_casual_lobby.cpp) — 50-message buffer, real-time via `SSE_EVENT_CHAT`, `LobbyServer_SendChat()` |
 
-**What the vision calls for:**
-Configurable retention policies (keep last N, last N days), metadata auto-tagging (characters, stage, winner, match duration, date, opponent name), highlight bookmarks during gameplay (hotkey to mark a moment), descriptive auto-naming (`2026-03-14_Ken-vs-Chun_ranked_W.rep`). For chat: pre-set quick messages (stickers/emotes) during gameplay, a quick-chat wheel via D-pad, between-rounds text chat, speech bubble indicators, and profanity filtering.
+#### Vision & Gap
 
-**The gap:**
-Auto-save *works*, but lacks the envisioned metadata and naming — replays are saved with a slot index, not descriptive filenames with match context. The `NativeReplayHeader` struct (defined in `sdl_netplay_ui.cpp`) only stores magic/version/size/reserved — it has no fields for characters, winner, or stage. Adding these would require extending the header and the save path. Retention policy doesn't exist — auto-save slots rotate through 10-19 and presumably overwrite. Highlight bookmarks would require a new input handler during gameplay that records frame numbers into the replay metadata.
-
-For chat, the gap is larger: lobby chat exists but **nothing runs during actual gameplay**. The quick-chat wheel (D-pad emote selection without typing) is an entirely new UI component. Between-rounds chat would need to hook into the round transition flow in `game.c`. The infrastructure (SSE, message delivery) is there — the problem is purely UX/timing: chat is only visible when the lobby RmlUi document is active, and that's hidden during matches.
+| Feature | Status | What's Needed |
+|---|---|---|
+| Auto-save every match | ✅ Works for netplay | — |
+| Descriptive filenames | ❌ | Extend `NativeReplayHeader` (currently only magic/version/size/reserved) with chars, winner, stage |
+| Metadata auto-tagging | ❌ | New fields in header + save path |
+| Retention policy | ❌ | Auto-save slots just rotate/overwrite |
+| Highlight bookmarks | ❌ | New input handler during gameplay recording frame numbers |
+| In-match quick-chat | ❌ | Entirely new UI — lobby chat is hidden during matches |
+| Quick-chat wheel | ❌ | D-pad emote selection, new component |
+| Between-rounds chat | ❌ | Hook into round transition in `game.c` |
 
 ---
 
 ### §3. Tournaments
 
-**What exists:**
-Nothing tournament-specific. The lobby server has rooms, queues, match reporting, and FT tracking — but no bracket management, no tournament state machine, and no server-side endpoints for tournament lifecycle.
+#### What Exists
 
-**What the vision calls for:**
-Full bracket systems (single/double elimination, round robin, Swiss), tournament creation from the Network menu, player registration with live bracket display, auto-matching from bracket positions via existing STUN/UPnP, auto-reported results, and TO manual overrides. Server infra: `POST /tournament/create`, `POST /tournament/join`, `GET /tournament/bracket`, `POST /tournament/report`.
+> Nothing tournament-specific. The lobby server has rooms, queues, match reporting, and FT tracking — but no bracket management, no tournament state machine, and no server-side endpoints.
 
-**The gap:**
-This is **entirely greenfield**. The existing `LobbyServer_ReportMatch()` could feed results into brackets, and the SSE streaming could push bracket updates — so the networking foundation exists. But the bracket logic (seeding, losers bracket, Swiss pairing), tournament-specific UI screens, and the server API all need to be built from scratch. This is the largest single effort in the document.
+#### Vision & Gap
+
+This is **entirely greenfield**. The networking foundation (SSE streaming, `LobbyServer_ReportMatch()`) is reusable, but everything else needs to be built:
+
+| Component | Status |
+|---|---|
+| Bracket logic (single/double elim, Swiss, round robin) | ❌ New |
+| Tournament UI screens | ❌ New |
+| Server API (`POST /tournament/create`, `join`, `GET /bracket`, `POST /report`) | ❌ New |
+| Auto-matching from bracket positions | ❌ New (can reuse STUN/UPnP) |
+| TO manual override tools | ❌ New |
+
+> This is the **largest single effort** in the document.
 
 ---
 
 ### §4. Dynamic Bezel During Netplay
 
-**What exists:**
-The bezel system is well-established: [sdl_app_bezel.c](file:///d:/3sxtra/src/port/sdl/app/sdl_app_bezel.c) and [sdl_bezel.c](file:///d:/3sxtra/src/port/rendering/sdl_bezel.c) handle loading and rendering 40+ per-character arcade bezels. Bezels auto-swap when the selected character changes. The toggle lives in the mods menu (`rmlui_mods_menu.cpp`). Netplay stats (ping, rollback frames, connection quality) are rendered separately by [netstats_renderer.c](file:///d:/3sxtra/src/port/sdl/netstats_renderer.c) and the RmlUi netplay overlay [rmlui_netplay_ui.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_netplay_ui.cpp).
+#### What Exists
 
-**What the vision calls for:**
-**Opponent-aware combined bezels** (P1's character on left panel, P2's on right — both players see a combined image). Netplay stats embedded into the bezel artwork (LED-style indicators in the cabinet art, not a separate overlay). Win/loss session record integrated into the bezel. Animated bezels (flickering cabinet lights, scrolling marquee with player names, input-reactive button glow). Regional/seasonal themed bezels. A spectator-specific broadcast-style frame.
+| System | Details |
+|---|---|
+| **Bezel loader/renderer** | [sdl_app_bezel.c](file:///d:/3sxtra/src/port/sdl/app/sdl_app_bezel.c), [sdl_bezel.c](file:///d:/3sxtra/src/port/rendering/sdl_bezel.c) — 40+ per-character arcade bezels, auto-swap on character change |
+| **Netplay stats overlay** | [netstats_renderer.c](file:///d:/3sxtra/src/port/sdl/netstats_renderer.c), [rmlui_netplay_ui.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_netplay_ui.cpp) — ping, rollback, quality (separate layer) |
 
-**The gap:**
-The current bezel system renders a single full-frame image per character — it has no concept of left/right panels or compositing two character bezels. Implementing opponent-aware bezels would require either: (a) generating composite images at runtime from half-bezel assets, or (b) pre-rendering all 20×20 character pairings (400 images, impractical). Option (a) means splitting bezel artwork into P1-side and P2-side panels and compositing them in the renderer.
+#### Vision & Gap
 
-Embedding stats into the bezel is a rendering integration task — currently stats and bezels are in different render layers. Animated bezels would need per-frame texture updates or sprite sheet playback in the bezel renderer, which currently handles static textures only. Seasonal/regional bezels need a selection mechanism but are otherwise just additional artwork.
+| Feature | Status | Notes |
+|---|---|---|
+| Opponent-aware (P1 left / P2 right) | ❌ | Current system renders one full-frame image — no left/right panel concept. Requires composite at runtime from half-bezel assets, or 400 pre-rendered pairs (impractical). |
+| Stats embedded in bezel art | ❌ | Stats and bezels are currently separate render layers |
+| Win/loss streak in bezel | ❌ | No session record display |
+| Animated bezels | ❌ | Renderer handles static textures only |
+| Regional/seasonal bezels | ❌ | Additional artwork + selection mechanism |
+| Spectator broadcast frame | ❌ | New layout |
 
 ---
 
 ### §5. King of the Hill
 
-**What exists:**
-The foundation is strong. The lobby server already implements **winner-stays-on rotation**: `LobbyServer_ReportMatchEnd()` sends winner/loser to the server, which auto-rotates the queue. `SSE_EVENT_MATCH_END` carries `match_winner_id` and `match_loser_id`. The queue system (`LobbyServer_JoinQueue/LeaveQueue`, `queue[MAX_ROOM_PLAYERS]` in `RoomState`) manages challenger ordering. Match proposals (`SSE_EVENT_MATCH_PROPOSE` → accept/decline Phase 6) handle the transition to the next match.
+#### What Exists
 
-Win streak display exists in two places: [win.c](file:///d:/3sxtra/src/sf33rd/Source/Game/screen/win.c) for the arcade win screen, and [rmlui_win_screen.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_win_screen.cpp) which binds `WGJ_Win` (consecutive wins) and `WGJ_Score` as an RmlUi overlay showing winner name, score, and streak text ("1st WIN", "2nd WIN+").
+| System | Details |
+|---|---|
+| **Winner-stays-on rotation** | `LobbyServer_ReportMatchEnd()` auto-rotates the queue. `SSE_EVENT_MATCH_END` carries `match_winner_id`/`match_loser_id`. |
+| **Queue management** | `LobbyServer_JoinQueue/LeaveQueue`, `queue[MAX_ROOM_PLAYERS]` in `RoomState` |
+| **Win streak display** | [win.c](file:///d:/3sxtra/src/sf33rd/Source/Game/screen/win.c) + [rmlui_win_screen.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_win_screen.cpp) — binds `WGJ_Win` (consecutive wins), shows "1st WIN", "2nd WIN+" |
+| **Spectating** | [netplay.c](file:///d:/3sxtra/src/netplay/netplay.c) — up to 4 spectators, 15-frame delay |
 
-Spectating is available: casual lobby has a spectate button, and [netplay.c](file:///d:/3sxtra/src/netplay/netplay.c) supports up to 4 spectators with 15-frame delay.
+> The **mechanics** work. The **KOTH experience** doesn't exist yet.
 
-**What the vision calls for:**
-A dedicated KOTH *mode* — not just a room with rotation, but a recognised room type in the lobby browser ("KOTH" label), with KOTH-specific stats (current streak, longest streak this session, total defenses, character usage, average match duration, parry/super counts), visible queue lineup with names/ranks, auto-promote with seamless transitions, CPU fill for empty queues, and a "dethroned" animation when a long streak is broken.
+#### The Gap
 
-**The gap:**
-The **mechanics** work (rotate, queue, streak count), but the **KOTH experience** doesn't exist. There's no KOTH room type in `RoomListItem` — all rooms look the same in the lobby browser. There's no KOTH-specific stats tracking beyond the basic `WGJ_Win` counter — session aggregate stats (longest streak, total defenses, character usage breakdowns) aren't tracked. The queue visualization in the casual lobby shows player names but not in a KOTH-themed way. The "dethroned" animation is purely cosmetic but signals the mode identity. CPU fill when the queue is empty would require triggering local AI matches while waiting — conceptually simple but untested in the current match flow.
+| Gap | Notes |
+|---|---|
+| **No KOTH room type** | All rooms look identical in the lobby browser — no "KOTH" label in `RoomListItem` |
+| **No session stats** | `WGJ_Win` exists but no longest-streak, total defenses, character usage, avg duration, parry/super counts |
+| **No KOTH lobby UI** | Queue is shown but not in a KOTH-themed way |
+| **No dethroned animation** | "UPSET!" screen when a long streak is broken |
+| **No CPU fill** | When queue is empty, King should play CPU — conceptually simple, untested in match flow |
 
-Implementing KOTH mostly means: (1) add a `room_type` field to the room API, (2) build a KOTH-flavored variant of the casual lobby UI, (3) wire server-side stats aggregation for the KOTH metrics, (4) add the dethroned/upset screen as an RmlUi overlay.
+**Implementation steps:** (1) add `room_type` to the room API, (2) build KOTH-flavored casual lobby variant, (3) wire server-side stats aggregation, (4) add dethroned/upset RmlUi overlay.
 
 ---
 
 ### §6. Private / Hidden Rooms
 
-**What exists:**
-Room creation works: `LobbyServer_CreateRoom(name, ft, out_room)` creates a room with a server-assigned 4-character code. `LobbyServer_ListRooms()` returns all active rooms. `LobbyServer_JoinRoom()` accepts a room code. The room code system already acts as a simple form of private access — you can share a code and only people who know it can join. But rooms are not truly hidden from the public list.
+#### What Exists
 
-The invite cooldown/decline system exists: `LobbyServer_DeclineInvite()` reports to the server, and `add_declined_player()` in `sdl_netplay_ui.cpp` enforces a local 30-second cooldown with configurable duration via `CFG_KEY_NETPLAY_INVITE_COOLDOWN`.
+| System | Details |
+|---|---|
+| **Room creation** | `LobbyServer_CreateRoom(name, ft, out_room)` — server-assigned 4-char code |
+| **Room listing/joining** | `LobbyServer_ListRooms()`, `LobbyServer_JoinRoom()` |
+| **Invite cooldown** | `LobbyServer_DeclineInvite()` + `add_declined_player()` — 30s local cooldown, configurable via `CFG_KEY_NETPLAY_INVITE_COOLDOWN` |
 
-**What the vision calls for:**
-**Password-protected rooms** (HMAC-SHA256 — SHA256 is already available in [sha256.c](file:///d:/3sxtra/src/netplay/sha256.c)). **Hidden rooms** that don't appear in `ListRooms()`. Human-readable room codes (e.g., `HADOKEN-42` instead of 4-char codes). Per-room allowlists/blocklists. Persistent rooms with a grace period when the host briefly disconnects.
+> Room codes act as *soft* private access — shareable, but rooms are still publicly visible.
 
-**The gap:**
-The server API needs: a `password` parameter in `CreateRoom`, a `visibility` field (public/hidden), allowlist/blocklist storage per room, and a host-migration grace timer. On the client: a password-entry dialog in the RmlUi lobby join flow, and lobby list filtering (Public / Private / My Rooms). SHA256 is available for the HMAC. The room code format is cosmetic — the server generates codes, so switching to word-based codes is a server change.
+#### Vision & Gap
 
-All of this is **API extensions + UI changes** — no fundamental architectural work. The server already stores room state with SSE streaming, so adding fields is straightforward.
+| Feature | Status | Notes |
+|---|---|---|
+| Password-protected rooms | ❌ | SHA256 already available in [sha256.c](file:///d:/3sxtra/src/netplay/sha256.c) — needs `password` param in `CreateRoom` |
+| Hidden rooms (not in `ListRooms`) | ❌ | Needs `visibility` field in room API |
+| Human-readable codes (`HADOKEN-42`) | ❌ | Server-side cosmetic change |
+| Per-room allowlist/blocklist | ❌ | Server storage + client enforcement |
+| Persistent rooms (host grace period) | ❌ | Host-migration timer |
+| Password dialog in lobby UI | ❌ | New RmlUi component |
+| Lobby list filters (Public/Private/My) | ❌ | New filter UI |
+
+> All of this is **API extensions + UI changes** — no fundamental architectural work.
 
 ---
 
 ### §7. Match Flow / Game Flow & Blind Picks
 
-**What exists:**
-**Character select** is fully implemented in [rmlui_char_select.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_char_select.cpp) (485 lines) — HD character portraits (select and versus variants for all 21 characters), Super Art name/numeral display per player, stage select with country names and flag images, BCD-decoded countdown timer with per-phase visibility gating, player visibility flags (solo/dual/confirmed states), and auto-hide when `Play_Game` starts.
+#### What Exists
 
-**VS screen** overlays character names via [rmlui_vs_screen.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_vs_screen.cpp). The **match proposal** system is complete: `SSE_EVENT_MATCH_PROPOSE` delivers P1/P2 info (name, connection type, RTT, region, room code), `LobbyServer_AcceptMatch/DeclineMatch` handles responses, and `SSE_EVENT_MATCH_DECLINE` carries reason ("declined" or "timeout"). FT is tracked per room and per match proposal.
+| System | Details |
+|---|---|
+| **Character select** | [rmlui_char_select.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_char_select.cpp) (485 lines) — HD portraits for all 21 chars, SA display, stage select with flags, BCD countdown timer, player visibility flags |
+| **VS screen** | [rmlui_vs_screen.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_vs_screen.cpp) |
+| **Match proposals** | `SSE_EVENT_MATCH_PROPOSE` — delivers P1/P2 name, conn type, RTT, region, room code. Accept/decline + timeout handling. |
+| **Game HUD** | [rmlui_game_hud.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_game_hud.cpp) (549 lines, 52 bindings) — health bars, round timer, stun/SA gauges, combo/parry counters, result bubbles |
 
-The **game HUD** in [rmlui_game_hud.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_game_hud.cpp) (549 lines, 52 bindings) provides: health bars with drain animation, round timer, stun gauge, SA gauge with stock/fill/percentage, combo counter with hit kind, parry counter with red parry flag, per-round result bubbles (V/P/C/D/J/S types), score, and player names — all with per-component phase 3 toggles allowing fallback to CPS3 sprites.
+#### Vision & Gap
 
-**What the vision calls for:**
-**Blind picks** — both players select simultaneously with selections hidden until both lock in, with a reveal animation. A structured match flow pipeline: Find Match → Blind Pick → Stage Ban → Loading → VS Screen → Match → Results → Rematch. Stage ban system (each player bans 1-2 stages, random from remainder, loser picks option). Game flow modes: Casual (open picks), Ranked (blind enforced, BO3, random stage), Tournament (blind G1, counter-pick G2+), FT-N.
-
-**The gap:**
-Character select works perfectly for local/standard play, but **blind pick requires a network synchronization layer** that doesn't exist. Currently both players see the same character select screen in real-time — implementing blind picks means: (a) hiding the opponent's cursor/portrait until lock-in, (b) adding lock-in state sync messages to the netplay protocol, (c) building the reveal animation. The existing `rmlui_char_select.cpp` bindings track `Sel_PL_Complete[0/1]` and `My_char[0/1]` — these could drive blind pick visibility gating, but the netcode doesn't currently decouple selection visibility from selection state.
-
-Stage bans need a new pre-match negotiation step — the current flow goes directly from character confirm to VS screen. The "match flow pipeline" diagram would require a state machine layered on top of the existing `menu_task_phases.h` phase system.
+| Feature | Status | Notes |
+|---|---|---|
+| Blind picks | ❌ | Requires network sync layer — both players currently see real-time char select. Need: hide opponent cursor until lock-in, lock-in sync messages, reveal animation. Hooks exist: `Sel_PL_Complete[0/1]`, `My_char[0/1]`. |
+| Stage bans | ❌ | New pre-match negotiation step before VS screen |
+| Match flow state machine | ❌ | State machine layered on `menu_task_phases.h` |
+| Ranked/Tournament game flow modes | ❌ | New server-coordinated flow |
 
 ---
 
 ### §8. Fight Requests — Matchmaking & Ranked
 
-**What exists:**
-The **server infrastructure is mature**. `LobbyServer_ReportMatch()` implements cross-validated match reporting with 4 statuses (pending/in_progress/complete/dispute). `LobbyServer_GetPlayerStats()` returns Glicko-2 stats: `rating`, `rd` (rating deviation), `tier` (bronze/silver/gold/etc.), `wins`, `losses`, `disconnects`. `LobbyServer_ReportDisconnect()` handles ragequit detection with 30-second server-side timeout. Leaderboards are paginated via `LobbyServer_GetLeaderboard()` with full RmlUi display in [rmlui_leaderboard.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_leaderboard.cpp). `LeaderboardEntry` includes `rank`, `rating`, `tier`, `grade`, `most_played_char`, `country`, and `disconnects`.
+#### What Exists
 
-The **connection quality filtering is implemented**: `player_passes_filters()` in [sdl_netplay_ui.cpp](file:///d:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp#L276-L301) checks three criteria: region lock (`CFG_KEY_NETPLAY_REGION_LOCK`), max ping (`CFG_KEY_NETPLAY_MAX_PING` using P2P RTT from `PingProbe_GetRTT()` with triangulated fallback), and Wi-Fi block (`CFG_KEY_NETPLAY_BLOCK_WIFI`). Invites that fail these checks are auto-declined with a reason logged and shown in the status message. The searching system (`LobbyServer_StartSearching/StopSearching/GetSearching`), region detection, Wi-Fi/wired detection ([net_detect.c](file:///d:/3sxtra/src/netplay/net_detect.c)), and P2P ping probing ([ping_probe.c](file:///d:/3sxtra/src/netplay/ping_probe.c)) are all operational.
+| System | Details |
+|---|---|
+| **Match reporting** | `LobbyServer_ReportMatch()` — cross-validated, 4 statuses (pending/in_progress/complete/dispute) |
+| **Player stats** | `LobbyServer_GetPlayerStats()` — Glicko-2 `rating`, `rd`, `tier`, `wins`, `losses`, `disconnects` |
+| **Disconnect handling** | `LobbyServer_ReportDisconnect()` — 30s server-side timeout for ragequit detection |
+| **Leaderboards** | `LobbyServer_GetLeaderboard()` (paginated) + [rmlui_leaderboard.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_leaderboard.cpp) — rank, rating, tier, grade, most-played char, country, disconnects |
+| **Connection filtering** | `player_passes_filters()` in [sdl_netplay_ui.cpp](file:///d:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp#L276-L301) — region lock, max ping (P2P RTT via `PingProbe_GetRTT()`), Wi-Fi block |
+| **Searching** | `LobbyServer_StartSearching/StopSearching/GetSearching` |
+| **Net detection** | [net_detect.c](file:///d:/3sxtra/src/netplay/net_detect.c) — Wi-Fi/wired; [ping_probe.c](file:///d:/3sxtra/src/netplay/ping_probe.c) — P2P RTT |
+| **Anti-spam** | `add_declined_player()` — 30s cooldown; `LobbyServer_DeclineInvite()` for server-side rate limiting |
 
-The anti-spam system works: declined invites trigger a local cooldown (configurable, default 30s) via `add_declined_player()`, and `LobbyServer_DeclineInvite()` reports to the server for rate limiting.
+#### The Gap
 
-**What the vision calls for:**
-**Character Lock** (lock character for duration of win streak, with bonuses/penalties), **Character Ban** (ban up to 2 characters with ranked point penalty multiplier, rank-gated in ranked mode), **ranked matchmaking queue** (auto-match based on skill, not manual server browsing), **hidden names pre-match** (only show connection quality and mode to prevent dodging), **win streak bonuses** (ranked point multiplier growing with streak, unique-opponent counter, streak-breaker bonus), **priority matchmaking** (long-streak players matched against other streak holders), **graceful quit** (hold-Start protocol for mutual no-penalty quit during round 1 with reason display), **jail system** (disconnect pattern detection → jail pool, restricted to casual + opted-in opponents, redemption path), **skill range matching** (Low/Same/High targeting).
+Every item below is **client-side gameplay or matchmaking algorithm** — the server plumbing is ready:
 
-**The gap:**
-Every gap here is a **client-side gameplay feature** or a **matchmaking algorithm** — the server plumbing is ready. Specifically:
-
-- **Character Lock/Ban**: Pure client-side state management + UI. The character select flow needs to read lock/ban config, hide banned characters, and enforce lock between matches. The ranked point modifier needs a multiplier field in the match report.
-- **Ranked matchmaking queue**: Currently players browse a list and manually connect. True matchmaking means the server pairs players automatically based on rating proximity. This requires a new server endpoint (e.g., `POST /matchmaking/enqueue` + SSE event for match found) and a client UI that shows "Searching..." instead of a player list.
-- **Hidden names**: Simple — the match proposal already shows P1/P2 info. Omit the `display_name` field until post-accept.
-- **Win streak bonuses/priority matching**: The win counter exists (`WGJ_Win`), but there's no streak-aware ranked point modifier and no priority matching logic on the server.
-- **Graceful quit**: An entirely new in-game protocol — hold-Start detection, reason cycling, mutual confirmation, penalty exemption. Needs hooks in the game loop and the netplay protocol.
-- **Jail system**: Server already tracks `disconnects`. Adding jail means: a `jailed` flag in player state, server logic to auto-jail on disconnect threshold, the `jailed_players` search filter, and a rehabilitation counter.
-- **Skill range matching**: Requires server-side matchmaking (not just filtering) that considers rating bands.
+| Feature | Notes |
+|---|---|
+| **Character Lock/Ban** | Client-side state + UI. Char select needs to read lock/ban config, hide banned chars, enforce lock between matches. Ranked point modifier needs multiplier field in match report. |
+| **Ranked matchmaking queue** | Currently manual browse + connect. Needs `POST /matchmaking/enqueue` + SSE event, "Searching..." client UI. |
+| **Hidden names pre-match** | Simple — omit `display_name` from match proposal until post-accept. |
+| **Win streak bonuses** | `WGJ_Win` exists. No streak-aware ranked point modifier, no priority matching logic. |
+| **Graceful quit** | New in-game protocol — hold-Start detection, reason cycling, mutual confirmation. Needs game loop + netplay protocol hooks. |
+| **Jail system** | `disconnects` already tracked. Needs: `jailed` flag, auto-jail threshold logic, jail search filter, rehabilitation counter. |
+| **Skill range matching** | Needs server-side matchmaking (not just filtering) with rating bands. |
 
 ---
 
 ### §9. Attract Mode & Information Bar
 
-**What exists:**
-The attract mode (CPU vs. CPU demo fights) is original arcade code: [demo01.c](file:///d:/3sxtra/src/sf33rd/Source/Game/demo/demo01.c) handles title screen and attract-mode title sequences, [demo02.c](file:///d:/3sxtra/src/sf33rd/Source/Game/demo/demo02.c) runs the in-game demo (character select + gameplay). The demo data in [demo_dat.c](file:///d:/3sxtra/src/sf33rd/Source/Game/demo/demo_dat.c) provides controller input-replay data for demo sequences, and [demo_states.h](file:///d:/3sxtra/src/sf33rd/Source/Game/demo/demo_states.h) defines the state machine (quick title, quick-start attract, full attract with char select).
+#### What Exists
 
-An **HD attract overlay** exists in [rmlui_attract_overlay.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_attract_overlay.cpp) — it shows an HD `logo_small.png` and a blinking "PRESS START BUTTON" prompt during Loop_Demo cases 3/5, with controlled show/hide of the logo triggered from `SF3_logo()` in `sc_sub.c`.
+| System | Details |
+|---|---|
+| **Attract mode** | Original arcade code — [demo01.c](file:///d:/3sxtra/src/sf33rd/Source/Game/demo/demo01.c) (title sequences), [demo02.c](file:///d:/3sxtra/src/sf33rd/Source/Game/demo/demo02.c) (demo gameplay), [demo_dat.c](file:///d:/3sxtra/src/sf33rd/Source/Game/demo/demo_dat.c) (input-replay data), [demo_states.h](file:///d:/3sxtra/src/sf33rd/Source/Game/demo/demo_states.h) |
+| **HD attract overlay** | [rmlui_attract_overlay.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_attract_overlay.cpp) — HD logo + "PRESS START BUTTON" during Loop_Demo cases 3/5 |
+| **High-score tables** | [sys_ranking.c](file:///d:/3sxtra/src/sf33rd/Source/Game/system/sys_ranking.c) |
 
-Ranking/high-score tables exist in [sys_ranking.c](file:///d:/3sxtra/src/sf33rd/Source/Game/system/sys_ranking.c).
+#### Vision & Gap
 
-**What the vision calls for:**
-An **online-aware attract mode** that replaces CPU demo fights with downloaded online match replays (player names hidden), displays live server stats (daily active players, most-played characters, total matches today), and shows a live win streak leaderboard (top 10-20 currently active streaks). Graceful offline fallback. Plus an **information bar** — a persistent bottom-of-screen bar that adapts content by context: menu item descriptions in options, scrolling ticker with announcements/server status in attract, room/player counts in lobby.
-
-**The gap:**
-The attract mode plays hardcoded CPU input sequences — it can't play back online replays because the replay download API doesn't exist yet on the server (replay *upload* works, but there's no `GET /replay/random` endpoint). Wiring it in would mean: (1) new server endpoint to serve random replays, (2) download and inject into the existing replay playback system, (3) suppress the "PRESS START" overlay during online replays. The leaderboard data is already fetchable via `LobbyServer_GetLeaderboard()` — it just needs to be rendered during attract mode instead of only in the network menu.
-
-The information bar is a standalone new RmlUi component — a persistent overlay document with context-aware bindings. No code exists for it. The main challenge is deciding which RmlUi context to use (it spans game and menu contexts) and how to source context descriptions for menu items (the existing menu system doesn't expose human-readable help text for its items).
+| Feature | Status | Notes |
+|---|---|---|
+| Online replay attract | ❌ | Replay *upload* works; needs new `GET /replay/random` endpoint + client download + inject into replay playback + suppress "PRESS START" overlay |
+| Live server stats display | ❌ | Data fetchable via `LobbyServer_GetLeaderboard()` — just needs rendering during attract, not only in network menu |
+| Live win streak leaderboard | ❌ | Same — data exists, no attract-mode rendering |
+| Offline fallback | ✅ | Already works — CPU demos always play when offline |
+| Information bar | ❌ | New standalone RmlUi component. Challenge: spans game + menu contexts; menu system has no human-readable help text for items. |
 
 ---
 
 ### §10. Additional Ideas
 
-**What exists:**
-**Spectator mode** is functional in [netplay.c](file:///d:/3sxtra/src/netplay/netplay.c) — it creates a spectate-only GekkoNet session with 15-frame delay, supports up to 4 spectators, handles connected/disconnected/paused/unpaused events, and processes advance + load game events (no saves). The casual lobby in `rmlui_casual_lobby.cpp` has a spectate button gated on `can_spectate` (not playing, match active, not already spectating). The network adapter in [sdl_net_adapter.c](file:///d:/3sxtra/src/netplay/sdl_net_adapter.c) caches up to 8 unique peers (1v1 + spectators).
+#### What Exists
 
-**Input display** is a full RmlUi data-bound overlay in [rmlui_input_display.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_input_display.cpp) (335 lines) with per-frame input history tracking and show/hide via the mods menu toggle `mods_menu_input_display_enabled`.
+| System | Details |
+|---|---|
+| **Spectator mode** | [netplay.c](file:///d:/3sxtra/src/netplay/netplay.c) — GekkoNet spectate session, 15-frame delay, up to 4 spectators, connected/paused/unpaused events. Spectate button in `rmlui_casual_lobby.cpp` gated on `can_spectate`. |
+| **Input display** | [rmlui_input_display.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_input_display.cpp) (335 lines) — per-frame input history, mods menu toggle |
+| **Frame data display** | [rmlui_frame_display.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_frame_display.cpp) (342 lines) — frame meter (startup/active/recovery/hitstun/blockstun/down), startup F / total F / advantage, training mode only |
+| **Player stats** | `LobbyServer_GetPlayerStats()` — wins/losses/disconnects/rating/rd/tier. `LeaderboardEntry` — rank, most-played char, country, grade |
+| **Lobby indicators** | [rmlui_network_lobby.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_network_lobby.cpp) — per-player `ping_label` (~42ms), `ping_class` (green/yellow/red), `conn_type` (wifi/wired), country flags ✅ |
+| **Player identity** | [identity.c](file:///d:/3sxtra/src/netplay/identity.c) — SHA256-based ID generation |
 
-**Frame data display** exists in [rmlui_frame_display.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_frame_display.cpp) (342 lines) — frame meter with startup/active/recovery/hitstun/blockstun/down states, stats text (startup F / total F / advantage), per-player colour-coded cell arrays, idle detection (clear after 90 frames of double-idle), training mode only.
+#### The Gap
 
-**Player stats on server**: `LobbyServer_GetPlayerStats()` returns wins/losses/disconnects/rating/rd/tier. `LeaderboardEntry` has rank, most-played character, country, grade. Country is server-derived from IP (ISO 3166-1 alpha-2). Player identity is managed via [identity.c](file:///d:/3sxtra/src/netplay/identity.c) with SHA256-based ID generation.
+**Spectator:**
 
-**What the vision calls for:**
-Spectator enhancements: spectator count shown to players, rewind without affecting live stream, input display for spectators, commentary mode. Ranked/rating: character-specific ratings, seasonal resets with placement matches. Community: player profiles (avatar, bio, stats, match history), friends list, clan tags. Quality of life: auto-region detection, notification sounds, idle timeout.
+| Feature | Status | Notes |
+|---|---|---|
+| Spectator count shown to players | ❌ | Data in `RoomState` server-side, not surfaced |
+| Rewind without affecting live stream | ❌ | Requires circular buffer of game states on spectator side |
+| Input display for spectators | ❌ | |
+| Commentary mode | ❌ | Stretch goal |
 
-**The gap:**
-- **Spectator** works but is bare — no spectator count display (the data is available server-side in `RoomState` but not surfaced), no rewind (would require circular buffer of game states on the spectator side), no commentary system.
-- **Rating system**: Glicko-2 exists server-side but is global (not per-character). Adding character-specific ratings needs a `{player_id, character}` composite key in the server DB. Seasonal resets and placement matches are server config changes.
-- **Social features** (profiles, friends, clans): Nothing exists. These are full-stack features needing server storage, client UI, and presence systems.
-- **QoL**: ~~Connection quality indicators~~ **DONE** — the network lobby UI in [rmlui_network_lobby.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_network_lobby.cpp) renders per-player `ping_label` (e.g. "~42ms"), color-coded `ping_class` (green/yellow/red at 60ms/120ms thresholds), `conn_type` (wifi/wired/unknown), and country flags with `flag_icon`. Auto-region detection is not implemented (region is manually set via `CFG_KEY_LOBBY_REGION`). Notification sounds and idle timeout don't exist.
+**Rating:**
+
+| Feature | Status | Notes |
+|---|---|---|
+| Global Glicko-2 rating + tiers | ✅ | Fully operational |
+| Global leaderboards | ✅ | Paginated, full RmlUi display |
+| Character-specific rating | ❌ | Needs `{player_id, character}` composite key in server DB |
+| Seasonal resets + placement matches | ❌ | Server config changes |
+
+**Social:**
+
+| Feature | Status |
+|---|---|
+| Player profiles (avatar, bio, stats) | ❌ |
+| Friends list | ❌ |
+| Clan / team tags | ❌ |
+| Match history (searchable log) | ❌ |
+
+**Quality of Life:**
+
+| Feature | Status | Notes |
+|---|---|---|
+| Lobby connection indicators | ✅ | ping_class, conn_type, country flags in network lobby |
+| Auto-region detection | ❌ | Region manually set via `CFG_KEY_LOBBY_REGION` |
+| Notification sounds | ❌ | |
+| Idle timeout | ❌ | |
 
 ---
 
 ### Summary
 
-```
-Feature Area                  What Exists                           What's Missing
-──────────────────────────────────────────────────────────────────────────────────────
-§1 Mod Menu          Mods/shader/stage menus (separate)     Unified tree, profiles,
-                     F-key toggles, phase3 per-component    discovery, previews,
-                     audio/voice mods, sprite overrides,    per-char FX overrides
-                     HD stages, hot-reload
-
-§2 Replays & Chat    Auto-save + upload, 20-slot picker,    Metadata tagging, named
-                     lobby chat (SSE, 50-msg buffer)        files, bookmarks, in-match
-                                                            quick chat, emotes
-
-§3 Tournaments       Nothing                                Everything — brackets, API,
-                                                            auto-matching, TO tools
-
-§4 Dynamic Bezel     40+ char bezels, auto-swap             Opponent-aware compositing,
-                                                            stats-in-bezel, animation,
-                                                            spectator frame
-
-§5 KOTH              Rotation + queue + streak count        KOTH room type, session
-                     (server-side, casual lobby)            stats, queue viz, dethroned
-                                                            anim, CPU fill
-
-§6 Private Rooms     Room codes, create/join                Password, hidden visibility,
-                                                            allow/blocklists, persistence
-
-§7 Match Flow        Char select (HD portraits, SA,         Blind pick sync, stage
-                     timer, stage select), VS screen,       bans, match flow state
-                     accept/decline proposals               machine, ranked/tournament
-                                                            game flow modes
-
-§8 Fight Requests    Glicko-2, match reporting,             Character lock/ban,
-                     disconnect tracking, leaderboards,     ranked auto-match, hidden
-                     region/ping/WiFi filtering,            names, streak bonuses,
-                     searching, anti-spam                   graceful quit, jail,
-                                                            skill range pairing
-
-§9 Attract Mode      CPU demos, HD overlay,                 Online replay playback,
-                     arcade ranking tables                  live stats, live streaks,
-                                                            information bar
-
-§10 Additional       Spectator (4 max, 15f delay),          Spectator count/rewind,
-                     input display, frame data,             per-char rating, seasonal
-                     player stats/identity,                resets, profiles, friends,
-                     lobby ping/conn indicators ✓          clans, match history UI
-```
+| Feature Area | What Exists | What's Missing |
+|---|---|---|
+| **§1 Mod Menu** | Mods/shader/stage menus, F-key toggles, phase3 per-component, audio/voice mods, sprite overrides, HD stages, hot-reload | Unified tree, profiles, discovery, previews, per-char FX |
+| **§2 Replays & Chat** | Auto-save + upload, 20-slot picker, lobby chat (SSE, 50-msg) | Metadata, named files, bookmarks, in-match quick chat, emotes |
+| **§3 Tournaments** | Nothing | Everything — brackets, API, auto-matching, TO tools |
+| **§4 Dynamic Bezel** | 40+ char bezels, auto-swap | Opponent-aware compositing, stats-in-bezel, animation, spectator frame |
+| **§5 KOTH** | Rotation + queue + streak count (server + casual lobby) | KOTH room type, session stats, queue viz, dethroned anim, CPU fill |
+| **§6 Private Rooms** | Room codes, create/join | Password, hidden visibility, allow/blocklists, persistence |
+| **§7 Match Flow** | Char select (HD portraits, SA, timer, stage), VS screen, accept/decline proposals | Blind pick sync, stage bans, match flow state machine, ranked/tournament modes |
+| **§8 Fight Requests** | Glicko-2, match reporting, disconnect tracking, leaderboards, region/ping/WiFi filtering, searching, anti-spam | Character lock/ban, ranked auto-match, hidden names, streak bonuses, graceful quit, jail, skill range pairing |
+| **§9 Attract Mode** | CPU demos, HD overlay, arcade ranking tables | Online replay playback, live stats, live streaks, information bar |
+| **§10 Additional** | Spectator (4 max, 15f delay), input display, frame data, player stats/identity, lobby ping/conn indicators ✅ | Spectator count/rewind, per-char rating, seasonal resets, profiles, friends, clans, match history |
 
 > [!IMPORTANT]
 > **Key finding:** The **server infrastructure and netplay plumbing are significantly ahead of the client-side UX**. Match reporting with cross-validation, Glicko-2 stats, disconnect tracking, P2P ping probing, Wi-Fi detection, connection quality filtering, replay auto-save + upload, winner-stays-on rotation, spectator support, and the full SSE streaming system are all operational. The remaining work falls into three categories:
 >
-> 1. **New gameplay protocols** — blind picks, character lock/ban, graceful quit, KOTH mode (require netcode + game loop changes)
-> 2. **Server-side matchmaking** — ranked queue, skill range pairing, jail system, priority matching (server algorithm work)
+> 1. **New gameplay protocols** — blind picks, character lock/ban, graceful quit, KOTH mode (netcode + game loop changes)
+> 2. **Server-side matchmaking** — ranked queue, skill range pairing, jail system, priority matching
 > 3. **Client-side UX** — unified menus, information bar, tournament UI, private room dialogs, KOTH stats (RmlUi screens)
 
 ---
@@ -259,37 +330,37 @@ Feature Area                  What Exists                           What's Missi
 
 **Original idea:** Expose mod configuration and visual-effects screens through the in-game menu system.
 
-### What this means
+### What This Means
 - Unify the **F3 mods menu** and shader/FX controls into a single, discoverable in-game menu tree accessible from the main menu or pause menu.
 - Let players toggle **HD stages**, **sprite overrides**, **bezel packs**, **shader presets**, and **audio mods** without memorizing hotkeys.
 - Present live previews: show a thumbnail or looping clip of the active shader/stage/bezel before committing.
 
-### Augmented scope
+### Augmented Scope
 | Sub-feature | Details |
 |---|---|
 | **Per-character FX overrides** | Individual hit-spark and super-flash styles per character (e.g., classic CPS3 sparks vs. HD redrawn). |
 | **Mod profiles / presets** | Save and name combinations of visual settings ("Tournament Clean", "Maximum Drip"). One-click swap. |
 | **Mod discovery** | Scan `assets/` at startup, auto-populate the menu. Show installed vs. missing mod packs. |
-| **Hot-reload** | Apply mod/shader changes without restarting the game. Already partially supported via F2/F4 — extend to all mod types. |
+| **Hot-reload** | Apply mod/shader changes without restarting. Already partially supported via F2/F4 and Ctrl+F5 (RmlUi) — extend to all mod types. |
 
 ---
 
 ## 2. Replay Autosaving & In-Match Chat
 
 ### Replay Autosaving
-**Original idea:** Automatically save replays without manual action.
 
-- **Auto-save every completed match** to `replays/` with zero user interaction.
+> [!NOTE]
+> Auto-save + server upload already works for netplay matches. The remaining work is metadata, naming, and retention.
+
 - Configurable retention policy: keep last N replays, or last N days, or unlimited.
 - Auto-tag replays with metadata: characters, stage, winner, match duration, date, netplay opponent name.
 - **Highlight bookmarks** — press a hotkey mid-match to bookmark a moment; replay viewer jumps to bookmarks.
 - **Replay naming** — auto-generate descriptive filenames: `2026-03-14_Ken-vs-Chun_ranked_W.rep`
 
 ### In-Match Chat
-**Original idea:** Chat during matches.
 
 - **Pre-set quick messages** (stickers/emotes): "GG", "Rematch?", "One more", "BRB", custom messages.
-- Quick-chat wheel activated by a hotkey — select with D-pad, no typing mid-match.
+- Quick-chat wheel activated by hotkey — select with D-pad, no typing mid-match.
 - **Between-rounds text chat** — small text input during the "Ready" countdown or post-match results screen.
 - **Chat history** — scrollable log in the lobby and post-match screen.
 - Profanity filter toggle (opt-in).
@@ -299,42 +370,37 @@ Feature Area                  What Exists                           What's Missi
 
 ## 3. Tournaments
 
-**Original idea:** Tournament support.
-
 ### Bracket System
-| Feature | Details |
+| Format | Details |
 |---|---|
 | **Single elimination** | Classic bracket, seeded or random. |
 | **Double elimination** | Winners/losers bracket with grand finals reset. |
 | **Round robin** | League-style, everyone plays everyone. Points-based ranking. |
-| **Swiss format** | Pair players with similar records each round. Good for large pools. |
+| **Swiss** | Pair players with similar records each round. Good for large pools. |
 
 ### Tournament Flow
-- **Creation:** Host creates tournament from the Network menu — set name, format, max players, game settings (best-of-3/5, stage select rules, etc.).
+- **Creation:** Host creates tournament from the Network menu — set name, format, max players, game settings.
 - **Registration:** Players join via lobby code or direct link. Show bracket live as players register.
 - **Auto-matching:** When a bracket match is ready, both players get a notification and auto-connect via the existing STUN/UPnP netplay.
-- **Results reporting:** Match results auto-reported from game state. Manual override for TOs (tournament organizers).
-- **Spectator queue:** Non-active players can spectate current matches (see §4).
+- **Results reporting:** Match results auto-reported from game state. Manual override for TOs.
+- **Spectator queue:** Non-active players can spectate current matches.
 
 ### Infrastructure
 - Extend the existing Node.js lobby server with tournament state management.
-- Store bracket state server-side; clients poll/subscribe for updates.
+- Store bracket state server-side; clients poll/subscribe via SSE.
 - REST API endpoints: `POST /tournament/create`, `POST /tournament/join`, `GET /tournament/bracket`, `POST /tournament/report`.
 
 ---
 
 ## 4. Dynamic Bezel During Netplay
 
-**Original idea:** Dynamic bezel during netplay.
-
-### Current State
-40+ per-character arcade bezels already auto-swap on character selection. This idea extends bezels to be **context-aware during netplay**.
+> 40+ per-character arcade bezels already auto-swap on character selection. This extends bezels to be **context-aware during netplay**.
 
 ### Proposed Enhancements
 | Feature | Details |
 |---|---|
 | **Opponent-aware bezels** | Show P1's character on the left bezel panel, P2's on the right. Both players see a combined bezel. |
-| **Netplay stats overlay on bezel** | Display ping, rollback frames, and connection quality as part of the bezel artwork — e.g., a small LED-style indicator embedded in the cabinet art. |
+| **Netplay stats overlay on bezel** | Display ping, rollback frames, and connection quality as part of the bezel artwork — LED-style indicator in the cabinet art. |
 | **Win/loss streak** | Show session record (W-L) integrated into the bezel — like a coin-op win counter. |
 | **Animated bezels** | Subtle animations: flickering arcade cabinet lights, scrolling marquee text with player names, glowing buttons that pulse on input. |
 | **Regional/seasonal bezels** | Themed bezels for events, holidays, or regions. Auto-select based on lobby region. |
@@ -343,8 +409,6 @@ Feature Area                  What Exists                           What's Missi
 ---
 
 ## 5. King of the Hill Mode with Stats
-
-**Original idea:** King of the Hill mode with stats.
 
 ### Core Loop
 1. One player is the **King** (on the cabinet). Challengers queue up.
@@ -373,8 +437,6 @@ Feature Area                  What Exists                           What's Missi
 
 ## 6. Private / Hidden Rooms
 
-**Original idea:** Private or hidden rooms.
-
 ### Implementation
 | Feature | Details |
 |---|---|
@@ -394,10 +456,7 @@ Feature Area                  What Exists                           What's Missi
 
 ## 7. Match Flow / Game Flow & Blind Picks
 
-**Original idea:** Match flow / game flow, blind picks.
-
-### Match Flow System
-A structured pre-match flow that mirrors tournament/competitive standards:
+### Match Flow Pipeline
 
 ```
 ┌─────────────┐    ┌──────────────┐    ┌─────────────┐    ┌───────────┐
@@ -414,16 +473,17 @@ A structured pre-match flow that mirrors tournament/competitive standards:
 ```
 
 ### Blind Picks
+
 Both players select their character and Super Art **simultaneously**, without seeing the opponent's choice.
 
 | Feature | Details |
 |---|---|
 | **Simultaneous selection** | Both players pick at the same time. Selections hidden until both are locked in. |
-| **Lock-in confirmation** | Visual + audio cue when a player has locked their pick. Opponent sees "READY" but not the character. |
-| **Reveal animation** | Dramatic character reveal once both players lock in — VS splash screen. |
+| **Lock-in confirmation** | Visual + audio cue when a player locks. Opponent sees "READY" but not the character. |
+| **Reveal animation** | Dramatic character reveal once both lock in — VS splash screen. |
 | **Timer** | 30-second pick timer. If time expires, last highlighted character is locked. Random if no selection. |
 | **Super Art selection** | Integrated into the blind pick — select character + SA in one flow. |
-| **Pick history** | Show what opponent picked in previous games of a set (for counter-picking in later games if blind pick is off). |
+| **Pick history** | Show what opponent picked in previous games of a set (for counter-picking). |
 
 ### Stage Selection
 - **Random stage** (default for competitive).
@@ -457,14 +517,14 @@ Players configure their Fight Request preferences before searching. All settings
 | **Skill Range** | Low / Same / High | Target opponents below, at, or above your skill level. |
 | **Connection Quality** | 1–5 bars minimum | Reject matches below this threshold. |
 | **Allow Wi-Fi** | On / Off | Filter out Wi-Fi connections for maximum stability. |
-| **Jailed Players** | On / Off *(casual only)* | Whether to include jailed players in the search pool (see §Jail System). |
+| **Jailed Players** | On / Off *(casual only)* | Whether to include jailed players in the search pool. |
 
 ### Character Lock
 
 | Setting | Behaviour |
 |---|---|
-| **On** | Enables **win streak display and bonuses**. On first search (zero wins), the character select screen appears. After getting a win the character is locked — the player keeps using the same character for the duration of the streak. Turning this off **resets any existing win streak**. |
-| **Off** | Win streak display is hidden, no streak bonuses. Player can freely re-select their character between matches. If the opponent has Character Lock **on**, only the locked player's character is fixed — the unlocked player may still pick freely. |
+| **On** | Enables **win streak display and bonuses**. On first search (zero wins), character select appears. After getting a win the character is locked for the duration of the streak. Turning this off **resets any existing win streak**. |
+| **Off** | Win streak hidden, no streak bonuses. Player can freely re-select between matches. If the opponent has Lock **on**, only they are fixed — the unlocked player may still pick freely. |
 
 > [!IMPORTANT]
 > Character Lock creates a risk/reward dynamic: locking in earns streak bonuses but removes the ability to counter-pick. This naturally rewards character loyalty and mastery.
@@ -478,10 +538,10 @@ Available in **all Casual matches** and in **Ranked up to a configurable rank th
 | **Ban up to 2 characters** | Each banned character applies a **ranked-point penalty multiplier** to that player's wins — the ban holder is penalized, not the opponent. |
 | **Stacking bans** | If both players ban, up to 4 characters are removed from the pool. |
 | **Streak interaction** | Win streak display and bonuses are **inactive** while character bans are enabled. |
-| **Rank gating** | Players above the rank threshold can only enable character bans in casual mode. This prevents high-rank players from gaming the system — you cannot climb to the top while avoiding matchups. |
+| **Rank gating** | Players above the rank threshold can only enable character bans in casual mode. You cannot climb to the top while avoiding matchups. |
 
 > [!NOTE]
-> The penalty multiplier means a player banning 2 characters earns, say, 0.7× ranked points per win. This lets lower-skill players enjoy the game while naturally capping their rank progression.
+> The penalty multiplier means a player banning 2 characters earns ~0.7× ranked points per win. This lets lower-skill players enjoy the game while naturally capping their rank progression.
 
 ### Pre-Match Acceptance
 
@@ -503,13 +563,11 @@ Win streaks are a core progression mechanic when Character Lock is on:
 | **Streak counter** | Prominently displayed during and between matches. |
 | **Unique opponents count** | Shows how many *different* players were defeated in the streak. |
 | **Highest streak beaten** | If an opponent was on a streak, display the streak number that was ended. |
-| **VS Screen fight card** | The VS screen displays both players' streak info, unique opponents, and highest streak broken — creating a hype moment before the match. |
+| **VS Screen fight card** | Displays both players' streak info, unique opponents, and highest streak broken — creating a hype moment before the match. |
 | **Streak-breaker bonus** | Ending someone's win streak awards bonus ranked points proportional to the streak length. |
-| **Priority matchmaking** | After reaching a threshold number of wins (e.g., 10+), matchmaking prioritizes other players who also have an active streak or are higher-ranked. This keeps long streaks honest — you have to beat increasingly strong opponents. |
+| **Priority matchmaking** | After reaching a threshold (e.g., 10+ wins), matchmaking prioritizes other streak holders or higher-ranked players. |
 
 ### Ranked Point System
-
-The ranked point calculation includes multiple modifiers to incentivize fair play:
 
 ```
 Base Points  ×  Streak Bonus  ×  Character Ban Penalty  ×  Disconnect Modifier
@@ -525,14 +583,14 @@ Base Points  ×  Streak Bonus  ×  Character Ban Penalty  ×  Disconnect Modifie
 
 If the connection is poor, both players can **quit without penalty** during the first round:
 
-1. **Request:** Hold Start button → a quit request message appears at the top of the screen while the game continues playing.
+1. **Request:** Hold Start → a quit request message appears at the top while the game continues.
 2. **Reason toggle:** Tap Start to cycle through reasons: *Bad Connection*, *Wrong Character*, *Controller Issue*, etc.
-3. **Cancel:** Hold Start again to cancel the request.
+3. **Cancel:** Hold Start again to cancel.
 4. **Mutual quit:** If the opponent also holds Start, the match ends with **no disconnect penalties** for either player.
-5. **One-sided quit:** If a player quits without mutual consent, normal disconnect penalties apply.
+5. **One-sided quit:** Normal disconnect penalties apply.
 
 > [!TIP]
-> The reason display serves double duty: it communicates intent to the opponent (so they know it's not rage-quitting) and provides analytics data for matchmaking quality improvements.
+> The reason display serves double duty: it communicates intent to the opponent and provides analytics data for matchmaking quality improvements.
 
 ### Jail System 💀
 
@@ -542,7 +600,7 @@ Anti-abuse mechanism for the casual pool:
 |---|---|
 | **Consistent disconnect pattern** | Player is flagged and moved to the Jail pool. |
 | **Suspected cheating** | Player is jailed pending review. |
-| **Jail restrictions** | Jailed players **cannot** enter the ranked pool. They can only match with other jailed players, or with casual players who have "Jailed Players: On" in their search settings. |
+| **Jail restrictions** | Jailed players **cannot** enter the ranked pool. They can only match with other jailed players, or casual players who have "Jailed Players: On" in their search settings. |
 | **Redemption** | Complete N matches without disconnecting to leave Jail. Repeat offenses increase the threshold. |
 
 ---
@@ -555,9 +613,9 @@ When the game is idle at the title screen and an internet connection is availabl
 
 | Classic (Offline) | Online-Enhanced |
 |---|---|
-| CPU vs. CPU demo fights | **Download and replay a random recorded online match** (player names hidden). Option to "like" the replay if a replay rating system is implemented. |
+| CPU vs. CPU demo fights | **Download and replay a random recorded online match** (player names hidden). |
 | High-score table | **Live server stats** — daily active players, most-played characters, total matches today, server uptime. |
-| Win streaks screen | **Live win streak leaderboard** — top 10–20 players currently on an active win streak, similar to SF6's Battle Ground arena. Shows character, streak count, and region. |
+| Win streaks screen | **Live win streak leaderboard** — top 10–20 players currently on an active win streak. Shows character, streak count, and region. |
 
 > [!NOTE]
 > If no internet connection is detected, the attract mode falls back to the classic arcade behaviour: CPU demo fights, local high scores, and local win streak records.
@@ -574,9 +632,7 @@ A persistent information bar at the bottom of the screen that adapts its content
 
 ---
 
-## 10. Additional Ideas (Augmented)
-
-These are natural extensions that complement the above features:
+## 10. Additional Ideas
 
 ### Spectator Mode
 - **Live spectating** of any public match from the lobby.

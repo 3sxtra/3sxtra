@@ -52,16 +52,16 @@
     <div id="rp-footer">
         <!-- Page control row -->
         <div class="rp-control-row" data-class-active="rp_zone == 1">
-            <span class="rp-ctl-arrow" data-if="rp_has_prev">&#x2190;</span>
+            <span class="rp-ctl-arrow" data-if="rp_has_prev">◀</span>
             <span class="rp-ctl-label">PAGE {{rp_page}} / {{rp_total_pages}}</span>
-            <span class="rp-ctl-arrow" data-if="rp_has_next">&#x2192;</span>
+            <span class="rp-ctl-arrow" data-if="rp_has_next">▶</span>
         </div>
         <!-- Tab control row -->
         <div class="rp-control-row" data-class-active="rp_zone == 2">
-            <span class="rp-ctl-arrow">&#x2190;</span>
+            <span class="rp-ctl-arrow">◀</span>
             <span class="rp-ctl-label" data-if="rp_tab == 0">LOCAL</span>
             <span class="rp-ctl-label" data-if="rp_tab == 1">NETPLAY</span>
-            <span class="rp-ctl-arrow">&#x2192;</span>
+            <span class="rp-ctl-arrow">▶</span>
         </div>
     </div>
 

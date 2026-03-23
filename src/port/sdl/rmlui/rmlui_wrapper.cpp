@@ -761,8 +761,10 @@ static void ensure_fonts_loaded(void) {
         SDL_Log("[RmlUi] Failed to load font: %s", font_noto.c_str());
     }
 
-    // NotoEmoji loaded as FALLBACK for emoji codepoints (⏳🔧📋📶🔌❓ etc.)
-    // that NotoSansJP doesn't cover.
+    // Noto Emoji (monochrome vector outlines) loaded as FALLBACK for emoji
+    // and symbol codepoints (◀▶🔌📶❓⏳🔧 etc.) that NotoSansJP doesn't cover.
+    // Vector outlines scale perfectly at any dp size — unlike CBDT (bitmap, fixed
+    // ppem strikes) or COLRv1 (requires Skia/Cairo to rasterize, blank in FreeType).
     std::string font_emoji = s_ui_base_path + "../fonts/NotoEmoji-Regular.ttf";
     if (!Rml::LoadFontFace(font_emoji.c_str(), true)) {
         SDL_Log("[RmlUi] Failed to load emoji font: %s", font_emoji.c_str());
