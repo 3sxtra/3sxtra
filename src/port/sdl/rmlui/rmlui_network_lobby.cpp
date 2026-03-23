@@ -143,6 +143,9 @@ static SDL_AtomicInt s_room_async_ok = { 0 };   // 1 = success, 0 = fail
 static char s_room_async_code[16] = { 0 };      // resulting room code on success
 static char s_room_async_error[128] = { 0 };    // error message on failure
 
+// Room-ready signal: set by async completion, consumed by ms_network_lobby.c
+static bool s_room_ready = false;
+
 struct AsyncRoomData {
     int action;    // 1 = create, 2 = join
     char name[64]; // room name (create)
@@ -609,13 +612,11 @@ extern "C" void rmlui_network_lobby_update(void) {
     if (SDL_GetAtomicInt(&s_room_async_done)) {
         SDL_SetAtomicInt(&s_room_async_done, 0);
         if (SDL_GetAtomicInt(&s_room_async_ok)) {
-            // Success — transition to casual lobby
+            // Success — signal ms_network_lobby.c to transition to casual lobby
             s_room_status = Rml::String(s_room_async_code);
             s_model_handle.DirtyVariable("room_status");
 
-            rmlui_casual_lobby_set_room(s_room_async_code);
-            rmlui_network_lobby_hide();
-            rmlui_casual_lobby_show();
+            s_room_ready = true;
 
             SDL_Log("[NetworkLobby] Room entered: %s", s_room_async_code);
         } else {
@@ -803,6 +804,7 @@ extern "C" void rmlui_network_lobby_update(void) {
 extern "C" void rmlui_network_lobby_show(void) {
     s_room_status = "";
     s_join_room_code = "";
+    s_room_ready = false; // Clear stale room-ready signal from prior async ops
     rmlui_wrapper_show_game_document("network_lobby");
 
     if (Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH)) {
@@ -873,6 +875,15 @@ extern "C" void rmlui_network_lobby_shutdown(void) {
     s_lan_peers.clear();
     s_net_peers.clear();
     s_room_list.clear();
+}
+
+extern "C" bool rmlui_network_lobby_has_pending_room(void) {
+    return s_room_ready;
+}
+
+extern "C" const char* rmlui_network_lobby_consume_pending_room(void) {
+    s_room_ready = false;
+    return s_room_async_code;
 }
 
 #undef DIRTY_INT

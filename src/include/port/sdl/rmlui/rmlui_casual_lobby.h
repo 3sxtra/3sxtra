@@ -29,6 +29,12 @@ const char* rmlui_casual_lobby_get_room_code(void);
 /// Returns true if the event was consumed (chat is active).
 bool rmlui_casual_lobby_handle_key_event(const union SDL_Event* event);
 
+/// Returns true if the user clicked "Leave Room" (consumed by ms_casual_lobby.c).
+bool rmlui_casual_lobby_wants_leave(void);
+
+/// Consume the leave signal — performs server leave + clears room code.
+void rmlui_casual_lobby_consume_leave(void);
+
 #ifdef __cplusplus
 }
 #endif

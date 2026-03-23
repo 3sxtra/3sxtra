@@ -535,12 +535,9 @@ void Network_Lobby(struct _TASK* task_ptr) {
     case 14: {
         /* --- Lobby input loop --- */
 
-        /* When the casual lobby room screen is visible, it handles its own
-         * input via rmlui_casual_lobby_update(). If a match is actively running,
-         * we also want to suspend menu input. Skip all menu.c input
-         * processing so button presses aren't double-handled. */
-        if (rmlui_casual_lobby_is_visible() ||
-            (Netplay_GetSessionState() != NETPLAY_SESSION_LOBBY && Netplay_GetSessionState() != NETPLAY_SESSION_IDLE))
+        /* When a match is actively running, suspend menu input so
+         * button presses aren't double-handled. */
+        if (Netplay_GetSessionState() != NETPLAY_SESSION_LOBBY && Netplay_GetSessionState() != NETPLAY_SESSION_IDLE)
             break;
 
         /* Decelerate slide-in offset */

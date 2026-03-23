@@ -27,6 +27,7 @@ extern void njUserMain();
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
+#include "port/menu_screen.h"
 #include "sf33rd/Source/Game/menu/menu.h"
 #include "port/menu_task.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
@@ -1001,10 +1002,15 @@ void Netplay_Run() {
             Menu_ReenterNetworkLobby();
 
             if (room && room[0]) {
-                rmlui_casual_lobby_show();
-                SDL_Log("[netplay] Re-entering LOBBY for casual room %s", room);
+                // Copy room code to local buffer BEFORE calling set_room:
+                // get_room_code() returns s_room_code.c_str() and set_room()
+                // does s_room_code = room_code — self-assignment through alias.
+                char room_buf[16];
+                SDL_snprintf(room_buf, sizeof(room_buf), "%s", room);
+                rmlui_casual_lobby_set_room(room_buf);
+                MenuScreen_Goto(MENU_SCREEN_CASUAL_LOBBY);
+                SDL_Log("[netplay] Re-entering LOBBY for casual room %s", room_buf);
             } else {
-                rmlui_network_lobby_show();
                 SDL_Log("[netplay] Re-entering LOBBY for normal netplay exit");
             }
         }

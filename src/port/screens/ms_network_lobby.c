@@ -32,6 +32,7 @@
 /* RmlUi Phase 3 */
 #include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
+#include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -92,6 +93,16 @@ static void network_lobby_enter(struct _TASK* task_ptr) {
 static void network_lobby_tick(struct _TASK* task_ptr) {
     /* Call the legacy function — it operates on the current r_no[2] */
     Network_Lobby(task_ptr);
+
+    /* Room create/join completed — transition to the casual lobby screen.
+     * The signal is set by rmlui_network_lobby_update() when the async
+     * LobbyServer_CreateRoom/JoinRoom thread completes successfully. */
+    if (rmlui_network_lobby_has_pending_room()) {
+        const char* code = rmlui_network_lobby_consume_pending_room();
+        rmlui_casual_lobby_set_room(code);
+        MenuScreen_Goto(MENU_SCREEN_CASUAL_LOBBY);
+        return;
+    }
 
     /* Detect exit: the legacy code sets r_no[1]=1 (Mode_Select) when
      * the user exits.  If r_no[1] changed from 21, hand off to legacy

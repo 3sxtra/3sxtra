@@ -235,6 +235,7 @@ if(NOT ENABLE_NETPLAY)
     list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdl/netplay/")
     list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdl/netstats_renderer")
     list(FILTER GAME_SRC EXCLUDE REGEX "ms_network_lobby")
+    list(FILTER GAME_SRC EXCLUDE REGEX "ms_casual_lobby")
 endif()
 
 if(NOT ENABLE_RMLUI)

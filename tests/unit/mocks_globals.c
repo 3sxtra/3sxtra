@@ -166,6 +166,10 @@ void dump_desync_state(int mismatch_frame, const void* local_state, const void* 
 // Missing GUI functions
 void Menu_ReenterNetworkLobby(void) {}
 void rmlui_network_lobby_show(void) {}
+bool rmlui_casual_lobby_wants_leave(void) { return false; }
+void rmlui_casual_lobby_consume_leave(void) {}
+bool rmlui_network_lobby_has_pending_room(void) { return false; }
+const char* rmlui_network_lobby_consume_pending_room(void) { return ""; }
 
 // Effect globals needed by game_state.c (gather_state / load_state).
 // Only defined when mocks_netplay.c is NOT linked (it provides its own copies).

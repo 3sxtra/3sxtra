@@ -30,6 +30,7 @@ extern "C" {
 #include <RmlUi/Core/Input.h>
 
 static bool s_chat_open = false;
+static bool s_wants_leave = false;
 
 // Chat popup is now a game context document using data bindings (chat_input, is_typing).
 // Keyboard input is handled via SDL events in the input handler below.
@@ -803,22 +804,12 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 }
                 refresh_room_state_from_server();
             } else if (s_cursor_y == 10) {
-                // Leave Room — go back to network lobby.
-                // The menu task is already alive at case 14 (lobby input loop)
-                // because the EXITING handler's Menu_ReenterNetworkLobby() rebuilt
-                // it after the match disconnect. Hiding the casual lobby document
-                // makes case 14's rmlui_casual_lobby_is_visible() check false,
-                // so it naturally resumes processing network lobby input.
-                SDL_Log("[CasualLobby] Leave Room: calling LobbyServer_LeaveRoom");
-                LobbyServer_LeaveRoom(s_room_code.c_str());
-                SDL_Log("[CasualLobby] Leave Room: calling rmlui_casual_lobby_hide");
-                rmlui_casual_lobby_hide();
-                // Clear room code so stale references don't confuse other
-                // systems (Discovery beacon, heartbeat, EXITING handler).
-                s_room_code.clear();
-                SDL_Log("[CasualLobby] Leave Room: calling rmlui_network_lobby_show");
-                rmlui_network_lobby_show();
-                SDL_Log("[CasualLobby] Leave Room: done");
+                // Leave Room — signal ms_casual_lobby.c to trigger
+                // MenuScreen_Goto(MENU_SCREEN_NETWORK_LOBBY).
+                // The actual server leave + cleanup is done in
+                // rmlui_casual_lobby_consume_leave() called from on_tick.
+                SDL_Log("[CasualLobby] Leave Room: setting s_wants_leave");
+                s_wants_leave = true;
             }
         }
     }
@@ -861,6 +852,7 @@ extern "C" void rmlui_casual_lobby_hide(void) {
     }
     s_proposal_active = 0;
     s_match_ended_pending_reshow = false;
+    s_wants_leave = false;
     // Reset grow-only display counts so stale data doesn't show on re-entry
     s_queue_display_count = 0;
     s_chat_display_count = 0;
@@ -941,4 +933,17 @@ extern "C" bool rmlui_casual_lobby_handle_key_event(const SDL_Event* event) {
     }
 
     return false;
+}
+
+extern "C" bool rmlui_casual_lobby_wants_leave(void) {
+    return s_wants_leave;
+}
+
+extern "C" void rmlui_casual_lobby_consume_leave(void) {
+    if (s_wants_leave) {
+        s_wants_leave = false;
+        SDL_Log("[CasualLobby] consume_leave: calling LobbyServer_LeaveRoom");
+        LobbyServer_LeaveRoom(s_room_code.c_str());
+        s_room_code.clear();
+    }
 }
