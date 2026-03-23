@@ -62,15 +62,24 @@
             <div class="section-header rooms-header">ROOMS</div>
 
             <div class="lobby-row" data-class-focused="cursor == 9">
+                <span class="lobby-cell-label">ROOM TYPE</span>
+                <span class="lobby-cell-value">{{create_room_type_label}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 10"
+                 data-if="create_room_type == 2">
+                <span class="lobby-cell-label">FORMAT</span>
+                <span class="lobby-cell-value">{{create_tournament_format_label}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 11">
                 <span class="lobby-cell-label">CREATE ROOM</span>
                 <span class="lobby-cell-value" data-if="room_status != ''">{{room_status}}</span>
             </div>
-            <div class="lobby-row" data-class-focused="cursor == 10">
+            <div class="lobby-row" data-class-focused="cursor == 12">
                 <span class="lobby-cell-label">JOIN ROOM</span>
                 <span class="lobby-cell-value" data-if="join_room_code != ''">{{join_room_code}}</span>
             </div>
 
-            <div class="lobby-row exit-row" data-class-focused="cursor == 11">
+            <div class="lobby-row exit-row" data-class-focused="cursor == 13">
                 <span class="lobby-cell-label">EXIT</span>
             </div>
         </div>
@@ -137,6 +146,7 @@
                     <div data-if="room_count > 0" data-for="r : room_list"
                          class="peer-list-item"
                          data-class-selected="r.selected">
+                        <span class="room-badge" data-if="r.is_tournament">🏆</span>
                         <span class="peer-list-name">{{r.name}}</span>
                         <span class="room-list-count">{{r.player_count}}/{{r.max_players}}</span>
                     </div>

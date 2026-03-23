@@ -607,20 +607,29 @@ void Network_Lobby(struct _TASK* task_ptr) {
         bool popup_active =
             SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge() || lan_incoming || lan_outgoing;
 
-        /* Handle cursor movement (12 items: 0..11) */
+        /* Handle cursor movement (14 items: 0..13) */
         {
             s16 prev_cursor = Menu_Cursor_Y[0];
-            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 11, FADE_OPAQUE) == 0) {
-                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 11, FADE_OPAQUE);
+            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 13, FADE_OPAQUE) == 0) {
+                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 13, FADE_OPAQUE);
             }
             if (popup_active) {
                 Menu_Cursor_Y[0] = prev_cursor;
-            } else if (prev_cursor != Menu_Cursor_Y[0]) {
-                if (task_ptr->free[2] == NET_MODE_NATIVE) {
-                    Message_Data->order = 1;
-                    Message_Data->request = NET_MSG_REQ_BASE + Menu_Cursor_Y[0];
-                    Message_Data->timer = 2;
-                    Message_Data->pos_y = NET_MSG_POS_Y;
+            } else {
+                /* Skip FORMAT row (10) when room type is not tournament */
+                if (Menu_Cursor_Y[0] == 10 && rmlui_network_lobby_get_create_room_type() != 2) {
+                    if (Menu_Cursor_Y[0] > prev_cursor)
+                        Menu_Cursor_Y[0] = 11; /* moving down → skip to CREATE ROOM */
+                    else
+                        Menu_Cursor_Y[0] = 9;  /* moving up → skip to ROOM TYPE */
+                }
+                if (prev_cursor != Menu_Cursor_Y[0]) {
+                    if (task_ptr->free[2] == NET_MODE_NATIVE) {
+                        Message_Data->order = 1;
+                        Message_Data->request = NET_MSG_REQ_BASE + Menu_Cursor_Y[0];
+                        Message_Data->timer = 2;
+                        Message_Data->pos_y = NET_MSG_POS_Y;
+                    }
                 }
             }
         }
@@ -748,7 +757,21 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     }
                     break;
                 }
-                case 10: { /* JOIN ROOM (room list scroll) */
+                case 9: { /* ROOM TYPE toggle */
+                    if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                        rmlui_network_lobby_cycle_room_type((click & 4) ? -1 : 1);
+                        SE_dir_cursor_move();
+                    }
+                    break;
+                }
+                case 10: { /* TOURNAMENT FORMAT cycle */
+                    if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                        rmlui_network_lobby_cycle_tournament_format((click & 4) ? -1 : 1);
+                        SE_dir_cursor_move();
+                    }
+                    break;
+                }
+                case 12: { /* JOIN ROOM (room list scroll) */
                     if (task_ptr->free[2] == NET_MODE_RMLUI) {
                         rmlui_network_lobby_room_scroll((click & 4) ? -1 : 1);
                         SE_dir_cursor_move();
@@ -1074,19 +1097,31 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         }
                         break;
 
-                    case 9: /* CREATE ROOM (RmlUI only) */
+                    case 9: /* ROOM TYPE toggle (confirm = toggle) */
+                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                            rmlui_network_lobby_cycle_room_type(1);
+                        }
+                        SE_selected();
+                        break;
+                    case 10: /* TOURNAMENT FORMAT cycle (confirm = advance) */
+                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                            rmlui_network_lobby_cycle_tournament_format(1);
+                        }
+                        SE_selected();
+                        break;
+                    case 11: /* CREATE ROOM (RmlUI only) */
                         if (task_ptr->free[2] == NET_MODE_RMLUI) {
                             rmlui_network_lobby_create_room();
                         }
                         SE_selected();
                         break;
-                    case 10: /* JOIN ROOM (RmlUI only) */
+                    case 12: /* JOIN ROOM (RmlUI only) */
                         if (task_ptr->free[2] == NET_MODE_RMLUI) {
                             rmlui_network_lobby_join_room();
                         }
                         SE_selected();
                         break;
-                    case 11:
+                    case 13:
                         /* EXIT */
                         goto lobby_exit;
                     }

@@ -81,10 +81,11 @@ struct RoomItem {
     int player_count;
     int max_players;
     bool selected;
+    bool is_tournament;
 
     bool operator==(const RoomItem& o) const {
         return code == o.code && name == o.name && player_count == o.player_count && max_players == o.max_players &&
-               selected == o.selected;
+               selected == o.selected && is_tournament == o.is_tournament;
     }
     bool operator!=(const RoomItem& o) const {
         return !(*this == o);
@@ -145,12 +146,37 @@ static char s_room_async_error[128] = { 0 };    // error message on failure
 
 // Room-ready signal: set by async completion, consumed by ms_network_lobby.c
 static bool s_room_ready = false;
+static int s_room_async_type = 0; // RoomType of the pending room
+
+// Create room settings (toggled by user before pressing CREATE)
+static int s_create_room_type = ROOM_TYPE_CASUAL; // 0=casual, 2=tournament
+static int s_create_tournament_format = TOURNAMENT_SINGLE_ELIM;
+static Rml::String s_create_room_type_label = "CASUAL";
+static Rml::String s_create_tournament_format_label = "SINGLE ELIM";
+
+static const char* room_type_label(int t) {
+    switch (t) {
+    case ROOM_TYPE_TOURNAMENT: return "TOURNAMENT";
+    default: return "CASUAL";
+    }
+}
+static const char* tournament_format_label(int f) {
+    switch (f) {
+    case TOURNAMENT_SINGLE_ELIM: return "SINGLE ELIM";
+    case TOURNAMENT_DOUBLE_ELIM: return "DOUBLE ELIM";
+    case TOURNAMENT_ROUND_ROBIN: return "ROUND ROBIN";
+    case TOURNAMENT_SWISS: return "SWISS";
+    default: return "SINGLE ELIM";
+    }
+}
 
 struct AsyncRoomData {
-    int action;    // 1 = create, 2 = join
-    char name[64]; // room name (create)
-    char code[16]; // room code (join)
-    int ft;        // FT mode for the room (create only)
+    int action;          // 1 = create, 2 = join, 3 = create_tournament
+    char name[64];       // room name (create)
+    char code[16];       // room code (join)
+    int ft;              // FT mode for the room (create only)
+    int room_type;       // RoomType enum (for create)
+    int tournament_fmt;  // TournamentFormat enum (for tournament create)
 };
 
 static int SDLCALL async_room_fn(void* data) {
@@ -167,10 +193,14 @@ static int SDLCALL async_room_fn(void* data) {
         if (!ok && err[0]) {
             snprintf(s_room_async_error, sizeof(s_room_async_error), "%s", err);
         }
+    } else if (d->action == 3) {
+        ok = LobbyServer_CreateTournamentRoom(d->name, (TournamentFormat)d->tournament_fmt,
+                                              16, d->ft, "rating", &room);
     }
 
     if (ok) {
         snprintf(s_room_async_code, sizeof(s_room_async_code), "%s", room.id);
+        s_room_async_type = room.room_type;
         SDL_SetAtomicInt(&s_room_async_ok, 1);
     } else {
         s_room_async_code[0] = '\0';
@@ -306,6 +336,7 @@ static void do_init(void) {
         h.RegisterMember("player_count", &RoomItem::player_count);
         h.RegisterMember("max_players", &RoomItem::max_players);
         h.RegisterMember("selected", &RoomItem::selected);
+        h.RegisterMember("is_tournament", &RoomItem::is_tournament);
     }
     ctor.RegisterArray<std::vector<RoomItem>>();
 
@@ -338,6 +369,12 @@ static void do_init(void) {
     // Room create/join status
     ctor.Bind("room_status", &s_room_status);
     ctor.Bind("join_room_code", &s_join_room_code);
+
+    // Create room settings
+    ctor.Bind("create_room_type", &s_create_room_type);
+    ctor.Bind("create_room_type_label", &s_create_room_type_label);
+    ctor.Bind("create_tournament_format", &s_create_tournament_format);
+    ctor.Bind("create_tournament_format_label", &s_create_tournament_format_label);
 
     // Room list scalars
     ctor.BindFunc("room_count", [](Rml::Variant& v) { v = (int)s_room_list.size(); });
@@ -757,6 +794,7 @@ extern "C" void rmlui_network_lobby_update(void) {
                 item.player_count = s_room_fetch_buf[i].player_count;
                 item.max_players = s_room_fetch_buf[i].max_players;
                 item.selected = (i == s_room_list_idx);
+                item.is_tournament = (s_room_fetch_buf[i].room_type == ROOM_TYPE_TOURNAMENT);
                 next.push_back(item);
             }
             if (next != s_room_list) {
@@ -820,13 +858,76 @@ extern "C" void rmlui_network_lobby_hide(void) {
 extern "C" void rmlui_network_lobby_create_room(void) {
     if (SDL_GetAtomicInt(&s_room_async_active) != 0)
         return;
-    s_room_status = "Creating...";
-    if (s_model_handle)
-        s_model_handle.DirtyVariable("room_status");
     const char* dn = Identity_GetDisplayName();
     char name[64];
-    snprintf(name, sizeof(name), "%s's Room", dn ? dn : "Player");
-    AsyncCreateRoom(name);
+
+    if (s_create_room_type == ROOM_TYPE_TOURNAMENT) {
+        snprintf(name, sizeof(name), "%s's Tournament", dn ? dn : "Player");
+        s_room_status = "Creating tournament...";
+        if (s_model_handle)
+            s_model_handle.DirtyVariable("room_status");
+
+        // Use tournament create path
+        SDL_SetAtomicInt(&s_room_async_active, 1);
+        SDL_SetAtomicInt(&s_room_async_done, 0);
+        AsyncRoomData* d = (AsyncRoomData*)calloc(1, sizeof(AsyncRoomData));
+        d->action = 3; // tournament create
+        d->ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
+        d->room_type = ROOM_TYPE_TOURNAMENT;
+        d->tournament_fmt = s_create_tournament_format;
+        snprintf(d->name, sizeof(d->name), "%s", name);
+        SDL_Thread* t = SDL_CreateThread(async_room_fn, "AsyncCreateTRoom", d);
+        if (t) {
+            SDL_DetachThread(t);
+        } else {
+            free(d);
+            SDL_SetAtomicInt(&s_room_async_active, 0);
+        }
+    } else {
+        snprintf(name, sizeof(name), "%s's Room", dn ? dn : "Player");
+        s_room_status = "Creating...";
+        if (s_model_handle)
+            s_model_handle.DirtyVariable("room_status");
+        AsyncCreateRoom(name);
+    }
+}
+
+extern "C" void rmlui_network_lobby_cycle_room_type(int direction) {
+    (void)direction;
+    // Toggle between CASUAL and TOURNAMENT
+    if (s_create_room_type == ROOM_TYPE_CASUAL)
+        s_create_room_type = ROOM_TYPE_TOURNAMENT;
+    else
+        s_create_room_type = ROOM_TYPE_CASUAL;
+    s_create_room_type_label = room_type_label(s_create_room_type);
+    if (s_model_handle) {
+        s_model_handle.DirtyVariable("create_room_type");
+        s_model_handle.DirtyVariable("create_room_type_label");
+    }
+}
+
+extern "C" int rmlui_network_lobby_get_create_room_type(void) {
+    return s_create_room_type;
+}
+
+extern "C" void rmlui_network_lobby_cycle_tournament_format(int direction) {
+    static const int formats[] = { TOURNAMENT_SINGLE_ELIM, TOURNAMENT_DOUBLE_ELIM,
+                                   TOURNAMENT_ROUND_ROBIN, TOURNAMENT_SWISS };
+    static const int fmt_count = 4;
+    int idx = 0;
+    for (int i = 0; i < fmt_count; i++) {
+        if (formats[i] == s_create_tournament_format) { idx = i; break; }
+    }
+    if (direction < 0)
+        idx = (idx - 1 + fmt_count) % fmt_count;
+    else
+        idx = (idx + 1) % fmt_count;
+    s_create_tournament_format = formats[idx];
+    s_create_tournament_format_label = tournament_format_label(s_create_tournament_format);
+    if (s_model_handle) {
+        s_model_handle.DirtyVariable("create_tournament_format");
+        s_model_handle.DirtyVariable("create_tournament_format_label");
+    }
 }
 
 extern "C" void rmlui_network_lobby_join_room(void) {
@@ -884,6 +985,10 @@ extern "C" bool rmlui_network_lobby_has_pending_room(void) {
 extern "C" const char* rmlui_network_lobby_consume_pending_room(void) {
     s_room_ready = false;
     return s_room_async_code;
+}
+
+extern "C" bool rmlui_network_lobby_pending_room_is_tournament(void) {
+    return s_room_async_type == ROOM_TYPE_TOURNAMENT;
 }
 
 #undef DIRTY_INT

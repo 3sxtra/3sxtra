@@ -263,11 +263,12 @@ function getPlayerName(id) {
 }
 
 function getRoomState(room) {
-    return {
+    const state = {
         id: room.id,
         name: room.name,
         host: room.host,
         ft: room.ft || 1,
+        room_type: room.room_type || 0,
         players: room.players.map(id => {
             const p = players.get(id);
             return { player_id: id, display_name: p ? p.display_name : id, region: p ? p.region : '', country: p ? p.country : '' };
@@ -276,6 +277,7 @@ function getRoomState(room) {
         match: room.match,
         chat: [] // Chat is ephemeral; do not send history
     };
+    return state;
 }
 
 /**
@@ -764,6 +766,731 @@ const cleanupTimer = setInterval(() => {
     }
 }, 5_000);
 
+// ---- Tournament Bracket Logic ----
+
+/**
+ * Seed players for bracket generation.
+ * @param {string[]} playerIds
+ * @param {string} method - 'rating', 'join_order', or 'random'
+ * @returns {string[]} Seeded player IDs
+ */
+function seedPlayers(playerIds, method) {
+    const ids = [...playerIds];
+    if (method === 'random') {
+        // Fisher-Yates shuffle
+        for (let i = ids.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [ids[i], ids[j]] = [ids[j], ids[i]];
+        }
+    } else if (method === 'rating' && db) {
+        // Sort by Glicko-2 rating (descending) — highest seed = best player
+        const getStats = db.prepare('SELECT rating FROM players_db WHERE player_id = ?');
+        ids.sort((a, b) => {
+            const ra = getStats.get(a)?.rating || 1500;
+            const rb = getStats.get(b)?.rating || 1500;
+            return rb - ra; // Descending
+        });
+    }
+    // 'join_order' = keep as-is (players array order)
+    return ids;
+}
+
+/**
+ * Standard bracket seeding order for power-of-2 sizes.
+ * For 8 players: [1,8,4,5,2,7,3,6] — ensures top seeds meet latest.
+ */
+function bracketSeedOrder(size) {
+    if (size <= 1) return [0];
+    const order = [0, 1]; // Seeds 1 and 2
+    let step = 2;
+    while (step < size) {
+        const next = [];
+        for (const s of order) {
+            next.push(s);
+            next.push(step * 2 - 1 - s);
+        }
+        order.length = 0;
+        order.push(...next);
+        step *= 2;
+    }
+    return order;
+}
+
+/**
+ * Generate a single-elimination bracket.
+ * Returns { bracket: BracketEntry[], total_rounds: number }
+ */
+function generateSingleElimBracket(seededPlayers) {
+    const n = seededPlayers.length;
+    if (n < 2) return { bracket: [], total_rounds: 0 };
+
+    // Round up to next power of 2
+    let size = 1;
+    while (size < n) size *= 2;
+    const totalRounds = Math.log2(size);
+
+    // Place players into seed slots (extras get BYE)
+    const slots = new Array(size).fill(null);
+    const seedOrder = bracketSeedOrder(size);
+    for (let i = 0; i < n; i++) {
+        slots[seedOrder[i]] = seededPlayers[i];
+    }
+
+    const bracket = [];
+
+    // Round 0: initial matchups
+    for (let pos = 0; pos < size / 2; pos++) {
+        const p1 = slots[pos * 2] || '';
+        const p2 = slots[pos * 2 + 1] || '';
+        const isBye = !p1 || !p2;
+        const winner = isBye ? (p1 || p2) : ''; // BYE auto-advances
+        bracket.push({
+            round: 0,
+            position: pos,
+            player1_id: p1,
+            player1_name: p1 ? getPlayerName(p1) : 'BYE',
+            player2_id: p2,
+            player2_name: p2 ? getPlayerName(p2) : 'BYE',
+            winner_id: winner,
+            completed: isBye ? 1 : 0
+        });
+    }
+
+    // Subsequent rounds: empty entries (filled as matches complete)
+    let matchesInRound = size / 4;
+    for (let round = 1; round < totalRounds; round++) {
+        for (let pos = 0; pos < matchesInRound; pos++) {
+            bracket.push({
+                round,
+                position: pos,
+                player1_id: '',
+                player1_name: '',
+                player2_id: '',
+                player2_name: '',
+                winner_id: '',
+                completed: 0
+            });
+        }
+        matchesInRound = Math.max(1, matchesInRound / 2);
+    }
+
+    return { bracket, total_rounds: totalRounds };
+}
+
+/**
+ * Generate round-robin pairings for a given round using the circle algorithm.
+ * Returns array of {p1, p2} pairs.
+ */
+function generateRoundRobinPairings(playerIds, round) {
+    const ids = [...playerIds];
+    if (ids.length % 2 !== 0) ids.push(null); // BYE for odd count
+    const n = ids.length;
+    const totalRounds = n - 1;
+    const half = n / 2;
+
+    // Rotate all but first element
+    const rotated = [ids[0]];
+    const rest = ids.slice(1);
+    const currentRound = round % totalRounds;
+    for (let i = 0; i < rest.length; i++) {
+        rotated.push(rest[(i + currentRound) % rest.length]);
+    }
+
+    const pairs = [];
+    for (let i = 0; i < half; i++) {
+        const p1 = rotated[i];
+        const p2 = rotated[n - 1 - i];
+        if (p1 && p2) { // Skip BYE pairings
+            pairs.push({ p1, p2 });
+        }
+    }
+    return pairs;
+}
+
+/**
+ * Generate Swiss pairings: pair players with similar records, avoid rematches.
+ * @param {string[]} playerIds
+ * @param {Map<string,{wins:number,losses:number}>} standings
+ * @param {Array<{p1:string,p2:string}>} previousPairings - all past pairings
+ */
+function generateSwissPairings(playerIds, standings, previousPairings) {
+    // Sort by wins descending, then losses ascending
+    const sorted = [...playerIds].sort((a, b) => {
+        const sa = standings.get(a) || { wins: 0, losses: 0 };
+        const sb = standings.get(b) || { wins: 0, losses: 0 };
+        if (sb.wins !== sa.wins) return sb.wins - sa.wins;
+        return sa.losses - sb.losses;
+    });
+
+    const pastPairSet = new Set(previousPairings.map(p => {
+        const s = [p.p1, p.p2].sort();
+        return s[0] + ':' + s[1];
+    }));
+
+    const paired = new Set();
+    const pairs = [];
+    for (let i = 0; i < sorted.length; i++) {
+        if (paired.has(sorted[i])) continue;
+        for (let j = i + 1; j < sorted.length; j++) {
+            if (paired.has(sorted[j])) continue;
+            const key = [sorted[i], sorted[j]].sort().join(':');
+            if (!pastPairSet.has(key)) {
+                pairs.push({ p1: sorted[i], p2: sorted[j] });
+                paired.add(sorted[i]);
+                paired.add(sorted[j]);
+                break;
+            }
+        }
+    }
+    return pairs;
+}
+
+/**
+ * Advance a winner in a single-elim bracket to the next round.
+ * Returns true if the current round is now fully complete.
+ */
+function advanceSingleElimBracket(tournament, matchRound, matchPosition, winnerId) {
+    const bracket = tournament.bracket;
+
+    // Mark match complete
+    const entry = bracket.find(b => b.round === matchRound && b.position === matchPosition);
+    if (!entry) return false;
+    entry.winner_id = winnerId;
+    entry.completed = 1;
+
+    // Place winner in next round
+    const nextRound = matchRound + 1;
+    if (nextRound < tournament.total_rounds) {
+        const nextPos = Math.floor(matchPosition / 2);
+        const nextEntry = bracket.find(b => b.round === nextRound && b.position === nextPos);
+        if (nextEntry) {
+            if (matchPosition % 2 === 0) {
+                nextEntry.player1_id = winnerId;
+                nextEntry.player1_name = getPlayerName(winnerId);
+            } else {
+                nextEntry.player2_id = winnerId;
+                nextEntry.player2_name = getPlayerName(winnerId);
+            }
+
+            // Auto-complete BYE: if opponent slot is empty and this is the only feeder
+            // (This handles cascading BYEs in subsequent rounds)
+            if (nextEntry.player1_id && !nextEntry.player2_id) {
+                // Check if the other feeder match was a BYE (already completed)
+                const otherFeederPos = matchPosition % 2 === 0 ? matchPosition + 1 : matchPosition - 1;
+                const otherFeeder = bracket.find(b => b.round === matchRound && b.position === otherFeederPos);
+                if (otherFeeder && otherFeeder.completed && !otherFeeder.player1_id && !otherFeeder.player2_id) {
+                    // Other feeder was empty BYE, auto-advance
+                    nextEntry.winner_id = nextEntry.player1_id;
+                    nextEntry.completed = 1;
+                    // Recursively advance
+                    advanceSingleElimBracket(tournament, nextRound, nextPos, nextEntry.player1_id);
+                }
+            } else if (!nextEntry.player1_id && nextEntry.player2_id) {
+                const otherFeederPos = matchPosition % 2 === 0 ? matchPosition + 1 : matchPosition - 1;
+                const otherFeeder = bracket.find(b => b.round === matchRound && b.position === otherFeederPos);
+                if (otherFeeder && otherFeeder.completed && !otherFeeder.player1_id && !otherFeeder.player2_id) {
+                    nextEntry.winner_id = nextEntry.player2_id;
+                    nextEntry.completed = 1;
+                    advanceSingleElimBracket(tournament, nextRound, nextPos, nextEntry.player2_id);
+                }
+            }
+        }
+    }
+
+    // Check if current round is fully complete
+    const roundMatches = bracket.filter(b => b.round === matchRound);
+    return roundMatches.every(b => b.completed);
+}
+
+/**
+ * Generate a double-elimination bracket.
+ *
+ * Structure:
+ *   - Winners bracket (bracket_side='W'): identical to single-elim
+ *   - Losers bracket (bracket_side='L'): 2*(W_rounds-1) rounds
+ *       - Odd L rounds receive drop-downs from winners bracket
+ *       - Even L rounds are internal losers bracket matches
+ *   - Grand Finals (bracket_side='GF'): W champion vs L champion
+ *
+ * Returns { bracket: BracketEntry[], total_rounds: number }
+ * total_rounds = W_rounds + L_rounds + 1 (GF)
+ */
+function generateDoubleElimBracket(seededPlayers) {
+    const n = seededPlayers.length;
+    if (n < 2) return { bracket: [], total_rounds: 0 };
+
+    // Generate winners bracket first (same structure as single-elim)
+    let wSize = 1;
+    while (wSize < n) wSize *= 2;
+    const wRounds = Math.log2(wSize);
+
+    const slots = new Array(wSize).fill(null);
+    const seedOrder = bracketSeedOrder(wSize);
+    for (let i = 0; i < n; i++) {
+        slots[seedOrder[i]] = seededPlayers[i];
+    }
+
+    const bracket = [];
+
+    // Winners round 0
+    for (let pos = 0; pos < wSize / 2; pos++) {
+        const p1 = slots[pos * 2] || '';
+        const p2 = slots[pos * 2 + 1] || '';
+        const isBye = !p1 || !p2;
+        bracket.push({
+            round: 0, position: pos, bracket_side: 'W',
+            player1_id: p1, player1_name: p1 ? getPlayerName(p1) : 'BYE',
+            player2_id: p2, player2_name: p2 ? getPlayerName(p2) : 'BYE',
+            winner_id: isBye ? (p1 || p2) : '', completed: isBye ? 1 : 0
+        });
+    }
+
+    // Winners subsequent rounds
+    let matchesInRound = wSize / 4;
+    for (let round = 1; round < wRounds; round++) {
+        for (let pos = 0; pos < matchesInRound; pos++) {
+            bracket.push({
+                round, position: pos, bracket_side: 'W',
+                player1_id: '', player1_name: '', player2_id: '', player2_name: '',
+                winner_id: '', completed: 0
+            });
+        }
+        matchesInRound = Math.max(1, matchesInRound / 2);
+    }
+
+    // Losers bracket: 2 * (wRounds - 1) rounds
+    // Structure per pair of L rounds:
+    //   L_even: drop-downs from winners arrive + existing losers advance (reduces by half)
+    //   L_odd:  internal match between remaining losers (no new drop-downs)
+    // Exception: L0 has wSize/4 matches (losers from W0 paired up),
+    //            then L1 receives W1 losers to play L0 winners
+    const lRounds = 2 * (wRounds - 1);
+    for (let lr = 0; lr < lRounds; lr++) {
+        // Calculate match count for this losers round
+        let matchCount;
+        if (lr === 0) {
+            matchCount = wSize / 4; // W0 losers paired (half of W0 matches / 2)
+        } else {
+            // After L0 (wSize/4 slots), each pair of rounds halves:
+            // L0: wSize/4 matches → wSize/4 winners
+            // L1: wSize/4 matches (L0 winners vs W1 dropdowns) → wSize/4 winners
+            // L2: wSize/8 matches (L1 winners pair internally) → wSize/8 winners
+            // L3: wSize/8 matches (L2 winners vs W2 dropdowns) → wSize/8 winners
+            // Pattern: matches halve every 2 rounds starting from L2
+            const phase = Math.floor((lr + 1) / 2); // 0-indexed phase
+            matchCount = Math.max(1, wSize / (4 * Math.pow(2, phase)));
+            // Odd rounds (drop-down rounds) keep same size as previous even round
+            if (lr % 2 === 1 && lr > 0) {
+                const prevCount = Math.max(1, wSize / (4 * Math.pow(2, Math.floor(lr / 2))));
+                matchCount = prevCount;
+            }
+        }
+
+        for (let pos = 0; pos < matchCount; pos++) {
+            bracket.push({
+                round: lr, position: pos, bracket_side: 'L',
+                player1_id: '', player1_name: '',
+                player2_id: '', player2_name: '',
+                winner_id: '', completed: 0
+            });
+        }
+    }
+
+    // Grand Finals: 1 entry
+    bracket.push({
+        round: 0, position: 0, bracket_side: 'GF',
+        player1_id: '', player1_name: '', // Winners champion
+        player2_id: '', player2_name: '', // Losers champion
+        winner_id: '', completed: 0
+    });
+
+    const totalRounds = wRounds + lRounds + 1;
+    return { bracket, total_rounds: totalRounds, w_rounds: wRounds, l_rounds: lRounds };
+}
+
+/**
+ * Advance a winner in a double-elim bracket.
+ * Routes:
+ *   - Winners bracket loser → losers bracket
+ *   - Winners bracket winner → next winners round (or GF if finals)
+ *   - Losers bracket winner → next losers round (or GF if losers finals)
+ *   - Losers bracket loser → eliminated
+ *   - GF winner → champion
+ *
+ * Returns true if the match's bracket round is now fully complete.
+ */
+function advanceDoubleElimBracket(tournament, side, matchRound, matchPosition, winnerId) {
+    const bracket = tournament.bracket;
+
+    // Find and mark the match
+    const entry = bracket.find(b =>
+        b.bracket_side === side && b.round === matchRound && b.position === matchPosition
+    );
+    if (!entry) return false;
+
+    const loserId = (entry.player1_id === winnerId) ? entry.player2_id : entry.player1_id;
+    entry.winner_id = winnerId;
+    entry.completed = 1;
+
+    const wRounds = tournament.w_rounds;
+    const lRounds = tournament.l_rounds;
+
+    if (side === 'W') {
+        // --- Winners bracket advancement ---
+        const nextWRound = matchRound + 1;
+
+        if (nextWRound < wRounds) {
+            // Advance winner to next winners round
+            const nextPos = Math.floor(matchPosition / 2);
+            const nextEntry = bracket.find(b => b.bracket_side === 'W' && b.round === nextWRound && b.position === nextPos);
+            if (nextEntry) {
+                if (matchPosition % 2 === 0) {
+                    nextEntry.player1_id = winnerId;
+                    nextEntry.player1_name = getPlayerName(winnerId);
+                } else {
+                    nextEntry.player2_id = winnerId;
+                    nextEntry.player2_name = getPlayerName(winnerId);
+                }
+                // Auto-complete if opponent is BYE (empty other feeder completed without players)
+                _autoCompleteBye(bracket, nextEntry, 'W', matchRound, matchPosition);
+            }
+        } else {
+            // Winners finals winner → Grand Finals player1
+            const gf = bracket.find(b => b.bracket_side === 'GF');
+            if (gf) {
+                gf.player1_id = winnerId;
+                gf.player1_name = getPlayerName(winnerId);
+                _autoCompleteGF(bracket, gf);
+            }
+        }
+
+        // Drop loser to losers bracket (skip BYE losers)
+        if (loserId) {
+            _dropToLosers(bracket, wRounds, matchRound, matchPosition, loserId);
+        }
+    } else if (side === 'L') {
+        // --- Losers bracket advancement ---
+        const nextLRound = matchRound + 1;
+
+        if (nextLRound < lRounds) {
+            // Advance winner to next losers round
+            // Losers bracket: even→odd keeps same count, odd→even halves
+            let nextPos;
+            if (matchRound % 2 === 0) {
+                // Even round → odd round (drop-down round): same position count
+                nextPos = matchPosition;
+            } else {
+                // Odd round → even round (internal): halve
+                nextPos = Math.floor(matchPosition / 2);
+            }
+            const nextEntry = bracket.find(b => b.bracket_side === 'L' && b.round === nextLRound && b.position === nextPos);
+            if (nextEntry) {
+                // In drop-down rounds (odd), the losers bracket player goes to p1, dropdown to p2
+                // In internal rounds (even), standard top/bottom
+                if (matchRound % 2 === 0) {
+                    // Winner of even round → p1 of next odd round (will face dropdown in p2)
+                    nextEntry.player1_id = winnerId;
+                    nextEntry.player1_name = getPlayerName(winnerId);
+                } else {
+                    // Winner of odd round → feed into next even round
+                    if (matchPosition % 2 === 0) {
+                        nextEntry.player1_id = winnerId;
+                        nextEntry.player1_name = getPlayerName(winnerId);
+                    } else {
+                        nextEntry.player2_id = winnerId;
+                        nextEntry.player2_name = getPlayerName(winnerId);
+                    }
+                }
+            }
+        } else {
+            // Losers finals winner → Grand Finals player2
+            const gf = bracket.find(b => b.bracket_side === 'GF');
+            if (gf) {
+                gf.player2_id = winnerId;
+                gf.player2_name = getPlayerName(winnerId);
+                _autoCompleteGF(bracket, gf);
+            }
+        }
+        // Loser is eliminated (nothing to do)
+    } else if (side === 'GF') {
+        // Grand finals complete — winner is tournament champion
+        // Nothing to advance
+    }
+
+    // Check if all matches on this side+round are complete
+    const roundMatches = bracket.filter(b => b.bracket_side === side && b.round === matchRound);
+    return roundMatches.every(b => b.completed);
+}
+
+/**
+ * Drop a loser from winners bracket round N into the appropriate losers bracket slot.
+ *
+ * Mapping (standard double-elim drop pattern):
+ *   W0 loser → L0 (initial losers round)
+ *   W1 loser → L1 (faces L0 winner)
+ *   W2 loser → L3 (faces L2 winner)
+ *   W(N) loser → L(2N-1) for N≥1
+ */
+function _dropToLosers(bracket, wRounds, wRound, wPosition, loserId) {
+    let targetLRound, targetPos;
+
+    if (wRound === 0) {
+        // W0 losers pair up in L0
+        targetLRound = 0;
+        targetPos = Math.floor(wPosition / 2);
+        const lEntry = bracket.find(b => b.bracket_side === 'L' && b.round === 0 && b.position === targetPos);
+        if (lEntry) {
+            if (wPosition % 2 === 0) {
+                lEntry.player1_id = loserId;
+                lEntry.player1_name = getPlayerName(loserId);
+            } else {
+                lEntry.player2_id = loserId;
+                lEntry.player2_name = getPlayerName(loserId);
+            }
+            // Auto-complete if both slots filled from BYE wins
+            if (lEntry.player1_id && lEntry.player2_id && !lEntry.completed) {
+                // Both fed — ready for match (don't auto-complete, let it be proposed)
+            } else if (lEntry.player1_id && !lEntry.player2_id) {
+                // Check if other feeder is a BYE (no player in that W0 slot)
+                const otherWPos = wPosition % 2 === 0 ? wPosition + 1 : wPosition - 1;
+                const otherW = bracket.find(b => b.bracket_side === 'W' && b.round === 0 && b.position === otherWPos);
+                if (otherW && otherW.completed && (!otherW.player1_id || !otherW.player2_id)) {
+                    // Other W0 match was a BYE — no loser drops. Auto-advance this loser.
+                    lEntry.winner_id = lEntry.player1_id;
+                    lEntry.completed = 1;
+                    advanceDoubleElimBracket({ bracket, w_rounds: wRounds, l_rounds: 2 * (wRounds - 1) }, 'L', 0, targetPos, lEntry.player1_id);
+                }
+            }
+        }
+    } else {
+        // W(N≥1) losers drop into L(2N-1) as player2 (facing the losers bracket survivor)
+        targetLRound = 2 * wRound - 1;
+        targetPos = wPosition; // Same position (1:1 mapping at this stage)
+        const lEntry = bracket.find(b => b.bracket_side === 'L' && b.round === targetLRound && b.position === targetPos);
+        if (lEntry) {
+            lEntry.player2_id = loserId;
+            lEntry.player2_name = getPlayerName(loserId);
+        }
+    }
+}
+
+/**
+ * Auto-complete BYE entries in winners bracket (same logic as single-elim).
+ */
+function _autoCompleteBye(bracket, nextEntry, side, sourceRound, sourcePosition) {
+    if (nextEntry.player1_id && !nextEntry.player2_id) {
+        const otherFeederPos = sourcePosition % 2 === 0 ? sourcePosition + 1 : sourcePosition - 1;
+        const otherFeeder = bracket.find(b => b.bracket_side === side && b.round === sourceRound && b.position === otherFeederPos);
+        if (otherFeeder && otherFeeder.completed && !otherFeeder.player1_id && !otherFeeder.player2_id) {
+            nextEntry.winner_id = nextEntry.player1_id;
+            nextEntry.completed = 1;
+        }
+    } else if (!nextEntry.player1_id && nextEntry.player2_id) {
+        const otherFeederPos = sourcePosition % 2 === 0 ? sourcePosition + 1 : sourcePosition - 1;
+        const otherFeeder = bracket.find(b => b.bracket_side === side && b.round === sourceRound && b.position === otherFeederPos);
+        if (otherFeeder && otherFeeder.completed && !otherFeeder.player1_id && !otherFeeder.player2_id) {
+            nextEntry.winner_id = nextEntry.player2_id;
+            nextEntry.completed = 1;
+        }
+    }
+}
+
+/**
+ * Auto-complete Grand Finals if only one player made it (shouldn't happen normally).
+ */
+function _autoCompleteGF(bracket, gf) {
+    // If both slots are filled but one is empty string, auto-advance the other
+    // (This only triggers in degenerate cases like 2-player double-elim)
+}
+
+/**
+ * Get tournament state as JSON for SSE broadcast / API response.
+ */
+function getTournamentState(room) {
+    if (!room.tournament) return null;
+    const t = room.tournament;
+    return {
+        format: t.format,
+        round: t.round,
+        total_rounds: t.total_rounds,
+        started: t.started ? 1 : 0,
+        paused: t.paused ? 1 : 0,
+        matches: t.matches.map(m => ({
+            p1: m.p1,
+            p2: m.p2,
+            active: m.active ? 1 : 0,
+            round: m.bracket_round,
+            position: m.bracket_position,
+            match_index: m.match_index
+        })),
+        bracket: t.bracket
+    };
+}
+
+/**
+ * Propose a single tournament match. Shared by single-elim and double-elim paths.
+ * Creates the match object, pushes it to t.matches, and broadcasts match_propose.
+ */
+function _proposeTournamentMatch(room, t, entry, matchIndex) {
+    const match = {
+        p1: entry.player1_id,
+        p2: entry.player2_id,
+        active: false,
+        bracket_round: entry.round,
+        bracket_position: entry.position,
+        bracket_side: entry.bracket_side || '',
+        match_index: matchIndex,
+        state: 'proposed',
+        accepts: { [entry.player1_id]: false, [entry.player2_id]: false },
+        proposed_at: Date.now()
+    };
+    t.matches.push(match);
+
+    const p1_data = players.get(entry.player1_id);
+    const p2_data = players.get(entry.player2_id);
+    broadcastRoomEvent(room, 'match_propose', {
+        ft: room.ft || 1,
+        match_index: matchIndex,
+        bracket_side: entry.bracket_side || '',
+        p1: {
+            id: entry.player1_id, name: entry.player1_name || getPlayerName(entry.player1_id),
+            connection_type: p1_data ? p1_data.connection_type : 'unknown',
+            rtt_ms: p1_data ? p1_data.rtt_ms : -1,
+            region: p1_data ? p1_data.region : '',
+            room_code: p1_data ? p1_data.room_code : ''
+        },
+        p2: {
+            id: entry.player2_id, name: entry.player2_name || getPlayerName(entry.player2_id),
+            connection_type: p2_data ? p2_data.connection_type : 'unknown',
+            rtt_ms: p2_data ? p2_data.rtt_ms : -1,
+            region: p2_data ? p2_data.region : '',
+            room_code: p2_data ? p2_data.room_code : ''
+        }
+    });
+    const sideLabel = entry.bracket_side ? `[${entry.bracket_side}]` : '';
+    console.log(`[tournament] match proposed in ${room.id}: ${getPlayerName(entry.player1_id)} vs ${getPlayerName(entry.player2_id)} (${sideLabel} round ${entry.round}, pos ${entry.position})`);
+}
+
+/**
+ * Fire match proposals for all unplayed matches in the current tournament round.
+ * For single/double elim: proposes all non-BYE, non-completed matches in current round.
+ * For round-robin/Swiss: proposes the pairings generated for this round.
+ */
+function tryStartTournamentRound(room) {
+    const t = room.tournament;
+    if (!t || !t.started || t.paused) return;
+
+    // Clear previous round's matches
+    t.matches = [];
+
+    if (t.format === 0) {
+        // Single Elim: propose all non-completed matches in current round
+        const roundMatches = t.bracket.filter(b => b.round === t.round && !b.completed);
+        let matchIndex = 0;
+        for (const entry of roundMatches) {
+            if (!entry.player1_id || !entry.player2_id) continue;
+            _proposeTournamentMatch(room, t, entry, matchIndex++);
+        }
+
+        // If no matches to propose (all BYEs), auto-advance round
+        if (t.matches.length === 0 && t.round < t.total_rounds - 1) {
+            t.round++;
+            console.log(`[tournament] auto-advancing to round ${t.round} (all BYEs)`);
+            broadcastRoomEvent(room, 'round_advance', { round: t.round });
+            tryStartTournamentRound(room);
+        }
+    } else if (t.format === 1) {
+        // Double Elim: propose ALL ready matches across W, L, and GF brackets
+        const readyMatches = t.bracket.filter(b =>
+            !b.completed && b.player1_id && b.player2_id
+        );
+        let matchIndex = 0;
+        for (const entry of readyMatches) {
+            _proposeTournamentMatch(room, t, entry, matchIndex++);
+        }
+    } else if (t.format === 2) {
+        // Round Robin: generate pairings for current round
+        const activePlayers = room.players.filter(p => !t.dq_players.includes(p));
+        const pairs = generateRoundRobinPairings(activePlayers, t.round);
+        let matchIndex = 0;
+        for (const pair of pairs) {
+            const entry = {
+                round: t.round,
+                position: matchIndex,
+                player1_id: pair.p1,
+                player1_name: getPlayerName(pair.p1),
+                player2_id: pair.p2,
+                player2_name: getPlayerName(pair.p2),
+                winner_id: '',
+                completed: 0
+            };
+            t.bracket.push(entry);
+
+            const match = {
+                p1: pair.p1, p2: pair.p2,
+                active: false,
+                bracket_round: t.round,
+                bracket_position: matchIndex,
+                match_index: matchIndex,
+                state: 'proposed',
+                accepts: { [pair.p1]: false, [pair.p2]: false },
+                proposed_at: Date.now()
+            };
+            t.matches.push(match);
+
+            const p1_data = players.get(pair.p1);
+            const p2_data = players.get(pair.p2);
+            broadcastRoomEvent(room, 'match_propose', {
+                ft: room.ft || 1,
+                match_index: matchIndex,
+                p1: { id: pair.p1, name: getPlayerName(pair.p1), connection_type: p1_data?.connection_type || 'unknown', rtt_ms: p1_data?.rtt_ms || -1, region: p1_data?.region || '', room_code: p1_data?.room_code || '' },
+                p2: { id: pair.p2, name: getPlayerName(pair.p2), connection_type: p2_data?.connection_type || 'unknown', rtt_ms: p2_data?.rtt_ms || -1, region: p2_data?.region || '', room_code: p2_data?.room_code || '' }
+            });
+            matchIndex++;
+        }
+    } else if (t.format === 3) {
+        // Swiss: generate pairings based on standings
+        const activePlayers = room.players.filter(p => !t.dq_players.includes(p));
+        const standings = new Map();
+        for (const p of activePlayers) {
+            const wins = t.bracket.filter(b => b.winner_id === p).length;
+            const losses = t.bracket.filter(b => b.completed && (b.player1_id === p || b.player2_id === p) && b.winner_id !== p).length;
+            standings.set(p, { wins, losses });
+        }
+        const previousPairings = t.bracket.map(b => ({ p1: b.player1_id, p2: b.player2_id }));
+        const pairs = generateSwissPairings(activePlayers, standings, previousPairings);
+        let matchIndex = 0;
+        for (const pair of pairs) {
+            const entry = {
+                round: t.round, position: matchIndex,
+                player1_id: pair.p1, player1_name: getPlayerName(pair.p1),
+                player2_id: pair.p2, player2_name: getPlayerName(pair.p2),
+                winner_id: '', completed: 0
+            };
+            t.bracket.push(entry);
+
+            const match = {
+                p1: pair.p1, p2: pair.p2, active: false,
+                bracket_round: t.round, bracket_position: matchIndex, match_index: matchIndex,
+                state: 'proposed', accepts: { [pair.p1]: false, [pair.p2]: false }, proposed_at: Date.now()
+            };
+            t.matches.push(match);
+
+            const p1_data = players.get(pair.p1);
+            const p2_data = players.get(pair.p2);
+            broadcastRoomEvent(room, 'match_propose', {
+                ft: room.ft || 1, match_index: matchIndex,
+                p1: { id: pair.p1, name: getPlayerName(pair.p1), connection_type: p1_data?.connection_type || 'unknown', rtt_ms: p1_data?.rtt_ms || -1, region: p1_data?.region || '', room_code: p1_data?.room_code || '' },
+                p2: { id: pair.p2, name: getPlayerName(pair.p2), connection_type: p2_data?.connection_type || 'unknown', rtt_ms: p2_data?.rtt_ms || -1, region: p2_data?.region || '', room_code: p2_data?.room_code || '' }
+            });
+            matchIndex++;
+        }
+    }
+
+    // Broadcast updated bracket state
+    broadcastRoomEvent(room, 'bracket_update', getTournamentState(room));
+}
+
 // ---- Auth ----
 
 function verifyRequest(method, path, body, headers) {
@@ -1002,7 +1729,8 @@ async function handleRequest(req, res) {
                 player_count: room.players.length,
                 max_players: room.max_players || 8,
                 region_locked: !!(room.regions && room.regions.length > 0),
-                ft: room.ft || 1
+                ft: room.ft || 1,
+                room_type: room.room_type || 0
             });
         }
         return json(res, 200, { rooms: list });
@@ -1022,9 +1750,11 @@ async function handleRequest(req, res) {
         const code = generateRoomCode();
         const roomName = String(data.name || `${data.display_name}'s Room`).slice(0, 31);
         const hostId = data.player_id;
+        const roomType = typeof data.room_type === 'number' ? data.room_type : 0;
 
         const roomFt = typeof data.ft === 'number' ? Math.max(1, Math.min(10, data.ft)) : 2;
-        rooms.set(code, {
+        const maxPlayers = typeof data.max_players === 'number' ? Math.max(2, Math.min(16, data.max_players)) : 8;
+        const roomObj = {
             id: code,
             name: roomName,
             host: hostId,
@@ -1033,9 +1763,29 @@ async function handleRequest(req, res) {
             match: null, // { p1: 'id', p2: 'id', state: 'playing' }
             chat: [],
             sseClients: new Set(),
-            ft: roomFt
-        });
-        console.log(`[room] ${hostId} created room ${code}: ${roomName} (FT${roomFt})`);
+            ft: roomFt,
+            room_type: roomType,
+            max_players: maxPlayers
+        };
+
+        // Tournament-specific fields
+        if (roomType === 2) {
+            roomObj.tournament = {
+                format: typeof data.tournament_format === 'number' ? data.tournament_format : 0,
+                seeding: data.seeding || 'rating',
+                started: false,
+                paused: false,
+                round: 0,
+                total_rounds: 0,
+                bracket: [],   // BracketEntry[]
+                matches: [],   // active RoomMatch[] for current round
+                dq_players: [] // DQ'd player IDs
+            };
+        }
+
+        rooms.set(code, roomObj);
+        const typeLabel = ['casual', 'koth', 'tournament'][roomType] || 'casual';
+        console.log(`[room] ${hostId} created ${typeLabel} room ${code}: ${roomName} (FT${roomFt}, max=${maxPlayers})`);
         return json(res, 200, { ok: true, room_code: code });
     }
 
@@ -1206,11 +1956,41 @@ async function handleRequest(req, res) {
         if (!data) return;
         const room = rooms.get(data.room_code);
         if (!room) return json(res, 404, { error: 'Room not found' });
+
+        const { player_id } = data;
+
+        // Tournament rooms: accept by match_index (parallel matches)
+        if (room.room_type === 2 && room.tournament && room.tournament.matches.length > 0) {
+            const matchIndex = typeof data.match_index === 'number' ? data.match_index : 0;
+            const tMatch = room.tournament.matches.find(m => m.match_index === matchIndex);
+            if (!tMatch || tMatch.state !== 'proposed') {
+                return json(res, 400, { error: 'No proposed match at this index' });
+            }
+            if (player_id !== tMatch.p1 && player_id !== tMatch.p2) {
+                return json(res, 400, { error: 'Not a match participant' });
+            }
+            tMatch.accepts[player_id] = true;
+            console.log(`[tournament] ${getPlayerName(player_id)} accepted match ${matchIndex} in ${room.id}`);
+
+            let match_started = false;
+            if (tMatch.accepts[tMatch.p1] && tMatch.accepts[tMatch.p2]) {
+                tMatch.state = 'playing';
+                tMatch.active = true;
+                broadcastRoomEvent(room, 'match_start', {
+                    match_index: matchIndex,
+                    p1: { id: tMatch.p1, name: getPlayerName(tMatch.p1) },
+                    p2: { id: tMatch.p2, name: getPlayerName(tMatch.p2) }
+                });
+                console.log(`[tournament] match ${matchIndex} confirmed in ${room.id}`);
+                match_started = true;
+            }
+            return json(res, 200, { ok: true, match_started });
+        }
+
+        // Casual/KOTH rooms: single match
         if (!room.match || room.match.state !== 'proposed') {
             return json(res, 400, { error: 'No proposed match' });
         }
-
-        const { player_id } = data;
         if (player_id !== room.match.p1 && player_id !== room.match.p2) {
             return json(res, 400, { error: 'Not a match participant' });
         }
@@ -1246,17 +2026,98 @@ async function handleRequest(req, res) {
         return json(res, 200, { ok: true });
     }
 
-    // --- POST /room/match/end --- "Winner Stays On" rotation
+    // --- POST /room/match/end --- "Winner Stays On" rotation / Tournament bracket advancement
     if (method === 'POST' && urlPath === '/room/match/end') {
         const data = parseJsonBody(res, body);
         if (!data) return;
         const room = rooms.get(data.room_code);
         if (!room) return json(res, 404, { error: 'Room not found' });
+
+        const { winner_id } = data;
+        const matchIndex = typeof data.match_index === 'number' ? data.match_index : 0;
+
+        // Tournament rooms: bracket-aware match end
+        if (room.room_type === 2 && room.tournament) {
+            const t = room.tournament;
+            const tMatch = t.matches.find(m => m.match_index === matchIndex);
+            if (!tMatch) {
+                return json(res, 400, { error: 'No match at this index' });
+            }
+            if (winner_id !== tMatch.p1 && winner_id !== tMatch.p2) {
+                return json(res, 400, { error: 'winner_id must be p1 or p2' });
+            }
+
+            const loser_id = winner_id === tMatch.p1 ? tMatch.p2 : tMatch.p1;
+            tMatch.state = 'completed';
+            tMatch.active = false;
+
+            // Advance bracket
+            let roundComplete = false;
+            const bracketSide = tMatch.bracket_side || '';
+
+            if (t.format === 0) {
+                roundComplete = advanceSingleElimBracket(t, tMatch.bracket_round, tMatch.bracket_position, winner_id);
+            } else if (t.format === 1) {
+                roundComplete = advanceDoubleElimBracket(t, bracketSide, tMatch.bracket_round, tMatch.bracket_position, winner_id);
+            } else {
+                // Round-robin / Swiss: just mark the bracket entry
+                const entry = t.bracket.find(b => b.round === tMatch.bracket_round && b.position === tMatch.bracket_position);
+                if (entry) {
+                    entry.winner_id = winner_id;
+                    entry.completed = 1;
+                }
+                const roundEntries = t.bracket.filter(b => b.round === t.round);
+                roundComplete = roundEntries.length > 0 && roundEntries.every(b => b.completed);
+            }
+
+            broadcastRoomEvent(room, 'match_end', {
+                winner_id, winner_name: getPlayerName(winner_id),
+                loser_id, loser_name: getPlayerName(loser_id),
+                match_index: matchIndex
+            });
+            broadcastRoomEvent(room, 'bracket_update', getTournamentState(room));
+            console.log(`[tournament] match ${matchIndex} ended in ${room.id}: ${getPlayerName(winner_id)} wins`);
+
+            if (t.format === 1) {
+                // Double Elim: tournament is over when GF is completed
+                const gf = t.bracket.find(b => b.bracket_side === 'GF');
+                if (gf && gf.completed) {
+                    console.log(`[tournament] TOURNAMENT COMPLETE in ${room.id} (double elim)`);
+                } else {
+                    // Propose any new ready matches (losers may have been populated)
+                    const allMatchesDone = t.matches.every(m => m.state === 'completed');
+                    if (allMatchesDone) {
+                        tryStartTournamentRound(room);
+                    }
+                }
+            } else if (roundComplete) {
+                const allMatchesDone = t.matches.every(m => m.state === 'completed');
+                if (allMatchesDone) {
+                    const isFinalRound = (t.format === 0)
+                        ? t.round >= t.total_rounds - 1
+                        : (t.format === 2)
+                            ? t.round >= (room.players.filter(p => !t.dq_players.includes(p)).length - 1) - 1
+                            : t.round >= Math.ceil(Math.log2(room.players.length)) - 1;
+
+                    if (isFinalRound) {
+                        console.log(`[tournament] TOURNAMENT COMPLETE in ${room.id}`);
+                    } else {
+                        t.round++;
+                        console.log(`[tournament] round complete in ${room.id}, advancing to round ${t.round}`);
+                        broadcastRoomEvent(room, 'round_advance', { round: t.round });
+                        tryStartTournamentRound(room);
+                    }
+                }
+            }
+
+            return json(res, 200, { ok: true });
+        }
+
+        // Casual/KOTH rooms: "Winner Stays On" rotation
         if (!room.match || room.match.state !== 'playing') {
             return json(res, 400, { error: 'No active match' });
         }
 
-        const { winner_id } = data;
         const { p1, p2 } = room.match;
 
         // Validate winner is one of the match players
@@ -1283,6 +2144,241 @@ async function handleRequest(req, res) {
         tryStartMatch(room);
 
         return json(res, 200, { ok: true });
+    }
+
+    // --- Tournament Bracket Endpoints ---
+
+    // POST /room/:code/bracket/start — Close registration, generate bracket
+    const bracketStartMatch = urlPath.match(/^\/room\/([^/]+)\/bracket\/start$/);
+    if (method === 'POST' && bracketStartMatch) {
+        const roomCode = bracketStartMatch[1];
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(roomCode);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        if (room.room_type !== 2 || !room.tournament) {
+            return json(res, 400, { error: 'Not a tournament room' });
+        }
+        if (data.player_id !== room.host) {
+            return json(res, 403, { error: 'Only the tournament organizer can start the bracket' });
+        }
+        if (room.tournament.started) {
+            return json(res, 400, { error: 'Bracket already started' });
+        }
+        if (room.players.length < 2) {
+            return json(res, 400, { error: 'Need at least 2 players' });
+        }
+
+        const t = room.tournament;
+        t.started = true;
+
+        // Seed players
+        const seeded = seedPlayers(room.players, t.seeding);
+
+        if (t.format === 0) {
+            // Single Elim
+            const result = generateSingleElimBracket(seeded);
+            t.bracket = result.bracket;
+            t.total_rounds = result.total_rounds;
+            t.round = 0;
+
+            // Advance BYEs in round 0 before proposing matches
+            for (const entry of t.bracket.filter(b => b.round === 0 && b.completed && b.winner_id)) {
+                advanceSingleElimBracket(t, 0, entry.position, entry.winner_id);
+            }
+        } else if (t.format === 1) {
+            // Double Elim
+            const result = generateDoubleElimBracket(seeded);
+            t.bracket = result.bracket;
+            t.total_rounds = result.total_rounds;
+            t.w_rounds = result.w_rounds;
+            t.l_rounds = result.l_rounds;
+            t.round = 0;
+
+            // Advance BYEs in winners round 0
+            for (const entry of t.bracket.filter(b => b.bracket_side === 'W' && b.round === 0 && b.completed && b.winner_id)) {
+                advanceDoubleElimBracket(t, 'W', 0, entry.position, entry.winner_id);
+            }
+        } else if (t.format === 2) {
+            // Round Robin: total rounds = N-1 (or N for odd)
+            const n = seeded.length % 2 === 0 ? seeded.length : seeded.length + 1;
+            t.total_rounds = n - 1;
+            t.round = 0;
+        } else if (t.format === 3) {
+            // Swiss: total rounds = ceil(log2(N))
+            t.total_rounds = Math.ceil(Math.log2(seeded.length));
+            t.round = 0;
+        }
+
+        console.log(`[tournament] bracket started in ${room.id}: ${seeded.length} players, ${t.total_rounds} rounds`);
+
+        // Broadcast bracket state
+        broadcastRoomEvent(room, 'bracket_update', getTournamentState(room));
+
+        // Fire first round matches
+        tryStartTournamentRound(room);
+
+        return json(res, 200, { ok: true, bracket: getTournamentState(room) });
+    }
+
+    // GET /room/:code/bracket — Fetch current bracket state
+    const bracketGetMatch = urlPath.match(/^\/room\/([^/]+)\/bracket$/);
+    if (method === 'GET' && bracketGetMatch) {
+        const roomCode = bracketGetMatch[1];
+        const room = rooms.get(roomCode);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        if (room.room_type !== 2 || !room.tournament) {
+            return json(res, 400, { error: 'Not a tournament room' });
+        }
+        return json(res, 200, getTournamentState(room));
+    }
+
+    // POST /room/:code/bracket/override — TO result override
+    const bracketOverrideMatch = urlPath.match(/^\/room\/([^/]+)\/bracket\/override$/);
+    if (method === 'POST' && bracketOverrideMatch) {
+        const roomCode = bracketOverrideMatch[1];
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(roomCode);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        if (room.room_type !== 2 || !room.tournament) {
+            return json(res, 400, { error: 'Not a tournament room' });
+        }
+        if (data.player_id !== room.host) {
+            return json(res, 403, { error: 'Only the tournament organizer can override results' });
+        }
+
+        const t = room.tournament;
+        const { match_index, winner_id } = data;
+        if (typeof match_index !== 'number' || !winner_id) {
+            return json(res, 400, { error: 'Missing match_index or winner_id' });
+        }
+
+        // Find the bracket entry by scanning for matching round+position or by match index
+        // For single elim: match_index maps to bracket entries in current round
+        const entry = t.bracket.find((b, idx) => idx === match_index) ||
+                      t.bracket.find(b => !b.completed && (b.player1_id === winner_id || b.player2_id === winner_id));
+        if (!entry) {
+            return json(res, 404, { error: 'Bracket entry not found' });
+        }
+        if (winner_id !== entry.player1_id && winner_id !== entry.player2_id) {
+            return json(res, 400, { error: 'winner_id must be a player in this match' });
+        }
+
+        // Apply override
+        if (t.format === 0) {
+            advanceSingleElimBracket(t, entry.round, entry.position, winner_id);
+        } else if (t.format === 1) {
+            advanceDoubleElimBracket(t, entry.bracket_side || 'W', entry.round, entry.position, winner_id);
+        } else {
+            entry.winner_id = winner_id;
+            entry.completed = 1;
+        }
+
+        // Also mark tournament match as completed if it exists
+        const tMatch = t.matches.find(m => m.bracket_round === entry.round && m.bracket_position === entry.position);
+        if (tMatch) {
+            tMatch.state = 'completed';
+            tMatch.active = false;
+        }
+
+        broadcastRoomEvent(room, 'bracket_update', getTournamentState(room));
+        console.log(`[tournament] TO override in ${room.id}: match at round ${entry.round} pos ${entry.position} -> winner ${getPlayerName(winner_id)}`);
+        return json(res, 200, { ok: true });
+    }
+
+    // POST /room/:code/bracket/dq — DQ a player
+    const bracketDQMatch = urlPath.match(/^\/room\/([^/]+)\/bracket\/dq$/);
+    if (method === 'POST' && bracketDQMatch) {
+        const roomCode = bracketDQMatch[1];
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(roomCode);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        if (room.room_type !== 2 || !room.tournament) {
+            return json(res, 400, { error: 'Not a tournament room' });
+        }
+        if (data.player_id !== room.host) {
+            return json(res, 403, { error: 'Only the tournament organizer can DQ players' });
+        }
+
+        const t = room.tournament;
+        const targetId = data.target_player_id;
+        if (!targetId) {
+            return json(res, 400, { error: 'Missing target_player_id' });
+        }
+        if (t.dq_players.includes(targetId)) {
+            return json(res, 400, { error: 'Player already DQ\'d' });
+        }
+
+        t.dq_players.push(targetId);
+
+        // Auto-advance opponent in any pending/active match involving the DQ'd player
+        for (const entry of t.bracket) {
+            if (entry.completed) continue;
+            if (entry.player1_id === targetId && entry.player2_id) {
+                if (t.format === 0) {
+                    advanceSingleElimBracket(t, entry.round, entry.position, entry.player2_id);
+                } else if (t.format === 1) {
+                    advanceDoubleElimBracket(t, entry.bracket_side || 'W', entry.round, entry.position, entry.player2_id);
+                } else {
+                    entry.winner_id = entry.player2_id;
+                    entry.completed = 1;
+                }
+            } else if (entry.player2_id === targetId && entry.player1_id) {
+                if (t.format === 0) {
+                    advanceSingleElimBracket(t, entry.round, entry.position, entry.player1_id);
+                } else if (t.format === 1) {
+                    advanceDoubleElimBracket(t, entry.bracket_side || 'W', entry.round, entry.position, entry.player1_id);
+                } else {
+                    entry.winner_id = entry.player1_id;
+                    entry.completed = 1;
+                }
+            }
+        }
+
+        // Cancel any proposed tournament match involving this player
+        for (const m of t.matches) {
+            if (m.state === 'proposed' && (m.p1 === targetId || m.p2 === targetId)) {
+                m.state = 'completed';
+                m.active = false;
+            }
+        }
+
+        broadcastRoomEvent(room, 'bracket_update', getTournamentState(room));
+        console.log(`[tournament] DQ in ${room.id}: ${getPlayerName(targetId)} disqualified`);
+        return json(res, 200, { ok: true });
+    }
+
+    // POST /room/:code/bracket/pause — Pause or resume tournament
+    const bracketPauseMatch = urlPath.match(/^\/room\/([^/]+)\/bracket\/pause$/);
+    if (method === 'POST' && bracketPauseMatch) {
+        const roomCode = bracketPauseMatch[1];
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(roomCode);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        if (room.room_type !== 2 || !room.tournament) {
+            return json(res, 400, { error: 'Not a tournament room' });
+        }
+        if (data.player_id !== room.host) {
+            return json(res, 403, { error: 'Only the tournament organizer can pause/resume' });
+        }
+
+        const pause = data.pause !== undefined ? !!data.pause : true;
+        room.tournament.paused = pause;
+        broadcastRoomEvent(room, 'bracket_update', getTournamentState(room));
+        console.log(`[tournament] ${room.id} ${pause ? 'PAUSED' : 'RESUMED'}`);
+
+        // If resuming, try to start any pending round
+        if (!pause && room.tournament.started) {
+            const hasActiveMatches = room.tournament.matches.some(m => m.state === 'proposed' || m.state === 'playing');
+            if (!hasActiveMatches) {
+                tryStartTournamentRound(room);
+            }
+        }
+
+        return json(res, 200, { ok: true, paused: pause });
     }
 
     // --- / Casual Rooms ---

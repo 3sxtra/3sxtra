@@ -527,6 +527,7 @@ int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms) {
         r->player_count = cjson_get_int(item, "player_count", 0);
         r->max_players = cjson_get_int(item, "max_players", 8);
         r->ft = cjson_get_int(item, "ft", 1);
+        r->room_type = cjson_get_int(item, "room_type", ROOM_TYPE_CASUAL);
         if (strlen(r->code) > 0)
             count++;
     }
@@ -775,6 +776,7 @@ static void parse_room_json(const char* json_str, RoomState* out) {
     cjson_get_string(root, "name", out->name, sizeof(out->name));
     cjson_get_string(root, "host", out->host, sizeof(out->host));
     out->ft = cjson_get_int(root, "ft", 1);
+    out->room_type = cjson_get_int(root, "room_type", ROOM_TYPE_CASUAL);
 
     /* Parse players array */
     const cJSON* players = cJSON_GetObjectItemCaseSensitive(root, "players");
@@ -1042,6 +1044,216 @@ bool LobbyServer_DeclineMatch(const char* room_code) {
     return ok;
 }
 
+// === Tournament Bracket Management ===
+
+/**
+ * Parse tournament-specific JSON fields into a TournamentState struct.
+ * Expected JSON shape:
+ *   { "format": 0, "round": 1, "total_rounds": 3, "started": 1, "paused": 0,
+ *     "matches": [{"p1":"id","p2":"id","active":1,"round":0,"position":0,"match_index":0}, ...],
+ *     "bracket": [{"round":0,"position":0,"player1_id":"","player1_name":"",
+ *                  "player2_id":"","player2_name":"","winner_id":"","completed":0}, ...] }
+ */
+static void parse_tournament_json(const cJSON* root, TournamentState* out) {
+    memset(out, 0, sizeof(*out));
+    if (!root)
+        return;
+
+    out->tournament_format = cjson_get_int(root, "format", TOURNAMENT_SINGLE_ELIM);
+    out->tournament_round = cjson_get_int(root, "round", 0);
+    out->tournament_total_rounds = cjson_get_int(root, "total_rounds", 0);
+    out->tournament_started = cjson_get_int(root, "started", 0);
+    out->tournament_paused = cjson_get_int(root, "paused", 0);
+
+    /* Parse matches array */
+    const cJSON* matches = cJSON_GetObjectItemCaseSensitive(root, "matches");
+    const cJSON* m_item = NULL;
+    cJSON_ArrayForEach(m_item, matches) {
+        if (out->match_count >= MAX_CONCURRENT_MATCHES)
+            break;
+        RoomMatch* rm = &out->matches[out->match_count++];
+        cjson_get_string(m_item, "p1", rm->p1, sizeof(rm->p1));
+        cjson_get_string(m_item, "p2", rm->p2, sizeof(rm->p2));
+        rm->active = cjson_get_int(m_item, "active", 0);
+        rm->bracket_round = cjson_get_int(m_item, "round", 0);
+        rm->bracket_position = cjson_get_int(m_item, "position", 0);
+        rm->match_index = cjson_get_int(m_item, "match_index", 0);
+        cjson_get_string(m_item, "bracket_side", rm->bracket_side, sizeof(rm->bracket_side));
+    }
+
+    /* Parse bracket array */
+    const cJSON* bracket = cJSON_GetObjectItemCaseSensitive(root, "bracket");
+    const cJSON* b_item = NULL;
+    cJSON_ArrayForEach(b_item, bracket) {
+        if (out->bracket_size >= MAX_BRACKET_SIZE)
+            break;
+        BracketEntry* be = &out->bracket[out->bracket_size++];
+        be->round = cjson_get_int(b_item, "round", 0);
+        be->position = cjson_get_int(b_item, "position", 0);
+        cjson_get_string(b_item, "player1_id", be->player1_id, sizeof(be->player1_id));
+        cjson_get_string(b_item, "player1_name", be->player1_name, sizeof(be->player1_name));
+        cjson_get_string(b_item, "player2_id", be->player2_id, sizeof(be->player2_id));
+        cjson_get_string(b_item, "player2_name", be->player2_name, sizeof(be->player2_name));
+        cjson_get_string(b_item, "winner_id", be->winner_id, sizeof(be->winner_id));
+        be->completed = cjson_get_int(b_item, "completed", 0);
+        cjson_get_string(b_item, "bracket_side", be->bracket_side, sizeof(be->bracket_side));
+    }
+}
+
+bool LobbyServer_CreateTournamentRoom(const char* name, TournamentFormat format,
+                                       int max_players, int ft, const char* seeding,
+                                       RoomState* out_room) {
+    if (!Identity_IsInitialized())
+        return false;
+
+    if (ft < 1) ft = 2;
+    if (ft > 10) ft = 10;
+    if (max_players < 2) max_players = 8;
+    if (max_players > MAX_ROOM_PLAYERS) max_players = MAX_ROOM_PLAYERS;
+
+    cJSON* root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "player_id", Identity_GetPlayerId());
+    cJSON_AddStringToObject(root, "name", name ? name : "Tournament");
+    cJSON_AddNumberToObject(root, "ft", ft);
+    cJSON_AddNumberToObject(root, "room_type", ROOM_TYPE_TOURNAMENT);
+    cJSON_AddNumberToObject(root, "tournament_format", (int)format);
+    cJSON_AddNumberToObject(root, "max_players", max_players);
+    cJSON_AddStringToObject(root, "seeding", seeding ? seeding : "rating");
+    char* body = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", "/room/create", body, response, sizeof(response));
+    free(body);
+
+    if (!ok)
+        return false;
+
+    if (out_room) {
+        cJSON* res_json = cJSON_Parse(response);
+        if (res_json) {
+            cjson_get_string(res_json, "room_code", out_room->id, sizeof(out_room->id));
+            cJSON_Delete(res_json);
+        }
+        SDL_strlcpy(out_room->name, name ? name : "Tournament", sizeof(out_room->name));
+        SDL_strlcpy(out_room->host, Identity_GetPlayerId(), sizeof(out_room->host));
+        out_room->player_count = 1;
+        out_room->ft = ft;
+        out_room->room_type = ROOM_TYPE_TOURNAMENT;
+        SDL_strlcpy(out_room->players[0].player_id, Identity_GetPlayerId(),
+                    sizeof(out_room->players[0].player_id));
+        SDL_strlcpy(out_room->players[0].display_name, Identity_GetDisplayName(),
+                    sizeof(out_room->players[0].display_name));
+    }
+    SDL_Log("[LobbyServer] Tournament room created: %s (format=%d, max=%d)",
+            out_room ? out_room->id : "?", (int)format, max_players);
+    return true;
+}
+
+bool LobbyServer_StartBracket(const char* room_code) {
+    if (!configured || !room_code || !Identity_IsInitialized())
+        return false;
+
+    char path[128];
+    snprintf(path, sizeof(path), "/room/%s/bracket/start", room_code);
+
+    char* body = json_body_pid(Identity_GetPlayerId());
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", path, body, response, sizeof(response));
+    free(body);
+
+    if (ok)
+        SDL_Log("[LobbyServer] Bracket started: room=%s", room_code);
+    return ok;
+}
+
+bool LobbyServer_GetBracket(const char* room_code, TournamentState* out) {
+    if (!configured || !room_code || !out)
+        return false;
+
+    char path[128];
+    snprintf(path, sizeof(path), "/room/%s/bracket", room_code);
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("GET", path, "", response, sizeof(response)))
+        return false;
+
+    cJSON* root = cJSON_Parse(response);
+    if (!root)
+        return false;
+
+    parse_tournament_json(root, out);
+    cJSON_Delete(root);
+    return true;
+}
+
+bool LobbyServer_BracketOverride(const char* room_code, int match_index, const char* winner_id) {
+    if (!configured || !room_code || !winner_id || !Identity_IsInitialized())
+        return false;
+
+    char path[128];
+    snprintf(path, sizeof(path), "/room/%s/bracket/override", room_code);
+
+    cJSON* root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "player_id", Identity_GetPlayerId());
+    cJSON_AddNumberToObject(root, "match_index", match_index);
+    cJSON_AddStringToObject(root, "winner_id", winner_id);
+    char* body = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", path, body, response, sizeof(response));
+    free(body);
+
+    if (ok)
+        SDL_Log("[LobbyServer] Bracket override: room=%s match=%d winner=%s", room_code, match_index, winner_id);
+    return ok;
+}
+
+bool LobbyServer_BracketDQ(const char* room_code, const char* player_id) {
+    if (!configured || !room_code || !player_id || !Identity_IsInitialized())
+        return false;
+
+    char path[128];
+    snprintf(path, sizeof(path), "/room/%s/bracket/dq", room_code);
+
+    cJSON* root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "player_id", Identity_GetPlayerId());
+    cJSON_AddStringToObject(root, "target_player_id", player_id);
+    char* body = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", path, body, response, sizeof(response));
+    free(body);
+
+    if (ok)
+        SDL_Log("[LobbyServer] Player DQ'd: room=%s player=%s", room_code, player_id);
+    return ok;
+}
+
+bool LobbyServer_BracketPause(const char* room_code, bool pause) {
+    if (!configured || !room_code || !Identity_IsInitialized())
+        return false;
+
+    char path[128];
+    snprintf(path, sizeof(path), "/room/%s/bracket/pause", room_code);
+
+    cJSON* root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "player_id", Identity_GetPlayerId());
+    cJSON_AddBoolToObject(root, "pause", pause);
+    char* body = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", path, body, response, sizeof(response));
+    free(body);
+
+    if (ok)
+        SDL_Log("[LobbyServer] Bracket %s: room=%s", pause ? "paused" : "resumed", room_code);
+    return ok;
+}
+
 /* ======== SSE raw socket connect ========
  * The SSE streaming client needs a long-lived TCP socket for recv() polling.
  * This is separate from the curl-based HTTP client used by all other APIs. */
@@ -1172,6 +1384,7 @@ static void sse_parse_event(const char* json_str, SSEEvent* out) {
         out->type = SSE_EVENT_MATCH_PROPOSE;
         if (data) {
             out->propose_ft = cjson_get_int(data, "ft", 1);
+            out->match_index = cjson_get_int(data, "match_index", 0);
             const cJSON* p1 = cJSON_GetObjectItemCaseSensitive(data, "p1");
             if (p1) {
                 cjson_get_string(p1, "id", out->propose_p1_id, sizeof(out->propose_p1_id));
@@ -1212,6 +1425,17 @@ static void sse_parse_event(const char* json_str, SSEEvent* out) {
         if (data) {
             cjson_get_string(data, "winner_id", out->match_winner_id, sizeof(out->match_winner_id));
             cjson_get_string(data, "loser_id", out->match_loser_id, sizeof(out->match_loser_id));
+            out->match_index = cjson_get_int(data, "match_index", 0);
+        }
+    } else if (strcmp(type_str, "bracket_update") == 0) {
+        out->type = SSE_EVENT_BRACKET_UPDATE;
+        if (data) {
+            parse_tournament_json(data, &out->tournament);
+        }
+    } else if (strcmp(type_str, "round_advance") == 0) {
+        out->type = SSE_EVENT_ROUND_ADVANCE;
+        if (data) {
+            out->round_number = cjson_get_int(data, "round", 0);
         }
     }
 

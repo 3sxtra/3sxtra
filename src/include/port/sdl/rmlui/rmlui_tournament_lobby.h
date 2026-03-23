@@ -1,0 +1,42 @@
+#ifndef RMLUI_TOURNAMENT_LOBBY_H
+#define RMLUI_TOURNAMENT_LOBBY_H
+
+#include <stdbool.h>
+
+// Forward declaration for SDL_Event
+union SDL_Event;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void rmlui_tournament_lobby_init(void);
+void rmlui_tournament_lobby_update(void);
+void rmlui_tournament_lobby_show(void);
+void rmlui_tournament_lobby_hide(void);
+void rmlui_tournament_lobby_shutdown(void);
+
+// Returns true if the tournament lobby screen is currently visible
+bool rmlui_tournament_lobby_is_visible(void);
+
+// Force the UI to refresh its state using the given room code
+void rmlui_tournament_lobby_set_room(const char* room_code);
+
+// Returns the current room code (empty string if not in a room)
+const char* rmlui_tournament_lobby_get_room_code(void);
+
+/// Handle SDL keyboard/text events for the chat popup.
+/// Returns true if the event was consumed (chat is active).
+bool rmlui_tournament_lobby_handle_key_event(const union SDL_Event* event);
+
+/// Returns true if the user clicked "Leave Room" (consumed by ms_tournament_lobby.c).
+bool rmlui_tournament_lobby_wants_leave(void);
+
+/// Consume the leave signal — performs server leave + clears room code.
+void rmlui_tournament_lobby_consume_leave(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

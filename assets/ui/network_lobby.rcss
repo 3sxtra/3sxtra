@@ -371,3 +371,10 @@
     color: rgba(150, 180, 220, 180);
     margin-left: 4dp;
 }
+
+.room-badge {
+    display: inline;
+    font-size: 7dp;
+    color: rgba(255, 210, 40, 255);
+    margin-right: 2dp;
+}

@@ -1,0 +1,196 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="tournament_lobby.rcss"/>
+    <title>Tournament Lobby</title>
+</head>
+<body data-model="tournament_lobby">
+<div id="lobby-panel">
+
+    <!-- ── Title bar ── -->
+    <div id="lobby-title-bar">
+        <div id="lobby-title-text">🏆 {{room_name}}</div>
+        <div id="tournament-badge">{{tournament_format_label}}</div>
+    </div>
+
+    <!-- ── Main content: Left bracket + Center matches + Right chat ── -->
+    <div id="lobby-body">
+
+        <!-- Left: Bracket Display -->
+        <div id="bracket-col">
+            <div class="section-header">BRACKET (Round {{tournament_round + 1}}/{{tournament_total_rounds}})</div>
+
+            <!-- Registration phase -->
+            <div data-if="!tournament_started" id="bracket-registration">
+                <div class="registration-text">REGISTRATION OPEN</div>
+                <div class="registration-count">{{player_count}}/{{max_players}} ENTRANTS</div>
+                <div data-if="is_host" id="btn-start-bracket"
+                     data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 1">
+                    START BRACKET
+                </div>
+            </div>
+
+            <!-- Active bracket -->
+            <div data-if="tournament_started" id="bracket-tree">
+                <div data-for="b : bracket_entries">
+                    <div data-if="b.index < bracket_count" class="bracket-match"
+                         data-class-completed="b.completed">
+                        <div class="bracket-round-label" data-if="b.position == 0">
+                            <span data-if="b.bracket_side != ''" class="side-tag">[{{b.bracket_side}}]</span>
+                            R{{b.round + 1}}
+                        </div>
+                        <div class="bracket-match-inner">
+                            <div class="bracket-player top"
+                                 data-class-winner="b.winner_name == b.p1_name &amp;&amp; b.completed">
+                                {{b.p1_name}}
+                            </div>
+                            <div class="bracket-vs">vs</div>
+                            <div class="bracket-player bottom"
+                                 data-class-winner="b.winner_name == b.p2_name &amp;&amp; b.completed">
+                                {{b.p2_name}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paused indicator -->
+            <div data-if="tournament_paused" id="paused-banner">
+                ⏸ TOURNAMENT PAUSED
+            </div>
+        </div>
+
+        <!-- Center: Active Matches + Controls -->
+        <div id="match-col">
+            <div class="section-header">ACTIVE MATCHES</div>
+
+            <div id="active-match-list">
+                <div data-for="m : active_matches">
+                    <div data-if="m.index < active_match_count" class="active-match-item"
+                         data-class-ours="m.is_ours"
+                         data-class-selected="cursor_x == 0 &amp;&amp; cursor_y == 0 &amp;&amp; match_selector_idx == m.index">
+                        <span class="match-tag" data-if="m.active">LIVE</span>
+                        <span class="match-tag waiting" data-if="!m.active">WAIT</span>
+                        <span class="match-side" data-if="m.bracket_side != ''">[{{m.bracket_side}}]</span>
+                        <span class="match-names">{{m.p1_name}} vs {{m.p2_name}}</span>
+                    </div>
+                </div>
+                <div data-if="active_match_count == 0" class="no-matches">
+                    No active matches
+                </div>
+            </div>
+
+            <!-- Spectate button -->
+            <div id="btn-spectate" data-if="!is_playing &amp;&amp; active_match_count > 0 &amp;&amp; !is_spectating"
+                 data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 0">
+                SPECTATE MATCH
+            </div>
+
+            <div id="spectating-indicator" data-if="is_spectating" class="spectating-badge">
+                [LIVE] SPECTATING...
+            </div>
+
+            <!-- TO Controls -->
+            <div data-if="is_host" id="to-controls">
+                <div class="section-header">TO CONTROLS</div>
+                <div data-if="!tournament_started" id="btn-to-start"
+                     data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 1">
+                    START BRACKET
+                </div>
+                <div data-if="tournament_started &amp;&amp; !tournament_paused" id="btn-to-pause"
+                     data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 1">
+                    PAUSE TOURNAMENT
+                </div>
+                <div data-if="tournament_started &amp;&amp; tournament_paused" id="btn-to-resume"
+                     data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 1">
+                    RESUME TOURNAMENT
+                </div>
+            </div>
+
+            <div id="btn-leave-room" data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 2">
+                LEAVE ROOM
+            </div>
+        </div>
+
+        <!-- Right: Player List + Chat -->
+        <div id="lobby-chat-col">
+            <div class="section-header">ENTRANTS ({{player_count}}/{{max_players}})</div>
+            <div id="player-list">
+                <div data-for="pl : room_players">
+                    <div data-if="pl.index < player_count" class="player-row"
+                         data-class-self="pl.is_self"
+                         data-class-playing="pl.is_playing">
+                        <img data-if="pl.country != ''"
+                             data-attr-src="'../flags_icons/' + pl.country + '.png'"
+                             class="player-flag"/>
+                        <span class="player-list-name">{{pl.name}}</span>
+                        <span class="player-status" data-if="pl.is_playing">[VS]</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-header">CHAT</div>
+            <div id="chat-messages">
+                <div data-for="msg : chat_messages">
+                    <div data-if="msg.index < chat_count" class="chat-msg">
+                        <span class="chat-sender">{{msg.sender}}:</span>
+                        <span class="chat-text">{{msg.text}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chat-input-box" data-class-focused="cursor_x == 1">
+                <span id="chat-prompt">&gt;</span>
+                <span id="chat-typing-text" data-class-active="is_typing">{{chat_input}}{{is_typing ? '_' : ''}}</span>
+                <span id="chat-hint" data-if="!is_typing">PRESS [START] TO CHAT</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Match Accept Popup ── -->
+    <div id="match-accept-panel" data-if="proposal_active">
+        <div id="ma-title">BRACKET MATCH!</div>
+        <div id="ma-opponent-section">
+            <div id="ma-opponent-label">OPPONENT</div>
+            <div id="ma-opponent-name">{{proposal_opponent_name}}</div>
+            <div id="ma-opponent-details">
+                <span class="ma-detail-item" data-if="proposal_opponent_ping >= 0">
+                    ~{{proposal_opponent_ping}}ms
+                </span>
+                <span class="ma-detail-item">
+                    {{proposal_opponent_conn_type == 'wired' ? 'Wired' : (proposal_opponent_conn_type == 'wifi' ? 'WiFi' : '?')}}
+                </span>
+            </div>
+        </div>
+        <div id="ma-countdown-section">
+            <div id="ma-countdown-bar-bg">
+                <div id="ma-countdown-bar-fill" data-style-width="proposal_countdown_pct + '%'"/>
+            </div>
+            <div id="ma-countdown-text">{{proposal_countdown}}s</div>
+        </div>
+        <div id="ma-buttons">
+            <div id="ma-btn-accept" data-class-focused="proposal_cursor == 0">
+                ACCEPT
+            </div>
+            <div id="ma-btn-decline" data-class-focused="proposal_cursor == 1">
+                DECLINE
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Chat Popup ── -->
+    <div id="chat-popup" data-if="is_typing">
+        <div id="chat-popup-title">ROOM CHAT</div>
+        <div id="chat-popup-text">{{chat_input}}<span class="cursor-blink">|</span></div>
+        <div class="chat-help">Type message, ENTER to send, ESC to cancel</div>
+    </div>
+
+    <!-- ── Status bar ── -->
+    <div id="status-bar" data-if="status_text != ''">
+        <span id="status-text">{{status_text}}</span>
+    </div>
+
+</div>
+</body>
+</rml>

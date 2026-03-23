@@ -1,0 +1,658 @@
+/* ─── Tournament Lobby ───────────────────────────────────────── */
+/* Built on top of base.rcss — 384×224 restricted resolution    */
+/* Extended casual lobby layout with bracket + multi-match cols */
+
+#lobby-panel {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: rgba(6, 8, 18, 210);
+    border-width: 1dp;
+    border-color: rgba(200, 160, 50, 80); /* Gold tint for tournament */
+}
+
+/* ─── Title bar ──────────────────────────────────────────────── */
+
+#lobby-title-bar {
+    display: block;
+    height: 16dp;
+    padding: 3dp 8dp 1dp 8dp;
+    text-align: center;
+    border-top-width: 1dp;
+    border-top-color: rgba(255, 210, 40, 180);
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(255, 210, 40, 180);
+}
+
+#lobby-title-text {
+    display: inline;
+    font-size: 11dp;
+    color: #fff;
+    font-weight: bold;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
+}
+
+#tournament-badge {
+    display: inline;
+    font-size: 7dp;
+    color: rgba(255, 210, 40, 255);
+    background-color: rgba(100, 60, 0, 180);
+    padding: 0dp 4dp;
+    margin-left: 6dp;
+    border-width: 1dp;
+    border-color: rgba(255, 180, 0, 150);
+}
+
+/* ─── Layout: Left (Bracket) + Center (Matches) + Right (Chat) ─ */
+
+#lobby-body {
+    display: block;
+}
+
+#bracket-col {
+    display: block;
+    position: absolute;
+    left: 4dp;
+    top: 19dp;
+    width: 130dp;
+    bottom: 16dp;
+    background-color: rgba(0, 6, 28, 130);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 50);
+    padding: 0dp 2dp;
+    overflow-y: auto;
+}
+
+#match-col {
+    display: block;
+    position: absolute;
+    left: 140dp;
+    top: 19dp;
+    width: 98dp;
+    bottom: 16dp;
+    padding: 0dp 2dp;
+}
+
+#lobby-chat-col {
+    display: block;
+    position: absolute;
+    left: 244dp;
+    top: 19dp;
+    right: 4dp;
+    bottom: 16dp;
+    background-color: rgba(0, 6, 28, 180);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 70);
+    padding: 0dp 2dp 2dp 4dp;
+}
+
+/* ─── Section headers ────────────────────────────────────────── */
+
+.section-header {
+    display: block;
+    font-size: 6dp;
+    color: rgba(170, 200, 255, 170);
+    padding: 0dp 0dp;
+    margin-top: 2dp;
+    margin-bottom: 2dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(100, 130, 220, 60);
+}
+
+/* ─── Bracket Display ────────────────────────────────────────── */
+
+#bracket-registration {
+    display: block;
+    text-align: center;
+    margin-top: 20dp;
+}
+
+.registration-text {
+    display: block;
+    font-size: 10dp;
+    color: rgba(100, 255, 100, 200);
+    margin-bottom: 4dp;
+}
+
+.registration-count {
+    display: block;
+    font-size: 8dp;
+    color: rgba(200, 200, 200, 180);
+    margin-bottom: 8dp;
+}
+
+#bracket-tree {
+    display: block;
+    overflow-y: auto;
+}
+
+.bracket-match {
+    display: block;
+    margin-bottom: 2dp;
+    background-color: rgba(15, 15, 30, 200);
+    border-width: 1dp;
+    border-color: rgba(80, 80, 120, 80);
+    padding: 1dp 2dp;
+}
+
+.bracket-match.completed {
+    border-color: rgba(100, 200, 100, 120);
+}
+
+.bracket-round-label {
+    display: block;
+    font-size: 5dp;
+    color: rgba(255, 210, 40, 180);
+    margin-bottom: 1dp;
+}
+
+.bracket-match-inner {
+    display: block;
+    text-align: center;
+}
+
+.bracket-player {
+    display: block;
+    font-size: 7dp;
+    color: rgba(200, 210, 230, 200);
+    padding: 0dp 2dp;
+}
+
+.bracket-player.winner {
+    color: rgba(255, 210, 40, 255);
+    font-weight: bold;
+}
+
+.bracket-vs {
+    display: block;
+    font-size: 5dp;
+    color: rgba(255, 80, 80, 200);
+}
+
+/* ─── Active Matches Column ──────────────────────────────────── */
+
+#active-match-list {
+    display: block;
+    overflow-y: auto;
+    margin-bottom: 2dp;
+    height: 80dp;
+}
+
+.active-match-item {
+    display: block;
+    font-size: 7dp;
+    color: rgba(200, 210, 230, 200);
+    padding: 1dp 2dp;
+    margin-bottom: 1dp;
+    background-color: rgba(15, 15, 30, 200);
+    border-width: 1dp;
+    border-color: rgba(60, 60, 80, 80);
+}
+
+.active-match-item.selected {
+    border-color: rgba(255, 210, 40, 240);
+    background-color: rgba(40, 30, 10, 200);
+}
+
+.active-match-item.ours {
+    background-color: rgba(30, 50, 30, 200);
+    border-color: rgba(100, 200, 100, 120);
+}
+
+.match-tag {
+    display: inline;
+    font-size: 5dp;
+    color: rgba(255, 80, 80, 255);
+    background-color: rgba(80, 0, 0, 200);
+    padding: 0dp 2dp;
+    margin-right: 2dp;
+}
+
+.match-tag.waiting {
+    color: rgba(200, 200, 100, 200);
+    background-color: rgba(60, 60, 0, 200);
+}
+
+.match-names {
+    display: inline;
+    font-size: 7dp;
+}
+
+.side-tag {
+    display: inline;
+    font-size: 5dp;
+    color: rgba(140, 200, 255, 200);
+    margin-right: 2dp;
+}
+
+.match-side {
+    display: inline;
+    font-size: 5dp;
+    color: rgba(140, 200, 255, 200);
+    margin-right: 2dp;
+}
+
+.no-matches {
+    display: block;
+    font-size: 7dp;
+    color: rgba(150, 150, 170, 150);
+    text-align: center;
+    margin-top: 10dp;
+}
+
+#btn-spectate {
+    display: block;
+    text-align: center;
+    font-size: 7dp;
+    background-color: rgba(30, 30, 80, 200);
+    color: #fff;
+    padding: 2dp 0;
+    margin-top: 2dp;
+    border-width: 1dp;
+    border-color: transparent;
+}
+
+#btn-spectate.focused {
+    background-color: rgba(255, 220, 0, 50);
+    border-color: rgba(255, 210, 40, 240);
+    color: rgba(255, 255, 255, 255);
+}
+
+.spectating-badge {
+    display: block;
+    text-align: center;
+    font-size: 7dp;
+    background-color: rgba(20, 60, 80, 220);
+    color: rgba(100, 230, 255, 255);
+    padding: 2dp 0;
+    margin-top: 2dp;
+    border-width: 1dp;
+    border-color: rgba(100, 200, 255, 180);
+}
+
+/* ─── TO Controls ────────────────────────────────────────────── */
+
+#to-controls {
+    display: block;
+    margin-top: 4dp;
+    background-color: rgba(40, 30, 0, 150);
+    border-width: 1dp;
+    border-color: rgba(200, 160, 50, 80);
+    padding: 2dp;
+}
+
+#btn-to-start, #btn-to-pause, #btn-to-resume {
+    display: block;
+    text-align: center;
+    font-size: 7dp;
+    background-color: rgba(60, 40, 0, 200);
+    color: rgba(255, 210, 40, 240);
+    padding: 2dp 0;
+    border-width: 1dp;
+    border-color: transparent;
+    margin-top: 2dp;
+}
+
+#btn-to-start.focused, #btn-to-pause.focused, #btn-to-resume.focused {
+    background-color: rgba(180, 140, 20, 255);
+    border-color: rgba(255, 210, 40, 255);
+    color: #fff;
+}
+
+#btn-start-bracket {
+    display: block;
+    text-align: center;
+    font-size: 9dp;
+    background-color: rgba(60, 40, 0, 200);
+    color: rgba(255, 210, 40, 240);
+    padding: 3dp 0;
+    border-width: 1dp;
+    border-color: transparent;
+    margin-top: 4dp;
+}
+
+#btn-start-bracket.focused {
+    background-color: rgba(180, 140, 20, 255);
+    border-color: rgba(255, 210, 40, 255);
+    color: #fff;
+}
+
+#paused-banner {
+    display: block;
+    text-align: center;
+    font-size: 9dp;
+    color: rgba(255, 210, 40, 255);
+    background-color: rgba(80, 60, 0, 200);
+    padding: 4dp;
+    margin-top: 8dp;
+    border-width: 1dp;
+    border-color: rgba(255, 180, 0, 150);
+}
+
+#btn-leave-room {
+    display: block;
+    text-align: center;
+    font-size: 7dp;
+    background-color: rgba(80, 20, 20, 200);
+    color: rgba(255, 180, 180, 200);
+    padding: 2dp 0;
+    margin-top: 4dp;
+    border-width: 1dp;
+    border-color: transparent;
+}
+
+#btn-leave-room.focused {
+    background-color: rgba(150, 30, 30, 255);
+    border-color: rgba(255, 100, 100, 255);
+    color: #fff;
+}
+
+/* ─── Player List ────────────────────────────────────────────── */
+
+#player-list {
+    display: block;
+    height: 40dp;
+    overflow-y: auto;
+    margin-bottom: 2dp;
+}
+
+.player-row {
+    display: block;
+    padding: 1dp 2dp;
+    font-size: 6dp;
+    color: rgba(190, 200, 225, 200);
+}
+
+.player-row.self .player-list-name {
+    color: rgba(90, 240, 150, 255);
+}
+
+.player-row.playing {
+    background-color: rgba(120, 30, 30, 80);
+}
+
+.player-row.playing .player-list-name {
+    color: rgba(255, 210, 70, 240);
+}
+
+.player-flag {
+    display: inline;
+    width: 10dp;
+    height: 7dp;
+    margin-right: 2dp;
+    vertical-align: middle;
+}
+
+.player-list-name {
+    display: inline;
+}
+
+.player-status {
+    display: inline;
+    font-size: 5dp;
+    color: rgba(255, 210, 70, 220);
+    margin-left: 2dp;
+}
+
+/* ─── Chat Panel ─────────────────────────────────────────────── */
+
+#chat-messages {
+    display: block;
+    height: 80dp;
+    overflow-y: auto;
+    margin-bottom: 2dp;
+}
+
+.chat-msg {
+    display: block;
+    font-size: 6dp;
+    color: rgba(220, 230, 255, 200);
+    margin-bottom: 1dp;
+    line-height: 1.1;
+}
+
+.chat-sender {
+    display: inline;
+    color: rgba(255, 210, 70, 220);
+    margin-right: 2dp;
+}
+
+.chat-text {
+    display: inline;
+}
+
+#chat-input-box {
+    display: block;
+    position: absolute;
+    bottom: 2dp;
+    left: 4dp;
+    right: 4dp;
+    height: 10dp;
+    background-color: rgba(0, 0, 0, 150);
+    border-width: 1dp;
+    border-color: rgba(100, 100, 150, 100);
+    padding: 1dp 2dp;
+}
+
+#chat-input-box.focused {
+    border-color: rgba(255, 210, 40, 240);
+    background-color: rgba(20, 20, 40, 200);
+}
+
+#chat-prompt {
+    display: inline;
+    font-size: 7dp;
+    color: rgba(100, 255, 100, 200);
+    margin-right: 2dp;
+}
+
+#chat-typing-text {
+    display: inline;
+    font-size: 7dp;
+    color: rgba(150, 150, 150, 200);
+}
+
+#chat-typing-text.active {
+    color: #fff;
+}
+
+#chat-hint {
+    display: inline;
+    font-size: 5dp;
+    color: rgba(120, 130, 150, 150);
+    margin-left: 2dp;
+}
+
+/* ─── Status bar ─────────────────────────────────────────────── */
+
+#status-bar {
+    display: block;
+    position: absolute;
+    bottom: 1dp;
+    left: 4dp;
+    right: 4dp;
+    padding: 1dp 6dp;
+    background-color: rgba(0, 8, 30, 160);
+    border-width: 1dp;
+    border-color: rgba(200, 160, 50, 50);
+}
+
+#status-text {
+    display: block;
+    font-size: 7dp;
+    color: rgba(255, 210, 70, 240);
+}
+
+/* ─── Match Accept Popup ─────────────────────────────────────── */
+
+#match-accept-panel {
+    display: block;
+    position: absolute;
+    top: 60dp;
+    left: 100dp;
+    width: 184dp;
+    background-color: rgba(8, 6, 18, 240);
+    border-width: 2dp;
+    border-color: rgba(255, 210, 40, 200);
+    padding: 8dp 10dp 6dp 10dp;
+}
+
+#ma-title {
+    display: block;
+    text-align: center;
+    font-size: 12dp;
+    color: rgba(255, 210, 40, 255);
+    letter-spacing: 2dp;
+    margin-bottom: 6dp;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 180));
+}
+
+#ma-opponent-section {
+    display: block;
+    background-color: rgba(20, 15, 35, 200);
+    border-width: 1dp;
+    border-color: rgba(130, 80, 200, 120);
+    padding: 4dp 6dp;
+    margin-bottom: 6dp;
+}
+
+#ma-opponent-label {
+    display: block;
+    font-size: 6dp;
+    color: rgba(170, 170, 200, 150);
+    margin-bottom: 1dp;
+}
+
+#ma-opponent-name {
+    display: block;
+    font-size: 11dp;
+    color: rgba(255, 255, 255, 255);
+    margin-bottom: 2dp;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
+}
+
+#ma-opponent-details {
+    display: block;
+    font-size: 7dp;
+}
+
+.ma-detail-item {
+    display: inline;
+    color: rgba(200, 220, 255, 200);
+    margin-right: 8dp;
+}
+
+#ma-countdown-section {
+    display: block;
+    margin-bottom: 6dp;
+}
+
+#ma-countdown-bar-bg {
+    display: block;
+    height: 4dp;
+    background-color: rgba(40, 40, 60, 200);
+    border-width: 1dp;
+    border-color: rgba(100, 100, 140, 100);
+}
+
+#ma-countdown-bar-fill {
+    display: block;
+    height: 100%;
+    background-color: rgba(100, 255, 100, 200);
+}
+
+#ma-countdown-text {
+    display: block;
+    text-align: center;
+    font-size: 8dp;
+    color: rgba(200, 200, 200, 180);
+    margin-top: 1dp;
+}
+
+#ma-buttons {
+    display: block;
+    text-align: center;
+}
+
+#ma-btn-accept, #ma-btn-decline {
+    display: inline-block;
+    width: 76dp;
+    height: 16dp;
+    line-height: 16dp;
+    text-align: center;
+    font-size: 9dp;
+    margin: 0 4dp;
+    border-width: 1dp;
+    border-color: transparent;
+}
+
+#ma-btn-accept {
+    background-color: rgba(20, 80, 30, 220);
+    color: rgba(120, 255, 120, 240);
+}
+
+#ma-btn-accept.focused {
+    background-color: rgba(40, 180, 60, 255);
+    border-color: rgba(100, 255, 100, 255);
+    color: rgba(255, 255, 255, 255);
+}
+
+#ma-btn-decline {
+    background-color: rgba(80, 20, 20, 220);
+    color: rgba(255, 120, 120, 240);
+}
+
+#ma-btn-decline.focused {
+    background-color: rgba(180, 40, 40, 255);
+    border-color: rgba(255, 100, 100, 255);
+    color: rgba(255, 255, 255, 255);
+}
+
+/* ─── Chat Popup ─────────────────────────────────────────────── */
+
+#chat-popup {
+    display: block;
+    position: absolute;
+    top: 60dp;
+    left: 60dp;
+    width: 264dp;
+    background-color: rgba(8, 6, 18, 240);
+    border-width: 2dp;
+    border-color: rgba(80, 140, 220, 200);
+    padding: 8dp 10dp 6dp 10dp;
+}
+
+#chat-popup-title {
+    display: block;
+    font-size: 10dp;
+    color: rgba(200, 220, 255, 255);
+    margin-bottom: 6dp;
+}
+
+#chat-popup-text {
+    display: block;
+    font-size: 9dp;
+    padding: 3dp 4dp;
+    color: #fff;
+    background-color: rgba(20, 20, 40, 200);
+    border-width: 1dp;
+    border-color: rgba(100, 140, 220, 150);
+    min-height: 12dp;
+}
+
+.cursor-blink {
+    display: inline;
+    color: rgba(100, 180, 255, 200);
+}
+
+.chat-help {
+    display: block;
+    font-size: 6dp;
+    color: rgba(160, 170, 200, 160);
+    margin-top: 4dp;
+}

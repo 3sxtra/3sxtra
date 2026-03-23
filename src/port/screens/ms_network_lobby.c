@@ -37,6 +37,7 @@
 #include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
+#include "port/sdl/rmlui/rmlui_tournament_lobby.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -104,13 +105,21 @@ static void network_lobby_tick(struct _TASK* task_ptr) {
     /* Call the legacy function — it operates on the current r_no[2] */
     Network_Lobby(task_ptr);
 
-    /* Room create/join completed — transition to the casual lobby screen.
+    /* Room create/join completed — transition to the appropriate lobby screen.
      * The signal is set by rmlui_network_lobby_update() when the async
-     * LobbyServer_CreateRoom/JoinRoom thread completes successfully. */
+     * LobbyServer_CreateRoom/JoinRoom thread completes successfully.
+     * Tournament-type rooms go to the tournament lobby; casual rooms go
+     * to the casual lobby. */
     if (rmlui_network_lobby_has_pending_room()) {
+        bool is_tournament = rmlui_network_lobby_pending_room_is_tournament();
         const char* code = rmlui_network_lobby_consume_pending_room();
-        rmlui_casual_lobby_set_room(code);
-        MenuScreen_Goto(MENU_SCREEN_CASUAL_LOBBY);
+        if (is_tournament) {
+            rmlui_tournament_lobby_set_room(code);
+            MenuScreen_Goto(MENU_SCREEN_TOURNAMENT_LOBBY);
+        } else {
+            rmlui_casual_lobby_set_room(code);
+            MenuScreen_Goto(MENU_SCREEN_CASUAL_LOBBY);
+        }
         return;
     }
 
@@ -170,8 +179,8 @@ void ms_network_lobby_register(void) {
         .on_enter = network_lobby_enter,
         .on_tick = network_lobby_tick,
         .on_exit = network_lobby_exit,
-        .cursor_max = 11,  /* 12 items in full lobby (0..11) */
-        .cancel_item = 11, /* EXIT item */
+        .cursor_max = 13,  /* 14 items in full lobby (0..13) */
+        .cancel_item = 13, /* EXIT item */
         .rmlui_show = network_lobby_rmlui_show,
         .rmlui_hide = network_lobby_rmlui_hide,
         .header_type = MENU_HEADER_NETWORK,
