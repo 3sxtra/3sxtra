@@ -1106,7 +1106,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     Netplay_HandleMenuExit();
                     Menu_Suicide[0] = 0;
                     Menu_Suicide[1] = 1;   /* kill our items + blue BG */
-                    task_ptr->r_no[1] = 1; /* Mode_Select */
+                    
+                    /* Return to gateway: r_no[2]=0 causes Network_Lobby to re-init */
                     task_ptr->r_no[2] = 0;
                     task_ptr->r_no[3] = 0;
                     task_ptr->free[0] = 0;
@@ -1513,7 +1514,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     Netplay_HandleMenuExit();
                     Menu_Suicide[0] = 0;
                     Menu_Suicide[1] = 1;   /* kill our items + blue BG */
-                    task_ptr->r_no[1] = 1; /* Mode_Select */
+                    
+                    /* Return to gateway: r_no[2]=0 causes Network_Lobby to re-init */
                     task_ptr->r_no[2] = 0;
                     task_ptr->r_no[3] = 0;
                     task_ptr->free[0] = 0;
