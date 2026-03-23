@@ -15,7 +15,13 @@
 ### §1. Mod Menu & FX Screens
 
 **What exists:**
-The mods menu is implemented as an RmlUi data-bound overlay in [rmlui_mods_menu.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_mods_menu.cpp) (14KB, ~341 lines), toggled via F3 in [sdl_app_input.c](file:///d:/3sxtra/src/port/sdl/app/sdl_app_input.c). It exposes toggles for shader bypass, fast pre-game, HD stages, and bezel on/off. A separate shader menu exists in [rmlui_shader_menu.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_shader_menu.cpp) (19KB), and stage config in [rmlui_stage_config.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_stage_config.cpp) (10KB). Per-component phase 3 toggles are defined in [rmlui_phase3_toggles.h](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_phase3_toggles.h) and owned by `rmlui_game_hud.cpp`, allowing runtime fallback to CPS3 rendering per HUD element. Hotkeys F2–F9 are individually handled for different overlays.
+The mods menu is implemented as an RmlUi data-bound overlay in [rmlui_mods_menu.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_mods_menu.cpp) (14KB, ~341 lines), toggled via F3 in [sdl_app_input.c](file:///d:/3sxtra/src/port/sdl/app/sdl_app_input.c). It exposes toggles for shader bypass, fast pre-game, HD stages, bezel on/off, and **modded BGM/voice on/off** (with track count display). A separate shader menu exists in [rmlui_shader_menu.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_shader_menu.cpp) (19KB), and stage config in [rmlui_stage_config.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_stage_config.cpp) (10KB). Per-component phase 3 toggles are defined in [rmlui_phase3_toggles.h](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_phase3_toggles.h) and owned by `rmlui_game_hud.cpp`, allowing runtime fallback to CPS3 rendering per HUD element. Hotkeys F2–F9 are individually handled for different overlays.
+
+**Audio mods** are fully implemented: [modded_bgm.c](file:///d:/3sxtra/src/port/sound/modded_bgm.c) handles BGM replacement and voice line replacement from `assets/voice_mod/`, supporting ogg/flac/opus/mp3/wav formats. The mods menu provides a toggle (`CFG_KEY_MODDED_BGM_ENABLED`) and displays the count of modded tracks.
+
+**Sprite overrides** are operational: [sprite_override.c](file:///d:/3sxtra/src/port/sdl/renderer/sprite_override.c) provides HD sprite replacement with 17+ integration points in [mtrans.c](file:///d:/3sxtra/src/sf33rd/Source/Game/rendering/mtrans.c) via `try_hd_sprite_override()` and `try_hd_sprite_override_ext()`. **HD stage overrides** use a full 22-stage system in [modded_stage.c](file:///d:/3sxtra/src/port/mods/modded_stage.c) with layer-based replacement.
+
+**Hot-reload** for RmlUi stylesheets and documents is implemented in [rmlui_wrapper.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_wrapper.cpp) via Ctrl+F5 (stylesheets) and Ctrl+Shift+F5 (all documents).
 
 **What the vision calls for:**
 A **unified in-game menu tree** accessible from the main or pause menu — not scattered F-key overlays. Per-character FX overrides (hit-spark styles per character), named mod profiles/presets with one-click swap, automatic discovery of mod packs in `assets/`, and live previews showing a thumbnail before committing.
@@ -181,13 +187,13 @@ The information bar is a standalone new RmlUi component — a persistent overlay
 **Player stats on server**: `LobbyServer_GetPlayerStats()` returns wins/losses/disconnects/rating/rd/tier. `LeaderboardEntry` has rank, most-played character, country, grade. Country is server-derived from IP (ISO 3166-1 alpha-2). Player identity is managed via [identity.c](file:///d:/3sxtra/src/netplay/identity.c) with SHA256-based ID generation.
 
 **What the vision calls for:**
-Spectator enhancements: spectator count shown to players, rewind without affecting live stream, input display for spectators, commentary mode. Ranked/rating: character-specific ratings, seasonal resets with placement matches. Community: player profiles (avatar, bio, stats, match history), friends list, clan tags. Quality of life: connection quality indicators in lobby list, auto-region detection, notification sounds, idle timeout.
+Spectator enhancements: spectator count shown to players, rewind without affecting live stream, input display for spectators, commentary mode. Ranked/rating: character-specific ratings, seasonal resets with placement matches. Community: player profiles (avatar, bio, stats, match history), friends list, clan tags. Quality of life: auto-region detection, notification sounds, idle timeout.
 
 **The gap:**
 - **Spectator** works but is bare — no spectator count display (the data is available server-side in `RoomState` but not surfaced), no rewind (would require circular buffer of game states on the spectator side), no commentary system.
 - **Rating system**: Glicko-2 exists server-side but is global (not per-character). Adding character-specific ratings needs a `{player_id, character}` composite key in the server DB. Seasonal resets and placement matches are server config changes.
 - **Social features** (profiles, friends, clans): Nothing exists. These are full-stack features needing server storage, client UI, and presence systems.
-- **QoL**: Connection quality indicators partially exist — `rtt_ms` and `connection_type` are in `LobbyPlayer`, `PingProbe_GetRTT()` provides P2P measurements. But the lobby room list UI doesn't render this data as colored indicators. Auto-region detection is not implemented (region is manually set via `CFG_KEY_LOBBY_REGION`). Notification sounds and idle timeout don't exist.
+- **QoL**: ~~Connection quality indicators~~ **DONE** — the network lobby UI in [rmlui_network_lobby.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_network_lobby.cpp) renders per-player `ping_label` (e.g. "~42ms"), color-coded `ping_class` (green/yellow/red at 60ms/120ms thresholds), `conn_type` (wifi/wired/unknown), and country flags with `flag_icon`. Auto-region detection is not implemented (region is manually set via `CFG_KEY_LOBBY_REGION`). Notification sounds and idle timeout don't exist.
 
 ---
 
@@ -198,7 +204,8 @@ Feature Area                  What Exists                           What's Missi
 ──────────────────────────────────────────────────────────────────────────────────────
 §1 Mod Menu          Mods/shader/stage menus (separate)     Unified tree, profiles,
                      F-key toggles, phase3 per-component    discovery, previews,
-                                                            per-char FX overrides
+                     audio/voice mods, sprite overrides,    per-char FX overrides
+                     HD stages, hot-reload
 
 §2 Replays & Chat    Auto-save + upload, 20-slot picker,    Metadata tagging, named
                      lobby chat (SSE, 50-msg buffer)        files, bookmarks, in-match
@@ -235,8 +242,8 @@ Feature Area                  What Exists                           What's Missi
 
 §10 Additional       Spectator (4 max, 15f delay),          Spectator count/rewind,
                      input display, frame data,             per-char rating, seasonal
-                     player stats/identity                  resets, profiles, friends,
-                                                            clans, match history UI
+                     player stats/identity,                resets, profiles, friends,
+                     lobby ping/conn indicators ✓          clans, match history UI
 ```
 
 > [!IMPORTANT]
@@ -244,7 +251,7 @@ Feature Area                  What Exists                           What's Missi
 >
 > 1. **New gameplay protocols** — blind picks, character lock/ban, graceful quit, KOTH mode (require netcode + game loop changes)
 > 2. **Server-side matchmaking** — ranked queue, skill range pairing, jail system, priority matching (server algorithm work)
-> 3. **Client-side UX** — unified menus, information bar, tournament UI, private room dialogs, KOTH stats, connection indicators in lobby (RmlUi screens)
+> 3. **Client-side UX** — unified menus, information bar, tournament UI, private room dialogs, KOTH stats (RmlUi screens)
 
 ---
 
@@ -579,11 +586,11 @@ These are natural extensions that complement the above features:
 - **Commentary mode** — designated spectator can overlay text/voice (stretch goal).
 
 ### Ranked / Rating System
-- **ELO or Glicko-2** rating per player.
-- **Rank tiers** with icons/borders: Bronze → Silver → Gold → Platinum → Diamond → Master → Legend.
+- ~~**ELO or Glicko-2** rating per player.~~ ✅ **DONE** — Glicko-2 with rating + RD, implemented server-side via `LobbyServer_GetPlayerStats()`.
+- ~~**Rank tiers** with icons/borders: Bronze → Silver → Gold → Platinum → Diamond → Master → Legend.~~ ✅ **DONE** — `tier` field returned by server, displayed in leaderboard.
 - **Seasonal resets** — soft reset each season, placement matches.
 - **Character-specific rating** — separate rank per character to encourage variety.
-- **Leaderboards** — global, regional, and per-character.
+- ~~**Leaderboards** — global, regional, and per-character.~~ ✅ **DONE** — paginated via `LobbyServer_GetLeaderboard()` with full RmlUi display in [rmlui_leaderboard.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_leaderboard.cpp). Per-character leaderboards not yet implemented.
 
 ### Community & Social
 - **Player profiles** — avatar, bio, main character, stats, match history.
@@ -592,7 +599,7 @@ These are natural extensions that complement the above features:
 - **Match history** — searchable log of recent matches with opponent, result, rating change.
 
 ### Quality of Life
-- **Connection quality indicator** in lobby list (green/yellow/red based on region + estimated ping).
+- ~~**Connection quality indicator** in lobby list (green/yellow/red based on region + estimated ping).~~ ✅ **DONE** — `ping_class` (good/ok/bad), `conn_type`, country flags rendered per player in network lobby.
 - **Auto-region detection** — detect player region and default to optimal lobby server.
 - **Notification sounds** — when a match is found, when a challenger enters KOTH queue, etc.
 - **Idle timeout** — auto-kick idle players from lobbies to keep rooms active.
@@ -607,7 +614,7 @@ These are natural extensions that complement the above features:
 |---|---|---|---|
 | 🔴 High | Fight Requests / Matchmaking | High | Critical — core online experience |
 | 🔴 High | Private / Hidden Rooms | Low | High — most requested for friend groups |
-| 🔴 High | Replay Autosaving | Low | High — data preservation, community clips |
+| 🔴 High | Replay Autosaving | Low | High — ⚠️ auto-save + upload already works for netplay; remaining: metadata, naming, retention |
 | 🔴 High | Match Flow / Blind Picks | Medium | High — competitive integrity |
 | 🟡 Medium | King of the Hill | Medium | High — social/arcade atmosphere |
 | 🟡 Medium | Attract Mode & Info Bar | Low | Medium — polish, community engagement |
@@ -615,8 +622,8 @@ These are natural extensions that complement the above features:
 | 🟡 Medium | In-Match Chat | Medium | Medium — social connectivity |
 | 🟡 Medium | Mod Menu via Game Menus | Medium | Medium — discoverability |
 | 🟢 Low | Tournaments | High | High — marquee feature but complex |
-| 🟢 Low | Ranked / Rating System | High | High — requires server infrastructure |
-| 🟢 Low | Spectator Mode | High | Medium — complex netcode extension |
+| 🟢 Low | Ranked / Rating System | Medium | High — ⚠️ Glicko-2, tiers, leaderboards, match reporting already exist; remaining: per-char rating, seasonal resets |
+| 🟢 Low | Spectator Mode | Medium | Medium — ⚠️ core spectating works (4 viewers, 15f delay); remaining: count display, rewind, commentary |
 
 ---
 
