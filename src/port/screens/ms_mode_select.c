@@ -229,6 +229,9 @@ static void mode_select_tick(struct _TASK* task_ptr) {
             s_exiting = true;
             s_exit_target = 21; /* AT index for Network_Lobby */
             task_ptr->free[0] = 0;
+            if (use_rmlui && rmlui_menu_mode) {
+                rmlui_mode_menu_hide();
+            }
             break;
 
         case 2: /* Training (cursor 2 → AT index 4) */
@@ -238,6 +241,9 @@ static void mode_select_tick(struct _TASK* task_ptr) {
             s_exiting = true;
             s_exit_target = Menu_Cursor_Y[0] + 2;
             task_ptr->free[0] = 0;
+            if (use_rmlui && rmlui_menu_mode) {
+                rmlui_mode_menu_hide();
+            }
             break;
 
         default:

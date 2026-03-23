@@ -1,84 +1,69 @@
 ================================================================================
-  3SXtra — Modded Voice Lines
+  3SXtra — Modded Voice & SFX
 ================================================================================
 
-Replace the VS screen and Character Select music with your own audio files.
+Replace character voices, sound effects, and the VS/Char Select announcer tracks 
+with your own audio files.
 
 SETUP
 -----
-1. Place your audio file(s) in this folder (assets/voice_mod/)
+1. Place your audio file(s) in the correct subfolders inside assets/voice_mod/
 2. Open the game and press F3 to open the Mods menu
 3. Enable "Enable Modded Voice Lines"
-4. The game will use your files next time those tracks play
+4. The game will play your files instead of the original sounds
 
-   Voice mod has its own toggle, separate from "Enable Modded BGM".
-   You need to enable voice mod specifically — BGM mod won't cover these.
+Supported audio formats: .ogg, .wav, .flac, .opus, .mp3
+(.ogg or .wav recommended)
 
 
-SUPPORTED FILES
+FOLDER STRUCTURE & NAMING
+-------------------------
+The game looks for files in specific subfolders based on the sound bank.
+Files must be named by their internal engine ID (e.g., 5.ogg):
+
+  assets/voice_mod/SE/          -> General Sound Effects
+  assets/voice_mod/PL00/        -> Character Voices (Gill/Boss)
+  assets/voice_mod/PL01/        -> Character Voices (Alex)
+  assets/voice_mod/PL02/        -> Character Voices (Ryu)
+  assets/voice_mod/PL03/        -> Character Voices (Yun)
+  assets/voice_mod/PL04/        -> Character Voices (Dudley)
+  assets/voice_mod/PL05/        -> Character Voices (Necro)
+  assets/voice_mod/PL06/        -> Character Voices (Hugo)
+  assets/voice_mod/PL07/        -> Character Voices (Ibuki)
+  assets/voice_mod/PL08/        -> Character Voices (Elena)
+  assets/voice_mod/PL09/        -> Character Voices (Oro)
+  assets/voice_mod/PL10/        -> Character Voices (Yang)
+  assets/voice_mod/PL11/        -> Character Voices (Ken)
+  assets/voice_mod/PL12/        -> Character Voices (Sean)
+  assets/voice_mod/PL13/        -> Character Voices (Urien)
+  assets/voice_mod/PL14/        -> Character Voices (Gouki / Akuma)
+  assets/voice_mod/PL15/        -> Character Voices (Shin Gouki)
+  assets/voice_mod/PL16/        -> Character Voices (Chun-Li)
+  assets/voice_mod/PL17/        -> Character Voices (Makoto)
+  assets/voice_mod/PL18/        -> Character Voices (Q)
+  assets/voice_mod/PL19/        -> Character Voices (Twelve)
+
+Example: To replace Ken's (PL11) medium shoryuken voice, you would place it at:
+  assets/voice_mod/PL11/45.ogg
+
+
+VS SCREEN & CHARACTER SELECT ANNOUNCER
+--------------------------------------
+The announcer tracks for VS and Character Select screens can also be replaced here.
+Place them directly in the root of the voice_mod folder:
+
+  assets/voice_mod/vs.ogg       -> VS screen announcer music
+  assets/voice_mod/emsel.ogg    -> Character Select music
+
+These play as ONE-SHOT (play once, no looping), matching the original arcade behavior.
+They are NOT affected by the "Enable Modded BGM" system. 
+
+Alternatively, if you want them to loop continuously, use the bgm_mod folder instead 
+(see assets/bgm_mod/readme.txt).
+
+
+LEGACY FALLBACK
 ---------------
-Name the file exactly as shown (case-sensitive, no extra characters):
-
-  File          | What it replaces               | When it plays
-  --------------|--------------------------------|---------------------------
-  vs.ogg        | VS screen announcer music      | Matchup screen before fight
-  emsel.ogg     | Character Select music         | Character selection screen
-
-Only these two names are recognized. Other files in this folder are ignored.
-
-The extension does NOT have to be .ogg — any of these formats work:
-  .ogg   — Ogg Vorbis (recommended, supports embedded loop tags)
-  .flac  — FLAC
-  .opus  — Opus
-  .mp3   — MP3
-  .wav   — WAV
-
-The engine tries extensions in the order above, so if you have both
-vs.ogg and vs.mp3, it will use vs.ogg.
-
-
-PLAYBACK BEHAVIOR
------------------
-Voice mod files play as ONE-SHOT (play once, no looping). This is
-different from bgm_mod which loops tracks. This matches the original
-behavior — VS music is a short jingle, and character select music
-plays once and transitions.
-
-These tracks play on a dedicated voice channel, separate from the
-regular BGM channel. They are NOT affected by the BGM mod system.
-
-
-WHAT ARE THESE TRACKS?
-----------------------
-The original game stores the VS screen and Character Select music
-pre-loaded in RAM (not streamed from disc). They come from compressed
-PPX archives in the AFS file:
-
-  Track    | BGM Code | Arranged source (fnum) | Arcade source (fnum)
-  ---------|----------|------------------------|---------------------
-  VS       |  51      | 1346 (51_VS.adx)       | 557 (o51_VS.adx)
-  EmSel    |  53      | 1348 (53_P_Sel.adx)    | 559 (o53_P_Sel.adx)
-
-  "Arranged" = Dreamcast/console soundtrack
-  "Arcade"   = Original CPS3 arcade soundtrack
-
-Voice mod replacements apply regardless of which soundtrack is selected.
-
-
-ALTERNATIVE: USING BGM_MOD INSTEAD
------------------------------------
-You can also replace these tracks via the bgm_mod system by creating
-files named by their fnum:
-
-  Arranged VS:      assets/bgm_mod/1346.ogg
-  Arranged EmSel:   assets/bgm_mod/1348.ogg
-  Arcade VS:        assets/bgm_mod/557.ogg
-  Arcade EmSel:     assets/bgm_mod/559.ogg
-
-The difference:
-  - voice_mod:  friendly names (vs.ogg/emsel.ogg), one-shot playback,
-                applies to both soundtracks, has its own enable toggle
-  - bgm_mod:    fnum-based names, loops the track, soundtrack-specific,
-                uses the "Enable Modded BGM" toggle
-
-For most users, voice_mod is the simpler option.
+The older flat-folder method using the master request number (e.g., assets/voice_mod/1245.ogg) 
+is still supported but not recommended for new mods, as finding the specific bank ID 
+is usually easier for modders.
