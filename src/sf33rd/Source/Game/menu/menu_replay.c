@@ -1,5 +1,7 @@
 #include "sf33rd/Source/Game/menu/menu_replay.h"
 #include "sf33rd/Source/Game/menu/menu_network.h"
+#include "sf33rd/Source/Game/menu/menu_network_constants.h"
+#include "sf33rd/Source/Game/effect/eff57.h"
 #include "sf33rd/Source/Game/menu/menu_save.h"
 #include "sf33rd/Source/Game/menu/menu_training.h"
 #include "port/init_task.h"
@@ -286,7 +288,6 @@ void After_Replay(struct _TASK* task_ptr) {
             FadeOut(1, FADE_OPAQUE, 8);
             task_ptr->r_no[2]++;
             task_ptr->timer = 5;
-            Menu_Suicide[0] = 0;
             Menu_Common_Init();
             Menu_Cursor_X[0] = 0;
             if (!rmlui_menu_replay)
@@ -296,6 +297,16 @@ void After_Replay(struct _TASK* task_ptr) {
                 Order[EFF_SLOT_REPLAY_HDR] = 3;
                 Order_Dir[EFF_SLOT_REPLAY_HDR] = 8;
                 Order_Timer[EFF_SLOT_REPLAY_HDR] = 1;
+            } else {
+                /* Blue background — same pattern as Network_Lobby case 11:
+                 * effect_work_init() destroys all old effects, then we create
+                 * a fresh blue BG on slot 0x4E. */
+                effect_work_init();
+                Message_Data->kind_req = NET_BG_MODE_BLUE;
+                Order[0x4E] = 5;
+                Order_Timer[0x4E] = 1;
+                Order_Dir[0x4E] = 1;
+                effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
             }
             if (!rmlui_menu_replay)
                 Setup_File_Property(1, REPLAY_FILE_PROPERTY_ALL);

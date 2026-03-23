@@ -25,6 +25,7 @@
 #include <stdio.h>
 
 #include "sf33rd/Source/Game/effect/eff45.h"    /* Message_Data */
+#include "sf33rd/Source/Game/menu/menu_network_constants.h" /* NET_BG_MODE_BLUE, EFF_Z_BLUE_BG */
 #include "sf33rd/Source/Game/engine/workuser.h" /* Menu_Cursor_X, Decide_ID, Interface_Type, etc. */
 #include "sf33rd/Source/Game/menu/menu.h" /* Menu_Common_Init, Setup_Replay_Sub, Setup_Final_Cursor_Pos, Load_Replay_MC_Sub */
 #include "sf33rd/Source/Game/menu/menu_internal.h" /* Menu_Sub_case1, Exit_Sub */
@@ -69,16 +70,21 @@ static void load_replay_enter(struct _TASK* task_ptr) {
     fflush(stdout);
 
     if (rmlui_menu_replay) {
-        /* ── RmlUI path: keep cleanup, skip native creation ──
-         * Kill Mode Select's effects (menu items, cursor, header) so they
-         * don't linger behind the RmlUI overlay.  But don't create any new
-         * native elements (BG, replay header, grey rectangle, flash). */
+        /* ── RmlUI path: destroy old effects and rebuild blue BG ──
+         * Same pattern as Network_Lobby case 11: effect_work_init() kills all
+         * existing effects (Mode Select's menu items, cursor, header), then
+         * we create a fresh blue BG on 0x4E. */
         Menu_Cursor_X[1] = Menu_Cursor_X[0];
+
+        effect_work_init();
         Menu_Common_Init();
-        Menu_Suicide[0] = 1;
-        Menu_Suicide[1] = 0;
-        Order[0x64] = 4;
-        Order_Timer[0x64] = 1;
+
+        Message_Data->kind_req = NET_BG_MODE_BLUE;
+        Order[0x4E] = 5;
+        Order_Timer[0x4E] = 1;
+        Order_Dir[0x4E] = 1;
+        effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
+
         task_ptr->timer = 0;
 
         rmlui_wrapper_hide_all_game_documents();

@@ -43,11 +43,7 @@ static const char* char_name(int my_char_id) {
 }
 
 /* ── Constants ─────────────────────────────────────────────────── */
-#define RP_PAGE_SIZE       5
-#define RP_LOCAL_START     0
-#define RP_LOCAL_END       10   /* exclusive: slots 0-9  */
-#define RP_NETPLAY_START   10
-#define RP_NETPLAY_END     20   /* exclusive: slots 10-19 */
+#define RP_PAGE_SIZE       10
 
 /* ── Data model ────────────────────────────────────────────────── */
 static Rml::DataModelHandle s_model_handle;
@@ -90,44 +86,47 @@ static ReplayPickerCache s_cache = {};
 
 /* ── Helpers ───────────────────────────────────────────────────── */
 
-static int tab_start(int tab) { return tab == 0 ? RP_LOCAL_START : RP_NETPLAY_START; }
-static int tab_end(int tab)   { return tab == 0 ? RP_LOCAL_END   : RP_NETPLAY_END; }
-static int tab_slot_count(int tab) { return tab_end(tab) - tab_start(tab); }
 static int total_pages(void) {
-    int count = tab_slot_count(s_tab);
+    int count = (int)s_all_slots.size();
     return count > 0 ? ((count + RP_PAGE_SIZE - 1) / RP_PAGE_SIZE) : 1;
 }
 
 static void refresh_slot_data(void) {
     /* Build full slot list for current tab */
     s_all_slots.clear();
-    int start = tab_start(s_tab);
-    int end   = tab_end(s_tab);
-    for (int i = start; i < end; i++) {
+    int is_netplay = (s_tab == 1) ? 1 : 0;
+    int slots[1000];
+    int count = NativeSave_FindAllReplays(slots, 1000, is_netplay);
+
+    for (int i = 0; i < count; i++) {
+        int slot = slots[i];
         SlotEntry entry;
-        entry.index = i;
-        entry.display_num = (i - start) + 1;
-        entry.exists = NativeSave_ReplayExists(i) != 0;
-        if (entry.exists) {
-            _sub_info info;
-            NativeSave_GetReplayInfo(i, &info);
-            entry.p1_name = char_name(info.player[0]);
-            entry.p2_name = char_name(info.player[1]);
-            char buf[32];
-            SDL_snprintf(buf,
-                         sizeof(buf),
-                         "%04d-%02d-%02d %02d:%02d",
-                         info.date.year,
-                         info.date.month,
-                         info.date.day,
-                         info.date.hour,
-                         info.date.min);
-            entry.date_str = buf;
-        } else {
-            entry.p1_name = "---";
-            entry.p2_name = "---";
-            entry.date_str = "";
-        }
+        entry.index = slot;
+        entry.display_num = i + 1;
+        entry.exists = true;
+
+        _sub_info info;
+        NativeSave_GetReplayInfo(slot, &info);
+        entry.p1_name = char_name(info.player[0]);
+        entry.p2_name = char_name(info.player[1]);
+        char buf[32];
+        SDL_snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d",
+                     info.date.year, info.date.month, info.date.day,
+                     info.date.hour, info.date.min);
+        entry.date_str = buf;
+        s_all_slots.push_back(entry);
+    }
+
+    if (s_mode == 1 && s_tab == 0) {
+        int new_slot = 0;
+        if (count > 0) new_slot = slots[0] + 1;
+        SlotEntry entry;
+        entry.index = new_slot;
+        entry.display_num = count + 1;
+        entry.exists = false;
+        entry.p1_name = "--- NEW";
+        entry.p2_name = "SAVE ---";
+        entry.date_str = "";
         s_all_slots.push_back(entry);
     }
 
@@ -135,6 +134,14 @@ static void refresh_slot_data(void) {
     s_slots.clear();
     int page_start = s_page * RP_PAGE_SIZE;
     int page_end   = std::min(page_start + RP_PAGE_SIZE, (int)s_all_slots.size());
+    
+    // Fix s_page out of bounds if items were removed
+    if (page_start >= (int)s_all_slots.size() && s_page > 0) {
+        s_page--;
+        page_start = s_page * RP_PAGE_SIZE;
+        page_end   = std::min(page_start + RP_PAGE_SIZE, (int)s_all_slots.size());
+    }
+
     for (int i = page_start; i < page_end; i++) {
         SlotEntry entry = s_all_slots[i];
         entry.page_idx = i - page_start;

@@ -79,21 +79,76 @@
 
 #### What Exists
 
-> Nothing tournament-specific. The lobby server has rooms, queues, match reporting, and FT tracking — but no bracket management, no tournament state machine, and no server-side endpoints.
+> Nothing tournament-specific. However, the **existing room infrastructure is directly reusable** as the foundation. The lobby server already has: rooms with SSE streaming, match proposal → accept → start → end lifecycle, match reporting with cross-validation, Glicko-2 stats, STUN/UPnP P2P connections, winner-stays-on rotation, spectating (4 viewers, 15f delay), and room chat.
+
+#### Architecture Decision: Tournament = Extended Room
+
+A tournament **is a room** with additional bracket state. Players join a tournament the same way they join a casual room (same `ListRooms`, `JoinRoom`, SSE subscription). The key difference:
+
+| Casual Room | Tournament Room |
+|---|---|
+| 1 match slot (`match_p1`/`match_p2`) | **N concurrent match slots** (`matches[MAX_CONCURRENT_MATCHES]`) |
+| FIFO queue → next in line plays | **Bracket-driven pairing** → server determines who plays whom |
+| Winner stays on | **Winner advances** in bracket |
+| No rounds | **Round progression** (bracket updates via SSE) |
+| Host = host | **Host = Tournament Organizer (TO)** with override powers |
+
+**Multi-match slots (parallel bracket play):** all independent bracket matches in a round fire simultaneously. Each pair gets their own P2P GekkoNet session. Non-playing participants choose which match to spectate via a **match selector**.
+
+```c
+typedef struct {
+    char p1[64];
+    char p2[64];
+    int active;
+    int bracket_round;
+    int bracket_position;  // match index within this round
+} RoomMatch;
+
+#define MAX_CONCURRENT_MATCHES 8
+
+// Extended RoomState for tournament rooms
+typedef struct {
+    // ... existing RoomState fields (players, chat, queue) ...
+    int room_type;           // ROOM_CASUAL, ROOM_KOTH, ROOM_TOURNAMENT
+    int tournament_format;   // SINGLE_ELIM, DOUBLE_ELIM, ROUND_ROBIN, SWISS
+    int tournament_round;
+    int tournament_total_rounds;
+    RoomMatch matches[MAX_CONCURRENT_MATCHES];
+    int match_count;
+    BracketEntry bracket[MAX_BRACKET_SIZE]; // full bracket tree
+    int bracket_size;
+} TournamentRoomState;
+```
+
+**SSE event extensions:**
+- Existing `MATCH_PROPOSE`, `MATCH_START`, `MATCH_END` gain a `match_index` field so each player knows which proposal is theirs
+- New `SSE_EVENT_BRACKET_UPDATE` — server pushes updated bracket tree after each match result
+- New `SSE_EVENT_ROUND_ADVANCE` — signals all matches in current round are complete
+
+**Bracket generation strategy:**
+- **Single/Double Elim:** full bracket generated at registration close (all matchups predetermined)
+- **Swiss/Round-Robin:** server generates only the next round's pairings after current round completes
 
 #### Vision & Gap
 
-This is **entirely greenfield**. The networking foundation (SSE streaming, `LobbyServer_ReportMatch()`) is reusable, but everything else needs to be built:
+| Component | Status | Notes |
+|---|---|---|
+| Room infrastructure (join, SSE, chat, P2P) | ✅ Reusable | Direct reuse of `RoomState`, `LobbyServer_*`, casual lobby SSE |
+| Match lifecycle (propose/accept/start/end) | ✅ Reusable | Add `match_index` for parallel matches |
+| Match reporting + cross-validation | ✅ Reusable | Server auto-advances bracket on `MATCH_SESSION_COMPLETE` |
+| STUN/UPnP P2P connections | ✅ Reusable | Each bracket match pair punches independently |
+| Spectating | ✅ Reusable | Need match selector UI for choosing which match to watch |
+| `room_type` field in `RoomListItem` | ❌ New | Trivial — add field + 🏆 icon/badge in the existing ROOMS panel on the right side of Network Lobby. No separate menu entry — tournaments listed alongside casual rooms. Optional filter tabs (All / Casual / Tournament). |
+| `CREATE ROOM` type toggle | ❌ New | Extend existing CREATE ROOM with a `TYPE: CASUAL / TOURNAMENT` selector. Tournament mode reveals additional options (format, max players, seeding). |
+| Multi-match slot support | ❌ New | Replace single `match_p1/p2/active` with `RoomMatch matches[]` |
+| Bracket logic (seeding, advancement, losers bracket) | ❌ New | Server-side — format-dependent generation + advancement |
+| Tournament registration + seeding | ❌ New | Player list → seed assignment → bracket generation at close |
+| TO controls (DQ, override result, pause) | ❌ New | Privileged API calls from room host |
+| Tournament UI (bracket display, match selector) | ❌ New | `rmlui_tournament_lobby.cpp` — variant of casual lobby with bracket panel. Entered automatically when joining a tournament-type room (same `JoinRoom` flow, different lobby view). |
+| Server API extensions | ❌ New | `POST /room/:code/bracket/start`, `GET /room/:code/bracket`, `POST /room/:code/bracket/override` |
 
-| Component | Status |
-|---|---|
-| Bracket logic (single/double elim, Swiss, round robin) | ❌ New |
-| Tournament UI screens | ❌ New |
-| Server API (`POST /tournament/create`, `join`, `GET /bracket`, `POST /report`) | ❌ New |
-| Auto-matching from bracket positions | ❌ New (can reuse STUN/UPnP) |
-| TO manual override tools | ❌ New |
-
-> This is the **largest single effort** in the document.
+> [!IMPORTANT]
+> This is no longer the **largest single effort** — the room-based architecture dramatically reduces scope. The truly new work is: bracket logic (server), bracket display (client), and multi-match slot support. Everything else (networking, P2P, match flow, chat, spectating) is reuse.
 
 ---
 
@@ -308,7 +363,7 @@ Every item below is **client-side gameplay or matchmaking algorithm** — the se
 |---|---|---|
 | **§1 Mod Menu** | Mods/shader/stage menus, F-key toggles, phase3 per-component, audio/voice mods, sprite overrides, HD stages, hot-reload | Unified tree, profiles, discovery, previews, per-char FX |
 | **§2 Replays & Chat** | Auto-save + upload, 20-slot picker, lobby chat (SSE, 50-msg) | Metadata, named files, bookmarks, in-match quick chat, emotes |
-| **§3 Tournaments** | Nothing | Everything — brackets, API, auto-matching, TO tools |
+| **§3 Tournaments** | Room infra (SSE, match lifecycle, P2P, chat, spectating) all reusable | Bracket logic, multi-match slots, bracket UI, TO controls, room_type field |
 | **§4 Dynamic Bezel** | 40+ char bezels, auto-swap | Opponent-aware compositing, stats-in-bezel, animation, spectator frame |
 | **§5 KOTH** | Rotation + queue + streak count (server + casual lobby) | KOTH room type, session stats, queue viz, dethroned anim, CPU fill |
 | **§6 Private Rooms** | Room codes, create/join | Password, hidden visibility, allow/blocklists, persistence |
@@ -370,25 +425,65 @@ Every item below is **client-side gameplay or matchmaking algorithm** — the se
 
 ## 3. Tournaments
 
-### Bracket System
-| Format | Details |
-|---|---|
-| **Single elimination** | Classic bracket, seeded or random. |
-| **Double elimination** | Winners/losers bracket with grand finals reset. |
-| **Round robin** | League-style, everyone plays everyone. Points-based ranking. |
-| **Swiss** | Pair players with similar records each round. Good for large pools. |
+> [!NOTE]
+> **Architecture decision:** A tournament is an extended room. Reuses the existing room infrastructure (SSE streaming, match lifecycle, P2P connections, chat, spectating). See §3 gap analysis above for the full design rationale.
+
+### Bracket Formats
+| Format | Details | Bracket Generation |
+|---|---|---|
+| **Single elimination** | Classic bracket, seeded or random. | Full bracket at registration close |
+| **Double elimination** | Winners/losers bracket with grand finals reset. | Full bracket at registration close |
+| **Round robin** | League-style, everyone plays everyone. Points-based ranking. | Round-by-round |
+| **Swiss** | Pair players with similar records each round. Good for large pools. | Round-by-round |
+
+### Parallel Bracket Matches
+
+All independent matches in a bracket round fire **simultaneously**. In an 8-player single elim Round 1, all four matches run at the same time:
+
+```
+Round 1 (all parallel):     Round 2 (all parallel):     Finals:
+  Match 0: Seed1 vs Seed8     Match 0: W0 vs W1           Match 0: W0 vs W1
+  Match 1: Seed2 vs Seed7     Match 1: W2 vs W3
+  Match 2: Seed3 vs Seed6
+  Match 3: Seed4 vs Seed5
+```
+
+Each pair gets an independent P2P GekkoNet session (STUN punch happens per pair). Non-playing participants use a **match selector** to choose which match to spectate.
+
+### Network Lobby Integration
+
+Tournaments are accessed through the **existing Network Lobby** — no separate menu entry:
+
+- **ROOMS panel** (right side): tournament rooms appear alongside casual rooms with a 🏆 icon/badge and player count (e.g., `🏆 Friday Night FT3  4/16`)
+- **CREATE ROOM** (left side): existing option gains a `TYPE: CASUAL / TOURNAMENT` toggle. Selecting tournament reveals additional fields: format (single elim, double elim, Swiss, round robin), max players, seeding method (rating / join order / random)
+- **Joining**: clicking a tournament room in the ROOMS list enters a **tournament lobby variant** (bracket display + match selector) instead of the casual lobby
 
 ### Tournament Flow
-- **Creation:** Host creates tournament from the Network menu — set name, format, max players, game settings.
-- **Registration:** Players join via lobby code or direct link. Show bracket live as players register.
-- **Auto-matching:** When a bracket match is ready, both players get a notification and auto-connect via the existing STUN/UPnP netplay.
-- **Results reporting:** Match results auto-reported from game state. Manual override for TOs.
-- **Spectator queue:** Non-active players can spectate current matches.
+1. **Creation:** TO selects CREATE ROOM → TYPE: TOURNAMENT → sets name, format, max players, FT value, seeding method.
+2. **Registration:** Tournament room appears in the ROOMS panel with a 🏆 badge. Players join via room list or room code (same `JoinRoom` flow). Bracket populates as players register.
+3. **Bracket close:** TO triggers bracket generation. Seeding: by rating (Glicko-2), by join order, or random.
+4. **Round start:** Server fires `MATCH_PROPOSE` for all pairings in the round simultaneously (each with a `match_index`). Players accept/decline as normal.
+5. **Parallel play:** All accepted matches run concurrently. `MATCH_END` events carry `match_index` so the server knows which bracket position to advance.
+6. **Round advance:** When all matches in a round complete, server sends `SSE_EVENT_ROUND_ADVANCE` and auto-fires the next round's proposals.
+7. **Results reporting:** Match results auto-reported via existing `LobbyServer_ReportMatch()` cross-validation. TO can override via privileged API.
+8. **Spectating:** Non-playing participants see a match selector and can spectate any active match.
 
-### Infrastructure
-- Extend the existing Node.js lobby server with tournament state management.
-- Store bracket state server-side; clients poll/subscribe via SSE.
-- REST API endpoints: `POST /tournament/create`, `POST /tournament/join`, `GET /tournament/bracket`, `POST /tournament/report`.
+### TO (Tournament Organizer) Controls
+| Action | Details |
+|---|---|
+| **Start bracket** | Lock registration, generate bracket |
+| **DQ player** | Remove from bracket, opponent auto-advances |
+| **Override result** | Correct misreported match (privileged API) |
+| **Pause tournament** | Freeze bracket progression |
+| **Restart match** | Re-fire a match proposal for a disputed game |
+
+### Server API Extensions
+All endpoints are scoped under the existing room namespace (no separate `/tournament/` namespace):
+- `POST /room/:code/bracket/start` — close registration, generate bracket
+- `GET /room/:code/bracket` — fetch current bracket state
+- `POST /room/:code/bracket/override` — TO result override
+- `POST /room/:code/bracket/dq` — DQ a player
+- `POST /room/:code/bracket/pause` — pause/resume
 
 ---
 
@@ -677,7 +772,7 @@ A persistent information bar at the bottom of the screen that adapts its content
 | 🟡 Medium | Dynamic Bezel (Netplay) | Low | Medium — polish and immersion |
 | 🟡 Medium | In-Match Chat | Medium | Medium — social connectivity |
 | 🟡 Medium | Mod Menu via Game Menus | Medium | Medium — discoverability |
-| 🟢 Low | Tournaments | High | High — marquee feature but complex |
+| 🟡 Medium | Tournaments | Medium | High — ⚠️ room-based architecture reuses SSE/match/P2P infrastructure; new work: bracket logic, multi-match slots, bracket UI, TO controls |
 | 🟢 Low | Ranked / Rating System | Medium | High — ⚠️ Glicko-2, tiers, leaderboards, match reporting already exist; remaining: per-char rating, seasonal resets |
 | 🟢 Low | Spectator Mode | Medium | Medium — ⚠️ core spectating works (4 viewers, 15f delay); remaining: count display, rewind, commentary |
 

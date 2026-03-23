@@ -695,37 +695,60 @@ int NativeSave_SaveReplay(int slot) {
     return 0;
 }
 
-/** @brief Auto-save replay to the oldest or first empty slot (ring-buffer). */
-int NativeSave_AutoSaveReplay(void) {
-    int empty_slot = -1;
-    int oldest_slot = -1;
-    uint64_t oldest_score = UINT64_MAX;
+typedef struct {
+    int* out_slots;
+    int max_count;
+    int current_count;
+    int is_netplay;
+} EnumReplayCtx;
 
-    /* Reserve slots 0-9 for manual/starred saves; auto-save uses 10-19 */
-    for (int i = 10; i < NATIVE_SAVE_REPLAY_SLOTS; i++) {
-        if (!NativeSave_ReplayExists(i)) {
-            if (empty_slot < 0)
-                empty_slot = i;
-            continue;
-        }
-
-        _sub_info info;
-        if (NativeSave_GetReplayInfo(i, &info) == 0) {
-            uint64_t score = ((uint64_t)info.date.year << 40) | ((uint64_t)info.date.month << 32) |
-                             ((uint64_t)info.date.day << 24) | ((uint64_t)info.date.hour << 16) |
-                             ((uint64_t)info.date.min << 8) | info.date.sec;
-            if (score < oldest_score) {
-                oldest_score = score;
-                oldest_slot = i;
+static SDL_EnumerationResult enum_replay_cb(void *userdata, const char *dirname, const char *fname) {
+    EnumReplayCtx* ctx = (EnumReplayCtx*)userdata;
+    int slot;
+    if (sscanf(fname, "replay_%02d.meta", &slot) == 1 || sscanf(fname, "replay_%d.meta", &slot) == 1) {
+        int is_netplay = (slot >= NATIVE_SAVE_NETPLAY_BASE);
+        if (is_netplay == ctx->is_netplay) {
+            if (ctx->current_count < ctx->max_count) {
+                ctx->out_slots[ctx->current_count++] = slot;
             }
         }
     }
+    return SDL_ENUM_CONTINUE;
+}
 
-    int target = (empty_slot >= 0) ? empty_slot : oldest_slot;
-    if (target < 0)
-        target = 10; /* fallback: overwrite slot 10 */
+int NativeSave_FindAllReplays(int* out_slots, int max_count, int is_netplay) {
+    EnumReplayCtx ctx = { out_slots, max_count, 0, is_netplay };
+    char path[512];
+    ensure_save_dir();
+    snprintf(path, sizeof(path), "%sreplays", save_dir);
 
-    SDL_Log("[NativeSave] Auto-saving replay to slot %d (%s)", target, empty_slot >= 0 ? "empty" : "oldest");
+    SDL_EnumerateDirectory(path, enum_replay_cb, &ctx);
+
+    /* Sort descending (newest/highest slot first) */
+    for (int i = 0; i < ctx.current_count - 1; i++) {
+        for (int j = i + 1; j < ctx.current_count; j++) {
+            if (out_slots[i] < out_slots[j]) {
+                int t = out_slots[i];
+                out_slots[i] = out_slots[j];
+                out_slots[j] = t;
+            }
+        }
+    }
+    return ctx.current_count;
+}
+
+/** @brief Auto-save replay to the next available uncapped slot. */
+int NativeSave_AutoSaveReplay(void) {
+    int slots[1000];
+    int count = NativeSave_FindAllReplays(slots, 1000, 1); // 1 = is_netplay
+    int highest = NATIVE_SAVE_NETPLAY_BASE - 1;
+
+    if (count > 0) {
+        highest = slots[0]; // array is sorted descending
+    }
+
+    int target = highest + 1;
+    SDL_Log("[NativeSave] Auto-saving replay to uncapped slot %d", target);
 
     return NativeSave_SaveReplay(target);
 }

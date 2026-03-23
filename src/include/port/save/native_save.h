@@ -61,7 +61,11 @@ void NativeSave_SaveDirection(void);
 
 /* ── Replay ────────────────────────────────────────────────────────── */
 
-#define NATIVE_SAVE_REPLAY_SLOTS 20
+#define NATIVE_SAVE_REPLAY_SLOTS 999999
+#define NATIVE_SAVE_NETPLAY_BASE 10000
+
+/** Find all replays for a given mode. Returns the number of replays found (slots sorted descending). */
+int NativeSave_FindAllReplays(int* out_slots, int max_count, int is_netplay);
 
 /** Check if a replay slot has a saved file. Returns 1=exists, 0=empty. */
 int NativeSave_ReplayExists(int slot);
