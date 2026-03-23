@@ -89,12 +89,6 @@ static void* hd_LoadFullSpriteOverride(int group_index, int cg_number) {
         tex = g_import->TextureLoadScaled(path, g_sprite_ratio);
     }
 
-    /* Debug: log first few attempts */
-    if (full_sprite_cache_count < 5) {
-        g_import->Log("SpriteOverride: g=%d cg=%d path='%s' tex=%p ratio=%.2f",
-                      group_index, cg_number, path, tex, g_sprite_ratio);
-    }
-
     /* Cache the result (even NULL = negative cache) */
     if (full_sprite_cache_count < FULL_SPRITE_CACHE_MAX / 2) {
         slot = key & FULL_SPRITE_CACHE_MASK;

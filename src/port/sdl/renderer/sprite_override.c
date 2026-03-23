@@ -202,8 +202,8 @@ void SpriteOverride_DumpMissing(void) {
     int sprite_count = 0;
     for (int i = 0; i < SPRITE_CACHE_SIZE; i++) {
         if (s_sprite_miss[i]) {
-            fprintf(f, "sprite,%d,%d,assets/sprites/sprite_%d_%d.png\n",
-                    s_sprite_group[i], i, s_sprite_group[i], i);
+            fprintf(f, "sprite,%d,%d,assets/sprites/sprite_%d.png\n",
+                    s_sprite_group[i], i, i);
             sprite_count++;
         }
     }
