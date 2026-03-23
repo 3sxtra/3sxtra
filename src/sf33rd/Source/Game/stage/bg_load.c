@@ -67,6 +67,9 @@ void Bg_TexInit() {
     bg_texture_type = 0;
     if (RENDERER_HAS_PLUGIN()) {
         g_renderer_plugin->ClearBGTileCache();
+        if (g_renderer_plugin->ClearTextureOverrideCache) {
+            g_renderer_plugin->ClearTextureOverrideCache();
+        }
     }
     ClearBGTileCache();
     s32 i;

@@ -13,6 +13,7 @@
  * Access: --renderer classic
  */
 #include "common.h"
+#include "port/renderer_plugin.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
@@ -516,6 +517,18 @@ void SDLGameRendererClassic_SetTexture(unsigned int th) {
         return;
     }
     cl_current_th = th;
+
+    /* ── Plugin texture override ── */
+    if (RENDERER_HAS_PLUGIN() && g_renderer_plugin->TryOverrideTexture) {
+        void* override_tex = g_renderer_plugin->TryOverrideTexture(
+            (unsigned int)texture_handle, (unsigned int)palette_handle);
+        if (override_tex != NULL) {
+            SDL_Texture* sdl_tex = (SDL_Texture*)override_tex;
+            SDL_SetTextureScaleMode(sdl_tex, SDL_SCALEMODE_LINEAR);
+            cl_current_texture = sdl_tex;
+            return;
+        }
+    }
 
     if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
         // Check flat cache first (no Tracy overhead for cache hits)

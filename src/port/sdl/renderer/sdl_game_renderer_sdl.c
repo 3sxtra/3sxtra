@@ -8,6 +8,7 @@
  * maximum compatibility on low-end devices (RPi4, old GPUs).
  */
 #include "common.h"
+#include "port/renderer_plugin.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
@@ -136,7 +137,6 @@ static void normalize_rect_verts(SDL_Vertex verts[4]);
 // Debugging and statistics
 static bool draw_rect_borders = false;
 static bool dump_textures = false;
-static int debug_texture_index = 0;
 
 // --- Per-Pixel Blending Utilities (ported from MiSTer FPGA build) ---
 // Operate on RGBA8888 layout matching SDL_PIXELFORMAT_RGBA8888 (LRU cache format).
@@ -258,14 +258,17 @@ static void read_color(const void* pixels, int index, size_t color_size, SDL_Col
 
 // --- Texture Debugging ---
 
-static void save_texture(const SDL_Surface* surface, const SDL_Palette* palette) {
+static void save_texture(const SDL_Surface* surface, const SDL_Palette* palette,
+                         unsigned int tex_handle, unsigned int pal_handle) {
     if (surface == NULL || palette == NULL) {
         SDL_Log("Cannot save texture: NULL surface or palette");
         return;
     }
 
+    /* Use handle-based naming so dump output matches override naming convention:
+     * texture_{texHandle}_{palHandle}.tga → user converts to .png and places in sprites path. */
     char filename[128];
-    snprintf(filename, sizeof(filename), "textures/%d.tga", debug_texture_index);
+    snprintf(filename, sizeof(filename), "textures/texture_%u_%u.tga", tex_handle, pal_handle);
 
     const Uint8* pixels = (const Uint8*)surface->pixels;
     const int width = surface->w;
@@ -310,12 +313,10 @@ static void save_texture(const SDL_Surface* surface, const SDL_Palette* palette)
     }
 
     fclose(f);
-    debug_texture_index = (debug_texture_index + 1) % 10000;
 }
 
 void SDLGameRendererSDL_DumpTextures(void) {
     SDL_CreateDirectory("textures");
-    debug_texture_index = 0;
     int count = 0;
 
     // Dump each indexed texture for every cached palette slot
@@ -330,7 +331,7 @@ void SDLGameRendererSDL_DumpTextures(void) {
             SDL_Palette* pal = palettes[ph - 1];
             if (!pal)
                 continue;
-            save_texture(surf, pal);
+            save_texture(surf, pal, (unsigned int)(ti + 1), (unsigned int)ph);
             count++;
         }
     }
@@ -1315,6 +1316,22 @@ void SDLGameRendererSDL_SetTexture(unsigned int th) {
         fatal_error("Invalid palette handle in SetTexture: %d", palette_handle);
     }
 
+    /* ── Plugin texture override ──────────────────────────────────────────
+     * Check if the renderer plugin wants to substitute this texture.
+     * Uses the engine's texture_handle + palette_handle (zero overhead,
+     * no content hashing). Override PNGs are premultiplied (native res). */
+    if (RENDERER_HAS_PLUGIN() && g_renderer_plugin->TryOverrideTexture) {
+        void* override_tex = g_renderer_plugin->TryOverrideTexture(
+            (unsigned int)texture_handle, (unsigned int)palette_handle);
+        if (override_tex != NULL) {
+            SDL_Texture* sdl_tex = (SDL_Texture*)override_tex;
+            SDL_SetTextureScaleMode(sdl_tex, SDL_SCALEMODE_LINEAR);
+            push_texture(sdl_tex);
+            last_set_texture = sdl_tex;
+            return;
+        }
+    }
+
     SDL_Surface* surface = surfaces[texture_index];
 
     if (!surface) {
@@ -1324,7 +1341,7 @@ void SDLGameRendererSDL_SetTexture(unsigned int th) {
     const SDL_Palette* palette = (palette_handle != 0) ? palettes[palette_handle - 1] : NULL;
 
     if (dump_textures && palette != NULL) {
-        save_texture(surface, palette);
+        save_texture(surface, palette, (unsigned int)texture_handle, (unsigned int)palette_handle);
     }
 
     // ⚡ Indexed textures: look up pre-baked RGBA texture from multi-slot cache.

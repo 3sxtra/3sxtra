@@ -12,7 +12,7 @@
 
 #include <stdbool.h>
 
-#define RENDERER_PLUGIN_API_VERSION 2
+#define RENDERER_PLUGIN_API_VERSION 3
 
 /* ================================================================
  * renderer_export_t — Functions the plugin DLL provides
@@ -52,6 +52,18 @@ typedef struct renderer_export_t {
 
     /* Sprite cache management */
     void (*ClearSpriteCache)(void);
+
+    /**
+     * Try to override a texture by its engine handle pair.
+     * Called from SetTexture() before normal texture binding.
+     * The override PNG is loaded at native resolution (premultiplied).
+     *
+     * @param texture_handle  Low 16 bits of the combined texture code (1-based).
+     * @param palette_handle  High 16 bits of the combined texture code (0 = no palette).
+     * @return Opaque TextureUtil handle to use instead, or NULL to fall through.
+     */
+    void* (*TryOverrideTexture)(unsigned int texture_handle, unsigned int palette_handle);
+    void (*ClearTextureOverrideCache)(void);
 
 } renderer_export_t;
 

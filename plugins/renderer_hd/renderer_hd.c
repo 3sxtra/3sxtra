@@ -89,6 +89,12 @@ static void* hd_LoadFullSpriteOverride(int group_index, int cg_number) {
         tex = g_import->TextureLoadScaled(path, g_sprite_ratio);
     }
 
+    /* Debug: log first few attempts */
+    if (full_sprite_cache_count < 5) {
+        g_import->Log("SpriteOverride: g=%d cg=%d path='%s' tex=%p ratio=%.2f",
+                      group_index, cg_number, path, tex, g_sprite_ratio);
+    }
+
     /* Cache the result (even NULL = negative cache) */
     if (full_sprite_cache_count < FULL_SPRITE_CACHE_MAX / 2) {
         slot = key & FULL_SPRITE_CACHE_MASK;
@@ -214,6 +220,86 @@ static void hd_DrawBGTile(void* texture, float x, float y, float w, float h, flo
 }
 
 /* ================================================================
+ * Texture override cache (handle-based)
+ *
+ * Keyed by (texture_handle << 16 | palette_handle).
+ * Loaded at native resolution (premultiplied) via TextureLoad.
+ * ================================================================ */
+
+#define TEX_OVERRIDE_CACHE_MAX 256
+#define TEX_OVERRIDE_CACHE_MASK (TEX_OVERRIDE_CACHE_MAX - 1)
+
+typedef struct {
+    uint32_t key;
+    void* texture;
+    bool checked;
+} TexOverrideCacheEntry;
+
+static TexOverrideCacheEntry tex_override_cache[TEX_OVERRIDE_CACHE_MAX] = { { 0 } };
+
+static void hd_ClearTextureOverrideCache(void) {
+    for (int i = 0; i < TEX_OVERRIDE_CACHE_MAX; i++) {
+        if (tex_override_cache[i].checked && tex_override_cache[i].texture != NULL) {
+            g_import->TextureFree(tex_override_cache[i].texture);
+        }
+        tex_override_cache[i].checked = false;
+        tex_override_cache[i].texture = NULL;
+    }
+}
+
+static void* hd_TryOverrideTexture(unsigned int texture_handle, unsigned int palette_handle) {
+    if (g_sprites_path[0] == '\0')
+        return NULL;
+
+    const uint32_t key = (texture_handle << 16) | (palette_handle & 0xFFFF);
+    uint32_t slot = key & TEX_OVERRIDE_CACHE_MASK;
+
+    /* Probe cache */
+    for (int i = 0; i < 16; i++) {
+        TexOverrideCacheEntry* entry = &tex_override_cache[slot];
+        if (!entry->checked)
+            break;
+        if (entry->key == key)
+            return entry->texture; /* hit (may be NULL = negative cache) */
+        slot = (slot + 1) & TEX_OVERRIDE_CACHE_MASK;
+    }
+
+    /* Cache miss — probe filesystem.
+     * Premultiplied: use TextureLoad (native resolution, no scaling). */
+    char path[512];
+    void* tex = NULL;
+
+    /* Try texture_{th}_{ph}.png (specific palette variant) */
+    snprintf(path, sizeof(path), "%s/texture_%u_%u.png", g_sprites_path, texture_handle, palette_handle);
+    tex = g_import->TextureLoad(path);
+
+    /* Fallback: texture_{th}.png (palette-independent) */
+    if (tex == NULL) {
+        snprintf(path, sizeof(path), "%s/texture_%u.png", g_sprites_path, texture_handle);
+        tex = g_import->TextureLoad(path);
+    }
+
+    /* Store result (including NULL for negative cache) */
+    slot = key & TEX_OVERRIDE_CACHE_MASK;
+    for (int i = 0; i < 16; i++) {
+        TexOverrideCacheEntry* entry = &tex_override_cache[slot];
+        if (!entry->checked) {
+            entry->key = key;
+            entry->texture = tex;
+            entry->checked = true;
+            break;
+        }
+        slot = (slot + 1) & TEX_OVERRIDE_CACHE_MASK;
+    }
+
+    if (tex != NULL) {
+        g_import->Log("Texture override loaded: %s (th=%u, ph=%u)", path, texture_handle, palette_handle);
+    }
+
+    return tex;
+}
+
+/* ================================================================
  * Lifecycle
  * ================================================================ */
 
@@ -261,6 +347,7 @@ static bool hd_Init(int argc, const char** argv) {
 static void hd_Shutdown(void) {
     hd_ClearBGTileCache();
     hd_ClearSpriteCache();
+    hd_ClearTextureOverrideCache();
     g_sprites_path[0] = '\0';
 }
 
@@ -280,6 +367,8 @@ EXPORT renderer_export_t* GetRendererAPI(const renderer_import_t* import) {
     g_exports.DrawBGTile = hd_DrawBGTile;
     g_exports.ClearBGTileCache = hd_ClearBGTileCache;
     g_exports.ClearSpriteCache = hd_ClearSpriteCache;
+    g_exports.TryOverrideTexture = hd_TryOverrideTexture;
+    g_exports.ClearTextureOverrideCache = hd_ClearTextureOverrideCache;
 
     return &g_exports;
 }

@@ -7,6 +7,7 @@
  * detection, and the texture cache live-set. Part of the GL rendering backend.
  */
 #include "port/config/config.h"
+#include "port/renderer_plugin.h"
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/renderer/sdl_game_renderer_gl_internal.h"
@@ -626,6 +627,20 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
 
     const int texture_handle = LO_16_BITS(th);
     const int palette_handle = HI_16_BITS(th);
+
+    /* ── Plugin texture override ── */
+    if (RENDERER_HAS_PLUGIN() && g_renderer_plugin->TryOverrideTexture) {
+        void* override_tex = g_renderer_plugin->TryOverrideTexture(
+            (unsigned int)texture_handle, (unsigned int)palette_handle);
+        if (override_tex != NULL) {
+            GLuint gl_tex = (GLuint)(uintptr_t)override_tex;
+            glBindTexture(GL_TEXTURE_2D, gl_tex);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            push_texture_with_layer(gl_tex, -1, 0, 1.0f, 1.0f);
+            return;
+        }
+    }
 
     /* ── HD UI page override: "I already have one" ── */
     if (configuration.renderer.enable_hd_sprites) {

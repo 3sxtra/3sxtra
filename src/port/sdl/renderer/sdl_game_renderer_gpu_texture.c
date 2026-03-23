@@ -256,6 +256,12 @@ void SDLGameRendererGPU_SetTexture(unsigned int th) {
     const int texture_handle = LO_16_BITS(th);
     const int palette_handle = HI_16_BITS(th);
 
+    /* TODO: Plugin TryOverrideTexture hook.
+     * The GPU backend stages textures into a compute-shader texture array —
+     * injecting an override requires uploading the PNG pixels into a free
+     * array layer (not a simple pointer swap). For now, texture overrides
+     * are supported on SDL2D, Classic, and GL backends only. */
+
     if (texture_handle < 1 || texture_handle > FL_TEXTURE_MAX) {
 
         return;

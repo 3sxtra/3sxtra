@@ -12,6 +12,7 @@
 #include "port/sound/modded_bgm.h"
 #include "port/config/config.h"
 #include "port/config/paths.h"
+#include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/cse.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>
@@ -474,15 +475,21 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
         int num_exts = (int)(sizeof(extensions) / sizeof(extensions[0]));
         bool found = false;
 
-        // Determine bank folder: ptix=0 is SE, ptix 1-20 maps to PL01-PL19/PL00
-        // ptix % 20 wraps ptix=20 (Gill/boss) back to PL00
+        // Determine bank folder from the RUNTIME character loaded in this bank slot.
+        // ptix is a bank SLOT index (always 1 for character sounds), not the character ID.
+        // The actual character is tracked in g_cseSysWork.SpuBankId[slot].
         char bank_dir_buf[8];
         const char* bank_dir = NULL;
         if (ptix == 0) {
             bank_dir = "SE";
-        } else if (ptix >= 1 && ptix <= 20) {
-            snprintf(bank_dir_buf, sizeof(bank_dir_buf), "PL%02d", ptix % 20);
-            bank_dir = bank_dir_buf;
+        } else {
+            u32 char_data_id = g_cseSysWork.SpuBankId[ptix & 0xF];
+            if (char_data_id >= 1 && char_data_id <= 20) {
+                // char_data_id is 1-based index into cseTSBDataTable:
+                // 1=PL00(Gill), 2=PL01(Alex), 3=PL02(Ryu), ...
+                snprintf(bank_dir_buf, sizeof(bank_dir_buf), "PL%02d", (int)(char_data_id - 1));
+                bank_dir = bank_dir_buf;
+            }
         }
         
         SDL_Log("ModdedSFX_Play Check: req=%d, ptix=%d, bank=%s, idx=%d", reqNum, ptix, bank_dir ? bank_dir : "UNKNOWN", engine_code);
