@@ -289,16 +289,18 @@ void After_Replay(struct _TASK* task_ptr) {
             Menu_Suicide[0] = 0;
             Menu_Common_Init();
             Menu_Cursor_X[0] = 0;
-            Setup_BG(1, BG_SLIDE_X_FULL, 0);
-            if (!(use_rmlui && rmlui_menu_replay)) {
+            if (!rmlui_menu_replay)
+                Setup_BG(1, BG_SLIDE_X_FULL, 0);
+            if (!rmlui_menu_replay) {
                 effect_57_init(EFF_SLOT_REPLAY_HDR, MENU_HEADER_REPLAY, 0, REPLAY_Z_HEADER, 999);
                 Order[EFF_SLOT_REPLAY_HDR] = 3;
                 Order_Dir[EFF_SLOT_REPLAY_HDR] = 8;
                 Order_Timer[EFF_SLOT_REPLAY_HDR] = 1;
             }
-            Setup_File_Property(1, REPLAY_FILE_PROPERTY_ALL);
+            if (!rmlui_menu_replay)
+                Setup_File_Property(1, REPLAY_FILE_PROPERTY_ALL);
             rmlui_replay_picker_open(1); /* always use RmlUI — ImGui removed */
-            if (!(use_rmlui && rmlui_menu_replay)) {
+            if (!rmlui_menu_replay) {
                 effect_66_init(EFF_SLOT_CURSOR_BG, REPLAY_SPRITE_PICKER_BG, 0, 0, -1, -1, REPLAY_Z_DEPTH_PICKER);
                 Order[EFF_SLOT_CURSOR_BG] = 3;
                 Order_Timer[EFF_SLOT_CURSOR_BG] = 1;

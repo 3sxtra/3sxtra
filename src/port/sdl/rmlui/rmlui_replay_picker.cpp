@@ -4,8 +4,11 @@
  *
  * Replaces the ImGui ReplayPicker_Open/Update/GetSelectedSlot flow
  * with an RmlUi overlay showing replay file list and confirmation.
- * Input handling (cursor, confirm, cancel) is done here via PLsw polling;
- * the .rml document just reflects the data model state.
+ * Input handling (cursor, confirm, cancel, tabs, pagination) is done
+ * here via PLsw polling; the .rml document just reflects the data model.
+ *
+ * Layout: leaderboard-style dark panel with LOCAL/NETPLAY tabs,
+ * paginated rows (5 per page), and footer with controls.
  */
 
 #include "port/sdl/rmlui/rmlui_replay_picker.h"
@@ -15,6 +18,7 @@
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>
 
+#include <algorithm>
 #include <vector>
 
 extern "C" {
@@ -38,38 +42,71 @@ static const char* char_name(int my_char_id) {
     return safe_char_name(my_char_id + chkNameAkuma(my_char_id, 6));
 }
 
+/* ── Constants ─────────────────────────────────────────────────── */
+#define RP_PAGE_SIZE       5
+#define RP_LOCAL_START     0
+#define RP_LOCAL_END       10   /* exclusive: slots 0-9  */
+#define RP_NETPLAY_START   10
+#define RP_NETPLAY_END     20   /* exclusive: slots 10-19 */
+
 /* ── Data model ────────────────────────────────────────────────── */
 static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
 /* ── Slot info for data binding ────────────────────────────────── */
 struct SlotEntry {
-    int index;
+    int index;        /* absolute slot index (0-19) */
+    int display_num;  /* display number within tab (1-10) */
+    int page_idx;     /* index within current page (0..PAGE_SIZE-1) for cursor matching */
     bool exists;
     Rml::String p1_name;
     Rml::String p2_name;
     Rml::String date_str;
 };
 
+/* s_all_slots holds ALL slots for the current tab; s_slots holds the current page slice */
+static std::vector<SlotEntry> s_all_slots;
 static std::vector<SlotEntry> s_slots;
-static int s_cursor = 0;
-static int s_mode = 0; /* 0=load, 1=save */
-static bool s_open = false;
-static int s_result = 1; /* 1=active, 0=done, -1=cancelled */
+
+static int s_cursor   = 0;  /* index into s_slots (0..PAGE_SIZE-1) */
+static int s_zone     = 0;  /* 0=data rows, 1=page control, 2=tab control */
+static int s_mode     = 0;  /* 0=load, 1=save */
+static int s_tab      = 0;  /* 0=LOCAL, 1=NETPLAY */
+static int s_page     = 0;  /* 0-indexed page within current tab */
+static bool s_open    = false;
+static int s_result   = 1;  /* 1=active, 0=done, -1=cancelled */
 static int s_selected_slot = -1;
 
 /* ── Cache for dirty detection ─────────────────────────────────── */
 struct ReplayPickerCache {
     int cursor;
+    int zone;
     int mode;
+    int tab;
+    int page;
+    int slot_count;
 };
 static ReplayPickerCache s_cache = {};
 
+/* ── Helpers ───────────────────────────────────────────────────── */
+
+static int tab_start(int tab) { return tab == 0 ? RP_LOCAL_START : RP_NETPLAY_START; }
+static int tab_end(int tab)   { return tab == 0 ? RP_LOCAL_END   : RP_NETPLAY_END; }
+static int tab_slot_count(int tab) { return tab_end(tab) - tab_start(tab); }
+static int total_pages(void) {
+    int count = tab_slot_count(s_tab);
+    return count > 0 ? ((count + RP_PAGE_SIZE - 1) / RP_PAGE_SIZE) : 1;
+}
+
 static void refresh_slot_data(void) {
-    s_slots.clear();
-    for (int i = 0; i < NATIVE_SAVE_REPLAY_SLOTS; i++) {
+    /* Build full slot list for current tab */
+    s_all_slots.clear();
+    int start = tab_start(s_tab);
+    int end   = tab_end(s_tab);
+    for (int i = start; i < end; i++) {
         SlotEntry entry;
         entry.index = i;
+        entry.display_num = (i - start) + 1;
         entry.exists = NativeSave_ReplayExists(i) != 0;
         if (entry.exists) {
             _sub_info info;
@@ -89,10 +126,36 @@ static void refresh_slot_data(void) {
         } else {
             entry.p1_name = "---";
             entry.p2_name = "---";
-            entry.date_str = "--- empty ---";
+            entry.date_str = "";
         }
+        s_all_slots.push_back(entry);
+    }
+
+    /* Slice to current page */
+    s_slots.clear();
+    int page_start = s_page * RP_PAGE_SIZE;
+    int page_end   = std::min(page_start + RP_PAGE_SIZE, (int)s_all_slots.size());
+    for (int i = page_start; i < page_end; i++) {
+        SlotEntry entry = s_all_slots[i];
+        entry.page_idx = i - page_start;
         s_slots.push_back(entry);
     }
+}
+
+static void dirty_all(void) {
+    if (!s_model_handle)
+        return;
+    s_model_handle.DirtyVariable("rp_cursor");
+    s_model_handle.DirtyVariable("rp_zone");
+    s_model_handle.DirtyVariable("rp_mode");
+    s_model_handle.DirtyVariable("rp_open");
+    s_model_handle.DirtyVariable("rp_slots");
+    s_model_handle.DirtyVariable("rp_tab");
+    s_model_handle.DirtyVariable("rp_page");
+    s_model_handle.DirtyVariable("rp_total_pages");
+    s_model_handle.DirtyVariable("rp_has_prev");
+    s_model_handle.DirtyVariable("rp_has_next");
+    s_model_handle.DirtyVariable("rp_slot_count");
 }
 
 /* ── Lazy init (deferred from boot to first use) ─────────────── */
@@ -108,6 +171,8 @@ static void do_init(void) {
     /* Register SlotEntry struct */
     if (auto sh = ctor.RegisterStruct<SlotEntry>()) {
         sh.RegisterMember("index", &SlotEntry::index);
+        sh.RegisterMember("display_num", &SlotEntry::display_num);
+        sh.RegisterMember("page_idx", &SlotEntry::page_idx);
         sh.RegisterMember("exists", &SlotEntry::exists);
         sh.RegisterMember("p1_name", &SlotEntry::p1_name);
         sh.RegisterMember("p2_name", &SlotEntry::p2_name);
@@ -117,8 +182,15 @@ static void do_init(void) {
 
     ctor.Bind("rp_slots", &s_slots);
     ctor.BindFunc("rp_cursor", [](Rml::Variant& v) { v = s_cursor; });
+    ctor.BindFunc("rp_zone", [](Rml::Variant& v) { v = s_zone; });
     ctor.BindFunc("rp_mode", [](Rml::Variant& v) { v = s_mode; });
     ctor.BindFunc("rp_open", [](Rml::Variant& v) { v = s_open; });
+    ctor.BindFunc("rp_tab", [](Rml::Variant& v) { v = s_tab; });
+    ctor.BindFunc("rp_page", [](Rml::Variant& v) { v = s_page + 1; }); /* 1-indexed for display */
+    ctor.BindFunc("rp_total_pages", [](Rml::Variant& v) { v = total_pages(); });
+    ctor.BindFunc("rp_has_prev", [](Rml::Variant& v) { v = s_page > 0; });
+    ctor.BindFunc("rp_has_next", [](Rml::Variant& v) { v = (s_page + 1) < total_pages(); });
+    ctor.BindFunc("rp_slot_count", [](Rml::Variant& v) { v = (int)s_slots.size(); });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -136,25 +208,43 @@ extern "C" void rmlui_replay_picker_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("replay_picker"))
         return;
 
+    bool dirty = false;
     if (s_cursor != s_cache.cursor) {
         s_cache.cursor = s_cursor;
         s_model_handle.DirtyVariable("rp_cursor");
+        dirty = true;
     }
     if (s_mode != s_cache.mode) {
         s_cache.mode = s_mode;
         s_model_handle.DirtyVariable("rp_mode");
+        dirty = true;
     }
+    if (s_tab != s_cache.tab) {
+        s_cache.tab = s_tab;
+        s_model_handle.DirtyVariable("rp_tab");
+        dirty = true;
+    }
+    if (s_page != s_cache.page) {
+        s_cache.page = s_page;
+        s_model_handle.DirtyVariable("rp_page");
+        s_model_handle.DirtyVariable("rp_total_pages");
+        s_model_handle.DirtyVariable("rp_has_prev");
+        s_model_handle.DirtyVariable("rp_has_next");
+        dirty = true;
+    }
+    if ((int)s_slots.size() != s_cache.slot_count) {
+        s_cache.slot_count = (int)s_slots.size();
+        s_model_handle.DirtyVariable("rp_slot_count");
+        s_model_handle.DirtyVariable("rp_slots");
+        dirty = true;
+    }
+    (void)dirty;
 }
 
 /* ── Show / Hide ───────────────────────────────────────────────── */
 extern "C" void rmlui_replay_picker_show(void) {
     rmlui_wrapper_show_game_document("replay_picker");
-    if (s_model_handle) {
-        s_model_handle.DirtyVariable("rp_cursor");
-        s_model_handle.DirtyVariable("rp_mode");
-        s_model_handle.DirtyVariable("rp_open");
-        s_model_handle.DirtyVariable("rp_slots");
-    }
+    dirty_all();
 }
 
 extern "C" void rmlui_replay_picker_hide(void) {
@@ -164,20 +254,17 @@ extern "C" void rmlui_replay_picker_hide(void) {
 /* ── Open (called from menu.c instead of ReplayPicker_Open) ───── */
 extern "C" void rmlui_replay_picker_open(int mode) {
     s_mode = mode;
+    s_tab = 0;    /* default to LOCAL */
+    s_page = 0;
     s_cursor = 0;
+    s_zone = 0;
     s_result = 1;
     s_selected_slot = -1;
     s_open = true;
 
     refresh_slot_data();
     rmlui_replay_picker_show();
-
-    if (s_model_handle) {
-        s_model_handle.DirtyVariable("rp_slots");
-        s_model_handle.DirtyVariable("rp_cursor");
-        s_model_handle.DirtyVariable("rp_mode");
-        s_model_handle.DirtyVariable("rp_open");
-    }
+    dirty_all();
 
     SDL_Log("[RmlUi ReplayPicker] Opened (mode=%s)", mode == 0 ? "load" : "save");
 }
@@ -187,49 +274,105 @@ extern "C" int rmlui_replay_picker_poll(void) {
     if (!s_open)
         return s_result;
 
-    /* Read controller input */
+    /* Read controller input (edge-triggered) */
     u16 trigger = 0;
     for (int i = 0; i < 2; i++) {
         trigger |= (~PLsw[i][1] & PLsw[i][0]);
     }
 
-    /* Navigate — 5-column grid layout */
-    const int COLS = 5;
-    if (trigger & 0x02) { /* Down — move one row */
-        if (s_cursor + COLS < NATIVE_SAVE_REPLAY_SLOTS)
-            s_cursor += COLS;
-    }
-    if (trigger & 0x01) { /* Up — move one row */
-        if (s_cursor - COLS >= 0)
-            s_cursor -= COLS;
-    }
-    if (trigger & 0x08) { /* Right */
-        if (s_cursor + 1 < NATIVE_SAVE_REPLAY_SLOTS)
-            s_cursor++;
-    }
-    if (trigger & 0x04) { /* Left */
-        if (s_cursor > 0)
-            s_cursor--;
-    }
+    int max_cursor = (int)s_slots.size() - 1;
+    if (max_cursor < 0) max_cursor = 0;
 
-    /* Cancel (button 2) */
-    if (trigger & 0x0200) {
-        s_open = false;
-        s_result = -1;
-        rmlui_replay_picker_hide();
-        return -1;
-    }
-
-    /* Confirm (button 1) */
-    if (trigger & 0x0100) {
-        if (s_mode == 0 && s_cursor < NATIVE_SAVE_REPLAY_SLOTS && !s_slots[s_cursor].exists) {
-            /* Can't load empty slot — do nothing */
+    /* ── DOWN (wraps from zone 2 → zone 0) ── */
+    if (trigger & 0x02) {
+        if (s_zone == 0) {
+            if (s_cursor < max_cursor)
+                s_cursor++;
+            else
+                s_zone = 1; /* move to page control */
+        } else if (s_zone == 1) {
+            s_zone = 2; /* move to tab control */
         } else {
-            s_selected_slot = s_cursor;
+            /* zone 2 → wrap to top */
+            s_zone = 0;
+            s_cursor = 0;
+        }
+        dirty_all();
+    }
+
+    /* ── UP (wraps from zone 0/cursor 0 → zone 2) ── */
+    if (trigger & 0x01) {
+        if (s_zone == 2) {
+            s_zone = 1;
+        } else if (s_zone == 1) {
+            s_zone = 0; /* back to data rows, cursor stays at last row */
+        } else if (s_zone == 0 && s_cursor > 0) {
+            s_cursor--;
+        } else {
+            /* zone 0, cursor 0 → wrap to bottom */
+            s_zone = 2;
+        }
+        dirty_all();
+    }
+
+    /* ── LEFT / RIGHT (context-dependent on zone) ── */
+    if (trigger & 0x04) { /* LEFT */
+        if (s_zone == 2) { /* tab control — switch to LOCAL */
+            if (s_tab != 0) {
+                s_tab = 0;
+                s_page = 0;
+                refresh_slot_data();
+            }
+        } else if (s_zone == 1) { /* page control — prev page */
+            if (s_page > 0) {
+                s_page--;
+                refresh_slot_data();
+            }
+        }
+        dirty_all();
+    }
+    if (trigger & 0x08) { /* RIGHT */
+        if (s_zone == 2) { /* tab control — switch to NETPLAY */
+            if (s_tab != 1) {
+                s_tab = 1;
+                s_page = 0;
+                refresh_slot_data();
+            }
+        } else if (s_zone == 1) { /* page control — next page */
+            if ((s_page + 1) < total_pages()) {
+                s_page++;
+                refresh_slot_data();
+            }
+        }
+        dirty_all();
+    }
+
+    /* ── Cancel (B / EAST) ── */
+    if (trigger & 0x0200) {
+        if (s_zone > 0) {
+            s_zone = 0; /* go back to data rows first */
+            dirty_all();
+        } else {
             s_open = false;
-            s_result = 0;
+            s_result = -1;
             rmlui_replay_picker_hide();
-            return 0;
+            return -1;
+        }
+    }
+
+    /* ── Confirm (A / SOUTH) ── */
+    if (trigger & 0x0100) {
+        if (s_zone == 0 && s_cursor < (int)s_slots.size()) {
+            const SlotEntry& slot = s_slots[s_cursor];
+            if (s_mode == 0 && !slot.exists) {
+                /* Can't load empty slot — do nothing */
+            } else {
+                s_selected_slot = slot.index;
+                s_open = false;
+                s_result = 0;
+                rmlui_replay_picker_hide();
+                return 0;
+            }
         }
     }
 

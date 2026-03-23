@@ -1823,10 +1823,12 @@ void Setup_Save_Replay_1st(struct _TASK* task_ptr) {
     Menu_Suicide[1] = 0;
     Menu_Suicide[2] = 0;
     Menu_Suicide[3] = 0;
-    Setup_BG(1, 512, 0);
-    /* Native replay setup skipped — RmlUI replay picker always used */
-    Setup_File_Property(1, FADE_OPAQUE);
-    Clear_Flash_Init(4);
+    if (!rmlui_menu_replay) {
+        Setup_BG(1, 512, 0);
+        /* Native replay setup skipped — RmlUI replay picker always used */
+        Setup_File_Property(1, FADE_OPAQUE);
+        Clear_Flash_Init(4);
+    }
 }
 
 /** @brief Return to VS Result screen after replay-save. */

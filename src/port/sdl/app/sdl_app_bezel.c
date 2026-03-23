@@ -156,16 +156,41 @@ static void update_character_tracking(void) {
     int p1 = My_char[0];
     int p2 = My_char[1];
 
-    /* Only show character-specific bezels during gameplay */
-    if (!(G_No[0] == 2 && G_No[1] >= 2)) {
+    /* Only show character-specific bezels during actual gameplay states.
+     * G_No[0]==2 = active game.  G_No[1] state map:
+     *   0  = title screen         — common bezels
+     *   1  = character select     — common bezels
+     *   2  = pre-round setup      — character bezels ✓
+     *   3  = in-match fighting    — character bezels ✓
+     *   4  = VS results           — character bezels ✓
+     *   5  = next round           — character bezels ✓
+     *   6  = game over            — character bezels ✓
+     *   7  = continue scene       — character bezels ✓
+     *   8  = ending sequence      — character bezels ✓
+     *   9  = bonus stage          — skip (My_char overwritten)
+     *   10 = post-bonus           — character bezels ✓
+     *   11 = next Q select        — character bezels ✓
+     *   12 = menu idle            — common bezels
+     */
+    bool in_gameplay = (G_No[0] == 2 && G_No[1] >= 2 && G_No[1] <= 11 && G_No[1] != 9);
+
+    if (!in_gameplay) {
         p1 = -1;
         p2 = -1;
     }
 
     if (p1 != last_p1_char || p2 != last_p2_char) {
-        last_p1_char = p1;
-        last_p2_char = p2;
-        BezelSystem_SetCharacters(last_p1_char, last_p2_char);
+        if (p1 == -1 && p2 == -1) {
+            /* Leaving gameplay — revert to common bezels so the old
+             * character's art doesn't flash on the next match start. */
+            last_p1_char = -1;
+            last_p2_char = -1;
+            BezelSystem_LoadTextures(); /* reloads common bezels */
+        } else {
+            last_p1_char = p1;
+            last_p2_char = p2;
+            BezelSystem_SetCharacters(last_p1_char, last_p2_char);
+        }
         bezel_vbo_dirty = true;
     }
 }

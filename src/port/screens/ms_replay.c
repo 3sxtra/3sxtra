@@ -22,6 +22,7 @@
  */
 
 #include "port/menu_screen.h"
+#include <stdio.h>
 
 #include "sf33rd/Source/Game/effect/eff45.h"    /* Message_Data */
 #include "sf33rd/Source/Game/engine/workuser.h" /* Menu_Cursor_X, Decide_ID, Interface_Type, etc. */
@@ -64,33 +65,45 @@ static ReplayInternalPhase s_phase = REPLAY_PHASE_PICKER_OPEN;
 
 static void load_replay_enter(struct _TASK* task_ptr) {
     s_phase = REPLAY_PHASE_PICKER_OPEN;
+    printf("[ms_replay] >>> load_replay_enter called (use_rmlui=%d, rmlui_menu_replay=%d)\n", use_rmlui, rmlui_menu_replay);
+    fflush(stdout);
 
-    Menu_Cursor_X[1] = Menu_Cursor_X[0];
-    Clear_Flash_Sub();
+    if (rmlui_menu_replay) {
+        /* ── RmlUI path: keep cleanup, skip native creation ──
+         * Kill Mode Select's effects (menu items, cursor, header) so they
+         * don't linger behind the RmlUI overlay.  But don't create any new
+         * native elements (BG, replay header, grey rectangle, flash). */
+        Menu_Cursor_X[1] = Menu_Cursor_X[0];
+        Menu_Common_Init();
+        Menu_Suicide[0] = 1;
+        Menu_Suicide[1] = 0;
+        Order[0x64] = 4;
+        Order_Timer[0x64] = 1;
+        task_ptr->timer = 0;
 
-    /* ── Replicate Menu_in_Sub pattern ── */
-    FadeOut(1, 0xFF, 8);
-    task_ptr->r_no[2] = 1; /* advance so Menu_Sub_case1 works in WAIT phase */
-    task_ptr->timer = 5;
-    Menu_Common_Init();
-
-    /* Hide all Phase 3 game documents when entering a new sub-menu. */
-    if (use_rmlui)
         rmlui_wrapper_hide_all_game_documents();
+    } else {
+        /* ── Legacy native path: full Menu_in_Sub + CPS3 effects ── */
+        Menu_Cursor_X[1] = Menu_Cursor_X[0];
+        Clear_Flash_Sub();
 
-    Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
-    Menu_Suicide[0] = 1;
-    Menu_Suicide[1] = 0;
-    Order[0x64] = 4;
-    Order_Timer[0x64] = 1;
+        FadeOut(1, 0xFF, 8);
+        task_ptr->r_no[2] = 1;
+        task_ptr->timer = 5;
+        Menu_Common_Init();
 
-    /* ── Load_Replay case 0 specific ── */
-    Menu_Cursor_X[0] = 0;
-    Setup_BG(1, 0x200, 0);
-    if (!(use_rmlui && rmlui_menu_replay))
+        Menu_Cursor_Y[0] = Cursor_Y_Pos[0][1];
+        Menu_Suicide[0] = 1;
+        Menu_Suicide[1] = 0;
+        Order[0x64] = 4;
+        Order_Timer[0x64] = 1;
+
+        Menu_Cursor_X[0] = 0;
+        Setup_BG(1, 0x200, 0);
         Setup_Replay_Sub(0x6E, MENU_HEADER_REPLAY, 1);
-    Clear_Flash_Init(4);
-    Message_Data->kind_req = 5;
+        Clear_Flash_Init(4);
+        Message_Data->kind_req = 5;
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

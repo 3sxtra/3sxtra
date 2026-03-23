@@ -1,121 +1,231 @@
-/* ── Replay Picker Stylesheet — 5×4 Grid ─────────────────── */
-/* Viewport: 384×224 dp (CPS3 native)                         */
-/* Panel sits inside the native grey shaded rectangle          */
-/* (~52dp top, ~140dp available height)                        */
+/* ─── Replay Picker ──────────────────────────────────────────── */
+/* 384×224 game canvas — strict dp metrics                        */
+/* Modeled after leaderboard.rcss — full-screen dark panel        */
 
-body {
-    width: 384dp;
-    height: 224dp;
-    font-family: "Noto Sans JP Thin";
-    font-size: 6dp;
-    color: #ffffffee;
-}
-
-.rp-panel {
+#rp-panel {
     display: block;
     position: absolute;
-    top: 65dp;
-    left: 18dp;
-    width: 348dp;
-    animation: panel-fade-in 0.25s quadratic-out;
-}
-
-@keyframes panel-fade-in {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-}
-
-.rp-title {
-    display: none;
-}
-
-/* ── Grid container ─────────────────────────────────────── */
-.rp-grid {
-    display: block;
-    background-color: transparent;
-    padding: 1dp;
-    text-align: center;
-}
-
-/* ── Individual cell ─────────────────────────────────────── */
-.rp-cell {
-    display: inline-block;
-    width: 54dp;
-    height: 22dp;
-    margin: 1dp;
-    padding: 1dp;
-    background-color: #ffffff08;
-    border-width: 1dp;
-    border-color: #ffffff11;
-    text-align: center;
-    vertical-align: top;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
     overflow: hidden;
-    transition: background-color border-color 0.1s;
+    background-color: rgba(6, 8, 18, 220);
+    border-width: 1dp;
+    border-color: rgba(80, 110, 200, 80);
 }
 
-.rp-cell.selected {
-    background-color: #88dd8844;
-    border-color: #88dd88aa;
-}
-
-.rp-cell.empty {
-    background-color: #00000033;
-    border-color: #ffffff08;
-}
-
-.rp-cell.empty.selected {
-    background-color: #88dd8822;
-    border-color: #88dd8866;
-}
-
-/* ── Cell contents ───────────────────────────────────────── */
-.rp-cell-num {
+/* ── Title bar ── */
+#rp-title-bar {
     display: block;
-    font-size: 6dp;
-    font-weight: bold;
-    color: #88dd88;
-}
-
-.rp-cell.empty .rp-cell-num {
-    color: #555555;
-}
-
-.rp-cell.selected .rp-cell-num {
-    color: #aaffaa;
-}
-
-.rp-cell-chars {
-    display: block;
-    font-size: 5dp;
-    color: #dddddd;
-}
-
-.rp-cell.selected .rp-cell-chars {
-    color: #ffffff;
-}
-
-.rp-cell-vs {
-    display: block;
-    font-size: 4dp;
-    color: #888888;
-}
-
-.rp-cell-empty {
-    display: block;
-    font-size: 5dp;
-    color: #444444;
-    margin-top: 2dp;
-}
-
-.rp-cell.selected .rp-cell-empty {
-    color: #888888;
-}
-
-/* ── Footer ──────────────────────────────────────────────── */
-.rp-footer {
-    display: block;
+    height: 16dp;
+    padding: 3dp 8dp 1dp 8dp;
+    border-top-width: 1dp;
+    border-top-color: rgba(255, 255, 255, 200);
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(255, 255, 255, 200);
     text-align: center;
-    font-size: 4dp;
-    color: #666666;
-    margin-top: 1dp;
 }
+#rp-title {
+    display: block;
+    font-size: 11dp;
+    color: #fff;
+    font-weight: bold;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
+    background-color: transparent;
+}
+
+/* ── Tab bar ── */
+#rp-tab-bar {
+    display: block;
+    padding: 2dp 8dp 1dp 8dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(80, 120, 220, 70);
+    text-align: center;
+}
+.rp-tab {
+    display: inline-block;
+    font-size: 8dp;
+    color: rgba(120, 140, 180, 150);
+    padding: 1dp 16dp;
+    margin: 0 4dp;
+    border-bottom-width: 2dp;
+    border-bottom-color: transparent;
+}
+.rp-tab.active {
+    color: rgba(255, 220, 80, 255);
+    font-weight: bold;
+    border-bottom-color: rgba(255, 210, 40, 230);
+}
+
+/* ── Table area ── */
+#rp-table {
+    display: block;
+    position: absolute;
+    top: 36dp;
+    left: 4dp;
+    right: 4dp;
+    bottom: 44dp;
+    padding: 2dp 2dp;
+    background-color: rgba(0, 6, 28, 180);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 70);
+    overflow: hidden;
+}
+
+/* ── Header row ── */
+.rp-header-row {
+    display: block;
+    font-size: 7dp;
+    color: rgba(140, 170, 230, 200);
+    padding: 2dp 0dp;
+    margin-bottom: 1dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(100, 130, 220, 80);
+    white-space: nowrap;
+}
+
+/* ── Slot rows ── */
+.rp-row {
+    display: block;
+    color: rgba(190, 200, 225, 180);
+    font-size: 8dp;
+    padding: 2dp 0dp;
+    margin-bottom: 1dp;
+    border-left-width: 2dp;
+    border-left-color: transparent;
+    white-space: nowrap;
+}
+
+.rp-row.selected {
+    color: rgba(255, 255, 255, 255);
+    background-color: rgba(100, 220, 120, 30);
+    border-left-color: rgba(100, 220, 120, 230);
+}
+
+.rp-row.empty {
+    color: rgba(100, 110, 130, 120);
+}
+
+.rp-row.empty.selected {
+    color: rgba(160, 170, 190, 180);
+    background-color: rgba(100, 220, 120, 15);
+    border-left-color: rgba(100, 220, 120, 120);
+}
+
+/* ── Column widths ── */
+.rp-col-num {
+    display: inline-block;
+    width: 24dp;
+    text-align: center;
+    color: rgba(100, 220, 120, 200);
+    font-size: 8dp;
+    font-weight: bold;
+}
+
+.rp-row.empty .rp-col-num {
+    color: rgba(80, 90, 100, 150);
+}
+
+.rp-row.selected .rp-col-num {
+    color: rgba(140, 255, 160, 255);
+}
+
+.rp-col-p1 {
+    display: inline-block;
+    width: 80dp;
+    text-align: right;
+    padding-right: 4dp;
+}
+
+.rp-col-vs {
+    display: inline-block;
+    width: 20dp;
+    text-align: center;
+    font-size: 6dp;
+    color: rgba(140, 150, 170, 140);
+}
+
+.rp-col-p2 {
+    display: inline-block;
+    width: 80dp;
+    text-align: left;
+    padding-left: 4dp;
+}
+
+.rp-col-date {
+    display: inline-block;
+    width: 100dp;
+    text-align: center;
+    font-size: 7dp;
+    color: rgba(140, 170, 210, 160);
+}
+
+.rp-col-empty {
+    display: inline-block;
+    width: 280dp;
+    text-align: center;
+    font-size: 7dp;
+    color: rgba(80, 90, 110, 100);
+}
+
+.rp-row.selected .rp-col-empty {
+    color: rgba(130, 150, 170, 150);
+}
+
+/* ── Empty state ── */
+#rp-empty {
+    display: block;
+    position: absolute;
+    top: 36dp;
+    left: 4dp;
+    right: 4dp;
+    bottom: 44dp;
+    text-align: center;
+    padding: 40dp 0;
+    font-size: 8dp;
+    color: rgba(140, 150, 180, 120);
+}
+
+/* ── Footer ── */
+#rp-footer {
+    display: block;
+    position: absolute;
+    bottom: 1dp;
+    left: 4dp;
+    right: 4dp;
+    padding: 1dp 4dp;
+    background-color: rgba(0, 8, 30, 160);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 50);
+}
+.rp-control-row {
+    display: block;
+    padding: 2dp 4dp;
+    margin: 1dp 0;
+    text-align: center;
+    border-left-width: 2dp;
+    border-left-color: transparent;
+    color: rgba(140, 160, 200, 150);
+    font-size: 8dp;
+}
+.rp-control-row.active {
+    color: rgba(255, 255, 255, 255);
+    background-color: rgba(100, 220, 120, 30);
+    border-left-color: rgba(100, 220, 120, 230);
+}
+.rp-ctl-arrow {
+    display: inline;
+    font-size: 8dp;
+    color: rgba(120, 140, 180, 120);
+    margin: 0 6dp;
+}
+.rp-control-row.active .rp-ctl-arrow {
+    color: rgba(255, 210, 70, 240);
+}
+.rp-ctl-label {
+    display: inline;
+    font-size: 8dp;
+}
+

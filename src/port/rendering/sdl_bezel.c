@@ -55,6 +55,10 @@ void BezelSystem_Init() {
 
 /** @brief Shut down the bezel system (release texture references). */
 void BezelSystem_Shutdown() {
+    if (current_textures.left)
+        TextureUtil_Free(current_textures.left);
+    if (current_textures.right)
+        TextureUtil_Free(current_textures.right);
     current_textures.left = NULL;
     current_textures.right = NULL;
 }
@@ -142,6 +146,12 @@ void BezelSystem_SetCharacters(int p1_char, int p2_char) {
 
     SetTextureNearest(l_tex);
     SetTextureNearest(r_tex);
+
+    // Free old textures before replacing to prevent GPU memory leak
+    if (current_textures.left)
+        TextureUtil_Free(current_textures.left);
+    if (current_textures.right)
+        TextureUtil_Free(current_textures.right);
 
     current_textures.left = l_tex;
     current_textures.right = r_tex;
