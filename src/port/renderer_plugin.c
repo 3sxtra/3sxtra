@@ -63,7 +63,7 @@ bool RendererPlugin_Load(const char* plugin_name, int argc, const char** argv) {
     #endif
 #endif
 
-    SDL_Log("Loading renderer plugin: %s", dll_path);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Loading renderer plugin: %s", dll_path);
 
     /* Load the shared library */
     plugin_handle = SDL_LoadObject(dll_path);

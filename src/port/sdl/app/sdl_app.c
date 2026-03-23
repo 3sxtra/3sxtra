@@ -480,9 +480,9 @@ int SDLApp_Init() {
         glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
 
         // Initialize Tracy GPU profiling (after GL context + glad)
-        SDL_Log("Initializing Tracy GPU Profiler...");
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Initializing Tracy GPU Profiler...");
         TRACE_GPU_INIT();
-        SDL_Log("Tracy GPU Profiler initialized.");
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Tracy GPU Profiler initialized.");
 
         // VSync OFF — native frame pacing handles timing.
         vsync_enabled = false;
@@ -491,9 +491,9 @@ int SDLApp_Init() {
     }
     // else: SDL2D — window and renderer already created above
 
-    SDL_Log("Initializing Game Renderer...");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Initializing Game Renderer...");
     SDLGameRenderer_Init();
-    SDL_Log("Game Renderer initialized.");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Game Renderer initialized.");
 
     // Initialize bezel GPU resources
     if (g_renderer_backend == RENDERER_SDLGPU) {

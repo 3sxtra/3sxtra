@@ -82,7 +82,7 @@ void MenuBridge_Init(const char* shm_suffix) {
 
     memset(g_bridge_state, 0, sizeof(MenuBridgeState));
 
-    SDL_Log("[MenuBridge] Initialized '%s'", name);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[MenuBridge] Initialized '%s'", name);
 #else
     printf("[MenuBridge] Shared Memory not implemented for this platform.\n");
 #endif

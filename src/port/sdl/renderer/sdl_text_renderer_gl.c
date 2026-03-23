@@ -42,7 +42,7 @@ static GLint s_rect_loc_rectColor = -1;
 
 void SDLTextRendererGL_Init(const char* base_path, const char* font_path) {
     (void)font_path; // Unused, we use internal 8x8 font
-    SDL_Log("Initializing OpenGL text renderer...");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Initializing OpenGL text renderer...");
 
     s_text_shader = create_shader_program(base_path, "shaders/text.vert", "shaders/text.frag");
     s_rect_shader = create_shader_program(base_path, "shaders/rect.vert", "shaders/rect.frag");

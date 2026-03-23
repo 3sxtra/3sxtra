@@ -211,6 +211,25 @@ class GameViewportGPU : public RenderInterface_SDL_GPU {
 };
 
 // -------------------------------------------------------------------
+// System
+// -------------------------------------------------------------------
+
+// Custom system interface to suppress noisy internal RmlUi logs
+class GameSystemInterface : public SystemInterface_SDL {
+  public:
+    using SystemInterface_SDL::SystemInterface_SDL;
+
+    bool LogMessage(Rml::Log::Type type, const Rml::String& message) override {
+        // Demote "Loaded font face" to debug
+        if (type == Rml::Log::LT_INFO && message.find("Loaded font face") == 0) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] %s", message.c_str());
+            return true;
+        }
+        return SystemInterface_SDL::LogMessage(type, message);
+    }
+};
+
+// -------------------------------------------------------------------
 // State
 // -------------------------------------------------------------------
 
@@ -347,7 +366,7 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     SDL_GetWindowSize(window, &s_window_w, &s_window_h);
 
     // Create system interface (SDL platform — shared by all renderers)
-    s_system_interface = new SystemInterface_SDL();
+    s_system_interface = new GameSystemInterface();
     s_system_interface->SetWindow(window);
     Rml::SetSystemInterface(s_system_interface);
 
@@ -394,11 +413,11 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     // types (Element, Document, Context, Event, form controls), and replaces
     // the <body> instancer with LuaDocument for inline <script> support.
     Rml::Lua::Initialise();
-    SDL_Log("[RmlUi Lua] Initialised");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Lua] Initialised");
 
     // Register engine API so Lua scripts can access game state
     lua_engine_bridge_init();
-    SDL_Log("[RmlUi Lua] Engine bridge registered");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Lua] Engine bridge registered");
 
     // Set up Lua package.path so compat modules can be found
     // and pre-load FBNeo compatibility globals (joypad, emu, gui, memory).
@@ -420,7 +439,7 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
                                 "memory = require('compat.memory')\n";
         Rml::Lua::Interpreter::DoString(lua_setup.c_str());
     }
-    SDL_Log("[RmlUi Lua] FBNeo compat modules loaded");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Lua] FBNeo compat modules loaded");
 
     // Trial definitions are loaded lazily on first access via
     // lua_trials_get_characters(), not at boot (saves ~100ms).
@@ -461,7 +480,7 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
 
     // RmlUi Debugger plugin is lazily initialized on first F12 press (Phase 3)
 #ifdef DEBUG
-    SDL_Log("[RmlUi] Debugger deferred to first F12 press");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Debugger deferred to first F12 press");
 #endif
 
     const char* backend_name = (s_active_backend == RENDERER_SDLGPU) ? "SDL_GPU"

@@ -807,7 +807,7 @@ static void do_init() {
     s_model = c.GetModelHandle();
     refresh_doc_list();
     s_initialized = true;
-    SDL_Log("[RmlUi DevOverlay] Init complete (lazy): %d docs", (int)s_docs.size());
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi DevOverlay] Init complete (lazy): %d docs", (int)s_docs.size());
 }
 
 extern "C" void rmlui_dev_overlay_init() { do_init(); }

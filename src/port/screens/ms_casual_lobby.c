@@ -114,6 +114,6 @@ void ms_casual_lobby_register(void) {
         .header_type = MENU_HEADER_MODE_MENU,
         .effect_slot = 0,
     };
-    SDL_Log("[ms_casual_lobby] registered screen id=%d on_tick=%p",
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[ms_casual_lobby] registered screen id=%d on_tick=%p",
             MENU_SCREEN_CASUAL_LOBBY, (void*)(uintptr_t)casual_lobby_tick);
 }

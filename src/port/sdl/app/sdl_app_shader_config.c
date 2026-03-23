@@ -224,7 +224,7 @@ static void ensure_shader_initialized(void) {
     available_presets = (char**)SDL_malloc(capacity * sizeof(char*));
     available_preset_count = 0;
 
-    SDL_Log("Scanning shader presets in: %s", shaders_path);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Scanning shader presets in: %s", shaders_path);
     scan_presets_recursive(shaders_path, "", &available_presets, &available_preset_count, &capacity);
 
     if (available_preset_count > 0) {
