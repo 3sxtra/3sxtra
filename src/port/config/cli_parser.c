@@ -28,6 +28,9 @@ bool g_font_test_mode = false;
 // UI mode flag — session-only, not persisted to config
 bool g_ui_mode_rmlui = false;
 
+// Dump missing HD sprites to CSV on shutdown
+bool g_dump_missing_sprites = false;
+
 // These might need to be mocked in tests
 // void SDLApp_SetWindowPosition(int x, int y);
 // void SDLApp_SetWindowSize(int w, int h);
@@ -80,6 +83,7 @@ void ParseCLI(int argc, char* argv[]) {
             printf("  --sprites-path <path>     Directory containing HD sprite PNGs\n");
             printf("  --render-scale <1-8>      Plugin canvas resolution multiplier (default: 4)\n");
             printf("  --sprite-scale <1-8>      Native scale of sprite assets (default: render-scale)\n");
+            printf("  --dump-missing-sprites    Write missing_sprites.csv on exit\n");
 #if DEBUG
             printf("  --test-enable             Enable test runner (DEBUG only)\n");
             printf("  --test-states <path>      Path to states directory (DEBUG only)\n");
@@ -140,9 +144,13 @@ void ParseCLI(int argc, char* argv[]) {
                 plugin = "renderer_hd";
             }
             configuration.renderer.plugin_name = plugin;
+            configuration.renderer.enable_hd_sprites = true;
             printf("[CLI] Renderer plugin: %s\n", configuration.renderer.plugin_name);
         } else if (strcmp(argv[i], "--font-test") == 0) {
             g_font_test_mode = true;
+        } else if (strcmp(argv[i], "--dump-missing-sprites") == 0) {
+            g_dump_missing_sprites = true;
+            printf("[CLI] Dump missing sprites: enabled\n");
         } else if (strcmp(argv[i], "--ui") == 0 && i + 1 < argc) {
             const char* mode = argv[++i];
             g_ui_mode_rmlui = (strcmp(mode, "rmlui") == 0);

@@ -22,6 +22,7 @@ void Renderer_EndFrame(void);
 void Renderer_SetBlendMode(RendererBlendMode mode);
 void Renderer_SetTexture(int textureId);
 void Renderer_SetCurrentTexture(Texture* tex);
+int Renderer_GetCurrentPPGPageIndex(void);
 
 // Drawing Commands
 

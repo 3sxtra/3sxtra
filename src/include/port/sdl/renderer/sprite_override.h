@@ -43,6 +43,35 @@ void ClearBGTileCache(void);
  */
 void SpriteOverride_Shutdown(void);
 
+/**
+ * @brief Reset miss flags so previously-missed CG numbers are retried.
+ *
+ * Call on stage transitions or when assets may have changed.
+ * Does not free cached textures — only clears the "not found" flags.
+ */
+void SpriteOverride_ClearMissFlags(void);
+
+/**
+ * @brief Write a CSV listing all CG numbers and BG tiles that had no HD override.
+ *
+ * Iterates the internal miss arrays and writes missing_sprites.csv next to
+ * the executable.  Only produces output when --dump-missing-sprites is set.
+ */
+void SpriteOverride_DumpMissing(void);
+
+/**
+ * @brief Load an HD override for an entire UI texture page.
+ *
+ * Checks assets/ui/page_{texHandle}_{palHandle}.png.  Results are cached
+ * per texHandle|palHandle combo.  On hit, returns an opaque TextureUtil
+ * handle (GL texture ID); on miss, returns NULL.
+ *
+ * @param tex_handle  PPG texture handle (1-based).
+ * @param pal_handle  PPG palette handle (0 = no palette).
+ * @return Opaque texture handle (TextureUtil), or NULL if no override exists.
+ */
+void* LoadUIPageOverride(unsigned int tex_handle, unsigned int pal_handle);
+
 #ifdef __cplusplus
 }
 #endif

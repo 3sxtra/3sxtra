@@ -23,6 +23,7 @@ typedef struct TestRunnerConfiguration {
 
 typedef struct RendererConfiguration {
     const char* plugin_name;
+    bool enable_hd_sprites;
 } RendererConfiguration;
 
 typedef struct Configuration {

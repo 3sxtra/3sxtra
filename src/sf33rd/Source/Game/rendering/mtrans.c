@@ -11,6 +11,7 @@
 #include "port/sdl/renderer/sprite_override.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/renderer_plugin.h"
+#include "configuration.h"
 
 // For screen space Z conversion
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
@@ -263,9 +264,15 @@ static void compute_tile_bbox_ext(const TileMapEntry* trsptr, s32 count, const u
             y += trsptr[i].y;
         }
 
-        const TEX* texptr = (const TEX*)((uintptr_t)textbl + textbl[trsptr[i].code]);
-        s32 dw = (texptr->wh & 0xE0) >> 2;
-        s32 dh = (texptr->wh & 0x1C) * 2;
+        s32 dw, dh;
+        if (textbl != NULL) {
+            const TEX* texptr = (const TEX*)((uintptr_t)textbl + textbl[trsptr[i].code]);
+            dw = (texptr->wh & 0xE0) >> 2;
+            dh = (texptr->wh & 0x1C) * 2;
+        } else {
+            dw = ((trsptr[i].attr & 0xC00) >> 7) + 8;
+            dh = ((trsptr[i].attr & 0x300) >> 5) + 8;
+        }
 
         f32 left = x - (dw * BOOL(flip & 0x8000));
         f32 top = y + (dh * BOOL(flip & 0x4000));
@@ -298,12 +305,25 @@ static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index, co
     njCalcPoint(NULL, &tl_in, &tl_out);
     njCalcPoint(NULL, &br_in, &br_out);
 
+    float draw_w = fabsf(br_out.x - tl_out.x);
+    float draw_h = fabsf(br_out.y - tl_out.y);
+    float draw_x = fminf(tl_out.x, br_out.x);
+    float draw_y = fminf(tl_out.y, br_out.y);
+    int flip_x = (flip_flags & 0x8000) ? 1 : 0;
+
     if (RENDERER_HAS_PLUGIN()) {
-        float draw_w = fabsf(br_out.x - tl_out.x);
-        float draw_h = fabsf(br_out.y - tl_out.y);
         if (g_renderer_plugin->TryRenderSprite(group_index, wk->cg_number,
-                fminf(tl_out.x, br_out.x), fminf(tl_out.y, br_out.y),
-                tl_out.z, (flip_flags & 0x8000) ? 1 : 0, 0xFFFFFFFF, draw_w, draw_h)) {
+                draw_x, draw_y, tl_out.z, flip_x, 0xFFFFFFFF, draw_w, draw_h)) {
+            appRenewTempPriority(wk->position_z);
+            return true;
+        }
+    }
+
+    /* Built-in fallback */
+    if (configuration.renderer.enable_hd_sprites) {
+        void* tex = LoadFullSpriteOverride(group_index, wk->cg_number);
+        if (tex != NULL) {
+            TextureUtil_DrawQuadEx(tex, draw_x, draw_y, draw_w, draw_h, flPS2ConvScreenFZ(tl_out.z), flip_x, 0);
             appRenewTempPriority(wk->position_z);
             return true;
         }
@@ -329,12 +349,25 @@ static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index
     njCalcPoint(NULL, &tl_in, &tl_out);
     njCalcPoint(NULL, &br_in, &br_out);
 
+    float draw_w = fabsf(br_out.x - tl_out.x);
+    float draw_h = fabsf(br_out.y - tl_out.y);
+    float draw_x = fminf(tl_out.x, br_out.x);
+    float draw_y = fminf(tl_out.y, br_out.y);
+    int flip_x = (flip_flags & 0x8000) ? 1 : 0;
+
     if (RENDERER_HAS_PLUGIN()) {
-        float draw_w = fabsf(br_out.x - tl_out.x);
-        float draw_h = fabsf(br_out.y - tl_out.y);
         if (g_renderer_plugin->TryRenderSprite(group_index, wk->cg_number,
-                fminf(tl_out.x, br_out.x), fminf(tl_out.y, br_out.y),
-                tl_out.z, (flip_flags & 0x8000) ? 1 : 0, 0xFFFFFFFF, draw_w, draw_h)) {
+                draw_x, draw_y, tl_out.z, flip_x, 0xFFFFFFFF, draw_w, draw_h)) {
+            appRenewTempPriority(wk->position_z);
+            return true;
+        }
+    }
+
+    /* Built-in fallback */
+    if (configuration.renderer.enable_hd_sprites) {
+        void* tex = LoadFullSpriteOverride(group_index, wk->cg_number);
+        if (tex != NULL) {
+            TextureUtil_DrawQuadEx(tex, draw_x, draw_y, draw_w, draw_h, flPS2ConvScreenFZ(tl_out.z), flip_x, 0);
             appRenewTempPriority(wk->position_z);
             return true;
         }
@@ -563,6 +596,12 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     mlt_obj_matrix(wk, base_y);
 
+    if (count > 0) {
+        if (try_hd_sprite_override_ext(wk, attr, i, trsptr, count, NULL)) {
+            return;
+        }
+    }
+
     while (count--) {
         if (attr & 0x8000) {
             x += trsptr->x;
@@ -664,6 +703,12 @@ void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
     }
 
     mlt_obj_matrix(wk, base_y);
+
+    if (count > 0) {
+        if (try_hd_sprite_override_ext(wk, attr, i, trsptr, count, NULL)) {
+            return;
+        }
+    }
 
     while (count--) {
         if (attr & 0x8000) {
@@ -1544,9 +1589,7 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
     mlt_obj_matrix(wk, base_y);
 
     if (count > 0) {
-        SpriteBox box;
-        compute_tile_bbox_ext(trsptr, count, textbl, flip, &box);
-        if (try_hd_sprite_override(wk, flip, i, &box)) {
+        if (try_hd_sprite_override_ext(wk, flip, i, trsptr, count, textbl)) {
             return;
         }
     }

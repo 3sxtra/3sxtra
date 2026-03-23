@@ -10,6 +10,8 @@
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/renderer/sdl_game_renderer_gl_internal.h"
+#include "port/sdl/renderer/sprite_override.h"
+#include "configuration.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include <libgraph.h>
@@ -625,6 +627,16 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
     const int texture_handle = LO_16_BITS(th);
     const int palette_handle = HI_16_BITS(th);
 
+    /* ── HD UI page override: "I already have one" ── */
+    if (configuration.renderer.enable_hd_sprites) {
+        void* hd_page = LoadUIPageOverride((unsigned int)texture_handle, (unsigned int)palette_handle);
+        if (hd_page != NULL) {
+            GLuint hd_gl_tex = (GLuint)(uintptr_t)hd_page;
+            push_texture_with_layer(hd_gl_tex, -1, 0, 1.0f, 1.0f);
+            return;
+        }
+    }
+
     if (texture_handle < 1 || texture_handle > FL_TEXTURE_MAX)
         fatal_error("Invalid texture handle");
 
@@ -975,6 +987,61 @@ void SDLGameRendererGL_DumpTextures(void) {
     }
 
     SDL_Log("[TextureDump] Wrote %d texture(s) to textures/", count);
+
+    /* Also dump with page_{tex}_{pal} naming for HD override workflow.
+     * Only dump combos that were actually rendered (have a cached GL texture). */
+    SDL_CreateDirectory("output");
+    SDL_CreateDirectory("output/ui_pages");
+    int page_count = 0;
+    for (int ti = 0; ti < FL_TEXTURE_MAX; ti++) {
+        SDL_Surface* surf = gl_state.surfaces[ti];
+        if (!surf || !SDL_ISPIXELFORMAT_INDEXED(surf->format))
+            continue;
+
+        for (int pi = 0; pi <= FL_PALETTE_MAX; pi++) {
+            /* Only dump if this tex+pal was actually resolved at some point */
+            if (gl_state.texture_cache[ti][pi] == 0 && gl_state.stale_texture_cache[ti][pi] == 0)
+                continue;
+
+            SDL_Palette* pal = (pi > 0 && pi <= FL_PALETTE_MAX) ? gl_state.palettes[pi - 1] : NULL;
+            if (!pal)
+                continue;
+
+            char filename[128];
+            snprintf(filename, sizeof(filename), "output/ui_pages/page_%d_%d.tga", ti + 1, pi);
+            FILE* fp = fopen(filename, "wb");
+            if (!fp)
+                continue;
+
+            const Uint8* pixels = (const Uint8*)surf->pixels;
+            const int pw = surf->w, ph = surf->h;
+            uint8_t hdr[18] = { 0 };
+            hdr[2] = 2;
+            hdr[12] = pw & 0xFF;
+            hdr[13] = (pw >> 8) & 0xFF;
+            hdr[14] = ph & 0xFF;
+            hdr[15] = (ph >> 8) & 0xFF;
+            hdr[16] = 32;
+            hdr[17] = 0x20;
+            fwrite(hdr, 1, 18, fp);
+
+            for (int px = 0; px < pw * ph; px++) {
+                Uint8 idx;
+                if (pal->ncolors == 16) {
+                    Uint8 byte = pixels[px / 2];
+                    idx = (px & 1) ? (byte >> 4) : (byte & 0x0F);
+                } else {
+                    idx = pixels[px];
+                }
+                const SDL_Color* c = &pal->colors[idx];
+                Uint8 bgra[] = { c->b, c->g, c->r, c->a };
+                fwrite(bgra, 1, 4, fp);
+            }
+            fclose(fp);
+            page_count++;
+        }
+    }
+    SDL_Log("[TextureDump] Wrote %d page(s) to output/ui_pages/", page_count);
 }
 
 /**

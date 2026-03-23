@@ -20,6 +20,7 @@
 
 // Static state to track current texture/blend mode if needed
 static int s_CurrentTextureId = 0;
+static int s_CurrentPPGPageIndex = -1; /* PPG page index (0-based), or -1 if not a PPG texture */
 
 // Internal 2D primitive queuing (migrated from dc_ghost.c)
 typedef struct {
@@ -69,6 +70,10 @@ void Renderer_SetCurrentTexture(Texture* tex) {
     s_CurrentTexture = tex;
 }
 
+int Renderer_GetCurrentPPGPageIndex(void) {
+    return s_CurrentPPGPageIndex;
+}
+
 void Renderer_SetTexture(int textureId) {
     s_CurrentTextureId = textureId;
 
@@ -90,6 +95,7 @@ void Renderer_SetTexture(int textureId) {
                 // Texture not loaded
                 return;
             }
+            s_CurrentPPGPageIndex = ix; /* Store for page-index-based HD override */
             // Check if texture needs a palette (bit 14 set in flags)
             u16 palHandle = 0;
             if (s_CurrentTexture->handle[ix].b16[1] & 0x4000) {

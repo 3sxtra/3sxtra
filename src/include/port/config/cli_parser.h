@@ -9,4 +9,7 @@ void ParseCLI(int argc, char* argv[]);
 /** @brief When true, RmlUi handles all overlay menus (set via --ui rmlui CLI). */
 extern bool g_ui_mode_rmlui;
 
+/** @brief When true, write missing_sprites.csv on shutdown (set via --dump-missing-sprites CLI). */
+extern bool g_dump_missing_sprites;
+
 #endif
