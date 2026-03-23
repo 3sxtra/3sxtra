@@ -37,11 +37,11 @@ Files must be named by their internal engine ID (e.g., 5.ogg):
   assets/voice_mod/PL12/        -> Character Voices (Sean)
   assets/voice_mod/PL13/        -> Character Voices (Urien)
   assets/voice_mod/PL14/        -> Character Voices (Gouki / Akuma)
-  assets/voice_mod/PL15/        -> Character Voices (Shin Gouki)
-  assets/voice_mod/PL16/        -> Character Voices (Chun-Li)
-  assets/voice_mod/PL17/        -> Character Voices (Makoto)
-  assets/voice_mod/PL18/        -> Character Voices (Q)
-  assets/voice_mod/PL19/        -> Character Voices (Twelve)
+  assets/voice_mod/PL15/        -> Character Voices (Chun-Li)
+  assets/voice_mod/PL16/        -> Character Voices (Makoto)
+  assets/voice_mod/PL17/        -> Character Voices (Q)
+  assets/voice_mod/PL18/        -> Character Voices (Twelve)
+  assets/voice_mod/PL19/        -> Character Voices (Remy)
 
 Example: To replace Ken's (PL11) medium shoryuken voice, you would place it at:
   assets/voice_mod/PL11/45.ogg

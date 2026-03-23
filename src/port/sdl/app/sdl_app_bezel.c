@@ -369,7 +369,7 @@ void SDLAppBezel_RenderGL(int win_w, int win_h, const SDL_FRect* viewport, unsig
         glUniform1i(s_bezel_pt_loc_filter_type, 0); /* nearest */
 
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
         glBindVertexArray(bezel_vao);
 

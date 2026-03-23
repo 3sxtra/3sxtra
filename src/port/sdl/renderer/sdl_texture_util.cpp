@@ -38,6 +38,22 @@ static GPUTextureMetadata* get_gpu_metadata(void* texture_id) {
     return nullptr;
 }
 
+static void premultiply_surface_alpha(SDL_Surface* surface) {
+    if (!surface || surface->format != SDL_PIXELFORMAT_RGBA32) return;
+    Uint8* pixels = (Uint8*)surface->pixels;
+    int pitch = surface->pitch;
+    for (int y = 0; y < surface->h; y++) {
+        Uint8* row = pixels + y * pitch;
+        for (int x = 0; x < surface->w; x++) {
+            Uint8* p = row + x * 4;
+            unsigned int a = p[3];
+            p[0] = (Uint8)((p[0] * a) / 255);
+            p[1] = (Uint8)((p[1] * a) / 255);
+            p[2] = (Uint8)((p[2] * a) / 255);
+        }
+    }
+}
+
 extern "C" void* TextureUtil_Load(const char* filename) {
     const char* resolved = Paths_ResolveAsset(filename);
     SDL_Surface* surface = IMG_Load(resolved);
@@ -56,6 +72,8 @@ extern "C" void* TextureUtil_Load(const char* filename) {
         SDL_DestroySurface(surface);
         if (!converted)
             return NULL;
+
+        premultiply_surface_alpha(converted);
 
         SDL_GPUTextureCreateInfo tex_info;
         SDL_zero(tex_info);
@@ -128,6 +146,9 @@ extern "C" void* TextureUtil_Load(const char* filename) {
             return NULL;
         }
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        if (texture) {
+            SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND_PREMULTIPLIED);
+        }
         SDL_DestroySurface(surface);
         return (void*)texture;
     } else {
@@ -137,6 +158,7 @@ extern "C" void* TextureUtil_Load(const char* filename) {
 
         SDL_Surface* converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
         if (converted) {
+            premultiply_surface_alpha(converted);
             glTexImage2D(
                 GL_TEXTURE_2D, 0, GL_RGBA, converted->w, converted->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, converted->pixels);
             SDL_DestroySurface(converted);
@@ -164,6 +186,8 @@ static void* upload_surface_to_texture(SDL_Surface* surface) {
         SDL_Surface* converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
         if (!converted)
             return NULL;
+
+        premultiply_surface_alpha(converted);
 
         SDL_GPUTextureCreateInfo tex_info;
         SDL_zero(tex_info);
@@ -237,6 +261,7 @@ static void* upload_surface_to_texture(SDL_Surface* surface) {
 
         SDL_Surface* converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
         if (converted) {
+            premultiply_surface_alpha(converted);
             glTexImage2D(
                 GL_TEXTURE_2D, 0, GL_RGBA, converted->w, converted->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, converted->pixels);
             SDL_DestroySurface(converted);
@@ -264,6 +289,8 @@ extern "C" void* TextureUtil_LoadScaled(const char* filename, float scale) {
     SDL_DestroySurface(surface);
     if (!converted)
         return NULL;
+
+    premultiply_surface_alpha(converted);
 
     /* Downscale at the surface level if scale < 1.0 */
     if (scale < 1.0f && scale > 0.0f && converted->w > 1 && converted->h > 1) {

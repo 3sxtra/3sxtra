@@ -214,31 +214,6 @@ void Bg_Texture_Load_EX() {
 
         ppgSourceDataReleased(&ppgAkeList);
 
-        /* DEBUG: Dump akeAdrs chip animation PPG data for offline extraction */
-        {
-            char dump_path[512];
-            FILE* df;
-            snprintf(dump_path, sizeof(dump_path),
-                     "stage_%02d_ake_ppg.bin", bg_w.stage);
-            df = fopen(dump_path, "wb");
-            if (df) {
-                fwrite(akeAdrs, 1, (size_t)akeSize, df);
-                fclose(df);
-                flLogOut("DEBUG: Dumped akeAdrs %d bytes to %s\n",
-                         akeSize, dump_path);
-            }
-
-            /* Also dump the full ColorRAM for palette reference */
-            snprintf(dump_path, sizeof(dump_path),
-                     "stage_%02d_colorram.bin", bg_w.stage);
-            df = fopen(dump_path, "wb");
-            if (df) {
-                fwrite(ColorRAM, 1, sizeof(ColorRAM), df);
-                fclose(df);
-                flLogOut("DEBUG: Dumped ColorRAM %zu bytes to %s\n",
-                         sizeof(ColorRAM), dump_path);
-            }
-        }
     }
 
     /* Try to load HD modded stage assets for this stage */

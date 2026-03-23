@@ -1160,7 +1160,7 @@ void SDLApp_EndFrame() {
 
                 if (modded_active_lr) {
                     glEnable(GL_BLEND);
-                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
                 }
                 LibrashaderManager_Render(SDLAppShader_GetManager(),
                                           (void*)(intptr_t)cps3_canvas_texture,
@@ -1228,7 +1228,7 @@ void SDLApp_EndFrame() {
                 // 3. Render Game Sprites (cps3_canvas_texture) on top
                 // Use Passthru shader to blit transparency
                 glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
                 glUseProgram(passthru_shader_program);
                 if (s_pt_loc_projection == -1) {
@@ -1327,7 +1327,7 @@ void SDLApp_EndFrame() {
             // canvas pixels let the HD background show through.
             if (modded_active) {
                 glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             }
 
             glBindVertexArray(vao);

@@ -240,7 +240,7 @@ void ControllerImageOverlay_FlushGL(float vp_x, float vp_y, float vp_w, float vp
     glUniform1i(loc_source, 0);
 
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glActiveTexture(GL_TEXTURE0);
 
     /* Create VAO/VBO on first use */

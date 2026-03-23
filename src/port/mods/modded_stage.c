@@ -386,13 +386,13 @@ static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, cons
 
     if (layer_index > 0) {
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     if (layer_index > 0) {
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     }
 }
 
@@ -425,7 +425,7 @@ void ModdedStage_Render(const BG* bg) {
     glGetIntegerv(GL_BLEND_SRC_ALPHA, &prev_src);
     glGetIntegerv(GL_BLEND_DST_ALPHA, &prev_dst);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     /* Sort layers by Z-Index from Config */
     // We can create a lightweight index array
