@@ -305,6 +305,70 @@ async function run() {
 
     console.log(`   DE tournament completed in ${iterations} match waves`);
 
+    // --- Test 11: Swiss Full Lifecycle ---
+    console.log('\n--- Test 11: Swiss Format ---');
+    const swRoom = await sendreq('/room/create', {
+        player_id: 'host', display_name: 'Host', name: 'Swiss Test',
+        room_type: 2, tournament_format: 3, max_players: 8, ft: 2, seeding: 'join_order'
+    });
+    assert(swRoom.ok, 'Swiss room created');
+    const swCode = swRoom.room_code;
+    for (const id of ['p2', 'p3', 'p4']) {
+        await sendreq('/room/join', { player_id: id, display_name: id.toUpperCase(), room_code: swCode });
+    }
+
+    // Start bracket
+    const swStart = await sendreq(`/room/${swCode}/bracket/start`, { player_id: 'host' });
+    assert(swStart.ok, 'Swiss bracket started');
+    const swState = swStart.bracket;
+    assert(swState.total_rounds === 2, `Swiss rounds = ceil(log2(4)) = 2 (got ${swState.total_rounds})`);
+    assert(swState.started === 1, 'Swiss marked as started');
+
+    // Round 0: all players have 0 wins — initial pairings
+    let swBracket = await sendreq(`/room/${swCode}/bracket`, null, 'GET');
+    let swMatches = swBracket.matches.filter(m => m.round === 0);
+    assert(swMatches.length === 2, `Round 0: 2 matches (got ${swMatches.length})`);
+    console.log(`   Round 0: ${swMatches.map(m => `${m.p1} vs ${m.p2}`).join(', ')}`);
+
+    // Play round 0: p1 always wins
+    for (const m of swMatches) {
+        await sendreq('/room/match/accept', { room_code: swCode, player_id: m.p1, match_index: m.match_index });
+        await sendreq('/room/match/accept', { room_code: swCode, player_id: m.p2, match_index: m.match_index });
+        await sendreq('/room/match/end', { room_code: swCode, winner_id: m.p1, match_index: m.match_index });
+    }
+
+    // Verify round advanced to 1
+    await sleep(200);
+    swBracket = await sendreq(`/room/${swCode}/bracket`, null, 'GET');
+    assert(swBracket.round === 1, `Advanced to round 1 (got ${swBracket.round})`);
+
+    // Round 1: winners (1 win) face each other, losers (0 wins) face each other
+    let swR1Matches = swBracket.matches.filter(m => m.round === 1);
+    assert(swR1Matches.length === 2, `Round 1: 2 matches (got ${swR1Matches.length})`);
+    console.log(`   Round 1: ${swR1Matches.map(m => `${m.p1} vs ${m.p2}`).join(', ')}`);
+
+    // Verify standings-based pairing: round 0 winners should play each other
+    const r0Winners = swMatches.map(m => m.p1); // p1 always won
+    const r1Match1Players = [swR1Matches[0].p1, swR1Matches[0].p2];
+    const winnersInMatch1 = r0Winners.filter(w => r1Match1Players.includes(w)).length;
+    // Either match should have both winners or both losers, not mixed
+    assert(winnersInMatch1 === 2 || winnersInMatch1 === 0,
+        `Swiss pairing: R1 match 1 has ${winnersInMatch1} R0-winners (expected 2 or 0 for proper pairing)`);
+
+    // Play round 1
+    for (const m of swR1Matches) {
+        await sendreq('/room/match/accept', { room_code: swCode, player_id: m.p1, match_index: m.match_index });
+        await sendreq('/room/match/accept', { room_code: swCode, player_id: m.p2, match_index: m.match_index });
+        await sendreq('/room/match/end', { room_code: swCode, winner_id: m.p1, match_index: m.match_index });
+    }
+
+    // Verify all bracket entries completed
+    await sleep(200);
+    const swFinal = await sendreq(`/room/${swCode}/bracket`, null, 'GET');
+    const allSwDone = swFinal.bracket.every(b => b.completed);
+    assert(allSwDone, 'All Swiss bracket entries completed');
+    console.log(`   Swiss tournament completed (${swFinal.bracket.length} total matches)`);
+
     // --- Cleanup ---
     console.log('\n--- Cleanup ---');
     for (const id of ['host', 'p2', 'p3', 'p4']) {
@@ -312,6 +376,7 @@ async function run() {
         await sendreq('/room/leave', { player_id: id, room_code: pauseCode });
         await sendreq('/room/leave', { player_id: id, room_code: dqCode });
         await sendreq('/room/leave', { player_id: id, room_code: deCode });
+        await sendreq('/room/leave', { player_id: id, room_code: swCode });
     }
 
     console.log('\n=== All tournament tests passed! ===');
