@@ -45,6 +45,8 @@ static void profile_enter(struct _TASK* task_ptr) {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static void profile_tick(struct _TASK* task_ptr) {
+    rmlui_player_profile_update();
+    
     /* Read edge-triggered input from both players */
     u16 trigger = 0;
     for (int i = 0; i < 2; i++) {

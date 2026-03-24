@@ -39,3 +39,4 @@ clang
 curl
 libcurl4-openssl-dev
 python3-jinja2
+bzip2

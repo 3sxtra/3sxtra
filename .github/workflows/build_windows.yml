@@ -54,7 +54,7 @@ jobs:
                 restore-keys: windows-cargo-
 
           - name: Build dependencies
-            run: sh build-deps.sh
+            run: bash build-deps.sh
 
           - name: Setup ccache
             uses: hendrikmuhs/ccache-action@v1.2
