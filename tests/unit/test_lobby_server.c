@@ -23,6 +23,9 @@ const char* Identity_GetPlayerId(void) { return mock_identity_player_id; }
 const char* Identity_GetDisplayName(void) { return mock_identity_display; }
 const char* Identity_GetPublicKeyHex(void) { return mock_identity_pubkey; }
 
+bool NET_Init(void) { return true; }
+void NET_Quit(void) {}
+
 /* Include the source file to access static variables directly */
 #include "../../src/netplay/lobby_server.c"
 

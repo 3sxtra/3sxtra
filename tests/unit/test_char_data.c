@@ -13,7 +13,7 @@
 #include <string.h>
 #include <cmocka.h>
 
-#include "port/char_data.h"
+#include "arcade/arcade_char_data.h"
 
 /* Number of hiit entries needed for the Akuma fixup (0x5D + 1 = 0x5E) */
 #define HIIT_LEN 0x5E

@@ -21,6 +21,10 @@
 | PR #170 — zlib removal | ⏭️ Skip — both sides deleted |
 | 27 PORTED_DELETE files (GekkoNet, zlib, bin2obj header) | ✅ Already handled |
 | 59 DIVERGED files with only-removal or already-ported changes | ✅ Already clean |
+| PR #137, #147, #152, #154, #179 — Training hitboxes/menus (`eff00.c`, `effa3.c`, `sys_sub.c`) | ✅ Ported |
+| PR #153 — No-stun training setting (`menu.c`) | ✅ Ported |
+| PR #188, #190 — Skip VS screens (`next_cpu.c`, `entry.c`) | ✅ Ported |
+| PR #143, #177 — Unit_Of_Timer to 50 (`select_timer.c`) | ✅ Ported |
 
 ---
 
@@ -28,12 +32,8 @@
 
 | PR(s) | File(s) | Lines | What |
 |--------|---------|------:|------|
-| #137 | `eff00.c` | 12 | Training hitbox display flag |
 | #137, #147, #148 | `aboutspr.c` | ~40 | Hitbox/hurtbox colors, spacing fix |
-| #147, #152 | `effa3.c` | 15 | Throw/projectile box colors |
-| #153 | `effe3.c`, `menu.c` | ~6 | No-stun training setting |
-| #154 | `sys_sub.c` | small | Immediate training menu input |
-| #179 | `sys_sub.c` | ~19 | Auto-skip training transitions |
+| #153 | `effe3.c` | ~6 | No-stun training setting (`effe3.c` part) |
 
 ---
 
@@ -43,11 +43,9 @@
 |--------|---------|------:|------|
 | #164, #187 | `sc_sub.c/.h`, `entry.c`, `count.c`, `flash_lp.c`, `vital.c`, `game.c` | ~80 | **Draw Player Over HUD** — z-order fix |
 | #186 | `sel_pl.c`, `n_input.c` | 8 | Attack buttons on press start |
-| #188 | `next_cpu.c` | 14 | Skip VS between CPU matches |
-| #190 | `entry.c`, `manage.c` | ~18 | Skip all VS screens |
+| #190 | `manage.c` | ~18 | Skip all VS screens (`manage.c` part) |
 | #193 | `pause.c` | 8 | Skip "Press x to pause" menu |
 | #194 | `emlShim.c` | 6 | Sound priority on voice stop |
-| #143, #177 | `select_timer.c` | 4 | Revert `Unit_Of_Timer` to 50 + reduce pacing delay |
 | #162 | `dc_ghost.c` | small | Increase 2D box limit |
 
 ---
@@ -73,7 +71,7 @@
 | Category | Items | Estimated Effort |
 |----------|------:|-----------------|
 | CPS3 decompilation | 3 files, ~494 lines | ✅ Done |
-| Training mode | 6 items, ~90 lines | Low |
-| Gameplay / QoL | 8 items, ~140 lines | Low (most trivial) |
+| Training mode | 2 items, ~46 lines | Low |
+| Gameplay / QoL | 5 items, ~102 lines | Low (most trivial) |
 | Arcade ROM system | 8+ files, new subsystem | ✅ Done |
-| **Total actionable** | **~14 items** | |
+| **Total actionable** | **7 items** | |

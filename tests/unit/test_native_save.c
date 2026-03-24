@@ -47,6 +47,7 @@ void dspwhUnpack(u8 src, u8* xdsp, u8* ydsp) {
     *xdsp = 100 - ((src >> 4) & 0xF);
     *ydsp = 100 - (src & 0xF);
 }
+int chkNameAkuma(int id) { return 0; }
 
 // Function to test
 extern int NativeSave_LoadOptions(void);

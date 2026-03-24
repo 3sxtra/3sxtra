@@ -70,6 +70,8 @@ void Input_SetGamepadEventCallback(void (*cb)(int gamepad_id, int event_type, in
 
 const char* rmlui_casual_lobby_get_room_code(void) { return ""; }
 void rmlui_casual_lobby_show(void) {}
+void rmlui_casual_lobby_set_room(bool private_room, const char* code, const char* pwd) {}
+void MenuScreen_Goto(int screen_id) {}
 #ifndef MOCK_SUPPRESS_UI
 void SDLNetplayUI_SetNativeLobbyActive(bool active) {}
 #endif

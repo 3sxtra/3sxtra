@@ -261,7 +261,7 @@ endif() # ENABLE_NETPLAY
 
 add_unit_test(test_char_data
     test_char_data.c
-    ${PROJECT_SOURCE_DIR}/src/port/char_data.c
+    ${PROJECT_SOURCE_DIR}/src/arcade/arcade_char_data.c
 )
 target_include_directories(test_char_data PRIVATE ${PROJECT_SOURCE_DIR}/src/include)
 
