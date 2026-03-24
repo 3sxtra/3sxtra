@@ -77,6 +77,15 @@ int Bracket_GenerateDoubleElim(const char player_ids[][64],
                                 BracketEntry* out_bracket,
                                 int max_entries);
 
+/// Advance double-elimination bracket: routes winner to next winners slot,
+/// and loser to the appropriate losers bracket slot.
+/// winners_rounds = number of winners bracket rounds (from log2(next_pow2(N))).
+bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size,
+                                int winners_rounds,
+                                int round, int position,
+                                const char* winner_id, const char* winner_name,
+                                const char* loser_id, const char* loser_name);
+
 // ─── Round Robin ─────────────────────────────────────────────────
 
 /// Total entries needed for round robin of N players.
@@ -91,6 +100,25 @@ int Bracket_GenerateRoundRobin(const char player_ids[][64],
                                 int num_players,
                                 BracketEntry* out_bracket,
                                 int max_entries);
+
+// ─── Swiss ───────────────────────────────────────────────────────
+
+/// Generate pairings for one Swiss round.
+/// Sorts players by record (wins descending) and pairs adjacent players.
+/// wins[] is an array of win counts parallel to player_ids[].
+/// swiss_round is the 0-indexed round number (used for BracketEntry.round).
+/// Returns number of entries written (num_players/2), or -1 on error.
+int Bracket_GenerateSwissRound(const char player_ids[][64],
+                                const char player_names[][32],
+                                const int* wins,
+                                int num_players,
+                                int swiss_round,
+                                BracketEntry* out_bracket,
+                                int max_entries);
+
+/// Recommended number of Swiss rounds for N players.
+/// Uses ceil(log2(N)) — same as single elim depth.
+int Bracket_SwissRounds(int num_players);
 
 // ─── Common Utilities ────────────────────────────────────────────
 

@@ -1994,9 +1994,9 @@ s16 Ck_Coin() {
     case 0:
         PL_id = -1;
 
-        if (~p1sw_1 & p1sw_0 & SWK_START) {
+        if (~p1sw_1 & p1sw_0 & (SWK_START | SWK_ATTACKS)) {
             PL_id = 0;
-        } else if (~p2sw_1 & p2sw_0 & SWK_START) {
+        } else if (~p2sw_1 & p2sw_0 & (SWK_START | SWK_ATTACKS)) {
             PL_id = 1;
         }
 

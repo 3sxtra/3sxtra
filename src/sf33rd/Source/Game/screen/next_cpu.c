@@ -492,21 +492,26 @@ static void Next_CPU_6th() {
     SEL_CPU_X = 1;
 }
 
+/** @brief Return true when player sprites, BG, and audio are all loaded. */
+static bool is_load_complete() {
+    if (!Check_PL_Load()) {
+        return false;
+    }
+
+    if (!Check_LDREQ_Queue_BG(bg_w.stage)) {
+        return false;
+    }
+
+    if (!(adx_now_playend() || Scene_Cut)) {
+        return false;
+    }
+
+    return true;
+}
+
 /** @brief Wait for player/BG/sound loads to finish, then init omop and signal exit. */
 static void Wait_Load_Complete() {
-    if (!Check_PL_Load()) {
-        return;
-    }
-
-    if (!Check_LDREQ_Queue_BG(bg_w.stage + 0)) {
-        return;
-    }
-
-    if (!adx_now_playend()) {
-        return;
-    }
-
-    if (!sndCheckVTransStatus(0)) {
+    if (!is_load_complete()) {
         return;
     }
 
@@ -517,19 +522,7 @@ static void Wait_Load_Complete() {
 
 /** @brief Wait for loads then signal exit with code 2 (post-VS path). */
 static void Wait_Load_Complete2() {
-    if (!Check_PL_Load()) {
-        return;
-    }
-
-    if (!Check_LDREQ_Queue_BG(bg_w.stage + 0)) {
-        return;
-    }
-
-    if (!adx_now_playend()) {
-        return;
-    }
-
-    if (!sndCheckVTransStatus(0)) {
+    if (!is_load_complete()) {
         return;
     }
 
@@ -540,19 +533,7 @@ static void Wait_Load_Complete2() {
 
 /** @brief Wait for loads then signal exit with code 2 (bonus-end path). */
 static void Wait_Load_Complete3() {
-    if (!Check_PL_Load()) {
-        return;
-    }
-
-    if (!Check_LDREQ_Queue_BG(bg_w.stage + 0)) {
-        return;
-    }
-
-    if (!adx_now_playend()) {
-        return;
-    }
-
-    if (!sndCheckVTransStatus(0)) {
+    if (!is_load_complete()) {
         return;
     }
 

@@ -355,6 +355,138 @@ int Bracket_GenerateDoubleElim(const char player_ids[][64],
     return entry_idx;
 }
 
+bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size,
+                                int winners_rounds,
+                                int round, int position,
+                                const char* winner_id, const char* winner_name,
+                                const char* loser_id, const char* loser_name) {
+    if (!bracket || !winner_id || bracket_size < 1 || winners_rounds < 1)
+        return false;
+
+    BracketEntry* current = Bracket_FindEntry(bracket, bracket_size, round, position);
+    if (!current)
+        return false;
+
+    strncpy(current->winner_id, winner_id, 63);
+    current->completed = 1;
+
+    // Determine if this match is in the winners or losers bracket
+    bool is_winners = (round < winners_rounds);
+    int losers_rounds = 2 * (winners_rounds - 1);
+    int gf_round = winners_rounds + losers_rounds;
+
+    if (is_winners) {
+        // ── Winners bracket: winner advances within winners ──
+        int next_round = round + 1;
+        int next_pos = position / 2;
+
+        if (next_round < winners_rounds) {
+            BracketEntry* next = Bracket_FindEntry(bracket, bracket_size, next_round, next_pos);
+            if (next) {
+                if (position % 2 == 0) {
+                    strncpy(next->player1_id, winner_id, 63);
+                    if (winner_name) strncpy(next->player1_name, winner_name, 31);
+                } else {
+                    strncpy(next->player2_id, winner_id, 63);
+                    if (winner_name) strncpy(next->player2_name, winner_name, 31);
+                }
+            }
+        } else {
+            // Winners bracket final winner goes to grand finals as P1
+            BracketEntry* gf = Bracket_FindEntry(bracket, bracket_size, gf_round, 0);
+            if (gf) {
+                strncpy(gf->player1_id, winner_id, 63);
+                if (winner_name) strncpy(gf->player1_name, winner_name, 31);
+            }
+        }
+
+        // ── Loser drops to losers bracket ──
+        if (loser_id && loser_id[0]) {
+            // Winners round R drops losers into losers round 2*R - 1 (odd rounds
+            // = "drop-down" rounds). For WR0 the losers go into LR0 as a special case.
+            int lr;
+            if (round == 0)
+                lr = 0;  // WR0 losers -> LR0
+            else
+                lr = 2 * round - 1;
+
+            int lr_round = winners_rounds + lr;
+            // Position in the losers round: same as winners position / 2 for
+            // drop-down rounds, direct mapping for LR0
+            int lr_pos = (round == 0) ? position / 2 : position;
+
+            BracketEntry* losers_entry = Bracket_FindEntry(bracket, bracket_size, lr_round, lr_pos);
+            if (losers_entry) {
+                // Drop-down rounds (odd LR): losers fill P2 slot
+                // Pairing rounds (even LR, including LR0): losers fill by position
+                if (round == 0) {
+                    // LR0: pair up — even positions fill P1, odd fill P2
+                    if (position % 2 == 0) {
+                        strncpy(losers_entry->player1_id, loser_id, 63);
+                        if (loser_name) strncpy(losers_entry->player1_name, loser_name, 31);
+                    } else {
+                        strncpy(losers_entry->player2_id, loser_id, 63);
+                        if (loser_name) strncpy(losers_entry->player2_name, loser_name, 31);
+                    }
+                } else {
+                    // Drop-down: loser fills P2 (P1 comes from previous LR winner)
+                    strncpy(losers_entry->player2_id, loser_id, 63);
+                    if (loser_name) strncpy(losers_entry->player2_name, loser_name, 31);
+                }
+            }
+        }
+    } else if (round < gf_round) {
+        // ── Losers bracket: winner advances within losers ──
+        int lr = round - winners_rounds; // losers round index (0-based)
+        int next_lr = lr + 1;
+        int next_lr_round = winners_rounds + next_lr;
+
+        if (next_lr < losers_rounds) {
+            int next_pos;
+            if (lr % 2 == 0) {
+                // Even LR (pairing round): halve positions
+                next_pos = position;
+            } else {
+                // Odd LR (drop-down round): same count, direct map
+                next_pos = position / 2;
+                // If next round is also even (pairing), positions halve
+                if (next_lr % 2 == 0)
+                    next_pos = position / 2;
+                else
+                    next_pos = position;
+            }
+
+            BracketEntry* next = Bracket_FindEntry(bracket, bracket_size, next_lr_round, next_pos);
+            if (next) {
+                // Even LR winners go to P1 of odd LR (drop-down round expects P1 from below)
+                if (lr % 2 == 0) {
+                    strncpy(next->player1_id, winner_id, 63);
+                    if (winner_name) strncpy(next->player1_name, winner_name, 31);
+                } else {
+                    if (position % 2 == 0) {
+                        strncpy(next->player1_id, winner_id, 63);
+                        if (winner_name) strncpy(next->player1_name, winner_name, 31);
+                    } else {
+                        strncpy(next->player2_id, winner_id, 63);
+                        if (winner_name) strncpy(next->player2_name, winner_name, 31);
+                    }
+                }
+            }
+        } else {
+            // Losers bracket final winner goes to grand finals as P2
+            BracketEntry* gf = Bracket_FindEntry(bracket, bracket_size, gf_round, 0);
+            if (gf) {
+                strncpy(gf->player2_id, winner_id, 63);
+                if (winner_name) strncpy(gf->player2_name, winner_name, 31);
+            }
+        }
+    } else {
+        // Grand finals — winner_id is the tournament champion, no advancement
+    }
+
+    return true;
+}
+
 // ─── Round Robin ─────────────────────────────────────────────────
 
 int Bracket_RoundRobinTotalEntries(int num_players) {
@@ -422,5 +554,73 @@ int Bracket_GenerateRoundRobin(const char player_ids[][64],
     }
 
     free(rotation);
+    return entry_idx;
+}
+
+// ─── Swiss ───────────────────────────────────────────────────────
+
+int Bracket_SwissRounds(int num_players) {
+    // Same as single elim depth: ceil(log2(N))
+    return Bracket_SingleElimRounds(num_players);
+}
+
+/// Swiss pairing helper: sort indices by wins descending (stable via index tiebreak)
+typedef struct {
+    int index;
+    int wins;
+} SwissEntry;
+
+static int cmp_swiss_desc(const void* a, const void* b) {
+    const SwissEntry* sa = (const SwissEntry*)a;
+    const SwissEntry* sb = (const SwissEntry*)b;
+    if (sb->wins != sa->wins)
+        return sb->wins - sa->wins;
+    return sa->index - sb->index; // stable: lower index first
+}
+
+int Bracket_GenerateSwissRound(const char player_ids[][64],
+                                const char player_names[][32],
+                                const int* wins,
+                                int num_players,
+                                int swiss_round,
+                                BracketEntry* out_bracket,
+                                int max_entries) {
+    if (!player_ids || !player_names || !wins || num_players < 2 ||
+        !out_bracket || max_entries < 1)
+        return -1;
+
+    int matches_needed = num_players / 2;
+    if (matches_needed > max_entries)
+        return -1;
+
+    // Build sorted index array
+    SwissEntry* sorted = (SwissEntry*)calloc((size_t)num_players, sizeof(SwissEntry));
+    if (!sorted) return -1;
+
+    for (int i = 0; i < num_players; i++) {
+        sorted[i].index = i;
+        sorted[i].wins = wins[i];
+    }
+    qsort(sorted, (size_t)num_players, sizeof(SwissEntry), cmp_swiss_desc);
+
+    // Pair adjacent players after sorting by record
+    memset(out_bracket, 0, sizeof(BracketEntry) * (size_t)matches_needed);
+    int entry_idx = 0;
+
+    for (int i = 0; i + 1 < num_players && entry_idx < matches_needed; i += 2) {
+        int p1 = sorted[i].index;
+        int p2 = sorted[i + 1].index;
+
+        BracketEntry* e = &out_bracket[entry_idx];
+        e->round = swiss_round;
+        e->position = entry_idx;
+        strncpy(e->player1_id, player_ids[p1], 63);
+        strncpy(e->player1_name, player_names[p1], 31);
+        strncpy(e->player2_id, player_ids[p2], 63);
+        strncpy(e->player2_name, player_names[p2], 31);
+        entry_idx++;
+    }
+
+    free(sorted);
     return entry_idx;
 }

@@ -2013,7 +2013,7 @@ s32 Pause_Check_Tr(s16 PL_id) {
 /** @brief Set up training-mode pause screen. */
 void Setup_Tr_Pause(struct _TASK* task_ptr) {
     task_ptr->r_no[1] = 2;
-    task_ptr->r_no[2] = 0;
+    task_ptr->r_no[2] = 1;
     task_ptr->r_no[3] = 0;
     task_ptr->free[0] = 60;
     Cursor_Y_Pos[0][0] = 0;
@@ -2069,25 +2069,26 @@ s32 Pause_in_Normal_Tr(struct _TASK* task_ptr) {
         }
 
         switch (IO_Result) {
+        case SWK_START:
         case SWK_EAST:
-            task_ptr->r_no[2] = 0;
+            task_ptr->r_no[2] = MENU_RNO2_PAUSE_EXIT;
+            Exit_Menu = 1;
             Menu_Suicide[0] = 1;
-            SE_selected();
-            break;
+            return 1;
 
         case SWK_SOUTH:
             switch (Menu_Cursor_Y[0]) {
-            case 0:
-                task_ptr->r_no[2] = 0;
+            case 0: // CONTINUE
+                task_ptr->r_no[2] = MENU_RNO2_PAUSE_EXIT;
+                Exit_Menu = 1;
                 Menu_Suicide[0] = 1;
-                SE_selected();
-                break;
+                return 1;
 
-            case 1:
+            case 1: // TRAINING MENU
                 Cursor_Y_Pos[0][0] = 0;
                 return 2;
 
-            case 2:
+            case 2: // EXIT
                 task_ptr->r_no[2]++;
                 SE_selected();
                 Menu_Suicide[0] = 1;
