@@ -65,7 +65,7 @@ void SDLGameRendererGPU_DrawOverlaySprite(const uint32_t* pixels, int tex_w, int
 void SDLGameRendererGPU_DrawOverlaySpriteEx(const uint32_t* pixels, int tex_w, int tex_h, float x, float y, float w,
                                             float h, float z, int flip_x, int flip_y);
 void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture* texture, int tex_w, int tex_h, float x, float y, float w,
-                                          float h, float z);
+                                          float h, float z, int flip_x, int flip_y);
 // ⚡ Opt6: LZ77 GPU compute decompression
 int SDLGameRendererGPU_LZ77Available(void);
 int SDLGameRendererGPU_LZ77Enqueue(const u8* compressed, u32 comp_size, u32 decomp_size, int texture_handle,

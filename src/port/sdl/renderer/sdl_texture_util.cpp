@@ -412,7 +412,7 @@ extern "C" void TextureUtil_DrawQuad(void* texture_id, float x, float y, float w
             return;
         if (meta->w > 512 || meta->h > 512) {
             /* Oversized: queue a direct blit onto canvas */
-            SDLGameRendererGPU_QueueDeferredBlit(meta->texture, meta->w, meta->h, x, y, w, h, z);
+            SDLGameRendererGPU_QueueDeferredBlit(meta->texture, meta->w, meta->h, x, y, w, h, z, 0, 0);
         } else {
             SDLGameRendererGPU_DrawOverlaySprite(meta->pixels, meta->w, meta->h, x, y, w, h, z);
         }
@@ -442,8 +442,8 @@ extern "C" void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float
         if (!meta || !meta->pixels)
             return;
         if (meta->w > 512 || meta->h > 512) {
-            /* Oversized: queue a direct blit onto canvas (flip not supported for blits) */
-            SDLGameRendererGPU_QueueDeferredBlit(meta->texture, meta->w, meta->h, x, y, w, h, z);
+            /* Oversized: queue a direct blit onto canvas (flip now supported via updated blits) */
+            SDLGameRendererGPU_QueueDeferredBlit(meta->texture, meta->w, meta->h, x, y, w, h, z, flip_x, flip_y);
         } else {
             SDLGameRendererGPU_DrawOverlaySpriteEx(
                 meta->pixels, meta->w, meta->h, x, y, w, h, z, flip_x, flip_y);

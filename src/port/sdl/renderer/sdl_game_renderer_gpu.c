@@ -946,9 +946,9 @@ void SDLGameRendererGPU_DrawOverlaySpriteEx(const uint32_t* pixels, int tex_w, i
 
 /** @brief Queue a standalone GPU texture into the z-sorted batch (oversized overlays). */
 void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture* texture, int tex_w, int tex_h, float x, float y, float w,
-                                          float h, float z) {
+                                          float h, float z, int flip_x, int flip_y) {
     if (!texture)
         return;
     /* Push a quad with layer=-2 (standalone overlay sentinel) */
-    push_overlay_quad(-2, x, y, w, h, z, tex_w, tex_h, 0, 0, texture);
+    push_overlay_quad(-2, x, y, w, h, z, tex_w, tex_h, flip_x, flip_y, texture);
 }

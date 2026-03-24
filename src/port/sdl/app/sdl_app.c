@@ -1053,8 +1053,8 @@ void SDLApp_EndFrame() {
                                                       canvas,
                                                       s_librashader_intermediate,
                                                       swapchain,
-                                                      384 * g_resolution_scale,
-                                                      224 * g_resolution_scale,
+                                                      384, // FORCE native resolution width
+                                                      224, // FORCE native resolution height
                                                       vp_w,
                                                       vp_h,
                                                       win_w,
@@ -1168,8 +1168,8 @@ void SDLApp_EndFrame() {
                 }
                 LibrashaderManager_Render(SDLAppShader_GetManager(),
                                           (void*)(intptr_t)cps3_canvas_texture,
-                                          tex_w,
-                                          tex_h,
+                                          384, // FORCE native resolution width
+                                          224, // FORCE native resolution height
                                           viewport.x,
                                           viewport.y,
                                           viewport.w,
@@ -1183,10 +1183,10 @@ void SDLApp_EndFrame() {
             // Render HD Stage + Sprites to FBO, then Shade everything
             else {
                 // Resize/Create Composition FBO if needed
-                int vp_w = (int)viewport.w;
-                int vp_h = (int)viewport.h;
+                int comp_w = tex_w;
+                int comp_h = tex_h;
 
-                if (vp_w != s_composition_w || vp_h != s_composition_h || s_composition_fbo == 0) {
+                if (comp_w != s_composition_w || comp_h != s_composition_h || s_composition_fbo == 0) {
                     if (s_composition_texture)
                         glDeleteTextures(1, &s_composition_texture);
                     if (s_composition_fbo)
@@ -1197,7 +1197,7 @@ void SDLApp_EndFrame() {
 
                     glGenTextures(1, &s_composition_texture);
                     glBindTexture(GL_TEXTURE_2D, s_composition_texture);
-                    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, vp_w, vp_h);
+                    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, comp_w, comp_h);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -1208,13 +1208,13 @@ void SDLApp_EndFrame() {
                         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Composition FBO incomplete!");
                     }
 
-                    s_composition_w = vp_w;
-                    s_composition_h = vp_h;
+                    s_composition_w = comp_w;
+                    s_composition_h = comp_h;
                 }
 
                 // 1. Bind Composition FBO
                 glBindFramebuffer(GL_FRAMEBUFFER, s_composition_fbo);
-                glViewport(0, 0, vp_w, vp_h);
+                glViewport(0, 0, comp_w, comp_h);
                 glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
 
@@ -1266,8 +1266,8 @@ void SDLApp_EndFrame() {
 
                 LibrashaderManager_Render(SDLAppShader_GetManager(),
                                           (void*)(intptr_t)s_composition_texture,
-                                          vp_w,
-                                          vp_h,
+                                          384, // FORCE native resolution width for correct CRT math
+                                          224, // FORCE native resolution height for correct CRT math
                                           viewport.x,
                                           viewport.y,
                                           viewport.w,
