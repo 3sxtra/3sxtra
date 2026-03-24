@@ -29,7 +29,7 @@ jobs:
                 TZ: UTC
             run: |
                 apt-get update
-                apt-get install -y git curl xz-utils nodejs
+                apt-get install -y git curl xz-utils nodejs bzip2 lbzip2
 
                 # ARM64 packages live on ports.ubuntu.com, not archive.ubuntu.com.
                 dpkg --add-architecture arm64
@@ -49,7 +49,7 @@ jobs:
                     > /etc/apt/sources.list.d/arm64-ports.list
 
                 apt-get update
-                apt-get install -y crossbuild-essential-arm64 cmake ninja-build make pkg-config clang zip file qemu-user-static python3-jinja2
+                apt-get install -y crossbuild-essential-arm64 cmake ninja-build make pkg-config clang zip file qemu-user-static python3-jinja2 bzip2 lbzip2
 
           - name: Install Rust toolchain (cross-compile)
             run: |

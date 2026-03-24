@@ -633,8 +633,8 @@ else
 
     cmake -S "$MINIZIP_NG_SRC" -B "$MINIZIP_NG_SRC/cmake-build" \
         -G Ninja \
-        -DCMAKE_C_COMPILER=clang \
-        -DCMAKE_CXX_COMPILER=clang++ \
+        ${CC:+-DCMAKE_C_COMPILER=$CC} \
+        ${CXX:+-DCMAKE_CXX_COMPILER=$CXX} \
         -DCMAKE_INSTALL_PREFIX="$MINIZIP_NG_BUILD" \
         -DMZ_COMPAT=OFF \
         -DMZ_ZLIB_FLAVOR=zlib \
@@ -678,8 +678,8 @@ else
 
     cmake -S "$TF_PSA_CRYPTO_SRC/tf-psa-crypto-$TF_PSA_CRYPTO_VERSION" -B "$TF_PSA_CRYPTO_SRC/cmake-build" \
         -G Ninja \
-        -DCMAKE_C_COMPILER=clang \
-        -DCMAKE_CXX_COMPILER=clang++ \
+        ${CC:+-DCMAKE_C_COMPILER=$CC} \
+        ${CXX:+-DCMAKE_CXX_COMPILER=$CXX} \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX="$TF_PSA_CRYPTO_BUILD" \
         -DENABLE_PROGRAMS=OFF \
