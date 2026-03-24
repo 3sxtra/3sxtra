@@ -1,0 +1,97 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="player_profile.rcss"/>
+    <title>Player Profile</title>
+</head>
+<body data-model="player_profile">
+<div id="profile-panel">
+
+    <!-- ── Title bar ── -->
+    <div id="profile-title-bar">
+        <div id="profile-title-text">PLAYER PROFILE</div>
+    </div>
+
+    <!-- ── Main content grid ── -->
+    <div id="profile-body">
+        
+        <!-- Top Left: Identity -->
+        <div id="panel-identity" class="profile-card">
+            <div class="card-header">IDENTITY</div>
+            <div id="identity-content">
+                <img id="avatar-img" data-attr-src="avatar_url" data-if="avatar_url != ''"/>
+                <div id="identity-info">
+                    <div id="player-name">{{player_name}}</div>
+                    <div id="player-title">{{player_title}}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Right: Rank & Rating -->
+        <div id="panel-rank" class="profile-card">
+            <div class="card-header">RANK &amp; RATING</div>
+            <div class="profile-row">
+                <span class="lbl">TIER</span>
+                <span class="val tier-val">{{tier}}</span>
+            </div>
+            <div class="profile-row">
+                <span class="lbl">RATING</span>
+                <span class="val">{{rating}} RP</span>
+            </div>
+            <div class="profile-row">
+                <span class="lbl">GLOBAL RANK</span>
+                <span class="val">{{global_rank}}</span>
+            </div>
+        </div>
+
+        <!-- Bottom Left: Match Stats & Network Health -->
+        <div id="panel-stats" class="profile-card">
+            <div class="card-header">MATCH STATS</div>
+            <div class="profile-row">
+                <span class="lbl">RECORD</span>
+                <span class="val">{{wins}} W - {{losses}} L</span>
+            </div>
+            <div class="profile-row">
+                <span class="lbl">WIN RATE</span>
+                <span class="val">{{win_rate}}</span>
+            </div>
+            <div class="profile-row">
+                <span class="lbl">BEST STREAK</span>
+                <span class="val">{{max_streak}}</span>
+            </div>
+            
+            <div class="card-header" style="margin-top: 6dp;">NETWORK HEALTH</div>
+            <div class="profile-row">
+                <span class="lbl">DISCONNECTS</span>
+                <span class="val" data-class-bad="disconnects_bad">{{disconnects}}%</span>
+            </div>
+            <div class="profile-row">
+                <span class="lbl">STATUS</span>
+                <span class="val" data-class-bad="status_bad" data-class-good="status_good">{{network_status}}</span>
+            </div>
+        </div>
+
+        <!-- Bottom Right: Match History / Replays -->
+        <div id="panel-history" class="profile-card">
+            <div class="card-header">RECENT MATCHES (REPLAYS)</div>
+            <div id="history-list">
+                <div data-for="m : match_history" class="history-item" data-class-selected="m.selected">
+                    <span class="hist-result" data-class-win="m.is_win">{{m.result_str}}</span>
+                    <span class="hist-vs">vs</span>
+                    <span class="hist-name">{{m.opponent_name}}</span>
+                    <span class="hist-status">{{m.replay_status}}</span>
+                </div>
+                <div class="history-empty" data-if="match_history_count == 0">No recent matches found.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Status bar ── -->
+    <div id="status-bar" data-if="status_text != ''">
+        <span id="status-text">{{status_text}}</span>
+    </div>
+
+</div>
+</body>
+</rml>

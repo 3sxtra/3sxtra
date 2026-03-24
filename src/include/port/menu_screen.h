@@ -55,6 +55,7 @@ typedef enum MenuScreenId {
     MENU_SCREEN_LEADERBOARD,
     MENU_SCREEN_SCREEN_ADJUST,
     MENU_SCREEN_NETWORK_REPLAYS,
+    MENU_SCREEN_PLAYER_PROFILE,
 
     /* --- Training sub-screens (r_no[0]=7) — Phase 5a (Task 19) --- */
     MENU_SCREEN_NORMAL_TRAINING,

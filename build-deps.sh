@@ -609,4 +609,90 @@ else
     cd "$ROOT_DIR"
 fi
 
+# -----------------------------
+# minizip-ng
+# -----------------------------
+
+MINIZIP_NG_TAG="4.1.0"
+MINIZIP_NG_DIR="$THIRD_PARTY/minizip-ng"
+MINIZIP_NG_BUILD="$MINIZIP_NG_DIR/build"
+
+if [ -d "$MINIZIP_NG_BUILD" ]; then
+    echo "minizip-ng already built at $MINIZIP_NG_BUILD"
+else
+    echo "Building minizip-ng @ $MINIZIP_NG_BUILD..."
+
+    mkdir -p "$MINIZIP_NG_BUILD"
+    MINIZIP_NG_SRC=$(mktemp -d)
+
+    git clone \
+        --branch "$MINIZIP_NG_TAG" \
+        --single-branch \
+        https://github.com/zlib-ng/minizip-ng \
+        "$MINIZIP_NG_SRC"
+
+    cmake -S "$MINIZIP_NG_SRC" -B "$MINIZIP_NG_SRC/cmake-build" \
+        -G Ninja \
+        -DCMAKE_C_COMPILER=clang \
+        -DCMAKE_CXX_COMPILER=clang++ \
+        -DCMAKE_INSTALL_PREFIX="$MINIZIP_NG_BUILD" \
+        -DMZ_COMPAT=OFF \
+        -DMZ_ZLIB_FLAVOR=zlib \
+        -DMZ_BZIP2=OFF \
+        -DMZ_LZMA=OFF \
+        -DMZ_PPMD=OFF \
+        -DMZ_ZSTD=OFF \
+        -DMZ_LIBCOMP=OFF \
+        -DMZ_PKCRYPT=OFF \
+        -DMZ_WZAES=OFF \
+        -DMZ_OPENSSL=OFF \
+        -DMZ_LIBBSD=OFF \
+        -DMZ_DECOMPRESS_ONLY=ON
+
+    cmake --build "$MINIZIP_NG_SRC/cmake-build" -j$(nproc)
+    cmake --install "$MINIZIP_NG_SRC/cmake-build"
+
+    rm -rf "$MINIZIP_NG_SRC"
+    echo "minizip-ng installed to $MINIZIP_NG_BUILD"
+fi
+
+# -----------------------------
+# tf-psa-crypto
+# -----------------------------
+
+TF_PSA_CRYPTO_VERSION="1.0.0"
+TF_PSA_CRYPTO_URL="https://github.com/Mbed-TLS/TF-PSA-Crypto/releases/download/tf-psa-crypto-$TF_PSA_CRYPTO_VERSION/tf-psa-crypto-$TF_PSA_CRYPTO_VERSION.tar.bz2"
+TF_PSA_CRYPTO_DIR="$THIRD_PARTY/tf-psa-crypto"
+TF_PSA_CRYPTO_BUILD="$TF_PSA_CRYPTO_DIR/build"
+
+if [ -d "$TF_PSA_CRYPTO_BUILD" ]; then
+    echo "tf-psa-crypto already built at $TF_PSA_CRYPTO_BUILD"
+else
+    echo "Building tf-psa-crypto @ $TF_PSA_CRYPTO_BUILD..."
+
+    mkdir -p "$TF_PSA_CRYPTO_BUILD"
+    TF_PSA_CRYPTO_SRC=$(mktemp -d)
+
+    curl -L -o "$TF_PSA_CRYPTO_SRC/tf-psa-crypto.tar.bz2" "$TF_PSA_CRYPTO_URL"
+    tar xf "$TF_PSA_CRYPTO_SRC/tf-psa-crypto.tar.bz2" -C "$TF_PSA_CRYPTO_SRC"
+
+    cmake -S "$TF_PSA_CRYPTO_SRC/tf-psa-crypto-$TF_PSA_CRYPTO_VERSION" -B "$TF_PSA_CRYPTO_SRC/cmake-build" \
+        -G Ninja \
+        -DCMAKE_C_COMPILER=clang \
+        -DCMAKE_CXX_COMPILER=clang++ \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX="$TF_PSA_CRYPTO_BUILD" \
+        -DENABLE_PROGRAMS=OFF \
+        -DENABLE_TESTING=OFF \
+        -DUSE_SHARED_TF_PSA_CRYPTO_LIBRARY=OFF \
+        -DUSE_STATIC_TF_PSA_CRYPTO_LIBRARY=ON \
+        -DTF_PSA_CRYPTO_CONFIG_FILE="$ROOT_DIR/configs/crypto-config-ccm-aes-sha256.h"
+
+    cmake --build "$TF_PSA_CRYPTO_SRC/cmake-build" -j$(nproc)
+    cmake --install "$TF_PSA_CRYPTO_SRC/cmake-build"
+
+    rm -rf "$TF_PSA_CRYPTO_SRC"
+    echo "tf-psa-crypto installed to $TF_PSA_CRYPTO_BUILD"
+fi
+
 echo "All dependencies installed successfully in $THIRD_PARTY"

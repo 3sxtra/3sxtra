@@ -1,0 +1,47 @@
+/**
+ * @file arcade_constants.h
+ * @brief CPS3 RAM offset constants for the SF3: 3rd Strike arcade hardware.
+ *
+ * These offsets reference locations in the emulated CPS3 main RAM.
+ * Used by the test runner and replay parser to read game state from
+ * per-frame RAM dumps.
+ */
+
+#ifndef ARCADE_CONSTANTS_H
+#define ARCADE_CONSTANTS_H
+
+/* ── Game state ───────────────────────────────────────────────── */
+#define GAME_TIMER_OFFSET          0x1136C
+#define COUNTER_HI_OFFSET          0x11376
+#define COUNTER_LOW_OFFSET         0x11378
+#define MY_CHAR_OFFSET             0x11387
+#define ALLOW_A_BATTLE_F_OFFSET    0x11389
+#define SUPER_ARTS_OFFSET          0x1138B
+#define GAME_ROUTINE_OFFSET        0x15438
+#define G_NO_OFFSET                0x15436
+#define C_NO_OFFSET                0x154A6
+#define ROUND_TIMER_OFFSET         0x28679
+
+/* ── Player work ──────────────────────────────────────────────── */
+#define PLW_OFFSET                 0x68C6C
+#define PLW_SIZE                   0x498
+
+#define PLW_SA_STOP_FLAG_OFFSET    0x41C
+#define PLW_DO_NOT_MOVE_OFFSET     0x455
+
+/* ── Input buffers ────────────────────────────────────────────── */
+#define P1SW_OFFSET                0x6AA8C
+#define P2SW_OFFSET                0x6AA90
+#define P1SW_1_OFFSET              0x6AA8E
+#define P2SW_1_OFFSET              0x6AA92
+
+/* ── Work struct field offsets ─────────────────────────────────── */
+#define WORK_ROUTINE_NO_OFFSET     0x24
+#define WORK_HIT_STOP_OFFSET       0x44
+#define WORK_XYZ_OFFSET            0x64
+#define WORK_VITAL_NEW_OFFSET      0x9E
+#define WORK_CG_IX_OFFSET          0x204
+#define WORK_CG_ADD_XY_OFFSET      0x228
+#define WORK_DM_STOP_OFFSET        0x32E
+
+#endif /* ARCADE_CONSTANTS_H */

@@ -1,0 +1,307 @@
+/**
+ * @file rmlui_player_profile.cpp
+ * @brief RmlUi Player Profile data model.
+ */
+
+#include "port/sdl/rmlui/rmlui_player_profile.h"
+#include "port/sdl/rmlui/rmlui_wrapper.h"
+
+#include <RmlUi/Core.h>
+#include <SDL3/SDL.h>
+#include <cstdio>
+#include <cstring>
+#include <vector>
+
+extern "C" {
+#include "netplay/identity.h"
+#include "netplay/lobby_server.h"
+} // extern "C"
+
+// ─── Match history struct for data-for ──────────────────────────
+
+struct ProfileMatchItem {
+    Rml::String result_str;    // "WIN" or "LOSS"
+    bool is_win;
+    Rml::String opponent_name;
+    Rml::String replay_status; // "Saved", "Unavailable"
+    bool selected;
+
+    bool operator==(const ProfileMatchItem& o) const {
+        return result_str == o.result_str && is_win == o.is_win &&
+               opponent_name == o.opponent_name && replay_status == o.replay_status && selected == o.selected;
+    }
+    bool operator!=(const ProfileMatchItem& o) const {
+        return !(*this == o);
+    }
+};
+
+// ─── Data model ──────────────────────────────────────────────────
+static Rml::DataModelHandle s_model_handle;
+static bool s_model_registered = false;
+
+static std::vector<ProfileMatchItem> s_match_history;
+
+static Rml::String s_avatar_url;
+static Rml::String s_player_name;
+static Rml::String s_player_title;
+static Rml::String s_tier;
+static Rml::String s_rating;
+static Rml::String s_global_rank;
+
+static int s_wins = 0;
+static int s_losses = 0;
+static Rml::String s_win_rate;
+static int s_max_streak = 0;
+static int s_disconnects = 0;
+static bool s_disconnects_bad = false;
+
+static Rml::String s_network_status;
+static bool s_status_bad = false;
+static bool s_status_good = false;
+
+static Rml::String s_status_text;
+
+// Async fetch state
+static SDL_AtomicInt s_fetch_active = { 0 };
+static SDL_AtomicInt s_fetch_done = { 0 };
+
+static PlayerStats s_fetch_stats;
+static bool s_fetch_success = false;
+
+// ─── Dummy / Mock Data for Matches ──────────────────────────────
+static std::vector<ReplayListEntry> s_fetch_matches;
+
+// ─── Async Fetch ────────────────────────────────────────────────
+static int async_fetch_profile_fn(void* userdata) {
+    (void)userdata;
+    const char* my_id = Identity_GetPlayerId();
+
+    if (my_id && my_id[0]) {
+        s_fetch_success = LobbyServer_GetPlayerStats(my_id, &s_fetch_stats);
+        
+        s_fetch_matches.clear();
+        ReplayListEntry entries[10];
+        int count = LobbyServer_GetPlayerMatchHistory(my_id, entries, 10, 0, NULL);
+        if (count > 0) {
+            for (int i = 0; i < count; i++) {
+                s_fetch_matches.push_back(entries[i]);
+            }
+        }
+    } else {
+        s_fetch_success = false;
+    }
+
+    SDL_MemoryBarrierRelease();
+    SDL_SetAtomicInt(&s_fetch_done, 1);
+    SDL_SetAtomicInt(&s_fetch_active, 0);
+    return 0;
+}
+
+// ─── Lazy Init ──────────────────────────────────────────────────
+static void do_init(void) {
+    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
+    if (!ctx)
+        return;
+
+    Rml::DataModelConstructor ctor = ctx->CreateDataModel("player_profile");
+    if (!ctor)
+        return;
+
+    // Register ProfileMatchItem struct
+    if (auto h = ctor.RegisterStruct<ProfileMatchItem>()) {
+        h.RegisterMember("result_str", &ProfileMatchItem::result_str);
+        h.RegisterMember("is_win", &ProfileMatchItem::is_win);
+        h.RegisterMember("opponent_name", &ProfileMatchItem::opponent_name);
+        h.RegisterMember("replay_status", &ProfileMatchItem::replay_status);
+        h.RegisterMember("selected", &ProfileMatchItem::selected);
+    }
+    ctor.RegisterArray<std::vector<ProfileMatchItem>>();
+    ctor.Bind("match_history", &s_match_history);
+    
+    ctor.BindFunc("match_history_count", [](Rml::Variant& v) { v = (int)s_match_history.size(); });
+
+    ctor.Bind("avatar_url", &s_avatar_url);
+    ctor.Bind("player_name", &s_player_name);
+    ctor.Bind("player_title", &s_player_title);
+    ctor.Bind("tier", &s_tier);
+    ctor.Bind("rating", &s_rating);
+    ctor.Bind("global_rank", &s_global_rank);
+    
+    ctor.Bind("wins", &s_wins);
+    ctor.Bind("losses", &s_losses);
+    ctor.Bind("win_rate", &s_win_rate);
+    ctor.Bind("max_streak", &s_max_streak);
+    
+    ctor.Bind("disconnects", &s_disconnects);
+    ctor.Bind("disconnects_bad", &s_disconnects_bad);
+    
+    ctor.Bind("network_status", &s_network_status);
+    ctor.Bind("status_bad", &s_status_bad);
+    ctor.Bind("status_good", &s_status_good);
+    
+    ctor.Bind("status_text", &s_status_text);
+
+    s_model_handle = ctor.GetModelHandle();
+    s_model_registered = true;
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Player Profile] Data model registered");
+}
+
+extern "C" void rmlui_player_profile_init(void) { do_init(); }
+
+// ─── Per-frame update ────────────────────────────────────────────
+extern "C" void rmlui_player_profile_update(void) {
+    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_handle)
+        return;
+    if (!rmlui_wrapper_is_game_document_visible("player_profile"))
+        return;
+
+    // Check if async fetch completed
+    if (SDL_GetAtomicInt(&s_fetch_done)) {
+        SDL_MemoryBarrierAcquire();
+        SDL_SetAtomicInt(&s_fetch_done, 0);
+
+        if (s_fetch_success) {
+            s_tier = Rml::String(s_fetch_stats.tier[0] ? s_fetch_stats.tier : "Unranked");
+            char buf[16];
+            SDL_snprintf(buf, sizeof(buf), "%.0f", (double)s_fetch_stats.rating);
+            s_rating = Rml::String(buf);
+            
+            s_wins = s_fetch_stats.wins;
+            s_losses = s_fetch_stats.losses;
+            
+            int total = s_wins + s_losses;
+            if (total > 0) {
+                SDL_snprintf(buf, sizeof(buf), "%d%%", (s_wins * 100) / total);
+            } else {
+                SDL_snprintf(buf, sizeof(buf), "0%%");
+            }
+            s_win_rate = Rml::String(buf);
+            
+            // For now map server disconnects to percentage manually (needs server updates to track properly)
+            // Just displaying raw disconnect count or estimating rate
+            int dc_rate = 0;
+            if (total + s_fetch_stats.disconnects > 0) {
+                 dc_rate = (s_fetch_stats.disconnects * 100) / (total + s_fetch_stats.disconnects);
+            }
+            s_disconnects = dc_rate;
+            s_disconnects_bad = dc_rate > 5;
+            
+            if (dc_rate > 5) {
+                s_network_status = "WARNING";
+                s_status_bad = true;
+                s_status_good = false;
+            } else {
+                s_network_status = "GOOD";
+                s_status_bad = false;
+                s_status_good = true;
+            }
+        } else {
+            s_tier = "---";
+            s_rating = "---";
+            s_wins = 0;
+            s_losses = 0;
+            s_win_rate = "---";
+            s_disconnects = 0;
+            s_network_status = "UNAVAILABLE";
+            s_status_bad = false;
+            s_status_good = true;
+        }
+        
+        // Convert fetched matches to UI model
+        s_match_history.clear();
+        const char* my_id = Identity_GetPlayerId();
+        for (const auto& m : s_fetch_matches) {
+            ProfileMatchItem item;
+            item.selected = false;
+            
+            bool im_p1 = (strcmp(m.p1_name, Identity_GetDisplayName()) == 0);
+            item.opponent_name = im_p1 ? m.p2_name : m.p1_name;
+            
+            item.is_win = (strcmp(m.winner_id, my_id) == 0);
+            item.result_str = item.is_win ? "WIN" : "LOSS";
+            
+            item.replay_status = "Saved"; // Assume saved if on server for now
+            
+            s_match_history.push_back(item);
+        }
+        s_model_handle.DirtyVariable("match_history");
+        s_fetch_matches.clear(); // Free memory
+        
+        s_model_handle.DirtyVariable("tier");
+        s_model_handle.DirtyVariable("rating");
+        s_model_handle.DirtyVariable("wins");
+        s_model_handle.DirtyVariable("losses");
+        s_model_handle.DirtyVariable("win_rate");
+        s_model_handle.DirtyVariable("disconnects");
+        s_model_handle.DirtyVariable("disconnects_bad");
+        s_model_handle.DirtyVariable("network_status");
+        s_model_handle.DirtyVariable("status_bad");
+        s_model_handle.DirtyVariable("status_good");
+        
+        s_status_text = "Updated from Server";
+        s_model_handle.DirtyVariable("status_text");
+    }
+}
+
+// ─── Fetch ───────────────────────────────────────────────────────
+extern "C" void rmlui_player_profile_fetch(void) {
+    if (SDL_GetAtomicInt(&s_fetch_active))
+        return;
+        
+    s_player_name = Identity_GetDisplayName()[0] ? Identity_GetDisplayName() : "Player 1";
+    s_player_title = "Street Fighter"; // Dummy Title
+    s_avatar_url = ""; // No avatar system yet
+    s_global_rank = "---"; // Require another API call later
+    s_max_streak = 0; // Not returned from simple stats yet
+    s_match_history.clear(); // Clear existing array while loading
+    
+    if (s_model_handle) {
+        s_model_handle.DirtyVariable("player_name");
+        s_model_handle.DirtyVariable("player_title");
+        s_model_handle.DirtyVariable("global_rank");
+        s_model_handle.DirtyVariable("max_streak");
+        s_model_handle.DirtyVariable("match_history");
+        s_status_text = "Fetching profile...";
+        s_model_handle.DirtyVariable("status_text");
+    }
+
+    if (!LobbyServer_IsConfigured()) {
+        s_status_text = "Not Connected";
+        if (s_model_handle) s_model_handle.DirtyVariable("status_text");
+        return;
+    }
+
+    SDL_SetAtomicInt(&s_fetch_active, 1);
+    SDL_SetAtomicInt(&s_fetch_done, 0);
+
+    SDL_Thread* t = SDL_CreateThread(async_fetch_profile_fn, "AsyncProfile", NULL);
+    if (t) {
+        SDL_DetachThread(t);
+    } else {
+        SDL_SetAtomicInt(&s_fetch_active, 0);
+    }
+}
+
+// ─── Show / Hide ─────────────────────────────────────────────────
+extern "C" void rmlui_player_profile_show(void) {
+    if (!s_model_registered) rmlui_player_profile_init();
+    rmlui_wrapper_show_game_document("player_profile");
+    rmlui_player_profile_fetch();
+}
+
+extern "C" void rmlui_player_profile_hide(void) {
+    rmlui_wrapper_hide_game_document("player_profile");
+}
+
+// ─── Shutdown ────────────────────────────────────────────────────
+extern "C" void rmlui_player_profile_shutdown(void) {
+    if (s_model_registered) {
+        rmlui_wrapper_hide_game_document("player_profile");
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
+        if (ctx)
+            ctx->RemoveDataModel("player_profile");
+        s_model_registered = false;
+    }
+    s_match_history.clear();
+}

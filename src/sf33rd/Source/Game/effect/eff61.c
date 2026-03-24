@@ -19,7 +19,7 @@ static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
 static void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */);
 static void EFF61_SUDDENLY(WORK_Other_CONN* ewk);
 
-const s8* Menu_Letter_Data[82] = { "ARCADE",
+const s8* Menu_Letter_Data[83] = { "ARCADE",
                                    "VERSUS",
                                    "TRAINING",
                                    "NETWORK",
@@ -97,8 +97,9 @@ const s8* Menu_Letter_Data[82] = { "ARCADE",
                                    "LOCAL NETWORK",
                                    "LEADERBOARD",
                                    "REPLAYS",
+                                   "PROFILE",
                                    "EXIT",
-                                   /* LAN-only lobby strings [79-81] */
+                                   /* LAN-only lobby strings [80-82] */
                                    "AUTO-CONN",
                                    "CONNECT",
                                    "EXIT" };
@@ -155,7 +156,7 @@ void effect_61_move(WORK_Other_CONN* ewk) {
 
     /* Lobby labels (char_index 68..73, 79..81): hide behind challenge popup */
     if (((ewk->wu.char_index >= 68 && ewk->wu.char_index <= 73) ||
-         (ewk->wu.char_index >= 79 && ewk->wu.char_index <= 81)) &&
+         (ewk->wu.char_index >= 80 && ewk->wu.char_index <= 82)) &&
         (SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge())) {
         ewk->wu.my_clear_level = 255;
     }

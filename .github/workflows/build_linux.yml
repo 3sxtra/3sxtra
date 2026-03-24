@@ -45,6 +45,7 @@ jobs:
             run: |
                 sudo apt update
                 sudo apt install -y $(cat tools/requirements-ubuntu.txt)
+                sh build-deps.sh
             shell: bash
 
           - name: Setup ccache

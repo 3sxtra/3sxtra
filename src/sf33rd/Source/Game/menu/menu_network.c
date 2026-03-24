@@ -299,10 +299,10 @@ void Network_Lobby(struct _TASK* task_ptr) {
         Order[EFF_SLOT_NET_HDR] = 1;
         Order_Dir[EFF_SLOT_NET_HDR] = 8;
         Order_Timer[EFF_SLOT_NET_HDR] = 1;
-        effect_04_init(1, NET_CURSOR_TYPE_GATEWAY, 0, NET_CURSOR_SLOT_GATEWAY); /* cursor type 7 = 5-item gateway */
+        effect_04_init(1, NET_CURSOR_TYPE_GATEWAY, 0, NET_CURSOR_SLOT_GATEWAY); /* cursor type 7 = 6-item gateway */
         {
-            s16 char_index = NET_STR_GATEWAY_BASE; /* 74=LOBBY MODE, 75=LOCAL NETWORK, 76=LEADERBOARD, 77=REPLAYS, 78=EXIT */
-            for (ix = 0; ix < 5; ix++) {
+            s16 char_index = NET_STR_GATEWAY_BASE; /* 74=LOBBY MODE, 75=LOCAL NETWORK, 76=LEADERBOARD, 77=REPLAYS, 78=PROFILE, 79=EXIT */
+            for (ix = 0; ix < 6; ix++) {
                 effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, EFF_FONT_CG_LARGE);
                 Order[ix + 0x50] = 1;
                 Order_Dir[ix + 0x50] = 4;
@@ -310,7 +310,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 char_index++;
             }
         }
-        Menu_Cursor_Move = 5;
+        Menu_Cursor_Move = 6;
         break;
 
     case 1:
@@ -324,15 +324,15 @@ void Network_Lobby(struct _TASK* task_ptr) {
         break;
 
     case 3:
-        /* Gateway input: pick LOBBY MODE / LOCAL NETWORK / LEADERBOARD / REPLAYS / EXIT */
-        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 4, FADE_OPAQUE) == 0) {
-            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 4, FADE_OPAQUE);
+        /* Gateway input: pick LOBBY MODE / LOCAL NETWORK / LEADERBOARD / REPLAYS / PROFILE / EXIT */
+        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 5, FADE_OPAQUE) == 0) {
+            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 5, FADE_OPAQUE);
         }
 
         if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
             SE_selected();
 
-            if (Menu_Cursor_Y[0] == 4 || IO_Result == SWK_EAST) {
+            if (Menu_Cursor_Y[0] == 5 || IO_Result == SWK_EAST) {
                 /* EXIT — back to Mode_Select */
                 Menu_Suicide[0] = 0;
                 Menu_Suicide[1] = 1;
@@ -345,7 +345,12 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 break;
             }
 
-            if (Menu_Cursor_Y[0] == 3) {
+            if (Menu_Cursor_Y[0] == 4) {
+                /* PROFILE — show RmlUi player profile */
+                MenuScreen_Goto(MENU_SCREEN_PLAYER_PROFILE);
+                MenuScreen_Tick(task_ptr);
+                return;
+            } else if (Menu_Cursor_Y[0] == 3) {
                 /* REPLAYS — jump to network replays phase */
                 task_ptr->r_no[2] = 30;
             } else if (Menu_Cursor_Y[0] == 2) {
@@ -1328,7 +1333,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
 
         /* Menu items: 3 items (AUTO-CONN, CONNECT, EXIT), EFF_FONT_COMPACT = compact 8px font, master_player=1 */
         {
-            static const s16 lan_lobby_strings[] = { 79, 80, 81 };
+            static const s16 lan_lobby_strings[] = { 80, 81, 82 };
             for (ix = 0; ix < 3; ix++) {
                 effect_61_init(0, ix + 0x50, 0, 1, lan_lobby_strings[ix], ix, EFF_FONT_COMPACT);
                 Order[ix + 0x50] = 1;

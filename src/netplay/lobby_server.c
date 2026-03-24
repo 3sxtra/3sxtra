@@ -539,6 +539,7 @@ int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms) {
         r->room_type = cjson_get_int(item, "room_type", ROOM_TYPE_CASUAL);
         r->password_required = cjson_get_int(item, "password_required", 0);
         r->visibility = cjson_get_int(item, "visibility", ROOM_VISIBILITY_PUBLIC);
+        r->spectator_count = cjson_get_int(item, "spectator_count", 0);
         if (strlen(r->code) > 0)
             count++;
     }
@@ -682,6 +683,51 @@ int LobbyServer_ListReplays(ReplayListEntry* out, int max_entries, int page, int
 
     char path[256];
     snprintf(path, sizeof(path), "/replays?page=%d&limit=%d", page, max_entries);
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("GET", path, "", response, sizeof(response))) {
+        return -1;
+    }
+
+    cJSON* root = cJSON_Parse(response);
+    if (!root)
+        return -1;
+
+    if (out_total) {
+        *out_total = cjson_get_int(root, "total", 0);
+    }
+
+    int count = 0;
+    const cJSON* replays = cJSON_GetObjectItemCaseSensitive(root, "replays");
+    const cJSON* item = NULL;
+    cJSON_ArrayForEach(item, replays) {
+        if (count >= max_entries)
+            break;
+        ReplayListEntry* e = &out[count];
+        memset(e, 0, sizeof(*e));
+        e->match_id = cjson_get_int(item, "match_id", -1);
+        cjson_get_string(item, "p1_name", e->p1_name, sizeof(e->p1_name));
+        cjson_get_string(item, "p2_name", e->p2_name, sizeof(e->p2_name));
+        e->p1_char = cjson_get_int(item, "p1_char", -1);
+        e->p2_char = cjson_get_int(item, "p2_char", -1);
+        cjson_get_string(item, "created_at", e->date, sizeof(e->date));
+        cjson_get_string(item, "winner_id", e->winner_id, sizeof(e->winner_id));
+
+        if (e->match_id >= 0)
+            count++;
+    }
+
+    cJSON_Delete(root);
+    return count;
+}
+
+int LobbyServer_GetPlayerMatchHistory(const char* player_id, ReplayListEntry* out, int max_entries, int page, int* out_total) {
+    ensure_init();
+    if (!configured || !player_id || !out || max_entries <= 0)
+        return -1;
+
+    char path[256];
+    snprintf(path, sizeof(path), "/replays?player_id=%s&page=%d&limit=%d", player_id, page, max_entries);
 
     char response[HTTP_BUF_SIZE];
     if (!http_request("GET", path, "", response, sizeof(response))) {
@@ -919,6 +965,7 @@ static void parse_room_json(const char* json_str, RoomState* out) {
     out->room_type = cjson_get_int(root, "room_type", ROOM_TYPE_CASUAL);
     out->visibility = cjson_get_int(root, "visibility", ROOM_VISIBILITY_PUBLIC);
     out->password_set = cjson_get_int(root, "password_set", 0);
+    out->spectator_count = cjson_get_int(root, "spectator_count", 0);
 
     /* Parse players array */
     const cJSON* players = cJSON_GetObjectItemCaseSensitive(root, "players");
@@ -1631,6 +1678,11 @@ static void sse_parse_event(const char* json_str, SSEEvent* out) {
             cjson_get_string(data, "room", out->remote_join_room, sizeof(out->remote_join_room));
             cjson_get_string(data, "password", out->remote_join_password, sizeof(out->remote_join_password));
         }
+    } else if (strcmp(type_str, "spectator_update") == 0) {
+        out->type = SSE_EVENT_SPECTATOR_UPDATE;
+        if (data) {
+            out->spectator_count = cjson_get_int(data, "count", 0);
+        }
     }
 
     cJSON_Delete(root);
@@ -2098,4 +2150,40 @@ SSEEventType LobbyServer_GlobalSSEPoll(SSEEvent* out_event) {
 
 bool LobbyServer_GlobalSSEIsConnected(void) {
     return SDL_GetAtomicInt(&s_gsse_running) != 0;
+}
+
+// === Spectator Tracking ===
+
+bool LobbyServer_ReportSpectateStart(const char* room_code) {
+    if (!configured || !room_code || !Identity_IsInitialized())
+        return false;
+
+    char path[128];
+    snprintf(path, sizeof(path), "/room/%s/spectate", room_code);
+
+    char* body = json_body_pid(Identity_GetPlayerId());
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", path, body, response, sizeof(response));
+    free(body);
+
+    if (ok)
+        SDL_Log("[LobbyServer] Spectate start: room=%s", room_code);
+    return ok;
+}
+
+bool LobbyServer_ReportSpectateStop(const char* room_code) {
+    if (!configured || !room_code || !Identity_IsInitialized())
+        return false;
+
+    char path[128];
+    snprintf(path, sizeof(path), "/room/%s/spectate", room_code);
+
+    char* body = json_body_pid(Identity_GetPlayerId());
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("DELETE", path, body, response, sizeof(response));
+    free(body);
+
+    if (ok)
+        SDL_Log("[LobbyServer] Spectate stop: room=%s", room_code);
+    return ok;
 }

@@ -47,6 +47,9 @@ extern u8 flash_win_type[2][4];
 
 } // extern "C"
 
+// ─── Spectator count (set by lobby code, read by HUD) ───────────
+int g_spectator_count = 0;
+
 // ─── Character name table (SF3:3S roster, index matches My_char) ───
 // Index 0 = Gill (boss), then the standard roster order.
 static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN",  "DUDLEY", "NECRO", "HUGO",
@@ -143,6 +146,7 @@ struct HudSnapshot {
     Rml::String p1_r0_lbl, p1_r1_lbl, p1_r2_lbl, p1_r3_lbl;
     Rml::String p2_r0_lbl, p2_r1_lbl, p2_r2_lbl, p2_r3_lbl;
     int p1_round_wins, p2_round_wins;
+    int spectator_count;
 };
 static HudSnapshot s_cache = {};
 
@@ -387,13 +391,16 @@ extern "C" void rmlui_game_hud_init(void) {
     ctor.BindFunc("training_stun_active",
                   [](Rml::Variant& v) { v = (bool)(Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_TRIALS); });
 
+    // ── Spectator Count ──
+    ctor.BindFunc("spectator_count", [](Rml::Variant& v) { v = (int)g_spectator_count; });
+
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
     // Pre-load the HUD document (hidden initially; shown when is_fight_active is true)
     rmlui_wrapper_show_game_document("game_hud");
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi HUD] Data model registered (52 bindings)");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi HUD] Data model registered (53 bindings)");
 }
 
 // ─── Per-frame update ────────────────────────────────────────────
@@ -529,6 +536,9 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_STR(p2_r1_lbl, Rml::String(win_type_label(flash_win_type[1][1])));
     DIRTY_STR(p2_r2_lbl, Rml::String(win_type_label(flash_win_type[1][2])));
     DIRTY_STR(p2_r3_lbl, Rml::String(win_type_label(flash_win_type[1][3])));
+
+    // ── Spectator count ──
+    DIRTY_INT(spectator_count, g_spectator_count);
 }
 
 // ─── Shutdown ────────────────────────────────────────────────────

@@ -20,6 +20,7 @@ option(ENABLE_REPLAY           "Build with replay recording & picker"           
 option(ENABLE_LIBRASHADER      "Build with librashader CRT/shader filters"        ON)
 option(ENABLE_DEBUG_HUD        "Build with debug HUD overlay"                     ON)
 option(ENABLE_LEADERBOARD      "Build with online leaderboard"                    ON)
+option(ENABLE_ARCADE_ROM       "Build with arcade ROM support (minizip-ng)"       ON)
 
 # Set third-party directory based on platform
 # RPi4 uses a separate directory to avoid conflicts with Windows-built files.
@@ -40,7 +41,7 @@ if(NOT PLATFORM_RPI4)
     if(SDL3_ROOT)
         set(ENV{SKIP_SDL3_BUILD} "1")
     endif()
-    execute_process(COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/build-deps.sh
+    execute_process(COMMAND bash build-deps.sh
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMAND_ERROR_IS_FATAL ANY)
 endif()
@@ -214,6 +215,15 @@ include_directories(
 )
 
 set(SPOUT2_DIR "${THIRD_PARTY_DIR}/Spout2")
+
+if(ENABLE_ARCADE_ROM)
+    set(MINIZIP_NG_ROOT "${THIRD_PARTY_DIR}/minizip-ng/build")
+    set(TF_PSA_CRYPTO_ROOT "${THIRD_PARTY_DIR}/tf-psa-crypto/build")
+    include_directories(
+        ${MINIZIP_NG_ROOT}/include
+        ${TF_PSA_CRYPTO_ROOT}/include
+    )
+endif()
 
 if(WIN32)
     include_directories(${SPOUT2_DIR}/SPOUTSDK/SpoutGL)
@@ -394,6 +404,7 @@ target_link_libraries(3sx PRIVATE glad_gl_core)
 target_compile_definitions(3sx PRIVATE
     $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:DEBUG>
     $<$<CONFIG:Release>:RELEASE>
+    $<$<CONFIG:Release>:CHECKSUM>
     TARGET_SDL3
     $<$<NOT:$<PLATFORM_ID:Darwin>>:_POSIX_C_SOURCE=200809L>
     $<$<BOOL:${PLATFORM_RPI4}>:PLATFORM_RPI4>
@@ -489,6 +500,8 @@ endif()
 
 target_link_libraries(3sx PRIVATE
     m
+    $<$<BOOL:${ENABLE_ARCADE_ROM}>:${MINIZIP_NG_ROOT}/lib/libminizip-ng.a>
+    $<$<BOOL:${ENABLE_ARCADE_ROM}>:${TF_PSA_CRYPTO_ROOT}/lib/libtfpsacrypto.a>
     $<$<BOOL:${ENABLE_NETPLAY}>:GekkoNet>
     stdc++
     glad_gl_core

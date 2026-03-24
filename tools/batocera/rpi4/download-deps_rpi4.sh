@@ -250,4 +250,34 @@ else
     git clone --depth 1 https://github.com/icculus/ControllerImage.git "$CTRLIMG_DIR"
 fi
 
+# -----------------------------
+# minizip-ng
+# -----------------------------
+
+MINIZIP_NG_DIR="$THIRD_PARTY/minizip-ng"
+if [ -d "$MINIZIP_NG_DIR" ]; then
+    echo "minizip-ng source already exists."
+else
+    echo "Cloning minizip-ng..."
+    git clone --branch 4.0.5 --single-branch https://github.com/zlib-ng/minizip-ng "$MINIZIP_NG_DIR"
+fi
+
+# -----------------------------
+# tf-psa-crypto
+# -----------------------------
+
+TF_PSA_CRYPTO_VERSION="1.0.0"
+TF_PSA_CRYPTO_URL="https://github.com/Mbed-TLS/TF-PSA-Crypto/releases/download/tf-psa-crypto-$TF_PSA_CRYPTO_VERSION/tf-psa-crypto-$TF_PSA_CRYPTO_VERSION.tar.bz2"
+TF_PSA_CRYPTO_DIR="$THIRD_PARTY/tf-psa-crypto"
+
+if [ -d "$TF_PSA_CRYPTO_DIR" ]; then
+    echo "tf-psa-crypto already downloaded."
+else
+    echo "Downloading tf-psa-crypto..."
+    mkdir -p "$TF_PSA_CRYPTO_DIR"
+    curl -L -o "$THIRD_PARTY/tf-psa-crypto.tar.bz2" "$TF_PSA_CRYPTO_URL"
+    tar xf "$THIRD_PARTY/tf-psa-crypto.tar.bz2" -C "$TF_PSA_CRYPTO_DIR" --strip-components=1
+    rm -f "$THIRD_PARTY/tf-psa-crypto.tar.bz2"
+fi
+
 echo "All sources downloaded to $THIRD_PARTY"

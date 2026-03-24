@@ -776,10 +776,10 @@ A persistent information bar at the bottom of the screen that adapts its content
 | 🟡 Medium | Dynamic Bezel (Netplay) | Low | Medium — polish and immersion |
 | 🟡 Medium | In-Match Chat | Medium | Medium — social connectivity |
 | 🟡 Medium | Mod Menu via Game Menus | Medium | Medium — discoverability |
-| 🟡 Medium | Tournaments | Medium | High — ⚠️ room-based architecture reuses SSE/match/P2P infrastructure; new work: bracket logic, multi-match slots, bracket UI, TO controls |
+| ✅ Done | Tournaments | — | — ✅ Feature-complete (March 24, 2026). SE/DE/RR/Swiss brackets, TO controls, bracket UI, match selector, server API, 28 unit + 12 integration tests. |
 | 🟢 Low | Ranked / Rating System | Medium | High — ⚠️ Glicko-2, tiers, leaderboards, match reporting already exist; remaining: per-char rating, seasonal resets |
 | 🟢 Low | Spectator Mode | Medium | Medium — ⚠️ core spectating works (4 viewers, 15f delay); remaining: count display, rewind, commentary |
 
 ---
 
-*Last updated: March 24, 2026*
+*Last updated: March 24, 2026 (priority matrix updated)*

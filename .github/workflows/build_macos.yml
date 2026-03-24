@@ -46,7 +46,7 @@ jobs:
 
           - name: Install dependencies
             run: |
-                brew install miniupnpc zlib
+                brew install miniupnpc zlib ninja
                 python3 -m pip install --break-system-packages jinja2
                 sh build-deps.sh
 

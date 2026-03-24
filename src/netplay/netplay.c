@@ -7,7 +7,7 @@
 #undef Game
 #include "sdl_net_adapter.h"
 #include "main.h"
-#include "port/char_data.h"
+#include "arcade/arcade_char_data.h"
 #include "port/config/config.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/effect/effect.h"

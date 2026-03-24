@@ -103,12 +103,13 @@ WARRANTY OF ANY KIND.
 
 --------------------------------------------------------------------------------
 
-stb_image
----------
+stb_image / stb_ds
+------------------
 Project: stb (single-file public domain libraries)
 Upstream: https://github.com/nothings/stb
 
-3SX uses stb_image (vendored via stb_impl.c) for PNG loading.
+3SX uses stb_image (vendored via stb_impl.c) for PNG loading and stb_ds
+(vendored in src/stb/) for dynamic arrays in the test runner.
 
 License: Public Domain or MIT License (dual-licensed; user's choice).
 

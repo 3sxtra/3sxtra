@@ -8,6 +8,7 @@
  */
 
 #include "port/sdl/rmlui/rmlui_tournament_lobby.h"
+#include "port/sdl/rmlui/rmlui_game_hud.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
@@ -120,6 +121,7 @@ static bool s_is_typing = false;
 // Playing/spectating
 static bool s_is_playing = false;
 static bool s_is_spectating = false;
+static int s_spectator_count = 0;
 
 // Navigation
 static int s_cursor_x = 0; // 0=left (bracket/actions), 1=right (chat)
@@ -338,6 +340,7 @@ static void do_init(void) {
     // Playing/spectating
     ctor.Bind("is_playing", &s_is_playing);
     ctor.Bind("is_spectating", &s_is_spectating);
+    ctor.Bind("spectator_count", &s_spectator_count);
 
     // Chat
     ctor.Bind("chat_input", &s_chat_input);
@@ -386,6 +389,8 @@ static void apply_room_state_to_model(void) {
     const char* qr_path = rmlui_network_lobby_get_qr_image_path();
     s_qr_image_path = (qr_path && qr_path[0]) ? Rml::String(qr_path) : Rml::String();
     s_player_count = s_room_state.player_count;
+    s_spectator_count = s_room_state.spectator_count;
+    g_spectator_count = s_spectator_count;
     s_is_host = (strcmp(s_room_state.host, s_my_id.c_str()) == 0);
 
     // Player list — grow-only
@@ -437,6 +442,7 @@ static void apply_room_state_to_model(void) {
     s_model_handle.DirtyVariable("room_players");
     s_model_handle.DirtyVariable("chat_messages");
     s_model_handle.DirtyVariable("chat_count");
+    s_model_handle.DirtyVariable("spectator_count");
 }
 
 static void apply_tournament_state_to_model(void) {
@@ -611,6 +617,10 @@ extern "C" void rmlui_tournament_lobby_update(void) {
         } else if (sse_type == SSE_EVENT_JOIN || sse_type == SSE_EVENT_LEAVE ||
                    sse_type == SSE_EVENT_QUEUE_UPDATE || sse_type == SSE_EVENT_HOST_MIGRATED) {
             refresh_room_state_from_server();
+        } else if (sse_type == SSE_EVENT_SPECTATOR_UPDATE) {
+            s_spectator_count = sse_evt.spectator_count;
+            g_spectator_count = s_spectator_count;
+            s_model_handle.DirtyVariable("spectator_count");
         } else if (sse_type == SSE_EVENT_BRACKET_UPDATE) {
             memcpy(&s_tournament_state, &sse_evt.tournament, sizeof(TournamentState));
             apply_tournament_state_to_model();
@@ -705,6 +715,7 @@ extern "C" void rmlui_tournament_lobby_update(void) {
 
             if (s_is_spectating) {
                 Netplay_StopSpectate();
+                LobbyServer_ReportSpectateStop(s_room_code.c_str());
                 s_is_spectating = false;
                 s_model_handle.DirtyVariable("is_spectating");
                 rmlui_wrapper_show_game_document("tournament_lobby");
@@ -900,6 +911,7 @@ extern "C" void rmlui_tournament_lobby_update(void) {
                 // Spectate selected match
                 s_is_spectating = true;
                 s_status_text = "Spectating...";
+                LobbyServer_ReportSpectateStart(s_room_code.c_str());
                 s_model_handle.DirtyVariable("is_spectating");
                 s_model_handle.DirtyVariable("status_text");
                 rmlui_wrapper_hide_game_document("tournament_lobby");
@@ -987,6 +999,7 @@ extern "C" void rmlui_tournament_lobby_show(void) {
     s_wants_leave = false;
     s_is_playing = false;
     s_is_spectating = false;
+    s_spectator_count = 0;
     s_match_ended_pending_reshow = false;
     s_proposal_active = 0;
     s_chat_open = false;

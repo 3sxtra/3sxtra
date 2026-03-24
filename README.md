@@ -6,7 +6,6 @@
 [![macOS](https://github.com/3sxtra/3sxtra/actions/workflows/build_macos.yml/badge.svg)](https://github.com/3sxtra/3sxtra/actions/workflows/build_macos.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 
-A modernized fork of **Street Fighter III: 3rd Strike** — modern GPU rendering, rollback netplay, arcade bezels, HD stage mods.
 
 > [!NOTE]
 > Experimental, unofficial fork. macOS and mainline Linux are lightly tested. Raspberry Pi 4 / Batocera is the primary Linux target.
@@ -17,7 +16,7 @@ Binary: `3sx` (`3sx.exe` on Windows).
 
 ## Quick Start
 
-1. Place your legally obtained `.afs` ROM in the `rom/` directory.
+1. Place your legally obtained `.afs` file extracted from your ISO of SF3.3 in the `rom/` directory. Alternatively, the game will use the default AFS path from upstream.
 2. Run `3sx.exe` (Windows) or `./3sx` (Linux / macOS).
 3. *Optional*: Create an empty `config/` folder next to the executable for portable mode.
 
@@ -33,14 +32,16 @@ Binary: `3sx` (`3sx.exe` on Windows).
 
 Select with `--renderer gl`, `--renderer gpu`, or `--renderer sdl`.
 
-### Shaders (librashader)
-Load any RetroArch `.slangp` preset at runtime. Hot-swap from the shader picker (**F2**).
+### Visuals & Mods Menu
 
-### Bezels
-40+ per-character arcade bezels. Auto-swap on character change, reset on menus.
+Press **F3** to access the in-game **Mods Menu** which centralizes various visual and quality-of-life toggles at runtime:
 
-### HD Stage Backgrounds
-Per-stage multi-layer parallax backgrounds at output resolution. Drop assets in `assets/stages/stage_XX/`. Toggle via **F3**.
+- **Shaders (librashader)**: Load & hot-swap RetroArch `.slangp` presets via the dedicated shader picker (**F2**), or bypass them entirely.
+- **Bezels**: 40+ per-character arcade bezels. Auto-swaps on character change and resets for menus.
+- **HD Stage Backgrounds**: Per-stage multi-layer parallax backgrounds rendered at output resolution using the 22-stage override system.
+- **Sprite Overrides**: HD sprite replacement support hooked into the rendering pipeline.
+- **Audio Mods**: Toggle custom BGM & voice replacement packs.
+- **Fast Pre-Game**: Skip or speed up the standard arcade intro screens.
 
 ---
 
@@ -83,9 +84,10 @@ Native save system replaces PS2 memory card emulation:
 
 - `options.ini` — settings and controls
 - `direction.ini` — system direction
-- `replays/` — binary replay files with metadata sidecars
+- `replays/` — string-based binary replay files with `.meta` sidecars
 - Atomic writes (crash-safe)
-- 20-slot replay picker with date, characters, and status
+- Auto-saving for netplay matches with auto-upload to the lobby server
+- In-game local and online replay browsers
 
 Files go to your user profile, or `config/` in portable mode.
 
@@ -101,16 +103,28 @@ Built on GekkoNet GGPO rollback netcode.
 |---|---|
 | **STUN hole-punching** | Discovers public endpoint, punches through NAT |
 | **UPnP fallback** | Auto-opens UDP port on compatible routers |
-| **Lobby server** | Node.js, zero deps, HMAC-SHA256 auth |
-| **In-game lobby** | Native and RmlUi lobby screens, no CLI required |
+| **Lobby server** | Node.js, zero deps, HMAC-SHA256 auth, Glicko-2 ratings |
+| **In-game lobby** | Native and RmlUi lobby screens, Casual and KOTH queues |
+| **Tournaments** | Full bracket support (Single/Double Elim, Swiss, Round Robin) with parallel matches and TO controls |
+| **Private Rooms** | Password-protected and hidden rooms with seamless QR code joining |
+| **Spectating** | Up to 4 live spectators with network lobby integration |
 | **Async comms** | HTTP lobby traffic on background thread |
 | **LAN support** | Dedicated LAN lobby with local IP display |
-| **Region filtering** | Filter by region for lower latency |
+| **Matchmaking** | Filter by region, ping, or Wi-Fi connection quality for lower latency |
 | **Client ID** | Stable fingerprint prevents username spoofing |
 | **Desync prevention** | Frame 0 reset, 17 expanded rollback fields, pointer-safe checksums |
 | **Sync test** | Automated sync-test with Python runner |
 
-Start from in-game **Network** menu or CLI: `3sx 1 192.168.1.100`
+### The Network Gateway
+
+The in-game **Network** menu serves as your hub for all online features:
+
+- **Lobby Browser**: Browse available Casual, KOTH, and Tournament rooms. See ping, connection type (wired/Wi-Fi), and region flags before joining.
+- **Create Room**: Host public, password-protected, or hidden rooms. Generate shareable QR codes, or switch to Tournament type to automatically manage a bracket (Single/Double Elim, Swiss, Round Robin).
+- **Leaderboards**: View the global ranking table utilizing the Glicko-2 rating system. Check player tiers, ranks, grades, and most-played characters.
+- **Online Replays**: Browse, download, and seamlessly play back recent matches played on the server directly within the game.
+
+Start from the in-game **Network** menu or via CLI shorthand: `3sx 1 192.168.1.100`
 
 ---
 

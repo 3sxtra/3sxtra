@@ -228,6 +228,7 @@ function createPermanentRooms() {
             queue: [],
             match: null,
             chat: [],
+            spectators: new Set(),
             sseClients: new Set(),
             permanent: true,
             regions: roomData.regions,  // Restrict joins to these GeoIP regions (empty = open)
@@ -281,7 +282,8 @@ function getRoomState(room) {
         }),
         queue: room.queue,
         match: room.match,
-        chat: [] // Chat is ephemeral; do not send history
+        chat: [], // Chat is ephemeral; do not send history
+        spectator_count: room.spectators ? room.spectators.size : 0
     };
     return state;
 }
@@ -317,6 +319,11 @@ function removePlayerFromRoom(room, playerId) {
 
     room.players = room.players.filter(p => p !== playerId);
     room.queue = room.queue.filter(p => p !== playerId);
+
+    // Remove from spectators if applicable
+    if (room.spectators && room.spectators.delete(playerId)) {
+        broadcastRoomEvent(room, 'spectator_update', { count: room.spectators.size });
+    }
 
     if (room.players.length === 0) {
         if (room.permanent) {
@@ -1802,7 +1809,8 @@ async function handleRequest(req, res) {
                 ft: room.ft || 1,
                 room_type: room.room_type || 0,
                 password_required: room.password ? 1 : 0,
-                visibility: room.visibility || 0
+                visibility: room.visibility || 0,
+                spectator_count: room.spectators ? room.spectators.size : 0
             });
         }
         return json(res, 200, { rooms: list });
@@ -1939,6 +1947,7 @@ async function handleRequest(req, res) {
             queue: [], // Next in line for cabinet
             match: null, // { p1: 'id', p2: 'id', state: 'playing' }
             chat: [],
+            spectators: new Set(),
             sseClients: new Set(),
             ft: roomFt,
             room_type: roomType,
@@ -2638,6 +2647,27 @@ async function handleRequest(req, res) {
         broadcastRoomEvent(room, 'bracket_update', getTournamentState(room));
         console.log(`[tournament] match ${match_index} RESTARTED in ${room.id} (${getPlayerName(entry.player1_id)} vs ${getPlayerName(entry.player2_id)})`);
         return json(res, 200, { ok: true });
+    }
+
+    // --- Spectator Tracking ---
+    const spectateMatch = urlPath.match(/^\/room\/([^/]+)\/spectate$/);
+    if (spectateMatch && (method === 'POST' || method === 'DELETE')) {
+        const roomCode = spectateMatch[1];
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(roomCode);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        const { player_id } = data;
+        if (!player_id) return json(res, 400, { error: 'Missing player_id' });
+
+        if (method === 'POST') {
+            room.spectators.add(player_id);
+        } else {
+            room.spectators.delete(player_id);
+        }
+        broadcastRoomEvent(room, 'spectator_update', { count: room.spectators.size });
+        console.log(`[room] spectator ${method === 'POST' ? 'start' : 'stop'}: ${player_id} in ${roomCode} (count=${room.spectators.size})`);
+        return json(res, 200, { ok: true, spectator_count: room.spectators.size });
     }
 
     // --- / Casual Rooms ---

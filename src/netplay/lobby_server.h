@@ -110,6 +110,11 @@ typedef struct {
 /// page is 0-indexed. *out_total receives the total replay count (may be NULL).
 int LobbyServer_ListReplays(ReplayListEntry* out, int max_entries, int page, int* out_total);
 
+/// Fetch a page of available replays for a specific player from the server.
+/// Returns number of entries (up to max_entries), or -1 on error.
+/// page is 0-indexed. *out_total receives the total replay count (may be NULL).
+int LobbyServer_GetPlayerMatchHistory(const char* player_id, ReplayListEntry* out, int max_entries, int page, int* out_total);
+
 /// Download replay data for a specific match.
 /// Allocates *out_data on success (caller must free). Returns data size, or 0 on error.
 size_t LobbyServer_DownloadReplay(int match_id, void** out_data);
@@ -185,6 +190,7 @@ typedef struct {
     int room_type;         // RoomType enum (0=casual, 1=koth, 2=tournament)
     int password_required; // 1 if room has a password set
     int visibility;        // RoomVisibility enum (0=public, 1=hidden)
+    int spectator_count;   // Number of active spectators
 } RoomListItem;
 
 /// Fetch list of active rooms from the lobby server.
@@ -270,6 +276,7 @@ typedef struct {
     int room_type;    // RoomType enum (0=casual, 1=koth, 2=tournament)
     int visibility;   // RoomVisibility enum (0=public, 1=hidden)
     int password_set;  // 1 if this room has a password
+    int spectator_count; // Number of active spectators
 } RoomState;
 
 // Sync room logic
@@ -302,6 +309,7 @@ typedef enum {
     SSE_EVENT_BRACKET_UPDATE,  // Tournament: bracket tree updated after match result
     SSE_EVENT_ROUND_ADVANCE,   // Tournament: all matches in current round complete
     SSE_EVENT_REMOTE_JOIN,     // QR join relay: phone scan triggered a room join
+    SSE_EVENT_SPECTATOR_UPDATE, // Spectator count changed
 } SSEEventType;
 
 typedef struct {
@@ -337,6 +345,8 @@ typedef struct {
     // QR Join: room code and password (populated on REMOTE_JOIN)
     char remote_join_room[16];
     char remote_join_password[64];
+    // Spectator update
+    int spectator_count;          // Populated on SPECTATOR_UPDATE
 } SSEEvent;
 
 /// Start SSE connection to a room (spawns background thread).
@@ -407,6 +417,14 @@ SSEEventType LobbyServer_GlobalSSEPoll(SSEEvent* out_event);
 
 /// Returns true if the global SSE connection is active.
 bool LobbyServer_GlobalSSEIsConnected(void);
+
+// === Spectator Tracking ===
+
+/// Notify the server that we started spectating a match in the given room.
+bool LobbyServer_ReportSpectateStart(const char* room_code);
+
+/// Notify the server that we stopped spectating.
+bool LobbyServer_ReportSpectateStop(const char* room_code);
 
 #ifdef __cplusplus
 }

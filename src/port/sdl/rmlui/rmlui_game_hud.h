@@ -24,6 +24,9 @@ void rmlui_game_hud_update(void);
 /** Destroy the data model and unload the document. */
 void rmlui_game_hud_shutdown(void);
 
+/// Spectator count — set by lobby code, read by HUD for display.
+extern int g_spectator_count;
+
 #else /* !ENABLE_RMLUI */
 
 static inline void rmlui_game_hud_init(void) {}

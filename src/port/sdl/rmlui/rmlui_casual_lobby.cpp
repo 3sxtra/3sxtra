@@ -7,6 +7,7 @@
  */
 
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
+#include "port/sdl/rmlui/rmlui_game_hud.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
@@ -81,6 +82,7 @@ static Rml::String s_match_p1_name;
 static Rml::String s_match_p2_name;
 static bool s_is_playing = false;
 static bool s_is_spectating = false;
+static int s_spectator_count = 0;
 static bool s_in_queue = false;
 
 static std::vector<RmlQueuePlayer> s_queue;
@@ -215,6 +217,7 @@ static void do_init(void) {
     ctor.Bind("match_p2_name", &s_match_p2_name);
     ctor.Bind("is_playing", &s_is_playing);
     ctor.Bind("is_spectating", &s_is_spectating);
+    ctor.Bind("spectator_count", &s_spectator_count);
     ctor.Bind("in_queue", &s_in_queue);
     ctor.BindFunc("queue_count", [](Rml::Variant& v) { v = s_queue_display_count; });
 
@@ -253,6 +256,8 @@ static void apply_room_state_to_model(void) {
     const char* qr_path = rmlui_network_lobby_get_qr_image_path();
     s_qr_image_path = (qr_path && qr_path[0]) ? Rml::String(qr_path) : Rml::String();
     s_player_count = s_room_state.player_count;
+    s_spectator_count = s_room_state.spectator_count;
+    g_spectator_count = s_spectator_count;
 
     // P1 / P2 names
     s_match_active = s_room_state.match_active;
@@ -373,6 +378,7 @@ static void apply_room_state_to_model(void) {
     s_model_handle.DirtyVariable("room_players");
     s_model_handle.DirtyVariable("chat_messages");
     s_model_handle.DirtyVariable("chat_count");
+    s_model_handle.DirtyVariable("spectator_count");
 }
 
 // TODO(perf): This is a synchronous HTTP call on the main thread. It can cause
@@ -458,6 +464,10 @@ extern "C" void rmlui_casual_lobby_update(void) {
                    sse_type == SSE_EVENT_HOST_MIGRATED) {
             // For structural changes, re-fetch full state as fallback
             refresh_room_state_from_server();
+        } else if (sse_type == SSE_EVENT_SPECTATOR_UPDATE) {
+            s_spectator_count = sse_evt.spectator_count;
+            g_spectator_count = s_spectator_count;
+            s_model_handle.DirtyVariable("spectator_count");
         } else if (sse_type == SSE_EVENT_MATCH_PROPOSE) {
             // Phase 6: Match proposed — check if we are a participant
             bool we_are_p1 = (strcmp(sse_evt.propose_p1_id, s_my_id.c_str()) == 0);
@@ -602,6 +612,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
             // If we were spectating, stop and re-show lobby
             if (s_is_spectating) {
                 Netplay_StopSpectate();
+                LobbyServer_ReportSpectateStop(s_room_code.c_str());
                 s_is_spectating = false;
                 s_model_handle.DirtyVariable("is_spectating");
                 rmlui_wrapper_show_game_document("casual_lobby");
@@ -806,6 +817,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 SDL_Log("Casual Lobby: Spectate clicked");
                 s_is_spectating = true;
                 s_status_text = "Spectating...";
+                LobbyServer_ReportSpectateStart(s_room_code.c_str());
                 s_model_handle.DirtyVariable("is_spectating");
                 s_model_handle.DirtyVariable("status_text");
                 rmlui_wrapper_hide_game_document("casual_lobby");
@@ -855,6 +867,7 @@ extern "C" void rmlui_casual_lobby_hide(void) {
     s_is_visible = false;
     s_is_playing = false;
     s_is_spectating = false;
+    s_spectator_count = 0;
     rmlui_wrapper_hide_game_document("casual_lobby");
     LobbyServer_SSEDisconnect();
     if (s_chat_open) {

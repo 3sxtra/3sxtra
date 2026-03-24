@@ -1,0 +1,252 @@
+/* ─── Player Profile ────────────────────────────────────────────── */
+/* 384×224 game canvas — every dp matters. No scrolling allowed.    */
+
+#profile-panel {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: rgba(10, 12, 22, 230);
+    border-width: 1dp;
+    border-color: rgba(100, 130, 220, 80);
+}
+
+/* ─── Title bar (compact) ──────────────────────────────────────── */
+
+#profile-title-bar {
+    display: block;
+    height: 16dp;
+    padding: 3dp 8dp 1dp 8dp;
+    text-align: center;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(255, 255, 255, 200);
+}
+
+#profile-title-text {
+    display: block;
+    font-size: 11dp;
+    color: #fff;
+    font-weight: bold;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
+    text-align: center;
+    background-color: transparent;
+}
+
+/* ─── Body grid Layout (absolute positioned, no overflow) ─────── */
+
+#profile-body {
+    display: block;
+}
+
+.profile-card {
+    display: block;
+    position: absolute;
+    background-color: rgba(0, 6, 28, 180);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 70);
+    padding: 2dp 4dp 4dp 4dp;
+}
+
+#panel-identity {
+    left: 4dp;
+    top: 21dp;
+    width: 165dp;
+    height: 50dp;
+}
+
+#panel-rank {
+    left: 172dp;
+    top: 21dp;
+    right: 4dp;
+    height: 50dp;
+}
+
+#panel-stats {
+    left: 4dp;
+    top: 75dp;
+    width: 165dp;
+    bottom: 16dp;
+}
+
+#panel-history {
+    left: 172dp;
+    top: 75dp;
+    right: 4dp;
+    bottom: 16dp;
+}
+
+/* ─── Section headers (tight) ────────────────────────────────── */
+
+.card-header {
+    display: block;
+    font-size: 7dp;
+    color: rgba(170, 200, 255, 170);
+    padding: 0dp 0dp;
+    margin-bottom: 2dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(100, 130, 220, 60);
+}
+
+/* ─── Identity Panel ─────────────────────────────────────────── */
+
+#identity-content {
+    display: block;
+}
+
+#avatar-img {
+    display: block;
+    position: absolute;
+    left: 4dp;
+    top: 14dp;
+    width: 32dp;
+    height: 32dp;
+    border-width: 1dp;
+    border-color: rgba(150, 180, 255, 100);
+}
+
+#identity-info {
+    display: block;
+    position: absolute;
+    left: 42dp;
+    top: 16dp;
+    right: 4dp;
+}
+
+#player-name {
+    display: block;
+    font-size: 12dp;
+    color: rgba(255, 210, 70, 255);
+    font-weight: bold;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 180));
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#player-title {
+    display: block;
+    font-size: 8dp;
+    color: rgba(160, 190, 240, 200);
+    margin-top: 1dp;
+}
+
+/* ─── Rows (Label + Value) ───────────────────────────────────── */
+
+.profile-row {
+    display: block;
+    padding: 1dp 2dp;
+    margin-bottom: 0dp;
+    font-size: 9dp;
+}
+
+.lbl {
+    display: inline;
+    width: 75dp;
+    font-size: 8dp;
+    color: rgba(150, 180, 230, 180);
+}
+
+.val {
+    display: inline;
+    font-size: 9dp;
+    color: #fff;
+    margin-left: 2dp;
+    font-weight: bold;
+}
+
+.val.bad {
+    color: rgba(255, 80, 80, 255);
+}
+
+.val.good {
+    color: rgba(90, 240, 150, 255);
+}
+
+.tier-val {
+    color: rgba(255, 235, 100, 255);
+}
+
+/* ─── Match History List ─────────────────────────────────────── */
+
+#history-list {
+    display: block;
+    overflow: hidden;
+}
+
+.history-item {
+    display: block;
+    padding: 1dp 2dp;
+    color: rgba(190, 200, 225, 180);
+    font-size: 8dp;
+    border-left-width: 2dp;
+    border-left-color: transparent;
+    white-space: nowrap;
+}
+
+.history-item.selected {
+    color: rgba(255, 255, 255, 255);
+    border-left-color: rgba(255, 210, 40, 230);
+    background-color: rgba(255, 220, 0, 25);
+}
+
+.hist-result {
+    display: inline;
+    width: 20dp;
+    font-size: 8dp;
+    color: rgba(255, 100, 100, 255); /* Loss */
+    font-weight: bold;
+}
+
+.hist-result.win {
+    color: rgba(90, 220, 100, 255); /* Win */
+}
+
+.hist-vs {
+    display: inline;
+    width: 12dp;
+    font-size: 7dp;
+    color: rgba(120, 140, 180, 150);
+}
+
+.hist-name {
+    display: inline;
+    font-size: 8dp;
+    color: rgba(200, 220, 255, 230);
+    width: 80dp;
+}
+
+.hist-status {
+    display: inline;
+    font-size: 7dp;
+    color: rgba(255, 210, 70, 200);
+}
+
+.history-empty {
+    display: block;
+    font-size: 8dp;
+    color: rgba(140, 150, 180, 100);
+    padding: 2dp 4dp;
+}
+
+/* ─── Status bar (pinned bottom) ─────────────────────────────── */
+
+#status-bar {
+    display: block;
+    position: absolute;
+    bottom: 1dp;
+    left: 4dp;
+    right: 4dp;
+    padding: 1dp 6dp;
+    background-color: rgba(0, 8, 30, 160);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 50);
+}
+
+#status-text {
+    display: block;
+    font-size: 8dp;
+    color: rgba(255, 210, 70, 240);
+}

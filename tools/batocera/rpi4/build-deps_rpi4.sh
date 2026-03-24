@@ -259,4 +259,79 @@ EOF
     echo "librashader cross-compiled to $LIBRASHADER_LIB"
 fi
 
+# -----------------------------
+# minizip-ng
+# -----------------------------
+
+MINIZIP_NG_DIR="$THIRD_PARTY/minizip-ng"
+MINIZIP_NG_BUILD="$MINIZIP_NG_DIR/build"
+
+if [ -d "$MINIZIP_NG_BUILD" ]; then
+    echo "minizip-ng already built at $MINIZIP_NG_BUILD"
+else
+    echo "Cross-compiling minizip-ng for aarch64..."
+    cd "$MINIZIP_NG_DIR"
+    mkdir -p build && cd build
+
+    cmake .. \
+        -DCMAKE_C_COMPILER="$CC" \
+        -DCMAKE_CXX_COMPILER="$CXX" \
+        "${SYSROOT_FLAGS[@]}" \
+        -DCMAKE_INSTALL_PREFIX="$MINIZIP_NG_BUILD" \
+        -DCMAKE_SYSTEM_NAME=Linux \
+        -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+        -DMZ_COMPAT=OFF \
+        -DMZ_ZLIB_FLAVOR=zlib \
+        -DMZ_BZIP2=OFF \
+        -DMZ_LZMA=OFF \
+        -DMZ_PPMD=OFF \
+        -DMZ_ZSTD=OFF \
+        -DMZ_LIBCOMP=OFF \
+        -DMZ_PKCRYPT=OFF \
+        -DMZ_WZAES=OFF \
+        -DMZ_OPENSSL=OFF \
+        -DMZ_LIBBSD=OFF \
+        -DMZ_DECOMPRESS_ONLY=ON
+
+    cmake --build . -j$(nproc)
+    cmake --install .
+    echo "minizip-ng cross-compiled to $MINIZIP_NG_BUILD"
+
+    cd ../..
+fi
+
+# -----------------------------
+# tf-psa-crypto
+# -----------------------------
+
+TF_PSA_CRYPTO_DIR="$THIRD_PARTY/tf-psa-crypto"
+TF_PSA_CRYPTO_BUILD="$TF_PSA_CRYPTO_DIR/build"
+
+if [ -d "$TF_PSA_CRYPTO_BUILD" ]; then
+    echo "tf-psa-crypto already built at $TF_PSA_CRYPTO_BUILD"
+else
+    echo "Cross-compiling tf-psa-crypto for aarch64..."
+    cd "$TF_PSA_CRYPTO_DIR"
+    mkdir -p build && cd build
+
+    cmake .. \
+        -DCMAKE_C_COMPILER="$CC" \
+        -DCMAKE_CXX_COMPILER="$CXX" \
+        "${SYSROOT_FLAGS[@]}" \
+        -DCMAKE_INSTALL_PREFIX="$TF_PSA_CRYPTO_BUILD" \
+        -DCMAKE_SYSTEM_NAME=Linux \
+        -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+        -DENABLE_PROGRAMS=OFF \
+        -DENABLE_TESTING=OFF \
+        -DUSE_SHARED_TF_PSA_CRYPTO_LIBRARY=OFF \
+        -DUSE_STATIC_TF_PSA_CRYPTO_LIBRARY=ON \
+        -DTF_PSA_CRYPTO_CONFIG_FILE="$ROOT_DIR/configs/crypto-config-ccm-aes-sha256.h"
+
+    cmake --build . -j$(nproc)
+    cmake --install .
+    echo "tf-psa-crypto cross-compiled to $TF_PSA_CRYPTO_BUILD"
+
+    cd ../..
+fi
+
 echo "All RPi4 dependencies built successfully."
