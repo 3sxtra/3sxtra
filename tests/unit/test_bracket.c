@@ -261,12 +261,12 @@ static void test_double_elim_4_players(void** state) {
     memset(bracket, 0, sizeof(bracket));
 
     int total_expected = Bracket_DoubleElimTotalEntries(4);
-    // 4 players → bracket_size=4, 2*(4-1)+1 = 7
-    assert_int_equal(total_expected, 7);
+    // 4 players → bracket_size=4, exact count from generator
+    assert_int_equal(total_expected, 6);
 
     int count = Bracket_GenerateDoubleElim(ids, names, 4, bracket, MAX_BRACKET_SIZE);
     assert_true(count > 0);
-    assert_int_equal(count, 7);
+    assert_int_equal(count, 6);
 
     // Winners round 0: 2 matches
     assert_int_equal(bracket[0].round, 0);
@@ -349,6 +349,147 @@ static void test_round_robin_invalid(void** state) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+ *  Bracket_GenerateSwissRound / Bracket_SwissRounds
+ * ═══════════════════════════════════════════════════════════════════ */
+
+static void test_swiss_rounds(void** state) {
+    (void)state;
+    assert_int_equal(Bracket_SwissRounds(4), 2);
+    assert_int_equal(Bracket_SwissRounds(8), 3);
+    assert_int_equal(Bracket_SwissRounds(16), 4);
+    assert_int_equal(Bracket_SwissRounds(1), 0);
+}
+
+static void test_swiss_round_4_players(void** state) {
+    (void)state;
+    char ids[4][64] = { "p1", "p2", "p3", "p4" };
+    char names[4][32] = { "Alice", "Bob", "Carol", "Dave" };
+    int wins[4] = { 0, 0, 0, 0 };
+    BracketEntry bracket[MAX_BRACKET_SIZE];
+    memset(bracket, 0, sizeof(bracket));
+
+    int count = Bracket_GenerateSwissRound(ids, names, wins, 4, 0, bracket, MAX_BRACKET_SIZE);
+    assert_int_equal(count, 2);
+
+    // Round 0, positions 0 and 1
+    assert_int_equal(bracket[0].round, 0);
+    assert_int_equal(bracket[0].position, 0);
+    assert_int_equal(bracket[1].round, 0);
+    assert_int_equal(bracket[1].position, 1);
+
+    // All players should appear exactly once
+    bool seen[4] = { false };
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (strcmp(bracket[i].player1_id, ids[j]) == 0) seen[j] = true;
+            if (strcmp(bracket[i].player2_id, ids[j]) == 0) seen[j] = true;
+        }
+    }
+    for (int j = 0; j < 4; j++)
+        assert_true(seen[j]);
+}
+
+static void test_swiss_round_by_record(void** state) {
+    (void)state;
+    char ids[6][64] = { "p1", "p2", "p3", "p4", "p5", "p6" };
+    char names[6][32] = { "A", "B", "C", "D", "E", "F" };
+    // After round 1: p1=2 wins, p2=2 wins, p3=1, p4=1, p5=0, p6=0
+    int wins[6] = { 2, 2, 1, 1, 0, 0 };
+    BracketEntry bracket[MAX_BRACKET_SIZE];
+    memset(bracket, 0, sizeof(bracket));
+
+    int count = Bracket_GenerateSwissRound(ids, names, wins, 6, 2, bracket, MAX_BRACKET_SIZE);
+    assert_int_equal(count, 3);
+
+    // First match should be between the two 2-win players (p1 vs p2)
+    assert_string_equal(bracket[0].player1_id, "p1");
+    assert_string_equal(bracket[0].player2_id, "p2");
+
+    // Second match should be between the two 1-win players (p3 vs p4)
+    assert_string_equal(bracket[1].player1_id, "p3");
+    assert_string_equal(bracket[1].player2_id, "p4");
+
+    // Third match: 0-win players
+    assert_string_equal(bracket[2].player1_id, "p5");
+    assert_string_equal(bracket[2].player2_id, "p6");
+
+    // All should be round 2
+    assert_int_equal(bracket[0].round, 2);
+    assert_int_equal(bracket[1].round, 2);
+    assert_int_equal(bracket[2].round, 2);
+}
+
+static void test_swiss_invalid(void** state) {
+    (void)state;
+    BracketEntry bracket[4];
+    int wins[2] = { 0, 0 };
+    assert_int_equal(Bracket_GenerateSwissRound(NULL, NULL, NULL, 0, 0, bracket, 4), -1);
+    assert_int_equal(Bracket_GenerateSwissRound(NULL, NULL, wins, 1, 0, bracket, 4), -1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  Bracket_AdvanceDoubleElim
+ * ═══════════════════════════════════════════════════════════════════ */
+
+static void test_advance_double_elim_4_players(void** state) {
+    (void)state;
+    char ids[4][64] = { "p1", "p2", "p3", "p4" };
+    char names[4][32] = { "Alice", "Bob", "Carol", "Dave" };
+    BracketEntry bracket[MAX_BRACKET_SIZE];
+    memset(bracket, 0, sizeof(bracket));
+
+    int count = Bracket_GenerateDoubleElim(ids, names, 4, bracket, MAX_BRACKET_SIZE);
+    assert_int_equal(count, 6);
+
+    // 4 players: 2 winners rounds (R0, R1)
+    int wr = Bracket_SingleElimRounds(4); // 2
+    assert_int_equal(wr, 2);
+
+    // WR0, match 0: Alice vs Dave → Alice wins, Dave drops to losers
+    bool ok = Bracket_AdvanceDoubleElim(bracket, count, wr, 0, 0,
+                                         "p1", "Alice", "p4", "Dave");
+    assert_true(ok);
+    assert_int_equal(bracket[0].completed, 1);
+    assert_string_equal(bracket[0].winner_id, "p1");
+
+    // WR0, match 1: Bob vs Carol → Bob wins, Carol drops
+    ok = Bracket_AdvanceDoubleElim(bracket, count, wr, 0, 1,
+                                    "p2", "Bob", "p3", "Carol");
+    assert_true(ok);
+    assert_int_equal(bracket[1].completed, 1);
+
+    // Winners bracket final (WR1): should have Alice (P1) and Bob (P2)
+    BracketEntry* wf = Bracket_FindEntry(bracket, count, 1, 0);
+    assert_non_null(wf);
+    assert_string_equal(wf->player1_name, "Alice");
+    assert_string_equal(wf->player2_name, "Bob");
+}
+
+static void test_advance_double_elim_grand_finals(void** state) {
+    (void)state;
+    char ids[4][64] = { "p1", "p2", "p3", "p4" };
+    char names[4][32] = { "Alice", "Bob", "Carol", "Dave" };
+    BracketEntry bracket[MAX_BRACKET_SIZE];
+    memset(bracket, 0, sizeof(bracket));
+
+    int count = Bracket_GenerateDoubleElim(ids, names, 4, bracket, MAX_BRACKET_SIZE);
+    int wr = 2;
+    int gf_round = wr + 2 * (wr - 1); // 2 + 2 = 4
+
+    // WR0: Alice beats Dave, Bob beats Carol
+    Bracket_AdvanceDoubleElim(bracket, count, wr, 0, 0, "p1", "Alice", "p4", "Dave");
+    Bracket_AdvanceDoubleElim(bracket, count, wr, 0, 1, "p2", "Bob", "p3", "Carol");
+
+    // WR1 (winners final): Alice beats Bob → Alice to GF P1, Bob drops
+    Bracket_AdvanceDoubleElim(bracket, count, wr, 1, 0, "p1", "Alice", "p2", "Bob");
+
+    // Verify grand finals entry has winners bracket champion as P1
+    BracketEntry* gf = Bracket_FindEntry(bracket, count, gf_round, 0);
+    assert_non_null(gf);
+    assert_string_equal(gf->player1_name, "Alice");
+}
+
+/* ═══════════════════════════════════════════════════════════════════
  *  Main
  * ═══════════════════════════════════════════════════════════════════ */
 
@@ -381,10 +522,18 @@ int main(void) {
         /* Double elimination */
         cmocka_unit_test(test_double_elim_4_players),
         cmocka_unit_test(test_double_elim_invalid),
+        /* Double elim advancement */
+        cmocka_unit_test(test_advance_double_elim_4_players),
+        cmocka_unit_test(test_advance_double_elim_grand_finals),
         /* Round robin */
         cmocka_unit_test(test_round_robin_4_players),
         cmocka_unit_test(test_round_robin_3_players),
         cmocka_unit_test(test_round_robin_invalid),
+        /* Swiss */
+        cmocka_unit_test(test_swiss_rounds),
+        cmocka_unit_test(test_swiss_round_4_players),
+        cmocka_unit_test(test_swiss_round_by_record),
+        cmocka_unit_test(test_swiss_invalid),
     };
     return cmocka_run_group_tests(tests, NULL, NULL);
 }

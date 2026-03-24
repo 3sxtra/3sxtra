@@ -304,6 +304,69 @@
     color: #fff;
 }
 
+#btn-to-dq {
+    display: block;
+    text-align: center;
+    font-size: 7dp;
+    background-color: rgba(80, 20, 20, 200);
+    color: rgba(255, 130, 130, 220);
+    padding: 2dp 0;
+    border-width: 1dp;
+    border-color: transparent;
+    margin-top: 2dp;
+}
+
+#btn-to-dq.focused {
+    background-color: rgba(180, 40, 40, 255);
+    border-color: rgba(255, 100, 100, 255);
+    color: #fff;
+}
+
+.dq-target {
+    display: inline;
+    color: rgba(255, 210, 70, 240);
+    font-weight: bold;
+}
+
+.dq-hint, .override-hint {
+    display: inline;
+    font-size: 5dp;
+    color: rgba(170, 170, 200, 150);
+    margin-left: 4dp;
+}
+
+#btn-to-override {
+    display: block;
+    text-align: center;
+    font-size: 7dp;
+    background-color: rgba(40, 20, 70, 200);
+    color: rgba(180, 140, 255, 220);
+    padding: 2dp 0;
+    border-width: 1dp;
+    border-color: transparent;
+    margin-top: 2dp;
+}
+
+#btn-to-override.focused {
+    background-color: rgba(100, 50, 180, 255);
+    border-color: rgba(180, 140, 255, 255);
+    color: #fff;
+}
+
+.override-winner {
+    display: inline;
+    color: rgba(255, 210, 70, 240);
+    font-weight: bold;
+}
+
+.match-nav-hint {
+    display: block;
+    text-align: center;
+    font-size: 5dp;
+    color: rgba(150, 150, 170, 120);
+    margin-top: 1dp;
+}
+
 #btn-start-bracket {
     display: block;
     text-align: center;

@@ -78,6 +78,9 @@
                 <div data-if="active_match_count == 0" class="no-matches">
                     No active matches
                 </div>
+                <div data-if="active_match_count > 1" class="match-nav-hint">
+                    ◄ ► SCROLL MATCHES
+                </div>
             </div>
 
             <!-- Spectate button -->
@@ -105,9 +108,20 @@
                      data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 1">
                     RESUME TOURNAMENT
                 </div>
+                <div data-if="tournament_started" id="btn-to-dq"
+                     data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 2">
+                    DQ: <span class="dq-target">{{dq_target_name}}</span>
+                    <span class="dq-hint">◄ ►</span>
+                </div>
+                <div data-if="tournament_started" id="btn-to-override"
+                     data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 3">
+                    OVERRIDE → <span class="override-winner">{{override_label}}</span>
+                    <span class="override-hint">◄ ►</span>
+                </div>
             </div>
 
-            <div id="btn-leave-room" data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 2">
+            <div id="btn-leave-room"
+                 data-class-focused="cursor_x == 0 &amp;&amp; ((is_host &amp;&amp; tournament_started &amp;&amp; cursor_y == 4) || (is_host &amp;&amp; !tournament_started &amp;&amp; cursor_y == 2) || (!is_host &amp;&amp; cursor_y == 1))">
                 LEAVE ROOM
             </div>
         </div>

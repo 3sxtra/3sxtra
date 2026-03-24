@@ -122,6 +122,14 @@ static bool s_is_spectating = false;
 static int s_cursor_x = 0; // 0=left (bracket/actions), 1=right (chat)
 static int s_cursor_y = 0; // context-dependent
 
+// DQ player selector (Fix 3)
+static int s_dq_target_idx = 0;
+static Rml::String s_dq_target_name;
+
+// Override result selector (Fix 4)
+static int s_override_winner = 0; // 0=p1, 1=p2
+static Rml::String s_override_label;
+
 static Uint64 s_last_poll_time = 0;
 static bool s_match_ended_pending_reshow = false;
 
@@ -185,8 +193,10 @@ static SDL_AtomicInt s_async_to_active = { 0 };
 
 struct AsyncTOData {
     char room_code[16];
-    int action; // 1=start, 2=pause, 3=resume, 4=dq
+    int action; // 1=start, 2=pause, 3=resume, 4=dq, 5=override
     char target_player[64];
+    int match_index;    // for override
+    char winner_id[64]; // for override
 };
 
 static int SDLCALL async_to_action_fn(void* data) {
@@ -196,13 +206,15 @@ static int SDLCALL async_to_action_fn(void* data) {
     case 2: LobbyServer_BracketPause(d->room_code, true); break;
     case 3: LobbyServer_BracketPause(d->room_code, false); break;
     case 4: LobbyServer_BracketDQ(d->room_code, d->target_player); break;
+    case 5: LobbyServer_BracketOverride(d->room_code, d->match_index, d->winner_id); break;
     }
     free(d);
     SDL_SetAtomicInt(&s_async_to_active, 0);
     return 0;
 }
 
-static void AsyncTOAction(const char* room_code, int action, const char* target) {
+static void AsyncTOAction(const char* room_code, int action, const char* target,
+                           int match_index, const char* winner_id) {
     if (SDL_GetAtomicInt(&s_async_to_active) != 0)
         return;
     SDL_SetAtomicInt(&s_async_to_active, 1);
@@ -215,6 +227,9 @@ static void AsyncTOAction(const char* room_code, int action, const char* target)
     d->action = action;
     if (target)
         snprintf(d->target_player, sizeof(d->target_player), "%s", target);
+    d->match_index = match_index;
+    if (winner_id)
+        snprintf(d->winner_id, sizeof(d->winner_id), "%s", winner_id);
     SDL_Thread* t = SDL_CreateThread(async_to_action_fn, "AsyncTO", d);
     if (t) {
         SDL_DetachThread(t);
@@ -333,6 +348,14 @@ static void do_init(void) {
     ctor.Bind("proposal_countdown", &s_proposal_countdown);
     ctor.Bind("proposal_countdown_pct", &s_proposal_countdown_pct);
     ctor.Bind("proposal_cursor", &s_proposal_cursor);
+
+    // DQ player selector
+    ctor.Bind("dq_target_name", &s_dq_target_name);
+    ctor.Bind("dq_target_idx", &s_dq_target_idx);
+
+    // Override result
+    ctor.Bind("override_label", &s_override_label);
+    ctor.Bind("override_winner", &s_override_winner);
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -786,13 +809,61 @@ extern "C" void rmlui_tournament_lobby_update(void) {
     }
     if (trigger & 0x02) { // Down
         if (s_cursor_x == 0) {
-            // Max items: 0=spectate match selector, 1..N=TO controls, then leave
-            int max_y = 3; // spectate(0), start/pause(1), leave(2), + match selector
+            // Dynamic max_y based on state
+            int max_y = 1; // spectate(0) + leave(last)
+            if (s_is_host && s_tournament_started) {
+                max_y = 4; // spectate(0), pause/resume(1), dq(2), override(3), leave(4)
+            } else if (s_is_host && !s_tournament_started) {
+                max_y = 2; // spectate(0), start(1), leave(2)
+            }
             if (s_cursor_y < max_y) s_cursor_y++;
         }
     }
-    if (trigger & 0x04) s_cursor_x = 0; // Left
-    if (trigger & 0x08) s_cursor_x = 1; // Right
+    // Fix 1: Left/Right scroll match selector when on spectate row
+    if (trigger & 0x04) { // Left
+        if (s_cursor_x == 0 && s_cursor_y == 0 && s_active_match_count > 1) {
+            s_match_selector_idx = (s_match_selector_idx - 1 + s_active_match_count) % s_active_match_count;
+            s_model_handle.DirtyVariable("match_selector_idx");
+        } else {
+            s_cursor_x = 0;
+        }
+    }
+    if (trigger & 0x08) { // Right
+        if (s_cursor_x == 0 && s_cursor_y == 0 && s_active_match_count > 1) {
+            s_match_selector_idx = (s_match_selector_idx + 1) % s_active_match_count;
+            s_model_handle.DirtyVariable("match_selector_idx");
+        } else {
+            s_cursor_x = 1;
+        }
+    }
+
+    // Left/Right for DQ target cycling (cursor_y == 2, host, started)
+    if (s_cursor_y == 2 && s_is_host && s_tournament_started && s_player_count > 0) {
+        if (trigger & 0x04) {
+            s_dq_target_idx = (s_dq_target_idx - 1 + s_player_count) % s_player_count;
+        }
+        if (trigger & 0x08) {
+            s_dq_target_idx = (s_dq_target_idx + 1) % s_player_count;
+        }
+        if (s_dq_target_idx < s_player_count)
+            s_dq_target_name = s_players[s_dq_target_idx].name;
+        s_model_handle.DirtyVariable("dq_target_name");
+        s_model_handle.DirtyVariable("dq_target_idx");
+    }
+
+    // Left/Right for Override winner cycling (cursor_y == 3, host, started)
+    if (s_cursor_y == 3 && s_is_host && s_tournament_started) {
+        if ((trigger & 0x04) || (trigger & 0x08)) {
+            s_override_winner = 1 - s_override_winner;
+            if (s_match_selector_idx < s_active_match_count) {
+                s_override_label = s_override_winner == 0
+                    ? s_active_matches[s_match_selector_idx].p1_name
+                    : s_active_matches[s_match_selector_idx].p2_name;
+            }
+            s_model_handle.DirtyVariable("override_label");
+            s_model_handle.DirtyVariable("override_winner");
+        }
+    }
 
     if (trigger & (0x0100 | 0x0800)) { // Confirm
         if (s_cursor_x == 1) {
@@ -804,6 +875,13 @@ extern "C" void rmlui_tournament_lobby_update(void) {
             s_model_handle.DirtyVariable("chat_input");
             SDL_StartTextInput(SDL_GetKeyboardFocus());
         } else {
+            // Dynamic leave position
+            int leave_y = 1; // non-host default
+            if (s_is_host && s_tournament_started)
+                leave_y = 4;
+            else if (s_is_host && !s_tournament_started)
+                leave_y = 2;
+
             if (s_cursor_y == 0 && s_active_match_count > 0) {
                 // Spectate selected match
                 s_is_spectating = true;
@@ -813,20 +891,54 @@ extern "C" void rmlui_tournament_lobby_update(void) {
                 rmlui_wrapper_hide_game_document("tournament_lobby");
             } else if (s_cursor_y == 1 && s_is_host && !s_tournament_started) {
                 // TO: Start bracket
-                AsyncTOAction(s_room_code.c_str(), 1, NULL);
+                AsyncTOAction(s_room_code.c_str(), 1, NULL, 0, NULL);
                 s_status_text = "Starting bracket...";
                 s_model_handle.DirtyVariable("status_text");
             } else if (s_cursor_y == 1 && s_is_host && s_tournament_started && !s_tournament_paused) {
                 // TO: Pause
-                AsyncTOAction(s_room_code.c_str(), 2, NULL);
+                AsyncTOAction(s_room_code.c_str(), 2, NULL, 0, NULL);
                 s_status_text = "Pausing tournament...";
                 s_model_handle.DirtyVariable("status_text");
             } else if (s_cursor_y == 1 && s_is_host && s_tournament_started && s_tournament_paused) {
                 // TO: Resume
-                AsyncTOAction(s_room_code.c_str(), 3, NULL);
+                AsyncTOAction(s_room_code.c_str(), 3, NULL, 0, NULL);
                 s_status_text = "Resuming tournament...";
                 s_model_handle.DirtyVariable("status_text");
-            } else if (s_cursor_y == 2) {
+            } else if (s_cursor_y == 2 && s_is_host && s_tournament_started && s_player_count > 0) {
+                // TO: DQ selected player
+                if (s_dq_target_idx < (int)s_players.size() && !s_players[s_dq_target_idx].name.empty()) {
+                    // Resolve player_id from RoomState
+                    const char* pid = "";
+                    for (int p = 0; p < s_room_state.player_count; p++) {
+                        if (strcmp(s_room_state.players[p].display_name,
+                                   s_players[s_dq_target_idx].name.c_str()) == 0) {
+                            pid = s_room_state.players[p].player_id;
+                            break;
+                        }
+                    }
+                    AsyncTOAction(s_room_code.c_str(), 4, pid, 0, NULL);
+                    s_status_text = Rml::String("DQ: ") + s_players[s_dq_target_idx].name;
+                    s_model_handle.DirtyVariable("status_text");
+                }
+            } else if (s_cursor_y == 3 && s_is_host && s_tournament_started) {
+                // TO: Override result for selected match
+                if (s_match_selector_idx < s_active_match_count) {
+                    const RmlActiveMatch& m = s_active_matches[s_match_selector_idx];
+                    // Resolve winner player_id
+                    const char* winner_pid = "";
+                    const Rml::String& winner_name = s_override_winner == 0 ? m.p1_name : m.p2_name;
+                    for (int p = 0; p < s_room_state.player_count; p++) {
+                        if (strcmp(s_room_state.players[p].display_name,
+                                   winner_name.c_str()) == 0) {
+                            winner_pid = s_room_state.players[p].player_id;
+                            break;
+                        }
+                    }
+                    AsyncTOAction(s_room_code.c_str(), 5, NULL, m.match_index, winner_pid);
+                    s_status_text = Rml::String("Override: ") + winner_name + " wins";
+                    s_model_handle.DirtyVariable("status_text");
+                }
+            } else if (s_cursor_y == leave_y) {
                 // Leave room
                 s_wants_leave = true;
             }

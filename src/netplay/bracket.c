@@ -227,11 +227,31 @@ const char* Bracket_GetWinner(const BracketEntry* bracket, int bracket_size,
 int Bracket_DoubleElimTotalEntries(int num_players) {
     if (num_players < 2) return 0;
     int bracket_size = next_pow2(num_players);
-    // Winners bracket: bracket_size - 1 matches
-    // Losers bracket: bracket_size - 1 matches (approximate — varies)
-    // Grand finals: 1 match
-    // Simplified: 2*(bracket_size-1) + 1
-    return 2 * (bracket_size - 1) + 1;
+    int winners_rounds = log2_int(bracket_size);
+    int losers_rounds = 2 * (winners_rounds - 1);
+    int first_round_matches = bracket_size / 2;
+
+    // Count winners bracket entries
+    int total = first_round_matches; // WR0
+    for (int r = 1; r < winners_rounds; r++)
+        total += bracket_size >> (r + 1);
+
+    // Count losers bracket entries (same formula as generator)
+    for (int lr = 0; lr < losers_rounds; lr++) {
+        int matches;
+        if (lr == 0)
+            matches = first_round_matches / 2;
+        else if (lr % 2 == 0)
+            matches = first_round_matches >> ((lr / 2) + 1);
+        else
+            matches = first_round_matches >> ((lr + 1) / 2);
+        if (matches < 1) matches = 1;
+        total += matches;
+    }
+
+    // Grand finals
+    total += 1;
+    return total;
 }
 
 int Bracket_GenerateDoubleElim(const char player_ids[][64],
