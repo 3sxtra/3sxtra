@@ -88,6 +88,28 @@ bool LobbyServer_ReportMatch(const MatchResult* result, int* out_match_id, Match
 /// The match_id must be the one returned by LobbyServer_ReportMatch.
 bool LobbyServer_UploadReplay(int match_id, const void* replay_data, size_t replay_size);
 
+// === Replay Browsing ===
+
+/// Replay list entry returned by the server
+typedef struct {
+    int match_id;
+    char p1_name[32];
+    char p2_name[32];
+    int p1_char;          // Character index (0-19)
+    int p2_char;          // Character index (0-19)
+    char date[20];        // "YYYY-MM-DD HH:MM"
+    char winner_id[64];
+} ReplayListEntry;
+
+/// Fetch a page of available replays from the server.
+/// Returns number of entries (up to max_entries), or -1 on error.
+/// page is 0-indexed. *out_total receives the total replay count (may be NULL).
+int LobbyServer_ListReplays(ReplayListEntry* out, int max_entries, int page, int* out_total);
+
+/// Download replay data for a specific match.
+/// Allocates *out_data on success (caller must free). Returns data size, or 0 on error.
+size_t LobbyServer_DownloadReplay(int match_id, void** out_data);
+
 /// Report a mid-match disconnect (ragequit). The remaining player calls this
 /// when GekkoPlayerDisconnected fires before a natural match conclusion.
 /// Server-side: if only one player submits a match result within 30s, the

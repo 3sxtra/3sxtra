@@ -112,7 +112,7 @@
 
 /* ── Menu item string indices ────────────────────────────────────── */
 
-/** First string index for gateway items (74=LOBBY, 75=LOCAL, 76=LB, 77=EXIT). */
+/** First string index for gateway items (74=LOBBY, 75=LOCAL, 76=LB, 77=REPLAYS, 78=EXIT). */
 #define NET_STR_GATEWAY_BASE     74
 /** String index for "NETWORK LOBBY" title label. */
 #define NET_STR_LOBBY_TITLE      67

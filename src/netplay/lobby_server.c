@@ -662,6 +662,135 @@ bool LobbyServer_UploadReplay(int match_id, const void* replay_data, size_t repl
     }
 }
 
+/* === Replay Browsing === */
+
+int LobbyServer_ListReplays(ReplayListEntry* out, int max_entries, int page, int* out_total) {
+    ensure_init();
+    if (!configured || !out || max_entries <= 0)
+        return -1;
+
+    char path[256];
+    snprintf(path, sizeof(path), "/replays?page=%d&limit=%d", page, max_entries);
+
+    char response[HTTP_BUF_SIZE];
+    if (!http_request("GET", path, "", response, sizeof(response))) {
+        return -1;
+    }
+
+    cJSON* root = cJSON_Parse(response);
+    if (!root)
+        return -1;
+
+    if (out_total) {
+        *out_total = cjson_get_int(root, "total", 0);
+    }
+
+    int count = 0;
+    const cJSON* replays = cJSON_GetObjectItemCaseSensitive(root, "replays");
+    const cJSON* item = NULL;
+    cJSON_ArrayForEach(item, replays) {
+        if (count >= max_entries)
+            break;
+        ReplayListEntry* e = &out[count];
+        memset(e, 0, sizeof(*e));
+        e->match_id = cjson_get_int(item, "match_id", -1);
+        cjson_get_string(item, "p1_name", e->p1_name, sizeof(e->p1_name));
+        cjson_get_string(item, "p2_name", e->p2_name, sizeof(e->p2_name));
+        e->p1_char = cjson_get_int(item, "p1_char", -1);
+        e->p2_char = cjson_get_int(item, "p2_char", -1);
+        cjson_get_string(item, "created_at", e->date, sizeof(e->date));
+        cjson_get_string(item, "winner_id", e->winner_id, sizeof(e->winner_id));
+
+        if (e->match_id >= 0)
+            count++;
+    }
+
+    cJSON_Delete(root);
+    return count;
+}
+
+size_t LobbyServer_DownloadReplay(int match_id, void** out_data) {
+    ensure_init();
+    if (!configured || match_id < 0 || !out_data)
+        return 0;
+    *out_data = NULL;
+
+    char path[128];
+    snprintf(path, sizeof(path), "/replays/%d", match_id);
+
+    CURL* curl = curl_easy_init();
+    if (!curl)
+        return 0;
+
+    char url[512];
+    snprintf(url, sizeof(url), "http://%s:%d%s", server_host, server_port, path);
+
+    /* Generate timestamp and signature */
+    char timestamp[32];
+    snprintf(timestamp, sizeof(timestamp), "%lld", (long long)time(NULL));
+
+    size_t sig_payload_len = strlen(timestamp) + 3 + strlen(path); /* "GET" = 3 */
+    char* sig_payload = (char*)malloc(sig_payload_len + 1);
+    if (!sig_payload) {
+        curl_easy_cleanup(curl);
+        return 0;
+    }
+    snprintf(sig_payload, sig_payload_len + 1, "%sGET%s", timestamp, path);
+
+    char signature[66];
+    compute_hmac(sig_payload, sig_payload_len, signature, sizeof(signature));
+    free(sig_payload);
+
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5L);
+    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+
+    struct curl_slist* headers = NULL;
+    char hdr_ts[64], hdr_sig[128];
+    snprintf(hdr_ts, sizeof(hdr_ts), "X-Timestamp: %s", timestamp);
+    snprintf(hdr_sig, sizeof(hdr_sig), "X-Signature: %s", signature);
+    headers = curl_slist_append(headers, hdr_ts);
+    headers = curl_slist_append(headers, hdr_sig);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+    CurlBuffer resp = { .data = (char*)malloc(65536), .size = 0, .capacity = 65536 };
+    if (resp.data)
+        resp.data[0] = '\0';
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_cb);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resp);
+
+    CURLcode res = curl_easy_perform(curl);
+    long status = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &status);
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+
+    if (res != CURLE_OK) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                    "[LobbyServer] Replay download curl error: %s", curl_easy_strerror(res));
+        free(resp.data);
+        return 0;
+    }
+
+    if (status < 200 || status >= 300) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                    "[LobbyServer] Replay download failed: HTTP %ld", status);
+        free(resp.data);
+        return 0;
+    }
+
+    if (resp.size == 0) {
+        free(resp.data);
+        return 0;
+    }
+
+    /* Transfer ownership to caller */
+    *out_data = resp.data;
+    SDL_Log("[LobbyServer] Replay downloaded for match %d (%zu bytes)", match_id, resp.size);
+    return resp.size;
+}
+
 bool LobbyServer_ReportDisconnect(const char* player_id, const char* opponent_id) {
     if (!configured || !player_id || !opponent_id)
         return false;

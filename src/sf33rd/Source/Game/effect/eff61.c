@@ -96,7 +96,7 @@ const s8* Menu_Letter_Data[82] = { "ARCADE",
                                    "LOBBY MODE",
                                    "LOCAL NETWORK",
                                    "LEADERBOARD",
-                                   "EXIT",
+                                   "REPLAYS",
                                    "EXIT",
                                    /* LAN-only lobby strings [79-81] */
                                    "AUTO-CONN",

@@ -36,6 +36,7 @@
 /* RmlUi Phase 3 */
 #include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
+#include "port/sdl/rmlui/rmlui_network_replay_picker.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_tournament_lobby.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
@@ -154,6 +155,7 @@ static void network_lobby_rmlui_hide(void) {
     /* Safety hide on screen exit */
     rmlui_network_lobby_hide();
     rmlui_leaderboard_hide();
+    rmlui_network_replay_picker_hide();
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

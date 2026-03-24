@@ -1,0 +1,68 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="network_replay_picker.rcss"/>
+    <title>Network Replay Picker</title>
+</head>
+<body data-model="network_replay_picker">
+<div id="nrp-panel" data-if="nrp_open">
+
+    <!-- Title bar -->
+    <div id="nrp-title-bar">
+        <span id="nrp-title">ONLINE REPLAYS</span>
+    </div>
+
+    <!-- Loading state -->
+    <div id="nrp-loading" data-if="nrp_loading">
+        <span>Fetching replays...</span>
+    </div>
+
+    <!-- Error state -->
+    <div id="nrp-error" data-if="nrp_error != ''">
+        <span>{{nrp_error}}</span>
+    </div>
+
+    <!-- Download state -->
+    <div id="nrp-downloading" data-if="nrp_downloading">
+        <span>Downloading replay...</span>
+    </div>
+
+    <!-- Table header -->
+    <div id="nrp-table" data-if="!nrp_loading &amp;&amp; nrp_error == '' &amp;&amp; !nrp_downloading">
+        <div class="nrp-header-row">
+            <span class="nrp-col-num">#</span>
+            <span class="nrp-col-p1">P1</span>
+            <span class="nrp-col-vs"></span>
+            <span class="nrp-col-p2">P2</span>
+            <span class="nrp-col-date">DATE</span>
+        </div>
+
+        <!-- Slot rows -->
+        <div data-for="slot : nrp_slots"
+             class="nrp-row"
+             data-class-selected="slot.index == nrp_cursor">
+            <span class="nrp-col-num">{{slot.display_num}}</span>
+            <span class="nrp-col-p1">{{slot.p1_name}}</span>
+            <span class="nrp-col-vs">vs</span>
+            <span class="nrp-col-p2">{{slot.p2_name}}</span>
+            <span class="nrp-col-date">{{slot.date_str}}</span>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="nrp-empty" data-if="!nrp_loading &amp;&amp; nrp_error == '' &amp;&amp; nrp_slot_count == 0 &amp;&amp; !nrp_downloading">
+        <span>No online replays found.</span>
+    </div>
+
+    <!-- Footer -->
+    <div id="nrp-footer" data-if="!nrp_loading &amp;&amp; !nrp_downloading">
+        <div class="nrp-control-row" data-class-active="nrp_zone == 1">
+            <span class="nrp-ctl-arrow" data-if="nrp_has_prev">◀</span>
+            <span class="nrp-ctl-label">PAGE {{nrp_page}} / {{nrp_total_pages}}</span>
+            <span class="nrp-ctl-arrow" data-if="nrp_has_next">▶</span>
+        </div>
+    </div>
+
+</div>
+</body>
+</rml>

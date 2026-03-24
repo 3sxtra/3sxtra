@@ -1,0 +1,201 @@
+/* ─── Network Replay Picker ─────────────────────────────────── */
+/* 384×224 game canvas — strict dp metrics                       */
+/* Modeled after replay_picker.rcss — full-screen dark panel     */
+
+#nrp-panel {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: rgba(6, 8, 18, 220);
+    border-width: 1dp;
+    border-color: rgba(80, 110, 200, 80);
+}
+
+/* ── Title bar ── */
+#nrp-title-bar {
+    display: block;
+    height: 16dp;
+    padding: 3dp 8dp 1dp 8dp;
+    border-top-width: 1dp;
+    border-top-color: rgba(255, 255, 255, 200);
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(255, 255, 255, 200);
+    text-align: center;
+}
+#nrp-title {
+    display: block;
+    font-size: 11dp;
+    color: #fff;
+    font-weight: bold;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
+    background-color: transparent;
+}
+
+/* ── Loading / Error / Downloading states ── */
+#nrp-loading, #nrp-error, #nrp-downloading {
+    display: block;
+    position: absolute;
+    top: 36dp;
+    left: 4dp;
+    right: 4dp;
+    bottom: 44dp;
+    text-align: center;
+    padding: 50dp 0;
+    font-size: 9dp;
+    color: rgba(180, 190, 220, 200);
+}
+#nrp-error {
+    color: rgba(255, 120, 100, 200);
+}
+#nrp-downloading {
+    color: rgba(100, 220, 180, 200);
+}
+
+/* ── Table area ── */
+#nrp-table {
+    display: block;
+    position: absolute;
+    top: 20dp;
+    left: 4dp;
+    right: 4dp;
+    bottom: 26dp;
+    padding: 2dp 2dp;
+    background-color: rgba(0, 6, 28, 180);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 70);
+    overflow: hidden;
+}
+
+/* ── Header row ── */
+.nrp-header-row {
+    display: block;
+    font-size: 7dp;
+    color: rgba(140, 170, 230, 200);
+    padding: 2dp 0dp;
+    margin-bottom: 1dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(100, 130, 220, 80);
+    white-space: nowrap;
+}
+
+/* ── Slot rows ── */
+.nrp-row {
+    display: block;
+    color: rgba(190, 200, 225, 180);
+    font-size: 8dp;
+    padding: 2dp 0dp;
+    margin-bottom: 1dp;
+    border-left-width: 2dp;
+    border-left-color: transparent;
+    white-space: nowrap;
+}
+
+.nrp-row.selected {
+    color: rgba(255, 255, 255, 255);
+    background-color: rgba(100, 220, 120, 30);
+    border-left-color: rgba(100, 220, 120, 230);
+}
+
+/* ── Column widths ── */
+.nrp-col-num {
+    display: inline-block;
+    width: 24dp;
+    text-align: center;
+    color: rgba(100, 220, 120, 200);
+    font-size: 8dp;
+    font-weight: bold;
+}
+
+.nrp-row.selected .nrp-col-num {
+    color: rgba(140, 255, 160, 255);
+}
+
+.nrp-col-p1 {
+    display: inline-block;
+    width: 80dp;
+    text-align: right;
+    padding-right: 4dp;
+}
+
+.nrp-col-vs {
+    display: inline-block;
+    width: 20dp;
+    text-align: center;
+    font-size: 6dp;
+    color: rgba(140, 150, 170, 140);
+}
+
+.nrp-col-p2 {
+    display: inline-block;
+    width: 80dp;
+    text-align: left;
+    padding-left: 4dp;
+}
+
+.nrp-col-date {
+    display: inline-block;
+    width: 100dp;
+    text-align: center;
+    font-size: 7dp;
+    color: rgba(140, 170, 210, 160);
+}
+
+/* ── Empty state ── */
+#nrp-empty {
+    display: block;
+    position: absolute;
+    top: 36dp;
+    left: 4dp;
+    right: 4dp;
+    bottom: 44dp;
+    text-align: center;
+    padding: 40dp 0;
+    font-size: 8dp;
+    color: rgba(140, 150, 180, 120);
+}
+
+/* ── Footer ── */
+#nrp-footer {
+    display: block;
+    position: absolute;
+    bottom: 1dp;
+    left: 4dp;
+    right: 4dp;
+    padding: 1dp 4dp;
+    background-color: rgba(0, 8, 30, 160);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 50);
+}
+.nrp-control-row {
+    display: block;
+    padding: 2dp 4dp;
+    margin: 1dp 0;
+    text-align: center;
+    border-left-width: 2dp;
+    border-left-color: transparent;
+    color: rgba(140, 160, 200, 150);
+    font-size: 8dp;
+}
+.nrp-control-row.active {
+    color: rgba(255, 255, 255, 255);
+    background-color: rgba(100, 220, 120, 30);
+    border-left-color: rgba(100, 220, 120, 230);
+}
+.nrp-ctl-arrow {
+    display: inline;
+    font-size: 8dp;
+    color: rgba(120, 140, 180, 120);
+    margin: 0 6dp;
+}
+.nrp-control-row.active .nrp-ctl-arrow {
+    color: rgba(255, 210, 70, 240);
+}
+.nrp-ctl-label {
+    display: inline;
+    font-size: 8dp;
+}

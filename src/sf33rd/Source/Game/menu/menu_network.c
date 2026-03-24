@@ -92,6 +92,7 @@
 #include "port/sdl/rmlui/rmlui_mode_menu.h"
 #include "port/sdl/rmlui/rmlui_leaderboard.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
+#include "port/sdl/rmlui/rmlui_network_replay_picker.h"
 #include "port/sdl/rmlui/rmlui_option_menu.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_replay_picker.h"
@@ -299,10 +300,10 @@ void Network_Lobby(struct _TASK* task_ptr) {
         Order[EFF_SLOT_NET_HDR] = 1;
         Order_Dir[EFF_SLOT_NET_HDR] = 8;
         Order_Timer[EFF_SLOT_NET_HDR] = 1;
-        effect_04_init(1, NET_CURSOR_TYPE_GATEWAY, 0, NET_CURSOR_SLOT_GATEWAY); /* cursor type 7 = 4-item gateway */
+        effect_04_init(1, NET_CURSOR_TYPE_GATEWAY, 0, NET_CURSOR_SLOT_GATEWAY); /* cursor type 7 = 5-item gateway */
         {
-            s16 char_index = NET_STR_GATEWAY_BASE; /* 74=LOBBY MODE, 75=LOCAL NETWORK, 76=LEADERBOARD, 77=EXIT */
-            for (ix = 0; ix < 4; ix++) {
+            s16 char_index = NET_STR_GATEWAY_BASE; /* 74=LOBBY MODE, 75=LOCAL NETWORK, 76=LEADERBOARD, 77=REPLAYS, 78=EXIT */
+            for (ix = 0; ix < 5; ix++) {
                 effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, EFF_FONT_CG_LARGE);
                 Order[ix + 0x50] = 1;
                 Order_Dir[ix + 0x50] = 4;
@@ -310,7 +311,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 char_index++;
             }
         }
-        Menu_Cursor_Move = 4;
+        Menu_Cursor_Move = 5;
         break;
 
     case 1:
@@ -324,15 +325,15 @@ void Network_Lobby(struct _TASK* task_ptr) {
         break;
 
     case 3:
-        /* Gateway input: pick LOBBY MODE / LOCAL NETWORK / LEADERBOARD / EXIT */
-        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 3, FADE_OPAQUE) == 0) {
-            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 3, FADE_OPAQUE);
+        /* Gateway input: pick LOBBY MODE / LOCAL NETWORK / LEADERBOARD / REPLAYS / EXIT */
+        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 4, FADE_OPAQUE) == 0) {
+            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 4, FADE_OPAQUE);
         }
 
         if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
             SE_selected();
 
-            if (Menu_Cursor_Y[0] == 3 || IO_Result == SWK_EAST) {
+            if (Menu_Cursor_Y[0] == 4 || IO_Result == SWK_EAST) {
                 /* EXIT — back to Mode_Select */
                 Menu_Suicide[0] = 0;
                 Menu_Suicide[1] = 1;
@@ -345,7 +346,10 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 break;
             }
 
-            if (Menu_Cursor_Y[0] == 2) {
+            if (Menu_Cursor_Y[0] == 3) {
+                /* REPLAYS — jump to network replays phase */
+                task_ptr->r_no[2] = 30;
+            } else if (Menu_Cursor_Y[0] == 2) {
                 /* LEADERBOARD — show RmlUI leaderboard overlay */
                 rmlui_leaderboard_show();
                 task_ptr->r_no[2] = 4; /* jump to leaderboard phase */
@@ -442,6 +446,91 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 task_ptr->r_no[3] = 0;
                 task_ptr->free[0] = 0;
             }
+        }
+        break;
+
+    /* ================================================================
+     * NETWORK REPLAYS PHASE (cases 30–34): online replay browser
+     * ================================================================ */
+    case 30:
+        /* Phase 30: Fade out, kill gateway items, request blue BG */
+        FadeOut(1, FADE_OPAQUE, 8);
+        task_ptr->r_no[2] += 1;
+        task_ptr->r_no[3] = 0;
+        task_ptr->timer = 5;
+        Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
+        Menu_Suicide[1] = 0;
+        Message_Data->kind_req = NET_BG_MODE_BLUE;
+        break;
+
+    case 31:
+        /* Phase 31: Destroy old effects, show RmlUI network replay picker */
+        FadeOut(1, FADE_OPAQUE, 8);
+        task_ptr->r_no[2] += 1;
+
+        effect_work_init();
+        Menu_Common_Init();
+        Menu_Cursor_Y[0] = 0;
+        Menu_Cursor_Y[1] = 0;
+        Order[EFF_SLOT_HEADER] = 5;
+        Order_Timer[EFF_SLOT_HEADER] = 1;
+        Order_Dir[EFF_SLOT_HEADER] = 1;
+
+        /* Blue background banner */
+        effect_57_init(EFF_SLOT_HEADER, MENU_HEADER_MODE_MENU, 0, EFF_Z_BLUE_BG, 0);
+
+        /* Show RmlUI network replay picker (auto-fetches page 0) */
+        rmlui_network_replay_picker_show();
+        /* fallthrough to case 32 */
+
+    case 32:
+        /* Wait for fade-out timer */
+        FadeOut(1, FADE_OPAQUE, 8);
+
+        if (--task_ptr->timer == 0) {
+            task_ptr->r_no[2] += 1;
+            task_ptr->r_no[3] = 1;
+            FadeInit();
+        }
+        break;
+
+    case 33:
+        /* Fade in */
+        if (FadeIn(1, FADE_SPEED_SLOW, 8)) {
+            task_ptr->r_no[2] += 1;
+        }
+        break;
+
+    case 34:
+        /* Network replay picker input loop */
+        {
+            rmlui_network_replay_picker_update();
+            int poll = rmlui_network_replay_picker_poll();
+
+            if (poll == -1) {
+                /* Cancel — back to gateway */
+                SE_selected();
+                rmlui_network_replay_picker_hide();
+                Menu_Suicide[0] = 0;
+                Menu_Suicide[1] = 1;
+                task_ptr->r_no[2] = 0;
+                task_ptr->r_no[3] = 0;
+                task_ptr->free[0] = 0;
+            } else if (poll == 0) {
+                /* Replay selected and downloaded — exit to replay playback.
+                 * Replay_w has been populated by the async download thread.
+                 * We set r_no[1]=1 to exit the Network_Lobby screen, and
+                 * ms_network_lobby.c will detect the exit and hand off to
+                 * ExitToLegacy, which routes to the replay viewer. */
+                rmlui_network_replay_picker_hide();
+                Menu_Suicide[0] = 0;
+                Menu_Suicide[1] = 1;
+                task_ptr->r_no[1] = 1;
+                task_ptr->r_no[2] = 0;
+                task_ptr->r_no[3] = 0;
+                task_ptr->free[0] = 0;
+            }
+            /* poll == 1: still browsing, keep looping */
         }
         break;
 
