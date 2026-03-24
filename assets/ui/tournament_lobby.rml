@@ -130,6 +130,10 @@
                  data-class-focused="cursor_x == 0 && ((is_host && tournament_started && cursor_y == 5) || (is_host && !tournament_started && cursor_y == 2) || (!is_host && cursor_y == 1))">
                 LEAVE ROOM
             </div>
+            <div id="qr-badge" data-if="qr_image_path != ''">
+                <img data-attr-src="qr_image_path" id="qr-code-img"/>
+                <div id="qr-label">SCAN TO JOIN</div>
+            </div>
         </div>
 
         <!-- Right: Player List + Chat -->

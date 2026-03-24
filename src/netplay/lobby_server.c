@@ -135,6 +135,14 @@ bool LobbyServer_WasInitialized(void) {
     return ls_initialized;  // Non-initializing — safe for shutdown guards
 }
 
+const char* LobbyServer_GetBaseURL(void) {
+    static char base_url[300] = { 0 };
+    ensure_init();
+    if (!configured) return "";
+    snprintf(base_url, sizeof(base_url), "http://%s:%d", server_host, server_port);
+    return base_url;
+}
+
 /* ======== SHA-256 (shared portable implementation) ======== */
 
 /* On non-Windows, use the shared portable SHA-256 for both hashing and HMAC.
@@ -1617,6 +1625,12 @@ static void sse_parse_event(const char* json_str, SSEEvent* out) {
         if (data) {
             out->round_number = cjson_get_int(data, "round", 0);
         }
+    } else if (strcmp(type_str, "REMOTE_JOIN") == 0) {
+        out->type = SSE_EVENT_REMOTE_JOIN;
+        if (data) {
+            cjson_get_string(data, "room", out->remote_join_room, sizeof(out->remote_join_room));
+            cjson_get_string(data, "password", out->remote_join_password, sizeof(out->remote_join_password));
+        }
     }
 
     cJSON_Delete(root);
@@ -1894,4 +1908,194 @@ SSEEventType LobbyServer_SSEPoll(SSEEvent* out_event) {
 
 bool LobbyServer_SSEIsConnected(void) {
     return SDL_GetAtomicInt(&s_sse_running) != 0;
+}
+
+/* ======== Global SSE (for QR Join relay) ========
+ * A lightweight SSE connection to /sse?player_id=... that receives
+ * REMOTE_JOIN events from QR code scans. Independent of the room SSE. */
+
+static SDL_AtomicInt s_gsse_running = { 0 };
+static SDL_AtomicInt s_gsse_stop = { 0 };
+static SDL_Thread* s_gsse_thread = NULL;
+static SDL_AtomicInt s_gsse_sock = { -1 };
+
+#define GSSE_RING_SIZE 4
+static SSEEvent s_gsse_ring[GSSE_RING_SIZE];
+static SDL_AtomicInt s_gsse_write_idx = { 0 };
+static SDL_AtomicInt s_gsse_read_idx = { 0 };
+
+static int gsse_thread_fn(void* userdata) {
+    (void)userdata;
+
+    int sock = sse_raw_connect();
+    if (sock < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GlobalSSE: connect failed");
+        SDL_SetAtomicInt(&s_gsse_running, 0);
+        return 1;
+    }
+    SDL_SetAtomicInt(&s_gsse_sock, sock);
+
+    const char* pid = Identity_IsInitialized() ? Identity_GetPlayerId() : "";
+    char request[512];
+    int req_len = snprintf(request, sizeof(request),
+                           "GET /sse?player_id=%s HTTP/1.1\r\n"
+                           "Host: %s:%d\r\n"
+                           "Accept: text/event-stream\r\n"
+                           "Cache-Control: no-cache\r\n"
+                           "Connection: keep-alive\r\n"
+                           "\r\n",
+                           pid, server_host, server_port);
+
+    if (send(sock, request, req_len, 0) < req_len) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GlobalSSE: send failed");
+        closesocket(sock);
+        SDL_SetAtomicInt(&s_gsse_sock, -1);
+        SDL_SetAtomicInt(&s_gsse_running, 0);
+        return 1;
+    }
+
+    SDL_Log("GlobalSSE: connected");
+
+    char buf[SSE_BUF_SIZE];
+    int buf_len = 0;
+    bool headers_done = false;
+
+#ifdef _WIN32
+    DWORD gsse_timeout = 1000;
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&gsse_timeout, sizeof(gsse_timeout));
+#else
+    struct timeval tv;
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+#endif
+
+    while (!SDL_GetAtomicInt(&s_gsse_stop)) {
+        int n = recv(sock, buf + buf_len, (int)(sizeof(buf) - 1 - buf_len), 0);
+        if (n < 0) {
+#ifdef _WIN32
+            if (WSAGetLastError() == WSAETIMEDOUT) continue;
+#else
+            if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
+#endif
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GlobalSSE: recv error");
+            break;
+        }
+        if (n == 0) {
+            SDL_Log("GlobalSSE: server closed connection");
+            break;
+        }
+
+        buf_len += n;
+        buf[buf_len] = '\0';
+
+        if (!headers_done) {
+            char* hdr_end = strstr(buf, "\r\n\r\n");
+            if (!hdr_end) continue;
+            hdr_end += 4;
+            int remaining = buf_len - (int)(hdr_end - buf);
+            if (remaining > 0) memmove(buf, hdr_end, remaining);
+            buf_len = remaining;
+            buf[buf_len] = '\0';
+            headers_done = true;
+        }
+
+        /* Process SSE data lines (skip comment lines starting with ':') */
+        char* line_start = buf;
+        while (1) {
+            char* data_prefix = strstr(line_start, "data: ");
+            if (!data_prefix) break;
+            char* line_end = strstr(data_prefix, "\n\n");
+            if (!line_end) break;
+
+            char* json_start = data_prefix + 6;
+            *line_end = '\0';
+
+            SSEEvent evt;
+            sse_parse_event(json_start, &evt);
+
+            if (evt.type != SSE_EVENT_NONE) {
+                int wi = SDL_GetAtomicInt(&s_gsse_write_idx);
+                int ri = SDL_GetAtomicInt(&s_gsse_read_idx);
+                if (wi - ri >= GSSE_RING_SIZE) {
+                    SDL_SetAtomicInt(&s_gsse_read_idx, ri + 1);
+                }
+                memcpy(&s_gsse_ring[wi % GSSE_RING_SIZE], &evt, sizeof(SSEEvent));
+                SDL_SetAtomicInt(&s_gsse_write_idx, wi + 1);
+            }
+
+            line_start = line_end + 2;
+        }
+
+        int remaining = buf_len - (int)(line_start - buf);
+        if (remaining > 0 && line_start != buf) memmove(buf, line_start, remaining);
+        buf_len = remaining;
+    }
+
+    closesocket(sock);
+    SDL_SetAtomicInt(&s_gsse_sock, -1);
+    SDL_SetAtomicInt(&s_gsse_running, 0);
+    SDL_Log("GlobalSSE: disconnected");
+    return 0;
+}
+
+bool LobbyServer_GlobalSSEConnect(void) {
+    ensure_init();
+    if (!configured || !Identity_IsInitialized()) return false;
+
+    if (SDL_GetAtomicInt(&s_gsse_running))
+        LobbyServer_GlobalSSEDisconnect();
+
+    SDL_SetAtomicInt(&s_gsse_stop, 0);
+    SDL_SetAtomicInt(&s_gsse_running, 1);
+    SDL_SetAtomicInt(&s_gsse_write_idx, 0);
+    SDL_SetAtomicInt(&s_gsse_read_idx, 0);
+    memset(s_gsse_ring, 0, sizeof(s_gsse_ring));
+
+    s_gsse_thread = SDL_CreateThread(gsse_thread_fn, "GlobalSSE", NULL);
+    if (!s_gsse_thread) {
+        SDL_SetAtomicInt(&s_gsse_running, 0);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GlobalSSE: failed to create thread");
+        return false;
+    }
+    SDL_DetachThread(s_gsse_thread);
+    return true;
+}
+
+void LobbyServer_GlobalSSEDisconnect(void) {
+    SDL_SetAtomicInt(&s_gsse_stop, 1);
+    if (!SDL_GetAtomicInt(&s_gsse_running)) return;
+
+    int sock = SDL_GetAtomicInt(&s_gsse_sock);
+    if (sock >= 0) {
+        SDL_SetAtomicInt(&s_gsse_sock, -1);
+        closesocket(sock);
+    }
+
+    int wait_ms = 0;
+    while (SDL_GetAtomicInt(&s_gsse_running) && wait_ms < 2000) {
+        SDL_Delay(10);
+        wait_ms += 10;
+    }
+    s_gsse_thread = NULL;
+    SDL_SetAtomicInt(&s_gsse_write_idx, 0);
+    SDL_SetAtomicInt(&s_gsse_read_idx, 0);
+}
+
+SSEEventType LobbyServer_GlobalSSEPoll(SSEEvent* out_event) {
+    int ri = SDL_GetAtomicInt(&s_gsse_read_idx);
+    int wi = SDL_GetAtomicInt(&s_gsse_write_idx);
+    if (ri >= wi) return SSE_EVENT_NONE;
+
+    if (wi - ri > GSSE_RING_SIZE) ri = wi - GSSE_RING_SIZE;
+
+    SSEEvent* slot = &s_gsse_ring[ri % GSSE_RING_SIZE];
+    if (out_event) memcpy(out_event, slot, sizeof(SSEEvent));
+
+    SDL_SetAtomicInt(&s_gsse_read_idx, ri + 1);
+    return slot->type;
+}
+
+bool LobbyServer_GlobalSSEIsConnected(void) {
+    return SDL_GetAtomicInt(&s_gsse_running) != 0;
 }

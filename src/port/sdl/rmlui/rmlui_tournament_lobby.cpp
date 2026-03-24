@@ -84,6 +84,7 @@ static Rml::String s_room_code;
 static Rml::String s_room_name;
 static Rml::String s_room_password;
 static int s_room_visibility = 0;
+static Rml::String s_qr_image_path;
 static Rml::String s_my_id;
 
 static int s_player_count = 0;
@@ -318,6 +319,7 @@ static void do_init(void) {
     ctor.Bind("room_name", &s_room_name);
     ctor.Bind("room_password", &s_room_password);
     ctor.Bind("room_visibility", &s_room_visibility);
+    ctor.Bind("qr_image_path", &s_qr_image_path);
     ctor.Bind("player_count", &s_player_count);
     ctor.Bind("max_players", &s_max_players);
     ctor.Bind("status_text", &s_status_text);
@@ -381,6 +383,8 @@ static void apply_room_state_to_model(void) {
     s_room_name = s_room_state.name;
     s_room_password = rmlui_network_lobby_get_active_password();
     s_room_visibility = s_room_state.visibility;
+    const char* qr_path = rmlui_network_lobby_get_qr_image_path();
+    s_qr_image_path = (qr_path && qr_path[0]) ? Rml::String(qr_path) : Rml::String();
     s_player_count = s_room_state.player_count;
     s_is_host = (strcmp(s_room_state.host, s_my_id.c_str()) == 0);
 
@@ -427,6 +431,7 @@ static void apply_room_state_to_model(void) {
     s_model_handle.DirtyVariable("room_name");
     s_model_handle.DirtyVariable("room_password");
     s_model_handle.DirtyVariable("room_visibility");
+    s_model_handle.DirtyVariable("qr_image_path");
     s_model_handle.DirtyVariable("player_count");
     s_model_handle.DirtyVariable("is_host");
     s_model_handle.DirtyVariable("room_players");

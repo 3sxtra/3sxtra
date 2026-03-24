@@ -59,6 +59,34 @@
     border-color: rgba(255, 100, 100, 150);
 }
 
+#qr-badge {
+    display: block;
+    text-align: center;
+    margin-top: 4dp;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: rgba(255, 255, 255, 240);
+    border-width: 1dp;
+    border-color: rgba(200, 200, 200, 200);
+    padding: 2dp;
+    width: 52dp;
+}
+
+#qr-code-img {
+    display: block;
+    width: 48dp;
+    height: 48dp;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#qr-label {
+    display: block;
+    font-size: 5dp;
+    color: rgba(0, 0, 0, 200);
+    margin-top: 1dp;
+}
+
 /* ─── Layout: Left (Match/Queue) + Right (Chat) ──────────────── */
 
 #lobby-body {

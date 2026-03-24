@@ -66,6 +66,10 @@
             <div id="btn-leave-room" data-class-focused="cursor_x == 0 && cursor_y == 10">
                 LEAVE ROOM
             </div>
+            <div id="qr-badge" data-if="qr_image_path != ''">
+                <img data-attr-src="qr_image_path" id="qr-code-img"/>
+                <div id="qr-label">SCAN TO JOIN</div>
+            </div>
             
         </div>
 

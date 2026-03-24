@@ -19,6 +19,9 @@ void rmlui_network_lobby_hide(void);
 // Returns the password for the active room, if any
 const char* rmlui_network_lobby_get_active_password(void);
 
+// Returns the filesystem path to the QR code BMP (empty if none)
+const char* rmlui_network_lobby_get_qr_image_path(void);
+
 // For casual/tournament rooms to reset the network lobby states if needed
 void rmlui_network_lobby_reset(void);
 void rmlui_network_lobby_shutdown(void);
@@ -71,6 +74,7 @@ static inline bool rmlui_network_lobby_is_password_popup_visible(void) { return 
 static inline bool rmlui_network_lobby_has_pending_room(void) { return false; }
 static inline const char* rmlui_network_lobby_consume_pending_room(void) { return ""; }
 static inline bool rmlui_network_lobby_pending_room_is_tournament(void) { return false; }
+static inline const char* rmlui_network_lobby_get_qr_image_path(void) { return ""; }
 
 #endif /* ENABLE_RMLUI */
 

@@ -203,6 +203,10 @@ const rooms = new Map();
 // reconnects SSE before it fires, the timer is cancelled.
 const sseGraceTimers = new Map();
 
+// Global SSE connections for players not in a room (used for QR join relay).
+// Key: player_id, Value: http.ServerResponse (SSE stream)
+const globalSseClients = new Map();
+
 function createPermanentRooms() {
     const permanentRooms = [
         { id: 'OPEN', name: 'Open Arena',         regions: [], max_players: 16 },
@@ -1618,6 +1622,72 @@ function resolveConnectMatch(player_id, display_name, room_code, connect_to) {
     }
 }
 
+// ---- QR Join Helpers ----
+
+/** Escape HTML special characters for safe output in generated pages. */
+function escHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/**
+ * Generate a styled mobile-friendly HTML page for the QR-join flow.
+ * @param {string} title - Page heading
+ * @param {string} message - HTML body content
+ * @param {'success'|'error'|'picker'} type - Visual theme
+ */
+function qrJoinHtml(title, message, type) {
+    const colors = {
+        success: { bg: '#0d1117', accent: '#3fb950', border: '#238636' },
+        error:   { bg: '#0d1117', accent: '#f85149', border: '#da3633' },
+        picker:  { bg: '#0d1117', accent: '#58a6ff', border: '#1f6feb' },
+    };
+    const c = colors[type] || colors.error;
+    return `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3SXtra — ${escHtml(title)}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:${c.bg};color:#c9d1d9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.card{background:#161b22;border:1px solid ${c.border};border-radius:12px;padding:32px;max-width:420px;width:100%;text-align:center}
+h1{color:${c.accent};font-size:1.5rem;margin-bottom:12px}
+p{font-size:1rem;line-height:1.5;color:#8b949e}
+p strong{color:#c9d1d9}
+.picker{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.btn{display:block;padding:14px 20px;background:${c.border};color:#fff;text-decoration:none;
+  border-radius:8px;font-size:1.1rem;font-weight:600;transition:background .15s}
+.btn:hover{background:${c.accent}}
+.logo{font-size:2rem;margin-bottom:8px}
+</style></head><body>
+<div class="card">
+<div class="logo">🕹️</div>
+<h1>${title}</h1>
+<p>${message}</p>
+</div></body></html>`;
+}
+
+/**
+ * Push a REMOTE_JOIN SSE event to a specific player.
+ * Tries the global SSE channel first, then falls back to any room SSE.
+ */
+function sendRemoteJoinEvent(playerId, roomCode, password) {
+    const payload = JSON.stringify({ type: 'REMOTE_JOIN', data: { room: roomCode, password: password || '' } });
+    const line = `data: ${payload}\n\n`;
+
+    // Try global SSE first
+    const globalRes = globalSseClients.get(playerId);
+    if (globalRes) {
+        try { globalRes.write(line); return; } catch { /* stale */ }
+    }
+
+    // Fallback: search room SSE connections (player might already be in a room)
+    // Room SSE clients are response objects stored in room.sseClients sets,
+    // but they're not keyed by player_id. We'd need to iterate — for now,
+    // global SSE is the primary channel.
+    console.warn(`[qr-join] no global SSE for ${playerId} — event may be lost`);
+}
+
 // ---- Routes ----
 
 async function handleRequest(req, res) {
@@ -1740,6 +1810,108 @@ async function handleRequest(req, res) {
             });
         }
         return json(res, 200, { rooms: list });
+    }
+
+    // --- Global SSE (no auth — player_id is unguessable) ---
+    // Provides a persistent event channel to clients not yet in a room.
+    // Used by the QR-Join relay to push REMOTE_JOIN events.
+    if (method === 'GET' && urlPath === '/sse') {
+        const playerId = url.searchParams.get('player_id') || '';
+        if (!playerId) return json(res, 400, { error: 'Missing player_id' });
+
+        // Close any previous global SSE for this player (reconnect)
+        const prev = globalSseClients.get(playerId);
+        if (prev) { try { prev.end(); } catch { /* ignore */ } }
+
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive'
+        });
+        // Heartbeat comment to confirm connection
+        res.write(': connected\n\n');
+
+        globalSseClients.set(playerId, res);
+        console.log(`[sse] global connected: ${playerId}`);
+
+        req.on('close', () => {
+            // Only delete if this response is still the current one
+            if (globalSseClients.get(playerId) === res) {
+                globalSseClients.delete(playerId);
+                console.log(`[sse] global disconnected: ${playerId}`);
+            }
+        });
+        return; // Keep connection open
+    }
+
+    // --- QR Join Relay (no auth — served to phones via scanned URL) ---
+    if (method === 'GET' && urlPath === '/qr-join') {
+        const roomCode = url.searchParams.get('room') || '';
+        const password = url.searchParams.get('pw') || '';
+        const phoneIp = (req.socket.remoteAddress || '').replace(/^::ffff:/, '');
+
+        if (!roomCode) {
+            res.writeHead(400, { 'Content-Type': 'text/html' });
+            return res.end(qrJoinHtml('Error', 'Missing room code in URL.', 'error'));
+        }
+
+        // Find 3SXtra clients whose stored IP matches the phone's public IP
+        const matchingClients = [];
+        for (const [id, p] of players) {
+            if (p.ip === phoneIp) {
+                matchingClients.push({ id, display_name: p.display_name });
+            }
+        }
+
+        if (matchingClients.length === 0) {
+            console.log(`[qr-join] no match for IP ${phoneIp} (room=${roomCode})`);
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            return res.end(qrJoinHtml(
+                'Could not find your PC',
+                'Make sure your phone is connected to the <strong>same Wi-Fi</strong> as your PC running 3SXtra, then scan again.',
+                'error'
+            ));
+        }
+
+        if (matchingClients.length === 1) {
+            const target = matchingClients[0];
+            sendRemoteJoinEvent(target.id, roomCode, password);
+            console.log(`[qr-join] direct relay to ${target.display_name} (${target.id}), room=${roomCode}`);
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            return res.end(qrJoinHtml(
+                'Success!',
+                `Joining room <strong>${roomCode}</strong> on <strong>${target.display_name}</strong>&rsquo;s PC. Check your screen!`,
+                'success'
+            ));
+        }
+
+        // Multiple clients on the same IP — show picker
+        const picked = url.searchParams.get('pick');
+        if (picked) {
+            const target = matchingClients.find(c => c.id === picked);
+            if (target) {
+                sendRemoteJoinEvent(target.id, roomCode, password);
+                console.log(`[qr-join] picked relay to ${target.display_name} (${target.id}), room=${roomCode}`);
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                return res.end(qrJoinHtml(
+                    'Success!',
+                    `Joining room <strong>${roomCode}</strong> on <strong>${target.display_name}</strong>&rsquo;s PC.`,
+                    'success'
+                ));
+            }
+        }
+
+        // Disambiguation: ask which client
+        const buttons = matchingClients.map(c =>
+            `<a class="btn" href="/qr-join?room=${encodeURIComponent(roomCode)}&pw=${encodeURIComponent(password)}&pick=${encodeURIComponent(c.id)}">${escHtml(c.display_name)}</a>`
+        ).join('');
+        console.log(`[qr-join] ${matchingClients.length} clients on IP ${phoneIp} — showing picker`);
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        return res.end(qrJoinHtml(
+            'Multiple players found',
+            `We found ${matchingClients.length} players on your network. Which screen are you on?<div class="picker">${buttons}</div>`,
+            'picker'
+        ));
     }
 
     // Auth check (all other endpoints)
@@ -2501,6 +2673,7 @@ async function handleRequest(req, res) {
             ft: typeof ft === 'number' ? Math.max(1, Math.min(10, ft)) : (existing ? existing.ft : 2),
             last_seen: Date.now(),
             last_chat_time: existing ? existing.last_chat_time : 0,
+            ip: clientIp.replace(/^::ffff:/, ''),
         });
 
         resolveConnectMatch(player_id, display_name, room_code, connect_to);

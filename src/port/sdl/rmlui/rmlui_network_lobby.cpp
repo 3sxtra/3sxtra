@@ -36,7 +36,9 @@ extern "C" {
 #include "netplay/identity.h"
 #include "netplay/lobby_server.h"
 #include "port/config/config.h"
+#include "port/config/paths.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
+#include "port/sdl/qr_texture.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 
 extern int g_lobby_peer_idx;
@@ -195,6 +197,9 @@ static const char* tournament_format_label(int f) {
     }
 }
 
+// QR code BMP path — generated on room create, displayed in casual lobby
+static char s_qr_image_path[512] = { 0 };
+
 struct AsyncRoomData {
     int action;          // 1 = create, 2 = join, 3 = create_tournament
     char name[64];       // room name (create)
@@ -231,6 +236,23 @@ static int SDLCALL async_room_fn(void* data) {
         snprintf(s_room_async_code, sizeof(s_room_async_code), "%s", room.id);
         s_room_async_type = room.room_type;
         snprintf(s_active_room_password, sizeof(s_active_room_password), "%s", d->password);
+
+        // Generate QR code BMP for private/password rooms (action 1 = create, 3 = tournament)
+        // Must happen BEFORE s_room_async_ok is set — main thread reads qr_image_path
+        // after observing async_done, so the path must be fully written first.
+        s_qr_image_path[0] = '\0';
+        if ((d->action == 1 || d->action == 3) && (d->password[0] || d->visibility == 1)) {
+            const char* server_url = LobbyServer_GetBaseURL();
+            if (server_url[0]) {
+                char qr_url[512];
+                snprintf(qr_url, sizeof(qr_url), "%s/qr-join?room=%s&pw=%s",
+                         server_url, room.id, d->password);
+                const char* pref = Paths_GetPrefPath();
+                snprintf(s_qr_image_path, sizeof(s_qr_image_path), "%sqr_join.bmp", pref ? pref : "");
+                QRTexture_GenerateBMP(qr_url, s_qr_image_path, 4);
+            }
+        }
+
         SDL_SetAtomicInt(&s_room_async_ok, 1);
     } else {
         s_room_async_code[0] = '\0';
@@ -679,6 +701,11 @@ static void do_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
+    // Start global SSE for QR join relay (receives REMOTE_JOIN events)
+    if (LobbyServer_IsConfigured() && !LobbyServer_GlobalSSEIsConnected()) {
+        LobbyServer_GlobalSSEConnect();
+    }
+
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi NetworkLobby] Data model registered (lazy)");
 }
 
@@ -691,6 +718,19 @@ extern "C" void rmlui_network_lobby_update(void) {
         return;
     if (!rmlui_wrapper_is_game_document_visible("network_lobby"))
         return;
+
+    // ── Poll global SSE for QR join events ────────────────────────
+    {
+        SSEEvent gsse_evt;
+        SSEEventType gsse_type = LobbyServer_GlobalSSEPoll(&gsse_evt);
+        if (gsse_type == SSE_EVENT_REMOTE_JOIN && gsse_evt.remote_join_room[0]) {
+            SDL_Log("[NetworkLobby] QR Join: joining room %s", gsse_evt.remote_join_room);
+            AsyncJoinRoom(
+                gsse_evt.remote_join_room,
+                gsse_evt.remote_join_password[0] ? gsse_evt.remote_join_password : NULL
+            );
+        }
+    }
 
     // ── Check async room create/join completion ───────────────────
     if (SDL_GetAtomicInt(&s_room_async_done)) {
@@ -1261,6 +1301,9 @@ extern "C" bool rmlui_network_lobby_is_password_popup_visible(void) {
 
 // ─── Shutdown ────────────────────────────────────────────────────
 extern "C" void rmlui_network_lobby_shutdown(void) {
+    // Disconnect global SSE when leaving network lobby
+    LobbyServer_GlobalSSEDisconnect();
+
     if (s_model_registered) {
         rmlui_wrapper_hide_game_document("network_lobby");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
@@ -1297,6 +1340,10 @@ extern "C" void rmlui_network_lobby_reset(void) {
 
 extern "C" const char* rmlui_network_lobby_get_active_password(void) {
     return s_active_room_password;
+}
+
+extern "C" const char* rmlui_network_lobby_get_qr_image_path(void) {
+    return s_qr_image_path;
 }
 
 #undef DIRTY_INT

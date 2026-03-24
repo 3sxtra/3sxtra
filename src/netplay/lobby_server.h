@@ -30,6 +30,10 @@ void LobbyServer_Init(void);
 bool LobbyServer_IsConfigured(void);
 bool LobbyServer_WasInitialized(void);
 
+/// Get the resolved base URL (e.g. "http://152.67.75.184:3000").
+/// Returns a pointer to a static buffer, or "" if not configured.
+const char* LobbyServer_GetBaseURL(void);
+
 /// Register or update player presence on the lobby server.
 /// connect_to may be NULL or "" (no connection intent) or a target room code.
 /// rtt_ms: our measured RTT to the lobby server in ms (-1 if unknown).
@@ -297,6 +301,7 @@ typedef enum {
     SSE_EVENT_MATCH_END,       // Match ended (winner stays on, loser to back)
     SSE_EVENT_BRACKET_UPDATE,  // Tournament: bracket tree updated after match result
     SSE_EVENT_ROUND_ADVANCE,   // Tournament: all matches in current round complete
+    SSE_EVENT_REMOTE_JOIN,     // QR join relay: phone scan triggered a room join
 } SSEEventType;
 
 typedef struct {
@@ -329,6 +334,9 @@ typedef struct {
     TournamentState tournament;
     // Tournament: round number (populated on ROUND_ADVANCE)
     int round_number;
+    // QR Join: room code and password (populated on REMOTE_JOIN)
+    char remote_join_room[16];
+    char remote_join_password[64];
 } SSEEvent;
 
 /// Start SSE connection to a room (spawns background thread).
@@ -383,6 +391,22 @@ bool LobbyServer_BracketPause(const char* room_code, bool pause);
 
 /// TO action: re-fire a match proposal for a disputed/timed-out match.
 bool LobbyServer_BracketRestartMatch(const char* room_code, int match_index);
+
+// === Global SSE (for QR Join relay) ===
+
+/// Start a global SSE connection (not tied to a room). Used for receiving
+/// REMOTE_JOIN events from QR code scans while on the network menu.
+bool LobbyServer_GlobalSSEConnect(void);
+
+/// Stop the global SSE connection.
+void LobbyServer_GlobalSSEDisconnect(void);
+
+/// Poll for next event on the global SSE channel.
+/// Returns SSE_EVENT_NONE if no events pending.
+SSEEventType LobbyServer_GlobalSSEPoll(SSEEvent* out_event);
+
+/// Returns true if the global SSE connection is active.
+bool LobbyServer_GlobalSSEIsConnected(void);
 
 #ifdef __cplusplus
 }
