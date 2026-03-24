@@ -82,10 +82,11 @@ struct RoomItem {
     int max_players;
     bool selected;
     bool is_tournament;
+    bool is_private;
 
     bool operator==(const RoomItem& o) const {
         return code == o.code && name == o.name && player_count == o.player_count && max_players == o.max_players &&
-               selected == o.selected && is_tournament == o.is_tournament;
+               selected == o.selected && is_tournament == o.is_tournament && is_private == o.is_private;
     }
     bool operator!=(const RoomItem& o) const {
         return !(*this == o);
@@ -115,6 +116,9 @@ static int SDLCALL async_room_list_fn(void* data) {
     int rc = LobbyServer_ListRooms(items, 16);
     memcpy(s_room_fetch_buf, items, sizeof(items));
     s_room_fetch_count = rc;
+
+    // Release barrier guarantees payload writes are visible before 'done' goes to 1
+    SDL_MemoryBarrierRelease();
     SDL_SetAtomicInt(&s_room_fetch_done, 1);
     SDL_SetAtomicInt(&s_room_fetch_active, 0);
     return 0;
@@ -153,6 +157,25 @@ static int s_create_room_type = ROOM_TYPE_CASUAL; // 0=casual, 2=tournament
 static int s_create_tournament_format = TOURNAMENT_SINGLE_ELIM;
 static Rml::String s_create_room_type_label = "CASUAL";
 static Rml::String s_create_tournament_format_label = "SINGLE ELIM";
+static int s_create_room_visibility = ROOM_VISIBILITY_PUBLIC;
+static Rml::String s_create_room_visibility_label = "PUBLIC";
+static char s_create_room_password[64] = { 0 };
+
+// Password prompt popup state (for joining private rooms OR setting create-room password)
+static bool s_password_popup_visible = false;
+static int s_password_popup_mode = 0;    // 0 = join (submits to AsyncJoinRoom), 1 = create (stores in s_create_room_password)
+static char s_password_input[64] = { 0 };
+static int s_password_input_len = 0;
+static Rml::String s_password_input_display;
+static char s_password_target_room[16] = { 0 };
+
+// Arcade-style character cycling state
+static int s_password_char_idx = 0; // index into charset for current cycling
+static const char PASSWORD_CHARSET[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+static const int PASSWORD_CHARSET_LEN = 36; // A-Z (26) + 0-9 (10)
+
+// Create room password display label
+static Rml::String s_create_password_label = "NONE";
 
 static const char* room_type_label(int t) {
     switch (t) {
@@ -177,6 +200,8 @@ struct AsyncRoomData {
     int ft;              // FT mode for the room (create only)
     int room_type;       // RoomType enum (for create)
     int tournament_fmt;  // TournamentFormat enum (for tournament create)
+    char password[64];   // room password (create + join)
+    int visibility;      // RoomVisibility enum (for create)
 };
 
 static int SDLCALL async_room_fn(void* data) {
@@ -186,16 +211,18 @@ static int SDLCALL async_room_fn(void* data) {
     bool ok = false;
 
     if (d->action == 1) {
-        ok = LobbyServer_CreateRoom(d->name, d->ft, &room);
+        ok = LobbyServer_CreateRoom(d->name, d->ft, d->password[0] ? d->password : NULL, d->visibility, &room);
     } else if (d->action == 2) {
         char err[128] = { 0 };
-        ok = LobbyServer_JoinRoom(d->code, &room, err, sizeof(err));
+        ok = LobbyServer_JoinRoom(d->code, d->password[0] ? d->password : NULL, &room, err, sizeof(err));
         if (!ok && err[0]) {
             snprintf(s_room_async_error, sizeof(s_room_async_error), "%s", err);
         }
     } else if (d->action == 3) {
         ok = LobbyServer_CreateTournamentRoom(d->name, (TournamentFormat)d->tournament_fmt,
-                                              16, d->ft, "rating", &room);
+                                              16, d->ft, "rating",
+                                              d->password[0] ? d->password : NULL,
+                                              d->visibility, &room);
     }
 
     if (ok) {
@@ -208,12 +235,15 @@ static int SDLCALL async_room_fn(void* data) {
     }
 
     free(d);
+
+    // Release barrier guarantees string writes are visible before 'done' goes to 1
+    SDL_MemoryBarrierRelease();
     SDL_SetAtomicInt(&s_room_async_done, 1);
     SDL_SetAtomicInt(&s_room_async_active, 0);
     return 0;
 }
 
-static void AsyncCreateRoom(const char* name) {
+static void AsyncCreateRoom(const char* name, const char* password, int visibility) {
     if (SDL_GetAtomicInt(&s_room_async_active) != 0)
         return;
     SDL_SetAtomicInt(&s_room_async_active, 1);
@@ -221,7 +251,10 @@ static void AsyncCreateRoom(const char* name) {
     AsyncRoomData* d = (AsyncRoomData*)calloc(1, sizeof(AsyncRoomData));
     d->action = 1;
     d->ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
+    d->visibility = visibility;
     snprintf(d->name, sizeof(d->name), "%s", name ? name : "Casual Room");
+    if (password && password[0])
+        snprintf(d->password, sizeof(d->password), "%s", password);
     SDL_Thread* t = SDL_CreateThread(async_room_fn, "AsyncCreateRoom", d);
     if (t) {
         SDL_DetachThread(t);
@@ -231,7 +264,7 @@ static void AsyncCreateRoom(const char* name) {
     }
 }
 
-static void AsyncJoinRoom(const char* code) {
+static void AsyncJoinRoom(const char* code, const char* password) {
     if (SDL_GetAtomicInt(&s_room_async_active) != 0)
         return;
     SDL_SetAtomicInt(&s_room_async_active, 1);
@@ -239,6 +272,8 @@ static void AsyncJoinRoom(const char* code) {
     AsyncRoomData* d = (AsyncRoomData*)calloc(1, sizeof(AsyncRoomData));
     d->action = 2;
     snprintf(d->code, sizeof(d->code), "%s", code);
+    if (password && password[0])
+        snprintf(d->password, sizeof(d->password), "%s", password);
     SDL_Thread* t = SDL_CreateThread(async_room_fn, "AsyncJoinRoom", d);
     if (t) {
         SDL_DetachThread(t);
@@ -337,6 +372,7 @@ static void do_init(void) {
         h.RegisterMember("max_players", &RoomItem::max_players);
         h.RegisterMember("selected", &RoomItem::selected);
         h.RegisterMember("is_tournament", &RoomItem::is_tournament);
+        h.RegisterMember("is_private", &RoomItem::is_private);
     }
     ctor.RegisterArray<std::vector<RoomItem>>();
 
@@ -375,6 +411,14 @@ static void do_init(void) {
     ctor.Bind("create_room_type_label", &s_create_room_type_label);
     ctor.Bind("create_tournament_format", &s_create_tournament_format);
     ctor.Bind("create_tournament_format_label", &s_create_tournament_format_label);
+
+    // Visibility + password popup
+    ctor.Bind("create_room_visibility", &s_create_room_visibility);
+    ctor.Bind("create_room_visibility_label", &s_create_room_visibility_label);
+    ctor.Bind("create_password_label", &s_create_password_label);
+    ctor.Bind("password_popup_visible", &s_password_popup_visible);
+    ctor.Bind("password_popup_mode", &s_password_popup_mode);
+    ctor.Bind("password_input_display", &s_password_input_display);
 
     // Room list scalars
     ctor.BindFunc("room_count", [](Rml::Variant& v) { v = (int)s_room_list.size(); });
@@ -647,6 +691,8 @@ extern "C" void rmlui_network_lobby_update(void) {
 
     // ── Check async room create/join completion ───────────────────
     if (SDL_GetAtomicInt(&s_room_async_done)) {
+        // Acquire barrier pairs with Release in the worker, ensuring safety
+        SDL_MemoryBarrierAcquire();
         SDL_SetAtomicInt(&s_room_async_done, 0);
         if (SDL_GetAtomicInt(&s_room_async_ok)) {
             // Success — signal ms_network_lobby.c to transition to casual lobby
@@ -777,6 +823,8 @@ extern "C" void rmlui_network_lobby_update(void) {
 
         // Consume result when ready
         if (SDL_GetAtomicInt(&s_room_fetch_done)) {
+            // Acquire barrier pairs with Release in the worker, ensuring safety
+            SDL_MemoryBarrierAcquire();
             SDL_SetAtomicInt(&s_room_fetch_done, 0);
             int rc = s_room_fetch_count;
             DIRTY_INT(room_count, rc);
@@ -795,6 +843,7 @@ extern "C" void rmlui_network_lobby_update(void) {
                 item.max_players = s_room_fetch_buf[i].max_players;
                 item.selected = (i == s_room_list_idx);
                 item.is_tournament = (s_room_fetch_buf[i].room_type == ROOM_TYPE_TOURNAMENT);
+                item.is_private = (s_room_fetch_buf[i].password_required != 0);
                 next.push_back(item);
             }
             if (next != s_room_list) {
@@ -875,6 +924,9 @@ extern "C" void rmlui_network_lobby_create_room(void) {
         d->ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
         d->room_type = ROOM_TYPE_TOURNAMENT;
         d->tournament_fmt = s_create_tournament_format;
+        d->visibility = s_create_room_visibility;
+        if (s_create_room_password[0])
+            snprintf(d->password, sizeof(d->password), "%s", s_create_room_password);
         snprintf(d->name, sizeof(d->name), "%s", name);
         SDL_Thread* t = SDL_CreateThread(async_room_fn, "AsyncCreateTRoom", d);
         if (t) {
@@ -888,8 +940,14 @@ extern "C" void rmlui_network_lobby_create_room(void) {
         s_room_status = "Creating...";
         if (s_model_handle)
             s_model_handle.DirtyVariable("room_status");
-        AsyncCreateRoom(name);
+        AsyncCreateRoom(name, s_create_room_password[0] ? s_create_room_password : NULL, s_create_room_visibility);
     }
+
+    // Clear password after use and reset label
+    memset(s_create_room_password, 0, sizeof(s_create_room_password));
+    s_create_password_label = "NONE";
+    if (s_model_handle)
+        s_model_handle.DirtyVariable("create_password_label");
 }
 
 extern "C" void rmlui_network_lobby_cycle_room_type(int direction) {
@@ -939,14 +997,31 @@ extern "C" void rmlui_network_lobby_join_room(void) {
     if (SDL_GetAtomicInt(&s_room_async_active) != 0)
         return;
 
-    const Rml::String& code = s_room_list[s_room_list_idx].code;
-    s_join_room_code = code;
+    const RoomItem& selected = s_room_list[s_room_list_idx];
+
+    // If room is private, show password popup instead of joining directly
+    if (selected.is_private) {
+        snprintf(s_password_target_room, sizeof(s_password_target_room), "%s", selected.code.c_str());
+        memset(s_password_input, 0, sizeof(s_password_input));
+        s_password_input_len = 0;
+        s_password_char_idx = 0;
+        s_password_popup_mode = 0; // join mode
+        s_password_input_display = "_";
+        s_password_popup_visible = true;
+        if (s_model_handle) {
+            s_model_handle.DirtyVariable("password_popup_visible");
+            s_model_handle.DirtyVariable("password_input_display");
+        }
+        return;
+    }
+
+    s_join_room_code = selected.code;
     s_room_status = "Joining...";
     if (s_model_handle) {
         s_model_handle.DirtyVariable("join_room_code");
         s_model_handle.DirtyVariable("room_status");
     }
-    AsyncJoinRoom(code.c_str());
+    AsyncJoinRoom(selected.code.c_str(), NULL);
 }
 
 /// Scroll room list selection (called from menu.c on Left/Right when cursor == 9)
@@ -962,6 +1037,200 @@ extern "C" void rmlui_network_lobby_room_scroll(int delta) {
         s_model_handle.DirtyVariable("room_list");
         s_model_handle.DirtyVariable("room_list_idx");
     }
+}
+
+// ─── Visibility cycle ────────────────────────────────────────────
+extern "C" void rmlui_network_lobby_cycle_visibility(int direction) {
+    (void)direction;
+    if (s_create_room_visibility == ROOM_VISIBILITY_PUBLIC)
+        s_create_room_visibility = ROOM_VISIBILITY_HIDDEN;
+    else
+        s_create_room_visibility = ROOM_VISIBILITY_PUBLIC;
+    s_create_room_visibility_label = (s_create_room_visibility == ROOM_VISIBILITY_HIDDEN) ? "PRIVATE" : "PUBLIC";
+
+    // When switching back to PUBLIC, clear any stored creation password
+    if (s_create_room_visibility == ROOM_VISIBILITY_PUBLIC) {
+        memset(s_create_room_password, 0, sizeof(s_create_room_password));
+        s_create_password_label = "NONE";
+    }
+
+    if (s_model_handle) {
+        s_model_handle.DirtyVariable("create_room_visibility");
+        s_model_handle.DirtyVariable("create_room_visibility_label");
+        s_model_handle.DirtyVariable("create_password_label");
+    }
+}
+
+extern "C" int rmlui_network_lobby_get_visibility(void) {
+    return s_create_room_visibility;
+}
+
+// ─── Password popup actions ──────────────────────────────────────
+
+/// Helper: rebuild masked display string from current input
+static void password_update_display(void) {
+    if (s_password_input_len == 0) {
+        s_password_input_display = "_";
+    } else {
+        // Show typed chars as '*' except show the last char when cycling
+        s_password_input_display = Rml::String(s_password_input_len, '*');
+    }
+    if (s_model_handle)
+        s_model_handle.DirtyVariable("password_input_display");
+}
+
+extern "C" void rmlui_network_lobby_password_input(int key) {
+    // key codes for arcade-style cycling from gamepad:
+    //   1 = UP   (cycle forward)
+    //   2 = DOWN (cycle backward)
+    //   3 = RIGHT (append current char and advance)
+    //   4 = LEFT  (backspace)
+    // key >= 32: direct ASCII character (keyboard passthrough)
+    // key == 8: backspace (keyboard)
+
+    if (key == 1) {
+        // UP: cycle forward through charset
+        s_password_char_idx = (s_password_char_idx + 1) % PASSWORD_CHARSET_LEN;
+        // Replace last char or show preview
+        if (s_password_input_len > 0) {
+            s_password_input[s_password_input_len - 1] = PASSWORD_CHARSET[s_password_char_idx];
+        } else {
+            // First char: append
+            s_password_input[0] = PASSWORD_CHARSET[s_password_char_idx];
+            s_password_input[1] = '\0';
+            s_password_input_len = 1;
+        }
+        // Show password with last char visible (cycling preview)
+        if (s_password_input_len > 1) {
+            s_password_input_display = Rml::String(s_password_input_len - 1, '*');
+            s_password_input_display += PASSWORD_CHARSET[s_password_char_idx];
+        } else {
+            s_password_input_display = Rml::String(1, PASSWORD_CHARSET[s_password_char_idx]);
+        }
+        if (s_model_handle)
+            s_model_handle.DirtyVariable("password_input_display");
+        return;
+    }
+
+    if (key == 2) {
+        // DOWN: cycle backward through charset
+        s_password_char_idx = (s_password_char_idx - 1 + PASSWORD_CHARSET_LEN) % PASSWORD_CHARSET_LEN;
+        if (s_password_input_len > 0) {
+            s_password_input[s_password_input_len - 1] = PASSWORD_CHARSET[s_password_char_idx];
+        } else {
+            s_password_input[0] = PASSWORD_CHARSET[s_password_char_idx];
+            s_password_input[1] = '\0';
+            s_password_input_len = 1;
+        }
+        if (s_password_input_len > 1) {
+            s_password_input_display = Rml::String(s_password_input_len - 1, '*');
+            s_password_input_display += PASSWORD_CHARSET[s_password_char_idx];
+        } else {
+            s_password_input_display = Rml::String(1, PASSWORD_CHARSET[s_password_char_idx]);
+        }
+        if (s_model_handle)
+            s_model_handle.DirtyVariable("password_input_display");
+        return;
+    }
+
+    if (key == 3) {
+        // RIGHT: lock current char and advance to next position
+        if (s_password_input_len > 0 && s_password_input_len < 63) {
+            // Current char already in buffer from UP/DOWN cycling
+            s_password_input_len++;
+            s_password_input[s_password_input_len - 1] = PASSWORD_CHARSET[0];
+            s_password_input[s_password_input_len] = '\0';
+            s_password_char_idx = 0;
+        }
+        password_update_display();
+        return;
+    }
+
+    if (key == 4 || key == 8) {
+        // LEFT or Backspace: delete last char
+        if (s_password_input_len > 0) {
+            s_password_input[--s_password_input_len] = '\0';
+            s_password_char_idx = 0;
+        }
+        password_update_display();
+        return;
+    }
+
+    // Direct ASCII key (keyboard passthrough)
+    if (key >= 32 && key < 127 && s_password_input_len < 63) {
+        s_password_input[s_password_input_len++] = (char)key;
+        s_password_input[s_password_input_len] = '\0';
+        s_password_char_idx = 0;
+    }
+    password_update_display();
+}
+
+extern "C" void rmlui_network_lobby_submit_password(void) {
+    if (!s_password_popup_visible)
+        return;
+
+    // Strip trailing cycling char if it was just added by cycling (len > 0 but only cycled, never "locked")
+    // Actually each char is valid — the buffer is always the full typed password.
+
+    s_password_popup_visible = false;
+
+    if (s_password_popup_mode == 1) {
+        // CREATE MODE: store password for next room creation
+        snprintf(s_create_room_password, sizeof(s_create_room_password), "%s", s_password_input);
+        s_create_password_label = s_password_input_len > 0
+            ? Rml::String(s_password_input_len, '*')
+            : "NONE";
+        if (s_model_handle) {
+            s_model_handle.DirtyVariable("password_popup_visible");
+            s_model_handle.DirtyVariable("create_password_label");
+        }
+    } else {
+        // JOIN MODE: join the room with the typed password
+        s_join_room_code = Rml::String(s_password_target_room);
+        s_room_status = "Joining...";
+        if (s_model_handle) {
+            s_model_handle.DirtyVariable("password_popup_visible");
+            s_model_handle.DirtyVariable("join_room_code");
+            s_model_handle.DirtyVariable("room_status");
+        }
+        AsyncJoinRoom(s_password_target_room, s_password_input[0] ? s_password_input : NULL);
+    }
+
+    // Clear password state
+    memset(s_password_input, 0, sizeof(s_password_input));
+    s_password_input_len = 0;
+    s_password_char_idx = 0;
+    s_password_target_room[0] = '\0';
+}
+
+extern "C" void rmlui_network_lobby_cancel_password(void) {
+    s_password_popup_visible = false;
+    memset(s_password_input, 0, sizeof(s_password_input));
+    s_password_input_len = 0;
+    s_password_char_idx = 0;
+    s_password_target_room[0] = '\0';
+    s_password_input_display = "";
+    if (s_model_handle) {
+        s_model_handle.DirtyVariable("password_popup_visible");
+        s_model_handle.DirtyVariable("password_input_display");
+    }
+}
+
+extern "C" void rmlui_network_lobby_open_create_password(void) {
+    memset(s_password_input, 0, sizeof(s_password_input));
+    s_password_input_len = 0;
+    s_password_char_idx = 0;
+    s_password_popup_mode = 1; // create mode
+    s_password_input_display = "_";
+    s_password_popup_visible = true;
+    if (s_model_handle) {
+        s_model_handle.DirtyVariable("password_popup_visible");
+        s_model_handle.DirtyVariable("password_input_display");
+    }
+}
+
+extern "C" bool rmlui_network_lobby_is_password_popup_visible(void) {
+    return s_password_popup_visible;
 }
 
 // ─── Shutdown ────────────────────────────────────────────────────

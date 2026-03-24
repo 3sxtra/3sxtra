@@ -51,7 +51,7 @@ static bool s_model_registered = false;
 
 /* ── Slot info for data binding ────────────────────────────────── */
 struct SlotEntry {
-    int index;        /* absolute slot index (0-19) */
+    Rml::String filename; /* string filename */
     int display_num;  /* display number within tab (1-10) */
     int page_idx;     /* index within current page (0..PAGE_SIZE-1) for cursor matching */
     bool exists;
@@ -71,7 +71,7 @@ static int s_tab      = 0;  /* 0=LOCAL, 1=NETPLAY */
 static int s_page     = 0;  /* 0-indexed page within current tab */
 static bool s_open    = false;
 static int s_result   = 1;  /* 1=active, 0=done, -1=cancelled */
-static int s_selected_slot = -1;
+static char s_selected_filename[128] = "";
 
 /* ── Cache for dirty detection ─────────────────────────────────── */
 struct ReplayPickerCache {
@@ -95,33 +95,36 @@ static void refresh_slot_data(void) {
     /* Build full slot list for current tab */
     s_all_slots.clear();
     int is_netplay = (s_tab == 1) ? 1 : 0;
-    int slots[1000];
-    int count = NativeSave_FindAllReplays(slots, 1000, is_netplay);
+    char filenames[1000][128];
+    int count = NativeSave_FindAllReplays(filenames, 1000, is_netplay);
 
     for (int i = 0; i < count; i++) {
-        int slot = slots[i];
+        const char* filename = filenames[i];
         SlotEntry entry;
-        entry.index = slot;
+        entry.filename = filename;
         entry.display_num = i + 1;
         entry.exists = true;
 
         _sub_info info;
-        NativeSave_GetReplayInfo(slot, &info);
-        entry.p1_name = char_name(info.player[0]);
-        entry.p2_name = char_name(info.player[1]);
-        char buf[32];
-        SDL_snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d",
-                     info.date.year, info.date.month, info.date.day,
-                     info.date.hour, info.date.min);
-        entry.date_str = buf;
+        if (NativeSave_GetReplayInfo(filename, &info) == 0) {
+            entry.p1_name = char_name(info.player[0]);
+            entry.p2_name = char_name(info.player[1]);
+            char buf[32];
+            SDL_snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d",
+                         info.date.year, info.date.month, info.date.day,
+                         info.date.hour, info.date.min);
+            entry.date_str = buf;
+        } else {
+            entry.p1_name = "Unknown";
+            entry.p2_name = "Unknown";
+            entry.date_str = filename; /* Fallback to filename if metadata is broken */
+        }
         s_all_slots.push_back(entry);
     }
 
     if (s_mode == 1 && s_tab == 0) {
-        int new_slot = 0;
-        if (count > 0) new_slot = slots[0] + 1;
         SlotEntry entry;
-        entry.index = new_slot;
+        entry.filename = ""; /* Will trigger auto-generation in save logic */
         entry.display_num = count + 1;
         entry.exists = false;
         entry.p1_name = "--- NEW";
@@ -177,7 +180,7 @@ static void do_init(void) {
 
     /* Register SlotEntry struct */
     if (auto sh = ctor.RegisterStruct<SlotEntry>()) {
-        sh.RegisterMember("index", &SlotEntry::index);
+        sh.RegisterMember("filename", &SlotEntry::filename);
         sh.RegisterMember("display_num", &SlotEntry::display_num);
         sh.RegisterMember("page_idx", &SlotEntry::page_idx);
         sh.RegisterMember("exists", &SlotEntry::exists);
@@ -266,7 +269,7 @@ extern "C" void rmlui_replay_picker_open(int mode) {
     s_cursor = 0;
     s_zone = 0;
     s_result = 1;
-    s_selected_slot = -1;
+    s_selected_filename[0] = '\0';
     s_open = true;
 
     refresh_slot_data();
@@ -374,7 +377,7 @@ extern "C" int rmlui_replay_picker_poll(void) {
             if (s_mode == 0 && !slot.exists) {
                 /* Can't load empty slot — do nothing */
             } else {
-                s_selected_slot = slot.index;
+                SDL_strlcpy(s_selected_filename, slot.filename.c_str(), sizeof(s_selected_filename));
                 s_open = false;
                 s_result = 0;
                 rmlui_replay_picker_hide();
@@ -386,9 +389,9 @@ extern "C" int rmlui_replay_picker_poll(void) {
     return 1;
 }
 
-/* ── Get selected slot ─────────────────────────────────────────── */
-extern "C" int rmlui_replay_picker_get_slot(void) {
-    return s_selected_slot;
+/* ── Get selected filename ─────────────────────────────────────── */
+extern "C" const char* rmlui_replay_picker_get_filename(void) {
+    return s_selected_filename;
 }
 
 /* ── Shutdown ──────────────────────────────────────────────────── */

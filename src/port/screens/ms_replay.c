@@ -164,8 +164,8 @@ static void load_replay_tick(struct _TASK* task_ptr) {
         int pick_result = rmlui_replay_picker_poll();
         if (pick_result == 0) {
             /* User picked a replay — try to load it */
-            int slot = rmlui_replay_picker_get_slot();
-            if (NativeSave_LoadReplay(slot) == 0) {
+            const char* filename = rmlui_replay_picker_get_filename();
+            if (NativeSave_LoadReplay(filename) == 0) {
                 /* Load successful — set up for game transition */
                 Decide_ID = 0;
                 if (Interface_Type[0] == 0) {

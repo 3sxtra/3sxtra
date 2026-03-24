@@ -528,6 +528,8 @@ int LobbyServer_ListRooms(RoomListItem* out_rooms, int max_rooms) {
         r->max_players = cjson_get_int(item, "max_players", 8);
         r->ft = cjson_get_int(item, "ft", 1);
         r->room_type = cjson_get_int(item, "room_type", ROOM_TYPE_CASUAL);
+        r->password_required = cjson_get_int(item, "password_required", 0);
+        r->visibility = cjson_get_int(item, "visibility", ROOM_VISIBILITY_PUBLIC);
         if (strlen(r->code) > 0)
             count++;
     }
@@ -906,6 +908,8 @@ static void parse_room_json(const char* json_str, RoomState* out) {
     cjson_get_string(root, "host", out->host, sizeof(out->host));
     out->ft = cjson_get_int(root, "ft", 1);
     out->room_type = cjson_get_int(root, "room_type", ROOM_TYPE_CASUAL);
+    out->visibility = cjson_get_int(root, "visibility", ROOM_VISIBILITY_PUBLIC);
+    out->password_set = cjson_get_int(root, "password_set", 0);
 
     /* Parse players array */
     const cJSON* players = cJSON_GetObjectItemCaseSensitive(root, "players");
@@ -958,7 +962,7 @@ static void parse_room_json(const char* json_str, RoomState* out) {
     cJSON_Delete(root);
 }
 
-bool LobbyServer_CreateRoom(const char* name, int ft, RoomState* out_room) {
+bool LobbyServer_CreateRoom(const char* name, int ft, const char* password, int visibility, RoomState* out_room) {
     if (!Identity_IsInitialized())
         return false;
 
@@ -971,6 +975,9 @@ bool LobbyServer_CreateRoom(const char* name, int ft, RoomState* out_room) {
     cJSON_AddStringToObject(root, "player_id", Identity_GetPlayerId());
     cJSON_AddStringToObject(root, "name", name ? name : "");
     cJSON_AddNumberToObject(root, "ft", ft);
+    if (password && password[0])
+        cJSON_AddStringToObject(root, "password", password);
+    cJSON_AddNumberToObject(root, "visibility", visibility);
     char* body = cJSON_PrintUnformatted(root);
     cJSON_Delete(root);
 
@@ -994,6 +1001,8 @@ bool LobbyServer_CreateRoom(const char* name, int ft, RoomState* out_room) {
         SDL_strlcpy(out_room->host, Identity_GetPlayerId(), sizeof(out_room->host));
         out_room->player_count = 1;
         out_room->ft = ft;
+        out_room->visibility = visibility;
+        out_room->password_set = (password && password[0]) ? 1 : 0;
         SDL_strlcpy(out_room->players[0].player_id, Identity_GetPlayerId(), sizeof(out_room->players[0].player_id));
         SDL_strlcpy(
             out_room->players[0].display_name, Identity_GetDisplayName(), sizeof(out_room->players[0].display_name));
@@ -1001,14 +1010,21 @@ bool LobbyServer_CreateRoom(const char* name, int ft, RoomState* out_room) {
     return true;
 }
 
-bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room, char* out_error, size_t error_size) {
+bool LobbyServer_JoinRoom(const char* room_code, const char* password, RoomState* out_room, char* out_error, size_t error_size) {
     if (!Identity_IsInitialized())
         return false;
 
     if (out_error && error_size > 0)
         out_error[0] = '\0';
 
-    char* body = json_body_pid_room(Identity_GetPlayerId(), room_code);
+    cJSON* root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "player_id", Identity_GetPlayerId());
+    cJSON_AddStringToObject(root, "room_code", room_code);
+    if (password && password[0])
+        cJSON_AddStringToObject(root, "password", password);
+    char* body = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+
     char response[HTTP_BUF_SIZE];
     bool ok = http_request("POST", "/room/join", body, response, sizeof(response));
     free(body);
@@ -1024,6 +1040,11 @@ bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room, char* out_
                     char your_region[16] = { 0 };
                     cjson_get_string(err_json, "your_region", your_region, sizeof(your_region));
                     snprintf(out_error, error_size, "Region locked — you are in %s", your_region);
+                } else if (strcmp(err_msg, "Wrong password") == 0 ||
+                           strcmp(err_msg, "Invalid password") == 0) {
+                    snprintf(out_error, error_size, "Wrong password");
+                } else if (strcmp(err_msg, "Password required") == 0) {
+                    snprintf(out_error, error_size, "Password required");
                 } else if (err_msg[0]) {
                     snprintf(out_error, error_size, "%s", err_msg);
                 }
@@ -1231,6 +1252,7 @@ static void parse_tournament_json(const cJSON* root, TournamentState* out) {
 
 bool LobbyServer_CreateTournamentRoom(const char* name, TournamentFormat format,
                                        int max_players, int ft, const char* seeding,
+                                       const char* password, int visibility,
                                        RoomState* out_room) {
     if (!Identity_IsInitialized())
         return false;
@@ -1248,6 +1270,9 @@ bool LobbyServer_CreateTournamentRoom(const char* name, TournamentFormat format,
     cJSON_AddNumberToObject(root, "tournament_format", (int)format);
     cJSON_AddNumberToObject(root, "max_players", max_players);
     cJSON_AddStringToObject(root, "seeding", seeding ? seeding : "rating");
+    if (password && password[0])
+        cJSON_AddStringToObject(root, "password", password);
+    cJSON_AddNumberToObject(root, "visibility", visibility);
     char* body = cJSON_PrintUnformatted(root);
     cJSON_Delete(root);
 

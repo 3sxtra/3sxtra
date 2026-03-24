@@ -71,10 +71,10 @@ static void ensure_replay_dir(void) {
     done = 1;
 }
 
-static void make_replay_path(char* dst, size_t dst_size, int slot, const char* ext) {
+static void make_replay_path(char* dst, size_t dst_size, const char* filename, const char* ext) {
     ensure_save_dir();
     ensure_replay_dir();
-    snprintf(dst, dst_size, "%sreplays/replay_%02d%s", save_dir, slot, ext);
+    snprintf(dst, dst_size, "%sreplays/%s%s", save_dir, filename, ext);
 }
 
 /* ── INI parser helpers ────────────────────────────────────────────── */
@@ -526,13 +526,19 @@ void NativeSave_SaveDirection(void) {
 /** Internal header for native replay files */
 typedef struct {
     u32 magic;     /* 0x33535852 = "3SXR" */
-    u32 version;   /* 1 */
+    u32 version;   /* 2 */
     u32 data_size; /* sizeof(_REPLAY_W) */
     u32 reserved;
+    /* Added in version 2 */
+    u8 player1_char;
+    u8 player2_char;
+    u8 winner; /* 0=P1, 1=P2, 2=Draw */
+    u8 stage;
+    u32 date_timestamp; /* time_t truncated to u32 */
 } NativeReplayHeader;
 
 #define NATIVE_REPLAY_MAGIC 0x33535852 /* "3SXR" */
-#define NATIVE_REPLAY_VERSION 1
+#define NATIVE_REPLAY_VERSION 2
 
 static void get_current_date(memcard_date* md) {
     time_t rawtime;
@@ -556,13 +562,13 @@ static void get_current_date(memcard_date* md) {
     }
 }
 
-/** @brief Check if a replay slot has a saved file. Returns 1 if exists, 0 if empty. */
-int NativeSave_ReplayExists(int slot) {
-    if (slot < 0 || slot >= NATIVE_SAVE_REPLAY_SLOTS)
+/** @brief Check if a replay file exists. Returns 1 if exists, 0 if empty. */
+int NativeSave_ReplayExists(const char* filename) {
+    if (!filename || !filename[0])
         return 0;
 
     char path[512];
-    make_replay_path(path, sizeof(path), slot, ".bin");
+    make_replay_path(path, sizeof(path), filename, ".bin");
 
     FILE* f = fopen(path, "rb");
     if (!f)
@@ -571,13 +577,13 @@ int NativeSave_ReplayExists(int slot) {
     return 1;
 }
 
-/** @brief Get metadata for a replay slot without loading full data. */
-int NativeSave_GetReplayInfo(int slot, _sub_info* out) {
-    if (slot < 0 || slot >= NATIVE_SAVE_REPLAY_SLOTS || !out)
+/** @brief Get metadata for a replay file without loading full data. */
+int NativeSave_GetReplayInfo(const char* filename, _sub_info* out) {
+    if (!filename || !filename[0] || !out)
         return -1;
 
     char path[512];
-    make_replay_path(path, sizeof(path), slot, ".meta");
+    make_replay_path(path, sizeof(path), filename, ".meta");
 
     FILE* f = fopen(path, "rb");
     if (!f)
@@ -589,37 +595,51 @@ int NativeSave_GetReplayInfo(int slot, _sub_info* out) {
     return (read == sizeof(_sub_info)) ? 0 : -1;
 }
 
-/** @brief Load replay data from the given slot into Replay_w. */
-int NativeSave_LoadReplay(int slot) {
-    if (slot < 0 || slot >= NATIVE_SAVE_REPLAY_SLOTS)
+/** @brief Load replay data from the given file into Replay_w. */
+int NativeSave_LoadReplay(const char* filename) {
+    if (!filename || !filename[0])
         return -1;
 
     char path[512];
-    make_replay_path(path, sizeof(path), slot, ".bin");
+    make_replay_path(path, sizeof(path), filename, ".bin");
 
     FILE* f = fopen(path, "rb");
     if (!f) {
-        SDL_Log("[NativeSave] Replay %d not found", slot);
+        SDL_Log("[NativeSave] Replay %s not found", filename);
         return -1;
     }
 
-    /* Read and validate header */
+    /* Read and validate header — v1 backward compatible */
     NativeReplayHeader hdr;
-    if (fread(&hdr, 1, sizeof(hdr), f) != sizeof(hdr)) {
-        SDL_Log("[NativeSave] Replay %d: header read error", slot);
+    memset(&hdr, 0, sizeof(hdr));
+
+    /* First read the common 16 bytes (v1 header) */
+    size_t v1_size = 16; /* magic (4) + version (4) + data_size (4) + reserved (4) */
+    if (fread(&hdr, 1, v1_size, f) != v1_size) {
+        SDL_Log("[NativeSave] Replay %s: header read error (v1)", filename);
         fclose(f);
         return -2;
     }
 
+    /* If version >= 2, read the rest of the header */
+    if (hdr.version >= 2) {
+        size_t v2_remainder = sizeof(NativeReplayHeader) - v1_size;
+        if (fread((uint8_t*)&hdr + v1_size, 1, v2_remainder, f) != v2_remainder) {
+            SDL_Log("[NativeSave] Replay %s: header read error (v2 payload)", filename);
+            fclose(f);
+            return -2;
+        }
+    }
+
     if (hdr.magic != NATIVE_REPLAY_MAGIC) {
-        SDL_Log("[NativeSave] Replay %d: bad magic 0x%08X", slot, hdr.magic);
+        SDL_Log("[NativeSave] Replay %s: bad magic 0x%08X", filename, hdr.magic);
         fclose(f);
         return -2;
     }
 
     if (hdr.data_size != sizeof(_REPLAY_W)) {
         SDL_Log(
-            "[NativeSave] Replay %d: size mismatch (file=%u, expected=%zu)", slot, hdr.data_size, sizeof(_REPLAY_W));
+            "[NativeSave] Replay %s: size mismatch (file=%u, expected=%zu)", filename, hdr.data_size, sizeof(_REPLAY_W));
         /* Still try to load — forward compat */
     }
 
@@ -630,23 +650,23 @@ int NativeSave_LoadReplay(int slot) {
     fclose(f);
 
     if (got < to_read) {
-        SDL_Log("[NativeSave] Replay %d: short read (%zu/%zu)", slot, got, to_read);
+        SDL_Log("[NativeSave] Replay %s: short read (%zu/%zu)", filename, got, to_read);
         return -2;
     }
 
-    SDL_Log("[NativeSave] Replay %d loaded from %s", slot, path);
+    SDL_Log("[NativeSave] Replay %s loaded from %s", filename, path);
     return 0;
 }
 
-/** @brief Save current replay data to the given slot. */
-int NativeSave_SaveReplay(int slot) {
-    if (slot < 0 || slot >= NATIVE_SAVE_REPLAY_SLOTS)
+/** @brief Save current replay data to the given filename. */
+int NativeSave_SaveReplay(const char* filename) {
+    if (!filename || !filename[0])
         return -1;
 
     char bin_path[512], bin_tmp[520];
     char meta_path[512], meta_tmp[520];
-    make_replay_path(bin_path, sizeof(bin_path), slot, ".bin");
-    make_replay_path(meta_path, sizeof(meta_path), slot, ".meta");
+    make_replay_path(bin_path, sizeof(bin_path), filename, ".bin");
+    make_replay_path(meta_path, sizeof(meta_path), filename, ".meta");
 
     /* Prepare replay data — copy from game state (mirrors save_data_store_replay) */
     _REPLAY_W* rw = &Replay_w;
@@ -670,9 +690,17 @@ int NativeSave_SaveReplay(int slot) {
         return -1;
     }
 
-    NativeReplayHeader hdr = {
-        .magic = NATIVE_REPLAY_MAGIC, .version = NATIVE_REPLAY_VERSION, .data_size = sizeof(_REPLAY_W), .reserved = 0
-    };
+    NativeReplayHeader hdr;
+    memset(&hdr, 0, sizeof(hdr));
+    hdr.magic = NATIVE_REPLAY_MAGIC;
+    hdr.version = NATIVE_REPLAY_VERSION;
+    hdr.data_size = sizeof(_REPLAY_W);
+    hdr.player1_char = rp->player_infor[0].my_char;
+    hdr.player2_char = rp->player_infor[1].my_char;
+    hdr.winner = (rw->game_infor.winner == 0) ? 0 : ((rw->game_infor.winner == 1) ? 1 : 2);
+    hdr.stage = rw->game_infor.stage;
+    hdr.date_timestamp = (u32)time(NULL);
+
     fwrite(&hdr, 1, sizeof(hdr), f);
     fwrite(rw, 1, sizeof(_REPLAY_W), f);
     fclose(f);
@@ -691,12 +719,12 @@ int NativeSave_SaveReplay(int slot) {
         atomic_commit(meta_path, meta_tmp);
     }
 
-    SDL_Log("[NativeSave] Replay %d saved to %s", slot, bin_path);
+    SDL_Log("[NativeSave] Replay %s saved to %s", filename, bin_path);
     return 0;
 }
 
 typedef struct {
-    int* out_slots;
+    char (*out_filenames)[128];
     int max_count;
     int current_count;
     int is_netplay;
@@ -704,66 +732,109 @@ typedef struct {
 
 static SDL_EnumerationResult enum_replay_cb(void *userdata, const char *dirname, const char *fname) {
     EnumReplayCtx* ctx = (EnumReplayCtx*)userdata;
-    int slot;
-    if (sscanf(fname, "replay_%02d.meta", &slot) == 1 || sscanf(fname, "replay_%d.meta", &slot) == 1) {
-        int is_netplay = (slot >= NATIVE_SAVE_NETPLAY_BASE);
-        if (is_netplay == ctx->is_netplay) {
+    const char* ext = strrchr(fname, '.');
+    if (ext && strcmp(ext, ".meta") == 0) {
+        /* Determine if it's netplay based on a '_net_' substring.
+         * Legacy slots >= 10000 were netplay, so we check for 'replay_XXXXX.meta'. */
+        int is_netplay = 0;
+        int legacy_slot = -1;
+        if (sscanf(fname, "replay_%d.meta", &legacy_slot) == 1 && legacy_slot >= NATIVE_SAVE_NETPLAY_BASE) {
+            is_netplay = 1;
+        } else if (strstr(fname, "_net_") != NULL) {
+            is_netplay = 1;
+        }
+
+        if (is_netplay == ctx->is_netplay || ctx->is_netplay == -1) {
             if (ctx->current_count < ctx->max_count) {
-                ctx->out_slots[ctx->current_count++] = slot;
+                size_t len = ext - fname;
+                if (len >= 128) len = 127;
+                memcpy(ctx->out_filenames[ctx->current_count], fname, len);
+                ctx->out_filenames[ctx->current_count][len] = '\0';
+                ctx->current_count++;
             }
         }
     }
     return SDL_ENUM_CONTINUE;
 }
 
-int NativeSave_FindAllReplays(int* out_slots, int max_count, int is_netplay) {
-    EnumReplayCtx ctx = { out_slots, max_count, 0, is_netplay };
+static int replay_filename_cmp_desc(const void* a, const void* b) {
+    return strcmp((const char*)b, (const char*)a);
+}
+
+int NativeSave_FindAllReplays(char out_filenames[][128], int max_count, int is_netplay) {
+    EnumReplayCtx ctx = { out_filenames, max_count, 0, is_netplay };
     char path[512];
     ensure_save_dir();
     snprintf(path, sizeof(path), "%sreplays", save_dir);
 
     SDL_EnumerateDirectory(path, enum_replay_cb, &ctx);
 
-    /* Sort descending (newest/highest slot first) */
-    for (int i = 0; i < ctx.current_count - 1; i++) {
-        for (int j = i + 1; j < ctx.current_count; j++) {
-            if (out_slots[i] < out_slots[j]) {
-                int t = out_slots[i];
-                out_slots[i] = out_slots[j];
-                out_slots[j] = t;
-            }
-        }
+    /* Sort descending (newest first based on string comparison) */
+    if (ctx.current_count > 1) {
+        qsort(out_filenames, ctx.current_count, 128, replay_filename_cmp_desc);
     }
     return ctx.current_count;
 }
 
-/** @brief Auto-save replay to the next available uncapped slot. */
-int NativeSave_AutoSaveReplay(void) {
-    int slots[1000];
-    int count = NativeSave_FindAllReplays(slots, 1000, 1); // 1 = is_netplay
-    int highest = NATIVE_SAVE_NETPLAY_BASE - 1;
+/* Character name table for auto-save filenames */
+extern s32 chkNameAkuma(s32 plnum, s32 rnum);
 
-    if (count > 0) {
-        highest = slots[0]; // array is sorted descending
+static const char* autosave_char_names[] = {
+    "Gill",  "Alex",    "Ryu",    "Yun",  "Dudley", "Necro", "Hugo",
+    "Ibuki", "Elena",   "Oro",    "Yang", "Ken",    "Sean",  "Urien",
+    "Gouki", "Chun-Li", "Makoto", "Q",    "Twelve", "Remy",  "Akuma"
+};
+
+static const char* get_char_name_for_filename(int my_char_id) {
+    int idx = my_char_id + chkNameAkuma(my_char_id, 6);
+    if (idx >= 0 && idx < 21) {
+        return autosave_char_names[idx];
     }
-
-    int target = highest + 1;
-    SDL_Log("[NativeSave] Auto-saving replay to uncapped slot %d", target);
-
-    return NativeSave_SaveReplay(target);
+    return "Unknown";
 }
 
-/** @brief Delete a replay slot (removes both .bin and .meta files). */
-int NativeSave_DeleteReplay(int slot) {
-    if (slot < 0 || slot >= NATIVE_SAVE_REPLAY_SLOTS)
+/** @brief Auto-save replay to a descriptive filename. */
+int NativeSave_AutoSaveReplay(int is_netplay) {
+    _REPLAY_W* rw = &Replay_w;
+    struct _REP_GAME_INFOR* rp = &rw->game_infor;
+
+    int p1_char = rp->player_infor[0].my_char;
+    int p2_char = rp->player_infor[1].my_char;
+
+    const char* p1_str = get_char_name_for_filename(p1_char);
+    const char* p2_str = get_char_name_for_filename(p2_char);
+
+    int winner = rp->winner;
+    const char* result_str = (winner == 0) ? "P1" : ((winner == 1) ? "P2" : "D");
+
+    time_t rawtime;
+    struct tm* t;
+    time(&rawtime);
+    t = localtime(&rawtime);
+
+    char filename[128];
+    snprintf(filename, sizeof(filename), "%04d-%02d-%02d_%02d-%02d-%02d_%s_%s-vs-%s_W-%s",
+             t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+             t->tm_hour, t->tm_min, t->tm_sec,
+             is_netplay ? "net" : "loc",
+             p1_str, p2_str, result_str);
+
+    SDL_Log("[NativeSave] Auto-saving replay to %s", filename);
+
+    return NativeSave_SaveReplay(filename);
+}
+
+/** @brief Delete a replay file (removes both .bin and .meta files). */
+int NativeSave_DeleteReplay(const char* filename) {
+    if (!filename || !filename[0])
         return -1;
 
     char path[512];
-    make_replay_path(path, sizeof(path), slot, ".bin");
+    make_replay_path(path, sizeof(path), filename, ".bin");
     remove(path);
-    make_replay_path(path, sizeof(path), slot, ".meta");
+    make_replay_path(path, sizeof(path), filename, ".meta");
     remove(path);
 
-    SDL_Log("[NativeSave] Replay %d deleted", slot);
+    SDL_Log("[NativeSave] Replay %s deleted", filename);
     return 0;
 }

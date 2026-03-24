@@ -128,8 +128,14 @@ static void save_replay_tick(struct _TASK* task_ptr) {
         int pick_result = rmlui_replay_picker_poll();
         if (pick_result == 0) {
             /* User picked a slot — save the replay */
-            int slot = rmlui_replay_picker_get_slot();
-            NativeSave_SaveReplay(slot);
+            const char* filename = rmlui_replay_picker_get_filename();
+            if (!filename || !filename[0]) {
+                NativeSave_AutoSaveReplay(0); /* 0 = local */
+            } else {
+                /* Overwriting an existing replay: delete old, create new */
+                NativeSave_DeleteReplay(filename);
+                NativeSave_AutoSaveReplay(0); /* 0 = local */
+            }
         }
         if (pick_result != 1) {
             /* Done or cancelled — trigger cancel path */

@@ -30,7 +30,6 @@
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/input/controller_image_overlay.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
-#include "port/ui/replay_picker.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/debug/Debug.h"

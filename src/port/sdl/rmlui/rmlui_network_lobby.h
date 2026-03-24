@@ -22,7 +22,15 @@ void rmlui_network_lobby_join_room(void);
 void rmlui_network_lobby_room_scroll(int delta);
 void rmlui_network_lobby_cycle_room_type(int direction);
 void rmlui_network_lobby_cycle_tournament_format(int direction);
+void rmlui_network_lobby_cycle_visibility(int direction);
 int rmlui_network_lobby_get_create_room_type(void);
+int rmlui_network_lobby_get_visibility(void);
+
+void rmlui_network_lobby_password_input(int key);
+void rmlui_network_lobby_submit_password(void);
+void rmlui_network_lobby_cancel_password(void);
+void rmlui_network_lobby_open_create_password(void);
+bool rmlui_network_lobby_is_password_popup_visible(void);
 
 /// Returns true if an async Create/Join completed and a room is ready.
 bool rmlui_network_lobby_has_pending_room(void);
@@ -45,7 +53,14 @@ static inline void rmlui_network_lobby_join_room(void) {}
 static inline void rmlui_network_lobby_room_scroll(int delta) { (void)delta; }
 static inline void rmlui_network_lobby_cycle_room_type(int direction) { (void)direction; }
 static inline void rmlui_network_lobby_cycle_tournament_format(int direction) { (void)direction; }
+static inline void rmlui_network_lobby_cycle_visibility(int direction) { (void)direction; }
 static inline int rmlui_network_lobby_get_create_room_type(void) { return 0; }
+static inline int rmlui_network_lobby_get_visibility(void) { return 0; }
+static inline void rmlui_network_lobby_password_input(int key) { (void)key; }
+static inline void rmlui_network_lobby_submit_password(void) {}
+static inline void rmlui_network_lobby_cancel_password(void) {}
+static inline void rmlui_network_lobby_open_create_password(void) {}
+static inline bool rmlui_network_lobby_is_password_popup_visible(void) { return false; }
 static inline bool rmlui_network_lobby_has_pending_room(void) { return false; }
 static inline const char* rmlui_network_lobby_consume_pending_room(void) { return ""; }
 static inline bool rmlui_network_lobby_pending_room_is_tournament(void) { return false; }

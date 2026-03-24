@@ -61,29 +61,30 @@ void NativeSave_SaveDirection(void);
 
 /* ── Replay ────────────────────────────────────────────────────────── */
 
+/* Used by legacy UI screens still allocating static buffers, max number to display */
 #define NATIVE_SAVE_REPLAY_SLOTS 999999
 #define NATIVE_SAVE_NETPLAY_BASE 10000
 
-/** Find all replays for a given mode. Returns the number of replays found (slots sorted descending). */
-int NativeSave_FindAllReplays(int* out_slots, int max_count, int is_netplay);
+/** Find all replays for a given mode. Returns the number of replays found (sorted descending by filename). */
+int NativeSave_FindAllReplays(char out_filenames[][128], int max_count, int is_netplay);
 
-/** Check if a replay slot has a saved file. Returns 1=exists, 0=empty. */
-int NativeSave_ReplayExists(int slot);
+/** Check if a replay file exists. Returns 1=exists, 0=empty. */
+int NativeSave_ReplayExists(const char* filename);
 
-/** Get metadata for a replay slot without loading full data. Returns 0 on success. */
-int NativeSave_GetReplayInfo(int slot, _sub_info* out);
+/** Get metadata for a replay file without loading full data. Returns 0 on success. */
+int NativeSave_GetReplayInfo(const char* filename, _sub_info* out);
 
-/** Load replay data from slot. Returns 0 on success. */
-int NativeSave_LoadReplay(int slot);
+/** Load replay data from filename. Returns 0 on success. */
+int NativeSave_LoadReplay(const char* filename);
 
-/** Save current replay data to slot. Returns 0 on success. */
-int NativeSave_SaveReplay(int slot);
+/** Save current replay data to the given filename. Returns 0 on success. */
+int NativeSave_SaveReplay(const char* filename);
 
-/** Delete a replay slot. Returns 0 on success. */
-int NativeSave_DeleteReplay(int slot);
+/** Delete a replay file. Returns 0 on success. */
+int NativeSave_DeleteReplay(const char* filename);
 
-/** Auto-save replay to the oldest or first empty slot. Returns slot used or -1 on failure. */
-int NativeSave_AutoSaveReplay(void);
+/** Auto-save replay using descriptive filename. Returns 0 on success. */
+int NativeSave_AutoSaveReplay(int is_netplay);
 
 /* ── Utility ───────────────────────────────────────────────────────── */
 

@@ -19,7 +19,6 @@
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/input/controller_image_overlay.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
-#include "port/ui/replay_picker.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -640,6 +639,32 @@ void Network_Lobby(struct _TASK* task_ptr) {
         if (Netplay_GetSessionState() != NETPLAY_SESSION_LOBBY && Netplay_GetSessionState() != NETPLAY_SESSION_IDLE)
             break;
 
+        /* === Password popup input intercept === */
+        if (rmlui_network_lobby_is_password_popup_visible()) {
+            u16 click = (~plsw_01[0] & plsw_00[0]) | (~plsw_01[1] & plsw_00[1]);
+            if (click & 1)  /* UP */
+                rmlui_network_lobby_password_input(1);
+            if (click & 2)  /* DOWN */
+                rmlui_network_lobby_password_input(2);
+            if (click & 4)  /* LEFT */
+                rmlui_network_lobby_password_input(4);
+            if (click & 8)  /* RIGHT */
+                rmlui_network_lobby_password_input(3);
+            switch (IO_Result) {
+            case SWK_SOUTH: /* LP = confirm */
+                rmlui_network_lobby_submit_password();
+                SE_selected();
+                break;
+            case SWK_EAST: /* MK = cancel */
+                rmlui_network_lobby_cancel_password();
+                SE_selected();
+                break;
+            default:
+                break;
+            }
+            break; /* skip all normal menu input while popup is active */
+        }
+
         /* Decelerate slide-in offset */
         if (s_slide_offset > 0) {
             s_slide_offset = (int)(s_slide_offset / 1.18f);
@@ -696,21 +721,33 @@ void Network_Lobby(struct _TASK* task_ptr) {
         bool popup_active =
             SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge() || lan_incoming || lan_outgoing;
 
-        /* Handle cursor movement (14 items: 0..13) */
+        /* Handle cursor movement (16 items: 0..15) */
         {
             s16 prev_cursor = Menu_Cursor_Y[0];
-            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 13, FADE_OPAQUE) == 0) {
-                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 13, FADE_OPAQUE);
+            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 15, FADE_OPAQUE) == 0) {
+                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 15, FADE_OPAQUE);
             }
             if (popup_active) {
                 Menu_Cursor_Y[0] = prev_cursor;
             } else {
-                /* Skip FORMAT row (10) when room type is not tournament */
-                if (Menu_Cursor_Y[0] == 10 && rmlui_network_lobby_get_create_room_type() != 2) {
+                /* Skip PASSWORD row (11) when visibility is PUBLIC */
+                if (Menu_Cursor_Y[0] == 11 && rmlui_network_lobby_get_visibility() != 1) {
                     if (Menu_Cursor_Y[0] > prev_cursor)
-                        Menu_Cursor_Y[0] = 11; /* moving down → skip to CREATE ROOM */
+                        Menu_Cursor_Y[0] = 12; /* moving down → skip to FORMAT/CREATE */
                     else
-                        Menu_Cursor_Y[0] = 9;  /* moving up → skip to ROOM TYPE */
+                        Menu_Cursor_Y[0] = 10;  /* moving up → skip to VISIBILITY */
+                }
+                /* Skip FORMAT row (12) when room type is not tournament */
+                if (Menu_Cursor_Y[0] == 12 && rmlui_network_lobby_get_create_room_type() != 2) {
+                    if (Menu_Cursor_Y[0] > prev_cursor)
+                        Menu_Cursor_Y[0] = 13; /* moving down → skip to CREATE ROOM */
+                    else {
+                        /* moving up → skip to PASSWORD or VISIBILITY */
+                        if (rmlui_network_lobby_get_visibility() == 1)
+                            Menu_Cursor_Y[0] = 11; /* PASSWORD visible */
+                        else
+                            Menu_Cursor_Y[0] = 10; /* skip to VISIBILITY */
+                    }
                 }
                 if (prev_cursor != Menu_Cursor_Y[0]) {
                     if (task_ptr->free[2] == NET_MODE_NATIVE) {
@@ -853,14 +890,21 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     }
                     break;
                 }
-                case 10: { /* TOURNAMENT FORMAT cycle */
+                case 10: { /* VISIBILITY toggle */
+                    if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                        rmlui_network_lobby_cycle_visibility((click & 4) ? -1 : 1);
+                        SE_dir_cursor_move();
+                    }
+                    break;
+                }
+                case 12: { /* TOURNAMENT FORMAT cycle */
                     if (task_ptr->free[2] == NET_MODE_RMLUI) {
                         rmlui_network_lobby_cycle_tournament_format((click & 4) ? -1 : 1);
                         SE_dir_cursor_move();
                     }
                     break;
                 }
-                case 12: { /* JOIN ROOM (room list scroll) */
+                case 14: { /* JOIN ROOM (room list scroll) */
                     if (task_ptr->free[2] == NET_MODE_RMLUI) {
                         rmlui_network_lobby_room_scroll((click & 4) ? -1 : 1);
                         SE_dir_cursor_move();
@@ -1192,25 +1236,37 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         }
                         SE_selected();
                         break;
-                    case 10: /* TOURNAMENT FORMAT cycle (confirm = advance) */
+                    case 10: /* VISIBILITY toggle (confirm = toggle) */
+                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                            rmlui_network_lobby_cycle_visibility(1);
+                        }
+                        SE_selected();
+                        break;
+                    case 11: /* PASSWORD (open password entry popup) */
+                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                            rmlui_network_lobby_open_create_password();
+                        }
+                        SE_selected();
+                        break;
+                    case 12: /* TOURNAMENT FORMAT cycle (confirm = advance) */
                         if (task_ptr->free[2] == NET_MODE_RMLUI) {
                             rmlui_network_lobby_cycle_tournament_format(1);
                         }
                         SE_selected();
                         break;
-                    case 11: /* CREATE ROOM (RmlUI only) */
+                    case 13: /* CREATE ROOM (RmlUI only) */
                         if (task_ptr->free[2] == NET_MODE_RMLUI) {
                             rmlui_network_lobby_create_room();
                         }
                         SE_selected();
                         break;
-                    case 12: /* JOIN ROOM (RmlUI only) */
+                    case 14: /* JOIN ROOM (RmlUI only) */
                         if (task_ptr->free[2] == NET_MODE_RMLUI) {
                             rmlui_network_lobby_join_room();
                         }
                         SE_selected();
                         break;
-                    case 13:
+                    case 15:
                         /* EXIT */
                         goto lobby_exit;
                     }

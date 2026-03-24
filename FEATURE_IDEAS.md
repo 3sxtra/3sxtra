@@ -54,10 +54,10 @@
 | System | Details |
 |---|---|
 | **Replay recording/playback** | [sys_replay.c](file:///d:/3sxtra/src/sf33rd/Source/Game/system/sys_replay.c) — CPS3-native format |
-| **Replay picker (local)** | [rmlui_replay_picker.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_replay_picker.cpp) — 20-slot UI |
+| **Replay picker (local)** | [rmlui_replay_picker.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_replay_picker.cpp) — string-based UI with metadata display |
 | **Replay picker (online)** | [rmlui_network_replay_picker.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_network_replay_picker.cpp) — browse/download replays from lobby server. Accessed via Network Gateway → REPLAYS. Async fetch + download threads, injects into `Replay_w` for playback. Server endpoints: `GET /replays` (paginated list), `GET /replays/:id` (binary download). |
 | **Save/load flow** | [ms_save_replay.c](file:///d:/3sxtra/src/port/screens/ms_save_replay.c) — full enter/tick/exit lifecycle |
-| **Auto-save (netplay)** | `NativeSave_AutoSaveReplay()` called in [sdl_netplay_ui.cpp](file:///d:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp#L974-L979) when match ends (guarded by `PL_Wins[0] + PL_Wins[1] > 0`). Slots 0–9 = manual, 10+ = auto-save (uncapped). |
+| **Auto-save (netplay)** | `NativeSave_AutoSaveReplay(1)` called in [sdl_netplay_ui.cpp](file:///d:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp) when match ends. Generates descriptive string filename. |
 | **Server upload** | `AsyncReportMatch()` snapshots `Replay_w` and uploads via `LobbyServer_UploadReplay()` on a background thread. Server stores as `replays/replay_{matchId}.bin`, sets `has_replay=1` in matches table. |
 | **Lobby chat** | [rmlui_casual_lobby.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_casual_lobby.cpp) — 50-message buffer, real-time via `SSE_EVENT_CHAT`, `LobbyServer_SendChat()` |
 
@@ -67,8 +67,8 @@
 |---|---|---|
 | Auto-save every match | ✅ Works for netplay | — |
 | Online replay browsing | ✅ Implemented | Network Gateway → REPLAYS. Paginated list, async download, inject into `Replay_w`. |
-| Descriptive filenames | ❌ | Extend `NativeReplayHeader` (currently only magic/version/size/reserved) with chars, winner, stage |
-| Metadata auto-tagging | ❌ | New fields in header + save path |
+| Descriptive filenames | ✅ Implemented | String-based filenames with timestamp, mode, chars, winner |
+| Metadata auto-tagging | ✅ Implemented | `NativeReplayHeader` v2 + sidecar `.meta` files |
 | Retention policy | ❌ | Auto-save slots just rotate/overwrite |
 | Highlight bookmarks | ❌ | New input handler during gameplay recording frame numbers |
 | In-match quick-chat | ❌ | Entirely new UI — lobby chat is hidden during matches |
@@ -81,7 +81,7 @@
 
 #### What Exists
 
-> Nothing tournament-specific. However, the **existing room infrastructure is directly reusable** as the foundation. The lobby server already has: rooms with SSE streaming, match proposal → accept → start → end lifecycle, match reporting with cross-validation, Glicko-2 stats, STUN/UPnP P2P connections, winner-stays-on rotation, spectating (4 viewers, 15f delay), and room chat.
+> **Tournaments are fully implemented** (March 24, 2026). All bracket formats, TO controls, bracket UI, and server API extensions are operational. The system extends the existing room infrastructure.
 
 #### Architecture Decision: Tournament = Extended Room
 
@@ -131,26 +131,27 @@ typedef struct {
 - **Single/Double Elim:** full bracket generated at registration close (all matchups predetermined)
 - **Swiss/Round-Robin:** server generates only the next round's pairings after current round completes
 
-#### Vision & Gap
+#### Implementation Status
 
 | Component | Status | Notes |
 |---|---|---|
-| Room infrastructure (join, SSE, chat, P2P) | ✅ Reusable | Direct reuse of `RoomState`, `LobbyServer_*`, casual lobby SSE |
-| Match lifecycle (propose/accept/start/end) | ✅ Reusable | Add `match_index` for parallel matches |
-| Match reporting + cross-validation | ✅ Reusable | Server auto-advances bracket on `MATCH_SESSION_COMPLETE` |
-| STUN/UPnP P2P connections | ✅ Reusable | Each bracket match pair punches independently |
-| Spectating | ✅ Reusable | Need match selector UI for choosing which match to watch |
-| `room_type` field in `RoomListItem` | ❌ New | Trivial — add field + 🏆 icon/badge in the existing ROOMS panel on the right side of Network Lobby. No separate menu entry — tournaments listed alongside casual rooms. Optional filter tabs (All / Casual / Tournament). |
-| `CREATE ROOM` type toggle | ❌ New | Extend existing CREATE ROOM with a `TYPE: CASUAL / TOURNAMENT` selector. Tournament mode reveals additional options (format, max players, seeding). |
-| Multi-match slot support | ❌ New | Replace single `match_p1/p2/active` with `RoomMatch matches[]` |
-| Bracket logic (seeding, advancement, losers bracket) | ❌ New | Server-side — format-dependent generation + advancement |
-| Tournament registration + seeding | ❌ New | Player list → seed assignment → bracket generation at close |
-| TO controls (DQ, override result, pause) | ❌ New | Privileged API calls from room host |
-| Tournament UI (bracket display, match selector) | ❌ New | `rmlui_tournament_lobby.cpp` — variant of casual lobby with bracket panel. Entered automatically when joining a tournament-type room (same `JoinRoom` flow, different lobby view). |
-| Server API extensions | ❌ New | `POST /room/:code/bracket/start`, `GET /room/:code/bracket`, `POST /room/:code/bracket/override` |
+| Room infrastructure (join, SSE, chat, P2P) | ✅ Reused | Direct reuse of `RoomState`, `LobbyServer_*`, casual lobby SSE |
+| Match lifecycle (propose/accept/start/end) | ✅ Reused | `match_index` added for parallel matches |
+| Match reporting + cross-validation | ✅ Reused | Server auto-advances bracket on `MATCH_SESSION_COMPLETE` |
+| STUN/UPnP P2P connections | ✅ Reused | Each bracket match pair punches independently |
+| Spectating + match selector | ✅ Done | D-pad ◄ ► scrolls `s_match_selector_idx` in [rmlui_tournament_lobby.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_tournament_lobby.cpp) |
+| `room_type` field + 🏆 badge | ✅ Done | `is_tournament` binding in [network_lobby.rml](file:///d:/3sxtra/assets/ui/network_lobby.rml) |
+| `CREATE ROOM` tournament toggle | ✅ Done | TYPE selector → format, max players, seeding fields in network lobby |
+| Multi-match slot support | ✅ Done | `RoomMatch matches[MAX_CONCURRENT_MATCHES]` in [lobby_server.h](file:///d:/3sxtra/src/netplay/lobby_server.h) |
+| Bracket logic (all 4 formats) | ✅ Done | [bracket.c](file:///d:/3sxtra/src/netplay/bracket.c): SE, DE (with cross-bracket routing), RR (circle algorithm), Swiss (Monrad pairing). 28 unit tests in [test_bracket.c](file:///d:/3sxtra/tests/unit/test_bracket.c) |
+| Tournament registration + seeding | ✅ Done | Rating (Glicko-2), join order, random — server + client |
+| TO controls (DQ, override, pause) | ✅ Done | DQ player selector + Override button in [tournament_lobby.rml](file:///d:/3sxtra/assets/ui/tournament_lobby.rml). API: `BracketDQ`, `BracketOverride`, `BracketPause` |
+| Tournament UI (bracket display) | ✅ Done | [rmlui_tournament_lobby.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_tournament_lobby.cpp) — bracket panel, TO controls, dynamic cursor |
+| Server API extensions | ✅ Done | All 5 endpoints in [lobby-server.js](file:///d:/3sxtra/tools/lobby-server/lobby-server.js): `/bracket/start`, `/bracket`, `/bracket/override`, `/bracket/dq`, `/bracket/pause`. Integration tests in [__test_tournament.js](file:///d:/3sxtra/tools/lobby-server/__test_tournament.js) (11 scenarios) |
+| Restart match (re-fire disputed) | ❌ Remaining | TO re-fires a match proposal for a disputed game |
 
-> [!IMPORTANT]
-> This is no longer the **largest single effort** — the room-based architecture dramatically reduces scope. The truly new work is: bracket logic (server), bracket display (client), and multi-match slot support. Everything else (networking, P2P, match flow, chat, spectating) is reuse.
+> [!TIP]
+> Tournament system is **feature-complete** (March 24, 2026). The only remaining TO control is `Restart match` — re-firing a match proposal for disputed games.
 
 ---
 
@@ -364,8 +365,8 @@ Every item below is **client-side gameplay or matchmaking algorithm** — the se
 | Feature Area | What Exists | What's Missing |
 |---|---|---|
 | **§1 Mod Menu** | Mods/shader/stage menus, F-key toggles, phase3 per-component, audio/voice mods, sprite overrides, HD stages, hot-reload | Unified tree, profiles, discovery, previews, per-char FX |
-| **§2 Replays & Chat** | Auto-save + upload, 20-slot picker, lobby chat (SSE, 50-msg) | Metadata, named files, bookmarks, in-match quick chat, emotes |
-| **§3 Tournaments** | Room infra (SSE, match lifecycle, P2P, chat, spectating) all reusable | Bracket logic, multi-match slots, bracket UI, TO controls, room_type field |
+| **§2 Replays & Chat** | Auto-save + upload, string-based picker, metadata v2, descriptive filenames, lobby chat | Retention policy, bookmarks, in-match quick chat, emotes |
+| **§3 Tournaments** | ✅ **Implemented** — SE/DE/RR/Swiss brackets, TO controls (DQ/override/pause), bracket UI, match selector, server API (5 endpoints), 28 unit tests, 11 integration tests | Restart match (re-fire disputed) |
 | **§4 Dynamic Bezel** | 40+ char bezels, auto-swap | Opponent-aware compositing, stats-in-bezel, animation, spectator frame |
 | **§5 KOTH** | Rotation + queue + streak count (server + casual lobby) | KOTH room type, session stats, queue viz, dethroned anim, CPU fill |
 | **§6 Private Rooms** | Room codes, create/join | Password, hidden visibility, allow/blocklists, persistence |
@@ -406,13 +407,12 @@ Every item below is **client-side gameplay or matchmaking algorithm** — the se
 
 ### Replay Autosaving
 
-> [!NOTE]
-> Auto-save + server upload already works for netplay matches. The remaining work is metadata, naming, and retention.
+> ✅ Auto-save + upload, v2 metadata headers, and descriptive string filenames (`2026-03-24_15-23-09_net_Ryu-vs-Ken_W-P1.bin`) are implemented.
+> 
+> The remaining work is retention and game-time marking (bookmarks).
 
-- Configurable retention policy: keep last N replays, or last N days, or unlimited.
-- Auto-tag replays with metadata: characters, stage, winner, match duration, date, netplay opponent name.
+- **Configurable retention policy**: keep last N replays, or last N days, or unlimited.
 - **Highlight bookmarks** — press a hotkey mid-match to bookmark a moment; replay viewer jumps to bookmarks.
-- **Replay naming** — auto-generate descriptive filenames: `2026-03-14_Ken-vs-Chun_ranked_W.rep`
 
 ### In-Match Chat
 
@@ -428,7 +428,7 @@ Every item below is **client-side gameplay or matchmaking algorithm** — the se
 ## 3. Tournaments
 
 > [!NOTE]
-> **Architecture decision:** A tournament is an extended room. Reuses the existing room infrastructure (SSE streaming, match lifecycle, P2P connections, chat, spectating). See §3 gap analysis above for the full design rationale.
+> ✅ **Implemented March 24, 2026.** A tournament is an extended room. All 4 bracket formats (SE/DE/RR/Swiss), TO controls (DQ/override/pause), bracket UI with match selector, and server API are operational. See §3 gap analysis above for implementation details.
 
 ### Bracket Formats
 | Format | Details | Bracket Generation |
@@ -767,7 +767,7 @@ A persistent information bar at the bottom of the screen that adapts its content
 |---|---|---|---|
 | 🔴 High | Fight Requests / Matchmaking | High | Critical — core online experience |
 | 🔴 High | Private / Hidden Rooms | Low | High — most requested for friend groups |
-| 🔴 High | Replay Autosaving | Low | High — ⚠️ auto-save + upload already works for netplay; remaining: metadata, naming, retention |
+| 🔴 High | Replay Autosaving | Low | High — ✅ v2 header, string filenames, and auto-save complete; remaining: retention policy, bookmarks |
 | 🔴 High | Match Flow / Blind Picks | Medium | High — competitive integrity |
 | 🟡 Medium | King of the Hill | Medium | High — social/arcade atmosphere |
 | 🟡 Medium | Attract Mode & Info Bar | Low | Medium — polish, community engagement |

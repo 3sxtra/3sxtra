@@ -19,7 +19,6 @@
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/input/controller_image_overlay.h"
 #include "port/sdl/netplay/sdl_netplay_ui.h"
-#include "port/ui/replay_picker.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/animation/appear.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -329,8 +328,14 @@ void After_Replay(struct _TASK* task_ptr) {
         case 3: {
             int pick_result = rmlui_replay_picker_poll();
             if (pick_result == 0) {
-                int slot = rmlui_replay_picker_get_slot();
-                NativeSave_SaveReplay(slot);
+                const char* filename = rmlui_replay_picker_get_filename();
+                if (!filename || !filename[0]) {
+                    NativeSave_AutoSaveReplay(0); /* 0 = local */
+                } else {
+                    /* Overwriting an existing replay: delete old, create new */
+                    NativeSave_DeleteReplay(filename);
+                    NativeSave_AutoSaveReplay(0); /* 0 = local */
+                }
             }
             if (pick_result == 1)
                 break; /* still active */

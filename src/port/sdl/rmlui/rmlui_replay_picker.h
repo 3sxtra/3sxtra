@@ -23,8 +23,8 @@ void rmlui_replay_picker_open(int mode);
 /** Poll the picker state. Returns 1=active, 0=slot selected, -1=cancelled. */
 int rmlui_replay_picker_poll(void);
 
-/** After poll() returns 0, get the selected slot index (0..19). */
-int rmlui_replay_picker_get_slot(void);
+/** After poll() returns 0, get the selected filename. */
+const char* rmlui_replay_picker_get_filename(void);
 
 #else /* !ENABLE_RMLUI */
 
@@ -35,7 +35,7 @@ static inline void rmlui_replay_picker_hide(void) {}
 static inline void rmlui_replay_picker_shutdown(void) {}
 static inline void rmlui_replay_picker_open(int mode) { (void)mode; }
 static inline int rmlui_replay_picker_poll(void) { return 0; }
-static inline int rmlui_replay_picker_get_slot(void) { return 0; }
+static inline const char* rmlui_replay_picker_get_filename(void) { return ""; }
 
 #endif /* ENABLE_RMLUI */
 

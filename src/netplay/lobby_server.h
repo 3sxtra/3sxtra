@@ -159,6 +159,11 @@ typedef enum {
 } RoomType;
 
 typedef enum {
+    ROOM_VISIBILITY_PUBLIC = 0,
+    ROOM_VISIBILITY_HIDDEN = 1,
+} RoomVisibility;
+
+typedef enum {
     TOURNAMENT_SINGLE_ELIM = 0,
     TOURNAMENT_DOUBLE_ELIM = 1,
     TOURNAMENT_ROUND_ROBIN = 2,
@@ -168,12 +173,14 @@ typedef enum {
 // === Room Discovery ===
 
 typedef struct {
-    char code[8];     // 4-char room code + null
-    char name[32];    // Room display name
-    int player_count; // Current player count
-    int max_players;  // Room capacity (8 default, 16 for Open Arena)
-    int ft;           // First-To match mode (1=unranked, default for region rooms)
-    int room_type;    // RoomType enum (0=casual, 1=koth, 2=tournament)
+    char code[8];          // 4-char room code + null
+    char name[32];         // Room display name
+    int player_count;      // Current player count
+    int max_players;       // Room capacity (8 default, 16 for Open Arena)
+    int ft;                // First-To match mode (1=unranked, default for region rooms)
+    int room_type;         // RoomType enum (0=casual, 1=koth, 2=tournament)
+    int password_required; // 1 if room has a password set
+    int visibility;        // RoomVisibility enum (0=public, 1=hidden)
 } RoomListItem;
 
 /// Fetch list of active rooms from the lobby server.
@@ -255,13 +262,17 @@ typedef struct {
 
     ChatMessage chat[MAX_CHAT_MESSAGES];
     int chat_count;
-    int ft;        // First-To match mode for this room
-    int room_type; // RoomType enum (0=casual, 1=koth, 2=tournament)
+    int ft;           // First-To match mode for this room
+    int room_type;    // RoomType enum (0=casual, 1=koth, 2=tournament)
+    int visibility;   // RoomVisibility enum (0=public, 1=hidden)
+    int password_set;  // 1 if this room has a password
 } RoomState;
 
 // Sync room logic
-bool LobbyServer_CreateRoom(const char* name, int ft, RoomState* out_room);
-bool LobbyServer_JoinRoom(const char* room_code, RoomState* out_room, char* out_error, size_t error_size);
+/// Create a room. password may be NULL/"" for no password. visibility: ROOM_VISIBILITY_PUBLIC or ROOM_VISIBILITY_HIDDEN.
+bool LobbyServer_CreateRoom(const char* name, int ft, const char* password, int visibility, RoomState* out_room);
+/// Join a room. password may be NULL/"" if room is not password-protected.
+bool LobbyServer_JoinRoom(const char* room_code, const char* password, RoomState* out_room, char* out_error, size_t error_size);
 bool LobbyServer_LeaveRoom(const char* room_code);
 bool LobbyServer_JoinQueue(const char* room_code);
 bool LobbyServer_LeaveQueue(const char* room_code);
@@ -351,6 +362,7 @@ bool LobbyServer_DeclineMatch(const char* room_code);
 /// Create a tournament room with bracket-specific parameters.
 bool LobbyServer_CreateTournamentRoom(const char* name, TournamentFormat format,
                                        int max_players, int ft, const char* seeding,
+                                       const char* password, int visibility,
                                        RoomState* out_room);
 
 /// Close registration and generate the bracket (TO only).

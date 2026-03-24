@@ -181,8 +181,8 @@ void ms_network_lobby_register(void) {
         .on_enter = network_lobby_enter,
         .on_tick = network_lobby_tick,
         .on_exit = network_lobby_exit,
-        .cursor_max = 13,  /* 14 items in full lobby (0..13) */
-        .cancel_item = 13, /* EXIT item */
+        .cursor_max = 15,  /* 16 items in full lobby (0..15) */
+        .cancel_item = 15, /* EXIT item */
         .rmlui_show = network_lobby_rmlui_show,
         .rmlui_hide = network_lobby_rmlui_hide,
         .header_type = MENU_HEADER_NETWORK,

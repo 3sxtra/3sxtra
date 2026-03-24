@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctime>
 #include <SDL3_net/SDL_net.h>
 #include "netplay/discovery.h"
 #include "netplay/identity.h"
@@ -69,13 +70,19 @@ static SDL_SpinLock async_match_session_lock = 0; // protects async_match_sessio
 // NativeReplayHeader must match the struct in native_save.c exactly
 typedef struct {
     uint32_t magic;     // 0x33535852 = "3SXR"
-    uint32_t version;   // 1
+    uint32_t version;   // 2
     uint32_t data_size; // sizeof(_REPLAY_W)
     uint32_t reserved;
+    // Added in version 2
+    uint8_t player1_char;
+    uint8_t player2_char;
+    uint8_t winner; // 0=P1, 1=P2, 2=Draw
+    uint8_t stage;
+    uint32_t date_timestamp; // time_t truncated to u32
 } AsyncNativeReplayHeader;
 
 #define ASYNC_NATIVE_REPLAY_MAGIC 0x33535852
-#define ASYNC_NATIVE_REPLAY_VERSION 1
+#define ASYNC_NATIVE_REPLAY_VERSION 2
 
 // Async data: carries both the match result and a snapshot of the replay
 typedef struct {
@@ -161,9 +168,16 @@ static void AsyncReportMatch(const char* my_id, const char* opponent_id, const c
     size_t snapshot_size = sizeof(AsyncNativeReplayHeader) + sizeof(_REPLAY_W);
     void* snapshot = malloc(snapshot_size);
     if (snapshot) {
-        AsyncNativeReplayHeader hdr = {
-            ASYNC_NATIVE_REPLAY_MAGIC, ASYNC_NATIVE_REPLAY_VERSION, (uint32_t)sizeof(_REPLAY_W), 0
-        };
+        AsyncNativeReplayHeader hdr;
+        memset(&hdr, 0, sizeof(hdr));
+        hdr.magic = ASYNC_NATIVE_REPLAY_MAGIC;
+        hdr.version = ASYNC_NATIVE_REPLAY_VERSION;
+        hdr.data_size = (uint32_t)sizeof(_REPLAY_W);
+        hdr.player1_char = (uint8_t)my_char;
+        hdr.player2_char = (uint8_t)opp_char;
+        hdr.winner = (Winner_id == 0) ? 0 : ((Winner_id == 1) ? 1 : 2);
+        hdr.stage = Replay_w.game_infor.stage;
+        hdr.date_timestamp = (uint32_t)time(NULL);
         memcpy(snapshot, &hdr, sizeof(hdr));
         memcpy((uint8_t*)snapshot + sizeof(hdr), &Replay_w, sizeof(_REPLAY_W));
         data->replay_snapshot = snapshot;
@@ -975,7 +989,7 @@ void SDLNetplayUI_Render(int window_width, int window_height) {
         // but only if at least one round was played (avoid corrupted replays
         // from early disconnects before the first match begins)
         if (PL_Wins[0] + PL_Wins[1] > 0) {
-            NativeSave_AutoSaveReplay();
+            NativeSave_AutoSaveReplay(1); /* 1 = netplay */
         }
 
         // A netplay match just ended — report the result if we are in a lobby context
@@ -1703,7 +1717,7 @@ void SDLNetplayUI_ReportNaturalMatchEnd(void) {
     if (lobby_my_player_id[0] && current_opponent_id[0]) {
         if (Winner_id >= 0 && total_rounds > 0) {
             // Auto-save replay locally (only when a match was actually played)
-            NativeSave_AutoSaveReplay();
+            NativeSave_AutoSaveReplay(1); /* 1 = netplay */
             const char* winner_pid = (Winner_id == my_player) ? lobby_my_player_id : current_opponent_id;
 
             const char* room_code = rmlui_casual_lobby_get_room_code();
