@@ -69,8 +69,7 @@
                 <span class="lobby-cell-label">VISIBILITY</span>
                 <span class="lobby-cell-value">{{create_room_visibility_label}}</span>
             </div>
-            <div class="lobby-row" data-class-focused="cursor == 11"
-                 data-if="create_room_visibility == 1">
+            <div class="lobby-row" data-class-focused="cursor == 11">
                 <span class="lobby-cell-label">PASSWORD</span>
                 <span class="lobby-cell-value">{{create_password_label}}</span>
             </div>
@@ -87,8 +86,11 @@
                 <span class="lobby-cell-label">JOIN ROOM</span>
                 <span class="lobby-cell-value" data-if="join_room_code != ''">{{join_room_code}}</span>
             </div>
+            <div class="lobby-row" data-class-focused="cursor == 15">
+                <span class="lobby-cell-label">JOIN BY CODE</span>
+            </div>
 
-            <div class="lobby-row exit-row" data-class-focused="cursor == 15">
+            <div class="lobby-row exit-row" data-class-focused="cursor == 16">
                 <span class="lobby-cell-label">EXIT</span>
             </div>
         </div>
@@ -195,7 +197,7 @@
     <!-- ── Password prompt popup ── -->
     <div data-if="password_popup_visible" id="popup-scrim">
         <div id="popup-box">
-            <div class="popup-title">{{password_popup_mode == 1 ? 'SET PASSWORD' : 'ENTER PASSWORD'}}</div>
+            <div class="popup-title">{{password_popup_mode == 2 ? 'ENTER ROOM CODE' : (password_popup_mode == 1 ? 'SET PASSWORD' : 'ENTER PASSWORD')}}</div>
             <div class="popup-name">{{password_input_display}}</div>
             <div class="popup-region">↑↓ CYCLE  ← DELETE  → NEXT</div>
             <div class="popup-actions">

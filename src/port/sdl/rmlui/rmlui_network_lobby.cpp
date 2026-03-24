@@ -161,6 +161,8 @@ static int s_create_room_visibility = ROOM_VISIBILITY_PUBLIC;
 static Rml::String s_create_room_visibility_label = "PUBLIC";
 static char s_create_room_password[64] = { 0 };
 
+static char s_active_room_password[64] = { 0 };
+
 // Password prompt popup state (for joining private rooms OR setting create-room password)
 static bool s_password_popup_visible = false;
 static int s_password_popup_mode = 0;    // 0 = join (submits to AsyncJoinRoom), 1 = create (stores in s_create_room_password)
@@ -228,6 +230,7 @@ static int SDLCALL async_room_fn(void* data) {
     if (ok) {
         snprintf(s_room_async_code, sizeof(s_room_async_code), "%s", room.id);
         s_room_async_type = room.room_type;
+        snprintf(s_active_room_password, sizeof(s_active_room_password), "%s", d->password);
         SDL_SetAtomicInt(&s_room_async_ok, 1);
     } else {
         s_room_async_code[0] = '\0';
@@ -703,16 +706,33 @@ extern "C" void rmlui_network_lobby_update(void) {
 
             SDL_Log("[NetworkLobby] Room entered: %s", s_room_async_code);
         } else {
-            // Failure — show error message from server if available
-            if (s_room_async_error[0]) {
-                s_room_status = Rml::String(s_room_async_error);
-                s_room_async_error[0] = '\0';
+            if (strcmp(s_room_async_error, "Wrong password") == 0 || strcmp(s_room_async_error, "Invalid password") == 0) {
+                // Intercept password errors and trigger the password popup UI
+                snprintf(s_password_target_room, sizeof(s_password_target_room), "%s", s_join_room_code.c_str());
+                memset(s_password_input, 0, sizeof(s_password_input));
+                s_password_input_len = 0;
+                s_password_char_idx = 0;
+                s_password_popup_mode = 0; // join mode
+                s_password_input_display = "_";
+                s_password_popup_visible = true;
+                
+                s_room_status = "";
+                s_join_room_code = "";
+                s_model_handle.DirtyVariable("password_popup_visible");
+                s_model_handle.DirtyVariable("password_input_display");
+                s_model_handle.DirtyVariable("room_status");
+                s_model_handle.DirtyVariable("join_room_code");
             } else {
-                s_room_status = "FAILED";
+                if (s_room_async_error[0]) {
+                    s_room_status = Rml::String(s_room_async_error);
+                    s_room_async_error[0] = '\0';
+                } else {
+                    s_room_status = "FAILED";
+                }
+                s_join_room_code = "";
+                s_model_handle.DirtyVariable("room_status");
+                s_model_handle.DirtyVariable("join_room_code");
             }
-            s_join_room_code = "";
-            s_model_handle.DirtyVariable("room_status");
-            s_model_handle.DirtyVariable("join_room_code");
             SDL_LogError(
                 SDL_LOG_CATEGORY_APPLICATION, "[NetworkLobby] Room create/join failed: %s", s_room_status.c_str());
         }
@@ -1167,6 +1187,16 @@ extern "C" void rmlui_network_lobby_submit_password(void) {
             s_model_handle.DirtyVariable("password_popup_visible");
             s_model_handle.DirtyVariable("create_password_label");
         }
+    } else if (s_password_popup_mode == 2) {
+        // JOIN BY CODE MODE: input is the room code
+        s_join_room_code = Rml::String(s_password_input);
+        s_room_status = "Joining...";
+        if (s_model_handle) {
+            s_model_handle.DirtyVariable("password_popup_visible");
+            s_model_handle.DirtyVariable("join_room_code");
+            s_model_handle.DirtyVariable("room_status");
+        }
+        AsyncJoinRoom(s_password_input, NULL);
     } else {
         // JOIN MODE: join the room with the typed password
         s_join_room_code = Rml::String(s_password_target_room);
@@ -1212,6 +1242,19 @@ extern "C" void rmlui_network_lobby_open_create_password(void) {
     }
 }
 
+extern "C" void rmlui_network_lobby_open_join_code(void) {
+    memset(s_password_input, 0, sizeof(s_password_input));
+    s_password_input_len = 0;
+    s_password_char_idx = 0;
+    s_password_popup_mode = 2; // join by code mode
+    s_password_input_display = "_";
+    s_password_popup_visible = true;
+    if (s_model_handle) {
+        s_model_handle.DirtyVariable("password_popup_visible");
+        s_model_handle.DirtyVariable("password_input_display");
+    }
+}
+
 extern "C" bool rmlui_network_lobby_is_password_popup_visible(void) {
     return s_password_popup_visible;
 }
@@ -1241,6 +1284,19 @@ extern "C" const char* rmlui_network_lobby_consume_pending_room(void) {
 
 extern "C" bool rmlui_network_lobby_pending_room_is_tournament(void) {
     return s_room_async_type == ROOM_TYPE_TOURNAMENT;
+}
+
+extern "C" void rmlui_network_lobby_reset(void) {
+    s_room_async_code[0] = '\0';
+    s_room_async_error[0] = '\0';
+    s_active_room_password[0] = '\0';
+    SDL_SetAtomicInt(&s_room_async_ok, 0);
+    SDL_SetAtomicInt(&s_room_async_done, 0);
+    SDL_SetAtomicInt(&s_room_async_active, 0);
+}
+
+extern "C" const char* rmlui_network_lobby_get_active_password(void) {
+    return s_active_room_password;
 }
 
 #undef DIRTY_INT

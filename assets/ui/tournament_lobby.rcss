@@ -48,6 +48,28 @@
     border-color: rgba(255, 180, 0, 150);
 }
 
+#password-badge {
+    display: inline;
+    font-size: 7dp;
+    background-color: rgba(60, 20, 20, 200);
+    color: rgba(255, 100, 100, 255);
+    padding: 0dp 4dp;
+    margin-left: 6dp;
+    border-width: 1dp;
+    border-color: rgba(255, 100, 100, 150);
+}
+
+#hidden-badge {
+    display: inline;
+    font-size: 7dp;
+    background-color: rgba(60, 20, 20, 200);
+    color: rgba(255, 100, 100, 255);
+    padding: 0dp 4dp;
+    margin-left: 6dp;
+    border-width: 1dp;
+    border-color: rgba(255, 100, 100, 150);
+}
+
 /* ─── Layout: Left (Bracket) + Center (Matches) + Right (Chat) ─ */
 
 #lobby-body {

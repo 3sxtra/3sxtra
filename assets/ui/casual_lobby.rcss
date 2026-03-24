@@ -29,13 +29,34 @@
 }
 
 #lobby-title-text {
-    display: block;
+    display: inline;
     font-size: 11dp;
     color: #fff;
     font-weight: bold;
     font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
-    text-align: center;
     background-color: transparent;
+}
+
+#password-badge {
+    display: inline;
+    font-size: 7dp;
+    background-color: rgba(60, 20, 20, 200);
+    color: rgba(255, 100, 100, 255);
+    padding: 0dp 4dp;
+    margin-left: 6dp;
+    border-width: 1dp;
+    border-color: rgba(255, 100, 100, 150);
+}
+
+#hidden-badge {
+    display: inline;
+    font-size: 7dp;
+    background-color: rgba(60, 20, 20, 200);
+    color: rgba(255, 100, 100, 255);
+    padding: 0dp 4dp;
+    margin-left: 6dp;
+    border-width: 1dp;
+    border-color: rgba(255, 100, 100, 150);
 }
 
 /* ─── Layout: Left (Match/Queue) + Right (Chat) ──────────────── */

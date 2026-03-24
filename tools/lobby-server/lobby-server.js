@@ -269,6 +269,8 @@ function getRoomState(room) {
         host: room.host,
         ft: room.ft || 1,
         room_type: room.room_type || 0,
+        visibility: room.visibility || 0,
+        password_set: room.password ? 1 : 0,
         players: room.players.map(id => {
             const p = players.get(id);
             return { player_id: id, display_name: p ? p.display_name : id, region: p ? p.region : '', country: p ? p.country : '' };
@@ -1723,6 +1725,8 @@ async function handleRequest(req, res) {
     if (method === 'GET' && urlPath === '/rooms/list') {
         const list = [];
         for (const [code, room] of rooms) {
+            if (room.visibility === 1) continue;
+
             list.push({
                 code: room.id,
                 name: room.name,
@@ -1730,7 +1734,9 @@ async function handleRequest(req, res) {
                 max_players: room.max_players || 8,
                 region_locked: !!(room.regions && room.regions.length > 0),
                 ft: room.ft || 1,
-                room_type: room.room_type || 0
+                room_type: room.room_type || 0,
+                password_required: room.password ? 1 : 0,
+                visibility: room.visibility || 0
             });
         }
         return json(res, 200, { rooms: list });
@@ -1754,6 +1760,9 @@ async function handleRequest(req, res) {
 
         const roomFt = typeof data.ft === 'number' ? Math.max(1, Math.min(10, data.ft)) : 2;
         const maxPlayers = typeof data.max_players === 'number' ? Math.max(2, Math.min(16, data.max_players)) : 8;
+        const password = typeof data.password === 'string' ? data.password : '';
+        const visibility = typeof data.visibility === 'number' ? data.visibility : 0;
+
         const roomObj = {
             id: code,
             name: roomName,
@@ -1765,7 +1774,9 @@ async function handleRequest(req, res) {
             sseClients: new Set(),
             ft: roomFt,
             room_type: roomType,
-            max_players: maxPlayers
+            max_players: maxPlayers,
+            password: password,
+            visibility: visibility
         };
 
         // Tournament-specific fields
@@ -1795,6 +1806,13 @@ async function handleRequest(req, res) {
         const room = rooms.get(data.room_code);
         if (!room) return json(res, 404, { error: 'Room not found' });
         if (room.players.length >= (room.max_players || 8)) return json(res, 400, { error: 'Room is full' });
+
+        if (room.password) {
+            const joinPassword = typeof data.password === 'string' ? data.password : '';
+            if (joinPassword !== room.password) {
+                return json(res, 403, { error: 'Wrong password' });
+            }
+        }
 
         // Region gate: permanent rooms restrict to their declared regions
         if (room.regions && room.regions.length > 0) {
@@ -2652,7 +2670,7 @@ async function handleRequest(req, res) {
         db.prepare('DELETE FROM pending_results WHERE match_key = ?').run(matchKey);
 
         // Record the session result in matches table
-        db.prepare(`INSERT INTO matches (p1_id, p2_id, winner_id, p1_char, p2_char, rounds)
+        const matchInfo = db.prepare(`INSERT INTO matches (p1_id, p2_id, winner_id, p1_char, p2_char, rounds)
                     VALUES (?, ?, ?, ?, ?, ?)`)
           .run(pending.p1_id, pending.p2_id, sessionWinnerId, pending.p1_char, pending.p2_char, p1Wins + p2Wins);
 
@@ -2700,7 +2718,7 @@ async function handleRequest(req, res) {
             `).run(sessionLoserId, loserName, loserCountryCasual);
         }
 
-        const matchId = db.prepare('SELECT last_insert_rowid() as id').get().id;
+        const matchId = matchInfo.lastInsertRowid;
         console.log(`[match] session complete (${sessionSource} FT${sessionFt}): ${winnerName} beat ${loserName} ${p1Wins}-${p2Wins} (Match ID: ${matchId})`);
         return json(res, 200, { ok: true, status: 'recorded', match_id: matchId, p1_wins: p1Wins, p2_wins: p2Wins });
     }

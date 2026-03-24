@@ -716,33 +716,21 @@ void Network_Lobby(struct _TASK* task_ptr) {
         bool popup_active =
             SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge() || lan_incoming || lan_outgoing;
 
-        /* Handle cursor movement (16 items: 0..15) */
+        /* Handle cursor movement (17 items: 0..16) */
         {
             s16 prev_cursor = Menu_Cursor_Y[0];
-            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 15, FADE_OPAQUE) == 0) {
-                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 15, FADE_OPAQUE);
+            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 16, FADE_OPAQUE) == 0) {
+                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 16, FADE_OPAQUE);
             }
             if (popup_active) {
                 Menu_Cursor_Y[0] = prev_cursor;
             } else {
-                /* Skip PASSWORD row (11) when visibility is PUBLIC */
-                if (Menu_Cursor_Y[0] == 11 && rmlui_network_lobby_get_visibility() != 1) {
-                    if (Menu_Cursor_Y[0] > prev_cursor)
-                        Menu_Cursor_Y[0] = 12; /* moving down → skip to FORMAT/CREATE */
-                    else
-                        Menu_Cursor_Y[0] = 10;  /* moving up → skip to VISIBILITY */
-                }
                 /* Skip FORMAT row (12) when room type is not tournament */
                 if (Menu_Cursor_Y[0] == 12 && rmlui_network_lobby_get_create_room_type() != 2) {
                     if (Menu_Cursor_Y[0] > prev_cursor)
                         Menu_Cursor_Y[0] = 13; /* moving down → skip to CREATE ROOM */
-                    else {
-                        /* moving up → skip to PASSWORD or VISIBILITY */
-                        if (rmlui_network_lobby_get_visibility() == 1)
-                            Menu_Cursor_Y[0] = 11; /* PASSWORD visible */
-                        else
-                            Menu_Cursor_Y[0] = 10; /* skip to VISIBILITY */
-                    }
+                    else
+                        Menu_Cursor_Y[0] = 11; /* moving up → skip to PASSWORD */
                 }
                 if (prev_cursor != Menu_Cursor_Y[0]) {
                     if (task_ptr->free[2] == NET_MODE_NATIVE) {
@@ -1261,7 +1249,13 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         }
                         SE_selected();
                         break;
-                    case 15:
+                    case 15: /* JOIN BY CODE (RmlUI only) */
+                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                            rmlui_network_lobby_open_join_code();
+                        }
+                        SE_selected();
+                        break;
+                    case 16:
                         /* EXIT */
                         goto lobby_exit;
                     }

@@ -11,6 +11,8 @@
     <div id="lobby-title-bar">
         <div id="lobby-title-text">🏆 {{room_name}}</div>
         <div id="tournament-badge">{{tournament_format_label}}</div>
+        <div id="password-badge" data-if="room_password != ''">🔒 PW: {{room_password}}</div>
+        <div id="hidden-badge" data-if="room_visibility == 1">🔒 ROOM CODE: {{room_code}}</div>
     </div>
 
     <!-- ── Main content: Left bracket + Center matches + Right chat ── -->

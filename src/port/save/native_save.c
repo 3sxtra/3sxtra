@@ -795,8 +795,7 @@ static const char* get_char_name_for_filename(int my_char_id) {
 
 /** @brief Auto-save replay to a descriptive filename. */
 int NativeSave_AutoSaveReplay(int is_netplay) {
-    _REPLAY_W* rw = &Replay_w;
-    struct _REP_GAME_INFOR* rp = &rw->game_infor;
+    struct _REP_GAME_INFOR* rp = &Rep_Game_Infor[10];
 
     int p1_char = rp->player_infor[0].my_char;
     int p2_char = rp->player_infor[1].my_char;

@@ -227,6 +227,7 @@ typedef struct {
 | Persistent rooms (host grace period) | ❌ | Host-migration timer |
 | Password dialog in lobby UI | ✅ | Arcade-style password entry in `rmlui_network_lobby.cpp` |
 | Lobby list filters (Public/Private/My) | ❌ | New filter UI |
+| QR Code Sharing | ❌ | Display a QR code for easy joining of hidden/password/tournament rooms |
 
 > All of this is **API extensions + UI changes** — no fundamental architectural work.
 
@@ -542,6 +543,7 @@ All endpoints are scoped under the existing room namespace (no separate `/tourna
 | **Room codes** | Short, human-readable codes (e.g., `HADOKEN-42`). Easy to share over Discord/voice chat. |
 | **Allowlist / Blocklist** | Host can pre-approve specific client IDs, or ban problem players from their room. |
 | **Persistent rooms** | Optionally keep the room alive even if the host disconnects briefly (grace period before dissolving). |
+| **QR Code Sharing** | When a hidden/password/tournament room is created, display a QR code containing the join link/credentials. Users can take a picture and share it with friends so they can easily join without typing codes or passwords. |
 
 ### Integration
 - Add `password` and `visibility` fields to the lobby server's room creation API.
