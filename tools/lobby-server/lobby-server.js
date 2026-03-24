@@ -1681,11 +1681,7 @@ function sendRemoteJoinEvent(playerId, roomCode, password) {
         try { globalRes.write(line); return; } catch { /* stale */ }
     }
 
-    // Fallback: search room SSE connections (player might already be in a room)
-    // Room SSE clients are response objects stored in room.sseClients sets,
-    // but they're not keyed by player_id. We'd need to iterate — for now,
-    // global SSE is the primary channel.
-    console.warn(`[qr-join] no global SSE for ${playerId} — event may be lost`);
+    console.warn(`[qr-join] no global SSE for ${playerId} — event lost`);
 }
 
 // ---- Routes ----

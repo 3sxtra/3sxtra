@@ -719,7 +719,15 @@ extern "C" void rmlui_network_lobby_update(void) {
     if (!rmlui_wrapper_is_game_document_visible("network_lobby"))
         return;
 
+    // ── Deferred Global SSE connect ──────────────────────────────
+    // do_init() runs before Identity_Init(), so the first connect attempt
+    // may fail. Retry here each frame until connected.
+    if (LobbyServer_IsConfigured() && !LobbyServer_GlobalSSEIsConnected()) {
+        LobbyServer_GlobalSSEConnect();
+    }
+
     // ── Poll global SSE for QR join events ────────────────────────
+    // Only runs when network lobby is visible (not in a room).
     {
         SSEEvent gsse_evt;
         SSEEventType gsse_type = LobbyServer_GlobalSSEPoll(&gsse_evt);
