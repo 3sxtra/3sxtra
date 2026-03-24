@@ -227,7 +227,7 @@ typedef struct {
 | Persistent rooms (host grace period) | ❌ | Host-migration timer |
 | Password dialog in lobby UI | ✅ | Arcade-style password entry in `rmlui_network_lobby.cpp` |
 | Lobby list filters (Public/Private/My) | ❌ | New filter UI |
-| QR Code Sharing | ❌ | Display a QR code for easy joining of hidden/password/tournament rooms |
+| QR Code Sharing | ✅ | QR code displayed in casual + tournament lobbies for hidden/password rooms. Mobile scan → server relay → Global SSE → auto-join. |
 
 > All of this is **API extensions + UI changes** — no fundamental architectural work.
 
@@ -370,7 +370,7 @@ Every item below is **client-side gameplay or matchmaking algorithm** — the se
 | **§3 Tournaments** | ✅ **Implemented** — SE/DE/RR/Swiss brackets, TO controls (DQ/override/pause/restart), bracket UI, match selector, server API (6 endpoints), 28 unit tests, 12 integration tests | — |
 | **§4 Dynamic Bezel** | 40+ char bezels, auto-swap | Opponent-aware compositing, stats-in-bezel, animation, spectator frame |
 | **§5 KOTH** | Rotation + queue + streak count (server + casual lobby) | KOTH room type, session stats, queue viz, dethroned anim, CPU fill |
-| **§6 Private Rooms** | Room codes, create/join, **passwords, hidden visibility, UI dialog** | Allow/blocklists, persistence, filters, human-readable codes |
+| **§6 Private Rooms** | Room codes, create/join, **passwords, hidden visibility, UI dialog, QR code sharing** | Allow/blocklists, persistence, filters, human-readable codes |
 | **§7 Match Flow** | Char select (HD portraits, SA, timer, stage), VS screen, accept/decline proposals | Blind pick sync, stage bans, match flow state machine, ranked/tournament modes |
 | **§8 Fight Requests** | Glicko-2, match reporting, disconnect tracking, leaderboards, region/ping/WiFi filtering, searching, anti-spam | Character lock/ban, ranked auto-match, hidden names, streak bonuses, graceful quit, jail, skill range pairing |
 | **§9 Attract Mode** | CPU demos, HD overlay, arcade ranking tables | Online replay playback, live stats, live streaks, information bar |
@@ -543,7 +543,7 @@ All endpoints are scoped under the existing room namespace (no separate `/tourna
 | **Room codes** | Short, human-readable codes (e.g., `HADOKEN-42`). Easy to share over Discord/voice chat. |
 | **Allowlist / Blocklist** | Host can pre-approve specific client IDs, or ban problem players from their room. |
 | **Persistent rooms** | Optionally keep the room alive even if the host disconnects briefly (grace period before dissolving). |
-| **QR Code Sharing** | When a hidden/password/tournament room is created, display a QR code containing the join link/credentials. Users can take a picture and share it with friends so they can easily join without typing codes or passwords. |
+| **QR Code Sharing** | ✅ When a hidden/password/tournament room is created, the client generates a QR code (via Nayuki `qrcodegen` library → BMP) displayed in the lobby UI. Mobile users scan the QR to hit the server's `/qr-join` relay endpoint, which matches the phone's IP to a registered PC client and dispatches a `REMOTE_JOIN` event via Global SSE. The receiving client auto-joins the room. Supports all render backends (OpenGL, SDL_GPU, SDL2D). |
 
 ### Integration
 - Add `password` and `visibility` fields to the lobby server's room creation API.
@@ -768,7 +768,7 @@ A persistent information bar at the bottom of the screen that adapts its content
 | Priority | Feature | Effort | Impact |
 |---|---|---|---|
 | 🔴 High | Fight Requests / Matchmaking | High | Critical — core online experience |
-| 🔴 High | Private / Hidden Rooms | Low | High — ✅ Create/join with passwords & visibility complete; remaining: persistence, filters |
+| 🔴 High | Private / Hidden Rooms | Low | High — ✅ Create/join with passwords, visibility, **QR code sharing** complete; remaining: persistence, filters |
 | 🔴 High | Replay Autosaving | Low | High — ✅ v2 header, string filenames, and auto-save complete; remaining: retention policy, bookmarks |
 | 🔴 High | Match Flow / Blind Picks | Medium | High — competitive integrity |
 | 🟡 Medium | King of the Hill | Medium | High — social/arcade atmosphere |
@@ -782,4 +782,4 @@ A persistent information bar at the bottom of the screen that adapts its content
 
 ---
 
-*Last updated: March 23, 2026*
+*Last updated: March 24, 2026*
