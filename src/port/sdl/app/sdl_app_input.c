@@ -20,6 +20,7 @@
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
+#include "port/sdl/rmlui/rmlui_tournament_lobby.h"
 #include "port/sdl/rmlui/rmlui_dev_overlay.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
@@ -83,9 +84,10 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
 
     // SDL2D mode: no NetplayUI — skip UI processing
     if (!is_sdl2d_backend(SDLApp_GetRenderer())) {
-        // Route keyboard/text events to casual lobby chat popup first
+        // Route keyboard/text events to casual/tournament lobby chat popup first
         if ((event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_TEXT_INPUT) &&
-            rmlui_casual_lobby_handle_key_event(event)) {
+            (rmlui_casual_lobby_handle_key_event(event) ||
+             rmlui_tournament_lobby_handle_key_event(event))) {
             return false; // Chat consumed the event
         }
 

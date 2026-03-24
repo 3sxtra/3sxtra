@@ -45,6 +45,7 @@
 #include "port/sdl/rmlui/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui/rmlui_button_config.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
+#include "port/sdl/rmlui/rmlui_tournament_lobby.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "port/sdl/rmlui/rmlui_continue.h"
 #include "port/sdl/rmlui/rmlui_control_mapping.h"
@@ -572,6 +573,7 @@ int SDLApp_Init() {
     rmlui_control_mapping_init();
     rmlui_network_lobby_init();
     rmlui_casual_lobby_init();
+    rmlui_tournament_lobby_init();
     rmlui_leaderboard_init();
 
     if (use_rmlui) {
@@ -639,6 +641,7 @@ void SDLApp_Quit() {
 
     // Shut down Phase 5 / Phase 3 RmlUi data models before rmlui_wrapper_shutdown()
     rmlui_casual_lobby_shutdown();
+    rmlui_tournament_lobby_shutdown();
     rmlui_leaderboard_shutdown();
 
     if (is_sdl2d_backend(g_renderer_backend)) {
@@ -878,6 +881,7 @@ void SDLApp_EndFrame() {
     rmlui_replay_picker_update();
     rmlui_network_lobby_update();
     rmlui_casual_lobby_update();
+    rmlui_tournament_lobby_update();
     rmlui_leaderboard_update();
 
     if (is_sdl2d_backend(g_renderer_backend)) {

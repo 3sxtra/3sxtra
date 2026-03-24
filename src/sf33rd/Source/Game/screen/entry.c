@@ -32,12 +32,14 @@
 #include "port/sdl/rmlui/rmlui_copyright.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_title_screen.h"
+#include "port/sdl/rmlui/rmlui_tournament_lobby.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
 /* Macro: skip SSPutStr if entry text RmlUi is active, or if the RmlUi network/casual lobby is open */
 #define ENTRY_TEXT_GATED                                                                                               \
     ((use_rmlui && rmlui_screen_entry_text) || rmlui_wrapper_is_game_document_visible("network_lobby") ||              \
-     rmlui_casual_lobby_is_visible() || rmlui_wrapper_is_game_document_visible("leaderboard") ||                       \
+     rmlui_casual_lobby_is_visible() || rmlui_tournament_lobby_is_visible() ||                                         \
+     rmlui_wrapper_is_game_document_visible("leaderboard") ||                                                          \
      rmlui_wrapper_is_game_document_visible("replay_picker"))
 
 u8 letter_stack[40];
@@ -216,6 +218,10 @@ static void Disp_00_0() {
 
     if (use_rmlui && rmlui_screen_attract_overlay && G_No[0] == 1 && G_No[1] >= 3) {
         /* Attract overlay handles the logo + blink during demo fights */
+        return;
+    }
+
+    if (ENTRY_TEXT_GATED) {
         return;
     }
 
