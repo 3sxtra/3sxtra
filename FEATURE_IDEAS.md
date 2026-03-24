@@ -54,10 +54,11 @@
 | System | Details |
 |---|---|
 | **Replay recording/playback** | [sys_replay.c](file:///d:/3sxtra/src/sf33rd/Source/Game/system/sys_replay.c) — CPS3-native format |
-| **Replay picker** | [rmlui_replay_picker.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_replay_picker.cpp) — 20-slot UI |
+| **Replay picker (local)** | [rmlui_replay_picker.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_replay_picker.cpp) — 20-slot UI |
+| **Replay picker (online)** | [rmlui_network_replay_picker.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_network_replay_picker.cpp) — browse/download replays from lobby server. Accessed via Network Gateway → REPLAYS. Async fetch + download threads, injects into `Replay_w` for playback. Server endpoints: `GET /replays` (paginated list), `GET /replays/:id` (binary download). |
 | **Save/load flow** | [ms_save_replay.c](file:///d:/3sxtra/src/port/screens/ms_save_replay.c) — full enter/tick/exit lifecycle |
-| **Auto-save (netplay)** | `NativeSave_AutoSaveReplay()` called in [sdl_netplay_ui.cpp](file:///d:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp#L974-L979) when match ends (guarded by `PL_Wins[0] + PL_Wins[1] > 0`). Slots 0–9 = manual, 10–19 = auto-save. |
-| **Server upload** | `AsyncReportMatch()` snapshots `Replay_w` and uploads via `LobbyServer_UploadReplay()` on a background thread |
+| **Auto-save (netplay)** | `NativeSave_AutoSaveReplay()` called in [sdl_netplay_ui.cpp](file:///d:/3sxtra/src/port/sdl/netplay/sdl_netplay_ui.cpp#L974-L979) when match ends (guarded by `PL_Wins[0] + PL_Wins[1] > 0`). Slots 0–9 = manual, 10+ = auto-save (uncapped). |
+| **Server upload** | `AsyncReportMatch()` snapshots `Replay_w` and uploads via `LobbyServer_UploadReplay()` on a background thread. Server stores as `replays/replay_{matchId}.bin`, sets `has_replay=1` in matches table. |
 | **Lobby chat** | [rmlui_casual_lobby.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_casual_lobby.cpp) — 50-message buffer, real-time via `SSE_EVENT_CHAT`, `LobbyServer_SendChat()` |
 
 #### Vision & Gap
@@ -65,6 +66,7 @@
 | Feature | Status | What's Needed |
 |---|---|---|
 | Auto-save every match | ✅ Works for netplay | — |
+| Online replay browsing | ✅ Implemented | Network Gateway → REPLAYS. Paginated list, async download, inject into `Replay_w`. |
 | Descriptive filenames | ❌ | Extend `NativeReplayHeader` (currently only magic/version/size/reserved) with chars, winner, stage |
 | Metadata auto-tagging | ❌ | New fields in header + save path |
 | Retention policy | ❌ | Auto-save slots just rotate/overwrite |
