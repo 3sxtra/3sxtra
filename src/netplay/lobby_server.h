@@ -381,6 +381,8 @@ bool LobbyServer_BracketDQ(const char* room_code, const char* player_id);
 /// TO action: pause or resume the tournament.
 bool LobbyServer_BracketPause(const char* room_code, bool pause);
 
+/// TO action: re-fire a match proposal for a disputed/timed-out match.
+bool LobbyServer_BracketRestartMatch(const char* room_code, int match_index);
 
 #ifdef __cplusplus
 }

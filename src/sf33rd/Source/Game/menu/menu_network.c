@@ -650,17 +650,12 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 rmlui_network_lobby_password_input(4);
             if (click & 8)  /* RIGHT */
                 rmlui_network_lobby_password_input(3);
-            switch (IO_Result) {
-            case SWK_SOUTH: /* LP = confirm */
+            if (click & SWK_SOUTH) { /* Confirm */
                 rmlui_network_lobby_submit_password();
                 SE_selected();
-                break;
-            case SWK_EAST: /* MK = cancel */
+            } else if (click & SWK_EAST) { /* Cancel */
                 rmlui_network_lobby_cancel_password();
                 SE_selected();
-                break;
-            default:
-                break;
             }
             break; /* skip all normal menu input while popup is active */
         }

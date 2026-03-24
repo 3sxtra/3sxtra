@@ -207,6 +207,7 @@ static int SDLCALL async_to_action_fn(void* data) {
     case 3: LobbyServer_BracketPause(d->room_code, false); break;
     case 4: LobbyServer_BracketDQ(d->room_code, d->target_player); break;
     case 5: LobbyServer_BracketOverride(d->room_code, d->match_index, d->winner_id); break;
+    case 6: LobbyServer_BracketRestartMatch(d->room_code, d->match_index); break;
     }
     free(d);
     SDL_SetAtomicInt(&s_async_to_active, 0);
@@ -812,7 +813,7 @@ extern "C" void rmlui_tournament_lobby_update(void) {
             // Dynamic max_y based on state
             int max_y = 1; // spectate(0) + leave(last)
             if (s_is_host && s_tournament_started) {
-                max_y = 4; // spectate(0), pause/resume(1), dq(2), override(3), leave(4)
+                max_y = 5; // spectate(0), pause(1), dq(2), override(3), restart(4), leave(5)
             } else if (s_is_host && !s_tournament_started) {
                 max_y = 2; // spectate(0), start(1), leave(2)
             }
@@ -878,7 +879,7 @@ extern "C" void rmlui_tournament_lobby_update(void) {
             // Dynamic leave position
             int leave_y = 1; // non-host default
             if (s_is_host && s_tournament_started)
-                leave_y = 4;
+                leave_y = 5;
             else if (s_is_host && !s_tournament_started)
                 leave_y = 2;
 
@@ -936,6 +937,14 @@ extern "C" void rmlui_tournament_lobby_update(void) {
                     }
                     AsyncTOAction(s_room_code.c_str(), 5, NULL, m.match_index, winner_pid);
                     s_status_text = Rml::String("Override: ") + winner_name + " wins";
+                    s_model_handle.DirtyVariable("status_text");
+                }
+            } else if (s_cursor_y == 4 && s_is_host && s_tournament_started) {
+                // TO: Restart selected match
+                if (s_match_selector_idx < s_active_match_count) {
+                    const RmlActiveMatch& m = s_active_matches[s_match_selector_idx];
+                    AsyncTOAction(s_room_code.c_str(), 6, NULL, m.match_index, NULL);
+                    s_status_text = Rml::String("Restarting match...");
                     s_model_handle.DirtyVariable("status_text");
                 }
             } else if (s_cursor_y == leave_y) {

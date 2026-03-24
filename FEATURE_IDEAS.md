@@ -148,10 +148,10 @@ typedef struct {
 | TO controls (DQ, override, pause) | ✅ Done | DQ player selector + Override button in [tournament_lobby.rml](file:///d:/3sxtra/assets/ui/tournament_lobby.rml). API: `BracketDQ`, `BracketOverride`, `BracketPause` |
 | Tournament UI (bracket display) | ✅ Done | [rmlui_tournament_lobby.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_tournament_lobby.cpp) — bracket panel, TO controls, dynamic cursor |
 | Server API extensions | ✅ Done | All 5 endpoints in [lobby-server.js](file:///d:/3sxtra/tools/lobby-server/lobby-server.js): `/bracket/start`, `/bracket`, `/bracket/override`, `/bracket/dq`, `/bracket/pause`. Integration tests in [__test_tournament.js](file:///d:/3sxtra/tools/lobby-server/__test_tournament.js) (11 scenarios) |
-| Restart match (re-fire disputed) | ❌ Remaining | TO re-fires a match proposal for a disputed game |
+| Restart match (re-fire disputed) | ✅ Done | TO re-fires a match proposal for a disputed game |
 
 > [!TIP]
-> Tournament system is **feature-complete** (March 24, 2026). The only remaining TO control is `Restart match` — re-firing a match proposal for disputed games.
+> Tournament system is **feature-complete** and 100% finished (March 24, 2026). All TO controls, bracket logic, UI, and parallel match flows are operational.
 
 ---
 
@@ -220,12 +220,12 @@ typedef struct {
 
 | Feature | Status | Notes |
 |---|---|---|
-| Password-protected rooms | ❌ | SHA256 already available in [sha256.c](file:///d:/3sxtra/src/netplay/sha256.c) — needs `password` param in `CreateRoom` |
-| Hidden rooms (not in `ListRooms`) | ❌ | Needs `visibility` field in room API |
+| Password-protected rooms | ✅ | Password dialog + `password` param in `CreateRoom`/`JoinRoom` |
+| Hidden rooms (not in `ListRooms`) | ✅ | `visibility` field implemented (Public/Private) |
 | Human-readable codes (`HADOKEN-42`) | ❌ | Server-side cosmetic change |
 | Per-room allowlist/blocklist | ❌ | Server storage + client enforcement |
 | Persistent rooms (host grace period) | ❌ | Host-migration timer |
-| Password dialog in lobby UI | ❌ | New RmlUi component |
+| Password dialog in lobby UI | ✅ | Arcade-style password entry in `rmlui_network_lobby.cpp` |
 | Lobby list filters (Public/Private/My) | ❌ | New filter UI |
 
 > All of this is **API extensions + UI changes** — no fundamental architectural work.
@@ -366,10 +366,10 @@ Every item below is **client-side gameplay or matchmaking algorithm** — the se
 |---|---|---|
 | **§1 Mod Menu** | Mods/shader/stage menus, F-key toggles, phase3 per-component, audio/voice mods, sprite overrides, HD stages, hot-reload | Unified tree, profiles, discovery, previews, per-char FX |
 | **§2 Replays & Chat** | Auto-save + upload, string-based picker, metadata v2, descriptive filenames, lobby chat | Retention policy, bookmarks, in-match quick chat, emotes |
-| **§3 Tournaments** | ✅ **Implemented** — SE/DE/RR/Swiss brackets, TO controls (DQ/override/pause), bracket UI, match selector, server API (5 endpoints), 28 unit tests, 11 integration tests | Restart match (re-fire disputed) |
+| **§3 Tournaments** | ✅ **Implemented** — SE/DE/RR/Swiss brackets, TO controls (DQ/override/pause/restart), bracket UI, match selector, server API (6 endpoints), 28 unit tests, 12 integration tests | — |
 | **§4 Dynamic Bezel** | 40+ char bezels, auto-swap | Opponent-aware compositing, stats-in-bezel, animation, spectator frame |
 | **§5 KOTH** | Rotation + queue + streak count (server + casual lobby) | KOTH room type, session stats, queue viz, dethroned anim, CPU fill |
-| **§6 Private Rooms** | Room codes, create/join | Password, hidden visibility, allow/blocklists, persistence |
+| **§6 Private Rooms** | Room codes, create/join, **passwords, hidden visibility, UI dialog** | Allow/blocklists, persistence, filters, human-readable codes |
 | **§7 Match Flow** | Char select (HD portraits, SA, timer, stage), VS screen, accept/decline proposals | Blind pick sync, stage bans, match flow state machine, ranked/tournament modes |
 | **§8 Fight Requests** | Glicko-2, match reporting, disconnect tracking, leaderboards, region/ping/WiFi filtering, searching, anti-spam | Character lock/ban, ranked auto-match, hidden names, streak bonuses, graceful quit, jail, skill range pairing |
 | **§9 Attract Mode** | CPU demos, HD overlay, arcade ranking tables | Online replay playback, live stats, live streaks, information bar |
@@ -766,7 +766,7 @@ A persistent information bar at the bottom of the screen that adapts its content
 | Priority | Feature | Effort | Impact |
 |---|---|---|---|
 | 🔴 High | Fight Requests / Matchmaking | High | Critical — core online experience |
-| 🔴 High | Private / Hidden Rooms | Low | High — most requested for friend groups |
+| 🔴 High | Private / Hidden Rooms | Low | High — ✅ Create/join with passwords & visibility complete; remaining: persistence, filters |
 | 🔴 High | Replay Autosaving | Low | High — ✅ v2 header, string filenames, and auto-save complete; remaining: retention policy, bookmarks |
 | 🔴 High | Match Flow / Blind Picks | Medium | High — competitive integrity |
 | 🟡 Medium | King of the Hill | Medium | High — social/arcade atmosphere |

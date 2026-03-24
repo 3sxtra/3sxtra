@@ -114,14 +114,18 @@
                     <span class="dq-hint">◄ ►</span>
                 </div>
                 <div data-if="tournament_started" id="btn-to-override"
-                     data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 3">
+                     data-class-focused="cursor_x == 0 && cursor_y == 3">
                     OVERRIDE → <span class="override-winner">{{override_label}}</span>
                     <span class="override-hint">◄ ►</span>
+                </div>
+                <div data-if="tournament_started" id="btn-to-restart"
+                     data-class-focused="cursor_x == 0 && cursor_y == 4">
+                    RESTART MATCH
                 </div>
             </div>
 
             <div id="btn-leave-room"
-                 data-class-focused="cursor_x == 0 &amp;&amp; ((is_host &amp;&amp; tournament_started &amp;&amp; cursor_y == 4) || (is_host &amp;&amp; !tournament_started &amp;&amp; cursor_y == 2) || (!is_host &amp;&amp; cursor_y == 1))">
+                 data-class-focused="cursor_x == 0 && ((is_host && tournament_started && cursor_y == 5) || (is_host && !tournament_started && cursor_y == 2) || (!is_host && cursor_y == 1))">
                 LEAVE ROOM
             </div>
         </div>

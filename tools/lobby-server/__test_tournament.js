@@ -369,6 +369,44 @@ async function run() {
     assert(allSwDone, 'All Swiss bracket entries completed');
     console.log(`   Swiss tournament completed (${swFinal.bracket.length} total matches)`);
 
+    // --- Test 12: Restart Match API ---
+    console.log('\n--- Test 12: Restart Match API ---');
+    const rsRoom = await sendreq('/room/create', {
+        player_id: 'host', display_name: 'Host', name: 'Restart Test',
+        room_type: 2, tournament_format: 0, max_players: 8, ft: 2, seeding: 'join_order'
+    });
+    const rsCode = rsRoom.room_code;
+    for (const id of ['p2', 'p3', 'p4']) {
+        await sendreq('/room/join', { player_id: id, display_name: id.toUpperCase(), room_code: rsCode });
+    }
+    await sendreq(`/room/${rsCode}/bracket/start`, { player_id: 'host' });
+
+    // End a match
+    let rsBracket = await sendreq(`/room/${rsCode}/bracket`, null, 'GET');
+    let targetMatch = rsBracket.matches[0];
+    await sendreq('/room/match/accept', { room_code: rsCode, player_id: targetMatch.p1, match_index: targetMatch.match_index });
+    await sendreq('/room/match/accept', { room_code: rsCode, player_id: targetMatch.p2, match_index: targetMatch.match_index });
+    await sendreq('/room/match/end', { room_code: rsCode, winner_id: targetMatch.p1, match_index: targetMatch.match_index });
+
+    // Verify it ended
+    rsBracket = await sendreq(`/room/${rsCode}/bracket`, null, 'GET');
+    let entry = rsBracket.bracket.find(b => b.round === targetMatch.round && b.position === targetMatch.position);
+    assert(entry.completed === 1, 'Match completed in bracket');
+
+    // Restart the match
+    const restartRes = await sendreq(`/room/${rsCode}/bracket/restart`, { player_id: 'host', match_index: targetMatch.match_index });
+    assert(restartRes.ok, 'Restart match API call succeeded');
+
+    // Verify it reset
+    rsBracket = await sendreq(`/room/${rsCode}/bracket`, null, 'GET');
+    entry = rsBracket.bracket.find(b => b.round === targetMatch.round && b.position === targetMatch.position);
+    assert(entry.completed === 0, 'Bracket entry reset to uncompleted');
+    assert(entry.winner_id === '', 'Bracket entry winner cleared');
+
+    targetMatch = rsBracket.matches.find(m => m.match_index === targetMatch.match_index);
+    assert(targetMatch, 'Restarted match is back in active pool');
+    assert(targetMatch.active === 0, 'Match is ready (proposed)');
+
     // --- Cleanup ---
     console.log('\n--- Cleanup ---');
     for (const id of ['host', 'p2', 'p3', 'p4']) {
@@ -377,6 +415,7 @@ async function run() {
         await sendreq('/room/leave', { player_id: id, room_code: dqCode });
         await sendreq('/room/leave', { player_id: id, room_code: deCode });
         await sendreq('/room/leave', { player_id: id, room_code: swCode });
+        await sendreq('/room/leave', { player_id: id, room_code: rsCode });
     }
 
     console.log('\n=== All tournament tests passed! ===');

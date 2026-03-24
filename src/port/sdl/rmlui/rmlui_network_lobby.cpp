@@ -1067,13 +1067,12 @@ extern "C" int rmlui_network_lobby_get_visibility(void) {
 
 // ─── Password popup actions ──────────────────────────────────────
 
-/// Helper: rebuild masked display string from current input
+/// Helper: update display string from current input
 static void password_update_display(void) {
     if (s_password_input_len == 0) {
         s_password_input_display = "_";
     } else {
-        // Show typed chars as '*' except show the last char when cycling
-        s_password_input_display = Rml::String(s_password_input_len, '*');
+        s_password_input_display = s_password_input;
     }
     if (s_model_handle)
         s_model_handle.DirtyVariable("password_input_display");
@@ -1091,7 +1090,6 @@ extern "C" void rmlui_network_lobby_password_input(int key) {
     if (key == 1) {
         // UP: cycle forward through charset
         s_password_char_idx = (s_password_char_idx + 1) % PASSWORD_CHARSET_LEN;
-        // Replace last char or show preview
         if (s_password_input_len > 0) {
             s_password_input[s_password_input_len - 1] = PASSWORD_CHARSET[s_password_char_idx];
         } else {
@@ -1100,15 +1098,7 @@ extern "C" void rmlui_network_lobby_password_input(int key) {
             s_password_input[1] = '\0';
             s_password_input_len = 1;
         }
-        // Show password with last char visible (cycling preview)
-        if (s_password_input_len > 1) {
-            s_password_input_display = Rml::String(s_password_input_len - 1, '*');
-            s_password_input_display += PASSWORD_CHARSET[s_password_char_idx];
-        } else {
-            s_password_input_display = Rml::String(1, PASSWORD_CHARSET[s_password_char_idx]);
-        }
-        if (s_model_handle)
-            s_model_handle.DirtyVariable("password_input_display");
+        password_update_display();
         return;
     }
 
@@ -1122,14 +1112,7 @@ extern "C" void rmlui_network_lobby_password_input(int key) {
             s_password_input[1] = '\0';
             s_password_input_len = 1;
         }
-        if (s_password_input_len > 1) {
-            s_password_input_display = Rml::String(s_password_input_len - 1, '*');
-            s_password_input_display += PASSWORD_CHARSET[s_password_char_idx];
-        } else {
-            s_password_input_display = Rml::String(1, PASSWORD_CHARSET[s_password_char_idx]);
-        }
-        if (s_model_handle)
-            s_model_handle.DirtyVariable("password_input_display");
+        password_update_display();
         return;
     }
 
@@ -1178,7 +1161,7 @@ extern "C" void rmlui_network_lobby_submit_password(void) {
         // CREATE MODE: store password for next room creation
         snprintf(s_create_room_password, sizeof(s_create_room_password), "%s", s_password_input);
         s_create_password_label = s_password_input_len > 0
-            ? Rml::String(s_password_input_len, '*')
+            ? s_password_input
             : "NONE";
         if (s_model_handle) {
             s_model_handle.DirtyVariable("password_popup_visible");

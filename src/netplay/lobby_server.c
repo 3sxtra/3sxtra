@@ -20,6 +20,7 @@
 #include "identity.h"
 #include "port/config/config.h"
 #include <SDL3/SDL.h>
+#include <SDL3_net/SDL_net.h>
 #include <curl/curl.h>
 #include <cJSON.h>
 #include <stdio.h>
@@ -1403,10 +1404,35 @@ bool LobbyServer_BracketPause(const char* room_code, bool pause) {
     bool ok = http_request("POST", path, body, response, sizeof(response));
     free(body);
 
-    if (ok)
-        SDL_Log("[LobbyServer] Bracket %s: room=%s", pause ? "paused" : "resumed", room_code);
+    if (ok) {
+        SDL_Log("[LobbyServer] Tournament %s in room %s", pause ? "PAUSED" : "RESUMED", room_code);
+    }
     return ok;
 }
+
+bool LobbyServer_BracketRestartMatch(const char* room_code, int match_index) {
+    if (!Identity_IsInitialized())
+        return false;
+
+    cJSON* root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "player_id", Identity_GetPlayerId());
+    cJSON_AddNumberToObject(root, "match_index", match_index);
+    char* body = cJSON_PrintUnformatted(root);
+    cJSON_Delete(root);
+
+    char path[128];
+    snprintf(path, sizeof(path), "/room/%s/bracket/restart", room_code);
+
+    char response[HTTP_BUF_SIZE];
+    bool ok = http_request("POST", path, body, response, sizeof(response));
+    free(body);
+
+    if (ok) {
+        SDL_Log("[LobbyServer] Tournament Match %d restarted in room %s", match_index, room_code);
+    }
+    return ok;
+}
+
 
 /* ======== SSE raw socket connect ========
  * The SSE streaming client needs a long-lived TCP socket for recv() polling.

@@ -2377,8 +2377,81 @@ async function handleRequest(req, res) {
                 tryStartTournamentRound(room);
             }
         }
-
         return json(res, 200, { ok: true, paused: pause });
+    }
+
+    // POST /room/:code/bracket/restart — Restart a match
+    const bracketRestartMatch = urlPath.match(/^\/room\/([^/]+)\/bracket\/restart$/);
+    if (method === 'POST' && bracketRestartMatch) {
+        const roomCode = bracketRestartMatch[1];
+        const data = parseJsonBody(res, body);
+        if (!data) return;
+        const room = rooms.get(roomCode);
+        if (!room) return json(res, 404, { error: 'Room not found' });
+        if (room.room_type !== 2 || !room.tournament) {
+            return json(res, 400, { error: 'Not a tournament room' });
+        }
+        if (data.player_id !== room.host) {
+            return json(res, 403, { error: 'Only the tournament organizer can restart matches' });
+        }
+
+        const t = room.tournament;
+        const { match_index } = data;
+        if (typeof match_index !== 'number') {
+            return json(res, 400, { error: 'Missing match_index' });
+        }
+
+        const tMatch = t.matches.find(m => m.match_index === match_index);
+        if (!tMatch) {
+            return json(res, 404, { error: 'Tournament match not found in active pool' });
+        }
+
+        const entry = t.bracket.find(b => b.round === tMatch.bracket_round && b.position === tMatch.bracket_position);
+        if (!entry) {
+            return json(res, 404, { error: 'Bracket entry not found' });
+        }
+
+        if (!entry.player1_id || !entry.player2_id) {
+            return json(res, 400, { error: 'Cannot restart a match missing players' });
+        }
+
+        // Reset the bracket entry
+        entry.completed = 0;
+        entry.winner_id = '';
+
+        // Reset existing match object
+        tMatch.state = 'proposed';
+        tMatch.active = false;
+        tMatch.accepts = { [entry.player1_id]: false, [entry.player2_id]: false };
+        tMatch.proposed_at = Date.now();
+
+        // Read player connection info to build the proposal correctly
+        const p1_data = players.get(entry.player1_id);
+        const p2_data = players.get(entry.player2_id);
+        
+        broadcastRoomEvent(room, 'match_propose', {
+            ft: room.ft || 1,
+            match_index: match_index,
+            bracket_side: entry.bracket_side || '',
+            p1: {
+                id: entry.player1_id, name: entry.player1_name || getPlayerName(entry.player1_id),
+                connection_type: p1_data ? p1_data.connection_type : 'unknown',
+                rtt_ms: p1_data ? p1_data.rtt_ms : -1,
+                region: p1_data ? p1_data.region : '',
+                room_code: p1_data ? p1_data.room_code : ''
+            },
+            p2: {
+                id: entry.player2_id, name: entry.player2_name || getPlayerName(entry.player2_id),
+                connection_type: p2_data ? p2_data.connection_type : 'unknown',
+                rtt_ms: p2_data ? p2_data.rtt_ms : -1,
+                region: p2_data ? p2_data.region : '',
+                room_code: p2_data ? p2_data.room_code : ''
+            }
+        });
+
+        broadcastRoomEvent(room, 'bracket_update', getTournamentState(room));
+        console.log(`[tournament] match ${match_index} RESTARTED in ${room.id} (${getPlayerName(entry.player1_id)} vs ${getPlayerName(entry.player2_id)})`);
+        return json(res, 200, { ok: true });
     }
 
     // --- / Casual Rooms ---
