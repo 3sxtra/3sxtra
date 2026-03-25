@@ -1,0 +1,385 @@
+/* Palette Editor stylesheet — 3SXtra RmlUi overlay
+ * Side-docked panel (no full-screen overlay) for live editing.
+ */
+
+body {
+    width: 100%;
+    height: 100%;
+}
+
+#palmod-panel {
+    display: block;
+    position: absolute;
+    right: 8dp;
+    top: 8dp;
+    width: 420dp;
+    max-height: 95%;
+    overflow-y: auto;
+    background-color: rgba(15, 15, 20, 230);
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 8dp;
+    padding: 10dp 14dp;
+    font-family: "Noto Sans JP";
+    font-size: 14dp;
+}
+
+/* Title */
+#palmod-panel h1 {
+    font-size: 18dp;
+    color: #33ccff;
+    margin-bottom: 6dp;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Section headers */
+#palmod-panel h2 {
+    font-size: 13dp;
+    color: #888;
+    margin-top: 4dp;
+    margin-bottom: 5dp;
+    text-transform: uppercase;
+    letter-spacing: 1dp;
+    white-space: nowrap;
+}
+
+/* ── Tab bar ──────────────────────────────────────────────────── */
+
+.tab-bar {
+    display: block;
+    text-align: center;
+    margin-bottom: 6dp;
+}
+
+.tab {
+    display: inline-block;
+    padding: 4dp 16dp;
+    font-size: 12dp;
+    color: #888;
+    background-color: rgba(255, 255, 255, 10);
+    border-width: 1dp;
+    border-color: #333;
+    border-radius: 4dp;
+    margin-left: 2dp;
+    margin-right: 2dp;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tab:hover {
+    background-color: rgba(255, 255, 255, 25);
+    color: #ccc;
+}
+
+.tab-active {
+    background-color: rgba(51, 204, 255, 40);
+    color: #33ccff;
+    border-color: #33ccff;
+}
+
+.tab-content {
+    display: block;
+}
+
+/* ── Sections & controls ──────────────────────────────────────── */
+
+.section {
+    display: block;
+    margin-bottom: 2dp;
+}
+
+.divider {
+    display: block;
+    height: 1dp;
+    background-color: #333;
+    margin-top: 3dp;
+    margin-bottom: 3dp;
+}
+
+.control-row {
+    display: block;
+    padding: 3dp 6dp;
+    white-space: nowrap;
+}
+
+.control-row input {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.control-row label {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.control-row:hover {
+    background-color: rgba(255, 255, 255, 13);
+    border-radius: 3dp;
+}
+
+label {
+    font-size: 14dp;
+    color: #dddddd;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.color-value {
+    display: inline-block;
+    font-size: 12dp;
+    color: #777;
+    margin-left: 4dp;
+    min-width: 24dp;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.color-label {
+    display: inline-block;
+    font-size: 15dp;
+    color: #33ccff;
+    margin-left: 8dp;
+    min-width: 40dp;
+    text-align: center;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
+.disabled {
+    opacity: 0.35;
+}
+
+.status-warn {
+    color: #ffcc33;
+    font-size: 13dp;
+    display: block;
+    margin-bottom: 4dp;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.hint {
+    font-size: 12dp;
+    color: #555;
+    margin-top: 8dp;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* ── Color swatch grid ────────────────────────────────────────── */
+
+.color-grid {
+    display: block;
+    width: 100%;
+    margin-top: 3dp;
+    margin-bottom: 3dp;
+    padding: 2dp;
+    line-height: 1;
+}
+
+.swatch {
+    display: inline-block;
+    width: 18dp;
+    height: 18dp;
+    min-width: 18dp;
+    min-height: 18dp;
+    max-width: 18dp;
+    max-height: 18dp;
+    margin: 1dp;
+    border-width: 1dp;
+    border-color: #333;
+    border-radius: 2dp;
+    cursor: pointer;
+    vertical-align: top;
+}
+
+.swatch:hover {
+    border-color: #33ccff;
+    border-width: 2dp;
+    margin: 0dp;
+}
+
+/* ── Color picker panel ───────────────────────────────────────── */
+
+.picker-panel {
+    display: block;
+    background-color: rgba(30, 30, 40, 220);
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 6dp;
+    padding: 8dp 12dp;
+    margin-top: 6dp;
+}
+
+.picker-previews {
+    display: block;
+    text-align: center;
+    margin-bottom: 6dp;
+}
+
+.preview-box {
+    display: inline-block;
+    text-align: center;
+    margin-left: 10dp;
+    margin-right: 10dp;
+    vertical-align: top;
+}
+
+.preview-label {
+    display: block;
+    font-size: 11dp;
+    color: #777;
+    margin-bottom: 2dp;
+}
+
+.preview-swatch {
+    display: block;
+    width: 48dp;
+    height: 48dp;
+    border-width: 2dp;
+    border-color: #555;
+    border-radius: 4dp;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* RGB sliders */
+.picker-slider {
+    padding: 2dp 6dp;
+}
+
+.channel-label {
+    display: inline-block;
+    width: 18dp;
+    font-size: 14dp;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+.r-label { color: #ff6666; }
+.g-label { color: #66ff66; }
+.b-label { color: #6666ff; }
+
+.channel-value {
+    display: inline-block;
+    font-size: 14dp;
+    color: #aaa;
+    margin-left: 6dp;
+    min-width: 24dp;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Picker buttons */
+.picker-buttons {
+    display: block;
+    text-align: center;
+    margin-top: 6dp;
+}
+
+.btn {
+    display: inline-block;
+    padding: 4dp 14dp;
+    font-size: 12dp;
+    border-width: 1dp;
+    border-radius: 4dp;
+    cursor: pointer;
+    margin-left: 4dp;
+    margin-right: 4dp;
+    white-space: nowrap;
+}
+
+.btn-reset {
+    color: #ffcc33;
+    background-color: rgba(255, 204, 51, 15);
+    border-color: #664400;
+}
+
+.btn-reset:hover {
+    background-color: rgba(255, 204, 51, 40);
+}
+
+.btn-close {
+    color: #aaa;
+    background-color: rgba(255, 255, 255, 10);
+    border-color: #555;
+}
+
+.btn-close:hover {
+    background-color: rgba(255, 255, 255, 30);
+}
+
+/* ── Save/Load panel ──────────────────────────────────────────── */
+
+.save-panel {
+    display: block;
+}
+
+.name-input {
+    display: inline-block;
+    width: 140dp;
+    padding: 3dp 6dp;
+    font-size: 13dp;
+    color: #ddd;
+    background-color: rgba(255, 255, 255, 10);
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 3dp;
+    margin-left: 4dp;
+    margin-right: 4dp;
+    vertical-align: middle;
+}
+
+.palette-name {
+    display: inline-block;
+    font-size: 14dp;
+    color: #33ccff;
+    min-width: 100dp;
+    text-align: center;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
+.btn-save {
+    color: #66ff66;
+    background-color: rgba(102, 255, 102, 15);
+    border-color: #336633;
+}
+
+.btn-save:hover {
+    background-color: rgba(102, 255, 102, 40);
+}
+
+.btn-load {
+    color: #33ccff;
+    background-color: rgba(51, 204, 255, 15);
+    border-color: #225577;
+}
+
+.btn-load:hover {
+    background-color: rgba(51, 204, 255, 40);
+}
+
+.btn-delete {
+    color: #ff6666;
+    background-color: rgba(255, 102, 102, 15);
+    border-color: #663333;
+}
+
+.btn-delete:hover {
+    background-color: rgba(255, 102, 102, 40);
+}
+
+.btn-nav {
+    color: #aaa;
+    background-color: rgba(255, 255, 255, 10);
+    border-color: #444;
+    padding: 3dp 8dp;
+    font-size: 14dp;
+}
+
+.btn-nav:hover {
+    background-color: rgba(255, 255, 255, 30);
+    color: #fff;
+}

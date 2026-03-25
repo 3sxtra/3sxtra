@@ -20,9 +20,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/system/ramcnt.h"
 
-typedef struct {
-    u16 col[2][28][64];
-} COL;
+// COL typedef moved to color3rd.h
 
 typedef struct {
     u16 data;
@@ -51,6 +49,7 @@ typedef struct {
     u16 col[20][16][16];
 } COL_x2800;
 
+
 // bss
 u16 colPalBuffDC[1024];
 u16 ColorRAM[512][64];
@@ -66,6 +65,13 @@ s32 palFormConv;
 void palConvRowTim2CI8Clut(u16* src, u16* dst, s32 size);
 const u16 hitmark_color[128];
 const col_file_data color_file[161];
+
+/* Palmod editor hook — called with COL data before Push_ramcnt_key frees it */
+static void (*s_palmod_col_hook)(int id, const COL* data) = NULL;
+
+void palmod_set_hook(void (*hook)(int id, const COL* data)) {
+    s_palmod_col_hook = hook;
+}
 
 /** @brief Queue a color data load request from the AFS archive. */
 void q_ldreq_color_data(REQ* curr) {
@@ -259,6 +265,9 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
         for (i = 0; i < 256; i++) {
             ldadrs[i] = palConvSrcToRam(tradrs[i]);
         }
+
+        /* Palmod hook: cache COL data before Push frees the memory */
+        if (s_palmod_col_hook) s_palmod_col_hook(id, plcol[id]);
 
         Push_ramcnt_key(key);
         palUpdateGhostCP3(id * 16, 16);

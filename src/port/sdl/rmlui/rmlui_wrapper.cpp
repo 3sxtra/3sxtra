@@ -753,7 +753,7 @@ static void ensure_fonts_loaded(void) {
     s_deferred_init_done = true;
 
     // NotoSansJP loaded as PRIMARY (non-fallback) so CSS font-family
-    // "Noto Sans JP Thin" matches it directly.  This prevents BoldPixels
+    // "Noto Sans JP" matches it directly.  This prevents BoldPixels
     // from claiming Unicode codepoints it cannot render (geometric shapes,
     // arrows, etc.) and blocking the fallback chain.
     std::string font_noto = s_ui_base_path + "../fonts/NotoSansJP-Regular.ttf";

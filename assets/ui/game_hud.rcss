@@ -7,7 +7,7 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP Thin";
+    font-family: "Noto Sans JP";
     font-size: 12dp;
 }
 

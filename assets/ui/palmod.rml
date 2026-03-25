@@ -1,0 +1,236 @@
+<rml>
+<head>
+    <title>Palette Editor</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="palmod.rcss"/>
+</head>
+<body data-model="palmod">
+    <div id="palmod-panel">
+        <h1>PALETTE EDITOR</h1>
+
+        <!-- Tab bar -->
+        <div class="tab-bar">
+            <button class="tab" data-class-tab-active="edit_mode == 0"
+                    data-event-click="set_mode_chars">CHARACTERS</button>
+            <button class="tab" data-class-tab-active="edit_mode == 1"
+                    data-event-click="set_mode_stage">STAGE</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <p data-if="!in_game" class="status-warn">Enter a match to edit palettes</p>
+
+        <!-- ═══════ CHARACTERS TAB ═══════ -->
+        <div data-if="edit_mode == 0" class="tab-content">
+            <!-- P1 -->
+            <div class="section" data-class-disabled="!in_game">
+                <h2>Player 1 — {{ p1_name }}</h2>
+                <div class="control-row">
+                    <label>Color:</label>
+                    <input type="range" min="0" max="15" step="1" data-value="p1_color"
+                           data-attrif-disabled="!in_game"/>
+                    <span class="color-label">{{ p1_label }}</span>
+                    <span class="color-value">({{ p1_color }})</span>
+                </div>
+                <!-- P1 color grid (8x8 = 64 swatches) -->
+                <div class="color-grid" data-if="in_game">
+                    <div class="swatch" data-style-background-color="sw0"  data-event-click="pick_p1_color(0)"></div>
+                    <div class="swatch" data-style-background-color="sw1"  data-event-click="pick_p1_color(1)"></div>
+                    <div class="swatch" data-style-background-color="sw2"  data-event-click="pick_p1_color(2)"></div>
+                    <div class="swatch" data-style-background-color="sw3"  data-event-click="pick_p1_color(3)"></div>
+                    <div class="swatch" data-style-background-color="sw4"  data-event-click="pick_p1_color(4)"></div>
+                    <div class="swatch" data-style-background-color="sw5"  data-event-click="pick_p1_color(5)"></div>
+                    <div class="swatch" data-style-background-color="sw6"  data-event-click="pick_p1_color(6)"></div>
+                    <div class="swatch" data-style-background-color="sw7"  data-event-click="pick_p1_color(7)"></div>
+                    <div class="swatch" data-style-background-color="sw8"  data-event-click="pick_p1_color(8)"></div>
+                    <div class="swatch" data-style-background-color="sw9"  data-event-click="pick_p1_color(9)"></div>
+                    <div class="swatch" data-style-background-color="sw10" data-event-click="pick_p1_color(10)"></div>
+                    <div class="swatch" data-style-background-color="sw11" data-event-click="pick_p1_color(11)"></div>
+                    <div class="swatch" data-style-background-color="sw12" data-event-click="pick_p1_color(12)"></div>
+                    <div class="swatch" data-style-background-color="sw13" data-event-click="pick_p1_color(13)"></div>
+                    <div class="swatch" data-style-background-color="sw14" data-event-click="pick_p1_color(14)"></div>
+                    <div class="swatch" data-style-background-color="sw15" data-event-click="pick_p1_color(15)"></div>
+                    <div class="swatch" data-style-background-color="sw16" data-event-click="pick_p1_color(16)"></div>
+                    <div class="swatch" data-style-background-color="sw17" data-event-click="pick_p1_color(17)"></div>
+                    <div class="swatch" data-style-background-color="sw18" data-event-click="pick_p1_color(18)"></div>
+                    <div class="swatch" data-style-background-color="sw19" data-event-click="pick_p1_color(19)"></div>
+                    <div class="swatch" data-style-background-color="sw20" data-event-click="pick_p1_color(20)"></div>
+                    <div class="swatch" data-style-background-color="sw21" data-event-click="pick_p1_color(21)"></div>
+                    <div class="swatch" data-style-background-color="sw22" data-event-click="pick_p1_color(22)"></div>
+                    <div class="swatch" data-style-background-color="sw23" data-event-click="pick_p1_color(23)"></div>
+                    <div class="swatch" data-style-background-color="sw24" data-event-click="pick_p1_color(24)"></div>
+                    <div class="swatch" data-style-background-color="sw25" data-event-click="pick_p1_color(25)"></div>
+                    <div class="swatch" data-style-background-color="sw26" data-event-click="pick_p1_color(26)"></div>
+                    <div class="swatch" data-style-background-color="sw27" data-event-click="pick_p1_color(27)"></div>
+                    <div class="swatch" data-style-background-color="sw28" data-event-click="pick_p1_color(28)"></div>
+                    <div class="swatch" data-style-background-color="sw29" data-event-click="pick_p1_color(29)"></div>
+                    <div class="swatch" data-style-background-color="sw30" data-event-click="pick_p1_color(30)"></div>
+                    <div class="swatch" data-style-background-color="sw31" data-event-click="pick_p1_color(31)"></div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- P2 -->
+            <div class="section" data-class-disabled="!in_game">
+                <h2>Player 2 — {{ p2_name }}</h2>
+                <div class="control-row">
+                    <label>Color:</label>
+                    <input type="range" min="0" max="15" step="1" data-value="p2_color"
+                           data-attrif-disabled="!in_game"/>
+                    <span class="color-label">{{ p2_label }}</span>
+                    <span class="color-value">({{ p2_color }})</span>
+                </div>
+                <!-- P2 color grid (first 32 swatches) -->
+                <div class="color-grid" data-if="in_game">
+                    <div class="swatch" data-style-background-color="sw2_0"  data-event-click="pick_p2_color(0)"></div>
+                    <div class="swatch" data-style-background-color="sw2_1"  data-event-click="pick_p2_color(1)"></div>
+                    <div class="swatch" data-style-background-color="sw2_2"  data-event-click="pick_p2_color(2)"></div>
+                    <div class="swatch" data-style-background-color="sw2_3"  data-event-click="pick_p2_color(3)"></div>
+                    <div class="swatch" data-style-background-color="sw2_4"  data-event-click="pick_p2_color(4)"></div>
+                    <div class="swatch" data-style-background-color="sw2_5"  data-event-click="pick_p2_color(5)"></div>
+                    <div class="swatch" data-style-background-color="sw2_6"  data-event-click="pick_p2_color(6)"></div>
+                    <div class="swatch" data-style-background-color="sw2_7"  data-event-click="pick_p2_color(7)"></div>
+                    <div class="swatch" data-style-background-color="sw2_8"  data-event-click="pick_p2_color(8)"></div>
+                    <div class="swatch" data-style-background-color="sw2_9"  data-event-click="pick_p2_color(9)"></div>
+                    <div class="swatch" data-style-background-color="sw2_10" data-event-click="pick_p2_color(10)"></div>
+                    <div class="swatch" data-style-background-color="sw2_11" data-event-click="pick_p2_color(11)"></div>
+                    <div class="swatch" data-style-background-color="sw2_12" data-event-click="pick_p2_color(12)"></div>
+                    <div class="swatch" data-style-background-color="sw2_13" data-event-click="pick_p2_color(13)"></div>
+                    <div class="swatch" data-style-background-color="sw2_14" data-event-click="pick_p2_color(14)"></div>
+                    <div class="swatch" data-style-background-color="sw2_15" data-event-click="pick_p2_color(15)"></div>
+                    <div class="swatch" data-style-background-color="sw2_16" data-event-click="pick_p2_color(16)"></div>
+                    <div class="swatch" data-style-background-color="sw2_17" data-event-click="pick_p2_color(17)"></div>
+                    <div class="swatch" data-style-background-color="sw2_18" data-event-click="pick_p2_color(18)"></div>
+                    <div class="swatch" data-style-background-color="sw2_19" data-event-click="pick_p2_color(19)"></div>
+                    <div class="swatch" data-style-background-color="sw2_20" data-event-click="pick_p2_color(20)"></div>
+                    <div class="swatch" data-style-background-color="sw2_21" data-event-click="pick_p2_color(21)"></div>
+                    <div class="swatch" data-style-background-color="sw2_22" data-event-click="pick_p2_color(22)"></div>
+                    <div class="swatch" data-style-background-color="sw2_23" data-event-click="pick_p2_color(23)"></div>
+                    <div class="swatch" data-style-background-color="sw2_24" data-event-click="pick_p2_color(24)"></div>
+                    <div class="swatch" data-style-background-color="sw2_25" data-event-click="pick_p2_color(25)"></div>
+                    <div class="swatch" data-style-background-color="sw2_26" data-event-click="pick_p2_color(26)"></div>
+                    <div class="swatch" data-style-background-color="sw2_27" data-event-click="pick_p2_color(27)"></div>
+                    <div class="swatch" data-style-background-color="sw2_28" data-event-click="pick_p2_color(28)"></div>
+                    <div class="swatch" data-style-background-color="sw2_29" data-event-click="pick_p2_color(29)"></div>
+                    <div class="swatch" data-style-background-color="sw2_30" data-event-click="pick_p2_color(30)"></div>
+                    <div class="swatch" data-style-background-color="sw2_31" data-event-click="pick_p2_color(31)"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════ STAGE TAB ═══════ -->
+        <div data-if="edit_mode == 1" class="tab-content">
+            <div class="section" data-class-disabled="!in_game">
+                <h2>Stage Palette Row</h2>
+                <div class="control-row">
+                    <label>Row:</label>
+                    <input type="range" min="32" data-attr-max="stage_row_max"
+                           step="1" data-value="stage_row"
+                           data-attrif-disabled="!in_game"/>
+                    <span class="color-label">{{ stage_row }}</span>
+                </div>
+                <!-- Stage color grid -->
+                <div class="color-grid" data-if="in_game">
+                    <div class="swatch" data-style-background-color="sw0"  data-event-click="pick_stage_color(0)"></div>
+                    <div class="swatch" data-style-background-color="sw1"  data-event-click="pick_stage_color(1)"></div>
+                    <div class="swatch" data-style-background-color="sw2"  data-event-click="pick_stage_color(2)"></div>
+                    <div class="swatch" data-style-background-color="sw3"  data-event-click="pick_stage_color(3)"></div>
+                    <div class="swatch" data-style-background-color="sw4"  data-event-click="pick_stage_color(4)"></div>
+                    <div class="swatch" data-style-background-color="sw5"  data-event-click="pick_stage_color(5)"></div>
+                    <div class="swatch" data-style-background-color="sw6"  data-event-click="pick_stage_color(6)"></div>
+                    <div class="swatch" data-style-background-color="sw7"  data-event-click="pick_stage_color(7)"></div>
+                    <div class="swatch" data-style-background-color="sw8"  data-event-click="pick_stage_color(8)"></div>
+                    <div class="swatch" data-style-background-color="sw9"  data-event-click="pick_stage_color(9)"></div>
+                    <div class="swatch" data-style-background-color="sw10" data-event-click="pick_stage_color(10)"></div>
+                    <div class="swatch" data-style-background-color="sw11" data-event-click="pick_stage_color(11)"></div>
+                    <div class="swatch" data-style-background-color="sw12" data-event-click="pick_stage_color(12)"></div>
+                    <div class="swatch" data-style-background-color="sw13" data-event-click="pick_stage_color(13)"></div>
+                    <div class="swatch" data-style-background-color="sw14" data-event-click="pick_stage_color(14)"></div>
+                    <div class="swatch" data-style-background-color="sw15" data-event-click="pick_stage_color(15)"></div>
+                    <div class="swatch" data-style-background-color="sw16" data-event-click="pick_stage_color(16)"></div>
+                    <div class="swatch" data-style-background-color="sw17" data-event-click="pick_stage_color(17)"></div>
+                    <div class="swatch" data-style-background-color="sw18" data-event-click="pick_stage_color(18)"></div>
+                    <div class="swatch" data-style-background-color="sw19" data-event-click="pick_stage_color(19)"></div>
+                    <div class="swatch" data-style-background-color="sw20" data-event-click="pick_stage_color(20)"></div>
+                    <div class="swatch" data-style-background-color="sw21" data-event-click="pick_stage_color(21)"></div>
+                    <div class="swatch" data-style-background-color="sw22" data-event-click="pick_stage_color(22)"></div>
+                    <div class="swatch" data-style-background-color="sw23" data-event-click="pick_stage_color(23)"></div>
+                    <div class="swatch" data-style-background-color="sw24" data-event-click="pick_stage_color(24)"></div>
+                    <div class="swatch" data-style-background-color="sw25" data-event-click="pick_stage_color(25)"></div>
+                    <div class="swatch" data-style-background-color="sw26" data-event-click="pick_stage_color(26)"></div>
+                    <div class="swatch" data-style-background-color="sw27" data-event-click="pick_stage_color(27)"></div>
+                    <div class="swatch" data-style-background-color="sw28" data-event-click="pick_stage_color(28)"></div>
+                    <div class="swatch" data-style-background-color="sw29" data-event-click="pick_stage_color(29)"></div>
+                    <div class="swatch" data-style-background-color="sw30" data-event-click="pick_stage_color(30)"></div>
+                    <div class="swatch" data-style-background-color="sw31" data-event-click="pick_stage_color(31)"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════ COLOR PICKER ═══════ -->
+        <div data-if="picker_active" class="picker-panel">
+            <div class="divider"></div>
+            <h2>COLOR EDITOR — Index {{ sel_index }}</h2>
+            <div class="picker-previews">
+                <div class="preview-box">
+                    <span class="preview-label">Original</span>
+                    <div class="preview-swatch" data-style-background-color="sel_original"></div>
+                </div>
+                <div class="preview-box">
+                    <span class="preview-label">Modified</span>
+                    <div class="preview-swatch" data-style-background-color="sel_preview"></div>
+                </div>
+            </div>
+
+            <div class="control-row picker-slider">
+                <label class="channel-label r-label">R</label>
+                <input type="range" min="0" max="31" step="1" data-value="sel_r"/>
+                <span class="channel-value">{{ sel_r }}</span>
+            </div>
+            <div class="control-row picker-slider">
+                <label class="channel-label g-label">G</label>
+                <input type="range" min="0" max="31" step="1" data-value="sel_g"/>
+                <span class="channel-value">{{ sel_g }}</span>
+            </div>
+            <div class="control-row picker-slider">
+                <label class="channel-label b-label">B</label>
+                <input type="range" min="0" max="31" step="1" data-value="sel_b"/>
+                <span class="channel-value">{{ sel_b }}</span>
+            </div>
+
+            <div class="picker-buttons">
+                <button class="btn btn-reset" data-event-click="reset_color">RESET</button>
+                <button class="btn btn-close" data-event-click="close_picker">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- ═══════ SAVE / LOAD ═══════ -->
+        <div class="save-panel" data-if="in_game">
+            <div class="divider"></div>
+            <h2>SAVE / LOAD</h2>
+
+            <!-- Save row -->
+            <div class="control-row">
+                <label>Name:</label>
+                <input type="text" data-value="save_name" class="name-input"
+                       placeholder="my_palette"/>
+                <button class="btn btn-save" data-event-click="do_save">SAVE</button>
+            </div>
+
+            <!-- Load browser -->
+            <div class="control-row" data-if="saved_count > 0">
+                <button class="btn btn-nav" data-event-click="prev_palette">◀</button>
+                <span class="palette-name">{{ selected_name }}</span>
+                <button class="btn btn-nav" data-event-click="next_palette">▶</button>
+                <button class="btn btn-load" data-event-click="do_load">LOAD</button>
+                <button class="btn btn-delete" data-event-click="do_delete">DEL</button>
+            </div>
+            <p data-if="saved_count == 0" class="status-warn">No saved palettes</p>
+        </div>
+
+        <div class="divider"></div>
+        <p class="hint">Saved per character · Press F10 to close</p>
+    </div>
+</body>
+</rml>

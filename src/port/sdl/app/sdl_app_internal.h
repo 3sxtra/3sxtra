@@ -25,6 +25,7 @@ void SDLApp_ToggleBezel();
 void SDLApp_ToggleFrameRateUncap();
 void SDLApp_ToggleDebugHUD();
 void SDLApp_ToggleDevOverlay();
+void SDLApp_TogglePalmodMenu();
 void SDLApp_CloseAllMenus();
 
 // Window Management

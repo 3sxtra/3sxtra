@@ -2,7 +2,7 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP Thin";
+    font-family: "Noto Sans JP";
     font-size: 14dp;
     color: #ffffff;
 }
@@ -216,7 +216,7 @@ body {
 
 .sa-name-text {
     display: inline-block;
-    font-family: "Noto Sans JP Thin";
+    font-family: "Noto Sans JP";
     font-size: 9dp;
     font-weight: bold;
     vertical-align: middle;

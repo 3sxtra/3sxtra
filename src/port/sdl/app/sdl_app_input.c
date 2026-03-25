@@ -120,6 +120,10 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
                 SDLApp_ToggleDevOverlay();
             }
 
+            if (event->key.key == SDLK_F10 && event->key.down && !event->key.repeat) {
+                SDLApp_TogglePalmodMenu();
+            }
+
             if (event->key.key == SDLK_F4 && event->key.down && !event->key.repeat) {
                 SDLAppShader_ToggleMode();
             }
@@ -197,7 +201,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
                 }
             }
             if (event->key.key == SDLK_F10 && event->key.down && !event->key.repeat) {
-                SDLNetplayUI_SetDiagnosticsVisible(!SDLNetplayUI_IsDiagnosticsVisible());
+                SDLApp_TogglePalmodMenu();
             }
         }
 

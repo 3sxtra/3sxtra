@@ -400,7 +400,7 @@ void SDLPad_HandleKeyboardEvent(SDL_KeyboardEvent* event) {
     // Skip all F-keys that are reserved for overlay toggles:
     // F1=Controller Setup, F2=Shader Menu, F3=Mods Menu, F4=Shader Mode,
     // F5=Frame Rate Uncap, F6=Stage Config, F7=Training Menu,
-    // F8=Scale Mode, F9=Dev Overlay, F11=Fullscreen
+    // F8=Scale Mode, F9=Dev Overlay, F10=Palette Editor, F11=Fullscreen
     // NOTE: F12 is NOT skipped — it passes through to the RmlUi debugger.
     switch (event->key) {
     case SDLK_F1:
@@ -412,6 +412,7 @@ void SDLPad_HandleKeyboardEvent(SDL_KeyboardEvent* event) {
     case SDLK_F7:
     case SDLK_F8:
     case SDLK_F9:
+    case SDLK_F10:
     case SDLK_F11:
         return;
     default:

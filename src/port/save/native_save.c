@@ -808,20 +808,10 @@ int NativeSave_FindAllReplays(char out_filenames[][128], int max_count, int is_n
 }
 
 /* Character name table for auto-save filenames */
-extern s32 chkNameAkuma(s32 plnum, s32 rnum);
-
-static const char* autosave_char_names[] = {
-    "Gill",  "Alex",    "Ryu",    "Yun",  "Dudley", "Necro", "Hugo",
-    "Ibuki", "Elena",   "Oro",    "Yang", "Ken",    "Sean",  "Urien",
-    "Gouki", "Chun-Li", "Makoto", "Q",    "Twelve", "Remy",  "Akuma"
-};
+#include "character_names.h"
 
 static const char* get_char_name_for_filename(int my_char_id) {
-    int idx = my_char_id + chkNameAkuma(my_char_id, 6);
-    if (idx >= 0 && idx < 21) {
-        return autosave_char_names[idx];
-    }
-    return "Unknown";
+    return character_get_name(my_char_id);
 }
 
 /** @brief Auto-save replay to a descriptive filename. */

@@ -23,6 +23,7 @@
 #include "port/sdl/rmlui/rmlui_frame_display.h"
 #include "port/sdl/rmlui/rmlui_input_display.h"
 #include "port/sdl/rmlui/rmlui_mods_menu.h"
+#include "port/sdl/rmlui/rmlui_palmod_menu.h"
 #include "port/sdl/rmlui/rmlui_shader_menu.h"
 #include "port/sdl/rmlui/rmlui_stage_config.h"
 #include "port/sdl/rmlui/rmlui_training_hud.h"
@@ -240,6 +241,7 @@ void training_menu_shutdown(void) { /* no-op */ }
 bool mods_menu_input_display_enabled = false;
 bool mods_menu_shader_bypass_enabled = false;
 bool mods_menu_fast_pre_game = false;
+static bool show_palmod_menu = false;
 bool game_paused = false;
 static bool frame_rate_uncapped = false;
 static bool vsync_enabled = false;     // VSync disabled — native frame pacing handles timing
@@ -564,6 +566,7 @@ int SDLApp_Init() {
     rmlui_replay_picker_init();
     rmlui_dev_overlay_init();
     rmlui_mods_menu_init();
+    rmlui_palmod_menu_init();
     rmlui_shader_menu_init();
     rmlui_stage_config_init();
     rmlui_input_display_init();
@@ -720,7 +723,8 @@ static bool has_pending_quit(void) {
 static /** @brief Hide the cursor after 2 seconds of inactivity. */
     void
     hide_cursor_if_needed() {
-    if (show_menu || show_shader_menu || show_stage_config_menu || show_training_menu || show_dev_overlay) {
+    if (show_menu || show_shader_menu || show_stage_config_menu || show_training_menu || show_dev_overlay ||
+        show_palmod_menu) {
         return;
     }
     const Uint64 now = SDL_GetTicks();
@@ -764,7 +768,7 @@ void SDLApp_BeginFrame() {
     // / rmlui_wrapper_render_game) — do NOT include rmlui_wrapper_any_game_visible()
     // here, as it would trigger the GL3 renderer for zero window documents.
     bool rmlui_active = use_rmlui || show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
-                        show_training_menu || show_dev_overlay;
+                        show_training_menu || show_dev_overlay || show_palmod_menu;
     if (rmlui_active) {
         rmlui_wrapper_new_frame();
     }
@@ -813,6 +817,8 @@ static void render_overlays(int win_w, int win_h) {
         rmlui_dev_overlay_update();
     if (show_training_menu)
         rmlui_training_menu_update();
+    if (show_palmod_menu)
+        rmlui_palmod_menu_update();
     rmlui_training_hud_update();
 
     /* Netplay backend state machine update */
@@ -827,7 +833,7 @@ static void render_overlays(int win_w, int win_h) {
      * documents use their own separate render path. Including it would
      * activate the GL3 renderer every frame for zero visible windows. */
     bool rmlui_active = use_rmlui || show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu ||
-                        show_training_menu || show_dev_overlay;
+                        show_training_menu || show_dev_overlay || show_palmod_menu;
     if (rmlui_active) {
         rmlui_wrapper_render();
     }
@@ -1626,9 +1632,16 @@ void SDLApp_ToggleTrainingMenu() {
     toggle_overlay(&show_training_menu, "training", true);
 }
 
+void SDLApp_TogglePalmodMenu() {
+    bool was_open = show_palmod_menu;
+    toggle_overlay(&show_palmod_menu, "palmod", false);
+    if (was_open && !show_palmod_menu)
+        rmlui_palmod_menu_flush_config();
+}
+
 void SDLApp_CloseAllMenus() {
     bool any_open = show_menu || show_shader_menu || show_mods_menu || show_stage_config_menu || show_training_menu ||
-                    show_dev_overlay || SDLNetplayUI_IsDiagnosticsVisible();
+                    show_dev_overlay || show_palmod_menu || SDLNetplayUI_IsDiagnosticsVisible();
     if (!any_open)
         return;
 
@@ -1638,6 +1651,8 @@ void SDLApp_CloseAllMenus() {
     show_stage_config_menu = false;
     show_training_menu = false;
     show_dev_overlay = false;
+    if (show_palmod_menu) rmlui_palmod_menu_flush_config();
+    show_palmod_menu = false;
     game_paused = false;
     SDLNetplayUI_SetDiagnosticsVisible(false);
 
@@ -1648,6 +1663,7 @@ void SDLApp_CloseAllMenus() {
     rmlui_wrapper_hide_document("stage_config");
     rmlui_wrapper_hide_document("training");
     rmlui_wrapper_hide_document("dev_overlay");
+    rmlui_wrapper_hide_document("palmod");
 }
 
 /** @brief Public wrapper for cycle_scale_mode(). */
