@@ -95,6 +95,10 @@
     white-space: nowrap;
 }
 
+.nrp-row.hidden {
+    display: none;
+}
+
 .nrp-row.selected {
     color: rgba(255, 255, 255, 255);
     background-color: rgba(100, 220, 120, 30);

@@ -32,12 +32,13 @@ struct ProfileMatchItem {
     Rml::String date_str;
     Rml::String replay_status; // "Saved", "Unavailable"
     bool selected;
+    bool is_valid;
 
     bool operator==(const ProfileMatchItem& o) const {
         return result_str == o.result_str && is_win == o.is_win &&
                player_char_name == o.player_char_name && opponent_char_name == o.opponent_char_name &&
                opponent_name == o.opponent_name && opponent_country == o.opponent_country &&
-               date_str == o.date_str && replay_status == o.replay_status && selected == o.selected;
+               date_str == o.date_str && replay_status == o.replay_status && selected == o.selected && is_valid == o.is_valid;
     }
     bool operator!=(const ProfileMatchItem& o) const {
         return !(*this == o);
@@ -191,6 +192,7 @@ static void do_init(void) {
         h.RegisterMember("date_str", &ProfileMatchItem::date_str);
         h.RegisterMember("replay_status", &ProfileMatchItem::replay_status);
         h.RegisterMember("selected", &ProfileMatchItem::selected);
+        h.RegisterMember("is_valid", &ProfileMatchItem::is_valid);
     }
     ctor.RegisterArray<std::vector<ProfileMatchItem>>();
     ctor.Bind("match_history", &s_match_history);
@@ -304,10 +306,25 @@ extern "C" void rmlui_player_profile_update(void) {
             item.result_str = item.is_win ? "WIN" : "LOSS";
             
             item.replay_status = "Saved"; // Assume saved if on server for now
+            item.is_valid = true;
             
             s_match_history.push_back(item);
         }
-        s_match_history_count = (int)s_match_history.size();
+        s_match_history_count = (int)s_fetch_matches.size();
+
+        while (s_match_history.size() < 10) {
+            ProfileMatchItem pad = {};
+            pad.is_valid = false;
+            pad.result_str = Rml::String();
+            pad.player_char_name = Rml::String();
+            pad.opponent_char_name = Rml::String();
+            pad.opponent_name = Rml::String();
+            pad.opponent_country = Rml::String();
+            pad.date_str = Rml::String();
+            pad.replay_status = Rml::String();
+            s_match_history.push_back(pad);
+        }
+        
         s_model_handle.DirtyVariable("match_history");
         s_model_handle.DirtyVariable("match_history_count");
         s_fetch_matches.clear(); // Free memory
@@ -371,8 +388,22 @@ extern "C" void rmlui_player_profile_fetch(void) {
     s_avatar_url = ""; // No avatar system yet
     s_global_rank = "---"; // Require another API call later
     s_max_streak = 0; // Not returned from simple stats yet
+    
     s_match_history.clear(); // Clear existing array while loading
+    while (s_match_history.size() < 10) {
+        ProfileMatchItem pad = {};
+        pad.is_valid = false;
+        pad.result_str = Rml::String();
+        pad.player_char_name = Rml::String();
+        pad.opponent_char_name = Rml::String();
+        pad.opponent_name = Rml::String();
+        pad.opponent_country = Rml::String();
+        pad.date_str = Rml::String();
+        pad.replay_status = Rml::String();
+        s_match_history.push_back(pad);
+    }
     s_match_history_count = 0;
+    
     s_cursor = 0;
     s_result = 1;
     

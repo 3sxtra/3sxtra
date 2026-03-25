@@ -35,6 +35,7 @@
         <!-- Entries -->
         <div data-for="e : entries"
              class="lb-row"
+             data-class-hidden="!e.is_valid"
              data-class-highlight="e.is_me"
              data-class-top3="e.is_top3"
              data-class-bronze="e.tier == 'bronze'"

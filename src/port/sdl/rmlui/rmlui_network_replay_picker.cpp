@@ -57,6 +57,7 @@ struct NrpSlotEntry {
     Rml::String winner_id;
     Rml::String date_str;
     Rml::String display_num;
+    bool is_valid;
 
     bool operator==(const NrpSlotEntry& o) const {
         return match_id == o.match_id && index == o.index &&
@@ -64,7 +65,7 @@ struct NrpSlotEntry {
                p1_country == o.p1_country && p2_country == o.p2_country &&
                p1_char_name == o.p1_char_name && p2_char_name == o.p2_char_name &&
                winner_id == o.winner_id &&
-               date_str == o.date_str && display_num == o.display_num;
+               date_str == o.date_str && display_num == o.display_num && is_valid == o.is_valid;
     }
     bool operator!=(const NrpSlotEntry& o) const { return !(*this == o); }
 };
@@ -228,6 +229,7 @@ static void do_init(void) {
         h.RegisterMember("winner_id", &NrpSlotEntry::winner_id);
         h.RegisterMember("date_str", &NrpSlotEntry::date_str);
         h.RegisterMember("display_num", &NrpSlotEntry::display_num);
+        h.RegisterMember("is_valid", &NrpSlotEntry::is_valid);
     }
     ctor.RegisterArray<std::vector<NrpSlotEntry>>();
 
@@ -288,7 +290,26 @@ static void rebuild_slots(void) {
         char num[8];
         SDL_snprintf(num, sizeof(num), "%d", s_page * NRP_SLOTS_PER_PAGE + i + 1);
         e.display_num = Rml::String(num);
+        e.is_valid = true;
         next.push_back(e);
+    }
+
+    // Pad the array to avoid RmlUi out-of-bounds evaluation bug on shrunk data-for loops
+    while (next.size() < NRP_SLOTS_PER_PAGE) {
+        NrpSlotEntry pad = {};
+        pad.is_valid = false;
+        pad.match_id = -1;
+        pad.index = (int)next.size();
+        pad.p1_name = Rml::String();
+        pad.p1_country = Rml::String();
+        pad.p2_name = Rml::String();
+        pad.p2_country = Rml::String();
+        pad.p1_char_name = Rml::String();
+        pad.p2_char_name = Rml::String();
+        pad.winner_id = Rml::String();
+        pad.date_str = Rml::String();
+        pad.display_num = Rml::String();
+        next.push_back(pad);
     }
 
     if (next != s_slots) {

@@ -92,6 +92,10 @@
     white-space: nowrap;
 }
 
+.lb-row.hidden {
+    display: none;
+}
+
 /* Alternating row tint (odd rows via nth-child not supported in RmlUi,
    so we rely on tier borders + highlight for visual rhythm) */
 

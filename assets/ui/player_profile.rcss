@@ -186,6 +186,10 @@
     white-space: nowrap;
 }
 
+.history-item.hidden {
+    display: none;
+}
+
 .history-item.selected {
     color: rgba(255, 255, 255, 255);
     border-left-color: rgba(255, 210, 40, 230);

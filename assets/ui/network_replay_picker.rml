@@ -41,6 +41,7 @@
         <!-- Slot rows -->
         <div data-for="slot : nrp_slots"
              class="nrp-row"
+             data-class-hidden="!slot.is_valid"
              data-class-selected="slot.index == nrp_cursor">
             <span class="nrp-col-num">{{slot.display_num}}</span>
             <span class="nrp-col-p1" data-class-winner="slot.winner_id == slot.p1_name">

@@ -75,7 +75,7 @@
         <div id="panel-history" class="profile-card">
             <div class="card-header">RECENT MATCHES (REPLAYS)</div>
             <div id="history-list">
-                <div data-for="m : match_history" class="history-item" data-class-selected="m.selected">
+                <div data-for="m : match_history" class="history-item" data-class-hidden="!m.is_valid" data-class-selected="m.selected">
                     <span class="hist-result" data-class-win="m.is_win" data-class-loss="!m.is_win">{{m.result_str}}</span>
                     <span class="hist-char">{{m.player_char_name}}</span>
                     <span class="hist-vs">vs</span>

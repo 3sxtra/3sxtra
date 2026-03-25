@@ -65,12 +65,13 @@ struct LBItem {
     Rml::String tier;
     bool is_me;
     bool is_top3; // rank 1-3 for medal styling
+    bool is_valid;
 
     bool operator==(const LBItem& o) const {
         return rank == o.rank && rank_str == o.rank_str && name == o.name && flag_icon == o.flag_icon &&
                char_name == o.char_name && wins_matches == o.wins_matches && win_pct == o.win_pct &&
                grade_str == o.grade_str && dc_pct == o.dc_pct && rating_str == o.rating_str && tier == o.tier &&
-               is_me == o.is_me && is_top3 == o.is_top3;
+               is_me == o.is_me && is_top3 == o.is_top3 && is_valid == o.is_valid;
     }
     bool operator!=(const LBItem& o) const {
         return !(*this == o);
@@ -148,6 +149,7 @@ static void do_init(void) {
         h.RegisterMember("tier", &LBItem::tier);
         h.RegisterMember("is_me", &LBItem::is_me);
         h.RegisterMember("is_top3", &LBItem::is_top3);
+        h.RegisterMember("is_valid", &LBItem::is_valid);
     }
     ctor.RegisterArray<std::vector<LBItem>>();
     ctor.Bind("entries", &s_entries);
@@ -254,9 +256,25 @@ extern "C" void rmlui_leaderboard_update(void) {
                 }
                 item.tier = Rml::String(e->tier);
                 item.is_me = (my_id && my_id[0] && strcmp(my_id, e->player_id) == 0);
+                item.is_valid = true;
                 next.push_back(item);
             }
             s_has_data = true;
+        }
+
+        // Pad the array to avoid RmlUi out-of-bounds evaluation bug on shrunk data-for loops
+        while (next.size() < LB_PAGE_SIZE) {
+            LBItem pad = {};
+            pad.is_valid = false;
+            pad.rank_str = Rml::String();
+            pad.name = Rml::String();
+            pad.flag_icon = Rml::String();
+            pad.char_name = Rml::String();
+            pad.wins_matches = Rml::String();
+            pad.grade_str = Rml::String();
+            pad.rating_str = Rml::String();
+            pad.tier = Rml::String();
+            next.push_back(pad);
         }
 
         if (next != s_entries) {
