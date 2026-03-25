@@ -17,7 +17,16 @@ MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-13.0}"
 echo "Using cmake from: $(which cmake)"
 cmake --version
 
-# glad code generation needs jinja2 — ensure it's available for whichever Python cmake finds
+# Pin Python so CMake can't accidentally find a Windows-system Python that lacks jinja2.
+# The MSYS2 mingw-w64-x86_64-python-jinja package (installed by compile.bat) provides
+# jinja2 for /mingw64/bin/python3.  Exporting Python3_EXECUTABLE ensures every nested
+# cmake invocation (glad, tf-psa-crypto, etc.) uses that same interpreter.
+if command -v python3 &>/dev/null; then
+    export Python3_EXECUTABLE="$(command -v python3)"
+    echo "Pinned Python3 to: $Python3_EXECUTABLE"
+fi
+
+# Belt-and-suspenders: try pip install in case the pacman package is missing
 python3 -m pip install --quiet --break-system-packages jinja2 2>/dev/null \
     || python3 -m pip install --quiet jinja2 2>/dev/null \
     || true
