@@ -15,7 +15,7 @@
 extern "C" {
 #include "netplay/identity.h"
 #include "netplay/lobby_server.h"
-#include "netplay/replay.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/engine/workuser.h" /* SWK constants */
 } // extern "C"
 
