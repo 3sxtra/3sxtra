@@ -6,7 +6,6 @@
  * and reads per-round inputs from a binary inputs file.
  */
 
-#define STB_DS_IMPLEMENTATION
 #include "stb/stb_ds.h"
 
 #include "test/replay_game.h"

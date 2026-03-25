@@ -56,6 +56,8 @@ __dead2 void fatal_error(const s8* fmt, ...);
 __dead2 void not_implemented(const s8* func);
 /** @brief Print a formatted debug message to the console. */
 void debug_print(const char* fmt, ...);
+/** @brief Conditional debug breakpoint (DEBUG builds only). */
+void stop_if(bool condition);
 
 #define LO_16_BITS(val) (val & 0xFFFF)
 #define HI_16_BITS(val) ((val & 0xFFFF0000) >> 16)

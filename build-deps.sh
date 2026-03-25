@@ -683,7 +683,7 @@ else
     TF_PSA_CRYPTO_SRC=$(mktemp -d)
 
     curl -L -o "$TF_PSA_CRYPTO_SRC/tf-psa-crypto.tar.bz2" "$TF_PSA_CRYPTO_URL"
-    tar xf "$TF_PSA_CRYPTO_SRC/tf-psa-crypto.tar.bz2" -C "$TF_PSA_CRYPTO_SRC"
+    tar xf "$TF_PSA_CRYPTO_SRC/tf-psa-crypto.tar.bz2" --no-same-owner -C "$TF_PSA_CRYPTO_SRC"
 
     cmake -S "$TF_PSA_CRYPTO_SRC/tf-psa-crypto-$TF_PSA_CRYPTO_VERSION" -B "$TF_PSA_CRYPTO_SRC/cmake-build" \
         -G Ninja \

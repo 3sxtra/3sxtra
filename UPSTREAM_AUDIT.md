@@ -38,6 +38,10 @@ git fetch upstream && git log 1fb1bcc6..upstream/main --oneline --no-merges
 | PR #164, #187 — Draw Player Over HUD (`sc_sub`, `sc_cockpit`, `vital`, `game.c`) | ✅ Ported |
 | PR #137, #147, #148 — Hitbox/hurtbox colors (`aboutspr.c`) | ✅ Already ported |
 | PR #153 — No-stun training setting (`effe3.c`) | ✅ Ported |
+| PR #141 — Fightcade replay tool (`fcade-replays/`) | ✅ Ported |
+| PRs #159, #166, #167 — CMake: disable `-Wunused-parameter/-variable` | ✅ Done |
+| `stb_ds.h` / `stb_impl.c` — dedicated implementation file | ✅ Done |
+| `stop_if()` debug helper (`utils.c`) | ✅ Done |
 
 ---
 
@@ -81,49 +85,51 @@ git fetch upstream && git log 1fb1bcc6..upstream/main --oneline --no-merges
 
 ---
 
-### 3. PR #141 — Fightcade replay tool → **Skip**
+### 3. PR #141 — Fightcade replay tool → **Ported**
 
-**Verdict**: Skip — external Python tool, not in-game code.
+**Verdict**: Ported — added as `fcade-replays/` directory.
 
-**Takeaway**: _Could be useful as a community tool._ If we ever want to import Fightcade replays into our replay system, this tool has the parsing logic. Low priority.
+**Action taken**: Copied the ~250-line Python tool from upstream PR #141. Includes `fcade_replay_tool.py`, `README.md`, and `.gitignore`. Useful as a community/dev tool for importing Fightcade replays.
 
 ---
 
-### 4. PRs #159, #166, #167 — CMake tweaks → **Skip + Takeaway**
+### 4. PRs #159, #166, #167 — CMake tweaks → **Partially Done**
 
-**Verdict**: Skip — 33 lines of build config, our CMakeLists.txt is heavily customized.
+**Verdict**: Adopted the warning suppression; skipped the rest.
 
 **Investigation**: Upstream disabled some warnings and added preprocessor variables. Our build has its own warning policy and defines.
 
-**Takeaway**: _Review our warning policy periodically._ Upstream disabled `-Wunused-parameter` and `-Wunused-variable` — we might want to keep those enabled for code health.
+**Action taken**: Added `-Wno-unused-parameter` and `-Wno-unused-variable` to both Clang and GCC `C_DISABLED_WARNINGS` lists in `CMakeLists.txt`. These are noisy in decompiled CPS3 code where many parameters exist by convention.
 
 ---
 
-### 5. PRs #156, #168 — Doc updates → **Skip + Takeaway**
+### 5. PRs #156, #168 — Doc updates → **Skip (Already Comprehensive)**
 
 **Verdict**: Skip — our docs cover different ground (RmlUi, netplay lobby, tournaments).
 
-**Takeaway**: _Ensure our `README.md` covers building from source clearly._ Upstream's `building.md` had dependency install commands for multiple platforms — worth checking if our build docs are equally comprehensive.
+**Investigation**: Checked `docs/building.md` (123 lines). Already covers Windows (MSYS2 with `pacman` + requirements file), Linux (apt + requirements file), macOS (Homebrew + pip), Rust install, cross-compilation (RPi4/Batocera), and Flatpak. Dependency install commands present for all 3 platforms.
+
+**Takeaway**: _No gap — our build docs are already comprehensive._
 
 ---
 
-### 6. `stb_ds.h` / `stb_impl.c` → **Skip (No Gap)**
+### 6. `stb_ds.h` / `stb_impl.c` → **Done**
 
-**Verdict**: Skip — identical `stb_ds.h`, no missing functionality.
+**Verdict**: Fixed — created dedicated `src/stb/stb_impl.c`.
 
-**Investigation**: Upstream created a separate `stb_impl.c` (2 lines: `#define STB_DS_IMPLEMENTATION` + `#include "stb/stb_ds.h"`). We define `STB_DS_IMPLEMENTATION` inside `replay_game.c` instead. The header itself is identical (v0.67).
+**Investigation**: Upstream created a separate `stb_impl.c` (2 lines: `#define STB_DS_IMPLEMENTATION` + `#include "stb/stb_ds.h"`). We had `STB_DS_IMPLEMENTATION` defined inside `replay_game.c` instead. The header itself is identical (v0.67).
 
-**Takeaway**: _Our approach is slightly fragile_ — if another file needs `stb_ds` data structures, the developer must know not to define `STB_DS_IMPLEMENTATION` again. A dedicated `stb_impl.c` is cleaner but not worth a change right now since only `replay_game.c` and `test_runner.c` include the header.
+**Action taken**: Created `src/stb/stb_impl.c` as the canonical single-point-of-definition. Removed `#define STB_DS_IMPLEMENTATION` from `replay_game.c`. Any new file needing stb_ds data structures can now safely `#include "stb/stb_ds.h"` without worrying about the implementation define.
 
 ---
 
-### 7. `src/port/utils.c` — Debug helpers → **Already Ported + One Gap**
+### 7. `src/port/utils.c` — Debug helpers → **Done**
 
-**Verdict**: `fatal_error`, `not_implemented`, `debug_print` — already in local `utils.c` (86 lines, with Windows dbghelp stack traces). **`stop_if()` is missing.**
+**Verdict**: All helpers now present: `fatal_error`, `not_implemented`, `debug_print`, `stop_if`.
 
-**Investigation**: Upstream added `stop_if(bool condition)` — a conditional debug breakpoint (`__debugbreak()` on Windows, `raise(SIGSTOP)` on Unix). Only active in `DEBUG` builds. Not called anywhere upstream either, but it's a useful primitive for development.
+**Investigation**: Upstream added `stop_if(bool condition)` — a conditional debug breakpoint (`__debugbreak()` on Windows, `raise(SIGSTOP)` on Unix). Only active in `DEBUG` builds.
 
-**Takeaway**: _Consider adding `stop_if()` if we need conditional breakpoints during debugging._ It's 10 lines. Not urgent since it has zero callers even upstream.
+**Action taken**: Added `stop_if()` to `utils.c` (~10 lines) and declared it in `common.h`. Zero callers today; available as a dev primitive for conditional breakpoints.
 
 ---
 
@@ -156,6 +162,7 @@ git fetch upstream && git log 1fb1bcc6..upstream/main --oneline --no-merges
 | Gameplay / QoL | 0 items | ✅ Done |
 | Arcade ROM system | 8+ files, new subsystem | ✅ Done |
 | Discussion items | 9 items investigated | ✅ All resolved |
+| Takeaway actions | 4 items executed | ✅ Done |
 | **Total actionable** | **0 items** | ✅ **All done** |
 
 ### Future Backlog (from takeaways)
@@ -163,5 +170,3 @@ git fetch upstream && git log 1fb1bcc6..upstream/main --oneline --no-merges
 | Item | Priority | Notes |
 |------|----------|-------|
 | Keyboard remapping | Low | Hardcoded WASD+IJKUOP; add if users request |
-| `stop_if()` debug helper | Low | 10 lines; useful for dev, zero callers today |
-| Dedicated `stb_impl.c` | Low | Cleaner separation; only matters if more files need stb_ds |

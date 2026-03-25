@@ -17,6 +17,7 @@
 #define SYMBOL_NAME_MAX 256
 #else
 #include <execinfo.h>
+#include <signal.h>
 #endif
 #include <stdarg.h>
 #include <stdio.h>
@@ -81,5 +82,18 @@ void debug_print(const char* fmt, ...) {
     vfprintf(stdout, fmt, args);
     fprintf(stdout, "\n");
     va_end(args);
+#endif
+}
+
+/** @brief Trigger a debug breakpoint if condition is true (DEBUG builds only). */
+void stop_if(bool condition) {
+#if DEBUG
+    if (condition) {
+#if _WIN32
+        __debugbreak();
+#else
+        raise(SIGSTOP);
+#endif
+    }
 #endif
 }

@@ -435,6 +435,8 @@ if(CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleCl
         -Wno-pointer-sign
         -Wno-absolute-value
         -Wno-implicit-function-declaration
+        -Wno-unused-parameter
+        -Wno-unused-variable
     )
 elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set(C_DISABLED_WARNINGS
@@ -453,6 +455,8 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
         -Wno-stringop-truncation
         -Wno-unused-result
         -Wno-format-truncation
+        -Wno-unused-parameter
+        -Wno-unused-variable
     )
 endif()
 
