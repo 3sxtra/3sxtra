@@ -37,6 +37,9 @@ static int result_count = 0;
 // we rewrite the source to match what GekkoNet was configured with.
 static char expected_remote_addr[64] = { 0 }; // Full "ip:port" string
 static Uint16 expected_remote_port = 0;
+
+static char active_chat_peer_addr[64] = { 0 };
+
 static bool cross_ip_logged = false; // Log only once per session
 
 // Per-peer address cache — avoids re-resolving DNS on every send.
@@ -145,6 +148,9 @@ static void send_data(GekkoNetAddress* addr, const char* data, int length) {
     unsigned int copy_len = addr->size < sizeof(addr_buf) - 1 ? addr->size : sizeof(addr_buf) - 1;
     SDL_memcpy(addr_buf, addr->data, copy_len);
     addr_buf[copy_len] = '\0';
+
+    // Track the active peer specifically for out-of-band P2P chat to bypass STUN mismatch
+    SDL_strlcpy(active_chat_peer_addr, addr_buf, sizeof(active_chat_peer_addr));
 
     CachedPeer* peer = find_or_create_peer(addr_buf);
     if (!peer->resolved)
@@ -286,6 +292,7 @@ void SDLNetAdapter_Destroy(void) {
     SDL_memset(chat_inbox, 0, sizeof(chat_inbox));
     chat_inbox_write = 0;
     chat_inbox_read = 0;
+    active_chat_peer_addr[0] = '\0';
 }
 
 // ─── P2P Chat API ────────────────────────────────────────────────
@@ -293,8 +300,8 @@ void SDLNetAdapter_Destroy(void) {
 void SDLNetAdapter_SendChat(const char* text) {
     if (!adapter_sock || !text || !text[0])
         return;
-    if (expected_remote_addr[0] == '\0')
-        return; // No remote peer configured
+    if (active_chat_peer_addr[0] == '\0')
+        return; // No active peer routed yet by GekkoNet
 
     int text_len = (int)SDL_strlen(text);
     if (text_len > CHAT_MAX_TEXT)
@@ -308,7 +315,7 @@ void SDLNetAdapter_SendChat(const char* text) {
     pkt[6] = (unsigned char)(text_len & 0xFF);
     SDL_memcpy(pkt + CHAT_HEADER_LEN, text, text_len);
 
-    CachedPeer* peer = find_or_create_peer(expected_remote_addr);
+    CachedPeer* peer = find_or_create_peer(active_chat_peer_addr);
     if (!peer || !peer->resolved)
         return;
 

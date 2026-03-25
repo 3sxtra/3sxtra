@@ -393,6 +393,7 @@ extern "C" void rmlui_game_hud_init(void) {
 
     // ── HUD visibility ──
     ctor.BindFunc("is_fight_active", [](Rml::Variant& v) { v = (bool)(Play_Game == 1); });
+    ctor.BindFunc("use_rmlui", [](Rml::Variant& v) { v = (bool)use_rmlui; });
     ctor.BindFunc("cockpit_visible", [](Rml::Variant& v) { v = (bool)(Disp_Cockpit != 0); });
 
     // ── Training Stun Counter ──
@@ -417,8 +418,9 @@ extern "C" void rmlui_game_hud_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    // Pre-load the HUD document (hidden initially; shown when is_fight_active is true)
-    rmlui_wrapper_show_game_document("game_hud");
+    // Pre-load the documents (hidden initially; shown when is_fight_active is true)
+    if (use_rmlui) rmlui_wrapper_show_game_document("game_hud");
+    rmlui_wrapper_show_game_document("match_banner");
 
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi HUD] Data model registered (53 bindings)");
 }
@@ -429,13 +431,17 @@ extern "C" void rmlui_game_hud_update(void) {
         return;
 
     // Game01() calls rmlui_wrapper_hide_all_game_documents() between rounds,
-    // which hides our HUD doc. Re-show it when a fight is active.
-    if (Play_Game == 1 && !rmlui_wrapper_is_game_document_visible("game_hud")) {
-        rmlui_wrapper_show_game_document("game_hud");
+    // which hides our docs. Re-show them when a fight is active.
+    if (Play_Game == 1) {
+        if (use_rmlui && !rmlui_wrapper_is_game_document_visible("game_hud"))
+            rmlui_wrapper_show_game_document("game_hud");
+        if (!rmlui_wrapper_is_game_document_visible("match_banner"))
+            rmlui_wrapper_show_game_document("match_banner");
     }
 
-    // ⚡ Skip dirty-checking when document is hidden
-    if (!rmlui_wrapper_is_game_document_visible("game_hud"))
+    // ⚡ Skip dirty-checking when both documents are hidden
+    if (!rmlui_wrapper_is_game_document_visible("game_hud") &&
+        !rmlui_wrapper_is_game_document_visible("match_banner"))
         return;
 
     DIRTY_INT(p1_health, (int)plw[0].wu.vital_new);
@@ -572,6 +578,7 @@ extern "C" void rmlui_game_hud_update(void) {
 // ─── Shutdown ────────────────────────────────────────────────────
 extern "C" void rmlui_game_hud_shutdown(void) {
     if (s_model_registered) {
+        rmlui_wrapper_hide_game_document("match_banner");
         rmlui_wrapper_hide_game_document("game_hud");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
         if (ctx)

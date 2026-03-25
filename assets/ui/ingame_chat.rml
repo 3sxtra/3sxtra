@@ -6,8 +6,8 @@
     <!-- Message feed (bottom-left, up to 4 messages) -->
     <div id="chat-feed">
         <div data-for="msg : messages">
-            <div class="chat-msg" data-if="msg.visible">
-                <span class="chat-sender" data-rml="msg.sender"></span>
+            <div class="chat-msg">
+                <span class="chat-sender">{{msg.sender}}:</span>
                 <span class="chat-text" data-rml="msg.text"></span>
             </div>
         </div>

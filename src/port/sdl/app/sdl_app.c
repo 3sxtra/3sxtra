@@ -577,11 +577,13 @@ int SDLApp_Init() {
     rmlui_tournament_lobby_init();
     rmlui_leaderboard_init();
 
+    // The game HUD provides the match banner even in Native UI mode.
+    rmlui_game_hud_init();
+
     if (use_rmlui) {
         SDL_Log("UI mode: RmlUi (overlay menus via HTML/CSS)");
 
         /* Phase 3 — Fight HUD & Mode Menu */
-        rmlui_game_hud_init();
         rmlui_mode_menu_init();
         rmlui_option_menu_init();
         rmlui_game_option_init();
@@ -851,11 +853,13 @@ void SDLApp_EndFrame() {
     // ⚡ Pi4: skip all 25 Phase 3 data model updates when no game documents are
     // visible. Each update individually checks visibility via hash-map lookup;
     // this single cached-bool check avoids all of them (~50µs saved on V3D).
-    if (use_rmlui && rmlui_wrapper_any_game_visible()) {
+    if (rmlui_wrapper_any_game_visible()) {
         TRACE_SUB_BEGIN("RmlUiUpdates");
         rmlui_game_hud_update();
         rmlui_ingame_chat_update();
-        rmlui_mode_menu_update();
+
+        if (use_rmlui) {
+            rmlui_mode_menu_update();
         rmlui_option_menu_update();
         rmlui_game_option_update();
         rmlui_title_screen_update();
@@ -876,6 +880,7 @@ void SDLApp_EndFrame() {
         rmlui_copyright_update();
         rmlui_name_entry_update();
         rmlui_exit_confirm_update();
+        }
         TRACE_SUB_END();
     }
 

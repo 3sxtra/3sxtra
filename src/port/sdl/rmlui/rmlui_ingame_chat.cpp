@@ -30,10 +30,9 @@ extern "C" {
 // ─── Data Structs ────────────────────────────────────────────────
 
 struct InGameChatMsg {
-    int index;
     Rml::String sender;
     Rml::String text;
-    bool visible;
+    Uint64 birth_tick;
 };
 
 // ─── State ───────────────────────────────────────────────────────
@@ -41,10 +40,6 @@ static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
 static std::vector<InGameChatMsg> s_messages;
-static int s_msg_display_count = 0;
-
-// Per-message birth tick for expiry
-static Uint64 s_birth_tick[CHAT_DISPLAY_SLOTS] = {};
 
 static Rml::String s_chat_input;
 static bool s_is_typing = false;
@@ -92,28 +87,11 @@ static void push_message(const char* sender, const char* text) {
     if (!s_model_handle)
         return;
 
-    // Shift messages up if full
-    if (s_msg_display_count >= CHAT_DISPLAY_SLOTS) {
-        for (int i = 1; i < CHAT_DISPLAY_SLOTS; i++) {
-            s_messages[i - 1].sender = s_messages[i].sender;
-            s_messages[i - 1].text = s_messages[i].text;
-            s_messages[i - 1].visible = s_messages[i].visible;
-            s_birth_tick[i - 1] = s_birth_tick[i];
-        }
-        s_msg_display_count = CHAT_DISPLAY_SLOTS - 1;
+    if (s_messages.size() >= CHAT_DISPLAY_SLOTS) {
+        s_messages.erase(s_messages.begin());
     }
 
-    int idx = s_msg_display_count;
-    if (idx >= (int)s_messages.size()) {
-        s_messages.push_back({idx, sender, text, true});
-    } else {
-        s_messages[idx].sender = sender;
-        s_messages[idx].text = text;
-        s_messages[idx].visible = true;
-    }
-    s_birth_tick[idx] = SDL_GetTicks();
-    s_msg_display_count++;
-
+    s_messages.push_back({sender, text, SDL_GetTicks()});
     s_model_handle.DirtyVariable("messages");
 }
 
@@ -131,10 +109,8 @@ extern "C" void rmlui_ingame_chat_init(void) {
         return;
 
     if (auto h = ctor.RegisterStruct<InGameChatMsg>()) {
-        h.RegisterMember("index", &InGameChatMsg::index);
         h.RegisterMember("sender", &InGameChatMsg::sender);
         h.RegisterMember("text", &InGameChatMsg::text);
-        h.RegisterMember("visible", &InGameChatMsg::visible);
     }
     ctor.RegisterArray<std::vector<InGameChatMsg>>();
     ctor.Bind("messages", &s_messages);
@@ -145,13 +121,8 @@ extern "C" void rmlui_ingame_chat_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    // Pre-populate message slots
-    s_messages.resize(CHAT_DISPLAY_SLOTS);
-    for (int i = 0; i < CHAT_DISPLAY_SLOTS; i++) {
-        s_messages[i] = {i, "", "", false};
-        s_birth_tick[i] = 0;
-    }
-    s_msg_display_count = 0;
+    // Clear message slots
+    s_messages.clear();
     s_chat_input = "";
     s_is_typing = false;
 
@@ -169,11 +140,12 @@ extern "C" void rmlui_ingame_chat_update(void) {
     bool dirty = false;
 
     // Expire old messages
-    for (int i = 0; i < s_msg_display_count; i++) {
-        if (s_messages[i].visible && s_birth_tick[i] > 0 &&
-            (now - s_birth_tick[i]) > (CHAT_EXPIRE_FRAMES * 1000 / 60)) {
-            s_messages[i].visible = false;
+    while (!s_messages.empty()) {
+        if ((now - s_messages.front().birth_tick) > (CHAT_EXPIRE_FRAMES * 1000 / 60)) {
+            s_messages.erase(s_messages.begin());
             dirty = true;
+        } else {
+            break; // Oldest is at the front; if it's not expired, others aren't either
         }
     }
 
@@ -308,7 +280,6 @@ extern "C" void rmlui_ingame_chat_shutdown(void) {
             ctx->RemoveDataModel("ingame_chat");
         s_model_registered = false;
         s_messages.clear();
-        s_msg_display_count = 0;
         s_relay_room_code[0] = '\0';
     }
     SDL_Log("[InGameChat] Shut down");

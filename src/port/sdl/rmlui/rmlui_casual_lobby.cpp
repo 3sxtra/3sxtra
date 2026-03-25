@@ -416,6 +416,7 @@ static void refresh_room_state_from_server(void) {
         s_status_text = "Room closed.";
         if (s_model_handle)
             s_model_handle.DirtyVariable("status_text");
+        rmlui_ingame_chat_shutdown();
         rmlui_casual_lobby_hide();
         rmlui_network_lobby_show();
     }
@@ -903,12 +904,11 @@ extern "C" void rmlui_casual_lobby_hide(void) {
     // Reset grow-only display counts so stale data doesn't show on re-entry
     s_queue_display_count = 0;
     s_chat_display_count = 0;
-    // Shut down in-game chat overlay
-    rmlui_ingame_chat_shutdown();
 }
 
 extern "C" void rmlui_casual_lobby_shutdown(void) {
     LobbyServer_SSEDisconnect();
+    rmlui_ingame_chat_shutdown();
     if (s_model_registered) {
         rmlui_wrapper_hide_game_document("casual_lobby");
         Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
@@ -1018,5 +1018,6 @@ extern "C" void rmlui_casual_lobby_consume_leave(void) {
         s_wants_leave = false;
         LobbyServer_LeaveRoom(s_room_code.c_str());
         s_room_code.clear();
+        rmlui_ingame_chat_shutdown();
     }
 }

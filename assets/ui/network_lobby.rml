@@ -106,7 +106,7 @@
                     <span class="peer-panel-count empty" data-if="lan_peer_count == 0">none</span>
                 </div>
                 <div class="peer-list">
-                    <div data-if="lan_peer_count > 0" data-for="p : lan_peers"
+                    <div data-for="p : lan_peers"
                          class="peer-list-item"
                          data-class-selected="p.selected">
                         <span class="peer-list-name">{{p.name}}</span>
@@ -126,7 +126,7 @@
                     <span class="peer-panel-count idle" data-if="!net_searching">idle</span>
                 </div>
                 <div class="peer-list">
-                    <div data-if="net_peer_count > 0" data-for="p : net_peers"
+                    <div data-for="p : net_peers"
                          class="peer-list-item"
                          data-class-selected="p.selected">
                         <img class="peer-list-flag" data-attr-src="p.flag_icon" data-if="p.flag_icon != ''"/>
@@ -154,7 +154,7 @@
                     <span class="peer-panel-count empty" data-if="room_count == 0">none</span>
                 </div>
                 <div class="peer-list">
-                    <div data-if="room_count > 0" data-for="r : room_list"
+                    <div data-for="r : room_list"
                          class="peer-list-item"
                          data-class-selected="r.selected">
                         <span class="room-badge" data-if="r.is_tournament">🏆</span>

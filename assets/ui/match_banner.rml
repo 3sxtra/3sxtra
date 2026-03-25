@@ -1,0 +1,34 @@
+<rml>
+<head>
+    <title>Match Banner</title>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="match_banner.rcss"/>
+</head>
+<body data-model="game_hud" id="match-banner-root">
+    <div id="match-banner-container" data-class-hud-hidden="!is_fight_active">
+        
+        <!-- ═══ MATCH BANNER (Fightcade style) ═══ -->
+        <div id="match-banner" data-if="match_banner_visible">
+            <div class="banner-p1">
+                <span class="banner-name">{{match_p1_name}}</span>
+                <span class="banner-country" data-if="match_p1_country != ''">{{match_p1_country}}</span>
+                <span class="banner-wins p1-banner-wins">{{match_p1_wins}}</span>
+            </div>
+            <div class="banner-center">
+                <span class="banner-ft">FT{{match_ft}}</span>
+            </div>
+            <div class="banner-p2">
+                <span class="banner-wins p2-banner-wins">{{match_p2_wins}}</span>
+                <span class="banner-country" data-if="match_p2_country != ''">{{match_p2_country}}</span>
+                <span class="banner-name">{{match_p2_name}}</span>
+            </div>
+        </div>
+
+        <!-- ═══ SPECTATOR BADGE (Fightcade style) ═══ -->
+        <div id="spectator-badge" data-if="spectator_count > 0">
+            <span class="spec-eye">👁</span><span class="spec-count">{{spectator_count}}</span>
+        </div>
+
+    </div>
+</body>
+</rml>
