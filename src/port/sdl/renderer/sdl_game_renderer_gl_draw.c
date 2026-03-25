@@ -217,7 +217,7 @@ void SDLGameRendererGL_RenderFrame(void) {
     glBindVertexArray(gl_state.persistent_vaos[current_buffer_idx]);
     // Common state setup
     glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glActiveTexture(GL_TEXTURE0);
 
     TRACE_GPU_ZONE("RenderFrame");

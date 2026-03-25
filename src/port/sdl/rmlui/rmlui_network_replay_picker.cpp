@@ -50,16 +50,32 @@ struct NrpSlotEntry {
     int index;          // 0-based index on current page
     Rml::String p1_name;
     Rml::String p2_name;
+    Rml::String p1_char_name;
+    Rml::String p2_char_name;
+    Rml::String winner_id;
     Rml::String date_str;
     Rml::String display_num;
 
     bool operator==(const NrpSlotEntry& o) const {
         return match_id == o.match_id && index == o.index &&
                p1_name == o.p1_name && p2_name == o.p2_name &&
+               p1_char_name == o.p1_char_name && p2_char_name == o.p2_char_name &&
+               winner_id == o.winner_id &&
                date_str == o.date_str && display_num == o.display_num;
     }
     bool operator!=(const NrpSlotEntry& o) const { return !(*this == o); }
 };
+
+// ─── Character name table (SF3:3S roster) ───────────────────────
+static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN",  "DUDLEY", "NECRO", "HUGO",
+                                              "IBUKI", "ELENA",   "ORO",    "YANG", "KEN",    "SEAN",  "URIEN",
+                                              "GOUKI", "CHUN-LI", "MAKOTO", "Q",    "TWELVE", "REMY",  "AKUMA" };
+
+static const char* char_name(int idx) {
+    if (idx >= 0 && idx < 21)
+        return s_char_names[idx];
+    return "???";
+}
 
 /* ─── State ──────────────────────────────────────────────────── */
 
@@ -202,6 +218,9 @@ static void do_init(void) {
         h.RegisterMember("index", &NrpSlotEntry::index);
         h.RegisterMember("p1_name", &NrpSlotEntry::p1_name);
         h.RegisterMember("p2_name", &NrpSlotEntry::p2_name);
+        h.RegisterMember("p1_char_name", &NrpSlotEntry::p1_char_name);
+        h.RegisterMember("p2_char_name", &NrpSlotEntry::p2_char_name);
+        h.RegisterMember("winner_id", &NrpSlotEntry::winner_id);
         h.RegisterMember("date_str", &NrpSlotEntry::date_str);
         h.RegisterMember("display_num", &NrpSlotEntry::display_num);
     }
@@ -246,6 +265,17 @@ static void rebuild_slots(void) {
         e.index = i;
         e.p1_name = Rml::String(s_fetch_buf[i].p1_name);
         e.p2_name = Rml::String(s_fetch_buf[i].p2_name);
+        e.p1_char_name = Rml::String(char_name(s_fetch_buf[i].p1_char));
+        e.p2_char_name = Rml::String(char_name(s_fetch_buf[i].p2_char));
+        
+        if (strcmp(s_fetch_buf[i].winner_id, s_fetch_buf[i].p1_id) == 0) {
+            e.winner_id = Rml::String(s_fetch_buf[i].p1_name);
+        } else if (strcmp(s_fetch_buf[i].winner_id, s_fetch_buf[i].p2_id) == 0) {
+            e.winner_id = Rml::String(s_fetch_buf[i].p2_name);
+        } else {
+            e.winner_id = "";
+        }
+        
         e.date_str = Rml::String(s_fetch_buf[i].date);
 
         char num[8];
@@ -352,7 +382,14 @@ extern "C" void rmlui_network_replay_picker_update(void) {
             /* Inject replay data into the engine */
             /* The download format is: NativeReplayHeader + _REPLAY_W data
              * (same format as the upload in sdl_netplay_ui.cpp) */
-            size_t header_size = 16; /* sizeof(NativeReplayHeader): magic + version + data_size + reserved */
+            size_t header_size = 16; /* Default to v1 header size */
+            if (s_download_size >= 8) {
+                uint32_t version = *((uint32_t*)s_download_data + 1);
+                if (version == 2) {
+                    header_size = 24; /* v2 header adds 8 bytes of metadata */
+                }
+            }
+
             if (s_download_size > header_size) {
                 size_t replay_data_size = s_download_size - header_size;
                 if (replay_data_size <= sizeof(Replay_w)) {

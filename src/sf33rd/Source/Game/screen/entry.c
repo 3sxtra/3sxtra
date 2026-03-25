@@ -41,6 +41,7 @@
      rmlui_casual_lobby_is_visible() || rmlui_tournament_lobby_is_visible() ||                                         \
      rmlui_wrapper_is_game_document_visible("leaderboard") ||                                                          \
      rmlui_wrapper_is_game_document_visible("replay_picker") ||                                                        \
+     rmlui_wrapper_is_game_document_visible("network_replay_picker") ||                                                \
      rmlui_wrapper_is_game_document_visible("player_profile"))
 
 u8 letter_stack[40];

@@ -80,12 +80,12 @@ OP_W op_w;
 
 /** @brief Top-level opening demo state machine (BG init → scroll → title). */
 s16 opening_demo() {
-    /* When skip-intro is enabled, bypass the cinematic (cases 0-1) and
-       jump straight to the title screen display (case 2). */
-    if (Config_GetBool(CFG_KEY_SKIP_INTRO) && D_No[3] < 2) {
+    /* When skip-intro is enabled, bypass the cinematic and the white fade (cases 0-2) and
+       jump straight to the fully visible title logo (case 3). */
+    if (Config_GetBool(CFG_KEY_SKIP_INTRO) && D_No[3] < 3) {
         TITLE_Init();
-        FadeInit();
-        D_No[3] = 2;
+        D_No[3] = 3;
+        op_timer0 = 300;
     }
 
     switch (D_No[3]) {

@@ -523,19 +523,28 @@ void Network_Lobby(struct _TASK* task_ptr) {
             } else if (poll == 0) {
                 /* Replay selected and downloaded — exit to replay playback.
                  * Replay_w has been populated by the async download thread.
-                 * We set r_no[1]=1 to exit the Network_Lobby screen, and
-                 * ms_network_lobby.c will detect the exit and hand off to
-                 * ExitToLegacy, which routes to the replay viewer. */
+                 * We start the game transition natively here. */
                 rmlui_network_replay_picker_hide();
                 Menu_Suicide[0] = 0;
                 Menu_Suicide[1] = 1;
-                task_ptr->r_no[1] = 1;
-                task_ptr->r_no[2] = 0;
+                
+                Decide_ID = 0;
+                if (Interface_Type[0] == 0) {
+                    Decide_ID = 1;
+                }
+                
+                task_ptr->r_no[2] = 35; /* Jump to Load_Replay_Sub transition phase */
                 task_ptr->r_no[3] = 0;
                 task_ptr->free[0] = 0;
             }
             /* poll == 1: still browsing, keep looping */
         }
+        break;
+
+    case 35:
+        /* Load_Replay_Sub initiates the multi-phase game exit for replay playback.
+         * It will cpExitTask(TASK_MENU) and hand off to the engine when done. */
+        Load_Replay_Sub(task_ptr);
         break;
 
     /* ================================================================

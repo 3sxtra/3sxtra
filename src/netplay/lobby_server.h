@@ -97,6 +97,8 @@ bool LobbyServer_UploadReplay(int match_id, const void* replay_data, size_t repl
 /// Replay list entry returned by the server
 typedef struct {
     int match_id;
+    char p1_id[64];
+    char p2_id[64];
     char p1_name[32];
     char p2_name[32];
     int p1_char;          // Character index (0-19)

@@ -28,12 +28,13 @@
     </div>
 
     <!-- Table header -->
-    <div id="nrp-table" data-if="!nrp_loading &amp;&amp; nrp_error == '' &amp;&amp; !nrp_downloading">
+    <div id="nrp-table" data-if="!nrp_loading && nrp_error == '' && !nrp_downloading">
         <div class="nrp-header-row">
             <span class="nrp-col-num">#</span>
             <span class="nrp-col-p1">P1</span>
             <span class="nrp-col-vs"></span>
             <span class="nrp-col-p2">P2</span>
+            <span class="nrp-col-char">MATCHUP</span>
             <span class="nrp-col-date">DATE</span>
         </div>
 
@@ -42,9 +43,10 @@
              class="nrp-row"
              data-class-selected="slot.index == nrp_cursor">
             <span class="nrp-col-num">{{slot.display_num}}</span>
-            <span class="nrp-col-p1">{{slot.p1_name}}</span>
+            <span class="nrp-col-p1" data-class-winner="slot.winner_id == slot.p1_name">{{slot.p1_name}}</span>
             <span class="nrp-col-vs">vs</span>
-            <span class="nrp-col-p2">{{slot.p2_name}}</span>
+            <span class="nrp-col-p2" data-class-winner="slot.winner_id == slot.p2_name">{{slot.p2_name}}</span>
+            <span class="nrp-col-char">{{slot.p1_char_name}} vs {{slot.p2_char_name}}</span>
             <span class="nrp-col-date">{{slot.date_str}}</span>
         </div>
     </div>

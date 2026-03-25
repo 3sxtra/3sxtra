@@ -137,6 +137,19 @@
     padding-left: 4dp;
 }
 
+.nrp-col-p1.winner, .nrp-col-p2.winner {
+    color: rgba(255, 210, 70, 255);
+    font-weight: bold;
+}
+
+.nrp-col-char {
+    display: inline-block;
+    width: 70dp;
+    text-align: center;
+    font-size: 6dp;
+    color: rgba(200, 180, 100, 180);
+}
+
 .nrp-col-date {
     display: inline-block;
     width: 100dp;
