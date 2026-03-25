@@ -233,13 +233,20 @@ if(ENABLE_ARCADE_ROM)
     endif()
     find_package(minizip-ng REQUIRED)
     
-    # tf-psa-crypto is a static library, search in lib, lib64, and multiarch directories
-    file(GLOB TF_PSA_CRYPTO_LIB_DIRS
-        "${TF_PSA_CRYPTO_ROOT}/lib"
-        "${TF_PSA_CRYPTO_ROOT}/lib64"
-        "${TF_PSA_CRYPTO_ROOT}/lib/*"
+    # tf-psa-crypto is a static library.
+    # GNUInstallDirs may place it in lib/, lib64/, or lib/<triple>/ (Debian multiarch).
+    find_library(TF_PSA_CRYPTO_LIB tfpsacrypto
+        HINTS "${TF_PSA_CRYPTO_ROOT}/lib" "${TF_PSA_CRYPTO_ROOT}/lib64"
+        PATH_SUFFIXES "" aarch64-linux-gnu x86_64-linux-gnu arm-linux-gnueabihf
+        NO_DEFAULT_PATH
     )
-    find_library(TF_PSA_CRYPTO_LIB tfpsacrypto HINTS ${TF_PSA_CRYPTO_LIB_DIRS} REQUIRED NO_DEFAULT_PATH)
+    if(NOT TF_PSA_CRYPTO_LIB)
+        # Debug: show what actually exists so we can fix the search path
+        file(GLOB_RECURSE _tf_psa_all "${TF_PSA_CRYPTO_ROOT}/*tfpsacrypto*")
+        message(STATUS "tf-psa-crypto search root: ${TF_PSA_CRYPTO_ROOT}")
+        message(STATUS "tf-psa-crypto files found: ${_tf_psa_all}")
+        message(FATAL_ERROR "Could not find TF_PSA_CRYPTO_LIB (tfpsacrypto). See paths above.")
+    endif()
 
     include_directories(
         ${MINIZIP_NG_ROOT}/include
