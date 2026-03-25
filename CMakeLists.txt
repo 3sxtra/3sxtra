@@ -219,6 +219,13 @@ set(SPOUT2_DIR "${THIRD_PARTY_DIR}/Spout2")
 if(ENABLE_ARCADE_ROM)
     set(MINIZIP_NG_ROOT "${THIRD_PARTY_DIR}/minizip-ng/build")
     set(TF_PSA_CRYPTO_ROOT "${THIRD_PARTY_DIR}/tf-psa-crypto/build")
+    
+    # minizip-ng provides a CMake config file
+    find_package(minizip-ng REQUIRED HINTS "${MINIZIP_NG_ROOT}" "${MINIZIP_NG_ROOT}/lib/cmake/minizip-ng" "${MINIZIP_NG_ROOT}/lib64/cmake/minizip-ng" NO_DEFAULT_PATH)
+    
+    # tf-psa-crypto is a static library, search in both lib and lib64
+    find_library(TF_PSA_CRYPTO_LIB tfpsacrypto HINTS "${TF_PSA_CRYPTO_ROOT}/lib" "${TF_PSA_CRYPTO_ROOT}/lib64" REQUIRED NO_DEFAULT_PATH)
+
     include_directories(
         ${MINIZIP_NG_ROOT}/include
         ${TF_PSA_CRYPTO_ROOT}/include
@@ -504,8 +511,8 @@ endif()
 
 target_link_libraries(3sx PRIVATE
     m
-    $<$<BOOL:${ENABLE_ARCADE_ROM}>:${MINIZIP_NG_ROOT}/lib/libminizip-ng.a>
-    $<$<BOOL:${ENABLE_ARCADE_ROM}>:${TF_PSA_CRYPTO_ROOT}/lib/libtfpsacrypto.a>
+    $<$<BOOL:${ENABLE_ARCADE_ROM}>:MINIZIP::minizip-ng>
+    $<$<BOOL:${ENABLE_ARCADE_ROM}>:${TF_PSA_CRYPTO_LIB}>
     $<$<BOOL:${ENABLE_NETPLAY}>:GekkoNet>
     stdc++
     glad_gl_core

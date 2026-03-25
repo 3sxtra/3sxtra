@@ -11,7 +11,7 @@
         <div id="match-banner" data-if="match_banner_visible">
             <div class="banner-p1">
                 <span class="banner-name">{{match_p1_name}}</span>
-                <span class="banner-country" data-if="match_p1_country != ''">{{match_p1_country}}</span>
+                <img class="banner-flag" data-if="match_p1_country != ''" data-attr-src="'../flags_icons/' + match_p1_country + '.png'"/>
                 <span class="banner-wins p1-banner-wins">{{match_p1_wins}}</span>
             </div>
             <div class="banner-center">
@@ -19,7 +19,7 @@
             </div>
             <div class="banner-p2">
                 <span class="banner-wins p2-banner-wins">{{match_p2_wins}}</span>
-                <span class="banner-country" data-if="match_p2_country != ''">{{match_p2_country}}</span>
+                <img class="banner-flag" data-if="match_p2_country != ''" data-attr-src="'../flags_icons/' + match_p2_country + '.png'"/>
                 <span class="banner-name">{{match_p2_name}}</span>
             </div>
         </div>

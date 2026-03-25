@@ -49,7 +49,9 @@ struct NrpSlotEntry {
     int match_id;
     int index;          // 0-based index on current page
     Rml::String p1_name;
+    Rml::String p1_country;
     Rml::String p2_name;
+    Rml::String p2_country;
     Rml::String p1_char_name;
     Rml::String p2_char_name;
     Rml::String winner_id;
@@ -59,6 +61,7 @@ struct NrpSlotEntry {
     bool operator==(const NrpSlotEntry& o) const {
         return match_id == o.match_id && index == o.index &&
                p1_name == o.p1_name && p2_name == o.p2_name &&
+               p1_country == o.p1_country && p2_country == o.p2_country &&
                p1_char_name == o.p1_char_name && p2_char_name == o.p2_char_name &&
                winner_id == o.winner_id &&
                date_str == o.date_str && display_num == o.display_num;
@@ -217,7 +220,9 @@ static void do_init(void) {
         h.RegisterMember("match_id", &NrpSlotEntry::match_id);
         h.RegisterMember("index", &NrpSlotEntry::index);
         h.RegisterMember("p1_name", &NrpSlotEntry::p1_name);
+        h.RegisterMember("p1_country", &NrpSlotEntry::p1_country);
         h.RegisterMember("p2_name", &NrpSlotEntry::p2_name);
+        h.RegisterMember("p2_country", &NrpSlotEntry::p2_country);
         h.RegisterMember("p1_char_name", &NrpSlotEntry::p1_char_name);
         h.RegisterMember("p2_char_name", &NrpSlotEntry::p2_char_name);
         h.RegisterMember("winner_id", &NrpSlotEntry::winner_id);
@@ -264,7 +269,9 @@ static void rebuild_slots(void) {
         e.match_id = s_fetch_buf[i].match_id;
         e.index = i;
         e.p1_name = Rml::String(s_fetch_buf[i].p1_name);
+        e.p1_country = Rml::String(s_fetch_buf[i].p1_country);
         e.p2_name = Rml::String(s_fetch_buf[i].p2_name);
+        e.p2_country = Rml::String(s_fetch_buf[i].p2_country);
         e.p1_char_name = Rml::String(char_name(s_fetch_buf[i].p1_char));
         e.p2_char_name = Rml::String(char_name(s_fetch_buf[i].p2_char));
         

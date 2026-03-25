@@ -100,7 +100,9 @@ typedef struct {
     char p1_id[64];
     char p2_id[64];
     char p1_name[32];
+    char p1_country[4];
     char p2_name[32];
+    char p2_country[4];
     int p1_char;          // Character index (0-19)
     int p2_char;          // Character index (0-19)
     char date[20];        // "YYYY-MM-DD HH:MM"

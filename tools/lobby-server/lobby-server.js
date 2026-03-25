@@ -3037,7 +3037,8 @@ async function handleRequest(req, res) {
 
         let query = `
             SELECT m.id, m.p1_id, m.p2_id, m.winner_id, m.p1_char, m.p2_char, m.rounds, m.created_at,
-                   p1.display_name AS p1_name, p2.display_name AS p2_name
+                   p1.display_name AS p1_name, p1.country AS p1_country,
+                   p2.display_name AS p2_name, p2.country AS p2_country
             FROM matches m
             LEFT JOIN players_db p1 ON m.p1_id = p1.player_id
             LEFT JOIN players_db p2 ON m.p2_id = p2.player_id
@@ -3069,8 +3070,10 @@ async function handleRequest(req, res) {
                 match_id: r.id,
                 p1_id: r.p1_id,
                 p1_name: r.p1_name || r.p1_id,
+                p1_country: r.p1_country || '',
                 p2_id: r.p2_id,
                 p2_name: r.p2_name || r.p2_id,
+                p2_country: r.p2_country || '',
                 winner_id: r.winner_id,
                 p1_char: r.p1_char,
                 p2_char: r.p2_char,

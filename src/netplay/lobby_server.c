@@ -709,7 +709,9 @@ int LobbyServer_ListReplays(ReplayListEntry* out, int max_entries, int page, int
         cjson_get_string(item, "p1_id", e->p1_id, sizeof(e->p1_id));
         cjson_get_string(item, "p2_id", e->p2_id, sizeof(e->p2_id));
         cjson_get_string(item, "p1_name", e->p1_name, sizeof(e->p1_name));
+        cjson_get_string(item, "p1_country", e->p1_country, sizeof(e->p1_country));
         cjson_get_string(item, "p2_name", e->p2_name, sizeof(e->p2_name));
+        cjson_get_string(item, "p2_country", e->p2_country, sizeof(e->p2_country));
         e->p1_char = cjson_get_int(item, "p1_char", -1);
         e->p2_char = cjson_get_int(item, "p2_char", -1);
         cjson_get_string(item, "created_at", e->date, sizeof(e->date));
@@ -756,7 +758,9 @@ int LobbyServer_GetPlayerMatchHistory(const char* player_id, ReplayListEntry* ou
         cjson_get_string(item, "p1_id", e->p1_id, sizeof(e->p1_id));
         cjson_get_string(item, "p2_id", e->p2_id, sizeof(e->p2_id));
         cjson_get_string(item, "p1_name", e->p1_name, sizeof(e->p1_name));
+        cjson_get_string(item, "p1_country", e->p1_country, sizeof(e->p1_country));
         cjson_get_string(item, "p2_name", e->p2_name, sizeof(e->p2_name));
+        cjson_get_string(item, "p2_country", e->p2_country, sizeof(e->p2_country));
         e->p1_char = cjson_get_int(item, "p1_char", -1);
         e->p2_char = cjson_get_int(item, "p2_char", -1);
         cjson_get_string(item, "created_at", e->date, sizeof(e->date));

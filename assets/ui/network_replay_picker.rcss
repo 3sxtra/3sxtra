@@ -142,6 +142,15 @@
     font-weight: bold;
 }
 
+.player-flag {
+    display: inline;
+    width: 10dp;
+    height: 7dp;
+    margin-right: 2dp;
+    margin-left: 2dp;
+    vertical-align: middle;
+}
+
 .nrp-col-char {
     display: inline-block;
     width: 70dp;

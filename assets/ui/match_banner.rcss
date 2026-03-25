@@ -62,10 +62,10 @@ body {
     font-effect: shadow(1dp 1dp #000000);
     vertical-align: middle;
 }
-.banner-country {
+.banner-flag {
     display: inline;
-    font-size: 7dp;
-    color: #AAAAAA;
+    width: 10dp;
+    height: 7dp;
     margin-left: 3dp;
     margin-right: 3dp;
     vertical-align: middle;

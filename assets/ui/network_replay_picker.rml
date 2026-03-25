@@ -43,9 +43,15 @@
              class="nrp-row"
              data-class-selected="slot.index == nrp_cursor">
             <span class="nrp-col-num">{{slot.display_num}}</span>
-            <span class="nrp-col-p1" data-class-winner="slot.winner_id == slot.p1_name">{{slot.p1_name}}</span>
+            <span class="nrp-col-p1" data-class-winner="slot.winner_id == slot.p1_name">
+                {{slot.p1_name}}
+                <img data-if="slot.p1_country != ''" data-attr-src="'../flags_icons/' + slot.p1_country + '.png'" class="player-flag"/>
+            </span>
             <span class="nrp-col-vs">vs</span>
-            <span class="nrp-col-p2" data-class-winner="slot.winner_id == slot.p2_name">{{slot.p2_name}}</span>
+            <span class="nrp-col-p2" data-class-winner="slot.winner_id == slot.p2_name">
+                <img data-if="slot.p2_country != ''" data-attr-src="'../flags_icons/' + slot.p2_country + '.png'" class="player-flag"/>
+                {{slot.p2_name}}
+            </span>
             <span class="nrp-col-char">{{slot.p1_char_name}} vs {{slot.p2_char_name}}</span>
             <span class="nrp-col-date">{{slot.date_str}}</span>
         </div>
