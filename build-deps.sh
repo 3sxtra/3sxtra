@@ -626,7 +626,7 @@ MINIZIP_NG_TAG="4.1.0"
 MINIZIP_NG_DIR="$THIRD_PARTY/minizip-ng"
 MINIZIP_NG_BUILD="$MINIZIP_NG_DIR/build"
 
-if [ -d "$MINIZIP_NG_BUILD" ]; then
+if [ -f "$MINIZIP_NG_BUILD/lib/libminizip-ng.a" ]; then
     echo "minizip-ng already built at $MINIZIP_NG_BUILD"
 else
     echo "Building minizip-ng @ $MINIZIP_NG_BUILD..."
@@ -674,7 +674,7 @@ TF_PSA_CRYPTO_URL="https://github.com/Mbed-TLS/TF-PSA-Crypto/releases/download/t
 TF_PSA_CRYPTO_DIR="$THIRD_PARTY/tf-psa-crypto"
 TF_PSA_CRYPTO_BUILD="$TF_PSA_CRYPTO_DIR/build"
 
-if [ -d "$TF_PSA_CRYPTO_BUILD" ]; then
+if [ -f "$TF_PSA_CRYPTO_BUILD/lib/libtfpsacrypto.a" ]; then
     echo "tf-psa-crypto already built at $TF_PSA_CRYPTO_BUILD"
 else
     echo "Building tf-psa-crypto @ $TF_PSA_CRYPTO_BUILD..."
