@@ -16,7 +16,7 @@ extern "C" {
 #ifdef ENABLE_NETPLAY
 
 void SDLNetplayUI_Init(void);
-void SDLNetplayUI_Render(int window_width, int window_height);
+void SDLNetplayUI_Update(void);
 void SDLNetplayUI_Shutdown(void);
 
 void SDLNetplayUI_ProcessEvent(const SDL_Event* event);
@@ -82,7 +82,7 @@ bool SDLNetplayUI_ConsumeSessionComplete(char* out_winner, size_t winner_size);
 #else /* !ENABLE_NETPLAY — inline no-ops */
 
 static inline void SDLNetplayUI_Init(void) {}
-static inline void SDLNetplayUI_Render(int w, int h) { (void)w; (void)h; }
+static inline void SDLNetplayUI_Update(void) {}
 static inline void SDLNetplayUI_Shutdown(void) {}
 static inline void SDLNetplayUI_ProcessEvent(const SDL_Event* e) { (void)e; }
 static inline void SDLNetplayUI_GetHUDText(char* b, size_t s) { (void)b; (void)s; }

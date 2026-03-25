@@ -815,13 +815,11 @@ static void render_overlays(int win_w, int win_h) {
         rmlui_training_menu_update();
     rmlui_training_hud_update();
 
-    /* Netplay overlay — SDLNetplayUI_Render is not initialized on SDL2D */
+    /* Netplay backend state machine update */
     int hud_fps_count = 0;
     const float* hud_fps_history = SDLAppDebugHud_GetFPSHistory(&hud_fps_count);
     SDLNetplayUI_SetFPSHistory(hud_fps_history, hud_fps_count, (float)SDLAppDebugHud_GetFPS());
-    if (!is_sdl2d_backend(g_renderer_backend)) {
-        SDLNetplayUI_Render(win_w, win_h);
-    }
+    SDLNetplayUI_Update();
     rmlui_netplay_ui_update();
 
     /* Flush UI framework — only when window-context overlays are active.

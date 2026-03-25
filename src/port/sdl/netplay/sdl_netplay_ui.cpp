@@ -977,7 +977,7 @@ static void PushHistory(float ping, float rb) {
 
 extern "C" {
 
-void SDLNetplayUI_Render(int window_width, int window_height) {
+void SDLNetplayUI_Update(void) {
     ProcessEvents();
 
     // Detect RUNNING -> EXITING transition for match reporting and auto-saving
@@ -1706,7 +1706,7 @@ void SDLNetplayUI_ReportNaturalMatchEnd(void) {
     // Called from VS_Result auto-skip while game state (Winner_id, PL_Wins, My_char)
     // is still valid. For natural match completion, the session stays RUNNING and
     // cycles back to character select — so the RUNNING→EXITING detection in
-    // SDLNetplayUI_Render never fires.
+    // SDLNetplayUI_Update never fires.
 
     if (match_result_reported)
         return;

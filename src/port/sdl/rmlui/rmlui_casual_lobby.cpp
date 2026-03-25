@@ -593,6 +593,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                         s_proposal_opponent_player_id,
                         s_proposal_we_are_p1 ? 1 : 0);
                 if (s_proposal_opponent_room_code[0] || s_proposal_opponent_player_id[0]) {
+                    rmlui_ingame_chat_set_opponent_name(s_proposal_opponent_name.c_str());
                     SDLNetplayUI_StartCasualMatchPunch(s_proposal_opponent_room_code,
                                                        s_proposal_opponent_name.c_str(),
                                                        s_proposal_opponent_player_id,

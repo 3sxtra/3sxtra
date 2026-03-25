@@ -9,6 +9,7 @@
 
 #include "port/sdl/rmlui/rmlui_tournament_lobby.h"
 #include "port/sdl/rmlui/rmlui_game_hud.h"
+#include "port/sdl/rmlui/rmlui_ingame_chat.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
@@ -733,6 +734,7 @@ extern "C" void rmlui_tournament_lobby_update(void) {
                 rmlui_wrapper_hide_game_document("tournament_lobby");
 
                 if (s_proposal_opponent_room_code[0] || s_proposal_opponent_player_id[0]) {
+                    rmlui_ingame_chat_set_opponent_name(s_proposal_opponent_name.c_str());
                     SDLNetplayUI_StartCasualMatchPunch(s_proposal_opponent_room_code,
                                                        s_proposal_opponent_name.c_str(),
                                                        s_proposal_opponent_player_id,
