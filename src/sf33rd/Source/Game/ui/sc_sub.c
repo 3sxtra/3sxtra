@@ -28,6 +28,8 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "sf33rd/Source/Game/ui/sc_data.h"
 #include "structs.h"
+#include "port/config/config.h"
+#include "constants.h"
 #include <stdbool.h>
 
 #define TO_UV_256(val) ((val) / 256.0f)
@@ -67,6 +69,11 @@ u8 FadeLimit;
 s16 Hnc_Num;
 FadeData fd_dat;
 
+int TopHUDPriority;
+int TopHUDShadowPriority;
+int TopHUDFacePriority;
+int TopHUDVitalPriority;
+
 // forward decls
 static s32 SSGetDrawSizePro(const s8* str);
 static s16 SSPutStrTexInputPro(u16 x, u16 y, u16 ix);
@@ -75,6 +82,21 @@ static f32 SSPutStrTexInputProScale(f32 x, f32 y, u16 ix, f32 sc);
 /* ═══════════════════════════════════════════════════════════════ */
 /*  Initialization                                                */
 /* ═══════════════════════════════════════════════════════════════ */
+
+/** @brief Initialize HUD priorities based on draw-players-above-hud config. */
+void HUD_Shift_Init() {
+    if (Config_GetBool(CFG_KEY_DRAW_PLAYERS_ABOVE_HUD)) {
+        TopHUDPriority = 2 + HUD_SHIFT;
+        TopHUDShadowPriority = 3 + HUD_SHIFT;
+        TopHUDFacePriority = 4 + HUD_SHIFT;
+        TopHUDVitalPriority = 5 + HUD_SHIFT;
+    } else {
+        TopHUDPriority = 2;
+        TopHUDShadowPriority = 3;
+        TopHUDFacePriority = 4;
+        TopHUDVitalPriority = 5;
+    }
+}
 
 /** @brief Initialize the screen-font rendering system and palette data. */
 void Scrscreen_Init() {

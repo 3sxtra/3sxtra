@@ -25,6 +25,12 @@
 | PR #153 — No-stun training setting (`menu.c`) | ✅ Ported |
 | PR #188, #190 — Skip VS screens (`next_cpu.c`, `entry.c`) | ✅ Ported |
 | PR #143, #177 — Unit_Of_Timer to 50 (`select_timer.c`) | ✅ Ported |
+| PR #193 — Skip "Press x to pause" menu (`pause.c`) | ✅ Already ported (test guard exists) |
+| PR #194 — Sound priority on voice stop (`emlShim.c`) | ✅ Ported |
+| PR #186 — Attack buttons on press start (`sel_pl.c`, `entry.c`, `game.c`) | ✅ Already ported |
+| PR #162 — Increase 2D box limit (`dc_ghost.c` → `renderer.c`) | ✅ Already ported (`RENDER_2D_PRIM_MAX 200`) |
+| PR #190 — Skip all VS screens (`manage.c` part) | ✅ Already ported |
+| PR #164, #187 — Draw Player Over HUD (`sc_sub`, `sc_cockpit`, `vital`, `game.c`) | ✅ Ported |
 
 ---
 
@@ -39,14 +45,6 @@
 
 ## 🟠 Port — Gameplay / QoL
 
-| PR(s) | File(s) | Lines | What |
-|--------|---------|------:|------|
-| #164, #187 | `sc_sub.c/.h`, `entry.c`, `count.c`, `flash_lp.c`, `vital.c`, `game.c` | ~80 | **Draw Player Over HUD** — z-order fix |
-| #186 | `sel_pl.c`, `n_input.c` | 8 | Attack buttons on press start |
-| #190 | `manage.c` | ~18 | Skip all VS screens (`manage.c` part) |
-| #193 | `pause.c` | 8 | Skip "Press x to pause" menu |
-| #194 | `emlShim.c` | 6 | Sound priority on voice stop |
-| #162 | `dc_ghost.c` | small | Increase 2D box limit |
 
 ---
 
@@ -72,6 +70,6 @@
 |----------|------:|-----------------|
 | CPS3 decompilation | 3 files, ~494 lines | ✅ Done |
 | Training mode | 2 items, ~46 lines | Low |
-| Gameplay / QoL | 5 items, ~102 lines | Low (most trivial) |
+| Gameplay / QoL | 0 items | ✅ Done |
 | Arcade ROM system | 8+ files, new subsystem | ✅ Done |
-| **Total actionable** | **7 items** | |
+| **Total actionable** | **2 items** | |

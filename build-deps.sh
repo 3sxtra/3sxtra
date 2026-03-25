@@ -681,6 +681,7 @@ else
         ${CC:+-DCMAKE_C_COMPILER=$CC} \
         ${CXX:+-DCMAKE_CXX_COMPILER=$CXX} \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_C_FLAGS="-Wno-error=array-bounds" \
         -DCMAKE_INSTALL_PREFIX="$TF_PSA_CRYPTO_BUILD" \
         -DENABLE_PROGRAMS=OFF \
         -DENABLE_TESTING=OFF \

@@ -27,6 +27,7 @@ extern "C" {
 #define CFG_KEY_SHADER_MODE_LIBRETRO "shader-mode-libretro"
 #define CFG_KEY_BEZEL_ENABLED "bezel-enabled"
 #define CFG_KEY_SHADER_PATH "shader-path"
+#define CFG_KEY_DRAW_PLAYERS_ABOVE_HUD "draw-players-above-hud"
 
 /* ── Broadcast ──────────────────────────── */
 #define CFG_KEY_BROADCAST_ENABLED "broadcast-enabled"

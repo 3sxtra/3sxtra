@@ -209,6 +209,7 @@ void Game_Task(struct _TASK* task_ptr) {
     s16 ix;
     s16 ff;
 
+    HUD_Shift_Init();
     init_color_trans_req();
     ff = sysFF;
 

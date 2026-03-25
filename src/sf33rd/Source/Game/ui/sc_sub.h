@@ -22,6 +22,14 @@
 /* ── Core: initialization ─────────────────────────────────────── */
 void Scrscreen_Init(void);
 
+/* ── HUD z-order priority (Draw Player Over HUD) ──────────────── */
+extern int TopHUDPriority;
+extern int TopHUDShadowPriority;
+extern int TopHUDFacePriority;
+extern int TopHUDVitalPriority;
+
+void HUD_Shift_Init(void);
+
 /* ── Core: shared state ───────────────────────────────────────── */
 typedef struct {
     u8 atr;

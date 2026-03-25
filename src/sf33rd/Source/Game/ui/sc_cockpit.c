@@ -80,7 +80,7 @@ void silver_vital_put(u8 Pl_Num) {
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    scrscrntex[0].z = scrscrntex[3].z = PrioBase[2];
+    scrscrntex[0].z = scrscrntex[3].z = PrioBase[TopHUDPriority];
     ppgSetupCurrentPaletteNumber(0, 9);
     scrscrntex[0].u = 224.0f / 256.0f;
     scrscrntex[3].u = 232.0f / 256.0f;
@@ -131,7 +131,7 @@ void vital_base_put(u8 Pl_Num) {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[4], (uintptr_t)col.color, 0);
+    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[TopHUDFacePriority], (uintptr_t)col.color, 0);
 }
 
 /* ── Super-art gauge ───────────────────────────────────────────── */
@@ -194,7 +194,7 @@ void stun_put(u8 Pl_Num, u8 stun) {
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    scrscrntex[0].z = scrscrntex[3].z = PrioBase[4];
+    scrscrntex[0].z = scrscrntex[3].z = PrioBase[TopHUDFacePriority];
     ppgSetupCurrentPaletteNumber(0, 10);
     scrscrntex[0].u = 0.0f;
     scrscrntex[3].u = 8.0f / 256.0f;
@@ -246,7 +246,7 @@ void stun_base_put(u8 Pl_Num, s16 len) {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[4], (uintptr_t)col.color, 0);
+    Renderer_Queue2DPrimitive((f32*)vtx.p, PrioBase[TopHUDFacePriority], (uintptr_t)col.color, 0);
 }
 
 /* ── Stun marks & MAX indicator ────────────────────────────────── */
@@ -266,7 +266,7 @@ void stun_mark_write(u8 Pl_Num, s16 Len) {
     ppgSetupCurrentDataList(&ppgScrList);
     tlen = Len - 7;
     scfont_sqput(
-        smark_pos_tbl[tlen][Pl_Num], 3, 10, 0, (smark_kind_tbl[tlen] * 4) + 1, 2, smark_kind_tbl[tlen] + 4, 1, 2);
+        smark_pos_tbl[tlen][Pl_Num], 3, 10, 0, (smark_kind_tbl[tlen] * 4) + 1, 2, smark_kind_tbl[tlen] + 4, 1, TopHUDPriority);
 }
 
 /** @brief Draw the "MAX" indicator when super-art gauge is full. */
@@ -290,7 +290,7 @@ static void silver_stun_put(u8 Pl_Num, s16 len) {
         return;
 
     ppgSetupCurrentDataList(&ppgScrList);
-    scrscrntex[0].z = scrscrntex[3].z = PrioBase[3];
+    scrscrntex[0].z = scrscrntex[3].z = PrioBase[TopHUDShadowPriority];
     ppgSetupCurrentPaletteNumber(0, 1);
 
     scrscrntex[0].u = 240.0f / 256.0f;
@@ -328,20 +328,20 @@ void stun_gauge_waku_write(s16 p1len, s16 p2len) {
     ppgSetupCurrentDataList(&ppgScrList);
 
     if (omop_st_bar_disp[0]) {
-        scfont_sqput(21 - p1len, 3, 10, 0, 12 - p1len, p1len + 1, p1len, 1, 3);
+        scfont_sqput(21 - p1len, 3, 10, 0, 12 - p1len, p1len + 1, p1len, 1, TopHUDShadowPriority);
     } else {
         silver_stun_put(0, p1len);
     }
 
-    scfont_sqput(11, 3, 1, 0, 2, p1len + 1, 10 - p1len, 1, 3);
+    scfont_sqput(11, 3, 1, 0, 2, p1len + 1, 10 - p1len, 1, TopHUDShadowPriority);
 
     if (omop_st_bar_disp[1]) {
-        scfont_sqput(27, 3, 10, 0, 2, p2len + 12, p2len, 1, 3);
+        scfont_sqput(27, 3, 10, 0, 2, p2len + 12, p2len, 1, TopHUDShadowPriority);
     } else {
         silver_stun_put(1, p2len);
     }
 
-    scfont_sqput(p2len + 27, 3, 1, 0, p2len + 2, p2len + 12, 10 - p2len, 1, 3);
+    scfont_sqput(p2len + 27, 3, 1, 0, p2len + 2, p2len + 12, 10 - p2len, 1, TopHUDShadowPriority);
 }
 
 /* ── Super-art stock indicators ────────────────────────────────── */
@@ -406,5 +406,5 @@ void Akaobi() {
         acol[i].color = 0xA0D00000;
     }
 
-    Renderer_Queue2DPrimitive((f32*)ap, PrioBase[2], (uintptr_t)acol[0].color, 0);
+    Renderer_Queue2DPrimitive((f32*)ap, PrioBase[TopHUDPriority], (uintptr_t)acol[0].color, 0);
 }

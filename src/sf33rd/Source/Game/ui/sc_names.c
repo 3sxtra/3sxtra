@@ -120,12 +120,12 @@ static void face_base_put() {
     pos[1].y = pos[0].y;
     pos[2].x = pos[0].x;
     pos[2].y = pos[3].y;
-    Renderer_Queue2DPrimitive((f32*)pos, PrioBase[4], (uintptr_t)col.color, 0);
+    Renderer_Queue2DPrimitive((f32*)pos, PrioBase[TopHUDFacePriority], (uintptr_t)col.color, 0);
     pos[0].x = 348.8f;
     pos[3].x = 377.6f;
     pos[1].x = pos[3].x;
     pos[2].x = pos[0].x;
-    Renderer_Queue2DPrimitive((f32*)pos, PrioBase[4], (uintptr_t)col.color, 0);
+    Renderer_Queue2DPrimitive((f32*)pos, PrioBase[TopHUDFacePriority], (uintptr_t)col.color, 0);
 }
 
 /** @brief Draw player face portraits on the HUD. */
