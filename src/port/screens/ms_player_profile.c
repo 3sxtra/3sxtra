@@ -12,12 +12,15 @@
 #include "sf33rd/Source/Game/effect/effect.h" /* effect_work_init */
 #include "sf33rd/Source/Game/engine/workuser.h" /* plsw_00, plsw_01, Order */
 #include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init */
+#include "sf33rd/Source/Game/system/work_sys.h" /* Interface_Type, Decide_ID */
 #include "sf33rd/Source/Game/sound/sound3rd.h"  /* SE_selected */
 #include "sf33rd/Source/Game/ui/sc_sub.h"       /* FadeOut */
 #include "structs.h"                            /* struct _TASK */
 
 /* RmlUi player profile bindings */
 #include "port/sdl/rmlui/rmlui_player_profile.h"
+
+extern bool g_lobby_reenter_to_replay;
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  on_enter
@@ -58,11 +61,15 @@ static void profile_tick(struct _TASK* task_ptr) {
     if (poll == 0) {
         /* Replay downloaded and injected into Replay_w */
         rmlui_player_profile_hide();
-        task_ptr->r_no[2] = 0;
-        task_ptr->r_no[3] = 0;
-        task_ptr->free[0] = 0;
         Menu_Suicide[0] = 0;
         Menu_Suicide[1] = 1;
+
+        Decide_ID = 0;
+        if (Interface_Type[0] == 0) {
+            Decide_ID = 1;
+        }
+
+        g_lobby_reenter_to_replay = true;
         MenuScreen_ExitToLegacy(task_ptr);
     } else if (poll == -1) { /* Cancel / B */
         SE_selected();

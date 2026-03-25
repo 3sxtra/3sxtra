@@ -49,6 +49,7 @@
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 bool g_lobby_reenter_from_match = false;
+bool g_lobby_reenter_to_replay = false;
 
 /* ═══════════════════════════════════════════════════════════════════════════
  *  on_enter
@@ -66,7 +67,14 @@ bool g_lobby_reenter_from_match = false;
 static void network_lobby_enter(struct _TASK* task_ptr) {
     task_ptr->r_no[1] = 21; /* for legacy compat */
 
-    if (g_lobby_reenter_from_match) {
+    if (g_lobby_reenter_to_replay) {
+        /* Re-entry from profile with a downloaded replay ready to play.
+         * Skips gateway and jumps straight to Replay transition. */
+        g_lobby_reenter_to_replay = false;
+        task_ptr->r_no[2] = 35;
+        task_ptr->r_no[3] = 0;
+        task_ptr->free[0] = 0;
+    } else if (g_lobby_reenter_from_match) {
         /* Re-entry from match — jump to lobby phase 10 (RmlUI mode).
          * The legacy Network_Lobby() case 10 will do its own FadeOut,
          * timer, effect setup, and blue BG rebuild. */
