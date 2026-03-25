@@ -24,8 +24,18 @@ void rmlui_game_hud_update(void);
 /** Destroy the data model and unload the document. */
 void rmlui_game_hud_shutdown(void);
 
+#include <stdbool.h>
+
 /// Spectator count — set by lobby code, read by HUD for display.
 extern int g_spectator_count;
+
+/// Match Banner Tracking State
+extern int g_match_ft;
+extern char g_match_p1_name[64];
+extern char g_match_p2_name[64];
+extern char g_match_p1_country[4];
+extern char g_match_p2_country[4];
+extern bool g_match_banner_visible;
 
 #else /* !ENABLE_RMLUI */
 

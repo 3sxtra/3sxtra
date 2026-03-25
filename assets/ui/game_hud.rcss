@@ -397,6 +397,92 @@ body {
 .p1-stun-counter { left: 10dp; }
 .p2-stun-counter { left: 250dp; }
 
+/* ── Match Banner (Fightcade style) ─────────────────────────────── */
+#match-banner {
+    display: block;
+    position: absolute;
+    top: 0dp;
+    left: 42dp;
+    width: 300dp;
+    height: 14dp;
+    background-color: rgba(0, 0, 0, 160);
+    border-bottom-left-radius: 4dp;
+    border-bottom-right-radius: 4dp;
+    z-index: 100;
+}
+.banner-p1 {
+    display: block;
+    position: absolute;
+    left: 4dp;
+    top: 0dp;
+    width: 120dp;
+    height: 14dp;
+    line-height: 14dp;
+    text-align: right;
+}
+.banner-center {
+    display: block;
+    position: absolute;
+    left: 126dp;
+    top: 0dp;
+    width: 48dp;
+    height: 14dp;
+    line-height: 15dp;
+    text-align: center;
+}
+.banner-p2 {
+    display: block;
+    position: absolute;
+    left: 176dp;
+    top: 0dp;
+    width: 120dp;
+    height: 14dp;
+    line-height: 14dp;
+    text-align: left;
+}
+.banner-name {
+    display: inline;
+    font-size: 9dp;
+    color: #FFFFFF;
+    font-effect: shadow(1dp 1dp #000000);
+    vertical-align: middle;
+}
+.banner-country {
+    display: inline;
+    font-size: 7dp;
+    color: #AAAAAA;
+    margin-left: 3dp;
+    margin-right: 3dp;
+    vertical-align: middle;
+}
+.banner-wins {
+    display: inline-block;
+    font-size: 10dp;
+    color: #FFD700;
+    font-effect: shadow(1dp 1dp #000000);
+    vertical-align: middle;
+    width: 14dp;
+    height: 12dp;
+    line-height: 12dp;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 30);
+    border-radius: 2dp;
+    margin-top: 1dp;
+}
+.p1-banner-wins { margin-left: 6dp; }
+.p2-banner-wins { margin-right: 6dp; }
+
+.banner-ft {
+    display: inline-block;
+    font-size: 8dp;
+    color: #00FF00;
+    font-effect: shadow(1dp 1dp #000000);
+    background-color: rgba(0, 255, 0, 30);
+    padding: 1dp 3dp;
+    border-radius: 2dp;
+    vertical-align: middle;
+}
+
 /* ── Spectator badge (Fightcade-style) ─────────────────────── */
 /* Subtle pill centered below the timer; only shown when count > 0 */
 #spectator-badge {

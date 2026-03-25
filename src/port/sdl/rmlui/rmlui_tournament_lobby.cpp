@@ -536,6 +536,48 @@ static void apply_tournament_state_to_model(void) {
     s_model_handle.DirtyVariable("active_match_count");
     s_model_handle.DirtyVariable("match_selector_idx");
     s_model_handle.DirtyVariable("room_players"); // re-dirty for is_playing
+
+    // ── Update HUD Match Banner Data ──
+    bool match_found = false;
+    RoomMatch target_match = {};
+    
+    // Find our active match, or the one we selected to spectate
+    for (int i = 0; i < s_tournament_state.match_count; i++) {
+        if (s_tournament_state.matches[i].active) {
+            bool is_ours = (strcmp(s_tournament_state.matches[i].p1, s_my_id.c_str()) == 0 ||
+                            strcmp(s_tournament_state.matches[i].p2, s_my_id.c_str()) == 0);
+            if (is_ours) {
+                target_match = s_tournament_state.matches[i];
+                match_found = true;
+                break;
+            }
+        }
+    }
+    if (!match_found && s_is_spectating && s_active_match_count > 0) {
+        if (s_match_selector_idx >= 0 && s_match_selector_idx < s_active_match_count) {
+            target_match = s_tournament_state.matches[s_active_matches[s_match_selector_idx].index];
+            match_found = true;
+        }
+    }
+
+    if (match_found && s_room_state.ft > 0) {
+        g_match_banner_visible = true;
+        g_match_ft = s_room_state.ft;
+        
+        // Resolve names and country from players list
+        for (int p = 0; p < s_room_state.player_count; p++) {
+            if (strcmp(s_room_state.players[p].player_id, target_match.p1) == 0) {
+                snprintf(g_match_p1_name, sizeof(g_match_p1_name), "%s", s_room_state.players[p].display_name);
+                snprintf(g_match_p1_country, sizeof(g_match_p1_country), "%s", s_room_state.players[p].country);
+            }
+            if (strcmp(s_room_state.players[p].player_id, target_match.p2) == 0) {
+                snprintf(g_match_p2_name, sizeof(g_match_p2_name), "%s", s_room_state.players[p].display_name);
+                snprintf(g_match_p2_country, sizeof(g_match_p2_country), "%s", s_room_state.players[p].country);
+            }
+        }
+    } else {
+        g_match_banner_visible = false;
+    }
 }
 
 static void refresh_room_state_from_server(void) {

@@ -266,6 +266,14 @@ static void apply_room_state_to_model(void) {
     s_match_p1_name = "Player 1";
     s_match_p2_name = "Player 2";
 
+    // ── Update HUD Match Banner Data ──
+    if (s_match_active) {
+        g_match_banner_visible = true;
+        g_match_ft = s_room_state.ft;
+    } else {
+        g_match_banner_visible = false;
+    }
+
     // Only consider ourselves "playing" if the server reports us in a match
     // AND the local netplay session is actually running. Without this check,
     // stale server match data (e.g. from a previous session) would block input.
@@ -276,11 +284,19 @@ static void apply_room_state_to_model(void) {
     for (int i = 0; i < s_room_state.player_count; i++) {
         if (strcmp(s_room_state.players[i].player_id, s_room_state.match_p1) == 0) {
             s_match_p1_name = s_room_state.players[i].display_name;
+            if (s_match_active) {
+                snprintf(g_match_p1_name, sizeof(g_match_p1_name), "%s", s_room_state.players[i].display_name);
+                snprintf(g_match_p1_country, sizeof(g_match_p1_country), "%s", s_room_state.players[i].country);
+            }
             if (locally_in_match && s_room_state.players[i].player_id == s_my_id)
                 s_is_playing = true;
         }
         if (strcmp(s_room_state.players[i].player_id, s_room_state.match_p2) == 0) {
             s_match_p2_name = s_room_state.players[i].display_name;
+            if (s_match_active) {
+                snprintf(g_match_p2_name, sizeof(g_match_p2_name), "%s", s_room_state.players[i].display_name);
+                snprintf(g_match_p2_country, sizeof(g_match_p2_country), "%s", s_room_state.players[i].country);
+            }
             if (locally_in_match && s_room_state.players[i].player_id == s_my_id)
                 s_is_playing = true;
         }
