@@ -595,6 +595,37 @@ int NativeSave_GetReplayInfo(const char* filename, _sub_info* out) {
     return (read == sizeof(_sub_info)) ? 0 : -1;
 }
 
+/** @brief Get winner from replay header. Returns 0 (P1), 1 (P2), 2 (Draw), or -1 (Unknown/Error). */
+int NativeSave_GetReplayWinner(const char* filename) {
+    if (!filename || !filename[0])
+        return -1;
+
+    char path[512];
+    make_replay_path(path, sizeof(path), filename, ".bin");
+
+    FILE* f = fopen(path, "rb");
+    if (!f) return -1;
+
+    NativeReplayHeader hdr;
+    if (fread(&hdr, 1, 16, f) != 16) {
+        fclose(f);
+        return -1;
+    }
+    if (hdr.magic != NATIVE_REPLAY_MAGIC || hdr.version < 2) {
+        fclose(f);
+        return -1;
+    }
+
+    size_t v2_remainder = sizeof(NativeReplayHeader) - 16;
+    if (fread((uint8_t*)&hdr + 16, 1, v2_remainder, f) != v2_remainder) {
+        fclose(f);
+        return -1;
+    }
+
+    fclose(f);
+    return hdr.winner;
+}
+
 /** @brief Load replay data from the given file into Replay_w. */
 int NativeSave_LoadReplay(const char* filename) {
     if (!filename || !filename[0])

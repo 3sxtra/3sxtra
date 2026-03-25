@@ -26,6 +26,7 @@
             <span class="rp-col-p1">P1</span>
             <span class="rp-col-vs"></span>
             <span class="rp-col-p2">P2</span>
+            <span class="rp-col-char">MATCHUP</span>
             <span class="rp-col-date">DATE</span>
         </div>
 
@@ -35,9 +36,16 @@
              data-class-selected="slot.page_idx == rp_cursor && rp_zone == 0"
              data-class-empty="!slot.exists">
             <span class="rp-col-num">{{slot.display_num}}</span>
-            <span class="rp-col-p1" data-if="slot.exists">{{slot.p1_name}}</span>
+            <span class="rp-col-p1" data-if="slot.exists" data-class-winner="slot.winner_id == slot.p1_name">
+                {{slot.p1_name}}
+                <img data-if="slot.p1_country != ''" data-attr-src="'../flags_icons/' + slot.p1_country + '.png'" class="player-flag"/>
+            </span>
             <span class="rp-col-vs" data-if="slot.exists">vs</span>
-            <span class="rp-col-p2" data-if="slot.exists">{{slot.p2_name}}</span>
+            <span class="rp-col-p2" data-if="slot.exists" data-class-winner="slot.winner_id == slot.p2_name">
+                <img data-if="slot.p2_country != ''" data-attr-src="'../flags_icons/' + slot.p2_country + '.png'" class="player-flag"/>
+                {{slot.p2_name}}
+            </span>
+            <span class="rp-col-char" data-if="slot.exists">{{slot.p1_char_name}} vs {{slot.p2_char_name}}</span>
             <span class="rp-col-date" data-if="slot.exists">{{slot.date_str}}</span>
             <span class="rp-col-empty" data-if="!slot.exists">--- empty ---</span>
         </div>

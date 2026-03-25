@@ -1351,11 +1351,11 @@ void Network_Lobby(struct _TASK* task_ptr) {
             }
         }
 
-        /* Title: "NETWORK LOBBY" in big CG font (EFF_FONT_CG_LARGE), string index NET_STR_LOBBY_TITLE */
-        effect_61_init(0, EFF_SLOT_NET_TITLE, 0, 1, NET_STR_LOBBY_TITLE, -1, EFF_FONT_CG_LARGE);
-        Order[EFF_SLOT_NET_TITLE] = 1;
-        Order_Dir[EFF_SLOT_NET_TITLE] = 4;
-        Order_Timer[EFF_SLOT_NET_TITLE] = NET_ORDER_TIMER_TITLE;
+        /* Red "NETWORK" header */
+        effect_57_init(EFF_SLOT_NET_HDR, MENU_HEADER_NETWORK, 0, EFF_Z_NETWORK_HDR, 2);
+        Order[EFF_SLOT_NET_HDR] = 1;
+        Order_Dir[EFF_SLOT_NET_HDR] = 8;
+        Order_Timer[EFF_SLOT_NET_HDR] = 1;
 
         /* Message system for description text */
         Message_Data->pos_x = 0;
@@ -1410,37 +1410,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
         }
         const s16 sl = (s16)s_slide_offset;
 
-        /* Custom red banner */
-        {
-            PAL_CURSOR_P ap[4];
-            PAL_CURSOR_COL acol[4];
-            u8 ci;
-            for (ci = 0; ci < 4; ci++) {
-                ap[ci].x = Akaobi_Pos_tbl[ci * 2];
-                ap[ci].y = Akaobi_Pos_tbl[(ci * 2) + 1];
-                acol[ci].color = NET_COLOR_BORDER_RED; /* fully opaque vibrant red */
-            }
-            Renderer_Queue2DPrimitive((f32*)ap, PrioBase[69], (uintptr_t)acol[0].color, 0);
-
-            /* White top border */
-            ap[0].x = NET_SCREEN_LEFT;
-            ap[0].y = NET_HDR_TOP_BORDER_Y0;
-            ap[1].x = NET_SCREEN_RIGHT;
-            ap[1].y = NET_HDR_TOP_BORDER_Y0;
-            ap[2].x = NET_SCREEN_LEFT;
-            ap[2].y = NET_HDR_TOP_BORDER_Y1;
-            ap[3].x = NET_SCREEN_RIGHT;
-            ap[3].y = NET_HDR_TOP_BORDER_Y1;
-            acol[0].color = acol[1].color = acol[2].color = acol[3].color = NET_COLOR_WHITE;
-            Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
-
-            /* White bottom border */
-            ap[0].y = NET_HDR_BOT_BORDER_Y0;
-            ap[1].y = NET_HDR_BOT_BORDER_Y0;
-            ap[2].y = NET_HDR_BOT_BORDER_Y1;
-            ap[3].y = NET_HDR_BOT_BORDER_Y1;
-            Renderer_Queue2DPrimitive((f32*)ap, PrioBase[67], (uintptr_t)acol[0].color, 0);
-        }
+        /* (Native banner is handled by effect_57_init) */
 
         /* Compute popup_active — LAN-only: only LAN challenges */
         bool lan_incoming = false;
@@ -1467,7 +1437,11 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 Menu_Cursor_Y[0] = prev_cursor;
             } else if (prev_cursor != Menu_Cursor_Y[0]) {
                 Message_Data->order = 1;
-                Message_Data->request = NET_MSG_REQ_BASE + Menu_Cursor_Y[0];
+                if (Menu_Cursor_Y[0] == 2) {
+                    Message_Data->request = NET_MSG_REQ_BASE + 5; /* Use EXIT message */
+                } else {
+                    Message_Data->request = NET_MSG_REQ_BASE + Menu_Cursor_Y[0];
+                }
                 Message_Data->timer = 2;
                 Message_Data->pos_y = NET_MSG_POS_Y;
             }
@@ -1517,7 +1491,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
             /* Display toggle values */
             {
                 bool lan_ac = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-                SSPutStr_Bigger(NET_TOGGLE_X + sl, NET_LAN_TOGGLE_Y, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
+                SSPutStr_Bigger(NET_TOGGLE_X_LANONLY + sl, NET_LAN_TOGGLE_Y_LANONLY, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
             }
 
             /* LAN Header */
@@ -1525,12 +1499,12 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 const char* lan_hdr = "----- LAN -----";
                 int lan_hdr_px = (int)SDL_strlen(lan_hdr) * 8;
                 s16 lan_hdr_x = (s16)((NET_SCREEN_WIDTH_PX - lan_hdr_px) / 2);
-                SSPutStr_Bigger(lan_hdr_x + sl, NET_LAN_HDR_Y, 5, (s8*)lan_hdr, 1.0f, 0, 1.0f);
+                SSPutStr_Bigger(lan_hdr_x + sl, NET_LAN_HDR_Y_LANONLY, 5, (s8*)lan_hdr, 1.0f, 0, 1.0f);
             }
 
             /* Peer Info (Right Side) */
             {
-                s16 peer_x = NET_PEER_INFO_X;
+                s16 peer_x = NET_PEER_INFO_X_LANONLY;
                 s16 lan_peer_y = NET_LAN_PEER_Y_LANONLY;
 
                 NetplayDiscoveredPeer d_peers[16];

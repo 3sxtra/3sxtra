@@ -74,6 +74,9 @@ int NativeSave_ReplayExists(const char* filename);
 /** Get metadata for a replay file without loading full data. Returns 0 on success. */
 int NativeSave_GetReplayInfo(const char* filename, _sub_info* out);
 
+/** Get winner from replay header. Returns 0 (P1), 1 (P2), 2 (Draw), or -1 (Unknown/Error). */
+int NativeSave_GetReplayWinner(const char* filename);
+
 /** Load replay data from filename. Returns 0 on success. */
 int NativeSave_LoadReplay(const char* filename);
 

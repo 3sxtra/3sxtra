@@ -189,23 +189,31 @@
 /** Y position for NET peer row (full lobby). */
 #define NET_NET_PEER_Y           115
 /** Y position for LAN peer row (LAN-only lobby). */
-#define NET_LAN_PEER_Y_LANONLY   77
+#define NET_LAN_PEER_Y_LANONLY   78
 /** Y position for LAN header text. */
 #define NET_LAN_HDR_Y            50
+/** Y position for LAN header text (LAN-only lobby). */
+#define NET_LAN_HDR_Y_LANONLY    60
 /** Y position for NET header text. */
 #define NET_NET_HDR_Y            102
 /** Y position for LAN toggle value. */
 #define NET_LAN_TOGGLE_Y         63
+/** Y position for LAN toggle value (LAN-only lobby). */
+#define NET_LAN_TOGGLE_Y_LANONLY 78
 /** Y position for NET auto-connect toggle. */
 #define NET_NET_AUTOCONN_Y       115
 /** Y position for NET auto-search toggle. */
 #define NET_NET_AUTOSRCH_Y       129
 /** X position for toggle value text. */
 #define NET_TOGGLE_X             136
+/** X position for toggle value text (LAN-only lobby). */
+#define NET_TOGGLE_X_LANONLY     128
 /** X position for status line text. */
 #define NET_STATUS_X             40
 /** Y position for status line text. */
 #define NET_STATUS_Y             215
+/** X position for peer info column (LAN-only lobby). */
+#define NET_PEER_INFO_X_LANONLY  200
 /** Peer name sub-row offset (below FOUND/ONLINE count). */
 #define NET_PEER_SUBROW          15
 /** Horizontal screen width for centering. */

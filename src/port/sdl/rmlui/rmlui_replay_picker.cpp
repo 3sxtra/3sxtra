@@ -56,7 +56,12 @@ struct SlotEntry {
     int page_idx;     /* index within current page (0..PAGE_SIZE-1) for cursor matching */
     bool exists;
     Rml::String p1_name;
+    Rml::String p1_country;
     Rml::String p2_name;
+    Rml::String p2_country;
+    Rml::String p1_char_name;
+    Rml::String p2_char_name;
+    Rml::String winner_id;
     Rml::String date_str;
 };
 
@@ -107,8 +112,22 @@ static void refresh_slot_data(void) {
 
         _sub_info info;
         if (NativeSave_GetReplayInfo(filename, &info) == 0) {
-            entry.p1_name = char_name(info.player[0]);
-            entry.p2_name = char_name(info.player[1]);
+            entry.p1_char_name = char_name(info.player[0]);
+            entry.p2_char_name = char_name(info.player[1]);
+            entry.p1_name = entry.p1_char_name;
+            entry.p1_country = "";
+            entry.p2_name = entry.p2_char_name;
+            entry.p2_country = "";
+            
+            int winner = NativeSave_GetReplayWinner(filename);
+            if (winner == 0) {
+                entry.winner_id = entry.p1_name;
+            } else if (winner == 1) {
+                entry.winner_id = entry.p2_name;
+            } else {
+                entry.winner_id = "";
+            }
+
             char buf[32];
             SDL_snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d",
                          info.date.year, info.date.month, info.date.day,
@@ -116,7 +135,12 @@ static void refresh_slot_data(void) {
             entry.date_str = buf;
         } else {
             entry.p1_name = "Unknown";
+            entry.p1_country = "";
             entry.p2_name = "Unknown";
+            entry.p2_country = "";
+            entry.p1_char_name = "???";
+            entry.p2_char_name = "???";
+            entry.winner_id = "";
             entry.date_str = filename; /* Fallback to filename if metadata is broken */
         }
         s_all_slots.push_back(entry);
@@ -128,7 +152,12 @@ static void refresh_slot_data(void) {
         entry.display_num = count + 1;
         entry.exists = false;
         entry.p1_name = "--- NEW";
+        entry.p1_country = "";
         entry.p2_name = "SAVE ---";
+        entry.p2_country = "";
+        entry.p1_char_name = "";
+        entry.p2_char_name = "";
+        entry.winner_id = "";
         entry.date_str = "";
         s_all_slots.push_back(entry);
     }
@@ -185,7 +214,12 @@ static void do_init(void) {
         sh.RegisterMember("page_idx", &SlotEntry::page_idx);
         sh.RegisterMember("exists", &SlotEntry::exists);
         sh.RegisterMember("p1_name", &SlotEntry::p1_name);
+        sh.RegisterMember("p1_country", &SlotEntry::p1_country);
         sh.RegisterMember("p2_name", &SlotEntry::p2_name);
+        sh.RegisterMember("p2_country", &SlotEntry::p2_country);
+        sh.RegisterMember("p1_char_name", &SlotEntry::p1_char_name);
+        sh.RegisterMember("p2_char_name", &SlotEntry::p2_char_name);
+        sh.RegisterMember("winner_id", &SlotEntry::winner_id);
         sh.RegisterMember("date_str", &SlotEntry::date_str);
     }
     ctor.RegisterArray<std::vector<SlotEntry>>();
