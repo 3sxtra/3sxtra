@@ -233,8 +233,13 @@ if(ENABLE_ARCADE_ROM)
     endif()
     find_package(minizip-ng REQUIRED)
     
-    # tf-psa-crypto is a static library, search in both lib and lib64
-    find_library(TF_PSA_CRYPTO_LIB tfpsacrypto HINTS "${TF_PSA_CRYPTO_ROOT}/lib" "${TF_PSA_CRYPTO_ROOT}/lib64" REQUIRED NO_DEFAULT_PATH)
+    # tf-psa-crypto is a static library, search in lib, lib64, and multiarch directories
+    file(GLOB TF_PSA_CRYPTO_LIB_DIRS
+        "${TF_PSA_CRYPTO_ROOT}/lib"
+        "${TF_PSA_CRYPTO_ROOT}/lib64"
+        "${TF_PSA_CRYPTO_ROOT}/lib/*"
+    )
+    find_library(TF_PSA_CRYPTO_LIB tfpsacrypto HINTS ${TF_PSA_CRYPTO_LIB_DIRS} REQUIRED NO_DEFAULT_PATH)
 
     include_directories(
         ${MINIZIP_NG_ROOT}/include
