@@ -143,6 +143,11 @@ void effect_E3_move(WORK_Other* ewk) {
             break;
         }
 
+        /* PR #153: No-Stun training setting — zero the stun gauge every frame */
+        if (Training[0].contents[0][1][3] == 2) {
+            mwk->py->now.quantity.h = 0;
+        }
+
         if (ewk->wu.direction == 0) {
             mwk->cp->waza_flag[7] = 2;
         }

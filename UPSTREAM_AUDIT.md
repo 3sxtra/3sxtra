@@ -31,15 +31,17 @@
 | PR #162 — Increase 2D box limit (`dc_ghost.c` → `renderer.c`) | ✅ Already ported (`RENDER_2D_PRIM_MAX 200`) |
 | PR #190 — Skip all VS screens (`manage.c` part) | ✅ Already ported |
 | PR #164, #187 — Draw Player Over HUD (`sc_sub`, `sc_cockpit`, `vital`, `game.c`) | ✅ Ported |
+| PR #137, #147, #148 — Hitbox/hurtbox colors (`aboutspr.c`) | ✅ Already ported |
+| PR #153 — No-stun training setting (`effe3.c`) | ✅ Ported |
 
 ---
 
-## 🟠 Port — Training Mode Improvements
+## ✅ Port — Training Mode Improvements (Done)
 
-| PR(s) | File(s) | Lines | What |
-|--------|---------|------:|------|
-| #137, #147, #148 | `aboutspr.c` | ~40 | Hitbox/hurtbox colors, spacing fix |
-| #153 | `effe3.c` | ~6 | No-stun training setting (`effe3.c` part) |
+| PR(s) | Status |
+|--------|--------|
+| #137, #147, #148 | ✅ Already ported in `aboutspr.c` |
+| #153 | ✅ Ported (`effe3.c` no-stun per-frame reset) |
 
 ---
 
@@ -69,7 +71,7 @@
 | Category | Items | Estimated Effort |
 |----------|------:|-----------------|
 | CPS3 decompilation | 3 files, ~494 lines | ✅ Done |
-| Training mode | 2 items, ~46 lines | Low |
+| Training mode | 2 items, ~46 lines | ✅ Done |
 | Gameplay / QoL | 0 items | ✅ Done |
 | Arcade ROM system | 8+ files, new subsystem | ✅ Done |
-| **Total actionable** | **2 items** | |
+| **Total actionable** | **0 items** | ✅ **All done** |
