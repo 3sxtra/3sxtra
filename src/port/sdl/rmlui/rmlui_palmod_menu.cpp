@@ -14,17 +14,17 @@
  */
 #include "port/sdl/rmlui/rmlui_palmod_menu.h"
 #include "port/config/config.h"
-/* palmod_storage requires cmake reconfigure for new .c file.
- * Define PALMOD_HAS_STORAGE in CMakeLists.txt once available. */
 #ifdef PALMOD_HAS_STORAGE
 #include "port/sdl/rmlui/palmod_storage.h"
 #endif
 #include "port/sdl/rmlui/rmlui_wrapper.h"
+#include "port/sdl/rmlui/palette_remix.h"
 
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>
 #include <cstdio>
 #include <cstring>
+#include <vector>
 
 extern "C" {
 
@@ -166,6 +166,48 @@ static Rml::String s_palette_list_str; /* display: "name1, name2, ..." */
 static int s_selected_palette = 0;     /* index into s_palette_list */
 static bool s_list_dirty = true;       /* refresh list on next update */
 
+/* ── Remix Tab State ── */
+static bool s_remix_target_p1 = true;
+static bool s_remix_target_p2 = false;
+static bool s_remix_target_stage = false;
+static int s_remix_scope = 0;  // 0=Global, 1=Selected Bank, 2=Ramps, 3=Checked Banks
+static bool s_remix_auto_preview = true;
+
+static bool s_remix_l2 = true;
+static bool s_remix_l0 = true;
+static bool s_remix_l1 = true;
+
+struct RemixEffectState {
+    const char* id;
+    const char* name;
+    bool checked;
+    int value; // 0-100
+};
+
+static RemixEffectState s_remix_effects[] = {
+    {"chk_noir", "Noir", false, 50},
+    {"chk_miami", "Miami", false, 50},
+    {"chk_grindhouse", "Grindhouse", false, 50},
+    {"chk_sunrise", "Sunrise", false, 50},
+    {"chk_noon", "Noon", false, 50},
+    {"chk_dusk", "Dusk", false, 50},
+    {"chk_midnight", "Midnight", false, 50},
+    {"chk_stormy", "Stormy", false, 50},
+    {"chk_neon_night", "Neon-night", false, 50},
+    {"chk_cold_steel", "Cold Steel", false, 50},
+    {"chk_heatwave", "Heatwave", false, 50},
+    {"chk_grad_curve", "Gradient Curve", false, 50},
+    {"chk_posterize", "Posterize", false, 50},
+    {"chk_dither", "Dither-Friendly", false, 50},
+    {"chk_edge", "Edge Accent", false, 50},
+    {"chk_neonizer", "Neonizer", false, 50},
+    {"chk_fg_pop", "Foreground Pop", false, 50},
+    {"chk_bg_wash", "Background Wash", false, 50},
+    {"chk_crt", "CRT / Arcade", false, 50},
+    {"chk_cel", "Comic / Cel", false, 50}
+};
+static const int REMIX_EFFECT_COUNT = sizeof(s_remix_effects) / sizeof(s_remix_effects[0]);
+
 /* Helpers to determine current context for save/load */
 #ifdef PALMOD_HAS_STORAGE
 static void get_current_context(const char** out_category, char* out_sub, size_t sub_size) {
@@ -263,6 +305,88 @@ static void apply_palette(int id, int color_index) {
     palUpdateGhostCP3(base, 16);
 }
 
+static void apply_remix_preview() {
+    // 1. Reset base colors from cached overrides
+    if (s_plcol_valid[0]) apply_palette(0, s_palmod_color[0] >= 0 ? s_palmod_color[0] : (int)Player_Color[0]);
+    if (s_plcol_valid[1]) apply_palette(1, s_palmod_color[1] >= 0 ? s_palmod_color[1] : (int)Player_Color[1]);
+    
+    auto apply_to_range = [&](int start_row, int end_row) {
+        if (start_row < 0) start_row = 0;
+        if (end_row > 511) end_row = 511;
+
+        size_t count = (size_t)(end_row - start_row + 1) * 64;
+        u16* colors = &ColorRAM[start_row][0];
+        
+        std::vector<int> ramp_indices;
+        std::vector<int> global_indices;
+        for (size_t i = 0; i < count; i++) {
+            if (i % 16 != 0 && colors[i] != 0) {
+                global_indices.push_back((int)i);
+            }
+        }
+        
+        if (s_remix_scope == 2) { // Smart Detect Ramps
+            for (size_t r = 0; r < count / 64; r++) {
+                for (int sub = 0; sub < 4; sub++) {
+                    std::vector<u16> sub_colors;
+                    std::vector<int> sub_idx;
+                    for (int i = 1; i < 16; i++) {
+                        int idx = r * 64 + sub * 16 + i;
+                        sub_colors.push_back(colors[idx]);
+                        sub_idx.push_back(idx);
+                    }
+                    if (PaletteRemix::is_likely_ramp(sub_colors)) {
+                        ramp_indices.insert(ramp_indices.end(), sub_idx.begin(), sub_idx.end());
+                    }
+                }
+            }
+        } else {
+            ramp_indices = global_indices;
+        }
+        
+        // Apply Effects
+        for (int i = 0; i < REMIX_EFFECT_COUNT; i++) {
+            const auto& fx = s_remix_effects[i];
+            if (!fx.checked) continue;
+            float intensity = fx.value / 100.0f;
+            
+            if (i <= 10) { // Moods apply globally (or at least mapped to indices via apply_ramp_effect mapping)
+                PaletteRemix::apply_ramp_effect(fx.name, intensity, colors, count, ramp_indices); 
+            } else if (i <= 15) { // Ramps
+                PaletteRemix::apply_ramp_effect(fx.name, intensity, colors, count, ramp_indices);
+            } else { // Looks
+                PaletteRemix::apply_layer_look(fx.name, intensity, colors, count, global_indices);
+            }
+        }
+        
+        // Push updates
+        for (int r = start_row; r <= end_row; r++) {
+            palUpdateGhostCP3(r, 1);
+        }
+    };
+    
+    // Apply for each active target
+    if (s_remix_target_p1) {
+        int start = (s_remix_scope == 1) ? ((s_palmod_color[0] >= 0) ? s_palmod_color[0] : 0) : 0;
+        int end = (s_remix_scope == 1) ? start : 15;
+        apply_to_range(start, end);
+    }
+    if (s_remix_target_p2) {
+        int start = (s_remix_scope == 1) ? 16 + ((s_palmod_color[1] >= 0) ? s_palmod_color[1] : 0) : 16;
+        int end = (s_remix_scope == 1) ? start : 31;
+        apply_to_range(start, end);
+    }
+    if (s_remix_target_stage) {
+        apply_to_range(s_stage_row, s_stage_row);
+    }
+}
+
+static void trigger_remix() {
+    if (s_init_complete && s_remix_auto_preview && s_edit_mode == 2 && Play_Game != 0) {
+        apply_remix_preview();
+    }
+}
+
 /* Write a single color to ColorRAM and push ghost update */
 static void write_single_color(int row, int col_index, u16 color) {
     if (row < 0 || row >= 512 || col_index < 0 || col_index >= 64)
@@ -330,7 +454,8 @@ static void do_init(void) {
         },
         [](const Rml::Variant& v) {
             int val = v.Get<int>();
-            if (val < 0) val = 0; if (val > 15) val = 15;
+            if (val < 0) val = 0;
+            if (val > 15) val = 15;
             s_palmod_color[0] = val;
             if (!s_init_complete) return; /* don't write during doc load */
             save_color(0, My_char[0], val);
@@ -344,7 +469,8 @@ static void do_init(void) {
         },
         [](const Rml::Variant& v) {
             int val = v.Get<int>();
-            if (val < 0) val = 0; if (val > 15) val = 15;
+            if (val < 0) val = 0;
+            if (val > 15) val = 15;
             s_palmod_color[1] = val;
             if (!s_init_complete) return;
             save_color(1, My_char[1], val);
@@ -482,6 +608,119 @@ static void do_init(void) {
         [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
             s_edit_mode = 1;
             s_list_dirty = true;
+        });
+
+    ctor.BindEventCallback("set_mode_remix",
+        [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
+            s_edit_mode = 2;
+            s_list_dirty = true;
+            trigger_remix();
+        });
+
+    /* ─── Remix Tab ─── */
+    
+    ctor.BindFunc("remix_target_p1",
+        [](Rml::Variant& v) { v = s_remix_target_p1; },
+        [](const Rml::Variant& v) { s_remix_target_p1 = v.Get<bool>(); trigger_remix(); });
+    ctor.BindFunc("remix_target_p2",
+        [](Rml::Variant& v) { v = s_remix_target_p2; },
+        [](const Rml::Variant& v) { s_remix_target_p2 = v.Get<bool>(); trigger_remix(); });
+    ctor.BindFunc("remix_target_stage",
+        [](Rml::Variant& v) { v = s_remix_target_stage; },
+        [](const Rml::Variant& v) { s_remix_target_stage = v.Get<bool>(); trigger_remix(); });
+        
+    ctor.BindFunc("remix_scope",
+        [](Rml::Variant& v) { v = s_remix_scope; },
+        [](const Rml::Variant& v) { s_remix_scope = v.Get<int>(); trigger_remix(); });
+        
+    ctor.BindFunc("remix_auto_preview",
+        [](Rml::Variant& v) { v = s_remix_auto_preview; },
+        [](const Rml::Variant& v) { s_remix_auto_preview = v.Get<bool>(); trigger_remix(); });
+        
+    ctor.BindFunc("remix_l2",
+        [](Rml::Variant& v) { v = s_remix_l2; },
+        [](const Rml::Variant& v) { s_remix_l2 = v.Get<bool>(); trigger_remix(); });
+    ctor.BindFunc("remix_l0",
+        [](Rml::Variant& v) { v = s_remix_l0; },
+        [](const Rml::Variant& v) { s_remix_l0 = v.Get<bool>(); trigger_remix(); });
+    ctor.BindFunc("remix_l1",
+        [](Rml::Variant& v) { v = s_remix_l1; },
+        [](const Rml::Variant& v) { s_remix_l1 = v.Get<bool>(); trigger_remix(); });
+        
+    for (int i = 0; i < REMIX_EFFECT_COUNT; i++) {
+        Rml::String chk_name = s_remix_effects[i].id;
+        Rml::String val_name = Rml::String(s_remix_effects[i].id);
+        val_name.replace(0, 4, "val_"); // "chk_noir" -> "val_noir"
+        
+        ctor.BindFunc(chk_name,
+            [i](Rml::Variant& v) { v = s_remix_effects[i].checked; },
+            [i](const Rml::Variant& v) { 
+                s_remix_effects[i].checked = v.Get<bool>(); 
+                trigger_remix(); 
+            });
+            
+        ctor.BindFunc(val_name,
+            [i](Rml::Variant& v) { v = s_remix_effects[i].value; },
+            [i](const Rml::Variant& v) { 
+                s_remix_effects[i].value = v.Get<int>(); 
+                trigger_remix(); 
+            });
+    }
+    
+    /* Event callbacks for effect controls inside the scroll container.
+     * Native <input> form controls don't work inside overflow-y: auto,
+     * so we use data-event-click spans + these callbacks instead. */
+    ctor.BindEventCallback("toggle_fx",
+        [](Rml::DataModelHandle h, Rml::Event& ev, const Rml::VariantList& args) {
+            if (args.empty()) return;
+            int i = args[0].Get<int>();
+            if (i < 0 || i >= REMIX_EFFECT_COUNT) return;
+            s_remix_effects[i].checked = !s_remix_effects[i].checked;
+            h.DirtyVariable(s_remix_effects[i].id);
+            trigger_remix();
+        });
+    
+    ctor.BindEventCallback("fx_inc",
+        [](Rml::DataModelHandle h, Rml::Event& ev, const Rml::VariantList& args) {
+            if (args.empty()) return;
+            int i = args[0].Get<int>();
+            if (i < 0 || i >= REMIX_EFFECT_COUNT) return;
+            s_remix_effects[i].value = std::min(100, s_remix_effects[i].value + 5);
+            ev.StopImmediatePropagation(); /* don't toggle checkbox */
+            Rml::String val_name = Rml::String(s_remix_effects[i].id);
+            val_name.replace(0, 4, "val_");
+            h.DirtyVariable(val_name);
+            trigger_remix();
+        });
+    
+    ctor.BindEventCallback("fx_dec",
+        [](Rml::DataModelHandle h, Rml::Event& ev, const Rml::VariantList& args) {
+            if (args.empty()) return;
+            int i = args[0].Get<int>();
+            if (i < 0 || i >= REMIX_EFFECT_COUNT) return;
+            s_remix_effects[i].value = std::max(0, s_remix_effects[i].value - 5);
+            ev.StopImmediatePropagation(); /* don't toggle checkbox */
+            Rml::String val_name = Rml::String(s_remix_effects[i].id);
+            val_name.replace(0, 4, "val_");
+            h.DirtyVariable(val_name);
+            trigger_remix();
+        });
+    
+    ctor.BindEventCallback("remix_reset",
+        [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
+            for (int i = 0; i < REMIX_EFFECT_COUNT; i++) {
+                s_remix_effects[i].checked = false;
+                s_remix_effects[i].value = 50;
+            }
+            if (s_plcol_valid[0]) apply_palette(0, s_palmod_color[0] >= 0 ? s_palmod_color[0] : (int)Player_Color[0]);
+            if (s_plcol_valid[1]) apply_palette(1, s_palmod_color[1] >= 0 ? s_palmod_color[1] : (int)Player_Color[1]);
+        });
+        
+    ctor.BindEventCallback("remix_apply",
+        [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
+            apply_remix_preview();
+            // In a real scenario, this would persist the remixed palette into a new custom palette.
+            // For now, doing apply_remix_preview() locks the changes in ColorRAM until reload.
         });
 
     /* ─── Save/Load bindings ─── */
@@ -643,6 +882,27 @@ extern "C" void rmlui_palmod_menu_update(void) {
     DIRTY_STR(p2_label, get_color_label(p2c));
     DIRTY_STR(sel_preview, color_to_css(cps3_pack(s_picker_r, s_picker_g, s_picker_b)));
     DIRTY_STR(sel_original, color_to_css(s_picker_original));
+    
+    // Check effect dirty state
+    static RemixEffectState s_fx_cache[20];
+    static bool fx_init = false;
+    if (!fx_init) {
+        memcpy(s_fx_cache, s_remix_effects, sizeof(s_remix_effects));
+        fx_init = true;
+    } else {
+        for (int i = 0; i < REMIX_EFFECT_COUNT; i++) {
+            if (s_remix_effects[i].checked != s_fx_cache[i].checked) {
+                s_fx_cache[i].checked = s_remix_effects[i].checked;
+                s_model_handle.DirtyVariable(s_remix_effects[i].id);
+            }
+            if (s_remix_effects[i].value != s_fx_cache[i].value) {
+                s_fx_cache[i].value = s_remix_effects[i].value;
+                Rml::String val_name = s_remix_effects[i].id;
+                val_name.replace(0, 4, "val_");
+                s_model_handle.DirtyVariable(val_name);
+            }
+        }
+    }
 
     /* Refresh saved palette list if dirty */
     if (s_list_dirty) {

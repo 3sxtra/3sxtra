@@ -220,9 +220,9 @@ class GameSystemInterface : public SystemInterface_SDL {
     using SystemInterface_SDL::SystemInterface_SDL;
 
     bool LogMessage(Rml::Log::Type type, const Rml::String& message) override {
-        // Demote "Loaded font face" to debug
-        if (type == Rml::Log::LT_INFO && message.find("Loaded font face") == 0) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] %s", message.c_str());
+        // Force "Loaded font face" to print as info
+        if (type == Rml::Log::LT_INFO) {
+            SDL_Log("[RmlUi] %s", message.c_str());
             return true;
         }
         return SystemInterface_SDL::LogMessage(type, message);
@@ -757,8 +757,12 @@ static void ensure_fonts_loaded(void) {
     // from claiming Unicode codepoints it cannot render (geometric shapes,
     // arrows, etc.) and blocking the fallback chain.
     std::string font_noto = s_ui_base_path + "../fonts/NotoSansJP-Regular.ttf";
-    if (!Rml::LoadFontFace(font_noto.c_str(), false)) {
+    if (!Rml::LoadFontFace(font_noto.c_str(), false, Rml::Style::FontWeight::Normal)) {
         SDL_Log("[RmlUi] Failed to load font: %s", font_noto.c_str());
+    }
+    // Also register the same file to satisfy bold requests (e.g. h1 elements)
+    if (!Rml::LoadFontFace(font_noto.c_str(), false, Rml::Style::FontWeight::Bold)) {
+        SDL_Log("[RmlUi] Failed to load bold fallback font: %s", font_noto.c_str());
     }
 
     // Noto Emoji (monochrome vector outlines) loaded as FALLBACK for emoji

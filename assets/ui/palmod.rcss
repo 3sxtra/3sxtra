@@ -1,5 +1,9 @@
 /* Palette Editor stylesheet — 3SXtra RmlUi overlay
  * Side-docked panel (no full-screen overlay) for live editing.
+ *
+ * ⚠ RmlUi scroll containers (overflow-y: auto/scroll) intercept mouse-down
+ * events on child form controls (checkboxes, sliders, selects). NEVER wrap
+ * interactive elements in a scroll container. Use overflow: hidden to clip.
  */
 
 body {
@@ -13,8 +17,9 @@ body {
     right: 8dp;
     top: 8dp;
     width: 420dp;
-    max-height: 95%;
-    overflow-y: auto;
+    /* No max-height or overflow — RmlUi scroll containers block form control
+     * clicks. The panel renders at natural height; drag the title bar to
+     * reposition if content extends below the window edge. */
     background-color: rgba(15, 15, 20, 230);
     border-width: 1dp;
     border-color: #555;
@@ -24,11 +29,18 @@ body {
     font-size: 14dp;
 }
 
-/* Title */
-#palmod-panel h1 {
+/* Title & Drag Handle */
+#title-bar {
+    display: block;
+    cursor: move;
+    padding-bottom: 6dp;
+    margin-bottom: 6dp;
+    border-bottom: 1dp #444;
+}
+
+#title-bar h1 {
     font-size: 18dp;
     color: #33ccff;
-    margin-bottom: 6dp;
     text-align: center;
     white-space: nowrap;
 }
@@ -47,8 +59,9 @@ body {
 /* ── Tab bar ──────────────────────────────────────────────────── */
 
 .tab-bar {
-    display: block;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 4dp;
     margin-bottom: 6dp;
 }
 
@@ -97,20 +110,14 @@ body {
     margin-bottom: 3dp;
 }
 
+/* Control rows use inline flow — NOT flexbox.
+ * RmlUi inline-block + vertical-align gives reliable control alignment
+ * without the scroll-container-event-blocking issues that come with
+ * flex containers in certain RmlUi versions. */
 .control-row {
     display: block;
     padding: 3dp 6dp;
     white-space: nowrap;
-}
-
-.control-row input {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.control-row label {
-    display: inline-block;
-    vertical-align: middle;
 }
 
 .control-row:hover {
@@ -118,11 +125,16 @@ body {
     border-radius: 3dp;
 }
 
+/* Range inputs in control rows get a fixed width — no flex needed */
+.control-row input.range {
+    width: 140dp;
+}
+
 label {
+    display: inline-block;
     font-size: 14dp;
     color: #dddddd;
-    cursor: pointer;
-    white-space: nowrap;
+    vertical-align: middle;
 }
 
 .color-value {
@@ -246,7 +258,9 @@ label {
 
 /* RGB sliders */
 .picker-slider {
+    display: block;
     padding: 2dp 6dp;
+    white-space: nowrap;
 }
 
 .channel-label {
@@ -273,8 +287,9 @@ label {
 
 /* Picker buttons */
 .picker-buttons {
-    display: block;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 8dp;
     margin-top: 6dp;
 }
 
@@ -382,4 +397,205 @@ label {
 .btn-nav:hover {
     background-color: rgba(255, 255, 255, 30);
     color: #fff;
+}
+
+/* ── Remix Tab ────────────────────────────────────────────────── */
+
+.remix-select {
+    display: inline-block;
+    width: 200dp;
+    padding: 3dp;
+    font-size: 13dp;
+    background-color: rgba(255, 255, 255, 15);
+    color: #eee;
+    vertical-align: middle;
+}
+
+.remix-select option {
+    background-color: #222;
+    color: #eee;
+}
+
+/* Layer checkboxes — inline flow, not flex */
+.layer-checks {
+    display: block;
+    padding: 4dp 6dp;
+    margin-bottom: 4dp;
+    white-space: nowrap;
+}
+
+.layer-checks label {
+    font-size: 13dp;
+    color: #ccc;
+    margin-right: 8dp;
+}
+
+/* Effects list — overflow-y: auto is now safe because we use
+ * data-event-click spans (not native <input> form controls).
+ * Pattern from shaders.rcss: scroll containers work with click events. */
+.effects-list {
+    display: block;
+    max-height: 250dp;
+    overflow-y: auto;
+    padding: 2dp;
+    margin-bottom: 6dp;
+    border-width: 1dp;
+    border-color: #444;
+    border-radius: 4dp;
+    background-color: rgba(0, 0, 0, 50);
+}
+
+/* Each effect row: clickable for checkbox toggle */
+.effect-row {
+    display: block;
+    padding: 3dp 6dp;
+    margin-bottom: 1dp;
+    white-space: nowrap;
+    cursor: pointer;
+    border-radius: 3dp;
+}
+
+.effect-row:hover {
+    background-color: rgba(255, 255, 255, 10);
+}
+
+/* Custom checkbox visual (not a native <input>) */
+.fx-check {
+    display: inline-block;
+    width: 14dp;
+    height: 14dp;
+    background-color: #1a1a2a;
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 3dp;
+    vertical-align: middle;
+    margin-right: 4dp;
+}
+
+.fx-check:hover {
+    border-color: #33ccff;
+}
+
+.fx-check.checked {
+    background-color: #2a4a80;
+    border-color: #33ccff;
+}
+
+.effect-label {
+    display: inline-block;
+    width: 110dp;
+    font-size: 13dp;
+    vertical-align: middle;
+    color: #ddd;
+}
+
+/* +/- buttons (same pattern as shader param controls) */
+.fx-btn {
+    display: inline-block;
+    width: 22dp;
+    height: 20dp;
+    font-size: 14dp;
+    font-weight: bold;
+    text-align: center;
+    background-color: #333;
+    color: #ccc;
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 4dp;
+    cursor: pointer;
+    margin-left: 2dp;
+    vertical-align: middle;
+}
+
+.fx-btn:hover {
+    background-color: #555;
+    color: #fff;
+}
+
+.fx-val {
+    display: inline-block;
+    width: 36dp;
+    font-size: 13dp;
+    color: #6f6;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Scrollbar styling for effects list */
+.effects-list scrollbarvertical {
+    width: 6dp;
+}
+
+.effects-list scrollbarvertical sliderbar {
+    background-color: #555;
+    border-radius: 3dp;
+}
+
+.effects-list scrollbarvertical sliderbar:hover {
+    background-color: #777;
+}
+
+.effects-list scrollbarvertical slidertrack {
+    background-color: #222;
+}
+
+/* ── Checkboxes & Sliders ── */
+
+input.checkbox {
+    width: 14dp;
+    height: 14dp;
+    min-width: 14dp;
+    min-height: 14dp;
+    background-color: #1a1a2a;
+    border-width: 1dp;
+    border-color: #555;
+    border-radius: 3dp;
+    vertical-align: middle;
+    margin-right: 4dp;
+}
+
+input.checkbox:hover {
+    border-color: #33ccff;
+}
+
+input.checkbox:checked {
+    background-color: #2a4a80;
+    border-color: #33ccff;
+}
+
+input.range {
+    width: 140dp;
+    height: 14dp;
+    vertical-align: middle;
+    margin-left: 4dp;
+}
+
+input.range slidertrack {
+    height: 4dp;
+    margin-top: 5dp;
+    background-color: #111;
+    border-radius: 2dp;
+    border-width: 1dp;
+    border-color: #333;
+}
+
+input.range sliderbar {
+    width: 12dp;
+    height: 14dp;
+    background-color: #b57a3e;
+    border-radius: 6dp;
+}
+
+input.range sliderbar:hover {
+    background-color: #d19454;
+}
+
+input.range sliderbar:active {
+    background-color: #ebae6f;
+}
+
+input.range sliderarrowdec,
+input.range sliderarrowinc {
+    width: 0;
+    height: 0;
 }

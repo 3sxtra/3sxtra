@@ -6,7 +6,9 @@
 </head>
 <body data-model="palmod">
     <div id="palmod-panel">
-        <h1>PALETTE EDITOR</h1>
+        <div id="title-bar" style="drag: drag;">
+            <h1>PALETTE EDITOR</h1>
+        </div>
 
         <!-- Tab bar -->
         <div class="tab-bar">
@@ -14,6 +16,8 @@
                     data-event-click="set_mode_chars">CHARACTERS</button>
             <button class="tab" data-class-tab-active="edit_mode == 1"
                     data-event-click="set_mode_stage">STAGE</button>
+            <button class="tab" data-class-tab-active="edit_mode == 2"
+                    data-event-click="set_mode_remix">REMIX</button>
         </div>
 
         <div class="divider"></div>
@@ -165,6 +169,68 @@
                     <div class="swatch" data-style-background-color="sw30" data-event-click="pick_stage_color(30)"></div>
                     <div class="swatch" data-style-background-color="sw31" data-event-click="pick_stage_color(31)"></div>
                 </div>
+            </div>
+        </div>
+
+        <!-- ═══════ REMIX TAB ═══════ -->
+        <div data-if="edit_mode == 2" class="tab-content" data-class-disabled="!in_game">
+            <div class="control-row">
+                <label>Target:</label>
+                <input type="checkbox" data-value="remix_target_p1"/> <label>P1</label>
+                <input type="checkbox" data-value="remix_target_p2"/> <label>P2</label>
+                <input type="checkbox" data-value="remix_target_stage"/> <label>Stage</label>
+            </div>
+            <div class="control-row">
+                <label>Scope:</label>
+                <select data-value="remix_scope" class="remix-select">
+                    <option value="0">Global (All Colors)</option>
+                    <option value="1">Selected Bank Only</option>
+                    <option value="2">Ramps (Smart Detect)</option>
+                    <option value="3">Checked Banks</option>
+                </select>
+            </div>
+            <div class="control-row">
+                <input type="checkbox" data-value="remix_auto_preview"/>
+                <label>Auto-Preview</label>
+            </div>
+            <div class="divider"></div>
+            
+            <div class="layer-checks">
+               <label>Layers:</label>
+               <input type="checkbox" data-value="remix_l2"/> <label>L2</label>
+               <input type="checkbox" data-value="remix_l0"/> <label>L0</label>
+               <input type="checkbox" data-value="remix_l1"/> <label>L1</label>
+            </div>
+            
+            <!-- Effects Scroll Container -- uses data-event-click, not native inputs,
+                 because RmlUi scroll containers block native form control events. -->
+            <div class="effects-list">
+               <div class="effect-row" data-event-click="toggle_fx(0)"><span class="fx-check" data-class-checked="chk_noir"></span><span class="effect-label">Noir</span><span class="fx-btn" data-event-click="fx_dec(0)">-</span><span class="fx-val">{{val_noir}}</span><span class="fx-btn" data-event-click="fx_inc(0)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(1)"><span class="fx-check" data-class-checked="chk_miami"></span><span class="effect-label">Miami</span><span class="fx-btn" data-event-click="fx_dec(1)">-</span><span class="fx-val">{{val_miami}}</span><span class="fx-btn" data-event-click="fx_inc(1)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(2)"><span class="fx-check" data-class-checked="chk_grindhouse"></span><span class="effect-label">Grindhouse</span><span class="fx-btn" data-event-click="fx_dec(2)">-</span><span class="fx-val">{{val_grindhouse}}</span><span class="fx-btn" data-event-click="fx_inc(2)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(3)"><span class="fx-check" data-class-checked="chk_sunrise"></span><span class="effect-label">Sunrise</span><span class="fx-btn" data-event-click="fx_dec(3)">-</span><span class="fx-val">{{val_sunrise}}</span><span class="fx-btn" data-event-click="fx_inc(3)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(4)"><span class="fx-check" data-class-checked="chk_noon"></span><span class="effect-label">Noon</span><span class="fx-btn" data-event-click="fx_dec(4)">-</span><span class="fx-val">{{val_noon}}</span><span class="fx-btn" data-event-click="fx_inc(4)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(5)"><span class="fx-check" data-class-checked="chk_dusk"></span><span class="effect-label">Dusk</span><span class="fx-btn" data-event-click="fx_dec(5)">-</span><span class="fx-val">{{val_dusk}}</span><span class="fx-btn" data-event-click="fx_inc(5)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(6)"><span class="fx-check" data-class-checked="chk_midnight"></span><span class="effect-label">Midnight</span><span class="fx-btn" data-event-click="fx_dec(6)">-</span><span class="fx-val">{{val_midnight}}</span><span class="fx-btn" data-event-click="fx_inc(6)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(7)"><span class="fx-check" data-class-checked="chk_stormy"></span><span class="effect-label">Stormy</span><span class="fx-btn" data-event-click="fx_dec(7)">-</span><span class="fx-val">{{val_stormy}}</span><span class="fx-btn" data-event-click="fx_inc(7)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(8)"><span class="fx-check" data-class-checked="chk_neon_night"></span><span class="effect-label">Neon-night</span><span class="fx-btn" data-event-click="fx_dec(8)">-</span><span class="fx-val">{{val_neon_night}}</span><span class="fx-btn" data-event-click="fx_inc(8)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(9)"><span class="fx-check" data-class-checked="chk_cold_steel"></span><span class="effect-label">Cold Steel</span><span class="fx-btn" data-event-click="fx_dec(9)">-</span><span class="fx-val">{{val_cold_steel}}</span><span class="fx-btn" data-event-click="fx_inc(9)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(10)"><span class="fx-check" data-class-checked="chk_heatwave"></span><span class="effect-label">Heatwave</span><span class="fx-btn" data-event-click="fx_dec(10)">-</span><span class="fx-val">{{val_heatwave}}</span><span class="fx-btn" data-event-click="fx_inc(10)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(11)"><span class="fx-check" data-class-checked="chk_grad_curve"></span><span class="effect-label">Gradient Curve</span><span class="fx-btn" data-event-click="fx_dec(11)">-</span><span class="fx-val">{{val_grad_curve}}</span><span class="fx-btn" data-event-click="fx_inc(11)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(12)"><span class="fx-check" data-class-checked="chk_posterize"></span><span class="effect-label">Posterize</span><span class="fx-btn" data-event-click="fx_dec(12)">-</span><span class="fx-val">{{val_posterize}}</span><span class="fx-btn" data-event-click="fx_inc(12)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(13)"><span class="fx-check" data-class-checked="chk_dither"></span><span class="effect-label">Dither-Friendly</span><span class="fx-btn" data-event-click="fx_dec(13)">-</span><span class="fx-val">{{val_dither}}</span><span class="fx-btn" data-event-click="fx_inc(13)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(14)"><span class="fx-check" data-class-checked="chk_edge"></span><span class="effect-label">Edge Accent</span><span class="fx-btn" data-event-click="fx_dec(14)">-</span><span class="fx-val">{{val_edge}}</span><span class="fx-btn" data-event-click="fx_inc(14)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(15)"><span class="fx-check" data-class-checked="chk_neonizer"></span><span class="effect-label">Neonizer</span><span class="fx-btn" data-event-click="fx_dec(15)">-</span><span class="fx-val">{{val_neonizer}}</span><span class="fx-btn" data-event-click="fx_inc(15)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(16)"><span class="fx-check" data-class-checked="chk_fg_pop"></span><span class="effect-label">Foreground Pop</span><span class="fx-btn" data-event-click="fx_dec(16)">-</span><span class="fx-val">{{val_fg_pop}}</span><span class="fx-btn" data-event-click="fx_inc(16)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(17)"><span class="fx-check" data-class-checked="chk_bg_wash"></span><span class="effect-label">Background Wash</span><span class="fx-btn" data-event-click="fx_dec(17)">-</span><span class="fx-val">{{val_bg_wash}}</span><span class="fx-btn" data-event-click="fx_inc(17)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(18)"><span class="fx-check" data-class-checked="chk_crt"></span><span class="effect-label">CRT / Arcade</span><span class="fx-btn" data-event-click="fx_dec(18)">-</span><span class="fx-val">{{val_crt}}</span><span class="fx-btn" data-event-click="fx_inc(18)">+</span></div>
+               <div class="effect-row" data-event-click="toggle_fx(19)"><span class="fx-check" data-class-checked="chk_cel"></span><span class="effect-label">Comic / Cel</span><span class="fx-btn" data-event-click="fx_dec(19)">-</span><span class="fx-val">{{val_cel}}</span><span class="fx-btn" data-event-click="fx_inc(19)">+</span></div>
+            </div>
+            
+            <div class="divider"></div>
+            <div class="picker-buttons">
+                <button class="btn btn-reset" data-event-click="remix_reset">RESET</button>
+                <button class="btn btn-save" data-event-click="remix_apply">APPLY (Commit)</button>
             </div>
         </div>
 
