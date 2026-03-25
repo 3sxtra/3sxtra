@@ -5,6 +5,28 @@
 #define MAX_NETWORK_RESULTS 128
 #define MAX_CACHED_PEERS 8 // Max unique peers (1v1 + spectators)
 
+// ─── P2P Chat (out-of-band on the same UDP socket) ─────────────
+// 4-byte magic header "3SXC" prevents collision with GekkoNet's wire format.
+// Thread safety: both receive_data() and PollChat() run on the game thread.
+// receive_data() is called from gekko_update_session() which is called from
+// Netplay_Run() on the game thread. PollChat() is called from
+// rmlui_ingame_chat_update() also on the game thread. No mutex needed.
+static const unsigned char CHAT_MAGIC[4] = { 0x33, 0x53, 0x58, 0x43 }; // "3SXC"
+#define CHAT_MAGIC_LEN   4
+#define CHAT_MSG_TYPE    0x01       // Sub-type: text message
+#define CHAT_HEADER_LEN  7         // magic(4) + type(1) + len(2)
+#define CHAT_INBOX_SIZE  8          // Ring buffer capacity
+#define CHAT_MAX_TEXT    120        // Max UTF-8 payload bytes
+
+typedef struct {
+    char text[CHAT_MAX_TEXT + 1];
+    bool occupied;
+} ChatInboxSlot;
+
+static ChatInboxSlot chat_inbox[CHAT_INBOX_SIZE];
+static int chat_inbox_write = 0;
+static int chat_inbox_read  = 0;
+
 static NET_DatagramSocket* adapter_sock = NULL;
 static GekkoNetAdapter adapter;
 static GekkoNetResult* results[MAX_NETWORK_RESULTS];
@@ -150,6 +172,29 @@ static GekkoNetResult** receive_data(int* length) {
 
     NET_Datagram* dgram = NULL;
     while (result_count < MAX_NETWORK_RESULTS && NET_ReceiveDatagram(adapter_sock, &dgram) && dgram) {
+        // ── P2P Chat intercept ──
+        // Chat packets start with 4-byte magic "3SXC". Extract the text and
+        // push it to the chat inbox ring buffer. Do NOT pass to GekkoNet.
+        if (dgram->buflen >= CHAT_HEADER_LEN &&
+            SDL_memcmp(dgram->buf, CHAT_MAGIC, CHAT_MAGIC_LEN) == 0) {
+            const unsigned char* hdr = (const unsigned char*)dgram->buf;
+            unsigned char msg_type = hdr[4];
+            if (msg_type == CHAT_MSG_TYPE) {
+                int text_len = (hdr[5] << 8) | hdr[6];
+                if (text_len > 0 && text_len <= CHAT_MAX_TEXT &&
+                    (int)dgram->buflen >= CHAT_HEADER_LEN + text_len) {
+                    ChatInboxSlot* slot = &chat_inbox[chat_inbox_write % CHAT_INBOX_SIZE];
+                    SDL_memcpy(slot->text, (char*)dgram->buf + CHAT_HEADER_LEN, text_len);
+                    slot->text[text_len] = '\0';
+                    slot->occupied = true;
+                    chat_inbox_write++;
+                }
+            }
+            NET_DestroyDatagram(dgram);
+            dgram = NULL;
+            continue;
+        }
+
         const char* raw_ip = NET_GetAddressString(dgram->addr);
         // Normalize IPv4-mapped IPv6 addresses (::ffff:x.x.x.x → x.x.x.x)
         // so GekkoNet can match incoming packets to the configured remote peer.
@@ -237,4 +282,52 @@ void SDLNetAdapter_Destroy(void) {
     expected_remote_addr[0] = '\0';
     expected_remote_port = 0;
     cross_ip_logged = false;
+    // Clear chat inbox
+    SDL_memset(chat_inbox, 0, sizeof(chat_inbox));
+    chat_inbox_write = 0;
+    chat_inbox_read = 0;
+}
+
+// ─── P2P Chat API ────────────────────────────────────────────────
+
+void SDLNetAdapter_SendChat(const char* text) {
+    if (!adapter_sock || !text || !text[0])
+        return;
+    if (expected_remote_addr[0] == '\0')
+        return; // No remote peer configured
+
+    int text_len = (int)SDL_strlen(text);
+    if (text_len > CHAT_MAX_TEXT)
+        text_len = CHAT_MAX_TEXT;
+
+    // Build packet: [magic 4B][type 1B][len_hi][len_lo][text...]
+    unsigned char pkt[CHAT_HEADER_LEN + CHAT_MAX_TEXT];
+    SDL_memcpy(pkt, CHAT_MAGIC, CHAT_MAGIC_LEN);
+    pkt[4] = CHAT_MSG_TYPE;
+    pkt[5] = (unsigned char)((text_len >> 8) & 0xFF);
+    pkt[6] = (unsigned char)(text_len & 0xFF);
+    SDL_memcpy(pkt + CHAT_HEADER_LEN, text, text_len);
+
+    CachedPeer* peer = find_or_create_peer(expected_remote_addr);
+    if (!peer || !peer->resolved)
+        return;
+
+    if (NET_GetAddressStatus(peer->resolved) == NET_SUCCESS) {
+        NET_SendDatagram(adapter_sock, peer->resolved, peer->port,
+                         pkt, CHAT_HEADER_LEN + text_len);
+    }
+}
+
+bool SDLNetAdapter_PollChat(char* out_text, int max_len) {
+    if (chat_inbox_read >= chat_inbox_write)
+        return false;
+
+    ChatInboxSlot* slot = &chat_inbox[chat_inbox_read % CHAT_INBOX_SIZE];
+    if (!slot->occupied)
+        return false;
+
+    SDL_strlcpy(out_text, slot->text, max_len);
+    slot->occupied = false;
+    chat_inbox_read++;
+    return true;
 }

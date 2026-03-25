@@ -28,6 +28,7 @@ extern void njUserMain();
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/menu_screen.h"
+#include "port/sdl/rmlui/rmlui_ingame_chat.h"
 #include "sf33rd/Source/Game/menu/menu.h"
 #include "port/menu_task.h"
 #include "sf33rd/Source/Game/rendering/mtrans.h"
@@ -472,6 +473,11 @@ static void configure_gekko() {
 }
 
 static u16 get_inputs() {
+    // Suppress input while typing a chat message — send neutral (0)
+    // so no phantom button presses go through the rollback session.
+    if (rmlui_ingame_chat_is_typing())
+        return 0;
+
     // The game doesn't differentiate between controllers and players.
     // That's why we OR the inputs of both local controllers together to get
     // local inputs.

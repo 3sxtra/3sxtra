@@ -8,6 +8,7 @@
 
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_game_hud.h"
+#include "port/sdl/rmlui/rmlui_ingame_chat.h"
 #include "port/sdl/rmlui/rmlui_network_lobby.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
@@ -861,6 +862,10 @@ extern "C" void rmlui_casual_lobby_show(void) {
         SDLNetplayUI_StopSearch();
     }
     refresh_room_state_from_server();
+
+    // Initialize in-game chat overlay (persists across matches within room)
+    rmlui_ingame_chat_init();
+    rmlui_ingame_chat_set_room_code(s_room_code.c_str());
 }
 
 extern "C" void rmlui_casual_lobby_hide(void) {
@@ -882,6 +887,8 @@ extern "C" void rmlui_casual_lobby_hide(void) {
     // Reset grow-only display counts so stale data doesn't show on re-entry
     s_queue_display_count = 0;
     s_chat_display_count = 0;
+    // Shut down in-game chat overlay
+    rmlui_ingame_chat_shutdown();
 }
 
 extern "C" void rmlui_casual_lobby_shutdown(void) {
@@ -906,6 +913,31 @@ extern "C" const char* rmlui_casual_lobby_get_room_code(void) {
 }
 
 extern "C" bool rmlui_casual_lobby_handle_key_event(const SDL_Event* event) {
+    // ── In-match chat (T key during active match) ──
+    // Route keyboard events to the in-game chat when a match is running.
+    if (s_is_playing) {
+        if (rmlui_ingame_chat_is_typing()) {
+            // While typing: route text input and key events to chat
+            if (event->type == SDL_EVENT_TEXT_INPUT) {
+                rmlui_ingame_chat_handle_key(0, event->text.text);
+                return true;
+            }
+            if (event->type == SDL_EVENT_KEY_DOWN) {
+                rmlui_ingame_chat_handle_key(event->key.key, NULL);
+                return true;
+            }
+            return false;
+        }
+        // T key opens chat input (only on key-down, not repeat)
+        if (event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat &&
+            event->key.key == SDLK_T) {
+            rmlui_ingame_chat_open_input();
+            return true;
+        }
+        return false;
+    }
+
+    // ── Lobby chat (existing behavior) ──
     if (!s_chat_open || !s_is_typing)
         return false;
 

@@ -29,6 +29,10 @@
                     <span data-if="!timer_infinite">{{round_timer}}</span>
                     <span data-if="timer_infinite">--</span>
                 </div>
+                <!-- Spectator count (Fightcade-style: LIVE dot + count, below timer) -->
+                <div id="spectator-badge" data-if="spectator_count > 0">
+                    <span class="spec-eye">👁</span><span class="spec-count">{{spectator_count}}</span>
+                </div>
             </div>
 
             <!-- Round result bubbles (dynamic count + V/J/C/S/P/D) -->

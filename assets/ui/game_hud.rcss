@@ -397,6 +397,33 @@ body {
 .p1-stun-counter { left: 10dp; }
 .p2-stun-counter { left: 250dp; }
 
+/* ── Spectator badge (Fightcade-style) ─────────────────────── */
+/* Subtle pill centered below the timer; only shown when count > 0 */
+#spectator-badge {
+    display: block;
+    position: absolute;
+    top: 34dp;
+    left: 168dp;
+    width: 48dp;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 140);
+    border-radius: 3dp;
+    padding: 1dp 2dp;
+}
+.spec-eye {
+    display: inline;
+    font-size: 7dp;
+    color: #CCCCCC;
+    vertical-align: middle;
+}
+.spec-count {
+    display: inline;
+    font-size: 8dp;
+    color: #CCCCCC;
+    margin-left: 2dp;
+    font-effect: shadow(1dp 1dp #000000);
+}
+
 /* ── Animations ─────────────────────────────────────────────── */
 @keyframes timer-pulse {
       0% { color: #FFD700; }

@@ -1,0 +1,76 @@
+/* In-match chat overlay — sits on top of the fight HUD */
+
+body {
+    font-family: NotoSansJP;
+    width: 100%;
+    height: 100%;
+}
+
+/* ── Message Feed ── */
+#chat-feed {
+    position: absolute;
+    bottom: 60dp;
+    left: 12dp;
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    gap: 4dp;
+}
+
+.chat-msg {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 3dp 8dp;
+    border-radius: 4dp;
+    font-size: 14dp;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.chat-sender {
+    color: #FFD700;
+    font-weight: bold;
+    margin-right: 6dp;
+}
+
+.chat-sender::after {
+    content: ":";
+}
+
+.chat-text {
+    color: #FFFFFFDD;
+}
+
+/* ── Input Bar ── */
+#chat-input-bar {
+    position: absolute;
+    bottom: 16dp;
+    left: 12dp;
+    width: 50%;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1dp solid #777;
+    padding: 6dp 10dp;
+    font-size: 16dp;
+    color: #fff;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-radius: 4dp;
+}
+
+.chat-prompt {
+    color: #FFD700;
+    margin-right: 6dp;
+    font-weight: bold;
+}
+
+.chat-input-text {
+    color: #fff;
+    flex: 1;
+}
+
+.chat-cursor {
+    color: #FFD700;
+    animation: blink 1s infinite;
+}

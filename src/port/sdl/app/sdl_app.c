@@ -45,6 +45,7 @@
 #include "port/sdl/rmlui/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui/rmlui_button_config.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
+#include "port/sdl/rmlui/rmlui_ingame_chat.h"
 #include "port/sdl/rmlui/rmlui_tournament_lobby.h"
 #include "port/sdl/rmlui/rmlui_char_select.h"
 #include "port/sdl/rmlui/rmlui_continue.h"
@@ -853,6 +854,7 @@ void SDLApp_EndFrame() {
     if (use_rmlui && rmlui_wrapper_any_game_visible()) {
         TRACE_SUB_BEGIN("RmlUiUpdates");
         rmlui_game_hud_update();
+        rmlui_ingame_chat_update();
         rmlui_mode_menu_update();
         rmlui_option_menu_update();
         rmlui_game_option_update();

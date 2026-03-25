@@ -16,4 +16,12 @@ void SDLNetAdapter_SetExpectedRemote(const char* addr_str);
 /// Destroy the adapter and release cached DNS entries.
 void SDLNetAdapter_Destroy(void);
 
+/// Send a text chat message to the remote peer via P2P (out-of-band on the
+/// same UDP socket). Messages use a 0x3C magic prefix so GekkoNet ignores them.
+void SDLNetAdapter_SendChat(const char* text);
+
+/// Poll for an incoming P2P chat message. Returns true if a message was
+/// available and copies it into out_text (up to max_len bytes).
+bool SDLNetAdapter_PollChat(char* out_text, int max_len);
+
 #endif

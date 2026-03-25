@@ -1,0 +1,23 @@
+<rml>
+<head>
+    <link type="text/rcss" href="ingame_chat.rcss"/>
+</head>
+<body data-model="ingame_chat">
+    <!-- Message feed (bottom-left, up to 4 messages) -->
+    <div id="chat-feed">
+        <div data-for="msg : messages">
+            <div class="chat-msg" data-if="msg.visible">
+                <span class="chat-sender" data-rml="msg.sender"></span>
+                <span class="chat-text" data-rml="msg.text"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input bar (only when typing) -->
+    <div id="chat-input-bar" data-if="is_typing">
+        <span class="chat-prompt">&gt;</span>
+        <span class="chat-input-text" data-rml="chat_input"></span>
+        <span class="chat-cursor">|</span>
+    </div>
+</body>
+</rml>
