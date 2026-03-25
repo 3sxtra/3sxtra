@@ -858,6 +858,11 @@ extern "C" void rmlui_casual_lobby_update(void) {
         }
     }
 
+    // Cancel/Back button (0x0200) — leave room (same as confirming "Leave Room")
+    if (trigger & 0x0200) {
+        s_wants_leave = true;
+    }
+
     if (prev_x != s_cursor_x || prev_y != s_cursor_y) {
         s_model_handle.DirtyVariable("cursor_x");
         s_model_handle.DirtyVariable("cursor_y");
