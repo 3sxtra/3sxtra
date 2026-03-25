@@ -53,7 +53,18 @@ static void profile_tick(struct _TASK* task_ptr) {
         trigger |= (~plsw_01[i] & plsw_00[i]);
     }
 
-    if (trigger & 0x0200) { /* Cancel / B */
+    int poll = rmlui_player_profile_poll(trigger);
+
+    if (poll == 0) {
+        /* Replay downloaded and injected into Replay_w */
+        rmlui_player_profile_hide();
+        task_ptr->r_no[2] = 0;
+        task_ptr->r_no[3] = 0;
+        task_ptr->free[0] = 0;
+        Menu_Suicide[0] = 0;
+        Menu_Suicide[1] = 1;
+        MenuScreen_ExitToLegacy(task_ptr);
+    } else if (poll == -1) { /* Cancel / B */
         SE_selected();
         rmlui_player_profile_hide();
 

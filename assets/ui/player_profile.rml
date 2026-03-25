@@ -76,8 +76,11 @@
             <div class="card-header">RECENT MATCHES (REPLAYS)</div>
             <div id="history-list">
                 <div data-for="m : match_history" class="history-item" data-class-selected="m.selected">
-                    <span class="hist-result" data-class-win="m.is_win">{{m.result_str}}</span>
+                    <span class="hist-result" data-class-win="m.is_win" data-class-loss="!m.is_win">{{m.result_str}}</span>
+                    <span class="hist-char">{{m.player_char_name}}</span>
                     <span class="hist-vs">vs</span>
+                    <span class="hist-char">{{m.opponent_char_name}}</span>
+                    <img class="player-flag" data-if="m.opponent_country != ''" data-attr-src="'../flags_icons/' + m.opponent_country + '.png'"/>
                     <span class="hist-name">{{m.opponent_name}}</span>
                     <span class="hist-status">{{m.replay_status}}</span>
                 </div>

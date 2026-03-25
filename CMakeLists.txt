@@ -221,7 +221,17 @@ if(ENABLE_ARCADE_ROM)
     set(TF_PSA_CRYPTO_ROOT "${THIRD_PARTY_DIR}/tf-psa-crypto/build")
     
     # minizip-ng provides a CMake config file
-    find_package(minizip-ng REQUIRED HINTS "${MINIZIP_NG_ROOT}" "${MINIZIP_NG_ROOT}/lib/cmake/minizip-ng" "${MINIZIP_NG_ROOT}/lib64/cmake/minizip-ng" NO_DEFAULT_PATH)
+    # On Debian/Ubuntu arm64, GNUInstallDirs puts it in lib/aarch64-linux-gnu/cmake/minizip-ng
+    file(GLOB MINIZIP_NG_CONFIG_DIRS
+        "${MINIZIP_NG_ROOT}/lib/cmake/minizip-ng"
+        "${MINIZIP_NG_ROOT}/lib64/cmake/minizip-ng"
+        "${MINIZIP_NG_ROOT}/lib/*/cmake/minizip-ng"
+    )
+    if(MINIZIP_NG_CONFIG_DIRS)
+        list(GET MINIZIP_NG_CONFIG_DIRS 0 MINIZIP_NG_EXACT_DIR)
+        set(minizip-ng_DIR "${MINIZIP_NG_EXACT_DIR}")
+    endif()
+    find_package(minizip-ng REQUIRED)
     
     # tf-psa-crypto is a static library, search in both lib and lib64
     find_library(TF_PSA_CRYPTO_LIB tfpsacrypto HINTS "${TF_PSA_CRYPTO_ROOT}/lib" "${TF_PSA_CRYPTO_ROOT}/lib64" REQUIRED NO_DEFAULT_PATH)
@@ -847,19 +857,21 @@ if(WIN32)
         )
     endif()
 else()
-    add_custom_command(TARGET 3sx POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_SOURCE_DIR}/assets" "$<TARGET_FILE_DIR:3sx>/assets"
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_SOURCE_DIR}/src/shaders" "$<TARGET_FILE_DIR:3sx>/shaders"
-        COMMENT "Symlinking assets + copying shaders"
-    )
-    if(ENABLE_LIBRASHADER)
+    if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
         add_custom_command(TARGET 3sx POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E create_symlink "${THIRD_PARTY_DIR}/slang-shaders" "$<TARGET_FILE_DIR:3sx>/shaders/libretro"
+            COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_SOURCE_DIR}/assets" "$<TARGET_FILE_DIR:3sx>/assets"
             COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${CMAKE_SOURCE_DIR}/shaders/custom" "$<TARGET_FILE_DIR:3sx>/shaders/libretro/custom"
-            COMMENT "Symlinking libretro shaders + copying custom presets"
+                "${CMAKE_SOURCE_DIR}/src/shaders" "$<TARGET_FILE_DIR:3sx>/shaders"
+            COMMENT "Symlinking assets + copying shaders"
         )
+        if(ENABLE_LIBRASHADER)
+            add_custom_command(TARGET 3sx POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E create_symlink "${THIRD_PARTY_DIR}/slang-shaders" "$<TARGET_FILE_DIR:3sx>/shaders/libretro"
+                COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    "${CMAKE_SOURCE_DIR}/shaders/custom" "$<TARGET_FILE_DIR:3sx>/shaders/libretro/custom"
+                COMMENT "Symlinking libretro shaders + copying custom presets"
+            )
+        endif()
     endif()
 endif()
 

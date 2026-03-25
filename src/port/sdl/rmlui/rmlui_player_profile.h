@@ -20,6 +20,10 @@ void rmlui_player_profile_show(void);
 // Hide the RmlUi player profile screen
 void rmlui_player_profile_hide(void);
 
+// Poll player inputs / actions on the profile pane.
+// Return 0 if replay ready to play, -1 if cancel requested, 1 to keep polling
+int rmlui_player_profile_poll(unsigned short trigger);
+
 // Force cleanup
 void rmlui_player_profile_shutdown(void);
 

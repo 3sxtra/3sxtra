@@ -193,34 +193,59 @@
 }
 
 .hist-result {
-    display: inline;
-    width: 20dp;
+    display: inline-block;
+    width: 22dp;
     font-size: 8dp;
-    color: rgba(255, 100, 100, 255); /* Loss */
     font-weight: bold;
+}
+
+.hist-result.loss {
+    color: rgba(255, 100, 100, 255); /* Loss */
 }
 
 .hist-result.win {
     color: rgba(90, 220, 100, 255); /* Win */
 }
 
+.hist-char {
+    display: inline-block;
+    width: 32dp;
+    text-align: center;
+    color: rgba(220, 180, 80, 180);
+    font-size: 7dp;
+}
+
 .hist-vs {
-    display: inline;
-    width: 12dp;
+    display: inline-block;
+    width: 10dp;
+    text-align: center;
     font-size: 7dp;
     color: rgba(120, 140, 180, 150);
 }
 
+.player-flag {
+    display: inline-block;
+    width: 10dp;
+    height: 7dp;
+    margin: 0 2dp;
+    vertical-align: middle;
+}
+
 .hist-name {
-    display: inline;
+    display: inline-block;
     font-size: 8dp;
     color: rgba(200, 220, 255, 230);
-    width: 80dp;
+    width: 48dp;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: middle;
 }
 
 .hist-status {
-    display: inline;
+    display: inline-block;
     font-size: 7dp;
+    width: 30dp;
+    text-align: right;
     color: rgba(255, 210, 70, 200);
 }
 

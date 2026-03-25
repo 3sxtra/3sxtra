@@ -15,31 +15,50 @@
 extern "C" {
 #include "netplay/identity.h"
 #include "netplay/lobby_server.h"
+#include "netplay/replay.h"
+#include "sf33rd/Source/Game/engine/workuser.h" /* SWK constants */
 } // extern "C"
 
 // ─── Match history struct for data-for ──────────────────────────
 
 struct ProfileMatchItem {
+    int match_id;
     Rml::String result_str;    // "WIN" or "LOSS"
     bool is_win;
+    Rml::String player_char_name;
+    Rml::String opponent_char_name;
     Rml::String opponent_name;
+    Rml::String opponent_country;
+    Rml::String date_str;
     Rml::String replay_status; // "Saved", "Unavailable"
     bool selected;
 
     bool operator==(const ProfileMatchItem& o) const {
         return result_str == o.result_str && is_win == o.is_win &&
-               opponent_name == o.opponent_name && replay_status == o.replay_status && selected == o.selected;
+               player_char_name == o.player_char_name && opponent_char_name == o.opponent_char_name &&
+               opponent_name == o.opponent_name && opponent_country == o.opponent_country &&
+               date_str == o.date_str && replay_status == o.replay_status && selected == o.selected;
     }
     bool operator!=(const ProfileMatchItem& o) const {
         return !(*this == o);
     }
 };
 
+// ─── Character name table (SF3:3S roster) ───────────────────────
+static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN",  "DUDLEY", "NECRO", "HUGO",
+                                              "IBUKI", "ELENA",   "ORO",    "YANG", "KEN",    "SEAN",  "URIEN",
+                                              "GOUKI", "CHUN-LI", "MAKOTO", "Q",    "TWELVE", "REMY",  "AKUMA" };
+static const char* char_name(int idx) {
+    if (idx >= 0 && idx < 21) return s_char_names[idx];
+    return "???";
+}
+
 // ─── Data model ──────────────────────────────────────────────────
 static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
 
 static std::vector<ProfileMatchItem> s_match_history;
+static int s_match_history_count = 0;
 
 static Rml::String s_avatar_url;
 static Rml::String s_player_name;
@@ -67,6 +86,17 @@ static SDL_AtomicInt s_fetch_done = { 0 };
 
 static PlayerStats s_fetch_stats;
 static bool s_fetch_success = false;
+
+// Async download state
+static SDL_AtomicInt s_download_active = { 0 };
+static SDL_AtomicInt s_download_done = { 0 };
+static SDL_AtomicInt s_download_ok = { 0 };
+static void* s_download_data = nullptr;
+static size_t s_download_size = 0;
+static bool s_downloading = false;
+
+static int s_cursor = 0;
+static int s_result = 1;
 
 // ─── Dummy / Mock Data for Matches ──────────────────────────────
 static std::vector<ReplayListEntry> s_fetch_matches;
@@ -97,6 +127,49 @@ static int async_fetch_profile_fn(void* userdata) {
     return 0;
 }
 
+struct DownloadArg {
+    int match_id;
+};
+
+static int SDLCALL async_download_fn(void* data) {
+    DownloadArg* arg = (DownloadArg*)data;
+    void* replay_data = nullptr;
+    size_t sz = LobbyServer_DownloadReplay(arg->match_id, &replay_data);
+    free(arg);
+
+    if (sz > 0 && replay_data) {
+        s_download_data = replay_data;
+        s_download_size = sz;
+        SDL_SetAtomicInt(&s_download_ok, 1);
+    } else {
+        s_download_data = nullptr;
+        s_download_size = 0;
+        SDL_SetAtomicInt(&s_download_ok, 0);
+        free(replay_data);
+    }
+    SDL_SetAtomicInt(&s_download_done, 1);
+    SDL_SetAtomicInt(&s_download_active, 0);
+    return 0;
+}
+
+static void AsyncDownloadProfileReplay(int match_id) {
+    if (SDL_GetAtomicInt(&s_download_active) != 0)
+        return;
+    SDL_SetAtomicInt(&s_download_active, 1);
+    SDL_SetAtomicInt(&s_download_done, 0);
+    SDL_SetAtomicInt(&s_download_ok, 0);
+
+    DownloadArg* arg = (DownloadArg*)calloc(1, sizeof(DownloadArg));
+    arg->match_id = match_id;
+    SDL_Thread* t = SDL_CreateThread(async_download_fn, "AsyncDownloadReplay", arg);
+    if (t) {
+        SDL_DetachThread(t);
+    } else {
+        free(arg);
+        SDL_SetAtomicInt(&s_download_active, 0);
+    }
+}
+
 // ─── Lazy Init ──────────────────────────────────────────────────
 static void do_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
@@ -111,14 +184,18 @@ static void do_init(void) {
     if (auto h = ctor.RegisterStruct<ProfileMatchItem>()) {
         h.RegisterMember("result_str", &ProfileMatchItem::result_str);
         h.RegisterMember("is_win", &ProfileMatchItem::is_win);
+        h.RegisterMember("player_char_name", &ProfileMatchItem::player_char_name);
+        h.RegisterMember("opponent_char_name", &ProfileMatchItem::opponent_char_name);
         h.RegisterMember("opponent_name", &ProfileMatchItem::opponent_name);
+        h.RegisterMember("opponent_country", &ProfileMatchItem::opponent_country);
+        h.RegisterMember("date_str", &ProfileMatchItem::date_str);
         h.RegisterMember("replay_status", &ProfileMatchItem::replay_status);
         h.RegisterMember("selected", &ProfileMatchItem::selected);
     }
     ctor.RegisterArray<std::vector<ProfileMatchItem>>();
     ctor.Bind("match_history", &s_match_history);
     
-    ctor.BindFunc("match_history_count", [](Rml::Variant& v) { v = (int)s_match_history.size(); });
+    ctor.Bind("match_history_count", &s_match_history_count);
 
     ctor.Bind("avatar_url", &s_avatar_url);
     ctor.Bind("player_name", &s_player_name);
@@ -213,10 +290,15 @@ extern "C" void rmlui_player_profile_update(void) {
         const char* my_id = Identity_GetPlayerId();
         for (const auto& m : s_fetch_matches) {
             ProfileMatchItem item;
+            item.match_id = m.match_id;
             item.selected = false;
             
             bool im_p1 = (strcmp(m.p1_name, Identity_GetDisplayName()) == 0);
             item.opponent_name = im_p1 ? m.p2_name : m.p1_name;
+            item.opponent_country = im_p1 ? m.p2_country : m.p1_country;
+            item.player_char_name = char_name(im_p1 ? m.p1_char : m.p2_char);
+            item.opponent_char_name = char_name(im_p1 ? m.p2_char : m.p1_char);
+            item.date_str = m.date;
             
             item.is_win = (strcmp(m.winner_id, my_id) == 0);
             item.result_str = item.is_win ? "WIN" : "LOSS";
@@ -225,7 +307,9 @@ extern "C" void rmlui_player_profile_update(void) {
             
             s_match_history.push_back(item);
         }
+        s_match_history_count = (int)s_match_history.size();
         s_model_handle.DirtyVariable("match_history");
+        s_model_handle.DirtyVariable("match_history_count");
         s_fetch_matches.clear(); // Free memory
         
         s_model_handle.DirtyVariable("tier");
@@ -242,6 +326,39 @@ extern "C" void rmlui_player_profile_update(void) {
         s_status_text = "Updated from Server";
         s_model_handle.DirtyVariable("status_text");
     }
+
+    if (SDL_GetAtomicInt(&s_download_done)) {
+        SDL_MemoryBarrierAcquire();
+        SDL_SetAtomicInt(&s_download_done, 0);
+        s_downloading = false;
+
+        if (SDL_GetAtomicInt(&s_download_ok) && s_download_data && s_download_size > 0) {
+            size_t header_size = 16;
+            if (s_download_size >= 8) {
+                uint32_t version = *((uint32_t*)s_download_data + 1);
+                if (version == 2) header_size = 24;
+            }
+
+            if (s_download_size > header_size) {
+                size_t replay_data_size = s_download_size - header_size;
+                if (replay_data_size <= sizeof(Replay_w)) {
+                    memcpy(&Replay_w, (uint8_t*)s_download_data + header_size, replay_data_size);
+                    s_result = 0; // Trigger playback
+                } else {
+                    s_status_text = "Replay too large.";
+                    s_model_handle.DirtyVariable("status_text");
+                }
+            } else {
+                s_status_text = "Invalid replay data.";
+                s_model_handle.DirtyVariable("status_text");
+            }
+            free(s_download_data);
+            s_download_data = nullptr;
+        } else {
+            s_status_text = "Download failed.";
+            s_model_handle.DirtyVariable("status_text");
+        }
+    }
 }
 
 // ─── Fetch ───────────────────────────────────────────────────────
@@ -255,6 +372,9 @@ extern "C" void rmlui_player_profile_fetch(void) {
     s_global_rank = "---"; // Require another API call later
     s_max_streak = 0; // Not returned from simple stats yet
     s_match_history.clear(); // Clear existing array while loading
+    s_match_history_count = 0;
+    s_cursor = 0;
+    s_result = 1;
     
     if (s_model_handle) {
         s_model_handle.DirtyVariable("player_name");
@@ -292,6 +412,54 @@ extern "C" void rmlui_player_profile_show(void) {
 
 extern "C" void rmlui_player_profile_hide(void) {
     rmlui_wrapper_hide_game_document("player_profile");
+}
+
+extern "C" int rmlui_player_profile_poll(unsigned short trigger) {
+    if (!s_model_registered || !s_model_handle || s_downloading)
+        return s_result;
+
+    if (SDL_GetAtomicInt(&s_fetch_active)) {
+        if (trigger & 0x0200) s_result = -1;
+        return s_result;
+    }
+
+    int count = s_match_history_count;
+    if (count > 0) {
+        int old_cursor = s_cursor;
+        if (trigger & 0x0010) { // UP
+            s_cursor--;
+            if (s_cursor < 0) s_cursor = count - 1;
+        }
+        if (trigger & 0x0020) { // DOWN
+            s_cursor++;
+            if (s_cursor >= count) s_cursor = 0;
+        }
+
+        if (old_cursor != s_cursor) {
+            for (int i = 0; i < count; i++) {
+                s_match_history[i].selected = (i == s_cursor);
+            }
+            s_model_handle.DirtyVariable("match_history");
+        }
+
+        if (trigger & 0x0100) { // ACCEPT / A
+            if (s_cursor >= 0 && s_cursor < count) {
+                int match_id = s_match_history[s_cursor].match_id;
+                if (match_id >= 0) {
+                    s_downloading = true;
+                    s_status_text = "Downloading...";
+                    s_model_handle.DirtyVariable("status_text");
+                    AsyncDownloadProfileReplay(match_id);
+                }
+            }
+        }
+    }
+
+    if (trigger & 0x0200) { // CANCEL / B
+        s_result = -1;
+    }
+
+    return s_result;
 }
 
 // ─── Shutdown ────────────────────────────────────────────────────
