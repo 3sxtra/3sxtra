@@ -90,7 +90,8 @@ cp -r "$ROOT_DIR/assets" "$PKG/bin/"
 cp -r "$BUILD_DIR/shaders" "$PKG/bin/"
 
 # Libretro slang-shader presets
-cp -r "$THIRD_PARTY/slang-shaders" "$PKG/bin/shaders/libretro"
+mkdir -p "$PKG/bin/assets/shaders/libretro"
+cp -r "$THIRD_PARTY/slang-shaders/"* "$PKG/bin/assets/shaders/libretro/"
 
 # Launcher script — sets LD_LIBRARY_PATH so the binary finds bundled .so files
 cat > "$PKG/3sx.sh" << 'LAUNCHER'

@@ -92,8 +92,8 @@ do_rsync "$ROOT_DIR/src/shaders/" "$PI_DEST/shaders/"
 # ── Step 7: Sync libretro shader presets ──────────────────────
 if [ -d "$THIRD_PARTY/slang-shaders" ]; then
     step "Syncing libretro shaders..."
-    $SSH_CMD "mkdir -p $PI_DEST/shaders/libretro"
-    do_rsync "$THIRD_PARTY/slang-shaders/" "$PI_DEST/shaders/libretro/"
+    $SSH_CMD "mkdir -p $PI_DEST/assets/shaders/libretro"
+    do_rsync "$THIRD_PARTY/slang-shaders/" "$PI_DEST/assets/shaders/libretro/"
 fi
 
 # ── Step 8: Sync launcher scripts ────────────────────────────

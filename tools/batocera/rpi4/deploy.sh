@@ -30,8 +30,8 @@ cp -r "$ROOT_DIR/src/shaders" "$DEPLOY_DIR/3sx/"
 
 # Copy libretro shader presets
 if [ -d "$THIRD_PARTY/slang-shaders" ]; then
-    mkdir -p "$DEPLOY_DIR/3sx/shaders/libretro"
-    cp -r "$THIRD_PARTY/slang-shaders/"* "$DEPLOY_DIR/3sx/shaders/libretro/"
+    mkdir -p "$DEPLOY_DIR/3sx/assets/shaders/libretro"
+    cp -r "$THIRD_PARTY/slang-shaders/"* "$DEPLOY_DIR/3sx/assets/shaders/libretro/"
 fi
 
 # Copy launchers (one per renderer backend)

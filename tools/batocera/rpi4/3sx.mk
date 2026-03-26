@@ -53,7 +53,8 @@ define 3SX_INSTALL_TARGET_CMDS
 	$(INSTALL) -D $(@D)/build/3sx $(TARGET_DIR)/usr/games/3sx/3sx
 	cp -r $(@D)/assets $(TARGET_DIR)/usr/games/3sx/
 	cp -r $(@D)/src/shaders $(TARGET_DIR)/usr/games/3sx/
-	cp -r $(@D)/third_party/slang-shaders $(TARGET_DIR)/usr/games/3sx/shaders/libretro
+	mkdir -p $(TARGET_DIR)/usr/games/3sx/assets/shaders/libretro
+	cp -r $(@D)/third_party/slang-shaders/* $(TARGET_DIR)/usr/games/3sx/assets/shaders/libretro/
 	$(INSTALL) -D $(@D)/tools/batocera/rpi4/3sx.sh $(TARGET_DIR)/usr/games/3sx/3sx.sh
 	$(INSTALL) -D $(@D)/tools/batocera/rpi4/3sx-gl.sh $(TARGET_DIR)/usr/games/3sx/3sx-gl.sh
 	$(INSTALL) -D $(@D)/tools/batocera/rpi4/3sx-gpu.sh $(TARGET_DIR)/usr/games/3sx/3sx-gpu.sh

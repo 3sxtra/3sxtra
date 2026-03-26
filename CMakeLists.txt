@@ -835,19 +835,28 @@ endif()
 # On Windows uses mklink /J (NTFS junctions — no admin/Developer Mode needed).
 # On Unix uses cmake -E create_symlink.
 # Saves copying 3+ GB of sprites and 100+ MB of libretro shaders each build.
+#
+# WINDOWS JUNCTION LAYOUT:
+#   build/assets  ──junction──►  <source>/assets/
+#   <source>/assets/shaders/libretro  ──junction──►  <third_party>/slang-shaders/
+#
+# The libretro junction is created in the SOURCE tree (not through the build
+# junction) because Windows cmd.exe cannot reliably create junctions through
+# an existing junction (nested junction traversal fails silently).
+# The build dir sees it transparently: build/assets/shaders/libretro resolves
+# through the first junction to the source, then the second to slang-shaders.
 # ---------------------------------------------------------------------------
 if(WIN32)
     # Convert paths to native backslashes for mklink /J
     file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/assets" _ASSETS_SRC)
     file(TO_NATIVE_PATH "${THIRD_PARTY_DIR}/slang-shaders" _SLANG_SRC)
     # Write a helper batch script at configure time.
-    # It creates the assets/shaders directory first (for the libretro junction),
-    # then creates junctions only if they do not already exist.
+    # Junction 1: build/assets → source assets/
+    # Junction 2: source assets/shaders/libretro → third_party slang-shaders (NOT through build junction)
     file(WRITE "${CMAKE_BINARY_DIR}/create_asset_links.bat"
         "@echo off\n"
         "if not exist \"%1\\assets\" (mklink /J \"%1\\assets\" \"${_ASSETS_SRC}\")\n"
-        "if not exist \"%1\\assets\\shaders\" (mkdir \"%1\\assets\\shaders\")\n"
-        "if not exist \"%1\\assets\\shaders\\libretro\" (mklink /J \"%1\\assets\\shaders\\libretro\" \"${_SLANG_SRC}\")\n"
+        "if not exist \"${_ASSETS_SRC}\\shaders\\libretro\" (mklink /J \"${_ASSETS_SRC}\\shaders\\libretro\" \"${_SLANG_SRC}\")\n"
     )
     add_custom_command(TARGET 3sx POST_BUILD
         # Create asset + libretro shader junctions via .bat
@@ -858,9 +867,11 @@ if(WIN32)
         COMMENT "Creating asset junctions + copying shaders"
     )
     if(ENABLE_LIBRASHADER)
+        # Copy custom presets directly into the source-tree libretro junction
+        # (avoids traversing two junctions from the build dir)
         add_custom_command(TARGET 3sx POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${CMAKE_SOURCE_DIR}/assets/shaders/custom" "$<TARGET_FILE_DIR:3sx>/assets/shaders/libretro/custom"
+                "${CMAKE_SOURCE_DIR}/assets/shaders/custom" "${CMAKE_SOURCE_DIR}/assets/shaders/libretro/custom"
             COMMENT "Copying custom shader presets"
         )
     endif()

@@ -46,6 +46,7 @@ game_deployment.tar.gz
 # === Project-Specific ===
 /assets/lua/sf3_3rd_trial_lua/
 /assets/lua/3rd_training_lua-main/
+/assets/shaders/libretro/
 3rd_training_lua-main.zip
 sf3_3rd_trial_lua_20220613.zip
 
@@ -83,3 +84,4 @@ tools/gifx.sh
 *.bin
 /tools/sprites/output
 /assets/voice_mod
+/assets/shaders/libretro_temp
