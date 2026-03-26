@@ -196,12 +196,12 @@ label {
 
 .swatch {
     display: inline-block;
-    width: 18dp;
-    height: 18dp;
-    min-width: 18dp;
-    min-height: 18dp;
-    max-width: 18dp;
-    max-height: 18dp;
+    width: 14dp;
+    height: 14dp;
+    min-width: 14dp;
+    min-height: 14dp;
+    max-width: 14dp;
+    max-height: 14dp;
     margin: 1dp;
     border-width: 1dp;
     border-color: #333;

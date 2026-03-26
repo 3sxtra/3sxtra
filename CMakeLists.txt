@@ -871,7 +871,7 @@ if(WIN32)
         # (avoids traversing two junctions from the build dir)
         add_custom_command(TARGET 3sx POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${CMAKE_SOURCE_DIR}/assets/shaders/custom" "${CMAKE_SOURCE_DIR}/assets/shaders/libretro/custom"
+                "${CMAKE_SOURCE_DIR}/assets/shaders/custom" "${THIRD_PARTY_DIR}/slang-shaders/custom"
             COMMENT "Copying custom shader presets"
         )
     endif()
@@ -887,7 +887,7 @@ else()
             add_custom_command(TARGET 3sx POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E create_symlink "${THIRD_PARTY_DIR}/slang-shaders" "$<TARGET_FILE_DIR:3sx>/assets/shaders/libretro"
                 COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    "${CMAKE_SOURCE_DIR}/assets/shaders/custom" "$<TARGET_FILE_DIR:3sx>/assets/shaders/libretro/custom"
+                    "${CMAKE_SOURCE_DIR}/assets/shaders/custom" "${THIRD_PARTY_DIR}/slang-shaders/custom"
                 COMMENT "Symlinking libretro shaders + copying custom presets"
             )
         endif()

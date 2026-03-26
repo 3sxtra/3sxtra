@@ -83,7 +83,7 @@ find "$THIRD_PARTY" -name "*.so*" -print0 | \
 
 # ── Step 5: Sync assets ──────────────────────────────────────
 step "Syncing assets..."
-do_rsync "$ROOT_DIR/assets/" "$PI_DEST/assets/"
+rsync -avz --checksum --exclude="shaders/libretro" -e "$RSYNC_RSH" "$ROOT_DIR/assets/" "$PI_USER@$PI_IP:$PI_DEST/assets/"
 
 # ── Step 6: Sync shaders ─────────────────────────────────────
 step "Syncing shaders..."
@@ -92,7 +92,7 @@ do_rsync "$ROOT_DIR/src/shaders/" "$PI_DEST/shaders/"
 # ── Step 7: Sync libretro shader presets ──────────────────────
 if [ -d "$THIRD_PARTY/slang-shaders" ]; then
     step "Syncing libretro shaders..."
-    $SSH_CMD "mkdir -p $PI_DEST/assets/shaders/libretro"
+    $SSH_CMD "rm -rf $PI_DEST/assets/shaders/libretro && mkdir -p $PI_DEST/assets/shaders/libretro"
     do_rsync "$THIRD_PARTY/slang-shaders/" "$PI_DEST/assets/shaders/libretro/"
 fi
 

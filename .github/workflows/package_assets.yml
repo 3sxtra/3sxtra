@@ -7,6 +7,12 @@ on:
         description: "Asset pack version (e.g. 1, 2). Written to assets/ASSET_VERSION."
         required: true
         type: string
+  workflow_call:
+    inputs:
+      version:
+        description: "Asset pack version (e.g. 1, 2). Written to assets/ASSET_VERSION."
+        required: true
+        type: string
   push:
     branches: [main]
     paths:
@@ -31,7 +37,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Get slang-shaders HEAD
+        id: slang-head
+        run: |
+          SHA=$(git ls-remote https://github.com/libretro/slang-shaders.git HEAD | awk '{print $1}')
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
+
+      - name: Cache libretro slang-shaders
+        id: cache-slang
+        uses: actions/cache@v4
+        with:
+          path: assets/shaders/libretro
+          key: slang-shaders-${{ steps.slang-head.outputs.sha }}
+
       - name: Clone libretro slang-shaders
+        if: steps.cache-slang.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://github.com/libretro/slang-shaders.git \
             assets/shaders/libretro

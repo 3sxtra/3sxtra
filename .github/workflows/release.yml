@@ -40,10 +40,16 @@ jobs:
     with:
       release: true
 
+  package-assets:
+    name: Package Assets
+    uses: ./.github/workflows/package_assets.yml
+    with:
+      version: '1'
+
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-linux, build-linux-arm64, build-windows, build-macos, build-flatpak]
+    needs: [build-linux, build-linux-arm64, build-windows, build-macos, build-flatpak, package-assets]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -89,6 +95,7 @@ jobs:
           | Windows | x86_64 | \`3SX-${SHORT_SHA}-windows.zip\` |
           | macOS | arm64 | \`3SX-${SHORT_SHA}-macos.dmg\` |
           | Linux (Flatpak) | x86_64 | \`3sx.flatpak\` |
+          | All | — | \`3SX-assets-v1-${SHORT_SHA}.zip\` |
           EOF
 
           if gh release view "${TAG_NAME}" >/dev/null 2>&1; then

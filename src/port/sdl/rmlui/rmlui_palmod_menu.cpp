@@ -99,12 +99,8 @@ static void save_color(int player, int char_id, int color) {
 static COL s_plcol_cache[2];
 static bool s_plcol_valid[2] = { false, false };
 
-static void palmod_on_color_loaded(int id, const COL* data) {
-    if (id >= 0 && id < 2 && data) {
-        memcpy(&s_plcol_cache[id], data, sizeof(COL));
-        s_plcol_valid[id] = true;
-    }
-}
+/* Forward-declared; defined after s_color_max / max_valid_palette / s_palmod_color. */
+static void palmod_on_color_loaded(int id, const COL* data);
 
 /* ── Data model state ─────────────────────────────────────────────── */
 static Rml::DataModelHandle s_model_handle;
@@ -210,6 +206,33 @@ static bool is_palette_empty(int id, int color_index) {
         }
     }
     return true;
+}
+
+/* Compute highest non-empty palette index for a player (0–15).
+ * Used to clamp the color slider so empty Extra presets are unreachable. */
+static int max_valid_palette(int id) {
+    int max_idx = 0; /* LP (index 0) is always valid */
+    for (int c = 1; c <= 15; c++) {
+        if (!is_palette_empty(id, c))
+            max_idx = c;
+    }
+    return max_idx;
+}
+
+/* Cached per-player slider max (recomputed on character change) */
+static int s_color_max[2] = { 15, 15 };
+
+/* Implementation of palmod_on_color_loaded (forward-declared above) */
+static void palmod_on_color_loaded(int id, const COL* data) {
+    if (id >= 0 && id < 2 && data) {
+        memcpy(&s_plcol_cache[id], data, sizeof(COL));
+        s_plcol_valid[id] = true;
+        /* Recompute slider max now that palette data is available */
+        s_color_max[id] = max_valid_palette(id);
+        /* Clamp current selection if it exceeds valid range */
+        if (s_palmod_color[id] > s_color_max[id])
+            s_palmod_color[id] = s_color_max[id];
+    }
 }
 
 static bool s_remix_l2 = true;
@@ -540,9 +563,7 @@ static void do_init(void) {
         [](const Rml::Variant& v) {
             int val = v.Get<int>();
             if (val < 0) val = 0;
-            if (val > 15) val = 15;
-            /* Skip empty Extra presets that would turn character all-black */
-            if (is_palette_empty(0, val)) return;
+            if (val > s_color_max[0]) val = s_color_max[0];
             s_palmod_color[0] = val;
             if (!s_init_complete) return; /* don't write during doc load */
             save_color(0, My_char[0], val);
@@ -557,9 +578,7 @@ static void do_init(void) {
         [](const Rml::Variant& v) {
             int val = v.Get<int>();
             if (val < 0) val = 0;
-            if (val > 15) val = 15;
-            /* Skip empty Extra presets that would turn character all-black */
-            if (is_palette_empty(1, val)) return;
+            if (val > s_color_max[1]) val = s_color_max[1];
             s_palmod_color[1] = val;
             if (!s_init_complete) return;
             save_color(1, My_char[1], val);
@@ -581,6 +600,10 @@ static void do_init(void) {
         int c = (s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)Player_Color[1];
         v = Rml::String(get_color_label(c));
     });
+
+    /* Dynamic slider max — clamped to last non-empty palette index */
+    ctor.BindFunc("p1_color_max", [](Rml::Variant& v) { v = s_color_max[0]; });
+    ctor.BindFunc("p2_color_max", [](Rml::Variant& v) { v = s_color_max[1]; });
 
     /* ─── Edit mode ─── */
 
@@ -987,6 +1010,12 @@ extern "C" void rmlui_palmod_menu_update(void) {
         if ((int)My_char[id] != s_last_char[id]) {
             s_last_char[id] = (int)My_char[id];
             s_palmod_color[id] = load_saved_color(id, My_char[id]);
+            /* Recompute slider max for the new character */
+            if (s_plcol_valid[id])
+                s_color_max[id] = max_valid_palette(id);
+            /* Clamp saved color to valid range */
+            if (s_palmod_color[id] > s_color_max[id])
+                s_palmod_color[id] = s_color_max[id];
         }
     }
 
@@ -1023,6 +1052,15 @@ extern "C" void rmlui_palmod_menu_update(void) {
     DIRTY_INT(sel_b, s_picker_b);
     DIRTY_BOOL(in_game, Play_Game != 0);
     DIRTY_BOOL(picker_active, s_picker_active);
+
+    /* Dirty-check slider max values (change on character switch) */
+    static int s_prev_max[2] = { 15, 15 };
+    for (int id = 0; id < 2; id++) {
+        if (s_color_max[id] != s_prev_max[id]) {
+            s_prev_max[id] = s_color_max[id];
+            s_model_handle.DirtyVariable(id == 0 ? "p1_color_max" : "p2_color_max");
+        }
+    }
 
     DIRTY_STR(p1_name, character_get_name(My_char[0]));
     DIRTY_STR(p2_name, character_get_name(My_char[1]));

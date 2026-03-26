@@ -33,7 +33,7 @@
                 <h2>Player 1 — {{ p1_name }}</h2>
                 <div class="control-row">
                     <label>Color:</label>
-                    <input type="range" min="0" max="15" step="1" data-value="p1_color"
+                    <input type="range" min="0" max="15" data-attr-max="p1_color_max" step="1" data-value="p1_color"
                            data-attrif-disabled="!in_game"/>
                     <span class="color-label">{{ p1_label }}</span>
                     <span class="color-value">({{ p1_color }})</span>
@@ -114,7 +114,7 @@
                 <h2>Player 2 — {{ p2_name }}</h2>
                 <div class="control-row">
                     <label>Color:</label>
-                    <input type="range" min="0" max="15" step="1" data-value="p2_color"
+                    <input type="range" min="0" max="15" data-attr-max="p2_color_max" step="1" data-value="p2_color"
                            data-attrif-disabled="!in_game"/>
                     <span class="color-label">{{ p2_label }}</span>
                     <span class="color-value">({{ p2_color }})</span>
