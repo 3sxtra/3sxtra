@@ -173,40 +173,89 @@ static bool s_remix_target_stage = false;
 static int s_remix_scope = 0;  // 0=Global, 1=Selected Bank, 2=Ramps, 3=Checked Banks
 static bool s_remix_auto_preview = true;
 
+/* Committed remix state: when Apply is clicked, we snapshot ColorRAM
+ * so that switching targets doesn't clobber previous work.           */
+static bool s_remix_committed[2] = { false, false };
+static u16  s_committed_cram[2][16][64]; /* rows 0-15 for P1, 16-31 for P2 */
+static bool s_stage_committed = false;
+static u16  s_committed_stage[480][64]; /* rows 32-511 */
+
+/* Original stage palette snapshot — captured on remix tab entry so
+ * that Reset can restore stage palettes (there's no plcol equivalent). */
+static bool s_stage_original_valid = false;
+static u16  s_original_stage[480][64]; /* rows 32-511 */
+
+static void cache_stage_original() {
+    for (int r = STAGE_ROW_MIN; r <= STAGE_ROW_MAX && (r - STAGE_ROW_MIN) < 480; r++)
+        memcpy(s_original_stage[r - STAGE_ROW_MIN], ColorRAM[r], sizeof(ColorRAM[0]));
+    s_stage_original_valid = true;
+}
+
+static void restore_stage_original() {
+    if (!s_stage_original_valid) return;
+    for (int r = STAGE_ROW_MIN; r <= STAGE_ROW_MAX && (r - STAGE_ROW_MIN) < 480; r++)
+        memcpy(ColorRAM[r], s_original_stage[r - STAGE_ROW_MIN], sizeof(ColorRAM[0]));
+    palUpdateGhostCP3(STAGE_ROW_MIN, STAGE_ROW_MAX - STAGE_ROW_MIN + 1);
+}
+
+/* Check if a palette color-index is all-black (empty/unused Extra preset).
+ * Checks both banks — Gill (My_char==0) uses bank 1 independently. */
+static bool is_palette_empty(int id, int color_index) {
+    if (!s_plcol_valid[id] || color_index < 0 || color_index > 15) return true;
+    const COL* col = &s_plcol_cache[id];
+    for (int bank = 0; bank < 2; bank++) {
+        for (int i = 1; i < 64; i++) { /* skip index 0 (transparent) */
+            if (col->col[bank][color_index][i] != 0) return false;
+        }
+    }
+    return true;
+}
+
 static bool s_remix_l2 = true;
 static bool s_remix_l0 = true;
 static bool s_remix_l1 = true;
 
+enum RemixFxType {
+    FX_MOOD,   /* global color grading */
+    FX_RAMP,   /* per-bank ramp manipulation */
+    FX_LOOK,   /* layer look (apply_layer_look) */
+};
+
 struct RemixEffectState {
     const char* id;
     const char* name;
+    RemixFxType type;
     bool checked;
     int value; // 0-100
 };
 
 static RemixEffectState s_remix_effects[] = {
-    {"chk_noir", "Noir", false, 50},
-    {"chk_miami", "Miami", false, 50},
-    {"chk_grindhouse", "Grindhouse", false, 50},
-    {"chk_sunrise", "Sunrise", false, 50},
-    {"chk_noon", "Noon", false, 50},
-    {"chk_dusk", "Dusk", false, 50},
-    {"chk_midnight", "Midnight", false, 50},
-    {"chk_stormy", "Stormy", false, 50},
-    {"chk_neon_night", "Neon-night", false, 50},
-    {"chk_cold_steel", "Cold Steel", false, 50},
-    {"chk_heatwave", "Heatwave", false, 50},
-    {"chk_grad_curve", "Gradient Curve", false, 50},
-    {"chk_posterize", "Posterize", false, 50},
-    {"chk_dither", "Dither-Friendly", false, 50},
-    {"chk_edge", "Edge Accent", false, 50},
-    {"chk_neonizer", "Neonizer", false, 50},
-    {"chk_fg_pop", "Foreground Pop", false, 50},
-    {"chk_bg_wash", "Background Wash", false, 50},
-    {"chk_crt", "CRT / Arcade", false, 50},
-    {"chk_cel", "Comic / Cel", false, 50}
+    {"chk_noir",       "Noir",             FX_MOOD, false, 50},
+    {"chk_miami",      "Miami",            FX_MOOD, false, 50},
+    {"chk_grindhouse", "Grindhouse",       FX_MOOD, false, 50},
+    {"chk_sunrise",    "Sunrise",          FX_MOOD, false, 50},
+    {"chk_noon",       "Noon",             FX_MOOD, false, 50},
+    {"chk_dusk",       "Dusk",             FX_MOOD, false, 50},
+    {"chk_midnight",   "Midnight",         FX_MOOD, false, 50},
+    {"chk_stormy",     "Stormy",           FX_MOOD, false, 50},
+    {"chk_neon_night", "Neon-night",       FX_MOOD, false, 50},
+    {"chk_cold_steel", "Cold Steel",       FX_MOOD, false, 50},
+    {"chk_heatwave",   "Heatwave",         FX_MOOD, false, 50},
+    {"chk_grad_curve", "Gradient Curve",   FX_RAMP, false, 50},
+    {"chk_posterize",  "Posterize",        FX_RAMP, false, 50},
+    {"chk_dither",     "Dither-Friendly",  FX_RAMP, false, 50},
+    {"chk_edge",       "Edge Accent",      FX_RAMP, false, 50},
+    {"chk_neonizer",   "Neonizer",         FX_RAMP, false, 50},
+    {"chk_fg_pop",     "Foreground Pop",   FX_LOOK, false, 50},
+    {"chk_bg_wash",    "Background Wash",  FX_LOOK, false, 50},
+    {"chk_crt",        "CRT / Arcade",     FX_LOOK, false, 50},
+    {"chk_cel",        "Comic / Cel",      FX_LOOK, false, 50}
 };
 static const int REMIX_EFFECT_COUNT = sizeof(s_remix_effects) / sizeof(s_remix_effects[0]);
+
+/* Apply flash timer: counts down frames after commit for visual feedback */
+static int s_apply_flash_timer = 0;
+static const int APPLY_FLASH_FRAMES = 90; /* ~1.5s at 60fps */
 
 /* Helpers to determine current context for save/load */
 #ifdef PALMOD_HAS_STORAGE
@@ -306,9 +355,22 @@ static void apply_palette(int id, int color_index) {
 }
 
 static void apply_remix_preview() {
-    // 1. Reset base colors from cached overrides
-    if (s_plcol_valid[0]) apply_palette(0, s_palmod_color[0] >= 0 ? s_palmod_color[0] : (int)Player_Color[0]);
-    if (s_plcol_valid[1]) apply_palette(1, s_palmod_color[1] >= 0 ? s_palmod_color[1] : (int)Player_Color[1]);
+    /* 1. Reset base colors — skip players that have been committed */
+    for (int id = 0; id < 2; id++) {
+        if (s_remix_committed[id]) {
+            int base = id * 16;
+            for (int r = 0; r < 16; r++)
+                memcpy(ColorRAM[base + r], s_committed_cram[id][r], sizeof(ColorRAM[0]));
+            palUpdateGhostCP3(base, 16);
+        } else if (s_plcol_valid[id]) {
+            apply_palette(id, s_palmod_color[id] >= 0 ? s_palmod_color[id] : (int)Player_Color[id]);
+        }
+    }
+    if (s_stage_committed) {
+        for (int r = STAGE_ROW_MIN; r <= STAGE_ROW_MAX && (r - STAGE_ROW_MIN) < 480; r++)
+            memcpy(ColorRAM[r], s_committed_stage[r - STAGE_ROW_MIN], sizeof(ColorRAM[0]));
+        palUpdateGhostCP3(STAGE_ROW_MIN, STAGE_ROW_MAX - STAGE_ROW_MIN + 1);
+    }
     
     auto apply_to_range = [&](int start_row, int end_row) {
         if (start_row < 0) start_row = 0;
@@ -331,7 +393,7 @@ static void apply_remix_preview() {
                     std::vector<u16> sub_colors;
                     std::vector<int> sub_idx;
                     for (int i = 1; i < 16; i++) {
-                        int idx = r * 64 + sub * 16 + i;
+                        int idx = (int)(r * 64 + sub * 16 + i);
                         sub_colors.push_back(colors[idx]);
                         sub_idx.push_back(idx);
                     }
@@ -344,18 +406,37 @@ static void apply_remix_preview() {
             ramp_indices = global_indices;
         }
         
-        // Apply Effects
+        /* Apply effects — ramp effects dispatched per 16-color bank
+         * to match Python reference (groupby x // 16).              */
         for (int i = 0; i < REMIX_EFFECT_COUNT; i++) {
             const auto& fx = s_remix_effects[i];
             if (!fx.checked) continue;
             float intensity = fx.value / 100.0f;
             
-            if (i <= 10) { // Moods apply globally (or at least mapped to indices via apply_ramp_effect mapping)
-                PaletteRemix::apply_ramp_effect(fx.name, intensity, colors, count, ramp_indices); 
-            } else if (i <= 15) { // Ramps
+            switch (fx.type) {
+            case FX_MOOD:
                 PaletteRemix::apply_ramp_effect(fx.name, intensity, colors, count, ramp_indices);
-            } else { // Looks
+                break;
+            case FX_RAMP: {
+                /* Per-bank dispatch: group ramp_indices by (idx / 16) */
+                std::vector<int> bank_chunk;
+                int prev_bank = -1;
+                for (int idx : ramp_indices) {
+                    int bank = idx / 16;
+                    if (bank != prev_bank && !bank_chunk.empty()) {
+                        PaletteRemix::apply_ramp_effect(fx.name, intensity, colors, count, bank_chunk);
+                        bank_chunk.clear();
+                    }
+                    bank_chunk.push_back(idx);
+                    prev_bank = bank;
+                }
+                if (!bank_chunk.empty())
+                    PaletteRemix::apply_ramp_effect(fx.name, intensity, colors, count, bank_chunk);
+                break;
+            }
+            case FX_LOOK:
                 PaletteRemix::apply_layer_look(fx.name, intensity, colors, count, global_indices);
+                break;
             }
         }
         
@@ -377,7 +458,8 @@ static void apply_remix_preview() {
         apply_to_range(start, end);
     }
     if (s_remix_target_stage) {
-        apply_to_range(s_stage_row, s_stage_row);
+        /* Apply to full stage palette range, not just one row */
+        apply_to_range(STAGE_ROW_MIN, STAGE_ROW_MAX);
     }
 }
 
@@ -456,6 +538,8 @@ static void do_init(void) {
             int val = v.Get<int>();
             if (val < 0) val = 0;
             if (val > 15) val = 15;
+            /* Skip empty Extra presets that would turn character all-black */
+            if (is_palette_empty(0, val)) return;
             s_palmod_color[0] = val;
             if (!s_init_complete) return; /* don't write during doc load */
             save_color(0, My_char[0], val);
@@ -471,6 +555,8 @@ static void do_init(void) {
             int val = v.Get<int>();
             if (val < 0) val = 0;
             if (val > 15) val = 15;
+            /* Skip empty Extra presets that would turn character all-black */
+            if (is_palette_empty(1, val)) return;
             s_palmod_color[1] = val;
             if (!s_init_complete) return;
             save_color(1, My_char[1], val);
@@ -614,6 +700,9 @@ static void do_init(void) {
         [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
             s_edit_mode = 2;
             s_list_dirty = true;
+            /* Cache original stage palette on first entry to remix tab */
+            if (!s_stage_original_valid && Play_Game != 0)
+                cache_stage_original();
             trigger_remix();
         });
 
@@ -655,7 +744,9 @@ static void do_init(void) {
         ctor.BindFunc(chk_name,
             [i](Rml::Variant& v) { v = s_remix_effects[i].checked; },
             [i](const Rml::Variant& v) { 
-                s_remix_effects[i].checked = v.Get<bool>(); 
+                bool newval = v.Get<bool>();
+                SDL_Log("[PalMod Remix] chk_%s setter: %d -> %d", s_remix_effects[i].id, s_remix_effects[i].checked, newval);
+                s_remix_effects[i].checked = newval; 
                 trigger_remix(); 
             });
             
@@ -705,23 +796,51 @@ static void do_init(void) {
             h.DirtyVariable(val_name);
             trigger_remix();
         });
-    
+        
     ctor.BindEventCallback("remix_reset",
         [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
             for (int i = 0; i < REMIX_EFFECT_COUNT; i++) {
                 s_remix_effects[i].checked = false;
                 s_remix_effects[i].value = 50;
             }
+            s_remix_committed[0] = s_remix_committed[1] = false;
+            s_stage_committed = false;
             if (s_plcol_valid[0]) apply_palette(0, s_palmod_color[0] >= 0 ? s_palmod_color[0] : (int)Player_Color[0]);
             if (s_plcol_valid[1]) apply_palette(1, s_palmod_color[1] >= 0 ? s_palmod_color[1] : (int)Player_Color[1]);
+            restore_stage_original();
         });
         
     ctor.BindEventCallback("remix_apply",
         [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
             apply_remix_preview();
-            // In a real scenario, this would persist the remixed palette into a new custom palette.
-            // For now, doing apply_remix_preview() locks the changes in ColorRAM until reload.
+            if (s_remix_target_p1) {
+                for (int r = 0; r < 16; r++)
+                    memcpy(s_committed_cram[0][r], ColorRAM[r], sizeof(ColorRAM[0]));
+                s_remix_committed[0] = true;
+            }
+            if (s_remix_target_p2) {
+                for (int r = 0; r < 16; r++)
+                    memcpy(s_committed_cram[1][r], ColorRAM[16 + r], sizeof(ColorRAM[0]));
+                s_remix_committed[1] = true;
+            }
+            if (s_remix_target_stage) {
+                for (int r = STAGE_ROW_MIN; r <= STAGE_ROW_MAX && (r - STAGE_ROW_MIN) < 480; r++)
+                    memcpy(s_committed_stage[r - STAGE_ROW_MIN], ColorRAM[r], sizeof(ColorRAM[0]));
+                s_stage_committed = true;
+            }
+            s_apply_flash_timer = APPLY_FLASH_FRAMES;
         });
+
+    /* "Applied ✓" flash + committed state indicators */
+    ctor.BindFunc("apply_flash", [](Rml::Variant& v) {
+        v = (s_apply_flash_timer > 0);
+    });
+    ctor.BindFunc("apply_label", [](Rml::Variant& v) {
+        v = (s_apply_flash_timer > 0) ? Rml::String("Applied!") : Rml::String("Apply");
+    });
+    ctor.BindFunc("committed_p1", [](Rml::Variant& v) { v = s_remix_committed[0]; });
+    ctor.BindFunc("committed_p2", [](Rml::Variant& v) { v = s_remix_committed[1]; });
+    ctor.BindFunc("committed_stage", [](Rml::Variant& v) { v = s_stage_committed; });
 
     /* ─── Save/Load bindings ─── */
 
@@ -802,6 +921,32 @@ static void do_init(void) {
         ctor.BindFunc(Rml::String(name),
             [i](Rml::Variant& v) {
                 v = color_to_css(ColorRAM[16][i]);
+            });
+    }
+
+    /* Stage: swatch rows showing s_stage_row..+3 */
+    for (int row_ofs = 0; row_ofs <= 3; row_ofs++) {
+        for (int i = 0; i < 64; i++) {
+            char name[24];
+            snprintf(name, sizeof(name), "sw_s%d_%d", row_ofs, i);
+            ctor.BindFunc(Rml::String(name),
+                [row_ofs, i](Rml::Variant& v) {
+                    int row = s_stage_row + row_ofs;
+                    if (row > 511) row = 511;
+                    v = color_to_css(ColorRAM[row][i]);
+                });
+        }
+    }
+
+    /* Stage row labels for each displayed row */
+    for (int row_ofs = 0; row_ofs <= 3; row_ofs++) {
+        char name[24];
+        snprintf(name, sizeof(name), "stage_row_label_%d", row_ofs);
+        ctor.BindFunc(Rml::String(name),
+            [row_ofs](Rml::Variant& v) {
+                char buf[16];
+                snprintf(buf, sizeof(buf), "Row %d", s_stage_row + row_ofs);
+                v = Rml::String(buf);
             });
     }
 
@@ -904,6 +1049,17 @@ extern "C" void rmlui_palmod_menu_update(void) {
         }
     }
 
+    /* Apply flash timer + committed state indicators */
+    if (s_apply_flash_timer > 0) {
+        s_apply_flash_timer--;
+        s_model_handle.DirtyVariable("apply_flash");
+        s_model_handle.DirtyVariable("apply_label");
+    }
+    /* Dirty committed indicators (cheap — only 3 bools) */
+    s_model_handle.DirtyVariable("committed_p1");
+    s_model_handle.DirtyVariable("committed_p2");
+    s_model_handle.DirtyVariable("committed_stage");
+
     /* Refresh saved palette list if dirty */
     if (s_list_dirty) {
         refresh_palette_list();
@@ -912,20 +1068,33 @@ extern "C" void rmlui_palmod_menu_update(void) {
         s_model_handle.DirtyVariable("selected_name");
     }
 
-    /* Dirty swatch grid only when content could have changed.
-     * Avoid per-frame dirtying of 128 variables — too expensive. */
+    /* Dirty swatch grid only when content could have changed. */
     static int s_prev_edit_mode = -1;
     static int s_prev_stage_row_swatch = -1;
+    static int s_prev_p1c_swatch = -1;
+    static int s_prev_p2c_swatch = -1;
     bool swatch_dirty = false;
     if (s_prev_edit_mode != s_edit_mode) { s_prev_edit_mode = s_edit_mode; swatch_dirty = true; }
     if (s_prev_stage_row_swatch != s_stage_row) { s_prev_stage_row_swatch = s_stage_row; swatch_dirty = true; }
-    if (s_picker_active) swatch_dirty = true; /* picker is editing a color */
+    if (s_prev_p1c_swatch != p1c) { s_prev_p1c_swatch = p1c; swatch_dirty = true; }
+    if (s_prev_p2c_swatch != p2c) { s_prev_p2c_swatch = p2c; swatch_dirty = true; }
+    if (s_picker_active) swatch_dirty = true;
+    if (s_edit_mode == 2) swatch_dirty = true; /* remix tab: colors change every frame */
     if (swatch_dirty) {
         for (int i = 0; i < 64; i++) {
-            char name[16];
+            char name[24];
             snprintf(name, sizeof(name), "sw%d", i);
             s_model_handle.DirtyVariable(name);
             snprintf(name, sizeof(name), "sw2_%d", i);
+            s_model_handle.DirtyVariable(name);
+            for (int r = 0; r <= 3; r++) {
+                snprintf(name, sizeof(name), "sw_s%d_%d", r, i);
+                s_model_handle.DirtyVariable(name);
+            }
+        }
+        for (int r = 0; r <= 3; r++) {
+            char name[24];
+            snprintf(name, sizeof(name), "stage_row_label_%d", r);
             s_model_handle.DirtyVariable(name);
         }
     }
@@ -947,5 +1116,6 @@ extern "C" void rmlui_palmod_menu_shutdown(void) {
     }
     s_init_complete = false;
     s_plcol_valid[0] = s_plcol_valid[1] = false;
+    s_stage_original_valid = false;
     SDL_Log("[RmlUi Palmod] Shut down");
 }

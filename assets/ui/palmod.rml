@@ -6,9 +6,11 @@
 </head>
 <body data-model="palmod">
     <div id="palmod-panel">
-        <div id="title-bar" style="drag: drag;">
-            <h1>PALETTE EDITOR</h1>
-        </div>
+        <handle move_target="#parent">
+            <div id="title-bar">
+                <h1>🎨 PALETTE EDITOR</h1>
+            </div>
+        </handle>
 
         <!-- Tab bar -->
         <div class="tab-bar">
@@ -36,7 +38,7 @@
                     <span class="color-label">{{ p1_label }}</span>
                     <span class="color-value">({{ p1_color }})</span>
                 </div>
-                <!-- P1 color grid (8x8 = 64 swatches) -->
+                <!-- P1 color grid (4x16 = 64 swatches) -->
                 <div class="color-grid" data-if="in_game">
                     <div class="swatch" data-style-background-color="sw0"  data-event-click="pick_p1_color(0)"></div>
                     <div class="swatch" data-style-background-color="sw1"  data-event-click="pick_p1_color(1)"></div>
@@ -70,6 +72,38 @@
                     <div class="swatch" data-style-background-color="sw29" data-event-click="pick_p1_color(29)"></div>
                     <div class="swatch" data-style-background-color="sw30" data-event-click="pick_p1_color(30)"></div>
                     <div class="swatch" data-style-background-color="sw31" data-event-click="pick_p1_color(31)"></div>
+                    <div class="swatch" data-style-background-color="sw32" data-event-click="pick_p1_color(32)"></div>
+                    <div class="swatch" data-style-background-color="sw33" data-event-click="pick_p1_color(33)"></div>
+                    <div class="swatch" data-style-background-color="sw34" data-event-click="pick_p1_color(34)"></div>
+                    <div class="swatch" data-style-background-color="sw35" data-event-click="pick_p1_color(35)"></div>
+                    <div class="swatch" data-style-background-color="sw36" data-event-click="pick_p1_color(36)"></div>
+                    <div class="swatch" data-style-background-color="sw37" data-event-click="pick_p1_color(37)"></div>
+                    <div class="swatch" data-style-background-color="sw38" data-event-click="pick_p1_color(38)"></div>
+                    <div class="swatch" data-style-background-color="sw39" data-event-click="pick_p1_color(39)"></div>
+                    <div class="swatch" data-style-background-color="sw40" data-event-click="pick_p1_color(40)"></div>
+                    <div class="swatch" data-style-background-color="sw41" data-event-click="pick_p1_color(41)"></div>
+                    <div class="swatch" data-style-background-color="sw42" data-event-click="pick_p1_color(42)"></div>
+                    <div class="swatch" data-style-background-color="sw43" data-event-click="pick_p1_color(43)"></div>
+                    <div class="swatch" data-style-background-color="sw44" data-event-click="pick_p1_color(44)"></div>
+                    <div class="swatch" data-style-background-color="sw45" data-event-click="pick_p1_color(45)"></div>
+                    <div class="swatch" data-style-background-color="sw46" data-event-click="pick_p1_color(46)"></div>
+                    <div class="swatch" data-style-background-color="sw47" data-event-click="pick_p1_color(47)"></div>
+                    <div class="swatch" data-style-background-color="sw48" data-event-click="pick_p1_color(48)"></div>
+                    <div class="swatch" data-style-background-color="sw49" data-event-click="pick_p1_color(49)"></div>
+                    <div class="swatch" data-style-background-color="sw50" data-event-click="pick_p1_color(50)"></div>
+                    <div class="swatch" data-style-background-color="sw51" data-event-click="pick_p1_color(51)"></div>
+                    <div class="swatch" data-style-background-color="sw52" data-event-click="pick_p1_color(52)"></div>
+                    <div class="swatch" data-style-background-color="sw53" data-event-click="pick_p1_color(53)"></div>
+                    <div class="swatch" data-style-background-color="sw54" data-event-click="pick_p1_color(54)"></div>
+                    <div class="swatch" data-style-background-color="sw55" data-event-click="pick_p1_color(55)"></div>
+                    <div class="swatch" data-style-background-color="sw56" data-event-click="pick_p1_color(56)"></div>
+                    <div class="swatch" data-style-background-color="sw57" data-event-click="pick_p1_color(57)"></div>
+                    <div class="swatch" data-style-background-color="sw58" data-event-click="pick_p1_color(58)"></div>
+                    <div class="swatch" data-style-background-color="sw59" data-event-click="pick_p1_color(59)"></div>
+                    <div class="swatch" data-style-background-color="sw60" data-event-click="pick_p1_color(60)"></div>
+                    <div class="swatch" data-style-background-color="sw61" data-event-click="pick_p1_color(61)"></div>
+                    <div class="swatch" data-style-background-color="sw62" data-event-click="pick_p1_color(62)"></div>
+                    <div class="swatch" data-style-background-color="sw63" data-event-click="pick_p1_color(63)"></div>
                 </div>
             </div>
 
@@ -85,7 +119,7 @@
                     <span class="color-label">{{ p2_label }}</span>
                     <span class="color-value">({{ p2_color }})</span>
                 </div>
-                <!-- P2 color grid (first 32 swatches) -->
+                <!-- P2 color grid (4x16 = 64 swatches) -->
                 <div class="color-grid" data-if="in_game">
                     <div class="swatch" data-style-background-color="sw2_0"  data-event-click="pick_p2_color(0)"></div>
                     <div class="swatch" data-style-background-color="sw2_1"  data-event-click="pick_p2_color(1)"></div>
@@ -119,6 +153,38 @@
                     <div class="swatch" data-style-background-color="sw2_29" data-event-click="pick_p2_color(29)"></div>
                     <div class="swatch" data-style-background-color="sw2_30" data-event-click="pick_p2_color(30)"></div>
                     <div class="swatch" data-style-background-color="sw2_31" data-event-click="pick_p2_color(31)"></div>
+                    <div class="swatch" data-style-background-color="sw2_32" data-event-click="pick_p2_color(32)"></div>
+                    <div class="swatch" data-style-background-color="sw2_33" data-event-click="pick_p2_color(33)"></div>
+                    <div class="swatch" data-style-background-color="sw2_34" data-event-click="pick_p2_color(34)"></div>
+                    <div class="swatch" data-style-background-color="sw2_35" data-event-click="pick_p2_color(35)"></div>
+                    <div class="swatch" data-style-background-color="sw2_36" data-event-click="pick_p2_color(36)"></div>
+                    <div class="swatch" data-style-background-color="sw2_37" data-event-click="pick_p2_color(37)"></div>
+                    <div class="swatch" data-style-background-color="sw2_38" data-event-click="pick_p2_color(38)"></div>
+                    <div class="swatch" data-style-background-color="sw2_39" data-event-click="pick_p2_color(39)"></div>
+                    <div class="swatch" data-style-background-color="sw2_40" data-event-click="pick_p2_color(40)"></div>
+                    <div class="swatch" data-style-background-color="sw2_41" data-event-click="pick_p2_color(41)"></div>
+                    <div class="swatch" data-style-background-color="sw2_42" data-event-click="pick_p2_color(42)"></div>
+                    <div class="swatch" data-style-background-color="sw2_43" data-event-click="pick_p2_color(43)"></div>
+                    <div class="swatch" data-style-background-color="sw2_44" data-event-click="pick_p2_color(44)"></div>
+                    <div class="swatch" data-style-background-color="sw2_45" data-event-click="pick_p2_color(45)"></div>
+                    <div class="swatch" data-style-background-color="sw2_46" data-event-click="pick_p2_color(46)"></div>
+                    <div class="swatch" data-style-background-color="sw2_47" data-event-click="pick_p2_color(47)"></div>
+                    <div class="swatch" data-style-background-color="sw2_48" data-event-click="pick_p2_color(48)"></div>
+                    <div class="swatch" data-style-background-color="sw2_49" data-event-click="pick_p2_color(49)"></div>
+                    <div class="swatch" data-style-background-color="sw2_50" data-event-click="pick_p2_color(50)"></div>
+                    <div class="swatch" data-style-background-color="sw2_51" data-event-click="pick_p2_color(51)"></div>
+                    <div class="swatch" data-style-background-color="sw2_52" data-event-click="pick_p2_color(52)"></div>
+                    <div class="swatch" data-style-background-color="sw2_53" data-event-click="pick_p2_color(53)"></div>
+                    <div class="swatch" data-style-background-color="sw2_54" data-event-click="pick_p2_color(54)"></div>
+                    <div class="swatch" data-style-background-color="sw2_55" data-event-click="pick_p2_color(55)"></div>
+                    <div class="swatch" data-style-background-color="sw2_56" data-event-click="pick_p2_color(56)"></div>
+                    <div class="swatch" data-style-background-color="sw2_57" data-event-click="pick_p2_color(57)"></div>
+                    <div class="swatch" data-style-background-color="sw2_58" data-event-click="pick_p2_color(58)"></div>
+                    <div class="swatch" data-style-background-color="sw2_59" data-event-click="pick_p2_color(59)"></div>
+                    <div class="swatch" data-style-background-color="sw2_60" data-event-click="pick_p2_color(60)"></div>
+                    <div class="swatch" data-style-background-color="sw2_61" data-event-click="pick_p2_color(61)"></div>
+                    <div class="swatch" data-style-background-color="sw2_62" data-event-click="pick_p2_color(62)"></div>
+                    <div class="swatch" data-style-background-color="sw2_63" data-event-click="pick_p2_color(63)"></div>
                 </div>
             </div>
         </div>
@@ -134,40 +200,92 @@
                            data-attrif-disabled="!in_game"/>
                     <span class="color-label">{{ stage_row }}</span>
                 </div>
-                <!-- Stage color grid -->
-                <div class="color-grid" data-if="in_game">
-                    <div class="swatch" data-style-background-color="sw0"  data-event-click="pick_stage_color(0)"></div>
-                    <div class="swatch" data-style-background-color="sw1"  data-event-click="pick_stage_color(1)"></div>
-                    <div class="swatch" data-style-background-color="sw2"  data-event-click="pick_stage_color(2)"></div>
-                    <div class="swatch" data-style-background-color="sw3"  data-event-click="pick_stage_color(3)"></div>
-                    <div class="swatch" data-style-background-color="sw4"  data-event-click="pick_stage_color(4)"></div>
-                    <div class="swatch" data-style-background-color="sw5"  data-event-click="pick_stage_color(5)"></div>
-                    <div class="swatch" data-style-background-color="sw6"  data-event-click="pick_stage_color(6)"></div>
-                    <div class="swatch" data-style-background-color="sw7"  data-event-click="pick_stage_color(7)"></div>
-                    <div class="swatch" data-style-background-color="sw8"  data-event-click="pick_stage_color(8)"></div>
-                    <div class="swatch" data-style-background-color="sw9"  data-event-click="pick_stage_color(9)"></div>
-                    <div class="swatch" data-style-background-color="sw10" data-event-click="pick_stage_color(10)"></div>
-                    <div class="swatch" data-style-background-color="sw11" data-event-click="pick_stage_color(11)"></div>
-                    <div class="swatch" data-style-background-color="sw12" data-event-click="pick_stage_color(12)"></div>
-                    <div class="swatch" data-style-background-color="sw13" data-event-click="pick_stage_color(13)"></div>
-                    <div class="swatch" data-style-background-color="sw14" data-event-click="pick_stage_color(14)"></div>
-                    <div class="swatch" data-style-background-color="sw15" data-event-click="pick_stage_color(15)"></div>
-                    <div class="swatch" data-style-background-color="sw16" data-event-click="pick_stage_color(16)"></div>
-                    <div class="swatch" data-style-background-color="sw17" data-event-click="pick_stage_color(17)"></div>
-                    <div class="swatch" data-style-background-color="sw18" data-event-click="pick_stage_color(18)"></div>
-                    <div class="swatch" data-style-background-color="sw19" data-event-click="pick_stage_color(19)"></div>
-                    <div class="swatch" data-style-background-color="sw20" data-event-click="pick_stage_color(20)"></div>
-                    <div class="swatch" data-style-background-color="sw21" data-event-click="pick_stage_color(21)"></div>
-                    <div class="swatch" data-style-background-color="sw22" data-event-click="pick_stage_color(22)"></div>
-                    <div class="swatch" data-style-background-color="sw23" data-event-click="pick_stage_color(23)"></div>
-                    <div class="swatch" data-style-background-color="sw24" data-event-click="pick_stage_color(24)"></div>
-                    <div class="swatch" data-style-background-color="sw25" data-event-click="pick_stage_color(25)"></div>
-                    <div class="swatch" data-style-background-color="sw26" data-event-click="pick_stage_color(26)"></div>
-                    <div class="swatch" data-style-background-color="sw27" data-event-click="pick_stage_color(27)"></div>
-                    <div class="swatch" data-style-background-color="sw28" data-event-click="pick_stage_color(28)"></div>
-                    <div class="swatch" data-style-background-color="sw29" data-event-click="pick_stage_color(29)"></div>
-                    <div class="swatch" data-style-background-color="sw30" data-event-click="pick_stage_color(30)"></div>
-                    <div class="swatch" data-style-background-color="sw31" data-event-click="pick_stage_color(31)"></div>
+                <!-- Stage color grid: 4 consecutive rows × 16 colors -->
+                <div data-if="in_game" class="stage-multi-grid">
+                    <div class="stage-row-block">
+                        <span class="stage-row-num">{{ stage_row_label_0 }}</span>
+                        <div class="color-grid stage-compact">
+                            <div class="swatch" data-style-background-color="sw_s0_0"  data-event-click="pick_stage_color(0)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_1"  data-event-click="pick_stage_color(1)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_2"  data-event-click="pick_stage_color(2)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_3"  data-event-click="pick_stage_color(3)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_4"  data-event-click="pick_stage_color(4)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_5"  data-event-click="pick_stage_color(5)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_6"  data-event-click="pick_stage_color(6)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_7"  data-event-click="pick_stage_color(7)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_8"  data-event-click="pick_stage_color(8)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_9"  data-event-click="pick_stage_color(9)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_10" data-event-click="pick_stage_color(10)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_11" data-event-click="pick_stage_color(11)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_12" data-event-click="pick_stage_color(12)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_13" data-event-click="pick_stage_color(13)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_14" data-event-click="pick_stage_color(14)"></div>
+                            <div class="swatch" data-style-background-color="sw_s0_15" data-event-click="pick_stage_color(15)"></div>
+                        </div>
+                    </div>
+                    <div class="stage-row-block">
+                        <span class="stage-row-num">{{ stage_row_label_1 }}</span>
+                        <div class="color-grid stage-compact">
+                            <div class="swatch" data-style-background-color="sw_s1_0"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_1"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_2"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_3"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_4"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_5"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_6"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_7"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_8"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_9"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_10"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_11"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_12"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_13"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_14"></div>
+                            <div class="swatch" data-style-background-color="sw_s1_15"></div>
+                        </div>
+                    </div>
+                    <div class="stage-row-block">
+                        <span class="stage-row-num">{{ stage_row_label_2 }}</span>
+                        <div class="color-grid stage-compact">
+                            <div class="swatch" data-style-background-color="sw_s2_0"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_1"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_2"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_3"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_4"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_5"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_6"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_7"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_8"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_9"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_10"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_11"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_12"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_13"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_14"></div>
+                            <div class="swatch" data-style-background-color="sw_s2_15"></div>
+                        </div>
+                    </div>
+                    <div class="stage-row-block">
+                        <span class="stage-row-num">{{ stage_row_label_3 }}</span>
+                        <div class="color-grid stage-compact">
+                            <div class="swatch" data-style-background-color="sw_s3_0"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_1"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_2"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_3"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_4"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_5"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_6"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_7"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_8"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_9"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_10"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_11"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_12"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_13"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_14"></div>
+                            <div class="swatch" data-style-background-color="sw_s3_15"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -230,7 +348,13 @@
             <div class="divider"></div>
             <div class="picker-buttons">
                 <button class="btn btn-reset" data-event-click="remix_reset">RESET</button>
-                <button class="btn btn-save" data-event-click="remix_apply">APPLY (Commit)</button>
+                <button class="btn btn-save" data-class-applied="apply_flash" data-event-click="remix_apply">{{ apply_label }}</button>
+            </div>
+            <div class="committed-status" data-if="committed_p1 || committed_p2 || committed_stage">
+                <span class="commit-label">Locked:</span>
+                <span data-if="committed_p1" class="commit-tag">P1</span>
+                <span data-if="committed_p2" class="commit-tag">P2</span>
+                <span data-if="committed_stage" class="commit-tag">STG</span>
             </div>
         </div>
 

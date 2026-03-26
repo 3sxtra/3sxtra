@@ -359,7 +359,7 @@ void apply_layer_look(const char* look_name, float intensity, u16* colors, size_
             if (lum > 0.7f) {
                 new_lum = std::min(1.0f, lum * 1.1f);
             }
-        } else if (look == "Comic / Cel-shade") {
+        } else if (look == "Comic / Cel-shade" || look == "Comic / Cel") {
             new_lum = (lum - 0.5f) * 1.5f + 0.5f;
             float steps = 4.0f;
             new_lum = std::round(new_lum * steps) / steps;

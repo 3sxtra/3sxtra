@@ -29,6 +29,10 @@ body {
     font-size: 14dp;
 }
 
+handle {
+    display: block;
+}
+
 /* Title & Drag Handle */
 #title-bar {
     display: block;
@@ -598,4 +602,73 @@ input.range sliderarrowdec,
 input.range sliderarrowinc {
     width: 0;
     height: 0;
+}
+
+/* ── Stage Multi-Row Grid ────────────────────────────────────── */
+
+.stage-multi-grid {
+    display: block;
+    margin-top: 4dp;
+}
+
+.stage-row-block {
+    display: block;
+    margin-bottom: 2dp;
+    white-space: nowrap;
+}
+
+.stage-row-num {
+    display: inline-block;
+    font-size: 10dp;
+    color: #777;
+    width: 42dp;
+    text-align: right;
+    margin-right: 4dp;
+    vertical-align: top;
+    padding-top: 3dp;
+}
+
+.stage-compact .swatch {
+    width: 14dp;
+    height: 14dp;
+    min-width: 14dp;
+    min-height: 14dp;
+    max-width: 14dp;
+    max-height: 14dp;
+    margin: 0dp;
+    border-radius: 1dp;
+}
+
+.stage-compact .swatch:hover {
+    border-width: 1dp;
+    margin: 0dp;
+}
+
+/* ── Apply Flash + Committed State ───────────────────────────── */
+
+.btn.applied {
+    background-color: #2a7a3a;
+    color: #fff;
+}
+
+.committed-status {
+    display: block;
+    margin-top: 4dp;
+    font-size: 10dp;
+    color: #888;
+}
+
+.commit-label {
+    color: #999;
+    margin-right: 4dp;
+}
+
+.commit-tag {
+    display: inline-block;
+    background-color: #2a6a3a;
+    color: #cfc;
+    padding: 1dp 6dp;
+    margin-right: 3dp;
+    border-radius: 3dp;
+    font-size: 9dp;
 }
