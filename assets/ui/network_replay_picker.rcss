@@ -41,8 +41,8 @@
     display: block;
     position: absolute;
     top: 36dp;
-    left: 4dp;
-    right: 4dp;
+    left: 1dp;
+    right: 1dp;
     bottom: 44dp;
     text-align: center;
     padding: 50dp 0;
@@ -60,9 +60,9 @@
 #nrp-table {
     display: block;
     position: absolute;
-    top: 24dp;
-    left: 4dp;
-    right: 4dp;
+    top: 22dp;
+    left: 1dp;
+    right: 1dp;
     bottom: 26dp;
     padding: 2dp 2dp;
     background-color: rgba(0, 6, 28, 180);
@@ -176,8 +176,8 @@
     display: block;
     position: absolute;
     top: 36dp;
-    left: 4dp;
-    right: 4dp;
+    left: 1dp;
+    right: 1dp;
     bottom: 44dp;
     text-align: center;
     padding: 40dp 0;
@@ -190,8 +190,8 @@
     display: block;
     position: absolute;
     bottom: 1dp;
-    left: 4dp;
-    right: 4dp;
+    left: 1dp;
+    right: 1dp;
     padding: 1dp 4dp;
     background-color: rgba(0, 8, 30, 160);
     border-width: 1dp;

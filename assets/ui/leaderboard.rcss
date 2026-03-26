@@ -58,8 +58,8 @@
     display: block;
     position: absolute;
     top: 22dp;
-    left: 4dp;
-    right: 4dp;
+    left: 1dp;
+    right: 1dp;
     bottom: 12dp;
     padding: 1dp 2dp;
     background-color: rgba(0, 6, 28, 180);
@@ -227,8 +227,8 @@
     display: block;
     position: absolute;
     top: 25dp;
-    left: 4dp;
-    right: 4dp;
+    left: 1dp;
+    right: 1dp;
     bottom: 20dp;
     text-align: center;
     padding: 60dp 0;
@@ -240,9 +240,9 @@
 #lb-footer {
     display: block;
     position: absolute;
-    bottom: 0dp;
-    left: 4dp;
-    right: 4dp;
+    bottom: 1dp;
+    left: 1dp;
+    right: 1dp;
     padding: 1dp 6dp;
     background-color: rgba(0, 8, 30, 160);
     border-width: 1dp;
