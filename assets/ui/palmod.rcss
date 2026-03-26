@@ -24,7 +24,7 @@ body {
     border-width: 1dp;
     border-color: #555;
     border-radius: 8dp;
-    padding: 10dp 14dp;
+    padding: 6dp 10dp;
     font-family: "Noto Sans JP";
     font-size: 14dp;
 }
@@ -224,22 +224,34 @@ label {
     border-width: 1dp;
     border-color: #555;
     border-radius: 6dp;
-    padding: 8dp 12dp;
-    margin-top: 6dp;
+    padding: 4dp 8dp;
+    margin-top: 2dp;
 }
 
-.picker-previews {
+.picker-compressed {
     display: block;
     text-align: center;
     margin-bottom: 6dp;
+    padding-top: 4dp;
+}
+
+.picker-sliders {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: left;
+    width: 240dp;
+}
+
+.picker-previews {
+    display: inline-block;
+    vertical-align: middle;
+    width: 100dp;
 }
 
 .preview-box {
-    display: inline-block;
+    display: block;
     text-align: center;
-    margin-left: 10dp;
-    margin-right: 10dp;
-    vertical-align: top;
+    margin-bottom: 6dp;
 }
 
 .preview-label {
@@ -251,8 +263,8 @@ label {
 
 .preview-swatch {
     display: block;
-    width: 48dp;
-    height: 48dp;
+    width: 36dp;
+    height: 36dp;
     border-width: 2dp;
     border-color: #555;
     border-radius: 4dp;
@@ -439,7 +451,7 @@ label {
  * Pattern from shaders.rcss: scroll containers work with click events. */
 .effects-list {
     display: block;
-    max-height: 250dp;
+    max-height: 115dp;
     overflow-y: auto;
     padding: 2dp;
     margin-bottom: 6dp;

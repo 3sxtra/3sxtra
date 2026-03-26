@@ -48,10 +48,14 @@
 
                 <!-- Pre-Game -->
                 <div class="section">
-                    <h2>Pre-Game</h2>
+                    <h2>Pre-Game & Engine</h2>
                     <div class="control-row">
                         <input type="checkbox" data-checked="fast_pre_game"/>
                         <label>Fast Pre-Game Sequences</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" data-checked="palmod_enabled"/>
+                        <label>Enable PalMod Engine</label>
                     </div>
                 </div>
 

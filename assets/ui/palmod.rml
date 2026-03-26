@@ -362,31 +362,35 @@
         <div data-if="picker_active" class="picker-panel">
             <div class="divider"></div>
             <h2>COLOR EDITOR — Index {{ sel_index }}</h2>
-            <div class="picker-previews">
-                <div class="preview-box">
-                    <span class="preview-label">Original</span>
-                    <div class="preview-swatch" data-style-background-color="sel_original"></div>
+            <div class="picker-compressed">
+                <div class="picker-sliders">
+                    <div class="control-row picker-slider">
+                        <label class="channel-label r-label">R</label>
+                        <input type="range" min="0" max="31" step="1" data-value="sel_r"/>
+                        <span class="channel-value">{{ sel_r }}</span>
+                    </div>
+                    <div class="control-row picker-slider">
+                        <label class="channel-label g-label">G</label>
+                        <input type="range" min="0" max="31" step="1" data-value="sel_g"/>
+                        <span class="channel-value">{{ sel_g }}</span>
+                    </div>
+                    <div class="control-row picker-slider">
+                        <label class="channel-label b-label">B</label>
+                        <input type="range" min="0" max="31" step="1" data-value="sel_b"/>
+                        <span class="channel-value">{{ sel_b }}</span>
+                    </div>
                 </div>
-                <div class="preview-box">
-                    <span class="preview-label">Modified</span>
-                    <div class="preview-swatch" data-style-background-color="sel_preview"></div>
+                <!-- Previews in an adjacent column -->
+                <div class="picker-previews">
+                    <div class="preview-box">
+                        <span class="preview-label">Original</span>
+                        <div class="preview-swatch" data-style-background-color="sel_original"></div>
+                    </div>
+                    <div class="preview-box">
+                        <span class="preview-label">Modified</span>
+                        <div class="preview-swatch" data-style-background-color="sel_preview"></div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="control-row picker-slider">
-                <label class="channel-label r-label">R</label>
-                <input type="range" min="0" max="31" step="1" data-value="sel_r"/>
-                <span class="channel-value">{{ sel_r }}</span>
-            </div>
-            <div class="control-row picker-slider">
-                <label class="channel-label g-label">G</label>
-                <input type="range" min="0" max="31" step="1" data-value="sel_g"/>
-                <span class="channel-value">{{ sel_g }}</span>
-            </div>
-            <div class="control-row picker-slider">
-                <label class="channel-label b-label">B</label>
-                <input type="range" min="0" max="31" step="1" data-value="sel_b"/>
-                <span class="channel-value">{{ sel_b }}</span>
             </div>
 
             <div class="picker-buttons">
@@ -396,7 +400,7 @@
         </div>
 
         <!-- ═══════ SAVE / LOAD ═══════ -->
-        <div class="save-panel" data-if="in_game">
+        <div class="save-panel" data-if="in_game && !picker_active">
             <div class="divider"></div>
             <h2>SAVE / LOAD</h2>
 

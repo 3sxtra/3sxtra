@@ -241,6 +241,7 @@ void training_menu_shutdown(void) { /* no-op */ }
 bool mods_menu_input_display_enabled = false;
 bool mods_menu_shader_bypass_enabled = false;
 bool mods_menu_fast_pre_game = false;
+bool mods_menu_palmod_enabled = true;
 static bool show_palmod_menu = false;
 bool game_paused = false;
 static bool frame_rate_uncapped = false;
@@ -1661,6 +1662,9 @@ void SDLApp_ToggleTrainingMenu() {
 }
 
 void SDLApp_TogglePalmodMenu() {
+    if (!mods_menu_palmod_enabled && !show_palmod_menu) {
+        return;
+    }
     bool was_open = show_palmod_menu;
     toggle_overlay(&show_palmod_menu, "palmod", false);
     if (was_open && !show_palmod_menu)

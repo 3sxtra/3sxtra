@@ -35,6 +35,8 @@ extern unsigned char My_char[2];
 extern signed char Player_Color[2];
 extern unsigned char Play_Game;
 
+extern bool mods_menu_palmod_enabled;
+
 } /* extern "C" */
 
 /* ── CPS3 Color Format Helpers ───────────────────────────────────── */
@@ -196,13 +198,17 @@ static void restore_stage_original() {
 }
 
 /* Check if a palette color-index is all-black (empty/unused Extra preset).
- * Checks both banks — Gill (My_char==0) uses bank 1 independently. */
+ * Gill (My_char==0) uses both banks independently; everyone else only
+ * uses bank 0, so we must ignore bank 1 to avoid false negatives from
+ * non-zero leftover data in unused bank 1 slots. */
 static bool is_palette_empty(int id, int color_index) {
     if (!s_plcol_valid[id] || color_index < 0 || color_index > 15) return true;
     const COL* col = &s_plcol_cache[id];
-    for (int bank = 0; bank < 2; bank++) {
+    int num_banks = (My_char[id] == 0) ? 2 : 1;
+    for (int bank = 0; bank < num_banks; bank++) {
         for (int i = 1; i < 64; i++) { /* skip index 0 (transparent) */
-            if (col->col[bank][color_index][i] != 0) return false;
+            u16 c = col->col[bank][color_index][i];
+            if (c != 0 && c != 0x8000) return false;
         }
     }
     return true;
@@ -224,11 +230,16 @@ static int s_color_max[2] = { 15, 15 };
 
 /* Implementation of palmod_on_color_loaded (forward-declared above) */
 static void palmod_on_color_loaded(int id, const COL* data) {
+    if (!mods_menu_palmod_enabled) return;
+
     if (id >= 0 && id < 2 && data) {
         memcpy(&s_plcol_cache[id], data, sizeof(COL));
         s_plcol_valid[id] = true;
         /* Recompute slider max now that palette data is available */
         s_color_max[id] = max_valid_palette(id);
+        SDL_Log("[PalMod] P%d (char %d, gill=%d) slider max = %d (%s)",
+                id + 1, My_char[id], My_char[id] == 0,
+                s_color_max[id], get_color_label(s_color_max[id]));
         /* Clamp current selection if it exceeds valid range */
         if (s_palmod_color[id] > s_color_max[id])
             s_palmod_color[id] = s_color_max[id];
@@ -501,6 +512,15 @@ static void write_single_color(int row, int col_index, u16 color) {
         return;
     ColorRAM[row][col_index] = color;
     palUpdateGhostCP3(row, 1);
+
+    /* For character palettes (P1=row 0, P2=row 16), the native game logic
+     * uses the bank duplicated at row + 8 depending on context. We must 
+     * mirror single color picks across both banks so the new color shows 
+     * up instantly, preventing "no visible effect" bugs. */
+    if (row == 0 || row == 16) {
+        ColorRAM[row + 8][col_index] = color;
+        palUpdateGhostCP3(row + 8, 1);
+    }
 }
 
 /* Open the color picker for a specific ColorRAM cell */
@@ -994,6 +1014,8 @@ extern "C" void rmlui_palmod_menu_init(void) { do_init(); }
 /* ── Per-frame update ─────────────────────────────────────────────── */
 
 extern "C" void rmlui_palmod_menu_update(void) {
+    if (!mods_menu_palmod_enabled) return;
+
     if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
     if (!s_model_handle) return;
 
@@ -1109,34 +1131,51 @@ extern "C" void rmlui_palmod_menu_update(void) {
         s_model_handle.DirtyVariable("selected_name");
     }
 
-    /* Dirty swatch grid only when content could have changed. */
+    /* Dirty swatch grid only when content actually changes! */
+    static u16 s_prev_col_p1[64] = {0};
+    static u16 s_prev_col_p2[64] = {0};
+    static u16 s_prev_col_stg[4][64] = {};
     static int s_prev_edit_mode = -1;
     static int s_prev_stage_row_swatch = -1;
-    static int s_prev_p1c_swatch = -1;
-    static int s_prev_p2c_swatch = -1;
-    bool swatch_dirty = false;
-    if (s_prev_edit_mode != s_edit_mode) { s_prev_edit_mode = s_edit_mode; swatch_dirty = true; }
-    if (s_prev_stage_row_swatch != s_stage_row) { s_prev_stage_row_swatch = s_stage_row; swatch_dirty = true; }
-    if (s_prev_p1c_swatch != p1c) { s_prev_p1c_swatch = p1c; swatch_dirty = true; }
-    if (s_prev_p2c_swatch != p2c) { s_prev_p2c_swatch = p2c; swatch_dirty = true; }
-    if (s_picker_active) swatch_dirty = true;
-    if (s_edit_mode == 2) swatch_dirty = true; /* remix tab: colors change every frame */
-    if (swatch_dirty) {
-        for (int i = 0; i < 64; i++) {
-            char name[24];
-            snprintf(name, sizeof(name), "sw%d", i);
-            s_model_handle.DirtyVariable(name);
-            snprintf(name, sizeof(name), "sw2_%d", i);
-            s_model_handle.DirtyVariable(name);
-            for (int r = 0; r <= 3; r++) {
-                snprintf(name, sizeof(name), "sw_s%d_%d", r, i);
-                s_model_handle.DirtyVariable(name);
-            }
-        }
+
+    bool mode_changed = false;
+    if (s_prev_edit_mode != s_edit_mode) { 
+        s_prev_edit_mode = s_edit_mode; 
+        mode_changed = true; 
+    }
+    
+    if (s_prev_stage_row_swatch != s_stage_row) { 
+        s_prev_stage_row_swatch = s_stage_row; 
+        mode_changed = true; 
         for (int r = 0; r <= 3; r++) {
             char name[24];
             snprintf(name, sizeof(name), "stage_row_label_%d", r);
             s_model_handle.DirtyVariable(name);
+        }
+    }
+
+    int p1_row = (s_edit_mode == 0) ? 0 : s_stage_row; 
+    
+    for (int i = 0; i < 64; i++) {
+        if (mode_changed || s_prev_col_p1[i] != ColorRAM[p1_row][i]) {
+            s_prev_col_p1[i] = ColorRAM[p1_row][i];
+            char name[24]; snprintf(name, sizeof(name), "sw%d", i);
+            s_model_handle.DirtyVariable(name);
+        }
+        if (mode_changed || s_prev_col_p2[i] != ColorRAM[16][i]) {
+            s_prev_col_p2[i] = ColorRAM[16][i];
+            char name[24]; snprintf(name, sizeof(name), "sw2_%d", i);
+            s_model_handle.DirtyVariable(name);
+        }
+        for (int r = 0; r <= 3; r++) {
+            int stg_row = s_stage_row + r;
+            if (stg_row > 511) stg_row = 511;
+
+            if (mode_changed || s_prev_col_stg[r][i] != ColorRAM[stg_row][i]) {
+                s_prev_col_stg[r][i] = ColorRAM[stg_row][i];
+                char name[24]; snprintf(name, sizeof(name), "sw_s%d_%d", r, i);
+                s_model_handle.DirtyVariable(name);
+            }
         }
     }
 
