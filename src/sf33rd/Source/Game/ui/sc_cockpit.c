@@ -194,7 +194,7 @@ void stun_put(u8 Pl_Num, u8 stun) {
     }
 
     ppgSetupCurrentDataList(&ppgScrList);
-    scrscrntex[0].z = scrscrntex[3].z = PrioBase[TopHUDFacePriority];
+    scrscrntex[0].z = scrscrntex[3].z = PrioBase[TopHUDPriority];
     ppgSetupCurrentPaletteNumber(0, 10);
     scrscrntex[0].u = 0.0f;
     scrscrntex[3].u = 8.0f / 256.0f;
