@@ -117,6 +117,7 @@ struct PalmodSnapshot {
     int stage_row;
     int sel_index, sel_r, sel_g, sel_b;
     bool in_game, picker_active;
+    bool committed_p1, committed_p2, committed_stage;
     Rml::String p1_name, p2_name, p1_label, p2_label;
     Rml::String sel_preview, sel_original;
 };
@@ -370,6 +371,10 @@ static void apply_remix_preview() {
         for (int r = STAGE_ROW_MIN; r <= STAGE_ROW_MAX && (r - STAGE_ROW_MIN) < 480; r++)
             memcpy(ColorRAM[r], s_committed_stage[r - STAGE_ROW_MIN], sizeof(ColorRAM[0]));
         palUpdateGhostCP3(STAGE_ROW_MIN, STAGE_ROW_MAX - STAGE_ROW_MIN + 1);
+    } else if (s_stage_original_valid && s_remix_target_stage) {
+        for (int r = STAGE_ROW_MIN; r <= STAGE_ROW_MAX && (r - STAGE_ROW_MIN) < 480; r++)
+            memcpy(ColorRAM[r], s_original_stage[r - STAGE_ROW_MIN], sizeof(ColorRAM[0]));
+        palUpdateGhostCP3(STAGE_ROW_MIN, STAGE_ROW_MAX - STAGE_ROW_MIN + 1);
     }
     
     auto apply_to_range = [&](int start_row, int end_row) {
@@ -441,19 +446,17 @@ static void apply_remix_preview() {
         }
         
         // Push updates
-        for (int r = start_row; r <= end_row; r++) {
-            palUpdateGhostCP3(r, 1);
-        }
+        palUpdateGhostCP3(start_row, end_row - start_row + 1);
     };
     
     // Apply for each active target
     if (s_remix_target_p1) {
-        int start = (s_remix_scope == 1) ? ((s_palmod_color[0] >= 0) ? s_palmod_color[0] : 0) : 0;
+        int start = (s_remix_scope == 1) ? ((s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)Player_Color[0]) : 0;
         int end = (s_remix_scope == 1) ? start : 15;
         apply_to_range(start, end);
     }
     if (s_remix_target_p2) {
-        int start = (s_remix_scope == 1) ? 16 + ((s_palmod_color[1] >= 0) ? s_palmod_color[1] : 0) : 16;
+        int start = (s_remix_scope == 1) ? 16 + ((s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)Player_Color[1]) : 16;
         int end = (s_remix_scope == 1) ? start : 31;
         apply_to_range(start, end);
     }
@@ -1055,10 +1058,10 @@ extern "C" void rmlui_palmod_menu_update(void) {
         s_model_handle.DirtyVariable("apply_flash");
         s_model_handle.DirtyVariable("apply_label");
     }
-    /* Dirty committed indicators (cheap — only 3 bools) */
-    s_model_handle.DirtyVariable("committed_p1");
-    s_model_handle.DirtyVariable("committed_p2");
-    s_model_handle.DirtyVariable("committed_stage");
+    /* Dirty committed indicators (cheap once cached) */
+    DIRTY_BOOL(committed_p1, s_remix_committed[0]);
+    DIRTY_BOOL(committed_p2, s_remix_committed[1]);
+    DIRTY_BOOL(committed_stage, s_stage_committed);
 
     /* Refresh saved palette list if dirty */
     if (s_list_dirty) {
