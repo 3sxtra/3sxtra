@@ -16,6 +16,9 @@ concurrency:
     group: build-linux-x86_64-${{ github.ref }}
     cancel-in-progress: true
 
+env:
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -50,7 +53,7 @@ jobs:
             shell: bash
 
           - name: Setup ccache
-            uses: hendrikmuhs/ccache-action@v1.2.21
+            uses: hendrikmuhs/ccache-action@v1.2.22
             with:
                 key: linux-x86_64-ccache
 

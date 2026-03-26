@@ -28,6 +28,9 @@ concurrency:
   group: package-assets-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   package:
     name: Build Asset Pack
@@ -45,7 +48,7 @@ jobs:
 
       - name: Cache libretro slang-shaders
         id: cache-slang
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: assets/shaders/libretro
           key: slang-shaders-${{ steps.slang-head.outputs.sha }}
