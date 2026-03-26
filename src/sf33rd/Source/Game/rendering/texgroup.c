@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/rendering/texgroup.h"
+#include "arcade/arcade_balance.h"
 #include "common.h"
 #include "main.h"
 #include "arcade/arcade_char_data.h"
@@ -285,14 +286,11 @@ void q_ldreq_texture_group(REQ* curr) {
                 const s16 character_id = plt_req[curr->id];
                 CharInitData* dst = &char_init_data[plid_data[character_id]];
 
-#if CPS3
-                const CharInitData* arcade_data = ArcadeCharData_Get(character_id);
+                const CharInitData* arcade_data = ArcadeBalance_IsEnabled() ? ArcadeCharData_Get(character_id) : NULL;
+
                 if (arcade_data) {
                     SDL_copyp(dst, arcade_data);
                 } else {
-#else
-                {
-#endif
                     for (i = 0; i < 25; i++) {
                         ((uintptr_t*)dst)[i] = ldchd + ((u32*)ldchd)[i];
                     }

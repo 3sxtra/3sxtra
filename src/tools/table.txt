@@ -1,0 +1,50 @@
+   Code | Arr. fnum | Arc. fnum | Stage Name | FileName             | Description
+  ------+-----------+-----------+------------+----------------------+-------------------------------------------
+    1 |  572 |   91 | NYC A    | 01_A_NYC.adx         | Alex — New York, variant A
+    2 |  588 |  107 | NYC B    | 02_B_NYC.adx         | Alex — New York, variant B
+    3 |  598 |    — | NYC C    | 03_C_NYC.adx         | Alex — New York, variant C
+    4 |  616 |  119 | Russia A | 04_A_Ros.adx         | Necro — Russia, variant A
+    5 |  642 |  133 | Russia B | 05_B_Ros.adx         | Necro — Russia, variant B
+    6 |  653 |    — | Russia C | 06_C_Ros.adx         | Necro — Russia, variant C
+    7 |  681 |  144 | German A | 07_A_Gem.adx         | Hugo — Germany, variant A
+    8 |  695 |  159 | German B | 08_B_Gem.adx         | Hugo — Germany, variant B
+    9 |  716 |    — | German C | 09_C_Gem.adx         | Hugo — Germany, variant C
+   10 |  728 |  182 | China A  | 10_A_Chi.adx         | Chun-Li — China, variant A
+   11 |  742 |  196 | China B  | 11_B_Chi.adx         | Chun-Li — China, variant B
+   12 |  758 |    — | China C  | 12_C_Chi.adx         | Chun-Li — China, variant C
+   13 |  776 |  212 | Shinju A | 13_A_Shi.adx         | Ibuki — Shinjuku, variant A
+   14 |  790 |  227 | Shinju B | 14_B_Shi.adx         | Ibuki — Shinjuku, variant B
+   15 |  808 |    — | Shinju C | 15_C_Shi.adx         | Ibuki — Shinjuku, variant C
+   16 |  822 |  246 | Kyoto A  | 16_A_Kyo.adx         | Makoto — Kyoto Dojo, variant A
+   17 |  833 |  257 | Kyoto B  | 17_B_Kyo.adx         | Makoto — Kyoto Dojo, variant B
+   18 |  844 |    — | Kyoto C  | 18_C_Kyo.adx         | Makoto — Kyoto Dojo, variant C
+   19 |  857 |  268 | Dojo A   | 19_A_Doj.adx         | Ryu — Suzaku Castle, variant A
+   20 |  871 |  282 | Dojo B   | 20_B_Doj.adx         | Ryu — Suzaku Castle, variant B
+   21 |  885 |    — | Dojo C   | 21_C_Doj.adx         | Ryu — Suzaku Castle, variant C
+   22 |  904 |  296 | Yamato A | 22_A_Yam.adx         | Oro — Mountain Cave, variant A
+   23 |  918 |  310 | Yamato B | 23_B_Yam.adx         | Oro — Mountain Cave, variant B
+   24 |  932 |    — | Yamato C | 24_C_Yam.adx         | Oro — Mountain Cave, variant C
+   25 |  946 |  325 | Africa A | 25_A_Afr.adx         | Elena — Africa, variant A
+   26 |  963 |  342 | Africa B | 26_B_Afr.adx         | Elena — Africa, variant B
+   27 |  977 |    — | Africa C | 27_C_Afr.adx         | Elena — Africa, variant C
+   28 |  994 |  356 | Brazil A | 28_A_Bra.adx         | Sean — Brazil, variant A
+   29 |  1012 |  374 | Brazil B | 29_B_Bra.adx         | Sean — Brazil, variant B
+   30 |  1026 |    — | Brazil C | 30_C_Bra.adx         | Sean — Brazil, variant C
+   31 |  1044 |  389 | London A | 31_A_Lon.adx         | Dudley — London, variant A
+   32 |  1064 |  409 | London B | 32_B_Lon.adx         | Dudley — London, variant B
+   33 |  1075 |    — | London C | 33_C_Lon.adx         | Dudley — London, variant C
+   34 |  1093 |  419 | HK A     | 34_A_Hon.adx         | Yun/Yang — Hong Kong, variant A
+   35 |  1110 |  436 | HK B     | 35_B_Hon.adx         | Yun/Yang — Hong Kong, variant B
+   36 |  1124 |    — | HK C     | 36_C_Hon.adx         | Yun/Yang — Hong Kong, variant C
+   37 |  1140 |  451 | France A | 37_A_Fra.adx         | Remy — France, variant A
+   38 |  1154 |  465 | France B | 38_B_Fra.adx         | Remy — France, variant B
+   39 |  1168 |    — | France C | 39_C_Fra.adx         | Remy — France, variant C
+   40 |  1186 |  481 | Q Lair A | 40_A_Q.adx           | Q — Underground Lair, variant A
+   41 |  1204 |  499 | Q Lair B | 41_B_Q.adx           | Q — Underground Lair, variant B
+   42 |  1223 |    — | Q Lair C | 42_C_Q.adx           | Q — Underground Lair, variant C
+   43 |  1241 |  517 | Mexico A | 43_A_Mex.adx         | Urien — Aztec Ruins, variant A
+   44 |  1255 |  525 | Mexico B | 44_B_Mex.adx         | Urien — Aztec Ruins, variant B
+   45 |  1269 |    — | Mexico C | 45_C_Mex.adx         | Urien — Aztec Ruins, variant C
+   46 |  1288 |  534 | Greece A | 46_A_Gre.adx         | Gill — Greece, variant A
+   47 |  1306 |  544 | Greece B | 47_B_Gre.adx         | Gill — Greece, variant B
+   48 |  1325 |    — | Greece C | 48_C_Gre.adx         | Gill — Greece, variant C

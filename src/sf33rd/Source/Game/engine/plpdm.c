@@ -4,6 +4,7 @@
  */
 
 #include "sf33rd/Source/Game/engine/plpdm.h"
+#include "arcade/arcade_balance.h"
 #include "bin2obj/buttobi.h"
 #include "bin2obj/etc.h"
 #include "common.h"
@@ -213,6 +214,11 @@ static void setup_damage_process_flags(PLW* wk) {
     wk->tsukamare_f = false;
     wk->scr_pos_set_flag = 1;
     wk->dm_hos_flag = 0;
+
+    if (ArcadeBalance_IsEnabled()) {
+        wk->sa_stop_flag = 0;
+    }
+
     wk->caution_flag = 0;
     wk->sa->saeff_ok = 0;
     wk->sa->saeff_mp = 0;
@@ -224,8 +230,10 @@ static void setup_damage_process_flags(PLW* wk) {
     wk->high_jump_flag = 0;
     wk->wu.swallow_no_effect = 0;
 
-    if (wk->wu.routine_no[3]) {
-        wk->sa_stop_flag = 0;
+    if (!ArcadeBalance_IsEnabled()) {
+        if (wk->wu.routine_no[3]) {
+            wk->sa_stop_flag = 0;
+        }
     }
 }
 

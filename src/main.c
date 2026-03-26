@@ -57,6 +57,8 @@
 #include "port/save/native_save.h"
 #include "structs.h"
 
+#include "arcade/arcade_balance.h"
+
 #if DEBUG
 #include "sf33rd/Source/Game/debug/debug_config.h"
 #endif
@@ -323,6 +325,7 @@ static void game_init() {
     distributeScratchPadAddress();
     Renderer_Init();
     MenuBridge_Init(g_shm_suffix);
+    ArcadeBalance_Init();
     njUserInit();
     palCreateGhost();
     ppgMakeConvTableTexDC();

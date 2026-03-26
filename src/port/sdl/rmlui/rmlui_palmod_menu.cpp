@@ -142,7 +142,7 @@ static int s_edit_mode = 0;
 /* Stage palette row selector */
 static int s_stage_row = 32;
 static const int STAGE_ROW_MIN = 32;
-static const int STAGE_ROW_MAX = 500;
+static const int STAGE_ROW_MAX = 511;
 
 /* Color picker state */
 static bool s_picker_active = false;
@@ -411,7 +411,7 @@ static void apply_remix_preview() {
         palUpdateGhostCP3(STAGE_ROW_MIN, STAGE_ROW_MAX - STAGE_ROW_MIN + 1);
     }
     
-    auto apply_to_range = [&](int start_row, int end_row) {
+    auto apply_to_range = [&](int start_row, int end_row, bool* active_rows = nullptr) {
         if (start_row < 0) start_row = 0;
         if (end_row > 511) end_row = 511;
 
@@ -421,6 +421,9 @@ static void apply_remix_preview() {
         std::vector<int> ramp_indices;
         std::vector<int> global_indices;
         for (size_t i = 0; i < count; i++) {
+            int row = start_row + (int)(i / 64);
+            if (active_rows && !active_rows[row]) continue;
+
             if (i % 16 != 0 && colors[i] != 0) {
                 global_indices.push_back((int)i);
             }
@@ -428,6 +431,9 @@ static void apply_remix_preview() {
         
         if (s_remix_scope == 2) { // Smart Detect Ramps
             for (size_t r = 0; r < count / 64; r++) {
+                int row = start_row + (int)r;
+                if (active_rows && !active_rows[row]) continue;
+
                 for (int sub = 0; sub < 4; sub++) {
                     std::vector<u16> sub_colors;
                     std::vector<int> sub_idx;
@@ -487,16 +493,18 @@ static void apply_remix_preview() {
     if (s_remix_target_p1) {
         int start = (s_remix_scope == 1) ? ((s_palmod_color[0] >= 0) ? s_palmod_color[0] : (int)Player_Color[0]) : 0;
         int end = (s_remix_scope == 1) ? start : 15;
-        apply_to_range(start, end);
+        apply_to_range(start, end, nullptr);
     }
     if (s_remix_target_p2) {
         int start = (s_remix_scope == 1) ? 16 + ((s_palmod_color[1] >= 0) ? s_palmod_color[1] : (int)Player_Color[1]) : 16;
         int end = (s_remix_scope == 1) ? start : 31;
-        apply_to_range(start, end);
+        apply_to_range(start, end, nullptr);
     }
     if (s_remix_target_stage) {
-        /* Apply to full stage palette range, not just one row */
-        apply_to_range(STAGE_ROW_MIN, STAGE_ROW_MAX);
+        bool active_rows[512];
+        // Always apply layer mask filtering to ensure exact .ppg usage and exclude UI rows unexpectedly falling into 32-511 range!
+        PaletteRemix::get_active_stage_palettes(s_remix_l0, s_remix_l1, s_remix_l2, active_rows);
+        apply_to_range(STAGE_ROW_MIN, STAGE_ROW_MAX, active_rows);
     }
 }
 

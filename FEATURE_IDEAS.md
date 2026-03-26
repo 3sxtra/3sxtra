@@ -25,6 +25,7 @@
 | **Audio mods** | [modded_bgm.c](file:///d:/3sxtra/src/port/sound/modded_bgm.c) — BGM + voice replacement from `assets/voice_mod/`, supports ogg/flac/opus/mp3/wav. Toggle via `CFG_KEY_MODDED_BGM_ENABLED`. |
 | **Sprite overrides** | [sprite_override.c](file:///d:/3sxtra/src/port/sdl/renderer/sprite_override.c) — HD sprite replacement with 17+ hooks in [mtrans.c](file:///d:/3sxtra/src/sf33rd/Source/Game/rendering/mtrans.c) |
 | **HD stage overrides** | [modded_stage.c](file:///d:/3sxtra/src/port/mods/modded_stage.c) — 22-stage system with layer-based replacement |
+| **Arcade balance sync** | [arcade_balance.c](file:///d:/3sxtra/src/arcade/arcade_balance.c) — `CFG_ARCADE_BALANCE` fallback toggle for CPS3 character offsets, MTS blending, and damage engine patches for upstream parity |
 | **Hot-reload** | [rmlui_wrapper.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_wrapper.cpp) — Ctrl+F5 (stylesheets), Ctrl+Shift+F5 (all documents) |
 
 #### Vision
@@ -365,16 +366,16 @@ Every item below is **client-side gameplay or matchmaking algorithm** — the se
 
 | Feature Area | What Exists | What's Missing |
 |---|---|---|
-| **§1 Mod Menu** | Mods/shader/stage menus, F-key toggles, phase3 per-component, audio/voice mods, sprite overrides, HD stages, hot-reload | Unified tree, profiles, discovery, previews, per-char FX |
-| **§2 Replays & Chat** | Auto-save + upload, string-based picker, metadata v2, descriptive filenames, lobby chat | Retention policy, bookmarks, in-match quick chat, emotes |
+| **§1 Mod Menu** | Mods/shader/stage menus, PalMod F10 Tool, phase3 per-component, audio mods, standalone `assets/` pack, sprite overrides, HD stages, Arcade Balance configs | Unified tree, profiles, discovery, previews, per-char FX |
+| **§2 Replays & Chat** | Auto-save + upload, network replay picker, metadata v2, descriptive filenames, lobby chat, in-match chat | Retention policy, bookmarks, emotes |
 | **§3 Tournaments** | ✅ **Implemented** — SE/DE/RR/Swiss brackets, TO controls (DQ/override/pause/restart), bracket UI, match selector, server API (6 endpoints), 28 unit tests, 12 integration tests | — |
-| **§4 Dynamic Bezel** | 40+ char bezels, auto-swap | Opponent-aware compositing, stats-in-bezel, animation, spectator frame |
+| **§4 Dynamic Bezel** | 40+ char bezels, auto-swap, Fightcade-style match banner HUD | Opponent-aware compositing, stats-in-bezel, animation, spectator frame |
 | **§5 KOTH** | Rotation + queue + streak count (server + casual lobby) | KOTH room type, session stats, queue viz, dethroned anim, CPU fill |
 | **§6 Private Rooms** | Room codes, create/join, **passwords, hidden visibility, UI dialog, QR code sharing** | Allow/blocklists, persistence, filters, human-readable codes |
 | **§7 Match Flow** | Char select (HD portraits, SA, timer, stage), VS screen, accept/decline proposals | Blind pick sync, stage bans, match flow state machine, ranked/tournament modes |
 | **§8 Fight Requests** | Glicko-2, match reporting, disconnect tracking, leaderboards, region/ping/WiFi filtering, searching, anti-spam | Character lock/ban, ranked auto-match, hidden names, streak bonuses, graceful quit, jail, skill range pairing |
 | **§9 Attract Mode** | CPU demos, HD overlay, arcade ranking tables | Online replay playback, live stats, live streaks, information bar |
-| **§10 Additional** | Spectator (4 max, 15f delay), input display, frame data, player stats/identity, lobby ping/conn indicators ✅ | Spectator count/rewind, per-char rating, seasonal resets, profiles, friends, clans, match history |
+| **§10 Additional** | Spectator count, player profiles, UI leaderboards, HUD flags, casual room leave button, lobby ping indicators ✅ | Spectator rewind, per-char rating, seasonal resets, friends, clans |
 
 > [!IMPORTANT]
 > **Key finding:** The **server infrastructure and netplay plumbing are significantly ahead of the client-side UX**. Match reporting with cross-validation, Glicko-2 stats, disconnect tracking, P2P ping probing, Wi-Fi detection, connection quality filtering, replay auto-save + upload, winner-stays-on rotation, spectator support, and the full SSE streaming system are all operational. The remaining work falls into three categories:
@@ -397,10 +398,11 @@ Every item below is **client-side gameplay or matchmaking algorithm** — the se
 ### Augmented Scope
 | Sub-feature | Details |
 |---|---|
+| **PalMod UI Port** | F10 interactive window with native looking controls, multi-target selection (P1/P2/Stage), and multi-row stage grid bindings. |
 | **Per-character FX overrides** | Individual hit-spark and super-flash styles per character (e.g., classic CPS3 sparks vs. HD redrawn). |
 | **Mod profiles / presets** | Save and name combinations of visual settings ("Tournament Clean", "Maximum Drip"). One-click swap. |
 | **Mod discovery** | Scan `assets/` at startup, auto-populate the menu. Show installed vs. missing mod packs. |
-| **Hot-reload** | Apply mod/shader changes without restarting. Already partially supported via F2/F4 and Ctrl+F5 (RmlUi) — extend to all mod types. |
+| **Standalone Assets** | Decoupling heavy assets (Lua, custom shaders, PalMod storage, BGM) into a standalone `assets/` repository release. |
 
 ---
 
@@ -417,12 +419,12 @@ Every item below is **client-side gameplay or matchmaking algorithm** — the se
 
 ### In-Match Chat
 
-- **Pre-set quick messages** (stickers/emotes): "GG", "Rematch?", "One more", "BRB", custom messages.
-- Quick-chat wheel activated by hotkey — select with D-pad, no typing mid-match.
+- ~~**Pre-set quick messages** (stickers/emotes): "GG", "Rematch?", "One more", "BRB", custom messages.~~ ✅ **DONE** — `rmlui_ingame_chat.cpp` with selection wheel.
+- ~~Quick-chat wheel activated by hotkey — select with D-pad, no typing mid-match.~~ ✅ **DONE**
 - **Between-rounds text chat** — small text input during the "Ready" countdown or post-match results screen.
 - **Chat history** — scrollable log in the lobby and post-match screen.
 - Profanity filter toggle (opt-in).
-- Visual indicator: small speech bubble above player name when opponent sends a message.
+- ~~Visual indicator: small speech bubble above player name when opponent sends a message.~~ ✅ **DONE**
 
 ---
 
@@ -735,7 +737,7 @@ A persistent information bar at the bottom of the screen that adapts its content
 
 ### Spectator Mode
 - **Live spectating** of any public match from the lobby.
-- **Spectator count** shown to players ("3 watching").
+- ~~**Spectator count** shown to players ("3 watching").~~ ✅ **DONE** — integrated into Fightcade-style `match_banner.rml`.
 - **Rewind** — spectators can rewind and rewatch moments without affecting the live stream.
 - Input display overlay for spectators (see what both players are pressing).
 - **Commentary mode** — designated spectator can overlay text/voice (stretch goal).
@@ -748,10 +750,10 @@ A persistent information bar at the bottom of the screen that adapts its content
 - ~~**Leaderboards** — global, regional, and per-character.~~ ✅ **DONE** — paginated via `LobbyServer_GetLeaderboard()` with full RmlUi display in [rmlui_leaderboard.cpp](file:///d:/3sxtra/src/port/sdl/rmlui/rmlui_leaderboard.cpp). Per-character leaderboards not yet implemented.
 
 ### Community & Social
-- **Player profiles** — avatar, bio, main character, stats, match history.
+- ~~**Player profiles** — avatar, bio, main character, stats, match history.~~ ✅ **DONE** — fully implemented with RmlUi profile pages, including network replay viewing directly from profile.
 - **Friends list** — add players from lobbies, see online status, challenge directly.
 - **Clan / Team tags** — display `[TEAM]PlayerName` in lobbies and matches.
-- **Match history** — searchable log of recent matches with opponent, result, rating change.
+- ~~**Match history** — searchable log of recent matches with opponent, result, rating change.~~ ✅ **DONE** — surfaced directly in the new player profile UI.
 
 ### Quality of Life
 - ~~**Connection quality indicator** in lobby list (green/yellow/red based on region + estimated ping).~~ ✅ **DONE** — `ping_class` (good/ok/bad), `conn_type`, country flags rendered per player in network lobby.
@@ -774,11 +776,11 @@ A persistent information bar at the bottom of the screen that adapts its content
 | 🟡 Medium | King of the Hill | Medium | High — social/arcade atmosphere |
 | 🟡 Medium | Attract Mode & Info Bar | Low | Medium — polish, community engagement |
 | 🟡 Medium | Dynamic Bezel (Netplay) | Low | Medium — polish and immersion |
-| 🟡 Medium | In-Match Chat | Medium | Medium — social connectivity |
-| 🟡 Medium | Mod Menu via Game Menus | Medium | Medium — discoverability |
-| ✅ Done | Tournaments | — | — ✅ Feature-complete (March 24, 2026). SE/DE/RR/Swiss brackets, TO controls, bracket UI, match selector, server API, 28 unit + 12 integration tests. |
-| 🟢 Low | Ranked / Rating System | Medium | High — ⚠️ Glicko-2, tiers, leaderboards, match reporting already exist; remaining: per-char rating, seasonal resets |
-| 🟢 Low | Spectator Mode | Medium | Medium — ⚠️ core spectating works (4 viewers, 15f delay); remaining: count display, rewind, commentary |
+| ✅ Done | In-Match Chat | — | — ✅ Feature-complete. Quick wheel, visual indicators merged in `rmlui_ingame_chat.cpp`. |
+| 🟡 Medium | Mod Menu via Game Menus | Medium | Medium — discoverability (partially solved via PalMod tool insertion) |
+| ✅ Done | Tournaments | — | — ✅ Feature-complete. SE/DE/RR/Swiss brackets, TO controls, bracket UI, match selector. |
+| 🟢 Low | Ranked / Rating System | Medium | High — ⚠️ Glicko-2, tiers, RmlUi leaderboards, player profiles already exist; remaining: seasonal resets |
+| 🟢 Low | Spectator Mode | Medium | Medium — ⚠️ core spectating works, spectator count HUD indicator added; remaining: rewind, commentary |
 
 ---
 

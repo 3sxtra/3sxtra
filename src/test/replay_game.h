@@ -52,6 +52,7 @@ typedef struct ReplayGame {
     ReplayRound* rounds;        /**< stb_ds dynamic array of rounds */
     Uint8        characters[2]; /**< Character IDs (adjusted for PS2 — no Shin Akuma) */
     Uint8        supers[2];     /**< Super Art indices */
+    Uint8        new_challenger;
 } ReplayGame;
 
 /**

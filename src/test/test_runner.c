@@ -138,6 +138,9 @@ void TestRunner_Prologue() {
             wait_timer -= 1;
 
             if (wait_timer <= 0) {
+                // We must set New_Challenger manually so that the game selects the correct stage.
+                // If we set this var earlier it would be overwritten
+                New_Challenger = game.new_challenger;
                 char_select_phase = 2;
             }
 

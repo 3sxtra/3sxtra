@@ -83,6 +83,7 @@ extern "C" {
 #define CFG_KEY_HD_STAGES "hd-stages"
 
 /* ── Mods ───────────────────────────────── */
+#define CFG_ARCADE_BALANCE "arcade-balance"
 #define CFG_KEY_MODDED_BGM_ENABLED "modded-bgm-enabled"
 #define CFG_KEY_MODDED_VOICE_ENABLED "modded-voice-enabled"
 

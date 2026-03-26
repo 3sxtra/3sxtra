@@ -467,6 +467,31 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
     if (!Config_GetBool(CFG_KEY_MODDED_VOICE_ENABLED))
         return false;
 
+    char bank_dir_buf[8];
+    const char* bank_dir = NULL;
+    
+    // Determine bank folder from the RUNTIME character loaded in this bank slot.
+    // ptix is a bank SLOT index (always 1 for character sounds), not the character ID.
+    // The actual character is tracked in g_cseSysWork.SpuBankId[slot].
+    if (ptix == 0x7F) {
+        /* BGM requests are modded via bgm_mod/, not voice_mod/ — log clearly */
+        SDL_Log("ModdedSFX Check: req=%d → BGM track (mod via assets/bgm_mod/ folder)", reqNum);
+    } else if (ptix == 0) {
+        bank_dir = "SE";
+        SDL_Log("ModdedSFX Check: req=%d → assets/voice_mod/SE/%d.ogg", reqNum, engine_code);
+    } else {
+        u32 char_data_id = g_cseSysWork.SpuBankId[ptix & 0xF];
+        if (char_data_id >= 1 && char_data_id <= 20) {
+            // char_data_id is 1-based index into cseTSBDataTable:
+            // 1=PL00(Gill), 2=PL01(Alex), 3=PL02(Ryu), ...
+            snprintf(bank_dir_buf, sizeof(bank_dir_buf), "PL%02d", (int)(char_data_id - 1));
+            bank_dir = bank_dir_buf;
+            SDL_Log("ModdedSFX Check: req=%d → assets/voice_mod/%s/%d.ogg", reqNum, bank_dir, engine_code);
+        } else {
+            SDL_Log("ModdedSFX Check: req=%d → assets/voice_mod/%d.ogg (bank slot %d not loaded)", reqNum, reqNum, ptix & 0xF);
+        }
+    }
+
     if (!sfx_attempted[reqNum]) {
         sfx_attempted[reqNum] = true;
         char path[1024];
@@ -474,30 +499,6 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
         static const char* extensions[] = { "ogg", "wav", "flac", "opus", "mp3" };
         int num_exts = (int)(sizeof(extensions) / sizeof(extensions[0]));
         bool found = false;
-
-        // Determine bank folder from the RUNTIME character loaded in this bank slot.
-        // ptix is a bank SLOT index (always 1 for character sounds), not the character ID.
-        // The actual character is tracked in g_cseSysWork.SpuBankId[slot].
-        char bank_dir_buf[8];
-        const char* bank_dir = NULL;
-        if (ptix == 0x7F) {
-            /* BGM requests are modded via bgm_mod/, not voice_mod/ — log clearly */
-            SDL_Log("ModdedSFX Check: req=%d → BGM track (mod via bgm_mod/ folder)", reqNum);
-        } else if (ptix == 0) {
-            bank_dir = "SE";
-            SDL_Log("ModdedSFX Check: req=%d → voice_mod/SE/%d.ogg", reqNum, engine_code);
-        } else {
-            u32 char_data_id = g_cseSysWork.SpuBankId[ptix & 0xF];
-            if (char_data_id >= 1 && char_data_id <= 20) {
-                // char_data_id is 1-based index into cseTSBDataTable:
-                // 1=PL00(Gill), 2=PL01(Alex), 3=PL02(Ryu), ...
-                snprintf(bank_dir_buf, sizeof(bank_dir_buf), "PL%02d", (int)(char_data_id - 1));
-                bank_dir = bank_dir_buf;
-                SDL_Log("ModdedSFX Check: req=%d → voice_mod/%s/%d.ogg", reqNum, bank_dir, engine_code);
-            } else {
-                SDL_Log("ModdedSFX Check: req=%d → voice_mod/%d.ogg (bank slot %d not loaded)", reqNum, reqNum, ptix & 0xF);
-            }
-        }
 
         for (int i = 0; i < num_exts && !found; i++) {
             // Attempt 1: assets/voice_mod/{bank_dir}/{engine_code}.{ext} (Decimal Only)

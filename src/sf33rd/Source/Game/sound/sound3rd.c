@@ -677,11 +677,11 @@ void setupAlwaysSeamlessFlag(s16 flag) {
 /** @brief Queue a BGM file for ADX playback (seamless entry or direct start). */
 static void bgm_play_request(s32 filenum, s32 flag) {
     if (flag == 0) {
-        SDL_Log("BGM: EntryAfs (seamless segment) fnum=%d", filenum);
+        SDL_Log("BGM: EntryAfs (seamless segment) fnum=%d [Mod override: assets/bgm_mod/%d.ogg]", filenum, filenum);
         ADX_EntryAfs(filenum);
     } else {
         int fnum = bgm_table[sys_w.bgm_type][filenum].fnum;
-        SDL_Log("BGM: StartAfs bgm_code=%d → AFS fnum=%d (bgm_type=%d)", filenum, fnum, sys_w.bgm_type);
+        SDL_Log("BGM: StartAfs bgm_code=%d → AFS fnum=%d (bgm_type=%d) [Mod override: assets/bgm_mod/%d.ogg]", filenum, fnum, sys_w.bgm_type, fnum);
         ADX_StartAfs(fnum);
     }
 }

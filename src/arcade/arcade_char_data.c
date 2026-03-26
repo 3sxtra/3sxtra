@@ -71,9 +71,28 @@ static Uint16 remap_cg_number(Uint16 value, Character character) {
 
     int adjusted = (int)value + cg_number_offsets[character];
 
-    // Makoto has a separate high cg-number bank that maps with an additional shift on PS2.
-    if (character == CHAR_MAKOTO && value >= 0xA000) {
-        adjusted -= 0x45F8;
+    switch (character) {
+    case CHAR_IBUKI:
+        // Ibuki uses two CPS3-only high cg-number banks that map down into her normal PS2 range.
+        if (value >= 0x70BD && value <= 0x70C7) {
+            adjusted = value - 18692;
+        } else if (value >= 0x9BA8 && value <= 0x9C6F) {
+            adjusted = value - 29904;
+        }
+
+        break;
+
+    case CHAR_MAKOTO:
+        // Makoto has a separate high cg-number bank that maps with an additional shift on PS2.
+        if (value >= 0xA000) {
+            adjusted -= 0x45F8;
+        }
+
+        break;
+
+    default:
+        // Do nothing
+        break;
     }
 
     if (adjusted < 0 || adjusted > 0xFFFF) {
@@ -81,6 +100,39 @@ static Uint16 remap_cg_number(Uint16 value, Character character) {
     }
 
     return (Uint16)adjusted;
+}
+
+static Uint16 remap_ovct_parts_char(Uint16 value, Character character) {
+    switch (character) {
+    case CHAR_IBUKI:
+        if (value >= 0x9660 && value <= 0x96D7) {
+            return value - 28671;
+        }
+
+        if ((value >= 0x9BCE && value <= 0x9BD4) || (value >= 0x9C43 && value <= 0x9C45) ||
+            (value >= 0x9C70 && value <= 0x9C7A)) {
+            return value - 29903;
+        }
+
+        break;
+
+    case CHAR_URIEN:
+        if (value >= 0x4E00 && value <= 0x533F) {
+            return value - 3168;
+        }
+
+        if (value >= 0x9F58 && value <= 0x9F64) {
+            return value - 10809;
+        }
+
+        break;
+
+    default:
+        // Do nothing
+        break;
+    }
+
+    return remap_cg_number(value, character);
 }
 
 static const void* read_char_table(SDL_IOStream* rom, Location location, Character character) {
@@ -278,14 +330,29 @@ static const void* read_ovct(SDL_IOStream* rom, Location location, Character cha
         SDL_ReadS16BE(rom, &element->parts_mts);
         SDL_ReadU16BE(rom, &element->parts_nix);
         SDL_ReadU16BE(rom, &element->parts_char);
+        element->parts_char = remap_ovct_parts_char(element->parts_char, character);
 
-        // CPS3 Ken overlap data stores this in a form that decodes to 0 with the generic path,
-        // but gameplay/rendering expects it enabled (matches PS2 char data behavior).
-        if (character == CHAR_KEN && element->parts_mts == 0) {
-            element->parts_mts = 1;
+        if (element->parts_mts == 0) {
+            switch (character) {
+            case CHAR_KEN:
+                // Ken's DP overlap flame uses additive MTS in PS2 data.
+                element->parts_mts = 1;
+                break;
+
+            case CHAR_URIEN:
+                if ((element->parts_char >= 17854 && element->parts_char <= 17879) ||
+                    (element->parts_char >= 18017 && element->parts_char <= 18037) ||
+                    element->parts_char == 18060 || (element->parts_char >= 18096 && element->parts_char <= 18100) ||
+                    (element->parts_char >= 18129 && element->parts_char <= 18131) ||
+                    element->parts_char == 18143 || (element->parts_char >= 29983 && element->parts_char <= 29995)) {
+                    element->parts_mts = 1;
+                }
+                break;
+
+            default:
+                break;
+            }
         }
-
-        element->parts_char = remap_cg_number(element->parts_char, character);
     }
 
     return result;

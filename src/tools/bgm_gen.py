@@ -1,0 +1,47 @@
+# Script to generate correct bgm_ids.txt table
+arranged = [
+    0, 572, 588, 598, 616, 642, 653, 681, 695, 716,
+    728, 742, 758, 776, 790, 808, 822, 833, 844, 857,
+    871, 885, 904, 918, 932, 946, 963, 977, 994, 1012,
+    1026, 1044, 1064, 1075, 1093, 1110, 1124, 1140, 1154, 1168,
+    1186, 1204, 1223, 1241, 1255, 1269, 1288, 1306, 1325
+]
+
+arcade = [
+    0, 91, 107, 0, 119, 133, 0, 144, 159, 0,
+    182, 196, 0, 212, 227, 0, 246, 257, 0, 268,
+    282, 0, 296, 310, 0, 325, 342, 0, 356, 374,
+    0, 389, 409, 0, 419, 436, 0, 451, 465, 0,
+    481, 499, 0, 517, 525, 0, 534, 544, 0
+]
+
+names = [
+    "(empty)", "NYC A", "NYC B", "NYC C", "Russia A", "Russia B", "Russia C", "German A", "German B", "German C",
+    "China A", "China B", "China C", "Shinju A", "Shinju B", "Shinju C", "Kyoto A", "Kyoto B", "Kyoto C", "Dojo A",
+    "Dojo B", "Dojo C", "Yamato A", "Yamato B", "Yamato C", "Africa A", "Africa B", "Africa C", "Brazil A", "Brazil B",
+    "Brazil C", "London A", "London B", "London C", "HK A", "HK B", "HK C", "France A", "France B", "France C",
+    "Q Lair A", "Q Lair B", "Q Lair C", "Mexico A", "Mexico B", "Mexico C", "Greece A", "Greece B", "Greece C"
+]
+
+files = [
+    "(empty)", "01_A_NYC.adx", "02_B_NYC.adx", "03_C_NYC.adx", "04_A_Ros.adx", "05_B_Ros.adx", "06_C_Ros.adx", "07_A_Gem.adx", "08_B_Gem.adx", "09_C_Gem.adx",
+    "10_A_Chi.adx", "11_B_Chi.adx", "12_C_Chi.adx", "13_A_Shi.adx", "14_B_Shi.adx", "15_C_Shi.adx", "16_A_Kyo.adx", "17_B_Kyo.adx", "18_C_Kyo.adx", "19_A_Doj.adx",
+    "20_B_Doj.adx", "21_C_Doj.adx", "22_A_Yam.adx", "23_B_Yam.adx", "24_C_Yam.adx", "25_A_Afr.adx", "26_B_Afr.adx", "27_C_Afr.adx", "28_A_Bra.adx", "29_B_Bra.adx",
+    "30_C_Bra.adx", "31_A_Lon.adx", "32_B_Lon.adx", "33_C_Lon.adx", "34_A_Hon.adx", "35_B_Hon.adx", "36_C_Hon.adx", "37_A_Fra.adx", "38_B_Fra.adx", "39_C_Fra.adx",
+    "40_A_Q.adx", "41_B_Q.adx", "42_C_Q.adx", "43_A_Mex.adx", "44_B_Mex.adx", "45_C_Mex.adx", "46_A_Gre.adx", "47_B_Gre.adx", "48_C_Gre.adx"
+]
+
+desc = [
+    "(empty)", "Alex — New York, variant A", "Alex — New York, variant B", "Alex — New York, variant C", "Necro — Russia, variant A", "Necro — Russia, variant B", "Necro — Russia, variant C", "Hugo — Germany, variant A", "Hugo — Germany, variant B", "Hugo — Germany, variant C",
+    "Chun-Li — China, variant A", "Chun-Li — China, variant B", "Chun-Li — China, variant C", "Ibuki — Shinjuku, variant A", "Ibuki — Shinjuku, variant B", "Ibuki — Shinjuku, variant C", "Makoto — Kyoto Dojo, variant A", "Makoto — Kyoto Dojo, variant B", "Makoto — Kyoto Dojo, variant C", "Ryu — Suzaku Castle, variant A",
+    "Ryu — Suzaku Castle, variant B", "Ryu — Suzaku Castle, variant C", "Oro — Mountain Cave, variant A", "Oro — Mountain Cave, variant B", "Oro — Mountain Cave, variant C", "Elena — Africa, variant A", "Elena — Africa, variant B", "Elena — Africa, variant C", "Sean — Brazil, variant A", "Sean — Brazil, variant B",
+    "Sean — Brazil, variant C", "Dudley — London, variant A", "Dudley — London, variant B", "Dudley — London, variant C", "Yun/Yang — Hong Kong, variant A", "Yun/Yang — Hong Kong, variant B", "Yun/Yang — Hong Kong, variant C", "Remy — France, variant A", "Remy — France, variant B", "Remy — France, variant C",
+    "Q — Underground Lair, variant A", "Q — Underground Lair, variant B", "Q — Underground Lair, variant C", "Urien — Aztec Ruins, variant A", "Urien — Aztec Ruins, variant B", "Urien — Aztec Ruins, variant C", "Gill — Greece, variant A", "Gill — Greece, variant B", "Gill — Greece, variant C"
+]
+
+print("   Code | Arr. fnum | Arc. fnum | Stage Name | FileName             | Description")
+print("  ------+-----------+-----------+------------+----------------------+-------------------------------------------")
+for i in range(1, 49):
+    arr = arranged[i]
+    arc = str(arcade[i]).rjust(4) if arcade[i] != 0 else "   —"
+    print(f"   {str(i).rjust(2)} |  {arr} | {arc} | {names[i].ljust(8)} | {files[i].ljust(20)} | {desc[i]}")

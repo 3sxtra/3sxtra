@@ -558,9 +558,11 @@ s32 check_stand_up(PLW* wk) {
 
 /** @brief Checks if the player is holding a defensive lever direction. */
 s32 check_defense_lever(PLW* wk) {
+#if !CPS3
     if (wk->spmv_ng_flag & DIP_GUARD_DISABLED) {
         return 0;
     }
+#endif
 
     if (!check_em_catt(wk)) {
         return 0;
