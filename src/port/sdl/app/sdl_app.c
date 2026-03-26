@@ -518,6 +518,34 @@ int SDLApp_Init() {
         fatal_error("Failed to get base path.");
     }
 
+    // ── Asset version check ──────────────────────────────────────
+    // Verifies that the assets/ directory contains a compatible version.
+    // This catches stale/missing asset packs early with a clear message.
+    {
+        #define MINIMUM_ASSET_VERSION 1
+        char version_path[1024];
+        snprintf(version_path, sizeof(version_path), "%sassets/ASSET_VERSION", base_path);
+        size_t version_len = 0;
+        char* version_data = (char*)SDL_LoadFile(version_path, &version_len);
+        if (!version_data) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                "Asset pack not found (missing assets/ASSET_VERSION). "
+                "Download the asset pack from the GitHub releases page.");
+        } else {
+            int asset_version = atoi(version_data);
+            if (asset_version < MINIMUM_ASSET_VERSION) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                    "Asset pack version %d is outdated (minimum: %d). "
+                    "Please download the latest asset pack.",
+                    asset_version, MINIMUM_ASSET_VERSION);
+            } else {
+                SDL_Log("Asset pack version: %d (OK)", asset_version);
+            }
+            SDL_free(version_data);
+        }
+        #undef MINIMUM_ASSET_VERSION
+    }
+
     // Text renderer init
     {
         char font_path[1024];

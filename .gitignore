@@ -44,7 +44,8 @@ uv.lock
 game_deployment.tar.gz
 
 # === Project-Specific ===
-/sf3_3rd_trial_lua/
+/assets/lua/sf3_3rd_trial_lua/
+/assets/lua/3rd_training_lua-main/
 3rd_training_lua-main.zip
 sf3_3rd_trial_lua_20220613.zip
 

@@ -87,6 +87,7 @@ modules:
     config-opts:
       - -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - -DENABLE_TESTS=OFF
+      - -DINSTALL_ASSETS=OFF
       - -DSDL3_ROOT=/app
     sources:
       - type: dir

@@ -371,7 +371,7 @@ static void do_init() {
             // Build full path in the libretro shaders directory
             char path[1024];
             const char* base = SDL_GetBasePath();
-            snprintf(path, sizeof(path), "%sshaders/libretro/%s", base ? base : "", filename);
+            snprintf(path, sizeof(path), "%sassets/shaders/libretro/%s", base ? base : "", filename);
 
             if (SDLAppShader_ChainSaveAsPreset(path)) {
                 SDL_Log("[Shader Chain] Saved as '%s'", path);

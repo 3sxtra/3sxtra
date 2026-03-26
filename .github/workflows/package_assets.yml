@@ -1,0 +1,70 @@
+name: Package Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Asset pack version (e.g. 1, 2). Written to assets/ASSET_VERSION."
+        required: true
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - 'assets/**'
+      - '!assets/sprites/**'
+      - '!assets/stages/**'
+      - '!assets/bgm_mod/**'
+      - '!assets/voice_mod/**'
+      - '!assets/bezels/**'
+      - 'shaders/custom/**'
+
+concurrency:
+  group: package-assets-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    name: Build Asset Pack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Clone libretro slang-shaders
+        run: |
+          git clone --depth 1 https://github.com/libretro/slang-shaders.git \
+            assets/shaders/libretro
+          rm -rf assets/shaders/libretro/.git
+
+      - name: Overlay custom presets into libretro collection
+        run: |
+          mkdir -p assets/shaders/libretro/custom
+          if [ -d "assets/shaders/custom" ]; then
+            cp -r assets/shaders/custom/* assets/shaders/libretro/custom/ 2>/dev/null || true
+          fi
+
+      - name: Remove gitignored heavy assets (not shipped)
+        run: |
+          rm -rf assets/sprites assets/stages assets/bgm_mod assets/voice_mod assets/bezels
+          # Also remove gitignored lua subdirs (training/trial zips)
+          rm -rf assets/lua/sf3_3rd_trial_lua assets/lua/3rd_training_lua-main
+
+      - name: Set asset version
+        run: |
+          VERSION="${{ inputs.version || '0' }}"
+          echo "$VERSION" > assets/ASSET_VERSION
+          echo "ASSET_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Package asset pack
+        run: |
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          FILENAME="3SX-assets-v${ASSET_VERSION}-${SHORT_SHA}.zip"
+          zip -r "$FILENAME" assets/
+          echo "ASSET_FILENAME=$FILENAME" >> "$GITHUB_ENV"
+
+      - name: Upload asset artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-assets-pack
+          path: 3SX-assets-*.zip

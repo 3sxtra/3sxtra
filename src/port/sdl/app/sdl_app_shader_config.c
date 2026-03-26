@@ -143,7 +143,7 @@ static void load_preset_internal(int index) {
     }
 
     char full_path[1024];
-    snprintf(full_path, sizeof(full_path), "%s%s/%s", g_base_path, "shaders/libretro", available_presets[index]);
+    snprintf(full_path, sizeof(full_path), "%s%s/%s", g_base_path, "assets/shaders/libretro", available_presets[index]);
 
     // Normalize path separators
     for (int i = 0; full_path[i]; i++) {
@@ -218,7 +218,7 @@ static void ensure_shader_initialized(void) {
     shader_mode_libretro = Config_GetBool(CFG_KEY_SHADER_MODE_LIBRETRO);
 
     char shaders_path[1024];
-    snprintf(shaders_path, sizeof(shaders_path), "%s%s", g_base_path, "shaders/libretro");
+    snprintf(shaders_path, sizeof(shaders_path), "%s%s", g_base_path, "assets/shaders/libretro");
 
     int capacity = 64;
     available_presets = (char**)SDL_malloc(capacity * sizeof(char*));
@@ -332,7 +332,7 @@ static void chain_load_and_merge(int preset_index, bool prepend) {
         return;
 
     char full_path[1024];
-    snprintf(full_path, sizeof(full_path), "%s%s/%s", g_base_path, "shaders/libretro", available_presets[preset_index]);
+    snprintf(full_path, sizeof(full_path), "%s%s/%s", g_base_path, "assets/shaders/libretro", available_presets[preset_index]);
     for (int i = 0; full_path[i]; i++) {
         if (full_path[i] == '\\')
             full_path[i] = '/';
@@ -362,9 +362,9 @@ static void chain_load_and_merge(int preset_index, bool prepend) {
     {
         char temp_path[1024];
         if (g_base_path)
-            snprintf(temp_path, sizeof(temp_path), "%s%s", g_base_path, "shaders/libretro/_3sx_chain.slangp");
+            snprintf(temp_path, sizeof(temp_path), "%s%s", g_base_path, "assets/shaders/libretro/_3sx_chain.slangp");
         else
-            snprintf(temp_path, sizeof(temp_path), "%s", "shaders/libretro/_3sx_chain.slangp");
+            snprintf(temp_path, sizeof(temp_path), "%s", "assets/shaders/libretro/_3sx_chain.slangp");
 
         // Write the current chain composition so we can read its params
         if (GLSLP_Write(&s_chain_preset, temp_path)) {
@@ -457,9 +457,9 @@ void SDLAppShader_ChainApply(void) {
     // Write the merged chain to a temp file
     char temp_path[1024];
     if (g_base_path) {
-        snprintf(temp_path, sizeof(temp_path), "%s%s", g_base_path, "shaders/libretro/_3sx_chain.slangp");
+        snprintf(temp_path, sizeof(temp_path), "%s%s", g_base_path, "assets/shaders/libretro/_3sx_chain.slangp");
     } else {
-        snprintf(temp_path, sizeof(temp_path), "%s", "shaders/libretro/_3sx_chain.slangp");
+        snprintf(temp_path, sizeof(temp_path), "%s", "assets/shaders/libretro/_3sx_chain.slangp");
     }
 
     if (!GLSLP_Write(&s_chain_preset, temp_path)) {

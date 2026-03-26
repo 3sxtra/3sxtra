@@ -68,11 +68,13 @@ jobs:
 
                 BUILD_TYPE=${{ inputs.release && 'Release' || 'Debug' }}
                 MSYS2_PYTHON=$(which python3)
+                INSTALL_ASSETS=${{ inputs.release && 'OFF' || 'ON' }}
 
                 CC=clang CXX=clang++ cmake -B build \
                     -G Ninja \
                     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
                     -DENABLE_TESTS=OFF \
+                    -DINSTALL_ASSETS=$INSTALL_ASSETS \
                     -DCMAKE_C_COMPILER_LAUNCHER=ccache \
                     -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                     -DMSYS2_LOCATION=${{ steps.msys2.outputs.msys2-location }} \

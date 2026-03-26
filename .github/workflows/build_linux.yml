@@ -60,9 +60,11 @@ jobs:
             run: |
                 set -o pipefail
                 BUILD_TYPE=${{ inputs.release && 'Release' || 'Debug' }}
+                INSTALL_ASSETS=${{ inputs.release && 'OFF' || 'ON' }}
                 CC=clang CXX=clang++ cmake -B build-linux \
                     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
                     -DENABLE_TESTS=OFF \
+                    -DINSTALL_ASSETS=$INSTALL_ASSETS \
                     -DCMAKE_C_COMPILER_LAUNCHER=ccache \
                     -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                     -DTHIRD_PARTY_DIR=${{ github.workspace }}/third_party_linux

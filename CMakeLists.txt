@@ -21,6 +21,7 @@ option(ENABLE_LIBRASHADER      "Build with librashader CRT/shader filters"      
 option(ENABLE_DEBUG_HUD        "Build with debug HUD overlay"                     ON)
 option(ENABLE_LEADERBOARD      "Build with online leaderboard"                    ON)
 option(ENABLE_ARCADE_ROM       "Build with arcade ROM support (minizip-ng)"       ON)
+option(INSTALL_ASSETS          "Install assets via symlinks (OFF for CI release)" ON)
 
 # Set third-party directory based on platform
 # RPi4 uses a separate directory to avoid conflicts with Windows-built files.
@@ -840,13 +841,13 @@ if(WIN32)
     file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/assets" _ASSETS_SRC)
     file(TO_NATIVE_PATH "${THIRD_PARTY_DIR}/slang-shaders" _SLANG_SRC)
     # Write a helper batch script at configure time.
-    # It creates the shaders directory first (for the libretro junction),
+    # It creates the assets/shaders directory first (for the libretro junction),
     # then creates junctions only if they do not already exist.
     file(WRITE "${CMAKE_BINARY_DIR}/create_asset_links.bat"
         "@echo off\n"
         "if not exist \"%1\\assets\" (mklink /J \"%1\\assets\" \"${_ASSETS_SRC}\")\n"
-        "if not exist \"%1\\shaders\" (mkdir \"%1\\shaders\")\n"
-        "if not exist \"%1\\shaders\\libretro\" (mklink /J \"%1\\shaders\\libretro\" \"${_SLANG_SRC}\")\n"
+        "if not exist \"%1\\assets\\shaders\" (mkdir \"%1\\assets\\shaders\")\n"
+        "if not exist \"%1\\assets\\shaders\\libretro\" (mklink /J \"%1\\assets\\shaders\\libretro\" \"${_SLANG_SRC}\")\n"
     )
     add_custom_command(TARGET 3sx POST_BUILD
         # Create asset + libretro shader junctions via .bat
@@ -859,7 +860,7 @@ if(WIN32)
     if(ENABLE_LIBRASHADER)
         add_custom_command(TARGET 3sx POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${CMAKE_SOURCE_DIR}/shaders/custom" "$<TARGET_FILE_DIR:3sx>/shaders/libretro/custom"
+                "${CMAKE_SOURCE_DIR}/assets/shaders/custom" "$<TARGET_FILE_DIR:3sx>/assets/shaders/libretro/custom"
             COMMENT "Copying custom shader presets"
         )
     endif()
@@ -873,69 +874,73 @@ else()
         )
         if(ENABLE_LIBRASHADER)
             add_custom_command(TARGET 3sx POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E create_symlink "${THIRD_PARTY_DIR}/slang-shaders" "$<TARGET_FILE_DIR:3sx>/shaders/libretro"
+                COMMAND ${CMAKE_COMMAND} -E create_symlink "${THIRD_PARTY_DIR}/slang-shaders" "$<TARGET_FILE_DIR:3sx>/assets/shaders/libretro"
                 COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    "${CMAKE_SOURCE_DIR}/shaders/custom" "$<TARGET_FILE_DIR:3sx>/shaders/libretro/custom"
+                    "${CMAKE_SOURCE_DIR}/assets/shaders/custom" "$<TARGET_FILE_DIR:3sx>/assets/shaders/libretro/custom"
                 COMMENT "Symlinking libretro shaders + copying custom presets"
             )
         endif()
     endif()
 endif()
 
+
 if(ENABLE_TRAINING)
     add_custom_command(TARGET 3sx POST_BUILD
         # Lua scripts for trials/training
         COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:3sx>/lua
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_SOURCE_DIR}/src/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua $<TARGET_FILE_DIR:3sx>/lua/sf3_3rd_trial_clean.lua
+        ${CMAKE_SOURCE_DIR}/assets/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua $<TARGET_FILE_DIR:3sx>/lua/sf3_3rd_trial_clean.lua
         # Lua compat modules (FBNeo API shim)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/src/lua/compat $<TARGET_FILE_DIR:3sx>/lua/compat
+        ${CMAKE_SOURCE_DIR}/assets/lua/compat $<TARGET_FILE_DIR:3sx>/lua/compat
         # Training mode bootstrap
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_SOURCE_DIR}/src/lua/training_main.lua $<TARGET_FILE_DIR:3sx>/lua/training_main.lua
+        ${CMAKE_SOURCE_DIR}/assets/lua/training_main.lua $<TARGET_FILE_DIR:3sx>/lua/training_main.lua
         # Effie's training Lua modules (data, tools, prediction)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/src/lua/3rd_training_lua-main/src $<TARGET_FILE_DIR:3sx>/lua/src
+        ${CMAKE_SOURCE_DIR}/assets/lua/3rd_training_lua-main/src $<TARGET_FILE_DIR:3sx>/lua/src
         # Effie's framedata JSONs
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/src/lua/3rd_training_lua-main/data $<TARGET_FILE_DIR:3sx>/lua/data
+        ${CMAKE_SOURCE_DIR}/assets/lua/3rd_training_lua-main/data $<TARGET_FILE_DIR:3sx>/lua/data
     )
 endif()
 
 # Heavy asset/shader dirs: create junctions (Win) or symlinks (Unix)
 # instead of copying 3+ GB of sprites and 100+ MB of libretro shaders.
-if(WIN32)
-    file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/assets" _INST_ASSETS_SRC)
-    file(TO_NATIVE_PATH "${THIRD_PARTY_DIR}/slang-shaders" _INST_SLANG_SRC)
-    file(WRITE "${CMAKE_BINARY_DIR}/create_install_links.bat"
-        "@echo off\n"
-        "if not exist \"%1\\assets\" (mklink /J \"%1\\assets\" \"${_INST_ASSETS_SRC}\")\n"
-        "if not exist \"%1\\shaders\" (mkdir \"%1\\shaders\")\n"
-        "if not exist \"%1\\shaders\\libretro\" (mklink /J \"%1\\shaders\\libretro\" \"${_INST_SLANG_SRC}\")\n"
-    )
-    install(CODE "execute_process(COMMAND \"${CMAKE_BINARY_DIR}/create_install_links.bat\" \"\${CMAKE_INSTALL_PREFIX}/bin\")")
-else()
-    install(CODE "
-        execute_process(COMMAND \${CMAKE_COMMAND} -E create_symlink
-            \"${CMAKE_SOURCE_DIR}/assets\" \"\${CMAKE_INSTALL_PREFIX}/bin/assets\")
-        execute_process(COMMAND \${CMAKE_COMMAND} -E create_symlink
-            \"${THIRD_PARTY_DIR}/slang-shaders\" \"\${CMAKE_INSTALL_PREFIX}/bin/shaders/libretro\")
-    ")
+# Disabled for CI release builds (assets are a separate download).
+if(INSTALL_ASSETS)
+    if(WIN32)
+        file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/assets" _INST_ASSETS_SRC)
+        file(TO_NATIVE_PATH "${THIRD_PARTY_DIR}/slang-shaders" _INST_SLANG_SRC)
+        file(WRITE "${CMAKE_BINARY_DIR}/create_install_links.bat"
+            "@echo off\n"
+            "if not exist \"%1\\assets\" (mklink /J \"%1\\assets\" \"${_INST_ASSETS_SRC}\")\n"
+            "if not exist \"%1\\assets\\shaders\" (mkdir \"%1\\assets\\shaders\")\n"
+            "if not exist \"%1\\assets\\shaders\\libretro\" (mklink /J \"%1\\assets\\shaders\\libretro\" \"${_INST_SLANG_SRC}\")\n"
+        )
+        install(CODE "execute_process(COMMAND \"${CMAKE_BINARY_DIR}/create_install_links.bat\" \"\${CMAKE_INSTALL_PREFIX}/bin\")")
+    else()
+        install(CODE "
+            execute_process(COMMAND \${CMAKE_COMMAND} -E create_symlink
+                \"${CMAKE_SOURCE_DIR}/assets\" \"\${CMAKE_INSTALL_PREFIX}/bin/assets\")
+            execute_process(COMMAND \${CMAKE_COMMAND} -E create_symlink
+                \"${THIRD_PARTY_DIR}/slang-shaders\" \"\${CMAKE_INSTALL_PREFIX}/bin/assets/shaders/libretro\")
+        ")
+    endif()
+    if(ENABLE_LIBRASHADER)
+        install(DIRECTORY assets/shaders/custom/ DESTINATION bin/assets/shaders/libretro/custom)
+    endif()
+    # Lua runtime files (only when training is enabled)
+    if(ENABLE_TRAINING)
+        install(DIRECTORY assets/lua/compat DESTINATION bin/lua)
+        install(FILES assets/lua/training_main.lua DESTINATION bin/lua)
+        install(FILES assets/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua DESTINATION bin/lua)
+        install(DIRECTORY assets/lua/3rd_training_lua-main/src DESTINATION bin/lua)
+        install(DIRECTORY assets/lua/3rd_training_lua-main/data DESTINATION bin/lua)
+    endif()
 endif()
-# Shaders: small copy (37 files) + custom presets
+# GPU shaders: always install (ships with binary, small ~37 files)
 install(DIRECTORY src/shaders DESTINATION bin)
-if(ENABLE_LIBRASHADER)
-    install(DIRECTORY shaders/custom/ DESTINATION bin/shaders/libretro/custom)
-endif()
-# Lua runtime files (only when training is enabled)
-if(ENABLE_TRAINING)
-    install(DIRECTORY src/lua/compat DESTINATION bin/lua)
-    install(FILES src/lua/training_main.lua DESTINATION bin/lua)
-    install(FILES src/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua DESTINATION bin/lua)
-    install(DIRECTORY src/lua/3rd_training_lua-main/src DESTINATION bin/lua)
-    install(DIRECTORY src/lua/3rd_training_lua-main/data DESTINATION bin/lua)
-endif()
 
 
 
