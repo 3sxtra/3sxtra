@@ -57,10 +57,10 @@
 #lb-table {
     display: block;
     position: absolute;
-    top: 22dp;
+    top: 20dp;
     left: 1dp;
     right: 1dp;
-    bottom: 12dp;
+    bottom: 15dp;
     padding: 1dp 2dp;
     background-color: rgba(0, 6, 28, 180);
     border-width: 1dp;

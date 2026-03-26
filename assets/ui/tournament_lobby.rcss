@@ -80,7 +80,7 @@
     display: block;
     position: absolute;
     left: 1dp;
-    top: 22dp;
+    top: 23dp;
     width: 130dp;
     bottom: 16dp;
     background-color: rgba(0, 6, 28, 130);
@@ -94,7 +94,7 @@
     display: block;
     position: absolute;
     left: 138dp;
-    top: 22dp;
+    top: 21dp;
     width: 98dp;
     bottom: 16dp;
     padding: 0dp 2dp;
@@ -104,7 +104,7 @@
     display: block;
     position: absolute;
     left: 241dp;
-    top: 22dp;
+    top: 23dp;
     right: 1dp;
     bottom: 16dp;
     background-color: rgba(0, 6, 28, 180);
