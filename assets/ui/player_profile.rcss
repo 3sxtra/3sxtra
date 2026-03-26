@@ -52,30 +52,30 @@
 }
 
 #panel-identity {
-    left: 4dp;
-    top: 21dp;
-    width: 165dp;
-    height: 50dp;
+    left: 1dp;
+    top: 22dp;
+    width: 150dp;
+    height: 49dp;
 }
 
 #panel-rank {
-    left: 172dp;
-    top: 21dp;
-    right: 4dp;
-    height: 50dp;
+    left: 162dp;
+    top: 22dp;
+    right: 1dp;
+    height: 49dp;
 }
 
 #panel-stats {
-    left: 4dp;
-    top: 75dp;
-    width: 165dp;
+    left: 1dp;
+    top: 72dp;
+    width: 150dp;
     bottom: 16dp;
 }
 
 #panel-history {
-    left: 172dp;
-    top: 75dp;
-    right: 4dp;
+    left: 162dp;
+    top: 72dp;
+    right: 1dp;
     bottom: 16dp;
 }
 
@@ -266,8 +266,8 @@
     display: block;
     position: absolute;
     bottom: 1dp;
-    left: 4dp;
-    right: 4dp;
+    left: 1dp;
+    right: 1dp;
     padding: 1dp 6dp;
     background-color: rgba(0, 8, 30, 160);
     border-width: 1dp;

@@ -60,7 +60,7 @@
 #nrp-table {
     display: block;
     position: absolute;
-    top: 20dp;
+    top: 24dp;
     left: 4dp;
     right: 4dp;
     bottom: 26dp;

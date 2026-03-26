@@ -89,7 +89,7 @@
 
 .lobby-row {
     display: block;
-    padding: 1dp 3dp;
+    padding: 0dp 3dp;
     margin-bottom: 0dp;
     color: rgba(210, 220, 255, 210);
     font-size: 9dp;
