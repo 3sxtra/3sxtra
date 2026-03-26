@@ -20,6 +20,44 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "main.h" /* For TASK_INIT, TASK_MENU, task[] */
+#include "port/menu_screen.h"
+#include "sf33rd/Source/Game/init_task_phases.h"
+#include "sf33rd/Source/Game/menu/menu_task_phases.h"
+
+extern MenuScreen g_screens[];
+extern u8 Exit_No;
+extern s8 VS_Stage;
+extern struct _TASK task[];
+
+const char* ModdedBGM_GetGameStateString(void) {
+    if (task[TASK_INIT].r_no[0] == ITP_BOOT) {
+        return "Boot";
+    }
+
+    MenuScreenId screen_id = MenuScreen_GetCurrent();
+    if (screen_id != MENU_SCREEN_NONE) {
+        if (screen_id == MENU_SCREEN_CHAR_SELECT) {
+            if (Exit_No >= 4) {
+                return "Versus Screen";
+            } else {
+                return "Character Select";
+            }
+        }
+        if (g_screens[screen_id].name) {
+            return g_screens[screen_id].name;
+        }
+    }
+
+    if (task[TASK_INIT].r_no[0] == ITP_RUNNING && task[TASK_MENU].r_no[0] == MTP_IN_GAME) {
+        static char buf[64];
+        SDL_snprintf(buf, sizeof(buf), "In-Game (Stage %d)", VS_Stage + 1);
+        return buf;
+    }
+
+    return "Transition";
+}
+
 static bool is_initialized = false;
 static MIX_Mixer* mixer = NULL;
 static MIX_Track* music_track = NULL;
@@ -260,7 +298,7 @@ static bool try_load_and_play(const char* ext, int file_id) {
 
     fade_active = false;
     cached_bgm_count = -1; /* New track added/removed — invalidate cache */
-    SDL_Log("ModdedBGM: Playing %s", path);
+    SDL_Log("[%s] ModdedBGM: Playing %s", ModdedBGM_GetGameStateString(), path);
     return true;
 }
 
@@ -387,13 +425,13 @@ static bool try_load_voice(const char* voice_name, const char* ext) {
     SDL_DestroyProperties(props);
 
     if (!ok) {
-        SDL_Log("ModdedBGM: Failed to play voice %s: %s", path, SDL_GetError());
+        SDL_Log("[%s] ModdedBGM: Failed to play voice %s: %s", ModdedBGM_GetGameStateString(), path, SDL_GetError());
         MIX_DestroyAudio(current_voice_audio);
         current_voice_audio = NULL;
         return false;
     }
 
-    SDL_Log("ModdedBGM: Playing voice %s", path);
+    SDL_Log("[%s] ModdedBGM: Playing voice %s", ModdedBGM_GetGameStateString(), path);
     return true;
 }
 
@@ -475,10 +513,10 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
     // The actual character is tracked in g_cseSysWork.SpuBankId[slot].
     if (ptix == 0x7F) {
         /* BGM requests are modded via bgm_mod/, not voice_mod/ — log clearly */
-        SDL_Log("ModdedSFX Check: req=%d → BGM track (mod via assets/bgm_mod/ folder)", reqNum);
+        SDL_Log("[%s] ModdedSFX Check: req=%d → BGM track (mod via assets/bgm_mod/ folder)", ModdedBGM_GetGameStateString(), reqNum);
     } else if (ptix == 0) {
         bank_dir = "SE";
-        SDL_Log("ModdedSFX Check: req=%d → assets/voice_mod/SE/%d.ogg", reqNum, engine_code);
+        SDL_Log("[%s] ModdedSFX Check: req=%d → assets/voice_mod/SE/%d.ogg", ModdedBGM_GetGameStateString(), reqNum, engine_code);
     } else {
         u32 char_data_id = g_cseSysWork.SpuBankId[ptix & 0xF];
         if (char_data_id >= 1 && char_data_id <= 20) {
@@ -486,9 +524,9 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
             // 1=PL00(Gill), 2=PL01(Alex), 3=PL02(Ryu), ...
             snprintf(bank_dir_buf, sizeof(bank_dir_buf), "PL%02d", (int)(char_data_id - 1));
             bank_dir = bank_dir_buf;
-            SDL_Log("ModdedSFX Check: req=%d → assets/voice_mod/%s/%d.ogg", reqNum, bank_dir, engine_code);
+            SDL_Log("[%s] ModdedSFX Check: req=%d → assets/voice_mod/%s/%d.ogg", ModdedBGM_GetGameStateString(), reqNum, bank_dir, engine_code);
         } else {
-            SDL_Log("ModdedSFX Check: req=%d → assets/voice_mod/%d.ogg (bank slot %d not loaded)", reqNum, reqNum, ptix & 0xF);
+            SDL_Log("[%s] ModdedSFX Check: req=%d → assets/voice_mod/%d.ogg (bank slot %d not loaded)", ModdedBGM_GetGameStateString(), reqNum, reqNum, ptix & 0xF);
         }
     }
 
@@ -530,9 +568,9 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
             MIX_Audio* audio = MIX_LoadAudio(mixer, path, false);
             if (audio) {
                 sfx_cache[reqNum] = audio;
-                SDL_Log("ModdedSFX: Loaded %s for request %X (bank %s, idx %d)", path, reqNum, bank_dir ? bank_dir : "?", engine_code);
+                SDL_Log("[%s] ModdedSFX: Loaded %s for request %X (bank %s, idx %d)", ModdedBGM_GetGameStateString(), path, reqNum, bank_dir ? bank_dir : "?", engine_code);
             } else {
-                SDL_Log("ModdedSFX: Failed to load %s: %s", path, SDL_GetError());
+                SDL_Log("[%s] ModdedSFX: Failed to load %s: %s", ModdedBGM_GetGameStateString(), path, SDL_GetError());
             }
         }
     }

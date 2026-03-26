@@ -71,7 +71,13 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan);
 bool ModdedBGM_IsVoiceModded(const char* voice_name);
 
 /**
+ * @brief Get a human-readable string representing the current game state (for logging).
+ */
+const char* ModdedBGM_GetGameStateString(void);
+
+/**
  * @brief Count how many modded BGM files are detected in assets/bgm_mod/.
+
  * @return Number of audio files found (any supported extension).
  */
 int ModdedBGM_CountModdedTracks(void);

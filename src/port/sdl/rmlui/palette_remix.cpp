@@ -4,12 +4,7 @@
 #include <algorithm>
 #include <string>
 
-extern "C" {
-#include "sf33rd/Source/Common/PPGFile.h"
-#include "sf33rd/Source/Common/PPGWork.h"
-#include "sf33rd/Source/Game/stage/bg_data.h"
-#include "structs.h"
-}
+
 
 // --- CPS3 Format Helpers ---
 // CPS3 format: 1BBBBBGGGGGRRRRR (MSB always set, 5 bits per channel)
@@ -422,31 +417,7 @@ bool is_likely_ramp(const std::vector<u16>& ramp_colors) {
     return (max_l - min_l) >= 0.1f;
 }
 
-void get_active_stage_palettes(bool l0, bool l1, bool l2, bool* active_rows) {
-    memset(active_rows, 0, 512 * sizeof(bool));
 
-    auto map_layer_palettes = [&](int bgnm) {
-        // CPS3 background tiles dynamically index sub-palettes up to 255.
-        // However, the port engine's PPG system aggressively frees the source structure
-        // after VRAM transfer, so we cannot safely iterate `transTotal` from RAM here.
-        // Instead, the engine tightly loads each layer's .col file into 100-palette
-        // contiguous blocks starting perfectly at `bgPalCodeOffset[bgnm]`.
-        int start_idx = bgPalCodeOffset[bgnm];
-        int end_idx = start_idx + 100;
-        
-        // Ensure bounds
-        if (start_idx < 0) start_idx = 0;
-        if (end_idx > 512) end_idx = 512;
-        
-        for (int i = start_idx; i < end_idx; i++) {
-            active_rows[i] = true;
-        }
-    };
-
-    if (l0) map_layer_palettes(0);
-    if (l1) map_layer_palettes(1);
-    if (l2) map_layer_palettes(2);
-}
 
 } // namespace PaletteRemix
 

@@ -21,9 +21,7 @@ namespace PaletteRemix {
     
     // Heuristic to detect if a set of colors is a gradient ramp
     bool is_likely_ramp(const std::vector<u16>& ramp_colors);
-    
-    // Extract which ColorRAM rows (0-511) are currently mapped to by active PPG chunks for L0, L1, L2
-    void get_active_stage_palettes(bool l0, bool l1, bool l2, bool* active_rows);
+
 }
 
 #endif /* __cplusplus */

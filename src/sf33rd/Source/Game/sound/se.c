@@ -23,6 +23,7 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "structs.h"
+#include "port/sound/modded_bgm.h"
 
 #define SDEB_SIZE 8
 #define BGM_STAGE_DATA_SIZE 22
@@ -60,7 +61,7 @@ void Stage_BGM(u16 Stage_Number, u16 Round_Number) {
         return;
     }
 
-    SDL_Log("Stage_BGM: stage=%u round=%u bgm_type=%d → code=%u", Stage_Number, Round_Number, sys_w.bgm_type, code);
+    SDL_Log("[%s] Stage_BGM: stage=%u round=%u bgm_type=%d → code=%u", ModdedBGM_GetGameStateString(), Stage_Number, Round_Number, sys_w.bgm_type, code);
     SsRequest(code);
 }
 
