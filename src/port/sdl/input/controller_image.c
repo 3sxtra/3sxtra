@@ -34,19 +34,6 @@ bool ControllerImage_Module_Init(void) {
         base_path = "";
     }
 
-    char data_path[1024];
-    SDL_snprintf(data_path, sizeof(data_path), "%sassets/controllers/controllerimage-standard.bin", base_path);
-
-    if (ControllerImage_AddDataFromFile(data_path) < 0) {
-        SDL_Log("[ControllerImage] Failed to load data from '%s': %s", data_path, SDL_GetError());
-        /* Try without the base_path prefix (running from the assets/ parent dir) */
-        if (ControllerImage_AddDataFromFile("assets/controllers/controllerimage-standard.bin") < 0) {
-            SDL_Log("[ControllerImage] Failed to load standard data (fallback): %s", SDL_GetError());
-            ControllerImage_Quit();
-            return false;
-        }
-    }
-
     char kenney_path[1024];
     SDL_snprintf(kenney_path, sizeof(kenney_path), "%sassets/controllers/controllerimage-kenney.bin", base_path);
     if (ControllerImage_AddDataFromFile(kenney_path) < 0) {
@@ -63,7 +50,19 @@ bool ControllerImage_Module_Init(void) {
         }
     }
 
-    SDL_Log("[ControllerImage] Initialized successfully, data loaded from '%s', '%s', '%s'", data_path, kenney_path, ordinary_path);
+    char data_path[1024];
+    SDL_snprintf(data_path, sizeof(data_path), "%sassets/controllers/controllerimage-standard.bin", base_path);
+    if (ControllerImage_AddDataFromFile(data_path) < 0) {
+        SDL_Log("[ControllerImage] Failed to load data from '%s': %s", data_path, SDL_GetError());
+        /* Try without the base_path prefix (running from the assets/ parent dir) */
+        if (ControllerImage_AddDataFromFile("assets/controllers/controllerimage-standard.bin") < 0) {
+            SDL_Log("[ControllerImage] Failed to load standard data (fallback): %s", SDL_GetError());
+            ControllerImage_Quit();
+            return false;
+        }
+    }
+
+    SDL_Log("[ControllerImage] Initialized successfully, data loaded from '%s', '%s', '%s'", kenney_path, ordinary_path, data_path);
 
     s_keyboard_device = ControllerImage_CreateKeyboardDevice();
     if (!s_keyboard_device) {
