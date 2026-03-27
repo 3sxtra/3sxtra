@@ -28,7 +28,7 @@
 
 #profile-title-text {
     display: block;
-    font-size: 11dp;
+    font-size: 14dp;
     color: #fff;
     font-weight: bold;
     font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
@@ -55,26 +55,26 @@
     left: 1dp;
     top: 22dp;
     width: 150dp;
-    height: 49dp;
+    height: 74dp;
 }
 
 #panel-rank {
     left: 162dp;
     top: 22dp;
     right: 1dp;
-    height: 49dp;
+    height: 74dp;
 }
 
 #panel-stats {
     left: 1dp;
-    top: 80dp;
+    top: 105dp;
     width: 150dp;
     bottom: 16dp;
 }
 
 #panel-history {
     left: 162dp;
-    top: 80dp;
+    top: 105dp;
     right: 1dp;
     bottom: 16dp;
 }
@@ -83,25 +83,30 @@
 
 .card-header {
     display: block;
-    font-size: 7dp;
-    color: rgba(170, 200, 255, 170);
-    padding: 0dp 0dp;
-    margin-bottom: 2dp;
+    font-size: 15dp;
+    font-weight: bold;
+    color: rgba(240, 250, 255, 255);
+    background-color: rgba(30, 45, 90, 200);
+    padding: 1dp 4dp 0dp 4dp;
+    margin-bottom: 3dp;
     border-bottom-width: 1dp;
-    border-bottom-color: rgba(100, 130, 220, 60);
+    border-bottom-color: rgba(100, 150, 255, 200);
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 150));
+    letter-spacing: 1dp;
 }
 
 /* ─── Identity Panel ─────────────────────────────────────────── */
 
 #identity-content {
     display: block;
+    text-align: center;
+    padding-top: 12dp;
 }
 
 #avatar-img {
-    display: block;
-    position: absolute;
-    left: 4dp;
-    top: 14dp;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6dp;
     width: 32dp;
     height: 32dp;
     border-width: 1dp;
@@ -109,28 +114,28 @@
 }
 
 #identity-info {
-    display: block;
-    position: absolute;
-    left: 42dp;
-    top: 16dp;
-    right: 4dp;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
 }
 
 #player-name {
     display: block;
-    font-size: 12dp;
+    font-size: 15dp;
     color: rgba(255, 210, 70, 255);
     font-weight: bold;
     font-effect: shadow(1dp 1dp rgba(0, 0, 0, 180));
+    text-align: center;
     white-space: nowrap;
     overflow: hidden;
 }
 
 #player-title {
     display: block;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(160, 190, 240, 200);
     margin-top: 1dp;
+    text-align: center;
 }
 
 /* ─── Rows (Label + Value) ───────────────────────────────────── */
@@ -139,19 +144,19 @@
     display: block;
     padding: 1dp 2dp;
     margin-bottom: 0dp;
-    font-size: 9dp;
+    font-size: 12dp;
 }
 
 .lbl {
     display: inline;
     width: 75dp;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(150, 180, 230, 180);
 }
 
 .val {
     display: inline;
-    font-size: 9dp;
+    font-size: 12dp;
     color: #fff;
     margin-left: 2dp;
     font-weight: bold;
@@ -180,7 +185,7 @@
     display: block;
     padding: 1dp 2dp;
     color: rgba(190, 200, 225, 180);
-    font-size: 8dp;
+    font-size: 11dp;
     border-left-width: 2dp;
     border-left-color: transparent;
     white-space: nowrap;
@@ -199,7 +204,7 @@
 .hist-result {
     display: inline-block;
     width: 22dp;
-    font-size: 8dp;
+    font-size: 11dp;
     font-weight: bold;
 }
 
@@ -216,14 +221,14 @@
     width: 32dp;
     text-align: center;
     color: rgba(220, 180, 80, 180);
-    font-size: 7dp;
+    font-size: 10dp;
 }
 
 .hist-vs {
     display: inline-block;
     width: 10dp;
     text-align: center;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(120, 140, 180, 150);
 }
 
@@ -237,7 +242,7 @@
 
 .hist-name {
     display: inline-block;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(200, 220, 255, 230);
     width: 48dp;
     overflow: hidden;
@@ -247,7 +252,7 @@
 
 .hist-status {
     display: inline-block;
-    font-size: 7dp;
+    font-size: 10dp;
     width: 30dp;
     text-align: right;
     color: rgba(255, 210, 70, 200);
@@ -255,7 +260,7 @@
 
 .history-empty {
     display: block;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(140, 150, 180, 100);
     padding: 2dp 4dp;
 }
@@ -276,6 +281,8 @@
 
 #status-text {
     display: block;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(255, 210, 70, 240);
 }
+
+

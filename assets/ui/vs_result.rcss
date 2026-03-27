@@ -2,8 +2,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 14dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 17dp;
     color: #ffffffee;
 }
 
@@ -32,7 +32,7 @@ body {
 /* ── Header ─────────────────────────────────────────────────── */
 .result-header {
     display: block;
-    font-size: 24dp;
+    font-size: 28dp;
     font-weight: bold;
     color: #ffd700;
     letter-spacing: 4dp;
@@ -71,23 +71,23 @@ body {
     vertical-align: top;
     text-align: center;
     padding-top: 40dp;
-    font-size: 18dp;
+    font-size: 22dp;
     font-weight: bold;
-    color: #888888;
+    color: #b0b0b0;
 }
 
 /* ── Player elements ────────────────────────────────────────── */
 .player-label {
     display: block;
-    font-size: 12dp;
-    color: #888888;
+    font-size: 15dp;
+    color: #b0b0b0;
     letter-spacing: 2dp;
     margin-bottom: 4dp;
 }
 
 .player-char {
     display: block;
-    font-size: 16dp;
+    font-size: 20dp;
     font-weight: bold;
     color: #ffffff;
     margin-bottom: 8dp;
@@ -95,7 +95,7 @@ body {
 
 .player-wins {
     display: block;
-    font-size: 28dp;
+    font-size: 32dp;
     font-weight: bold;
     color: #ffd700;
     margin-bottom: 4dp;
@@ -104,7 +104,7 @@ body {
 
 .player-pct-label {
     display: block;
-    font-size: 10dp;
+    font-size: 13dp;
     color: #666666;
     letter-spacing: 1dp;
     margin-bottom: 2dp;
@@ -112,7 +112,9 @@ body {
 
 .player-pct {
     display: block;
-    font-size: 18dp;
+    font-size: 22dp;
     font-weight: bold;
-    color: #cccccc;
+    color: #e0e0e0;
 }
+
+

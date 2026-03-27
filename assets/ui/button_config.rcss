@@ -18,7 +18,7 @@
 /* ── Title: orange accent ──────────────────────────────────── */
 .bc-title {
     display: block;
-    font-size: 12dp;
+    font-size: 15dp;
     font-weight: bold;
     color: #ff8844;
     letter-spacing: 3dp;
@@ -34,9 +34,9 @@
 .menu-item {
     padding: 2dp 8dp;
     margin-bottom: 1dp;
-    font-size: 10dp;
+    font-size: 13dp;
     letter-spacing: 1dp;
-    color: #cccccc;
+    color: #e0e0e0;
     height: auto;
     line-height: 1.2;
     transition: background-color 0.12s linear-in-out;
@@ -48,3 +48,5 @@
     padding-left: 5dp;
     color: #ffffff;
 }
+
+

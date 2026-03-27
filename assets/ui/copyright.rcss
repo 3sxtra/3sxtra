@@ -6,8 +6,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 6dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 9dp;
 }
 
 #copyright-text {
@@ -21,8 +21,10 @@ body {
 
 .copyright-line {
     display: block;
-    font-size: 6dp;
-    color: #CCCCCC;
+    font-size: 9dp;
+    color: #e0e0e0;
     text-align: center;
     line-height: 8dp;
 }
+
+

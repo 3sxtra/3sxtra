@@ -2,8 +2,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 14dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 17dp;
     color: #ffffffee;
 }
 
@@ -31,7 +31,7 @@ body {
 
 .countdown-number {
     display: inline-block;
-    font-size: 32dp;
+    font-size: 36dp;
     font-weight: bold;
     color: #ff4444;
     font-effect: shadow(2dp 2dp #00000088);
@@ -40,15 +40,15 @@ body {
 
 @keyframes count-pulse {
     0% {
-        font-size: 32dp;
+        font-size: 36dp;
         color: #ff4444;
     }
     50% {
-        font-size: 36dp;
+        font-size: 40dp;
         color: #ffcc44;
     }
     100% {
-        font-size: 32dp;
+        font-size: 36dp;
         color: #ff4444;
     }
 }
@@ -56,7 +56,9 @@ body {
 /* ── Loser character name ───────────────────────────────────── */
 .loser-name {
     display: block;
-    font-size: 11dp;
-    color: #aaaaaa;
+    font-size: 14dp;
+    color: #cccccc;
     letter-spacing: 2dp;
 }
+
+

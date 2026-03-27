@@ -6,7 +6,7 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
+    font-family: "DistrictTF-RegularItalic";
     background-color: rgba(0, 0, 0, 0);
 }
 
@@ -39,9 +39,9 @@ body {
 .press-start {
     display: inline-block;
     font-family: "BoldPixels";
-    font-size: 12dp;
+    font-size: 15dp;
     line-height: 12dp;
-    color: #A8ECFF;
+    color: #a8ecff;
     letter-spacing: 2dp;
     font-effect: outline(1dp #1A2866);
     animation: attract-blink-slow 1s sine-in-out infinite alternate;
@@ -52,3 +52,5 @@ body {
     0%   { opacity: 1; }
     100% { opacity: 0; }
 }
+
+

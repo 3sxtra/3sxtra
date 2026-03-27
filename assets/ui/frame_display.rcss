@@ -55,7 +55,7 @@
 /* ── Stats text ── */
 .stats-text {
     display: block;
-    font-size: 9dp;
+    font-size: 12dp;
     color: rgba(255, 255, 255, 230);
     padding: 1dp 0dp;
 }
@@ -67,3 +67,5 @@
 .stats-text.negative {
     color: #ff5959;
 }
+
+

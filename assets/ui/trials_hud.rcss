@@ -5,8 +5,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 10dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 13dp;
 }
 
 #trials-container {
@@ -19,8 +19,8 @@ body {
 
 #trial-header {
     display: block;
-    font-size: 9dp;
-    color: #FFFFFF;
+    font-size: 12dp;
+    color: #ffffff;
     font-effect: shadow(1dp 1dp #000000);
     margin-bottom: 4dp;
 }
@@ -30,8 +30,8 @@ body {
     position: absolute;
     top: 0dp;
     left: 224dp;
-    font-size: 9dp;
-    color: #00FFFF;
+    font-size: 12dp;
+    color: #00ffff;
     font-effect: shadow(1dp 1dp #000000);
 }
 
@@ -42,25 +42,25 @@ body {
 
 .step-item {
     display: block;
-    font-size: 8dp;
+    font-size: 11dp;
     font-effect: shadow(1dp 1dp #000000);
     margin-bottom: 2dp;
 }
 
 .step-item.pending {
-    color: #CCCCCC;
+    color: #e0e0e0;
 }
 
 .step-item.active {
-    color: #FFFF00;
+    color: #ffff00;
 }
 
 .step-item.completed {
-    color: #00FF00;
+    color: #00ff00;
 }
 
 .step-item.failed {
-    color: #FF0000;
+    color: #ff0000;
 }
 
 #trial-complete {
@@ -68,7 +68,7 @@ body {
     position: absolute;
     top: 110dp;
     left: 134dp;
-    font-size: 14dp;
+    font-size: 17dp;
     text-align: center;
     font-effect: shadow(2dp 2dp #000000);
 }
@@ -78,7 +78,9 @@ body {
 }
 
 @keyframes trial-flash {
-      0% { color: #00FF00; }
-     50% { color: #FFFFFF; }
-    100% { color: #00FF00; }
+      0% { color: #00ff00; }
+     50% { color: #ffffff; }
+    100% { color: #00ff00; }
 }
+
+

@@ -2,8 +2,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 14dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 17dp;
     color: #ffffffee;
 }
 
@@ -50,7 +50,7 @@ body {
     display: inline-block;
     width: 140dp;
     text-align: left;
-    font-size: 10dp;
+    font-size: 13dp;
     color: #999999;
     letter-spacing: 1dp;
 }
@@ -59,7 +59,9 @@ body {
     display: inline-block;
     width: 140dp;
     text-align: right;
-    font-size: 13dp;
+    font-size: 16dp;
     font-weight: bold;
     color: #ffffff;
 }
+
+

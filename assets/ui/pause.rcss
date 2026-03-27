@@ -7,8 +7,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 12dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 15dp;
 }
 
 /* ── Pause text ────────────────────────────────────────────── */
@@ -23,8 +23,8 @@ body {
 
 .pause-label {
     display: inline-block;
-    font-size: 16dp;
-    color: #FFFFFF;
+    font-size: 20dp;
+    color: #ffffff;
     font-effect: shadow(2dp 2dp #000000);
     animation: pause-blink 1.5s steps(1) infinite;
 }
@@ -46,9 +46,11 @@ body {
 
 .disconnect-line {
     display: block;
-    font-size: 9dp;
-    color: #FFFFFF;
+    font-size: 12dp;
+    color: #ffffff;
     font-effect: shadow(1dp 1dp #000000);
     line-height: 16dp;
     text-align: left;
 }
+
+

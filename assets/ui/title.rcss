@@ -6,7 +6,7 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
+    font-family: "DistrictTF-RegularItalic";
     background-color: rgba(0, 0, 0, 0);
 }
 
@@ -42,9 +42,9 @@ body {
 .press-start {
     display: inline-block;
     font-family: "BoldPixels";
-    font-size: 12dp;
+    font-size: 15dp;
     line-height: 12dp;
-    color: #A8ECFF;
+    color: #a8ecff;
     letter-spacing: 2dp;
     font-effect: outline(1dp #1A2866);
     animation: title-blink-slow 1s sine-in-out infinite alternate;
@@ -63,7 +63,7 @@ body {
     display: inline-block;
     position: absolute;
     left: 20dp;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(180, 220, 255, 217);
     letter-spacing: 1dp;
     animation: title-blink 1.33s step-end infinite;
@@ -73,7 +73,7 @@ body {
     display: inline-block;
     position: absolute;
     right: 20dp;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(255, 180, 180, 217);
     letter-spacing: 1dp;
     animation: title-blink 1.33s step-end infinite;
@@ -84,3 +84,5 @@ body {
     0%   { opacity: 1; }
     100% { opacity: 0; }
 }
+
+

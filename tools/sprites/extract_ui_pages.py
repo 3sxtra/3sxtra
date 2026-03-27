@@ -41,7 +41,7 @@ def parse_ppg_header(data):
     return chunks
 
 
-def decode_ppg_page(data, chunk_offset, chunk_size, palette_colors):
+def decode_ppg_page(data, chunk_offset, chunk_size, palette_colors, force_bank=0):
     """Decode a single pTEX chunk into an RGBA PIL Image.
 
     The PPG pTEX format (PPGFileHeader):
@@ -96,7 +96,7 @@ def decode_ppg_page(data, chunk_offset, chunk_size, palette_colors):
     else:
         raw = comp_data
 
-    # Build per-pixel palette bank map (default: bank 0)
+    # Build per-pixel palette bank map
     if trans:
         default_pal = trans[0][0]
         pal_map = [[default_pal] * w for _ in range(h)]
@@ -107,8 +107,10 @@ def decode_ppg_page(data, chunk_offset, chunk_size, palette_colors):
                 for px in range(px_x, min(px_x + px_w, w)):
                     pal_map[py][px] = pal_bank
     else:
-        # No trans entries: all pixels use palette bank 0
+        # No trans entries: fallback to force_bank
         pal_map = None
+
+    nibble_swap = (pixel_field & 0x20) != 0
 
     # Render indexed pixels to RGBA
     buf = bytearray(w * h * 4)
@@ -119,10 +121,15 @@ def decode_ppg_page(data, chunk_offset, chunk_size, palette_colors):
                 if byte_idx >= len(raw):
                     continue
                 byte_val = raw[byte_idx]
-                if px & 1:
-                    idx = (byte_val >> 4) & 0x0F
+                is_odd = (px & 1) != 0
+                if nibble_swap:
+                    # 3SX spec: if nibble-swap is set, high nibble is the RIGHT (odd) pixel
+                    idx = (byte_val >> 4) if is_odd else byte_val
                 else:
-                    idx = byte_val & 0x0F
+                    # Standard: high nibble is the LEFT (even) pixel
+                    idx = byte_val if is_odd else (byte_val >> 4)
+                idx &= 0x0F
+
             else:
                 byte_idx = py * w + px
                 if byte_idx >= len(raw):
@@ -130,7 +137,7 @@ def decode_ppg_page(data, chunk_offset, chunk_size, palette_colors):
                 idx = raw[byte_idx]
             if idx == 0:
                 continue  # transparent
-            pal_bank = pal_map[py][px] if pal_map else 0
+            pal_bank = pal_map[py][px] if pal_map else force_bank
             color_idx = pal_bank * pal_stride + idx
             off = (py * w + px) * 4
             if color_idx < len(palette_colors):
@@ -237,13 +244,28 @@ def extract_ui_pages(afs_path, output_dir, scale=1):
     ppg_data = read_afs_file(afs_path, entries[SCRSCRN_AFS_ENTRY])
     print(f"Loaded scrscrn.ppg: {len(ppg_data)} bytes from AFS entry {SCRSCRN_AFS_ENTRY}")
 
-    # Parse palette from embedded pPAL chunks (returns flat list of (R,G,B,A) tuples)
-    palette_colors = parse_ppl_palette(ppg_data)
-    if palette_colors:
-        print(f"  Palette: {len(palette_colors)} total colors")
+    # Parse all palettes from embedded pPAL chunks
+    palettes = []
+    pal_idx = 0
+    while True:
+        pal = parse_ppl_palette(ppg_data, pal_idx)
+        if not pal:
+            break
+        palettes.append(pal)
+        pal_idx += 1
+
+    if palettes:
+        print(f"  Loaded {len(palettes)} palettes.")
     else:
         print("  WARNING: No embedded palette found in PPG file")
-        palette_colors = [(128, 128, 128, 255)] * (64 * 512)
+        palettes.append([(128, 128, 128, 255)] * (64 * 512))
+
+    def get_palette_for_page(page_index):
+        if page_index == 5 and len(palettes) > 2:
+            return palettes[2]
+        if page_index == 6 and len(palettes) > 3:
+            return palettes[3]
+        return palettes[0]
 
     # Parse texture chunks
     tex_chunks = parse_ppg_header(ppg_data)
@@ -253,13 +275,32 @@ def extract_ui_pages(afs_path, output_dir, scale=1):
 
     for i, (offset, size) in enumerate(tex_chunks):
         try:
-            page = decode_ppg_page(ppg_data, offset, size, palette_colors)
+            page_pal = get_palette_for_page(i)
+            pixel_field = ppg_data[offset + 11]
+            is_4bit = (pixel_field & 3) == 0
+
+            if is_4bit:
+                # 4-bit pages use 32 different 16-color banks. Extract all of them.
+                bank_dir = os.path.join(output_dir, f"page_{i}_banks")
+                os.makedirs(bank_dir, exist_ok=True)
+                for bank in range(32):
+                    page = decode_ppg_page(ppg_data, offset, size, page_pal, force_bank=bank)
+                    if scale > 1:
+                        new_size = (page.width * scale, page.height * scale)
+                        page = page.resize(new_size, Image.NEAREST)
+                    page.save(os.path.join(bank_dir, f"bank_{bank:02d}.png"))
+                
+                # Also save the default bank 0 at the root level
+                page = decode_ppg_page(ppg_data, offset, size, page_pal, force_bank=0)
+            else:
+                page = decode_ppg_page(ppg_data, offset, size, page_pal)
+
             if scale > 1:
                 new_size = (page.width * scale, page.height * scale)
                 page = page.resize(new_size, Image.NEAREST)
             out_path = os.path.join(output_dir, f"page_{i}.png")
             page.save(out_path)
-            print(f"  Page {i}: {page.size[0]}x{page.size[1]} -> {out_path}")
+            print(f"  Page {i}: {page.size[0]}x{page.size[1]} -> {out_path} (plus all 32 banks)")
         except Exception as e:
             print(f"  WARNING: Failed to decode page {i}: {e}")
 
@@ -272,7 +313,8 @@ def extract_ui_pages(afs_path, output_dir, scale=1):
         atlas = Image.new("RGBA", (cols * tile_w, rows * tile_h), (0, 0, 0, 0))
         for i, (offset, size) in enumerate(tex_chunks):
             try:
-                page = decode_ppg_page(ppg_data, offset, size, palette_colors)
+                page_pal = get_palette_for_page(i)
+                page = decode_ppg_page(ppg_data, offset, size, page_pal, force_bank=0)
                 if scale > 1:
                     page = page.resize((tile_w, tile_h), Image.NEAREST)
                 atlas.paste(page, ((i % cols) * tile_w, (i // cols) * tile_h))

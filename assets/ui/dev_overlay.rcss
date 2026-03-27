@@ -39,7 +39,7 @@ body {
 
 /* Title */
 #dev-panel h1 {
-    font-size: 12dp;
+    font-size: 15dp;
     color: #4a9eff;
     margin-bottom: 2dp;
     text-align: center;
@@ -48,7 +48,7 @@ body {
 
 /* Section headers */
 h2 {
-    font-size: 9dp;
+    font-size: 12dp;
     color: #6a6a80;
     margin-top: 2dp;
     margin-bottom: 2dp;
@@ -57,7 +57,7 @@ h2 {
 }
 
 h3 {
-    font-size: 8dp;
+    font-size: 11dp;
     color: #4a9eff;
     margin-top: 2dp;
     margin-bottom: 1dp;
@@ -92,12 +92,12 @@ h3 {
     display: inline-block;
     float: right;
     padding: 2dp 8dp;
-    font-size: 11dp;
+    font-size: 14dp;
     background-color: #1a1a2a;
     border-width: 1dp;
     border-color: #444;
     border-radius: 3dp;
-    color: #aaa;
+    color: #cccccc;
     cursor: pointer;
 }
 
@@ -117,7 +117,7 @@ h3 {
 .doc-item {
     display: block;
     padding: 2dp 6dp;
-    font-size: 9dp;
+    font-size: 12dp;
     color: #bbb;
     cursor: pointer;
     border-radius: 3dp;
@@ -135,12 +135,12 @@ h3 {
 }
 
 .doc-item.doc-hidden {
-    color: #555;
+    color: #888;
 }
 
 .doc-ctx {
     display: inline-block;
-    font-size: 10dp;
+    font-size: 13dp;
     color: #666;
     min-width: 50dp;
 }
@@ -151,14 +151,14 @@ h3 {
 
 .doc-vis {
     display: inline-block;
-    font-size: 10dp;
+    font-size: 13dp;
     color: #44cc44;
     margin-left: 6dp;
 }
 
 .doc-vis-off {
     display: inline-block;
-    font-size: 10dp;
+    font-size: 13dp;
     color: #444;
     margin-left: 6dp;
 }
@@ -174,7 +174,7 @@ h3 {
 .elem-item {
     display: block;
     padding: 1dp 4dp;
-    font-size: 9dp;
+    font-size: 12dp;
     color: #999;
     cursor: pointer;
     border-radius: 2dp;
@@ -182,7 +182,7 @@ h3 {
 
 .elem-item:hover {
     background-color: #181830;
-    color: #ccc;
+    color: #e0e0e0;
 }
 
 .elem-item.elem-selected {
@@ -193,7 +193,7 @@ h3 {
 /* ─── Inspector ─── */
 
 .elem-breadcrumb {
-    font-size: 11dp;
+    font-size: 14dp;
     color: #4af0ff;
     margin-bottom: 4dp;
     display: block;
@@ -207,7 +207,7 @@ h3 {
 
 label {
     display: inline-block;
-    font-size: 9dp;
+    font-size: 12dp;
     color: #999;
     min-width: 40dp;
 }
@@ -221,7 +221,7 @@ input.text {
     border-color: #333;
     border-radius: 2dp;
     color: #ddd;
-    font-size: 9dp;
+    font-size: 12dp;
     margin-left: 2dp;
 }
 
@@ -232,7 +232,7 @@ input.text:focus {
 /* Range slider value display */
 .value-display {
     display: inline-block;
-    font-size: 10dp;
+    font-size: 13dp;
     color: #4a9eff;
     margin-left: 4dp;
     min-width: 30dp;
@@ -310,15 +310,15 @@ input.checkbox:checked {
 
 .info-label {
     display: inline-block;
-    font-size: 10dp;
+    font-size: 13dp;
     color: #666;
     min-width: 55dp;
 }
 
 .info-value {
     display: inline-block;
-    font-size: 11dp;
-    color: #aaa;
+    font-size: 14dp;
+    color: #cccccc;
 }
 
 .info-accent {
@@ -338,8 +338,8 @@ button {
     border-width: 1dp;
     border-color: #444;
     border-radius: 3dp;
-    color: #ccc;
-    font-size: 9dp;
+    color: #e0e0e0;
+    font-size: 12dp;
     cursor: pointer;
     margin-right: 6dp;
 }
@@ -371,14 +371,14 @@ button:active {
 /* Status/hint text */
 .status-hint {
     color: #444;
-    font-size: 11dp;
+    font-size: 14dp;
     display: block;
     text-align: center;
     padding: 8dp;
 }
 
 .hint {
-    font-size: 10dp;
+    font-size: 13dp;
     color: #333;
     margin-top: 4dp;
     text-align: center;
@@ -412,3 +412,5 @@ button:active {
     background-color: #2a2a40;
     border-radius: 2dp;
 }
+
+

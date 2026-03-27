@@ -2,8 +2,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 14dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 17dp;
     color: #ffffffee;
 }
 
@@ -37,7 +37,7 @@ body {
 
 .banner-label {
     display: inline-block;
-    font-size: 28dp;
+    font-size: 32dp;
     font-weight: bold;
     color: #ffd700;
     text-align: center;
@@ -58,7 +58,7 @@ body {
 /* ── Character name ─────────────────────────────────────────── */
 .winner-name {
     display: block;
-    font-size: 22dp;
+    font-size: 26dp;
     font-weight: bold;
     color: #ffffff;
     margin-bottom: 16dp;
@@ -84,8 +84,8 @@ body {
     display: inline-block;
     width: 100dp;
     text-align: left;
-    font-size: 12dp;
-    color: #cccccc;
+    font-size: 15dp;
+    color: #e0e0e0;
     letter-spacing: 2dp;
 }
 
@@ -93,7 +93,7 @@ body {
     display: inline-block;
     width: 140dp;
     text-align: right;
-    font-size: 16dp;
+    font-size: 20dp;
     font-weight: bold;
     color: #ffd700;
 }
@@ -106,7 +106,7 @@ body {
 
 .streak-text {
     display: inline-block;
-    font-size: 16dp;
+    font-size: 20dp;
     font-weight: bold;
     color: #ff6600;
     letter-spacing: 2dp;
@@ -121,3 +121,5 @@ body {
         color: #ffaa44;
     }
 }
+
+

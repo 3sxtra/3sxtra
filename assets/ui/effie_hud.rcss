@@ -25,34 +25,36 @@ body {
 /* ── Text elements ── */
 .hud-text {
     display: block;
-    font-size: 8dp;
-    color: #CCCCCC;
+    font-size: 11dp;
+    color: #e0e0e0;
     margin-bottom: 2dp;
 
 }
 
 .hud-text.life {
-    color: #44FF44;
+    color: #44ff44;
 }
 
 .hud-text.meter {
-    color: #44AAFF;
+    color: #44aaff;
 }
 
 .hud-text.stun {
-    color: #FFAA00;
+    color: #ffaa00;
 }
 
 .hud-text.advantage {
-    color: #CCCCCC;
-    font-size: 10dp;
+    color: #e0e0e0;
+    font-size: 13dp;
     font-weight: bold;
 }
 
 .hud-text.advantage.positive {
-    color: #44FF44;
+    color: #44ff44;
 }
 
 .hud-text.advantage.negative {
-    color: #FF4444;
+    color: #ff4444;
 }
+
+

@@ -2,8 +2,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 14dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 17dp;
     color: #ffffffee;
 }
 
@@ -21,7 +21,7 @@ body {
     position: absolute;
     top: 35%;
     left: 8%;
-    font-size: 20dp;
+    font-size: 24dp;
     font-weight: bold;
     color: #ffcc44;
     letter-spacing: 2dp;
@@ -36,7 +36,7 @@ body {
     margin-left: -24dp;
     width: 48dp;
     text-align: center;
-    font-size: 28dp;
+    font-size: 32dp;
     font-weight: bold;
     color: #ff4444;
     font-effect: shadow(2dp 2dp #000000cc);
@@ -47,10 +47,12 @@ body {
     position: absolute;
     top: 35%;
     right: 8%;
-    font-size: 20dp;
+    font-size: 24dp;
     font-weight: bold;
     color: #4488ff;
     letter-spacing: 2dp;
     font-effect: shadow(2dp 2dp #000000aa);
     text-align: right;
 }
+
+

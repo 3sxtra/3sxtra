@@ -4,8 +4,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 12dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 15dp;
 }
 
 .hud-hidden {
@@ -57,8 +57,8 @@ body {
 }
 .banner-name {
     display: inline;
-    font-size: 9dp;
-    color: #FFFFFF;
+    font-size: 12dp;
+    color: #ffffff;
     font-effect: shadow(1dp 1dp #000000);
     vertical-align: middle;
 }
@@ -72,8 +72,8 @@ body {
 }
 .banner-wins {
     display: inline-block;
-    font-size: 10dp;
-    color: #FFD700;
+    font-size: 13dp;
+    color: #ffd700;
     font-effect: shadow(1dp 1dp #000000);
     vertical-align: middle;
     width: 14dp;
@@ -89,8 +89,8 @@ body {
 
 .banner-ft {
     display: inline-block;
-    font-size: 8dp;
-    color: #00FF00;
+    font-size: 11dp;
+    color: #00ff00;
     font-effect: shadow(1dp 1dp #000000);
     background-color: rgba(0, 255, 0, 30);
     padding: 1dp 3dp;
@@ -112,14 +112,16 @@ body {
 }
 .spec-eye {
     display: inline;
-    font-size: 7dp;
-    color: #CCCCCC;
+    font-size: 10dp;
+    color: #e0e0e0;
     vertical-align: middle;
 }
 .spec-count {
     display: inline;
-    font-size: 8dp;
-    color: #CCCCCC;
+    font-size: 11dp;
+    color: #e0e0e0;
     margin-left: 2dp;
     font-effect: shadow(1dp 1dp #000000);
 }
+
+

@@ -8,8 +8,10 @@
 /* ── Inline toggle value (e.g. "OFF" / "ON") ──────────────── */
 .item-value {
     display: inline;
-    font-size: 10dp;
+    font-size: 13dp;
     color: #ffcc00;
     letter-spacing: 1dp;
     margin-left: 4dp;
 }
+
+

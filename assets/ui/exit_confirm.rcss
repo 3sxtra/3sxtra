@@ -21,7 +21,7 @@
 .exit-title {
     display: block;
     text-align: center;
-    font-size: 14dp;
+    font-size: 17dp;
     color: rgba(255, 90, 60, 255);
     letter-spacing: 2dp;
     margin-bottom: 4dp;
@@ -30,7 +30,7 @@
 .exit-subtitle {
     display: block;
     text-align: center;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(200, 200, 200, 160);
     margin-bottom: 16dp;
 }
@@ -46,7 +46,7 @@
     width: 100%;
     height: 18dp;
     line-height: 18dp;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(200, 200, 200, 200);
     text-align: center;
     margin-bottom: 4dp;
@@ -62,3 +62,5 @@
     from { margin-top: -30dp; opacity: 0; }
     to   { margin-top: 0dp;   opacity: 1; }
 }
+
+

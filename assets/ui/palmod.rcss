@@ -22,11 +22,11 @@ body {
      * reposition if content extends below the window edge. */
     background-color: rgba(15, 15, 20, 230);
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 8dp;
     padding: 6dp 10dp;
-    font-family: "Noto Sans JP";
-    font-size: 14dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 17dp;
 }
 
 handle {
@@ -43,7 +43,7 @@ handle {
 }
 
 #title-bar h1 {
-    font-size: 18dp;
+    font-size: 22dp;
     color: #33ccff;
     text-align: center;
     white-space: nowrap;
@@ -51,8 +51,8 @@ handle {
 
 /* Section headers */
 #palmod-panel h2 {
-    font-size: 13dp;
-    color: #888;
+    font-size: 16dp;
+    color: #b0b0b0;
     margin-top: 4dp;
     margin-bottom: 5dp;
     text-transform: uppercase;
@@ -72,8 +72,8 @@ handle {
 .tab {
     display: inline-block;
     padding: 4dp 16dp;
-    font-size: 12dp;
-    color: #888;
+    font-size: 15dp;
+    color: #b0b0b0;
     background-color: rgba(255, 255, 255, 10);
     border-width: 1dp;
     border-color: #333;
@@ -86,7 +86,7 @@ handle {
 
 .tab:hover {
     background-color: rgba(255, 255, 255, 25);
-    color: #ccc;
+    color: #e0e0e0;
 }
 
 .tab-active {
@@ -136,14 +136,14 @@ handle {
 
 label {
     display: inline-block;
-    font-size: 14dp;
+    font-size: 17dp;
     color: #dddddd;
     vertical-align: middle;
 }
 
 .color-value {
     display: inline-block;
-    font-size: 12dp;
+    font-size: 15dp;
     color: #777;
     margin-left: 4dp;
     min-width: 24dp;
@@ -153,7 +153,7 @@ label {
 
 .color-label {
     display: inline-block;
-    font-size: 15dp;
+    font-size: 19dp;
     color: #33ccff;
     margin-left: 8dp;
     min-width: 40dp;
@@ -168,7 +168,7 @@ label {
 
 .status-warn {
     color: #ffcc33;
-    font-size: 13dp;
+    font-size: 16dp;
     display: block;
     margin-bottom: 4dp;
     text-align: center;
@@ -176,8 +176,8 @@ label {
 }
 
 .hint {
-    font-size: 12dp;
-    color: #555;
+    font-size: 15dp;
+    color: #888;
     margin-top: 8dp;
     text-align: center;
     white-space: nowrap;
@@ -222,7 +222,7 @@ label {
     display: block;
     background-color: rgba(30, 30, 40, 220);
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 6dp;
     padding: 4dp 8dp;
     margin-top: 2dp;
@@ -256,7 +256,7 @@ label {
 
 .preview-label {
     display: block;
-    font-size: 11dp;
+    font-size: 14dp;
     color: #777;
     margin-bottom: 2dp;
 }
@@ -266,7 +266,7 @@ label {
     width: 36dp;
     height: 36dp;
     border-width: 2dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 4dp;
     margin-left: auto;
     margin-right: auto;
@@ -282,7 +282,7 @@ label {
 .channel-label {
     display: inline-block;
     width: 18dp;
-    font-size: 14dp;
+    font-size: 17dp;
     font-weight: bold;
     vertical-align: middle;
 }
@@ -293,8 +293,8 @@ label {
 
 .channel-value {
     display: inline-block;
-    font-size: 14dp;
-    color: #aaa;
+    font-size: 17dp;
+    color: #cccccc;
     margin-left: 6dp;
     min-width: 24dp;
     text-align: center;
@@ -312,7 +312,7 @@ label {
 .btn {
     display: inline-block;
     padding: 4dp 14dp;
-    font-size: 12dp;
+    font-size: 15dp;
     border-width: 1dp;
     border-radius: 4dp;
     cursor: pointer;
@@ -332,9 +332,9 @@ label {
 }
 
 .btn-close {
-    color: #aaa;
+    color: #cccccc;
     background-color: rgba(255, 255, 255, 10);
-    border-color: #555;
+    border-color: #888;
 }
 
 .btn-close:hover {
@@ -351,11 +351,11 @@ label {
     display: inline-block;
     width: 140dp;
     padding: 3dp 6dp;
-    font-size: 13dp;
+    font-size: 16dp;
     color: #ddd;
     background-color: rgba(255, 255, 255, 10);
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 3dp;
     margin-left: 4dp;
     margin-right: 4dp;
@@ -364,7 +364,7 @@ label {
 
 .palette-name {
     display: inline-block;
-    font-size: 14dp;
+    font-size: 17dp;
     color: #33ccff;
     min-width: 100dp;
     text-align: center;
@@ -403,11 +403,11 @@ label {
 }
 
 .btn-nav {
-    color: #aaa;
+    color: #cccccc;
     background-color: rgba(255, 255, 255, 10);
     border-color: #444;
     padding: 3dp 8dp;
-    font-size: 14dp;
+    font-size: 17dp;
 }
 
 .btn-nav:hover {
@@ -421,7 +421,7 @@ label {
     display: inline-block;
     width: 200dp;
     padding: 3dp;
-    font-size: 13dp;
+    font-size: 16dp;
     background-color: rgba(255, 255, 255, 15);
     color: #eee;
     vertical-align: middle;
@@ -441,8 +441,8 @@ label {
 }
 
 .layer-checks label {
-    font-size: 13dp;
-    color: #ccc;
+    font-size: 16dp;
+    color: #e0e0e0;
     margin-right: 8dp;
 }
 
@@ -482,7 +482,7 @@ label {
     height: 14dp;
     background-color: #1a1a2a;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 3dp;
     vertical-align: middle;
     margin-right: 4dp;
@@ -500,7 +500,7 @@ label {
 .effect-label {
     display: inline-block;
     width: 110dp;
-    font-size: 13dp;
+    font-size: 16dp;
     vertical-align: middle;
     color: #ddd;
 }
@@ -510,13 +510,13 @@ label {
     display: inline-block;
     width: 22dp;
     height: 20dp;
-    font-size: 14dp;
+    font-size: 17dp;
     font-weight: bold;
     text-align: center;
     background-color: #333;
-    color: #ccc;
+    color: #e0e0e0;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 4dp;
     cursor: pointer;
     margin-left: 2dp;
@@ -524,14 +524,14 @@ label {
 }
 
 .fx-btn:hover {
-    background-color: #555;
+    background-color: #888;
     color: #fff;
 }
 
 .fx-val {
     display: inline-block;
     width: 36dp;
-    font-size: 13dp;
+    font-size: 16dp;
     color: #6f6;
     text-align: center;
     vertical-align: middle;
@@ -543,7 +543,7 @@ label {
 }
 
 .effects-list scrollbarvertical sliderbar {
-    background-color: #555;
+    background-color: #888;
     border-radius: 3dp;
 }
 
@@ -564,7 +564,7 @@ input.checkbox {
     min-height: 14dp;
     background-color: #1a1a2a;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 3dp;
     vertical-align: middle;
     margin-right: 4dp;
@@ -631,7 +631,7 @@ input.range sliderarrowinc {
 
 .stage-row-num {
     display: inline-block;
-    font-size: 10dp;
+    font-size: 13dp;
     color: #777;
     width: 42dp;
     text-align: right;
@@ -666,8 +666,8 @@ input.range sliderarrowinc {
 .committed-status {
     display: block;
     margin-top: 4dp;
-    font-size: 10dp;
-    color: #888;
+    font-size: 13dp;
+    color: #b0b0b0;
 }
 
 .commit-label {
@@ -682,5 +682,7 @@ input.range sliderarrowinc {
     padding: 1dp 6dp;
     margin-right: 3dp;
     border-radius: 3dp;
-    font-size: 9dp;
+    font-size: 12dp;
 }
+
+

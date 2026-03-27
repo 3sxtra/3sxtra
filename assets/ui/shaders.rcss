@@ -52,7 +52,7 @@ body {
 
 /* Title */
 #shader-panel h1 {
-    font-size: 18dp;
+    font-size: 22dp;
     color: #ff9933;
     margin-bottom: 6dp;
     text-align: center;
@@ -61,8 +61,8 @@ body {
 
 /* Section headers */
 #shader-panel h2 {
-    font-size: 13dp;
-    color: #888;
+    font-size: 16dp;
+    color: #b0b0b0;
     margin-top: 6dp;
     margin-bottom: 5dp;
     text-transform: uppercase;
@@ -109,7 +109,7 @@ body {
 
 /* Labels */
 label {
-    font-size: 14dp;
+    font-size: 17dp;
     color: #dddddd;
     cursor: pointer;
 }
@@ -128,10 +128,10 @@ select {
     height: 26dp;
     background-color: #2a2a30;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 4dp;
     color: #ddd;
-    font-size: 13dp;
+    font-size: 16dp;
 }
 
 select selectvalue {
@@ -154,7 +154,7 @@ select selectbox {
     width: 100%;
     background-color: #1a1a20;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
 }
 
 select selectbox option {
@@ -205,10 +205,10 @@ input.text {
     padding: 6dp 10dp;
     background-color: #1a1a20;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 4dp;
     color: #fff;
-    font-size: 14dp;
+    font-size: 17dp;
     margin-top: 4dp;
 }
 
@@ -235,7 +235,7 @@ input.text:focus {
     align-items: center;
     width: 100%;
     padding: 3dp 10dp;
-    font-size: 13dp;
+    font-size: 16dp;
     color: #bbb;
     cursor: pointer;
     border-radius: 4dp;
@@ -255,14 +255,14 @@ input.text:focus {
 /* Status / footer */
 .status-warn {
     color: #ffcc33;
-    font-size: 13dp;
+    font-size: 16dp;
     display: block;
     padding: 4dp 8dp;
 }
 
 .hint {
-    font-size: 13dp;
-    color: #555;
+    font-size: 16dp;
+    color: #888;
     margin-top: 8dp;
     text-align: center;
 }
@@ -273,7 +273,7 @@ scrollbarvertical {
 }
 
 scrollbarvertical sliderbar {
-    background-color: #555;
+    background-color: #888;
     border-radius: 3dp;
 }
 
@@ -310,7 +310,7 @@ scrollbarvertical slidertrack {
     display: inline-block;
     width: 48%;
     padding: 3dp 6dp;
-    font-size: 13dp;
+    font-size: 16dp;
     color: #e0e0e0;
     vertical-align: middle;
     white-space: nowrap;
@@ -327,18 +327,18 @@ scrollbarvertical slidertrack {
 .chain-btn {
     display: inline-block;
     padding: 3dp 8dp;
-    font-size: 11dp;
+    font-size: 14dp;
     background-color: #333;
-    color: #ccc;
+    color: #e0e0e0;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 4dp;
     margin-right: 4dp;
     cursor: pointer;
 }
 
 .chain-btn:hover {
-    background-color: #555;
+    background-color: #888;
     color: #fff;
 }
 
@@ -364,7 +364,7 @@ scrollbarvertical slidertrack {
 .chain-clear-btn {
     display: inline-block;
     padding: 6dp 12dp;
-    font-size: 13dp;
+    font-size: 16dp;
     background-color: #333;
     color: #f66;
     border-width: 1dp;
@@ -378,8 +378,8 @@ scrollbarvertical slidertrack {
 }
 
 .status-info {
-    color: #888;
-    font-size: 13dp;
+    color: #b0b0b0;
+    font-size: 16dp;
     padding: 8dp;
 }
 
@@ -401,7 +401,7 @@ scrollbarvertical slidertrack {
 .chain-append-btn, .chain-prepend-btn {
     display: inline-block;
     padding: 2dp 6dp;
-    font-size: 11dp;
+    font-size: 14dp;
     font-weight: bold;
     background-color: #1a3a1a;
     color: #6c6;
@@ -420,7 +420,7 @@ scrollbarvertical slidertrack {
 .chain-save-btn {
     display: inline-block;
     padding: 6dp 12dp;
-    font-size: 13dp;
+    font-size: 16dp;
     background-color: #1a2a3a;
     color: #6af;
     border-width: 1dp;
@@ -473,8 +473,8 @@ scrollbarvertical slidertrack {
     display: inline-block;
     width: 48%;
     padding: 3dp 6dp;
-    font-size: 13dp;
-    color: #ccc;
+    font-size: 16dp;
+    color: #e0e0e0;
     vertical-align: middle;
 }
 
@@ -490,20 +490,20 @@ scrollbarvertical slidertrack {
     display: inline-block;
     width: 24dp;
     height: 22dp;
-    font-size: 14dp;
+    font-size: 17dp;
     font-weight: bold;
     text-align: center;
     background-color: #333;
-    color: #ccc;
+    color: #e0e0e0;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 4dp;
     cursor: pointer;
     margin-left: 3dp;
 }
 
 .param-btn:hover {
-    background-color: #555;
+    background-color: #888;
     color: #fff;
 }
 
@@ -521,8 +521,10 @@ scrollbarvertical slidertrack {
 .param-value {
     display: inline-block;
     width: 54dp;
-    font-size: 13dp;
+    font-size: 16dp;
     color: #6f6;
     text-align: center;
     padding-top: 3dp;
 }
+
+

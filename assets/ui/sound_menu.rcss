@@ -54,25 +54,25 @@
 }
 
 .opt-row.focused .bar-fill {
-    background-color: #FFD700;
+    background-color: #ffd700;
 }
 
 .bar-num {
     display: inline-block;
     width: 30dp;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(160, 220, 255, 230);
     text-align: right;
     vertical-align: middle;
 }
 
 .opt-row.focused .bar-num {
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 /* ── Track arrows ──────────────────────────────────────────── */
 .arrow {
-    font-size: 6dp;
+    font-size: 9dp;
     color: rgba(160, 220, 255, 128);
 }
 
@@ -85,3 +85,5 @@
     from { margin-top: -20dp; opacity: 0; }
     to   { margin-top: 0dp;   opacity: 1; }
 }
+
+

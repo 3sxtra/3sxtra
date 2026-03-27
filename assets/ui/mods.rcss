@@ -52,7 +52,7 @@ body {
 
 /* Title */
 #mods-panel h1 {
-    font-size: 18dp;
+    font-size: 22dp;
     color: #ff9933;
     margin-bottom: 6dp;
     text-align: center;
@@ -61,8 +61,8 @@ body {
 
 /* Section headers */
 #mods-panel h2 {
-    font-size: 13dp;
-    color: #888;
+    font-size: 16dp;
+    color: #b0b0b0;
     margin-top: 6dp;
     margin-bottom: 5dp;
     text-transform: uppercase;
@@ -109,7 +109,7 @@ body {
 
 /* Labels */
 label {
-    font-size: 14dp;
+    font-size: 17dp;
     color: #dddddd;
     cursor: pointer;
     white-space: nowrap;
@@ -134,10 +134,10 @@ select {
     height: 26dp;
     background-color: #2a2a30;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 4dp;
     color: #ddd;
-    font-size: 13dp;
+    font-size: 16dp;
 }
 
 select selectvalue {
@@ -160,7 +160,7 @@ select selectbox {
     width: 100%;
     background-color: #1a1a20;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
 }
 
 select selectbox option {
@@ -180,12 +180,12 @@ select selectbox option:checked {
 /* Status indicator text */
 .status-ok {
     color: #66ff66;
-    font-size: 13dp;
+    font-size: 16dp;
 }
 
 .status-warn {
     color: #ffcc33;
-    font-size: 13dp;
+    font-size: 16dp;
     display: block;
     margin-bottom: 4dp;
     white-space: nowrap;
@@ -193,8 +193,8 @@ select selectbox option:checked {
 
 /* Footer hint text */
 .hint {
-    font-size: 12dp;
-    color: #555;
+    font-size: 15dp;
+    color: #888;
     margin-top: 8dp;
     text-align: center;
     white-space: nowrap;
@@ -206,7 +206,7 @@ scrollbarvertical {
 }
 
 scrollbarvertical sliderbar {
-    background-color: #555;
+    background-color: #888;
     border-radius: 3dp;
 }
 
@@ -217,3 +217,5 @@ scrollbarvertical sliderbar:hover {
 scrollbarvertical slidertrack {
     background-color: #222;
 }
+
+

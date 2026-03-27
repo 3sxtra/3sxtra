@@ -27,7 +27,7 @@
 .nav-value {
     display: inline;
     color: rgba(140, 200, 255, 230);
-    font-size: 10dp;
+    font-size: 13dp;
     margin-left: 4dp;
 }
 
@@ -40,7 +40,7 @@
 .page-indicator {
     display: block;
     text-align: center;
-    font-size: 9dp;
+    font-size: 12dp;
     color: rgba(140, 170, 220, 178);
     margin-bottom: 2dp;
     padding-bottom: 2dp;
@@ -54,7 +54,7 @@
     display: block;
     padding: 2dp 4dp;
     color: rgba(200, 210, 240, 217);
-    font-size: 11dp;
+    font-size: 14dp;
     border-left-width: 2dp;
     border-left-color: transparent;
     transition: background-color border-left-color 0.08s linear-in-out;
@@ -69,7 +69,7 @@
 .toggle-label {
     display: inline-block;
     width: 100dp;
-    font-size: 10dp;
+    font-size: 13dp;
 }
 
 .toggle-value {
@@ -77,7 +77,7 @@
     text-align: right;
     width: 40dp;
     color: rgba(100, 220, 160, 242);
-    font-size: 11dp;
+    font-size: 14dp;
 }
 
 .toggle-row.focused .toggle-value {
@@ -125,7 +125,9 @@
 
 .desc-text {
     display: block;
-    font-size: 9dp;
+    font-size: 12dp;
     color: rgba(180, 190, 220, 217);
     line-height: 1.2;
 }
+
+

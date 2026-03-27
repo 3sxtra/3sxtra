@@ -12,7 +12,7 @@
 }
 
 .hud-text {
-    font-size: 10dp;
+    font-size: 13dp;
     font-weight: bold;
     color: #ffffff;
 }
@@ -43,8 +43,8 @@
 }
 
 #diag-panel h2 {
-    font-size: 10dp;
-    color: #cccccc;
+    font-size: 13dp;
+    color: #e0e0e0;
     margin-bottom: 4dp;
     border-bottom-width: 1dp;
     border-bottom-color: #444;
@@ -66,7 +66,7 @@
 
 /* FPS text with color coding */
 .fps-text {
-    font-size: 10dp;
+    font-size: 13dp;
     font-weight: bold;
 }
 .fps-text.ok {
@@ -82,7 +82,7 @@
 /* Stats line (below charts) — mean, median, duration, frame count */
 .diag-stats {
     display: block;
-    font-size: 11dp;
+    font-size: 14dp;
     color: rgba(255, 255, 255, 128);
     margin-top: 4dp;
 }
@@ -90,7 +90,7 @@
 /* Stat lines (ping, rollback, delay, duration) */
 .stat-line {
     display: block;
-    font-size: 9dp;
+    font-size: 12dp;
     color: #dddddd;
     padding: 1dp 0dp;
 }
@@ -98,7 +98,7 @@
 /* Chart label */
 .chart-label {
     display: block;
-    font-size: 11dp;
+    font-size: 14dp;
     color: rgba(255, 255, 255, 153);
     margin-top: 6dp;
     margin-bottom: 2dp;
@@ -169,6 +169,8 @@
     margin-bottom: 3dp;
     background-color: rgba(0, 0, 0, 178);
     border-radius: 3dp;
-    font-size: 10dp;
+    font-size: 13dp;
     color: #ffffff;
 }
+
+

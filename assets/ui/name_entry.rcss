@@ -5,8 +5,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 12dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 15dp;
 }
 
 #name-entry-container {
@@ -20,15 +20,15 @@ body {
 
 #ne-rank {
     display: inline-block;
-    font-size: 18dp;
-    color: #FFD700;
+    font-size: 22dp;
+    color: #ffd700;
     font-effect: shadow(2dp 2dp #000000);
 }
 
 #ne-rank-suffix {
     display: inline-block;
-    font-size: 10dp;
-    color: #FFD700;
+    font-size: 13dp;
+    color: #ffd700;
     font-effect: shadow(1dp 1dp #000000);
     margin-right: 12dp;
 }
@@ -43,8 +43,8 @@ body {
     display: inline-block;
     width: 20dp;
     height: 22dp;
-    font-size: 18dp;
-    color: #FFFFFF;
+    font-size: 22dp;
+    color: #ffffff;
     text-align: center;
     font-effect: shadow(1dp 1dp #000000);
     margin: 0dp 3dp;
@@ -52,21 +52,23 @@ body {
 }
 
 .ne-active {
-    color: #00FFFF;
-    border-bottom-color: #00FFFF;
+    color: #00ffff;
+    border-bottom-color: #00ffff;
     animation: ne-cursor-blink 0.53s steps(1) infinite;
 }
 
 @keyframes ne-cursor-blink {
-      0% { color: #00FFFF; }
-     50% { color: #FFFFFF; }
-    100% { color: #00FFFF; }
+      0% { color: #00ffff; }
+     50% { color: #ffffff; }
+    100% { color: #00ffff; }
 }
 
 #ne-player {
     display: block;
     margin-top: 8dp;
-    font-size: 10dp;
-    color: #888888;
+    font-size: 13dp;
+    color: #b0b0b0;
     text-align: center;
 }
+
+

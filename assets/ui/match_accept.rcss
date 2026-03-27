@@ -21,7 +21,7 @@
 #ma-title {
     display: block;
     text-align: center;
-    font-size: 12dp;
+    font-size: 15dp;
     color: rgba(255, 210, 40, 255);
     letter-spacing: 2dp;
     margin-bottom: 6dp;
@@ -40,14 +40,14 @@
 
 #ma-opponent-label {
     display: block;
-    font-size: 6dp;
+    font-size: 9dp;
     color: rgba(170, 170, 200, 150);
     margin-bottom: 1dp;
 }
 
 #ma-opponent-name {
     display: block;
-    font-size: 11dp;
+    font-size: 14dp;
     color: rgba(255, 255, 255, 255);
     margin-bottom: 2dp;
     font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
@@ -55,7 +55,7 @@
 
 #ma-opponent-details {
     display: block;
-    font-size: 7dp;
+    font-size: 10dp;
 }
 
 .ma-detail-item {
@@ -88,7 +88,7 @@
 #ma-countdown-text {
     display: block;
     text-align: center;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(200, 200, 200, 180);
     margin-top: 1dp;
 }
@@ -105,7 +105,7 @@
     height: 16dp;
     line-height: 16dp;
     text-align: center;
-    font-size: 9dp;
+    font-size: 12dp;
     margin: 0 4dp;
     border-width: 1dp;
     border-color: transparent;
@@ -138,3 +138,5 @@
     from { margin-top: -20dp; }
     to   { margin-top: 0dp; }
 }
+
+

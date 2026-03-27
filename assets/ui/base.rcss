@@ -8,8 +8,8 @@ div, p, h1, h2, h3, button {
 body {
     width: 100%;
     height: 100%;
-    font-family: "Noto Sans JP";
-    font-size: 10dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 13dp;
     color: #ffffff;
 }
 
@@ -25,15 +25,15 @@ body {
 /* Section headers */
 h1 {
     display: block;
-    font-size: 14dp;
+    font-size: 17dp;
     color: #ff9933;
     margin-bottom: 4dp;
 }
 
 h2 {
     display: block;
-    font-size: 11dp;
-    color: #cccccc;
+    font-size: 14dp;
+    color: #e0e0e0;
     margin-top: 6dp;
     margin-bottom: 4dp;
     border-bottom-width: 1dp;
@@ -63,8 +63,8 @@ h2 {
 
 /* Checkbox: styled as a small colored square */
 input.checkbox {
-    width: 10dp;
-    height: 10dp;
+    width: 13dp;
+    height: 13dp;
     border-width: 1dp;
     border-color: #666;
     background-color: #333;
@@ -89,8 +89,8 @@ input.checkbox:disabled {
 
 /* Range slider */
 input.range {
-    width: 80dp;
-    height: 12dp;
+    width: 100dp;
+    height: 14dp;
     margin-left: 4dp;
     vertical-align: middle;
 }
@@ -101,8 +101,8 @@ input.range slidertrack {
     border-radius: 2dp;
 }
 input.range sliderbar {
-    width: 14dp;
-    height: 14dp;
+    width: 16dp;
+    height: 16dp;
     background-color: #ff9933;
     border-radius: 7dp;
     margin-top: -5dp;
@@ -127,7 +127,7 @@ input.range:disabled {
     position: absolute;
     left: 0;
     width: 100%;
-    height: 28dp;
+    height: 32dp;
     text-align: center;
     padding-top: 3dp;
     padding-bottom: 1dp;
@@ -139,7 +139,7 @@ input.range:disabled {
 
 .red-banner-text {
     display: block;
-    font-size: 24dp;
+    font-size: 28dp;
     font-weight: bold;
     letter-spacing: 4dp;
     color: rgba(15, 10, 10, 220);
@@ -147,3 +147,5 @@ input.range:disabled {
     text-transform: uppercase;
     background-color: rgba(210, 20, 20, 220);
 }
+
+

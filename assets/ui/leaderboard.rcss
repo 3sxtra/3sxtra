@@ -40,7 +40,7 @@
     position: absolute;
     right: 8dp;
     top: 5dp;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(170, 200, 255, 170);
 }
 
@@ -71,25 +71,29 @@
 /* ── Header row ── */
 .lb-header-row {
     display: block;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(140, 170, 230, 200);
     padding: 1dp 0dp;
     margin-bottom: 1dp;
     border-bottom-width: 1dp;
     border-bottom-color: rgba(100, 130, 220, 80);
     white-space: nowrap;
+    line-height: 11dp;
+    height: 11dp;
 }
 
 /* ── Data rows ── */
 .lb-row {
     display: block;
     color: rgba(190, 200, 225, 180);
-    font-size: 8dp;
+    font-size: 11dp;
     padding: 0dp 0dp;
     margin-bottom: 0dp;
     border-left-width: 2dp;
     border-left-color: transparent;
     white-space: nowrap;
+    line-height: 12dp;
+    height: 12dp;
 }
 
 .lb-row.hidden {
@@ -125,7 +129,7 @@
     width: 22dp;
     text-align: center;
     color: rgba(150, 160, 180, 200);
-    font-size: 8dp;
+    font-size: 11dp;
 }
 
 /* Medal colors for top 3 */
@@ -148,7 +152,7 @@
 
 .lb-col-name {
     display: inline-block;
-    width: 120dp;
+    width: 104dp;
     padding-left: 2dp;
     overflow: hidden;
 }
@@ -161,16 +165,16 @@
     display: inline-block;
     width: 28dp;
     text-align: center;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(160, 180, 210, 160);
 }
 
 .lb-col-wm {
     display: inline-block;
-    width: 48dp;
+    width: 64dp;
     text-align: center;
     color: rgba(90, 240, 150, 230);
-    font-size: 8dp;
+    font-size: 11dp;
 }
 
 .lb-col-pct {
@@ -184,7 +188,7 @@
     display: inline-block;
     width: 20dp;
     text-align: center;
-    font-size: 8dp;
+    font-size: 11dp;
     font-weight: bold;
     color: rgba(200, 210, 230, 200);
 }
@@ -208,7 +212,7 @@
     width: 30dp;
     text-align: center;
     color: rgba(150, 160, 180, 200);
-    font-size: 7dp;
+    font-size: 10dp;
 }
 .lb-col-dc.dc-warn {
     color: rgba(255, 80, 80, 255);
@@ -232,7 +236,7 @@
     bottom: 20dp;
     text-align: center;
     padding: 60dp 0;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(140, 150, 180, 120);
 }
 
@@ -248,7 +252,7 @@
     border-width: 1dp;
     border-color: rgba(80, 120, 220, 50);
     text-align: center;
-    font-size: 7dp;
+    font-size: 10dp;
 }
 .lb-nav {
     display: inline;
@@ -259,3 +263,6 @@
     display: inline;
     color: rgba(170, 200, 255, 170);
 }
+
+
+

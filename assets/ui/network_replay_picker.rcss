@@ -29,7 +29,7 @@
 }
 #nrp-title {
     display: block;
-    font-size: 11dp;
+    font-size: 14dp;
     color: #fff;
     font-weight: bold;
     font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
@@ -46,7 +46,7 @@
     bottom: 44dp;
     text-align: center;
     padding: 50dp 0;
-    font-size: 9dp;
+    font-size: 12dp;
     color: rgba(180, 190, 220, 200);
 }
 #nrp-error {
@@ -74,7 +74,7 @@
 /* ── Header row ── */
 .nrp-header-row {
     display: block;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(140, 170, 230, 200);
     padding: 2dp 0dp;
     margin-bottom: 1dp;
@@ -87,7 +87,7 @@
 .nrp-row {
     display: block;
     color: rgba(190, 200, 225, 180);
-    font-size: 8dp;
+    font-size: 11dp;
     padding: 2dp 0dp;
     margin-bottom: 1dp;
     border-left-width: 2dp;
@@ -111,7 +111,7 @@
     width: 24dp;
     text-align: center;
     color: rgba(100, 220, 120, 200);
-    font-size: 8dp;
+    font-size: 11dp;
     font-weight: bold;
 }
 
@@ -130,7 +130,7 @@
     display: inline-block;
     width: 20dp;
     text-align: center;
-    font-size: 6dp;
+    font-size: 9dp;
     color: rgba(140, 150, 170, 140);
 }
 
@@ -159,7 +159,7 @@
     display: inline-block;
     width: 70dp;
     text-align: center;
-    font-size: 6dp;
+    font-size: 9dp;
     color: rgba(200, 180, 100, 180);
 }
 
@@ -167,7 +167,7 @@
     display: inline-block;
     width: 100dp;
     text-align: center;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(140, 170, 210, 160);
 }
 
@@ -181,7 +181,7 @@
     bottom: 44dp;
     text-align: center;
     padding: 40dp 0;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(140, 150, 180, 120);
 }
 
@@ -205,7 +205,7 @@
     border-left-width: 2dp;
     border-left-color: transparent;
     color: rgba(140, 160, 200, 150);
-    font-size: 8dp;
+    font-size: 11dp;
 }
 .nrp-control-row.active {
     color: rgba(255, 255, 255, 255);
@@ -214,7 +214,7 @@
 }
 .nrp-ctl-arrow {
     display: inline;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(120, 140, 180, 120);
     margin: 0 6dp;
 }
@@ -223,5 +223,7 @@
 }
 .nrp-ctl-label {
     display: inline;
-    font-size: 8dp;
+    font-size: 11dp;
 }
+
+

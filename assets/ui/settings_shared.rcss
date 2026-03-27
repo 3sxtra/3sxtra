@@ -33,7 +33,7 @@
 .opt-row.focused {
     background-color: rgba(255, 220, 0, 38);
     border-left-width: 3dp;
-    border-left-color: #FFD700;
+    border-left-color: #ffd700;
     padding-left: 5dp;
 }
 
@@ -41,34 +41,36 @@
 .opt-label {
     display: inline-block;
     width: 155dp;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(220, 220, 220, 217);
 }
 
 .opt-row.focused .opt-label {
-    color: #FFD700;
+    color: #ffd700;
 }
 
 /* ── Value (right column) — override width per-menu ────────── */
 .opt-value {
     display: inline-block;
     width: 90dp;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(160, 220, 255, 230);
     text-align: right;
 }
 
 .opt-row.focused .opt-value {
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 /* ── Action-only row (no value column) ─────────────────────── */
 .opt-action {
     display: inline-block;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(220, 220, 220, 217);
 }
 
 .opt-row.focused .opt-action {
-    color: #FFD700;
+    color: #ffd700;
 }
+
+

@@ -30,7 +30,7 @@
 
 #lobby-title-text {
     display: block;
-    font-size: 11dp;
+    font-size: 14dp;
     color: #fff;
     font-weight: bold;
     font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
@@ -66,7 +66,7 @@
 
 .section-header {
     display: block;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(170, 200, 255, 170);
     padding: 0dp 0dp;
     margin-top: 2dp;
@@ -86,7 +86,7 @@
     padding: 0dp 3dp;
     margin-bottom: 0dp;
     color: rgba(210, 220, 255, 210);
-    font-size: 9dp;
+    font-size: 12dp;
     border-left-width: 2dp;
     border-left-color: transparent;
     transition: background-color border-left-color 0.08s linear-in-out;
@@ -101,12 +101,12 @@
 .lobby-cell-label {
     display: inline;
     width: 95dp;
-    font-size: 9dp;
+    font-size: 12dp;
 }
 
 .lobby-cell-value {
     display: inline;
-    font-size: 9dp;
+    font-size: 12dp;
     color: rgba(170, 180, 210, 200);
     margin-left: 3dp;
 }
@@ -151,13 +151,13 @@
 
 .peer-panel-title {
     display: inline;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(150, 185, 245, 200);
 }
 
 .peer-panel-count {
     display: inline;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(90, 240, 150, 230);
     margin-left: 4dp;
 }
@@ -180,7 +180,7 @@
     display: block;
     padding: 0dp 2dp;
     color: rgba(190, 200, 225, 180);
-    font-size: 8dp;
+    font-size: 11dp;
     border-left-width: 2dp;
     border-left-color: transparent;
     overflow: hidden;
@@ -195,12 +195,12 @@
 
 .peer-list-name {
     display: inline;
-    font-size: 8dp;
+    font-size: 11dp;
 }
 
 .peer-list-ping {
     display: inline;
-    font-size: 7dp;
+    font-size: 10dp;
     margin-left: 3dp;
     color: rgba(160, 170, 195, 150);
 }
@@ -227,7 +227,7 @@
 
 .peer-list-conn {
     display: inline;
-    font-size: 6dp;
+    font-size: 9dp;
     color: rgba(140, 160, 190, 130);
     margin-left: 2dp;
 }
@@ -238,7 +238,7 @@
 
 .peer-list-empty {
     display: block;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(140, 150, 180, 100);
     padding: 1dp 3dp;
 }
@@ -263,7 +263,7 @@
 
 #status-text {
     display: block;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(255, 210, 70, 240);
 }
 
@@ -295,7 +295,7 @@
 .popup-title {
     display: block;
     text-align: center;
-    font-size: 10dp;
+    font-size: 13dp;
     color: rgba(255, 210, 70, 255);
     margin-bottom: 3dp;
     border-bottom-width: 1dp;
@@ -306,7 +306,7 @@
 .popup-name {
     display: block;
     text-align: center;
-    font-size: 10dp;
+    font-size: 13dp;
     color: #fff;
     margin-bottom: 2dp;
 }
@@ -314,7 +314,7 @@
 .popup-ping {
     display: block;
     text-align: center;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(140, 210, 255, 230);
     margin-bottom: 2dp;
 }
@@ -322,7 +322,7 @@
 .popup-region {
     display: block;
     text-align: center;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(170, 180, 210, 175);
     margin-bottom: 3dp;
 }
@@ -330,7 +330,7 @@
 .popup-ft {
     display: block;
     text-align: center;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(255, 235, 100, 220);
     margin-bottom: 2dp;
 }
@@ -346,19 +346,21 @@
 
 .popup-accept {
     display: inline;
-    font-size: 9dp;
+    font-size: 12dp;
     color: rgba(70, 230, 110, 255);
     margin-right: 16dp;
 }
 
 .popup-decline {
     display: inline;
-    font-size: 9dp;
+    font-size: 12dp;
     color: rgba(255, 70, 70, 255);
 }
 
 .popup-cancel {
     display: inline;
-    font-size: 9dp;
+    font-size: 12dp;
     color: rgba(255, 70, 70, 255);
 }
+
+

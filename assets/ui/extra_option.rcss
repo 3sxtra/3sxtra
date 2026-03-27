@@ -2,8 +2,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 14dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 17dp;
     color: #ffffffee;
 }
 
@@ -30,7 +30,7 @@ body {
 /* ── Title ──────────────────────────────────────────────────── */
 .extra-title {
     display: block;
-    font-size: 13dp;
+    font-size: 16dp;
     font-weight: bold;
     color: #ffcc44;
     letter-spacing: 3dp;
@@ -42,13 +42,13 @@ body {
 .page-indicator {
     display: block;
     margin-bottom: 6dp;
-    font-size: 12dp;
-    color: #cccccc;
+    font-size: 15dp;
+    color: #e0e0e0;
 }
 
 .page-arrow {
     color: #ffcc44;
-    font-size: 14dp;
+    font-size: 17dp;
     margin-left: 8dp;
     margin-right: 8dp;
 }
@@ -83,8 +83,8 @@ body {
     display: inline-block;
     width: 200dp;
     text-align: left;
-    font-size: 11dp;
-    color: #aaaaaa;
+    font-size: 14dp;
+    color: #cccccc;
     letter-spacing: 1dp;
 }
 
@@ -92,7 +92,7 @@ body {
     display: inline-block;
     width: 120dp;
     text-align: right;
-    font-size: 13dp;
+    font-size: 16dp;
     font-weight: bold;
     color: #ffffff;
 }
@@ -101,7 +101,9 @@ body {
 .footer-hint {
     display: block;
     margin-top: 6dp;
-    font-size: 10dp;
-    color: #888888;
+    font-size: 13dp;
+    color: #b0b0b0;
     letter-spacing: 1dp;
 }
+
+

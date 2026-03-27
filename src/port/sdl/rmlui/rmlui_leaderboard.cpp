@@ -92,7 +92,7 @@ static bool s_has_data = false;
 static SDL_AtomicInt s_fetch_active = { 0 };
 static SDL_AtomicInt s_fetch_done = { 0 };
 
-#define LB_PAGE_SIZE 20
+#define LB_PAGE_SIZE 14
 
 struct FetchResult {
     LeaderboardEntry entries[LB_PAGE_SIZE];

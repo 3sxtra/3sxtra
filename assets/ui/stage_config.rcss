@@ -36,7 +36,7 @@ body {
 
 /* Title */
 #config-panel h1 {
-    font-size: 14dp;
+    font-size: 17dp;
     color: #ff9933;
     margin-bottom: 3dp;
     text-align: center;
@@ -45,8 +45,8 @@ body {
 
 /* Section headers */
 h2 {
-    font-size: 9dp;
-    color: #888;
+    font-size: 12dp;
+    color: #b0b0b0;
     margin-top: 2dp;
     margin-bottom: 2dp;
     text-transform: uppercase;
@@ -66,8 +66,8 @@ h2 {
 /* Stage info */
 .stage-info {
     display: block;
-    color: #aaa;
-    font-size: 9dp;
+    color: #cccccc;
+    font-size: 12dp;
     margin-bottom: 3dp;
 }
 
@@ -83,10 +83,10 @@ button {
     padding: 3dp 8dp;
     background-color: #2a2a30;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 3dp;
     color: #ddd;
-    font-size: 10dp;
+    font-size: 13dp;
     cursor: pointer;
     margin-right: 4dp;
 }
@@ -124,15 +124,15 @@ button:active {
     border-width: 1dp;
     border-color: #333;
     border-radius: 3dp 3dp 0 0;
-    color: #888;
-    font-size: 9dp;
+    color: #b0b0b0;
+    font-size: 12dp;
     cursor: pointer;
     margin-right: 2dp;
 }
 
 .tab:hover {
     background-color: #2a2a30;
-    color: #ccc;
+    color: #e0e0e0;
 }
 
 .tab.active {
@@ -160,8 +160,8 @@ button:active {
 }
 
 label {
-    font-size: 10dp;
-    color: #ccc;
+    font-size: 13dp;
+    color: #e0e0e0;
 }
 
 /* Indent for sub-options */
@@ -178,10 +178,10 @@ input.text {
     padding: 4dp 8dp;
     background-color: #1a1a20;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 3dp;
     color: #fff;
-    font-size: 10dp;
+    font-size: 13dp;
     margin-top: 2dp;
     box-sizing: border-box;
 }
@@ -197,10 +197,10 @@ select {
     padding: 4dp 8dp;
     background-color: #2a2a30;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
     border-radius: 3dp;
     color: #ddd;
-    font-size: 10dp;
+    font-size: 13dp;
     margin-left: 4dp;
 }
 
@@ -211,7 +211,7 @@ select:hover {
 select selectbox {
     background-color: #1a1a20;
     border-width: 1dp;
-    border-color: #555;
+    border-color: #888;
 }
 
 select selectbox option {
@@ -231,7 +231,7 @@ select selectbox option:checked {
 
 .value-display {
     display: inline-block;
-    font-size: 9dp;
+    font-size: 12dp;
     color: #ff9933;
     margin-left: 4dp;
     min-width: 30dp;
@@ -240,7 +240,7 @@ select selectbox option:checked {
 /* Status text */
 .status-error {
     color: #ff4444;
-    font-size: 10dp;
+    font-size: 13dp;
     display: block;
     text-align: center;
     padding: 8dp;
@@ -248,14 +248,14 @@ select selectbox option:checked {
 
 .status-hint {
     color: #666;
-    font-size: 9dp;
+    font-size: 12dp;
     display: block;
     margin-left: 10dp;
 }
 
 .hint {
-    font-size: 8dp;
-    color: #555;
+    font-size: 11dp;
+    color: #888;
     margin-top: 3dp;
     text-align: center;
 }
@@ -266,7 +266,7 @@ select selectbox option:checked {
 }
 
 #config-panel scrollbarvertical sliderbar {
-    background-color: #555;
+    background-color: #888;
     border-radius: 4dp;
 }
 
@@ -277,3 +277,5 @@ select selectbox option:checked {
 #config-panel scrollbarvertical slidertrack {
     background-color: #222;
 }
+
+

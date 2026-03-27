@@ -7,8 +7,8 @@
 body {
     width: 384dp;
     height: 224dp;
-    font-family: "Noto Sans JP";
-    font-size: 12dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 15dp;
 }
 
 /* ── Outer container ────────────────────────────────────────── */
@@ -54,8 +54,8 @@ body {
     top: 24dp;
     width: 80dp;
     height: 10dp;
-    font-size: 10dp;
-    color: #FFFFFF;
+    font-size: 13dp;
+    color: #ffffff;
     font-effect: outline(1dp #000000);
 }
 .p1-name { left: 48dp; text-align: left; }
@@ -99,9 +99,9 @@ body {
 .p1-hp .hp-fill { right: 0dp; }
 .p2-hp .hp-fill { left: 0dp; }
 
-.hp-col-1 { background-color: #40C840; }   /* Green — full */
-.hp-col-2 { background-color: #E8C000; }   /* Yellow — mid */
-.hp-col-3 { background-color: #E00000; }   /* Red — low */
+.hp-col-1 { background-color: #40c840; }   /* Green — full */
+.hp-col-2 { background-color: #e8c000; }   /* Yellow — mid */
+.hp-col-3 { background-color: #e00000; }   /* Red — low */
 
 /* ── Center timer ───────────────────────────────────────────── */
 /* CPS3: digits at tile(22,0)=176px (2×16=32px wide) y=0        */
@@ -120,8 +120,8 @@ body {
     left: 168dp;
     top: 0dp;
     width: 48dp;
-    font-size: 28dp;
-    color: #FFD700;
+    font-size: 32dp;
+    color: #ffd700;
     font-effect: shadow(2dp 2dp #000000);
     text-align: center;
     line-height: 32dp;
@@ -159,19 +159,19 @@ body {
     border-radius: 4dp;
     background-color: #333333;
     margin: 0dp 1dp;
-    font-size: 6dp;
+    font-size: 9dp;
     text-align: center;
     line-height: 8dp;
     color: #000000;
 }
 /* Result type colors */
-.rt-1  { background-color: #FFD700; color: #222222; } /* V — Normal victory (gold) */
-.rt-3  { background-color: #00E5FF; color: #003333; } /* P — Perfect (cyan) */
-.rt-4  { background-color: #FF8C00; color: #331A00; } /* C — Chip/special (orange) */
-.rt-5  { background-color: #888888; color: #222222; } /* D — Draw (gray) */
-.rt-6  { background-color: #B388FF; color: #1A0033; } /* J — Judgement (purple) */
-.rt-7  { background-color: #FF4444; color: #330000; } /* S — SA finish (red) */
-.rt-0  { width: 4dp; height: 4dp; background-color: #FFFFFF; border-width: 0; vertical-align: bottom; margin-bottom: 0dp; } /* Empty — small white dot */
+.rt-1  { background-color: #ffd700; color: #222222; } /* V — Normal victory (gold) */
+.rt-3  { background-color: #00e5ff; color: #003333; } /* P — Perfect (cyan) */
+.rt-4  { background-color: #ff8c00; color: #331a00; } /* C — Chip/special (orange) */
+.rt-5  { background-color: #b0b0b0; color: #222222; } /* D — Draw (gray) */
+.rt-6  { background-color: #b388ff; color: #1a0033; } /* J — Judgement (purple) */
+.rt-7  { background-color: #ff4444; color: #330000; } /* S — SA finish (red) */
+.rt-0  { width: 4dp; height: 4dp; background-color: #ffffff; border-width: 0; vertical-align: bottom; margin-bottom: 0dp; } /* Empty — small white dot */
 .win-sep {
     display: none;
 }
@@ -194,7 +194,7 @@ body {
     position: absolute;
     top: 0dp;
     height: 2dp;
-    background-color: #C81010;
+    background-color: #c81010;
     max-width: 100%;
     transition: width 0.05s linear-in-out;
 }
@@ -222,7 +222,7 @@ body {
     position: absolute;
     top: 0dp;
     height: 4dp;
-    background-color: #4080FF;
+    background-color: #4080ff;
     max-width: 100%;
     transition: width 0.08s linear-in-out;
 }
@@ -230,7 +230,7 @@ body {
 .p2-sa .sa-fill { left: 0dp; }
 
 .sa-fill.sa-active {
-    background-color: #E040E0;
+    background-color: #e040e0;
     animation: sa-active-pulse 0.2s sine-in-out infinite;
 }
 .sa-fill.sa-ready {
@@ -247,8 +247,8 @@ body {
     left: 0dp;
     width: 100%;
     font-family: "BoldPixels";
-    font-size: 12dp;
-    color: #FFD700;
+    font-size: 15dp;
+    color: #ffd700;
     text-align: center;
     font-effect: outline(1dp #CC6600);
 }
@@ -258,8 +258,8 @@ body {
     position: absolute;
     top: -4dp;
     font-family: "BoldPixels";
-    font-size: 12dp;
-    color: #FFFFFF;
+    font-size: 15dp;
+    color: #ffffff;
     font-effect: shadow(1dp 1dp #000000);
 }
 .p1-sa .sa-stock { right: 102%; margin-right: 2dp; text-align: right; }
@@ -275,7 +275,7 @@ body {
     position: absolute;
     top: -4dp;            /* centers 12dp glyph in the 4dp bar: (4/2) - (12/2) = -4dp */
     font-family: "BoldPixels";
-    font-size: 12dp;
+    font-size: 15dp;
     font-effect: outline(1dp #000000);
 }
 .p1-sa .sa-type { left: 102%; margin-left: 2dp; }
@@ -307,32 +307,32 @@ body {
 
 .combo-hits {
     display: inline-block;
-    font-size: 18dp;
-    color: #FFFFFF;
+    font-size: 22dp;
+    color: #ffffff;
     font-effect: shadow(2dp 2dp #000000);
 }
 .combo-label {
     display: inline-block;
-    font-size: 10dp;
-    color: #FFFFFF;
+    font-size: 13dp;
+    color: #ffffff;
     letter-spacing: 1dp;
     font-effect: shadow(2dp 2dp #000000);
 }
 
 /* Kind-specific label colors */
-.combo-lbl-hit   { color: #FFFFFF; }
-.combo-lbl-arts  { color: #E0C060; }
-.combo-lbl-sa    { color: #E040E0; }
-.combo-lbl-1st   { color: #FFD700; }
-.combo-lbl-rev   { color: #FF6040; }
-.combo-lbl-parry { color: #40C0FF; }
-.parry-red { color: #FF4040; }
+.combo-lbl-hit   { color: #ffffff; }
+.combo-lbl-arts  { color: #e0c060; }
+.combo-lbl-sa    { color: #e040e0; }
+.combo-lbl-1st   { color: #ffd700; }
+.combo-lbl-rev   { color: #ff6040; }
+.combo-lbl-parry { color: #40c0ff; }
+.parry-red { color: #ff4040; }
 
 /* Combo points below label */
 .combo-pts {
     display: block;
-    font-size: 8dp;
-    color: #FFD700;
+    font-size: 11dp;
+    color: #ffd700;
     font-effect: shadow(1dp 1dp #000000);
 }
 .p1-combo .combo-pts { text-align: right; }
@@ -351,8 +351,8 @@ body {
     display: block;
     position: absolute;
     top: 0dp;
-    font-size: 16dp;
-    color: #00EDD0;
+    font-size: 20dp;
+    color: #00edd0;
     font-effect: outline(1dp #000000);
 }
 /* Score: native right-aligns at tile 17 (P1) / tile 37 (P2) = 136dp / 296dp */
@@ -367,9 +367,9 @@ body {
     margin: 0dp;
     padding: 0dp;
     font-family: "BoldPixels";
-    font-size: 12dp;
+    font-size: 15dp;
     line-height: 12dp;
-    color: #A8ECFF;
+    color: #a8ecff;
     font-effect: outline(1dp #1A2866);
     animation: press-start-blink 1.3s sine-in-out infinite;
 }
@@ -390,8 +390,8 @@ body {
 .stun-counter {
     display: block;
     position: absolute;
-    font-size: 10dp;
-    color: #40C0FF;
+    font-size: 13dp;
+    color: #40c0ff;
     font-effect: shadow(1dp 1dp #000000);
 }
 .p1-stun-counter { left: 10dp; }
@@ -399,27 +399,27 @@ body {
 
 /* ── Animations ─────────────────────────────────────────────── */
 @keyframes timer-pulse {
-      0% { color: #FFD700; }
-     50% { color: #FF4040; }
-    100% { color: #FFD700; }
+      0% { color: #ffd700; }
+     50% { color: #ff4040; }
+    100% { color: #ffd700; }
 }
 
 @keyframes stun-blink {
-      0% { background-color: #C81010; }
-     50% { background-color: #FF8080; }
-    100% { background-color: #C81010; }
+      0% { background-color: #c81010; }
+     50% { background-color: #ff8080; }
+    100% { background-color: #c81010; }
 }
 
 @keyframes sa-active-pulse {
-      0% { background-color: #E040E0; }
-     50% { background-color: #FFFFFF; }
-    100% { background-color: #E040E0; }
+      0% { background-color: #e040e0; }
+     50% { background-color: #ffffff; }
+    100% { background-color: #e040e0; }
 }
 
 @keyframes sa-stock-flicker {
-      0% { background-color: #80C0FF; }
-     50% { background-color: #FFFFFF; }
-    100% { background-color: #80C0FF; }
+      0% { background-color: #80c0ff; }
+     50% { background-color: #ffffff; }
+    100% { background-color: #80c0ff; }
 }
 
 @keyframes combo-enter {
@@ -435,3 +435,5 @@ body {
      63% { opacity: 0; }
     100% { opacity: 0; }
 }
+
+

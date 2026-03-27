@@ -31,7 +31,7 @@
 
 #lobby-title-text {
     display: inline;
-    font-size: 11dp;
+    font-size: 14dp;
     color: #fff;
     font-weight: bold;
     font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
@@ -39,7 +39,7 @@
 
 #tournament-badge {
     display: inline;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(255, 210, 40, 255);
     background-color: rgba(100, 60, 0, 180);
     padding: 0dp 4dp;
@@ -50,7 +50,7 @@
 
 #password-badge {
     display: inline;
-    font-size: 7dp;
+    font-size: 10dp;
     background-color: rgba(60, 20, 20, 200);
     color: rgba(255, 100, 100, 255);
     padding: 0dp 4dp;
@@ -61,7 +61,7 @@
 
 #hidden-badge {
     display: inline;
-    font-size: 7dp;
+    font-size: 10dp;
     background-color: rgba(60, 20, 20, 200);
     color: rgba(255, 100, 100, 255);
     padding: 0dp 4dp;
@@ -117,7 +117,7 @@
 
 .section-header {
     display: block;
-    font-size: 6dp;
+    font-size: 9dp;
     color: rgba(170, 200, 255, 170);
     padding: 0dp 0dp;
     margin-top: 2dp;
@@ -136,14 +136,14 @@
 
 .registration-text {
     display: block;
-    font-size: 10dp;
+    font-size: 13dp;
     color: rgba(100, 255, 100, 200);
     margin-bottom: 4dp;
 }
 
 .registration-count {
     display: block;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(200, 200, 200, 180);
     margin-bottom: 8dp;
 }
@@ -168,7 +168,7 @@
 
 .bracket-round-label {
     display: block;
-    font-size: 5dp;
+    font-size: 8dp;
     color: rgba(255, 210, 40, 180);
     margin-bottom: 1dp;
 }
@@ -180,7 +180,7 @@
 
 .bracket-player {
     display: block;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(200, 210, 230, 200);
     padding: 0dp 2dp;
 }
@@ -192,7 +192,7 @@
 
 .bracket-vs {
     display: block;
-    font-size: 5dp;
+    font-size: 8dp;
     color: rgba(255, 80, 80, 200);
 }
 
@@ -207,7 +207,7 @@
 
 .active-match-item {
     display: block;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(200, 210, 230, 200);
     padding: 1dp 2dp;
     margin-bottom: 1dp;
@@ -228,7 +228,7 @@
 
 .match-tag {
     display: inline;
-    font-size: 5dp;
+    font-size: 8dp;
     color: rgba(255, 80, 80, 255);
     background-color: rgba(80, 0, 0, 200);
     padding: 0dp 2dp;
@@ -242,26 +242,26 @@
 
 .match-names {
     display: inline;
-    font-size: 7dp;
+    font-size: 10dp;
 }
 
 .side-tag {
     display: inline;
-    font-size: 5dp;
+    font-size: 8dp;
     color: rgba(140, 200, 255, 200);
     margin-right: 2dp;
 }
 
 .match-side {
     display: inline;
-    font-size: 5dp;
+    font-size: 8dp;
     color: rgba(140, 200, 255, 200);
     margin-right: 2dp;
 }
 
 .no-matches {
     display: block;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(150, 150, 170, 150);
     text-align: center;
     margin-top: 10dp;
@@ -270,7 +270,7 @@
 #btn-spectate {
     display: block;
     text-align: center;
-    font-size: 7dp;
+    font-size: 10dp;
     background-color: rgba(30, 30, 80, 200);
     color: #fff;
     padding: 2dp 0;
@@ -288,7 +288,7 @@
 .spectating-badge {
     display: block;
     text-align: center;
-    font-size: 7dp;
+    font-size: 10dp;
     background-color: rgba(20, 60, 80, 220);
     color: rgba(100, 230, 255, 255);
     padding: 2dp 0;
@@ -311,7 +311,7 @@
 #btn-to-start, #btn-to-pause, #btn-to-resume {
     display: block;
     text-align: center;
-    font-size: 7dp;
+    font-size: 10dp;
     background-color: rgba(60, 40, 0, 200);
     color: rgba(255, 210, 40, 240);
     padding: 2dp 0;
@@ -329,7 +329,7 @@
 #btn-to-dq {
     display: block;
     text-align: center;
-    font-size: 7dp;
+    font-size: 10dp;
     background-color: rgba(80, 20, 20, 200);
     color: rgba(255, 130, 130, 220);
     padding: 2dp 0;
@@ -352,7 +352,7 @@
 
 .dq-hint, .override-hint {
     display: inline;
-    font-size: 5dp;
+    font-size: 8dp;
     color: rgba(170, 170, 200, 150);
     margin-left: 4dp;
 }
@@ -360,7 +360,7 @@
 #btn-to-override {
     display: block;
     text-align: center;
-    font-size: 7dp;
+    font-size: 10dp;
     background-color: rgba(40, 20, 70, 200);
     color: rgba(180, 140, 255, 220);
     padding: 2dp 0;
@@ -384,7 +384,7 @@
 .match-nav-hint {
     display: block;
     text-align: center;
-    font-size: 5dp;
+    font-size: 8dp;
     color: rgba(150, 150, 170, 120);
     margin-top: 1dp;
 }
@@ -392,7 +392,7 @@
 #btn-start-bracket {
     display: block;
     text-align: center;
-    font-size: 9dp;
+    font-size: 12dp;
     background-color: rgba(60, 40, 0, 200);
     color: rgba(255, 210, 40, 240);
     padding: 3dp 0;
@@ -410,7 +410,7 @@
 #paused-banner {
     display: block;
     text-align: center;
-    font-size: 9dp;
+    font-size: 12dp;
     color: rgba(255, 210, 40, 255);
     background-color: rgba(80, 60, 0, 200);
     padding: 4dp;
@@ -422,7 +422,7 @@
 #btn-leave-room {
     display: block;
     text-align: center;
-    font-size: 7dp;
+    font-size: 10dp;
     background-color: rgba(80, 20, 20, 200);
     color: rgba(255, 180, 180, 200);
     padding: 2dp 0;
@@ -460,7 +460,7 @@
 
 #qr-label {
     display: block;
-    font-size: 5dp;
+    font-size: 8dp;
     color: rgba(0, 0, 0, 200);
     margin-top: 1dp;
 }
@@ -477,7 +477,7 @@
 .player-row {
     display: block;
     padding: 1dp 2dp;
-    font-size: 6dp;
+    font-size: 9dp;
     color: rgba(190, 200, 225, 200);
 }
 
@@ -507,7 +507,7 @@
 
 .player-status {
     display: inline;
-    font-size: 5dp;
+    font-size: 8dp;
     color: rgba(255, 210, 70, 220);
     margin-left: 2dp;
 }
@@ -523,7 +523,7 @@
 
 .chat-msg {
     display: block;
-    font-size: 6dp;
+    font-size: 9dp;
     color: rgba(220, 230, 255, 200);
     margin-bottom: 1dp;
     line-height: 1.1;
@@ -559,14 +559,14 @@
 
 #chat-prompt {
     display: inline;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(100, 255, 100, 200);
     margin-right: 2dp;
 }
 
 #chat-typing-text {
     display: inline;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(150, 150, 150, 200);
 }
 
@@ -576,7 +576,7 @@
 
 #chat-hint {
     display: inline;
-    font-size: 5dp;
+    font-size: 8dp;
     color: rgba(120, 130, 150, 150);
     margin-left: 2dp;
 }
@@ -597,7 +597,7 @@
 
 #status-text {
     display: block;
-    font-size: 7dp;
+    font-size: 10dp;
     color: rgba(255, 210, 70, 240);
 }
 
@@ -618,7 +618,7 @@
 #ma-title {
     display: block;
     text-align: center;
-    font-size: 12dp;
+    font-size: 15dp;
     color: rgba(255, 210, 40, 255);
     letter-spacing: 2dp;
     margin-bottom: 6dp;
@@ -636,14 +636,14 @@
 
 #ma-opponent-label {
     display: block;
-    font-size: 6dp;
+    font-size: 9dp;
     color: rgba(170, 170, 200, 150);
     margin-bottom: 1dp;
 }
 
 #ma-opponent-name {
     display: block;
-    font-size: 11dp;
+    font-size: 14dp;
     color: rgba(255, 255, 255, 255);
     margin-bottom: 2dp;
     font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
@@ -651,7 +651,7 @@
 
 #ma-opponent-details {
     display: block;
-    font-size: 7dp;
+    font-size: 10dp;
 }
 
 .ma-detail-item {
@@ -682,7 +682,7 @@
 #ma-countdown-text {
     display: block;
     text-align: center;
-    font-size: 8dp;
+    font-size: 11dp;
     color: rgba(200, 200, 200, 180);
     margin-top: 1dp;
 }
@@ -698,7 +698,7 @@
     height: 16dp;
     line-height: 16dp;
     text-align: center;
-    font-size: 9dp;
+    font-size: 12dp;
     margin: 0 4dp;
     border-width: 1dp;
     border-color: transparent;
@@ -742,14 +742,14 @@
 
 #chat-popup-title {
     display: block;
-    font-size: 10dp;
+    font-size: 13dp;
     color: rgba(200, 220, 255, 255);
     margin-bottom: 6dp;
 }
 
 #chat-popup-text {
     display: block;
-    font-size: 9dp;
+    font-size: 12dp;
     padding: 3dp 4dp;
     color: #fff;
     background-color: rgba(20, 20, 40, 200);
@@ -765,7 +765,9 @@
 
 .chat-help {
     display: block;
-    font-size: 6dp;
+    font-size: 9dp;
     color: rgba(160, 170, 200, 160);
     margin-top: 4dp;
 }
+
+

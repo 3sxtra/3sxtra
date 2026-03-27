@@ -840,16 +840,19 @@ static void ensure_fonts_loaded(void) {
         return;
     s_deferred_init_done = true;
 
-    // NotoSansJP loaded as PRIMARY (non-fallback) so CSS font-family
-    // "Noto Sans JP" matches it directly.  This prevents BoldPixels
-    // from claiming Unicode codepoints it cannot render (geometric shapes,
-    // arrows, etc.) and blocking the fallback chain.
+    std::string font_district = s_ui_base_path + "../fonts/district_italic.ttf";
+    if (!Rml::LoadFontFace(font_district.c_str(), false, Rml::Style::FontWeight::Normal)) {
+        SDL_Log("[RmlUi] Failed to load font: %s", font_district.c_str());
+    }
+
+    // NotoSansJP loaded as FALLBACK so that Japanese text and symbols missing
+    // from DistrictTF-RegularItalic can still be rendered gracefully.
     std::string font_noto = s_ui_base_path + "../fonts/NotoSansJP-Regular.ttf";
-    if (!Rml::LoadFontFace(font_noto.c_str(), false, Rml::Style::FontWeight::Normal)) {
+    if (!Rml::LoadFontFace(font_noto.c_str(), true, Rml::Style::FontWeight::Normal)) {
         SDL_Log("[RmlUi] Failed to load font: %s", font_noto.c_str());
     }
     // Also register the same file to satisfy bold requests (e.g. h1 elements)
-    if (!Rml::LoadFontFace(font_noto.c_str(), false, Rml::Style::FontWeight::Bold)) {
+    if (!Rml::LoadFontFace(font_noto.c_str(), true, Rml::Style::FontWeight::Bold)) {
         SDL_Log("[RmlUi] Failed to load bold fallback font: %s", font_noto.c_str());
     }
 
