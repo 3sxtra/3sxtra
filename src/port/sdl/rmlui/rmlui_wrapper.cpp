@@ -1063,12 +1063,9 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
         glViewport(0, 0, win_w, win_h);
     }
 
-    // Use independent X/Y dp ratios so UI elements map 1:1 to physical pixels
-    // without the CPS3 9/7 PAR stretch that the game canvas gets.
-    // The smaller ratio ensures the UI fits within the viewport.
-    const float dp_x = view_w / (float)GAME_W;
-    const float dp_y = view_h / (float)GAME_H;
-    const float dp_ratio = (dp_x < dp_y) ? dp_x : dp_y;
+    // Calculate display ratio based strictly on width to provide a
+    // crisp high-resolution font render while keeping the layout locked.
+    const float dp_ratio = view_w / (float)GAME_W;
     s_game_context->SetDensityIndependentPixelRatio(dp_ratio);
 
     // PAR correction factor for portrait images (e.g. char select).
@@ -1078,10 +1075,12 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
     else
         s_par_correct_y = 1.0f;
 
-    // Context dimensions match the physical viewport so the viewport
-    // adapter scales 1:1 (no PAR distortion on UI elements).
-    const int ctx_w = (int)(view_w + 0.5f);
-    const int ctx_h = (int)(view_h + 0.5f);
+    // Lock logical context dimensions strictly to GAME_W x GAME_H dp.
+    // We multiply by dp_ratio so RmlUi's layout engine maps it to exactly 384x224 dp.
+    // The viewport adapter will then physically scale the stretched axis 
+    // to match the game's internal stretch natively on screen.
+    const int ctx_w = (int)(GAME_W * dp_ratio + 0.5f);
+    const int ctx_h = (int)(GAME_H * dp_ratio + 0.5f);
     s_game_context->SetDimensions(Rml::Vector2i(ctx_w, ctx_h));
 
     const int phys_w = (int)(view_w + 0.5f);
