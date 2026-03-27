@@ -20,6 +20,7 @@
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "stun.h"
+#include "net_tuning.h"
 // dc_ghost.h does not exist in our repo; njdp2d_draw was renamed to Renderer_Flush2DPrimitives.
 #include "port/rendering/renderer.h"
 extern void njUserMain();
@@ -54,10 +55,10 @@ extern void njUserMain();
 #endif
 
 #define INPUT_HISTORY_MAX 120
-#define FRAME_SKIP_TIMER_MAX 60 // Allow skipping a frame roughly every second
+// FRAME_SKIP_TIMER_MAX is now dynamic
 #define STATS_UPDATE_TIMER_MAX 60
 #define DELAY_FRAMES_DEFAULT 1
-#define DELAY_FRAMES_MAX 4
+#define DELAY_FRAMES_MAX 5
 #define PING_SAMPLE_INTERVAL 30
 #define PLAYER_COUNT 2
 
@@ -88,8 +89,9 @@ static int stats_update_timer = 0;
 static int frame_max_rollback = 0;
 static NetworkStats network_stats = { 0 };
 
-// --- Dynamic delay from ping ---
+// --- Dynamic tuning from ping ---
 static int dynamic_delay = DELAY_FRAMES_DEFAULT;
+static int dynamic_frame_skip_max = 3;
 static bool dynamic_delay_applied = false;
 static float ping_sum = 0;
 static float jitter_sum = 0;
@@ -387,17 +389,24 @@ static void configure_lossy_adapter() {
 }
 #endif
 
-static int compute_delay_from_ping(float avg_ping, float jitter) {
+static void compute_tuning_from_ping(float avg_ping, float jitter, int* out_delay, int* out_skip_max) {
     float effective_rtt = avg_ping + jitter;
-    if (effective_rtt < 30.0f)
-        return 0;
-    if (effective_rtt < 70.0f)
-        return 1;
-    if (effective_rtt < 130.0f)
-        return 2;
-    if (effective_rtt < 200.0f)
-        return 3;
-    return DELAY_FRAMES_MAX;
+    if (effective_rtt < 90.0f) {
+        *out_delay = 0;
+        *out_skip_max = 2;
+    } else if (effective_rtt < 150.0f) {
+        *out_delay = 1;
+        *out_skip_max = 3;
+    } else if (effective_rtt < 200.0f) {
+        *out_delay = 3;
+        *out_skip_max = 4;
+    } else if (effective_rtt < 250.0f) {
+        *out_delay = 4;
+        *out_skip_max = 5;
+    } else {
+        *out_delay = 5;
+        *out_skip_max = 5;
+    }
 }
 
 static void configure_gekko() {
@@ -408,7 +417,7 @@ static void configure_gekko() {
     config.input_size = sizeof(u16);
     config.state_size = sizeof(State);
     config.max_spectators = 4;
-    config.input_prediction_window = 12;
+    config.input_prediction_window = 8; // Absolute max 8 per recommendations
 
     config.desync_detection = true;
 
@@ -433,6 +442,7 @@ static void configure_gekko() {
         // critical for GekkoNet's address-based sync handshake matching.
         fallback_socket = NET_CreateDatagramSocket(NULL, local_port);
         if (fallback_socket) {
+            NetTuning_SetRecvBuf(fallback_socket, 256 * 1024);
             gekko_net_adapter_set(session, SDLNetAdapter_Create(fallback_socket));
             SDL_Log("Using SDL3_Net fallback socket for GekkoNet adapter (port %hu)", local_port);
         } else {
@@ -727,18 +737,20 @@ static void update_network_stats() {
 }
 
 static void run_netplay() {
-    // Apply dynamic delay once when battle starts
+    // Apply dynamic tuning once when battle starts
     if (!dynamic_delay_applied && G_No[1] == 2) {
         if (ping_sample_count > 0) {
             float avg = ping_sum / ping_sample_count;
             float jitter_avg = jitter_sum / ping_sample_count;
-            dynamic_delay = compute_delay_from_ping(avg, jitter_avg);
+            compute_tuning_from_ping(avg, jitter_avg, &dynamic_delay, &dynamic_frame_skip_max);
         } else {
             dynamic_delay = DELAY_FRAMES_DEFAULT;
+            dynamic_frame_skip_max = 3;
         }
         gekko_set_local_delay(session, player_handle, dynamic_delay);
-        SDL_Log("[netplay] dynamic delay set to %d (samples=%d, avg_ping=%.1f, jitter=%.1f)",
+        SDL_Log("[netplay] dynamic tuning set: delay=%d, skip_max=%d (samples=%d, avg_ping=%.1f, jitter=%.1f)",
                 dynamic_delay,
+                dynamic_frame_skip_max,
                 ping_sample_count,
                 ping_sample_count > 0 ? ping_sum / ping_sample_count : 0.f,
                 ping_sample_count > 0 ? jitter_sum / ping_sample_count : 0.f);
@@ -747,12 +759,12 @@ static void run_netplay() {
 
     // Step
 
-    const bool catch_up = need_to_catch_up() && (frame_skip_timer == 0);
+    const bool catch_up = need_to_catch_up() && (frame_skip_timer <= 0);
     step_logic(!catch_up);
 
     if (catch_up) {
         step_logic(true);
-        frame_skip_timer = FRAME_SKIP_TIMER_MAX;
+        frame_skip_timer = dynamic_frame_skip_max;
     }
 
     frame_skip_timer -= 1;
@@ -819,6 +831,7 @@ void Netplay_Begin() {
 
     // Reset dynamic delay sampling for this session
     dynamic_delay = DELAY_FRAMES_DEFAULT;
+    dynamic_frame_skip_max = 3;
     dynamic_delay_applied = false;
     ping_sum = 0;
     jitter_sum = 0;
@@ -1158,8 +1171,8 @@ void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
     config.input_size = sizeof(u16);
     config.state_size = sizeof(State);
     config.max_spectators = 1;
-    config.spectator_delay = 15; // 15 frames (~250ms at 60fps)
-    config.input_prediction_window = 12;
+    config.spectator_delay = 10; // 10 frames (~166ms at 60fps) max per recommendations
+    config.input_prediction_window = 8;
     config.desync_detection = false; // Spectators don't need desync detection
 
     if (!gekko_create(&session, GekkoSpectateSession)) {
