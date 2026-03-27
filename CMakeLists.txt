@@ -856,6 +856,7 @@ if(WIN32)
     file(WRITE "${CMAKE_BINARY_DIR}/create_asset_links.bat"
         "@echo off\n"
         "if not exist \"%1\\assets\" (mklink /J \"%1\\assets\" \"${_ASSETS_SRC}\")\n"
+        "if not exist \"${_ASSETS_SRC}\\shaders\" (mkdir \"${_ASSETS_SRC}\\shaders\")\n"
         "if not exist \"${_ASSETS_SRC}\\shaders\\libretro\" (mklink /J \"${_ASSETS_SRC}\\shaders\\libretro\" \"${_SLANG_SRC}\")\n"
     )
     add_custom_command(TARGET 3sx POST_BUILD
@@ -939,7 +940,8 @@ if(INSTALL_ASSETS)
         ")
     endif()
     if(ENABLE_LIBRASHADER)
-        install(DIRECTORY assets/shaders/custom/ DESTINATION bin/assets/shaders/libretro/custom)
+        # Custom presets are copied into the slang-shaders directory during POST_BUILD,
+        # so the libretro junction will naturally include them.
     endif()
     # Lua runtime files (only when training is enabled)
     if(ENABLE_TRAINING)

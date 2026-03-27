@@ -511,15 +511,16 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     // Use the absolute base path so require() works regardless of CWD
     // (on Pi4 the working directory differs from the executable directory).
     {
-        std::string lua_base = (base_path ? std::string(base_path) : std::string()) + "lua/";
+        std::string exe_base = (base_path ? std::string(base_path) : std::string());
+        std::string lua_base1 = exe_base + "lua/";
+        std::string lua_base2 = exe_base + "assets/lua/";
         // Normalize backslashes to forward slashes — Lua interprets '\' as
         // escape sequences inside string literals (e.g. '\3' → ETX char).
-        for (auto& ch : lua_base) {
-            if (ch == '\\')
-                ch = '/';
-        }
-        std::string lua_setup = "package.path = '" + lua_base + "?.lua;" + lua_base +
-                                "?/init.lua;' .. package.path\n"
+        for (auto& ch : lua_base1) { if (ch == '\\') ch = '/'; }
+        for (auto& ch : lua_base2) { if (ch == '\\') ch = '/'; }
+        std::string lua_setup = "package.path = '" + 
+                                lua_base1 + "?.lua;" + lua_base1 + "?/init.lua;" +
+                                lua_base2 + "?.lua;" + lua_base2 + "?/init.lua;' .. package.path\n"
                                 "joypad = require('compat.joypad')\n"
                                 "emu    = require('compat.emu')\n"
                                 "gui    = require('compat.gui')\n"

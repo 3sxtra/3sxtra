@@ -477,6 +477,13 @@ bool lua_trials_load(const char* lua_path) {
     // Resolve path relative to exe directory (user may run from any CWD)
     std::string exe_dir = get_exe_dir();
     std::string abs_path = exe_dir.empty() ? lua_path : (exe_dir + lua_path);
+
+    SDL_IOStream* io = SDL_IOFromFile(abs_path.c_str(), "rb");
+    if (!io) {
+        return false;
+    }
+    SDL_CloseIO(io);
+
     SDL_Log("[Lua Trials] Resolved path: %s", abs_path.c_str());
 
     if (luaL_dofile(L, abs_path.c_str()) != LUA_OK) {
@@ -525,7 +532,8 @@ void lua_trials_free(void) {
 const TrialCharacterDef* lua_trials_get_characters(int* out_count) {
     // Lazy-load trial definitions on first access (deferred from boot)
     if (!s_loaded && !s_load_failed) {
-        if (!lua_trials_load("lua/sf3_3rd_trial_clean.lua")) {
+        if (!lua_trials_load("lua/sf3_3rd_trial_clean.lua") && 
+            !lua_trials_load("assets/lua/sf3_3rd_trial_lua/sf3_3rd_trial_clean.lua")) {
             SDL_Log("[Lua Trials] Lazy load failed, no trial data available");
             s_load_failed = true; // Don't retry every frame
             if (out_count)

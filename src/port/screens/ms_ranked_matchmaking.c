@@ -22,6 +22,8 @@
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
 #include "netplay/netplay.h"
+#include "port/sdl/netplay/sdl_netplay_ui.h"
+#include "sf33rd/Source/Game/menu/menu.h"
 
 extern s16 g_net_peer_idx;
 

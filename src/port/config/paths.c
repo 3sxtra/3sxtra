@@ -41,11 +41,10 @@ const char* Paths_GetPrefPath() {
 
     /* Check for portable mode: config/ folder next to executable */
     if (portable_mode == -1) {
-        char* base = SDL_GetBasePath();
+        const char* base = SDL_GetBasePath();
         if (base) {
             static char portable_path[512];
             snprintf(portable_path, sizeof(portable_path), "%sconfig/", base);
-            SDL_free(base);
 
             SDL_PathInfo info;
             if (SDL_GetPathInfo(portable_path, &info) && info.type == SDL_PATHTYPE_DIRECTORY) {
@@ -122,10 +121,9 @@ const char* Paths_GetBasePath() {
 #endif
         // Fallback or multi-platform
         if (s_base_path[0] == '\0') {
-            char* sdl_base = SDL_GetBasePath();
+            const char* sdl_base = SDL_GetBasePath();
             if (sdl_base) {
                 SDL_strlcpy(s_base_path, sdl_base, sizeof(s_base_path));
-                SDL_free(sdl_base);
                 Paths_Normalize(s_base_path);
             } else {
                 SDL_strlcpy(s_base_path, "./", sizeof(s_base_path));
