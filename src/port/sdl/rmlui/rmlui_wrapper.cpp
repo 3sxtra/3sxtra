@@ -309,7 +309,7 @@ class GameSystemInterface : public SystemInterface_SDL {
     bool LogMessage(Rml::Log::Type type, const Rml::String& message) override {
         // Force "Loaded font face" to print as info
         if (type == Rml::Log::LT_INFO) {
-            SDL_Log("[RmlUi] %s", message.c_str());
+            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] %s", message.c_str());
             return true;
         }
         return SystemInterface_SDL::LogMessage(type, message);
@@ -573,7 +573,7 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     const char* backend_name = (s_active_backend == RENDERER_SDLGPU) ? "SDL_GPU"
                                : is_sdl2d_backend(s_active_backend)  ? "SDL2D"
                                                                      : "GL3";
-    SDL_Log("[RmlUi] Initialized (%s renderer, %dx%d window + %dx%d game, dp-ratio=%.2fx)",
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Initialized (%s renderer, %dx%d window + %dx%d game, dp-ratio=%.2fx)",
             backend_name,
             s_window_w,
             s_window_h,
@@ -629,7 +629,7 @@ extern "C" void rmlui_wrapper_shutdown(void) {
     delete s_system_interface;
     s_system_interface = nullptr;
 
-    SDL_Log("[RmlUi] Shut down");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Shut down");
 }
 
 // -------------------------------------------------------------------
@@ -647,7 +647,7 @@ extern "C" void rmlui_wrapper_process_event(union SDL_Event* event) {
             Rml::Debugger::Initialise(s_window_context);
             Rml::Debugger::SetContext(s_game_context);
             s_debugger_initialized = true;
-            SDL_Log("[RmlUi] Debugger plugin initialized (lazy, F12)");
+            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Debugger plugin initialized (lazy, F12)");
         }
         bool new_vis = !Rml::Debugger::IsVisible();
         Rml::Debugger::SetVisible(new_vis);
@@ -925,7 +925,7 @@ extern "C" void rmlui_wrapper_close_document(const char* name) {
         it->second->Close();
         s_window_documents.erase(it);
         s_any_window_visible = recompute_visible(s_window_documents);
-        SDL_Log("[RmlUi] Closed window document: %s", name);
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Closed window document: %s", name);
     }
 }
 
@@ -1021,7 +1021,7 @@ extern "C" void rmlui_wrapper_close_game_document(const char* name) {
     if (it != s_game_documents.end()) {
         it->second->Close();
         s_game_documents.erase(it);
-        SDL_Log("[RmlUi] Closed game document: %s", name);
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Closed game document: %s", name);
     }
 }
 
@@ -1185,7 +1185,7 @@ extern "C" void rmlui_wrapper_reload_stylesheets(void) {
             count++;
         }
     }
-    SDL_Log("[RmlUi] Reloaded stylesheets for %d document(s)", count);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Reloaded stylesheets for %d document(s)", count);
 }
 
 // Helper to reload a document in a given context + document map
@@ -1208,7 +1208,7 @@ static void reload_doc_in(Rml::Context* ctx, std::unordered_map<std::string, Rml
         if (was_visible)
             new_doc->Show();
         it->second = new_doc;
-        SDL_Log("[RmlUi] Reloaded document: %s", name);
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Reloaded document: %s", name);
     } else {
         docs.erase(it);
         SDL_Log("[RmlUi] Failed to reload document: %s", name);
@@ -1266,10 +1266,10 @@ extern "C" void rmlui_wrapper_reload_all_documents(void) {
         total += reload_all_in(s_window_context, s_window_documents);
     if (s_game_context)
         total += reload_all_in(s_game_context, s_game_documents);
-    SDL_Log("[RmlUi] Reloaded %d/%zu document(s)", total, total_docs);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Reloaded %d/%zu document(s)", total, total_docs);
 }
 
 extern "C" void rmlui_wrapper_release_textures(void) {
     Rml::ReleaseTextures();
-    SDL_Log("[RmlUi] Released all textures (will reload on next render)");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Released all textures (will reload on next render)");
 }

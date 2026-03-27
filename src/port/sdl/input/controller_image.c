@@ -60,7 +60,7 @@ bool ControllerImage_Module_Init(void) {
         }
     }
 
-    SDL_Log("[ControllerImage] Initialized successfully, data loaded from '%s', '%s', '%s'", kenney_path, ordinary_path, data_path);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[ControllerImage] Initialized successfully, data loaded from '%s', '%s', '%s'", kenney_path, ordinary_path, data_path);
 
     s_keyboard_device = ControllerImage_CreateKeyboardDevice();
     if (!s_keyboard_device) {
@@ -91,7 +91,7 @@ void ControllerImage_Module_Quit(void) {
 
     ControllerImage_Quit();
     s_initialized = false;
-    SDL_Log("[ControllerImage] Shut down");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[ControllerImage] Shut down");
 }
 
 void ControllerImage_Module_OnGamepadAdded(SDL_Gamepad* gamepad, int slot) {
@@ -123,7 +123,7 @@ void ControllerImage_Module_OnGamepadAdded(SDL_Gamepad* gamepad, int slot) {
     s_devices[slot] = dev;
 
     const char* device_type = ControllerImage_GetDeviceType(dev);
-    SDL_Log("[ControllerImage] Slot %d: device type = '%s'", slot, device_type ? device_type : "unknown");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[ControllerImage] Slot %d: device type = '%s'", slot, device_type ? device_type : "unknown");
 }
 
 void ControllerImage_Module_OnGamepadRemoved(int slot) {
@@ -135,7 +135,7 @@ void ControllerImage_Module_OnGamepadRemoved(int slot) {
     }
 
     if (s_devices[slot]) {
-        SDL_Log("[ControllerImage] Slot %d: device removed", slot);
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[ControllerImage] Slot %d: device removed", slot);
         ControllerImage_DestroyGamepadDevice(s_devices[slot]);
         s_devices[slot] = NULL;
     }

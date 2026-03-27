@@ -116,7 +116,11 @@
 }
 
 .exit-row {
-    margin-top: 10dp; /* Extra spacing for exit */
+    position: absolute;
+    bottom: 2dp;
+    left: 0;
+    right: 0;
+    margin-top: 0;
     border-top-width: 1dp;
     border-top-color: rgba(100, 130, 220, 50);
     padding-top: 2dp;
@@ -126,14 +130,15 @@
 
 .peer-panel {
     display: block;
-    margin-top: 2dp;
-    margin-bottom: 3dp;
+    position: absolute;
+    top: 2dp;
+    bottom: 3dp;
+    left: 0;
+    right: 0;
     background-color: rgba(0, 6, 28, 180);
     border-width: 1dp;
     border-color: rgba(80, 120, 220, 70);
     padding: 0dp 4dp 3dp 4dp;
-    /* In Ranked mode, this panel fills most of the right column */
-    height: 180dp;
 }
 
 .peer-panel-header {
@@ -240,6 +245,26 @@
 
 .peer-list-empty.searching {
     color: rgba(255, 210, 70, 160);
+}
+
+/* ─── Status bar (pinned bottom) ─────────────────────────────── */
+
+#status-bar {
+    display: block;
+    position: absolute;
+    bottom: 1dp;
+    left: 1dp;
+    right: 1dp;
+    padding: 1dp 6dp;
+    background-color: rgba(0, 8, 30, 160);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 50);
+}
+
+#status-text {
+    display: block;
+    font-size: 8dp;
+    color: rgba(255, 210, 70, 240);
 }
 
 /* ─── Popup overlay ──────────────────────────────────────────── */

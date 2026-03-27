@@ -87,8 +87,10 @@
         </div><!-- lobby-peers-col -->
     </div><!-- lobby-body -->
 
-    <!-- Status Bar (using existing data-model strings if needed) -->
-    <!-- (Optional, skipped for cleaner look or added if requested) -->
+    <!-- ── Status bar ── -->
+    <div id="status-bar" data-if="status_text != ''">
+        <span id="status-text">{{status_text}}</span>
+    </div>
 
     <!-- ── Popup overlay (reusing logic from network lobby) ── -->
     <div data-if="popup_type > 0" id="popup-scrim">

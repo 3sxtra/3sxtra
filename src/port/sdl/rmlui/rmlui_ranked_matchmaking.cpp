@@ -57,6 +57,7 @@ struct RankedLobbyCache {
     int ft_value;
     int net_peer_count;
     int net_peer_idx;
+    int cursor;
     int popup_type; // 0=none, 1=incoming, 2=outgoing
 };
 static RankedLobbyCache s_cache = {};
@@ -112,6 +113,19 @@ static void do_init(void) {
     ctor.BindFunc("net_peer_idx", [](Rml::Variant& v) { v = g_net_peer_idx; });
     ctor.BindFunc("cursor", [](Rml::Variant& v) {
         v = (int)Menu_Cursor_Y[0];
+    });
+
+    ctor.BindFunc("status_text", [](Rml::Variant& v) {
+        const char* msg = SDLNetplayUI_GetStatusMsg();
+        if (msg[0]) {
+            v = Rml::String(msg);
+            return;
+        }
+        if (SDLNetplayUI_IsSearching()) {
+            v = Rml::String("DISCOVERING...");
+            return;
+        }
+        v = Rml::String("");
     });
 
     ctor.BindFunc("popup_type", [](Rml::Variant& v) {
@@ -208,6 +222,11 @@ extern "C" void rmlui_ranked_matchmaking_update(void) {
     DIRTY_BOOL(block_wifi, Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI));
     DIRTY_INT(ft_value, Config_GetInt(CFG_KEY_NETPLAY_FT));
 
+    DIRTY_INT(net_peer_count, SDLNetplayUI_GetOnlinePlayerCount());
+    DIRTY_INT(net_peer_idx, g_net_peer_idx);
+    DIRTY_INT(cursor, (int)Menu_Cursor_Y[0]);
+
+    s_model_handle.DirtyVariable("status_text");
     {
         int nc = SDLNetplayUI_GetOnlinePlayerCount();
         std::vector<RankedPeerItem> next;
@@ -257,12 +276,33 @@ extern "C" void rmlui_ranked_matchmaking_update(void) {
         s_last_cursor = Menu_Cursor_Y[0];
         s_model_handle.DirtyVariable("cursor");
     }
+
+    {
+        int pt = 0;
+        if (SDLNetplayUI_HasPendingInvite()) {
+            pt = 1;
+        } else if (SDLNetplayUI_HasOutgoingChallenge()) {
+            pt = 2;
+        }
+        DIRTY_INT(popup_type, pt);
+    }
+
+    s_model_handle.DirtyVariable("popup_title");
+    s_model_handle.DirtyVariable("popup_name");
+    s_model_handle.DirtyVariable("popup_ping");
+    s_model_handle.DirtyVariable("popup_region");
+    s_model_handle.DirtyVariable("popup_is_incoming");
+    s_model_handle.DirtyVariable("popup_ft");
 }
 
 extern "C" void rmlui_ranked_matchmaking_show(void) {
     if (!s_model_registered) do_init();
     s_wants_leave = false;
     rmlui_wrapper_show_game_document("ranked_matchmaking");
+
+    if (Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH)) {
+        SDLNetplayUI_StartSearch();
+    }
 }
 
 extern "C" void rmlui_ranked_matchmaking_hide(void) {

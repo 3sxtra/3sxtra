@@ -21,6 +21,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"
 #include "sf33rd/Source/Game/io/pulpul.h"
+#include "netplay/netplay.h"
 
 extern s16 g_net_peer_idx;
 
@@ -29,6 +30,8 @@ static void ranked_matchmaking_enter(struct _TASK* task_ptr) {
     FadeOut(1, 0xFF, 8);
     task_ptr->r_no[3] = 0;
     task_ptr->timer = 5; /* standard wait for fade transition */
+
+    Netplay_EnterLobby();
 
     Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
     Menu_Suicide[1] = 0; /* enable our items (master_player=1) */
@@ -131,6 +134,23 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
     if (sw & 0x000C) { /* Left or Right */
         int dir = (sw & 0x0008) ? 1 : -1;
         switch (cursor) {
+            case 0: /* AUTO-ACCEPT */
+                Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT));
+                SE_dir_cursor_move();
+                break;
+            case 1: /* AUTO-SEARCH */
+            {
+                bool searching = !SDLNetplayUI_IsSearching();
+                Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, searching);
+                if (searching) SDLNetplayUI_StartSearch();
+                else SDLNetplayUI_StopSearch();
+                SE_dir_cursor_move();
+                break;
+            }
+            case 2: /* REGION LOCK */
+                Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK));
+                SE_dir_cursor_move();
+                break;
             case 3: /* MAX PING */
             {
                 int val = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
@@ -141,6 +161,10 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
                 SE_dir_cursor_move();
                 break;
             }
+            case 4: /* BLOCK WIFI */
+                Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI));
+                SE_dir_cursor_move();
+                break;
             case 5: /* MATCH FT */
             {
                 static const int fts[] = { 1, 2, 3, 5, 10 };

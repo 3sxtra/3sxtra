@@ -51,7 +51,7 @@ const char* Paths_GetPrefPath() {
             if (SDL_GetPathInfo(portable_path, &info) && info.type == SDL_PATHTYPE_DIRECTORY) {
                 portable_mode = 1;
                 pref_path = portable_path;
-                printf("[Paths] Portable mode: using %s\n", pref_path);
+                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Portable mode: using %s\n", pref_path);
                 return pref_path;
             }
         }
@@ -60,7 +60,7 @@ const char* Paths_GetPrefPath() {
 
     /* Standard mode: AppData */
     pref_path = SDL_GetPrefPath("CrowdedStreet", "3SX");
-    printf("[Paths] Standard mode: using %s\n", pref_path);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Standard mode: using %s\n", pref_path);
     return pref_path;
 }
 
@@ -99,7 +99,7 @@ const char* Paths_GetBasePath() {
                     SDL_IOStream* io = SDL_IOFromFile(check_path, "rb");
                     if (io) {
                         SDL_CloseIO(io);
-                        SDL_Log("[Paths] FOUND PROJECT ROOT AT: %s", current);
+                        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] FOUND PROJECT ROOT AT: %s", current);
                         found_root = true;
                         break;
                     }
@@ -131,7 +131,7 @@ const char* Paths_GetBasePath() {
                 SDL_strlcpy(s_base_path, "./", sizeof(s_base_path));
             }
         }
-        SDL_Log("[Paths] Base path initialized to: %s", s_base_path);
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Base path initialized to: %s", s_base_path);
     }
     return s_base_path;
 }
@@ -175,7 +175,7 @@ const char* Paths_ResolveAsset(const char* relative_path) {
             SDL_IOStream* io = SDL_IOFromFile(resolved, "rb");
             if (io) {
                 SDL_CloseIO(io);
-                SDL_Log("[Paths] Resolved '%s' -> '%s'", relative_path, resolved);
+                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Resolved '%s' -> '%s'", relative_path, resolved);
                 return resolved;
             }
         }

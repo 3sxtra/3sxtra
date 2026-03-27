@@ -225,7 +225,7 @@ static FILE* atomic_open_bin(const char* path, char* tmp_path, size_t tmp_size) 
 /** @brief Initialize the native save system. Call once at startup. */
 void NativeSave_Init(void) {
     ensure_save_dir();
-    SDL_Log("[NativeSave] Save directory: %s", save_dir);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] Save directory: %s", save_dir);
 }
 
 /** @brief Get the save directory path (for debug display). */
@@ -245,7 +245,7 @@ int NativeSave_LoadOptions(void) {
 
     FILE* f = fopen(path, "r");
     if (!f) {
-        SDL_Log("[NativeSave] No options.ini found — using defaults");
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] No options.ini found — using defaults");
         return -1;
     }
 
@@ -341,7 +341,7 @@ int NativeSave_LoadOptions(void) {
     }
     sys_w.screen_mode = sw->Screen_Mode;
 
-    SDL_Log("[NativeSave] Options loaded from %s", path);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] Options loaded from %s", path);
     return 0;
 }
 
@@ -447,7 +447,7 @@ void NativeSave_SaveOptions(void) {
 
     fclose(f);
     atomic_commit(path, tmp);
-    SDL_Log("[NativeSave] Options saved to %s", path);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] Options saved to %s", path);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -461,7 +461,7 @@ int NativeSave_LoadDirection(void) {
 
     FILE* f = fopen(path, "r");
     if (!f) {
-        SDL_Log("[NativeSave] No direction.ini found — using defaults");
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] No direction.ini found — using defaults");
         return -1;
     }
 
@@ -487,7 +487,7 @@ int NativeSave_LoadDirection(void) {
         }
     }
 
-    SDL_Log("[NativeSave] Direction loaded from %s", path);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] Direction loaded from %s", path);
     return 0;
 }
 
@@ -516,7 +516,7 @@ void NativeSave_SaveDirection(void) {
 
     fclose(f);
     atomic_commit(path, tmp);
-    SDL_Log("[NativeSave] Direction saved to %s", path);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[NativeSave] Direction saved to %s", path);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
