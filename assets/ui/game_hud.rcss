@@ -6,7 +6,7 @@
 /* ── Root body ─────────────────────────────────────────────── */
 body {
     width: 384dp;
-    height: 224dp;
+    height: 100%;
     font-family: "DistrictTF-RegularItalic";
     font-size: 15dp;
 }
@@ -18,7 +18,7 @@ body {
     top: 0dp;
     left: 0dp;
     width: 384dp;
-    height: 224dp;
+    height: 100%;
 }
 .hud-hidden {
     display: none;
@@ -35,7 +35,7 @@ body {
     top: 0dp;
     left: 0dp;
     width: 384dp;
-    height: 224dp;
+    height: 100%;
 }
 .player-side {
     display: block;
@@ -43,7 +43,7 @@ body {
     top: 0dp;
     left: 0dp;
     width: 384dp;
-    height: 224dp;
+    height: 100%;
 }
 
 /* ── Player names ───────────────────────────────────────────── */
@@ -210,7 +210,7 @@ body {
 .sa-wrap {
     display: block;
     position: absolute;
-    top: 213dp;
+    bottom: 7dp;
     height: 4dp;
     background-color: rgba(0, 0, 0, 200);
 }
@@ -345,7 +345,7 @@ body {
     top: 0dp;
     left: 0dp;
     width: 384dp;
-    height: 224dp;
+    height: 100%;
 }
 .score {
     display: block;

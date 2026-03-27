@@ -895,16 +895,13 @@ void SDLApp_EndFrame() {
 
     // Update Phase 3 data models immediately after game frame processing,
     // before the renderer backends run rmlui_wrapper_update_game() which processes them.
-    // ⚡ Pi4: skip all 25 Phase 3 data model updates when no game documents are
-    // visible. Each update individually checks visibility via hash-map lookup;
-    // this single cached-bool check avoids all of them (~50µs saved on V3D).
-    if (rmlui_wrapper_any_game_visible()) {
-        TRACE_SUB_BEGIN("RmlUiUpdates");
-        rmlui_game_hud_update();
-        rmlui_ingame_chat_update();
+    // (Optimization wrapper removed: these functions contain state-machine logic to SHOW documents)
+    TRACE_SUB_BEGIN("RmlUiUpdates");
+    rmlui_game_hud_update();
+    rmlui_ingame_chat_update();
 
-        if (use_rmlui) {
-            rmlui_mode_menu_update();
+    if (use_rmlui) {
+        rmlui_mode_menu_update();
         rmlui_option_menu_update();
         rmlui_game_option_update();
         rmlui_title_screen_update();
@@ -925,9 +922,8 @@ void SDLApp_EndFrame() {
         rmlui_copyright_update();
         rmlui_name_entry_update();
         rmlui_exit_confirm_update();
-        }
-        TRACE_SUB_END();
     }
+    TRACE_SUB_END();
 
     /* Replay picker and network lobby always use RmlUI — update outside use_rmlui gate */
     rmlui_replay_picker_update();

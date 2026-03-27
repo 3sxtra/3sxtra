@@ -3,7 +3,7 @@
  * ============================================================ */
 body {
     width: 384dp;
-    height: 224dp;
+    height: 100%;
     font-family: "DistrictTF-RegularItalic";
     font-size: 15dp;
 }
