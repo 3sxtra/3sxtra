@@ -187,7 +187,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/include/sdk
     $<$<BOOL:${ENABLE_NETPLAY}>:${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include>
     ${THIRD_PARTY_DIR}/stb
-    $<$<BOOL:${ENABLE_CONTROLLER_IMAGE}>:${THIRD_PARTY_DIR}/controllerimage/src>
+    $<$<BOOL:${ENABLE_CONTROLLER_IMAGE}>:${PROJECT_SOURCE_DIR}/src/port/sdl/input/controllerimage>
 
     $<$<BOOL:${ENABLE_LIBRASHADER}>:${THIRD_PARTY_DIR}/librashader/include>
     ${THIRD_PARTY_DIR}/simde
@@ -341,7 +341,7 @@ set_source_files_properties(src/port/win32/broadcast_spout.cpp
 
 # ControllerImage library: suppress warnings for vendored source
 set_source_files_properties(
-    ${THIRD_PARTY_DIR}/controllerimage/src/controllerimage.c
+    ${PROJECT_SOURCE_DIR}/src/port/sdl/input/controllerimage/controllerimage.c
     PROPERTIES
         COMPILE_OPTIONS "-Wno-error"
         SKIP_LINTING ON
@@ -397,7 +397,7 @@ add_executable(3sx MACOSX_BUNDLE
 
 # --- Conditional third-party sources ---
 if(ENABLE_CONTROLLER_IMAGE)
-    target_sources(3sx PRIVATE ${THIRD_PARTY_DIR}/controllerimage/src/controllerimage.c)
+    target_sources(3sx PRIVATE ${PROJECT_SOURCE_DIR}/src/port/sdl/input/controllerimage/controllerimage.c)
 endif()
 
 if(ENABLE_NETPLAY OR ENABLE_LEADERBOARD)

@@ -148,19 +148,6 @@ else
     echo "GekkoNet cloned to $GEKKONET_DIR"
 fi
 
-# -----------------------------
-# ControllerImage (controller button glyphs)
-# -----------------------------
-
-CTRLIMG_DIR="$THIRD_PARTY/controllerimage"
-
-if [ -d "$CTRLIMG_DIR" ]; then
-    echo "ControllerImage already exists at $CTRLIMG_DIR"
-else
-    echo "Cloning ControllerImage..."
-    git clone --depth 1 https://github.com/icculus/ControllerImage.git "$CTRLIMG_DIR"
-    echo "ControllerImage cloned to $CTRLIMG_DIR"
-fi
 
 # -----------------------------
 # cJSON (vendored JSON library for lobby_server)

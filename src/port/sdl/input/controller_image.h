@@ -55,6 +55,13 @@ SDL_Surface* ControllerImage_Module_CreateButtonSurface(int slot, SDL_GamepadBut
 /// @return SDL_Surface* or NULL on failure.
 SDL_Surface* ControllerImage_Module_CreateAxisSurface(int slot, SDL_GamepadAxis axis, int size);
 
+/// Create an SDL_Surface with the image for a specific keyboard scancode.
+/// The caller owns the returned surface and must call SDL_DestroySurface().
+/// @param scancode  SDL keyboard scancode enum.
+/// @param size      Desired image size in pixels (width and height).
+/// @return SDL_Surface* or NULL on failure.
+SDL_Surface* ControllerImage_Module_CreateScancodeSurface(SDL_Scancode scancode, int size);
+
 #ifdef __cplusplus
 }
 #endif
