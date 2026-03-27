@@ -73,6 +73,7 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
         for (int i = 0; i < 2; i++) trigger |= (~plsw_01[i] & plsw_00[i]);
 
         if (trigger & 0x0100) { /* LP / SOUTH - Accept */
+            Netplay_SetNegotiatedFT(SDLNetplayUI_GetPendingInviteFT());
             SDLNetplayUI_AcceptPendingInvite();
             SE_selected();
         } else if (trigger & 0x0200) { /* MK / EAST - Decline */
@@ -100,12 +101,14 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
         switch (cursor) {
             case 0: /* AUTO-ACCEPT */
                 Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT));
+                Config_Save();
                 SE_dir_cursor_move();
                 break;
             case 1: /* AUTO-SEARCH */
             {
                 bool searching = !SDLNetplayUI_IsSearching();
                 Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, searching);
+                Config_Save();
                 if (searching) SDLNetplayUI_StartSearch();
                 else SDLNetplayUI_StopSearch();
                 SE_dir_cursor_move();
@@ -113,14 +116,40 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
             }
             case 2: /* REGION LOCK */
                 Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK));
+                Config_Save();
                 SE_dir_cursor_move();
                 break;
+            case 3: /* MAX PING */
+            {
+                int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
+                if (cur >= 200) cur = 0;
+                else if (cur <= 0) cur = 50;
+                else cur += 50;
+                Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
+                Config_Save();
+                SE_selected();
+                break;
+            }
             case 4: /* BLOCK WIFI */
                 Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI));
+                Config_Save();
                 SE_dir_cursor_move();
                 break;
+            case 5: /* MATCH FT */
+            {
+                static const int fts[] = { 1, 2, 3, 5, 10 };
+                int val = Config_GetInt(CFG_KEY_NETPLAY_FT);
+                int idx = 1;
+                for (int i = 0; i < 5; i++) if (fts[i] == val) { idx = i; break; }
+                idx = (idx + 1) % 5;
+                Config_SetInt(CFG_KEY_NETPLAY_FT, fts[idx]);
+                Config_Save();
+                SE_selected();
+                break;
+            }
             case 6: /* CONNECT */
                 if (SDLNetplayUI_IsSearching() && SDLNetplayUI_GetOnlinePlayerCount() > 0) {
+                    Netplay_SetNegotiatedFT(Config_GetInt(CFG_KEY_NETPLAY_FT));
                     SDLNetplayUI_ConnectToPlayer(g_net_peer_idx);
                     SE_selected();
                 }
@@ -138,12 +167,14 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
         switch (cursor) {
             case 0: /* AUTO-ACCEPT */
                 Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT));
+                Config_Save();
                 SE_dir_cursor_move();
                 break;
             case 1: /* AUTO-SEARCH */
             {
                 bool searching = !SDLNetplayUI_IsSearching();
                 Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, searching);
+                Config_Save();
                 if (searching) SDLNetplayUI_StartSearch();
                 else SDLNetplayUI_StopSearch();
                 SE_dir_cursor_move();
@@ -151,20 +182,29 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
             }
             case 2: /* REGION LOCK */
                 Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK));
+                Config_Save();
                 SE_dir_cursor_move();
                 break;
             case 3: /* MAX PING */
             {
-                int val = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
-                val += dir * 30;
-                if (val < 0) val = 300;
-                if (val > 300) val = 0;
-                Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, val);
+                int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
+                if (dir == -1) { /* left */
+                    if (cur <= 0) cur = 200;
+                    else if (cur <= 50) cur = 0;
+                    else cur -= 50;
+                } else { /* right */
+                    if (cur >= 200) cur = 0;
+                    else if (cur <= 0) cur = 50;
+                    else cur += 50;
+                }
+                Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
+                Config_Save();
                 SE_dir_cursor_move();
                 break;
             }
             case 4: /* BLOCK WIFI */
                 Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI));
+                Config_Save();
                 SE_dir_cursor_move();
                 break;
             case 5: /* MATCH FT */
@@ -175,6 +215,7 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
                 for (int i=0; i<5; i++) if (fts[i] == val) { idx = i; break; }
                 idx = (idx + dir + 5) % 5;
                 Config_SetInt(CFG_KEY_NETPLAY_FT, fts[idx]);
+                Config_Save();
                 SE_dir_cursor_move();
                 break;
             }

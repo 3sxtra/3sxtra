@@ -574,7 +574,11 @@ void mlt_obj_disp(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
-        flLogOut("トランスデータが有効ではありません。グループ番号：%d, cg_number: %d\n", i, n);
+        static u8 warned[256];
+        if (!warned[i]) {
+            flLogOut("トランスデータが有効ではありません。グループ番号：%d, cg_number: %d\n", i, n);
+            warned[i] = 1;
+        }
         return;
     }
 
@@ -683,7 +687,11 @@ void mlt_obj_disp_rgb(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
-        flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
+        static u8 warned[256];
+        if (!warned[i]) {
+            flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
+            warned[i] = 1;
+        }
         return;
     }
 
@@ -832,7 +840,11 @@ void mlt_obj_trans_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
-        flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
+        static u8 warned[256];
+        if (!warned[i]) {
+            flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
+            warned[i] = 1;
+        }
         return;
     }
 
@@ -1189,7 +1201,11 @@ void mlt_obj_trans_cp3_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
-        flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
+        static u8 warned[256];
+        if (!warned[i]) {
+            flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
+            warned[i] = 1;
+        }
         return;
     }
 
@@ -1565,7 +1581,11 @@ void mlt_obj_trans_rgb_ext(MultiTexture* mt, WORK* wk, s32 base_y) {
 
     if (texgrplds[i].ok == 0) {
         // The trans data is not valid. Group number: %d\n
-        flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
+        static u8 warned[256];
+        if (!warned[i]) {
+            flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", i);
+            warned[i] = 1;
+        }
         return;
     }
 
@@ -2799,7 +2819,11 @@ void mlt_obj_melt2(MultiTexture* mt, u16 cg_number) {
 
     if (grplds->ok == 0) {
         // The trans data is not valid. Group number: %d\n
-        flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", obj_group_table[cg_number]);
+        static u8 warned[256];
+        if (!warned[obj_group_table[cg_number]]) {
+            flLogOut("トランスデータが有効ではありません。グループ番号：%d\n", obj_group_table[cg_number]);
+            warned[obj_group_table[cg_number]] = 1;
+        }
         return;
     }
 

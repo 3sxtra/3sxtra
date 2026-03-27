@@ -45,6 +45,7 @@
             </div>
             <div class="lobby-row" data-class-focused="cursor == 6">
                 <span class="lobby-cell-label">CONNECT</span>
+                <span class="lobby-cell-value peer-val">{{net_peer_name}}</span>
             </div>
 
             <div class="lobby-row exit-row" data-class-focused="cursor == 7">

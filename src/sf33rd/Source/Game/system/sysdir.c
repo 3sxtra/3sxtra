@@ -14,6 +14,8 @@
 #include "common.h"
 #include "sf33rd/Source/Game/engine/plcnt.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/menu/dir_data.h"
+#include "sf33rd/Source/Game/system/sys_options.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 u8 chainex_check[2][36];
@@ -111,8 +113,8 @@ void init_omop() {
     omop_spmv_ng_table2[0] |= DIP2_UNKNOWN_23;
 
     if (Mode_Type == MODE_NETWORK) {
-        get_system_direction_parameter(&system_dir[2]);
-        get_extra_option_parameter(&save_w[SAVEW_NETWORK].extra_option);
+        get_system_direction_parameter((SystemDir*)&Dir_Default_Data);
+        get_extra_option_parameter((_EXTRA_OPTION*)&Game_Default_Data.extra_option);
     } else if (Demo_Flag == 0) {
         get_system_direction_parameter(&system_dir[0]);
         get_extra_option_parameter(&save_w->extra_option);

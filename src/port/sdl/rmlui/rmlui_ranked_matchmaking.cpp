@@ -110,6 +110,19 @@ static void do_init(void) {
     ctor.BindFunc("ft_value", [](Rml::Variant& v) { v = Config_GetInt(CFG_KEY_NETPLAY_FT); });
 
     ctor.BindFunc("net_peer_count", [](Rml::Variant& v) { v = SDLNetplayUI_GetOnlinePlayerCount(); });
+    ctor.BindFunc("net_peer_name", [](Rml::Variant& v) {
+        int count = SDLNetplayUI_GetOnlinePlayerCount();
+        if (count > 0) {
+            int idx = g_net_peer_idx;
+            if (idx < 0) idx = 0;
+            if (idx >= count) idx = count - 1;
+            v = Rml::String(SDLNetplayUI_GetOnlinePlayerName(idx));
+        } else if (SDLNetplayUI_IsSearching()) {
+            v = Rml::String("SEARCHING");
+        } else {
+            v = Rml::String("IDLE");
+        }
+    });
     ctor.BindFunc("net_peer_idx", [](Rml::Variant& v) { v = g_net_peer_idx; });
     ctor.BindFunc("cursor", [](Rml::Variant& v) {
         v = (int)Menu_Cursor_Y[0];
