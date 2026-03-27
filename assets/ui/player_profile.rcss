@@ -83,7 +83,7 @@
 
 .card-header {
     display: block;
-    font-size: 15dp;
+    font-size: 11dp;
     font-weight: bold;
     color: rgba(240, 250, 255, 255);
     background-color: rgba(30, 45, 90, 200);
@@ -144,19 +144,19 @@
     display: block;
     padding: 1dp 2dp;
     margin-bottom: 0dp;
-    font-size: 12dp;
+    font-size: 11dp;
 }
 
 .lbl {
     display: inline;
     width: 75dp;
-    font-size: 11dp;
+    font-size: 10dp;
     color: rgba(150, 180, 230, 180);
 }
 
 .val {
     display: inline;
-    font-size: 12dp;
+    font-size: 11dp;
     color: #fff;
     margin-left: 2dp;
     font-weight: bold;
