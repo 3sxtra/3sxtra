@@ -13,6 +13,7 @@
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
+#include "port/sdl/input/controller_image.h"
 
 // GL header for RmlUi GL3 backend (glEnable, glBlendFunc, etc.)
 #if defined(__APPLE__)
@@ -57,6 +58,31 @@
 // to bake viewport offset + scale into the rendering pipeline without
 // modifying any third-party RenderInterface classes.
 // -------------------------------------------------------------------
+
+static SDL_Surface* load_ctrlimg_surface(const Rml::String& source) {
+    if (source.find("ctrlimg:") != 0) return nullptr;
+
+    const char* p = source.c_str() + 8; // skip "ctrlimg:"
+    if (SDL_strncmp(p, "scancode:", 9) == 0) {
+        int sc = SDL_atoi(p + 9);
+        return ControllerImage_Module_CreateScancodeSurface((SDL_Scancode)sc, 128);
+    }
+    if (SDL_strncmp(p, "device:", 7) == 0) {
+        int dev = SDL_atoi(p + 7);
+        const char* semi = SDL_strchr(p, ';');
+        if (semi) {
+            if (SDL_strncmp(semi + 1, "button:", 7) == 0) {
+                int btn = SDL_atoi(semi + 8);
+                return ControllerImage_Module_CreateButtonSurface(dev, (SDL_GamepadButton)btn, 128);
+            }
+            if (SDL_strncmp(semi + 1, "axis:", 5) == 0) {
+                int axis = SDL_atoi(semi + 6);
+                return ControllerImage_Module_CreateAxisSurface(dev, (SDL_GamepadAxis)axis, 128);
+            }
+        }
+    }
+    return nullptr;
+}
 
 // GL3 viewport adapter — maps logical (ctx_w × ctx_h) coordinates
 // to the physical viewport (phys_w × phys_h) at letterbox offset.
@@ -104,10 +130,10 @@ class GameViewportGL3 : public RenderInterface_GL3 {
     }
 
     Rml::TextureHandle LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source) override {
-        // RmlUi GL3 backend natively only supports TGAs. We override this to use
-        // SDL_image to load PNG/JPG files. RmlUi also expects pre-multiplied alpha,
-        // so we must do the conversion here before forwarding to GenerateTexture.
-        SDL_Surface* surface = IMG_Load(source.c_str());
+        SDL_Surface* surface = load_ctrlimg_surface(source);
+        if (!surface) {
+            surface = IMG_Load(source.c_str());
+        }
 #ifndef _WIN32
         // RmlUi's SystemInterface::JoinPath strips the leading '/' from
         // absolute paths (e.g. "/userdata/..." → "userdata/...").  Retry
@@ -203,11 +229,72 @@ class GameViewportGPU : public RenderInterface_SDL_GPU {
         RenderInterface_SDL_GPU::SetScissorRegion(adjusted);
     }
 
+    Rml::TextureHandle LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source) override {
+        if (source.find("ctrlimg:") == 0) {
+            SDL_Surface* surface = load_ctrlimg_surface(source);
+            if (!surface) return 0;
+
+            if (surface->format != SDL_PIXELFORMAT_RGBA32) {
+                SDL_Surface* converted_surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+                SDL_DestroySurface(surface);
+                if (!converted_surface) return 0;
+                surface = converted_surface;
+            }
+
+            // Convert to premultiplied alpha (optional but good practice for SDL_GPU)
+            const size_t pixels_byte_size = surface->w * surface->h * 4;
+            uint8_t* pixels = static_cast<uint8_t*>(surface->pixels);
+            for (size_t i = 0; i < pixels_byte_size; i += 4) {
+                const uint8_t alpha = pixels[i + 3];
+                for (size_t j = 0; j < 3; ++j) {
+                    pixels[i + j] = (uint8_t)((int(pixels[i + j]) * int(alpha)) / 255);
+                }
+            }
+
+            texture_dimensions.x = surface->w;
+            texture_dimensions.y = surface->h;
+            Rml::Span<const Rml::byte> data { static_cast<const Rml::byte*>(surface->pixels),
+                                              static_cast<size_t>(surface->pitch * surface->h) };
+            Rml::TextureHandle handle = RenderInterface_SDL_GPU::GenerateTexture(data, texture_dimensions);
+            SDL_DestroySurface(surface);
+            return handle;
+        }
+        return RenderInterface_SDL_GPU::LoadTexture(texture_dimensions, source);
+    }
+
   private:
     bool m_active = false;
     float m_sx = 1.0f, m_sy = 1.0f;
     int m_off_x = 0, m_off_y = 0;
     Rml::Matrix4f m_correction;
+};
+
+class GameViewportSDL : public RenderInterface_SDL {
+  public:
+    using RenderInterface_SDL::RenderInterface_SDL;
+
+    Rml::TextureHandle LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source) override {
+        if (source.find("ctrlimg:") == 0) {
+            SDL_Surface* surface = load_ctrlimg_surface(source);
+            if (!surface) return 0;
+
+            if (surface->format != SDL_PIXELFORMAT_RGBA32) {
+                SDL_Surface* converted_surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+                SDL_DestroySurface(surface);
+                if (!converted_surface) return 0;
+                surface = converted_surface;
+            }
+
+            texture_dimensions.x = surface->w;
+            texture_dimensions.y = surface->h;
+            Rml::Span<const Rml::byte> data { static_cast<const Rml::byte*>(surface->pixels),
+                                              static_cast<size_t>(surface->pitch * surface->h) };
+            Rml::TextureHandle handle = RenderInterface_SDL::GenerateTexture(data, texture_dimensions);
+            SDL_DestroySurface(surface);
+            return handle;
+        }
+        return RenderInterface_SDL::LoadTexture(texture_dimensions, source);
+    }
 };
 
 // -------------------------------------------------------------------
@@ -249,8 +336,8 @@ static Rml::RenderInterface* s_render_interface = nullptr;
 // Typed pointers for backend-specific init/shutdown/render calls.
 // Exactly one of these is non-null at a time.
 static GameViewportGL3* s_render_gl3 = nullptr;
-static RenderInterface_SDL* s_render_sdl = nullptr;
 static GameViewportGPU* s_render_gpu = nullptr;
+static GameViewportSDL* s_render_sdl = nullptr;
 
 static RendererBackend s_active_backend;
 
@@ -395,7 +482,7 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     case RENDERER_SDL2D:
     case RENDERER_SDL2D_CLASSIC: {
         SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
-        s_render_sdl = new RenderInterface_SDL(renderer);
+        s_render_sdl = new GameViewportSDL(renderer);
         s_render_interface = s_render_sdl;
         break;
     }

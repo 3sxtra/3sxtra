@@ -12,6 +12,7 @@ extern "C" {
 
 int ControlMapping_GetPlayerDeviceID(int player_num);
 InputID ControlMapping_GetPlayerMapping(int player_num, const char* action);
+const char* ControlMapping_GetPlayerMappingIconURI(int player_num, int index);
 
 #ifdef __cplusplus
 }

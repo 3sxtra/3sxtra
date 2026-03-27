@@ -226,12 +226,23 @@ button:active {
     text-align: center;
 }
 
-.map-input {
+.map-input-container {
     display: inline-block;
     width: 48%;
+    text-align: right;
+    vertical-align: middle;
+}
+
+.map-input-text {
     color: #66ff66;
     font-size: 14dp;
-    text-align: right;
+}
+
+.map-input-icon {
+    display: inline-block;
+    height: 32dp;
+    width: auto;
+    vertical-align: middle;
 }
 
 /* Status text */

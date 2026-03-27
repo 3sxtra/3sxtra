@@ -36,6 +36,7 @@ int ControlMapping_GetAvailableDeviceId(int index);
 int ControlMapping_GetPlayerMappingCount(int player_num);
 const char* ControlMapping_GetPlayerMappingAction(int player_num, int index);
 const char* ControlMapping_GetPlayerMappingInput(int player_num, int index);
+const char* ControlMapping_GetPlayerMappingIconURI(int player_num, int index);
 
 extern const char* game_actions[];
 int get_game_actions_count();
@@ -52,6 +53,7 @@ struct DeviceEntry {
 struct MappingEntry {
     Rml::String action;
     Rml::String input;
+    Rml::String icon_uri;
 };
 
 // ── Module state ───────────────────────────────────────────────
@@ -115,7 +117,8 @@ static void rebuild_mappings(int player_num, std::vector<MappingEntry>& vec) {
     for (int i = 0; i < count; i++) {
         const char* action = ControlMapping_GetPlayerMappingAction(player_num, i);
         const char* input = ControlMapping_GetPlayerMappingInput(player_num, i);
-        vec.push_back({ action ? action : "", input ? input : "" });
+        const char* icon = ControlMapping_GetPlayerMappingIconURI(player_num, i);
+        vec.push_back({ action ? action : "", input ? input : "", icon ? icon : "" });
     }
 }
 
@@ -164,6 +167,7 @@ static void do_init() {
     if (auto sh = c.RegisterStruct<MappingEntry>()) {
         sh.RegisterMember("action", &MappingEntry::action);
         sh.RegisterMember("input", &MappingEntry::input);
+        sh.RegisterMember("icon_uri", &MappingEntry::icon_uri);
     }
     c.RegisterArray<std::vector<MappingEntry>>();
 
