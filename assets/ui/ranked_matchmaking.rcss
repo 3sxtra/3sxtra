@@ -1,0 +1,339 @@
+/* ─── Ranked Matchmaking ────────────────────────────────────────── */
+/* Derived from network_lobby.rcss — simplified for ranked focus.    */
+
+#lobby-panel {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: rgba(6, 8, 18, 210);
+    border-width: 1dp;
+    border-color: rgba(80, 110, 200, 80);
+}
+
+/* ─── Title bar (compact) ──────────────────────────────────────── */
+
+#lobby-title-bar {
+    display: block;
+    height: 16dp;
+    padding: 3dp 8dp 1dp 8dp;
+    text-align: center;
+    border-top-width: 1dp;
+    border-top-color: rgba(255, 255, 255, 200);
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(255, 255, 255, 200);
+}
+
+#lobby-title-text {
+    display: block;
+    font-size: 11dp;
+    color: #fff;
+    font-weight: bold;
+    font-effect: shadow(1dp 1dp rgba(0, 0, 0, 120));
+    text-align: center;
+    background-color: transparent;
+}
+
+/* ─── Two-column body ────────────────────────────────────────── */
+
+#lobby-body {
+    display: block;
+}
+
+#lobby-menu-col {
+    display: block;
+    position: absolute;
+    left: 1dp;
+    top: 21dp;
+    width: 150dp;
+    bottom: 16dp;
+}
+
+#lobby-peers-col {
+    display: block;
+    position: absolute;
+    left: 152dp;
+    top: 21dp;
+    right: 1dp;
+    bottom: 16dp;
+}
+
+/* ─── Section headers ────────────────────────────────────────── */
+
+.section-header {
+    display: block;
+    font-size: 7dp;
+    color: rgba(170, 200, 255, 170);
+    padding: 0dp 0dp;
+    margin-top: 2dp;
+    margin-bottom: 1dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(100, 130, 220, 60);
+}
+
+.net-header {
+    margin-top: 3dp;
+}
+
+/* ─── Menu rows ──────────────────────────────────────────────── */
+
+.lobby-row {
+    display: block;
+    padding: 0dp 3dp;
+    margin-bottom: 0dp;
+    color: rgba(210, 220, 255, 210);
+    font-size: 9dp;
+    border-left-width: 2dp;
+    border-left-color: transparent;
+    transition: background-color border-left-color 0.08s linear-in-out;
+}
+
+.lobby-row.focused {
+    background-color: rgba(255, 220, 0, 30);
+    border-left-color: rgba(255, 210, 40, 240);
+    color: #fff;
+}
+
+.lobby-cell-label {
+    display: inline;
+    width: 95dp;
+    font-size: 9dp;
+}
+
+.lobby-cell-value {
+    display: inline;
+    font-size: 9dp;
+    color: rgba(170, 180, 210, 200);
+    margin-left: 3dp;
+}
+
+.lobby-cell-value.on {
+    color: rgba(90, 240, 150, 255);
+}
+
+.exit-row {
+    margin-top: 10dp; /* Extra spacing for exit */
+    border-top-width: 1dp;
+    border-top-color: rgba(100, 130, 220, 50);
+    padding-top: 2dp;
+}
+
+/* ─── Peer panel cards ───────────────────────────────────────── */
+
+.peer-panel {
+    display: block;
+    margin-top: 2dp;
+    margin-bottom: 3dp;
+    background-color: rgba(0, 6, 28, 180);
+    border-width: 1dp;
+    border-color: rgba(80, 120, 220, 70);
+    padding: 0dp 4dp 3dp 4dp;
+    /* In Ranked mode, this panel fills most of the right column */
+    height: 180dp;
+}
+
+.peer-panel-header {
+    display: block;
+    margin-bottom: 1dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(80, 120, 220, 50);
+    padding-bottom: 1dp;
+}
+
+.peer-panel-title {
+    display: inline;
+    font-size: 8dp;
+    color: rgba(150, 185, 245, 200);
+}
+
+.peer-panel-count {
+    display: inline;
+    font-size: 7dp;
+    color: rgba(90, 240, 150, 230);
+    margin-left: 4dp;
+}
+
+.peer-panel-count.searching {
+    color: rgba(255, 210, 70, 210);
+}
+
+.peer-panel-count.idle {
+    color: rgba(160, 170, 195, 100);
+}
+
+/* ─── Peer list rows ─────────────────────────────────────────── */
+
+.peer-list {
+    display: block;
+}
+
+.peer-list-item {
+    display: block;
+    padding: 0dp 2dp;
+    color: rgba(190, 200, 225, 180);
+    font-size: 8dp;
+    border-left-width: 2dp;
+    border-left-color: transparent;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.peer-list-item.selected {
+    color: rgba(255, 235, 100, 255);
+    border-left-color: rgba(255, 210, 40, 230);
+    background-color: rgba(255, 220, 0, 18);
+}
+
+.peer-list-name {
+    display: inline;
+    font-size: 8dp;
+}
+
+.peer-list-ping {
+    display: inline;
+    font-size: 7dp;
+    margin-left: 3dp;
+    color: rgba(160, 170, 195, 150);
+}
+
+.peer-list-ping.ping-good {
+    color: rgba(80, 235, 130, 240);
+}
+
+.peer-list-ping.ping-ok {
+    color: rgba(255, 200, 60, 230);
+}
+
+.peer-list-ping.ping-bad {
+    color: rgba(255, 80, 80, 220);
+}
+
+.peer-list-flag {
+    display: inline;
+    width: 12dp;
+    height: 8dp;
+    margin-right: 2dp;
+    vertical-align: baseline;
+}
+
+.peer-list-conn {
+    display: inline;
+    font-size: 6dp;
+    color: rgba(140, 160, 190, 130);
+    margin-left: 2dp;
+}
+
+.peer-list-conn.wifi {
+    color: rgba(255, 170, 60, 210);
+}
+
+.peer-list-empty {
+    display: block;
+    font-size: 7dp;
+    color: rgba(140, 150, 180, 100);
+    padding: 1dp 3dp;
+}
+
+.peer-list-empty.searching {
+    color: rgba(255, 210, 70, 160);
+}
+
+/* ─── Popup overlay ──────────────────────────────────────────── */
+
+#popup-scrim {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 175);
+}
+
+#popup-box {
+    display: block;
+    position: absolute;
+    top: 40dp;
+    left: 30dp;
+    right: 30dp;
+    padding: 6dp 10dp;
+    background-color: rgba(8, 12, 26, 245);
+    border-width: 2dp;
+    border-color: rgba(210, 15, 15, 220);
+    border-radius: 3dp;
+}
+
+.popup-title {
+    display: block;
+    text-align: center;
+    font-size: 10dp;
+    color: rgba(255, 210, 70, 255);
+    margin-bottom: 3dp;
+    border-bottom-width: 1dp;
+    border-bottom-color: rgba(150, 30, 30, 120);
+    padding-bottom: 2dp;
+}
+
+.popup-name {
+    display: block;
+    text-align: center;
+    font-size: 10dp;
+    color: #fff;
+    margin-bottom: 2dp;
+}
+
+.popup-ping {
+    display: block;
+    text-align: center;
+    font-size: 8dp;
+    color: rgba(140, 210, 255, 230);
+    margin-bottom: 2dp;
+}
+
+.popup-region {
+    display: block;
+    text-align: center;
+    font-size: 8dp;
+    color: rgba(170, 180, 210, 175);
+    margin-bottom: 3dp;
+}
+
+.popup-ft {
+    display: block;
+    text-align: center;
+    font-size: 8dp;
+    color: rgba(255, 235, 100, 220);
+    margin-bottom: 2dp;
+}
+
+.popup-actions {
+    display: block;
+    text-align: center;
+    margin-top: 3dp;
+    padding-top: 3dp;
+    border-top-width: 1dp;
+    border-top-color: rgba(90, 110, 155, 76);
+}
+
+.popup-accept {
+    display: inline;
+    font-size: 9dp;
+    color: rgba(70, 230, 110, 255);
+    margin-right: 16dp;
+}
+
+.popup-decline {
+    display: inline;
+    font-size: 9dp;
+    color: rgba(255, 70, 70, 255);
+}
+
+.popup-cancel {
+    display: inline;
+    font-size: 9dp;
+    color: rgba(255, 70, 70, 255);
+}

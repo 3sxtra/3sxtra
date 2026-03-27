@@ -91,7 +91,7 @@ char* Resources_GetPath(const char* file_path) {
 
 /** @brief Build and return the full path to a file in the rom directory (caller frees). */
 char* Resources_GetRomPath(const char* file_path) {
-    const char* base = SDL_GetBasePath();
+    const char* base = Paths_GetBasePath();
     char* full_path = NULL;
 
     if (file_path == NULL) {

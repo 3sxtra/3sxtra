@@ -1,0 +1,113 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="ranked_matchmaking.rcss"/>
+    <title>Ranked Matchmaking</title>
+</head>
+<body data-model="ranked_matchmaking">
+<div id="lobby-panel">
+
+    <!-- ── Title bar ── -->
+    <div id="lobby-title-bar">
+        <div id="lobby-title-text">RANKED MATCHMAKING</div>
+    </div>
+
+    <!-- ── Main content ── -->
+    <div id="lobby-body">
+
+        <!-- Left: menu column (Internet settings only) -->
+        <div id="lobby-menu-col">
+            <div class="section-header net-header">INTERNET SETTINGS</div>
+
+            <div class="lobby-row" data-class-focused="cursor == 0">
+                <span class="lobby-cell-label">AUTO-ACCEPT</span>
+                <span class="lobby-cell-value" data-class-on="net_auto">{{net_auto ? 'ON' : 'OFF'}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 1">
+                <span class="lobby-cell-label">AUTO-SEARCH</span>
+                <span class="lobby-cell-value" data-class-on="net_search_toggle">{{net_search_toggle ? 'ON' : 'OFF'}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 2">
+                <span class="lobby-cell-label">REGION LOCK</span>
+                <span class="lobby-cell-value" data-class-on="region_lock">{{region_lock ? 'ON' : 'OFF'}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 3">
+                <span class="lobby-cell-label">MAX PING</span>
+                <span class="lobby-cell-value">{{max_ping == 0 ? 'OFF' : max_ping + 'ms'}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 4">
+                <span class="lobby-cell-label">BLOCK WIFI</span>
+                <span class="lobby-cell-value" data-class-on="block_wifi">{{block_wifi ? 'ON' : 'OFF'}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 5">
+                <span class="lobby-cell-label">MATCH FT</span>
+                <span class="lobby-cell-value">{{ft_value == 1 ? 'UNRANKED' : 'FT' + ft_value}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 6">
+                <span class="lobby-cell-label">CONNECT</span>
+            </div>
+
+            <div class="lobby-row exit-row" data-class-focused="cursor == 7">
+                <span class="lobby-cell-label">EXIT</span>
+            </div>
+        </div>
+
+        <!-- Right: peer panels column (Online only) -->
+        <div id="lobby-peers-col">
+
+            <!-- Online Peers (Large) -->
+            <div class="peer-panel">
+                <div class="peer-panel-header">
+                    <span class="peer-panel-title">ONLINE PLAYERS</span>
+                    <span class="peer-panel-count" data-if="net_searching &amp;&amp; net_peer_count > 0">{{net_peer_count}} online</span>
+                    <span class="peer-panel-count searching" data-if="net_searching &amp;&amp; net_peer_count == 0">searching...</span>
+                    <span class="peer-panel-count idle" data-if="!net_searching">idle</span>
+                </div>
+                <div class="peer-list">
+                    <div data-for="p : net_peers"
+                         class="peer-list-item"
+                         data-class-selected="p.selected">
+                        <img class="peer-list-flag" data-attr-src="p.flag_icon" data-if="p.flag_icon != ''"/>
+                        <span class="peer-list-name">{{p.name}}</span>
+                        <span class="peer-list-conn" data-class-wifi="p.conn_type == 'wifi'">{{p.conn_type == 'wifi' ? 'WiFi' : ''}}</span>
+                        <span class="peer-list-ping" data-class-ping-good="p.ping_class == 'ping-good'"
+                              data-class-ping-ok="p.ping_class == 'ping-ok'"
+                              data-class-ping-bad="p.ping_class == 'ping-bad'">{{p.ping_label}}</span>
+                    </div>
+                    <div class="peer-list-empty" data-if="!net_searching">
+                        <span data-if="net_is_configured">enable search to find players</span>
+                        <span data-if="!net_is_configured">lobby server not configured</span>
+                    </div>
+                    <div class="peer-list-empty searching" data-if="net_searching &amp;&amp; net_peer_count == 0">
+                        looking for players...
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- lobby-peers-col -->
+    </div><!-- lobby-body -->
+
+    <!-- Status Bar (using existing data-model strings if needed) -->
+    <!-- (Optional, skipped for cleaner look or added if requested) -->
+
+    <!-- ── Popup overlay (reusing logic from network lobby) ── -->
+    <div data-if="popup_type > 0" id="popup-scrim">
+        <div id="popup-box">
+            <div class="popup-title">{{popup_title}}</div>
+            <div class="popup-name">{{popup_name}}</div>
+            <div class="popup-ping" data-if="popup_ping != ''">PING: {{popup_ping}}</div>
+            <div class="popup-region" data-if="popup_region != ''">{{popup_region}}</div>
+            <div class="popup-ft" data-if="popup_ft != ''">{{popup_ft}}</div>
+            <div class="popup-actions" data-if="popup_is_incoming">
+                <span class="popup-accept">[LP] ACCEPT</span>
+                <span class="popup-decline">[MK] DECLINE</span>
+            </div>
+            <div class="popup-actions" data-if="!popup_is_incoming">
+                <span class="popup-cancel">[MK] CANCEL</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</rml>

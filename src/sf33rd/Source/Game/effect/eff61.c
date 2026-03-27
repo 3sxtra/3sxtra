@@ -19,7 +19,7 @@ static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
 static void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */);
 static void EFF61_SUDDENLY(WORK_Other_CONN* ewk);
 
-const s8* Menu_Letter_Data[83] = { "ARCADE",
+const s8* Menu_Letter_Data[84] = { "ARCADE",
                                    "VERSUS",
                                    "TRAINING",
                                    "NETWORK",
@@ -102,7 +102,8 @@ const s8* Menu_Letter_Data[83] = { "ARCADE",
                                    /* LAN-only lobby strings [80-82] */
                                    "AUTO-CONN",
                                    "CONNECT",
-                                   "EXIT" };
+                                   "EXIT",
+                                   "RANKED MATCHMAKING" };
 
 /** @brief No-op — NETWORK is now always visible in the Mode Menu. */
 void Menu_UpdateNetworkLabel(void) {}

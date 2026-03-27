@@ -12,8 +12,18 @@
 #include "port/config/paths.h"
 
 #include <SDL3/SDL.h>
-#include <stdio.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+#include "port/config/paths.h"
+#include "port/config/config.h"
 
 static const char* pref_path = NULL;
 static int portable_mode = -1; /* -1=unchecked, 0=standard, 1=portable */
@@ -31,10 +41,11 @@ const char* Paths_GetPrefPath() {
 
     /* Check for portable mode: config/ folder next to executable */
     if (portable_mode == -1) {
-        const char* base = SDL_GetBasePath();
+        char* base = SDL_GetBasePath();
         if (base) {
             static char portable_path[512];
             snprintf(portable_path, sizeof(portable_path), "%sconfig/", base);
+            SDL_free(base);
 
             SDL_PathInfo info;
             if (SDL_GetPathInfo(portable_path, &info) && info.type == SDL_PATHTYPE_DIRECTORY) {
@@ -53,54 +64,126 @@ const char* Paths_GetPrefPath() {
     return pref_path;
 }
 
+static void Paths_Normalize(char* path) {
+    if (!path) return;
+    for (int i = 0; path[i]; i++) {
+        if (path[i] == '\\') path[i] = '/';
+    }
+}
 /** @brief Get the application base directory path (lazy-initialized, cached). */
 const char* Paths_GetBasePath() {
-    static const char* base_path = NULL;
-    if (base_path == NULL) {
-        const char* sdl_base = SDL_GetBasePath();
-        if (sdl_base) {
-            base_path = SDL_strdup(sdl_base);
+    static char s_base_path[1024] = {0};
+    if (s_base_path[0] == '\0') {
+#ifdef _WIN32
+        wchar_t w_path[MAX_PATH];
+        if (GetModuleFileNameW(NULL, w_path, MAX_PATH) > 0) {
+            // Convert to UTF-8
+            char utf8_path[1024];
+            int size = WideCharToMultiByte(CP_UTF8, 0, w_path, -1, utf8_path, sizeof(utf8_path), NULL, NULL);
+            if (size > 0) {
+                char current[1024];
+                SDL_strlcpy(current, utf8_path, sizeof(current));
+                Paths_Normalize(current);
+
+                // Strip filename
+                char* last_slash = strrchr(current, '/');
+                if (last_slash) *last_slash = '\0';
+
+                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Searching for root from (Win32): %s", current);
+
+                bool found_root = false;
+                while (true) {
+                    char check_path[1024];
+                    snprintf(check_path, sizeof(check_path), "%s/assets/ASSET_VERSION", current);
+
+                    SDL_IOStream* io = SDL_IOFromFile(check_path, "rb");
+                    if (io) {
+                        SDL_CloseIO(io);
+                        SDL_Log("[Paths] FOUND PROJECT ROOT AT: %s", current);
+                        found_root = true;
+                        break;
+                    }
+
+                    char* up = strrchr(current, '/');
+                    if (!up || (up > current && *(up - 1) == ':')) break;
+                    *up = '\0';
+                }
+
+                if (found_root) {
+                    snprintf(s_base_path, sizeof(s_base_path), "%s/", current);
+                } else {
+                    // Fallback to exe directory
+                    SDL_strlcpy(s_base_path, utf8_path, sizeof(s_base_path));
+                    last_slash = strrchr(s_base_path, '/');
+                    if (last_slash) *(last_slash + 1) = '\0';
+                }
+            }
         }
+#endif
+        // Fallback or multi-platform
+        if (s_base_path[0] == '\0') {
+            char* sdl_base = SDL_GetBasePath();
+            if (sdl_base) {
+                SDL_strlcpy(s_base_path, sdl_base, sizeof(s_base_path));
+                SDL_free(sdl_base);
+                Paths_Normalize(s_base_path);
+            } else {
+                SDL_strlcpy(s_base_path, "./", sizeof(s_base_path));
+            }
+        }
+        SDL_Log("[Paths] Base path initialized to: %s", s_base_path);
     }
-    return base_path;
+    return s_base_path;
 }
 
 
 /**
- * @brief Resolve an asset path by searching multiple locations.
+ * @brief Resolve an asset path by searching multiple project-relative locations.
  *
- * Search order:
- *   1. <exe_dir>/<relative_path>  (next to the executable / symlinked assets)
- *   2. <appdata>/<relative_path>  (AppData/CrowdedStreet/3SX/ — HD pack location)
+ * Search order for each base (Project Root, then Pref Path):
+ *   1. base/relative_path
+ *   2. base/assets/relative_path
+ *   3. base/src/relative_path
+ *   4. base/bin/relative_path      (to handle build artifacts)
  *
- * Returns a pointer to a static buffer (not thread-safe, single-caller pattern).
- * Returns the original relative_path unchanged if no match is found anywhere,
- * allowing IMG_Load / SDL_IOFromFile to report its own "not found" error.
+ * Returns a pointer to a rotating static buffer (supports ~4 concurrent callers
+ * in a single statement).
  */
 const char* Paths_ResolveAsset(const char* relative_path) {
-    static char resolved[1024];
-    SDL_PathInfo info;
+    if (!relative_path || !relative_path[0]) return relative_path;
 
-    /* 1. Try next to the executable (base path) */
-    const char* base = Paths_GetBasePath();
-    if (base) {
-        snprintf(resolved, sizeof(resolved), "%s%s", base, relative_path);
-        if (SDL_GetPathInfo(resolved, &info)) {
-            return resolved;
+    static char buffers[4][1024];
+    static int next_idx = 0;
+    char* resolved = buffers[next_idx++ % 4];
+    memset(resolved, 0, 1024);
+
+    const char* sub_dirs[] = { "", "assets/", "src/", "bin/" };
+    const char* bases[] = { Paths_GetBasePath(), Paths_GetPrefPath() };
+
+    for (int i = 0; i < 2; i++) {
+        const char* base = bases[i];
+        if (!base || !base[0]) continue;
+
+        for (int j = 0; j < 4; j++) {
+            // Avoid double 'assets/' if the input path already contains it
+            if (j == 1 && (strncmp(relative_path, "assets/", 7) == 0 || strncmp(relative_path, "assets\\", 7) == 0))
+                continue;
+
+            snprintf(resolved, 1024, "%s%s%s", base, sub_dirs[j], relative_path);
+            Paths_Normalize(resolved);
+
+            SDL_IOStream* io = SDL_IOFromFile(resolved, "rb");
+            if (io) {
+                SDL_CloseIO(io);
+                SDL_Log("[Paths] Resolved '%s' -> '%s'", relative_path, resolved);
+                return resolved;
+            }
         }
     }
 
-    /* 2. Try the user data directory (AppData / pref path) */
-    const char* pref = Paths_GetPrefPath();
-    if (pref) {
-        snprintf(resolved, sizeof(resolved), "%s%s", pref, relative_path);
-        if (SDL_GetPathInfo(resolved, &info)) {
-            return resolved;
-        }
-    }
-
-    /* Not found anywhere — return original so the caller gets a normal error */
-    return relative_path;
+    /* Not found anywhere — return original (copy it into the buffer to be safe against caller mutation) */
+    SDL_strlcpy(resolved, relative_path, 1024);
+    return resolved;
 }
 /** @brief Returns 1 if running in portable mode (config/ next to exe). */
 int Paths_IsPortable() {

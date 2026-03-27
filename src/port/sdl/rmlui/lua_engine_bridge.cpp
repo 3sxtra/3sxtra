@@ -43,6 +43,7 @@ extern "C" {
 }
 
 #include "rmlui_training_hud.h"
+#include "port/config/paths.h"
 
 // ---- Helpers ----
 
@@ -726,7 +727,8 @@ static const luaL_Reg engine_funcs[] = {
 
 void lua_engine_bridge_init(void) {
     // Cache SDL_GetBasePath() now — before shader scanning corrupts the pointer.
-    const char* base = SDL_GetBasePath();
+    // Paths_GetBasePath() handles the caching and the SDL_free() call internally.
+    const char* base = Paths_GetBasePath();
     if (base) {
         SDL_strlcpy(s_exe_base_path, base, sizeof(s_exe_base_path));
     }

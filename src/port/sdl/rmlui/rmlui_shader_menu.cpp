@@ -11,6 +11,7 @@
 
 #include <RmlUi/Core.h>
 #include <SDL3/SDL.h>
+#include "port/config/paths.h"
 
 #include <algorithm>
 #include <cctype>
@@ -370,7 +371,7 @@ static void do_init() {
 
             // Build full path in the libretro shaders directory
             char path[1024];
-            const char* base = SDL_GetBasePath();
+            const char* base = Paths_GetBasePath();
             snprintf(path, sizeof(path), "%sassets/shaders/libretro/%s", base ? base : "", filename);
 
             if (SDLAppShader_ChainSaveAsPreset(path)) {

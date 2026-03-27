@@ -301,16 +301,15 @@ void Network_Lobby(struct _TASK* task_ptr) {
         Order_Timer[EFF_SLOT_NET_HDR] = 1;
         effect_04_init(1, NET_CURSOR_TYPE_GATEWAY, 0, NET_CURSOR_SLOT_GATEWAY); /* cursor type 7 = 6-item gateway */
         {
-            s16 char_index = NET_STR_GATEWAY_BASE; /* 74=LOBBY MODE, 75=LOCAL NETWORK, 76=LEADERBOARD, 77=REPLAYS, 78=PROFILE, 79=EXIT */
-            for (ix = 0; ix < 6; ix++) {
-                effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, EFF_FONT_CG_LARGE);
+            static const s16 gateway_strings[] = { 74, 83, 75, 76, 77, 78, 79 };
+            for (ix = 0; ix < 7; ix++) {
+                effect_61_init(0, ix + 0x50, 0, 1, gateway_strings[ix], ix, EFF_FONT_CG_LARGE);
                 Order[ix + 0x50] = 1;
                 Order_Dir[ix + 0x50] = 4;
                 Order_Timer[ix + 0x50] = ix + NET_ORDER_TIMER_BASE;
-                char_index++;
             }
         }
-        Menu_Cursor_Move = 6;
+        Menu_Cursor_Move = 7;
         break;
 
     case 1:
@@ -324,15 +323,15 @@ void Network_Lobby(struct _TASK* task_ptr) {
         break;
 
     case 3:
-        /* Gateway input: pick LOBBY MODE / LOCAL NETWORK / LEADERBOARD / REPLAYS / PROFILE / EXIT */
-        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 5, FADE_OPAQUE) == 0) {
-            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 5, FADE_OPAQUE);
+        /* Gateway input: pick LOBBY MODE / RANKED MATCHMAKING / LOCAL NETWORK / LEADERBOARD / REPLAYS / PROFILE / EXIT */
+        if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 6, FADE_OPAQUE) == 0) {
+            MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 6, FADE_OPAQUE);
         }
 
         if (IO_Result == SWK_SOUTH || IO_Result == SWK_EAST) {
             SE_selected();
 
-            if (Menu_Cursor_Y[0] == 5 || IO_Result == SWK_EAST) {
+            if (Menu_Cursor_Y[0] == 6 || IO_Result == SWK_EAST) {
                 /* EXIT — back to Mode_Select */
                 Menu_Suicide[0] = 0;
                 Menu_Suicide[1] = 1;
@@ -345,22 +344,27 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 break;
             }
 
-            if (Menu_Cursor_Y[0] == 4) {
+            if (Menu_Cursor_Y[0] == 5) {
                 /* PROFILE — show RmlUi player profile */
                 MenuScreen_Goto(MENU_SCREEN_PLAYER_PROFILE);
                 MenuScreen_Tick(task_ptr);
                 return;
-            } else if (Menu_Cursor_Y[0] == 3) {
+            } else if (Menu_Cursor_Y[0] == 4) {
                 /* REPLAYS — jump to network replays phase */
                 task_ptr->r_no[2] = 30;
-            } else if (Menu_Cursor_Y[0] == 2) {
+            } else if (Menu_Cursor_Y[0] == 3) {
                 /* LEADERBOARD — show RmlUI leaderboard overlay */
                 rmlui_leaderboard_show();
                 task_ptr->r_no[2] = 4; /* jump to leaderboard phase */
-            } else if (Menu_Cursor_Y[0] == 1) {
+            } else if (Menu_Cursor_Y[0] == 2) {
                 /* LOCAL NETWORK — jump to LAN-only lobby phase */
                 task_ptr->free[2] = NET_MODE_LAN;  /* 2=lan-only */
                 task_ptr->r_no[2] = 20; /* jump to LAN-only lobby phase */
+            } else if (Menu_Cursor_Y[0] == 1) {
+                /* RANKED MATCHMAKING */
+                MenuScreen_Goto(MENU_SCREEN_RANKED_MATCHMAKING);
+                MenuScreen_Tick(task_ptr);
+                return;
             } else {
                 /* LOBBY MODE (0) — always use RmlUI lobby */
                 task_ptr->free[2] = NET_MODE_RMLUI;  /* 1=rmlui */

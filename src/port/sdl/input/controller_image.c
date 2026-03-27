@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "controllerimage/controllerimage.h"
+#include "port/config/paths.h"
 
 #define CONTROLLER_IMAGE_MAX_SLOTS 4
 
@@ -29,10 +30,7 @@ bool ControllerImage_Module_Init(void) {
     }
 
     /* Load the standard data file from assets/ (deployed alongside the binary) */
-    const char* base_path = SDL_GetBasePath();
-    if (!base_path) {
-        base_path = "";
-    }
+    const char* base_path = Paths_GetBasePath();
 
     char kenney_path[1024];
     SDL_snprintf(kenney_path, sizeof(kenney_path), "%sassets/controllers/controllerimage-kenney.bin", base_path);

@@ -17,6 +17,7 @@
 #endif
 #include "port/broadcast.h"
 #include "port/config/config.h"
+#include "port/config/paths.h"
 #include "port/mods/modded_stage.h"
 #include "port/sdl/input/control_mapping.h"
 #include "port/sdl/rmlui/rmlui_dev_overlay.h"
@@ -153,11 +154,26 @@ static char* read_shader_source(const char* path) {
 
 /** @brief Compile vertex + fragment shaders and link into a GL program. */
 GLuint create_shader_program(const char* base_path, const char* vertex_path, const char* fragment_path) {
+    // Defensive copy: Paths_ResolveAsset returns a pointer to a static rotating buffer.
+    // If both vertex_path and fragment_path point to that buffer, the second call
+    // will overwrite the first. We copy them here to be safe.
+    char v_path[1024], f_path[1024];
+    SDL_strlcpy(v_path, vertex_path, sizeof(v_path));
+    SDL_strlcpy(f_path, fragment_path, sizeof(f_path));
+
     char full_vertex_path[1024];
-    snprintf(full_vertex_path, sizeof(full_vertex_path), "%s%s", base_path, vertex_path);
+    if (v_path[0] == '/' || (v_path[1] == ':' && (v_path[2] == '/' || v_path[2] == '\\'))) {
+        SDL_strlcpy(full_vertex_path, v_path, sizeof(full_vertex_path));
+    } else {
+        snprintf(full_vertex_path, sizeof(full_vertex_path), "%s%s", base_path, v_path);
+    }
 
     char full_fragment_path[1024];
-    snprintf(full_fragment_path, sizeof(full_fragment_path), "%s%s", base_path, fragment_path);
+    if (f_path[0] == '/' || (f_path[1] == ':' && (f_path[2] == '/' || f_path[2] == '\\'))) {
+        SDL_strlcpy(full_fragment_path, f_path, sizeof(full_fragment_path));
+    } else {
+        snprintf(full_fragment_path, sizeof(full_fragment_path), "%s%s", base_path, f_path);
+    }
 
     char* vertex_source = read_shader_source(full_vertex_path);
     if (vertex_source == NULL) {
@@ -502,7 +518,7 @@ int SDLApp_Init() {
 
     // Initialize bezel GPU resources
     if (g_renderer_backend == RENDERER_SDLGPU) {
-        SDLAppBezel_InitGPU(SDL_GetBasePath());
+        SDLAppBezel_InitGPU(Paths_GetBasePath());
         SDL_Log("Bezel GPU resources initialized.");
     }
 
@@ -514,10 +530,7 @@ int SDLApp_Init() {
 
     Broadcast_Initialize();
 
-    char* base_path = SDL_GetBasePath();
-    if (base_path == NULL) {
-        fatal_error("Failed to get base path.");
-    }
+    const char* base_path = Paths_GetBasePath();
 
     // ── Asset version check ──────────────────────────────────────
     // Verifies that the assets/ directory contains a compatible version.
@@ -555,9 +568,9 @@ int SDLApp_Init() {
     }
 
     if (g_renderer_backend == RENDERER_OPENGL) {
-        passthru_shader_program = create_shader_program(base_path, "shaders/blit.vert", "shaders/passthru.frag");
-        scene_shader_program = create_shader_program(base_path, "shaders/scene.vert", "shaders/scene.frag");
-        scene_array_shader_program = create_shader_program(base_path, "shaders/scene.vert", "shaders/scene_array.frag");
+        passthru_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/blit.vert"), Paths_ResolveAsset("shaders/passthru.frag"));
+        scene_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/scene.frag"));
+        scene_array_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/scene_array.frag"));
 
         // Create quad
         float vertices[] = { // positions        // texture coords
@@ -662,8 +675,7 @@ int SDLApp_Init() {
         RendererPlugin_Load(configuration.renderer.plugin_name, configuration.argc, configuration.argv);
     }
 
-    SDL_free(base_path);
-
+    // Do NOT free base_path since it is a statically allocated cache from Paths_GetBasePath()!
     return 0;
 }
 

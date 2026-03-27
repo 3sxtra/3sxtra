@@ -13,6 +13,7 @@
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_scale.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
+#include "port/config/paths.h"
 
 #include "sf33rd/Source/Game/engine/workuser.h"
 
@@ -218,11 +219,8 @@ void SDLAppBezel_InitGPU(const char* base_path) {
     if (!dev || !win)
         return;
 
-    char vert_path[1024];
-    char frag_path[1024];
-    snprintf(vert_path, sizeof(vert_path), "%sshaders/blit.vert.spv", base_path);
-    snprintf(frag_path, sizeof(frag_path), "%sshaders/blit.frag.spv", base_path);
-
+    const char* vert_path = Paths_ResolveAsset("shaders/blit.vert.spv");
+    const char* frag_path = Paths_ResolveAsset("shaders/blit.frag.spv");
     SDL_GPUShader* vert = CreateBezelGPUShader(dev, vert_path, SDL_GPU_SHADERSTAGE_VERTEX);
     SDL_GPUShader* frag = CreateBezelGPUShader(dev, frag_path, SDL_GPU_SHADERSTAGE_FRAGMENT);
 

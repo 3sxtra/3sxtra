@@ -11,6 +11,7 @@
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include <SDL3_shadercross/SDL_shadercross.h>
+#include "port/config/paths.h"
 #include <stdio.h>
 
 /** @brief Load a shader file from disk, returning the raw bytes. */
@@ -74,7 +75,7 @@ void SDLGameRendererGPU_Init(void) {
     }
 
     // Load Shaders (Expects SPIR-V)
-    const char* base_path = SDL_GetBasePath();
+    const char* base_path = Paths_GetBasePath();
     char vert_path[1024];
     char frag_path[1024];
     snprintf(vert_path, sizeof(vert_path), "%sshaders/vert.spv", base_path);

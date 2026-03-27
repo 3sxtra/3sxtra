@@ -12,6 +12,7 @@
 
 #include <RmlUi/Lua/Interpreter.h>
 #include <SDL3/SDL.h>
+#include "port/config/paths.h"
 
 extern "C" {
 #include <lauxlib.h>
@@ -425,9 +426,9 @@ static void flatten_to_c_structs() {
 // ---- Public API ----
 
 // Helper: get the exe directory path with trailing separator.
-// Tries SDL_GetBasePath() first, falls back to platform API if empty.
+// Tries Paths_GetBasePath() (centralized/cached) first, falls back to platform API if empty.
 static std::string get_exe_dir() {
-    const char* base = SDL_GetBasePath();
+    const char* base = Paths_GetBasePath();
     if (base && base[0])
         return std::string(base);
 

@@ -5,6 +5,7 @@
 
 #include "port/sdl/renderer/sdl_game_renderer_gpu_lz77.h"
 #include "sf33rd/Source/Common/PPGFile.h"
+#include "port/config/paths.h"
 #include <SDL3_shadercross/SDL_shadercross.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,7 +45,7 @@ LZ77Context* LZ77_Create(SDL_GPUDevice* device, LoadShaderCodeFunc load_shader_c
         return NULL;
 
     char comp_path[1024];
-    const char* bp = SDL_GetBasePath();
+    const char* bp = Paths_GetBasePath();
     snprintf(comp_path, sizeof(comp_path), "%sshaders/lz77_decode.comp.spv", bp ? bp : "");
     size_t comp_size_file;
     void* comp_code = load_shader_cb(comp_path, &comp_size_file);

@@ -1,6 +1,7 @@
 #include "port/renderer_plugin.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
+#include "port/config/paths.h"
 
 #include <SDL3/SDL.h>
 #include <stdarg.h>
@@ -46,7 +47,7 @@ bool RendererPlugin_Load(const char* plugin_name, int argc, const char** argv) {
 
     /* Build DLL path from plugin name */
     char dll_path[512];
-    const char* base = SDL_GetBasePath();
+    const char* base = Paths_GetBasePath();
 #ifdef _WIN32
     SDL_snprintf(dll_path, sizeof(dll_path), "%s%s.dll", base ? base : "", plugin_name);
     /* MinGW adds a 'lib' prefix by default — try that too */

@@ -132,7 +132,7 @@ class GameViewportGL3 : public RenderInterface_GL3 {
     Rml::TextureHandle LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source) override {
         SDL_Surface* surface = load_ctrlimg_surface(source);
         if (!surface) {
-            surface = IMG_Load(source.c_str());
+            surface = IMG_Load(Paths_ResolveAsset(source.c_str()));
         }
 #ifndef _WIN32
         // RmlUi's SystemInterface::JoinPath strips the leading '/' from
@@ -259,7 +259,7 @@ class GameViewportGPU : public RenderInterface_SDL_GPU {
             SDL_DestroySurface(surface);
             return handle;
         }
-        return RenderInterface_SDL_GPU::LoadTexture(texture_dimensions, source);
+        return RenderInterface_SDL_GPU::LoadTexture(texture_dimensions, Paths_ResolveAsset(source.c_str()));
     }
 
   private:
@@ -293,7 +293,7 @@ class GameViewportSDL : public RenderInterface_SDL {
             SDL_DestroySurface(surface);
             return handle;
         }
-        return RenderInterface_SDL::LoadTexture(texture_dimensions, source);
+        return RenderInterface_SDL::LoadTexture(texture_dimensions, Paths_ResolveAsset(source.c_str()));
     }
 };
 
@@ -535,9 +535,9 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     // rmlui_wrapper_new_frame() call (~130ms saved from boot).
 
     // NotoSansJP (~4MB) deferred to first frame — see rmlui_wrapper_new_frame()
-    std::string font_bold = s_ui_base_path + "../fonts/BoldPixels.ttf";
-    if (!Rml::LoadFontFace(font_bold.c_str())) {
-        SDL_Log("[RmlUi] Failed to load font: %s", font_bold.c_str());
+    const char* font_bold = Paths_ResolveAsset("fonts/BoldPixels.ttf");
+    if (!Rml::LoadFontFace(font_bold)) {
+        SDL_Log("[RmlUi] Failed to load font: %s", font_bold);
     }
 
     // --- Window context (Phase 2 overlays — window resolution) ---
