@@ -98,6 +98,9 @@ static float jitter_sum = 0;
 static int ping_sample_count = 0;
 static int ping_sample_timer = 0;
 
+static MenuScreenId s_netplay_origin_screen = MENU_SCREEN_NONE;
+static bool s_netplay_origin_native_lan = false;
+
 #if defined(LOSSY_ADAPTER)
 static GekkoNetAdapter* base_adapter = NULL;
 static GekkoNetAdapter lossy_adapter = { 0 };
@@ -819,6 +822,16 @@ int Netplay_GetNegotiatedFT(void) {
 }
 
 void Netplay_Begin() {
+    MenuScreenId cur = MenuScreen_GetCurrent();
+    if (cur == MENU_SCREEN_NETWORK_LOBBY || cur == MENU_SCREEN_CASUAL_LOBBY || 
+        cur == MENU_SCREEN_TOURNAMENT_LOBBY || cur == MENU_SCREEN_RANKED_MATCHMAKING) {
+        s_netplay_origin_screen = cur;
+    } else {
+        s_netplay_origin_screen = MENU_SCREEN_NETWORK_LOBBY;
+    }
+    s_netplay_origin_native_lan = SDLNetplayUI_IsNativeLobbyActive();
+    SDLNetplayUI_SetNativeLobbyActive(false);
+
     /* Hide the RmlUI lobby overlay on connection (safe no-op if not shown) */
     rmlui_network_lobby_hide();
 
@@ -948,7 +961,7 @@ void Netplay_Run() {
                     Netplay_SetRemoteIP(target_peer->ip);
                     Netplay_SetRemotePort(target_peer->port);
                     Netplay_SetLocalPort(configuration.netplay.port);
-                    SDLNetplayUI_SetNativeLobbyActive(false);
+
                     Netplay_Begin();
                 }
             } else {
@@ -1031,7 +1044,13 @@ void Netplay_Run() {
                 MenuScreen_Goto(MENU_SCREEN_CASUAL_LOBBY);
                 SDL_Log("[netplay] Re-entering LOBBY for casual room %s", room_buf);
             } else {
-                SDL_Log("[netplay] Re-entering LOBBY for normal netplay exit");
+                MenuScreenId dest = (s_netplay_origin_screen != MENU_SCREEN_NONE) ? s_netplay_origin_screen : MENU_SCREEN_NETWORK_LOBBY;
+                if (dest == MENU_SCREEN_NETWORK_LOBBY && s_netplay_origin_native_lan) {
+                    extern bool g_lobby_reenter_lan_match;
+                    g_lobby_reenter_lan_match = true;
+                }
+                MenuScreen_Goto(dest);
+                SDL_Log("[netplay] Re-entering LOBBY origin screen: %d", dest);
             }
         }
         break;
@@ -1161,6 +1180,16 @@ int Netplay_GetBattleStartFrame(void) {
 }
 
 void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
+    MenuScreenId cur = MenuScreen_GetCurrent();
+    if (cur == MENU_SCREEN_NETWORK_LOBBY || cur == MENU_SCREEN_CASUAL_LOBBY || 
+        cur == MENU_SCREEN_TOURNAMENT_LOBBY || cur == MENU_SCREEN_RANKED_MATCHMAKING) {
+        s_netplay_origin_screen = cur;
+    } else {
+        s_netplay_origin_screen = MENU_SCREEN_NETWORK_LOBBY;
+    }
+    s_netplay_origin_native_lan = SDLNetplayUI_IsNativeLobbyActive();
+    SDLNetplayUI_SetNativeLobbyActive(false);
+
     if (session_state != NETPLAY_SESSION_IDLE) {
         SDL_Log("[spectate] cannot start: session state is %d", session_state);
         return;

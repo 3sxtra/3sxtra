@@ -49,6 +49,7 @@
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 bool g_lobby_reenter_from_match = false;
+bool g_lobby_reenter_lan_match = false;
 bool g_lobby_reenter_to_replay = false;
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -74,6 +75,12 @@ static void network_lobby_enter(struct _TASK* task_ptr) {
         task_ptr->r_no[2] = 35;
         task_ptr->r_no[3] = 0;
         task_ptr->free[0] = 0;
+    } else if (g_lobby_reenter_lan_match) {
+        /* Re-entry from Native LAN match — jump to lobby phase 20 (LAN mode). */
+        g_lobby_reenter_lan_match = false;
+        task_ptr->r_no[2] = 20;
+        task_ptr->r_no[3] = 0;
+        task_ptr->free[2] = 0; /* 0 = Native mode */
     } else if (g_lobby_reenter_from_match) {
         /* Re-entry from match — jump to lobby phase 10 (RmlUI mode).
          * The legacy Network_Lobby() case 10 will do its own FadeOut,
