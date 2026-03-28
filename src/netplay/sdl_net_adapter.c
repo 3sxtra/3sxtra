@@ -158,6 +158,14 @@ static void send_data(GekkoNetAddress* addr, const char* data, int length) {
 
     switch (NET_GetAddressStatus(peer->resolved)) {
     case NET_SUCCESS:
+        {
+            const char* resolve_str = NET_GetAddressString(peer->resolved);
+            static Uint32 last_log = 0;
+            if (SDL_GetTicks() - last_log > 1000) {
+                SDL_Log("[NetAdapter_Send] Sending %d bytes to %s:%u (resolved=%s)", length, peer->addr_key, peer->port, resolve_str ? resolve_str : "null");
+                last_log = SDL_GetTicks();
+            }
+        }
         NET_SendDatagram(adapter_sock, peer->resolved, peer->port, data, length);
         break;
     case NET_FAILURE:
@@ -216,10 +224,16 @@ static GekkoNetResult** receive_data(int* length) {
         if (expected_remote_port != 0 && dgram->port == expected_remote_port &&
             SDL_strcmp(addr_str, expected_remote_addr) != 0 && expected_remote_addr[0] != '\0') {
             if (!cross_ip_logged) {
-                SDL_Log("[NetAdapter] Cross-IP: rewriting source to match expected remote");
+                SDL_Log("[NetAdapter] Cross-IP: rewriting source from %s to match expected remote %s", addr_str, expected_remote_addr);
                 cross_ip_logged = true;
             }
             final_addr = expected_remote_addr;
+        }
+
+        static Uint32 last_recv_log = 0;
+        if (SDL_GetTicks() - last_recv_log > 1000) {
+            SDL_Log("[NetAdapter_Recv] Got %d bytes from %s (final=%s), expected=%s", (int)dgram->buflen, addr_str, final_addr, expected_remote_addr);
+            last_recv_log = SDL_GetTicks();
         }
 
         GekkoNetResult* res = SDL_malloc(sizeof(GekkoNetResult));

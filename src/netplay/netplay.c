@@ -91,7 +91,7 @@ static NetworkStats network_stats = { 0 };
 
 // --- Dynamic tuning from ping ---
 static int dynamic_delay = DELAY_FRAMES_DEFAULT;
-static int dynamic_frame_skip_max = 3;
+static int dynamic_frame_skip_max = 60;
 static bool dynamic_delay_applied = false;
 static float ping_sum = 0;
 static float jitter_sum = 0;
@@ -393,19 +393,19 @@ static void compute_tuning_from_ping(float avg_ping, float jitter, int* out_dela
     float effective_rtt = avg_ping + jitter;
     if (effective_rtt < 90.0f) {
         *out_delay = 0;
-        *out_skip_max = 2;
+        *out_skip_max = 60;
     } else if (effective_rtt < 150.0f) {
         *out_delay = 1;
-        *out_skip_max = 3;
+        *out_skip_max = 60;
     } else if (effective_rtt < 200.0f) {
         *out_delay = 3;
-        *out_skip_max = 4;
+        *out_skip_max = 60;
     } else if (effective_rtt < 250.0f) {
         *out_delay = 4;
-        *out_skip_max = 5;
+        *out_skip_max = 60;
     } else {
         *out_delay = 5;
-        *out_skip_max = 5;
+        *out_skip_max = 60;
     }
 }
 
@@ -417,7 +417,7 @@ static void configure_gekko() {
     config.input_size = sizeof(u16);
     config.state_size = sizeof(State);
     config.max_spectators = 4;
-    config.input_prediction_window = 8; // Absolute max 8 per recommendations
+    config.input_prediction_window = 12;
 
     config.desync_detection = true;
 
@@ -429,6 +429,7 @@ static void configure_gekko() {
 
     if (stun_socket != NULL) {
         // Internet play: reuse the hole-punched STUN socket
+        NetTuning_SetRecvBuf(stun_socket, 256 * 1024);
         gekko_net_adapter_set(session, SDLNetAdapter_Create(stun_socket));
         SDL_Log("Using STUN socket for GekkoNet adapter");
     } else {
@@ -745,7 +746,7 @@ static void run_netplay() {
             compute_tuning_from_ping(avg, jitter_avg, &dynamic_delay, &dynamic_frame_skip_max);
         } else {
             dynamic_delay = DELAY_FRAMES_DEFAULT;
-            dynamic_frame_skip_max = 3;
+            dynamic_frame_skip_max = 60;
         }
         gekko_set_local_delay(session, player_handle, dynamic_delay);
         SDL_Log("[netplay] dynamic tuning set: delay=%d, skip_max=%d (samples=%d, avg_ping=%.1f, jitter=%.1f)",
@@ -831,7 +832,7 @@ void Netplay_Begin() {
 
     // Reset dynamic delay sampling for this session
     dynamic_delay = DELAY_FRAMES_DEFAULT;
-    dynamic_frame_skip_max = 3;
+    dynamic_frame_skip_max = 60;
     dynamic_delay_applied = false;
     ping_sum = 0;
     jitter_sum = 0;
@@ -1171,8 +1172,8 @@ void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
     config.input_size = sizeof(u16);
     config.state_size = sizeof(State);
     config.max_spectators = 1;
-    config.spectator_delay = 10; // 10 frames (~166ms at 60fps) max per recommendations
-    config.input_prediction_window = 8;
+    config.spectator_delay = 15;
+    config.input_prediction_window = 12;
     config.desync_detection = false; // Spectators don't need desync detection
 
     if (!gekko_create(&session, GekkoSpectateSession)) {

@@ -36,13 +36,13 @@
 #define STUN_ATTR_MAPPED_ADDRESS 0x0001
 #define STUN_ATTR_XOR_MAPPED_ADDRESS 0x0020
 
-void Stun_EncodeEndpoint(const char* ip, uint16_t port, char* out_code) {
+void Stun_EncodeEndpoint(const char* ip, uint16_t port, uint16_t local_port, char* out_code) {
     if (!ip || !out_code)
         return;
-    snprintf(out_code, 64, "%s|%u", ip, port);
+    snprintf(out_code, 64, "%s|%u|%u", ip, port, local_port);
 }
 
-bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port) {
+bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port, uint16_t* out_local_port) {
     if (!code || !out_ip || !out_port)
         return false;
 
@@ -56,6 +56,16 @@ bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port) {
     *sep = '\0';
     SDL_strlcpy(out_ip, temp, 64);
     *out_port = (uint16_t)atoi(sep + 1);
+
+    if (out_local_port) {
+        char* sep2 = strchr(sep + 1, '|');
+        if (sep2) {
+            *out_local_port = (uint16_t)atoi(sep2 + 1);
+        } else {
+            *out_local_port = *out_port; // default to public port if not present
+        }
+    }
+
     return true;
 }
 

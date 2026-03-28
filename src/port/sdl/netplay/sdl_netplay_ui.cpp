@@ -333,6 +333,7 @@ static SDL_Thread* lobby_thread = NULL;
 static SDL_AtomicInt lobby_thread_result = { 0 }; // 1=success, 0=fail
 static char lobby_punch_peer_ip[64] = { 0 };
 static uint16_t lobby_punch_peer_port = 0;
+static uint16_t lobby_punch_peer_local_port = 0;
 static char lobby_punch_peer_name[32] = { 0 }; // Display name of peer being punched
 static UpnpMapping lobby_upnp_mapping = {};
 static bool native_lobby_active = false;
@@ -363,7 +364,7 @@ static uint32_t lobby_wait_peer_start = 0;
 static bool lobby_skip_wait_peer = false; // Set by casual lobby path (both sides already accepted via server)
 
 // Forward declarations for functions used by lobby_poll_server
-static void lobby_start_punch(char* peer_ip, uint16_t peer_port);
+static void lobby_start_punch(char* peer_ip, uint16_t peer_port, uint16_t peer_local_port);
 
 // --- Async Lobby API ---
 typedef struct {
@@ -553,7 +554,8 @@ static void lobby_poll_server(void) {
 
             char peer_ip[64] = { 0 };
             uint16_t peer_port = 0;
-            if (!Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port))
+            uint16_t peer_local_port = 0;
+            if (!Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port, &peer_local_port))
                 break;
 
             // Auto-decline if player fails filter criteria (region lock, max ping, WiFi block)
@@ -638,7 +640,7 @@ static void lobby_poll_server(void) {
                 AsyncUpdatePresence(lobby_my_player_id, d2, my_room_code, lobby_server_players[i].room_code);
                 lobby_has_pending_invite = false; // Consumed
                 lobby_we_are_initiator = false;   // They invited us, we auto-accepted
-                lobby_start_punch(peer_ip, peer_port);
+                lobby_start_punch(peer_ip, peer_port, peer_local_port);
             }
             // else: popup will show via lobby_has_pending_invite — no eager punch
             break;
@@ -668,8 +670,9 @@ static void lobby_poll_server(void) {
             // Decode their STUN endpoint from room_code
             char peer_ip[64] = { 0 };
             uint16_t peer_port = 0;
+            uint16_t peer_local_port = 0;
             if (lobby_server_players[i].room_code[0] &&
-                Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port)) {
+                Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port, &peer_local_port)) {
                 // LAN peers share our public IP — probe their private LAN IP instead
                 if (stun_result.public_ip[0] != '\0' && strcmp(peer_ip, stun_result.public_ip) == 0) {
                     NetplayDiscoveredPeer lan_peers[16];
@@ -704,6 +707,23 @@ static int lobby_punch_rtt_ms = -1; // Measured RTT from hole punch (separate fr
 static int SDLCALL hole_punch_thread_fn(void* data) {
     (void)data;
     SDL_SetAtomicInt(&lobby_punch_cancel, 0);
+
+    // Hairpin bypass: check if connecting to our own public IP (e.g. testing Ranked Matchmaking with 2 clients on the same PC).
+    // Bypasses the 10-second STUN timeout and routes directly to localhost.
+    if (stun_result.public_ip[0] != '\0' && SDL_strcmp(lobby_punch_peer_ip, stun_result.public_ip) == 0) {
+        SDL_Log("[lobby] Peer public IP matches ours (NAT Hairpin). Bypassing STUN and using 127.0.0.1 (local port %u)", lobby_punch_peer_local_port);
+        SDL_strlcpy(lobby_punch_peer_ip, "127.0.0.1", sizeof(lobby_punch_peer_ip));
+        
+        // When connecting locally, we CANNOT use the STUN public_port because NAT loopback doesn't work internally!
+        // The peer is listening on their local_port. Override it here.
+        lobby_punch_peer_port = lobby_punch_peer_local_port;
+        
+        lobby_punch_rtt_ms = 1;
+        SDL_SetAtomicInt(&lobby_thread_result, 1);
+        SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_PUNCH_DONE);
+        return 0;
+    }
+
     uint32_t start_ms = SDL_GetTicks();
     bool ok = Stun_HolePunch(&stun_result, lobby_punch_peer_ip, &lobby_punch_peer_port, 10000, &lobby_punch_cancel);
     if (ok) {
@@ -723,7 +743,7 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
 static int SDLCALL upnp_fallback_thread_fn(void* data) {
     (void)data;
     bool ok = Upnp_AddMapping(
-        &lobby_upnp_mapping, SDL_Swap16BE(stun_result.public_port), SDL_Swap16BE(stun_result.public_port), "UDP");
+        &lobby_upnp_mapping, stun_result.public_port, stun_result.public_port, "UDP");
     SDL_SetAtomicInt(&lobby_thread_result, ok ? 1 : 0);
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_UPNP_DONE);
     return 0;
@@ -741,9 +761,10 @@ static void lobby_start_discover(void) {
     }
 }
 
-static void lobby_start_punch(char* peer_ip, uint16_t peer_port) {
+static void lobby_start_punch(char* peer_ip, uint16_t peer_port, uint16_t peer_local_port) {
     SDL_strlcpy(lobby_punch_peer_ip, peer_ip, 64);
     lobby_punch_peer_port = peer_port;
+    lobby_punch_peer_local_port = peer_local_port;
     // Show display name in status if available, fall back to IP
     if (lobby_punch_peer_name[0]) {
         snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Hole punching to %s...", lobby_punch_peer_name);
@@ -752,7 +773,7 @@ static void lobby_start_punch(char* peer_ip, uint16_t peer_port) {
                  sizeof(lobby_status_msg),
                  "Hole punching to %s:%u...",
                  lobby_punch_peer_ip,
-                 SDL_Swap16BE(peer_port));
+                 peer_port);
     }
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_PUNCHING);
     SDL_SetAtomicInt(&lobby_thread_result, 0);
@@ -1067,7 +1088,7 @@ void SDLNetplayUI_Update(void) {
         // Handle STUN discovery completion
         if (state == LOBBY_ASYNC_READY && my_room_code[0] == '\0') {
             lobby_cleanup_thread();
-            Stun_EncodeEndpoint(stun_result.public_ip, stun_result.public_port, my_room_code);
+            Stun_EncodeEndpoint(stun_result.public_ip, stun_result.public_port, stun_result.local_port, my_room_code);
             snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Ready.");
 
             // Initialize P2P ping probe on the STUN socket
@@ -1120,8 +1141,22 @@ void SDLNetplayUI_Update(void) {
                 // Punch succeeded — prepare connection parameters
                 snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Hole punch success!");
                 Netplay_SetRemoteIP(lobby_punch_peer_ip);
-                Netplay_SetRemotePort(SDL_Swap16BE(lobby_punch_peer_port));
+                Netplay_SetRemotePort(lobby_punch_peer_port);
                 Netplay_SetLocalPort(stun_result.local_port);
+
+                // Hairpin bypass: Windows dual-stack sockets often bind to different ephemeral
+                // OS ports for IPv4 vs IPv6 when 0 is passed. STUN uses the IPv4 port, but
+                // localhost routing fails if they diverge. Destroy the STUN socket entirely
+                // so Netplay_Begin creates a clean bound socket specifically on stun_result.local_port.
+                if (SDL_strcmp(lobby_punch_peer_ip, "127.0.0.1") == 0 && stun_result.socket != NULL) {
+                    if (ping_probe_initialized) {
+                        PingProbe_Init(NULL); // Detach probe before destroying socket
+                    }
+                    NET_DestroyDatagramSocket(stun_result.socket);
+                    stun_result.socket = NULL;
+                    SDL_Log("[lobby] Hairpin bypass: STUN socket destroyed to resolve dual-stack UDP conflicts.");
+                }
+
                 Netplay_SetStunSocket(stun_result.socket);
                 stun_result.socket = NULL; // Ownership transferred; prevent double-close
                 if (ping_probe_initialized) {
@@ -1151,7 +1186,7 @@ void SDLNetplayUI_Update(void) {
                              sizeof(lobby_status_msg),
                              "UPnP thread failed. Attempting connection anyway...");
                     Netplay_SetRemoteIP(lobby_punch_peer_ip);
-                    Netplay_SetRemotePort(SDL_Swap16BE(lobby_punch_peer_port));
+                    Netplay_SetRemotePort(lobby_punch_peer_port);
                     Netplay_SetLocalPort(stun_result.local_port);
                     Netplay_SetStunSocket(stun_result.socket);
                     stun_result.socket = NULL;
@@ -1180,7 +1215,7 @@ void SDLNetplayUI_Update(void) {
                 snprintf(lobby_status_msg, sizeof(lobby_status_msg), "UPnP failed. Attempting direct connection...");
             }
             Netplay_SetRemoteIP(lobby_punch_peer_ip);
-            Netplay_SetRemotePort(SDL_Swap16BE(lobby_punch_peer_port));
+            Netplay_SetRemotePort(lobby_punch_peer_port);
             Netplay_SetLocalPort(stun_result.local_port);
             Netplay_SetStunSocket(stun_result.socket);
             stun_result.socket = NULL;
@@ -1465,7 +1500,8 @@ void SDLNetplayUI_ConnectToPlayer(int index) {
         if (count == index) {
             char peer_ip[64] = { 0 };
             uint16_t peer_port = 0;
-            if (Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port)) {
+            uint16_t peer_local_port = 0;
+            if (Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port, &peer_local_port)) {
                 // Signal intent via lobby server
                 const char* display_ct = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
                 if (!display_ct || !display_ct[0])
@@ -1477,7 +1513,7 @@ void SDLNetplayUI_ConnectToPlayer(int index) {
                     lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", lobby_server_players[i].display_name);
                 snprintf(current_opponent_id, sizeof(current_opponent_id), "%s", lobby_server_players[i].player_id);
                 lobby_we_are_initiator = true; // We clicked Connect
-                lobby_start_punch(peer_ip, peer_port);
+                lobby_start_punch(peer_ip, peer_port, peer_local_port);
             }
             return;
         }
@@ -1529,8 +1565,13 @@ void SDLNetplayUI_AcceptPendingInvite() {
     AsyncUpdatePresence(lobby_my_player_id, d2, my_room_code, lobby_pending_invite_room);
     snprintf(lobby_connect_to_intent, sizeof(lobby_connect_to_intent), "%s", lobby_pending_invite_room);
     lobby_has_pending_invite = false;
-    lobby_we_are_initiator = false;
-    lobby_start_punch(lobby_pending_invite_ip, lobby_pending_invite_port);
+    char peer_ip[64] = { 0 };
+    uint16_t peer_port = 0;
+    uint16_t peer_local_port = 0;
+    if (Stun_DecodeEndpoint(lobby_pending_invite_room, peer_ip, &peer_port, &peer_local_port)) {
+        lobby_we_are_initiator = false;
+        lobby_start_punch(peer_ip, peer_port, peer_local_port);
+    }
 }
 
 void SDLNetplayUI_DeclinePendingInvite() {
@@ -1626,8 +1667,9 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
     // Decode the opponent's STUN endpoint (may be empty if their STUN discovery failed)
     char peer_ip[64] = { 0 };
     uint16_t peer_port = 0;
+    uint16_t peer_local_port = 0;
     bool decoded = (opponent_room_code && opponent_room_code[0])
-                       ? Stun_DecodeEndpoint(opponent_room_code, peer_ip, &peer_port)
+                       ? Stun_DecodeEndpoint(opponent_room_code, peer_ip, &peer_port, &peer_local_port)
                        : false;
 
     // Check if opponent is on LAN — works even without a room code via player_id match.
@@ -1699,7 +1741,7 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
     snprintf(
         lobby_status_msg, sizeof(lobby_status_msg), "Connecting to %s...", opponent_name ? opponent_name : "opponent");
 
-    lobby_start_punch(peer_ip, peer_port);
+    lobby_start_punch(peer_ip, peer_port, peer_local_port);
 }
 
 void SDLNetplayUI_ReportNaturalMatchEnd(void) {
