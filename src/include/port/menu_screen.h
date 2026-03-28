@@ -175,6 +175,14 @@ void MenuScreen_Tick(struct _TASK* task_ptr);
 bool MenuScreen_IsActive(void);
 
 /**
+ * @brief Returns true if a screen transition is scheduled (g_next_screen is set).
+ *
+ * This allows the menu task loop to pick up dynamically scheduled transitions 
+ * from systems like netplay that call MenuScreen_Goto before the menu is active.
+ */
+bool MenuScreen_HasPendingTransition(void);
+
+/**
  * @brief Map a legacy AT_Jmp_Tbl index to a MenuScreenId.
  *
  * Returns MENU_SCREEN_NONE for un-migrated or disabled screens.

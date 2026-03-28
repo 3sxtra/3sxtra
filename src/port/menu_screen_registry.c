@@ -100,6 +100,10 @@ bool MenuScreen_IsActive(void) {
     return g_current_screen != MENU_SCREEN_NONE;
 }
 
+bool MenuScreen_HasPendingTransition(void) {
+    return g_next_screen != MENU_SCREEN_NONE;
+}
+
 void MenuScreen_RequestFadeOut(void) {
     if (g_phase == MENU_PHASE_ACTIVE) {
         g_phase = MENU_PHASE_FADE_OUT;

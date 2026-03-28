@@ -27,7 +27,7 @@ extern void njUserMain();
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
-#include "port/sdl/rmlui/rmlui_network_lobby.h"
+#include "port/sdl/rmlui/rmlui_wrapper.h"
 #include "port/menu_screen.h"
 #include "port/sdl/rmlui/rmlui_ingame_chat.h"
 #include "sf33rd/Source/Game/menu/menu.h"
@@ -833,7 +833,7 @@ void Netplay_Begin() {
     SDLNetplayUI_SetNativeLobbyActive(false);
 
     /* Hide the RmlUI lobby overlay on connection (safe no-op if not shown) */
-    rmlui_network_lobby_hide();
+    rmlui_wrapper_hide_all_game_documents();
 
     setup_vs_mode();
     Discovery_Shutdown();
@@ -1196,6 +1196,7 @@ void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
     }
 
     GekkoConfig config;
+    rmlui_wrapper_hide_all_game_documents();
     SDL_zero(config);
     config.num_players = PLAYER_COUNT;
     config.input_size = sizeof(u16);

@@ -206,11 +206,12 @@ void Setup_Pad_or_Stick() {
 /** @brief After-title state â€” dispatch to sub-menu by r_no[1]. */
 void After_Title(struct _TASK* task_ptr) {
     /* ── MenuScreen registry integration hook (Task 4) ──
-     * If the registry is already driving a screen, tick it and return.
+     * If the registry is already driving a screen (or if a transition was
+     * dynamically queued by a subsystem like netplay), tick it and return.
      * Otherwise, try to map the legacy r_no[1] index to a MenuScreenId;
      * if a migrated (and enabled) screen is found, hand off to the
      * registry.  Un-migrated indices fall through to the legacy table. */
-    if (MenuScreen_IsActive()) {
+    if (MenuScreen_IsActive() || MenuScreen_HasPendingTransition()) {
         MenuScreen_Tick(task_ptr);
         return;
     }
