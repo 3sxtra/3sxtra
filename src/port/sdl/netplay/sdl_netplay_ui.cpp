@@ -725,7 +725,7 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
     }
 
     uint32_t start_ms = SDL_GetTicks();
-    bool ok = Stun_HolePunch(&stun_result, lobby_punch_peer_ip, &lobby_punch_peer_port, 10000, &lobby_punch_cancel);
+    bool ok = Stun_HolePunch(&stun_result, lobby_punch_peer_ip, &lobby_punch_peer_port, 2500, &lobby_punch_cancel);
     if (ok) {
         uint32_t rtt_ms = (SDL_GetTicks() - start_ms);
         if (rtt_ms > 200)
