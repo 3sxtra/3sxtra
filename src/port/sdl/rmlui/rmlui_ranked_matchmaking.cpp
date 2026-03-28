@@ -14,8 +14,8 @@ extern "C" {
 #include "netplay/lobby_server.h"
 #include "netplay/ping_probe.h"
 
-extern s16 g_net_peer_idx;
-extern s16 Menu_Cursor_Y[2];
+extern int g_net_peer_idx;
+extern s8 Menu_Cursor_Y[2];
 }
 
 #include <vector>

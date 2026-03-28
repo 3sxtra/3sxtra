@@ -38,11 +38,11 @@ die()  { echo -e "${RED}✖ $1${NC}" >&2; exit 1; }
 export SSHPASS="$PI_PASS"
 RSYNC_RSH="sshpass -e ssh -o StrictHostKeyChecking=no"
 SSH_CMD="sshpass -e ssh -o StrictHostKeyChecking=no $PI_USER@$PI_IP"
-RSYNC="rsync -avz --checksum -e '$RSYNC_RSH'"
+RSYNC="rsync -avz -e '$RSYNC_RSH'"
 
 do_rsync() {
     local src="$1" dst="$2"
-    rsync -avz --checksum -e "$RSYNC_RSH" "$src" "$PI_USER@$PI_IP:$dst"
+    rsync -avz -e "$RSYNC_RSH" "$src" "$PI_USER@$PI_IP:$dst"
 }
 
 # ── Pre-flight ────────────────────────────────────────────────
@@ -77,13 +77,13 @@ step "Syncing libraries..."
 # Collect .so files into a temp list, rsync from their locations
 $SSH_CMD "mkdir -p $PI_DEST/lib"
 find "$THIRD_PARTY" -name "*.so*" -print0 | \
-    rsync -avz --checksum --from0 --files-from=- -e "$RSYNC_RSH" \
+    rsync -avz --from0 --files-from=- -e "$RSYNC_RSH" \
     "/" "$PI_USER@$PI_IP:$PI_DEST/lib/" \
     --no-relative --no-dirs
 
 # ── Step 5: Sync assets ──────────────────────────────────────
 step "Syncing assets..."
-rsync -avz --checksum --exclude="shaders/libretro" -e "$RSYNC_RSH" "$ROOT_DIR/assets/" "$PI_USER@$PI_IP:$PI_DEST/assets/"
+rsync -avz --exclude="shaders/libretro" -e "$RSYNC_RSH" "$ROOT_DIR/assets/" "$PI_USER@$PI_IP:$PI_DEST/assets/"
 
 # ── Step 6: Sync shaders ─────────────────────────────────────
 step "Syncing shaders..."

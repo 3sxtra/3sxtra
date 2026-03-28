@@ -40,7 +40,7 @@
 typedef struct {
     char player_id[64];
     char ip[64];
-    uint16_t port; /* Network byte order */
+    uint16_t port; /* Host byte order */
     bool active;
     uint8_t generation; /* Incremented on slot reuse — prevents stale pong cross-attribution */
 
@@ -106,8 +106,7 @@ static void send_probe(ProbePeer* peer) {
     uint16_t token = (uint16_t)((peer->generation << 8) | (uint8_t)(peer - s_peers));
     build_probe(pkt, PING_MAGIC, peer->next_seq, now, token);
 
-    uint16_t host_port = SDL_Swap16BE(peer->port);
-    NET_SendDatagram(s_socket, peer->resolved_addr, host_port, pkt, PROBE_PKT_SIZE);
+    NET_SendDatagram(s_socket, peer->resolved_addr, peer->port, pkt, PROBE_PKT_SIZE);
 
     peer->next_seq++;
     peer->last_send_ticks = now;
@@ -179,7 +178,7 @@ static void receive_probes(void) {
             }
 
             // Opportunistically learn NAT port shifts for this peer
-            uint16_t received_port = SDL_Swap16BE(dgram->port);
+            uint16_t received_port = dgram->port; // Host order from NET_ReceiveDatagram
             if (peer->port != received_port) {
                 peer->port = received_port;
                 // Invalidate cached address since port changed

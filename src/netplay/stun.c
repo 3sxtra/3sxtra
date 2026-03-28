@@ -305,10 +305,31 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
         }
 
         // Success!
-        result->local_port = SDL_Swap16BE(port);
         SDL_strlcpy(result->public_ip, ip, sizeof(result->public_ip));
         result->public_port = port;
         result->socket = sock; // Keep open for hole punching!
+
+        // Query the ACTUAL OS-assigned local port via getsockname.
+        // The STUN public port may differ from the local port on
+        // non-port-preserving NATs. The hairpin bypass needs the real
+        // local port so localhost connections target the correct socket.
+        {
+            const NetTuningDgramMirror* m = (const NetTuningDgramMirror*)sock;
+            result->local_port = port; // Fallback: assume port-preserving NAT
+            for (int h = 0; h < m->num_handles; h++) {
+                struct sockaddr_storage sa;
+                int sa_len = sizeof(sa);
+                if (getsockname((int)m->handles[h].handle, (struct sockaddr*)&sa, &sa_len) == 0) {
+                    if (sa.ss_family == AF_INET) {
+                        result->local_port = ntohs(((struct sockaddr_in*)&sa)->sin_port);
+                        break;
+                    } else if (sa.ss_family == AF_INET6) {
+                        result->local_port = ntohs(((struct sockaddr_in6*)&sa)->sin6_port);
+                        // Keep looking for IPv4; prefer it since STUN used IPv4
+                    }
+                }
+            }
+        }
 
         NET_DestroyDatagram(dgram);
 
@@ -362,7 +383,7 @@ bool Stun_HolePunch(StunResult* local, char* peer_ip, uint16_t* peer_port, int p
     uint32_t last_send = 0;
     bool received_response = false;
 
-    uint16_t local_peer_port = SDL_Swap16BE(*peer_port);
+    uint16_t local_peer_port = *peer_port; // Host order — NET_SendDatagram expects host order
 
     while ((int)(SDL_GetTicks() - start) < punch_duration_ms) {
         // Check for cancellation
@@ -397,7 +418,7 @@ bool Stun_HolePunch(StunResult* local, char* peer_ip, uint16_t* peer_port, int p
                 received_response = true;
 
                 // Update with actual received endpoint (fixes Symmetric NAT port/IP translation)
-                *peer_port = SDL_Swap16BE(dgram->port);
+                *peer_port = dgram->port; // Host order — NET_ReceiveDatagram returns host order
 
                 // Update peer_ip from received address (Symmetric NAT may change it)
                 const char* received_ip = NET_GetAddressString(dgram->addr);

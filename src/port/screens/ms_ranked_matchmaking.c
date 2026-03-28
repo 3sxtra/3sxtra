@@ -25,7 +25,7 @@
 #include "port/sdl/netplay/sdl_netplay_ui.h"
 #include "sf33rd/Source/Game/menu/menu.h"
 
-extern s16 g_net_peer_idx;
+extern int g_net_peer_idx;
 
 static void ranked_matchmaking_enter(struct _TASK* task_ptr) {
     /* ── Standard Rebuild/Transition Sequence ── */

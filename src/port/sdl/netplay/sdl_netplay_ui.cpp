@@ -743,7 +743,7 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
 static int SDLCALL upnp_fallback_thread_fn(void* data) {
     (void)data;
     bool ok = Upnp_AddMapping(
-        &lobby_upnp_mapping, stun_result.public_port, stun_result.public_port, "UDP");
+        &lobby_upnp_mapping, stun_result.local_port, stun_result.public_port, "UDP");
     SDL_SetAtomicInt(&lobby_thread_result, ok ? 1 : 0);
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_UPNP_DONE);
     return 0;
@@ -774,6 +774,13 @@ static void lobby_start_punch(char* peer_ip, uint16_t peer_port, uint16_t peer_l
                  "Hole punching to %s:%u...",
                  lobby_punch_peer_ip,
                  peer_port);
+    }
+    // Stop PingProbe BEFORE starting the punch thread.
+    // Both PingProbe and HolePunch call NET_ReceiveDatagram on the same STUN socket.
+    // If PingProbe is still running, it steals the hole punch response packets
+    // (they don't match PING/PONG magic → silently discarded), causing the punch to always time out.
+    if (ping_probe_initialized) {
+        PingProbe_Init(NULL);
     }
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_PUNCHING);
     SDL_SetAtomicInt(&lobby_thread_result, 0);

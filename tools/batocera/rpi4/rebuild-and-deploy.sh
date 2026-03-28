@@ -31,7 +31,7 @@ DO_CLEAN=false
 DO_SYNC=false
 ENABLE_TRACY=false
 ENABLE_LTO=false
-BUILD_TYPE="RelWithDebInfo"
+BUILD_TYPE="Release"
 
 ROOT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
 BUILD_DIR="$ROOT_DIR/build_rpi4"

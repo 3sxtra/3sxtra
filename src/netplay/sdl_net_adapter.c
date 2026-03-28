@@ -36,7 +36,9 @@ static int result_count = 0;
 // When a packet arrives on the expected port but from a different IP,
 // we rewrite the source to match what GekkoNet was configured with.
 static char expected_remote_addr[64] = { 0 }; // Full "ip:port" string
+static char expected_remote_ip[64] = { 0 };   // IP part only
 static Uint16 expected_remote_port = 0;
+static Uint16 actual_remote_port = 0;
 
 static char active_chat_peer_addr[64] = { 0 };
 
@@ -149,10 +151,19 @@ static void send_data(GekkoNetAddress* addr, const char* data, int length) {
     SDL_memcpy(addr_buf, addr->data, copy_len);
     addr_buf[copy_len] = '\0';
 
-    // Track the active peer specifically for out-of-band P2P chat to bypass STUN mismatch
-    SDL_strlcpy(active_chat_peer_addr, addr_buf, sizeof(active_chat_peer_addr));
+    // Override the destination port if we learned a new one via Symmetric NAT incoming packets
+    char send_addr_key[64];
+    SDL_strlcpy(send_addr_key, addr_buf, sizeof(send_addr_key));
+    if (actual_remote_port != 0 && actual_remote_port != expected_remote_port) {
+        if (SDL_strcmp(addr_buf, expected_remote_addr) == 0) {
+            SDL_snprintf(send_addr_key, sizeof(send_addr_key), "%s:%u", expected_remote_ip, actual_remote_port);
+        }
+    }
 
-    CachedPeer* peer = find_or_create_peer(addr_buf);
+    // Track the active peer specifically for out-of-band P2P chat to bypass STUN mismatch
+    SDL_strlcpy(active_chat_peer_addr, send_addr_key, sizeof(active_chat_peer_addr));
+
+    CachedPeer* peer = find_or_create_peer(send_addr_key);
     if (!peer->resolved)
         return;
 
@@ -216,13 +227,24 @@ static GekkoNetResult** receive_data(int* length) {
         char addr_str[64];
         SDL_snprintf(addr_str, sizeof(addr_str), "%s:%d", ip_str, (int)dgram->port);
 
-        // Cross-IP normalization: if this packet arrived on the expected remote
-        // port but from a different IP (IPv4↔IPv6 mismatch), rewrite the source
-        // address to match what GekkoNet was configured with. This makes
-        // GekkoNet's string-based address matching work across address families.
+        // Cross-IP normalization & Symmetric NAT port learning
         const char* final_addr = addr_str;
-        if (expected_remote_port != 0 && dgram->port == expected_remote_port &&
-            SDL_strcmp(addr_str, expected_remote_addr) != 0 && expected_remote_addr[0] != '\0') {
+        
+        // 1. Port Learning: if IP matches but port differs (Symmetric NAT changed source port)
+        if (expected_remote_ip[0] != '\0' && expected_remote_port != 0 &&
+            dgram->port != expected_remote_port &&
+            SDL_strcmp(ip_str, expected_remote_ip) == 0) {
+            
+            if (actual_remote_port != dgram->port) {
+                actual_remote_port = dgram->port;
+                SDL_Log("[NetAdapter] Symmetric NAT port learning: peer is using port %u (expected %u). Adapting.", actual_remote_port, expected_remote_port);
+            }
+            // Masquerade the packet as coming from the expected STUN port so Gekko accepts it
+            final_addr = expected_remote_addr;
+            
+        // 2. Cross-IP: if port matches but IP differs (IPv4-mapped IPv6 mismatch)
+        } else if (expected_remote_port != 0 && dgram->port == expected_remote_port &&
+                   SDL_strcmp(addr_str, expected_remote_addr) != 0 && expected_remote_addr[0] != '\0') {
             if (!cross_ip_logged) {
                 SDL_Log("[NetAdapter] Cross-IP: rewriting source from %s to match expected remote %s", addr_str, expected_remote_addr);
                 cross_ip_logged = true;
@@ -280,11 +302,16 @@ void SDLNetAdapter_SetExpectedRemote(const char* addr_str) {
         char ip[64];
         int port = 0;
         parse_addr_str(addr_str, ip, sizeof(ip), &port);
+        SDL_strlcpy(expected_remote_ip, strip_ipv4_mapped_prefix(ip), sizeof(expected_remote_ip));
         expected_remote_port = (Uint16)port;
+        actual_remote_port = expected_remote_port; 
         cross_ip_logged = false;
-        SDL_Log("[NetAdapter] Expected remote configured (port %u)", expected_remote_port);
+        SDL_Log("[NetAdapter] Expected remote configured (ip %s, port %u)", expected_remote_ip, expected_remote_port);
     } else {
         expected_remote_addr[0] = '\0';
+        expected_remote_ip[0] = '\0';
+        expected_remote_port = 0;
+        actual_remote_port = 0;
         expected_remote_port = 0;
     }
 }
