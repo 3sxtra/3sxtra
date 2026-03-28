@@ -354,6 +354,12 @@ static void setup_vs_mode() {
     SDL_zeroa(win_type);
 
     // Player identity (set later by character select, but must start clean)
+    // Clean up stale attract/demo sequences that mutate start-of-match state
+    Combo_Demo_Flag = 0;
+    Select_Demo_Index = 0;
+    Demo_Stage_Index = 0;
+    Demo_PL_Index = 0;
+
     SDL_zeroa(My_char);
     SDL_zeroa(Super_Arts);
 
