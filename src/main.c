@@ -19,6 +19,7 @@
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 #include "port/sdl/app/sdl_app.h"
+#include "port/sdl/renderer/sdl_game_renderer.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/netstats_renderer.h"
 
@@ -451,6 +452,7 @@ static void game_step_0() {
     // Only run game loop directly if we are in IDLE or LOBBY mode.
     // In TRANSITIONING, CONNECTING, and RUNNING modes, Netplay_Run() calls step_game() automatically.
     if (current_net_state == NETPLAY_SESSION_IDLE || current_net_state == NETPLAY_SESSION_LOBBY) {
+        SDLGameRenderer_ResetBatchState();
         njUserMain();
 
         // ⚡ Bolt: Input Lag Test Detection
