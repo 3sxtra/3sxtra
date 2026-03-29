@@ -367,6 +367,19 @@ static bool cjson_get_string(const cJSON* obj, const char* key, char* out, size_
     return false;
 }
 
+/** Get a string field and force it to lowercase (e.g. for country codes). */
+static bool cjson_get_string_lower(const cJSON* obj, const char* key, char* out, size_t out_size) {
+    bool ret = cjson_get_string(obj, key, out, out_size);
+    if (ret && out) {
+        for (size_t i = 0; out[i] != '\0'; i++) {
+            if (out[i] >= 'A' && out[i] <= 'Z') {
+                out[i] += 32;
+            }
+        }
+    }
+    return ret;
+}
+
 /** Get an integer field with default. */
 static int cjson_get_int(const cJSON* obj, const char* key, int default_val) {
     const cJSON* item = cJSON_GetObjectItemCaseSensitive(obj, key);
@@ -476,7 +489,7 @@ int LobbyServer_GetSearching(LobbyPlayer* out_players, int max_players, const ch
         cjson_get_string(item, "room_code", p->room_code, sizeof(p->room_code));
         cjson_get_string(item, "connect_to", p->connect_to, sizeof(p->connect_to));
         cjson_get_string(item, "status", p->status, sizeof(p->status));
-        cjson_get_string(item, "country", p->country, sizeof(p->country));
+        cjson_get_string_lower(item, "country", p->country, sizeof(p->country));
         cjson_get_string(item, "connection_type", p->connection_type, sizeof(p->connection_type));
         p->rtt_ms = cjson_get_int(item, "rtt_ms", -1);
         p->ft = cjson_get_int(item, "ft", 2);
@@ -709,9 +722,9 @@ int LobbyServer_ListReplays(ReplayListEntry* out, int max_entries, int page, int
         cjson_get_string(item, "p1_id", e->p1_id, sizeof(e->p1_id));
         cjson_get_string(item, "p2_id", e->p2_id, sizeof(e->p2_id));
         cjson_get_string(item, "p1_name", e->p1_name, sizeof(e->p1_name));
-        cjson_get_string(item, "p1_country", e->p1_country, sizeof(e->p1_country));
+        cjson_get_string_lower(item, "p1_country", e->p1_country, sizeof(e->p1_country));
         cjson_get_string(item, "p2_name", e->p2_name, sizeof(e->p2_name));
-        cjson_get_string(item, "p2_country", e->p2_country, sizeof(e->p2_country));
+        cjson_get_string_lower(item, "p2_country", e->p2_country, sizeof(e->p2_country));
         e->p1_char = cjson_get_int(item, "p1_char", -1);
         e->p2_char = cjson_get_int(item, "p2_char", -1);
         cjson_get_string(item, "created_at", e->date, sizeof(e->date));
@@ -758,9 +771,9 @@ int LobbyServer_GetPlayerMatchHistory(const char* player_id, ReplayListEntry* ou
         cjson_get_string(item, "p1_id", e->p1_id, sizeof(e->p1_id));
         cjson_get_string(item, "p2_id", e->p2_id, sizeof(e->p2_id));
         cjson_get_string(item, "p1_name", e->p1_name, sizeof(e->p1_name));
-        cjson_get_string(item, "p1_country", e->p1_country, sizeof(e->p1_country));
+        cjson_get_string_lower(item, "p1_country", e->p1_country, sizeof(e->p1_country));
         cjson_get_string(item, "p2_name", e->p2_name, sizeof(e->p2_name));
-        cjson_get_string(item, "p2_country", e->p2_country, sizeof(e->p2_country));
+        cjson_get_string_lower(item, "p2_country", e->p2_country, sizeof(e->p2_country));
         e->p1_char = cjson_get_int(item, "p1_char", -1);
         e->p2_char = cjson_get_int(item, "p2_char", -1);
         cjson_get_string(item, "created_at", e->date, sizeof(e->date));
@@ -945,7 +958,7 @@ int LobbyServer_GetLeaderboard(LeaderboardEntry* out, int max_entries, int page,
         e->disconnects = cjson_get_int(item, "disconnects", 0);
         e->rating = (float)cjson_get_double(item, "rating", 1500.0);
         cjson_get_string(item, "tier", e->tier, sizeof(e->tier));
-        cjson_get_string(item, "country", e->country, sizeof(e->country));
+        cjson_get_string_lower(item, "country", e->country, sizeof(e->country));
         e->grade = cjson_get_int(item, "grade", -1);
         e->most_played_char = cjson_get_int(item, "most_played_char", -1);
 
@@ -985,7 +998,7 @@ static void parse_room_json(const char* json_str, RoomState* out) {
         cjson_get_string(p_item, "player_id", rp->player_id, sizeof(rp->player_id));
         cjson_get_string(p_item, "display_name", rp->display_name, sizeof(rp->display_name));
         cjson_get_string(p_item, "region", rp->region, sizeof(rp->region));
-        cjson_get_string(p_item, "country", rp->country, sizeof(rp->country));
+        cjson_get_string_lower(p_item, "country", rp->country, sizeof(rp->country));
         cjson_get_string(p_item, "room_code", rp->room_code, sizeof(rp->room_code));
     }
 
