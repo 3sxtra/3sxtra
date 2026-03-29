@@ -1230,7 +1230,7 @@ void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
     char addr_str[100];
     SDL_snprintf(addr_str, sizeof(addr_str), "%s:%hu", host_ip, host_port);
     GekkoNetAddress addr = { .data = addr_str, .size = (unsigned int)strlen(addr_str) };
-    gekko_add_actor(session, GekkoSpectator, &addr);
+    gekko_add_actor(session, GekkoRemotePlayer, &addr);
 
     setup_vs_mode();
     session_state = NETPLAY_SESSION_SPECTATING;
