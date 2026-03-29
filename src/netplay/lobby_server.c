@@ -1704,6 +1704,8 @@ static void sse_parse_event(const char* json_str, SSEEvent* out) {
         out->type = SSE_EVENT_SPECTATOR_UPDATE;
         if (data) {
             out->spectator_count = cjson_get_int(data, "count", 0);
+            cjson_get_string(data, "spectator_room_code", out->spectator_room_code, sizeof(out->spectator_room_code));
+            cjson_get_string(data, "spectator_player_id", out->spectator_player_id, sizeof(out->spectator_player_id));
         }
     }
 

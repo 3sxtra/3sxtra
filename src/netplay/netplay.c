@@ -21,6 +21,7 @@
 #include "sf33rd/Source/Game/rendering/color3rd.h"
 #include "stun.h"
 #include "net_tuning.h"
+#include "lobby_server.h"
 // dc_ghost.h does not exist in our repo; njdp2d_draw was renamed to Renderer_Flush2DPrimitives.
 #include "port/rendering/renderer.h"
 extern void njUserMain();
@@ -1006,6 +1007,27 @@ void Netplay_Run() {
     case NETPLAY_SESSION_CONNECTING:
     case NETPLAY_SESSION_RUNNING:
         run_netplay();
+
+        // Poll SSE for spectator join events so the host can register them
+        if (session_state == NETPLAY_SESSION_RUNNING && session) {
+            SSEEvent sse_evt;
+            while (LobbyServer_SSEPoll(&sse_evt) != SSE_EVENT_NONE) {
+                if (sse_evt.type == SSE_EVENT_SPECTATOR_UPDATE && sse_evt.spectator_room_code[0]) {
+                    char spec_ip[64];
+                    uint16_t spec_port = 0, spec_local_port = 0;
+                    if (Stun_DecodeEndpoint(sse_evt.spectator_room_code, spec_ip, &spec_port, &spec_local_port)) {
+                        // For LAN, use local_port; for internet, use public port
+                        uint16_t effective_port = spec_local_port ? spec_local_port : spec_port;
+                        char spec_addr[100];
+                        SDL_snprintf(spec_addr, sizeof(spec_addr), "%s:%hu", spec_ip, effective_port);
+                        GekkoNetAddress addr = { .data = spec_addr, .size = (unsigned int)strlen(spec_addr) };
+                        int handle = gekko_add_actor(session, GekkoSpectator, &addr);
+                        SDL_Log("[netplay] Registered spectator %s at %s (handle=%d)",
+                                sse_evt.spectator_player_id, spec_addr, handle);
+                    }
+                }
+            }
+        }
         break;
 
     case NETPLAY_SESSION_EXITING:
@@ -1224,7 +1246,24 @@ void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
     }
 
     gekko_start(session, &config);
-    gekko_net_adapter_set(session, gekko_default_adapter(0)); // OS-assigned port
+
+    // Use SDLNetAdapter with a real socket so the port is known and
+    // consistent with the address format the host's adapter expects.
+    if (stun_socket != NULL) {
+        // Internet play: reuse the STUN socket (port matches our room_code)
+        gekko_net_adapter_set(session, SDLNetAdapter_Create(stun_socket));
+        SDL_Log("[spectate] Using STUN socket for adapter");
+    } else {
+        // LAN play: create a fresh socket on port 0 (OS-assigned)
+        fallback_socket = NET_CreateDatagramSocket(NULL, 0);
+        if (fallback_socket) {
+            gekko_net_adapter_set(session, SDLNetAdapter_Create(fallback_socket));
+            SDL_Log("[spectate] Using fallback socket for adapter");
+        } else {
+            gekko_net_adapter_set(session, gekko_default_adapter(0));
+            SDL_Log("[spectate] Fallback to default adapter (port 0)");
+        }
+    }
 
     // Connect to the match host as a spectator
     char addr_str[100];
@@ -1243,6 +1282,15 @@ void Netplay_StopSpectate(void) {
 
     if (session) {
         gekko_destroy(&session);
+        SDLNetAdapter_Destroy();
+        if (stun_socket != NULL) {
+            NET_DestroyDatagramSocket(stun_socket);
+            stun_socket = NULL;
+        }
+        if (fallback_socket != NULL) {
+            NET_DestroyDatagramSocket(fallback_socket);
+            fallback_socket = NULL;
+        }
         gekko_default_adapter_destroy();
     }
 

@@ -352,6 +352,8 @@ typedef struct {
     char remote_join_password[64];
     // Spectator update
     int spectator_count;          // Populated on SPECTATOR_UPDATE
+    char spectator_room_code[64]; // Spectator's STUN endpoint (for host registration)
+    char spectator_player_id[64]; // Spectator's player ID
 } SSEEvent;
 
 /// Start SSE connection to a room (spawns background thread).
