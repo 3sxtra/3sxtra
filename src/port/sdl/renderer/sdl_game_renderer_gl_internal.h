@@ -81,6 +81,7 @@ typedef struct {
     // Batching & Tasks
     RenderTask render_tasks[RENDER_TASK_MAX];
     int render_task_count;
+    int saved_render_task_count;
     RenderTask merge_temp[RENDER_TASK_MAX]; // For sorting
 
     SDL_Vertex batch_vertices[RENDER_TASK_MAX * 4];

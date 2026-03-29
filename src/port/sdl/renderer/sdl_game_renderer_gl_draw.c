@@ -49,6 +49,14 @@ static void clear_render_tasks(void) {
     gl_state.render_task_count = 0;
 }
 
+void SDLGameRendererGL_SaveBatchState(void) {
+    gl_state.saved_render_task_count = gl_state.render_task_count;
+}
+
+void SDLGameRendererGL_RestoreBatchState(void) {
+    gl_state.render_task_count = gl_state.saved_render_task_count;
+}
+
 /**
  * ⚡ Bolt: Ping-pong merge sort — eliminates per-pass memcpy.
  *
@@ -375,7 +383,7 @@ void SDLGameRendererGL_EndFrame(void) {
         gl_state.textures_to_destroy_count = 0;
     }
 
-    clear_render_tasks();
+    SDLGameRendererGL_RestoreBatchState();
 }
 
 /// Lightweight reset for netplay sub-frames: clears the texture stack and
@@ -384,6 +392,7 @@ void SDLGameRendererGL_ResetBatchState(void) {
     gl_state.texture_count = 0;
     gl_state.last_set_texture_th = 0;
     clear_render_tasks();
+    gl_state.saved_render_task_count = 0;
 }
 
 // --- Draw Quad Helpers ---

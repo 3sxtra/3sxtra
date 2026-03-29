@@ -56,12 +56,11 @@ body {
     text-align: left;
 }
 .banner-name {
-    display: inline-block;
+    display: inline;
     font-size: 12dp;
     color: #ffffff;
     font-effect: shadow(1dp 1dp #000000);
-    vertical-align: middle;
-    margin-top: -1dp;
+    vertical-align: 1dp;
 }
 .banner-flag {
     display: inline;
@@ -76,14 +75,13 @@ body {
     font-size: 13dp;
     color: #ffd700;
     font-effect: shadow(1dp 1dp #000000);
-    vertical-align: middle;
+    vertical-align: 1dp;
     width: 14dp;
     height: 12dp;
     line-height: 12dp;
     text-align: center;
     background-color: rgba(255, 255, 255, 30);
     border-radius: 2dp;
-    margin-top: -1dp;
 }
 .p1-banner-wins { margin-left: 6dp; }
 .p2-banner-wins { margin-right: 6dp; }
@@ -96,8 +94,7 @@ body {
     background-color: rgba(0, 255, 0, 30);
     padding: 1dp 3dp;
     border-radius: 2dp;
-    vertical-align: middle;
-    margin-top: -2dp;
+    vertical-align: 2dp;
 }
 
 /* ── Spectator badge (Fightcade-style) ─────────────────────── */
@@ -105,25 +102,27 @@ body {
     display: block;
     position: absolute;
     top: 34dp;
-    left: 179dp;
-    width: 26dp;
+    left: 42dp;
+    width: 300dp;
     text-align: center;
-    background-color: rgba(0, 0, 0, 140);
-    border-radius: 3dp;
-    padding: 1dp 2dp;
 }
 .spec-eye {
-    display: inline;
+    display: inline-block;
     font-size: 10dp;
     color: #e0e0e0;
     vertical-align: middle;
+    background-color: rgba(0, 0, 0, 140);
+    border-top-left-radius: 3dp;
+    border-bottom-left-radius: 3dp;
+    padding: 1dp 0dp 1dp 4dp;
 }
 .spec-count {
-    display: inline;
+    display: inline-block;
     font-size: 11dp;
     color: #e0e0e0;
-    margin-left: 2dp;
     font-effect: shadow(1dp 1dp #000000);
+    background-color: rgba(0, 0, 0, 140);
+    border-top-right-radius: 3dp;
+    border-bottom-right-radius: 3dp;
+    padding: 1dp 4dp 1dp 2dp;
 }
-
-

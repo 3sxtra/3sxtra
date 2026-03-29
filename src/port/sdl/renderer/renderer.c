@@ -40,15 +40,7 @@ typedef struct {
 } Render2DQueue;
 
 static Render2DQueue s_Render2DQueue;
-static Render2DQueue s_Render2DQueue_Backup;
 
-void Renderer_Backup2DQueue(void) {
-    s_Render2DQueue_Backup = s_Render2DQueue;
-}
-
-void Renderer_RestoreBackup2DQueue(void) {
-    s_Render2DQueue = s_Render2DQueue_Backup;
-}
 
 static void Renderer_2DQueueInit(void) {
     s_Render2DQueue.ix1st = -1;

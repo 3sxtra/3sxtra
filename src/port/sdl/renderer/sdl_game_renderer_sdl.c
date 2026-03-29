@@ -561,10 +561,23 @@ static const uint32_t* sw_ensure_nonidx_pixels(int ti, int* out_w, int* out_h) {
 
 // --- Render Task Management ---
 
+static int sdl_saved_render_task_count = 0;
+
 static void clear_render_tasks(void) {
     // ⚡ Only reset count — no need to zero ~800KB of static data every frame
     render_task_count = 0;
     // ⚡ Reset sortedness tracking for next frame
+    sort_inversions = 0;
+    last_submitted_z = -1e30f;
+}
+
+void SDLGameRendererSDL_SaveBatchState(void) {
+    sdl_saved_render_task_count = render_task_count;
+}
+
+void SDLGameRendererSDL_ResetBatchState(void) {
+    render_task_count = 0;
+    sdl_saved_render_task_count = 0;
     sort_inversions = 0;
     last_submitted_z = -1e30f;
 }
@@ -1039,7 +1052,11 @@ void SDLGameRendererSDL_RenderFrame(void) {
 void SDLGameRendererSDL_EndFrame(void) {
     TRACE_SUB_BEGIN("SDL2D:EndFrame");
     destroy_textures();
-    clear_render_tasks();
+    // Restore to saved count instead of zeroing — preserves last valid frame
+    // for re-render during netplay starvation (spectator buffering / lag spikes)
+    render_task_count = sdl_saved_render_task_count;
+    sort_inversions = 0;
+    last_submitted_z = -1e30f;
     TRACE_SUB_END();
 }
 

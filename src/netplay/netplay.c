@@ -566,7 +566,7 @@ static void step_game(bool render) {
 
     njUserMain();
     seqsBeforeProcess();
-    Renderer_Backup2DQueue();
+    SDLGameRenderer_SaveBatchState();
     Renderer_Flush2DPrimitives();
     seqsAfterProcess();
 }

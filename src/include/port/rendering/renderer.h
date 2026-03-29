@@ -21,8 +21,6 @@ void Renderer_EndFrame(void);
 
 // State Management
 void Renderer_SetBlendMode(RendererBlendMode mode);
-void Renderer_Backup2DQueue(void);
-void Renderer_RestoreBackup2DQueue(void);
 void Renderer_SetTexture(int textureId);
 void Renderer_SetCurrentTexture(Texture* tex);
 int Renderer_GetCurrentPPGPageIndex(void);

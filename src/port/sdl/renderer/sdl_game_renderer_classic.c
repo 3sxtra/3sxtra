@@ -62,6 +62,7 @@ static RendererBlendMode cl_current_blend_mode = RENDERER_BLEND_NORMAL;
 
 static RenderTask cl_render_tasks[RENDER_TASK_MAX];
 static int cl_render_task_count = 0;
+static int cl_saved_render_task_count = 0;
 
 // Batch buffers for SDL_RenderGeometry
 static SDL_Vertex cl_batch_vertices[RENDER_TASK_MAX * 4];
@@ -309,8 +310,19 @@ void SDLGameRendererClassic_EndFrame(void) {
         cl_textures_to_destroy[i] = NULL;
     }
     cl_textures_to_destroy_count = 0;
-    cl_render_task_count = 0;
+    // Restore to saved count instead of zeroing — preserves last valid frame
+    // for re-render during netplay starvation (spectator buffering / lag spikes)
+    cl_render_task_count = cl_saved_render_task_count;
     TRACE_ZONE_END();
+}
+
+void SDLGameRendererClassic_SaveBatchState(void) {
+    cl_saved_render_task_count = cl_render_task_count;
+}
+
+void SDLGameRendererClassic_ResetBatchState(void) {
+    cl_render_task_count = 0;
+    cl_saved_render_task_count = 0;
 }
 
 SDL_Texture* SDLGameRendererClassic_GetCanvas(void) {

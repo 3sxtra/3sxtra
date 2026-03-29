@@ -475,7 +475,7 @@ static void game_step_0() {
 
         seqsBeforeProcess();
 
-        Renderer_Backup2DQueue();
+        SDLGameRenderer_SaveBatchState();
         Renderer_Flush2DPrimitives();
         seqsAfterProcess();
     }

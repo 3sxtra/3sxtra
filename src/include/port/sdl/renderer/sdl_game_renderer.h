@@ -67,6 +67,7 @@ unsigned int SDLGameRenderer_GetCachedGLTexture(unsigned int texture_handle, uns
 
 // Reset texture batch state between sub-frames (used by netplay rollback).
 void SDLGameRenderer_ResetBatchState(void);
+void SDLGameRenderer_SaveBatchState(void);
 
 // Dumps all currently loaded textures to textures/*.tga
 void SDLGameRenderer_DumpTextures(void);
