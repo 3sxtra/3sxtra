@@ -278,7 +278,7 @@ function getRoomState(room) {
         password_set: room.password ? 1 : 0,
         players: room.players.map(id => {
             const p = players.get(id);
-            return { player_id: id, display_name: p ? p.display_name : id, region: p ? p.region : '', country: p ? p.country : '' };
+            return { player_id: id, display_name: p ? p.display_name : id, region: p ? p.region : '', country: p ? p.country : '', room_code: p ? p.room_code : '' };
         }),
         queue: room.queue,
         match: room.match,
