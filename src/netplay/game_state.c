@@ -1653,6 +1653,13 @@ void save_state(const GekkoGameEvent* event) {
         h = djb2_update_mem(h, (const uint8_t*)&gs->PL_Wins, sizeof(gs->PL_Wins));
         h = djb2_update_mem(h, (const uint8_t*)&gs->Conclusion_Type, sizeof(gs->Conclusion_Type));
         h = djb2_update_mem(h, (const uint8_t*)&gs->win_type, sizeof(gs->win_type));
+        
+        // Match Resolution (Judgement Gals & Winner State)
+        h = djb2_update_mem(h, (const uint8_t*)&gs->Champion, sizeof(gs->Champion));
+        h = djb2_update_mem(h, (const uint8_t*)&gs->Winner_id, sizeof(gs->Winner_id));
+        h = djb2_update_mem(h, (const uint8_t*)&gs->Loser_id, sizeof(gs->Loser_id));
+        h = djb2_update_mem(h, (const uint8_t*)&gs->judge_gals, sizeof(gs->judge_gals));
+        h = djb2_update_mem(h, (const uint8_t*)&gs->EJG_index, sizeof(gs->EJG_index));
 
         // Player identity
         h = djb2_update_mem(h, (const uint8_t*)&gs->My_char, sizeof(gs->My_char));
