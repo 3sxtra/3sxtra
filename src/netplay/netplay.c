@@ -1015,7 +1015,7 @@ void Netplay_Run() {
                 if (sse_evt.type == SSE_EVENT_SPECTATOR_UPDATE && sse_evt.spectator_room_code[0]) {
                     char spec_ip[64];
                     uint16_t spec_port = 0, spec_local_port = 0;
-                    if (Stun_DecodeEndpoint(sse_evt.spectator_room_code, spec_ip, &spec_port, &spec_local_port)) {
+                    if (Stun_DecodeEndpoint(sse_evt.spectator_room_code, spec_ip, &spec_port, &spec_local_port, NULL)) {
                         // For LAN, use local_port; for internet, use public port
                         uint16_t effective_port = spec_local_port ? spec_local_port : spec_port;
                         char spec_addr[100];

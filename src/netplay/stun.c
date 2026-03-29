@@ -36,13 +36,17 @@
 #define STUN_ATTR_MAPPED_ADDRESS 0x0001
 #define STUN_ATTR_XOR_MAPPED_ADDRESS 0x0020
 
-void Stun_EncodeEndpoint(const char* ip, uint16_t port, uint16_t local_port, char* out_code) {
+void Stun_EncodeEndpoint(const char* ip, uint16_t port, uint16_t local_port, const char* local_ip, char* out_code) {
     if (!ip || !out_code)
         return;
-    snprintf(out_code, 64, "%s|%u|%u", ip, port, local_port);
+    if (local_ip && local_ip[0]) {
+        snprintf(out_code, 64, "%s|%u|%u|%s", ip, port, local_port, local_ip);
+    } else {
+        snprintf(out_code, 64, "%s|%u|%u", ip, port, local_port);
+    }
 }
 
-bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port, uint16_t* out_local_port) {
+bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port, uint16_t* out_local_port, char* out_local_ip) {
     if (!code || !out_ip || !out_port)
         return false;
 
@@ -61,9 +65,22 @@ bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port, uin
         char* sep2 = strchr(sep + 1, '|');
         if (sep2) {
             *out_local_port = (uint16_t)atoi(sep2 + 1);
+            if (out_local_ip) {
+                char* sep3 = strchr(sep2 + 1, '|');
+                if (sep3) {
+                    SDL_strlcpy(out_local_ip, sep3 + 1, 64);
+                } else {
+                    out_local_ip[0] = '\0';
+                }
+            }
         } else {
             *out_local_port = *out_port; // default to public port if not present
+            if (out_local_ip) {
+                out_local_ip[0] = '\0';
+            }
         }
+    } else if (out_local_ip) {
+        out_local_ip[0] = '\0';
     }
 
     return true;
@@ -322,9 +339,11 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
                 if (getsockname((int)m->handles[h].handle, (struct sockaddr*)&sa, &sa_len) == 0) {
                     if (sa.ss_family == AF_INET) {
                         result->local_port = ntohs(((struct sockaddr_in*)&sa)->sin_port);
+                        inet_ntop(AF_INET, &((struct sockaddr_in*)&sa)->sin_addr, result->local_ip, sizeof(result->local_ip));
                         break;
                     } else if (sa.ss_family == AF_INET6) {
                         result->local_port = ntohs(((struct sockaddr_in6*)&sa)->sin6_port);
+                        inet_ntop(AF_INET6, &((struct sockaddr_in6*)&sa)->sin6_addr, result->local_ip, sizeof(result->local_ip));
                         // Keep looking for IPv4; prefer it since STUN used IPv4
                     }
                 }
