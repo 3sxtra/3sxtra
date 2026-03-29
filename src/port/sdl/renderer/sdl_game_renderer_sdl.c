@@ -829,7 +829,7 @@ void SDLGameRendererSDL_RenderFrame(void) {
     // ⚡ Pre-baked RGBA textures via lookup_idx_tex — pure pointer lookup, no blit.
     int batch_start = 0;
     unsigned int current_th = task_th[render_task_order[0]];
-    RendererBlendMode current_applied_blend = (RendererBlendMode)-1;
+    RendererBlendMode current_applied_blend = task_blend[render_task_order[0]];
     bool current_is_rect = task_is_rect[render_task_order[0]];
     int rect_fast_path_count = 0;
 
@@ -847,14 +847,12 @@ void SDLGameRendererSDL_RenderFrame(void) {
                 SDL_Texture* draw_texture = task_texture[render_task_order[batch_start]];
                 const int batch_palette = HI_16_BITS(current_th);
 
-                if (current_applied_blend != (RendererBlendMode)-1) {
-                    SDL_BlendMode sdl_blend;
-                    if (current_applied_blend == RENDERER_BLEND_ADD) sdl_blend = SDL_BLENDMODE_ADD;
-                    else if (current_applied_blend == RENDERER_BLEND_MULTIPLY) sdl_blend = SDL_BLENDMODE_MUL;
-                    else sdl_blend = SDL_BLENDMODE_BLEND;
-                    if (draw_texture) SDL_SetTextureBlendMode(draw_texture, sdl_blend);
-                    else SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
-                }
+                SDL_BlendMode sdl_blend;
+                if (current_applied_blend == RENDERER_BLEND_ADD) sdl_blend = SDL_BLENDMODE_ADD;
+                else if (current_applied_blend == RENDERER_BLEND_MULTIPLY) sdl_blend = SDL_BLENDMODE_MUL;
+                else sdl_blend = SDL_BLENDMODE_BLEND;
+                if (draw_texture) SDL_SetTextureBlendMode(draw_texture, sdl_blend);
+                else SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
                 const int batch_tex_handle = LO_16_BITS(current_th);
 
                 // ⚡ For indexed textures: swap draw_texture for the pre-baked slot.

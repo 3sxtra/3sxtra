@@ -12,6 +12,7 @@
 #define SDL_GAME_RENDERER_GPU_INTERNAL_H
 
 #include "common.h"
+#include "port/rendering/renderer.h"
 #include "port/sdl/renderer/sdl_game_renderer_gpu_lz77.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include <SDL3/SDL.h>

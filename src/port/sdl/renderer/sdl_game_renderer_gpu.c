@@ -217,17 +217,10 @@ static void stable_sort_quads(void) {
             unsigned int l = left, r = mid, k = left;
 
             while (l < mid && r < right) {
-                if (src[l].z < src[r].z)
+                if (src[l].z <= src[r].z)
                     tmp[k++] = src[l++];
-                else if (src[l].z > src[r].z)
+                else
                     tmp[k++] = src[r++];
-                else {
-                    // Tie-break by blend mode to maximize pipeline batching
-                    if (src[l].blend_mode <= src[r].blend_mode)
-                        tmp[k++] = src[l++];
-                    else
-                        tmp[k++] = src[r++];
-                }
             }
             while (l < mid)
                 tmp[k++] = src[l++];
