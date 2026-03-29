@@ -24,11 +24,6 @@ void effect_37_move(WORK_Other* ewk) {
     WORK* mwk = (WORK*)ewk->my_master;
     s16 ix;
 
-    // Preventive check for ARM64 alignment/truncation issues crashing on Pi4
-    if (!mwk) {
-        push_effect_work(&ewk->wu);
-        return;
-    }
 
     switch (ewk->wu.routine_no[0]) {
     case 0:
