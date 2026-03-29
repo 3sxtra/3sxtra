@@ -566,6 +566,7 @@ static void step_game(bool render) {
 
     njUserMain();
     seqsBeforeProcess();
+    Renderer_Backup2DQueue();
     Renderer_Flush2DPrimitives();
     seqsAfterProcess();
 }
@@ -670,10 +671,11 @@ static void process_session() {
     }
 }
 
-static void process_events(bool drawing_allowed) {
+static bool process_events(bool drawing_allowed) {
     int game_event_count = 0;
     GekkoGameEvent** game_events = gekko_update_session(session, &game_event_count);
     int frames_rolled_back = 0;
+    bool advanced = false;
 
     for (int i = 0; i < game_event_count; i++) {
         const GekkoGameEvent* event = game_events[i];
@@ -687,6 +689,7 @@ static void process_events(bool drawing_allowed) {
             const bool rolling_back = event->data.adv.rolling_back;
             advance_game(event, drawing_allowed && !rolling_back);
             frames_rolled_back += rolling_back ? 1 : 0;
+            advanced = true;
             break;
         }
 
@@ -701,11 +704,12 @@ static void process_events(bool drawing_allowed) {
     }
 
     frame_max_rollback = SDL_max(frame_max_rollback, frames_rolled_back);
+    return advanced;
 }
 
-static void step_logic(bool drawing_allowed) {
+static bool step_logic(bool drawing_allowed) {
     process_session();
-    process_events(drawing_allowed);
+    return process_events(drawing_allowed);
 }
 
 static void update_network_stats() {

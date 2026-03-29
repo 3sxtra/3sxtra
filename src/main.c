@@ -475,6 +475,7 @@ static void game_step_0() {
 
         seqsBeforeProcess();
 
+        Renderer_Backup2DQueue();
         Renderer_Flush2DPrimitives();
         seqsAfterProcess();
     }

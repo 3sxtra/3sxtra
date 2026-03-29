@@ -56,11 +56,12 @@ body {
     text-align: left;
 }
 .banner-name {
-    display: inline;
+    display: inline-block;
     font-size: 12dp;
     color: #ffffff;
     font-effect: shadow(1dp 1dp #000000);
     vertical-align: middle;
+    margin-top: -1dp;
 }
 .banner-flag {
     display: inline;
@@ -82,7 +83,7 @@ body {
     text-align: center;
     background-color: rgba(255, 255, 255, 30);
     border-radius: 2dp;
-    margin-top: 1dp;
+    margin-top: -1dp;
 }
 .p1-banner-wins { margin-left: 6dp; }
 .p2-banner-wins { margin-right: 6dp; }
@@ -96,6 +97,7 @@ body {
     padding: 1dp 3dp;
     border-radius: 2dp;
     vertical-align: middle;
+    margin-top: -2dp;
 }
 
 /* ── Spectator badge (Fightcade-style) ─────────────────────── */
@@ -103,8 +105,8 @@ body {
     display: block;
     position: absolute;
     top: 34dp;
-    left: 168dp;
-    width: 48dp;
+    left: 179dp;
+    width: 26dp;
     text-align: center;
     background-color: rgba(0, 0, 0, 140);
     border-radius: 3dp;
