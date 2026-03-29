@@ -1749,7 +1749,6 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
         lobby_status_msg, sizeof(lobby_status_msg), "Connecting to %s...", opponent_name ? opponent_name : "opponent");
 
     lobby_start_punch(peer_ip, peer_port, peer_local_port);
-}
 
 void SDLNetplayUI_StartSpectatePunch(const char* host_room_code, const char* host_name, const char* host_player_id) {
     char peer_ip[64] = { 0 };
@@ -1770,6 +1769,7 @@ void SDLNetplayUI_StartSpectatePunch(const char* host_room_code, const char* hos
 
             if ((id_match || ip_match) && lan_peers[i].ip[0]) {
                 uint16_t remote_port = lan_peers[i].port;
+                uint16_t local_port = Discovery_GetLocalPort();
                 SDL_Log("[casual] LAN peer detected: %s — spectating via direct connection",
                         host_name ? host_name : lan_peers[i].display_name);
                 Netplay_BeginSpectate(lan_peers[i].ip, remote_port);
@@ -1790,6 +1790,7 @@ void SDLNetplayUI_StartSpectatePunch(const char* host_room_code, const char* hos
     // For spectating over internet, we don't hole punch (we just send packets directly to their public IP/port).
     // GekkoSpectator will open its own socket.
     Netplay_BeginSpectate(peer_ip, peer_port);
+}
 }
 
 void SDLNetplayUI_ReportNaturalMatchEnd(void) {

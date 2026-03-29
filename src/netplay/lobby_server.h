@@ -220,6 +220,7 @@ typedef struct {
     char display_name[32];
     char region[16];
     char country[4]; // ISO 3166-1 alpha-2 (e.g. "US", "JP"), server-derived
+    char room_code[64];
 } RoomPlayer;
 
 /// Individual match slot (for parallel bracket matches in tournaments)

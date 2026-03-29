@@ -986,6 +986,7 @@ static void parse_room_json(const char* json_str, RoomState* out) {
         cjson_get_string(p_item, "display_name", rp->display_name, sizeof(rp->display_name));
         cjson_get_string(p_item, "region", rp->region, sizeof(rp->region));
         cjson_get_string(p_item, "country", rp->country, sizeof(rp->country));
+        cjson_get_string(p_item, "room_code", rp->room_code, sizeof(rp->room_code));
     }
 
     /* Parse queue array: ["player_id_1", "player_id_2", ...] */

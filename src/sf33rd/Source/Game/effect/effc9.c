@@ -121,7 +121,7 @@ void effect_C9_move(WORK_Other* ewk) {
                     }
                 }
 
-                if (Event_Judge_Gals) {
+                if (Event_Judge_Gals > 0) {
                     ewk->wu.routine_no[1] += 1;
                     set_char_move_init(&ewk->wu, 0, 1);
                 }
@@ -209,7 +209,7 @@ void setup_EJG_index() {
         }
     } else {
         for (i = 0; i < 4; i++) {
-            EJG_index[i] = sel_ejg_ix_table[Winner_id][Game_timer & 1][i];
+            EJG_index[i] = sel_ejg_ix_table[Winner_id & 1][Random_ix16 & 1][i];
         }
     }
 }
