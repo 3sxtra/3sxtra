@@ -1907,12 +1907,6 @@ static void Judge_Winner() {
             return;
         }
 
-        if (Mode_Type == MODE_NETWORK) {
-            Winner_id = 0;
-            Loser_id = 1;
-            return;
-        }
-
         Winner_id = Champion;
         Loser_id = Champion ^ 1;
         return;
