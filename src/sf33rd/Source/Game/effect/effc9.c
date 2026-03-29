@@ -21,8 +21,8 @@
 
 // forward declarations
 
-u32* ag_char_table[] = { _ag_00_char_table, _ag_01_char_table, _ag_02_char_table, _ag_03_char_table,
-                         _ag_04_char_table, _ag_05_char_table, _ag_06_char_table, _ag_07_char_table };
+u32* ag_char_table[] = { &_ag_rom_block[0],  &_ag_rom_block[4],  &_ag_rom_block[8],  &_ag_rom_block[12],
+                         &_ag_rom_block[16], &_ag_rom_block[20], &_ag_rom_block[24], &_ag_rom_block[28] };
 
 const s32 efy_data[6] = { 40, -368, -851968, 32768, 229376, -24576 };
 
