@@ -420,6 +420,7 @@ static void compute_tuning_from_ping(float avg_ping, float jitter, int* out_dela
 
 static void configure_gekko() {
     GekkoConfig config;
+    Discovery_Shutdown();
     SDL_zero(config);
 
     config.num_players = PLAYER_COUNT;
@@ -1196,12 +1197,13 @@ void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
     s_netplay_origin_native_lan = SDLNetplayUI_IsNativeLobbyActive();
     SDLNetplayUI_SetNativeLobbyActive(false);
 
-    if (session_state != NETPLAY_SESSION_IDLE) {
+    if (session_state != NETPLAY_SESSION_IDLE && session_state != NETPLAY_SESSION_LOBBY) {
         SDL_Log("[spectate] cannot start: session state is %d", session_state);
         return;
     }
 
     GekkoConfig config;
+    Discovery_Shutdown();
     rmlui_wrapper_hide_all_game_documents();
     SDL_zero(config);
     config.num_players = PLAYER_COUNT;
