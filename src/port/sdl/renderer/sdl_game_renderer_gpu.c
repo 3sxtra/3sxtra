@@ -24,7 +24,8 @@ SDL_GPUDevice* device = NULL;
 LZ77Context* s_lz77_ctx = NULL;
 SDL_Window* gpu_window = NULL;
 SDL_GPUCommandBuffer* current_cmd_buf = NULL;
-SDL_GPUGraphicsPipeline* pipeline = NULL;
+SDL_GPUGraphicsPipeline* pipelines[3] = { NULL };
+RendererBlendMode s_current_blend_mode = RENDERER_BLEND_NORMAL;
 SDL_GPUTexture* s_palette_texture = NULL;
 SDL_GPUTransferBuffer* s_palette_transfer = NULL;
 SDL_GPUSampler* palette_sampler = NULL;
@@ -95,6 +96,10 @@ static SDL_GPUTexture* quad_overlay_tex[MAX_QUADS];
 SDL_GPUTexture* s_1x1_white_texture = NULL; /* fallback for overlay sampler */
 
 /** @brief Begin a new frame: acquire command buffer and swapchain texture. */
+void SDLGameRendererGPU_SetBlendMode(RendererBlendMode mode) {
+    s_current_blend_mode = mode;
+}
+
 void SDLGameRendererGPU_BeginFrame(void) {
     TRACE_ZONE_N("GPU:BeginFrame");
     if (!device) {
@@ -212,10 +217,17 @@ static void stable_sort_quads(void) {
             unsigned int l = left, r = mid, k = left;
 
             while (l < mid && r < right) {
-                if (src[l].z <= src[r].z)
+                if (src[l].z < src[r].z)
                     tmp[k++] = src[l++];
-                else
+                else if (src[l].z > src[r].z)
                     tmp[k++] = src[r++];
+                else {
+                    // Tie-break by blend mode to maximize pipeline batching
+                    if (src[l].blend_mode <= src[r].blend_mode)
+                        tmp[k++] = src[l++];
+                    else
+                        tmp[k++] = src[r++];
+                }
             }
             while (l < mid)
                 tmp[k++] = src[l++];
@@ -410,7 +422,7 @@ void SDLGameRendererGPU_RenderFrame(void) {
 
         SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(current_cmd_buf, &color_target, 1, NULL);
         if (pass) {
-            if (pipeline && vertex_count > 0) {
+            if (vertex_count > 0) {
                 // Fixed viewport for Canvas (scaled)
                 const int sw = 384 * g_resolution_scale;
                 const int sh = 224 * g_resolution_scale;
@@ -431,7 +443,6 @@ void SDLGameRendererGPU_RenderFrame(void) {
                                        { 0.0f, -2.0f / (float)sh, 0.0f, 0.0f },
                                        { 0.0f, 0.0f, -1.0f, 0.0f },
                                        { -1.0f, 1.0f, 0.0f, 1.0f } };
-                SDL_BindGPUGraphicsPipeline(pass, pipeline);
 
                 SDL_PushGPUVertexUniformData(current_cmd_buf, 0, matrix, sizeof(matrix));
 
@@ -455,30 +466,46 @@ void SDLGameRendererGPU_RenderFrame(void) {
                 tex_bindings[2].sampler = sampler;
                 SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 3);
 
-                // Split-draw: batch consecutive quads with the same overlay texture.
-                // Most quads have NULL overlay (use array), so they batch efficiently.
+                // Split-draw: batch consecutive quads with the same overlay texture AND blend mode.
                 unsigned int draw_start = 0;
-                SDL_GPUTexture* current_overlay = NULL; // NULL = default (1x1 white)
+                SDL_GPUTexture* current_overlay = (SDL_GPUTexture*)-1;
+                RendererBlendMode current_applied_blend = (RendererBlendMode)-1;
+
                 for (unsigned int qi = 0; qi <= quad_count; qi++) {
                     SDL_GPUTexture* this_overlay = NULL;
+                    RendererBlendMode this_blend = RENDERER_BLEND_NORMAL;
+
                     if (qi < quad_count) {
                         int orig_idx = quad_sort_keys[qi].original_index;
                         this_overlay = quad_overlay_tex[orig_idx];
+                        this_blend = quad_sort_keys[qi].blend_mode;
                     }
-                    if (qi == quad_count || this_overlay != current_overlay) {
+
+                    bool blend_changed = (this_blend != current_applied_blend);
+                    bool overlay_changed = (this_overlay != current_overlay);
+
+                    if (qi == quad_count || blend_changed || overlay_changed) {
                         // Flush previous segment
                         unsigned int segment_quads = qi - draw_start;
                         if (segment_quads > 0) {
                             SDL_DrawGPUIndexedPrimitives(pass, segment_quads * 6, 1, draw_start * 6, 0, 0);
                         }
-                        if (qi < quad_count && this_overlay != current_overlay) {
-                            // Rebind overlay sampler
-                            current_overlay = this_overlay;
-                            tex_bindings[2].texture = current_overlay
-                                                          ? current_overlay
-                                                          : (s_1x1_white_texture ? s_1x1_white_texture : texture_array);
-                            tex_bindings[2].sampler = sampler;
-                            SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 3);
+
+                        if (qi < quad_count) {
+                            if (blend_changed) {
+                                current_applied_blend = this_blend;
+                                SDL_BindGPUGraphicsPipeline(pass, pipelines[current_applied_blend]);
+                            }
+
+                            if (overlay_changed) {
+                                current_overlay = this_overlay;
+                                tex_bindings[2].texture = current_overlay
+                                                              ? current_overlay
+                                                              : (s_1x1_white_texture ? s_1x1_white_texture
+                                                                                     : texture_array);
+                                tex_bindings[2].sampler = sampler;
+                                SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 3);
+                            }
                         }
                         draw_start = qi;
                     }
@@ -554,6 +581,7 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     if (quad_count < MAX_QUADS) {
         quad_sort_keys[quad_count].z = flPS2ConvScreenFZ(vertices[0].coord.z);
         quad_sort_keys[quad_count].original_index = quad_count;
+        quad_sort_keys[quad_count].blend_mode = s_current_blend_mode;
         quad_overlay_tex[quad_count] = NULL;
         quad_count++;
     }
@@ -752,6 +780,7 @@ void SDLGameRendererGPU_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         if (quad_count < MAX_QUADS) {
             quad_sort_keys[quad_count].z = flPS2ConvScreenFZ(spr->v[0].z);
             quad_sort_keys[quad_count].original_index = quad_count;
+            quad_sort_keys[quad_count].blend_mode = s_current_blend_mode;
             quad_overlay_tex[quad_count] = NULL;
             quad_count++;
         }
@@ -921,6 +950,7 @@ static void push_overlay_quad(int layer, float x, float y, float w, float h, flo
 
     quad_sort_keys[quad_count].z = z;
     quad_sort_keys[quad_count].original_index = quad_count;
+    quad_sort_keys[quad_count].blend_mode = s_current_blend_mode;
     quad_overlay_tex[quad_count] = standalone_tex;
     quad_count++;
     vertex_count += 4;

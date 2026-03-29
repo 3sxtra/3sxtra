@@ -2,6 +2,7 @@
 #define SDL_GAME_RENDERER_H
 
 #include "structs.h"
+#include "port/rendering/renderer.h"
 #include <SDL3/SDL.h>
 
 typedef struct SDLGameRenderer_Vertex {
@@ -50,6 +51,7 @@ void SDLGameRenderer_CreatePalette(unsigned int ph);
 void SDLGameRenderer_DestroyPalette(unsigned int palette_handle);
 void SDLGameRenderer_UnlockPalette(unsigned int ph);
 void SDLGameRenderer_SetTexture(unsigned int th);
+void SDLGameRenderer_SetBlendMode(RendererBlendMode mode);
 void SDLGameRenderer_DrawTexturedQuad(const Sprite* sprite, unsigned int color);
 void SDLGameRenderer_DrawSolidQuad(const Quad* vertices, unsigned int color);
 void SDLGameRenderer_DrawSprite(const Sprite* sprite, unsigned int color);

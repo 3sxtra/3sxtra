@@ -10,7 +10,8 @@
 typedef enum {
     RENDERER_BLEND_NORMAL,
     RENDERER_BLEND_ADD,
-    // Add others as discovered (e.g., subtract, multiply)
+    RENDERER_BLEND_MULTIPLY,
+    // Add others as discovered (e.g., subtract)
 } RendererBlendMode;
 
 // Initialization and Lifecycle

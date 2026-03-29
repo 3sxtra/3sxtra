@@ -57,6 +57,7 @@ typedef struct {
 typedef struct {
     float z;
     int original_index; /* quad index in submission order */
+    RendererBlendMode blend_mode;
 } QuadSortKey;
 
 /** @brief Per-vertex data layout for the GPU pipeline. */
@@ -75,7 +76,8 @@ extern SDL_GPUDevice* device;
 extern LZ77Context* s_lz77_ctx;
 extern SDL_Window* gpu_window;
 extern SDL_GPUCommandBuffer* current_cmd_buf;
-extern SDL_GPUGraphicsPipeline* pipeline;
+extern SDL_GPUGraphicsPipeline* pipelines[3];
+extern RendererBlendMode s_current_blend_mode;
 extern SDL_GPUTexture* s_palette_texture;
 extern SDL_GPUTransferBuffer* s_palette_transfer;
 extern SDL_GPUSampler* palette_sampler;

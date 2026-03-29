@@ -59,7 +59,7 @@ void Renderer_EndFrame(void) {
 }
 
 void Renderer_SetBlendMode(RendererBlendMode mode) {
-    // TODO: Expose blend mode control in SDLGameRenderer
+    SDLGameRenderer_SetBlendMode(mode);
 }
 
 // Track current texture table for PPG texture index resolution

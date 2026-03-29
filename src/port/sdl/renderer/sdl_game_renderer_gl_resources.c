@@ -610,6 +610,10 @@ void SDLGameRendererGL_FlushPendingUnlocks(void) {
     gl_state.pending_unlock_count = 0;
 }
 
+void SDLGameRendererGL_SetBlendMode(RendererBlendMode mode) {
+    gl_state.current_blend_mode = mode;
+}
+
 void SDLGameRendererGL_SetTexture(unsigned int th) {
     // TRACE_ZONE_N("SetTexture"); // Commented out to reduce header deps for now
     if ((th & 0xFFFF) == 0)

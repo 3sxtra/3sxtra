@@ -39,6 +39,7 @@ typedef struct RenderTask {
     int original_index; // Preserves submission order for stable sorting
     int array_layer;    // ⚡ Bolt: >= 0 means use texture array, -1 means legacy path
     int palette_slot;   // Slot index in the palette buffer
+    RendererBlendMode blend_mode;
 } RenderTask;
 
 // Global GL State Container
@@ -95,6 +96,7 @@ typedef struct {
     float texture_uv_sy[RENDER_TASK_MAX];
     int texture_count;
     unsigned int last_set_texture_th;
+    RendererBlendMode current_blend_mode;
 
     // Caches & Dirty Tracking
     SDL_Surface* surfaces[FL_TEXTURE_MAX];

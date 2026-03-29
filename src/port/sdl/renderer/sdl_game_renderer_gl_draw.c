@@ -40,6 +40,7 @@ static void push_render_task(GLuint texture, const SDL_Vertex* vertices, float z
     task->index = gl_state.render_task_count;
     task->array_layer = array_layer;
     task->palette_slot = pal_slot;
+    task->blend_mode = gl_state.current_blend_mode;
 
     gl_state.render_task_count++;
 }
@@ -217,8 +218,9 @@ void SDLGameRendererGL_RenderFrame(void) {
     glBindVertexArray(gl_state.persistent_vaos[current_buffer_idx]);
     // Common state setup
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glActiveTexture(GL_TEXTURE0);
+
+    RendererBlendMode current_applied_blend_mode = -1;
 
     TRACE_GPU_ZONE("RenderFrame");
 
@@ -238,6 +240,18 @@ void SDLGameRendererGL_RenderFrame(void) {
         // array_layer <= -2 → RGBA8 direct-color array
         // array_layer == -1 → legacy individual texture (fallback)
         const bool is_array_task = (gl_state.render_tasks[i].array_layer != -1);
+        const RendererBlendMode task_blend = gl_state.render_tasks[i].blend_mode;
+
+        if (task_blend != current_applied_blend_mode) {
+            if (task_blend == RENDERER_BLEND_ADD) {
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            } else if (task_blend == RENDERER_BLEND_MULTIPLY) {
+                glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+            } else {
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            current_applied_blend_mode = task_blend;
+        }
 
         if (is_array_task) {
             if (current_shader_type != SHADER_ARRAY) {
@@ -274,7 +288,8 @@ void SDLGameRendererGL_RenderFrame(void) {
 
             int batch_count = 0;
             int start_index = i;
-            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer != -1) {
+            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer != -1 &&
+                   gl_state.render_tasks[i].blend_mode == current_applied_blend_mode) {
                 batch_count++;
                 i++;
             }
@@ -298,13 +313,15 @@ void SDLGameRendererGL_RenderFrame(void) {
                 glUniform1i(gl_state.loc_source, 0);
             }
 
-            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer == -1) {
+            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer == -1 &&
+                   gl_state.render_tasks[i].blend_mode == current_applied_blend_mode) {
                 const GLuint current_texture = gl_state.render_tasks[i].texture;
                 int batch_count = 0;
                 int start_index = i;
 
                 while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer == -1 &&
-                       gl_state.render_tasks[i].texture == current_texture) {
+                       gl_state.render_tasks[i].texture == current_texture &&
+                       gl_state.render_tasks[i].blend_mode == current_applied_blend_mode) {
                     batch_count++;
                     i++;
                 }
@@ -628,6 +645,7 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
         task->index = task_idx;
         task->array_layer = cur_layer;
         task->palette_slot = cur_pal;
+        task->blend_mode = gl_state.current_blend_mode;
 
         gl_state.render_task_count++;
     }

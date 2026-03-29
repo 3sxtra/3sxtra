@@ -35,7 +35,8 @@
 // Split 104-byte struct into parallel arrays to keep Z-sorting strictly within L1 cache.
 static float task_z[RENDER_TASK_MAX];
 static SDL_Texture* task_texture[RENDER_TASK_MAX];
-static unsigned int task_th[RENDER_TASK_MAX]; // combined texture+palette handle for batch-breaking
+static unsigned int task_th[RENDER_TASK_MAX];
+static RendererBlendMode task_blend[RENDER_TASK_MAX];
 static SDL_Vertex task_verts[RENDER_TASK_MAX][4];
 static bool task_is_rect[RENDER_TASK_MAX]; // ⚡ true = axis-aligned rect eligible for SDL_RenderTexture
 
@@ -114,6 +115,7 @@ static float last_submitted_z = -1e30f;
 // ⚡ Cached texture binding — skip redundant SetTexture lookups
 static unsigned int last_set_texture_th = 0;
 static SDL_Texture* last_set_texture = NULL;
+static RendererBlendMode current_blend_mode = RENDERER_BLEND_NORMAL;
 
 // Pre-allocated batch buffers for optimized rendering
 static SDL_Vertex batch_vertices[RENDER_TASK_MAX * 4];
@@ -717,6 +719,10 @@ void SDLGameRendererSDL_Shutdown(void) {
     batch_buffers_initialized = false;
 }
 
+void SDLGameRendererSDL_SetBlendMode(RendererBlendMode mode) {
+    current_blend_mode = mode;
+}
+
 void SDLGameRendererSDL_BeginFrame(void) {
     TRACE_SUB_BEGIN("SDL2D:BeginFrame");
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
@@ -823,11 +829,14 @@ void SDLGameRendererSDL_RenderFrame(void) {
     // ⚡ Pre-baked RGBA textures via lookup_idx_tex — pure pointer lookup, no blit.
     int batch_start = 0;
     unsigned int current_th = task_th[render_task_order[0]];
+    RendererBlendMode current_applied_blend = (RendererBlendMode)-1;
     bool current_is_rect = task_is_rect[render_task_order[0]];
     int rect_fast_path_count = 0;
 
     for (int i = 0; i <= render_task_count; i++) {
+        const RendererBlendMode this_blend = (i < render_task_count) ? task_blend[render_task_order[i]] : current_applied_blend;
         const bool should_flush = (i == render_task_count) || (task_th[render_task_order[i]] != current_th) ||
+                                  (this_blend != current_applied_blend) ||
                                   (task_is_rect[render_task_order[i]] != current_is_rect);
 
         if (should_flush) {
@@ -837,6 +846,15 @@ void SDLGameRendererSDL_RenderFrame(void) {
 
                 SDL_Texture* draw_texture = task_texture[render_task_order[batch_start]];
                 const int batch_palette = HI_16_BITS(current_th);
+
+                if (current_applied_blend != (RendererBlendMode)-1) {
+                    SDL_BlendMode sdl_blend;
+                    if (current_applied_blend == RENDERER_BLEND_ADD) sdl_blend = SDL_BLENDMODE_ADD;
+                    else if (current_applied_blend == RENDERER_BLEND_MULTIPLY) sdl_blend = SDL_BLENDMODE_MUL;
+                    else sdl_blend = SDL_BLENDMODE_BLEND;
+                    if (draw_texture) SDL_SetTextureBlendMode(draw_texture, sdl_blend);
+                    else SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
+                }
                 const int batch_tex_handle = LO_16_BITS(current_th);
 
                 // ⚡ For indexed textures: swap draw_texture for the pre-baked slot.
@@ -988,6 +1006,7 @@ void SDLGameRendererSDL_RenderFrame(void) {
 
             if (i < render_task_count) {
                 current_th = task_th[render_task_order[i]];
+                current_applied_blend = task_blend[render_task_order[i]];
                 current_is_rect = task_is_rect[render_task_order[i]];
                 batch_start = i;
             }
@@ -1441,6 +1460,7 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     const int task_idx = render_task_count;
     task_texture[task_idx] = textured ? get_texture() : NULL;
     task_th[task_idx] = textured ? last_set_texture_th : 0;
+    task_blend[task_idx] = current_blend_mode;
     task_z[task_idx] = flPS2ConvScreenFZ(vertices[0].coord.z);
 
     // ⚡ Track sortedness
@@ -1652,6 +1672,7 @@ void SDLGameRendererSDL_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         const int task_idx = render_task_count;
         task_texture[task_idx] = NULL; // ⚡ Deferred — resolved in RenderFrame on hw fallback
         task_th[task_idx] = tc;
+        task_blend[task_idx] = current_blend_mode;
         task_z[task_idx] = flPS2ConvScreenFZ(spr->v[0].z);
 
         if (task_z[task_idx] < last_submitted_z)
@@ -1746,7 +1767,8 @@ void SDLGameRendererSDL_DrawOverlaySpriteEx(SDL_Texture* texture, float x, float
     const int idx = render_task_count;
 
     task_texture[idx] = texture;
-    task_th[idx] = 0xFFFFFFFF; /* sentinel — prevents deferred resolution override */
+    task_th[idx] = 0xFFFFFFFF;
+    task_blend[idx] = current_blend_mode; /* sentinel — prevents deferred resolution override */
     task_z[idx] = z;
 
     /* Track sortedness */

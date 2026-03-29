@@ -38,6 +38,7 @@ typedef struct RenderTask {
     SDL_Vertex vertices[4];
     float z;
     int original_index;
+    RendererBlendMode blend_mode;
 } RenderTask;
 
 static SDL_Texture* cps3_canvas_classic = NULL;
@@ -57,6 +58,7 @@ static int cl_textures_to_destroy_count = 0;
 
 static SDL_Texture* cl_current_texture = NULL;
 static unsigned int cl_current_th = 0;
+static RendererBlendMode cl_current_blend_mode = RENDERER_BLEND_NORMAL;
 
 static RenderTask cl_render_tasks[RENDER_TASK_MAX];
 static int cl_render_task_count = 0;
@@ -132,6 +134,7 @@ static void cl_draw_quad(SDL_Vertex vertices[4], SDL_Texture* texture, float z) 
     task->texture = texture;
     task->z = flPS2ConvScreenFZ(z);
     task->original_index = cl_render_task_count;
+    task->blend_mode = cl_current_blend_mode;
     memcpy(task->vertices, vertices, sizeof(SDL_Vertex) * 4);
     cl_render_task_count++;
 }
@@ -234,6 +237,10 @@ void SDLGameRendererClassic_BeginFrame(void) {
     TRACE_ZONE_END();
 }
 
+void SDLGameRendererClassic_SetBlendMode(RendererBlendMode mode) {
+    cl_current_blend_mode = mode;
+}
+
 void SDLGameRendererClassic_RenderFrame(void) {
 
     TRACE_PLOT_INT("ClassicRenderTasks", cl_render_task_count);
@@ -250,17 +257,28 @@ void SDLGameRendererClassic_RenderFrame(void) {
     qsort(cl_render_tasks, cl_render_task_count, sizeof(RenderTask), cl_compare_render_tasks);
     TRACE_SUB_END();
 
-    // Batch rendering: group consecutive tasks with same texture pointer
+    // Batch rendering: group consecutive tasks with same texture pointer and blend mode
     TRACE_SUB_BEGIN("Classic:BatchRender");
     int batch_start = 0;
     SDL_Texture* current_batch_texture = cl_render_tasks[0].texture;
+    RendererBlendMode current_batch_blend = cl_render_tasks[0].blend_mode;
 
     for (int i = 0; i <= cl_render_task_count; i++) {
-        bool should_flush = (i == cl_render_task_count) || (cl_render_tasks[i].texture != current_batch_texture);
+        bool should_flush = (i == cl_render_task_count) ||
+                            (cl_render_tasks[i].texture != current_batch_texture) ||
+                            (cl_render_tasks[i].blend_mode != current_batch_blend);
 
         if (should_flush) {
             int batch_size = i - batch_start;
             if (batch_size > 0) {
+                SDL_BlendMode sdl_blend;
+                if (current_batch_blend == RENDERER_BLEND_ADD) sdl_blend = SDL_BLENDMODE_ADD;
+                else if (current_batch_blend == RENDERER_BLEND_MULTIPLY) sdl_blend = SDL_BLENDMODE_MUL;
+                else sdl_blend = SDL_BLENDMODE_BLEND;
+
+                if (current_batch_texture) SDL_SetTextureBlendMode(current_batch_texture, sdl_blend);
+                else SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
+
                 for (int j = 0; j < batch_size; j++) {
                     memcpy(
                         &cl_batch_vertices[j * 4], cl_render_tasks[batch_start + j].vertices, 4 * sizeof(SDL_Vertex));
@@ -275,6 +293,7 @@ void SDLGameRendererClassic_RenderFrame(void) {
 
             if (i < cl_render_task_count) {
                 current_batch_texture = cl_render_tasks[i].texture;
+                current_batch_blend = cl_render_tasks[i].blend_mode;
                 batch_start = i;
             }
         }

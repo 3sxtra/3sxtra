@@ -149,22 +149,38 @@ void SDLGameRendererGPU_Init(void) {
     color_target_desc.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
 
     color_target_desc.blend_state.enable_blend = true;
-    color_target_desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
-    color_target_desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
     color_target_desc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-    color_target_desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-    color_target_desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
     color_target_desc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
 
     pipeline_info.target_info.color_target_descriptions = &color_target_desc;
     pipeline_info.target_info.num_color_targets = 1;
 
-    pipeline = SDL_CreateGPUGraphicsPipeline(device, &pipeline_info);
+    // Normal Blend
+    color_target_desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+    color_target_desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    color_target_desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    color_target_desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    pipelines[RENDERER_BLEND_NORMAL] = SDL_CreateGPUGraphicsPipeline(device, &pipeline_info);
+
+    // Additive Blend
+    color_target_desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+    color_target_desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    color_target_desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    color_target_desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    pipelines[RENDERER_BLEND_ADD] = SDL_CreateGPUGraphicsPipeline(device, &pipeline_info);
+
+    // Multiplicative Blend
+    color_target_desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_DST_COLOR;
+    color_target_desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    color_target_desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+    color_target_desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    pipelines[RENDERER_BLEND_MULTIPLY] = SDL_CreateGPUGraphicsPipeline(device, &pipeline_info);
+
     SDL_ReleaseGPUShader(device, vert_shader);
     SDL_ReleaseGPUShader(device, frag_shader);
 
-    if (!pipeline) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to create GPU pipeline: %s", SDL_GetError());
+    if (!pipelines[0] || !pipelines[1] || !pipelines[2]) {
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to create GPU pipeline(s): %s", SDL_GetError());
         return;
     }
 
@@ -411,8 +427,10 @@ void SDLGameRendererGPU_Shutdown(void) {
             s_frame_fences[i] = NULL;
         }
     }
-    if (pipeline)
-        SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
+    for (int i = 0; i < 3; i++) {
+        if (pipelines[i])
+            SDL_ReleaseGPUGraphicsPipeline(device, pipelines[i]);
+    }
     {
         extern SDL_GPUTexture* s_1x1_white_texture;
         if (s_1x1_white_texture) {
