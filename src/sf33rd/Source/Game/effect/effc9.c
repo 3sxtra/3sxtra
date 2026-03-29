@@ -238,7 +238,7 @@ void setup_EJG_index() {
         }
     } else {
         for (i = 0; i < 4; i++) {
-            EJG_index[i] = sel_ejg_ix_table[Winner_id][Game_timer & 1][i];
+            EJG_index[i] = sel_ejg_ix_table[Winner_id & 1][Game_timer & 1][i];
         }
     }
 }
