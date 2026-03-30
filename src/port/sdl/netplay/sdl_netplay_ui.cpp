@@ -1793,12 +1793,28 @@ void SDLNetplayUI_StartSpectatePunch(const char* host_room_code, const char* hos
     // Direct same-router spectating via embedded LAN IP checking
     if (ip_match && peer_local_ip[0]) {
         SDL_Log("[casual] Same-router detection: spectating direct to LAN IP %s:%u", peer_local_ip, peer_local_port);
+        if (stun_result.socket != NULL) {
+            if (ping_probe_initialized) {
+                PingProbe_Init(NULL);
+                ping_probe_initialized = false;
+            }
+            Netplay_SetStunSocket(stun_result.socket);
+            stun_result.socket = NULL;
+        }
         Netplay_BeginSpectate(peer_local_ip, peer_local_port);
         return;
     }
 
     // For spectating over internet, we don't hole punch (we just send packets directly to their public IP/port).
-    // GekkoSpectator will open its own socket.
+    // GekkoSpectator will open its own socket using the transferred STUN socket to match the registered STUN port.
+    if (stun_result.socket != NULL) {
+        if (ping_probe_initialized) {
+            PingProbe_Init(NULL);
+            ping_probe_initialized = false;
+        }
+        Netplay_SetStunSocket(stun_result.socket);
+        stun_result.socket = NULL;
+    }
     Netplay_BeginSpectate(peer_ip, peer_port);
 }
 

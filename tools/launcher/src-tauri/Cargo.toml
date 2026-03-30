@@ -28,4 +28,5 @@ tokio = { version = "1", features = ["full"] }
 sha2 = "0.10"
 rust-ini = "0.21"
 directories = "5.0"
+zip = "0.6.3"
 

@@ -451,10 +451,25 @@ bool ModdedBGM_PlayVoice(const char* voice_name) {
     return false;
 }
 
+#define MAX_VOICE_MOD_CACHE 16
+static struct {
+    char name[32];
+    bool is_modded;
+    bool active;
+} s_voice_mod_cache[MAX_VOICE_MOD_CACHE];
+
 bool ModdedBGM_IsVoiceModded(const char* voice_name) {
     if (!voice_name)
         return false;
 
+    // Check cache
+    for (int i = 0; i < MAX_VOICE_MOD_CACHE; i++) {
+        if (s_voice_mod_cache[i].active && strncmp(s_voice_mod_cache[i].name, voice_name, sizeof(s_voice_mod_cache[i].name)) == 0) {
+            return s_voice_mod_cache[i].is_modded;
+        }
+    }
+
+    bool found = false;
     static const char* extensions[] = { "ogg", "flac", "opus", "mp3", "wav" };
     for (int i = 0; i < (int)(sizeof(extensions) / sizeof(extensions[0])); i++) {
         char path[1024];
@@ -462,10 +477,32 @@ bool ModdedBGM_IsVoiceModded(const char* voice_name) {
         SDL_IOStream* io = SDL_IOFromFile(path, "rb");
         if (io) {
             SDL_CloseIO(io);
-            return true;
+            found = true;
+            break;
         }
     }
-    return false;
+
+    // Insert into cache
+    static int insert_idx = 0;
+    int target_idx = -1;
+    for (int i = 0; i < MAX_VOICE_MOD_CACHE; i++) {
+        if (!s_voice_mod_cache[i].active) {
+            target_idx = i;
+            break;
+        }
+    }
+    
+    if (target_idx == -1) {
+        // If cache is full, we round-robin evict
+        target_idx = insert_idx;
+        insert_idx = (insert_idx + 1) % MAX_VOICE_MOD_CACHE;
+    }
+    
+    s_voice_mod_cache[target_idx].active = true;
+    s_voice_mod_cache[target_idx].is_modded = found;
+    SDL_strlcpy(s_voice_mod_cache[target_idx].name, voice_name, sizeof(s_voice_mod_cache[0].name));
+
+    return found;
 }
 
 int ModdedBGM_CountModdedTracks(void) {

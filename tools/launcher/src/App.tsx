@@ -328,7 +328,7 @@ function App() {
       <div className="scanline" />
 
       {/* ── Frameless Window Controls ──────── */}
-      <div className="window-controls">
+      <div data-tauri-drag-region className="window-controls">
         <button className="window-btn" onClick={() => getCurrentWindow().minimize()} title="Minimize">
           <svg width="12" height="12" viewBox="0 0 12 12"><rect y="5" width="12" height="1.5" fill="currentColor" /></svg>
         </button>

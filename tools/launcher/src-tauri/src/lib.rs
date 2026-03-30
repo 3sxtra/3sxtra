@@ -67,13 +67,22 @@ fn get_pref_path() -> PathBuf {
         return portable_path;
     }
 
-    // 2. Standard Mode — hardcoded to match SDL_GetPrefPath("CrowdedStreet", "3SX")
+    // 2. Standard Mode — matches SDL_GetPrefPath("CrowdedStreet", "3SX")
     if let Some(user_dirs) = UserDirs::new() {
-        let path = user_dirs.home_dir()
-            .join("AppData")
-            .join("Roaming")
-            .join("CrowdedStreet")
-            .join("3SX");
+        #[cfg(target_os = "windows")]
+        let base_path = user_dirs.home_dir().join("AppData").join("Roaming");
+
+        #[cfg(target_os = "macos")]
+        let base_path = user_dirs.home_dir().join("Library").join("Application Support");
+
+        #[cfg(target_os = "linux")]
+        let base_path = user_dirs.home_dir().join(".local").join("share");
+
+        // Fallback for any other obscure OS
+        #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+        let base_path = user_dirs.home_dir().join(".config");
+
+        let path = base_path.join("CrowdedStreet").join("3SX");
 
         if !path.exists() {
             let _ = std::fs::create_dir_all(&path);
@@ -99,14 +108,16 @@ fn get_mappings_file_path() -> PathBuf {
 #[tauri::command]
 fn is_game_installed() -> Result<bool, String> {
     let game_root = get_game_root();
-    let exe_path = game_root.join("3sx.exe");
+    let exe_name = format!("3sx{}", std::env::consts::EXE_SUFFIX);
+    let exe_path = game_root.join(exe_name);
     Ok(exe_path.exists())
 }
 
 #[tauri::command]
 fn launch_game() -> Result<String, String> {
     let game_root = get_game_root();
-    let exe_path = game_root.join("3sx.exe");
+    let exe_name = format!("3sx{}", std::env::consts::EXE_SUFFIX);
+    let exe_path = game_root.join(exe_name);
 
     if !exe_path.exists() {
         return Err(format!("Game executable not found at: {}", exe_path.display()));
@@ -206,7 +217,7 @@ fn save_mapping(key: String, value: String) -> Result<(), String> {
 
 #[tauri::command]
 async fn check_updates() -> Result<Option<UpdateManifest>, String> {
-    let manifest_url = "https://raw.githubusercontent.com/3SXtra/3SX/main/launcher/remote_manifest.json";
+    let manifest_url = "https://raw.githubusercontent.com/3sxtra/3sxtra/main/tools/launcher/remote_manifest.json";
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(10))
         .build()

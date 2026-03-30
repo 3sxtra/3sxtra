@@ -21,11 +21,14 @@
 .window-controls {
   position: fixed;
   top: 0;
+  left: 0;
   right: 0;
+  height: 34px;
   z-index: 100;
   display: flex;
-  -webkit-app-region: no-drag;
+  justify-content: flex-end;
 }
+
 
 .window-btn {
   width: 46px;
