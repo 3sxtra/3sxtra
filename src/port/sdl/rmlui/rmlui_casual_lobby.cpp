@@ -841,7 +841,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 SDL_Log("Casual Lobby: Spectate clicked");
                 s_is_spectating = true;
                 s_status_text = "Spectating...";
-                LobbyServer_ReportSpectateStart(s_room_code.c_str());
+                LobbyServer_ReportSpectateStart(s_room_code.c_str(), SDLNetplayUI_GetRoomCode());
                 s_model_handle.DirtyVariable("is_spectating");
                 s_model_handle.DirtyVariable("status_text");
                 rmlui_wrapper_hide_game_document("casual_lobby");

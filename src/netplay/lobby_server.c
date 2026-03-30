@@ -2178,14 +2178,14 @@ bool LobbyServer_GlobalSSEIsConnected(void) {
 
 // === Spectator Tracking ===
 
-bool LobbyServer_ReportSpectateStart(const char* room_code) {
+bool LobbyServer_ReportSpectateStart(const char* room_code, const char* spectator_room_code) {
     if (!configured || !room_code || !Identity_IsInitialized())
         return false;
 
     char path[128];
     snprintf(path, sizeof(path), "/room/%s/spectate", room_code);
 
-    char* body = json_body_pid(Identity_GetPlayerId());
+    char* body = spectator_room_code[0] ? json_body_pid_room(Identity_GetPlayerId(), spectator_room_code) : json_body_pid(Identity_GetPlayerId());
     char response[HTTP_BUF_SIZE];
     bool ok = http_request("POST", path, body, response, sizeof(response));
     free(body);

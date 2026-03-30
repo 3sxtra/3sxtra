@@ -428,7 +428,7 @@ bool LobbyServer_GlobalSSEIsConnected(void);
 // === Spectator Tracking ===
 
 /// Notify the server that we started spectating a match in the given room.
-bool LobbyServer_ReportSpectateStart(const char* room_code);
+bool LobbyServer_ReportSpectateStart(const char* room_code, const char* spectator_room_code);
 
 /// Notify the server that we stopped spectating.
 bool LobbyServer_ReportSpectateStop(const char* room_code);
