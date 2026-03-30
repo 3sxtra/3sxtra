@@ -32,25 +32,21 @@ jobs:
           - label: windows-x86_64
             runner: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact_name: 3SX-Launcher-windows.exe
-            exe_path: tools/launcher/src-tauri/target/release/launcher.exe
+            exe_path: tools/launcher/src-tauri/target/x86_64-pc-windows-msvc/release/launcher.exe
 
-          - label: macos-arm64
+          - label: macos-universal
             runner: macos-latest
-            target: aarch64-apple-darwin
-            artifact_name: 3SX-Launcher-macos
-            exe_path: tools/launcher/src-tauri/target/release/launcher
+            target: universal-apple-darwin
+            exe_path: tools/launcher/src-tauri/target/universal-apple-darwin/release/launcher
 
           - label: linux-x86_64
             runner: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            artifact_name: 3SX-Launcher-linux-x86_64
-            exe_path: tools/launcher/src-tauri/target/release/launcher
+            exe_path: tools/launcher/src-tauri/target/x86_64-unknown-linux-gnu/release/launcher
 
           - label: linux-arm64
             runner: ubuntu-22.04
             target: aarch64-unknown-linux-gnu
-            artifact_name: 3SX-Launcher-linux-arm64
             exe_path: tools/launcher/src-tauri/target/aarch64-unknown-linux-gnu/release/launcher
 
     steps:
@@ -90,7 +86,7 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: ${{ matrix.label == 'macos-universal' && 'aarch64-apple-darwin,x86_64-apple-darwin' || matrix.target }}
 
       - name: Cache Cargo
         uses: actions/cache@v5
@@ -117,22 +113,34 @@ jobs:
         working-directory: tools/launcher
         run: npm run build
 
-      - name: Build Tauri (native)
-        if: matrix.label != 'linux-arm64'
+      - name: Build Tauri (macOS universal)
+        if: matrix.label == 'macos-universal'
         working-directory: tools/launcher/src-tauri
-        run: cargo build --release --target ${{ matrix.target }}
+        run: |
+          cargo build --release --target aarch64-apple-darwin
+          cargo build --release --target x86_64-apple-darwin
+          mkdir -p target/universal-apple-darwin/release
+          lipo -create \
+            target/aarch64-apple-darwin/release/launcher \
+            target/x86_64-apple-darwin/release/launcher \
+            -output target/universal-apple-darwin/release/launcher
 
-      - name: Build Tauri (ARM64 cross)
+      - name: Build Tauri (Linux ARM64 cross)
         if: matrix.label == 'linux-arm64'
         working-directory: tools/launcher/src-tauri
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
           CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
           CXX_aarch64_unknown_linux_gnu: aarch64-linux-gnu-g++
-          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig
-          PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig
-          PKG_CONFIG_SYSROOT_DIR: /
+          PKG_CONFIG_PATH_aarch64_unknown_linux_gnu: /usr/lib/aarch64-linux-gnu/pkgconfig
+          PKG_CONFIG_LIBDIR_aarch64_unknown_linux_gnu: /usr/lib/aarch64-linux-gnu/pkgconfig
+          PKG_CONFIG_SYSROOT_DIR_aarch64_unknown_linux_gnu: /
           PKG_CONFIG_ALLOW_CROSS: 1
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build Tauri (native)
+        if: matrix.label != 'linux-arm64' && matrix.label != 'macos-universal'
+        working-directory: tools/launcher/src-tauri
         run: cargo build --release --target ${{ matrix.target }}
 
       # ── Package ──────────────────────────────────────────────
@@ -141,18 +149,13 @@ jobs:
         run: |
           SHORT_SHA="${GITHUB_SHA:0:7}"
           SRC="${{ matrix.exe_path }}"
-          DEST="${{ matrix.artifact_name }}"
 
-          # Add .exe extension for Windows
-          if [[ "${{ matrix.label }}" == "windows"* ]]; then
-            FINAL="3SX-Launcher-${SHORT_SHA}-windows.exe"
-          elif [[ "${{ matrix.label }}" == "macos"* ]]; then
-            FINAL="3SX-Launcher-${SHORT_SHA}-macos"
-          elif [[ "${{ matrix.label }}" == "linux-arm64" ]]; then
-            FINAL="3SX-Launcher-${SHORT_SHA}-linux-arm64"
-          else
-            FINAL="3SX-Launcher-${SHORT_SHA}-linux-x86_64"
-          fi
+          case "${{ matrix.label }}" in
+            windows*)    FINAL="3SX-Launcher-${SHORT_SHA}-windows.exe" ;;
+            macos*)      FINAL="3SX-Launcher-${SHORT_SHA}-macos-universal" ;;
+            linux-arm64) FINAL="3SX-Launcher-${SHORT_SHA}-linux-arm64" ;;
+            *)           FINAL="3SX-Launcher-${SHORT_SHA}-linux-x86_64" ;;
+          esac
 
           cp "$SRC" "$FINAL"
           echo "FINAL_NAME=$FINAL" >> $GITHUB_ENV
