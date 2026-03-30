@@ -211,7 +211,7 @@ void Gekko::SpectatorSession::HandleReceivedInputs()
         if (remote->GetStatus() != Connected) continue;
 
         // check if we are severely lagging behind the newest inputs and need a state chunk
-        Frame last_added_host_input = _msg.GetLastAddedInput(true);
+        Frame last_added_host_input = _msg.GetLastAddedInputFrom(0);
         Frame current = _sync.GetCurrentFrame();
         
         if (last_added_host_input > current + 120) { // 120 frames = 2 seconds behind

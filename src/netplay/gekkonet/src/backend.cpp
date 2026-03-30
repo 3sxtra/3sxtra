@@ -68,6 +68,23 @@ void Gekko::MessageSystem::NetInputQueue::TrimToAck(Frame min_ack, u32 max_size)
 void Gekko::MessageSystem::AddInput(Frame input_frame, Handle player, u8 input[], bool remote)
 {
     auto& input_q = _net_player_queue[player];
+
+    if (input_frame > input_q.last_added_input + 1) {
+        // Gap detected! (Late joining spectator missing history or packet loss).
+        // Pad the queue with empty inputs up to this frame so last_added_input tracks properly.
+        Frame gap = input_frame - (input_q.last_added_input + 1);
+        // Protect against massive jumps DOSing memory
+        if (gap > MAX_INPUT_QUEUE_SIZE * 2) {
+            gap = MAX_INPUT_QUEUE_SIZE * 2;
+            input_q.last_added_input = input_frame - gap - 1;
+        }
+        for (Frame i = 0; i < gap; i++) {
+            input_q.last_added_input++;
+            input_q.inputs.push_back(std::make_unique<u8[]>(_input_size));
+            std::memset(input_q.inputs.back().get(), 0, _input_size);
+        }
+    }
+
 	if (input_q.last_added_input + 1 == input_frame) {
         input_q.last_added_input++;
         input_q.inputs.push_back(std::make_unique<u8[]>(_input_size));
@@ -82,9 +99,23 @@ void Gekko::MessageSystem::AddInput(Frame input_frame, Handle player, u8 input[]
 void Gekko::MessageSystem::AddSpectatorInput(Frame input_frame, u8 input[])
 {
     auto& input_q = _net_spectator_queue;
+	const size_t num_players = locals.size() + remotes.size();
+
+    if (input_frame > input_q.last_added_input + 1) {
+        Frame gap = input_frame - (input_q.last_added_input + 1);
+        if (gap > MAX_INPUT_QUEUE_SIZE * 2) {
+            gap = MAX_INPUT_QUEUE_SIZE * 2;
+            input_q.last_added_input = input_frame - gap - 1;
+        }
+        for (Frame i = 0; i < gap; i++) {
+            input_q.last_added_input++;
+            input_q.inputs.push_back(std::make_unique<u8[]>(_input_size * num_players));
+            std::memset(input_q.inputs.back().get(), 0, _input_size * num_players);
+        }
+    }
+
 	if (input_q.last_added_input + 1 == input_frame) {
         input_q.last_added_input++;
-        const size_t num_players = locals.size() + remotes.size();
         input_q.inputs.push_back(std::make_unique<u8[]>(_input_size * num_players));
         std::memcpy(input_q.inputs.back().get(), input, _input_size * num_players);
 	}
