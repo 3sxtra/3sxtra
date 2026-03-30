@@ -307,6 +307,17 @@ fn check_file_exists(path: String) -> Result<bool, String> {
 }
 
 #[tauri::command]
+fn get_local_version() -> Result<String, String> {
+    let version_file = get_game_root().join("launcher_version.txt");
+    if version_file.exists() {
+        if let Ok(content) = std::fs::read_to_string(&version_file) {
+            return Ok(content.trim().to_string());
+        }
+    }
+    Ok("UNKNOWN".to_string())
+}
+
+#[tauri::command]
 async fn download_and_extract_archive(
     window: tauri::Window,
     url: String, 
@@ -432,7 +443,8 @@ pub fn run() {
             save_mapping,
             check_updates,
             download_and_extract_archive,
-            check_file_exists
+            check_file_exists,
+            get_local_version
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -110,6 +110,7 @@ function App() {
   const [configs, setConfigs] = useState<GameConfig[]>([]);
   const [mappings, setMappings] = useState<GameConfig[]>([]);
   const [isGameInstalled, setIsGameInstalled] = useState(true);
+  const [buildDate, setBuildDate] = useState("UNKNOWN");
 
   const performUpdate = async () => {
     setStatus("CHECKING FOR UPDATES...");
@@ -160,6 +161,21 @@ function App() {
         setMappings(loadedMappings);
       } catch {
         // First run — no config exists yet
+      }
+
+      // Fetch build date from the engine version manifest
+      try {
+        const localVersion = await invoke("get_local_version") as string;
+        if (localVersion && localVersion !== "UNKNOWN") {
+          const date = new Date(localVersion);
+          if (!isNaN(date.getTime())) {
+            setBuildDate(date.toISOString().split('T')[0]); // e.g. "2026-03-30"
+          } else {
+            setBuildDate(localVersion);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch local version", err);
       }
 
       // 2. Check if game is installed
@@ -418,7 +434,7 @@ function App() {
       <main className="main-content">
         <header className="app-header" data-tauri-drag-region>
           <h1 className="app-title text-gradient">3rd Strike 3SXtra</h1>
-          <span style={{ fontSize: 14, fontFamily: 'monospace', color: '#fff', textShadow: '1px 1px 0 #000', letterSpacing: '1px' }}>STABLE BUILD · V2.4.0-BETA</span>
+          <span style={{ fontSize: 14, fontFamily: 'monospace', color: '#fff', textShadow: '1px 1px 0 #000', letterSpacing: '1px' }}>ROLLING RELEASE · {buildDate}</span>
         </header>
 
         <h2 className="page-title">{activeTab.replace('_', ' ')}</h2>

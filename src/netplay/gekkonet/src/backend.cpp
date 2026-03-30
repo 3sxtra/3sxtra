@@ -74,8 +74,8 @@ void Gekko::MessageSystem::AddInput(Frame input_frame, Handle player, u8 input[]
         // Pad the queue with empty inputs up to this frame so last_added_input tracks properly.
         Frame gap = input_frame - (input_q.last_added_input + 1);
         // Protect against massive jumps DOSing memory
-        if (gap > MAX_INPUT_QUEUE_SIZE * 2) {
-            gap = MAX_INPUT_QUEUE_SIZE * 2;
+        if (gap > (Frame)(MAX_INPUT_QUEUE_SIZE * 2)) {
+            gap = (Frame)(MAX_INPUT_QUEUE_SIZE * 2);
             input_q.last_added_input = input_frame - gap - 1;
         }
         for (Frame i = 0; i < gap; i++) {
@@ -103,8 +103,8 @@ void Gekko::MessageSystem::AddSpectatorInput(Frame input_frame, u8 input[])
 
     if (input_frame > input_q.last_added_input + 1) {
         Frame gap = input_frame - (input_q.last_added_input + 1);
-        if (gap > MAX_INPUT_QUEUE_SIZE * 2) {
-            gap = MAX_INPUT_QUEUE_SIZE * 2;
+        if (gap > (Frame)(MAX_INPUT_QUEUE_SIZE * 2)) {
+            gap = (Frame)(MAX_INPUT_QUEUE_SIZE * 2);
             input_q.last_added_input = input_frame - gap - 1;
         }
         for (Frame i = 0; i < gap; i++) {
