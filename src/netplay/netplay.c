@@ -1336,4 +1336,17 @@ void Netplay_RegisterSpectator(const char* spectator_room_code, const char* spec
     int handle = gekko_add_actor(session, GekkoSpectator, &addr);
     SDL_Log("[netplay] Registered spectator %s at %s (handle=%d)",
             spectator_player_id ? spectator_player_id : "?", spec_addr, handle);
+
+    // Explicitly hole-punch the host's firewall to allow the spectator's incoming UDP stream.
+    // Since the spectator's initial packets are unsolicited, Windows/OS firewalls may silently drop them.
+    // Sending a tiny outbound dummy packet primes the NAT/firewall to accept the spectator's return traffic.
+    if (stun_socket != NULL) {
+        NET_Address* net_addr = NET_ResolveHostname(target_ip);
+        if (net_addr) {
+            char dummy[4] = "PNCH";
+            NET_SendDatagram(stun_socket, net_addr, effective_port, dummy, sizeof(dummy));
+            NET_UnrefAddress(net_addr);
+            SDL_Log("[netplay] Primed firewall hole for spectator %s", spec_addr);
+        }
+    }
 }

@@ -109,6 +109,7 @@ function App() {
   const [status, setStatus] = useState("CHECKING SYSTEM...");
   const [configs, setConfigs] = useState<GameConfig[]>([]);
   const [mappings, setMappings] = useState<GameConfig[]>([]);
+  const [isGameInstalled, setIsGameInstalled] = useState(true);
 
   const performUpdate = async () => {
     setStatus("CHECKING FOR UPDATES...");
@@ -167,6 +168,8 @@ function App() {
       try {
         installed = await invoke("is_game_installed");
       } catch {}
+
+      setIsGameInstalled(installed);
 
       if (!installed) {
         setStatus("FIRST RUN - DOWNLOAD REQUIRED");
@@ -245,7 +248,7 @@ function App() {
   const handlePlay = async () => {
     if (isUpdating) return; // Don't allow launch during update
 
-    if (status === "FIRST RUN - DOWNLOAD REQUIRED") {
+    if (!isGameInstalled) {
       await performUpdate();
       return;
     }

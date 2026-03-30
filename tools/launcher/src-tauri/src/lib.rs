@@ -13,9 +13,6 @@ pub struct GameConfig {
     pub value: String,
 }
 
-use std::path::PathBuf;
-use tauri::Manager;
-use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug)]
 struct GitHubAsset {
@@ -379,7 +376,7 @@ pub fn run() {
             get_config,
             save_config,
             get_mappings,
-            save_mappings,
+            save_mapping,
             check_updates,
             download_and_extract_archive,
             check_file_exists
