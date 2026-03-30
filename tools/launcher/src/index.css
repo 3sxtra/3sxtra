@@ -1,19 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&family=Roboto+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:ital,wght@0,400;0,700;1,700&family=Teko:wght@500;700&family=Roboto+Mono:wght@700&display=swap');
 
 :root {
-  /* 🎨 3SX Color Palette */
-  --bg-dark: #05070a;
-  --bg-panel: rgba(15, 23, 42, 0.65);
-  --accent-cyan: #00f2ff;
-  --accent-magenta: #ff00ea;
-  --accent-yellow: #fdf500;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --border-glass: rgba(255, 255, 255, 0.1);
-  --glow-cyan: 0 0 15px rgba(0, 242, 255, 0.4);
-  --glow-magenta: 0 0 15px rgba(255, 0, 234, 0.4);
+  /* 🎨 3nd Strike Arcade Palette */
+  --bg-dark: #000000;
+  --bg-panel: #000000;
+  --accent-red: #CC1C10;
+  --accent-yellow: #FFE033;
+  --text-primary: #F0F0F0;
+  --text-secondary: #8C2920;
+  --text-unselected: #555555;
+  --border-glass: #CC1C10;
   
-  --font-main: 'Outfit', sans-serif;
+  --font-main: 'Teko', sans-serif;
+  --font-header: 'Oswald', sans-serif;
   --font-mono: 'Roboto Mono', monospace;
 }
 
@@ -38,56 +37,60 @@ body {
   width: 100%;
 }
 
-/* 🧱 Glassmorphism Utilities */
-.glass {
-  background: rgba(10, 15, 25, 0.75);
-  backdrop-filter: blur(16px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+/* 🧱 Arcade Box Utilities */
+.arcade-box {
+  background: var(--bg-panel);
+  border: 4px solid var(--accent-red);
+  padding: 16px;
+  box-shadow: 4px 4px 0px rgba(204, 28, 16, 0.4);
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.arcade-card {
+  background: rgba(204, 28, 16, 0.1);
+  border: 2px solid var(--accent-red);
+  transition: all 0.1s ease;
 }
 
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 242, 255, 0.1);
+.arcade-card:hover {
+  background: rgba(255, 224, 51, 0.2);
+  border-color: var(--accent-yellow);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px var(--accent-red);
 }
 
 /* ⚡ Interactive Elements */
 button {
   cursor: pointer;
   border: none;
-  font-family: var(--font-main);
-  transition: all 0.2s ease;
+  font-family: var(--font-header);
+  transition: all 0.1s ease;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-cyan), #00d2ff);
+  background: var(--accent-yellow);
   color: #000;
-  font-weight: 900;
+  font-family: var(--font-header);
+  font-weight: 700;
+  font-style: italic;
+  font-size: 24px;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  padding: 12px 32px;
-  border-radius: 6px;
-  box-shadow: var(--glow-cyan);
+  letter-spacing: 2px;
+  padding: 8px 32px;
+  border: 4px solid #fff;
+  box-shadow: 4px 4px 0px var(--accent-red);
 }
 
 .btn-primary:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 0 25px rgba(0, 242, 255, 0.6);
-  transform: scale(1.02);
+  background: #fff;
+  color: var(--accent-red);
+  border-color: var(--accent-yellow);
+  box-shadow: 6px 6px 0px var(--accent-red);
+  transform: translate(-2px, -2px);
 }
 
 .btn-primary:active {
-  transform: scale(0.98);
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px var(--accent-red);
 }
 
 /* 📺 Retro/CRT VFX */
@@ -123,13 +126,27 @@ button {
 
 /* 🖼️ Typography */
 h1, h2, h3 {
+  font-family: var(--font-header);
+  font-style: italic;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  font-weight: 900;
+  letter-spacing: 1px;
+  font-weight: 700;
+  margin: 0;
 }
 
 .text-gradient {
-  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--accent-yellow);
+  text-shadow: 2px 2px 0px var(--accent-red);
+}
+
+/* 🕹️ Generic Arcade Selection Text */
+.arcade-row-selectable {
+  font-family: var(--font-main);
+  color: var(--text-unselected);
+  text-transform: uppercase;
+  font-size: 24px;
+}
+
+.arcade-row-selectable.active {
+  color: var(--accent-yellow);
 }

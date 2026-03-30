@@ -5,15 +5,15 @@
   background: url('./assets/hero_bg.png') no-repeat center center fixed;
   background-size: cover;
   position: relative;
+  background-color: var(--bg-dark);
 }
 
 .app-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(5, 7, 10, 0.4) 0%, rgba(5, 7, 10, 0.8) 100%);
+  top: 0; left: 0; right: 0; bottom: 0;
+  /* Gritty dark red to black scanline gradient */
+  background: radial-gradient(circle at center, rgba(30, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.95) 100%),
+              repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.5) 2px, rgba(0,0,0,0.5) 4px);
   pointer-events: none;
 }
 
@@ -53,43 +53,54 @@
   color: #fff;
 }
 
-/* ⬅️ Sidebar */
-.sidebar {
-  width: 80px;
+/* ⬅️ Arcade Menu List */
+.arcade-sidebar {
+  width: 320px;
   height: 100%;
+  padding: 100px 0 0 40px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 40px 0;
-  gap: 30px;
+  align-items: flex-start;
+  gap: 16px;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(20px);
-  border-right: 1px solid var(--border-glass);
 }
 
 .nav-item {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
   background: transparent;
-  color: var(--text-secondary);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--text-unselected);
+  font-family: var(--font-header);
+  font-size: 42px;
+  font-style: italic;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  position: relative;
+}
+
+.nav-item:before {
+  content: '▶ ';
+  color: transparent;
+  position: absolute;
+  left: -30px;
+  transition: color 0.1s ease;
 }
 
 .nav-item.active {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--accent-cyan);
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+  color: var(--accent-yellow);
+  text-shadow: 3px 3px 0px var(--accent-red);
+  transform: translateX(10px);
+}
+
+.nav-item.active:before {
+  color: var(--accent-yellow);
 }
 
 .nav-item:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
-  transform: scale(1.05);
+  color: #fff;
 }
 
 /* 📄 Main Content Area */
@@ -163,16 +174,16 @@
 /* 🕹️ Bottom Bar */
 .bottom-bar {
   height: 80px;
-  width: 100%;
-  padding: 0 0 0 0;
+  width: calc(100% + 40px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   z-index: 10;
-  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
-  margin: 0 -40px;
+  background: var(--accent-red);
+  margin: 0 -40px 0 0;
   padding: 0 40px;
-  width: calc(100% + 80px);
+  border-top: 4px solid #fff;
+  box-shadow: 0 -4px 15px rgba(204, 28, 16, 0.5);
 }
 
 .play-button-container {
@@ -183,54 +194,56 @@
 
 .update-progress {
   width: 300px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
+  height: 16px;
+  background: #000;
+  border: 2px solid #fff;
 }
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
-  box-shadow: var(--glow-cyan);
-  transition: width 0.3s ease;
-  border-radius: 2px;
+  background: var(--accent-yellow);
 }
 
 .status-text {
-  font-size: 12px;
-  color: var(--text-secondary);
+  font-size: 16px;
+  color: #fff;
   font-family: var(--font-mono);
-  letter-spacing: 0.5px;
+  font-weight: 700;
 }
 
-/* ── Header ──────────────────────────────────── */
+/* ── Top Absolute Info Bar ──────────────────── */
 .app-header {
-  margin-bottom: 30px;
-  -webkit-app-region: drag;
-  cursor: grab;
+  position: absolute;
+  top: 10px;
+  right: 20px;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: flex-end;
-}
-
-.app-header button,
-.app-header a,
-.app-header input {
-  -webkit-app-region: no-drag;
+  -webkit-app-region: drag;
+  z-index: 100;
+  text-align: right;
 }
 
 .app-title {
-  font-size: 42px;
-  margin-bottom: 4px;
-  line-height: 1;
+  display: none; /* Hide main title, logo will be in the background */
 }
 
 .version {
   font-family: var(--font-mono);
-  color: var(--accent-magenta);
+  color: #fff;
   font-size: 12px;
-  opacity: 0.8;
+  font-weight: 700;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.system-direction-title {
+  font-family: var(--font-header);
+  font-style: italic;
+  font-size: 64px;
+  color: var(--accent-red);
+  text-shadow: 4px 4px 0 #000;
+  margin-bottom: 20px;
+  text-transform: uppercase;
 }
 
 /* ── Scrollbar ───────────────────────────────── */
@@ -252,15 +265,10 @@
 }
 
 /* ── Animations ──────────────────────────────── */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -268,16 +276,10 @@
   }
 }
 
-@keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 15px rgba(0, 242, 255, 0.4); }
-  50% { box-shadow: 0 0 30px rgba(0, 242, 255, 0.7), 0 0 60px rgba(0, 242, 255, 0.2); }
+.status-text.blink {
+  animation: blink 0.5s step-start infinite;
 }
 
-.btn-primary {
-  animation: glowPulse 3s ease-in-out infinite;
-}
-
-.btn-primary:hover {
-  animation: none;
-  box-shadow: 0 0 30px rgba(0, 242, 255, 0.7), 0 0 60px rgba(0, 242, 255, 0.3);
+@keyframes blink {
+  50% { opacity: 0; }
 }

@@ -271,17 +271,17 @@ function App() {
   const renderSettingRow = (s: SettingDef) => {
     const val = getConfigValue(s.key);
     return (
-      <div key={s.key} style={{ display: 'flex', flexDirection: 'column', padding: '6px 8px', background: 'rgba(0,0,0,0.2)', borderRadius: 6, border: '1px solid rgba(255,255,255,0.03)' }}>
-        <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{s.label}</span>
+      <div key={s.key} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '2px 8px', borderBottom: '2px solid rgba(255,255,255,0.1)' }}>
+        <span style={{ fontSize: 20, color: 'var(--text-unselected)', fontFamily: 'var(--font-main)', textTransform: 'uppercase' }}>{s.label}</span>
         {s.type === "bool" && (
           <button
             onClick={() => toggleBool(s.key)}
             style={{
-              background: isBoolEnabled(s.key) ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.08)',
-              color: isBoolEnabled(s.key) ? '#000' : 'var(--text-secondary)',
-              border: 'none', borderRadius: 4, padding: '4px 0', width: '100%',
-              fontWeight: 700, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-mono)',
-              transition: 'all 0.2s ease',
+              background: 'transparent',
+              color: isBoolEnabled(s.key) ? 'var(--accent-yellow)' : 'var(--text-secondary)',
+              border: 'none', padding: '0',
+              fontWeight: 700, fontSize: 20, cursor: 'pointer', fontFamily: 'var(--font-main)',
+              transition: 'all 0.1s ease', textTransform: 'uppercase'
             }}
           >
             {isBoolEnabled(s.key) ? "ON" : "OFF"}
@@ -293,9 +293,9 @@ function App() {
             value={val || "0"}
             onChange={e => updateSetting(s.key, e.target.value)}
             style={{
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 4, padding: '4px 8px', width: '100%', color: 'var(--accent-cyan)',
-              fontFamily: 'var(--font-mono)', fontSize: 12, boxSizing: 'border-box'
+              background: 'transparent', border: 'none',
+              width: '60px', color: 'var(--accent-yellow)', textAlign: 'right',
+              fontFamily: 'var(--font-main)', fontSize: 20, boxSizing: 'border-box'
             }}
           />
         )}
@@ -304,11 +304,11 @@ function App() {
             type="text"
             value={val || ""}
             onChange={e => updateSetting(s.key, e.target.value)}
-            placeholder="not set"
+            placeholder="-"
             style={{
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 4, padding: '4px 8px', width: '100%', color: 'var(--accent-cyan)',
-              fontFamily: 'var(--font-mono)', fontSize: 12, boxSizing: 'border-box'
+              background: 'transparent', border: 'none',
+              width: '100px', color: 'var(--accent-yellow)', textAlign: 'right',
+              fontFamily: 'var(--font-main)', fontSize: 20, boxSizing: 'border-box'
             }}
           />
         )}
@@ -317,12 +317,13 @@ function App() {
             value={val || s.options[0].value}
             onChange={e => updateSetting(s.key, e.target.value)}
             style={{
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 4, padding: '4px 8px', width: '100%', color: 'var(--accent-cyan)',
-              fontFamily: 'var(--font-mono)', fontSize: 12, boxSizing: 'border-box'
+              background: 'transparent', border: 'none',
+              color: 'var(--accent-yellow)', textAlign: 'right',
+              fontFamily: 'var(--font-main)', fontSize: 20, boxSizing: 'border-box',
+              appearance: 'none', paddingRight: '20px', cursor: 'pointer'
             }}
           >
-            {s.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            {s.options.map(o => <option key={o.value} value={o.value} style={{background: '#000'}}>{o.label.toUpperCase()}</option>)}
           </select>
         )}
       </div>
@@ -349,19 +350,27 @@ function App() {
       </div>
 
 
-      {/* ⬅️ Sidebar */}
-      <nav className="sidebar">
-        <div className="nav-logo" onClick={() => setActiveTab("news")}>
-          <div style={{ width: 40, height: 40, background: 'var(--accent-cyan)', borderRadius: 8, filter: 'drop-shadow(0 0 10px var(--accent-cyan))' }} />
-        </div>
-        <button className={`nav-item ${activeTab === 'news' ? 'active' : ''}`} onClick={() => setActiveTab("news")} title="News">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10l4 4v10a2 2 0 0 1-2 2z"></path><polyline points="14 4 14 8 18 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      {/* ⬅️ Arcade Menu Sidebar */}
+      <nav className="arcade-sidebar">
+        <h1 className="system-direction-title">SYSTEM<br/>DIRECTION</h1>
+        
+        <button 
+          className={`nav-item ${activeTab === 'news' ? 'active' : ''}`} 
+          onClick={() => setActiveTab("news")}
+        >
+          LATEST NEWS
         </button>
-        <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab("settings")} title="Settings">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <button 
+          className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} 
+          onClick={() => setActiveTab("settings")}
+        >
+          GAME OPTION
         </button>
-        <button className={`nav-item ${activeTab === 'controls' ? 'active' : ''}`} onClick={() => setActiveTab("controls")} title="Controls">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+        <button 
+          className={`nav-item ${activeTab === 'controls' ? 'active' : ''}`} 
+          onClick={() => setActiveTab("controls")}
+        >
+          BUTTON CONFIG
         </button>
       </nav>
 
@@ -379,7 +388,7 @@ function App() {
               <h2 style={{ marginBottom: 20 }}>Latest News</h2>
               <div className="news-grid">
                 {MOCK_NEWS.map(news => (
-                  <div key={news.id} className="news-card glass">
+                  <div key={news.id} className="news-card arcade-box">
                     <img src={news.image} className="news-card-img" alt={news.title} />
                     <div className="news-card-tag">{news.tag}</div>
                     <h3 style={{ fontSize: 18 }}>{news.title}</h3>
@@ -393,8 +402,8 @@ function App() {
           {/* ── Settings ──────────────────────────── */}
           {activeTab === "settings" && (
             <div className="settings-panel">
-              <h2 style={{ marginBottom: 20 }}>System Settings</h2>
-              <div className="glass settings-list" style={{ padding: 24 }}>
+              <h2 style={{ marginBottom: 20, color: 'var(--accent-red)' }}>Game Option</h2>
+              <div className="arcade-box settings-list" style={{ padding: 24 }}>
                 {configs.length === 0 ? (
                   <p style={{ opacity: 0.6 }}>No config found. Run the game once to generate defaults, or settings will be created as you change them.</p>
                 ) : null}
@@ -410,7 +419,7 @@ function App() {
                     }}>
                       {cat.icon} {cat.name}
                     </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '8px' }}>
                       {cat.settings.map(renderSettingRow)}
                     </div>
                   </div>
@@ -426,8 +435,8 @@ function App() {
                 <h2>Input Mapping</h2>
                 <div style={{ display: 'flex', gap: 10 }}>
                   {(["XBOX", "PS5", "STICKS"] as const).map(preset => (
-                    <button key={preset} className="glass-card" onClick={() => applyPreset(preset)}
-                      style={{ fontSize: 11, padding: '6px 16px', cursor: 'pointer', border: 'none', color: 'var(--text-secondary)', fontWeight: 700, fontFamily: 'var(--font-mono)', borderRadius: 6 }}>
+                    <button key={preset} className="arcade-card" onClick={() => applyPreset(preset)}
+                      style={{ fontSize: 16, padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', fontWeight: 700, fontFamily: 'var(--font-main)' }}>
                       {preset}
                     </button>
                   ))}

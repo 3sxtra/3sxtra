@@ -495,7 +495,8 @@ void Gekko::MessageSystem::ParsePacket(NetAddress& addr, NetPacket& pkt, u32 pac
             OnSyncRequest(addr, pkt);
         }
         else {
-            printf("dropped packet!\n");
+            printf("[Gekko] dropped packet from %s (type=%d, magic=%u, expected=%u)\n", 
+                   (char*)addr.GetAddress(), pkt.header.type, pkt.header.magic, _session_magic);
         }
     }
     else {
@@ -541,6 +542,7 @@ void Gekko::MessageSystem::OnSyncRequest(NetAddress& addr, NetPacket& pkt)
 
     // handle requests and set the peer its session magic for both remotes and spectators
     std::vector<std::unique_ptr<Player>>* current = &remotes;
+    bool found_exact = false;
     for (u32 i = 0; i < 2; i++)
     {
         if (i == 1) {
@@ -554,7 +556,33 @@ void Gekko::MessageSystem::OnSyncRequest(NetAddress& addr, NetPacket& pkt)
                     player->stats.last_sent_sync_message = now;
                     should_send++;
                 }
+                found_exact = true;
             }
+        }
+    }
+
+    if (!found_exact) {
+        // Address mismatch (common with LAN sockets or Symmetric NAT changing the port).
+        // If a peer is still 'Initiating' and hasn't synced yet, we assume this SyncRequest
+        // belongs to them and bind their logical address to this physical endpoint.
+        current = &remotes;
+        for (u32 i = 0; i < 2; i++) {
+            if (i == 1) current = &spectators;
+            for (auto& player : *current) {
+                if (player->GetStatus() == Initiating && player->session_magic == 0) {
+                    player->address.Copy(&addr);
+                    printf("[Gekko] Updated peer address to %s (Symmetric NAT/LAN port shift)\n", player->address.GetAddress());
+                    
+                    player->session_magic = body->rng_data;
+                    if (player->sync_num == 0) {
+                        player->stats.last_sent_sync_message = now;
+                        should_send++;
+                    }
+                    found_exact = true;
+                    break;
+                }
+            }
+            if (found_exact) break;
         }
     }
 
@@ -605,6 +633,32 @@ void Gekko::MessageSystem::OnSyncResponse(NetAddress& addr, NetPacket& pkt)
                     continue;
                 }
             }
+        }
+    }
+
+    // Address mismatch fallback (symmetric NAT or LAN port shift protection)
+    if (should_send == 0) {
+        current = &remotes;
+        for (u32 i = 0; i < 2; i++) {
+            if (i == 1) current = &spectators;
+            for (auto& player : *current) {
+                if (player->GetStatus() == Initiating && player->session_magic == body->rng_data) {
+                    player->address.Copy(&addr);
+                    printf("[Gekko] Updated peer address to %s on SyncResponse (Symmetric NAT/LAN port shift)\n", player->address.GetAddress());
+                    
+                    if (player->sync_num < NUM_TO_SYNC) {
+                        player->sync_num++;
+                        should_send++;
+                        player->stats.last_sent_sync_message = now;
+                        session_events.AddPlayerSyncingEvent(player->handle, player->sync_num, NUM_TO_SYNC);
+                    } else {
+                        player->SetStatus(Connected);
+                        session_events.AddPlayerConnectedEvent(player->handle);
+                    }
+                    break;
+                }
+            }
+            if (should_send > 0) break;
         }
     }
 
