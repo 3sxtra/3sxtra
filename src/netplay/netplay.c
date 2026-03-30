@@ -1303,7 +1303,9 @@ void Netplay_StopSpectate(void) {
 void Netplay_RegisterSpectator(const char* spectator_room_code, const char* spectator_player_id) {
     if (!spectator_room_code || !spectator_room_code[0])
         return;
-    if (session_state != NETPLAY_SESSION_RUNNING || !session)
+    if (session_state != NETPLAY_SESSION_RUNNING && session_state != NETPLAY_SESSION_CONNECTING)
+        return;
+    if (!session)
         return;
 
     char spec_ip[64];

@@ -1,0 +1,2103 @@
+{
+  "version": "2026.03.30",
+  "files": [
+    {
+      "path": "assets/3sxlogo.ico",
+      "hash": "8a43421e2b0506a3e054f9cfa44fd50fe69a7cba3776cc837d8d3d4d1f7e1d62",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/3sxlogo.ico"
+    },
+    {
+      "path": "assets/3sxlogo.png",
+      "hash": "68eed39b676a01cc533248995fa54bc08c162d01d08463cfd44f25cb51fd3ebf",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/3sxlogo.png"
+    },
+    {
+      "path": "assets/3sxlogo_128.png",
+      "hash": "6966e65b2d98b3aa00aa06738814f0e3bef3ab52151ca4c394e28361d4b7c103",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/3sxlogo_128.png"
+    },
+    {
+      "path": "assets/ASSET_VERSION",
+      "hash": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ASSET_VERSION"
+    },
+    {
+      "path": "assets/controllers/controller.png",
+      "hash": "d8af38766dbba75444d58f4a55a797e222e07e245eb896220b7c67c38ba2f0b5",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/controller.png"
+    },
+    {
+      "path": "assets/controllers/controllerimage-kenney.bin",
+      "hash": "74be890abe3bac545e112b66cb81032b75d6dfe1e1e58b270fcc3501833222e5",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/controllerimage-kenney.bin"
+    },
+    {
+      "path": "assets/controllers/controllerimage-ordinary.bin",
+      "hash": "69860e2432fde0a3b5c9f79757705d428c42917a8a777d236d3201f41bf5fffe",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/controllerimage-ordinary.bin"
+    },
+    {
+      "path": "assets/controllers/controllerimage-standard.bin",
+      "hash": "8df779b1f4b6db3d7c5bba4c578fa62fb7c708947a95f2c1aba2320b24cbd9cb",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/controllerimage-standard.bin"
+    },
+    {
+      "path": "assets/controllers/keyboard.png",
+      "hash": "1b9e7dce8bdbc7aa3fbe8fb166f827210cc8272120c90c0711eb07fe6ec1979c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/keyboard.png"
+    },
+    {
+      "path": "assets/controllers/ps3.png",
+      "hash": "562c56cafb8559f5e4e01144aecd3b274869a731acb33444ebed45c7dcfdf110",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ps3.png"
+    },
+    {
+      "path": "assets/controllers/ps4.png",
+      "hash": "371b636cedffb9f58b6706cca514ec3073c22babf72938d67fc78b0d3f279a1e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ps4.png"
+    },
+    {
+      "path": "assets/controllers/ps5.png",
+      "hash": "32f80de7b08e56b84b50a747fa635dbabc13f39b979fb7f9fe5692771e2e6b5c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ps5.png"
+    },
+    {
+      "path": "assets/controllers/steam_deck.png",
+      "hash": "75a44d3e1ca0719f3a84eae29b42fa2383331c360b6228b3763741c92512dc9e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/steam_deck.png"
+    },
+    {
+      "path": "assets/controllers/switch.png",
+      "hash": "202cb31989e76fe63b99583a788683a50b3d1179c395b0786286a1f7a23129e8",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/switch.png"
+    },
+    {
+      "path": "assets/controllers/xbox_360.png",
+      "hash": "2f93f97a535a1c1cbf6c7bc7808bc534c32132bf932acb3f2a9d4bbe7ad380f8",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/xbox_360.png"
+    },
+    {
+      "path": "assets/controllers/xbox_one.png",
+      "hash": "2f387855e891ef0f81cc7ac5008cfa150d39c169a6df19e2a28f9a2053a471d6",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/xbox_one.png"
+    },
+    {
+      "path": "assets/controllers/xbox_series.png",
+      "hash": "e18457263b7541fa29ecf712a93489dc13dbef3be4c628706feda2d395416a0e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/xbox_series.png"
+    },
+    {
+      "path": "assets/flags/br.png",
+      "hash": "6466fb8c9df8f3b6f9ae01fb2ce414dc276a63f51305cebd7f09e0572b893b0e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/br.png"
+    },
+    {
+      "path": "assets/flags/cn.png",
+      "hash": "31cc1ee20de5242d8119931bd27e6f34ae11ab700b751877d1b6742f4bd3dad2",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/cn.png"
+    },
+    {
+      "path": "assets/flags/de.png",
+      "hash": "9fca2a227034ec5e748309159eb9a25b1ef31fa94605730c028fbc563dbddb33",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/de.png"
+    },
+    {
+      "path": "assets/flags/fr.png",
+      "hash": "3a38f3dc1104be24050e3e80f2a5a7609feef13127607186e3d98f5dc077423b",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fr.png"
+    },
+    {
+      "path": "assets/flags/gb.png",
+      "hash": "a53b93202fdf4d38aa1c02ce17eee25bc0d5dac04ef86b8beaf1ef6d71694a42",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gb.png"
+    },
+    {
+      "path": "assets/flags/gr.png",
+      "hash": "11b20711f7c60b79f3bef1b57e4ffda24e2b37a47306e14e4a2d70496b2ad947",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gr.png"
+    },
+    {
+      "path": "assets/flags/jp.png",
+      "hash": "1541c804e6de5125814cd551955de53b4d45f7646c6d7b80c4d52ca49c7f55e9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/jp.png"
+    },
+    {
+      "path": "assets/flags/ke.png",
+      "hash": "375de21c24980d6d26c1da24676c9f75d5acca14d3852861eb7d54572009357f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ke.png"
+    },
+    {
+      "path": "assets/flags/ru.png",
+      "hash": "71ba22d9f7d682bb7ce1bc22b0cfbd63bea52d4eb6363df243ad5845aaa2d12e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ru.png"
+    },
+    {
+      "path": "assets/flags/us.png",
+      "hash": "8d21952aee7f6f8d49ea1fe2a5f7b3d06d509269f43cc1ad66b42ed8cb98e7ef",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/us.png"
+    },
+    {
+      "path": "assets/flags_icons/ae.png",
+      "hash": "7ff4c92ac96f02ef5a513c10cf5eb1e4d6e7fedd3ab3306427156244700bc384",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ae.png"
+    },
+    {
+      "path": "assets/flags_icons/af.png",
+      "hash": "9e7a660ca3c048956fcfe3619252e8198e5c85ed9742e90711d79f2b40cefac9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/af.png"
+    },
+    {
+      "path": "assets/flags_icons/al.png",
+      "hash": "0531d813891251121806909f9f382fabdc570896f4a4298915a0b56b144e20f7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/al.png"
+    },
+    {
+      "path": "assets/flags_icons/am.png",
+      "hash": "22a8ecb10dc6e0234be3fac07a59daab1c1bceba8622c1ca6999d4a5301d3354",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/am.png"
+    },
+    {
+      "path": "assets/flags_icons/ao.png",
+      "hash": "98c2fd6fd1fb75f711ef97484782643e4a467833b76dbf2e6dce21ca0db667a3",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ao.png"
+    },
+    {
+      "path": "assets/flags_icons/aq.png",
+      "hash": "4708c4efaa4c0345453fec72ae2778095e1e686d32701a1447f0cc40c1106cea",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/aq.png"
+    },
+    {
+      "path": "assets/flags_icons/ar.png",
+      "hash": "6bdb24b5268d83b9b36717928198671ebee03d67b6352694f11c64509bb7f86c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ar.png"
+    },
+    {
+      "path": "assets/flags_icons/at.png",
+      "hash": "a67bfd679cfd4d72a865393712d41b9f3f3fd53024c6694001f68ed62e9d8ca5",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/at.png"
+    },
+    {
+      "path": "assets/flags_icons/au.png",
+      "hash": "8896f5f0cc5baee5244f1b744d6d45a5b473b5643e00cf88136c6952b970f315",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/au.png"
+    },
+    {
+      "path": "assets/flags_icons/az.png",
+      "hash": "96b12feb246377057631682fadeacc8a6a7a56f69f66687be45497504abe87a7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/az.png"
+    },
+    {
+      "path": "assets/flags_icons/ba.png",
+      "hash": "4b57177ba6f79642ce318095f9185ae0781f6403b941d6fc5d3614fa9629316f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ba.png"
+    },
+    {
+      "path": "assets/flags_icons/bd.png",
+      "hash": "293a7619e9c8dcc6859a71ad47a8eefd89c3ff718b6fa4a3472e8adae6a47165",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/bd.png"
+    },
+    {
+      "path": "assets/flags_icons/be.png",
+      "hash": "ce6e58def6f432d9bef5de4789551a12f5d806bb7e7f235920cea7f4f1e6e135",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/be.png"
+    },
+    {
+      "path": "assets/flags_icons/bf.png",
+      "hash": "b8bc60ad74c72460fd3873e6cd5a7a100dbdc95c811af68df78de9fedad64b01",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/bf.png"
+    },
+    {
+      "path": "assets/flags_icons/bg.png",
+      "hash": "b59fed6291d8d286f031527128ca07611fbbc608392534fb62f2cfc2047dc374",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/bg.png"
+    },
+    {
+      "path": "assets/flags_icons/bi.png",
+      "hash": "e40614fcd9a1cb2c1039d8dcc8929637fa65b58681e257ae2b02dc780c0e7fa9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/bi.png"
+    },
+    {
+      "path": "assets/flags_icons/bj.png",
+      "hash": "1728deff7732c0a1cb61eeec8f9cd7d0808ec2f284bd0d01b76e13f579d3d450",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/bj.png"
+    },
+    {
+      "path": "assets/flags_icons/bn.png",
+      "hash": "e1ecbed76f88b4e6765b7422f728d4d59a86de346c155326534647f5bafe053d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/bn.png"
+    },
+    {
+      "path": "assets/flags_icons/bo.png",
+      "hash": "4d5be68fed0493214a4011bad770ba02f2e397115d0a5732a8c92c3533d62c60",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/bo.png"
+    },
+    {
+      "path": "assets/flags_icons/br.png",
+      "hash": "8512b3a0d591b84adfc78469211ffd1727f9a5e7db06fe9f046e7eb51e626792",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/br.png"
+    },
+    {
+      "path": "assets/flags_icons/bs.png",
+      "hash": "d26351ff7435576d322652b94b24872ca2396b695bff206e509000c8f18ba587",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/bs.png"
+    },
+    {
+      "path": "assets/flags_icons/bt.png",
+      "hash": "6bd63e08812f703f9bf1a082b958081c4db8f033a050d3614a4e1d63cc75c740",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/bt.png"
+    },
+    {
+      "path": "assets/flags_icons/bw.png",
+      "hash": "7939df4e98695e4bcd8ad82ffd9ef1f03d634217afcc5a89a843dba2032c0425",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/bw.png"
+    },
+    {
+      "path": "assets/flags_icons/by.png",
+      "hash": "66b3aeb69b7bebdb300099aa5019def287e7b3f671ccff15a5bdcb300c396aa5",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/by.png"
+    },
+    {
+      "path": "assets/flags_icons/bz.png",
+      "hash": "dee1676943409ddf9401c3db68d6d1b68f5e33965d2ee36f2948beb1f91dc9d5",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/bz.png"
+    },
+    {
+      "path": "assets/flags_icons/ca.png",
+      "hash": "e36b7fbd7218d785e18143d5a8ddffbab41188b6cf8d0115e2d7ff555560706e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ca.png"
+    },
+    {
+      "path": "assets/flags_icons/cd.png",
+      "hash": "82b12bf096cad902b8c202abeb995245ad09fc95f1d279e3276f85a190b647a2",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/cd.png"
+    },
+    {
+      "path": "assets/flags_icons/cf.png",
+      "hash": "ce65220210da1d79b59e27a1fd4ebeed619494ad36be32d6c56e8fe69839d199",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/cf.png"
+    },
+    {
+      "path": "assets/flags_icons/cg.png",
+      "hash": "82c45115a99fc6aed6c45f0a56033e9b6a9d7243f72c2bc11c4a7516f207f588",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/cg.png"
+    },
+    {
+      "path": "assets/flags_icons/ch.png",
+      "hash": "533280fe33c0abeafc3ff0a108e846d7454e66fbe955dbef3a27926e549efb1d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ch.png"
+    },
+    {
+      "path": "assets/flags_icons/ci.png",
+      "hash": "362dfde55da89f2206829a20d8b02d1c91efb7e4ef70b96c61a04a76943bbb14",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ci.png"
+    },
+    {
+      "path": "assets/flags_icons/cl.png",
+      "hash": "254f78bb438cdd6d2446a34e3364aeba78164b6eafe339fc54141ac82d5b23fe",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/cl.png"
+    },
+    {
+      "path": "assets/flags_icons/cm.png",
+      "hash": "91d2f0756a337d1c7a380b47f9988d46f8dbc7299be8968c34925359faff584e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/cm.png"
+    },
+    {
+      "path": "assets/flags_icons/cn.png",
+      "hash": "778ca166d19bee6fb75cb4995d90acaec2589ce6e9db8720b1df79eecaf523a4",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/cn.png"
+    },
+    {
+      "path": "assets/flags_icons/co.png",
+      "hash": "06250e2ed80f6d8dcb9892436e5f128e3d6d52b8072b322e958a06696119af35",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/co.png"
+    },
+    {
+      "path": "assets/flags_icons/cr.png",
+      "hash": "5aca838d62b666d4515a23a9d4a6fa030f495a94a9140f7c23fc7f4e3029442e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/cr.png"
+    },
+    {
+      "path": "assets/flags_icons/cu.png",
+      "hash": "20a32a5cbc8aef925017114a20e776ee1fdbd11dbcfb338f7cf1bd36f2829b25",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/cu.png"
+    },
+    {
+      "path": "assets/flags_icons/cy.png",
+      "hash": "e7cf4d12f31d1760dcd025dfca00ae36bee9acec26b69788303e8228a81a20f8",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/cy.png"
+    },
+    {
+      "path": "assets/flags_icons/cz.png",
+      "hash": "e6869d9ecb3f8678f21bf8a0d25c3f286a6eb8222964fe002e256a2424c11325",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/cz.png"
+    },
+    {
+      "path": "assets/flags_icons/de.png",
+      "hash": "ef579f50dd92e3a70b89407c6e1858383cd7a58d7c9e07fccd8afb923b1867ff",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/de.png"
+    },
+    {
+      "path": "assets/flags_icons/dj.png",
+      "hash": "00eb30d5020953d7f9286aca7a396671da266f2c8f643ace618c23f7ffdd9fec",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/dj.png"
+    },
+    {
+      "path": "assets/flags_icons/dk.png",
+      "hash": "6328fa68f653e447d1bbd81acf1fb29a0527c5740345a29367e3df02548ca669",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/dk.png"
+    },
+    {
+      "path": "assets/flags_icons/do.png",
+      "hash": "8def698a718a4f0cfadf94cdd946a32ff11f92b6b1627075b0982a6d63e6ef5c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/do.png"
+    },
+    {
+      "path": "assets/flags_icons/dz.png",
+      "hash": "d61470cba0d7a0c91b450d3a039054abb8fccd0dd955bccc710bed2d02a705be",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/dz.png"
+    },
+    {
+      "path": "assets/flags_icons/ec.png",
+      "hash": "cacb35813bb4cf395a9c4341803bc5039556990636cbaae6bcea6694d51e1d62",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ec.png"
+    },
+    {
+      "path": "assets/flags_icons/ee.png",
+      "hash": "2792069a7f599f5b231cfd4ba210149f717fc65f74e4b06a07a69df8d40fff70",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ee.png"
+    },
+    {
+      "path": "assets/flags_icons/eg.png",
+      "hash": "92cddae5b1b60544c3bbb93249c4c92ffe2d51477684e9c62e1b7788979bc517",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/eg.png"
+    },
+    {
+      "path": "assets/flags_icons/eh.png",
+      "hash": "d31b9982cdee9aaa01767b832845557947cfd0a18543b8baafcd84de25511bc4",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/eh.png"
+    },
+    {
+      "path": "assets/flags_icons/er.png",
+      "hash": "f637ce61f01279855bad3e7ba15f49fad1e3d2d8957fc39ec23b4878ca9af6c6",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/er.png"
+    },
+    {
+      "path": "assets/flags_icons/es.png",
+      "hash": "f08d4200bb64066e6d43487b1cbb04cce1e3bac59546258cc206caaf99fe3a72",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/es.png"
+    },
+    {
+      "path": "assets/flags_icons/et.png",
+      "hash": "3fb98832b0c55d43ae842f05b0bb482cd5afbbe632f8deb530c1af6bff684ca3",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/et.png"
+    },
+    {
+      "path": "assets/flags_icons/fi.png",
+      "hash": "f991a44ca68053d90d6e5c15207012c0b2303f9c5ad67701a7261e8ea2b80a30",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fi.png"
+    },
+    {
+      "path": "assets/flags_icons/fj.png",
+      "hash": "28b5b92d207cad955c38182af5567a92f8674af3b7701dfd4a4cbe9de8c9903e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fj.png"
+    },
+    {
+      "path": "assets/flags_icons/fk.png",
+      "hash": "ae0dc7ed4dc274d0ec7d2b120e32e1899d3c827e2d635177d391b028e1300453",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fk.png"
+    },
+    {
+      "path": "assets/flags_icons/fr.png",
+      "hash": "cadee3fa97d9f93ff456fba1a0b23392741b6b16f628b87740159453aa4fed79",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fr.png"
+    },
+    {
+      "path": "assets/flags_icons/ga.png",
+      "hash": "f70c1aa7017cc97a35821b1c0dbdb4e3cddb29dbe079f941bee9c6045c8370dd",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ga.png"
+    },
+    {
+      "path": "assets/flags_icons/gb.png",
+      "hash": "62bc061bdc7296b2f47a3e3227fd423a66e6384c43608297775ab31984f75aae",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gb.png"
+    },
+    {
+      "path": "assets/flags_icons/ge.png",
+      "hash": "ccff9e41f12baf98485a0dff8c135c5154af087bf99b7cb9dadce723226738dd",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ge.png"
+    },
+    {
+      "path": "assets/flags_icons/gh.png",
+      "hash": "fde0c05d1f10d035bb839aa660086df612b16c0d7f0e3b659fd748d046017b82",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gh.png"
+    },
+    {
+      "path": "assets/flags_icons/gl.png",
+      "hash": "908d0a70910785c805a0c4cee9221f2b87eb0640d76798e357bca2e290fc4f86",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gl.png"
+    },
+    {
+      "path": "assets/flags_icons/gm.png",
+      "hash": "193e67a657f73f4d91887dd3958942a649de8574ac1839c3373eda64fda3779e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gm.png"
+    },
+    {
+      "path": "assets/flags_icons/gn.png",
+      "hash": "e26c7524cb10bee2e63b3f28bb009a018240cf1ad28fd376032942fd2ad25150",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gn.png"
+    },
+    {
+      "path": "assets/flags_icons/gq.png",
+      "hash": "b8e6cae65632d0e8cefb11a413ecf82509183fadd3e1bd88f4f24dcbcae6d8c5",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gq.png"
+    },
+    {
+      "path": "assets/flags_icons/gr.png",
+      "hash": "33e5a940af2b9731bcacd6c5c358643f643c9a6da3807d71c846cef894545598",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gr.png"
+    },
+    {
+      "path": "assets/flags_icons/gt.png",
+      "hash": "80a14ff7e29c3b78654a2102bebd76eec788bf082524f07498b870034469a6ef",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gt.png"
+    },
+    {
+      "path": "assets/flags_icons/gw.png",
+      "hash": "b9e63dfe6088f3bd1a372e738bb670274e9ea48ad6c1e424a6f651586c92fd1a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gw.png"
+    },
+    {
+      "path": "assets/flags_icons/gy.png",
+      "hash": "5bb05826d93c26180388ef4ca2f5ac4ab11721e3b39b35079a9fa402987c7168",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gy.png"
+    },
+    {
+      "path": "assets/flags_icons/hn.png",
+      "hash": "5715e02f2559eb246c1c6ad350709f9fe0113e886a33321db49631937154348c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/hn.png"
+    },
+    {
+      "path": "assets/flags_icons/hr.png",
+      "hash": "e3e46c4f3630f14b70b0a027f708763bf9671a34266842962ef2a22ff002f246",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/hr.png"
+    },
+    {
+      "path": "assets/flags_icons/ht.png",
+      "hash": "885a254a7471be945d127bab1e17509a7abd8899bd97bfc42ff0b43abff1bd3a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ht.png"
+    },
+    {
+      "path": "assets/flags_icons/hu.png",
+      "hash": "130fd374ad656cd22db3bf0bd05ceeb480525fb589680fa5baf9c74645430ce0",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/hu.png"
+    },
+    {
+      "path": "assets/flags_icons/id.png",
+      "hash": "d37ef50acba39877a78929fe101cc97308844818575d2f1238270ef3dfa5cc61",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/id.png"
+    },
+    {
+      "path": "assets/flags_icons/ie.png",
+      "hash": "24acacb455ba03ca7a0ebbc9461e55dba7afdca7a3c3ce27004576abd25b0e74",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ie.png"
+    },
+    {
+      "path": "assets/flags_icons/il.png",
+      "hash": "290e155c303680310d838994e0e807b007ed7c1c5f69ff14a8d455d9eac1a508",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/il.png"
+    },
+    {
+      "path": "assets/flags_icons/in.png",
+      "hash": "2d21b5bae83706eeb221cdb34c9b67535e920847f5566b00fa66479d7a3aad84",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/in.png"
+    },
+    {
+      "path": "assets/flags_icons/iq.png",
+      "hash": "78aa387bf04e4a27f292f81adb066b45c733cb70510943523a75d283e9650a84",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/iq.png"
+    },
+    {
+      "path": "assets/flags_icons/ir.png",
+      "hash": "207fde2b0c77554d89dd48af3cc609ff6b96929f6f0de32ee7f7b89377ce6348",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ir.png"
+    },
+    {
+      "path": "assets/flags_icons/is.png",
+      "hash": "f1e0055662cc57ce7972bdbe62b211b80f1cccd464fe1d2961d2dec4938d296e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/is.png"
+    },
+    {
+      "path": "assets/flags_icons/it.png",
+      "hash": "1dfb9ea9cb89097836d39c0902c0a7283bbd7d222d80c1ddc990899717b1ae0e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/it.png"
+    },
+    {
+      "path": "assets/flags_icons/jm.png",
+      "hash": "8692b78fc94a7ce5d6dce3263dcc2b5a8aa60baf590cb52206908b8654e4cec9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/jm.png"
+    },
+    {
+      "path": "assets/flags_icons/jo.png",
+      "hash": "ea50e4ea5efeebb81329acd91c0bc3e3f6103b54da080ca8be5ba6d013db4de1",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/jo.png"
+    },
+    {
+      "path": "assets/flags_icons/jp.png",
+      "hash": "5b1b16b2ce91a6c214576f10b5cb135ef92ad29eb7f79462f98fb72f8f9ad3c7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/jp.png"
+    },
+    {
+      "path": "assets/flags_icons/ke.png",
+      "hash": "4c37b98edbabe168641b40fc218051ac01fab5abbcc479ba6becc9a40da248ee",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ke.png"
+    },
+    {
+      "path": "assets/flags_icons/kg.png",
+      "hash": "6a5f1de95031f3f33ce41d2ac19bc60672ff373be1c476a8568367b8b2dc092a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/kg.png"
+    },
+    {
+      "path": "assets/flags_icons/kh.png",
+      "hash": "80e9db50b06c3bc7ffe848abf8bfb07710f0cbd9fb88e3ecd2b32e788fe017a7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/kh.png"
+    },
+    {
+      "path": "assets/flags_icons/kp.png",
+      "hash": "e6a247fc671664dc6847056bbdeefee4c63aa418dd5b68728a36c025be8daaaf",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/kp.png"
+    },
+    {
+      "path": "assets/flags_icons/kr.png",
+      "hash": "983cabccf4632413c7880b58f6b41636584f0d24989379f454bb6bc082821f81",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/kr.png"
+    },
+    {
+      "path": "assets/flags_icons/kw.png",
+      "hash": "2805d559580a539ccb6a45c90a04440e97d4a7e162f4e503c18696c966f63d90",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/kw.png"
+    },
+    {
+      "path": "assets/flags_icons/kz.png",
+      "hash": "9130950e0800b6bf3f0de08905048ef933c0bbc089e2139ead13feebbd0401fe",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/kz.png"
+    },
+    {
+      "path": "assets/flags_icons/la.png",
+      "hash": "53b076a7faed28ed3e1e6d6c75abc08f905c7e2a07c0730e57670fe79ababb6a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/la.png"
+    },
+    {
+      "path": "assets/flags_icons/lb.png",
+      "hash": "0432f530c37848cebf5790b907c79613024f0295d984a49a91c8d93840697880",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/lb.png"
+    },
+    {
+      "path": "assets/flags_icons/lk.png",
+      "hash": "dcbc8543235d7e41a019b56bb5902a0d43c56b370373afa503c5815eed1ec31b",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/lk.png"
+    },
+    {
+      "path": "assets/flags_icons/lr.png",
+      "hash": "2066db274ab6dfc6c0548ee01f670208ce91631cca39d8c126f487b5cab548a6",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/lr.png"
+    },
+    {
+      "path": "assets/flags_icons/ls.png",
+      "hash": "7eedb73518320e19fbd4109d71c0f1265a097c5c4a314e0d40d370298a211cca",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ls.png"
+    },
+    {
+      "path": "assets/flags_icons/lt.png",
+      "hash": "2db22ac319acc5f544a30f3fbe32bd03739b0882d4089bbf244bbce9dbcb4fa1",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/lt.png"
+    },
+    {
+      "path": "assets/flags_icons/lu.png",
+      "hash": "66cd4e22bd6e6355802ed1f20ac413ae804b52fc9fbf95b84f85c614e0c5a2a2",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/lu.png"
+    },
+    {
+      "path": "assets/flags_icons/lv.png",
+      "hash": "b3b91b5e1259b79553fd991dc60c33feb8e4557c04fea70dc0fdc0d07634ebc5",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/lv.png"
+    },
+    {
+      "path": "assets/flags_icons/ly.png",
+      "hash": "09a1a34eb1e2cfcb9bc46465e5d54ada66656880ddaad38ec800926b4db72d1e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ly.png"
+    },
+    {
+      "path": "assets/flags_icons/ma.png",
+      "hash": "f8ba2b3d85487825208ebd18dc1f9cc82d14d028ae79f684ee2be014285a4054",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ma.png"
+    },
+    {
+      "path": "assets/flags_icons/md.png",
+      "hash": "6b4c82b3c821db50197e1dd80830844934bfc47f278d999218fb15ba063f9cd9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/md.png"
+    },
+    {
+      "path": "assets/flags_icons/me.png",
+      "hash": "8bbd84c257c2c21fd3bbdfc02b78e754e33cb5f033af04f6aa4c9f6595b7de00",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/me.png"
+    },
+    {
+      "path": "assets/flags_icons/mg.png",
+      "hash": "1862217d11ab01050047bf01a5496c94ccd5910c1ba9c6c86abf9f466fc9eac8",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mg.png"
+    },
+    {
+      "path": "assets/flags_icons/mk.png",
+      "hash": "7722bec9830bc9ebbfdb391c698e006df2e18562597a007ec2c23add1fe31def",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mk.png"
+    },
+    {
+      "path": "assets/flags_icons/ml.png",
+      "hash": "45b1fc0891b3fef52ba6ef98eae5039b4311e91d087220e89300f42a244e84f0",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ml.png"
+    },
+    {
+      "path": "assets/flags_icons/mm.png",
+      "hash": "092248967ad64ab23cac32dd9f2ff8380fd2ce04461b035f1520236e7b4d8fc3",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mm.png"
+    },
+    {
+      "path": "assets/flags_icons/mn.png",
+      "hash": "0f77bf97da6d4447902385132f21de4099cec8d351b1493b0a6e93b5299190e9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mn.png"
+    },
+    {
+      "path": "assets/flags_icons/mr.png",
+      "hash": "cc0f70a0fe77366806ff3b0052ad20bd854a7fbd0fd9e1d73e92513c0165ff2e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mr.png"
+    },
+    {
+      "path": "assets/flags_icons/mw.png",
+      "hash": "6d4ac82937d34ed367d63142a3768cc7ad5bf9540c9ed7aaefa7e9cc8a6ee5b7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mw.png"
+    },
+    {
+      "path": "assets/flags_icons/mx.png",
+      "hash": "2ed5ac817849b95fe11ffab4d61afdf9f7236f80429dec55299f4da38bd73ccb",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mx.png"
+    },
+    {
+      "path": "assets/flags_icons/my.png",
+      "hash": "fdd0ea2be30d2af07a8621df4ed4d47ddbedc6c7f939338558f30abe4b0c679f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/my.png"
+    },
+    {
+      "path": "assets/flags_icons/mz.png",
+      "hash": "6b76e86daf5e1a9f39cc8c54f82b3364ff180d74f6081ff21933036129df8ab6",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mz.png"
+    },
+    {
+      "path": "assets/flags_icons/na.png",
+      "hash": "194e77f16777ea186a3e457f12f481e908b629e5954f945e8b9646de8ff16beb",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/na.png"
+    },
+    {
+      "path": "assets/flags_icons/nc.png",
+      "hash": "98d8f4fe359e229fbe76be666270830345dc52efdc5fc3d3be0f6afdeb02fa60",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/nc.png"
+    },
+    {
+      "path": "assets/flags_icons/ne.png",
+      "hash": "f0e602e4ed2d6d48d6dbbffa26104f69a912e1622652e5f3ca86f7c855fb1cb7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ne.png"
+    },
+    {
+      "path": "assets/flags_icons/ng.png",
+      "hash": "ff9a346bcaeba99fc94415da2fe176438de62dfb10b28b04c9ec2f30ec7020cc",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ng.png"
+    },
+    {
+      "path": "assets/flags_icons/ni.png",
+      "hash": "066b3ae813e1f0c7579d3551031a1d1e14501480602190cae01afa23cafd7ea7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ni.png"
+    },
+    {
+      "path": "assets/flags_icons/nl.png",
+      "hash": "a452da7558753dd712a50f34768623fe56be32d6a9ae20f216ce93b4af8bd8d4",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/nl.png"
+    },
+    {
+      "path": "assets/flags_icons/no.png",
+      "hash": "299f79c45c58df9c1ee680b77ddca9830a360428b46347ace4fdbade78760245",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/no.png"
+    },
+    {
+      "path": "assets/flags_icons/np.png",
+      "hash": "52ce4af502965261d2194ebe2a40de8db3147759471561899dd9ae2a4d87871a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/np.png"
+    },
+    {
+      "path": "assets/flags_icons/nz.png",
+      "hash": "d4d557d5e3d8e1c6fa60fe61aea44526c5431e6412a752b6a7570c72b399ad61",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/nz.png"
+    },
+    {
+      "path": "assets/flags_icons/om.png",
+      "hash": "c510a79a879c1f57fd3fbc8315b483a8560620fd6df6d2611a9dc68e37e7ecc1",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/om.png"
+    },
+    {
+      "path": "assets/flags_icons/pa.png",
+      "hash": "685dacba3cafe0915dae6779a4c82ecc8f5493cf899b37743350d34b42b41a12",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/pa.png"
+    },
+    {
+      "path": "assets/flags_icons/pe.png",
+      "hash": "1c066ca2d8f43069b7e7e03539b371a995c3a1f5e181f61e22ee1baae45637ff",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/pe.png"
+    },
+    {
+      "path": "assets/flags_icons/pg.png",
+      "hash": "7d7318812c56c485e5cb9d859f5348f5540815e17697d41d774ad207f361536f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/pg.png"
+    },
+    {
+      "path": "assets/flags_icons/ph.png",
+      "hash": "ceaa44cacd6a0626f753efd74cbb34fcdde82f601f9e8303e549e3a09a6b07fd",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ph.png"
+    },
+    {
+      "path": "assets/flags_icons/pk.png",
+      "hash": "45d301fd6f713e18dcabd8c144a62f13f01f97cf694c220b00bb9fde40df9b7e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/pk.png"
+    },
+    {
+      "path": "assets/flags_icons/pl.png",
+      "hash": "06df9e35861d6fadbdad8668ac352a84dfcf60a47a8edbcec722ac7eb099e519",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/pl.png"
+    },
+    {
+      "path": "assets/flags_icons/pr.png",
+      "hash": "47fcfc5ba6a8d504b5df53a7e1b3f17dce45b12c061728b977a9fc11f60c5ca9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/pr.png"
+    },
+    {
+      "path": "assets/flags_icons/ps.png",
+      "hash": "56f8f5cb9315e1ddd045170ef6821c33c58d101282aa5db331313818232b1e62",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ps.png"
+    },
+    {
+      "path": "assets/flags_icons/pt.png",
+      "hash": "f181c45a041070b632635b884f19f29e02bbc94eacc5bf8020269ce5e62fdbd2",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/pt.png"
+    },
+    {
+      "path": "assets/flags_icons/py.png",
+      "hash": "5edc9071f5c7fa362e556be9be7cc7ce0f36ccf8d509492f618cd52c42362014",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/py.png"
+    },
+    {
+      "path": "assets/flags_icons/qa.png",
+      "hash": "b56ace2490ca768ab6e65023f5bde4693f56c265209ddbbdae68c2b6e02317c4",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/qa.png"
+    },
+    {
+      "path": "assets/flags_icons/ro.png",
+      "hash": "fe901dea2cb9352ef1f95b5dbf6820b1087df57312b94b577b3803746fcaf86f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ro.png"
+    },
+    {
+      "path": "assets/flags_icons/rs.png",
+      "hash": "171f2e5debd55ee912ecdb51f30424dca6c038cd8306e08ea441c7c52856e7bf",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/rs.png"
+    },
+    {
+      "path": "assets/flags_icons/ru.png",
+      "hash": "3f5b2499914481232f95d67c4264322724e68867e500f3c2c4e957a6f9871f65",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ru.png"
+    },
+    {
+      "path": "assets/flags_icons/rw.png",
+      "hash": "0035f5a3ce44807393367d3fd493a92c7b19b51cc5aa56ae5f2d130e161cd1b1",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/rw.png"
+    },
+    {
+      "path": "assets/flags_icons/sa.png",
+      "hash": "3975f7397e7245947868c3654494842fe4160f7f68127817dbb3b8548e5104a8",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sa.png"
+    },
+    {
+      "path": "assets/flags_icons/sb.png",
+      "hash": "2572504ca8dd7baa94d3bd0be6248c8535a7952bc6558252592629f345184286",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sb.png"
+    },
+    {
+      "path": "assets/flags_icons/sd.png",
+      "hash": "d6a3ae7c883f8a1826abc00009adea1d7da5896fb3fef1482d50c55c9122f365",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sd.png"
+    },
+    {
+      "path": "assets/flags_icons/se.png",
+      "hash": "8533bb419076105224955a54881e5714d28c1f867be3d06d6e77d260927f892c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/se.png"
+    },
+    {
+      "path": "assets/flags_icons/si.png",
+      "hash": "6b5584c3ed46e120bff84fc8b554e649f2ebe06b46922b7662397b845aaecb2d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/si.png"
+    },
+    {
+      "path": "assets/flags_icons/sk.png",
+      "hash": "b0dd0d7dceb029f35f52dcbc1571b20113495baaa6009bc846ea15f3f4775eb7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sk.png"
+    },
+    {
+      "path": "assets/flags_icons/sl.png",
+      "hash": "e8c8ce90f0d1cf10c233984eb84f5573a81cf4966293d7e9f8ffd5cc16005959",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sl.png"
+    },
+    {
+      "path": "assets/flags_icons/sn.png",
+      "hash": "2313399dbdbc67ece1877fdb2f678c7d97c104b974a43df4d33a35af76d80056",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sn.png"
+    },
+    {
+      "path": "assets/flags_icons/so.png",
+      "hash": "11d73d6a7ca7f9285e17a96b1c851c0124ef5ae2e818d85a5f052f0b1dffe6a0",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/so.png"
+    },
+    {
+      "path": "assets/flags_icons/sr.png",
+      "hash": "33cffb5177678be48eb3d6d0abbd04f262a3f42ee1f67d1f9cf5fbe2f9af51f9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sr.png"
+    },
+    {
+      "path": "assets/flags_icons/ss.png",
+      "hash": "8d1e15e35e04bd078f80b6062be0a85a8c51c445b8467852751beee50a0cce1a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ss.png"
+    },
+    {
+      "path": "assets/flags_icons/sv.png",
+      "hash": "e66254d71eb15ce3018a431f73ef85176f9632e3230c7f3c15e73d6d88e5a786",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sv.png"
+    },
+    {
+      "path": "assets/flags_icons/sy.png",
+      "hash": "ad28fc51bdaf55ae39a6a993fe08931fa75fe5070eed894f7be5bff365548638",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sy.png"
+    },
+    {
+      "path": "assets/flags_icons/sz.png",
+      "hash": "f7ff3f09f3d42f63b5fe4e4df1729af85628727373d5a6ed87aaaacaf8fe6571",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sz.png"
+    },
+    {
+      "path": "assets/flags_icons/td.png",
+      "hash": "24a26af9403327a7d3122e9fb0c1162718b0a9d7f389c9424f9d8e6a3c23e752",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/td.png"
+    },
+    {
+      "path": "assets/flags_icons/tf.png",
+      "hash": "ef054f15e7a049e5779fbe7a072d7ab064e32f905c795b2173a6979ebddb58a9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/tf.png"
+    },
+    {
+      "path": "assets/flags_icons/tg.png",
+      "hash": "179f6f44331ab76c677adb804629e5e53cd41e110d865686335ae998b48dafba",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/tg.png"
+    },
+    {
+      "path": "assets/flags_icons/th.png",
+      "hash": "6c2ecd77b37083aa53cfd6339c99e380e7155e35609d1bf7123573d947681a1f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/th.png"
+    },
+    {
+      "path": "assets/flags_icons/tj.png",
+      "hash": "2cf6db51f84b50cae8899d87cffdd9245042dae6208420061b4cbe065d22f66f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/tj.png"
+    },
+    {
+      "path": "assets/flags_icons/tl.png",
+      "hash": "70d2792eda126af0c1807824817da093d885673552a0af326a2c36f1907ce033",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/tl.png"
+    },
+    {
+      "path": "assets/flags_icons/tm.png",
+      "hash": "fe6cd1fdee7d81e33e6f44861e9b4f754631a760a052b10557eb33c2efc66173",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/tm.png"
+    },
+    {
+      "path": "assets/flags_icons/tn.png",
+      "hash": "ab1add6e8b524d1d6b973ab9d0d1b5892049ade0c6d7faf545eccea2abd98b62",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/tn.png"
+    },
+    {
+      "path": "assets/flags_icons/tr.png",
+      "hash": "b6e2a52640a4660e853995e2900d6349679aace2add82ce389b54aecab141b4c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/tr.png"
+    },
+    {
+      "path": "assets/flags_icons/tt.png",
+      "hash": "326e5b1f4e197d2d1c2e9414b8f71d3590273a6a48fce773853ebaa4c79a41d7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/tt.png"
+    },
+    {
+      "path": "assets/flags_icons/tz.png",
+      "hash": "4e3013d09edf3cd5853f268ac7af5b4b0245c5fa028a25559256b25cdbd1d9cd",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/tz.png"
+    },
+    {
+      "path": "assets/flags_icons/ua.png",
+      "hash": "b23a5033c063a1564993cfb7961444fab4966daae0185718eeca190f3c8c2304",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ua.png"
+    },
+    {
+      "path": "assets/flags_icons/ug.png",
+      "hash": "ab057f84c98bac343acadc421ea72aca7cbfccfe2c67dcab98471c941fd3d2f0",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ug.png"
+    },
+    {
+      "path": "assets/flags_icons/us.png",
+      "hash": "bb1d77351f006b1ca0fc414314388da9f8cb7bd940a4d59770328e8ca03e8439",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/us.png"
+    },
+    {
+      "path": "assets/flags_icons/uy.png",
+      "hash": "e4fad72251fec694e4c687b6df16bb66f0c2d9de1031c8129dfa50662c8f01c8",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/uy.png"
+    },
+    {
+      "path": "assets/flags_icons/uz.png",
+      "hash": "9b989fbbd9f825f1756e780b8b4e16b2b5000e22faff3f20888acfbf51b9e8f1",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/uz.png"
+    },
+    {
+      "path": "assets/flags_icons/ve.png",
+      "hash": "d21c43bdfd8fc3c65460adc7592c5d050ba67a902440bfc64255ac72c2b4c3a7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ve.png"
+    },
+    {
+      "path": "assets/flags_icons/vn.png",
+      "hash": "17e698788b0c5af74387cc61ef2fe4baa88436949693d9ae7b3ce51b81ec8d39",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/vn.png"
+    },
+    {
+      "path": "assets/flags_icons/vu.png",
+      "hash": "55b3e3e75467374927d99074e85c8dcde2b5f6a4269f56d1f58d9806b791f015",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/vu.png"
+    },
+    {
+      "path": "assets/flags_icons/ye.png",
+      "hash": "67afc6a29676d3f3717e2bff19f5c192ba13a1d8f358786b1471d90407287382",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ye.png"
+    },
+    {
+      "path": "assets/flags_icons/za.png",
+      "hash": "00fc7f59f30aac85d10e43e7627bb9db27c5b29eb67677b45440e5a5b4f06315",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/za.png"
+    },
+    {
+      "path": "assets/flags_icons/zm.png",
+      "hash": "bfcc8c58c26c1b04d3abd162470b09826db00ac3d5a3d3743ee8acc1937ee997",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/zm.png"
+    },
+    {
+      "path": "assets/flags_icons/zw.png",
+      "hash": "1159be05f5e89abd0ca6f011d6b4a26828dcaecbac361cd2c3414448e93112b7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/zw.png"
+    },
+    {
+      "path": "assets/fonts/BoldPixels.ttf",
+      "hash": "bdee4cb0d6087bdebeb8a7cd1aeb3a44441ba9d1734cd1502f76acc25000d32e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/BoldPixels.ttf"
+    },
+    {
+      "path": "assets/fonts/district_italic.ttf",
+      "hash": "c4b56e7942e4baf0a71200b10a7081bda2b2a0f30aed9c16318ddf53c3b56982",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/district_italic.ttf"
+    },
+    {
+      "path": "assets/fonts/NotoEmoji-Regular.ttf",
+      "hash": "de6c18832938afc99caf132b39d6a30a19bac7f2e812e28db2535b4608d27551",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/NotoEmoji-Regular.ttf"
+    },
+    {
+      "path": "assets/fonts/NotoSansJP-Regular.ttf",
+      "hash": "f396a3b57256e4515be9cb41f7aac54766d654890082a9f1b5c2451b5c093d8a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/NotoSansJP-Regular.ttf"
+    },
+    {
+      "path": "assets/icons-capcom-32.png",
+      "hash": "83c4e5fdeefa1ab89d0792208ca3dc5855e53a2697d354c099b4bdaa7930ddd6",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/icons-capcom-32.png"
+    },
+    {
+      "path": "assets/image.png",
+      "hash": "9b96315f7b3750ae956c7d7c990f5867eacc6a7763e60f6aa11b881bca21d7d2",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/image.png"
+    },
+    {
+      "path": "assets/lua/compat/emu.lua",
+      "hash": "16f0d41a96174f802fc2aaa13effede1e4b90f9aea5bd4f6e873c828b54e49fc",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/emu.lua"
+    },
+    {
+      "path": "assets/lua/compat/engine_gamestate.lua",
+      "hash": "6f40d64bff8add2e56ca8b52a6ee0efa07ea8b1da18c2fcc3d0e16baf3a28291",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/engine_gamestate.lua"
+    },
+    {
+      "path": "assets/lua/compat/gui.lua",
+      "hash": "09eadf4c86e51b88119db797bb32249c6de69e7c865774ef235da61f0f1f526d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gui.lua"
+    },
+    {
+      "path": "assets/lua/compat/joypad.lua",
+      "hash": "aa91f3b87d9f82226ab0823b580c667aebb2aadbdae9dbf5ba0a9c6fd6cf5bc1",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/joypad.lua"
+    },
+    {
+      "path": "assets/lua/compat/memory.lua",
+      "hash": "32938ce3364fa296f07cdecfa5752b8f0e5bf269faa904b56e303d526899de66",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/memory.lua"
+    },
+    {
+      "path": "assets/lua/smart_dummy.lua",
+      "hash": "720fcae9631f1f04007286bc1bde27e3c5c8a6d19e598213fb64c2e31e8dab85",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/smart_dummy.lua"
+    },
+    {
+      "path": "assets/lua/training_main.lua",
+      "hash": "8415931dbb68b07430e00c1fc3707cee7532dd7105df410cc7d8b80f2bbd8199",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/training_main.lua"
+    },
+    {
+      "path": "assets/shaders/custom/chain1-scalefx-jinc2.slangp",
+      "hash": "04045c7333ef0601a5d163c86c772bcb0f1efb65298c84fc6cc2a4ad42206f1c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/chain1-scalefx-jinc2.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/chain2-nnedi3-sabr.slangp",
+      "hash": "36a46ba2e351903817e2273fb3607932f93057a17f836a7a154c02f454c21f47",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/chain2-nnedi3-sabr.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/chain3-nnedi3-jinc2.slangp",
+      "hash": "d9501ada08aa8da942fcad9ef25317690628a5fc0470f35ea4c7d032e6833a7c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/chain3-nnedi3-jinc2.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/chain4-nnedi3-omni.slangp",
+      "hash": "858109eae0da73bb9b8e79964eb2b38fb12ce007f9185f7421410abd90f161a9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/chain4-nnedi3-omni.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/chain5-infinity.slangp",
+      "hash": "fa2b549a0926444829fc1eab0391b7ccc088eed98d32def542e6d7dd4c9d73df",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/chain5-infinity.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/edge-smooth.slang",
+      "hash": "605ac59c0ccb0b7b375ff3debdab998673749f0a1d7d8d12727b7623ec612f3d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/edge-smooth.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/fsrcnnx-x2-8-0-4-1.slangp",
+      "hash": "06332be62b8bc4ad45ea6f270b24d8b140752855a85e14eee30a8a0e387093ab",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-x2-8-0-4-1.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass00-feature-map-1.slang",
+      "hash": "a2031f15bc29771bae1c1c29cb71d63e68549333c82d8cc02d85dc894b292198",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass00-feature-map-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass01-feature-map-2.slang",
+      "hash": "3dc45fe119384d19831110cdaf1a3b12587bef4a74247e088b691b28cf820be7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass01-feature-map-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass02-mapping-1-1.slang",
+      "hash": "2e7301e86f82452ef589b218900ea12935a0da94c0db9cd065892263c89f5318",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass02-mapping-1-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass03-mapping-1-2.slang",
+      "hash": "749af04beed359f63bba39e12b309bf3830856fa13710365c2757dfa52e9f1b7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass03-mapping-1-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass04-mapping-2-1.slang",
+      "hash": "983574f340e2feaede33ef5f65b4a4693784bdfead85bff1ea6555c0059e26d6",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass04-mapping-2-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass05-mapping-2-2.slang",
+      "hash": "872550b59fb44ca52be3b7887d37f857e50dddf33a691d2c2cec25b8e0bd4d45",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass05-mapping-2-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass06-mapping-3-1.slang",
+      "hash": "80d230891d820dcb2a074a4116f8ced02241d59c2bc4ebff3909d1806f66e09f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass06-mapping-3-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass07-mapping-3-2.slang",
+      "hash": "30514f859ceee870c81930ed5de2575c4d0df1c232dada5c14d1dd3711fcd5ce",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass07-mapping-3-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass08-mapping-4-1.slang",
+      "hash": "3aca5118ec4aa654113d56474e5da5d8cb7fd321e8843700495561ae92487fac",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass08-mapping-4-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass09-mapping-4-2.slang",
+      "hash": "d862e6428ba94cca3456245adcc04577985e2ccac1826cdf611c1d95275e2cfd",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass09-mapping-4-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass10-sub-band-residuals-1.slang",
+      "hash": "9f509739206ac3fa989bd4a2b012e62d17c3d3cff443505c35a4766f4ecf2234",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass10-sub-band-residuals-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass11-sub-band-residuals-2.slang",
+      "hash": "b80b2582a0b4f5a9610f3ba01587c4dfb138be40e04b8907d1563f1d57f4fc56",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass11-sub-band-residuals-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass12-sub-pixel-convolution-1.slang",
+      "hash": "29d74f8d2d59a94a9fc5ba3f14d3e553125409617f20c808daa519f6ea05ee58",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass12-sub-pixel-convolution-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx/shaders/fsrcnnx-pass13-aggregation.slang",
+      "hash": "51eba1c5996f86a23a76c276008d347fc2c7b9ba789df7a59f8575796d7b8d53",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass13-aggregation.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/fsrcnnx-x2-2-12-0-3-1-v1.slangp",
+      "hash": "851e11c4675ed07e73ec9cae0a09a18233a493feb9ce298cfa28dda219911111",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-x2-2-12-0-3-1-v1.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass00-feature-map-1.slang",
+      "hash": "784241a9441139482cf0d0e09c1fdde99bf006a6271e6cb2536214ea33db1402",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass00-feature-map-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass01-feature-map-2.slang",
+      "hash": "3ff57c829e4ef88a4cb8f5f1648929e93a7c55e3b27116f01535c4d3a2b8a999",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass01-feature-map-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass02-feature-map-3.slang",
+      "hash": "eec545a03a9847842860bb628ebd79a6509f65e381a3dd14183ef4716d9cb60c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass02-feature-map-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass03-mapping-1-1.slang",
+      "hash": "094e6eedb406a8580f1d877860eba6765387abb6f545d2d64a991ac4f6e857db",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass03-mapping-1-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass04-mapping-1-2.slang",
+      "hash": "7bfd5ff238ec7a0e41c487ac46c28c713163d6189a3a9f8fdebbb494f5a729a8",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass04-mapping-1-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass05-mapping-1-3.slang",
+      "hash": "1ec0b4436d5c5b1789a3b35441bd84962139f49f27e7677b76fa63701a0af870",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass05-mapping-1-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass06-mapping-2-1.slang",
+      "hash": "459f427737475a120da40363811cf955ec3ccc35770b2bbc24f546c668c1bad6",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass06-mapping-2-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass07-mapping-2-2.slang",
+      "hash": "6dabd9d5be0c50fd66ea2012c9073adf821c2ce680a1d151ffeda7db84a351d9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass07-mapping-2-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass08-mapping-2-3.slang",
+      "hash": "b060308e64e65004493508babce17c1ddc8cee16407238b25cd87408d687ed02",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass08-mapping-2-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass09-mapping-3-1.slang",
+      "hash": "a003bd760acdf4af19b3583dfc53172066061e72bb8913f1c88f27be22ce909a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass09-mapping-3-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass10-mapping-3-2.slang",
+      "hash": "202388b099aee9eea1aa961abef42fb187ef6a9931cef5bccee26fd74da7a086",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass10-mapping-3-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass11-mapping-3-3.slang",
+      "hash": "b2868bf37f5b16b21436b55c92fc26cf9ad90285e616da3dc98e637ae21fbf4a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass11-mapping-3-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass12-sub-band-residuals-1.slang",
+      "hash": "9d5a2018220213b075346656c2cbb06dfaf2eee6176b038786cab53773073bae",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass12-sub-band-residuals-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass13-sub-band-residuals-2.slang",
+      "hash": "02d5d132fa91c9fd43908543cfd62273649240180b4a5ed890762a56f6c94368",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass13-sub-band-residuals-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass14-sub-band-residuals-3.slang",
+      "hash": "6458f2d972a0c083b5634b634463b4c7c71d8979abb05c00b50358ccace6f5e7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass14-sub-band-residuals-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass15-sub-pixel-convolution-1.slang",
+      "hash": "64f60cd34fc47616d9d45880faadbf70ad89bf8b84b054b5150aef749860e37c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass15-sub-pixel-convolution-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-3-1-v1/shaders/fsrcnnx-pass16-aggregation.slang",
+      "hash": "3c36bcaca03069ea725fd346e85ea35dbeff7237c87a2117fd37985a1fb1d003",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass16-aggregation.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/fsrcnnx-x2-2-12-0-4-1-v1.slangp",
+      "hash": "221df8eb87d258133a4509e0e9ff7c35e560bdbc00df29c0ea7485cc389bd763",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-x2-2-12-0-4-1-v1.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass00-feature-map-1.slang",
+      "hash": "cb039f297c8faff2b0ac0e84313bb19a48101f93d7570ddf83e39dc1443da909",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass00-feature-map-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass01-feature-map-2.slang",
+      "hash": "11ec336e6953cd8f72edb8bc69f0fc07fd2629b475e10b4ee8e48909189f34a3",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass01-feature-map-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass02-feature-map-3.slang",
+      "hash": "e0814df3ddea3e87081f828edc26b98847bc75d106fe24f70472b78c80309239",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass02-feature-map-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass03-mapping-1-1.slang",
+      "hash": "ff3be91221fd1064f2fa6c0bec894ee350201df14bf238d099583e85f2545b16",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass03-mapping-1-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass04-mapping-1-2.slang",
+      "hash": "e7412ae946a26bf00343531df9f76cf704cb6390f6f67803998abb225c087eb6",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass04-mapping-1-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass05-mapping-1-3.slang",
+      "hash": "61071099de1a08c7ea9903209de55e35f158d7ad778704e528547bd3134f00b5",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass05-mapping-1-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass06-mapping-2-1.slang",
+      "hash": "f227c9e6b9e96ecb278ebc8c39b4e78811ea48a88511ffe68ba96fcb2748b200",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass06-mapping-2-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass07-mapping-2-2.slang",
+      "hash": "68f9890542335906be8bc4201ade7c12d8a202cf760c045ed0ba6d3f61c00db3",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass07-mapping-2-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass08-mapping-2-3.slang",
+      "hash": "e958be5db2cbdd3764cc4472d75f183b7aa8f93c9ca4607471b66cafc5e08f9a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass08-mapping-2-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass09-mapping-3-1.slang",
+      "hash": "065602ade89b560116f04fc8ce4205e6347f9d7c9c3887cfc2721eb321f7f58f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass09-mapping-3-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass10-mapping-3-2.slang",
+      "hash": "9120ecc4eedeb4a67f7ba42de1096bf949551eb6322de853bbe4059871720231",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass10-mapping-3-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass11-mapping-3-3.slang",
+      "hash": "91cf4ce20dd63038df33c3acaf2e474c508ef6edb8b42e21e3abd1d0e710d6cc",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass11-mapping-3-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass12-mapping-4-1.slang",
+      "hash": "6552ed9cfb9511191e4af7cb1c8b44eb08e226cba47ab6da600a4cef82d7850d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass12-mapping-4-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass13-mapping-4-2.slang",
+      "hash": "a951b2a173b531556a3f0fb0b6888eb83503e91db112f024f3d52c1a66fdee42",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass13-mapping-4-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass14-mapping-4-3.slang",
+      "hash": "ad7aefc3619543917edbfee97edfe29c2d6857b1b302d4cc0fe47d184d8e8463",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass14-mapping-4-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass15-sub-band-residuals-1.slang",
+      "hash": "70f835c5f35fa184215bf5699ffb825b77a2377b5ece8acc71e476517ff105d0",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass15-sub-band-residuals-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass16-sub-band-residuals-2.slang",
+      "hash": "aa2a78d5319d38876af2c77b088e81895afe8b9ec4f16ad459a7f19f846b8e88",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass16-sub-band-residuals-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass17-sub-band-residuals-3.slang",
+      "hash": "125cb748f92c1948fb3576b82fb346d7326fc78b3554cead3cfea3d0f5d8db34",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass17-sub-band-residuals-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass18-sub-pixel-convolution-1.slang",
+      "hash": "d127094e6ee4afa5344ff62dd5d8230382c85467f21fd54fdec06e6cf9506699",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass18-sub-pixel-convolution-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-12-0-4-1-v1/shaders/fsrcnnx-pass19-aggregation.slang",
+      "hash": "7421d7721ab2d4a7bbaa8a5159d810e31316c28170a3162122b390a44ae21bea",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass19-aggregation.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/fsrcnnx-x2-2-16-0-4-1-v1.slangp",
+      "hash": "145b0b3ce85d10083f544a1522bfa7065b3b3d061b4731fc9941d8ceb384a157",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-x2-2-16-0-4-1-v1.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass00-feature-map-1.slang",
+      "hash": "eb449d49eed1e1d3f6907de079cef12c25f72c408563661854a6f3328fff87b5",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass00-feature-map-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass01-feature-map-2.slang",
+      "hash": "476daed164f48e179767cd8607cd58b93d193d3c09ed65a127696894177e9aac",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass01-feature-map-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass02-feature-map-3.slang",
+      "hash": "38331d9358764b9ddb1033c6bb226459c11232dee6ba78b3dffec7d199fe5cc6",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass02-feature-map-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass03-feature-map-4.slang",
+      "hash": "d120366b76de8d47a447abb62db724c1c91d9263152e766be970782ecd52d10f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass03-feature-map-4.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass04-mapping-1-1.slang",
+      "hash": "5639a35f8b015394b5aec4d8a1228e550a4470d04da28cb00834b6b12fd71468",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass04-mapping-1-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass05-mapping-1-2.slang",
+      "hash": "736843eae666590048effddb304cfe618a3658b8167356c4ac01720173386782",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass05-mapping-1-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass06-mapping-1-3.slang",
+      "hash": "bd6a3242da9c34bd0f59a6a066d9f5c4fdf1d8642f2ee204e7debccf92da9b11",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass06-mapping-1-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass07-mapping-1-4.slang",
+      "hash": "1703a3de728124ef5a83ccd21acc88428aebdb41321a1104a86ae461567b3926",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass07-mapping-1-4.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass08-mapping-2-1.slang",
+      "hash": "b816cfe3b9684cd47373daf69f95494589a0bb439f4e7ebf5a986b9ec97ba7ca",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass08-mapping-2-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass09-mapping-2-2.slang",
+      "hash": "8ba99ca373c30465dabb29fb1166e313aa6de4f40b197340e962db3f16312c70",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass09-mapping-2-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass10-mapping-2-3.slang",
+      "hash": "9e9d93e0ed68479a969733eb2fd4390d9875ef49240ae43ba0a9a28464799fcb",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass10-mapping-2-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass11-mapping-2-4.slang",
+      "hash": "9fba4727f9a5f4f2c096fd67091e3deb5887ae7b6c809ab5118c12686920222c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass11-mapping-2-4.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass12-mapping-3-1.slang",
+      "hash": "a6b1afc3f630ad41897b91cc10b78880fd1ee80275ec289e975ebddb89e8a321",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass12-mapping-3-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass13-mapping-3-2.slang",
+      "hash": "01db61b2f264e986d2beea76d2c06e65890778e32f7910c84723d353be36f4d0",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass13-mapping-3-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass14-mapping-3-3.slang",
+      "hash": "07e0d328550d582e6a4e217ae36595b85d4f9bb0a0e41ace99cca7865da0261d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass14-mapping-3-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass15-mapping-3-4.slang",
+      "hash": "b2ec5491533c333ad161dff4609c2475628737b8aee592a4a307012a8139a74c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass15-mapping-3-4.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass16-mapping-4-1.slang",
+      "hash": "81734f6e22e7f14164becf08ed1e82965ac697bd6a3601d4e8fa3de0eca4930c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass16-mapping-4-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass17-mapping-4-2.slang",
+      "hash": "6efba3a46f779c02bf021ced3d5716a47040f13cdb74b00e2749fcb84de73d39",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass17-mapping-4-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass18-mapping-4-3.slang",
+      "hash": "e30eafd198dfa63c9b1304be9b376bc5cd722b54e679a0a9820a82693098b02e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass18-mapping-4-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass19-mapping-4-4.slang",
+      "hash": "96417c5d8ee1bae3d767c9ff6c9a1fbbb62213aa42ba5c71462c4cfddd66f042",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass19-mapping-4-4.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass20-sub-band-residuals-1.slang",
+      "hash": "328acc09946ecb2805c2936cbbf714c70b8418f7f82de66f2c1d2c6f98d72611",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass20-sub-band-residuals-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass21-sub-band-residuals-2.slang",
+      "hash": "d8fd1c2728f0badfb2a0de272f15f59bffa718fc5cc1d249c88bb9f66a47a539",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass21-sub-band-residuals-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass22-sub-band-residuals-3.slang",
+      "hash": "4ce382bb39722ab1047247d5e379e1aa5b8cae8bd948be17554dfefbb07f28a0",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass22-sub-band-residuals-3.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass23-sub-band-residuals-4.slang",
+      "hash": "eef9dbc6d85ed7ce36a462abe4d984ed13ae6d085900f387ca383403b1c19a7d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass23-sub-band-residuals-4.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass24-sub-pixel-convolution-1.slang",
+      "hash": "4e1e5ef4d73719e533f19526e95bb72ccdb0128c7be449e8879225ba1ef7969c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass24-sub-pixel-convolution-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-16-0-4-1-v1/shaders/fsrcnnx-pass25-aggregation.slang",
+      "hash": "af35cffb92a6b2f2a84d5bf75df0115f25811bcf9e9b3269cae0ed0a4aa680b5",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass25-aggregation.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/fsrcnnx-x2-2-8-0-4-1-v1.slangp",
+      "hash": "06332be62b8bc4ad45ea6f270b24d8b140752855a85e14eee30a8a0e387093ab",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-x2-2-8-0-4-1-v1.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass00-feature-map-1.slang",
+      "hash": "be9927559d60706e9f3eac4b1ec1b7e03a076e6db5d1c00d46b241b29dded40c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass00-feature-map-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass01-feature-map-2.slang",
+      "hash": "bda868525db0c8a3e0917401576f34c592db43f691603ac91c008d31f7c9a5aa",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass01-feature-map-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass02-mapping-1-1.slang",
+      "hash": "7866272bcddfa929e18c1b7d64901f8340d38207c0519f5453020dd8f0ddd34b",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass02-mapping-1-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass03-mapping-1-2.slang",
+      "hash": "98fa7e00fafd4a78bf6cb06575f65f339018ead2db03cc4528d1a7a80144df6b",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass03-mapping-1-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass04-mapping-2-1.slang",
+      "hash": "3bd32fb3b2104f008bd45c029ca777051c70e0e8efcc1b3d2085d3323f2cf34d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass04-mapping-2-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass05-mapping-2-2.slang",
+      "hash": "0c36459bcdc9222ccec2bdd18d8cbe6626602fadbc3e97caed8102c9f5be7188",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass05-mapping-2-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass06-mapping-3-1.slang",
+      "hash": "562616c7b3ab154408fc36ed23fa519e141d90712e6557d5b3468b54a396d0de",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass06-mapping-3-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass07-mapping-3-2.slang",
+      "hash": "6787096e9e5bd3464a56629d25ceecbe0744b7169436cff25785b622f8d371da",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass07-mapping-3-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass08-mapping-4-1.slang",
+      "hash": "082e6bd6b98186010519eee42df22a3e2c0b35d57807b2176b0ef976d9d4c380",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass08-mapping-4-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass09-mapping-4-2.slang",
+      "hash": "8e47c73009e44e7d0682f4b325e599daf85bfc5c1c48f7f24ade11d887ebf6c4",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass09-mapping-4-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass10-sub-band-residuals-1.slang",
+      "hash": "96126ec7fc67c4759a0b6d02474c1206933b240558bb8de5f9dd30b1e445f24a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass10-sub-band-residuals-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass11-sub-band-residuals-2.slang",
+      "hash": "cc0a505ce770e3b7c552af4f6888fe24d7b05768360a0cfecb783ed9f2fd48d2",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass11-sub-band-residuals-2.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass12-sub-pixel-convolution-1.slang",
+      "hash": "0b835e4dca8410638205106aceeb6165b256a0329b7656d2e07a7381f701d614",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass12-sub-pixel-convolution-1.slang"
+    },
+    {
+      "path": "assets/shaders/custom/fsrcnnx-x2-2-8-0-4-1-v1/shaders/fsrcnnx-pass13-aggregation.slang",
+      "hash": "51eba1c5996f86a23a76c276008d347fc2c7b9ba789df7a59f8575796d7b8d53",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/fsrcnnx-pass13-aggregation.slang"
+    },
+    {
+      "path": "assets/shaders/custom/ink-cel.slang",
+      "hash": "6d67214bbea883f1ebcfd6fb0946df5aef3eab1f7c4c0b12dbc7c2d4d4261319",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ink-cel.slang"
+    },
+    {
+      "path": "assets/shaders/custom/ink-fighter-nnedi3.slangp",
+      "hash": "85a88041efcafa8a926ea161861ab7e3077c63fe62bc69b4e75348962e3bfd2f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ink-fighter-nnedi3.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/ink-fighter.slangp",
+      "hash": "7f29a457c5c344096582a08ac61dfa602da75cee582f4db40e8b970d2a841124",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ink-fighter.slangp"
+    },
+    {
+      "path": "assets/shaders/custom/stock.slang",
+      "hash": "6da138501d966b0d08b132280ed0ce40b8bf1ce5752fb06993a3af4f8fe1d94b",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/stock.slang"
+    },
+    {
+      "path": "assets/shaders/custom/stock.slangp",
+      "hash": "4db7e97192c5a076e9d7ad529b2bee8260df9df64bf1ebc0c41398c43f2b6d15",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/stock.slangp"
+    },
+    {
+      "path": "assets/ui/attract_overlay.rcss",
+      "hash": "b5bec5a5130a02eb4376477176d59913820cda20411be2fa2c2d3ccfb9a0691a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/attract_overlay.rcss"
+    },
+    {
+      "path": "assets/ui/attract_overlay.rml",
+      "hash": "bf0d2fd1816e3efc1ea43b2201b8af6c1eda049818722ba0e800c508a5825799",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/attract_overlay.rml"
+    },
+    {
+      "path": "assets/ui/base.rcss",
+      "hash": "e89622cccdd3e516bd15b5337f9505fd2074448d5d945c25aeed59f1b0997c02",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/base.rcss"
+    },
+    {
+      "path": "assets/ui/blocking_training.rml",
+      "hash": "c7c82ca031a3a8a233b4b9767e50e04b893f28c4ee48ac7bae3d8c4ffea4065d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/blocking_training.rml"
+    },
+    {
+      "path": "assets/ui/button_config.rcss",
+      "hash": "faca7d13a5d64737f256dbdb61a36ea87eda2a9e5115bcc45369e8b657b0a08b",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/button_config.rcss"
+    },
+    {
+      "path": "assets/ui/button_config.rml",
+      "hash": "93426b5e627794dea492a62700eb33209e6daef0ec5a5285e5fb25b771b7ca13",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/button_config.rml"
+    },
+    {
+      "path": "assets/ui/casual_lobby.rcss",
+      "hash": "c15476c8b8997495c2efb1dc40bbe03349d0171aac3bf7a1c17ec1c433ec3db2",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/casual_lobby.rcss"
+    },
+    {
+      "path": "assets/ui/casual_lobby.rml",
+      "hash": "60989feba6b98136d0b5a3094e7a0178bb58c1e1196552636aea2509c45b76c3",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/casual_lobby.rml"
+    },
+    {
+      "path": "assets/ui/char_select.rcss",
+      "hash": "2108652501cb99a10db0c477b783cb848b53ec54710eedd9edcbdc1380be2ede",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/char_select.rcss"
+    },
+    {
+      "path": "assets/ui/char_select.rml",
+      "hash": "32272df579aa3b1b0da9fd1e9a5a1320faa712e65ffde599f2d5ac0c20881e3f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/char_select.rml"
+    },
+    {
+      "path": "assets/ui/continue.rcss",
+      "hash": "5b769662a3aae13e8c3a3a36131570e861cdce4c9711f3c4a6d1056eb52cb327",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/continue.rcss"
+    },
+    {
+      "path": "assets/ui/continue.rml",
+      "hash": "24fb661227f8173a3b49a397d10e872b19c6cb5ae0aa38c63cfde32404b09a02",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/continue.rml"
+    },
+    {
+      "path": "assets/ui/control_mapping.rcss",
+      "hash": "182fc4f39de5782400efb74782d5825ffddaf7bb5c5c174b153ca19115b43fb8",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/control_mapping.rcss"
+    },
+    {
+      "path": "assets/ui/control_mapping.rml",
+      "hash": "6f8996dc81bb4ee7ecb7bad20c0ed1caac19a3250e74babb9b3d79d5b8370d7b",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/control_mapping.rml"
+    },
+    {
+      "path": "assets/ui/copyright.rcss",
+      "hash": "b4420590948171acd855988dfa4cbe04bdcecba1d0e5a1ec639837f7f9cf8bd3",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/copyright.rcss"
+    },
+    {
+      "path": "assets/ui/copyright.rml",
+      "hash": "b63f5a0d0040b4b876036e0c3e2eb50163f81fd1f3d7f3d8d4e31210999e50ad",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/copyright.rml"
+    },
+    {
+      "path": "assets/ui/dev_overlay.rcss",
+      "hash": "cc248d30f49c1351719fa23ddfcdbcdd2bf56e8a7169c8f1935022c5f8988bbb",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/dev_overlay.rcss"
+    },
+    {
+      "path": "assets/ui/dev_overlay.rml",
+      "hash": "8074729824ec3453a1d23eaa21672cda71ea7daf2126bcfe4a4312982109d83e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/dev_overlay.rml"
+    },
+    {
+      "path": "assets/ui/effie_hud.rcss",
+      "hash": "4df6d305ebc9494408037d7006f39f61f6bcdf4799ad63367d44655dfd58d7a0",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/effie_hud.rcss"
+    },
+    {
+      "path": "assets/ui/effie_hud.rml",
+      "hash": "aff9b562e64817c3484266df44d514dba06f3bfc3f36a5ac33efeeca18315777",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/effie_hud.rml"
+    },
+    {
+      "path": "assets/ui/exit_confirm.rcss",
+      "hash": "ce6e1fedb7d16552e6759b9946da27bccb2bac442faa5e5adca851d39af66019",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/exit_confirm.rcss"
+    },
+    {
+      "path": "assets/ui/exit_confirm.rml",
+      "hash": "009b6f0a261a23f8a0c7cb80f7618054225edcca928f272fef94ac69dede8ee9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/exit_confirm.rml"
+    },
+    {
+      "path": "assets/ui/extra_option.rcss",
+      "hash": "133549704f50a2dcfeaec9a3570f48525cfba7930162a3977d276121b0925bc9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/extra_option.rcss"
+    },
+    {
+      "path": "assets/ui/extra_option.rml",
+      "hash": "1f631af05582dbb0299df923efb10a9ce04bb74d4c60439e437da977ebfc8146",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/extra_option.rml"
+    },
+    {
+      "path": "assets/ui/frame_display.rcss",
+      "hash": "640411324a9acec6e64d2e4d9f6c651666cfe51b5086a98a4b726fd62fd4c8e1",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/frame_display.rcss"
+    },
+    {
+      "path": "assets/ui/frame_display.rml",
+      "hash": "46c7eeea6bff857454998d3e69afeaf0464e91bd5b00619a644466edadf57f9e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/frame_display.rml"
+    },
+    {
+      "path": "assets/ui/gameover.rcss",
+      "hash": "65d81cc570fef9966e308de315c8e1e9bea2ef79fb8c7aa79ceb3e42734f14c7",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gameover.rcss"
+    },
+    {
+      "path": "assets/ui/gameover.rml",
+      "hash": "828799f140022a44885dfa2886c5088f002ffc4a91162f56b7080229299f6bb6",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/gameover.rml"
+    },
+    {
+      "path": "assets/ui/game_hud.rcss",
+      "hash": "2d4efc9c4998191a8c2c7b9af39d041d5439ddc9f70f8cfdd382a7743c6b7351",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/game_hud.rcss"
+    },
+    {
+      "path": "assets/ui/game_hud.rml",
+      "hash": "3bbecf680d1b4e2716b1a3097eb2505ba763949ba03253983870ed42659358d9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/game_hud.rml"
+    },
+    {
+      "path": "assets/ui/game_option.rcss",
+      "hash": "586a39793bed2404dad1d0be7f8c2fce753ae8fe46532eb6579b8610e313d480",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/game_option.rcss"
+    },
+    {
+      "path": "assets/ui/game_option.rml",
+      "hash": "a2554e41c13a79092588efa7cdf3ac1fbf73427122512025c4cdcba3aaf6d921",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/game_option.rml"
+    },
+    {
+      "path": "assets/ui/ingame_chat.rcss",
+      "hash": "f653f7ea4a0b919bf0354a17a92778d8f048a51956a0a1857c571e5069ceb8b6",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ingame_chat.rcss"
+    },
+    {
+      "path": "assets/ui/ingame_chat.rml",
+      "hash": "0465e20606cb30bfb7bec11e45b34d13b16363e51c569e374a408b76ea48a495",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ingame_chat.rml"
+    },
+    {
+      "path": "assets/ui/input_display.rcss",
+      "hash": "cee2b371e2a7e43700937250429d83cb038072a6a2909dc7dcaffc5d29a65e74",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/input_display.rcss"
+    },
+    {
+      "path": "assets/ui/input_display.rml",
+      "hash": "987930970962069bfacc57e8e4dea1ac7e65eb73e3250f33b53267abc90d6d5a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/input_display.rml"
+    },
+    {
+      "path": "assets/ui/leaderboard.rcss",
+      "hash": "95ce966b489b8652f99ecebdc06451edcb4d42cab77988fc0b69bb0ae6181815",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/leaderboard.rcss"
+    },
+    {
+      "path": "assets/ui/leaderboard.rml",
+      "hash": "baa5013274df11def5bf4f1605f8a61b1941d0f5627a20d3689ffc27a62b5935",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/leaderboard.rml"
+    },
+    {
+      "path": "assets/ui/match_accept.rcss",
+      "hash": "9c37d20cd47ec8d8e29e2e2b4cda58fac6cf1394e3012e0a7daae4508f50e68a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/match_accept.rcss"
+    },
+    {
+      "path": "assets/ui/match_accept.rml",
+      "hash": "47dcc1c7fb95c5c4d6e783d60113f020e9297e03adfa9988fab8c60de613f32a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/match_accept.rml"
+    },
+    {
+      "path": "assets/ui/match_banner.rcss",
+      "hash": "45dc0ab4333245081ee41b41ac00c75b17c600a38d4780068f8c67f3b06401c9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/match_banner.rcss"
+    },
+    {
+      "path": "assets/ui/match_banner.rml",
+      "hash": "dd92d592e4b90c845bd1d0635d0f7024fe29b271bf3fd8cc9e41f674d42b93c1",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/match_banner.rml"
+    },
+    {
+      "path": "assets/ui/memory_card.rcss",
+      "hash": "8de4c9ffd85ecaef34ab87658de5975980e286cbfd41c05cd30df39fb88d3a05",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/memory_card.rcss"
+    },
+    {
+      "path": "assets/ui/memory_card.rml",
+      "hash": "92f39fd36ade829dccc6db8bac2c9ee28e37dcd2bc30cfbc40eef69018a45880",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/memory_card.rml"
+    },
+    {
+      "path": "assets/ui/menu_shared.rcss",
+      "hash": "3cdebfaa5cd9aee1fefb74d1161c38fbd07773be5f609df0c9448253746e4204",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/menu_shared.rcss"
+    },
+    {
+      "path": "assets/ui/mode_menu.rcss",
+      "hash": "e3493503c6a3d1650fe711fdcfb823932f311341d74a85eea5144940e031dad8",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mode_menu.rcss"
+    },
+    {
+      "path": "assets/ui/mode_menu.rml",
+      "hash": "bd64c4a84a00f852f2f0509f46fe796fbd585dcf45a72d00f3da37541a94bc51",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mode_menu.rml"
+    },
+    {
+      "path": "assets/ui/mods.rcss",
+      "hash": "fc06c1d79f48ce55fe409531612bd7f15dc853c0a460a02f9e6511b8b5b00875",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mods.rcss"
+    },
+    {
+      "path": "assets/ui/mods.rml",
+      "hash": "09311fabec317961de5cb8c9498f6ec7750b295335b3fe582baad7abc15f2448",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/mods.rml"
+    },
+    {
+      "path": "assets/ui/name_entry.rcss",
+      "hash": "020147c9f102dd59a3e2f2d37b4833927138b06084eb895f76d6ac97cbc6d7ed",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/name_entry.rcss"
+    },
+    {
+      "path": "assets/ui/name_entry.rml",
+      "hash": "f2577d25b1f9ee6bba26f62d99166115942b53ea2e438f28e396bba5037e2322",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/name_entry.rml"
+    },
+    {
+      "path": "assets/ui/netplay.rcss",
+      "hash": "ad8c3b66a7ac2ce28a38375ae21db64d6b5e48506762a03237150e26a184ba6e",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/netplay.rcss"
+    },
+    {
+      "path": "assets/ui/netplay.rml",
+      "hash": "bd27459c22fbbe73133aadb9d347a09b90ac00a4d7c96f64a3d819f73a3268f3",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/netplay.rml"
+    },
+    {
+      "path": "assets/ui/network_lobby.rcss",
+      "hash": "dceb85e0fa21aa670b4e91200b2b0a556b05c2f99780139dbf1032ad38acf397",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/network_lobby.rcss"
+    },
+    {
+      "path": "assets/ui/network_lobby.rml",
+      "hash": "cfdac34032c99abf931d7ba2d21b7e283a0d75b5f6819c6765c46f4b75aca475",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/network_lobby.rml"
+    },
+    {
+      "path": "assets/ui/network_replay_picker.rcss",
+      "hash": "cf6ed8cdb2f2869ddb1f641c715e70edfe7a180cfdf4076480ea63549c486fa0",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/network_replay_picker.rcss"
+    },
+    {
+      "path": "assets/ui/network_replay_picker.rml",
+      "hash": "366e5441a111510dbab428e62f18b63e55f4d7e1df89d32062f4a961e5c66167",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/network_replay_picker.rml"
+    },
+    {
+      "path": "assets/ui/option_menu.rcss",
+      "hash": "7f3a4b2c4c4544200475bbe54c905344327a6dcafe401557b65334a1861ce024",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/option_menu.rcss"
+    },
+    {
+      "path": "assets/ui/option_menu.rml",
+      "hash": "347b2c63a3b120292ed33690d1a24cfcc749511605a2ff6fa60b977c73cc9680",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/option_menu.rml"
+    },
+    {
+      "path": "assets/ui/palmod.rcss",
+      "hash": "beae92d70d39393ca8d833467cd0ffc29bc2ed7b64fdf1f861b44229b79ae401",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/palmod.rcss"
+    },
+    {
+      "path": "assets/ui/palmod.rml",
+      "hash": "05bcaa69823d551de017e56d7d709eaa8e8a850418f600fd91cabe5a67746fa8",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/palmod.rml"
+    },
+    {
+      "path": "assets/ui/pause.rcss",
+      "hash": "24ea2d15bd7343d959d4e005812e6a3bf666840848b588877ad0f47f1f0eb316",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/pause.rcss"
+    },
+    {
+      "path": "assets/ui/pause.rml",
+      "hash": "a462938e9732d32a59d1dcaa26495fa0421717de392791641171c34bdd8ef124",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/pause.rml"
+    },
+    {
+      "path": "assets/ui/player_profile.rcss",
+      "hash": "a2aca0e52efd5729f4e03ef8999ebe1cdde1d5b28f7216cf51f4df4defc06916",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/player_profile.rcss"
+    },
+    {
+      "path": "assets/ui/player_profile.rml",
+      "hash": "6f14b74f0dcbd7c78e7ea74335476437a462283cb27d502602b19411d2c9ce60",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/player_profile.rml"
+    },
+    {
+      "path": "assets/ui/ranked_matchmaking.rcss",
+      "hash": "6f59b44a5edce22b958ecf194ac7cd98be2b01be4433718e17b87b5715742683",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ranked_matchmaking.rcss"
+    },
+    {
+      "path": "assets/ui/ranked_matchmaking.rml",
+      "hash": "a75dc4a9472b7d3304371a56a6066df53fc9fd14efc3ecca61cde0b1ccf0fe02",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/ranked_matchmaking.rml"
+    },
+    {
+      "path": "assets/ui/replay_picker.rcss",
+      "hash": "a1daabec86042ae644cc0e6e4b2cf14e90ee00e859d851cb0cb328b6659ee179",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/replay_picker.rcss"
+    },
+    {
+      "path": "assets/ui/replay_picker.rml",
+      "hash": "33ac17f53c2775aac2b6b86450a83971a1f6fcef52eb9e2206f59407a00935a9",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/replay_picker.rml"
+    },
+    {
+      "path": "assets/ui/room_code_input.rml",
+      "hash": "529762e83f51292a8b2030d0e952c8ee4f53b90a787da8eaab4621ba2a8ef001",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/room_code_input.rml"
+    },
+    {
+      "path": "assets/ui/settings_shared.rcss",
+      "hash": "35c3576ad3633dfda48c832b232117d26ffda6235a79f71e5332dabde451dda8",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/settings_shared.rcss"
+    },
+    {
+      "path": "assets/ui/shaders.rcss",
+      "hash": "33f5ff78b47c7f9e6646e644b908260fad5dac4c75356467b9d95ddae3cba8ee",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/shaders.rcss"
+    },
+    {
+      "path": "assets/ui/shaders.rml",
+      "hash": "14cc782a71294e4665ee41a370bbe037f6dddc40c52988526d8d16616d02d5ef",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/shaders.rml"
+    },
+    {
+      "path": "assets/ui/sound_menu.rcss",
+      "hash": "a636a1c1efa68c65f54e2c3eeeee6ee13f08806b0403c4c5b40f0f553cde4ade",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sound_menu.rcss"
+    },
+    {
+      "path": "assets/ui/sound_menu.rml",
+      "hash": "aa7466393af7d0e4304be1e194e01b70464c49ea8ee94e88eb090142a18a4912",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sound_menu.rml"
+    },
+    {
+      "path": "assets/ui/stage_config.rcss",
+      "hash": "20b918d710d5e905ab816d2c4e36a4f160abc793fa4a1c4a111d729a47df862b",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/stage_config.rcss"
+    },
+    {
+      "path": "assets/ui/stage_config.rml",
+      "hash": "1fde65f38891b0a29aa933627492d838f3fd7ffdb0bf160bf03e4603c474cede",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/stage_config.rml"
+    },
+    {
+      "path": "assets/ui/sysdir.rcss",
+      "hash": "27bb091a0c0530de8d31681fe596f30859d04be5c792f2eec5c4cc90b641bb81",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sysdir.rcss"
+    },
+    {
+      "path": "assets/ui/sysdir.rml",
+      "hash": "00475d2c48eb9bd809e2a247e7bf303f88b9ffd978328ecb3b19db2da875306d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/sysdir.rml"
+    },
+    {
+      "path": "assets/ui/test.rml",
+      "hash": "f60360cba75b866572355804fab94a1fbeb2adfb22f2723868401223a11c479b",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/test.rml"
+    },
+    {
+      "path": "assets/ui/title.rcss",
+      "hash": "b279ae31d07a7f2fb77763785162a43f2d0f8841c31493927c8271487bfceef1",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/title.rcss"
+    },
+    {
+      "path": "assets/ui/title.rml",
+      "hash": "4a0891c86f8a4d65e4adfe8845160ee96d9f3baae48a19024083554c2bf1ed75",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/title.rml"
+    },
+    {
+      "path": "assets/ui/tournament_lobby.rcss",
+      "hash": "9b265d1ca617f9ffb916c00462e4aa87c4178d1d5e2b6c95c2a35a6f14a38ce5",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/tournament_lobby.rcss"
+    },
+    {
+      "path": "assets/ui/tournament_lobby.rml",
+      "hash": "1b713213a82140bfb2d287fb19326c2dd4835c1bf783e04efd7aaed4e5b5b03f",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/tournament_lobby.rml"
+    },
+    {
+      "path": "assets/ui/training.rcss",
+      "hash": "bcf7304137bf6360bf3151748cc83a3a7ed8d133d23cb7b52dadc65d6cf1167a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/training.rcss"
+    },
+    {
+      "path": "assets/ui/training.rml",
+      "hash": "e33e1e80f32ea4bbef8c10155b0f067c0c5a3e3e07a73c35b670a00df1426aa1",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/training.rml"
+    },
+    {
+      "path": "assets/ui/training_hud.rml",
+      "hash": "d28687ac188cd3550155af306bfa16a26236126d341d8b7fd181badf24ac161d",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/training_hud.rml"
+    },
+    {
+      "path": "assets/ui/training_mode.rcss",
+      "hash": "647c36a7db1455c14ba02ff7b4c6084420a208aa6db7f35bbcf1d0bff3f8424b",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/training_mode.rcss"
+    },
+    {
+      "path": "assets/ui/training_mode.rml",
+      "hash": "e2935aaddfd8aff202fd5a84b45c13016f57f47d539295ce0d22bb7c3d980fef",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/training_mode.rml"
+    },
+    {
+      "path": "assets/ui/trials_hud.rcss",
+      "hash": "0d48acc53cb4c5744f12c08bd367be6d750c33837ae7f8a8e2a6c8084221b748",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/trials_hud.rcss"
+    },
+    {
+      "path": "assets/ui/trials_hud.rml",
+      "hash": "ddfcd9e0c30a98e19cfb9ad1ea1c0542efdb3f9d98b50b964e7b68445fb8e5c4",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/trials_hud.rml"
+    },
+    {
+      "path": "assets/ui/vs_result.rcss",
+      "hash": "1c197daa6cc177668af9b1242ef0720ca0ea62683789cb0971f55b50ccedc83b",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/vs_result.rcss"
+    },
+    {
+      "path": "assets/ui/vs_result.rml",
+      "hash": "440385c66855d18d2d9fb75a2a5f78def4318e48c89f8ff1042c4ad446a4b37c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/vs_result.rml"
+    },
+    {
+      "path": "assets/ui/vs_screen.rcss",
+      "hash": "f11ecea54c7a65297af598fb11bdd5a24f0bd983cc829471f196fe6c376df865",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/vs_screen.rcss"
+    },
+    {
+      "path": "assets/ui/vs_screen.rml",
+      "hash": "b6018beca94caa9844503cd594a1de440d49d1a10df748bbccf8402a0eca418a",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/vs_screen.rml"
+    },
+    {
+      "path": "assets/ui/win.rcss",
+      "hash": "b820f4b297bf2a2bdafe18972a31302e6873bbb20155843994cf7366f9c9e770",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/win.rcss"
+    },
+    {
+      "path": "assets/ui/win.rml",
+      "hash": "3e7212472a2e1dc12f9e2d4a6eff78d7ca4d9e783b8e84e041bda3a70295e64c",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/win.rml"
+    },
+    {
+      "path": "assets/Vector Source.fla",
+      "hash": "1d9ea4e7265886d007415cf2bb777d623c5173791c42c5429e6a59bcb1ab2007",
+      "url": "https://github.com/3sxtra/3sxtra/releases/latest/download/Vector Source.fla"
+    }
+  ],
+  "archives": [
+    {
+      "name": "slang-shaders",
+      "url": "https://github.com/libretro/slang-shaders/archive/refs/heads/master.zip",
+      "extractPath": "assets/shaders/libretro",
+      "markerFile": "assets/shaders/libretro/COPYING"
+    }
+  ]
+}

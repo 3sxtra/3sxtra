@@ -115,26 +115,28 @@ function App() {
     setIsUpdating(true);
     try {
       const manifest = await invoke("check_updates") as any;
-      if (manifest && manifest.files) {
-        let needsUpdate = false;
-        for (const file of manifest.files) {
-          const valid = await invoke("verify_file_hash", { path: file.path, expectedHash: file.hash });
-          if (!valid) { needsUpdate = true; break; }
+      if (manifest && manifest.archives) {
+        
+        const total = manifest.archives.length;
+        let done = 0;
+
+        for (const arc of manifest.archives) {
+          const exists = await invoke("check_file_exists", { path: arc.markerFile });
+          
+          if (arc.forceUpdate || !exists) {
+            setStatus(`DOWNLOADING ${arc.name.toUpperCase()}...`);
+            await invoke("download_and_extract_archive", { 
+              url: arc.url, 
+              extractPath: arc.extractPath, 
+              markerFile: arc.markerFile,
+              stripRoot: arc.stripRoot,
+              versionId: arc.versionId
+            });
+          }
+          done++;
+          setProgress(Math.round((done / total) * 100));
         }
 
-        if (needsUpdate) {
-          setStatus("DOWNLOADING UPDATES...");
-          const total = manifest.files.length;
-          let done = 0;
-          for (const file of manifest.files) {
-            const valid = await invoke("verify_file_hash", { path: file.path, expectedHash: file.hash });
-            if (!valid) {
-              await invoke("download_file", { url: file.url, path: file.path });
-            }
-            done++;
-            setProgress(Math.round((done / total) * 100));
-          }
-        }
         setStatus("GAME UP TO DATE");
       } else {
         setStatus("SYSTEM READY");
