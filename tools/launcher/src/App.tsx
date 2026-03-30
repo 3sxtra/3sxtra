@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { listen } from "@tauri-apps/api/event";
@@ -104,7 +104,6 @@ const MOCK_NEWS: NewsItem[] = [
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>("news");
-  const [activeSettingsCat, setActiveSettingsCat] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState("CHECKING SYSTEM...");
@@ -272,15 +271,15 @@ function App() {
   const renderSettingRow = (s: SettingDef) => {
     const val = getConfigValue(s.key);
     return (
-      <div key={s.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-        <span style={{ fontSize: 14 }}>{s.label}</span>
+      <div key={s.key} style={{ display: 'flex', flexDirection: 'column', padding: '6px 8px', background: 'rgba(0,0,0,0.2)', borderRadius: 6, border: '1px solid rgba(255,255,255,0.03)' }}>
+        <span style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{s.label}</span>
         {s.type === "bool" && (
           <button
             onClick={() => toggleBool(s.key)}
             style={{
               background: isBoolEnabled(s.key) ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.08)',
               color: isBoolEnabled(s.key) ? '#000' : 'var(--text-secondary)',
-              border: 'none', borderRadius: 4, padding: '4px 16px',
+              border: 'none', borderRadius: 4, padding: '4px 0', width: '100%',
               fontWeight: 700, fontSize: 11, cursor: 'pointer', fontFamily: 'var(--font-mono)',
               transition: 'all 0.2s ease',
             }}
@@ -295,8 +294,8 @@ function App() {
             onChange={e => updateSetting(s.key, e.target.value)}
             style={{
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 4, padding: '4px 10px', width: 80, color: 'var(--accent-cyan)',
-              fontFamily: 'var(--font-mono)', fontSize: 12, textAlign: 'right',
+              borderRadius: 4, padding: '4px 8px', width: '100%', color: 'var(--accent-cyan)',
+              fontFamily: 'var(--font-mono)', fontSize: 12, boxSizing: 'border-box'
             }}
           />
         )}
@@ -308,8 +307,8 @@ function App() {
             placeholder="not set"
             style={{
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 4, padding: '4px 10px', width: 200, color: 'var(--accent-cyan)',
-              fontFamily: 'var(--font-mono)', fontSize: 12,
+              borderRadius: 4, padding: '4px 8px', width: '100%', color: 'var(--accent-cyan)',
+              fontFamily: 'var(--font-mono)', fontSize: 12, boxSizing: 'border-box'
             }}
           />
         )}
@@ -319,8 +318,8 @@ function App() {
             onChange={e => updateSetting(s.key, e.target.value)}
             style={{
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 4, padding: '4px 10px', color: 'var(--accent-cyan)',
-              fontFamily: 'var(--font-mono)', fontSize: 12,
+              borderRadius: 4, padding: '4px 8px', width: '100%', color: 'var(--accent-cyan)',
+              fontFamily: 'var(--font-mono)', fontSize: 12, boxSizing: 'border-box'
             }}
           >
             {s.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -395,32 +394,27 @@ function App() {
           {activeTab === "settings" && (
             <div className="settings-panel">
               <h2 style={{ marginBottom: 20 }}>System Settings</h2>
-              {/* Category Tabs */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-                {SETTING_CATEGORIES.map((cat, i) => (
-                  <button
-                    key={cat.name}
-                    className={`glass-card ${activeSettingsCat === i ? 'active' : ''}`}
-                    onClick={() => setActiveSettingsCat(i)}
-                    style={{
-                      padding: '8px 18px', cursor: 'pointer', border: 'none',
-                      background: activeSettingsCat === i ? 'rgba(0,242,255,0.15)' : 'rgba(255,255,255,0.03)',
-                      color: activeSettingsCat === i ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-                      borderRadius: 8, fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-main)',
-                      borderBottom: activeSettingsCat === i ? '2px solid var(--accent-cyan)' : '2px solid transparent',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {cat.icon} {cat.name}
-                  </button>
-                ))}
-              </div>
-              {/* Settings List */}
-              <div className="glass" style={{ padding: 24 }}>
+              <div className="glass settings-list" style={{ padding: 24 }}>
                 {configs.length === 0 ? (
                   <p style={{ opacity: 0.6 }}>No config found. Run the game once to generate defaults, or settings will be created as you change them.</p>
                 ) : null}
-                {SETTING_CATEGORIES[activeSettingsCat].settings.map(renderSettingRow)}
+                
+                {SETTING_CATEGORIES.map((cat) => (
+                  <div key={cat.name} style={{ marginBottom: 20 }}>
+                    <h3 style={{ 
+                      fontSize: 14, 
+                      color: 'var(--accent-cyan)', 
+                      borderBottom: '1px solid rgba(255,255,255,0.1)', 
+                      paddingBottom: 4, 
+                      marginBottom: 8 
+                    }}>
+                      {cat.icon} {cat.name}
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px' }}>
+                      {cat.settings.map(renderSettingRow)}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

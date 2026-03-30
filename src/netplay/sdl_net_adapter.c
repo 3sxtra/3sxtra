@@ -69,6 +69,20 @@ static const char* strip_ipv4_mapped_prefix(const char* ip) {
     return ip;
 }
 
+static bool is_private_ip(const char* ip) {
+    if (SDL_strncmp(ip, "192.168.", 8) == 0) return true;
+    if (SDL_strncmp(ip, "10.", 3) == 0) return true;
+    if (SDL_strncmp(ip, "127.", 4) == 0) return true;
+    
+    // 172.16.x.x - 172.31.x.x check
+    if (SDL_strncmp(ip, "172.", 4) == 0) {
+        int second_octet = SDL_atoi(ip + 4);
+        if (second_octet >= 16 && second_octet <= 31) return true;
+    }
+    
+    return false;
+}
+
 /**
  * @brief Parse "ip:port" address string, handling both IPv4 and IPv6.
  *
@@ -233,7 +247,8 @@ static GekkoNetResult** receive_data(int* length) {
         // 1. Port Learning: if IP matches but port differs (Symmetric NAT changed source port)
         if (expected_remote_ip[0] != '\0' && expected_remote_port != 0 &&
             dgram->port != expected_remote_port &&
-            SDL_strcmp(ip_str, expected_remote_ip) == 0) {
+            SDL_strcmp(ip_str, expected_remote_ip) == 0 &&
+            !is_private_ip(ip_str)) {
             
             if (actual_remote_port != dgram->port) {
                 actual_remote_port = dgram->port;
@@ -296,23 +311,23 @@ GekkoNetAdapter* SDLNetAdapter_Create(NET_DatagramSocket* sock) {
     return &adapter;
 }
 
-void SDLNetAdapter_SetExpectedRemote(const char* addr_str) {
-    if (addr_str && addr_str[0]) {
-        SDL_strlcpy(expected_remote_addr, addr_str, sizeof(expected_remote_addr));
-        char ip[64];
+void SDLNetAdapter_SetExpectedRemote(const char* remote_ip_port) {
+    if (remote_ip_port && remote_ip_port[0] != '\0') {
+        SDL_strlcpy(expected_remote_addr, remote_ip_port, sizeof(expected_remote_addr));
+        char dummy_ip[64];
         int port = 0;
-        parse_addr_str(addr_str, ip, sizeof(ip), &port);
-        SDL_strlcpy(expected_remote_ip, strip_ipv4_mapped_prefix(ip), sizeof(expected_remote_ip));
+        parse_addr_str(remote_ip_port, dummy_ip, sizeof(dummy_ip), &port);
+        
+        // Strip the ::ffff: prefix from the expected IP as well, to match incoming
+        const char* clean_expected = strip_ipv4_mapped_prefix(dummy_ip);
+        SDL_strlcpy(expected_remote_ip, clean_expected, sizeof(expected_remote_ip));
         expected_remote_port = (Uint16)port;
-        actual_remote_port = expected_remote_port; 
-        cross_ip_logged = false;
-        SDL_Log("[NetAdapter] Expected remote configured (ip %s, port %u)", expected_remote_ip, expected_remote_port);
+        actual_remote_port = 0;
     } else {
         expected_remote_addr[0] = '\0';
         expected_remote_ip[0] = '\0';
         expected_remote_port = 0;
         actual_remote_port = 0;
-        expected_remote_port = 0;
     }
 }
 

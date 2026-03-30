@@ -437,8 +437,11 @@ void Gekko::GameSession::Poll()
 
 bool Gekko::GameSession::AllActorsValid()
 {
+    // Always check actor status so late-joining spectators can handshake
+    bool ready = _msg.CheckStatusActors();
+
 	if (!_started) {
-		if (!_msg.CheckStatusActors()) {
+		if (!ready) {
 			return false;
 		}
 

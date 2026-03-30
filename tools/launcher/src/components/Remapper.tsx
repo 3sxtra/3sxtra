@@ -90,35 +90,35 @@ export function Remapper({ onMappingSaved, currentMappings }: Props) {
         )}
       </div>
 
-      <svg width="100%" height="300" viewBox="0 0 600 300" style={{ filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}>
+      <svg width="100%" height="300" viewBox="0 0 650 350" style={{ filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}>
         {/* 🕹️ D-Pad / Stick Area */}
-        <g transform="translate(100, 150)">
-          <line x1="-50" y1="0" x2="50" y2="0" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-          <line x1="0" y1="-50" x2="0" y2="50" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-          <Button action="Up" x={0} y={-50} r={20} />
-          <Button action="Down" x={0} y={50} r={20} />
-          <Button action="Left" x={-50} y={0} r={20} />
-          <Button action="Right" x={50} y={0} r={20} />
-          <circle cx="0" cy="0" r="10" fill="var(--accent-magenta)" opacity="0.3" />
+        <g transform="translate(140, 180)">
+          <line x1="-60" y1="0" x2="60" y2="0" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+          <line x1="0" y1="-60" x2="0" y2="60" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+          <Button action="Up" x={0} y={-60} r={22} />
+          <Button action="Down" x={0} y={60} r={22} />
+          <Button action="Left" x={-60} y={0} r={22} />
+          <Button action="Right" x={60} y={0} r={22} />
+          <circle cx="0" cy="0" r="12" fill="var(--accent-magenta)" opacity="0.3" />
         </g>
 
-        {/* 🔘 Action Buttons (Arcade Layout) */}
-        <g transform="translate(350, 120)">
+        {/* 🔘 Action Buttons (Arcade Layout - Vewlix style) */}
+        <g transform="translate(320, 130)">
           {/* Top Row */}
-          <Button action="LP" x={0} y={0} color="var(--accent-cyan)" />
-          <Button action="MP" x={70} y={-10} color="var(--accent-cyan)" />
-          <Button action="HP" x={140} y={-15} color="var(--accent-cyan)" />
+          <Button action="LP" x={0} y={30} color="var(--accent-cyan)" r={24} />
+          <Button action="MP" x={70} y={15} color="var(--accent-cyan)" r={24} />
+          <Button action="HP" x={140} y={15} color="var(--accent-cyan)" r={24} />
           
           {/* Bottom Row */}
-          <Button action="LK" x={10} y={80} color="var(--accent-magenta)" />
-          <Button action="MK" x={80} y={70} color="var(--accent-magenta)" />
-          <Button action="HK" x={150} y={65} color="var(--accent-magenta)" />
+          <Button action="LK" x={0} y={100} color="var(--accent-magenta)" r={24} />
+          <Button action="MK" x={70} y={85} color="var(--accent-magenta)" r={24} />
+          <Button action="HK" x={140} y={85} color="var(--accent-magenta)" r={24} />
         </g>
 
         {/* ⚙️ Meta Buttons */}
-        <g transform="translate(520, 40)">
-          <Button action="Start" x={0} y={0} r={18} color="var(--accent-yellow)" />
-          <Button action="Select" x={0} y={50} r={18} color="rgba(255,255,255,0.5)" />
+        <g transform="translate(560, 60)">
+          <Button action="Start" x={0} y={0} r={16} color="var(--accent-yellow)" />
+          <Button action="Select" x={0} y={60} r={16} color="rgba(255,255,255,0.5)" />
         </g>
       </svg>
 
