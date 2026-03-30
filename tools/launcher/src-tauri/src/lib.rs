@@ -261,16 +261,46 @@ async fn check_updates() -> Result<Option<UpdateManifest>, String> {
 
     let release: GitHubRelease = resp.json().await.map_err(|e| format!("Invalid release JSON: {}", e))?;
     
-    // Check local version
     let root = get_game_root();
     let version_file = root.join("launcher_version.txt");
     let local_version = std::fs::read_to_string(&version_file).unwrap_or_default();
     
     let mut archives = vec![];
     
-    // Only push a monolithic Game Update if the GitHub published time doesn't match our local time
+    // ── Asset Pack ─────────────────────────────────────────────
+    // The asset zip is named like "3SX-assets-v1-3a760a0.zip".
+    // Compare the "vN" in the filename against local assets/ASSET_VERSION.
+    let local_asset_version = std::fs::read_to_string(root.join("assets").join("ASSET_VERSION"))
+        .unwrap_or_default()
+        .trim()
+        .to_string();
+    
+    if let Some(asset_zip) = release.assets.iter().find(|a| a.name.contains("assets") && a.name.ends_with(".zip")) {
+        // Extract version from filename: "3SX-assets-v1-abc1234.zip" -> "1"
+        let remote_asset_version = asset_zip.name
+            .split("-v")
+            .nth(1)
+            .and_then(|s| s.split('-').next())
+            .unwrap_or("0")
+            .to_string();
+        
+        let needs_assets = local_asset_version.is_empty() || local_asset_version != remote_asset_version;
+        
+        if needs_assets {
+            archives.push(ArchiveTask {
+                name: "3SX Asset Pack".to_string(),
+                url: asset_zip.browser_download_url.clone(),
+                extract_path: ".".to_string(), // zip already contains assets/ folder
+                marker_file: "assets/ASSET_VERSION".to_string(),
+                strip_root: false, // zip is structured as assets/... already
+                force_update: true,
+                version_id: None, // version tracked by ASSET_VERSION file inside the zip
+            });
+        }
+    }
+    
+    // ── Engine Binary ──────────────────────────────────────────
     if local_version.trim() != release.published_at.trim() {
-        // Detect OS for asset download target (github actions produce `windows.zip`)
         let os_str = if cfg!(target_os = "windows") {
             "windows"
         } else if cfg!(target_os = "macos") {
@@ -279,27 +309,26 @@ async fn check_updates() -> Result<Option<UpdateManifest>, String> {
             "linux" 
         };
         
-        // Find the zip file for this OS
-        if let Some(asset) = release.assets.into_iter().find(|a| a.name.contains(os_str) && a.name.ends_with(".zip")) {
+        if let Some(asset) = release.assets.iter().find(|a| a.name.contains(os_str) && a.name.ends_with(".zip")) {
             archives.push(ArchiveTask {
                 name: "3SX Core Engine".to_string(),
-                url: asset.browser_download_url,
-                extract_path: ".".to_string(), // extract directly to game root
+                url: asset.browser_download_url.clone(),
+                extract_path: ".".to_string(),
                 marker_file: if cfg!(target_os = "windows") { "3sx.exe".to_string() } else { "3sx".to_string() },
-                strip_root: false, // The release zip has no top-level repo directory
-                force_update: true, // Always forcefully update if the version differs
-                version_id: Some(release.published_at.clone()), // Save this version upon successful unpack
+                strip_root: true, // The release zip has a top-level bin/ directory
+                force_update: true,
+                version_id: Some(release.published_at.clone()),
             });
         }
     }
     
-    // Always attach the slang shaders archive, but frontend logic ignores it if marker file exists
+    // ── Slang Shaders (one-time bootstrap) ─────────────────────
     archives.push(ArchiveTask {
         name: "Slang Shaders".to_string(),
         url: "https://github.com/libretro/slang-shaders/archive/refs/heads/master.zip".to_string(),
         extract_path: "assets/shaders/libretro".to_string(),
         marker_file: "assets/shaders/libretro/COPYING".to_string(),
-        strip_root: true, // GitHub repo zips always have a top-level dir we must strip
+        strip_root: true,
         force_update: false,
         version_id: None,
     });

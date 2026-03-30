@@ -409,7 +409,7 @@ void Gekko::GameSession::Poll()
     auto state_reqs = _msg.GetAndClearStateRequests();
     if (!state_reqs.empty() && _state_callbacks.get_state) {
         std::vector<u8> state_buffer;
-        state_buffer.resize(1024 * 256); // 256KB max state size
+        state_buffer.resize(1024 * 1024); // 1MB max state size (State struct is ~500KB+)
         unsigned int actual_size = 0;
         _state_callbacks.get_state(state_buffer.data(), &actual_size);
         if (actual_size > 0 && actual_size <= state_buffer.size()) {

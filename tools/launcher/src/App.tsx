@@ -139,8 +139,26 @@ function App() {
         setStatus("SYSTEM READY");
       }
     } catch {
-      setStatus("OFFLINE — PLAY AVAILABLE");
+      const installed = await invoke("is_game_installed").catch(() => false);
+      setStatus(installed ? "OFFLINE — PLAY AVAILABLE" : "OFFLINE — INSTALL REQUIRED");
     }
+
+    const nowInstalled = await invoke("is_game_installed").catch(() => false) as boolean;
+    setIsGameInstalled(nowInstalled);
+
+    // Refresh build date after download may have written launcher_version.txt
+    try {
+      const localVersion = await invoke("get_local_version") as string;
+      if (localVersion && localVersion !== "UNKNOWN") {
+        const date = new Date(localVersion);
+        if (!isNaN(date.getTime())) {
+          setBuildDate(date.toISOString().split('T')[0]);
+        } else {
+          setBuildDate(localVersion);
+        }
+      }
+    } catch {}
+
     setIsUpdating(false);
     setProgress(100);
   };
@@ -241,6 +259,7 @@ function App() {
     }
   };
 
+  /* 
   const applyPreset = async (type: "XBOX" | "PS5" | "STICKS") => {
     setStatus(`APPLYING ${type} PRESET...`);
 
@@ -262,6 +281,7 @@ function App() {
       console.error(err);
     }
   };
+  */
 
   // ── Play / Update ──────────────────────────────────────────────
   const handlePlay = async () => {
@@ -424,8 +444,8 @@ function App() {
             onClick={handlePlay} 
             disabled={isUpdating}
           >
-            {status === "FIRST RUN - DOWNLOAD REQUIRED" ? "INSTALL GAME" : 
-             (status === "GAME UP TO DATE" || status === "SYSTEM READY" || status === "PRESET APPLIED" || status === "OFFLINE — PLAY AVAILABLE" ? "PLAY" : "UPDATE")}
+            {!isGameInstalled ? "INSTALL GAME" : 
+             (isUpdating ? "UPDATING..." : "PLAY")}
           </button>
         </div>
       </nav>
