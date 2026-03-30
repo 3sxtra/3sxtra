@@ -486,6 +486,11 @@ extern "C" void rmlui_casual_lobby_update(void) {
             s_spectator_count = sse_evt.spectator_count;
             g_spectator_count = s_spectator_count;
             s_model_handle.DirtyVariable("spectator_count");
+            // Forward spectator endpoint to the running GekkoNet session so
+            // the host registers them as an actor (accepts their packets).
+            if (sse_evt.spectator_room_code[0]) {
+                Netplay_RegisterSpectator(sse_evt.spectator_room_code, sse_evt.spectator_player_id);
+            }
         } else if (sse_type == SSE_EVENT_MATCH_PROPOSE) {
             // Phase 6: Match proposed — check if we are a participant
             bool we_are_p1 = (strcmp(sse_evt.propose_p1_id, s_my_id.c_str()) == 0);

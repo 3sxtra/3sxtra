@@ -71,6 +71,11 @@ void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port);
 /// Stop spectating and return to idle.
 void Netplay_StopSpectate(void);
 
+/// Register a spectator with the running GekkoNet session.
+/// Called by the casual lobby when it receives an SSE_EVENT_SPECTATOR_UPDATE
+/// (since the lobby drains the SSE ring buffer before Netplay_Run can see it).
+void Netplay_RegisterSpectator(const char* spectator_room_code, const char* spectator_player_id);
+
 #ifdef __cplusplus
 }
 #endif

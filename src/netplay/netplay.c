@@ -1299,3 +1299,24 @@ void Netplay_StopSpectate(void) {
     session_state = NETPLAY_SESSION_IDLE;
     SDL_Log("[spectate] stopped");
 }
+
+void Netplay_RegisterSpectator(const char* spectator_room_code, const char* spectator_player_id) {
+    if (!spectator_room_code || !spectator_room_code[0])
+        return;
+    if (session_state != NETPLAY_SESSION_RUNNING || !session)
+        return;
+
+    char spec_ip[64];
+    uint16_t spec_port = 0, spec_local_port = 0;
+    if (!Stun_DecodeEndpoint(spectator_room_code, spec_ip, &spec_port, &spec_local_port, NULL))
+        return;
+
+    // For LAN, use local_port; for internet, use public port
+    uint16_t effective_port = spec_local_port ? spec_local_port : spec_port;
+    char spec_addr[100];
+    SDL_snprintf(spec_addr, sizeof(spec_addr), "%s:%hu", spec_ip, effective_port);
+    GekkoNetAddress addr = { .data = spec_addr, .size = (unsigned int)strlen(spec_addr) };
+    int handle = gekko_add_actor(session, GekkoSpectator, &addr);
+    SDL_Log("[netplay] Registered spectator %s at %s (handle=%d)",
+            spectator_player_id ? spectator_player_id : "?", spec_addr, handle);
+}
