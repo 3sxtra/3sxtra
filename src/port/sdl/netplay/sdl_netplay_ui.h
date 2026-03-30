@@ -39,6 +39,7 @@ bool SDLNetplayUI_IsNativeLobbyActive(void);
 
 const char* SDLNetplayUI_GetStatusMsg(void);
 const char* SDLNetplayUI_GetRoomCode(void);
+struct NET_DatagramSocket* SDLNetplayUI_GetAdapterSocket(void);
 bool SDLNetplayUI_IsDiscovering(void);
 bool SDLNetplayUI_IsReady(void);
 

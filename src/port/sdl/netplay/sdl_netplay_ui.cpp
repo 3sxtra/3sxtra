@@ -1338,6 +1338,10 @@ const char* SDLNetplayUI_GetRoomCode() {
     return my_room_code;
 }
 
+NET_DatagramSocket* SDLNetplayUI_GetAdapterSocket() {
+    return stun_result.socket;
+}
+
 bool SDLNetplayUI_IsDiscovering() {
     int s = SDL_GetAtomicInt(&lobby_async_state);
     return (s == LOBBY_ASYNC_DISCOVERING);

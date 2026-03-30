@@ -86,6 +86,13 @@ static float frames_behind = 0;
 static int frame_skip_timer = 0;
 static int transition_ready_frames = 0;
 
+#define MAX_PENDING_SPECTATORS 8
+static struct {
+    char room_code[128];
+    char player_id[64];
+} pending_spectators[MAX_PENDING_SPECTATORS];
+static int num_pending_spectators = 0;
+
 static int stats_update_timer = 0;
 static int frame_max_rollback = 0;
 static NetworkStats network_stats = { 0 };
@@ -454,11 +461,19 @@ static void configure_gekko() {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[netplay] Session is already running! probably incorrect.");
     }
 
-    if (stun_socket != NULL) {
+    // If a hole-punched socket was provided by the UI layer (internet play):
+    NET_DatagramSocket* active_stun = stun_socket;
+    
+    // If not, see if the UI module itself has an idle STUN socket (LAN / Local Arcade play):
+    if (!active_stun) {
+        active_stun = SDLNetplayUI_GetAdapterSocket();
+    }
+
+    if (active_stun != NULL) {
         // Internet play: reuse the hole-punched STUN socket
-        NetTuning_SetRecvBuf(stun_socket, 256 * 1024);
-        gekko_net_adapter_set(session, SDLNetAdapter_Create(stun_socket));
-        SDL_Log("Using STUN socket for GekkoNet adapter");
+        NetTuning_SetRecvBuf(active_stun, 256 * 1024);
+        gekko_net_adapter_set(session, SDLNetAdapter_Create(active_stun));
+        SDL_Log("Using active STUN socket for GekkoNet adapter (port matches Lobby Presence)");
     } else {
 #if defined(LOSSY_ADAPTER)
         configure_lossy_adapter();
@@ -508,6 +523,12 @@ static void configure_gekko() {
             gekko_add_actor(session, GekkoRemotePlayer, &remote_address);
         }
     }
+
+    // Process any queued spectators who joined the lobby before we started
+    for (int i = 0; i < num_pending_spectators; i++) {
+        Netplay_RegisterSpectator(pending_spectators[i].room_code, pending_spectators[i].player_id);
+    }
+    num_pending_spectators = 0;
 }
 
 static u16 get_inputs() {
@@ -1012,47 +1033,6 @@ void Netplay_Run() {
     case NETPLAY_SESSION_CONNECTING:
     case NETPLAY_SESSION_RUNNING:
         run_netplay();
-
-        // Poll SSE for spectator join events so the host can register them
-        if (session_state == NETPLAY_SESSION_RUNNING && session) {
-            SSEEvent sse_evt;
-            while (LobbyServer_SSEPoll(&sse_evt) != SSE_EVENT_NONE) {
-                if (sse_evt.type == SSE_EVENT_SPECTATOR_UPDATE && sse_evt.spectator_room_code[0]) {
-                    char spec_ip[64];
-                    char spec_local_ip[64] = { 0 };
-                    uint16_t spec_port = 0, spec_local_port = 0;
-                    if (Stun_DecodeEndpoint(sse_evt.spectator_room_code, spec_ip, &spec_port, &spec_local_port, spec_local_ip)) {
-                        const char* target_ip = spec_ip;
-                        bool ip_match = false;
-                        const char* my_code = SDLNetplayUI_GetRoomCode();
-                        if (my_code && my_code[0]) {
-                            char my_ip[64];
-                            uint16_t my_port, my_lport;
-                            if (Stun_DecodeEndpoint(my_code, my_ip, &my_port, &my_lport, NULL)) {
-                                if (strcmp(spec_ip, my_ip) == 0) ip_match = true;
-                            }
-                        }
-                        if (!ip_match && strcmp(spec_ip, spec_local_ip) == 0) {
-                            ip_match = true;
-                        }
-
-                        if (ip_match && spec_local_ip[0] != '\0') {
-                            target_ip = spec_local_ip;
-                            SDL_Log("[netplay] Host/Spectator LAN match! Using LAN IP %s", target_ip);
-                        }
-
-                        // For LAN, use local_port; for internet, use public port
-                        uint16_t effective_port = (ip_match && spec_local_port) ? spec_local_port : spec_port;
-                        char spec_addr[100];
-                        SDL_snprintf(spec_addr, sizeof(spec_addr), "%s:%hu", target_ip, effective_port);
-                        GekkoNetAddress addr = { .data = spec_addr, .size = (unsigned int)strlen(spec_addr) };
-                        int handle = gekko_add_actor(session, GekkoSpectator, &addr);
-                        SDL_Log("[netplay] Registered spectator %s at %s (handle=%d)",
-                                sse_evt.spectator_player_id, spec_addr, handle);
-                    }
-                }
-            }
-        }
         break;
 
     case NETPLAY_SESSION_EXITING:
@@ -1328,10 +1308,28 @@ void Netplay_StopSpectate(void) {
 void Netplay_RegisterSpectator(const char* spectator_room_code, const char* spectator_player_id) {
     if (!spectator_room_code || !spectator_room_code[0])
         return;
-    if (session_state != NETPLAY_SESSION_RUNNING && session_state != NETPLAY_SESSION_CONNECTING)
+
+    // Fast-fail if not in a state where we can ever have a session.
+    if (session_state != NETPLAY_SESSION_RUNNING && session_state != NETPLAY_SESSION_CONNECTING &&
+        session_state != NETPLAY_SESSION_LOBBY && session_state != NETPLAY_SESSION_TRANSITIONING) {
         return;
-    if (!session)
+    }
+
+    if (!session) {
+        // Queue the spectator until configuration_gekko initializes the network session
+        if (num_pending_spectators < MAX_PENDING_SPECTATORS) {
+            SDL_strlcpy(pending_spectators[num_pending_spectators].room_code, spectator_room_code, 128);
+            if (spectator_player_id)
+                SDL_strlcpy(pending_spectators[num_pending_spectators].player_id, spectator_player_id, 64);
+            else
+                pending_spectators[num_pending_spectators].player_id[0] = '\0';
+            num_pending_spectators++;
+            SDL_Log("[netplay] Queued spectator %s for upcoming session", spectator_player_id ? spectator_player_id : "unknown");
+        } else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[netplay] Pending spectator queue is full! Dropping %s", spectator_player_id ? spectator_player_id : "unknown");
+        }
         return;
+    }
 
     char spec_ip[64];
     char spec_local_ip[64] = { 0 };
