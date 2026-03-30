@@ -25,7 +25,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <unistd.h>
 #endif
 
 // STUN message types (RFC 5389)
@@ -37,17 +36,13 @@
 #define STUN_ATTR_MAPPED_ADDRESS 0x0001
 #define STUN_ATTR_XOR_MAPPED_ADDRESS 0x0020
 
-void Stun_EncodeEndpoint(const char* ip, uint16_t port, uint16_t local_port, const char* local_ip, char* out_code) {
+void Stun_EncodeEndpoint(const char* ip, uint16_t port, uint16_t local_port, char* out_code) {
     if (!ip || !out_code)
         return;
-    if (local_ip && local_ip[0]) {
-        snprintf(out_code, 64, "%s|%u|%u|%s", ip, port, local_port, local_ip);
-    } else {
-        snprintf(out_code, 64, "%s|%u|%u", ip, port, local_port);
-    }
+    snprintf(out_code, 64, "%s|%u|%u", ip, port, local_port);
 }
 
-bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port, uint16_t* out_local_port, char* out_local_ip) {
+bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port, uint16_t* out_local_port) {
     if (!code || !out_ip || !out_port)
         return false;
 
@@ -66,22 +61,9 @@ bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port, uin
         char* sep2 = strchr(sep + 1, '|');
         if (sep2) {
             *out_local_port = (uint16_t)atoi(sep2 + 1);
-            if (out_local_ip) {
-                char* sep3 = strchr(sep2 + 1, '|');
-                if (sep3) {
-                    SDL_strlcpy(out_local_ip, sep3 + 1, 64);
-                } else {
-                    out_local_ip[0] = '\0';
-                }
-            }
         } else {
             *out_local_port = *out_port; // default to public port if not present
-            if (out_local_ip) {
-                out_local_ip[0] = '\0';
-            }
         }
-    } else if (out_local_ip) {
-        out_local_ip[0] = '\0';
     }
 
     return true;
@@ -336,11 +318,7 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
             result->local_port = port; // Fallback: assume port-preserving NAT
             for (int h = 0; h < m->num_handles; h++) {
                 struct sockaddr_storage sa;
-#ifdef _WIN32
                 int sa_len = sizeof(sa);
-#else
-                socklen_t sa_len = sizeof(sa);
-#endif
                 if (getsockname((int)m->handles[h].handle, (struct sockaddr*)&sa, &sa_len) == 0) {
                     if (sa.ss_family == AF_INET) {
                         result->local_port = ntohs(((struct sockaddr_in*)&sa)->sin_port);
@@ -350,47 +328,6 @@ bool Stun_Discover(StunResult* result, uint16_t local_port) {
                         // Keep looking for IPv4; prefer it since STUN used IPv4
                     }
                 }
-            }
-        }
-
-        // Discover the actual LAN IP of the outbound network interface.
-        // getsockname() on a wildcard-bound socket returns 0.0.0.0, so instead
-        // we create a temporary UDP socket, connect() it to an external address
-        // (no data is sent), and then getsockname() returns the real interface IP.
-        {
-            result->local_ip[0] = '\0';
-#ifdef _WIN32
-            SOCKET tmp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-            if (tmp != INVALID_SOCKET) {
-#else
-            int tmp = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-            if (tmp >= 0) {
-#endif
-                struct sockaddr_in target;
-                memset(&target, 0, sizeof(target));
-                target.sin_family = AF_INET;
-                target.sin_port = htons(53);
-                // 8.8.8.8 — just used for routing table lookup, no data sent
-                target.sin_addr.s_addr = htonl(0x08080808);
-                if (connect(tmp, (struct sockaddr*)&target, sizeof(target)) == 0) {
-                    struct sockaddr_in local_sa;
-#ifdef _WIN32
-                    int local_len = sizeof(local_sa);
-#else
-                    socklen_t local_len = sizeof(local_sa);
-#endif
-                    if (getsockname(tmp, (struct sockaddr*)&local_sa, &local_len) == 0) {
-                        inet_ntop(AF_INET, &local_sa.sin_addr, result->local_ip, sizeof(result->local_ip));
-                    }
-                }
-#ifdef _WIN32
-                closesocket(tmp);
-#else
-                close(tmp);
-#endif
-            }
-            if (result->local_ip[0] == '\0') {
-                SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "STUN: Could not determine LAN IP");
             }
         }
 

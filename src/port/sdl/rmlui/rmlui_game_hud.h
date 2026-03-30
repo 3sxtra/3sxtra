@@ -26,8 +26,6 @@ void rmlui_game_hud_shutdown(void);
 
 #include <stdbool.h>
 
-/// Spectator count — set by lobby code, read by HUD for display.
-extern int g_spectator_count;
 
 /// Match Banner Tracking State
 extern int g_match_ft;

@@ -20,7 +20,6 @@ typedef enum NetplaySessionState {
     NETPLAY_SESSION_CONNECTING,
     NETPLAY_SESSION_RUNNING,
     NETPLAY_SESSION_EXITING,
-    NETPLAY_SESSION_SPECTATING,
 } NetplaySessionState;
 
 void Netplay_SetPlayerNumber(int player_num);
@@ -64,17 +63,6 @@ void Netplay_SetStunSocket(NET_DatagramSocket* socket);
 void Netplay_SetNegotiatedFT(int ft);
 int Netplay_GetNegotiatedFT(void);
 
-/// Begin a spectate-only session: connect to the active match host
-/// and render the game without injecting local input.
-void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port);
-
-/// Stop spectating and return to idle.
-void Netplay_StopSpectate(void);
-
-/// Register a spectator with the running GekkoNet session.
-/// Called by the casual lobby when it receives an SSE_EVENT_SPECTATOR_UPDATE
-/// (since the lobby drains the SSE ring buffer before Netplay_Run can see it).
-void Netplay_RegisterSpectator(const char* spectator_room_code, const char* spectator_player_id);
 
 #ifdef __cplusplus
 }

@@ -86,12 +86,6 @@ static float frames_behind = 0;
 static int frame_skip_timer = 0;
 static int transition_ready_frames = 0;
 
-#define MAX_PENDING_SPECTATORS 8
-static struct {
-    char room_code[128];
-    char player_id[64];
-} pending_spectators[MAX_PENDING_SPECTATORS];
-static int num_pending_spectators = 0;
 
 static int stats_update_timer = 0;
 static int frame_max_rollback = 0;
@@ -426,19 +420,6 @@ static void compute_tuning_from_ping(float avg_ping, float jitter, int* out_dela
     }
 }
 
-static void on_get_state(void* buffer, unsigned int* size) {
-    save_current_state(buffer, G_No[1]);
-    *size = sizeof(State);
-}
-
-static void on_inject_state(const void* buffer, unsigned int size) {
-    if (size == sizeof(State)) {
-        load_state((const State*)buffer);
-    } else {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[netplay] Invalid state chunk size %u", size);
-    }
-}
-
 static void configure_gekko() {
     GekkoConfig config;
     Discovery_Shutdown();
@@ -446,33 +427,21 @@ static void configure_gekko() {
 
     config.num_players = PLAYER_COUNT;
     config.input_size = sizeof(u16);
-    config.state_size = sizeof(State);
-    config.max_spectators = 4;
     config.input_prediction_window = 8; // Absolute max 8 per recommendations
 
     config.desync_detection = true;
 
     if (gekko_create(&session, GekkoGameSession)) {
         gekko_start(session, &config);
-        
-        GekkoStateCallbacks callbacks = { on_get_state, on_inject_state };
-        gekko_state_callbacks_set(session, &callbacks);
     } else {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[netplay] Session is already running! probably incorrect.");
     }
 
-    // If a hole-punched socket was provided by the UI layer (internet play):
-    NET_DatagramSocket* active_stun = stun_socket;
-    
-    // If not, see if the UI module itself has an idle STUN socket (LAN / Local Arcade play):
-    if (!active_stun) {
-        active_stun = SDLNetplayUI_GetAdapterSocket();
-    }
 
-    if (active_stun != NULL) {
+    if (stun_socket != NULL) {
         // Internet play: reuse the hole-punched STUN socket
-        NetTuning_SetRecvBuf(active_stun, 256 * 1024);
-        gekko_net_adapter_set(session, SDLNetAdapter_Create(active_stun));
+        NetTuning_SetRecvBuf(stun_socket, 256 * 1024);
+        gekko_net_adapter_set(session, SDLNetAdapter_Create(stun_socket));
         SDL_Log("Using active STUN socket for GekkoNet adapter (port matches Lobby Presence)");
     } else {
 #if defined(LOSSY_ADAPTER)
@@ -524,11 +493,6 @@ static void configure_gekko() {
         }
     }
 
-    // Process any queued spectators who joined the lobby before we started
-    for (int i = 0; i < num_pending_spectators; i++) {
-        Netplay_RegisterSpectator(pending_spectators[i].room_code, pending_spectators[i].player_id);
-    }
-    num_pending_spectators = 0;
 }
 
 static u16 get_inputs() {
@@ -1096,57 +1060,7 @@ void Netplay_Run() {
     case NETPLAY_SESSION_IDLE:
         break;
 
-    case NETPLAY_SESSION_SPECTATING:
-        if (session) {
-            gekko_network_poll(session);
 
-            // Process session events (connected/disconnected/paused/unpaused)
-            int sess_count = 0;
-            GekkoSessionEvent** sess_events = gekko_session_events(session, &sess_count);
-            for (int i = 0; i < sess_count; i++) {
-                const GekkoSessionEvent* event = sess_events[i];
-                switch (event->type) {
-                case GekkoPlayerConnected:
-                    SDL_Log("[spectate] connected to host");
-                    push_event(NETPLAY_EVENT_CONNECTED);
-                    break;
-                case GekkoPlayerDisconnected:
-                    SDL_Log("[spectate] host disconnected");
-                    push_event(NETPLAY_EVENT_DISCONNECTED);
-                    Netplay_StopSpectate();
-                    return;
-                case GekkoSpectatorPaused:
-                    SDL_Log("[spectate] paused (buffering)");
-                    break;
-                case GekkoSpectatorUnpaused:
-                    SDL_Log("[spectate] unpaused");
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            // Process game events — spectators only receive advance + load, no saves
-            int game_count = 0;
-            GekkoGameEvent** game_events = gekko_update_session(session, &game_count);
-            for (int i = 0; i < game_count; i++) {
-                const GekkoGameEvent* event = game_events[i];
-                switch (event->type) {
-                case GekkoLoadEvent:
-                    load_state_from_event(event);
-                    break;
-                case GekkoAdvanceEvent:
-                    advance_game(event, true); // Always render for spectators
-                    break;
-                case GekkoSaveEvent:
-                    save_state(event);
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-        break;
     }
 }
 
@@ -1169,7 +1083,6 @@ void Netplay_HandleMenuExit() {
     case NETPLAY_SESSION_TRANSITIONING:
     case NETPLAY_SESSION_CONNECTING:
     case NETPLAY_SESSION_RUNNING:
-    case NETPLAY_SESSION_SPECTATING:
         session_state = NETPLAY_SESSION_EXITING;
         break;
     }
@@ -1182,7 +1095,7 @@ static NetplayEvent event_queue[EVENT_QUEUE_MAX];
 static int event_queue_count = 0;
 
 bool Netplay_IsEnabled() {
-    return session_state != NETPLAY_SESSION_IDLE && session_state != NETPLAY_SESSION_SPECTATING;
+    return session_state != NETPLAY_SESSION_IDLE;
 }
 
 void Netplay_GetNetworkStats(NetworkStats* stats) {
@@ -1217,170 +1130,3 @@ int Netplay_GetBattleStartFrame(void) {
     return -1;
 }
 
-void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
-    MenuScreenId cur = MenuScreen_GetCurrent();
-    if (cur == MENU_SCREEN_NETWORK_LOBBY || cur == MENU_SCREEN_CASUAL_LOBBY || 
-        cur == MENU_SCREEN_TOURNAMENT_LOBBY || cur == MENU_SCREEN_RANKED_MATCHMAKING) {
-        s_netplay_origin_screen = cur;
-    } else {
-        s_netplay_origin_screen = MENU_SCREEN_NETWORK_LOBBY;
-    }
-    s_netplay_origin_native_lan = SDLNetplayUI_IsNativeLobbyActive();
-    SDLNetplayUI_SetNativeLobbyActive(false);
-
-    if (session_state != NETPLAY_SESSION_IDLE && session_state != NETPLAY_SESSION_LOBBY) {
-        SDL_Log("[spectate] cannot start: session state is %d", session_state);
-        return;
-    }
-
-    GekkoConfig config;
-    Discovery_Shutdown();
-    rmlui_wrapper_hide_all_game_documents();
-    SDL_zero(config);
-    config.num_players = PLAYER_COUNT;
-    config.input_size = sizeof(u16);
-    config.state_size = sizeof(State);
-    config.max_spectators = 1;
-    config.spectator_delay = 10; // 10 frames (~166ms at 60fps) max per recommendations
-    config.input_prediction_window = 8; // Absolute max 8 per recommendations
-    config.desync_detection = false; // Spectators don't need desync detection
-
-    if (!gekko_create(&session, GekkoSpectateSession)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[spectate] failed to create session");
-        return;
-    }
-
-    gekko_start(session, &config);
-
-    // State callbacks are required for spectators to receive state chunks from the host.
-    // Without these, the spectator cannot fast-forward to the host's current frame.
-    GekkoStateCallbacks callbacks = { on_get_state, on_inject_state };
-    gekko_state_callbacks_set(session, &callbacks);
-
-    // Use SDLNetAdapter with a real socket so the port is known and
-    // consistent with the address format the host's adapter expects.
-    if (stun_socket != NULL) {
-        // Internet play: reuse the STUN socket (port matches our room_code)
-        gekko_net_adapter_set(session, SDLNetAdapter_Create(stun_socket));
-        SDL_Log("[spectate] Using STUN socket for adapter");
-    } else {
-        // LAN play: create a fresh socket on port 0 (OS-assigned)
-        fallback_socket = NET_CreateDatagramSocket(NULL, 0);
-        if (fallback_socket) {
-            gekko_net_adapter_set(session, SDLNetAdapter_Create(fallback_socket));
-            SDL_Log("[spectate] Using fallback socket for adapter");
-        } else {
-            gekko_net_adapter_set(session, gekko_default_adapter(0));
-            SDL_Log("[spectate] Fallback to default adapter (port 0)");
-        }
-    }
-
-    // Connect to the match host as a spectator
-    char addr_str[100];
-    SDL_snprintf(addr_str, sizeof(addr_str), "%s:%hu", host_ip, host_port);
-    GekkoNetAddress addr = { .data = addr_str, .size = (unsigned int)strlen(addr_str) };
-    gekko_add_actor(session, GekkoRemotePlayer, &addr);
-
-    setup_vs_mode();
-    session_state = NETPLAY_SESSION_SPECTATING;
-    SDL_Log("[spectate] connecting to host");
-}
-
-void Netplay_StopSpectate(void) {
-    if (session_state != NETPLAY_SESSION_SPECTATING)
-        return;
-
-    if (session) {
-        gekko_destroy(&session);
-        SDLNetAdapter_Destroy();
-        if (stun_socket != NULL) {
-            NET_DestroyDatagramSocket(stun_socket);
-            stun_socket = NULL;
-        }
-        if (fallback_socket != NULL) {
-            NET_DestroyDatagramSocket(fallback_socket);
-            fallback_socket = NULL;
-        }
-        gekko_default_adapter_destroy();
-    }
-
-    clean_input_buffers();
-    Soft_Reset_Sub();
-    session_state = NETPLAY_SESSION_IDLE;
-    SDL_Log("[spectate] stopped");
-}
-
-void Netplay_RegisterSpectator(const char* spectator_room_code, const char* spectator_player_id) {
-    if (!spectator_room_code || !spectator_room_code[0])
-        return;
-
-    // Fast-fail if not in a state where we can ever have a session.
-    if (session_state != NETPLAY_SESSION_RUNNING && session_state != NETPLAY_SESSION_CONNECTING &&
-        session_state != NETPLAY_SESSION_LOBBY && session_state != NETPLAY_SESSION_TRANSITIONING) {
-        return;
-    }
-
-    if (!session) {
-        // Queue the spectator until configuration_gekko initializes the network session
-        if (num_pending_spectators < MAX_PENDING_SPECTATORS) {
-            SDL_strlcpy(pending_spectators[num_pending_spectators].room_code, spectator_room_code, 128);
-            if (spectator_player_id)
-                SDL_strlcpy(pending_spectators[num_pending_spectators].player_id, spectator_player_id, 64);
-            else
-                pending_spectators[num_pending_spectators].player_id[0] = '\0';
-            num_pending_spectators++;
-            SDL_Log("[netplay] Queued spectator %s for upcoming session", spectator_player_id ? spectator_player_id : "unknown");
-        } else {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[netplay] Pending spectator queue is full! Dropping %s", spectator_player_id ? spectator_player_id : "unknown");
-        }
-        return;
-    }
-
-    char spec_ip[64];
-    char spec_local_ip[64] = { 0 };
-    uint16_t spec_port = 0, spec_local_port = 0;
-    if (!Stun_DecodeEndpoint(spectator_room_code, spec_ip, &spec_port, &spec_local_port, spec_local_ip))
-        return;
-
-    // Same-router detection: If spectator's public IP matches our own, use their LAN IP.
-    const char* target_ip = spec_ip;
-    bool ip_match = false;
-    const char* my_code = SDLNetplayUI_GetRoomCode();
-    if (my_code && my_code[0]) {
-        char my_ip[64];
-        uint16_t my_port, my_lport;
-        if (Stun_DecodeEndpoint(my_code, my_ip, &my_port, &my_lport, NULL)) {
-            if (strcmp(spec_ip, my_ip) == 0) ip_match = true;
-        }
-    }
-    if (!ip_match && strcmp(spec_ip, spec_local_ip) == 0) {
-        ip_match = true;
-    }
-
-    if (ip_match && spec_local_ip[0] != '\0') {
-        target_ip = spec_local_ip;
-        SDL_Log("[netplay] Same-router spectator detected! Using local IP %s", target_ip);
-    }
-
-    // For LAN, use local_port; for internet, use public port
-    uint16_t effective_port = (ip_match && spec_local_port) ? spec_local_port : spec_port;
-    char spec_addr[100];
-    SDL_snprintf(spec_addr, sizeof(spec_addr), "%s:%hu", target_ip, effective_port);
-    GekkoNetAddress addr = { .data = spec_addr, .size = (unsigned int)strlen(spec_addr) };
-    int handle = gekko_add_actor(session, GekkoSpectator, &addr);
-    SDL_Log("[netplay] Registered spectator %s at %s (handle=%d)",
-            spectator_player_id ? spectator_player_id : "?", spec_addr, handle);
-
-    // Explicitly hole-punch the host's firewall to allow the spectator's incoming UDP stream.
-    // Since the spectator's initial packets are unsolicited, Windows/OS firewalls may silently drop them.
-    // Sending a tiny outbound dummy packet primes the NAT/firewall to accept the spectator's return traffic.
-    if (stun_socket != NULL) {
-        NET_Address* net_addr = NET_ResolveHostname(target_ip);
-        if (net_addr) {
-            char dummy[4] = "PNCH";
-            NET_SendDatagram(stun_socket, net_addr, effective_port, dummy, sizeof(dummy));
-            NET_UnrefAddress(net_addr);
-            SDL_Log("[netplay] Primed firewall hole for spectator %s", spec_addr);
-        }
-    }
-}

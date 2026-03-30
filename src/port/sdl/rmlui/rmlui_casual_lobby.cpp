@@ -82,8 +82,7 @@ static int s_match_winner = 0;
 static Rml::String s_match_p1_name;
 static Rml::String s_match_p2_name;
 static bool s_is_playing = false;
-static bool s_is_spectating = false;
-static int s_spectator_count = 0;
+
 static bool s_in_queue = false;
 
 static std::vector<RmlQueuePlayer> s_queue;
@@ -217,8 +216,8 @@ static void do_init(void) {
     ctor.Bind("match_p1_name", &s_match_p1_name);
     ctor.Bind("match_p2_name", &s_match_p2_name);
     ctor.Bind("is_playing", &s_is_playing);
-    ctor.Bind("is_spectating", &s_is_spectating);
-    ctor.Bind("spectator_count", &s_spectator_count);
+
+
     ctor.Bind("in_queue", &s_in_queue);
     ctor.BindFunc("queue_count", [](Rml::Variant& v) { v = s_queue_display_count; });
 
@@ -257,8 +256,7 @@ static void apply_room_state_to_model(void) {
     const char* qr_path = rmlui_network_lobby_get_qr_image_path();
     s_qr_image_path = (qr_path && qr_path[0]) ? Rml::String(qr_path) : Rml::String();
     s_player_count = s_room_state.player_count;
-    s_spectator_count = s_room_state.spectator_count;
-    g_spectator_count = s_spectator_count;
+
 
     // P1 / P2 names
     s_match_active = s_room_state.match_active;
@@ -395,7 +393,7 @@ static void apply_room_state_to_model(void) {
     s_model_handle.DirtyVariable("room_players");
     s_model_handle.DirtyVariable("chat_messages");
     s_model_handle.DirtyVariable("chat_count");
-    s_model_handle.DirtyVariable("spectator_count");
+
 }
 
 // TODO(perf): This is a synchronous HTTP call on the main thread. It can cause
@@ -482,15 +480,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
                    sse_type == SSE_EVENT_HOST_MIGRATED) {
             // For structural changes, re-fetch full state as fallback
             refresh_room_state_from_server();
-        } else if (sse_type == SSE_EVENT_SPECTATOR_UPDATE) {
-            s_spectator_count = sse_evt.spectator_count;
-            g_spectator_count = s_spectator_count;
-            s_model_handle.DirtyVariable("spectator_count");
-            // Forward spectator endpoint to the running GekkoNet session so
-            // the host registers them as an actor (accepts their packets).
-            if (sse_evt.spectator_room_code[0]) {
-                Netplay_RegisterSpectator(sse_evt.spectator_room_code, sse_evt.spectator_player_id);
-            }
+
         } else if (sse_type == SSE_EVENT_MATCH_PROPOSE) {
             // Phase 6: Match proposed — check if we are a participant
             bool we_are_p1 = (strcmp(sse_evt.propose_p1_id, s_my_id.c_str()) == 0);
@@ -633,14 +623,6 @@ extern "C" void rmlui_casual_lobby_update(void) {
             s_status_text = winner_name + " WINS! Winner stays on.";
             s_model_handle.DirtyVariable("status_text");
 
-            // If we were spectating, stop and re-show lobby
-            if (s_is_spectating) {
-                Netplay_StopSpectate();
-                LobbyServer_ReportSpectateStop(s_room_code.c_str());
-                s_is_spectating = false;
-                s_model_handle.DirtyVariable("is_spectating");
-                rmlui_wrapper_show_game_document("casual_lobby");
-            }
 
             // If we were playing, defer re-show until the netplay session
             // has fully cleaned up (IDLE/LOBBY). This prevents the room
@@ -783,7 +765,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
     }
 
     // --- Input Navigation ---
-    if (s_is_playing || s_is_spectating || s_match_ended_pending_reshow) {
+    if (s_is_playing || s_match_ended_pending_reshow) {
         return; // Suspend lobby navigation while match is active or cleanup pending
     }
 
@@ -795,10 +777,8 @@ extern "C" void rmlui_casual_lobby_update(void) {
     int prev_x = s_cursor_x;
     int prev_y = s_cursor_y;
 
-    bool can_spectate = !s_is_playing && s_match_active && !s_is_spectating;
-
-    // Fallback if cursor is on hidden spectate button
-    if (s_cursor_x == 0 && s_cursor_y == 0 && !can_spectate) {
+    // Fallback if cursor gets stuck out of bounds
+    if (s_cursor_x == 0 && s_cursor_y == 0) {
         s_cursor_y = 9;
     }
 
@@ -806,8 +786,6 @@ extern "C" void rmlui_casual_lobby_update(void) {
         if (s_cursor_x == 0) {
             if (s_cursor_y == 10)
                 s_cursor_y = 9;
-            else if (s_cursor_y == 9 && can_spectate)
-                s_cursor_y = 0;
         }
     }
     if (trigger & 0x02) { // Down
@@ -836,26 +814,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
             s_model_handle.DirtyVariable("chat_input");
             SDL_StartTextInput(SDL_GetKeyboardFocus());
         } else {
-            if (s_cursor_y == 0 && !s_is_playing && s_match_active) {
-                // Spectate — hide lobby overlay so game view is visible
-                SDL_Log("Casual Lobby: Spectate clicked");
-                s_is_spectating = true;
-                s_status_text = "Spectating...";
-                LobbyServer_ReportSpectateStart(s_room_code.c_str(), SDLNetplayUI_GetRoomCode());
-                s_model_handle.DirtyVariable("is_spectating");
-                s_model_handle.DirtyVariable("status_text");
-                rmlui_wrapper_hide_game_document("casual_lobby");
-
-                const char* host_room_code = "";
-                for (int i = 0; i < s_room_state.player_count; i++) {
-                    if (strcmp(s_room_state.players[i].player_id, s_room_state.match_p1) == 0) {
-                        host_room_code = s_room_state.players[i].room_code;
-                        break;
-                    }
-                }
-                SDLNetplayUI_StartSpectatePunch(host_room_code, s_match_p1_name.c_str(), s_room_state.match_p1);
-
-            } else if (s_cursor_y == 9) {
+            if (s_cursor_y == 9) {
                 // Join/Leave Queue
                 if (s_in_queue) {
                     LobbyServer_LeaveQueue(s_room_code.c_str());
@@ -909,8 +868,7 @@ extern "C" void rmlui_casual_lobby_show(void) {
 extern "C" void rmlui_casual_lobby_hide(void) {
     s_is_visible = false;
     s_is_playing = false;
-    s_is_spectating = false;
-    s_spectator_count = 0;
+
     rmlui_wrapper_hide_game_document("casual_lobby");
     LobbyServer_SSEDisconnect();
     if (s_chat_open) {

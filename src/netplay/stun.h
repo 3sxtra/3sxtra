@@ -14,7 +14,6 @@ typedef struct {
     char public_ip[64];                // String representation (IPv4 or IPv6)
     uint16_t public_port;              // Host byte order
     uint16_t local_port;               // Host byte order — actual OS-bound port (may differ from public_port)
-    char local_ip[64];                 // String representation of LAN interface IP used for routing
     struct NET_DatagramSocket* socket; // The socket used for STUN (reuse for hole punching)
 } StunResult;
 
@@ -28,14 +27,14 @@ bool Stun_Discover(StunResult* result, uint16_t local_port);
 /// Close the STUN socket when done
 void Stun_CloseSocket(StunResult* result);
 
-/// Encode an IP string + port + LAN IP into an endpoint string.
+/// Encode an IP string + port into an endpoint string.
 /// out_code must be at least 64 bytes.
-void Stun_EncodeEndpoint(const char* ip, uint16_t port, uint16_t local_port, const char* local_ip, char* out_code);
+void Stun_EncodeEndpoint(const char* ip, uint16_t port, uint16_t local_port, char* out_code);
 
-/// Decode an endpoint string back into IP string + port + LAN IP.
-/// out_ip must be at least 64 bytes. out_local_ip must be at least 64 bytes.
+/// Decode an endpoint string back into IP string + port.
+/// out_ip must be at least 64 bytes.
 /// Returns true on success.
-bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port, uint16_t* out_local_port, char* out_local_ip);
+bool Stun_DecodeEndpoint(const char* code, char* out_ip, uint16_t* out_port, uint16_t* out_local_port);
 
 /// Hole punches NAT to connect to peer. Blocks for up to `punch_duration_ms`.
 // Updates `peer_ip` and `peer_port` with the true translated endpoint if successful.

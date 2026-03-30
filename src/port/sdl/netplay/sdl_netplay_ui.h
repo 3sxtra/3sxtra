@@ -39,7 +39,6 @@ bool SDLNetplayUI_IsNativeLobbyActive(void);
 
 const char* SDLNetplayUI_GetStatusMsg(void);
 const char* SDLNetplayUI_GetRoomCode(void);
-struct NET_DatagramSocket* SDLNetplayUI_GetAdapterSocket(void);
 bool SDLNetplayUI_IsDiscovering(void);
 bool SDLNetplayUI_IsReady(void);
 
@@ -75,9 +74,7 @@ float SDLNetplayUI_GetCurrentFPS(void);
 
 bool SDLNetplayUI_PlayerPassesFilters(const char* conn_type, int rtt_ms, const char* region);
 void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const char* opponent_name,
-                                        const char* opponent_player_id, bool we_are_p1);
-void SDLNetplayUI_StartSpectatePunch(const char* host_room_code, const char* host_name, const char* host_player_id);
-void SDLNetplayUI_ReportNaturalMatchEnd(void);
+                                        const char* opponent_player_id, bool we_are_p1);void SDLNetplayUI_ReportNaturalMatchEnd(void);
 bool SDLNetplayUI_IsSessionComplete(void);
 bool SDLNetplayUI_ConsumeSessionComplete(char* out_winner, size_t winner_size);
 
@@ -132,7 +129,7 @@ static inline bool SDLNetplayUI_PlayerPassesFilters(const char* c, int r, const 
 }
 static inline void SDLNetplayUI_StartCasualMatchPunch(const char* rc, const char* n,
     const char* id, bool p1) { (void)rc; (void)n; (void)id; (void)p1; }
-static inline void SDLNetplayUI_StartSpectatePunch(const char* rc, const char* n, const char* id) { (void)rc; (void)n; (void)id; }
+
 static inline void SDLNetplayUI_ReportNaturalMatchEnd(void) {}
 static inline bool SDLNetplayUI_IsSessionComplete(void) { return false; }
 static inline bool SDLNetplayUI_ConsumeSessionComplete(char* w, size_t s) { (void)w; (void)s; return false; }

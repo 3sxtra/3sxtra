@@ -63,9 +63,6 @@ static inline void Netplay_HandleMenuExit(void) {}
 static inline bool Netplay_IsEnabled(void) { return false; }
 static inline void Netplay_SetNegotiatedFT(int ft) { (void)ft; }
 static inline int  Netplay_GetNegotiatedFT(void) { return 0; }
-static inline void Netplay_BeginSpectate(const char* h, unsigned short p) { (void)h; (void)p; }
-static inline void Netplay_StopSpectate(void) {}
-static inline void Netplay_RegisterSpectator(const char* rc, const char* pid) { (void)rc; (void)pid; }
 /* game_state.h netplay functions (called from engine code) */
 static inline int  Netplay_GetPlayerHandle(void) { return 0; }
 static inline int  Netplay_GetBattleStartFrame(void) { return 0; }

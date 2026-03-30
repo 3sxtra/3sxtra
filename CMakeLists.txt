@@ -83,7 +83,9 @@ set(ENABLE_PGO "OFF" CACHE STRING "PGO mode: OFF, GENERATE, or USE")
 include(FetchContent)
 
 if(ENABLE_NETPLAY)
-    message(STATUS "Vendored GekkoNet will be compiled natively from src/netplay/gekkonet.")
+    message(STATUS "DEBUG: Adding GekkoNet subdirectory...")
+    add_subdirectory("${THIRD_PARTY_DIR}/GekkoNet" GekkoNet)
+    message(STATUS "DEBUG: GekkoNet added.")
 endif()
 
 # SDL_ShaderCross — pre-cloned by build-deps.sh into third_party/
@@ -183,9 +185,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/src/include
     ${PROJECT_SOURCE_DIR}/src/include/sdk
-    src/netplay/gekkonet/thirdparty
-    src/netplay/gekkonet/thirdparty/asio
-    $<$<BOOL:${ENABLE_NETPLAY}>:${PROJECT_SOURCE_DIR}/src/netplay/gekkonet/include>
+    $<$<BOOL:${ENABLE_NETPLAY}>:${THIRD_PARTY_DIR}/GekkoNet/GekkoLib/include>
     ${THIRD_PARTY_DIR}/stb
     $<$<BOOL:${ENABLE_CONTROLLER_IMAGE}>:${PROJECT_SOURCE_DIR}/src/port/sdl/input/controllerimage>
 
@@ -416,7 +416,6 @@ endif()
 
 target_include_directories(3sx PRIVATE
     ${THIRD_PARTY_DIR}/rmlui/Backends
-    ${PROJECT_SOURCE_DIR}/src/netplay/gekkonet/thirdparty
 )
 
 set_target_properties(3sx PROPERTIES LINKER_LANGUAGE CXX)
@@ -448,7 +447,6 @@ target_compile_definitions(3sx PRIVATE
     $<$<BOOL:${ENABLE_DEBUG_HUD}>:ENABLE_DEBUG_HUD>
     $<$<BOOL:${ENABLE_LEADERBOARD}>:ENABLE_LEADERBOARD>
     $<$<BOOL:${ENABLE_RMLUI}>:RMLUI_SDL_VERSION_MAJOR=3>
-    $<$<BOOL:${ENABLE_NETPLAY}>:GEKKONET_STATIC>
 )
 
 
@@ -533,6 +531,7 @@ target_link_libraries(3sx PRIVATE
     m
     $<$<BOOL:${ENABLE_ARCADE_ROM}>:MINIZIP::minizip-ng>
     $<$<BOOL:${ENABLE_ARCADE_ROM}>:${TF_PSA_CRYPTO_LIB}>
+    $<$<BOOL:${ENABLE_NETPLAY}>:GekkoNet>
     stdc++
     glad_gl_core
     ZLIB::ZLIB

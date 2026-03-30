@@ -47,8 +47,6 @@ extern u8 flash_win_type[2][4];
 
 } // extern "C"
 
-// ─── Spectator count (set by lobby code, read by HUD) ───────────
-int g_spectator_count = 0;
 
 // ─── Match Banner Globals (set by lobby/netplay, read by HUD) ───
 int g_match_ft = 0;
@@ -154,7 +152,6 @@ struct HudSnapshot {
     Rml::String p1_r0_lbl, p1_r1_lbl, p1_r2_lbl, p1_r3_lbl;
     Rml::String p2_r0_lbl, p2_r1_lbl, p2_r2_lbl, p2_r3_lbl;
     int p1_round_wins, p2_round_wins;
-    int spectator_count;
     int match_ft;
     Rml::String match_p1_name, match_p2_name;
     Rml::String match_p1_country, match_p2_country;
@@ -402,8 +399,6 @@ extern "C" void rmlui_game_hud_init(void) {
     ctor.BindFunc("training_stun_active",
                   [](Rml::Variant& v) { v = (bool)(Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_TRIALS); });
 
-    // ── Spectator Count ──
-    ctor.BindFunc("spectator_count", [](Rml::Variant& v) { v = (int)g_spectator_count; });
 
     // ── Match Banner ──
     ctor.BindFunc("match_ft", [](Rml::Variant& v) { v = (int)g_match_ft; });
@@ -563,8 +558,6 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_STR(p2_r2_lbl, Rml::String(win_type_label(flash_win_type[1][2])));
     DIRTY_STR(p2_r3_lbl, Rml::String(win_type_label(flash_win_type[1][3])));
 
-    // ── Spectator count ──
-    DIRTY_INT(spectator_count, g_spectator_count);
 
     // ── Match Banner ──
     DIRTY_INT(match_ft, g_match_ft);

@@ -135,6 +135,21 @@ if [ ! -f "$STB_DIR/stb_image.h" ]; then
 fi
 
 # -----------------------------
+# GekkoNet (rollback networking)
+# -----------------------------
+
+GEKKONET_DIR="$THIRD_PARTY/GekkoNet"
+
+if [ -d "$GEKKONET_DIR" ]; then
+    echo "GekkoNet already exists at $GEKKONET_DIR"
+else
+    echo "Cloning GekkoNet..."
+    git clone --depth 1 https://github.com/HeatXD/GekkoNet.git "$GEKKONET_DIR"
+    echo "GekkoNet cloned to $GEKKONET_DIR"
+fi
+
+
+# -----------------------------
 # cJSON (vendored JSON library for lobby_server)
 # -----------------------------
 

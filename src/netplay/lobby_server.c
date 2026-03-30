@@ -1704,8 +1704,6 @@ static void sse_parse_event(const char* json_str, SSEEvent* out) {
         out->type = SSE_EVENT_SPECTATOR_UPDATE;
         if (data) {
             out->spectator_count = cjson_get_int(data, "count", 0);
-            cjson_get_string(data, "spectator_room_code", out->spectator_room_code, sizeof(out->spectator_room_code));
-            cjson_get_string(data, "spectator_player_id", out->spectator_player_id, sizeof(out->spectator_player_id));
         }
     }
 
@@ -2178,14 +2176,14 @@ bool LobbyServer_GlobalSSEIsConnected(void) {
 
 // === Spectator Tracking ===
 
-bool LobbyServer_ReportSpectateStart(const char* room_code, const char* spectator_room_code) {
+bool LobbyServer_ReportSpectateStart(const char* room_code) {
     if (!configured || !room_code || !Identity_IsInitialized())
         return false;
 
     char path[128];
     snprintf(path, sizeof(path), "/room/%s/spectate", room_code);
 
-    char* body = spectator_room_code[0] ? json_body_pid_room(Identity_GetPlayerId(), spectator_room_code) : json_body_pid(Identity_GetPlayerId());
+    char* body = json_body_pid(Identity_GetPlayerId());
     char response[HTTP_BUF_SIZE];
     bool ok = http_request("POST", path, body, response, sizeof(response));
     free(body);

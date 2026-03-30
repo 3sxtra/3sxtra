@@ -2665,18 +2665,10 @@ async function handleRequest(req, res) {
 
         if (method === 'POST') {
             room.spectators.add(player_id);
-            // Look up spectator's STUN endpoint so the host can register them
-            const spectatorData = players.get(player_id);
-            const spectatorRoomCode = spectatorData ? (spectatorData.room_code || '') : '';
-            broadcastRoomEvent(room, 'spectator_update', {
-                count: room.spectators.size,
-                spectator_room_code: spectatorRoomCode,
-                spectator_player_id: player_id
-            });
         } else {
             room.spectators.delete(player_id);
-            broadcastRoomEvent(room, 'spectator_update', { count: room.spectators.size });
         }
+        broadcastRoomEvent(room, 'spectator_update', { count: room.spectators.size });
         console.log(`[room] spectator ${method === 'POST' ? 'start' : 'stop'}: ${player_id} in ${roomCode} (count=${room.spectators.size})`);
         return json(res, 200, { ok: true, spectator_count: room.spectators.size });
     }

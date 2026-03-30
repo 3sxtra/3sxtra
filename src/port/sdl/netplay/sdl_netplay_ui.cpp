@@ -553,12 +553,10 @@ static void lobby_poll_server(void) {
             }
 
             char peer_ip[64] = { 0 };
-            char peer_local_ip[64] = { 0 };
             uint16_t peer_port = 0;
             uint16_t peer_local_port = 0;
-            if (!Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port, &peer_local_port, peer_local_ip)) {
-                continue;
-            }
+            if (!Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port, &peer_local_port))
+                break;
 
             // Auto-decline if player fails filter criteria (region lock, max ping, WiFi block)
             if (!player_passes_filters(&lobby_server_players[i])) {
@@ -671,9 +669,10 @@ static void lobby_poll_server(void) {
                 continue;
             // Decode their STUN endpoint from room_code
             char peer_ip[64] = { 0 };
-            uint16_t peer_port = 0, peer_local_port = 0;
+            uint16_t peer_port = 0;
+            uint16_t peer_local_port = 0;
             if (lobby_server_players[i].room_code[0] &&
-                Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port, &peer_local_port, NULL)) {
+                Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port, &peer_local_port)) {
                 // LAN peers share our public IP — probe their private LAN IP instead
                 if (stun_result.public_ip[0] != '\0' && strcmp(peer_ip, stun_result.public_ip) == 0) {
                     NetplayDiscoveredPeer lan_peers[16];
@@ -1096,7 +1095,7 @@ void SDLNetplayUI_Update(void) {
         // Handle STUN discovery completion
         if (state == LOBBY_ASYNC_READY && my_room_code[0] == '\0') {
             lobby_cleanup_thread();
-            Stun_EncodeEndpoint(stun_result.public_ip, stun_result.public_port, stun_result.local_port, stun_result.local_ip, my_room_code);
+            Stun_EncodeEndpoint(stun_result.public_ip, stun_result.public_port, stun_result.local_port, my_room_code);
             snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Ready.");
 
             // Initialize P2P ping probe on the STUN socket
@@ -1338,10 +1337,6 @@ const char* SDLNetplayUI_GetRoomCode() {
     return my_room_code;
 }
 
-NET_DatagramSocket* SDLNetplayUI_GetAdapterSocket() {
-    return stun_result.socket;
-}
-
 bool SDLNetplayUI_IsDiscovering() {
     int s = SDL_GetAtomicInt(&lobby_async_state);
     return (s == LOBBY_ASYNC_DISCOVERING);
@@ -1510,23 +1505,22 @@ void SDLNetplayUI_ConnectToPlayer(int index) {
         if (!player_passes_filters(&lobby_server_players[i]))
             continue;
         if (count == index) {
-            if (lobby_server_players[i].room_code[0]) {
-                char peer_ip[64] = { 0 };
-                uint16_t peer_port = 0, peer_local_port = 0;
-                if (Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port, &peer_local_port, NULL)) {
-                    // Signal intent via lobby server
-                    const char* display_ct = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
-                    if (!display_ct || !display_ct[0])
-                        display_ct = my_room_code;
-                    AsyncUpdatePresence(lobby_my_player_id, display_ct, my_room_code, lobby_server_players[i].room_code);
-                    snprintf(
-                        lobby_connect_to_intent, sizeof(lobby_connect_to_intent), "%s", lobby_server_players[i].room_code);
-                    snprintf(
-                        lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", lobby_server_players[i].display_name);
-                    snprintf(current_opponent_id, sizeof(current_opponent_id), "%s", lobby_server_players[i].player_id);
-                    lobby_we_are_initiator = true; // We clicked Connect
-                    lobby_start_punch(peer_ip, peer_port, peer_local_port);
-                }
+            char peer_ip[64] = { 0 };
+            uint16_t peer_port = 0;
+            uint16_t peer_local_port = 0;
+            if (Stun_DecodeEndpoint(lobby_server_players[i].room_code, peer_ip, &peer_port, &peer_local_port)) {
+                // Signal intent via lobby server
+                const char* display_ct = Config_GetString(CFG_KEY_LOBBY_DISPLAY_NAME);
+                if (!display_ct || !display_ct[0])
+                    display_ct = my_room_code;
+                AsyncUpdatePresence(lobby_my_player_id, display_ct, my_room_code, lobby_server_players[i].room_code);
+                snprintf(
+                    lobby_connect_to_intent, sizeof(lobby_connect_to_intent), "%s", lobby_server_players[i].room_code);
+                snprintf(
+                    lobby_punch_peer_name, sizeof(lobby_punch_peer_name), "%s", lobby_server_players[i].display_name);
+                snprintf(current_opponent_id, sizeof(current_opponent_id), "%s", lobby_server_players[i].player_id);
+                lobby_we_are_initiator = true; // We clicked Connect
+                lobby_start_punch(peer_ip, peer_port, peer_local_port);
             }
             return;
         }
@@ -1579,9 +1573,9 @@ void SDLNetplayUI_AcceptPendingInvite() {
     snprintf(lobby_connect_to_intent, sizeof(lobby_connect_to_intent), "%s", lobby_pending_invite_room);
     lobby_has_pending_invite = false;
     char peer_ip[64] = { 0 };
-    uint16_t peer_port = 0, peer_local_port = 0;
-
-    if (Stun_DecodeEndpoint(lobby_pending_invite_room, peer_ip, &peer_port, &peer_local_port, NULL)) {
+    uint16_t peer_port = 0;
+    uint16_t peer_local_port = 0;
+    if (Stun_DecodeEndpoint(lobby_pending_invite_room, peer_ip, &peer_port, &peer_local_port)) {
         lobby_we_are_initiator = false;
         lobby_start_punch(peer_ip, peer_port, peer_local_port);
     }
@@ -1682,7 +1676,7 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
     uint16_t peer_port = 0;
     uint16_t peer_local_port = 0;
     bool decoded = (opponent_room_code && opponent_room_code[0])
-                       ? Stun_DecodeEndpoint(opponent_room_code, peer_ip, &peer_port, &peer_local_port, NULL)
+                       ? Stun_DecodeEndpoint(opponent_room_code, peer_ip, &peer_port, &peer_local_port)
                        : false;
 
     // Check if opponent is on LAN — works even without a room code via player_id match.
@@ -1757,70 +1751,6 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
     lobby_start_punch(peer_ip, peer_port, peer_local_port);
 }
 
-void SDLNetplayUI_StartSpectatePunch(const char* host_room_code, const char* host_name, const char* host_player_id) {
-    char peer_ip[64] = { 0 };
-    char peer_local_ip[64] = { 0 };
-    uint16_t peer_port = 0;
-    uint16_t peer_local_port = 0;
-    bool decoded = (host_room_code && host_room_code[0])
-                       ? Stun_DecodeEndpoint(host_room_code, peer_ip, &peer_port, &peer_local_port, peer_local_ip)
-                       : false;
-
-    bool ip_match = decoded && (stun_result.public_ip[0] != '\0' && strcmp(peer_ip, stun_result.public_ip) == 0);
-
-    {
-        NetplayDiscoveredPeer lan_peers[16];
-        int lan_count = Discovery_GetPeers(lan_peers, 16);
-        for (int i = 0; i < lan_count; i++) {
-            bool id_match = (host_player_id && host_player_id[0] && lan_peers[i].player_id[0] &&
-                             strcmp(lan_peers[i].player_id, host_player_id) == 0);
-
-            if ((id_match || ip_match) && lan_peers[i].ip[0]) {
-                uint16_t remote_port = lan_peers[i].port;
-                SDL_Log("[casual] LAN peer detected via broadcast: %s — spectating via direct connection",
-                        host_name ? host_name : lan_peers[i].display_name);
-                Netplay_BeginSpectate(lan_peers[i].ip, remote_port);
-                return;
-            }
-        }
-    }
-
-    if (!decoded) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "[casual] Cannot spectate: %s",
-                     (!host_room_code || !host_room_code[0])
-                         ? "host has no room code"
-                         : "failed to decode host room code");
-        return;
-    }
-
-    // Direct same-router spectating via embedded LAN IP checking
-    if (ip_match && peer_local_ip[0]) {
-        SDL_Log("[casual] Same-router detection: spectating direct to LAN IP %s:%u", peer_local_ip, peer_local_port);
-        if (stun_result.socket != NULL) {
-            if (ping_probe_initialized) {
-                PingProbe_Init(NULL);
-                ping_probe_initialized = false;
-            }
-            Netplay_SetStunSocket(stun_result.socket);
-            stun_result.socket = NULL;
-        }
-        Netplay_BeginSpectate(peer_local_ip, peer_local_port);
-        return;
-    }
-
-    // For spectating over internet, we don't hole punch (we just send packets directly to their public IP/port).
-    // GekkoSpectator will open its own socket using the transferred STUN socket to match the registered STUN port.
-    if (stun_result.socket != NULL) {
-        if (ping_probe_initialized) {
-            PingProbe_Init(NULL);
-            ping_probe_initialized = false;
-        }
-        Netplay_SetStunSocket(stun_result.socket);
-        stun_result.socket = NULL;
-    }
-    Netplay_BeginSpectate(peer_ip, peer_port);
-}
 
 void SDLNetplayUI_ReportNaturalMatchEnd(void) {
     // Called from VS_Result auto-skip while game state (Winner_id, PL_Wins, My_char)
