@@ -419,6 +419,19 @@ static void compute_tuning_from_ping(float avg_ping, float jitter, int* out_dela
     }
 }
 
+static void on_get_state(void* buffer, unsigned int* size) {
+    save_current_state(buffer, G_No[1]);
+    *size = sizeof(State);
+}
+
+static void on_inject_state(const void* buffer, unsigned int size) {
+    if (size == sizeof(State)) {
+        load_state((const State*)buffer);
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[netplay] Invalid state chunk size %u", size);
+    }
+}
+
 static void configure_gekko() {
     GekkoConfig config;
     Discovery_Shutdown();
@@ -434,6 +447,9 @@ static void configure_gekko() {
 
     if (gekko_create(&session, GekkoGameSession)) {
         gekko_start(session, &config);
+        
+        GekkoStateCallbacks callbacks = { on_get_state, on_inject_state };
+        gekko_state_callbacks_set(session, &callbacks);
     } else {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[netplay] Session is already running! probably incorrect.");
     }

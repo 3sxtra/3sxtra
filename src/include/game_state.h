@@ -791,6 +791,8 @@ struct GekkoGameEvent;
 int Netplay_GetPlayerHandle(void);
 int Netplay_GetBattleStartFrame(void);
 void save_state(const struct GekkoGameEvent* event);
+uint32_t save_current_state(void* buffer, int frame);
+void load_state(const struct State* src);
 void load_state_from_event(const struct GekkoGameEvent* event);
 
 #if DEBUG

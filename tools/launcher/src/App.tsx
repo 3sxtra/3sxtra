@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { listen } from "@tauri-apps/api/event";
 import { Remapper } from "./components/Remapper";
 import "./App.css";
 
@@ -117,14 +118,11 @@ function App() {
     try {
       const manifest = await invoke("check_updates") as any;
       if (manifest && manifest.archives) {
-        
-        const total = manifest.archives.length;
-        let done = 0;
-
         for (const arc of manifest.archives) {
           const exists = await invoke("check_file_exists", { path: arc.markerFile });
           
           if (arc.forceUpdate || !exists) {
+            setProgress(0);
             setStatus(`DOWNLOADING ${arc.name.toUpperCase()}...`);
             await invoke("download_and_extract_archive", { 
               url: arc.url, 
@@ -134,8 +132,6 @@ function App() {
               versionId: arc.versionId
             });
           }
-          done++;
-          setProgress(Math.round((done / total) * 100));
         }
 
         setStatus("GAME UP TO DATE");
@@ -150,6 +146,10 @@ function App() {
   };
 
   useEffect(() => {
+    const unlistenProgress = listen<number>('download-progress', (event) => {
+      setProgress(Math.round(event.payload));
+    });
+
     async function init() {
       // 1. Load local settings
       try {
@@ -180,6 +180,10 @@ function App() {
       await performUpdate();
     }
     init();
+
+    return () => {
+      unlistenProgress.then(unlisten => unlisten());
+    };
   }, []);
 
 

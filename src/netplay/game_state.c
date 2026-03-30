@@ -1547,13 +1547,9 @@ static State* note_state(const State* state, int frame) {
  * slow-motion flags, super gauge, stun). UI-only fields are saved but not
  * checksummed to reduce false positives from rendering-only divergence.
  */
-void save_state(const GekkoGameEvent* event) {
-    *event->data.save.state_len = sizeof(State);
-    State* dst = (State*)event->data.save.state;
-
+uint32_t save_current_state(void* buffer, int frame) {
+    State* dst = (State*)buffer;
     gather_state(dst);
-
-    const int frame = event->data.save.frame;
 
     // Activate checksumming from the very first synced frame (not just battle).
     // This catches desyncs during character select, not only during gameplay.
@@ -1683,8 +1679,6 @@ void save_state(const GekkoGameEvent* event) {
         h = djb2_update_mem(h, (const uint8_t*)&gs->piyori_type, sizeof(gs->piyori_type));
         h = djb2_update_mem(h, (const uint8_t*)&gs->Max_vitality, sizeof(gs->Max_vitality));
 
-        *event->data.save.checksum = h;
-
 #if DEBUG
         // Per-section checksums for desync triage (debug-only diagnostic)
         SectionedChecksum sc;
@@ -1704,7 +1698,15 @@ void save_state(const GekkoGameEvent* event) {
         SDL_memcpy(&saved_plw_scratch[frame % STATE_BUFFER_MAX][0], &plw_scratch[0], sizeof(PLW));
         SDL_memcpy(&saved_plw_scratch[frame % STATE_BUFFER_MAX][1], &plw_scratch[1], sizeof(PLW));
 #endif
+        return h;
     }
+    return 0;
+}
+
+void save_state(const GekkoGameEvent* event) {
+    *event->data.save.state_len = sizeof(State);
+    uint32_t h = save_current_state(event->data.save.state, event->data.save.frame);
+    *event->data.save.checksum = h;
 }
 
 #if DEBUG
@@ -1805,7 +1807,7 @@ void dump_desync_state(int frame, uint32_t local_checksum, uint32_t remote_check
  * saved State snapshot: GameState_Load for game globals, then manually restores
  * the effect pool state (frw, frwque, head_ix, tail_ix, frwctr, frwctr_min).
  */
-static void load_state(const State* src) {
+void load_state(const State* src) {
     // GameState
     const GameState* gs = &src->gs;
     GameState_Load(gs);

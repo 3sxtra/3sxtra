@@ -1,5 +1,6 @@
 use std::process::Command;
 use std::path::{Path, PathBuf};
+use tauri::Emitter;
 use directories::UserDirs;
 use ini::Ini;
 use serde::{Serialize, Deserialize};
@@ -306,23 +307,71 @@ fn check_file_exists(path: String) -> Result<bool, String> {
 }
 
 #[tauri::command]
-async fn download_and_extract_archive(url: String, extract_path: String, marker_file: String, strip_root: bool, version_id: Option<String>) -> Result<(), String> {
+async fn download_and_extract_archive(
+    window: tauri::Window,
+    url: String, 
+    extract_path: String, 
+    marker_file: String, 
+    strip_root: bool, 
+    version_id: Option<String>
+) -> Result<(), String> {
     let game_root = get_game_root();
     
-    let client = reqwest::Client::builder().timeout(std::time::Duration::from_secs(60)).build().map_err(|e| e.to_string())?;
+    // Unbound the download time limitation for poor networks
+    let client = reqwest::Client::builder().build().map_err(|e| e.to_string())?;
     let resp = client.get(&url).send().await.map_err(|e| e.to_string())?;
     if !resp.status().is_success() {
         return Err(format!("Download failed with status: {}", resp.status()));
     }
     
-    let bytes = resp.bytes().await.map_err(|e| e.to_string())?;
-    let cursor = std::io::Cursor::new(bytes);
+    let total_size = resp.content_length().unwrap_or(0);
     
-    let mut archive = zip::ZipArchive::new(cursor).map_err(|e| format!("Invalid ZIP: {}", e))?;
+    use futures_util::StreamExt;
+    use std::io::Write;
+    
+    // Use a robust temporary stream file on disk instead of blasting system RAM!
+    let temp_file_name = format!("{}.zip.part", marker_file.replace("/", "_").replace("\\", "_"));
+    let temp_zip_path = game_root.join(&temp_file_name);
+    let mut file = std::fs::File::create(&temp_zip_path).map_err(|e| format!("Failed to create temp zip: {}", e))?;
+    
+    let mut downloaded: u64 = 0;
+    let mut stream = resp.bytes_stream();
+    
+    while let Some(chunk) = stream.next().await {
+        let chunk = chunk.map_err(|e| format!("Stream error: {}", e))?;
+        file.write_all(&chunk).map_err(|e| format!("Write error: {}", e))?;
+        downloaded += chunk.len() as u64;
+        
+        if total_size > 0 {
+            let progress = (downloaded as f64 / total_size as f64) * 100.0;
+            let _ = window.emit("download-progress", progress);
+        }
+    }
+    
+    // Explicitly flush and drop the write handle before unzipping
+    file.flush().unwrap_or_default();
+    drop(file);
+    
+    let file_reader = std::fs::File::open(&temp_zip_path).map_err(|e| format!("Failed to read temp zip: {}", e))?;
+    
+    let mut archive = match zip::ZipArchive::new(file_reader) {
+        Ok(arc) => arc,
+        Err(e) => {
+            let _ = std::fs::remove_file(&temp_zip_path);
+            return Err(format!("Invalid ZIP: {}", e));
+        }
+    };
+    
     let extract_dir = game_root.join(&extract_path);
     
     for i in 0..archive.len() {
-        let mut file = archive.by_index(i).map_err(|e| format!("Error reading ZIP file {}: {}", i, e))?;
+        let mut file = match archive.by_index(i) {
+            Ok(f) => f,
+            Err(e) => {
+                let _ = std::fs::remove_file(&temp_zip_path);
+                return Err(format!("Error reading ZIP file {}: {}", i, e));
+            }
+        };
         let out_path = match file.enclosed_name() {
             Some(path) => path.to_owned(),
             None => continue,
@@ -343,15 +392,19 @@ async fn download_and_extract_archive(url: String, extract_path: String, marker_
         let target_path = extract_dir.join(stripped_path);
         
         if file.name().ends_with('/') || file.is_dir() {
-            std::fs::create_dir_all(&target_path).map_err(|e| e.to_string())?;
+            std::fs::create_dir_all(&target_path).unwrap_or_default();
         } else {
             if let Some(p) = target_path.parent() {
-                std::fs::create_dir_all(p).map_err(|e| e.to_string())?;
+                std::fs::create_dir_all(p).unwrap_or_default();
             }
-            let mut out_file = std::fs::File::create(&target_path).map_err(|e| e.to_string())?;
-            std::io::copy(&mut file, &mut out_file).map_err(|e| e.to_string())?;
+            if let Ok(mut out_file) = std::fs::File::create(&target_path) {
+                let _ = std::io::copy(&mut file, &mut out_file);
+            }
         }
     }
+    
+    // Perform cleanup of the massive temp partial zip!
+    let _ = std::fs::remove_file(&temp_zip_path);
     
     if !game_root.join(&marker_file).exists() {
         return Err(format!("Archive extracted but marker file {} was not found", marker_file));
