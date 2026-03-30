@@ -3,7 +3,7 @@
 :root {
   /* 🎨 3nd Strike Arcade Palette */
   --bg-dark: #000000;
-  --bg-panel: #000000;
+  --bg-panel: rgba(0, 0, 0, 0.75);
   --accent-red: #CC1C10;
   --accent-yellow: #FFE033;
   --text-primary: #F0F0F0;
@@ -75,9 +75,12 @@ button {
   font-size: 24px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  padding: 8px 32px;
+  padding: 2px 24px;
   border: 4px solid #fff;
   box-shadow: 4px 4px 0px var(--accent-red);
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .btn-primary:hover {

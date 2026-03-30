@@ -50,75 +50,76 @@ export function Remapper({ onMappingSaved, currentMappings }: Props) {
       onMouseLeave={() => setHoveredAction(null)}
       onClick={() => setBindingAction(action)}
     >
-      <circle 
-        cx={x} cy={y} r={r} 
-        fill={bindingAction === action ? color : "rgba(255,255,255,0.05)"}
+      <rect 
+        x={x - r} y={y - r} width={r * 2} height={r * 2} rx="12"
+        fill={bindingAction === action ? color : "rgba(0,0,0,0.8)"}
         stroke={hoveredAction === action ? color : "rgba(255,255,255,0.2)"}
-        strokeWidth="2"
-        style={{ transition: 'all 0.2s ease' }}
+        strokeWidth="6"
+        style={{ transition: 'all 0.1s ease', filter: 'drop-shadow(4px 4px 0 var(--accent-red))' }}
       />
       <text 
-        x={x} y={y + 5} 
+        x={x} y={y} 
         textAnchor="middle" 
+        alignmentBaseline="middle"
         fill={bindingAction === action ? "#000" : "#fff"}
-        style={{ fontSize: 12, fontWeight: 900, pointerEvents: 'none' }}
+        style={{ fontSize: 22, fontFamily: 'var(--font-main)', fontWeight: 700, pointerEvents: 'none' }}
       >
         {action}
       </text>
       <text 
-        x={x} y={y + r + 15} 
+        x={x}
+        y={y + r + 30} 
         textAnchor="middle" 
-        fill="var(--text-secondary)"
-        style={{ fontSize: 10, fontFamily: 'var(--font-mono)' }}
+        fill="var(--accent-yellow)"
+        style={{ fontSize: 18, fontFamily: 'var(--font-mono)', fontWeight: 700 }}
       >
-        {getMappedValue(action)}
+        {getMappedValue(action).replace('Key_', '')}
       </text>
     </g>
   );
 
   return (
-    <div className="remapper-container glass" style={{ padding: 40, marginTop: 20, position: 'relative' }}>
+    <div className="remapper-container arcade-box" style={{ padding: 40, marginTop: 20, position: 'relative' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 30 }}>
         <div>
-          <h3 style={{ color: 'var(--accent-cyan)' }}>Visual Mapping Tool</h3>
+          <h3 style={{ color: 'var(--accent-red)' }}>Visual Mapping Tool</h3>
           <p style={{ fontSize: 12, opacity: 0.6 }}>Click a button to start binding. Press any key to assign.</p>
         </div>
         {bindingAction && (
-          <div className="text-gradient" style={{ fontSize: 14, fontWeight: 900, animation: 'pulse 1s infinite' }}>
-            WAITING FOR INPUT: {bindingAction.toUpperCase()} ...
+          <div className="text-gradient" style={{ fontSize: 24, fontFamily: 'var(--font-main)', fontWeight: 900, animation: 'pulse 1s infinite' }}>
+            BINDING: {bindingAction.toUpperCase()}
           </div>
         )}
       </div>
 
-      <svg width="100%" height="300" viewBox="0 0 650 350" style={{ filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}>
+      <svg width="100%" height="auto" viewBox="0 0 1300 400" preserveAspectRatio="xMidYMin meet" style={{ filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}>
         {/* 🕹️ D-Pad / Stick Area */}
-        <g transform="translate(140, 180)">
-          <line x1="-60" y1="0" x2="60" y2="0" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-          <line x1="0" y1="-60" x2="0" y2="60" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-          <Button action="Up" x={0} y={-60} r={22} />
-          <Button action="Down" x={0} y={60} r={22} />
-          <Button action="Left" x={-60} y={0} r={22} />
-          <Button action="Right" x={60} y={0} r={22} />
-          <circle cx="0" cy="0" r="12" fill="var(--accent-magenta)" opacity="0.3" />
+        <g transform="translate(240, 180)">
+          <line x1="-130" y1="0" x2="130" y2="0" stroke="rgba(255,255,255,0.1)" strokeWidth="12" />
+          <line x1="0" y1="-130" x2="0" y2="130" stroke="rgba(255,255,255,0.1)" strokeWidth="12" />
+          <Button action="Up" x={0} y={-130} r={50} />
+          <Button action="Down" x={0} y={130} r={50} />
+          <Button action="Left" x={-130} y={0} r={50} />
+          <Button action="Right" x={130} y={0} r={50} />
         </g>
 
         {/* 🔘 Action Buttons (Arcade Layout - Vewlix style) */}
-        <g transform="translate(320, 130)">
+        <g transform="translate(600, 60)">
           {/* Top Row */}
-          <Button action="LP" x={0} y={30} color="var(--accent-cyan)" r={24} />
-          <Button action="MP" x={70} y={15} color="var(--accent-cyan)" r={24} />
-          <Button action="HP" x={140} y={15} color="var(--accent-cyan)" r={24} />
+          <Button action="LP" x={0} y={60} color="var(--accent-yellow)" r={50} />
+          <Button action="MP" x={200} y={20} color="var(--accent-yellow)" r={50} />
+          <Button action="HP" x={400} y={20} color="var(--accent-yellow)" r={50} />
           
           {/* Bottom Row */}
-          <Button action="LK" x={0} y={100} color="var(--accent-magenta)" r={24} />
-          <Button action="MK" x={70} y={85} color="var(--accent-magenta)" r={24} />
-          <Button action="HK" x={140} y={85} color="var(--accent-magenta)" r={24} />
+          <Button action="LK" x={0} y={200} color="var(--accent-red)" r={50} />
+          <Button action="MK" x={200} y={160} color="var(--accent-red)" r={50} />
+          <Button action="HK" x={400} y={160} color="var(--accent-red)" r={50} />
         </g>
 
         {/* ⚙️ Meta Buttons */}
-        <g transform="translate(560, 60)">
-          <Button action="Start" x={0} y={0} r={16} color="var(--accent-yellow)" />
-          <Button action="Select" x={0} y={60} r={16} color="rgba(255,255,255,0.5)" />
+        <g transform="translate(1160, 60)">
+          <Button action="Start" x={0} y={0} r={32} color="var(--accent-yellow)" />
+          <Button action="Select" x={0} y={140} r={32} color="#fff" />
         </g>
       </svg>
 

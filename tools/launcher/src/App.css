@@ -55,13 +55,18 @@
 
 /* ⬅️ Arcade Menu List */
 .arcade-sidebar {
-  width: 320px;
-  height: 100%;
-  padding: 100px 0 0 40px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 100vh;
+  padding: 40px 0 0 30px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
+  background: rgba(0,0,0,0.4); /* Solidify menu contrast */
+  border-right: 4px solid var(--accent-red);
+  box-shadow: 4px 0 15px rgba(0,0,0,0.8);
   z-index: 10;
 }
 
@@ -69,7 +74,7 @@
   background: transparent;
   color: var(--text-unselected);
   font-family: var(--font-header);
-  font-size: 42px;
+  font-size: 32px;
   font-style: italic;
   font-weight: 700;
   text-transform: uppercase;
@@ -79,24 +84,27 @@
   cursor: pointer;
   transition: all 0.1s ease;
   position: relative;
+  line-height: 1;
 }
 
 .nav-item:before {
-  content: '▶ ';
+  content: '▶';
   color: transparent;
   position: absolute;
-  left: -30px;
+  left: -40px;
+  top: 0px;
   transition: color 0.1s ease;
 }
 
 .nav-item.active {
   color: var(--accent-yellow);
-  text-shadow: 3px 3px 0px var(--accent-red);
+  text-shadow: 2px 2px 0px var(--accent-red);
   transform: translateX(10px);
 }
 
 .nav-item.active:before {
   color: var(--accent-yellow);
+  text-shadow: 2px 2px 0px var(--accent-red);
 }
 
 .nav-item:hover {
@@ -105,11 +113,15 @@
 
 /* 📄 Main Content Area */
 .main-content {
-  flex: 1;
+  position: absolute;
+  top: 0;
+  left: 300px;
+  width: calc(100% - 300px);
+  height: 100vh; 
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding: 40px;
-  padding-top: 34px; /* Room for window controls */
+  padding: 40px 40px 0 40px;
   z-index: 5;
   overflow: hidden;
 }
@@ -117,14 +129,14 @@
 .content-panel {
   flex: 1;
   overflow-y: auto;
-  padding-right: 10px;
+  padding: 0 20px 20px 0;
   animation: fadeIn 0.3s ease;
 }
 
 /* 📋 News Feed */
 .news-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
@@ -137,6 +149,10 @@
   position: relative;
   overflow: hidden;
   animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+  border-radius: 0px; 
+  border: 2px solid var(--accent-red);
+  background: rgba(0,0,0,0.5);
+  box-shadow: 4px 4px 0px rgba(204, 28, 16, 0.4);
 }
 
 .news-card:nth-child(1) { animation-delay: 0.05s; }
@@ -151,8 +167,8 @@
   height: 100%;
   object-fit: cover;
   z-index: -1;
-  opacity: 0.6;
-  filter: saturate(0.5);
+  opacity: 0.9;
+  filter: saturate(0.8);
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -171,26 +187,7 @@
   letter-spacing: 1px;
 }
 
-/* 🕹️ Bottom Bar */
-.bottom-bar {
-  height: 80px;
-  width: calc(100% + 40px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 10;
-  background: var(--accent-red);
-  margin: 0 -40px 0 0;
-  padding: 0 40px;
-  border-top: 4px solid #fff;
-  box-shadow: 0 -4px 15px rgba(204, 28, 16, 0.5);
-}
-
-.play-button-container {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
+/* DELETED BOTTOM BAR */
 
 .update-progress {
   width: 300px;
@@ -214,8 +211,8 @@
 /* ── Top Absolute Info Bar ──────────────────── */
 .app-header {
   position: absolute;
-  top: 10px;
-  right: 20px;
+  top: 20px;
+  right: 150px; /* Safe distance from ALL Tauri window controls block! */
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -236,14 +233,18 @@
   text-shadow: 1px 1px 0 #000;
 }
 
-.system-direction-title {
+.page-title {
   font-family: var(--font-header);
   font-style: italic;
-  font-size: 64px;
-  color: var(--accent-red);
-  text-shadow: 4px 4px 0 #000;
+  font-size: 36px;
+  color: var(--text-primary);
+  text-shadow: 2px 2px 0 #000;
   margin-bottom: 20px;
   text-transform: uppercase;
+  line-height: 1;
+  border-bottom: 2px solid var(--accent-red);
+  box-shadow: 0 2px 0 0 #000;
+  padding-bottom: 6px;
 }
 
 /* ── Scrollbar ───────────────────────────────── */

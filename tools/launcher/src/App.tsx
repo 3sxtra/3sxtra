@@ -271,8 +271,20 @@ function App() {
   const renderSettingRow = (s: SettingDef) => {
     const val = getConfigValue(s.key);
     return (
-      <div key={s.key} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '2px 8px', borderBottom: '2px solid rgba(255,255,255,0.1)' }}>
-        <span style={{ fontSize: 20, color: 'var(--text-unselected)', fontFamily: 'var(--font-main)', textTransform: 'uppercase' }}>{s.label}</span>
+      <div key={s.key} className="arcade-row-selectable" style={{ 
+        display: 'flex', 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        padding: '8px 12px', 
+        marginBottom: '6px',
+        background: 'rgba(0,0,0,0.85)',
+        border: '2px solid var(--accent-red)',
+        boxShadow: '2px 2px 0 rgba(204, 28, 16, 0.3)',
+        transition: 'all 0.1s ease',
+        cursor: 'pointer'
+      }}>
+        <span style={{ fontSize: 24, color: '#fff', fontFamily: 'var(--font-main)', textTransform: 'uppercase', letterSpacing: '1px' }}>{s.label}</span>
         {s.type === "bool" && (
           <button
             onClick={() => toggleBool(s.key)}
@@ -280,7 +292,7 @@ function App() {
               background: 'transparent',
               color: isBoolEnabled(s.key) ? 'var(--accent-yellow)' : 'var(--text-secondary)',
               border: 'none', padding: '0',
-              fontWeight: 700, fontSize: 20, cursor: 'pointer', fontFamily: 'var(--font-main)',
+              fontWeight: 700, fontSize: 16, cursor: 'pointer', fontFamily: 'var(--font-main)',
               transition: 'all 0.1s ease', textTransform: 'uppercase'
             }}
           >
@@ -290,12 +302,12 @@ function App() {
         {s.type === "int" && (
           <input
             type="number"
-            value={val || "0"}
+            value={val || ""}
             onChange={e => updateSetting(s.key, e.target.value)}
             style={{
               background: 'transparent', border: 'none',
-              width: '60px', color: 'var(--accent-yellow)', textAlign: 'right',
-              fontFamily: 'var(--font-main)', fontSize: 20, boxSizing: 'border-box'
+              width: '80px', color: 'var(--accent-yellow)', textAlign: 'right',
+              fontFamily: 'var(--font-main)', fontSize: 24, boxSizing: 'border-box'
             }}
           />
         )}
@@ -307,8 +319,8 @@ function App() {
             placeholder="-"
             style={{
               background: 'transparent', border: 'none',
-              width: '100px', color: 'var(--accent-yellow)', textAlign: 'right',
-              fontFamily: 'var(--font-main)', fontSize: 20, boxSizing: 'border-box'
+              width: '160px', color: 'var(--accent-yellow)', textAlign: 'right',
+              fontFamily: 'var(--font-main)', fontSize: 24, boxSizing: 'border-box'
             }}
           />
         )}
@@ -319,8 +331,8 @@ function App() {
             style={{
               background: 'transparent', border: 'none',
               color: 'var(--accent-yellow)', textAlign: 'right',
-              fontFamily: 'var(--font-main)', fontSize: 20, boxSizing: 'border-box',
-              appearance: 'none', paddingRight: '20px', cursor: 'pointer'
+              fontFamily: 'var(--font-main)', fontSize: 24, boxSizing: 'border-box',
+              appearance: 'none', paddingRight: '10px', cursor: 'pointer'
             }}
           >
             {s.options.map(o => <option key={o.value} value={o.value} style={{background: '#000'}}>{o.label.toUpperCase()}</option>)}
@@ -352,48 +364,76 @@ function App() {
 
       {/* ⬅️ Arcade Menu Sidebar */}
       <nav className="arcade-sidebar">
-        <h1 className="system-direction-title">SYSTEM<br/>DIRECTION</h1>
-        
-        <button 
-          className={`nav-item ${activeTab === 'news' ? 'active' : ''}`} 
-          onClick={() => setActiveTab("news")}
-        >
-          LATEST NEWS
-        </button>
-        <button 
-          className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} 
-          onClick={() => setActiveTab("settings")}
-        >
-          GAME OPTION
-        </button>
-        <button 
-          className={`nav-item ${activeTab === 'controls' ? 'active' : ''}`} 
-          onClick={() => setActiveTab("controls")}
-        >
-          BUTTON CONFIG
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <button 
+            className={`nav-item ${activeTab === 'news' ? 'active' : ''}`} 
+            onClick={() => setActiveTab("news")}
+          >
+            LATEST NEWS
+          </button>
+          
+          <button 
+            className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} 
+            onClick={() => setActiveTab("settings")}
+          >
+            GAME OPTION
+          </button>
+
+          <button 
+            className={`nav-item ${activeTab === 'controls' ? 'active' : ''}`} 
+            onClick={() => setActiveTab("controls")}
+          >
+            BUTTON CONFIG
+          </button>
+        </div>
+
+        {/* Global Action Block (Replaces Bottom Bar) */}
+        <div style={{ marginTop: 'auto', width: '100%', paddingRight: 40, paddingBottom: 40 }}>
+          <div className="status-container" style={{ marginBottom: 16, borderLeft: '4px solid var(--accent-red)', paddingLeft: 12 }}>
+            <div className={`status-text ${isUpdating ? 'blink' : ''}`} style={{ color: 'var(--accent-yellow)', fontSize: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px' }}>{status}</div>
+            {isUpdating && (
+              <div className="progress-bar" style={{ height: '100%', background: 'var(--accent-red)', width: `${progress}%` }} />
+            )}
+          </div>
+          <button 
+            className="btn-primary" 
+            style={{ 
+              width: '100%', 
+              textAlign: 'center', 
+              justifyContent: 'center', 
+              padding: '16px 0', 
+              fontSize: 24, 
+              whiteSpace: 'nowrap' 
+            }}
+            onClick={handlePlay} 
+            disabled={isUpdating}
+          >
+            {status === "FIRST RUN - DOWNLOAD REQUIRED" ? "INSTALL GAME" : 
+             (status === "GAME UP TO DATE" || status === "SYSTEM READY" || status === "PRESET APPLIED" || status === "OFFLINE — PLAY AVAILABLE" ? "PLAY" : "UPDATE")}
+          </button>
+        </div>
       </nav>
 
       {/* 📄 Main Content */}
       <main className="main-content">
         <header className="app-header" data-tauri-drag-region>
           <h1 className="app-title text-gradient">3rd Strike 3SXtra</h1>
-          <div className="version">STABLE BUILD · V2.4.0-BETA</div>
+          <span style={{ fontSize: 14, fontFamily: 'monospace', color: '#fff', textShadow: '1px 1px 0 #000', letterSpacing: '1px' }}>STABLE BUILD · V2.4.0-BETA</span>
         </header>
+
+        <h2 className="page-title">{activeTab.replace('_', ' ')}</h2>
 
         <section className="content-panel">
           {/* ── News ───────────────────────────────── */}
           {activeTab === "news" && (
             <div className="news-feed">
-              <h2 style={{ marginBottom: 20 }}>Latest News</h2>
               <div className="news-grid">
-                {MOCK_NEWS.map(news => (
-                  <div key={news.id} className="news-card arcade-box">
-                    <img src={news.image} className="news-card-img" alt={news.title} />
-                    <div className="news-card-tag">{news.tag}</div>
-                    <h3 style={{ fontSize: 18 }}>{news.title}</h3>
-                    <p style={{ fontSize: 12, opacity: 0.6, marginTop: 8 }}>{news.date}</p>
-                  </div>
+              {MOCK_NEWS.map((news) => (
+              <div key={news.id} className="news-card" style={{ border: '2px solid var(--accent-red)', boxShadow: '4px 4px 0 rgba(0,0,0,0.8)', background: `linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.1) 100%), url(${news.image}) center/cover` }}>
+                <span style={{ fontSize: 18, color: 'var(--accent-yellow)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 800, textShadow: '2px 2px 0 #000' }}>{news.tag}</span>
+                <h3 style={{ margin: '12px 0', fontSize: 32, color: '#fff', fontFamily: 'var(--font-header)', fontStyle: 'italic', textTransform: 'uppercase', textShadow: '3px 3px 0 #000', lineHeight: 1.1 }}>{news.title}</h3>
+                <span style={{ fontSize: 18, color: '#aaa', fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '1px' }}>{news.date}</span>
+              </div>
                 ))}
               </div>
             </div>
@@ -402,8 +442,7 @@ function App() {
           {/* ── Settings ──────────────────────────── */}
           {activeTab === "settings" && (
             <div className="settings-panel">
-              <h2 style={{ marginBottom: 20, color: 'var(--accent-red)' }}>Game Option</h2>
-              <div className="arcade-box settings-list" style={{ padding: 24 }}>
+              <div className="settings-list" style={{ paddingBottom: 40 }}>
                 {configs.length === 0 ? (
                   <p style={{ opacity: 0.6 }}>No config found. Run the game once to generate defaults, or settings will be created as you change them.</p>
                 ) : null}
@@ -411,15 +450,15 @@ function App() {
                 {SETTING_CATEGORIES.map((cat) => (
                   <div key={cat.name} style={{ marginBottom: 20 }}>
                     <h3 style={{ 
-                      fontSize: 14, 
-                      color: 'var(--accent-cyan)', 
-                      borderBottom: '1px solid rgba(255,255,255,0.1)', 
+                      fontSize: 24, 
+                      color: 'var(--text-primary)', 
+                      borderBottom: '4px solid var(--accent-red)', 
                       paddingBottom: 4, 
-                      marginBottom: 8 
+                      marginBottom: 16 
                     }}>
                       {cat.icon} {cat.name}
                     </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '8px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)', columnGap: '60px', rowGap: '8px' }}>
                       {cat.settings.map(renderSettingRow)}
                     </div>
                   </div>
@@ -431,39 +470,11 @@ function App() {
           {/* ── Controls ──────────────────────────── */}
           {activeTab === "controls" && (
             <div className="controls-panel">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <h2>Input Mapping</h2>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  {(["XBOX", "PS5", "STICKS"] as const).map(preset => (
-                    <button key={preset} className="arcade-card" onClick={() => applyPreset(preset)}
-                      style={{ fontSize: 16, padding: '6px 16px', cursor: 'pointer', color: 'var(--text-primary)', fontWeight: 700, fontFamily: 'var(--font-main)' }}>
-                      {preset}
-                    </button>
-                  ))}
-                </div>
-              </div>
+
               <Remapper onMappingSaved={updateMapping} currentMappings={mappings} />
             </div>
           )}
         </section>
-
-        {/* 🕹️ Bottom Bar */}
-        <footer className="bottom-bar">
-          <div className="status-container">
-            <div className="status-text">{status}</div>
-            {isUpdating && (
-              <div className="update-progress">
-                <div className="progress-bar" style={{ width: `${progress}%` }} />
-              </div>
-            )}
-          </div>
-          <div className="play-button-container">
-            <button className="btn-primary" onClick={handlePlay} disabled={isUpdating}>
-              {status === "FIRST RUN - DOWNLOAD REQUIRED" ? "INSTALL GAME" : 
-               (status === "GAME UP TO DATE" || status === "SYSTEM READY" || status === "PRESET APPLIED" || status === "OFFLINE — PLAY AVAILABLE" ? "PLAY" : "UPDATE")}
-            </button>
-          </div>
-        </footer>
       </main>
     </div>
   );

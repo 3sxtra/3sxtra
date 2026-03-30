@@ -200,7 +200,7 @@ void Gekko::MessageSystem::SendInputAck(Handle player, Frame frame, i8 local_adv
 {
 	auto plyr = GetPlayerByHandle(player);
 
-    if (!plyr) {
+    if (!plyr || plyr->GetStatus() != Connected) {
         return;
     }
 
@@ -403,7 +403,7 @@ void Gekko::MessageSystem::SendDataToAll(NetData* pkt, GekkoNetAdapter* host, bo
 
     for (auto& actor : actors) {
         _bin_buffer.clear();
-        if (actor->address.GetSize() != 0 && actor->GetStatus() != Disconnected) {
+        if (actor->address.GetSize() != 0 && actor->GetStatus() == Connected) {
 
             pkt->addr.Copy(&actor->address);
             pkt->pkt.header.magic = actor->session_magic;
@@ -889,6 +889,17 @@ void Gekko::MessageSystem::ClearAssembledState()
 
 void Gekko::MessageSystem::SendStateChunks(NetAddress& addr, Frame frame, u8* state_data, u32 state_size, GekkoNetAdapter* host)
 {
+    // find the magic for this addr
+    u16 magic = 0;
+    for (auto& spec : spectators) {
+        if (spec->address.Equals(addr)) {
+            magic = spec->session_magic;
+            break;
+        }
+    }
+
+    if (magic == 0) return;
+
     const u32 chunk_payload_size = 1024;
     u16 total_chunks = (state_size + chunk_payload_size - 1) / chunk_payload_size;
 
@@ -905,15 +916,6 @@ void Gekko::MessageSystem::SendStateChunks(NetAddress& addr, Frame frame, u8* st
         body->chunk_index = i;
         body->total_chunks = total_chunks;
         body->chunk_data.insert(body->chunk_data.end(), state_data + offset, state_data + offset + this_chunk_size);
-
-        // find the magic for this addr
-        u16 magic = 0;
-        for (auto& spec : spectators) {
-            if (spec->address.Equals(addr)) {
-                magic = spec->session_magic;
-                break;
-            }
-        }
 
         message->addr.Copy(&addr);
         message->pkt.header.type = StateChunkResponse;
@@ -943,6 +945,11 @@ void Gekko::MessageSystem::SendStateChunkRequest(NetAddress* addr, GekkoNetAdapt
         }
     }
 
+    if (magic == 0) {
+        _pending_output.pop();
+        return;
+    }
+
     message->addr.Copy(addr);
     message->pkt.header.type = StateChunkRequest;
     message->pkt.header.magic = magic;
@@ -954,7 +961,7 @@ void Gekko::MessageSystem::SendStateChunkRequest(NetAddress* addr, GekkoNetAdapt
 
 void Gekko::MessageSystem::SendInputsToPeer(Player* peer, GekkoNetAdapter* host, bool spectator)
 {
-    if (peer->address.GetSize() == 0 || peer->GetStatus() == Disconnected) {
+    if (peer->address.GetSize() == 0 || peer->GetStatus() != Connected) {
         return;
     }
 
