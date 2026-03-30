@@ -642,6 +642,12 @@ void Game2_1() {
     }
 
     Player_control();
+
+    if (Disp_Cockpit) {
+        vital_cont_main();
+        combo_cont_main();
+    }
+
     TATE00();
     Game_Management();
     BG_Draw_System();
@@ -650,12 +656,10 @@ void Game2_1() {
     Basic_Sub_Ex();
 
     if (Disp_Cockpit) {
-        vital_cont_main();
         if (!use_rmlui || !rmlui_hud_faces)
             player_face();
         if (!use_rmlui || !rmlui_hud_names)
             player_name();
-        combo_cont_main();
         stngauge_cont_main();
         spgauge_cont_main();
         if (!use_rmlui || !rmlui_hud_super)
