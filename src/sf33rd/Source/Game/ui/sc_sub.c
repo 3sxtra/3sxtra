@@ -274,7 +274,7 @@ static void SSPutStr_impl(u16 x, u16 y, u8 atr, const s8* str, u16 priority, u8 
         }
 
         Renderer_SetTexture(1);
-        Renderer_DrawSprite(scrscrntex, 4);
+        Renderer_DrawSpriteVtx(scrscrntex, 4);
         x += 8;
         str++;
     }
@@ -316,7 +316,7 @@ s32 SSPutStrPro(u16 flag, u16 x, u16 y, u8 atr, u32 vtxcol, s8* str) {
         str += 1;
         x += step;
         Renderer_SetTexture(1);
-        Renderer_DrawSprite(scrscrntex, 4);
+        Renderer_DrawSpriteVtx(scrscrntex, 4);
     }
 
     return usex;
@@ -385,7 +385,7 @@ s32 SSPutStrPro_Scale(u16 flag, f32 x, f32 y, u8 atr, u32 vtxcol, s8* str, f32 s
         str += 1;
         x += step;
         Renderer_SetTexture(1);
-        Renderer_DrawTexturedQuad(scrscrntex, 4);
+        Renderer_DrawTexturedQuadVtx(scrscrntex, 4);
     }
 
     return (s32)usex;
@@ -484,7 +484,7 @@ void SSPutStr_Bigger(u16 x, u16 y, u8 atr, s8* str, f32 sc, u8 gr, u16 priority)
 
         SSPutStrTexInputB(xx, yy, str, sc);
         Renderer_SetTexture(1);
-        Renderer_DrawTexturedQuad(scrscrntex, 4);
+        Renderer_DrawTexturedQuadVtx(scrscrntex, 4);
         xx += 8.0f * sc;
         str++;
     }
@@ -525,7 +525,7 @@ void SSPutDec(u16 x, u16 y, u8 atr, u8 dec, u8 size) {
 
     SSPutStrTexInput2(x, y, str[2]);
     Renderer_SetTexture(1);
-    Renderer_DrawSprite(scrscrntex, 4);
+    Renderer_DrawSpriteVtx(scrscrntex, 4);
 
     if (size == 0) {
         return;
@@ -536,7 +536,7 @@ void SSPutDec(u16 x, u16 y, u8 atr, u8 dec, u8 size) {
     if (size == 3 && str[0] != 0) {
         SSPutStrTexInput2(x, y, str[0]);
         Renderer_SetTexture(1);
-        Renderer_DrawSprite(scrscrntex, 4);
+        Renderer_DrawSpriteVtx(scrscrntex, 4);
         zero_sw = 1;
     }
 
@@ -545,11 +545,11 @@ void SSPutDec(u16 x, u16 y, u8 atr, u8 dec, u8 size) {
     if (zero_sw == 1) {
         SSPutStrTexInput2(x, y, str[1]);
         Renderer_SetTexture(1);
-        Renderer_DrawSprite(scrscrntex, 4);
+        Renderer_DrawSpriteVtx(scrscrntex, 4);
     } else if (size > 1 && str[1] != 0) {
         SSPutStrTexInput2(x, y, str[1]);
         Renderer_SetTexture(1);
-        Renderer_DrawSprite(scrscrntex, 4);
+        Renderer_DrawSpriteVtx(scrscrntex, 4);
     }
 }
 
@@ -619,7 +619,7 @@ void scfont_sqput(u16 x, u16 y, u8 atr, u8 page, u8 cx1, u8 cy1, u8 cx2, u8 cy2,
     scrscrntex[0].y = y;
     scrscrntex[3].y = (y + (v2 - v1));
     Renderer_SetTexture(page);
-    Renderer_DrawSprite(scrscrntex, 4);
+    Renderer_DrawSpriteVtx(scrscrntex, 4);
 }
 
 /** @brief Render a rectangular font region with optional UV inversion. */

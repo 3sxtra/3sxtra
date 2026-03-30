@@ -13,7 +13,7 @@
 #include "sf33rd/Source/Common/PPGFile.h"
 #include "common.h"
 #include "port/rendering/renderer.h"
-#include "port/sdl/renderer/sdl_game_renderer.h"
+#include "rendering/game_renderer.h"
 #include "sf33rd/AcrSDK/common/plcommon.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
@@ -193,7 +193,7 @@ static void ppgWriteQuadOnly(Vertex* pos, u32 col, u32 texCode) {
         prm.t[i].t = pos[i].t;
     }
 
-    SDLGameRenderer_DrawTexturedQuad(&prm, col);
+    Renderer_DrawTexturedQuad(&prm, col);
 }
 
 /** @brief Submit a textured quad as a sprite (uses corners 0 and 3 only). */
@@ -213,7 +213,7 @@ static void ppgWriteQuadOnly2(Vertex* pos, u32 col, u32 texCode) {
     prm.t[3].s = pos[3].s;
     prm.t[3].t = pos[3].t;
 
-    SDLGameRenderer_DrawSprite(&prm, col);
+    Renderer_DrawSprite(&prm, col);
 }
 
 /** @brief Draw a quad using explicit data-list, texture index, and palette index. */
@@ -1006,7 +1006,7 @@ void ppgMakeConvTableTexDC() {
  * full flLockTexture/flUnlockTexture call chain.  Case 3 of flPS2LockTexture
  * simply returns flPS2GetSystemBuffAdrs(mem_handle), and case 3 of
  * flPS2UnlockTexture is a no-op.  We skip both and write directly into the
- * system buffer, then call SDLGameRenderer_UnlockTexture for GPU invalidation.
+ * system buffer, then call Renderer_UnlockTexture for GPU invalidation.
  */
 s32 ppgRenewTexChunkSeqs(Texture* tch) {
     plContext bits;
@@ -1042,7 +1042,7 @@ s32 ppgRenewTexChunkSeqs(Texture* tch) {
                 dstRam = (s32*)flPS2GetSystemBuffAdrs(fl->mem_handle);
                 srcRam = (s32*)(tch->srcAdrs + tch->srcSize * i);
                 SDL_memmove(dstRam, srcRam, tch->srcSize);
-                SDLGameRenderer_UnlockTexture(th);
+                Renderer_UnlockTexture(th);
             } else {
                 /* Fallback: full lock/unlock path for textures without system memory */
                 flLockTexture(NULL, th, &bits, 3);

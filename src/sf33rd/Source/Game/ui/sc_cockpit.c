@@ -70,7 +70,7 @@ void vital_put(u8 Pl_Num, s8 atr, s16 vital, u8 kind, u16 priority) {
 
     scrscrntex[0].color = scrscrntex[3].color = -1;
     Renderer_SetTexture(0);
-    Renderer_DrawSprite(scrscrntex, 4);
+    Renderer_DrawSpriteVtx(scrscrntex, 4);
 }
 
 /** @brief Draw the silver (recoverable) health bar overlay. */
@@ -100,7 +100,7 @@ void silver_vital_put(u8 Pl_Num) {
 
     scrscrntex[0].color = scrscrntex[3].color = -1;
     Renderer_SetTexture(0);
-    Renderer_DrawSprite(scrscrntex, 4);
+    Renderer_DrawSpriteVtx(scrscrntex, 4);
 }
 
 /** @brief Draw the health bar background/frame. */
@@ -213,7 +213,7 @@ void stun_put(u8 Pl_Num, u8 stun) {
     scrscrntex[3].y = 32.0f;
     scrscrntex[0].color = scrscrntex[3].color = -1;
     Renderer_SetTexture(0);
-    Renderer_DrawSprite(scrscrntex, 4);
+    Renderer_DrawSpriteVtx(scrscrntex, 4);
 }
 
 /** @brief Draw the stun gauge bar background. */
@@ -311,7 +311,7 @@ static void silver_stun_put(u8 Pl_Num, s16 len) {
 
     scrscrntex[0].color = scrscrntex[3].color = 0xFFFFFFFF;
     Renderer_SetTexture(0);
-    Renderer_DrawSprite(scrscrntex, 4);
+    Renderer_DrawSpriteVtx(scrscrntex, 4);
 }
 
 void stun_gauge_waku_write(s16 p1len, s16 p2len) {

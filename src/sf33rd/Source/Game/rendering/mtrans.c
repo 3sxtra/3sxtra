@@ -7,7 +7,7 @@
 #include "common.h"
 #include "port/rendering/legacy_matrix.h"
 #include "port/rendering/renderer.h"
-#include "port/sdl/renderer/sdl_game_renderer.h"
+#include "rendering/game_renderer.h"
 #include "port/sdl/renderer/sprite_override.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
 #include "port/renderer_plugin.h"
@@ -2066,7 +2066,7 @@ void seqsAfterProcess() {
         }
 
         // Phase 2: ⚡ Batch flush all sprites in one call
-        SDLGameRenderer_FlushSprite2Batch(seqs_w.chip, seqs_w.up, seqs_w.sprTotal);
+        Renderer_FlushSprite2Batch(seqs_w.chip, seqs_w.up, seqs_w.sprTotal);
     }
 }
 

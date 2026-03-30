@@ -380,5 +380,5 @@ static void sea_trans(u16 num, f64 arg2) {
     poly[0].z = poly[1].z = poly[2].z = poly[3].z = PrioBase[84];
 
     Renderer_SetTexture(228);
-    Renderer_DrawTexturedQuad(poly, 4);
+    Renderer_DrawTexturedQuadVtx(poly, 4);
 }

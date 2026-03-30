@@ -17,7 +17,7 @@
 #include "sf33rd/AcrSDK/ps2/flps2vram.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 
-#include "port/sdl/renderer/sdl_game_renderer.h"
+#include "rendering/game_renderer.h"
 
 static void flPS2SetClearColor(u32 col);
 static s32 flPS2SendTextureRegister(u32 th);
@@ -90,7 +90,7 @@ s32 flPS2SetTextureRegister(u32 th, u64* texA, u64* tex1, u64* tex0, u64* clamp,
     (void)render_ope;
 
     // Each backend (GPU/GL/SDL2D) validates handle bounds and null surfaces.
-    SDLGameRenderer_SetTexture(th);
+    Renderer_SetTexture(th);
 
     return 1;
 }

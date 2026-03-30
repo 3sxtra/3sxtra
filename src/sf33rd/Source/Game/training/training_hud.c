@@ -54,7 +54,7 @@ static void draw_box(s16 left, s16 right, s16 top, s16 bottom, u32 color) {
     v[3].x = sx_r;
     v[3].y = sy_b;
 
-    Renderer_DrawSolidQuad(v, 4);
+    Renderer_DrawSolidQuadVtx(v, 4);
 }
 
 /**

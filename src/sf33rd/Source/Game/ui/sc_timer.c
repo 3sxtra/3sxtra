@@ -12,7 +12,7 @@
 
 #include "port/rendering/legacy_matrix.h"
 #include "port/rendering/renderer.h"
-#include "port/sdl/renderer/sdl_game_renderer.h"
+#include "rendering/game_renderer.h"
 #include "port/sdl/rmlui/rmlui_attract_overlay.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
@@ -92,7 +92,7 @@ static void SSPutDec3(u16 x, u16 y, u8 atr, s16 dec, u8 size, u8 gr, u16 priorit
 
     SSPutStrTexInputB2(xx, yy, str[2]);
     Renderer_SetTexture(4);
-    Renderer_DrawTexturedQuad(scrscrntex, 4);
+    Renderer_DrawTexturedQuadVtx(scrscrntex, 4);
 
     if (size == 0) {
         return;
@@ -103,7 +103,7 @@ static void SSPutDec3(u16 x, u16 y, u8 atr, s16 dec, u8 size, u8 gr, u16 priorit
     if (size == 3 && str[0] != 0) {
         SSPutStrTexInputB2(xx, yy, str[0]);
         Renderer_SetTexture(4);
-        Renderer_DrawSprite(scrscrntex, 4);
+        Renderer_DrawSpriteVtx(scrscrntex, 4);
         zero_sw = 1;
     }
 
@@ -112,11 +112,11 @@ static void SSPutDec3(u16 x, u16 y, u8 atr, s16 dec, u8 size, u8 gr, u16 priorit
     if (zero_sw == 1) {
         SSPutStrTexInputB2(xx, yy, str[1]);
         Renderer_SetTexture(4);
-        Renderer_DrawSprite(scrscrntex, 4);
+        Renderer_DrawSpriteVtx(scrscrntex, 4);
     } else if (size > 1 && str[1] != 0) {
         SSPutStrTexInputB2(xx, yy, str[1]);
         Renderer_SetTexture(4);
-        Renderer_DrawSprite(scrscrntex, 4);
+        Renderer_DrawSpriteVtx(scrscrntex, 4);
     }
 }
 
@@ -154,7 +154,7 @@ static void scfont_sqput3(u16 x, u16 y, u8 atr, u8 page, u16 cx1, u16 cy1, u16 c
     scrscrntex[0].y = scrscrntex[2].y = y;
     scrscrntex[1].y = scrscrntex[3].y = (y + (v2 - v1));
     Renderer_SetTexture(page);
-    Renderer_DrawTexturedQuad(scrscrntex, 4);
+    Renderer_DrawTexturedQuadVtx(scrscrntex, 4);
 }
 
 /* ── HNC overlays ──────────────────────────────────────────────── */
@@ -192,7 +192,7 @@ void hnc_set(u8 num, u8 atr) {
         scrscrntex[3].y = 112.0f;
         scrscrntex[0].color = scrscrntex[3].color = -1;
         Renderer_SetTexture(1);
-        Renderer_DrawSprite(scrscrntex, 4);
+        Renderer_DrawSpriteVtx(scrscrntex, 4);
     }
 }
 
@@ -222,7 +222,7 @@ void hnc_wipeinit(u8 atr) {
 
             if (!No_Trans) {
                 Renderer_SetTexture(1);
-                Renderer_DrawTexturedQuad(dmyvtx, 4);
+                Renderer_DrawTexturedQuadVtx(dmyvtx, 4);
             }
         }
     }
@@ -272,7 +272,7 @@ s32 hnc_wipeout(u8 atr) {
                 }
 
                 Renderer_SetTexture(1);
-                Renderer_DrawTexturedQuad(vtx, 4);
+                Renderer_DrawTexturedQuadVtx(vtx, 4);
                 ipx += 8;
                 ipu += 8;
             }
@@ -305,7 +305,7 @@ s32 hnc_wipeout(u8 atr) {
             }
 
             Renderer_SetTexture(1);
-            Renderer_DrawTexturedQuad(vtx, 4);
+            Renderer_DrawTexturedQuadVtx(vtx, 4);
             ipy += 12;
             ipv += 12;
         }
@@ -656,7 +656,7 @@ void SF3_logo(u8 step) {
             pos[3].u = TO_UV_256((176 - i) + step);
             pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
             Renderer_SetTexture(0);
-            Renderer_DrawTexturedQuad(pos, 4);
+            Renderer_DrawTexturedQuadVtx(pos, 4);
         }
 
         pos[0].y = pos[1].y = 80.0f;
@@ -675,7 +675,7 @@ void SF3_logo(u8 step) {
             pos[3].u = TO_UV_256(pos[3].x);
             pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
             Renderer_SetTexture(0);
-            Renderer_DrawTexturedQuad(pos, 4);
+            Renderer_DrawTexturedQuadVtx(pos, 4);
         }
 
         pos[0].y = pos[1].y = 80.0f;
@@ -694,7 +694,7 @@ void SF3_logo(u8 step) {
             pos[3].v = TO_UV_256((240 - i) - step);
             pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
             Renderer_SetTexture(0);
-            Renderer_DrawTexturedQuad(pos, 4);
+            Renderer_DrawTexturedQuadVtx(pos, 4);
         }
     } else {
         step -= 8;
@@ -714,7 +714,7 @@ void SF3_logo(u8 step) {
             pos[3].u = TO_UV_256(176 - i);
             pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
             Renderer_SetTexture(0);
-            Renderer_DrawTexturedQuad(pos, 4);
+            Renderer_DrawTexturedQuadVtx(pos, 4);
         }
 
         pos[0].y = pos[1].y = 80.0f;
@@ -733,7 +733,7 @@ void SF3_logo(u8 step) {
             pos[3].u = TO_UV_256(pos[3].x);
             pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
             Renderer_SetTexture(0);
-            Renderer_DrawTexturedQuad(pos, 4);
+            Renderer_DrawTexturedQuadVtx(pos, 4);
         }
 
         pos[0].y = pos[1].y = 80.0f;
@@ -752,7 +752,7 @@ void SF3_logo(u8 step) {
             pos[3].v = TO_UV_256(232 - i);
             pos[0].color = pos[1].color = pos[2].color = pos[3].color = 0xFFFFFFFF;
             Renderer_SetTexture(0);
-            Renderer_DrawTexturedQuad(pos, 4);
+            Renderer_DrawTexturedQuadVtx(pos, 4);
         }
     }
 }
@@ -949,7 +949,7 @@ void dispButtonImage(s32 px, s32 py, s32 pz, s32 sx, s32 sy, s32 cl, s32 ix) {
     prm.t[0].t = scrnAddTex1UV[ix][1] / 128.0f;
     prm.t[3].t = (scrnAddTex1UV[ix][1] + scrnAddTex1UV[ix][3]) / 128.0f;
     flSetRenderState(FLRENDER_TEXSTAGE0, prm.tex_code);
-    SDLGameRenderer_DrawSprite(&prm, oricol.color);
+    Renderer_DrawSprite(&prm, oricol.color);
 }
 
 /** @brief Render a button-prompt image variant 2 (alternate UV mapping). */
@@ -974,7 +974,7 @@ void dispButtonImage2(s32 px, s32 py, s32 pz, s32 sx, s32 sy, s32 cl, s32 ix) {
     prm.t[0].t = scrnAddTex1UV[ix][1] / 128.0f;
     prm.t[3].t = (scrnAddTex1UV[ix][1] + scrnAddTex1UV[ix][3]) / 128.0f;
     flSetRenderState(FLRENDER_TEXSTAGE0, prm.tex_code);
-    SDLGameRenderer_DrawSprite(&prm, oricol.color);
+    Renderer_DrawSprite(&prm, oricol.color);
 }
 
 /** @brief Render the save/load title banner from event-work data. */
@@ -1010,7 +1010,7 @@ void dispSaveLoadTitle(void* ewk) {
     for (i = 0; i < 3; i++) {
         njCalcPoint(NULL, (Vec3*)&pos[0], &prm.v[0]);
         njCalcPoint(NULL, (Vec3*)&pos[1], &prm.v[3]);
-        SDLGameRenderer_DrawSprite(&prm, oricol.color);
+        Renderer_DrawSprite(&prm, oricol.color);
         step_t += 36.0f;
         prm.t[0].t = prm.t[3].t;
         prm.t[3].t = step_t / 128.0f;

@@ -562,7 +562,7 @@ void scr_trans(u8 bgnm) {
                     u16 tex = ppgGetUsingTextureHandle(NULL, x);
                     u16 pal = ppgGetCurrentPaletteHandle();
                     Renderer_SetTexture(tex | (pal << 16));
-                    Renderer_DrawTexturedQuad((const RendererVertex*)bgpoly, 4);
+                    Renderer_DrawTexturedQuadVtx((const RendererVertex*)bgpoly, 4);
                 }
             }
         }

@@ -96,7 +96,7 @@ void scfont_sqput_face(u16 x, u16 y, u16 atr, u8 page, u8 cx1, u8 cy1, u8 cx2, u
     scrscrntex[0].y = y;
     scrscrntex[3].y = (y + (v2 - v1));
     Renderer_SetTexture(page);
-    Renderer_DrawSprite(scrscrntex, 4);
+    Renderer_DrawSpriteVtx(scrscrntex, 4);
 }
 
 /** @brief Draw the base frame behind player face portraits. */

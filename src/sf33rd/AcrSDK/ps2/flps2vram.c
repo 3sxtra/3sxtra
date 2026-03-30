@@ -19,7 +19,7 @@
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 
-#include "port/sdl/renderer/sdl_game_renderer.h"
+#include "rendering/game_renderer.h"
 
 #include <libgraph.h>
 
@@ -179,7 +179,7 @@ s32 flPS2GetTextureInfoFromContext(plContext* bits, s32 bnum, u32 th, u32 flag) 
 
 /** @brief Finalise a texture handle by creating the GPU resource. */
 s32 flPS2CreateTextureHandle(u32 th, u32 flag) {
-    SDLGameRenderer_CreateTexture(th);
+    Renderer_CreateTexture(th);
     return 1;
 }
 
@@ -284,7 +284,7 @@ s32 flPS2GetPaletteInfoFromContext(plContext* bits, u32 ph, u32 flag) {
 
 /** @brief Finalise a palette handle by creating the GPU resource. */
 s32 flPS2CreatePaletteHandle(u32 ph, u32 flag) {
-    SDLGameRenderer_CreatePalette(ph);
+    Renderer_CreatePalette(ph);
     return 1;
 }
 
@@ -318,7 +318,7 @@ s32 flReleaseTextureHandle(u32 texture_handle) {
         return 0; // Already released
     }
 
-    SDLGameRenderer_DestroyTexture(texture_handle);
+    Renderer_DestroyTexture(texture_handle);
 
     if (lpflTexture->mem_handle != 0) {
         flPS2ReleaseSystemMemory(lpflTexture->mem_handle);
@@ -341,7 +341,7 @@ s32 flReleasePaletteHandle(u32 palette_handle) {
         return 0; // Already released
     }
 
-    SDLGameRenderer_DestroyPalette(palette_handle);
+    Renderer_DestroyPalette(palette_handle);
 
     if (lpflPalette->mem_handle != 0) {
         flPS2ReleaseSystemMemory(lpflPalette->mem_handle);
@@ -813,7 +813,7 @@ s32 flUnlockTexture(u32 th) {
     }
 
     const s32 ret = flPS2UnlockTexture(lpflTexture);
-    SDLGameRenderer_UnlockTexture(th);
+    Renderer_UnlockTexture(th);
     return ret;
 }
 
@@ -830,7 +830,7 @@ s32 flUnlockPalette(u32 th) {
     }
 
     const s32 ret = flPS2UnlockTexture(lpflPalette);
-    SDLGameRenderer_UnlockPalette(th);
+    Renderer_UnlockPalette(th);
     return ret;
 }
 

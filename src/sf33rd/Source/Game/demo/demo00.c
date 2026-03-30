@@ -291,7 +291,7 @@ void Put_char(const f32* ptr, u32 indexG, u16 prio, s16 x, s16 y, f32 zx, f32 zy
         tex[1].y = tex[3].y = (y + (off_y * zy) + ((u32)*ptr++ * zy));
 
         Renderer_SetTexture(indexG);
-        Renderer_DrawTexturedQuad(tex, 4);
+        Renderer_DrawTexturedQuadVtx(tex, 4);
     }
 }
 
@@ -380,7 +380,7 @@ void Put_Warning(s16 type) {
     }
 
     Renderer_SetTexture(type + 590);
-    Renderer_DrawTexturedQuad(tex, 4);
+    Renderer_DrawTexturedQuadVtx(tex, 4);
 }
 
 /** @brief Draw the pulsing palette-selection cursor (used in options). */

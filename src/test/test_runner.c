@@ -18,6 +18,7 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 #include "test/replay_game.h"
 #include "test/test_runner_utils.h"
+#include "test/test_runner_compare.h"
 
 #include "stb/stb_ds.h"
 #include <SDL3/SDL.h>
@@ -36,15 +37,41 @@ static const Uint8 character_to_cursor[20][2] = { { 7, 1 }, { 1, 0 }, { 5, 2 }, 
                                                    { 3, 0 }, { 2, 2 }, { 4, 2 }, { 0, 1 }, { 0, 2 }, { 2, 0 }, { 5, 0 },
                                                    { 6, 0 }, { 3, 1 }, { 2, 1 }, { 4, 1 }, { 1, 1 }, { 5, 1 } };
 
+static const SWKey color_to_keys[13] = {
+    SWK_WEST,
+    SWK_NORTH,
+    SWK_RIGHT_SHOULDER,
+    SWK_SOUTH,
+    SWK_EAST,
+    SWK_RIGHT_TRIGGER,
+    SWK_WEST | SWK_RIGHT_SHOULDER | SWK_EAST,
+    SWK_START | SWK_WEST,
+    SWK_START | SWK_NORTH,
+    SWK_START | SWK_RIGHT_SHOULDER,
+    SWK_START | SWK_SOUTH,
+    SWK_START | SWK_EAST,
+    SWK_START | SWK_RIGHT_TRIGGER,
+};
+
 static Uint64 frame = 0;
 static Phase phase = PHASE_TITLE;
 static int char_select_phase = 0;
 static int wait_timer = 0;
 static int inputs_index = 0;
+static int comparison_index = 0;
+static bool in_battle = false;
+static bool in_battle_prev = false;
 
 static bool initialized = false;
 static ReplayGame game;
 static int round_index = 0;
+
+static SDL_IOStream* io_at_index(int index) {
+    const char* path = ram_path(index);
+    SDL_IOStream* io = SDL_IOFromFile(path, "rb");
+    SDL_free((void*)path);
+    return io;
+}
 
 static ReplayRound* current_round(void) {
     return &game.rounds[round_index];
@@ -66,6 +93,10 @@ static void tap_button(SWKey button, int player) {
     *dst |= button;
 }
 
+static void reset_comparison_index(void) {
+    comparison_index = current_round()->start_frame;
+}
+
 static void finish_round(void) {
     inputs_index = 0;
 
@@ -76,14 +107,18 @@ static void finish_round(void) {
         ReplayGame_Destroy(&game);
         exit(0);
     }
+
+    reset_comparison_index();
 }
 
 void TestRunner_Prologue() {
     p1sw_buff = 0;
     p2sw_buff = 0;
+    in_battle = (C_No[0] == 2);
 
     if (!initialized) {
         ReplayGame_Parse(&game);
+        reset_comparison_index();
         initialized = true;
     }
 
@@ -147,8 +182,8 @@ void TestRunner_Prologue() {
             break;
 
         case 2:
-            tap_button(SWK_SOUTH, 0);
-            tap_button(SWK_SOUTH, 1);
+            tap_button(color_to_keys[game.colors[0]], 0);
+            tap_button(color_to_keys[game.colors[1]], 1);
             wait_timer = 45;
             char_select_phase = 3;
             break;
@@ -183,6 +218,14 @@ void TestRunner_Prologue() {
             // Wait for the next round to start
             break;
         }
+
+        SDL_IOStream* io = io_at_index(comparison_index - 1);
+        if (io) {
+            Game_timer = read_s16(io, GAME_TIMER_OFFSET);
+            sync_values(io);
+            SDL_CloseIO(io);
+        }
+
         phase = PHASE_GAME;
         // fallthrough
 
@@ -204,6 +247,16 @@ void TestRunner_Prologue() {
 }
 
 void TestRunner_Epilogue() {
+    if (phase == PHASE_GAME && in_battle) {
+        SDL_IOStream* io = io_at_index(comparison_index);
+        if (io) {
+            compare_values(io, frame);
+            SDL_CloseIO(io);
+        }
+        comparison_index += 1;
+    }
+
+    in_battle_prev = in_battle;
     frame += 1;
     p1sw_buff = 0;
     p2sw_buff = 0;

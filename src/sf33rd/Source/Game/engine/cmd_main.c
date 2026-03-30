@@ -4,6 +4,8 @@
  */
 
 #include "sf33rd/Source/Game/engine/cmd_main.h"
+#include "arcade/arcade_balance.h"
+#include "arcade/arcade_cmd_data.h"
 #include "common.h"
 #include "sf33rd/Source/Game/engine/cmd_constants.h"
 #include "sf33rd/Source/Game/engine/cmd_data.h"
@@ -91,18 +93,23 @@ void cmd_init(PLW* pl) {
     waza_compel_all_init(pl);
 }
 
+static const void* get_commands(s16 char_num) {
+    if (ArcadeBalance_IsEnabled()) {
+        return ArcadeCommandData_Get(char_num);
+    } else if (cmd_sel[cmd_id]) {
+        return pl_CMD[char_num];
+    } else {
+        return pl_cmd[char_num];
+    }
+}
+
 /** @brief Advances all active command checks by one frame. */
 void cmd_move() {
     s16 j;
     intptr_t* adrs;
 
     cmd_id = cmd_pl->wu.id;
-
-    if (cmd_sel[cmd_id]) {
-        adrs = pl_CMD[cmd_pl->player_number];
-    } else {
-        adrs = pl_cmd[cmd_pl->player_number];
-    }
+    adrs = get_commands(cmd_pl->player_number);
 
     for (j = 0; j < 56; j++) {
         if (wcp[cmd_id].waza_flag[j] != -1) {

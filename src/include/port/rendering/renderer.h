@@ -31,19 +31,19 @@ int Renderer_GetCurrentPPGPageIndex(void);
  * @brief Draws a textured quad using the current texture.
  * Corresponds to legacy ppgWriteQuadWithST_B / njDrawTexture
  */
-void Renderer_DrawTexturedQuad(const RendererVertex* vertices, int count);
+void Renderer_DrawTexturedQuadVtx(const RendererVertex* vertices, int count);
 
 /**
  * @brief Draws a sprite (2D textured quad).
  * Corresponds to legacy ppgWriteQuadWithST_B2 / njDrawSprite
  */
-void Renderer_DrawSprite(const RendererVertex* vertices, int count);
+void Renderer_DrawSpriteVtx(const RendererVertex* vertices, int count);
 
 /**
  * @brief Draws a solid colored quad (no texture).
  * Corresponds to legacy SDLGameRenderer_DrawSolidQuad
  */
-void Renderer_DrawSolidQuad(const RendererVertex* vertices, int count);
+void Renderer_DrawSolidQuadVtx(const RendererVertex* vertices, int count);
 
 /**
  * @brief Queues a 2D primitive with depth sorting.

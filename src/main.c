@@ -19,7 +19,7 @@
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 #include "port/sdl/app/sdl_app.h"
-#include "port/sdl/renderer/sdl_game_renderer.h"
+#include "rendering/game_renderer.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/netstats_renderer.h"
 

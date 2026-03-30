@@ -122,7 +122,7 @@ void Renderer_SetTexture(int textureId) {
     SDLGameRenderer_SetTexture(texCode);
 }
 
-void Renderer_DrawTexturedQuad(const RendererVertex* vertices, int count) {
+void Renderer_DrawTexturedQuadVtx(const RendererVertex* vertices, int count) {
     if (count != 4)
         return;
 
@@ -141,7 +141,7 @@ void Renderer_DrawTexturedQuad(const RendererVertex* vertices, int count) {
 // Weak declaration for builds that don't link PPGFile.c (like test targets)
 extern s32 ppgWriteQuadWithST_B2(Vertex* pos, u32 col, PPGDataList* tb, s32 tix, s32 cix) __attribute__((weak));
 
-void Renderer_DrawSprite(const RendererVertex* vertices, int count) {
+void Renderer_DrawSpriteVtx(const RendererVertex* vertices, int count) {
     if (count != 4)
         return;
 
@@ -176,11 +176,10 @@ void Renderer_DrawSprite(const RendererVertex* vertices, int count) {
         sprite.t[i].s = vertices[i].u;
         sprite.t[i].t = vertices[i].v;
     }
-
     SDLGameRenderer_DrawSprite(&sprite, vertices[0].color);
 }
 
-void Renderer_DrawSolidQuad(const RendererVertex* vertices, int count) {
+void Renderer_DrawSolidQuadVtx(const RendererVertex* vertices, int count) {
     if (count != 4)
         return;
 
