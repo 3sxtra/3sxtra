@@ -12,27 +12,27 @@
 #include "port/sdl/renderer/sdl_game_renderer.h"
 
 void Renderer_CreateTexture(unsigned int th) {
-    // Legacy stub, modern 3sxtra backend handles textures internally
+    SDLGameRenderer_CreateTexture(th);
 }
 
 void Renderer_DestroyTexture(unsigned int texture_handle) {
-    // Legacy stub
+    SDLGameRenderer_DestroyTexture(texture_handle);
 }
 
 void Renderer_UnlockTexture(unsigned int th) {
-    // Legacy stub
+    SDLGameRenderer_UnlockTexture(th);
 }
 
 void Renderer_CreatePalette(unsigned int ph) {
-    // Legacy stub
+    SDLGameRenderer_CreatePalette(ph);
 }
 
 void Renderer_DestroyPalette(unsigned int palette_handle) {
-    // Legacy stub
+    SDLGameRenderer_DestroyPalette(palette_handle);
 }
 
 void Renderer_UnlockPalette(unsigned int th) {
-    // Legacy stub
+    SDLGameRenderer_UnlockPalette(th);
 }
 
 
