@@ -1307,14 +1307,29 @@ void Netplay_RegisterSpectator(const char* spectator_room_code, const char* spec
         return;
 
     char spec_ip[64];
+    char spec_local_ip[64] = { 0 };
     uint16_t spec_port = 0, spec_local_port = 0;
-    if (!Stun_DecodeEndpoint(spectator_room_code, spec_ip, &spec_port, &spec_local_port, NULL))
+    if (!Stun_DecodeEndpoint(spectator_room_code, spec_ip, &spec_port, &spec_local_port, spec_local_ip))
         return;
 
+    // Same-router detection: If spectator's public IP matches our own, use their LAN IP.
+    const char* target_ip = spec_ip;
+    const char* my_code = SDLNetplayUI_GetRoomCode();
+    if (my_code && my_code[0]) {
+        char my_ip[64];
+        uint16_t my_port, my_lport;
+        if (Stun_DecodeEndpoint(my_code, my_ip, &my_port, &my_lport, NULL)) {
+            if (strcmp(spec_ip, my_ip) == 0 && spec_local_ip[0] != '\0') {
+                target_ip = spec_local_ip;
+                SDL_Log("[netplay] Same-router spectator detected! Using local IP %s", target_ip);
+            }
+        }
+    }
+
     // For LAN, use local_port; for internet, use public port
-    uint16_t effective_port = spec_local_port ? spec_local_port : spec_port;
+    uint16_t effective_port = (target_ip == spec_local_ip && spec_local_port) ? spec_local_port : spec_port;
     char spec_addr[100];
-    SDL_snprintf(spec_addr, sizeof(spec_addr), "%s:%hu", spec_ip, effective_port);
+    SDL_snprintf(spec_addr, sizeof(spec_addr), "%s:%hu", target_ip, effective_port);
     GekkoNetAddress addr = { .data = spec_addr, .size = (unsigned int)strlen(spec_addr) };
     int handle = gekko_add_actor(session, GekkoSpectator, &addr);
     SDL_Log("[netplay] Registered spectator %s at %s (handle=%d)",
