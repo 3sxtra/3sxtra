@@ -57,7 +57,7 @@ float Gekko::NetStats::CalculateJitter()
     }
 
     float sum = 0.f;
-    for (i32 i = 1; i < rtt.size(); ++i) {
+    for (size_t i = 1; i < rtt.size(); ++i) {
         sum += std::abs((float)rtt[i] - (float)rtt[i - 1]);
     }
 
@@ -72,7 +72,7 @@ float Gekko::NetStats::CalculateAvgRTT()
     }
 
     float sum = 0.f;
-    for (i32 i = 0; i < rtt.size(); i++) {
+    for (size_t i = 0; i < rtt.size(); i++) {
         sum += rtt[i];
     }
 

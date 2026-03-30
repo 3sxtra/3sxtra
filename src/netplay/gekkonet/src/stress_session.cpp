@@ -85,7 +85,7 @@ GekkoGameEvent** Gekko::StressSession::UpdateSession(i32* count)
     _game_events.Reset();
 
     Frame current = _sync.GetCurrentFrame();
-    if (_check_distance > 0 && current > _check_distance) {
+    if (_check_distance > 0 && current > (Frame)_check_distance) {
         // once whe have gone far enough forward start rollback back and comparing checksums
         for (Frame check_frame = current - _check_distance; check_frame < current; check_frame++) {
             CheckForDesyncs(check_frame);
