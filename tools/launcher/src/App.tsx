@@ -297,6 +297,7 @@ function App() {
       await invoke("launch_game");
       // Minimize the launcher after successful launch
       getCurrentWindow().minimize();
+      setStatus("SYSTEM READY");
     } catch (err: any) {
       setStatus(`LAUNCH FAILED: ${err}`);
     }

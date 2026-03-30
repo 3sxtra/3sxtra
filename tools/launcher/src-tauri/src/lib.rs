@@ -1,12 +1,9 @@
 use std::process::Command;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use tauri::Emitter;
 use directories::UserDirs;
 use ini::Ini;
 use serde::{Serialize, Deserialize};
-use sha2::{Sha256, Digest};
-use std::io::{Read, BufReader};
-use std::fs::File;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct GameConfig {
@@ -22,6 +19,7 @@ struct GitHubAsset {
 }
 
 #[derive(Deserialize, Debug)]
+#[allow(dead_code)]
 struct GitHubRelease {
     name: String,
     published_at: String,
@@ -322,17 +320,6 @@ async fn check_updates() -> Result<Option<UpdateManifest>, String> {
         }
     }
     
-    // ── Slang Shaders (one-time bootstrap) ─────────────────────
-    archives.push(ArchiveTask {
-        name: "Slang Shaders".to_string(),
-        url: "https://github.com/libretro/slang-shaders/archive/refs/heads/master.zip".to_string(),
-        extract_path: "assets/shaders/libretro".to_string(),
-        marker_file: "assets/shaders/libretro/COPYING".to_string(),
-        strip_root: true,
-        force_update: false,
-        version_id: None,
-    });
-
     Ok(Some(UpdateManifest {
         version: release.published_at,
         archives: Some(archives),

@@ -1252,6 +1252,11 @@ void Netplay_BeginSpectate(const char* host_ip, unsigned short host_port) {
 
     gekko_start(session, &config);
 
+    // State callbacks are required for spectators to receive state chunks from the host.
+    // Without these, the spectator cannot fast-forward to the host's current frame.
+    GekkoStateCallbacks callbacks = { on_get_state, on_inject_state };
+    gekko_state_callbacks_set(session, &callbacks);
+
     // Use SDLNetAdapter with a real socket so the port is known and
     // consistent with the address format the host's adapter expects.
     if (stun_socket != NULL) {

@@ -1,0 +1,172 @@
+name: Build Launcher
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      release:
+        description: "Produce release artifacts"
+        required: false
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - 'tools/launcher/**'
+
+concurrency:
+  group: build-launcher-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    name: Build Launcher (${{ matrix.label }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: windows-x86_64
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: 3SX-Launcher-windows.exe
+            exe_path: tools/launcher/src-tauri/target/release/launcher.exe
+
+          - label: macos-arm64
+            runner: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: 3SX-Launcher-macos
+            exe_path: tools/launcher/src-tauri/target/release/launcher
+
+          - label: linux-x86_64
+            runner: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            artifact_name: 3SX-Launcher-linux-x86_64
+            exe_path: tools/launcher/src-tauri/target/release/launcher
+
+          - label: linux-arm64
+            runner: ubuntu-22.04
+            target: aarch64-unknown-linux-gnu
+            artifact_name: 3SX-Launcher-linux-arm64
+            exe_path: tools/launcher/src-tauri/target/aarch64-unknown-linux-gnu/release/launcher
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # ── System Dependencies ──────────────────────────────────
+      - name: Install Linux dependencies (x86_64)
+        if: matrix.label == 'linux-x86_64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev \
+            librsvg2-dev libssl-dev
+
+      - name: Install Linux dependencies (ARM64 cross)
+        if: matrix.label == 'linux-arm64'
+        run: |
+          sudo dpkg --add-architecture arm64
+
+          # Pin existing sources to amd64-only
+          sudo sed -i 's/^deb /deb [arch=amd64] /' /etc/apt/sources.list
+
+          # Add arm64 sources from ports
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports jammy-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
+            libwebkit2gtk-4.1-dev:arm64 libgtk-3-dev:arm64 \
+            libayatana-appindicator3-dev:arm64 librsvg2-dev:arm64 \
+            libssl-dev:arm64 pkg-config
+
+      # ── Rust Toolchain ───────────────────────────────────────
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Cargo
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tools/launcher/src-tauri/target
+          key: launcher-${{ matrix.label }}-cargo-${{ hashFiles('tools/launcher/src-tauri/Cargo.lock') }}
+          restore-keys: launcher-${{ matrix.label }}-cargo-
+
+      # ── Node.js ──────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install npm dependencies
+        working-directory: tools/launcher
+        run: npm ci
+
+      # ── Build ────────────────────────────────────────────────
+      - name: Build frontend
+        working-directory: tools/launcher
+        run: npm run build
+
+      - name: Build Tauri (native)
+        if: matrix.label != 'linux-arm64'
+        working-directory: tools/launcher/src-tauri
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build Tauri (ARM64 cross)
+        if: matrix.label == 'linux-arm64'
+        working-directory: tools/launcher/src-tauri
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+          CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
+          CXX_aarch64_unknown_linux_gnu: aarch64-linux-gnu-g++
+          PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig
+          PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig
+          PKG_CONFIG_SYSROOT_DIR: /
+          PKG_CONFIG_ALLOW_CROSS: 1
+        run: cargo build --release --target ${{ matrix.target }}
+
+      # ── Package ──────────────────────────────────────────────
+      - name: Rename artifact
+        shell: bash
+        run: |
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          SRC="${{ matrix.exe_path }}"
+          DEST="${{ matrix.artifact_name }}"
+
+          # Add .exe extension for Windows
+          if [[ "${{ matrix.label }}" == "windows"* ]]; then
+            FINAL="3SX-Launcher-${SHORT_SHA}-windows.exe"
+          elif [[ "${{ matrix.label }}" == "macos"* ]]; then
+            FINAL="3SX-Launcher-${SHORT_SHA}-macos"
+          elif [[ "${{ matrix.label }}" == "linux-arm64" ]]; then
+            FINAL="3SX-Launcher-${SHORT_SHA}-linux-arm64"
+          else
+            FINAL="3SX-Launcher-${SHORT_SHA}-linux-x86_64"
+          fi
+
+          cp "$SRC" "$FINAL"
+          echo "FINAL_NAME=$FINAL" >> $GITHUB_ENV
+
+      - name: Upload release artifact
+        if: ${{ inputs.release }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-assets-launcher-${{ matrix.label }}
+          path: ${{ env.FINAL_NAME }}
+
+      - name: Upload build artifact (non-release)
+        if: ${{ !inputs.release }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: launcher-${{ matrix.label }}
+          path: ${{ env.FINAL_NAME }}
