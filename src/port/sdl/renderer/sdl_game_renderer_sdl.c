@@ -561,8 +561,6 @@ static const uint32_t* sw_ensure_nonidx_pixels(int ti, int* out_w, int* out_h) {
 
 // --- Render Task Management ---
 
-static bool sdl_had_game_tick = false;
-
 static void clear_render_tasks(void) {
     // ⚡ Only reset count — no need to zero ~800KB of static data every frame
     render_task_count = 0;
@@ -571,14 +569,6 @@ static void clear_render_tasks(void) {
     last_submitted_z = -1e30f;
 }
 
-void SDLGameRendererSDL_SaveBatchState(void) {
-    sdl_had_game_tick = true;
-}
-
-void SDLGameRendererSDL_ResetBatchState(void) {
-    clear_render_tasks();
-    sdl_had_game_tick = false;
-}
 
 // --- Render Task Sorting ---
 // Sort by z-depth first, then original submission order for stable layering.
@@ -1050,11 +1040,7 @@ void SDLGameRendererSDL_RenderFrame(void) {
 void SDLGameRendererSDL_EndFrame(void) {
     TRACE_SUB_BEGIN("SDL2D:EndFrame");
     destroy_textures();
-    // Only clear render tasks if a game tick produced new frame data.
-    // When starved (spectator buffering / lag spikes), tasks persist for re-render.
-    if (sdl_had_game_tick) {
-        clear_render_tasks();
-    }
+    clear_render_tasks();
     TRACE_SUB_END();
 }
 

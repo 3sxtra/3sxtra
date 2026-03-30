@@ -563,27 +563,16 @@ static bool need_to_catch_up() {
  * once per frame during normal play and multiple times during rollback replay.
  *
  * The sequence is:
- *  1. SDLGameRenderer_ResetBatchState() — prevent texture stack overflow during
- *     rapid rollback replays (each frame pushes to the stack via SetTexture).
- *  2. No_Trans = !render — skip rendering during rollback replay frames.
- *  3. njUserMain() — the game's main tick function.
- *  4. seqsBeforeProcess() / seqsAfterProcess() — pre/post frame hooks.
- *  5. Renderer_Flush2DPrimitives() — flush 2D draw calls between hooks.
+ *  1. No_Trans = !render — skip rendering during rollback replay frames.
+ *  2. njUserMain() — the game's main tick function.
+ *  3. seqsBeforeProcess() / seqsAfterProcess() — pre/post frame hooks.
+ *  4. Renderer_Flush2DPrimitives() — flush 2D draw calls between hooks.
  */
 static void step_game(bool render) {
-    // Reset renderer texture stack between sub-frames.
-    // During rollback, GekkoNet replays many game frames within a single
-    // outer frame. Each frame pushes to the texture stack via SetTexture().
-    // Without this reset, the stack overflows past FL_PALETTE_MAX.
-    // NOTE: Must be at the START — if at the end, it clears the final
-    // frame's render tasks before RenderFrame can draw them.
-    SDLGameRenderer_ResetBatchState();
-
     No_Trans = !render;
 
     njUserMain();
     seqsBeforeProcess();
-    SDLGameRenderer_SaveBatchState();
     Renderer_Flush2DPrimitives();
     seqsAfterProcess();
 }

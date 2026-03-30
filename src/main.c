@@ -452,7 +452,6 @@ static void game_step_0() {
     // Only run game loop directly if we are in IDLE or LOBBY mode.
     // In TRANSITIONING, CONNECTING, and RUNNING modes, Netplay_Run() calls step_game() automatically.
     if (current_net_state == NETPLAY_SESSION_IDLE || current_net_state == NETPLAY_SESSION_LOBBY) {
-        SDLGameRenderer_ResetBatchState();
         njUserMain();
 
         // ⚡ Bolt: Input Lag Test Detection
@@ -477,7 +476,6 @@ static void game_step_0() {
 
         seqsBeforeProcess();
 
-        SDLGameRenderer_SaveBatchState();
         Renderer_Flush2DPrimitives();
         seqsAfterProcess();
     }

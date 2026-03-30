@@ -73,31 +73,7 @@ void SDLGameRenderer_EndFrame() {
     }
 }
 
-void SDLGameRenderer_ResetBatchState() {
-    RendererBackend r = SDLApp_GetRenderer();
-    if (r == RENDERER_OPENGL) {
-        SDLGameRendererGL_ResetBatchState();
-    } else if (r == RENDERER_SDLGPU) {
-        SDLGameRendererGPU_ResetBatchState();
-    } else if (r == RENDERER_SDL2D) {
-        SDLGameRendererSDL_ResetBatchState();
-    } else if (r == RENDERER_SDL2D_CLASSIC) {
-        SDLGameRendererClassic_ResetBatchState();
-    }
-}
 
-void SDLGameRenderer_SaveBatchState() {
-    RendererBackend r = SDLApp_GetRenderer();
-    if (r == RENDERER_OPENGL) {
-        SDLGameRendererGL_SaveBatchState();
-    } else if (r == RENDERER_SDLGPU) {
-        SDLGameRendererGPU_SaveBatchState();
-    } else if (r == RENDERER_SDL2D) {
-        SDLGameRendererSDL_SaveBatchState();
-    } else if (r == RENDERER_SDL2D_CLASSIC) {
-        SDLGameRendererClassic_SaveBatchState();
-    }
-}
 
 void SDLGameRenderer_CreateTexture(unsigned int th) {
     RendererBackend r = SDLApp_GetRenderer();

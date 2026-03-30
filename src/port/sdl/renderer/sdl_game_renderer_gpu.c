@@ -26,7 +26,7 @@ SDL_Window* gpu_window = NULL;
 SDL_GPUCommandBuffer* current_cmd_buf = NULL;
 SDL_GPUGraphicsPipeline* pipelines[3] = { NULL };
 RendererBlendMode s_current_blend_mode = RENDERER_BLEND_NORMAL;
-static bool s_gpu_had_game_tick = false;
+
 SDL_GPUTexture* s_palette_texture = NULL;
 SDL_GPUTransferBuffer* s_palette_transfer = NULL;
 SDL_GPUSampler* palette_sampler = NULL;
@@ -185,7 +185,7 @@ void SDLGameRendererGPU_BeginFrame(void) {
     s_tex_upload_count = 0;
     s_pal_upload_count = 0;
     s_last_set_texture_handle = 0; // ⭐ Reset back-to-back cache each frame
-    s_gpu_had_game_tick = false;
+
 
     extern void SDLGameRendererGPU_FreeOverlayLayers(void);
     SDLGameRendererGPU_FreeOverlayLayers(); // Free temp overlay array layers from last frame
@@ -411,7 +411,7 @@ void SDLGameRendererGPU_RenderFrame(void) {
         color_target.clear_color.g = ((flPs2State.FrameClearColor >> 8) & 0xFF) / 255.0f;
         color_target.clear_color.b = (flPs2State.FrameClearColor & 0xFF) / 255.0f;
         color_target.clear_color.a = ModdedStage_IsActiveForCurrentStage() ? 0.0f : 1.0f;
-        color_target.load_op = s_gpu_had_game_tick ? SDL_GPU_LOADOP_CLEAR : SDL_GPU_LOADOP_LOAD;
+        color_target.load_op = SDL_GPU_LOADOP_CLEAR;
         color_target.store_op = SDL_GPU_STOREOP_STORE;
         color_target.cycle = true;
 
@@ -532,17 +532,7 @@ void SDLGameRendererGPU_EndFrame(void) {
     TRACE_ZONE_END();
 }
 
-void SDLGameRendererGPU_SaveBatchState(void) {
-    s_gpu_had_game_tick = true;
-}
 
-void SDLGameRendererGPU_ResetBatchState(void) {
-    texture_count = 0;
-    s_last_set_texture_handle = 0;
-    quad_count = 0;
-    vertex_count = 0;
-    s_gpu_had_game_tick = false;
-}
 
 SDL_GPUCommandBuffer* SDLGameRendererGPU_GetCommandBuffer(void) {
     return current_cmd_buf;

@@ -49,9 +49,6 @@ static void clear_render_tasks(void) {
     gl_state.render_task_count = 0;
 }
 
-void SDLGameRendererGL_SaveBatchState(void) {
-    gl_state.had_game_tick = true;
-}
 
 
 
@@ -381,18 +378,7 @@ void SDLGameRendererGL_EndFrame(void) {
         gl_state.textures_to_destroy_count = 0;
     }
 
-    if (gl_state.had_game_tick) {
-        clear_render_tasks();
-    }
-}
-
-/// Lightweight reset for netplay sub-frames: clears the texture stack and
-/// render tasks without unbinding the framebuffer or deleting textures.
-void SDLGameRendererGL_ResetBatchState(void) {
-    gl_state.texture_count = 0;
-    gl_state.last_set_texture_th = 0;
     clear_render_tasks();
-    gl_state.had_game_tick = false;
 }
 
 // --- Draw Quad Helpers ---
