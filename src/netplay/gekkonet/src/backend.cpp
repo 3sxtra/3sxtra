@@ -11,7 +11,10 @@ namespace
         zpp::serializer::make_type<Gekko::InputMsg, zpp::serializer::make_id("Gekko::InputMsg")>,
         zpp::serializer::make_type<Gekko::InputAckMsg, zpp::serializer::make_id("Gekko::InputAckMsg")>,
         zpp::serializer::make_type<Gekko::SessionHealthMsg, zpp::serializer::make_id("Gekko::SessionHealthMsg")>,
-        zpp::serializer::make_type<Gekko::NetworkHealthMsg, zpp::serializer::make_id("Gekko::NetworkHealthMsg")>
+        zpp::serializer::make_type<Gekko::NetworkHealthMsg, zpp::serializer::make_id("Gekko::NetworkHealthMsg")>,
+        zpp::serializer::make_type<Gekko::StateChunkRequestMsg, zpp::serializer::make_id("Gekko::StateChunkRequestMsg")>,
+        zpp::serializer::make_type<Gekko::StateChunkResponseMsg, zpp::serializer::make_id("Gekko::StateChunkResponseMsg")>,
+        zpp::serializer::make_type<Gekko::StateChunkAckMsg, zpp::serializer::make_id("Gekko::StateChunkAckMsg")>
     > _;
 }
 

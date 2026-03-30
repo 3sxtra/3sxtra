@@ -57,18 +57,27 @@ struct UpdateManifest {
 fn get_game_root() -> PathBuf {
     if let Ok(exe_path) = std::env::current_exe() {
         if let Some(exe_dir) = exe_path.parent() {
-            // During development the CWD is tools/launcher, game root is ../../
-            // During release the launcher sits next to the game exe
-            let dev_root = exe_dir.join("..").join("..");
-            let marker = dev_root.join("assets").join("ASSET_VERSION");
-            if marker.exists() {
-                return std::fs::canonicalize(dev_root).unwrap_or_else(|_| exe_dir.to_path_buf());
-            }
-            // Release layout: launcher is in game root
+            // Release layout: launcher is in game root directly
             let release_marker = exe_dir.join("assets").join("ASSET_VERSION");
             if release_marker.exists() {
                 return exe_dir.to_path_buf();
             }
+
+            // Dev layout: Tauri 2 places exes deep in target/debug/.
+            // Walk up directories (up to 6 levels mapping back to repo root)
+            let mut current = exe_dir.to_path_buf();
+            for _ in 0..6 {
+                if current.join("assets").join("ASSET_VERSION").exists() {
+                    return std::fs::canonicalize(&current).unwrap_or(current.clone());
+                }
+                if let Some(parent) = current.parent() {
+                    current = parent.to_path_buf();
+                } else {
+                    break;
+                }
+            }
+            
+            // Fallback
             return exe_dir.to_path_buf();
         }
     }
