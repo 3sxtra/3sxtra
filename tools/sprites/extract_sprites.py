@@ -101,7 +101,7 @@ STAGE_SPRITE_GROUPS = {
 # Per-group default colcd (palette base).
 GROUP_DEFAULT_COLCD = {
     # ── System / UI groups ──
-    20: 144,  22: 144,  98: 144,
+    0: 0, 20: 144,  22: 144,  98: 144,
     25: 300,  24: 65,   34: 10,
     # ── Effect/system groups ── colcd 0x1AC (428)
     26: 428, 29: 428, 32: 428, 33: 428, 37: 428, 82: 428,
@@ -187,6 +187,12 @@ def extract_group(afs_path, entries, grp_entry, pal_banks, output_dir,
         # 2. Static engine map (no mode info, keep group default)
         if colcd is None:
             colcd = engine_pal_map.get(cg_number)
+            
+        # [PATCH] Fix 3rd Strike ROM bug for Skater Girl (Group 24)
+        # Capcom artists typo'd the palette offset for several back-facing frames, 
+        # causing her to erroneously pull from bank 69 instead of 68 mid-animation.
+        if group_idx == 24 and cg_number in {29207, 29211, 29212, 29213, 29214, 29215, 29216, 29217}:
+            colcd = 68
 
         # 3. Group default
         if colcd is None:
@@ -361,9 +367,8 @@ def cmd_stages(args):
     total_frames = 0
     for grp in groups_to_extract:
         stage = afs_entry_to_stage(grp.apfn)
-
         stage_pal_afs = STAGE_PAL_AFS.get(stage) if stage is not None else None
-        pal_banks = build_stage_colorram(afs_path, entries, stage_pal_afs)
+        pal_banks = build_stage_colorram(afs_path, entries, stage_pal_afs, apply_clut=False)
 
         # Overlay runtime ColorRAM dump (authoritative source)
         rt_dump = None

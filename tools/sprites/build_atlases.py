@@ -243,11 +243,23 @@ def process_stage_group(afs_path, entries, grp, output_dir, engine_pal_map, colc
     stage_pal_afs = STAGE_PAL_AFS.get(stage) if stage is not None else None
     pal_banks = build_stage_colorram(afs_path, entries, stage_pal_afs, apply_clut=False)
 
-    rt_dump = load_colorram_dump(stage) if stage is not None else None
-    
-    # Only fall back to Stage 0 (Gill) dump if this group natively belongs to NO specific stage.
-    if rt_dump is None and stage is None:
-        rt_dump = load_colorram_dump(0)
+    # Load rt_dump when we have a specific stage, OR for groups without stage
+    # mapping that need runtime palette data (player banks 0-31, or stage banks).
+    # groups 32/33 are excluded — they have hardcoded overrides below.
+    RT_DUMP_FALLBACK_GROUPS = (
+        set(range(61, 77))  # Effect groups (CSV: colcd {0,4,8,12}, mode 33)
+    )
+    CONSENSUS_FALLBACK_GROUPS = {24, 25, 82} # UI/System groups
+
+    if stage is not None:
+        rt_dump = load_colorram_dump(stage)
+    elif group_idx in CONSENSUS_FALLBACK_GROUPS:
+        from sprite_compositor import load_consensus_colorram_dump
+        rt_dump = load_consensus_colorram_dump()
+    elif group_idx in RT_DUMP_FALLBACK_GROUPS:
+        rt_dump = load_colorram_dump(0)  # Stage 0 dump has player palette data
+    else:
+        rt_dump = None
     
     if rt_dump:
         for bank_idx in range(512):
@@ -302,6 +314,20 @@ def process_stage_group(afs_path, entries, grp, output_dir, engine_pal_map, colc
             last_colcd = colcd
             last_mode = cg_mode
             
+        # Hardcode override based on debug script findings for Bonus groups
+        # Hardcode override based on debug script findings for Bonus groups
+        # to ensure they absolutely don't inherit faulty state/mode fallbacks.
+        if grp.group_idx in {32, 33}:
+            colcd = 300
+            cg_mode = 18
+
+        # [PATCH] Fix 3rd Strike ROM bug for Skater Girl in Group 24
+        # The game's embedded attribute data incorrectly sets the palette bank to 69 
+        # instead of 68 during her turn-around sequence, exposing a blonde/red palette 
+        # offset when statically extracted. Overriding to 68 forces her natural colors.
+        if group_idx == 24 and cg_number in {29207, 29211, 29212, 29213, 29214, 29215, 29216, 29217}:
+            colcd = 68
+            
         # Parse tiles just to grab exact bounding box pivots (what extract_stage_frame drops)
         tiles = _parse_tiles(data, grp.to_tex, fi)
         if not tiles:
@@ -350,6 +376,111 @@ def process_stage_group(afs_path, entries, grp, output_dir, engine_pal_map, colc
     return count
 
 
+def process_per_character_group(afs_path, entries, grp, output_dir, engine_pal_map, colcd_map):
+    """Extract a PER_CHARACTER_EFFECT_GROUP once per character.
+
+    Groups 61-76 use mode 17 (exchange_current_colcd) at runtime, which
+    redirects palette lookups to the active character's banks (0-15).
+    We replicate this offline by loading each character's palette file
+    and extracting with colcd_base=0.
+    """
+    group_idx = grp.group_idx
+
+    if grp.apfn < 0 or grp.apfn >= len(entries):
+        return 0
+
+    data = read_afs_file(afs_path, entries[grp.apfn])
+    if len(data) < 4:
+        return 0
+
+    num_frames = struct.unpack_from("<I", data, 0)[0] // 4
+    if num_frames == 0 or num_frames > 10000:
+        return 0
+    if grp.to_tex >= len(data):
+        return 0
+
+    os.makedirs(output_dir, exist_ok=True)
+    grp_name = f"group_{group_idx:02d}"
+
+    total_count = 0
+    char_names = sorted(CHARACTERS.keys(), key=lambda k: CHARACTERS[k]["num_of_1st"])
+
+    for char_name in char_names:
+        char = CHARACTERS[char_name]
+        pal_data = read_afs_file(afs_path, entries[char["pal_apfn"]])
+        # Build full ColorRAM with this character's palette in banks 0-15
+        pal_banks = build_char_colorram(afs_path, entries, pal_data, 0)
+
+        print(f"  Building {grp_name} with {char_name}'s palette ({num_frames} frames)...")
+
+        builder = TextureAtlasBuilder()
+        count = 0
+
+        for fi in range(num_frames):
+            cg_number = grp.num_of_1st + fi
+
+            tiles = _parse_tiles(data, grp.to_tex, fi)
+            if not tiles:
+                continue
+
+            pts, _ = _compute_positions(tiles)
+            px = min(p[0] for p in pts)
+            py = min(p[1] for p in pts)
+
+            # Resolve colcd/mode from CSV (cross-stage scan), then group defaults
+            colcd = None
+            cg_mode = None
+            for key, val in colcd_map.items():
+                if key[1] == cg_number:
+                    colcd, cg_mode = val
+                    break
+            if colcd is None:
+                colcd = engine_pal_map.get(cg_number)
+            if colcd is None:
+                colcd = GROUP_DEFAULT_COLCD.get(group_idx, 0)
+            if cg_mode is None:
+                cg_mode = get_rendering_mode(group_idx, STAGE_SPRITE_GROUPS)
+
+            img = extract_stage_frame(
+                data, grp.to_tex, fi, pal_banks,
+                colcd_base=colcd, rendering_mode=cg_mode
+            )
+            if img:
+                builder.add_frame(cg_number, img, px, py)
+                count += 1
+
+        atlases = builder.build()
+        if not atlases:
+            continue
+
+        master_metadata = {
+            "group": grp_name,
+            "character": char_name,
+            "description": grp.desc,
+            "base_cg": grp.num_of_1st,
+            "num_frames": num_frames,
+            "atlases": []
+        }
+
+        for i, (img, meta) in enumerate(atlases):
+            img_filename = f"{grp_name}_atlas_{char_name}_{i:02d}.png"
+            img_path = os.path.join(output_dir, img_filename)
+            img.save(img_path)
+
+            master_metadata["atlases"].append({
+                "image": img_filename,
+                "frames": meta
+            })
+
+        with open(os.path.join(output_dir, f"{grp_name}_{char_name}_metadata.json"), "w") as f:
+            json.dump(master_metadata, f, indent=2)
+
+        print(f"    -> {char_name}: {len(atlases)} atlases, {count} frames.")
+        total_count += count
+
+    return total_count
+
+
 def cmd_chars(args):
     afs_path = args.afs
     output_dir = args.output
@@ -394,7 +525,8 @@ def cmd_stages(args):
             continue
             
         grp_dir = os.path.join(output_dir, f"group_{grp.group_idx:02d}")
-        grand_total += process_stage_group(afs_path, entries, grp, grp_dir, engine_pal_map, colcd_map)
+        grand_total += process_stage_group(
+            afs_path, entries, grp, grp_dir, engine_pal_map, colcd_map)
         
     print(f"\nDone! Processed {grand_total} total frames.")
 

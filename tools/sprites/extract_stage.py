@@ -483,7 +483,7 @@ def extract_chip_anims(afs_path, entries, stage_idx, stage_dir):
         return
 
     # Build full 512-bank ColorRAM (common + stage palettes)
-    colorram = build_stage_colorram(afs_path, entries, pal_afs)
+    colorram = build_stage_colorram(afs_path, entries, pal_afs, apply_clut=False)
 
     # Filter gap entries to valid chip data
     chip_candidates = []
