@@ -24,10 +24,13 @@
             </div>
         </div>
 
-        <!-- ═══ SPECTATOR BADGE (Fightcade style) ═══ -->
+        <!-- ═══ SPECTATOR BADGE (Fightcade style) ═══
+             Disabled: spectator_count variable removed from data model.
+             Re-enable when spectator mode is re-implemented.
         <div id="spectator-badge" data-if="spectator_count > 0">
             <span class="spec-eye">👁</span><span class="spec-count">{{spectator_count}}</span>
         </div>
+        -->
 
     </div>
 </body>

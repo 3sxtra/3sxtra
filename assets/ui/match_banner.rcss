@@ -97,7 +97,9 @@ body {
     vertical-align: 2dp;
 }
 
-/* ── Spectator badge (Fightcade-style) ─────────────────────── */
+/* ── Spectator badge (Fightcade-style) ─────────────────────── *
+ * Disabled: spectator_count removed from data model.
+ * Re-enable when spectator mode is re-implemented.
 #spectator-badge {
     display: block;
     position: absolute;
@@ -126,3 +128,4 @@ body {
     border-bottom-right-radius: 3dp;
     padding: 1dp 4dp 1dp 2dp;
 }
+*/
