@@ -31,6 +31,7 @@ static void push_render_task(GLuint texture, const SDL_Vertex* vertices, float z
     // ⚡ Bolt: SIMD broadcast — write same float to 4 consecutive slots
     simde_mm_storeu_ps(&gl_state.batch_layers[vertex_offset], simde_mm_set1_ps((float)array_layer));
     simde_mm_storeu_ps(&gl_state.batch_pal_indices[vertex_offset], simde_mm_set1_ps((float)pal_slot));
+    simde_mm_storeu_ps(&gl_state.batch_z[vertex_offset], simde_mm_set1_ps(z));
 
     RenderTask* task = &gl_state.render_tasks[gl_state.render_task_count];
     task->texture = texture;
@@ -140,8 +141,8 @@ void SDLGameRendererGL_BeginFrame(void) {
     glBindFramebuffer(GL_FRAMEBUFFER, gl_state.cps3_canvas_fbo);
     glViewport(0, 0, 384 * g_resolution_scale, 224 * g_resolution_scale);
     glClearColor(r, g, b, a);
-
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClearDepth(0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     TRACE_ZONE_END();
 }
 
@@ -180,6 +181,7 @@ void SDLGameRendererGL_RenderFrame(void) {
         SDL_Vertex* vbo_ptr = gl_state.persistent_vbo_ptr[current_buffer_idx];
         float* layer_ptr = gl_state.persistent_layer_ptr[current_buffer_idx];
         float* pal_ptr = gl_state.persistent_pal_ptr[current_buffer_idx];
+        float* z_ptr = gl_state.persistent_z_ptr[current_buffer_idx];
 
         // ⚡ Bolt: SIMD broadcast — copy sorted layer/palette with single stores
         for (int i = 0; i < gl_state.render_task_count; i++) {
@@ -189,12 +191,14 @@ void SDLGameRendererGL_RenderFrame(void) {
 
             simde_mm_storeu_ps(&layer_ptr[dst], simde_mm_set1_ps(gl_state.batch_layers[src]));
             simde_mm_storeu_ps(&pal_ptr[dst], simde_mm_set1_ps(gl_state.batch_pal_indices[src]));
+            simde_mm_storeu_ps(&z_ptr[dst], simde_mm_set1_ps(gl_state.batch_z[src]));
         }
     } else {
         current_buffer_idx = 0;
         static SDL_Vertex sorted_vertices[RENDER_TASK_MAX * 4];
         static float sorted_layers[RENDER_TASK_MAX * 4];
         static float sorted_pals[RENDER_TASK_MAX * 4];
+        static float sorted_z[RENDER_TASK_MAX * 4];
 
         // ⚡ Bolt: SIMD broadcast — copy sorted layer/palette with single stores
         for (int i = 0; i < gl_state.render_task_count; i++) {
@@ -204,6 +208,7 @@ void SDLGameRendererGL_RenderFrame(void) {
 
             simde_mm_storeu_ps(&sorted_layers[dst], simde_mm_set1_ps(gl_state.batch_layers[src]));
             simde_mm_storeu_ps(&sorted_pals[dst], simde_mm_set1_ps(gl_state.batch_pal_indices[src]));
+            simde_mm_storeu_ps(&sorted_z[dst], simde_mm_set1_ps(gl_state.batch_z[src]));
         }
 
         glBindVertexArray(gl_state.persistent_vaos[0]);
@@ -216,12 +221,19 @@ void SDLGameRendererGL_RenderFrame(void) {
 
         glBindBuffer(GL_ARRAY_BUFFER, gl_state.persistent_pal_vbos[0]);
         glBufferSubData(GL_ARRAY_BUFFER, 0, gl_state.render_task_count * 4 * sizeof(float), sorted_pals);
+
+        glBindBuffer(GL_ARRAY_BUFFER, gl_state.persistent_z_vbos[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, gl_state.render_task_count * 4 * sizeof(float), sorted_z);
     }
 
     glBindVertexArray(gl_state.persistent_vaos[current_buffer_idx]);
     // Common state setup
     glEnable(GL_BLEND);
     glActiveTexture(GL_TEXTURE0);
+
+    // ⚡ Bolt: Enable depth testing for HD composition pass occlusion
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_ALWAYS); // Painter's algorithm guarantees last-drawn is front-most
 
     RendererBlendMode current_applied_blend_mode = -1;
 
@@ -303,38 +315,9 @@ void SDLGameRendererGL_RenderFrame(void) {
             glDrawElements(GL_TRIANGLES, batch_count * 6, GL_UNSIGNED_INT, (void*)offset_bytes);
 
         } else {
-            if (current_shader_type != SHADER_LEGACY) {
-                glUseProgram(leg_shader);
-                current_shader_type = SHADER_LEGACY;
-
-                if (gl_state.loc_projection == -1)
-                    gl_state.loc_projection = glGetUniformLocation(leg_shader, "projection");
-                glUniformMatrix4fv(gl_state.loc_projection, 1, GL_FALSE, (const float*)projection);
-
-                if (gl_state.loc_source == -1)
-                    gl_state.loc_source = glGetUniformLocation(leg_shader, "Source");
-                glUniform1i(gl_state.loc_source, 0);
-            }
-
-            while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer == -1 &&
-                   gl_state.render_tasks[i].blend_mode == current_applied_blend_mode) {
-                const GLuint current_texture = gl_state.render_tasks[i].texture;
-                int batch_count = 0;
-                int start_index = i;
-
-                while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer == -1 &&
-                       gl_state.render_tasks[i].texture == current_texture &&
-                       gl_state.render_tasks[i].blend_mode == current_applied_blend_mode) {
-                    batch_count++;
-                    i++;
-                }
-
-                stat_legacy_sprites += batch_count;
-                stat_draw_calls++;
-                glBindTexture(GL_TEXTURE_2D, current_texture);
-                const size_t offset_bytes = (size_t)start_index * 6 * sizeof(int);
-                glDrawElements(GL_TRIANGLES, batch_count * 6, GL_UNSIGNED_INT, (void*)offset_bytes);
-            }
+            // ⚡ Bolt: HD Sprites and legacy direct mode skips the native pass.
+            // They are deferred to SDLGameRendererGL_RenderHDPass().
+            i++;
         }
     }
     TRACE_SUB_END();
@@ -345,10 +328,127 @@ void SDLGameRendererGL_RenderFrame(void) {
     TRACE_PLOT_INT("RGBAFree", gl_state.tex_array_rgba_free_count);
 
     TRACE_GPU_ZONE_END();
+    glDisable(GL_DEPTH_TEST);
 
     if (gl_state.use_persistent_mapping) {
         gl_state.fences[current_buffer_idx] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     }
+
+    TRACE_ZONE_END();
+}
+
+void SDLGameRendererGL_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h, bool backgrounds_only) {
+    if (gl_state.render_task_count == 0) return;
+
+    TRACE_ZONE_N("RenderHDPass");
+
+    const float sw = 384.0f * g_resolution_scale;
+    const float sh = 224.0f * g_resolution_scale;
+    const float projection[4][4] = { { 2.0f / sw, 0.0f, 0.0f, 0.0f },
+                                     { 0.0f, -2.0f / sh, 0.0f, 0.0f },
+                                     { 0.0f, 0.0f, -1.0f, 0.0f },
+                                     { -1.0f, 1.0f, 0.0f, 1.0f } };
+
+    int current_buffer_idx = gl_state.use_persistent_mapping ? gl_state.buffer_index : 0;
+    glBindVertexArray(gl_state.persistent_vaos[current_buffer_idx]);
+
+    glEnable(GL_BLEND);
+
+    GLuint hd_shader;
+
+    if (!backgrounds_only) {
+        // Bind Native depth map to texture unit 1 to enable fragment exclusion 
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, cps3_canvas_depth_texture);
+        glActiveTexture(GL_TEXTURE0);
+
+        hd_shader = SDLApp_GetHDSceneShaderProgram(); // Utilizes depth discard
+    } else {
+        glActiveTexture(GL_TEXTURE0);
+        hd_shader = SDLApp_GetSceneShaderProgram(); // Standard texturing
+    }
+
+    glUseProgram(hd_shader);
+
+    GLint loc_proj = glGetUniformLocation(hd_shader, "projection");
+    glUniformMatrix4fv(loc_proj, 1, GL_FALSE, (const float*)projection);
+
+    GLint loc_src = glGetUniformLocation(hd_shader, "Source");
+    glUniform1i(loc_src, 0);
+
+    if (!backgrounds_only) {
+        GLint loc_depth = glGetUniformLocation(hd_shader, "NativeDepthTex");
+        if (loc_depth != -1) {
+            glUniform1i(loc_depth, 1);
+        }
+
+        GLint loc_res = glGetUniformLocation(hd_shader, "Resolution");
+        if (loc_res != -1) {
+            glUniform2f(loc_res, (float)viewport_w, (float)viewport_h);
+        }
+    }
+
+    GLint loc_res = glGetUniformLocation(hd_shader, "Resolution");
+    glUniform2f(loc_res, (float)viewport_w, (float)viewport_h);
+
+    RendererBlendMode current_applied_blend_mode = -1;
+    int i = 0;
+
+    while (i < gl_state.render_task_count) {
+        if (gl_state.render_tasks[i].array_layer != -1) {
+            i++;
+            continue;
+        }
+
+        if (backgrounds_only && gl_state.render_tasks[i].z >= 0.1f) {
+            i++;
+            continue;
+        }
+        if (!backgrounds_only && gl_state.render_tasks[i].z < 0.1f) {
+            i++;
+            continue;
+        }
+
+        const RendererBlendMode task_blend = gl_state.render_tasks[i].blend_mode;
+        if (task_blend != current_applied_blend_mode) {
+            if (task_blend == RENDERER_BLEND_ADD) {
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+                glBlendEquation(GL_FUNC_ADD);
+            } else if (task_blend == RENDERER_BLEND_MULTIPLY) {
+                glBlendFunc(GL_DST_COLOR, GL_ZERO);
+                glBlendEquation(GL_FUNC_ADD);
+            } else {
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glBlendEquation(GL_FUNC_ADD);
+            }
+            current_applied_blend_mode = task_blend;
+        }
+
+        const GLuint current_texture = gl_state.render_tasks[i].texture;
+        int batch_count = 0;
+        int start_index = i;
+
+        while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer == -1 &&
+               gl_state.render_tasks[i].texture == current_texture &&
+               gl_state.render_tasks[i].blend_mode == current_applied_blend_mode) {
+            
+            // Re-validate against splitting planes within the internal batch loop
+            if (backgrounds_only && gl_state.render_tasks[i].z >= 0.1f) break;
+            if (!backgrounds_only && gl_state.render_tasks[i].z < 0.1f) break;
+
+            batch_count++;
+            i++;
+        }
+
+        glBindTexture(GL_TEXTURE_2D, current_texture);
+        const size_t offset_bytes = (size_t)start_index * 6 * sizeof(int);
+        glDrawElements(GL_TRIANGLES, batch_count * 6, GL_UNSIGNED_INT, (void*)offset_bytes);
+    }
+    
+    // Unbind Depth
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0);
 
     TRACE_ZONE_END();
 }
@@ -627,9 +727,10 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
         v[3].tex_coord.y = t1;
         memcpy(&v[3].color, &color, sizeof(Uint32));
 
-        // Write layer + palette with SIMD broadcast
+        // Write layer + palette + Z with SIMD broadcast
         simde_mm_storeu_ps(&gl_state.batch_layers[vo], simde_mm_set1_ps((float)cur_layer));
         simde_mm_storeu_ps(&gl_state.batch_pal_indices[vo], simde_mm_set1_ps((float)cur_pal));
+        simde_mm_storeu_ps(&gl_state.batch_z[vo], simde_mm_set1_ps(z));
 
         // Fill render task metadata
         RenderTask* task = &gl_state.render_tasks[task_idx];
@@ -734,6 +835,45 @@ void SDLGameRendererGL_DrawOverlaySpriteEx(unsigned int gl_texture_id, float x, 
     sdl_vertices[3].position.y = sy + sh;
     sdl_vertices[3].tex_coord.x = max_u;
     sdl_vertices[3].tex_coord.y = max_v;
+    memcpy(&sdl_vertices[3].color, &white, sizeof(Uint32));
+
+    /* Push as a legacy texture (array_layer = -1, pal_slot = 0) */
+    push_render_task((GLuint)gl_texture_id, sdl_vertices, z, -1, 0);
+}
+
+void SDLGameRendererGL_DrawOverlaySubSprite(unsigned int gl_texture_id, float x, float y, float w, float h, 
+                                            float u0, float v0, float u1, float v1, float z) {
+    const Uint32 white = 0xFFFFFFFF;
+    SDL_Vertex sdl_vertices[4];
+    const float s = (float)g_resolution_scale;
+    float sx = x * s, sy = y * s, sw = w * s, sh = h * s;
+
+    /* Top-left */
+    sdl_vertices[0].position.x = sx;
+    sdl_vertices[0].position.y = sy;
+    sdl_vertices[0].tex_coord.x = u0;
+    sdl_vertices[0].tex_coord.y = v0;
+    memcpy(&sdl_vertices[0].color, &white, sizeof(Uint32));
+
+    /* Top-right */
+    sdl_vertices[1].position.x = sx + sw;
+    sdl_vertices[1].position.y = sy;
+    sdl_vertices[1].tex_coord.x = u1;
+    sdl_vertices[1].tex_coord.y = v0;
+    memcpy(&sdl_vertices[1].color, &white, sizeof(Uint32));
+
+    /* Bottom-left */
+    sdl_vertices[2].position.x = sx;
+    sdl_vertices[2].position.y = sy + sh;
+    sdl_vertices[2].tex_coord.x = u0;
+    sdl_vertices[2].tex_coord.y = v1;
+    memcpy(&sdl_vertices[2].color, &white, sizeof(Uint32));
+
+    /* Bottom-right */
+    sdl_vertices[3].position.x = sx + sw;
+    sdl_vertices[3].position.y = sy + sh;
+    sdl_vertices[3].tex_coord.x = u1;
+    sdl_vertices[3].tex_coord.y = v1;
     memcpy(&sdl_vertices[3].color, &white, sizeof(Uint32));
 
     /* Push as a legacy texture (array_layer = -1, pal_slot = 0) */

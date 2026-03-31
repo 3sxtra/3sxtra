@@ -22,4 +22,8 @@ void main()
         float layer = -TexLayer - 2.0;
         FragColor = texture(SourceRGBA, vec3(TexCoord, layer)) * FgColor;
     }
+
+    if (FragColor.a < 0.01) {
+        discard;
+    }
 }

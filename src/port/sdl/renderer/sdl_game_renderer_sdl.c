@@ -737,7 +737,8 @@ void SDLGameRendererSDL_BeginFrame(void) {
     if (a != SDL_ALPHA_TRANSPARENT) {
         SDL_SetRenderDrawColor(renderer, r, g, b, a);
     } else {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+        Uint8 bg_alpha = ModdedStage_IsActiveForCurrentStage() ? SDL_ALPHA_TRANSPARENT : SDL_ALPHA_OPAQUE;
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, bg_alpha);
     }
 
     SDL_SetRenderTarget(renderer, cps3_canvas);
@@ -845,15 +846,19 @@ void SDLGameRendererSDL_RenderFrame(void) {
             if (batch_size > 0) {
                 SDL_assert(batch_size <= RENDER_TASK_MAX);
 
-                SDL_Texture* draw_texture = task_texture[render_task_order[batch_start]];
-                const int batch_palette = HI_16_BITS(current_th);
-
                 SDL_BlendMode sdl_blend;
                 if (current_applied_blend == RENDERER_BLEND_ADD) sdl_blend = SDL_BLENDMODE_ADD;
                 else if (current_applied_blend == RENDERER_BLEND_MULTIPLY) sdl_blend = SDL_BLENDMODE_MUL;
                 else sdl_blend = SDL_BLENDMODE_BLEND;
-                if (draw_texture) SDL_SetTextureBlendMode(draw_texture, sdl_blend);
-                else SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
+
+                if (current_th == 0xFFFFFFFF) {
+                    // ⚡ HD Overlay Pass is deferred to RenderHDPass, skip rendering to canvas
+                    rect_fast_path_count += 0; // maintain dummy stat if needed
+                } else {
+                    SDL_Texture* draw_texture = task_texture[render_task_order[batch_start]];
+                    const int batch_palette = HI_16_BITS(current_th);
+                    if (draw_texture) SDL_SetTextureBlendMode(draw_texture, sdl_blend);
+                    else SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
                 const int batch_tex_handle = LO_16_BITS(current_th);
 
                 // ⚡ For indexed textures: swap draw_texture for the pre-baked slot.
@@ -1001,6 +1006,7 @@ void SDLGameRendererSDL_RenderFrame(void) {
                     SDL_RenderGeometry(
                         renderer, draw_texture, batch_vertices, batch_size * 4, batch_indices, batch_size * 6);
                 }
+                } // ⚡ Close newly added else { for skipped overlays
             }
 
             if (i < render_task_count) {
@@ -1034,6 +1040,54 @@ void SDLGameRendererSDL_RenderFrame(void) {
             SDL_RenderRect(renderer, &border_rect);
         }
     }
+    TRACE_ZONE_END();
+}
+
+void SDLGameRendererSDL_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h, bool backgrounds_only) {
+    if (render_task_count == 0) return;
+    TRACE_ZONE_N("SDL2D:RenderHDPass");
+
+    SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+    float scale_x = (float)viewport_w / (384.0f * g_resolution_scale);
+    float scale_y = (float)viewport_h / (224.0f * g_resolution_scale);
+    SDL_SetRenderScale(renderer, scale_x, scale_y);
+
+    for (int i = 0; i < render_task_count; i++) {
+        const int idx = render_task_order[i];
+        if (task_th[idx] != 0xFFFFFFFF) continue;
+
+        if (backgrounds_only && task_z[idx] >= 0.1f) continue;
+        if (!backgrounds_only && task_z[idx] < 0.1f) continue;
+
+        SDL_Texture* draw_texture = task_texture[idx];
+        if (!draw_texture) continue;
+
+        SDL_BlendMode sdl_blend;
+        if (task_blend[idx] == RENDERER_BLEND_ADD) sdl_blend = SDL_BLENDMODE_ADD;
+        else if (task_blend[idx] == RENDERER_BLEND_MULTIPLY) sdl_blend = SDL_BLENDMODE_MUL;
+        else sdl_blend = SDL_BLENDMODE_BLEND;
+        
+        SDL_SetTextureBlendMode(draw_texture, sdl_blend);
+
+        if (task_is_rect[idx]) {
+            SDL_SetTextureColorModFloat(draw_texture, task_verts[idx][0].color.r, task_verts[idx][0].color.g, task_verts[idx][0].color.b);
+            SDL_SetTextureAlphaModFloat(draw_texture, task_verts[idx][0].color.a);
+
+            if (task_flip[idx] != SDL_FLIP_NONE) {
+                SDL_RenderTextureRotated(renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx], 0.0, NULL, task_flip[idx]);
+            } else {
+                SDL_RenderTexture(renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx]);
+            }
+
+            SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
+            SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
+        } else {
+            int indices[6] = { 0, 1, 2, 1, 3, 2 };
+            SDL_RenderGeometry(renderer, draw_texture, task_verts[idx], 4, indices, 6);
+        }
+    }
+    
+    SDL_SetRenderScale(renderer, 1.0f, 1.0f);
     TRACE_ZONE_END();
 }
 
@@ -1813,10 +1867,69 @@ void SDLGameRendererSDL_DrawOverlaySpriteEx(SDL_Texture* texture, float x, float
     task_is_rect[idx] = true;
 
     /* Software-frame data */
-    task_src_rect[idx] = (SDL_FRect) { u0, v0, u1 - u0, v1 - v0 };
+    float tex_w = 1.0f, tex_h = 1.0f;
+    SDL_GetTextureSize(texture, &tex_w, &tex_h);
+    task_src_rect[idx] = (SDL_FRect) { 0.0f, 0.0f, tex_w, tex_h };
     task_dst_rect[idx] = (SDL_FRect) { sx, sy, sw, sh };
-    task_flip[idx] = SDL_FLIP_NONE; /* flips already baked into UVs */
+    task_flip[idx] = (SDL_FlipMode)( (flip_x ? SDL_FLIP_HORIZONTAL : 0) | (flip_y ? SDL_FLIP_VERTICAL : 0) );
     task_color32[idx] = 0xFFFFFFFF; /* white, full alpha */
+
+    render_task_count++;
+}
+
+void SDLGameRendererSDL_DrawOverlaySubSprite(SDL_Texture* texture, float x, float y, float w, float h, 
+                                             float u0, float v0, float u1, float v1, float z) {
+    if (render_task_count >= RENDER_TASK_MAX || texture == NULL)
+        return;
+
+    const int idx = render_task_count;
+
+    task_texture[idx] = texture;
+    task_th[idx] = 0xFFFFFFFF;
+    task_blend[idx] = current_blend_mode;
+    task_z[idx] = z;
+
+    if (z < last_submitted_z)
+        sort_inversions++;
+    last_submitted_z = z;
+
+    const float s = (float)g_resolution_scale;
+    float sx = x * s, sy = y * s, sw = w * s, sh = h * s;
+
+    const SDL_FColor white = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    task_verts[idx][0].position.x = sx;
+    task_verts[idx][0].position.y = sy;
+    task_verts[idx][0].tex_coord.x = u0;
+    task_verts[idx][0].tex_coord.y = v0;
+    task_verts[idx][0].color = white;
+
+    task_verts[idx][1].position.x = sx + sw;
+    task_verts[idx][1].position.y = sy;
+    task_verts[idx][1].tex_coord.x = u1;
+    task_verts[idx][1].tex_coord.y = v0;
+    task_verts[idx][1].color = white;
+
+    task_verts[idx][2].position.x = sx;
+    task_verts[idx][2].position.y = sy + sh;
+    task_verts[idx][2].tex_coord.x = u0;
+    task_verts[idx][2].tex_coord.y = v1;
+    task_verts[idx][2].color = white;
+
+    task_verts[idx][3].position.x = sx + sw;
+    task_verts[idx][3].position.y = sy + sh;
+    task_verts[idx][3].tex_coord.x = u1;
+    task_verts[idx][3].tex_coord.y = v1;
+    task_verts[idx][3].color = white;
+
+    task_is_rect[idx] = true;
+
+    float tex_w = 1.0f, tex_h = 1.0f;
+    SDL_GetTextureSize(texture, &tex_w, &tex_h);
+    task_src_rect[idx] = (SDL_FRect) { u0 * tex_w, v0 * tex_h, (u1 - u0) * tex_w, (v1 - v0) * tex_h };
+    task_dst_rect[idx] = (SDL_FRect) { sx, sy, sw, sh };
+    task_flip[idx] = SDL_FLIP_NONE;
+    task_color32[idx] = 0xFFFFFFFF;
 
     render_task_count++;
 }

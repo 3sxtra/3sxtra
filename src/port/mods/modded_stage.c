@@ -20,7 +20,6 @@
 #include "sf33rd/Source/Game/system/work_sys.h"
 
 #include <SDL3/SDL.h>
-#include <glad/gl.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -46,100 +45,6 @@ static int s_loaded_stage = -1;
 static ModdedLayerResources s_layer_res[MAX_STAGE_LAYERS];
 static int s_layer_res_count = 0;
 
-/* Simple passthru shader for textured quad rendering */
-static GLuint s_shader_program = 0;
-static GLuint s_quad_vao = 0;
-static GLuint s_quad_vbo = 0;
-static GLint s_loc_projection = -1;
-static GLint s_loc_texture = -1;
-
-/* ---------- Shader Setup ---------- */
-
-static const char* s_vert_src = "#version 330 core\n"
-                                "layout(location = 0) in vec2 aPos;\n"
-                                "layout(location = 1) in vec2 aUV;\n"
-                                "uniform mat4 projection;\n"
-                                "out vec2 vUV;\n"
-                                "void main() {\n"
-                                "    gl_Position = projection * vec4(aPos, 0.0, 1.0);\n"
-                                "    vUV = aUV;\n"
-                                "}\n";
-
-static const char* s_frag_src = "#version 330 core\n"
-                                "in vec2 vUV;\n"
-                                "uniform sampler2D tex;\n"
-                                "out vec4 FragColor;\n"
-                                "void main() {\n"
-                                "    FragColor = texture(tex, vUV);\n"
-                                "}\n";
-
-static void init_shader(void) {
-    if (s_shader_program != 0)
-        return;
-
-    GLint success;
-    char info_log[512];
-
-    GLuint vert = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vert, 1, &s_vert_src, NULL);
-    glCompileShader(vert);
-    glGetShaderiv(vert, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vert, sizeof(info_log), NULL, info_log);
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "ModdedStage: vertex shader compile failed: %s", info_log);
-        glDeleteShader(vert);
-        return;
-    }
-
-    GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(frag, 1, &s_frag_src, NULL);
-    glCompileShader(frag);
-    glGetShaderiv(frag, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(frag, sizeof(info_log), NULL, info_log);
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "ModdedStage: fragment shader compile failed: %s", info_log);
-        glDeleteShader(vert);
-        glDeleteShader(frag);
-        return;
-    }
-
-    s_shader_program = glCreateProgram();
-    glAttachShader(s_shader_program, vert);
-    glAttachShader(s_shader_program, frag);
-    glLinkProgram(s_shader_program);
-
-    glDeleteShader(vert);
-    glDeleteShader(frag);
-
-    glGetProgramiv(s_shader_program, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(s_shader_program, sizeof(info_log), NULL, info_log);
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "ModdedStage: shader link failed: %s", info_log);
-        glDeleteProgram(s_shader_program);
-        s_shader_program = 0;
-        return;
-    }
-
-    s_loc_projection = glGetUniformLocation(s_shader_program, "projection");
-    s_loc_texture = glGetUniformLocation(s_shader_program, "tex");
-
-    /* Create reusable VAO/VBO for quad rendering */
-    glGenVertexArrays(1, &s_quad_vao);
-    glGenBuffers(1, &s_quad_vbo);
-
-    glBindVertexArray(s_quad_vao);
-    glBindBuffer(GL_ARRAY_BUFFER, s_quad_vbo);
-    /* Allocate space for 4 vertices × 4 floats (pos.x, pos.y, uv.u, uv.v) */
-    glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(float), NULL, GL_DYNAMIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-    glBindVertexArray(0);
-}
-
 /* ---------- Lifecycle ---------- */
 
 void ModdedStage_Init(void) {
@@ -154,18 +59,6 @@ void ModdedStage_Init(void) {
 
 void ModdedStage_Shutdown(void) {
     ModdedStage_Unload();
-    if (s_shader_program) {
-        glDeleteProgram(s_shader_program);
-        s_shader_program = 0;
-    }
-    if (s_quad_vao) {
-        glDeleteVertexArrays(1, &s_quad_vao);
-        s_quad_vao = 0;
-    }
-    if (s_quad_vbo) {
-        glDeleteBuffers(1, &s_quad_vbo);
-        s_quad_vbo = 0;
-    }
 }
 
 void ModdedStage_SetEnabled(bool enabled) {
@@ -369,63 +262,14 @@ static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, cons
     float u1 = (scroll_x + vp_w) / effective_w;
     float v1 = (scroll_y + vp_h) / effective_h;
 
-    float verts[] = {
-        0.0f, 0.0f, u0, v0, 1.0f, 0.0f, u1, v0, 1.0f, 1.0f, u1, v1, 0.0f, 1.0f, u0, v1,
-    };
-
-    glBindBuffer(GL_ARRAY_BUFFER, s_quad_vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);
-
-    /* Bind layer texture */
-    GLuint tex_id = (GLuint)(intptr_t)res->texture;
-    glBindTexture(GL_TEXTURE_2D, tex_id);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    if (layer_index > 0) {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    }
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    if (layer_index > 0) {
-        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    }
+    /* Base depth for the modded stage - drawn way behind the character sprites */
+    float z_base = 0.05f + (layer_index * 0.001f);
+    
+    TextureUtil_DrawSubQuadEx(res->texture, 0.0f, 0.0f, vp_w, vp_h, u0, v0, u1, v1, z_base);
 }
-
 void ModdedStage_Render(const BG* bg) {
     if (!bg || s_layer_res_count == 0)
         return;
-
-    /* Lazy-init the shader on first render */
-    init_shader();
-
-    /* Save current GL state */
-    GLint prev_program;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &prev_program);
-    GLint prev_vao;
-    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &prev_vao);
-
-    static const float projection[4][4] = { { 2.0f, 0.0f, 0.0f, 0.0f },
-                                            { 0.0f, -2.0f, 0.0f, 0.0f },
-                                            { 0.0f, 0.0f, -1.0f, 0.0f },
-                                            { -1.0f, 1.0f, 0.0f, 1.0f } };
-
-    glUseProgram(s_shader_program);
-    glUniformMatrix4fv(s_loc_projection, 1, GL_FALSE, (const float*)projection);
-    glUniform1i(s_loc_texture, 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(s_quad_vao);
-
-    GLboolean prev_blend = glIsEnabled(GL_BLEND);
-    GLint prev_src, prev_dst;
-    glGetIntegerv(GL_BLEND_SRC_ALPHA, &prev_src);
-    glGetIntegerv(GL_BLEND_DST_ALPHA, &prev_dst);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     /* Sort layers by Z-Index from Config */
     // We can create a lightweight index array
@@ -463,11 +307,4 @@ void ModdedStage_Render(const BG* bg) {
     for (int i = 0; i < count; i++) {
         draw_layer(sort_buf[i].index, bg_prm, bg); // Pass global bg_prm array + BG struct
     }
-
-    /* Restore previous GL state */
-    if (!prev_blend)
-        glDisable(GL_BLEND);
-    glBlendFunc(prev_src, prev_dst);
-    glBindVertexArray(prev_vao);
-    glUseProgram(prev_program);
 }

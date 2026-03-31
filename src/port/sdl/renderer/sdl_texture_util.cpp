@@ -458,3 +458,27 @@ extern "C" void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float
         SDLGameRendererClassic_DrawOverlaySpriteEx((SDL_Texture*)texture_id, x, y, w, h, z, flip_x, flip_y);
     }
 }
+
+extern "C" void TextureUtil_DrawSubQuadEx(void* texture_id, float x, float y, float w, float h, 
+                                          float u0, float v0, float u1, float v1, float z) {
+    if (!texture_id)
+        return;
+
+    if (SDLApp_GetRenderer() == RENDERER_OPENGL) {
+        SDLGameRendererGL_DrawOverlaySubSprite((unsigned int)(intptr_t)texture_id, x, y, w, h, u0, v0, u1, v1, z);
+    } else if (SDLApp_GetRenderer() == RENDERER_SDLGPU) {
+        GPUTextureMetadata* meta = get_gpu_metadata(texture_id);
+        if (!meta || !meta->pixels)
+            return;
+        if (meta->w > 512 || meta->h > 512) {
+            SDLGameRendererGPU_QueueDeferredSubBlit(meta->texture, meta->w, meta->h, x, y, w, h, u0, v0, u1, v1, z);
+        } else {
+            SDLGameRendererGPU_DrawOverlaySubSprite(
+                meta->pixels, meta->w, meta->h, x, y, w, h, u0, v0, u1, v1, z);
+        }
+    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
+        SDLGameRendererSDL_DrawOverlaySubSprite((SDL_Texture*)texture_id, x, y, w, h, u0, v0, u1, v1, z);
+    } else if (SDLApp_GetRenderer() == RENDERER_SDL2D_CLASSIC) {
+        SDLGameRendererClassic_DrawOverlaySubSprite((SDL_Texture*)texture_id, x, y, w, h, u0, v0, u1, v1, z);
+    }
+}

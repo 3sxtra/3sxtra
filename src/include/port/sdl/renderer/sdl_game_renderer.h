@@ -19,11 +19,13 @@ typedef struct SDLGameRenderer_Vertex {
 #include "rendering/primitives.h"
 
 extern unsigned int cps3_canvas_texture;
+extern unsigned int cps3_canvas_depth_texture;
 
 void SDLGameRenderer_Init();
 void SDLGameRenderer_Shutdown();
 void SDLGameRenderer_BeginFrame();
 void SDLGameRenderer_RenderFrame();
+void SDLGameRenderer_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h, bool backgrounds_only);
 void SDLGameRenderer_EndFrame();
 
 void SDLGameRenderer_CreateTexture(unsigned int th);

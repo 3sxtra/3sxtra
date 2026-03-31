@@ -760,6 +760,26 @@ void SDLGameRendererClassic_DrawOverlaySpriteEx(SDL_Texture* texture, float x, f
     cl_render_tasks[cl_render_task_count - 1].z = z;
 }
 
+void SDLGameRendererClassic_DrawOverlaySubSprite(SDL_Texture* texture, float x, float y, float w, float h, 
+                                                 float u0, float v0, float u1, float v1, float z) {
+    if (cl_render_task_count >= RENDER_TASK_MAX || texture == NULL)
+        return;
+
+    const float s = (float)g_resolution_scale;
+    float sx = x * s, sy = y * s, sw = w * s, sh = h * s;
+
+    const SDL_FColor white = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    SDL_Vertex verts[4];
+    verts[0] = (SDL_Vertex) { { sx, sy }, white, { u0, v0 } };
+    verts[1] = (SDL_Vertex) { { sx + sw, sy }, white, { u1, v0 } };
+    verts[2] = (SDL_Vertex) { { sx, sy + sh }, white, { u0, v1 } };
+    verts[3] = (SDL_Vertex) { { sx + sw, sy + sh }, white, { u1, v1 } };
+
+    cl_draw_quad(verts, texture, z);
+    cl_render_tasks[cl_render_task_count - 1].z = z;
+}
+
 void SDLGameRendererClassic_DrawOverlaySprite(SDL_Texture* texture, float x, float y, float w, float h, float z) {
     SDLGameRendererClassic_DrawOverlaySpriteEx(texture, x, y, w, h, z, 0, 0);
 }

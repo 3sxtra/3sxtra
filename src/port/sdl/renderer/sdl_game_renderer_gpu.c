@@ -483,7 +483,11 @@ void SDLGameRendererGPU_RenderFrame(void) {
                         // Flush previous segment
                         unsigned int segment_quads = qi - draw_start;
                         if (segment_quads > 0) {
-                            SDL_DrawGPUIndexedPrimitives(pass, segment_quads * 6, 1, draw_start * 6, 0, 0);
+                            // ⚡ Skip standalone overlays (e.g. HD backgrounds) in the native canvas FBO pass.
+                            // They are deferred to SDLGameRendererGPU_RenderHDPass.
+                            if (current_overlay == NULL) {
+                                SDL_DrawGPUIndexedPrimitives(pass, segment_quads * 6, 1, draw_start * 6, 0, 0);
+                            }
                         }
 
                         if (qi < quad_count) {
@@ -510,6 +514,134 @@ void SDLGameRendererGPU_RenderFrame(void) {
         }
     }
 
+    TRACE_ZONE_END();
+}
+
+void SDLGameRendererGPU_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h, bool backgrounds_only) {
+    if (vertex_count == 0 || quad_count == 0 || !s_swapchain_texture || !current_cmd_buf)
+        return;
+
+    TRACE_ZONE_N("GPU:RenderHDPass");
+
+    SDL_GPUColorTargetInfo color_target;
+    SDL_zero(color_target);
+    color_target.texture = s_swapchain_texture;
+    color_target.load_op = SDL_GPU_LOADOP_LOAD; 
+    color_target.store_op = SDL_GPU_STOREOP_STORE;
+
+    SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(current_cmd_buf, &color_target, 1, NULL);
+    if (pass) {
+        SDL_GPUViewport viewport;
+        SDL_zero(viewport);
+        viewport.x = viewport_x;
+        viewport.y = viewport_y;
+        viewport.w = viewport_w;
+        viewport.h = viewport_h;
+        viewport.min_depth = 0.0f;
+        viewport.max_depth = 1.0f;
+        SDL_SetGPUViewport(pass, &viewport);
+
+        SDL_Rect scissor = { viewport_x, viewport_y, viewport_w, viewport_h };
+        SDL_SetGPUScissor(pass, &scissor);
+
+        // Map the game's 384x224 * scale logical coordinate space to the full physical viewport.
+        const int sw = 384 * g_resolution_scale;
+        const int sh = 224 * g_resolution_scale;
+        float matrix[4][4] = { { 2.0f / (float)sw, 0.0f, 0.0f, 0.0f },
+                               { 0.0f, -2.0f / (float)sh, 0.0f, 0.0f },
+                               { 0.0f, 0.0f, -1.0f, 0.0f },
+                               { -1.0f, 1.0f, 0.0f, 1.0f } };
+
+        SDL_PushGPUVertexUniformData(current_cmd_buf, 0, matrix, sizeof(matrix));
+
+        SDL_GPUBufferBinding vb_binding;
+        vb_binding.buffer = vertex_buffer;
+        vb_binding.offset = 0;
+        SDL_BindGPUVertexBuffers(pass, 0, &vb_binding, 1);
+
+        SDL_GPUBufferBinding ib_binding;
+        ib_binding.buffer = index_buffer;
+        ib_binding.offset = 0;
+        SDL_BindGPUIndexBuffer(pass, &ib_binding, SDL_GPU_INDEXELEMENTSIZE_16BIT);
+
+        SDL_GPUTextureSamplerBinding tex_bindings[3];
+        tex_bindings[0].texture = texture_array;
+        tex_bindings[0].sampler = sampler;
+        tex_bindings[1].texture = s_palette_texture;
+        tex_bindings[1].sampler = palette_sampler;
+        tex_bindings[2].texture = texture_array;
+        tex_bindings[2].sampler = sampler;
+        SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 3);
+
+        unsigned int draw_start = 0;
+        SDL_GPUTexture* current_overlay = (SDL_GPUTexture*)-1;
+        RendererBlendMode current_applied_blend = (RendererBlendMode)-1;
+
+        for (unsigned int qi = 0; qi <= quad_count; qi++) {
+            SDL_GPUTexture* this_overlay = NULL;
+            RendererBlendMode this_blend = RENDERER_BLEND_NORMAL;
+            float this_z = 0.0f;
+
+            if (qi < quad_count) {
+                int orig_idx = quad_sort_keys[qi].original_index;
+                this_overlay = quad_overlay_tex[orig_idx];
+                this_blend = quad_sort_keys[qi].blend_mode;
+                this_z = quad_sort_keys[qi].z;
+            }
+
+            bool skip_quad = false;
+            // Native renderer Z validation checks for Layer segregation
+            if (this_overlay) {
+                if (backgrounds_only && this_z >= 0.1f) skip_quad = true;
+                if (!backgrounds_only && this_z < 0.1f) skip_quad = true;
+            } else {
+                // If it isn't an overlay texture, it was already handled by Native FBO.
+                skip_quad = true;
+            }
+
+            bool blend_changed = (this_blend != current_applied_blend);
+            bool overlay_changed = (this_overlay != current_overlay);
+
+            if (qi == quad_count || blend_changed || overlay_changed || skip_quad) {
+                unsigned int segment_quads = qi - draw_start;
+                if (segment_quads > 0) {
+                    if (current_overlay != NULL && current_overlay != (SDL_GPUTexture*)-1) {
+                        // We ONLY draw if it's explicitly an overlay matching the current parameters
+                        SDL_DrawGPUIndexedPrimitives(pass, segment_quads * 6, 1, draw_start * 6, 0, 0);
+                    }
+                }
+                
+                if (qi < quad_count) {
+                    if (skip_quad) {
+                        // Jump over this quad, start tracing the next segment here
+                        draw_start = qi + 1;
+                        current_overlay = (SDL_GPUTexture*)-1;
+                    } else if (blend_changed) {
+                        current_applied_blend = this_blend;
+                        SDL_BindGPUGraphicsPipeline(pass, pipelines[current_applied_blend]);
+                    }
+
+                    if (overlay_changed && !skip_quad) {
+                        SDL_GPUTextureSamplerBinding tex_bindings[3];
+                        tex_bindings[0].texture = texture_array;
+                        tex_bindings[0].sampler = sampler;
+                        tex_bindings[1].texture = s_palette_texture;
+                        tex_bindings[1].sampler = palette_sampler;
+                        current_overlay = this_overlay;
+                        tex_bindings[2].texture = current_overlay
+                                                      ? current_overlay
+                                                      : (s_1x1_white_texture ? s_1x1_white_texture : texture_array);
+                        tex_bindings[2].sampler = sampler;
+                        SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 3);
+                    }
+                    if (!skip_quad) {
+                        draw_start = qi;
+                    }
+                }
+            }
+        }
+        SDL_EndGPURenderPass(pass);
+    }
     TRACE_ZONE_END();
 }
 
@@ -978,4 +1110,42 @@ void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture* texture, int tex_w, in
         return;
     /* Push a quad with layer=-2 (standalone overlay sentinel) */
     push_overlay_quad(-2, x, y, w, h, z, tex_w, tex_h, flip_x, flip_y, texture);
+}
+
+static void push_overlay_subquad(int layer, float x, float y, float w, float h, float u0, float v0, float u1, float v1, 
+                                 float z, SDL_GPUTexture* standalone_tex) {
+    if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES || quad_count >= MAX_QUADS)
+        return;
+
+    GPUVertex* v = (GPUVertex*)mapped_vertex_ptr + vertex_count;
+    float fl = (float)layer;
+    const float s = (float)g_resolution_scale;
+    float sx = x * s, sy = y * s, sw = w * s, sh = h * s;
+
+    v[0] = (GPUVertex) { sx, sy, 1, 1, 1, 1, u0, v0, fl, -1.0f };
+    v[1] = (GPUVertex) { sx + sw, sy, 1, 1, 1, 1, u1, v0, fl, -1.0f };
+    v[2] = (GPUVertex) { sx, sy + sh, 1, 1, 1, 1, u0, v1, fl, -1.0f };
+    v[3] = (GPUVertex) { sx + sw, sy + sh, 1, 1, 1, 1, u1, v1, fl, -1.0f };
+
+    quad_sort_keys[quad_count].z = z;
+    quad_sort_keys[quad_count].original_index = quad_count;
+    quad_sort_keys[quad_count].blend_mode = s_current_blend_mode;
+    quad_overlay_tex[quad_count] = standalone_tex;
+    quad_count++;
+    vertex_count += 4;
+}
+
+void SDLGameRendererGPU_DrawOverlaySubSprite(const uint32_t* pixels, int tex_w, int tex_h, float x, float y, float w,
+                                             float h, float u0, float v0, float u1, float v1, float z) {
+    int layer = upload_overlay_to_array_layer(pixels, tex_w, tex_h);
+    if (layer < 0)
+        return;
+    push_overlay_subquad(layer, x, y, w, h, u0, v0, u1, v1, z, NULL);
+}
+
+void SDLGameRendererGPU_QueueDeferredSubBlit(SDL_GPUTexture* texture, int tex_w, int tex_h, float x, float y, float w,
+                                             float h, float u0, float v0, float u1, float v1, float z) {
+    if (!texture)
+        return;
+    push_overlay_subquad(-2, x, y, w, h, u0, v0, u1, v1, z, texture);
 }

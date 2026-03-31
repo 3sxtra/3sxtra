@@ -119,6 +119,14 @@ void SDLGameRendererGL_Init() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cps3_canvas_texture, 0);
 
+    // ⚡ Bolt: Create and attach depth buffer for HD composition pass occlusion testing
+    glGenTextures(1, &cps3_canvas_depth_texture);
+    glBindTexture(GL_TEXTURE_2D, cps3_canvas_depth_texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT24, 384 * g_resolution_scale, 224 * g_resolution_scale);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, cps3_canvas_depth_texture, 0);
+
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         fatal_error("Failed to create framebuffer");
     }
@@ -161,6 +169,7 @@ void SDLGameRendererGL_Init() {
         glGenBuffers(1, &gl_state.persistent_ebos[i]);
         glGenBuffers(1, &gl_state.persistent_layer_vbos[i]);
         glGenBuffers(1, &gl_state.persistent_pal_vbos[i]);
+        glGenBuffers(1, &gl_state.persistent_z_vbos[i]);
 
         glBindVertexArray(gl_state.persistent_vaos[i]);
 
@@ -212,6 +221,18 @@ void SDLGameRendererGL_Init() {
         }
         glEnableVertexAttribArray(4);
         glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, gl_state.persistent_z_vbos[i]);
+        if (gl_state.use_persistent_mapping) {
+            const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+            glBufferStorage(GL_ARRAY_BUFFER, sizeof(gl_state.batch_z), NULL, flags);
+            gl_state.persistent_z_ptr[i] =
+                (float*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(gl_state.batch_z), flags);
+        } else {
+            glBufferData(GL_ARRAY_BUFFER, sizeof(gl_state.batch_z), NULL, GL_DYNAMIC_DRAW);
+        }
+        glEnableVertexAttribArray(5);
+        glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
 
         glBindVertexArray(0);
     }

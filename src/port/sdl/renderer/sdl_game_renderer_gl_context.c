@@ -10,3 +10,4 @@
 // Define the global state instance
 GLRendererState gl_state = { 0 };
 unsigned int cps3_canvas_texture = 0;
+unsigned int cps3_canvas_depth_texture = 0;

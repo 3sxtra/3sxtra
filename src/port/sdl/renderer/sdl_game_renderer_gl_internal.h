@@ -69,10 +69,12 @@ typedef struct {
     GLuint persistent_ebos[OFFSET_BUFFER_COUNT];
     GLuint persistent_layer_vbos[OFFSET_BUFFER_COUNT];
     GLuint persistent_pal_vbos[OFFSET_BUFFER_COUNT];
+    GLuint persistent_z_vbos[OFFSET_BUFFER_COUNT];
 
     SDL_Vertex* persistent_vbo_ptr[OFFSET_BUFFER_COUNT];
     float* persistent_layer_ptr[OFFSET_BUFFER_COUNT];
     float* persistent_pal_ptr[OFFSET_BUFFER_COUNT];
+    float* persistent_z_ptr[OFFSET_BUFFER_COUNT];
 
     GLsync fences[OFFSET_BUFFER_COUNT];
     bool use_persistent_mapping;
@@ -87,6 +89,7 @@ typedef struct {
     int batch_indices[RENDER_TASK_MAX * 6];
     float batch_layers[RENDER_TASK_MAX * 4];
     float batch_pal_indices[RENDER_TASK_MAX * 4];
+    float batch_z[RENDER_TASK_MAX * 4];
 
     // Texture State Stack (per frame) — sized to match max render tasks
     GLuint textures[RENDER_TASK_MAX];
@@ -151,6 +154,8 @@ typedef struct {
 } GLRendererState;
 
 extern GLRendererState gl_state;
+extern unsigned int cps3_canvas_texture;
+extern unsigned int cps3_canvas_depth_texture;
 
 // Helpers shared between Resources and Draw
 void check_gl_error(const char* operation);

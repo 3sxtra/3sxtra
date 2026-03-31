@@ -12,6 +12,8 @@ interface NewsItem {
   id: number;
   tag: string;
   title: string;
+  summary?: string;
+  url?: string;
   date: string;
   image: string;
 }
@@ -97,13 +99,16 @@ const SETTING_CATEGORIES: SettingCategory[] = [
 ];
 
 const MOCK_NEWS: NewsItem[] = [
-  { id: 1, tag: "PATCH NOTES", title: "v1.4.2: Netplay Stability & PS3 Fixes", date: "MAR 30, 2026", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800" },
-  { id: 2, tag: "TOURNAMENT", title: "Friday Night FT3 - Registration Open", date: "APR 02, 2026", image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=800" },
-  { id: 3, tag: "MOD PACK", title: "SF3 3SX: HD Stage Pack Vol. 1", date: "MAR 25, 2026", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800" },
+  { id: 1, tag: "PATCH NOTES", title: "v1.4.2: Netplay Stability & PS3 Fixes", summary: "Critical LAN netplay stability changes and HD composition updates live now.", url: "https://github.com/3sxtra/3sxtra/releases", date: "MAR 30, 2026", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800" },
+  { id: 2, tag: "TOURNAMENT", title: "Friday Night FT3 - Registration Open", summary: "Sign up for this week's 3SX ranbat tournament, hosted on GekkoNet.", url: "https://challonge.com", date: "APR 02, 2026", image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=800" },
+  { id: 3, tag: "MOD PACK", title: "SF3 3SX: HD Stage Pack Vol. 1", summary: "Download the officially curated high-resolution stage modpack for 3SX.", url: "https://github.com/3sxtra/3sxtra", date: "MAR 25, 2026", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800" },
 ];
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>("news");
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
+    Window: true, Rendering: false, Netplay: false, Training: false, Mods: false
+  });
   const [newsFeed, setNewsFeed] = useState<NewsItem[]>(MOCK_NEWS);
   const [isUpdating, setIsUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -164,7 +169,28 @@ function App() {
     setProgress(100);
   };
 
+  const toggleCategory = (name: string) => {
+    setOpenCategories(prev => ({ ...prev, [name]: !prev[name] }));
+  };
+
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'SELECT') return;
+
+      setActiveTab(prev => {
+        const tabs: Tab[] = ["news", "settings", "controls"];
+        const idx = tabs.indexOf(prev);
+        if (e.key === 'q' || e.key === 'Q' || e.key === 'ArrowLeft') {
+          return tabs[(idx - 1 + tabs.length) % tabs.length];
+        }
+        if (e.key === 'e' || e.key === 'E' || e.key === 'ArrowRight') {
+          return tabs[(idx + 1) % tabs.length];
+        }
+        return prev;
+      });
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     const unlistenProgress = listen<number>('download-progress', (event) => {
       setProgress(Math.round(event.payload));
     });
@@ -231,6 +257,7 @@ function App() {
 
     return () => {
       unlistenProgress.then(unlisten => unlisten());
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
@@ -332,7 +359,7 @@ function App() {
         marginBottom: '6px',
         background: 'rgba(0,0,0,0.85)',
         border: '2px solid var(--accent-red)',
-        boxShadow: '2px 2px 0 rgba(204, 28, 16, 0.3)',
+        boxShadow: '2px 2px 0 rgba(0, 0, 0, 0.5)',
         transition: 'all 0.1s ease',
         cursor: 'pointer'
       }}>
@@ -416,7 +443,10 @@ function App() {
 
       {/* ⬅️ Arcade Menu Sidebar */}
       <nav className="arcade-sidebar">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div className="sidebar-logo">
+          <h1 style={{ fontSize: 48, fontFamily: 'var(--font-header)', fontStyle: 'italic', textTransform: 'uppercase', color: 'var(--accent-yellow)', textShadow: '4px 4px 0 var(--accent-red), 0 0 4px #000', margin: '0 0 50px 0', lineHeight: 0.9 }}>3rd Strike<br/><span style={{ color: '#fff' }}>3SXtra</span></h1>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <button 
             className={`nav-item ${activeTab === 'news' ? 'active' : ''}`} 
             onClick={() => setActiveTab("news")}
@@ -439,38 +469,43 @@ function App() {
           </button>
         </div>
 
-        {/* Global Action Block (Replaces Bottom Bar) */}
-        <div style={{ marginTop: 'auto', width: '100%', paddingRight: 40, paddingBottom: 40 }}>
-          <div className="status-container" style={{ marginBottom: 16, borderLeft: '4px solid var(--accent-red)', paddingLeft: 12 }}>
-            <div className={`status-text ${isUpdating ? 'blink' : ''}`} style={{ color: 'var(--accent-yellow)', fontSize: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px' }}>{status}</div>
+        <div style={{ marginTop: 'auto', marginBottom: 40, paddingRight: 40, opacity: 0.6, fontSize: 14, color: '#fff', fontFamily: 'var(--font-mono)' }}>
+          [Q] / [E] PREV/NEXT TAB
+        </div>
+      </nav>
+
+      {/* 📄 Main Content */}
+      <main className="main-content">
+        <div className="persistent-play-btn" style={{ position: 'fixed', bottom: 40, right: 40, zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', width: 320 }}>
+          <div className="status-container" style={{ marginBottom: 16, textAlign: 'right' }}>
+            <div className={`status-text ${isUpdating ? 'blink' : ''}`} style={{ color: '#fff', fontSize: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', textShadow: '1px 1px 0 #000' }}>{status}</div>
             {isUpdating && (
-              <div className="progress-bar" style={{ height: '100%', background: 'var(--accent-red)', width: `${progress}%` }} />
+              <div style={{ width: '100%', height: 6, background: '#000', border: '1px solid var(--accent-red)' }}>
+                 <div className="progress-bar" style={{ height: '100%', background: 'var(--accent-yellow)', width: `${progress}%` }} />
+              </div>
             )}
           </div>
           <button 
             className="btn-primary" 
             style={{ 
               width: '100%', 
-              textAlign: 'center', 
               justifyContent: 'center', 
-              padding: '16px 0', 
-              fontSize: 24, 
-              whiteSpace: 'nowrap' 
+              padding: '20px 0', 
+              fontSize: 36, 
+              whiteSpace: 'nowrap',
+              boxShadow: '6px 6px 0 rgba(0,0,0,0.8)',
+              cursor: isUpdating ? 'not-allowed' : 'pointer',
+              border: '4px solid #fff'
             }}
             onClick={handlePlay} 
             disabled={isUpdating}
           >
-            {!isGameInstalled ? "INSTALL GAME" : 
-             (isUpdating ? "UPDATING..." : "PLAY")}
+            {!isGameInstalled ? "INSTALL GAME" : (isUpdating ? "UPDATING..." : "PLAY 3SX")}
           </button>
         </div>
-      </nav>
 
-      {/* 📄 Main Content */}
-      <main className="main-content">
         <header className="app-header" data-tauri-drag-region>
-          <h1 className="app-title text-gradient">3rd Strike 3SXtra</h1>
-          <span style={{ fontSize: 14, fontFamily: 'monospace', color: '#fff', textShadow: '1px 1px 0 #000', letterSpacing: '1px' }}>ROLLING RELEASE · {buildDate}</span>
+          <span style={{ fontSize: 14, fontFamily: 'monospace', color: '#fff', textShadow: '1px 1px 0 #000', letterSpacing: '1px', opacity: 0.8 }}>ROLLING RELEASE · {buildDate}</span>
         </header>
 
         <h2 className="page-title">{activeTab.replace('_', ' ')}</h2>
@@ -481,10 +516,19 @@ function App() {
             <div className="news-feed">
               <div className="news-grid">
               {newsFeed.map((news) => (
-              <div key={news.id} className="news-card" style={{ border: '2px solid var(--accent-red)', boxShadow: '4px 4px 0 rgba(0,0,0,0.8)', background: `linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.1) 100%), url(${news.image}) center/cover` }}>
+              <div key={news.id} className="news-card" style={{ border: '2px solid var(--accent-red)', boxShadow: '4px 4px 0 rgba(0,0,0,0.8)', background: `linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.1) 100%), url(${news.image}) center/cover` }}>
                 <span style={{ fontSize: 18, color: 'var(--accent-yellow)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 800, textShadow: '2px 2px 0 #000' }}>{news.tag}</span>
-                <h3 style={{ margin: '12px 0', fontSize: 32, color: '#fff', fontFamily: 'var(--font-header)', fontStyle: 'italic', textTransform: 'uppercase', textShadow: '3px 3px 0 #000', lineHeight: 1.1 }}>{news.title}</h3>
-                <span style={{ fontSize: 18, color: '#aaa', fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '1px' }}>{news.date}</span>
+                <h3 style={{ margin: '8px 0', fontSize: 28, color: '#fff', fontFamily: 'var(--font-header)', fontStyle: 'italic', textTransform: 'uppercase', textShadow: '3px 3px 0 #000', lineHeight: 1.1 }}>{news.title}</h3>
+                <p className="news-summary" style={{ color: '#ccc', fontSize: 15, fontFamily: 'var(--font-main)', margin: '0 0 16px 0', textShadow: '1px 1px 0 #000' }}>{news.summary || "Click below to read more details."}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <button onClick={() => news.url && invoke("open_url", { url: news.url }).catch(console.error)} className="btn-news" style={{
+                    padding: '8px 16px', fontSize: 16, fontFamily: 'var(--font-header)', fontStyle: 'italic', fontWeight: 700,
+                    backgroundColor: 'var(--accent-yellow)', color: '#000', border: 'none', cursor: 'pointer', textTransform: 'uppercase', boxShadow: '2px 2px 0 var(--accent-red)', transition: 'all 0.1s'
+                  }}>
+                    {news.tag.includes("PATCH") ? "Open Patch Notes" : "Read More"}
+                  </button>
+                  <span style={{ fontSize: 14, color: '#aaa', fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '1px' }}>{news.date}</span>
+                </div>
               </div>
                 ))}
               </div>
@@ -500,19 +544,30 @@ function App() {
                 ) : null}
                 
                 {SETTING_CATEGORIES.map((cat) => (
-                  <div key={cat.name} style={{ marginBottom: 20 }}>
-                    <h3 style={{ 
-                      fontSize: 24, 
-                      color: 'var(--text-primary)', 
-                      borderBottom: '4px solid var(--accent-red)', 
-                      paddingBottom: 4, 
-                      marginBottom: 16 
+                  <div key={cat.name} style={{ marginBottom: openCategories[cat.name] ? 24 : 12, background: 'rgba(0,0,0,0.5)', border: `2px solid ${openCategories[cat.name] ? 'var(--accent-yellow)' : 'var(--accent-red)'}`, padding: '16px', transition: 'all 0.2s ease' }}>
+                    <h3 
+                      onClick={() => toggleCategory(cat.name)}
+                      style={{ 
+                      fontSize: 28, 
+                      color: openCategories[cat.name] ? 'var(--accent-yellow)' : 'var(--text-primary)', 
+                      paddingBottom: openCategories[cat.name] ? 16 : 0, 
+                      marginBottom: openCategories[cat.name] ? 16 : 0, 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      userSelect: 'none',
+                      borderBottom: openCategories[cat.name] ? '2px solid rgba(255, 255, 255, 0.1)' : 'none',
+                      transition: 'all 0.2s ease'
                     }}>
-                      {cat.icon} {cat.name}
+                      <span>{cat.icon} {cat.name}</span>
+                      <span style={{ fontSize: 18, transform: openCategories[cat.name] ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', opacity: 0.8 }}>▼</span>
                     </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)', columnGap: '60px', rowGap: '8px' }}>
-                      {cat.settings.map(renderSettingRow)}
-                    </div>
+                    {openCategories[cat.name] && (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(300px, 1fr)', columnGap: '40px', rowGap: '8px' }}>
+                        {cat.settings.map(renderSettingRow)}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

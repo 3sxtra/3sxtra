@@ -44,6 +44,7 @@ bool SDLApp_IsFrameRateUncapped(void);
 
 unsigned int SDLApp_GetPassthruShaderProgram();
 unsigned int SDLApp_GetSceneShaderProgram();
+unsigned int SDLApp_GetHDSceneShaderProgram();
 unsigned int SDLApp_GetSceneArrayShaderProgram();
 
 int SDLApp_GetScaleMode();

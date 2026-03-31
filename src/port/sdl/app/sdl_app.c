@@ -118,6 +118,7 @@ static int g_cli_window_height = 0;
 
 static GLuint passthru_shader_program;
 static GLuint scene_shader_program;
+static GLuint hd_scene_shader_program;
 static GLuint scene_array_shader_program; // ⚡ Bolt: Texture array variant (sampler2DArray)
 static GLuint vao;
 static GLuint vbo;
@@ -570,6 +571,7 @@ int SDLApp_Init() {
     if (g_renderer_backend == RENDERER_OPENGL) {
         passthru_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/blit.vert"), Paths_ResolveAsset("shaders/passthru.frag"));
         scene_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/scene.frag"));
+        hd_scene_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/hd_scene.frag"));
         scene_array_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/scene_array.frag"));
 
         // Create quad
@@ -714,8 +716,8 @@ void SDLApp_Quit() {
             glDeleteVertexArrays(1, &vao);
             glDeleteBuffers(1, &vbo);
             glDeleteProgram(passthru_shader_program);
-
             glDeleteProgram(scene_shader_program);
+            glDeleteProgram(hd_scene_shader_program);
             glDeleteProgram(scene_array_shader_program);
 
             if (s_composition_fbo)
@@ -887,6 +889,24 @@ void SDLApp_EndFrame() {
 
     // Render all queued tasks to the FBO (skip in present-only mode — canvas already has last frame)
     if (!present_only_mode) {
+        if (ModdedStage_IsActiveForCurrentStage()) {
+            ModdedStage_Render(&bg_w);
+
+            // ⚡ SDLGPU: Queue the canvas texture as an overlay quad BEFORE RenderFrame.
+            // RenderFrame uploads all vertex/index data to the GPU. Any quads pushed after
+            // that upload will have no vertex data on the GPU. By queuing here, the canvas
+            // quad is included in the sort + upload, and RenderFrame skips it (overlay!=NULL).
+            // RenderHDPass(false) will then draw it to the swapchain in the foreground pass.
+            if (g_renderer_backend == RENDERER_SDLGPU) {
+                extern void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture* texture, int tex_w, int tex_h,
+                    float x, float y, float w, float h, float z, int flip_x, int flip_y);
+                SDL_GPUTexture* canvas = SDLGameRendererGPU_GetCanvasTexture();
+                if (canvas) {
+                    SDLGameRendererGPU_QueueDeferredBlit(canvas, 384*g_resolution_scale, 224*g_resolution_scale,
+                                                         0, 0, 384, 224, 0.5f, 0, 0);
+                }
+            }
+        }
         SDLGameRenderer_RenderFrame();
     }
 
@@ -946,10 +966,20 @@ void SDLApp_EndFrame() {
         last_had_letterbox_bars =
             (dst_rect.x > 0.5f || dst_rect.y > 0.5f || dst_rect.w < (win_w - 0.5f) || dst_rect.h < (win_h - 0.5f));
 
+        // ⚡ Bolt: Execute Deferred HD Background Pass (Draw behind canvas)
+        if (g_renderer_backend == RENDERER_SDL2D) {
+            SDLGameRenderer_RenderHDPass(dst_rect.x, dst_rect.y, (int)dst_rect.w, (int)dst_rect.h, true);
+        }
+
         // Blit game canvas to window with letterboxing
         SDL_Texture* canvas = (g_renderer_backend == RENDERER_SDL2D_CLASSIC) ? SDLGameRendererClassic_GetCanvas()
                                                                              : SDLGameRendererSDL_GetCanvas();
         SDL_RenderTexture(sdl_renderer, canvas, NULL, &dst_rect);
+
+        // ⚡ Bolt: Execute Deferred HD Foreground Sprite Pass (Draw over canvas)
+        if (g_renderer_backend == RENDERER_SDL2D) {
+            SDLGameRenderer_RenderHDPass(dst_rect.x, dst_rect.y, (int)dst_rect.w, (int)dst_rect.h, false);
+        }
 
         // Bezel rendering (SDL2D)
         SDLAppBezel_RenderSDL2D(sdl_renderer, win_w, win_h, &dst_rect);
@@ -1055,8 +1085,30 @@ void SDLApp_EndFrame() {
                 skip_checked = true;
             }
 
-            // Using new accessor
-            if (SDLAppShader_IsLibretroMode() && SDLAppShader_GetManager() && !skip_librashader) {
+            bool modded_active = ModdedStage_IsActiveForCurrentStage();
+
+            if (modded_active) {
+                // Clear swapchain to black for letterbox bars
+                {
+                    SDL_GPUColorTargetInfo clear_target;
+                    SDL_zero(clear_target);
+                    clear_target.texture = swapchain;
+                    clear_target.load_op = SDL_GPU_LOADOP_CLEAR;
+                    clear_target.store_op = SDL_GPU_STOREOP_STORE;
+                    clear_target.clear_color = (SDL_FColor) { 0.0f, 0.0f, 0.0f, 1.0f };
+                    SDL_GPURenderPass* clear_pass = SDL_BeginGPURenderPass(cb, &clear_target, 1, NULL);
+                    if (clear_pass)
+                        SDL_EndGPURenderPass(clear_pass);
+                }
+
+                // Canvas quad was already queued before RenderFrame (z=0.5, foreground pass).
+                // Stage backgrounds were pushed by ModdedStage_Render (z≈0.05, background pass).
+                // Pass 1: HD Background layers (z < 0.1)
+                SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, true);
+                
+                // Pass 2: Canvas + foreground overlays (z >= 0.1)
+                SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, false);
+            } else if (SDLAppShader_IsLibretroMode() && SDLAppShader_GetManager() && !skip_librashader) {
                 int vp_w = (int)viewport.w;
                 int vp_h = (int)viewport.h;
 
@@ -1093,6 +1145,9 @@ void SDLApp_EndFrame() {
                     s_librashader_intermediate_h = vp_h;
                 }
 
+                // Librashader scaling...
+                // (HD Pass skipped inside pure Libretro block)
+
                 // Two-stage render (matches GL backend):
                 // 1. Librashader renders to intermediate at {0,0}
                 // 2. Raw vkCmdBlitImage copies to swapchain at letterbox offset
@@ -1111,6 +1166,7 @@ void SDLApp_EndFrame() {
                                                       (int)viewport.y);
             } else {
                 // Manual Blit with Scaling
+
                 SDL_GPUBlitInfo blit_info;
                 SDL_zero(blit_info);
                 blit_info.source.texture = canvas;
@@ -1130,7 +1186,7 @@ void SDLApp_EndFrame() {
 
                 SDL_BlitGPUTexture(cb, &blit_info);
             }
-        }
+            }
 
 #if DEBUG
         // Debug Buffer (PS2)
@@ -1202,7 +1258,8 @@ void SDLApp_EndFrame() {
                     glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
                     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
                     glClear(GL_COLOR_BUFFER_BIT);
-                    ModdedStage_Render(&bg_w);
+                    
+                    SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, true);
                 } else {
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
                     glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
@@ -1266,16 +1323,8 @@ void SDLApp_EndFrame() {
                 glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT);
 
-                // 2. Render HD Stage
-                // Note: ModdedStage_Render sets its own viewport if needed, but usually
-                // relies on current viewport. It also sets its own shader/projection.
-                // We need to ensure it draws to our FBO size.
-                // ModdedStage usually draws to "screen", assumes native resolution or viewport.
-                // Here we are drawing to an FBO of size 'viewport.w x viewport.h'.
-                // So glViewport(0,0,w,h) is correct relative to FBO.
-
-                // !!! ModdedStage_Render might change viewport! check/fix if needed
-                ModdedStage_Render(&bg_w);
+                // 2. Render HD Background Pipeline
+                SDLGameRenderer_RenderHDPass(0, 0, comp_w, comp_h, true);
 
                 // 3. Render Game Sprites (cps3_canvas_texture) on top
                 // Use Passthru shader to blit transparency
@@ -1330,11 +1379,10 @@ void SDLApp_EndFrame() {
 
             // --- HD Modded Stage Background (native resolution) ---
             // Draw HD parallax layers BEFORE the canvas blit so they appear
-            // behind all game sprites. The canvas FBO was cleared with alpha=0,
-            // so we enable blending for the blit to composite correctly.
+            // behind all game sprites.
             bool modded_active = ModdedStage_IsActiveForCurrentStage();
             if (modded_active) {
-                ModdedStage_Render(&bg_w);
+                SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, true);
             }
 
             GLuint current_shader = passthru_shader_program;
@@ -1388,6 +1436,10 @@ void SDLApp_EndFrame() {
             if (modded_active) {
                 glDisable(GL_BLEND);
             }
+
+            // ⚡ Bolt: Execute Deferred HD Foreground Sprite Pass
+            // Rendered directly to the screen viewport ON TOP of the upscaled native canvas.
+            SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, false);
         }
         TRACE_SUB_END();
 
@@ -1556,6 +1608,10 @@ unsigned int SDLApp_GetPassthruShaderProgram() {
 /** @brief Get the scene (2D) shader program handle. */
 unsigned int SDLApp_GetSceneShaderProgram() {
     return scene_shader_program;
+}
+
+unsigned int SDLApp_GetHDSceneShaderProgram() {
+    return hd_scene_shader_program;
 }
 
 /** @brief Get the scene texture-array shader program handle. */
