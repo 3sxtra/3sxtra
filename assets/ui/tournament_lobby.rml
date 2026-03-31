@@ -85,15 +85,7 @@
                 </div>
             </div>
 
-            <!-- Spectate button -->
-            <div id="btn-spectate" data-if="!is_playing &amp;&amp; active_match_count > 0 &amp;&amp; !is_spectating"
-                 data-class-focused="cursor_x == 0 &amp;&amp; cursor_y == 0">
-                SPECTATE MATCH
-            </div>
 
-            <div id="spectating-indicator" data-if="is_spectating" class="spectating-badge">
-                [LIVE] SPECTATING...
-            </div>
 
             <!-- TO Controls -->
             <div data-if="is_host" id="to-controls">

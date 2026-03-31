@@ -104,6 +104,7 @@ const MOCK_NEWS: NewsItem[] = [
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>("news");
+  const [newsFeed, setNewsFeed] = useState<NewsItem[]>(MOCK_NEWS);
   const [isUpdating, setIsUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState("CHECKING SYSTEM...");
@@ -179,6 +180,20 @@ function App() {
         setMappings(loadedMappings);
       } catch {
         // First run — no config exists yet
+      }
+
+      // Fetch live news feeds
+      try {
+        const fetchNews = async () => {
+          const res = await fetch("https://raw.githubusercontent.com/3sxtra/3sxtra/main/news.json");
+          if (res.ok) {
+            const liveNews = await res.json();
+            setNewsFeed(liveNews);
+          }
+        };
+        await fetchNews();
+      } catch (err) {
+        console.error("Failed to fetch live news:", err);
       }
 
       // Fetch build date from the engine version manifest
@@ -465,7 +480,7 @@ function App() {
           {activeTab === "news" && (
             <div className="news-feed">
               <div className="news-grid">
-              {MOCK_NEWS.map((news) => (
+              {newsFeed.map((news) => (
               <div key={news.id} className="news-card" style={{ border: '2px solid var(--accent-red)', boxShadow: '4px 4px 0 rgba(0,0,0,0.8)', background: `linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.1) 100%), url(${news.image}) center/cover` }}>
                 <span style={{ fontSize: 18, color: 'var(--accent-yellow)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 800, textShadow: '2px 2px 0 #000' }}>{news.tag}</span>
                 <h3 style={{ margin: '12px 0', fontSize: 32, color: '#fff', fontFamily: 'var(--font-header)', fontStyle: 'italic', textTransform: 'uppercase', textShadow: '3px 3px 0 #000', lineHeight: 1.1 }}>{news.title}</h3>

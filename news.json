@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "tag": "DEVELOPMENT",
+    "title": "Arcade Launcher Beta Integration",
+    "date": "MAR 30, 2026",
+    "image": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    "id": 2,
+    "tag": "PLATFORM",
+    "title": "Automated Cross-Platform CI Pipeline Live",
+    "date": "MAR 30, 2026",
+    "image": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    "id": 3,
+    "tag": "NETPLAY",
+    "title": "Engine Core: ASIO Network Refactoring",
+    "date": "MAR 30, 2026",
+    "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=800"
+  }
+]

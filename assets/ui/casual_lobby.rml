@@ -34,13 +34,7 @@
                         <span class="player-name">{{match_p2_name}}</span>
                     </div>
                 </div>
-                <!-- Spectate Button (only visible if you aren't playing and not already spectating) -->
-                <div id="btn-spectate" data-if="!is_playing && match_active && !is_spectating" data-class-focused="cursor_x == 0 && cursor_y == 0">
-                    SPECTATE MATCH
-                </div>
-                <div id="spectating-indicator" data-if="is_spectating" class="spectating-badge">
-                    [LIVE] SPECTATING...
-                </div>
+
                 <div id="match-idle" data-if="!match_active">CABINET OPEN — JOIN QUEUE TO PLAY</div>
             </div>
 

@@ -427,6 +427,7 @@ static void configure_gekko() {
 
     config.num_players = PLAYER_COUNT;
     config.input_size = sizeof(u16);
+    config.state_size = sizeof(State);
     config.input_prediction_window = 8; // Absolute max 8 per recommendations
 
     config.desync_detection = true;

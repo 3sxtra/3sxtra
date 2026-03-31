@@ -267,35 +267,7 @@
     margin-top: 10dp;
 }
 
-#btn-spectate {
-    display: block;
-    text-align: center;
-    font-size: 10dp;
-    background-color: rgba(30, 30, 80, 200);
-    color: #fff;
-    padding: 2dp 0;
-    margin-top: 2dp;
-    border-width: 1dp;
-    border-color: transparent;
-}
 
-#btn-spectate.focused {
-    background-color: rgba(255, 220, 0, 50);
-    border-color: rgba(255, 210, 40, 240);
-    color: rgba(255, 255, 255, 255);
-}
-
-.spectating-badge {
-    display: block;
-    text-align: center;
-    font-size: 10dp;
-    background-color: rgba(20, 60, 80, 220);
-    color: rgba(100, 230, 255, 255);
-    padding: 2dp 0;
-    margin-top: 2dp;
-    border-width: 1dp;
-    border-color: rgba(100, 200, 255, 180);
-}
 
 /* ─── TO Controls ────────────────────────────────────────────── */
 
