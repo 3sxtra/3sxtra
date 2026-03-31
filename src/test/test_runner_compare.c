@@ -1,5 +1,9 @@
 #if DEBUG
+#if defined(__clang__)
 #pragma clang diagnostic ignored "-Wunused-function"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 
 #include "test/test_runner_compare.h"
 #include "arcade/arcade_constants.h"
