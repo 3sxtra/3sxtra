@@ -43,6 +43,12 @@ jobs:
     with:
       release: true
 
+  build-launcher:
+    name: Build (Launcher)
+    uses: ./.github/workflows/build_launcher.yml
+    with:
+      release: true
+
   package-assets:
     name: Package Assets
     uses: ./.github/workflows/package_assets.yml
@@ -52,7 +58,7 @@ jobs:
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-linux, build-linux-arm64, build-windows, build-macos, build-flatpak, package-assets]
+    needs: [build-linux, build-linux-arm64, build-windows, build-macos, build-flatpak, build-launcher, package-assets]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -99,6 +105,11 @@ jobs:
           | macOS | arm64 | \`3SX-${SHORT_SHA}-macos.dmg\` |
           | Linux (Flatpak) | x86_64 | \`3sx.flatpak\` |
           | All | — | \`3SX-assets-v1-${SHORT_SHA}.zip\` |
+          | **Launcher** | | |
+          | Windows | x86_64 | \`3SX-Launcher-${SHORT_SHA}-windows.exe\` |
+          | macOS | Universal | \`3SX-Launcher-${SHORT_SHA}-macos-universal\` |
+          | Linux | x86_64 | \`3SX-Launcher-${SHORT_SHA}-linux-x86_64\` |
+          | Linux | ARM64 | \`3SX-Launcher-${SHORT_SHA}-linux-arm64\` |
           EOF
 
           if gh release view "${TAG_NAME}" >/dev/null 2>&1; then

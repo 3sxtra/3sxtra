@@ -307,13 +307,16 @@ async fn check_updates() -> Result<Option<UpdateManifest>, String> {
             "linux" 
         };
         
-        if let Some(asset) = release.assets.iter().find(|a| a.name.contains(os_str) && a.name.ends_with(".zip")) {
+        if let Some(asset) = release.assets.iter().find(|a| {
+            a.name.contains(os_str) && !a.name.contains("Launcher") &&
+            (a.name.ends_with(".zip") || a.name.ends_with(".tar.gz") || a.name.ends_with(".dmg"))
+        }) {
             archives.push(ArchiveTask {
                 name: "3SX Core Engine".to_string(),
                 url: asset.browser_download_url.clone(),
                 extract_path: ".".to_string(),
                 marker_file: if cfg!(target_os = "windows") { "3sx.exe".to_string() } else { "3sx".to_string() },
-                strip_root: true, // The release zip has a top-level bin/ directory
+                strip_root: true, // The release archive has a top-level directory
                 force_update: true,
                 version_id: Some(release.published_at.clone()),
             });
@@ -365,10 +368,14 @@ async fn download_and_extract_archive(
     use futures_util::StreamExt;
     use std::io::Write;
     
+    // Determine archive type from URL
+    let is_targz = url.ends_with(".tar.gz") || url.ends_with(".tgz");
+    let temp_ext = if is_targz { "tar.gz" } else { "zip" };
+    
     // Use a robust temporary stream file on disk instead of blasting system RAM!
-    let temp_file_name = format!("{}.zip.part", marker_file.replace("/", "_").replace("\\", "_"));
-    let temp_zip_path = game_root.join(&temp_file_name);
-    let mut file = std::fs::File::create(&temp_zip_path).map_err(|e| format!("Failed to create temp zip: {}", e))?;
+    let temp_file_name = format!("{}.{}.part", marker_file.replace("/", "_").replace("\\", "_"), temp_ext);
+    let temp_path = game_root.join(&temp_file_name);
+    let mut file = std::fs::File::create(&temp_path).map_err(|e| format!("Failed to create temp file: {}", e))?;
     
     let mut downloaded: u64 = 0;
     let mut stream = resp.bytes_stream();
@@ -384,63 +391,103 @@ async fn download_and_extract_archive(
         }
     }
     
-    // Explicitly flush and drop the write handle before unzipping
+    // Explicitly flush and drop the write handle before extracting
     file.flush().unwrap_or_default();
     drop(file);
     
-    let file_reader = std::fs::File::open(&temp_zip_path).map_err(|e| format!("Failed to read temp zip: {}", e))?;
-    
-    let mut archive = match zip::ZipArchive::new(file_reader) {
-        Ok(arc) => arc,
-        Err(e) => {
-            let _ = std::fs::remove_file(&temp_zip_path);
-            return Err(format!("Invalid ZIP: {}", e));
-        }
-    };
-    
     let extract_dir = game_root.join(&extract_path);
     
-    for i in 0..archive.len() {
-        let mut file = match archive.by_index(i) {
-            Ok(f) => f,
-            Err(e) => {
-                let _ = std::fs::remove_file(&temp_zip_path);
-                return Err(format!("Error reading ZIP file {}: {}", i, e));
+    if is_targz {
+        // ── .tar.gz extraction ──────────────────────────────────
+        let tar_file = std::fs::File::open(&temp_path)
+            .map_err(|e| format!("Failed to read temp tar.gz: {}", e))?;
+        let gz_decoder = flate2::read::GzDecoder::new(tar_file);
+        let mut archive = tar::Archive::new(gz_decoder);
+        
+        for entry in archive.entries().map_err(|e| format!("tar read error: {}", e))? {
+            let mut entry = entry.map_err(|e| format!("tar entry error: {}", e))?;
+            let entry_path = entry.path().map_err(|e| format!("tar path error: {}", e))?.into_owned();
+            
+            let stripped_path = if strip_root {
+                let mut components = entry_path.components();
+                let _ = components.next(); // Skip the root dir
+                components.collect::<std::path::PathBuf>()
+            } else {
+                entry_path
+            };
+            
+            if stripped_path.as_os_str().is_empty() {
+                continue;
             }
-        };
-        let out_path = match file.enclosed_name() {
-            Some(path) => path.to_owned(),
-            None => continue,
-        };
-        
-        let stripped_path = if strip_root {
-            let mut components = out_path.components();
-            let _ = components.next(); // Skip the root dir
-            components.collect::<std::path::PathBuf>()
-        } else {
-            out_path
-        };
-        
-        if stripped_path.as_os_str().is_empty() { 
-            continue; 
+            
+            let target_path = extract_dir.join(&stripped_path);
+            
+            if entry.header().entry_type().is_dir() {
+                std::fs::create_dir_all(&target_path).unwrap_or_default();
+            } else {
+                if let Some(p) = target_path.parent() {
+                    std::fs::create_dir_all(p).unwrap_or_default();
+                }
+                if let Ok(mut out_file) = std::fs::File::create(&target_path) {
+                    let _ = std::io::copy(&mut entry, &mut out_file);
+                }
+            }
         }
+    } else {
+        // ── .zip extraction ─────────────────────────────────────
+        let file_reader = std::fs::File::open(&temp_path)
+            .map_err(|e| format!("Failed to read temp zip: {}", e))?;
         
-        let target_path = extract_dir.join(stripped_path);
-        
-        if file.name().ends_with('/') || file.is_dir() {
-            std::fs::create_dir_all(&target_path).unwrap_or_default();
-        } else {
-            if let Some(p) = target_path.parent() {
-                std::fs::create_dir_all(p).unwrap_or_default();
+        let mut archive = match zip::ZipArchive::new(file_reader) {
+            Ok(arc) => arc,
+            Err(e) => {
+                let _ = std::fs::remove_file(&temp_path);
+                return Err(format!("Invalid ZIP: {}", e));
             }
-            if let Ok(mut out_file) = std::fs::File::create(&target_path) {
-                let _ = std::io::copy(&mut file, &mut out_file);
+        };
+        
+        for i in 0..archive.len() {
+            let mut file = match archive.by_index(i) {
+                Ok(f) => f,
+                Err(e) => {
+                    let _ = std::fs::remove_file(&temp_path);
+                    return Err(format!("Error reading ZIP file {}: {}", i, e));
+                }
+            };
+            let out_path = match file.enclosed_name() {
+                Some(path) => path.to_owned(),
+                None => continue,
+            };
+            
+            let stripped_path = if strip_root {
+                let mut components = out_path.components();
+                let _ = components.next(); // Skip the root dir
+                components.collect::<std::path::PathBuf>()
+            } else {
+                out_path
+            };
+            
+            if stripped_path.as_os_str().is_empty() { 
+                continue; 
+            }
+            
+            let target_path = extract_dir.join(stripped_path);
+            
+            if file.name().ends_with('/') || file.is_dir() {
+                std::fs::create_dir_all(&target_path).unwrap_or_default();
+            } else {
+                if let Some(p) = target_path.parent() {
+                    std::fs::create_dir_all(p).unwrap_or_default();
+                }
+                if let Ok(mut out_file) = std::fs::File::create(&target_path) {
+                    let _ = std::io::copy(&mut file, &mut out_file);
+                }
             }
         }
     }
     
-    // Perform cleanup of the massive temp partial zip!
-    let _ = std::fs::remove_file(&temp_zip_path);
+    // Perform cleanup of the temp download file
+    let _ = std::fs::remove_file(&temp_path);
     
     if !game_root.join(&marker_file).exists() {
         return Err(format!("Archive extracted but marker file {} was not found", marker_file));
