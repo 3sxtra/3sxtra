@@ -539,9 +539,6 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
     if (!is_initialized || reqNum < 0 || reqNum >= 65536)
         return false;
 
-    if (!Config_GetBool(CFG_KEY_MODDED_VOICE_ENABLED))
-        return false;
-
     char bank_dir_buf[8];
     const char* bank_dir = NULL;
     
@@ -550,10 +547,10 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
     // The actual character is tracked in g_cseSysWork.SpuBankId[slot].
     if (ptix == 0x7F) {
         /* BGM requests are modded via bgm_mod/, not voice_mod/ — log clearly */
-        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[%s] ModdedSFX Check: req=%d → BGM track (mod via assets/bgm_mod/ folder)", ModdedBGM_GetGameStateString(), reqNum);
+        SDL_Log("[%s] ModdedSFX Check: req=%d → BGM track (mod via assets/bgm_mod/ folder)", ModdedBGM_GetGameStateString(), reqNum);
     } else if (ptix == 0) {
         bank_dir = "SE";
-        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[%s] ModdedSFX Check: req=%d → assets/voice_mod/SE/%d.ogg", ModdedBGM_GetGameStateString(), reqNum, engine_code);
+        SDL_Log("[%s] ModdedSFX Check: req=%d → assets/voice_mod/SE/%d.ogg", ModdedBGM_GetGameStateString(), reqNum, engine_code);
     } else {
         u32 char_data_id = g_cseSysWork.SpuBankId[ptix & 0xF];
         if (char_data_id >= 1 && char_data_id <= 20) {
@@ -561,11 +558,14 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
             // 1=PL00(Gill), 2=PL01(Alex), 3=PL02(Ryu), ...
             snprintf(bank_dir_buf, sizeof(bank_dir_buf), "PL%02d", (int)(char_data_id - 1));
             bank_dir = bank_dir_buf;
-            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[%s] ModdedSFX Check: req=%d → assets/voice_mod/%s/%d.ogg", ModdedBGM_GetGameStateString(), reqNum, bank_dir, engine_code);
+            SDL_Log("[%s] ModdedSFX Check: req=%d → assets/voice_mod/%s/%d.ogg", ModdedBGM_GetGameStateString(), reqNum, bank_dir, engine_code);
         } else {
-            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[%s] ModdedSFX Check: req=%d → assets/voice_mod/%d.ogg (bank slot %d not loaded)", ModdedBGM_GetGameStateString(), reqNum, reqNum, ptix & 0xF);
+            SDL_Log("[%s] ModdedSFX Check: req=%d → assets/voice_mod/%d.ogg (bank slot %d not loaded)", ModdedBGM_GetGameStateString(), reqNum, reqNum, ptix & 0xF);
         }
     }
+
+    if (!Config_GetBool(CFG_KEY_MODDED_VOICE_ENABLED))
+        return false;
 
     if (!sfx_attempted[reqNum]) {
         sfx_attempted[reqNum] = true;
@@ -605,7 +605,7 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
             MIX_Audio* audio = MIX_LoadAudio(mixer, path, false);
             if (audio) {
                 sfx_cache[reqNum] = audio;
-                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[%s] ModdedSFX: Loaded %s for request %X (bank %s, idx %d)", ModdedBGM_GetGameStateString(), path, reqNum, bank_dir ? bank_dir : "?", engine_code);
+                SDL_Log("[%s] ModdedSFX: Loaded %s for request %X (bank %s, idx %d)", ModdedBGM_GetGameStateString(), path, reqNum, bank_dir ? bank_dir : "?", engine_code);
             } else {
                 SDL_Log("[%s] ModdedSFX: Failed to load %s: %s", ModdedBGM_GetGameStateString(), path, SDL_GetError());
             }

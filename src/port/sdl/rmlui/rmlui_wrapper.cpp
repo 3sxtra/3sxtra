@@ -514,13 +514,16 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
         std::string exe_base = (base_path ? std::string(base_path) : std::string());
         std::string lua_base1 = exe_base + "lua/";
         std::string lua_base2 = exe_base + "assets/lua/";
+        std::string lua_base3 = exe_base + "assets/lua/3rd_training_lua-main/";
         // Normalize backslashes to forward slashes — Lua interprets '\' as
         // escape sequences inside string literals (e.g. '\3' → ETX char).
         for (auto& ch : lua_base1) { if (ch == '\\') ch = '/'; }
         for (auto& ch : lua_base2) { if (ch == '\\') ch = '/'; }
+        for (auto& ch : lua_base3) { if (ch == '\\') ch = '/'; }
         std::string lua_setup = "package.path = '" + 
                                 lua_base1 + "?.lua;" + lua_base1 + "?/init.lua;" +
-                                lua_base2 + "?.lua;" + lua_base2 + "?/init.lua;' .. package.path\n"
+                                lua_base2 + "?.lua;" + lua_base2 + "?/init.lua;" +
+                                lua_base3 + "?.lua;" + lua_base3 + "?/init.lua;' .. package.path\n"
                                 "joypad = require('compat.joypad')\n"
                                 "emu    = require('compat.emu')\n"
                                 "gui    = require('compat.gui')\n"
