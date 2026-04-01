@@ -15,6 +15,7 @@
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "port/sdl/renderer/sdl_game_renderer_sdl_sw.h"
 #include "port/tracy_zones.h"
+#include "port/mods/modded_stage.h"
 #include "sf33rd/AcrSDK/ps2/flps2etc.h"
 #include "sf33rd/AcrSDK/ps2/flps2render.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
