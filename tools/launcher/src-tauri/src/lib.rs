@@ -22,7 +22,7 @@ struct GitHubAsset {
 #[allow(dead_code)]
 struct GitHubRelease {
     name: String,
-    published_at: String,
+    created_at: String,
     assets: Vec<GitHubAsset>,
 }
 
@@ -298,7 +298,7 @@ async fn check_updates() -> Result<Option<UpdateManifest>, String> {
     }
     
     // ── Engine Binary ──────────────────────────────────────────
-    if local_version.trim() != release.published_at.trim() {
+    if local_version.trim() != release.created_at.trim() {
         let os_str = if cfg!(target_os = "windows") {
             "windows"
         } else if cfg!(target_os = "macos") {
@@ -318,13 +318,13 @@ async fn check_updates() -> Result<Option<UpdateManifest>, String> {
                 marker_file: if cfg!(target_os = "windows") { "3sx.exe".to_string() } else { "3sx".to_string() },
                 strip_root: true, // The release archive has a top-level directory
                 force_update: true,
-                version_id: Some(release.published_at.clone()),
+                version_id: Some(release.created_at.clone()),
             });
         }
     }
     
     Ok(Some(UpdateManifest {
-        version: release.published_at,
+        version: release.created_at,
         archives: Some(archives),
     }))
 }
@@ -336,13 +336,46 @@ fn check_file_exists(path: String) -> Result<bool, String> {
 
 #[tauri::command]
 fn get_local_version() -> Result<String, String> {
+    // 1. Check launcher_version.txt (written by auto-updater downloads)
     let version_file = get_game_root().join("launcher_version.txt");
     if version_file.exists() {
         if let Ok(content) = std::fs::read_to_string(&version_file) {
-            return Ok(content.trim().to_string());
+            let trimmed = content.trim();
+            if !trimmed.is_empty() {
+                return Ok(trimmed.to_string());
+            }
+        }
+    }
+    // 2. Fall back to engine exe modification time (for local builds)
+    let exe_name = format!("3sx{}", std::env::consts::EXE_SUFFIX);
+    let exe_path = get_game_root().join(exe_name);
+    if let Ok(meta) = std::fs::metadata(&exe_path) {
+        if let Ok(modified) = meta.modified() {
+            let duration = modified.duration_since(std::time::UNIX_EPOCH).unwrap_or_default();
+            let secs = duration.as_secs() as i64;
+            // Simple UTC date calculation (no external deps needed)
+            let days = secs / 86400;
+            let y = (10000 * days + 14780) / 3652425;
+            let doy = days - (365 * y + y / 4 - y / 100 + y / 400);
+            let (y, doy) = if doy < 0 {
+                let y = y - 1;
+                (y, days - (365 * y + y / 4 - y / 100 + y / 400))
+            } else {
+                (y, doy)
+            };
+            let mi = (100 * doy + 52) / 3060;
+            let month = mi + 3 - 12 * (mi / 10);
+            let year = y + mi / 10;
+            let day = doy - (mi * 306 + 5) / 10 + 1;
+            return Ok(format!("{:04}-{:02}-{:02}", year, month, day));
         }
     }
     Ok("UNKNOWN".to_string())
+}
+
+#[tauri::command]
+fn get_launcher_build_date() -> Result<String, String> {
+    Ok(env!("LAUNCHER_BUILD_DATE").to_string())
 }
 
 #[tauri::command]
@@ -516,7 +549,8 @@ pub fn run() {
             check_updates,
             download_and_extract_archive,
             check_file_exists,
-            get_local_version
+            get_local_version,
+            get_launcher_build_date
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

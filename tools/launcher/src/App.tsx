@@ -117,6 +117,7 @@ function App() {
   const [mappings, setMappings] = useState<GameConfig[]>([]);
   const [isGameInstalled, setIsGameInstalled] = useState(true);
   const [buildDate, setBuildDate] = useState("UNKNOWN");
+  const [launcherDate, setLauncherDate] = useState("UNKNOWN");
 
   const performUpdate = async () => {
     setStatus("CHECKING FOR UPDATES...");
@@ -235,6 +236,14 @@ function App() {
         }
       } catch (err) {
         console.error("Failed to fetch local version", err);
+      }
+
+      // Fetch launcher build date (compile-time constant)
+      try {
+        const lbd = await invoke("get_launcher_build_date") as string;
+        if (lbd) setLauncherDate(lbd);
+      } catch (err) {
+        console.error("Failed to fetch launcher build date", err);
       }
 
       // 2. Check if game is installed
@@ -502,10 +511,10 @@ function App() {
           >
             {!isGameInstalled ? "INSTALL GAME" : (isUpdating ? "UPDATING..." : "PLAY 3SX")}
           </button>
+          <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#fff', textShadow: '1px 1px 0 #000', letterSpacing: '1px', opacity: 0.5, marginTop: 10, textAlign: 'right' }}>ENGINE {buildDate} · LAUNCHER {launcherDate}</span>
         </div>
 
         <header className="app-header" data-tauri-drag-region>
-          <span style={{ fontSize: 14, fontFamily: 'monospace', color: '#fff', textShadow: '1px 1px 0 #000', letterSpacing: '1px', opacity: 0.8 }}>ROLLING RELEASE · {buildDate}</span>
         </header>
 
         <h2 className="page-title">{activeTab.replace('_', ' ')}</h2>
