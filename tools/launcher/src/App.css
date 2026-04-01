@@ -12,9 +12,8 @@
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   /* Gritty dark red to black scanline gradient */
-  background: radial-gradient(circle at center, rgba(30, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.95) 100%),
-              repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.6) 2px, rgba(0,0,0,0.6) 4px);
-  background-color: rgba(0, 0, 0, 0.6);
+  background: radial-gradient(circle at center, rgba(30, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.75) 100%),
+              repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.3) 2px, rgba(0,0,0,0.3) 4px);
   pointer-events: none;
 }
 
@@ -59,7 +58,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 300px;
+  width: 380px;
   height: 100vh;
   padding: 40px 0 0 30px;
   box-sizing: border-box;
@@ -107,8 +106,8 @@
 .main-content {
   position: absolute;
   top: 0;
-  left: 300px;
-  width: calc(100% - 300px);
+  left: 380px;
+  width: calc(100% - 380px);
   height: 100vh; 
   box-sizing: border-box;
   display: flex;
@@ -139,11 +138,12 @@
   flex-direction: column;
   justify-content: flex-end;
   position: relative;
+  z-index: 1; /* Establishes stacking context */
   overflow: hidden;
   animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) backwards;
   border-radius: 0px; 
   border: 2px solid var(--accent-red);
-  background: rgba(0,0,0,0.5);
+  background: transparent;
   box-shadow: 4px 4px 0px rgba(204, 28, 16, 0.4);
 }
 
@@ -181,7 +181,7 @@
 
 .news-summary {
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;

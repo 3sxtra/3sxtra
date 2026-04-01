@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { listen } from "@tauri-apps/api/event";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { Remapper } from "./components/Remapper";
 import "./App.css";
 
@@ -54,7 +55,11 @@ const SETTING_CATEGORIES: SettingCategory[] = [
     icon: "🎨",
     settings: [
       { key: "scale-mode", label: "Scale Mode", type: "select", options: [
-        { label: "Nearest", value: "nearest" }, { label: "Linear", value: "linear" }
+        { label: "Nearest", value: "nearest" }, 
+        { label: "Linear", value: "linear" },
+        { label: "Soft Linear", value: "soft-linear" },
+        { label: "Integer", value: "integer" },
+        { label: "Square Pixels", value: "square-pixels" }
       ]},
       { key: "hd-stages", label: "HD Stages", type: "bool" },
       { key: "bezel-enabled", label: "Bezel", type: "bool" },
@@ -98,18 +103,12 @@ const SETTING_CATEGORIES: SettingCategory[] = [
   },
 ];
 
-const MOCK_NEWS: NewsItem[] = [
-  { id: 1, tag: "PATCH NOTES", title: "v1.4.2: Netplay Stability & PS3 Fixes", summary: "Critical LAN netplay stability changes and HD composition updates live now.", url: "https://github.com/3sxtra/3sxtra/releases", date: "MAR 30, 2026", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800" },
-  { id: 2, tag: "TOURNAMENT", title: "Friday Night FT3 - Registration Open", summary: "Sign up for this week's 3SX ranbat tournament, hosted on GekkoNet.", url: "https://challonge.com", date: "APR 02, 2026", image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=800" },
-  { id: 3, tag: "MOD PACK", title: "SF3 3SX: HD Stage Pack Vol. 1", summary: "Download the officially curated high-resolution stage modpack for 3SX.", url: "https://github.com/3sxtra/3sxtra", date: "MAR 25, 2026", image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800" },
-];
-
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>("news");
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
     Window: true, Rendering: false, Netplay: false, Training: false, Mods: false
   });
-  const [newsFeed, setNewsFeed] = useState<NewsItem[]>(MOCK_NEWS);
+  const [newsFeed, setNewsFeed] = useState<NewsItem[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState("CHECKING SYSTEM...");
@@ -212,9 +211,33 @@ function App() {
       // Fetch live news feeds
       try {
         const fetchNews = async () => {
-          const res = await fetch("https://raw.githubusercontent.com/3sxtra/3sxtra/main/news.json");
+          const res = await fetch("https://api.github.com/repos/3sxtra/3sxtra/commits?per_page=3");
           if (res.ok) {
-            const liveNews = await res.json();
+            const commits = await res.json();
+            const bgImages = [
+              "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=600",
+              "https://images.unsplash.com/photo-1534423861386-85a16f5d13fd?auto=format&fit=crop&q=80&w=600",
+              "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=600"
+            ];
+
+            const liveNews = commits.map((commitData: any, index: number) => {
+              const messageParts = commitData.commit.message.split('\n');
+              const title = messageParts[0];
+              const summaryRaw = messageParts.slice(1).join(' ').replace(/\*/g, '').replace(/(\r\n|\n|\r)/gm, ' ').replace(/\s+/g, ' ').trim();
+              const summary = summaryRaw.length > 130 ? summaryRaw.substring(0, 127) + "..." : summaryRaw || "Routine patches and stability improvements pushed to the 3SX engine.";
+              const dateRaw = new Date(commitData.commit.author.date);
+              const dateFormatted = dateRaw.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase();
+              
+              return {
+                id: index + 1,
+                tag: "DEV UPDATE",
+                title: title.length > 50 ? title.substring(0, 47) + "..." : title,
+                summary: summary,
+                url: commitData.html_url,
+                date: dateFormatted,
+                image: bgImages[index % bgImages.length]
+              };
+            });
             setNewsFeed(liveNews);
           }
         };
@@ -478,15 +501,8 @@ function App() {
           </button>
         </div>
 
-        <div style={{ marginTop: 'auto', marginBottom: 40, paddingRight: 40, opacity: 0.6, fontSize: 14, color: '#fff', fontFamily: 'var(--font-mono)' }}>
-          [Q] / [E] PREV/NEXT TAB
-        </div>
-      </nav>
-
-      {/* 📄 Main Content */}
-      <main className="main-content">
-        <div className="persistent-play-btn" style={{ position: 'fixed', bottom: 40, right: 40, zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', width: 320 }}>
-          <div className="status-container" style={{ marginBottom: 16, textAlign: 'right' }}>
+        <div className="persistent-play-btn" style={{ marginTop: 'auto', marginBottom: 24, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: 320 }}>
+          <div className="status-container" style={{ marginBottom: 16, width: '100%' }}>
             <div className={`status-text ${isUpdating ? 'blink' : ''}`} style={{ color: '#fff', fontSize: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', textShadow: '1px 1px 0 #000' }}>{status}</div>
             {isUpdating && (
               <div style={{ width: '100%', height: 6, background: '#000', border: '1px solid var(--accent-red)' }}>
@@ -511,9 +527,16 @@ function App() {
           >
             {!isGameInstalled ? "INSTALL GAME" : (isUpdating ? "UPDATING..." : "PLAY 3SX")}
           </button>
-          <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#fff', textShadow: '1px 1px 0 #000', letterSpacing: '1px', opacity: 0.5, marginTop: 10, textAlign: 'right' }}>ENGINE {buildDate} · LAUNCHER {launcherDate}</span>
+          <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#fff', textShadow: '1px 1px 0 #000', letterSpacing: '1px', opacity: 0.5, marginTop: 10, alignSelf: 'center' }}>ENGINE {buildDate} · LAUNCHER {launcherDate}</span>
         </div>
 
+        <div style={{ marginBottom: 40, opacity: 0.6, fontSize: 14, color: '#fff', fontFamily: 'var(--font-mono)' }}>
+          [Q] / [E] PREV/NEXT TAB
+        </div>
+      </nav>
+
+      {/* 📄 Main Content */}
+      <main className="main-content">
         <header className="app-header" data-tauri-drag-region>
         </header>
 
@@ -525,20 +548,27 @@ function App() {
             <div className="news-feed">
               <div className="news-grid">
               {newsFeed.map((news) => (
-              <div key={news.id} className="news-card" style={{ border: '2px solid var(--accent-red)', boxShadow: '4px 4px 0 rgba(0,0,0,0.8)', background: `linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.1) 100%), url(${news.image}) center/cover` }}>
-                <span style={{ fontSize: 18, color: 'var(--accent-yellow)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 800, textShadow: '2px 2px 0 #000' }}>{news.tag}</span>
-                <h3 style={{ margin: '8px 0', fontSize: 28, color: '#fff', fontFamily: 'var(--font-header)', fontStyle: 'italic', textTransform: 'uppercase', textShadow: '3px 3px 0 #000', lineHeight: 1.1 }}>{news.title}</h3>
-                <p className="news-summary" style={{ color: '#ccc', fontSize: 15, fontFamily: 'var(--font-main)', margin: '0 0 16px 0', textShadow: '1px 1px 0 #000' }}>{news.summary || "Click below to read more details."}</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <button onClick={() => news.url && invoke("open_url", { url: news.url }).catch(console.error)} className="btn-news" style={{
-                    padding: '8px 16px', fontSize: 16, fontFamily: 'var(--font-header)', fontStyle: 'italic', fontWeight: 700,
-                    backgroundColor: 'var(--accent-yellow)', color: '#000', border: 'none', cursor: 'pointer', textTransform: 'uppercase', boxShadow: '2px 2px 0 var(--accent-red)', transition: 'all 0.1s'
-                  }}>
-                    {news.tag.includes("PATCH") ? "Open Patch Notes" : "Read More"}
-                  </button>
-                  <span style={{ fontSize: 14, color: '#aaa', fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '1px' }}>{news.date}</span>
+                <div key={news.id} className="news-card" style={{ border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', background: 'transparent' }}>
+                  <img src={news.image} alt={news.title} className="news-card-img" />
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: -1, background: 'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, rgba(0,0,0,0.1) 100%)' }} />
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: 13, color: 'var(--accent-yellow)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 800 }}>{news.tag}</span>
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '1px' }}>{news.date}</span>
+                  </div>
+                  
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: 26, color: '#fff', fontFamily: 'var(--font-header)', fontStyle: 'italic', textTransform: 'uppercase', letterSpacing: '0.5px', textShadow: '2px 2px 0 rgba(0,0,0,0.8)', lineHeight: 1 }}>{news.title}</h3>
+                  <p className="news-summary" style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontFamily: 'var(--font-main)', margin: '0 0 20px 0', lineHeight: 1.4, textShadow: '1px 1px 0 #000' }}>{news.summary}</p>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <button onClick={() => news.url && openUrl(news.url).catch(console.error)} className="btn-news" style={{
+                      padding: '8px 24px', fontSize: 14, fontFamily: 'var(--font-header)', fontStyle: 'italic', fontWeight: 800,
+                      backgroundColor: 'transparent', color: '#fff', border: '2px solid var(--accent-red)', cursor: 'pointer', textTransform: 'uppercase', boxShadow: '0 0 0 transparent', transition: 'all 0.15s'
+                    }}>
+                      {news.tag.includes("PATCH") ? "PATCH NOTES" : "READ FULL"}
+                    </button>
+                  </div>
                 </div>
-              </div>
                 ))}
               </div>
             </div>

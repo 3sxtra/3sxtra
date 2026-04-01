@@ -29,8 +29,9 @@ export function Remapper({ onMappingSaved, currentMappings }: Props) {
       
       try {
         await invoke("save_mapping", { 
-          key: `p1_mapping_${bindingAction.toLowerCase()}`, 
-          value: `${bindingAction},${inputId}` 
+          player: "p1",
+          action: bindingAction, 
+          input: inputId 
         });
         setBindingAction(null);
         onMappingSaved();

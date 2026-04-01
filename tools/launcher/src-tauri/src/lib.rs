@@ -57,7 +57,9 @@ fn get_game_root() -> PathBuf {
         if let Some(exe_dir) = exe_path.parent() {
             // Release layout: launcher is in game root directly
             let release_marker = exe_dir.join("assets").join("ASSET_VERSION");
-            if release_marker.exists() {
+            let release_marker_win = exe_dir.join("3sx.exe");
+            let release_marker_unix = exe_dir.join("3sx");
+            if release_marker.exists() || release_marker_win.exists() || release_marker_unix.exists() {
                 return exe_dir.to_path_buf();
             }
 
@@ -65,7 +67,7 @@ fn get_game_root() -> PathBuf {
             // Walk up directories (up to 6 levels mapping back to repo root)
             let mut current = exe_dir.to_path_buf();
             for _ in 0..6 {
-                if current.join("assets").join("ASSET_VERSION").exists() {
+                if current.join("assets").join("ASSET_VERSION").exists() || (current.join("package.json").exists() && current.join("src-tauri").exists()) {
                     return std::fs::canonicalize(&current).unwrap_or(current.clone());
                 }
                 if let Some(parent) = current.parent() {
@@ -221,21 +223,37 @@ fn get_mappings() -> Result<Vec<GameConfig>, String> {
 }
 
 #[tauri::command]
-fn save_mapping(key: String, value: String) -> Result<(), String> {
+fn save_mapping(player: String, action: String, input: String) -> Result<(), String> {
     let path = get_mappings_file_path();
 
     if let Some(parent) = path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
 
-    let mut conf = if path.exists() {
-        Ini::load_from_file(&path).unwrap_or_default()
-    } else {
-        Ini::new()
-    };
+    let mut lines = Vec::new();
+    if path.exists() {
+        if let Ok(content) = std::fs::read_to_string(&path) {
+            lines = content.lines().map(|s| s.to_string()).collect();
+        }
+    }
 
-    conf.with_section(None::<String>).set(&key, &value);
-    conf.write_to_file(&path).map_err(|e| e.to_string())
+    let prefix = format!("{}_mapping=", player);
+    let target_start = format!("{}{},", prefix, action);
+
+    let mut replaced = false;
+    for line in lines.iter_mut() {
+        if line.starts_with(&target_start) {
+            *line = format!("{}{},{}", prefix, action, input);
+            replaced = true;
+            break;
+        }
+    }
+
+    if !replaced {
+        lines.push(format!("{}{},{}", prefix, action, input));
+    }
+
+    std::fs::write(&path, lines.join("\n")).map_err(|e| e.to_string())
 }
 
 // ────────────────────────────────────────────────────────────
