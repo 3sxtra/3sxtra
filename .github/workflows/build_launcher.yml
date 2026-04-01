@@ -109,25 +109,25 @@ jobs:
         run: npm ci
 
       # ── Build ────────────────────────────────────────────────
-      - name: Build frontend
-        working-directory: tools/launcher
-        run: npm run build
+      # Use `npx tauri build` instead of raw `cargo build` so that
+      # the Vite frontend dist is embedded into the release binary.
+      # Plain `cargo build` produces a dev binary that expects localhost:1420.
 
       - name: Build Tauri (macOS universal)
         if: matrix.label == 'macos-universal'
-        working-directory: tools/launcher/src-tauri
+        working-directory: tools/launcher
         run: |
-          cargo build --release --target aarch64-apple-darwin
-          cargo build --release --target x86_64-apple-darwin
-          mkdir -p target/universal-apple-darwin/release
+          npx tauri build --target aarch64-apple-darwin --no-bundle
+          npx tauri build --target x86_64-apple-darwin --no-bundle
+          mkdir -p src-tauri/target/universal-apple-darwin/release
           lipo -create \
-            target/aarch64-apple-darwin/release/launcher \
-            target/x86_64-apple-darwin/release/launcher \
-            -output target/universal-apple-darwin/release/launcher
+            src-tauri/target/aarch64-apple-darwin/release/launcher \
+            src-tauri/target/x86_64-apple-darwin/release/launcher \
+            -output src-tauri/target/universal-apple-darwin/release/launcher
 
       - name: Build Tauri (Linux ARM64 cross)
         if: matrix.label == 'linux-arm64'
-        working-directory: tools/launcher/src-tauri
+        working-directory: tools/launcher
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
           CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
@@ -135,12 +135,12 @@ jobs:
           PKG_CONFIG_PATH_aarch64_unknown_linux_gnu: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
           PKG_CONFIG_LIBDIR_aarch64_unknown_linux_gnu: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
           PKG_CONFIG_ALLOW_CROSS: 1
-        run: cargo build --release --target ${{ matrix.target }}
+        run: npx tauri build --target ${{ matrix.target }} --no-bundle
 
       - name: Build Tauri (native)
         if: matrix.label != 'linux-arm64' && matrix.label != 'macos-universal'
-        working-directory: tools/launcher/src-tauri
-        run: cargo build --release --target ${{ matrix.target }}
+        working-directory: tools/launcher
+        run: npx tauri build --target ${{ matrix.target }} --no-bundle
 
       # ── Package ──────────────────────────────────────────────
       - name: Rename artifact
