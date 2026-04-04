@@ -1,0 +1,96 @@
+name: Build Arcade (Linux ARM64)
+
+on:
+    workflow_dispatch:
+    pull_request:
+        branches: [ "main" ]
+
+concurrency:
+    group: build-linux-arm64-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+        name: Build Arcade (Linux ARM64 cross-compile)
+        runs-on: ubuntu-latest
+        container:
+            image: debian:bookworm
+
+        steps:
+          - name: Install tools and cross-compiler
+            env:
+                DEBIAN_FRONTEND: noninteractive
+            run: |
+                dpkg --add-architecture arm64
+                apt-get update
+                apt-get install -y \
+                    git curl xz-utils bzip2 nodejs \
+                    cmake ninja-build make pkg-config file \
+                    crossbuild-essential-arm64 \
+                    zlib1g-dev:arm64 \
+                    libasound2-dev:arm64 \
+                    libdrm-dev:arm64 libgbm-dev:arm64 \
+                    libgles2-mesa-dev:arm64 libegl1-mesa-dev:arm64 \
+                    libudev-dev:arm64 libdbus-1-dev:arm64 \
+                    libx11-dev:arm64 libxext-dev:arm64 \
+                    libxrandr-dev:arm64 libxcursor-dev:arm64 \
+                    libxfixes-dev:arm64 libxi-dev:arm64 \
+                    libxss-dev:arm64 libxtst-dev:arm64 \
+                    libxkbcommon-dev:arm64
+
+          - name: Checkout repository
+            uses: actions/checkout@v4
+            with:
+                submodules: true
+
+          - name: Cache dependencies
+            uses: actions/cache@v4
+            with:
+                path: third_party_arm64
+                key: linux-arm64-deps-v1-${{ hashFiles('build-deps-arm64.sh') }}
+
+          - name: Build dependencies (cross-compile)
+            run: |
+                chmod +x ./build-deps-arm64.sh
+                ./build-deps-arm64.sh
+            shell: bash
+
+          - name: Build for Linux ARM64
+            env:
+                PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+                PKG_CONFIG_LIBDIR: /usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            run: |
+                set -o pipefail
+                cmake -B build-arm64 \
+                    -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-linux-gnu.cmake \
+                    -DCMAKE_BUILD_TYPE=Release \
+                    -DTHIRD_PARTY_DIR=$GITHUB_WORKSPACE/third_party_arm64 \
+                    -G Ninja
+                cmake --build build-arm64 --parallel 2>&1 | tee build.log
+            shell: bash
+
+          - name: Verify binary architecture
+            run: |
+                file build-arm64/3sx
+                file build-arm64/3sx | grep -q "aarch64" \
+                    && echo "✅ ARM64 binary confirmed" \
+                    || (echo "❌ Not an ARM64 binary!" && exit 1)
+
+          - name: Package release
+            run: |
+                cd build-arm64
+                cpack -G TGZ --config CPackConfig.cmake
+                ls -lh *.tar.gz
+
+          - name: Upload release artifact
+            uses: actions/upload-artifact@v4
+            with:
+                name: 3sx-linux-arm64
+                path: build-arm64/*.tar.gz
+
+          - name: Upload build log
+            if: always()
+            uses: actions/upload-artifact@v4
+            with:
+                name: build-log-arm64
+                path: build.log
