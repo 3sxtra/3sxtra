@@ -6,27 +6,36 @@ on:
         branches: [ "main" ]
 
 concurrency:
-    group: build-linux-arm64-${{ github.ref }}
+    group: build-arcade-linux-arm64-${{ github.ref }}
     cancel-in-progress: true
 
 jobs:
     build:
         name: Build Arcade (Linux ARM64 cross-compile)
-        runs-on: ubuntu-latest
-        container:
-            image: debian:bookworm
+        runs-on: ubuntu-24.04
 
         steps:
-          - name: Install tools and cross-compiler
-            env:
-                DEBIAN_FRONTEND: noninteractive
+          - name: Setup ARM64 cross-compilation
             run: |
-                dpkg --add-architecture arm64
-                apt-get update
-                apt-get install -y \
-                    git curl xz-utils bzip2 nodejs \
-                    cmake ninja-build make pkg-config file \
-                    crossbuild-essential-arm64 \
+                sudo dpkg --add-architecture arm64
+
+                # Pin existing DEB822 sources to amd64-only (Ubuntu 24.04 format)
+                for f in /etc/apt/sources.list.d/*.sources; do
+                    if [ -f "$f" ] && ! grep -q 'Architectures:' "$f"; then
+                        sudo sed -i '/^Types:/a Architectures: amd64' "$f"
+                    fi
+                done
+
+                # Add arm64 sources from ports.ubuntu.com
+                printf '%s\n' \
+                    'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main restricted universe multiverse' \
+                    'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main restricted universe multiverse' \
+                    'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main restricted universe multiverse' \
+                    | sudo tee /etc/apt/sources.list.d/arm64-ports.list
+
+                sudo apt-get update
+                sudo apt-get install -y \
+                    crossbuild-essential-arm64 clang \
                     zlib1g-dev:arm64 \
                     libasound2-dev:arm64 \
                     libdrm-dev:arm64 libgbm-dev:arm64 \
