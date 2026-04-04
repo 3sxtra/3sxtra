@@ -112,7 +112,7 @@ endif()
 # Dependencies
 # ======================================
 
-set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/third_party")
+set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/third_party" CACHE PATH "Path to third-party dependencies")
 find_package(ZLIB REQUIRED)
 
 set(FFMPEG_ROOT        "${THIRD_PARTY_DIR}/ffmpeg/build")
