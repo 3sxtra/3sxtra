@@ -1,4 +1,4 @@
-name: Build (Linux ARM64)
+name: Build Arcade (Linux ARM64)
 
 on:
     workflow_dispatch:
@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
     build:
-        name: Build (Linux ARM64 cross-compile)
+        name: Build Arcade (Linux ARM64 cross-compile)
         runs-on: ubuntu-latest
         container:
             image: debian:bookworm
