@@ -241,6 +241,7 @@ static RendererBackend g_renderer_backend = RENDERER_OPENGL; // SDL_GPU opt-in v
 #endif
 static SDL_GPUDevice* gpu_device = NULL;
 static SDL_Renderer* sdl_renderer = NULL; // Only used in SDL2D mode
+static bool g_cli_renderer_set = false;
 
 static Uint64 frame_deadline = 0;
 static Uint64 frame_counter = 0;
@@ -283,6 +284,16 @@ int SDLApp_Init() {
     const char* cfg_scale = Config_GetString(CFG_KEY_SCALEMODE);
     if (cfg_scale) {
         scale_mode = config_string_to_scale_mode(cfg_scale);
+    }
+
+    if (!g_cli_renderer_set) {
+        const char* cfg_renderer = Config_GetString(CFG_KEY_RENDERER);
+        if (cfg_renderer && cfg_renderer[0] != '\0' && strcmp(cfg_renderer, "auto") != 0) {
+            if (strcmp(cfg_renderer, "gpu") == 0) g_renderer_backend = RENDERER_SDLGPU;
+            else if (strcmp(cfg_renderer, "sdl") == 0 || strcmp(cfg_renderer, "sdl2d") == 0) g_renderer_backend = RENDERER_SDL2D;
+            else if (strcmp(cfg_renderer, "classic") == 0) g_renderer_backend = RENDERER_SDL2D_CLASSIC;
+            else if (strcmp(cfg_renderer, "gl") == 0) g_renderer_backend = RENDERER_OPENGL;
+        }
     }
 
     show_debug_hud = Config_GetBool(CFG_KEY_DEBUG_HUD); // defined in sdl_app_debug_hud.c
@@ -1693,6 +1704,7 @@ void SDLApp_SetWindowSize(int width, int height) {
 
 void SDLApp_SetRenderer(RendererBackend backend) {
     g_renderer_backend = backend;
+    g_cli_renderer_set = true;
 }
 
 RendererBackend SDLApp_GetRenderer(void) {
