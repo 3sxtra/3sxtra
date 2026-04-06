@@ -286,13 +286,15 @@ void SDLGameRendererGL_Init() {
 
     tcache_live_init();
 
-    glGenBuffers(1, &gl_state.palette_buffer);
-    glBindBuffer(GL_TEXTURE_BUFFER, gl_state.palette_buffer);
-    glBufferData(GL_TEXTURE_BUFFER, PALETTE_BUFFER_SIZE, NULL, GL_DYNAMIC_DRAW);
-
+    // GL_TEXTURE_BUFFER is not supported natively on GLES 3.0 devices.
+    // We use a regular GL_TEXTURE_2D where each row is a 256-color palette.
     glGenTextures(1, &gl_state.palette_tbo);
-    glBindTexture(GL_TEXTURE_BUFFER, gl_state.palette_tbo);
-    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, gl_state.palette_buffer);
+    glBindTexture(GL_TEXTURE_2D, gl_state.palette_tbo);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, 256, FL_PALETTE_MAX);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     for (int i = 0; i < FL_PALETTE_MAX; ++i) {
         gl_state.palette_slots[i] = -1;
@@ -339,8 +341,6 @@ void SDLGameRendererGL_Shutdown() {
         glDeleteTextures(1, &gl_state.tex_array_rgba_id);
     if (gl_state.palette_tbo)
         glDeleteTextures(1, &gl_state.palette_tbo);
-    if (gl_state.palette_buffer)
-        glDeleteBuffers(1, &gl_state.palette_buffer);
 }
 
 void SDLGameRendererGL_CreateTexture(unsigned int th) {
@@ -489,9 +489,9 @@ void SDLGameRendererGL_CreatePalette(unsigned int ph) {
         break;
     }
 
-    glBindBuffer(GL_TEXTURE_BUFFER, gl_state.palette_buffer);
-    glBufferSubData(GL_TEXTURE_BUFFER, slot * 256 * 4 * sizeof(float), color_count * 4 * sizeof(float), color_data);
-    glBindBuffer(GL_TEXTURE_BUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, gl_state.palette_tbo);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, slot, color_count, 1, GL_RGBA, GL_FLOAT, color_data);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     // ⚡ Bolt: SIMD float→u8 pack — 4 colors (16 floats → 16 bytes) per iteration
     SDL_Color sdl_colors[256];

@@ -56,7 +56,6 @@ typedef struct {
     int16_t tex_array_rgba_layer[FL_TEXTURE_MAX][FL_PALETTE_MAX + 1];
 
     GLuint palette_tbo;
-    GLuint palette_buffer;
     int palette_slots[FL_PALETTE_MAX];
     bool palette_slot_free[FL_PALETTE_MAX];
 

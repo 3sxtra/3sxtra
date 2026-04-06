@@ -293,7 +293,7 @@ void SDLGameRendererGL_RenderFrame(void) {
                 glBindTexture(GL_TEXTURE_2D_ARRAY, gl_state.tex_array_id);
 
                 glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_BUFFER, gl_state.palette_tbo);
+                glBindTexture(GL_TEXTURE_2D, gl_state.palette_tbo);
 
                 glActiveTexture(GL_TEXTURE2);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, gl_state.tex_array_rgba_id);

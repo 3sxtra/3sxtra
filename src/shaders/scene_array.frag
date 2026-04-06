@@ -7,16 +7,17 @@ flat in float TexLayer;
 flat in float PaletteIndex;
 
 uniform usampler2DArray Source; // Raw indices (R8UI)
-uniform samplerBuffer PaletteBuffer; // RGBA float colors
+uniform sampler2D PaletteBuffer; // RGBA float colors
 uniform sampler2DArray SourceRGBA; // Direct-color RGBA8
 
 void main()
 {
     if (TexLayer >= 0.0) {
-        // Indexed path — palette lookup
+        // Indexed path — palette lookup via 2D palette texture
         uint index = texture(Source, vec3(TexCoord, TexLayer)).r;
-        int offset = int(PaletteIndex) * 256 + int(index);
-        FragColor = texelFetch(PaletteBuffer, offset) * FgColor;
+        float u = (float(index) + 0.5) / 256.0;
+        float v = (PaletteIndex + 0.5) / float(textureSize(PaletteBuffer, 0).y);
+        FragColor = texture(PaletteBuffer, vec2(u, v)) * FgColor;
     } else {
         // Direct-color path — RGBA texture array
         float layer = -TexLayer - 2.0;
