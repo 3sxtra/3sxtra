@@ -86,3 +86,17 @@ tools/gifx.sh
 /assets/voice_mod
 /assets/shaders/libretro_temp
 assets/shaders/libretro
+
+# === Android Build ===
+android/app/.cxx/
+android/app/build/
+android/build/
+android/.gradle/
+android/.kotlin/
+android/.idea/
+android/local.properties
+android/app/src/main/jniLibs/
+android/app/src/main/assets/shaders/
+android/app/src/main/cpp/third_party/
+android/third_party/
+/third_party_android

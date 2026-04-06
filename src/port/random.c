@@ -7,7 +7,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <bcrypt.h>
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(__ANDROID__)
 #include <stdlib.h>
 #else
 #include <sys/random.h>
@@ -21,7 +21,7 @@ void Sys_RandomBytes(void* buf, size_t len) {
     if (BCryptGenRandom(NULL, bytes, (ULONG)len, BCRYPT_USE_SYSTEM_PREFERRED_RNG) == 0) {
         success = true;
     }
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(__ANDROID__)
     arc4random_buf(bytes, len);
     success = true;
 #else

@@ -510,17 +510,39 @@ int ModdedBGM_CountModdedTracks(void) {
     if (cached_bgm_count >= 0)
         return cached_bgm_count;
 
+    static const char* extensions[] = { "ogg", "flac", "opus", "mp3", "wav" };
+    int num_exts = (int)(sizeof(extensions) / sizeof(extensions[0]));
+
+#ifdef __ANDROID__
+    /* SDL_GlobDirectory doesn't work with Android's AssetManager (no dir listing).
+     * Probe sequential file IDs to count available modded tracks. */
+    int count = 0;
+    for (int id = 0; id < 1000; id++) {
+        bool found = false;
+        for (int e = 0; e < num_exts && !found; e++) {
+            char rel_path[256];
+            snprintf(rel_path, sizeof(rel_path), "bgm_mod/%d.%s", id, extensions[e]);
+            const char* path = Paths_ResolveAsset(rel_path);
+            SDL_IOStream* io = SDL_IOFromFile(path, "rb");
+            if (io) {
+                SDL_CloseIO(io);
+                count++;
+                found = true;
+            }
+        }
+    }
+    cached_bgm_count = count;
+    return count;
+#else
     char dir_path[1024];
     const char* base = Paths_GetBasePath();
     snprintf(dir_path, sizeof(dir_path), "%sassets/bgm_mod", base ? base : "");
 
     int count = 0;
-    static const char* extensions[] = { "ogg", "flac", "opus", "mp3", "wav" };
-
     SDL_GlobFlags flags = 0;
     int num_results = 0;
 
-    for (int e = 0; e < (int)(sizeof(extensions) / sizeof(extensions[0])); e++) {
+    for (int e = 0; e < num_exts; e++) {
         char pattern[32];
         snprintf(pattern, sizeof(pattern), "*.%s", extensions[e]);
 
@@ -533,6 +555,7 @@ int ModdedBGM_CountModdedTracks(void) {
 
     cached_bgm_count = count;
     return count;
+#endif
 }
 
 bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {

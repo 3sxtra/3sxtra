@@ -18,7 +18,7 @@
 #include <SDL3/SDL.h>
 #include <stddef.h>
 #include <string.h>
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 
 #define OVERLAY_MAX_SLOTS 4
 #define OVERLAY_GLYPH_SIZE 128 /* Source resolution for ControllerImage SVG glyphs */

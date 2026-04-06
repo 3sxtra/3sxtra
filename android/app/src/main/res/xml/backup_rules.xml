@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- TODO: Remove this file if you don't need to support API 30 and lower-->
+    <include domain="file" path="."/>
+    <include domain="database" path="."/>
+    <include domain="sharedpref" path="."/>
+    <include domain="external" path="."/>
+    <include domain="root" path="."/>
+</full-backup-content>

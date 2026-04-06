@@ -2,7 +2,7 @@
 #define SHADER_MANAGER_H
 
 #include "glslp_parser.h"
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 
 typedef struct {
     GLuint program;

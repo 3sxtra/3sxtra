@@ -73,6 +73,32 @@ static void open_folder_dialog_callback(void* userdata, const char* const* filel
     success &= copy_file(rom_path, "THIRD/SF33RD.AFS", "SF33RD.AFS");
     flow_state = success ? COPY_SUCCESS : COPY_ERROR;
 }
+
+#ifdef __ANDROID__
+/** @brief SDL file-dialog callback — copies the selected AFS file. */
+static void open_file_dialog_callback(void* userdata, const char* const* filelist, int filter) {
+    if (!filelist || !filelist[0]) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "File dialog returned no selection");
+        flow_state = COPY_ERROR;
+        return;
+    }
+
+    const char* src_path = filelist[0];
+    const char* internal_dir = SDL_GetAndroidInternalStoragePath();
+    if (!internal_dir) {
+        flow_state = COPY_ERROR;
+        return;
+    }
+    
+    char* dst_path = NULL;
+    SDL_asprintf(&dst_path, "%s/SF33RD.AFS", internal_dir);
+    
+    bool success = SDL_CopyFile(src_path, dst_path);
+    SDL_free(dst_path);
+    
+    flow_state = success ? COPY_SUCCESS : COPY_ERROR;
+}
+#endif
 #endif
 
 /** @brief Build and return the full path to a file in the resources directory (caller frees). */
@@ -105,6 +131,19 @@ char* Resources_GetRomPath(const char* file_path) {
 
 /** @brief Check if required game resources (SF33RD.AFS) exist. */
 bool Resources_CheckIfPresent() {
+#ifdef __ANDROID__
+    // On Android, check internal storage first, then APK assets.
+    // SDL_IOFromFile with a relative path checks the Android AssetManager.
+    const char* internal = SDL_GetAndroidInternalStoragePath();
+    if (internal) {
+        char* internal_path = NULL;
+        SDL_asprintf(&internal_path, "%s/SF33RD.AFS", internal);
+        bool found = file_exists(internal_path);
+        SDL_free(internal_path);
+        if (found) return true;
+    }
+    return false;
+#else
     if (check_if_file_present("SF33RD.AFS")) {
         return true;
     }
@@ -114,11 +153,12 @@ bool Resources_CheckIfPresent() {
     const bool found = file_exists(rom_path);
     SDL_free(rom_path);
     return found;
+#endif
 }
 
 /** @brief Drive the resource-copying state machine (dialog → copy → done). */
 bool Resources_RunResourceCopyingFlow() {
-#ifdef PLATFORM_RPI4
+#if defined(PLATFORM_RPI4)
     /* Batocera / headless Linux has no desktop dialog backend.
        Log a clear error instead of spinning forever or crashing. */
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -130,11 +170,20 @@ bool Resources_RunResourceCopyingFlow() {
     case INIT:
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
                                  "Resources are missing",
+#ifdef __ANDROID__
+                                 "3SX needs the SF33RD.AFS ROM to run. Please select your SF33RD.AFS file in the next dialog.",
+#else
                                  "3SX needs resources from a copy of \"Street Fighter III: 3rd Strike\" to run. Choose "
                                  "a location with the game files in the next dialog",
+#endif
                                  SDLApp_GetWindow());
         flow_state = DIALOG_OPENED;
+#ifdef __ANDROID__
+        SDL_DialogFileFilter filter[1] = { { "AFS Files", "AFS;afs" } };
+        SDL_ShowOpenFileDialog(open_file_dialog_callback, NULL, SDLApp_GetWindow(), filter, 1, NULL, false);
+#else
         SDL_ShowOpenFolderDialog(open_folder_dialog_callback, NULL, SDLApp_GetWindow(), NULL, false);
+#endif
         break;
 
     case DIALOG_OPENED:
@@ -144,19 +193,32 @@ bool Resources_RunResourceCopyingFlow() {
     case COPY_ERROR:
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
                                  "Invalid directory",
+#ifdef __ANDROID__
+                                 "The file you provided couldn't be copied. Please select a valid SF33RD.AFS file.",
+#else
                                  "The directory you provided doesn't contain the required files",
+#endif
                                  SDLApp_GetWindow());
         flow_state = DIALOG_OPENED;
+#ifdef __ANDROID__
+        SDL_DialogFileFilter filter2[1] = { { "AFS Files", "AFS;afs" } };
+        SDL_ShowOpenFileDialog(open_file_dialog_callback, NULL, SDLApp_GetWindow(), filter2, 1, NULL, false);
+#else
         SDL_ShowOpenFolderDialog(open_folder_dialog_callback, NULL, SDLApp_GetWindow(), NULL, false);
+#endif
         break;
 
     case COPY_SUCCESS:
-        char* resources_path = Resources_GetPath(NULL);
         char* message = NULL;
+#ifdef __ANDROID__
+        SDL_asprintf(&message, "ROM copied successfully to internal storage!");
+#else
+        char* resources_path = Resources_GetPath(NULL);
         SDL_asprintf(&message, "You can find them at:\n%s", resources_path);
+        SDL_free(resources_path);
+#endif
         SDL_ShowSimpleMessageBox(
             SDL_MESSAGEBOX_INFORMATION, "Resources copied successfully", message, SDLApp_GetWindow());
-        SDL_free(resources_path);
         SDL_free(message);
         flow_state = INIT;
         return true;

@@ -9,7 +9,7 @@
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include <SDL3/SDL.h>
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 
 // ⚡ Bolt: SIMDe — portable SIMD intrinsics
 #include <simde/x86/sse2.h>

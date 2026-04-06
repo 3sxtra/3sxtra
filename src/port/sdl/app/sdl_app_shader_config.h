@@ -12,6 +12,7 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_LIBRASHADER
 void SDLAppShader_Init(const char* base_path);
 void SDLAppShader_Shutdown();
 void SDLAppShader_ProcessPendingLoad();
@@ -68,6 +69,47 @@ float SDLAppShader_GetParamMax(int index);
 float SDLAppShader_GetParamStep(int index);
 void SDLAppShader_SetParamValue(int index, float value);
 void SDLAppShader_ResetParam(int index);
+#else
+static inline void SDLAppShader_Init(const char* base_path) {}
+static inline void SDLAppShader_Shutdown() {}
+static inline void SDLAppShader_ProcessPendingLoad() {}
+
+static inline LibrashaderManager* SDLAppShader_GetManager() { return NULL; }
+static inline bool SDLAppShader_IsLibretroMode() { return false; }
+
+static inline void SDLAppShader_ToggleMode() {}
+static inline void SDLAppShader_CyclePreset() {}
+static inline void SDLAppShader_LoadPreset(int index) {}
+
+static inline int SDLAppShader_GetAvailableCount() { return 0; }
+static inline const char* SDLAppShader_GetPresetName(int index) { return NULL; }
+static inline int SDLAppShader_GetCurrentIndex() { return 0; }
+static inline void SDLAppShader_SetCurrentIndex(int index) {}
+static inline void SDLAppShader_SetMode(bool libretro) {}
+
+static inline void SDLAppShader_ChainAppend(int preset_index) {}
+static inline void SDLAppShader_ChainPrepend(int preset_index) {}
+static inline void SDLAppShader_ChainRemovePass(int pass_index) {}
+static inline void SDLAppShader_ChainMovePass(int from, int to) {}
+static inline void SDLAppShader_ChainClear(void) {}
+static inline void SDLAppShader_ChainApply(void) {}
+
+static inline int SDLAppShader_ChainGetPassCount(void) { return 0; }
+static inline const char* SDLAppShader_ChainGetPassShaderPath(int pass_index) { return NULL; }
+static inline const char* SDLAppShader_ChainGetPassSourcePreset(int pass_index) { return NULL; }
+static inline bool SDLAppShader_ChainSaveAsPreset(const char* path) { return false; }
+
+static inline int SDLAppShader_GetParamCount(void) { return 0; }
+static inline const char* SDLAppShader_GetParamName(int index) { return NULL; }
+static inline const char* SDLAppShader_GetParamDesc(int index) { return NULL; }
+static inline float SDLAppShader_GetParamValue(int index) { return 0.0f; }
+static inline float SDLAppShader_GetParamInitial(int index) { return 0.0f; }
+static inline float SDLAppShader_GetParamMin(int index) { return 0.0f; }
+static inline float SDLAppShader_GetParamMax(int index) { return 0.0f; }
+static inline float SDLAppShader_GetParamStep(int index) { return 0.0f; }
+static inline void SDLAppShader_SetParamValue(int index, float value) {}
+static inline void SDLAppShader_ResetParam(int index) {}
+#endif
 
 #ifdef __cplusplus
 }

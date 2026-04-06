@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <cmocka.h>
 #include <string.h>
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 #include "port/rendering/sdl_bezel.h"
 
 // Stub GL functions

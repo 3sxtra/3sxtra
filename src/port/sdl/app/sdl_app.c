@@ -95,9 +95,11 @@ int g_resolution_scale = 1;
 #include "sf33rd/Source/Game/engine/workuser.h"
 
 // clang-format off
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 #include <SDL3/SDL.h>
+#ifndef __ANDROID__
 #include <SDL3/SDL_opengl.h>
+#endif
 // clang-format on
 #include <limits.h>
 #include <stdio.h>
@@ -232,7 +234,11 @@ static const double target_fps = 59.59949;
 static const Uint64 target_frame_time_ns = 1000000000.0 / target_fps;
 
 SDL_Window* window = NULL;
+#ifdef __ANDROID__
+static RendererBackend g_renderer_backend = RENDERER_SDL2D_CLASSIC;
+#else
 static RendererBackend g_renderer_backend = RENDERER_OPENGL; // SDL_GPU opt-in via --renderer gpu
+#endif
 static SDL_GPUDevice* gpu_device = NULL;
 static SDL_Renderer* sdl_renderer = NULL; // Only used in SDL2D mode
 
@@ -288,15 +294,20 @@ int SDLApp_Init() {
     SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 
     if (g_renderer_backend == RENDERER_OPENGL) {
-#ifdef PLATFORM_RPI4
+#ifdef __ANDROID__
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+#elif defined(PLATFORM_RPI4)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #else
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-#endif
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-#ifndef PLATFORM_RPI4
+#endif
+#if !defined(PLATFORM_RPI4) && !defined(__ANDROID__)
         SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 #endif
     }
@@ -427,15 +438,20 @@ int SDLApp_Init() {
                 SDL_DestroyWindow(window);
                 window = NULL;
             }
-#ifdef PLATFORM_RPI4
+#ifdef __ANDROID__
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+#elif defined(PLATFORM_RPI4)
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #else
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-#endif
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-#ifndef PLATFORM_RPI4
+#endif
+#if !defined(PLATFORM_RPI4) && !defined(__ANDROID__)
             SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 #endif
             window_flags |= SDL_WINDOW_OPENGL;
@@ -490,10 +506,18 @@ int SDLApp_Init() {
             return 1;
         }
 
+#ifdef __ANDROID__
+        if (!gladLoadGLES2((GLADloadfunc)SDL_GL_GetProcAddress)) {
+            SDL_Log("Failed to initialize GLAD (GLES2 loader)");
+            return 1;
+        }
+        SDL_Log("GLAD: OpenGL ES loaded successfully");
+#else
         if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress)) {
             SDL_Log("Failed to initialize GLAD");
             return 1;
         }
+#endif
 
         // Set initial viewport
         int win_w, win_h;
@@ -510,6 +534,21 @@ int SDLApp_Init() {
         vsync_enabled = false;
         SDL_GL_SetSwapInterval(0);
         SDL_Log("VSync: OFF (OpenGL, native pacing)");
+
+#ifdef __ANDROID__
+        /* Android GL path: create an SDL_Renderer for RmlUi's SDL backend.
+         * On Android the GL3 RmlUi renderer can't be used (GLES vs desktop GL
+         * shader mismatch), so RmlUi is routed through SDL_Renderer instead.
+         * SDL3 can create a renderer on a window that already has a GL context. */
+        sdl_renderer = SDL_CreateRenderer(window, NULL);
+        if (sdl_renderer) {
+            SDL_SetRenderDrawBlendMode(sdl_renderer, SDL_BLENDMODE_BLEND);
+            SDL_Log("Android: Created SDL_Renderer for RmlUi overlay");
+        } else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_RENDER,
+                        "Android: Failed to create SDL_Renderer for RmlUi: %s", SDL_GetError());
+        }
+#endif
     }
     // else: SDL2D — window and renderer already created above
 
@@ -538,8 +577,7 @@ int SDLApp_Init() {
     // This catches stale/missing asset packs early with a clear message.
     {
         #define MINIMUM_ASSET_VERSION 1
-        char version_path[1024];
-        snprintf(version_path, sizeof(version_path), "%sassets/ASSET_VERSION", base_path);
+        const char* version_path = Paths_ResolveAsset("ASSET_VERSION");
         size_t version_len = 0;
         char* version_data = (char*)SDL_LoadFile(version_path, &version_len);
         if (!version_data) {
@@ -563,16 +601,22 @@ int SDLApp_Init() {
 
     // Text renderer init
     {
-        char font_path[1024];
-        snprintf(font_path, sizeof(font_path), "%s%s", base_path, "assets/BoldPixels.ttf");
+        const char* font_path = Paths_ResolveAsset("BoldPixels.ttf");
         SDLTextRenderer_Init(base_path, font_path);
     }
 
     if (g_renderer_backend == RENDERER_OPENGL) {
+#ifdef __ANDROID__
+        passthru_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/blit.vert.es"), Paths_ResolveAsset("shaders/passthru.frag.es"));
+        scene_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert.es"), Paths_ResolveAsset("shaders/scene.frag.es"));
+        hd_scene_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert.es"), Paths_ResolveAsset("shaders/hd_scene.frag.es"));
+        scene_array_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert.es"), Paths_ResolveAsset("shaders/scene_array.frag.es"));
+#else
         passthru_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/blit.vert"), Paths_ResolveAsset("shaders/passthru.frag"));
         scene_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/scene.frag"));
         hd_scene_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/hd_scene.frag"));
         scene_array_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/scene_array.frag"));
+#endif
 
         // Create quad
         float vertices[] = { // positions        // texture coords

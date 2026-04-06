@@ -10,7 +10,7 @@
 #include "port/sdl/app/sdl_app.h"
 
 // clang-format off
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 #include <SDL3/SDL.h>
 // clang-format on
 

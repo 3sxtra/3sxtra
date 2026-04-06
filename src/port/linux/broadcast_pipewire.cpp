@@ -17,7 +17,7 @@
 #include <spa/param/video/format-utils.h>
 #include <spa/utils/result.h>
 
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 
 #define MAX_STREAM_NAME 128
 

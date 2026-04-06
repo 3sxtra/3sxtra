@@ -18,7 +18,7 @@
 #include "sf33rd/Source/Game/engine/workuser.h"
 
 // clang-format off
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 #include <SDL3/SDL.h>
 #include <SDL3_shadercross/SDL_shadercross.h>
 // clang-format on

@@ -32,8 +32,16 @@ bool ControllerImage_Module_Init(void) {
     /* Load the standard data file from assets/ (deployed alongside the binary) */
     const char* base_path = Paths_GetBasePath();
 
+    /* On Android, SDL_IOFromFile routes through AssetManager which is already
+     * rooted at the assets/ folder.  On desktop the full path is needed. */
+#ifdef __ANDROID__
+    #define CI_PREFIX "controllers/"
+#else
+    #define CI_PREFIX "assets/controllers/"
+#endif
+
     char kenney_path[1024];
-    SDL_snprintf(kenney_path, sizeof(kenney_path), "%sassets/controllers/controllerimage-kenney.bin", base_path);
+    SDL_snprintf(kenney_path, sizeof(kenney_path), "%s" CI_PREFIX "controllerimage-kenney.bin", base_path);
     if (ControllerImage_AddDataFromFile(kenney_path) < 0) {
         if (ControllerImage_AddDataFromFile("assets/controllers/controllerimage-kenney.bin") < 0) {
             SDL_Log("[ControllerImage] Failed to load kenney data: %s", SDL_GetError());
@@ -41,7 +49,7 @@ bool ControllerImage_Module_Init(void) {
     }
 
     char ordinary_path[1024];
-    SDL_snprintf(ordinary_path, sizeof(ordinary_path), "%sassets/controllers/controllerimage-ordinary.bin", base_path);
+    SDL_snprintf(ordinary_path, sizeof(ordinary_path), "%s" CI_PREFIX "controllerimage-ordinary.bin", base_path);
     if (ControllerImage_AddDataFromFile(ordinary_path) < 0) {
         if (ControllerImage_AddDataFromFile("assets/controllers/controllerimage-ordinary.bin") < 0) {
             SDL_Log("[ControllerImage] Failed to load ordinary data: %s", SDL_GetError());
@@ -49,7 +57,7 @@ bool ControllerImage_Module_Init(void) {
     }
 
     char data_path[1024];
-    SDL_snprintf(data_path, sizeof(data_path), "%sassets/controllers/controllerimage-standard.bin", base_path);
+    SDL_snprintf(data_path, sizeof(data_path), "%s" CI_PREFIX "controllerimage-standard.bin", base_path);
     if (ControllerImage_AddDataFromFile(data_path) < 0) {
         SDL_Log("[ControllerImage] Failed to load data from '%s': %s", data_path, SDL_GetError());
         /* Try without the base_path prefix (running from the assets/ parent dir) */

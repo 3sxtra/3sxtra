@@ -85,6 +85,13 @@ static struct {
 static Rml::String make_absolute_icon_path(const char* relative_path) {
     if (!relative_path || !relative_path[0])
         return "";
+#ifdef __ANDROID__
+    // On Android, strip the "assets/" prefix — AssetManager is rooted there.
+    // The path then goes through GameFileInterface::Open → Paths_ResolveAsset
+    // which handles normalization and prefix stripping.
+    if (strncmp(relative_path, "assets/", 7) == 0)
+        return Rml::String(relative_path + 7);
+#endif
     const char* base = Paths_GetBasePath();
     if (base && base[0] != '\0') {
         Rml::String abs_path = Rml::String(base) + relative_path;

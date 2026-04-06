@@ -62,7 +62,16 @@ static State state_buffer[STATE_BUFFER_MAX];
 // Steps: 1) Add the corresponding GS_SAVE/GS_LOAD line in this file.
 //        2) Update the constant below to the new sizeof(GameState).
 // ============================================================================
+#include <stdint.h>
+
+#if UINTPTR_MAX == 0xffffffff
+#define EXPECTED_GAME_STATE_SIZE 17800
+#define EXPECTED_TASK_SIZE 20
+#else
 #define EXPECTED_GAME_STATE_SIZE 19376
+#define EXPECTED_TASK_SIZE 32
+#endif
+
 _Static_assert(sizeof(GameState) == EXPECTED_GAME_STATE_SIZE,
                "sizeof(GameState) changed! Did you add/remove a field in game_state.h? "
                "Update GS_SAVE/GS_LOAD in this file, then set EXPECTED_GAME_STATE_SIZE "
@@ -70,7 +79,7 @@ _Static_assert(sizeof(GameState) == EXPECTED_GAME_STATE_SIZE,
 
 // Guard the task struct layout specifically — task[11] is saved/loaded wholesale
 // via GS_SAVE(task)/GS_LOAD(task), so any size change causes silent corruption.
-_Static_assert(sizeof(struct _TASK) == 32, "sizeof(struct _TASK) changed! This struct is saved/loaded wholesale "
+_Static_assert(sizeof(struct _TASK) == EXPECTED_TASK_SIZE, "sizeof(struct _TASK) changed! This struct is saved/loaded wholesale "
                                            "during netplay rollback. DO NOT change its layout without updating "
                                            "GameState and verifying rollback compatibility.");
 

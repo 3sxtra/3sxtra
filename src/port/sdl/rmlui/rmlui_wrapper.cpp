@@ -18,8 +18,10 @@
 // GL header for RmlUi GL3 backend (glEnable, glBlendFunc, etc.)
 #if defined(__APPLE__)
 #include <OpenGL/gl3.h>
+#elif defined(__ANDROID__)
+#include "port/sdl/renderer/gl_compat.h"
 #else
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 #endif
 
 #include "lua_engine_bridge.h"
@@ -316,6 +318,49 @@ class GameSystemInterface : public SystemInterface_SDL {
     }
 };
 
+class GameFileInterface : public Rml::FileInterface {
+public:
+    Rml::FileHandle Open(const Rml::String& path) override {
+        const char* final_path = path.c_str();
+#ifdef __ANDROID__
+        /* On Android, RmlUi resolves <img src> relative to the document base,
+         * producing paths like "ui/../flags/gr.png" or "ui/assets/portraits/...".
+         * Paths_ResolveAsset normalizes ../ and strips the "assets/" prefix. */
+        if (path.length() > 0 && path[0] != '/') {
+            final_path = Paths_ResolveAsset(path.c_str());
+        }
+#endif
+        SDL_IOStream* io = SDL_IOFromFile(final_path, "rb");
+        return (Rml::FileHandle)io;
+    }
+
+    void Close(Rml::FileHandle file) override {
+        SDL_IOStream* io = (SDL_IOStream*)file;
+        if (io) SDL_CloseIO(io);
+    }
+
+    size_t Read(void* buffer, size_t size, Rml::FileHandle file) override {
+        SDL_IOStream* io = (SDL_IOStream*)file;
+        if (!io) return 0;
+        return SDL_ReadIO(io, buffer, size);
+    }
+
+    bool Seek(Rml::FileHandle file, long offset, int origin) override {
+        SDL_IOStream* io = (SDL_IOStream*)file;
+        if (!io) return false;
+        SDL_IOWhence whence = SDL_IO_SEEK_SET;
+        if (origin == SEEK_CUR) whence = SDL_IO_SEEK_CUR;
+        if (origin == SEEK_END) whence = SDL_IO_SEEK_END;
+        return SDL_SeekIO(io, offset, whence) >= 0;
+    }
+
+    size_t Tell(Rml::FileHandle file) override {
+        SDL_IOStream* io = (SDL_IOStream*)file;
+        if (!io) return 0;
+        return SDL_TellIO(io);
+    }
+};
+
 // -------------------------------------------------------------------
 // State
 // -------------------------------------------------------------------
@@ -329,6 +374,7 @@ static Rml::Context* s_game_context = nullptr;
 static std::unordered_map<std::string, Rml::ElementDocument*> s_game_documents;
 
 static SystemInterface_SDL* s_system_interface = nullptr;
+static GameFileInterface* s_file_interface = nullptr;
 
 // Polymorphic base — used by Rml::SetRenderInterface() and context render
 static Rml::RenderInterface* s_render_interface = nullptr;
@@ -441,13 +487,28 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     s_window = window;
     s_active_backend = SDLApp_GetRenderer();
 
-    // Determine assets/ui/ path
-    const char* base_path = Paths_GetBasePath();
-    if (base_path) {
-        s_ui_base_path = std::string(base_path) + "assets/ui/";
-    } else {
-        s_ui_base_path = "assets/ui/";
+#ifdef __ANDROID__
+    // RmlUi's GL3 backend uses #version 330 core shaders internally —
+    // incompatible with OpenGL ES.  Force SDL_Renderer on Android.
+    if (s_active_backend == RENDERER_OPENGL) {
+        s_active_backend = RENDERER_SDL2D;
+        SDL_Log("[RmlUi] Android: overriding GL3 backend → SDL Renderer");
     }
+#endif
+
+    // Determine UI path
+#ifdef __ANDROID__
+    s_ui_base_path = "ui/";
+#else
+    {
+        const char* bp = Paths_GetBasePath();
+        if (bp && bp[0] != '\0') {
+            s_ui_base_path = std::string(bp) + "assets/ui/";
+        } else {
+            s_ui_base_path = "assets/ui/";
+        }
+    }
+#endif
 
     // Get window dimensions
     SDL_GetWindowSize(window, &s_window_w, &s_window_h);
@@ -456,6 +517,9 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     s_system_interface = new GameSystemInterface();
     s_system_interface->SetWindow(window);
     Rml::SetSystemInterface(s_system_interface);
+
+    s_file_interface = new GameFileInterface();
+    Rml::SetFileInterface(s_file_interface);
 
     // Create render interface based on active renderer
     switch (s_active_backend) {
@@ -511,10 +575,17 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     // Use the absolute base path so require() works regardless of CWD
     // (on Pi4 the working directory differs from the executable directory).
     {
-        std::string exe_base = (base_path ? std::string(base_path) : std::string());
+#ifdef __ANDROID__
+        std::string lua_base1 = "lua/";
+        std::string lua_base2 = "lua/";
+        std::string lua_base3 = "lua/3rd_training_lua-main/";
+#else
+        const char* bp = Paths_GetBasePath();
+        std::string exe_base = (bp ? std::string(bp) : std::string());
         std::string lua_base1 = exe_base + "lua/";
         std::string lua_base2 = exe_base + "assets/lua/";
         std::string lua_base3 = exe_base + "assets/lua/3rd_training_lua-main/";
+#endif
         // Normalize backslashes to forward slashes — Lua interprets '\' as
         // escape sequences inside string literals (e.g. '\3' → ETX char).
         for (auto& ch : lua_base1) { if (ch == '\\') ch = '/'; }
@@ -632,6 +703,9 @@ extern "C" void rmlui_wrapper_shutdown(void) {
 
     delete s_system_interface;
     s_system_interface = nullptr;
+
+    delete s_file_interface;
+    s_file_interface = nullptr;
 
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Shut down");
 }

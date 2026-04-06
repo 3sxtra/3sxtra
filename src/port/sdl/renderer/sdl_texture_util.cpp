@@ -11,7 +11,11 @@
 #include "port/sdl/renderer/sdl_game_renderer_internal.h"
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
-#include <glad/gl.h>
+#ifdef __ANDROID__
+#include "port/sdl/renderer/gl_compat.h"
+#else
+#include "port/sdl/renderer/gl_compat.h"
+#endif
 #include <string.h>
 #include <unordered_map>
 
@@ -37,6 +41,11 @@ static GPUTextureMetadata* get_gpu_metadata(void* texture_id) {
     }
     return nullptr;
 }
+
+
+#ifdef __ANDROID__
+static std::unordered_map<GLuint, std::pair<int, int>> s_gles_texture_sizes;
+#endif
 
 static void premultiply_surface_alpha(SDL_Surface* surface) {
     if (!surface || surface->format != SDL_PIXELFORMAT_RGBA32) return;
@@ -169,6 +178,12 @@ extern "C" void* TextureUtil_Load(const char* filename) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+#ifdef __ANDROID__
+        if (converted) {
+            s_gles_texture_sizes[texture_id] = std::make_pair(converted->w, converted->h);
+        }
+#endif
+
         SDL_DestroySurface(surface);
         return (void*)(intptr_t)texture_id;
     }
@@ -270,6 +285,12 @@ static void* upload_surface_to_texture(SDL_Surface* surface) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+#ifdef __ANDROID__
+        if (converted) {
+            s_gles_texture_sizes[texture_id] = std::make_pair(converted->w, converted->h);
+        }
+#endif
+
         return (void*)(intptr_t)texture_id;
     }
 }
@@ -335,6 +356,9 @@ extern "C" void TextureUtil_Free(void* texture_id) {
         SDL_DestroyTexture(tex);
     } else {
         GLuint id = (GLuint)(intptr_t)texture_id;
+#ifdef __ANDROID__
+        s_gles_texture_sizes.erase(id);
+#endif
         glDeleteTextures(1, &id);
     }
 }
@@ -373,11 +397,23 @@ extern "C" void TextureUtil_GetSize(void* texture_id, int* w, int* h) {
         }
     } else {
         GLuint id = (GLuint)(intptr_t)texture_id;
+#ifndef __ANDROID__
         glBindTexture(GL_TEXTURE_2D, id);
         if (w)
             glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, w);
         if (h)
             glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, h);
+#else
+        /* GLES3 doesn't have glGetTexLevelParameteriv — use cached sizes */
+        auto it = s_gles_texture_sizes.find(id);
+        if (it != s_gles_texture_sizes.end()) {
+            if (w) *w = it->second.first;
+            if (h) *h = it->second.second;
+        } else {
+            if (w) *w = 0;
+            if (h) *h = 0;
+        }
+#endif
     }
 }
 

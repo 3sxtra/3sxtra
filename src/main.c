@@ -69,6 +69,7 @@
 #include "port/rendering/resources.h"
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 
 #ifndef _WIN32
 #include <signal.h>
@@ -141,6 +142,29 @@ void cpInitTask();
  * next to the executable.
  */
 static void afs_init() {
+#ifdef __ANDROID__
+    // On Android, the ROM is user-provided and placed in internal storage
+    // (e.g. /data/data/<pkg>/files/SF33RD.AFS). We read it directly from
+    // there — no copying, no APK bundling.
+    const char* internal = SDL_GetAndroidInternalStoragePath();
+    if (internal) {
+        char* internal_path = NULL;
+        SDL_asprintf(&internal_path, "%s/SF33RD.AFS", internal);
+
+        SDL_PathInfo info;
+        if (SDL_GetPathInfo(internal_path, &info) && info.type == SDL_PATHTYPE_FILE) {
+            SDL_Log("AFS found in internal storage: %s", internal_path);
+            AFS_Init(internal_path);
+            SDL_free(internal_path);
+            return;
+        }
+        SDL_Log("AFS not found at: %s", internal_path);
+        SDL_free(internal_path);
+    }
+
+    fatal_error("SF33RD.AFS not found. Please place the ROM file in the app's "
+                "internal storage directory.");
+#else
     // Try the standard resources path first (e.g. AppData/Roaming/CrowdedStreet/3SX/resources/)
     char* file_path = Resources_GetPath("SF33RD.AFS");
 
@@ -157,6 +181,7 @@ static void afs_init() {
     SDL_Log("AFS not found in resources dir, trying: %s", file_path);
     AFS_Init(file_path);
     SDL_free(file_path);
+#endif
 }
 
 /**

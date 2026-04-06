@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "port/config/paths.h"
 
 #define INPUT_SOURCES_MAX 4
 
@@ -130,6 +131,17 @@ static void handle_gamepad_added_event(SDL_GamepadDeviceEvent* event) {
             device_name ? device_name : "Unknown",
             is_actually_gamepad);
 
+#ifdef __ANDROID__
+    if (device_name) {
+        if (SDL_strcasestr(device_name, "virtual") || 
+            SDL_strcasestr(device_name, "remote") || 
+            SDL_strcasestr(device_name, "ipcontrol")) {
+            SDL_Log("Ignoring virtual/remote gamepad: %s", device_name);
+            return;
+        }
+    }
+#endif
+
     // Remove keyboard to potentially make space for the new gamepad
     remove_keyboard();
 
@@ -183,6 +195,15 @@ static void handle_gamepad_removed_event(SDL_GamepadDeviceEvent* event) {
 
 void SDLPad_Init() {
     setup_keyboard();
+
+    const char* mapping_file = Paths_ResolveAsset("gamecontrollerdb.txt");
+    if (mapping_file) {
+        if (SDL_AddGamepadMappingsFromFile(mapping_file) < 0) {
+            SDL_Log("Could not load gamepad mappings: %s", SDL_GetError());
+        } else {
+            SDL_Log("Loaded gamepad mappings from %s", mapping_file);
+        }
+    }
 }
 
 void SDLPad_HandleGamepadDeviceEvent(SDL_GamepadDeviceEvent* event) {
@@ -205,6 +226,18 @@ void SDLPad_HandleJoystickDeviceEvent(SDL_JoyDeviceEvent* event) {
     if (event->type == SDL_EVENT_JOYSTICK_ADDED) {
         if (SDL_IsGamepad(event->which))
             return;
+
+        const char* device_name = SDL_GetJoystickNameForID(event->which);
+#ifdef __ANDROID__
+        if (device_name) {
+            if (SDL_strcasestr(device_name, "virtual") || 
+                SDL_strcasestr(device_name, "remote") || 
+                SDL_strcasestr(device_name, "ipcontrol")) {
+                SDL_Log("Ignoring virtual/remote joystick: %s", device_name);
+                return;
+            }
+        }
+#endif
 
         if (input_source_index_from_joystick_id(event->which) >= 0)
             return;

@@ -11,7 +11,7 @@
 #include "port/sdl/app/sdl_app.h"
 #include "port/sdl/renderer/sdl_texture_util.h"
 #include <SDL3/SDL.h>
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 #include <stdio.h>
 #include <string.h>
 

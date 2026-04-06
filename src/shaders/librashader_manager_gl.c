@@ -1,6 +1,6 @@
 // #include "librashader_manager.h" // Do not include the public header to avoid struct redefinition conflicts
 #include <SDL3/SDL.h>
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -68,6 +68,17 @@ static void Paths_Normalize(char* path) {
     for (int i = 0; path[i]; i++) {
         if (path[i] == '\\') path[i] = '/';
     }
+    /* Resolve /../ sequences (needed for Android asset paths) */
+    char* p;
+    while ((p = SDL_strstr(path, "/../")) != NULL) {
+        char* prev = p - 1;
+        while (prev >= path && *prev != '/') prev--;
+        if (prev >= path) {
+            SDL_memmove(prev, p + 3, SDL_strlen(p + 3) + 1);
+        } else {
+            SDL_memmove(path, p + 4, SDL_strlen(p + 4) + 1);
+        }
+    }
 }
 /** @brief Get the application base directory path (lazy-initialized, cached). */
 const char* Paths_GetBasePath() {
@@ -121,6 +132,11 @@ const char* Paths_GetBasePath() {
 #endif
         // Fallback or multi-platform
         if (s_base_path[0] == '\0') {
+#ifdef __ANDROID__
+            /* On Android, assets must be accessed via relative paths to
+             * utilize the AssetManager. Keep base path empty. */
+            s_base_path[0] = '\0';
+#else
             const char* sdl_base = SDL_GetBasePath();
             if (sdl_base) {
                 SDL_strlcpy(s_base_path, sdl_base, sizeof(s_base_path));
@@ -128,6 +144,7 @@ const char* Paths_GetBasePath() {
             } else {
                 SDL_strlcpy(s_base_path, "./", sizeof(s_base_path));
             }
+#endif
         }
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Base path initialized to: %s", s_base_path);
     }
@@ -170,14 +187,36 @@ const char* Paths_ResolveAsset(const char* relative_path) {
             snprintf(resolved, 1024, "%s%s%s", base, sub_dirs[j], relative_path);
             Paths_Normalize(resolved);
 
-            SDL_IOStream* io = SDL_IOFromFile(resolved, "rb");
+            const char* final_path = resolved;
+#ifdef __ANDROID__
+            /* Strip assets/ prefix so SDL_IOFromFile routes through AssetManager */
+            if (strncmp(final_path, "assets/", 7) == 0) {
+                final_path += 7;
+            }
+#endif
+
+            SDL_IOStream* io = SDL_IOFromFile(final_path, "rb");
             if (io) {
                 SDL_CloseIO(io);
-                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Resolved '%s' -> '%s'", relative_path, resolved);
+                SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Resolved '%s' -> '%s'", relative_path, final_path);
+                /* Return exactly the working path that was successful */
+                SDL_strlcpy(resolved, final_path, 1024);
                 return resolved;
             }
         }
     }
+
+#ifdef __ANDROID__
+    /* On Android the base path is empty, so the search loop above may be
+     * skipped. Normalize the path (resolve ../) and strip the "assets/"
+     * prefix so that SDL_IOFromFile routes through the AssetManager. */
+    SDL_strlcpy(resolved, relative_path, 1024);
+    Paths_Normalize(resolved);
+    if (strncmp(resolved, "assets/", 7) == 0) {
+        memmove(resolved, resolved + 7, strlen(resolved + 7) + 1);
+    }
+    return resolved;
+#endif
 
     /* Not found anywhere — return original (copy it into the buffer to be safe against caller mutation) */
     SDL_strlcpy(resolved, relative_path, 1024);

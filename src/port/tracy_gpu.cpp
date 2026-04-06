@@ -11,7 +11,7 @@
 
 #ifdef TRACY_ENABLE
 
-#include <glad/gl.h>
+#include "port/sdl/renderer/gl_compat.h"
 #include <stdio.h>
 #include <string.h>
 #include <tracy/Tracy.hpp>

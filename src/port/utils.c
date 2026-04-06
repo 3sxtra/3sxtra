@@ -15,6 +15,8 @@
 #include <dbghelp.h>
 // clang-format on
 #define SYMBOL_NAME_MAX 256
+#elif defined(__ANDROID__)
+#include <signal.h>
 #else
 #include <execinfo.h>
 #include <signal.h>
@@ -40,11 +42,7 @@ void fatal_error(const s8* fmt, ...) {
     fflush(stderr);
 
     void* buffer[BACKTRACE_MAX];
-#ifndef _WIN32
-    int nptrs = backtrace(buffer, BACKTRACE_MAX);
-    fprintf(stderr, "Stack trace:\n");
-    backtrace_symbols_fd(buffer, nptrs, fileno(stderr));
-#else
+#if defined(_WIN32)
     fprintf(stderr, "Stack trace:\n");
     HANDLE process = GetCurrentProcess();
     SymInitialize(process, NULL, TRUE);
@@ -65,6 +63,12 @@ void fatal_error(const s8* fmt, ...) {
     free(symbol);
     SymCleanup(process);
     fflush(stderr);
+#elif defined(__ANDROID__)
+    fprintf(stderr, "Stack trace not supported on Android.\n");
+#else
+    int nptrs = backtrace(buffer, BACKTRACE_MAX);
+    fprintf(stderr, "Stack trace:\n");
+    backtrace_symbols_fd(buffer, nptrs, fileno(stderr));
 #endif
     abort();
 }
