@@ -105,6 +105,147 @@ static int compare_strings(const void* a, const void* b) {
     return strcmp(*(const char**)a, *(const char**)b);
 }
 
+#ifdef __ANDROID__
+#include "port/config/paths.h"
+
+// Extract a single APK asset to the filesystem.
+// Returns true if the file already exists or was successfully extracted.
+static bool extract_asset_to_filesystem(const char* asset_rel_path, const char* dest_dir) {
+    char dest_path[1024];
+    snprintf(dest_path, sizeof(dest_path), "%s/%s", dest_dir, asset_rel_path);
+
+    // Already extracted?
+    SDL_PathInfo info;
+    if (SDL_GetPathInfo(dest_path, &info))
+        return true;
+
+    // Ensure parent directories exist
+    char dir_buf[1024];
+    SDL_strlcpy(dir_buf, dest_path, sizeof(dir_buf));
+    char* last_slash = SDL_strrchr(dir_buf, '/');
+    if (last_slash) {
+        *last_slash = '\0';
+        SDL_CreateDirectory(dir_buf);
+    }
+
+    // Read from APK asset (AssetManager path = without "assets/" prefix)
+    char asset_path[1024];
+    snprintf(asset_path, sizeof(asset_path), "shaders/libretro/%s", asset_rel_path);
+    SDL_IOStream* src = SDL_IOFromFile(asset_path, "rb");
+    if (!src) return false;
+
+    Sint64 size = SDL_GetIOSize(src);
+    if (size <= 0) { SDL_CloseIO(src); return false; }
+
+    void* data = SDL_malloc(size);
+    SDL_ReadIO(src, data, size);
+    SDL_CloseIO(src);
+
+    SDL_IOStream* dst = SDL_IOFromFile(dest_path, "wb");
+    if (!dst) { SDL_free(data); return false; }
+    SDL_WriteIO(dst, data, size);
+    SDL_CloseIO(dst);
+    SDL_free(data);
+    return true;
+}
+
+// Extract all shader files referenced by a preset's directory tree.
+// The .slangp itself + all .slang, .inc, .h, .glsl files in its folder and subfolders.
+static void extract_shader_preset_tree(const char* preset_rel, const char* dest_dir) {
+    // Extract the preset file itself
+    extract_asset_to_filesystem(preset_rel, dest_dir);
+
+    // Determine the preset's parent directory
+    char parent_dir[512] = "";
+    SDL_strlcpy(parent_dir, preset_rel, sizeof(parent_dir));
+    char* last_slash = SDL_strrchr(parent_dir, '/');
+    if (last_slash) *last_slash = '\0';
+    else parent_dir[0] = '\0';
+
+    // Scan the manifest and extract all shader source files in this directory or subdirs
+    // Re-read manifest to find related files
+    SDL_IOStream* mio = SDL_IOFromFile("shaders/libretro/shader_manifest.txt", "rb");
+    if (!mio) return;
+    Sint64 msize = SDL_GetIOSize(mio);
+    if (msize <= 0) { SDL_CloseIO(mio); return; }
+    char* mdata = (char*)SDL_malloc(msize + 1);
+    SDL_ReadIO(mio, mdata, msize);
+    mdata[msize] = '\0';
+    SDL_CloseIO(mio);
+
+    // The manifest only has .slangp files. But .slang files aren't listed.
+    // Extract ALL assets that share the same parent directory by probing common patterns.
+    // Actually, let's just extract all .slangp files from the same directory so the chain works.
+    char* line = strtok(mdata, "\r\n");
+    while (line) {
+        if (line[0] != '\0' && parent_dir[0] != '\0') {
+            if (strncmp(line, parent_dir, strlen(parent_dir)) == 0) {
+                extract_asset_to_filesystem(line, dest_dir);
+            }
+        }
+        line = strtok(NULL, "\r\n");
+    }
+    SDL_free(mdata);
+
+    // Now extract all the .slang source files referenced by this preset.
+    // Parse the .slangp to find shader references and extract them.
+    char preset_fs_path[1024];
+    snprintf(preset_fs_path, sizeof(preset_fs_path), "%s/%s", dest_dir, preset_rel);
+    SDL_IOStream* pio = SDL_IOFromFile(preset_fs_path, "rb");
+    if (!pio) return;
+    Sint64 psize = SDL_GetIOSize(pio);
+    if (psize <= 0) { SDL_CloseIO(pio); return; }
+    char* pdata = (char*)SDL_malloc(psize + 1);
+    SDL_ReadIO(pio, pdata, psize);
+    pdata[psize] = '\0';
+    SDL_CloseIO(pio);
+
+    // Find all shaderN = "path" references
+    char* search = pdata;
+    while ((search = strstr(search, "shader")) != NULL) {
+        // Find the = sign
+        char* eq = strchr(search, '=');
+        if (!eq) { search++; continue; }
+        // Skip whitespace after =
+        char* val = eq + 1;
+        while (*val == ' ' || *val == '\t') val++;
+        // Strip quotes
+        if (*val == '"') val++;
+        char ref_path[512];
+        int ri = 0;
+        while (*val && *val != '"' && *val != '\n' && *val != '\r' && ri < 510)
+            ref_path[ri++] = *val++;
+        ref_path[ri] = '\0';
+        // Trim trailing spaces
+        while (ri > 0 && (ref_path[ri-1] == ' ' || ref_path[ri-1] == '\t'))
+            ref_path[--ri] = '\0';
+
+        if (ri > 0 && (strstr(ref_path, ".slang") || strstr(ref_path, ".glsl") ||
+                       strstr(ref_path, ".inc") || strstr(ref_path, ".h"))) {
+            // Resolve relative to preset directory
+            char full_ref[1024];
+            if (parent_dir[0])
+                snprintf(full_ref, sizeof(full_ref), "%s/%s", parent_dir, ref_path);
+            else
+                SDL_strlcpy(full_ref, ref_path, sizeof(full_ref));
+            extract_asset_to_filesystem(full_ref, dest_dir);
+        }
+        search = eq + 1;
+    }
+    SDL_free(pdata);
+}
+
+// Get the filesystem-backed shader directory
+static const char* get_shader_fs_dir(void) {
+    static char shader_dir[1024] = {0};
+    if (shader_dir[0] == '\0') {
+        const char* pref = Paths_GetPrefPath();
+        snprintf(shader_dir, sizeof(shader_dir), "%sshaders/libretro", pref);
+    }
+    return shader_dir;
+}
+#endif // __ANDROID__
+
 static void load_preset_internal(int index) {
     SDL_Log("load_preset called with index %d", index);
     if (index < 0 || index >= available_preset_count) {
@@ -143,7 +284,16 @@ static void load_preset_internal(int index) {
     }
 
     char full_path[1024];
+#ifdef __ANDROID__
+    // On Android, extract shader files from APK assets to filesystem
+    // because librashader uses standard file I/O (can't read APK assets).
+    const char* fs_dir = get_shader_fs_dir();
+    SDL_Log("Extracting shader preset to filesystem: %s -> %s", available_presets[index], fs_dir);
+    extract_shader_preset_tree(available_presets[index], fs_dir);
+    snprintf(full_path, sizeof(full_path), "%s/%s", fs_dir, available_presets[index]);
+#else
     snprintf(full_path, sizeof(full_path), "%s%s/%s", g_base_path, "assets/shaders/libretro", available_presets[index]);
+#endif
 
     // Normalize path separators
     for (int i = 0; full_path[i]; i++) {
@@ -220,12 +370,60 @@ static void ensure_shader_initialized(void) {
     char shaders_path[1024];
     snprintf(shaders_path, sizeof(shaders_path), "%s%s", g_base_path, "assets/shaders/libretro");
 
+#ifdef __ANDROID__
+    // On Android, APK assets can't be enumerated with SDL_GlobDirectory.
+    // Read a pre-generated manifest file listing all .slangp preset paths.
+    {
+        char manifest_path[1024];
+        snprintf(manifest_path, sizeof(manifest_path), "%s/shader_manifest.txt", shaders_path);
+        // On Android, SDL_IOFromFile routes through AssetManager which uses
+        // paths relative to the assets/ root — strip the prefix.
+        const char* manifest_open_path = manifest_path;
+#ifdef __ANDROID__
+        if (strncmp(manifest_open_path, "assets/", 7) == 0)
+            manifest_open_path += 7;
+#endif
+        SDL_IOStream* io = SDL_IOFromFile(manifest_open_path, "rb");
+        if (io) {
+            Sint64 size = SDL_GetIOSize(io);
+            if (size > 0) {
+                char* data = (char*)SDL_malloc(size + 1);
+                SDL_ReadIO(io, data, size);
+                data[size] = '\0';
+                SDL_CloseIO(io);
+
+                int capacity = 64;
+                available_presets = (char**)SDL_malloc(capacity * sizeof(char*));
+                available_preset_count = 0;
+
+                char* line = strtok(data, "\r\n");
+                while (line) {
+                    if (line[0] != '\0') {
+                        if (available_preset_count >= capacity) {
+                            capacity *= 2;
+                            available_presets = (char**)SDL_realloc(available_presets, capacity * sizeof(char*));
+                        }
+                        available_presets[available_preset_count] = SDL_strdup(line);
+                        available_preset_count++;
+                    }
+                    line = strtok(NULL, "\r\n");
+                }
+                SDL_free(data);
+            } else {
+                SDL_CloseIO(io);
+            }
+        } else {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Shader manifest not found: %s", manifest_path);
+        }
+    }
+#else
     int capacity = 64;
     available_presets = (char**)SDL_malloc(capacity * sizeof(char*));
     available_preset_count = 0;
 
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Scanning shader presets in: %s", shaders_path);
     scan_presets_recursive(shaders_path, "", &available_presets, &available_preset_count, &capacity);
+#endif
 
     if (available_preset_count > 0) {
         qsort(available_presets, available_preset_count, sizeof(char*), compare_strings);

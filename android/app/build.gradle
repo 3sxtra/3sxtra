@@ -100,12 +100,34 @@ tasks.register('copyCustomShaders', Copy) {
     into "$buildDir/generated/assets/core/shaders/libretro/custom"
 }
 
+// Generate a manifest listing all .slangp presets (SDL_GlobDirectory doesn't work on APK assets)
+tasks.register('generateShaderManifest') {
+    dependsOn 'copyLibretroShaders'
+    dependsOn 'copyCustomShaders'
+    doLast {
+        def libretroDir = file("$buildDir/generated/assets/core/shaders/libretro")
+        def manifest = file("$buildDir/generated/assets/core/shaders/libretro/shader_manifest.txt")
+        def lines = []
+        if (libretroDir.exists()) {
+            libretroDir.eachFileRecurse { f ->
+                if (f.name.endsWith('.slangp')) {
+                    lines << libretroDir.toPath().relativize(f.toPath()).toString().replace('\\', '/')
+                }
+            }
+        }
+        lines.sort()
+        manifest.text = lines.join('\n') + '\n'
+        println "Generated shader manifest with ${lines.size()} presets"
+    }
+}
+
 afterEvaluate {
     tasks.named('preBuild').configure {
         dependsOn copyShaders
         dependsOn copyCoreAssets
         dependsOn copyLibretroShaders
         dependsOn copyCustomShaders
+        dependsOn generateShaderManifest
     }
 }
 

@@ -1586,6 +1586,13 @@ void SDLApp_EndFrame() {
         // Swap the window to display the final rendered frame
         TRACE_SUB_BEGIN("SwapWindow");
         if (!has_pending_quit()) {
+#ifdef __ANDROID__
+            // On Android, RmlUi routes through sdl_renderer even when the backend is OpenGL.
+            // Flush the SDL_Renderer batch buffer to the default framebuffer before swapping.
+            if (sdl_renderer) {
+                SDL_FlushRenderer(sdl_renderer);
+            }
+#endif
             SDL_GL_SwapWindow(window);
         }
         TRACE_SUB_END();
