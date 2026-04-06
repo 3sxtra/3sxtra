@@ -67,6 +67,11 @@ fetch_source() {
         cd "$THIRD_PARTY/glad" && python -m glad --api gl:core=4.6 --reproducible --out-path "../glad_generated" c --loader
         cd "$ROOT_DIR"
     fi
+    if [ ! -d "$THIRD_PARTY/glad_gles_generated/include/glad" ]; then
+        echo "Generating GLAD GLES..."
+        cd "$THIRD_PARTY/glad" && python -m glad --api gles2=3.0 --reproducible --out-path "../glad_gles_generated" c --loader
+        cd "$ROOT_DIR"
+    fi
     # SDL_shadercross
     if [ ! -d "$THIRD_PARTY/SDL_shadercross" ]; then 
         git clone https://github.com/libsdl-org/SDL_shadercross.git "$THIRD_PARTY/SDL_shadercross"
