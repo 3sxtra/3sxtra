@@ -37,10 +37,28 @@ set(ENABLE_MODS ON)
 set(ENABLE_BEZEL ON)
 set(ENABLE_CONTROLLER_IMAGE ON)
 set(ENABLE_REPLAY ON)
-set(ENABLE_LIBRASHADER OFF CACHE BOOL "" FORCE)
+set(ENABLE_LIBRASHADER ON CACHE BOOL "" FORCE)
 set(ENABLE_DEBUG_HUD ON)
 set(ENABLE_LEADERBOARD ON)
 set(ENABLE_ARCADE_ROM ON)
+
+# Validate librashader availability for this ABI (must run before source filters)
+if(ENABLE_LIBRASHADER)
+    if(ANDROID_ABI STREQUAL "arm64-v8a")
+        set(RUST_TARGET "aarch64-linux-android")
+    elseif(ANDROID_ABI STREQUAL "armeabi-v7a")
+        set(RUST_TARGET "armv7-linux-androideabi")
+    elseif(ANDROID_ABI STREQUAL "x86_64")
+        set(RUST_TARGET "x86_64-linux-android")
+    elseif(ANDROID_ABI STREQUAL "x86")
+        set(RUST_TARGET "i686-linux-android")
+    endif()
+    set(LIBRASHADER_LIB_PATH "${REPO_ROOT}/third_party/librashader/target/${RUST_TARGET}/release/liblibrashader_capi.a")
+    if(NOT EXISTS "${LIBRASHADER_LIB_PATH}")
+        message(WARNING "librashader: NOT found for ${ANDROID_ABI} — disabling (${LIBRASHADER_LIB_PATH})")
+        set(ENABLE_LIBRASHADER OFF)
+    endif()
+endif()
 
 # ======================================
 # Add Subdirectories for Source Deps
@@ -127,6 +145,7 @@ include_directories(
     ${SDL3_NET_ROOT}/include
     ${MINIZIP_NG_ROOT}/include
     ${TF_PSA_CRYPTO_ROOT}/include
+    ${REPO_ROOT}/third_party/librashader/include
 )
 
 # ======================================
@@ -270,6 +289,7 @@ target_compile_definitions(main PRIVATE
     $<$<BOOL:${ENABLE_DEBUG_HUD}>:ENABLE_DEBUG_HUD>
     $<$<BOOL:${ENABLE_LEADERBOARD}>:ENABLE_LEADERBOARD>
     $<$<BOOL:${ENABLE_ARCADE_ROM}>:ENABLE_ARCADE_ROM>
+    $<$<BOOL:${ENABLE_LIBRASHADER}>:ENABLE_LIBRASHADER>
     $<$<BOOL:${ENABLE_RMLUI}>:RMLUI_SDL_VERSION_MAJOR=3>
 )
 
@@ -308,6 +328,17 @@ add_library(tfpsacrypto::tfpsacrypto STATIC IMPORTED)
 set_target_properties(tfpsacrypto::tfpsacrypto PROPERTIES IMPORTED_LOCATION "${TF_PSA_CRYPTO_ROOT}/lib/libtfpsacrypto.a")
 
 # ======================================
+# Librashader (static Rust library)
+# ======================================
+if(ENABLE_LIBRASHADER)
+    add_library(librashader_capi STATIC IMPORTED)
+    set_target_properties(librashader_capi PROPERTIES
+        IMPORTED_LOCATION "${LIBRASHADER_LIB_PATH}"
+    )
+    message(STATUS "librashader: enabled for ${ANDROID_ABI}")
+endif()
+
+# ======================================
 # Link against libraries
 # ======================================
 target_link_libraries(main PRIVATE
@@ -325,6 +356,7 @@ target_link_libraries(main PRIVATE
     rmlui_debugger
     lua_static
     SDL3_shadercross::SDL3_shadercross
+    $<$<BOOL:${ENABLE_LIBRASHADER}>:librashader_capi>
     log
     android
     EGL

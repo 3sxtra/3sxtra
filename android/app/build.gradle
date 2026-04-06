@@ -69,6 +69,7 @@ tasks.register('copyShaders', Copy) {
     include '*.es'
     include '*.frag'
     include '*.vert'
+    include '*.spv'
 }
 
 tasks.register('copyCoreAssets', Copy) {
@@ -84,10 +85,27 @@ tasks.register('copyCoreAssets', Copy) {
     include 'ASSET_VERSION'
 }
 
+tasks.register('copyLibretroShaders', Copy) {
+    from '../../third_party/slang-shaders'
+    into "$buildDir/generated/assets/core/shaders/libretro"
+    include '**/*.slangp'
+    include '**/*.slang'
+    include '**/*.inc'
+    include '**/*.h'
+    include '**/*.glsl'
+}
+
+tasks.register('copyCustomShaders', Copy) {
+    from '../../assets/shaders/custom'
+    into "$buildDir/generated/assets/core/shaders/libretro/custom"
+}
+
 afterEvaluate {
     tasks.named('preBuild').configure {
         dependsOn copyShaders
         dependsOn copyCoreAssets
+        dependsOn copyLibretroShaders
+        dependsOn copyCustomShaders
     }
 }
 

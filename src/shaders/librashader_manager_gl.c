@@ -55,6 +55,26 @@ static GLuint compile_shader(const char* source, GLenum type) {
 }
 
 static void init_blit_resources(LibrashaderManagerGL* manager) {
+#ifdef __ANDROID__
+    const char* vs_src = "#version 300 es\n"
+                         "in vec2 aPos;\n"
+                         "in vec2 aTexCoord;\n"
+                         "out vec2 TexCoord;\n"
+                         "void main() {\n"
+                         "    gl_Position = vec4(aPos, 0.0, 1.0);\n"
+                         "    TexCoord = aTexCoord;\n"
+                         "}\n";
+
+    const char* fs_src = "#version 300 es\n"
+                         "precision mediump float;\n"
+                         "in vec2 TexCoord;\n"
+                         "out vec4 FragColor;\n"
+                         "uniform sampler2D Source;\n"
+                         "uniform sampler2D Original;\n"
+                         "void main() {\n"
+                         "    FragColor = vec4(texture(Source, TexCoord).rgb, texture(Original, TexCoord).a);\n"
+                         "}\n";
+#else
     const char* vs_src = "#version 330 core\n"
                          "layout(location = 0) in vec2 aPos;\n"
                          "layout(location = 1) in vec2 aTexCoord;\n"
@@ -72,6 +92,7 @@ static void init_blit_resources(LibrashaderManagerGL* manager) {
                          "void main() {\n"
                          "    FragColor = vec4(texture(Source, TexCoord).rgb, texture(Original, TexCoord).a);\n"
                          "}\n";
+#endif
 
     GLuint vs = compile_shader(vs_src, GL_VERTEX_SHADER);
     GLuint fs = compile_shader(fs_src, GL_FRAGMENT_SHADER);
@@ -143,7 +164,9 @@ LibrashaderManagerGL* LibrashaderManager_Init_GL(const char* preset_path) {
     // 3. Create Filter Chain
     struct filter_chain_gl_opt_t opt;
     opt.version = LIBRASHADER_CURRENT_VERSION;
-#ifdef PLATFORM_RPI4
+#ifdef __ANDROID__
+    opt.glsl_version = 100; // GLES — librashader maps to 300 es
+#elif defined(PLATFORM_RPI4)
     opt.glsl_version = 330;
 #else
     opt.glsl_version = 460;
@@ -196,8 +219,10 @@ void LibrashaderManager_Render_GL(LibrashaderManagerGL* manager, GLuint input_te
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // Re-enable mipmaps just in case, though unlikely to be the cause
+#ifndef __ANDROID__
+    // Skip mipmap generation on Android — canvas texture doesn't use mipmaps
     glGenerateMipmap(GL_TEXTURE_2D);
+#endif
 
     // Prepare inputs
     struct libra_image_gl_t input_image = {
