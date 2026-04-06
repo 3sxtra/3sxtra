@@ -58,6 +58,9 @@ android {
     aaptOptions {
         noCompress 'AFS'
     }
+    packagingOptions {
+        pickFirst '**/libc++_shared.so'
+    }
 }
 
 tasks.register('copyShaders', Copy) {
