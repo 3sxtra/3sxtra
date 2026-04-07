@@ -488,9 +488,10 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     s_active_backend = SDLApp_GetRenderer();
 
 #ifdef __ANDROID__
-    // RmlUi's GL3 backend uses #version 330 core shaders internally —
-    // incompatible with OpenGL ES.  Force SDL_Renderer on Android.
-    if (s_active_backend == RENDERER_OPENGL) {
+    // RmlUi's GL3 backend supports GLES 3.2 natively (#version 320 es).
+    // Previously this was overridden to SDL_Renderer, but that creates a
+    // separate EGL context whose renders are invisible in the GL framebuffer.
+    if (false) {
         s_active_backend = RENDERER_SDL2D;
         SDL_Log("[RmlUi] Android: overriding GL3 backend → SDL Renderer");
     }
@@ -825,6 +826,13 @@ extern "C" void rmlui_wrapper_render(void) {
     if (!s_any_window_visible)
         return;
 
+    static bool s_first_render = true;
+    if (s_first_render) {
+        SDL_Log("[RmlUi] First window render: gl3=%p gpu=%p sdl=%p if=%p",
+                (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl, (void*)s_render_interface);
+        s_first_render = false;
+    }
+
     // Ensure layout is up-to-date before rendering. Documents lazily shown
     // during render_overlays() (e.g. control_mapping on first F1 press) will
     // have missed the earlier Update() call in rmlui_wrapper_new_frame() since
@@ -865,7 +873,9 @@ extern "C" void rmlui_wrapper_render(void) {
         SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
         SDL_SetRenderTarget(renderer, NULL);
         s_window_context->Render();
-        // EndFrame() is a no-op in the SDL backend, skip it.
+        // Flush immediately — subsequent direct GL calls (bezels, debug HUD)
+        // would corrupt the SDL_Renderer's batched GL state otherwise.
+        SDL_FlushRenderer(renderer);
     }
 }
 
@@ -946,6 +956,8 @@ static void ensure_fonts_loaded(void) {
 extern "C" void rmlui_wrapper_show_document(const char* name) {
     if (!s_window_context || !name)
         return;
+    SDL_Log("[RmlUi] show_document('%s') render_if=%p gl3=%p gpu=%p sdl=%p",
+            name, (void*)s_render_interface, (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl);
     ensure_gl3_ready(); // ⚡ LoadDocument needs render interface for textures
     ensure_fonts_loaded();
 
@@ -962,8 +974,9 @@ extern "C" void rmlui_wrapper_show_document(const char* name) {
         doc->Show();
         s_window_documents[name] = doc;
         s_any_window_visible = true;
+        SDL_Log("[RmlUi] Loaded window document: %s", path.c_str());
     } else {
-        SDL_Log("[RmlUi] Failed to load window document: %s", path.c_str());
+        SDL_Log("[RmlUi] FAILED to load window document: %s", path.c_str());
     }
 }
 
@@ -1016,6 +1029,8 @@ extern "C" void rmlui_wrapper_close_document(const char* name) {
 extern "C" void rmlui_wrapper_show_game_document(const char* name) {
     if (!s_game_context || !name)
         return;
+    SDL_Log("[RmlUi] show_game_document('%s') render_if=%p gl3=%p gpu=%p sdl=%p",
+            name, (void*)s_render_interface, (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl);
     ensure_gl3_ready(); // ⚡ LoadDocument needs render interface for textures
     ensure_fonts_loaded();
 
@@ -1032,8 +1047,9 @@ extern "C" void rmlui_wrapper_show_game_document(const char* name) {
         doc->Show();
         s_game_documents[name] = doc;
         s_any_game_visible = true;
+        SDL_Log("[RmlUi] Loaded game document: %s", path.c_str());
     } else {
-        SDL_Log("[RmlUi] Failed to load game document: %s", path.c_str());
+        SDL_Log("[RmlUi] FAILED to load game document: %s", path.c_str());
     }
 }
 
@@ -1126,6 +1142,14 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
     // ⚡ Cached bool — zero-cost check, no map iteration
     if (!s_any_game_visible)
         return;
+
+    static bool s_first_game_render = true;
+    if (s_first_game_render) {
+        SDL_Log("[RmlUi] First game render: gl3=%p gpu=%p sdl=%p if=%p view=%.0fx%.0f",
+                (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl,
+                (void*)s_render_interface, view_w, view_h);
+        s_first_game_render = false;
+    }
 
     // ⚡ On-demand GL3: create renderer if needed
     ensure_gl3_ready();
@@ -1239,6 +1263,10 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
         // Restore viewport and scale
         SDL_SetRenderViewport(renderer, NULL);
         SDL_SetRenderScale(renderer, 1.0f, 1.0f);
+
+        // Flush immediately — subsequent direct GL calls (bezels, overlays)
+        // would corrupt the SDL_Renderer's batched GL state otherwise.
+        SDL_FlushRenderer(renderer);
     }
 }
 

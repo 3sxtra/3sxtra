@@ -10,7 +10,7 @@ flat in float PaletteIndex;
 
 uniform highp usampler2DArray Source;    // Raw indices (R8UI)
 uniform sampler2D PaletteBuffer;         // RGBA float colors — 2D texture (256 x FL_PALETTE_MAX)
-uniform sampler2DArray SourceRGBA;       // Direct-color RGBA8
+uniform mediump sampler2DArray SourceRGBA;  // Direct-color RGBA8
 
 void main()
 {

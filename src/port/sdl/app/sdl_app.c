@@ -155,7 +155,8 @@ static char* read_shader_source(const char* path) {
     return buffer; // caller frees with SDL_free
 }
 
-/** @brief Compile vertex + fragment shaders and link into a GL program. */
+/** @brief Compile vertex + fragment shaders and link into a GL program.
+ *  Returns 0 on failure instead of aborting — callers should check. */
 GLuint create_shader_program(const char* base_path, const char* vertex_path, const char* fragment_path) {
     // Defensive copy: Paths_ResolveAsset returns a pointer to a static rotating buffer.
     // If both vertex_path and fragment_path point to that buffer, the second call
@@ -178,14 +179,21 @@ GLuint create_shader_program(const char* base_path, const char* vertex_path, con
         snprintf(full_fragment_path, sizeof(full_fragment_path), "%s%s", base_path, f_path);
     }
 
+    SDL_Log("create_shader_program: vert='%s' frag='%s'", full_vertex_path, full_fragment_path);
+
     char* vertex_source = read_shader_source(full_vertex_path);
     if (vertex_source == NULL) {
-        fatal_error("Failed to read vertex shader source from path: %s", full_vertex_path);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "Failed to read vertex shader source from path: %s", full_vertex_path);
+        return 0;
     }
 
     char* fragment_source = read_shader_source(full_fragment_path);
     if (fragment_source == NULL) {
-        fatal_error("Failed to read fragment shader source from path: %s", full_fragment_path);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "Failed to read fragment shader source from path: %s", full_fragment_path);
+        SDL_free(vertex_source);
+        return 0;
     }
 
     GLint success;
@@ -197,7 +205,12 @@ GLuint create_shader_program(const char* base_path, const char* vertex_path, con
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
-        fatal_error("Vertex shader compilation failed: %s", info_log);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "Vertex shader compilation failed (%s): %s", full_vertex_path, info_log);
+        glDeleteShader(vertex_shader);
+        SDL_free(vertex_source);
+        SDL_free(fragment_source);
+        return 0;
     }
 
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -206,7 +219,13 @@ GLuint create_shader_program(const char* base_path, const char* vertex_path, con
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(fragment_shader, 512, NULL, info_log);
-        fatal_error("Fragment shader compilation failed: %s", info_log);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "Fragment shader compilation failed (%s): %s", full_fragment_path, info_log);
+        glDeleteShader(vertex_shader);
+        glDeleteShader(fragment_shader);
+        SDL_free(vertex_source);
+        SDL_free(fragment_source);
+        return 0;
     }
 
     GLuint program = glCreateProgram();
@@ -218,7 +237,12 @@ GLuint create_shader_program(const char* base_path, const char* vertex_path, con
     if (!success) {
         glGetProgramInfoLog(program, 512, NULL, info_log);
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Shader linking failed: %s", info_log);
-        exit(1);
+        glDeleteShader(vertex_shader);
+        glDeleteShader(fragment_shader);
+        glDeleteProgram(program);
+        SDL_free(vertex_source);
+        SDL_free(fragment_source);
+        return 0;
     }
 
     glDeleteShader(vertex_shader);
@@ -303,6 +327,9 @@ int SDLApp_Init() {
     SDL_SetAppMetadata(app_name, "0.1", NULL);
     SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR, "1");
     SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+#ifdef __ANDROID__
+    SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
+#endif
 
     if (g_renderer_backend == RENDERER_OPENGL) {
 #ifdef __ANDROID__

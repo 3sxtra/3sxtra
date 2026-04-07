@@ -24,6 +24,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <SDL3/SDL.h>
 
 #define BACKTRACE_MAX 100
 
@@ -37,6 +38,17 @@ void fatal_error(const s8* fmt, ...) {
     fprintf(stderr, "\n");
 
     va_end(args);
+
+    /* On Android, fprintf(stderr) doesn't route to logcat.
+     * Re-format the message via SDL_LogError so it's visible in adb logcat. */
+    {
+        va_list args2;
+        va_start(args2, fmt);
+        char buf[1024];
+        vsnprintf(buf, sizeof(buf), fmt, args2);
+        va_end(args2);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FATAL: %s", buf);
+    }
 
     fflush(stdout);
     fflush(stderr);
