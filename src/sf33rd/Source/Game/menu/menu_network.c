@@ -573,7 +573,7 @@ void Network_Lobby(struct _TASK* task_ptr) {
         effect_work_init();
         Menu_Common_Init();
         s_slide_offset = 384;
-        Menu_Cursor_Y[0] = 0;
+        Menu_Cursor_Y[0] = 2;
         Menu_Cursor_Y[1] = 0;
         Order[0x4E] = 5;
         Order_Timer[0x4E] = 1;
@@ -739,6 +739,10 @@ void Network_Lobby(struct _TASK* task_ptr) {
             s16 prev_cursor = Menu_Cursor_Y[0];
             if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 16, FADE_OPAQUE) == 0) {
                 MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 16, FADE_OPAQUE);
+            }
+            if (Menu_Cursor_Y[0] < 2) {
+                if (prev_cursor == 2) Menu_Cursor_Y[0] = 16;
+                else Menu_Cursor_Y[0] = 2;
             }
             if (popup_active) {
                 Menu_Cursor_Y[0] = prev_cursor;

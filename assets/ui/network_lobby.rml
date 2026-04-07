@@ -17,18 +17,8 @@
 
         <!-- Left: menu column -->
         <div id="lobby-menu-col">
-            <div class="section-header">LAN</div>
-
-            <div class="lobby-row" data-class-focused="cursor == 0">
-                <span class="lobby-cell-label">AUTO-CONNECT</span>
-                <span class="lobby-cell-value" data-class-on="lan_auto">{{lan_auto ? 'ON' : 'OFF'}}</span>
-            </div>
-            <div class="lobby-row" data-class-focused="cursor == 1">
-                <span class="lobby-cell-label">CONNECT PEER</span>
-                <span class="lobby-cell-value peer-val">{{lan_peer_name}}</span>
-            </div>
-
             <div class="section-header net-header">INTERNET</div>
+
 
             <div class="lobby-row" data-class-focused="cursor == 2">
                 <span class="lobby-cell-label">AUTO-ACCEPT</span>
@@ -97,25 +87,6 @@
 
         <!-- Right: peer panels column -->
         <div id="lobby-peers-col">
-
-            <!-- LAN Peers -->
-            <div class="peer-panel">
-                <div class="peer-panel-header">
-                    <span class="peer-panel-title">LAN PEERS</span>
-                    <span class="peer-panel-count" data-if="lan_peer_count > 0">{{lan_peer_count}} found</span>
-                    <span class="peer-panel-count empty" data-if="lan_peer_count == 0">none</span>
-                </div>
-                <div class="peer-list">
-                    <div data-for="p : lan_peers"
-                         class="peer-list-item"
-                         data-class-selected="p.selected">
-                        <span class="peer-list-name">{{p.name}}</span>
-                    </div>
-                    <div class="peer-list-empty" data-if="lan_peer_count == 0">
-                        scanning LAN...
-                    </div>
-                </div>
-            </div>
 
             <!-- Online Peers -->
             <div class="peer-panel">
