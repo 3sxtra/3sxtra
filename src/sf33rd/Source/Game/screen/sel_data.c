@@ -155,7 +155,7 @@ const u8 Random_Stage_Data[2][32] = {
     { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 2, 3, 4, 5, 6, 7, 8, 11, 12, 15, 16, 19, 0 }
 };
 
-const s16 Slide_Pos_Data_61[84][2] = {
+const s16 Slide_Pos_Data_61[99][2] = {
     { -120, 156 },
     { -104, 135 },
     { -88, 114 },
@@ -242,7 +242,24 @@ const s16 Slide_Pos_Data_61[84][2] = {
     { -150, 154 }, /* [80] AUTO-CONN */
     { -150, 138 }, /* [81] CONNECT   */
     { -150, 114 }, /* [82] EXIT      */
-    { -104, 135 }  /* [83] RANKED MATCHMAKING (between LOBBY and LOCAL) */
+    { -104, 135 }, /* [83] RANKED MATCHMAKING (between LOBBY and LOCAL) */
+    /* [84-90] 7-item Options Menu (FX Option, no Extra Option) */
+    { -128, 169 }, /* 84 */
+    { -120, 156 }, /* 85 */
+    { -112, 143 }, /* 86 */
+    { -104, 130 }, /* 87 */
+    { -96, 117 },  /* 88 */
+    { -88, 104 },  /* 89 (FX Option) */
+    { -80, 91 },   /* 90 */
+    /* [91-98] 8-item Options Menu (FX Option + Extra Option) */
+    { -128, 169 }, /* 91 */
+    { -120, 156 }, /* 92 */
+    { -112, 143 }, /* 93 */
+    { -104, 130 }, /* 94 */
+    { -96, 117 },  /* 95 */
+    { -88, 104 },  /* 96 (Extra Option) */
+    { -80, 91 },   /* 97 (FX Option) */
+    { -72, 78 }    /* 98 */
 
 };
 

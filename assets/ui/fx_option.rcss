@@ -1,0 +1,104 @@
+/* ── FX Option Stylesheet ──────────────────────────────── */
+body {
+    width: 384dp;
+    height: 224dp;
+    font-family: "DistrictTF-RegularItalic";
+    font-size: 17dp;
+    color: #ffffffee;
+}
+
+.fx-panel {
+    display: block;
+    position: absolute;
+    top: 68dp;
+    left: 50%;
+    margin-left: -160dp;
+    width: 320dp;
+    text-align: center;
+    animation: panel-fade-in 0.4s quadratic-out;
+}
+
+@keyframes panel-fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* ── Title ──────────────────────────────────────────────────── */
+.fx-title {
+    display: block;
+    font-size: 14dp;
+    font-weight: bold;
+    color: #ffcc44;
+    letter-spacing: 2dp;
+    margin-bottom: 2dp;
+    font-effect: shadow(1dp 1dp #00000088);
+}
+
+/* ── Page indicator ────────────────────────────────────────── */
+.page-indicator {
+    display: block;
+    margin-bottom: 4dp;
+    font-size: 13dp;
+    color: #e0e0e0;
+}
+
+.page-arrow {
+    color: #ffcc44;
+    font-size: 15dp;
+    margin-left: 6dp;
+    margin-right: 6dp;
+}
+
+.page-num {
+    letter-spacing: 1dp;
+}
+
+/* ── Option list ────────────────────────────────────────────── */
+.option-list {
+    display: block;
+    padding: 0dp 6dp;
+    background-color: #00000088;
+    border-width: 1dp;
+    border-color: #ffcc4433;
+}
+
+.option-row {
+    display: block;
+    padding: 2dp 4dp;
+    margin-bottom: 0dp;
+    transition: background-color 0.15s linear-in-out;
+    white-space: nowrap;
+}
+
+.option-row.focused {
+    background-color: rgba(255, 204, 68, 38);
+    border-left-width: 2dp;
+    border-left-color: #ffcc44;
+}
+
+.opt-label {
+    display: inline-block;
+    width: 160dp;
+    text-align: left;
+    font-size: 13dp;
+    color: #cccccc;
+    letter-spacing: 1dp;
+}
+
+.opt-value {
+    display: inline-block;
+    width: 130dp;
+    text-align: right;
+    font-size: 14dp;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* ── Footer hint ────────────────────────────────────────────── */
+.footer-hint {
+    display: block;
+    margin-top: 4dp;
+    font-size: 11dp;
+    color: #b0b0b0;
+    letter-spacing: 1dp;
+}

@@ -59,13 +59,22 @@
                 EXTRA OPTION
             </button>
 
-            <!-- 6 (or 5 when Extra Option locked): Exit -->
+            <!-- 6 (or 5 when Extra locked): FX Option -->
             <button class="menu-item" id="opt-6"
                     data-class-focused="(extra_option_available ? option_cursor == 6 : option_cursor == 5)"
                     data-event-click="select_item(extra_option_available ? 6 : 5)"
-                    nav-up="opt-5">
+                    nav-up="opt-5" nav-down="opt-7">
+                FX OPTION
+            </button>
+
+            <!-- 7 (or 6 when Extra locked): Exit -->
+            <button class="menu-item" id="opt-7"
+                    data-class-focused="(extra_option_available ? option_cursor == 7 : option_cursor == 6)"
+                    data-event-click="select_item(extra_option_available ? 7 : 6)"
+                    nav-up="opt-6">
                 EXIT
             </button>
+
 
         </div><!-- menu-items -->
     </div><!-- option-panel -->

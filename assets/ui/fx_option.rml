@@ -1,0 +1,49 @@
+<rml>
+<head>
+    <link type="text/rcss" href="base.rcss"/>
+    <link type="text/rcss" href="fx_option.rcss"/>
+    <title>FX Option</title>
+</head>
+<body data-model="fx_option">
+    <div id="fx-panel" class="fx-panel">
+        <div class="option-list">
+            <div class="option-row" data-class-focused="fx_cursor == 0" data-if="fx_row_count > 0">
+                <span class="opt-label">{{ fx_label_0 }}</span>
+                <span class="opt-value">{{ fx_value_0 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="fx_cursor == 1" data-if="fx_row_count > 1">
+                <span class="opt-label">{{ fx_label_1 }}</span>
+                <span class="opt-value">{{ fx_value_1 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="fx_cursor == 2" data-if="fx_row_count > 2">
+                <span class="opt-label">{{ fx_label_2 }}</span>
+                <span class="opt-value">{{ fx_value_2 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="fx_cursor == 3" data-if="fx_row_count > 3">
+                <span class="opt-label">{{ fx_label_3 }}</span>
+                <span class="opt-value">{{ fx_value_3 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="fx_cursor == 4" data-if="fx_row_count > 4">
+                <span class="opt-label">{{ fx_label_4 }}</span>
+                <span class="opt-value">{{ fx_value_4 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="fx_cursor == 5" data-if="fx_row_count > 5">
+                <span class="opt-label">{{ fx_label_5 }}</span>
+                <span class="opt-value">{{ fx_value_5 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="fx_cursor == 6" data-if="fx_row_count > 6">
+                <span class="opt-label">{{ fx_label_6 }}</span>
+                <span class="opt-value">{{ fx_value_6 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="fx_cursor == 7" data-if="fx_row_count > 7">
+                <span class="opt-label">{{ fx_label_7 }}</span>
+                <span class="opt-value">{{ fx_value_7 }}</span>
+            </div>
+        </div>
+
+        <div class="footer-hint">
+            <span>&lt;&lt; &gt;&gt; CHANGE PAGE   ◀ ▶ CHANGE VALUE</span>
+        </div>
+    </div>
+</body>
+</rml>

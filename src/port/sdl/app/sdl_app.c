@@ -55,6 +55,7 @@
 #include "port/sdl/rmlui/rmlui_copyright.h"
 #include "port/sdl/rmlui/rmlui_exit_confirm.h"
 #include "port/sdl/rmlui/rmlui_extra_option.h"
+#include "port/sdl/rmlui/rmlui_fx_option.h"
 #include "port/sdl/rmlui/rmlui_game_hud.h"
 #include "port/sdl/rmlui/rmlui_game_option.h"
 #include "port/sdl/rmlui/rmlui_gameover.h"
@@ -711,6 +712,7 @@ int SDLApp_Init() {
     rmlui_casual_lobby_init();
     rmlui_tournament_lobby_init();
     rmlui_leaderboard_init();
+    rmlui_fx_option_init();
 
     // The game HUD provides the match banner even in Native UI mode.
     rmlui_game_hud_init();
@@ -1033,7 +1035,8 @@ void SDLApp_EndFrame() {
     }
     TRACE_SUB_END();
 
-    /* Replay picker and network lobby always use RmlUI — update outside use_rmlui gate */
+    /* Replay picker, network lobby, and FX option always use RmlUI — update outside use_rmlui gate */
+    rmlui_fx_option_update();
     rmlui_replay_picker_update();
     rmlui_network_lobby_update();
     rmlui_casual_lobby_update();

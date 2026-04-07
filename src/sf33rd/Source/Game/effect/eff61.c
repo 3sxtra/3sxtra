@@ -19,7 +19,7 @@ static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
 static void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */);
 static void EFF61_SUDDENLY(WORK_Other_CONN* ewk);
 
-const s8* Menu_Letter_Data[84] = { "ARCADE",
+const s8* Menu_Letter_Data[99] = { "ARCADE",
                                    "VERSUS",
                                    "TRAINING",
                                    "NETWORK",
@@ -103,7 +103,24 @@ const s8* Menu_Letter_Data[84] = { "ARCADE",
                                    "AUTO-CONN",
                                    "CONNECT",
                                    "EXIT",
-                                   "RANKED MATCHMAKING" };
+                                   "RANKED MATCHMAKING",
+                                   /* [84-90] 7-item Options Menu (FX Option, no Extra Option) */
+                                   "GAME OPTION",
+                                   "BUTTON CONFIG.",
+                                   "SYSTEM DIRECTION",
+                                   "SOUND",
+                                   "SAVE#/#LOAD",
+                                   "FX OPTION",
+                                   "EXIT",
+                                   /* [91-98] 8-item Options Menu (FX Option + Extra Option) */
+                                   "GAME OPTION",
+                                   "BUTTON CONFIG.",
+                                   "SYSTEM DIRECTION",
+                                   "SOUND",
+                                   "SAVE#/#LOAD",
+                                   "EXTRA OPTION",
+                                   "FX OPTION",
+                                   "EXIT" };
 
 /** @brief No-op — NETWORK is now always visible in the Mode Menu. */
 void Menu_UpdateNetworkLabel(void) {}

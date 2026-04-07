@@ -22,6 +22,7 @@
 
 #include "port/menu_screen.h"
 
+#include "sf33rd/AcrSDK/common/pad.h"              /* SWK_UP, SWK_DOWN, etc. */
 #include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
@@ -37,7 +38,10 @@
 #include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
 #include "structs.h"                               /* struct _TASK */
 
+#include "port/sdl/input/sdl_pad.h" /* SDLPad_GetButtonState — shoulder buttons */
+
 /* RmlUi Phase 3 */
+#include "port/sdl/rmlui/rmlui_fx_option.h"     /* rmlui_fx_option_show/hide/cursor */
 #include "port/sdl/rmlui/rmlui_option_menu.h"    /* rmlui_option_menu_show/hide */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_option */
 #include "port/sdl/rmlui/rmlui_wrapper.h"        /* rmlui_wrapper_hide_all_game_documents */
@@ -65,8 +69,8 @@ extern MenuScreen g_screens[MENU_SCREEN_COUNT];
  *  Calls Menu_in_Sub pattern, sets up header bar, menu items (effect_61),
  *  cursor bar (effect_04), and RmlUi option menu.
  *
- *  Dynamic cursor_max: 6 items (0–5) normally, 7 items (0–6) with Extra
- *  Option unlocked.
+ *  Dynamic cursor_max: 7 items (0–6) normally, 8 items (0–7) with Extra
+ *  Option unlocked.  The FX OPTION item is always present.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 static void option_select_enter(struct _TASK* task_ptr) {
@@ -107,38 +111,16 @@ static void option_select_enter(struct _TASK* task_ptr) {
     }
 
     /* ── Dynamic item count based on Extra_Option unlock ── */
+    /* FX OPTION is always present (+1 to both paths). */
     if (CurrentSave()->Extra_Option == 0 && CurrentSave()->Unlock_All == 0) {
-        /* 6 items — no Extra Option */
+        /* 7 items — no Extra Option, but FX Option present */
         if (use_rmlui && rmlui_menu_option) {
             rmlui_option_menu_show();
         } else {
             effect_04_init(1, 4, 0, 0x48);
 
             ix = 0;
-            char_index = 0x2F;
-
-            while (ix < 6) {
-                effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x70A7);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
-                ix++;
-                char_index++;
-            }
-            Menu_Cursor_Move = 6;
-        }
-
-        /* Update the screen's cursor_max to reflect 6 items (0–5) */
-        g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 5;
-    } else {
-        /* 7 items — Extra Option unlocked */
-        if (use_rmlui && rmlui_menu_option) {
-            rmlui_option_menu_show();
-        } else {
-            effect_04_init(1, 1, 0, 0x48);
-
-            ix = 0;
-            char_index = 7;
+            char_index = 84; /* [84-90] */
 
             while (ix < 7) {
                 effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x70A7);
@@ -151,8 +133,31 @@ static void option_select_enter(struct _TASK* task_ptr) {
             Menu_Cursor_Move = 7;
         }
 
-        /* Update the screen's cursor_max to reflect 7 items (0–6) */
+        /* 7 items: 0-4 legacy, 5 FX Option, 6 Exit */
         g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 6;
+    } else {
+        /* 8 items — Extra Option unlocked + FX Option */
+        if (use_rmlui && rmlui_menu_option) {
+            rmlui_option_menu_show();
+        } else {
+            effect_04_init(1, 1, 0, 0x48);
+
+            ix = 0;
+            char_index = 91; /* [91-98] */
+
+            while (ix < 8) {
+                effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x70A7);
+                Order[ix + 0x50] = 1;
+                Order_Dir[ix + 0x50] = 4;
+                Order_Timer[ix + 0x50] = ix + 0x14;
+                ix++;
+                char_index++;
+            }
+            Menu_Cursor_Move = 8;
+        }
+
+        /* 8 items: 0-5 legacy (Extra=5), 6 FX Option, 7 Exit */
+        g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 7;
     }
 }
 
@@ -200,15 +205,16 @@ static void option_select_tick(struct _TASK* task_ptr) {
     }
 
     /* ── Determine dynamic cursor_max ── */
+    /* +1 for FX Option item (always present) */
     if (CurrentSave()->Extra_Option || CurrentSave()->Unlock_All) {
-        ix = 1;
+        ix = 1; /* Extra Option unlocked */
     } else {
         ix = 0;
     }
 
     /* ── Cursor movement ── */
-    if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, ix + 5, 0xFF) == 0) {
-        MC_Move_Sub(Check_Menu_Lever(1, 0), 0, ix + 5, 0xFF);
+    if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, ix + 6, 0xFF) == 0) {
+        MC_Move_Sub(Check_Menu_Lever(1, 0), 0, ix + 6, 0xFF);
     }
 
     /* ── Input dispatch ── */
@@ -223,8 +229,8 @@ static void option_select_tick(struct _TASK* task_ptr) {
 
     SE_selected();
 
-    /* ── Cancel / last item → back to Mode Select ── */
-    if (Menu_Cursor_Y[0] == ix + 5 || IO_Result == 0x200) {
+    /* ── Cancel / last item (EXIT) → back to Mode Select ── */
+    if (Menu_Cursor_Y[0] == ix + 6 || IO_Result == 0x200) {
         Menu_Suicide[0] = 0;
         Menu_Suicide[1] = 1;
         task_ptr->r_no[1] = 1; /* Mode_Select AT index */
@@ -255,7 +261,20 @@ static void option_select_tick(struct _TASK* task_ptr) {
         return;
     }
 
-    /* ── Confirm on a sub-screen item → fade-out to sub-screen ── */
+    /* ── FX OPTION item: ix + 5 (the item just before EXIT) ── */
+    if (Menu_Cursor_Y[0] == ix + 5) {
+        if (use_rmlui && rmlui_menu_option)
+            rmlui_option_menu_hide();
+        
+        /* Save the cursor position so we return exactly here */
+        Cursor_Y_Pos[0][1] = Menu_Cursor_Y[0];
+        Cursor_Y_Pos[1][1] = Menu_Cursor_Y[1];
+        
+        MenuScreen_Goto(MENU_SCREEN_FX_OPTION);
+        return;
+    }
+
+    /* ── Confirm on a CPS3 sub-screen item → fade-out to sub-screen ── */
     task_ptr->free[0] = 0;
 
     /* Set up X/Y adjust buffers (replicated from legacy Option_Select case 3) */
@@ -330,7 +349,7 @@ void ms_option_select_register(void) {
         .on_enter = option_select_enter,
         .on_tick = option_select_tick,
         .on_exit = option_select_exit,
-        .cursor_max = 6,   /* default: 7 items (0–6) — on_enter may override to 5 */
+        .cursor_max = 7,   /* default: 8 items (0–7) — on_enter may override to 6 */
         .cancel_item = -1, /* dynamic — handled in on_tick */
         .rmlui_show = option_select_rmlui_show,
         .rmlui_hide = option_select_rmlui_hide,
