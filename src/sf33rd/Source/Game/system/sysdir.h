@@ -4,7 +4,7 @@
 #include "structs.h"
 #include "types.h"
 
-typedef enum Dipswitch {
+typedef enum Dipswitch : uint32_t {
     DIP_TAUNT_DISABLED = 1 << 0,
     DIP_TAUNT_AFTER_KO_DISABLED = 1 << 1,
     DIP_FORWARD_DASH_DISABLED = 1 << 2,
@@ -30,6 +30,7 @@ typedef enum Dipswitch {
     DIP_HIGH_JUMP_2ND_IMPACT_STYLE_ENABLED = 1 << 23,
     DIP_SEMI_AUTO_PARRY_DISABLED = 1 << 24,
     DIP_AIR_KNOCKDOWNS_DISABLED = 1 << 25,
+    DIP_NEW_GUARD_JUDGMENT_ENABLED = 1 << 26,
     DIP_UNKNOWN_28 = 1 << 28,
     DIP_UNKNOWN_29 = 1 << 29,
     DIP_UNKNOWN_30 = 1 << 30,

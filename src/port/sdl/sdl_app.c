@@ -1,5 +1,6 @@
 #include "port/sdl/sdl_app.h"
 #include "common.h"
+#include "imgui/imgui_wrapper.h"
 #include "port/config/config.h"
 #include "port/config/keymap.h"
 #include "port/sdl/netplay_screen.h"
@@ -13,8 +14,6 @@
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 
 #include <SDL3/SDL.h>
-
-#define FRAME_END_TIMES_MAX 30
 
 typedef enum ScaleMode {
     SCALEMODE_NEAREST,
@@ -36,11 +35,8 @@ static SDL_Texture* screen_texture = NULL;
 static ScaleMode scale_mode = SCALEMODE_SOFT_LINEAR;
 
 static Uint64 frame_deadline = 0;
-static Uint64 frame_end_times[FRAME_END_TIMES_MAX];
-static int frame_end_times_index = 0;
-static bool frame_end_times_filled = false;
-static double fps = 0;
-static Uint64 frame_counter = 0;
+static FrameMetrics frame_metrics = { 0 };
+static Uint64 last_frame_end_time = 0;
 
 static bool should_save_screenshot = false;
 static Uint64 last_mouse_motion_time = 0;
@@ -57,7 +53,7 @@ static SDL_ScaleMode screen_texture_scale_mode() {
     case SCALEMODE_INTEGER:
         return SDL_SCALEMODE_NEAREST;
     default:
-      return SDL_SCALEMODE_INVALID;
+        return SDL_SCALEMODE_INVALID;
     }
 }
 
@@ -174,22 +170,39 @@ int SDLApp_FullInit() {
     // Initialize pads
     SDLPad_Init();
 
+#if DEBUG
+    ImGuiW_Init(window, renderer);
+#endif
+
     return 0;
 }
 
 void SDLApp_Quit() {
     Config_Destroy();
     ScanlineRenderer_Destroy();
+
+#if DEBUG
+    ImGuiW_Finish();
+#endif
+
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
 
-static void set_screenshot_flag_if_needed(SDL_KeyboardEvent* event) {
+// static void set_screenshot_flag_if_needed(SDL_KeyboardEvent* event) {
+//     if ((event->key == SDLK_GRAVE) && event->down && !event->repeat) {
+//         should_save_screenshot = true;
+//     }
+// }
+
+#if DEBUG
+static void toggle_debug_window_visibility(SDL_KeyboardEvent* event) {
     if ((event->key == SDLK_GRAVE) && event->down && !event->repeat) {
-        should_save_screenshot = true;
+        ImGuiW_ToggleVisivility();
     }
 }
+#endif
 
 static void handle_fullscreen_toggle(SDL_KeyboardEvent* event) {
     const bool is_alt_enter = (event->key == SDLK_RETURN) && (event->mod & SDL_KMOD_ALT);
@@ -227,6 +240,10 @@ bool SDLApp_PollEvents() {
     bool continue_running = true;
 
     while (SDL_PollEvent(&event)) {
+#if DEBUG
+        ImGuiW_ProcessEvent(&event);
+#endif
+
         switch (event.type) {
         case SDL_EVENT_GAMEPAD_ADDED:
         case SDL_EVENT_GAMEPAD_REMOVED:
@@ -235,7 +252,12 @@ bool SDLApp_PollEvents() {
 
         case SDL_EVENT_KEY_DOWN:
         case SDL_EVENT_KEY_UP:
-            set_screenshot_flag_if_needed(&event.key);
+            // set_screenshot_flag_if_needed(&event.key);
+
+#if DEBUG
+            toggle_debug_window_visibility(&event.key);
+#endif
+
             handle_fullscreen_toggle(&event.key);
             break;
 
@@ -264,6 +286,10 @@ void SDLApp_BeginFrame() {
 
     SDLMessageRenderer_BeginFrame();
     SDLGameRenderer_BeginFrame();
+
+#if DEBUG
+    ImGuiW_BeginFrame();
+#endif
 }
 
 static void center_rect(SDL_FRect* rect, int win_w, int win_h) {
@@ -323,31 +349,17 @@ static SDL_FRect get_letterbox_rect(int win_w, int win_h) {
     }
 }
 
-static void note_frame_end_time() {
-    frame_end_times[frame_end_times_index] = SDL_GetTicksNS();
-    frame_end_times_index += 1;
-    frame_end_times_index %= FRAME_END_TIMES_MAX;
+static void update_metrics(Uint64 sleep_time) {
+    const Uint64 new_frame_end_time = SDL_GetTicksNS();
+    const Uint64 frame_time = new_frame_end_time - last_frame_end_time;
+    const float frame_time_ms = (float)frame_time / 1e6;
 
-    if (frame_end_times_index == 0) {
-        frame_end_times_filled = true;
-    }
-}
+    frame_metrics.frame_time[frame_metrics.head] = frame_time_ms;
+    frame_metrics.idle_time[frame_metrics.head] = (float)sleep_time / 1e6;
+    frame_metrics.fps[frame_metrics.head] = 1000 / frame_time_ms;
 
-static void update_fps() {
-    if (!frame_end_times_filled) {
-        return;
-    }
-
-    double total_frame_time_ms = 0;
-
-    for (int i = 0; i < FRAME_END_TIMES_MAX - 1; i++) {
-        const int cur = (frame_end_times_index + i) % FRAME_END_TIMES_MAX;
-        const int next = (cur + 1) % FRAME_END_TIMES_MAX;
-        total_frame_time_ms += (double)(frame_end_times[next] - frame_end_times[cur]) / 1e6;
-    }
-
-    double average_frame_time_ms = total_frame_time_ms / (FRAME_END_TIMES_MAX - 1);
-    fps = 1000 / average_frame_time_ms;
+    frame_metrics.head = (frame_metrics.head + 1) % SDL_arraysize(frame_metrics.frame_time);
+    last_frame_end_time = new_frame_end_time;
 }
 
 static void save_texture(SDL_Texture* texture, const char* filename) {
@@ -402,13 +414,7 @@ void SDLApp_EndFrame() {
     // Render debug text
     SDLDebugText_Render();
 
-    // Render metrics
-    // int window_width;
-    // SDL_GetRenderOutputSize(renderer, &window_width, NULL);
-    // SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-    // SDL_SetRenderScale(renderer, 2, 2);
-    // SDL_RenderDebugTextFormat(renderer, (window_width / 2) - 88, 2, "FPS: %.3f", fps);
-    // SDL_SetRenderScale(renderer, 1, 1);
+    ImGuiW_EndFrame(renderer);
 #endif
 
     SDL_RenderPresent(renderer);
@@ -427,8 +433,10 @@ void SDLApp_EndFrame() {
         frame_deadline = now + target_frame_time_ns;
     }
 
+    Uint64 sleep_time = 0;
+
     if (now < frame_deadline) {
-        Uint64 sleep_time = frame_deadline - now;
+        sleep_time = frame_deadline - now;
         SDL_DelayNS(sleep_time);
         now = SDL_GetTicksNS();
     }
@@ -441,13 +449,15 @@ void SDLApp_EndFrame() {
     }
 
     // Measure
-    frame_counter += 1;
-    note_frame_end_time();
-    update_fps();
+    update_metrics(sleep_time);
 }
 
 void SDLApp_Exit() {
     SDL_Event quit_event;
     quit_event.type = SDL_EVENT_QUIT;
     SDL_PushEvent(&quit_event);
+}
+
+const FrameMetrics* SDLApp_GetFrameMetrics() {
+    return &frame_metrics;
 }
