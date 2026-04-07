@@ -573,7 +573,11 @@ void Network_Lobby(struct _TASK* task_ptr) {
         effect_work_init();
         Menu_Common_Init();
         s_slide_offset = 384;
-        Menu_Cursor_Y[0] = 2;
+        if (task_ptr->free[2] == NET_MODE_RMLUI) {
+            Menu_Cursor_Y[0] = 0;
+        } else {
+            Menu_Cursor_Y[0] = 2;
+        }
         Menu_Cursor_Y[1] = 0;
         Order[0x4E] = 5;
         Order_Timer[0x4E] = 1;
@@ -734,33 +738,40 @@ void Network_Lobby(struct _TASK* task_ptr) {
         bool popup_active =
             SDLNetplayUI_HasPendingInvite() || SDLNetplayUI_HasOutgoingChallenge() || lan_incoming || lan_outgoing;
 
-        /* Handle cursor movement (17 items: 0..16) */
+        /* Handle cursor movement */
         {
             s16 prev_cursor = Menu_Cursor_Y[0];
-            if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 16, FADE_OPAQUE) == 0) {
-                MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 16, FADE_OPAQUE);
-            }
-            if (Menu_Cursor_Y[0] < 2) {
-                if (prev_cursor == 2) Menu_Cursor_Y[0] = 16;
-                else Menu_Cursor_Y[0] = 2;
-            }
-            if (popup_active) {
-                Menu_Cursor_Y[0] = prev_cursor;
+            if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 11, FADE_OPAQUE) == 0) {
+                    MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 11, FADE_OPAQUE);
+                }
+                if (popup_active) {
+                    Menu_Cursor_Y[0] = prev_cursor;
+                } else {
+                    /* Skip FORMAT row (3) when room type is not tournament */
+                    if (Menu_Cursor_Y[0] == 3 && rmlui_network_lobby_get_create_room_type() != 2) {
+                        if (Menu_Cursor_Y[0] > prev_cursor)
+                            Menu_Cursor_Y[0] = 4; /* moving down → skip to REGION LOCK */
+                        else
+                            Menu_Cursor_Y[0] = 2; /* moving up → skip to PASSWORD */
+                    }
+                }
             } else {
-                /* Skip FORMAT row (12) when room type is not tournament */
-                if (Menu_Cursor_Y[0] == 12 && rmlui_network_lobby_get_create_room_type() != 2) {
-                    if (Menu_Cursor_Y[0] > prev_cursor)
-                        Menu_Cursor_Y[0] = 13; /* moving down → skip to CREATE ROOM */
-                    else
-                        Menu_Cursor_Y[0] = 11; /* moving up → skip to PASSWORD */
+                if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 16, FADE_OPAQUE) == 0) {
+                    MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 16, FADE_OPAQUE);
+                }
+                if (Menu_Cursor_Y[0] < 2) {
+                    if (prev_cursor == 2) Menu_Cursor_Y[0] = 16;
+                    else Menu_Cursor_Y[0] = 2;
+                }
+                if (popup_active) {
+                    Menu_Cursor_Y[0] = prev_cursor;
                 }
                 if (prev_cursor != Menu_Cursor_Y[0]) {
-                    if (task_ptr->free[2] == NET_MODE_NATIVE) {
-                        Message_Data->order = 1;
-                        Message_Data->request = NET_MSG_REQ_BASE + Menu_Cursor_Y[0];
-                        Message_Data->timer = 2;
-                        Message_Data->pos_y = NET_MSG_POS_Y;
-                    }
+                    Message_Data->order = 1;
+                    Message_Data->request = NET_MSG_REQ_BASE + Menu_Cursor_Y[0];
+                    Message_Data->timer = 2;
+                    Message_Data->pos_y = NET_MSG_POS_Y;
                 }
             }
         }
@@ -770,154 +781,102 @@ void Network_Lobby(struct _TASK* task_ptr) {
             u16 click = (~plsw_01[0] & plsw_00[0]) | (~plsw_01[1] & plsw_00[1]);
 
             if (click & 12) {
-                switch (Menu_Cursor_Y[0]) {
-                case 0: { /* LAN AUTO-CONN */
-                    bool v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-                    Config_SetBool(CFG_KEY_NETPLAY_AUTO_CONNECT, !v);
-                    Config_Save();
-                    SE_dir_cursor_move();
-                    break;
-                }
-                case 1: { /* LAN CONNECT (peer toggling) */
-                    NetplayDiscoveredPeer tg_peers[16];
-                    int tg_count = Discovery_GetPeers(tg_peers, 16);
-                    if (tg_count > 0) {
-                        if (click & 4) {
-                            g_lobby_peer_idx--;
-                            if (g_lobby_peer_idx < 0)
-                                g_lobby_peer_idx = tg_count - 1;
-                        } else {
-                            g_lobby_peer_idx++;
-                            if (g_lobby_peer_idx >= tg_count)
-                                g_lobby_peer_idx = 0;
-                        }
-                        SE_dir_cursor_move();
-                        if (Discovery_GetChallengeTarget() != 0) {
-                            Discovery_SetChallengeTarget(0);
-                        }
-                    }
-                    break;
-                }
-                case 2: { /* NET AUTO-ACPT */
-                    bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
-                    Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !v);
-                    Config_Save();
-                    SE_dir_cursor_move();
-                    break;
-                }
-                case 3: { /* NET AUTO-SEARCH */
-                    bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
-                    Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, !v);
-                    Config_Save();
-                    SE_dir_cursor_move();
-                    break;
-                }
-                case 4: { /* REGION LOCK toggle */
-                    bool v = Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK);
-                    Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !v);
-                    Config_Save();
-                    SE_dir_cursor_move();
-                    break;
-                }
-                case 5: { /* MAX PING cycle */
-                    int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
-                    /* Cycle through: 0(off) → 50 → 100 → 150 → 200 → 0 */
-                    if (click & 4) { /* left */
-                        if (cur <= 0)
-                            cur = 200;
-                        else if (cur <= 50)
-                            cur = 0;
-                        else
-                            cur -= 50;
-                    } else { /* right */
-                        if (cur >= 200)
-                            cur = 0;
-                        else if (cur <= 0)
-                            cur = 50;
-                        else
-                            cur += 50;
-                    }
-                    Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
-                    Config_Save();
-                    SE_dir_cursor_move();
-                    break;
-                }
-                case 6: { /* BLOCK WIFI toggle */
-                    bool v = Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI);
-                    Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !v);
-                    Config_Save();
-                    SE_dir_cursor_move();
-                    break;
-                }
-                case 7: { /* MATCH FT cycle */
-                    static const int ft_values[] = { 1, 2, 3, 5, 10 };
-                    static const int ft_count = 5;
-                    int cur_ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
-                    int idx = 1; /* default to FT2 index */
-                    for (int fi = 0; fi < ft_count; fi++) {
-                        if (ft_values[fi] == cur_ft) {
-                            idx = fi;
-                            break;
-                        }
-                    }
-                    if (click & 4) { /* left */
-                        idx = (idx - 1 + ft_count) % ft_count;
-                    } else { /* right */
-                        idx = (idx + 1) % ft_count;
-                    }
-                    Config_SetInt(CFG_KEY_NETPLAY_FT, ft_values[idx]);
-                    Config_Save();
-                    SE_dir_cursor_move();
-                    break;
-                }
-                case 8: { /* NET CONNECT */
-                    if (SDLNetplayUI_IsSearching()) {
-                        int p_count = SDLNetplayUI_GetOnlinePlayerCount();
-                        if (p_count > 0) {
-                            if (click & 4) {
-                                g_net_peer_idx--;
-                                if (g_net_peer_idx < 0)
-                                    g_net_peer_idx = p_count - 1;
-                            } else {
-                                g_net_peer_idx++;
-                                if (g_net_peer_idx >= p_count)
-                                    g_net_peer_idx = 0;
-                            }
-                            SE_dir_cursor_move();
-                        }
-                    }
-                    break;
-                }
-                case 9: { /* ROOM TYPE toggle */
-                    if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                    switch (Menu_Cursor_Y[0]) {
+                    case 0: /* ROOM TYPE */
                         rmlui_network_lobby_cycle_room_type((click & 4) ? -1 : 1);
                         SE_dir_cursor_move();
-                    }
-                    break;
-                }
-                case 10: { /* VISIBILITY toggle */
-                    if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                        break;
+                    case 1: /* VISIBILITY */
                         rmlui_network_lobby_cycle_visibility((click & 4) ? -1 : 1);
                         SE_dir_cursor_move();
-                    }
-                    break;
-                }
-                case 12: { /* TOURNAMENT FORMAT cycle */
-                    if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                        break;
+                    case 3: /* FORMAT */
                         rmlui_network_lobby_cycle_tournament_format((click & 4) ? -1 : 1);
                         SE_dir_cursor_move();
+                        break;
+                    case 4: { /* REGION LOCK */
+                        bool v = Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK);
+                        Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !v);
+                        Config_Save();
+                        SE_dir_cursor_move();
+                        break;
                     }
-                    break;
-                }
-                case 14: { /* JOIN ROOM (room list scroll) */
-                    if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                    case 5: { /* MAX PING */
+                        int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
+                        if (click & 4) {
+                            if (cur <= 0) cur = 200; else if (cur <= 50) cur = 0; else cur -= 50;
+                        } else {
+                            if (cur >= 200) cur = 0; else if (cur <= 0) cur = 50; else cur += 50;
+                        }
+                        Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
+                        Config_Save();
+                        SE_dir_cursor_move();
+                        break;
+                    }
+                    case 6: { /* BLOCK WIFI */
+                        bool v = Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI);
+                        Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !v);
+                        Config_Save();
+                        SE_dir_cursor_move();
+                        break;
+                    }
+                    case 7: { /* MATCH FT */
+                        static const int ft_values[] = { 1, 2, 3, 5, 10 };
+                        static const int ft_count = 5;
+                        int cur_ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
+                        int idx = 1;
+                        for (int fi = 0; fi < ft_count; fi++) {
+                            if (ft_values[fi] == cur_ft) { idx = fi; break; }
+                        }
+                        if (click & 4) idx = (idx - 1 + ft_count) % ft_count; else idx = (idx + 1) % ft_count;
+                        Config_SetInt(CFG_KEY_NETPLAY_FT, ft_values[idx]);
+                        Config_Save();
+                        SE_dir_cursor_move();
+                        break;
+                    }
+                    case 9: /* JOIN ROOM (room list scroll) */
                         rmlui_network_lobby_room_scroll((click & 4) ? -1 : 1);
                         SE_dir_cursor_move();
+                        break;
                     }
-                    break;
-                }
-                default:
-                    break;
+                } else {
+                    /* NATIVE MODE KEEP-ALIVE */
+                    switch (Menu_Cursor_Y[0]) {
+                    case 2: {
+                        bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
+                        Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !v);
+                        Config_Save();
+                        SE_dir_cursor_move();
+                        break;
+                    }
+                    case 3: {
+                        bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
+                        Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, !v);
+                        Config_Save();
+                        SE_dir_cursor_move();
+                        break;
+                    }
+                    case 4: {
+                        bool v = Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK);
+                        Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !v);
+                        Config_Save();
+                        SE_dir_cursor_move();
+                        break;
+                    }
+                    case 5: {
+                        int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
+                        if (click & 4) {
+                            if (cur <= 0) cur = 200; else if (cur <= 50) cur = 0; else cur -= 50;
+                        } else {
+                            if (cur >= 200) cur = 0; else if (cur <= 0) cur = 50; else cur += 50;
+                        }
+                        Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
+                        Config_Save();
+                        SE_dir_cursor_move();
+                        break;
+                    }
+                    }
                 }
             }
         }
@@ -1139,147 +1098,75 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 /* === Handle confirm/cancel (normal lobby input) === */
                 switch (IO_Result) {
                 case SWK_SOUTH: /* Confirm */
-                    switch (Menu_Cursor_Y[0]) {
-                    case 0: { /* LAN AUTO-CONN toggle */
-                        bool v = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-                        Config_SetBool(CFG_KEY_NETPLAY_AUTO_CONNECT, !v);
-                        Config_Save();
-                        SE_selected();
-                        break;
-                    }
-                    case 1: { /* LAN CONNECT */
-                        NetplayDiscoveredPeer cp_peers[16];
-                        int cp_count = Discovery_GetPeers(cp_peers, 16);
-                        if (cp_count > 0 && g_lobby_peer_idx >= 0 && g_lobby_peer_idx < cp_count) {
-                            NetplayDiscoveredPeer* p = &cp_peers[g_lobby_peer_idx];
-
-                            Discovery_SetChallengeTarget(p->instance_id);
-                            SE_selected();
-                        } else {
-                            SE_selected();
+                    if (task_ptr->free[2] == NET_MODE_RMLUI) {
+                        switch (Menu_Cursor_Y[0]) {
+                        case 0: rmlui_network_lobby_cycle_room_type(1); SE_selected(); break;
+                        case 1: rmlui_network_lobby_cycle_visibility(1); SE_selected(); break;
+                        case 2: rmlui_network_lobby_open_create_password(); SE_selected(); break;
+                        case 3: rmlui_network_lobby_cycle_tournament_format(1); SE_selected(); break;
+                        case 4: {
+                            bool v = Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK);
+                            Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !v);
+                            Config_Save(); SE_selected(); break;
                         }
-                        break;
-                    }
-                    case 2: { /* NET AUTO-ACPT toggle */
-                        bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
-                        Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !v);
-                        Config_Save();
-                        SE_selected();
-                        break;
-                    }
-                    case 3: { /* NET AUTO-SEARCH toggle */
-                        bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
-                        Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, !v);
-                        Config_Save();
-                        SE_selected();
-                        break;
-                    }
-                    case 4: { /* REGION LOCK toggle */
-                        bool v = Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK);
-                        Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !v);
-                        Config_Save();
-                        SE_selected();
-                        break;
-                    }
-                    case 5: { /* MAX PING cycle */
-                        int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
-                        if (cur >= 200)
-                            cur = 0;
-                        else if (cur <= 0)
-                            cur = 50;
-                        else
-                            cur += 50;
-                        Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
-                        Config_Save();
-                        SE_selected();
-                        break;
-                    }
-                    case 6: { /* BLOCK WIFI toggle */
-                        bool v = Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI);
-                        Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !v);
-                        Config_Save();
-                        SE_selected();
-                        break;
-                    }
-                    case 7: { /* MATCH FT cycle (confirm = advance) */
-                        static const int ft_values[] = { 1, 2, 3, 5, 10 };
-                        static const int ft_count = 5;
-                        int cur_ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
-                        int idx = 1;
-                        for (int fi = 0; fi < ft_count; fi++) {
-                            if (ft_values[fi] == cur_ft) {
-                                idx = fi;
-                                break;
+                        case 5: {
+                            int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
+                            if (cur >= 200) cur = 0; else if (cur <= 0) cur = 50; else cur += 50;
+                            Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
+                            Config_Save(); SE_selected(); break;
+                        }
+                        case 6: {
+                            bool v = Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI);
+                            Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !v);
+                            Config_Save(); SE_selected(); break;
+                        }
+                        case 7: {
+                            static const int ft_values[] = { 1, 2, 3, 5, 10 };
+                            static const int ft_count = 5;
+                            int cur_ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
+                            int idx = 1;
+                            for (int fi = 0; fi < ft_count; fi++) {
+                                if (ft_values[fi] == cur_ft) { idx = fi; break; }
                             }
+                            idx = (idx + 1) % ft_count;
+                            Config_SetInt(CFG_KEY_NETPLAY_FT, ft_values[idx]);
+                            Config_Save(); SE_selected(); break;
                         }
-                        idx = (idx + 1) % ft_count;
-                        Config_SetInt(CFG_KEY_NETPLAY_FT, ft_values[idx]);
-                        Config_Save();
-                        SE_selected();
-                        break;
-                    }
-                    case 8: /* NET CONNECT */
-                        if (SDLNetplayUI_IsSearching()) {
-                            int p_count = SDLNetplayUI_GetOnlinePlayerCount();
-                            if (p_count > 0 && g_net_peer_idx >= 0 && g_net_peer_idx < p_count) {
-                                Netplay_SetNegotiatedFT(Config_GetInt(CFG_KEY_NETPLAY_FT));
-                                SDLNetplayUI_ConnectToPlayer(g_net_peer_idx);
-                                SE_selected();
-                            } else {
-                                SDLNetplayUI_StopSearch();
-                                SE_selected();
-                            }
-                        } else {
-                            SDLNetplayUI_StartSearch();
-                            SE_selected();
+                        case 8: rmlui_network_lobby_create_room(); SE_selected(); break;
+                        case 9: rmlui_network_lobby_join_room(); SE_selected(); break;
+                        case 10: rmlui_network_lobby_open_join_code(); SE_selected(); break;
+                        case 11: goto lobby_exit;
                         }
-                        break;
-
-                    case 9: /* ROOM TYPE toggle (confirm = toggle) */
-                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
-                            rmlui_network_lobby_cycle_room_type(1);
+                    } else {
+                        /* Native Mode Keep-Alive */
+                        switch (Menu_Cursor_Y[0]) {
+                        case 2: {
+                            bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
+                            Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !v);
+                            Config_Save(); SE_selected(); break;
                         }
-                        SE_selected();
-                        break;
-                    case 10: /* VISIBILITY toggle (confirm = toggle) */
-                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
-                            rmlui_network_lobby_cycle_visibility(1);
+                        case 3: {
+                            bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
+                            Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, !v);
+                            Config_Save(); SE_selected(); break;
                         }
-                        SE_selected();
-                        break;
-                    case 11: /* PASSWORD (open password entry popup) */
-                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
-                            rmlui_network_lobby_open_create_password();
+                        case 4: {
+                            bool v = Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK);
+                            Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !v);
+                            Config_Save(); SE_selected(); break;
                         }
-                        SE_selected();
-                        break;
-                    case 12: /* TOURNAMENT FORMAT cycle (confirm = advance) */
-                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
-                            rmlui_network_lobby_cycle_tournament_format(1);
+                        case 5: {
+                            int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
+                            if (cur >= 200) cur = 0; else if (cur <= 0) cur = 50; else cur += 50;
+                            Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
+                            Config_Save(); SE_selected(); break;
                         }
-                        SE_selected();
-                        break;
-                    case 13: /* CREATE ROOM (RmlUI only) */
-                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
-                            rmlui_network_lobby_create_room();
+                        case 6: {
+                            bool v = Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI);
+                            Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !v);
+                            Config_Save(); SE_selected(); break;
                         }
-                        SE_selected();
-                        break;
-                    case 14: /* JOIN ROOM (RmlUI only) */
-                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
-                            rmlui_network_lobby_join_room();
                         }
-                        SE_selected();
-                        break;
-                    case 15: /* JOIN BY CODE (RmlUI only) */
-                        if (task_ptr->free[2] == NET_MODE_RMLUI) {
-                            rmlui_network_lobby_open_join_code();
-                        }
-                        SE_selected();
-                        break;
-                    case 16:
-                        /* EXIT */
-                        goto lobby_exit;
                     }
                     break;
 

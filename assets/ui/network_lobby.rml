@@ -17,16 +17,24 @@
 
         <!-- Left: menu column -->
         <div id="lobby-menu-col">
-            <div class="section-header net-header">INTERNET</div>
+            <div class="section-header rooms-header">ROOMS</div>
 
-
-            <div class="lobby-row" data-class-focused="cursor == 2">
-                <span class="lobby-cell-label">AUTO-ACCEPT</span>
-                <span class="lobby-cell-value" data-class-on="net_auto">{{net_auto ? 'ON' : 'OFF'}}</span>
+            <div class="lobby-row" data-class-focused="cursor == 0">
+                <span class="lobby-cell-label">ROOM TYPE</span>
+                <span class="lobby-cell-value">{{create_room_type_label}}</span>
             </div>
-            <div class="lobby-row" data-class-focused="cursor == 3">
-                <span class="lobby-cell-label">AUTO-SEARCH</span>
-                <span class="lobby-cell-value" data-class-on="net_search_toggle">{{net_search_toggle ? 'ON' : 'OFF'}}</span>
+            <div class="lobby-row" data-class-focused="cursor == 1">
+                <span class="lobby-cell-label">VISIBILITY</span>
+                <span class="lobby-cell-value">{{create_room_visibility_label}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 2">
+                <span class="lobby-cell-label">PASSWORD</span>
+                <span class="lobby-cell-value">{{create_password_label}}</span>
+            </div>
+            <div class="lobby-row" data-class-focused="cursor == 3"
+                 data-if="create_room_type == 2">
+                <span class="lobby-cell-label">FORMAT</span>
+                <span class="lobby-cell-value">{{create_tournament_format_label}}</span>
             </div>
             <div class="lobby-row" data-class-focused="cursor == 4">
                 <span class="lobby-cell-label">REGION LOCK</span>
@@ -45,42 +53,18 @@
                 <span class="lobby-cell-value">{{ft_value == 1 ? 'UNRANKED' : 'FT' + ft_value}}</span>
             </div>
             <div class="lobby-row" data-class-focused="cursor == 8">
-                <span class="lobby-cell-label">CONNECT</span>
-                <span class="lobby-cell-value peer-val">{{net_peer_name}}</span>
-            </div>
-
-            <div class="section-header rooms-header">ROOMS</div>
-
-            <div class="lobby-row" data-class-focused="cursor == 9">
-                <span class="lobby-cell-label">ROOM TYPE</span>
-                <span class="lobby-cell-value">{{create_room_type_label}}</span>
-            </div>
-            <div class="lobby-row" data-class-focused="cursor == 10">
-                <span class="lobby-cell-label">VISIBILITY</span>
-                <span class="lobby-cell-value">{{create_room_visibility_label}}</span>
-            </div>
-            <div class="lobby-row" data-class-focused="cursor == 11">
-                <span class="lobby-cell-label">PASSWORD</span>
-                <span class="lobby-cell-value">{{create_password_label}}</span>
-            </div>
-            <div class="lobby-row" data-class-focused="cursor == 12"
-                 data-if="create_room_type == 2">
-                <span class="lobby-cell-label">FORMAT</span>
-                <span class="lobby-cell-value">{{create_tournament_format_label}}</span>
-            </div>
-            <div class="lobby-row" data-class-focused="cursor == 13">
                 <span class="lobby-cell-label">CREATE ROOM</span>
                 <span class="lobby-cell-value" data-if="room_status != ''">{{room_status}}</span>
             </div>
-            <div class="lobby-row" data-class-focused="cursor == 14">
+            <div class="lobby-row" data-class-focused="cursor == 9">
                 <span class="lobby-cell-label">JOIN ROOM</span>
                 <span class="lobby-cell-value" data-if="join_room_code != ''">{{join_room_code}}</span>
             </div>
-            <div class="lobby-row" data-class-focused="cursor == 15">
+            <div class="lobby-row" data-class-focused="cursor == 10">
                 <span class="lobby-cell-label">JOIN BY CODE</span>
             </div>
 
-            <div class="lobby-row exit-row" data-class-focused="cursor == 16">
+            <div class="lobby-row exit-row" data-class-focused="cursor == 11">
                 <span class="lobby-cell-label">EXIT</span>
             </div>
         </div>
@@ -88,34 +72,7 @@
         <!-- Right: peer panels column -->
         <div id="lobby-peers-col">
 
-            <!-- Online Peers -->
-            <div class="peer-panel">
-                <div class="peer-panel-header">
-                    <span class="peer-panel-title">ONLINE</span>
-                    <span class="peer-panel-count" data-if="net_searching &amp;&amp; net_peer_count > 0">{{net_peer_count}} online</span>
-                    <span class="peer-panel-count searching" data-if="net_searching &amp;&amp; net_peer_count == 0">searching...</span>
-                    <span class="peer-panel-count idle" data-if="!net_searching">idle</span>
-                </div>
-                <div class="peer-list">
-                    <div data-for="p : net_peers"
-                         class="peer-list-item"
-                         data-class-selected="p.selected">
-                        <img class="peer-list-flag" data-attr-src="p.flag_icon" data-if="p.flag_icon != ''"/>
-                        <span class="peer-list-name">{{p.name}}</span>
-                        <span class="peer-list-conn" data-class-wifi="p.conn_type == 'wifi'">{{p.conn_type == 'wifi' ? 'WiFi' : ''}}</span>
-                        <span class="peer-list-ping" data-class-ping-good="p.ping_class == 'ping-good'"
-                              data-class-ping-ok="p.ping_class == 'ping-ok'"
-                              data-class-ping-bad="p.ping_class == 'ping-bad'">{{p.ping_label}}</span>
-                    </div>
-                    <div class="peer-list-empty" data-if="!net_searching">
-                        <span data-if="net_is_configured">enable search to find players</span>
-                        <span data-if="!net_is_configured">lobby server not configured</span>
-                    </div>
-                    <div class="peer-list-empty searching" data-if="net_searching &amp;&amp; net_peer_count == 0">
-                        looking for players...
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Active Rooms -->
             <div class="peer-panel">
