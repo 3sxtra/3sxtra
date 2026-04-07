@@ -6,6 +6,7 @@
  * FPS history buffer, and text rendering for the debug HUD on all backends.
  */
 #include "port/sdl/app/sdl_app_debug_hud.h"
+#include "port/linux/gpio_lag_test.h"
 
 #include "port/config/config.h"
 #include "port/rendering/sdl_bezel.h"
@@ -33,6 +34,10 @@ static float* fps_history = NULL;
 static int fps_history_count = 0;
 static int fps_history_capacity = 0;
 
+/* ── Frame counter (for camera-based input lag measurement) ────────── */
+
+static Uint64 s_frame_counter = 0;
+
 /* ── Visibility flag ────────────────────────────────────────────────── */
 
 bool show_debug_hud = false;
@@ -47,6 +52,8 @@ void SDLAppDebugHud_NoteFrameEnd(void) {
     if (frame_end_times_index == 0) {
         frame_end_times_filled = true;
     }
+
+    s_frame_counter++;
 }
 
 void SDLAppDebugHud_UpdateFPS(void) {
@@ -78,6 +85,7 @@ void SDLAppDebugHud_Render(int win_w, int win_h, const SDL_FRect* viewport) {
     char fps_text[64];
     char mode_text[128];
     char shader_text[128];
+    char frame_text[64];
 
     snprintf(fps_text, sizeof(fps_text), "FPS: %.2f%s", fps, SDLApp_IsFrameRateUncapped() ? " UNCAPPED [F5]" : "");
 
@@ -103,7 +111,13 @@ void SDLAppDebugHud_Render(int win_w, int win_h, const SDL_FRect* viewport) {
              "Shader Mode: %s [F4]",
              SDLAppShader_IsLibretroMode() ? "Libretro" : "Internal");
 
-    snprintf(debug_text, sizeof(debug_text), "%s | %s | %s", fps_text, shader_text, mode_text);
+    /* Frame counter for camera-based input lag measurement */
+    snprintf(frame_text, sizeof(frame_text), "F: %llu%s",
+             (unsigned long long)s_frame_counter,
+             GpioLagTest_IsEnabled() ? " GPIO" : "");
+
+    snprintf(debug_text, sizeof(debug_text), "%s | %s | %s | %s",
+             fps_text, shader_text, mode_text, frame_text);
 
     float overlay_scale = ((float)win_h / 480.0f) * 0.8f;
     float base_x = viewport->x + (10.0f * overlay_scale);

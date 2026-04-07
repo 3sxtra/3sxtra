@@ -24,6 +24,7 @@
 #include "port/sdl/rmlui/rmlui_dev_overlay.h"
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
+#include "port/linux/gpio_lag_test.h"
 
 // Key handlers
 static void handle_menu_toggle(SDL_KeyboardEvent* event) {
@@ -131,6 +132,12 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
                 if (!Netplay_IsEnabled()) {
                     SDLApp_ToggleFrameRateUncap();
                 }
+            }
+
+            // Ctrl+G: Toggle GPIO lag test (Pi4 only — no-op on other platforms)
+            if (event->key.key == SDLK_G && event->key.down && !event->key.repeat &&
+                (event->key.mod & SDL_KMOD_CTRL)) {
+                GpioLagTest_Toggle();
             }
         }
 

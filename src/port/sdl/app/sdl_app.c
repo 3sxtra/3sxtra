@@ -83,6 +83,7 @@
 /* Feature toggle stubs — must come AFTER all subsystem headers so that stubs
    override any declarations from headers that aren't yet self-guarding. */
 #include "port/feature_toggles.h"
+#include "port/linux/gpio_lag_test.h"
 
 int g_resolution_scale = 1;
 #include "port/sdl/input/controller_image.h"
@@ -611,6 +612,9 @@ int SDLApp_Init() {
     // Initialize pads
     SDLPad_Init();
 
+    // GPIO lag test (Pi4 only — no-op stub on other platforms)
+    GpioLagTest_Init();
+
     // ControllerImage is lazily initialized on first gamepad connection event
     // (see controller_image.c — OnGamepadAdded auto-inits if needed)
 
@@ -774,6 +778,7 @@ int SDLApp_Init() {
 
 /** @brief Shut down SDL, release shaders, destroy window. */
 void SDLApp_Quit() {
+    GpioLagTest_Shutdown();
     RendererPlugin_Unload();
     Broadcast_Shutdown();
     SDLGameRenderer_Shutdown();

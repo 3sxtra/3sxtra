@@ -31,6 +31,7 @@ DO_CLEAN=false
 DO_SYNC=false
 ENABLE_TRACY=false
 ENABLE_LTO=false
+ENABLE_LAG_TEST=false
 BUILD_TYPE="Release"
 
 ROOT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
@@ -39,12 +40,13 @@ BUILD_DIR="$ROOT_DIR/build_rpi4"
 # ── Argument parsing ──────────────────────────────────────────
 for arg in "$@"; do
     case "$arg" in
-        --clean)   DO_CLEAN=true ;;
-        --sync)    DO_SYNC=true ;;
-        --tracy)   ENABLE_TRACY=true ;;
-        --lto)     ENABLE_LTO=true ;;
-        --release) BUILD_TYPE="Release" ;;
-        --debug)   BUILD_TYPE="Debug" ;;
+        --clean)    DO_CLEAN=true ;;
+        --sync)     DO_SYNC=true ;;
+        --tracy)    ENABLE_TRACY=true ;;
+        --lto)      ENABLE_LTO=true ;;
+        --lag-test) ENABLE_LAG_TEST=true ;;
+        --release)  BUILD_TYPE="Release" ;;
+        --debug)    BUILD_TYPE="Debug" ;;
         -h|--help)
             head -n 17 "$0" | tail -n +2 | sed 's/^# \?//'
             exit 0
@@ -80,6 +82,7 @@ echo -e "${CYAN}├────────────────────�
 echo -e "${CYAN}│${NC}  Build type:  ${YELLOW}$BUILD_TYPE${NC}"
 echo -e "${CYAN}│${NC}  Tracy:       ${YELLOW}$([ "$ENABLE_TRACY" = true ] && echo "ENABLED" || echo "disabled")${NC}"
 echo -e "${CYAN}│${NC}  LTO:         ${YELLOW}$([ "$ENABLE_LTO" = true ] && echo "ENABLED" || echo "disabled")${NC}"
+echo -e "${CYAN}│${NC}  Lag test:    ${YELLOW}$([ "$ENABLE_LAG_TEST" = true ] && echo "ENABLED (GPIO 17)" || echo "disabled")${NC}"
 echo -e "${CYAN}│${NC}  Clean:       ${YELLOW}$([ "$DO_CLEAN" = true ] && echo "YES" || echo "no (incremental)")${NC}"
 echo -e "${CYAN}│${NC}  Deploy:      ${YELLOW}$([ "$DO_SYNC" = true ] && echo "rsync (incremental)" || echo "tarball (full)")${NC}"
 echo -e "${CYAN}│${NC}  Target:      ${YELLOW}$PI_USER@$PI_IP${NC}"
@@ -119,6 +122,11 @@ if [ ! -f "$BUILD_DIR/build.ninja" ] && [ ! -f "$BUILD_DIR/Makefile" ]; then
     if [ "$ENABLE_LTO" = true ]; then
         CMAKE_ARGS+=(-DENABLE_LTO=ON)
         info "LTO: ENABLED"
+    fi
+
+    if [ "$ENABLE_LAG_TEST" = true ]; then
+        CMAKE_ARGS+=(-DENABLE_GPIO_LAG_TEST=ON)
+        info "GPIO lag test: ENABLED"
     fi
 
     cmake "$ROOT_DIR" "${CMAKE_ARGS[@]}" || die "CMake configure failed!"

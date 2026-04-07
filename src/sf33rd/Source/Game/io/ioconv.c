@@ -14,6 +14,7 @@
 #include "port/input_definition.h"
 #include "port/sdl/input/control_mapping_bindings.h"
 #include "port/sdl/input/sdl_pad.h"
+#include "port/linux/gpio_lag_test.h"
 #include "sf33rd/AcrSDK/common/mlPAD.h"
 #include "sf33rd/AcrSDK/common/pad.h"
 #include "sf33rd/Source/Game/debug/Debug.h"
@@ -419,6 +420,9 @@ void keyConvert() {
             }
         }
     }
+
+    /* GPIO lag test: OR in MK from physical button (after all normal input processing) */
+    GpioLagTest_OnInputPoll();
 
     p1sw_buff = io_w.sw[0];
     p2sw_buff = io_w.sw[1];

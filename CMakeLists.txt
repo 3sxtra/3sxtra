@@ -21,6 +21,7 @@ option(ENABLE_LIBRASHADER      "Build with librashader CRT/shader filters"      
 option(ENABLE_DEBUG_HUD        "Build with debug HUD overlay"                     ON)
 option(ENABLE_LEADERBOARD      "Build with online leaderboard"                    ON)
 option(ENABLE_ARCADE_ROM       "Build with arcade ROM support (minizip-ng)"       ON)
+option(ENABLE_GPIO_LAG_TEST    "GPIO input lag measurement (Pi4)"                 OFF)
 option(INSTALL_ASSETS          "Install assets via symlinks (OFF for CI release)" ON)
 
 # Set third-party directory based on platform
@@ -447,6 +448,7 @@ target_compile_definitions(3sx PRIVATE
     $<$<BOOL:${ENABLE_DEBUG_HUD}>:ENABLE_DEBUG_HUD>
     $<$<BOOL:${ENABLE_LEADERBOARD}>:ENABLE_LEADERBOARD>
     $<$<BOOL:${ENABLE_RMLUI}>:RMLUI_SDL_VERSION_MAJOR=3>
+    $<$<BOOL:${ENABLE_GPIO_LAG_TEST}>:ENABLE_GPIO_LAG_TEST>
 )
 
 
@@ -638,6 +640,10 @@ elseif(UNIX AND NOT APPLE)
         target_link_libraries(3sx PRIVATE ${PIPEWIRE_LIBRARIES})
         
         target_sources(3sx PRIVATE src/port/linux/broadcast_pipewire.cpp)
+    endif()
+    if(ENABLE_GPIO_LAG_TEST)
+        target_sources(3sx PRIVATE src/port/linux/gpio_lag_test.c)
+        message(STATUS "GPIO lag test: ENABLED (GPIO 17 → MK injection)")
     endif()
 endif()
 
