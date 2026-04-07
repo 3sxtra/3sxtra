@@ -40,6 +40,8 @@ typedef struct ConfigEntry {
 
 static const ConfigEntry default_entries[] = {
     { .key = CFG_KEY_FULLSCREEN, .type = CFG_BOOL, .value.b = true },
+    { .key = CFG_KEY_FULLSCREEN_EXCLUSIVE, .type = CFG_BOOL, .value.b = false },
+    { .key = CFG_KEY_SCALE_STRETCH, .type = CFG_BOOL, .value.b = false },
     { .key = CFG_KEY_FULLSCREEN_WIDTH, .type = CFG_INT, .value.i = 0 },
     { .key = CFG_KEY_FULLSCREEN_HEIGHT, .type = CFG_INT, .value.i = 0 },
     { .key = CFG_KEY_WINDOW_WIDTH, .type = CFG_INT, .value.i = 1920 },

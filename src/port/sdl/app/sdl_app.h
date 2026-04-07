@@ -37,6 +37,10 @@ void SDLApp_Exit();
 void SDLApp_SetVSync(bool enabled);
 bool SDLApp_IsVSyncEnabled();
 
+// Fullscreen API
+bool SDLApp_IsFullscreen(void);
+void SDLApp_SetFullscreenExclusive(bool exclusive);
+
 // Frame Rate Uncap (decoupled rendering)
 void SDLApp_PresentOnly(void);
 Uint64 SDLApp_GetTargetFrameTimeNS(void);

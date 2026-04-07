@@ -1173,25 +1173,31 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
         glViewport(0, 0, win_w, win_h);
     }
 
-    // Use independent X/Y dp ratios so UI elements map 1:1 to physical pixels
-    // without the CPS3 9/7 PAR stretch that the game canvas gets.
-    // The smaller ratio ensures the UI fits within the viewport.
-    const float dp_x = view_w / (float)GAME_W;
-    const float dp_y = view_h / (float)GAME_H;
-    const float dp_ratio = (dp_x < dp_y) ? dp_x : dp_y;
+    // The game's native hardware canvas is 384x224 (GAME_W x GAME_H).
+    // The previous implementation mapped RmlUi logically to the physical aspect ratio,
+    // which caused the UI layout sizes to shift depending on the monitor resolution
+    // and failed to visually stretch with the cabinet canvas.
+    // 
+    // We bind our dp_ratio to the primary vertical axis to guarantee high-def
+    // crisp vector texture generation scaling linearly with monitor size.
+    const float dp_ratio = (view_h > 0.0f) ? (view_h / (float)GAME_H) : 1.0f;
     s_game_context->SetDensityIndependentPixelRatio(dp_ratio);
 
-    // PAR correction factor for portrait images (e.g. char select).
-    // In 4:3 modes this is 7/9 ≈ 0.778; in square-pixel mode it is 1.0.
+    // PAR correction factor for portrait images (e.g. char select) that need to 
+    // explicitly reverse the non-uniform pipeline stretch.
     if (view_h > 0.0f)
         s_par_correct_y = (view_w * (float)GAME_H) / (view_h * (float)GAME_W);
     else
         s_par_correct_y = 1.0f;
 
-    // Context dimensions match the physical viewport so the viewport
-    // adapter scales 1:1 (no PAR distortion on UI elements).
-    const int ctx_w = (int)(view_w + 0.5f);
-    const int ctx_h = (int)(view_h + 0.5f);
+    // We forcibly lock the RmlUi layout context linearly to the native CPS3 aspect engine!
+    // This accomplishes two things:
+    // 1) Resolves all shifting-resolution layout bugs (we always have exactly 384x224 dp).
+    // 2) Forces the OpenGL viewport adapter to non-uniformly scale our perfectly rendered
+    //    high resolution vector elements so they visually "stretch" or "squash" perfectly
+    //    identically to the native game!
+    const int ctx_w = (int)(GAME_W * dp_ratio + 0.5f);
+    const int ctx_h = (int)(GAME_H * dp_ratio + 0.5f);
     s_game_context->SetDimensions(Rml::Vector2i(ctx_w, ctx_h));
 
     const int phys_w = (int)(view_w + 0.5f);

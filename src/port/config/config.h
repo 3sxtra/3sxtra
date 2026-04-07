@@ -13,6 +13,7 @@ extern "C" {
 
 /* ── Window ─────────────────────────────── */
 #define CFG_KEY_FULLSCREEN "fullscreen"
+#define CFG_KEY_FULLSCREEN_EXCLUSIVE "fullscreen-exclusive"
 #define CFG_KEY_FULLSCREEN_WIDTH "fullscreen-width"
 #define CFG_KEY_FULLSCREEN_HEIGHT "fullscreen-height"
 #define CFG_KEY_WINDOW_WIDTH "window-width"
@@ -22,6 +23,7 @@ extern "C" {
 
 /* ── Rendering ──────────────────────────── */
 #define CFG_KEY_SCALEMODE "scale-mode"
+#define CFG_KEY_SCALE_STRETCH "scale-stretch"
 #define CFG_KEY_RENDERER "renderer"
 #define CFG_KEY_DRAW_RECT_BORDERS "draw-rect-borders"
 #define CFG_KEY_DUMP_TEXTURES "dump-textures"

@@ -39,6 +39,14 @@
                 <span class="opt-label">{{ fx_label_7 }}</span>
                 <span class="opt-value">{{ fx_value_7 }}</span>
             </div>
+            <div class="option-row" data-class-focused="fx_cursor == 8" data-if="fx_row_count > 8">
+                <span class="opt-label">{{ fx_label_8 }}</span>
+                <span class="opt-value">{{ fx_value_8 }}</span>
+            </div>
+            <div class="option-row" data-class-focused="fx_cursor == 9" data-if="fx_row_count > 9">
+                <span class="opt-label">{{ fx_label_9 }}</span>
+                <span class="opt-value">{{ fx_value_9 }}</span>
+            </div>
         </div>
 
         <div class="footer-hint">

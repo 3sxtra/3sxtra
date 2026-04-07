@@ -415,22 +415,23 @@ int SDLApp_Init() {
     }
 
     // Set the fullscreen display mode on the window before it goes fullscreen.
-    // When has_fs_res is true, SDL3 will enter exclusive fullscreen at the
-    // requested resolution; otherwise it uses desktop borderless.
-    if (has_fs_res) {
+    // When CFG_KEY_FULLSCREEN_EXCLUSIVE is true, SDL3 will enter exclusive fullscreen.
+    if (Config_GetBool(CFG_KEY_FULLSCREEN_EXCLUSIVE)) {
         SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
         if (displayID == 0) {
             displayID = SDL_GetPrimaryDisplay();
         }
+        int w = has_fs_res ? fs_w : width;
+        int h = has_fs_res ? fs_h : height;
         SDL_DisplayMode closest_mode;
-        if (SDL_GetClosestFullscreenDisplayMode(displayID, fs_w, fs_h, 0.0f, false, &closest_mode)) {
+        if (SDL_GetClosestFullscreenDisplayMode(displayID, w, h, 0.0f, false, &closest_mode)) {
             if (!SDL_SetWindowFullscreenMode(window, &closest_mode)) {
-                SDL_Log("SDLApp_Init: Could not set fullscreen mode %dx%d: %s", fs_w, fs_h, SDL_GetError());
+                SDL_Log("SDLApp_Init: Could not set fullscreen mode %dx%d: %s", w, h, SDL_GetError());
             } else {
-                SDL_Log("SDLApp_Init: Fullscreen mode set to %dx%d", fs_w, fs_h);
+                SDL_Log("SDLApp_Init: Fullscreen mode set to %dx%d", w, h);
             }
         } else {
-            SDL_Log("SDLApp_Init: Could not find closest fullscreen mode for %dx%d", fs_w, fs_h);
+            SDL_Log("SDLApp_Init: Could not find closest fullscreen mode for %dx%d", w, h);
         }
     }
 
@@ -1871,25 +1872,59 @@ void SDLApp_MarkBezelDirty() {
     SDLAppBezel_MarkDirty();
 }
 
-void SDLApp_ToggleFullscreen() {
-    const SDL_WindowFlags flags = SDL_GetWindowFlags(window);
+bool SDLApp_IsFullscreen(void) {
+    if (!window) return false;
+    return (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) != 0;
+}
 
-    if (flags & SDL_WINDOW_FULLSCREEN) {
+void SDLApp_SetFullscreenExclusive(bool exclusive) {
+    Config_SetBool(CFG_KEY_FULLSCREEN_EXCLUSIVE, exclusive);
+    
+    if (SDLApp_IsFullscreen()) {
+        if (exclusive) {
+            int fs_w = Config_GetInt(CFG_KEY_FULLSCREEN_WIDTH);
+            int fs_h = Config_GetInt(CFG_KEY_FULLSCREEN_HEIGHT);
+            int w, h;
+            SDL_GetWindowSize(window, &w, &h);
+            if (fs_w <= 0) fs_w = w;
+            if (fs_h <= 0) fs_h = h;
+            
+            SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
+            if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
+            
+            SDL_DisplayMode closest_mode;
+            if (SDL_GetClosestFullscreenDisplayMode(displayID, fs_w, fs_h, 0.0f, false, &closest_mode)) {
+                SDL_Log("Set_FS_Excl: Setting exclusive mode %dx%d", closest_mode.w, closest_mode.h);
+                SDL_SetWindowFullscreenMode(window, &closest_mode);
+            }
+        } else {
+            SDL_Log("Set_FS_Excl: Setting borderless mode (NULL)");
+            SDL_SetWindowFullscreenMode(window, NULL);
+        }
+    }
+}
+
+void SDLApp_ToggleFullscreen() {
+    if (SDLApp_IsFullscreen()) {
         SDL_SetWindowFullscreen(window, false);
         Config_SetBool(CFG_KEY_FULLSCREEN, false);
     } else {
-        // Apply user-defined fullscreen resolution before entering fullscreen.
-        // If both dimensions are set, SDL3 enters exclusive fullscreen at that
-        // resolution; otherwise it falls back to desktop borderless.
-        int fs_w = Config_GetInt(CFG_KEY_FULLSCREEN_WIDTH);
-        int fs_h = Config_GetInt(CFG_KEY_FULLSCREEN_HEIGHT);
-        if (fs_w > 0 && fs_h > 0) {
+        // Evaluate exclusive vs borderless preference before activating.
+        if (Config_GetBool(CFG_KEY_FULLSCREEN_EXCLUSIVE)) {
+            int fs_w = Config_GetInt(CFG_KEY_FULLSCREEN_WIDTH);
+            int fs_h = Config_GetInt(CFG_KEY_FULLSCREEN_HEIGHT);
+            int w, h;
+            SDL_GetWindowSize(window, &w, &h);
+            if (fs_w <= 0) fs_w = w;
+            if (fs_h <= 0) fs_h = h;
+            
             SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
             if (displayID == 0) {
                 displayID = SDL_GetPrimaryDisplay();
             }
             SDL_DisplayMode closest_mode;
             if (SDL_GetClosestFullscreenDisplayMode(displayID, fs_w, fs_h, 0.0f, false, &closest_mode)) {
+                SDL_Log("F11 Toggle: Entering EXCLUSIVE Fullscreen (%dx%d)", closest_mode.w, closest_mode.h);
                 if (!SDL_SetWindowFullscreenMode(window, &closest_mode)) {
                     SDL_Log("ToggleFullscreen: Could not set mode %dx%d: %s", fs_w, fs_h, SDL_GetError());
                 }
@@ -1898,6 +1933,7 @@ void SDLApp_ToggleFullscreen() {
             }
         } else {
             // Ensure desktop borderless (NULL = use desktop mode)
+            SDL_Log("F11 Toggle: Entering BORDERLESS Fullscreen (Desktop Mode)");
             SDL_SetWindowFullscreenMode(window, NULL);
         }
         SDL_SetWindowFullscreen(window, true);

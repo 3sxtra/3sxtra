@@ -17,6 +17,7 @@
 /* ── Global state ──────────────────────────────────────────────────────── */
 
 ScaleMode scale_mode = SCALEMODE_NEAREST;
+bool scale_stretch_enabled = false;
 
 static const float display_target_ratio = 4.0f / 3.0f;
 
@@ -25,6 +26,7 @@ static SDL_FRect cached_letterbox_rect = { 0 };
 static int cached_lb_win_w = 0;
 static int cached_lb_win_h = 0;
 static int cached_lb_scale_mode = -1;
+static bool cached_lb_scale_stretch = false;
 
 /* ── Conversion helpers ────────────────────────────────────────────────── */
 
@@ -98,6 +100,14 @@ void cycle_scale_mode(void) {
     Config_SetString(CFG_KEY_SCALEMODE, scale_mode_to_config_string(scale_mode));
     SDLApp_MarkBezelDirty(); /* Viewport changed, recalculate bezel positions */
     SDL_Log("Scale mode: %s", scale_mode_name());
+}
+
+/** @brief Toggle explicit display stretch boolean and persist to config. */
+void toggle_scale_stretch(void) {
+    scale_stretch_enabled = !scale_stretch_enabled;
+    Config_SetBool(CFG_KEY_SCALE_STRETCH, scale_stretch_enabled);
+    SDLApp_MarkBezelDirty(); /* Viewport changed, recalculate bezel positions */
+    SDL_Log("Widescreen Stretch mode: %s", scale_stretch_enabled ? "ON" : "OFF");
 }
 
 /* ── Geometry utilities ────────────────────────────────────────────────── */
@@ -181,12 +191,19 @@ static SDL_FRect fit_integer_rect(int win_w, int win_h, int pixel_w, int pixel_h
 /** @brief Get the current letterbox/viewport rectangle based on scale mode. */
 SDL_FRect get_letterbox_rect(int win_w, int win_h) {
     /* ⚡ Return cached result if inputs haven't changed */
-    if (win_w == cached_lb_win_w && win_h == cached_lb_win_h && scale_mode == cached_lb_scale_mode) {
+    if (win_w == cached_lb_win_w && win_h == cached_lb_win_h && 
+        scale_mode == cached_lb_scale_mode && scale_stretch_enabled == cached_lb_scale_stretch) {
         return cached_letterbox_rect;
     }
 
     SDL_FRect result;
-    switch (scale_mode) {
+    if (scale_stretch_enabled) {
+        result.x = 0;
+        result.y = 0;
+        result.w = (float)win_w;
+        result.h = (float)win_h;
+    } else {
+        switch (scale_mode) {
     case SCALEMODE_NEAREST:
     case SCALEMODE_LINEAR:
     case SCALEMODE_SOFT_LINEAR:
@@ -211,11 +228,13 @@ SDL_FRect get_letterbox_rect(int win_w, int win_h) {
         result = fit_4_by_3_rect(win_w, win_h);
         break;
     }
+    } // End of stretch check
 
     /* Update cache */
     cached_lb_win_w = win_w;
     cached_lb_win_h = win_h;
     cached_lb_scale_mode = scale_mode;
+    cached_lb_scale_stretch = scale_stretch_enabled;
     cached_letterbox_rect = result;
     return result;
 }

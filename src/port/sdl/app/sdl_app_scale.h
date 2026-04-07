@@ -30,6 +30,9 @@ typedef enum ScaleMode {
 /** @brief Current scale mode (global, persisted to config). */
 extern ScaleMode scale_mode;
 
+/** @brief Active widespread aspect ratio stretch lock (overrides mode logic). */
+extern bool scale_stretch_enabled;
+
 /** @brief Return the display name for the current scale mode. */
 const char* scale_mode_name(void);
 
@@ -41,6 +44,9 @@ ScaleMode config_string_to_scale_mode(const char* string);
 
 /** @brief Advance to the next scale mode (wrapping) and persist to config. */
 void cycle_scale_mode(void);
+
+/** @brief Toggle explicit display stretch boolean and persist to config. */
+void toggle_scale_stretch(void);
 
 /** @brief Get the current letterbox/viewport rectangle based on scale mode. */
 SDL_FRect get_letterbox_rect(int win_w, int win_h);

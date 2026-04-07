@@ -10,7 +10,7 @@ body {
 .fx-panel {
     display: block;
     position: absolute;
-    top: 68dp;
+    top: 70dp;
     left: 50%;
     margin-left: -160dp;
     width: 320dp;
@@ -64,8 +64,10 @@ body {
 
 .option-row {
     display: block;
-    padding: 2dp 4dp;
+    padding: 1dp 4dp;
+    height: 14dp;
     margin-bottom: 0dp;
+    line-height: 14dp;
     transition: background-color 0.15s linear-in-out;
     white-space: nowrap;
 }
@@ -79,6 +81,8 @@ body {
 .opt-label {
     display: inline-block;
     width: 160dp;
+    height: 14dp;
+    line-height: 14dp;
     text-align: left;
     font-size: 13dp;
     color: #cccccc;
@@ -88,8 +92,10 @@ body {
 .opt-value {
     display: inline-block;
     width: 130dp;
+    height: 14dp;
+    line-height: 14dp;
     text-align: right;
-    font-size: 14dp;
+    font-size: 13dp;
     font-weight: bold;
     color: #ffffff;
 }
@@ -97,7 +103,7 @@ body {
 /* ── Footer hint ────────────────────────────────────────────── */
 .footer-hint {
     display: block;
-    margin-top: 4dp;
+    margin-top: 2dp;
     font-size: 11dp;
     color: #b0b0b0;
     letter-spacing: 1dp;

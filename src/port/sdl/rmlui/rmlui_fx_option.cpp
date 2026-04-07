@@ -147,6 +147,20 @@ extern "C" void rmlui_fx_option_page_left(void);
 extern "C" void rmlui_fx_option_page_right(void);
 static const int PAGE_COUNT = 2; // Forward declaration constant value
 
+// --- Widescreen Stretch ---
+static Rml::String get_scale_stretch(void) { return bool_on_off(scale_stretch_enabled); }
+static void cycle_scale_stretch(void) { 
+    toggle_scale_stretch();
+}
+
+// --- Fullscreen Type ---
+static Rml::String get_fullscreen_type(void) { return Config_GetBool(CFG_KEY_FULLSCREEN_EXCLUSIVE) ? "Exclusive" : "Borderless"; }
+static void toggle_fullscreen_type(void) { 
+    bool exclusive = !Config_GetBool(CFG_KEY_FULLSCREEN_EXCLUSIVE);
+    SDLApp_SetFullscreenExclusive(exclusive);
+    Config_Save();
+}
+
 // ─── State ───────────────────────────────────────────────────────
 static Rml::DataModelHandle s_model_handle;
 static bool s_model_registered = false;
@@ -164,18 +178,20 @@ static Rml::String get_page_display(void) {
 // Page 1: Audio & Mods (5 rows)
 
 static const FxSetting s_page0[] = {
-    { "PAGE",            get_page_display,   rmlui_fx_option_page_left, rmlui_fx_option_page_right },
-    { "SHADER SYSTEM",   get_shader_system,  cycle_shader_system,  cycle_shader_system  },
-    { "SCALE MODE",      get_scale_mode,     cycle_scale_left,     cycle_scale_right    },
-    { "SHADER PRESET",   get_preset_name,    cycle_preset_left,    cycle_preset_right   },
-    { "HD BACKGROUNDS",  get_hd,             toggle_hd,            toggle_hd            },
-    { "SHADER BYPASS",   get_shader_bypass,  toggle_shader_bypass, toggle_shader_bypass },
-    { "BEZELS",          get_bezels,         toggle_bezels,        toggle_bezels        },
-    { "VSYNC",           get_vsync,          toggle_vsync,         toggle_vsync         },
+    { "PAGE",               get_page_display,     rmlui_fx_option_page_left, rmlui_fx_option_page_right },
+    { "FULLSCREEN TYPE",    get_fullscreen_type,  toggle_fullscreen_type,    toggle_fullscreen_type },
+    { "WIDESCREEN STRETCH", get_scale_stretch,    cycle_scale_stretch,       cycle_scale_stretch  },
+    { "SHADER SYSTEM",      get_shader_system,    cycle_shader_system,       cycle_shader_system  },
+    { "SCALE MODE",         get_scale_mode,       cycle_scale_left,          cycle_scale_right    },
+    { "SHADER PRESET",      get_preset_name,      cycle_preset_left,         cycle_preset_right   },
+    { "HD BACKGROUNDS",     get_hd,               toggle_hd,                 toggle_hd            },
+    { "SHADER BYPASS",      get_shader_bypass,    toggle_shader_bypass,      toggle_shader_bypass },
 };
 
 static const FxSetting s_page1[] = {
-    { "PAGE",            get_page_display,   rmlui_fx_option_page_left, rmlui_fx_option_page_right },
+    { "PAGE",               get_page_display,     rmlui_fx_option_page_left, rmlui_fx_option_page_right },
+    { "BEZELS",             get_bezels,           toggle_bezels,             toggle_bezels        },
+    { "VSYNC",              get_vsync,            toggle_vsync,              toggle_vsync         },
     { "MODDED BGM",      get_modded_bgm,     toggle_modded_bgm,    toggle_modded_bgm    },
     { "MODDED VOICE",    get_modded_voice,   toggle_modded_voice,  toggle_modded_voice  },
     { "FAST PRE-GAME",   get_fast_pregame,   toggle_fast_pregame,  toggle_fast_pregame  },
@@ -194,7 +210,7 @@ static const Page s_pages[] = {
 // PAGE_COUNT is defined above to avoid forward declaration errors.
 
 // Cached values for dirty detection
-static Rml::String s_cached_values[8]; // max rows per page
+static Rml::String s_cached_values[10]; // max rows per page
 static int s_cached_cursor = -1;
 static int s_cached_page = -1;
 
@@ -205,7 +221,7 @@ static void dirty_all_rows(void) {
     s_model_handle.DirtyVariable("fx_cursor");
     s_model_handle.DirtyVariable("fx_page");
     s_model_handle.DirtyVariable("fx_row_count");
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 10; i++) {
         char name[24];
         snprintf(name, sizeof(name), "fx_label_%d", i);
         s_model_handle.DirtyVariable(name);
@@ -231,8 +247,8 @@ static void do_init(void) {
     ctor.BindFunc("fx_page_count", [](Rml::Variant& v) { v = PAGE_COUNT; });
     ctor.BindFunc("fx_row_count",  [](Rml::Variant& v) { v = current_page().count; });
 
-    // Per-row label and value (up to 8)
-    for (int i = 0; i < 8; i++) {
+    // Per-row label and value (up to 10)
+    for (int i = 0; i < 10; i++) {
         {
             char name[24];
             snprintf(name, sizeof(name), "fx_label_%d", i);
@@ -317,7 +333,7 @@ extern "C" void rmlui_fx_option_update(void) {
 
     // Dirty-check values on current page
     const Page& p = current_page();
-    for (int i = 0; i < p.count && i < 8; i++) {
+    for (int i = 0; i < p.count && i < 10; i++) {
         Rml::String val = p.settings[i].get_value();
         if (val != s_cached_values[i]) {
             s_cached_values[i] = val;
