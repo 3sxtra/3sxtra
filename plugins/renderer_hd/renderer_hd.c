@@ -37,47 +37,34 @@ static renderer_export_t g_exports;
  * Full-sprite override cache
  * ================================================================ */
 
-#define FULL_SPRITE_CACHE_MAX 4096
-#define FULL_SPRITE_CACHE_MASK (FULL_SPRITE_CACHE_MAX - 1)
+#define STB_DS_IMPLEMENTATION
+#include "stb/stb_ds.h"
 
 typedef struct {
     uint32_t key;
-    void* texture;
-    bool checked;
-} FullSpriteCacheEntry;
+    void* value;
+} TexCacheMap;
 
-static FullSpriteCacheEntry full_sprite_cache[FULL_SPRITE_CACHE_MAX] = { { 0 } };
-static int full_sprite_cache_count = 0;
+static TexCacheMap* full_sprite_cache = NULL;
 
 static void hd_ClearSpriteCache(void) {
-    for (int i = 0; i < FULL_SPRITE_CACHE_MAX; i++) {
-        if (full_sprite_cache[i].checked && full_sprite_cache[i].texture != NULL) {
-            g_import->TextureFree(full_sprite_cache[i].texture);
+    for (ptrdiff_t i = 0; i < hmlen(full_sprite_cache); i++) {
+        if (full_sprite_cache[i].value != NULL) {
+            g_import->TextureFree(full_sprite_cache[i].value);
         }
-        full_sprite_cache[i].checked = false;
-        full_sprite_cache[i].texture = NULL;
     }
-    full_sprite_cache_count = 0;
+    hmfree(full_sprite_cache);
+    full_sprite_cache = NULL;
 }
 
 static void* hd_LoadFullSpriteOverride(int group_index, int cg_number) {
     if (g_sprites_path[0] == '\0')
         return NULL;
     const uint32_t key = (uint32_t)(group_index << 16) | (uint32_t)(cg_number & 0xFFFF);
-    uint32_t slot = key & FULL_SPRITE_CACHE_MASK;
 
-    for (int i = 0; i < 32; i++) {
-        FullSpriteCacheEntry* entry = &full_sprite_cache[slot];
-
-        if (!entry->checked) {
-            break;
-        }
-
-        if (entry->key == key) {
-            return entry->texture;
-        }
-
-        slot = (slot + 1) & FULL_SPRITE_CACHE_MASK;
+    ptrdiff_t idx = hmgeti(full_sprite_cache, key);
+    if (idx >= 0) {
+        return full_sprite_cache[idx].value;
     }
 
     char path[512];
@@ -89,32 +76,8 @@ static void* hd_LoadFullSpriteOverride(int group_index, int cg_number) {
         tex = g_import->TextureLoadScaled(path, g_sprite_ratio);
     }
 
-    /* Cache the result (even NULL = negative cache) */
-    if (full_sprite_cache_count < FULL_SPRITE_CACHE_MAX / 2) {
-        slot = key & FULL_SPRITE_CACHE_MASK;
-
-        for (int i = 0; i < 32; i++) {
-            FullSpriteCacheEntry* entry = &full_sprite_cache[slot];
-
-            if (!entry->checked) {
-                entry->key = key;
-                entry->texture = tex;
-                entry->checked = true;
-                full_sprite_cache_count++;
-                return tex;
-            }
-
-            slot = (slot + 1) & FULL_SPRITE_CACHE_MASK;
-        }
-    }
-
-    /* Cache is full and no free slot found — free the loaded texture to
-     * prevent a leak (it would be re-loaded next frame, but at least
-     * we don't leak the handle). */
-    if (tex != NULL) {
-        g_import->TextureFree(tex);
-    }
-    return NULL;
+    hmput(full_sprite_cache, key, tex);
+    return tex;
 }
 
 /* ================================================================
@@ -148,60 +111,31 @@ static bool hd_TryRenderSprite(int group_index, int cg_number, float screen_x, f
  * Background tile cache
  * ================================================================ */
 
-#define BG_TILE_CACHE_MAX 1024
-#define BG_TILE_CACHE_MASK (BG_TILE_CACHE_MAX - 1)
-
-typedef struct {
-    int gbix;
-    void* texture;
-    bool checked;
-} BGTileCacheEntry;
-
-static BGTileCacheEntry bg_tile_cache[BG_TILE_CACHE_MAX] = { { 0 } };
+static TexCacheMap* bg_tile_cache = NULL;
 
 static void hd_ClearBGTileCache(void) {
-    for (int i = 0; i < BG_TILE_CACHE_MAX; i++) {
-        if (bg_tile_cache[i].checked && bg_tile_cache[i].texture != NULL) {
-            g_import->TextureFree(bg_tile_cache[i].texture);
+    for (ptrdiff_t i = 0; i < hmlen(bg_tile_cache); i++) {
+        if (bg_tile_cache[i].value != NULL) {
+            g_import->TextureFree(bg_tile_cache[i].value);
         }
-        bg_tile_cache[i].checked = false;
-        bg_tile_cache[i].texture = NULL;
     }
+    hmfree(bg_tile_cache);
+    bg_tile_cache = NULL;
 }
 
 static void* hd_LoadBGTileOverride(int type, int stage, int gbix) {
-    int composite_key = type * 100000 + stage * 1000 + gbix;
-    uint32_t slot = (uint32_t)composite_key & BG_TILE_CACHE_MASK;
+    uint32_t key = (uint32_t)(type * 100000 + stage * 1000 + gbix);
 
-    for (int i = 0; i < 16; i++) {
-        BGTileCacheEntry* entry = &bg_tile_cache[slot];
-
-        if (!entry->checked)
-            break;
-        if (entry->gbix == composite_key)
-            return entry->texture;
-        slot = (slot + 1) & BG_TILE_CACHE_MASK;
+    ptrdiff_t idx = hmgeti(bg_tile_cache, key);
+    if (idx >= 0) {
+        return bg_tile_cache[idx].value;
     }
 
     char path[512];
-    snprintf(path, sizeof(path), "%s/bg_%d.png", g_sprites_path, composite_key);
+    snprintf(path, sizeof(path), "%s/bg_%u.png", g_sprites_path, key);
     void* tex = g_import->TextureLoadScaled(path, g_sprite_ratio);
 
-    slot = (uint32_t)composite_key & BG_TILE_CACHE_MASK;
-
-    for (int i = 0; i < 16; i++) {
-        BGTileCacheEntry* entry = &bg_tile_cache[slot];
-
-        if (!entry->checked) {
-            entry->gbix = composite_key;
-            entry->texture = tex;
-            entry->checked = true;
-            break;
-        }
-
-        slot = (slot + 1) & BG_TILE_CACHE_MASK;
-    }
-
+    hmput(bg_tile_cache, key, tex);
     return tex;
 }
 
@@ -220,25 +154,16 @@ static void hd_DrawBGTile(void* texture, float x, float y, float w, float h, flo
  * Loaded at native resolution (premultiplied) via TextureLoad.
  * ================================================================ */
 
-#define TEX_OVERRIDE_CACHE_MAX 256
-#define TEX_OVERRIDE_CACHE_MASK (TEX_OVERRIDE_CACHE_MAX - 1)
-
-typedef struct {
-    uint32_t key;
-    void* texture;
-    bool checked;
-} TexOverrideCacheEntry;
-
-static TexOverrideCacheEntry tex_override_cache[TEX_OVERRIDE_CACHE_MAX] = { { 0 } };
+static TexCacheMap* tex_override_cache = NULL;
 
 static void hd_ClearTextureOverrideCache(void) {
-    for (int i = 0; i < TEX_OVERRIDE_CACHE_MAX; i++) {
-        if (tex_override_cache[i].checked && tex_override_cache[i].texture != NULL) {
-            g_import->TextureFree(tex_override_cache[i].texture);
+    for (ptrdiff_t i = 0; i < hmlen(tex_override_cache); i++) {
+        if (tex_override_cache[i].value != NULL) {
+            g_import->TextureFree(tex_override_cache[i].value);
         }
-        tex_override_cache[i].checked = false;
-        tex_override_cache[i].texture = NULL;
     }
+    hmfree(tex_override_cache);
+    tex_override_cache = NULL;
 }
 
 static void* hd_TryOverrideTexture(unsigned int texture_handle, unsigned int palette_handle) {
@@ -246,16 +171,9 @@ static void* hd_TryOverrideTexture(unsigned int texture_handle, unsigned int pal
         return NULL;
 
     const uint32_t key = (texture_handle << 16) | (palette_handle & 0xFFFF);
-    uint32_t slot = key & TEX_OVERRIDE_CACHE_MASK;
-
-    /* Probe cache */
-    for (int i = 0; i < 16; i++) {
-        TexOverrideCacheEntry* entry = &tex_override_cache[slot];
-        if (!entry->checked)
-            break;
-        if (entry->key == key)
-            return entry->texture; /* hit (may be NULL = negative cache) */
-        slot = (slot + 1) & TEX_OVERRIDE_CACHE_MASK;
+    ptrdiff_t idx = hmgeti(tex_override_cache, key);
+    if (idx >= 0) {
+        return tex_override_cache[idx].value;
     }
 
     /* Cache miss — probe filesystem.
@@ -273,18 +191,7 @@ static void* hd_TryOverrideTexture(unsigned int texture_handle, unsigned int pal
         tex = g_import->TextureLoad(path);
     }
 
-    /* Store result (including NULL for negative cache) */
-    slot = key & TEX_OVERRIDE_CACHE_MASK;
-    for (int i = 0; i < 16; i++) {
-        TexOverrideCacheEntry* entry = &tex_override_cache[slot];
-        if (!entry->checked) {
-            entry->key = key;
-            entry->texture = tex;
-            entry->checked = true;
-            break;
-        }
-        slot = (slot + 1) & TEX_OVERRIDE_CACHE_MASK;
-    }
+    hmput(tex_override_cache, key, tex);
 
     if (tex != NULL) {
         g_import->Log("Texture override loaded: %s (th=%u, ph=%u)", path, texture_handle, palette_handle);

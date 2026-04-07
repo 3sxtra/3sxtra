@@ -12,6 +12,7 @@ endif()
 
 target_include_directories(renderer_hd PRIVATE
     ${CMAKE_SOURCE_DIR}/src/include
+    ${CMAKE_SOURCE_DIR}/src
     ${THIRD_PARTY_DIR}/stb
     ${SDL3_ROOT}/include
 )
