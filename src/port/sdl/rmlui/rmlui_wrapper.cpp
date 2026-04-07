@@ -275,6 +275,74 @@ class GameViewportSDL : public RenderInterface_SDL {
   public:
     using RenderInterface_SDL::RenderInterface_SDL;
 
+    struct GeometryView {
+        Rml::Span<const Rml::Vertex> vertices;
+        Rml::Span<const int> indices;
+    };
+
+    void ActivateGameViewport(int ctx_w, int ctx_h, int phys_w, int phys_h) {
+        m_active = true;
+        m_sx = (float)phys_w / (float)ctx_w;
+        m_sy = (float)phys_h / (float)ctx_h;
+    }
+
+    void DeactivateGameViewport() {
+        m_active = false;
+    }
+
+    void SetScissorRegion(Rml::Rectanglei region) override {
+        if (!m_active) {
+            RenderInterface_SDL::SetScissorRegion(region);
+            return;
+        }
+        int ax = (int)(region.Left() * m_sx + 0.5f);
+        int ay = (int)(region.Top() * m_sy + 0.5f);
+        int aw = (int)(region.Width() * m_sx + 0.5f);
+        int ah = (int)(region.Height() * m_sy + 0.5f);
+        RenderInterface_SDL::SetScissorRegion(Rml::Rectanglei::FromPositionSize({ax, ay}, {aw, ah}));
+    }
+
+    void RenderGeometry(Rml::CompiledGeometryHandle handle, Rml::Vector2f translation, Rml::TextureHandle texture) override {
+        if (!m_active) {
+            RenderInterface_SDL::RenderGeometry(handle, translation, texture);
+            return;
+        }
+
+        const GeometryView* geometry = reinterpret_cast<GeometryView*>(handle);
+        const Rml::Vertex* vertices = geometry->vertices.data();
+        const size_t num_vertices = geometry->vertices.size();
+        const int* indices = geometry->indices.data();
+        const size_t num_indices = geometry->indices.size();
+
+        Rml::UniquePtr<SDL_Vertex[]> sdl_vertices{new SDL_Vertex[num_vertices]};
+
+        for (size_t i = 0; i < num_vertices; i++) {
+            float vx = (vertices[i].position.x + translation.x) * m_sx;
+            float vy = (vertices[i].position.y + translation.y) * m_sy;
+            sdl_vertices[i].position.x = vx;
+            sdl_vertices[i].position.y = vy;
+            sdl_vertices[i].tex_coord.x = vertices[i].tex_coord.x;
+            sdl_vertices[i].tex_coord.y = vertices[i].tex_coord.y;
+
+            const auto& color = vertices[i].colour;
+#if SDL_MAJOR_VERSION >= 3
+            sdl_vertices[i].color.r = color.red / 255.f;
+            sdl_vertices[i].color.g = color.green / 255.f;
+            sdl_vertices[i].color.b = color.blue / 255.f;
+            sdl_vertices[i].color.a = color.alpha / 255.f;
+#else
+            sdl_vertices[i].color.r = color.red;
+            sdl_vertices[i].color.g = color.green;
+            sdl_vertices[i].color.b = color.blue;
+            sdl_vertices[i].color.a = color.alpha;
+#endif
+        }
+
+        SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
+        SDL_Texture* sdl_texture = (SDL_Texture*)texture;
+        SDL_RenderGeometry(renderer, sdl_texture, sdl_vertices.get(), (int)num_vertices, indices, (int)num_indices);
+    }
+
     Rml::TextureHandle LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source) override {
         if (source.find("ctrlimg:") == 0) {
             SDL_Surface* surface = load_ctrlimg_surface(source);
@@ -297,6 +365,11 @@ class GameViewportSDL : public RenderInterface_SDL {
         }
         return RenderInterface_SDL::LoadTexture(texture_dimensions, Paths_ResolveAsset(source.c_str()));
     }
+
+  private:
+    bool m_active = false;
+    float m_sx = 1.0f;
+    float m_sy = 1.0f;
 };
 
 // -------------------------------------------------------------------
@@ -1268,16 +1341,14 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
         vp_rect.h = phys_h;
         SDL_SetRenderViewport(renderer, &vp_rect);
 
-        // Scale from logical (ctx_w × ctx_h) to physical (phys_w × phys_h)
-        float scale_x = (float)phys_w / (float)ctx_w;
-        float scale_y = (float)phys_h / (float)ctx_h;
-        SDL_SetRenderScale(renderer, scale_x, scale_y);
-
+        // Scale is natively executed mathematically via GameViewportSDL overrides.
+        // Skipping SDL_SetRenderScale entirely averts bounds-clipping bugs in SDL_RenderGeometry internally!
+        s_render_sdl->ActivateGameViewport(ctx_w, ctx_h, phys_w, phys_h);
         s_game_context->Render();
+        s_render_sdl->DeactivateGameViewport();
 
-        // Restore viewport and scale
+        // Restore viewport
         SDL_SetRenderViewport(renderer, NULL);
-        SDL_SetRenderScale(renderer, 1.0f, 1.0f);
 
         // Flush immediately — subsequent direct GL calls (bezels, overlays)
         // would corrupt the SDL_Renderer's batched GL state otherwise.
