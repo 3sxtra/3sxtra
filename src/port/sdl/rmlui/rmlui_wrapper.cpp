@@ -397,7 +397,12 @@ static float s_hidpi_ratio = 1.0f;
 static constexpr float REFERENCE_W = 1280.0f;
 
 static float compute_window_dp_ratio(int window_w) {
-    float size_scale = (float)window_w / REFERENCE_W;
+    // When SDL_WINDOW_HIGH_PIXEL_DENSITY is set, SDL_GetWindowSize returns
+    // physical pixels (e.g. 2992 on Pixel 8 Pro).  Convert to logical pixels
+    // before comparing against REFERENCE_W so we don't double-count HiDPI.
+    // On desktop without HiDPI, s_hidpi_ratio is 1.0 so this is a no-op.
+    float logical_w = (float)window_w / s_hidpi_ratio;
+    float size_scale = logical_w / REFERENCE_W;
     // Clamp to avoid extremes (too tiny or too huge)
     if (size_scale < 0.3f)
         size_scale = 0.3f;
@@ -828,7 +833,8 @@ extern "C" void rmlui_wrapper_render(void) {
 
     static bool s_first_render = true;
     if (s_first_render) {
-        SDL_Log("[RmlUi] First window render: gl3=%p gpu=%p sdl=%p if=%p",
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                "[RmlUi] First window render: gl3=%p gpu=%p sdl=%p if=%p",
                 (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl, (void*)s_render_interface);
         s_first_render = false;
     }
@@ -956,7 +962,8 @@ static void ensure_fonts_loaded(void) {
 extern "C" void rmlui_wrapper_show_document(const char* name) {
     if (!s_window_context || !name)
         return;
-    SDL_Log("[RmlUi] show_document('%s') render_if=%p gl3=%p gpu=%p sdl=%p",
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+            "[RmlUi] show_document('%s') render_if=%p gl3=%p gpu=%p sdl=%p",
             name, (void*)s_render_interface, (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl);
     ensure_gl3_ready(); // ⚡ LoadDocument needs render interface for textures
     ensure_fonts_loaded();
@@ -974,7 +981,7 @@ extern "C" void rmlui_wrapper_show_document(const char* name) {
         doc->Show();
         s_window_documents[name] = doc;
         s_any_window_visible = true;
-        SDL_Log("[RmlUi] Loaded window document: %s", path.c_str());
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Loaded window document: %s", path.c_str());
     } else {
         SDL_Log("[RmlUi] FAILED to load window document: %s", path.c_str());
     }
@@ -1029,7 +1036,8 @@ extern "C" void rmlui_wrapper_close_document(const char* name) {
 extern "C" void rmlui_wrapper_show_game_document(const char* name) {
     if (!s_game_context || !name)
         return;
-    SDL_Log("[RmlUi] show_game_document('%s') render_if=%p gl3=%p gpu=%p sdl=%p",
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+            "[RmlUi] show_game_document('%s') render_if=%p gl3=%p gpu=%p sdl=%p",
             name, (void*)s_render_interface, (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl);
     ensure_gl3_ready(); // ⚡ LoadDocument needs render interface for textures
     ensure_fonts_loaded();
@@ -1047,7 +1055,7 @@ extern "C" void rmlui_wrapper_show_game_document(const char* name) {
         doc->Show();
         s_game_documents[name] = doc;
         s_any_game_visible = true;
-        SDL_Log("[RmlUi] Loaded game document: %s", path.c_str());
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Loaded game document: %s", path.c_str());
     } else {
         SDL_Log("[RmlUi] FAILED to load game document: %s", path.c_str());
     }
@@ -1145,7 +1153,8 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
 
     static bool s_first_game_render = true;
     if (s_first_game_render) {
-        SDL_Log("[RmlUi] First game render: gl3=%p gpu=%p sdl=%p if=%p view=%.0fx%.0f",
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                "[RmlUi] First game render: gl3=%p gpu=%p sdl=%p if=%p view=%.0fx%.0f",
                 (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl,
                 (void*)s_render_interface, view_w, view_h);
         s_first_game_render = false;
