@@ -10,6 +10,15 @@
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 #include <SDL3/SDL.h>
 #include "port/sdl/renderer/gl_compat.h"
+#include "stb/stb_ds.h"
+
+typedef struct {
+    uint32_t key;
+    GLuint texture;
+    int16_t w;
+    int16_t h;
+    GLuint stale_texture;
+} GLTextureCacheEntry;
 
 // ⚡ Bolt: SIMDe — portable SIMD intrinsics
 #include <simde/x86/sse2.h>
@@ -104,13 +113,7 @@ typedef struct {
     SDL_Surface* surfaces[FL_TEXTURE_MAX];
     SDL_Palette* palettes[FL_PALETTE_MAX];
 
-    GLuint texture_cache[FL_TEXTURE_MAX][FL_PALETTE_MAX + 1];
-    int16_t texture_cache_w[FL_TEXTURE_MAX][FL_PALETTE_MAX + 1];
-    int16_t texture_cache_h[FL_TEXTURE_MAX][FL_PALETTE_MAX + 1];
-    GLuint stale_texture_cache[FL_TEXTURE_MAX][FL_PALETTE_MAX + 1];
-
-    TCacheLivePair tcache_live[TCACHE_LIVE_MAX];
-    int tcache_live_count;
+    GLTextureCacheEntry* texture_cache_map;
 
     GLuint textures_to_destroy[TEXTURES_TO_DESTROY_MAX];
     int textures_to_destroy_count;
@@ -159,7 +162,7 @@ extern unsigned int cps3_canvas_depth_texture;
 // Helpers shared between Resources and Draw
 void check_gl_error(const char* operation);
 void push_texture_to_destroy(GLuint texture);
-void tcache_live_add(int tex_idx, int pal_idx);
+
 void SDLGameRendererGL_FlushPendingUnlocks(void);
 
 #endif // SDL_GAME_RENDERER_GL_INTERNAL_H

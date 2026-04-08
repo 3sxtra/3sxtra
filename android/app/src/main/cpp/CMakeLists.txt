@@ -151,7 +151,7 @@ include_directories(
 # ======================================
 # Source files — from shared repo src/
 # ======================================
-file(GLOB_RECURSE GAME_SRC ${SRC_DIR}/*.c ${SRC_DIR}/*.cpp)
+file(GLOB_RECURSE GAME_SRC CONFIGURE_DEPENDS ${SRC_DIR}/*.c ${SRC_DIR}/*.cpp)
 file(GLOB_RECURSE ZLIB_SRC ${REPO_ROOT}/zlib/*.c)
 file(GLOB_RECURSE GLAD_SRC "${THIRD_PARTY_DIR}/glad_gles_generated/src/*.c")
 set_source_files_properties(${GLAD_SRC} PROPERTIES COMPILE_DEFINITIONS "GLAD_GLES2_USE_SYSTEM_EGL=1")

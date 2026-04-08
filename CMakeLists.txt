@@ -259,7 +259,7 @@ endif()
 # Source collection
 # ======================================
 
-file(GLOB_RECURSE GAME_SRC src/*.c src/*.cpp)
+file(GLOB_RECURSE GAME_SRC CONFIGURE_DEPENDS src/*.c src/*.cpp)
 
 # Exclude platform-specific broadcast backends (added conditionally below)
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/win32/")

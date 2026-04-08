@@ -64,24 +64,6 @@ static const Uint8 ps2_clut_shuffle[256] = {
     220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247, 232, 233,
     234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254, 255
 };
-void tcache_live_init(void) {
-    gl_state.tcache_live_count = 0;
-}
-
-void tcache_live_add(int tex_idx, int pal_idx) {
-#ifndef NDEBUG
-    for (int i = 0; i < gl_state.tcache_live_count; i++) {
-        SDL_assert(!(gl_state.tcache_live[i].tex_idx == tex_idx && gl_state.tcache_live[i].pal_idx == pal_idx));
-    }
-#endif
-    if (gl_state.tcache_live_count >= TCACHE_LIVE_MAX) {
-        SDL_Log("Warning: tcache_live overflow (%d pairs)", gl_state.tcache_live_count);
-        return;
-    }
-    gl_state.tcache_live[gl_state.tcache_live_count].tex_idx = (uint16_t)tex_idx;
-    gl_state.tcache_live[gl_state.tcache_live_count].pal_idx = (uint16_t)pal_idx;
-    gl_state.tcache_live_count++;
-}
 
 void push_texture_to_destroy(GLuint texture) {
     if (gl_state.textures_to_destroy_count >= TEXTURES_TO_DESTROY_MAX) {
@@ -284,8 +266,6 @@ void SDLGameRendererGL_Init() {
             GL_TEXTURE_2D_ARRAY, 0, 0, 0, gl_state.white_array_layer, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &white_pixel);
     }
 
-    tcache_live_init();
-
     // GL_TEXTURE_BUFFER is not supported natively on GLES 3.0 devices.
     // We use a regular GL_TEXTURE_2D where each row is a 256-color palette.
     glGenTextures(1, &gl_state.palette_tbo);
@@ -389,28 +369,23 @@ void SDLGameRendererGL_DestroyTexture(unsigned int texture_handle) {
     if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX)
         return;
 
-    for (int i = gl_state.tcache_live_count - 1; i >= 0; i--) {
-        if (gl_state.tcache_live[i].tex_idx == (uint16_t)texture_index) {
-            int pal = gl_state.tcache_live[i].pal_idx;
-            GLuint* texture_p = &gl_state.texture_cache[texture_index][pal];
-            if (*texture_p != 0) {
-                push_texture_to_destroy(*texture_p);
-                *texture_p = 0;
-            }
-            GLuint* stale_p = &gl_state.stale_texture_cache[texture_index][pal];
-            if (*stale_p != 0) {
-                push_texture_to_destroy(*stale_p);
-                *stale_p = 0;
-            }
-            gl_state.texture_cache_w[texture_index][pal] = 0;
-            gl_state.texture_cache_h[texture_index][pal] = 0;
+    for (int i = hmlen(gl_state.texture_cache_map) - 1; i >= 0; i--) {
+        if ((gl_state.texture_cache_map[i].key >> 16) == (uint32_t)texture_index) {
+            int pal = gl_state.texture_cache_map[i].key & 0xFFFF;
+            GLuint texture = gl_state.texture_cache_map[i].texture;
+            if (texture != 0)
+                push_texture_to_destroy(texture);
+            GLuint stale = gl_state.texture_cache_map[i].stale_texture;
+            if (stale != 0)
+                push_texture_to_destroy(stale);
 
             if (gl_state.tex_array_rgba_layer[texture_index][pal] >= 0) {
                 gl_state.tex_array_rgba_free[gl_state.tex_array_rgba_free_count++] =
                     gl_state.tex_array_rgba_layer[texture_index][pal];
                 gl_state.tex_array_rgba_layer[texture_index][pal] = -1;
             }
-            gl_state.tcache_live[i] = gl_state.tcache_live[--gl_state.tcache_live_count];
+
+            (void)hmdel(gl_state.texture_cache_map, gl_state.texture_cache_map[i].key);
         }
     }
 
@@ -529,28 +504,24 @@ void SDLGameRendererGL_DestroyPalette(unsigned int palette_handle) {
     if (palette_index < 0 || palette_index >= FL_PALETTE_MAX)
         return;
 
-    for (int i = gl_state.tcache_live_count - 1; i >= 0; i--) {
-        if (gl_state.tcache_live[i].pal_idx == (uint16_t)palette_handle) {
-            int tex = gl_state.tcache_live[i].tex_idx;
-            GLuint* texture_p = &gl_state.texture_cache[tex][palette_handle];
-            if (*texture_p != 0) {
-                push_texture_to_destroy(*texture_p);
-                *texture_p = 0;
-            }
-            GLuint* stale_p = &gl_state.stale_texture_cache[tex][palette_handle];
-            if (*stale_p != 0) {
-                push_texture_to_destroy(*stale_p);
-                *stale_p = 0;
-            }
-            gl_state.texture_cache_w[tex][palette_handle] = 0;
-            gl_state.texture_cache_h[tex][palette_handle] = 0;
+    for (int i = hmlen(gl_state.texture_cache_map) - 1; i >= 0; i--) {
+        if ((gl_state.texture_cache_map[i].key & 0xFFFF) == (uint32_t)palette_handle) {
+            int tex = gl_state.texture_cache_map[i].key >> 16;
+            GLuint texture = gl_state.texture_cache_map[i].texture;
+            if (texture != 0)
+                push_texture_to_destroy(texture);
+            GLuint stale = gl_state.texture_cache_map[i].stale_texture;
+            if (stale != 0)
+                push_texture_to_destroy(stale);
+
             // R8UI layer is per-texture, not per-palette — don't free here
             if (gl_state.tex_array_rgba_layer[tex][palette_handle] >= 0) {
                 gl_state.tex_array_rgba_free[gl_state.tex_array_rgba_free_count++] =
                     gl_state.tex_array_rgba_layer[tex][palette_handle];
                 gl_state.tex_array_rgba_layer[tex][palette_handle] = -1;
             }
-            gl_state.tcache_live[i] = gl_state.tcache_live[--gl_state.tcache_live_count];
+
+            (void)hmdel(gl_state.texture_cache_map, gl_state.texture_cache_map[i].key);
         }
     }
 
@@ -608,19 +579,17 @@ void SDLGameRendererGL_FlushPendingUnlocks(void) {
         return;
 
     // Single reverse pass through tcache_live — check each entry against the boolean lookup
-    for (int i = gl_state.tcache_live_count - 1; i >= 0; i--) {
-        const int tex_idx = gl_state.tcache_live[i].tex_idx;
+    for (int i = hmlen(gl_state.texture_cache_map) - 1; i >= 0; i--) {
+        const int tex_idx = gl_state.texture_cache_map[i].key >> 16;
         if (gl_state.pending_unlock_flags[tex_idx]) {
-            int pal = gl_state.tcache_live[i].pal_idx;
-            GLuint* texture_p = &gl_state.texture_cache[tex_idx][pal];
-            if (*texture_p != 0) {
-                GLuint stale = gl_state.stale_texture_cache[tex_idx][pal];
+            GLuint texture = gl_state.texture_cache_map[i].texture;
+            if (texture != 0) {
+                GLuint stale = gl_state.texture_cache_map[i].stale_texture;
                 if (stale != 0)
                     push_texture_to_destroy(stale);
-                gl_state.stale_texture_cache[tex_idx][pal] = *texture_p;
-                *texture_p = 0;
+                gl_state.texture_cache_map[i].stale_texture = texture;
+                gl_state.texture_cache_map[i].texture = 0;
             }
-            gl_state.tcache_live[i] = gl_state.tcache_live[--gl_state.tcache_live_count];
         }
     }
 
@@ -684,23 +653,36 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
     if (!surface)
         fatal_error("Surface is NULL");
 
-    GLuint texture = gl_state.texture_cache[texture_handle - 1][palette_handle];
+    const uint32_t key = ((uint32_t)(texture_handle - 1) << 16) | palette_handle;
+    const int cache_idx = hmgeti(gl_state.texture_cache_map, key);
+
+    GLuint texture = 0;
+    int16_t cached_w = 0, cached_h = 0;
+    GLuint stale = 0;
+
+    if (cache_idx >= 0) {
+        texture = gl_state.texture_cache_map[cache_idx].texture;
+        cached_w = gl_state.texture_cache_map[cache_idx].w;
+        cached_h = gl_state.texture_cache_map[cache_idx].h;
+        stale = gl_state.texture_cache_map[cache_idx].stale_texture;
+    }
 
     if (texture == 0) {
         const FLTexture* fl_texture = &flTexture[texture_handle - 1];
 
-        const int16_t cached_w = gl_state.texture_cache_w[texture_handle - 1][palette_handle];
-        const int16_t cached_h = gl_state.texture_cache_h[texture_handle - 1][palette_handle];
-        GLuint stale = gl_state.stale_texture_cache[texture_handle - 1][palette_handle];
         const bool can_sub_image = (stale != 0 && cached_w == surface->w && cached_h == surface->h);
 
         if (can_sub_image) {
             texture = stale;
-            gl_state.stale_texture_cache[texture_handle - 1][palette_handle] = 0;
+            stale = 0;
+            if (cache_idx >= 0)
+                gl_state.texture_cache_map[cache_idx].stale_texture = 0;
         } else {
             if (stale != 0) {
                 push_texture_to_destroy(stale);
-                gl_state.stale_texture_cache[texture_handle - 1][palette_handle] = 0;
+                stale = 0;
+                if (cache_idx >= 0)
+                    gl_state.texture_cache_map[cache_idx].stale_texture = 0;
             }
             glGenTextures(1, &texture);
         }
@@ -935,10 +917,19 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         }
 
-        gl_state.texture_cache_w[texture_handle - 1][palette_handle] = (int16_t)surface->w;
-        gl_state.texture_cache_h[texture_handle - 1][palette_handle] = (int16_t)surface->h;
-        gl_state.texture_cache[texture_handle - 1][palette_handle] = texture;
-        tcache_live_add(texture_handle - 1, palette_handle);
+        if (cache_idx >= 0) {
+            gl_state.texture_cache_map[cache_idx].texture = texture;
+            gl_state.texture_cache_map[cache_idx].w = (int16_t)surface->w;
+            gl_state.texture_cache_map[cache_idx].h = (int16_t)surface->h;
+        } else {
+            GLTextureCacheEntry new_entry;
+            new_entry.key = key;
+            new_entry.texture = texture;
+            new_entry.w = (int16_t)surface->w;
+            new_entry.h = (int16_t)surface->h;
+            new_entry.stale_texture = 0;
+            (void)hmputs(gl_state.texture_cache_map, new_entry);
+        }
     }
 
     {
@@ -963,13 +954,15 @@ unsigned int SDLGameRendererGL_GetCachedGLTexture(unsigned int texture_handle, u
     if (palette_handle > FL_PALETTE_MAX)
         return 0;
 
-    GLuint cached = gl_state.texture_cache[texture_handle - 1][palette_handle];
-    if (cached != 0)
-        return cached;
+    const uint32_t key = ((uint32_t)(texture_handle - 1) << 16) | palette_handle;
+    int cache_idx = hmgeti(gl_state.texture_cache_map, key);
+    if (cache_idx >= 0 && gl_state.texture_cache_map[cache_idx].texture != 0)
+        return gl_state.texture_cache_map[cache_idx].texture;
 
     unsigned int combined = (palette_handle << 16) | texture_handle;
     SDLGameRendererGL_SetTexture(combined);
-    return gl_state.texture_cache[texture_handle - 1][palette_handle];
+    cache_idx = hmgeti(gl_state.texture_cache_map, key);
+    return cache_idx >= 0 ? gl_state.texture_cache_map[cache_idx].texture : 0;
 }
 
 void SDLGameRendererGL_DumpTextures(void) {
@@ -977,10 +970,10 @@ void SDLGameRendererGL_DumpTextures(void) {
     int tex_index = 0;
     int count = 0;
 
-    // Use tcache_live — the authoritative list of tex+pal pairs that have been rendered.
-    for (int li = 0; li < gl_state.tcache_live_count; li++) {
-        int ti = gl_state.tcache_live[li].tex_idx;
-        int pi = gl_state.tcache_live[li].pal_idx;
+    // Iterate through texture cache map instead of tcache_live
+    for (int li = 0; li < hmlen(gl_state.texture_cache_map); li++) {
+        int ti = gl_state.texture_cache_map[li].key >> 16;
+        int pi = gl_state.texture_cache_map[li].key & 0xFFFF;
 
         SDL_Surface* surf = gl_state.surfaces[ti];
         if (!surf || !SDL_ISPIXELFORMAT_INDEXED(surf->format))
@@ -1040,7 +1033,11 @@ void SDLGameRendererGL_DumpTextures(void) {
 
         for (int pi = 0; pi <= FL_PALETTE_MAX; pi++) {
             /* Only dump if this tex+pal was actually resolved at some point */
-            if (gl_state.texture_cache[ti][pi] == 0 && gl_state.stale_texture_cache[ti][pi] == 0)
+            const uint32_t key = ((uint32_t)ti << 16) | pi;
+            int idx = hmgeti(gl_state.texture_cache_map, key);
+            if (idx < 0)
+                continue;
+            if (gl_state.texture_cache_map[idx].texture == 0 && gl_state.texture_cache_map[idx].stale_texture == 0)
                 continue;
 
             SDL_Palette* pal = (pi > 0 && pi <= FL_PALETTE_MAX) ? gl_state.palettes[pi - 1] : NULL;
@@ -1094,9 +1091,9 @@ void SDLGameRendererGL_DumpPaletteStats(void) {
     static uint8_t pal_count[FL_TEXTURE_MAX];
     memset(pal_count, 0, sizeof(pal_count));
 
-    int total_pairs = gl_state.tcache_live_count;
+    int total_pairs = hmlen(gl_state.texture_cache_map);
     for (int li = 0; li < total_pairs; li++) {
-        int ti = gl_state.tcache_live[li].tex_idx;
+        int ti = gl_state.texture_cache_map[li].key >> 16;
         if (ti >= 0 && ti < FL_TEXTURE_MAX && pal_count[ti] < 255)
             pal_count[ti]++;
     }
