@@ -11,6 +11,10 @@
  * control), so a high-speed camera can see the LED flash and correlate
  * it with the on-screen frame counter in the debug HUD.
  *
+ * Frame tracking: records the frame the button was first pressed (receive_frame)
+ * and the frame when the game character reacted (active_frame, via routine_no
+ * change). Results persist on-screen for ~3 seconds after button release.
+ *
  * Uses raw ioctl instead of libgpiod for zero external dependencies on
  * Batocera (which has no package manager).
  */
@@ -18,6 +22,9 @@
 
 #include "port/linux/gpio_lag_test.h"
 #include "sf33rd/Source/Game/io/ioconv.h"
+#include "sf33rd/Source/Game/engine/workuser.h"
+#include "sf33rd/Source/Game/system/work_sys.h"
+#include "sf33rd/Source/Game/engine/plcnt.h"
 
 #include <SDL3/SDL.h>
 #include <errno.h>
@@ -33,6 +40,7 @@
 #define GPIO_LINE 17
 #define MK_FLAG 0x200 /* Medium Kick game flag */
 #define CONSUMER_LABEL "3sx-lag-test"
+#define DISPLAY_PERSIST_FRAMES 180 /* ~3 seconds at 60fps */
 
 /* ── State ─────────────────────────────────────────────────────────── */
 
@@ -41,6 +49,18 @@ static bool s_gpio_ready = false;
 static int s_chip_fd = -1; /* /dev/gpiochip0 fd */
 static int s_line_fd = -1; /* Line request fd (for get_values) */
 static int s_debug_counter = 0;
+
+/* ── Frame tracking state ──────────────────────────────────────────── */
+
+static bool s_button_held = false;         /* Current GPIO button state */
+static bool s_button_prev = false;         /* Previous frame button state */
+static bool s_tracking = false;            /* Currently tracking a press→react cycle */
+static bool s_result_ready = false;        /* active_frame has been detected */
+static uint32_t s_receive_frame = 0;       /* Frame when button first pressed */
+static uint32_t s_active_frame = 0;        /* Frame when routine_no changed */
+static int s_initial_routine_0 = 0;        /* routine_no[0] at press time */
+static int s_initial_routine_1 = 0;        /* routine_no[1] at press time */
+static int s_display_timer = 0;            /* Countdown for OSD persistence */
 
 /* ── Public API ────────────────────────────────────────────────────── */
 
@@ -139,9 +159,73 @@ void GpioLagTest_OnInputPoll(void) {
         SDL_Log("[GpioLagTest] GPIO %d = %llu", GPIO_LINE, (unsigned long long)vals.bits);
     }
 
+    /* Track button state for rising-edge detection */
+    s_button_prev = s_button_held;
+
     /* Active low: bit=0 means button is pressed */
-    if ((vals.bits & 1) == 0) {
+    s_button_held = ((vals.bits & 1) == 0);
+
+    if (s_button_held) {
         io_w.sw[0] |= MK_FLAG;
+    }
+
+    /* Rising edge: button just pressed */
+    if (s_button_held && !s_button_prev) {
+        /* Debounce: ignore any rising edges within 30 frames (0.5s) of the last one 
+           to eliminate physical switch bounce corrupting the receive_frame. */
+        static uint32_t s_last_press_frame = 0;
+        if (system_timer - s_last_press_frame < 30) {
+            return;
+        }
+        s_last_press_frame = system_timer;
+
+        s_receive_frame = system_timer;
+        s_active_frame = 0;
+        s_result_ready = false;
+        s_tracking = true;
+        s_display_timer = DISPLAY_PERSIST_FRAMES;
+
+        /* Capture initial routine_no for change detection */
+        s_initial_routine_0 = plw[0].wu.routine_no[0];
+        s_initial_routine_1 = plw[0].wu.routine_no[1];
+
+        SDL_Log("[GpioLagTest] Button PRESSED — receive_frame=%u, routine_no=[%d,%d]",
+                s_receive_frame,
+                s_initial_routine_0,
+                s_initial_routine_1);
+    }
+}
+
+void GpioLagTest_UpdateFrameTracking(void) {
+    if (!s_enabled)
+        return;
+
+    /* Check if game state reacted to the input (routine_no changed) */
+    if (s_tracking && !s_result_ready) {
+        if (plw[0].wu.routine_no[0] != s_initial_routine_0 ||
+            plw[0].wu.routine_no[1] != s_initial_routine_1) {
+
+            s_active_frame = system_timer;
+            s_result_ready = true;
+
+            SDL_Log("[GpioLagTest] State CHANGED — active_frame=%u, lag=%d frames, "
+                    "routine_no: [%d,%d] -> [%d,%d]",
+                    s_active_frame,
+                    (int)(s_active_frame - s_receive_frame),
+                    s_initial_routine_0,
+                    s_initial_routine_1,
+                    plw[0].wu.routine_no[0],
+                    plw[0].wu.routine_no[1]);
+        }
+    }
+
+    /* Persistence timer: keep OSD visible for ~3 seconds after press */
+    if (s_display_timer > 0) {
+        s_display_timer--;
+        if (s_display_timer == 0) {
+            s_tracking = false;
+            s_result_ready = false;
+        }
     }
 }
 
@@ -158,4 +242,19 @@ bool GpioLagTest_IsEnabled(void) {
     return s_enabled;
 }
 
+GpioLagTestState GpioLagTest_GetState(void) {
+    GpioLagTestState state;
+    state.enabled = s_enabled;
+    state.input_held = s_button_held;
+    state.tracking = s_tracking;
+    state.result_ready = s_result_ready;
+    state.current_frame = system_timer;
+    state.receive_frame = s_receive_frame;
+    state.active_frame = s_active_frame;
+    state.lag_frames = s_result_ready ? (int32_t)(s_active_frame - s_receive_frame) : 0;
+    state.display_timer = s_display_timer;
+    return state;
+}
+
 #endif /* ENABLE_GPIO_LAG_TEST */
+

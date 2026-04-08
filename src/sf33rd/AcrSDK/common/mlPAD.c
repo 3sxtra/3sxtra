@@ -21,8 +21,7 @@
 #define PAD_DEPTH_COUNT 16
 #define PAD_PRESS_MAX 0xFF
 
-volatile bool g_sim_lag_active = false;
-int g_sim_lag_frame = 0;
+
 #include "sf33rd/AcrSDK/ps2/flPADUSR.h"
 #include "sf33rd/AcrSDK/ps2/ps2PAD.h"
 #include "structs.h"
@@ -115,16 +114,7 @@ void flPADGetALL() {
 
         flupdate_pad_button_data(&flpad_adr[0][i], tarpad_root[i].sw);
 
-        // ⚡ Bolt: Input Lag Test Injection
-        if (g_sim_lag_active && i == 0) {
-            // Inject Light Punch (SWK_SOUTH / Cross -> Mapped to LP by ioconv)
-            flpad_adr[0][i].sw |= SWK_SOUTH;
-            flpad_adr[0][i].sw_new |= SWK_SOUTH;
 
-            // Log only on first frame of injection to avoid spam?
-            // Or keep it for confirmation.
-            // SDL_Log("Bolt: Inj Frame %d. SW: %08X", g_sim_lag_frame, flpad_adr[0][i].sw);
-        }
 
         flupdate_pad_on_cnt(&flpad_adr[0][i]);
         flpad_adr[0][i].sw_repeat = flpad_adr[0][i].sw_new;

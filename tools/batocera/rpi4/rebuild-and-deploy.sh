@@ -133,12 +133,24 @@ if [ ! -f "$BUILD_DIR/build.ninja" ] && [ ! -f "$BUILD_DIR/Makefile" ]; then
     echo -e "${GREEN}✔ Configure succeeded${NC}"
 else
     info "Build directory already configured (use --clean to reconfigure)"
-    # If Tracy flag changed, reconfigure in-place
+    # Reconfigure in-place if flags changed
+    RECONFIG_ARGS=()
+    
     if [ "$ENABLE_TRACY" = true ]; then
-        step "Reconfiguring with Tracy enabled..."
-        cd "$BUILD_DIR"
-        cmake . -DENABLE_TRACY=ON || die "CMake reconfigure failed!"
+        RECONFIG_ARGS+=("-DENABLE_TRACY=ON")
+    else
+        RECONFIG_ARGS+=("-DENABLE_TRACY=OFF")
     fi
+
+    if [ "$ENABLE_LAG_TEST" = true ]; then
+        RECONFIG_ARGS+=("-DENABLE_GPIO_LAG_TEST=ON")
+    else
+        RECONFIG_ARGS+=("-DENABLE_GPIO_LAG_TEST=OFF")
+    fi
+
+    step "Reconfiguring with current flags..."
+    cd "$BUILD_DIR"
+    cmake . "${RECONFIG_ARGS[@]}" || die "CMake reconfigure failed!"
 fi
 
 # ── Step 3: Build ─────────────────────────────────────────────

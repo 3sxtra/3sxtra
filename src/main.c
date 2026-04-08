@@ -22,6 +22,7 @@
 #include "rendering/game_renderer.h"
 #include "port/sdl/app/sdl_app_config.h"
 #include "port/sdl/netstats_renderer.h"
+#include "port/sdl/lagtest_renderer.h"
 
 #include "sf33rd/AcrSDK/common/mlPAD.h"
 #include "sf33rd/AcrSDK/ps2/flps2debug.h"
@@ -113,13 +114,6 @@ MPP mpp_w;
 Configuration configuration = { 0 };
 
 const char* g_shm_suffix = NULL;
-
-// ⚡ Bolt: Input Lag Test Globals
-extern volatile bool g_sim_lag_active;
-extern int g_sim_lag_frame;
-static int s_lag_test_initial_routine = 0;
-static int s_lag_test_initial_routine_1 = 0;
-static Uint64 s_lag_test_start_ticks = 0;
 
 // forward decls
 static void game_init();
@@ -479,26 +473,6 @@ static void game_step_0() {
     if (current_net_state == NETPLAY_SESSION_IDLE || current_net_state == NETPLAY_SESSION_LOBBY) {
         njUserMain();
 
-        // ⚡ Bolt: Input Lag Test Detection
-        if (g_sim_lag_active) {
-            // Check if Action Status (routine_no[0] or routine_no[1]) has changed
-            if (plw[0].wu.routine_no[0] != s_lag_test_initial_routine ||
-                plw[0].wu.routine_no[1] != s_lag_test_initial_routine_1) {
-
-                int delta = system_timer - g_sim_lag_frame;
-                Uint64 end_ticks = SDL_GetPerformanceCounter();
-                double ms_latency =
-                    (double)(end_ticks - s_lag_test_start_ticks) * 1000.0 / (double)SDL_GetPerformanceFrequency();
-
-                SDL_Log("Bolt: Lag Test RESULT: %d frames (%.3f ms latency). Detected State Change R1: %d -> %d",
-                        delta,
-                        ms_latency,
-                        s_lag_test_initial_routine_1,
-                        plw[0].wu.routine_no[1]);
-                g_sim_lag_active = false; // End test
-            }
-        }
-
         seqsBeforeProcess();
 
         Renderer_Flush2DPrimitives();
@@ -510,6 +484,9 @@ static void game_step_0() {
     MenuBridge_PostTick();
 
     training_hud_draw();
+
+    // Input lag test OSD (GPIO lag test mode — Pi4 only)
+    LagtestRenderer_Render();
 
     flFlip(0);
 }
