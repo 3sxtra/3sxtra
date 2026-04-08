@@ -20,6 +20,7 @@
 #include "sf33rd/Source/Game/debug/Debug.h"
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
+#include "stb/stb_ds.h"
 
 IO io_w;
 
@@ -57,32 +58,39 @@ s32 get_game_actions_count() {
     return sizeof(game_actions) / sizeof(game_actions[0]);
 }
 
+// turbo
+// What: Convert sequential O(N) strcmp string search into O(1) hash map lookup for pad mapping.
+// Target: Algorithmic complexity via fast Data Structures (stb_ds.h).
+// Expected Impact: Eliminates ~144 string comparisons per frame per connected player.
+
+typedef struct {
+    char* key;
+    u32 value;
+} ActionMap;
+
+static ActionMap* action_map = NULL;
+
 /** @brief Map an action name string to its corresponding button flag. */
 u32 get_action_flag(const char* action) {
-    if (strcmp(action, "Up") == 0)
-        return 0x1;
-    if (strcmp(action, "Down") == 0)
-        return 0x2;
-    if (strcmp(action, "Left") == 0)
-        return 0x4;
-    if (strcmp(action, "Right") == 0)
-        return 0x8;
-    if (strcmp(action, "Light Punch") == 0)
-        return 0x10;
-    if (strcmp(action, "Medium Punch") == 0)
-        return 0x20;
-    if (strcmp(action, "Hard Punch") == 0)
-        return 0x40;
-    if (strcmp(action, "Light Kick") == 0)
-        return 0x100;
-    if (strcmp(action, "Medium Kick") == 0)
-        return 0x200;
-    if (strcmp(action, "Hard Kick") == 0)
-        return 0x400;
-    if (strcmp(action, "Start") == 0)
-        return 0x1000;
-    if (strcmp(action, "Select") == 0)
-        return 0x2000;
+    if (!action_map) {
+        shput(action_map, "Up", 0x1);
+        shput(action_map, "Down", 0x2);
+        shput(action_map, "Left", 0x4);
+        shput(action_map, "Right", 0x8);
+        shput(action_map, "Light Punch", 0x10);
+        shput(action_map, "Medium Punch", 0x20);
+        shput(action_map, "Hard Punch", 0x40);
+        shput(action_map, "Light Kick", 0x100);
+        shput(action_map, "Medium Kick", 0x200);
+        shput(action_map, "Hard Kick", 0x400);
+        shput(action_map, "Start", 0x1000);
+        shput(action_map, "Select", 0x2000);
+    }
+    
+    ptrdiff_t ix = shgeti(action_map, action);
+    if (ix >= 0) {
+        return action_map[ix].value;
+    }
     return 0;
 }
 
