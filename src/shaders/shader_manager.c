@@ -449,7 +449,12 @@ ShaderManager* ShaderManager_Init(GLSLP_Preset* preset, const char* base_path) {
 
             snprintf(vs_source,
                      buf_size,
+#ifdef __ANDROID__
+                     "#version 300 es\n"
+                     "precision mediump float;\n"
+#else
                      "#version 330 core\n"
+#endif
                      "#define VERTEX\n"
                      "%s"
                      "#define varying out\n"
@@ -462,7 +467,12 @@ ShaderManager* ShaderManager_Init(GLSLP_Preset* preset, const char* base_path) {
             if (has_fragcolor_out) {
                 snprintf(fs_source,
                          buf_size,
+#ifdef __ANDROID__
+                         "#version 300 es\n"
+                         "precision mediump float;\n"
+#else
                          "#version 330 core\n"
+#endif
                          "#define FRAGMENT\n"
                          "%s"
                          "#define varying in\n"
@@ -474,7 +484,12 @@ ShaderManager* ShaderManager_Init(GLSLP_Preset* preset, const char* base_path) {
             } else {
                 snprintf(fs_source,
                          buf_size,
+#ifdef __ANDROID__
+                         "#version 300 es\n"
+                         "precision mediump float;\n"
+#else
                          "#version 330 core\n"
+#endif
                          "#define FRAGMENT\n"
                          "%s"
                          "#define varying in\n"
@@ -507,7 +522,12 @@ ShaderManager* ShaderManager_Init(GLSLP_Preset* preset, const char* base_path) {
             if (has_fragcolor_out) {
                 snprintf(fs_source,
                          buf_size,
+#ifdef __ANDROID__
+                         "#version 300 es\n"
+                         "precision mediump float;\n"
+#else
                          "#version 330 core\n"
+#endif
                          "#define FRAGMENT\n"
                          "%s"
                          "#define texture2D texture\n"
@@ -519,7 +539,12 @@ ShaderManager* ShaderManager_Init(GLSLP_Preset* preset, const char* base_path) {
             } else {
                 snprintf(fs_source,
                          buf_size,
+#ifdef __ANDROID__
+                         "#version 300 es\n"
+                         "precision mediump float;\n"
+#else
                          "#version 330 core\n"
+#endif
                          "#define FRAGMENT\n"
                          "%s"
                          "#define texture2D texture\n"

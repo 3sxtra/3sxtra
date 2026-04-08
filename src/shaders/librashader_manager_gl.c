@@ -165,7 +165,7 @@ LibrashaderManagerGL* LibrashaderManager_Init_GL(const char* preset_path) {
     struct filter_chain_gl_opt_t opt;
     opt.version = LIBRASHADER_CURRENT_VERSION;
 #ifdef __ANDROID__
-    opt.glsl_version = 100; // GLES — librashader maps to 300 es
+    opt.glsl_version = 300; // GLES 3.0
 #elif defined(PLATFORM_RPI4)
     opt.glsl_version = 330;
 #else

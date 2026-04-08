@@ -395,27 +395,50 @@ static void apply_room_state_to_model(void) {
     s_model_handle.DirtyVariable("chat_count");
 }
 
-// TODO(perf): This is a synchronous HTTP call on the main thread. It can cause
-// 50–200ms frame hitches depending on server latency. Consider making it async
-// with a background thread, or using SSE event data for incremental updates.
+static SDL_AtomicInt s_async_refresh_active = { 0 };
+static bool s_async_refresh_completed = false;
+static bool s_async_refresh_success = false;
+static bool s_async_refresh_pending_retrigger = false;
+static RoomState s_async_room_state_buffer;
+
+struct AsyncRefreshData {
+    char room_code[16];
+};
+
+static int SDLCALL async_refresh_fn(void* data) {
+    AsyncRefreshData* d = (AsyncRefreshData*)data;
+    bool success = LobbyServer_GetRoomState(d->room_code, &s_async_room_state_buffer);
+    s_async_refresh_success = success;
+    s_async_refresh_completed = true;
+    free(d);
+    return 0;
+}
+
 static void refresh_room_state_from_server(void) {
     if (s_room_code.empty())
         return;
 
-    // Use the read-only GET /room/state endpoint (no re-join side effect)
-    if (LobbyServer_GetRoomState(s_room_code.c_str(), &s_room_state)) {
-        apply_room_state_to_model();
+    if (SDL_GetAtomicInt(&s_async_refresh_active) != 0) {
+        s_async_refresh_pending_retrigger = true;
+        return;
+    }
+
+    SDL_SetAtomicInt(&s_async_refresh_active, 1);
+    s_async_refresh_completed = false;
+
+    AsyncRefreshData* d = (AsyncRefreshData*)malloc(sizeof(AsyncRefreshData));
+    if (!d) {
+        SDL_SetAtomicInt(&s_async_refresh_active, 0);
+        return;
+    }
+    snprintf(d->room_code, sizeof(d->room_code), "%s", s_room_code.c_str());
+
+    SDL_Thread* t = SDL_CreateThread(async_refresh_fn, "AsyncRefresh", d);
+    if (t) {
+        SDL_DetachThread(t);
     } else {
-        // Room may have been destroyed (404) — navigate back gracefully
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-                    "[CasualLobby] Room %s no longer exists on server, returning to lobby",
-                    s_room_code.c_str());
-        s_status_text = "Room closed.";
-        if (s_model_handle)
-            s_model_handle.DirtyVariable("status_text");
-        rmlui_ingame_chat_shutdown();
-        rmlui_casual_lobby_hide();
-        rmlui_network_lobby_show();
+        free(d);
+        SDL_SetAtomicInt(&s_async_refresh_active, 0);
     }
 }
 
@@ -428,6 +451,33 @@ extern "C" void rmlui_casual_lobby_update(void) {
     }
     if (!s_is_visible)
         return;
+
+    // Handle async refresh completion
+    if (s_async_refresh_completed) {
+        s_async_refresh_completed = false;
+        
+        if (s_async_refresh_success) {
+            memcpy(&s_room_state, &s_async_room_state_buffer, sizeof(RoomState));
+            apply_room_state_to_model();
+        } else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                        "[CasualLobby] Room %s no longer exists on server, returning to lobby",
+                        s_room_code.c_str());
+            s_status_text = "Room closed.";
+            if (s_model_handle)
+                s_model_handle.DirtyVariable("status_text");
+            rmlui_ingame_chat_shutdown();
+            rmlui_casual_lobby_hide();
+            rmlui_network_lobby_show();
+        }
+        
+        SDL_SetAtomicInt(&s_async_refresh_active, 0);
+
+        if (s_async_refresh_pending_retrigger) {
+            s_async_refresh_pending_retrigger = false;
+            refresh_room_state_from_server();
+        }
+    }
 
     // Deferred overlay re-show: wait for game engine to finish cleanup
     if (s_match_ended_pending_reshow) {

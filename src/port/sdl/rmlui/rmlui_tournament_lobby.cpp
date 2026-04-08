@@ -588,26 +588,55 @@ static void apply_tournament_state_to_model(void) {
     }
 }
 
+static SDL_AtomicInt s_async_refresh_active = { 0 };
+static bool s_async_refresh_completed = false;
+static bool s_async_refresh_success = false;
+static bool s_async_refresh_pending_retrigger = false;
+static RoomState s_async_room_state_buffer;
+static TournamentState s_async_tournament_state_buffer;
+
+struct AsyncRefreshData {
+    char room_code[16];
+};
+
+static int SDLCALL async_refresh_fn(void* data) {
+    AsyncRefreshData* d = (AsyncRefreshData*)data;
+    bool success = LobbyServer_GetRoomState(d->room_code, &s_async_room_state_buffer);
+    s_async_refresh_success = success;
+    if (success) {
+        memset(&s_async_tournament_state_buffer, 0, sizeof(TournamentState));
+        LobbyServer_GetBracket(d->room_code, &s_async_tournament_state_buffer);
+    }
+    s_async_refresh_completed = true;
+    free(d);
+    return 0;
+}
+
 static void refresh_room_state_from_server(void) {
     if (s_room_code.empty())
         return;
 
-    if (LobbyServer_GetRoomState(s_room_code.c_str(), &s_room_state)) {
-        apply_room_state_to_model();
-    } else {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-                    "[TournamentLobby] Room %s no longer exists, returning to lobby",
-                    s_room_code.c_str());
-        s_status_text = "Room closed.";
-        if (s_model_handle)
-            s_model_handle.DirtyVariable("status_text");
-        rmlui_tournament_lobby_hide();
-        rmlui_network_lobby_show();
+    if (SDL_GetAtomicInt(&s_async_refresh_active) != 0) {
+        s_async_refresh_pending_retrigger = true;
+        return;
     }
 
-    // Also fetch bracket state
-    if (LobbyServer_GetBracket(s_room_code.c_str(), &s_tournament_state)) {
-        apply_tournament_state_to_model();
+    SDL_SetAtomicInt(&s_async_refresh_active, 1);
+    s_async_refresh_completed = false;
+
+    AsyncRefreshData* d = (AsyncRefreshData*)malloc(sizeof(AsyncRefreshData));
+    if (!d) {
+        SDL_SetAtomicInt(&s_async_refresh_active, 0);
+        return;
+    }
+    snprintf(d->room_code, sizeof(d->room_code), "%s", s_room_code.c_str());
+
+    SDL_Thread* t = SDL_CreateThread(async_refresh_fn, "AsyncRefreshT", d);
+    if (t) {
+        SDL_DetachThread(t);
+    } else {
+        free(d);
+        SDL_SetAtomicInt(&s_async_refresh_active, 0);
     }
 }
 
@@ -620,6 +649,33 @@ extern "C" void rmlui_tournament_lobby_update(void) {
     }
     if (!s_is_visible)
         return;
+
+    if (s_async_refresh_completed) {
+        s_async_refresh_completed = false;
+
+        if (s_async_refresh_success) {
+            memcpy(&s_room_state, &s_async_room_state_buffer, sizeof(RoomState));
+            apply_room_state_to_model();
+            memcpy(&s_tournament_state, &s_async_tournament_state_buffer, sizeof(TournamentState));
+            apply_tournament_state_to_model();
+        } else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                        "[TournamentLobby] Room %s no longer exists, returning to lobby",
+                        s_room_code.c_str());
+            s_status_text = "Room closed.";
+            if (s_model_handle)
+                s_model_handle.DirtyVariable("status_text");
+            rmlui_tournament_lobby_hide();
+            rmlui_network_lobby_show();
+        }
+
+        SDL_SetAtomicInt(&s_async_refresh_active, 0);
+
+        if (s_async_refresh_pending_retrigger) {
+            s_async_refresh_pending_retrigger = false;
+            refresh_room_state_from_server();
+        }
+    }
 
     // Deferred overlay re-show
     if (s_match_ended_pending_reshow) {

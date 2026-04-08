@@ -314,6 +314,34 @@ int SDLApp_Init() {
 
     if (!g_cli_renderer_set) {
         const char* cfg_renderer = Config_GetString(CFG_KEY_RENDERER);
+#ifdef __ANDROID__
+#include <jni.h>
+        {
+            JNIEnv *env = (JNIEnv *)SDL_GetAndroidJNIEnv();
+            if (env) {
+                jclass activityClass = (*env)->FindClass(env, "com/goodport/sxdroid/MainActivity");
+                if (activityClass) {
+                    jmethodID mid = (*env)->GetStaticMethodID(env, activityClass, "showRendererChooserDialog", "()I");
+                    if (mid) {
+                        int result = (*env)->CallStaticIntMethod(env, activityClass, mid);
+                        if (result == 0) Config_SetString(CFG_KEY_RENDERER, "gpu");
+                        else if (result == 1) Config_SetString(CFG_KEY_RENDERER, "gl");
+                        else if (result == 2) Config_SetString(CFG_KEY_RENDERER, "sdl");
+                        else if (result == 3) Config_SetString(CFG_KEY_RENDERER, "classic");
+                        
+                        cfg_renderer = Config_GetString(CFG_KEY_RENDERER);
+                    } else {
+                        SDL_Log("JNI Error: Could not find showRendererChooserDialog method.");
+                    }
+                    (*env)->DeleteLocalRef(env, activityClass);
+                } else {
+                    SDL_Log("JNI Error: Could not find MainActivity class.");
+                }
+            } else {
+                SDL_Log("JNI Error: Could not get JNIEnv.");
+            }
+        }
+#endif
         if (cfg_renderer && cfg_renderer[0] != '\0' && strcmp(cfg_renderer, "auto") != 0) {
             if (strcmp(cfg_renderer, "gpu") == 0)
                 g_renderer_backend = RENDERER_SDLGPU;
