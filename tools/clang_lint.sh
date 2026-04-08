@@ -30,7 +30,7 @@ if [ -f build/compile_commands.json ]; then
     # Exclude platform dirs not buildable on the current host (linux/, macos/).
     find src/port src/netplay -type f \( -name '*.c' -o -name '*.cpp' \) \
         -not -path '*/linux/*' -not -path '*/macos/*' \
-        | xargs clang-tidy -p build --quiet 2>&1 || CLANG_TIDY_ISSUES=1
+        | xargs -P $(nproc) clang-tidy -p build --quiet 2>&1 || CLANG_TIDY_ISSUES=1
 else
     echo "No compile_commands.json found. Run cmake configure first (CMAKE_EXPORT_COMPILE_COMMANDS is ON)."
 fi

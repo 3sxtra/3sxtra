@@ -86,7 +86,7 @@ u32 get_action_flag(const char* action) {
         shput(action_map, "Start", 0x1000);
         shput(action_map, "Select", 0x2000);
     }
-    
+
     ptrdiff_t ix = shgeti(action_map, action);
     if (ix >= 0) {
         return action_map[ix].value;

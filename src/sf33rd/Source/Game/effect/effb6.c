@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include <strings.h>
+#include "stb/stb_ds.h"
 
 void get_message_conn_data(WORK_Other_CONN* ewk, s16 kind, s16 pl, s16 msg);
 static s32 msgConvertObjNum(u8* moji, s32* spc, s32* hz, u16* num, u8 hzSel);
@@ -309,6 +310,40 @@ const s8** han_adrs[3] = { src_han_kata, src_han_alpha, src_han_alpha2 };
 const s8** zen_adrs[11] = { src_zen_comm, src_zen_hira, src_zen_kata, src_zen_kan0, src_zen_kan1, src_zen_kan2,
                             src_zen_kan3, src_zen_kan4, src_zen_kan5, src_zen_kan6, src_zen_kan7 };
 
+// turbo
+// What: Convert sequential O(N) strcmp string search into O(1) hash map lookup for message rendering.
+// Target: Algorithmic complexity via fast Data Structures (stb_ds.h).
+// Expected Impact: Eliminates up to 1400 string comparisons per character parsed in text rendering, mitigating latency
+// spikes during dialog.
+
+typedef struct {
+    char* key;
+    u16 value;
+} TextMap;
+
+static TextMap* han_map_3 = NULL;
+static TextMap* han_map_2 = NULL;
+static TextMap* zen_map_11 = NULL;
+
+static void init_text_maps() {
+    s32 i, j;
+    for (i = 10; i >= 0; i--) {
+        for (j = 127; j >= 0; j--) {
+            u16 v = j + (i * 128) + 0x80B0;
+            shput(zen_map_11, zen_adrs[i][j], v);
+        }
+    }
+    for (i = 2; i >= 0; i--) {
+        for (j = 127; j >= 0; j--) {
+            u16 v = j + (i * 128) + 0x7F30;
+            shput(han_map_3, han_adrs[i][j], v);
+            if (i < 2) {
+                shput(han_map_2, han_adrs[i][j], v);
+            }
+        }
+    }
+}
+
 void effect_B6_move(WORK_Other_CONN* ewk) {
     switch (ewk->wu.routine_no[0]) {
     case 0:
@@ -448,31 +483,25 @@ static s32 msgConvertObjNum(u8* moji, s32* spc, s32* hz, u16* num, u8 hzSel) {
             tmpstr[1] = ((u8**)src_han_zen_conv)[tmpstr[0]][1];
             tmpstr[0] = ((u8**)src_han_zen_conv)[tmpstr[0]][0];
 
-            for (i = 0; i < 3; i++) {
-                for (j = 0; j < 128; j++) {
-                    if (strcmp(&tmpstr[0], han_adrs[i][j]) != 0) {
-                        continue;
-                    }
-
-                    *hz = 0;
-                    *spc = 0;
-                    *num = j + (i * 128) + 0x7F30;
-                    return 1;
-                }
+            if (!han_map_3)
+                init_text_maps();
+            u16 val = shget(han_map_3, (char*)tmpstr);
+            if (val) {
+                *hz = 0;
+                *spc = 0;
+                *num = val;
+                return 1;
             }
         }
 
-        for (i = 0; i < 11; i++) {
-            for (j = 0; j < 128; j++) {
-                if (strcmp(&tmpstr[0], zen_adrs[i][j]) != 0) {
-                    continue;
-                }
-
-                *hz = 1;
-                *spc = 0;
-                *num = j + (i * 128) + 0x80B0;
-                return 2;
-            }
+        if (!zen_map_11)
+            init_text_maps();
+        u16 val = shget(zen_map_11, (char*)tmpstr);
+        if (val) {
+            *hz = 1;
+            *spc = 0;
+            *num = val;
+            return 2;
         }
 
         goto three;
@@ -493,17 +522,14 @@ static s32 msgConvertObjNum(u8* moji, s32* spc, s32* hz, u16* num, u8 hzSel) {
         goto one;
     }
 
-    for (i = 0; i < 2; i++) {
-        for (j = 0; j < 128; j++) {
-            if (strcmp(&tmpstr[0], han_adrs[i][j]) != 0) {
-                continue;
-            }
-
-            *hz = 0;
-            *spc = 0;
-            *num = j + (i * 128) + 0x7F30;
-            return rnum;
-        }
+    if (!han_map_2)
+        init_text_maps();
+    u16 val = shget(han_map_2, (char*)tmpstr);
+    if (val) {
+        *hz = 0;
+        *spc = 0;
+        *num = val;
+        return rnum;
     }
 
 one:

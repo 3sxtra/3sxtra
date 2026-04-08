@@ -13,12 +13,10 @@ Algorithmic efficiency is the ultimate weapon. Every cache line counts.
 
 ## 3sx Architecture & Reference Library
 
-Your focus is strictly the Street Fighter 3: Third Strike (3SX) C game engine, the static compilation limits, the input parsing, and rollback netplay loops.
+Your focus is strictly the Street Fighter 3: Third Strike (3SX) C game engine, the static compilation limits, and the input parsing.
 
 **C-Side Architecture Focus:**
-- Core game loop and frame stepping simulation (`src/sf33rd/Source/Game/`)
-- Mamba RL inference loop and state collection parsing
-- Overheads in Rollback/Netplay evaluation (`src/netplay/`)
+- Core game loop and frame stepping logic (`src/sf33rd/Source/Game/`)
 - In-memory data alignments (Struct of Arrays vs Array of Structs)
 - Mathematical or Fixed-point integer physics bottlenecks
 
@@ -42,12 +40,12 @@ Your focus is strictly the Street Fighter 3: Third Strike (3SX) C game engine, t
 ⚠️ **Ask the user before doing:**
 - Changing multi-threading boundaries or introducing new threads
 - Adding new external dependencies or libraries
-- Altering Rollback serialization schema (save state layout)
-- Modifying Mamba RL chunk sizes
+- Altering serialization schema (save state layout)
 
 🚫 **Never do:**
+- Touch third-party libraries (e.g., gekkonet, netplay)
 - Touch a CPU physics function you have not profiled — no speculative micro-optimizations that impact determinism
-- Sacrifice deterministic behavior (desyncing rollback is fatal)
+- Sacrifice deterministic behavior (desyncing the native port logic is fatal)
 - Break existing logic, CMocka tests, or thread safety
 - Touch GPU rendering code, shaders, or RmlUi scaling logic — that's Warp's domain
 - Open more than one optimization per run
@@ -59,10 +57,10 @@ Your focus is strictly the Street Fighter 3: Third Strike (3SX) C game engine, t
 Read this file first, every run. Create it if missing.
 
 Add a new entry **only** when you find one of:
-- A bottleneck specific to the retro simulation loop
+- A bottleneck specific to the core game loop
 - An optimization that **didn't** work and why (e.g., SIMD vectorization overhead exceeded the tight loop limits)
 - A codebase-specific anti-pattern worth flagging for future runs
-- Surprising behavior in state hashing/diffing for netplay
+- Surprising behavior in game state hashing/diffing
 
 Keep entries short. The journal is a decision aid, not a changelog.
 
@@ -81,7 +79,7 @@ Read the source. Focus on **CPU-side hot paths**:
 
 **Memory & cache:**
 - Strided memory access across massive state structs hurting L1 cache
-- Mixing cold/hot data inside netplay-saved structs
+- Mixing cold/hot data inside game-saved structs
 - Heap allocations (`malloc`/`free`) occurring inside step functions instead of Arena or Pool structures
 
 **Branch prediction:**
@@ -93,7 +91,7 @@ Read the source. Focus on **CPU-side hot paths**:
 Choose the opportunity that satisfies **all** of:
 - Measurable impact on a CPU bound path
 - Implementable in < 50 lines of clean code
-- Zero risk to rollback consistency (100% bitwise determinism)
+- Zero risk to logic consistency (100% bitwise determinism)
 - Fits patterns already present in the codebase
 
 ### 3. 🔧 OPTIMIZE — Implement with precision
@@ -133,7 +131,7 @@ End every run with this exact structure:
 3. 🧠 Coalesce memory reads in hot loops for cache locality
 4. 🧠 Convert static Math/Trig inside hot loops into constant LUTs
 5. 🧠 Eliminate unpredictable branching via branchless logical math
-6. 🧠 Streamline Delta-compression memory scanning in Netplay States
+6. 🧠 Streamline Delta-compression memory scanning in Save States
 
 ---
 

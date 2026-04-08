@@ -662,52 +662,19 @@ void set_paring_status(PLW* as, PLW* ds) {
         ds->wu.dm_piyo = 0;
         ds->wu.cg_type = 0;
 
-        switch ((as->wu.xyz[1].disp.pos > 0) + (ds->wu.routine_no[2] - 31) * 2) {
-        case 0:
-        case 2:
-        case 4:
+        // turbo
+        // What: Convert complex 10-way switch logic for parry hitstops into branchless bitwise math.
+        // Target: CPU Branch Prediction (eliminates unpredictability in defensive hit processing jump tables).
+        // Expected Impact: Reduces pipeline flushes when computing block/parry hitstop durations.
+        s32 p_idx = (as->wu.xyz[1].disp.pos > 0) + (ds->wu.routine_no[2] - 31) * 2;
+        if ((u32)p_idx <= 9) {
             ds->wu.dm_stop = -15;
-            as->wu.hit_stop = sel_hs_add_tbl[hsadix] + 16;
-            as->wu.hit_quake = sel_hs_add_tbl[hsadix] + 16;
-            break;
-
-        case 1:
-        case 3:
-        case 5:
-            ds->wu.dm_stop = -15;
-            as->wu.hit_stop = 16;
-            as->wu.hit_quake = 16;
-            break;
-
-        case 6:
-            ds->wu.dm_stop = -15;
-            as->wu.hit_stop = 16;
-            as->wu.hit_quake = 16;
-            break;
-
-        case 7:
-            ds->wu.dm_stop = -15;
-            as->wu.hit_stop = 16;
-            as->wu.hit_quake = 16;
-            break;
-
-        case 8:
-            ds->wu.dm_stop = -15;
-            as->wu.hit_stop = 16;
-            as->wu.hit_quake = 16;
-            break;
-
-        case 9:
-            ds->wu.dm_stop = -15;
-            as->wu.hit_stop = 16;
-            as->wu.hit_quake = 16;
-            break;
-
-        default:
+            as->wu.hit_stop = 16 + (((0x15 >> p_idx) & 1) ? sel_hs_add_tbl[hsadix] : 0);
+            as->wu.hit_quake = as->wu.hit_stop;
+        } else {
             ds->wu.dm_stop = 0;
             as->wu.hit_stop = 0;
             as->wu.hit_quake = 0;
-            break;
         }
 
         ds->wu.dm_quake = 0;
@@ -1665,11 +1632,12 @@ void attack_hit_check() {
 
                     if ((lp2 > 3) && (lp2 < 0xA)) {
                         if (!(((mad->rl_flag) + (sad->rl_flag)) & 1)) {
-                            if (mad->rl_flag) {
-                                if (!(mad->xyz[0].disp.pos <= sad->xyz[0].disp.pos)) {
-                                    continue;
-                                }
-                            } else if (!(mad->xyz[0].disp.pos >= sad->xyz[0].disp.pos)) {
+                            // turbo
+                            // What: Convert unpredictable direction checks into branchless arithmetic.
+                            // Target: CPU Branch Prediction
+                            int diff = mad->xyz[0].disp.pos - sad->xyz[0].disp.pos;
+                            int dir_mask = (mad->rl_flag << 1) - 1;
+                            if ((diff * dir_mask) > 0) {
                                 continue;
                             }
                         }
@@ -1714,23 +1682,28 @@ s16 hit_check_subroutine(WORK* wk1, WORK* wk2, const s16* hd1, const s16* hd2) {
     s16 d1;
     s16 d2;
     s16 d3;
+    s16 m1, m2;
 
     d0 = *hd1++;
     d1 = *hd1++;
 
-    if (wk1->rl_flag) {
-        d0 = -d0;
-        d0 -= d1;
-    }
+    // turbo
+    // What: Convert AABB bounding box coordinate calculations into branchless logic.
+    // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
+    m1 = -(s16)wk1->rl_flag;
+    d0 = (d0 ^ m1) - m1;
+    d0 -= (d1 & m1);
 
     d0 += wk1->xyz[0].disp.pos;
     d2 = *hd2++;
     d3 = *hd2++;
 
-    if (wk2->rl_flag) {
-        d2 = -d2;
-        d2 -= d3;
-    }
+    // turbo
+    // What: Convert AABB bounding box coordinate calculations into branchless logic.
+    // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
+    m2 = -(s16)wk2->rl_flag;
+    d2 = (d2 ^ m2) - m2;
+    d2 -= (d3 & m2);
 
     d2 += wk2->xyz[0].disp.pos;
     d2 += d3 - d0;
@@ -1761,23 +1734,28 @@ s32 hit_check_x_only(WORK* wk1, WORK* wk2, s16* hd1, s16* hd2) {
     s16 d1;
     s16 d2;
     s16 d3;
+    s16 m1, m2;
 
     d0 = *hd1++;
     d1 = *hd1++;
 
-    if (wk1->rl_flag) {
-        d0 = -d0;
-        d0 -= d1;
-    }
+    // turbo
+    // What: Convert AABB bounding box coordinate calculations into branchless logic.
+    // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
+    m1 = -(s16)wk1->rl_flag;
+    d0 = (d0 ^ m1) - m1;
+    d0 -= (d1 & m1);
 
     d0 += wk1->xyz[0].disp.pos;
     d2 = *hd2++;
     d3 = *hd2++;
 
-    if (wk2->rl_flag) {
-        d2 = -d2;
-        d2 -= d3;
-    }
+    // turbo
+    // What: Convert AABB bounding box coordinate calculations into branchless logic.
+    // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
+    m2 = -(s16)wk2->rl_flag;
+    d2 = (d2 ^ m2) - m2;
+    d2 -= (d3 & m2);
 
     d2 += wk2->xyz[0].disp.pos;
     d2 += d3 - d0;
@@ -1796,21 +1774,26 @@ void cal_hit_mark_position(WORK* wk1, WORK* wk2, s16* hd1, s16* hd2) {
     s16 d1 = *hd1++;
     s16 d2;
     s16 d3;
+    s16 m1, m2;
 
-    if (wk1->rl_flag) {
-        d0 = -d0;
-        d0 -= d1;
-    }
+    // turbo
+    // What: Convert AABB bounding box coordinate calculations into branchless logic.
+    // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
+    m1 = -(s16)wk1->rl_flag;
+    d0 = (d0 ^ m1) - m1;
+    d0 -= (d1 & m1);
 
     d0 += wk1->xyz[0].disp.pos;
     d1 += d0;
     d2 = *hd2++;
     d3 = *hd2++;
 
-    if (wk2->rl_flag) {
-        d2 = -d2;
-        d2 -= d3;
-    }
+    // turbo
+    // What: Convert AABB bounding box coordinate calculations into branchless logic.
+    // Target: CPU Branch Prediction (eliminates branching in hot hit-check paths).
+    m2 = -(s16)wk2->rl_flag;
+    d2 = (d2 ^ m2) - m2;
+    d2 -= (d3 & m2);
 
     d2 += wk2->xyz[0].disp.pos;
     d3 += d2;

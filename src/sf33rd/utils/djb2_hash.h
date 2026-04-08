@@ -10,19 +10,29 @@ static inline uint32_t djb2_init() {
 }
 
 // turbo
-// What: Coalesce memory reads in djb2_update_mem for netplay rollback state scanning.
+// What: Coalesce memory reads in djb2_update_mem into 64-bit boundaries for netplay rollback state scanning.
 // Target: CPU Memory & Cache (Cache Locality / Scan Bandwidth).
-// Expected Impact: Reduces loop iterations by 4x across 20KB game state snapshots.
+// Expected Impact: Reduces loop iterations by an additional 2x (total 8x) for netplay game state hashing.
 static inline uint32_t djb2_update_mem(uint32_t hash, const uint8_t* data, size_t len) {
-    size_t dwords = len / 4;
-    for (size_t i = 0; i < dwords; i++) {
-        uint32_t block;
-        memcpy(&block, data + (i * 4), 4);
-        hash = (hash * 33) ^ block;
+    size_t qwords = len / 8;
+    for (size_t i = 0; i < qwords; i++) {
+        uint64_t block;
+        memcpy(&block, data + (i * 8), 8);
+        hash = (hash * 33) ^ (uint32_t)(block & 0xFFFFFFFF);
+        hash = (hash * 33) ^ (uint32_t)(block >> 32);
     }
 
-    const uint8_t* tail = data + (dwords * 4);
-    size_t rem = len % 4;
+    const uint8_t* tail = data + (qwords * 8);
+    size_t rem = len % 8;
+
+    if (rem >= 4) {
+        uint32_t block;
+        memcpy(&block, tail, 4);
+        hash = (hash * 33) ^ block;
+        tail += 4;
+        rem -= 4;
+    }
+
     for (size_t i = 0; i < rem; i++) {
         hash = (hash * 33) ^ tail[i];
     }

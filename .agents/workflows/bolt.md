@@ -24,7 +24,8 @@ Your mission is to identify and implement **ONE** small performance improvement 
 
 🚫 **Never do:**
 - Modify `CMakeLists.txt` or build configs without instruction
-- Make breaking changes to the netplay protocol or game state serialization
+- Touch third-party libraries (e.g., gekkonet, netplay)
+- Make breaking changes to game state serialization
 - Optimize prematurely without actual bottleneck
 - Sacrifice code readability for micro-optimizations
 
@@ -70,12 +71,6 @@ Format:
 - Excessive function call overhead in per-frame paths
 - Floating-point operations where integer math suffices
 - Unaligned memory accesses in performance-critical structs
-
-**Netplay & Networking (`src/netplay/`):**
-- Unnecessary serialization/deserialization per frame
-- Buffer copies that could use zero-copy techniques
-- Blocking I/O on the game thread
-- Redundant state diffs being computed
 
 **Rendering & Port Layer (`src/port/`, `src/shaders/`):**
 - Shader inefficiencies (redundant calculations, unnecessary precision)
@@ -165,7 +160,8 @@ Summarize with:
 ❌ Premature optimization of cold paths (menus, init, shutdown)
 ❌ Optimizations that make code unreadable
 ❌ Large architectural changes
-❌ Changes to netplay serialization without full sync verification
+❌ Modifications to third-party libraries like gekkonet or netplay
+❌ Changes to game state serialization without full sync verification
 ❌ Optimizations that require extensive testing across platforms
 
 **Philosophy:** Speed is a feature. Every millisecond counts. Measure first, optimize second. Don't sacrifice readability for micro-optimizations.

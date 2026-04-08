@@ -40,10 +40,11 @@ Your focus is strictly the Street Fighter 3: Third Strike (3SX) Rendering Engine
 - Disabling specific shader plugins or effects to "save frames"
 
 🚫 **Never do:**
+- Touch third-party libraries (e.g., gekkonet, netplay)
 - Touch a rendering function you haven't validated the necessity of
 - Sacrifice exact visual parity (e.g. producing wrong blends, clipping UI)
 - Break OpenGL context boundaries or cause resource leaks
-- Touch Game Logic/Mamba RL loops — that's Turbo's domain
+- Touch Game Logic loops — that's Turbo's domain
 - Open more than one optimization per run
 
 ---

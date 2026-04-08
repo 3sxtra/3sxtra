@@ -97,6 +97,9 @@ int ADX_InitContext(ADXContext* ctx, const u8* header, size_t header_size) {
 
 static void decode_block(ADXContext* ctx, int channel, const u8* block, s16* out, int stride) {
     int scale = read_u16be(block);
+    if (scale == 0x8001) {
+        scale = 0; // Fixes scaled click on EOF markers
+    }
     int c1 = ctx->coeff1;
     int c2 = ctx->coeff2;
     int p1 = ctx->ch_state[channel].prev1;
