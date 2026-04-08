@@ -9,7 +9,7 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/Source/Game/effect/effect.h" /* effect_work_init */
+#include "sf33rd/Source/Game/effect/effect.h"   /* effect_work_init */
 #include "sf33rd/Source/Game/engine/workuser.h" /* plsw_00, plsw_01, Order */
 #include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init */
 #include "sf33rd/Source/Game/system/work_sys.h" /* Interface_Type, Decide_ID */
@@ -30,9 +30,9 @@ static void profile_enter(struct _TASK* task_ptr) {
     /* Setup blue background header similar to leaderboard */
     effect_work_init();
     Menu_Common_Init();
-    
+
     Order[0x4E] = 5;
-    
+
     /* Blue background banner */
     effect_57_init(0x4E, MENU_HEADER_MODE_MENU, 0, 0x45, 0);
 
@@ -49,7 +49,7 @@ static void profile_enter(struct _TASK* task_ptr) {
 
 static void profile_tick(struct _TASK* task_ptr) {
     rmlui_player_profile_update();
-    
+
     /* Read edge-triggered input from both players */
     u16 trigger = 0;
     for (int i = 0; i < 2; i++) {

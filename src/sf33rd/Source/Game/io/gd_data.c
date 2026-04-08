@@ -2,7 +2,8 @@
  * @file gd_data.c
  * @brief Load-request data tables (ROM data).
  *
- * Pure const data extracted from gd3rd.c for readability.
+ * Pure const data extracted from gd3rd.c for
+ * readability.
  * Contains the 294-entry ldreq_tbl[] and 43-entry ldreq_ix[] arrays.
  *
  * Part of the io module.

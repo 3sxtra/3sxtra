@@ -43,20 +43,32 @@ bool LibrashaderManager_SetParam(LibrashaderManager* manager, const char* name, 
 // Get the current runtime value of a parameter by name.
 bool LibrashaderManager_GetParam(LibrashaderManager* manager, const char* name, float* out_value);
 #else
-static inline LibrashaderManager* LibrashaderManager_Init(const char* preset_path) { return NULL; }
-static inline void LibrashaderManager_Render(LibrashaderManager* manager, void* input_texture_ptr, int input_w, int input_h,
-                               int viewport_x, int viewport_y, int viewport_w, int viewport_h) {}
-static inline void LibrashaderManager_Render_GPU_Wrapper(LibrashaderManager* manager, void* command_buffer, void* input_texture,
-                                           void* intermediate_texture, void* swapchain_texture, int input_w,
-                                           int input_h, int viewport_w, int viewport_h, int swapchain_w,
-                                           int swapchain_h, int display_x, int display_y) {}
+static inline LibrashaderManager* LibrashaderManager_Init(const char* preset_path) {
+    return NULL;
+}
+static inline void LibrashaderManager_Render(LibrashaderManager* manager, void* input_texture_ptr, int input_w,
+                                             int input_h, int viewport_x, int viewport_y, int viewport_w,
+                                             int viewport_h) {}
+static inline void LibrashaderManager_Render_GPU_Wrapper(LibrashaderManager* manager, void* command_buffer,
+                                                         void* input_texture, void* intermediate_texture,
+                                                         void* swapchain_texture, int input_w, int input_h,
+                                                         int viewport_w, int viewport_h, int swapchain_w,
+                                                         int swapchain_h, int display_x, int display_y) {}
 static inline void LibrashaderManager_Free(LibrashaderManager* manager) {}
-static inline int LibrashaderManager_GetParamCount(LibrashaderManager* manager) { return 0; }
+static inline int LibrashaderManager_GetParamCount(LibrashaderManager* manager) {
+    return 0;
+}
 static inline bool LibrashaderManager_GetParamInfo(LibrashaderManager* manager, int index, const char** out_name,
-                                     const char** out_desc, float* out_value, float* out_initial, float* out_min,
-                                     float* out_max, float* out_step) { return false; }
-static inline bool LibrashaderManager_SetParam(LibrashaderManager* manager, const char* name, float value) { return false; }
-static inline bool LibrashaderManager_GetParam(LibrashaderManager* manager, const char* name, float* out_value) { return false; }
+                                                   const char** out_desc, float* out_value, float* out_initial,
+                                                   float* out_min, float* out_max, float* out_step) {
+    return false;
+}
+static inline bool LibrashaderManager_SetParam(LibrashaderManager* manager, const char* name, float value) {
+    return false;
+}
+static inline bool LibrashaderManager_GetParam(LibrashaderManager* manager, const char* name, float* out_value) {
+    return false;
+}
 #endif
 
 #endif

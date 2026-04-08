@@ -231,8 +231,7 @@ static const ConfigComment section_comments[] = {
     { CFG_KEY_BROADCAST_ENABLED,
       "\n# ── Broadcast ───────────────────────────────────────────\n"
       "# broadcast-source: 0=Game, 1=Window\n" },
-    { CFG_KEY_TRAINING_HITBOXES,
-      "\n# ── Training Mode ───────────────────────────────────────\n" },
+    { CFG_KEY_TRAINING_HITBOXES, "\n# ── Training Mode ───────────────────────────────────────\n" },
     { CFG_KEY_DUMMY_BLOCK,
       "\n# ── Training Dummy ──────────────────────────────────────\n"
       "# dummy-block: 0=None, 1=After First, 2=All\n"
@@ -245,10 +244,8 @@ static const ConfigComment section_comments[] = {
       "\n# ── Netplay / Lobby ──────────────────────────────────────\n"
       "# netplay-ft: first-to-N wins (1-10)\n"
       "# netplay-max-ping: 0=any, otherwise max ms\n" },
-    { CFG_KEY_VSYNC,
-      "\n# ── Display / Performance ───────────────────────────────\n" },
-    { CFG_KEY_MODDED_BGM_ENABLED,
-      "\n# ── Mods ────────────────────────────────────────────────\n" },
+    { CFG_KEY_VSYNC, "\n# ── Display / Performance ───────────────────────────────\n" },
+    { CFG_KEY_MODDED_BGM_ENABLED, "\n# ── Mods ────────────────────────────────────────────────\n" },
 };
 
 static const size_t section_comments_count = SDL_arraysize(section_comments);
@@ -265,8 +262,7 @@ static void write_section_comment(SDL_IOStream* io, const char* key) {
 
 /** @brief Write the trailing comments (lobby server, display name). */
 static void write_trailing_comments(SDL_IOStream* io) {
-    print_io(io,
-             "\n# ── Custom Server ───────────────────────────────────────\n");
+    print_io(io, "\n# ── Custom Server ───────────────────────────────────────\n");
     print_io(io, "# To use a custom matchmaking server, uncomment and edit:\n");
     print_io(io, "# lobby-server-url = http://your-server-ip:3000\n");
     print_io(io, "# lobby-server-key = your-secret-hmac-key\n");

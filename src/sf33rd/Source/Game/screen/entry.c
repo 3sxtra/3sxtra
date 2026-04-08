@@ -38,9 +38,8 @@
 /* Macro: skip SSPutStr if entry text RmlUi is active, or if the RmlUi network/casual lobby is open */
 #define ENTRY_TEXT_GATED                                                                                               \
     ((use_rmlui && rmlui_screen_entry_text) || rmlui_wrapper_is_game_document_visible("network_lobby") ||              \
-     rmlui_wrapper_is_game_document_visible("ranked_matchmaking") ||                                                   \
-     rmlui_casual_lobby_is_visible() || rmlui_tournament_lobby_is_visible() ||                                         \
-     rmlui_wrapper_is_game_document_visible("leaderboard") ||                                                          \
+     rmlui_wrapper_is_game_document_visible("ranked_matchmaking") || rmlui_casual_lobby_is_visible() ||                \
+     rmlui_tournament_lobby_is_visible() || rmlui_wrapper_is_game_document_visible("leaderboard") ||                   \
      rmlui_wrapper_is_game_document_visible("replay_picker") ||                                                        \
      rmlui_wrapper_is_game_document_visible("network_replay_picker") ||                                                \
      rmlui_wrapper_is_game_document_visible("player_profile"))

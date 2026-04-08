@@ -265,3 +265,11 @@ All defined in `rmlui_phase3_toggles.h`, declared in `rmlui_game_hud.cpp`:
 ## Tool Quirks
 
 **grep_search**: SearchPath must be a **directory** (files fail silently). Always use `Includes` globs. 50-result cap. For single files use `view_file`. For complex searches use `rg` via `run_command`.
+
+---
+
+## Algorithmic & SOTA Research Priority
+
+Before reinventing the wheel or when facing a complex logical, geometric, or performance problem, you must:
+1. **Consult cp-algorithms:** Use [cp-algorithms.com](https://cp-algorithms.com/) as your primary baseline for efficient data structures, graph algorithms, algebra, geometry, and string processing techniques. It provides optimal implementations for many fundamental computational problems.
+2. **Search for SOTA:** Actively use your web search capabilities to find State-of-the-Art (SOTA) algorithms, whitepapers, or modern heuristic approaches tailored to your specific domain (e.g., modern layout algorithms, SOTA caching strategies, advanced rendering approximations). Do not default to naive solutions if a known SOTA algorithm exists.

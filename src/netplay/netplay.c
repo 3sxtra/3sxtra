@@ -86,7 +86,6 @@ static float frames_behind = 0;
 static int frame_skip_timer = 0;
 static int transition_ready_frames = 0;
 
-
 static int stats_update_timer = 0;
 static int frame_max_rollback = 0;
 static NetworkStats network_stats = { 0 };
@@ -438,7 +437,6 @@ static void configure_gekko() {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[netplay] Session is already running! probably incorrect.");
     }
 
-
     if (stun_socket != NULL) {
         // Internet play: reuse the hole-punched STUN socket
         NetTuning_SetRecvBuf(stun_socket, 256 * 1024);
@@ -493,7 +491,6 @@ static void configure_gekko() {
             gekko_add_actor(session, GekkoRemotePlayer, &remote_address);
         }
     }
-
 }
 
 static u16 get_inputs() {
@@ -826,8 +823,8 @@ int Netplay_GetNegotiatedFT(void) {
 
 void Netplay_Begin() {
     MenuScreenId cur = MenuScreen_GetCurrent();
-    if (cur == MENU_SCREEN_NETWORK_LOBBY || cur == MENU_SCREEN_CASUAL_LOBBY || 
-        cur == MENU_SCREEN_TOURNAMENT_LOBBY || cur == MENU_SCREEN_RANKED_MATCHMAKING) {
+    if (cur == MENU_SCREEN_NETWORK_LOBBY || cur == MENU_SCREEN_CASUAL_LOBBY || cur == MENU_SCREEN_TOURNAMENT_LOBBY ||
+        cur == MENU_SCREEN_RANKED_MATCHMAKING) {
         s_netplay_origin_screen = cur;
     } else {
         s_netplay_origin_screen = MENU_SCREEN_NETWORK_LOBBY;
@@ -1047,7 +1044,8 @@ void Netplay_Run() {
                 MenuScreen_Goto(MENU_SCREEN_CASUAL_LOBBY);
                 SDL_Log("[netplay] Re-entering LOBBY for casual room %s", room_buf);
             } else {
-                MenuScreenId dest = (s_netplay_origin_screen != MENU_SCREEN_NONE) ? s_netplay_origin_screen : MENU_SCREEN_NETWORK_LOBBY;
+                MenuScreenId dest =
+                    (s_netplay_origin_screen != MENU_SCREEN_NONE) ? s_netplay_origin_screen : MENU_SCREEN_NETWORK_LOBBY;
                 if (dest == MENU_SCREEN_NETWORK_LOBBY && s_netplay_origin_native_lan) {
                     extern bool g_lobby_reenter_lan_match;
                     g_lobby_reenter_lan_match = true;
@@ -1060,8 +1058,6 @@ void Netplay_Run() {
 
     case NETPLAY_SESSION_IDLE:
         break;
-
-
     }
 }
 
@@ -1130,4 +1126,3 @@ int Netplay_GetPlayerHandle(void) {
 int Netplay_GetBattleStartFrame(void) {
     return -1;
 }
-

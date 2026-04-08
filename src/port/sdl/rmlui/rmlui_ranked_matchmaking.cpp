@@ -22,198 +22,214 @@ extern s8 Menu_Cursor_Y[2];
 
 namespace {
 
-struct RankedPeerItem {
-    Rml::String name;
-    Rml::String country;
-    Rml::String flag_icon;
-    Rml::String ping_label;
-    Rml::String ping_class;
-    Rml::String conn_type;
-    bool selected;
+    struct RankedPeerItem {
+        Rml::String name;
+        Rml::String country;
+        Rml::String flag_icon;
+        Rml::String ping_label;
+        Rml::String ping_class;
+        Rml::String conn_type;
+        bool selected;
 
-    bool operator==(const RankedPeerItem& o) const {
-        return name == o.name && country == o.country && flag_icon == o.flag_icon &&
-               ping_label == o.ping_label && ping_class == o.ping_class &&
-               conn_type == o.conn_type && selected == o.selected;
-    }
-    bool operator!=(const RankedPeerItem& o) const { return !(*this == o); }
-};
+        bool operator==(const RankedPeerItem& o) const {
+            return name == o.name && country == o.country && flag_icon == o.flag_icon && ping_label == o.ping_label &&
+                   ping_class == o.ping_class && conn_type == o.conn_type && selected == o.selected;
+        }
+        bool operator!=(const RankedPeerItem& o) const {
+            return !(*this == o);
+        }
+    };
 
-static std::vector<RankedPeerItem> s_net_peers;
+    static std::vector<RankedPeerItem> s_net_peers;
 
-// State
-static bool s_model_registered = false;
-static Rml::DataModelHandle s_model_handle;
-static bool s_wants_leave = false;
+    // State
+    static bool s_model_registered = false;
+    static Rml::DataModelHandle s_model_handle;
+    static bool s_wants_leave = false;
 
-struct RankedLobbyCache {
-    bool net_auto;
-    bool net_search_toggle;
-    bool net_searching;
-    bool net_is_configured;
-    bool region_lock;
-    int max_ping;
-    bool block_wifi;
-    int ft_value;
-    int net_peer_count;
-    int net_peer_idx;
-    int cursor;
-    int popup_type; // 0=none, 1=incoming, 2=outgoing
-};
-static RankedLobbyCache s_cache = {};
+    struct RankedLobbyCache {
+        bool net_auto;
+        bool net_search_toggle;
+        bool net_searching;
+        bool net_is_configured;
+        bool region_lock;
+        int max_ping;
+        bool block_wifi;
+        int ft_value;
+        int net_peer_count;
+        int net_peer_idx;
+        int cursor;
+        int popup_type; // 0=none, 1=incoming, 2=outgoing
+    };
+    static RankedLobbyCache s_cache = {};
 
-#define DIRTY_INT(nm, expr) \
-    do { \
-        int _v = (expr); \
-        if (_v != s_cache.nm) { \
-            s_cache.nm = _v; \
-            s_model_handle.DirtyVariable(#nm); \
-        } \
+#define DIRTY_INT(nm, expr)                                                                                            \
+    do {                                                                                                               \
+        int _v = (expr);                                                                                               \
+        if (_v != s_cache.nm) {                                                                                        \
+            s_cache.nm = _v;                                                                                           \
+            s_model_handle.DirtyVariable(#nm);                                                                         \
+        }                                                                                                              \
     } while (0)
 
-#define DIRTY_BOOL(nm, expr) \
-    do { \
-        bool _v = (expr); \
-        if (_v != s_cache.nm) { \
-            s_cache.nm = _v; \
-            s_model_handle.DirtyVariable(#nm); \
-        } \
+#define DIRTY_BOOL(nm, expr)                                                                                           \
+    do {                                                                                                               \
+        bool _v = (expr);                                                                                              \
+        if (_v != s_cache.nm) {                                                                                        \
+            s_cache.nm = _v;                                                                                           \
+            s_model_handle.DirtyVariable(#nm);                                                                         \
+        }                                                                                                              \
     } while (0)
 
-static void do_init(void) {
-    Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
-    if (!ctx) return;
-
-    Rml::DataModelConstructor ctor = ctx->CreateDataModel("ranked_matchmaking");
-    if (!ctor) return;
-
-    if (auto h = ctor.RegisterStruct<RankedPeerItem>()) {
-        h.RegisterMember("name", &RankedPeerItem::name);
-        h.RegisterMember("country", &RankedPeerItem::country);
-        h.RegisterMember("flag_icon", &RankedPeerItem::flag_icon);
-        h.RegisterMember("ping_label", &RankedPeerItem::ping_label);
-        h.RegisterMember("ping_class", &RankedPeerItem::ping_class);
-        h.RegisterMember("conn_type", &RankedPeerItem::conn_type);
-        h.RegisterMember("selected", &RankedPeerItem::selected);
-    }
-    ctor.RegisterArray<std::vector<RankedPeerItem>>();
-    ctor.Bind("net_peers", &s_net_peers);
-
-    ctor.BindFunc("net_auto", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT); });
-    ctor.BindFunc("net_search_toggle", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH); });
-    ctor.BindFunc("net_searching", [](Rml::Variant& v) { v = SDLNetplayUI_IsSearching(); });
-    ctor.BindFunc("net_is_configured", [](Rml::Variant& v) { v = LobbyServer_IsConfigured(); });
-
-    ctor.BindFunc("region_lock", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK); });
-    ctor.BindFunc("max_ping", [](Rml::Variant& v) { v = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING); });
-    ctor.BindFunc("block_wifi", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI); });
-    ctor.BindFunc("ft_value", [](Rml::Variant& v) { v = Config_GetInt(CFG_KEY_NETPLAY_FT); });
-
-    ctor.BindFunc("net_peer_count", [](Rml::Variant& v) { v = SDLNetplayUI_GetOnlinePlayerCount(); });
-    ctor.BindFunc("net_peer_name", [](Rml::Variant& v) {
-        int count = SDLNetplayUI_GetOnlinePlayerCount();
-        if (count > 0) {
-            int idx = g_net_peer_idx;
-            if (idx < 0) idx = 0;
-            if (idx >= count) idx = count - 1;
-            v = Rml::String(SDLNetplayUI_GetOnlinePlayerName(idx));
-        } else if (SDLNetplayUI_IsSearching()) {
-            v = Rml::String("SEARCHING");
-        } else {
-            v = Rml::String("IDLE");
-        }
-    });
-    ctor.BindFunc("net_peer_idx", [](Rml::Variant& v) { v = g_net_peer_idx; });
-    ctor.BindFunc("cursor", [](Rml::Variant& v) {
-        v = (int)Menu_Cursor_Y[0];
-    });
-
-    ctor.BindFunc("status_text", [](Rml::Variant& v) {
-        const char* msg = SDLNetplayUI_GetStatusMsg();
-        if (msg[0]) {
-            v = Rml::String(msg);
+    static void do_init(void) {
+        Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
+        if (!ctx)
             return;
-        }
-        if (SDLNetplayUI_IsSearching()) {
-            v = Rml::String("DISCOVERING...");
-            return;
-        }
-        v = Rml::String("");
-    });
 
-    ctor.BindFunc("popup_type", [](Rml::Variant& v) {
-        if (SDLNetplayUI_HasPendingInvite()) {
-            v = 1; return;
+        Rml::DataModelConstructor ctor = ctx->CreateDataModel("ranked_matchmaking");
+        if (!ctor)
+            return;
+
+        if (auto h = ctor.RegisterStruct<RankedPeerItem>()) {
+            h.RegisterMember("name", &RankedPeerItem::name);
+            h.RegisterMember("country", &RankedPeerItem::country);
+            h.RegisterMember("flag_icon", &RankedPeerItem::flag_icon);
+            h.RegisterMember("ping_label", &RankedPeerItem::ping_label);
+            h.RegisterMember("ping_class", &RankedPeerItem::ping_class);
+            h.RegisterMember("conn_type", &RankedPeerItem::conn_type);
+            h.RegisterMember("selected", &RankedPeerItem::selected);
         }
-        if (SDLNetplayUI_HasOutgoingChallenge()) {
-            v = 2; return;
-        }
-        v = 0;
-    });
-    ctor.BindFunc("popup_title", [](Rml::Variant& v) {
-        if (SDLNetplayUI_HasPendingInvite()) {
-            v = Rml::String("INCOMING CHALLENGE!"); return;
-        }
-        if (SDLNetplayUI_HasOutgoingChallenge()) {
-            v = Rml::String("CONNECTING..."); return;
-        }
-        v = Rml::String("");
-    });
-    ctor.BindFunc("popup_name", [](Rml::Variant& v) {
-        if (SDLNetplayUI_HasPendingInvite()) {
-            v = Rml::String(SDLNetplayUI_GetPendingInviteName()); return;
-        }
-        if (SDLNetplayUI_HasOutgoingChallenge()) {
-            v = Rml::String(SDLNetplayUI_GetOutgoingChallengeName()); return;
-        }
-        v = Rml::String("");
-    });
-    ctor.BindFunc("popup_ping", [](Rml::Variant& v) {
-        auto format_ping = [](int ping) -> Rml::String {
-            char buf[32];
-            if (ping < 0) SDL_snprintf(buf, sizeof(buf), "...");
-            else SDL_snprintf(buf, sizeof(buf), "~%dms", ping);
-            return Rml::String(buf);
-        };
-        if (SDLNetplayUI_HasPendingInvite()) {
-            v = format_ping(SDLNetplayUI_GetPendingInvitePing()); return;
-        }
-        if (SDLNetplayUI_HasOutgoingChallenge()) {
-            v = format_ping(SDLNetplayUI_GetOutgoingChallengePing()); return;
-        }
-        v = Rml::String("...");
-    });
-    ctor.BindFunc("popup_region", [](Rml::Variant& v) {
-        if (SDLNetplayUI_HasPendingInvite()) {
-            const char* r = SDLNetplayUI_GetPendingInviteRegion();
-            v = Rml::String(r ? r : ""); return;
-        }
-        v = Rml::String("");
-    });
-    ctor.BindFunc("popup_is_incoming", [](Rml::Variant& v) {
-        if (SDLNetplayUI_HasPendingInvite()) {
-            v = true; return;
-        }
-        v = false;
-    });
-    ctor.BindFunc("popup_ft", [](Rml::Variant& v) {
-        if (SDLNetplayUI_HasPendingInvite()) {
-            int ft = SDLNetplayUI_GetPendingInviteFT();
-            if (ft == 1) v = Rml::String("UNRANKED");
-            else {
-                char buf[16];
-                snprintf(buf, sizeof(buf), "FT%d", ft);
-                v = Rml::String(buf);
+        ctor.RegisterArray<std::vector<RankedPeerItem>>();
+        ctor.Bind("net_peers", &s_net_peers);
+
+        ctor.BindFunc("net_auto", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT); });
+        ctor.BindFunc("net_search_toggle", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH); });
+        ctor.BindFunc("net_searching", [](Rml::Variant& v) { v = SDLNetplayUI_IsSearching(); });
+        ctor.BindFunc("net_is_configured", [](Rml::Variant& v) { v = LobbyServer_IsConfigured(); });
+
+        ctor.BindFunc("region_lock", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK); });
+        ctor.BindFunc("max_ping", [](Rml::Variant& v) { v = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING); });
+        ctor.BindFunc("block_wifi", [](Rml::Variant& v) { v = Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI); });
+        ctor.BindFunc("ft_value", [](Rml::Variant& v) { v = Config_GetInt(CFG_KEY_NETPLAY_FT); });
+
+        ctor.BindFunc("net_peer_count", [](Rml::Variant& v) { v = SDLNetplayUI_GetOnlinePlayerCount(); });
+        ctor.BindFunc("net_peer_name", [](Rml::Variant& v) {
+            int count = SDLNetplayUI_GetOnlinePlayerCount();
+            if (count > 0) {
+                int idx = g_net_peer_idx;
+                if (idx < 0)
+                    idx = 0;
+                if (idx >= count)
+                    idx = count - 1;
+                v = Rml::String(SDLNetplayUI_GetOnlinePlayerName(idx));
+            } else if (SDLNetplayUI_IsSearching()) {
+                v = Rml::String("SEARCHING");
+            } else {
+                v = Rml::String("IDLE");
             }
-            return;
-        }
-        v = Rml::String("");
-    });
+        });
+        ctor.BindFunc("net_peer_idx", [](Rml::Variant& v) { v = g_net_peer_idx; });
+        ctor.BindFunc("cursor", [](Rml::Variant& v) { v = (int)Menu_Cursor_Y[0]; });
 
-    s_model_handle = ctor.GetModelHandle();
-    s_model_registered = true;
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi RankedMatchmaking] Data model registered");
-}
+        ctor.BindFunc("status_text", [](Rml::Variant& v) {
+            const char* msg = SDLNetplayUI_GetStatusMsg();
+            if (msg[0]) {
+                v = Rml::String(msg);
+                return;
+            }
+            if (SDLNetplayUI_IsSearching()) {
+                v = Rml::String("DISCOVERING...");
+                return;
+            }
+            v = Rml::String("");
+        });
+
+        ctor.BindFunc("popup_type", [](Rml::Variant& v) {
+            if (SDLNetplayUI_HasPendingInvite()) {
+                v = 1;
+                return;
+            }
+            if (SDLNetplayUI_HasOutgoingChallenge()) {
+                v = 2;
+                return;
+            }
+            v = 0;
+        });
+        ctor.BindFunc("popup_title", [](Rml::Variant& v) {
+            if (SDLNetplayUI_HasPendingInvite()) {
+                v = Rml::String("INCOMING CHALLENGE!");
+                return;
+            }
+            if (SDLNetplayUI_HasOutgoingChallenge()) {
+                v = Rml::String("CONNECTING...");
+                return;
+            }
+            v = Rml::String("");
+        });
+        ctor.BindFunc("popup_name", [](Rml::Variant& v) {
+            if (SDLNetplayUI_HasPendingInvite()) {
+                v = Rml::String(SDLNetplayUI_GetPendingInviteName());
+                return;
+            }
+            if (SDLNetplayUI_HasOutgoingChallenge()) {
+                v = Rml::String(SDLNetplayUI_GetOutgoingChallengeName());
+                return;
+            }
+            v = Rml::String("");
+        });
+        ctor.BindFunc("popup_ping", [](Rml::Variant& v) {
+            auto format_ping = [](int ping) -> Rml::String {
+                char buf[32];
+                if (ping < 0)
+                    SDL_snprintf(buf, sizeof(buf), "...");
+                else
+                    SDL_snprintf(buf, sizeof(buf), "~%dms", ping);
+                return Rml::String(buf);
+            };
+            if (SDLNetplayUI_HasPendingInvite()) {
+                v = format_ping(SDLNetplayUI_GetPendingInvitePing());
+                return;
+            }
+            if (SDLNetplayUI_HasOutgoingChallenge()) {
+                v = format_ping(SDLNetplayUI_GetOutgoingChallengePing());
+                return;
+            }
+            v = Rml::String("...");
+        });
+        ctor.BindFunc("popup_region", [](Rml::Variant& v) {
+            if (SDLNetplayUI_HasPendingInvite()) {
+                const char* r = SDLNetplayUI_GetPendingInviteRegion();
+                v = Rml::String(r ? r : "");
+                return;
+            }
+            v = Rml::String("");
+        });
+        ctor.BindFunc("popup_is_incoming", [](Rml::Variant& v) {
+            if (SDLNetplayUI_HasPendingInvite()) {
+                v = true;
+                return;
+            }
+            v = false;
+        });
+        ctor.BindFunc("popup_ft", [](Rml::Variant& v) {
+            if (SDLNetplayUI_HasPendingInvite()) {
+                int ft = SDLNetplayUI_GetPendingInviteFT();
+                if (ft == 1)
+                    v = Rml::String("UNRANKED");
+                else {
+                    char buf[16];
+                    snprintf(buf, sizeof(buf), "FT%d", ft);
+                    v = Rml::String(buf);
+                }
+                return;
+            }
+            v = Rml::String("");
+        });
+
+        s_model_handle = ctor.GetModelHandle();
+        s_model_registered = true;
+        SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi RankedMatchmaking] Data model registered");
+    }
 
 } // namespace
 
@@ -222,9 +238,15 @@ extern "C" void rmlui_ranked_matchmaking_init(void) {
 }
 
 extern "C" void rmlui_ranked_matchmaking_update(void) {
-    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
-    if (!s_model_handle) return;
-    if (!rmlui_wrapper_is_game_document_visible("ranked_matchmaking")) return;
+    if (!s_model_registered) {
+        do_init();
+        if (!s_model_registered)
+            return;
+    }
+    if (!s_model_handle)
+        return;
+    if (!rmlui_wrapper_is_game_document_visible("ranked_matchmaking"))
+        return;
 
     DIRTY_BOOL(net_auto, Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT));
     DIRTY_BOOL(net_search_toggle, Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH));
@@ -265,9 +287,12 @@ extern "C" void rmlui_ranked_matchmaking_update(void) {
                 char buf[16];
                 SDL_snprintf(buf, sizeof(buf), "~%dms", ping);
                 item.ping_label = Rml::String(buf);
-                if (ping < 60) item.ping_class = "ping-good";
-                else if (ping < 120) item.ping_class = "ping-ok";
-                else item.ping_class = "ping-bad";
+                if (ping < 60)
+                    item.ping_class = "ping-good";
+                else if (ping < 120)
+                    item.ping_class = "ping-ok";
+                else
+                    item.ping_class = "ping-bad";
             } else {
                 item.ping_label = "...";
                 item.ping_class = "ping-bad";
@@ -309,7 +334,8 @@ extern "C" void rmlui_ranked_matchmaking_update(void) {
 }
 
 extern "C" void rmlui_ranked_matchmaking_show(void) {
-    if (!s_model_registered) do_init();
+    if (!s_model_registered)
+        do_init();
     s_wants_leave = false;
     rmlui_wrapper_show_game_document("ranked_matchmaking");
 

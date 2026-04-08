@@ -133,8 +133,7 @@ static void handle_gamepad_added_event(SDL_GamepadDeviceEvent* event) {
 
 #ifdef __ANDROID__
     if (device_name) {
-        if (SDL_strcasestr(device_name, "virtual") || 
-            SDL_strcasestr(device_name, "remote") || 
+        if (SDL_strcasestr(device_name, "virtual") || SDL_strcasestr(device_name, "remote") ||
             SDL_strcasestr(device_name, "ipcontrol")) {
             SDL_Log("Ignoring virtual/remote gamepad: %s", device_name);
             return;
@@ -230,8 +229,7 @@ void SDLPad_HandleJoystickDeviceEvent(SDL_JoyDeviceEvent* event) {
         const char* device_name = SDL_GetJoystickNameForID(event->which);
 #ifdef __ANDROID__
         if (device_name) {
-            if (SDL_strcasestr(device_name, "virtual") || 
-                SDL_strcasestr(device_name, "remote") || 
+            if (SDL_strcasestr(device_name, "virtual") || SDL_strcasestr(device_name, "remote") ||
                 SDL_strcasestr(device_name, "ipcontrol")) {
                 SDL_Log("Ignoring virtual/remote joystick: %s", device_name);
                 return;

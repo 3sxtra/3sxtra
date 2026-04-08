@@ -623,37 +623,79 @@ const char* ControlMapping_GetPlayerMappingInput(int player_num, int index) {
 
 static bool input_to_gamepad_btn(InputID id, SDL_GamepadButton* out_btn) {
     switch (id) {
-    case INPUT_ID_DPAD_UP: *out_btn = SDL_GAMEPAD_BUTTON_DPAD_UP; return true;
-    case INPUT_ID_DPAD_DOWN: *out_btn = SDL_GAMEPAD_BUTTON_DPAD_DOWN; return true;
-    case INPUT_ID_DPAD_LEFT: *out_btn = SDL_GAMEPAD_BUTTON_DPAD_LEFT; return true;
-    case INPUT_ID_DPAD_RIGHT: *out_btn = SDL_GAMEPAD_BUTTON_DPAD_RIGHT; return true;
-    case INPUT_ID_START: *out_btn = SDL_GAMEPAD_BUTTON_START; return true;
-    case INPUT_ID_BACK: *out_btn = SDL_GAMEPAD_BUTTON_BACK; return true;
-    case INPUT_ID_LEFT_STICK: *out_btn = SDL_GAMEPAD_BUTTON_LEFT_STICK; return true;
-    case INPUT_ID_RIGHT_STICK: *out_btn = SDL_GAMEPAD_BUTTON_RIGHT_STICK; return true;
-    case INPUT_ID_LEFT_SHOULDER: *out_btn = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER; return true;
-    case INPUT_ID_RIGHT_SHOULDER: *out_btn = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER; return true;
-    case INPUT_ID_BUTTON_SOUTH: *out_btn = SDL_GAMEPAD_BUTTON_SOUTH; return true;
-    case INPUT_ID_BUTTON_EAST: *out_btn = SDL_GAMEPAD_BUTTON_EAST; return true;
-    case INPUT_ID_BUTTON_WEST: *out_btn = SDL_GAMEPAD_BUTTON_WEST; return true;
-    case INPUT_ID_BUTTON_NORTH: *out_btn = SDL_GAMEPAD_BUTTON_NORTH; return true;
-    default: return false;
+    case INPUT_ID_DPAD_UP:
+        *out_btn = SDL_GAMEPAD_BUTTON_DPAD_UP;
+        return true;
+    case INPUT_ID_DPAD_DOWN:
+        *out_btn = SDL_GAMEPAD_BUTTON_DPAD_DOWN;
+        return true;
+    case INPUT_ID_DPAD_LEFT:
+        *out_btn = SDL_GAMEPAD_BUTTON_DPAD_LEFT;
+        return true;
+    case INPUT_ID_DPAD_RIGHT:
+        *out_btn = SDL_GAMEPAD_BUTTON_DPAD_RIGHT;
+        return true;
+    case INPUT_ID_START:
+        *out_btn = SDL_GAMEPAD_BUTTON_START;
+        return true;
+    case INPUT_ID_BACK:
+        *out_btn = SDL_GAMEPAD_BUTTON_BACK;
+        return true;
+    case INPUT_ID_LEFT_STICK:
+        *out_btn = SDL_GAMEPAD_BUTTON_LEFT_STICK;
+        return true;
+    case INPUT_ID_RIGHT_STICK:
+        *out_btn = SDL_GAMEPAD_BUTTON_RIGHT_STICK;
+        return true;
+    case INPUT_ID_LEFT_SHOULDER:
+        *out_btn = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER;
+        return true;
+    case INPUT_ID_RIGHT_SHOULDER:
+        *out_btn = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER;
+        return true;
+    case INPUT_ID_BUTTON_SOUTH:
+        *out_btn = SDL_GAMEPAD_BUTTON_SOUTH;
+        return true;
+    case INPUT_ID_BUTTON_EAST:
+        *out_btn = SDL_GAMEPAD_BUTTON_EAST;
+        return true;
+    case INPUT_ID_BUTTON_WEST:
+        *out_btn = SDL_GAMEPAD_BUTTON_WEST;
+        return true;
+    case INPUT_ID_BUTTON_NORTH:
+        *out_btn = SDL_GAMEPAD_BUTTON_NORTH;
+        return true;
+    default:
+        return false;
     }
 }
 
 static bool input_to_gamepad_axis(InputID id, SDL_GamepadAxis* out_axis) {
     switch (id) {
-    case INPUT_ID_LEFT_TRIGGER: *out_axis = SDL_GAMEPAD_AXIS_LEFT_TRIGGER; return true;
-    case INPUT_ID_RIGHT_TRIGGER: *out_axis = SDL_GAMEPAD_AXIS_RIGHT_TRIGGER; return true;
+    case INPUT_ID_LEFT_TRIGGER:
+        *out_axis = SDL_GAMEPAD_AXIS_LEFT_TRIGGER;
+        return true;
+    case INPUT_ID_RIGHT_TRIGGER:
+        *out_axis = SDL_GAMEPAD_AXIS_RIGHT_TRIGGER;
+        return true;
     case INPUT_ID_LEFT_STICK_X_PLUS:
-    case INPUT_ID_LEFT_STICK_X_MINUS: *out_axis = SDL_GAMEPAD_AXIS_LEFTX; return true;
+    case INPUT_ID_LEFT_STICK_X_MINUS:
+        *out_axis = SDL_GAMEPAD_AXIS_LEFTX;
+        return true;
     case INPUT_ID_LEFT_STICK_Y_PLUS:
-    case INPUT_ID_LEFT_STICK_Y_MINUS: *out_axis = SDL_GAMEPAD_AXIS_LEFTY; return true;
+    case INPUT_ID_LEFT_STICK_Y_MINUS:
+        *out_axis = SDL_GAMEPAD_AXIS_LEFTY;
+        return true;
     case INPUT_ID_RIGHT_STICK_X_PLUS:
-    case INPUT_ID_RIGHT_STICK_X_MINUS: *out_axis = SDL_GAMEPAD_AXIS_RIGHTX; return true;
+    case INPUT_ID_RIGHT_STICK_X_MINUS:
+        *out_axis = SDL_GAMEPAD_AXIS_RIGHTX;
+        return true;
     case INPUT_ID_RIGHT_STICK_Y_PLUS:
-    case INPUT_ID_RIGHT_STICK_Y_MINUS: *out_axis = SDL_GAMEPAD_AXIS_RIGHTY; return true;
-    default: return false;
+    case INPUT_ID_RIGHT_STICK_Y_MINUS:
+        *out_axis = SDL_GAMEPAD_AXIS_RIGHTY;
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -663,7 +705,8 @@ const char* ControlMapping_GetPlayerMappingIconURI(int player_num, int index) {
         return "";
 
     InputID id = it->second[index].input_id;
-    if (id == INPUT_ID_UNKNOWN) return "";
+    if (id == INPUT_ID_UNKNOWN)
+        return "";
 
     static char s_uri_buf[128];
 
@@ -675,7 +718,8 @@ const char* ControlMapping_GetPlayerMappingIconURI(int player_num, int index) {
 
     // Must have a device for joy/gamepad inputs to know which device_id to render
     Device* dev = (player_num == 1) ? p1Device.get() : p2Device.get();
-    if (!dev) return "";
+    if (!dev)
+        return "";
 
     SDL_GamepadButton out_btn;
     if (input_to_gamepad_btn(id, &out_btn)) {

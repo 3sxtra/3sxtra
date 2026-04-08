@@ -33,9 +33,15 @@ static inline void rmlui_replay_picker_update(void) {}
 static inline void rmlui_replay_picker_show(void) {}
 static inline void rmlui_replay_picker_hide(void) {}
 static inline void rmlui_replay_picker_shutdown(void) {}
-static inline void rmlui_replay_picker_open(int mode) { (void)mode; }
-static inline int rmlui_replay_picker_poll(void) { return 0; }
-static inline const char* rmlui_replay_picker_get_filename(void) { return ""; }
+static inline void rmlui_replay_picker_open(int mode) {
+    (void)mode;
+}
+static inline int rmlui_replay_picker_poll(void) {
+    return 0;
+}
+static inline const char* rmlui_replay_picker_get_filename(void) {
+    return "";
+}
 
 #endif /* ENABLE_RMLUI */
 

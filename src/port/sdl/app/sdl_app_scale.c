@@ -191,8 +191,8 @@ static SDL_FRect fit_integer_rect(int win_w, int win_h, int pixel_w, int pixel_h
 /** @brief Get the current letterbox/viewport rectangle based on scale mode. */
 SDL_FRect get_letterbox_rect(int win_w, int win_h) {
     /* ⚡ Return cached result if inputs haven't changed */
-    if (win_w == cached_lb_win_w && win_h == cached_lb_win_h && 
-        scale_mode == cached_lb_scale_mode && scale_stretch_enabled == cached_lb_scale_stretch) {
+    if (win_w == cached_lb_win_w && win_h == cached_lb_win_h && scale_mode == cached_lb_scale_mode &&
+        scale_stretch_enabled == cached_lb_scale_stretch) {
         return cached_letterbox_rect;
     }
 
@@ -204,30 +204,30 @@ SDL_FRect get_letterbox_rect(int win_w, int win_h) {
         result.h = (float)win_h;
     } else {
         switch (scale_mode) {
-    case SCALEMODE_NEAREST:
-    case SCALEMODE_LINEAR:
-    case SCALEMODE_SOFT_LINEAR:
-        result = fit_4_by_3_rect(win_w, win_h);
-        break;
+        case SCALEMODE_NEAREST:
+        case SCALEMODE_LINEAR:
+        case SCALEMODE_SOFT_LINEAR:
+            result = fit_4_by_3_rect(win_w, win_h);
+            break;
 
-    case SCALEMODE_INTEGER:
-        /* In order to scale a 384x224 buffer to 4:3 we need to stretch the image vertically by 9 / 7 */
-        result = fit_integer_rect(win_w, win_h, 7, 9);
-        break;
+        case SCALEMODE_INTEGER:
+            /* In order to scale a 384x224 buffer to 4:3 we need to stretch the image vertically by 9 / 7 */
+            result = fit_integer_rect(win_w, win_h, 7, 9);
+            break;
 
-    case SCALEMODE_PIXEL_ART:
-        result = fit_4_by_3_rect(win_w, win_h);
-        break;
+        case SCALEMODE_PIXEL_ART:
+            result = fit_4_by_3_rect(win_w, win_h);
+            break;
 
-    case SCALEMODE_SQUARE_PIXELS:
-        result = fit_integer_rect(win_w, win_h, 1, 1);
-        break;
+        case SCALEMODE_SQUARE_PIXELS:
+            result = fit_integer_rect(win_w, win_h, 1, 1);
+            break;
 
-    case SCALEMODE_COUNT:
-    default:
-        result = fit_4_by_3_rect(win_w, win_h);
-        break;
-    }
+        case SCALEMODE_COUNT:
+        default:
+            result = fit_4_by_3_rect(win_w, win_h);
+            break;
+        }
     } // End of stretch check
 
     /* Update cache */

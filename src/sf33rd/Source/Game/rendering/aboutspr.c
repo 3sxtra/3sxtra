@@ -292,13 +292,13 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
 
     wk->current_colcd &= 0x1FF;
 
-    /* DEBUG: Log (stage, cg_number, colcd, mode) for offline palette extraction.
-     * Uses 64-bit keys to avoid bit-overlap for large CG numbers (>32768).
-     * Appends to existing CSV to accumulate data across multiple runs.
-     * IMPORTANT: Logging happens AFTER exchange_current_colcd / colcd assignment
-     * so we capture the actual palette bank used for rendering. */
-    #define COLCD_HASH_SIZE 16384
-    #define COLCD_HASH_MASK (COLCD_HASH_SIZE - 1)
+/* DEBUG: Log (stage, cg_number, colcd, mode) for offline palette extraction.
+ * Uses 64-bit keys to avoid bit-overlap for large CG numbers (>32768).
+ * Appends to existing CSV to accumulate data across multiple runs.
+ * IMPORTANT: Logging happens AFTER exchange_current_colcd / colcd assignment
+ * so we capture the actual palette bank used for rendering. */
+#define COLCD_HASH_SIZE 16384
+#define COLCD_HASH_MASK (COLCD_HASH_SIZE - 1)
     static u64 seen[COLCD_HASH_SIZE];
     static int seen_init = 0;
     static FILE* colcd_log = NULL;
@@ -313,27 +313,25 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
         }
         seen_init = 1;
     }
-    #define COLCD_LOG_ENTRY(colcd_val, mode_val) do { \
-        if (colcd_log && wk->cg_number != 0) { \
-            u64 key = ((u64)bg_w.stage << 32) \
-                    | ((u64)wk->cg_number << 16) \
-                    | (u64)((colcd_val) & 0x1FF) \
-                    | 1ULL; \
-            u32 slot = (u32)((key * 0x9E3779B97F4A7C15ULL) >> 50); \
-            int colcd_i; \
-            for (colcd_i = 0; colcd_i < 16; colcd_i++) { \
-                u32 idx = (slot + colcd_i) & COLCD_HASH_MASK; \
-                if (seen[idx] == key) break; \
-                if (seen[idx] == 0) { \
-                    seen[idx] = key; \
-                    fprintf(colcd_log, "%d,%u,%d,%d\n", \
-                            bg_w.stage, wk->cg_number, (colcd_val) & 0x1FF, (mode_val)); \
-                    fflush(colcd_log); \
-                    break; \
-                } \
-            } \
-        } \
-    } while(0)
+#define COLCD_LOG_ENTRY(colcd_val, mode_val)                                                                           \
+    do {                                                                                                               \
+        if (colcd_log && wk->cg_number != 0) {                                                                         \
+            u64 key = ((u64)bg_w.stage << 32) | ((u64)wk->cg_number << 16) | (u64)((colcd_val) & 0x1FF) | 1ULL;        \
+            u32 slot = (u32)((key * 0x9E3779B97F4A7C15ULL) >> 50);                                                     \
+            int colcd_i;                                                                                               \
+            for (colcd_i = 0; colcd_i < 16; colcd_i++) {                                                               \
+                u32 idx = (slot + colcd_i) & COLCD_HASH_MASK;                                                          \
+                if (seen[idx] == key)                                                                                  \
+                    break;                                                                                             \
+                if (seen[idx] == 0) {                                                                                  \
+                    seen[idx] = key;                                                                                   \
+                    fprintf(colcd_log, "%d,%u,%d,%d\n", bg_w.stage, wk->cg_number, (colcd_val) & 0x1FF, (mode_val));   \
+                    fflush(colcd_log);                                                                                 \
+                    break;                                                                                             \
+                }                                                                                                      \
+            }                                                                                                          \
+        }                                                                                                              \
+    } while (0)
 
     if (wk->my_col_mode & 0x400) {
         wk->my_clear_level = 0x90;
@@ -396,7 +394,7 @@ void Mtrans_use_trans_mode(WORK* wk, s16 bsy) {
 
         break;
     }
-    #undef COLCD_LOG_ENTRY
+#undef COLCD_LOG_ENTRY
 }
 
 /** @brief Look up and return the current color code for a character. */

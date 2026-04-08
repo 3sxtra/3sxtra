@@ -25,29 +25,47 @@
 
 static SDL_Scancode legacy_keyboard_reverse_map_button(SDL_GamepadButton btn) {
     switch (btn) {
-    case SDL_GAMEPAD_BUTTON_SOUTH: return SDL_SCANCODE_J;
-    case SDL_GAMEPAD_BUTTON_EAST: return SDL_SCANCODE_K;
-    case SDL_GAMEPAD_BUTTON_WEST: return SDL_SCANCODE_U;
-    case SDL_GAMEPAD_BUTTON_NORTH: return SDL_SCANCODE_I;
-    case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: return SDL_SCANCODE_O;
-    case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: return SDL_SCANCODE_P;
-    case SDL_GAMEPAD_BUTTON_BACK: return SDL_SCANCODE_BACKSPACE;
-    case SDL_GAMEPAD_BUTTON_START: return SDL_SCANCODE_RETURN;
-    case SDL_GAMEPAD_BUTTON_LEFT_STICK: return SDL_SCANCODE_9;
-    case SDL_GAMEPAD_BUTTON_RIGHT_STICK: return SDL_SCANCODE_0;
-    case SDL_GAMEPAD_BUTTON_DPAD_UP: return SDL_SCANCODE_W;
-    case SDL_GAMEPAD_BUTTON_DPAD_DOWN: return SDL_SCANCODE_S;
-    case SDL_GAMEPAD_BUTTON_DPAD_LEFT: return SDL_SCANCODE_A;
-    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: return SDL_SCANCODE_D;
-    default: return SDL_SCANCODE_UNKNOWN;
+    case SDL_GAMEPAD_BUTTON_SOUTH:
+        return SDL_SCANCODE_J;
+    case SDL_GAMEPAD_BUTTON_EAST:
+        return SDL_SCANCODE_K;
+    case SDL_GAMEPAD_BUTTON_WEST:
+        return SDL_SCANCODE_U;
+    case SDL_GAMEPAD_BUTTON_NORTH:
+        return SDL_SCANCODE_I;
+    case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+        return SDL_SCANCODE_O;
+    case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+        return SDL_SCANCODE_P;
+    case SDL_GAMEPAD_BUTTON_BACK:
+        return SDL_SCANCODE_BACKSPACE;
+    case SDL_GAMEPAD_BUTTON_START:
+        return SDL_SCANCODE_RETURN;
+    case SDL_GAMEPAD_BUTTON_LEFT_STICK:
+        return SDL_SCANCODE_9;
+    case SDL_GAMEPAD_BUTTON_RIGHT_STICK:
+        return SDL_SCANCODE_0;
+    case SDL_GAMEPAD_BUTTON_DPAD_UP:
+        return SDL_SCANCODE_W;
+    case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+        return SDL_SCANCODE_S;
+    case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+        return SDL_SCANCODE_A;
+    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+        return SDL_SCANCODE_D;
+    default:
+        return SDL_SCANCODE_UNKNOWN;
     }
 }
 
 static SDL_Scancode legacy_keyboard_reverse_map_axis(SDL_GamepadAxis axis) {
     switch (axis) {
-    case SDL_GAMEPAD_AXIS_LEFT_TRIGGER: return SDL_SCANCODE_SEMICOLON;
-    case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER: return SDL_SCANCODE_L;
-    default: return SDL_SCANCODE_UNKNOWN;
+    case SDL_GAMEPAD_AXIS_LEFT_TRIGGER:
+        return SDL_SCANCODE_SEMICOLON;
+    case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER:
+        return SDL_SCANCODE_L;
+    default:
+        return SDL_SCANCODE_UNKNOWN;
     }
 }
 
@@ -114,37 +132,79 @@ static const char* s_row_to_action[CONTROLLER_OVERLAY_BUTTON_COUNT] = {
 
 static bool input_to_gamepad_button(InputID id, SDL_GamepadButton* out_btn) {
     switch (id) {
-    case INPUT_ID_BUTTON_SOUTH: *out_btn = SDL_GAMEPAD_BUTTON_SOUTH; return true;
-    case INPUT_ID_BUTTON_EAST: *out_btn = SDL_GAMEPAD_BUTTON_EAST; return true;
-    case INPUT_ID_BUTTON_WEST: *out_btn = SDL_GAMEPAD_BUTTON_WEST; return true;
-    case INPUT_ID_BUTTON_NORTH: *out_btn = SDL_GAMEPAD_BUTTON_NORTH; return true;
-    case INPUT_ID_LEFT_SHOULDER: *out_btn = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER; return true;
-    case INPUT_ID_RIGHT_SHOULDER: *out_btn = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER; return true;
-    case INPUT_ID_DPAD_UP: *out_btn = SDL_GAMEPAD_BUTTON_DPAD_UP; return true;
-    case INPUT_ID_DPAD_DOWN: *out_btn = SDL_GAMEPAD_BUTTON_DPAD_DOWN; return true;
-    case INPUT_ID_DPAD_LEFT: *out_btn = SDL_GAMEPAD_BUTTON_DPAD_LEFT; return true;
-    case INPUT_ID_DPAD_RIGHT: *out_btn = SDL_GAMEPAD_BUTTON_DPAD_RIGHT; return true;
-    case INPUT_ID_START: *out_btn = SDL_GAMEPAD_BUTTON_START; return true;
-    case INPUT_ID_BACK: *out_btn = SDL_GAMEPAD_BUTTON_BACK; return true;
-    case INPUT_ID_LEFT_STICK: *out_btn = SDL_GAMEPAD_BUTTON_LEFT_STICK; return true;
-    case INPUT_ID_RIGHT_STICK: *out_btn = SDL_GAMEPAD_BUTTON_RIGHT_STICK; return true;
-    default: return false;
+    case INPUT_ID_BUTTON_SOUTH:
+        *out_btn = SDL_GAMEPAD_BUTTON_SOUTH;
+        return true;
+    case INPUT_ID_BUTTON_EAST:
+        *out_btn = SDL_GAMEPAD_BUTTON_EAST;
+        return true;
+    case INPUT_ID_BUTTON_WEST:
+        *out_btn = SDL_GAMEPAD_BUTTON_WEST;
+        return true;
+    case INPUT_ID_BUTTON_NORTH:
+        *out_btn = SDL_GAMEPAD_BUTTON_NORTH;
+        return true;
+    case INPUT_ID_LEFT_SHOULDER:
+        *out_btn = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER;
+        return true;
+    case INPUT_ID_RIGHT_SHOULDER:
+        *out_btn = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER;
+        return true;
+    case INPUT_ID_DPAD_UP:
+        *out_btn = SDL_GAMEPAD_BUTTON_DPAD_UP;
+        return true;
+    case INPUT_ID_DPAD_DOWN:
+        *out_btn = SDL_GAMEPAD_BUTTON_DPAD_DOWN;
+        return true;
+    case INPUT_ID_DPAD_LEFT:
+        *out_btn = SDL_GAMEPAD_BUTTON_DPAD_LEFT;
+        return true;
+    case INPUT_ID_DPAD_RIGHT:
+        *out_btn = SDL_GAMEPAD_BUTTON_DPAD_RIGHT;
+        return true;
+    case INPUT_ID_START:
+        *out_btn = SDL_GAMEPAD_BUTTON_START;
+        return true;
+    case INPUT_ID_BACK:
+        *out_btn = SDL_GAMEPAD_BUTTON_BACK;
+        return true;
+    case INPUT_ID_LEFT_STICK:
+        *out_btn = SDL_GAMEPAD_BUTTON_LEFT_STICK;
+        return true;
+    case INPUT_ID_RIGHT_STICK:
+        *out_btn = SDL_GAMEPAD_BUTTON_RIGHT_STICK;
+        return true;
+    default:
+        return false;
     }
 }
 
 static bool input_to_gamepad_axis(InputID id, SDL_GamepadAxis* out_axis) {
     switch (id) {
-    case INPUT_ID_LEFT_TRIGGER: *out_axis = SDL_GAMEPAD_AXIS_LEFT_TRIGGER; return true;
-    case INPUT_ID_RIGHT_TRIGGER: *out_axis = SDL_GAMEPAD_AXIS_RIGHT_TRIGGER; return true;
+    case INPUT_ID_LEFT_TRIGGER:
+        *out_axis = SDL_GAMEPAD_AXIS_LEFT_TRIGGER;
+        return true;
+    case INPUT_ID_RIGHT_TRIGGER:
+        *out_axis = SDL_GAMEPAD_AXIS_RIGHT_TRIGGER;
+        return true;
     case INPUT_ID_LEFT_STICK_X_PLUS:
-    case INPUT_ID_LEFT_STICK_X_MINUS: *out_axis = SDL_GAMEPAD_AXIS_LEFTX; return true;
+    case INPUT_ID_LEFT_STICK_X_MINUS:
+        *out_axis = SDL_GAMEPAD_AXIS_LEFTX;
+        return true;
     case INPUT_ID_LEFT_STICK_Y_PLUS:
-    case INPUT_ID_LEFT_STICK_Y_MINUS: *out_axis = SDL_GAMEPAD_AXIS_LEFTY; return true;
+    case INPUT_ID_LEFT_STICK_Y_MINUS:
+        *out_axis = SDL_GAMEPAD_AXIS_LEFTY;
+        return true;
     case INPUT_ID_RIGHT_STICK_X_PLUS:
-    case INPUT_ID_RIGHT_STICK_X_MINUS: *out_axis = SDL_GAMEPAD_AXIS_RIGHTX; return true;
+    case INPUT_ID_RIGHT_STICK_X_MINUS:
+        *out_axis = SDL_GAMEPAD_AXIS_RIGHTX;
+        return true;
     case INPUT_ID_RIGHT_STICK_Y_PLUS:
-    case INPUT_ID_RIGHT_STICK_Y_MINUS: *out_axis = SDL_GAMEPAD_AXIS_RIGHTY; return true;
-    default: return false;
+    case INPUT_ID_RIGHT_STICK_Y_MINUS:
+        *out_axis = SDL_GAMEPAD_AXIS_RIGHTY;
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -162,16 +222,20 @@ static void generate_slot(int player_idx) {
         device_id = player_idx;
         use_custom_mapping = false;
         is_keyboard = SDLPad_IsKeyboard(device_id);
-        
+
         // Ensure there actually is a trackable device in this slot
         if (!is_keyboard && !ControllerImage_Module_GetDeviceType(device_id)) {
-            return; 
+            return;
         }
     } else {
         is_keyboard = SDLPad_IsKeyboard(device_id);
     }
 
-    SDL_Log("[ControllerImageOverlay] Generating glyphs for player %d (device_id=%d, keyboard=%d, custom=%d)", player_num, device_id, is_keyboard, use_custom_mapping);
+    SDL_Log("[ControllerImageOverlay] Generating glyphs for player %d (device_id=%d, keyboard=%d, custom=%d)",
+            player_num,
+            device_id,
+            is_keyboard,
+            use_custom_mapping);
 
     for (int row = 0; row < CONTROLLER_OVERLAY_BUTTON_COUNT; row++) {
         SDL_Surface* surface = NULL;
@@ -200,8 +264,8 @@ static void generate_slot(int player_idx) {
         }
 
         // --- FALLBACK ---
-        // If the mapped action didn't yield an image (or was unmapped), fall back 
-        // to the physical default layout if it's NOT a keyboard, OR use the reverse 
+        // If the mapped action didn't yield an image (or was unmapped), fall back
+        // to the physical default layout if it's NOT a keyboard, OR use the reverse
         // mapped default keyboard layout if it IS a keyboard. This prevents the
         // pink CPS3 sprites from bleeding thru.
         if (!surface) {
@@ -233,8 +297,11 @@ static void generate_slot(int player_idx) {
         }
 
         if (!cache->textures[row]) {
-            SDL_LogDebug(
-                SDL_LOG_CATEGORY_APPLICATION, "[ControllerImageOverlay] No glyph for player %d row %d fallback=%d", player_num, row, s_row_to_button[row]);
+            SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                         "[ControllerImageOverlay] No glyph for player %d row %d fallback=%d",
+                         player_num,
+                         row,
+                         s_row_to_button[row]);
         }
     }
 

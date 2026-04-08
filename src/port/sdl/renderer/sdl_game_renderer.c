@@ -60,7 +60,8 @@ void SDLGameRenderer_RenderFrame() {
     }
 }
 
-void SDLGameRenderer_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h, bool backgrounds_only) {
+void SDLGameRenderer_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
+                                  bool backgrounds_only) {
     RendererBackend r = SDLApp_GetRenderer();
     if (r == RENDERER_SDLGPU) {
         SDLGameRendererGPU_RenderHDPass(viewport_x, viewport_y, viewport_w, viewport_h, backgrounds_only);
@@ -85,8 +86,6 @@ void SDLGameRenderer_EndFrame() {
         SDLGameRendererGL_EndFrame();
     }
 }
-
-
 
 void SDLGameRenderer_CreateTexture(unsigned int th) {
     RendererBackend r = SDLApp_GetRenderer();

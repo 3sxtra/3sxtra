@@ -35,9 +35,9 @@ bool ControllerImage_Module_Init(void) {
     /* On Android, SDL_IOFromFile routes through AssetManager which is already
      * rooted at the assets/ folder.  On desktop the full path is needed. */
 #ifdef __ANDROID__
-    #define CI_PREFIX "controllers/"
+#define CI_PREFIX "controllers/"
 #else
-    #define CI_PREFIX "assets/controllers/"
+#define CI_PREFIX "assets/controllers/"
 #endif
 
     char kenney_path[1024];
@@ -68,7 +68,11 @@ bool ControllerImage_Module_Init(void) {
         }
     }
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[ControllerImage] Initialized successfully, data loaded from '%s', '%s', '%s'", kenney_path, ordinary_path, data_path);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                 "[ControllerImage] Initialized successfully, data loaded from '%s', '%s', '%s'",
+                 kenney_path,
+                 ordinary_path,
+                 data_path);
 
     s_keyboard_device = ControllerImage_CreateKeyboardDevice();
     if (!s_keyboard_device) {
@@ -131,7 +135,10 @@ void ControllerImage_Module_OnGamepadAdded(SDL_Gamepad* gamepad, int slot) {
     s_devices[slot] = dev;
 
     const char* device_type = ControllerImage_GetDeviceType(dev);
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[ControllerImage] Slot %d: device type = '%s'", slot, device_type ? device_type : "unknown");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                 "[ControllerImage] Slot %d: device type = '%s'",
+                 slot,
+                 device_type ? device_type : "unknown");
 }
 
 void ControllerImage_Module_OnGamepadRemoved(int slot) {

@@ -12,11 +12,11 @@
 // Netplay_Run() on the game thread. PollChat() is called from
 // rmlui_ingame_chat_update() also on the game thread. No mutex needed.
 static const unsigned char CHAT_MAGIC[4] = { 0x33, 0x53, 0x58, 0x43 }; // "3SXC"
-#define CHAT_MAGIC_LEN   4
-#define CHAT_MSG_TYPE    0x01       // Sub-type: text message
-#define CHAT_HEADER_LEN  7         // magic(4) + type(1) + len(2)
-#define CHAT_INBOX_SIZE  8          // Ring buffer capacity
-#define CHAT_MAX_TEXT    120        // Max UTF-8 payload bytes
+#define CHAT_MAGIC_LEN 4
+#define CHAT_MSG_TYPE 0x01 // Sub-type: text message
+#define CHAT_HEADER_LEN 7  // magic(4) + type(1) + len(2)
+#define CHAT_INBOX_SIZE 8  // Ring buffer capacity
+#define CHAT_MAX_TEXT 120  // Max UTF-8 payload bytes
 
 typedef struct {
     char text[CHAT_MAX_TEXT + 1];
@@ -25,7 +25,7 @@ typedef struct {
 
 static ChatInboxSlot chat_inbox[CHAT_INBOX_SIZE];
 static int chat_inbox_write = 0;
-static int chat_inbox_read  = 0;
+static int chat_inbox_read = 0;
 
 static NET_DatagramSocket* adapter_sock = NULL;
 static GekkoNetAdapter adapter;
@@ -168,15 +168,18 @@ static void send_data(GekkoNetAddress* addr, const char* data, int length) {
         return;
 
     switch (NET_GetAddressStatus(peer->resolved)) {
-    case NET_SUCCESS:
-        {
-            const char* resolve_str = NET_GetAddressString(peer->resolved);
-            static Uint32 last_log = 0;
-            if (SDL_GetTicks() - last_log > 1000) {
-                SDL_Log("[NetAdapter_Send] Sending %d bytes to %s:%u (resolved=%s)", length, peer->addr_key, peer->port, resolve_str ? resolve_str : "null");
-                last_log = SDL_GetTicks();
-            }
+    case NET_SUCCESS: {
+        const char* resolve_str = NET_GetAddressString(peer->resolved);
+        static Uint32 last_log = 0;
+        if (SDL_GetTicks() - last_log > 1000) {
+            SDL_Log("[NetAdapter_Send] Sending %d bytes to %s:%u (resolved=%s)",
+                    length,
+                    peer->addr_key,
+                    peer->port,
+                    resolve_str ? resolve_str : "null");
+            last_log = SDL_GetTicks();
         }
+    }
         NET_SendDatagram(adapter_sock, peer->resolved, peer->port, data, length);
         break;
     case NET_FAILURE:
@@ -200,14 +203,12 @@ static GekkoNetResult** receive_data(int* length) {
         // ── P2P Chat intercept ──
         // Chat packets start with 4-byte magic "3SXC". Extract the text and
         // push it to the chat inbox ring buffer. Do NOT pass to GekkoNet.
-        if (dgram->buflen >= CHAT_HEADER_LEN &&
-            SDL_memcmp(dgram->buf, CHAT_MAGIC, CHAT_MAGIC_LEN) == 0) {
+        if (dgram->buflen >= CHAT_HEADER_LEN && SDL_memcmp(dgram->buf, CHAT_MAGIC, CHAT_MAGIC_LEN) == 0) {
             const unsigned char* hdr = (const unsigned char*)dgram->buf;
             unsigned char msg_type = hdr[4];
             if (msg_type == CHAT_MSG_TYPE) {
                 int text_len = (hdr[5] << 8) | hdr[6];
-                if (text_len > 0 && text_len <= CHAT_MAX_TEXT &&
-                    (int)dgram->buflen >= CHAT_HEADER_LEN + text_len) {
+                if (text_len > 0 && text_len <= CHAT_MAX_TEXT && (int)dgram->buflen >= CHAT_HEADER_LEN + text_len) {
                     ChatInboxSlot* slot = &chat_inbox[chat_inbox_write % CHAT_INBOX_SIZE];
                     SDL_memcpy(slot->text, (char*)dgram->buf + CHAT_HEADER_LEN, text_len);
                     slot->text[text_len] = '\0';
@@ -229,24 +230,27 @@ static GekkoNetResult** receive_data(int* length) {
 
         // Cross-IP normalization & Symmetric NAT port learning
         const char* final_addr = addr_str;
-        
+
         // 1. Port Learning: if IP matches but port differs (Symmetric NAT changed source port)
-        if (expected_remote_ip[0] != '\0' && expected_remote_port != 0 &&
-            dgram->port != expected_remote_port &&
+        if (expected_remote_ip[0] != '\0' && expected_remote_port != 0 && dgram->port != expected_remote_port &&
             SDL_strcmp(ip_str, expected_remote_ip) == 0) {
-            
+
             if (actual_remote_port != dgram->port) {
                 actual_remote_port = dgram->port;
-                SDL_Log("[NetAdapter] Symmetric NAT port learning: peer is using port %u (expected %u). Adapting.", actual_remote_port, expected_remote_port);
+                SDL_Log("[NetAdapter] Symmetric NAT port learning: peer is using port %u (expected %u). Adapting.",
+                        actual_remote_port,
+                        expected_remote_port);
             }
             // Masquerade the packet as coming from the expected STUN port so Gekko accepts it
             final_addr = expected_remote_addr;
-            
-        // 2. Cross-IP: if port matches but IP differs (IPv4-mapped IPv6 mismatch)
+
+            // 2. Cross-IP: if port matches but IP differs (IPv4-mapped IPv6 mismatch)
         } else if (expected_remote_port != 0 && dgram->port == expected_remote_port &&
                    SDL_strcmp(addr_str, expected_remote_addr) != 0 && expected_remote_addr[0] != '\0') {
             if (!cross_ip_logged) {
-                SDL_Log("[NetAdapter] Cross-IP: rewriting source from %s to match expected remote %s", addr_str, expected_remote_addr);
+                SDL_Log("[NetAdapter] Cross-IP: rewriting source from %s to match expected remote %s",
+                        addr_str,
+                        expected_remote_addr);
                 cross_ip_logged = true;
             }
             final_addr = expected_remote_addr;
@@ -254,7 +258,11 @@ static GekkoNetResult** receive_data(int* length) {
 
         static Uint32 last_recv_log = 0;
         if (SDL_GetTicks() - last_recv_log > 1000) {
-            SDL_Log("[NetAdapter_Recv] Got %d bytes from %s (final=%s), expected=%s", (int)dgram->buflen, addr_str, final_addr, expected_remote_addr);
+            SDL_Log("[NetAdapter_Recv] Got %d bytes from %s (final=%s), expected=%s",
+                    (int)dgram->buflen,
+                    addr_str,
+                    final_addr,
+                    expected_remote_addr);
             last_recv_log = SDL_GetTicks();
         }
 
@@ -304,7 +312,7 @@ void SDLNetAdapter_SetExpectedRemote(const char* addr_str) {
         parse_addr_str(addr_str, ip, sizeof(ip), &port);
         SDL_strlcpy(expected_remote_ip, strip_ipv4_mapped_prefix(ip), sizeof(expected_remote_ip));
         expected_remote_port = (Uint16)port;
-        actual_remote_port = expected_remote_port; 
+        actual_remote_port = expected_remote_port;
         cross_ip_logged = false;
         SDL_Log("[NetAdapter] Expected remote configured (ip %s, port %u)", expected_remote_ip, expected_remote_port);
     } else {
@@ -361,8 +369,7 @@ void SDLNetAdapter_SendChat(const char* text) {
         return;
 
     if (NET_GetAddressStatus(peer->resolved) == NET_SUCCESS) {
-        NET_SendDatagram(adapter_sock, peer->resolved, peer->port,
-                         pkt, CHAT_HEADER_LEN + text_len);
+        NET_SendDatagram(adapter_sock, peer->resolved, peer->port, pkt, CHAT_HEADER_LEN + text_len);
     }
 }
 

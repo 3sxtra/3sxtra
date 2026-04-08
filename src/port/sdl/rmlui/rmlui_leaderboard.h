@@ -31,7 +31,9 @@ static inline void rmlui_leaderboard_update(void) {}
 static inline void rmlui_leaderboard_show(void) {}
 static inline void rmlui_leaderboard_hide(void) {}
 static inline void rmlui_leaderboard_shutdown(void) {}
-static inline void rmlui_leaderboard_fetch_page(int page) { (void)page; }
+static inline void rmlui_leaderboard_fetch_page(int page) {
+    (void)page;
+}
 static inline void rmlui_leaderboard_next_page(void) {}
 static inline void rmlui_leaderboard_prev_page(void) {}
 

@@ -167,7 +167,8 @@ static char s_active_room_password[64] = { 0 };
 
 // Password prompt popup state (for joining private rooms OR setting create-room password)
 static bool s_password_popup_visible = false;
-static int s_password_popup_mode = 0;    // 0 = join (submits to AsyncJoinRoom), 1 = create (stores in s_create_room_password)
+static int s_password_popup_mode =
+    0; // 0 = join (submits to AsyncJoinRoom), 1 = create (stores in s_create_room_password)
 static char s_password_input[64] = { 0 };
 static int s_password_input_len = 0;
 static Rml::String s_password_input_display;
@@ -183,17 +184,24 @@ static Rml::String s_create_password_label = "NONE";
 
 static const char* room_type_label(int t) {
     switch (t) {
-    case ROOM_TYPE_TOURNAMENT: return "TOURNAMENT";
-    default: return "CASUAL";
+    case ROOM_TYPE_TOURNAMENT:
+        return "TOURNAMENT";
+    default:
+        return "CASUAL";
     }
 }
 static const char* tournament_format_label(int f) {
     switch (f) {
-    case TOURNAMENT_SINGLE_ELIM: return "SINGLE ELIM";
-    case TOURNAMENT_DOUBLE_ELIM: return "DOUBLE ELIM";
-    case TOURNAMENT_ROUND_ROBIN: return "ROUND ROBIN";
-    case TOURNAMENT_SWISS: return "SWISS";
-    default: return "SINGLE ELIM";
+    case TOURNAMENT_SINGLE_ELIM:
+        return "SINGLE ELIM";
+    case TOURNAMENT_DOUBLE_ELIM:
+        return "DOUBLE ELIM";
+    case TOURNAMENT_ROUND_ROBIN:
+        return "ROUND ROBIN";
+    case TOURNAMENT_SWISS:
+        return "SWISS";
+    default:
+        return "SINGLE ELIM";
     }
 }
 
@@ -201,14 +209,14 @@ static const char* tournament_format_label(int f) {
 static char s_qr_image_path[512] = { 0 };
 
 struct AsyncRoomData {
-    int action;          // 1 = create, 2 = join, 3 = create_tournament
-    char name[64];       // room name (create)
-    char code[16];       // room code (join)
-    int ft;              // FT mode for the room (create only)
-    int room_type;       // RoomType enum (for create)
-    int tournament_fmt;  // TournamentFormat enum (for tournament create)
-    char password[64];   // room password (create + join)
-    int visibility;      // RoomVisibility enum (for create)
+    int action;         // 1 = create, 2 = join, 3 = create_tournament
+    char name[64];      // room name (create)
+    char code[16];      // room code (join)
+    int ft;             // FT mode for the room (create only)
+    int room_type;      // RoomType enum (for create)
+    int tournament_fmt; // TournamentFormat enum (for tournament create)
+    char password[64];  // room password (create + join)
+    int visibility;     // RoomVisibility enum (for create)
 };
 
 static int SDLCALL async_room_fn(void* data) {
@@ -226,10 +234,14 @@ static int SDLCALL async_room_fn(void* data) {
             snprintf(s_room_async_error, sizeof(s_room_async_error), "%s", err);
         }
     } else if (d->action == 3) {
-        ok = LobbyServer_CreateTournamentRoom(d->name, (TournamentFormat)d->tournament_fmt,
-                                              16, d->ft, "rating",
+        ok = LobbyServer_CreateTournamentRoom(d->name,
+                                              (TournamentFormat)d->tournament_fmt,
+                                              16,
+                                              d->ft,
+                                              "rating",
                                               d->password[0] ? d->password : NULL,
-                                              d->visibility, &room);
+                                              d->visibility,
+                                              &room);
     }
 
     if (ok) {
@@ -245,8 +257,7 @@ static int SDLCALL async_room_fn(void* data) {
             const char* server_url = LobbyServer_GetBaseURL();
             if (server_url[0]) {
                 char qr_url[512];
-                snprintf(qr_url, sizeof(qr_url), "%s/qr-join?room=%s&pw=%s",
-                         server_url, room.id, d->password);
+                snprintf(qr_url, sizeof(qr_url), "%s/qr-join?room=%s&pw=%s", server_url, room.id, d->password);
                 const char* pref = Paths_GetPrefPath();
                 snprintf(s_qr_image_path, sizeof(s_qr_image_path), "%sqr_join.bmp", pref ? pref : "");
                 QRTexture_GenerateBMP(qr_url, s_qr_image_path, 4);
@@ -709,11 +720,17 @@ static void do_init(void) {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi NetworkLobby] Data model registered (lazy)");
 }
 
-extern "C" void rmlui_network_lobby_init(void) { do_init(); }
+extern "C" void rmlui_network_lobby_init(void) {
+    do_init();
+}
 
 // ─── Per-frame update ────────────────────────────────────────────
 extern "C" void rmlui_network_lobby_update(void) {
-    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_registered) {
+        do_init();
+        if (!s_model_registered)
+            return;
+    }
     if (!s_model_handle)
         return;
     if (!rmlui_wrapper_is_game_document_visible("network_lobby"))
@@ -733,10 +750,8 @@ extern "C" void rmlui_network_lobby_update(void) {
         SSEEventType gsse_type = LobbyServer_GlobalSSEPoll(&gsse_evt);
         if (gsse_type == SSE_EVENT_REMOTE_JOIN && gsse_evt.remote_join_room[0]) {
             SDL_Log("[NetworkLobby] QR Join: joining room %s", gsse_evt.remote_join_room);
-            AsyncJoinRoom(
-                gsse_evt.remote_join_room,
-                gsse_evt.remote_join_password[0] ? gsse_evt.remote_join_password : NULL
-            );
+            AsyncJoinRoom(gsse_evt.remote_join_room,
+                          gsse_evt.remote_join_password[0] ? gsse_evt.remote_join_password : NULL);
         }
     }
 
@@ -754,7 +769,8 @@ extern "C" void rmlui_network_lobby_update(void) {
 
             SDL_Log("[NetworkLobby] Room entered: %s", s_room_async_code);
         } else {
-            if (strcmp(s_room_async_error, "Wrong password") == 0 || strcmp(s_room_async_error, "Invalid password") == 0) {
+            if (strcmp(s_room_async_error, "Wrong password") == 0 ||
+                strcmp(s_room_async_error, "Invalid password") == 0) {
                 // Intercept password errors and trigger the password popup UI
                 snprintf(s_password_target_room, sizeof(s_password_target_room), "%s", s_join_room_code.c_str());
                 memset(s_password_input, 0, sizeof(s_password_input));
@@ -763,7 +779,7 @@ extern "C" void rmlui_network_lobby_update(void) {
                 s_password_popup_mode = 0; // join mode
                 s_password_input_display = "_";
                 s_password_popup_visible = true;
-                
+
                 s_room_status = "";
                 s_join_room_code = "";
                 s_model_handle.DirtyVariable("password_popup_visible");
@@ -1037,12 +1053,16 @@ extern "C" int rmlui_network_lobby_get_create_room_type(void) {
 }
 
 extern "C" void rmlui_network_lobby_cycle_tournament_format(int direction) {
-    static const int formats[] = { TOURNAMENT_SINGLE_ELIM, TOURNAMENT_DOUBLE_ELIM,
-                                   TOURNAMENT_ROUND_ROBIN, TOURNAMENT_SWISS };
+    static const int formats[] = {
+        TOURNAMENT_SINGLE_ELIM, TOURNAMENT_DOUBLE_ELIM, TOURNAMENT_ROUND_ROBIN, TOURNAMENT_SWISS
+    };
     static const int fmt_count = 4;
     int idx = 0;
     for (int i = 0; i < fmt_count; i++) {
-        if (formats[i] == s_create_tournament_format) { idx = i; break; }
+        if (formats[i] == s_create_tournament_format) {
+            idx = i;
+            break;
+        }
     }
     if (direction < 0)
         idx = (idx - 1 + fmt_count) % fmt_count;
@@ -1228,9 +1248,7 @@ extern "C" void rmlui_network_lobby_submit_password(void) {
     if (s_password_popup_mode == 1) {
         // CREATE MODE: store password for next room creation
         snprintf(s_create_room_password, sizeof(s_create_room_password), "%s", s_password_input);
-        s_create_password_label = s_password_input_len > 0
-            ? s_password_input
-            : "NONE";
+        s_create_password_label = s_password_input_len > 0 ? s_password_input : "NONE";
         if (s_model_handle) {
             s_model_handle.DirtyVariable("password_popup_visible");
             s_model_handle.DirtyVariable("create_password_label");

@@ -1160,7 +1160,8 @@ void check_15() {
                     check_next();
                 }
             }
-        } else if (((chk_pl->old_lvbt & CMD_LEVER_MASK) != (chk_pl->new_lvbt & CMD_LEVER_MASK)) && (chk_pl->sw_lever & waza_ptr->w_lvr) &&
+        } else if (((chk_pl->old_lvbt & CMD_LEVER_MASK) != (chk_pl->new_lvbt & CMD_LEVER_MASK)) &&
+                   (chk_pl->sw_lever & waza_ptr->w_lvr) &&
                    (waza_ptr->shot_ok += 1, waza_ptr->shot_ok < waza_ptr->free1 == 0)) {
             if (*waza_ptr->w_ptr == CHK_MOVE_COUNT) {
                 command_ok();
@@ -1244,7 +1245,8 @@ void check_18() {
                 waza_ptr->w_int = waza_ptr->free1;
                 wcp[cmd_id].waza_flag[waza_type[cmd_id]] = wcp[cmd_id].reset[waza_type[cmd_id]];
             }
-        } else if ((chk_pl->old_lvbt & CMD_LEVER_MASK) != (chk_pl->new_lvbt & CMD_LEVER_MASK) && (sw_lever & waza_ptr->w_lvr)) {
+        } else if ((chk_pl->old_lvbt & CMD_LEVER_MASK) != (chk_pl->new_lvbt & CMD_LEVER_MASK) &&
+                   (sw_lever & waza_ptr->w_lvr)) {
             waza_ptr->w_int = waza_ptr->free1;
             wcp[cmd_id].waza_flag[waza_type[cmd_id]] = wcp[cmd_id].reset[waza_type[cmd_id]];
         }
@@ -1390,7 +1392,8 @@ void check_23() {
         break;
 
     case 1:
-        if ((chk_pl->old_lvbt & CMD_LEVER_MASK) != (chk_pl->new_lvbt & CMD_LEVER_MASK) && chk_pl->sw_lever == waza_ptr->w_lvr) {
+        if ((chk_pl->old_lvbt & CMD_LEVER_MASK) != (chk_pl->new_lvbt & CMD_LEVER_MASK) &&
+            chk_pl->sw_lever == waza_ptr->w_lvr) {
             waza_ptr->shot_ok++;
             wcp[cmd_id].waza_flag[(waza_type[cmd_id])] = wcp[cmd_id].reset[(waza_type[cmd_id])];
             waza_ptr->free3 = (s16)(((((wcp[cmd_id].reset[(waza_type[cmd_id])])) + 3)));
@@ -1629,7 +1632,7 @@ void pl_lvr_set() {
     chk_pl->sw_chg = (chk_pl->sw_now) | (chk_pl->sw_old & ~(sw_0));
     chk_pl->sw_lever = sw_0 & CMD_LEVER_MASK;
     chk_pl->shot_up = chk_pl->sw_now & CMD_BTN_ATTACKS;
-    chk_pl->shot_down = chk_pl->sw_old & ~(sw_0) & CMD_BTN_ATTACKS;
+    chk_pl->shot_down = chk_pl->sw_old & ~(sw_0)&CMD_BTN_ATTACKS;
     chk_pl->shot_ud = ((chk_pl->shot_up) | (chk_pl->shot_down));
     sw_work = ((chk_pl->sw_now) | (wcp[cmd_id].old_now));
 

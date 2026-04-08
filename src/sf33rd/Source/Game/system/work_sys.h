@@ -89,13 +89,13 @@ extern f32 scr_sc;
  *
  * Note: save_w[Present_Mode] is also accessed via the CurrentSave() accessor.
  */
-#define SAVEW_BASE      0  /**< Base/defaults slot (extra-option editing buffer) */
-#define SAVEW_ARCADE    1  /**< Arcade game options (difficulty, time, pad, sound) */
-#define SAVEW_NETWORK   2  /**< Network mode settings */
-#define SAVEW_REPLAY    3  /**< Replay mode settings */
-#define SAVEW_TRAINING  4  /**< Training mode settings */
-#define SAVEW_EXTRA     5  /**< Extra/mirror settings */
-#define SAVEW_COUNT     6  /**< Total number of save_w[] slots */
+#define SAVEW_BASE 0     /**< Base/defaults slot (extra-option editing buffer) */
+#define SAVEW_ARCADE 1   /**< Arcade game options (difficulty, time, pad, sound) */
+#define SAVEW_NETWORK 2  /**< Network mode settings */
+#define SAVEW_REPLAY 3   /**< Replay mode settings */
+#define SAVEW_TRAINING 4 /**< Training mode settings */
+#define SAVEW_EXTRA 5    /**< Extra/mirror settings */
+#define SAVEW_COUNT 6    /**< Total number of save_w[] slots */
 
 extern struct _SAVE_W save_w[SAVEW_COUNT];
 

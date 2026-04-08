@@ -138,8 +138,6 @@ static s16 Check_Time_Over();
 void complete_victory_pause();
 static void Game_Manage_13th();
 
-
-
 u8 Disp_Bonus_Contents;
 s8 MANAGE_X;
 
@@ -158,20 +156,47 @@ s32 Game_Management() {
     MANAGE_X = 0;
 
     switch (C_No[0]) {
-    case 0:  Game_Manage_1st();  break;
-    case 1:  Game_Manage_2nd();  break;
-    case 2:  Game_Manage_3rd();  break;
-    case 3:  Game_Manage_4th();  break;
-    case 4:  Game_Manage_5th();  break;
-    case 5:  Game_Manage_6th();  break;
-    case 6:  Game_Manage_7th();  break;
-    case 7:  Game_Manage_8th();  break;
-    case 8:  Game_Manage_9th();  break;
-    case 9:  Game_Manage_10th(); break;
-    case 10: Game_Manage_11th(); break;
-    case 11: Game_Manage_12th(); break;
-    case 12: Game_Manage_13th(); break;
-    default: break;
+    case 0:
+        Game_Manage_1st();
+        break;
+    case 1:
+        Game_Manage_2nd();
+        break;
+    case 2:
+        Game_Manage_3rd();
+        break;
+    case 3:
+        Game_Manage_4th();
+        break;
+    case 4:
+        Game_Manage_5th();
+        break;
+    case 5:
+        Game_Manage_6th();
+        break;
+    case 6:
+        Game_Manage_7th();
+        break;
+    case 7:
+        Game_Manage_8th();
+        break;
+    case 8:
+        Game_Manage_9th();
+        break;
+    case 9:
+        Game_Manage_10th();
+        break;
+    case 10:
+        Game_Manage_11th();
+        break;
+    case 11:
+        Game_Manage_12th();
+        break;
+    case 12:
+        Game_Manage_13th();
+        break;
+    default:
+        break;
     }
 
     BGM_Fade_Sub();
@@ -275,12 +300,23 @@ static void Clear_1Stage_Work() {
 /** @brief Phase 2 dispatcher: pre-round setup (screen switch, round init, appear wait). */
 static void Game_Manage_2nd() {
     switch (C_No[1]) {
-    case 0: Game_Manage_2_0(); break;
-    case 1: Game_Manage_2_1(); break;
-    case 2: Game_Manage_2_2(); break;
-    case 3: Game_Manage_2_3(); break;
-    case 4: Game_Manage_2_4(); break;
-    default: break;
+    case 0:
+        Game_Manage_2_0();
+        break;
+    case 1:
+        Game_Manage_2_1();
+        break;
+    case 2:
+        Game_Manage_2_2();
+        break;
+    case 3:
+        Game_Manage_2_3();
+        break;
+    case 4:
+        Game_Manage_2_4();
+        break;
+    default:
+        break;
     }
 }
 
@@ -635,15 +671,32 @@ static void Game_Manage_4th() {
 /** @brief Phase 5 dispatcher: complete victory (judgement gals) sequence. */
 static void Game_Manage_5th() {
     switch (C_No[1]) {
-    case 0: Game_Manage_5_0(); break;
-    case 1: Game_Manage_5_1(); break;
-    case 2: Game_Manage_5_2(); break;
-    case 3: Game_Manage_5_3(); break;
-    case 4: Game_Manage_5_4(); break;
-    case 5: Game_Manage_5_5(); break;
-    case 6: Game_Manage_5_6(); break;
-    case 7: Game_Manage_5_7(); break;
-    default: break;
+    case 0:
+        Game_Manage_5_0();
+        break;
+    case 1:
+        Game_Manage_5_1();
+        break;
+    case 2:
+        Game_Manage_5_2();
+        break;
+    case 3:
+        Game_Manage_5_3();
+        break;
+    case 4:
+        Game_Manage_5_4();
+        break;
+    case 5:
+        Game_Manage_5_5();
+        break;
+    case 6:
+        Game_Manage_5_6();
+        break;
+    case 7:
+        Game_Manage_5_7();
+        break;
+    default:
+        break;
     }
 }
 
@@ -789,17 +842,38 @@ static void Game_Manage_6th() {
 /** @brief Phase 7 dispatcher: win presentation, winner display, perfect announcement. */
 static void Game_Manage_7th() {
     switch (C_No[1]) {
-    case 0: Game_Manage_7_0(); break;
-    case 1: Game_Manage_7_1(); break;
-    case 2: Game_Manage_7_2(); break;
-    case 3: Game_Manage_7_3(); break;
-    case 4: Game_Manage_7_4(); break;
-    case 5: Game_Manage_7_5(); break;
-    case 6: Game_Manage_7_6(); break;
-    case 7: Game_Manage_7_7(); break;
-    case 8: Game_Manage_7_8(); break;
-    case 9: Game_Manage_7_9(); break;
-    default: break;
+    case 0:
+        Game_Manage_7_0();
+        break;
+    case 1:
+        Game_Manage_7_1();
+        break;
+    case 2:
+        Game_Manage_7_2();
+        break;
+    case 3:
+        Game_Manage_7_3();
+        break;
+    case 4:
+        Game_Manage_7_4();
+        break;
+    case 5:
+        Game_Manage_7_5();
+        break;
+    case 6:
+        Game_Manage_7_6();
+        break;
+    case 7:
+        Game_Manage_7_7();
+        break;
+    case 8:
+        Game_Manage_7_8();
+        break;
+    case 9:
+        Game_Manage_7_9();
+        break;
+    default:
+        break;
     }
 }
 
@@ -944,11 +1018,20 @@ static void Game_Manage_7_9() {
 /** @brief Phase 8 dispatcher: post-match score tallying and bonus display. */
 static void Game_Manage_8th() {
     switch (C_No[1]) {
-    case 0: Game_Manage_8_0(); break;
-    case 1: Game_Manage_8_1(); break;
-    case 2: Game_Manage_8_2(); break;
-    case 3: Game_Manage_8_3(); break;
-    default: break;
+    case 0:
+        Game_Manage_8_0();
+        break;
+    case 1:
+        Game_Manage_8_1();
+        break;
+    case 2:
+        Game_Manage_8_2();
+        break;
+    case 3:
+        Game_Manage_8_3();
+        break;
+    default:
+        break;
     }
 }
 
@@ -985,11 +1068,20 @@ static void Game_Manage_8_0() {
 
 static void Game_Manage_8_1() {
     switch (C_No[2]) {
-    case 0: Game_Manage_81_0(); break;
-    case 1: Game_Manage_81_1(); break;
-    case 2: Game_Manage_81_2(); break;
-    case 3: Game_Manage_81_3(); break;
-    default: break;
+    case 0:
+        Game_Manage_81_0();
+        break;
+    case 1:
+        Game_Manage_81_1();
+        break;
+    case 2:
+        Game_Manage_81_2();
+        break;
+    case 3:
+        Game_Manage_81_3();
+        break;
+    default:
+        break;
     }
 }
 
@@ -2019,17 +2111,38 @@ static void Game_Manage_11th() {
 /** @brief Phase 12 dispatcher: bonus stage (car destruction / parry ball) management. */
 static void Game_Manage_12th() {
     switch (C_No[1]) {
-    case 0: Game_Manage_12_0(); break;
-    case 1: Game_Manage_12_1(); break;
-    case 2: Game_Manage_12_2(); break;
-    case 3: Game_Manage_12_3(); break;
-    case 4: Game_Manage_12_4(); break;
-    case 5: Game_Manage_12_5(); break;
-    case 6: Game_Manage_12_1(); break; /* fallthrough from parry ball path */
-    case 7: Game_Manage_12_7(); break;
-    case 8: Game_Manage_12_8(); break;
-    case 9: Game_Manage_12_5(); break; /* fallthrough from parry ball path */
-    default: break;
+    case 0:
+        Game_Manage_12_0();
+        break;
+    case 1:
+        Game_Manage_12_1();
+        break;
+    case 2:
+        Game_Manage_12_2();
+        break;
+    case 3:
+        Game_Manage_12_3();
+        break;
+    case 4:
+        Game_Manage_12_4();
+        break;
+    case 5:
+        Game_Manage_12_5();
+        break;
+    case 6:
+        Game_Manage_12_1();
+        break; /* fallthrough from parry ball path */
+    case 7:
+        Game_Manage_12_7();
+        break;
+    case 8:
+        Game_Manage_12_8();
+        break;
+    case 9:
+        Game_Manage_12_5();
+        break; /* fallthrough from parry ball path */
+    default:
+        break;
     }
 
     if (Bonus_Type == 20) {

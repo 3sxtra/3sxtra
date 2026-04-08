@@ -42,13 +42,13 @@ static GPUTextureMetadata* get_gpu_metadata(void* texture_id) {
     return nullptr;
 }
 
-
 #ifdef __ANDROID__
 static std::unordered_map<GLuint, std::pair<int, int>> s_gles_texture_sizes;
 #endif
 
 static void premultiply_surface_alpha(SDL_Surface* surface) {
-    if (!surface || surface->format != SDL_PIXELFORMAT_RGBA32) return;
+    if (!surface || surface->format != SDL_PIXELFORMAT_RGBA32)
+        return;
     Uint8* pixels = (Uint8*)surface->pixels;
     int pitch = surface->pitch;
     for (int y = 0; y < surface->h; y++) {
@@ -317,8 +317,10 @@ extern "C" void* TextureUtil_LoadScaled(const char* filename, float scale) {
     if (scale < 1.0f && scale > 0.0f && converted->w > 1 && converted->h > 1) {
         int new_w = (int)(converted->w * scale + 0.5f);
         int new_h = (int)(converted->h * scale + 0.5f);
-        if (new_w < 1) new_w = 1;
-        if (new_h < 1) new_h = 1;
+        if (new_w < 1)
+            new_w = 1;
+        if (new_h < 1)
+            new_h = 1;
 
         SDL_Surface* scaled = SDL_CreateSurface(new_w, new_h, SDL_PIXELFORMAT_RGBA32);
         if (scaled != NULL) {
@@ -407,11 +409,15 @@ extern "C" void TextureUtil_GetSize(void* texture_id, int* w, int* h) {
         /* GLES3 doesn't have glGetTexLevelParameteriv — use cached sizes */
         auto it = s_gles_texture_sizes.find(id);
         if (it != s_gles_texture_sizes.end()) {
-            if (w) *w = it->second.first;
-            if (h) *h = it->second.second;
+            if (w)
+                *w = it->second.first;
+            if (h)
+                *h = it->second.second;
         } else {
-            if (w) *w = 0;
-            if (h) *h = 0;
+            if (w)
+                *w = 0;
+            if (h)
+                *h = 0;
         }
 #endif
     }
@@ -481,8 +487,7 @@ extern "C" void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float
             /* Oversized: queue a direct blit onto canvas (flip now supported via updated blits) */
             SDLGameRendererGPU_QueueDeferredBlit(meta->texture, meta->w, meta->h, x, y, w, h, z, flip_x, flip_y);
         } else {
-            SDLGameRendererGPU_DrawOverlaySpriteEx(
-                meta->pixels, meta->w, meta->h, x, y, w, h, z, flip_x, flip_y);
+            SDLGameRendererGPU_DrawOverlaySpriteEx(meta->pixels, meta->w, meta->h, x, y, w, h, z, flip_x, flip_y);
         }
 
     } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
@@ -495,8 +500,8 @@ extern "C" void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float
     }
 }
 
-extern "C" void TextureUtil_DrawSubQuadEx(void* texture_id, float x, float y, float w, float h, 
-                                          float u0, float v0, float u1, float v1, float z) {
+extern "C" void TextureUtil_DrawSubQuadEx(void* texture_id, float x, float y, float w, float h, float u0, float v0,
+                                          float u1, float v1, float z) {
     if (!texture_id)
         return;
 
@@ -509,8 +514,7 @@ extern "C" void TextureUtil_DrawSubQuadEx(void* texture_id, float x, float y, fl
         if (meta->w > 512 || meta->h > 512) {
             SDLGameRendererGPU_QueueDeferredSubBlit(meta->texture, meta->w, meta->h, x, y, w, h, u0, v0, u1, v1, z);
         } else {
-            SDLGameRendererGPU_DrawOverlaySubSprite(
-                meta->pixels, meta->w, meta->h, x, y, w, h, u0, v0, u1, v1, z);
+            SDLGameRendererGPU_DrawOverlaySubSprite(meta->pixels, meta->w, meta->h, x, y, w, h, u0, v0, u1, v1, z);
         }
     } else if (SDLApp_GetRenderer() == RENDERER_SDL2D) {
         SDLGameRendererSDL_DrawOverlaySubSprite((SDL_Texture*)texture_id, x, y, w, h, u0, v0, u1, v1, z);

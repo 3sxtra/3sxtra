@@ -41,7 +41,6 @@ typedef struct {
 
 static Render2DQueue s_Render2DQueue;
 
-
 static void Renderer_2DQueueInit(void) {
     s_Render2DQueue.ix1st = -1;
     s_Render2DQueue.total = 0;

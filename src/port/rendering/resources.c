@@ -89,13 +89,13 @@ static void open_file_dialog_callback(void* userdata, const char* const* filelis
         flow_state = COPY_ERROR;
         return;
     }
-    
+
     char* dst_path = NULL;
     SDL_asprintf(&dst_path, "%s/SF33RD.AFS", internal_dir);
-    
+
     bool success = SDL_CopyFile(src_path, dst_path);
     SDL_free(dst_path);
-    
+
     flow_state = success ? COPY_SUCCESS : COPY_ERROR;
 }
 #endif
@@ -140,7 +140,8 @@ bool Resources_CheckIfPresent() {
         SDL_asprintf(&internal_path, "%s/SF33RD.AFS", internal);
         bool found = file_exists(internal_path);
         SDL_free(internal_path);
-        if (found) return true;
+        if (found)
+            return true;
     }
     return false;
 #else
@@ -168,15 +169,16 @@ bool Resources_RunResourceCopyingFlow() {
 #else
     switch (flow_state) {
     case INIT:
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
-                                 "Resources are missing",
+        SDL_ShowSimpleMessageBox(
+            SDL_MESSAGEBOX_INFORMATION,
+            "Resources are missing",
 #ifdef __ANDROID__
-                                 "3SX needs the SF33RD.AFS ROM to run. Please select your SF33RD.AFS file in the next dialog.",
+            "3SX needs the SF33RD.AFS ROM to run. Please select your SF33RD.AFS file in the next dialog.",
 #else
-                                 "3SX needs resources from a copy of \"Street Fighter III: 3rd Strike\" to run. Choose "
-                                 "a location with the game files in the next dialog",
+            "3SX needs resources from a copy of \"Street Fighter III: 3rd Strike\" to run. Choose "
+            "a location with the game files in the next dialog",
 #endif
-                                 SDLApp_GetWindow());
+            SDLApp_GetWindow());
         flow_state = DIALOG_OPENED;
 #ifdef __ANDROID__
         SDL_DialogFileFilter filter[1] = { { "AFS Files", "AFS;afs" } };

@@ -29,9 +29,15 @@ static inline void ControllerImage_Shutdown(void) {}
 /* ========================================================================= */
 #ifndef ENABLE_MODS
 static inline void StageConfig_Init(void) {}
-static inline void StageConfig_Load(int idx) { (void)idx; }
-static inline void StageConfig_Save(int idx) { (void)idx; }
-static inline void StageConfig_SetDefaultLayer(int idx) { (void)idx; }
+static inline void StageConfig_Load(int idx) {
+    (void)idx;
+}
+static inline void StageConfig_Save(int idx) {
+    (void)idx;
+}
+static inline void StageConfig_SetDefaultLayer(int idx) {
+    (void)idx;
+}
 static inline void modded_bgm_init(void) {}
 static inline void modded_bgm_shutdown(void) {}
 static inline void modded_stage_init(void) {}
@@ -51,21 +57,41 @@ static inline void SDLAppShaderConfig_Shutdown(void) {}
 /* ========================================================================= */
 #ifndef ENABLE_NETPLAY
 /* Core netplay */
-static inline void Netplay_SetPlayerNumber(int p) { (void)p; }
-static inline int  Netplay_GetPlayerNumber(void) { return 0; }
-static inline void Netplay_SetRemoteIP(const char* ip) { (void)ip; }
-static inline void Netplay_SetLocalPort(unsigned short p) { (void)p; }
-static inline void Netplay_SetRemotePort(unsigned short p) { (void)p; }
+static inline void Netplay_SetPlayerNumber(int p) {
+    (void)p;
+}
+static inline int Netplay_GetPlayerNumber(void) {
+    return 0;
+}
+static inline void Netplay_SetRemoteIP(const char* ip) {
+    (void)ip;
+}
+static inline void Netplay_SetLocalPort(unsigned short p) {
+    (void)p;
+}
+static inline void Netplay_SetRemotePort(unsigned short p) {
+    (void)p;
+}
 static inline void Netplay_EnterLobby(void) {}
 static inline void Netplay_Begin(void) {}
 static inline void Netplay_Run(void) {}
 static inline void Netplay_HandleMenuExit(void) {}
-static inline bool Netplay_IsEnabled(void) { return false; }
-static inline void Netplay_SetNegotiatedFT(int ft) { (void)ft; }
-static inline int  Netplay_GetNegotiatedFT(void) { return 0; }
+static inline bool Netplay_IsEnabled(void) {
+    return false;
+}
+static inline void Netplay_SetNegotiatedFT(int ft) {
+    (void)ft;
+}
+static inline int Netplay_GetNegotiatedFT(void) {
+    return 0;
+}
 /* game_state.h netplay functions (called from engine code) */
-static inline int  Netplay_GetPlayerHandle(void) { return 0; }
-static inline int  Netplay_GetBattleStartFrame(void) { return 0; }
+static inline int Netplay_GetPlayerHandle(void) {
+    return 0;
+}
+static inline int Netplay_GetBattleStartFrame(void) {
+    return 0;
+}
 /* SDLNetplayUI_* stubs are in self-guarding sdl_netplay_ui.h */
 #endif
 

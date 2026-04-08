@@ -312,8 +312,8 @@ static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index, co
     int flip_x = (flip_flags & 0x8000) ? 1 : 0;
 
     if (RENDERER_HAS_PLUGIN()) {
-        if (g_renderer_plugin->TryRenderSprite(group_index, wk->cg_number,
-                draw_x, draw_y, tl_out.z, flip_x, 0xFFFFFFFF, draw_w, draw_h)) {
+        if (g_renderer_plugin->TryRenderSprite(
+                group_index, wk->cg_number, draw_x, draw_y, tl_out.z, flip_x, 0xFFFFFFFF, draw_w, draw_h)) {
             appRenewTempPriority(wk->position_z);
             return true;
         }
@@ -356,8 +356,8 @@ static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index
     int flip_x = (flip_flags & 0x8000) ? 1 : 0;
 
     if (RENDERER_HAS_PLUGIN()) {
-        if (g_renderer_plugin->TryRenderSprite(group_index, wk->cg_number,
-                draw_x, draw_y, tl_out.z, flip_x, 0xFFFFFFFF, draw_w, draw_h)) {
+        if (g_renderer_plugin->TryRenderSprite(
+                group_index, wk->cg_number, draw_x, draw_y, tl_out.z, flip_x, 0xFFFFFFFF, draw_w, draw_h)) {
             appRenewTempPriority(wk->position_z);
             return true;
         }

@@ -265,8 +265,15 @@ void stun_mark_write(u8 Pl_Num, s16 Len) {
 
     ppgSetupCurrentDataList(&ppgScrList);
     tlen = Len - 7;
-    scfont_sqput(
-        smark_pos_tbl[tlen][Pl_Num], 3, 10, 0, (smark_kind_tbl[tlen] * 4) + 1, 2, smark_kind_tbl[tlen] + 4, 1, TopHUDPriority);
+    scfont_sqput(smark_pos_tbl[tlen][Pl_Num],
+                 3,
+                 10,
+                 0,
+                 (smark_kind_tbl[tlen] * 4) + 1,
+                 2,
+                 smark_kind_tbl[tlen] + 4,
+                 1,
+                 TopHUDPriority);
 }
 
 /** @brief Draw the "MAX" indicator when super-art gauge is full. */

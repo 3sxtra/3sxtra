@@ -802,7 +802,7 @@ void zoom_ud_check() {
 
     work2 = zoom_request_flag & ZOOM_LEVEL_MASK;
     bg_w.frame_deff = ZOOM_FRAME_DEFAULT - zoom_request_level;
-    work = (~(zoom_req_flag_old) & (zoom_request_flag) & ZOOM_LEVEL_MASK);
+    work = (~(zoom_req_flag_old) & (zoom_request_flag)&ZOOM_LEVEL_MASK);
 
     if (work && !bg_w.frame_flag) {
         bg_w.frame_flag = 1;

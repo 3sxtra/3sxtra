@@ -45,7 +45,9 @@ struct FxSetting {
 static Rml::String get_shader_system(void) {
     return SDLAppShader_IsLibretroMode() ? "LIBRETRO" : "INTERNAL";
 }
-static void cycle_shader_system(void) { SDLAppShader_ToggleMode(); }
+static void cycle_shader_system(void) {
+    SDLAppShader_ToggleMode();
+}
 
 // --- Scale Mode ---
 static Rml::String get_scale_mode(void) {
@@ -53,14 +55,16 @@ static Rml::String get_scale_mode(void) {
 }
 static void cycle_scale_left(void) {
     int m = (int)scale_mode - 1;
-    if (m < 0) m = SCALEMODE_COUNT - 1;
+    if (m < 0)
+        m = SCALEMODE_COUNT - 1;
     scale_mode = (ScaleMode)m;
     Config_SetString(CFG_KEY_SCALEMODE, scale_mode_to_config_string(scale_mode));
     Config_Save();
 }
 static void cycle_scale_right(void) {
     int m = (int)scale_mode + 1;
-    if (m >= SCALEMODE_COUNT) m = 0;
+    if (m >= SCALEMODE_COUNT)
+        m = 0;
     scale_mode = (ScaleMode)m;
     Config_SetString(CFG_KEY_SCALEMODE, scale_mode_to_config_string(scale_mode));
     Config_Save();
@@ -74,24 +78,32 @@ static Rml::String get_preset_name(void) {
 }
 static void cycle_preset_left(void) {
     int count = SDLAppShader_GetAvailableCount();
-    if (count <= 0) return;
+    if (count <= 0)
+        return;
     int idx = SDLAppShader_GetCurrentIndex() - 1;
-    if (idx < 0) idx = count - 1;
+    if (idx < 0)
+        idx = count - 1;
     SDLAppShader_LoadPreset(idx);
 }
 static void cycle_preset_right(void) {
     int count = SDLAppShader_GetAvailableCount();
-    if (count <= 0) return;
+    if (count <= 0)
+        return;
     int idx = SDLAppShader_GetCurrentIndex() + 1;
-    if (idx >= count) idx = 0;
+    if (idx >= count)
+        idx = 0;
     SDLAppShader_LoadPreset(idx);
 }
 
 // --- Toggle helpers ---
-static Rml::String bool_on_off(bool v)   { return v ? "ON" : "OFF"; }
+static Rml::String bool_on_off(bool v) {
+    return v ? "ON" : "OFF";
+}
 
 // --- HD Backgrounds ---
-static Rml::String get_hd(void)          { return bool_on_off(ModdedStage_IsEnabled()); }
+static Rml::String get_hd(void) {
+    return bool_on_off(ModdedStage_IsEnabled());
+}
 static void toggle_hd(void) {
     bool on = !ModdedStage_IsEnabled();
     ModdedStage_SetEnabled(on);
@@ -100,11 +112,17 @@ static void toggle_hd(void) {
 }
 
 // --- Shader Bypass ---
-static Rml::String get_shader_bypass(void) { return bool_on_off(mods_menu_shader_bypass_enabled); }
-static void toggle_shader_bypass(void) { mods_menu_shader_bypass_enabled = !mods_menu_shader_bypass_enabled; }
+static Rml::String get_shader_bypass(void) {
+    return bool_on_off(mods_menu_shader_bypass_enabled);
+}
+static void toggle_shader_bypass(void) {
+    mods_menu_shader_bypass_enabled = !mods_menu_shader_bypass_enabled;
+}
 
 // --- Bezels ---
-static Rml::String get_bezels(void)      { return bool_on_off(BezelSystem_IsVisible()); }
+static Rml::String get_bezels(void) {
+    return bool_on_off(BezelSystem_IsVisible());
+}
 static void toggle_bezels(void) {
     bool on = !BezelSystem_IsVisible();
     BezelSystem_SetVisible(on);
@@ -113,11 +131,17 @@ static void toggle_bezels(void) {
 }
 
 // --- VSync ---
-static Rml::String get_vsync(void)       { return bool_on_off(SDLApp_IsVSyncEnabled()); }
-static void toggle_vsync(void)           { SDLApp_SetVSync(!SDLApp_IsVSyncEnabled()); }
+static Rml::String get_vsync(void) {
+    return bool_on_off(SDLApp_IsVSyncEnabled());
+}
+static void toggle_vsync(void) {
+    SDLApp_SetVSync(!SDLApp_IsVSyncEnabled());
+}
 
 // --- Modded BGM ---
-static Rml::String get_modded_bgm(void) { return bool_on_off(Config_GetBool(CFG_KEY_MODDED_BGM_ENABLED)); }
+static Rml::String get_modded_bgm(void) {
+    return bool_on_off(Config_GetBool(CFG_KEY_MODDED_BGM_ENABLED));
+}
 static void toggle_modded_bgm(void) {
     bool on = !Config_GetBool(CFG_KEY_MODDED_BGM_ENABLED);
     Config_SetBool(CFG_KEY_MODDED_BGM_ENABLED, on);
@@ -125,7 +149,9 @@ static void toggle_modded_bgm(void) {
 }
 
 // --- Modded Voice ---
-static Rml::String get_modded_voice(void) { return bool_on_off(Config_GetBool(CFG_KEY_MODDED_VOICE_ENABLED)); }
+static Rml::String get_modded_voice(void) {
+    return bool_on_off(Config_GetBool(CFG_KEY_MODDED_VOICE_ENABLED));
+}
 static void toggle_modded_voice(void) {
     bool on = !Config_GetBool(CFG_KEY_MODDED_VOICE_ENABLED);
     Config_SetBool(CFG_KEY_MODDED_VOICE_ENABLED, on);
@@ -133,11 +159,17 @@ static void toggle_modded_voice(void) {
 }
 
 // --- Fast Pre-Game ---
-static Rml::String get_fast_pregame(void) { return bool_on_off(mods_menu_fast_pre_game); }
-static void toggle_fast_pregame(void) { mods_menu_fast_pre_game = !mods_menu_fast_pre_game; }
+static Rml::String get_fast_pregame(void) {
+    return bool_on_off(mods_menu_fast_pre_game);
+}
+static void toggle_fast_pregame(void) {
+    mods_menu_fast_pre_game = !mods_menu_fast_pre_game;
+}
 
 // --- Debug HUD ---
-static Rml::String get_debug_hud(void)   { return bool_on_off(SDLAppDebugHud_IsVisible()); }
+static Rml::String get_debug_hud(void) {
+    return bool_on_off(SDLAppDebugHud_IsVisible());
+}
 static void toggle_debug_hud(void) {
     SDLAppDebugHud_Toggle();
 }
@@ -148,14 +180,18 @@ extern "C" void rmlui_fx_option_page_right(void);
 static const int PAGE_COUNT = 2; // Forward declaration constant value
 
 // --- Widescreen Stretch ---
-static Rml::String get_scale_stretch(void) { return bool_on_off(scale_stretch_enabled); }
-static void cycle_scale_stretch(void) { 
+static Rml::String get_scale_stretch(void) {
+    return bool_on_off(scale_stretch_enabled);
+}
+static void cycle_scale_stretch(void) {
     toggle_scale_stretch();
 }
 
 // --- Fullscreen Type ---
-static Rml::String get_fullscreen_type(void) { return Config_GetBool(CFG_KEY_FULLSCREEN_EXCLUSIVE) ? "Exclusive" : "Borderless"; }
-static void toggle_fullscreen_type(void) { 
+static Rml::String get_fullscreen_type(void) {
+    return Config_GetBool(CFG_KEY_FULLSCREEN_EXCLUSIVE) ? "Exclusive" : "Borderless";
+}
+static void toggle_fullscreen_type(void) {
     bool exclusive = !Config_GetBool(CFG_KEY_FULLSCREEN_EXCLUSIVE);
     SDLApp_SetFullscreenExclusive(exclusive);
     Config_Save();
@@ -178,24 +214,24 @@ static Rml::String get_page_display(void) {
 // Page 1: Audio & Mods (5 rows)
 
 static const FxSetting s_page0[] = {
-    { "PAGE",               get_page_display,     rmlui_fx_option_page_left, rmlui_fx_option_page_right },
-    { "FULLSCREEN TYPE",    get_fullscreen_type,  toggle_fullscreen_type,    toggle_fullscreen_type },
-    { "WIDESCREEN STRETCH", get_scale_stretch,    cycle_scale_stretch,       cycle_scale_stretch  },
-    { "SHADER SYSTEM",      get_shader_system,    cycle_shader_system,       cycle_shader_system  },
-    { "SCALE MODE",         get_scale_mode,       cycle_scale_left,          cycle_scale_right    },
-    { "SHADER PRESET",      get_preset_name,      cycle_preset_left,         cycle_preset_right   },
-    { "HD BACKGROUNDS",     get_hd,               toggle_hd,                 toggle_hd            },
-    { "SHADER BYPASS",      get_shader_bypass,    toggle_shader_bypass,      toggle_shader_bypass },
+    { "PAGE", get_page_display, rmlui_fx_option_page_left, rmlui_fx_option_page_right },
+    { "FULLSCREEN TYPE", get_fullscreen_type, toggle_fullscreen_type, toggle_fullscreen_type },
+    { "WIDESCREEN STRETCH", get_scale_stretch, cycle_scale_stretch, cycle_scale_stretch },
+    { "SHADER SYSTEM", get_shader_system, cycle_shader_system, cycle_shader_system },
+    { "SCALE MODE", get_scale_mode, cycle_scale_left, cycle_scale_right },
+    { "SHADER PRESET", get_preset_name, cycle_preset_left, cycle_preset_right },
+    { "HD BACKGROUNDS", get_hd, toggle_hd, toggle_hd },
+    { "SHADER BYPASS", get_shader_bypass, toggle_shader_bypass, toggle_shader_bypass },
 };
 
 static const FxSetting s_page1[] = {
-    { "PAGE",               get_page_display,     rmlui_fx_option_page_left, rmlui_fx_option_page_right },
-    { "BEZELS",             get_bezels,           toggle_bezels,             toggle_bezels        },
-    { "VSYNC",              get_vsync,            toggle_vsync,              toggle_vsync         },
-    { "MODDED BGM",      get_modded_bgm,     toggle_modded_bgm,    toggle_modded_bgm    },
-    { "MODDED VOICE",    get_modded_voice,   toggle_modded_voice,  toggle_modded_voice  },
-    { "FAST PRE-GAME",   get_fast_pregame,   toggle_fast_pregame,  toggle_fast_pregame  },
-    { "DEBUG HUD",       get_debug_hud,      toggle_debug_hud,     toggle_debug_hud     },
+    { "PAGE", get_page_display, rmlui_fx_option_page_left, rmlui_fx_option_page_right },
+    { "BEZELS", get_bezels, toggle_bezels, toggle_bezels },
+    { "VSYNC", get_vsync, toggle_vsync, toggle_vsync },
+    { "MODDED BGM", get_modded_bgm, toggle_modded_bgm, toggle_modded_bgm },
+    { "MODDED VOICE", get_modded_voice, toggle_modded_voice, toggle_modded_voice },
+    { "FAST PRE-GAME", get_fast_pregame, toggle_fast_pregame, toggle_fast_pregame },
+    { "DEBUG HUD", get_debug_hud, toggle_debug_hud, toggle_debug_hud },
 };
 
 struct Page {
@@ -214,10 +250,13 @@ static Rml::String s_cached_values[10]; // max rows per page
 static int s_cached_cursor = -1;
 static int s_cached_page = -1;
 
-static const Page& current_page(void) { return s_pages[s_page]; }
+static const Page& current_page(void) {
+    return s_pages[s_page];
+}
 
 static void dirty_all_rows(void) {
-    if (!s_model_handle) return;
+    if (!s_model_handle)
+        return;
     s_model_handle.DirtyVariable("fx_cursor");
     s_model_handle.DirtyVariable("fx_page");
     s_model_handle.DirtyVariable("fx_row_count");
@@ -231,21 +270,24 @@ static void dirty_all_rows(void) {
     // Reset cache
     s_cached_cursor = -1;
     s_cached_page = -1;
-    for (auto& v : s_cached_values) v.clear();
+    for (auto& v : s_cached_values)
+        v.clear();
 }
 
 static void do_init(void) {
     Rml::Context* ctx = static_cast<Rml::Context*>(rmlui_wrapper_get_game_context());
-    if (!ctx) return;
+    if (!ctx)
+        return;
 
     Rml::DataModelConstructor ctor = ctx->CreateDataModel("fx_option");
-    if (!ctor) return;
+    if (!ctor)
+        return;
 
     // Cursor and page
-    ctor.BindFunc("fx_cursor",     [](Rml::Variant& v) { v = s_cursor; });
-    ctor.BindFunc("fx_page",       [](Rml::Variant& v) { v = s_page; });
+    ctor.BindFunc("fx_cursor", [](Rml::Variant& v) { v = s_cursor; });
+    ctor.BindFunc("fx_page", [](Rml::Variant& v) { v = s_page; });
     ctor.BindFunc("fx_page_count", [](Rml::Variant& v) { v = PAGE_COUNT; });
-    ctor.BindFunc("fx_row_count",  [](Rml::Variant& v) { v = current_page().count; });
+    ctor.BindFunc("fx_row_count", [](Rml::Variant& v) { v = current_page().count; });
 
     // Per-row label and value (up to 10)
     for (int i = 0; i < 10; i++) {
@@ -276,30 +318,26 @@ static void do_init(void) {
     }
 
     // Event callbacks
-    ctor.BindEventCallback("change_value_left",
-        [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
-            const Page& p = current_page();
-            if (s_cursor < p.count && p.settings[s_cursor].cycle_left)
-                p.settings[s_cursor].cycle_left();
-        });
-    ctor.BindEventCallback("change_value_right",
-        [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
-            const Page& p = current_page();
-            if (s_cursor < p.count && p.settings[s_cursor].cycle_right)
-                p.settings[s_cursor].cycle_right();
-        });
-    ctor.BindEventCallback("change_page_left",
-        [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
-            s_page = (s_page - 1 + PAGE_COUNT) % PAGE_COUNT;
-            s_cursor = 0;
-            dirty_all_rows();
-        });
-    ctor.BindEventCallback("change_page_right",
-        [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
-            s_page = (s_page + 1) % PAGE_COUNT;
-            s_cursor = 0;
-            dirty_all_rows();
-        });
+    ctor.BindEventCallback("change_value_left", [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
+        const Page& p = current_page();
+        if (s_cursor < p.count && p.settings[s_cursor].cycle_left)
+            p.settings[s_cursor].cycle_left();
+    });
+    ctor.BindEventCallback("change_value_right", [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
+        const Page& p = current_page();
+        if (s_cursor < p.count && p.settings[s_cursor].cycle_right)
+            p.settings[s_cursor].cycle_right();
+    });
+    ctor.BindEventCallback("change_page_left", [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
+        s_page = (s_page - 1 + PAGE_COUNT) % PAGE_COUNT;
+        s_cursor = 0;
+        dirty_all_rows();
+    });
+    ctor.BindEventCallback("change_page_right", [](Rml::DataModelHandle, Rml::Event&, const Rml::VariantList&) {
+        s_page = (s_page + 1) % PAGE_COUNT;
+        s_cursor = 0;
+        dirty_all_rows();
+    });
 
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
@@ -307,11 +345,15 @@ static void do_init(void) {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi FxOption] Data model registered");
 }
 
-extern "C" void rmlui_fx_option_init(void) { do_init(); }
+extern "C" void rmlui_fx_option_init(void) {
+    do_init();
+}
 // ─── Per-frame update ────────────────────────────────────────────
 extern "C" void rmlui_fx_option_update(void) {
-    if (!s_model_registered || !s_model_handle) return;
-    if (!rmlui_wrapper_is_game_document_visible("fx_option")) return;
+    if (!s_model_registered || !s_model_handle)
+        return;
+    if (!rmlui_wrapper_is_game_document_visible("fx_option"))
+        return;
 
     // Dirty-check cursor
     if (s_cursor != s_cached_cursor) {
@@ -382,7 +424,8 @@ extern "C" void rmlui_fx_option_page_right(void) {
 
 // ─── Show / Hide ─────────────────────────────────────────────────
 extern "C" void rmlui_fx_option_show(void) {
-    if (!s_model_registered) do_init();
+    if (!s_model_registered)
+        do_init();
     s_cursor = 0;
     s_page = 0;
     rmlui_wrapper_show_game_document("fx_option");

@@ -35,8 +35,8 @@ static void ranked_matchmaking_enter(struct _TASK* task_ptr) {
 
     Netplay_EnterLobby();
 
-    Menu_Suicide[0] = 1; /* kill gateway items (master_player=0) */
-    Menu_Suicide[1] = 0; /* enable our items (master_player=1) */
+    Menu_Suicide[0] = 1;        /* kill gateway items (master_player=0) */
+    Menu_Suicide[1] = 0;        /* enable our items (master_player=1) */
     Message_Data->kind_req = 4; /* NET_BG_MODE_BLUE */
 
     effect_work_init();
@@ -58,9 +58,9 @@ static void ranked_matchmaking_enter(struct _TASK* task_ptr) {
 
 static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
     (void)task_ptr;
-    
+
     rmlui_ranked_matchmaking_update();
-    
+
     if (rmlui_ranked_matchmaking_wants_leave()) {
         rmlui_ranked_matchmaking_consume_leave();
         MenuScreen_Goto(MENU_SCREEN_NETWORK_LOBBY);
@@ -70,7 +70,8 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
     /* ─── Popup Handling ─── */
     if (SDLNetplayUI_HasPendingInvite()) {
         u16 trigger = 0;
-        for (int i = 0; i < 2; i++) trigger |= (~plsw_01[i] & plsw_00[i]);
+        for (int i = 0; i < 2; i++)
+            trigger |= (~plsw_01[i] & plsw_00[i]);
 
         if (trigger & 0x0100) { /* LP / SOUTH - Accept */
             Netplay_SetNegotiatedFT(SDLNetplayUI_GetPendingInviteFT());
@@ -83,7 +84,8 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
         return; /* Block menu navigation when popup is active */
     } else if (SDLNetplayUI_HasOutgoingChallenge()) {
         u16 trigger = 0;
-        for (int i = 0; i < 2; i++) trigger |= (~plsw_01[i] & plsw_00[i]);
+        for (int i = 0; i < 2; i++)
+            trigger |= (~plsw_01[i] & plsw_00[i]);
 
         if (trigger & (0x0100 | 0x0200)) { /* LP or MK - Cancel */
             SDLNetplayUI_CancelOutgoingChallenge();
@@ -99,65 +101,74 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
 
     if (res & 0x0100) { /* LP / Select */
         switch (cursor) {
-            case 0: /* AUTO-ACCEPT */
-                Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT));
-                Config_Save();
-                SE_dir_cursor_move();
-                break;
-            case 1: /* AUTO-SEARCH */
-            {
-                bool searching = !SDLNetplayUI_IsSearching();
-                Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, searching);
-                Config_Save();
-                if (searching) SDLNetplayUI_StartSearch();
-                else SDLNetplayUI_StopSearch();
-                SE_dir_cursor_move();
-                break;
-            }
-            case 2: /* REGION LOCK */
-                Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK));
-                Config_Save();
-                SE_dir_cursor_move();
-                break;
-            case 3: /* MAX PING */
-            {
-                int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
-                if (cur >= 200) cur = 0;
-                else if (cur <= 0) cur = 50;
-                else cur += 50;
-                Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
-                Config_Save();
-                SE_selected();
-                break;
-            }
-            case 4: /* BLOCK WIFI */
-                Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI));
-                Config_Save();
-                SE_dir_cursor_move();
-                break;
-            case 5: /* MATCH FT */
-            {
-                static const int fts[] = { 1, 2, 3, 5, 10 };
-                int val = Config_GetInt(CFG_KEY_NETPLAY_FT);
-                int idx = 1;
-                for (int i = 0; i < 5; i++) if (fts[i] == val) { idx = i; break; }
-                idx = (idx + 1) % 5;
-                Config_SetInt(CFG_KEY_NETPLAY_FT, fts[idx]);
-                Config_Save();
-                SE_selected();
-                break;
-            }
-            case 6: /* CONNECT */
-                if (SDLNetplayUI_IsSearching() && SDLNetplayUI_GetOnlinePlayerCount() > 0) {
-                    Netplay_SetNegotiatedFT(Config_GetInt(CFG_KEY_NETPLAY_FT));
-                    SDLNetplayUI_ConnectToPlayer(g_net_peer_idx);
-                    SE_selected();
+        case 0: /* AUTO-ACCEPT */
+            Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT));
+            Config_Save();
+            SE_dir_cursor_move();
+            break;
+        case 1: /* AUTO-SEARCH */
+        {
+            bool searching = !SDLNetplayUI_IsSearching();
+            Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, searching);
+            Config_Save();
+            if (searching)
+                SDLNetplayUI_StartSearch();
+            else
+                SDLNetplayUI_StopSearch();
+            SE_dir_cursor_move();
+            break;
+        }
+        case 2: /* REGION LOCK */
+            Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK));
+            Config_Save();
+            SE_dir_cursor_move();
+            break;
+        case 3: /* MAX PING */
+        {
+            int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
+            if (cur >= 200)
+                cur = 0;
+            else if (cur <= 0)
+                cur = 50;
+            else
+                cur += 50;
+            Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
+            Config_Save();
+            SE_selected();
+            break;
+        }
+        case 4: /* BLOCK WIFI */
+            Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI));
+            Config_Save();
+            SE_dir_cursor_move();
+            break;
+        case 5: /* MATCH FT */
+        {
+            static const int fts[] = { 1, 2, 3, 5, 10 };
+            int val = Config_GetInt(CFG_KEY_NETPLAY_FT);
+            int idx = 1;
+            for (int i = 0; i < 5; i++)
+                if (fts[i] == val) {
+                    idx = i;
+                    break;
                 }
-                break;
-            case 7: /* EXIT */
+            idx = (idx + 1) % 5;
+            Config_SetInt(CFG_KEY_NETPLAY_FT, fts[idx]);
+            Config_Save();
+            SE_selected();
+            break;
+        }
+        case 6: /* CONNECT */
+            if (SDLNetplayUI_IsSearching() && SDLNetplayUI_GetOnlinePlayerCount() > 0) {
+                Netplay_SetNegotiatedFT(Config_GetInt(CFG_KEY_NETPLAY_FT));
+                SDLNetplayUI_ConnectToPlayer(g_net_peer_idx);
                 SE_selected();
-                MenuScreen_Goto(MENU_SCREEN_NETWORK_LOBBY);
-                break;
+            }
+            break;
+        case 7: /* EXIT */
+            SE_selected();
+            MenuScreen_Goto(MENU_SCREEN_NETWORK_LOBBY);
+            break;
         }
     }
 
@@ -165,69 +176,81 @@ static void ranked_matchmaking_tick(struct _TASK* task_ptr) {
     if (sw & 0x000C) { /* Left or Right */
         int dir = (sw & 0x0008) ? 1 : -1;
         switch (cursor) {
-            case 0: /* AUTO-ACCEPT */
-                Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT));
-                Config_Save();
-                SE_dir_cursor_move();
-                break;
-            case 1: /* AUTO-SEARCH */
-            {
-                bool searching = !SDLNetplayUI_IsSearching();
-                Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, searching);
-                Config_Save();
-                if (searching) SDLNetplayUI_StartSearch();
-                else SDLNetplayUI_StopSearch();
-                SE_dir_cursor_move();
-                break;
+        case 0: /* AUTO-ACCEPT */
+            Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT));
+            Config_Save();
+            SE_dir_cursor_move();
+            break;
+        case 1: /* AUTO-SEARCH */
+        {
+            bool searching = !SDLNetplayUI_IsSearching();
+            Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, searching);
+            Config_Save();
+            if (searching)
+                SDLNetplayUI_StartSearch();
+            else
+                SDLNetplayUI_StopSearch();
+            SE_dir_cursor_move();
+            break;
+        }
+        case 2: /* REGION LOCK */
+            Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK));
+            Config_Save();
+            SE_dir_cursor_move();
+            break;
+        case 3: /* MAX PING */
+        {
+            int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
+            if (dir == -1) { /* left */
+                if (cur <= 0)
+                    cur = 200;
+                else if (cur <= 50)
+                    cur = 0;
+                else
+                    cur -= 50;
+            } else { /* right */
+                if (cur >= 200)
+                    cur = 0;
+                else if (cur <= 0)
+                    cur = 50;
+                else
+                    cur += 50;
             }
-            case 2: /* REGION LOCK */
-                Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK));
-                Config_Save();
-                SE_dir_cursor_move();
-                break;
-            case 3: /* MAX PING */
-            {
-                int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
-                if (dir == -1) { /* left */
-                    if (cur <= 0) cur = 200;
-                    else if (cur <= 50) cur = 0;
-                    else cur -= 50;
-                } else { /* right */
-                    if (cur >= 200) cur = 0;
-                    else if (cur <= 0) cur = 50;
-                    else cur += 50;
+            Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
+            Config_Save();
+            SE_dir_cursor_move();
+            break;
+        }
+        case 4: /* BLOCK WIFI */
+            Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI));
+            Config_Save();
+            SE_dir_cursor_move();
+            break;
+        case 5: /* MATCH FT */
+        {
+            static const int fts[] = { 1, 2, 3, 5, 10 };
+            int val = Config_GetInt(CFG_KEY_NETPLAY_FT);
+            int idx = 0;
+            for (int i = 0; i < 5; i++)
+                if (fts[i] == val) {
+                    idx = i;
+                    break;
                 }
-                Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
-                Config_Save();
+            idx = (idx + dir + 5) % 5;
+            Config_SetInt(CFG_KEY_NETPLAY_FT, fts[idx]);
+            Config_Save();
+            SE_dir_cursor_move();
+            break;
+        }
+        case 6: /* CONNECT (cycle peer) */
+        {
+            int count = SDLNetplayUI_GetOnlinePlayerCount();
+            if (count > 0) {
+                g_net_peer_idx = (s16)((g_net_peer_idx + dir + count) % count);
                 SE_dir_cursor_move();
-                break;
             }
-            case 4: /* BLOCK WIFI */
-                Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI));
-                Config_Save();
-                SE_dir_cursor_move();
-                break;
-            case 5: /* MATCH FT */
-            {
-                static const int fts[] = { 1, 2, 3, 5, 10 };
-                int val = Config_GetInt(CFG_KEY_NETPLAY_FT);
-                int idx = 0;
-                for (int i=0; i<5; i++) if (fts[i] == val) { idx = i; break; }
-                idx = (idx + dir + 5) % 5;
-                Config_SetInt(CFG_KEY_NETPLAY_FT, fts[idx]);
-                Config_Save();
-                SE_dir_cursor_move();
-                break;
-            }
-            case 6: /* CONNECT (cycle peer) */
-            {
-                int count = SDLNetplayUI_GetOnlinePlayerCount();
-                if (count > 0) {
-                    g_net_peer_idx = (s16)((g_net_peer_idx + dir + count) % count);
-                    SE_dir_cursor_move();
-                }
-                break;
-            }
+            break;
+        }
         }
     }
 
@@ -241,7 +264,7 @@ static void ranked_matchmaking_exit(struct _TASK* task_ptr) {
     (void)task_ptr;
 }
 
-static void ranked_matchmaking_rmlui_show(void) { }
+static void ranked_matchmaking_rmlui_show(void) {}
 static void ranked_matchmaking_rmlui_hide(void) {
     rmlui_ranked_matchmaking_hide();
 }
@@ -273,4 +296,3 @@ void ms_ranked_matchmaking_register(void) {
         .effect_slot = 0,
     };
 }
-

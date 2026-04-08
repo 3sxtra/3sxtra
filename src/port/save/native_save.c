@@ -604,7 +604,8 @@ int NativeSave_GetReplayWinner(const char* filename) {
     make_replay_path(path, sizeof(path), filename, ".bin");
 
     FILE* f = fopen(path, "rb");
-    if (!f) return -1;
+    if (!f)
+        return -1;
 
     NativeReplayHeader hdr;
     if (fread(&hdr, 1, 16, f) != 16) {
@@ -669,8 +670,10 @@ int NativeSave_LoadReplay(const char* filename) {
     }
 
     if (hdr.data_size != sizeof(_REPLAY_W)) {
-        SDL_Log(
-            "[NativeSave] Replay %s: size mismatch (file=%u, expected=%zu)", filename, hdr.data_size, sizeof(_REPLAY_W));
+        SDL_Log("[NativeSave] Replay %s: size mismatch (file=%u, expected=%zu)",
+                filename,
+                hdr.data_size,
+                sizeof(_REPLAY_W));
         /* Still try to load — forward compat */
     }
 
@@ -761,7 +764,7 @@ typedef struct {
     int is_netplay;
 } EnumReplayCtx;
 
-static SDL_EnumerationResult enum_replay_cb(void *userdata, const char *dirname, const char *fname) {
+static SDL_EnumerationResult enum_replay_cb(void* userdata, const char* dirname, const char* fname) {
     EnumReplayCtx* ctx = (EnumReplayCtx*)userdata;
     const char* ext = strrchr(fname, '.');
     if (ext && strcmp(ext, ".meta") == 0) {
@@ -778,7 +781,8 @@ static SDL_EnumerationResult enum_replay_cb(void *userdata, const char *dirname,
         if (is_netplay == ctx->is_netplay || ctx->is_netplay == -1) {
             if (ctx->current_count < ctx->max_count) {
                 size_t len = ext - fname;
-                if (len >= 128) len = 127;
+                if (len >= 128)
+                    len = 127;
                 memcpy(ctx->out_filenames[ctx->current_count], fname, len);
                 ctx->out_filenames[ctx->current_count][len] = '\0';
                 ctx->current_count++;
@@ -833,11 +837,19 @@ int NativeSave_AutoSaveReplay(int is_netplay) {
     t = localtime(&rawtime);
 
     char filename[128];
-    snprintf(filename, sizeof(filename), "%04d-%02d-%02d_%02d-%02d-%02d_%s_%s-vs-%s_W-%s",
-             t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-             t->tm_hour, t->tm_min, t->tm_sec,
+    snprintf(filename,
+             sizeof(filename),
+             "%04d-%02d-%02d_%02d-%02d-%02d_%s_%s-vs-%s_W-%s",
+             t->tm_year + 1900,
+             t->tm_mon + 1,
+             t->tm_mday,
+             t->tm_hour,
+             t->tm_min,
+             t->tm_sec,
              is_netplay ? "net" : "loc",
-             p1_str, p2_str, result_str);
+             p1_str,
+             p2_str,
+             result_str);
 
     SDL_Log("[NativeSave] Auto-saving replay to %s", filename);
 

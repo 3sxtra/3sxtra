@@ -41,7 +41,7 @@
 #include "port/sdl/input/sdl_pad.h" /* SDLPad_GetButtonState — shoulder buttons */
 
 /* RmlUi Phase 3 */
-#include "port/sdl/rmlui/rmlui_fx_option.h"     /* rmlui_fx_option_show/hide/cursor */
+#include "port/sdl/rmlui/rmlui_fx_option.h"      /* rmlui_fx_option_show/hide/cursor */
 #include "port/sdl/rmlui/rmlui_option_menu.h"    /* rmlui_option_menu_show/hide */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h" /* use_rmlui, rmlui_menu_option */
 #include "port/sdl/rmlui/rmlui_wrapper.h"        /* rmlui_wrapper_hide_all_game_documents */
@@ -265,11 +265,11 @@ static void option_select_tick(struct _TASK* task_ptr) {
     if (Menu_Cursor_Y[0] == ix + 5) {
         if (use_rmlui && rmlui_menu_option)
             rmlui_option_menu_hide();
-        
+
         /* Save the cursor position so we return exactly here */
         Cursor_Y_Pos[0][1] = Menu_Cursor_Y[0];
         Cursor_Y_Pos[1][1] = Menu_Cursor_Y[1];
-        
+
         MenuScreen_Goto(MENU_SCREEN_FX_OPTION);
         return;
     }

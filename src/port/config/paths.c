@@ -64,15 +64,18 @@ const char* Paths_GetPrefPath() {
 }
 
 static void Paths_Normalize(char* path) {
-    if (!path) return;
+    if (!path)
+        return;
     for (int i = 0; path[i]; i++) {
-        if (path[i] == '\\') path[i] = '/';
+        if (path[i] == '\\')
+            path[i] = '/';
     }
     /* Resolve /../ sequences (needed for Android asset paths) */
     char* p;
     while ((p = SDL_strstr(path, "/../")) != NULL) {
         char* prev = p - 1;
-        while (prev >= path && *prev != '/') prev--;
+        while (prev >= path && *prev != '/')
+            prev--;
         if (prev >= path) {
             SDL_memmove(prev, p + 3, SDL_strlen(p + 3) + 1);
         } else {
@@ -82,7 +85,7 @@ static void Paths_Normalize(char* path) {
 }
 /** @brief Get the application base directory path (lazy-initialized, cached). */
 const char* Paths_GetBasePath() {
-    static char s_base_path[1024] = {0};
+    static char s_base_path[1024] = { 0 };
     if (s_base_path[0] == '\0') {
 #ifdef _WIN32
         wchar_t w_path[MAX_PATH];
@@ -97,7 +100,8 @@ const char* Paths_GetBasePath() {
 
                 // Strip filename
                 char* last_slash = strrchr(current, '/');
-                if (last_slash) *last_slash = '\0';
+                if (last_slash)
+                    *last_slash = '\0';
 
                 SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Paths] Searching for root from (Win32): %s", current);
 
@@ -115,7 +119,8 @@ const char* Paths_GetBasePath() {
                     }
 
                     char* up = strrchr(current, '/');
-                    if (!up || (up > current && *(up - 1) == ':')) break;
+                    if (!up || (up > current && *(up - 1) == ':'))
+                        break;
                     *up = '\0';
                 }
 
@@ -125,7 +130,8 @@ const char* Paths_GetBasePath() {
                     // Fallback to exe directory
                     SDL_strlcpy(s_base_path, utf8_path, sizeof(s_base_path));
                     last_slash = strrchr(s_base_path, '/');
-                    if (last_slash) *(last_slash + 1) = '\0';
+                    if (last_slash)
+                        *(last_slash + 1) = '\0';
                 }
             }
         }
@@ -151,7 +157,6 @@ const char* Paths_GetBasePath() {
     return s_base_path;
 }
 
-
 /**
  * @brief Resolve an asset path by searching multiple project-relative locations.
  *
@@ -165,7 +170,8 @@ const char* Paths_GetBasePath() {
  * in a single statement).
  */
 const char* Paths_ResolveAsset(const char* relative_path) {
-    if (!relative_path || !relative_path[0]) return relative_path;
+    if (!relative_path || !relative_path[0])
+        return relative_path;
 
     static char buffers[4][1024];
     static int next_idx = 0;
@@ -177,7 +183,8 @@ const char* Paths_ResolveAsset(const char* relative_path) {
 
     for (int i = 0; i < 2; i++) {
         const char* base = bases[i];
-        if (!base || !base[0]) continue;
+        if (!base || !base[0])
+            continue;
 
         for (int j = 0; j < 4; j++) {
             // Avoid double 'assets/' if the input path already contains it

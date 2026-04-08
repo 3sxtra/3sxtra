@@ -24,7 +24,6 @@ void effect_37_move(WORK_Other* ewk) {
     WORK* mwk = (WORK*)ewk->my_master;
     s16 ix;
 
-
     switch (ewk->wu.routine_no[0]) {
     case 0:
         ewk->wu.routine_no[0]++;

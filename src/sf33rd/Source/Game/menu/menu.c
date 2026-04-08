@@ -146,9 +146,6 @@ enum MenuState {
     MENU_STATE_END_REPLAY_MENU = 13
 };
 
-
-
-
 // sbss
 u8 r_no_plus;
 u8 control_player;
@@ -178,20 +175,48 @@ void Menu_Task(struct _TASK* task_ptr) {
     }
 
     switch (task_ptr->r_no[0]) {
-    case MENU_STATE_AFTER_TITLE:       After_Title(task_ptr); break;
-    case MENU_STATE_IN_GAME:           In_Game(task_ptr); break;
-    case MENU_STATE_WAIT_LOAD_SAVE:    Wait_Load_Save(task_ptr); break;
-    case MENU_STATE_WAIT_REPLAY_CHECK: Wait_Replay_Check(task_ptr); break;
-    case MENU_STATE_DISP_AUTO_SAVE:    Disp_Auto_Save(task_ptr); break;
-    case MENU_STATE_SUSPEND_MENU:      Suspend_Menu(); break;
-    case MENU_STATE_WAIT_REPLAY_LOAD:  Wait_Replay_Load(); break;
-    case MENU_STATE_TRAINING_MENU:     Training_Menu(task_ptr); break;
-    case MENU_STATE_AFTER_REPLAY:      After_Replay(task_ptr); break;
-    case MENU_STATE_DISP_AUTO_SAVE2:   Disp_Auto_Save2(task_ptr); break;
-    case MENU_STATE_WAIT_PAUSE_IN_TR:  Wait_Pause_in_Tr(task_ptr); break;
-    case MENU_STATE_RESET_TRAINING:    Reset_Training(task_ptr); break;
-    case MENU_STATE_RESET_REPLAY:      Reset_Replay(task_ptr); break;
-    case MENU_STATE_END_REPLAY_MENU:   End_Replay_Menu(task_ptr); break;
+    case MENU_STATE_AFTER_TITLE:
+        After_Title(task_ptr);
+        break;
+    case MENU_STATE_IN_GAME:
+        In_Game(task_ptr);
+        break;
+    case MENU_STATE_WAIT_LOAD_SAVE:
+        Wait_Load_Save(task_ptr);
+        break;
+    case MENU_STATE_WAIT_REPLAY_CHECK:
+        Wait_Replay_Check(task_ptr);
+        break;
+    case MENU_STATE_DISP_AUTO_SAVE:
+        Disp_Auto_Save(task_ptr);
+        break;
+    case MENU_STATE_SUSPEND_MENU:
+        Suspend_Menu();
+        break;
+    case MENU_STATE_WAIT_REPLAY_LOAD:
+        Wait_Replay_Load();
+        break;
+    case MENU_STATE_TRAINING_MENU:
+        Training_Menu(task_ptr);
+        break;
+    case MENU_STATE_AFTER_REPLAY:
+        After_Replay(task_ptr);
+        break;
+    case MENU_STATE_DISP_AUTO_SAVE2:
+        Disp_Auto_Save2(task_ptr);
+        break;
+    case MENU_STATE_WAIT_PAUSE_IN_TR:
+        Wait_Pause_in_Tr(task_ptr);
+        break;
+    case MENU_STATE_RESET_TRAINING:
+        Reset_Training(task_ptr);
+        break;
+    case MENU_STATE_RESET_REPLAY:
+        Reset_Replay(task_ptr);
+        break;
+    case MENU_STATE_END_REPLAY_MENU:
+        End_Replay_Menu(task_ptr);
+        break;
     }
 }
 
@@ -334,17 +359,11 @@ void Menu_in_Sub(struct _TASK* task_ptr) {
 
 /* ── Popup draw helpers (called from lobby and font_test) ──────── */
 
-
-
-
-
 /** @brief Network Lobby screen — options-screen style with toggles and peer list.
  *  Uses effect_61 brightness for cursor indication (no effect_04 cursor bar). */
 /* Peer selection indices — exposed as globals for RmlUI bindings */
 int g_lobby_peer_idx = 0;
 int g_net_peer_idx = 0;
-
-
 
 /**
  * @brief Re-activate TASK_MENU at the Network_Lobby input loop (RmlUI mode).
@@ -353,7 +372,6 @@ int g_net_peer_idx = 0;
  * the user then leaves the room and returns to the network lobby, the menu
  * task must be restored so input processing works (case 14 = RmlUI lobby loop).
  */
-
 
 /* toSelectGame() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
@@ -557,9 +575,14 @@ void In_Game(struct _TASK* task_ptr) {
      * Indices 1–3 are intercepted by MenuScreen_FromInGameIndex() above.
      * Only index 0 (Menu_Init) and 4 (Pad_Come_Out) remain. */
     switch (task_ptr->r_no[1]) {
-    case 0:                   Menu_Init(task_ptr);    break;
-    case 4:                   Pad_Come_Out(task_ptr); break;
-    default:                  break;
+    case 0:
+        Menu_Init(task_ptr);
+        break;
+    case 4:
+        Pad_Come_Out(task_ptr);
+        break;
+    default:
+        break;
     }
 }
 
@@ -619,30 +642,21 @@ void bg_etc_write_ex(s16 type) {
 
 /** @brief Wait for save/load I/O completion before proceeding. */
 
-
 /** @brief Display auto-save notification. */
-
 
 /** @brief Auto-save step 1 â€” initiate save process. */
 
-
 /** @brief Auto-save step 2 â€” wait for I/O completion. */
-
 
 /** @brief Auto-save step 3 â€” display completion message. */
 
-
 /** @brief Auto-save step 4 â€” fade and return. */
-
 
 /** @brief Display auto-save notification (variant 2). */
 
-
 /** @brief Auto-save variant 2 step 4 â€” fade and return. */
 
-
 /** @brief Wait for replay check result before proceeding. */
-
 
 /* VS_Result() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
@@ -650,36 +664,25 @@ void bg_etc_write_ex(s16 type) {
 
 /** @brief Save Replay step 2 â€” execute memory-card write. */
 
-
 /** @brief Set up replay parameters (type, character, master player). */
-
 
 /** @brief Wait-in-pause state for training mode. */
 
-
 /** @brief Reset training session (reinitialise state). */
-
 
 /** @brief Reset replay session (reinitialise state). */
 
-
 /** @brief Training Menu dispatch â€” jump to selected training sub-screen. */
-
 
 /** @brief Training initialisation â€” set up menu items and effects. */
 
-
 /** @brief Normal Training sub-menu â€” recording, playback, and settings. */
-
 
 /** @brief Dummy Setting sub-menu â€” configure training dummy. */
 
-
 /** @brief Training Option sub-menu â€” configure training parameters. */
 
-
 /** @brief Blocking (parrying) Training sub-menu. */
-
 
 const LetterData training_letter_data[6] = { { 0x82, "NORMAL TRAINING" },   { 0x73, "PARRYING TRAINING" },
                                              { 0x7C, "DUMMY SETTING" },     { 0x87, "TRAINING OPTION" },
@@ -687,15 +690,11 @@ const LetterData training_letter_data[6] = { { 0x82, "NORMAL TRAINING" },   { 0x
 
 /** @brief Blocking Training option screen. */
 
-
 /** @brief Character Change screen in training mode. */
-
 
 /** @brief Reset training data to defaults (optionally full or partial). */
 
-
 /** @brief Wait for replay data to finish loading. */
-
 
 /** @brief Menu-sub case 1 â€” wait for fade and timer. */
 s32 Menu_Sub_case1(struct _TASK* task_ptr) {
@@ -713,4 +712,3 @@ s32 Menu_Sub_case1(struct _TASK* task_ptr) {
 /* Extra_Option() — REMOVED: migrated to MenuScreen registry (ms_*.c) */
 
 /** @brief End Replay Menu â€” post-replay choices (retry / exit). */
-

@@ -103,9 +103,9 @@ typedef struct {
     char p1_country[4];
     char p2_name[32];
     char p2_country[4];
-    int p1_char;          // Character index (0-19)
-    int p2_char;          // Character index (0-19)
-    char date[20];        // "YYYY-MM-DD HH:MM"
+    int p1_char;   // Character index (0-19)
+    int p2_char;   // Character index (0-19)
+    char date[20]; // "YYYY-MM-DD HH:MM"
     char winner_id[64];
 } ReplayListEntry;
 
@@ -117,7 +117,8 @@ int LobbyServer_ListReplays(ReplayListEntry* out, int max_entries, int page, int
 /// Fetch a page of available replays for a specific player from the server.
 /// Returns number of entries (up to max_entries), or -1 on error.
 /// page is 0-indexed. *out_total receives the total replay count (may be NULL).
-int LobbyServer_GetPlayerMatchHistory(const char* player_id, ReplayListEntry* out, int max_entries, int page, int* out_total);
+int LobbyServer_GetPlayerMatchHistory(const char* player_id, ReplayListEntry* out, int max_entries, int page,
+                                      int* out_total);
 
 /// Download replay data for a specific match.
 /// Allocates *out_data on success (caller must free). Returns data size, or 0 on error.
@@ -229,9 +230,9 @@ typedef struct {
     char p2[64];
     int active;
     int bracket_round;
-    int bracket_position;   // match index within this round
-    int match_index;        // global match index (0..N-1)
-    char bracket_side[4];   // "W", "L", or "GF" (double elim)
+    int bracket_position; // match index within this round
+    int match_index;      // global match index (0..N-1)
+    char bracket_side[4]; // "W", "L", or "GF" (double elim)
 } RoomMatch;
 
 /// Bracket entry for display
@@ -244,15 +245,15 @@ typedef struct {
     char player2_name[32];
     char winner_id[64];
     int completed;
-    char bracket_side[4];   // "W", "L", or "GF" (double elim); empty for single elim
+    char bracket_side[4]; // "W", "L", or "GF" (double elim); empty for single elim
 } BracketEntry;
 
 /// Tournament-specific room state (extends RoomState)
 typedef struct {
-    int tournament_format;      // TournamentFormat enum
-    int tournament_round;       // current round (0-indexed)
+    int tournament_format; // TournamentFormat enum
+    int tournament_round;  // current round (0-indexed)
     int tournament_total_rounds;
-    int tournament_started;     // 0 = registration open, 1 = bracket locked
+    int tournament_started; // 0 = registration open, 1 = bracket locked
     int tournament_paused;
     RoomMatch matches[MAX_CONCURRENT_MATCHES];
     int match_count;
@@ -277,18 +278,20 @@ typedef struct {
 
     ChatMessage chat[MAX_CHAT_MESSAGES];
     int chat_count;
-    int ft;           // First-To match mode for this room
-    int room_type;    // RoomType enum (0=casual, 1=koth, 2=tournament)
-    int visibility;   // RoomVisibility enum (0=public, 1=hidden)
-    int password_set;  // 1 if this room has a password
+    int ft;              // First-To match mode for this room
+    int room_type;       // RoomType enum (0=casual, 1=koth, 2=tournament)
+    int visibility;      // RoomVisibility enum (0=public, 1=hidden)
+    int password_set;    // 1 if this room has a password
     int spectator_count; // Number of active spectators
 } RoomState;
 
 // Sync room logic
-/// Create a room. password may be NULL/"" for no password. visibility: ROOM_VISIBILITY_PUBLIC or ROOM_VISIBILITY_HIDDEN.
+/// Create a room. password may be NULL/"" for no password. visibility: ROOM_VISIBILITY_PUBLIC or
+/// ROOM_VISIBILITY_HIDDEN.
 bool LobbyServer_CreateRoom(const char* name, int ft, const char* password, int visibility, RoomState* out_room);
 /// Join a room. password may be NULL/"" if room is not password-protected.
-bool LobbyServer_JoinRoom(const char* room_code, const char* password, RoomState* out_room, char* out_error, size_t error_size);
+bool LobbyServer_JoinRoom(const char* room_code, const char* password, RoomState* out_room, char* out_error,
+                          size_t error_size);
 bool LobbyServer_LeaveRoom(const char* room_code);
 bool LobbyServer_JoinQueue(const char* room_code);
 bool LobbyServer_LeaveQueue(const char* room_code);
@@ -301,19 +304,19 @@ bool LobbyServer_GetRoomState(const char* room_code, RoomState* out);
 
 typedef enum {
     SSE_EVENT_NONE = 0,
-    SSE_EVENT_SYNC,            // Full room state sync (on connect)
-    SSE_EVENT_JOIN,            // Player joined
-    SSE_EVENT_LEAVE,           // Player left
-    SSE_EVENT_CHAT,            // New chat message
-    SSE_EVENT_QUEUE_UPDATE,    // Queue changed
-    SSE_EVENT_HOST_MIGRATED,   // Host changed
-    SSE_EVENT_MATCH_PROPOSE,   // Phase 6: Match proposed (await accept/decline)
-    SSE_EVENT_MATCH_START,     // Match started (both accepted)
-    SSE_EVENT_MATCH_DECLINE,   // Phase 6: Match proposal declined or timed out
-    SSE_EVENT_MATCH_END,       // Match ended (winner stays on, loser to back)
-    SSE_EVENT_BRACKET_UPDATE,  // Tournament: bracket tree updated after match result
-    SSE_EVENT_ROUND_ADVANCE,   // Tournament: all matches in current round complete
-    SSE_EVENT_REMOTE_JOIN,     // QR join relay: phone scan triggered a room join
+    SSE_EVENT_SYNC,             // Full room state sync (on connect)
+    SSE_EVENT_JOIN,             // Player joined
+    SSE_EVENT_LEAVE,            // Player left
+    SSE_EVENT_CHAT,             // New chat message
+    SSE_EVENT_QUEUE_UPDATE,     // Queue changed
+    SSE_EVENT_HOST_MIGRATED,    // Host changed
+    SSE_EVENT_MATCH_PROPOSE,    // Phase 6: Match proposed (await accept/decline)
+    SSE_EVENT_MATCH_START,      // Match started (both accepted)
+    SSE_EVENT_MATCH_DECLINE,    // Phase 6: Match proposal declined or timed out
+    SSE_EVENT_MATCH_END,        // Match ended (winner stays on, loser to back)
+    SSE_EVENT_BRACKET_UPDATE,   // Tournament: bracket tree updated after match result
+    SSE_EVENT_ROUND_ADVANCE,    // Tournament: all matches in current round complete
+    SSE_EVENT_REMOTE_JOIN,      // QR join relay: phone scan triggered a room join
     SSE_EVENT_SPECTATOR_UPDATE, // Spectator count changed
 } SSEEventType;
 
@@ -351,7 +354,7 @@ typedef struct {
     char remote_join_room[16];
     char remote_join_password[64];
     // Spectator update
-    int spectator_count;          // Populated on SPECTATOR_UPDATE
+    int spectator_count; // Populated on SPECTATOR_UPDATE
 } SSEEvent;
 
 /// Start SSE connection to a room (spawns background thread).
@@ -383,10 +386,8 @@ bool LobbyServer_DeclineMatch(const char* room_code);
 // === Tournament Bracket Management ===
 
 /// Create a tournament room with bracket-specific parameters.
-bool LobbyServer_CreateTournamentRoom(const char* name, TournamentFormat format,
-                                       int max_players, int ft, const char* seeding,
-                                       const char* password, int visibility,
-                                       RoomState* out_room);
+bool LobbyServer_CreateTournamentRoom(const char* name, TournamentFormat format, int max_players, int ft,
+                                      const char* seeding, const char* password, int visibility, RoomState* out_room);
 
 /// Close registration and generate the bracket (TO only).
 bool LobbyServer_StartBracket(const char* room_code);
@@ -395,8 +396,7 @@ bool LobbyServer_StartBracket(const char* room_code);
 bool LobbyServer_GetBracket(const char* room_code, TournamentState* out);
 
 /// TO override: set the winner for a specific bracket match.
-bool LobbyServer_BracketOverride(const char* room_code, int match_index,
-                                  const char* winner_id);
+bool LobbyServer_BracketOverride(const char* room_code, int match_index, const char* winner_id);
 
 /// TO action: disqualify a player from the tournament.
 bool LobbyServer_BracketDQ(const char* room_code, const char* player_id);

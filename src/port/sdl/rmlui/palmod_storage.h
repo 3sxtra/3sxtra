@@ -34,8 +34,7 @@ typedef struct {
  * @param colors   array of 64 u16 values (CPS3 format)
  * @return true on success
  */
-bool palmod_save(const char* category, const char* sub_name,
-                 const char* pal_name, const u16* colors);
+bool palmod_save(const char* category, const char* sub_name, const char* pal_name, const u16* colors);
 
 /**
  * Load a palette from disk.
@@ -45,8 +44,7 @@ bool palmod_save(const char* category, const char* sub_name,
  * @param out_colors output array of 64 u16 values
  * @return true on success
  */
-bool palmod_load(const char* category, const char* sub_name,
-                 const char* pal_name, u16* out_colors);
+bool palmod_load(const char* category, const char* sub_name, const char* pal_name, u16* out_colors);
 
 /**
  * List saved palettes for a category/sub_name.
@@ -55,15 +53,13 @@ bool palmod_load(const char* category, const char* sub_name,
  * @param out_entries output array (max PALMOD_MAX_PALETTES)
  * @return number of palettes found
  */
-int palmod_list(const char* category, const char* sub_name,
-                PalmodEntry* out_entries);
+int palmod_list(const char* category, const char* sub_name, PalmodEntry* out_entries);
 
 /**
  * Delete a saved palette.
  * @return true on success
  */
-bool palmod_delete(const char* category, const char* sub_name,
-                   const char* pal_name);
+bool palmod_delete(const char* category, const char* sub_name, const char* pal_name);
 
 #ifdef __cplusplus
 }

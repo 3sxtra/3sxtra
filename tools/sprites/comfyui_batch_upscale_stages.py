@@ -36,11 +36,13 @@ from comfyui_api import build_upscale_workflow, queue_prompt, wait_for_completio
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 
-STAGES_ROOT    = os.environ.get("SF33RD_STAGES_ROOT", r"D:\3sxtra\output\stages")
-TILES_OUTPUT   = os.environ.get("SF33RD_TILES_OUTPUT", r"D:\3sxtra\assets\sprites")
-UPSCALE_MODEL  = "4x-UltraSharpV2.safetensors"
+STAGES_ROOT = os.environ.get("SF33RD_STAGES_ROOT", r"D:\3sxtra\output\stages")
+TILES_OUTPUT = os.environ.get("SF33RD_TILES_OUTPUT", r"D:\3sxtra\assets\sprites")
+UPSCALE_MODEL = "4x-UltraSharpV2.safetensors"
 DEFAULT_SERVER = "127.0.0.1:8188"
-RETILE_SCRIPT  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "retile_stage.py")
+RETILE_SCRIPT = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "retile_stage.py"
+)
 
 # ── Prompt builder ────────────────────────────────────────────────────────────
 
@@ -60,8 +62,8 @@ def build_prompt(input_path: str, output_path: str, filename_prefix: str) -> dic
             "path": os.path.dirname(input_path),
             "pattern": os.path.basename(input_path),
             "allow_RGBA_output": "true",
-            "filename_text_extension": "false"
-        }
+            "filename_text_extension": "false",
+        },
     }
 
     save_node = {
@@ -82,14 +84,15 @@ def build_prompt(input_path: str, output_path: str, filename_prefix: str) -> dic
             "show_history": "false",
             "show_history_by_prefix": "true",
             "embed_workflow": "false",
-            "show_previews": "true"
-        }
+            "show_previews": "true",
+        },
     }
 
     return build_upscale_workflow(UPSCALE_MODEL, loader_node, save_node)
 
 
 # ── Stage discovery ───────────────────────────────────────────────────────────
+
 
 def find_stage_layers(stages_root: str, stage_filter: int = None):
     """
@@ -122,13 +125,26 @@ def find_stage_layers(stages_root: str, stage_filter: int = None):
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Batch upscale stage layers via ComfyUI + retile")
-    parser.add_argument("--server", default=DEFAULT_SERVER, help="ComfyUI server address")
-    parser.add_argument("--stage", type=int, default=None, help="Process a single stage index")
-    parser.add_argument("--dry-run", action="store_true", help="Preview without processing")
-    parser.add_argument("--skip-retile", action="store_true", help="Only upscale, skip retiling")
-    parser.add_argument("--output", default=TILES_OUTPUT, help="Retiled tiles output dir")
+    parser = argparse.ArgumentParser(
+        description="Batch upscale stage layers via ComfyUI + retile"
+    )
+    parser.add_argument(
+        "--server", default=DEFAULT_SERVER, help="ComfyUI server address"
+    )
+    parser.add_argument(
+        "--stage", type=int, default=None, help="Process a single stage index"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Preview without processing"
+    )
+    parser.add_argument(
+        "--skip-retile", action="store_true", help="Only upscale, skip retiling"
+    )
+    parser.add_argument(
+        "--output", default=TILES_OUTPUT, help="Retiled tiles output dir"
+    )
     args = parser.parse_args()
 
     # Verify ComfyUI is running
@@ -138,7 +154,9 @@ def main():
             print(f"✅ Connected to ComfyUI at {args.server}")
         except Exception as e:
             print(f"❌ Cannot connect to ComfyUI at {args.server}")
-            print(f"   Start ComfyUI first: cd D:\\ComfyUI_windows_portable && run_nvidia_gpu.bat")
+            print(
+                "   Start ComfyUI first: cd D:\\ComfyUI_windows_portable && run_nvidia_gpu.bat"
+            )
             print(f"   Error: {e}")
             sys.exit(1)
 
@@ -146,13 +164,13 @@ def main():
     layers = find_stage_layers(STAGES_ROOT, args.stage)
     if not layers:
         print(f"❌ No stage layers found in {STAGES_ROOT}")
-        print(f"   Run 'python tools/extract_stage.py all --mode=indexed' first")
+        print("   Run 'python tools/extract_stage.py all --mode=indexed' first")
         sys.exit(1)
 
     client_id = str(uuid.uuid4())
     total = len(layers)
 
-    print(f"\n🏟️  Stage Layer Upscale + Retile Pipeline")
+    print("\n🏟️  Stage Layer Upscale + Retile Pipeline")
     print(f"📁 Source:  {STAGES_ROOT}")
     print(f"📂 Output:  {args.output}")
     print(f"🔧 Model:   {UPSCALE_MODEL}")
@@ -161,7 +179,9 @@ def main():
 
     upscaled_dirs = set()
 
-    for idx, (stage_dir, json_path, layer_png, stage_idx, layer_name) in enumerate(layers, 1):
+    for idx, (stage_dir, json_path, layer_png, stage_idx, layer_name) in enumerate(
+        layers, 1
+    ):
         stage_name = os.path.basename(stage_dir)
         label = f"[{idx}/{total}] stage {stage_idx:02d} {layer_name}"
 
@@ -197,7 +217,9 @@ def main():
 
         # The upscaled file is saved by ComfyUI with the prefix we gave
         # Find it in the upscaled directory
-        upscaled_candidates = sorted(glob.glob(os.path.join(upscaled_dir, f"{prefix}*")))
+        upscaled_candidates = sorted(
+            glob.glob(os.path.join(upscaled_dir, f"{prefix}*"))
+        )
         if upscaled_candidates:
             # Rename to the standard name retile_stage.py expects
             expected_name = os.path.join(stage_dir, f"{layer_name}_upscaled.png")
@@ -207,7 +229,7 @@ def main():
     # Retile all upscaled stages
     if not args.dry_run and not args.skip_retile and upscaled_dirs:
         print(f"\n{'─' * 60}")
-        print(f"🔲 Retiling upscaled layers into runtime tiles...")
+        print("🔲 Retiling upscaled layers into runtime tiles...")
         print(f"   Output: {args.output}")
 
         os.makedirs(args.output, exist_ok=True)
@@ -218,7 +240,8 @@ def main():
             try:
                 result = subprocess.run(
                     [sys.executable, RETILE_SCRIPT, stage_dir, "--output", args.output],
-                    capture_output=True, text=True
+                    capture_output=True,
+                    text=True,
                 )
                 if result.stdout:
                     for line in result.stdout.strip().split("\n"):
@@ -230,11 +253,13 @@ def main():
 
     print(f"\n{'─' * 60}")
     if args.dry_run:
-        print(f"🔍 Dry run: {total} layers across {len(set(s[3] for s in layers))} stages")
+        print(
+            f"🔍 Dry run: {total} layers across {len(set(s[3] for s in layers))} stages"
+        )
     else:
         print(f"🎉 Done! {total} layers upscaled and retiled.")
         print(f"   Tiles: {args.output}")
-        print(f"   Rebuild (recompile.bat) to deploy to build output.")
+        print("   Rebuild (recompile.bat) to deploy to build output.")
 
 
 if __name__ == "__main__":

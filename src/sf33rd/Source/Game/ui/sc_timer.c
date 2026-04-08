@@ -922,8 +922,8 @@ void Training_Data_Disp() {
 /* ── Button images & save/load ─────────────────────────────────── */
 
 const u8 scrnAddTex1UV[SCRN_ADD_TEX_COUNT][4] = { { 96, 0, 32, 32 },  { 63, 0, 32, 32 },  { 0, 96, 32, 32 },
-                                                   { 0, 64, 32, 32 },  { 0, 0, 32, 32 },   { 31, 0, 32, 32 },
-                                                   { 32, 96, 32, 32 }, { 32, 64, 32, 32 }, { 128, 0, 96, 128 } };
+                                                  { 0, 64, 32, 32 },  { 0, 0, 32, 32 },   { 31, 0, 32, 32 },
+                                                  { 32, 96, 32, 32 }, { 32, 64, 32, 32 }, { 128, 0, 96, 128 } };
 
 /** @brief Render a button-prompt image from the controller texture atlas. */
 void dispButtonImage(s32 px, s32 py, s32 pz, s32 sx, s32 sy, s32 cl, s32 ix) {

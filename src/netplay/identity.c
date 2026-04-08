@@ -134,7 +134,8 @@ void Identity_Init(void) {
 }
 
 static void ensure_init(void) {
-    if (!initialized) Identity_Init();
+    if (!initialized)
+        Identity_Init();
 }
 
 const char* Identity_GetPlayerId(void) {

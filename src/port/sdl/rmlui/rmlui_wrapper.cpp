@@ -62,7 +62,8 @@
 // -------------------------------------------------------------------
 
 static SDL_Surface* load_ctrlimg_surface(const Rml::String& source) {
-    if (source.find("ctrlimg:") != 0) return nullptr;
+    if (source.find("ctrlimg:") != 0)
+        return nullptr;
 
     const char* p = source.c_str() + 8; // skip "ctrlimg:"
     if (SDL_strncmp(p, "scancode:", 9) == 0) {
@@ -234,12 +235,14 @@ class GameViewportGPU : public RenderInterface_SDL_GPU {
     Rml::TextureHandle LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source) override {
         if (source.find("ctrlimg:") == 0) {
             SDL_Surface* surface = load_ctrlimg_surface(source);
-            if (!surface) return 0;
+            if (!surface)
+                return 0;
 
             if (surface->format != SDL_PIXELFORMAT_RGBA32) {
                 SDL_Surface* converted_surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
                 SDL_DestroySurface(surface);
-                if (!converted_surface) return 0;
+                if (!converted_surface)
+                    return 0;
                 surface = converted_surface;
             }
 
@@ -299,10 +302,11 @@ class GameViewportSDL : public RenderInterface_SDL {
         int ay = (int)(region.Top() * m_sy + 0.5f);
         int aw = (int)(region.Width() * m_sx + 0.5f);
         int ah = (int)(region.Height() * m_sy + 0.5f);
-        RenderInterface_SDL::SetScissorRegion(Rml::Rectanglei::FromPositionSize({ax, ay}, {aw, ah}));
+        RenderInterface_SDL::SetScissorRegion(Rml::Rectanglei::FromPositionSize({ ax, ay }, { aw, ah }));
     }
 
-    void RenderGeometry(Rml::CompiledGeometryHandle handle, Rml::Vector2f translation, Rml::TextureHandle texture) override {
+    void RenderGeometry(Rml::CompiledGeometryHandle handle, Rml::Vector2f translation,
+                        Rml::TextureHandle texture) override {
         if (!m_active) {
             RenderInterface_SDL::RenderGeometry(handle, translation, texture);
             return;
@@ -314,7 +318,7 @@ class GameViewportSDL : public RenderInterface_SDL {
         const int* indices = geometry->indices.data();
         const size_t num_indices = geometry->indices.size();
 
-        Rml::UniquePtr<SDL_Vertex[]> sdl_vertices{new SDL_Vertex[num_vertices]};
+        Rml::UniquePtr<SDL_Vertex[]> sdl_vertices { new SDL_Vertex[num_vertices] };
 
         for (size_t i = 0; i < num_vertices; i++) {
             float vx = (vertices[i].position.x + translation.x) * m_sx;
@@ -346,12 +350,14 @@ class GameViewportSDL : public RenderInterface_SDL {
     Rml::TextureHandle LoadTexture(Rml::Vector2i& texture_dimensions, const Rml::String& source) override {
         if (source.find("ctrlimg:") == 0) {
             SDL_Surface* surface = load_ctrlimg_surface(source);
-            if (!surface) return 0;
+            if (!surface)
+                return 0;
 
             if (surface->format != SDL_PIXELFORMAT_RGBA32) {
                 SDL_Surface* converted_surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
                 SDL_DestroySurface(surface);
-                if (!converted_surface) return 0;
+                if (!converted_surface)
+                    return 0;
                 surface = converted_surface;
             }
 
@@ -392,7 +398,7 @@ class GameSystemInterface : public SystemInterface_SDL {
 };
 
 class GameFileInterface : public Rml::FileInterface {
-public:
+  public:
     Rml::FileHandle Open(const Rml::String& path) override {
         const char* final_path = path.c_str();
 #ifdef __ANDROID__
@@ -409,27 +415,33 @@ public:
 
     void Close(Rml::FileHandle file) override {
         SDL_IOStream* io = (SDL_IOStream*)file;
-        if (io) SDL_CloseIO(io);
+        if (io)
+            SDL_CloseIO(io);
     }
 
     size_t Read(void* buffer, size_t size, Rml::FileHandle file) override {
         SDL_IOStream* io = (SDL_IOStream*)file;
-        if (!io) return 0;
+        if (!io)
+            return 0;
         return SDL_ReadIO(io, buffer, size);
     }
 
     bool Seek(Rml::FileHandle file, long offset, int origin) override {
         SDL_IOStream* io = (SDL_IOStream*)file;
-        if (!io) return false;
+        if (!io)
+            return false;
         SDL_IOWhence whence = SDL_IO_SEEK_SET;
-        if (origin == SEEK_CUR) whence = SDL_IO_SEEK_CUR;
-        if (origin == SEEK_END) whence = SDL_IO_SEEK_END;
+        if (origin == SEEK_CUR)
+            whence = SDL_IO_SEEK_CUR;
+        if (origin == SEEK_END)
+            whence = SDL_IO_SEEK_END;
         return SDL_SeekIO(io, offset, whence) >= 0;
     }
 
     size_t Tell(Rml::FileHandle file) override {
         SDL_IOStream* io = (SDL_IOStream*)file;
-        if (!io) return 0;
+        if (!io)
+            return 0;
         return SDL_TellIO(io);
     }
 };
@@ -667,13 +679,21 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
 #endif
         // Normalize backslashes to forward slashes — Lua interprets '\' as
         // escape sequences inside string literals (e.g. '\3' → ETX char).
-        for (auto& ch : lua_base1) { if (ch == '\\') ch = '/'; }
-        for (auto& ch : lua_base2) { if (ch == '\\') ch = '/'; }
-        for (auto& ch : lua_base3) { if (ch == '\\') ch = '/'; }
-        std::string lua_setup = "package.path = '" + 
-                                lua_base1 + "?.lua;" + lua_base1 + "?/init.lua;" +
-                                lua_base2 + "?.lua;" + lua_base2 + "?/init.lua;" +
-                                lua_base3 + "?.lua;" + lua_base3 + "?/init.lua;' .. package.path\n"
+        for (auto& ch : lua_base1) {
+            if (ch == '\\')
+                ch = '/';
+        }
+        for (auto& ch : lua_base2) {
+            if (ch == '\\')
+                ch = '/';
+        }
+        for (auto& ch : lua_base3) {
+            if (ch == '\\')
+                ch = '/';
+        }
+        std::string lua_setup = "package.path = '" + lua_base1 + "?.lua;" + lua_base1 + "?/init.lua;" + lua_base2 +
+                                "?.lua;" + lua_base2 + "?/init.lua;" + lua_base3 + "?.lua;" + lua_base3 +
+                                "?/init.lua;' .. package.path\n"
                                 "joypad = require('compat.joypad')\n"
                                 "emu    = require('compat.emu')\n"
                                 "gui    = require('compat.gui')\n"
@@ -727,13 +747,14 @@ extern "C" void rmlui_wrapper_init(SDL_Window* window, void* gl_context) {
     const char* backend_name = (s_active_backend == RENDERER_SDLGPU) ? "SDL_GPU"
                                : is_sdl2d_backend(s_active_backend)  ? "SDL2D"
                                                                      : "GL3";
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi] Initialized (%s renderer, %dx%d window + %dx%d game, dp-ratio=%.2fx)",
-            backend_name,
-            s_window_w,
-            s_window_h,
-            GAME_W,
-            GAME_H,
-            dp_ratio);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                 "[RmlUi] Initialized (%s renderer, %dx%d window + %dx%d game, dp-ratio=%.2fx)",
+                 backend_name,
+                 s_window_w,
+                 s_window_h,
+                 GAME_W,
+                 GAME_H,
+                 dp_ratio);
 
     // ⚡ Pi4: deactivate GL3 renderer now that init is done.
     // ensure_gl3_ready() will re-activate on first actual render need.
@@ -907,8 +928,11 @@ extern "C" void rmlui_wrapper_render(void) {
     static bool s_first_render = true;
     if (s_first_render) {
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-                "[RmlUi] First window render: gl3=%p gpu=%p sdl=%p if=%p",
-                (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl, (void*)s_render_interface);
+                     "[RmlUi] First window render: gl3=%p gpu=%p sdl=%p if=%p",
+                     (void*)s_render_gl3,
+                     (void*)s_render_gpu,
+                     (void*)s_render_sdl,
+                     (void*)s_render_interface);
         s_first_render = false;
     }
 
@@ -1036,8 +1060,12 @@ extern "C" void rmlui_wrapper_show_document(const char* name) {
     if (!s_window_context || !name)
         return;
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-            "[RmlUi] show_document('%s') render_if=%p gl3=%p gpu=%p sdl=%p",
-            name, (void*)s_render_interface, (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl);
+                 "[RmlUi] show_document('%s') render_if=%p gl3=%p gpu=%p sdl=%p",
+                 name,
+                 (void*)s_render_interface,
+                 (void*)s_render_gl3,
+                 (void*)s_render_gpu,
+                 (void*)s_render_sdl);
     ensure_gl3_ready(); // ⚡ LoadDocument needs render interface for textures
     ensure_fonts_loaded();
 
@@ -1110,8 +1138,12 @@ extern "C" void rmlui_wrapper_show_game_document(const char* name) {
     if (!s_game_context || !name)
         return;
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-            "[RmlUi] show_game_document('%s') render_if=%p gl3=%p gpu=%p sdl=%p",
-            name, (void*)s_render_interface, (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl);
+                 "[RmlUi] show_game_document('%s') render_if=%p gl3=%p gpu=%p sdl=%p",
+                 name,
+                 (void*)s_render_interface,
+                 (void*)s_render_gl3,
+                 (void*)s_render_gpu,
+                 (void*)s_render_sdl);
     ensure_gl3_ready(); // ⚡ LoadDocument needs render interface for textures
     ensure_fonts_loaded();
 
@@ -1227,9 +1259,13 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
     static bool s_first_game_render = true;
     if (s_first_game_render) {
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-                "[RmlUi] First game render: gl3=%p gpu=%p sdl=%p if=%p view=%.0fx%.0f",
-                (void*)s_render_gl3, (void*)s_render_gpu, (void*)s_render_sdl,
-                (void*)s_render_interface, view_w, view_h);
+                     "[RmlUi] First game render: gl3=%p gpu=%p sdl=%p if=%p view=%.0fx%.0f",
+                     (void*)s_render_gl3,
+                     (void*)s_render_gpu,
+                     (void*)s_render_sdl,
+                     (void*)s_render_interface,
+                     view_w,
+                     view_h);
         s_first_game_render = false;
     }
 
@@ -1250,13 +1286,13 @@ extern "C" void rmlui_wrapper_render_game(int win_w, int win_h, float view_x, fl
     // The previous implementation mapped RmlUi logically to the physical aspect ratio,
     // which caused the UI layout sizes to shift depending on the monitor resolution
     // and failed to visually stretch with the cabinet canvas.
-    // 
+    //
     // We bind our dp_ratio to the primary vertical axis to guarantee high-def
     // crisp vector texture generation scaling linearly with monitor size.
     const float dp_ratio = (view_h > 0.0f) ? (view_h / (float)GAME_H) : 1.0f;
     s_game_context->SetDensityIndependentPixelRatio(dp_ratio);
 
-    // PAR correction factor for portrait images (e.g. char select) that need to 
+    // PAR correction factor for portrait images (e.g. char select) that need to
     // explicitly reverse the non-uniform pipeline stretch.
     if (view_h > 0.0f)
         s_par_correct_y = (view_w * (float)GAME_H) / (view_h * (float)GAME_W);

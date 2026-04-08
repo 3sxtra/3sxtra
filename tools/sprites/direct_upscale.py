@@ -4,7 +4,7 @@ Direct GPU upscale for sprite PNGs — no ComfyUI required.
 
 Loads 4x-UltraSharpV2.safetensors via spandrel and runs inference
 directly on the GPU. Alpha channel is preserved by upscaling RGB
-and alpha mask separately, then recombining. 
+and alpha mask separately, then recombining.
 
 *Updated with unmultiply logic to prevent dark edge halos/ghosting.*
 
@@ -23,7 +23,6 @@ Usage:
 import argparse
 import logging
 import os
-import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -49,6 +48,7 @@ DEFAULT_TILE = 0  # 0 = no tiling (whole image)
 
 # ── Image I/O (runs in threads) ──────────────────────────────────────────────
 
+
 def load_image(path: str) -> np.ndarray:
     """Load PNG as float32 RGBA numpy array (H, W, 4)."""
     img = Image.open(path).convert("RGBA")
@@ -64,7 +64,10 @@ def save_image(path: str, arr: np.ndarray):
 
 # ── Tiled upscale ────────────────────────────────────────────────────────────
 
-def upscale_tensor(model, img_tensor: torch.Tensor, tile_size: int, scale: int, device, dtype) -> torch.Tensor:
+
+def upscale_tensor(
+    model, img_tensor: torch.Tensor, tile_size: int, scale: int, device, dtype
+) -> torch.Tensor:
     """
     Upscale a (1, C, H, W) tensor, optionally tiling to avoid OOM.
     """
@@ -103,24 +106,53 @@ def upscale_tensor(model, img_tensor: torch.Tensor, tile_size: int, scale: int, 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Direct GPU sprite upscale (no ComfyUI)")
-    parser.add_argument("--model", default=DEFAULT_MODEL, help="Path to .safetensors upscale model")
-    parser.add_argument("--input", default=DEFAULT_INPUT, help="Input directory of PNGs")
-    parser.add_argument("--output", default=DEFAULT_OUTPUT, help="Output directory for upscaled PNGs")
-    parser.add_argument("--tile-size", type=int, default=DEFAULT_TILE, help="Tile size (0 = whole image, use 512 for large sprites)")
-    parser.add_argument("--fp16", action="store_true", help="Use fp16 instead of fp32 (faster but less precise)")
-    parser.add_argument("--compile", action="store_true", help="Enable torch.compile() (only helps if all images are the same size)")
-    parser.add_argument("--skip-existing", action="store_true", help="Skip files that already exist in output")
+    parser = argparse.ArgumentParser(
+        description="Direct GPU sprite upscale (no ComfyUI)"
+    )
+    parser.add_argument(
+        "--model", default=DEFAULT_MODEL, help="Path to .safetensors upscale model"
+    )
+    parser.add_argument(
+        "--input", default=DEFAULT_INPUT, help="Input directory of PNGs"
+    )
+    parser.add_argument(
+        "--output", default=DEFAULT_OUTPUT, help="Output directory for upscaled PNGs"
+    )
+    parser.add_argument(
+        "--tile-size",
+        type=int,
+        default=DEFAULT_TILE,
+        help="Tile size (0 = whole image, use 512 for large sprites)",
+    )
+    parser.add_argument(
+        "--fp16",
+        action="store_true",
+        help="Use fp16 instead of fp32 (faster but less precise)",
+    )
+    parser.add_argument(
+        "--compile",
+        action="store_true",
+        help="Enable torch.compile() (only helps if all images are the same size)",
+    )
+    parser.add_argument(
+        "--skip-existing",
+        action="store_true",
+        help="Skip files that already exist in output",
+    )
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     dtype = torch.float16 if args.fp16 else torch.float32
-    print(f"🖥️  Device: {device} ({torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'})")
+    print(
+        f"🖥️  Device: {device} ({torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'})"
+    )
     print(f"⚡ Precision: {'fp16' if args.fp16 else 'fp32'}")
 
     # ── Load model via spandrel ──
     import spandrel
+
     print(f"📦 Loading model: {os.path.basename(args.model)}")
     t0 = time.perf_counter()
     model_desc = spandrel.ModelLoader(device=device).load_from_file(args.model)
@@ -179,14 +211,14 @@ def main():
 
         if has_alpha:
             alpha_np = img_np[:, :, 3:4]
-            
+
             # --- THE FIX: Unmultiply (Straighten) the RGB channels ---
             # Divide the color channels by the mat to restore full brightness to edge pixels
             alpha_safe = np.clip(alpha_np, 1e-6, 1.0)
-            
+
             # Only unmultiply where there is actually some transparency/color
             rgb_np = np.where(alpha_np > 0, rgb_np / alpha_safe, rgb_np)
-            
+
             # Prepare alpha tensor
             alpha = torch.from_numpy(alpha_np).permute(2, 0, 1).unsqueeze(0)
 
@@ -199,7 +231,9 @@ def main():
         # Upscale alpha (as 3-channel, take mean)
         if has_alpha:
             alpha_3ch = alpha.expand(-1, 3, -1, -1)
-            alpha_up = upscale_tensor(model, alpha_3ch, args.tile_size, scale, device, dtype)
+            alpha_up = upscale_tensor(
+                model, alpha_3ch, args.tile_size, scale, device, dtype
+            )
             alpha_up = alpha_up.mean(dim=1, keepdim=True)
             # Combine
             result = torch.cat([rgb_up.cpu(), alpha_up.cpu()], dim=1)
@@ -215,13 +249,18 @@ def main():
         elapsed = time.perf_counter() - start_time
         rate = (i + 1) / elapsed
         eta = (total - i - 1) / rate if rate > 0 else 0
-        print(f"  [{i+1}/{total}] {fpath.name}  {w}x{h} → {w*scale}x{h*scale}  "
-              f"({rate:.1f} img/s, ETA {eta:.0f}s)", end="\r")
+        print(
+            f"  [{i + 1}/{total}] {fpath.name}  {w}x{h} → {w * scale}x{h * scale}  "
+            f"({rate:.1f} img/s, ETA {eta:.0f}s)",
+            end="\r",
+        )
 
     executor.shutdown(wait=True)
     total_time = time.perf_counter() - start_time
     print(f"\n{'─' * 60}")
-    print(f"🎉 Done! {total} images in {total_time:.1f}s ({total/total_time:.1f} img/s)")
+    print(
+        f"🎉 Done! {total} images in {total_time:.1f}s ({total / total_time:.1f} img/s)"
+    )
     print(f"   Output: {output_dir}")
 
 

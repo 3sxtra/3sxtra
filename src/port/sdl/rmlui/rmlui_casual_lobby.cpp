@@ -72,7 +72,7 @@ Rml::String s_room_code;
 static Rml::String s_room_name;
 static Rml::String s_room_password;
 static int s_room_visibility = 0;
-static Rml::String s_qr_image_path;  // Filesystem path to QR code BMP (if any)
+static Rml::String s_qr_image_path; // Filesystem path to QR code BMP (if any)
 static Rml::String s_my_id;
 
 static int s_player_count = 0;
@@ -217,7 +217,6 @@ static void do_init(void) {
     ctor.Bind("match_p2_name", &s_match_p2_name);
     ctor.Bind("is_playing", &s_is_playing);
 
-
     ctor.Bind("in_queue", &s_in_queue);
     ctor.BindFunc("queue_count", [](Rml::Variant& v) { v = s_queue_display_count; });
 
@@ -243,7 +242,9 @@ static void do_init(void) {
     s_my_id = Identity_GetPlayerId();
 }
 
-extern "C" void rmlui_casual_lobby_init(void) { do_init(); }
+extern "C" void rmlui_casual_lobby_init(void) {
+    do_init();
+}
 
 static void apply_room_state_to_model(void) {
     if (!s_model_handle)
@@ -256,7 +257,6 @@ static void apply_room_state_to_model(void) {
     const char* qr_path = rmlui_network_lobby_get_qr_image_path();
     s_qr_image_path = (qr_path && qr_path[0]) ? Rml::String(qr_path) : Rml::String();
     s_player_count = s_room_state.player_count;
-
 
     // P1 / P2 names
     s_match_active = s_room_state.match_active;
@@ -393,7 +393,6 @@ static void apply_room_state_to_model(void) {
     s_model_handle.DirtyVariable("room_players");
     s_model_handle.DirtyVariable("chat_messages");
     s_model_handle.DirtyVariable("chat_count");
-
 }
 
 // TODO(perf): This is a synchronous HTTP call on the main thread. It can cause
@@ -422,7 +421,11 @@ static void refresh_room_state_from_server(void) {
 
 // ─── Update loop ─────────────────────────────────────────────────
 extern "C" void rmlui_casual_lobby_update(void) {
-    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_registered) {
+        do_init();
+        if (!s_model_registered)
+            return;
+    }
     if (!s_is_visible)
         return;
 
@@ -622,7 +625,6 @@ extern "C" void rmlui_casual_lobby_update(void) {
                 winner_name = sse_evt.match_winner_id;
             s_status_text = winner_name + " WINS! Winner stays on.";
             s_model_handle.DirtyVariable("status_text");
-
 
             // If we were playing, defer re-show until the netplay session
             // has fully cleaned up (IDLE/LOBBY). This prevents the room
@@ -924,8 +926,7 @@ extern "C" bool rmlui_casual_lobby_handle_key_event(const SDL_Event* event) {
             return false;
         }
         // T key opens chat input (only on key-down, not repeat)
-        if (event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat &&
-            event->key.key == SDLK_T) {
+        if (event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat && event->key.key == SDLK_T) {
             rmlui_ingame_chat_open_input();
             return true;
         }

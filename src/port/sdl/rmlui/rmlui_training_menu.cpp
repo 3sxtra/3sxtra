@@ -283,19 +283,26 @@ static void do_init(void) {
     s_model_handle = ctor.GetModelHandle();
     s_model_registered = true;
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Training] Data model registered (lazy, 9 display + 8 dummy bindings)");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                 "[RmlUi Training] Data model registered (lazy, 9 display + 8 dummy bindings)");
 }
 
 // -------------------------------------------------------------------
 // Init — register data model + load persisted config
 // -------------------------------------------------------------------
-extern "C" void rmlui_training_menu_init(void) { do_init(); }
+extern "C" void rmlui_training_menu_init(void) {
+    do_init();
+}
 
 // -------------------------------------------------------------------
 // Per-frame update — dirty check
 // -------------------------------------------------------------------
 extern "C" void rmlui_training_menu_update(void) {
-    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_registered) {
+        do_init();
+        if (!s_model_registered)
+            return;
+    }
     if (!s_model_handle)
         return;
 

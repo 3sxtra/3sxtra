@@ -61,7 +61,12 @@ void Stage_BGM(u16 Stage_Number, u16 Round_Number) {
         return;
     }
 
-    SDL_Log("[%s] Stage_BGM: stage=%u round=%u bgm_type=%d → code=%u", ModdedBGM_GetGameStateString(), Stage_Number, Round_Number, sys_w.bgm_type, code);
+    SDL_Log("[%s] Stage_BGM: stage=%u round=%u bgm_type=%d → code=%u",
+            ModdedBGM_GetGameStateString(),
+            Stage_Number,
+            Round_Number,
+            sys_w.bgm_type,
+            code);
     SsRequest(code);
 }
 

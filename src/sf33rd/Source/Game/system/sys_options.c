@@ -279,7 +279,8 @@ s32 Check_Extra_Setting() {
 
     for (page = 0; page < 4; page++) {
         for (ix = 0; ix < 4; ix++) {
-            if (save_w[SAVEW_ARCADE].extra_option.contents[page][ix] != save_w[SAVEW_BASE].extra_option.contents[page][ix]) {
+            if (save_w[SAVEW_ARCADE].extra_option.contents[page][ix] !=
+                save_w[SAVEW_BASE].extra_option.contents[page][ix]) {
                 return 1;
             }
         }

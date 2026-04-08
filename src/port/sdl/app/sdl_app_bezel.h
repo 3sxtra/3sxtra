@@ -44,13 +44,26 @@ void SDLAppBezel_MarkDirty(void);
 #else /* !ENABLE_BEZEL — inline no-ops */
 
 static inline void SDLAppBezel_InitGL(void) {}
-static inline void SDLAppBezel_InitGPU(const char* p) { (void)p; }
+static inline void SDLAppBezel_InitGPU(const char* p) {
+    (void)p;
+}
 static inline void SDLAppBezel_Shutdown(void) {}
-static inline void SDLAppBezel_RenderGL(int w, int h, const SDL_FRect* v, unsigned int s,
-    const float* m) { (void)w; (void)h; (void)v; (void)s; (void)m; }
-static inline void SDLAppBezel_RenderGPU(int w, int h) { (void)w; (void)h; }
+static inline void SDLAppBezel_RenderGL(int w, int h, const SDL_FRect* v, unsigned int s, const float* m) {
+    (void)w;
+    (void)h;
+    (void)v;
+    (void)s;
+    (void)m;
+}
+static inline void SDLAppBezel_RenderGPU(int w, int h) {
+    (void)w;
+    (void)h;
+}
 static inline void SDLAppBezel_RenderSDL2D(SDL_Renderer* r, int w, int h, const SDL_FRect* d) {
-    (void)r; (void)w; (void)h; (void)d;
+    (void)r;
+    (void)w;
+    (void)h;
+    (void)d;
 }
 static inline void SDLAppBezel_MarkDirty(void) {}
 

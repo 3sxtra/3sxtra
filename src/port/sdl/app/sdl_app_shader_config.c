@@ -132,17 +132,24 @@ static bool extract_asset_to_filesystem(const char* asset_rel_path, const char* 
     char asset_path[1024];
     snprintf(asset_path, sizeof(asset_path), "shaders/libretro/%s", asset_rel_path);
     SDL_IOStream* src = SDL_IOFromFile(asset_path, "rb");
-    if (!src) return false;
+    if (!src)
+        return false;
 
     Sint64 size = SDL_GetIOSize(src);
-    if (size <= 0) { SDL_CloseIO(src); return false; }
+    if (size <= 0) {
+        SDL_CloseIO(src);
+        return false;
+    }
 
     void* data = SDL_malloc(size);
     SDL_ReadIO(src, data, size);
     SDL_CloseIO(src);
 
     SDL_IOStream* dst = SDL_IOFromFile(dest_path, "wb");
-    if (!dst) { SDL_free(data); return false; }
+    if (!dst) {
+        SDL_free(data);
+        return false;
+    }
     SDL_WriteIO(dst, data, size);
     SDL_CloseIO(dst);
     SDL_free(data);
@@ -159,15 +166,21 @@ static void extract_shader_preset_tree(const char* preset_rel, const char* dest_
     char parent_dir[512] = "";
     SDL_strlcpy(parent_dir, preset_rel, sizeof(parent_dir));
     char* last_slash = SDL_strrchr(parent_dir, '/');
-    if (last_slash) *last_slash = '\0';
-    else parent_dir[0] = '\0';
+    if (last_slash)
+        *last_slash = '\0';
+    else
+        parent_dir[0] = '\0';
 
     // Scan the manifest and extract all shader source files in this directory or subdirs
     // Re-read manifest to find related files
     SDL_IOStream* mio = SDL_IOFromFile("shaders/libretro/shader_manifest.txt", "rb");
-    if (!mio) return;
+    if (!mio)
+        return;
     Sint64 msize = SDL_GetIOSize(mio);
-    if (msize <= 0) { SDL_CloseIO(mio); return; }
+    if (msize <= 0) {
+        SDL_CloseIO(mio);
+        return;
+    }
     char* mdata = (char*)SDL_malloc(msize + 1);
     SDL_ReadIO(mio, mdata, msize);
     mdata[msize] = '\0';
@@ -192,9 +205,13 @@ static void extract_shader_preset_tree(const char* preset_rel, const char* dest_
     char preset_fs_path[1024];
     snprintf(preset_fs_path, sizeof(preset_fs_path), "%s/%s", dest_dir, preset_rel);
     SDL_IOStream* pio = SDL_IOFromFile(preset_fs_path, "rb");
-    if (!pio) return;
+    if (!pio)
+        return;
     Sint64 psize = SDL_GetIOSize(pio);
-    if (psize <= 0) { SDL_CloseIO(pio); return; }
+    if (psize <= 0) {
+        SDL_CloseIO(pio);
+        return;
+    }
     char* pdata = (char*)SDL_malloc(psize + 1);
     SDL_ReadIO(pio, pdata, psize);
     pdata[psize] = '\0';
@@ -205,23 +222,28 @@ static void extract_shader_preset_tree(const char* preset_rel, const char* dest_
     while ((search = strstr(search, "shader")) != NULL) {
         // Find the = sign
         char* eq = strchr(search, '=');
-        if (!eq) { search++; continue; }
+        if (!eq) {
+            search++;
+            continue;
+        }
         // Skip whitespace after =
         char* val = eq + 1;
-        while (*val == ' ' || *val == '\t') val++;
+        while (*val == ' ' || *val == '\t')
+            val++;
         // Strip quotes
-        if (*val == '"') val++;
+        if (*val == '"')
+            val++;
         char ref_path[512];
         int ri = 0;
         while (*val && *val != '"' && *val != '\n' && *val != '\r' && ri < 510)
             ref_path[ri++] = *val++;
         ref_path[ri] = '\0';
         // Trim trailing spaces
-        while (ri > 0 && (ref_path[ri-1] == ' ' || ref_path[ri-1] == '\t'))
+        while (ri > 0 && (ref_path[ri - 1] == ' ' || ref_path[ri - 1] == '\t'))
             ref_path[--ri] = '\0';
 
-        if (ri > 0 && (strstr(ref_path, ".slang") || strstr(ref_path, ".glsl") ||
-                       strstr(ref_path, ".inc") || strstr(ref_path, ".h"))) {
+        if (ri > 0 && (strstr(ref_path, ".slang") || strstr(ref_path, ".glsl") || strstr(ref_path, ".inc") ||
+                       strstr(ref_path, ".h"))) {
             // Resolve relative to preset directory
             char full_ref[1024];
             if (parent_dir[0])
@@ -237,7 +259,7 @@ static void extract_shader_preset_tree(const char* preset_rel, const char* dest_
 
 // Get the filesystem-backed shader directory
 static const char* get_shader_fs_dir(void) {
-    static char shader_dir[1024] = {0};
+    static char shader_dir[1024] = { 0 };
     if (shader_dir[0] == '\0') {
         const char* pref = Paths_GetPrefPath();
         snprintf(shader_dir, sizeof(shader_dir), "%sshaders/libretro", pref);
@@ -530,7 +552,12 @@ static void chain_load_and_merge(int preset_index, bool prepend) {
         return;
 
     char full_path[1024];
-    snprintf(full_path, sizeof(full_path), "%s%s/%s", g_base_path, "assets/shaders/libretro", available_presets[preset_index]);
+    snprintf(full_path,
+             sizeof(full_path),
+             "%s%s/%s",
+             g_base_path,
+             "assets/shaders/libretro",
+             available_presets[preset_index]);
     for (int i = 0; full_path[i]; i++) {
         if (full_path[i] == '\\')
             full_path[i] = '/';

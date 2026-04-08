@@ -36,18 +36,18 @@ extern u16 plsw_01[2];
 #define NRP_SLOTS_PER_PAGE 10
 
 /* Input bit masks — must match SWKey in sf33rd/AcrSDK/common/pad.h */
-#define NRP_SWK_UP     0x0001  /* SWK_UP     = 1 << 0 */
-#define NRP_SWK_DOWN   0x0002  /* SWK_DOWN   = 1 << 1 */
-#define NRP_SWK_LEFT   0x0004  /* SWK_LEFT   = 1 << 2 */
-#define NRP_SWK_RIGHT  0x0008  /* SWK_RIGHT  = 1 << 3 */
-#define NRP_SWK_SOUTH  0x0100  /* SWK_SOUTH  = 1 << 8, confirm (LP) */
-#define NRP_SWK_EAST   0x0200  /* SWK_EAST   = 1 << 9, cancel  (MK) */
+#define NRP_SWK_UP 0x0001    /* SWK_UP     = 1 << 0 */
+#define NRP_SWK_DOWN 0x0002  /* SWK_DOWN   = 1 << 1 */
+#define NRP_SWK_LEFT 0x0004  /* SWK_LEFT   = 1 << 2 */
+#define NRP_SWK_RIGHT 0x0008 /* SWK_RIGHT  = 1 << 3 */
+#define NRP_SWK_SOUTH 0x0100 /* SWK_SOUTH  = 1 << 8, confirm (LP) */
+#define NRP_SWK_EAST 0x0200  /* SWK_EAST   = 1 << 9, cancel  (MK) */
 
 /* ─── Slot entry ─────────────────────────────────────────────── */
 
 struct NrpSlotEntry {
     int match_id;
-    int index;          // 0-based index on current page
+    int index; // 0-based index on current page
     Rml::String p1_name;
     Rml::String p1_country;
     Rml::String p2_name;
@@ -60,14 +60,14 @@ struct NrpSlotEntry {
     bool is_valid;
 
     bool operator==(const NrpSlotEntry& o) const {
-        return match_id == o.match_id && index == o.index &&
-               p1_name == o.p1_name && p2_name == o.p2_name &&
-               p1_country == o.p1_country && p2_country == o.p2_country &&
-               p1_char_name == o.p1_char_name && p2_char_name == o.p2_char_name &&
-               winner_id == o.winner_id &&
-               date_str == o.date_str && display_num == o.display_num && is_valid == o.is_valid;
+        return match_id == o.match_id && index == o.index && p1_name == o.p1_name && p2_name == o.p2_name &&
+               p1_country == o.p1_country && p2_country == o.p2_country && p1_char_name == o.p1_char_name &&
+               p2_char_name == o.p2_char_name && winner_id == o.winner_id && date_str == o.date_str &&
+               display_num == o.display_num && is_valid == o.is_valid;
     }
-    bool operator!=(const NrpSlotEntry& o) const { return !(*this == o); }
+    bool operator!=(const NrpSlotEntry& o) const {
+        return !(*this == o);
+    }
 };
 
 // ─── Character name table (SF3:3S roster) ───────────────────────
@@ -91,10 +91,10 @@ static bool s_loading = false;
 static bool s_downloading = false;
 static Rml::String s_error;
 
-static int s_cursor = 0;      // selected row index on current page
-static int s_page = 0;        // 0-indexed
+static int s_cursor = 0; // selected row index on current page
+static int s_page = 0;   // 0-indexed
 static int s_total_replays = 0;
-static int s_zone = 0;        // 0=table, 1=page controls
+static int s_zone = 0; // 0=table, 1=page controls
 
 static std::vector<NrpSlotEntry> s_slots;
 
@@ -127,13 +127,11 @@ static int SDLCALL async_fetch_fn(void* data) {
     int count = LobbyServer_ListReplays(entries, NRP_SLOTS_PER_PAGE, page, &total);
 
     if (count < 0) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-                    "[NetworkReplayPicker] Fetch failed (page %d)", page);
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[NetworkReplayPicker] Fetch failed (page %d)", page);
         s_fetch_error = 1;
         count = 0;
     } else {
-        SDL_Log("[NetworkReplayPicker] Fetched %d replays (total=%d, page=%d)",
-                count, total, page);
+        SDL_Log("[NetworkReplayPicker] Fetched %d replays (total=%d, page=%d)", count, total, page);
         s_fetch_error = 0;
     }
 
@@ -246,7 +244,8 @@ static void do_init(void) {
     ctor.BindFunc("nrp_page", [](Rml::Variant& v) { v = s_page + 1; });
     ctor.BindFunc("nrp_total_pages", [](Rml::Variant& v) {
         int pages = (s_total_replays + NRP_SLOTS_PER_PAGE - 1) / NRP_SLOTS_PER_PAGE;
-        if (pages < 1) pages = 1;
+        if (pages < 1)
+            pages = 1;
         v = pages;
     });
     ctor.BindFunc("nrp_has_prev", [](Rml::Variant& v) { v = (s_page > 0); });
@@ -276,7 +275,7 @@ static void rebuild_slots(void) {
         e.p2_country = Rml::String(s_fetch_buf[i].p2_country);
         e.p1_char_name = Rml::String(char_name(s_fetch_buf[i].p1_char));
         e.p2_char_name = Rml::String(char_name(s_fetch_buf[i].p2_char));
-        
+
         if (strcmp(s_fetch_buf[i].winner_id, s_fetch_buf[i].p1_id) == 0) {
             e.winner_id = Rml::String(s_fetch_buf[i].p1_name);
         } else if (strcmp(s_fetch_buf[i].winner_id, s_fetch_buf[i].p2_id) == 0) {
@@ -284,7 +283,7 @@ static void rebuild_slots(void) {
         } else {
             e.winner_id = "";
         }
-        
+
         e.date_str = Rml::String(s_fetch_buf[i].date);
 
         char num[8];
@@ -389,7 +388,8 @@ extern "C" void rmlui_network_replay_picker_update(void) {
 
         if (s_cursor >= (int)s_slots.size() && !s_slots.empty())
             s_cursor = (int)s_slots.size() - 1;
-        if (s_cursor < 0) s_cursor = 0;
+        if (s_cursor < 0)
+            s_cursor = 0;
 
         s_model.DirtyVariable("nrp_loading");
         s_model.DirtyVariable("nrp_error");
@@ -429,7 +429,8 @@ extern "C" void rmlui_network_replay_picker_update(void) {
                     s_model.DirtyVariable("nrp_error");
                     SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
                                 "[NetworkReplayPicker] Replay too large: %zu > %zu",
-                                replay_data_size, sizeof(Replay_w));
+                                replay_data_size,
+                                sizeof(Replay_w));
                 }
             } else {
                 s_error = "Invalid replay data";
@@ -465,13 +466,15 @@ extern "C" int rmlui_network_replay_picker_poll(void) {
         if (slot_count > 0) {
             if (trigger & NRP_SWK_UP) {
                 s_cursor--;
-                if (s_cursor < 0) s_cursor = slot_count - 1;
+                if (s_cursor < 0)
+                    s_cursor = slot_count - 1;
                 s_model.DirtyVariable("nrp_cursor");
                 s_model.DirtyVariable("nrp_slots");
             }
             if (trigger & NRP_SWK_DOWN) {
                 s_cursor++;
-                if (s_cursor >= slot_count) s_cursor = 0;
+                if (s_cursor >= slot_count)
+                    s_cursor = 0;
                 s_model.DirtyVariable("nrp_cursor");
                 s_model.DirtyVariable("nrp_slots");
             }

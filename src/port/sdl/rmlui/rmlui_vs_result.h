@@ -21,7 +21,12 @@ void rmlui_vs_result_shutdown(void);
 
 static inline void rmlui_vs_result_init(void) {}
 static inline void rmlui_vs_result_update(void) {}
-static inline void rmlui_vs_result_show(int p1_wins, int p2_wins, int p1_pct, int p2_pct) { (void)p1_wins; (void)p2_wins; (void)p1_pct; (void)p2_pct; }
+static inline void rmlui_vs_result_show(int p1_wins, int p2_wins, int p1_pct, int p2_pct) {
+    (void)p1_wins;
+    (void)p2_wins;
+    (void)p1_pct;
+    (void)p2_pct;
+}
 static inline void rmlui_vs_result_hide(void) {}
 static inline void rmlui_vs_result_shutdown(void) {}
 

@@ -27,8 +27,8 @@
 #define PROBE_PKT_SIZE 16
 
 #define MAX_PROBE_PEERS 16
-#define PROBE_INTERVAL_MS 500  /* Send one probe per peer every 0.5s */
-#define MISS_TIMEOUT_COUNT 10  /* Mark unreachable after 10 misses (5s) */
+#define PROBE_INTERVAL_MS 500 /* Send one probe per peer every 0.5s */
+#define MISS_TIMEOUT_COUNT 10 /* Mark unreachable after 10 misses (5s) */
 
 #define SMOOTHING_ALPHA_NUM 3 /* α = 3/4 = 0.75 (rapid drop-off for router wakeup spikes) */
 #define SMOOTHING_ALPHA_DEN 4

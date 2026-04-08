@@ -50,9 +50,6 @@ static void clear_render_tasks(void) {
     gl_state.render_task_count = 0;
 }
 
-
-
-
 /**
  * ⚡ Bolt: Ping-pong merge sort — eliminates per-pass memcpy.
  *
@@ -337,8 +334,10 @@ void SDLGameRendererGL_RenderFrame(void) {
     TRACE_ZONE_END();
 }
 
-void SDLGameRendererGL_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h, bool backgrounds_only) {
-    if (gl_state.render_task_count == 0) return;
+void SDLGameRendererGL_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
+                                    bool backgrounds_only) {
+    if (gl_state.render_task_count == 0)
+        return;
 
     TRACE_ZONE_N("RenderHDPass");
 
@@ -357,7 +356,7 @@ void SDLGameRendererGL_RenderHDPass(int viewport_x, int viewport_y, int viewport
     GLuint hd_shader;
 
     if (!backgrounds_only) {
-        // Bind Native depth map to texture unit 1 to enable fragment exclusion 
+        // Bind Native depth map to texture unit 1 to enable fragment exclusion
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, cps3_canvas_depth_texture);
         glActiveTexture(GL_TEXTURE0);
@@ -431,10 +430,12 @@ void SDLGameRendererGL_RenderHDPass(int viewport_x, int viewport_y, int viewport
         while (i < gl_state.render_task_count && gl_state.render_tasks[i].array_layer == -1 &&
                gl_state.render_tasks[i].texture == current_texture &&
                gl_state.render_tasks[i].blend_mode == current_applied_blend_mode) {
-            
+
             // Re-validate against splitting planes within the internal batch loop
-            if (backgrounds_only && gl_state.render_tasks[i].z >= 0.1f) break;
-            if (!backgrounds_only && gl_state.render_tasks[i].z < 0.1f) break;
+            if (backgrounds_only && gl_state.render_tasks[i].z >= 0.1f)
+                break;
+            if (!backgrounds_only && gl_state.render_tasks[i].z < 0.1f)
+                break;
 
             batch_count++;
             i++;
@@ -444,7 +445,7 @@ void SDLGameRendererGL_RenderHDPass(int viewport_x, int viewport_y, int viewport
         const size_t offset_bytes = (size_t)start_index * 6 * sizeof(int);
         glDrawElements(GL_TRIANGLES, batch_count * 6, GL_UNSIGNED_INT, (void*)offset_bytes);
     }
-    
+
     // Unbind Depth
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -841,8 +842,8 @@ void SDLGameRendererGL_DrawOverlaySpriteEx(unsigned int gl_texture_id, float x, 
     push_render_task((GLuint)gl_texture_id, sdl_vertices, z, -1, 0);
 }
 
-void SDLGameRendererGL_DrawOverlaySubSprite(unsigned int gl_texture_id, float x, float y, float w, float h, 
-                                            float u0, float v0, float u1, float v1, float z) {
+void SDLGameRendererGL_DrawOverlaySubSprite(unsigned int gl_texture_id, float x, float y, float w, float h, float u0,
+                                            float v0, float u1, float v1, float z) {
     const Uint32 white = 0xFFFFFFFF;
     SDL_Vertex sdl_vertices[4];
     const float s = (float)g_resolution_scale;

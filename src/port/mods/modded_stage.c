@@ -264,7 +264,7 @@ static void draw_layer(int layer_index, const BackgroundParameters* bg_prm, cons
 
     /* Base depth for the modded stage - drawn way behind the character sprites */
     float z_base = 0.05f + (layer_index * 0.001f);
-    
+
     TextureUtil_DrawSubQuadEx(res->texture, 0.0f, 0.0f, vp_w, vp_h, u0, v0, u1, v1, z_base);
 }
 void ModdedStage_Render(const BG* bg) {

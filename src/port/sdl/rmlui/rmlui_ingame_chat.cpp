@@ -23,9 +23,9 @@ extern "C" {
 }
 
 // ─── Configuration ───────────────────────────────────────────────
-#define CHAT_DISPLAY_SLOTS 4      // Max visible messages
-#define CHAT_EXPIRE_FRAMES 300    // ~5 seconds at 60fps
-#define CHAT_INPUT_MAX     120    // Max input length (matches adapter limit)
+#define CHAT_DISPLAY_SLOTS 4   // Max visible messages
+#define CHAT_EXPIRE_FRAMES 300 // ~5 seconds at 60fps
+#define CHAT_INPUT_MAX 120     // Max input length (matches adapter limit)
 
 // ─── Data Structs ────────────────────────────────────────────────
 
@@ -91,7 +91,7 @@ static void push_message(const char* sender, const char* text) {
         s_messages.erase(s_messages.begin());
     }
 
-    s_messages.push_back({sender, text, SDL_GetTicks()});
+    s_messages.push_back({ sender, text, SDL_GetTicks() });
     s_model_handle.DirtyVariable("messages");
 }
 

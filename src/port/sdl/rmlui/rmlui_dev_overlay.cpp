@@ -810,14 +810,20 @@ static void do_init() {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi DevOverlay] Init complete (lazy): %d docs", (int)s_docs.size());
 }
 
-extern "C" void rmlui_dev_overlay_init() { do_init(); }
+extern "C" void rmlui_dev_overlay_init() {
+    do_init();
+}
 
 // ── Per-frame update ──────────────────────────────────────────
 
 static bool s_first_open = true;
 
 extern "C" void rmlui_dev_overlay_update() {
-    if (!s_initialized) { do_init(); if (!s_initialized) return; }
+    if (!s_initialized) {
+        do_init();
+        if (!s_initialized)
+            return;
+    }
     if (!s_model)
         return;
 

@@ -56,12 +56,12 @@ bool RendererPlugin_Load(const char* plugin_name, int argc, const char** argv) {
     }
 #else
     SDL_snprintf(dll_path, sizeof(dll_path), "%slib%s.so", base ? base : "", plugin_name);
-    // macOS fallback
-    #ifdef __APPLE__
+// macOS fallback
+#ifdef __APPLE__
     if (!SDL_GetPathInfo(dll_path, NULL)) {
         SDL_snprintf(dll_path, sizeof(dll_path), "%slib%s.dylib", base ? base : "", plugin_name);
     }
-    #endif
+#endif
 #endif
 
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Loading renderer plugin: %s", dll_path);

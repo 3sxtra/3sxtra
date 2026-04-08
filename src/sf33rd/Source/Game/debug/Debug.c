@@ -38,9 +38,9 @@
 /** @brief Debug task state machine phases. */
 enum DebugTaskState {
     DEBUG_STATE_INIT = 0, /**< Initialize debug state */
-    DEBUG_STATE_1ST  = 1, /**< First-frame setup */
-    DEBUG_STATE_2ND  = 2, /**< Main loop */
-    DEBUG_STATE_COUNT      /**< Number of states (3) */
+    DEBUG_STATE_1ST = 1,  /**< First-frame setup */
+    DEBUG_STATE_2ND = 2,  /**< Main loop */
+    DEBUG_STATE_COUNT     /**< Number of states (3) */
 };
 
 // sbss
@@ -70,10 +70,17 @@ extern s8* cpu_data[];
 /** @brief Debug task entry point — dispatches to Init/1st/2nd and runs diagnostics. */
 void Debug_Task(struct _TASK* task_ptr) {
     switch (task_ptr->r_no[0]) {
-    case DEBUG_STATE_INIT: Debug_Init(task_ptr); break;
-    case DEBUG_STATE_1ST:  Debug_1st(task_ptr);  break;
-    case DEBUG_STATE_2ND:  Debug_2nd(task_ptr);  break;
-    default: return;
+    case DEBUG_STATE_INIT:
+        Debug_Init(task_ptr);
+        break;
+    case DEBUG_STATE_1ST:
+        Debug_1st(task_ptr);
+        break;
+    case DEBUG_STATE_2ND:
+        Debug_2nd(task_ptr);
+        break;
+    default:
+        return;
     }
 
     Disp_Free_work();

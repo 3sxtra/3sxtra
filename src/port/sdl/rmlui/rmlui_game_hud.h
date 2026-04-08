@@ -26,7 +26,6 @@ void rmlui_game_hud_shutdown(void);
 
 #include <stdbool.h>
 
-
 /// Match Banner Tracking State
 extern int g_match_ft;
 extern char g_match_p1_name[64];

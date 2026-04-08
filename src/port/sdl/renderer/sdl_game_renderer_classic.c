@@ -32,14 +32,16 @@
 #define RENDER_TASK_MAX 8192
 #define TEXTURES_TO_DESTROY_MAX 1024
 
-// AoS RenderTask — simple and readable (no SoA optimizations)
+// partially SoA RenderTask (vertices split out for batch contiguous fast path)
 typedef struct RenderTask {
     SDL_Texture* texture;
-    SDL_Vertex vertices[4];
     float z;
     int original_index;
     RendererBlendMode blend_mode;
+    bool is_rect;
 } RenderTask;
+
+static SDL_Vertex cl_task_verts[RENDER_TASK_MAX][4]; // ⚡ Parallel SoA array for vertices
 
 static SDL_Texture* cps3_canvas_classic = NULL;
 
@@ -62,7 +64,7 @@ static RendererBlendMode cl_current_blend_mode = RENDERER_BLEND_NORMAL;
 
 static RenderTask cl_render_tasks[RENDER_TASK_MAX];
 static int cl_render_task_count = 0;
-
+static int cl_sort_order[RENDER_TASK_MAX]; // ⚡ Index-based sort: sort 4-byte indices not 104-byte structs
 
 // Batch buffers for SDL_RenderGeometry
 static SDL_Vertex cl_batch_vertices[RENDER_TASK_MAX * 4];
@@ -115,15 +117,45 @@ static void cl_read_color(const void* pixels, int index, size_t color_size, SDL_
     }
 }
 
-// qsort comparator: sort by Z depth, then stable by original index
-static int cl_compare_render_tasks(const void* a, const void* b) {
-    const RenderTask* ta = (const RenderTask*)a;
-    const RenderTask* tb = (const RenderTask*)b;
-    if (ta->z < tb->z)
-        return -1;
-    if (ta->z > tb->z)
-        return 1;
-    return ta->original_index - tb->original_index;
+// ⚡ Insertion sort on index array — O(n) for near-sorted input (which CPS3 frames are).
+// Sorts by Z depth, stable by original submission order.
+static void cl_insertion_sort_indices(int* order, int count) {
+    for (int i = 1; i < count; i++) {
+        const int key = order[i];
+        const float key_z = cl_render_tasks[key].z;
+        int j = i - 1;
+        while (j >= 0 &&
+               (cl_render_tasks[order[j]].z > key_z || (cl_render_tasks[order[j]].z == key_z && order[j] > key))) {
+            order[j + 1] = order[j];
+            j--;
+        }
+        order[j + 1] = key;
+    }
+}
+
+// ⚡ Texture sub-sort: within runs of equal Z, sort by texture pointer.
+// Maximizes same-texture batching → fewer SDL_RenderGeometry draw calls.
+static void cl_texture_subsort_equal_z(int* order, int count) {
+    int i = 0;
+    while (i < count) {
+        // Find end of this Z-equal run
+        const float z = cl_render_tasks[order[i]].z;
+        int j = i + 1;
+        while (j < count && cl_render_tasks[order[j]].z == z)
+            j++;
+        // Stable insertion sort [i..j) by texture pointer (runs are typically small)
+        for (int a = i + 1; a < j; a++) {
+            const int key = order[a];
+            const SDL_Texture* key_tex = cl_render_tasks[key].texture;
+            int b = a - 1;
+            while (b >= i && (uintptr_t)cl_render_tasks[order[b]].texture > (uintptr_t)key_tex) {
+                order[b + 1] = order[b];
+                b--;
+            }
+            order[b + 1] = key;
+        }
+        i = j;
+    }
 }
 
 // --- draw_quad: enqueue a rendering task ---
@@ -136,7 +168,8 @@ static void cl_draw_quad(SDL_Vertex vertices[4], SDL_Texture* texture, float z) 
     task->z = flPS2ConvScreenFZ(z);
     task->original_index = cl_render_task_count;
     task->blend_mode = cl_current_blend_mode;
-    memcpy(task->vertices, vertices, sizeof(SDL_Vertex) * 4);
+    task->is_rect = false; // Default to geometry mode
+    memcpy(cl_task_verts[cl_render_task_count], vertices, sizeof(SDL_Vertex) * 4);
     cl_render_task_count++;
 }
 
@@ -253,48 +286,130 @@ void SDLGameRendererClassic_RenderFrame(void) {
         return;
     }
 
-    // Simple qsort — no adaptive sorting, no radix sort
+    // ⚡ Index-based sort: sort 4-byte indices instead of 104-byte structs.
+    // Insertion sort is O(n) for near-sorted input (CPS3 submits mostly in Z order).
     TRACE_SUB_BEGIN("Classic:Sort");
-    qsort(cl_render_tasks, cl_render_task_count, sizeof(RenderTask), cl_compare_render_tasks);
+    for (int i = 0; i < cl_render_task_count; i++)
+        cl_sort_order[i] = i;
+    cl_insertion_sort_indices(cl_sort_order, cl_render_task_count);
+    // ⚡ Texture sub-sort: group same-texture sprites within equal-Z runs.
+    cl_texture_subsort_equal_z(cl_sort_order, cl_render_task_count);
     TRACE_SUB_END();
 
-    // Batch rendering: group consecutive tasks with same texture pointer and blend mode
+    // Batch rendering: group consecutive tasks with same texture pointer and blend mode.
+    // Uses cl_sort_order[] indirection — structs stay in submission order.
     TRACE_SUB_BEGIN("Classic:BatchRender");
     int batch_start = 0;
-    SDL_Texture* current_batch_texture = cl_render_tasks[0].texture;
-    RendererBlendMode current_batch_blend = cl_render_tasks[0].blend_mode;
+    SDL_Texture* current_batch_texture = cl_render_tasks[cl_sort_order[0]].texture;
+    RendererBlendMode current_batch_blend = cl_render_tasks[cl_sort_order[0]].blend_mode;
+    bool current_batch_is_rect = cl_render_tasks[cl_sort_order[0]].is_rect;
 
     for (int i = 0; i <= cl_render_task_count; i++) {
-        bool should_flush = (i == cl_render_task_count) ||
-                            (cl_render_tasks[i].texture != current_batch_texture) ||
-                            (cl_render_tasks[i].blend_mode != current_batch_blend);
+        const int idx = (i < cl_render_task_count) ? cl_sort_order[i] : 0;
+        const bool should_flush = (i == cl_render_task_count) ||
+                                  (cl_render_tasks[idx].texture != current_batch_texture) ||
+                                  (cl_render_tasks[idx].blend_mode != current_batch_blend) ||
+                                  (cl_render_tasks[idx].is_rect != current_batch_is_rect);
 
         if (should_flush) {
-            int batch_size = i - batch_start;
+            const int batch_size = i - batch_start;
             if (batch_size > 0) {
                 SDL_BlendMode sdl_blend;
-                if (current_batch_blend == RENDERER_BLEND_ADD) sdl_blend = SDL_BLENDMODE_ADD;
-                else if (current_batch_blend == RENDERER_BLEND_MULTIPLY) sdl_blend = SDL_BLENDMODE_MUL;
-                else sdl_blend = SDL_BLENDMODE_BLEND;
+                if (current_batch_blend == RENDERER_BLEND_ADD)
+                    sdl_blend = SDL_BLENDMODE_ADD;
+                else if (current_batch_blend == RENDERER_BLEND_MULTIPLY)
+                    sdl_blend = SDL_BLENDMODE_MUL;
+                else
+                    sdl_blend = SDL_BLENDMODE_BLEND;
 
-                if (current_batch_texture) SDL_SetTextureBlendMode(current_batch_texture, sdl_blend);
-                else SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
+                if (current_batch_texture)
+                    SDL_SetTextureBlendMode(current_batch_texture, sdl_blend);
+                else
+                    SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
 
-                for (int j = 0; j < batch_size; j++) {
-                    memcpy(
-                        &cl_batch_vertices[j * 4], cl_render_tasks[batch_start + j].vertices, 4 * sizeof(SDL_Vertex));
+                // ⚡ Rect fast path: use SDL_RenderTexture for axis-aligned rects.
+                // SDL_RenderTexture can use optimized hardware blit paths.
+                if (current_batch_is_rect && current_batch_texture != NULL) {
+                    float tex_w, tex_h;
+                    SDL_GetTextureSize(current_batch_texture, &tex_w, &tex_h);
+
+                    for (int j = 0; j < batch_size; j++) {
+                        const int si = cl_sort_order[batch_start + j];
+                        const SDL_Vertex* v = cl_task_verts[si];
+
+                        float src_x = v[0].tex_coord.x * tex_w;
+                        float src_y = v[0].tex_coord.y * tex_h;
+                        float src_w = (v[3].tex_coord.x - v[0].tex_coord.x) * tex_w;
+                        float src_h = (v[3].tex_coord.y - v[0].tex_coord.y) * tex_h;
+
+                        SDL_FlipMode flip = SDL_FLIP_NONE;
+                        if (src_w < 0) {
+                            flip |= SDL_FLIP_HORIZONTAL;
+                            src_x += src_w;
+                            src_w = -src_w;
+                        }
+                        if (src_h < 0) {
+                            flip |= SDL_FLIP_VERTICAL;
+                            src_y += src_h;
+                            src_h = -src_h;
+                        }
+
+                        const SDL_FRect src = { src_x, src_y, src_w, src_h };
+                        const SDL_FRect dst = { v[0].position.x,
+                                                v[0].position.y,
+                                                v[3].position.x - v[0].position.x,
+                                                v[3].position.y - v[0].position.y };
+
+                        SDL_SetTextureColorModFloat(current_batch_texture, v[0].color.r, v[0].color.g, v[0].color.b);
+                        SDL_SetTextureAlphaModFloat(current_batch_texture, v[0].color.a);
+
+                        if (flip != SDL_FLIP_NONE) {
+                            SDL_RenderTextureRotated(renderer, current_batch_texture, &src, &dst, 0.0, NULL, flip);
+                        } else {
+                            SDL_RenderTexture(renderer, current_batch_texture, &src, &dst);
+                        }
+                    }
+                    // Reset color mod
+                    SDL_SetTextureColorModFloat(current_batch_texture, 1.0f, 1.0f, 1.0f);
+                    SDL_SetTextureAlphaModFloat(current_batch_texture, 1.0f);
+                } else {
+                    // ⚡ Batch copy elimination: if tasks are sequential, pass direct array offset
+                    bool contiguous = true;
+                    for (int j = 1; j < batch_size; j++) {
+                        if (cl_sort_order[batch_start + j] != cl_sort_order[batch_start + j - 1] + 1) {
+                            contiguous = false;
+                            break;
+                        }
+                    }
+
+                    if (contiguous) {
+                        const int first_si = cl_sort_order[batch_start];
+                        SDL_RenderGeometry(renderer,
+                                           current_batch_texture,
+                                           (const SDL_Vertex*)cl_task_verts[first_si],
+                                           batch_size * 4,
+                                           cl_batch_indices,
+                                           batch_size * 6);
+                    } else {
+                        // Sparse elements — must copy into flat buffer
+                        for (int j = 0; j < batch_size; j++) {
+                            const int si = cl_sort_order[batch_start + j];
+                            memcpy(&cl_batch_vertices[j * 4], cl_task_verts[si], 4 * sizeof(SDL_Vertex));
+                        }
+                        SDL_RenderGeometry(renderer,
+                                           current_batch_texture,
+                                           cl_batch_vertices,
+                                           batch_size * 4,
+                                           cl_batch_indices,
+                                           batch_size * 6);
+                    }
                 }
-                SDL_RenderGeometry(renderer,
-                                   current_batch_texture,
-                                   cl_batch_vertices,
-                                   batch_size * 4,
-                                   cl_batch_indices,
-                                   batch_size * 6);
             }
 
             if (i < cl_render_task_count) {
-                current_batch_texture = cl_render_tasks[i].texture;
-                current_batch_blend = cl_render_tasks[i].blend_mode;
+                current_batch_texture = cl_render_tasks[idx].texture;
+                current_batch_blend = cl_render_tasks[idx].blend_mode;
+                current_batch_is_rect = cl_render_tasks[idx].is_rect;
                 batch_start = i;
             }
         }
@@ -313,7 +428,6 @@ void SDLGameRendererClassic_EndFrame(void) {
     cl_render_task_count = 0;
     TRACE_ZONE_END();
 }
-
 
 SDL_Texture* SDLGameRendererClassic_GetCanvas(void) {
     return cps3_canvas_classic;
@@ -541,8 +655,8 @@ void SDLGameRendererClassic_SetTexture(unsigned int th) {
 
     /* ── Plugin texture override ── */
     if (RENDERER_HAS_PLUGIN() && g_renderer_plugin->TryOverrideTexture) {
-        void* override_tex = g_renderer_plugin->TryOverrideTexture(
-            (unsigned int)texture_handle, (unsigned int)palette_handle);
+        void* override_tex =
+            g_renderer_plugin->TryOverrideTexture((unsigned int)texture_handle, (unsigned int)palette_handle);
         if (override_tex != NULL) {
             SDL_Texture* sdl_tex = (SDL_Texture*)override_tex;
             SDL_SetTextureScaleMode(sdl_tex, SDL_SCALEMODE_LINEAR);
@@ -697,26 +811,118 @@ void SDLGameRendererClassic_DrawSprite2(const Sprite2* sprite2) {
     SDLGameRendererClassic_DrawSprite(&sprite, sprite2->vertex_color);
 }
 
-// FlushSprite2Batch — calls through engine's texture pipeline via flSetRenderState
+// ⚡ Inlined FlushSprite2Batch — Sprite2 → RenderTask directly in one loop.
+// Eliminates the 3-deep call chain (DrawSprite2 → DrawSprite → draw_quad)
+// and 2 intermediate vertex/sprite copies per sprite.
 void SDLGameRendererClassic_FlushSprite2Batch(Sprite2* chips, const unsigned char* active_layers, int count) {
     TRACE_ZONE_N("Classic:FlushBatch");
     TRACE_ZONE_VALUE(count);
 
+    // ⚡ Pre-computed u8→float LUT (avoids per-channel division by 255.0f)
+    static const float to_float[256] = {
+        0.0f / 255,   1.0f / 255,   2.0f / 255,   3.0f / 255,   4.0f / 255,   5.0f / 255,   6.0f / 255,   7.0f / 255,
+        8.0f / 255,   9.0f / 255,   10.0f / 255,  11.0f / 255,  12.0f / 255,  13.0f / 255,  14.0f / 255,  15.0f / 255,
+        16.0f / 255,  17.0f / 255,  18.0f / 255,  19.0f / 255,  20.0f / 255,  21.0f / 255,  22.0f / 255,  23.0f / 255,
+        24.0f / 255,  25.0f / 255,  26.0f / 255,  27.0f / 255,  28.0f / 255,  29.0f / 255,  30.0f / 255,  31.0f / 255,
+        32.0f / 255,  33.0f / 255,  34.0f / 255,  35.0f / 255,  36.0f / 255,  37.0f / 255,  38.0f / 255,  39.0f / 255,
+        40.0f / 255,  41.0f / 255,  42.0f / 255,  43.0f / 255,  44.0f / 255,  45.0f / 255,  46.0f / 255,  47.0f / 255,
+        48.0f / 255,  49.0f / 255,  50.0f / 255,  51.0f / 255,  52.0f / 255,  53.0f / 255,  54.0f / 255,  55.0f / 255,
+        56.0f / 255,  57.0f / 255,  58.0f / 255,  59.0f / 255,  60.0f / 255,  61.0f / 255,  62.0f / 255,  63.0f / 255,
+        64.0f / 255,  65.0f / 255,  66.0f / 255,  67.0f / 255,  68.0f / 255,  69.0f / 255,  70.0f / 255,  71.0f / 255,
+        72.0f / 255,  73.0f / 255,  74.0f / 255,  75.0f / 255,  76.0f / 255,  77.0f / 255,  78.0f / 255,  79.0f / 255,
+        80.0f / 255,  81.0f / 255,  82.0f / 255,  83.0f / 255,  84.0f / 255,  85.0f / 255,  86.0f / 255,  87.0f / 255,
+        88.0f / 255,  89.0f / 255,  90.0f / 255,  91.0f / 255,  92.0f / 255,  93.0f / 255,  94.0f / 255,  95.0f / 255,
+        96.0f / 255,  97.0f / 255,  98.0f / 255,  99.0f / 255,  100.0f / 255, 101.0f / 255, 102.0f / 255, 103.0f / 255,
+        104.0f / 255, 105.0f / 255, 106.0f / 255, 107.0f / 255, 108.0f / 255, 109.0f / 255, 110.0f / 255, 111.0f / 255,
+        112.0f / 255, 113.0f / 255, 114.0f / 255, 115.0f / 255, 116.0f / 255, 117.0f / 255, 118.0f / 255, 119.0f / 255,
+        120.0f / 255, 121.0f / 255, 122.0f / 255, 123.0f / 255, 124.0f / 255, 125.0f / 255, 126.0f / 255, 127.0f / 255,
+        128.0f / 255, 129.0f / 255, 130.0f / 255, 131.0f / 255, 132.0f / 255, 133.0f / 255, 134.0f / 255, 135.0f / 255,
+        136.0f / 255, 137.0f / 255, 138.0f / 255, 139.0f / 255, 140.0f / 255, 141.0f / 255, 142.0f / 255, 143.0f / 255,
+        144.0f / 255, 145.0f / 255, 146.0f / 255, 147.0f / 255, 148.0f / 255, 149.0f / 255, 150.0f / 255, 151.0f / 255,
+        152.0f / 255, 153.0f / 255, 154.0f / 255, 155.0f / 255, 156.0f / 255, 157.0f / 255, 158.0f / 255, 159.0f / 255,
+        160.0f / 255, 161.0f / 255, 162.0f / 255, 163.0f / 255, 164.0f / 255, 165.0f / 255, 166.0f / 255, 167.0f / 255,
+        168.0f / 255, 169.0f / 255, 170.0f / 255, 171.0f / 255, 172.0f / 255, 173.0f / 255, 174.0f / 255, 175.0f / 255,
+        176.0f / 255, 177.0f / 255, 178.0f / 255, 179.0f / 255, 180.0f / 255, 181.0f / 255, 182.0f / 255, 183.0f / 255,
+        184.0f / 255, 185.0f / 255, 186.0f / 255, 187.0f / 255, 188.0f / 255, 189.0f / 255, 190.0f / 255, 191.0f / 255,
+        192.0f / 255, 193.0f / 255, 194.0f / 255, 195.0f / 255, 196.0f / 255, 197.0f / 255, 198.0f / 255, 199.0f / 255,
+        200.0f / 255, 201.0f / 255, 202.0f / 255, 203.0f / 255, 204.0f / 255, 205.0f / 255, 206.0f / 255, 207.0f / 255,
+        208.0f / 255, 209.0f / 255, 210.0f / 255, 211.0f / 255, 212.0f / 255, 213.0f / 255, 214.0f / 255, 215.0f / 255,
+        216.0f / 255, 217.0f / 255, 218.0f / 255, 219.0f / 255, 220.0f / 255, 221.0f / 255, 222.0f / 255, 223.0f / 255,
+        224.0f / 255, 225.0f / 255, 226.0f / 255, 227.0f / 255, 228.0f / 255, 229.0f / 255, 230.0f / 255, 231.0f / 255,
+        232.0f / 255, 233.0f / 255, 234.0f / 255, 235.0f / 255, 236.0f / 255, 237.0f / 255, 238.0f / 255, 239.0f / 255,
+        240.0f / 255, 241.0f / 255, 242.0f / 255, 243.0f / 255, 244.0f / 255, 245.0f / 255, 246.0f / 255, 247.0f / 255,
+        248.0f / 255, 249.0f / 255, 250.0f / 255, 251.0f / 255, 252.0f / 255, 253.0f / 255, 254.0f / 255, 255.0f / 255,
+    };
+
     unsigned int last_tex_code = 0;
+    const float scale = (float)g_resolution_scale;
 
     for (int i = 0; i < count; i++) {
-        if (active_layers && !active_layers[chips[i].id]) {
+        if (active_layers && !active_layers[chips[i].id])
             continue;
-        }
+        if (cl_render_task_count >= RENDER_TASK_MAX)
+            break;
 
-        // Only call SetTexture through the engine when tex_code changes
-        const unsigned int tc = chips[i].tex_code;
+        const Sprite2* spr = &chips[i];
+
+        // SetTexture on tex_code change (still goes through engine pipeline)
+        const unsigned int tc = spr->tex_code;
         if (tc != last_tex_code) {
             last_tex_code = tc;
             flSetRenderState(FLRENDER_TEXSTAGE0, tc);
         }
 
-        SDLGameRendererClassic_DrawSprite2(&chips[i]);
+        // --- Inlined: Sprite2 → RenderTask (was DrawSprite2 → DrawSprite → draw_quad) ---
+        RenderTask* task = &cl_render_tasks[cl_render_task_count];
+        task->texture = cl_current_texture;
+        task->z = flPS2ConvScreenFZ(spr->v[0].z);
+        task->original_index = cl_render_task_count;
+        task->blend_mode = cl_current_blend_mode;
+
+        // Color: u8→float via LUT (was cl_read_rgba32_fcolor with 4 divisions)
+        const Uint32 color = spr->vertex_color;
+        const SDL_FColor fc = { .b = to_float[color & 0xFF],
+                                .g = to_float[(color >> 8) & 0xFF],
+                                .r = to_float[(color >> 16) & 0xFF],
+                                .a = to_float[(color >> 24) & 0xFF] };
+
+        // Expand Sprite2 2-corner → 4 vertices directly into task
+        // Sprite2: v[0]=TL, v[1]=BR; t[0]=TL UV, t[1]=BR UV
+        const float x0 = spr->v[0].x * scale;
+        const float y0 = spr->v[0].y * scale;
+        const float x1 = spr->v[1].x * scale;
+        const float y1 = spr->v[1].y * scale;
+        const float s0 = spr->t[0].s, t0 = spr->t[0].t;
+        const float s1 = spr->t[1].s, t1 = spr->t[1].t;
+
+        // TL
+        cl_task_verts[cl_render_task_count][0].position.x = x0;
+        cl_task_verts[cl_render_task_count][0].position.y = y0;
+        cl_task_verts[cl_render_task_count][0].tex_coord.x = s0;
+        cl_task_verts[cl_render_task_count][0].tex_coord.y = t0;
+        cl_task_verts[cl_render_task_count][0].color = fc;
+        // TR
+        cl_task_verts[cl_render_task_count][1].position.x = x1;
+        cl_task_verts[cl_render_task_count][1].position.y = y0;
+        cl_task_verts[cl_render_task_count][1].tex_coord.x = s1;
+        cl_task_verts[cl_render_task_count][1].tex_coord.y = t0;
+        cl_task_verts[cl_render_task_count][1].color = fc;
+        // BL
+        cl_task_verts[cl_render_task_count][2].position.x = x0;
+        cl_task_verts[cl_render_task_count][2].position.y = y1;
+        cl_task_verts[cl_render_task_count][2].tex_coord.x = s0;
+        cl_task_verts[cl_render_task_count][2].tex_coord.y = t1;
+        cl_task_verts[cl_render_task_count][2].color = fc;
+        // BR
+        cl_task_verts[cl_render_task_count][3].position.x = x1;
+        cl_task_verts[cl_render_task_count][3].position.y = y1;
+        cl_task_verts[cl_render_task_count][3].tex_coord.x = s1;
+        cl_task_verts[cl_render_task_count][3].tex_coord.y = t1;
+        cl_task_verts[cl_render_task_count][3].color = fc;
+
+        task->is_rect = true; // ⚡ Inlined SPR2 are always axis-aligned rects
+
+        cl_render_task_count++;
     }
 
     TRACE_ZONE_END();
@@ -760,8 +966,8 @@ void SDLGameRendererClassic_DrawOverlaySpriteEx(SDL_Texture* texture, float x, f
     cl_render_tasks[cl_render_task_count - 1].z = z;
 }
 
-void SDLGameRendererClassic_DrawOverlaySubSprite(SDL_Texture* texture, float x, float y, float w, float h, 
-                                                 float u0, float v0, float u1, float v1, float z) {
+void SDLGameRendererClassic_DrawOverlaySubSprite(SDL_Texture* texture, float x, float y, float w, float h, float u0,
+                                                 float v0, float u1, float v1, float z) {
     if (cl_render_task_count >= RENDER_TASK_MAX || texture == NULL)
         return;
 

@@ -185,15 +185,15 @@ GLuint create_shader_program(const char* base_path, const char* vertex_path, con
 
     char* vertex_source = read_shader_source(full_vertex_path);
     if (vertex_source == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "Failed to read vertex shader source from path: %s", full_vertex_path);
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION, "Failed to read vertex shader source from path: %s", full_vertex_path);
         return 0;
     }
 
     char* fragment_source = read_shader_source(full_fragment_path);
     if (fragment_source == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "Failed to read fragment shader source from path: %s", full_fragment_path);
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION, "Failed to read fragment shader source from path: %s", full_fragment_path);
         SDL_free(vertex_source);
         return 0;
     }
@@ -207,8 +207,8 @@ GLuint create_shader_program(const char* base_path, const char* vertex_path, con
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "Vertex shader compilation failed (%s): %s", full_vertex_path, info_log);
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION, "Vertex shader compilation failed (%s): %s", full_vertex_path, info_log);
         glDeleteShader(vertex_shader);
         SDL_free(vertex_source);
         SDL_free(fragment_source);
@@ -221,8 +221,8 @@ GLuint create_shader_program(const char* base_path, const char* vertex_path, con
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(fragment_shader, 512, NULL, info_log);
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "Fragment shader compilation failed (%s): %s", full_fragment_path, info_log);
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION, "Fragment shader compilation failed (%s): %s", full_fragment_path, info_log);
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
         SDL_free(vertex_source);
@@ -315,10 +315,14 @@ int SDLApp_Init() {
     if (!g_cli_renderer_set) {
         const char* cfg_renderer = Config_GetString(CFG_KEY_RENDERER);
         if (cfg_renderer && cfg_renderer[0] != '\0' && strcmp(cfg_renderer, "auto") != 0) {
-            if (strcmp(cfg_renderer, "gpu") == 0) g_renderer_backend = RENDERER_SDLGPU;
-            else if (strcmp(cfg_renderer, "sdl") == 0 || strcmp(cfg_renderer, "sdl2d") == 0) g_renderer_backend = RENDERER_SDL2D;
-            else if (strcmp(cfg_renderer, "classic") == 0) g_renderer_backend = RENDERER_SDL2D_CLASSIC;
-            else if (strcmp(cfg_renderer, "gl") == 0) g_renderer_backend = RENDERER_OPENGL;
+            if (strcmp(cfg_renderer, "gpu") == 0)
+                g_renderer_backend = RENDERER_SDLGPU;
+            else if (strcmp(cfg_renderer, "sdl") == 0 || strcmp(cfg_renderer, "sdl2d") == 0)
+                g_renderer_backend = RENDERER_SDL2D;
+            else if (strcmp(cfg_renderer, "classic") == 0)
+                g_renderer_backend = RENDERER_SDL2D_CLASSIC;
+            else if (strcmp(cfg_renderer, "gl") == 0)
+                g_renderer_backend = RENDERER_OPENGL;
         }
     }
 
@@ -592,8 +596,8 @@ int SDLApp_Init() {
             SDL_SetRenderDrawBlendMode(sdl_renderer, SDL_BLENDMODE_BLEND);
             SDL_Log("Android: Created SDL_Renderer for RmlUi overlay");
         } else {
-            SDL_LogWarn(SDL_LOG_CATEGORY_RENDER,
-                        "Android: Failed to create SDL_Renderer for RmlUi: %s", SDL_GetError());
+            SDL_LogWarn(
+                SDL_LOG_CATEGORY_RENDER, "Android: Failed to create SDL_Renderer for RmlUi: %s", SDL_GetError());
         }
 #endif
     }
@@ -626,27 +630,28 @@ int SDLApp_Init() {
     // Verifies that the assets/ directory contains a compatible version.
     // This catches stale/missing asset packs early with a clear message.
     {
-        #define MINIMUM_ASSET_VERSION 1
+#define MINIMUM_ASSET_VERSION 1
         const char* version_path = Paths_ResolveAsset("ASSET_VERSION");
         size_t version_len = 0;
         char* version_data = (char*)SDL_LoadFile(version_path, &version_len);
         if (!version_data) {
             SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-                "Asset pack not found (missing assets/ASSET_VERSION). "
-                "Download the asset pack from the GitHub releases page.");
+                        "Asset pack not found (missing assets/ASSET_VERSION). "
+                        "Download the asset pack from the GitHub releases page.");
         } else {
             int asset_version = atoi(version_data);
             if (asset_version < MINIMUM_ASSET_VERSION) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-                    "Asset pack version %d is outdated (minimum: %d). "
-                    "Please download the latest asset pack.",
-                    asset_version, MINIMUM_ASSET_VERSION);
+                            "Asset pack version %d is outdated (minimum: %d). "
+                            "Please download the latest asset pack.",
+                            asset_version,
+                            MINIMUM_ASSET_VERSION);
             } else {
                 SDL_Log("Asset pack version: %d (OK)", asset_version);
             }
             SDL_free(version_data);
         }
-        #undef MINIMUM_ASSET_VERSION
+#undef MINIMUM_ASSET_VERSION
     }
 
     // Text renderer init
@@ -657,15 +662,23 @@ int SDLApp_Init() {
 
     if (g_renderer_backend == RENDERER_OPENGL) {
 #ifdef __ANDROID__
-        passthru_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/blit.vert.es"), Paths_ResolveAsset("shaders/passthru.frag.es"));
-        scene_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert.es"), Paths_ResolveAsset("shaders/scene.frag.es"));
-        hd_scene_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert.es"), Paths_ResolveAsset("shaders/hd_scene.frag.es"));
-        scene_array_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert.es"), Paths_ResolveAsset("shaders/scene_array.frag.es"));
+        passthru_shader_program = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/blit.vert.es"), Paths_ResolveAsset("shaders/passthru.frag.es"));
+        scene_shader_program = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/scene.vert.es"), Paths_ResolveAsset("shaders/scene.frag.es"));
+        hd_scene_shader_program = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/scene.vert.es"), Paths_ResolveAsset("shaders/hd_scene.frag.es"));
+        scene_array_shader_program = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/scene.vert.es"), Paths_ResolveAsset("shaders/scene_array.frag.es"));
 #else
-        passthru_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/blit.vert"), Paths_ResolveAsset("shaders/passthru.frag"));
-        scene_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/scene.frag"));
-        hd_scene_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/hd_scene.frag"));
-        scene_array_shader_program = create_shader_program(base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/scene_array.frag"));
+        passthru_shader_program = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/blit.vert"), Paths_ResolveAsset("shaders/passthru.frag"));
+        scene_shader_program = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/scene.frag"));
+        hd_scene_shader_program = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/hd_scene.frag"));
+        scene_array_shader_program = create_shader_program(
+            base_path, Paths_ResolveAsset("shaders/scene.vert"), Paths_ResolveAsset("shaders/scene_array.frag"));
 #endif
 
         // Create quad
@@ -848,7 +861,8 @@ void SDLApp_Quit() {
     Config_Save();
     Config_Destroy();
     ControllerImage_Module_Quit();
-    if (LobbyServer_WasInitialized()) NET_Quit(); // Only quit if NET was initialized
+    if (LobbyServer_WasInitialized())
+        NET_Quit(); // Only quit if NET was initialized
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
@@ -994,12 +1008,20 @@ void SDLApp_EndFrame() {
             // quad is included in the sort + upload, and RenderFrame skips it (overlay!=NULL).
             // RenderHDPass(false) will then draw it to the swapchain in the foreground pass.
             if (g_renderer_backend == RENDERER_SDLGPU) {
-                extern void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture* texture, int tex_w, int tex_h,
-                    float x, float y, float w, float h, float z, int flip_x, int flip_y);
+                extern void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture * texture,
+                                                                 int tex_w,
+                                                                 int tex_h,
+                                                                 float x,
+                                                                 float y,
+                                                                 float w,
+                                                                 float h,
+                                                                 float z,
+                                                                 int flip_x,
+                                                                 int flip_y);
                 SDL_GPUTexture* canvas = SDLGameRendererGPU_GetCanvasTexture();
                 if (canvas) {
-                    SDLGameRendererGPU_QueueDeferredBlit(canvas, 384*g_resolution_scale, 224*g_resolution_scale,
-                                                         0, 0, 384, 224, 0.5f, 0, 0);
+                    SDLGameRendererGPU_QueueDeferredBlit(
+                        canvas, 384 * g_resolution_scale, 224 * g_resolution_scale, 0, 0, 384, 224, 0.5f, 0, 0);
                 }
             }
         }
@@ -1202,7 +1224,7 @@ void SDLApp_EndFrame() {
                 // Stage backgrounds were pushed by ModdedStage_Render (z≈0.05, background pass).
                 // Pass 1: HD Background layers (z < 0.1)
                 SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, true);
-                
+
                 // Pass 2: Canvas + foreground overlays (z >= 0.1)
                 SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, false);
             } else if (SDLAppShader_IsLibretroMode() && SDLAppShader_GetManager() && !skip_librashader) {
@@ -1283,7 +1305,7 @@ void SDLApp_EndFrame() {
 
                 SDL_BlitGPUTexture(cb, &blit_info);
             }
-            }
+        }
 
 #if DEBUG
         // Debug Buffer (PS2)
@@ -1355,8 +1377,9 @@ void SDLApp_EndFrame() {
                     glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
                     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
                     glClear(GL_COLOR_BUFFER_BIT);
-                    
-                    SDLGameRenderer_RenderHDPass((int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, true);
+
+                    SDLGameRenderer_RenderHDPass(
+                        (int)viewport.x, (int)viewport.y, (int)viewport.w, (int)viewport.h, true);
                 } else {
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
                     glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
@@ -1852,7 +1875,8 @@ void SDLApp_CloseAllMenus() {
     show_stage_config_menu = false;
     show_training_menu = false;
     show_dev_overlay = false;
-    if (show_palmod_menu) rmlui_palmod_menu_flush_config();
+    if (show_palmod_menu)
+        rmlui_palmod_menu_flush_config();
     show_palmod_menu = false;
     game_paused = false;
     SDLNetplayUI_SetDiagnosticsVisible(false);
@@ -1878,25 +1902,29 @@ void SDLApp_MarkBezelDirty() {
 }
 
 bool SDLApp_IsFullscreen(void) {
-    if (!window) return false;
+    if (!window)
+        return false;
     return (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) != 0;
 }
 
 void SDLApp_SetFullscreenExclusive(bool exclusive) {
     Config_SetBool(CFG_KEY_FULLSCREEN_EXCLUSIVE, exclusive);
-    
+
     if (SDLApp_IsFullscreen()) {
         if (exclusive) {
             int fs_w = Config_GetInt(CFG_KEY_FULLSCREEN_WIDTH);
             int fs_h = Config_GetInt(CFG_KEY_FULLSCREEN_HEIGHT);
             int w, h;
             SDL_GetWindowSize(window, &w, &h);
-            if (fs_w <= 0) fs_w = w;
-            if (fs_h <= 0) fs_h = h;
-            
+            if (fs_w <= 0)
+                fs_w = w;
+            if (fs_h <= 0)
+                fs_h = h;
+
             SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
-            if (displayID == 0) displayID = SDL_GetPrimaryDisplay();
-            
+            if (displayID == 0)
+                displayID = SDL_GetPrimaryDisplay();
+
             SDL_DisplayMode closest_mode;
             if (SDL_GetClosestFullscreenDisplayMode(displayID, fs_w, fs_h, 0.0f, false, &closest_mode)) {
                 SDL_Log("Set_FS_Excl: Setting exclusive mode %dx%d", closest_mode.w, closest_mode.h);
@@ -1920,9 +1948,11 @@ void SDLApp_ToggleFullscreen() {
             int fs_h = Config_GetInt(CFG_KEY_FULLSCREEN_HEIGHT);
             int w, h;
             SDL_GetWindowSize(window, &w, &h);
-            if (fs_w <= 0) fs_w = w;
-            if (fs_h <= 0) fs_h = h;
-            
+            if (fs_w <= 0)
+                fs_w = w;
+            if (fs_h <= 0)
+                fs_h = h;
+
             SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
             if (displayID == 0) {
                 displayID = SDL_GetPrimaryDisplay();

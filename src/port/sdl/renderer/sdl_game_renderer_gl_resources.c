@@ -655,8 +655,8 @@ void SDLGameRendererGL_SetTexture(unsigned int th) {
 
     /* ── Plugin texture override ── */
     if (RENDERER_HAS_PLUGIN() && g_renderer_plugin->TryOverrideTexture) {
-        void* override_tex = g_renderer_plugin->TryOverrideTexture(
-            (unsigned int)texture_handle, (unsigned int)palette_handle);
+        void* override_tex =
+            g_renderer_plugin->TryOverrideTexture((unsigned int)texture_handle, (unsigned int)palette_handle);
         if (override_tex != NULL) {
             GLuint gl_tex = (GLuint)(uintptr_t)override_tex;
             glBindTexture(GL_TEXTURE_2D, gl_tex);

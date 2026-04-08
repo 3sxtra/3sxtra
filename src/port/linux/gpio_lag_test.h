@@ -32,7 +32,9 @@ static inline void GpioLagTest_Init(void) {}
 static inline void GpioLagTest_Shutdown(void) {}
 static inline void GpioLagTest_OnInputPoll(void) {}
 static inline void GpioLagTest_Toggle(void) {}
-static inline bool GpioLagTest_IsEnabled(void) { return false; }
+static inline bool GpioLagTest_IsEnabled(void) {
+    return false;
+}
 
 #endif /* ENABLE_GPIO_LAG_TEST */
 

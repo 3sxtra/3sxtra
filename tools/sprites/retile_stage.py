@@ -101,7 +101,9 @@ def retile_layer(json_path, upscaled_path=None, output_dir=None):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: retile_stage.py <layer.json or stage_dir> [--upscaled <image>] [--output <dir>]")
+        print(
+            "Usage: retile_stage.py <layer.json or stage_dir> [--upscaled <image>] [--output <dir>]"
+        )
         sys.exit(1)
 
     target = sys.argv[1]

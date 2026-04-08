@@ -186,7 +186,6 @@ void SDLGameRendererGPU_BeginFrame(void) {
     s_pal_upload_count = 0;
     s_last_set_texture_handle = 0; // ⭐ Reset back-to-back cache each frame
 
-
     extern void SDLGameRendererGPU_FreeOverlayLayers(void);
     SDLGameRendererGPU_FreeOverlayLayers(); // Free temp overlay array layers from last frame
 
@@ -498,10 +497,9 @@ void SDLGameRendererGPU_RenderFrame(void) {
 
                             if (overlay_changed) {
                                 current_overlay = this_overlay;
-                                tex_bindings[2].texture = current_overlay
-                                                              ? current_overlay
-                                                              : (s_1x1_white_texture ? s_1x1_white_texture
-                                                                                     : texture_array);
+                                tex_bindings[2].texture =
+                                    current_overlay ? current_overlay
+                                                    : (s_1x1_white_texture ? s_1x1_white_texture : texture_array);
                                 tex_bindings[2].sampler = sampler;
                                 SDL_BindGPUFragmentSamplers(pass, 0, tex_bindings, 3);
                             }
@@ -517,7 +515,8 @@ void SDLGameRendererGPU_RenderFrame(void) {
     TRACE_ZONE_END();
 }
 
-void SDLGameRendererGPU_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h, bool backgrounds_only) {
+void SDLGameRendererGPU_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
+                                     bool backgrounds_only) {
     if (vertex_count == 0 || quad_count == 0 || !s_swapchain_texture || !current_cmd_buf)
         return;
 
@@ -526,7 +525,7 @@ void SDLGameRendererGPU_RenderHDPass(int viewport_x, int viewport_y, int viewpor
     SDL_GPUColorTargetInfo color_target;
     SDL_zero(color_target);
     color_target.texture = s_swapchain_texture;
-    color_target.load_op = SDL_GPU_LOADOP_LOAD; 
+    color_target.load_op = SDL_GPU_LOADOP_LOAD;
     color_target.store_op = SDL_GPU_STOREOP_STORE;
 
     SDL_GPURenderPass* pass = SDL_BeginGPURenderPass(current_cmd_buf, &color_target, 1, NULL);
@@ -592,8 +591,10 @@ void SDLGameRendererGPU_RenderHDPass(int viewport_x, int viewport_y, int viewpor
             bool skip_quad = false;
             // Native renderer Z validation checks for Layer segregation
             if (this_overlay) {
-                if (backgrounds_only && this_z >= 0.1f) skip_quad = true;
-                if (!backgrounds_only && this_z < 0.1f) skip_quad = true;
+                if (backgrounds_only && this_z >= 0.1f)
+                    skip_quad = true;
+                if (!backgrounds_only && this_z < 0.1f)
+                    skip_quad = true;
             } else {
                 // If it isn't an overlay texture, it was already handled by Native FBO.
                 skip_quad = true;
@@ -610,7 +611,7 @@ void SDLGameRendererGPU_RenderHDPass(int viewport_x, int viewport_y, int viewpor
                         SDL_DrawGPUIndexedPrimitives(pass, segment_quads * 6, 1, draw_start * 6, 0, 0);
                     }
                 }
-                
+
                 if (qi < quad_count) {
                     if (skip_quad) {
                         // Jump over this quad, start tracing the next segment here
@@ -663,8 +664,6 @@ void SDLGameRendererGPU_EndFrame(void) {
     s_swapchain_texture = NULL;
     TRACE_ZONE_END();
 }
-
-
 
 SDL_GPUCommandBuffer* SDLGameRendererGPU_GetCommandBuffer(void) {
     return current_cmd_buf;
@@ -1112,7 +1111,7 @@ void SDLGameRendererGPU_QueueDeferredBlit(SDL_GPUTexture* texture, int tex_w, in
     push_overlay_quad(-2, x, y, w, h, z, tex_w, tex_h, flip_x, flip_y, texture);
 }
 
-static void push_overlay_subquad(int layer, float x, float y, float w, float h, float u0, float v0, float u1, float v1, 
+static void push_overlay_subquad(int layer, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
                                  float z, SDL_GPUTexture* standalone_tex) {
     if (!mapped_vertex_ptr || vertex_count + 4 > MAX_VERTICES || quad_count >= MAX_QUADS)
         return;

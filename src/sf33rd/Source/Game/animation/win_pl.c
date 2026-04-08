@@ -91,23 +91,56 @@ void win_player(PLW* wk) {
     }
 
     switch (winner_type_tbl[wk->player_number]) {
-    case 0:  Win_00000(wk); break;
-    case 1:  Win_01000(wk); break;
-    case 2:  Win_02000(wk); break;
-    case 3:  Win_03000(wk); break;
-    case 4:  Win_04000(wk); break;
-    case 5:  Win_05000(wk); break;
-    case 6:  Win_06000(wk); break;
-    case 7:  Win_07000(wk); break;
-    case 8:  Win_08000(wk); break;
-    case 9:  Win_09000(wk); break;
-    case 10: Win_10000(wk); break;
-    case 11: Win_11000(wk); break;
-    case 12: Win_12000(wk); break;
-    case 13: Win_13000(wk); break;
-    case 14: Win_14000(wk); break;
-    case 15: Win_15000(wk); break;
-    default: break;
+    case 0:
+        Win_00000(wk);
+        break;
+    case 1:
+        Win_01000(wk);
+        break;
+    case 2:
+        Win_02000(wk);
+        break;
+    case 3:
+        Win_03000(wk);
+        break;
+    case 4:
+        Win_04000(wk);
+        break;
+    case 5:
+        Win_05000(wk);
+        break;
+    case 6:
+        Win_06000(wk);
+        break;
+    case 7:
+        Win_07000(wk);
+        break;
+    case 8:
+        Win_08000(wk);
+        break;
+    case 9:
+        Win_09000(wk);
+        break;
+    case 10:
+        Win_10000(wk);
+        break;
+    case 11:
+        Win_11000(wk);
+        break;
+    case 12:
+        Win_12000(wk);
+        break;
+    case 13:
+        Win_13000(wk);
+        break;
+    case 14:
+        Win_14000(wk);
+        break;
+    case 15:
+        Win_15000(wk);
+        break;
+    default:
+        break;
     }
 }
 

@@ -112,12 +112,13 @@ void SDLAppDebugHud_Render(int win_w, int win_h, const SDL_FRect* viewport) {
              SDLAppShader_IsLibretroMode() ? "Libretro" : "Internal");
 
     /* Frame counter for camera-based input lag measurement */
-    snprintf(frame_text, sizeof(frame_text), "F: %llu%s",
+    snprintf(frame_text,
+             sizeof(frame_text),
+             "F: %llu%s",
              (unsigned long long)s_frame_counter,
              GpioLagTest_IsEnabled() ? " GPIO" : "");
 
-    snprintf(debug_text, sizeof(debug_text), "%s | %s | %s | %s",
-             fps_text, shader_text, mode_text, frame_text);
+    snprintf(debug_text, sizeof(debug_text), "%s | %s | %s | %s", fps_text, shader_text, mode_text, frame_text);
 
     float overlay_scale = ((float)win_h / 480.0f) * 0.8f;
     float base_x = viewport->x + (10.0f * overlay_scale);

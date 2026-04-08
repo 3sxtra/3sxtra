@@ -178,7 +178,7 @@ bool MenuScreen_IsActive(void);
 /**
  * @brief Returns true if a screen transition is scheduled (g_next_screen is set).
  *
- * This allows the menu task loop to pick up dynamically scheduled transitions 
+ * This allows the menu task loop to pick up dynamically scheduled transitions
  * from systems like netplay that call MenuScreen_Goto before the menu is active.
  */
 bool MenuScreen_HasPendingTransition(void);

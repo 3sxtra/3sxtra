@@ -196,7 +196,8 @@ void Wait_Pause_in_Tr(struct _TASK* task_ptr) {
 
     case 3:
         if (Interface_Type[Pause_ID] == 0) {
-            dispControllerWasRemovedMessage(TRAINING_CTRL_REMOVED_MSG_X, TRAINING_CTRL_REMOVED_MSG_Y, TRAINING_CTRL_REMOVED_MSG_COLOR);
+            dispControllerWasRemovedMessage(
+                TRAINING_CTRL_REMOVED_MSG_X, TRAINING_CTRL_REMOVED_MSG_Y, TRAINING_CTRL_REMOVED_MSG_COLOR);
             break;
         }
 
@@ -297,8 +298,11 @@ void Training_Menu(struct _TASK* task_ptr) {
              * All indices 1–7 are intercepted by MenuScreen_FromTrainingIndex()
              * above.  Only index 0 (Training_Init) is still dispatched here. */
             switch (task_ptr->r_no[1]) {
-            case 0:  Training_Init(task_ptr); break;
-            default: break;
+            case 0:
+                Training_Init(task_ptr);
+                break;
+            default:
+                break;
             }
         }
     }
@@ -308,8 +312,13 @@ void Training_Menu(struct _TASK* task_ptr) {
     ToneDown(TRAINING_TONE_NORMAL, 2);
 
     if ((!use_rmlui || !rmlui_menu_training) && Training_Index < TRAINING_LETTER_COUNT) {
-        SSPutStr_Bigger(
-            training_letter_data[Training_Index].pos_x, TRAINING_HEADER_POS_Y, 9, training_letter_data[Training_Index].menu, 1, 2, 1);
+        SSPutStr_Bigger(training_letter_data[Training_Index].pos_x,
+                        TRAINING_HEADER_POS_Y,
+                        9,
+                        training_letter_data[Training_Index].menu,
+                        1,
+                        2,
+                        1);
     }
 }
 
@@ -493,7 +502,8 @@ void Dummy_Setting(struct _TASK* task_ptr) {
             effect_A3_init(0, 1, ix, ix, 1, TRAINING_DUMMY_SETTING_LBL_X, y, 0);
         }
 
-        for (ix = 0, y = TRAINING_DUMMY_SETTING_START_Y, s4 = group = 2; ix < 5; ix++, group++, s3 = y += TRAINING_SPACING_Y) {
+        for (ix = 0, y = TRAINING_DUMMY_SETTING_START_Y, s4 = group = 2; ix < 5;
+             ix++, group++, s3 = y += TRAINING_SPACING_Y) {
             effect_A3_init(0, group, ix, ix, 1, TRAINING_DUMMY_SETTING_X, y, 0);
         }
 
@@ -547,7 +557,8 @@ void Training_Option(struct _TASK* task_ptr) {
             effect_A3_init(0, 9, ix, ix, 1, TRAINING_OPTION_LBL_X, y, 1);
         }
 
-        for (ix = 0, y = TRAINING_OPTION_START_Y, s4 = group = 10; ix < 4; ix++, group++, s3 = y += TRAINING_SPACING_Y) {
+        for (ix = 0, y = TRAINING_OPTION_START_Y, s4 = group = 10; ix < 4;
+             ix++, group++, s3 = y += TRAINING_SPACING_Y) {
             effect_A3_init(0, group, ix, ix, 1, TRAINING_OPTION_VAL_X, y, 1);
         }
 
@@ -749,7 +760,8 @@ void Blocking_Tr_Option(struct _TASK* task_ptr) {
             effect_A3_init(1, 19, ix, ix, 1, TRAINING_BLOCKING_OPT_LBL_X, y, 0);
         }
 
-        for (ix = 0, y = TRAINING_OPTION_START_Y, s4 = group = 18; ix < 4; ix++, group++, s3 = y += TRAINING_SPACING_Y) {
+        for (ix = 0, y = TRAINING_OPTION_START_Y, s4 = group = 18; ix < 4;
+             ix++, group++, s3 = y += TRAINING_SPACING_Y) {
             if (ix == 2) {
                 y += 20;
             }

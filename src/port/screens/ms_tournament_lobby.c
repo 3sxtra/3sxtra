@@ -88,13 +88,15 @@ void ms_tournament_lobby_register(void) {
         .on_enter = tournament_lobby_enter,
         .on_tick = tournament_lobby_tick,
         .on_exit = tournament_lobby_exit,
-        .cursor_max = 0,   /* input handled internally by rmlui_tournament_lobby_update */
+        .cursor_max = 0, /* input handled internally by rmlui_tournament_lobby_update */
         .cancel_item = -1,
         .rmlui_show = tournament_lobby_rmlui_show,
         .rmlui_hide = tournament_lobby_rmlui_hide,
         .header_type = MENU_HEADER_MODE_MENU,
         .effect_slot = 0,
     };
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[ms_tournament_lobby] registered screen id=%d on_tick=%p",
-            MENU_SCREEN_TOURNAMENT_LOBBY, (void*)(uintptr_t)tournament_lobby_tick);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                 "[ms_tournament_lobby] registered screen id=%d on_tick=%p",
+                 MENU_SCREEN_TOURNAMENT_LOBBY,
+                 (void*)(uintptr_t)tournament_lobby_tick);
 }

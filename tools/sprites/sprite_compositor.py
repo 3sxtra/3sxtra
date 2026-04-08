@@ -13,15 +13,24 @@ import struct
 from PIL import Image
 
 from sprite_common import (
-    read_afs, read_afs_file, lz_ext_p6_fx, DTL, unswizzle,
-    decode_color_abgr1555, decode_palette_banks, _clut_reorder_bank,
-    STAGE_PAL_AFS, STAGE_TILE_AFS,
-    TileChip, COLORS_PER_BANK, PALETTE_BANK_BYTES, TOTAL_BANKS, CHAR_PAL_ROWS,
+    read_afs_file,
+    lz_ext_p6_fx,
+    unswizzle,
+    decode_color_abgr1555,
+    decode_palette_banks,
+    STAGE_PAL_AFS,
+    STAGE_TILE_AFS,
+    TileChip,
+    COLORS_PER_BANK,
+    PALETTE_BANK_BYTES,
+    TOTAL_BANKS,
+    CHAR_PAL_ROWS,
 )
 
 # Optional NumPy for accelerated compositing
 try:
     import numpy as np
+
     _HAS_NUMPY = True
 except ImportError:
     _HAS_NUMPY = False
@@ -54,11 +63,12 @@ COLCD_MAP_CSV = os.path.join(COLORRAM_DUMP_DIR, "colcd_map.csv")
 
 def load_engine_palette_map():
     """Load engine-derived CG-to-colcd map from cg_palette_map.json."""
-    map_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            "cg_palette_map.json")
+    map_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "cg_palette_map.json"
+    )
     if not os.path.exists(map_path):
         return {}
-    with open(map_path, 'r') as f:
+    with open(map_path, "r") as f:
         raw = json.load(f)
     return {int(k): v for k, v in raw.items()}
 
@@ -103,8 +113,7 @@ def load_colorram_dump(stage_idx, dump_dir=None):
     """
     if dump_dir is None:
         dump_dir = COLORRAM_DUMP_DIR
-    dump_path = os.path.join(dump_dir,
-                             f"stage_{stage_idx:02d}_colorram.bin")
+    dump_path = os.path.join(dump_dir, f"stage_{stage_idx:02d}_colorram.bin")
     if not os.path.exists(dump_path):
         return None
     with open(dump_path, "rb") as f:
@@ -139,23 +148,24 @@ def load_consensus_colorram_dump():
     """Load all available ColorRAM dumps and build a consensus by modal frequency.
     Filters out noise/corruption from active gameplay sparks and hit effects."""
     from collections import Counter
+
     all_dumps = []
     for i in range(20):
         d = load_colorram_dump(i)
         if d is not None:
             all_dumps.append(d)
-            
+
     if not all_dumps:
         return None
 
     consensus = [[(0, 0, 0, 0)] * COLORS_PER_BANK for _ in range(TOTAL_BANKS)]
-    
+
     for bank_idx in range(TOTAL_BANKS):
         for color_idx in range(COLORS_PER_BANK):
             colors = []
             for dump in all_dumps:
                 c = dump[bank_idx][color_idx]
-                if c[3] != 0: # Check alpha or just check > 0
+                if c[3] != 0:  # Check alpha or just check > 0
                     colors.append(c)
             if colors:
                 consensus[bank_idx][color_idx] = Counter(colors).most_common(1)[0][0]
@@ -172,14 +182,18 @@ def build_stage_colorram(afs_path, entries, stage_pal_afs, apply_clut=False):
 
     if COMMON_PAL_AFS < len(entries):
         common_data = read_afs_file(afs_path, entries[COMMON_PAL_AFS])
-        for i, bank in enumerate(decode_palette_banks(common_data, apply_clut=apply_clut)):
+        for i, bank in enumerate(
+            decode_palette_banks(common_data, apply_clut=apply_clut)
+        ):
             slot = COMMON_PAL_SLOT + i
             if slot < TOTAL_BANKS:
                 colorram[slot] = bank
 
     if stage_pal_afs is not None and stage_pal_afs < len(entries):
         stage_data = read_afs_file(afs_path, entries[stage_pal_afs])
-        for i, bank in enumerate(decode_palette_banks(stage_data, apply_clut=apply_clut)):
+        for i, bank in enumerate(
+            decode_palette_banks(stage_data, apply_clut=apply_clut)
+        ):
             slot = STAGE_PAL_SLOT + i
             if slot < TOTAL_BANKS:
                 colorram[slot] = bank
@@ -238,8 +252,11 @@ def build_char_colorram(afs_path, entries, pal_data, pal_idx):
     sub_pals = []
     for sub in range(7):  # rows 16-22: 7 sub-palettes (effects, projectiles, etc.)
         row = 16 + sub
-        sub_pals.append(_load_pal_row(pal_data, row, total_rows) if row < total_rows
-                        else [(0, 0, 0, 0)] * COLORS_PER_BANK)
+        sub_pals.append(
+            _load_pal_row(pal_data, row, total_rows)
+            if row < total_rows
+            else [(0, 0, 0, 0)] * COLORS_PER_BANK
+        )
 
     for base in (0, 16):  # P1 and P2 banks
         colorram[base] = body
@@ -259,8 +276,9 @@ def build_char_colorram(afs_path, entries, pal_data, pal_idx):
     return colorram
 
 
-def load_character_palette(afs_path, entries, char_id, pal_banks,
-                           char_pal_afs, costume=0, bank_offset=0):
+def load_character_palette(
+    afs_path, entries, char_id, pal_banks, char_pal_afs, costume=0, bank_offset=0
+):
     """Load a character's palette into pal_banks.
 
     Body (row costume) → bank_offset+0, sub-pals (rows 16-21) → bank_offset+1..6,
@@ -350,7 +368,7 @@ def _parse_tiles(data, to_tex, frame_idx):
         if dw == 0 or dh == 0:
             continue
 
-        raw = lz_ext_p6_fx(data[aoff + 1:], ts)
+        raw = lz_ext_p6_fx(data[aoff + 1 :], ts)
         px = unswizzle(raw, td)
         tiles.append(TileChip(dx, dy, attr, code, td, dw, dh, px))
 
@@ -405,7 +423,7 @@ def _composite_numpy(tiles, pts, all_xflip, palette_fn, sw, sh, mnx, mny):
         # Create coordinate grids
         yo_arr = np.arange(t.dh)
         xo_arr = np.arange(t.dw)
-        yy, xx = np.meshgrid(yo_arr, xo_arr, indexing='ij')
+        yy, xx = np.meshgrid(yo_arr, xo_arr, indexing="ij")
 
         # Apply flip
         rx = (t.dw - 1 - xx) if flip_x else xx
@@ -434,7 +452,7 @@ def _composite_numpy(tiles, pts, all_xflip, palette_fn, sw, sh, mnx, mny):
 
         # Build mask: non-zero pixel, in bounds, valid palette index
         mask = (vals > 0) & (ddx >= 0) & (ddx < sw) & (ddy >= 0) & (ddy < sh)
-        mask &= (vals < len(pal_arr))
+        mask &= vals < len(pal_arr)
 
         # Write pixels
         valid_vals = vals[mask]
@@ -443,12 +461,18 @@ def _composite_numpy(tiles, pts, all_xflip, palette_fn, sw, sh, mnx, mny):
         buf[valid_ddy, valid_ddx] = pal_arr[valid_vals]
 
         # Handle out-of-palette pixels (grey)
-        oob_mask = (vals > 0) & (vals >= len(pal_arr)) & \
-                   (ddx >= 0) & (ddx < sw) & (ddy >= 0) & (ddy < sh)
+        oob_mask = (
+            (vals > 0)
+            & (vals >= len(pal_arr))
+            & (ddx >= 0)
+            & (ddx < sw)
+            & (ddy >= 0)
+            & (ddy < sh)
+        )
         if np.any(oob_mask):
             buf[ddy[oob_mask], ddx[oob_mask]] = [128, 128, 128, 255]
 
-    return Image.fromarray(buf, 'RGBA')
+    return Image.fromarray(buf, "RGBA")
 
 
 def _composite_python(tiles, pts, all_xflip, palette_fn, sw, sh, mnx, mny):
@@ -504,8 +528,15 @@ def _composite(tiles, pts, all_xflip, palette_fn):
 # ══════════════════════════════════════════════════════════════════════════════
 
 
-def extract_stage_frame(data, to_tex, frame_idx, pal_banks, colcd_base=None,
-                        rendering_mode=18, skip_empty=True):
+def extract_stage_frame(
+    data,
+    to_tex,
+    frame_idx,
+    pal_banks,
+    colcd_base=None,
+    rendering_mode=18,
+    skip_empty=True,
+):
     """Extract a single stage/effect sprite frame.
 
     Palette dispatch:
@@ -536,8 +567,9 @@ def extract_stage_frame(data, to_tex, frame_idx, pal_banks, colcd_base=None,
     return _composite(tiles, pts, all_xflip, palette_fn)
 
 
-def extract_char_frame(data, to_tex, frame_idx, colorram, base_cg=0,
-                       engine_pal_map=None, colcd_map=None):
+def extract_char_frame(
+    data, to_tex, frame_idx, colorram, base_cg=0, engine_pal_map=None, colcd_map=None
+):
     """Extract a single character animation frame.
 
     Palette dispatch depends on the rendering mode the engine used:
@@ -591,7 +623,7 @@ def extract_char_frame(data, to_tex, frame_idx, colorram, base_cg=0,
         if has_pal_attr:
             colcd_mode = 18
             # Find nearest CG in CSV with mode=18, within same character range
-            best_dist = float('inf')
+            best_dist = float("inf")
             colcd_base = 0  # fallback
             max_search_dist = 2000  # chars span ~1000-2000 CGs
             for key, val in colcd_map.items():

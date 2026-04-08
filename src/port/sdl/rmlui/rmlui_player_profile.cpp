@@ -23,7 +23,7 @@ extern "C" {
 
 struct ProfileMatchItem {
     int match_id;
-    Rml::String result_str;    // "WIN" or "LOSS"
+    Rml::String result_str; // "WIN" or "LOSS"
     bool is_win;
     Rml::String player_char_name;
     Rml::String opponent_char_name;
@@ -35,10 +35,10 @@ struct ProfileMatchItem {
     bool is_valid;
 
     bool operator==(const ProfileMatchItem& o) const {
-        return result_str == o.result_str && is_win == o.is_win &&
-               player_char_name == o.player_char_name && opponent_char_name == o.opponent_char_name &&
-               opponent_name == o.opponent_name && opponent_country == o.opponent_country &&
-               date_str == o.date_str && replay_status == o.replay_status && selected == o.selected && is_valid == o.is_valid;
+        return result_str == o.result_str && is_win == o.is_win && player_char_name == o.player_char_name &&
+               opponent_char_name == o.opponent_char_name && opponent_name == o.opponent_name &&
+               opponent_country == o.opponent_country && date_str == o.date_str && replay_status == o.replay_status &&
+               selected == o.selected && is_valid == o.is_valid;
     }
     bool operator!=(const ProfileMatchItem& o) const {
         return !(*this == o);
@@ -50,7 +50,8 @@ static const char* const s_char_names[21] = { "GILL",  "ALEX",    "RYU",    "YUN
                                               "IBUKI", "ELENA",   "ORO",    "YANG", "KEN",    "SEAN",  "URIEN",
                                               "GOUKI", "CHUN-LI", "MAKOTO", "Q",    "TWELVE", "REMY",  "AKUMA" };
 static const char* char_name(int idx) {
-    if (idx >= 0 && idx < 21) return s_char_names[idx];
+    if (idx >= 0 && idx < 21)
+        return s_char_names[idx];
     return "???";
 }
 
@@ -109,7 +110,7 @@ static int async_fetch_profile_fn(void* userdata) {
 
     if (my_id && my_id[0]) {
         s_fetch_success = LobbyServer_GetPlayerStats(my_id, &s_fetch_stats);
-        
+
         s_fetch_matches.clear();
         ReplayListEntry entries[10];
         int count = LobbyServer_GetPlayerMatchHistory(my_id, entries, 10, 0, NULL);
@@ -196,7 +197,7 @@ static void do_init(void) {
     }
     ctor.RegisterArray<std::vector<ProfileMatchItem>>();
     ctor.Bind("match_history", &s_match_history);
-    
+
     ctor.Bind("match_history_count", &s_match_history_count);
 
     ctor.Bind("avatar_url", &s_avatar_url);
@@ -205,19 +206,19 @@ static void do_init(void) {
     ctor.Bind("tier", &s_tier);
     ctor.Bind("rating", &s_rating);
     ctor.Bind("global_rank", &s_global_rank);
-    
+
     ctor.Bind("wins", &s_wins);
     ctor.Bind("losses", &s_losses);
     ctor.Bind("win_rate", &s_win_rate);
     ctor.Bind("max_streak", &s_max_streak);
-    
+
     ctor.Bind("disconnects", &s_disconnects);
     ctor.Bind("disconnects_bad", &s_disconnects_bad);
-    
+
     ctor.Bind("network_status", &s_network_status);
     ctor.Bind("status_bad", &s_status_bad);
     ctor.Bind("status_good", &s_status_good);
-    
+
     ctor.Bind("status_text", &s_status_text);
 
     s_model_handle = ctor.GetModelHandle();
@@ -225,11 +226,17 @@ static void do_init(void) {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Player Profile] Data model registered");
 }
 
-extern "C" void rmlui_player_profile_init(void) { do_init(); }
+extern "C" void rmlui_player_profile_init(void) {
+    do_init();
+}
 
 // ─── Per-frame update ────────────────────────────────────────────
 extern "C" void rmlui_player_profile_update(void) {
-    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_registered) {
+        do_init();
+        if (!s_model_registered)
+            return;
+    }
     if (!s_model_handle)
         return;
     if (!rmlui_wrapper_is_game_document_visible("player_profile"))
@@ -245,10 +252,10 @@ extern "C" void rmlui_player_profile_update(void) {
             char buf[16];
             SDL_snprintf(buf, sizeof(buf), "%.0f", (double)s_fetch_stats.rating);
             s_rating = Rml::String(buf);
-            
+
             s_wins = s_fetch_stats.wins;
             s_losses = s_fetch_stats.losses;
-            
+
             int total = s_wins + s_losses;
             if (total > 0) {
                 SDL_snprintf(buf, sizeof(buf), "%d%%", (s_wins * 100) / total);
@@ -256,16 +263,16 @@ extern "C" void rmlui_player_profile_update(void) {
                 SDL_snprintf(buf, sizeof(buf), "0%%");
             }
             s_win_rate = Rml::String(buf);
-            
+
             // For now map server disconnects to percentage manually (needs server updates to track properly)
             // Just displaying raw disconnect count or estimating rate
             int dc_rate = 0;
             if (total + s_fetch_stats.disconnects > 0) {
-                 dc_rate = (s_fetch_stats.disconnects * 100) / (total + s_fetch_stats.disconnects);
+                dc_rate = (s_fetch_stats.disconnects * 100) / (total + s_fetch_stats.disconnects);
             }
             s_disconnects = dc_rate;
             s_disconnects_bad = dc_rate > 5;
-            
+
             if (dc_rate > 5) {
                 s_network_status = "WARNING";
                 s_status_bad = true;
@@ -286,7 +293,7 @@ extern "C" void rmlui_player_profile_update(void) {
             s_status_bad = false;
             s_status_good = true;
         }
-        
+
         // Convert fetched matches to UI model
         s_match_history.clear();
         const char* my_id = Identity_GetPlayerId();
@@ -294,20 +301,20 @@ extern "C" void rmlui_player_profile_update(void) {
             ProfileMatchItem item;
             item.match_id = m.match_id;
             item.selected = false;
-            
+
             bool im_p1 = (strcmp(m.p1_name, Identity_GetDisplayName()) == 0);
             item.opponent_name = im_p1 ? m.p2_name : m.p1_name;
             item.opponent_country = im_p1 ? m.p2_country : m.p1_country;
             item.player_char_name = char_name(im_p1 ? m.p1_char : m.p2_char);
             item.opponent_char_name = char_name(im_p1 ? m.p2_char : m.p1_char);
             item.date_str = m.date;
-            
+
             item.is_win = (strcmp(m.winner_id, my_id) == 0);
             item.result_str = item.is_win ? "WIN" : "LOSS";
-            
+
             item.replay_status = "Saved"; // Assume saved if on server for now
             item.is_valid = true;
-            
+
             s_match_history.push_back(item);
         }
         s_match_history_count = (int)s_fetch_matches.size();
@@ -324,11 +331,11 @@ extern "C" void rmlui_player_profile_update(void) {
             pad.replay_status = Rml::String();
             s_match_history.push_back(pad);
         }
-        
+
         s_model_handle.DirtyVariable("match_history");
         s_model_handle.DirtyVariable("match_history_count");
         s_fetch_matches.clear(); // Free memory
-        
+
         s_model_handle.DirtyVariable("tier");
         s_model_handle.DirtyVariable("rating");
         s_model_handle.DirtyVariable("wins");
@@ -339,7 +346,7 @@ extern "C" void rmlui_player_profile_update(void) {
         s_model_handle.DirtyVariable("network_status");
         s_model_handle.DirtyVariable("status_bad");
         s_model_handle.DirtyVariable("status_good");
-        
+
         s_status_text = "Updated from Server";
         s_model_handle.DirtyVariable("status_text");
     }
@@ -353,7 +360,8 @@ extern "C" void rmlui_player_profile_update(void) {
             size_t header_size = 16;
             if (s_download_size >= 8) {
                 uint32_t version = *((uint32_t*)s_download_data + 1);
-                if (version == 2) header_size = 24;
+                if (version == 2)
+                    header_size = 24;
             }
 
             if (s_download_size > header_size) {
@@ -382,13 +390,13 @@ extern "C" void rmlui_player_profile_update(void) {
 extern "C" void rmlui_player_profile_fetch(void) {
     if (SDL_GetAtomicInt(&s_fetch_active))
         return;
-        
+
     s_player_name = Identity_GetDisplayName()[0] ? Identity_GetDisplayName() : "Player 1";
     s_player_title = "Street Fighter"; // Dummy Title
-    s_avatar_url = ""; // No avatar system yet
-    s_global_rank = "---"; // Require another API call later
-    s_max_streak = 0; // Not returned from simple stats yet
-    
+    s_avatar_url = "";                 // No avatar system yet
+    s_global_rank = "---";             // Require another API call later
+    s_max_streak = 0;                  // Not returned from simple stats yet
+
     s_match_history.clear(); // Clear existing array while loading
     while (s_match_history.size() < 10) {
         ProfileMatchItem pad = {};
@@ -403,10 +411,10 @@ extern "C" void rmlui_player_profile_fetch(void) {
         s_match_history.push_back(pad);
     }
     s_match_history_count = 0;
-    
+
     s_cursor = 0;
     s_result = 1;
-    
+
     if (s_model_handle) {
         s_model_handle.DirtyVariable("player_name");
         s_model_handle.DirtyVariable("player_title");
@@ -419,7 +427,8 @@ extern "C" void rmlui_player_profile_fetch(void) {
 
     if (!LobbyServer_IsConfigured()) {
         s_status_text = "Not Connected";
-        if (s_model_handle) s_model_handle.DirtyVariable("status_text");
+        if (s_model_handle)
+            s_model_handle.DirtyVariable("status_text");
         return;
     }
 
@@ -436,7 +445,8 @@ extern "C" void rmlui_player_profile_fetch(void) {
 
 // ─── Show / Hide ─────────────────────────────────────────────────
 extern "C" void rmlui_player_profile_show(void) {
-    if (!s_model_registered) rmlui_player_profile_init();
+    if (!s_model_registered)
+        rmlui_player_profile_init();
     rmlui_wrapper_show_game_document("player_profile");
     rmlui_player_profile_fetch();
 }
@@ -450,7 +460,8 @@ extern "C" int rmlui_player_profile_poll(unsigned short trigger) {
         return s_result;
 
     if (SDL_GetAtomicInt(&s_fetch_active)) {
-        if (trigger & 0x0200) s_result = -1;
+        if (trigger & 0x0200)
+            s_result = -1;
         return s_result;
     }
 
@@ -459,11 +470,13 @@ extern "C" int rmlui_player_profile_poll(unsigned short trigger) {
         int old_cursor = s_cursor;
         if (trigger & 0x0010) { // UP
             s_cursor--;
-            if (s_cursor < 0) s_cursor = count - 1;
+            if (s_cursor < 0)
+                s_cursor = count - 1;
         }
         if (trigger & 0x0020) { // DOWN
             s_cursor++;
-            if (s_cursor >= count) s_cursor = 0;
+            if (s_cursor >= count)
+                s_cursor = 0;
         }
 
         if (old_cursor != s_cursor) {

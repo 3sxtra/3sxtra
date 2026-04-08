@@ -35,8 +35,6 @@ void Renderer_UnlockPalette(unsigned int th) {
     SDLGameRenderer_UnlockPalette(th);
 }
 
-
-
 void Renderer_DrawTexturedQuad(const Sprite* sprite, unsigned int color) {
     RendererVertex v[4];
     for (int i = 0; i < 4; i++) {
@@ -67,17 +65,33 @@ void Renderer_DrawSprite(const Sprite* sprite, unsigned int color) {
 void Renderer_DrawSprite2(const Sprite2* sprite2) {
     RendererVertex v[4];
     // Sprite2 only has 2 vertices (top-left, bottom-right), we need to expand to 4 for 3sxtra
-    v[0].x = sprite2->v[0].x; v[0].y = sprite2->v[0].y; v[0].z = sprite2->v[0].z; 
-    v[0].u = sprite2->t[0].s; v[0].v = sprite2->t[0].t; v[0].color = sprite2->vertex_color;
+    v[0].x = sprite2->v[0].x;
+    v[0].y = sprite2->v[0].y;
+    v[0].z = sprite2->v[0].z;
+    v[0].u = sprite2->t[0].s;
+    v[0].v = sprite2->t[0].t;
+    v[0].color = sprite2->vertex_color;
 
-    v[1].x = sprite2->v[1].x; v[1].y = sprite2->v[0].y; v[1].z = sprite2->v[0].z; 
-    v[1].u = sprite2->t[1].s; v[1].v = sprite2->t[0].t; v[1].color = sprite2->vertex_color;
+    v[1].x = sprite2->v[1].x;
+    v[1].y = sprite2->v[0].y;
+    v[1].z = sprite2->v[0].z;
+    v[1].u = sprite2->t[1].s;
+    v[1].v = sprite2->t[0].t;
+    v[1].color = sprite2->vertex_color;
 
-    v[2].x = sprite2->v[1].x; v[2].y = sprite2->v[1].y; v[2].z = sprite2->v[1].z; 
-    v[2].u = sprite2->t[1].s; v[2].v = sprite2->t[1].t; v[2].color = sprite2->vertex_color;
+    v[2].x = sprite2->v[1].x;
+    v[2].y = sprite2->v[1].y;
+    v[2].z = sprite2->v[1].z;
+    v[2].u = sprite2->t[1].s;
+    v[2].v = sprite2->t[1].t;
+    v[2].color = sprite2->vertex_color;
 
-    v[3].x = sprite2->v[0].x; v[3].y = sprite2->v[1].y; v[3].z = sprite2->v[1].z; 
-    v[3].u = sprite2->t[0].s; v[3].v = sprite2->t[1].t; v[3].color = sprite2->vertex_color;
+    v[3].x = sprite2->v[0].x;
+    v[3].y = sprite2->v[1].y;
+    v[3].z = sprite2->v[1].z;
+    v[3].u = sprite2->t[0].s;
+    v[3].v = sprite2->t[1].t;
+    v[3].color = sprite2->vertex_color;
 
     Renderer_DrawSpriteVtx((const RendererVertex*)&v, 4);
 }

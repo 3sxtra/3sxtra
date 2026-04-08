@@ -96,19 +96,44 @@ s16 Next_CPU() {
     Scene_Cut = Cut_Cut_Cut();
 
     switch (SC_No[0]) {
-    case 0:  Next_CPU_1st();        break;
-    case 1:  Next_CPU_2nd();        break;
-    case 2:  Next_CPU_3rd();        break;
-    case 3:  Next_CPU_4th();        break;
-    case 4:  Next_CPU_5th();        break;
-    case 5:  Next_CPU_6th();        break;
-    case 6:  Next_Bonus_1st();      break;
-    case 7:  Next_Bonus_2nd();      break;
-    case 8:  Next_Bonus_3rd();      break;
-    case 9:  Next_Bonus_End();      break;
-    case 10: Wait_Load_Complete();   break;
-    case 11: Wait_Load_Complete2();  break;
-    default: break;
+    case 0:
+        Next_CPU_1st();
+        break;
+    case 1:
+        Next_CPU_2nd();
+        break;
+    case 2:
+        Next_CPU_3rd();
+        break;
+    case 3:
+        Next_CPU_4th();
+        break;
+    case 4:
+        Next_CPU_5th();
+        break;
+    case 5:
+        Next_CPU_6th();
+        break;
+    case 6:
+        Next_Bonus_1st();
+        break;
+    case 7:
+        Next_Bonus_2nd();
+        break;
+    case 8:
+        Next_Bonus_3rd();
+        break;
+    case 9:
+        Next_Bonus_End();
+        break;
+    case 10:
+        Wait_Load_Complete();
+        break;
+    case 11:
+        Wait_Load_Complete2();
+        break;
+    default:
+        break;
     }
 
     Time_Over = false;
@@ -552,18 +577,37 @@ s32 After_Bonus() {
     Scene_Cut = Cut_Cut_Cut();
 
     switch (SC_No[0]) {
-    case 0:  After_Bonus_1st();      break;
-    case 1:  After_Bonus_2nd();      break;
-    case 2:  Next_CPU_1st();         break;
-    case 3:  Next_CPU_2nd();         break;
-    case 4:  Next_CPU_3rd();         break;
-    case 5:  Next_CPU_4th();         break;
-    case 6:  Wait_Load_Complete2();   break;
-    case 7:  /* fallthrough */
-    case 8:  /* fallthrough */
-    case 9:  Next_Bonus_End();        break;
-    case 10: Wait_Load_Complete3();   break;
-    default: break;
+    case 0:
+        After_Bonus_1st();
+        break;
+    case 1:
+        After_Bonus_2nd();
+        break;
+    case 2:
+        Next_CPU_1st();
+        break;
+    case 3:
+        Next_CPU_2nd();
+        break;
+    case 4:
+        Next_CPU_3rd();
+        break;
+    case 5:
+        Next_CPU_4th();
+        break;
+    case 6:
+        Wait_Load_Complete2();
+        break;
+    case 7: /* fallthrough */
+    case 8: /* fallthrough */
+    case 9:
+        Next_Bonus_End();
+        break;
+    case 10:
+        Wait_Load_Complete3();
+        break;
+    default:
+        break;
     }
 
     Time_Over = false;
@@ -637,11 +681,20 @@ s16 Select_CPU_First() {
     SEL_CPU_X = 0;
 
     switch (SC_No[0]) {
-    case 0: Select_CPU_1st(); break;
-    case 1: Select_CPU_2nd(); break;
-    case 2: Select_CPU_3rd(); break;
-    case 3: Select_CPU_4th(); break;
-    default: break;
+    case 0:
+        Select_CPU_1st();
+        break;
+    case 1:
+        Select_CPU_2nd();
+        break;
+    case 2:
+        Select_CPU_3rd();
+        break;
+    case 3:
+        Select_CPU_4th();
+        break;
+    default:
+        break;
     }
 
     Time_Over = false;
@@ -1008,13 +1061,24 @@ s16 Next_Q() {
     Scene_Cut = Cut_Cut_Cut();
 
     switch (SC_No[0]) {
-    case 0: Next_Q_1st();         break;
-    case 1: Next_Q_2nd();         break;
-    case 2: Next_Q_3rd();         break;
+    case 0:
+        Next_Q_1st();
+        break;
+    case 1:
+        Next_Q_2nd();
+        break;
+    case 2:
+        Next_Q_3rd();
+        break;
     case 3: /* fallthrough */
-    case 4: Wait_Load_Complete();  break;
-    case 5: Next_CPU_6th();       break;
-    default: break;
+    case 4:
+        Wait_Load_Complete();
+        break;
+    case 5:
+        Next_CPU_6th();
+        break;
+    default:
+        break;
     }
 
     if (Check_Exit_Check() == 0 && Debug_w[DEBUG_TIME_STOP] == -1) {

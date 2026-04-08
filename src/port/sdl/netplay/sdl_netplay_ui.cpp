@@ -708,16 +708,17 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
     (void)data;
     SDL_SetAtomicInt(&lobby_punch_cancel, 0);
 
-    // Hairpin bypass: check if connecting to our own public IP (e.g. testing Ranked Matchmaking with 2 clients on the same PC).
-    // Bypasses the 10-second STUN timeout and routes directly to localhost.
+    // Hairpin bypass: check if connecting to our own public IP (e.g. testing Ranked Matchmaking with 2 clients on the
+    // same PC). Bypasses the 10-second STUN timeout and routes directly to localhost.
     if (stun_result.public_ip[0] != '\0' && SDL_strcmp(lobby_punch_peer_ip, stun_result.public_ip) == 0) {
-        SDL_Log("[lobby] Peer public IP matches ours (NAT Hairpin). Bypassing STUN and using 127.0.0.1 (local port %u)", lobby_punch_peer_local_port);
+        SDL_Log("[lobby] Peer public IP matches ours (NAT Hairpin). Bypassing STUN and using 127.0.0.1 (local port %u)",
+                lobby_punch_peer_local_port);
         SDL_strlcpy(lobby_punch_peer_ip, "127.0.0.1", sizeof(lobby_punch_peer_ip));
-        
+
         // When connecting locally, we CANNOT use the STUN public_port because NAT loopback doesn't work internally!
         // The peer is listening on their local_port. Override it here.
         lobby_punch_peer_port = lobby_punch_peer_local_port;
-        
+
         lobby_punch_rtt_ms = 1;
         SDL_SetAtomicInt(&lobby_thread_result, 1);
         SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_PUNCH_DONE);
@@ -742,8 +743,7 @@ static int SDLCALL hole_punch_thread_fn(void* data) {
 // UPnP fallback thread function
 static int SDLCALL upnp_fallback_thread_fn(void* data) {
     (void)data;
-    bool ok = Upnp_AddMapping(
-        &lobby_upnp_mapping, stun_result.local_port, stun_result.public_port, "UDP");
+    bool ok = Upnp_AddMapping(&lobby_upnp_mapping, stun_result.local_port, stun_result.public_port, "UDP");
     SDL_SetAtomicInt(&lobby_thread_result, ok ? 1 : 0);
     SDL_SetAtomicInt(&lobby_async_state, LOBBY_ASYNC_UPNP_DONE);
     return 0;
@@ -769,11 +769,8 @@ static void lobby_start_punch(char* peer_ip, uint16_t peer_port, uint16_t peer_l
     if (lobby_punch_peer_name[0]) {
         snprintf(lobby_status_msg, sizeof(lobby_status_msg), "Hole punching to %s...", lobby_punch_peer_name);
     } else {
-        snprintf(lobby_status_msg,
-                 sizeof(lobby_status_msg),
-                 "Hole punching to %s:%u...",
-                 lobby_punch_peer_ip,
-                 peer_port);
+        snprintf(
+            lobby_status_msg, sizeof(lobby_status_msg), "Hole punching to %s:%u...", lobby_punch_peer_ip, peer_port);
     }
     // Stop PingProbe BEFORE starting the punch thread.
     // Both PingProbe and HolePunch call NET_ReceiveDatagram on the same STUN socket.
@@ -1750,7 +1747,6 @@ void SDLNetplayUI_StartCasualMatchPunch(const char* opponent_room_code, const ch
 
     lobby_start_punch(peer_ip, peer_port, peer_local_port);
 }
-
 
 void SDLNetplayUI_ReportNaturalMatchEnd(void) {
     // Called from VS_Result auto-skip while game state (Winner_id, PL_Wins, My_char)

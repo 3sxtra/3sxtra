@@ -13,26 +13,26 @@
 
 /** Character IDs matching CPS3 internal numbering. */
 typedef enum ReplayCharacter {
-    CHAR_GILL     = 0,
-    CHAR_ALEX     = 1,
-    CHAR_RYU      = 2,
-    CHAR_YUN      = 3,
-    CHAR_DUDLEY   = 4,
-    CHAR_NECRO    = 5,
-    CHAR_HUGO     = 6,
-    CHAR_IBUKI    = 7,
-    CHAR_ELENA    = 8,
-    CHAR_ORO      = 9,
-    CHAR_YANG     = 10,
-    CHAR_KEN      = 11,
-    CHAR_SEAN     = 12,
-    CHAR_URIEN    = 13,
-    CHAR_AKUMA    = 14,
-    CHAR_CHUNLI   = 15,
-    CHAR_MAKOTO   = 16,
-    CHAR_Q        = 17,
-    CHAR_TWELVE   = 18,
-    CHAR_REMY     = 19,
+    CHAR_GILL = 0,
+    CHAR_ALEX = 1,
+    CHAR_RYU = 2,
+    CHAR_YUN = 3,
+    CHAR_DUDLEY = 4,
+    CHAR_NECRO = 5,
+    CHAR_HUGO = 6,
+    CHAR_IBUKI = 7,
+    CHAR_ELENA = 8,
+    CHAR_ORO = 9,
+    CHAR_YANG = 10,
+    CHAR_KEN = 11,
+    CHAR_SEAN = 12,
+    CHAR_URIEN = 13,
+    CHAR_AKUMA = 14,
+    CHAR_CHUNLI = 15,
+    CHAR_MAKOTO = 16,
+    CHAR_Q = 17,
+    CHAR_TWELVE = 18,
+    CHAR_REMY = 19,
 } ReplayCharacter;
 
 /** A single frame of player inputs. */
@@ -43,17 +43,17 @@ typedef struct ReplayInput {
 
 /** One round's worth of inputs and metadata. */
 typedef struct ReplayRound {
-    ReplayInput* inputs;    /**< stb_ds dynamic array — call arrfree() to release */
-    int          start_frame; /**< Frame index where this round's inputs begin */
+    ReplayInput* inputs; /**< stb_ds dynamic array — call arrfree() to release */
+    int start_frame;     /**< Frame index where this round's inputs begin */
 } ReplayRound;
 
 /** A complete multi-round replay game. */
 typedef struct ReplayGame {
-    ReplayRound* rounds;        /**< stb_ds dynamic array of rounds */
-    Uint8        characters[2]; /**< Character IDs (adjusted for PS2 — no Shin Akuma) */
-    Uint8        supers[2];     /**< Super Art indices */
-    Uint8        colors[2];     /**< Player color indices */
-    Uint8        new_challenger;
+    ReplayRound* rounds; /**< stb_ds dynamic array of rounds */
+    Uint8 characters[2]; /**< Character IDs (adjusted for PS2 — no Shin Akuma) */
+    Uint8 supers[2];     /**< Super Art indices */
+    Uint8 colors[2];     /**< Player color indices */
+    Uint8 new_challenger;
 } ReplayGame;
 
 /**

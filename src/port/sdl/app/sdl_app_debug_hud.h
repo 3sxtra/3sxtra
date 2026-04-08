@@ -33,18 +33,27 @@ void SDLAppDebugHud_Toggle(void);
 static inline void SDLAppDebugHud_NoteFrameEnd(void) {}
 static inline void SDLAppDebugHud_UpdateFPS(void) {}
 static inline void SDLAppDebugHud_Render(int w, int h, const SDL_FRect* v) {
-    (void)w; (void)h; (void)v;
+    (void)w;
+    (void)h;
+    (void)v;
 }
 static inline void SDLAppDebugHud_RenderSDL2D(int w, int h, const SDL_FRect* d) {
-    (void)w; (void)h; (void)d;
+    (void)w;
+    (void)h;
+    (void)d;
 }
-static inline double SDLAppDebugHud_GetFPS(void) { return 0.0; }
+static inline double SDLAppDebugHud_GetFPS(void) {
+    return 0.0;
+}
 static inline const float* SDLAppDebugHud_GetFPSHistory(int* out_count) {
-    if (out_count) *out_count = 0;
+    if (out_count)
+        *out_count = 0;
     return (const float*)0;
 }
 static const bool show_debug_hud = false;
-static inline bool SDLAppDebugHud_IsVisible(void) { return false; }
+static inline bool SDLAppDebugHud_IsVisible(void) {
+    return false;
+}
 static inline void SDLAppDebugHud_Toggle(void) {}
 
 #endif /* ENABLE_DEBUG_HUD */

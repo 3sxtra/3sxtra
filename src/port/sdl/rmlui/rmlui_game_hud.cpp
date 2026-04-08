@@ -47,7 +47,6 @@ extern u8 flash_win_type[2][4];
 
 } // extern "C"
 
-
 // ─── Match Banner Globals (set by lobby/netplay, read by HUD) ───
 int g_match_ft = 0;
 char g_match_p1_name[64] = "";
@@ -332,8 +331,10 @@ extern "C" void rmlui_game_hud_init(void) {
     // ── Names & Wins ──
     ctor.BindFunc("p1_name", [](Rml::Variant& v) { v = Rml::String(char_name(My_char[0])); });
     ctor.BindFunc("p2_name", [](Rml::Variant& v) { v = Rml::String(char_name(My_char[1])); });
-    ctor.BindFunc("p1_wins", [](Rml::Variant& v) { v = (int)((Mode_Type == MODE_VERSUS) ? VS_Win_Record[0] : Win_Record[0]); });
-    ctor.BindFunc("p2_wins", [](Rml::Variant& v) { v = (int)((Mode_Type == MODE_VERSUS) ? VS_Win_Record[1] : Win_Record[1]); });
+    ctor.BindFunc("p1_wins",
+                  [](Rml::Variant& v) { v = (int)((Mode_Type == MODE_VERSUS) ? VS_Win_Record[0] : Win_Record[0]); });
+    ctor.BindFunc("p2_wins",
+                  [](Rml::Variant& v) { v = (int)((Mode_Type == MODE_VERSUS) ? VS_Win_Record[1] : Win_Record[1]); });
 
     // ── Round results (per-round bubbles) ──
     ctor.BindFunc("rounds_to_win", [](Rml::Variant& v) { v = (int)(CurrentSave()->Battle_Number[Play_Type] + 1); });
@@ -399,11 +400,12 @@ extern "C" void rmlui_game_hud_init(void) {
     ctor.BindFunc("training_stun_active",
                   [](Rml::Variant& v) { v = (bool)(Mode_Type == MODE_NORMAL_TRAINING || Mode_Type == MODE_TRIALS); });
 
-
     // ── Match Banner ──
     ctor.BindFunc("match_ft", [](Rml::Variant& v) { v = (int)g_match_ft; });
-    ctor.BindFunc("match_p1_wins", [](Rml::Variant& v) { v = (int)((Mode_Type == MODE_VERSUS) ? VS_Win_Record[0] : Win_Record[0]); });
-    ctor.BindFunc("match_p2_wins", [](Rml::Variant& v) { v = (int)((Mode_Type == MODE_VERSUS) ? VS_Win_Record[1] : Win_Record[1]); });
+    ctor.BindFunc("match_p1_wins",
+                  [](Rml::Variant& v) { v = (int)((Mode_Type == MODE_VERSUS) ? VS_Win_Record[0] : Win_Record[0]); });
+    ctor.BindFunc("match_p2_wins",
+                  [](Rml::Variant& v) { v = (int)((Mode_Type == MODE_VERSUS) ? VS_Win_Record[1] : Win_Record[1]); });
     ctor.BindFunc("match_p1_name", [](Rml::Variant& v) { v = Rml::String(g_match_p1_name); });
     ctor.BindFunc("match_p2_name", [](Rml::Variant& v) { v = Rml::String(g_match_p2_name); });
     ctor.BindFunc("match_p1_country", [](Rml::Variant& v) { v = Rml::String(g_match_p1_country); });
@@ -414,7 +416,8 @@ extern "C" void rmlui_game_hud_init(void) {
     s_model_registered = true;
 
     // Pre-load the documents (hidden initially; shown when is_fight_active is true)
-    if (use_rmlui) rmlui_wrapper_show_game_document("game_hud");
+    if (use_rmlui)
+        rmlui_wrapper_show_game_document("game_hud");
     rmlui_wrapper_show_game_document("match_banner");
 
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi HUD] Data model registered (53 bindings)");
@@ -435,8 +438,7 @@ extern "C" void rmlui_game_hud_update(void) {
     }
 
     // ⚡ Skip dirty-checking when both documents are hidden
-    if (!rmlui_wrapper_is_game_document_visible("game_hud") &&
-        !rmlui_wrapper_is_game_document_visible("match_banner"))
+    if (!rmlui_wrapper_is_game_document_visible("game_hud") && !rmlui_wrapper_is_game_document_visible("match_banner"))
         return;
 
     DIRTY_INT(p1_health, (int)plw[0].wu.vital_new);
@@ -557,7 +559,6 @@ extern "C" void rmlui_game_hud_update(void) {
     DIRTY_STR(p2_r1_lbl, Rml::String(win_type_label(flash_win_type[1][1])));
     DIRTY_STR(p2_r2_lbl, Rml::String(win_type_label(flash_win_type[1][2])));
     DIRTY_STR(p2_r3_lbl, Rml::String(win_type_label(flash_win_type[1][3])));
-
 
     // ── Match Banner ──
     DIRTY_INT(match_ft, g_match_ft);

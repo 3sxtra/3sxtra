@@ -22,15 +22,19 @@ import sys
 from PIL import Image
 
 from sprite_common import (
-    read_afs, read_afs_file, lz_ext_p6_fx, DTL, unswizzle,
-    decode_color_abgr1555, decode_palette_banks,
-    STAGE_NAMES, STAGE_PAL_AFS, STAGE_TILE_AFS,
-    COLORS_PER_BANK, PALETTE_BANK_BYTES,
+    read_afs,
+    read_afs_file,
+    decode_palette_banks,
+    STAGE_NAMES,
+    STAGE_PAL_AFS,
+    STAGE_TILE_AFS,
+    COLORS_PER_BANK,
 )
 
 # Optional NumPy for accelerated tile decoding
 try:
     import numpy as np
+
     _HAS_NUMPY = True
 except ImportError:
     _HAS_NUMPY = False
@@ -39,9 +43,28 @@ except ImportError:
 
 # --- Mode 1: Raw PPG entries (direct-color 16-bit tiles) ---
 STAGE_PPG_ENTRY = [
-    54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
-    64, 65, 66, 67, 68, 69, 70, 71, 72, 73,
-    75, 76,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    75,
+    76,
 ]
 
 # Layers per stage (from use_real_scr)
@@ -54,10 +77,28 @@ REWRITE_SCR = [0, 0, 0, 25, 0, 0, 0, 12, 24, 0, 96, 0, 0, 0, 1, 0, 0, 0, 10, 18,
 # BGW number per stage per layer (from stage_bgw_number in bg_data.c)
 # First non-zero index determines stg offset for GBIX base calculation.
 STAGE_BGW_NUMBER = [
-    [1, 2, 0], [0, 2, 0], [1, 2, 3], [1, 2, 0], [0, 2, 0], [1, 2, 0],
-    [0, 2, 0], [1, 2, 0], [1, 2, 0], [1, 2, 0], [1, 2, 0], [0, 1, 0],
-    [1, 2, 0], [1, 2, 0], [1, 2, 3], [1, 2, 0], [1, 2, 0], [1, 2, 0],
-    [1, 2, 0], [0, 2, 0], [1, 2, 0], [0, 2, 0],
+    [1, 2, 0],
+    [0, 2, 0],
+    [1, 2, 3],
+    [1, 2, 0],
+    [0, 2, 0],
+    [1, 2, 0],
+    [0, 2, 0],
+    [1, 2, 0],
+    [1, 2, 0],
+    [1, 2, 0],
+    [1, 2, 0],
+    [0, 1, 0],
+    [1, 2, 0],
+    [1, 2, 0],
+    [1, 2, 3],
+    [1, 2, 0],
+    [1, 2, 0],
+    [1, 2, 0],
+    [1, 2, 0],
+    [0, 2, 0],
+    [1, 2, 0],
+    [0, 2, 0],
 ]
 
 # Tile bitmasks per stage per layer (from bgtex_stage_gbix)
@@ -110,7 +151,7 @@ def compute_gbix_base(stage_idx, layer):
 def _default_afs_path():
     return os.environ.get(
         "SF33RD_AFS",
-        r"C:\Users\dov\AppData\Roaming\CrowdedStreet\3SX\resources\SF33RD.AFS"
+        r"C:\Users\dov\AppData\Roaming\CrowdedStreet\3SX\resources\SF33RD.AFS",
     )
 
 
@@ -140,7 +181,7 @@ def _decode_ppg_tile_raw_numpy(raw, w, h):
     mg_mask = (r >= 248) & (b >= 248) & ((g == 0) | (g == 48))
     a[mg_mask] = 0
     # Zero out RGB where alpha is 0 to avoid ghosting
-    trans_mask = (a == 0)
+    trans_mask = a == 0
     r[trans_mask] = 0
     g[trans_mask] = 0
     b[trans_mask] = 0
@@ -204,7 +245,7 @@ def extract_ppg_tiles_raw(afs_path, entries, entry_idx):
 
 def _decode_ppg_tile_indexed_numpy(raw, w, h, pal_map, palette_colors, default_pal):
     """Decode an indexed PPG tile using NumPy (fast path)."""
-    indices = np.frombuffer(raw[:w * h], dtype=np.uint8).reshape(h, w)
+    indices = np.frombuffer(raw[: w * h], dtype=np.uint8).reshape(h, w)
 
     # Build per-pixel palette bank as numpy array
     pal_map_arr = np.array(pal_map, dtype=np.int32)
@@ -223,7 +264,7 @@ def _decode_ppg_tile_indexed_numpy(raw, w, h, pal_map, palette_colors, default_p
     rgba = np.where(
         indices[..., np.newaxis] == 0,
         np.array([0, 0, 0, 0], dtype=np.uint8),
-        pal_arr[np.clip(color_idx, 0, len(pal_arr) - 1)]
+        pal_arr[np.clip(color_idx, 0, len(pal_arr) - 1)],
     )
     return Image.fromarray(rgba.astype(np.uint8), "RGBA")
 
@@ -274,8 +315,11 @@ def extract_ppg_tiles_indexed(data, palette_colors):
                         pal_map[py][px] = pal_bank
 
             if _HAS_NUMPY:
-                tiles.append(_decode_ppg_tile_indexed_numpy(
-                    raw, w, h, pal_map, palette_colors, default_pal))
+                tiles.append(
+                    _decode_ppg_tile_indexed_numpy(
+                        raw, w, h, pal_map, palette_colors, default_pal
+                    )
+                )
             else:
                 buf = bytearray(w * h * 4)
                 for py in range(h):
@@ -294,7 +338,7 @@ def extract_ppg_tiles_indexed(data, palette_colors):
                                     buf[off + 2] = b
                                     buf[off + 3] = a
                                 else:
-                                    buf[off:off + 4] = b'\x80\x80\x80\xff'
+                                    buf[off : off + 4] = b"\x80\x80\x80\xff"
                 tiles.append(Image.frombytes("RGBA", (w, h), bytes(buf)))
         except Exception as e:
             print(f"    WARNING: failed to decode indexed tile at offset {ofs}: {e}")
@@ -324,13 +368,17 @@ def composite_layers(tiles, stage_idx, num_layers, stage_dir):
                 if byte_val & (0x80 >> col):
                     if tile_ptr < len(tiles):
                         layer_img.paste(tiles[tile_ptr], (col * 128, row * 128))
-                        composite_key = BG_TEXTURE_TYPE_GAMEPLAY * 100000 + stage_idx * 1000 + gbix
-                        tile_entries.append({
-                            "row": row,
-                            "col": col,
-                            "gbix": gbix,
-                            "composite_key": composite_key,
-                        })
+                        composite_key = (
+                            BG_TEXTURE_TYPE_GAMEPLAY * 100000 + stage_idx * 1000 + gbix
+                        )
+                        tile_entries.append(
+                            {
+                                "row": row,
+                                "col": col,
+                                "gbix": gbix,
+                                "composite_key": composite_key,
+                            }
+                        )
                         tile_ptr += 1
                         count += 1
 
@@ -354,7 +402,9 @@ def composite_layers(tiles, stage_idx, num_layers, stage_dir):
         with open(json_path, "w") as f:
             json.dump(metadata, f, indent=2)
 
-        print(f"  Layer {layer}: {count} tiles, {len(tile_entries)} gbix entries -> {layer_img.size}")
+        print(
+            f"  Layer {layer}: {count} tiles, {len(tile_entries)} gbix entries -> {layer_img.size}"
+        )
 
 
 # ─── Stage extraction (both modes) ─────────────────────────────
@@ -473,6 +523,7 @@ def extract_chip_anims(afs_path, entries, stage_idx, stage_dir):
     Type B files (non-zero attr, no embedded textures) are skipped.
     """
     from sprite_compositor import extract_stage_frame, build_stage_colorram
+
     pal_afs = STAGE_PAL_AFS[stage_idx]
     tile_afs = STAGE_TILE_AFS[stage_idx]
     lo = min(pal_afs, tile_afs)
@@ -561,8 +612,9 @@ def extract_chip_anims(afs_path, entries, stage_idx, stage_dir):
 
         extracted = 0
         for fi in range(num_frames):
-            img = extract_stage_frame(data, to_tex, fi, colorram,
-                                      colcd_base=300, rendering_mode=33)
+            img = extract_stage_frame(
+                data, to_tex, fi, colorram, colcd_base=300, rendering_mode=33
+            )
             if img is not None:
                 img.save(os.path.join(chip_dir, f"frame_{fi:04d}.png"))
                 extracted += 1
@@ -584,20 +636,26 @@ def main():
         description="Extract stage background layers from AFS archive."
     )
     parser.add_argument(
-        "stage", nargs="?", default=None,
-        help="Stage index (0-21) or 'all' to extract all stages"
+        "stage",
+        nargs="?",
+        default=None,
+        help="Stage index (0-21) or 'all' to extract all stages",
     )
     parser.add_argument(
-        "--mode", choices=["ppg", "indexed"], default="ppg",
-        help="Extraction mode: ppg (raw direct-color) or indexed (palette-based)"
+        "--mode",
+        choices=["ppg", "indexed"],
+        default="ppg",
+        help="Extraction mode: ppg (raw direct-color) or indexed (palette-based)",
     )
     parser.add_argument(
-        "--output", default="output/stages",
-        help="Output directory (default: output/stages)"
+        "--output",
+        default="output/stages",
+        help="Output directory (default: output/stages)",
     )
     parser.add_argument(
-        "--afs", default=_default_afs_path(),
-        help="Path to SF33RD.AFS (default: SF33RD_AFS env var or built-in path)"
+        "--afs",
+        default=_default_afs_path(),
+        help="Path to SF33RD.AFS (default: SF33RD_AFS env var or built-in path)",
     )
     args = parser.parse_args()
 
@@ -620,7 +678,9 @@ def main():
             print(f"ERROR: '{args.stage}' is not a valid stage index or 'all'")
             sys.exit(1)
         if stage_idx < 0 or stage_idx >= len(STAGE_NAMES):
-            print(f"ERROR: stage index {stage_idx} out of range (0-{len(STAGE_NAMES)-1})")
+            print(
+                f"ERROR: stage index {stage_idx} out of range (0-{len(STAGE_NAMES) - 1})"
+            )
             sys.exit(1)
         os.makedirs(output_dir, exist_ok=True)
         extract_stage(afs_path, stage_idx, output_dir, args.mode)

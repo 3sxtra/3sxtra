@@ -87,8 +87,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
     if (!is_sdl2d_backend(SDLApp_GetRenderer())) {
         // Route keyboard/text events to casual/tournament lobby chat popup first
         if ((event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_TEXT_INPUT) &&
-            (rmlui_casual_lobby_handle_key_event(event) ||
-             rmlui_tournament_lobby_handle_key_event(event))) {
+            (rmlui_casual_lobby_handle_key_event(event) || rmlui_tournament_lobby_handle_key_event(event))) {
             return false; // Chat consumed the event
         }
 
@@ -135,8 +134,7 @@ bool SDLAppInput_HandleEvent(SDL_Event* event) {
             }
 
             // Ctrl+G: Toggle GPIO lag test (Pi4 only — no-op on other platforms)
-            if (event->key.key == SDLK_G && event->key.down && !event->key.repeat &&
-                (event->key.mod & SDL_KMOD_CTRL)) {
+            if (event->key.key == SDLK_G && event->key.down && !event->key.repeat && (event->key.mod & SDL_KMOD_CTRL)) {
                 GpioLagTest_Toggle();
             }
         }

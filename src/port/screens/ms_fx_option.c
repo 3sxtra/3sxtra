@@ -9,14 +9,14 @@
 
 #include "port/menu_screen.h"
 
-#include "sf33rd/AcrSDK/common/pad.h"              /* SWK_UP, etc. */
-#include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init */
-#include "sf33rd/Source/Game/engine/workuser.h"    /* Menu_Cursor_Y */
-#include "sf33rd/Source/Game/menu/menu.h"          /* Menu_Common_Init */
-#include "sf33rd/Source/Game/sound/sound3rd.h"     /* SE_selected */
-#include "sf33rd/Source/Game/system/reset.h"       /* Menu_Suicide */
-#include "sf33rd/Source/Game/ui/sc_sub.h"          /* FadeOut, FadeIn, FadeInit */
-#include "structs.h"                               /* struct _TASK */
+#include "sf33rd/AcrSDK/common/pad.h"           /* SWK_UP, etc. */
+#include "sf33rd/Source/Game/effect/eff57.h"    /* effect_57_init */
+#include "sf33rd/Source/Game/engine/workuser.h" /* Menu_Cursor_Y */
+#include "sf33rd/Source/Game/menu/menu.h"       /* Menu_Common_Init */
+#include "sf33rd/Source/Game/sound/sound3rd.h"  /* SE_selected */
+#include "sf33rd/Source/Game/system/reset.h"    /* Menu_Suicide */
+#include "sf33rd/Source/Game/ui/sc_sub.h"       /* FadeOut, FadeIn, FadeInit */
+#include "structs.h"                            /* struct _TASK */
 
 #include "port/sdl/input/sdl_pad.h" /* SDLPad_GetButtonState */
 #include "port/sdl/rmlui/rmlui_fx_option.h"
@@ -39,38 +39,52 @@ static void fx_option_enter(struct _TASK* task_ptr) {
 static void fx_option_tick(struct _TASK* task_ptr) {
     /* ── FX Option Input Loop ── */
     u16 sw = Check_Menu_Lever(0, 0);
-    if (sw == 0) sw = Check_Menu_Lever(1, 0);
+    if (sw == 0)
+        sw = Check_Menu_Lever(1, 0);
 
-        switch (sw) {
-        case SWK_UP:    rmlui_fx_option_cursor_up();    SE_dir_cursor_move(); break;
-        case SWK_DOWN:  rmlui_fx_option_cursor_down();  SE_dir_cursor_move(); break;
-        case SWK_LEFT:  rmlui_fx_option_value_left();   SE_dir_cursor_move(); break;
-        case SWK_RIGHT: rmlui_fx_option_value_right();  SE_dir_cursor_move(); break;
-        default: break;
-        }
+    switch (sw) {
+    case SWK_UP:
+        rmlui_fx_option_cursor_up();
+        SE_dir_cursor_move();
+        break;
+    case SWK_DOWN:
+        rmlui_fx_option_cursor_down();
+        SE_dir_cursor_move();
+        break;
+    case SWK_LEFT:
+        rmlui_fx_option_value_left();
+        SE_dir_cursor_move();
+        break;
+    case SWK_RIGHT:
+        rmlui_fx_option_value_right();
+        SE_dir_cursor_move();
+        break;
+    default:
+        break;
+    }
 
-        /* L/R shoulder for page change — edge detection */
-        SDLPad_ButtonState pad;
-        SDLPad_GetButtonState(0, &pad);
-        if (pad.left_shoulder && !s_shoulder_l_prev) {
-            rmlui_fx_option_page_left();
-            SE_dir_cursor_move();
-        }
-        if (pad.right_shoulder && !s_shoulder_r_prev) {
-            rmlui_fx_option_page_right();
-            SE_dir_cursor_move();
-        }
-        s_shoulder_l_prev = pad.left_shoulder;
-        s_shoulder_r_prev = pad.right_shoulder;
+    /* L/R shoulder for page change — edge detection */
+    SDLPad_ButtonState pad;
+    SDLPad_GetButtonState(0, &pad);
+    if (pad.left_shoulder && !s_shoulder_l_prev) {
+        rmlui_fx_option_page_left();
+        SE_dir_cursor_move();
+    }
+    if (pad.right_shoulder && !s_shoulder_r_prev) {
+        rmlui_fx_option_page_right();
+        SE_dir_cursor_move();
+    }
+    s_shoulder_l_prev = pad.left_shoulder;
+    s_shoulder_r_prev = pad.right_shoulder;
 
-        /* Cancel → return to option menu */
-        if (sw & SWK_EAST) {
-            SE_selected();
-            rmlui_fx_option_hide();
-            
-            /* Go back to Option Select */
-            MenuScreen_Goto(MENU_SCREEN_OPTION_SELECT);
-        }
+    /* Cancel → return to option menu */
+    if (sw & SWK_EAST) {
+        SE_selected();
+        rmlui_fx_option_hide();
+
+        /* Go back to Option Select */
+        MenuScreen_Goto(MENU_SCREEN_OPTION_SELECT);
+    }
 }
 
 static void fx_option_exit(struct _TASK* task_ptr) {

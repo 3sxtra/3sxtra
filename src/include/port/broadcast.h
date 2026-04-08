@@ -47,7 +47,11 @@ void Broadcast_Update(void); // Call this to sync config changes
 static inline void Broadcast_Initialize(void) {}
 static inline void Broadcast_Shutdown(void) {}
 static inline bool Broadcast_Send(uint32_t t, uint32_t w, uint32_t h, bool f) {
-    (void)t; (void)w; (void)h; (void)f; return false;
+    (void)t;
+    (void)w;
+    (void)h;
+    (void)f;
+    return false;
 }
 static inline void Broadcast_Update(void) {}
 #endif

@@ -38,8 +38,14 @@ void rmlui_training_hud_set_gauge(const char* field, float fill);
 static inline void rmlui_training_hud_init(void) {}
 static inline void rmlui_training_hud_update(void) {}
 static inline void rmlui_training_hud_shutdown(void) {}
-static inline void rmlui_training_hud_set_text(const char* field, const char* value) { (void)field; (void)value; }
-static inline void rmlui_training_hud_set_gauge(const char* field, float fill) { (void)field; (void)fill; }
+static inline void rmlui_training_hud_set_text(const char* field, const char* value) {
+    (void)field;
+    (void)value;
+}
+static inline void rmlui_training_hud_set_gauge(const char* field, float fill) {
+    (void)field;
+    (void)fill;
+}
 
 #endif /* ENABLE_RMLUI */
 

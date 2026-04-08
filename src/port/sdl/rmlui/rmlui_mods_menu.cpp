@@ -278,13 +278,19 @@ static void do_init(void) {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi Mods] Data model registered (lazy, 17 bindings)");
 }
 
-extern "C" void rmlui_mods_menu_init(void) { do_init(); }
+extern "C" void rmlui_mods_menu_init(void) {
+    do_init();
+}
 
 // -------------------------------------------------------------------
 // Per-frame update — dirty check and auto-reset
 // -------------------------------------------------------------------
 extern "C" void rmlui_mods_menu_update(void) {
-    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_registered) {
+        do_init();
+        if (!s_model_registered)
+            return;
+    }
     if (!s_model_handle)
         return;
 

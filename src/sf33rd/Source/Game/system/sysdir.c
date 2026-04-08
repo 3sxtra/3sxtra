@@ -82,7 +82,8 @@ const s16 base_vital_omake[7] = { 0xfe3e, 0xfed4, 0xff6a, 0x0000, 0x0096, 0x012c
 
 /** @brief Check if both players have the SA-max-at-round-start flag set (immediate full gauge). */
 u32 sag_ikinari_max() {
-    return ((omop_spmv_ng_table2[0] & DIP2_SA_GAUGE_MAX_START_DISABLED) + (omop_spmv_ng_table2[1] & DIP2_SA_GAUGE_MAX_START_DISABLED)) == (DIP2_SA_GAUGE_MAX_START_DISABLED * 2);
+    return ((omop_spmv_ng_table2[0] & DIP2_SA_GAUGE_MAX_START_DISABLED) +
+            (omop_spmv_ng_table2[1] & DIP2_SA_GAUGE_MAX_START_DISABLED)) == (DIP2_SA_GAUGE_MAX_START_DISABLED * 2);
 }
 
 /** @brief Return non-zero if "use all super arts" is enabled in the current system direction. */

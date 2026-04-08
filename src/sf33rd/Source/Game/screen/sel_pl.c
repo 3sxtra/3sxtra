@@ -133,14 +133,11 @@ static void Correct_Control_Time(s16 PL_id);
 static s32 Check_Boss(s16 PL_id);
 static u8 Setup_Battle_Country();
 
-
-
 u8 SEL_PL_X;
 s16 Play_Type_1st;
 u16 Color7[2];
 u8 Decide_Stage;
 u8 hc3alpha;
-
 
 /** @brief Per-frame body of the character select — called by ms_char_select.c on_tick. */
 void Sel_PL_Control_Frame() {

@@ -45,7 +45,7 @@ struct RmlBracketEntry {
     Rml::String p1_name;
     Rml::String p2_name;
     Rml::String winner_name;
-    Rml::String bracket_side;  // "W", "L", "GF" (double elim)
+    Rml::String bracket_side; // "W", "L", "GF" (double elim)
     bool completed;
 };
 
@@ -54,7 +54,7 @@ struct RmlActiveMatch {
     int match_index;
     Rml::String p1_name;
     Rml::String p2_name;
-    Rml::String bracket_side;  // "W", "L", "GF" (double elim)
+    Rml::String bracket_side; // "W", "L", "GF" (double elim)
     bool active;
     bool is_ours; // true if we are p1 or p2
 };
@@ -121,7 +121,6 @@ static bool s_is_typing = false;
 
 // Playing/spectating
 static bool s_is_playing = false;
-
 
 // Navigation
 static int s_cursor_x = 0; // 0=left (bracket/actions), 1=right (chat)
@@ -207,20 +206,32 @@ struct AsyncTOData {
 static int SDLCALL async_to_action_fn(void* data) {
     AsyncTOData* d = (AsyncTOData*)data;
     switch (d->action) {
-    case 1: LobbyServer_StartBracket(d->room_code); break;
-    case 2: LobbyServer_BracketPause(d->room_code, true); break;
-    case 3: LobbyServer_BracketPause(d->room_code, false); break;
-    case 4: LobbyServer_BracketDQ(d->room_code, d->target_player); break;
-    case 5: LobbyServer_BracketOverride(d->room_code, d->match_index, d->winner_id); break;
-    case 6: LobbyServer_BracketRestartMatch(d->room_code, d->match_index); break;
+    case 1:
+        LobbyServer_StartBracket(d->room_code);
+        break;
+    case 2:
+        LobbyServer_BracketPause(d->room_code, true);
+        break;
+    case 3:
+        LobbyServer_BracketPause(d->room_code, false);
+        break;
+    case 4:
+        LobbyServer_BracketDQ(d->room_code, d->target_player);
+        break;
+    case 5:
+        LobbyServer_BracketOverride(d->room_code, d->match_index, d->winner_id);
+        break;
+    case 6:
+        LobbyServer_BracketRestartMatch(d->room_code, d->match_index);
+        break;
     }
     free(d);
     SDL_SetAtomicInt(&s_async_to_active, 0);
     return 0;
 }
 
-static void AsyncTOAction(const char* room_code, int action, const char* target,
-                           int match_index, const char* winner_id) {
+static void AsyncTOAction(const char* room_code, int action, const char* target, int match_index,
+                          const char* winner_id) {
     if (SDL_GetAtomicInt(&s_async_to_active) != 0)
         return;
     SDL_SetAtomicInt(&s_async_to_active, 1);
@@ -252,11 +263,16 @@ static void apply_tournament_state_to_model(void);
 
 static const char* format_label(int fmt) {
     switch (fmt) {
-    case TOURNAMENT_SINGLE_ELIM: return "SINGLE ELIM";
-    case TOURNAMENT_DOUBLE_ELIM: return "DOUBLE ELIM";
-    case TOURNAMENT_ROUND_ROBIN: return "ROUND ROBIN";
-    case TOURNAMENT_SWISS:       return "SWISS";
-    default:                     return "TOURNAMENT";
+    case TOURNAMENT_SINGLE_ELIM:
+        return "SINGLE ELIM";
+    case TOURNAMENT_DOUBLE_ELIM:
+        return "DOUBLE ELIM";
+    case TOURNAMENT_ROUND_ROBIN:
+        return "ROUND ROBIN";
+    case TOURNAMENT_SWISS:
+        return "SWISS";
+    default:
+        return "TOURNAMENT";
     }
 }
 
@@ -340,7 +356,6 @@ static void do_init(void) {
     // Playing/spectating
     ctor.Bind("is_playing", &s_is_playing);
 
-
     // Chat
     ctor.Bind("chat_input", &s_chat_input);
     ctor.Bind("is_typing", &s_is_typing);
@@ -373,7 +388,9 @@ static void do_init(void) {
     s_my_id = Identity_GetPlayerId();
 }
 
-extern "C" void rmlui_tournament_lobby_init(void) { do_init(); }
+extern "C" void rmlui_tournament_lobby_init(void) {
+    do_init();
+}
 
 // ─── Apply state to model ────────────────────────────────────────
 
@@ -440,7 +457,6 @@ static void apply_room_state_to_model(void) {
     s_model_handle.DirtyVariable("room_players");
     s_model_handle.DirtyVariable("chat_messages");
     s_model_handle.DirtyVariable("chat_count");
-
 }
 
 static void apply_tournament_state_to_model(void) {
@@ -464,7 +480,8 @@ static void apply_tournament_state_to_model(void) {
         s_bracket[i].position = be.position;
         s_bracket[i].p1_name = be.player1_name[0] ? be.player1_name : "TBD";
         s_bracket[i].p2_name = be.player2_name[0] ? be.player2_name : "TBD";
-        s_bracket[i].winner_name = be.winner_id[0] ? (strcmp(be.winner_id, be.player1_id) == 0 ? be.player1_name : be.player2_name) : "";
+        s_bracket[i].winner_name =
+            be.winner_id[0] ? (strcmp(be.winner_id, be.player1_id) == 0 ? be.player1_name : be.player2_name) : "";
         s_bracket[i].bracket_side = be.bracket_side[0] ? be.bracket_side : "";
         s_bracket[i].completed = be.completed != 0;
     }
@@ -488,8 +505,7 @@ static void apply_tournament_state_to_model(void) {
         s_active_matches[i].match_index = rm.match_index;
         s_active_matches[i].bracket_side = rm.bracket_side[0] ? rm.bracket_side : "";
         s_active_matches[i].active = rm.active != 0;
-        s_active_matches[i].is_ours = (strcmp(rm.p1, s_my_id.c_str()) == 0 ||
-                                        strcmp(rm.p2, s_my_id.c_str()) == 0);
+        s_active_matches[i].is_ours = (strcmp(rm.p1, s_my_id.c_str()) == 0 || strcmp(rm.p2, s_my_id.c_str()) == 0);
 
         // Resolve display names from player list
         s_active_matches[i].p1_name = rm.p1;
@@ -538,7 +554,7 @@ static void apply_tournament_state_to_model(void) {
     // ── Update HUD Match Banner Data ──
     bool match_found = false;
     RoomMatch target_match = {};
-    
+
     // Find our active match, or the one we selected to view
     for (int i = 0; i < s_tournament_state.match_count; i++) {
         if (s_tournament_state.matches[i].active) {
@@ -552,11 +568,10 @@ static void apply_tournament_state_to_model(void) {
         }
     }
 
-
     if (match_found && s_room_state.ft > 0) {
         g_match_banner_visible = true;
         g_match_ft = s_room_state.ft;
-        
+
         // Resolve names and country from players list
         for (int p = 0; p < s_room_state.player_count; p++) {
             if (strcmp(s_room_state.players[p].player_id, target_match.p1) == 0) {
@@ -598,7 +613,11 @@ static void refresh_room_state_from_server(void) {
 
 // ─── Update loop ─────────────────────────────────────────────────
 extern "C" void rmlui_tournament_lobby_update(void) {
-    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_registered) {
+        do_init();
+        if (!s_model_registered)
+            return;
+    }
     if (!s_is_visible)
         return;
 
@@ -649,8 +668,8 @@ extern "C" void rmlui_tournament_lobby_update(void) {
             }
             s_model_handle.DirtyVariable("chat_messages");
             s_model_handle.DirtyVariable("chat_count");
-        } else if (sse_type == SSE_EVENT_JOIN || sse_type == SSE_EVENT_LEAVE ||
-                   sse_type == SSE_EVENT_QUEUE_UPDATE || sse_type == SSE_EVENT_HOST_MIGRATED) {
+        } else if (sse_type == SSE_EVENT_JOIN || sse_type == SSE_EVENT_LEAVE || sse_type == SSE_EVENT_QUEUE_UPDATE ||
+                   sse_type == SSE_EVENT_HOST_MIGRATED) {
             refresh_room_state_from_server();
         } else if (sse_type == SSE_EVENT_BRACKET_UPDATE) {
             memcpy(&s_tournament_state, &sse_evt.tournament, sizeof(TournamentState));
@@ -658,7 +677,8 @@ extern "C" void rmlui_tournament_lobby_update(void) {
             s_status_text = "Bracket updated.";
             s_model_handle.DirtyVariable("status_text");
         } else if (sse_type == SSE_EVENT_ROUND_ADVANCE) {
-            s_status_text = Rml::String("Round ") + Rml::String(std::to_string(sse_evt.round_number + 1).c_str()) + " starting!";
+            s_status_text =
+                Rml::String("Round ") + Rml::String(std::to_string(sse_evt.round_number + 1).c_str()) + " starting!";
             s_model_handle.DirtyVariable("status_text");
             refresh_room_state_from_server();
         } else if (sse_type == SSE_EVENT_MATCH_PROPOSE) {
@@ -687,7 +707,8 @@ extern "C" void rmlui_tournament_lobby_update(void) {
                 snprintf(s_proposal_opponent_player_id, sizeof(s_proposal_opponent_player_id), "%s", opp_id);
                 s_proposal_ft = sse_evt.propose_ft > 0 ? sse_evt.propose_ft : 1;
 
-                s_status_text = Rml::String("Match proposed: ") + sse_evt.propose_p1_name + " vs " + sse_evt.propose_p2_name;
+                s_status_text =
+                    Rml::String("Match proposed: ") + sse_evt.propose_p1_name + " vs " + sse_evt.propose_p2_name;
 
                 s_model_handle.DirtyVariable("proposal_active");
                 s_model_handle.DirtyVariable("proposal_opponent_name");
@@ -745,7 +766,6 @@ extern "C" void rmlui_tournament_lobby_update(void) {
             s_status_text = winner_name + " advances!";
             s_model_handle.DirtyVariable("status_text");
 
-
             if (s_is_playing) {
                 NetplaySessionState ns = Netplay_GetSessionState();
                 if (ns == NETPLAY_SESSION_IDLE || ns == NETPLAY_SESSION_LOBBY) {
@@ -790,11 +810,13 @@ extern "C" void rmlui_tournament_lobby_update(void) {
     if (s_proposal_active) {
         Uint64 elapsed = SDL_GetTicks() - s_proposal_start_time;
         int remaining = PROPOSAL_TIMEOUT_SEC - (int)(elapsed / 1000);
-        if (remaining < 0) remaining = 0;
+        if (remaining < 0)
+            remaining = 0;
 
         int elapsed_ms = (int)(elapsed);
         int pct = 100 - (elapsed_ms * 100 / (PROPOSAL_TIMEOUT_SEC * 1000));
-        if (pct < 0) pct = 0;
+        if (pct < 0)
+            pct = 0;
         if (pct != s_proposal_countdown_pct) {
             s_proposal_countdown_pct = pct;
             s_model_handle.DirtyVariable("proposal_countdown_pct");
@@ -815,10 +837,16 @@ extern "C" void rmlui_tournament_lobby_update(void) {
         for (int i = 0; i < 2; i++)
             trigger |= (~PLsw[i][1] & PLsw[i][0]);
         if (trigger & 0x04) {
-            if (s_proposal_cursor != 0) { s_proposal_cursor = 0; s_model_handle.DirtyVariable("proposal_cursor"); }
+            if (s_proposal_cursor != 0) {
+                s_proposal_cursor = 0;
+                s_model_handle.DirtyVariable("proposal_cursor");
+            }
         }
         if (trigger & 0x08) {
-            if (s_proposal_cursor != 1) { s_proposal_cursor = 1; s_model_handle.DirtyVariable("proposal_cursor"); }
+            if (s_proposal_cursor != 1) {
+                s_proposal_cursor = 1;
+                s_model_handle.DirtyVariable("proposal_cursor");
+            }
         }
         if (trigger & (0x0100 | 0x0800)) {
             s_proposal_active = 0;
@@ -854,7 +882,8 @@ extern "C" void rmlui_tournament_lobby_update(void) {
 
     if (trigger & 0x01) { // Up
         if (s_cursor_x == 0) {
-            if (s_cursor_y > 0) s_cursor_y--;
+            if (s_cursor_y > 0)
+                s_cursor_y--;
         }
     }
     if (trigger & 0x02) { // Down
@@ -866,7 +895,8 @@ extern "C" void rmlui_tournament_lobby_update(void) {
             } else if (s_is_host && !s_tournament_started) {
                 max_y = 2; // view(0), start(1), leave(2)
             }
-            if (s_cursor_y < max_y) s_cursor_y++;
+            if (s_cursor_y < max_y)
+                s_cursor_y++;
         }
     }
     // Fix 1: Left/Right scroll match selector
@@ -906,9 +936,8 @@ extern "C" void rmlui_tournament_lobby_update(void) {
         if ((trigger & 0x04) || (trigger & 0x08)) {
             s_override_winner = 1 - s_override_winner;
             if (s_match_selector_idx < s_active_match_count) {
-                s_override_label = s_override_winner == 0
-                    ? s_active_matches[s_match_selector_idx].p1_name
-                    : s_active_matches[s_match_selector_idx].p2_name;
+                s_override_label = s_override_winner == 0 ? s_active_matches[s_match_selector_idx].p1_name
+                                                          : s_active_matches[s_match_selector_idx].p2_name;
             }
             s_model_handle.DirtyVariable("override_label");
             s_model_handle.DirtyVariable("override_winner");
@@ -953,8 +982,8 @@ extern "C" void rmlui_tournament_lobby_update(void) {
                     // Resolve player_id from RoomState
                     const char* pid = "";
                     for (int p = 0; p < s_room_state.player_count; p++) {
-                        if (strcmp(s_room_state.players[p].display_name,
-                                   s_players[s_dq_target_idx].name.c_str()) == 0) {
+                        if (strcmp(s_room_state.players[p].display_name, s_players[s_dq_target_idx].name.c_str()) ==
+                            0) {
                             pid = s_room_state.players[p].player_id;
                             break;
                         }
@@ -971,8 +1000,7 @@ extern "C" void rmlui_tournament_lobby_update(void) {
                     const char* winner_pid = "";
                     const Rml::String& winner_name = s_override_winner == 0 ? m.p1_name : m.p2_name;
                     for (int p = 0; p < s_room_state.player_count; p++) {
-                        if (strcmp(s_room_state.players[p].display_name,
-                                   winner_name.c_str()) == 0) {
+                        if (strcmp(s_room_state.players[p].display_name, winner_name.c_str()) == 0) {
                             winner_pid = s_room_state.players[p].player_id;
                             break;
                         }
@@ -1009,8 +1037,10 @@ extern "C" void rmlui_tournament_lobby_update(void) {
 // ─── Show / Hide / Lifecycle ─────────────────────────────────────
 
 extern "C" void rmlui_tournament_lobby_show(void) {
-    if (!s_model_registered) do_init();
-    if (!s_model_registered) return;
+    if (!s_model_registered)
+        do_init();
+    if (!s_model_registered)
+        return;
 
     s_is_visible = true;
     s_wants_leave = false;
@@ -1052,7 +1082,8 @@ extern "C" bool rmlui_tournament_lobby_is_visible(void) {
 }
 
 extern "C" void rmlui_tournament_lobby_set_room(const char* room_code) {
-    if (!s_model_registered) do_init();
+    if (!s_model_registered)
+        do_init();
     s_room_code = room_code ? room_code : "";
     memset(&s_room_state, 0, sizeof(s_room_state));
     memset(&s_tournament_state, 0, sizeof(s_tournament_state));

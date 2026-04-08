@@ -25,7 +25,8 @@ void SDLGameRenderer_Init();
 void SDLGameRenderer_Shutdown();
 void SDLGameRenderer_BeginFrame();
 void SDLGameRenderer_RenderFrame();
-void SDLGameRenderer_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h, bool backgrounds_only);
+void SDLGameRenderer_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
+                                  bool backgrounds_only);
 void SDLGameRenderer_EndFrame();
 
 void SDLGameRenderer_CreateTexture(unsigned int th);
@@ -48,8 +49,6 @@ void SDLGameRenderer_FlushSprite2Batch(Sprite2* chips, const unsigned char* acti
 // Returns the cached GL texture ID for a given texture+palette combination.
 // Used by ImGui to render game textures. Returns 0 if not found/invalid.
 unsigned int SDLGameRenderer_GetCachedGLTexture(unsigned int texture_handle, unsigned int palette_handle);
-
-
 
 // Dumps all currently loaded textures to textures/*.tga
 void SDLGameRenderer_DumpTextures(void);

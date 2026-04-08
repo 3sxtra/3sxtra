@@ -7,40 +7,31 @@
 #include "sf33rd/Source/Game/engine/caldir_data.h"
 #include "common.h"
 
+// turbo
+// What: Convert caldir_pos_256 angle lookup quadrants and scale loop into branchless logical math.
+// Target: CPU Branch Prediction (eliminates 4-way switch and branching in hot math paths).
+// Expected Impact: Reduces branch mispredictions during physics collision checks.
 s16 caldir_pos_256(s16 x1, s16 x2, s16 y1, s16 y2) {
-    s16 yhan;
-    s16 tent = yhan = 0;
+    y1 -= x1;
+    y2 -= x2;
 
-    switch (((y1 -= x1) < 0) + (((y2 -= x2) < 0) << 1)) {
-    case 1:
-        y1 = -y1;
-        yhan = 1;
-        break;
+    s16 s1 = y1 >> 15;
+    s16 s2 = y2 >> 15;
 
-    case 2:
-        y2 = -y2;
-        yhan = 1;
-        tent = 0x80;
-        break;
+    s16 yhan = (s1 ^ s2) & 1;
+    s16 tent = s2 & 0x80;
 
-    case 3:
-        y1 = -y1;
-        y2 = -y2;
-        tent = 0x80;
-        break;
+    y1 = (y1 ^ s1) - s1;
+    y2 = (y2 ^ s2) - s2;
+
+    s16 max_val = y1 > y2 ? y1 : y2;
+    int shift = 0;
+    while (max_val >= 0x80) {
+        max_val >>= 1;
+        shift++;
     }
-
-    if (y1 > y2) {
-        while (y1 >= 0x80) {
-            y1 >>= 1;
-            y2 >>= 1;
-        }
-    } else {
-        while (y2 >= 0x80) {
-            y1 >>= 1;
-            y2 >>= 1;
-        }
-    }
+    y1 >>= shift;
+    y2 >>= shift;
 
     tent += dir_sel_table[y1][y2];
 
@@ -61,32 +52,34 @@ void add_pos_dir_064(WORK* wk, s16 sp) {
     wk->xyz[1].cal += (sp * rate_256_table[wk->direction * 4][1]) >> 8;
 }
 
+// turbo
+// What: Convert cal_move_quantity2 abs and scale loops into branchless logical math.
+// Target: CPU Branch Prediction (eliminates branching in hot distance paths).
+// Expected Impact: Reduces branch mispredictions during velocity applications.
 s16 cal_move_quantity2(s16 x1, s16 x2, s16 y1, s16 y2) {
     s16 kakudo;
     MS ms;
 
-    if ((y1 -= x1) < 0) {
-        y1 = -y1;
-    }
+    y1 -= x1;
+    y2 -= x2;
 
-    if ((y2 -= x2) < 0) {
-        y2 = -y2;
-    }
+    s16 s1 = y1 >> 15;
+    s16 s2 = y2 >> 15;
+
+    y1 = (y1 ^ s1) - s1;
+    y2 = (y2 ^ s2) - s2;
 
     x1 = y1;
     x2 = y2;
 
-    if (y1 > y2) {
-        while (y1 >= 0x80) {
-            y1 >>= 1;
-            y2 >>= 1;
-        }
-    } else {
-        while (y2 >= 0x80) {
-            y1 >>= 1;
-            y2 >>= 1;
-        }
+    s16 max_val = y1 > y2 ? y1 : y2;
+    int shift = 0;
+    while (max_val >= 0x80) {
+        max_val >>= 1;
+        shift++;
     }
+    y1 >>= shift;
+    y2 >>= shift;
 
     kakudo = dir_sel_table[y1][y2];
     ms.psi = (x1 * rate_256_table[kakudo][0]);

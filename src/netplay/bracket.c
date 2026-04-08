@@ -16,14 +16,18 @@
 /// Round up to next power of 2
 static int next_pow2(int n) {
     int p = 1;
-    while (p < n) p <<= 1;
+    while (p < n)
+        p <<= 1;
     return p;
 }
 
 /// log2 for powers of 2
 static int log2_int(int n) {
     int r = 0;
-    while (n > 1) { n >>= 1; r++; }
+    while (n > 1) {
+        n >>= 1;
+        r++;
+    }
     return r;
 }
 
@@ -32,13 +36,16 @@ static int log2_int(int n) {
 static int cmp_rating_desc(const void* a, const void* b) {
     const BracketSeed* sa = (const BracketSeed*)a;
     const BracketSeed* sb = (const BracketSeed*)b;
-    if (sb->rating > sa->rating) return 1;
-    if (sb->rating < sa->rating) return -1;
+    if (sb->rating > sa->rating)
+        return 1;
+    if (sb->rating < sa->rating)
+        return -1;
     return 0;
 }
 
 void Bracket_SortByRating(BracketSeed* seeds, int count) {
-    if (!seeds || count < 2) return;
+    if (!seeds || count < 2)
+        return;
     qsort(seeds, (size_t)count, sizeof(BracketSeed), cmp_rating_desc);
     for (int i = 0; i < count; i++)
         seeds[i].seed = i;
@@ -47,23 +54,23 @@ void Bracket_SortByRating(BracketSeed* seeds, int count) {
 // ─── Single Elimination ──────────────────────────────────────────
 
 int Bracket_SingleElimRounds(int num_players) {
-    if (num_players < 2) return 0;
+    if (num_players < 2)
+        return 0;
     return log2_int(next_pow2(num_players));
 }
 
 int Bracket_GetMatchesInRound(int num_players, int round) {
-    if (num_players < 2 || round < 0) return 0;
+    if (num_players < 2 || round < 0)
+        return 0;
     int bracket_size = next_pow2(num_players);
     int total_rounds = log2_int(bracket_size);
-    if (round >= total_rounds) return 0;
+    if (round >= total_rounds)
+        return 0;
     return bracket_size >> (round + 1);
 }
 
-int Bracket_GenerateSingleElim(const char player_ids[][64],
-                                const char player_names[][32],
-                                int num_players,
-                                BracketEntry* out_bracket,
-                                int max_entries) {
+int Bracket_GenerateSingleElim(const char player_ids[][64], const char player_names[][32], int num_players,
+                               BracketEntry* out_bracket, int max_entries) {
     if (!player_ids || !player_names || num_players < 2 || !out_bracket || max_entries < 1)
         return -1;
 
@@ -127,18 +134,15 @@ int Bracket_GenerateSingleElim(const char player_ids[][64],
                 winner_name = e->player1_name;
             else
                 winner_name = e->player2_name;
-            Bracket_AdvanceSingleElim(out_bracket, entry_idx, 0, i,
-                                       e->winner_id, winner_name);
+            Bracket_AdvanceSingleElim(out_bracket, entry_idx, 0, i, e->winner_id, winner_name);
         }
     }
 
     return entry_idx;
 }
 
-int Bracket_GenerateSingleElimSeeded(const BracketSeed* seeds,
-                                      int num_players,
-                                      BracketEntry* out_bracket,
-                                      int max_entries) {
+int Bracket_GenerateSingleElimSeeded(const BracketSeed* seeds, int num_players, BracketEntry* out_bracket,
+                                     int max_entries) {
     if (!seeds || num_players < 2)
         return -1;
 
@@ -156,8 +160,7 @@ int Bracket_GenerateSingleElimSeeded(const BracketSeed* seeds,
         strncpy(names[i], seeds[i].display_name, 31);
     }
 
-    int result = Bracket_GenerateSingleElim(ids, names, num_players,
-                                             out_bracket, max_entries);
+    int result = Bracket_GenerateSingleElim(ids, names, num_players, out_bracket, max_entries);
     free(ids);
     free(names);
     return result;
@@ -165,8 +168,7 @@ int Bracket_GenerateSingleElimSeeded(const BracketSeed* seeds,
 
 // ─── Common Utilities ────────────────────────────────────────────
 
-BracketEntry* Bracket_FindEntry(BracketEntry* bracket, int bracket_size,
-                                 int round, int position) {
+BracketEntry* Bracket_FindEntry(BracketEntry* bracket, int bracket_size, int round, int position) {
     for (int i = 0; i < bracket_size; i++) {
         if (bracket[i].round == round && bracket[i].position == position)
             return &bracket[i];
@@ -174,9 +176,8 @@ BracketEntry* Bracket_FindEntry(BracketEntry* bracket, int bracket_size,
     return NULL;
 }
 
-bool Bracket_AdvanceSingleElim(BracketEntry* bracket, int bracket_size,
-                                int round, int position,
-                                const char* winner_id, const char* winner_name) {
+bool Bracket_AdvanceSingleElim(BracketEntry* bracket, int bracket_size, int round, int position, const char* winner_id,
+                               const char* winner_name) {
     if (!bracket || !winner_id || bracket_size < 1)
         return false;
 
@@ -207,8 +208,7 @@ bool Bracket_AdvanceSingleElim(BracketEntry* bracket, int bracket_size,
     return true;
 }
 
-const char* Bracket_GetWinner(const BracketEntry* bracket, int bracket_size,
-                               int total_rounds) {
+const char* Bracket_GetWinner(const BracketEntry* bracket, int bracket_size, int total_rounds) {
     if (!bracket || bracket_size < 1 || total_rounds < 1)
         return "";
 
@@ -225,7 +225,8 @@ const char* Bracket_GetWinner(const BracketEntry* bracket, int bracket_size,
 // ─── Double Elimination ──────────────────────────────────────────
 
 int Bracket_DoubleElimTotalEntries(int num_players) {
-    if (num_players < 2) return 0;
+    if (num_players < 2)
+        return 0;
     int bracket_size = next_pow2(num_players);
     int winners_rounds = log2_int(bracket_size);
     int losers_rounds = 2 * (winners_rounds - 1);
@@ -245,7 +246,8 @@ int Bracket_DoubleElimTotalEntries(int num_players) {
             matches = first_round_matches >> ((lr / 2) + 1);
         else
             matches = first_round_matches >> ((lr + 1) / 2);
-        if (matches < 1) matches = 1;
+        if (matches < 1)
+            matches = 1;
         total += matches;
     }
 
@@ -254,11 +256,8 @@ int Bracket_DoubleElimTotalEntries(int num_players) {
     return total;
 }
 
-int Bracket_GenerateDoubleElim(const char player_ids[][64],
-                                const char player_names[][32],
-                                int num_players,
-                                BracketEntry* out_bracket,
-                                int max_entries) {
+int Bracket_GenerateDoubleElim(const char player_ids[][64], const char player_names[][32], int num_players,
+                               BracketEntry* out_bracket, int max_entries) {
     if (!player_ids || !player_names || num_players < 2 || !out_bracket || max_entries < 1)
         return -1;
 
@@ -333,7 +332,8 @@ int Bracket_GenerateDoubleElim(const char player_ids[][64],
         else
             matches = first_round_matches >> ((lr + 1) / 2);
 
-        if (matches < 1) matches = 1;
+        if (matches < 1)
+            matches = 1;
 
         for (int pos = 0; pos < matches; pos++) {
             BracketEntry* e = &out_bracket[entry_idx++];
@@ -362,11 +362,13 @@ int Bracket_GenerateDoubleElim(const char player_ids[][64],
                 if (i % 2 == 0) {
                     strncpy(next->player1_id, e->winner_id, 63);
                     strncpy(next->player1_name,
-                            strcmp(e->winner_id, e->player1_id) == 0 ? e->player1_name : e->player2_name, 31);
+                            strcmp(e->winner_id, e->player1_id) == 0 ? e->player1_name : e->player2_name,
+                            31);
                 } else {
                     strncpy(next->player2_id, e->winner_id, 63);
                     strncpy(next->player2_name,
-                            strcmp(e->winner_id, e->player1_id) == 0 ? e->player1_name : e->player2_name, 31);
+                            strcmp(e->winner_id, e->player1_id) == 0 ? e->player1_name : e->player2_name,
+                            31);
                 }
             }
         }
@@ -375,11 +377,9 @@ int Bracket_GenerateDoubleElim(const char player_ids[][64],
     return entry_idx;
 }
 
-bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size,
-                                int winners_rounds,
-                                int round, int position,
-                                const char* winner_id, const char* winner_name,
-                                const char* loser_id, const char* loser_name) {
+bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size, int winners_rounds, int round, int position,
+                               const char* winner_id, const char* winner_name, const char* loser_id,
+                               const char* loser_name) {
     if (!bracket || !winner_id || bracket_size < 1 || winners_rounds < 1)
         return false;
 
@@ -405,10 +405,12 @@ bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size,
             if (next) {
                 if (position % 2 == 0) {
                     strncpy(next->player1_id, winner_id, 63);
-                    if (winner_name) strncpy(next->player1_name, winner_name, 31);
+                    if (winner_name)
+                        strncpy(next->player1_name, winner_name, 31);
                 } else {
                     strncpy(next->player2_id, winner_id, 63);
-                    if (winner_name) strncpy(next->player2_name, winner_name, 31);
+                    if (winner_name)
+                        strncpy(next->player2_name, winner_name, 31);
                 }
             }
         } else {
@@ -416,7 +418,8 @@ bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size,
             BracketEntry* gf = Bracket_FindEntry(bracket, bracket_size, gf_round, 0);
             if (gf) {
                 strncpy(gf->player1_id, winner_id, 63);
-                if (winner_name) strncpy(gf->player1_name, winner_name, 31);
+                if (winner_name)
+                    strncpy(gf->player1_name, winner_name, 31);
             }
         }
 
@@ -426,7 +429,7 @@ bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size,
             // = "drop-down" rounds). For WR0 the losers go into LR0 as a special case.
             int lr;
             if (round == 0)
-                lr = 0;  // WR0 losers -> LR0
+                lr = 0; // WR0 losers -> LR0
             else
                 lr = 2 * round - 1;
 
@@ -443,15 +446,18 @@ bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size,
                     // LR0: pair up — even positions fill P1, odd fill P2
                     if (position % 2 == 0) {
                         strncpy(losers_entry->player1_id, loser_id, 63);
-                        if (loser_name) strncpy(losers_entry->player1_name, loser_name, 31);
+                        if (loser_name)
+                            strncpy(losers_entry->player1_name, loser_name, 31);
                     } else {
                         strncpy(losers_entry->player2_id, loser_id, 63);
-                        if (loser_name) strncpy(losers_entry->player2_name, loser_name, 31);
+                        if (loser_name)
+                            strncpy(losers_entry->player2_name, loser_name, 31);
                     }
                 } else {
                     // Drop-down: loser fills P2 (P1 comes from previous LR winner)
                     strncpy(losers_entry->player2_id, loser_id, 63);
-                    if (loser_name) strncpy(losers_entry->player2_name, loser_name, 31);
+                    if (loser_name)
+                        strncpy(losers_entry->player2_name, loser_name, 31);
                 }
             }
         }
@@ -481,14 +487,17 @@ bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size,
                 // Even LR winners go to P1 of odd LR (drop-down round expects P1 from below)
                 if (lr % 2 == 0) {
                     strncpy(next->player1_id, winner_id, 63);
-                    if (winner_name) strncpy(next->player1_name, winner_name, 31);
+                    if (winner_name)
+                        strncpy(next->player1_name, winner_name, 31);
                 } else {
                     if (position % 2 == 0) {
                         strncpy(next->player1_id, winner_id, 63);
-                        if (winner_name) strncpy(next->player1_name, winner_name, 31);
+                        if (winner_name)
+                            strncpy(next->player1_name, winner_name, 31);
                     } else {
                         strncpy(next->player2_id, winner_id, 63);
-                        if (winner_name) strncpy(next->player2_name, winner_name, 31);
+                        if (winner_name)
+                            strncpy(next->player2_name, winner_name, 31);
                     }
                 }
             }
@@ -497,7 +506,8 @@ bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size,
             BracketEntry* gf = Bracket_FindEntry(bracket, bracket_size, gf_round, 0);
             if (gf) {
                 strncpy(gf->player2_id, winner_id, 63);
-                if (winner_name) strncpy(gf->player2_name, winner_name, 31);
+                if (winner_name)
+                    strncpy(gf->player2_name, winner_name, 31);
             }
         }
     } else {
@@ -510,15 +520,13 @@ bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size,
 // ─── Round Robin ─────────────────────────────────────────────────
 
 int Bracket_RoundRobinTotalEntries(int num_players) {
-    if (num_players < 2) return 0;
+    if (num_players < 2)
+        return 0;
     return num_players * (num_players - 1) / 2;
 }
 
-int Bracket_GenerateRoundRobin(const char player_ids[][64],
-                                const char player_names[][32],
-                                int num_players,
-                                BracketEntry* out_bracket,
-                                int max_entries) {
+int Bracket_GenerateRoundRobin(const char player_ids[][64], const char player_names[][32], int num_players,
+                               BracketEntry* out_bracket, int max_entries) {
     if (!player_ids || !player_names || num_players < 2 || !out_bracket || max_entries < 1)
         return -1;
 
@@ -536,7 +544,8 @@ int Bracket_GenerateRoundRobin(const char player_ids[][64],
 
     // Build rotation array
     int* rotation = (int*)calloc((size_t)padded, sizeof(int));
-    if (!rotation) return -1;
+    if (!rotation)
+        return -1;
     for (int i = 0; i < padded; i++)
         rotation[i] = i;
 
@@ -598,15 +607,9 @@ static int cmp_swiss_desc(const void* a, const void* b) {
     return sa->index - sb->index; // stable: lower index first
 }
 
-int Bracket_GenerateSwissRound(const char player_ids[][64],
-                                const char player_names[][32],
-                                const int* wins,
-                                int num_players,
-                                int swiss_round,
-                                BracketEntry* out_bracket,
-                                int max_entries) {
-    if (!player_ids || !player_names || !wins || num_players < 2 ||
-        !out_bracket || max_entries < 1)
+int Bracket_GenerateSwissRound(const char player_ids[][64], const char player_names[][32], const int* wins,
+                               int num_players, int swiss_round, BracketEntry* out_bracket, int max_entries) {
+    if (!player_ids || !player_names || !wins || num_players < 2 || !out_bracket || max_entries < 1)
         return -1;
 
     int matches_needed = num_players / 2;
@@ -615,7 +618,8 @@ int Bracket_GenerateSwissRound(const char player_ids[][64],
 
     // Build sorted index array
     SwissEntry* sorted = (SwissEntry*)calloc((size_t)num_players, sizeof(SwissEntry));
-    if (!sorted) return -1;
+    if (!sorted)
+        return -1;
 
     for (int i = 0; i < num_players; i++) {
         sorted[i].index = i;

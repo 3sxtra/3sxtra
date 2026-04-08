@@ -59,7 +59,9 @@ def parse_fcade_url(url: str) -> ReplayTarget:
     if parsed.scheme != "fcade":
         raise ValueError(f"expected fcade:// URL, got: {url}")
     if parsed.netloc != "stream":
-        raise ValueError(f"expected fcade://stream/... URL, got netloc={parsed.netloc!r}")
+        raise ValueError(
+            f"expected fcade://stream/... URL, got netloc={parsed.netloc!r}"
+        )
 
     parts = parsed.path.strip("/").split("/")
     if len(parts) != 3:
@@ -157,7 +159,9 @@ def _parse_minus13(payload: bytes) -> dict:
         "body_len": len(body),
         "expected_body_len": expected,
         "body_matches": len(body) == expected,
-        "records_preview_hex": body[: min(len(body), record_size * min(record_count, 3))].hex(),
+        "records_preview_hex": body[
+            : min(len(body), record_size * min(record_count, 3))
+        ].hex(),
     }
 
 
@@ -245,7 +249,9 @@ def download_replay(
         sock.connect((host, target.port))
     with sock:
         sock.settimeout(idle_timeout)
-        handshake_messages = do_handshake(sock, target.token, send_delay_ms=send_delay_ms)
+        handshake_messages = do_handshake(
+            sock, target.token, send_delay_ms=send_delay_ms
+        )
         idle_hits = 0
 
         with frames_bin.open("wb") as fw, inputs_path.open("wb") as inputs_f:
@@ -254,7 +260,9 @@ def download_replay(
                 fw.write(_u32be(len(payload)))
                 fw.write(payload)
                 info = parse_server_message(payload)
-                info.update({"index": count, "length": len(payload), "stage": "handshake"})
+                info.update(
+                    {"index": count, "length": len(payload), "stage": "handshake"}
+                )
                 messages.append(info)
                 count += 1
 
@@ -290,7 +298,11 @@ def download_replay(
                 elif msg_type == -13:
                     body = payload[12:]
                     expected = info.get("expected_body_len")
-                    if isinstance(expected, int) and expected >= 0 and len(body) >= expected:
+                    if (
+                        isinstance(expected, int)
+                        and expected >= 0
+                        and len(body) >= expected
+                    ):
                         inputs_f.write(body[:expected])
                         if len(body) != expected:
                             info["inputs_trailer_len"] = len(body) - expected
@@ -352,7 +364,12 @@ def cmd_download(args: argparse.Namespace) -> int:
         send_delay_ms=args.send_delay_ms,
     )
 
-    print(json.dumps({"out_dir": str(out_dir), "message_count": len(summary["messages"])}, indent=2))
+    print(
+        json.dumps(
+            {"out_dir": str(out_dir), "message_count": len(summary["messages"])},
+            indent=2,
+        )
+    )
     return 0
 
 
@@ -360,7 +377,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Fightcade replay downloader/parser")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_download = sub.add_parser("download", help="connect to GGPO replay stream and save parsed artifacts")
+    p_download = sub.add_parser(
+        "download", help="connect to GGPO replay stream and save parsed artifacts"
+    )
     p_download.add_argument("--fcade-url", help="fcade://stream/... URL")
     p_download.add_argument("--emulator", default="fbneo")
     p_download.add_argument("--game")
@@ -389,7 +408,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_download.add_argument("--max-frames", type=int, default=2000)
     p_download.add_argument("--out-dir", default="fcade-replays/output")
-    p_download.add_argument("--auto-dir", action="store_true", help="append <game>-<token> subdir")
+    p_download.add_argument(
+        "--auto-dir", action="store_true", help="append <game>-<token> subdir"
+    )
     p_download.set_defaults(func=cmd_download)
 
     return parser

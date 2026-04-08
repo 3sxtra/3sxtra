@@ -20,21 +20,21 @@
 #pragma pack(push, 1)
 typedef struct {
     /* BMP file header */
-    uint8_t  bm[2];         /* 'B','M' */
+    uint8_t bm[2]; /* 'B','M' */
     uint32_t file_size;
     uint16_t reserved1;
     uint16_t reserved2;
     uint32_t pixel_offset;
     /* DIB header (BITMAPINFOHEADER) */
-    uint32_t dib_size;       /* 40 */
-    int32_t  width;
-    int32_t  height;         /* Negative = top-down (no flip needed) */
-    uint16_t planes;         /* 1 */
-    uint16_t bpp;            /* 24 */
-    uint32_t compression;    /* 0 = BI_RGB */
-    uint32_t image_size;     /* May be 0 for BI_RGB */
-    int32_t  x_ppm;
-    int32_t  y_ppm;
+    uint32_t dib_size; /* 40 */
+    int32_t width;
+    int32_t height;       /* Negative = top-down (no flip needed) */
+    uint16_t planes;      /* 1 */
+    uint16_t bpp;         /* 24 */
+    uint32_t compression; /* 0 = BI_RGB */
+    uint32_t image_size;  /* May be 0 for BI_RGB */
+    int32_t x_ppm;
+    int32_t y_ppm;
     uint32_t colors_used;
     uint32_t colors_important;
 } BMPHeader;
@@ -48,13 +48,14 @@ bool QRTexture_GenerateBMP(const char* text, const char* path, int scale) {
     uint8_t qr_buf[qrcodegen_BUFFER_LEN_MAX];
     uint8_t temp_buf[qrcodegen_BUFFER_LEN_MAX];
 
-    bool ok = qrcodegen_encodeText(
-        text, temp_buf, qr_buf,
-        qrcodegen_Ecc_LOW,         /* Low ECC for shorter URLs, denser QR */
-        qrcodegen_VERSION_MIN,
-        qrcodegen_VERSION_MAX,
-        qrcodegen_Mask_AUTO,
-        true                       /* Boost ECC if possible */
+    bool ok = qrcodegen_encodeText(text,
+                                   temp_buf,
+                                   qr_buf,
+                                   qrcodegen_Ecc_LOW, /* Low ECC for shorter URLs, denser QR */
+                                   qrcodegen_VERSION_MIN,
+                                   qrcodegen_VERSION_MAX,
+                                   qrcodegen_Mask_AUTO,
+                                   true /* Boost ECC if possible */
     );
     if (!ok) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "[QR] Failed to encode: %s", text);
@@ -62,7 +63,7 @@ bool QRTexture_GenerateBMP(const char* text, const char* path, int scale) {
     }
 
     int qr_size = qrcodegen_getSize(qr_buf);
-    int quiet = 4;  /* 4-module quiet zone (standard) for visual centering */
+    int quiet = 4; /* 4-module quiet zone (standard) for visual centering */
     int img_modules = qr_size + quiet * 2;
     int img_px = img_modules * scale;
 
@@ -74,15 +75,16 @@ bool QRTexture_GenerateBMP(const char* text, const char* path, int scale) {
     uint32_t file_size = 54 + pixel_data_size;
 
     uint8_t* pixels = (uint8_t*)calloc(1, pixel_data_size);
-    if (!pixels) return false;
+    if (!pixels)
+        return false;
 
     /* Fill pixels: white background, black modules
      * BMP with negative height = top-down scanline order */
     for (int py = 0; py < img_px; py++) {
         uint8_t* row = pixels + py * row_stride;
         for (int px = 0; px < img_px; px++) {
-            int mx = px / scale - quiet;  /* module x */
-            int my = py / scale - quiet;  /* module y */
+            int mx = px / scale - quiet; /* module x */
+            int my = py / scale - quiet; /* module y */
 
             bool is_black = false;
             if (mx >= 0 && mx < qr_size && my >= 0 && my < qr_size) {
@@ -106,7 +108,7 @@ bool QRTexture_GenerateBMP(const char* text, const char* path, int scale) {
     hdr.pixel_offset = 54;
     hdr.dib_size = 40;
     hdr.width = img_px;
-    hdr.height = -img_px;  /* Negative = top-down */
+    hdr.height = -img_px; /* Negative = top-down */
     hdr.planes = 1;
     hdr.bpp = 24;
     hdr.image_size = pixel_data_size;

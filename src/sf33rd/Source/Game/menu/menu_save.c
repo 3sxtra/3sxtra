@@ -184,10 +184,18 @@ void Disp_Auto_Save(struct _TASK* task_ptr) {
     }
 
     switch (task_ptr->r_no[1]) {
-    case AUTO_SAVE_1ST: DAS_1st(task_ptr); break;
-    case AUTO_SAVE_2ND: DAS_2nd(task_ptr); break;
-    case AUTO_SAVE_3RD: DAS_3rd(task_ptr); break;
-    case AUTO_SAVE_4TH: DAS_4th(task_ptr); break;
+    case AUTO_SAVE_1ST:
+        DAS_1st(task_ptr);
+        break;
+    case AUTO_SAVE_2ND:
+        DAS_2nd(task_ptr);
+        break;
+    case AUTO_SAVE_3RD:
+        DAS_3rd(task_ptr);
+        break;
+    case AUTO_SAVE_4TH:
+        DAS_4th(task_ptr);
+        break;
     }
 }
 
@@ -234,10 +242,18 @@ void Disp_Auto_Save2(struct _TASK* task_ptr) {
     }
 
     switch (task_ptr->r_no[1]) {
-    case AUTO_SAVE_1ST: DAS_1st(task_ptr); break;
-    case AUTO_SAVE_2ND: DAS_2nd(task_ptr); break;
-    case AUTO_SAVE_3RD: DAS_3rd(task_ptr); break;
-    case AUTO_SAVE_4TH: DAS2_4th(task_ptr); break;
+    case AUTO_SAVE_1ST:
+        DAS_1st(task_ptr);
+        break;
+    case AUTO_SAVE_2ND:
+        DAS_2nd(task_ptr);
+        break;
+    case AUTO_SAVE_3RD:
+        DAS_3rd(task_ptr);
+        break;
+    case AUTO_SAVE_4TH:
+        DAS2_4th(task_ptr);
+        break;
     }
 }
 

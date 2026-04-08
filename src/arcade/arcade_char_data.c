@@ -341,10 +341,10 @@ static const void* read_ovct(SDL_IOStream* rom, Location location, Character cha
 
             case CHAR_URIEN:
                 if ((element->parts_char >= 17854 && element->parts_char <= 17879) ||
-                    (element->parts_char >= 18017 && element->parts_char <= 18037) ||
-                    element->parts_char == 18060 || (element->parts_char >= 18096 && element->parts_char <= 18100) ||
-                    (element->parts_char >= 18129 && element->parts_char <= 18131) ||
-                    element->parts_char == 18143 || (element->parts_char >= 29983 && element->parts_char <= 29995)) {
+                    (element->parts_char >= 18017 && element->parts_char <= 18037) || element->parts_char == 18060 ||
+                    (element->parts_char >= 18096 && element->parts_char <= 18100) ||
+                    (element->parts_char >= 18129 && element->parts_char <= 18131) || element->parts_char == 18143 ||
+                    (element->parts_char >= 29983 && element->parts_char <= 29995)) {
                     element->parts_mts = 1;
                 }
                 break;

@@ -742,7 +742,8 @@ void lua_engine_bridge_init(void) {
     luaL_newlib(L, engine_funcs);
     lua_setglobal(L, "engine");
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[Lua Bridge] Registered engine API (%d functions), base='%s'",
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                 "[Lua Bridge] Registered engine API (%d functions), base='%s'",
                  (int)(sizeof(engine_funcs) / sizeof(engine_funcs[0]) - 1),
                  s_exe_base_path);
 }

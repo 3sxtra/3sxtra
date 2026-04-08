@@ -81,7 +81,7 @@ class TestDecodeColorABGR1555:
 class TestDecodePaletteBanks:
     def test_single_bank(self):
         """128 bytes → 1 bank of 64 colors."""
-        data = b'\x00\x00' * COLORS_PER_BANK
+        data = b"\x00\x00" * COLORS_PER_BANK
         banks = decode_palette_banks(data)
         assert len(banks) == 1
         assert len(banks[0]) == COLORS_PER_BANK
@@ -90,7 +90,7 @@ class TestDecodePaletteBanks:
 
     def test_two_banks(self):
         """256 bytes → 2 banks."""
-        data = b'\x00\x00' * (COLORS_PER_BANK * 2)
+        data = b"\x00\x00" * (COLORS_PER_BANK * 2)
         banks = decode_palette_banks(data)
         assert len(banks) == 2
 
@@ -108,11 +108,11 @@ class TestDecodePaletteBanks:
 
     def test_empty_data(self):
         """Empty data → 0 banks."""
-        assert decode_palette_banks(b'') == []
+        assert decode_palette_banks(b"") == []
 
     def test_partial_bank(self):
         """Data shorter than one bank → 0 banks (truncated)."""
-        data = b'\x00' * (PALETTE_BANK_BYTES - 1)
+        data = b"\x00" * (PALETTE_BANK_BYTES - 1)
         banks = decode_palette_banks(data)
         assert len(banks) == 0
 
@@ -138,8 +138,8 @@ class TestLzExtP6Fx:
 
     def test_empty_source(self):
         """Empty source → zero-filled output."""
-        result = lz_ext_p6_fx(b'', 4)
-        assert result == b'\x00\x00\x00\x00'
+        result = lz_ext_p6_fx(b"", 4)
+        assert result == b"\x00\x00\x00\x00"
 
     def test_dst_larger_than_src(self):
         """Output larger than source with only literals → zero-padded."""
@@ -182,7 +182,9 @@ class TestUnswizzle:
 
 class TestTileChip:
     def test_named_access(self):
-        tile = TileChip(dx=10, dy=20, attr=0x8000, code=5, td=16, dw=24, dh=32, px=b'\x00')
+        tile = TileChip(
+            dx=10, dy=20, attr=0x8000, code=5, td=16, dw=24, dh=32, px=b"\x00"
+        )
         assert tile.dx == 10
         assert tile.dy == 20
         assert tile.attr == 0x8000
@@ -190,16 +192,16 @@ class TestTileChip:
         assert tile.td == 16
         assert tile.dw == 24
         assert tile.dh == 32
-        assert tile.px == b'\x00'
+        assert tile.px == b"\x00"
 
     def test_positional_access(self):
         """NamedTuple still supports index access for backward compat."""
-        tile = TileChip(1, 2, 3, 4, 5, 6, 7, b'\xFF')
+        tile = TileChip(1, 2, 3, 4, 5, 6, 7, b"\xff")
         assert tile[0] == 1
-        assert tile[7] == b'\xFF'
+        assert tile[7] == b"\xff"
 
     def test_immutable(self):
-        tile = TileChip(0, 0, 0, 0, 8, 8, 8, b'')
+        tile = TileChip(0, 0, 0, 0, 8, 8, 8, b"")
         with pytest.raises(AttributeError):
             tile.dx = 99
 
@@ -230,8 +232,13 @@ from sprite_common import TexGroupEntry, TEXGRPDAT
 
 class TestTexGroupEntry:
     def test_named_access(self):
-        e = TexGroupEntry(group_idx=52, num_of_1st=35024, apfn=1386,
-                          to_tex=4568, desc="Stage 00 (Gill/Boss) sprites")
+        e = TexGroupEntry(
+            group_idx=52,
+            num_of_1st=35024,
+            apfn=1386,
+            to_tex=4568,
+            desc="Stage 00 (Gill/Boss) sprites",
+        )
         assert e.group_idx == 52
         assert e.num_of_1st == 35024
         assert e.apfn == 1386
@@ -259,9 +266,10 @@ class TestCompositorModule:
     def test_import(self):
         """sprite_compositor should be importable without errors."""
         import sprite_compositor
-        assert hasattr(sprite_compositor, 'extract_stage_frame')
-        assert hasattr(sprite_compositor, 'build_stage_colorram')
-        assert hasattr(sprite_compositor, 'extract_char_frame')
+
+        assert hasattr(sprite_compositor, "extract_stage_frame")
+        assert hasattr(sprite_compositor, "build_stage_colorram")
+        assert hasattr(sprite_compositor, "extract_char_frame")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -272,8 +280,7 @@ class TestCompositorModule:
 import os
 
 _DEFAULT_AFS = os.environ.get(
-    "SF33RD_AFS",
-    r"C:\Users\dov\AppData\Roaming\CrowdedStreet\3SX\resources\SF33RD.AFS"
+    "SF33RD_AFS", r"C:\Users\dov\AppData\Roaming\CrowdedStreet\3SX\resources\SF33RD.AFS"
 )
 _AFS_EXISTS = os.path.isfile(_DEFAULT_AFS)
 _skip_no_afs = pytest.mark.skipif(not _AFS_EXISTS, reason="AFS file not found")
@@ -286,23 +293,23 @@ class TestIntegrationAFS:
     def test_afs_read(self):
         """AFS should have ~1500+ entries."""
         from sprite_common import read_afs
+
         entries = read_afs(_DEFAULT_AFS)
         assert len(entries) > 1400
 
     def test_stage_frame_extraction(self):
         """Extract frame 0 of group 52 (Gill boss stage) → non-None RGBA image."""
-        import struct
         from sprite_common import read_afs, read_afs_file, STAGE_PAL_AFS
         from sprite_compositor import extract_stage_frame, build_stage_colorram
 
         entries = read_afs(_DEFAULT_AFS)
         grp52 = next(e for e in TEXGRPDAT if e.group_idx == 52)
 
-        pal_banks = build_stage_colorram(_DEFAULT_AFS, entries,
-                                         STAGE_PAL_AFS[0])
+        pal_banks = build_stage_colorram(_DEFAULT_AFS, entries, STAGE_PAL_AFS[0])
         data = read_afs_file(_DEFAULT_AFS, entries[grp52.apfn])
-        img = extract_stage_frame(data, grp52.to_tex, 0, pal_banks,
-                                  colcd_base=300, rendering_mode=33)
+        img = extract_stage_frame(
+            data, grp52.to_tex, 0, pal_banks, colcd_base=300, rendering_mode=33
+        )
         assert img is not None
         assert img.mode == "RGBA"
         assert img.size[0] > 0 and img.size[1] > 0

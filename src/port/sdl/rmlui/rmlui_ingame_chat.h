@@ -48,11 +48,20 @@ void rmlui_ingame_chat_set_opponent_name(const char* name);
 static inline void rmlui_ingame_chat_init(void) {}
 static inline void rmlui_ingame_chat_update(void) {}
 static inline void rmlui_ingame_chat_shutdown(void) {}
-static inline bool rmlui_ingame_chat_is_typing(void) { return false; }
+static inline bool rmlui_ingame_chat_is_typing(void) {
+    return false;
+}
 static inline void rmlui_ingame_chat_open_input(void) {}
-static inline void rmlui_ingame_chat_handle_key(int k, const char* t) { (void)k; (void)t; }
-static inline void rmlui_ingame_chat_set_room_code(const char* r) { (void)r; }
-static inline void rmlui_ingame_chat_set_opponent_name(const char* n) { (void)n; }
+static inline void rmlui_ingame_chat_handle_key(int k, const char* t) {
+    (void)k;
+    (void)t;
+}
+static inline void rmlui_ingame_chat_set_room_code(const char* r) {
+    (void)r;
+}
+static inline void rmlui_ingame_chat_set_opponent_name(const char* n) {
+    (void)n;
+}
 
 #endif /* ENABLE_RMLUI */
 

@@ -10,8 +10,13 @@ void sync_values(SDL_IOStream* io);
 
 #else
 
-static inline void compare_values(SDL_IOStream* io, Uint64 frame) { (void)io; (void)frame; }
-static inline void sync_values(SDL_IOStream* io) { (void)io; }
+static inline void compare_values(SDL_IOStream* io, Uint64 frame) {
+    (void)io;
+    (void)frame;
+}
+static inline void sync_values(SDL_IOStream* io) {
+    (void)io;
+}
 
 #endif
 

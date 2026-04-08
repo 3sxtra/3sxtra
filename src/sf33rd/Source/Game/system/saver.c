@@ -19,10 +19,10 @@
 
 /** @brief Screensaver task states (replaces Main_Jmp_Tbl indices). */
 enum SaverState {
-    SAVER_STATE_INIT  = 0,
+    SAVER_STATE_INIT = 0,
     SAVER_STATE_CHECK = 1,
-    SAVER_STATE_MOVE  = 2,
-    SAVER_STATE_EXIT  = 3,
+    SAVER_STATE_MOVE = 2,
+    SAVER_STATE_EXIT = 3,
     SAVER_STATE_COUNT
 };
 
@@ -35,11 +35,20 @@ void Saver_Task(struct _TASK* task_ptr) {
     }
 
     switch (task_ptr->r_no[0]) {
-    case SAVER_STATE_INIT:  Saver_Init(task_ptr);  break;
-    case SAVER_STATE_CHECK: Saver_Check(task_ptr); break;
-    case SAVER_STATE_MOVE:  Saver_Move(task_ptr);  break;
-    case SAVER_STATE_EXIT:  Saver_Exit(task_ptr);  break;
-    default: break;
+    case SAVER_STATE_INIT:
+        Saver_Init(task_ptr);
+        break;
+    case SAVER_STATE_CHECK:
+        Saver_Check(task_ptr);
+        break;
+    case SAVER_STATE_MOVE:
+        Saver_Move(task_ptr);
+        break;
+    case SAVER_STATE_EXIT:
+        Saver_Exit(task_ptr);
+        break;
+    default:
+        break;
     }
 }
 

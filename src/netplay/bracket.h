@@ -22,8 +22,8 @@ extern "C" {
 typedef struct {
     char player_id[64];
     char display_name[32];
-    int seed;       // 0 = top seed, ascending
-    float rating;   // optional: used for rating-based sort
+    int seed;     // 0 = top seed, ascending
+    float rating; // optional: used for rating-based sort
 } BracketSeed;
 
 /// Sort BracketSeed array by rating descending (highest rating = seed 0).
@@ -41,24 +41,18 @@ int Bracket_GetMatchesInRound(int num_players, int round);
 /// Players should be pre-ordered by seed (index 0 = top seed).
 /// Writes bracket entries to out_bracket (max MAX_BRACKET_SIZE).
 /// Returns number of entries written, or -1 on error.
-int Bracket_GenerateSingleElim(const char player_ids[][64],
-                                const char player_names[][32],
-                                int num_players,
-                                BracketEntry* out_bracket,
-                                int max_entries);
+int Bracket_GenerateSingleElim(const char player_ids[][64], const char player_names[][32], int num_players,
+                               BracketEntry* out_bracket, int max_entries);
 
 /// Generate single-elimination bracket from BracketSeed array.
 /// Seeds should be pre-sorted (call Bracket_SortByRating first if needed).
-int Bracket_GenerateSingleElimSeeded(const BracketSeed* seeds,
-                                      int num_players,
-                                      BracketEntry* out_bracket,
-                                      int max_entries);
+int Bracket_GenerateSingleElimSeeded(const BracketSeed* seeds, int num_players, BracketEntry* out_bracket,
+                                     int max_entries);
 
 /// Advance bracket: given a completed match (round, position, winner_id),
 /// place the winner into the correct next-round slot.
-bool Bracket_AdvanceSingleElim(BracketEntry* bracket, int bracket_size,
-                                int round, int position,
-                                const char* winner_id, const char* winner_name);
+bool Bracket_AdvanceSingleElim(BracketEntry* bracket, int bracket_size, int round, int position, const char* winner_id,
+                               const char* winner_name);
 
 // ─── Double Elimination ──────────────────────────────────────────
 
@@ -71,20 +65,15 @@ int Bracket_DoubleElimTotalEntries(int num_players);
 ///                       rounds R..2R-1 = losers bracket,
 ///                       round 2R = grand finals.
 /// Returns number of entries written, or -1 on error.
-int Bracket_GenerateDoubleElim(const char player_ids[][64],
-                                const char player_names[][32],
-                                int num_players,
-                                BracketEntry* out_bracket,
-                                int max_entries);
+int Bracket_GenerateDoubleElim(const char player_ids[][64], const char player_names[][32], int num_players,
+                               BracketEntry* out_bracket, int max_entries);
 
 /// Advance double-elimination bracket: routes winner to next winners slot,
 /// and loser to the appropriate losers bracket slot.
 /// winners_rounds = number of winners bracket rounds (from log2(next_pow2(N))).
-bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size,
-                                int winners_rounds,
-                                int round, int position,
-                                const char* winner_id, const char* winner_name,
-                                const char* loser_id, const char* loser_name);
+bool Bracket_AdvanceDoubleElim(BracketEntry* bracket, int bracket_size, int winners_rounds, int round, int position,
+                               const char* winner_id, const char* winner_name, const char* loser_id,
+                               const char* loser_name);
 
 // ─── Round Robin ─────────────────────────────────────────────────
 
@@ -95,11 +84,8 @@ int Bracket_RoundRobinTotalEntries(int num_players);
 /// Generate a round-robin bracket (every player vs every other).
 /// Rounds are generated using the circle method for balanced scheduling.
 /// Returns number of entries written, or -1 on error.
-int Bracket_GenerateRoundRobin(const char player_ids[][64],
-                                const char player_names[][32],
-                                int num_players,
-                                BracketEntry* out_bracket,
-                                int max_entries);
+int Bracket_GenerateRoundRobin(const char player_ids[][64], const char player_names[][32], int num_players,
+                               BracketEntry* out_bracket, int max_entries);
 
 // ─── Swiss ───────────────────────────────────────────────────────
 
@@ -108,13 +94,8 @@ int Bracket_GenerateRoundRobin(const char player_ids[][64],
 /// wins[] is an array of win counts parallel to player_ids[].
 /// swiss_round is the 0-indexed round number (used for BracketEntry.round).
 /// Returns number of entries written (num_players/2), or -1 on error.
-int Bracket_GenerateSwissRound(const char player_ids[][64],
-                                const char player_names[][32],
-                                const int* wins,
-                                int num_players,
-                                int swiss_round,
-                                BracketEntry* out_bracket,
-                                int max_entries);
+int Bracket_GenerateSwissRound(const char player_ids[][64], const char player_names[][32], const int* wins,
+                               int num_players, int swiss_round, BracketEntry* out_bracket, int max_entries);
 
 /// Recommended number of Swiss rounds for N players.
 /// Uses ceil(log2(N)) — same as single elim depth.
@@ -123,13 +104,11 @@ int Bracket_SwissRounds(int num_players);
 // ─── Common Utilities ────────────────────────────────────────────
 
 /// Find the bracket entry for a given round and position.
-BracketEntry* Bracket_FindEntry(BracketEntry* bracket, int bracket_size,
-                                 int round, int position);
+BracketEntry* Bracket_FindEntry(BracketEntry* bracket, int bracket_size, int round, int position);
 
 /// Check if the bracket is complete (a grand final winner exists).
 /// Returns the winner's player_id, or empty string if not yet decided.
-const char* Bracket_GetWinner(const BracketEntry* bracket, int bracket_size,
-                               int total_rounds);
+const char* Bracket_GetWinner(const BracketEntry* bracket, int bracket_size, int total_rounds);
 
 #ifdef __cplusplus
 }

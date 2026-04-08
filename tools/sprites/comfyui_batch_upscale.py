@@ -25,9 +25,9 @@ from comfyui_api import build_upscale_workflow, queue_prompt, wait_for_completio
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 
-SPRITES_ROOT   = os.environ.get("SF33RD_SPRITES_ROOT", r"D:\3sxtra\output\sprites")
+SPRITES_ROOT = os.environ.get("SF33RD_SPRITES_ROOT", r"D:\3sxtra\output\sprites")
 SPRITES_OUTPUT = os.environ.get("SF33RD_SPRITES_4X", r"D:\3sxtra\output\sprites_4x")
-UPSCALE_MODEL  = "4x-UltraSharpV2.safetensors"
+UPSCALE_MODEL = "4x-UltraSharpV2.safetensors"
 DEFAULT_SERVER = "127.0.0.1:8188"
 
 # ── Prompt builder ─────────────────────────────────────────────────────────────
@@ -48,8 +48,8 @@ def build_prompt(input_dir: str, output_dir: str, img_idx: int = 0) -> dict:
             "path": input_path,
             "pattern": "*",
             "allow_RGBA_output": "true",
-            "filename_text_extension": "false"
-        }
+            "filename_text_extension": "false",
+        },
     }
 
     save_node = {
@@ -57,7 +57,7 @@ def build_prompt(input_dir: str, output_dir: str, img_idx: int = 0) -> dict:
         "inputs": {
             "images": ["34", 0],
             "output_path": output_path,
-            "filename_prefix": ["26", 1],   # original filename from loader
+            "filename_prefix": ["26", 1],  # original filename from loader
             "filename_delimiter": "_",
             "filename_number_padding": 1,
             "filename_number_start": "false",
@@ -70,8 +70,8 @@ def build_prompt(input_dir: str, output_dir: str, img_idx: int = 0) -> dict:
             "show_history": "false",
             "show_history_by_prefix": "true",
             "embed_workflow": "false",
-            "show_previews": "true"
-        }
+            "show_previews": "true",
+        },
     }
 
     return build_upscale_workflow(UPSCALE_MODEL, loader_node, save_node)
@@ -91,11 +91,24 @@ def count_pngs(directory: str) -> int:
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 
+
 def main():
     parser = argparse.ArgumentParser(description="Batch upscale sprites via ComfyUI")
-    parser.add_argument("--server", default=DEFAULT_SERVER, help="ComfyUI server address (default: 127.0.0.1:8188)")
-    parser.add_argument("--folder", default=None, help="Process a single character folder instead of all")
-    parser.add_argument("--dry-run", action="store_true", help="Print what would be processed without running")
+    parser.add_argument(
+        "--server",
+        default=DEFAULT_SERVER,
+        help="ComfyUI server address (default: 127.0.0.1:8188)",
+    )
+    parser.add_argument(
+        "--folder",
+        default=None,
+        help="Process a single character folder instead of all",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print what would be processed without running",
+    )
     args = parser.parse_args()
 
     # Verify ComfyUI is running
@@ -104,7 +117,9 @@ def main():
         print(f"✅ Connected to ComfyUI at {args.server}")
     except Exception as e:
         print(f"❌ Cannot connect to ComfyUI at {args.server}")
-        print(f"   Start ComfyUI first: cd D:\\ComfyUI_windows_portable && run_nvidia_gpu.bat")
+        print(
+            "   Start ComfyUI first: cd D:\\ComfyUI_windows_portable && run_nvidia_gpu.bat"
+        )
         print(f"   Error: {e}")
         sys.exit(1)
 
@@ -112,10 +127,13 @@ def main():
     if args.folder:
         folders = [args.folder]
     else:
-        folders = sorted([
-            d for d in os.listdir(SPRITES_ROOT)
-            if os.path.isdir(os.path.join(SPRITES_ROOT, d))
-        ])
+        folders = sorted(
+            [
+                d
+                for d in os.listdir(SPRITES_ROOT)
+                if os.path.isdir(os.path.join(SPRITES_ROOT, d))
+            ]
+        )
 
     if not folders:
         print("❌ No character folders found in", SPRITES_ROOT)
@@ -134,7 +152,7 @@ def main():
     print(f"{'─' * 60}")
 
     for idx, folder_name in enumerate(folders, 1):
-        input_dir  = os.path.join(SPRITES_ROOT, folder_name)
+        input_dir = os.path.join(SPRITES_ROOT, folder_name)
         png_count = count_pngs(input_dir)
 
         if png_count == 0:
@@ -160,7 +178,9 @@ def main():
                 wait_for_completion(args.server, prompt_id, img_label)
             except urllib.error.HTTPError as e:
                 error_body = e.read().decode("utf-8", errors="replace")
-                print(f"\n  ❌ API error for {folder_name} image {img_idx + 1}: {e.code}")
+                print(
+                    f"\n  ❌ API error for {folder_name} image {img_idx + 1}: {e.code}"
+                )
                 print(f"     {error_body[:500]}")
                 # Continue with next image
             except Exception as e:
@@ -168,9 +188,13 @@ def main():
 
     print(f"\n{'─' * 60}")
     if args.dry_run:
-        print(f"🔍 Dry run complete: {total_images} images across {total_folders} folders.")
+        print(
+            f"🔍 Dry run complete: {total_images} images across {total_folders} folders."
+        )
     else:
-        print(f"🎉 Done! Processed {total_images} images across {total_folders} folders.")
+        print(
+            f"🎉 Done! Processed {total_images} images across {total_folders} folders."
+        )
         print(f"   Output: {SPRITES_OUTPUT}")
 
 

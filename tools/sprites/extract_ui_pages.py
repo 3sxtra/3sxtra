@@ -16,7 +16,6 @@ import os
 import struct
 import sys
 import zlib
-from pathlib import Path
 
 from PIL import Image
 
@@ -31,7 +30,7 @@ def parse_ppg_header(data):
     chunks = []
     ofs = 0
     while ofs < len(data) - 8:
-        magic = data[ofs:ofs + 4]
+        magic = data[ofs : ofs + 4]
         if magic == b"pEND":
             break
         file_size = struct.unpack_from(">I", data, ofs + 4)[0]
@@ -70,7 +69,7 @@ def decode_ppg_page(data, chunk_offset, chunk_size, palette_colors, force_bank=0
     h = hb * 16
 
     # Determine pixel depth
-    is_4bit = (pixel_mode == 0)
+    is_4bit = pixel_mode == 0
     pal_stride = 16 if is_4bit else 256
 
     # Parse palette region entries (if any)
@@ -88,7 +87,7 @@ def decode_ppg_page(data, chunk_offset, chunk_size, palette_colors, force_bank=0
 
     # Compressed pixel data starts after trans entries
     comp_start = chunk_offset + 16 + trans_nums * 3
-    comp_data = data[comp_start:chunk_offset + chunk_size]
+    comp_data = data[comp_start : chunk_offset + chunk_size]
 
     # Decompress
     if compress & 3:
@@ -173,7 +172,7 @@ def parse_ppl_palette(data, pal_index=0):
     ppal_idx = 0
 
     while ofs < len(data) - 8:
-        magic = data[ofs:ofs + 4]
+        magic = data[ofs : ofs + 4]
         if magic == b"pEND":
             break
         file_size = struct.unpack_from(">I", data, ofs + 4)[0]
@@ -186,9 +185,9 @@ def parse_ppl_palette(data, pal_index=0):
                 pal_count = struct.unpack_from(">H", data, ofs + 14)[0]
                 col_items = col_mode_width[c_mode]
 
-                comp_data = data[ofs + 16:ofs + file_size]
+                comp_data = data[ofs + 16 : ofs + file_size]
 
-                is_32bit = (form_argb == 0x8888)
+                is_32bit = form_argb == 0x8888
                 bytes_per_color = 4 if is_32bit else 2
 
                 if compress & 3:
@@ -227,8 +226,10 @@ def parse_ppl_palette(data, pal_index=0):
                         else:
                             all_colors.append((r, g, b, a))
 
-                print(f"  pPAL[{ppal_idx}]: {pal_count} palettes, {col_items} colors/pal, "
-                      f"compress={compress}, {'32bit' if is_32bit else '16bit'}")
+                print(
+                    f"  pPAL[{ppal_idx}]: {pal_count} palettes, {col_items} colors/pal, "
+                    f"compress={compress}, {'32bit' if is_32bit else '16bit'}"
+                )
                 return all_colors
 
             ppal_idx += 1
@@ -242,7 +243,9 @@ def extract_ui_pages(afs_path, output_dir, scale=1):
     """Extract all screen-font texture pages from scrscrn.ppg."""
     entries = read_afs(afs_path)
     ppg_data = read_afs_file(afs_path, entries[SCRSCRN_AFS_ENTRY])
-    print(f"Loaded scrscrn.ppg: {len(ppg_data)} bytes from AFS entry {SCRSCRN_AFS_ENTRY}")
+    print(
+        f"Loaded scrscrn.ppg: {len(ppg_data)} bytes from AFS entry {SCRSCRN_AFS_ENTRY}"
+    )
 
     # Parse all palettes from embedded pPAL chunks
     palettes = []
@@ -284,12 +287,14 @@ def extract_ui_pages(afs_path, output_dir, scale=1):
                 bank_dir = os.path.join(output_dir, f"page_{i}_banks")
                 os.makedirs(bank_dir, exist_ok=True)
                 for bank in range(32):
-                    page = decode_ppg_page(ppg_data, offset, size, page_pal, force_bank=bank)
+                    page = decode_ppg_page(
+                        ppg_data, offset, size, page_pal, force_bank=bank
+                    )
                     if scale > 1:
                         new_size = (page.width * scale, page.height * scale)
                         page = page.resize(new_size, Image.NEAREST)
                     page.save(os.path.join(bank_dir, f"bank_{bank:02d}.png"))
-                
+
                 # Also save the default bank 0 at the root level
                 page = decode_ppg_page(ppg_data, offset, size, page_pal, force_bank=0)
             else:
@@ -300,7 +305,9 @@ def extract_ui_pages(afs_path, output_dir, scale=1):
                 page = page.resize(new_size, Image.NEAREST)
             out_path = os.path.join(output_dir, f"page_{i}.png")
             page.save(out_path)
-            print(f"  Page {i}: {page.size[0]}x{page.size[1]} -> {out_path} (plus all 32 banks)")
+            print(
+                f"  Page {i}: {page.size[0]}x{page.size[1]} -> {out_path} (plus all 32 banks)"
+            )
         except Exception as e:
             print(f"  WARNING: Failed to decode page {i}: {e}")
 
@@ -328,7 +335,7 @@ def extract_ui_pages(afs_path, output_dir, scale=1):
 def _default_afs_path():
     return os.environ.get(
         "SF33RD_AFS",
-        r"C:\Users\dov\AppData\Roaming\CrowdedStreet\3SX\resources\SF33RD.AFS"
+        r"C:\Users\dov\AppData\Roaming\CrowdedStreet\3SX\resources\SF33RD.AFS",
     )
 
 
@@ -337,16 +344,18 @@ def main():
         description="Extract screen-font (HUD) texture pages from scrscrn.ppg."
     )
     parser.add_argument(
-        "--afs", default=_default_afs_path(),
-        help="Path to SF33RD.AFS (default: SF33RD_AFS env var or built-in path)"
+        "--afs",
+        default=_default_afs_path(),
+        help="Path to SF33RD.AFS (default: SF33RD_AFS env var or built-in path)",
     )
     parser.add_argument(
-        "--output", default="output/ui_pages",
-        help="Output directory for page PNGs"
+        "--output", default="output/ui_pages", help="Output directory for page PNGs"
     )
     parser.add_argument(
-        "--scale", type=int, default=1,
-        help="Upscale factor (e.g. 4 for 4x nearest-neighbor)"
+        "--scale",
+        type=int,
+        default=1,
+        help="Upscale factor (e.g. 4 for 4x nearest-neighbor)",
     )
     args = parser.parse_args()
 

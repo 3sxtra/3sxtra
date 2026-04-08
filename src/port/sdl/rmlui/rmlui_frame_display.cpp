@@ -167,11 +167,17 @@ static void do_init(void) {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi FrameDisplay] Data model registered (lazy)");
 }
 
-extern "C" void rmlui_frame_display_init(void) { do_init(); }
+extern "C" void rmlui_frame_display_init(void) {
+    do_init();
+}
 
 // ── Per-frame update ───────────────────────────────────────────
 extern "C" void rmlui_frame_display_update(void) {
-    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_registered) {
+        do_init();
+        if (!s_model_registered)
+            return;
+    }
     if (!s_model_handle)
         return;
 

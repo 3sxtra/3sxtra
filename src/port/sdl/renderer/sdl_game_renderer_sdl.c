@@ -27,6 +27,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <simde/x86/sse2.h> // ⚡ Bolt: SIMD palette→RGBA conversion in bake_idx_tex
+
 #include "radix_sort.h"
 
 #define RENDER_TASK_MAX 8192
@@ -261,8 +263,8 @@ static void read_color(const void* pixels, int index, size_t color_size, SDL_Col
 
 // --- Texture Debugging ---
 
-static void save_texture(const SDL_Surface* surface, const SDL_Palette* palette,
-                         unsigned int tex_handle, unsigned int pal_handle) {
+static void save_texture(const SDL_Surface* surface, const SDL_Palette* palette, unsigned int tex_handle,
+                         unsigned int pal_handle) {
     if (surface == NULL || palette == NULL) {
         SDL_Log("Cannot save texture: NULL surface or palette");
         return;
@@ -429,13 +431,34 @@ found:;
     SDL_assert(pixel_count <= RGBA_SCRATCH_MAX);
 
     if (surf->format == SDL_PIXELFORMAT_INDEX8) {
+        // ⚡ Bolt: SIMD 4-wide palette gather + RGBA swizzle.
+        // SDL_Color is {r,g,b,a} = little-endian 0xAABBGGRR in memory.
+        // Target RGBA8888 = R<<24 | G<<16 | B<<8 | A.
         const uint8_t* src = (const uint8_t*)surf->pixels;
-        for (int i = 0; i < pixel_count; i++) {
+        const uint32_t* pal32 = (const uint32_t*)colors;
+        int i = 0;
+        for (; i + 4 <= pixel_count; i += 4) {
+            // Scalar gather from palette (4 lookups)
+            const simde__m128i v = simde_mm_set_epi32(
+                (int)pal32[src[i + 3]], (int)pal32[src[i + 2]], (int)pal32[src[i + 1]], (int)pal32[src[i + 0]]);
+            // Swizzle 0xAABBGGRR → 0xRRGGBBAA
+            const simde__m128i mask_ff = simde_mm_set1_epi32(0xFF);
+            const simde__m128i r = simde_mm_and_si128(v, mask_ff);
+            const simde__m128i g = simde_mm_and_si128(simde_mm_srli_epi32(v, 8), mask_ff);
+            const simde__m128i b = simde_mm_and_si128(simde_mm_srli_epi32(v, 16), mask_ff);
+            const simde__m128i a = simde_mm_srli_epi32(v, 24);
+            const simde__m128i result =
+                simde_mm_or_si128(simde_mm_or_si128(simde_mm_slli_epi32(r, 24), simde_mm_slli_epi32(g, 16)),
+                                  simde_mm_or_si128(simde_mm_slli_epi32(b, 8), a));
+            simde_mm_storeu_si128((simde__m128i*)&rgba_scratch[i], result);
+        }
+        // Scalar tail
+        for (; i < pixel_count; i++) {
             const SDL_Color c = colors[src[i]];
             rgba_scratch[i] = ((uint32_t)c.r << 24) | ((uint32_t)c.g << 16) | ((uint32_t)c.b << 8) | c.a;
         }
     } else {
-        // PSMT4: 4-bit packed indices
+        // PSMT4: 4-bit packed indices (scalar — nibble unpack doesn't vectorize cleanly)
         const uint8_t* src = (const uint8_t*)surf->pixels;
         for (int i = 0; i < pixel_count; i++) {
             const uint8_t idx4 = (i & 1) ? (src[i >> 1] >> 4) : (src[i >> 1] & 0xF);
@@ -445,7 +468,11 @@ found:;
     }
     SDL_UpdateTexture(tex, NULL, rgba_scratch, surf->w * 4);
 
-    // ⚡ Persist pixel data for software-frame path (zero per-frame bake cost).
+    // ⚡ Bolt: Pixel cache disabled — SW rasterizer is hard-disabled (sw_frame_disabled=true
+    // in sdl_game_renderer_sdl_sw.c). Skipping malloc+memcpy saves ~256KB per 256×256 bake.
+    // Re-enable this block if/when the SW rasterizer is reactivated.
+#if 0
+    // Persist pixel data for software-frame path (zero per-frame bake cost).
     // Free old buffer if evicting a slot with different dimensions.
     if (idx_pal_pixels[ti][evict] != NULL &&
         (idx_pal_pixels_w[ti][evict] != surf->w || idx_pal_pixels_h[ti][evict] != surf->h)) {
@@ -460,6 +487,7 @@ found:;
         idx_pal_pixels_w[ti][evict] = surf->w;
         idx_pal_pixels_h[ti][evict] = surf->h;
     }
+#endif
 
     idx_pal_handle[ti][evict] = palette_handle;
     idx_pal_hash[ti][evict] = palette_hash[palette_handle - 1];
@@ -569,7 +597,6 @@ static void clear_render_tasks(void) {
     sort_inversions = 0;
     last_submitted_z = -1e30f;
 }
-
 
 // --- Render Task Sorting ---
 // Sort by z-depth first, then original submission order for stable layering.
@@ -837,7 +864,8 @@ void SDLGameRendererSDL_RenderFrame(void) {
     int rect_fast_path_count = 0;
 
     for (int i = 0; i <= render_task_count; i++) {
-        const RendererBlendMode this_blend = (i < render_task_count) ? task_blend[render_task_order[i]] : current_applied_blend;
+        const RendererBlendMode this_blend =
+            (i < render_task_count) ? task_blend[render_task_order[i]] : current_applied_blend;
         const bool should_flush = (i == render_task_count) || (task_th[render_task_order[i]] != current_th) ||
                                   (this_blend != current_applied_blend) ||
                                   (task_is_rect[render_task_order[i]] != current_is_rect);
@@ -848,9 +876,12 @@ void SDLGameRendererSDL_RenderFrame(void) {
                 SDL_assert(batch_size <= RENDER_TASK_MAX);
 
                 SDL_BlendMode sdl_blend;
-                if (current_applied_blend == RENDERER_BLEND_ADD) sdl_blend = SDL_BLENDMODE_ADD;
-                else if (current_applied_blend == RENDERER_BLEND_MULTIPLY) sdl_blend = SDL_BLENDMODE_MUL;
-                else sdl_blend = SDL_BLENDMODE_BLEND;
+                if (current_applied_blend == RENDERER_BLEND_ADD)
+                    sdl_blend = SDL_BLENDMODE_ADD;
+                else if (current_applied_blend == RENDERER_BLEND_MULTIPLY)
+                    sdl_blend = SDL_BLENDMODE_MUL;
+                else
+                    sdl_blend = SDL_BLENDMODE_BLEND;
 
                 if (current_th == 0xFFFFFFFF) {
                     // ⚡ HD Overlay Pass is deferred to RenderHDPass, skip rendering to canvas
@@ -858,155 +889,157 @@ void SDLGameRendererSDL_RenderFrame(void) {
                 } else {
                     SDL_Texture* draw_texture = task_texture[render_task_order[batch_start]];
                     const int batch_palette = HI_16_BITS(current_th);
-                    if (draw_texture) SDL_SetTextureBlendMode(draw_texture, sdl_blend);
-                    else SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
-                const int batch_tex_handle = LO_16_BITS(current_th);
+                    if (draw_texture)
+                        SDL_SetTextureBlendMode(draw_texture, sdl_blend);
+                    else
+                        SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
+                    const int batch_tex_handle = LO_16_BITS(current_th);
 
-                // ⚡ For indexed textures: swap draw_texture for the pre-baked slot.
-                // lookup_idx_tex is a pure cache hit 99.9% of the time (no blit here).
-                if (draw_texture != NULL && batch_palette > 0 && batch_palette <= FL_PALETTE_MAX &&
-                    batch_tex_handle > 0) {
-                    SDL_Texture* cached = lookup_idx_tex(renderer, batch_tex_handle - 1, batch_palette);
-                    if (cached != NULL)
-                        draw_texture = cached;
-                }
-
-                // ⚡ Rect fast path: use SDL_RenderTexture for axis-aligned rects.
-                // SDL_RenderTexture can use optimized hardware blit paths vs.
-                // the generic triangle rasterization of SDL_RenderGeometry.
-                if (current_is_rect && draw_texture != NULL) {
-                    // Query texture size once per batch (all tasks share same texture)
-                    float tex_w, tex_h;
-                    SDL_GetTextureSize(draw_texture, &tex_w, &tex_h);
-
-                    for (int j = 0; j < batch_size; j++) {
-                        const int task_idx = render_task_order[batch_start + j];
-                        const SDL_Vertex* v = task_verts[task_idx];
-
-                        // Compute source rect — detect flipped axes via negative dimensions
-                        float src_x = v[0].tex_coord.x * tex_w;
-                        float src_y = v[0].tex_coord.y * tex_h;
-                        float src_w = (v[3].tex_coord.x - v[0].tex_coord.x) * tex_w;
-                        float src_h = (v[3].tex_coord.y - v[0].tex_coord.y) * tex_h;
-
-                        SDL_FlipMode flip = SDL_FLIP_NONE;
-                        if (src_w < 0) {
-                            flip |= SDL_FLIP_HORIZONTAL;
-                            src_x += src_w;
-                            src_w = -src_w;
-                        }
-                        if (src_h < 0) {
-                            flip |= SDL_FLIP_VERTICAL;
-                            src_y += src_h;
-                            src_h = -src_h;
-                        }
-
-                        const SDL_FRect src = { src_x, src_y, src_w, src_h };
-
-                        // Destination rect from vertex positions
-                        const SDL_FRect dst = { v[0].position.x,
-                                                v[0].position.y,
-                                                v[3].position.x - v[0].position.x,
-                                                v[3].position.y - v[0].position.y };
-
-                        // Apply color + alpha modulation from uniform vertex color
-                        SDL_SetTextureColorModFloat(draw_texture, v[0].color.r, v[0].color.g, v[0].color.b);
-                        SDL_SetTextureAlphaModFloat(draw_texture, v[0].color.a);
-
-                        if (flip != SDL_FLIP_NONE) {
-                            SDL_RenderTextureRotated(renderer, draw_texture, &src, &dst, 0.0, NULL, flip);
-                        } else {
-                            SDL_RenderTexture(renderer, draw_texture, &src, &dst);
-                        }
+                    // ⚡ For indexed textures: swap draw_texture for the pre-baked slot.
+                    // lookup_idx_tex is a pure cache hit 99.9% of the time (no blit here).
+                    if (draw_texture != NULL && batch_palette > 0 && batch_palette <= FL_PALETTE_MAX &&
+                        batch_tex_handle > 0) {
+                        SDL_Texture* cached = lookup_idx_tex(renderer, batch_tex_handle - 1, batch_palette);
+                        if (cached != NULL)
+                            draw_texture = cached;
                     }
-                    // ⚡ Reset color/alpha mod to prevent leaking into subsequent
-                    // SDL_RenderGeometry batches that may share this texture.
-                    SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
-                    SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
-                    rect_fast_path_count += batch_size;
-                } else if (draw_texture != NULL && !current_is_rect) {
-                    // ⚡ Retroactive rect recovery: re-examine geometry tasks to see if
-                    // they actually form axis-aligned rects. Catches quads missed by
-                    // is_axis_aligned_rect at enqueue time (MiSTer's try_resolve_geometry_task_as_rect_copy).
-                    float tex_w, tex_h;
-                    SDL_GetTextureSize(draw_texture, &tex_w, &tex_h);
-                    int geo_start = 0;
-                    for (int j = 0; j < batch_size; j++) {
-                        const int task_idx = render_task_order[batch_start + j];
-                        if (is_axis_aligned_rect(task_verts[task_idx])) {
-                            // Flush pending non-rect geometry before this rect
-                            if (j > geo_start) {
-                                const int geo_count = j - geo_start;
-                                for (int k = 0; k < geo_count; k++) {
-                                    const int gi = render_task_order[batch_start + geo_start + k];
-                                    memcpy(&batch_vertices[k * 4], task_verts[gi], 4 * sizeof(SDL_Vertex));
-                                }
-                                SDL_RenderGeometry(renderer,
-                                                   draw_texture,
-                                                   batch_vertices,
-                                                   geo_count * 4,
-                                                   batch_indices,
-                                                   geo_count * 6);
-                            }
-                            // ⚡ Normalize vertex order so v[0]=TL, v[3]=BR
-                            normalize_rect_verts(task_verts[task_idx]);
-                            // Submit as rect
+
+                    // ⚡ Rect fast path: use SDL_RenderTexture for axis-aligned rects.
+                    // SDL_RenderTexture can use optimized hardware blit paths vs.
+                    // the generic triangle rasterization of SDL_RenderGeometry.
+                    if (current_is_rect && draw_texture != NULL) {
+                        // Query texture size once per batch (all tasks share same texture)
+                        float tex_w, tex_h;
+                        SDL_GetTextureSize(draw_texture, &tex_w, &tex_h);
+
+                        for (int j = 0; j < batch_size; j++) {
+                            const int task_idx = render_task_order[batch_start + j];
                             const SDL_Vertex* v = task_verts[task_idx];
-                            float rx = v[0].tex_coord.x * tex_w;
-                            float ry = v[0].tex_coord.y * tex_h;
-                            float rw = (v[3].tex_coord.x - v[0].tex_coord.x) * tex_w;
-                            float rh = (v[3].tex_coord.y - v[0].tex_coord.y) * tex_h;
-                            SDL_FlipMode rflip = SDL_FLIP_NONE;
-                            if (rw < 0) {
-                                rflip |= SDL_FLIP_HORIZONTAL;
-                                rx += rw;
-                                rw = -rw;
+
+                            // Compute source rect — detect flipped axes via negative dimensions
+                            float src_x = v[0].tex_coord.x * tex_w;
+                            float src_y = v[0].tex_coord.y * tex_h;
+                            float src_w = (v[3].tex_coord.x - v[0].tex_coord.x) * tex_w;
+                            float src_h = (v[3].tex_coord.y - v[0].tex_coord.y) * tex_h;
+
+                            SDL_FlipMode flip = SDL_FLIP_NONE;
+                            if (src_w < 0) {
+                                flip |= SDL_FLIP_HORIZONTAL;
+                                src_x += src_w;
+                                src_w = -src_w;
                             }
-                            if (rh < 0) {
-                                rflip |= SDL_FLIP_VERTICAL;
-                                ry += rh;
-                                rh = -rh;
+                            if (src_h < 0) {
+                                flip |= SDL_FLIP_VERTICAL;
+                                src_y += src_h;
+                                src_h = -src_h;
                             }
-                            const SDL_FRect rsrc = { rx, ry, rw, rh };
-                            const SDL_FRect rdst = { v[0].position.x,
-                                                     v[0].position.y,
-                                                     v[3].position.x - v[0].position.x,
-                                                     v[3].position.y - v[0].position.y };
+
+                            const SDL_FRect src = { src_x, src_y, src_w, src_h };
+
+                            // Destination rect from vertex positions
+                            const SDL_FRect dst = { v[0].position.x,
+                                                    v[0].position.y,
+                                                    v[3].position.x - v[0].position.x,
+                                                    v[3].position.y - v[0].position.y };
+
+                            // Apply color + alpha modulation from uniform vertex color
                             SDL_SetTextureColorModFloat(draw_texture, v[0].color.r, v[0].color.g, v[0].color.b);
                             SDL_SetTextureAlphaModFloat(draw_texture, v[0].color.a);
-                            if (rflip != SDL_FLIP_NONE) {
-                                SDL_RenderTextureRotated(renderer, draw_texture, &rsrc, &rdst, 0.0, NULL, rflip);
-                            } else {
-                                SDL_RenderTexture(renderer, draw_texture, &rsrc, &rdst);
-                            }
-                            SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
-                            SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
-                            rect_fast_path_count++;
-                            geo_start = j + 1;
-                        }
-                    }
-                    // Flush remaining non-rect geometry
-                    if (geo_start < batch_size) {
-                        const int geo_count = batch_size - geo_start;
-                        for (int k = 0; k < geo_count; k++) {
-                            const int gi = render_task_order[batch_start + geo_start + k];
-                            memcpy(&batch_vertices[k * 4], task_verts[gi], 4 * sizeof(SDL_Vertex));
-                        }
-                        SDL_RenderGeometry(
-                            renderer, draw_texture, batch_vertices, geo_count * 4, batch_indices, geo_count * 6);
-                    }
-                } else {
-                    // Standard geometry path: copy vertices to batch buffer
-                    for (int j = 0; j < batch_size; j++) {
-                        const int task_idx = render_task_order[batch_start + j];
-                        const int vert_offset = j * 4;
-                        memcpy(&batch_vertices[vert_offset], task_verts[task_idx], 4 * sizeof(SDL_Vertex));
-                    }
 
-                    // Single draw call for entire batch
-                    SDL_RenderGeometry(
-                        renderer, draw_texture, batch_vertices, batch_size * 4, batch_indices, batch_size * 6);
-                }
+                            if (flip != SDL_FLIP_NONE) {
+                                SDL_RenderTextureRotated(renderer, draw_texture, &src, &dst, 0.0, NULL, flip);
+                            } else {
+                                SDL_RenderTexture(renderer, draw_texture, &src, &dst);
+                            }
+                        }
+                        // ⚡ Reset color/alpha mod to prevent leaking into subsequent
+                        // SDL_RenderGeometry batches that may share this texture.
+                        SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
+                        SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
+                        rect_fast_path_count += batch_size;
+                    } else if (draw_texture != NULL && !current_is_rect) {
+                        // ⚡ Retroactive rect recovery: re-examine geometry tasks to see if
+                        // they actually form axis-aligned rects. Catches quads missed by
+                        // is_axis_aligned_rect at enqueue time (MiSTer's try_resolve_geometry_task_as_rect_copy).
+                        float tex_w, tex_h;
+                        SDL_GetTextureSize(draw_texture, &tex_w, &tex_h);
+                        int geo_start = 0;
+                        for (int j = 0; j < batch_size; j++) {
+                            const int task_idx = render_task_order[batch_start + j];
+                            if (is_axis_aligned_rect(task_verts[task_idx])) {
+                                // Flush pending non-rect geometry before this rect
+                                if (j > geo_start) {
+                                    const int geo_count = j - geo_start;
+                                    for (int k = 0; k < geo_count; k++) {
+                                        const int gi = render_task_order[batch_start + geo_start + k];
+                                        memcpy(&batch_vertices[k * 4], task_verts[gi], 4 * sizeof(SDL_Vertex));
+                                    }
+                                    SDL_RenderGeometry(renderer,
+                                                       draw_texture,
+                                                       batch_vertices,
+                                                       geo_count * 4,
+                                                       batch_indices,
+                                                       geo_count * 6);
+                                }
+                                // ⚡ Normalize vertex order so v[0]=TL, v[3]=BR
+                                normalize_rect_verts(task_verts[task_idx]);
+                                // Submit as rect
+                                const SDL_Vertex* v = task_verts[task_idx];
+                                float rx = v[0].tex_coord.x * tex_w;
+                                float ry = v[0].tex_coord.y * tex_h;
+                                float rw = (v[3].tex_coord.x - v[0].tex_coord.x) * tex_w;
+                                float rh = (v[3].tex_coord.y - v[0].tex_coord.y) * tex_h;
+                                SDL_FlipMode rflip = SDL_FLIP_NONE;
+                                if (rw < 0) {
+                                    rflip |= SDL_FLIP_HORIZONTAL;
+                                    rx += rw;
+                                    rw = -rw;
+                                }
+                                if (rh < 0) {
+                                    rflip |= SDL_FLIP_VERTICAL;
+                                    ry += rh;
+                                    rh = -rh;
+                                }
+                                const SDL_FRect rsrc = { rx, ry, rw, rh };
+                                const SDL_FRect rdst = { v[0].position.x,
+                                                         v[0].position.y,
+                                                         v[3].position.x - v[0].position.x,
+                                                         v[3].position.y - v[0].position.y };
+                                SDL_SetTextureColorModFloat(draw_texture, v[0].color.r, v[0].color.g, v[0].color.b);
+                                SDL_SetTextureAlphaModFloat(draw_texture, v[0].color.a);
+                                if (rflip != SDL_FLIP_NONE) {
+                                    SDL_RenderTextureRotated(renderer, draw_texture, &rsrc, &rdst, 0.0, NULL, rflip);
+                                } else {
+                                    SDL_RenderTexture(renderer, draw_texture, &rsrc, &rdst);
+                                }
+                                SDL_SetTextureColorModFloat(draw_texture, 1.0f, 1.0f, 1.0f);
+                                SDL_SetTextureAlphaModFloat(draw_texture, 1.0f);
+                                rect_fast_path_count++;
+                                geo_start = j + 1;
+                            }
+                        }
+                        // Flush remaining non-rect geometry
+                        if (geo_start < batch_size) {
+                            const int geo_count = batch_size - geo_start;
+                            for (int k = 0; k < geo_count; k++) {
+                                const int gi = render_task_order[batch_start + geo_start + k];
+                                memcpy(&batch_vertices[k * 4], task_verts[gi], 4 * sizeof(SDL_Vertex));
+                            }
+                            SDL_RenderGeometry(
+                                renderer, draw_texture, batch_vertices, geo_count * 4, batch_indices, geo_count * 6);
+                        }
+                    } else {
+                        // Standard geometry path: copy vertices to batch buffer
+                        for (int j = 0; j < batch_size; j++) {
+                            const int task_idx = render_task_order[batch_start + j];
+                            const int vert_offset = j * 4;
+                            memcpy(&batch_vertices[vert_offset], task_verts[task_idx], 4 * sizeof(SDL_Vertex));
+                        }
+
+                        // Single draw call for entire batch
+                        SDL_RenderGeometry(
+                            renderer, draw_texture, batch_vertices, batch_size * 4, batch_indices, batch_size * 6);
+                    }
                 } // ⚡ Close newly added else { for skipped overlays
             }
 
@@ -1044,8 +1077,10 @@ void SDLGameRendererSDL_RenderFrame(void) {
     TRACE_ZONE_END();
 }
 
-void SDLGameRendererSDL_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h, bool backgrounds_only) {
-    if (render_task_count == 0) return;
+void SDLGameRendererSDL_RenderHDPass(int viewport_x, int viewport_y, int viewport_w, int viewport_h,
+                                     bool backgrounds_only) {
+    if (render_task_count == 0)
+        return;
     TRACE_ZONE_N("SDL2D:RenderHDPass");
 
     SDL_Renderer* renderer = SDLApp_GetSDLRenderer();
@@ -1055,27 +1090,36 @@ void SDLGameRendererSDL_RenderHDPass(int viewport_x, int viewport_y, int viewpor
 
     for (int i = 0; i < render_task_count; i++) {
         const int idx = render_task_order[i];
-        if (task_th[idx] != 0xFFFFFFFF) continue;
+        if (task_th[idx] != 0xFFFFFFFF)
+            continue;
 
-        if (backgrounds_only && task_z[idx] >= 0.1f) continue;
-        if (!backgrounds_only && task_z[idx] < 0.1f) continue;
+        if (backgrounds_only && task_z[idx] >= 0.1f)
+            continue;
+        if (!backgrounds_only && task_z[idx] < 0.1f)
+            continue;
 
         SDL_Texture* draw_texture = task_texture[idx];
-        if (!draw_texture) continue;
+        if (!draw_texture)
+            continue;
 
         SDL_BlendMode sdl_blend;
-        if (task_blend[idx] == RENDERER_BLEND_ADD) sdl_blend = SDL_BLENDMODE_ADD;
-        else if (task_blend[idx] == RENDERER_BLEND_MULTIPLY) sdl_blend = SDL_BLENDMODE_MUL;
-        else sdl_blend = SDL_BLENDMODE_BLEND;
-        
+        if (task_blend[idx] == RENDERER_BLEND_ADD)
+            sdl_blend = SDL_BLENDMODE_ADD;
+        else if (task_blend[idx] == RENDERER_BLEND_MULTIPLY)
+            sdl_blend = SDL_BLENDMODE_MUL;
+        else
+            sdl_blend = SDL_BLENDMODE_BLEND;
+
         SDL_SetTextureBlendMode(draw_texture, sdl_blend);
 
         if (task_is_rect[idx]) {
-            SDL_SetTextureColorModFloat(draw_texture, task_verts[idx][0].color.r, task_verts[idx][0].color.g, task_verts[idx][0].color.b);
+            SDL_SetTextureColorModFloat(
+                draw_texture, task_verts[idx][0].color.r, task_verts[idx][0].color.g, task_verts[idx][0].color.b);
             SDL_SetTextureAlphaModFloat(draw_texture, task_verts[idx][0].color.a);
 
             if (task_flip[idx] != SDL_FLIP_NONE) {
-                SDL_RenderTextureRotated(renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx], 0.0, NULL, task_flip[idx]);
+                SDL_RenderTextureRotated(
+                    renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx], 0.0, NULL, task_flip[idx]);
             } else {
                 SDL_RenderTexture(renderer, draw_texture, &task_src_rect[idx], &task_dst_rect[idx]);
             }
@@ -1087,7 +1131,7 @@ void SDLGameRendererSDL_RenderHDPass(int viewport_x, int viewport_y, int viewpor
             SDL_RenderGeometry(renderer, draw_texture, task_verts[idx], 4, indices, 6);
         }
     }
-    
+
     SDL_SetRenderScale(renderer, 1.0f, 1.0f);
     TRACE_ZONE_END();
 }
@@ -1394,8 +1438,8 @@ void SDLGameRendererSDL_SetTexture(unsigned int th) {
      * Uses the engine's texture_handle + palette_handle (zero overhead,
      * no content hashing). Override PNGs are premultiplied (native res). */
     if (RENDERER_HAS_PLUGIN() && g_renderer_plugin->TryOverrideTexture) {
-        void* override_tex = g_renderer_plugin->TryOverrideTexture(
-            (unsigned int)texture_handle, (unsigned int)palette_handle);
+        void* override_tex =
+            g_renderer_plugin->TryOverrideTexture((unsigned int)texture_handle, (unsigned int)palette_handle);
         if (override_tex != NULL) {
             SDL_Texture* sdl_tex = (SDL_Texture*)override_tex;
             SDL_SetTextureScaleMode(sdl_tex, SDL_SCALEMODE_LINEAR);
@@ -1872,14 +1916,14 @@ void SDLGameRendererSDL_DrawOverlaySpriteEx(SDL_Texture* texture, float x, float
     SDL_GetTextureSize(texture, &tex_w, &tex_h);
     task_src_rect[idx] = (SDL_FRect) { 0.0f, 0.0f, tex_w, tex_h };
     task_dst_rect[idx] = (SDL_FRect) { sx, sy, sw, sh };
-    task_flip[idx] = (SDL_FlipMode)( (flip_x ? SDL_FLIP_HORIZONTAL : 0) | (flip_y ? SDL_FLIP_VERTICAL : 0) );
+    task_flip[idx] = (SDL_FlipMode)((flip_x ? SDL_FLIP_HORIZONTAL : 0) | (flip_y ? SDL_FLIP_VERTICAL : 0));
     task_color32[idx] = 0xFFFFFFFF; /* white, full alpha */
 
     render_task_count++;
 }
 
-void SDLGameRendererSDL_DrawOverlaySubSprite(SDL_Texture* texture, float x, float y, float w, float h, 
-                                             float u0, float v0, float u1, float v1, float z) {
+void SDLGameRendererSDL_DrawOverlaySubSprite(SDL_Texture* texture, float x, float y, float w, float h, float u0,
+                                             float v0, float u1, float v1, float z) {
     if (render_task_count >= RENDER_TASK_MAX || texture == NULL)
         return;
 

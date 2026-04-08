@@ -107,13 +107,15 @@ void ms_casual_lobby_register(void) {
         .on_enter = casual_lobby_enter,
         .on_tick = casual_lobby_tick,
         .on_exit = casual_lobby_exit,
-        .cursor_max = 0,   /* input handled internally by rmlui_casual_lobby_update */
+        .cursor_max = 0, /* input handled internally by rmlui_casual_lobby_update */
         .cancel_item = -1,
         .rmlui_show = casual_lobby_rmlui_show,
         .rmlui_hide = casual_lobby_rmlui_hide,
         .header_type = MENU_HEADER_MODE_MENU,
         .effect_slot = 0,
     };
-    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[ms_casual_lobby] registered screen id=%d on_tick=%p",
-            MENU_SCREEN_CASUAL_LOBBY, (void*)(uintptr_t)casual_lobby_tick);
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
+                 "[ms_casual_lobby] registered screen id=%d on_tick=%p",
+                 MENU_SCREEN_CASUAL_LOBBY,
+                 (void*)(uintptr_t)casual_lobby_tick);
 }

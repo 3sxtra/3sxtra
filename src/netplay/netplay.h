@@ -63,7 +63,6 @@ void Netplay_SetStunSocket(NET_DatagramSocket* socket);
 void Netplay_SetNegotiatedFT(int ft);
 int Netplay_GetNegotiatedFT(void);
 
-
 #ifdef __cplusplus
 }
 #endif

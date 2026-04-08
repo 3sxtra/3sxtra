@@ -74,11 +74,11 @@ void TextureUtil_DrawQuadEx(void* texture_id, float x, float y, float w, float h
 /**
  * @brief Draw a specifically defined sub-region of a TextureUtil texture.
  *
- * Same as TextureUtil_DrawQuadEx but accepts explicit normalized UV coordinates 
+ * Same as TextureUtil_DrawQuadEx but accepts explicit normalized UV coordinates
  * for scrolling or parallax (used heavily by ModdedStage backgrounds).
  */
-void TextureUtil_DrawSubQuadEx(void* texture_id, float x, float y, float w, float h, 
-                               float u0, float v0, float u1, float v1, float z);
+void TextureUtil_DrawSubQuadEx(void* texture_id, float x, float y, float w, float h, float u0, float v0, float u1,
+                               float v1, float z);
 
 #ifdef __cplusplus
 }

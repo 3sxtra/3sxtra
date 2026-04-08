@@ -14,15 +14,12 @@ import urllib.error
 
 def queue_prompt(server, prompt, client_id):
     """Submit a prompt to ComfyUI and return prompt_id."""
-    data = json.dumps({
-        "prompt": prompt,
-        "client_id": client_id
-    }).encode("utf-8")
+    data = json.dumps({"prompt": prompt, "client_id": client_id}).encode("utf-8")
 
     req = urllib.request.Request(
         f"http://{server}/prompt",
         data=data,
-        headers={"Content-Type": "application/json"}
+        headers={"Content-Type": "application/json"},
     )
     resp = urllib.request.urlopen(req)
     result = json.loads(resp.read())
@@ -44,7 +41,7 @@ def get_queue(server):
 
 def wait_for_completion(server, prompt_id, label=""):
     """Poll until a prompt finishes executing."""
-    spinner = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+    spinner = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
     i = 0
     while True:
         history = get_history(server, prompt_id)
@@ -60,7 +57,9 @@ def wait_for_completion(server, prompt_id, label=""):
                     print(f"     {msg}")
                 return False
 
-        print(f"\r  {spinner[i % len(spinner)]} {label} processing...", end="", flush=True)
+        print(
+            f"\r  {spinner[i % len(spinner)]} {label} processing...", end="", flush=True
+        )
         i += 1
         time.sleep(1.0)
 
@@ -90,66 +89,34 @@ def build_upscale_workflow(model_name, loader_node, save_node):
         # Node 21: Load upscale model
         "21": {
             "class_type": "UpscaleModelLoader",
-            "inputs": {
-                "model_name": model_name
-            }
+            "inputs": {"model_name": model_name},
         },
-
         # Node 26: Image loader (caller-provided)
         "26": loader_node,
-
         # Node 30: Split image into RGB + Alpha mask
-        "30": {
-            "class_type": "SplitImageWithAlpha",
-            "inputs": {
-                "image": ["26", 0]
-            }
-        },
-
+        "30": {"class_type": "SplitImageWithAlpha", "inputs": {"image": ["26", 0]}},
         # Node 20: Upscale the RGB image
         "20": {
             "class_type": "ImageUpscaleWithModel",
-            "inputs": {
-                "upscale_model": ["21", 0],
-                "image": ["30", 0]
-            }
+            "inputs": {"upscale_model": ["21", 0], "image": ["30", 0]},
         },
-
         # Node 31: Convert alpha mask to image (so we can upscale it)
-        "31": {
-            "class_type": "MaskToImage",
-            "inputs": {
-                "mask": ["30", 1]
-            }
-        },
-
+        "31": {"class_type": "MaskToImage", "inputs": {"mask": ["30", 1]}},
         # Node 32: Upscale the alpha mask (as an image)
         "32": {
             "class_type": "ImageUpscaleWithModel",
-            "inputs": {
-                "upscale_model": ["21", 0],
-                "image": ["31", 0]
-            }
+            "inputs": {"upscale_model": ["21", 0], "image": ["31", 0]},
         },
-
         # Node 33: Convert upscaled alpha image back to mask
         "33": {
             "class_type": "ImageToMask",
-            "inputs": {
-                "image": ["32", 0],
-                "channel": "red"
-            }
+            "inputs": {"image": ["32", 0], "channel": "red"},
         },
-
         # Node 34: Recombine upscaled RGB with upscaled alpha
         "34": {
             "class_type": "JoinImageWithAlpha",
-            "inputs": {
-                "image": ["20", 0],
-                "alpha": ["33", 0]
-            }
+            "inputs": {"image": ["20", 0], "alpha": ["33", 0]},
         },
-
         # Node 27: Image saver (caller-provided)
         "27": save_node,
     }

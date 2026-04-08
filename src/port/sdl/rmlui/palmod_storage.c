@@ -20,10 +20,8 @@ static void build_dir(char* buf, size_t size, const char* category, const char* 
     snprintf(buf, size, "%spalettes/%s/%s", Paths_GetPrefPath(), category, sub_name);
 }
 
-static void build_path(char* buf, size_t size, const char* category,
-                        const char* sub_name, const char* pal_name) {
-    snprintf(buf, size, "%spalettes/%s/%s/%s.json",
-             Paths_GetPrefPath(), category, sub_name, pal_name);
+static void build_path(char* buf, size_t size, const char* category, const char* sub_name, const char* pal_name) {
+    snprintf(buf, size, "%spalettes/%s/%s/%s.json", Paths_GetPrefPath(), category, sub_name, pal_name);
 }
 
 /* Ensure directory tree exists (SDL3 mkdir is recursive if you go level-by-level) */
@@ -31,7 +29,8 @@ static bool ensure_dir(const char* path) {
     /* Build path level by level */
     char tmp[512];
     size_t len = strlen(path);
-    if (len >= sizeof(tmp)) return false;
+    if (len >= sizeof(tmp))
+        return false;
     memcpy(tmp, path, len + 1);
 
     for (size_t i = 1; i <= len; i++) {
@@ -41,7 +40,8 @@ static bool ensure_dir(const char* path) {
             /* SDL_CreateDirectory returns true if created or already exists */
             SDL_CreateDirectory(tmp);
             tmp[i] = saved;
-            if (saved == '\0') break;
+            if (saved == '\0')
+                break;
         }
     }
     return true;
@@ -49,9 +49,9 @@ static bool ensure_dir(const char* path) {
 
 /* ── Save ─────────────────────────────────────────────────────────── */
 
-bool palmod_save(const char* category, const char* sub_name,
-                 const char* pal_name, const u16* colors) {
-    if (!category || !sub_name || !pal_name || !colors) return false;
+bool palmod_save(const char* category, const char* sub_name, const char* pal_name, const u16* colors) {
+    if (!category || !sub_name || !pal_name || !colors)
+        return false;
 
     char dir[512];
     build_dir(dir, sizeof(dir), category, sub_name);
@@ -75,7 +75,8 @@ bool palmod_save(const char* category, const char* sub_name,
 
     char* json_str = cJSON_Print(root);
     cJSON_Delete(root);
-    if (!json_str) return false;
+    if (!json_str)
+        return false;
 
     bool ok = SDL_SaveFile(filepath, json_str, strlen(json_str));
     cJSON_free(json_str);
@@ -90,9 +91,9 @@ bool palmod_save(const char* category, const char* sub_name,
 
 /* ── Load ─────────────────────────────────────────────────────────── */
 
-bool palmod_load(const char* category, const char* sub_name,
-                 const char* pal_name, u16* out_colors) {
-    if (!category || !sub_name || !pal_name || !out_colors) return false;
+bool palmod_load(const char* category, const char* sub_name, const char* pal_name, u16* out_colors) {
+    if (!category || !sub_name || !pal_name || !out_colors)
+        return false;
 
     char filepath[512];
     build_path(filepath, sizeof(filepath), category, sub_name, pal_name);
@@ -134,9 +135,9 @@ bool palmod_load(const char* category, const char* sub_name,
 
 /* ── List ─────────────────────────────────────────────────────────── */
 
-int palmod_list(const char* category, const char* sub_name,
-                PalmodEntry* out_entries) {
-    if (!category || !sub_name || !out_entries) return 0;
+int palmod_list(const char* category, const char* sub_name, PalmodEntry* out_entries) {
+    if (!category || !sub_name || !out_entries)
+        return 0;
 
     char dir[512];
     build_dir(dir, sizeof(dir), category, sub_name);
@@ -144,7 +145,8 @@ int palmod_list(const char* category, const char* sub_name,
     int count = 0;
     int num_items = 0;
     char** items = SDL_GlobDirectory(dir, "*.json", SDL_GLOB_CASEINSENSITIVE, &num_items);
-    if (!items) return 0;
+    if (!items)
+        return 0;
 
     for (int i = 0; i < num_items && count < PALMOD_MAX_PALETTES; i++) {
         const char* fname = items[i];
@@ -152,7 +154,8 @@ int palmod_list(const char* category, const char* sub_name,
         size_t len = strlen(fname);
         if (len > 5 && strcmp(fname + len - 5, ".json") == 0) {
             size_t name_len = len - 5;
-            if (name_len >= PALMOD_NAME_MAX) name_len = PALMOD_NAME_MAX - 1;
+            if (name_len >= PALMOD_NAME_MAX)
+                name_len = PALMOD_NAME_MAX - 1;
             memcpy(out_entries[count].name, fname, name_len);
             out_entries[count].name[name_len] = '\0';
             count++;
@@ -165,9 +168,9 @@ int palmod_list(const char* category, const char* sub_name,
 
 /* ── Delete ───────────────────────────────────────────────────────── */
 
-bool palmod_delete(const char* category, const char* sub_name,
-                   const char* pal_name) {
-    if (!category || !sub_name || !pal_name) return false;
+bool palmod_delete(const char* category, const char* sub_name, const char* pal_name) {
+    if (!category || !sub_name || !pal_name)
+        return false;
 
     char filepath[512];
     build_path(filepath, sizeof(filepath), category, sub_name, pal_name);

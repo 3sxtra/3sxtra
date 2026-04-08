@@ -49,7 +49,6 @@ typedef struct {
     u16 col[20][16][16];
 } COL_x2800;
 
-
 // bss
 u16 colPalBuffDC[1024];
 u16 ColorRAM[512][64];
@@ -267,7 +266,8 @@ void init_trans_color_ram(s16 id, s16 key, u8 type, u16 data) {
         }
 
         /* Palmod hook: cache COL data before Push frees the memory */
-        if (s_palmod_col_hook) s_palmod_col_hook(id, plcol[id]);
+        if (s_palmod_col_hook)
+            s_palmod_col_hook(id, plcol[id]);
 
         Push_ramcnt_key(key);
         palUpdateGhostCP3(id * 16, 16);

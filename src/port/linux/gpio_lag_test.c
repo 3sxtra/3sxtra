@@ -29,18 +29,18 @@
 
 /* ── Configuration ─────────────────────────────────────────────────── */
 
-#define GPIO_CHIP         "/dev/gpiochip0"
-#define GPIO_LINE         17
-#define MK_FLAG           0x200   /* Medium Kick game flag */
-#define CONSUMER_LABEL    "3sx-lag-test"
+#define GPIO_CHIP "/dev/gpiochip0"
+#define GPIO_LINE 17
+#define MK_FLAG 0x200 /* Medium Kick game flag */
+#define CONSUMER_LABEL "3sx-lag-test"
 
 /* ── State ─────────────────────────────────────────────────────────── */
 
 static bool s_enabled = false;
 static bool s_gpio_ready = false;
-static int  s_chip_fd = -1;       /* /dev/gpiochip0 fd */
-static int  s_line_fd = -1;       /* Line request fd (for get_values) */
-static int  s_debug_counter = 0;
+static int s_chip_fd = -1; /* /dev/gpiochip0 fd */
+static int s_line_fd = -1; /* Line request fd (for get_values) */
+static int s_debug_counter = 0;
 
 /* ── Public API ────────────────────────────────────────────────────── */
 
@@ -52,7 +52,9 @@ void GpioLagTest_Init(void) {
     if (s_chip_fd < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "[GpioLagTest] Failed to open %s (errno=%d: %s)",
-                     GPIO_CHIP, errno, strerror(errno));
+                     GPIO_CHIP,
+                     errno,
+                     strerror(errno));
         return;
     }
     SDL_Log("[GpioLagTest] Opened %s (fd=%d)", GPIO_CHIP, s_chip_fd);
@@ -65,8 +67,7 @@ void GpioLagTest_Init(void) {
     req.num_lines = 1;
     strncpy(req.consumer, CONSUMER_LABEL, sizeof(req.consumer) - 1);
 
-    req.config.flags = GPIO_V2_LINE_FLAG_INPUT
-                     | GPIO_V2_LINE_FLAG_BIAS_PULL_UP;
+    req.config.flags = GPIO_V2_LINE_FLAG_INPUT | GPIO_V2_LINE_FLAG_BIAS_PULL_UP;
     /* Single line, no per-line attribute overrides needed */
     req.config.num_attrs = 0;
 
@@ -74,7 +75,8 @@ void GpioLagTest_Init(void) {
     if (ret < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "[GpioLagTest] GPIO_V2_GET_LINE_IOCTL failed (errno=%d: %s)",
-                     errno, strerror(errno));
+                     errno,
+                     strerror(errno));
         close(s_chip_fd);
         s_chip_fd = -1;
         return;
@@ -90,12 +92,10 @@ void GpioLagTest_Init(void) {
 
     ret = ioctl(s_line_fd, GPIO_V2_LINE_GET_VALUES_IOCTL, &vals);
     if (ret < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "[GpioLagTest] Test read failed (errno=%d: %s)",
-                     errno, strerror(errno));
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION, "[GpioLagTest] Test read failed (errno=%d: %s)", errno, strerror(errno));
     } else {
-        SDL_Log("[GpioLagTest] Test read: value=%llu (1=HIGH/released, 0=LOW/pressed)",
-                (unsigned long long)vals.bits);
+        SDL_Log("[GpioLagTest] Test read: value=%llu (1=HIGH/released, 0=LOW/pressed)", (unsigned long long)vals.bits);
     }
 
     s_gpio_ready = true;
@@ -118,7 +118,8 @@ void GpioLagTest_Shutdown(void) {
 }
 
 void GpioLagTest_OnInputPoll(void) {
-    if (!s_enabled || !s_gpio_ready || s_line_fd < 0) return;
+    if (!s_enabled || !s_gpio_ready || s_line_fd < 0)
+        return;
 
     struct gpio_v2_line_values vals;
     memset(&vals, 0, sizeof(vals));
@@ -127,17 +128,15 @@ void GpioLagTest_OnInputPoll(void) {
     int ret = ioctl(s_line_fd, GPIO_V2_LINE_GET_VALUES_IOCTL, &vals);
     if (ret < 0) {
         if (s_debug_counter++ % 300 == 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-                        "[GpioLagTest] read failed (errno=%d: %s)",
-                        errno, strerror(errno));
+            SDL_LogWarn(
+                SDL_LOG_CATEGORY_APPLICATION, "[GpioLagTest] read failed (errno=%d: %s)", errno, strerror(errno));
         }
         return;
     }
 
     /* Log periodically (~every 5 seconds at 60fps) */
     if (s_debug_counter++ % 300 == 0) {
-        SDL_Log("[GpioLagTest] GPIO %d = %llu", GPIO_LINE,
-                (unsigned long long)vals.bits);
+        SDL_Log("[GpioLagTest] GPIO %d = %llu", GPIO_LINE, (unsigned long long)vals.bits);
     }
 
     /* Active low: bit=0 means button is pressed */
@@ -148,8 +147,7 @@ void GpioLagTest_OnInputPoll(void) {
 
 void GpioLagTest_Toggle(void) {
     if (!s_gpio_ready) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-                    "[GpioLagTest] Cannot toggle — GPIO not initialised");
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[GpioLagTest] Cannot toggle — GPIO not initialised");
         return;
     }
     s_enabled = !s_enabled;

@@ -8,7 +8,7 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_data.h"
 #include "sf33rd/Source/Game/stage/bg_rewrite.h"
-#include <stdio.h>  /* DEBUG: for ColorRAM dump */
+#include <stdio.h> /* DEBUG: for ColorRAM dump */
 #include "common.h"
 #include "port/mods/modded_stage.h"
 #include "port/renderer_plugin.h"
@@ -213,7 +213,6 @@ void Bg_Texture_Load_EX() {
         }
 
         ppgSourceDataReleased(&ppgAkeList);
-
     }
 
     /* Try to load HD modded stage assets for this stage */

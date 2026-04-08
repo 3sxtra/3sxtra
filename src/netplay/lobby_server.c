@@ -132,13 +132,14 @@ bool LobbyServer_IsConfigured(void) {
 }
 
 bool LobbyServer_WasInitialized(void) {
-    return ls_initialized;  // Non-initializing — safe for shutdown guards
+    return ls_initialized; // Non-initializing — safe for shutdown guards
 }
 
 const char* LobbyServer_GetBaseURL(void) {
     static char base_url[300] = { 0 };
     ensure_init();
-    if (!configured) return "";
+    if (!configured)
+        return "";
     snprintf(base_url, sizeof(base_url), "http://%s:%d", server_host, server_port);
     return base_url;
 }
@@ -738,7 +739,8 @@ int LobbyServer_ListReplays(ReplayListEntry* out, int max_entries, int page, int
     return count;
 }
 
-int LobbyServer_GetPlayerMatchHistory(const char* player_id, ReplayListEntry* out, int max_entries, int page, int* out_total) {
+int LobbyServer_GetPlayerMatchHistory(const char* player_id, ReplayListEntry* out, int max_entries, int page,
+                                      int* out_total) {
     ensure_init();
     if (!configured || !player_id || !out || max_entries <= 0)
         return -1;
@@ -845,15 +847,14 @@ size_t LobbyServer_DownloadReplay(int match_id, void** out_data) {
     curl_easy_cleanup(curl);
 
     if (res != CURLE_OK) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-                    "[LobbyServer] Replay download curl error: %s", curl_easy_strerror(res));
+        SDL_LogWarn(
+            SDL_LOG_CATEGORY_APPLICATION, "[LobbyServer] Replay download curl error: %s", curl_easy_strerror(res));
         free(resp.data);
         return 0;
     }
 
     if (status < 200 || status >= 300) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
-                    "[LobbyServer] Replay download failed: HTTP %ld", status);
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[LobbyServer] Replay download failed: HTTP %ld", status);
         free(resp.data);
         return 0;
     }
@@ -1088,7 +1089,8 @@ bool LobbyServer_CreateRoom(const char* name, int ft, const char* password, int 
     return true;
 }
 
-bool LobbyServer_JoinRoom(const char* room_code, const char* password, RoomState* out_room, char* out_error, size_t error_size) {
+bool LobbyServer_JoinRoom(const char* room_code, const char* password, RoomState* out_room, char* out_error,
+                          size_t error_size) {
     if (!Identity_IsInitialized())
         return false;
 
@@ -1118,8 +1120,7 @@ bool LobbyServer_JoinRoom(const char* room_code, const char* password, RoomState
                     char your_region[16] = { 0 };
                     cjson_get_string(err_json, "your_region", your_region, sizeof(your_region));
                     snprintf(out_error, error_size, "Region locked — you are in %s", your_region);
-                } else if (strcmp(err_msg, "Wrong password") == 0 ||
-                           strcmp(err_msg, "Invalid password") == 0) {
+                } else if (strcmp(err_msg, "Wrong password") == 0 || strcmp(err_msg, "Invalid password") == 0) {
                     snprintf(out_error, error_size, "Wrong password");
                 } else if (strcmp(err_msg, "Password required") == 0) {
                     snprintf(out_error, error_size, "Password required");
@@ -1328,17 +1329,19 @@ static void parse_tournament_json(const cJSON* root, TournamentState* out) {
     }
 }
 
-bool LobbyServer_CreateTournamentRoom(const char* name, TournamentFormat format,
-                                       int max_players, int ft, const char* seeding,
-                                       const char* password, int visibility,
-                                       RoomState* out_room) {
+bool LobbyServer_CreateTournamentRoom(const char* name, TournamentFormat format, int max_players, int ft,
+                                      const char* seeding, const char* password, int visibility, RoomState* out_room) {
     if (!Identity_IsInitialized())
         return false;
 
-    if (ft < 1) ft = 2;
-    if (ft > 10) ft = 10;
-    if (max_players < 2) max_players = 8;
-    if (max_players > MAX_ROOM_PLAYERS) max_players = MAX_ROOM_PLAYERS;
+    if (ft < 1)
+        ft = 2;
+    if (ft > 10)
+        ft = 10;
+    if (max_players < 2)
+        max_players = 8;
+    if (max_players > MAX_ROOM_PLAYERS)
+        max_players = MAX_ROOM_PLAYERS;
 
     cJSON* root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "player_id", Identity_GetPlayerId());
@@ -1372,13 +1375,14 @@ bool LobbyServer_CreateTournamentRoom(const char* name, TournamentFormat format,
         out_room->player_count = 1;
         out_room->ft = ft;
         out_room->room_type = ROOM_TYPE_TOURNAMENT;
-        SDL_strlcpy(out_room->players[0].player_id, Identity_GetPlayerId(),
-                    sizeof(out_room->players[0].player_id));
-        SDL_strlcpy(out_room->players[0].display_name, Identity_GetDisplayName(),
-                    sizeof(out_room->players[0].display_name));
+        SDL_strlcpy(out_room->players[0].player_id, Identity_GetPlayerId(), sizeof(out_room->players[0].player_id));
+        SDL_strlcpy(
+            out_room->players[0].display_name, Identity_GetDisplayName(), sizeof(out_room->players[0].display_name));
     }
     SDL_Log("[LobbyServer] Tournament room created: %s (format=%d, max=%d)",
-            out_room ? out_room->id : "?", (int)format, max_players);
+            out_room ? out_room->id : "?",
+            (int)format,
+            max_players);
     return true;
 }
 
@@ -1509,7 +1513,6 @@ bool LobbyServer_BracketRestartMatch(const char* room_code, int match_index) {
     }
     return ok;
 }
-
 
 /* ======== SSE raw socket connect ========
  * The SSE streaming client needs a long-lived TCP socket for recv() polling.
@@ -2011,14 +2014,17 @@ static int gsse_thread_fn(void* userdata) {
 
     const char* pid = Identity_IsInitialized() ? Identity_GetPlayerId() : "";
     char request[512];
-    int req_len = snprintf(request, sizeof(request),
+    int req_len = snprintf(request,
+                           sizeof(request),
                            "GET /sse?player_id=%s HTTP/1.1\r\n"
                            "Host: %s:%d\r\n"
                            "Accept: text/event-stream\r\n"
                            "Cache-Control: no-cache\r\n"
                            "Connection: keep-alive\r\n"
                            "\r\n",
-                           pid, server_host, server_port);
+                           pid,
+                           server_host,
+                           server_port);
 
     if (send(sock, request, req_len, 0) < req_len) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GlobalSSE: send failed");
@@ -2048,9 +2054,11 @@ static int gsse_thread_fn(void* userdata) {
         int n = recv(sock, buf + buf_len, (int)(sizeof(buf) - 1 - buf_len), 0);
         if (n < 0) {
 #ifdef _WIN32
-            if (WSAGetLastError() == WSAETIMEDOUT) continue;
+            if (WSAGetLastError() == WSAETIMEDOUT)
+                continue;
 #else
-            if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+                continue;
 #endif
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "GlobalSSE: recv error");
             break;
@@ -2065,10 +2073,12 @@ static int gsse_thread_fn(void* userdata) {
 
         if (!headers_done) {
             char* hdr_end = strstr(buf, "\r\n\r\n");
-            if (!hdr_end) continue;
+            if (!hdr_end)
+                continue;
             hdr_end += 4;
             int remaining = buf_len - (int)(hdr_end - buf);
-            if (remaining > 0) memmove(buf, hdr_end, remaining);
+            if (remaining > 0)
+                memmove(buf, hdr_end, remaining);
             buf_len = remaining;
             buf[buf_len] = '\0';
             headers_done = true;
@@ -2078,9 +2088,11 @@ static int gsse_thread_fn(void* userdata) {
         char* line_start = buf;
         while (1) {
             char* data_prefix = strstr(line_start, "data: ");
-            if (!data_prefix) break;
+            if (!data_prefix)
+                break;
             char* line_end = strstr(data_prefix, "\n\n");
-            if (!line_end) break;
+            if (!line_end)
+                break;
 
             char* json_start = data_prefix + 6;
             *line_end = '\0';
@@ -2102,7 +2114,8 @@ static int gsse_thread_fn(void* userdata) {
         }
 
         int remaining = buf_len - (int)(line_start - buf);
-        if (remaining > 0 && line_start != buf) memmove(buf, line_start, remaining);
+        if (remaining > 0 && line_start != buf)
+            memmove(buf, line_start, remaining);
         buf_len = remaining;
     }
 
@@ -2115,7 +2128,8 @@ static int gsse_thread_fn(void* userdata) {
 
 bool LobbyServer_GlobalSSEConnect(void) {
     ensure_init();
-    if (!configured || !Identity_IsInitialized()) return false;
+    if (!configured || !Identity_IsInitialized())
+        return false;
 
     if (SDL_GetAtomicInt(&s_gsse_running))
         LobbyServer_GlobalSSEDisconnect();
@@ -2138,7 +2152,8 @@ bool LobbyServer_GlobalSSEConnect(void) {
 
 void LobbyServer_GlobalSSEDisconnect(void) {
     SDL_SetAtomicInt(&s_gsse_stop, 1);
-    if (!SDL_GetAtomicInt(&s_gsse_running)) return;
+    if (!SDL_GetAtomicInt(&s_gsse_running))
+        return;
 
     int sock = SDL_GetAtomicInt(&s_gsse_sock);
     if (sock >= 0) {
@@ -2159,12 +2174,15 @@ void LobbyServer_GlobalSSEDisconnect(void) {
 SSEEventType LobbyServer_GlobalSSEPoll(SSEEvent* out_event) {
     int ri = SDL_GetAtomicInt(&s_gsse_read_idx);
     int wi = SDL_GetAtomicInt(&s_gsse_write_idx);
-    if (ri >= wi) return SSE_EVENT_NONE;
+    if (ri >= wi)
+        return SSE_EVENT_NONE;
 
-    if (wi - ri > GSSE_RING_SIZE) ri = wi - GSSE_RING_SIZE;
+    if (wi - ri > GSSE_RING_SIZE)
+        ri = wi - GSSE_RING_SIZE;
 
     SSEEvent* slot = &s_gsse_ring[ri % GSSE_RING_SIZE];
-    if (out_event) memcpy(out_event, slot, sizeof(SSEEvent));
+    if (out_event)
+        memcpy(out_event, slot, sizeof(SSEEvent));
 
     SDL_SetAtomicInt(&s_gsse_read_idx, ri + 1);
     return slot->type;

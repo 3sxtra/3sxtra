@@ -2516,7 +2516,8 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
 
             if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] != last_pos) {
                 Message_Data->order = 1;
-                Message_Data->request = save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Max] + MSG_EX_PAGE_OFFSET;
+                Message_Data->request =
+                    save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Max] + MSG_EX_PAGE_OFFSET;
                 Message_Data->timer = 2;
             }
         } else if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] < 0) {
@@ -2546,7 +2547,8 @@ void Ex_Move_Sub_LR(u16 sw, s16 PL_id) {
 
             if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] != last_pos) {
                 Message_Data->order = 1;
-                Message_Data->request = save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Max] + MSG_EX_PAGE_OFFSET;
+                Message_Data->request =
+                    save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Max] + MSG_EX_PAGE_OFFSET;
                 Message_Data->timer = 2;
             }
         } else if (save_w[SAVEW_ARCADE].extra_option.contents[Menu_Page_Buff][Menu_Cursor_Y[0]] >

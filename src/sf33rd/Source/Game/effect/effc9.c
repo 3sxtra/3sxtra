@@ -242,5 +242,3 @@ void setup_EJG_index() {
         }
     }
 }
-
-

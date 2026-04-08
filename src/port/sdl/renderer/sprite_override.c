@@ -120,8 +120,8 @@ void* LoadBGTileOverride(int type, int stage, int gbix) {
 #define UI_PAGE_CACHE_SIZE 64
 
 typedef struct {
-    unsigned int key;   /* texHandle | (palHandle << 16), 0 = empty slot */
-    void* texture;      /* TextureUtil handle, or NULL if miss */
+    unsigned int key; /* texHandle | (palHandle << 16), 0 = empty slot */
+    void* texture;    /* TextureUtil handle, or NULL if miss */
     bool checked;
 } UIPageCacheEntry;
 
@@ -176,7 +176,8 @@ void* LoadUIPageOverride(unsigned int tex_handle, unsigned int pal_handle) {
     }
 
     if (tex != NULL) {
-        SDL_Log("SpriteOverride: loaded HD UI page: %s (ppg_idx=%d, th=%u, ph=%u)", path, ppg_idx, tex_handle, pal_handle);
+        SDL_Log(
+            "SpriteOverride: loaded HD UI page: %s (ppg_idx=%d, th=%u, ph=%u)", path, ppg_idx, tex_handle, pal_handle);
     }
 
     return tex;
@@ -202,8 +203,7 @@ void SpriteOverride_DumpMissing(void) {
     int sprite_count = 0;
     for (int i = 0; i < SPRITE_CACHE_SIZE; i++) {
         if (s_sprite_miss[i]) {
-            fprintf(f, "sprite,%d,%d,assets/sprites/sprite_%d.png\n",
-                    s_sprite_group[i], i, i);
+            fprintf(f, "sprite,%d,%d,assets/sprites/sprite_%d.png\n", s_sprite_group[i], i, i);
             sprite_count++;
         }
     }
@@ -217,8 +217,7 @@ void SpriteOverride_DumpMissing(void) {
     }
 
     fclose(f);
-    SDL_Log("SpriteOverride: wrote %s (%d sprites, %d bg tiles missing)",
-            csv_path, sprite_count, bg_count);
+    SDL_Log("SpriteOverride: wrote %s (%d sprites, %d bg tiles missing)", csv_path, sprite_count, bg_count);
 }
 
 void SpriteOverride_Shutdown(void) {

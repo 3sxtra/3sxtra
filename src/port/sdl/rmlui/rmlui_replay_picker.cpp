@@ -43,7 +43,7 @@ static const char* char_name(int my_char_id) {
 }
 
 /* ── Constants ─────────────────────────────────────────────────── */
-#define RP_PAGE_SIZE       10
+#define RP_PAGE_SIZE 10
 
 /* ── Data model ────────────────────────────────────────────────── */
 static Rml::DataModelHandle s_model_handle;
@@ -52,8 +52,8 @@ static bool s_model_registered = false;
 /* ── Slot info for data binding ────────────────────────────────── */
 struct SlotEntry {
     Rml::String filename; /* string filename */
-    int display_num;  /* display number within tab (1-10) */
-    int page_idx;     /* index within current page (0..PAGE_SIZE-1) for cursor matching */
+    int display_num;      /* display number within tab (1-10) */
+    int page_idx;         /* index within current page (0..PAGE_SIZE-1) for cursor matching */
     bool exists;
     Rml::String p1_name;
     Rml::String p1_country;
@@ -69,13 +69,13 @@ struct SlotEntry {
 static std::vector<SlotEntry> s_all_slots;
 static std::vector<SlotEntry> s_slots;
 
-static int s_cursor   = 0;  /* index into s_slots (0..PAGE_SIZE-1) */
-static int s_zone     = 0;  /* 0=data rows, 1=page control, 2=tab control */
-static int s_mode     = 0;  /* 0=load, 1=save */
-static int s_tab      = 0;  /* 0=LOCAL, 1=NETPLAY */
-static int s_page     = 0;  /* 0-indexed page within current tab */
-static bool s_open    = false;
-static int s_result   = 1;  /* 1=active, 0=done, -1=cancelled */
+static int s_cursor = 0; /* index into s_slots (0..PAGE_SIZE-1) */
+static int s_zone = 0;   /* 0=data rows, 1=page control, 2=tab control */
+static int s_mode = 0;   /* 0=load, 1=save */
+static int s_tab = 0;    /* 0=LOCAL, 1=NETPLAY */
+static int s_page = 0;   /* 0-indexed page within current tab */
+static bool s_open = false;
+static int s_result = 1; /* 1=active, 0=done, -1=cancelled */
 static char s_selected_filename[128] = "";
 
 /* ── Cache for dirty detection ─────────────────────────────────── */
@@ -118,7 +118,7 @@ static void refresh_slot_data(void) {
             entry.p1_country = "";
             entry.p2_name = entry.p2_char_name;
             entry.p2_country = "";
-            
+
             int winner = NativeSave_GetReplayWinner(filename);
             if (winner == 0) {
                 entry.winner_id = entry.p1_name;
@@ -129,9 +129,14 @@ static void refresh_slot_data(void) {
             }
 
             char buf[32];
-            SDL_snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d",
-                         info.date.year, info.date.month, info.date.day,
-                         info.date.hour, info.date.min);
+            SDL_snprintf(buf,
+                         sizeof(buf),
+                         "%04d-%02d-%02d %02d:%02d",
+                         info.date.year,
+                         info.date.month,
+                         info.date.day,
+                         info.date.hour,
+                         info.date.min);
             entry.date_str = buf;
         } else {
             entry.p1_name = "Unknown";
@@ -165,13 +170,13 @@ static void refresh_slot_data(void) {
     /* Slice to current page */
     s_slots.clear();
     int page_start = s_page * RP_PAGE_SIZE;
-    int page_end   = std::min(page_start + RP_PAGE_SIZE, (int)s_all_slots.size());
-    
+    int page_end = std::min(page_start + RP_PAGE_SIZE, (int)s_all_slots.size());
+
     // Fix s_page out of bounds if items were removed
     if (page_start >= (int)s_all_slots.size() && s_page > 0) {
         s_page--;
         page_start = s_page * RP_PAGE_SIZE;
-        page_end   = std::min(page_start + RP_PAGE_SIZE, (int)s_all_slots.size());
+        page_end = std::min(page_start + RP_PAGE_SIZE, (int)s_all_slots.size());
     }
 
     for (int i = page_start; i < page_end; i++) {
@@ -241,11 +246,17 @@ static void do_init(void) {
     SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[RmlUi ReplayPicker] Data model registered (lazy)");
 }
 
-extern "C" void rmlui_replay_picker_init(void) { do_init(); }
+extern "C" void rmlui_replay_picker_init(void) {
+    do_init();
+}
 
 /* ── Per-frame update (called from sdl_app.c render loop) ──────── */
 extern "C" void rmlui_replay_picker_update(void) {
-    if (!s_model_registered) { do_init(); if (!s_model_registered) return; }
+    if (!s_model_registered) {
+        do_init();
+        if (!s_model_registered)
+            return;
+    }
     if (!s_model_handle)
         return;
     // ⚡ Skip when document is hidden
@@ -298,7 +309,7 @@ extern "C" void rmlui_replay_picker_hide(void) {
 /* ── Open (called from menu.c instead of ReplayPicker_Open) ───── */
 extern "C" void rmlui_replay_picker_open(int mode) {
     s_mode = mode;
-    s_tab = 0;    /* default to LOCAL */
+    s_tab = 0; /* default to LOCAL */
     s_page = 0;
     s_cursor = 0;
     s_zone = 0;
@@ -325,7 +336,8 @@ extern "C" int rmlui_replay_picker_poll(void) {
     }
 
     int max_cursor = (int)s_slots.size() - 1;
-    if (max_cursor < 0) max_cursor = 0;
+    if (max_cursor < 0)
+        max_cursor = 0;
 
     /* ── DOWN (wraps from zone 2 → zone 0) ── */
     if (trigger & 0x02) {
@@ -360,7 +372,7 @@ extern "C" int rmlui_replay_picker_poll(void) {
     }
 
     /* ── LEFT / RIGHT (context-dependent on zone) ── */
-    if (trigger & 0x04) { /* LEFT */
+    if (trigger & 0x04) {  /* LEFT */
         if (s_zone == 2) { /* tab control — switch to LOCAL */
             if (s_tab != 0) {
                 s_tab = 0;
@@ -375,7 +387,7 @@ extern "C" int rmlui_replay_picker_poll(void) {
         }
         dirty_all();
     }
-    if (trigger & 0x08) { /* RIGHT */
+    if (trigger & 0x08) {  /* RIGHT */
         if (s_zone == 2) { /* tab control — switch to NETPLAY */
             if (s_tab != 1) {
                 s_tab = 1;

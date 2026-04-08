@@ -102,7 +102,6 @@
 #include "port/sdl/rmlui/rmlui_vs_screen.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 
-
 void NetLobby_DrawIncomingPopup(const char* name, const char* region, int ping) {
     /* Dark semi-transparent overlay covering the whole screen */
     {
@@ -323,7 +322,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
         break;
 
     case 3:
-        /* Gateway input: pick LOBBY MODE / RANKED MATCHMAKING / LOCAL NETWORK / LEADERBOARD / REPLAYS / PROFILE / EXIT */
+        /* Gateway input: pick LOBBY MODE / RANKED MATCHMAKING / LOCAL NETWORK / LEADERBOARD / REPLAYS / PROFILE / EXIT
+         */
         if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, 6, FADE_OPAQUE) == 0) {
             MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 6, FADE_OPAQUE);
         }
@@ -358,8 +358,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 task_ptr->r_no[2] = 4; /* jump to leaderboard phase */
             } else if (Menu_Cursor_Y[0] == 2) {
                 /* LOCAL NETWORK — jump to LAN-only lobby phase */
-                task_ptr->free[2] = NET_MODE_LAN;  /* 2=lan-only */
-                task_ptr->r_no[2] = 20; /* jump to LAN-only lobby phase */
+                task_ptr->free[2] = NET_MODE_LAN; /* 2=lan-only */
+                task_ptr->r_no[2] = 20;           /* jump to LAN-only lobby phase */
             } else if (Menu_Cursor_Y[0] == 1) {
                 /* RANKED MATCHMAKING */
                 MenuScreen_Goto(MENU_SCREEN_RANKED_MATCHMAKING);
@@ -367,8 +367,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 return;
             } else {
                 /* LOBBY MODE (0) — always use RmlUI lobby */
-                task_ptr->free[2] = NET_MODE_RMLUI;  /* 1=rmlui */
-                task_ptr->r_no[2] = 10; /* jump to lobby phase */
+                task_ptr->free[2] = NET_MODE_RMLUI; /* 1=rmlui */
+                task_ptr->r_no[2] = 10;             /* jump to lobby phase */
             }
         }
         break;
@@ -531,12 +531,12 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 rmlui_network_replay_picker_hide();
                 Menu_Suicide[0] = 0;
                 Menu_Suicide[1] = 1;
-                
+
                 Decide_ID = 0;
                 if (Interface_Type[0] == 0) {
                     Decide_ID = 1;
                 }
-                
+
                 task_ptr->r_no[2] = 35; /* Jump to Load_Replay_Sub transition phase */
                 task_ptr->r_no[3] = 0;
                 task_ptr->free[0] = 0;
@@ -560,8 +560,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
-        Menu_Suicide[0] = 1;        /* kill gateway items (master_player=0) */
-        Menu_Suicide[1] = 0;        /* enable lobby items (master_player=1) */
+        Menu_Suicide[0] = 1;                       /* kill gateway items (master_player=0) */
+        Menu_Suicide[1] = 0;                       /* enable lobby items (master_player=1) */
         Message_Data->kind_req = NET_BG_MODE_BLUE; /* blue-BG background mode */
         break;
 
@@ -664,13 +664,13 @@ void Network_Lobby(struct _TASK* task_ptr) {
         /* === Password popup input intercept === */
         if (rmlui_network_lobby_is_password_popup_visible()) {
             u16 click = (~plsw_01[0] & plsw_00[0]) | (~plsw_01[1] & plsw_00[1]);
-            if (click & 1)  /* UP */
+            if (click & 1) /* UP */
                 rmlui_network_lobby_password_input(1);
-            if (click & 2)  /* DOWN */
+            if (click & 2) /* DOWN */
                 rmlui_network_lobby_password_input(2);
-            if (click & 4)  /* LEFT */
+            if (click & 4) /* LEFT */
                 rmlui_network_lobby_password_input(4);
-            if (click & 8)  /* RIGHT */
+            if (click & 8) /* RIGHT */
                 rmlui_network_lobby_password_input(3);
             if (click & SWK_SOUTH) { /* Confirm */
                 rmlui_network_lobby_submit_password();
@@ -761,8 +761,10 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     MC_Move_Sub(Check_Menu_Lever(1, 0), 0, 16, FADE_OPAQUE);
                 }
                 if (Menu_Cursor_Y[0] < 2) {
-                    if (prev_cursor == 2) Menu_Cursor_Y[0] = 16;
-                    else Menu_Cursor_Y[0] = 2;
+                    if (prev_cursor == 2)
+                        Menu_Cursor_Y[0] = 16;
+                    else
+                        Menu_Cursor_Y[0] = 2;
                 }
                 if (popup_active) {
                     Menu_Cursor_Y[0] = prev_cursor;
@@ -805,9 +807,19 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     case 5: { /* MAX PING */
                         int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
                         if (click & 4) {
-                            if (cur <= 0) cur = 200; else if (cur <= 50) cur = 0; else cur -= 50;
+                            if (cur <= 0)
+                                cur = 200;
+                            else if (cur <= 50)
+                                cur = 0;
+                            else
+                                cur -= 50;
                         } else {
-                            if (cur >= 200) cur = 0; else if (cur <= 0) cur = 50; else cur += 50;
+                            if (cur >= 200)
+                                cur = 0;
+                            else if (cur <= 0)
+                                cur = 50;
+                            else
+                                cur += 50;
                         }
                         Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
                         Config_Save();
@@ -827,9 +839,15 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         int cur_ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
                         int idx = 1;
                         for (int fi = 0; fi < ft_count; fi++) {
-                            if (ft_values[fi] == cur_ft) { idx = fi; break; }
+                            if (ft_values[fi] == cur_ft) {
+                                idx = fi;
+                                break;
+                            }
                         }
-                        if (click & 4) idx = (idx - 1 + ft_count) % ft_count; else idx = (idx + 1) % ft_count;
+                        if (click & 4)
+                            idx = (idx - 1 + ft_count) % ft_count;
+                        else
+                            idx = (idx + 1) % ft_count;
                         Config_SetInt(CFG_KEY_NETPLAY_FT, ft_values[idx]);
                         Config_Save();
                         SE_dir_cursor_move();
@@ -867,9 +885,19 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     case 5: {
                         int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
                         if (click & 4) {
-                            if (cur <= 0) cur = 200; else if (cur <= 50) cur = 0; else cur -= 50;
+                            if (cur <= 0)
+                                cur = 200;
+                            else if (cur <= 50)
+                                cur = 0;
+                            else
+                                cur -= 50;
                         } else {
-                            if (cur >= 200) cur = 0; else if (cur <= 0) cur = 50; else cur += 50;
+                            if (cur >= 200)
+                                cur = 0;
+                            else if (cur <= 0)
+                                cur = 50;
+                            else
+                                cur += 50;
                         }
                         Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
                         Config_Save();
@@ -886,13 +914,31 @@ void Network_Lobby(struct _TASK* task_ptr) {
             /* === Display toggle values (right of labels) === */
             {
                 bool lan_ac = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-                SSPutStr_Bigger(NET_TOGGLE_X + sl, NET_LAN_TOGGLE_Y, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
+                SSPutStr_Bigger(NET_TOGGLE_X + sl,
+                                NET_LAN_TOGGLE_Y,
+                                5,
+                                lan_ac ? (s8*)"ON" : (s8*)"OFF",
+                                1.0f,
+                                lan_ac ? 9 : 1,
+                                1.0f);
 
                 bool net_ac = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
-                SSPutStr_Bigger(NET_TOGGLE_X + sl, NET_NET_AUTOCONN_Y, 5, net_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, net_ac ? 9 : 1, 1.0f);
+                SSPutStr_Bigger(NET_TOGGLE_X + sl,
+                                NET_NET_AUTOCONN_Y,
+                                5,
+                                net_ac ? (s8*)"ON" : (s8*)"OFF",
+                                1.0f,
+                                net_ac ? 9 : 1,
+                                1.0f);
 
                 bool auto_s = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
-                SSPutStr_Bigger(NET_TOGGLE_X + sl, NET_NET_AUTOSRCH_Y, 5, auto_s ? (s8*)"ON" : (s8*)"OFF", 1.0f, auto_s ? 9 : 1, 1.0f);
+                SSPutStr_Bigger(NET_TOGGLE_X + sl,
+                                NET_NET_AUTOSRCH_Y,
+                                5,
+                                auto_s ? (s8*)"ON" : (s8*)"OFF",
+                                1.0f,
+                                auto_s ? 9 : 1,
+                                1.0f);
             }
 
             /* === LAN / NET Headers === */
@@ -1100,25 +1146,48 @@ void Network_Lobby(struct _TASK* task_ptr) {
                 case SWK_SOUTH: /* Confirm */
                     if (task_ptr->free[2] == NET_MODE_RMLUI) {
                         switch (Menu_Cursor_Y[0]) {
-                        case 0: rmlui_network_lobby_cycle_room_type(1); SE_selected(); break;
-                        case 1: rmlui_network_lobby_cycle_visibility(1); SE_selected(); break;
-                        case 2: rmlui_network_lobby_open_create_password(); SE_selected(); break;
-                        case 3: rmlui_network_lobby_cycle_tournament_format(1); SE_selected(); break;
+                        case 0:
+                            rmlui_network_lobby_cycle_room_type(1);
+                            SE_selected();
+                            break;
+                        case 1:
+                            rmlui_network_lobby_cycle_visibility(1);
+                            SE_selected();
+                            break;
+                        case 2:
+                            rmlui_network_lobby_open_create_password();
+                            SE_selected();
+                            break;
+                        case 3:
+                            rmlui_network_lobby_cycle_tournament_format(1);
+                            SE_selected();
+                            break;
                         case 4: {
                             bool v = Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK);
                             Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !v);
-                            Config_Save(); SE_selected(); break;
+                            Config_Save();
+                            SE_selected();
+                            break;
                         }
                         case 5: {
                             int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
-                            if (cur >= 200) cur = 0; else if (cur <= 0) cur = 50; else cur += 50;
+                            if (cur >= 200)
+                                cur = 0;
+                            else if (cur <= 0)
+                                cur = 50;
+                            else
+                                cur += 50;
                             Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
-                            Config_Save(); SE_selected(); break;
+                            Config_Save();
+                            SE_selected();
+                            break;
                         }
                         case 6: {
                             bool v = Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI);
                             Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !v);
-                            Config_Save(); SE_selected(); break;
+                            Config_Save();
+                            SE_selected();
+                            break;
                         }
                         case 7: {
                             static const int ft_values[] = { 1, 2, 3, 5, 10 };
@@ -1126,16 +1195,31 @@ void Network_Lobby(struct _TASK* task_ptr) {
                             int cur_ft = Config_GetInt(CFG_KEY_NETPLAY_FT);
                             int idx = 1;
                             for (int fi = 0; fi < ft_count; fi++) {
-                                if (ft_values[fi] == cur_ft) { idx = fi; break; }
+                                if (ft_values[fi] == cur_ft) {
+                                    idx = fi;
+                                    break;
+                                }
                             }
                             idx = (idx + 1) % ft_count;
                             Config_SetInt(CFG_KEY_NETPLAY_FT, ft_values[idx]);
-                            Config_Save(); SE_selected(); break;
+                            Config_Save();
+                            SE_selected();
+                            break;
                         }
-                        case 8: rmlui_network_lobby_create_room(); SE_selected(); break;
-                        case 9: rmlui_network_lobby_join_room(); SE_selected(); break;
-                        case 10: rmlui_network_lobby_open_join_code(); SE_selected(); break;
-                        case 11: goto lobby_exit;
+                        case 8:
+                            rmlui_network_lobby_create_room();
+                            SE_selected();
+                            break;
+                        case 9:
+                            rmlui_network_lobby_join_room();
+                            SE_selected();
+                            break;
+                        case 10:
+                            rmlui_network_lobby_open_join_code();
+                            SE_selected();
+                            break;
+                        case 11:
+                            goto lobby_exit;
                         }
                     } else {
                         /* Native Mode Keep-Alive */
@@ -1143,28 +1227,43 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         case 2: {
                             bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_CONNECT);
                             Config_SetBool(CFG_KEY_LOBBY_AUTO_CONNECT, !v);
-                            Config_Save(); SE_selected(); break;
+                            Config_Save();
+                            SE_selected();
+                            break;
                         }
                         case 3: {
                             bool v = Config_GetBool(CFG_KEY_LOBBY_AUTO_SEARCH);
                             Config_SetBool(CFG_KEY_LOBBY_AUTO_SEARCH, !v);
-                            Config_Save(); SE_selected(); break;
+                            Config_Save();
+                            SE_selected();
+                            break;
                         }
                         case 4: {
                             bool v = Config_GetBool(CFG_KEY_NETPLAY_REGION_LOCK);
                             Config_SetBool(CFG_KEY_NETPLAY_REGION_LOCK, !v);
-                            Config_Save(); SE_selected(); break;
+                            Config_Save();
+                            SE_selected();
+                            break;
                         }
                         case 5: {
                             int cur = Config_GetInt(CFG_KEY_NETPLAY_MAX_PING);
-                            if (cur >= 200) cur = 0; else if (cur <= 0) cur = 50; else cur += 50;
+                            if (cur >= 200)
+                                cur = 0;
+                            else if (cur <= 0)
+                                cur = 50;
+                            else
+                                cur += 50;
                             Config_SetInt(CFG_KEY_NETPLAY_MAX_PING, cur);
-                            Config_Save(); SE_selected(); break;
+                            Config_Save();
+                            SE_selected();
+                            break;
                         }
                         case 6: {
                             bool v = Config_GetBool(CFG_KEY_NETPLAY_BLOCK_WIFI);
                             Config_SetBool(CFG_KEY_NETPLAY_BLOCK_WIFI, !v);
-                            Config_Save(); SE_selected(); break;
+                            Config_Save();
+                            SE_selected();
+                            break;
                         }
                         }
                     }
@@ -1183,8 +1282,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
                         rmlui_network_lobby_hide();
                     Netplay_HandleMenuExit();
                     Menu_Suicide[0] = 0;
-                    Menu_Suicide[1] = 1;   /* kill our items + blue BG */
-                    
+                    Menu_Suicide[1] = 1; /* kill our items + blue BG */
+
                     /* Return to gateway: r_no[2]=0 causes Network_Lobby to re-init */
                     task_ptr->r_no[2] = 0;
                     task_ptr->r_no[3] = 0;
@@ -1209,8 +1308,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
         task_ptr->r_no[2] += 1;
         task_ptr->r_no[3] = 0;
         task_ptr->timer = 5;
-        Menu_Suicide[0] = 1;        /* kill gateway items (master_player=0) */
-        Menu_Suicide[1] = 0;        /* enable lobby items (master_player=1) */
+        Menu_Suicide[0] = 1;                       /* kill gateway items (master_player=0) */
+        Menu_Suicide[1] = 0;                       /* enable lobby items (master_player=1) */
         Message_Data->kind_req = NET_BG_MODE_BLUE; /* blue-BG background mode */
         break;
 
@@ -1386,7 +1485,13 @@ void Network_Lobby(struct _TASK* task_ptr) {
             /* Display toggle values */
             {
                 bool lan_ac = Config_GetBool(CFG_KEY_NETPLAY_AUTO_CONNECT);
-                SSPutStr_Bigger(NET_TOGGLE_X_LANONLY + sl, NET_LAN_TOGGLE_Y_LANONLY, 5, lan_ac ? (s8*)"ON" : (s8*)"OFF", 1.0f, lan_ac ? 9 : 1, 1.0f);
+                SSPutStr_Bigger(NET_TOGGLE_X_LANONLY + sl,
+                                NET_LAN_TOGGLE_Y_LANONLY,
+                                5,
+                                lan_ac ? (s8*)"ON" : (s8*)"OFF",
+                                1.0f,
+                                lan_ac ? 9 : 1,
+                                1.0f);
             }
 
             /* LAN Header */
@@ -1565,8 +1670,8 @@ void Network_Lobby(struct _TASK* task_ptr) {
                     SDLNetplayUI_SetNativeLobbyActive(false);
                     Netplay_HandleMenuExit();
                     Menu_Suicide[0] = 0;
-                    Menu_Suicide[1] = 1;   /* kill our items + blue BG */
-                    
+                    Menu_Suicide[1] = 1; /* kill our items + blue BG */
+
                     /* Return to gateway: r_no[2]=0 causes Network_Lobby to re-init */
                     task_ptr->r_no[2] = 0;
                     task_ptr->r_no[3] = 0;

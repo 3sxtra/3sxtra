@@ -93,3 +93,11 @@ A project judged highly by all three:
 3. **Be ruthless** — This is not babysitting. Expose risks and educate.
 
 **Begin Judging, Panel!**
+
+---
+
+## Algorithmic & SOTA Research Priority
+
+Before finalizing any design or performance critique, you must:
+1. **Consult cp-algorithms:** Check [cp-algorithms.com](https://cp-algorithms.com/) for optimal data structures, geometry, strings, and graph algorithms to ensure computational efficiency.
+2. **Search Online for SOTA:** Actively search the web for relevant State-of-the-Art (SOTA) algorithms, whitepapers, or heuristics tailored to the specific domain. Do not accept naive solutions if a known SOTA algorithm exists.
