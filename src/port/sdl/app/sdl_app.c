@@ -269,7 +269,14 @@ static SDL_GPUDevice* gpu_device = NULL;
 static SDL_Renderer* sdl_renderer = NULL; // Only used in SDL2D mode
 static bool g_cli_renderer_set = false;
 
+// Frame pacing variables
 static Uint64 frame_deadline = 0;
+// ⚡ Bolt: ezQuake style vsync lag fix timing state
+static Uint64 s_frame_work_start_ns = 0;
+static Uint64 s_frame_work_end_ns = 0;
+#define NUM_WORK_TIMINGS 5
+static Uint64 s_work_timings[NUM_WORK_TIMINGS] = {0};
+static int s_work_timings_idx = 0;
 static Uint64 frame_counter = 0;
 
 static Uint64 last_mouse_motion_time = 0;
@@ -916,6 +923,84 @@ static /** @brief Hide the cursor after 2 seconds of inactivity. */
     }
 }
 
+// ==============================================================================================
+// ⚡ Bolt: Dynamic input lag reduction (ezQuake style "vid_vsync_lag_fix")
+// Abstracted frame pacing to apply the idle wait BEFORE sampling the new frame's input.
+// ==============================================================================================
+static void apply_frame_pacing(void) {
+    Uint64 now = SDL_GetTicksNS();
+
+    if (frame_rate_uncapped) {
+        return;
+    }
+
+    // Measure how long the game simulation + rendering took (excluding driver present blocks)
+    Uint64 work_time_ns = 0;
+    if (s_frame_work_start_ns > 0 && s_frame_work_end_ns > s_frame_work_start_ns) {
+        work_time_ns = s_frame_work_end_ns - s_frame_work_start_ns;
+        // Edge case: if we were paused or tabbed out, clamp the work time to safety bounds
+        if (work_time_ns > target_frame_time_ns) {
+            work_time_ns = target_frame_time_ns;
+        }
+        s_work_timings[s_work_timings_idx] = work_time_ns;
+        s_work_timings_idx = (s_work_timings_idx + 1) % NUM_WORK_TIMINGS;
+    }
+
+    Uint64 max_work_time_ns = 0;
+    bool has_enough_data = true;
+    for (int i = 0; i < NUM_WORK_TIMINGS; ++i) {
+        if (s_work_timings[i] == 0) {
+            has_enough_data = false;
+            break;
+        }
+        if (s_work_timings[i] > max_work_time_ns) {
+            max_work_time_ns = s_work_timings[i];
+        }
+    }
+
+    if (frame_deadline == 0) {
+        frame_deadline = now + target_frame_time_ns;
+    }
+
+    // Shift the sleep forward so rendering finishes precisely on the frame deadline.
+    // This pushes the "idle" wait from the end of the frame to the beginning, grabbing inputs 
+    // at the last possible moment before rendering completes!
+    Uint64 target_wakeup_ns = frame_deadline;
+    const Uint64 safety_margin_ns = 1000000; // 1ms safety margin prevents missed vblanks
+    
+    if (has_enough_data && (max_work_time_ns + safety_margin_ns < target_frame_time_ns)) {
+        target_wakeup_ns = frame_deadline - max_work_time_ns - safety_margin_ns;
+        
+        // Prevent waking up in the past if things fell behind occasionally
+        if (target_wakeup_ns < now) {
+            target_wakeup_ns = now;
+        }
+    }
+
+    if (now < target_wakeup_ns) {
+        Uint64 sleep_time = target_wakeup_ns - now;
+        // ⚡ Bolt: Hybrid sleep+spin — kernel timer jitter on RPi4 is 1-4ms.
+        // Sleep for the bulk, then spin-wait for the final 2ms exactly.
+        const Uint64 spin_threshold_ns = 2000000; // 2ms
+        if (sleep_time > spin_threshold_ns) {
+            SDL_DelayNS(sleep_time - spin_threshold_ns);
+        }
+        while (SDL_GetTicksNS() < target_wakeup_ns) {
+            if (has_pending_quit())
+                break;
+            SDL_CPUPauseInstruction();
+        }
+        now = SDL_GetTicksNS();
+    }
+
+    frame_deadline += target_frame_time_ns;
+
+    // Resync if we fell behind to avoid spiraling
+    if (now > frame_deadline + target_frame_time_ns) {
+        frame_deadline = now + target_frame_time_ns;
+    }
+}
+
 /** @brief Process all pending SDL events (input, window, quit). Returns false on quit. */
 bool SDLApp_PollEvents() {
     SDL_Event event;
@@ -937,6 +1022,8 @@ bool SDLApp_PollEvents() {
 
 /** @brief Begin a new frame — clear the GL viewport. */
 void SDLApp_BeginFrame() {
+    s_frame_work_start_ns = SDL_GetTicksNS();
+    
     if (!is_sdl2d_backend(g_renderer_backend)) {
         // Process any deferred preset switch
         SDLAppShader_ProcessPendingLoad();
@@ -1151,6 +1238,7 @@ void SDLApp_EndFrame() {
         render_overlays(win_w, win_h);
 
         TRACE_SUB_BEGIN("RenderPresent");
+        s_frame_work_end_ns = SDL_GetTicksNS();
         if (!has_pending_quit()) {
             SDL_RenderPresent(sdl_renderer);
         }
@@ -1159,31 +1247,8 @@ void SDLApp_EndFrame() {
         SDLGameRenderer_EndFrame();
         hide_cursor_if_needed();
 
-        // Frame pacing
-        Uint64 now = SDL_GetTicksNS();
-
-        if (!frame_rate_uncapped) {
-            if (frame_deadline == 0) {
-                frame_deadline = now + target_frame_time_ns;
-            }
-            if (now < frame_deadline) {
-                Uint64 sleep_time = frame_deadline - now;
-                const Uint64 spin_threshold_ns = 2000000;
-                if (sleep_time > spin_threshold_ns) {
-                    SDL_DelayNS(sleep_time - spin_threshold_ns);
-                }
-                while (SDL_GetTicksNS() < frame_deadline) {
-                    if (has_pending_quit())
-                        break;
-                    SDL_CPUPauseInstruction();
-                }
-                now = SDL_GetTicksNS();
-            }
-            frame_deadline += target_frame_time_ns;
-            if (now > frame_deadline + target_frame_time_ns) {
-                frame_deadline = now + target_frame_time_ns;
-            }
-        }
+        // Frame pacing (Vsync lag fix integration)
+        apply_frame_pacing();
 
         frame_counter += 1;
         SDLAppDebugHud_NoteFrameEnd();
@@ -1362,6 +1427,7 @@ void SDLApp_EndFrame() {
         // Flush Text Renderer (draws buffered text)
         SDLTextRenderer_Flush();
 
+        s_frame_work_end_ns = SDL_GetTicksNS();
     gpu_end_frame_submit:; // empty statement after label for C compliance
 
     } else {
@@ -1678,6 +1744,7 @@ void SDLApp_EndFrame() {
 
         // Swap the window to display the final rendered frame
         TRACE_SUB_BEGIN("SwapWindow");
+        s_frame_work_end_ns = SDL_GetTicksNS();
         if (!has_pending_quit()) {
 #ifdef __ANDROID__
             // Flush SDL_Renderer (used by RmlUi) to GL default framebuffer.
@@ -1708,39 +1775,7 @@ void SDLApp_EndFrame() {
     hide_cursor_if_needed();
 
     // Do frame pacing (skipped when uncapped for benchmarking)
-    Uint64 now = SDL_GetTicksNS();
-
-    if (!frame_rate_uncapped) {
-        if (frame_deadline == 0) {
-            frame_deadline = now + target_frame_time_ns;
-        }
-
-        if (now < frame_deadline) {
-            Uint64 sleep_time = frame_deadline - now;
-            // ⚡ Bolt: Hybrid sleep+spin — kernel timer jitter on RPi4 is 1-4ms.
-            // Sleep for the bulk, then spin-wait for the final 2ms to hit
-            // the deadline precisely. Eliminates ~2ms frame-time jitter.
-            const Uint64 spin_threshold_ns = 2000000; // 2ms
-            if (sleep_time > spin_threshold_ns) {
-                SDL_DelayNS(sleep_time - spin_threshold_ns);
-            }
-            // Spin-wait for remaining time — SDL_CPUPauseInstruction emits
-            // 'yield' on ARM (reduces power/heat) or 'pause' on x86.
-            while (SDL_GetTicksNS() < frame_deadline) {
-                if (has_pending_quit())
-                    break;
-                SDL_CPUPauseInstruction();
-            }
-            now = SDL_GetTicksNS();
-        }
-
-        frame_deadline += target_frame_time_ns;
-
-        // If we fell behind by more than one frame, resync to avoid spiraling
-        if (now > frame_deadline + target_frame_time_ns) {
-            frame_deadline = now + target_frame_time_ns;
-        }
-    }
+    apply_frame_pacing();
 
     // Measure
     frame_counter += 1;
