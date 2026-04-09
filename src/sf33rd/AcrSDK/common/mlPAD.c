@@ -21,7 +21,6 @@
 #define PAD_DEPTH_COUNT 16
 #define PAD_PRESS_MAX 0xFF
 
-
 #include "sf33rd/AcrSDK/ps2/flPADUSR.h"
 #include "sf33rd/AcrSDK/ps2/ps2PAD.h"
 #include "structs.h"
@@ -113,8 +112,6 @@ void flPADGetALL() {
         flpad_adr[0][i].anshot = tarpad_root[i].anshot;
 
         flupdate_pad_button_data(&flpad_adr[0][i], tarpad_root[i].sw);
-
-
 
         flupdate_pad_on_cnt(&flpad_adr[0][i]);
         flpad_adr[0][i].sw_repeat = flpad_adr[0][i].sw_new;

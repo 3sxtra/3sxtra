@@ -455,7 +455,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
     // Handle async refresh completion
     if (s_async_refresh_completed) {
         s_async_refresh_completed = false;
-        
+
         if (s_async_refresh_success) {
             memcpy(&s_room_state, &s_async_room_state_buffer, sizeof(RoomState));
             apply_room_state_to_model();
@@ -470,7 +470,7 @@ extern "C" void rmlui_casual_lobby_update(void) {
             rmlui_casual_lobby_hide();
             rmlui_network_lobby_show();
         }
-        
+
         SDL_SetAtomicInt(&s_async_refresh_active, 0);
 
         if (s_async_refresh_pending_retrigger) {

@@ -21,15 +21,18 @@ extern "C" {
 
 /** @brief Snapshot of input lag test state for the OSD renderer. */
 typedef struct {
-    bool enabled;        /**< Whether GPIO lag test mode is on */
-    bool input_held;     /**< Whether the GPIO button is currently pressed */
-    bool tracking;       /**< Whether we're tracking a press (receive→active) */
-    bool result_ready;   /**< Whether active_frame was detected for this press */
-    uint32_t current_frame;  /**< Current system_timer value */
-    uint32_t receive_frame;  /**< Frame when GPIO button press was first detected */
-    uint32_t active_frame;   /**< Frame when game state reacted (routine_no changed) */
-    int32_t lag_frames;      /**< active_frame - receive_frame (0 if not yet detected) */
-    int display_timer;       /**< Countdown frames remaining to keep OSD result visible */
+    bool enabled;           /**< Whether GPIO lag test mode is on */
+    bool input_held;        /**< Whether the GPIO button is currently pressed */
+    bool tracking;          /**< Whether we're tracking a press (receive→active) */
+    bool result_ready;      /**< Whether active_frame was detected for this press */
+    uint32_t current_frame; /**< Current system_timer value */
+    uint32_t receive_frame; /**< Frame when GPIO button press was first detected */
+    uint32_t active_frame;  /**< Frame when game state reacted (routine_no changed) */
+    int32_t lag_frames;     /**< active_frame - receive_frame (0 if not yet detected) */
+    int display_timer;      /**< Countdown frames remaining to keep OSD result visible */
+    uint64_t receive_ticks; /**< SDL perf counter when button was pressed */
+    uint64_t active_ticks;  /**< SDL perf counter when game state reacted */
+    double lag_ms;          /**< Actual measured lag in milliseconds (active - receive) */
 } GpioLagTestState;
 
 #ifdef ENABLE_GPIO_LAG_TEST

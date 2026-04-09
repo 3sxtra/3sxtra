@@ -311,9 +311,15 @@ static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index, co
     float draw_y = fminf(tl_out.y, br_out.y);
     int flip_x = (flip_flags & 0x8000) ? 1 : 0;
 
+    /* Compute the midpoint Z where the HD sprite should sit.
+     * tl_out.z is the starting matrix Z. We shift half the tile count forward. */
+    float sprite_z = tl_out.z + (cge->count * 0.5f) * (1.0f / 65536.0f);
+
     if (RENDERER_HAS_PLUGIN()) {
         if (g_renderer_plugin->TryRenderSprite(
-                group_index, wk->cg_number, draw_x, draw_y, tl_out.z, flip_x, 0xFFFFFFFF, draw_w, draw_h)) {
+                group_index, wk->cg_number, draw_x, draw_y, sprite_z, flip_x, 0xFFFFFFFF, draw_w, draw_h)) {
+            /* Simulate the Z-stepping that the skipped chip loop would have performed */
+            njTranslateZ(cge->count / 65536.0f);
             appRenewTempPriority(wk->position_z);
             return true;
         }
@@ -323,7 +329,9 @@ static bool try_hd_sprite_override(WORK* wk, s32 flip_flags, s32 group_index, co
     if (configuration.renderer.enable_hd_sprites) {
         void* tex = LoadFullSpriteOverride(group_index, wk->cg_number);
         if (tex != NULL) {
-            TextureUtil_DrawQuadEx(tex, draw_x, draw_y, draw_w, draw_h, flPS2ConvScreenFZ(tl_out.z), flip_x, 0);
+            TextureUtil_DrawQuadEx(tex, draw_x, draw_y, draw_w, draw_h, flPS2ConvScreenFZ(sprite_z), flip_x, 0);
+            /* Simulate the Z-stepping that the skipped chip loop would have performed */
+            njTranslateZ(cge->count / 65536.0f);
             appRenewTempPriority(wk->position_z);
             return true;
         }
@@ -355,9 +363,15 @@ static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index
     float draw_y = fminf(tl_out.y, br_out.y);
     int flip_x = (flip_flags & 0x8000) ? 1 : 0;
 
+    /* Compute the midpoint Z where the HD sprite should sit.
+     * tl_out.z is the starting matrix Z. We shift half the tile count forward. */
+    float sprite_z = tl_out.z + (count * 0.5f) * (1.0f / 65536.0f);
+
     if (RENDERER_HAS_PLUGIN()) {
         if (g_renderer_plugin->TryRenderSprite(
-                group_index, wk->cg_number, draw_x, draw_y, tl_out.z, flip_x, 0xFFFFFFFF, draw_w, draw_h)) {
+                group_index, wk->cg_number, draw_x, draw_y, sprite_z, flip_x, 0xFFFFFFFF, draw_w, draw_h)) {
+            /* Simulate the Z-stepping that the skipped chip loop would have performed */
+            njTranslateZ(count / 65536.0f);
             appRenewTempPriority(wk->position_z);
             return true;
         }
@@ -367,7 +381,9 @@ static bool try_hd_sprite_override_ext(WORK* wk, s32 flip_flags, s32 group_index
     if (configuration.renderer.enable_hd_sprites) {
         void* tex = LoadFullSpriteOverride(group_index, wk->cg_number);
         if (tex != NULL) {
-            TextureUtil_DrawQuadEx(tex, draw_x, draw_y, draw_w, draw_h, flPS2ConvScreenFZ(tl_out.z), flip_x, 0);
+            TextureUtil_DrawQuadEx(tex, draw_x, draw_y, draw_w, draw_h, flPS2ConvScreenFZ(sprite_z), flip_x, 0);
+            /* Simulate the Z-stepping that the skipped chip loop would have performed */
+            njTranslateZ(count / 65536.0f);
             appRenewTempPriority(wk->position_z);
             return true;
         }

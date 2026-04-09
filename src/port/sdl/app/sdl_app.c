@@ -275,7 +275,7 @@ static Uint64 frame_deadline = 0;
 static Uint64 s_frame_work_start_ns = 0;
 static Uint64 s_frame_work_end_ns = 0;
 #define NUM_WORK_TIMINGS 5
-static Uint64 s_work_timings[NUM_WORK_TIMINGS] = {0};
+static Uint64 s_work_timings[NUM_WORK_TIMINGS] = { 0 };
 static int s_work_timings_idx = 0;
 static Uint64 frame_counter = 0;
 
@@ -324,18 +324,22 @@ int SDLApp_Init() {
 #ifdef __ANDROID__
 #include <jni.h>
         {
-            JNIEnv *env = (JNIEnv *)SDL_GetAndroidJNIEnv();
+            JNIEnv* env = (JNIEnv*)SDL_GetAndroidJNIEnv();
             if (env) {
                 jclass activityClass = (*env)->FindClass(env, "com/goodport/sxdroid/MainActivity");
                 if (activityClass) {
                     jmethodID mid = (*env)->GetStaticMethodID(env, activityClass, "showRendererChooserDialog", "()I");
                     if (mid) {
                         int result = (*env)->CallStaticIntMethod(env, activityClass, mid);
-                        if (result == 0) Config_SetString(CFG_KEY_RENDERER, "gpu");
-                        else if (result == 1) Config_SetString(CFG_KEY_RENDERER, "gl");
-                        else if (result == 2) Config_SetString(CFG_KEY_RENDERER, "sdl");
-                        else if (result == 3) Config_SetString(CFG_KEY_RENDERER, "classic");
-                        
+                        if (result == 0)
+                            Config_SetString(CFG_KEY_RENDERER, "gpu");
+                        else if (result == 1)
+                            Config_SetString(CFG_KEY_RENDERER, "gl");
+                        else if (result == 2)
+                            Config_SetString(CFG_KEY_RENDERER, "sdl");
+                        else if (result == 3)
+                            Config_SetString(CFG_KEY_RENDERER, "classic");
+
                         cfg_renderer = Config_GetString(CFG_KEY_RENDERER);
                     } else {
                         SDL_Log("JNI Error: Could not find showRendererChooserDialog method.");
@@ -963,14 +967,14 @@ static void apply_frame_pacing(void) {
     }
 
     // Shift the sleep forward so rendering finishes precisely on the frame deadline.
-    // This pushes the "idle" wait from the end of the frame to the beginning, grabbing inputs 
+    // This pushes the "idle" wait from the end of the frame to the beginning, grabbing inputs
     // at the last possible moment before rendering completes!
     Uint64 target_wakeup_ns = frame_deadline;
     const Uint64 safety_margin_ns = 1000000; // 1ms safety margin prevents missed vblanks
-    
+
     if (has_enough_data && (max_work_time_ns + safety_margin_ns < target_frame_time_ns)) {
         target_wakeup_ns = frame_deadline - max_work_time_ns - safety_margin_ns;
-        
+
         // Prevent waking up in the past if things fell behind occasionally
         if (target_wakeup_ns < now) {
             target_wakeup_ns = now;
@@ -1023,7 +1027,7 @@ bool SDLApp_PollEvents() {
 /** @brief Begin a new frame — clear the GL viewport. */
 void SDLApp_BeginFrame() {
     s_frame_work_start_ns = SDL_GetTicksNS();
-    
+
     if (!is_sdl2d_backend(g_renderer_backend)) {
         // Process any deferred preset switch
         SDLAppShader_ProcessPendingLoad();

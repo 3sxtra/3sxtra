@@ -52,15 +52,17 @@ static int s_debug_counter = 0;
 
 /* ── Frame tracking state ──────────────────────────────────────────── */
 
-static bool s_button_held = false;         /* Current GPIO button state */
-static bool s_button_prev = false;         /* Previous frame button state */
-static bool s_tracking = false;            /* Currently tracking a press→react cycle */
-static bool s_result_ready = false;        /* active_frame has been detected */
-static uint32_t s_receive_frame = 0;       /* Frame when button first pressed */
-static uint32_t s_active_frame = 0;        /* Frame when routine_no changed */
-static int s_initial_routine_0 = 0;        /* routine_no[0] at press time */
-static int s_initial_routine_1 = 0;        /* routine_no[1] at press time */
-static int s_display_timer = 0;            /* Countdown for OSD persistence */
+static bool s_button_held = false;   /* Current GPIO button state */
+static bool s_button_prev = false;   /* Previous frame button state */
+static bool s_tracking = false;      /* Currently tracking a press→react cycle */
+static bool s_result_ready = false;  /* active_frame has been detected */
+static uint32_t s_receive_frame = 0; /* Frame when button first pressed */
+static uint32_t s_active_frame = 0;  /* Frame when routine_no changed */
+static int s_initial_routine_0 = 0;  /* routine_no[0] at press time */
+static int s_initial_routine_1 = 0;  /* routine_no[1] at press time */
+static int s_display_timer = 0;      /* Countdown for OSD persistence */
+static uint64_t s_receive_ticks = 0; /* SDL perf counter at button press */
+static uint64_t s_active_ticks = 0;  /* SDL perf counter at game reaction */
 
 /* ── Public API ────────────────────────────────────────────────────── */
 
@@ -171,7 +173,7 @@ void GpioLagTest_OnInputPoll(void) {
 
     /* Rising edge: button just pressed */
     if (s_button_held && !s_button_prev) {
-        /* Debounce: ignore any rising edges within 30 frames (0.5s) of the last one 
+        /* Debounce: ignore any rising edges within 30 frames (0.5s) of the last one
            to eliminate physical switch bounce corrupting the receive_frame. */
         static uint32_t s_last_press_frame = 0;
         if (system_timer - s_last_press_frame < 30) {
@@ -180,7 +182,9 @@ void GpioLagTest_OnInputPoll(void) {
         s_last_press_frame = system_timer;
 
         s_receive_frame = system_timer;
+        s_receive_ticks = SDL_GetPerformanceCounter();
         s_active_frame = 0;
+        s_active_ticks = 0;
         s_result_ready = false;
         s_tracking = true;
         s_display_timer = DISPLAY_PERSIST_FRAMES;
@@ -202,16 +206,19 @@ void GpioLagTest_UpdateFrameTracking(void) {
 
     /* Check if game state reacted to the input (routine_no changed) */
     if (s_tracking && !s_result_ready) {
-        if (plw[0].wu.routine_no[0] != s_initial_routine_0 ||
-            plw[0].wu.routine_no[1] != s_initial_routine_1) {
+        if (plw[0].wu.routine_no[0] != s_initial_routine_0 || plw[0].wu.routine_no[1] != s_initial_routine_1) {
 
             s_active_frame = system_timer;
+            s_active_ticks = SDL_GetPerformanceCounter();
             s_result_ready = true;
 
-            SDL_Log("[GpioLagTest] State CHANGED — active_frame=%u, lag=%d frames, "
+            double lag_ms = (double)(s_active_ticks - s_receive_ticks) * 1000.0 / (double)SDL_GetPerformanceFrequency();
+
+            SDL_Log("[GpioLagTest] State CHANGED — active_frame=%u, lag=%d frames (%.2fms), "
                     "routine_no: [%d,%d] -> [%d,%d]",
                     s_active_frame,
                     (int)(s_active_frame - s_receive_frame),
+                    lag_ms,
                     s_initial_routine_0,
                     s_initial_routine_1,
                     plw[0].wu.routine_no[0],
@@ -253,8 +260,14 @@ GpioLagTestState GpioLagTest_GetState(void) {
     state.active_frame = s_active_frame;
     state.lag_frames = s_result_ready ? (int32_t)(s_active_frame - s_receive_frame) : 0;
     state.display_timer = s_display_timer;
+    state.receive_ticks = s_receive_ticks;
+    state.active_ticks = s_active_ticks;
+    if (s_result_ready && s_active_ticks > s_receive_ticks) {
+        state.lag_ms = (double)(s_active_ticks - s_receive_ticks) * 1000.0 / (double)SDL_GetPerformanceFrequency();
+    } else {
+        state.lag_ms = 0.0;
+    }
     return state;
 }
 
 #endif /* ENABLE_GPIO_LAG_TEST */
-
