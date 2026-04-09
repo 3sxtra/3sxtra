@@ -234,10 +234,6 @@ static int gcVoices() {
     struct VWork *i, *n;
     int numFreed = 0;
 
-    TRACE_LOCK_BEFORE(soundLockCtx);
-    SDL_LockMutex(soundLock);
-    TRACE_LOCK_AFTER(soundLockCtx);
-
     list_for_each_safe (i, n, &active_voices, list) {
         if (SPU_VoiceIsFinished(i->voice_num)) {
             list_remove(&i->list);
@@ -245,9 +241,6 @@ static int gcVoices() {
             numFreed++;
         }
     }
-
-    SDL_UnlockMutex(soundLock);
-    TRACE_LOCK_UNLOCK(soundLockCtx);
 
     return numFreed;
 }
