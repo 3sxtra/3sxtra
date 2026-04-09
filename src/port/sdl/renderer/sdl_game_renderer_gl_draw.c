@@ -17,8 +17,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "radix_sort.h"
-
 // --- Render Task Management ---
 
 static void push_render_task(GLuint texture, const SDL_Vertex* vertices, float z, int array_layer, int pal_slot) {
@@ -45,69 +43,66 @@ static void push_render_task(GLuint texture, const SDL_Vertex* vertices, float z
     task->palette_slot = pal_slot;
     task->blend_mode = gl_state.current_blend_mode;
 
-    if (z < gl_state.last_submitted_z) {
-        gl_state.sort_inversions++;
-    }
-    gl_state.last_submitted_z = z;
-
     gl_state.render_task_count++;
 }
 
 static void clear_render_tasks(void) {
     gl_state.render_task_count = 0;
-    gl_state.sort_inversions = 0;
-    gl_state.last_submitted_z = -1e30f;
 }
 
-// ⚡ Radix sort scratch buffers (used when sort_inversions > INSERTION_SORT_THRESHOLD)
-static uint32_t radix_keys[RENDER_TASK_MAX];
-static int radix_scratch[RENDER_TASK_MAX];
-static int render_task_order[RENDER_TASK_MAX];
-static float task_z[RENDER_TASK_MAX];
-
-#define INSERTION_SORT_THRESHOLD 16
-
-static void insertion_sort_render_tasks(void) {
-    const int count = gl_state.render_task_count;
-    RenderTask* tasks = gl_state.render_tasks;
-    for (int i = 1; i < count; i++) {
-        const RenderTask key = tasks[i];
-        int j = i - 1;
-        while (j >= 0) {
-            if (tasks[j].z <= key.z)
-                break;
-            tasks[j + 1] = tasks[j];
-            j--;
-        }
-        tasks[j + 1] = key;
-    }
-}
-
-// turbo
-// What: Convert O(N log N) render task merge sort into an O(N) adaptive radix/insertion sort.
-// Target: CPU Algorithmic Complexity / Branch Prediction.
-// Expected Impact: Eliminates the O(N log N) merge sort overhead and associated branch mispredictions. Gameplay typically features near-sorted z-depths where insertion sort achieves O(N).
+/**
+ * ⚡ Bolt: Ping-pong merge sort — eliminates per-pass memcpy.
+ *
+ * Instead of merging into merge_temp and copying back every pass, we
+ * alternate source/destination buffers each pass.  Only one final memcpy
+ * is needed if the result lands in merge_temp.
+ *
+ * Impact: ~hundreds of render tasks per frame, each 28 bytes.
+ * Saves O(n × log n) bytes of memcpy per frame.
+ */
 static void stable_sort_render_tasks(void) {
-    const int count = gl_state.render_task_count;
-    if (count <= 1)
+    const int n = gl_state.render_task_count;
+    if (n <= 1)
         return;
 
-    if (gl_state.sort_inversions <= INSERTION_SORT_THRESHOLD) {
-        insertion_sort_render_tasks();
-    } else {
-        // Prepare arrays for radix sort
-        for (int i = 0; i < count; i++) {
-            task_z[i] = gl_state.render_tasks[i].z;
-            render_task_order[i] = i;
+    RenderTask* src = gl_state.render_tasks;
+    RenderTask* dst = gl_state.merge_temp;
+
+    for (int width = 1; width < n; width *= 2) {
+        for (int left = 0; left < n; left += 2 * width) {
+            const int mid = left + width;
+            int right = left + 2 * width;
+            if (mid >= n) {
+                /* Left run covers rest — copy tail unchanged */
+                memcpy(&dst[left], &src[left], (size_t)(n - left) * sizeof(RenderTask));
+                break;
+            }
+            if (right > n)
+                right = n;
+
+            int i = left, j = mid, k = left;
+            while (i < mid && j < right) {
+                if (src[i].z <= src[j].z) {
+                    dst[k++] = src[i++];
+                } else {
+                    dst[k++] = src[j++];
+                }
+            }
+            while (i < mid)
+                dst[k++] = src[i++];
+            while (j < right)
+                dst[k++] = src[j++];
         }
 
-        radix_sort_render_task_indices(render_task_order, task_z, count, radix_keys, radix_scratch);
+        /* Swap source and destination for next pass */
+        RenderTask* tmp = src;
+        src = dst;
+        dst = tmp;
+    }
 
-        // Reorder render_tasks using merge_temp as scratch space
-        for (int i = 0; i < count; i++) {
-            gl_state.merge_temp[i] = gl_state.render_tasks[render_task_order[i]];
-        }
-        memcpy(gl_state.render_tasks, gl_state.merge_temp, (size_t)count * sizeof(RenderTask));
+    /* If the sorted result ended up in merge_temp, copy back */
+    if (src != gl_state.render_tasks) {
+        memcpy(gl_state.render_tasks, gl_state.merge_temp, (size_t)n * sizeof(RenderTask));
     }
 }
 
@@ -748,11 +743,6 @@ void SDLGameRendererGL_FlushSprite2Batch(Sprite2* chips, const unsigned char* ac
         task->array_layer = cur_layer;
         task->palette_slot = cur_pal;
         task->blend_mode = gl_state.current_blend_mode;
-
-        if (z < gl_state.last_submitted_z) {
-            gl_state.sort_inversions++;
-        }
-        gl_state.last_submitted_z = z;
 
         gl_state.render_task_count++;
     }

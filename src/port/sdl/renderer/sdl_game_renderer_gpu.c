@@ -17,8 +17,6 @@
 #include "sf33rd/AcrSDK/ps2/foundaps2.h"
 
 #include <libgraph.h>
-
-#include "radix_sort.h"
 /* ─── Global Variable Definitions ─────────────────────────────────────── */
 /* Declared extern in sdl_game_renderer_gpu_internal.h                     */
 
@@ -92,8 +90,6 @@ int s_pal_upload_count = 0;
 
 QuadSortKey quad_sort_keys[MAX_QUADS];
 unsigned int quad_count = 0;
-static int s_sort_inversions = 0;
-static float s_last_submitted_z = -1e30f;
 QuadSortKey quad_sort_temp[MAX_QUADS];
 
 /* ─── Per-quad standalone overlay texture (for oversized overlays) ─── */
@@ -185,8 +181,6 @@ void SDLGameRendererGPU_BeginFrame(void) {
 
     vertex_count = 0;
     quad_count = 0;
-    s_sort_inversions = 0;
-    s_last_submitted_z = -1e30f;
     texture_count = 0;
     s_tex_upload_count = 0;
     s_pal_upload_count = 0;
@@ -207,50 +201,41 @@ void SDLGameRendererGPU_BeginFrame(void) {
     TRACE_ZONE_END();
 }
 
-// ⚡ Radix sort scratch buffers
-static uint32_t radix_keys[MAX_QUADS];
-static int radix_scratch[MAX_QUADS];
-static int quad_order[MAX_QUADS];
-static float quad_z_values[MAX_QUADS];
-
-#define INSERTION_SORT_THRESHOLD 16
-
-static void insertion_sort_quads(void) {
-    for (unsigned int i = 1; i < quad_count; i++) {
-        const QuadSortKey key = quad_sort_keys[i];
-        int j = i - 1;
-        while (j >= 0) {
-            if (quad_sort_keys[j].z <= key.z)
-                break;
-            quad_sort_keys[j + 1] = quad_sort_keys[j];
-            j--;
-        }
-        quad_sort_keys[j + 1] = key;
-    }
-}
-
-// turbo
-// What: Convert O(N log N) quad merge sort into an O(N) adaptive radix/insertion sort.
-// Target: CPU Algorithmic Complexity / Branch Prediction.
-// Expected Impact: Eliminates the O(N log N) merge sort overhead and associated branch mispredictions. Gameplay typically features near-sorted z-depths where insertion sort achieves O(N).
+/** @brief Bottom-up merge sort for QuadSortKeys — O(n log n) stable sort matching GL backend. */
 static void stable_sort_quads(void) {
-    if (quad_count <= 1)
+    const unsigned int n = quad_count;
+    if (n <= 1)
         return;
 
-    if (s_sort_inversions <= INSERTION_SORT_THRESHOLD) {
-        insertion_sort_quads();
-    } else {
-        for (unsigned int i = 0; i < quad_count; i++) {
-            quad_z_values[i] = quad_sort_keys[i].z;
-            quad_order[i] = i;
-        }
+    QuadSortKey* src = quad_sort_keys;
+    QuadSortKey* tmp = quad_sort_temp;
 
-        radix_sort_render_task_indices(quad_order, quad_z_values, quad_count, radix_keys, radix_scratch);
+    for (unsigned int width = 1; width < n; width *= 2) {
+        for (unsigned int i = 0; i < n; i += 2 * width) {
+            unsigned int left = i;
+            unsigned int mid = (i + width < n) ? i + width : n;
+            unsigned int right = (i + 2 * width < n) ? i + 2 * width : n;
+            unsigned int l = left, r = mid, k = left;
 
-        for (unsigned int i = 0; i < quad_count; i++) {
-            quad_sort_temp[i] = quad_sort_keys[quad_order[i]];
+            while (l < mid && r < right) {
+                if (src[l].z <= src[r].z)
+                    tmp[k++] = src[l++];
+                else
+                    tmp[k++] = src[r++];
+            }
+            while (l < mid)
+                tmp[k++] = src[l++];
+            while (r < right)
+                tmp[k++] = src[r++];
         }
-        memcpy(quad_sort_keys, quad_sort_temp, quad_count * sizeof(QuadSortKey));
+        // Swap src/tmp
+        QuadSortKey* swap = src;
+        src = tmp;
+        tmp = swap;
+    }
+
+    if (src != quad_sort_keys) {
+        memcpy(quad_sort_keys, src, n * sizeof(QuadSortKey));
     }
 }
 
@@ -722,17 +707,10 @@ static void draw_quad(const SDLGameRenderer_Vertex* vertices, bool textured) {
     }
 
     if (quad_count < MAX_QUADS) {
-        float z = flPS2ConvScreenFZ(vertices[0].coord.z);
-        quad_sort_keys[quad_count].z = z;
+        quad_sort_keys[quad_count].z = flPS2ConvScreenFZ(vertices[0].coord.z);
         quad_sort_keys[quad_count].original_index = quad_count;
         quad_sort_keys[quad_count].blend_mode = s_current_blend_mode;
         quad_overlay_tex[quad_count] = NULL;
-
-        if (z < s_last_submitted_z) {
-            s_sort_inversions++;
-        }
-        s_last_submitted_z = z;
-
         quad_count++;
     }
 
@@ -928,17 +906,10 @@ void SDLGameRendererGPU_FlushSprite2Batch(Sprite2* chips, const unsigned char* a
         v[3].paletteIdx = palIdx;
 
         if (quad_count < MAX_QUADS) {
-            float z = flPS2ConvScreenFZ(spr->v[0].z);
-            quad_sort_keys[quad_count].z = z;
+            quad_sort_keys[quad_count].z = flPS2ConvScreenFZ(spr->v[0].z);
             quad_sort_keys[quad_count].original_index = quad_count;
             quad_sort_keys[quad_count].blend_mode = s_current_blend_mode;
             quad_overlay_tex[quad_count] = NULL;
-
-            if (z < s_last_submitted_z) {
-                s_sort_inversions++;
-            }
-            s_last_submitted_z = z;
-
             quad_count++;
         }
 
@@ -1109,12 +1080,6 @@ static void push_overlay_quad(int layer, float x, float y, float w, float h, flo
     quad_sort_keys[quad_count].original_index = quad_count;
     quad_sort_keys[quad_count].blend_mode = s_current_blend_mode;
     quad_overlay_tex[quad_count] = standalone_tex;
-
-    if (z < s_last_submitted_z) {
-        s_sort_inversions++;
-    }
-    s_last_submitted_z = z;
-
     quad_count++;
     vertex_count += 4;
 }
@@ -1165,12 +1130,6 @@ static void push_overlay_subquad(int layer, float x, float y, float w, float h, 
     quad_sort_keys[quad_count].original_index = quad_count;
     quad_sort_keys[quad_count].blend_mode = s_current_blend_mode;
     quad_overlay_tex[quad_count] = standalone_tex;
-
-    if (z < s_last_submitted_z) {
-        s_sort_inversions++;
-    }
-    s_last_submitted_z = z;
-
     quad_count++;
     vertex_count += 4;
 }
