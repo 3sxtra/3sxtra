@@ -24,6 +24,7 @@
 #include "port/menu_screen.h"
 #include "sf33rd/Source/Game/init_task_phases.h"
 #include "sf33rd/Source/Game/menu/menu_task_phases.h"
+#include "stb/stb_ds.h"
 
 extern MenuScreen g_screens[];
 extern u8 Exit_No;
@@ -77,6 +78,30 @@ static bool fade_active = false;
 
 /* Cached track count to avoid per-frame filesystem scans */
 static int cached_bgm_count = -1; /* -1 = needs refresh */
+
+typedef struct {
+    char* key; // The path
+    bool value;
+} AssetPresenceCache;
+
+static AssetPresenceCache* asset_presence_cache = NULL;
+
+static bool check_file_exists(const char* path) {
+    int idx = shgeti(asset_presence_cache, path);
+    if (idx != -1) {
+        return asset_presence_cache[idx].value;
+    }
+
+    // Check if file exists by opening via SDL IO
+    SDL_IOStream* io = SDL_IOFromFile(path, "rb");
+    bool exists = (io != NULL);
+    if (io) {
+        SDL_CloseIO(io);
+    }
+
+    shput(asset_presence_cache, path, exists);
+    return exists;
+}
 
 void ModdedBGM_Init(void) {
     if (is_initialized)
@@ -248,12 +273,9 @@ static bool try_load_and_play(const char* ext, int file_id) {
     snprintf(id_str, sizeof(id_str), "%d", file_id);
     build_asset_path(path, sizeof(path), "bgm_mod", id_str, ext);
 
-    // Check if file exists by opening via SDL IO
-    SDL_IOStream* io = SDL_IOFromFile(path, "rb");
-    if (!io) {
+    if (!check_file_exists(path)) {
         return false;
     }
-    SDL_CloseIO(io);
 
     current_audio = MIX_LoadAudio(mixer, path, false);
     if (!current_audio) {
@@ -396,10 +418,9 @@ static bool try_load_voice(const char* voice_name, const char* ext) {
     char path[1024];
     build_asset_path(path, sizeof(path), "voice_mod", voice_name, ext);
 
-    SDL_IOStream* io = SDL_IOFromFile(path, "rb");
-    if (!io)
+    if (!check_file_exists(path)) {
         return false;
-    SDL_CloseIO(io);
+    }
 
     /* Stop any previously playing voice */
     if (current_voice_audio) {
@@ -475,9 +496,7 @@ bool ModdedBGM_IsVoiceModded(const char* voice_name) {
     for (int i = 0; i < (int)(sizeof(extensions) / sizeof(extensions[0])); i++) {
         char path[1024];
         build_asset_path(path, sizeof(path), "voice_mod", voice_name, extensions[i]);
-        SDL_IOStream* io = SDL_IOFromFile(path, "rb");
-        if (io) {
-            SDL_CloseIO(io);
+        if (check_file_exists(path)) {
             found = true;
             break;
         }
@@ -524,9 +543,7 @@ int ModdedBGM_CountModdedTracks(void) {
             char rel_path[256];
             snprintf(rel_path, sizeof(rel_path), "bgm_mod/%d.%s", id, extensions[e]);
             const char* path = Paths_ResolveAsset(rel_path);
-            SDL_IOStream* io = SDL_IOFromFile(path, "rb");
-            if (io) {
-                SDL_CloseIO(io);
+            if (check_file_exists(path)) {
                 count++;
                 found = true;
             }
@@ -622,9 +639,7 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
                          bank_dir,
                          engine_code,
                          extensions[i]);
-                SDL_IOStream* io = SDL_IOFromFile(path, "rb");
-                if (io) {
-                    SDL_CloseIO(io);
+                if (check_file_exists(path)) {
                     found = true;
                     break;
                 }
@@ -637,9 +652,7 @@ bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) {
                      Paths_GetBasePath() ? Paths_GetBasePath() : "",
                      reqNum,
                      extensions[i]);
-            SDL_IOStream* io = SDL_IOFromFile(path, "rb");
-            if (io) {
-                SDL_CloseIO(io);
+            if (check_file_exists(path)) {
                 found = true;
                 break;
             }
