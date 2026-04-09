@@ -888,21 +888,15 @@ void SDLGameRendererSDL_RenderFrame(void) {
                     rect_fast_path_count += 0; // maintain dummy stat if needed
                 } else {
                     SDL_Texture* draw_texture = task_texture[render_task_order[batch_start]];
-                    const int batch_palette = HI_16_BITS(current_th);
                     if (draw_texture)
                         SDL_SetTextureBlendMode(draw_texture, sdl_blend);
                     else
                         SDL_SetRenderDrawBlendMode(renderer, sdl_blend);
-                    const int batch_tex_handle = LO_16_BITS(current_th);
 
-                    // ⚡ For indexed textures: swap draw_texture for the pre-baked slot.
-                    // lookup_idx_tex is a pure cache hit 99.9% of the time (no blit here).
-                    if (draw_texture != NULL && batch_palette > 0 && batch_palette <= FL_PALETTE_MAX &&
-                        batch_tex_handle > 0) {
-                        SDL_Texture* cached = lookup_idx_tex(renderer, batch_tex_handle - 1, batch_palette);
-                        if (cached != NULL)
-                            draw_texture = cached;
-                    }
+                    // ⚡ Warp Optimization: Removed redundant lookup_idx_tex inside batch loop.
+                    // draw_texture already contains the fully resolved texture from task_texture[idx],
+                    // which is safely initialized in SetTexture or the deferred resolution phase.
+                    // This eliminates O(N) cache queries per frame and prevents plugin overrides from being discarded.
 
                     // ⚡ Rect fast path: use SDL_RenderTexture for axis-aligned rects.
                     // SDL_RenderTexture can use optimized hardware blit paths vs.
