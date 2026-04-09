@@ -15,7 +15,6 @@
       <div id="lobby-body">
         <!-- Left: menu column -->
         <div id="lobby-menu-col">
-          <div class="section-header rooms-header">SETTINGS</div>
 
           <div class="lobby-row" data-class-focused="cursor == 0">
             <span class="lobby-cell-label">ROOM TYPE</span>
@@ -44,25 +43,25 @@
           <div class="lobby-row" data-class-focused="cursor == 4">
             <span class="lobby-cell-label">REGION LOCK</span>
             <span class="lobby-cell-value" data-class-on="region_lock">{{
-              region_lock ? "ON" : "OFF"
+              region_lock ? 'ON' : 'OFF'
             }}</span>
           </div>
           <div class="lobby-row" data-class-focused="cursor == 5">
             <span class="lobby-cell-label">MAX PING</span>
             <span class="lobby-cell-value">{{
-              max_ping == 0 ? "OFF" : max_ping + "ms"
+              max_ping == 0 ? 'OFF' : max_ping + 'ms'
             }}</span>
           </div>
           <div class="lobby-row" data-class-focused="cursor == 6">
             <span class="lobby-cell-label">BLOCK WIFI</span>
             <span class="lobby-cell-value" data-class-on="block_wifi">{{
-              block_wifi ? "ON" : "OFF"
+              block_wifi ? 'ON' : 'OFF'
             }}</span>
           </div>
           <div class="lobby-row" data-class-focused="cursor == 7">
             <span class="lobby-cell-label">MATCH FT</span>
             <span class="lobby-cell-value">{{
-              ft_value == 1 ? "UNRANKED" : "FT" + ft_value
+              ft_value == 1 ? 'UNRANKED' : 'FT' + ft_value
             }}</span>
           </div>
           <div class="lobby-row" data-class-focused="cursor == 8">
@@ -155,10 +154,10 @@
           <div class="popup-title">
             {{
               password_popup_mode == 2
-                ? "ENTER ROOM CODE"
+                ? 'ENTER ROOM CODE'
                 : password_popup_mode == 1
-                  ? "SET PASSWORD"
-                  : "ENTER PASSWORD"
+                  ? 'SET PASSWORD'
+                  : 'ENTER PASSWORD'
             }}
           </div>
           <div class="popup-name">{{ password_input_display }}</div>
