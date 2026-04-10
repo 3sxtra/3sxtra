@@ -73,6 +73,36 @@ bool NativeUI_ButtonEx(const char* label, bool disabled);
 void NativeUI_Label(const char* label);
 
 /**
+ * @brief Offsets the legacy graphic sprite lookup index for effect_61 menus
+ *        that do not start at 0 (e.g. System Direction starts at 43).
+ */
+void NativeUI_SetGraphicOffset(int offset);
+
+/**
+ * @brief Specifies the engine Menu_Suicide array index that owns these elements.
+ *        Defaults to 0. Important for screens that selectively clear overlays using 
+ *        Menu_Suicide[1]=1 while keeping Menu_Suicide[0]=0.
+ */
+void NativeUI_SetMasterPlayer(int master_player_id);
+
+/**
+ * @brief Sets the legacy font type used for native rendering.
+ * @param type The text font ID, e.g. 0x7047 (block) or 0x70A7 (regular).
+ */
+void NativeUI_SetLetterType(unsigned short type);
+void NativeUI_SetMasterPlayer(int mp);
+
+/**
+ * @brief Overrides the internal layout index counter for the next item.
+ */
+void NativeUI_SetNextIndex(int index);
+
+/**
+ * @brief Synchronizes the internal focus state to an external cursor variable.
+ */
+void NativeUI_SetFocusIndex(int index);
+
+/**
  * @brief Advanced: Force manual layout coordinates for the next element.
  */
 void NativeUI_SetNextPos(int x, int y);

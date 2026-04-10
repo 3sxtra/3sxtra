@@ -7,12 +7,13 @@
 #include "sf33rd/Source/Game/effect/eff45.h"
 #include "sf33rd/Source/Game/effect/eff57.h"
 #include "sf33rd/Source/Game/effect/eff61.h"
+#include "sf33rd/Source/Game/rendering/texgroup.h"
 
 #include <string.h>
 
-#define UI_MAX_ELEMENTS 128
-#define UI_SLOT_MIN 20   // We can map to slots 20-147
-#define UI_SLOT_MAX 147
+#define UI_MAX_ELEMENTS 22
+#define UI_SLOT_MIN 105  // Must be strictly < 128 (EFFECT_MAX). avoids 0x64 (100)
+#define UI_SLOT_MAX 126
 
 typedef struct {
     uint32_t id_hash;
@@ -30,8 +31,16 @@ static NativeUIDir s_dir = UI_DIR_VERTICAL;
 static int s_focus_index = 0;
 static int s_current_index = 0;
 static int s_max_index = 0;
+static int s_graphic_offset = 0;
+static int s_master_player = 0;
 
 static bool s_confirm_pressed = false;
+
+static u16 s_letter_type = 0x7047;
+
+void NativeUI_SetLetterType(u16 type) {
+    s_letter_type = type;
+}
 
 // Scope ID Stack
 static int s_id_stack[16];
@@ -130,9 +139,12 @@ void NativeUI_Clear(void) {
     memset(s_elements, 0, sizeof(s_elements));
     s_frame_counter = 0;
     s_focus_index = 0;
-    Menu_Cursor_Y[0] = 0;
+    // Do NOT wipe Menu_Cursor_Y[0] here. It destroys state for dispatch targets right after calling NativeUI_Clear.
     s_scroll_current_offset = 0;
     s_in_scroll_list = false;
+    s_graphic_offset = 0;
+    s_master_player = 0;
+    s_letter_type = 0x7047;
 }
 
 void NativeUI_Begin(int start_x, int start_y, NativeUIDir dir) {
@@ -203,6 +215,22 @@ void NativeUI_EndScrollList(void) {
     s_in_scroll_list = false;
 }
 
+void NativeUI_SetGraphicOffset(int offset) {
+    s_graphic_offset = offset;
+}
+
+void NativeUI_SetMasterPlayer(int master_player_id) {
+    s_master_player = master_player_id;
+}
+
+void NativeUI_SetNextIndex(int explicit_index) {
+    s_current_index = explicit_index;
+}
+
+void NativeUI_SetFocusIndex(int index) {
+    s_focus_index = index;
+}
+
 void NativeUI_Header(int header_type) {
     bool is_new = false;
     int slot = AllocSlot((uint32_t)header_type + 0x10000, &is_new);
@@ -212,6 +240,7 @@ void NativeUI_Header(int header_type) {
         Order_Dir[slot] = 8;
         Order_Timer[slot] = 1;
         effect_57_init(slot, (MenuHeader)header_type, 0, 0x3F, 2);
+        load_any_texture_patnum(0x7F30, 0xC, 0); // Guarantee texture is in VRAM
     }
 }
 
@@ -250,8 +279,10 @@ bool NativeUI_ButtonEx(const char* label, bool disabled) {
         int visual_index = my_index - s_scroll_current_offset;
         Order_Timer[slot] = visual_index + 7; // Use visual offset for animation sequence
         
-        // type dictates literal Graphic text lookup (ARCADE). flag pushes vertical coordinate!
-        effect_61_init(0, slot, 0, 0, visual_index, my_index, 0x7047); 
+        int graphic_index = my_index + s_graphic_offset;
+        // Arg 5 (char_ix) dictates absolute graphic string and Y layout from Slide_Pos_Data_61.
+        // Arg 6 (cursor_index) connects to Menu_Cursor_Y[0] for dynamic highlighting.
+        effect_61_init(0, slot, 0, s_master_player, graphic_index, my_index, s_letter_type); 
     }
     
     NativeUI_Label(label);

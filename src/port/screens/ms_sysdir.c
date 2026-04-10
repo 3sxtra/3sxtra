@@ -14,10 +14,7 @@
  * Direction_Menu (AT index 18) is the per-character dipswitch sub-page
  * system that uses Menu_Page/Page_Max/Setup_Next_Page() for multi-page
  * navigation.  It handles L/R page cycling, per-item value toggles via
- * Dir_Move_Sub, and exits back to System_Direction.
- *
- * Legacy locations:
- *   System_Direction: menu.c lines 2339–2466 (AT_Jmp_Tbl index 5/11)
+ * Dir_Move_Sub, and exits back *   System_Direction: menu.c lines 2339–2466 (AT_Jmp_Tbl index 5/11)
  *   Direction_Menu:   menu.c lines 2469–2641 (AT_Jmp_Tbl index 18)
  *
  * Part of the Menu Backend Migration (see MENU_BACKEND_MIGRATION.md §8 Phase 4).
@@ -25,6 +22,7 @@
 
 #include "port/menu_screen.h"
 
+#include "port/ui/native_imgui.h"                      /* NativeUI */
 #include "sf33rd/Source/Game/effect/eff04.h"           /* effect_04_init */
 #include "sf33rd/Source/Game/effect/eff45.h"           /* Message_Data */
 #include "sf33rd/Source/Game/effect/eff57.h"           /* effect_57_init, MenuHeader */
@@ -138,16 +136,6 @@ static void sysdir_enter(struct _TASK* task_ptr) {
         Order_Dir[0x61] = 4;
         Order_Timer[0x61] = 0x14;
 
-        ix = 0;
-        char_index = 0x2B;
-        while (ix < 4) {
-            effect_61_init(0, ix + 0x50, 0, s_sysdir_from_option ? 2 : 1, char_index, ix + 1, 0x7047);
-            Order[ix + 0x50] = 1;
-            Order_Dir[ix + 0x50] = 4;
-            Order_Timer[ix + 0x50] = ix + 0x15;
-            ix++;
-            char_index++;
-        }
         Menu_Cursor_Move = 4;
     }
 
@@ -195,6 +183,23 @@ static void sysdir_tick(struct _TASK* task_ptr) {
     if (IO_Result == 0) {
         System_Dir_Move_Sub(1);
     }
+    
+    /* ── Render NativeUI declaratively to match legacy focus ── */
+    if (!use_rmlui || !rmlui_menu_sysdir) {
+        const int SYSDIR_GRAPHIC_START_OFFSET = 42; // Base offset to reach string 43 (0x2B "PAGE 1")
+        
+        NativeUI_SetFocusIndex(Menu_Cursor_Y[0]);
+        NativeUI_Begin(0, 0, UI_DIR_VERTICAL);
+        NativeUI_SetNextIndex(1); // Item 0 is handled natively by effect_64 combo box!
+        NativeUI_SetGraphicOffset(SYSDIR_GRAPHIC_START_OFFSET); 
+        NativeUI_SetMasterPlayer(s_sysdir_from_option ? 2 : 1);
+        
+        NativeUI_Button("PAGE 1");
+        NativeUI_Button("PAGE 2");
+        NativeUI_Button("PAGE 3");
+        NativeUI_Button("EXIT");
+        NativeUI_End();
+    }
 
     switch (IO_Result) {
     case 0x100:
@@ -209,6 +214,7 @@ static void sysdir_tick(struct _TASK* task_ptr) {
         Order_Timer[0x6D] = 4;
 
         if (Menu_Cursor_Y[0] == 4 || IO_Result == 0x200) {
+            NativeUI_Clear();
             if (s_sysdir_from_option) {
                 /* Return to Option_Select */
                 if (use_rmlui && rmlui_menu_sysdir)
@@ -235,6 +241,7 @@ static void sysdir_tick(struct _TASK* task_ptr) {
         /* Navigate to Direction_Menu sub-page via Exit_Sub */
         s_sysdir_exiting = true;
         s_sysdir_exit_target = Menu_Cursor_Y[0] + 0x11;
+        NativeUI_Clear();
         task_ptr->r_no[2] = 4; /* advance past case 3 for Exit_Sub */
         task_ptr->free[0] = 0;
         break;

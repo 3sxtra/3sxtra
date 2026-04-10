@@ -205,7 +205,9 @@ u16 Dir_Move_Sub2(u16 sw) {
         return IO_Result = SWK_START;
 
     default:
-        return IO_Result = 0;
+        // DO NOT clobber IO_Result if it was already set by another system (like RmlUi mouse clicks).
+        // Return 0 to indicate no directional input was processed.
+        return 0;
     }
 }
 

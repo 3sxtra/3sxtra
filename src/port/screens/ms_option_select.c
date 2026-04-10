@@ -23,6 +23,7 @@
 #include "port/menu_screen.h"
 
 #include "sf33rd/AcrSDK/common/pad.h"              /* SWK_UP, SWK_DOWN, etc. */
+#include "port/ui/native_imgui.h"                  /* NativeUI */
 #include "sf33rd/Source/Game/effect/eff04.h"       /* effect_04_init */
 #include "sf33rd/Source/Game/effect/eff57.h"       /* effect_57_init, MenuHeader */
 #include "sf33rd/Source/Game/effect/eff61.h"       /* effect_61_init */
@@ -118,22 +119,8 @@ static void option_select_enter(struct _TASK* task_ptr) {
             rmlui_option_menu_show();
         } else {
             effect_04_init(1, 4, 0, 0x48);
-
-            ix = 0;
-            char_index = 84; /* [84-90] */
-
-            while (ix < 7) {
-                effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x70A7);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
-                ix++;
-                char_index++;
-            }
             Menu_Cursor_Move = 7;
         }
-
-        /* 7 items: 0-4 legacy, 5 FX Option, 6 Exit */
         g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 6;
     } else {
         /* 8 items — Extra Option unlocked + FX Option */
@@ -141,22 +128,8 @@ static void option_select_enter(struct _TASK* task_ptr) {
             rmlui_option_menu_show();
         } else {
             effect_04_init(1, 1, 0, 0x48);
-
-            ix = 0;
-            char_index = 91; /* [91-98] */
-
-            while (ix < 8) {
-                effect_61_init(0, ix + 0x50, 0, 1, char_index, ix, 0x70A7);
-                Order[ix + 0x50] = 1;
-                Order_Dir[ix + 0x50] = 4;
-                Order_Timer[ix + 0x50] = ix + 0x14;
-                ix++;
-                char_index++;
-            }
             Menu_Cursor_Move = 8;
         }
-
-        /* 8 items: 0-5 legacy (Extra=5), 6 FX Option, 7 Exit */
         g_screens[MENU_SCREEN_OPTION_SELECT].cursor_max = 7;
     }
 }
@@ -216,84 +189,107 @@ static void option_select_tick(struct _TASK* task_ptr) {
     if (MC_Move_Sub(Check_Menu_Lever(0, 0), 0, ix + 6, 0xFF) == 0) {
         MC_Move_Sub(Check_Menu_Lever(1, 0), 0, ix + 6, 0xFF);
     }
+    
+    /* ── Render NativeUI declaratively to match legacy focus ── */
+    if (!use_rmlui || !rmlui_menu_option) {
+        const int OPTION_UNLOCKED_GRAPHIC_START = 91;
+        const int OPTION_LOCKED_GRAPHIC_START = 84;
+        NativeUI_SetFocusIndex(Menu_Cursor_Y[0]);
+        NativeUI_Begin(0, 0, UI_DIR_VERTICAL);
+        NativeUI_SetGraphicOffset(ix ? OPTION_UNLOCKED_GRAPHIC_START : OPTION_LOCKED_GRAPHIC_START); 
+        NativeUI_SetMasterPlayer(1); // Bind to Menu_Suicide[1] (which is ALIVE=0) since Menu_Suicide[0]=1 (DEAD)
+        NativeUI_SetLetterType(0x70A7); // Use narrower font for option select
+        
+        NativeUI_Button("GAME OPTION");
+        NativeUI_Button("BUTTON CONFIG.");
+        NativeUI_Button("SYSTEM DIRECTION");
+        NativeUI_Button("SOUND");
+        NativeUI_Button("SAVE / LOAD");
+        
+        if (ix) {
+            NativeUI_Button("EXTRA OPTION");
+        }
+        
+        NativeUI_Button("FX OPTION");
+        NativeUI_Button("EXIT");
+        
+        NativeUI_End();
+    }
+
 
     /* ── Input dispatch ── */
-    switch (IO_Result) {
-    case 0x100:
-    case 0x200:
-        break;
+    if (IO_Result == 0x100 || IO_Result == 0x200) {
+        SE_selected();
 
-    default:
-        return;
-    }
+        /* ── Cancel / last item (EXIT) → back to Mode Select ── */
+        if (Menu_Cursor_Y[0] == ix + 6 || IO_Result == 0x200) {
+            NativeUI_Clear();
+            Menu_Suicide[0] = 0;
+            Menu_Suicide[1] = 1;
+            task_ptr->r_no[1] = 1; /* Mode_Select AT index */
+            task_ptr->r_no[2] = 0;
+            task_ptr->r_no[3] = 0;
+            task_ptr->free[0] = 0;
+            Order[0x4F] = 4;
+            Order_Timer[0x4F] = 4;
 
-    SE_selected();
+            if (use_rmlui && rmlui_menu_option)
+                rmlui_option_menu_hide();
 
-    /* ── Cancel / last item (EXIT) → back to Mode Select ── */
-    if (Menu_Cursor_Y[0] == ix + 6 || IO_Result == 0x200) {
-        Menu_Suicide[0] = 0;
-        Menu_Suicide[1] = 1;
-        task_ptr->r_no[1] = 1; /* Mode_Select AT index */
-        task_ptr->r_no[2] = 0;
-        task_ptr->r_no[3] = 0;
-        task_ptr->free[0] = 0;
-        Order[0x4F] = 4;
-        Order_Timer[0x4F] = 4;
-
-        if (use_rmlui && rmlui_menu_option)
-            rmlui_option_menu_hide();
-
-        /* Auto-save check (replicated from legacy) */
-        if (Check_Change_Contents()) {
-            if (CurrentSave()->Auto_Save) {
-                task_ptr->r_no[0] = 4; /* Disp_Auto_Save */
-                task_ptr->r_no[1] = 0;
-                Forbid_Reset = 1;
-                Copy_Check_w();
-                /* Exit to legacy — Disp_Auto_Save will handle it */
-                s_cancel_exit = true;
-                return;
+            /* Auto-save check (replicated from legacy) */
+            if (Check_Change_Contents()) {
+                if (CurrentSave()->Auto_Save) {
+                    task_ptr->r_no[0] = 4; /* Disp_Auto_Save */
+                    task_ptr->r_no[1] = 0;
+                    Forbid_Reset = 1;
+                    Copy_Check_w();
+                    /* Exit to legacy — Disp_Auto_Save will handle it */
+                    s_cancel_exit = true;
+                    return;
+                }
             }
+
+            /* Normal exit to Mode_Select (or already handled auto-save above) */
+            s_cancel_exit = true;
+            return;
         }
 
-        /* Normal exit to Mode_Select (or already handled auto-save above) */
-        s_cancel_exit = true;
-        return;
+        /* ── FX OPTION item: ix + 5 (the item just before EXIT) ── */
+        if (Menu_Cursor_Y[0] == ix + 5) {
+            if (use_rmlui && rmlui_menu_option)
+                rmlui_option_menu_hide();
+
+            /* Save the cursor position so we return exactly here */
+            Cursor_Y_Pos[0][1] = Menu_Cursor_Y[0];
+            Cursor_Y_Pos[1][1] = Menu_Cursor_Y[1];
+            NativeUI_Clear();
+
+            MenuScreen_Goto(MENU_SCREEN_FX_OPTION);
+            return;
+        }
+
+        /* ── Confirm on a CPS3 sub-screen item → fade-out to sub-screen ── */
+        task_ptr->free[0] = 0;
+
+        /* Set up X/Y adjust buffers (replicated from legacy Option_Select case 3) */
+        X_Adjust_Buff[0] = X_Adjust;
+        X_Adjust_Buff[1] = X_Adjust;
+        X_Adjust_Buff[2] = X_Adjust;
+        Y_Adjust_Buff[0] = Y_Adjust;
+        Y_Adjust_Buff[1] = Y_Adjust;
+        Y_Adjust_Buff[2] = Y_Adjust;
+
+        /* Exit_Sub target: AT index = Menu_Cursor_Y[0] + 9
+         * Item 0 → AT 9 (Game_Option)
+         * Item 1 → AT 10 (Button_Config)
+         * Item 2 → AT 11 (System_Direction from Option)
+         * Item 3 → AT 12 (Sound_Test)
+         * Item 4 → AT 13 (Memory_Card)
+         * Item 5 → AT 14 (Extra_Option) — only when unlocked */
+        s_exiting = true;
+        s_exit_target = Menu_Cursor_Y[0] + 9;
+        NativeUI_Clear();
     }
-
-    /* ── FX OPTION item: ix + 5 (the item just before EXIT) ── */
-    if (Menu_Cursor_Y[0] == ix + 5) {
-        if (use_rmlui && rmlui_menu_option)
-            rmlui_option_menu_hide();
-
-        /* Save the cursor position so we return exactly here */
-        Cursor_Y_Pos[0][1] = Menu_Cursor_Y[0];
-        Cursor_Y_Pos[1][1] = Menu_Cursor_Y[1];
-
-        MenuScreen_Goto(MENU_SCREEN_FX_OPTION);
-        return;
-    }
-
-    /* ── Confirm on a CPS3 sub-screen item → fade-out to sub-screen ── */
-    task_ptr->free[0] = 0;
-
-    /* Set up X/Y adjust buffers (replicated from legacy Option_Select case 3) */
-    X_Adjust_Buff[0] = X_Adjust;
-    X_Adjust_Buff[1] = X_Adjust;
-    X_Adjust_Buff[2] = X_Adjust;
-    Y_Adjust_Buff[0] = Y_Adjust;
-    Y_Adjust_Buff[1] = Y_Adjust;
-    Y_Adjust_Buff[2] = Y_Adjust;
-
-    /* Exit_Sub target: AT index = Menu_Cursor_Y[0] + 9
-     * Item 0 → AT 9 (Game_Option)
-     * Item 1 → AT 10 (Button_Config)
-     * Item 2 → AT 11 (System_Direction from Option)
-     * Item 3 → AT 12 (Sound_Test)
-     * Item 4 → AT 13 (Memory_Card)
-     * Item 5 → AT 14 (Extra_Option) — only when unlocked */
-    s_exiting = true;
-    s_exit_target = Menu_Cursor_Y[0] + 9;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

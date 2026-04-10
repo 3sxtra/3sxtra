@@ -344,3 +344,28 @@ The `Configuration` system supports this because config.ini keys are simple stri
 
 > [!IMPORTANT]
 > **Mode_Type vs. AppMode**: These are different axes. `Mode_Type` controls _in-game behavior_ (arcade vs. VS vs. training). `AppMode` would control the _application shell_ (boot flow, menu layout, session rules). A tournament `AppMode` could still use `MODE_VERSUS` as the `Mode_Type`. They compose, not conflict.
+
+## 11. Debugging Case Study: Option Select Lockup
+
+During the modernization of the Option Menu (`ms_option_select.c`) to the NativeUI framework, a critical UI lockup occurred where no text rendered and the game stopped responding to inputs.
+
+### Root Cause Analysis
+
+The deadlock was triggered by an interaction between legacy `MC_Move_Sub` validation and the declarative NativeUI loop:
+
+1. **The `Menu_Cursor_Move` Semaphore Deadlock:**
+   The legacy menu engine uses a global variable `Menu_Cursor_Move` initialized to the number of items spawning (e.g., `7` or `8` items). Each text label (`effect_61`) and the red cursor highlight (`effect_64`) decrements this counter when their entrance animation ("slide in") finishes.
+   While `Menu_Cursor_Move > 0`, the input routine `MC_Move_Sub` forcefully returns `0` and ignores all controller states, treating the menu as "currently animating".
+   
+2. **Missing Cursor Initialization:**
+   The modernization properly spawned `effect_61` text labels via `NativeUI_Button()`, but explicitly removed the manual `effect_64` cursor initialization in `option_select_enter()`. Because the cursor's slide-in never resolved, the semaphore `Menu_Cursor_Move` never hit `0`, leaving the system completely locked.
+
+3. **Input Dispatch Trap (Early Return):**
+   Prior to `Menu_Cursor_Move` reaching `0`, the local `IO_Result` never registers user action. Consequently, an overly aggressive input switch case with `default: return;` would exit the `tick` routine entirely, failing to finalize NativeUI garbage collection logic and blocking all exits.
+
+### Logical Next Steps
+
+To resolve this mechanical deadlock, we need to apply three targeted fixes to `ms_option_select.c`:
+1. **Restore `effect_64_init`**: We must manually restore the legacy cursor (`effect_64`) initialization in `option_select_enter()` so its entrance animation can finish and decrement the `Menu_Cursor_Move` semaphore, unlocking the input layer exactly like before.
+2. **Remove Early Return Trap**: Remove the `default: return;` inside the `IO_Result` switch in `option_select_tick()` so that `NativeUI_End()` state and garbage collection resolve completely on every tick.
+3. **Verify Slot Allocation Boundary**: Ensure `NativeUI` dynamically spawned buttons do not collide with hardcoded legacy slots like the background lines (`0x48`) or cursor (`0x64`). Review `UI_SLOT_MIN` and verify all elements spawn safely.
