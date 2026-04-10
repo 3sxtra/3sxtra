@@ -212,7 +212,7 @@ u16 Dir_Move_Sub2(u16 sw) {
 }
 
 /** @brief Direction menu left/right value toggle handler. */
-void Dir_Move_Sub_LR(u16 sw, s16 /* unused */) {
+void Dir_Move_Sub_LR(u16 sw, s16 unused1) {
     u8 last_pos = system_dir[1].contents[Menu_Page][Menu_Cursor_Y[0]];
 
     switch (sw) {
@@ -286,7 +286,7 @@ void Dir_Move_Sub_LR(u16 sw, s16 /* unused */) {
 }
 
 /** @brief Transition to next Direction page (save â†’ load). */
-void Setup_Next_Page(struct _TASK* task_ptr, u8 /* unused */) {
+void Setup_Next_Page(struct _TASK* task_ptr, u8 unused1) {
     s16 ix;
     s16 disp_index;
     s16 mode_type;
@@ -1664,7 +1664,7 @@ s32 Check_Pad_in_Pause(struct _TASK* task_ptr) {
 }
 
 /** @brief Pad come-out stub (no-op). */
-void Pad_Come_Out(struct _TASK* /* unused */) {}
+void Pad_Come_Out(struct _TASK* unused1) {}
 
 /** @brief VS Result selection sub-routine (continue / save / exit). */
 s32 VS_Result_Select_Sub(struct _TASK* task_ptr, s16 PL_id) {
@@ -1846,7 +1846,7 @@ void Return_VS_Result_Sub(struct _TASK* task_ptr) {
 }
 
 /** @brief Memory-card replay save sub-routine with error handling. */
-s32 Save_Replay_MC_Sub(struct _TASK* task_ptr, s16 /* unused */) {
+s32 Save_Replay_MC_Sub(struct _TASK* task_ptr, s16 unused1) {
     switch (IO_Result) {
     case SWK_SOUTH:
         SE_selected();

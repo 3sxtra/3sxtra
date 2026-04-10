@@ -121,7 +121,7 @@ static s16 eff46_appear_check(WORK_Other* ewk) {
     return 1;
 }
 
-s32 effect_46_init(WORK* wk, s32 /* unused */) {
+s32 effect_46_init(WORK* wk, s32 unused1) {
     WORK_Other* ewk;
     s16 ix;
 

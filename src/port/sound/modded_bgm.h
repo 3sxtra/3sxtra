@@ -11,6 +11,8 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_MODS
+
 void ModdedBGM_Init(void);
 void ModdedBGM_Exit(void);
 
@@ -81,6 +83,25 @@ const char* ModdedBGM_GetGameStateString(void);
  * @return Number of audio files found (any supported extension).
  */
 int ModdedBGM_CountModdedTracks(void);
+
+#else
+
+static inline void ModdedBGM_Init(void) {}
+static inline void ModdedBGM_Exit(void) {}
+static inline bool ModdedBGM_Play(int file_id) { (void)file_id; return false; }
+static inline void ModdedBGM_Stop(void) {}
+static inline void ModdedBGM_SetVolume(int volume_db10) { (void)volume_db10; }
+static inline void ModdedBGM_Pause(bool pause) { (void)pause; }
+static inline void ModdedBGM_FadeOut(int fade_ms) { (void)fade_ms; }
+static inline bool ModdedBGM_PlayVoice(const char* voice_name) { (void)voice_name; return false; }
+static inline bool ModdedSFX_Play(int reqNum, int ptix, int engine_code, int pan) { (void)reqNum; (void)ptix; (void)engine_code; (void)pan; return false; }
+static inline bool ModdedBGM_IsVoiceModded(const char* voice_name) { (void)voice_name; return false; }
+static inline const char* ModdedBGM_GetGameStateString(void) { return ""; }
+static inline int ModdedBGM_CountModdedTracks(void) { return 0; }
+
+#endif
+
+
 
 #ifdef __cplusplus
 }

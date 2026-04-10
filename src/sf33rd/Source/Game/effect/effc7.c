@@ -84,7 +84,7 @@ void effect_C7_move(WORK_Other* ewk) {
     }
 }
 
-static void effc7_sort_push(WORK* ewk, WORK* /* unused */) {
+static void effc7_sort_push(WORK* ewk, WORK* unused1) {
     sort_push_request8(ewk);
 }
 

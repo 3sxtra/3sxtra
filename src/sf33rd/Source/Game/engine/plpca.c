@@ -132,7 +132,7 @@ static void check_nagenuke(PLW* wk, PLW* tk) {
 }
 
 /** @brief Catch state 00 — no-op placeholder. */
-static void Catch_00000(PLW* /* unused */) {}
+static void Catch_00000(PLW* unused1) {}
 
 /** @brief Catch state 01 — grab startup animation. */
 static void Catch_01000(PLW* wk) {

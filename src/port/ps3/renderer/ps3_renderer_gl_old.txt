@@ -1,0 +1,545 @@
+#include "ps3_renderer_gl.h"
+#include "sf33rd/AcrSDK/ps2/foundaps2.h"
+#include "port/utils.h"
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#define LO_16_BITS(x) ((x) & 0xFFFF)
+#define HI_16_BITS(x) (((x) >> 16) & 0xFFFF)
+
+/* Byte-swap helpers removed: Native byte extraction from VRAM buffer is now used
+ * for endian-agnostic ARGB channel decoding. */
+
+GLRendererState gl_state;
+static const int g_resolution_scale = 1;
+
+static const Uint8 s_5to8[32] = { 0,   8,   16,  25,  33,  41,  49,  58,  66,  74,  82,  90,  99,  107, 115, 123,
+                               132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
+
+static const Uint8 ps2_clut_shuffle[256] = {
+    0,   1,   2,   3,   4,   5,   6,   7,   16,  17,  18,  19,  20,  21,  22,  23,  8,   9,   10,  11,  12,  13,
+    14,  15,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,  37,  38,  39,  48,  49,  50,  51,
+    52,  53,  54,  55,  40,  41,  42,  43,  44,  45,  46,  47,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,
+    66,  67,  68,  69,  70,  71,  80,  81,  82,  83,  84,  85,  86,  87,  72,  73,  74,  75,  76,  77,  78,  79,
+    88,  89,  90,  91,  92,  93,  94,  95,  96,  97,  98,  99,  100, 101, 102, 103, 112, 113, 114, 115, 116, 117,
+    118, 119, 104, 105, 106, 107, 108, 109, 110, 111, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131,
+    132, 133, 134, 135, 144, 145, 146, 147, 148, 149, 150, 151, 136, 137, 138, 139, 140, 141, 142, 143, 152, 153,
+    154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 176, 177, 178, 179, 180, 181, 182, 183,
+    168, 169, 170, 171, 172, 173, 174, 175, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197,
+    198, 199, 208, 209, 210, 211, 212, 213, 214, 215, 200, 201, 202, 203, 204, 205, 206, 207, 216, 217, 218, 219,
+    220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247, 232, 233,
+    234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254, 255
+};
+
+static void push_texture_to_destroy(GLuint texture) {
+    if (gl_state.textures_to_destroy_count >= TEXTURES_TO_DESTROY_MAX) {
+        glDeleteTextures(1, &texture);
+        return;
+    }
+    gl_state.textures_to_destroy[gl_state.textures_to_destroy_count++] = texture;
+}
+
+static void stable_sort_render_tasks(void) {
+    const int n = gl_state.render_task_count;
+    if (n <= 1) return;
+
+    RenderTask* src = gl_state.render_tasks;
+    RenderTask* dst = gl_state.merge_temp;
+
+    for (int width = 1; width < n; width *= 2) {
+        for (int left = 0; left < n; left += 2 * width) {
+            const int mid = left + width;
+            int right = left + 2 * width;
+            if (mid >= n) {
+                memcpy(&dst[left], &src[left], (size_t)(n - left) * sizeof(RenderTask));
+                break;
+            }
+            if (right > n) right = n;
+
+            int i = left, j = mid, k = left;
+            while (i < mid && j < right) {
+                if (src[i].z <= src[j].z) {
+                    dst[k++] = src[i++];
+                } else {
+                    dst[k++] = src[j++];
+                }
+            }
+            while (i < mid) dst[k++] = src[i++];
+            while (j < right) dst[k++] = src[j++];
+        }
+
+        RenderTask* tmp = src;
+        src = dst;
+        dst = tmp;
+    }
+
+    if (src != gl_state.render_tasks) {
+        memcpy(gl_state.render_tasks, gl_state.merge_temp, (size_t)n * sizeof(RenderTask));
+    }
+}
+
+static void read_rgba16_color(const uint8_t* p, uint8_t* out) {
+    // Natively stored as Big-Endian ARGB1555 sequence on PS3
+    uint16_t pixel = (p[0] << 8) | p[1];
+    out[0] = s_5to8[pixel & 0x1F];         // R
+    out[1] = s_5to8[(pixel >> 5) & 0x1F];  // G
+    out[2] = s_5to8[(pixel >> 10) & 0x1F]; // B
+    out[3] = (pixel & 0x8000) ? 255 : 0;   // A
+}
+
+static void read_rgba32_color(const uint8_t* p, uint8_t* out) {
+    // Natively stored as ARGB 8888 sequence on PS3 disk dumps
+    out[0] = p[1]; // R
+    out[1] = p[2]; // G
+    out[2] = p[3]; // B
+    out[3] = p[0]; // A
+}
+
+static uint32_t build_swizzled_rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    /* GL_RGBA + GL_UNSIGNED_BYTE expects memory layout [R, G, B, A].
+     * On little-endian, (a<<24)|(b<<16)|(g<<8)|r → memory [r,g,b,a] ✓
+     * On big-endian,    (r<<24)|(g<<16)|(b<<8)|a → memory [r,g,b,a] ✓ */
+#ifdef PLATFORM_PS3
+    return (r << 24) | (g << 16) | (b << 8) | a;
+#else
+    return (a << 24) | (b << 16) | (g << 8) | r;
+#endif
+}
+
+void PS3_Renderer_Init(void) {
+    memset(&gl_state, 0, sizeof(GLRendererState));
+    
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    // 384x224 Ortho mapping but allow massive Z-depths from PS2 engine without clipping!
+    glOrthof(0.0f, 384.0f, 224.0f, 0.0f, -65535000.0f, 65535000.0f);
+    
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    printf("[PS3 GL] PS3_Renderer_Init OK\n");
+}
+
+void PS3_Renderer_BeginFrame(void) {
+    // Clear canvas
+    const Uint8 r = (flPs2State.FrameClearColor >> 16) & 0xFF;
+    const Uint8 g = (flPs2State.FrameClearColor >> 8) & 0xFF;
+    const Uint8 b = flPs2State.FrameClearColor & 0xFF;
+    const Uint8 a = flPs2State.FrameClearColor >> 24;
+
+    glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    gl_state.render_task_count = 0;
+    gl_state.texture_count = 0;
+    gl_state.last_set_texture_th = 0;
+}
+
+void PS3_Renderer_EndFrame(void) {
+    if (gl_state.textures_to_destroy_count > 0) {
+        glDeleteTextures(gl_state.textures_to_destroy_count, gl_state.textures_to_destroy);
+        gl_state.textures_to_destroy_count = 0;
+    }
+}
+
+void PS3_Renderer_RenderFrame(void) {
+    static int s_frame_counter = 0;
+    s_frame_counter++;
+    if (s_frame_counter <= 5 || (s_frame_counter % 300) == 0) {
+        printf("[PS3 GL] RenderFrame #%d: %d tasks, %d textures\n",
+               s_frame_counter, gl_state.render_task_count, gl_state.texture_count);
+    }
+    if (gl_state.render_task_count == 0) return;
+
+    stable_sort_render_tasks();
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+    glEnable(GL_TEXTURE_2D);
+
+    int idx = 0;
+    // Iterate render tasks, batched by texture
+    while (idx < gl_state.render_task_count) {
+        GLuint current_tex = gl_state.render_tasks[idx].texture;
+        int batch_count = 0; // Number of quads in this batch
+        int start_idx = idx;
+
+        while (idx < gl_state.render_task_count && gl_state.render_tasks[idx].texture == current_tex) {
+            batch_count++;
+            idx++;
+        }
+
+        if (current_tex != 0) {
+            glBindTexture(GL_TEXTURE_2D, current_tex);
+        }
+
+        // Each RenderTask wrote 6 vertices into the continuous batch_vertices array.
+        // The sorted list's actual vertices need to be contiguous for glDrawArrays,
+        // but since they are scattered across batch_vertices by original_index,
+        // we must construct a temporary draw buffer or copy them.
+        // Wait: The vertices are ALREADY sorted! No... The struct RenderTask is sorted!
+        // So we must pass the actual vertices one by one if they aren't linear.
+        // But PlayStation allows us to draw directly using small buffers natively quickly.
+        
+        static PSGL_Vertex DrawBuffer[RENDER_TASK_MAX * 6];
+        for(int k = 0; k < batch_count; k++) {
+            RenderTask* t = &gl_state.render_tasks[start_idx + k];
+            memcpy(&DrawBuffer[k * 6], &gl_state.batch_vertices[t->original_index * 6], sizeof(PSGL_Vertex) * 6);
+        }
+
+        glVertexPointer(3, GL_FLOAT, sizeof(PSGL_Vertex), &DrawBuffer[0].x);
+        glTexCoordPointer(2, GL_FLOAT, sizeof(PSGL_Vertex), &DrawBuffer[0].u);
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(PSGL_Vertex), &DrawBuffer[0].color);
+
+        glDrawArrays(GL_TRIANGLES, 0, batch_count * 6);
+    }
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+}
+
+void PS3_Renderer_CreateTexture(unsigned int th) {
+    const int texture_index = LO_16_BITS(th) - 1;
+    if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX) return;
+
+    const FLTexture* fl_texture = &flTexture[texture_index];
+    const void* pixels = flPS2GetSystemBuffAdrs(fl_texture->mem_handle);
+    int tex_width = fl_texture->width;
+    int tex_height = fl_texture->height;
+    
+    if (!pixels) return;
+
+    if (gl_state.raw_textures[texture_index] != NULL) {
+        free(gl_state.raw_textures[texture_index]);
+        gl_state.raw_textures[texture_index] = NULL;
+    }
+
+    int buff_size = tex_width * tex_height;
+    if (fl_texture->format == SCE_GS_PSMCT32) buff_size *= 4;
+    else if (fl_texture->format == SCE_GS_PSMCT16) buff_size *= 2;
+    else if (fl_texture->format == SCE_GS_PSMT4) buff_size = (buff_size + 1) / 2;
+    // PSMT8 is 1bpp.
+
+    gl_state.raw_textures[texture_index] = malloc(buff_size);
+    memcpy(gl_state.raw_textures[texture_index], pixels, buff_size);
+}
+
+void PS3_Renderer_DestroyTexture(unsigned int texture_handle) {
+    const int texture_index = texture_handle - 1;
+    if (texture_index < 0 || texture_index >= FL_TEXTURE_MAX) return;
+
+    for (int i = 0; i <= FL_PALETTE_MAX; i++) {
+        if (gl_state.texture_cache[texture_index][i] != 0) {
+            push_texture_to_destroy(gl_state.texture_cache[texture_index][i]);
+            gl_state.texture_cache[texture_index][i] = 0;
+        }
+    }
+
+    if (gl_state.raw_textures[texture_index] != NULL) {
+        free(gl_state.raw_textures[texture_index]);
+        gl_state.raw_textures[texture_index] = NULL;
+    }
+}
+
+void PS3_Renderer_CreatePalette(unsigned int ph) {
+    const int palette_index = HI_16_BITS(ph) - 1;
+    if (palette_index < 0 || palette_index >= FL_PALETTE_MAX) return;
+
+    const FLTexture* fl_palette = &flPalette[palette_index];
+    const void* pixels = flPS2GetSystemBuffAdrs(fl_palette->mem_handle);
+    if (!pixels) return;
+
+    const int color_count = fl_palette->width * fl_palette->height;
+
+    uint32_t* pal_cache = gl_state.raw_palettes[palette_index];
+
+    if (color_count == 16) {
+        if (fl_palette->format == SCE_GS_PSMCT32) {
+            const uint8_t* rgba = (const uint8_t*)pixels;
+            for (int i = 0; i < 16; i++) {
+                uint8_t out[4] = {0};
+                read_rgba32_color(&rgba[i * 4], out);
+                pal_cache[i] = build_swizzled_rgba(out[0], out[1], out[2], out[3]);
+            }
+        } else {
+            const uint8_t* rgba = (const uint8_t*)pixels;
+            for (int i = 0; i < 16; i++) {
+                uint8_t out[4] = {0};
+                read_rgba16_color(&rgba[i * 2], out);
+                pal_cache[i] = build_swizzled_rgba(out[0], out[1], out[2], out[3]);
+            }
+        }
+    } else if (color_count == 256) {
+        if (fl_palette->format == SCE_GS_PSMCT32) {
+            const uint8_t* rgba = (const uint8_t*)pixels;
+            for (int i = 0; i < 256; i++) {
+                uint8_t out[4] = {0};
+                read_rgba32_color(&rgba[ps2_clut_shuffle[i] * 4], out);
+                pal_cache[i] = build_swizzled_rgba(out[0], out[1], out[2], out[3]);
+            }
+        } else {
+            const uint8_t* rgba = (const uint8_t*)pixels;
+            for (int i = 0; i < 256; i++) {
+                uint8_t out[4] = {0};
+                read_rgba16_color(&rgba[ps2_clut_shuffle[i] * 2], out);
+                pal_cache[i] = build_swizzled_rgba(out[0], out[1], out[2], out[3]);
+            }
+        }
+    }
+    
+    gl_state.palette_valid[palette_index] = true;
+}
+
+void PS3_Renderer_DestroyPalette(unsigned int palette_handle) {
+    const int palette_index = palette_handle - 1;
+    if (palette_index < 0 || palette_index >= FL_PALETTE_MAX) return;
+
+    for (int i = 0; i < FL_TEXTURE_MAX; i++) {
+        if (gl_state.texture_cache[i][palette_handle] != 0) {
+            push_texture_to_destroy(gl_state.texture_cache[i][palette_handle]);
+            gl_state.texture_cache[i][palette_handle] = 0;
+        }
+    }
+
+    gl_state.palette_valid[palette_index] = false;
+}
+
+void PS3_Renderer_UnlockTexture(unsigned int th) {
+    const int texture_handle = LO_16_BITS(th);
+    if (texture_handle > 0 && texture_handle <= FL_TEXTURE_MAX) {
+        gl_state.last_set_texture_th = 0;
+        const int tex_idx = texture_handle - 1;
+        
+        for (int i = 0; i <= FL_PALETTE_MAX; i++) {
+            if (gl_state.texture_cache[tex_idx][i] != 0) {
+                push_texture_to_destroy(gl_state.texture_cache[tex_idx][i]);
+                gl_state.texture_cache[tex_idx][i] = 0;
+            }
+        }
+        
+        gl_state.texture_dirty_flags[tex_idx] = false;
+    }
+}
+
+void PS3_Renderer_UnlockPalette(unsigned int ph) {
+    const int palette_index = ph - 1;
+    if (palette_index >= 0 && palette_index < FL_PALETTE_MAX) {
+        gl_state.last_set_texture_th = 0;
+        gl_state.palette_valid[palette_index] = false;
+        
+        // Destroy all textures that use this palette immediately
+        for (int i = 0; i < FL_TEXTURE_MAX; i++) {
+            if (gl_state.texture_cache[i][ph] != 0) {
+                push_texture_to_destroy(gl_state.texture_cache[i][ph]);
+                gl_state.texture_cache[i][ph] = 0;
+            }
+        }
+    }
+}
+
+void PS3_Renderer_SetTexture(unsigned int th) {
+    if ((th & 0xFFFF) == 0) th = (th & 0xFFFF0000) | 1000;
+
+    const int texture_handle = LO_16_BITS(th);
+    const int palette_handle = HI_16_BITS(th);
+    
+    if (texture_handle < 1 || texture_handle > FL_TEXTURE_MAX) return;
+
+    const int tex_idx = texture_handle - 1;
+
+    if (palette_handle > 0 && !gl_state.palette_valid[palette_handle - 1]) {
+        PS3_Renderer_CreatePalette(palette_handle << 16);
+    }
+
+    GLuint texture = gl_state.texture_cache[tex_idx][palette_handle];
+
+    if (texture == 0 || gl_state.texture_dirty_flags[tex_idx]) {
+        // Upload time! Combine texture data with palette data.
+        const FLTexture* fl_texture = &flTexture[tex_idx];
+        uint8_t* raw = (uint8_t*)flPS2GetSystemBuffAdrs(fl_texture->mem_handle);
+        if (!raw) {
+            texture = 0;
+            goto skip_texture_update;
+        }
+
+        uint32_t* conv = gl_state.conversion_buffer;
+        int pixels = fl_texture->width * fl_texture->height;
+        if (pixels > 1024 * 1024) pixels = 1024 * 1024; // Bounds check for safety
+
+        if (fl_texture->format == SCE_GS_PSMT8) {
+            uint32_t* pal = palette_handle > 0 ? gl_state.raw_palettes[palette_handle - 1] : NULL;
+            for (int i = 0; i < pixels; i++) {
+                int r_idx = i;
+                conv[i] = pal ? pal[raw[r_idx]] : 0x00000000;
+            }
+        } else if (fl_texture->format == SCE_GS_PSMT4) {
+            uint32_t* pal = palette_handle > 0 ? gl_state.raw_palettes[palette_handle - 1] : NULL;
+            for (int i = 0; i < pixels; i++) {
+                int physical_byte = i / 2;
+                uint8_t byte = raw[physical_byte];
+                // Native LSB-first packing from VRAM (Bits 0-3 = Pixel 0, Bits 4-7 = Pixel 1)
+                uint8_t nibble = (i % 2 == 0) ? (byte & 0x0F) : ((byte >> 4) & 0x0F);
+                conv[i] = pal ? pal[nibble] : 0x00000000;
+            }
+        } else if (fl_texture->format == SCE_GS_PSMCT32) {
+            const uint8_t* rgba = (const uint8_t*)raw;
+            for (int i = 0; i < pixels; i++) {
+                uint8_t out[4] = {0};
+                read_rgba32_color(&rgba[i * 4], out);
+                conv[i] = build_swizzled_rgba(out[0], out[1], out[2], out[3]);
+            }
+        } else if (fl_texture->format == SCE_GS_PSMCT16) {
+            // Raw unpacking without palette
+            const uint8_t* rgba = (const uint8_t*)raw;
+            for (int i = 0; i < pixels; i++) {
+                uint8_t out[4] = {0};
+                read_rgba16_color(&rgba[i * 2], out);
+                conv[i] = build_swizzled_rgba(out[0], out[1], out[2], out[3]);
+            }
+        } else {
+            memset(conv, 0, pixels * 4); // Unsupported format, fill black
+        }
+
+        if (texture == 0) glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fl_texture->width, fl_texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, conv);
+
+        gl_state.texture_cache[tex_idx][palette_handle] = texture;
+        gl_state.texture_dirty_flags[tex_idx] = false;
+    }
+
+skip_texture_update:
+    if (gl_state.texture_count < RENDER_TASK_MAX) {
+        gl_state.textures[gl_state.texture_count++] = texture;
+    }
+}
+
+static void draw_quad(const SDLGameRenderer_Vertex* v, bool textured) {
+    if (gl_state.render_task_count >= RENDER_TASK_MAX) return;
+
+    GLuint tex = textured && gl_state.texture_count > 0 ? gl_state.textures[gl_state.texture_count - 1] : 0;
+    
+    int t_idx = gl_state.render_task_count;
+    RenderTask* task = &gl_state.render_tasks[t_idx];
+    task->texture = tex;
+    task->z = flPS2ConvScreenFZ(v[0].coord.z);
+    task->index = t_idx;
+    task->original_index = t_idx;
+    
+    // Convert 4 vertices to 6 triangles natively in cache
+    PSGL_Vertex* batch = &gl_state.batch_vertices[t_idx * 6];
+    int draw_order[6] = {0, 1, 2, 2, 1, 3}; // Triangle Strip format mapping to Triangles (TL, TR, BL, BR)
+
+    for (int i = 0; i < 6; i++) {
+        int v_idx = draw_order[i];
+        batch[i].x = v[v_idx].coord.x * g_resolution_scale;
+        batch[i].y = v[v_idx].coord.y * g_resolution_scale;
+        batch[i].z = task->z;
+        /* Engine color is ARGB (0xAARRGGBB). GL_UNSIGNED_BYTE reads bytes as RGBA.
+         * On big-endian: rotate left 8 bits so 0xAARRGGBB → 0xRRGGBBAA → bytes [RR,GG,BB,AA]. */
+#ifdef PLATFORM_PS3
+        {
+            uint32_t c = v[v_idx].color;
+            batch[i].color = (c << 8) | (c >> 24);
+        }
+#else
+        batch[i].color = v[v_idx].color;
+#endif
+
+        if (textured) {
+            batch[i].u = v[v_idx].tex_coord.s;
+            batch[i].v = v[v_idx].tex_coord.t;
+        } else {
+            batch[i].u = 0.0f;
+            batch[i].v = 0.0f;
+        }
+    }
+
+    gl_state.render_task_count++;
+}
+
+void PS3_Renderer_DrawTexturedQuad(const Sprite* sprite, unsigned int color) {
+    SDLGameRenderer_Vertex v[4];
+    for (int i = 0; i < 4; i++) {
+        v[i].coord.x = sprite->v[i].x;
+        v[i].coord.y = sprite->v[i].y;
+        v[i].coord.z = sprite->v[i].z;
+        v[i].color = color;
+        v[i].tex_coord = sprite->t[i];
+    }
+    draw_quad(v, true);
+}
+
+void PS3_Renderer_DrawSolidQuad(const Quad* quad, unsigned int color) {
+    SDLGameRenderer_Vertex v[4];
+    for (int i = 0; i < 4; i++) {
+        v[i].coord.x = quad->v[i].x;
+        v[i].coord.y = quad->v[i].y;
+        v[i].coord.z = quad->v[i].z;
+        v[i].color = color;
+    }
+    draw_quad(v, false);
+}
+
+void PS3_Renderer_DrawSprite(const Sprite* sprite, unsigned int color) {
+    SDLGameRenderer_Vertex v[4];
+    for (int i = 0; i < 4; i++) {
+        v[i].coord.z = sprite->v[0].z;
+        v[i].color = color;
+    }
+    v[0].coord.x = sprite->v[0].x;
+    v[0].coord.y = sprite->v[0].y;
+    v[3].coord.x = sprite->v[3].x;
+    v[3].coord.y = sprite->v[3].y;
+    v[1].coord.x = v[3].coord.x;
+    v[1].coord.y = v[0].coord.y;
+    v[2].coord.x = v[0].coord.x;
+    v[2].coord.y = v[3].coord.y;
+
+    v[0].tex_coord = sprite->t[0];
+    v[3].tex_coord = sprite->t[3];
+    v[1].tex_coord.s = v[3].tex_coord.s;
+    v[1].tex_coord.t = v[0].tex_coord.t;
+    v[2].tex_coord.s = v[0].tex_coord.s;
+    v[2].tex_coord.t = v[3].tex_coord.t;
+
+    draw_quad(v, true);
+}
+
+void PS3_Renderer_DrawSprite2(const Sprite2* sprite2) {
+    SDLGameRenderer_Vertex v[4];
+    for (int i = 0; i < 4; i++) {
+        v[i].coord.z = sprite2->v[0].z;
+        v[i].color = sprite2->vertex_color;
+    }
+    v[0].coord.x = sprite2->v[0].x;
+    v[0].coord.y = sprite2->v[0].y;
+    v[3].coord.x = sprite2->v[1].x;
+    v[3].coord.y = sprite2->v[1].y;
+    v[1].coord.x = v[3].coord.x;
+    v[1].coord.y = v[0].coord.y;
+    v[2].coord.x = v[0].coord.x;
+    v[2].coord.y = v[3].coord.y;
+
+    v[0].tex_coord = sprite2->t[0];
+    v[3].tex_coord = sprite2->t[1];
+    v[1].tex_coord.s = v[3].tex_coord.s;
+    v[1].tex_coord.t = v[0].tex_coord.t;
+    v[2].tex_coord.s = v[0].tex_coord.s;
+    v[2].tex_coord.t = v[3].tex_coord.t;
+
+    draw_quad(v, true);
+}

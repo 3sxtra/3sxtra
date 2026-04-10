@@ -50,7 +50,8 @@ uintptr_t mmRoundOff(s32 unit, uintptr_t num) {
 }
 
 /** @brief Debug tag writer (no-op in this build). */
-void mmDebWriteTag(s8* /* unused */) {
+void mmDebWriteTag(s8* unused) {
+    (void)unused;
     // Do nothing
 }
 

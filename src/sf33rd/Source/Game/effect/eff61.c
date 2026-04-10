@@ -16,7 +16,7 @@
 
 static void EFF61_WAIT(WORK_Other_CONN* ewk);
 static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk);
-static void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */);
+static void EFF61_SLIDE_OUT(WORK_Other_CONN* unused1);
 static void EFF61_SUDDENLY(WORK_Other_CONN* ewk);
 
 const s8* Menu_Letter_Data[99] = { "ARCADE",
@@ -232,7 +232,7 @@ static void EFF61_SLIDE_IN(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF61_SLIDE_OUT(WORK_Other_CONN* /* unused */) {}
+void EFF61_SLIDE_OUT(WORK_Other_CONN* unused1) {}
 
 static void EFF61_SUDDENLY(WORK_Other_CONN* ewk) {
     switch (ewk->wu.routine_no[1]) {

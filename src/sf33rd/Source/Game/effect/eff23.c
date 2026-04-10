@@ -18,8 +18,8 @@
 
 static void EFF23_WAIT(WORK_Other_CONN* ewk);
 static void EFF23_SLIDE_IN(WORK_Other_CONN* ewk);
-static void EFF23_CHAR_CHANGE(WORK_Other_CONN* /* unused */);
-static void EFF23_SUDDENLY(WORK_Other_CONN* /* unused */);
+static void EFF23_CHAR_CHANGE(WORK_Other_CONN* unused1);
+static void EFF23_SUDDENLY(WORK_Other_CONN* unused1);
 static void Setup_23_Sub(WORK_Other_CONN* ewk);
 static void Setup_Letter_23(WORK_Other_CONN* ewk, s16 disp_index);
 
@@ -173,9 +173,9 @@ static void EFF23_SLIDE_IN(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF23_CHAR_CHANGE(WORK_Other_CONN* /* unused */) {}
+void EFF23_CHAR_CHANGE(WORK_Other_CONN* unused1) {}
 
-void EFF23_SUDDENLY(WORK_Other_CONN* /* unused */) {}
+void EFF23_SUDDENLY(WORK_Other_CONN* unused1) {}
 
 s32 effect_23_init(s16 id, u8 dir_old, s16 sync_bg, s16 master_player, s16 letter_type, s16 cursor_index,
                    u16 char_offset, s16 pos_index, s16 type) {

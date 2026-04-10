@@ -2,7 +2,7 @@
  * @file sys_sub.h
  * @brief Public API for the system state and management hub.
  *
- * Umbrella header â€” includes all sys_sub domain headers for
+ * Umbrella header â€ includes all sys_sub domain headers for
  * backward compatibility with existing consumers.
  */
 #ifndef SYS_SUB_H
@@ -13,14 +13,14 @@
 
 #include <stdbool.h>
 
-/* Domain headers â€” split from the original monolithic sys_sub.h */
+/* Domain headers â€ split from the original monolithic sys_sub.h */
 #include "sf33rd/Source/Game/system/sys_replay.h"
 #include "sf33rd/Source/Game/system/sys_ranking.h"
 #include "sf33rd/Source/Game/system/sys_options.h"
 #include "sf33rd/Source/Game/system/sys_score.h"
 
 /* === Core wipe/transition === */
-void Switch_Screen_Init(s32 /* unused */);
+void Switch_Screen_Init(s32 unused1);
 s32 Switch_Screen(u8 Wipe_Type);
 s32 Switch_Screen_Revival(u8 Wipe_Type);
 
@@ -100,6 +100,6 @@ s32 Check_Fade_Complete(void);
 
 /* === Misc === */
 void All_Clear_Suicide(void);
-s32 Flash_Violent(WORK_Other* /* unused */, s32 /* unused */);
+s32 Flash_Violent(WORK_Other* unused1, s32 unused2);
 
 #endif

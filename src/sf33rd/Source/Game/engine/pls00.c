@@ -89,7 +89,7 @@ static void TO_nm_18000_01(WORK* wk) {
 }
 
 /** @brief Normal input handler 00 — no-op placeholder. */
-static void nm_00000(PLW* /* unused */) {}
+static void nm_00000(PLW* unused1) {}
 
 /** @brief Normal input handler 01 — standing idle input check. */
 static void nm_01000(PLW* wk) {
@@ -1336,7 +1336,7 @@ static void nm_49000(PLW* wk) {
 }
 
 /** @brief Normal input handler 51 — stun recovery no-op. */
-static void nm_51000(PLW* /* unused */) {}
+static void nm_51000(PLW* unused1) {}
 
 /** @brief Normal input handler 52 — stunned (dizzy) input. */
 static void nm_52000(PLW* wk) {
@@ -1599,7 +1599,7 @@ static void process_catch(PLW* wk) {
 }
 
 /** @brief Caught/grabbed input sub-dispatcher — no-op placeholder. */
-static void process_caught(PLW* /* unused */) {}
+static void process_caught(PLW* unused1) {}
 
 /** @brief Attack input sub-dispatcher — cancel checks, chain combo logic. */
 static void process_attack(PLW* wk) {

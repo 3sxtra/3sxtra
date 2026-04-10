@@ -28,7 +28,7 @@
 
 /** @brief Top-level reset task states (replaces Main_Jmp_Tbl indices). */
 typedef enum {
-    RESET_INIT = 0,  /**< Initialize â€” advance to move state      */
+    RESET_INIT = 0,  /**< Initialize â€ advance to move state      */
     RESET_MOVE = 1,  /**< Monitor for reset button combination     */
     RESET_WAIT = 2,  /**< Wait for pending loads, then soft-reset  */
     RESET_SLEEP = 3, /**< Wait for buttons released before reinit  */
@@ -45,9 +45,9 @@ static void Reset_Sleep(struct _TASK* task_ptr);
 static void Check_Reset();
 static u8 Check_SoftReset(s16 PL_id);
 static s32 Setup_Next_Disposal();
-static void Check_Reset_IO(struct _TASK* /* unused */, s16 PL_id);
+static void Check_Reset_IO(struct _TASK* unused1, s16 PL_id);
 
-/** @brief Main reset task entry point â€” processes I/O for both players, then dispatches sub-state. */
+/** @brief Main reset task entry point â€ processes I/O for both players, then dispatches sub-state. */
 void Reset_Task(struct _TASK* task_ptr) {
     Check_Reset_IO(task_ptr, 0);
     Check_Reset_IO(task_ptr, 1);
@@ -69,7 +69,7 @@ void Reset_Task(struct _TASK* task_ptr) {
     }
 }
 
-/** @brief Reset init state â€” advance to move state and clear reset flag. */
+/** @brief Reset init state â€ advance to move state and clear reset flag. */
 static void Reset_Init(struct _TASK* task_ptr) {
     task_ptr->r_no[0] = RESET_MOVE;
     RESET_X = 0;
@@ -80,7 +80,7 @@ u8 nowSoftReset() {
     return RESET_X != 0;
 }
 
-/** @brief Reset move state â€” check for reset input and initiate the reset sequence if detected. */
+/** @brief Reset move state â€ check for reset input and initiate the reset sequence if detected. */
 static void Reset_Move(struct _TASK* task_ptr) {
     RESET_X = 0;
     Check_Reset();
@@ -96,7 +96,7 @@ static void Reset_Move(struct _TASK* task_ptr) {
     }
 }
 
-/** @brief Reset wait state â€” stop audio and execute soft-reset once loads have completed. */
+/** @brief Reset wait state â€ stop audio and execute soft-reset once loads have completed. */
 static void Reset_Wait(struct _TASK* task_ptr) {
     ToneDown(0xFF, 0);
 
@@ -117,7 +117,7 @@ static void Reset_Wait(struct _TASK* task_ptr) {
     }
 }
 
-/** @brief Reset sleep state â€” wait for the reset button to be released before reinitializing. */
+/** @brief Reset sleep state â€ wait for the reset button to be released before reinitializing. */
 static void Reset_Sleep(struct _TASK* task_ptr) {
     ToneDown(0xFF, 0);
 
@@ -179,7 +179,7 @@ static s32 Setup_Next_Disposal() {
 }
 
 /** @brief Track the Start/Back button state machine for reset detection on the given player. */
-static void Check_Reset_IO(struct _TASK* /* unused */, s16 PL_id) {
+static void Check_Reset_IO(struct _TASK* unused1, s16 PL_id) {
     u16 sw;
     u16 plsw;
 

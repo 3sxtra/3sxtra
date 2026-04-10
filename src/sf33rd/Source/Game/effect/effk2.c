@@ -433,7 +433,7 @@ static void effK2_parts_move_type_1(WORK_Other* ewk, DADD* hahen) {
     }
 }
 
-static void effK2_parts_move_type_2(WORK_Other* ewk, DADD* /* unused */) {
+static void effK2_parts_move_type_2(WORK_Other* ewk, DADD* unused1) {
     switch (ewk->wu.routine_no[2]) {
     case 0:
         char_move(&ewk->wu);

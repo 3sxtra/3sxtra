@@ -5,6 +5,7 @@ project(3sx LANGUAGES C CXX)
 # Options and platform setup
 # ======================================
 
+option(PLATFORM_PS3 "Build for PlayStation 3 (CELL SDK)" OFF)
 option(PLATFORM_RPI4 "Build for Raspberry Pi 4 / Batocera (aarch64)" OFF)
 option(ENABLE_TRACY "Enable Tracy profiler instrumentation" OFF)
 
@@ -29,6 +30,22 @@ option(INSTALL_ASSETS          "Install assets via symlinks (OFF for CI release)
 # Any platform can override via -DTHIRD_PARTY_DIR=<path> (e.g. third_party_linux).
 if(THIRD_PARTY_DIR)
     message(STATUS "THIRD_PARTY_DIR overridden: ${THIRD_PARTY_DIR}")
+elseif(PLATFORM_PS3)
+    set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/third_party_ps3")
+    add_definitions(-DPLATFORM_PS3)
+    set(CMAKE_C_COMPILE_OBJECT "<CMAKE_C_COMPILER> <DEFINES> <INCLUDES> <FLAGS> -o <OBJECT> -c <SOURCE>")
+    # Force disable heavy desktop-only features
+    set(ENABLE_NETPLAY OFF CACHE BOOL "Disabled on PS3" FORCE)
+    set(ENABLE_BROADCAST OFF CACHE BOOL "Disabled on PS3" FORCE)
+    set(ENABLE_LIBRASHADER OFF CACHE BOOL "Disabled on PS3" FORCE)
+    set(ENABLE_TRACY OFF CACHE BOOL "Disabled on PS3" FORCE)
+    set(ENABLE_ARCADE_ROM OFF CACHE BOOL "Disabled on PS3" FORCE)
+    set(ENABLE_TESTS OFF CACHE BOOL "Disabled on PS3" FORCE)
+    set(ENABLE_RMLUI OFF CACHE BOOL "Disabled on PS3" FORCE)
+    set(ENABLE_LEADERBOARD OFF CACHE BOOL "Disabled on PS3" FORCE)
+    set(ENABLE_MODS OFF CACHE BOOL "Disabled on PS3" FORCE)
+    set(ENABLE_BEZEL OFF CACHE BOOL "Disabled on PS3" FORCE)
+    message(STATUS "PLATFORM_PS3: ON — targeting CELL SDK, using third_party_ps3/")
 elseif(PLATFORM_RPI4)
     set(THIRD_PARTY_DIR "${CMAKE_SOURCE_DIR}/third_party_rpi4")
     message(STATUS "PLATFORM_RPI4: ON — targeting GL 3.3 Core, excluding broadcast")
@@ -39,7 +56,7 @@ endif()
 
 # Execute the dependency build script (desktop builds only)
 # When SDL3_ROOT is pre-set (e.g. flatpak modules), skip SDL3/SDL3_image builds
-if(NOT PLATFORM_RPI4)
+if(NOT PLATFORM_RPI4 AND NOT PLATFORM_PS3)
     if(SDL3_ROOT)
         set(ENV{SKIP_SDL3_BUILD} "1")
     endif()
@@ -55,8 +72,13 @@ endif()
 # So that GekkoNet builds as a static lib
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
+if(PLATFORM_PS3)
+    set(CMAKE_C_STANDARD 99)
+    set(CMAKE_C_STANDARD_REQUIRED OFF)
+else()
+    set(CMAKE_C_STANDARD 11)
+    set(CMAKE_C_STANDARD_REQUIRED ON)
+endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ⚡ Bolt: LTO — cross-TU inlining of hot functions.
@@ -90,11 +112,12 @@ if(ENABLE_NETPLAY)
 endif()
 
 # SDL_ShaderCross — pre-cloned by build-deps.sh into third_party/
-set(SDLSHADERCROSS_VENDORED ON CACHE BOOL "" FORCE)
-set(SDLSHADERCROSS_DXC OFF CACHE BOOL "" FORCE)
-set(SDL3_DIR "${SDL3_ROOT}/lib/cmake/SDL3" CACHE PATH "" FORCE)
-
-add_subdirectory("${THIRD_PARTY_DIR}/SDL_shadercross" SDL_shadercross)
+if(NOT PLATFORM_PS3 AND NOT PLATFORM_RPI4)
+    set(SDLSHADERCROSS_VENDORED ON CACHE BOOL "" FORCE)
+    set(SDLSHADERCROSS_DXC OFF CACHE BOOL "" FORCE)
+    set(SDL3_DIR "${SDL3_ROOT}/lib/cmake/SDL3" CACHE PATH "" FORCE)
+    add_subdirectory("${THIRD_PARTY_DIR}/SDL_shadercross" SDL_shadercross)
+endif()
 
 # Tracy Profiler (opt-in)
 if(ENABLE_TRACY)
@@ -149,9 +172,9 @@ if(NOT TARGET Freetype::Freetype)
             INTERFACE_INCLUDE_DIRECTORIES "${FREETYPE_BUILD_DIR}/include/freetype2"
         )
         message(STATUS "FreeType: using bundled static lib at ${FREETYPE_BUILD_DIR}")
-    elseif(PLATFORM_RPI4 AND EXISTS "${THIRD_PARTY_DIR}/freetype/CMakeLists.txt")
+    elseif((PLATFORM_RPI4 OR PLATFORM_PS3) AND EXISTS "${THIRD_PARTY_DIR}/freetype/CMakeLists.txt")
         add_subdirectory("${THIRD_PARTY_DIR}/freetype" freetype)
-        message(STATUS "FreeType: using RPi4 subdirectory")
+        message(STATUS "FreeType: using subdirectory")
     else()
         message(STATUS "FreeType: using system package")
     endif()
@@ -191,7 +214,7 @@ include_directories(
     $<$<BOOL:${ENABLE_CONTROLLER_IMAGE}>:${PROJECT_SOURCE_DIR}/src/port/sdl/input/controllerimage>
 
     $<$<BOOL:${ENABLE_LIBRASHADER}>:${THIRD_PARTY_DIR}/librashader/include>
-    ${THIRD_PARTY_DIR}/simde
+    ${CMAKE_SOURCE_DIR}/third_party/simde
     ${glad_SOURCE_DIR}/include
     ${CMAKE_BINARY_DIR}/gladsources/glad/include
     ${THIRD_PARTY_DIR}/sdl3/SDL/src/video/khronos
@@ -265,6 +288,38 @@ file(GLOB_RECURSE GAME_SRC CONFIGURE_DEPENDS src/*.c src/*.cpp)
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/win32/")
 list(FILTER GAME_SRC EXCLUDE REGEX "src/port/linux/")
 
+if(PLATFORM_PS3)
+    add_compile_options(--diag_suppress=142 --diag_suppress=1787)
+    set(ENABLE_CONTROLLER_IMAGE OFF CACHE BOOL "Disabled on PS3" FORCE)
+    set(ENABLE_TRAINING OFF CACHE BOOL "Disabled on PS3" FORCE)
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/netplay/")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/shaders/")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/Compress/zlibApp\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/AcrSDK/ps2/")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/io/afs\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/screens/ms_ranked_matchmaking\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/screens/ms_ranking\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sound/modded_bgm\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sound/adx_decoder\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdl/")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/rendering/sdl_bezel\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/mods/")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/ps3/rmlui/")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/input_definition.cpp")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sound/adx\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/resources\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/paths\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/utils\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/sdk/.*")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/utils/sha256\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/netplay/.*")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/arcade/rom_load\\.c")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/test/.*")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/ps3/renderer/spu/.*\\.c")
+else()
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/port/ps3/")
+endif()
+
 # --- Feature-toggle conditional source exclusions ---
 if(NOT ENABLE_NETPLAY)
     list(FILTER GAME_SRC EXCLUDE REGEX "src/netplay/")
@@ -282,6 +337,7 @@ endif()
 
 if(NOT ENABLE_TRAINING)
     list(FILTER GAME_SRC EXCLUDE REGEX "lua_engine_bridge")
+    list(FILTER GAME_SRC EXCLUDE REGEX "src/sf33rd/Source/Game/training/")
     list(FILTER GAME_SRC EXCLUDE REGEX "lua_trials_loader")
     list(FILTER GAME_SRC EXCLUDE REGEX "rmlui_training_")
     list(FILTER GAME_SRC EXCLUDE REGEX "rmlui_trials_")
@@ -330,7 +386,9 @@ if(NOT ENABLE_LEADERBOARD)
     list(FILTER GAME_SRC EXCLUDE REGEX "rmlui_leaderboard")
 endif()
 
-find_package(ZLIB REQUIRED)
+if(NOT PLATFORM_PS3)
+    find_package(ZLIB REQUIRED)
+endif()
 
 # Disable clang-tidy for all third-party sources
 set_source_files_properties(src/port/win32/broadcast_spout.cpp
@@ -406,22 +464,73 @@ if(ENABLE_NETPLAY OR ENABLE_LEADERBOARD)
 endif()
 
 if(ENABLE_RMLUI)
-    target_sources(3sx PRIVATE
-        ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
-        ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
-        ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL.cpp
-        ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL_GPU.cpp
-    )
+    if(PLATFORM_PS3)
+        target_sources(3sx PRIVATE
+            ${PROJECT_SOURCE_DIR}/src/port/ps3/rmlui/RmlUi_Renderer_GCM.cpp
+        )
+    else()
+        target_sources(3sx PRIVATE
+            ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Platform_SDL.cpp
+            ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_GL3.cpp
+            ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL.cpp
+            ${THIRD_PARTY_DIR}/rmlui/Backends/RmlUi_Renderer_SDL_GPU.cpp
+        )
+    endif()
 endif()
 
 
 target_include_directories(3sx PRIVATE
+    ${PROJECT_SOURCE_DIR}/src/include
+    ${glad_SOURCE_DIR}/include
     ${THIRD_PARTY_DIR}/rmlui/Backends
 )
 
-set_target_properties(3sx PROPERTIES LINKER_LANGUAGE CXX)
+if(NOT PLATFORM_PS3)
+    target_link_libraries(3sx PRIVATE ZLIB::ZLIB)
+endif()
 
-target_link_libraries(3sx PRIVATE glad_gl_core)
+set_target_properties(3sx PROPERTIES LINKER_LANGUAGE CXX)
+set(CMAKE_C_STANDARD 99)
+
+if(PLATFORM_PS3)
+    set_target_properties(3sx PROPERTIES SUFFIX ".elf")
+    
+    set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_LINKER> <LINK_FLAGS> <OBJECTS> <LINK_LIBRARIES> -o <TARGET>")
+    set(PS3_SDK_LIB_DIR "C:/usr/local/cell/target/ppu/lib")
+    target_link_libraries(3sx PRIVATE
+        "${PS3_SDK_LIB_DIR}/libdbgfont.a"
+        "${PS3_SDK_LIB_DIR}/libaudio_stub.a"
+        "${PS3_SDK_LIB_DIR}/libsysmodule_stub.a"
+        "${PS3_SDK_LIB_DIR}/libio_stub.a"
+        "${PS3_SDK_LIB_DIR}/libspurs_stub.a"
+        "${PS3_SDK_LIB_DIR}/libfios.a"
+        "${PS3_SDK_LIB_DIR}/libedgezlib.a"
+        "${PS3_SDK_LIB_DIR}/libcgc.a"
+        "${PS3_SDK_LIB_DIR}/libresc_stub.a"
+        "${PS3_SDK_LIB_DIR}/libgcm_cmd.a"
+        "${PS3_SDK_LIB_DIR}/libgcm_sys_stub.a"
+        "${PS3_SDK_LIB_DIR}/libsysutil_stub.a"
+        "${PS3_SDK_LIB_DIR}/libfs_stub.a"
+    )
+    
+    set(SPU_BIN "${CMAKE_CURRENT_BINARY_DIR}/spu_sort_task.spu.elf")
+    set(SPU_OBJ "${CMAKE_CURRENT_BINARY_DIR}/spu_sort_task.o")
+    
+    find_program(SPU_GCC_CMD "spu-lv2-gcc.exe" PATHS "C:/usr/local/cell/host-win32/sn/bin" "C:/usr/local/cell/host-win32/spu/bin")
+    find_program(PPU_OBJCOPY_CMD "ppu-lv2-objcopy.exe" PATHS "C:/usr/local/cell/host-win32/sn/bin" "C:/usr/local/cell/host-win32/ppu/bin")
+
+    add_custom_command(
+        OUTPUT ${SPU_OBJ}
+        COMMAND ${SPU_GCC_CMD} -O3 -fpic ${CMAKE_SOURCE_DIR}/src/port/ps3/renderer/spu/spu_sort_task.c -o ${SPU_BIN}
+        COMMAND ${PPU_OBJCOPY_CMD} -I binary -O elf64-powerpc-celloslv2 -B powerpc:common64 ${SPU_BIN} ${SPU_OBJ}
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/port/ps3/renderer/spu/spu_sort_task.c
+        COMMENT "Compiling SPU Sort Task..."
+    )
+    
+    target_sources(3sx PRIVATE ${SPU_OBJ})
+else()
+    target_link_libraries(3sx PRIVATE glad_gl_core)
+endif()
 
 # ======================================
 # Compiler and linker flags
@@ -487,12 +596,18 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     )
 endif()
 
-target_compile_options(3sx PRIVATE
-    -Wall
-    -Werror
-    -fno-strict-aliasing
-    $<$<COMPILE_LANGUAGE:C>:${C_DISABLED_WARNINGS}>
-)
+if(PLATFORM_PS3)
+    target_compile_options(3sx PRIVATE
+        -fno-strict-aliasing
+    )
+else()
+    target_compile_options(3sx PRIVATE
+        -Wall
+        -Werror
+        -fno-strict-aliasing
+        $<$<COMPILE_LANGUAGE:C>:${C_DISABLED_WARNINGS}>
+    )
+endif()
 
 # ⚡ Bolt: Platform-specific SIMD flags.
 if(PLATFORM_RPI4)
@@ -502,8 +617,10 @@ if(PLATFORM_RPI4)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64|ARM64")
     # Generic ARM64: NEON is baseline, no specific CPU tuning.
     message(STATUS "SIMD: ARM64 target — NEON is implicit, no extra flags needed")
+elseif(PLATFORM_PS3)
+    message(STATUS "SIMD: PS3 Cell Broadband Engine — AltiVec available via intrinsics")
 else()
-        # x86-64: SSE4.2 � supported on Intel Nehalem (2008+) / AMD Bulldozer (2011+).
+        # x86-64: SSE4.2  supported on Intel Nehalem (2008+) / AMD Bulldozer (2011+).
     # SIMDE maps intrinsics portably; compiler auto-vectorizes with 128-bit SSE.
     target_compile_options(3sx PRIVATE -msse4.2)
 endif()
@@ -529,31 +646,33 @@ if(ENABLE_LIBRASHADER)
     endif()
 endif()
 
-target_link_libraries(3sx PRIVATE
-    m
-    $<$<BOOL:${ENABLE_ARCADE_ROM}>:MINIZIP::minizip-ng>
-    $<$<BOOL:${ENABLE_ARCADE_ROM}>:${TF_PSA_CRYPTO_LIB}>
-    $<$<BOOL:${ENABLE_NETPLAY}>:GekkoNet>
-    stdc++
-    glad_gl_core
-    ZLIB::ZLIB
-    $<$<BOOL:${ENABLE_LIBRASHADER}>:${LIBRASHADER_LIB}>
-    SDL3_shadercross::SDL3_shadercross
-    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui>
-    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui_core>
-    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui_lua>
-    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui_debugger>
-    $<$<NOT:$<PLATFORM_ID:Darwin>>:-Wl,--start-group>
-    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui>
-    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui_core>
-    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui_lua>
-    $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui_debugger>
-    $<$<NOT:$<PLATFORM_ID:Darwin>>:-Wl,--end-group>
-    $<$<BOOL:${ENABLE_RMLUI}>:lua_static>
-)
+if(NOT PLATFORM_PS3)
+    target_link_libraries(3sx PRIVATE
+        m
+        $<$<BOOL:${ENABLE_ARCADE_ROM}>:MINIZIP::minizip-ng>
+        $<$<BOOL:${ENABLE_ARCADE_ROM}>:${TF_PSA_CRYPTO_LIB}>
+        $<$<BOOL:${ENABLE_NETPLAY}>:GekkoNet>
+        stdc++
+        glad_gl_core
+        ZLIB::ZLIB
+        $<$<BOOL:${ENABLE_LIBRASHADER}>:${LIBRASHADER_LIB}>
+        SDL3_shadercross::SDL3_shadercross
+        $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui>
+        $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui_core>
+        $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui_lua>
+        $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<PLATFORM_ID:Darwin>>:rmlui_debugger>
+        $<$<NOT:$<PLATFORM_ID:Darwin>>:-Wl,--start-group>
+        $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui>
+        $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui_core>
+        $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui_lua>
+        $<$<AND:$<BOOL:${ENABLE_RMLUI}>,$<NOT:$<PLATFORM_ID:Darwin>>>:rmlui_debugger>
+        $<$<NOT:$<PLATFORM_ID:Darwin>>:-Wl,--end-group>
+        $<$<BOOL:${ENABLE_RMLUI}>:lua_static>
+    )
 
-if(ENABLE_TRACY)
-    target_link_libraries(3sx PRIVATE TracyClient)
+    if(ENABLE_TRACY)
+        target_link_libraries(3sx PRIVATE TracyClient)
+    endif()
 endif()
 
 if(UNIX)
@@ -662,13 +781,15 @@ endif()
 # FetchContent_MakeAvailable(glad)
 # message(STATUS "DEBUG: glad fetched.")
 
-# Use local glad cloned by build-deps.sh
-add_subdirectory("${THIRD_PARTY_DIR}/glad/cmake" glad_cmake)
+if(NOT PLATFORM_PS3)
+    # Use local glad cloned by build-deps.sh
+    add_subdirectory("${THIRD_PARTY_DIR}/glad/cmake" glad_cmake)
 
-if(PLATFORM_RPI4)
-    glad_add_library(glad_gl_core REPRODUCIBLE LOADER API gl:core=3.3)
-else()
-    glad_add_library(glad_gl_core REPRODUCIBLE LOADER API gl:core=4.6)
+    if(PLATFORM_RPI4)
+        glad_add_library(glad_gl_core REPRODUCIBLE LOADER API gl:core=3.3)
+    else()
+        glad_add_library(glad_gl_core REPRODUCIBLE LOADER API gl:core=4.6)
+    endif()
 endif()
 
 # Spout2 for Windows video broadcast
@@ -883,7 +1004,7 @@ if(WIN32)
         )
     endif()
 else()
-    if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR AND NOT PLATFORM_PS3)
         add_custom_command(TARGET 3sx POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_SOURCE_DIR}/assets" "$<TARGET_FILE_DIR:3sx>/assets"
             COMMAND ${CMAKE_COMMAND} -E copy_directory

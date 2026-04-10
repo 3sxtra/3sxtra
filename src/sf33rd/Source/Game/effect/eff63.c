@@ -16,8 +16,8 @@
 
 static void EFF63_WAIT(WORK_Other_CONN* ewk);
 static void EFF63_SLIDE_IN(WORK_Other_CONN* ewk);
-static void EFF63_CHAR_CHANGE(WORK_Other_CONN* /* unused */);
-static void EFF63_SUDDENLY(WORK_Other_CONN* /* unused */);
+static void EFF63_CHAR_CHANGE(WORK_Other_CONN* unused1);
+static void EFF63_SUDDENLY(WORK_Other_CONN* unused1);
 static void Disp_63_Sub(WORK_Other_CONN* ewk);
 static void Setup_Letter_63(WORK_Other_CONN* ewk, s16 disp_index);
 
@@ -111,9 +111,9 @@ static void EFF63_SLIDE_IN(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF63_CHAR_CHANGE(WORK_Other_CONN* /* unused */) {}
+void EFF63_CHAR_CHANGE(WORK_Other_CONN* unused1) {}
 
-void EFF63_SUDDENLY(WORK_Other_CONN* /* unused */) {}
+void EFF63_SUDDENLY(WORK_Other_CONN* unused1) {}
 
 s32 effect_63_init(u8 dir_old, s16 sync_bg, s16 master_player, s16 letter_type, s16 cursor_index) {
     WORK_Other_CONN* ewk;

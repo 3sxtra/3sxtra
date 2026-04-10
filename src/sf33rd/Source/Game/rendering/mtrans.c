@@ -32,7 +32,9 @@
 #include <SDL3/SDL.h>
 
 // ⚡ Opt5: SIMDe for portable SIMD intrinsics (SSE+FMA on x86, NEON on ARM)
+#ifndef PLATFORM_PS3
 #include <simde/x86/fma.h>
+#endif
 
 /* Forward declaration — defined later in this file */
 static void appRenewTempPriority(s32 z);
@@ -44,7 +46,9 @@ typedef struct {
     f32 min_x, min_y, max_x, max_y;
 } SpriteBox;
 
+#ifndef PLATFORM_PS3
 #include <simde/x86/sse.h>
+#endif
 
 #define PRIO_BASE_SIZE 128
 #define SPRITE_LAYERS_MAX 24 // Maximum number of sprite layers (matches MultiTexture mts[] array)
@@ -2110,6 +2114,7 @@ static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr
     // ⚡ Opt5: SIMD affine transform — process both points in parallel.
     // Layout: vec = {x0, x1, -, -} for each component multiply.
     // Uses FMA (fused multiply-add) for better precision and throughput.
+#ifndef PLATFORM_PS3
     {
         const f32 x1 = x + w;
         const f32 y1 = y - h;
@@ -2139,6 +2144,20 @@ static s32 seqsStoreChip(f32 x, f32 y, s32 w, s32 h, s32 gix, s32 code, s32 attr
         chip->v[0].z = x * s_mtx_02 + y * s_mtx_12 + s_mtx_tz;
         chip->v[1].z = x1 * s_mtx_02 + y1 * s_mtx_12 + s_mtx_tz;
     }
+#else
+    {
+        const f32 x1 = x + w;
+        const f32 y1 = y - h;
+        
+        chip->v[0].x = x * s_mtx_00 + y * s_mtx_10 + s_mtx_tx;
+        chip->v[1].x = x1 * s_mtx_00 + y1 * s_mtx_10 + s_mtx_tx;
+        chip->v[0].y = x * s_mtx_01 + y * s_mtx_11 + s_mtx_ty;
+        chip->v[1].y = x1 * s_mtx_01 + y1 * s_mtx_11 + s_mtx_ty;
+
+        chip->v[0].z = x * s_mtx_02 + y * s_mtx_12 + s_mtx_tz;
+        chip->v[1].z = x1 * s_mtx_02 + y1 * s_mtx_12 + s_mtx_tz;
+    }
+#endif
 
     if ((chip->v[0].x >= 384.0f) || (chip->v[1].x < 0.0f) || (chip->v[0].y >= 224.0f) || (chip->v[1].y < 0.0f)) {
         return 1;

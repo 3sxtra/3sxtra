@@ -20,7 +20,7 @@
 #include "sf33rd/Source/Game/sound/se_data.h"
 
 static void effD5_main_process(WORK_Other* ewk);
-static void cal_speeds(WORK_Other* ewk, PLW* /* unused */, PLW* twk);
+static void cal_speeds(WORK_Other* ewk, PLW* unused1, PLW* twk);
 static s32 my_rose_live_check(PLW* wk);
 
 const s16 dm_sp_sel_tbl[4][2] = { { 0, 14 }, { 1, 16 }, { 2, 18 }, { 3, 20 } };
@@ -186,7 +186,7 @@ static void effD5_main_process(WORK_Other* ewk) {
     }
 }
 
-static void cal_speeds(WORK_Other* ewk, PLW* /* unused */, PLW* twk) {
+static void cal_speeds(WORK_Other* ewk, PLW* unused1, PLW* twk) {
     s16 tx = twk->wu.position_x;
     s16 rix = 0;
 
@@ -219,7 +219,7 @@ static void cal_speeds(WORK_Other* ewk, PLW* /* unused */, PLW* twk) {
     }
 }
 
-s32 effect_D5_init(WORK* wk, s32 /* unused */) {
+s32 effect_D5_init(WORK* wk, s32 unused1) {
     WORK_Other* ewk;
     s16 ix;
 

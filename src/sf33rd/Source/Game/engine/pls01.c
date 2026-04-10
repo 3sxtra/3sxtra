@@ -58,7 +58,7 @@ s32 sa_stop_check() {
 }
 
 /** @brief Deactivates the player's own throw power-up flag. */
-void check_my_tk_power_off(PLW* wk, PLW* /* unused */) {
+void check_my_tk_power_off(PLW* wk, PLW* unused1) {
     if (wk->wu.old_rno[1] == 1) {
         if (wk->wu.old_rno[2] < 8 && wk->wu.old_rno[2] > 3) {
             return;

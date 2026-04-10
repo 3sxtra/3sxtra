@@ -14,14 +14,18 @@
 #include "main.h"
 #include "port/menu_task.h"
 #include "common.h"
+#ifdef ENABLE_NETPLAY
 #include "netplay/netplay.h"
+#endif
 #include "port/rendering/renderer.h"
 #include "port/sdl/rmlui/rmlui_casual_lobby.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
 #include "port/sdl/app/sdl_app.h"
 #include "rendering/game_renderer.h"
 #include "port/sdl/app/sdl_app_config.h"
+#ifdef ENABLE_NETPLAY
 #include "port/sdl/netstats_renderer.h"
+#endif
 #include "port/sdl/lagtest_renderer.h"
 
 #include "sf33rd/AcrSDK/common/mlPAD.h"
@@ -70,9 +74,11 @@
 #include "port/rendering/resources.h"
 
 #include <SDL3/SDL.h>
+#ifndef PLATFORM_PS3
 #include <SDL3/SDL_main.h>
+#endif
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(PLATFORM_PS3)
 #include <signal.h>
 static volatile sig_atomic_t g_signal_quit = 0;
 static void signal_handler(int sig) {
@@ -98,7 +104,6 @@ extern bool game_paused;
 #include <stdio.h>
 #endif
 
-#include <memory.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -237,7 +242,7 @@ int main(int argc, char* argv[]) {
 
     SDLApp_Init();
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(PLATFORM_PS3)
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
 #endif
@@ -290,7 +295,7 @@ int main(int argc, char* argv[]) {
             step_0();
             SDLApp_EndFrame();
             is_running = SDLApp_PollEvents();
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(PLATFORM_PS3)
             if (g_signal_quit)
                 is_running = false;
 #endif
@@ -299,7 +304,7 @@ int main(int argc, char* argv[]) {
             /* Re-present the existing canvas (no game logic, no FBO clear) */
             SDLApp_PresentOnly();
             is_running = SDLApp_PollEvents();
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(PLATFORM_PS3)
             if (g_signal_quit)
                 is_running = false;
 #endif
@@ -448,6 +453,7 @@ static void game_step_0() {
 
     mpp_w.inGame = false;
 
+#ifdef ENABLE_NETPLAY
     NetplaySessionState current_net_state = Netplay_GetSessionState();
 
     if (current_net_state != NETPLAY_SESSION_IDLE) {
@@ -471,13 +477,16 @@ static void game_step_0() {
     // Only run game loop directly if we are in IDLE or LOBBY mode.
     // In TRANSITIONING, CONNECTING, and RUNNING modes, Netplay_Run() calls step_game() automatically.
     if (current_net_state == NETPLAY_SESSION_IDLE || current_net_state == NETPLAY_SESSION_LOBBY) {
+#endif
         njUserMain();
 
         seqsBeforeProcess();
 
         Renderer_Flush2DPrimitives();
         seqsAfterProcess();
+#ifdef ENABLE_NETPLAY
     }
+#endif
 
     disp_effect_work();
 

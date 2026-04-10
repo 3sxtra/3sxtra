@@ -15,8 +15,8 @@
 
 static void EFF64_WAIT(WORK_Other_CONN* ewk);
 static void EFF64_SLIDE_IN(WORK_Other_CONN* ewk);
-static void EFF64_CHAR_CHANGE(WORK_Other_CONN* /* unused */);
-static void EFF64_SUDDENLY(WORK_Other_CONN* /* unused */);
+static void EFF64_CHAR_CHANGE(WORK_Other_CONN* unused1);
+static void EFF64_SUDDENLY(WORK_Other_CONN* unused1);
 static void Disp_64_Sub(WORK_Other_CONN* ewk);
 static void Setup_Letter_64(WORK_Other_CONN* ewk, s16 disp_index);
 
@@ -146,9 +146,9 @@ static void EFF64_SLIDE_IN(WORK_Other_CONN* ewk) {
     }
 }
 
-void EFF64_CHAR_CHANGE(WORK_Other_CONN* /* unused */) {}
+void EFF64_CHAR_CHANGE(WORK_Other_CONN* unused1) {}
 
-void EFF64_SUDDENLY(WORK_Other_CONN* /* unused */) {}
+void EFF64_SUDDENLY(WORK_Other_CONN* unused1) {}
 
 s32 effect_64_init(u8 dir_old, s16 sync_bg, s16 master_player, s16 letter_type, s16 cursor_index, u16 char_offset,
                    s16 pos_index, s16 convert_id, s16 convert_id2) {

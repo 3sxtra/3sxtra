@@ -21,7 +21,7 @@ s32 fsOpen(REQ* req) {
     return 1;
 }
 
-void fsClose(REQ* /* unused */) {
+void fsClose(REQ* unused1) {
     AFS_Close(afs_handle);
     afs_handle = AFS_NONE;
 }
@@ -38,7 +38,7 @@ u32 fsCalSectorSize(u32 size) {
     return (size + 2048 - 1) / 2048;
 }
 
-s32 fsCansel(REQ* /* unused */) {
+s32 fsCansel(REQ* unused1) {
     if ((afs_handle != AFS_NONE) && (AFS_GetState(afs_handle) == AFS_READ_STATE_READING)) {
         AFS_Stop(afs_handle);
     }
@@ -67,12 +67,12 @@ s32 fsCheckCommandExecuting() {
     }
 }
 
-s32 fsRequestFileRead(REQ* /* unused */, u32 sec, void* buff) {
+s32 fsRequestFileRead(REQ* unused1, u32 sec, void* buff) {
     AFS_Read(afs_handle, sec, buff);
     return 1;
 }
 
-s32 fsCheckFileReaded(REQ* /* unused */) {
+s32 fsCheckFileReaded(REQ* unused1) {
     const AFSReadState state = AFS_GetState(afs_handle);
 
     switch (state) {

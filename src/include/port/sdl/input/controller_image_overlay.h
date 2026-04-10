@@ -16,6 +16,8 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_CONTROLLER_IMAGE
+
 /// Number of button-icon rows in the Button Config menu.
 #define CONTROLLER_OVERLAY_BUTTON_COUNT 8
 
@@ -55,6 +57,20 @@ void ControllerImageOverlay_FlushGL(float vp_x, float vp_y, float vp_w, float vp
 
 /// Clear the deferred draw queue without drawing (e.g. when overlay is not used this frame).
 void ControllerImageOverlay_ClearQueue(void);
+
+#else
+
+#define CONTROLLER_OVERLAY_BUTTON_COUNT 8
+static inline void ControllerImageOverlay_Init(void) {}
+static inline void ControllerImageOverlay_Shutdown(void) {}
+static inline bool ControllerImageOverlay_HasSlot(int slot) { (void)slot; return false; }
+static inline void* ControllerImageOverlay_GetTexture(int slot, int button_row) { (void)slot; (void)button_row; return 0; }
+static inline bool ControllerImageOverlay_DrawButton(int slot, int button_row, int px, int py, int sx, int sy, int pz) { (void)slot; (void)button_row; (void)px; (void)py; (void)sx; (void)sy; (void)pz; return false; }
+static inline void ControllerImageOverlay_FlushGL(float vp_x, float vp_y, float vp_w, float vp_h, int win_w, int win_h) { (void)vp_x; (void)vp_y; (void)vp_w; (void)vp_h; (void)win_w; (void)win_h; }
+static inline void ControllerImageOverlay_ClearQueue(void) {}
+
+#endif
+
 
 #ifdef __cplusplus
 }

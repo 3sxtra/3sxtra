@@ -4,7 +4,7 @@
 #include "structs.h"
 #include "types.h"
 
-void Att_DUMMY(PLW* /* unused */);
+void Att_DUMMY(PLW* unused1);
 void Att_METAMOR_WAIT(PLW* wk);
 void Att_METAMOR_REBIRTH(PLW* wk);
 void Att_HADOUKEN(PLW* wk);

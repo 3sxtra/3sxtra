@@ -44,7 +44,7 @@ void TITLE_Init();
 s16 TITLE_Move(u16 type);
 s16 opening_demo();
 void OPBG_Init();
-s16 OPBG_Move(s32 /* unused */);
+s16 OPBG_Move(s32 unused1);
 void opening_init();
 void sound_trg_init();
 void sound_trg_move();

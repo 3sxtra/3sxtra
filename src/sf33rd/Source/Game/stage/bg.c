@@ -64,7 +64,7 @@ u8 s_gouki_pal_xored;
 /** @brief Update read/write work buffers for animated background tiles. */
 static void bgRWWorkUpdate();
 /** @brief Draw all visible chips for a single background screen. */
-static void bgDrawOneScreen(s32 bgnum, s32 gixbase, s32* xx, s32* yy, s32 /* unused */, s32 ofsPal,
+static void bgDrawOneScreen(s32 bgnum, s32 gixbase, s32* xx, s32* yy, s32 unused1, s32 ofsPal,
                             PPGDataList* curDataList);
 /** @brief Draw a single background tile chip at the given position. */
 static void bgDrawOneChip(s32 x, s32 y, s32 xs, s32 ys, s32 gbix, u32 vtxCol, s32 ofsPal);
@@ -601,7 +601,7 @@ void bgRWWorkUpdate() {
 }
 
 /** @brief Draw all visible chips for a single background screen. */
-void bgDrawOneScreen(s32 bgnum, s32 gixbase, s32* xx, s32* yy, s32 /* unused */, s32 ofsPal, PPGDataList* curDataList) {
+void bgDrawOneScreen(s32 bgnum, s32 gixbase, s32* xx, s32* yy, s32 unused1, s32 ofsPal, PPGDataList* curDataList) {
     s32 i, x, y, gbix;
 
     for (y = yy[0]; y < yy[1]; y += 128) {

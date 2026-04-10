@@ -16,7 +16,7 @@
 #include "sf33rd/Source/Game/effect/eff57.h"
 #include "sf33rd/Source/Game/ui/sc_sub.h"
 
-#include <SDL3/SDL_log.h>
+#include <SDL3/SDL.h>
 
 #include "sf33rd/Source/Game/engine/workuser.h"
 #include "sf33rd/Source/Game/sound/sound3rd.h"

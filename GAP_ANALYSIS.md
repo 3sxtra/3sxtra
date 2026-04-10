@@ -14,12 +14,12 @@ Fighting game netcode lives and dies by its algorithmic efficiency, strict deter
 
 ### The Gap: Full-State Snapshotting vs. The Unified Event Queue
 - **Current Deficit:** `GameState_Save()` and `GameState_Load()` perform full struct serialization. Input reading is decentralized.
-- **SOTA Standard:** Quake 3 centralized all inputs into a **Unified Event Queue** (a circular ring buffer with bitmask wrapping). All state histories are derived from this sequence. Furthermore, modern implementations combine this with **Incremental Snapshotting** (delta compression via **dirty flags**). 
+- **SOTA Standard (Enforced via Libretro Core):** Quake 3 centralized all inputs into a **Unified Event Queue**. By moving to a Libretro Core port, RetroArch's rollback system perfectly fulfills this sequence constraint. Furthermore, the core must adopt **Incremental Snapshotting** (delta compression via **dirty flags**) to optimize `retro_serialize` performance.
 - **The Risk:** Brute-forcing a full 22KB memory copy across 5 rollback frames destroys the CPU cache. Furthermore, without a unified input queue, we cannot reliably reproduce non-deterministic "Heisenbugs."
 - **Architecture Goal:** 
-  1. Implement a unified $O(1)$ Event Queue that drops the oldest event on overflow to guarantee memory stability.
+  1. Implement a unified $O(1)$ Event Queue that funnels `retro_input_state_t` queries synchronously, dropping the oldest event on overflow to guarantee memory stability.
   2. Implement **Event Journaling**: Treat real-time matches as a batch process, allowing the engine to reliably replay any network desync offline.
-  3. Formally segment `GameState` arenas and implement bitmask change-tracking for incremental memory snapshots.
+  3. Formally segment `GameState` arenas via Libretro's `retro_serialize()` bounds and implement bitmask change-tracking for incremental memory snapshots to eliminate rollback overhead.
 
 ### The Gap: Floating-Point Drift & Silent Failures
 - **Current Deficit:** The engine relies on pointers being sanitized before rudimentary checksum loops. Uninitialized pointers often lead to silent memory corruption instead of immediate failures.
@@ -37,10 +37,10 @@ Systems must naturally solve their own problems through strict interface boundar
 ### The Gap: Subsystem Entanglement & Cross-Boundary Risk
 - **Current Deficit:** The modern `AppMode` wrapper simply hijacks the 1999 static C-arrays (`G_No`) without true isolation. Furthermore, bridging legacy CPS3 logic and SDL wrappers introduces risky stack-calling assumptions.
 - **SOTA Standard:** DOOM initialized highly modular subsystems sequentially (`V_`, `M_`, `Z_`) and forced strict `I_` prefix isolation for OS bindings. Quake 3 enforced the **`cdecl` Calling Convention** across boundaries to ensure exact stack cleanup. Instead of complex Entity Component Systems (ECS), 1v1 fighting engines are mathematically purer as pure **Data-Oriented Design (DOD)** arrays wrapped in Finite State Machines (FSMs).
-- **Architecture Goal:** 
-  1. Enforce strict `cdecl` contracts and explicit `I_` style port boundaries. The CPS3 core must never execute a direct OS/SDL call.
-  2. Leverage **Preprocessor-Driven Environments** (`#ifdef`) to orchestrate execution contexts (e.g., headless simulation server) at build-time, completely unified under one codebase.
-  3. Detangle `game.c`, deprecating `G_No` jump tables in favor of strict FSM interfaces.
+- **Architecture Goal (Enforced via Libretro Core):** 
+  1. Enforce strict `cdecl` contracts and explicit `I_` style port boundaries using the **Libretro API** as the sole gateway. The CPS3 core must never execute a direct OS/SDL call.
+  2. Leverage **Preprocessor-Driven Environments** (`#ifdef`) to orchestrate execution contexts (e.g., `#ifndef LIBRETRO` to cleanly strip proprietary UI) under one purely decoupled codebase.
+  3. Detangle `game.c`, deprecating `G_No` jump tables in favor of strict FSM interfaces yielding strictly to `retro_run()`.
 
 ---
 

@@ -152,7 +152,7 @@ void setup_bonus_car_parts() {
 }
 
 /** @brief Register a DMA group for a given sprite number. */
-void setup_dma_group(u16 num, u32 /* unused */) {
+void setup_dma_group(u16 num, u32 unused1) {
     load_any_texture_patnum(num, 2, 0);
 }
 

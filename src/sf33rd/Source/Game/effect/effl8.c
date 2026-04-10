@@ -58,7 +58,7 @@ void check_new_color_data_L8(WORK* wk) {
     get_new_color_data_L8(wk, (s16*)wk->hit_adrs, wk->move_xy_table);
 }
 
-void get_new_color_data_L8(WORK* /* unused */, s16* trom, s16* tram) {
+void get_new_color_data_L8(WORK* unused1, s16* trom, s16* tram) {
     s16 i;
     u16 col;
 

@@ -80,7 +80,7 @@ static void setup_caught_process_flags(PLW* wk) {
 }
 
 /** @brief Caught state 00 — no-op placeholder. */
-static void Caught_00000(PLW* /* unused */, PLW* /* unused */) {}
+static void Caught_00000(PLW* unused1, PLW* unused2) {}
 
 /** @brief Caught state 01 — grounded grab hold. */
 static void Caught_01000(PLW* wk, PLW* emwk) {
@@ -175,7 +175,7 @@ static void Caught_02000(PLW* wk, PLW* emwk) {
 }
 
 /** @brief Caught state 03 — no-op end of catch. */
-static void Caught_03000(PLW* /* unused */, PLW* /* unused */) {}
+static void Caught_03000(PLW* unused1, PLW* unused2) {}
 
 /** @brief Handles cg_type transitions during the caught state. */
 static void caught_cg_type_check(PLW* wk, PLW* emwk) {

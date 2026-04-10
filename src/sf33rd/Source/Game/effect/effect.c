@@ -441,12 +441,12 @@ s32 shell_live_check(PLW* wk, s16 wix) {
     return 0;
 }
 
-s32 clear_caution_flag(PLW* wk, u8 /* unused */) {
+s32 clear_caution_flag(PLW* wk, u8 unused1) {
     wk->caution_flag = 0;
     return 0;
 }
 
-s32 set_caution_flag(PLW* wk, u8 /* unused */) {
+s32 set_caution_flag(PLW* wk, u8 unused1) {
     wk->caution_flag = 1;
     return 0;
 }
@@ -456,12 +456,12 @@ s32 setup_status_flag(WORK* wk, u8 data) {
     return 0;
 }
 
-s32 reset_extra_bg_flag(WORK* wk, u8 /* unused */) {
+s32 reset_extra_bg_flag(WORK* wk, u8 unused1) {
     another_bg[wk->id] = 0;
     return 0;
 }
 
-s32 flip_my_rl_flag(WORK* wk, u8 /* unused */) {
+s32 flip_my_rl_flag(WORK* wk, u8 unused1) {
     wk->rl_flag = wk->rl_flag + 1U & 1;
     return 0;
 }
@@ -503,16 +503,16 @@ s32 setup_my_bright_level(WORK* wk, u8 data) {
     return 0;
 }
 
-s32 setup_free_program(s32 /* unused */, s32 /* unused */) {
+s32 setup_free_program(s32 unused1, s32 unused2) {
     return 0;
 }
 
-s32 setup_bg_quake_x(s32 /* unused */, u8 data) {
+s32 setup_bg_quake_x(s32 unused1, u8 data) {
     bg_w.quake_x_index = data;
     return 0;
 }
 
-s32 setup_bg_quake_y(s32 /* unused */, u8 data) {
+s32 setup_bg_quake_y(s32 unused1, u8 data) {
     bg_w.quake_y_index = data;
     pp_screen_quake(bg_w.quake_y_index);
     return 0;

@@ -3,7 +3,7 @@
 
 #include "common.h"
 #include "port/tracy_zones.h"
-#include <SDL3/SDL_mutex.h>
+#include <SDL3/SDL.h>
 
 struct SPUVConf {
     u32 pitch;

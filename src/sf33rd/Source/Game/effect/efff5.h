@@ -5,6 +5,6 @@
 #include "types.h"
 
 void effect_F5_move(WORK_Other* ewk);
-s32 effect_F5_init(s16 /* unused */);
+s32 effect_F5_init(s16 unused1);
 
 #endif

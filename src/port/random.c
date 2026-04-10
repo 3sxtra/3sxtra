@@ -10,7 +10,9 @@
 #elif defined(__APPLE__) || defined(__ANDROID__)
 #include <stdlib.h>
 #else
+#if !defined(_WIN32) && !defined(PLATFORM_PS3)
 #include <sys/random.h>
+#endif
 #endif
 
 void Sys_RandomBytes(void* buf, size_t len) {
@@ -24,6 +26,9 @@ void Sys_RandomBytes(void* buf, size_t len) {
 #elif defined(__APPLE__) || defined(__ANDROID__)
     arc4random_buf(bytes, len);
     success = true;
+#elif defined(PLATFORM_PS3)
+    // SNC lacks CSPRNG wrappers natively; rely on SDL PRNG fallback below.
+    success = false;
 #else
     if (getrandom(bytes, len, 0) == (ssize_t)len) {
         success = true;

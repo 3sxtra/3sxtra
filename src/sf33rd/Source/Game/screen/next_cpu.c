@@ -69,7 +69,7 @@ static void Next_Bonus_End();
 static void Next_Q_1st();
 static void Next_Q_2nd();
 static void Next_Q_3rd();
-static void Sel_CPU_Sub(s16 PL_id, u16 sw, u16 /* unused */);
+static void Sel_CPU_Sub(s16 PL_id, u16 sw, u16 unused1);
 static void Setup_EM_List();
 static void Setup_Next_Fighter();
 static s8 Setup_Com_Arts();
@@ -1185,7 +1185,7 @@ static void Next_Q_3rd() {
 }
 
 /** @brief Process lever/button input for CPU opponent selection (up/down to pick, attack to confirm). */
-static void Sel_CPU_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
+static void Sel_CPU_Sub(s16 PL_id, u16 sw, u16 unused1) {
     u16 lever_sw;
 
     if (Sel_EM_Complete[PL_id]) {

@@ -1,16 +1,16 @@
 /**
  * @file sys_sub.c
- * @brief System state and management hub â€” core utilities.
+ * @brief System state and management hub â€ core utilities.
  *
  * Wipe/transition effects, background layer setup and movement,
  * input remapping, button-cut helpers, fade control, soft reset,
  * clear/init helpers, and miscellaneous system-level utilities.
  *
  * Domain-specific subsystems have been split into:
- *   sys_replay.c  â€” replay record/playback
- *   sys_ranking.c â€” ranking insertion + opponent candidate selection
- *   sys_options.c â€” game option save/load/defaults/compare
- *   sys_score.c   â€” score display, win records, digit rendering, copyright
+ *   sys_replay.c  â€ replay record/playback
+ *   sys_ranking.c â€ ranking insertion + opponent candidate selection
+ *   sys_options.c â€ game option save/load/defaults/compare
+ *   sys_score.c   â€ score display, win records, digit rendering, copyright
  *
  * Part of the system module.
  * Originally from the PS2 sys_sub module.
@@ -47,11 +47,13 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "sf33rd/Source/Game/system/sys_sub2.h"
 #include "sf33rd/Source/Game/system/work_sys.h"
-#include <memory.h>
+#include <string.h>
 
 /* RmlUi Phase 3 bypass */
 #include "port/sdl/rmlui/rmlui_phase3_toggles.h"
 #include "port/sdl/rmlui/rmlui_wrapper.h"
+
+#include "port/mods/modded_stage.h"
 
 #define CONVERT_DATA_COUNT 12
 
@@ -64,7 +66,7 @@ static void Reset_Sub0();
 const u16 Convert_Data[CONVERT_DATA_COUNT] = { 16, 32, 64, 256, 512, 1024, 272, 544, 1088, 112, 1792, 0 };
 
 /** @brief Initialize screen-switch (wipe-out) state. */
-void Switch_Screen_Init(s32 /* unused */) {
+void Switch_Screen_Init(s32 unused1) {
     WipeInit();
     Forbid_Break = 1;
     Exec_Wipe = 1;
@@ -510,7 +512,7 @@ void BG_move() {
     }
 }
 
-/** @brief Extended background move â€” recalculate scroll for a single layer. */
+/** @brief Extended background move â€ recalculate scroll for a single layer. */
 void BG_move_Ex(u8 ix) {
     scr_calc(ix);
 }
@@ -666,7 +668,7 @@ bool Cut_Cut_Loser() {
 
 /** @brief Legacy infinite-loop VSync wait stub (no longer functional). */
 void njWaitVSync_with_N() {
-    // Original PS2 VSync spin loop â€” no-op on modern platforms
+    // Original PS2 VSync spin loop â€ no-op on modern platforms
 }
 
 /** @brief Perform the soft-reset sequence: fade out, stop audio, purge textures, reinitialize tasks. */
@@ -742,7 +744,7 @@ void Clear_Flash_Init(s16 level) {
     Synchro_Level = level;
 }
 
-/** @brief Advance the clear-flash oscillation and return the current flash intensity (0â€“127). */
+/** @brief Advance the clear-flash oscillation and return the current flash intensity (0â€127). */
 s16 Clear_Flash_Sub() {
     switch (Synchro_No) {
     case 0:
@@ -847,6 +849,6 @@ void All_Clear_Suicide() {
 }
 
 /** @brief Placeholder flash-violent callback (always returns 1). */
-s32 Flash_Violent(WORK_Other* /* unused */, s32 /* unused */) {
+s32 Flash_Violent(WORK_Other* unused1, s32 unused2) {
     return 1;
 }

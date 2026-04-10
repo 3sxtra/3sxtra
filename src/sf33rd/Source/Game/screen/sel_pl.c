@@ -108,7 +108,7 @@ static void Sel_PL_Sub_CU(s16 PL_id);
 static void Sel_PL_Sub_CD(s16 PL_id);
 static void Auto_Repeat_Sub(s16 PL_id);
 static u16 Auto_Repeat_Sub_Wife(s16 PL_id);
-static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */);
+static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 unused1);
 static void Check_Exit();
 static void Exit_1st();
 static void Exit_2nd();
@@ -1614,7 +1614,7 @@ static u16 Auto_Repeat_Sub_Wife(s16 PL_id) {
 }
 
 /** @brief Super-art selector — move art plate up/down, confirm on attack. */
-static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 /* unused */) {
+static void Sel_Arts_Sub(s16 PL_id, u16 sw, u16 unused1) {
     u16 lever_sw;
 
     if (Sel_Arts_Complete[PL_id]) {

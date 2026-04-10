@@ -5,7 +5,7 @@
 #ifndef SDL_BEZEL_H
 #define SDL_BEZEL_H
 
-#include <SDL3/SDL_rect.h>
+#include <SDL3/SDL.h>
 #include <stdbool.h>
 #include <stddef.h>
 

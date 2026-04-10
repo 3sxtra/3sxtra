@@ -100,3 +100,5 @@ android/app/src/main/assets/shaders/
 android/app/src/main/cpp/third_party/
 android/third_party/
 /third_party_android
+/build-ps3
+/third_party_ps3

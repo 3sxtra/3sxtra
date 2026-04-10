@@ -1,0 +1,29 @@
+struct V2F {
+    float2 texcoord : TEXCOORD0;
+    float4 color : COLOR;
+};
+
+float4 main(V2F IN, 
+            uniform sampler2D texture : TEXUNIT0,
+            uniform sampler2D palette : TEXUNIT1,
+            uniform float is_palettized,
+            uniform float2 tex_dimensions) : COLOR
+{
+    float4 tex0 = tex2D(texture, IN.texcoord);
+
+    if (is_palettized > 1.5f) {
+        float byte_v = floor(tex0.a * 255.0 + 0.5);
+        float pixel_x = floor(IN.texcoord.x * tex_dimensions.x);
+        float is_odd = fmod(pixel_x, 2.0); // 0.0 for even, 1.0 for odd
+        // C-11 Audit Fix: PS2 PSMT4 packs high nibble first (even=high, odd=low)
+        float final_nibble = lerp(floor(byte_v / 16.0), fmod(byte_v, 16.0), is_odd);
+        float4 tex_color = tex2D(palette, float2((final_nibble + 0.5) / 256.0, 0.5));
+        return tex_color * IN.color;
+    } else if (is_palettized > 0.5f) {
+        float byte_v = floor(tex0.a * 255.0 + 0.5);
+        float4 tex_color = tex2D(palette, float2((byte_v + 0.5) / 256.0, 0.5));
+        return tex_color * IN.color;
+    }
+    
+    return tex0 * IN.color;
+}

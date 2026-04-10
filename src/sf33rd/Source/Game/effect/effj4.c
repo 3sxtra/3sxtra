@@ -94,7 +94,7 @@ s32 effect_J4_init(u8 data2) {
     return 0;
 }
 
-s32 setup_sa_shadow(u8 /* unused */, u8 data) {
+s32 setup_sa_shadow(u8 unused1, u8 data) {
     if (test_flag) {
         return -1;
     }

@@ -551,7 +551,7 @@ u16 Check_Menu_Lever(u8 PL_id, s16 type) {
 }
 
 /** @brief Suspend-menu stub (no-op). */
-static void Suspend_Menu(struct _TASK* /* unused */) {
+static void Suspend_Menu(struct _TASK* unused1) {
     // Do nothing
 }
 

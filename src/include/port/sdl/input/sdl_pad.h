@@ -6,5 +6,7 @@
  * This forwarding header exists so code that includes via the public
  * include/ tree still gets the full declaration set without duplication.
  */
-#pragma once
-#include "port/sdl/input/sdl_pad.h"
+#ifndef SRC_INCLUDE_PORT_SDL_PAD_FORWARD
+#define SRC_INCLUDE_PORT_SDL_PAD_FORWARD
+#include "../../../../src/port/sdl/input/sdl_pad.h"
+#endif

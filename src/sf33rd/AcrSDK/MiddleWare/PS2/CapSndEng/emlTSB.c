@@ -16,7 +16,7 @@
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlMemMap.h"
 #include "sf33rd/AcrSDK/MiddleWare/PS2/CapSndEng/emlRefPhd.h"
 
-#include <memory.h>
+#include <string.h>
 #include <stdio.h>
 
 #define ECHO_INDEX_MASK 0xF

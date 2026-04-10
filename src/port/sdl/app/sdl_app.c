@@ -82,7 +82,7 @@
 
 /* Feature toggle stubs — must come AFTER all subsystem headers so that stubs
    override any declarations from headers that aren't yet self-guarding. */
-#include "port/feature_toggles.h"
+
 #include "port/linux/gpio_lag_test.h"
 
 int g_resolution_scale = 1;

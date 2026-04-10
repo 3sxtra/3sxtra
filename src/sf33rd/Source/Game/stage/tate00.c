@@ -11,6 +11,8 @@
 #include "sf33rd/Source/Game/stage/bg.h"
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 
+#include "port/mods/modded_stage.h"
+
 static void ta0_init00();
 static void ta0_init01();
 static void ta0_init02();

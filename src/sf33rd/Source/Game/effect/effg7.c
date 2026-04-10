@@ -43,7 +43,7 @@ void effect_G7_move(WORK_Other* ewk) {
     }
 }
 
-s32 effect_G7_init(s32 /* unused */, s32 /* unused */) {
+s32 effect_G7_init(s32 unused1, s32 unused2) {
     WORK_Other* ewk;
     s16 ix;
 

@@ -265,7 +265,7 @@ void char_move_wca_init(WORK* wk) {
 }
 
 /** @brief Script command: WCA (wait-for-command-A) mode toggle. */
-static s32 comm_wca(WORK* wk, UNK11* /* unused */) {
+static s32 comm_wca(WORK* wk, UNK11* unused1) {
     char_move_wca_init(wk);
     return 1;
 }
@@ -469,12 +469,12 @@ void check_cm_extended_code(WORK* wk) {
 }
 
 /** @brief Script command: dummy — no-op. */
-static s32 comm_dummy(WORK* /* unused */, UNK11* /* unused */) {
+static s32 comm_dummy(WORK* unused1, UNK11* unused2) {
     return 1;
 }
 
 /** @brief Script command: ROA — read-once-and-advance. */
-static s32 comm_roa(WORK* wk, UNK11* /* unused */) {
+static s32 comm_roa(WORK* wk, UNK11* unused1) {
     if (wk->cmoa.pat == 0) {
         wk->cmoa.koc = wk->now_koc;
         wk->cmoa.ix = wk->char_index;
@@ -515,7 +515,7 @@ static s32 comm_jsr(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: RET — return from subroutine. */
-static s32 comm_ret(WORK* wk, UNK11* /* unused */) {
+static s32 comm_ret(WORK* wk, UNK11* unused1) {
     set_char_move_init2(wk, wk->cmsw.koc, wk->cmsw.ix, wk->cmsw.pat, 0);
     return 0;
 }
@@ -689,7 +689,7 @@ static s32 comm_rja4(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: UJA4. */
-static s32 comm_uja4(WORK* wk, UNK11* /* unused */) {
+static s32 comm_uja4(WORK* wk, UNK11* unused1) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmj4.koc, wk->cmj4.ix, wk->cmj4.pat, 0);
     return 0;
@@ -704,7 +704,7 @@ static s32 comm_rja5(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: UJA5. */
-static s32 comm_uja5(WORK* wk, UNK11* /* unused */) {
+static s32 comm_uja5(WORK* wk, UNK11* unused1) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmj5.koc, wk->cmj5.ix, wk->cmj5.pat, 0);
     return 0;
@@ -749,7 +749,7 @@ static s32 comm_rmja(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: UMJA — unconditional move-jump A. */
-static s32 comm_umja(WORK* wk, UNK11* /* unused */) {
+static s32 comm_umja(WORK* wk, UNK11* unused1) {
     setup_comm_back(wk);
     set_char_move_init2(wk, wk->cmms.koc, wk->cmms.ix, wk->cmms.pat, 0);
     return 0;
@@ -1053,7 +1053,7 @@ static s32 comm_hjmp(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: HCLR — clear hit-stop jump data. */
-static s32 comm_hclr(WORK* wk, UNK11* /* unused */) {
+static s32 comm_hclr(WORK* wk, UNK11* unused1) {
     wk->hf.hit_flag = 0;
     return 1;
 }
@@ -1077,13 +1077,13 @@ static s32 comm_ixbw(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: QUAX — set quake X. */
-static s32 comm_quax(WORK* /* unused */, UNK11* ctc) {
+static s32 comm_quax(WORK* unused1, UNK11* ctc) {
     bg_w.quake_x_index = ctc->koc;
     return 1;
 }
 
 /** @brief Script command: QUAY — set quake Y. */
-static s32 comm_quay(WORK* /* unused */, UNK11* ctc) {
+static s32 comm_quay(WORK* unused1, UNK11* ctc) {
     bg_w.quake_y_index = ctc->koc;
     pp_screen_quake(bg_w.quake_y_index);
     return 1;
@@ -1157,7 +1157,7 @@ static s32 comm_rapk(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: GETS — get shot button state. */
-static s32 comm_gets(WORK* wk, UNK11* /* unused */) {
+static s32 comm_gets(WORK* wk, UNK11* unused1) {
     setupCharTableData(wk, 0, 1);
     return 1;
 }
@@ -1226,7 +1226,7 @@ static s32 comm_smhf(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: NGME — negate me (set negative attributes). */
-static s32 comm_ngme(WORK* wk, UNK11* /* unused */) {
+static s32 comm_ngme(WORK* wk, UNK11* unused1) {
     WORK* emwk;
 
     emwk = (WORK*)wk->hit_adrs;
@@ -1242,7 +1242,7 @@ static s32 comm_ngme(WORK* wk, UNK11* /* unused */) {
 }
 
 /** @brief Script command: NGEM — negate enemy (set negative attributes). */
-static s32 comm_ngem(WORK* wk, UNK11* /* unused */) {
+static s32 comm_ngem(WORK* wk, UNK11* unused1) {
     WORK* emwk;
 
     emwk = (WORK*)wk->hit_adrs;
@@ -1335,7 +1335,7 @@ static s32 comm_schy(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: BACK — store backup state. */
-static s32 comm_back(WORK* wk, UNK11* /* unused */) {
+static s32 comm_back(WORK* wk, UNK11* unused1) {
     set_char_move_init2(wk, wk->cmbk.koc, wk->cmbk.ix, wk->cmbk.pat, 0);
     return 0;
 }
@@ -1806,7 +1806,7 @@ static s32 comm_rv_y(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: CCFL — cancel chain flag. */
-static s32 comm_ccfl(PLW* wk, UNK11* /* unused */) {
+static s32 comm_ccfl(PLW* wk, UNK11* unused1) {
     wk->caution_flag = 0;
     return 1;
 }
@@ -1883,12 +1883,12 @@ static s32 comm_emhp(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: EXBGS — extra BG start (no-op stub). */
-static s32 comm_exbgs(WORK* /* unused */, UNK11* /* unused */) {
+static s32 comm_exbgs(WORK* unused1, UNK11* unused2) {
     return 1;
 }
 
 /** @brief Script command: EXBGC — extra BG clear (no-op stub). */
-static s32 comm_exbgc(WORK* /* unused */, UNK11* /* unused */) {
+static s32 comm_exbgc(WORK* unused1, UNK11* unused2) {
     return 1;
 }
 
@@ -1910,7 +1910,7 @@ static s32 comm_chkwf(PLW* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: RETMJ — return from move-jump. */
-static s32 comm_retmj(PLW* wk, UNK11* /* unused */) {
+static s32 comm_retmj(PLW* wk, UNK11* unused1) {
     wk->wu.now_koc = wk->wu.cmb2.koc;
     wk->wu.char_index = wk->wu.cmb2.ix;
     wk->wu.cg_ix = wk->wu.cmb2.pat;
@@ -2161,7 +2161,7 @@ static s32 comm_ngda(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: FLIP — flip sprite horizontally. */
-static s32 comm_flip(WORK* wk, UNK11* /* unused */) {
+static s32 comm_flip(WORK* wk, UNK11* unused1) {
     wk->rl_flag = (wk->rl_flag + 1) & 1;
     return 1;
 }
@@ -2263,7 +2263,7 @@ static s32 comm_ifs2(WORK* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: ABBAK — absolute back position restore. */
-static s32 comm_abbak(WORK* wk, UNK11* /* unused */) {
+static s32 comm_abbak(WORK* wk, UNK11* unused1) {
     set_char_move_init2(wk, wk->cmb3.koc, wk->cmb3.ix, wk->cmb3.pat, 0);
     return 0;
 }
@@ -2336,7 +2336,7 @@ static s32 comm_rhsja(PLW* wk, UNK11* ctc) {
 }
 
 /** @brief Script command: UHSJA — unconditional hit-stop jump A. */
-static s32 comm_uhsja(PLW* wk, UNK11* /* unused */) {
+static s32 comm_uhsja(PLW* wk, UNK11* unused1) {
     setup_comm_back(&wk->wu);
     wk->hsjp_ok = 0;
     set_char_move_init2(&wk->wu, wk->wu.cmhs.koc, wk->wu.cmhs.ix, wk->wu.cmhs.pat, 0);

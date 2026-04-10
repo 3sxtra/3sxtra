@@ -545,7 +545,8 @@ s32 ppgSetupCmpChunk(u8* srcAdrs, s32 num, u8* dstAdrs) {
 }
 
 /** @brief Locate and load a pPAL palette chunk by index, creating GPU handles. */
-s32 ppgSetupPalChunk(Palette* pch, u8* adrs, s32 size, s32 ixNum1st, s32 num, s32 /* unused */) {
+s32 ppgSetupPalChunk(Palette* pch, u8* adrs, s32 size, s32 ixNum1st, s32 num, s32 unused) {
+    (void)unused;
     PPLFileHeader* ppl;
     plContext bits;
     s32 i;
@@ -680,7 +681,8 @@ error_handler:
 }
 
 /** @brief Locate and load a pPAL palette chunk directly from pre-parsed data. */
-s32 ppgSetupPalChunkDir(Palette* pch, PPLFileHeader* ppl, u8* adrs, s32 ixNum1st, s32 /* unused */) {
+s32 ppgSetupPalChunkDir(Palette* pch, PPLFileHeader* ppl, u8* adrs, s32 ixNum1st, s32 unused) {
+    (void)unused;
     plContext bits;
     s32 i;
 

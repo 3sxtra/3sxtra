@@ -135,7 +135,7 @@ static void fall_data_set(WORK_Other* ewk) {
     cal_all_speed_data(&ewk->wu, ewk->wu.old_rno[0], ewk->wu.old_rno[1], ewk->wu.old_rno[2], 2, 1);
 }
 
-s32 effect_D1_init(WORK_Other* oya, s32 /* unused */) {
+s32 effect_D1_init(WORK_Other* oya, s32 unused1) {
     WORK_Other* ewk;
     s16 ix;
 

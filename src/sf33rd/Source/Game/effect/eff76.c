@@ -27,7 +27,7 @@ void effect_76_move(WORK_Other* ewk);
 static void EFF76_WAIT(WORK_Other* ewk);
 static void EFF76_WAIT_BREAK_INTO(WORK_Other* ewk);
 static void EFF76_SLIDE_IN(WORK_Other* ewk);
-static void EFF76_SLIDE_OUT(WORK_Other* /* unused */);
+static void EFF76_SLIDE_OUT(WORK_Other* unused1);
 static void EFF76_SUDDENLY(WORK_Other* ewk);
 static void EFF76_BEFORE(WORK_Other* ewk);
 static void EFF76_SHIFT(WORK_Other* ewk);
@@ -137,7 +137,7 @@ static void EFF76_SLIDE_IN(WORK_Other* ewk) {
     }
 }
 
-static void EFF76_SLIDE_OUT(WORK_Other* /* unused */) {
+static void EFF76_SLIDE_OUT(WORK_Other* unused1) {
     // Do nothing
 }
 

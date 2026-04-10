@@ -34,7 +34,9 @@ bool g_dump_missing_sprites = false;
 // These might need to be mocked in tests
 // void SDLApp_SetWindowPosition(int x, int y);
 // void SDLApp_SetWindowSize(int w, int h);
+#ifndef SDL_atoi
 int SDL_atoi(const char* str);
+#endif
 
 /**
  * @brief Validate parsed configuration for conflicting or invalid options.

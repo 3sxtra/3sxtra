@@ -17,6 +17,8 @@
 #include "sf33rd/Source/Game/stage/bg_sub.h"
 #include "structs.h"
 
+#include "port/mods/modded_stage.h"
+
 // sdata
 s16 eff_hit_data[4][4] = { { -67, 59, 13, 29 }, { 31, 95, 24, 15 }, { 4, 123, 28, 15 }, { 20, 15, 67, 37 } };
 

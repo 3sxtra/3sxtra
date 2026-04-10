@@ -153,7 +153,7 @@ void Debug_2nd(struct _TASK* task_ptr) {
 }
 
 /** @brief Render the 3-column debug option list with current values. */
-void Debug_Menu_Disp(u32 /* unused */, u32 /* unused */) {
+void Debug_Menu_Disp(u32 unused1, u32 unused2) {
 #if DEBUG
     s16 side;
     s16 ix;
@@ -439,7 +439,7 @@ void Check_Check_Screen() {
 }
 
 /** @brief Stub — lever display (unused). */
-void Disp_Lever(u16* /* unused */, u32 /* unused */, u32 /* unused */) {
+void Disp_Lever(u16* unused1, u32 unused2, u32 unused3) {
     // do nothing
 }
 

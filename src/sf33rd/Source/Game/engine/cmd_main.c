@@ -42,7 +42,7 @@ void key_thru(PLW* pl) {
 }
 
 /** @brief Initializes command sequence data tables from the move definition set. */
-void cmd_data_set(PLW* /* unused */, s16 i) {
+void cmd_data_set(PLW* unused1, s16 i) {
     u8* ptr3;
     u16* ptr4;
 

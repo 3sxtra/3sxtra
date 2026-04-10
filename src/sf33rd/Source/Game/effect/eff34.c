@@ -101,7 +101,7 @@ void effect_34_move(WORK_Other* ewk) {
         break;
     }
 }
-s32 effect_34_init(WORK* wk, s32 /* unused */) {
+s32 effect_34_init(WORK* wk, s32 unused1) {
     WORK_Other* ewk;
     s16 ix;
 

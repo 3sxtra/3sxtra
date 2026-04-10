@@ -63,7 +63,7 @@ static void get_sky_dm_timer(PLW* wk);
 static void get_damage_reaction_data(PLW* wk);
 static void damage_atemi_setup(PLW* wk, PLW* ek);
 static void check_bullet_damage(PLW* wk);
-static void check_dmpat_to_dmpat(PLW* /* unused */);
+static void check_dmpat_to_dmpat(PLW* unused1);
 static void add_dm_step_tbl(PLW* wk, s8 flag);
 static void set_dm_hos_flag_grd(PLW* wk);
 static void setup_smoke_type(PLW* wk);
@@ -1385,7 +1385,7 @@ static void add_dm_step_tbl(PLW* wk, s8 flag) {
 }
 
 /** @brief Stub — placeholder for damage-pattern-to-damage-pattern transition check. */
-static void check_dmpat_to_dmpat(PLW* /* unused */) {}
+static void check_dmpat_to_dmpat(PLW* unused1) {}
 
 /** @brief Sets the damage direction flag for airborne hit (sky). */
 static void set_dm_hos_flag_sky(PLW* wk) {

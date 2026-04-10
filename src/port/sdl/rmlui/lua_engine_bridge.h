@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+#ifdef ENABLE_TRAINING
+
 /** Initialize the Lua engine bridge — registers the `engine` global table. */
 void lua_engine_bridge_init(void);
 
@@ -23,6 +25,15 @@ void lua_engine_bridge_tick(void);
 
 /** Load the training_main.lua bootstrap (lazy, call once on first training frame). */
 void lua_engine_bridge_load_training(void);
+
+#else
+
+static inline void lua_engine_bridge_init(void) {}
+static inline void lua_engine_bridge_shutdown(void) {}
+static inline void lua_engine_bridge_tick(void) {}
+static inline void lua_engine_bridge_load_training(void) {}
+
+#endif
 
 #ifdef __cplusplus
 }

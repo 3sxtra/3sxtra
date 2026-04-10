@@ -1,6 +1,6 @@
 /**
  * @file sound3rd.c
- * @brief Main sound system controller â€” BGM and SE engine.
+ * @brief Main sound system controller â€ BGM and SE engine.
  *
  * Manages all sound output: BGM via ADX streaming (with fade, seamless, and
  * memory-loaded tracks), SE via SPU banks (CSE engine shim). Contains the
@@ -38,6 +38,8 @@
 #include "structs.h"
 
 #include <SDL3/SDL.h>
+
+#include "port/sound/modded_bgm.h"
 
 #define ADX_STM_WORK_SIZE 252388
 #define BGM_TABLE_SIZE 68
@@ -161,7 +163,7 @@ static void bgm_volume_setup(s16 data);
 
 extern const s16 adx_volume[128];
 
-/** @brief Initialize the sound system â€” ADX, CSE/SPU shim, default levels. */
+/** @brief Initialize the sound system â€ ADX, CSE/SPU shim, default levels. */
 void Init_sound_system() {
     se_level = 15;
     bgm_level = 15;
@@ -183,7 +185,7 @@ void Init_sound_system() {
     system_init_level |= 1;
 }
 
-/** @brief Check if a voice transfer is complete (stub â€” always returns 1). */
+/** @brief Check if a voice transfer is complete (stub â€ always returns 1). */
 s32 sndCheckVTransStatus(s32 type) {
     // Keeping this for now, might use later?
     return 1;
@@ -224,7 +226,7 @@ void checkAdxFileLoaded() {
     adx_NowOnMemoryType = sys_w.bgm_type;
 }
 
-/** @brief Shut down the sound system â€” stop ADX and SPU. */
+/** @brief Shut down the sound system â€ stop ADX and SPU. */
 void Exit_sound_system() {
     if (system_init_level & 2) {
         ADX_Exit();
@@ -685,7 +687,7 @@ static void bgm_play_request(s32 filenum, s32 flag) {
     } else {
         int fnum = bgm_table[sys_w.bgm_type][filenum].fnum;
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION,
-                     "BGM: StartAfs bgm_code=%d â†’ AFS fnum=%d (bgm_type=%d) [Mod override: assets/bgm_mod/%d.ogg]",
+                     "BGM: StartAfs bgm_code=%d -> AFS fnum=%d (bgm_type=%d) [Mod override: assets/bgm_mod/%d.ogg]",
                      filenum,
                      fnum,
                      sys_w.bgm_type,
@@ -784,7 +786,7 @@ s32 bgmSkipCheck(s32 code) {
     return (bgm_table[sys_w.bgm_type][code].data & 0x8000) != 0;
 }
 
-/** @brief Stop all notes (BGM + SE) â€” legacy wrapper. */
+/** @brief Stop all notes (BGM + SE) â€ legacy wrapper. */
 void SsAllNoteOff() {
     sound_all_off();
 }
@@ -795,7 +797,7 @@ void SsAllNoteOff() {
  * Looks up the CPS3 sound code in the lookup table, then routes through
  * ProcessSoundRequest() with the given pan offset.
  */
-void SsRequestPan(u16 reqNum, s16 start, s16 /* unused */, s32 /* unused */, s32 /* unused */) {
+void SsRequestPan(u16 reqNum, s16 start, s16 unused1, s32 unused2, s32 unused3) {
     SoundRequestData rmcode;
 
     start -= 0x40;
@@ -1019,7 +1021,7 @@ void SsBgmFadeOut(u16 time) {
 }
 
 /** @brief Set BGM volume offset (bank=7 request), clamped to [-0x7F, 0]. */
-void SsBgmControl(s8 /* unused */, s8 VOLUME) {
+void SsBgmControl(s8 unused1, s8 VOLUME) {
     SoundRequestData rmcode;
 
     rmcode.ptix = BGM_PTIX;

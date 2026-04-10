@@ -134,7 +134,7 @@ static void d0_speed_set(WORK* ewk, s16 num) {
     ewk->mvxy.d[1].sp = effd0_data_tbl[num][3];
 }
 
-s32 effect_D0_init(PLW* oya, s32 /* unused */) {
+s32 effect_D0_init(PLW* oya, s32 unused1) {
     WORK_Other* ewk;
     s16 ix;
 

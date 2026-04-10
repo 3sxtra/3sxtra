@@ -55,7 +55,7 @@ static void Win_13000(PLW* wk);
 static void Win_14000(PLW* wk);
 static void urien_dash(PLW* wk);
 static void Win_15000(PLW* wk);
-static s16 win_select(PLW* /* unused */, s16 num);
+static s16 win_select(PLW* unused1, s16 num);
 static void bonus_game_win_pause(PLW* wk);
 static void meta_win_pause(PLW* wk);
 
@@ -1603,7 +1603,7 @@ static void Win_15000(PLW* wk) {
 }
 
 /** @brief Select a random win-pose index masked to num+1 variants. */
-static s16 win_select(PLW* /* unused */, s16 num) {
+static s16 win_select(PLW* unused1, s16 num) {
     s16 work = random_16();
     work &= num;
     return work;

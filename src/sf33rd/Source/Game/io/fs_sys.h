@@ -8,7 +8,7 @@
 s32 fsOpen(REQ* req);
 
 /** @brief Close an open file */
-void fsClose(REQ* /* unused */);
+void fsClose(REQ* unused1);
 
 /** @brief Get the size of a file in bytes */
 u32 fsGetFileSize(u16 fnum);

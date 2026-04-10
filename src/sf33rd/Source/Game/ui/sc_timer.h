@@ -25,7 +25,7 @@ void sc_ram_to_vram_opc(s8 sc_num, s8 x, s8 y, u16 atr);
 void sq_paint_chenge(u16 x, u16 y, u16 sx, u16 sy, u16 atr);
 void SF3_logo(u8 step);
 void Training_Disp_Work_Clear(void);
-void Training_Damage_Set(s16 damage, s16 /* unused */, u8 kezuri);
+void Training_Damage_Set(s16 damage, s16 unused1, u8 kezuri);
 void Training_Data_Disp(void);
 void dispButtonImage(s32 px, s32 py, s32 pz, s32 sx, s32 sy, s32 cl, s32 ix);
 void dispButtonImage2(s32 px, s32 py, s32 pz, s32 sx, s32 sy, s32 cl, s32 ix);

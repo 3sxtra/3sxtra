@@ -114,7 +114,7 @@ static void activate_new_operators(void);
 #define ENTRY_JMP_COUNT 11
 
 /** @brief Main entry-task callback — dispatch per-frame screen transitions for all entry phases. */
-void Entry_Task(struct _TASK* /* unused */) {
+void Entry_Task(struct _TASK* unused1) {
     s16 ix;
     s16 ff;
 
@@ -1381,7 +1381,7 @@ s32 Ck_Break_Into_SP(u16 Sw_0, u16 Sw_1, s16 PL_id) {
 }
 
 /** @brief Break-in type 02 — activate challenger, reset entry state, init grades. */
-static void Break_Into_02(s16 /* unused */) {
+static void Break_Into_02(s16 unused1) {
     plw[New_Challenger].wu.pl_operator = 1;
     Operator_Status[New_Challenger] = 1;
     E_Number[New_Challenger][0] = ENTRY_PL_INIT;
@@ -1398,7 +1398,7 @@ static void Break_Into_02(s16 /* unused */) {
 }
 
 /** @brief Break-in type 04 — full interrupt with A2 effect, sound off, and load request. */
-static void Break_Into_04(s16 /* unused */) {
+static void Break_Into_04(s16 unused1) {
     Break_Into = 1;
     E_No[1] += 1;
     E_No[2] = 0;

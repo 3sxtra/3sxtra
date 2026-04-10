@@ -6,18 +6,18 @@
 #include "sf33rd/Source/Game/effect/efff5.h"
 #include "common.h"
 
-static void efff5_0000(WORK_Other* /* unused */);
-static void efff5_1000(WORK_Other* /* unused */);
-static void efff5_2000(WORK_Other* /* unused */);
-static void efff5_3000(WORK_Other* /* unused */);
-static void efff5_4000(WORK_Other* /* unused */);
-static void efff5_5000(WORK_Other* /* unused */);
-static void efff5_6000(WORK_Other* /* unused */);
-static void efff5_7000(WORK_Other* /* unused */);
-static void efff5_8000(WORK_Other* /* unused */);
-static void efff5_9000(WORK_Other* /* unused */);
-static void efff5_A000(WORK_Other* /* unused */);
-static void efff5_B000(WORK_Other* /* unused */);
+static void efff5_0000(WORK_Other* unused1);
+static void efff5_1000(WORK_Other* unused1);
+static void efff5_2000(WORK_Other* unused1);
+static void efff5_3000(WORK_Other* unused1);
+static void efff5_4000(WORK_Other* unused1);
+static void efff5_5000(WORK_Other* unused1);
+static void efff5_6000(WORK_Other* unused1);
+static void efff5_7000(WORK_Other* unused1);
+static void efff5_8000(WORK_Other* unused1);
+static void efff5_9000(WORK_Other* unused1);
+static void efff5_A000(WORK_Other* unused1);
+static void efff5_B000(WORK_Other* unused1);
 
 void effect_F5_move(WORK_Other* ewk) {
     void (*efff5_jp[12])(WORK_Other*) = { efff5_0000, efff5_1000, efff5_2000, efff5_3000, efff5_4000, efff5_5000,
@@ -26,30 +26,30 @@ void effect_F5_move(WORK_Other* ewk) {
     efff5_jp[ewk->wu.routine_no[0]](ewk);
 }
 
-void efff5_0000(WORK_Other* /* unused */) {}
+void efff5_0000(WORK_Other* unused1) {}
 
-void efff5_1000(WORK_Other* /* unused */) {}
+void efff5_1000(WORK_Other* unused1) {}
 
-void efff5_2000(WORK_Other* /* unused */) {}
+void efff5_2000(WORK_Other* unused1) {}
 
-void efff5_3000(WORK_Other* /* unused */) {}
+void efff5_3000(WORK_Other* unused1) {}
 
-void efff5_4000(WORK_Other* /* unused */) {}
+void efff5_4000(WORK_Other* unused1) {}
 
-void efff5_5000(WORK_Other* /* unused */) {}
+void efff5_5000(WORK_Other* unused1) {}
 
-void efff5_6000(WORK_Other* /* unused */) {}
+void efff5_6000(WORK_Other* unused1) {}
 
-void efff5_7000(WORK_Other* /* unused */) {}
+void efff5_7000(WORK_Other* unused1) {}
 
-void efff5_8000(WORK_Other* /* unused */) {}
+void efff5_8000(WORK_Other* unused1) {}
 
-void efff5_9000(WORK_Other* /* unused */) {}
+void efff5_9000(WORK_Other* unused1) {}
 
-void efff5_A000(WORK_Other* /* unused */) {}
+void efff5_A000(WORK_Other* unused1) {}
 
-void efff5_B000(WORK_Other* /* unused */) {}
+void efff5_B000(WORK_Other* unused1) {}
 
-s32 effect_F5_init(s16 /* unused */) {
+s32 effect_F5_init(s16 unused1) {
     return 0;
 }

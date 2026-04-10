@@ -80,10 +80,12 @@ OP_W op_w;
 
 /** @brief Top-level opening demo state machine (BG init → scroll → title). */
 s16 opening_demo() {
-    /* When skip-intro is enabled, bypass the cinematic and the white fade (cases 0-2) and
-       jump straight to the fully visible title logo (case 3). */
+    /* When skip-intro is enabled, bypass the cinematic and zoom sequence,
+       jumping straight to the static title screen. We must set zoom to 1.0 (0x40)
+       so the logo isn't drawn invisibly small. */
     if (Config_GetBool(CFG_KEY_SKIP_INTRO) && D_No[3] < 3) {
         TITLE_Init();
+        Zoom_Value_Set(0x40); // Fixes the invisible logo bug!
         D_No[3] = 3;
         op_timer0 = 300;
     }
@@ -109,7 +111,9 @@ s16 opening_demo() {
     case 2:
         TITLE_Move(0);
 
-        if (FadeIn(0, 4, 8) != 0) {
+        /* Wait for TITLE_Move(0) zoom sequence (op_w.r_no_0 goes from 0 to 3) to complete.
+           This ensures the logo fully lands without relying on the buggy FadeIn() effect. */
+        if (op_w.r_no_0 >= 3) {
             D_No[3] += 1;
             op_timer0 = 300;
         }
@@ -265,7 +269,7 @@ void OPBG_Init() {
 }
 
 /** @brief Tick the opening BG demo and render the scrolling layers. */
-s16 OPBG_Move(s32 /* unused */) {
+s16 OPBG_Move(s32 unused1) {
     s16 flag = 0;
 
     flag = oh_opening_demo();

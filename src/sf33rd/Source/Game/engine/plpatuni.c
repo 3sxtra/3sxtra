@@ -14,7 +14,7 @@
 static void att_ahj_table_reader(PLW* wk);
 
 /** @brief Dummy attack — no-op placeholder. */
-void Att_DUMMY(PLW* /* unused */) {}
+void Att_DUMMY(PLW* unused1) {}
 
 /** @brief Metamorphosis wait state — waits before transformation. */
 void Att_METAMOR_WAIT(PLW* wk) {

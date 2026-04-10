@@ -1,0 +1,18 @@
+struct V2F {
+    float4 position : POSITION;
+    float2 texcoord : TEXCOORD0;
+    float4 color : COLOR;
+};
+
+V2F main(float4 position : ATTR0, 
+         float2 texcoord : ATTR1, 
+         float4 color : ATTR2,
+         uniform float4x4 mvp) 
+{
+    V2F OUT;
+    OUT.position = mul(mvp, position);
+    // RSX expects Y-flip or not depending on projection, we will handle in matrix
+    OUT.texcoord = texcoord;
+    OUT.color = color;
+    return OUT;
+}

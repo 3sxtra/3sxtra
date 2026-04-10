@@ -94,6 +94,7 @@ u32 get_action_flag(const char* action) {
     return 0;
 }
 
+#ifndef PLATFORM_PS3
 /** @brief Test whether a given input ID is active in the button state. */
 static bool is_input_active(SDLPad_ButtonState* state, InputID input_id) {
     switch (input_id) {
@@ -149,6 +150,7 @@ static bool is_input_active(SDLPad_ButtonState* state, InputID input_id) {
         return false;
     }
 }
+#endif
 
 /** @brief Convert raw pad states into game I/O words (per frame). */
 void keyConvert() {
@@ -172,6 +174,7 @@ void keyConvert() {
 
     for (i = 0; i < 2; i++) {
         s32 device_id = ControlMapping_GetPlayerDeviceID(i + 1);
+#ifndef PLATFORM_PS3
         if (device_id != -1) {
             // --- F1 Mapped Device Path ---
             // When the player has a device assigned via the F1 Controller Setup menu,
@@ -347,7 +350,9 @@ void keyConvert() {
             pad->stick[0] = drv_pad->stick[0];
             pad->stick[1] = drv_pad->stick[1];
 
-        } else {
+        } else
+#endif
+        {
             // Original logic
             flPADSetRepeatSw(&flpad_adr[0][i], 0xFF000F, 15, 3);
 

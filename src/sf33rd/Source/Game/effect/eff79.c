@@ -18,7 +18,7 @@
 
 static s32 Check_Play_Status_79(WORK_Other* ewk);
 static void Move_Move_79(WORK_Other* ewk);
-static void Setup_Move_79(WORK_Other* ewk, s32 /* unused */, s32 X_Value, s32 Y_Value, s32 Option);
+static void Setup_Move_79(WORK_Other* ewk, s32 unused1, s32 X_Value, s32 Y_Value, s32 Option);
 static void Move_79(WORK_Other* ewk);
 static void Check_Priority(WORK_Other* ewk);
 static s32 EFF79_Move_X(WORK_Other* ewk);
@@ -405,7 +405,7 @@ static void Move_Move_79(WORK_Other* ewk) {
     }
 }
 
-static void Setup_Move_79(WORK_Other* ewk, s32 /* unused */, s32 X_Value, s32 Y_Value, s32 Option) {
+static void Setup_Move_79(WORK_Other* ewk, s32 unused1, s32 X_Value, s32 Y_Value, s32 Option) {
     ewk->wu.routine_no[1] = 1;
     ewk->wu.routine_no[2] = 0;
     ewk->wu.routine_no[5] = 0;

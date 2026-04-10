@@ -5,7 +5,7 @@
 #include "types.h"
 
 s32 sa_stop_check();
-void check_my_tk_power_off(PLW* wk, PLW* /* unused */);
+void check_my_tk_power_off(PLW* wk, PLW* unused1);
 void check_em_tk_power_off(PLW* wk, PLW* tk);
 s16 check_ukemi_flag(PLW* wk);
 s32 check_rl_flag(WORK* wk);
